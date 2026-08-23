@@ -1,7 +1,7 @@
 # État du projet
 
 **Dernière mise à jour :** 2026-08-23 · branche `main`
-· dernière migration `drizzle/0056_diagnostic_vegetal.sql`
+· dernière migration `drizzle/0061_note_chantier.sql`
 
 *(Le numéro du dernier commit ne figure plus ici : il était faux dès le commit
 suivant, et une ligne fausse coûte plus cher qu'une ligne absente. `git log
@@ -9,6 +9,21 @@ suivant, et une ligne fausse coûte plus cher qu'une ligne absente. `git log
 
 Ce fichier dit **où en est le produit**, pas ce qu'on aimerait qu'il soit. Une
 ligne « fait » qui ne l'est pas coûte plus cher qu'une ligne absente.
+
+---
+
+## Le client touché ne remonte plus (23 août 2026)
+
+Son défaut : le client haut sur l'écran disparaît quand on le touche.
+
+| | État |
+|---|---|
+| La ligne touchée reste immobile sous le doigt | **fait** (`useAncrageDuGeste`) |
+| La fiche s'ouvre **vers le bas**, comme au milieu de l'écran | **fait** |
+| Sa séquence rejouée au navigateur, à 390 px | **fait** (`test-ligne-planning-e2e.ts`) |
+| Le contrôle confronté à l'état dégradé | **fait** — rouge à 422 px sans l'ancrage |
+
+Le détail et les partis pris : `ARCHITECTURE.md` §157.
 
 ---
 
@@ -35,6 +50,20 @@ positions des zones et l'endroit de la nourrice, et **cela n'a pas pu être
 éprouvé** (`AGENTS.md`). C'est le premier essai à faire sur son banc.
 
 Le détail : `ARCHITECTURE.md` §150.
+
+### Lire un croquis à main levée (23 août 2026)
+
+| | État |
+|---|---|
+| Un croquis **pas à l'échelle** se lit quand même | **fait** (`echelleTolerante`) |
+| Le trajet du regard garde sa règle **stricte** | inchangé, et éprouvé |
+| La **haie** donne l'échelle, elle aussi | **fait** |
+| Dernier recours : la plus grande cote sur l'étendue du dessin | **fait**, marqué « approchée » |
+| Un agencement illisible ne retire que le **dessin**, pas le plan | **fait** |
+| Le refus n'accuse plus les cotes quand elles sont là | **fait** |
+| Les **trois points qui soufflent** pendant la lecture | **fait** (`PointsQuiSoufflent`) |
+
+Le détail : `ARCHITECTURE.md` §149.
 
 ### Ses deux corrections du 23 août
 

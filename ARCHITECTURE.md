@@ -13222,96 +13222,6 @@ empreintes différentes selon qu'elles montrent leur temps ou non.
 Il ne s'est pas prononcé sur le **réglage de départ** — codé sur « Visible ».
 Passer à « Masqué » est le défaut de la colonne à retourner. Voir `TODO.md`.
 
----
-
-## 149. Le croquis dit où sont les choses : les proportions, et l'échelle déduite
-
-**Sa demande du 22 août 2026 au soir : « oui fais-le lire les proportions ».**
-
-### Ce que je lui avais dit, et pourquoi c'était faux
-
-Le §147 avait fermé le calcul de pression sauf un morceau : le trajet du regard
-à la PREMIÈRE tête. Je le lui ai présenté comme hors d'atteinte — *« aucune
-saisie ne le donne »*. Sa réponse : *« j'ai pas besoin de lui dire, il a tous
-les métrés du terrain, il a juste à calculer »*.
-
-**Il avait raison sur le fond, je me trompais sur le fait.** Le croquis porte la
-nourrice (c'est même obligatoire, `CLAUDE.md` §4 bis), les zones, et leurs
-cotes. Ce qui manquait n'était pas l'information : c'était la LECTURE, qui ne
-rendait que des dimensions et jamais des places. C'est le §5 ter du dépôt dans
-sa version la plus coûteuse — déclarer impossible ce qui n'était qu'à écrire.
-
-### Les places en fraction, jamais en mètres
-
-Le modèle rend, pour chaque zone et pour la nourrice, `x`, `y`,
-`largeur_fraction`, `hauteur_fraction`, tous entre 0 et 1. C'est tout ce qu'une
-image permet de dire sûrement : il voit qu'une pelouse occupe le tiers gauche du
-dessin, il ne voit pas qu'elle est à douze mètres du regard.
-
-**Hors de [0, 1], la valeur est refusée, pas rognée.** Un « 12 » pour un x n'est
-pas une fraction : c'est des mètres, un pixel, ou une confusion de champ. Le
-ramener à 1 fabriquerait une position plausible et fausse — et c'est une
-distance de tuyau qui en sortirait.
-
-### L'échelle se DÉDUIT des cotes
-
-`echelleDuCroquis` (dans `geometrie-croquis.ts`) croise les deux : une pelouse
-de 16 m qui occupe 0,40 du croquis donne 40 m par unité de fraction. Chaque zone
-cotée fournit jusqu'à **deux** estimations — une par côté, ce qui corrige une
-zone dessinée de travers dans un seul sens.
-
-**Médiane, pas moyenne.** Un modèle qui se trompe sur une zone tirerait la
-moyenne vers son erreur ; la médiane l'ignore.
-
-**Et le refus est la bonne réponse quand les zones se contredisent.** Au-delà de
-`ECART_MAX_ENTRE_ZONES` (2), le croquis n'est pas à l'échelle ou la lecture est
-fausse : on rend une raison, jamais une distance moyenne qui n'existe nulle
-part. Deux, parce qu'un croquis à main levée n'est jamais exact — refuser plus
-tôt ferait parler le garde-fou à tort, et un avertissement qui parle à tort
-s'apprend à être ignoré.
-
-### La distance : Manhattan, jusqu'au bord
-
-Un tuyau suit les axes. À vol d'oiseau, on sous-estimerait à la fois le tuyau à
-acheter et la perte qu'il subit — le mauvais sens des deux.
-
-**Et elle vise le BORD de la zone, pas son centre.** La première tête est sur le
-pourtour ; compter jusqu'au milieu ajouterait la moitié de la pelouse à un
-trajet que la ligne parcourt déjà — cette longueur-là est comptée par
-`perteDuReseau`, et la compter deux fois resserrerait la pose sans raison.
-
-**Le trajet retenu est LE PLUS LONG** de toutes les zones : elles sont
-dimensionnées sur une seule pression, qui doit être celle du point le plus mal
-servi.
-
-### Ce que ça change, et les garde-fous
-
-Sur le jardin d'exemple, trente mètres de trajet coûtent **0,29 bar** : la
-pression au dernier arroseur tombe de 2,28 à 2,01. Ce n'était pas un détail.
-
-Deux refus supplémentaires, parce que ce calcul repose sur une lecture
-approximative : au-delà de 200 m de trajet, ce n'est plus un jardin de
-particulier mais une échelle lue de travers ; et sans nourrice dessinée, aucun
-trajet — elle ne se déduit jamais du point d'eau (`CLAUDE.md` §4 bis).
-
-### Pourquoi un fichier à part, et pas dans `calcul.js`
-
-`calcul.js` est une copie octet pour octet partagée avec `appli/`
-(`verifier-arrosage-une-seule-source.mjs`). Y mettre cette géométrie l'aurait
-dupliquée dans une page qui n'en a pas l'usage. La distance est donc calculée
-côté serveur et **passée en entrée** (`regardVersZone`), comme la longueur
-d'amenée l'était déjà.
-
-### Un contrôle a rougi sur mon erreur
-
-`test-geometrie-croquis.ts` figeait « 8 m » pour une distance en diagonale ;
-le calcul rendait 11. C'est moi qui avais lu les demi-côtés de travers — refaire
-l'opération à la main était le seul moyen de trancher, et c'est exactement ce
-que vaut une valeur figée dans une suite plutôt qu'une borne large.
-
-Les deux défauts plausibles ont été joués : vol d'oiseau au lieu de Manhattan,
-moyenne au lieu de médiane. Chacun fait rougir la suite en nommant le chiffre.
-
 ## 150. Le plan se DESSINE : du croquis lu au tracé de la tranchée
 
 **Sa demande du 21 août 2026 :** *« il manque la photo, le schéma avec les
@@ -13417,7 +13327,14 @@ se commande quand même.
 | Ce qui manque | Ce qu'on fait |
 |---|---|
 | l'endroit **définitif** de la nourrice | refus, en le nommant |
-| la position des zones les unes par rapport aux autres | refus, en le nommant |
+| la position des zones les unes par rapport aux autres | **le plan sort sans son dessin**, et l'on dit pourquoi |
+
+**La seconde ligne a changé le 23 août 2026**, et c'est lui qui l'a corrigée.
+Ses trois éléments obligatoires sont les métrés, le piquage et la nourrice ;
+l'AGENCEMENT n'en fait pas partie. Un croquis qui porte les trois donne un plan
+juste — le compte d'arroseurs, les réseaux, les pièces — même si le dessin ne
+peut pas être reconstitué. Tout refuser dans ce cas, c'est ce qu'il a vu :
+*« il n'arrive pas à me lire mon croquis... là, il y a tous les métrés »*.
 
 Le second mérite son existence : le calcul rend `x = 0, y = 0` quand le croquis
 ne situe pas la zone. Deux pelouses se superposeraient alors **exactement**, et
@@ -13773,3 +13690,263 @@ ou « AUCUN » quand il n'y en avait pas.
 **Les noms, jamais les valeurs** : ce dépôt est public, et une valeur d'en-tête
 peut porter un jeton. Un contrôle le tient, et il a été vu rouge dans les deux
 sens — sur la disparition des noms, et sur la fuite d'une valeur.
+
+## 156. Le dossier du client ne porte que ce qu'il a reçu
+
+**Sa règle du 23 août 2026**, après avoir facturé M. Bernard : *« il y a une
+fiche chantier qui s'est créée en même temps. Cette catégorie est réservée
+lorsque les paysagistes créent une fiche chantier avec les informations type la
+tonte, la taille, ce qu'ils ont fait. À aucun moment, lorsqu'une facture doit
+être envoyée, une fiche chantier doit être créée. »*
+
+### Deux erreurs se cachaient l'une derrière l'autre
+
+| | |
+|---|---|
+| **Quand** | la colonne listait les chantiers `termine_at IS NOT NULL`, et **émettre une facture pose cette date** (`factures.ts` : `COALESCE(termine_at, now())`). Facturer fabriquait donc une pièce que personne n'avait écrite |
+| **Quoi** | le document servi était la feuille **interne** — équipe, créneau, note vocale, adresse — que ses salariés ouvrent dans la camionnette. Rangée au dossier d'un client, elle donnait à croire qu'il l'avait reçue |
+
+La seconde est la plus grave, et c'est celle qu'on ne voyait pas : une colonne
+qui se remplit toute seule finit par être crue.
+
+### La règle, et elle vaut pour les trois colonnes
+
+**Une pièce du dossier est un document que le client A REÇU.** Un devis envoyé,
+une facture émise, une fiche d'entretien partie. Ni brouillon, ni document
+interne, ni pièce déduite d'un état.
+
+La colonne porte donc les `passages_entretien` **figés** (`envoye_le` et `jeton`
+non nuls), à l'adresse même que le client a reçue — `/entretien/{jeton}`.
+
+### Une pièce n'est plus forcément un PDF
+
+`PieceDuClient.format` (`"pdf"` par défaut) le dit à la carte. Sur une page :
+la vignette annonce « FICHE », « Enregistrer » disparaît et « Ouvrir » devient
+le geste principal. Rien ne fige ce rapport en fichier : proposer de
+l'enregistrer aurait fait descendre une page web nommée `.pdf`, que rien
+n'ouvre — le défaut du 7 août 2026, retourné.
+
+### LE PIÈGE DRIZZLE, ET IL RESSERVIRA
+
+Une sous-requête corrélée écrite `${passagesEntretien.id}` se rend en **`"id"`
+NU** dès qu'aucune jointure n'oblige Drizzle à qualifier ses colonnes :
+
+```
+select count(*)::int from "lignes_passage" l
+ where l.passage_id = "id" and l.faite     -- « id » = celui de l, jamais vrai
+```
+
+Chaque fiche s'annonçait « 0 prestation » sur une base qui en portait deux ou
+trois. **Le voisin `listerPassages` écrit exactement la même chose et
+fonctionne** — il porte un `leftJoin`, qui force la qualification : le motif
+paraissait donc éprouvé. Écrire `passages_entretien.id` en toutes lettres.
+
+**Aucun test ne l'a vu ; c'est la CAPTURE qui l'a montré** — la cinquième fois
+dans ce dépôt qu'un défaut sort d'une image et d'aucun vert (`CLAUDE.md` §5). Le
+contrôle qui manquait exige désormais **deux fiches à comptes différents** : un
+seul compte juste peut l'être par hasard.
+
+## 149. Le croquis dit où sont les choses : les proportions, et l'échelle déduite
+
+**Sa demande du 22 août 2026 au soir : « oui fais-le lire les proportions ».**
+
+### Ce que je lui avais dit, et pourquoi c'était faux
+
+Le §147 avait fermé le calcul de pression sauf un morceau : le trajet du regard
+à la PREMIÈRE tête. Je le lui ai présenté comme hors d'atteinte — *« aucune
+saisie ne le donne »*. Sa réponse : *« j'ai pas besoin de lui dire, il a tous
+les métrés du terrain, il a juste à calculer »*.
+
+**Il avait raison sur le fond, je me trompais sur le fait.** Le croquis porte la
+nourrice (c'est même obligatoire, `CLAUDE.md` §4 bis), les zones, et leurs
+cotes. Ce qui manquait n'était pas l'information : c'était la LECTURE, qui ne
+rendait que des dimensions et jamais des places. C'est le §5 ter du dépôt dans
+sa version la plus coûteuse — déclarer impossible ce qui n'était qu'à écrire.
+
+### Les places en fraction, jamais en mètres
+
+Le modèle rend, pour chaque zone et pour la nourrice, `x`, `y`,
+`largeur_fraction`, `hauteur_fraction`, tous entre 0 et 1. C'est tout ce qu'une
+image permet de dire sûrement : il voit qu'une pelouse occupe le tiers gauche du
+dessin, il ne voit pas qu'elle est à douze mètres du regard.
+
+**Hors de [0, 1], la valeur est refusée, pas rognée.** Un « 12 » pour un x n'est
+pas une fraction : c'est des mètres, un pixel, ou une confusion de champ. Le
+ramener à 1 fabriquerait une position plausible et fausse — et c'est une
+distance de tuyau qui en sortirait.
+
+### L'échelle se DÉDUIT des cotes
+
+`echelleDuCroquis` (dans `geometrie-croquis.ts`) croise les deux : une pelouse
+de 16 m qui occupe 0,40 du croquis donne 40 m par unité de fraction. Chaque zone
+cotée fournit jusqu'à **deux** estimations — une par côté, ce qui corrige une
+zone dessinée de travers dans un seul sens.
+
+**Médiane, pas moyenne.** Un modèle qui se trompe sur une zone tirerait la
+moyenne vers son erreur ; la médiane l'ignore.
+
+**Et le refus est la bonne réponse quand les zones se contredisent.** Au-delà de
+`ECART_MAX_ENTRE_ZONES` (2), le croquis n'est pas à l'échelle ou la lecture est
+fausse : on rend une raison, jamais une distance moyenne qui n'existe nulle
+part. Deux, parce qu'un croquis à main levée n'est jamais exact — refuser plus
+tôt ferait parler le garde-fou à tort, et un avertissement qui parle à tort
+s'apprend à être ignoré.
+
+### La distance : Manhattan, jusqu'au bord
+
+Un tuyau suit les axes. À vol d'oiseau, on sous-estimerait à la fois le tuyau à
+acheter et la perte qu'il subit — le mauvais sens des deux.
+
+**Et elle vise le BORD de la zone, pas son centre.** La première tête est sur le
+pourtour ; compter jusqu'au milieu ajouterait la moitié de la pelouse à un
+trajet que la ligne parcourt déjà — cette longueur-là est comptée par
+`perteDuReseau`, et la compter deux fois resserrerait la pose sans raison.
+
+**Le trajet retenu est LE PLUS LONG** de toutes les zones : elles sont
+dimensionnées sur une seule pression, qui doit être celle du point le plus mal
+servi.
+
+### Ce que ça change, et les garde-fous
+
+Sur le jardin d'exemple, trente mètres de trajet coûtent **0,29 bar** : la
+pression au dernier arroseur tombe de 2,28 à 2,01. Ce n'était pas un détail.
+
+Deux refus supplémentaires, parce que ce calcul repose sur une lecture
+approximative : au-delà de 200 m de trajet, ce n'est plus un jardin de
+particulier mais une échelle lue de travers ; et sans nourrice dessinée, aucun
+trajet — elle ne se déduit jamais du point d'eau (`CLAUDE.md` §4 bis).
+
+### Pourquoi un fichier à part, et pas dans `calcul.js`
+
+`calcul.js` est une copie octet pour octet partagée avec `appli/`
+(`verifier-arrosage-une-seule-source.mjs`). Y mettre cette géométrie l'aurait
+dupliquée dans une page qui n'en a pas l'usage. La distance est donc calculée
+côté serveur et **passée en entrée** (`regardVersZone`), comme la longueur
+d'amenée l'était déjà.
+
+### Un contrôle a rougi sur mon erreur
+
+`test-geometrie-croquis.ts` figeait « 8 m » pour une distance en diagonale ;
+le calcul rendait 11. C'est moi qui avais lu les demi-côtés de travers — refaire
+l'opération à la main était le seul moyen de trancher, et c'est exactement ce
+que vaut une valeur figée dans une suite plutôt qu'une borne large.
+
+Les deux défauts plausibles ont été joués : vol d'oiseau au lieu de Manhattan,
+moyenne au lieu de médiane. Chacun fait rougir la suite en nommant le chiffre.
+
+---
+
+### Un croquis à main levée se lit quand même (23 août 2026)
+
+**Sa correction, et elle allait au fond :** *« il n'arrive pas à me lire mon
+croquis sous prétexte qu'il n'est pas à l'échelle. Ce qui serait bien, c'est
+qu'il arrive à le lire même s'il n'est pas totalement à l'échelle, car les
+utilisateurs ne vont pas s'amuser à faire des croquis à l'échelle à chaque fois.
+Là, il y a tous les métrés. »*
+
+Il avait raison. **Les COTES commandent, le dessin ne fait qu'ordonner.** Un
+croquis à main levée dit avec certitude qui est à gauche de qui et qui touche
+quoi ; il ne dit rien de fiable sur les longueurs — c'est justement pour cela
+qu'on y écrit les métrés. Refuser le plan parce que le dessin n'est pas
+proportionné, c'était refuser le croquis pour ce qu'il n'a jamais eu à être.
+
+**Deux règles, désormais, et la sévérité reste où elle sert :**
+
+| | Ce qu'elle sert | Devant un dessin approximatif |
+|---|---|---|
+| `echelleDuCroquis` | le **trajet du regard**, donc la pression, donc l'espacement | refuse — un chiffre faux y coûte un plan faux |
+| `echelleTolerante` | le **dessin** | conclut, et le dit en réserve |
+
+Une pelouse placée un peu de travers se voit et se corrige à l'œil ; une
+pression fausse ne se voit qu'en juillet.
+
+**Trois sources d'échelle, dans cet ordre :** les zones qui portent à la fois
+leur cote et leur proportion ; **la haie**, qui porte sa longueur et dont on
+prend le plus grand côté dessiné ; et, en dernier recours, la plus grande cote
+du croquis rapportée à l'étendue du dessin — un ordre de grandeur, rendu marqué
+« approchée ».
+
+**Ce qui reste refusé, et doit l'être :** un croquis qui ne situe RIEN. Là, il
+n'y a pas d'agencement à reconstituer, seulement à inventer.
+
+**Et le refus n'accuse plus les cotes.** Le message qu'il a vu — *« aucune zone
+du croquis ne porte à la fois ses cotes et sa place »* — désignait ses métrés
+alors qu'ils étaient tous là : le fautif était la lecture, qui n'avait rendu
+aucune proportion. Une erreur qui accuse à tort coûte plus cher que pas d'erreur
+du tout (`CLAUDE.md` §5).
+
+**La consigne au modèle a été reprise en conséquence.** « Tu ne devines jamais »
+ne s'applique PAS aux places : une cote se LIT (illisible = null), une place se
+MESURE sur l'image et se voit toujours dès que la zone est dessinée.
+
+
+## 157. Ouvrir une fiche referme une autre — et la ligne touchée doit rester sous le doigt
+
+**Son défaut du 22 août 2026, capture à l'appui :** *« lorsque le client se
+trouve sur la partie haute de l'écran comme sur la photo, monsieur Pornic, et
+que je clique dessus pour pouvoir afficher sa fiche chantier, le client remonte
+et la fiche chantier aussi. […] tout remonte d'un bloc et je suis perdu, je ne
+sais plus où est mon client. Il disparaît sous mes yeux. »*
+
+### Ce n'était pas un défilement, et c'est ce qui rendait le défaut sournois
+
+Aucun `scrollTo`, aucun `scrollIntoView` : chercher un appel de défilement dans
+`PlanningClient.tsx` ne donne rien, et l'on conclut trop vite que l'écran est
+innocent.
+
+La cause est ailleurs, et elle vient d'une règle qu'il a lui-même demandée le
+22 août — *« le même nom referme ce qu'il a ouvert »* : `carteListe` ne porte
+**qu'une** fiche ouverte à la fois. Toucher un client en referme donc un autre.
+Quand la fiche refermée se trouvait **plus haut dans la page**, tout ce qui la
+suit remonte de sa hauteur — mesuré : **422 px** —, et la ligne touchée passe
+au-dessus du bord de l'écran pendant que le doigt est encore dessus.
+
+D'où la forme du symptôme, qu'aucune autre hypothèse n'explique : le défaut
+n'apparaît **que** lorsque le client visé est haut sur l'écran, jamais au milieu
+ni en bas. Au milieu, la fiche refermée est encore visible et l'on voit la page
+se recomposer ; en haut, la ligne sort du cadre.
+
+### Le navigateur ne le rattrape pas
+
+Les navigateurs savent ancrer le défilement quand du contenu disparaît
+au-dessus du point regardé (`overflow-anchor`). **Safari ne l'implémente pas** —
+et c'est Safari qu'il a dans la main. Compter dessus, c'était livrer un écran
+juste sur une machine et faux sur la sienne.
+
+### La réparation : mesurer avant, rattraper après
+
+`src/components/atlas/useAncrageDuGeste.ts` — un crochet, volontairement
+minuscule :
+
+1. dans le gestionnaire, **avant** tout changement d'état, on relève la position
+   de la ligne dans la fenêtre (`getBoundingClientRect().top`) ;
+2. `useLayoutEffect` la restaure une fois React repeint, par un `scrollBy` de
+   l'écart.
+
+**`useLayoutEffect`, jamais `useEffect`.** Le second s'exécute après que le
+navigateur a peint : on verrait la page sauter, puis revenir. Le premier
+s'intercale avant la peinture, et le saut n'existe jamais à l'œil.
+
+**Ce qu'on ancre, c'est la LIGNE, pas la fiche.** Le nom du client est ce qu'il
+cherche des yeux ; la fiche s'ouvre dessous et peut grandir sans le gêner.
+
+**Ce que le crochet ne fait pas :** amener une ligne à l'écran quand elle n'y
+est pas. Ce n'est pas son besoin — il touche ce qu'il voit — et un défilement de
+confort par-dessus le sien lui reprendrait la main.
+
+Un écart de moins d'un pixel est ignoré : c'est l'arrondi du rendu, pas un saut,
+et le rattraper ferait vibrer la page à chaque geste.
+
+### Le contrôle rejoue la SÉQUENCE, pas le geste
+
+`scripts/test-ligne-planning-e2e.ts`, cas « Le client touché ne remonte pas ».
+Une suite qui se contenterait de toucher une ligne sur une page fraîche ne
+fermerait rien au-dessus d'elle, ne bougerait rien, et serait **verte sur le
+défaut même qu'elle prétend attraper**. Elle ouvre donc une première fiche plus
+haut, fait défiler jusqu'à ce qu'un autre client soit sous l'en-tête, puis le
+touche.
+
+Elle a été **confrontée à l'état dégradé** (`CLAUDE.md` §5) : l'ancrage
+neutralisé, elle rougit en nommant le bon coupable — *« le client touché a bougé
+de 422 px (145 → -277) »*. Et elle refuse de conclure si le montage n'a pas pu
+amener la ligne assez haut, plutôt que de rendre un vert qui ne prouve rien.

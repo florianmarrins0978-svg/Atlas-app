@@ -14,6 +14,14 @@ import { withEntreprise } from "../src/server/db/with-entreprise";
 import { devis } from "../src/server/db/schema";
 import { eq } from "drizzle-orm";
 import { creerPuisFiche } from "./_creer-chantier-e2e";
+import { ajouterPrestation as ajouterPrestationEntretien } from "../src/server/repositories/prestations-entretien";
+import {
+  ouvrirPassage,
+  lirePassage,
+  cocherLigne,
+  nommerClient,
+  figerPassage,
+} from "../src/server/repositories/passages-entretien";
 
 // La fiche du client, telle qu'il l'atteint.
 //
@@ -161,6 +169,23 @@ async function main() {
   const facture = await getFacturePourChantier(ctx, chantierId);
   await emettreFacture(ctx, facture!.facture.id);
 
+  // **Et une fiche d'entretien REMPLIE PUIS ENVOYÉE.** Depuis sa règle du
+  // 23 août 2026, la troisième colonne ne porte que celles-là : facturer ne
+  // fabrique plus de fiche, si bien que sans ce geste la colonne serait vide et
+  // l'ordre — le cœur de sa demande — ne se vérifierait plus.
+  const clientDuChantier = (
+    await pool.query(`SELECT client_id FROM chantiers WHERE id = $1`, [chantierId])
+  ).rows[0].client_id as string;
+  await ajouterPrestationEntretien(ctx, { famille: "Pelouse", libelle: "Tonte" });
+  const passageOuvert = await ouvrirPassage(ctx, "2026-06-18");
+  assert.ok(passageOuvert.ok, "la fiche d'entretien du montage n'a pas pu s'ouvrir");
+  const passageLu = await lirePassage(ctx, passageOuvert.id);
+  await cocherLigne(ctx, passageOuvert.id, passageLu!.lignes[0].id, true);
+  await nommerClient(ctx, passageOuvert.id, clientDuChantier);
+  const passageFige = await figerPassage(ctx, passageOuvert.id);
+  assert.ok(passageFige.ok, "la fiche d'entretien du montage n'est pas partie");
+  const jetonFiche = passageFige.jeton;
+
   // **On compte les devis DU CLIENT, pas ceux d'un chantier.** Ce garde-fou
   // visait `chantier_id` et a accusé le montage à tort dès que le second devis
   // est passé sur un second chantier — un contrôle qui accuse à tort coûte plus
@@ -280,7 +305,9 @@ async function main() {
     const attendus: Record<string, RegExp> = {
       Devis: /^\/api\/devis\//,
       Facture: /^\/api\/factures\//,
-      "Fiche chantier": /^\/api\/chantiers\/[0-9a-f-]{36}\/fiche\/pdf$/,
+      // **Plus un PDF de chantier depuis le 23 août 2026** : la colonne porte
+      // le rapport d'entretien, à l'adresse même que le client a reçue.
+      "Fiche chantier": /^\/entretien\/[A-Za-z0-9_-]+$/,
     };
     for (const colonne of colonnes) {
       assert.ok(colonne.liens.length >= 1, `la colonne « ${colonne.titre} » est vide`);
@@ -426,39 +453,43 @@ async function main() {
   // **Ouvert POUR DE BON, pas seulement listé.** Un lien qui rend une erreur 500
   // ou une page HTML se voit exactement pareil dans le DOM ; c'est en le
   // suivant qu'on l'apprend.
-  await cas("la fiche de chantier s'ouvre vraiment, et c'est un PDF", async () => {
-    // L'adresse se lit dans la feuille, ouverte comme il l'ouvre.
+  await cas("la fiche s'ouvre vraiment, et c'est le rapport reçu par le client", async () => {
+    // **Ce n'est plus un PDF, et c'est le sujet.** Jusqu'au 23 août 2026 cette
+    // colonne servait la feuille INTERNE d'un chantier terminé — équipe,
+    // créneau, note vocale, adresse —, celle que ses salariés ouvrent dans la
+    // camionnette. Rangée au dossier d'un client, elle donnait à croire qu'il
+    // l'avait reçue. Elle porte désormais le rapport d'entretien, à l'adresse
+    // même qu'il a envoyée.
     const cadre = page.locator("div").filter({ has: page.locator('h3:text-is("Fiche chantier")') }).last();
     await cadre.locator('[data-atlas="piece"]').first().click();
     const ouvrir = page.locator('[data-atlas="piece-ouvrir"]');
     await ouvrir.waitFor({ state: "visible", timeout: 20_000 });
     const href = await ouvrir.getAttribute("href");
+
+    // **« Enregistrer » n'est PAS proposé**, et ce n'est pas un oubli : rien ne
+    // fige ce rapport en fichier. Le laisser ferait descendre une page web
+    // nommée `.pdf`, que rien n'ouvrirait — le défaut du 7 août, retourné.
+    assert.equal(
+      await page.locator('[data-atlas="piece-enregistrer"]').count(),
+      0,
+      "« Enregistrer » est offert sur une fiche qui n'est pas un fichier"
+    );
     await page.getByRole("button", { name: "Annuler" }).click();
     await ouvrir.waitFor({ state: "hidden", timeout: 15_000 });
-    assert.equal(
-      href,
-      `/api/chantiers/${chantierId}/fiche/pdf`,
-      `la feuille de la fiche de chantier mène à « ${href} »`
-    );
+
+    assert.equal(href, `/entretien/${jetonFiche}`, `la feuille de la fiche mène à « ${href} »`);
+
+    // **Ouvert POUR DE BON, pas seulement listé.** Un lien qui rend une erreur
+    // 500 se voit exactement pareil dans le DOM ; c'est en le suivant qu'on
+    // l'apprend.
     const reponse = await page.request.get(`${BASE}${href}`);
-    assert.equal(reponse.status(), 200, `la fiche de chantier répond ${reponse.status()}`);
+    assert.equal(reponse.status(), 200, `le rapport d'entretien répond ${reponse.status()}`);
+    const corps = await reponse.text();
     assert.match(
-      reponse.headers()["content-type"] ?? "",
-      /application\/pdf/,
-      `la fiche n'est pas servie en PDF : ${reponse.headers()["content-type"]}`
+      corps,
+      /Tonte/i,
+      "le rapport ne porte pas la prestation cochée : ce n'est pas la fiche envoyée"
     );
-    const octets = await reponse.body();
-    assert.equal(
-      octets.subarray(0, 5).toString("latin1"),
-      "%PDF-",
-      "le fichier servi ne commence pas par %PDF-"
-    );
-    // **Aucun prix sur une fiche de chantier.** Elle se donne à un locataire, à
-    // un syndic, à l'assurance d'un voisin : un montant imprimé ici divulgue ce
-    // que le propriétaire a payé. La mise en page l'éprouve déjà
-    // (`test-fiche-chantier-pdf.ts`) ; ici on éprouve que c'est bien CE
-    // document-là qui est servi.
-    assert.ok(octets.length > 2000, `la fiche pèse ${octets.length} octets — elle est probablement vide`);
   });
 
   await cas("un chantier SANS client n'ouvre aucune porte sur du vide", async () => {

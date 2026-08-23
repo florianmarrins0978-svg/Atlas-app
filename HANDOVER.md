@@ -9,6 +9,24 @@ sert.
 
 ---
 
+## PIÈGE : « TOUT REMONTE » N'EST PAS UN DÉFILEMENT (23 août 2026)
+
+**Si un écran d'Atlas saute sous le doigt, ne cherchez pas de `scrollTo` — il
+n'y en a pas.** Sur le planning, ouvrir une fiche en REFERME une autre
+(`carteListe` n'en porte qu'une). Quand la fiche refermée était plus haut dans
+la page, tout ce qui suit remonte de sa hauteur : 422 px mesurés, et la ligne
+touchée sort de l'écran.
+
+**Safari n'implémente pas `overflow-anchor`** — et c'est Safari qu'il a dans la
+main. Le rattrapage est donc à notre charge : `useAncrageDuGeste` relève la
+position de la ligne dans le gestionnaire, et la restaure en `useLayoutEffect`
+(jamais `useEffect` : le second peint d'abord, et l'on verrait le saut).
+
+Le même piège guette partout où un panneau se referme au-dessus du point
+regardé. Détail : `ARCHITECTURE.md` §157.
+
+---
+
 ## LE PLAN D'ARROSAGE EST DESSINÉ — CE QU'IL FAUT SAVOIR AVANT D'Y TOUCHER (23 août 2026)
 
 **Trois fichiers purs, et aucun ne recalcule ce qui existait :**
@@ -41,6 +59,21 @@ zone et l'endroit de la nourrice. **Aucune clé de vision dans cet
 environnement** — la fonction pure `lireReponseCroquis` est éprouvée
 (`test-lecture-croquis.ts`), l'appel au fournisseur ne l'est pas. Premier essai à
 faire sur son banc.
+
+### DEUX ÉCHELLES, ET NE PAS LES CONFONDRE (23 août 2026)
+
+| | Ce qu'elle sert | Devant un dessin approximatif |
+|---|---|---|
+| `echelleDuCroquis` | le trajet du regard → la pression → l'espacement | **refuse** |
+| `echelleTolerante` | le dessin | **conclut**, et le dit en réserve |
+
+**Ne pas « harmoniser » les deux.** Une pelouse placée de travers se voit à
+l'œil ; une pression fausse ne se voit qu'en juillet. C'est sa correction :
+*« les utilisateurs ne vont pas s'amuser à faire des croquis à l'échelle »*.
+
+**Et l'agencement n'est pas l'un des trois éléments obligatoires** (métrés,
+piquage, nourrice). Un agencement illisible ne retire que le DESSIN : le plan
+sort quand même, avec une réserve qui dit pourquoi.
 
 ### LE CROQUIS SE LIT EN FRACTIONS, ET UN SEUL ENDROIT LES CONVERTIT
 

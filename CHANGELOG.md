@@ -9,6 +9,95 @@ Format : le plus récent en tête.
 
 ## 2026-08-23
 
+### Un croquis à main levée se lit quand même — et l'attente souffle
+
+**Sa correction :** *« il n'arrive pas à me lire mon croquis sous prétexte qu'il
+n'est pas à l'échelle. Les utilisateurs ne vont pas s'amuser à faire des croquis
+à l'échelle à chaque fois. Là, il y a tous les métrés. »*
+
+**Les cotes commandent, le dessin ne fait qu'ordonner.** Un croquis à main levée
+dit avec certitude qui est à gauche de qui ; il ne dit rien de fiable sur les
+longueurs — c'est pour cela qu'on y écrit les métrés. Le plan n'est donc plus
+refusé parce que le dessin n'est pas proportionné : les zones sont posées
+d'après leurs cotes, et l'écart se dit en réserve.
+
+**La sévérité reste où elle sert** : le trajet du regard, qui entre dans le
+calcul de pression, garde sa règle stricte. Une pelouse placée de travers se
+voit à l'œil ; une pression fausse ne se voit qu'en juillet.
+
+**La haie donne l'échelle, elle aussi.** Sur son croquis elle longe tout le haut
+du terrain et porte sa longueur : la lui refuser jetait la moitié de ce que le
+dessin disait.
+
+**Et l'agencement n'est plus un motif de tout refuser.** Métrés, piquage,
+nourrice restent obligatoires ; un agencement illisible ne retire que le DESSIN.
+Le plan sort — arroseurs, réseaux, pièces — et l'on dit pourquoi il n'est pas
+dessiné.
+
+**Le message accusait le mauvais coupable.** *« Aucune zone du croquis ne porte
+à la fois ses cotes et sa place »* désignait ses métrés alors qu'ils étaient
+tous là : le fautif était la lecture, qui n'avait rendu aucune proportion. La
+consigne au modèle a été reprise — « tu ne devines jamais » ne s'applique pas
+aux places, qui se mesurent sur l'image.
+
+**Et l'attente souffle.** *« Lors de la lecture du croquis, mets les trois
+petits points qui bougent. »* Trois points de suspension immobiles étaient
+exactement le défaut relevé le 13 août sur la dictée : ils disent « rien ne se
+passe » pendant que le travail est en cours, et la lecture d'un croquis est la
+plus longue attente de l'application. Le geste est partagé
+(`PointsQuiSoufflent`), jamais recopié.
+
+Détail : `ARCHITECTURE.md` §149 et §150.
+### Le client touché ne remonte plus : la fiche s'ouvre vers le bas
+
+**Son défaut :** *« lorsque le client se trouve sur la partie haute de l'écran
+[…] et que je clique dessus, le client remonte et la fiche chantier aussi. […]
+tout remonte d'un bloc et je suis perdu, je ne sais plus où est mon client. Il
+disparaît sous mes yeux. »*
+
+Aucun défilement n'était en cause : ouvrir une fiche en referme une autre, et
+quand celle-ci se trouvait plus haut dans la page, tout remontait de sa hauteur
+— 422 px mesurés. Safari n'ancre pas le défilement ; la ligne touchée reste
+désormais immobile sous le doigt (`useAncrageDuGeste`, `ARCHITECTURE.md` §157).
+
+---
+
+### La colonne « Fiche chantier » ne se remplit plus toute seule
+
+*« Je viens de facturer monsieur Bernard […] néanmoins il y a une fiche chantier
+qui s'est créée en même temps. Cette catégorie est réservée lorsque les
+paysagistes créent une fiche chantier avec les informations type la tonte, la
+taille, ce qu'ils ont fait. À aucun moment, lorsqu'une facture doit être
+envoyée, une fiche chantier doit être créée. »*
+
+**Le mécanisme, invisible à la lecture.** Émettre une facture POSE la date de
+fin du chantier (`factures.ts` : `COALESCE(termine_at, now())`), et la colonne
+listait les chantiers terminés. Facturer fabriquait donc une pièce que personne
+n'avait écrite.
+
+**Et le document qu'elle ouvrait était le mauvais.** C'est la feuille INTERNE —
+équipe, créneau, note vocale, adresse du chantier —, celle que ses salariés
+ouvrent dans la camionnette. Rangée au dossier d'un client, elle donnait à
+croire qu'il l'avait reçue. Cette feuille reste joignable depuis le chantier :
+elle n'a simplement plus sa place dans le dossier du client.
+
+**Ce que la colonne porte désormais :** les fiches d'entretien qu'il a remplies
+et ENVOYÉES (Paysage → Fiche de chantier), à l'adresse même que le client a
+reçue. Un brouillon n'y entre pas — comme un devis non parti, il n'a ni date
+d'envoi ni adresse publique.
+
+**« Enregistrer » disparaît sur ces pièces-là**, et ce n'est pas un oubli : rien
+ne fige ce rapport en fichier. Le laisser aurait fait descendre une page web
+nommée `.pdf`, que rien n'ouvre — le défaut du 7 août 2026, retourné. La
+vignette dit « FICHE » plutôt que « PDF », et « Ouvrir » prend la place du geste
+principal.
+
+**Un client sans aucun chantier voit quand même sa fiche.** Elle s'ouvre depuis
+Paysage, se nomme, s'envoie — sans qu'aucun chantier n'existe. Le retour
+anticipé « ce client n'a pas de chantier » l'aurait fait disparaître de son
+dossier.
+
+
 ### Le banc accusait le mauvais coupable — Atlas signe maintenant ses réponses
 
 *« L'appli ne se lance plus »*, puis une capture : son téléphone propose de
@@ -281,9 +370,6 @@ n'engage à rien.
 ceux qui réclamaient le refus vérifient désormais l'avertissement et la
 possibilité de passer outre.
 
----
-
-## 2026-08-23
 
 ### « Terminés » : cinq chiffres en moins, et de l'air
 
@@ -367,9 +453,6 @@ Trois contrôles neufs, **tous vus rougir** contre l'état dégradé qu'ils
 prétendent attraper — une lecture publique qui ignore le masquage, un masquage
 qui efface la durée, une empreinte qui scelle le temps caché.
 
----
-
-## 2026-08-23
 
 ### La durée passe sous le nom, et le filet du « + » disparaît
 

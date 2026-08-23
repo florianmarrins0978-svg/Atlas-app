@@ -1,0 +1,267 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Mon message au client — le rédiger soi-même</title>
+<style>
+  :root{
+    --fond:#f5f3ee; --plage:#faf9f5; --encre:#1c1c1a; --encre-douce:#4a4a44;
+    --gris:#8a8578; --pin:#2f3b2f; --pale:#b9c6b4; --papier:#ece9e1;
+    --or:#B98B47; --trait:rgba(28,28,26,.12); --bordeaux:#6E2433;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:#e6e3dc}
+  body{font:16px/1.5 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;color:var(--encre);
+       -webkit-text-size-adjust:100%;padding:0 0 44px}
+  .bandeau{background:#1c1c1a;color:#f5f3ee;padding:16px 20px;font-size:14px;line-height:1.5}
+  .bandeau b{color:#fff}
+  .bandeau i{color:#d9d5c9}
+
+  .bloc{max-width:430px;margin:24px auto 0;padding:0 20px}
+  .bloc h2{margin:0 0 8px;font:700 10px/1 ui-sans-serif,sans-serif;letter-spacing:.2em;
+           text-transform:uppercase;color:var(--or)}
+  .bloc p{margin:0 0 10px;font-size:14.5px;line-height:1.55;color:var(--encre-douce)}
+  .bloc p b{color:var(--encre)}
+
+  /* ── L'écran des réglages, tel qu'il est ──────────────────────────── */
+  .ecran{max-width:430px;margin:10px auto 0;background:var(--fond);border-radius:14px;
+         padding:16px 16px 18px;box-shadow:0 10px 28px rgba(20,18,14,.13)}
+  .ecran .chapeau{font:700 10px/1 ui-sans-serif,sans-serif;letter-spacing:.2em;
+                  text-transform:uppercase;color:var(--or);margin:0}
+  .ecran .titre{margin:8px 0 0;font:400 26px/1.2 ui-serif,Georgia,serif}
+
+  .rubrique{display:flex;align-items:center;gap:12px;padding:13px 0;border-top:1px solid var(--trait)}
+  .rubrique:first-of-type{border-top:0}
+  .rubrique .rond{width:34px;height:34px;border-radius:999px;background:var(--papier);
+                  display:grid;place-items:center;font-size:16px;flex:none}
+  .rubrique .nom{font-size:15.5px}
+  .rubrique .dit{display:block;font-size:12.5px;color:var(--gris);margin-top:2px}
+  .rubrique .fleche{margin-left:auto;color:var(--gris)}
+  .rubrique.neuve{background:rgba(185,139,71,.10);border-radius:10px;padding:13px 10px;
+                  border-top:0;margin-top:6px}
+  .rubrique.neuve .nom{color:var(--encre)}
+
+  .cadre{margin:14px 0 0;padding-top:14px;border-top:1px solid var(--trait)}
+  .cadre .etiquette{font:700 10px/1 ui-sans-serif,sans-serif;letter-spacing:.16em;
+                    text-transform:uppercase;color:var(--gris);margin:0 0 8px}
+  /* **Assez haut pour porter le message ENTIER sans faire défiler dedans.**
+     À 190 px, « Bien à vous, [entreprise] » tombait hors du cadre : on jugeait
+     un texte dont on ne voyait pas la fin, et la signature — ce qu'il veut
+     justement changer — était la première chose cachée. */
+  textarea.modele{width:100%;border:1px solid var(--trait);border-radius:9px;background:var(--plage);
+                  padding:11px 12px;font:400 16px/1.5 ui-sans-serif,-apple-system,sans-serif;
+                  color:var(--encre);resize:vertical;min-height:272px;
+                  -webkit-tap-highlight-color:transparent}
+  textarea.modele:focus{outline:none;border-color:var(--or)}
+
+  .jetons{display:flex;flex-wrap:wrap;gap:7px;margin:9px 0 0}
+  .jetons button{border:1px solid var(--or);border-radius:999px;background:transparent;
+                 color:var(--or);padding:7px 12px;font-size:13px;cursor:pointer;
+                 -webkit-tap-highlight-color:transparent}
+  .jetons .mot{align-self:center;font-size:12.5px;color:var(--gris);margin-right:2px}
+
+  .alerte{margin:9px 0 0;font-size:13px;line-height:1.45;color:var(--bordeaux);min-height:19px}
+  .alerte:empty{min-height:0}
+
+  /* ── L'aperçu : le SMS tel que le client le reçoit ────────────────── */
+  .telephone{max-width:430px;margin:10px auto 0;background:#fff;border-radius:14px;
+             padding:14px 14px 16px;box-shadow:0 10px 28px rgba(20,18,14,.13)}
+  .telephone .qui{font-size:12.5px;color:var(--gris);margin:0 0 10px;text-align:center}
+  .bulle{background:#e9e9eb;border-radius:16px;padding:11px 13px;font-size:15px;line-height:1.45;
+         white-space:pre-wrap;color:#000;word-break:break-word}
+  .bulle .lien{color:#0a62d0;text-decoration:underline}
+
+  .verdict{max-width:430px;margin:16px auto 0;padding:14px 18px;border-radius:14px;
+           font-size:14.5px;line-height:1.5;background:var(--papier);color:var(--encre-douce)}
+  .verdict b{color:var(--encre)}
+
+  .question{max-width:430px;margin:26px auto 0;padding:16px 18px;border-radius:14px;
+            background:var(--papier);font-size:15px;line-height:1.55}
+  .question > b:first-child{display:block;margin-bottom:10px;font-size:16px}
+  .question .choix{margin-top:14px;padding-top:14px;border-top:1px solid var(--trait)}
+  .question .choix div{display:flex;align-items:baseline;gap:10px;margin-top:8px}
+  .question .choix .mot{flex-shrink:0;width:34px;font-weight:700;color:var(--pin)}
+</style>
+</head>
+<body>
+
+<div class="bandeau">
+  <b>Ta demande :</b> « y a-t-il un endroit dans les réglages où l'utilisateur peut
+  rédiger ce message automatique ? S'il n'y en a pas, il faut en créer un ».<br>
+  <b>Réponse : il n'y en a pas.</b> Ce texte est écrit dans le code, le même pour
+  tout le monde. Voici deux façons de te le rendre — <b>et le cadre s'écrit</b> :
+  tape dedans, le téléphone dessous suit.
+</div>
+
+<!-- ═══ A ═══════════════════════════════════════════════════════════ -->
+<div class="bloc">
+  <h2>A — dans « Devis &amp; factures »</h2>
+  <p>La rubrique existe déjà : validité, acompte, délai de paiement, mentions.
+     <b>Le message y descend en dernier bloc.</b> Rien de neuf à trouver dans le
+     sommaire.</p>
+  <p>En contrepartie, l'écran s'allonge — et le rappel d'impayé, le compte rendu
+     d'entretien viendront s'y ajouter un jour.</p>
+</div>
+<div class="ecran">
+  <p class="chapeau">Mon entreprise</p>
+  <p class="titre">Devis &amp; factures</p>
+  <div style="margin-top:14px">
+    <div class="rubrique"><span class="rond">📅</span><span class="nom">Validité du devis<span class="dit">30 jours</span></span><span class="fleche">›</span></div>
+    <div class="rubrique"><span class="rond">💶</span><span class="nom">Acompte demandé<span class="dit">30 %</span></span><span class="fleche">›</span></div>
+    <div class="rubrique"><span class="rond">⏳</span><span class="nom">Délai de paiement<span class="dit">30 jours</span></span><span class="fleche">›</span></div>
+    <div class="rubrique neuve"><span class="rond">✉️</span><span class="nom">Mon message au client<span class="dit">Ce qui part avec le devis, et avec la facture</span></span><span class="fleche">›</span></div>
+  </div>
+</div>
+
+<!-- ═══ B ═══════════════════════════════════════════════════════════ -->
+<div class="bloc">
+  <h2>B — une rubrique à elle : « Mes messages »</h2>
+  <p>Une ligne de plus dans le sommaire des réglages, et <b>tous tes messages au
+     même endroit</b> : le devis, la facture, le rappel d'impayé, le compte rendu
+     d'entretien.</p>
+  <p>En contrepartie, une rubrique de plus à parcourir quand tu cherches autre
+     chose.</p>
+</div>
+<div class="ecran">
+  <p class="chapeau">Mon entreprise</p>
+  <p class="titre">Réglages</p>
+  <div style="margin-top:14px">
+    <div class="rubrique"><span class="rond">🏢</span><span class="nom">Mon entreprise<span class="dit">Identité, coordonnées, informations légales</span></span><span class="fleche">›</span></div>
+    <div class="rubrique"><span class="rond">🏷️</span><span class="nom">Tarifs &amp; catalogue<span class="dit">Prestations, main-d'œuvre, matériel</span></span><span class="fleche">›</span></div>
+    <div class="rubrique"><span class="rond">📄</span><span class="nom">Devis &amp; factures<span class="dit">Validité, acompte, délai, mentions</span></span><span class="fleche">›</span></div>
+    <div class="rubrique neuve"><span class="rond">✉️</span><span class="nom">Mes messages<span class="dit">Ce que vos clients reçoivent par SMS et par e-mail</span></span><span class="fleche">›</span></div>
+  </div>
+</div>
+
+<!-- ═══ L'écran lui-même, dans les deux cas ═════════════════════════ -->
+<div class="bloc">
+  <h2>L'écran, identique dans les deux cas</h2>
+  <p><b>Écris ce que tu veux</b> dans le cadre : le téléphone dessous montre ce
+     que Mme&nbsp;Larousse recevra vraiment.</p>
+  <p>Les trois pastilles posent ce qu'Atlas remplace tout seul — <b>le nom du
+     client, le lien, le nom de ton entreprise</b>. Essaie d'effacer le lien pour
+     voir ce qui se passe.</p>
+</div>
+
+<div class="ecran">
+  <p class="chapeau">Mon entreprise</p>
+  <p class="titre">Mon message au client</p>
+
+  <div class="cadre">
+    <p class="etiquette">Avec le devis</p>
+    <textarea class="modele" id="modele" spellcheck="false"></textarea>
+    <div class="jetons">
+      <span class="mot">Poser :</span>
+      <button type="button" data-jeton="[client]">le client</button>
+      <button type="button" data-jeton="[lien]">le lien</button>
+      <button type="button" data-jeton="[entreprise]">mon entreprise</button>
+      <button type="button" id="remettre">Remettre le texte d'origine</button>
+    </div>
+    <p class="alerte" id="alerte"></p>
+  </div>
+</div>
+
+<div class="telephone">
+  <p class="qui">Ce que Mme Larousse reçoit</p>
+  <div class="bulle" id="apercu"></div>
+</div>
+
+<div class="verdict">
+  <b>Ce qui ne se règle pas ici, et pourquoi.</b> Un SMS part en texte nu : ni
+  gras, ni couleur, ni logo — c'est le téléphone du client qui décide de tout
+  cela, pas nous. Ce qui s'habille, c'est le devis lui-même, et c'est l'autre
+  planche.
+</div>
+
+<div class="question">
+  <b>Trois questions :</b>
+  <div class="choix">
+    <div><span class="mot">1.</span><span><b>A</b> — dans « Devis &amp; factures » — ou
+      <b>B</b> — une rubrique « Mes messages » ?</span></div>
+    <div><span class="mot">2.</span><span>Le <b>lien est-il obligatoire</b> ? Sans
+      lui, ton client ne peut ni voir son devis ni choisir sa date. Atlas doit-il
+      <b>refuser</b> un message qui ne le porte pas, ou te laisser faire ?</span></div>
+    <div><span class="mot">3.</span><span>Un message par document — devis,
+      facture, rappel d'impayé, compte rendu d'entretien — ou <b>un seul</b> pour
+      tout ?</span></div>
+  </div>
+</div>
+
+<script>
+/* Le texte d'aujourd'hui, RECOPIÉ du code qui l'envoie (src/lib/message-client.ts).
+   L'écrire de mémoire ici aurait montré une maquette qui ne dit pas ce que ses
+   clients reçoivent — et c'est précisément ce qu'il vient corriger. */
+const ORIGINE = [
+  "Bonjour [client],",
+  "",
+  "Voici votre devis. Vous pouvez le consulter et choisir votre date d'intervention en suivant ce lien :",
+  "",
+  "[lien]",
+  "",
+  "Si aucune des dates proposées ne vous convient, vous pouvez en proposer une autre.",
+  "",
+  "Bien à vous,",
+  "[entreprise]",
+].join("\n");
+
+/* Le vrai client de sa capture, et son vrai lien — pas un exemple inventé. */
+const CLIENT = "Mme Larousse";
+const ENTREPRISE = "Eden Nature";
+const LIEN = "https://…app.github.dev/devis/_7deYienbFTa4DISAZLc2IwhVYYin-Xe8Dj1f_xPtqnU";
+
+const modele = document.getElementById("modele");
+const apercu = document.getElementById("apercu");
+const alerte = document.getElementById("alerte");
+
+function echapper(t) {
+  return t.replace(/&/g, "&amp;").replace(/</g, "&lt;");
+}
+
+function peindre() {
+  const texte = modele.value;
+
+  /* **Le lien est habillé À PART**, après l'échappement : un lien cliquable se
+     voit bleu et souligné sur son téléphone, et c'est ce qui lui a manqué le
+     10 août. Le montrer en noir ici donnerait une idée fausse de ce que reçoit
+     le client. */
+  const rendu = echapper(texte)
+    .replace(/\[client\]/g, echapper(CLIENT))
+    .replace(/\[entreprise\]/g, echapper(ENTREPRISE))
+    .replace(/\[lien\]/g, '<span class="lien">' + echapper(LIEN) + "</span>");
+
+  apercu.innerHTML = rendu;
+
+  /* **On DIT ce qui manque, on ne le rattrape pas en douce.** Un lien remis tout
+     seul dans son texte se verrait à l'envoi, pas à l'écriture — et il croirait
+     avoir écrit autre chose que ce qui part. */
+  alerte.textContent = texte.includes("[lien]")
+    ? ""
+    : "Sans le lien, votre client ne peut ni voir son devis ni choisir sa date.";
+}
+
+for (const bouton of document.querySelectorAll("[data-jeton]")) {
+  bouton.addEventListener("click", () => {
+    /* Posé LÀ OÙ IL ÉCRIT, pas à la fin : un mot qui atterrit au bas du message
+       oblige à le déplacer à la main, sur un téléphone, au doigt. */
+    const debut = modele.selectionStart ?? modele.value.length;
+    const fin = modele.selectionEnd ?? debut;
+    const jeton = bouton.dataset.jeton;
+    modele.value = modele.value.slice(0, debut) + jeton + modele.value.slice(fin);
+    modele.focus();
+    modele.selectionStart = modele.selectionEnd = debut + jeton.length;
+    peindre();
+  });
+}
+
+document.getElementById("remettre").addEventListener("click", () => {
+  modele.value = ORIGINE;
+  peindre();
+});
+
+modele.addEventListener("input", peindre);
+modele.value = ORIGINE;
+peindre();
+</script>
+</body>
+</html>
