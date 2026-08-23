@@ -169,6 +169,15 @@ langage. Rien n'y entre sans son accord explicite (voir `AGENTS.md`).
 - **Jamais de règle dupliquée entre l'affichage et la vérification.** La même
   fonction sert à construire un écran et à revalider ce qu'il renvoie — deux
   implémentations finissent toujours par diverger.
+- **Aucune couleur écrite en clair dans un écran.** Sept chartes cohabitent,
+  dont **deux sombres** : sur Nuit et Sylve, l'accent est CLAIR et le fond est
+  SOMBRE — les pôles s'inversent. Un `#faf9f5` posé sur `colors.rust` est donc
+  juste cinq fois sur sept, et illisible deux fois. C'est exactement ce que le
+  patron a signalé le 22 août 2026 : *« le mode nuit est illisible »*. Ce qui
+  s'écrit à la place : `surPlein` pour ce qu'on pose SUR un aplat,
+  `voile(colors.ink, α)` pour un voile, et les jetons pour les signaux
+  (`ARCHITECTURE.md` §148). En dix secondes :
+  `npx tsx scripts/test-chartes-lisibles.ts`.
 
 ## 3 ter. Lui répondre court
 

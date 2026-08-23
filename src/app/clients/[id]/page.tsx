@@ -88,7 +88,7 @@ export default async function FicheClientPage({
               le nom du client en tête d'écran — « je veux plus voir le nom en
               dessous ». On l'a retiré, et c'est cette ligne-ci qui porte le noir
               gras, avec la date. Le détail vit dans les puces en dessous. */}
-          <p className={libelleCaps} style={{ color: "#000", fontWeight: 700 }}>
+          <p className={libelleCaps} style={{ color: colors.ink, fontWeight: 700 }}>
             Dernière prestation
             {fiche.derniere.jour ? ` · ${jourCourt(fiche.derniere.jour)}` : ""}
           </p>

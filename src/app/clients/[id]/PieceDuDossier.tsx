@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import BottomSheet from "@/components/atlas/BottomSheet";
-import { colors } from "@/lib/design-tokens";
+import { colors, voile } from "@/lib/design-tokens";
 import { nomDuFichierDeLaPiece, type PieceDuClient } from "@/lib/documents-du-client";
 
 /**
@@ -89,8 +89,8 @@ export default function PieceDuDossier({ piece }: { piece: PieceDuClient }) {
         <span
           className="mx-auto flex h-[29px] w-[24px] items-end justify-center rounded-[3px] pb-[3px] text-[6.5px] font-bold"
           style={{
-            backgroundColor: "#fff",
-            boxShadow: `inset 0 0 0 1px ${colors.alert}59`,
+            backgroundColor: colors.card,
+            boxShadow: `inset 0 0 0 1px ${voile(colors.alert, 0.35)}`,
             color: colors.alert,
             letterSpacing: "0.06em",
           }}

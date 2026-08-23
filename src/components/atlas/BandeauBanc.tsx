@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import type { EtatConstructionBanc } from "@/server/etat-banc";
+import { colors, voile } from "@/lib/design-tokens";
 
 /**
  * « Version rapide en construction » — la phrase qui manquait au patron.
@@ -91,16 +92,16 @@ export default function BandeauBanc() {
       aria-live="polite"
       className="px-6 py-2.5"
       style={{
-        backgroundColor: "rgba(185,139,71,0.13)",
-        borderBottom: "1px solid rgba(185,139,71,0.30)",
+        backgroundColor: voile(colors.or, 0.13),
+        borderBottom: `1px solid ${voile(colors.or, 0.3)}`,
       }}
     >
-      <p className="text-[12.5px] leading-[1.4]" style={{ color: "#7d6234" }}>
+      <p className="text-[12.5px] leading-[1.4]" style={{ color: colors.or }}>
         Version rapide en construction
         {avecCompte ? (
           <>
             {" — "}
-            <b style={{ color: "#1c1c1a", fontWeight: 500 }}>
+            <b style={{ color: colors.ink, fontWeight: 500 }}>
               {etat.faits} écran{etat.faits > 1 ? "s" : ""} sur {etat.total}
             </b>{" "}
             déjà prêts.
@@ -112,11 +113,11 @@ export default function BandeauBanc() {
       {part !== null && (
         <div
           className="mt-[7px] h-[3px] overflow-hidden rounded-full"
-          style={{ backgroundColor: "rgba(185,139,71,0.25)" }}
+          style={{ backgroundColor: voile(colors.or, 0.25) }}
         >
           <div
             className="h-full"
-            style={{ width: `${part}%`, backgroundColor: "#B98B47", transition: "width .4s" }}
+            style={{ width: `${part}%`, backgroundColor: colors.or, transition: "width .4s" }}
           />
         </div>
       )}

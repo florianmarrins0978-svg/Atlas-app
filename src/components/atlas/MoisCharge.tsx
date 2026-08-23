@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
-import { colors, font } from "@/lib/design-tokens";
+import { colors, font, surPlein, voile } from "@/lib/design-tokens";
 import { grilleDuMois, JOURS_COURTS, MOIS_LONGS } from "@/lib/mois";
 import { etatDemi, partDeLaBarre, type EtatDemi } from "@/lib/planning-jour";
 import type { JourIso } from "@/server/disponibilites";
@@ -125,7 +125,7 @@ export default function MoisCharge({
         aria-hidden="true"
       >
         {JOURS_COURTS.map((j, i) => (
-          <span key={`${j}-${i}`} style={i >= 5 ? { color: "rgba(28,28,26,0.3)" } : undefined}>
+          <span key={`${j}-${i}`} style={i >= 5 ? { color: voile(colors.ink, 0.3) } : undefined}>
             {j}
           </span>
         ))}
@@ -169,7 +169,7 @@ export default function MoisCharge({
                   : c.jour === jourTouche
                     ? colors.rustTint
                     : c.weekEnd
-                      ? "rgba(28,28,26,0.035)"
+                      ? voile(colors.ink, 0.035)
                       : "transparent",
                 boxShadow:
                   c.jour === jourTouche
@@ -185,11 +185,11 @@ export default function MoisCharge({
                 style={{
                   fontFamily: font.display,
                   color: retenus.has(c.jour)
-                    ? colors.card
+                    ? surPlein
                     : c.jour === aujourdHui
                       ? colors.or
                       : c.weekEnd
-                        ? "rgba(28,28,26,0.42)"
+                        ? voile(colors.ink, 0.42)
                         : colors.ink,
                   fontWeight: c.jour === aujourdHui ? 600 : 400,
                 }}
@@ -277,7 +277,7 @@ export function MarqueDuJour({
         className="flex h-[6px] overflow-hidden rounded-[2px]"
         style={
           surFondPlein
-            ? { background: "rgba(250,249,245,0.22)" }
+            ? { background: voile(surPlein, 0.22) }
             : { background: colors.card, boxShadow: `inset 0 0 0 1px ${colors.line}` }
         }
       >

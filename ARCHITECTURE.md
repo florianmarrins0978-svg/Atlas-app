@@ -13165,3 +13165,115 @@ rendus faux :
   3,2 bar, où la même buse est retenue, contre les pressions réellement
   reçues.
 
+
+---
+
+## 148. Le mode nuit : ce qui rendait deux chartes sur sept illisibles
+
+*Payé le 22 août 2026, sur sa capture du planning en « Nuit » et six mots :*
+***« Le mode nuit est illisible. Corrige ça. »***
+
+### Le diagnostic, mesuré et non supposé
+
+Le dépôt refuse les correctifs imaginés (`AGENTS.md`) : avant de toucher une
+ligne, chaque écran a été ouvert dans un navigateur sous les deux chartes
+sombres, et le contraste de **chaque texte visible** calculé contre son fond
+réellement composé — pas contre le fond qu'on suppose, qui est presque toujours
+transparent sur l'élément lui-même.
+
+Trois familles de fautes en sont sorties, et **aucune ne pouvait se voir sur les
+cinq chartes claires** :
+
+| | Ce qui était écrit | Ce que ça donne en Nuit |
+|---|---|---|
+| **1. un crème sur l'accent** | `#faf9f5`, `#fff`, `fill="white"` sur `colors.rust` | **1,05** — un crème sur un crème |
+| **2. un voile d'encre** | `rgba(28,28,26,0.42)` sur un fond noir | **1,04** — du noir sur du noir |
+| **3. trois signaux figés** | `alert`, `bordeaux`, `vertPale` en clair | **1,5 / 1,76 / 2,5** |
+
+### 1. `surPlein` — ce qu'on écrit sur un aplat
+
+Sur les cinq chartes claires, l'accent est un vert pin sombre : un crème s'y lit
+très bien, et huit endroits du dépôt l'écrivaient en clair. **Sur Nuit et Sylve,
+l'accent EST l'encre** — la charte inverse les pôles, et le crème se retrouve
+sur du crème.
+
+`design-tokens.ts` expose donc `surPlein`, et **il vaut `card`**. Ce n'est pas
+un raccourci : dans chacune des sept chartes, la plage et l'accent sont aux deux
+bouts de l'échelle — l'un clair et l'autre sombre, ou l'inverse. Ce qui se lit
+sur la plage se lit sur l'accent, retourné. Et sur « Origine », `card` vaut
+`#faf9f5` **au caractère près** : les cinq claires ne bougent pas d'un pixel.
+
+La garantie n'est pas une intuition. `test-chartes-lisibles.ts` mesure le couple
+`card` / `rust` sur les sept chartes et refuse la moindre sous 4,5 — c'est ce
+qui autorise l'affirmation ci-dessus, et ce qui la défendra le jour où une
+huitième charte arrivera.
+
+### 2. `voile()` — un voile qui suit la charte
+
+Un `rgba(28,28,26,α)` dit « l'encre d'Origine, à α ». Sur une charte sombre,
+l'encre n'est plus celle-là, et le voile devient une teinte pleine posée sur son
+propre fond. `voile(colors.ink, 0.42)` s'écrit en `color-mix` et suit la
+variable.
+
+**Ce qui se passe si le navigateur ne connaît pas `color-mix`** — avant
+iOS 16.2 : la déclaration est ignorée et la couleur retombe sur celle qu'elle
+hérite, c'est-à-dire l'encre pleine. Le chiffre est alors **trop vu, jamais
+invisible**. La dégradation va du bon côté, et c'est délibéré : le défaut qu'on
+répare est l'effacement.
+
+### 3. Alerte, bordeaux, vert pâle : ce qui les figeait exigeait qu'elles bougent
+
+`design-tokens.ts` affirmait que ces trois-là n'avaient pas à suivre la charte,
+et donnait sa raison : dérivées de chaque charte, deux d'entre elles finiraient
+par se ressembler, et le mois cesserait de se lire d'un coup d'œil.
+
+**Le raisonnement était juste et la conclusion fausse.** C'est précisément parce
+que leur rôle est de se distinguer qu'elles doivent suivre : sur les deux
+sombres, l'accent plein DEVIENT clair, si bien qu'« incomplet » (vert pâle) et
+« complet » (l'accent) se lisaient tous deux comme deux blancs — **1,5 l'un
+contre l'autre**, quand les cinq claires tiennent de 6,6 à 9,5.
+
+Elles deviennent donc des jetons de charte, dérivés par `detacher()` :
+
+- **la teinte et la saturation du patron ne bougent pas**, seule la clarté se
+  décale. Mêler vers l'encre — le réflexe — tire le rouge d'alerte vers le
+  gris-vert : on obtient un brun terne qui ne dit plus « attention » et qui se
+  confond avec le bordeaux, c'est-à-dire exactement les deux couleurs qu'il
+  fallait garder distinctes ;
+- **elle ne bouge que si elle en a besoin.** Sur un fond clair le premier essai
+  passe déjà le seuil, et la valeur sort intacte : `#9C3B2E`, `#6E2433`,
+  `#b9c6b4`. Les cinq chartes claires sont donc identiques au caractère près,
+  et une suite le fixe ;
+- **le vert pâle descend là où les deux autres montent.** Sur un écran sombre,
+  plus la demi-journée est pleine, plus la barre est claire — l'inverse exact
+  d'un écran clair, et la même règle.
+
+### Deux contrôles, et aucun ne remplace l'autre
+
+| | Ce qu'il attrape | Ce qu'il ne peut pas voir |
+|---|---|---|
+| `test-chartes-lisibles.ts` | une charte dont un couple ne se lit plus — sept palettes, sans navigateur, dix secondes | une couleur écrite en clair DANS un écran |
+| `test-mode-sombre-lisible-e2e.ts` | exactement cela : il ouvre chaque écran en Origine puis en Nuit et compare **le même texte à lui-même** | ce qui n'est pas sur son parcours |
+
+Le second est celui qui aurait vu « Julien ＋ ». Les deux ont été confrontés à
+l'état d'avant le lot et rougissent en nommant le texte fautif et ses deux
+mesures — 1,17 en Nuit contre 11,15 en Origine.
+
+**Aucun seuil n'a été inventé, et c'est la §5 bis de `CLAUDE.md`.** Sur Origine,
+le bordeaux et le vert pin tiennent **1,10** l'un contre l'autre — ils se
+distinguent par la teinte, rouge contre vert — et le chevron de navigation
+2,6. Ce sont ses choix, relevés sur son site. Une suite qui exigerait 4,5
+partout accuserait le dessin qu'il a validé et rendrait son écran impossible à
+changer. La règle retenue est donc : **le sombre ne fait pas moins bien que le
+clair**, et le clair se mesure au lieu de s'écrire — le plancher de `muted` est
+celui de Moka (3,24), calculé, jamais recopié.
+
+### Ce qui reste non couvert, et qu'il faut savoir
+
+Le parcours de la suite navigateur porte six écrans — l'accueil, le planning
+avec une journée ouverte, les terminés, le paysage, les réglages, l'apparence.
+**Ce qui n'y est pas n'est pas éprouvé** : les états qui ne s'ouvrent qu'au
+doigt (feuilles, tiroirs, listes déroulantes) et les écrans plus profonds. La
+suite refuse de conclure sur moins de six textes comparables — un contrôle qui
+mesure zéro ne mesure rien (`CLAUDE.md` §5) —, mais elle ne prétend pas couvrir
+l'application entière.

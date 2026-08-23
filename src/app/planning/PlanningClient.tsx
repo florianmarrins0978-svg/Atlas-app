@@ -6,7 +6,7 @@ import { getPlanificationEtat, trierParDatePlanifiee } from "@/lib/chantier-etat
 import { estAuPlanning } from "@/lib/onglet-chantier";
 import { jourIso } from "@/lib/jour";
 import EnTeteEcran from "@/components/atlas/EnTeteEcran";
-import { colors, font, libelleCaps } from "@/lib/design-tokens";
+import { colors, font, libelleCaps, surPlein } from "@/lib/design-tokens";
 import MoisCharge, { fondDeLEtat } from "@/components/atlas/MoisCharge";
 import {
   cleCreneau,
@@ -958,7 +958,7 @@ function Petit({
       style={{
         border: `1px solid ${retenue ? colors.rust : fini ? colors.or : colors.line}`,
         background: retenue ? colors.rust : colors.card,
-        color: retenue ? "#faf9f5" : fini ? colors.or : colors.inkSoft,
+        color: retenue ? surPlein : fini ? colors.or : colors.inkSoft,
         WebkitTapHighlightColor: "transparent",
       }}
     >
@@ -996,7 +996,7 @@ function PastilleEquipe({
       style={{
         border: vide ? `1px dashed ${colors.or}` : "0",
         background: vide ? "transparent" : colors.rust,
-        color: vide ? colors.or : "#faf9f5",
+        color: vide ? colors.or : surPlein,
         WebkitTapHighlightColor: "transparent",
       }}
     >
@@ -1588,7 +1588,7 @@ function FeuilleChantier({
           target="_blank"
           rel="noreferrer"
           className="mx-auto mt-3 block w-max rounded-full px-5 py-2.5 text-[13px]"
-          style={{ background: colors.rust, color: "#faf9f5" }}
+          style={{ background: colors.rust, color: surPlein }}
         >
           Ouvrir le PDF sans les prix
         </a>

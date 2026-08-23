@@ -9,6 +9,55 @@ Format : le plus récent en tête.
 
 ## 2026-08-22
 
+### Le mode nuit se lit — huit couleurs claires écrites en dur, et trois signaux tenus pour immuables
+
+**Sa capture du planning, en « Nuit », et six mots :** *« Le mode nuit est
+illisible. Corrige ça. »* La pastille d'équipe portait « Julien ＋ » en blanc
+sur un fond blanc cassé, les chiffres du week-end n'existaient pas, et
+« incomplet » et « complet » étaient devenus deux blancs.
+
+**Trois familles de fautes, toutes invisibles sur les cinq chartes claires.**
+
+1. **Un crème écrit en dur sur l'accent.** Huit endroits posaient `#faf9f5`,
+   `#fff` ou `fill="white"` sur `colors.rust`. Sur les claires, l'accent est un
+   vert pin sombre : parfait. Sur Nuit et Sylve, **l'accent EST l'encre** — un
+   crème sur un crème, 1,05 de contraste. `surPlein` remplace le tout, et vaut
+   `card` : dans chacune des sept chartes, la plage et l'accent sont aux deux
+   bouts de l'échelle. Sur Origine, `card` vaut `#faf9f5` au caractère près.
+2. **Un voile d'encre écrit en dur.** Le calendrier éteignait ses week-ends
+   avec `rgba(28,28,26,0.42)` — l'encre d'Origine. Sur un fond noir, du noir à
+   42 % est du noir : les « 29 » et « 30 » de sa capture n'existaient pas
+   (1,04). `voile(colors.ink, 0.42)` suit la charte, et retombe sur l'encre
+   pleine là où `color-mix` manque : trop vu, jamais invisible.
+3. **Trois couleurs de signal tenues pour immuables.** `design-tokens.ts`
+   affirmait qu'alerte, bordeaux et vert pâle n'avaient pas à suivre la charte.
+   Leur rôle est pourtant que quatre états se distinguent d'un coup d'œil — et
+   sur les sombres, « incomplet » et « complet » tenaient 1,5, le dépassement
+   1,76 contre son fond, un refus 2,5. Elles deviennent des jetons : la TEINTE
+   du patron ne bouge pas, seule la clarté s'accorde au fond, et **uniquement
+   quand elle en a besoin**.
+
+**Les cinq chartes claires ne bougent pas d'un caractère**, et c'est vérifié :
+la dérivation ne remonte la clarté que si le contraste manque, ce qui n'arrive
+jamais sur un fond clair. Ce qu'il regarde tous les jours est intact.
+
+**Deux contrôles, et aucun ne remplace l'autre.**
+`test-chartes-lisibles.ts` mesure les sept palettes sans navigateur, en dix
+secondes. `test-mode-sombre-lisible-e2e.ts` ouvre chaque écran deux fois — en
+Origine puis en Nuit — et compare **le même texte à lui-même** : c'est le seul
+qui pouvait voir une couleur écrite DANS un écran, hors de toute charte. Les
+deux ont été confrontés à l'état d'avant le lot, et ils rougissent en nommant
+« Julien ＋ » et les chiffres du week-end.
+
+**Aucun seuil inventé.** Sur Origine, le bordeaux et le vert pin tiennent 1,10
+l'un contre l'autre, et le chevron de navigation 2,6 : ce sont ses choix. Une
+suite qui les ferait rougir accuserait le dessin qu'il a validé (`CLAUDE.md`
+§5 bis). La règle retenue est *le sombre ne fait pas moins bien que le clair*,
+et le clair se mesure au lieu de s'écrire.
+
+Le détail : `ARCHITECTURE.md` §148.
+
+
 ### « Choisir la date » ouvre le calendrier du planning, et dit qui est déjà là
 
 **Sa demande, puis sa validation :** *« lorsqu'on clique sur "Choisir la date"

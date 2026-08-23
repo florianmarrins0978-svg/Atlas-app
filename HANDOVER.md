@@ -9,6 +9,43 @@ sert.
 
 ---
 
+## UNE COULEUR ÉCRITE EN CLAIR EST JUSTE SUR CINQ CHARTES ET FAUSSE SUR DEUX (22 août 2026)
+
+**Sa capture du planning en « Nuit », six mots :** *« Le mode nuit est
+illisible. Corrige ça. »*
+
+**La règle à retenir avant d'écrire une couleur.** Sept chartes cohabitent, dont
+**deux sombres** — Nuit et Sylve. Sur celles-là, `rust` (l'accent) est CLAIR,
+`cream` et `card` sont SOMBRES : les pôles s'inversent. Une valeur écrite en
+clair est donc juste cinq fois sur sept, et personne ne s'en aperçoit tant qu'on
+ne pose pas la charte.
+
+| Ce qu'on veut | Ce qu'il faut écrire | Ce qu'il ne faut PLUS écrire |
+|---|---|---|
+| du texte sur l'accent plein ou sur l'alerte | `surPlein` | `#faf9f5`, `#fff`, `fill="white"` |
+| un voile d'encre | `voile(colors.ink, 0.42)` | `rgba(28,28,26,0.42)` |
+| un voile sur un aplat plein | `voile(surPlein, 0.22)` | `rgba(250,249,245,0.22)` |
+| une couleur de signal | `colors.alert`, `colors.bordeaux`, `colors.vertPale` | leur valeur hexadécimale |
+
+**Devant un doute, la commande qui répond** — dix secondes, sans base ni
+serveur :
+
+```bash
+npx tsx scripts/test-chartes-lisibles.ts
+```
+
+Et celle qui REGARDE l'écran, Origine contre Nuit, sur six parcours (il lui faut
+le serveur et la base) :
+
+```bash
+npx tsx scripts/test-mode-sombre-lisible-e2e.ts
+```
+
+Le pourquoi de chaque choix, et ce qui reste non couvert : `ARCHITECTURE.md`
+§148.
+
+---
+
 ## LA PRESSION QUI DIMENSIONNE EST CELLE DU DERNIER ARROSEUR (22 août 2026)
 
 **Avant de toucher à `decouper` ou à `buseALaPression`, sachez ceci :** le

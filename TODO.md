@@ -9,6 +9,33 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
+## Mode nuit : ce que le lot du 22 août ne couvre PAS (22 août 2026)
+
+Le défaut qu'il a signalé est réparé (`ARCHITECTURE.md` §148), et deux contrôles
+le tiennent. Ce qui reste dehors, et qu'il faut savoir avant de croire
+l'application entièrement lisible en Nuit :
+
+| Ce qui n'est pas éprouvé | Pourquoi |
+|---|---|
+| **les états qui ne s'ouvrent qu'au doigt** — feuilles, tiroirs, listes déroulantes, champs en cours de saisie | la suite navigateur parcourt des écrans au repos ; ouvrir chaque geste demanderait un scénario par écran |
+| **les écrans profonds** — fiche chantier, devis complet, facture, catalogue, arrosage | le parcours porte neuf écrans, pas l'application entière |
+| **la pastille d'équipe elle-même**, dans la CI | le jeu de démonstration n'a qu'une équipe et aucun chantier planifié : le cas exact de sa capture ne se rejoue qu'avec deux équipes en base |
+
+Le troisième point est le plus gênant : c'est celui qu'il a signalé, et la suite
+le mesurerait s'il y avait de quoi le mesurer. Le corriger demande soit
+d'enrichir le jeu de démonstration — qui sert aux quatre-vingts suites de la
+batterie —, soit de faire poser un chantier et une seconde équipe par la suite
+elle-même, à travers les écrans. La seconde voie est la plus sûre et n'a pas été
+prise faute de temps.
+
+**Les pages publiques du client restent volontairement claires** — devis,
+facture, fiche d'entretien, documents légaux. Un devis ne part pas en noir chez
+le client parce que l'artisan a choisi « Nuit » (`design-tokens.ts`,
+`couleursDocument`). Ce n'est pas un manque, c'est une décision, et elle est
+tenue.
+
+---
+
 ## Arrosage : deux calculs manquent encore, et il ne les a pas commandés (22 août 2026)
 
 Sa question du 22 août — *« quel calcul utilisent-ils pour savoir cela ? »* — a

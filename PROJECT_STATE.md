@@ -12,6 +12,24 @@ ligne « fait » qui ne l'est pas coûte plus cher qu'une ligne absente.
 
 ---
 
+## Le mode nuit se lit (22 août 2026)
+
+*« Le mode nuit est illisible. Corrige ça. »* — sa capture du planning.
+
+| | État |
+|---|---|
+| Ce qu'on écrit sur un aplat plein suit la charte (`surPlein`) | **fait** — 8 endroits, `#faf9f5`/`#fff`/`fill="white"` |
+| Les voiles d'encre suivent la charte (`voile()`) | **fait** — calendrier, interrupteur d'agenda |
+| Alerte, bordeaux et vert pâle deviennent des jetons de charte | **fait** — teinte gardée, clarté accordée |
+| Les cinq chartes claires, intactes au caractère près | **fait**, et fixé par une suite |
+| Contrôle sans navigateur, sur les sept palettes | **fait** (`test-chartes-lisibles.ts`) |
+| Contrôle qui REGARDE l'écran, Origine contre Nuit | **fait** (`test-mode-sombre-lisible-e2e.ts`) |
+
+Non couvert : les états qui ne s'ouvrent qu'au doigt et les écrans profonds — le
+parcours de la suite porte six écrans. Détail : `ARCHITECTURE.md` §148.
+
+---
+
 ## Proposer une date : le calendrier du planning (22 août 2026)
 
 Sa demande, validée sur planche 91 puis codée trait pour trait.
