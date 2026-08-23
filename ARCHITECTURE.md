@@ -13822,3 +13822,58 @@ Il vise désormais une phrase qui n'appartient qu'au refus — *« recevrait un
 document vide »* —, et il a été vu rouge contre l'absence du garde-fou. C'est la
 troisième fois de la journée qu'un contrôle passait au vert sur le défaut même
 dont il portait le nom ; le remède est toujours le même : **le confronter**.
+
+## 157. Le devis se recompose au moment d'envoyer, pas au chargement de l'écran
+
+**Le patron, le 23 août 2026 :** *« Le devis part à zéro euro chez la cliente,
+alors qu'il y a un arbre à tailler et un à démonter. »* Puis, quand on lui a
+répondu que rien n'était chiffré : *« j'avais mis des prix, cinq cent cinquante
+et je ne sais plus combien, un devis à mille trois cents euros »*.
+
+**Il avait raison, et la première explication était fausse.** Elle est consignée
+telle quelle en §156 : elle concluait à des prestations jamais chiffrées, et
+posait un garde-fou contre les devis vides. Le garde-fou reste utile ; le
+diagnostic, lui, était à côté.
+
+### Rien ne se perdait — rien n'arrivait
+
+Ses prix étaient bien en base, dans `lignes_prix`. Ce sont les lignes du
+**DOCUMENT** qui manquaient. Le devis ne se recompose que dans
+`getOuCreerDevisBrouillon`, appelé au **chargement** de l'écran
+(`src/app/chantiers/[id]/devis-complet/page.tsx`). Tout prix tapé ensuite — c'est-à-dire tous ceux qu'on
+tape vraiment — restait dehors.
+
+**Mesuré avant correction, sur son geste exact :** écran à **660,00 €**,
+`lignes_prix` à 1 ligne, et le devis à **0,00 € et zéro ligne**.
+
+### Deux nœuds, et le second était le plus discret
+
+1. `envoyerAuClientAction` figeait le devis **sans le recomposer** ;
+2. `creerEnvoi` retenait le `devisId` **venu du navigateur** — celui du
+   chargement de la page. Or la page publique du client lit les lignes de CE
+   devis-là. Le document recomposé pouvait donc être juste pendant que le lien
+   pointait toujours sur le vide.
+
+L'identifiant vient désormais du serveur, qui reprend la version courante du
+chantier qu'il vient lui-même de recomposer. Le paramètre reçu est conservé dans
+la signature mais ignoré : le retirer ferait glisser les arguments suivants et
+transformerait une correction en panne.
+
+### Le garde-fou de §156 accusait à tort, et c'est ce qui l'a révélé
+
+Posé contre les devis vides, il comptait les lignes du **document périmé** — donc
+il refusait un envoi parfaitement légitime : écran à 660 €, refus affiché. *Un
+contrôle qui accuse à tort coûte plus cher que pas de contrôle du tout*
+(`AGENTS.md`).
+
+La recomposition a été portée dans `preparerEnvoiAction`, c'est-à-dire **à
+l'ouverture de la feuille d'envoi**. Ce que l'écran compte, ce qu'il montre et ce
+qui partira sont enfin la même chose.
+
+### Ce que le contrôle doit faire, et qu'aucun autre ne faisait
+
+Toutes les suites d'envoi chiffraient **avant** d'ouvrir l'écran du devis — par
+`/prix` —, si bien que la recomposition du chargement suffisait et que le défaut
+restait invisible. Le nouveau cas chiffre **sur l'écran du devis, après son
+ouverture** : c'est le geste réel du patron, et le seul qui prenne le défaut. Il
+a été vu rouge contre l'ancien code.

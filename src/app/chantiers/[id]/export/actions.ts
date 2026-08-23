@@ -57,6 +57,24 @@ export async function reprendreDevisAction(chantierId: string) {
  */
 export async function preparerEnvoiAction(chantierId: string, dureeDemiJournees?: number) {
   const ctx = await getCurrentCtx();
+
+  // **Le document se recompose DÈS L'OUVERTURE de la feuille d'envoi.**
+  //
+  // Le devis ne se recomposait qu'au chargement de l'écran, et tout prix tapé
+  // ensuite restait dehors (voir `envoyerAuClientAction`). Deux conséquences,
+  // et la seconde a failli être pire que la première :
+  //
+  //   1. le patron envoyait un document vide sans le savoir ;
+  //   2. le garde-fou posé contre ça — « ce devis ne porte aucune ligne » —
+  //      comptait les lignes du document PÉRIMÉ, et refusait donc un envoi
+  //      parfaitement légitime. Mesuré : écran à 660 €, refus affiché. Un
+  //      contrôle qui accuse à tort coûte plus cher que pas de contrôle du tout
+  //      (`AGENTS.md`).
+  //
+  // Recomposer ici règle les deux d'un coup : ce que l'écran compte, ce qu'il
+  // montre et ce qui partira sont enfin la même chose.
+  await getOuCreerDevisBrouillon(ctx, chantierId);
+
   const maintenant = new Date();
   // **Le planning descend avec la préparation** — sa demande du 22 août 2026,
   // validée sur planche 91 : *« la possibilité de cliquer sur les jours pour
@@ -114,7 +132,18 @@ export type ResultatEnvoiClient =
  */
 export async function envoyerAuClientAction(
   chantierId: string,
-  devisId: string,
+  /**
+   * **Reçu, et délibérément IGNORÉ depuis le 23 août 2026.**
+   *
+   * Il datait du chargement de l'écran, et c'est ce décalage qui a envoyé un
+   * devis vide chez sa cliente. Le serveur reprend la version courante du
+   * chantier, qu'il recompose lui-même juste avant de la figer.
+   *
+   * Le paramètre reste dans la signature pour que les écrans qui l'envoient
+   * encore n'aient rien à changer — le supprimer ferait glisser les suivants et
+   * transformerait une correction en panne.
+   */
+  _devisId: string,
   datesProposees: string[],
   dureeDemiJournees?: number,
   /**
@@ -127,6 +156,31 @@ export async function envoyerAuClientAction(
   autreDateAutorisee?: boolean
 ): Promise<ResultatEnvoiClient> {
   const ctx = await getCurrentCtx();
+
+  /**
+   * **LE DOCUMENT SE RECOMPOSE AVANT DE PARTIR, jamais avant.**
+   *
+   * *Le patron, le 23 août 2026 :* « le devis part à zéro euro chez la cliente,
+   * alors qu'il y a un arbre à tailler et un à démonter », puis, quand on lui a
+   * dit que rien n'était chiffré : *« j'avais mis des prix, cinq cent cinquante
+   * et je ne sais plus combien, un devis à mille trois cents euros »*.
+   *
+   * Il avait raison, et la première explication était fausse. Ses prix étaient
+   * bien en base — dans `lignes_prix`. Ce sont les lignes du DOCUMENT qui
+   * manquaient : le devis ne se recompose qu'au CHARGEMENT de l'écran
+   * (`page.tsx` → `getOuCreerDevisBrouillon`), et tout prix tapé ensuite restait
+   * dehors. Mesuré : écran à 660 €, document à 0,00 € et zéro ligne.
+   *
+   * Le geste d'envoi figeait donc le devis tel qu'il était à l'ouverture de la
+   * page — c'est-à-dire vide. **Rien ne se perdait ; rien n'arrivait.**
+   *
+   * **Et l'identifiant vient désormais d'ICI, plus du navigateur.** Celui que
+   * l'écran transmettait datait de son chargement : sur une page ouverte depuis
+   * un moment, il pouvait désigner une version dépassée. Le serveur reprend la
+   * version courante du chantier, qu'il vient lui-même de recomposer.
+   */
+  const brouillon = await getOuCreerDevisBrouillon(ctx, chantierId);
+  const devisAEnvoyer = brouillon.id;
 
   const preparation = await preparerEnvoi(ctx, chantierId, new Date(), dureeDemiJournees);
   // **Le refus vit AUSSI ici, et pas seulement à l'écran.** Cacher un bouton ne
@@ -174,7 +228,7 @@ export async function envoyerAuClientAction(
   // plus. Une erreur qui n'accuse personne coûte deux échanges à chaque fois.
   let devisEnvoye: Awaited<ReturnType<typeof envoyerDevisAction>>;
   try {
-    devisEnvoye = await envoyerDevisAction(devisId);
+    devisEnvoye = await envoyerDevisAction(devisAEnvoyer);
   } catch (err) {
     return { succes: false, erreur: raisonLisible(err) };
   }
@@ -182,7 +236,11 @@ export async function envoyerAuClientAction(
   try {
     const envoi = await creerEnvoi(ctx, {
       chantierId,
-      devisId,
+      // **C'est CE devis que sa cliente ouvrira**, et c'est ici que le lien se
+      // nouait de travers : l'envoi retenait l'identifiant venu du navigateur,
+      // et la page publique lit les lignes de ce devis-là. Le document recomposé
+      // pouvait donc être juste pendant que le lien pointait sur le vide.
+      devisId: devisAEnvoyer,
       canal: preparation.canal,
       datesProposees,
       autreDateAutorisee: autreDateAutorisee ?? true,

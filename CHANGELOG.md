@@ -9,6 +9,38 @@ Format : le plus récent en tête.
 
 ## 2026-08-23
 
+### Les prix tapés sur l'écran du devis partent enfin chez le client
+
+*« Le devis part à zéro euro chez la cliente, alors qu'il y a un arbre à tailler
+et un à démonter »*, puis, quand on lui a répondu que rien n'était chiffré :
+*« j'avais mis des prix, cinq cent cinquante et je ne sais plus combien, un devis
+à mille trois cents euros »*.
+
+**Il avait raison, et la première explication — juste en dessous — était
+fausse.** Elle est laissée telle quelle : elle raconte le chemin, et le
+garde-fou qu'elle a posé reste utile.
+
+**Rien ne se perdait ; rien n'arrivait.** Ses prix étaient bien en base. Ce sont
+les lignes du DOCUMENT qui manquaient : le devis ne se recompose qu'au
+CHARGEMENT de l'écran, et tout prix tapé ensuite — c'est-à-dire tous ceux qu'on
+tape vraiment — restait dehors. Mesuré sur son geste exact : écran à 660,00 €,
+document à 0,00 € et zéro ligne.
+
+Deux nœuds, et le second était le plus discret : l'envoi figeait le devis sans le
+recomposer, **et** retenait l'identifiant venu du navigateur — celui du
+chargement de la page. Or la page publique du client lit les lignes de ce
+devis-là : le document pouvait être juste pendant que le lien pointait sur le
+vide.
+
+Le devis se recompose désormais **à l'ouverture de la feuille d'envoi**, et
+l'identifiant vient du serveur. Ce que l'écran compte, ce qu'il montre et ce qui
+part sont enfin la même chose.
+
+**Et le garde-fou de l'entrée précédente accusait à tort :** il comptait les
+lignes du document périmé et refusait un envoi à 660 €. C'est ce refus qui a
+révélé la vraie cause. Détail dans `ARCHITECTURE.md` §157.
+
+
 ### Un devis vide ne part plus chez le client
 
 *« Le devis part à zéro euro chez la cliente, alors qu'il y a un arbre à tailler

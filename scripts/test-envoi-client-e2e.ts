@@ -468,6 +468,78 @@ async function main() {
     await page.getByRole("button", { name: "Annuler l’envoi" }).click();
   });
 
+  await test("LES PRIX TAPÉS SUR L'ÉCRAN DU DEVIS PARTENT BIEN — son défaut du 23 août", async () => {
+    // **Son signalement, et sa correction de ma première explication :** *« le
+    // devis part à zéro euro chez la cliente, alors qu'il y a un arbre à tailler
+    // et un à démonter »*, puis — quand on lui a répondu que rien n'était
+    // chiffré — *« j'avais mis des prix, cinq cent cinquante et je ne sais plus
+    // combien, un devis à mille trois cents euros »*.
+    //
+    // Il avait raison. Ses prix étaient bien en base, dans `lignes_prix`. Ce
+    // sont les lignes du DOCUMENT qui manquaient : le devis ne se recomposait
+    // qu'au CHARGEMENT de l'écran, et tout prix tapé ensuite restait dehors.
+    // Mesuré avant correction : écran à 660 €, document à 0,00 € et zéro ligne.
+    //
+    // **Rien ne se perdait ; rien n'arrivait.** C'est pourquoi ce cas chiffre
+    // SUR l'écran du devis, après son ouverture — la seule façon de le prendre.
+    await page.goto(`${BASE}/chantiers/nouveau`, { waitUntil: "networkidle" });
+    await page.fill('input[placeholder="Bernard"]', `Prix tardifs ${Date.now()}`);
+    await page.fill('input[placeholder="06 12 34 56 78"]', "06 12 34 56 78");
+    await creerPuisFiche(page);
+    await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/);
+    const url = page.url();
+
+    await page.goto(`${url}/devis-complet`, { waitUntil: "networkidle" });
+    await page.waitForSelector("text=Total TTC", { timeout: DELAI_ECRAN_MS });
+    await page.getByRole("button", { name: "+ Ajouter une ligne" }).click();
+    await page.waitForTimeout(900);
+    await page.getByLabel("Description 1").fill("Taille d'un chêne");
+    await page.getByLabel("Prix unitaire 1").fill("550");
+    await page.getByLabel("Description 1").click();
+    await page.waitForTimeout(1500);
+
+    await page.click("text=Choisir la date");
+    await page.waitForSelector('[data-atlas="invite-dates"]', { timeout: DELAI_ECRAN_MS });
+
+    // **Le garde-fou du devis vide ne doit PAS se déclencher ici.** Il comptait
+    // les lignes du document périmé et refusait un envoi parfaitement légitime :
+    // un contrôle qui accuse à tort coûte plus cher que pas de contrôle du tout.
+    const avantEnvoi = await page.locator("body").innerText();
+    assert.doesNotMatch(
+      avantEnvoi,
+      /recevrait un document vide/,
+      "l'envoi est refusé alors que l'écran affiche 660 € : le garde-fou compte un document périmé"
+    );
+
+    await page.getByRole("button", { name: "Envoyer le devis" }).click();
+    await page.waitForURL(/localhost:3000\/$/, { timeout: 15000 });
+
+    await page.goto(`${url}/export`, { waitUntil: "networkidle" });
+    const message = decodeURIComponent(
+      (await page.locator("a[data-transmission]").getAttribute("href")) ?? ""
+    );
+    const debut = message.indexOf("/devis/");
+    assert.ok(debut >= 0, `aucun lien de devis dans le message : ${message.slice(0, 90)}`);
+    const chemin = message.slice(debut).split(/\s/)[0];
+
+    const sansCompte = await browser.newContext();
+    const pageClient = await sansCompte.newPage();
+    await pageClient.goto(`${BASE}${chemin}`, { waitUntil: "networkidle" });
+    const vu = await pageClient.locator("body").innerText();
+    assert.match(
+      vu,
+      /660,00\s*€/,
+      "La cliente ne voit pas le montant chiffré : le devis lui parvient vide, " +
+        `c'est son défaut du 23 août. Elle a sous les yeux : ${JSON.stringify(vu.slice(0, 240))}`
+    );
+    assert.doesNotMatch(
+      vu,
+      /Total TTC\s*\n?\s*0,00\s*€/,
+      "la cliente reçoit un total à zéro euro"
+    );
+    await sansCompte.close();
+  });
+
   await test("UN DEVIS VIDE NE PART PAS — son défaut du 23 août", async () => {
     // **Son signalement, mot pour mot :** *« le devis part à zéro euro chez la
     // cliente, alors qu'il y a un arbre à tailler et un à démonter. Rien
