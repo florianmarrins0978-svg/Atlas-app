@@ -1,7 +1,7 @@
 # État du projet
 
 **Dernière mise à jour :** 2026-08-23 · branche `main`
-· dernière migration `drizzle/0056_diagnostic_vegetal.sql`
+· dernière migration `drizzle/0062_tentatives_connexion.sql`
 
 *(Le numéro du dernier commit ne figure plus ici : il était faux dès le commit
 suivant, et une ligne fausse coûte plus cher qu'une ligne absente. `git log
@@ -11,6 +11,30 @@ Ce fichier dit **où en est le produit**, pas ce qu'on aimerait qu'il soit. Une
 ligne « fait » qui ne l'est pas coûte plus cher qu'une ligne absente.
 
 ---
+
+## Sécurité : le lot 1 de l'audit est corrigé (23 août 2026)
+
+Un audit hostile complet a été mené sur le dépôt. Le détail des décisions est en
+`ARCHITECTURE.md` §156 ; ce qui reste à faire est dans `TODO.md`.
+
+| | État |
+|---|---|
+| **L'isolation entre entreprises** — 42 tables sur 42 en RLS forcée | **tient**, éprouvée en attaquant, pas en relisant |
+| C1 — bourrage d'identifiants (28 800 essais/jour → 103) | **fait** |
+| C1 — la protection survit à une panne de Redis | **fait** (compteur en base, migration 0062) |
+| C1 — mot de passe à 12 caractères, sans mettre dehors les comptes existants | **fait** |
+| E1 — `db:seed` ne peut plus vider une vraie base | **fait** |
+| E2 — SSRF par l'agenda iCloud | **fait** (domaine, schéma, adresses internes, redirections) |
+| E3 — les prix de vente réservés au propriétaire | **fait**, côté serveur |
+| M7 — `trustHost` : une seule source de vérité | **fait** |
+| M8 — le profil banc ne peut plus servir en production | **fait** |
+| Sauvegardes et restauration | **RIEN** — c'est le premier point du lot suivant |
+| M1–M6, M9–M12, F1–F13 | **à faire**, listés dans `TODO.md` |
+
+**Deux variables à poser le jour du déploiement**, et leur absence ne se paie pas
+pareil : sans `AUTH_TRUST_HOST` (ou `AUTH_URL`), **plus personne ne se
+connecte** ; sans `ATLAS_PROXY_SAUTS`, le seuil par visiteur redevient commun à
+tout le monde. La temporisation par compte, elle, ne dépend d'aucune des deux.
 
 ## Le plan d'arrosage dessiné (23 août 2026)
 

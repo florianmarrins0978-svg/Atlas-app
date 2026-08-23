@@ -40,6 +40,25 @@ export type Env = {
   };
   /** Connexions simultanées à PostgreSQL, par instance. Voir `db/client.ts`. */
   poolMax: number;
+
+  /**
+   * Combien de mandataires de CONFIANCE se trouvent devant Atlas. `0` = aucun.
+   *
+   * **Pourquoi ce réglage existe** (audit du 23 août 2026, constat C1) : la
+   * limitation des tentatives de connexion se calait sur la première valeur de
+   * `x-forwarded-for` — un en-tête que celui qui frappe écrit lui-même. Il
+   * suffisait donc de le changer à chaque essai pour repartir d'un compteur
+   * neuf, et la protection n'existait pas.
+   *
+   * Une adresse transmise ne vaut que par le mandataire qui l'a écrite. Ce
+   * nombre dit lequel : la liste se lit par la droite, chaque mandataire y
+   * ajoutant l'adresse de qui s'est connecté à lui. **Sans ce réglage, aucune
+   * valeur transmise n'est retenue** — jamais de confiance devinée.
+   *
+   * À poser en production : le nombre de mandataires de confiance (1 pour un
+   * hébergeur ordinaire). Voir `src/app/login/actions.ts`.
+   */
+  proxySauts: number;
   redisUrl?: string;
   cronSecret?: string;
   sentryDsn?: string;
@@ -319,6 +338,62 @@ function construireEnv(): Env {
   }
   const stockageProvider: FournisseurStockage = stockageProviderBrut === "s3" ? "s3" : "local";
 
+  /**
+   * **UN DÉPLOIEMENT RÉEL NE PEUT PAS SE DÉCLARER BANC D'ESSAI** (audit du
+   * 23 août 2026, constat M8).
+   *
+   * Le profil banc relâche trois choses, et l'une d'elles est grave :
+   * `src/middleware.ts` aligne alors l'hôte sur l'ORIGINE annoncée par le
+   * navigateur, ce qui **désactive intégralement la protection contre le CSRF**
+   * des actions serveur (Next.js compare les deux). `next.config.ts` élargit
+   * dans la foulée les origines autorisées. Une seule variable mal posée sur un
+   * vrai déploiement ouvrait donc toute l'application.
+   *
+   * ───────────────────────────────────────────────────────────────────────────
+   * **POURQUOI `NODE_ENV` NE PEUT PAS ÊTRE LE CRITÈRE — et c'est tout le
+   * dessin.** Le banc d'essai EST, littéralement, « production + profil banc » :
+   * il sert une version bâtie, et `next start` impose `NODE_ENV=production`
+   * (`.devcontainer/demarrer.sh` pose `ATLAS_PROFIL=banc` juste à côté).
+   * Refuser sur cette base-là aurait éteint le banc du patron à la seconde,
+   * pour une correction censée le protéger.
+   *
+   * **Ce qu'on cherche, c'est donc une CONTRADICTION** : un profil qui dit
+   * « machine d'essai, données inventées » posé en même temps qu'un signe
+   * qu'aucun banc ne peut produire. Deux signes, et le premier se déclenche
+   * tout seul :
+   *
+   *   - `STORAGE_PROVIDER=s3` — le profil banc existe précisément parce qu'un
+   *     banc n'a pas de compartiment S3. Les deux ensemble n'ont aucun sens ;
+   *   - `ATLAS_DEPLOIEMENT=production` — la déclaration explicite, pour un
+   *     hébergement qui n'utiliserait pas S3.
+   *
+   * **Aucune heuristique sur un nom de domaine** : une adresse se change, et un
+   * garde-fou qui se fie à l'apparence finit par accuser à tort.
+   *
+   * **Volontairement PAS suspendu pendant `next build`.** Les autres refus le
+   * sont — bâtir n'est pas déployer, et cela a coûté une construction
+   * impossible le 9 août. Celui-ci est différent : il n'exige aucun secret, il
+   * ne peut se déclencher que sur une contradiction que personne ne pose par
+   * accident, et une construction faite dans cette configuration produirait
+   * justement l'image dangereuse.
+   */
+  if (bancDEssai) {
+    const signaux = [
+      stockageProviderBrut === "s3" ? "STORAGE_PROVIDER=s3" : null,
+      optionnel("ATLAS_DEPLOIEMENT")?.toLowerCase() === "production" ? "ATLAS_DEPLOIEMENT=production" : null,
+    ].filter((s): s is string => s !== null);
+
+    if (signaux.length > 0) {
+      throw new ErreurConfiguration(
+        `Configuration contradictoire : le profil BANC D'ESSAI est déclaré (ATLAS_PROFIL/ATLAS_BANC_ESSAI) ` +
+          `en même temps que ${signaux.join(" et ")}. ` +
+          `Le profil banc DÉSACTIVE la protection contre le CSRF des actions serveur (voir src/middleware.ts) ` +
+          `et élargit les origines autorisées : il ne doit jamais servir de vrais clients. ` +
+          `Retirer ATLAS_PROFIL et ATLAS_BANC_ESSAI de ce déploiement.`
+      );
+    }
+  }
+
   const s3 =
     stockageProvider === "s3"
       ? {
@@ -366,6 +441,10 @@ function construireEnv(): Env {
     // ignorée plutôt que de rendre le pool absurde — un `max: NaN` ouvrirait
     // une connexion et une seule, sans le moindre message.
     poolMax: Math.max(1, Number(optionnel("DATABASE_POOL_MAX")) || 10),
+    // Zéro par défaut, et c'est le défaut SÛR : sans déclaration, aucune
+    // adresse transmise n'est crue. Une valeur illisible ou négative vaut zéro
+    // plutôt que d'ouvrir une confiance que personne n'a accordée.
+    proxySauts: Math.max(0, Math.trunc(Number(optionnel("ATLAS_PROXY_SAUTS")) || 0)),
     redisUrl: process.env.REDIS_URL,
     cronSecret,
     sentryDsn: process.env.SENTRY_DSN,

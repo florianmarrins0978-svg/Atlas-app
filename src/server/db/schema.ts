@@ -2232,3 +2232,19 @@ export const photosDiagnosticAPurger = pgTable(
     index("photos_diagnostic_a_purger_echeance_idx").on(t.purgerLe),
   ]
 );
+
+// --- Échecs de connexion (migration 0062, audit C1 du 23 août 2026) ---------
+//
+// **La seule protection contre le bourrage qui survive à une panne de Redis.**
+// Le raisonnement complet — pourquoi une empreinte plutôt que l'adresse,
+// pourquoi aucune politique d'isolation ici, pourquoi le blocage est plafonné —
+// vit en tête de `drizzle/0062_tentatives_connexion.sql`. La règle des paliers,
+// elle, est une fonction pure : `src/lib/tentatives-connexion.ts`.
+export const tentativesConnexion = pgTable("tentatives_connexion", {
+  /** SHA-256 hexadécimal de l'adresse normalisée — jamais l'adresse elle-même. */
+  empreinte: text("empreinte").primaryKey(),
+  /** Échecs CONSÉCUTIFS : une connexion réussie efface la ligne. */
+  echecs: integer("echecs").notNull().default(0),
+  dernierEchecAt: timestamp("dernier_echec_at", { withTimezone: true }).notNull().defaultNow(),
+  bloqueJusqua: timestamp("bloque_jusqua", { withTimezone: true }),
+});

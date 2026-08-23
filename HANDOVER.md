@@ -9,6 +9,46 @@ sert.
 
 ---
 
+## SÉCURITÉ : CE QUI A CHANGÉ LE 23 AOÛT 2026, ET LES TROIS PIÈGES À NE PAS REFAIRE
+
+Un audit hostile a été mené, et son **lot 1** est corrigé. Le détail est en
+`ARCHITECTURE.md` §156 ; la suite est dans `TODO.md`. Ce qu'il faut avoir en
+tête avant de toucher à ces zones :
+
+**Ce qui a changé, en une ligne chacun :**
+
+| | |
+|---|---|
+| `src/lib/tentatives-connexion.ts` + migration 0062 | la temporisation par compte, **en base** — elle survit à une panne de Redis |
+| `src/lib/source-visiteur.ts` | `x-forwarded-for` n'est cru que derrière `ATLAS_PROXY_SAUTS` |
+| `src/lib/garde-seed.ts` | `db:seed` doit prouver sa cible avant tout `TRUNCATE` |
+| `src/lib/destination-caldav.ts` | où Atlas a le droit d'aller frapper en CalDAV |
+| `src/lib/confiance-hote.ts` | `trustHost`, **une seule fois** |
+| `src/server/env.ts` | refuse « profil banc + déploiement réel » |
+
+**LES TROIS PIÈGES — ils se re-tendront, et chacun casse quelque chose qui
+marche :**
+
+1. **Ne pas tirer au hasard le mot de passe de démonstration.** `demo1234` est
+   attendu par **136 fichiers**, dont `verifier-connexion.mjs` — la dernière
+   étape de la batterie de livraison. Il reste le défaut, et la garde du seed
+   fait qu'il ne peut s'appliquer que sur une base d'essai.
+2. **Ne pas interdire les redirections CalDAV.** iCloud renvoie `301` de
+   `caldav.icloud.com` vers `p42-caldav.icloud.com` : l'interdire casserait
+   **tout raccordement Apple**. Ce qui est interdit, c'est de SORTIR du domaine.
+3. **Ne pas refuser le banc sur `NODE_ENV=production`.** Le banc EST
+   « production + profil banc » — `next start` l'impose. Le critère est la
+   contradiction : profil banc **et** S3, ou profil banc **et**
+   `ATLAS_DEPLOIEMENT=production`.
+
+**Et une règle qui vaut au-delà de ce lot :** une garde de rôle se pose sur
+**l'action et l'écran**, jamais dans le dépôt. `apprendre-grille.ts` écrit des
+prix tout seul pendant qu'un devis s'établit ; une garde posée trop bas aurait
+empêché un salarié d'établir un devis, et personne n'aurait relié la panne à un
+contrôle de rôle.
+
+---
+
 ## LE PLAN D'ARROSAGE EST DESSINÉ — CE QU'IL FAUT SAVOIR AVANT D'Y TOUCHER (23 août 2026)
 
 **Trois fichiers purs, et aucun ne recalcule ce qui existait :**

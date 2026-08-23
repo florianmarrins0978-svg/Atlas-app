@@ -13773,3 +13773,108 @@ ou « AUCUN » quand il n'y en avait pas.
 **Les noms, jamais les valeurs** : ce dépôt est public, et une valeur d'en-tête
 peut porter un jeton. Un contrôle le tient, et il a été vu rouge dans les deux
 sens — sur la disparition des noms, et sur la fuite d'une valeur.
+
+---
+
+## 156. Audit de sécurité, lot 1 : ce qui a été décidé, et ce qui a failli casser
+
+**23 août 2026.** Un audit hostile complet a été mené (base montée, RLS attaquée
+directement en SQL sous `atlas_app`, historique Git balayé, `npm audit`). Le
+rapport nomme trente constats ; ce lot en corrige six. Ce §-ci ne les répète
+pas — `CHANGELOG.md` le fait — il garde **les décisions structurantes et leur
+pourquoi**, c'est-à-dire ce qu'une prochaine session refera de travers faute de
+le savoir.
+
+### Ce qui a tenu, et qu'il ne faut pas croire fragile
+
+L'isolation entre entreprises a été attaquée, pas relue : 42 tables sur 42
+portant `entreprise_id` sont en `FORCE ROW LEVEL SECURITY`, l'écriture croisée
+est refusée par la base, la lecture sans contexte rend zéro ligne, et les 189
+appels à `withEntreprise` passent tous `ctx`. **Aucun correctif de ce lot ne
+touche à ce mécanisme**, et c'est délibéré : on ne remanie pas ce qui tient
+pendant qu'on répare ce qui ne tient pas.
+
+### La décision qui commande C1 : le compteur d'échecs vit EN BASE
+
+La limitation de débit d'Atlas vit dans Redis, et Redis tombe — il est tombé le
+12 août sur l'espace du patron. La réparation d'alors laissait tout passer quand
+le magasin ne répondait plus : juste dans son intention (ne pas enfermer
+l'artisan dehors), trop loin dans sa conclusion. **Il suffisait donc d'attendre
+une panne de Redis pour n'avoir plus aucune limite de connexion.**
+
+D'où la migration 0062 : le compteur d'échecs consécutifs est une table. Il ne
+dépend d'aucun service annexe, il est là tant qu'Atlas sert. Trois conséquences
+qu'il faut garder en tête :
+
+| | |
+|---|---|
+| le blocage est **plafonné** à un quart d'heure | sans plafond, taper trois fois à côté sur l'adresse d'un artisan l'empêcherait d'entrer chez lui — on aurait remplacé une porte trop faible par une porte murée |
+| il s'**oublie** au bout d'une heure sans échec | sinon, cinq fautes réparties sur trois mois temporiseraient quelqu'un pour des gestes sans rapport |
+| une connexion réussie l'**efface** | celui qui retrouve son mot de passe ne doit pas rester à un doigt de la temporisation |
+
+Et le magasin de limitation, lui, bascule désormais sur son compteur **mémoire**
+quand le principal ne répond pas : dégradé (un compteur par instance), jamais
+absent. Personne n'est enfermé dehors, personne n'entre en rafale.
+
+### La règle générale que ce lot pose : ne jamais croire un en-tête du client
+
+`x-forwarded-for` est écrit par celui qui frappe. Le lire naïvement, c'était
+offrir un compteur neuf à chaque essai. La règle vaut au-delà de la connexion :
+**une valeur transmise ne vaut que par le mandataire qui l'a écrite**, et sans
+savoir combien de mandataires de confiance nous précèdent, aucune position dans
+la liste n'est fiable. `ATLAS_PROXY_SAUTS` dit ce nombre ; à défaut, on ne tire
+rien de l'en-tête. Voir `src/lib/source-visiteur.ts`.
+
+*(Deux autres endroits lisent encore cet en-tête à titre de PREUVE — l'adresse
+consignée sur l'acceptation d'un devis, sur celle des documents légaux. C'est
+un autre usage : elle documente, elle ne décide de rien, et les commentaires le
+disent déjà. Ne pas les « corriger » sans y penser.)*
+
+### Les trois endroits où la correction évidente cassait quelque chose
+
+C'est la partie la plus importante de ce §, parce que ces pièges se
+re-tendront.
+
+**1. Le mot de passe de démonstration.** L'audit demandait qu'il cesse d'être
+fixe et public. Le tirer au hasard aurait cassé **136 fichiers** — les trente-
+trois suites navigateur et `verifier-connexion.mjs`, c'est-à-dire la dernière
+étape de la batterie de livraison. Il reste donc `demo1234` **par défaut**, et
+ce défaut ne peut s'appliquer que là où effacer est sans conséquence : dès
+qu'il faut forcer la garde, `ATLAS_MDP_DEMO` devient obligatoire.
+
+**2. Les redirections CalDAV.** Interdire tout changement d'hôte aurait cassé
+**tout raccordement Apple** : iCloud répond `301` depuis `caldav.icloud.com`
+vers le serveur qui héberge réellement le compte (`p42-caldav.icloud.com`), et
+le code suit ce renvoi exprès. La règle juste n'est pas « aucune redirection »
+mais « aucune SORTIE du domaine ».
+
+**3. Le profil banc en production.** Le critère ne peut pas être `NODE_ENV` :
+le banc d'essai **est**, littéralement, « production + profil banc », puisque
+`next start` impose `NODE_ENV=production` et que `.devcontainer/demarrer.sh`
+pose `ATLAS_PROFIL=banc` juste à côté. Refuser là-dessus aurait éteint la
+machine du patron à la seconde, pour une correction censée le protéger. Ce
+qu'on cherche est une **contradiction** — le profil d'une machine d'essai posé
+en même temps qu'un signe qu'aucun banc ne peut produire : un compartiment S3,
+ou `ATLAS_DEPLOIEMENT=production`.
+
+### Où une garde de rôle se pose, et où elle ne se pose JAMAIS
+
+E3 réservait les prix de vente au propriétaire. La garde est sur **l'action et
+l'écran**, jamais dans le dépôt — parce que `src/server/services/apprendre-grille.ts`
+appelle `poserPrixGrille` tout seul, pendant qu'un devis s'établit, avec
+l'origine `devis`. La poser un cran plus bas aurait empêché un salarié
+d'établir un devis, et personne n'aurait relié cette panne à un contrôle de
+rôle. **Règle générale : une garde de rôle appartient au geste de l'utilisateur,
+pas à l'écriture qu'il déclenche.**
+
+### Ce qui reste dépendant de l'infrastructure
+
+Deux variables doivent être posées le jour du déploiement, et leur absence se
+paie différemment :
+
+| | Sans elle |
+|---|---|
+| `AUTH_TRUST_HOST` (ou `AUTH_URL`) | **plus personne ne se connecte** — Auth.js refuse l'hôte, l'artisan lit « une erreur » |
+| `ATLAS_PROXY_SAUTS` | le seuil par visiteur redevient commun à tout le monde : il protège encore, moins finement |
+
+La temporisation par compte, elle, ne dépend d'aucune des deux.

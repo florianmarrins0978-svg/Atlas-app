@@ -17,11 +17,20 @@ import { authConfig } from "./auth.config";
 // Ce fichier étend authConfig (Edge-safe) avec tout ce qui dépend de Node
 // (bcrypt, connexion PostgreSQL) — il n'est JAMAIS importé par le middleware,
 // uniquement par les Server Actions et Route Handlers (runtime Node).
+// **`trustHost` N'EST PLUS POSÉ ICI, et c'était une vraie faille** (audit du
+// 23 août 2026, constat M7). Ce fichier portait `trustHost: true`, sans
+// condition, après l'étalement de `authConfig` — il écrasait donc la valeur que
+// `src/auth.config.ts` calcule avec soin, et dont le commentaire promet qu'elle
+// protège la production. Le middleware, lui, gardait la valeur conditionnelle :
+// deux chemins, deux comportements, pour la même question.
+//
+// La règle vit maintenant dans `src/lib/confiance-hote.ts` et n'est appelée
+// qu'une fois, depuis `authConfig`. **Ne rien remettre ici** : l'étalement
+// ci-dessous la fait déjà descendre.
 export const { handlers, auth, signIn, signOut } = NextAuth({
   ...authConfig,
   secret: getEnv().authSecret,
   session: { strategy: "jwt" },
-  trustHost: true,
   providers: [
     Credentials({
       credentials: {

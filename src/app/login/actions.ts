@@ -6,6 +6,10 @@ import { AuthError } from "next-auth";
 import { redirect } from "next/navigation";
 import { verifierLimite, LIMITES } from "@/server/rate-limit";
 import { logger } from "@/server/logger";
+import { getEnv } from "@/server/env";
+import { messageAttente as messageTemporisation } from "@/lib/tentatives-connexion";
+import { sourceDepuisEntetes } from "@/lib/source-visiteur";
+import { attenteAvantEssai, noterEchec, oublierEchecs } from "@/server/repositories/tentatives-connexion";
 
 const MESSAGE_GENERIQUE = "Email ou mot de passe incorrect.";
 
@@ -58,16 +62,55 @@ function messageAttente(secondes: number): string {
 }
 
 /**
- * L'adresse du visiteur, telle que la voit le serveur.
+ * De qui vient cette tentative — **et seulement quand on peut le savoir.**
  *
- * Derrière le proxy de Codespaces comme derrière un hébergeur, l'adresse réelle
- * n'arrive que par `x-forwarded-for`. Absente, on retombe sur une clé commune :
- * le comptage redevient alors celui d'avant, jamais plus permissif.
+ * ───────────────────────────────────────────────────────────────────────────
+ * **Le défaut réparé le 23 août 2026 (audit, constat C1).** La version
+ * précédente lisait ceci :
+ *
+ *     const transmise = entetes.get("x-forwarded-for")?.split(",")[0]?.trim();
+ *
+ * `x-forwarded-for` est un en-tête **que celui qui frappe écrit lui-même**. En
+ * prendre la première valeur, c'est offrir un compteur neuf à chaque essai : il
+ * suffisait d'incrémenter un chiffre pour ne jamais atteindre aucun seuil. La
+ * protection « cinq essais par quart d'heure » n'existait donc pas dès qu'on
+ * pensait à la contourner.
+ *
+ * **Ce qu'on fait à la place, et pourquoi c'est la seule chose honnête.**
+ * Une adresse transmise ne vaut que par le mandataire qui l'a écrite. Sans
+ * savoir combien de mandataires de confiance nous précèdent, aucune position
+ * dans la liste n'est fiable — et deviner reviendrait à faire confiance à
+ * l'attaquant. On distingue donc trois cas :
+ *
+ *   1. `ATLAS_PROXY_SAUTS` est posé — on sait combien de mandataires ajoutent
+ *      leur ligne, donc laquelle a été écrite par le nôtre. Elle fait foi ;
+ *   2. l'en-tête existe mais rien ne dit qui l'a écrit — **on n'en tire aucune
+ *      valeur** : toutes ces tentatives partagent un seul et même seau. C'est
+ *      exactement le comportement d'avant lorsqu'aucun en-tête n'arrivait, donc
+ *      jamais plus permissif qu'aujourd'hui ;
+ *   3. aucun en-tête — connexion directe, un seul seau également.
+ *
+ * **Ce qui reste à configurer en production, et il faut le dire :** poser
+ * `ATLAS_PROXY_SAUTS` au nombre de mandataires de confiance placés devant
+ * Atlas (1 pour un hébergeur ordinaire), ET s'assurer que ce mandataire
+ * **écrase** `x-forwarded-for` au lieu d'y ajouter la valeur du client. Sans
+ * les deux, ce seuil-ci reste commun à tout le monde — ce qui protège encore,
+ * mais moins finement. Le compteur par compte, lui, ne dépend de rien de tout
+ * cela (voir plus bas).
  */
-async function adresseVisiteur(): Promise<string> {
+async function sourceDuVisiteur(): Promise<string> {
   const entetes = await headers();
-  const transmise = entetes.get("x-forwarded-for")?.split(",")[0]?.trim();
-  return transmise || entetes.get("x-real-ip") || "inconnue";
+  // La règle vit dans `src/lib/source-visiteur.ts` — fonction pure, éprouvée
+  // sans requête HTTP. Ici, on ne fait que lui donner ce que le serveur voit.
+  return sourceDepuisEntetes({
+    xff: entetes.get("x-forwarded-for"),
+    sauts: getEnv().proxySauts,
+    // **Sur un banc, on distingue encore les visiteurs par leur adresse.**
+    // Sans cela, tout le monde retomberait dans le même seau — cinq essais à se
+    // partager sur un compte de démonstration unique, c'est-à-dire la panne du
+    // 6 août 2026, recréée par le remède. Voir `src/lib/source-visiteur.ts`.
+    horsProduction: getEnv().nodeEnv !== "production" || getEnv().bancDEssai,
+  });
 }
 
 export async function connexionAction(
@@ -81,8 +124,8 @@ export async function connexionAction(
 
   // Par visiteur d'abord — c'est ce seuil qui protège du martèlement, et lui
   // seul peut bloquer quelqu'un de bonne foi, d'où un message qui le dit.
-  const ip = await adresseVisiteur();
-  const parVisiteur = await verifierLimite(`connexion:${email}:${ip}`, LIMITES.connexion);
+  const source = await sourceDuVisiteur();
+  const parVisiteur = await verifierLimite(`connexion:${email}:${source}`, LIMITES.connexion);
   if (!parVisiteur.autorise) {
     logger.warn("Limite de tentatives de connexion atteinte (visiteur)", { email });
     return { erreur: messageAttente(parVisiteur.retryAfterSecondes) };
@@ -103,6 +146,31 @@ export async function connexionAction(
     return { erreur: messageAttente(parCompte.retryAfterSecondes) };
   }
 
+  /**
+   * **La couche qui tient quand les deux précédentes ne tiennent plus.**
+   *
+   * Les deux seuils ci-dessus vivent dans Redis, et Redis tombe : le 12 août
+   * 2026 il est tombé sur l'espace du patron, et depuis, un magasin qui ne
+   * répond pas ne refuse plus rien (`server/rate-limit/index.ts` — la bascule
+   * sur le compteur mémoire est de ce lot-ci, mais elle reste par instance).
+   * Autrement dit, avant aujourd'hui, il suffisait d'attendre une panne pour
+   * n'avoir plus aucune limite du tout.
+   *
+   * Celle-ci vit **en base**, avec les données. Elle est là tant qu'Atlas sert,
+   * elle compte les échecs CONSÉCUTIFS de ce compte, elle s'oublie toute seule
+   * au bout d'une heure sans nouvel échec, et une connexion réussie l'efface.
+   * La règle des paliers est une fonction pure, éprouvée sans base :
+   * `src/lib/tentatives-connexion.ts`.
+   *
+   * **Posée AVANT `signIn`**, donc avant toute comparaison de condensat : c'est
+   * ce qui rend la temporisation réelle plutôt que cosmétique.
+   */
+  const attente = await attenteAvantEssai(email);
+  if (attente !== null) {
+    logger.warn("Connexion temporisée : trop d'échecs consécutifs sur ce compte", { email });
+    return { erreur: messageTemporisation(attente) };
+  }
+
   try {
     await signIn("credentials", { email, password, redirect: false });
   } catch (err) {
@@ -113,6 +181,11 @@ export async function connexionAction(
       // c'est accuser le patron de se tromper de mot de passe pendant qu'un
       // service est couché, et il n'a alors aucun moyen de le comprendre.
       if (err.type === "CredentialsSignin") {
+        // **Un échec, et un seul type d'échec, fait avancer le compteur.** Une
+        // base couchée ou un secret manquant ne sont pas des essais ratés :
+        // les compter temporiserait l'artisan pour une panne qui n'est pas la
+        // sienne — le piège que la branche du dessous existe pour éviter.
+        await noterEchec(email);
         return { erreur: MESSAGE_GENERIQUE };
       }
       // Bruyant à dessein : c'est la seule trace qui restera, et le message
@@ -126,6 +199,12 @@ export async function connexionAction(
     }
     throw err;
   }
+
+  // **Le compteur repart de zéro — et il faut que ce soit ici.** Un artisan qui
+  // se trompe quatre fois puis se rappelle son mot de passe ne doit pas rester
+  // à un doigt de la temporisation pendant l'heure qui suit. Posé avant
+  // `redirect()`, qui lève et ne rend jamais la main.
+  await oublierEchecs(email);
   redirect("/");
 }
 
