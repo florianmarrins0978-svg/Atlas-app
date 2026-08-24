@@ -142,6 +142,23 @@ export const entreprises = pgTable("entreprises", {
   messageClient: text("message_client"),
 
   /**
+   * L'allure de son devis et de sa facture (migration 0063, 23 août 2026).
+   *
+   * **`null` veut dire « comme aujourd'hui »** — sa règle : *« les réglages
+   * actuels doivent être par défaut »*. Les valeurs vivent dans
+   * `src/lib/allure-documents.ts`, jamais recopiées ici.
+   *
+   * **La feuille de chantier et le compte rendu ne sont PAS concernés** : sa
+   * décision du même jour. L'une est interne, l'autre est une page web.
+   */
+  docTypographie: text("doc_typographie"),
+  docFond: text("doc_fond"),
+  docAccent: text("doc_accent"),
+  /** Le logo vit dans le stockage, comme une photo — la base garde sa clef. */
+  logoStorageKey: text("logo_storage_key"),
+  logoMime: text("logo_mime"),
+
+  /**
    * Les deux rappels de la rubrique « Notifications » (migration 0043).
    *
    * `null` = éteint. Ce sont des CONFORTS, et c'est pour cela qu'ils se

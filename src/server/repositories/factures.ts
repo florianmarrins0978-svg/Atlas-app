@@ -1,6 +1,7 @@
 import { and, asc, eq, isNotNull, isNull, or, sql } from "drizzle-orm";
 import Decimal from "decimal.js";
 import { withEntreprise } from "../db/with-entreprise";
+import { allureDesDocuments } from "./entreprises";
 import type { DbOrTx } from "../db/client";
 import {
   chantiers,
@@ -289,7 +290,8 @@ export async function genererPdfFacturePourApercu(ctx: Ctx, factureId: string): 
       .from(devis)
       .where(eq(devis.id, f.devisId))
       .limit(1);
-    return genererPdfFacture(donneesFacture(f, lignes, d?.numero ?? null));
+    const habillage = await allureDesDocuments(tx, ctx.entrepriseId);
+    return genererPdfFacture(donneesFacture(f, lignes, d?.numero ?? null), habillage);
   });
 }
 
@@ -322,6 +324,7 @@ export async function emettreFacture(ctx: Ctx, factureId: string, maintenant: Da
       .where(eq(devis.id, avant.devisId))
       .limit(1);
 
+    const habillage2 = await allureDesDocuments(tx, ctx.entrepriseId);
     const pdfBytes = await genererPdfFacture(
       donneesFacture(
         {
@@ -339,7 +342,7 @@ export async function emettreFacture(ctx: Ctx, factureId: string, maintenant: Da
         lignes,
         d?.numero ?? null
       )
-    );
+    , habillage2);
 
     const objet = await enregistrerObjet(
       `chantiers/${avant.chantierId}/factures`,

@@ -14211,3 +14211,121 @@ ne se lit d'ailleurs jamais par SMS.
 `sms:` du client. Les suites pures de `message-client` diraient vert même si
 l'écran n'enregistrait rien, ou si l'écran d'envoi ignorait ce qui est
 enregistré : c'est le FIL qu'il faut tenir, et lui seul le traverse.
+
+---
+
+## 162. L'allure de ses documents : une typographie, deux couleurs, un logo
+
+*Sa demande du 23 août 2026 : « il faudrait que l'utilisateur puisse avoir un
+endroit dédié à la modification de son devis. S'il veut rajouter son logo,
+changer la typographie, changer le fond de page. » Puis, devant la planche
+`appli/allure-de-mes-devis.html` : **B** (dans « Devis & factures »), « juste
+pour devis facture », « fais-en une dizaine », et « le fond teinté fais-le
+modifiable […] les réglages actuels doivent être par défaut ».*
+
+### Le défaut est le document d'avant, et c'est le contrôle le plus important
+
+Un réglage neuf ne doit changer l'allure d'aucun devis tant qu'il n'y a pas
+touché. C'est sa règle, et elle est plus fragile qu'elle n'en a l'air : elle
+s'est cassée **deux fois** dans la même journée.
+
+| Ce qui l'a cassée | Ce qui l'a rattrapée |
+|---|---|
+| `ALLURE_PAR_DEFAUT.fond` écrit « #ece9e1 » — une teinte lue sur la maquette, que ses devis n'ont jamais portée (c'est `#faf9f5`) | `test-allure-pdf.ts`, en comparant deux devis **octet pour octet** |
+| les teintes calculées ne retombent pas d'elles-mêmes sur les six constantes d'origine : ouvrir le réglage et le refermer suffisait à faire dériver l'encre douce, le trait clair et la mention légale | le même contrôle |
+
+D'où deux règles qui tiennent l'invariant plutôt que d'espérer qu'il coïncide :
+
+1. `ALLURE_PAR_DEFAUT` **reprend `couleursDocument`**, il ne le retape pas ;
+2. `teintesDe` a une **porte** : allure absente **ou égale au défaut** → on rend
+   exactement la palette d'avant, sans rien calculer.
+
+Et en base, le défaut **s'écrit vide** : trois colonnes `NULL`, jamais la
+couleur du jour en clair. Sans quoi ses documents cesseraient de suivre la
+charte le jour où elle bougerait, et personne ne saurait pourquoi.
+
+### Le devis et la facture SEULEMENT
+
+La feuille de chantier sort de la **même fabrique** que le devis, par
+`sansChiffrage`. Sans filtre, elle aurait pris la marque et les couleurs
+réservées à ce que le client garde. D'où, dans `devis-pdf.ts` :
+
+```ts
+allure: sansPrix ? null : options.allure,
+logo:   sansPrix ? null : options.logo,
+```
+
+Ce n'est pas une précaution : c'est la règle, et `test-allure-pdf.ts` la tient.
+
+### L'encre suit le fond, elle ne se choisit pas
+
+Il peut mettre **n'importe quelle** couleur de fond, c'est sa décision. Lui
+offrir un second réglage pour l'encre ne ferait que déplacer le piège d'un
+cran : un fond nuit avec une encre noire donne un devis illisible, et il ne
+s'en apercevrait qu'à l'impression, chez son client. `encreSurFond` tranche
+sur la luminosité perçue, et la même fonction sert l'écran et le PDF.
+
+### Les polices sont RÉDUITES dans le dépôt, et embarquées ENTIÈRES
+
+C'est l'inverse de ce qu'on écrit d'ordinaire, et ça a été payé.
+
+| | Ce qui se passe |
+|---|---|
+| `embedFont(…, { subset: true })` | **perd des caractères en silence** : un devis complet en EB Garamond ne sortait plus que « e e e Roc e e ». Pas d'erreur, pas de journal |
+| `embedFont(…, { subset: false })` sur les fichiers d'origine | Archivo Narrow fait **tomber** `pdf-lib` (`RangeError` dans le lecteur de glyphes) |
+
+Ni l'un ni l'autre n'est sûr avec le fontkit que `pdf-lib` embarque. Les
+dix-huit fichiers ont donc été réduits **une fois pour toutes**, hors ligne, au
+latin dont ses documents ont besoin — 3,9 Mo → 570 ko —, et le PDF les prend
+tels quels. Un devis habillé pèse 40 à 60 ko.
+
+La commande est dans `src/server/pdf/polices/LISEZ-MOI.md`.
+`scripts/test-polices-documents.ts` monte la garde : chaque caractère qu'un
+devis sait écrire doit avoir un dessin, la police doit s'embarquer sans tomber,
+et aucun fichier non réduit ne doit être reposé là.
+
+### L'écran servait du Georgia en annonçant « Playfair Display »
+
+Le navigateur ne connaît aucune des neuf familles : les quatre serif
+retombaient toutes sur Georgia, les cinq linéales sur la police de l'appareil.
+Il aurait choisi en regardant autre chose, et découvert la vraie sur le devis
+parti chez son client.
+
+`/api/polices/[fichier]` sert donc **exactement les fichiers que le PDF
+embarque** — pas une copie dans `public/`, qui divergerait. Le nom demandé
+n'est jamais concaténé au chemin : il est cherché dans `TYPOGRAPHIES`, tout le
+reste repart en 404.
+
+**Ce défaut ne s'est vu qu'à la capture.** C'est la sixième fois dans ce dépôt
+(`CLAUDE.md` §5). Le contrôle qui le tient désormais mesure la **même phrase**
+dans Archivo Narrow et Merriweather : si rien n'est chargé, les deux tombent
+sur la même police et la même largeur.
+
+### Le logo : au-dessus du nom, jamais à côté
+
+Les références du devis — numéro, date, validité — occupent le quart droit de
+la même bande. Un logo posé à gauche du nom viendrait les toucher dès qu'il est
+un peu large, et un numéro de devis illisible coûte plus cher qu'un en-tête
+d'un centimètre plus haut. Hauteur fixe (34 pt), largeur libre jusqu'à 150 pt,
+proportions gardées : un logo en bandeau et un logo carré n'ont rien à voir.
+
+Le nom **descend** sous l'image ; les références, elles, **ne bougent pas** —
+elles ont leur propre colonne.
+
+Et rien de tout cela n'empêche un devis de sortir : un fichier illisible, un
+compartiment vidé, une clef écrite par une autre instance donnent un document
+**sans logo**, journalisé. Lever priverait son client du devis pour une
+question d'apparence.
+
+### Ce que chaque contrôle tient, et pourquoi il en faut quatre
+
+| Suite | Ce qu'elle voit que les autres ne voient pas |
+|---|---|
+| `test-allure-documents.ts` | la règle seule — la lisibilité de l'encre sur seize fonds, les proportions du logo |
+| `test-polices-documents.ts` | qu'une police s'imprime vraiment — le défaut muet |
+| `test-allure-pdf.ts` | le document : le devis d'avant inchangé, la feuille non habillée, le logo qui ne mange pas les références |
+| `test-allure-documents-db.ts` | les colonnes : le défaut écrit vide, et l'isolation entre entreprises |
+| `test-allure-de-mes-devis-e2e.ts` | **le fil** — il choisit, ça s'enregistre, ça survit au rechargement, et l'écran ne ment pas |
+
+Chacune resterait verte si l'écran n'enregistrait rien. C'est la dernière qui
+compte, et elle ne remplace aucune des autres.

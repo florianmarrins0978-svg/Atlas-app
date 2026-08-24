@@ -2703,7 +2703,7 @@ vanne, son tuyau visite toutes ses têtes où qu'elles soient, et le départ se
 mesure depuis le regard — sa règle du 21 août. Regardé à l'écran sur les trois
 jardins d'exemple, pas seulement compté.
 
-### 0 quinvicies septies. Son message au client — **CODÉ le 23 août 2026** — et l'allure de ses devis, qui attend encore
+### 0 quinvicies septies. Son message au client et l'allure de ses devis — **LES DEUX SONT CODÉS** (23 et 24 août 2026)
 
 **SES RÉPONSES DU 23 AOÛT AU SOIR, sur le message :** *« Message client A. Liens
 obligatoire. Et message pour tous. »*
@@ -2758,16 +2758,22 @@ doivent être par défaut. »*
 | Fond de page | **modifiable — n'importe quelle couleur**, pas une liste de trois |
 | Le départ | **ses réglages d'aujourd'hui** : crème, or, police de l'appareil |
 
-**CE QU'IL FAUDRA CODER, ET CE QUE ÇA COÛTE — mesuré, pas supposé.** Le PDF est
-fait par `pdf-lib` et n'embarque que **Times et Helvetica**, les polices
-standard du format (`src/server/pdf/document-commun.ts`). Les dix typographies
-demandent donc `@pdf-lib/fontkit` et un fichier par famille, embarqué dans
-chaque devis. C'est faisable ; ce n'est pas gratuit, et la planche le lui dit.
+**C'EST CODÉ, le 24 août 2026** (`ARCHITECTURE.md` §162) : migration
+`0063_allure_documents.sql`, bloc dans « Devis & factures », dix typographies,
+deux nuanciers libres, un logo — et le devis comme la facture les portent.
 
-**Et la planche charge ces polices depuis Google Fonts.** Acceptable pour une
-maquette qu'il ouvre sur son téléphone ; **pas pour le produit** — l'allure d'un
-document ne doit pas dépendre d'un domaine tiers. Au codage, les fichiers vivent
-dans le dépôt, et ils serviront à la fois l'écran et le PDF.
+**Ce que ça a coûté, et qu'il faut savoir :**
+
+| | |
+|---|---|
+| les polices | dans le dépôt, **réduites une fois pour toutes** au latin (3,9 Mo → 570 ko) et embarquées **entières** — le découpeur de `pdf-lib` perd des caractères en silence |
+| un devis habillé | **40 à 60 ko**, contre 5 ko sans typographie choisie |
+| l'écran | sert les **mêmes fichiers** que le PDF, par `/api/polices/[fichier]` — jamais Google Fonts |
+
+**Reste ouvert sur l'allure :** rien de bloquant. Deux points de confort, à lui
+demander seulement s'il les évoque — le logo ne sort pas encore sur la **page
+publique** du devis (elle n'est pas un PDF, c'est un autre chemin), et le
+compte rendu d'entretien garde son allure, ce qu'il a demandé.
 
 **Deux leçons d'outillage, payées ici :**
 

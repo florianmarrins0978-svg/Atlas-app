@@ -4947,6 +4947,9 @@ DATABASE_URL=postgresql://postgres:postgres_ci_pw@localhost:5432/atlas_test \
 | Facture, fin de chantier, relevé de TVA | `src/server/repositories/factures.ts` |
 | Conservation, purge, effacement | `src/server/retention.ts`, `src/server/repositories/donnees-client.ts` |
 | Schéma complet | `src/server/db/schema.ts` + `drizzle/*.sql` |
+| Le message qui part chez son client | `src/lib/message-client.ts` |
+| L'allure de ses devis (typo, fond, accent, logo) | `src/lib/allure-documents.ts` |
+| Les polices embarquées dans les PDF | `src/server/pdf/polices/LISEZ-MOI.md` — **réduites, et embarquées entières** |
 
 ## Le compte de démonstration
 

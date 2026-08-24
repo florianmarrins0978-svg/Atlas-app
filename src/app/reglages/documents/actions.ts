@@ -5,6 +5,9 @@ import { exigerProprietaire } from "@/server/autorisation";
 import { mettreAJourEntreprise, getEntreprise } from "@/server/repositories/entreprises";
 import { conditionsDepuisEntreprise, type ConditionsLues } from "@/lib/conditions-documents";
 import { refusDuMessage, MESSAGE_PAR_DEFAUT } from "@/lib/message-client";
+import { normaliserAllure, refusDuLogo, type Allure } from "@/lib/allure-documents";
+import { enregistrerObjet, supprimerObjet } from "@/server/storage";
+import { verifierLimite, LIMITES } from "@/server/rate-limit";
 import { logger } from "@/server/logger";
 
 /**
@@ -73,5 +76,111 @@ export async function majConditionsAction(
       ok: false,
       raison: "Ces conditions n'ont pas pu être enregistrées. Réessayez dans un instant.",
     };
+  }
+}
+
+/**
+ * Enregistre L'ALLURE de ses documents — typographie, fond, accent.
+ *
+ * **Séparée de celle des conditions, et c'est voulu.** Les conditions engagent
+ * l'entreprise ; l'allure ne fait que peindre. Les mêler obligerait à
+ * réenregistrer des conditions pour changer une couleur, et une erreur sur
+ * l'une ferait perdre l'autre.
+ *
+ * **Elle rend l'allure RELUE en base**, jamais celle qu'on lui a demandé
+ * d'écrire : une couleur mal formée retombe sur le défaut, et l'écran doit
+ * montrer ce qui s'imprimera, pas ce qu'il a tapé.
+ */
+export async function majAllureAction(
+  saisie: Allure | null
+): Promise<{ ok: true; allure: Allure } | { ok: false; raison: string }> {
+  const ctx = await getCurrentCtx();
+  try {
+    await exigerProprietaire(ctx, "modifier l'allure des documents");
+    await mettreAJourEntreprise(ctx, { allure: saisie });
+    const e = await getEntreprise(ctx);
+    return {
+      ok: true,
+      allure: normaliserAllure({
+        typographie: e?.docTypographie ?? undefined,
+        fond: e?.docFond ?? undefined,
+        accent: e?.docAccent ?? undefined,
+      }),
+    };
+  } catch (err) {
+    logger.error("Enregistrement de l'allure impossible", {
+      erreur: err instanceof Error ? err.message : String(err),
+    });
+    return {
+      ok: false,
+      raison: "Cette allure n'a pas pu être enregistrée. Réessayez dans un instant.",
+    };
+  }
+}
+
+/**
+ * Pose son logo — l'image d'abord, la ligne ensuite.
+ *
+ * **L'ancien fichier est supprimé APRÈS que le nouveau soit écrit en base.**
+ * L'inverse — effacer puis écrire — laisse, si l'écriture tombe, une entreprise
+ * qui pointe vers une image qui n'existe plus : le devis partirait sans logo et
+ * personne ne saurait pourquoi.
+ */
+export async function poserLogoAction(
+  formData: FormData
+): Promise<{ ok: true; logo: string } | { ok: false; raison: string }> {
+  const ctx = await getCurrentCtx();
+  try {
+    await exigerProprietaire(ctx, "changer le logo des documents");
+    const fichier = formData.get("fichier");
+    if (!(fichier instanceof File)) return { ok: false, raison: "Aucune image reçue." };
+
+    // **Le refus vient de la même fonction que l'écran** (`refusDuLogo`) : un
+    // format que le PDF ne sait pas embarquer doit être dit ici, pendant qu'il
+    // peut encore en choisir un autre — pas découvert sur le devis du client.
+    const refus = refusDuLogo(fichier.type, fichier.size);
+    if (refus) return { ok: false, raison: refus };
+
+    const limite = await verifierLimite(
+      `televersement:${ctx.entrepriseId}`,
+      LIMITES.televersementFichier
+    );
+    if (!limite.autorise) return { ok: false, raison: limite.message };
+
+    const avant = await getEntreprise(ctx);
+    const octets = Buffer.from(await fichier.arrayBuffer());
+    const objet = await enregistrerObjet(
+      `entreprises/${ctx.entrepriseId}/logo`,
+      octets,
+      fichier.type === "image/png" ? ".png" : ".jpg",
+      fichier.type
+    );
+    await mettreAJourEntreprise(ctx, {
+      logo: { storageKey: objet.storageKey, mime: fichier.type },
+    });
+    if (avant?.logoStorageKey) await supprimerObjet(avant.logoStorageKey);
+    return { ok: true, logo: objet.storageKey };
+  } catch (err) {
+    logger.error("Enregistrement du logo impossible", {
+      erreur: err instanceof Error ? err.message : String(err),
+    });
+    return { ok: false, raison: "Cette image n'a pas pu être enregistrée. Réessayez." };
+  }
+}
+
+/** Retire son logo. Le fichier part avec la ligne : rien ne le lit plus. */
+export async function retirerLogoAction(): Promise<{ ok: true } | { ok: false; raison: string }> {
+  const ctx = await getCurrentCtx();
+  try {
+    await exigerProprietaire(ctx, "retirer le logo des documents");
+    const avant = await getEntreprise(ctx);
+    await mettreAJourEntreprise(ctx, { logo: null });
+    if (avant?.logoStorageKey) await supprimerObjet(avant.logoStorageKey);
+    return { ok: true };
+  } catch (err) {
+    logger.error("Retrait du logo impossible", {
+      erreur: err instanceof Error ? err.message : String(err),
+    });
+    return { ok: false, raison: "Ce logo n'a pas pu être retiré. Réessayez." };
   }
 }
