@@ -60,7 +60,22 @@ async function convertirEnJpeg(page) {
       ctx.fillStyle = "#fff";
       ctx.fillRect(0, 0, c.width, c.height);
       ctx.drawImage(img, 0, 0);
-      return c.toDataURL("image/jpeg", 0.86).split(",")[1];
+      // **La largeur est ramenée à 560 px.** L'image est posée sur 54 mm dans le
+      // document : 560 px y font 265 points par pouce, au-delà de ce qu'une
+      // imprimante de bureau rend. Le PDF passe sous les 120 ko, et c'est ce qui
+      // permet de le JOINDRE à un courriel depuis ici plutôt que de le lui faire
+      // télécharger — sa demande du 24 août.
+      const LARGEUR = 400;
+      const c2 = document.createElement("canvas");
+      const ratio = Math.min(1, LARGEUR / img.naturalWidth);
+      c2.width = Math.round(img.naturalWidth * ratio);
+      c2.height = Math.round(img.naturalHeight * ratio);
+      const ctx2 = c2.getContext("2d");
+      ctx2.imageSmoothingQuality = "high";
+      ctx2.fillStyle = "#fff";
+      ctx2.fillRect(0, 0, c2.width, c2.height);
+      ctx2.drawImage(c, 0, 0, c2.width, c2.height);
+      return c2.toDataURL("image/jpeg", 0.70).split(",")[1];
     }, b64);
     const cible = resolve(racine, `captures/${nom}.jpg`);
     writeFileSync(cible, Buffer.from(jpeg, "base64"));
