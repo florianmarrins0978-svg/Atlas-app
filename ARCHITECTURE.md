@@ -14663,3 +14663,89 @@ porte la raison à côté d'elle (`CLAUDE.md` §4 ter).
 Un contrôle figeait aussi *« deux vannes, nommées Devant et Derrière »* : il
 éprouve désormais la RÈGLE — une vanne ne s'annonce jamais sous le nom d'une
 zone qu'elle n'arrose pas — et non la mise en page, qui dépend du choix de buse.
+
+---
+
+## 167. Discuter le plan : Atlas ne dessine pas, il pose un paramètre
+
+**Sa demande du 21 août 2026 :** *« j'ai besoin que si l'utilisateur a besoin de
+te demander de faire une modification, qu'il puisse le faire — une petite
+interface pour qu'il puisse discuter avec toi »*. Codée le 23 au soir, sur sa
+maquette validée (`appli/arrosage-discuter.html`).
+
+### La phrase qui commande toute l'architecture
+
+Elle est de la maquette qu'il a validée : **« Atlas ne dessine pas le plan : il
+lit votre demande, pose un paramètre du calcul, et c'est le calcul qui refait le
+schéma et les pièces. »**
+
+Ce qui sort d'un message n'est donc jamais un tracé, jamais un métré, jamais une
+liste de pièces — c'est **une consigne** prise dans une liste fermée :
+
+| Consigne | Ce qu'elle change |
+|---|---|
+| `marque` | Rain Bird, Toro, Hunter |
+| `corps` | une référence de corps du catalogue |
+| `materiel` | turbine, tuyère ou « au mieux », sur UNE zone |
+| `buse` | une référence de buse du catalogue, sur UNE zone |
+| `sonde` | la sonde de pluie |
+
+**Pourquoi cette borne tient tout.** Un plan retouché à la main ne se recalcule
+plus : la fois d'après, le tracé, les métrés et les pièces ne viennent plus de
+la même source, et deux d'entre eux finissent par se contredire
+(`CLAUDE.md` §3). En passant par les paramètres, tout ce qui s'affiche reste issu
+du même calcul — y compris ce que sa demande casse ailleurs, qu'on peut alors
+lui DIRE.
+
+### Ses deux bornes, appliquées à la lettre
+
+**« La discussion ne doit JAMAIS créer un plan avec des réseaux. »** Le fil ne
+s'affiche qu'AVEC un plan, donc à partir d'un croquis déjà complet. Sans plan, ni
+fil ni champ — un « Écrire à Atlas… » posé là inviterait à demander un plan par
+la conversation. C'est l'ABSENCE qui est éprouvée, parce que c'est elle la règle.
+
+**« Il ne faut pas mettre les phrases pré-écrites. »** La maquette en montrait
+trois, et le disait — *« trois demandes déjà écrites, pour montrer »*. L'écran
+n'en porte aucune : des suggestions apprennent à ne demander que ce qui est
+proposé.
+
+**Et la nourrice ne se discute pas** (`CLAUDE.md` §4 bis). Elle voyage dans les
+paramètres parce que le DESSIN en a besoin à chaque recalcul, pas parce qu'elle
+serait réglable. Pour la déplacer : corriger le croquis et le renvoyer — et
+l'écran le dit sous le champ, pour qu'il ne l'essaie pas et n'y voie une panne.
+
+### Rien n'est enregistré, et les paramètres voyagent
+
+Les paramètres partent vers l'écran avec le plan et reviennent avec chaque
+message. **Aucune persistance** : un plan d'arrosage se refait à chaque client,
+comme un devis. Le jour où il vivra en base, ce sera une décision, pas un effet
+de bord.
+
+Les zones y portent un **identifiant stable**, parce que les consignes les
+désignent par lui (« passe la zone 2 en tuyères »). Le laisser au calcul le
+ferait dépendre de l'ordre de lecture, et un message d'hier viserait demain une
+autre pelouse.
+
+### Les chiffres ne viennent jamais du modèle
+
+On lui donne l'état du plan en clair — débit disponible, plafond d'une voie,
+débit de chaque réseau, buses du catalogue — **pour qu'il n'ait pas à les
+inventer**. C'est la leçon du 21 août : laissé libre, il avait écrit « 5004 buse
+3.0, portée 6 m », qui n'existe pas, et tout le maillage en dépendait.
+
+**Une référence hors catalogue est refusée, jamais rapprochée de la plus
+proche.** Mais le refus ne jette pas sa réponse : ce qu'il a expliqué reste
+utile, seule la modification tombe — et il lit pourquoi, dans la réponse
+elle-même.
+
+### Ce qui n'est pas éprouvé ici
+
+La règle pure l'est, sans clé et sans réseau : la liste fermée
+(`test-consignes-arrosage.ts`) et la lecture de ce que le modèle rend
+(`test-discussion-plan.ts`), avec ses travers observés — référence inventée,
+texte vide, JSON noyé dans de la prose, consigne hors liste.
+
+**Le parcours entier ne l'est pas** : le fil n'apparaît qu'avec un plan, donc
+après une lecture de croquis, donc avec une clé de vision que cet environnement
+n'a pas (`AGENTS.md`). Premier essai à faire sur son banc.
+

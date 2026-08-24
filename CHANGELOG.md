@@ -158,6 +158,35 @@ PDF embarque.
 
 ## 2026-08-23
 
+### On peut enfin discuter du plan — et Atlas ne dessine pas, il pose un paramètre
+
+**Sa demande du 21 août, codée :** *« j'ai besoin que si l'utilisateur a besoin
+de te demander de faire une modification, qu'il puisse le faire — une petite
+interface pour qu'il puisse discuter avec toi »*.
+
+**Sous le plan, un fil et un champ libre.** Il écrit ce qu'il veut ; Atlas
+répond, et s'il y a lieu **pose une consigne** — marque, corps, matériel d'une
+zone, buse d'une zone, sonde de pluie. C'est le calcul qui refait tout : le
+tracé, les métrés et les pièces restent issus de la même source. Un plan
+retouché à la main ne se recalculerait plus.
+
+**Ses deux bornes, à la lettre.** La discussion ne s'affiche qu'AVEC un plan —
+elle ne peut donc jamais en créer un. Et **aucune phrase pré-écrite** : la
+maquette en montrait trois, elle le disait elle-même ; des suggestions
+apprennent à ne demander que ce qui est proposé.
+
+**La nourrice ne se discute pas.** Pour la déplacer, on corrige le croquis — et
+l'écran le dit sous le champ, pour qu'il ne l'essaie pas et n'y voie une panne.
+
+**Aucune référence inventée.** Une buse hors catalogue est refusée, jamais
+rapprochée de la plus proche — mais la réponse d'Atlas reste, et il lit pourquoi
+la modification n'a pas été appliquée.
+
+**Non vérifié ici :** le parcours entier, qui demande une clé de vision que cet
+environnement n'a pas. Les règles pures, elles, le sont.
+
+Détail : `ARCHITECTURE.md` §167.
+
 ### Cinq réseaux pour 208 m² : le critère de choix des buses était à l'envers
 
 *« Cinq réseaux pour ça ??????? »*, devant un plan de 12 × 12 et 8 × 8.

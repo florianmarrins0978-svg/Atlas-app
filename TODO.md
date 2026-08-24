@@ -158,7 +158,29 @@ traités évite de les rouvrir.
 ---
 
 
-## Arrosage : l'interface pour discuter le plan (23 août 2026)
+## ⏳ `verifier-maquette-message-et-allure.mjs` est rouge, et ce n'est pas l'arrosage
+
+Constaté le 23 août 2026 au soir, sur `main` :
+
+```
+❌ Les planches du 23 août ne tiennent pas :
+   • le fond de départ est rgb(250, 249, 245) au lieu du crème d'aujourd'hui
+   • le retour ne rend pas le crème : rgb(250, 249, 245)
+```
+
+**Vérifié rouge AVANT le lot arrosage**, en mettant celui-ci de côté : il n'en
+vient pas. Les planches sont `appli/mon-message-au-client.html` et
+`appli/allure-de-mes-devis.html`, arrivées avec la branche
+`claude/devis-dicte-ecrit-buttons-x7iw0c`.
+
+**Écrit ici plutôt que corrigé au jugé** : le fond attendu est une décision de
+cette maquette-là. La deviner ferait passer un contrôle au vert sur la mauvaise
+couleur, ce qui est pire que rouge.
+
+---
+
+
+## ~~Arrosage : l'interface pour discuter le plan~~ — **FAIT le 23 août 2026** (`ARCHITECTURE.md` §167)
 
 Le plan se dessine (`ARCHITECTURE.md` §150). Reste ce qu'il a demandé le 21 :
 *« j'ai besoin que si l'utilisateur a besoin de te demander de faire une
