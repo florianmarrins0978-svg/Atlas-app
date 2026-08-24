@@ -553,7 +553,12 @@ export default function DocumentsClient({
                 data-atlas={`typo-${t.clef}`}
                 aria-pressed={choisie}
                 onClick={() => poserAllure({ typographie: t.clef })}
-                className="min-h-[56px] rounded-[8px] px-3 py-2 text-left"
+                // **`rounded-full`, comme tous ses boutons depuis le 12 août
+                //   2026.** `test-boutons-arrondis` l'a attrapé ici : un rayon
+                //   de 8 px était resté, et un seul bouton carré dans
+                //   l'application se voit. Le rembourrage est plus large en
+                //   conséquence — sur une pastille, le texte touche la courbe.
+                className="min-h-[62px] rounded-full px-5 py-2.5 text-left"
                 style={{
                   backgroundColor: choisie ? colors.card : "transparent",
                   boxShadow: `inset 0 0 0 1px ${choisie ? colors.or : colors.line}`,
