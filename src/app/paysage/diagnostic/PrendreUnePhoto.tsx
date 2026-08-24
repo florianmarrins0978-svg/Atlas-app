@@ -4,6 +4,7 @@ import { useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import PrimaryButton from "@/components/atlas/PrimaryButton";
 import { colors } from "@/lib/design-tokens";
+import { ACCEPT_PHOTOS } from "@/lib/exif";
 import { analyserPhotoAction, ajouterComplementAction } from "./actions";
 
 /**
@@ -43,7 +44,11 @@ export default function PrendreUnePhoto({
       <input
         ref={entree}
         type="file"
-        accept="image/jpeg,image/png,image/webp"
+        // **La constante partagée, jamais la liste recopiée.** Elle valait
+        // exactement la même chose ici — et c'est bien le danger : le jour où
+        // la liste bouge dans `src/lib/exif.ts`, cet écran resterait seul en
+        // arrière sans que rien ne le dise (`CLAUDE.md` §3).
+        accept={ACCEPT_PHOTOS}
         // **PAS de `capture` — la même règle que pour le croquis d'arrosage**,
         // posée le 21 août 2026 : « soit je peux mettre une photo de ma
         // bibliothèque, soit prendre une photo ».

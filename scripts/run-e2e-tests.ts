@@ -347,8 +347,28 @@ async function main() {
    */
   const JOURNAL_SERVEUR = path.join(tmpdir(), "atlas-serveur-e2e.log");
   const journalFd = openSync(JOURNAL_SERVEUR, "w");
+  /**
+   * **Le serveur des suites ANNONCE une adresse publique — posé le 24 août
+   * 2026, et il faut savoir pourquoi.**
+   *
+   * Depuis ce jour, Atlas refuse de mettre dans un message au client une
+   * adresse qui n'existe que sur la machine de l'artisan : le patron a envoyé
+   * une fiche de chantier dont le lien pointait sur `localhost`, et son client
+   * a reçu « Connexion au serveur impossible » (`src/lib/adresse-du-client.ts`).
+   *
+   * Or les suites, elles, tournent sur `http://localhost:3000` — sans cette
+   * variable, chaque écran d'envoi rendrait le refus, et une dizaine de suites
+   * rougiraient en accusant l'envoi alors que c'est leur adresse qui est en
+   * cause. On DÉCLARE donc une adresse publique, comme le ferait un
+   * déploiement derrière un mandataire muet.
+   *
+   * **Ce que cela laisse hors de portée, et qui doit être dit :** le refus
+   * lui-même ne se joue pas au navigateur ici — un seul serveur tourne, avec
+   * une seule adresse. C'est `test-adresse-du-client.ts` qui l'éprouve, dans
+   * les deux sens, sans navigateur.
+   */
   const serveur = spawn(NPM, ["run", "dev", "--", "-p", "3000"], {
-    env: process.env,
+    env: { ...process.env, ATLAS_URL_PUBLIQUE: "https://atlas-suites.test" },
     stdio: ["ignore", journalFd, journalFd],
     detached: true,
   });

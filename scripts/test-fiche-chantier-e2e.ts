@@ -479,8 +479,128 @@ async function main() {
       () => cases.first().click({ timeout: 3_000 }),
       "une case reste cliquable sur un rapport déjà parti"
     );
-    const texte = await page.locator('[data-atlas="fiche-chantier"]').innerText();
-    assert.match(texte, /figé/, "l'écran ne dit pas que le rapport est figé");
+
+    // **Ce contrôle visait le mot « figé », et le patron l'a fait retirer le
+    // 24 août 2026** — *« Ce rapport est figé en gris supprime »*. Réclamer un
+    // libellé qu'il a fait enlever rendrait son écran impossible à changer
+    // (`CLAUDE.md` §5 bis) : on vise donc plus profond que la phrase.
+    //
+    // Ce qui est vrai d'un rapport parti, et le restera quel que soit le mot :
+    // il n'y a plus rien pour l'enregistrer, et il ne reste qu'à le transmettre.
+    assert.equal(
+      await page.locator('[data-atlas="envoyer-fiche"]').count(),
+      0,
+      "« Enregistrer et envoyer » est encore là sur un rapport déjà parti"
+    );
+    assert.equal(
+      await page.locator('[data-atlas="ouvrir-sms-fiche"], [data-atlas="ouvrir-email-fiche"]').count(),
+      1,
+      "un rapport parti n'offre aucun moyen de le transmettre"
+    );
+
+    // **Et le canal est celui qu'il a CHOISI**, pas celui qu'on déduit de la
+    // fiche du client — sa demande du 24 août. Ce client a un téléphone et pas
+    // d'e-mail, et le SMS a été retenu plus haut dans le parcours.
+    const bouton = page.locator('[data-atlas="ouvrir-sms-fiche"]');
+    assert.equal(await bouton.count(), 1, "le canal choisi n'est pas celui du bouton");
+    assert.match(
+      (await bouton.innerText()).trim(),
+      /envoyer par sms/i,
+      "le bouton ne dit pas par quoi le rapport part"
+    );
+  });
+
+  await test("Une fiche EN COURS se supprime depuis la liste — et le rapport parti, non", async () => {
+    // **Sa demande du 24 août 2026** : *« Je ne peux pas supprimer les fiches en
+    // cours. Il faut pouvoir les supprimer. »*
+    //
+    // **Ce que ce cas tient et que la suite base ne peut pas voir** :
+    // `supprimerPassage` resterait vert si l'écran ne l'appelait jamais. On
+    // supprime donc au doigt, depuis la liste, et l'on regarde la base.
+    //
+    // `networkidle` : la section est un composant client, et une croix touchée
+    // avant l'hydratation ne déclenche rien.
+    await page.goto(`${BASE}/paysage/fiche`, { waitUntil: "networkidle" });
+
+    const { rows: brouillons } = await pool.query(
+      `SELECT p.id FROM passages_entretien p JOIN clients c ON c.id = p.client_id
+        WHERE c.nom = $1 AND p.envoye_le IS NULL`,
+      [CLIENT]
+    );
+    assert.equal(brouillons.length, 1, "ce cas n'a pas de brouillon à supprimer : il ne prouverait rien");
+    const id = brouillons[0].id as string;
+
+    // **Le rapport parti n'a PAS de croix.** Son lien vit chez le client : le
+    // supprimer changerait son adresse en page morte. L'écran ne doit donc pas
+    // même le proposer — et sans ce contrôle, la croix se poserait sur les deux
+    // sections au premier remaniement.
+    const { rows: envoyes } = await pool.query(
+      `SELECT p.id FROM passages_entretien p JOIN clients c ON c.id = p.client_id
+        WHERE c.nom = $1 AND p.envoye_le IS NOT NULL`,
+      [CLIENT]
+    );
+    assert.ok(envoyes[0]?.id, "aucun rapport envoyé : la moitié de ce cas ne prouverait rien");
+    assert.equal(
+      await page.locator(`[data-supprimer-fiche="${envoyes[0].id}"]`).count(),
+      0,
+      "un rapport déjà parti chez le client porte une croix de suppression"
+    );
+
+    const croix = page.locator(`[data-supprimer-fiche="${id}"]`);
+    await croix.waitFor({ state: "visible", timeout: 15_000 });
+    await croix.click();
+    await capturer(page, "11-fiche-retiree-annulable");
+
+    // **« Annuler » est là, et rien n'est encore écrit** — sa règle du 10 août.
+    const tiroir = page.locator(".atlas-tiroir[data-ouvert='oui']");
+    await tiroir.waitFor({ state: "visible", timeout: 5_000 });
+    const { rows: pendant } = await pool.query(
+      `SELECT count(*)::int AS n FROM passages_entretien WHERE id = $1`,
+      [id]
+    );
+    assert.equal(pendant[0].n, 1, "la fiche a été effacée alors qu'« Annuler » était encore à l'écran");
+
+    // Puis le tiroir se ferme, et le retrait devient définitif. L'attente monte
+    // plutôt qu'un délai fixe : sous la charge d'une batterie, six secondes de
+    // minuteur s'étirent.
+    for (const essai of [1, 2, 3, 4, 5, 6]) {
+      await page.waitForTimeout(essai * 1200);
+      const { rows } = await pool.query(
+        `SELECT count(*)::int AS n FROM passages_entretien WHERE id = $1`,
+        [id]
+      );
+      if (rows[0].n === 0) {
+        // Ses lignes sont parties avec elle : une fiche effacée qui laisse
+        // vingt lignes derrière fait grossir la base sans que rien ne le dise.
+        const { rows: lignes } = await pool.query(
+          `SELECT count(*)::int AS n FROM lignes_passage WHERE passage_id = $1`,
+          [id]
+        );
+        assert.equal(lignes[0].n, 0, "des lignes survivent à la fiche supprimée");
+        return;
+      }
+    }
+    assert.fail("la fiche est toujours en base une fois le tiroir refermé");
+  });
+
+  await test("L'endroit où la fiche se compose reste atteignable depuis la liste", async () => {
+    // **Sa remarque du 24 août 2026** : *« Avant, il y avait un endroit où je
+    // pouvais créer ma fiche sur mesure […]. Aujourd'hui, cet endroit a
+    // disparu. »* Il n'avait pas disparu — il ne s'affichait QUE sur une fiche
+    // vide, c'est-à-dire jamais après le premier jour.
+    //
+    // **Le contrôle vise l'ADRESSE, pas le libellé** (`CLAUDE.md` §5 bis) : le
+    // jour où il fait changer le mot, c'est le chemin qui doit rester tenu.
+    await page.goto(`${BASE}/paysage/fiche`, { waitUntil: "networkidle" });
+    const porte = page.locator('a[href="/reglages/fiche-entretien"]');
+    assert.ok(
+      (await porte.count()) > 0,
+      "la liste ne mène plus nulle part pour composer sa fiche — c'est le défaut du 24 août"
+    );
+    await capturer(page, "12-liste-avec-la-porte-du-modele");
+
+    await porte.first().click();
+    await page.waitForURL(`${BASE}/reglages/fiche-entretien`, { timeout: 30_000 });
   });
 
   await context.close();

@@ -8,6 +8,7 @@ import {
   retirerPrestation,
   renommerPrestation,
   renommerFamille,
+  retirerFamille,
   poserModeleFourni,
 } from "../src/server/repositories/prestations-entretien";
 import {
@@ -203,6 +204,54 @@ async function main() {
     const apres = await listerPrestations(ctx);
     assert.equal(apres.length, avant.length - 1);
     assert.ok(!apres.some((p) => p.id === cible.id));
+  });
+
+  await cas("retirer une FAMILLE emporte ses prestations, et elles seules", async () => {
+    // **Sa remarque du 24 août 2026** : cet écran sert à *« ajouter des
+    // catégories, en enlever, en créer »*. « En enlever » n'existait pas — il
+    // fallait retirer les lignes une par une, au pouce, avec des gants.
+    const ctx = await contexte("retirer-famille");
+    for (const [famille, libelle] of [
+      ["Pelouse", "Tonte"],
+      ["Pelouse", "Engrais"],
+      ["Massifs", "Bêchage"],
+    ] as const) {
+      assert.equal((await ajouterPrestation(ctx, { famille, libelle })).ok, true);
+    }
+
+    const r = await retirerFamille(ctx, "Pelouse");
+    assert.equal(r.ok, true);
+    if (r.ok) assert.equal(r.retirees, 2, "le compte des lignes emportées est faux");
+
+    const restantes = await listerPrestations(ctx);
+    assert.deepEqual(
+      restantes.map((p) => p.libelle),
+      ["Bêchage"],
+      "la famille voisine a été emportée"
+    );
+
+    // **La casse ne coupe pas une famille en deux.** L'écran envoie le nom tel
+    // qu'il l'affiche ; une égalité stricte laisserait la moitié des lignes
+    // derrière, sans un mot — le même piège que `renommerFamille`.
+    assert.equal((await retirerFamille(ctx, "massifs")).ok, true);
+    assert.equal((await listerPrestations(ctx)).length, 0);
+
+    // Une famille qui n'existe pas ne rend pas un faux succès.
+    const vide = await retirerFamille(ctx, "Pelouse");
+    assert.equal(vide.ok, false);
+    if (!vide.ok) assert.equal(vide.refus, "introuvable");
+  });
+
+  await cas("ISOLATION : B ne retire pas la famille de A", async () => {
+    const a = await contexte("famille-a");
+    const b = await contexte("famille-b");
+    assert.equal((await ajouterPrestation(a, { famille: "Pelouse", libelle: "Tonte" })).ok, true);
+    assert.equal((await ajouterPrestation(b, { famille: "Pelouse", libelle: "Tonte" })).ok, true);
+
+    // Le nom est le MÊME chez les deux : c'est précisément le cas où un filtre
+    // par texte sans contexte d'entreprise viderait la fiche du voisin.
+    assert.equal((await retirerFamille(b, "Pelouse")).ok, true);
+    assert.equal((await listerPrestations(a)).length, 1, "la fiche de A a été vidée par B");
   });
 
   await cas("ISOLATION : B ne voit ni ne touche la fiche de A", async () => {

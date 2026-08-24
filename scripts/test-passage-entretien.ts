@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { randomBytes } from "node:crypto";
+import { Client } from "pg";
 import { pool } from "../src/server/db/client";
 import * as entreprisesRepo from "../src/server/repositories/entreprises";
 import { creerClient, mettreAJourClient } from "../src/server/repositories/clients";
@@ -19,6 +20,7 @@ import {
   majPassage,
   nommerClient,
   ouvrirPassage,
+  supprimerPassage,
 } from "../src/server/repositories/passages-entretien";
 import {
   MINUTES_MAX,
@@ -67,6 +69,32 @@ async function petitModele(ctx: { utilisateurId: string; entrepriseId: string })
   for (const libelle of ["Tonte", "Haies", "Massifs", "Feuilles"]) {
     const r = await ajouterPrestation(ctx, { famille: "Entretien", libelle });
     assert.equal(r.ok, true, `le petit modèle n'a pas pu poser « ${libelle} »`);
+  }
+}
+
+/**
+ * Compte les lignes d'une fiche **en base**, hors du dépôt.
+ *
+ * **Le contexte d'entreprise se pose ici, et c'est tout l'intérêt du geste.**
+ * Une requête nue sur `lignes_passage` rend zéro quoi qu'il arrive — la RLS est
+ * FORCÉE, y compris pour le propriétaire. Un contrôle écrit ainsi mesurerait
+ * zéro avant comme après une suppression, et rendrait un vert qui ne prouve
+ * rien : c'est exactement la faute payée le 15 août 2026.
+ */
+async function compterLignes(entrepriseId: string, passageId: string): Promise<number> {
+  const client = new Client({
+    connectionString: process.env.DATABASE_ADMIN_URL ?? process.env.DATABASE_URL,
+  });
+  await client.connect();
+  try {
+    await client.query("SELECT set_config('app.entreprise_id', $1, false)", [entrepriseId]);
+    const { rows } = await client.query(
+      "SELECT count(*)::int AS n FROM lignes_passage WHERE passage_id = $1",
+      [passageId]
+    );
+    return rows[0].n;
+  } finally {
+    await client.end();
   }
 }
 
@@ -632,6 +660,79 @@ async function main() {
     const montre = await empreinteDe("empreinte-montre", true);
     const masque = await empreinteDe("empreinte-masque", false);
     assert.notEqual(masque, montre, "le temps masqué est scellé comme s'il avait été lu");
+  });
+
+  await cas("une fiche EN COURS se supprime, ses lignes avec elle", async () => {
+    // **Sa demande du 24 août 2026** : *« Je ne peux pas supprimer les fiches en
+    // cours. Il faut pouvoir les supprimer. »*
+    const ctx = await contexte("supprimer");
+    await petitModele(ctx);
+    const ouverte = await ouvrirPassage(ctx, "2026-08-24");
+    assert.equal(ouverte.ok, true);
+    if (!ouverte.ok) return;
+
+    assert.equal(
+      await compterLignes(ctx.entrepriseId, ouverte.id),
+      4,
+      "la fiche neuve n'a pas ses quatre lignes — ce cas ne mesurerait plus rien"
+    );
+
+    assert.equal((await supprimerPassage(ctx, ouverte.id)).ok, true);
+    assert.equal(await lirePassage(ctx, ouverte.id), null, "la fiche est encore lisible");
+
+    // **Les lignes ne survivent pas à leur fiche.** Le compte se fait sous
+    // contexte, sinon il vaudrait zéro même avec vingt lignes en place (voir
+    // `compterLignes`) — et le quatre vérifié juste au-dessus est ce qui prouve
+    // que ce contrôle sait, lui, mesurer autre chose que zéro.
+    assert.equal(
+      await compterLignes(ctx.entrepriseId, ouverte.id),
+      0,
+      "des lignes survivent à leur fiche"
+    );
+
+    // Supprimer deux fois n'efface pas autre chose : le second appel refuse.
+    const encore = await supprimerPassage(ctx, ouverte.id);
+    assert.equal(encore.ok, false);
+    if (!encore.ok) assert.equal(encore.refus, "introuvable");
+  });
+
+  await cas("UN RAPPORT PARTI NE SE SUPPRIME PAS, et le refus le dit", async () => {
+    // **Le cœur du lot du 24 août.** Son lien vit chez le client, dans un SMS
+    // qu'il a peut-être gardé : effacer la fiche changerait cette adresse en
+    // page morte, sans que personne ne l'ait voulu ni ne puisse le savoir.
+    const ctx = await contexte("supprimer-parti");
+    await petitModele(ctx);
+    const client = await creerClient(ctx, { nom: "Lemoine" });
+    const ouverte = await ouvrirPassage(ctx, "2026-08-24");
+    assert.equal(ouverte.ok, true);
+    if (!ouverte.ok) return;
+    const lue = await lirePassage(ctx, ouverte.id);
+    assert.equal((await cocherLigne(ctx, ouverte.id, lue!.lignes[0].id, true)).ok, true);
+    assert.equal((await nommerClient(ctx, ouverte.id, client.id)).ok, true);
+    const fige = await figerPassage(ctx, ouverte.id);
+    assert.equal(fige.ok, true);
+    if (!fige.ok) return;
+
+    const refuse = await supprimerPassage(ctx, ouverte.id);
+    assert.equal(refuse.ok, false, "un rapport envoyé a été supprimé");
+    if (!refuse.ok) assert.equal(refuse.refus, "deja_envoye");
+
+    // Et la page du client répond toujours : c'est ce que le refus protège.
+    assert.notEqual(await lireRapportParJeton(fige.jeton), null, "le lien du client est mort");
+  });
+
+  await cas("ISOLATION : B ne supprime pas la fiche de A", async () => {
+    const a = await contexte("supprimer-a");
+    const b = await contexte("supprimer-b");
+    await petitModele(a);
+    const ouverte = await ouvrirPassage(a, "2026-08-24");
+    assert.equal(ouverte.ok, true);
+    if (!ouverte.ok) return;
+
+    const vole = await supprimerPassage(b, ouverte.id);
+    assert.equal(vole.ok, false, "B a supprimé la fiche de A");
+    if (!vole.ok) assert.equal(vole.refus, "introuvable");
+    assert.notEqual(await lirePassage(a, ouverte.id), null, "la fiche de A a disparu");
   });
 
   await cas("sans le jeton exact, la page publique ne rend RIEN", async () => {
