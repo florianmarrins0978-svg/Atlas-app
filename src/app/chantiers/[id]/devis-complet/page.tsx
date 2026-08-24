@@ -1,4 +1,5 @@
 import { headers } from "next/headers";
+import { originePublique } from "@/server/origine-publique";
 import { notFound } from "next/navigation";
 import { colors, font } from "@/lib/design-tokens";
 import { getCurrentCtx } from "@/server/session-ctx";
@@ -86,15 +87,9 @@ export default async function DevisCompletPage({ params }: { params: Promise<{ i
     if (rappel) rappels[ligne.id] = { prix: rappel.prix, phrase: rappel.phrase };
   }
 
-  // **Bâtie ICI, côté serveur, et non depuis `window`.** Le patron doit pouvoir
-  // recevoir une adresse entière — un chemin seul ne s'ouvre nulle part —, et
-  // une origine composée dans le navigateur diffèrerait de ce que le serveur a
-  // rendu, ce qui ferait régénérer tout l'arbre à React. Même raisonnement, et
-  // même code, que l'écran du devis parti.
-  const entetes = await headers();
-  const hote = entetes.get("x-forwarded-host") ?? entetes.get("host") ?? "";
-  const protocole = entetes.get("x-forwarded-proto") ?? (hote.startsWith("localhost") ? "http" : "https");
-  const origine = hote ? `${protocole}://${hote}` : "";
+  // Le pourquoi vit dans `originePublique` — c'était « même code que l'écran du
+  // devis parti », et c'est désormais LE même code.
+  const origine = originePublique(await headers());
 
   return (
     <div

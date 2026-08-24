@@ -13,6 +13,7 @@ import {
   periodeTva,
   type PeriodiciteTva,
 } from "@/server/periode-tva";
+import { ACCEPT_PHOTOS } from "@/lib/exif";
 
 /** Ce que la lecture propose — jamais ce qui est enregistré. */
 type TicketLuAffiche = {
@@ -216,7 +217,7 @@ export default function AchatsTva({
       <input
         ref={objectif}
         type="file"
-        accept="image/*"
+        accept={ACCEPT_PHOTOS}
         className="hidden"
         onChange={(e) => {
           const f = e.target.files?.[0];

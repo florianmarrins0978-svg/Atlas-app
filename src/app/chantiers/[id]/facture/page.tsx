@@ -1,4 +1,5 @@
 import { headers } from "next/headers";
+import { originePublique } from "@/server/origine-publique";
 import { notFound } from "next/navigation";
 import EnTeteEcran from "@/components/atlas/EnTeteEcran";
 import { colors, font } from "@/lib/design-tokens";
@@ -47,10 +48,7 @@ export default async function FacturePage({ params }: { params: Promise<{ id: st
   // écran doit le rattraper.
   const envoiDejaFait = existante ? await dernierEnvoiFacture(ctx, existante.facture.id) : null;
 
-  const entetes = await headers();
-  const hote = entetes.get("x-forwarded-host") ?? entetes.get("host") ?? "";
-  const protocole = entetes.get("x-forwarded-proto") ?? (hote.startsWith("localhost") ? "http" : "https");
-  const origine = hote ? `${protocole}://${hote}` : "";
+  const origine = originePublique(await headers());
 
   return (
     <div style={{ backgroundColor: colors.cream, color: colors.ink, fontFamily: font.body, minHeight: "100%" }}>

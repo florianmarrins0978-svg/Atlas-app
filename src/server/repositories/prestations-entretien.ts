@@ -222,6 +222,47 @@ export async function renommerFamille(
 }
 
 /**
+ * Retire une famille entière — **et toutes ses prestations avec elle**.
+ *
+ * **Sa remarque du 24 août 2026** : l'endroit où il compose sa fiche sert à
+ * *« ajouter des catégories, en enlever, en créer »*. « En enlever » n'existait
+ * pas : il fallait retirer les prestations une par une, et la famille
+ * disparaissait toute seule quand la dernière tombait. Six appuis au pouce,
+ * avec des gants, pour retirer une famille qu'il ne fait pas.
+ *
+ * **Une famille n'est pas une ligne en base, c'est une colonne de texte** (voir
+ * `renommerFamille`) : la retirer, c'est supprimer ses prestations. Elle rend
+ * donc combien elle en a emporté — ce que l'écran, lui, annonce AVANT le geste,
+ * d'après ce qu'il affiche. Le chiffre sert ici à ce qu'un contrôle puisse dire
+ * « deux, et pas la famille voisine » : sans lui, un retrait trop large et un
+ * retrait juste se ressemblent.
+ *
+ * **Aucun rapport déjà envoyé n'est touché**, comme pour une prestation seule :
+ * ceux-ci portent leur propre copie (migration `0055`).
+ */
+export async function retirerFamille(
+  ctx: Ctx,
+  famille: string
+): Promise<{ ok: true; retirees: number } | { ok: false; refus: RefusPrestation }> {
+  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    const supprimees = await tx
+      .delete(prestationsEntretien)
+      .where(
+        and(
+          eq(prestationsEntretien.entrepriseId, ctx.entrepriseId),
+          // `lower()` comme au renommage : l'écran envoie le nom tel qu'il
+          // l'affiche, et une casse différente laisserait la moitié des lignes
+          // derrière — une famille à moitié retirée, sans un mot.
+          sql`lower(${prestationsEntretien.famille}) = lower(${famille})`
+        )
+      )
+      .returning({ id: prestationsEntretien.id });
+    if (supprimees.length === 0) return { ok: false as const, refus: "introuvable" as const };
+    return { ok: true as const, retirees: supprimees.length };
+  });
+}
+
+/**
  * Pose le modèle fourni — **seulement si la fiche est vide**.
  *
  * La garde n'est pas une précaution : sans elle, un second appui sur le bouton

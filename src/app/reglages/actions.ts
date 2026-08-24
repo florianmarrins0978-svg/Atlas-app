@@ -7,6 +7,7 @@ import { creerTarif, listerTarifs, modifierTarif, supprimerTarif } from "@/serve
 import { lireFichierTarifs } from "@/server/import/lire-fichier-tarifs";
 import { montantLu, rapprocher, type LigneImportee, type TarifExistant } from "@/lib/import-tarifs";
 import { exigerProprietaire } from "@/server/autorisation";
+import { verifierLimite, LIMITES } from "@/server/rate-limit";
 import { mettreAJourEntreprise } from "@/server/repositories/entreprises";
 import { nommerEquipe } from "@/server/repositories/equipes";
 import { noterAbsenceEquipe, retirerAbsenceEquipe } from "@/server/repositories/absences-equipe";
@@ -81,6 +82,21 @@ export async function analyserFichierTarifsAction(donnees: FormData): Promise<Ap
   if (fichier.size > 5_000_000) {
     return { statut: "refuse", raison: "Ce fichier dépasse 5 Mo — ce n'est probablement pas une liste de prix." };
   }
+
+  /**
+   * **UNE CADENCE, et c'est le seul chemin d'Atlas qui décompresse quelque
+   * chose.** Audit du 23 août 2026, constats M4 et M5 réunis : un `.xlsx` est
+   * une archive, et la lire coûte — même bornée à trente-deux mégaoctets
+   * gonflés (`src/server/import/lire-classeur.ts`). Sans seuil, un propriétaire
+   * pouvait déposer le même fichier en boucle et tenir le processeur du
+   * serveur.
+   *
+   * **Posée APRÈS la garde de rôle et la borne de taille**, à dessein : un
+   * salarié qui n'a rien à faire ici, ou un fichier de cent mégaoctets, sont
+   * refusés sans consommer le seuil de l'artisan qui, lui, importe pour de bon.
+   */
+  const limite = await verifierLimite(`import-tarifs:${ctx.entrepriseId}`, LIMITES.televersementFichier);
+  if (!limite.autorise) return { statut: "refuse", raison: limite.message };
 
   const lecture = lireFichierTarifs(fichier.name, new Uint8Array(await fichier.arrayBuffer()));
   if (lecture.statut === "refuse") return lecture;

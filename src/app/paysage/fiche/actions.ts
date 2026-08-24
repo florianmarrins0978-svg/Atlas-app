@@ -10,6 +10,7 @@ import {
   majPassage,
   nommerClient,
   ouvrirPassage,
+  supprimerPassage,
 } from "@/server/repositories/passages-entretien";
 import { PHRASE_REFUS_PASSAGE, type LignePassage } from "@/lib/passage-entretien";
 
@@ -94,6 +95,25 @@ export async function nommerClientAction(
   if (!r.ok) return { ok: false, phrase: PHRASE_REFUS_PASSAGE[r.refus] };
   revalidatePath(`/paysage/fiche/${passageId}`);
   return { ok: true, retirees: r.retirees, lignes: r.lignes };
+}
+
+/**
+ * Supprime une fiche en cours.
+ *
+ * **Sa demande du 24 août 2026** : *« Je ne peux pas supprimer les fiches en
+ * cours. Il faut pouvoir les supprimer. »*
+ *
+ * **Appelée à la FERMETURE du tiroir, pas au geste** (`useRetraits`, sa règle
+ * du 10 août) : tant qu'« Annuler » est à l'écran, rien n'est écrit. Une
+ * suppression écrite au moment de l'appui rendrait ce bouton menteur — et une
+ * annulation qui ne rend rien est pire que pas d'annulation.
+ */
+export async function supprimerFicheAction(passageId: string): Promise<Resultat> {
+  const ctx = await getCurrentCtx();
+  const r = await supprimerPassage(ctx, passageId);
+  if (!r.ok) return { ok: false, phrase: PHRASE_REFUS_PASSAGE[r.refus] };
+  revalidatePath("/paysage/fiche");
+  return { ok: true };
 }
 
 /**

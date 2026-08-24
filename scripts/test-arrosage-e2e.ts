@@ -348,6 +348,35 @@ async function main() {
     );
   });
 
+  // ── LA DISCUSSION NE CRÉE JAMAIS UN PLAN ─────────────────────────────────
+  //
+  // **Sa borne du 21 août 2026 :** *« la discussion avec l'interface ne doit
+  // jamais créer un plan avec des réseaux ; elle peut seulement modifier ou
+  // recréer si un croquis avec tous les bons éléments aux bons endroits a été
+  // fourni »*.
+  //
+  // Sans plan à l'écran, il n'y a rien à modifier — et un champ « Écrire à
+  // Atlas… » posé là inviterait à demander un plan par la conversation, ce
+  // qu'il a exclu. Le contrôle tient donc l'ABSENCE, qui est la règle.
+  //
+  // **Ce qui n'est PAS éprouvé ici, et il faut le dire** (`AGENTS.md`) : la
+  // discussion elle-même. Elle n'apparaît qu'avec un plan, donc après une
+  // lecture de croquis, donc avec une clé de vision — que ce banc n'a pas. Sa
+  // règle pure l'est, sans clé (`test-discussion-plan.ts`, `test-consignes-arrosage.ts`) ;
+  // le parcours entier reste à faire sur le banc du patron.
+  await cas("sans plan, aucun endroit où discuter — la discussion ne CRÉE pas un plan", async () => {
+    assert.equal(
+      await page.locator('[data-atlas="discuter-plan"]').count(),
+      0,
+      "le fil de discussion s'affiche alors qu'aucun plan n'a été calculé",
+    );
+    assert.equal(
+      await page.locator('[data-atlas="champ-discussion"]').count(),
+      0,
+      "le champ « Écrire à Atlas… » invite à demander un plan par la conversation",
+    );
+  });
+
   await cas("rien ne déborde sur la largeur de son téléphone", async () => {
     const m = await page.evaluate(() => ({
       page: document.documentElement.scrollWidth,

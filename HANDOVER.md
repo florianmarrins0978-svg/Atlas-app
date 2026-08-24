@@ -24,16 +24,77 @@ position de la ligne dans le gestionnaire, et la restaure en `useLayoutEffect`
 
 Le même piège guette partout où un panneau se referme au-dessus du point
 regardé. Détail : `ARCHITECTURE.md` §157.
-## DEUX MIGRATIONS PORTENT LE NUMÉRO 0062 — et ce n'est pas cassé
+## PIÈGE : UN LIEN ENVOYÉ AU CLIENT PREND L'ADRESSE DU NAVIGATEUR (24 août 2026)
 
-`0062_message_client.sql` et `0062_tentatives_connexion.sql` sont nées le même
-jour dans deux sessions parallèles. **Rien ne casse** : `run-migrations.ts` trie
-par nom de fichier et retient chaque nom séparément dans `_migrations`, donc les
-deux s'appliquent, toujours dans le même ordre.
+**Devant « le client ne reçoit rien » ou « connexion au serveur impossible » :
+regarder d'abord PAR QUELLE ADRESSE il a ouvert Atlas.**
+
+Un lien fabriqué depuis `http://localhost:3000` — la redirection de port de son
+éditeur — désigne le téléphone du client. Le rapport, le devis ou la facture
+existent, leur jeton est bon ; seule l'adresse ne mène nulle part.
+
+Atlas refuse maintenant de composer le message et le DIT (`ouvrableParLeClient`,
+`src/lib/adresse-du-client.ts`). Deux choses à savoir :
+
+- **`ATLAS_URL_PUBLIQUE`** est la réponse d'un déploiement derrière un mandataire
+  muet — posée, elle commande. Son banc ne la pose pas, et n'en a pas besoin tant
+  qu'il ouvre Atlas par l'adresse de son espace.
+- **Les suites navigateur DÉCLARENT une adresse publique** (`run-e2e-tests.ts`) :
+  sans cela, tournant sur `localhost`, elles rougiraient toutes en accusant
+  l'envoi. Le refus lui-même s'éprouve sans navigateur
+  (`test-adresse-du-client.ts`).
+
+Détail : `ARCHITECTURE.md` §169.
+
+---
+
+## Fiche de chantier : ce que le 24 août a changé (aucune migration)
+
+Deux plaintes de sa part, un même mécanisme derrière : **un écran qui retire ce
+dont on se sert au moment où l'on commence à s'en servir.**
+
+- **Un brouillon se supprime** depuis la liste — croix, puis « Annuler » pendant
+  six secondes (`useRetraits`, sa règle du 10 août). **Un rapport parti, non** :
+  son lien vit chez le client, et l'effacer changerait cette adresse en page
+  morte. `supprimerPassage` refuse, et l'écran ne pose pas de croix dessus.
+- **L'endroit où la fiche se compose n'avait pas disparu** : son lien vivait
+  dans l'encart de la fiche VIDE, qui s'efface à la première prestation posée.
+  Il est désormais en bas de `/paysage/fiche`, en permanence, pour le seul
+  propriétaire.
+- **Les catégories se créent nommées et se retirent d'un geste** — avant, créer
+  rangeait dans « Divers » et retirer n'existait pas.
+
+**Rien en base** : aucune migration, la table `passages_entretien` portait déjà
+son `GRANT DELETE` et sa politique d'isolation (migration 0055).
+
+**Et ce qui vaut d'être retenu :** trois défauts de ce lot sont sortis de
+CAPTURES REGARDÉES, aucun d'une suite rouge — un titre resté seul, deux croix
+identiques aux conséquences très différentes, une ligne serrée contre la barre
+d'onglets. C'est la sixième fois dans ce dépôt. Détail : `ARCHITECTURE.md` §168.
+
+---
+
+## QUATRE MIGRATIONS, DEUX NUMÉROS EN DOUBLE — et ce n'est pas cassé
+
+Le 23-24 août 2026, plusieurs sessions ont travaillé en parallèle et se sont
+croisées sur la numérotation :
+
+| Numéro | Les deux fichiers |
+|---|---|
+| **0062** | `message_client` · `tentatives_connexion` |
+| **0063** | `allure_documents` · `cles_appareil` |
+
+**Rien ne casse** : `run-migrations.ts` trie par nom de fichier complet et
+retient chaque nom séparément dans `_migrations`. Les quatre s'appliquent,
+toujours dans le même ordre, et aucune ne dépend d'une autre.
 
 **Ce qu'il ne faut PAS faire : en renommer une.** Le suivi est keyé sur le nom
 du fichier ; le changer ferait rejouer la migration sur toute base qui l'a déjà.
-La suite reprend à **0064**.
+
+**Et la leçon, elle, se retient :** un numéro de migration ne se réserve pas.
+Avant d'en poser un, regarder `git branch -r --sort=-committerdate` et le
+`drizzle/` des branches vivantes (`CLAUDE.md` §6, point A). La suite reprend à
+**0064**.
 
 ---
 
@@ -150,6 +211,23 @@ zone et l'endroit de la nourrice. **Aucune clé de vision dans cet
 environnement** — la fonction pure `lireReponseCroquis` est éprouvée
 (`test-lecture-croquis.ts`), l'appel au fournisseur ne l'est pas. Premier essai à
 faire sur son banc.
+
+### LA DISCUSSION POSE UN PARAMÈTRE, ELLE NE DESSINE PAS (23 août 2026)
+
+Ce qui sort d'un message est **une consigne** prise dans une liste fermée
+(`consignes.ts`) : marque, corps, matériel d'une zone, buse d'une zone, sonde.
+Rien d'autre. C'est le calcul qui refait le plan.
+
+**Ne pas élargir cette liste sans y réfléchir** : un plan retouché à la main ne
+se recalcule plus, et la fois d'après le tracé, les métrés et les pièces ne
+viennent plus de la même source.
+
+**La nourrice n'y est pas, et ne doit pas y entrer** (`CLAUDE.md` §4 bis). Elle
+voyage dans les paramètres parce que le DESSIN en a besoin, pas parce qu'elle
+serait réglable.
+
+**Le fil ne s'affiche qu'avec un plan** — sa borne : *« la discussion ne doit
+jamais créer un plan »*. C'est l'absence qui est éprouvée en e2e.
 
 ### DEUX ÉCHELLES, ET NE PAS LES CONFONDRE (23 août 2026)
 

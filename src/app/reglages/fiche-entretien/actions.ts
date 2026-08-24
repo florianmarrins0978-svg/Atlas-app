@@ -8,6 +8,7 @@ import {
   retirerPrestation,
   renommerPrestation,
   renommerFamille,
+  retirerFamille,
   poserModeleFourni,
 } from "@/server/repositories/prestations-entretien";
 import { revalidatePath } from "next/cache";
@@ -69,6 +70,24 @@ export async function renommerFamilleAction(ancienne: string, nouvelle: string):
   const ctx = await contexteAutorise();
   if (!ctx) return refus("non_autorise");
   const r = await renommerFamille(ctx, ancienne, nouvelle);
+  if (!r.ok) return refus(r.refus);
+  revalidatePath("/reglages/fiche-entretien");
+  return { ok: true };
+}
+
+/**
+ * Retire une famille entière — ses prestations avec elle.
+ *
+ * **Sa remarque du 24 août 2026** : cet écran sert à *« ajouter des catégories,
+ * en enlever, en créer »*. « En enlever » manquait.
+ *
+ * **Appelée à la fermeture du tiroir**, comme le retrait d'une prestation :
+ * tant qu'« Annuler » est à l'écran, rien n'est écrit (`useRetraits`).
+ */
+export async function retirerFamilleAction(famille: string): Promise<Resultat> {
+  const ctx = await contexteAutorise();
+  if (!ctx) return refus("non_autorise");
+  const r = await retirerFamille(ctx, famille);
   if (!r.ok) return refus(r.refus);
   revalidatePath("/reglages/fiche-entretien");
   return { ok: true };

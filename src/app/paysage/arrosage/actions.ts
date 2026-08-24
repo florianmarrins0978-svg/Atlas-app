@@ -7,6 +7,10 @@ import { calculerPlan } from "@/lib/arrosage/calcul.js";
 import { trajetLePlusLong, poserSurLeTerrain } from "@/lib/arrosage/geometrie-croquis";
 import { debitRetenu, SEAU_LITRES } from "@/lib/arrosage/mesure-debit";
 import { dessinerPlan, type Dessin, type ZoneDessinee } from "@/lib/arrosage/plan-dessine";
+import { appliquer, type ParametresPlan } from "@/lib/arrosage/consignes";
+import { discuterLePlan, etatDuPlanEnClair, type Tour } from "@/server/ai/services/discuter-plan";
+import { MESSAGE_PHOTO_REFUSEE, photoAcceptee } from "@/lib/exif";
+import { verifierLimite, LIMITES } from "@/server/rate-limit";
 
 /**
  * Les gestes de l'écran « Plan d'arrosage ».
@@ -41,6 +45,8 @@ export type EtatPlan =
        */
       /** `null` quand le croquis ne permet pas de reconstituer l'agencement. */
       dessin: Dessin | null;
+      /** De quoi refaire le plan quand il demande une modification. */
+      parametres: ParametresPlan;
       plan: {
         debitDisponible: number;
         secteurs: { nom: string; debit: number; famille: string; part: string | null }[];
@@ -110,12 +116,25 @@ export type EtatPlan =
 
 export async function lireLeCroquis(_precedent: EtatPlan, formulaire: FormData): Promise<EtatPlan> {
   // La session est exigée avant tout : cet écran fait travailler l'IA, et
-  // c'est un coût. Personne d'anonyme ne le déclenche.
-  await getCurrentCtx();
+  // c'est un coût. Personne d'anonyme ne le déclenche — et l'entreprise sert
+  // désormais à compter la cadence, plus bas.
+  const ctx = await getCurrentCtx();
 
   const photo = formulaire.get("croquis");
   if (!(photo instanceof File) || photo.size === 0) {
     return { etat: "refus", raison: "Aucune photo n’a été jointe." };
+  }
+  /**
+   * **Une liste blanche, et une cadence** — hors du brief du lot 2, mais de la
+   * même famille (audit du 23 août 2026). Ce chemin-ci envoie la photo à un
+   * fournisseur d'IA : il bornait la taille et rien d'autre.
+   *
+   * Ce que chacune arrête : la liste blanche empêche d'envoyer autre chose
+   * qu'une image à un service qu'on paie ; la cadence borne **une facture**,
+   * comme sur le diagnostic végétal — personne ne lit dix croquis à la minute.
+   */
+  if (!photoAcceptee(photo.type)) {
+    return { etat: "refus", raison: MESSAGE_PHOTO_REFUSEE };
   }
   // **Une borne dure sur la taille.** Une photo de téléphone moderne pèse
   // 10 Mo ; l'envoyer entière au fournisseur coûte pour rien et fait parfois
@@ -123,6 +142,9 @@ export async function lireLeCroquis(_precedent: EtatPlan, formulaire: FormData):
   if (photo.size > 8 * 1024 * 1024) {
     return { etat: "refus", raison: "Cette photo dépasse 8 Mo. Reprenez-la en plus petit." };
   }
+
+  const limite = await verifierLimite(`croquis:${ctx.entrepriseId}`, LIMITES.diagnosticVegetal);
+  if (!limite.autorise) return { etat: "refus", raison: limite.message };
 
   const base64 = Buffer.from(await photo.arrayBuffer()).toString("base64");
   const lu = await lireCroquis(base64, photo.type || "image/jpeg");
@@ -186,7 +208,15 @@ export async function lireLeCroquis(_precedent: EtatPlan, formulaire: FormData):
   const trajet = trajetLePlusLong(lu.croquis.nourrice, places);
   const terrain = poserSurLeTerrain(lu.croquis.nourrice, places);
 
-  const plan = calculerPlan({
+  // **LES PARAMÈTRES SONT UNE VALEUR, ET ILS REPARTENT VERS L'ÉCRAN.**
+  //
+  // *Sa demande du 21 août : une interface pour discuter du plan.* La
+  // discussion refait le plan en posant un paramètre — il lui faut donc ceux-ci,
+  // au message suivant. **Rien n'est enregistré pour autant** : ils voyagent
+  // avec l'écran, comme le plan lui-même. Un plan d'arrosage se refait à chaque
+  // client ; le jour où il vivra en base, ce sera une décision, pas un effet de
+  // bord.
+  const parametres: ParametresPlan = {
     regardVersZone: trajet.ok ? trajet.metres : 0,
     // Le calcul raisonne en seau et temps : on lui rend le débit retenu sous
     // cette forme, sans repasser par la saisie — une seule source du débit.
@@ -195,6 +225,11 @@ export async function lireLeCroquis(_precedent: EtatPlan, formulaire: FormData):
     pression: mesure.pression,
     compteur: piquage === "compteur" ? "oui" : "non",
     zones: mesurees.map((z, i) => ({
+      // **Un identifiant STABLE**, parce que la discussion désigne les zones par
+      // lui : « passe la zone 2 en tuyères ». Le laisser au calcul le ferait
+      // dépendre de l'ordre de lecture, et un message d'hier viserait demain
+      // une autre pelouse.
+      id: i + 1,
       type: z.type,
       nom: z.nom ?? undefined,
       L: z.L ?? undefined,
@@ -207,7 +242,9 @@ export async function lireLeCroquis(_precedent: EtatPlan, formulaire: FormData):
       x: terrain.ok ? terrain.terrain.zones[i].x : undefined,
       y: terrain.ok ? terrain.terrain.zones[i].y : undefined,
     })),
-  });
+    nourrice: terrain.ok ? terrain.terrain.nourrice : null,
+  };
+  const plan = calculerPlan(parametres as never);
 
   const reserves = [...lu.croquis.reserves];
   if (mesure.reserve) reserves.push(mesure.reserve);
@@ -274,7 +311,7 @@ export async function lireLeCroquis(_precedent: EtatPlan, formulaire: FormData):
   // lire mon croquis... là, il y a tous les métrés »*. Il avait raison.
   if (!terrain.ok) {
     reserves.push(`${terrain.raison} : le plan est calculé, mais il n’est pas dessiné`);
-    return { etat: "lu", zones: lu.croquis.zones, reserves, dessin: null, plan: leCalcul(plan) };
+    return { etat: "lu", zones: lu.croquis.zones, reserves, dessin: null, parametres, plan: leCalcul(plan) };
   }
   if (terrain.terrain.reserve) reserves.push(terrain.terrain.reserve);
   const dessine = dessinerPlan(
@@ -282,7 +319,7 @@ export async function lireLeCroquis(_precedent: EtatPlan, formulaire: FormData):
     // **La nourrice EN MÈTRES**, sur le même repère que les zones. Lui passer
     // la fraction lue dessinerait un jardin d'un mètre de large : le défaut
     // aurait été muet, puisque tout resterait cohérent entre soi.
-    terrain.terrain.nourrice,
+    parametres.nourrice,
     plan.couleurs as string[]
   );
   // Idem si le tracé lui-même n'aboutit pas : c'est le dessin qui manque, pas
@@ -290,7 +327,7 @@ export async function lireLeCroquis(_precedent: EtatPlan, formulaire: FormData):
   // elle est refusée plus haut, à la lecture.
   if (!dessine.ok) {
     reserves.push(`${dessine.raison} Le plan est calculé, mais il n’est pas dessiné.`);
-    return { etat: "lu", zones: lu.croquis.zones, reserves, dessin: null, plan: leCalcul(plan) };
+    return { etat: "lu", zones: lu.croquis.zones, reserves, dessin: null, parametres, plan: leCalcul(plan) };
   }
   reserves.push(...dessine.reserves);
 
@@ -299,6 +336,7 @@ export async function lireLeCroquis(_precedent: EtatPlan, formulaire: FormData):
     zones: lu.croquis.zones,
     reserves,
     dessin: dessine.dessin,
+    parametres,
     plan: leCalcul(plan),
   };
 }
@@ -335,3 +373,85 @@ function leCalcul(plan: ReturnType<typeof calculerPlan>) {
     pressionAuxArroseurs: plan.pressionAuxArroseurs,
   };
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   DISCUTER LE PLAN — sa demande du 21 août 2026.
+
+   *« J'ai besoin que si l'utilisateur a besoin de te demander de faire une
+   modification, qu'il puisse le faire. »*
+
+   **Atlas ne dessine pas : il pose un paramètre, et le calcul refait tout.**
+   C'est la phrase de la maquette qu'il a validée, et c'est ce que cette action
+   exécute — `discuterLePlan` lit sa demande et rend au plus UNE consigne prise
+   dans une liste fermée (`consignes.ts`) ; le plan qui revient sort du même
+   calcul que celui du croquis, tracé compris.
+
+   **LA DISCUSSION NE CRÉE JAMAIS UN PLAN**, sa borne du 21 août : elle part
+   toujours de paramètres existants, donc d'un croquis déjà complet. Sans plan à
+   l'écran, il n'y a rien à discuter — et l'écran ne montre pas la saisie.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+export type EtatDiscussion =
+  | { etat: "vide" }
+  | { etat: "refus"; raison: string }
+  | {
+      etat: "repondu";
+      texte: string;
+      chiffres: string | null;
+      /** Vrai quand le plan a été refait — l'écran remplace alors ce qu'il montre. */
+      modifie: boolean;
+      parametres: ParametresPlan;
+      dessin: Dessin | null;
+      plan: ReturnType<typeof leCalcul>;
+      reserves: string[];
+    };
+
+export async function discuterDuPlan(
+  parametres: ParametresPlan,
+  historique: Tour[],
+  demande: string
+): Promise<EtatDiscussion> {
+  await getCurrentCtx();
+  const propos = demande.trim();
+  if (propos === "") return { etat: "refus", raison: "Écrivez ce que vous voulez changer." };
+  if (propos.length > 2000) {
+    return { etat: "refus", raison: "Votre message est trop long — dites-le en quelques phrases." };
+  }
+
+  // **On recalcule le plan AVANT de lui parler.** Le modèle a besoin des vrais
+  // chiffres — débit disponible, plafond d'une voie, débit de chaque réseau —
+  // sinon il répond quand même, avec des nombres plausibles (`CLAUDE.md` §4).
+  const avant = calculerPlan(parametres as never);
+  const lu = await discuterLePlan(
+    propos,
+    parametres,
+    etatDuPlanEnClair(parametres, avant as never),
+    historique
+  );
+  if (!lu.ok) return { etat: "refus", raison: lu.raison };
+
+  // Sans consigne, il n'a fait qu'expliquer : le plan à l'écran ne bouge pas.
+  const suivants = lu.reponse.consigne ? appliquer(parametres, lu.reponse.consigne) : parametres;
+  const plan = lu.reponse.consigne ? calculerPlan(suivants as never) : avant;
+
+  const reserves: string[] = [];
+  const dessine = dessinerPlan(
+    plan.dessin as ZoneDessinee[],
+    suivants.nourrice,
+    plan.couleurs as string[]
+  );
+  if (dessine.ok) reserves.push(...dessine.reserves);
+  else reserves.push(`${dessine.raison} Le plan est calculé, mais il n’est pas dessiné.`);
+
+  return {
+    etat: "repondu",
+    texte: lu.reponse.texte,
+    chiffres: lu.reponse.chiffres,
+    modifie: lu.reponse.consigne !== null,
+    parametres: suivants,
+    dessin: dessine.ok ? dessine.dessin : null,
+    plan: leCalcul(plan),
+    reserves,
+  };
+}
+

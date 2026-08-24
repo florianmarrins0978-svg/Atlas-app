@@ -9,6 +9,110 @@ Format : le plus récent en tête.
 
 ## 2026-08-24
 
+### Un lien envoyé à un client ne peut plus être une adresse de sa machine
+
+**« Connexion au serveur impossible. »** C'est ce que lisait son client en
+ouvrant le SMS de sa fiche de chantier. Le rapport existait et son jeton était
+bon : c'est l'adresse qui portait `localhost`, c'est-à-dire le téléphone du
+client lui-même. Le lien prenait l'adresse du navigateur qui l'avait fabriqué —
+juste quand Atlas est ouvert par son adresse publique, faux dès qu'il passe par
+la redirection de port de son éditeur, et rien à l'écran ne distinguait les
+deux.
+
+Atlas refuse désormais de composer un message avec une adresse qui ne sort pas
+d'une machine — `localhost`, mais aussi `192.168.x.x`, qui est la plus traître :
+elle s'ouvre au bureau, donc l'essai réussit, et elle échoue chez tout le monde.
+L'écran le dit, et dit que le rapport est enregistré : sans cela il recocherait
+toute sa fiche.
+
+**`ATLAS_URL_PUBLIQUE`** répond pour un déploiement dont les en-têtes ne
+trahissent pas l'adresse (documentée dans `.env.example`), et **les quatre
+copies de ce calcul** — devis parti, devis complet, facture, fiche de chantier —
+n'en font plus qu'une. Le garde-fou a été vu rouge : la suite de la fiche,
+rejouée sans adresse déclarée, tombe exactement là où son client est tombé.
+Détail : `ARCHITECTURE.md` §169.
+
+
+### La fiche en cours se supprime, et l'endroit où elle se compose se retrouve
+
+**Rien n'effaçait un brouillon.** Une fiche s'ouvre à chaque geste, et l'écran
+qu'il ouvre chaque matin devenait une pile — une fiche du mauvais jour, une
+autre pour un jardin qu'il n'a pas fait. Une croix les retire, avec le geste du
+10 août : la ligne part, « Annuler » reste, rien n'est écrit tant que le tiroir
+est ouvert. **Un rapport déjà parti, lui, ne se supprime pas** et n'a pas de
+croix : son lien vit chez le client, et l'effacer changerait cette adresse en
+page morte sans que personne puisse le savoir.
+
+**L'endroit où la fiche se compose n'avait pas disparu : il ne s'affichait
+plus.** Le lien vers Réglages → Fiche d'entretien vivait dans l'encart de la
+fiche VIDE, celui qui s'efface à la première prestation posée — l'écran retirait
+sa porte à l'instant où le patron commençait à s'en servir. Elle est désormais
+en bas de la liste, en permanence, pour le propriétaire.
+
+**Deux verbes sur trois ne tenaient pas** dans l'écran qui compose la fiche.
+« Créer une catégorie » rangeait la ligne dans « Divers », à lui de renommer le
+titre au-dessus ; « en enlever » n'existait pas — six retraits au pouce. Le nom
+se saisit maintenant avec sa première prestation, et un bouton retire la famille
+entière.
+
+**Le rapport figé perd ses deux lignes grises**, à sa demande : la phrase sur la
+preuve de passage et l'adresse recopiée sous le bouton. Aucune n'apprenait rien
+— l'état figé se lit déjà aux cases qui ne se cochent plus. L'adresse survit là
+où elle sert vraiment : chez un client sans téléphone ni e-mail, elle est le
+seul moyen de transmettre. **Et le bouton dit enfin par quoi ça part** :
+« Envoyer par SMS » ou « Envoyer par e-mail », selon ce qu'il a choisi sous le
+nom du client — l'écran le déduisait des coordonnées, et annonçait donc un canal
+que personne n'avait demandé.
+
+**Trois défauts trouvés en REGARDANT les captures**, aucune suite ne rougissait :
+« EN COURS » restait seul sans une ligne dessous pendant le délai d'annulation ;
+la croix d'une famille était le jumeau exact de celle d'une ligne (elle s'écrit
+maintenant « Retirer la famille ») ; la porte du modèle butait sur la barre
+d'onglets — mesuré à 60 px, contre 116 px après. Détail : `ARCHITECTURE.md`
+§168.
+
+
+### Audit de sécurité, lot 2 : ce qu'on dépose dans Atlas
+
+**Un classeur piégé ne couche plus le serveur.** Un `.xlsx` est une archive, et
+`deflate` dépasse mille pour un sur du texte répété : les 5 Mo qu'accepte
+l'écran d'import rendaient plusieurs gigaoctets, et le processus mourait
+d'épuisement mémoire — sans message, en emportant les requêtes de tout le monde.
+Une borne à trente-deux mégaoctets gonflés, et l'import de tarifs reçoit enfin
+une cadence : c'était le seul chemin d'Atlas qui décompresse, et le seul sans
+seuil. `test-classeur-bombe.ts` assemble une vraie bombe de 200 Mo et a été vue
+rouge contre la version d'avant.
+
+**Le type d'un fichier servi ne vient plus du navigateur.** La route des
+fichiers renvoyait le type déclaré au dépôt : annoncer `image/svg+xml` faisait
+servir un document porteur de script depuis notre propre domaine.
+`nosniff` était déjà posé et n'y changeait rien — il interdit de *deviner* un
+type, pas d'en *annoncer* un. Le type se déduit désormais de l'extension que le
+serveur a posée.
+
+**Les photos de chantier et les tickets de TVA perdent leurs coordonnées GPS**,
+et n'acceptent plus n'importe quoi. `startsWith("image/")` laissait passer le
+SVG ; une liste blanche le ferme. Le diagnostic végétal faisait déjà tout bien
+depuis toujours — il n'y avait qu'à reprendre.
+
+**Le piège de ce lot, et il valait d'être trouvé avant de livrer :** resserrer
+les types côté serveur, seul, aurait refusé les photos d'iPhone. Un iPhone
+photographie en HEIC ; s'il transcode en JPEG, c'est **parce que l'attribut
+`accept` du champ le lui demande**, et trois écrans portaient `image/*`. Les
+attributs et la liste serveur bougent donc ensemble, le HEIC est accepté en
+filet, et **un échec de nettoyage ne refuse jamais la photo** : elle est rangée
+telle quelle, et journalisée. Un artisan sur un chantier, ticket en main, ne
+doit pas lire un refus.
+
+**Hors brief, même famille :** le croquis d'arrosage envoyait la photo à un
+fournisseur d'IA sans vérifier son type ni compter les appels. Il porte
+maintenant les deux — ce seuil-là ne protège pas un service, il borne une
+facture.
+
+`ARCHITECTURE.md` §165. Rien de M6 n'a été touché : le plafond d'octets existait
+déjà, et le réécrire aurait été du risque contre rien.
+
+
 ### Face ID est codé — sa réponse B, et le mot de passe intact
 
 Il a tranché : **B**, la porte d'aujourd'hui plus une ligne au-dessus. Rien n'a
@@ -142,10 +246,216 @@ PDF embarque.
 
 `ARCHITECTURE.md` §164.
 
----
+### « Brume moderne » entre dans Apparence — et l'application ne bouge pas
+
+Son choix devant la planche 92 : *« ajoute-moi le Brume moderne comme style,
+mais ne change pas l'appli »*. Les deux moitiés commandent ensemble : la charte
+s'ajoute aux sept, `origine` reste le défaut, et rien ne change pour qui ne la
+choisit pas.
+
+**Une charte peut désormais porter une FORME, pas seulement des couleurs.** Le
+champ `formes` est à part de `jetons`, et ce n'est pas un rangement : les
+dérivations — `estSombre`, `contraste`, la remontée des couleurs de signal —
+parcourent les jetons en supposant que chaque valeur est une couleur. Y glisser
+une pile de polices ferait calculer une luminance sur « ui-sans-serif », et le
+résultat ne serait pas une erreur, ce serait **un nombre faux, en silence**.
+
+| Ce que Brume porte | Ce qu'elle ne porte pas encore |
+|---|---|
+| les huit couleurs de la planche | les rayons de 20 px |
+| les **titres** dans la police du téléphone | l'ombre bleutée, l'air en plus |
+
+La typographie passait déjà par `--font-display` : elle suit la charte sans
+qu'aucun écran soit touché. Les rayons, non — **soixante-six fichiers** les
+écrivent en dur (`rounded-[13px]`), et une charte ne peut rien sur ce qui ne
+passe pas par elle. C'est annoncé, pas fait.
+
+### Un contrôle de devis comparait une pendule, pas un document
+
+**Il accusait le code le plus grave de la suite, et il avait tort.** *« Sans
+réglage, le devis est EXACTEMENT celui d'avant »* — le contrôle qui garantit
+qu'aucun artisan ne voit son devis changer parce qu'un écran est apparu. Il
+rougissait environ une fois sur cinq, sur du code qui n'avait pas bougé d'une
+ligne.
+
+La cause : `pdf-lib` grave dans chaque document sa date de création, à la
+seconde. Les deux compositions comparées tombaient de part et d'autre d'une
+seconde, et les octets différaient.
+
+**Mesuré, pas supposé** — le même devis composé à 1,5 s d'écart rend deux
+fichiers de même taille dont quelques octets diffèrent. **Et ces octets sont
+dans un flux compressé** : c'est ce qui a fait échouer la première correction,
+qui effaçait les dates dans le *texte* du PDF. Elles n'y sont pas. On ne peut
+pas les ôter après coup — on peut seulement empêcher l'horloge d'avancer entre
+les deux compositions, et c'est ce que fait `aLaMemeSeconde`.
+
+**Ce n'est pas un assouplissement**, et il fallait le vérifier plutôt que
+l'affirmer : confronté à deux documents réellement différents, le contrôle
+rougit toujours et le dit. Stable sur six exécutions d'affilée.
+
+**Ce qui reste à trancher, et qui n'est pas de ce lot** : rendre la composition
+reproductible côté produit — dates fixées à l'émission plutôt qu'à la
+fabrication. Cela touche le composeur, donc les documents du patron. Noté dans
+`TODO.md` plutôt que fait en passant.
+
+### Le gabarit recopiait les couleurs au lieu de les demander
+
+**Le défaut qui a fait perdre le plus de temps ce soir-là, et il était
+invisible.** `layout.tsx` reparcourait `c.jetons` de son côté
+(`variablesEnStyle`) alors que `variablesCss` existait : **deux implémentations
+de la même règle**, ce que `CLAUDE.md` §3 interdit précisément parce qu'elles
+finissent par diverger. Elles ont divergé au premier changement — la police de
+Brume était émise par l'une et pas par l'autre. À l'écran : le réglage
+s'écrivait, les couleurs changeaient, **la typographie non**, et rien ne le
+disait.
+
+Les deux formes dérivent maintenant de `variablesCharte`. Un contrôle compare
+les deux sorties charte par charte, et **interdit au gabarit de reparcourir les
+jetons**.
+
+**Sa première version ne savait pas échouer**, et c'est le genre de contrôle
+qui rassure sans rien tenir : elle se contentait de chercher le mot
+`variablesCharte` dans le fichier — or l'import y reste même quand le corps
+recopie. Confrontée au défaut qu'elle prétendait attraper, elle est restée
+verte. Elle vise désormais le parcours lui-même.
+
+### Le script de capture était aveugle à la charte neuve
+
+`capture-chartes.mts` énumérait les sept noms **à la main**. « Brume moderne »
+n'a donc pas été capturée : l'outil qui existe pour *regarder l'écran* ne
+montrait pas la seule chose qu'on venait d'ajouter. Il lit la liste maintenant.
+
+Une énumération recopiée ne suit jamais la source qu'elle prétend montrer —
+c'est la même faute que celle du gabarit, dans l'outillage.
 
 ## 2026-08-23
 
+### On peut enfin discuter du plan — et Atlas ne dessine pas, il pose un paramètre
+
+**Sa demande du 21 août, codée :** *« j'ai besoin que si l'utilisateur a besoin
+de te demander de faire une modification, qu'il puisse le faire — une petite
+interface pour qu'il puisse discuter avec toi »*.
+
+**Sous le plan, un fil et un champ libre.** Il écrit ce qu'il veut ; Atlas
+répond, et s'il y a lieu **pose une consigne** — marque, corps, matériel d'une
+zone, buse d'une zone, sonde de pluie. C'est le calcul qui refait tout : le
+tracé, les métrés et les pièces restent issus de la même source. Un plan
+retouché à la main ne se recalculerait plus.
+
+**Ses deux bornes, à la lettre.** La discussion ne s'affiche qu'AVEC un plan —
+elle ne peut donc jamais en créer un. Et **aucune phrase pré-écrite** : la
+maquette en montrait trois, elle le disait elle-même ; des suggestions
+apprennent à ne demander que ce qui est proposé.
+
+**La nourrice ne se discute pas.** Pour la déplacer, on corrige le croquis — et
+l'écran le dit sous le champ, pour qu'il ne l'essaie pas et n'y voie une panne.
+
+**Aucune référence inventée.** Une buse hors catalogue est refusée, jamais
+rapprochée de la plus proche — mais la réponse d'Atlas reste, et il lit pourquoi
+la modification n'a pas été appliquée.
+
+**Non vérifié ici :** le parcours entier, qui demande une clé de vision que cet
+environnement n'a pas. Les règles pures, elles, le sont.
+
+Détail : `ARCHITECTURE.md` §167.
+### Planche 92 — un blanc à reflets bleutés, neuf écrans qui s'essaient
+
+**Trois demandes en une soirée, et chacune a corrigé la précédente.**
+
+| Ce qu'il a dit | Ce que ça a changé |
+|---|---|
+| *« un fond blanc avec des reflets bleutés un peu »* | la planche |
+| *« j'ai que le visuel de Brume »* | **trois bleus distincts**, pas un seul en trois habits |
+| *« des maquettes pour chaque page, que je voie comment ça va rendre »* | **neuf écrans**, la barre du bas fonctionne |
+
+**Ce que la demande mélangeait, et que la planche sépare :** la **couleur** tient
+dans les huit valeurs de `chartes.ts` sans toucher un écran ; l'**allure** —
+typographie, rayons, ombre, air — les touche tous. Deux réglages indépendants,
+douze combinaisons, sur chacun des neuf écrans.
+
+**Pourquoi neuf et pas cinquante-sept.** Ce qu'il faut éprouver n'est pas le
+nombre d'écrans mais **les formes de contenu qui cassent une allure** : le
+planning (42 cases, deux barres par jour) et le devis (tableau de lignes et
+totaux) sont là pour ça. Une allure qui tient sur trois cartes de chantier ne
+prouve rien.
+
+**DEUX DÉFAUTS SORTIS D'UNE CAPTURE, JAMAIS D'UN TEST** — les cinquième et
+sixième de ce dépôt :
+
+1. la **barre du bas** gardait le crème d'Origine sur les allures bleutées. Un
+   jeton composé (`--barre-fond:var(--fond)`) déclaré sur `:root` est substitué
+   **là où il est déclaré**, pas là où il est lu ;
+2. le **panneau de réglages masquait le titre** de l'écran quand on changeait de
+   page — on jugeait donc une allure sans voir son en-tête, ce qui est
+   exactement ce qu'on lui demandait de juger.
+
+Les deux sont désormais tenus par le parcours navigateur, qui **refuse aussi de
+conclure sur un titre de hauteur nulle** : l'absence de matière à mesurer n'est
+pas un succès.
+
+### La première version de cette planche — trois habits pour un seul bleu
+
+Sa demande, capture de « Apparence » à l'appui : *« crée-moi une version de
+l'appli plus stylée dans le style des applis d'aujourd'hui, avec un fond blanc
+avec des reflets bleutés un peu. Propose avant de coder quoi que ce soit. »*
+Rien dans `src/` — `CLAUDE.md` §3 bis.
+
+**Ce que la demande mélange, et que la planche sépare.** Elle porte deux choses
+qui n'ont ni le même coût ni le même risque :
+
+| | Ce que ça touche |
+|---|---|
+| **la couleur** | huit valeurs dans `chartes.ts`. **Aucun écran** |
+| **l'allure** — typographie, rayons, ombres, air | **tous** les écrans |
+
+D'où trois propositions du moins cher au plus engageant — A · Brume (la couleur
+seule), B · Brume+ (couleur et allure), C · Verre (halos, cartes flottantes,
+barre dépolie) — et l'allure d'aujourd'hui gardée comme quatrième bouton, pour
+qu'elles se jugent contre quelque chose plutôt que dans le vide.
+
+**Sous chacune, ce qu'elle coûte ET ce qu'elle risque.** C est la plus proche de
+ce qu'il décrit, et c'est aussi celle dont le flou peut faire saccader une liste
+de quarante chantiers sur un téléphone de trois ans — un choix d'apparence se
+paie en écrans à reprendre et en images par seconde, et cela ne se lit sur
+aucune capture.
+
+**UN DÉFAUT SORTI D'UNE CAPTURE, JAMAIS D'UN TEST — la cinquième fois dans ce
+dépôt.** La barre du bas gardait le crème d'Origine sur les deux allures
+bleutées. La cause est un piège de CSS qui ne se voit pas à la lecture : un jeton
+composé (`--barre-fond:var(--fond)`) déclaré sur `:root` est substitué **là où il
+est déclaré**, donc contre le fond de la racine — pas contre celui du look. Le
+parcours navigateur passait au vert pendant ce temps. Il compare désormais le
+fond de la barre à celui de la page, allure par allure.
+
+**Le chemin entier a été parcouru**, d'`essais.html` à la planche : la tuile se
+touche (64 px), la page s'ouvre, les boutons répondent. Trois fois une adresse
+lui a été transmise sans que personne ne l'ait ouverte, et trois fois c'est lui
+qui a trouvé le défaut.
+
+### Cinq réseaux pour 208 m² : le critère de choix des buses était à l'envers
+
+*« Cinq réseaux pour ça ??????? »*, devant un plan de 12 × 12 et 8 × 8.
+
+**On prenait la plus GRANDE buse qui pave** — le moins d'arroseurs possible. Mais
+une grosse buse boit : son carré de 12 m partait en quatre 5000 Plus à
+2,79 m³/h, soit **trois vannes à lui seul** quand une voie n'en passe que 1,53.
+Les mêmes 144 m² en 3504 buse 0,75 tiennent sur **une** vanne.
+
+Le critère est retourné : **le moins de vannes d'abord, le moins d'arroseurs
+ensuite**. Neuf arroseurs se posent une fois ; une vanne coûte une électrovanne,
+une station de programmateur, sa tranchée et son créneau d'arrosage.
+
+**Le vrai fond du défaut était ailleurs**, et plus vicieux : le quinconce
+resserrait les arroseurs tant que le damier ne couvrait pas, **sans plancher** —
+jusqu'à 4 m d'écart pour une portée de 5,14. La pose sortait « trop serrée »,
+donc écartée à la comparaison : la seule buse qui tenait sur une vanne était
+disqualifiée par un tour de vis qui enfreignait déjà sa règle du 17 août,
+*« jamais moins que la portée »*. Le damier ne se resserre plus sous la portée.
+
+**Son jardin passe de cinq réseaux à deux**, et le carré de 12 m reçoit les
+neuf 3504 buse 0,75 qu'il avait dessinés à la main le 21 août.
+
+Détail : `ARCHITECTURE.md` §166.
 ### Son message au client s'écrit — un seul, pour ses trois documents
 
 *« Y a-t-il un endroit dans les réglages où l'utilisateur peut rédiger ce
@@ -541,8 +851,6 @@ surtout pas `NODE_ENV`** : le banc EST « production + profil banc », puisque
 
 Huit suites neuves, toutes écrites pour rougir sur l'ancien code. Ce qui reste
 à faire (M1 à M12 hors M7/M8, F1 à F13) est dans `TODO.md`.
-
-
 ### Le banc accusait le mauvais coupable — Atlas signe maintenant ses réponses
 
 *« L'appli ne se lance plus »*, puis une capture : son téléphone propose de

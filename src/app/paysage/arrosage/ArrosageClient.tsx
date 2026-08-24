@@ -2,12 +2,14 @@
 
 import { useActionState, useRef, useState } from "react";
 import { colors, font, libelleCaps } from "@/lib/design-tokens";
-import { lireLeCroquis, type EtatPlan } from "./actions";
+import { lireLeCroquis, type EtatPlan, type EtatDiscussion } from "./actions";
 // Module JavaScript repris tel quel de `appli/` — la même fonction sert à la
 // page publiée : deux façons d'écrire une quantité finiraient par diverger.
 import { quantiteEcrite } from "@/lib/arrosage/calcul.js";
 import PlanDessine from "./PlanDessine";
 import PointsQuiSoufflent from "@/components/atlas/PointsQuiSoufflent";
+import DiscuterLePlan from "./DiscuterLePlan";
+import { ACCEPT_PHOTOS } from "@/lib/exif";
 
 /**
  * L'écran « Plan d'arrosage » — deux gestes, et le plan sort.
@@ -264,7 +266,7 @@ export default function ArrosageClient({
           id="croquis"
           name="croquis"
           type="file"
-          accept="image/*"
+          accept={ACCEPT_PHOTOS}
           // **PAS de `capture` — sa demande du 21 août 2026 :** « soit je peux
           // mettre une photo de ma bibliothèque, soit prendre une photo ; le
           // même schéma que pour ajouter des photos à la fiche client ».
@@ -311,7 +313,9 @@ export default function ArrosageClient({
         </p>
       )}
 
-      {etat.etat === "lu" && <Plan etat={etat} />}
+      {/* **La `key` repart de zéro à chaque croquis lu.** Garder la discussion
+          d'un jardin sur le plan d'un autre ferait répondre Atlas à côté. */}
+      {etat.etat === "lu" && <Plan key={etat.zones.map((z) => z.nom ?? z.type).join("|")} etat={etat} />}
     </form>
   );
 }
@@ -323,7 +327,21 @@ function virgule(x: number) {
 
 /** Le plan, une fois le croquis lu : le dessin, les réseaux, puis les pièces. */
 function Plan({ etat }: { etat: Extract<EtatPlan, { etat: "lu" }> }) {
-  const { plan, reserves, dessin } = etat;
+  /**
+   * **LE PLAN DE L'ÉCRAN PEUT VENIR DE DEUX ENDROITS** — la lecture du croquis,
+   * ou une modification demandée dans la discussion. Il vit donc ici, et non
+   * dans l'état de l'action : sinon un plan refait ne s'afficherait qu'au
+   * prochain croquis photographié.
+   *
+   * **Et il repart de zéro quand un nouveau croquis arrive** (`key` sur l'appel,
+   * plus bas) : garder la discussion d'un jardin sur le plan d'un autre ferait
+   * répondre Atlas à côté.
+   */
+  const [refait, setRefait] = useState<Extract<EtatDiscussion, { etat: "repondu" }> | null>(null);
+  const plan = refait?.plan ?? etat.plan;
+  const dessin = refait?.dessin ?? etat.dessin;
+  const parametres = refait?.parametres ?? etat.parametres;
+  const reserves = refait?.reserves ?? etat.reserves;
 
   return (
     <div data-atlas="plan-arrosage">
@@ -436,6 +454,11 @@ function Plan({ etat }: { etat: Extract<EtatPlan, { etat: "lu" }> }) {
           ))}
         </ul>
       )}
+
+      {/* **La discussion se pose APRÈS le plan**, et seulement avec lui : sa
+          borne du 21 août — *« la discussion ne doit jamais créer un plan »*.
+          Sans plan à l'écran, il n'y a rien à modifier. */}
+      <DiscuterLePlan parametres={parametres} surNouveauPlan={setRefait} />
     </div>
   );
 }

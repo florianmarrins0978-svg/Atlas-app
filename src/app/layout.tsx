@@ -1,6 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { headers } from "next/headers";
-import { charte, type Charte } from "@/lib/chartes";
+import { charte, variablesCharte, type Charte } from "@/lib/chartes";
 import { lireCharte } from "@/server/repositories/charte-personne";
 import "./globals.css";
 import AtlasBottomNav from "@/components/atlas/AtlasBottomNav";
@@ -130,9 +130,12 @@ function estEcranSansNavigation(chemin: string | null): boolean {
  * chaîne `--a:b;--c:d` posée dans `style` est ignorée sans un mot.
  */
 function variablesEnStyle(c: Charte): Record<string, string> {
-  const sortie: Record<string, string> = {};
-  for (const [cle, valeur] of Object.entries(c.jetons)) sortie[`--atlas-${cle}`] = valeur;
-  return sortie;
+  // **Il reparcourait `c.jetons` lui-même, et c'était une seconde
+  // implémentation de `variablesCharte`** — interdite par `CLAUDE.md` §3. Les
+  // deux ont divergé au premier changement : la police de « Brume moderne »
+  // était émise d'un côté et pas de l'autre, si bien que le réglage s'écrivait,
+  // les couleurs changeaient, et la typographie non. Rien ne le disait.
+  return variablesCharte(c);
 }
 
 /**

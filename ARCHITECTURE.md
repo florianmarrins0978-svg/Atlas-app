@@ -14527,3 +14527,444 @@ question d'apparence.
 
 Chacune resterait verte si l'écran n'enregistrait rien. C'est la dernière qui
 compte, et elle ne remplace aucune des autres.
+
+---
+
+## 165. Audit de sécurité, lot 2 : les fichiers déposés, et le piège de la correction
+
+**24 août 2026.** Six constats de l'audit portaient sur ce qu'un artisan dépose
+— photos, tickets, croquis, listes de prix. Ce §-ci garde **ce qui se serait
+refait de travers**, pas la liste des corrections (`CHANGELOG.md` la porte).
+
+### Deux constats du brief n'existaient pas comme décrits
+
+**La bombe zip ne venait pas des entrées multiples.** `lireEntreeZip` parcourt
+le répertoire central sans rien décompresser et n'inflate **que** l'entrée dont
+le nom correspond. Cent entrées piégées ne coûtent rien. Le vrai vecteur tenait
+en une seule : `deflate` dépasse mille pour un sur du texte répété, donc les
+5 Mo qu'accepte l'écran rendaient plusieurs gigaoctets. Une option —
+`maxOutputLength` — et c'est fermé.
+
+**Le plafond d'octets existait déjà**, et le réécrire aurait été du risque
+contre rien : `bodySizeLimit` dans `next.config.ts`, et `fichier.size` lu avant
+tout `arrayBuffer()`. Next.js met le corps en mémoire avant de rendre la main :
+il n'y a **pas de flux à interrompre** à notre niveau.
+
+### `nosniff` ne ferme pas ce qu'on croit
+
+La route des fichiers renvoyait le type MIME **déclaré par le navigateur** au
+dépôt. `image/svg+xml` faisait donc servir un document SVG depuis notre propre
+domaine — et un SVG porte du script.
+
+**`X-Content-Type-Options: nosniff` était déjà posé sur toutes les routes, et
+n'y changeait rien** : il interdit de *deviner* un type, pas d'en *annoncer*
+un. La politique de sécurité du contenu ne rattrapait pas davantage — elle
+autorise l'inline pour les scripts d'hydratation de Next.js.
+
+Le type se déduit désormais de l'extension de la clé, que **le serveur** a
+posée (`src/lib/type-de-fichier.ts`). Une extension inconnue rend
+`application/octet-stream` : le navigateur propose d'enregistrer plutôt que
+d'ouvrir, ce qui est le défaut sûr.
+
+### LE PIÈGE DE CE LOT : la correction qui aggrave
+
+**Resserrer la liste des types d'image côté serveur, seul, refuse les photos
+d'iPhone.** Un iPhone photographie en HEIC ; s'il transcode en JPEG à l'envoi,
+c'est **parce que l'attribut `accept` du champ le lui demande**. Trois écrans
+portaient `accept="image/*"` — donc aucune raison de transcoder.
+
+D'où **deux listes, et elles ne se confondent pas** :
+
+| | Ce qu'elle répond |
+|---|---|
+| `TYPES_IMAGE_ACCEPTES` | « sais-je retirer les métadonnées de ce format ? » |
+| `TYPES_PHOTO_ACCEPTES` | « ai-je le droit de le ranger ? » — plus large, HEIC compris |
+| `ACCEPT_PHOTOS` | ce que l'écran propose — **sans le HEIC**, pour qu'iOS transcode |
+
+**Et la troisième ligne est contre-intuitive au point qu'un contrôle la
+garde** : ajouter `image/heic` à l'`accept` ferait *cesser* le transcodage, et
+nous recevrions des HEIC bruts — que le nettoyage ne sait pas lire, donc rangés
+avec leurs coordonnées GPS. La correction qu'on croirait bonne rendrait la
+situation pire qu'avant.
+
+### Un échec de nettoyage ne refuse JAMAIS la photo
+
+`retirerMetadonnees` rend `{ nettoye: false }` et les octets d'origine sur un
+format qu'il ne sait pas lire. L'appelant range, et **journalise** — il ne lève
+pas. C'est un arbitrage, et il se dit : perdre le cliché d'un artisan qui vient
+de le prendre, sur un chantier, coûte plus cher que garder des métadonnées sur
+une photo de haie. *Un outil qui refuse la photo qu'on vient de prendre est pire
+que le risque qu'il évite.*
+
+### Ce que le brief n'avait pas vu
+
+Le **croquis d'arrosage** envoie la photo à un fournisseur d'IA : il bornait la
+taille et rien d'autre — ni type, ni cadence. Il porte désormais les deux, avec
+le seuil du diagnostic végétal, parce que ce seuil-là ne protège pas un service :
+**il borne une facture**.
+
+---
+
+## 166. Le moins de VANNES, pas le moins d'arroseurs
+
+**Sa colère du 23 août 2026 :** *« cinq réseaux pour ça ??????? »* — devant un
+plan de 12 × 12 et 8 × 8, soit 208 m² de pelouse.
+
+### Le critère était à l'envers
+
+`modelePour` prenait **la plus grande buse qui pave**. C'est le moins
+d'arroseurs possible — et c'est le mauvais objectif, parce qu'une grosse buse
+boit. Sur son carré de 12 m :
+
+| | Arroseurs | Débit | Vannes |
+|---|---|---|---|
+| 5000 Plus buse 3,0 (l'ancien choix) | 4 | 2,79 m³/h | **3** |
+| 3504 buse 0,75 (sa pose du 21 août) | 9 | 1,24 m³/h | **1** |
+
+**Neuf arroseurs se posent une fois. Une vanne coûte une électrovanne, une
+station de programmateur, sa tranchée et son créneau d'arrosage** — et elle
+revient chaque été dans la durée totale d'arrosage.
+
+Le critère est donc : **le moins de vannes d'abord, le moins d'arroseurs
+ensuite**. L'ancien critère n'est pas jeté, il devient le départage.
+
+### Comment, sans écrire une seconde façon de poser
+
+`poser()` s'appelle **lui-même** avec une buse imposée, pour chaque buse qui
+pave. Recalculer un pavage dans `modelePour` aurait fabriqué une seconde
+implémentation du quinconce et du débit par angle — exactement ce que le §3
+interdit. La récursion est de profondeur un : l'appel qui porte une buse imposée
+ne relance pas la boucle.
+
+`limiteParVoie()` est sortie de `decouper()` pour être partagée : choisir une
+buse pour un plafond que le découpage n'applique pas serait le pire des deux
+mondes.
+
+### Le tour de vis de trop, qui cachait la bonne réponse
+
+**Et c'est le vrai fond du défaut.** Le quinconce resserrait les arroseurs
+**tant que le damier ne couvrait pas**, sans plancher. Sur le carré de 12 m en
+buse 0,75, il finissait à 4 m d'écart pour une portée de 5,14 — donc une pose
+marquée « trop serrée », donc écartée au moment de comparer les buses. La seule
+qui tenait sur une vanne était disqualifiée par un resserrement qui enfreignait
+déjà sa règle du 17 août : *« jamais moins que la portée »*.
+
+Le damier ne se resserre plus sous la portée. Quand il ne couvre pas à cet
+écart-là, on garde la **grille alignée**, qui couvre par construction — et c'est
+elle qui rend les neuf arroseurs qu'il avait dessinés.
+
+### Deux valeurs de référence ont bougé, sciemment
+
+La perte de charge du réseau passe de 0,436 à 0,386 bar : des buses plus fines
+font des lignes qui portent moins de débit, donc qui perdent moins. Ce n'est pas
+la formule qui a changé, c'est le plan qu'on lui donne — et la ligne de la suite
+porte la raison à côté d'elle (`CLAUDE.md` §4 ter).
+
+Un contrôle figeait aussi *« deux vannes, nommées Devant et Derrière »* : il
+éprouve désormais la RÈGLE — une vanne ne s'annonce jamais sous le nom d'une
+zone qu'elle n'arrose pas — et non la mise en page, qui dépend du choix de buse.
+
+---
+
+## 167. Discuter le plan : Atlas ne dessine pas, il pose un paramètre
+
+**Sa demande du 21 août 2026 :** *« j'ai besoin que si l'utilisateur a besoin de
+te demander de faire une modification, qu'il puisse le faire — une petite
+interface pour qu'il puisse discuter avec toi »*. Codée le 23 au soir, sur sa
+maquette validée (`appli/arrosage-discuter.html`).
+
+### La phrase qui commande toute l'architecture
+
+Elle est de la maquette qu'il a validée : **« Atlas ne dessine pas le plan : il
+lit votre demande, pose un paramètre du calcul, et c'est le calcul qui refait le
+schéma et les pièces. »**
+
+Ce qui sort d'un message n'est donc jamais un tracé, jamais un métré, jamais une
+liste de pièces — c'est **une consigne** prise dans une liste fermée :
+
+| Consigne | Ce qu'elle change |
+|---|---|
+| `marque` | Rain Bird, Toro, Hunter |
+| `corps` | une référence de corps du catalogue |
+| `materiel` | turbine, tuyère ou « au mieux », sur UNE zone |
+| `buse` | une référence de buse du catalogue, sur UNE zone |
+| `sonde` | la sonde de pluie |
+
+**Pourquoi cette borne tient tout.** Un plan retouché à la main ne se recalcule
+plus : la fois d'après, le tracé, les métrés et les pièces ne viennent plus de
+la même source, et deux d'entre eux finissent par se contredire
+(`CLAUDE.md` §3). En passant par les paramètres, tout ce qui s'affiche reste issu
+du même calcul — y compris ce que sa demande casse ailleurs, qu'on peut alors
+lui DIRE.
+
+### Ses deux bornes, appliquées à la lettre
+
+**« La discussion ne doit JAMAIS créer un plan avec des réseaux. »** Le fil ne
+s'affiche qu'AVEC un plan, donc à partir d'un croquis déjà complet. Sans plan, ni
+fil ni champ — un « Écrire à Atlas… » posé là inviterait à demander un plan par
+la conversation. C'est l'ABSENCE qui est éprouvée, parce que c'est elle la règle.
+
+**« Il ne faut pas mettre les phrases pré-écrites. »** La maquette en montrait
+trois, et le disait — *« trois demandes déjà écrites, pour montrer »*. L'écran
+n'en porte aucune : des suggestions apprennent à ne demander que ce qui est
+proposé.
+
+**Et la nourrice ne se discute pas** (`CLAUDE.md` §4 bis). Elle voyage dans les
+paramètres parce que le DESSIN en a besoin à chaque recalcul, pas parce qu'elle
+serait réglable. Pour la déplacer : corriger le croquis et le renvoyer — et
+l'écran le dit sous le champ, pour qu'il ne l'essaie pas et n'y voie une panne.
+
+### Rien n'est enregistré, et les paramètres voyagent
+
+Les paramètres partent vers l'écran avec le plan et reviennent avec chaque
+message. **Aucune persistance** : un plan d'arrosage se refait à chaque client,
+comme un devis. Le jour où il vivra en base, ce sera une décision, pas un effet
+de bord.
+
+Les zones y portent un **identifiant stable**, parce que les consignes les
+désignent par lui (« passe la zone 2 en tuyères »). Le laisser au calcul le
+ferait dépendre de l'ordre de lecture, et un message d'hier viserait demain une
+autre pelouse.
+
+### Les chiffres ne viennent jamais du modèle
+
+On lui donne l'état du plan en clair — débit disponible, plafond d'une voie,
+débit de chaque réseau, buses du catalogue — **pour qu'il n'ait pas à les
+inventer**. C'est la leçon du 21 août : laissé libre, il avait écrit « 5004 buse
+3.0, portée 6 m », qui n'existe pas, et tout le maillage en dépendait.
+
+**Une référence hors catalogue est refusée, jamais rapprochée de la plus
+proche.** Mais le refus ne jette pas sa réponse : ce qu'il a expliqué reste
+utile, seule la modification tombe — et il lit pourquoi, dans la réponse
+elle-même.
+
+### Ce qui n'est pas éprouvé ici
+
+La règle pure l'est, sans clé et sans réseau : la liste fermée
+(`test-consignes-arrosage.ts`) et la lecture de ce que le modèle rend
+(`test-discussion-plan.ts`), avec ses travers observés — référence inventée,
+texte vide, JSON noyé dans de la prose, consigne hors liste.
+
+**Le parcours entier ne l'est pas** : le fil n'apparaît qu'avec un plan, donc
+après une lecture de croquis, donc avec une clé de vision que cet environnement
+n'a pas (`AGENTS.md`). Premier essai à faire sur son banc.
+
+
+## 168. La fiche en cours se supprime — et l'endroit où elle se compose cesse de disparaître
+
+**Ses deux phrases du 24 août 2026**, sur une capture de « Fiche de chantier » :
+*« Je ne peux pas supprimer les fiches en cours. Il faut pouvoir les
+supprimer. »* Et : *« Avant, il y avait un endroit où je pouvais créer ma fiche
+sur mesure. Ajouter des catégories, en enlever, en créer. Aujourd'hui, cet
+endroit a disparu. »*
+
+Deux plaintes, deux défauts sans rapport apparent — et pourtant le même
+mécanisme : **un écran qui retire ce dont on se sert au moment où l'on commence
+à s'en servir.**
+
+### 1. Rien n'effaçait un brouillon
+
+Une fiche s'ouvre à chaque geste, et rien ne la refermait. Il en fait quatre ou
+cinq par jour ; une ouverte sur le mauvais jour, une autre pour un jardin qu'il
+n'a finalement pas fait, et l'écran qu'il ouvre chaque matin devient une pile.
+Sur sa capture, deux brouillons attendaient déjà.
+
+`supprimerPassage` retire la fiche et ses lignes. Trois choses en font le tour :
+
+| | |
+|---|---|
+| **le geste** | celui du 10 août — la ligne part, « Annuler » reste, rien n'est écrit tant que le tiroir est ouvert (`useRetraits`) |
+| **le refus** | un rapport PARTI ne se supprime pas |
+| **les lignes** | effacées explicitement, sous contexte d'entreprise |
+
+**Le refus est le cœur, pas une précaution.** Le lien d'un rapport envoyé vit
+chez le client, dans un SMS qu'il a peut-être gardé : effacer la fiche
+changerait cette adresse en page morte, sans que personne ne l'ait voulu ni ne
+puisse le savoir. C'est l'invariant du 16 août — un rapport parti ne change plus
+— poussé jusqu'à sa conséquence : il ne disparaît pas non plus. L'écran ne pose
+donc pas de croix sur la section « Rapports envoyés », et une suite navigateur
+le tient : sans elle, la croix se poserait sur les deux au premier remaniement.
+
+**Les lignes ne s'en remettent pas à la cascade** de la migration 0055. Elle
+tient, mais elle s'exécute hors de la politique d'isolation : lui confier la
+suppression reviendrait à retirer la RLS du chemin le plus destructeur de cette
+table. Deux `delete` sous contexte coûtent une ligne de code.
+
+### 2. L'endroit n'avait pas disparu : il ne s'affichait plus
+
+Il existe, et il n'a jamais bougé — Réglages → Fiche d'entretien. Mais le lien
+qui y menait depuis « Fiche de chantier » vivait dans l'encart de la fiche VIDE,
+celui qui s'efface dès la première prestation posée.
+
+**L'écran retirait donc sa propre porte à l'instant précis où le patron
+commençait à s'en servir.** Il l'a vue une fois, le premier jour, puis plus
+jamais — et sa conclusion était la bonne, vue de sa place : l'endroit avait
+disparu.
+
+Une ligne permanente le rouvre, **en bas de la liste** : ce qu'il vient faire
+ici neuf fois sur dix, c'est ouvrir une fiche, pas la recomposer. Elle ne paraît
+que pour le propriétaire — la rubrique lui est réservée, et un lien qui n'ouvre
+qu'un « Rubrique réservée » est pire qu'aucun lien. Et le contrôle vise
+l'ADRESSE, jamais le libellé (`CLAUDE.md` §5 bis).
+
+### 3. Les catégories : deux verbes sur trois ne tenaient pas
+
+Sa phrase décrit l'écran par ce qu'il y fait — *« ajouter des catégories, en
+enlever, en créer »*. Vérification faite, l'écran n'en tenait qu'un :
+
+| Son mot | Ce que l'écran faisait |
+|---|---|
+| ajouter une prestation | ✓ |
+| **créer** une catégorie | rangeait la ligne dans « Divers », à lui de renommer le titre au-dessus |
+| **enlever** une catégorie | rien — six retraits au pouce, et la famille tombait avec sa dernière ligne |
+
+Le nom se saisit désormais **avec** sa première prestation, et un bouton retire
+la famille entière par le même tiroir que les lignes. Une famille n'étant pas
+une ligne en base mais une colonne de texte (§ sur `renommerFamille`), la
+retirer c'est supprimer ses prestations — et `lower()` compare les noms, sinon
+une casse différente couperait la famille en deux sans un mot.
+
+### Ce que les captures ont attrapé, et qu'aucune suite ne voyait
+
+Trois défauts, tous sortis d'une image — la sixième fois dans ce dépôt
+(`CLAUDE.md` §5) :
+
+1. **« EN COURS » restait seul**, sans une ligne dessous, pendant les six
+   secondes du délai d'annulation. Un écran qui paraît cassé à l'instant précis
+   où il vient de toucher une croix, et où il se demande s'il a effacé plus que
+   prévu. Le titre part maintenant avec sa dernière ligne ; le tiroir reste,
+   c'est lui qui raconte.
+2. **La croix d'une FAMILLE était le jumeau exact de celle d'une ligne** — même
+   signe, même taille, même colonne. Rien à l'œil ne disait que l'une retire une
+   prestation et l'autre en emporte six. Elle s'écrit désormais : « Retirer la
+   famille ».
+3. **La porte du modèle butait sur la barre d'onglets** — 60 px, contre 116 px
+   avec la marge des réglages. Mesuré, pas supposé : elle n'était pas cachée, et
+   la dire cachée aurait été annoncer une panne corrigée là où seul le confort
+   l'était.
+
+### 4. Le rapport figé : deux paragraphes gris en moins, un bouton qui dit ce qu'il fait
+
+**Ses mots, le même soir, sur une capture de l'écran figé** : *« Ce rapport est
+figé en gris supprime, et tout ce qui est en gris en dessous supprime également
+! »* Puis : *« Ouvrir le sms tout prêt corrigé par envoyer par sms si on a
+sélectionné sms, sinon envoyer par email si on a sélectionné email. »*
+
+**Ce qui est parti :** la phrase « Ce rapport est figé. Il ne se modifie plus —
+c'est ce qui en fait une preuve de passage », et l'adresse du rapport recopiée
+en toutes lettres sous le bouton. Aucune des deux n'apprenait quoi que ce soit :
+l'état figé se lit déjà — les cases ne se cochent plus, la molette ne tourne
+plus — et l'adresse est DANS le message que le bouton compose.
+
+**L'adresse en clair survit à un seul endroit**, et il faut le savoir avant de
+la retirer tout à fait : le client qui n'a ni téléphone ni e-mail. Là, elle
+n'est plus un doublon du bouton — elle est le seul moyen de transmettre le
+rapport.
+
+**Le canal était DÉDUIT, il est maintenant CHOISI.** L'écran figé lisait « un
+téléphone existe, donc ce sera un SMS ». Chez un client qui a les deux, choisir
+l'e-mail sous son nom ne changeait donc rien : le bouton annonçait un canal que
+personne n'avait demandé. Il retombe encore sur ce qui existe — mais seulement
+quand le canal choisi n'a plus de coordonnée, une fiche client pouvant changer
+entre le jour où le rapport a été figé et celui où on le rouvre.
+
+**Et un contrôle a été ADAPTÉ, pas contourné.** Une suite navigateur exigeait le
+mot « figé » à l'écran — celui qu'il vient de faire retirer. Écrire une suite
+qui réclame ce qu'il a fait enlever rend son écran impossible à changer
+(`CLAUDE.md` §5 bis) : elle vise désormais ce qui restera vrai quel que soit le
+mot — plus de bouton d'enregistrement, un et un seul moyen de transmettre, et
+c'est celui qu'il a choisi.
+
+### Ce qui n'a PAS été fait, et pourquoi
+
+Aucune maquette n'a précédé ces gestes, et c'est délibéré (`CLAUDE.md` §3 bis) :
+aucun n'est neuf. Le retrait réversible avec son tiroir est le SIEN, celui du
+10 août, déjà à l'œuvre à huit endroits ; lui en donner une neuvième variante
+sur l'écran qu'il ouvre le plus lui ferait apprendre deux fois la même chose.
+
+---
+
+## 169. Le lien qui part chez un client ne peut pas être une adresse de sa machine
+
+**Sa capture du 24 août 2026 : « Connexion au serveur impossible. »** Son client
+ouvre le SMS de sa fiche de chantier et tombe sur une page morte, sur
+`localhost`.
+
+Le rapport existait, son jeton était bon, la page fonctionnait. **C'est
+l'adresse qui désignait le téléphone du client lui-même.**
+
+### Pourquoi cela n'arrivait que par moments
+
+L'adresse d'un lien était celle du navigateur qui l'avait fabriqué :
+
+| Comment il ouvre Atlas | Ce que le client reçoit |
+|---|---|
+| par l'adresse publique de son espace | un lien qui s'ouvre |
+| par la redirection de port de son éditeur — `localhost:3000` | une page morte |
+
+Rien à l'écran ne distinguait les deux, et le message partait pareil. Il a donc
+envoyé des rapports valides à des clients qui n'ont rien pu lire — sans qu'aucun
+des deux ne sache pourquoi.
+
+### Le dépôt connaissait déjà ce piège — ailleurs
+
+Le 9 août 2026, le retour d'autorisation Google renvoyait l'artisan vers
+`localhost:3000` : même cause, même page morte. C'est ce jour-là qu'est né
+`adressePublique`. Ce qui manquait, c'est qu'**aucune règle ne DISAIT qu'une
+adresse pareille ne se donne pas à quelqu'un d'autre**.
+
+### Trois choses, et la troisième est celle qui protège
+
+1. **`originePublique`** remplace quatre copies. Les mêmes quatre lignes
+   vivaient dans le devis parti, le devis complet, la facture et la fiche de
+   chantier — chacune avec un commentaire disant qu'elle faisait comme la
+   voisine. Quatre endroits à corriger le jour où la règle change, et ce jour
+   est arrivé (`CLAUDE.md` §3).
+2. **`ATLAS_URL_PUBLIQUE` commande quand elle est posée.** C'est le seul moyen
+   qu'a un déploiement derrière un mandataire muet de dire son adresse. Elle
+   n'existait pas ; elle est documentée dans `.env.example`.
+3. **`ouvrableParLeClient` refuse de composer le message**, et l'écran le dit.
+   Parce que le point 2 ne suffit pas : sur son espace de travail, aucune
+   variable ne peut deviner par quelle porte il est entré.
+
+**La plus traître n'est pas `localhost`, c'est `192.168.x.x`** — elle s'ouvre au
+bureau, donc l'essai réussit, et elle échoue chez tout le monde. Les plages
+privées, les adresses de lien local et `.local` sont donc refusées avec elle.
+
+### Le refus vient APRÈS le figeage, et c'est délibéré
+
+Le rapport est enregistré avant que le message se compose. Refuser plus tôt
+l'obligerait à recocher toute sa fiche pour une raison qui n'a rien à voir avec
+son chantier. **Ce qu'on lui épargne, c'est le message mort ; ce qu'on lui
+garde, c'est son travail** — et la phrase le dit, sans quoi il croirait avoir
+tout perdu.
+
+Le même refus est posé **sur l'écran figé**, pas seulement sur le premier envoi :
+un rapport se rouvre des jours plus tard, depuis l'adresse du moment.
+
+### Ce que les suites peuvent, et ce qu'elles ne peuvent pas
+
+Elles tournent sur `http://localhost:3000` : sans rien faire, chaque écran
+d'envoi rendrait le refus et une dizaine de suites rougiraient en accusant
+l'envoi. Le serveur des suites **déclare donc une adresse publique**, comme le
+ferait un vrai déploiement.
+
+**Conséquence à dire plutôt qu'à taire :** le refus lui-même ne se joue pas au
+navigateur — un seul serveur tourne, avec une seule adresse.
+`test-adresse-du-client.ts` l'éprouve dans les deux sens, sans navigateur. Et le
+garde-fou a bien été vu ROUGE : la suite de la fiche de chantier, rejouée sans
+l'adresse déclarée, tombe sur « n'a ouvert aucune messagerie » et « n'offre
+aucun moyen de le transmettre » — exactement là où son client est tombé.
+
+### Ce qui n'est PAS réglé ici, et qui lui appartient
+
+Il a écrit : *« Il est sensé recevoir la fiche par pdf ! »* Ce n'est pas ce que
+le dépôt fait, et ce n'est pas un oubli — `docs/QUESTIONS.md` §3 porte
+l'arbitrage du 3 août 2026 : *« Dans Atlas, la livraison est la page du
+client »*, et *« joindre le PDF serait désormais nuisible »*. Le tableau de la
+même question dit pourquoi les deux ne se cumulent pas : un lien `sms:` ou
+`mailto:` remplit le destinataire mais **ne peut porter aucune pièce jointe** ;
+le partage natif joint le fichier mais n'a pas de champ destinataire.
+
+Le destinataire prérempli est ce qu'il a demandé le 3 août. Revenir au PDF, ce
+serait le rendre. **La question lui est posée, elle n'est pas tranchée ici.**

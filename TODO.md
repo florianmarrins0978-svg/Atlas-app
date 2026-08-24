@@ -9,6 +9,43 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
+## Le devis et la facture n'ont pas encore le refus d'adresse locale (24 août 2026)
+
+Le lien envoyé au client prenait l'adresse du navigateur qui l'avait fabriqué —
+et son client a reçu une page morte sur `localhost` (`ARCHITECTURE.md` §169).
+
+**Ce qui est fait pour les quatre écrans** : l'adresse se calcule au même
+endroit, et `ATLAS_URL_PUBLIQUE` la commande quand elle est posée.
+
+**Ce qui n'est fait que sur la fiche de chantier** : le REFUS de composer un
+message avec une adresse locale, et la phrase qui le dit. Le devis parti, le
+devis complet et la facture peuvent donc encore envoyer un lien mort quand Atlas
+est ouvert par une redirection de port.
+
+| | |
+|---|---|
+| ce qu'il faut | poser `ouvrableParLeClient` sur leurs trois gestes d'envoi |
+| qui peut le faire | n'importe quelle session — la règle pure existe déjà |
+| pourquoi ce n'est pas fait ici | trois écrans de plus dans un lot déjà large, et leurs suites à reprendre une par une |
+
+Ce n'est pas urgent tant qu'il envoie depuis l'adresse de son espace de travail
+— mais c'est exactement l'hypothèse qui vient d'être démentie.
+
+---
+
+## ~~Supprimer une fiche en cours, et retrouver où la fiche se compose~~ (fait le 24 août 2026)
+
+Ses deux phrases du jour. Les deux sont livrées — `ARCHITECTURE.md` §168.
+
+**Ce qui reste ouvert, et qui n'est PAS un oubli :** un rapport déjà envoyé ne
+se supprime toujours pas, et c'est une décision, pas une lacune. Son lien vit
+chez le client. Le jour où il demandera de pouvoir en retirer un, la question à
+lui poser n'est pas « peut-on ? » mais **« que doit lire le client qui rouvre
+son SMS ? »** — une page morte, ou une page qui dit que le rapport a été
+retiré. Le second demande une colonne ; le premier ne demande rien et ment.
+
+---
+
 ## ⚠ `ARCHITECTURE.md` porte SIX paragraphes pour trois numéros (23 août 2026)
 
 Trois numéros sont pris deux fois, et cela existe déjà sur `main` — ce n'est
@@ -79,10 +116,11 @@ d'activation. Parcouru en navigateur (`test-face-id-e2e.ts`).
 
 ---
 
-## Audit de sécurité : les lots 2 et suivants (23 août 2026)
+## Audit de sécurité : ~~le lot 2~~ **fait le 24 août 2026**, et les suivants
 
-Le **lot 1 est fait** — C1, E1, E2, E3, M7, M8 (`ARCHITECTURE.md` §162,
-`CHANGELOG.md` du 23 août). Ce qui suit vient du même audit et attend son tour.
+Le **lot 1 est fait** — C1, E1, E2, E3, M7, M8 (`ARCHITECTURE.md` §162). Le
+**lot 2 aussi** — M1 à M5, plus le croquis d'arrosage (`ARCHITECTURE.md` §165) ;
+M6 n'avait pas lieu d'être. Ce qui suit vient du même audit et attend son tour.
 Rien ici n'est théorique : chaque point a été constaté dans le code.
 
 ### Avant d'ouvrir Atlas à d'autres artisans
@@ -96,33 +134,46 @@ Rien ici n'est théorique : chaque point a été constaté dans le code.
   jours (le défaut d'Auth.js s'applique aujourd'hui). Le lot 1 a durci le mot de
   passe et la temporisation ; c'est la marche suivante.
 
-### Les téléversements : quatre chemins, un seul fait bien
+### ~~Les téléversements : quatre chemins, un seul fait bien~~ — **réglé le 24 août 2026**
 
-- **M2 — le type d'image n'est pas contrôlé** sur les photos de chantier
+Les quatre chemins font désormais la même chose (`ARCHITECTURE.md` §165). Les
+constats sont barrés ci-dessous plutôt que supprimés : savoir qu'ils ont été
+traités évite de les rouvrir.
+
+- ~~**M2 — le type d'image n'est pas contrôlé** sur les photos de chantier
   (`photos-actions.ts`) ni sur les tickets de TVA : `startsWith("image/")`
   accepte `image/svg+xml`, et `/api/fichiers/[...key]` renvoie ce type tel quel.
   Un SVG ouvert en navigation directe exécute son script sur l'origine d'Atlas.
   **Le diagnostic végétal fait déjà tout bien** (`typeImageAccepte` +
-  `retirerMetadonnees`) : il n'y a qu'à reprendre.
-- **M3 — les photos de chantier gardent leurs métadonnées**, coordonnées GPS
+  `retirerMetadonnees`) : il n'y a qu'à reprendre.~~
+- ~~**M3 — les photos de chantier gardent leurs métadonnées**, coordonnées GPS
   comprises — donc l'adresse du domicile d'un client. Celles du diagnostic sont
-  nettoyées, avec un commentaire qui explique pourquoi. Même correction.
-- **M1 — traversée de chemin** : `local-storage.ts` n'assainit pas le dossier
+  nettoyées, avec un commentaire qui explique pourquoi. Même correction.~~
+- ~~**M1 — traversée de chemin** : `local-storage.ts` n'assainit pas le dossier
   alors que `s3-storage.ts` le fait, et le dossier contient un `chantierId` venu
   d'une action serveur. Vérifié : `../../../../tmp/x` sort de `.storage`. Le
   stockage local étant refusé en production, cela vise le banc — mais la clé
-  ainsi fabriquée part ensuite dans l'archive ZIP de l'export.
-- **M4 — `lireLeCroquis` (arrosage) n'a aucune limite de débit**, ni liste
+  ainsi fabriquée part ensuite dans l'archive ZIP de l'export.~~
+- ~~**M4 — `lireLeCroquis` (arrosage) n'a aucune limite de débit**, ni liste
   blanche de type, ni retrait de métadonnées — alors que le diagnostic a les
-  trois. Chaque appel est une facture chez le fournisseur de vision.
+  trois. Chaque appel est une facture chez le fournisseur de vision.~~
+
+  *Nuance retenue le 24 août : le croquis N'EST PAS nettoyé de ses métadonnées.
+  C'est un dessin sur une feuille, pas une photo de la maison du client, et il
+  n'est jamais rangé — il part au fournisseur puis disparaît. Le type et la
+  cadence, eux, sont posés.*
 
 ### Robustesse
 
-- **M5 — bombe de décompression** : `inflateRawSync` sans `maxOutputLength` dans
-  `lire-classeur.ts`, sur un `.xlsx` téléversé.
-- **M6 — corps de requête non borné** : `/api/notes-vocales/[chantierId]` fait
+- ~~**M5 — bombe de décompression** : `inflateRawSync` sans `maxOutputLength` dans
+  `lire-classeur.ts`, sur un `.xlsx` téléversé.~~ **Fait le 24 août** — borne à
+  32 Mo gonflés, plus une borne sur le nombre d'entrées et sur les décalages lus
+  dans l'archive. `test-classeur-bombe.ts` assemble une vraie bombe.
+- ~~**M6 — corps de requête non borné** : `/api/notes-vocales/[chantierId]` fait
   `formData()` avant toute vérification de taille, et la limite des actions
-  serveur ne s'applique pas aux routes.
+  serveur ne s'applique pas aux routes.~~ **Fait le 24 août** — `content-length`
+  est lu avant `formData()`, et rend un 413. L'en-tête vient du client : c'est le
+  premier rempart, pas le seul (`fichier.size` tranche ensuite).
 - **M10 — dépendances** : 11 avis, dont Next lui-même (16.2.12 → 16.3.2) et
   `next-auth` encore en bêta sur le chemin d'authentification.
 
@@ -144,7 +195,29 @@ Rien ici n'est théorique : chaque point a été constaté dans le code.
 ---
 
 
-## Arrosage : l'interface pour discuter le plan (23 août 2026)
+## ⏳ `verifier-maquette-message-et-allure.mjs` est rouge, et ce n'est pas l'arrosage
+
+Constaté le 23 août 2026 au soir, sur `main` :
+
+```
+❌ Les planches du 23 août ne tiennent pas :
+   • le fond de départ est rgb(250, 249, 245) au lieu du crème d'aujourd'hui
+   • le retour ne rend pas le crème : rgb(250, 249, 245)
+```
+
+**Vérifié rouge AVANT le lot arrosage**, en mettant celui-ci de côté : il n'en
+vient pas. Les planches sont `appli/mon-message-au-client.html` et
+`appli/allure-de-mes-devis.html`, arrivées avec la branche
+`claude/devis-dicte-ecrit-buttons-x7iw0c`.
+
+**Écrit ici plutôt que corrigé au jugé** : le fond attendu est une décision de
+cette maquette-là. La deviner ferait passer un contrôle au vert sur la mauvaise
+couleur, ce qui est pire que rouge.
+
+---
+
+
+## ~~Arrosage : l'interface pour discuter le plan~~ — **FAIT le 23 août 2026** (`ARCHITECTURE.md` §167)
 
 Le plan se dessine (`ARCHITECTURE.md` §150). Reste ce qu'il a demandé le 21 :
 *« j'ai besoin que si l'utilisateur a besoin de te demander de faire une
@@ -240,6 +313,33 @@ le produit. **Ne pas rouvrir** sans qu'il le redemande.
 
 La planche 92 (`appli/calendrier-aujourdhui.html`) reste : elle raconte le
 chemin, et le prochain qui trouvera deux cases entourées saura pourquoi.
+## `verifier:maquette` est ROUGE sur `main`, et ce n'est pas le mode nuit (23 août 2026)
+
+`scripts/verifier-maquette-message-et-allure.mjs` échoue sur `main` nu, à
+l'identique, depuis le commit `5fa4d25` (« Rendre au patron le message qui part
+à ses clients ») :
+
+```
+• le fond de départ est rgb(250, 249, 245) au lieu du crème d'aujourd'hui
+• le retour ne rend pas le crème : rgb(250, 249, 245)
+```
+
+Il lit `#faf9f5` — la **plage** — là où il attend `#f5f3ee`, le **crème** de la
+page. Les deux se ressemblent à l'œil et ne sont pas la même chose : c'est
+typiquement une planche qui a changé de fond sans que son contrôle suive, ou
+l'inverse.
+
+**Vérifié sur `main` sans aucun lot par-dessus**, dans un arbre séparé : le
+défaut n'appartient à personne d'autre qu'à ce commit-là. Il est noté ici plutôt
+que corrigé au passage — élargir un lot de maquette pour réparer celui d'une
+autre session, c'est mêler deux changements et masquer les erreurs de chacun.
+
+**Conséquence pratique tant que ce n'est pas réglé :** `npm run verifier:maquette`
+s'arrête là et ne joue PAS les contrôles qui suivent dans la chaîne. Ce qui est
+en aval passe pour vérifié sans l'avoir été.
+
+---
+
 ## Mode nuit : ce que le lot du 22 août ne couvre PAS (22 août 2026)
 
 Le défaut qu'il a signalé est réparé (`ARCHITECTURE.md` §160), et deux contrôles
@@ -2927,6 +3027,20 @@ pas une réparation annoncée : c'est un constat, et il n'a pas été corrigé.
 |---|---|---|
 | `test-facture-au-client-e2e` | « L'écran laisse croire que la facture est partie » | sur la branche du lot de l'allure, **deux fois sur trois** |
 | `test-tva-au-paiement-e2e` | `waitForFunction: Timeout 15000ms exceeded` sur l'acompte | sur **`main`**, sans aucun changement |
+| `test-periodicite-tva-e2e` | « "Tous les trimestres" n'a pas été enregistré » après trois rechargements | sur la branche du lot 2 de sécurité, **une fois sur une** |
+
+**La troisième s'ajoute le 24 août 2026, et elle confirme la lecture ci-dessus.**
+Le lot de sécurité ne touche ni la périodicité ni l'écran « Mon entreprise » —
+sa seule ligne dans `src/app/reglages/actions.ts` vit à l'intérieur de
+`analyserFichierTarifsAction`, que cette suite n'appelle jamais. Jouée seule :
+7/7. **Trois suites, trois branches, trois symptômes différents** — c'est bien
+la charge.
+
+Et celle-ci porte un indice de plus : son propre commentaire dit qu'elle
+recharge **trois fois** en laissant du temps à l'action, précisément parce que
+le défaut avait déjà été vu le 13 août. Trois chances ne suffisent plus. La
+piste est donc la même que pour les deux autres — on attend une valeur à
+l'écran sur une montre, au lieu d'attendre que la base ait bougé.
 
 **Et ATTENTION à ne pas confondre deux rouges dans cette même suite.** Le
 24 août au soir, elle a rougi une seconde fois — sur un autre cas, et pour une
@@ -6320,3 +6434,10 @@ et c'est déjà arrivé.
 - ~~Rédiger le devis entièrement à la main, depuis la fiche du chantier~~ — 2026-08-04
 - ~~Retirer la case « Nom du chantier » : plus rien n'est obligatoire à la création~~ — 2026-08-05
 - ~~« Rédiger à la main » ouvre le devis ENTIER, à l'image du modèle, et il reste dans Atlas~~ — 2026-08-05
+- [ ] **Rendre la composition d'un PDF reproductible.** `pdf-lib` grave l'instant
+  de fabrication dans chaque document : deux compositions du même devis ne
+  rendent pas les mêmes octets. La suite le contourne en figeant l'horloge
+  (`aLaMemeSeconde`, `scripts/test-allure-pdf.ts`), mais le produit reste
+  non déterministe — un même devis renvoyé n'est jamais identique au précédent.
+  Corriger demande de toucher le composeur, donc les documents du patron :
+  à faire dans un lot qui les regarde, pas en passant. *(24 août 2026)*

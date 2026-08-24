@@ -19,6 +19,39 @@ import { inflateRawSync } from "node:zlib";
 // formatée « 400,00 € » vaut 400 — le formatage est de la présentation), les
 // autres feuilles, et absolument rien d'exécutable.
 
+/**
+ * **CE QU'UNE ENTRÉE A LE DROIT DE PESER UNE FOIS GONFLÉE.**
+ *
+ * Audit du 23 août 2026, constat M5 — et le vecteur n'est pas celui qu'on
+ * imagine. Un ZIP piégé à cent entrées ne coûte rien ici : `lireEntreeZip` ne
+ * décompresse QUE l'entrée dont le nom correspond, jamais les autres.
+ *
+ * Le vrai danger tient en une seule entrée. Le taux de compression de `deflate`
+ * dépasse mille pour un sur du texte répété : les 5 Mo qu'accepte l'écran
+ * (`src/app/reglages/actions.ts`) rendent alors **plusieurs gigaoctets**, et le
+ * serveur meurt d'épuisement mémoire — sans message, sans journal, en emportant
+ * les requêtes de tout le monde.
+ *
+ * **Trente-deux mégaoctets** : une liste de prix de dix mille lignes fait
+ * quelques mégaoctets de XML une fois gonflée. Cette borne laisse dix fois la
+ * marge d'un usage réel, et arrête net ce qui n'en est pas un.
+ *
+ * Passé ce seuil, `inflateRawSync` lève — `lireClasseur` attrape déjà et rend
+ * un tableau vide, donc l'écran dit « je n'ai rien reconnu dans ce fichier »
+ * plutôt que d'afficher une panne.
+ */
+const ENTREE_GONFLEE_MAX = 32 * 1024 * 1024;
+
+/**
+ * Combien d'entrées on accepte de parcourir dans le répertoire central.
+ *
+ * Le nombre est **lu dans l'archive elle-même** — donc écrit par celui qui la
+ * dépose. Une valeur inventée ferait tourner la boucle 65 535 fois sur des
+ * lectures hors limites ; chacune lève, et `lireClasseur` attrape, mais on aura
+ * balayé pour rien. Un classeur ordinaire porte une vingtaine d'entrées.
+ */
+const ENTREES_MAX = 4096;
+
 /** Une entrée du ZIP, décompressée. */
 function lireEntreeZip(archive: Buffer, nom: string): string | null {
   // On passe par le répertoire central : c'est la seule table de vérité d'un
@@ -26,10 +59,15 @@ function lireEntreeZip(archive: Buffer, nom: string): string | null {
   // et sur les entrées supprimées.
   const finCentral = archive.lastIndexOf(Buffer.from([0x50, 0x4b, 0x05, 0x06]));
   if (finCentral < 0) return null;
-  const nombreEntrees = archive.readUInt16LE(finCentral + 10);
+  const nombreEntrees = Math.min(archive.readUInt16LE(finCentral + 10), ENTREES_MAX);
   let position = archive.readUInt32LE(finCentral + 16);
 
   for (let i = 0; i < nombreEntrees; i++) {
+    // **La position est bornée avant chaque lecture.** Elle vient de l'archive,
+    // et une valeur forgée enverrait `readUInt32LE` hors du tampon. L'erreur
+    // serait attrapée plus haut, mais elle accuserait le lecteur plutôt que le
+    // fichier — et c'est ce que `AGENTS.md` compte pour pire que pas d'erreur.
+    if (position < 0 || position + 46 > archive.length) return null;
     if (archive.readUInt32LE(position) !== 0x02014b50) return null;
     const methode = archive.readUInt16LE(position + 10);
     const tailleCompressee = archive.readUInt32LE(position + 20);
@@ -43,12 +81,16 @@ function lireEntreeZip(archive: Buffer, nom: string): string | null {
       // L'en-tête local redonne les longueurs de nom et d'extra, qui diffèrent
       // souvent de celles du répertoire central : c'est LUI qui dit où commence
       // vraiment la donnée.
+      if (decalageLocal < 0 || decalageLocal + 30 > archive.length) return null;
       const nomLocal = archive.readUInt16LE(decalageLocal + 26);
       const extraLocal = archive.readUInt16LE(decalageLocal + 28);
       const debut = decalageLocal + 30 + nomLocal + extraLocal;
+      if (debut < 0 || debut > archive.length) return null;
       const brut = archive.subarray(debut, debut + tailleCompressee);
       if (methode === 0) return brut.toString("utf8");
-      if (methode === 8) return inflateRawSync(brut).toString("utf8");
+      // `maxOutputLength` : la seule ligne qui sépare une liste de prix d'une
+      // bombe de décompression (voir `ENTREE_GONFLEE_MAX` en tête).
+      if (methode === 8) return inflateRawSync(brut, { maxOutputLength: ENTREE_GONFLEE_MAX }).toString("utf8");
       return null; // Une méthode exotique : on préfère ne rien rendre que du faux.
     }
 

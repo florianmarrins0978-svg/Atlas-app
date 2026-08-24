@@ -19,7 +19,11 @@ import { MODELE_FOURNI } from "../src/lib/prestations-entretien";
 //      coûteux de cet écran : une croix sans retour sur une liste composée à la
 //      main ;
 //   4. une prestation ajoutée se range dans SA famille, pas au bas de l'écran ;
-//   5. un doublon est refusé **avec une phrase**, jamais avec un code.
+//   5. un doublon est refusé **avec une phrase**, jamais avec un code ;
+//   6. **les CATÉGORIES se créent nommées et se retirent d'un geste** — sa
+//      remarque du 24 août 2026, *« ajouter des catégories, en enlever, en
+//      créer »*. Avant, « créer » rangeait dans « Divers » à charge pour lui de
+//      renommer, et « enlever » n'existait pas.
 
 const BASE = "http://localhost:3000";
 
@@ -153,6 +157,92 @@ async function main() {
     assert.match(phrase, /déjà dans votre fiche/i, `phrase inattendue : « ${phrase} »`);
     // Ce que le patron ne doit JAMAIS lire.
     assert.doesNotMatch(phrase, /doublon|refus|error/i, `« ${phrase} » parle comme un programme`);
+  });
+
+  await cas("une famille se CRÉE avec son nom, jamais dans « Divers »", async () => {
+    // **Sa remarque du 24 août 2026.** Le bouton promettait une famille et
+    // rangeait la ligne dans « Divers », à charge pour lui de renommer le titre
+    // juste au-dessus — un second geste que rien n'annonçait.
+    await page.reload({ waitUntil: "networkidle" });
+    await page.getByRole("button", { name: "+ Ajouter une famille" }).click();
+    await page.getByLabel("Nom de la nouvelle famille").fill("Potager");
+    await page.getByLabel(/Première prestation de la nouvelle famille/).fill("Binage des rangs");
+    await page.getByRole("button", { name: /Créer la famille/ }).click();
+    await page.waitForTimeout(3_000);
+
+    const { rows } = await pool.query(
+      `select famille from prestations_entretien where libelle = 'Binage des rangs'`
+    );
+    assert.equal(rows.length, 1, "la prestation n'a pas été enregistrée");
+    assert.equal(
+      rows[0].famille,
+      "Potager",
+      `la famille saisie a été ignorée — la ligne est tombée dans « ${rows[0].famille} »`
+    );
+  });
+
+  await cas("une famille sans nom se refuse AVEC UNE PHRASE, et ne perd pas la saisie", async () => {
+    // Le refus vient du dépôt, pas d'une règle recopiée dans l'écran : c'est
+    // `PHRASE_REFUS.famille_vide` qui parle.
+    await page.reload({ waitUntil: "networkidle" });
+    await page.getByRole("button", { name: "+ Ajouter une famille" }).click();
+    await page.getByLabel(/Première prestation de la nouvelle famille/).fill("Une ligne sans famille");
+    await page.getByRole("button", { name: /Créer la famille/ }).click();
+    await page.waitForTimeout(1_500);
+
+    const alerte = page.locator("[data-refus]");
+    assert.equal(await alerte.count(), 1, "l'écran s'est refermé sans dire pourquoi");
+    assert.match(await alerte.innerText(), /famille/i);
+    // Et rien n'a été écrit sous un nom inventé.
+    const { rows } = await pool.query(
+      `select count(*)::int as n from prestations_entretien where libelle = 'Une ligne sans famille'`
+    );
+    assert.equal(rows[0].n, 0, "une ligne a été rangée dans une famille que personne n'a nommée");
+  });
+
+  await cas("UNE FAMILLE SE RETIRE D'UN GESTE — et le retrait se défait", async () => {
+    // « En enlever » n'existait pas avant le 24 août 2026 : il fallait retirer
+    // les lignes une par une, au pouce, avec des gants.
+    await page.reload({ waitUntil: "networkidle" });
+    const { rows: avant } = await pool.query(
+      `select count(*)::int as n from prestations_entretien where famille = 'Massifs'`
+    );
+    assert.ok(avant[0].n > 1, "ce cas ne prouverait rien : la famille « Massifs » est déjà vide");
+
+    await page.locator('[data-retirer-famille="Massifs"]').click();
+    await page.waitForTimeout(500);
+    assert.equal(
+      await page.locator('[data-famille="Massifs"]').count(),
+      0,
+      "la famille est restée à l'écran"
+    );
+
+    // Rien en base tant que « Annuler » est là — sa règle du 10 août, la même
+    // que pour une ligne seule.
+    const pendant = await pool.query(
+      `select count(*)::int as n from prestations_entretien where famille = 'Massifs'`
+    );
+    assert.equal(
+      pendant.rows[0].n,
+      avant[0].n,
+      "la famille a été effacée AVANT la fin du délai d'annulation"
+    );
+
+    await page.getByRole("button", { name: /Annuler/ }).click();
+    await page.waitForTimeout(500);
+    assert.equal(
+      await page.locator('[data-famille="Massifs"]').count(),
+      1,
+      "« Annuler » n'a pas ramené la famille"
+    );
+
+    // Et non annulé, il s'écrit : la famille part avec toutes ses prestations.
+    await page.locator('[data-retirer-famille="Massifs"]').click();
+    await page.waitForTimeout(9_000);
+    const apres = await pool.query(
+      `select count(*)::int as n from prestations_entretien where famille = 'Massifs'`
+    );
+    assert.equal(apres.rows[0].n, 0, "la famille retirée est toujours en base après le délai");
   });
 
   await contexte.close();
