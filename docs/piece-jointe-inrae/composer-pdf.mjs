@@ -14,7 +14,9 @@ import { resolve } from "node:path";
 const racine = resolve(import.meta.dirname, "../..");
 const source = resolve(racine, "docs/piece-jointe-inrae/document.html");
 const atelier = resolve(racine, "captures/document-inrae.html");
-const sortie = resolve(racine, "captures/Atlas-INRAE.pdf");
+// Le fichier ne porte plus de marque non plus : c'est la première chose
+// que le destinataire lit, avant même d'ouvrir.
+const sortie = resolve(racine, "captures/Anthracnose-du-platane.pdf");
 
 // **Le document se rend DEPUIS `captures/`, jamais depuis `docs/`.** Ses deux
 // `<img>` sont relatifs, et les captures vivent dans `captures/`. Rendu depuis

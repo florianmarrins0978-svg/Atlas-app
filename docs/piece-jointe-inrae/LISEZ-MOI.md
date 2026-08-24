@@ -66,6 +66,26 @@ images libres trouvables ailleurs sont américaines, sur des essences qui ne son
 pas les nôtres. **Ne pas remettre la formule d'abandon** : elle offrait un refus
 tout prêt sur le point auquel il tient le plus.
 
+**Sa troisième passe, le 24 août au matin.** La ligne grise « Paysagiste-élagueur »
+sous sa signature est partie ; il ne reste que son nom. Et **le nom du fichier
+lui-même** ne porte plus la marque : `Anthracnose-du-platane.pdf`, c'est la
+première chose qu'un destinataire lit, avant même d'ouvrir.
+
+**Le PDF pesait 2,8 Mo, et son téléphone renonçait à l'afficher** — un écran
+noir avec une icône de fichier, et un bouton « Ouvrir ». Le fichier n'avait
+rien : `%PDF-1.4`, table des objets correcte, trois pages. C'était l'aperçu qui
+abandonnait. La cause était la capture d'écran, prise à `deviceScaleFactor: 3`
+alors qu'elle est posée sur 30 % d'une A4, soit 54 mm : plus de 500 points par
+pouce, pour une image qu'aucune imprimante ne rendra à ce détail. À 2, elle
+reste au-dessus de 350 et le PDF tombe à 1,4 Mo.
+
+**Sur « un vrai PDF non modifiable » :** celui-ci en est déjà un. Il ne porte ni
+champ de formulaire ni couche de texte modifiable — c'est du texte figé et deux
+images. Y ajouter un mot de passe de protection **desservirait** la demande :
+cela met une barrière devant un institut à qui l'on demande une faveur, et
+n'importe quel outil de bureau la retire en une minute. Ne pas le faire sans
+qu'il le redemande en connaissance de cause.
+
 **Devant une demande d'aller plus loin dans ce sens, le lui dire plutôt que de
 l'exécuter.** Ce n'est pas une réserve de style : c'est la différence entre une
 demande d'autorisation et une demande obtenue par omission.

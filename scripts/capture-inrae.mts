@@ -96,7 +96,12 @@ async function main() {
   // elle mange le crédit de la photo.
   const contexte = await navigateur.newContext({
     viewport: { width: 390, height: 1500 },
-    deviceScaleFactor: 3,
+    // **2, et non 3.** L'image est posée sur 30 % d'une A4, soit 54 mm : à 3 elle
+    // sortait à plus de 500 points par pouce, pour un PDF de 2,8 Mo que le
+    // téléphone du patron renonçait à prévisualiser. À 2, elle reste au-dessus
+    // de 350 — bien plus que ce qu'une imprimante rend — et le fichier tient en
+    // moins d'un mégaoctet.
+    deviceScaleFactor: 2,
   });
   const page = await contexte.newPage();
 
