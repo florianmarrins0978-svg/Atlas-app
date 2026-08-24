@@ -15,7 +15,8 @@
 // Ni base, ni réseau, ni navigateur.
 
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
 import path from "node:path";
 import {
   ACCEPT_PHOTOS,
@@ -107,7 +108,25 @@ essai("la liste SERVEUR est plus large que l'attribut — c'est le filet", () =>
   }
 });
 
-essai("LES TROIS ÉCRANS emploient le même attribut — jamais `image/*` recopié", () => {
+/**
+ * Le code d'un fichier, ses commentaires retirés.
+ *
+ * **Le contrôle du dessous s'y est fait prendre, et c'était mérité.** Le
+ * commentaire de `Pellicule.tsx` RACONTE le défaut — « ce contrôle cherchait
+ * `accept="image/*"` en dur » — pour qu'on ne le refasse pas. Chercher cette
+ * chaîne dans le fichier entier fait donc rougir sur la documentation qui
+ * l'explique. Même piège que `test-confiance-hote.ts` et
+ * `test-boutons-arrondis.ts`, même remède : on cherche du CODE.
+ */
+function codeSeul(chemin: string): string {
+  return readFileSync(chemin, "utf-8")
+    .replace(/\/\*[\s\S]*?\*\//g, "")
+    .split("\n")
+    .filter((l) => !l.trim().startsWith("//"))
+    .join("\n");
+}
+
+essai("LES QUATRE ÉCRANS emploient le même attribut — jamais `image/*` recopié", () => {
   // Le danger de ce lot est de resserrer d'un côté seulement. Une constante
   // partagée le rend impossible ; ce contrôle vérifie qu'on l'emploie vraiment.
   const racine = path.join(__dirname, "..");
@@ -118,8 +137,27 @@ essai("LES TROIS ÉCRANS emploient le même attribut — jamais `image/*` recopi
     "src/app/paysage/diagnostic/PrendreUnePhoto.tsx",
   ];
   for (const ecran of ecrans) {
-    const source = readFileSync(path.join(racine, ecran), "utf-8");
-    assert.ok(!/accept="image\/\*"/.test(source), `${ecran} porte encore accept="image/*"`);
+    assert.ok(
+      !/accept="image\/\*"/.test(codeSeul(path.join(racine, ecran))),
+      `${ecran} porte encore accept="image/*"`
+    );
+  }
+});
+
+essai("…et ce contrôle SAIT ENCORE voir un vrai `image/*`", () => {
+  // Un contrôle qu'on vient de rendre plus tolérant doit prouver qu'il n'est
+  // pas devenu aveugle. On lui donne du code, et du commentaire.
+  const bac = mkdtempSync(path.join(tmpdir(), "atlas-accept-"));
+  try {
+    const coupable = path.join(bac, "coupable.tsx");
+    writeFileSync(coupable, '<input type="file" accept="image/*" />');
+    assert.match(codeSeul(coupable), /accept="image\/\*"/, "le contrôle ne voit plus un vrai accept");
+
+    const innocent = path.join(bac, "innocent.tsx");
+    writeFileSync(innocent, '// on cherchait accept="image/*" en dur\n<input accept={ACCEPT_PHOTOS} />');
+    assert.ok(!/accept="image\/\*"/.test(codeSeul(innocent)), "un commentaire fait encore rougir");
+  } finally {
+    rmSync(bac, { recursive: true, force: true });
   }
 });
 
