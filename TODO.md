@@ -6427,6 +6427,18 @@ et c'est déjà arrivé.
 - ~~Rédiger le devis entièrement à la main, depuis la fiche du chantier~~ — 2026-08-04
 - ~~Retirer la case « Nom du chantier » : plus rien n'est obligatoire à la création~~ — 2026-08-05
 - ~~« Rédiger à la main » ouvre le devis ENTIER, à l'image du modèle, et il reste dans Atlas~~ — 2026-08-05
+- [ ] **La batterie rougit sur des suites DIFFÉRENTES à chaque exécution**, et
+  chacune passe seule sur le même code. Relevé le 24 août 2026, trois
+  exécutions d'affilée : d'abord `test-planning-vers-facture-e2e` (un texte
+  attendu qui n'apparaît pas), puis `test-fiche-chantier-e2e` et
+  `test-prix-e2e` (un prix lu à `0.00` au lieu de `34.50`). **Rejouées seules,
+  les trois sont vertes.** Ce n'est donc pas le produit : c'est l'interférence
+  entre suites — le lanceur partage UN serveur et UNE base entre toutes.
+  Écarté au passage : le gel d'horloge de `test-allure-pdf` ne peut pas fuir,
+  chaque suite est lancée par `spawnSync` dans son propre processus.
+  **Pourquoi ça compte plus qu'un agacement** : un rouge qui tombe au hasard
+  s'apprend à être ignoré, et le jour où il dit vrai personne ne le croit —
+  c'est exactement ce qui a coûté une soirée avec `test:arrosage`. *(24 août 2026)*
 - [ ] **Rendre la composition d'un PDF reproductible.** `pdf-lib` grave l'instant
   de fabrication dans chaque document : deux compositions du même devis ne
   rendent pas les mêmes octets. La suite le contourne en figeant l'horloge
