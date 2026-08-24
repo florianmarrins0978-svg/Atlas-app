@@ -24,26 +24,30 @@
     puisse ouvrir depuis son téléphone.
 
     ————————————————————————————————————————————————————————————————
-    CE QUE SA DEMANDE CONTIENT, ET QU'IL FAUT SÉPARER
+    SA CORRECTION, LE SOIR MÊME : « J'AI QUE LE VISUEL DE BRUME »
     ————————————————————————————————————————————————————————————————
 
-    Elle porte DEUX choses, et elles n'ont ni le même coût ni le même risque :
+    La première version proposait A, B et C — et les trois portaient **le même
+    bleu**. Seules les formes changeaient. Trois boutons, un seul visuel : il
+    l'a vu tout de suite, et il avait raison. Un choix qui n'en est pas un fait
+    perdre le temps qu'on croyait faire gagner.
 
-      1. **la couleur** — un blanc froid, des reflets bleutés. Cela tient
-         entièrement dans le système de chartes qui existe déjà
-         (`src/lib/chartes.ts`) : huit valeurs entrent, tout le reste se
-         déduit. Aucun écran n'est touché ;
-      2. **l'allure** — « le style des applis d'aujourd'hui ». Là, ce n'est
-         plus une couleur : c'est la typographie (son Georgia serif contre un
-         sans-serif), les rayons des cartes, l'ombre, l'air entre les lignes.
-         Cela touche TOUS les écrans.
+    **D'où deux réglages SÉPARÉS, à croiser librement**, parce que ce sont deux
+    décisions indépendantes et qu'elles n'ont ni le même coût ni le même risque :
 
-    D'où trois propositions plutôt qu'une seule, du moins cher au plus
-    engageant. **Appuyez sur les quatre boutons** : l'écran dessous change
-    pour de bon, ce n'est pas une image.
+      · **LA COULEUR** (trois bleus, plus le gris-vert d'aujourd'hui). Elle tient
+        entièrement dans le système de chartes qui existe déjà
+        (`src/lib/chartes.ts`) : huit valeurs entrent, tout le reste se déduit.
+        **Aucun écran n'est touché** ;
+      · **L'ALLURE** (celle d'aujourd'hui, moderne, ou verre). Là, ce n'est plus
+        une couleur : c'est la typographie — son Georgia serif contre un
+        sans-serif —, les rayons, l'ombre, l'air. **Cela touche tous les écrans.**
+
+    Douze combinaisons, toutes vivantes. **Appuyez sur les boutons** : l'écran
+    change pour de bon, ce n'est pas une image.
 
     ————————————————————————————————————————————————————————————————
-    CE QUI EST DÉLIBÉRÉMENT GARDÉ, DANS LES TROIS
+    CE QUI EST DÉLIBÉRÉMENT GARDÉ, DANS TOUTES
     ————————————————————————————————————————————————————————————————
 
       · **44 px de haut au moins** sur tout ce qui se touche. C'est un pouce,
@@ -53,86 +57,100 @@
         Une couleur qui parle à tort s'apprend à être ignorée ;
       · **les montants restent alignés à droite**, en chiffres tabulaires. On
         les compare d'un coup d'œil ou on ne les compare pas ;
-      · **le contraste du texte principal reste au-dessus de 7:1** sur les
-        trois. Un blanc bleuté très pâle invite à écrire en gris clair — et
-        cet écran se lit dehors, en plein soleil.
+      · **le texte principal reste très contrasté.** Un blanc bleuté très pâle
+        invite à écrire en gris clair — et cet écran se lit dehors, en plein
+        soleil.
 
     ————————————————————————————————————————————————————————————————
     CE QUE CETTE PLANCHE NE PROUVE PAS
     ————————————————————————————————————————————————————————————————
 
-    Elle montre DEUX écrans — « Chantiers » et « Apparence ». L'application en
-    porte une trentaine. Une allure qui tient sur deux écrans peut se défaire
-    sur un tableau de TVA ou un plan d'arrosage, et c'est au moment de coder
-    qu'on le découvrirait. *Une règle éprouvée sur un seul cas n'est pas une
-    règle éprouvée.*
-
-    **AUCUN JAVASCRIPT N'EST NÉCESSAIRE POUR LA LIRE** — le changement de look
-    est un attribut posé sur un élément. La page s'ouvre hors ligne, dans un
-    onglet laissé ouvert des heures.
+    Elle montre UN écran — « Chantiers » — et un morceau d'« Apparence ».
+    L'application en porte une trentaine. Une allure qui tient ici peut se
+    défaire sur un tableau de TVA ou un plan d'arrosage, et c'est au moment de
+    coder qu'on le découvrirait. *Une règle éprouvée sur un seul cas n'est pas
+    une règle éprouvée.*
   */
 
   /* ═══════════════════════════════════════════════════════════════
-     LES QUATRE LOOKS, EN JETONS
+     LA COULEUR — quatre chartes
      ═══════════════════════════════════════════════════════════════
-     Chaque look ne redéfinit que ce qui change. Le reste est hérité —
-     c'est ce qui rend la comparaison honnête : deux implémentations
-     séparées auraient fini par diverger ailleurs que sur ce qu'on compare.
+     Chacune ne pose QUE des couleurs. Aucune ne touche à une forme :
+     c'est ce qui permet de les croiser avec les allures ci-dessous sans
+     que le résultat dépende de l'ordre dans lequel on appuie.
   */
   :root{
+    /* Origine — recopiée du produit, pas dérivée. Une seule valeur qui
+       s'écarterait ferait comparer les bleus à un gris-vert qui n'existe pas. */
     --fond:#f5f3ee; --plage:#faf9f5; --encre:#1c1c1a; --encre-douce:#4a4a44;
     --gris:#8a8578; --plein:#2f3b2f; --or:#B98B47;
     --ligne:rgba(28,28,26,.12); --ligne-fine:rgba(28,28,26,.07);
+    --halo1:rgba(160,170,150,.20); --halo2:rgba(150,165,145,.16);
+
     --serif:Georgia,"Times New Roman",serif;
     --sans:-apple-system,"Segoe UI",Roboto,sans-serif;
     --titre:var(--serif);
     --rayon:13px; --rayon-carte:13px;
-    --ombre:none;
-    --air:26px;
-    --fond-image:none;
-    --barre-flou:none;
+    --ombre:none; --air:26px; --halos:0; --flou:none;
   }
 
-  /* A — BRUME : la charte seule. Rien d'autre ne bouge.
-     Le blanc n'est pas #fff mais un blanc FROID (#f6f8fb) : le blanc pur, sur
-     une dalle de téléphone en plein soleil, éblouit et fait perdre les
-     séparations fines. Le bleu est profond, presque marine — un bleu clair
-     aurait la valeur d'un lien et l'on appuierait dessus. */
-  [data-look="brume"]{
+  /* BRUME — le blanc froid. Le fond n'est pas #fff mais #f4f7fb : le blanc pur,
+     sur une dalle de téléphone en plein soleil, éblouit et fait perdre les
+     séparations fines. Le bleu d'action est marine — un bleu clair aurait la
+     valeur d'un lien, et l'on appuierait dessus par erreur. */
+  [data-couleur="brume"]{
     --fond:#f4f7fb; --plage:#ffffff; --encre:#111823; --encre-douce:#43505f;
     --gris:#78838f; --plein:#22456d; --or:#B98B47;
     --ligne:rgba(17,24,35,.11); --ligne-fine:rgba(17,24,35,.06);
+    --halo1:rgba(126,170,224,.30); --halo2:rgba(163,196,236,.26);
   }
 
-  /* B — BRUME MODERNE : la charte + l'allure d'aujourd'hui.
-     Le serif part, les rayons doublent, une ombre bleutée très basse remplace
-     le trait de contour, et l'air entre les blocs augmente d'un tiers. */
-  [data-look="moderne"]{
-    --fond:#f4f7fb; --plage:#ffffff; --encre:#111823; --encre-douce:#43505f;
-    --gris:#78838f; --plein:#22456d; --or:#B98B47;
-    --ligne:rgba(17,24,35,.10); --ligne-fine:rgba(17,24,35,.05);
+  /* ARDOISE — le plus sobre des trois. Le fond tire vers le gris-bleu, l'encre
+     est presque noire, l'accent est un bleu acier éteint. C'est celui qui
+     ressemble le moins à une application grand public, et le plus à un outil. */
+  [data-couleur="ardoise"]{
+    --fond:#eceff3; --plage:#f8fafc; --encre:#0f1418; --encre-douce:#3b444d;
+    --gris:#6f7883; --plein:#33505f; --or:#B98B47;
+    --ligne:rgba(15,20,24,.13); --ligne-fine:rgba(15,20,24,.07);
+    --halo1:rgba(120,150,175,.24); --halo2:rgba(140,165,185,.20);
+  }
+
+  /* AZUR — le plus franc. Blanc quasi pur, accent bleu vif : c'est la couleur
+     des applications qu'on installe aujourd'hui. **C'est aussi le plus risqué
+     des trois**, et pas pour une raison de goût — un bleu vif attire l'œil
+     partout où il se pose, et il finit par concurrencer l'or qui, lui, veut
+     dire « à faire ». Deux couleurs qui réclament l'attention en même temps
+     n'en obtiennent aucune. */
+  [data-couleur="azur"]{
+    --fond:#f7fafd; --plage:#ffffff; --encre:#0b1220; --encre-douce:#3f4a5c;
+    --gris:#7b8595; --plein:#1f6feb; --or:#B98B47;
+    --ligne:rgba(11,18,32,.10); --ligne-fine:rgba(11,18,32,.055);
+    --halo1:rgba(90,150,240,.26); --halo2:rgba(140,190,255,.24);
+  }
+
+  /* ═══════════════════════════════════════════════════════════════
+     L'ALLURE — trois formes
+     ═══════════════════════════════════════════════════════════════
+     Chacune ne pose QUE des formes. Aucune ne touche à une couleur.
+  */
+
+  /* MODERNE — le serif part, les rayons doublent, une ombre bleutée très basse
+     remplace le trait de contour, et l'air entre les blocs augmente d'un tiers. */
+  [data-forme="moderne"]{
     --titre:var(--sans);
     --rayon:14px; --rayon-carte:20px;
     --ombre:0 1px 2px rgba(17,35,68,.04), 0 8px 24px -12px rgba(17,35,68,.14);
     --air:30px;
   }
 
-  /* C — VERRE : on va au bout. Le fond n'est plus plat mais porte deux
-     halos bleutés très larges ; les cartes flottent ; la barre du bas est
-     dépolie. C'est ce qui ressemble le plus aux applications d'aujourd'hui —
-     et c'est aussi le plus cher à tenir sur trente écrans. */
-  [data-look="verre"]{
-    --fond:#eef3fa; --plage:rgba(255,255,255,.82); --encre:#0e1520; --encre-douce:#3d4a5a;
-    --gris:#727e8c; --plein:#1d4470; --or:#B98B47;
-    --ligne:rgba(14,21,32,.08); --ligne-fine:rgba(14,21,32,.045);
+  /* VERRE — on va au bout : le fond porte deux halos très larges, les cartes
+     flottent, la barre du bas est dépolie. C'est le plus proche des
+     applications d'aujourd'hui, et le plus cher à tenir sur trente écrans. */
+  [data-forme="verre"]{
     --titre:var(--sans);
     --rayon:16px; --rayon-carte:24px;
     --ombre:0 1px 1px rgba(16,38,74,.04), 0 12px 32px -14px rgba(16,38,74,.22);
-    --air:32px;
-    --fond-image:
-      radial-gradient(120% 80% at 12% -8%, rgba(126,170,224,.30) 0%, rgba(126,170,224,0) 60%),
-      radial-gradient(110% 70% at 108% 12%, rgba(163,196,236,.26) 0%, rgba(163,196,236,0) 62%);
-    --barre-flou:saturate(180%) blur(18px);
+    --air:32px; --halos:1; --flou:saturate(180%) blur(18px);
   }
 
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
@@ -148,39 +166,49 @@
   .chapo{margin:12px 0 0;font-size:14.5px;color:#4a4a44;line-height:1.62}
   .chapo b{color:#1c1c1a}
 
-  /* ── Le sélecteur ────────────────────────────────────────────── */
-  .choix{position:sticky;top:0;z-index:20;margin:22px -20px 0;padding:12px 20px 13px;
-         background:#e9e7e1e6;backdrop-filter:saturate(180%) blur(12px);
+  /* ── Les deux réglages ───────────────────────────────────────── */
+  .choix{position:sticky;top:0;z-index:20;margin:20px -20px 0;padding:11px 20px 12px;
+         background:#e9e7e1e8;backdrop-filter:saturate(180%) blur(12px);
          -webkit-backdrop-filter:saturate(180%) blur(12px)}
-  .rangee{display:flex;gap:7px}
+  .quoi-regle{margin:0 0 6px;font-size:9px;font-weight:500;letter-spacing:.26em;
+              text-transform:uppercase;color:#8a8578}
+  .quoi-regle:not(:first-child){margin-top:11px}
+  .rangee{display:flex;gap:6px}
   .onglet{flex:1;min-height:46px;border:0;border-radius:12px;background:#faf9f5;
           box-shadow:inset 0 0 0 1px rgba(28,28,26,.12);
-          font:500 12.5px/1.25 -apple-system,"Segoe UI",Roboto,sans-serif;
-          color:#4a4a44;cursor:pointer;padding:6px 4px;display:flex;
-          flex-direction:column;align-items:center;justify-content:center;gap:2px}
-  .onglet b{font-size:13px;font-weight:600;color:#1c1c1a}
-  .onglet .lettre{font-size:8.5px;letter-spacing:.2em;text-transform:uppercase;color:#8a8578}
-  .onglet[aria-pressed="true"]{background:#1c1c1a;box-shadow:none}
-  .onglet[aria-pressed="true"] b,
-  .onglet[aria-pressed="true"] .lettre{color:#faf9f5}
+          font:600 13px/1.25 -apple-system,"Segoe UI",Roboto,sans-serif;
+          color:#1c1c1a;cursor:pointer;padding:6px 4px;display:flex;
+          align-items:center;justify-content:center;gap:6px}
+  /* La pastille montre la couleur DONT on parle, à même le bouton. Un nom seul
+     — « Ardoise », « Azur » — ne dit rien tant qu'on ne l'a pas essayé, et
+     c'est exactement ce qui l'a fait dire « j'ai que le visuel de Brume ». */
+  .onglet .pastille{width:14px;height:14px;border-radius:50%;flex-shrink:0;
+                    box-shadow:inset 0 0 0 1px rgba(28,28,26,.22)}
+  .onglet[aria-pressed="true"]{background:#1c1c1a;box-shadow:none;color:#faf9f5}
+  .onglet[aria-pressed="true"] .pastille{box-shadow:inset 0 0 0 1px rgba(255,255,255,.5)}
 
   /* ── Le téléphone ────────────────────────────────────────────── */
-  .tel{margin:20px 0 0;border-radius:30px;overflow:hidden;background:var(--fond);
-       background-image:var(--fond-image);box-shadow:0 2px 3px rgba(28,28,26,.07),
-       0 24px 50px -22px rgba(28,28,26,.4);position:relative}
-  .ecran{padding:26px 0 0;min-height:560px;display:flex;flex-direction:column}
+  .tel{margin:18px 0 0;border-radius:30px;overflow:hidden;background:var(--fond);
+       box-shadow:0 2px 3px rgba(28,28,26,.07), 0 24px 50px -22px rgba(28,28,26,.4);
+       position:relative}
+  /* Les halos existent toujours ; c'est leur OPACITÉ que l'allure commande.
+     Les poser ou les retirer en JavaScript aurait fait une seconde définition
+     du look, qui aurait divergé de la feuille de style. */
+  .tel::before{content:"";position:absolute;inset:0;pointer-events:none;
+    opacity:var(--halos);transition:opacity .18s;
+    background:
+      radial-gradient(120% 80% at 12% -8%, var(--halo1) 0%, transparent 60%),
+      radial-gradient(110% 70% at 108% 12%, var(--halo2) 0%, transparent 62%)}
+  .ecran{padding:26px 0 0;min-height:560px;display:flex;flex-direction:column;
+         position:relative;z-index:1}
   .corps{padding:0 22px;flex:1}
-
-  .retour{width:46px;height:46px;border-radius:50%;background:var(--plage);
-          box-shadow:inset 0 0 0 1px var(--ligne);display:flex;align-items:center;
-          justify-content:center;margin:0 0 20px 22px;color:var(--encre-douce);font-size:19px}
 
   .oeil{margin:0;font-size:9.5px;font-weight:500;letter-spacing:.3em;
         text-transform:uppercase;color:var(--or)}
   h2.ecran-titre{margin:9px 0 0;font-family:var(--titre);font-weight:400;font-size:33px;
                  line-height:1.06;letter-spacing:-.02em;color:var(--encre)}
-  [data-look="moderne"] h2.ecran-titre,
-  [data-look="verre"] h2.ecran-titre{font-weight:640;letter-spacing:-.032em;font-size:32px}
+  [data-forme="moderne"] h2.ecran-titre,
+  [data-forme="verre"] h2.ecran-titre{font-weight:640;letter-spacing:-.032em;font-size:32px}
 
   .dit{margin:12px 0 0;font-size:13.5px;line-height:1.62;color:var(--encre-douce)}
   .dit b{color:var(--encre)}
@@ -190,27 +218,26 @@
 
   /* ── Une carte de chantier ───────────────────────────────────── */
   .carte{background:var(--plage);border-radius:var(--rayon-carte);padding:15px 17px;
-         margin-bottom:9px;box-shadow:var(--ombre);position:relative;min-height:64px;
+         margin-bottom:9px;box-shadow:var(--ombre);min-height:64px;
          display:flex;gap:12px;align-items:flex-start}
   /* Le trait de contour n'existe QUE là où il n'y a pas d'ombre : superposés,
      ils font une bordure grasse qu'aucune application ne porte. */
-  [data-look="origine"] .carte, [data-look="brume"] .carte{
+  .tel:not([data-forme="moderne"]):not([data-forme="verre"]) .carte{
     box-shadow:inset 0 0 0 1px var(--ligne)}
-  [data-look="verre"] .carte{backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
-                             box-shadow:var(--ombre), inset 0 0 0 1px rgba(255,255,255,.55)}
+  [data-forme="verre"] .carte{box-shadow:var(--ombre), inset 0 0 0 1px rgba(255,255,255,.6)}
 
   .carte .gauche{flex:1;min-width:0}
   .carte .client{display:block;font-family:var(--titre);font-size:18px;line-height:1.25;
                  color:var(--encre);letter-spacing:-.01em}
-  [data-look="moderne"] .carte .client,
-  [data-look="verre"] .carte .client{font-weight:600;font-size:16.5px;letter-spacing:-.012em}
+  [data-forme="moderne"] .carte .client,
+  [data-forme="verre"] .carte .client{font-weight:600;font-size:16.5px;letter-spacing:-.012em}
   .carte .ou{display:block;margin-top:4px;font-size:12.5px;color:var(--gris);line-height:1.5;
              overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .carte .droite{text-align:right;flex-shrink:0}
   .carte .euros{display:block;font-size:15px;color:var(--encre);
                 font-variant-numeric:tabular-nums;letter-spacing:-.01em}
-  [data-look="moderne"] .carte .euros,
-  [data-look="verre"] .carte .euros{font-weight:600}
+  [data-forme="moderne"] .carte .euros,
+  [data-forme="verre"] .carte .euros{font-weight:600}
   .carte .etat{display:block;margin-top:5px;font-size:11px;color:var(--gris)}
   .carte .etat.attend{color:var(--or)}
 
@@ -218,61 +245,53 @@
   .charte{display:flex;align-items:center;gap:15px;padding:15px 2px;
           border-bottom:1px solid var(--ligne-fine)}
   .vignette{width:52px;height:52px;border-radius:10px;flex-shrink:0;position:relative;
-            box-shadow:inset 0 0 0 1px var(--ligne);overflow:hidden}
+            box-shadow:inset 0 0 0 1px var(--ligne);overflow:hidden;background:var(--fond)}
   .vignette i{position:absolute;display:block;border-radius:2px}
-  .vignette .h{left:9px;top:11px;width:22px;height:5px}
-  .vignette .b{left:9px;top:29px;width:26px;height:8px}
-  .vignette .p{right:8px;top:30px;width:7px;height:7px;border-radius:50%}
+  .vignette .h{left:9px;top:11px;width:22px;height:5px;background:var(--encre)}
+  .vignette .b{left:9px;top:29px;width:26px;height:8px;background:var(--plein)}
+  .vignette .p{right:8px;top:30px;width:7px;height:7px;border-radius:50%;background:var(--or)}
   .charte .nom{flex:1;min-width:0}
   .charte .nom b{display:block;font-family:var(--titre);font-weight:400;font-size:18px;
                  color:var(--encre);line-height:1.2}
-  [data-look="moderne"] .charte .nom b,
-  [data-look="verre"] .charte .nom b{font-weight:600;font-size:16.5px}
+  [data-forme="moderne"] .charte .nom b,
+  [data-forme="verre"] .charte .nom b{font-weight:600;font-size:16.5px}
   .charte .nom span{display:block;margin-top:4px;font-size:12.5px;color:var(--gris);line-height:1.5}
-  .rond{width:22px;height:22px;border-radius:50%;flex-shrink:0;
-        box-shadow:inset 0 0 0 1.5px var(--ligne)}
-  .rond.pris{background:var(--or);box-shadow:inset 0 0 0 4px var(--plage),
-             inset 0 0 0 5.5px var(--or)}
+  .rond{width:22px;height:22px;border-radius:50%;flex-shrink:0;background:var(--or);
+        box-shadow:inset 0 0 0 4px var(--plage), inset 0 0 0 5.5px var(--or)}
 
   /* ── La barre du bas ─────────────────────────────────────────── */
-    /* **Le fond se lit ici, PAS dans un jeton composé.** Un `--barre-fond:var(--fond)`
-     déclaré sur `:root` est substitué à l'endroit où il est DÉCLARÉ : il valait le
-     crème de la racine, et la barre du bas restait beige sur les allures bleutées.
-     Le défaut ne se voyait sur aucun test — il est sorti d'une capture regardée. */
-  .barre{margin-top:auto;display:flex;padding:14px 8px 20px;
-         background:var(--fond);backdrop-filter:var(--barre-flou);
-         -webkit-backdrop-filter:var(--barre-flou);border-top:1px solid var(--ligne-fine)}
+  /* **Le fond se lit ici, PAS dans un jeton composé.** Un `--barre-fond:var(--fond)`
+     déclaré sur `:root` est substitué à l'endroit où il est DÉCLARÉ : il valait
+     le crème de la racine, et la barre restait beige sur les allures bleutées.
+     Aucun test ne le voyait — le défaut est sorti d'une capture regardée. */
+  .barre{margin-top:auto;display:flex;padding:14px 8px 20px;background:var(--fond);
+         backdrop-filter:var(--flou);-webkit-backdrop-filter:var(--flou);
+         border-top:1px solid var(--ligne-fine)}
   .barre a{flex:1;text-align:center;font-size:9px;letter-spacing:.16em;text-transform:uppercase;
            color:var(--gris);text-decoration:none;padding:8px 0 9px;min-height:44px;
            display:flex;align-items:center;justify-content:center}
   .barre a.ici{color:var(--encre);border-bottom:2px solid var(--or)}
-  [data-look="verre"] .barre{background:rgba(248,251,255,.72)}
-  [data-look="moderne"] .barre a.ici,
-  [data-look="verre"] .barre a.ici{border-bottom:0;background:rgba(34,69,109,.09);
-                                   border-radius:11px;color:var(--plein)}
+  [data-forme="moderne"] .barre a.ici,
+  [data-forme="verre"] .barre a.ici{border-bottom:0;background:color-mix(in srgb, var(--plein) 11%, transparent);
+                                    border-radius:11px;color:var(--plein)}
 
   /* ── Le bouton d'action ──────────────────────────────────────── */
   .action{display:block;width:calc(100% - 44px);margin:20px 22px 6px;min-height:52px;
           border:0;border-radius:var(--rayon);background:var(--plein);color:#fff;
           font:500 15px/1.3 -apple-system,"Segoe UI",Roboto,sans-serif;cursor:pointer}
-  [data-look="moderne"] .action{border-radius:16px;font-weight:600}
-  [data-look="verre"] .action{border-radius:999px;font-weight:600;
-                              box-shadow:0 8px 20px -8px rgba(29,68,112,.5)}
+  [data-forme="moderne"] .action{border-radius:16px;font-weight:600}
+  [data-forme="verre"] .action{border-radius:999px;font-weight:600}
 
-  /* ── Ce que chaque look coûte ────────────────────────────────── */
-  .fiche{margin-top:18px;padding:17px 19px;background:#faf9f5;border-radius:14px;
+  /* ── Ce que chaque choix coûte ───────────────────────────────── */
+  .fiche{margin-top:16px;padding:17px 19px;background:#faf9f5;border-radius:14px;
          box-shadow:inset 0 0 0 1px rgba(28,28,26,.1);font-size:13.5px;line-height:1.65;
          color:#4a4a44}
   .fiche .t{display:block;margin-bottom:9px;font-size:9.5px;font-weight:500;
             letter-spacing:.28em;text-transform:uppercase;color:#B98B47}
   .fiche b{color:#1c1c1a}
-  .fiche dl{margin:11px 0 0;display:grid;grid-template-columns:auto 1fr;gap:6px 14px}
-  .fiche dt{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:#8a8578;
-            padding-top:3px}
-  .fiche dd{margin:0}
   .fiche[hidden]{display:none}
 
-  .question{margin-top:26px;padding:19px;background:#1c1c1a;border-radius:14px;color:#e9e7e1;
+  .question{margin-top:24px;padding:19px;background:#1c1c1a;border-radius:14px;color:#e9e7e1;
             font-size:13.5px;line-height:1.68}
   .question .t{display:block;margin-bottom:10px;font-size:9.5px;font-weight:500;
                letter-spacing:.28em;text-transform:uppercase;color:#C9A15E}
@@ -280,24 +299,32 @@
   .question ol{margin:12px 0 0;padding-left:19px}
   .question li{margin-bottom:9px}
 
-  .pied{margin-top:22px;font-size:12.5px;line-height:1.65;color:#6b675e;text-align:center}
+  .pied{margin-top:20px;font-size:12.5px;line-height:1.65;color:#6b675e;text-align:center}
 </style>
 
 <div class="page">
   <p class="sur">Atlas · planche 92</p>
   <h1 class="grand">Un blanc à reflets bleutés</h1>
-  <p class="chapo">Votre demande du 23 août. <b>Rien n’est codé</b> — appuyez sur les quatre boutons, l’écran dessous change pour de bon. Le <b>gris-vert d’aujourd’hui</b> est là pour comparer.</p>
+  <p class="chapo">Votre demande du 23 août. <b>Deux réglages qui se croisent</b> — la couleur d’un côté, la forme de l’autre. Appuyez : l’écran change pour de bon. <b>Rien n’est codé.</b></p>
 
   <div class="choix">
-    <div class="rangee" role="group" aria-label="Les quatre allures">
-      <button class="onglet" aria-pressed="true"  data-va="origine"><span class="lettre">Aujourd’hui</span><b>Origine</b></button>
-      <button class="onglet" aria-pressed="false" data-va="brume"><span class="lettre">A</span><b>Brume</b></button>
-      <button class="onglet" aria-pressed="false" data-va="moderne"><span class="lettre">B</span><b>Brume+</b></button>
-      <button class="onglet" aria-pressed="false" data-va="verre"><span class="lettre">C</span><b>Verre</b></button>
+    <p class="quoi-regle">La couleur — 8 valeurs, aucun écran touché</p>
+    <div class="rangee" role="group" aria-label="La couleur">
+      <button class="onglet" data-couleur="origine" aria-pressed="true"><span class="pastille" style="background:#2f3b2f"></span>Origine</button>
+      <button class="onglet" data-couleur="brume"   aria-pressed="false"><span class="pastille" style="background:#22456d"></span>Brume</button>
+      <button class="onglet" data-couleur="ardoise" aria-pressed="false"><span class="pastille" style="background:#33505f"></span>Ardoise</button>
+      <button class="onglet" data-couleur="azur"    aria-pressed="false"><span class="pastille" style="background:#1f6feb"></span>Azur</button>
+    </div>
+
+    <p class="quoi-regle">La forme — elle touche tous les écrans</p>
+    <div class="rangee" role="group" aria-label="L’allure">
+      <button class="onglet" data-forme="origine" aria-pressed="true">Aujourd’hui</button>
+      <button class="onglet" data-forme="moderne" aria-pressed="false">Moderne</button>
+      <button class="onglet" data-forme="verre"   aria-pressed="false">Verre</button>
     </div>
   </div>
 
-  <div class="tel" id="tel" data-look="origine">
+  <div class="tel" id="tel" data-couleur="origine" data-forme="origine">
     <div class="ecran">
       <div class="corps">
         <p class="oeil">Aujourd’hui</p>
@@ -342,11 +369,9 @@
         <p class="famille">Votre charte</p>
 
         <div class="charte">
-          <span class="vignette" id="vig-a">
-            <i class="h"></i><i class="b"></i><i class="p"></i>
-          </span>
-          <span class="nom"><b id="nom-a">Origine</b><span id="dit-a">Vos couleurs actuelles : gris-vert, or, et le vert pin pour l’action.</span></span>
-          <span class="rond pris"></span>
+          <span class="vignette"><i class="h"></i><i class="b"></i><i class="p"></i></span>
+          <span class="nom"><b id="nom">Origine</b><span id="dit">Vos couleurs actuelles : gris-vert, or, et le vert pin pour l’action.</span></span>
+          <span class="rond"></span>
         </div>
       </div>
 
@@ -362,101 +387,93 @@
     </div>
   </div>
 
-  <!-- Ce que chaque allure coûte VRAIMENT. Un choix d'apparence se paie en
+  <!-- Ce que chaque choix coûte VRAIMENT. Un choix d'apparence se paie en
        écrans à reprendre, et ce chiffre-là ne se lit sur aucune capture. -->
   <div class="fiche" data-fiche="origine">
-    <span class="t">Aujourd’hui — pour comparer</span>
-    Le gris-vert crème, le Georgia, les rayons de 13 px. <b>C’est ce que vous ouvrez ce soir.</b> Il est là pour que les trois autres se jugent contre quelque chose, pas dans le vide.
+    <span class="t">Origine — pour comparer</span>
+    Le gris-vert crème que vous ouvrez ce soir. Il est là pour que les trois bleus se jugent contre quelque chose, pas dans le vide.
   </div>
-
   <div class="fiche" data-fiche="brume" hidden>
-    <span class="t">A — Brume · la couleur seule</span>
-    Un blanc froid, une encre bleutée, un bleu marine à la place du vert pin. <b>Tout le reste ne bouge pas</b> : mêmes formes, même Georgia, mêmes rayons.
-    <dl>
-      <dt>Coût</dt><dd><b>Huit valeurs</b> dans <code>chartes.ts</code>. Aucun écran touché.</dd>
-      <dt>Risque</dt><dd>Presque nul — c’est le mécanisme qui porte déjà Pierre, Beurre et Moka.</dd>
-      <dt>Réserve</dt><dd>Ça ne fera pas « appli d’aujourd’hui » : la forme reste celle d’hier. C’est une <b>teinte</b>, pas une allure.</dd>
-    </dl>
+    <span class="t">Brume — le blanc froid</span>
+    Un blanc légèrement bleuté, une encre presque marine, un bleu profond pour l’action. <b>Le plus proche de ce que vous décrivez</b> : il fait « propre » sans faire clinique. L’or reste parfaitement lisible dessus.
+  </div>
+  <div class="fiche" data-fiche="ardoise" hidden>
+    <span class="t">Ardoise — le plus sobre</span>
+    Le fond tire vers le gris-bleu, l’encre est presque noire, l’accent est un bleu acier éteint. <b>Celui qui ressemble le moins à une application grand public</b>, et le plus à un outil de métier. C’est aussi le plus reposant sur une longue journée.
+  </div>
+  <div class="fiche" data-fiche="azur" hidden>
+    <span class="t">Azur — le plus franc</span>
+    Blanc quasi pur, bleu vif : la couleur des applications qu’on installe aujourd’hui. <b>Réserve, et elle compte :</b> un bleu vif attire l’œil partout où il se pose, et il finit par concurrencer l’or — qui, lui, veut dire « à faire ». Deux couleurs qui réclament l’attention en même temps n’en obtiennent aucune.
   </div>
 
-  <div class="fiche" data-fiche="moderne" hidden>
-    <span class="t">B — Brume + · la couleur ET l’allure</span>
-    Le Georgia laisse la place à la police du téléphone, les rayons passent à 20 px, un trait de contour devient une ombre bleutée très basse, et l’air entre les blocs augmente d’un tiers. <b>C’est ce qui ressemble le plus à ce que vous décrivez</b>, sans partir dans l’effet.
-    <dl>
-      <dt>Coût</dt><dd>La charte, plus <b>quatre pièces partagées</b> — le bouton, l’en-tête d’écran, les cartes, la barre du bas. La trentaine d’écrans en hérite.</dd>
-      <dt>Risque</dt><dd>Moyen. À reprendre à l’œil sur les écrans denses : le tableau de TVA, le plan d’arrosage, la liste des pièces.</dd>
-      <dt>Réserve</dt><dd>Le serif partait <b>partout</b>, y compris sur vos devis et factures si l’on n’y prend pas garde. Un devis n’a pas à changer d’allure parce que l’application change.</dd>
-    </dl>
+  <div class="fiche" data-forme-fiche="origine">
+    <span class="t">Forme d’aujourd’hui</span>
+    Le Georgia, les rayons de 13 px, le trait de contour. <b>Changer la couleur seule ne coûte rien</b> : huit valeurs, aucun écran repris.
   </div>
-
-  <div class="fiche" data-fiche="verre" hidden>
-    <span class="t">C — Verre · on va au bout</span>
-    Le fond porte deux halos bleutés, les cartes flottent, la barre du bas est dépolie, le bouton devient une pastille pleine. <b>C’est le plus proche des applications qu’on installe aujourd’hui.</b>
-    <dl>
-      <dt>Coût</dt><dd>Celui de B, plus le fond et le flou à tenir sur <b>chaque</b> écran — un halo qui s’arrête au milieu d’une longue liste se voit tout de suite.</dd>
-      <dt>Risque</dt><dd>Le plus élevé, et pour une raison qui n’est pas l’esthétique : <b>le flou coûte à l’affichage</b>. Sur un téléphone de trois ans, une liste de quarante chantiers peut saccader au défilement.</dd>
-      <dt>Réserve</dt><dd>Le verre dépoli <b>baisse le contraste</b> là où il s’applique. En plein soleil, sur un chantier, c’est exactement ce qu’on ne veut pas — d’où le fond de barre gardé très opaque ici.</dd>
-    </dl>
+  <div class="fiche" data-forme-fiche="moderne" hidden>
+    <span class="t">Forme moderne</span>
+    La police du téléphone remplace le Georgia, les cartes s’arrondissent à 20 px, une ombre bleutée très basse remplace le trait, l’air augmente d’un tiers. <b>Coût :</b> quatre pièces partagées — le bouton, l’en-tête, les cartes, la barre du bas — et la trentaine d’écrans en hérite. <b>À reprendre à l’œil</b> sur les écrans denses : le tableau de TVA, le plan d’arrosage, la liste des pièces.
+  </div>
+  <div class="fiche" data-forme-fiche="verre" hidden>
+    <span class="t">Forme verre</span>
+    Le fond porte deux halos, les cartes flottent, la barre du bas est dépolie, le bouton devient une pastille pleine. <b>Réserve, et elle n’est pas esthétique :</b> le flou coûte à l’affichage — sur un téléphone de trois ans, une liste de quarante chantiers peut saccader au défilement. Et le dépoli <b>baisse le contraste</b> là où il s’applique : en plein soleil, sur un chantier, c’est ce qu’on ne veut pas.
   </div>
 
   <div class="question">
     <span class="t">Ce que je ne peux pas décider à votre place</span>
     <ol>
-      <li><b>Laquelle ?</b> A, B ou C — ou A tout de suite et B plus tard, ce qui est le chemin le moins cher.</li>
-      <li><b>Cette allure remplace-t-elle Origine, ou s’ajoute-t-elle</b> comme une charte de plus dans « Apparence » ? S’ajouter ne coûte rien de plus et ne vous engage pas.</li>
-      <li><b>Vos devis et vos factures suivent-ils ?</b> Aujourd’hui ils gardent leur apparence quoi que vous choisissiez. Pour B et C, il faut trancher — un client reçoit le document, pas l’application.</li>
+      <li><b>Quelle couleur ?</b> Brume, Ardoise ou Azur.</li>
+      <li><b>Quelle forme ?</b> On peut garder celle d’aujourd’hui et ne changer que la couleur — c’est le chemin le moins cher, et il se fait ce soir.</li>
+      <li><b>Ça remplace Origine, ou ça s’ajoute</b> comme une charte de plus dans « Apparence » ? S’ajouter ne coûte rien de plus et ne vous engage pas.</li>
+      <li><b>Vos devis et vos factures suivent-ils ?</b> Aujourd’hui ils gardent leur apparence quoi que vous choisissiez. Un client reçoit le document, pas l’application.</li>
     </ol>
   </div>
 
-  <p class="pied">Rien n’est écrit dans l’application. Dites-moi un nom — <b>A</b>, <b>B</b> ou <b>C</b> — et je code celle-là.</p>
+  <p class="pied">Rien n’est écrit dans l’application. Dites-moi <b>une couleur</b> et <b>une forme</b>, et je code celle-là.</p>
 </div>
 
 <script>
   /*
-    Le seul travail du script : poser un attribut. Toute l'apparence tient
-    dans les jetons CSS ci-dessus — refaire ici ce que la feuille de style
-    sait faire produirait deux définitions du même look, qui divergeraient.
+    Le seul travail du script : poser deux attributs. Toute l'apparence tient
+    dans les jetons CSS — refaire ici ce que la feuille de style sait faire
+    produirait deux définitions du même look, qui divergeraient (`CLAUDE.md` §3).
   */
   var tel = document.getElementById("tel");
-  var VIGNETTES = {
-    origine: { fond:"#f5f3ee", plage:"#faf9f5", encre:"#1c1c1a", plein:"#2f3b2f", or:"#B98B47",
-               nom:"Origine", dit:"Vos couleurs actuelles : gris-vert, or, et le vert pin pour l’action." },
-    brume:   { fond:"#f4f7fb", plage:"#ffffff", encre:"#111823", plein:"#22456d", or:"#B98B47",
-               nom:"Brume", dit:"Un blanc froid, une encre bleutée, un bleu marine pour l’action." },
-    moderne: { fond:"#f4f7fb", plage:"#ffffff", encre:"#111823", plein:"#22456d", or:"#B98B47",
-               nom:"Brume", dit:"La même, avec la typographie et les formes d’aujourd’hui." },
-    verre:   { fond:"#eef3fa", plage:"#ffffff", encre:"#0e1520", plein:"#1d4470", or:"#B98B47",
-               nom:"Brume", dit:"La même, posée sur un fond en halos, cartes flottantes." }
+  var NOMS = {
+    origine: ["Origine", "Vos couleurs actuelles : gris-vert, or, et le vert pin pour l’action."],
+    brume:   ["Brume",   "Un blanc froid, une encre bleutée, un bleu marine pour l’action."],
+    ardoise: ["Ardoise", "Gris-bleu, encre presque noire, un bleu acier éteint. Aucun éclat."],
+    azur:    ["Azur",    "Blanc quasi pur et bleu vif — la couleur des applis d’aujourd’hui."]
   };
 
-  function montrer(quoi) {
-    tel.setAttribute("data-look", quoi);
+  function poser(quoi, valeur) {
+    tel.setAttribute("data-" + quoi, valeur);
 
-    document.querySelectorAll(".onglet").forEach(function (b) {
-      b.setAttribute("aria-pressed", String(b.dataset.va === quoi));
-    });
-    document.querySelectorAll("[data-fiche]").forEach(function (f) {
-      f.hidden = f.dataset.fiche !== quoi;
+    document.querySelectorAll("[data-" + quoi + "]").forEach(function (b) {
+      if (b === tel) return;
+      b.setAttribute("aria-pressed", String(b.dataset[quoi] === valeur));
     });
 
-    // La vignette de « Apparence » montre la charte SÉLECTIONNÉE — sur l'écran
-    // réel elle porte les couleurs de la charte, pas celles de l'écran. Les
-    // faire suivre est ce qui rend l'essai honnête.
-    var v = VIGNETTES[quoi];
-    var vig = document.getElementById("vig-a");
-    vig.style.background = v.fond;
-    vig.querySelector(".h").style.background = v.encre;
-    vig.querySelector(".b").style.background = v.plein;
-    vig.querySelector(".p").style.background = v.or;
-    document.getElementById("nom-a").textContent = v.nom;
-    document.getElementById("dit-a").textContent = v.dit;
+    var cle = quoi === "couleur" ? "data-fiche" : "data-forme-fiche";
+    document.querySelectorAll("[" + cle + "]").forEach(function (f) {
+      f.hidden = f.getAttribute(cle) !== valeur;
+    });
+
+    if (quoi === "couleur") {
+      document.getElementById("nom").textContent = NOMS[valeur][0];
+      document.getElementById("dit").textContent = NOMS[valeur][1];
+    }
   }
 
-  document.querySelectorAll(".onglet").forEach(function (b) {
-    b.addEventListener("click", function () { montrer(b.dataset.va); });
+  document.querySelectorAll("button[data-couleur]").forEach(function (b) {
+    b.addEventListener("click", function () { poser("couleur", b.dataset.couleur); });
+  });
+  document.querySelectorAll("button[data-forme]").forEach(function (b) {
+    b.addEventListener("click", function () { poser("forme", b.dataset.forme); });
   });
 
-  montrer("origine");
+  poser("couleur", "origine");
+  poser("forme", "origine");
 </script>
 </body>
 </html>
