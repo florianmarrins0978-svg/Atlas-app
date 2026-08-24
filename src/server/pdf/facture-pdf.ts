@@ -3,8 +3,10 @@ import {
   type DonneesDocument,
   type LigneDocument,
   type TraceDocument,
+  type LogoDocument,
 } from "./document-commun";
 import { jourNumerique } from "../../lib/jour";
+import type { Allure } from "@/lib/allure-documents";
 
 // La facture, sur le modèle du patron (`appli/facture-modele.html`).
 //
@@ -77,8 +79,19 @@ function mentionLegaleFacture(data: FacturePdfData): string {
   return enFranchise ? `${base} TVA non applicable, art. 293 B du CGI.` : base;
 }
 
+/**
+ * L'allure réglée par le patron (23 août 2026) — la facture la porte comme le
+ * devis : ce sont les deux documents que son client reçoit.
+ */
+export type OptionsFacturePdf = {
+  allure?: Allure | null;
+  /** Son logo, lu par le dépôt. Une facture est une pièce que le client garde. */
+  logo?: LogoDocument | null;
+};
+
 export async function composerFacturePdf(
-  data: FacturePdfData
+  data: FacturePdfData,
+  options: OptionsFacturePdf = {}
 ): Promise<{ pdf: Uint8Array; trace: TraceDocument }> {
   const references: [string, string][] = [
     ["Facture n°", data.numeroCommercial],
@@ -91,6 +104,8 @@ export async function composerFacturePdf(
   if (data.dateEcheance) references.push(["Date d'échéance", jourNumerique(data.dateEcheance)]);
 
   return composerDocument(data, {
+    allure: options.allure ?? null,
+    logo: options.logo ?? null,
     // Une facture non émise qui ne le signale pas peut partir par erreur, et
     // une facture partie est immuable — la corriger demande un avoir.
     titre: data.statut === "brouillon" ? "FACTURE (BROUILLON)" : "FACTURE",
@@ -104,6 +119,9 @@ export async function composerFacturePdf(
   });
 }
 
-export async function genererPdfFacture(data: FacturePdfData): Promise<Uint8Array> {
-  return (await composerFacturePdf(data)).pdf;
+export async function genererPdfFacture(
+  data: FacturePdfData,
+  options: OptionsFacturePdf = {}
+): Promise<Uint8Array> {
+  return (await composerFacturePdf(data, options)).pdf;
 }

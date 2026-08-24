@@ -26,10 +26,24 @@
 # ─────────────────────────────────────────────────────────────────────────────
 # Écrit UN SEUL MOT sur sa sortie, pour que `demarrer.sh` sache quoi dire :
 #
-#   ouvert         le port vient d'être rendu public
-#   hors-codespace on n'est pas dans un espace GitHub : il n'y a rien à ouvrir
-#   sans-gh        l'outil `gh` est absent — le patron devra le faire à la main
-#   échec          `gh` a refusé ; la raison est sur la sortie d'erreur
+#   ouvert          le port vient d'être rendu public
+#   hors-codespace  on n'est pas dans un espace GitHub : il n'y a rien à ouvrir
+#   sans-gh         l'outil `gh` est absent — le patron devra le faire à la main
+#   non-declare     `gh` répond, mais le RELAIS NE CONNAÎT PAS le port 3000
+#   échec:<raison>  `gh` a refusé, et la raison est recopiée derrière les deux points
+#
+# **`non-declare` est né le 23 août 2026, et il valait une soirée.** Le patron a
+# écrit trois fois « ça ne marche pas » pendant que la fiche l'envoyait rendre
+# public un port… qui n'existait pas pour le relais. Rendre public et être
+# DÉCLARÉ sont deux choses : `gh codespace ports visibility` règle la première
+# et se tait sur la seconde, si bien qu'un port jamais enregistré recevait le
+# même verdict qu'un port simplement privé — et le même geste, qui ne pouvait
+# rien. On pose donc la question qui manquait : le relais connaît-il ce port ?
+#
+# **Et `échec` porte désormais SA RAISON.** Elle partait à `/dev/null` : le
+# refus de `gh` — jeton absent, espace introuvable, réseau — se lisait
+# « échec », un mot qui ne désigne personne. Un défaut muet se rend bavard
+# avant de se corriger (`AGENTS.md`).
 #
 # **`sans-gh` n'est PAS un cas d'école, c'est le cas courant ici.** L'image de ce
 # conteneur est `mcr.microsoft.com/devcontainers/typescript-node:22`, qui
@@ -53,16 +67,84 @@ if [ -z "${CODESPACE_NAME:-}" ]; then
   exit 0
 fi
 
+# **`gh` ABSENT : on l'installe, plutôt que de renvoyer le patron à un panneau.**
+#
+# Le 23 août 2026, il a écrit trois fois « ça ne marche pas ». La déclaration de
+# `devcontainer.json` qui embarque `gh` ne vaut que pour un espace À NAÎTRE — le
+# sien est plus ancien —, si bien que rien, chez lui, ne pouvait ouvrir ce port :
+# le démarrage rendait `sans-gh` et lui demandait de viser un panneau minuscule
+# sur un écran de six pouces. C'est la quatrième fois que ce piège coûte une
+# soirée (voir `ARCHITECTURE.md` §55).
+#
+# **Ce que cette tentative ne peut pas faire, et c'est voulu :**
+#
+#   · elle est BORNÉE À 90 SECONDES et rend la main quoi qu'il arrive. Un banc
+#     qui démarre lentement reste un banc ; un banc suspendu à `apt` est mort ;
+#   · elle n'écrit rien sur la sortie : ce script ne rend qu'UN mot, et une
+#     ligne d'`apt` au milieu ferait dire n'importe quoi à `demarrer.sh` ;
+#   · elle échoue en silence. Si l'installation ne passe pas, on retombe sur
+#     `sans-gh` — exactement l'état d'avant, jamais pire.
+#
+# **NON ÉPROUVÉE DANS L'ENVIRONNEMENT DE L'AGENT**, et il faut le dire plutôt que
+# de la présenter comme sûre (`AGENTS.md`) : son mandataire réseau refuse les
+# dépôts `apt` (403 sur `cli.github.com`). Ce qui est éprouvé, c'est qu'un échec
+# ici ne coûte rien — le chemin `sans-gh` reste exactement celui d'avant.
+installer_gh() {
+  command -v sudo > /dev/null 2>&1 || return 1
+  sudo -n true 2>/dev/null || return 1
+  command -v apt-get > /dev/null 2>&1 || return 1
+
+  timeout 90 bash -c '
+    set -e
+    sudo -n mkdir -p -m 755 /etc/apt/keyrings
+    curl -fsSL --max-time 30 https://cli.github.com/packages/githubcli-archive-keyring.gpg \
+      | sudo -n tee /etc/apt/keyrings/githubcli-archive-keyring.gpg > /dev/null
+    sudo -n chmod go+r /etc/apt/keyrings/githubcli-archive-keyring.gpg
+    echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" \
+      | sudo -n tee /etc/apt/sources.list.d/github-cli.list > /dev/null
+    sudo -n apt-get update -qq -o Dir::Etc::sourcelist=/etc/apt/sources.list.d/github-cli.list \
+      -o Dir::Etc::sourceparts=- -o APT::Get::List-Cleanup=0
+    sudo -n apt-get install -y -qq gh
+  ' > /dev/null 2>&1 || return 1
+
+  command -v gh > /dev/null 2>&1
+}
+
 if ! command -v gh > /dev/null 2>&1; then
-  echo "sans-gh"
-  exit 0
+  if ! installer_gh; then
+    echo "sans-gh"
+    exit 0
+  fi
 fi
 
 # Le délai est là pour le cas où `gh` attend une authentification qui ne viendra
 # pas : le démarrage ne doit pas rester suspendu à cette commande de confort.
-if timeout 30 gh codespace ports visibility "${PORT}:public" -c "$CODESPACE_NAME" > /dev/null 2>&1; then
+RAISON="$(timeout 30 gh codespace ports visibility "${PORT}:public" -c "$CODESPACE_NAME" 2>&1 >/dev/null)"
+CODE=$?
+
+if [ "$CODE" -eq 0 ]; then
   echo "ouvert"
-else
-  echo "échec"
+  exit 0
 fi
+
+# **La question qui manquait : le relais CONNAÎT-IL ce port ?**
+#
+# `gh codespace ports` liste ce qui est enregistré. Le port absent de cette
+# liste, aucun réglage de visibilité ne peut aboutir — et l'onglet PORTS ne
+# servira qu'à le REMETTRE, pas à le basculer. Distinguer les deux, c'est la
+# différence entre un geste qui répare et un geste qu'on refait trois fois.
+#
+# La liste peut elle-même échouer (jeton, réseau) : on ne conclut alors PAS
+# « non déclaré », on rend le refus initial. Une supposition présentée comme une
+# mesure coûte plus cher qu'un « je ne sais pas ».
+LISTE="$(timeout 30 gh codespace ports -c "$CODESPACE_NAME" 2>/dev/null)"
+if [ -n "$LISTE" ] && ! printf '%s' "$LISTE" | grep -qE "(^|[^0-9])${PORT}([^0-9]|$)"; then
+  echo "non-declare"
+  exit 0
+fi
+
+# Une raison tient sur une ligne : la fiche est lue sur un téléphone, et un pavé
+# d'erreur y noie ce qu'il faut en retenir.
+RAISON="$(printf '%s' "$RAISON" | tr '\n' ' ' | tr -s ' ' | cut -c1-160)"
+echo "échec:${RAISON:-sans raison donnée}"
 exit 0

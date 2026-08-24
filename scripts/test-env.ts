@@ -422,6 +422,111 @@ function main() {
     }
   });
 
+  // ──────────────────────────────────────────────────────────────────────────
+  // **UN DÉPLOIEMENT RÉEL NE PEUT PAS SE DÉCLARER BANC D'ESSAI**
+  // (audit du 23 août 2026, constat M8).
+  //
+  // Le profil banc désactive la protection contre le CSRF des actions serveur :
+  // `src/middleware.ts` aligne alors l'hôte sur l'ORIGINE annoncée par le
+  // navigateur, et `next.config.ts` élargit les origines autorisées. Une seule
+  // variable mal posée sur un vrai déploiement ouvrait toute l'application.
+  //
+  // **Le critère ne peut pas être `NODE_ENV`** — le banc EST « production +
+  // profil banc », puisqu'il sert une version bâtie. Ce qu'on cherche est une
+  // CONTRADICTION : le profil d'une machine d'essai posé en même temps qu'un
+  // signe qu'aucun banc ne peut produire.
+
+  test("Banc déclaré AVEC un compartiment S3 : refusé — c'est une contradiction", () => {
+    for (const declaration of [{ ATLAS_PROFIL: "banc" }, { ATLAS_BANC_ESSAI: "1" }]) {
+      avecEnv(
+        {
+          ...BANC_COMPLET,
+          ATLAS_PROFIL: undefined,
+          ATLAS_BANC_ESSAI: undefined,
+          ...declaration,
+          STORAGE_PROVIDER: "s3",
+          STORAGE_S3_BUCKET: "compartiment",
+          STORAGE_S3_ACCESS_KEY_ID: "cle",
+          STORAGE_S3_SECRET_ACCESS_KEY: "secret",
+        },
+        () => {
+          assert.throws(
+            () => getEnv(),
+            (e: unknown) =>
+              e instanceof ErreurConfiguration && /contradictoire/i.test(e.message) && /CSRF/i.test(e.message),
+            `${JSON.stringify(declaration)} + S3 a été accepté`
+          );
+        }
+      );
+    }
+  });
+
+  test("Banc déclaré AVEC ATLAS_DEPLOIEMENT=production : refusé", () => {
+    avecEnv({ ...BANC_COMPLET, ATLAS_DEPLOIEMENT: "production" }, () => {
+      assert.throws(() => getEnv(), ErreurConfiguration);
+    });
+  });
+
+  // **La moitié qui protège le banc du patron.** Sans ces cas, la correction
+  // aurait éteint sa machine à la seconde : son espace pose `ATLAS_PROFIL=banc`
+  // ET tourne sous `NODE_ENV=production`, parce que `next start` l'impose.
+  test("Le banc ORDINAIRE continue de démarrer — production bâtie comprise", () => {
+    avecEnv({ ...BANC_COMPLET, NODE_ENV: "production" }, () => {
+      const env = getEnv();
+      assert.equal(env.bancDEssai, true);
+      assert.equal(env.stockageProvider, "local");
+    });
+  });
+
+  test("Un déploiement réel avec S3, SANS profil banc, démarre normalement", () => {
+    avecEnv(
+      {
+        ...BANC_COMPLET,
+        ATLAS_PROFIL: undefined,
+        ATLAS_BANC_ESSAI: undefined,
+        NODE_ENV: "production",
+        LLM_PROVIDER: "anthropic",
+        ANTHROPIC_API_KEY: "sk-ant-fictive-pour-les-tests",
+        TRANSCRIPTION_PROVIDER: "openai",
+        OPENAI_API_KEY: "sk-fictive-pour-les-tests",
+        STORAGE_PROVIDER: "s3",
+        STORAGE_S3_BUCKET: "compartiment",
+        STORAGE_S3_ACCESS_KEY_ID: "cle",
+        STORAGE_S3_SECRET_ACCESS_KEY: "secret",
+      },
+      () => {
+        const env = getEnv();
+        assert.equal(env.bancDEssai, false);
+        assert.equal(env.stockageProvider, "s3");
+      }
+    );
+  });
+
+  // ──────────────────────────────────────────────────────────────────────────
+  // **Les mandataires de confiance** (audit du 23 août 2026, constat C1).
+  //
+  // Le défaut SÛR est zéro : sans déclaration, aucune adresse transmise n'est
+  // crue, et le seuil par visiteur redevient commun. Une valeur absurde ne doit
+  // jamais devenir une confiance.
+
+  test("ATLAS_PROXY_SAUTS : zéro par défaut, et jamais négatif", () => {
+    avecEnv({ ...BANC_COMPLET, ATLAS_PROXY_SAUTS: undefined }, () => {
+      assert.equal(getEnv().proxySauts, 0);
+    });
+    for (const [pose, attendu] of [
+      ["1", 1],
+      ["2", 2],
+      ["", 0],
+      ["-3", 0],
+      ["abc", 0],
+      ["1.9", 1],
+    ] as const) {
+      avecEnv({ ...BANC_COMPLET, ATLAS_PROXY_SAUTS: pose }, () => {
+        assert.equal(getEnv().proxySauts, attendu, `« ${pose} » a donné autre chose que ${attendu}`);
+      });
+    }
+  });
+
   console.log(`\n${passed} test(s) réussi(s), ${failed} échoué(s).`);
   if (failed > 0) process.exit(1);
 }

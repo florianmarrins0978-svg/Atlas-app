@@ -1,5 +1,15 @@
 import assert from "node:assert";
-import { canalPourJoindre, composerMessageClient, composerMessageFacture, lienTransmission } from "../src/lib/message-client";
+import {
+  canalPourJoindre,
+  composerMessageClient,
+  composerMessageEntretien,
+  composerMessageFacture,
+  lienTransmission,
+  refusDuMessage,
+  rendreMessage,
+  MESSAGE_MAX,
+  MESSAGE_PAR_DEFAUT,
+} from "../src/lib/message-client";
 import { CIVILITE_PAR_DEFAUT, avecCivilite } from "../src/lib/civilite";
 
 // Le message qui remet le devis au client part de la boîte du patron, en son
@@ -146,6 +156,98 @@ test("La date se propose AU PRÉSENT : « vous pouvez », jamais « vous pourrez
   // Le futur repoussait le geste à plus tard, comme s'il fallait d'abord faire
   // autre chose. Il ne doit pas revenir par une reformulation.
   assert.ok(!m.corps.includes("pourrez"), "le futur est revenu dans le message");
+});
+
+// ═══ SON MESSAGE, ÉCRIT PAR LUI — sa décision du 23 août 2026 ═══════════
+//
+// *« Message client A. Liens obligatoire. Et message pour tous. »* puis, devant
+// les six bulles de la planche : *« façon 1 »*.
+
+test("le lien est OBLIGATOIRE : un message sans lui est refusé", () => {
+  // **Sa règle, et c'est un refus, pas un avertissement.** Sans lien, le
+  // message part et le client ne peut rien ouvrir : le patron ne l'apprend
+  // qu'au téléphone, une semaine plus tard.
+  const refus = refusDuMessage("Bonjour [client], voici [document]. [entreprise]");
+  assert.ok(refus, "un message sans lien a été accepté");
+  assert.ok(/lien/i.test(refus), `le refus ne nomme pas le lien : « ${refus} »`);
+  assert.equal(refusDuMessage(MESSAGE_PAR_DEFAUT), null, "le message d'Atlas est refusé");
+});
+
+test("un message vide ou démesuré est refusé, et le dit", () => {
+  assert.ok(refusDuMessage("   "), "un message vide a été accepté");
+  // Tronquer serait pire que refuser : un message coupé part QUAND MÊME, et
+  // c'est le client qui lit la moitié d'une phrase.
+  const trop = "[lien] " + "b".repeat(MESSAGE_MAX);
+  const refus = refusDuMessage(trop);
+  assert.ok(refus, "un message de plus de 2 000 caractères a été accepté");
+  assert.ok(String(MESSAGE_MAX) === "2000" && refus.includes("2000"),
+    `le refus ne dit pas la borne : « ${refus} »`);
+});
+
+test("UN SEUL message, et chaque document dit ce qu'il doit dire", () => {
+  // **Le cœur de sa « façon 1 ».** Le même gabarit sert les trois envois ; ce
+  // qui les distingue vient d'Atlas, à l'endroit où il a posé `[document]`.
+  const commun = { clientNom: "Larousse", entrepriseNom: "Eden Nature", lien: LIEN };
+  const devis = composerMessageClient(commun).corps;
+  const facture = composerMessageFacture({
+    ...commun,
+    numeroFacture: "F2026-0008",
+    echeanceLisible: "21 septembre",
+  }).corps;
+  const rapport = composerMessageEntretien(commun).corps;
+
+  // Le cadre est le même : c'est ce qu'il a demandé.
+  for (const corps of [devis, facture, rapport]) {
+    // **« Mr. Larousse », pas « Larousse ».** La civilité vient de
+    // `src/lib/civilite.ts`, sa règle du 13 août : ce contrôle l'attendait sans
+    // elle, et c'est LUI qui avait tort. Un contrôle qui exige moins que le
+    // produit finit par autoriser une régression.
+    assert.ok(corps.startsWith("Bonjour Mr. Larousse,"), `le cadre diffère : ${corps.slice(0, 40)}`);
+    assert.ok(corps.includes(LIEN), "le lien manque");
+    assert.ok(corps.trimEnd().endsWith("Eden Nature"), "la signature manque");
+  }
+
+  // Le milieu, lui, ne l'est PAS — et c'est ce que la façon 2 lui coûtait.
+  assert.ok(/votre devis/i.test(devis), "le devis ne se nomme pas");
+  assert.ok(/votre facture F2026-0008/i.test(facture), "la facture ne porte pas son numéro");
+  assert.ok(/à régler avant le 21 septembre/i.test(facture),
+    "l'échéance manque : c'est précisément ce qu'il a refusé de perdre");
+  assert.ok(/compte rendu de mon passage/i.test(rapport), "le compte rendu ne se nomme pas");
+
+  // **Et aucun ne parle du document d'un autre.** Une facture qui annonce un
+  // devis, c'est le client qui rappelle pour comprendre.
+  assert.ok(!/votre devis/i.test(facture), "la facture parle d'un devis");
+  assert.ok(!/votre devis|facture/i.test(rapport), "le compte rendu parle d'un autre document");
+});
+
+test("SON message remplace celui d'Atlas, partout", () => {
+  const sien = "Salut [client] !\n[document]\n[lien]\nÀ bientôt, [entreprise]";
+  const commun = { clientNom: "Larousse", entrepriseNom: "Eden Nature", lien: LIEN, modele: sien };
+  const devis = composerMessageClient(commun).corps;
+  const facture = composerMessageFacture({ ...commun, numeroFacture: "F2026-0008" }).corps;
+
+  assert.ok(devis.startsWith("Salut Mr. Larousse !"), `son message n'est pas servi : ${devis.slice(0, 40)}`);
+  assert.ok(devis.includes("À bientôt, Eden Nature"), "sa signature n'est pas servie");
+  // Le sien sert AUSSI la facture : c'est « un message pour tous ».
+  assert.ok(facture.startsWith("Salut Mr. Larousse !"), "la facture garde l'ancien message");
+  assert.ok(/votre facture F2026-0008/i.test(facture), "la phrase du document n'est plus posée");
+  // Et une pastille inconnue reste en clair plutôt que de disparaître : il la
+  // voit à l'aperçu et se corrige, au lieu de perdre un mot sans savoir où.
+  assert.ok(
+    rendreMessage("[client] [inconnue] [lien]", {
+      client: "A", document: "D", lien: "L", entreprise: "E",
+    }) === "A [inconnue] L",
+    "une pastille inconnue ne survit pas telle quelle"
+  );
+});
+
+test("un message vide RETOMBE sur celui d'Atlas, il ne part pas nu", () => {
+  // Il efface tout, enregistre, et part en chantier : le client doit recevoir
+  // un message, pas une ligne vide.
+  const corps = composerMessageClient({
+    clientNom: "Larousse", entrepriseNom: "Eden Nature", lien: LIEN, modele: "   ",
+  }).corps;
+  assert.ok(corps.includes(LIEN) && corps.includes("Bonjour"), `message nu : « ${corps} »`);
 });
 
 test("Le canal se DÉDUIT, il ne s'invente pas", () => {

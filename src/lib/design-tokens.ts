@@ -50,9 +50,16 @@ export const colors = {
   sage: "#7d9a6d", // --sage : bordure de survol, encarts d'information
   sageLight: "#9fbd82", // --sage-light
   // Exception discrète, sans équivalent chez Arborea : uniquement pour
-  // confirmer une action destructive. Gardée en terre cuite sombre, car une
-  // alerte en vert se confondrait avec l'accent ordinaire.
-  alert: "#9C3B2E",
+  // confirmer une action destructive. Terre cuite sombre, car une alerte en
+  // vert se confondrait avec l'accent ordinaire.
+  //
+  // **ELLE PASSE PAR UNE VARIABLE DEPUIS LE 22 AOÛT 2026.** Elle était écrite
+  // en clair, et ce fichier affirmait qu'elle n'avait pas à suivre la charte.
+  // C'est faux sur les deux sombres : une terre cuite sombre posée sur un noir
+  // chaud tient 2,5 de contraste — un refus qu'on ne peut pas lire n'a pas
+  // refusé. La TEINTE reste la sienne ; seule la clarté s'accorde au fond, et
+  // seulement quand elle en a besoin (`chartes.ts`, `detacher`).
+  alert: "var(--atlas-alerte, #9C3B2E)",
   // ─── Les deux couleurs du planning, posées le 21 août 2026 ───────────────
   //
   // **Elles ne suivent pas la charte, comme `sage` et `alert`**, et c'est
@@ -63,13 +70,21 @@ export const colors = {
   //
   // `vertPale` : « il reste de la place ». Assez clair pour se distinguer du
   // vert pin plein, assez soutenu pour ne pas se confondre avec un carré vide.
-  vertPale: "#b9c6b4",
+  //
+  // **Elles suivent la charte depuis le 22 août 2026, et pour la raison même
+  // qui les avait fixées.** Leur rôle est que quatre états se distinguent d'un
+  // coup d'œil ; sur les deux chartes sombres l'accent plein DEVIENT clair, si
+  // bien qu'« incomplet » (vert pâle) et « complet » (l'accent) se lisaient
+  // tous les deux comme deux blancs — 1,5 de contraste entre eux —, et que le
+  // bordeaux du dépassement disparaissait dans le fond noir (1,76). Ce qui les
+  // gardait fixes est exactement ce qui exige qu'elles bougent.
+  vertPale: "var(--atlas-vertPale, #b9c6b4)",
   // `bordeaux` : le dépassement — plus de chantiers que d'équipes. **Son choix
   // du 21 août, après l'or puis l'ardoise**, tous deux écartés par lui. L'or
   // sert partout ailleurs à ce qu'on LIT, il ne signalait donc plus rien ; et
   // ce n'est PAS `alert` (#9C3B2E), qui dit « erreur » — dépasser est un choix
   // qu'il assume : *« il peut quand même le faire, nous on prévient juste »*.
-  bordeaux: "#6E2433",
+  bordeaux: "var(--atlas-bordeaux, #6E2433)",
   // ─── L'or, second accent, posé le 9 août 2026 ────────────────────────────
   //
   // **Il vient d'une maquette du patron, pas d'une envie.** Il a envoyé une
@@ -117,6 +132,47 @@ export const couleursDocument = {
   encre: "#1c1c1a",
   etiquette: "#6b6b5c",
 } as const;
+
+// ═══ CE QU'ON ÉCRIT SUR UN APLAT — le défaut du 22 août 2026 ════════════════
+//
+// **Sa capture, le 22 août :** *« le mode nuit est illisible »*. La pastille
+// d'équipe du planning portait « Julien ＋ » en `#faf9f5` — un crème écrit en
+// clair — sur `colors.rust`. Sur les cinq chartes claires, l'accent est un vert
+// pin sombre et cela se lit très bien. **Sur Nuit et Sylve, l'accent EST
+// l'encre** : un crème sur un crème, 1,05 de contraste. Le même défaut se
+// répétait sur les boutons pleins, les icônes `fill="white"` et les libellés
+// posés sur le rouge d'alerte — huit endroits, tous écrits en clair, tous
+// justes sur cinq chartes et illisibles sur deux.
+//
+// **`card` est la réponse, et ce n'est pas un hasard :** dans chacune des sept
+// chartes, la plage et l'accent sont aux deux bouts de l'échelle — l'un clair
+// et l'autre sombre, ou l'inverse. Ce qui se lit sur la plage se lit sur
+// l'accent, retourné. Sur « Origine », `card` vaut `#faf9f5` au caractère près :
+// les cinq chartes claires ne bougent donc pas d'un pixel.
+//
+// La garantie n'est pas une intuition : `scripts/test-chartes-lisibles.ts`
+// mesure les sept chartes et refuse la moindre sous 4,5.
+export const surPlein = colors.card;
+
+/**
+ * Un voile d'encre qui SUIT la charte — ce que `rgba(28,28,26,…)` ne faisait
+ * pas.
+ *
+ * Le calendrier éteignait ses week-ends et ses jours passés avec l'encre
+ * d'Origine écrite en clair. Sur un fond noir, du noir à 42 % est du noir :
+ * les chiffres « 29 » et « 30 » de sa capture n'existaient tout simplement
+ * pas. Écrit ainsi, le voile est clair sur une charte sombre et sombre sur une
+ * charte claire, sans que l'écran ait à savoir laquelle est posée.
+ *
+ * **Ce qu'il se passe si le navigateur ne connaît pas `color-mix`** (avant
+ * iOS 16.2) : la déclaration est ignorée, et la couleur retombe sur celle
+ * qu'elle hérite — c'est-à-dire l'encre pleine. Le chiffre est alors trop VU,
+ * jamais invisible. La dégradation va du bon côté, et c'est délibéré : le
+ * défaut qu'on répare est l'effacement, pas l'excès.
+ */
+export function voile(couleur: string, part: number): string {
+  return `color-mix(in srgb, ${couleur} ${Math.round(part * 1000) / 10}%, transparent)`;
+}
 
 export const font = {
   display: "var(--font-display)", // titres de page, noms de chantier — Playfair Display

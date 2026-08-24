@@ -9,6 +9,7 @@ import MoisCharge from "@/components/atlas/MoisCharge";
 import { useOccupation } from "@/components/atlas/useOccupation";
 import JourneeRegardee from "./JourneeRegardee";
 import { basculerJour } from "@/lib/calendrier";
+import { MOTIF_DEVIS_VIDE } from "@/lib/devis-envoyable";
 import {
   preparerEnvoiAction,
   envoyerAuClientAction,
@@ -51,6 +52,11 @@ const MESSAGES_BLOCAGE: Record<string, string> = {
   canal_absent: "Comment joindre ce client ?",
   coordonnee_absente: "Il manque la coordonnée pour ce canal.",
   devis_absent: "Aucun devis à envoyer pour ce chantier.",
+  // **Son défaut du 23 août 2026**, et il était sans garde-fou : *« le devis
+  // part à zéro euro chez la cliente, alors qu'il y a un arbre à tailler et un
+  // à démonter »*. Le texte vient de `src/lib/devis-envoyable.ts` — la même
+  // phrase qu'emploie le refus du serveur, jamais une recopie qui divergerait.
+  devis_vide: MOTIF_DEVIS_VIDE,
 };
 
 /**

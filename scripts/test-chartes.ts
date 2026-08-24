@@ -89,10 +89,23 @@ essai("chaque jeton employé par l'application EST une variable", () => {
 
 console.log("");
 
-essai("chaque charte porte les treize jetons, aucun vide", () => {
+// **Le compte n'est plus écrit ici, et c'est délibéré.** Il valait « treize »,
+// et le lot du 22 août 2026 en a ajouté trois — alerte, bordeaux, vert pâle,
+// qui devaient suivre la charte pour rester lisibles sur Nuit et Sylve
+// (`ARCHITECTURE.md` §160). La suite a rougi sur du code juste, pour un chiffre
+// qui ne défendait rien : ce qu'elle doit fixer, c'est qu'**aucune charte ne
+// porte moins de jetons qu'une autre** — un jeton oublié sur une seule des sept
+// laisse un écran à demi repeint, et c'est ce défaut-là qui coûte cher.
+const JETONS_ATTENDUS = Object.keys(charte("origine").jetons).sort();
+
+essai("les sept chartes portent les mêmes jetons, aucun vide", () => {
   for (const c of CHARTES) {
     const cles = Object.keys(c.jetons);
-    assert.equal(cles.length, Object.keys(AVANT_LE_LOT).length, `${c.nom} : ${cles.length} jetons`);
+    assert.deepEqual(
+      [...cles].sort(),
+      JETONS_ATTENDUS,
+      `${c.nom} ne porte pas les mêmes jetons qu'origine`
+    );
     for (const cle of cles) {
       const v = (c.jetons as unknown as Record<string, string>)[cle];
       assert.match(v, /^(#[0-9a-fA-F]{6}|rgba\()/, `${c.nom}.${cle} vaut « ${v} »`);

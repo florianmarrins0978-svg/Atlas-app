@@ -145,7 +145,17 @@ export default function ListeTermines({
                 style={{ color: colors.ink, borderBottom: `1px solid ${colors.line}` }}
                 data-atlas="compte-du-mois"
               >
-                {attente.length > 0 && <>{attente.length} à facturer{" · "}</>}
+                {attente.length > 0 && (
+                  <>
+                    {/* **« À facturer » en or — sa correction du 23 août au
+                        soir.** L'or porte ici ce qu'il porte déjà sur les lignes
+                        en dessous (« Pas encore facturé · 360,00 € prévus ») :
+                        ce qui attend un geste de lui. Deux comptes du même noir
+                        se lisaient comme un seul chiffre coupé en deux. */}
+                    <span style={{ color: colors.or }}>{attente.length} à facturer</span>
+                    {" · "}
+                  </>
+                )}
                 {faites.length} facturé{faites.length > 1 ? "s" : ""}
               </p>
               {mois.lignes.map((l) => (

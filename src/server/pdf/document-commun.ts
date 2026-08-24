@@ -1,7 +1,19 @@
 import { adressesDuDocument } from "../../lib/adresses";
-import { PDFDocument, PDFFont, PDFPage, StandardFonts, rgb, RGB } from "pdf-lib";
+import { PDFDocument, PDFFont, PDFImage, PDFPage, StandardFonts, rgb, RGB } from "pdf-lib";
 import Decimal from "decimal.js";
 import { couleursDocument } from "@/lib/design-tokens";
+import {
+  encreSurFond,
+  estLAllureParDefaut,
+  normaliserAllure,
+  taillePourLogo,
+  typographieDe,
+  type Allure,
+} from "@/lib/allure-documents";
+import fontkit from "@pdf-lib/fontkit";
+import { readFile } from "node:fs/promises";
+import path from "node:path";
+import { logger } from "@/server/logger";
 import { avecCivilite } from "@/lib/civilite";
 import { libelleReduction } from "@/lib/reduction-devis";
 
@@ -38,13 +50,85 @@ const PALETTE = {
   papier: couleursDocument.papier, // le devis n'est pas sur du blanc
 } as const;
 
-const ENCRE = couleurHexa(PALETTE.encre);
-const ETIQUETTE = couleurHexa(PALETTE.etiquette);
-const TITRE_PARTIE = couleurHexa(PALETTE.titrePartie);
-const COORDONNEES = couleurHexa(PALETTE.coordonnees);
-const TRAIT_CLAIR = couleurHexa(PALETTE.traitClair);
-const LEGAL = couleurHexa(PALETTE.legal);
-const PAPIER = couleurHexa(PALETTE.papier);
+/**
+ * LES TEINTES D'UN DOCUMENT — calculées, plus constantes.
+ *
+ * **Sa demande du 23 août 2026 :** le fond de page et la couleur d'accent se
+ * règlent, *« les réglages actuels doivent être par défaut »*. Elles étaient
+ * sept constantes de module ; elles descendent maintenant sur le contexte,
+ * parce qu'un document n'a plus la même allure qu'un autre.
+ *
+ * **L'ENCRE SUIT LE FOND, elle ne se choisit pas** (`encreSurFond`) : il peut
+ * mettre n'importe quelle couleur, et un fond sombre avec une encre noire
+ * donnerait un devis illisible dont il ne s'apercevrait qu'à l'impression, chez
+ * son client. Un second réglage pour l'encre ne ferait que déplacer le piège.
+ *
+ * **Une constante de module aurait été pire qu'un désordre** : partagée entre
+ * deux requêtes servies en même temps, elle aurait peint le devis de l'un aux
+ * couleurs de l'autre.
+ */
+type Teintes = {
+  encre: RGB;
+  etiquette: RGB;
+  titrePartie: RGB;
+  coordonnees: RGB;
+  traitClair: RGB;
+  legal: RGB;
+  papier: RGB;
+  /**
+   * Le fond, en clair — pour la trace.
+   *
+   * **La trace disait « #ece9e1 » pendant que la page se peignait en vert**,
+   * parce qu'elle recopiait la palette d'origine au lieu de lire la teinte
+   * retenue. Un contrôle d'apparence y aurait lu le crème sur un document
+   * sombre : c'est exactement le genre de vert qui ne prouve rien.
+   */
+  papierEcrit: string;
+};
+
+function teintesDe(brut: Allure | null | undefined): Teintes {
+  // **Rien n'est cru sur parole ICI NON PLUS.** Le dépôt normalise à l'écriture,
+  // mais une ligne posée par une version d'avant, ou par une main dans la base,
+  // arriverait telle quelle : « bleu roi » comme couleur de fond faisait sortir
+  // un devis à la couleur littérale. Trouvé par `test-allure-pdf.ts`.
+  const allure = brut ? normaliserAllure(brut) : null;
+  // Sans allure réglée — ou réglée sur le défaut — ce sont EXACTEMENT les
+  // couleurs d'avant : le document d'un patron qui n'a rien touché ne doit pas
+  // changer d'un pixel.
+  //
+  // **Le second cas n'est pas une optimisation.** Les teintes calculées ne
+  // retombent pas d'elles-mêmes sur les six constantes d'origine — l'encre
+  // douce, le trait clair et la mention légale y ont chacune leur valeur. Sans
+  // cette porte, ouvrir le réglage et le refermer sans rien changer aurait
+  // suffi à faire dériver son devis.
+  if (!allure || estLAllureParDefaut(allure)) {
+    return {
+      encre: couleurHexa(PALETTE.encre),
+      etiquette: couleurHexa(PALETTE.etiquette),
+      titrePartie: couleurHexa(PALETTE.titrePartie),
+      coordonnees: couleurHexa(PALETTE.coordonnees),
+      traitClair: couleurHexa(PALETTE.traitClair),
+      legal: couleurHexa(PALETTE.legal),
+      papier: couleurHexa(PALETTE.papier),
+      papierEcrit: PALETTE.papier,
+    };
+  }
+  const { encre, encreDouce } = encreSurFond(allure.fond);
+  return {
+    encre: couleurHexa(encre),
+    etiquette: couleurHexa(encreDouce),
+    // L'accent tient les titres de parties et le trait sous le titre : c'est
+    // là qu'il se voit, et c'est ce que la planche lui a montré.
+    titrePartie: couleurHexa(allure.accent),
+    coordonnees: couleurHexa(encreDouce),
+    // Le trait clair est l'encre très diluée : le calculer plutôt que de le
+    // fixer évite un filet noir sur un fond sombre.
+    traitClair: couleurHexa(encreDouce),
+    legal: couleurHexa(encreDouce),
+    papier: couleurHexa(allure.fond),
+    papierEcrit: allure.fond,
+  };
+}
 
 /** A4, et la marge de `@page{margin:1.1cm}` du modèle. */
 const LARGEUR = 595.28;
@@ -118,6 +202,14 @@ export type TraceDocument = {
   cadres: CadreTrace[];
   /** Le fond posé, une entrée par page — une page restée blanche se verrait. */
   fonds: { page: number; couleur: string }[];
+  /**
+   * Le logo, quand il y en a un : sa place et sa taille en points.
+   *
+   * **Sans cette trace, aucun contrôle ne peut rien dire du logo.** Une image
+   * ne laisse pas de texte : un devis qui l'aurait perdue, ou qui l'écraserait
+   * sur les coordonnées, passerait toutes les suites au vert.
+   */
+  logos: { x: number; y: number; largeur: number; hauteur: number }[];
 };
 
 type Contexte = {
@@ -128,6 +220,8 @@ type Contexte = {
   sansGras: PDFFont;
   serif: PDFFont;
   serifGras: PDFFont;
+  /** Les couleurs de CE document — son allure, ou celle d'avant. */
+  teintes: Teintes;
   trace: TraceDocument;
 };
 type Style = { taille?: number; police?: PDFFont; couleur?: RGB };
@@ -145,7 +239,7 @@ function poser(ctx: Contexte, contenu: string, x: number, y: number, style: Styl
     y,
     size: style.taille ?? 9.5,
     font: style.police ?? ctx.sans,
-    color: style.couleur ?? ENCRE,
+    color: style.couleur ?? ctx.teintes.encre,
   });
 }
 
@@ -157,7 +251,7 @@ function ecrire(ctx: Contexte, contenu: string, x: number, y: number, style: Sty
     y,
     taille: style.taille ?? 9.5,
     page: ctx.numeroPage,
-    couleur: enHexa(style.couleur ?? ENCRE),
+    couleur: enHexa(style.couleur ?? ctx.teintes.encre),
   });
 }
 
@@ -215,7 +309,7 @@ function ecrireEspace(
     y,
     taille,
     page: ctx.numeroPage,
-    couleur: enHexa(style.couleur ?? ENCRE),
+    couleur: enHexa(style.couleur ?? ctx.teintes.encre),
   });
 }
 
@@ -244,8 +338,8 @@ function ecrireEspaceADroite(
  * même », et il est assumé ici plutôt que découvert à la première cartouche.
  */
 function poserPapier(ctx: Contexte) {
-  ctx.page.drawRectangle({ x: 0, y: 0, width: LARGEUR, height: HAUTEUR, color: PAPIER });
-  ctx.trace.fonds.push({ page: ctx.numeroPage, couleur: PALETTE.papier });
+  ctx.page.drawRectangle({ x: 0, y: 0, width: LARGEUR, height: HAUTEUR, color: ctx.teintes.papier });
+  ctx.trace.fonds.push({ page: ctx.numeroPage, couleur: ctx.teintes.papierEcrit });
 }
 
 /** Ouvre une page de plus et rend l'ordonnée où reprendre le contenu. */
@@ -302,9 +396,137 @@ export type DonneesDocument = {
   lignes: LigneDocument[];
 };
 
+/**
+ * SON LOGO, embarqué — ou rien, et le document sort quand même.
+ *
+ * **Une image refusée ne doit pas empêcher un devis de partir.** Un fichier
+ * renommé en `.png` mais qui n'en est pas un, un JPEG progressif que `pdf-lib`
+ * ne sait pas lire : dans tous ces cas le document se compose sans logo, et
+ * l'incident se journalise. L'inverse — lever — priverait son client du devis
+ * pour une question d'apparence.
+ *
+ * Le refus utile, celui qu'il peut corriger, se fait bien plus haut : au moment
+ * où il choisit l'image (`refusDuLogo`).
+ */
+async function imageDuLogo(
+  pdfDoc: PDFDocument,
+  logo: LogoDocument | null | undefined
+): Promise<PDFImage | null> {
+  if (!logo) return null;
+  try {
+    return logo.mime === "image/png"
+      ? await pdfDoc.embedPng(logo.octets)
+      : await pdfDoc.embedJpg(logo.octets);
+  } catch (err) {
+    logger.error("Logo illisible, document composé sans lui", {
+      mime: logo.mime,
+      erreur: err instanceof Error ? err.message : String(err),
+    });
+    return null;
+  }
+}
+
+/**
+ * LES QUATRE POLICES DU DOCUMENT — celles d'avant, ou la sienne.
+ *
+ * **Un PDF n'a que deux polices nativement** : Times et Helvetica, celles du
+ * format. C'est tout ce que ses devis portaient jusqu'au 23 août 2026, et c'est
+ * ce que rend cette fabrique tant qu'il n'a rien choisi.
+ *
+ * **Une typographie choisie remplace les QUATRE**, linéale comme serif. Le
+ * document distingue les deux par l'usage — la serif pour les titres de partie,
+ * la linéale pour les intitulés de colonnes —, mais mêler la sienne à Times
+ * ferait un document à deux mains, ce qui est pire que pas de choix du tout.
+ *
+ * **LES FICHIERS SONT DÉJÀ RÉDUITS, ET LE PDF LES EMBARQUE ENTIERS.** C'est
+ * l'inverse de ce qu'on écrit d'ordinaire, et ça a été payé : `pdf-lib`
+ * découpe lui-même la police quand on lui passe `subset: true`, et **son
+ * découpeur ment**. Sur EB Garamond, un devis complet ne sortait plus que
+ * « e e e Roc e e » — pas d'erreur, pas de journal : les caractères ne
+ * s'imprimaient simplement pas. Un devis muet part quand même chez le client.
+ *
+ * Les fichiers de `polices/` ont donc été réduits une fois pour toutes au
+ * latin dont ses documents ont besoin (`polices/LISEZ-MOI.md` donne la
+ * commande). Ils pèsent 16 à 30 ko chacun, deux par document — et rien ne les
+ * retouche à l'exécution. `scripts/test-polices-documents.ts` monte la garde.
+ */
+async function policesDu(
+  pdfDoc: PDFDocument,
+  allure: Allure | null | undefined
+): Promise<{ sans: PDFFont; sansGras: PDFFont; serif: PDFFont; serifGras: PDFFont }> {
+  // Même prudence que pour les teintes : une clef écrite par une version d'avant
+  // ne doit pas empêcher le document de sortir.
+  const choisie = allure ? typographieDe(normaliserAllure(allure).typographie) : null;
+  if (!choisie?.fichiers) {
+    return {
+      sans: await pdfDoc.embedFont(StandardFonts.Helvetica),
+      sansGras: await pdfDoc.embedFont(StandardFonts.HelveticaBold),
+      serif: await pdfDoc.embedFont(StandardFonts.TimesRoman),
+      serifGras: await pdfDoc.embedFont(StandardFonts.TimesRomanBold),
+    };
+  }
+
+  const dossier = path.join(process.cwd(), "src/server/pdf/polices");
+  try {
+    const [normal, gras] = await Promise.all([
+      readFile(path.join(dossier, choisie.fichiers.normal)),
+      readFile(path.join(dossier, choisie.fichiers.gras)),
+    ]);
+    const [police, policeGrasse] = await Promise.all([
+      // `subset: false` : voir plus haut — le découpeur de `pdf-lib` perd des
+      // caractères en silence, et Archivo Narrow le fait carrément tomber.
+      pdfDoc.embedFont(normal, { subset: false }),
+      pdfDoc.embedFont(gras, { subset: false }),
+    ]);
+    return { sans: police, sansGras: policeGrasse, serif: police, serifGras: policeGrasse };
+  } catch (err) {
+    // **Un fichier manquant ne doit pas empêcher son devis de sortir.** Il
+    // partirait sans document chez son client, pour un choix d'apparence. On
+    // retombe sur les polices du format, et l'on journalise — sans quoi
+    // personne ne saurait jamais pourquoi son devis a repris son ancienne
+    // allure (`AGENTS.md` : un défaut muet se rend d'abord bavard).
+    logger.error("Typographie du document introuvable, retour aux polices du format", {
+      typographie: choisie.clef,
+      erreur: err instanceof Error ? err.message : String(err),
+    });
+    return {
+      sans: await pdfDoc.embedFont(StandardFonts.Helvetica),
+      sansGras: await pdfDoc.embedFont(StandardFonts.HelveticaBold),
+      serif: await pdfDoc.embedFont(StandardFonts.TimesRoman),
+      serifGras: await pdfDoc.embedFont(StandardFonts.TimesRomanBold),
+    };
+  }
+}
+
+/**
+ * Le logo tel qu'un document l'embarque : ses octets, et son format.
+ *
+ * **PNG ou JPEG, et rien d'autre** — ce sont les deux seuls que `pdf-lib` sait
+ * embarquer. Le refus se fait bien plus haut, au moment où il choisit l'image
+ * (`refusDuLogo`), pour qu'il puisse encore en prendre une autre.
+ */
+export type LogoDocument = { octets: Uint8Array; mime: string };
+
 export type OptionsDocument = {
   /** « DEVIS », « FACTURE », ou leur variante brouillon. */
   titre: string;
+  /**
+   * L'allure réglée par le patron — typographie, fond, accent.
+   *
+   * **Absente : le document d'avant, au pixel près.** C'est ce que reçoit la
+   * feuille de chantier et le compte rendu d'entretien, que sa décision du
+   * 23 août 2026 laisse délibérément hors du réglage.
+   */
+  allure?: Allure | null;
+  /**
+   * Son logo, déjà lu — les octets et leur format.
+   *
+   * **Ce module ne va PAS le chercher lui-même.** Un composeur de document qui
+   * saurait lire dans le stockage deviendrait impossible à éprouver sans
+   * compartiment ; c'est le dépôt qui lit, et qui décide quoi faire d'un logo
+   * introuvable.
+   */
+  logo?: LogoDocument | null;
   /** Le bloc de références en haut à droite : libellé et valeur. */
   references: [string, string][];
   /** Intertitre du bloc de notes — le devis y met aussi ses conditions. */
@@ -361,24 +583,44 @@ export async function composerDocument(
   options: OptionsDocument
 ): Promise<{ pdf: Uint8Array; trace: TraceDocument }> {
   const pdfDoc = await PDFDocument.create();
+  // **`registerFontkit` inconditionnellement**, même sans typographie choisie :
+  // l'oublier ne se verrait qu'au premier document d'un patron qui en a réglé
+  // une, c'est-à-dire chez lui et pas ici.
+  pdfDoc.registerFontkit(fontkit);
+  const polices = await policesDu(pdfDoc, options.allure);
   const ctx: Contexte = {
     pdfDoc,
     page: pdfDoc.addPage([LARGEUR, HAUTEUR]),
     numeroPage: 1,
-    sans: await pdfDoc.embedFont(StandardFonts.Helvetica),
-    sansGras: await pdfDoc.embedFont(StandardFonts.HelveticaBold),
-    serif: await pdfDoc.embedFont(StandardFonts.TimesRoman),
-    serifGras: await pdfDoc.embedFont(StandardFonts.TimesRomanBold),
-    trace: { pages: 1, textes: [], traits: [], cadres: [], fonds: [] },
+    ...polices,
+    teintes: teintesDe(options.allure),
+    trace: { pages: 1, textes: [], traits: [], cadres: [], fonds: [], logos: [] },
   };
   poserPapier(ctx);
 
-  let y = HAUTEUR - MARGE - 22;
+  /** La ligne de départ de l'en-tête, avant que le logo ne pousse le nom. */
+  const yEnTete = HAUTEUR - MARGE - 22;
+  let y = yEnTete;
 
   /** Descend de `hauteur`, en changeant de page si le pied est atteint. */
   const place = (hauteur: number): void => {
     if (y - hauteur < PLANCHER) y = pageSuivante(ctx);
   };
+
+  // ─── Le logo, au-dessus du nom ──────────────────────────────────────────
+  // **Au-dessus, et pas à côté.** Les références du devis occupent le quart
+  // droit de cette même bande : un logo posé à gauche du nom viendrait les
+  // toucher dès qu'il est un peu large, et un numéro de devis illisible coûte
+  // plus cher qu'un en-tête d'un centimètre plus haut.
+  const logo = await imageDuLogo(pdfDoc, options.logo);
+  if (logo) {
+    const t = taillePourLogo(logo.width, logo.height);
+    const yImage = HAUTEUR - MARGE - t.hauteur;
+    ctx.page.drawImage(logo, { x: MARGE, y: yImage, width: t.largeur, height: t.hauteur });
+    ctx.trace.logos.push({ x: MARGE, y: yImage, largeur: t.largeur, hauteur: t.hauteur });
+    // Le nom descend sous le logo ; les références, elles, restent en haut.
+    y = yImage - 10 - 22;
+  }
 
   // ─── En-tête : l'entreprise à gauche, les références à droite ───────────
   ecrire(ctx, data.entrepriseNom, MARGE, y, { taille: 22, police: ctx.sans });
@@ -391,21 +633,22 @@ export async function composerDocument(
 
   let yCoord = y - 15;
   for (const ligne of coordonnees) {
-    ecrire(ctx, ligne, MARGE, yCoord, { taille: 8.5, couleur: COORDONNEES });
+    ecrire(ctx, ligne, MARGE, yCoord, { taille: 8.5, couleur: ctx.teintes.coordonnees });
     yCoord -= 11;
   }
 
   const references = options.references;
-  let yRef = y;
+  // Les références ne suivent PAS le logo : elles occupent leur propre colonne.
+  let yRef = yEnTete;
   for (const [libelle, valeur] of references) {
-    ecrire(ctx, libelle, DROITE - 175, yRef, { taille: 8.5, police: ctx.sansGras, couleur: ETIQUETTE });
+    ecrire(ctx, libelle, DROITE - 175, yRef, { taille: 8.5, police: ctx.sansGras, couleur: ctx.teintes.etiquette });
     ecrireADroite(ctx, valeur, DROITE, yRef, { taille: 9 });
-    trait(ctx, yRef - 4, 0.5, TRAIT_CLAIR, DROITE - 105, DROITE);
+    trait(ctx, yRef - 4, 0.5, ctx.teintes.traitClair, DROITE - 105, DROITE);
     yRef -= 17;
   }
 
   y = Math.min(yCoord, yRef) - 8;
-  trait(ctx, y, 1.6, ENCRE);
+  trait(ctx, y, 1.6, ctx.teintes.encre);
   y -= 30;
 
   // ─── Titre centré ───────────────────────────────────────────────────────
@@ -426,7 +669,7 @@ export async function composerDocument(
   // reçoit deux pièces qu'il doit rapprocher lui-même. Elle consomme sa propre
   // hauteur : posée sans descendre, elle venait toucher « ÉMETTEUR ».
   if (options.rappel) {
-    ecrire(ctx, options.rappel, MARGE, y, { taille: 8.5, couleur: ETIQUETTE });
+    ecrire(ctx, options.rappel, MARGE, y, { taille: 8.5, couleur: ctx.teintes.etiquette });
     y -= 20;
   }
 
@@ -440,7 +683,7 @@ export async function composerDocument(
   // Helvetica, les polices standard du format. C'est ce qui l'a mis d'accord
   // tout seul avec l'écran le 10 août 2026, quand l'application est passée aux
   // polices de l'appareil.
-  const etiquettePartie: Style = { taille: 8.5, police: ctx.serif, couleur: TITRE_PARTIE };
+  const etiquettePartie: Style = { taille: 8.5, police: ctx.serif, couleur: ctx.teintes.titrePartie };
   ecrireEspace(ctx, "ÉMETTEUR", MARGE, y, APPROCHE_ETIQUETTE, etiquettePartie);
   ecrireEspace(ctx, "CLIENT", colonneDroite, y, APPROCHE_ETIQUETTE, etiquettePartie);
   y -= 15;
@@ -479,7 +722,7 @@ export async function composerDocument(
   const xPrix = DROITE - 140;
   const xMontant = DROITE;
 
-  const enTeteColonne: Style = { taille: 7.5, police: ctx.sansGras, couleur: ETIQUETTE };
+  const enTeteColonne: Style = { taille: 7.5, police: ctx.sansGras, couleur: ctx.teintes.etiquette };
   const enTeteTableau = () => {
     ecrireEspace(ctx, options.enTeteLignes ?? "DESCRIPTION", MARGE, y, APPROCHE_ETIQUETTE, enTeteColonne);
     if (!options.sansChiffrage) {
@@ -488,16 +731,16 @@ export async function composerDocument(
       ecrireEspaceADroite(ctx, "TOTAL HT", xMontant, y, APPROCHE_ETIQUETTE, enTeteColonne);
     }
     y -= 9;
-    trait(ctx, y, 1.2, ENCRE);
+    trait(ctx, y, 1.2, ctx.teintes.encre);
     y -= 17;
   };
   enTeteTableau();
 
   if (data.lignes.length === 0) {
     // Un tableau vide sans un mot laisse croire à un document tronqué.
-    ecrire(ctx, "Aucune ligne pour l'instant.", MARGE, y, { taille: 9, couleur: ETIQUETTE });
+    ecrire(ctx, "Aucune ligne pour l'instant.", MARGE, y, { taille: 9, couleur: ctx.teintes.etiquette });
     y -= 14;
-    trait(ctx, y, 0.7, TRAIT_CLAIR);
+    trait(ctx, y, 0.7, ctx.teintes.traitClair);
     y -= 12;
   }
 
@@ -525,7 +768,7 @@ export async function composerDocument(
       });
     }
     y -= Math.max(lignesLibelle.length, 1) * 11 + 7;
-    trait(ctx, y, 0.7, TRAIT_CLAIR);
+    trait(ctx, y, 0.7, ctx.teintes.traitClair);
     y -= 12;
   }
 
@@ -581,7 +824,7 @@ export async function composerDocument(
   ecrireADroite(ctx, formatMontant(data.totalTva, data.devise), DROITE, y, { taille: 9.5 });
   y -= 14;
 
-  trait(ctx, y, 1.6, ENCRE, gaucheTotaux, DROITE);
+  trait(ctx, y, 1.6, ctx.teintes.encre, gaucheTotaux, DROITE);
   y -= 22;
 
   ecrire(ctx, "Total TTC", gaucheTotaux, y, { taille: 14, police: ctx.serifGras });
@@ -593,7 +836,7 @@ export async function composerDocument(
   }
 
   // ─── Conditions et modalités de paiement ────────────────────────────────
-  const etiquetteBloc: Style = { taille: 7.5, police: ctx.sansGras, couleur: ETIQUETTE };
+  const etiquetteBloc: Style = { taille: 7.5, police: ctx.sansGras, couleur: ctx.teintes.etiquette };
 
   // Les blocs supplémentaires — matériel, photos — passent avant les notes :
   // ils décrivent le chantier, là où les notes commentent.
@@ -636,13 +879,13 @@ export async function composerDocument(
   // Ancré en bas de la dernière page plutôt qu'à la suite du contenu : le cadre
   // de signature d'un devis se cherche toujours au même endroit.
   const yPied = MARGE + 92;
-  trait(ctx, yPied + 22, 0.7, TRAIT_CLAIR);
+  trait(ctx, yPied + 22, 0.7, ctx.teintes.traitClair);
 
   // Mot pour mot la mention du modèle du patron : c'est celle qu'il a déjà
   // envoyée à ses clients, et Atlas ne doit pas en dire autre chose.
   const mention = options.mentionLegale(data);
   enLignes(mention, ctx.sans, 7.8, 290).forEach((l, i) =>
-    ecrire(ctx, l, MARGE, yPied - i * 10, { taille: 7.8, couleur: LEGAL })
+    ecrire(ctx, l, MARGE, yPied - i * 10, { taille: 7.8, couleur: ctx.teintes.legal })
   );
 
   // Le cadre de signature n'appartient qu'au devis : une facture ne se signe
@@ -656,7 +899,7 @@ export async function composerDocument(
       y: yPied - 24,
       width: largeurSignature,
       height: 50,
-      borderColor: TRAIT_CLAIR,
+      borderColor: ctx.teintes.traitClair,
       borderWidth: 1,
       borderDashArray: [3, 3],
     });
@@ -673,7 +916,7 @@ export async function composerDocument(
       legende,
       gaucheSignature + (largeurSignature - ctx.sans.widthOfTextAtSize(legende, 7.8)) / 2,
       yPied - 38,
-      { taille: 7.8, couleur: ETIQUETTE }
+      { taille: 7.8, couleur: ctx.teintes.etiquette }
     );
   }
 
@@ -690,7 +933,7 @@ export async function composerDocument(
         y: MARGE,
         size: 7.5,
         font: ctx.sans,
-        color: LEGAL,
+        color: ctx.teintes.legal,
       });
       ctx.trace.textes.push({
         contenu: numero,

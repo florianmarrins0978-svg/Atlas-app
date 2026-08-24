@@ -65,20 +65,50 @@ jobs:
             sleep 1
           done
           curl -sf http://127.0.0.1:8080/app.html >/dev/null
-          BASE_URL=http://127.0.0.1:8080 npm run test:e2e
+
+          # **ON JOUE LES QUATRE, MÊME SI LA PREMIÈRE TOMBE.**
+          #
+          # *Payé le 23 août 2026.* Avec `set -e`, la première suite rouge
+          # arrêtait l'étape : `test:arrosage` a barré la publication pendant
+          # dix heures — donc TOUTES ses maquettes, dont celles qu'on venait de
+          # lui demander d'ouvrir —, et pendant ce temps un SECOND défaut
+          # dormait dans `test:croquis`, invisible parce que la suite n'était
+          # jamais atteinte. Le corriger a demandé de le découvrir à la main.
+          #
+          # C'est la règle du dépôt appliquée ici (`CLAUDE.md` §5) : savoir que
+          # deux choses cassent, et lesquelles, vaut mieux que de les découvrir
+          # une par une. On note l'échec, on continue, et l'on tombe à la fin.
+          ECHECS=""
+          jouer(){
+            echo "── $1"
+            BASE_URL=http://127.0.0.1:8080 npm run "$1" || ECHECS="$ECHECS $1"
+          }
+          jouer test:e2e
           # **Les suites de l'arrosage gardent le calcul, pas les écrans.** Elles
           # étaient jouées à la main jusqu'au 18 août — et ce jour-là, un morceau
           # de calcul resté dans `arrosage.html` a mis la liste des pièces à zéro
           # sur la page du croquis sans qu'aucune suite jouée en ligne ne le
           # voie. Une suite qui ne barre pas la publication ne barre rien.
-          BASE_URL=http://127.0.0.1:8080 npm run test:arrosage
-          BASE_URL=http://127.0.0.1:8080 npm run test:croquis
+          jouer test:arrosage
+          jouer test:croquis
           # **La planche qu'on lui demande d'ESSAYER se parcourt d'abord ici.**
           # Trois fois, une adresse lui a été transmise sans que personne ne
           # l'ait ouverte, et c'est lui qui a trouvé le défaut. Celle-ci
           # s'ouvre, ses quatre onglets s'affichent et ses boutons se pressent
           # dans un vrai navigateur avant qu'elle parte en ligne.
-          BASE_URL=http://127.0.0.1:8080 npm run test:termines
+          jouer test:termines
+          # **Une planche dont on ATTEND un choix se parcourt d'abord ici.**
+          # Celle-ci porte la seule chose qu'il ait posée comme non
+          # négociable — « bien entendu qu'il faut conserver le mot de passe » :
+          # la suite refuse une porte où Face ID serait le seul chemin. Une
+          # planche qui lui ferait valider autre chose que sa demande, c'est la
+          # porte de l'application qui en sortirait.
+          jouer test:face-id
+
+          if [ -n "$ECHECS" ]; then
+            echo "::error::Suites en échec :$ECHECS"
+            exit 1
+          fi
 
   deploy:
     name: Déploiement
@@ -203,9 +233,21 @@ jobs:
           # `essais.html`. Sans cette ligne, on lui transmettrait une adresse
           # dont rien ne prouve qu'elle répond — c'est déjà arrivé, et c'est LUI
           # qui avait fait le test.
+          # `anthracnose-du-platane.pdf` s'ajoute le 24 août 2026, et pour une
+          # raison précise : son application de courrier a répondu « Impossible
+          # d'ajouter la pièce jointe » — le fichier n'était nulle part sur son
+          # téléphone, puisqu'il ne l'avait reçu que dans une conversation. Un
+          # document qu'on lui demande d'ENVOYER doit avoir une adresse, comme
+          # une planche qu'on lui demande de regarder (`CLAUDE.md` §3 bis). Il
+          # n'est lié d'aucune page — la liste déduite ne le verrait pas — et il
+          # se donne par son adresse directe. `ecran-anthracnose-platane.png`
+          # l'accompagne pour la même raison : il a demandé la copie d'écran
+          # SEULE, et une image reçue dans une conversation n'est pas plus
+          # attachable qu'un PDF.
           for f in index.html essais.html nav.js arrosage-catalogue.js \
                    arrosage-simple.html arrosage-plan.html \
-                   arrosage-discuter.html $LIES; do
+                   arrosage-discuter.html anthracnose-du-platane.pdf \
+                   ecran-anthracnose-platane.png $LIES; do
             code=$(curl -sL -o /dev/null -w '%{http_code}' --max-time 20 "$BASE/$f")
             echo "$code  $f"
             [ "$code" = "200" ] || { echo "Écran manquant ou en erreur : $f"; exit 1; }
