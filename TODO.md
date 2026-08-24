@@ -2836,6 +2836,37 @@ fin, et le fond figé.
 obligatoires, disposition des colonnes, ordre des totaux. Un devis mal posé
 n'est pas un devis moins joli, c'est un devis qu'on peut lui contester.
 
+### 0 trigies sexies. Deux suites navigateur rougissent encore sous charge — **CONSTATÉ le 24 août 2026, PAS RÉPARÉ**
+
+**Écrit parce que le silence coûterait l'enquête une seconde fois.** Ce n'est
+pas une réparation annoncée : c'est un constat, et il n'a pas été corrigé.
+
+| Suite | Ce qu'elle rend | Où |
+|---|---|---|
+| `test-facture-au-client-e2e` | « L'écran laisse croire que la facture est partie » | sur la branche du lot de l'allure, **deux fois sur trois** |
+| `test-tva-au-paiement-e2e` | `waitForFunction: Timeout 15000ms exceeded` sur l'acompte | sur **`main`**, sans aucun changement |
+
+**Les deux sont VERTES jouées seules**, et c'est la question qui tranche
+(§ ci-dessous). Surtout : **ce ne sont pas les mêmes** d'une branche à l'autre.
+Un lot qui ne touche ni la facture ni la TVA ne peut pas faire tomber l'une
+pendant que l'autre tombe sur `main` : c'est la charge, pas le code.
+
+**Ce qu'il faudra regarder**, et personne ne l'a fait :
+
+- `test-facture-au-client` lit l'écran **après** avoir attendu « arrêtée ». Or
+  l'écran d'après porte un jeton, donc la phrase « votre client ne l'a pas
+  encore reçue » **disparaît**. Le contrôle semble donc dépendre du fait que
+  `router.refresh()` n'a pas encore atterri : ce serait une course écrite dans
+  la suite elle-même, pas dans le produit. À vérifier avant de toucher quoi que
+  ce soit ;
+- `test-tva-au-paiement` attend une valeur à l'écran par `waitForFunction` :
+  c'est exactement le mal des cinq suites d'à côté (0 trigies quinquies), et le
+  remède est connu — **relire la base en boucle**, jamais l'écran sur une montre.
+
+**Ce que ça ne doit PAS devenir :** une raison de rejouer la batterie jusqu'à ce
+qu'elle passe. Une suite qui rougit une fois sur trois barre la publication une
+fois sur trois, et c'est déjà arrivé (`CLAUDE.md` §5).
+
 ### 0 trigies quinquies. ~~Cinq suites du devis rougissaient une batterie sur deux~~ — **RÉPARÉES le 23 août 2026**
 
 **Quatre l'étaient pour la même raison, et la cinquième pour une autre.** C'est
