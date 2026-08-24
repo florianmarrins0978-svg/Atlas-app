@@ -101,8 +101,12 @@ par `pages.yml` — sans quoi on lui transmettrait une adresse dont rien ne prou
 qu'elle répond, ce qui est déjà arrivé trois fois.
 
     https://florianmarrins0978-svg.github.io/Atlas-app/anthracnose-du-platane.pdf
+    https://florianmarrins0978-svg.github.io/Atlas-app/ecran-anthracnose-platane.png
 
-**Après chaque modification du document, refaire cette copie.** Le PDF de
+La copie d'écran seule y est aussi : il l'a demandée à part, et une image reçue
+dans une conversation n'est pas plus attachable qu'un PDF.
+
+**Après chaque modification du document, refaire ces DEUX copies.** Le PDF de
 `captures/` n'est pas publié : `captures/` est ignoré. Un document corrigé dans
 `docs/` et jamais recopié dans `appli/` laisse en ligne la version d'avant, et
 c'est celle-là qu'il enverra.

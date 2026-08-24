@@ -233,10 +233,14 @@ jobs:
           # document qu'on lui demande d'ENVOYER doit avoir une adresse, comme
           # une planche qu'on lui demande de regarder (`CLAUDE.md` §3 bis). Il
           # n'est lié d'aucune page — la liste déduite ne le verrait pas — et il
-          # se donne par son adresse directe.
+          # se donne par son adresse directe. `ecran-anthracnose-platane.png`
+          # l'accompagne pour la même raison : il a demandé la copie d'écran
+          # SEULE, et une image reçue dans une conversation n'est pas plus
+          # attachable qu'un PDF.
           for f in index.html essais.html nav.js arrosage-catalogue.js \
                    arrosage-simple.html arrosage-plan.html \
-                   arrosage-discuter.html anthracnose-du-platane.pdf $LIES; do
+                   arrosage-discuter.html anthracnose-du-platane.pdf \
+                   ecran-anthracnose-platane.png $LIES; do
             code=$(curl -sL -o /dev/null -w '%{http_code}' --max-time 20 "$BASE/$f")
             echo "$code  $f"
             [ "$code" = "200" ] || { echo "Écran manquant ou en erreur : $f"; exit 1; }
