@@ -15,6 +15,43 @@ ligne « fait » qui ne l'est pas coûte plus cher qu'une ligne absente.
 
 ---
 
+## Le lien envoyé au client ne peut plus être une adresse locale (24 août 2026)
+
+Son client lisait « Connexion au serveur impossible » : le lien portait
+`localhost`.
+
+| | État |
+|---|---|
+| Une adresse locale ne part plus dans un message | **fait** (`ouvrableParLeClient`) |
+| L'écran le dit, et dit que le rapport est sauf | **fait** |
+| `ATLAS_URL_PUBLIQUE` pour un mandataire muet | **fait**, documentée dans `.env.example` |
+| Les quatre copies du calcul d'adresse réunies | **fait** (`originePublique`) |
+| Le garde-fou confronté à l'état dégradé | **fait** — la suite de la fiche rougit sans adresse déclarée |
+| Le même refus sur le devis et la facture | **NON** — leur adresse est corrigée, mais aucun refus n'y est posé |
+
+Le détail et les partis pris : `ARCHITECTURE.md` §169.
+
+---
+
+## La fiche de chantier : supprimer un brouillon, retrouver où elle se compose (24 août 2026)
+
+Ses deux phrases, sur une capture : *« Je ne peux pas supprimer les fiches en
+cours »* et *« l'endroit où je pouvais créer ma fiche sur mesure […] a
+disparu »*.
+
+| | État |
+|---|---|
+| Une fiche EN COURS se retire depuis la liste, avec « Annuler » | **fait** (`FichesEnCours`, `supprimerPassage`) |
+| Un rapport PARTI ne se supprime pas — et ne porte pas de croix | **fait**, tenu par une suite base ET une suite navigateur |
+| L'endroit où la fiche se compose, atteignable en permanence | **fait** — en bas de la liste, propriétaire seulement |
+| Créer une catégorie en la NOMMANT | **fait** — elle ne tombe plus dans « Divers » |
+| Retirer une catégorie d'un geste | **fait** (`retirerFamille`) |
+| Les écrans regardés, pas seulement testés | **fait** — trois défauts corrigés qu'aucune suite ne voyait |
+
+Le détail et les partis pris : `ARCHITECTURE.md` §168.
+
+---
+
 ## Le client touché ne remonte plus (23 août 2026)
 
 Son défaut : le client haut sur l'écran disparaît quand on le touche.
@@ -117,6 +154,24 @@ positions des zones et l'endroit de la nourrice, et **cela n'a pas pu être
 éprouvé** (`AGENTS.md`). C'est le premier essai à faire sur son banc.
 
 Le détail : `ARCHITECTURE.md` §150.
+
+### Discuter le plan (23 août 2026)
+
+| | État |
+|---|---|
+| Un fil et un **champ libre** sous le plan | **fait** (`DiscuterLePlan.tsx`) |
+| Atlas pose une **consigne**, jamais un tracé | **fait** (`consignes.ts`) |
+| La discussion ne s'affiche **qu'avec un plan** | **fait**, et éprouvé par l'absence |
+| **Aucune phrase pré-écrite** | **fait** |
+| La nourrice **ne se discute pas** | **fait**, et l'écran le dit |
+| Une référence hors catalogue est **refusée** | **fait**, sans jeter la réponse |
+| Rien n'est enregistré — les paramètres voyagent | **fait** |
+
+**Non vérifié ici :** le parcours entier (il faut une clé de vision pour obtenir
+un plan). Les règles pures le sont : `test-consignes-arrosage.ts`,
+`test-discussion-plan.ts`.
+
+Le détail : `ARCHITECTURE.md` §167.
 
 ### Le moins de vannes, pas le moins d'arroseurs (23 août 2026)
 

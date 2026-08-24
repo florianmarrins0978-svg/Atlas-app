@@ -9,6 +9,69 @@ Format : le plus récent en tête.
 
 ## 2026-08-24
 
+### Un lien envoyé à un client ne peut plus être une adresse de sa machine
+
+**« Connexion au serveur impossible. »** C'est ce que lisait son client en
+ouvrant le SMS de sa fiche de chantier. Le rapport existait et son jeton était
+bon : c'est l'adresse qui portait `localhost`, c'est-à-dire le téléphone du
+client lui-même. Le lien prenait l'adresse du navigateur qui l'avait fabriqué —
+juste quand Atlas est ouvert par son adresse publique, faux dès qu'il passe par
+la redirection de port de son éditeur, et rien à l'écran ne distinguait les
+deux.
+
+Atlas refuse désormais de composer un message avec une adresse qui ne sort pas
+d'une machine — `localhost`, mais aussi `192.168.x.x`, qui est la plus traître :
+elle s'ouvre au bureau, donc l'essai réussit, et elle échoue chez tout le monde.
+L'écran le dit, et dit que le rapport est enregistré : sans cela il recocherait
+toute sa fiche.
+
+**`ATLAS_URL_PUBLIQUE`** répond pour un déploiement dont les en-têtes ne
+trahissent pas l'adresse (documentée dans `.env.example`), et **les quatre
+copies de ce calcul** — devis parti, devis complet, facture, fiche de chantier —
+n'en font plus qu'une. Le garde-fou a été vu rouge : la suite de la fiche,
+rejouée sans adresse déclarée, tombe exactement là où son client est tombé.
+Détail : `ARCHITECTURE.md` §169.
+
+
+### La fiche en cours se supprime, et l'endroit où elle se compose se retrouve
+
+**Rien n'effaçait un brouillon.** Une fiche s'ouvre à chaque geste, et l'écran
+qu'il ouvre chaque matin devenait une pile — une fiche du mauvais jour, une
+autre pour un jardin qu'il n'a pas fait. Une croix les retire, avec le geste du
+10 août : la ligne part, « Annuler » reste, rien n'est écrit tant que le tiroir
+est ouvert. **Un rapport déjà parti, lui, ne se supprime pas** et n'a pas de
+croix : son lien vit chez le client, et l'effacer changerait cette adresse en
+page morte sans que personne puisse le savoir.
+
+**L'endroit où la fiche se compose n'avait pas disparu : il ne s'affichait
+plus.** Le lien vers Réglages → Fiche d'entretien vivait dans l'encart de la
+fiche VIDE, celui qui s'efface à la première prestation posée — l'écran retirait
+sa porte à l'instant où le patron commençait à s'en servir. Elle est désormais
+en bas de la liste, en permanence, pour le propriétaire.
+
+**Deux verbes sur trois ne tenaient pas** dans l'écran qui compose la fiche.
+« Créer une catégorie » rangeait la ligne dans « Divers », à lui de renommer le
+titre au-dessus ; « en enlever » n'existait pas — six retraits au pouce. Le nom
+se saisit maintenant avec sa première prestation, et un bouton retire la famille
+entière.
+
+**Le rapport figé perd ses deux lignes grises**, à sa demande : la phrase sur la
+preuve de passage et l'adresse recopiée sous le bouton. Aucune n'apprenait rien
+— l'état figé se lit déjà aux cases qui ne se cochent plus. L'adresse survit là
+où elle sert vraiment : chez un client sans téléphone ni e-mail, elle est le
+seul moyen de transmettre. **Et le bouton dit enfin par quoi ça part** :
+« Envoyer par SMS » ou « Envoyer par e-mail », selon ce qu'il a choisi sous le
+nom du client — l'écran le déduisait des coordonnées, et annonçait donc un canal
+que personne n'avait demandé.
+
+**Trois défauts trouvés en REGARDANT les captures**, aucune suite ne rougissait :
+« EN COURS » restait seul sans une ligne dessous pendant le délai d'annulation ;
+la croix d'une famille était le jumeau exact de celle d'une ligne (elle s'écrit
+maintenant « Retirer la famille ») ; la porte du modèle butait sur la barre
+d'onglets — mesuré à 60 px, contre 116 px après. Détail : `ARCHITECTURE.md`
+§168.
+
+
 ### Audit de sécurité, lot 2 : ce qu'on dépose dans Atlas
 
 **Un classeur piégé ne couche plus le serveur.** Un `.xlsx` est une archive, et
@@ -158,6 +221,34 @@ PDF embarque.
 
 ## 2026-08-23
 
+### On peut enfin discuter du plan — et Atlas ne dessine pas, il pose un paramètre
+
+**Sa demande du 21 août, codée :** *« j'ai besoin que si l'utilisateur a besoin
+de te demander de faire une modification, qu'il puisse le faire — une petite
+interface pour qu'il puisse discuter avec toi »*.
+
+**Sous le plan, un fil et un champ libre.** Il écrit ce qu'il veut ; Atlas
+répond, et s'il y a lieu **pose une consigne** — marque, corps, matériel d'une
+zone, buse d'une zone, sonde de pluie. C'est le calcul qui refait tout : le
+tracé, les métrés et les pièces restent issus de la même source. Un plan
+retouché à la main ne se recalculerait plus.
+
+**Ses deux bornes, à la lettre.** La discussion ne s'affiche qu'AVEC un plan —
+elle ne peut donc jamais en créer un. Et **aucune phrase pré-écrite** : la
+maquette en montrait trois, elle le disait elle-même ; des suggestions
+apprennent à ne demander que ce qui est proposé.
+
+**La nourrice ne se discute pas.** Pour la déplacer, on corrige le croquis — et
+l'écran le dit sous le champ, pour qu'il ne l'essaie pas et n'y voie une panne.
+
+**Aucune référence inventée.** Une buse hors catalogue est refusée, jamais
+rapprochée de la plus proche — mais la réponse d'Atlas reste, et il lit pourquoi
+la modification n'a pas été appliquée.
+
+**Non vérifié ici :** le parcours entier, qui demande une clé de vision que cet
+environnement n'a pas. Les règles pures, elles, le sont.
+
+Détail : `ARCHITECTURE.md` §167.
 ### Planche 92 — un blanc à reflets bleutés, neuf écrans qui s'essaient
 
 **Trois demandes en une soirée, et chacune a corrigé la précédente.**

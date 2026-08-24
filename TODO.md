@@ -9,6 +9,43 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
+## Le devis et la facture n'ont pas encore le refus d'adresse locale (24 août 2026)
+
+Le lien envoyé au client prenait l'adresse du navigateur qui l'avait fabriqué —
+et son client a reçu une page morte sur `localhost` (`ARCHITECTURE.md` §169).
+
+**Ce qui est fait pour les quatre écrans** : l'adresse se calcule au même
+endroit, et `ATLAS_URL_PUBLIQUE` la commande quand elle est posée.
+
+**Ce qui n'est fait que sur la fiche de chantier** : le REFUS de composer un
+message avec une adresse locale, et la phrase qui le dit. Le devis parti, le
+devis complet et la facture peuvent donc encore envoyer un lien mort quand Atlas
+est ouvert par une redirection de port.
+
+| | |
+|---|---|
+| ce qu'il faut | poser `ouvrableParLeClient` sur leurs trois gestes d'envoi |
+| qui peut le faire | n'importe quelle session — la règle pure existe déjà |
+| pourquoi ce n'est pas fait ici | trois écrans de plus dans un lot déjà large, et leurs suites à reprendre une par une |
+
+Ce n'est pas urgent tant qu'il envoie depuis l'adresse de son espace de travail
+— mais c'est exactement l'hypothèse qui vient d'être démentie.
+
+---
+
+## ~~Supprimer une fiche en cours, et retrouver où la fiche se compose~~ (fait le 24 août 2026)
+
+Ses deux phrases du jour. Les deux sont livrées — `ARCHITECTURE.md` §168.
+
+**Ce qui reste ouvert, et qui n'est PAS un oubli :** un rapport déjà envoyé ne
+se supprime toujours pas, et c'est une décision, pas une lacune. Son lien vit
+chez le client. Le jour où il demandera de pouvoir en retirer un, la question à
+lui poser n'est pas « peut-on ? » mais **« que doit lire le client qui rouvre
+son SMS ? »** — une page morte, ou une page qui dit que le rapport a été
+retiré. Le second demande une colonne ; le premier ne demande rien et ment.
+
+---
+
 ## ⚠ `ARCHITECTURE.md` porte SIX paragraphes pour trois numéros (23 août 2026)
 
 Trois numéros sont pris deux fois, et cela existe déjà sur `main` — ce n'est
@@ -158,7 +195,29 @@ traités évite de les rouvrir.
 ---
 
 
-## Arrosage : l'interface pour discuter le plan (23 août 2026)
+## ⏳ `verifier-maquette-message-et-allure.mjs` est rouge, et ce n'est pas l'arrosage
+
+Constaté le 23 août 2026 au soir, sur `main` :
+
+```
+❌ Les planches du 23 août ne tiennent pas :
+   • le fond de départ est rgb(250, 249, 245) au lieu du crème d'aujourd'hui
+   • le retour ne rend pas le crème : rgb(250, 249, 245)
+```
+
+**Vérifié rouge AVANT le lot arrosage**, en mettant celui-ci de côté : il n'en
+vient pas. Les planches sont `appli/mon-message-au-client.html` et
+`appli/allure-de-mes-devis.html`, arrivées avec la branche
+`claude/devis-dicte-ecrit-buttons-x7iw0c`.
+
+**Écrit ici plutôt que corrigé au jugé** : le fond attendu est une décision de
+cette maquette-là. La deviner ferait passer un contrôle au vert sur la mauvaise
+couleur, ce qui est pire que rouge.
+
+---
+
+
+## ~~Arrosage : l'interface pour discuter le plan~~ — **FAIT le 23 août 2026** (`ARCHITECTURE.md` §167)
 
 Le plan se dessine (`ARCHITECTURE.md` §150). Reste ce qu'il a demandé le 21 :
 *« j'ai besoin que si l'utilisateur a besoin de te demander de faire une

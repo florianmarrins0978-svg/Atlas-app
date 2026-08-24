@@ -424,6 +424,16 @@ au mauvais endroit, et une tranchée ne se déplace pas.
 emplacement, on répond avec des chiffres — l'amenée s'allonge, les lignes
 raccourcissent. On ne dit jamais où le mettre.
 
+**LA DISCUSSION POSE UN PARAMÈTRE, ELLE NE DESSINE JAMAIS.** Sa demande du
+21 août, codée le 23. Ce qui sort d'un message est **une consigne** prise dans
+une liste fermée — marque, corps, matériel d'une zone, buse d'une zone, sonde —
+et c'est le calcul qui refait le plan. Un plan retouché à la main ne se
+recalcule plus.
+
+Deux bornes qu'il a posées : **la discussion ne crée jamais un plan** (le fil ne
+s'affiche qu'avec un plan déjà calculé), et **aucune phrase pré-écrite** (un
+champ libre, rien d'autre).
+
 **LE MOINS DE VANNES D'ABORD, LE MOINS D'ARROSEURS ENSUITE — sa colère du
 23 août 2026 :** *« cinq réseaux pour ça ??????? »*, devant 208 m² de pelouse.
 On ne choisit plus la plus grande buse qui pave : on choisit celle qui demande
