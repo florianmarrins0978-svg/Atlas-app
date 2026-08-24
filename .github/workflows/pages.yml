@@ -226,9 +226,17 @@ jobs:
           # `essais.html`. Sans cette ligne, on lui transmettrait une adresse
           # dont rien ne prouve qu'elle répond — c'est déjà arrivé, et c'est LUI
           # qui avait fait le test.
+          # `anthracnose-du-platane.pdf` s'ajoute le 24 août 2026, et pour une
+          # raison précise : son application de courrier a répondu « Impossible
+          # d'ajouter la pièce jointe » — le fichier n'était nulle part sur son
+          # téléphone, puisqu'il ne l'avait reçu que dans une conversation. Un
+          # document qu'on lui demande d'ENVOYER doit avoir une adresse, comme
+          # une planche qu'on lui demande de regarder (`CLAUDE.md` §3 bis). Il
+          # n'est lié d'aucune page — la liste déduite ne le verrait pas — et il
+          # se donne par son adresse directe.
           for f in index.html essais.html nav.js arrosage-catalogue.js \
                    arrosage-simple.html arrosage-plan.html \
-                   arrosage-discuter.html $LIES; do
+                   arrosage-discuter.html anthracnose-du-platane.pdf $LIES; do
             code=$(curl -sL -o /dev/null -w '%{http_code}' --max-time 20 "$BASE/$f")
             echo "$code  $f"
             [ "$code" = "200" ] || { echo "Écran manquant ou en erreur : $f"; exit 1; }

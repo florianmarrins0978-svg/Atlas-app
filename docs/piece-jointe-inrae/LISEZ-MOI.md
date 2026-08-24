@@ -86,6 +86,31 @@ cela met une barrière devant un institut à qui l'on demande une faveur, et
 n'importe quel outil de bureau la retire en une minute. Ne pas le faire sans
 qu'il le redemande en connaissance de cause.
 
+## Le document doit avoir une ADRESSE, pas seulement un fichier
+
+**Payé le 24 août 2026.** Son application de courrier a répondu *« Impossible
+d'ajouter la pièce jointe »*. Le fichier n'était nulle part sur son téléphone :
+il ne l'avait reçu que dans une conversation, dont l'aperçu refusait déjà de
+s'ouvrir. On lui demandait donc d'envoyer un document qu'il n'avait pas.
+
+C'est la même leçon que `CLAUDE.md` §3 bis, dans l'autre sens : une planche
+qu'il doit REGARDER vit dans `appli/`, parce que c'est le seul dossier publié.
+Un document qu'il doit **envoyer** aussi. Le PDF est donc copié dans
+`appli/anthracnose-du-platane.pdf`, et son adresse est **vérifiée en ligne**
+par `pages.yml` — sans quoi on lui transmettrait une adresse dont rien ne prouve
+qu'elle répond, ce qui est déjà arrivé trois fois.
+
+    https://florianmarrins0978-svg.github.io/Atlas-app/anthracnose-du-platane.pdf
+
+**Après chaque modification du document, refaire cette copie.** Le PDF de
+`captures/` n'est pas publié : `captures/` est ignoré. Un document corrigé dans
+`docs/` et jamais recopié dans `appli/` laisse en ligne la version d'avant, et
+c'est celle-là qu'il enverra.
+
+**Et le poids compte.** 2,8 Mo puis 1,4 Mo : deux tailles auxquelles son
+téléphone renonçait. Les captures passent maintenant en JPEG dans
+`composer-pdf.mjs` — 375 ko pour le même document, sans perte visible.
+
 **Devant une demande d'aller plus loin dans ce sens, le lui dire plutôt que de
 l'exécuter.** Ce n'est pas une réserve de style : c'est la différence entre une
 demande d'autorisation et une demande obtenue par omission.

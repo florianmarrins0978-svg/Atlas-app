@@ -8,7 +8,7 @@
  */
 import { chromium } from "playwright";
 import { pathToFileURL } from "node:url";
-import { copyFileSync, existsSync, readFileSync, readdirSync } from "node:fs";
+import { copyFileSync, existsSync, readFileSync, readdirSync, statSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 
 const racine = resolve(import.meta.dirname, "../..");
@@ -29,6 +29,48 @@ for (const image of ["captures/inrae-ecran.png", "captures/inrae-sources.png"]) 
   }
 }
 copyFileSync(source, atelier);
+
+/**
+ * Les captures passent en JPEG avant d'entrer dans le PDF.
+ *
+ * **Payé le 24 août 2026.** Le document pesait 2,8 Mo, puis 1,4 : son téléphone
+ * renonçait à l'afficher, et son application de courrier a fini par répondre
+ * « Impossible d'ajouter la pièce jointe ». Chromium embarque les PNG tels
+ * quels, et une photographie en PNG pèse quatre fois son JPEG sans qu'un œil
+ * voie la différence — le PNG est fait pour les aplats, pas pour une feuille de
+ * platane. 261 ko au lieu de 1 009 pour la même image, et le PDF passe de
+ * 1,4 Mo à 375 ko.
+ *
+ * La conversion se fait ICI plutôt qu'à la capture : `capture-inrae.mts` rend
+ * des PNG, qui restent la bonne matière pour REGARDER un écran de près.
+ */
+async function convertirEnJpeg(page) {
+  for (const nom of ["inrae-ecran", "inrae-sources"]) {
+    const b64 = readFileSync(resolve(racine, `captures/${nom}.png`)).toString("base64");
+    const jpeg = await page.evaluate(async (data) => {
+      const img = new Image();
+      img.src = "data:image/png;base64," + data;
+      await img.decode();
+      const c = document.createElement("canvas");
+      c.width = img.naturalWidth;
+      c.height = img.naturalHeight;
+      const ctx = c.getContext("2d");
+      // Un fond blanc D'ABORD : le JPEG ne connaît pas la transparence, et sans
+      // lui les zones transparentes ressortent en NOIR.
+      ctx.fillStyle = "#fff";
+      ctx.fillRect(0, 0, c.width, c.height);
+      ctx.drawImage(img, 0, 0);
+      return c.toDataURL("image/jpeg", 0.86).split(",")[1];
+    }, b64);
+    const cible = resolve(racine, `captures/${nom}.jpg`);
+    writeFileSync(cible, Buffer.from(jpeg, "base64"));
+    // Une image de quelques octets n'est pas une image : c'est une conversion
+    // qui a échoué en silence.
+    if (statSync(cible).size < 5000) {
+      throw new Error(`${nom}.jpg fait ${statSync(cible).size} octets — la conversion n'a rien rendu.`);
+    }
+  }
+}
 
 /**
  * Le Chromium déjà posé dans l'image, plutôt qu'un téléchargement que le
@@ -57,6 +99,7 @@ const nav = await chromium.launch({ executablePath: navigateurPreInstalle() });
 // pour cela qu'il reste 32 px de marge, et que le compte de pages du PDF a le
 // dernier mot juste en dessous.
 const page = await nav.newPage({ viewport: { width: 680, height: 1002 } });
+await convertirEnJpeg(page);
 await page.emulateMedia({ media: "print" });
 await page.goto(pathToFileURL(atelier).href, { waitUntil: "networkidle" });
 
