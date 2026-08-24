@@ -9,6 +9,46 @@ Format : le plus récent en tête.
 
 ## 2026-08-23
 
+### Planche 92 — un blanc à reflets bleutés, quatre allures qui s'essaient
+
+Sa demande, capture de « Apparence » à l'appui : *« crée-moi une version de
+l'appli plus stylée dans le style des applis d'aujourd'hui, avec un fond blanc
+avec des reflets bleutés un peu. Propose avant de coder quoi que ce soit. »*
+Rien dans `src/` — `CLAUDE.md` §3 bis.
+
+**Ce que la demande mélange, et que la planche sépare.** Elle porte deux choses
+qui n'ont ni le même coût ni le même risque :
+
+| | Ce que ça touche |
+|---|---|
+| **la couleur** | huit valeurs dans `chartes.ts`. **Aucun écran** |
+| **l'allure** — typographie, rayons, ombres, air | **tous** les écrans |
+
+D'où trois propositions du moins cher au plus engageant — A · Brume (la couleur
+seule), B · Brume+ (couleur et allure), C · Verre (halos, cartes flottantes,
+barre dépolie) — et l'allure d'aujourd'hui gardée comme quatrième bouton, pour
+qu'elles se jugent contre quelque chose plutôt que dans le vide.
+
+**Sous chacune, ce qu'elle coûte ET ce qu'elle risque.** C est la plus proche de
+ce qu'il décrit, et c'est aussi celle dont le flou peut faire saccader une liste
+de quarante chantiers sur un téléphone de trois ans — un choix d'apparence se
+paie en écrans à reprendre et en images par seconde, et cela ne se lit sur
+aucune capture.
+
+**UN DÉFAUT SORTI D'UNE CAPTURE, JAMAIS D'UN TEST — la cinquième fois dans ce
+dépôt.** La barre du bas gardait le crème d'Origine sur les deux allures
+bleutées. La cause est un piège de CSS qui ne se voit pas à la lecture : un jeton
+composé (`--barre-fond:var(--fond)`) déclaré sur `:root` est substitué **là où il
+est déclaré**, donc contre le fond de la racine — pas contre celui du look. Le
+parcours navigateur passait au vert pendant ce temps. Il compare désormais le
+fond de la barre à celui de la page, allure par allure.
+
+**Le chemin entier a été parcouru**, d'`essais.html` à la planche : la tuile se
+touche (64 px), la page s'ouvre, les boutons répondent. Trois fois une adresse
+lui a été transmise sans que personne ne l'ait ouverte, et trois fois c'est lui
+qui a trouvé le défaut.
+
+
 ### Les prix tapés sur l'écran du devis partent enfin chez le client
 
 *« Le devis part à zéro euro chez la cliente, alors qu'il y a un arbre à tailler
@@ -237,10 +277,6 @@ sous-commandes (`scripts/test-ouvrir-port.ts`) : `ouvert`, `non-declare`,
 environnement n'est pas un espace GitHub. Le nouveau mot `non-declare` est
 éprouvé sur la règle qui le lit, pas sur un vrai relais — c'est au prochain
 allumage de son espace que la fiche le dira, ou non.
-
----
-
-## 2026-08-23
 
 ### Le banc accusait le mauvais coupable — Atlas signe maintenant ses réponses
 
