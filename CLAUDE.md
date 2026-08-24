@@ -239,7 +239,17 @@ qu'il ne s'est pas prononcé.)*
 Concrètement, pour toute planche dont on attend un choix :
 
 1. le fichier va dans **`appli/`** ;
-2. un lien l'ajoute à **`appli/essais.html`** — c'est l'adresse qu'on lui donne ;
+2. un lien l'ajoute à **`appli/essais.html`** ;
+2 bis. **ON LUI DONNE L'ADRESSE ENTIÈRE, jamais tronquée.** Payé le 24 août
+   2026 : la planche était en ligne, publiée et vérifiée — et il a répondu
+   *« je t'ai demandé des maquettes dynamiques en .html pour que je puisse
+   avoir un visuel avant de choisir !!!! »*, parce qu'on lui avait écrit
+   `…github.io/Atlas-app/essais.html`. **Des points de suspension, ça ne se
+   tape pas sur un téléphone.** L'adresse complète, et celle de la planche
+   elle-même plutôt que celle du sommaire :
+   `https://florianmarrins0978-svg.github.io/Atlas-app/<la-planche>.html`.
+   C'est la quatrième fois qu'une adresse lui coûte un aller-retour, et les
+   quatre fois le code était juste ;
 3. rien d'autre à faire pour qu'elle soit vérifiée en ligne : depuis le
    20 août 2026, `pages.yml` **déduit sa liste des liens d'`essais.html`** —
    une liste tenue à la main s'oubliait à chaque page neuve, et l'oubli ne se
