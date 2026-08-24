@@ -341,6 +341,17 @@ au mauvais endroit, et une tranchée ne se déplace pas.
 emplacement, on répond avec des chiffres — l'amenée s'allonge, les lignes
 raccourcissent. On ne dit jamais où le mettre.
 
+**LE MOINS DE VANNES D'ABORD, LE MOINS D'ARROSEURS ENSUITE — sa colère du
+23 août 2026 :** *« cinq réseaux pour ça ??????? »*, devant 208 m² de pelouse.
+On ne choisit plus la plus grande buse qui pave : on choisit celle qui demande
+le moins de vannes, et l'on départage sur le nombre d'arroseurs. Neuf arroseurs
+se posent une fois ; une vanne coûte une électrovanne, une station de
+programmateur, sa tranchée et son créneau d'arrosage.
+
+**Et le quinconce ne se resserre JAMAIS sous la portée** — sa règle du 17 août.
+Quand le damier ne couvre pas à cet écart-là, on garde la grille alignée. Le
+resserrement sans plancher disqualifiait la seule pose qui tenait sur une vanne.
+
 **UN CROQUIS À MAIN LEVÉE SE LIT QUAND MÊME — sa correction du 23 août 2026 :**
 *« les utilisateurs ne vont pas s'amuser à faire des croquis à l'échelle à
 chaque fois ; là, il y a tous les métrés »*. **Les cotes commandent, le dessin

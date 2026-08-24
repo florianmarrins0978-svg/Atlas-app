@@ -51,6 +51,17 @@ positions des zones et l'endroit de la nourrice, et **cela n'a pas pu être
 
 Le détail : `ARCHITECTURE.md` §150.
 
+### Le moins de vannes, pas le moins d'arroseurs (23 août 2026)
+
+| | État |
+|---|---|
+| Le choix de buse vise **le moins de vannes** | **fait** — l'ancien critère devient le départage |
+| Le quinconce ne se resserre plus **sous la portée** | **fait** — sa règle du 17 août |
+| Son jardin du 23 août : **2 réseaux** au lieu de 5 | **fait**, et éprouvé |
+| Le carré de 12 m : **9 × 3504 buse 0,75** | **fait** — sa pose du 21 août |
+
+Le détail : `ARCHITECTURE.md` §158.
+
 ### Lire un croquis à main levée (23 août 2026)
 
 | | État |
