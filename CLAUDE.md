@@ -240,8 +240,10 @@ Concrètement, pour toute planche dont on attend un choix :
 
 1. le fichier va dans **`appli/`** ;
 2. un lien l'ajoute à **`appli/essais.html`** — c'est l'adresse qu'on lui donne ;
-3. son nom entre dans la **liste vérifiée en ligne** de `pages.yml`, sans quoi
-   rien ne prouve qu'elle répond ;
+3. rien d'autre à faire pour qu'elle soit vérifiée en ligne : depuis le
+   20 août 2026, `pages.yml` **déduit sa liste des liens d'`essais.html`** —
+   une liste tenue à la main s'oubliait à chaque page neuve, et l'oubli ne se
+   voyait pas. Ce qu'on lui donne à cliquer est exactement ce qu'on vérifie ;
 4. `docs/maquettes/index.html` la référence par `../../appli/…`, comme les
    autres essayables.
 
