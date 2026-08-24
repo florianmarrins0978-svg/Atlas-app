@@ -20,16 +20,36 @@ import type { FormeGrille, NomAxe } from "@/lib/grille-prix";
 /**
  * Poser — ou effacer — le prix d'une case, dans l'une des grilles.
  *
- * Pas de garde d'éditeur ici, contrairement au vocabulaire : ce sont les prix de
- * l'entreprise connectée, et l'isolation par entreprise (`withEntreprise`) fait
- * qu'un compte ne peut toucher que les siens. La case est validée dans le dépôt
- * — une clé inventée ne crée rien.
+ * ───────────────────────────────────────────────────────────────────────────
+ * **RÉSERVÉE AU PROPRIÉTAIRE — corrigé le 23 août 2026** (audit, constat E3).
+ *
+ * Cette action était **la seule de ce fichier** sans garde, quand ses neuf
+ * voisines en portaient une. Son commentaire s'en expliquait ainsi : *« ce sont
+ * les prix de l'entreprise connectée, et l'isolation par entreprise fait qu'un
+ * compte ne peut toucher que les siens »*. L'argument est juste et répond à la
+ * mauvaise question : il parle de l'isolation ENTRE entreprises, pas du rôle
+ * DANS l'entreprise. Or la règle du patron du 13 août 2026 ne porte que sur le
+ * second — *« un salarié ne doit évidemment pas pouvoir modifier les tarifs »*.
+ *
+ * **Ce que cela permettait :** un salarié appelait cette action depuis
+ * n'importe quel écran et réécrivait la grille tarifaire de l'entreprise. Les
+ * devis suivants s'en servaient. L'écran, lui, ne lui était même pas proposé —
+ * la protection ne vivait que dans l'affichage.
+ *
+ * ───────────────────────────────────────────────────────────────────────────
+ * **LA GARDE EST ICI, ET SURTOUT PAS DANS LE DÉPÔT.** `poserPrixGrille` est
+ * aussi appelé par `src/server/services/apprendre-grille.ts`, qui apprend les
+ * prix **tout seul** à partir des devis établis, avec l'origine « devis ». La
+ * poser un cran plus bas casserait la génération d'un devis pour un salarié —
+ * un remède qui fabriquerait une panne, sur un chemin que personne ne relierait
+ * à un contrôle de rôle. Ce qui se ferme ici, c'est la SAISIE À LA MAIN.
  *
  * Un prix vide efface la case : elle redevient une question posée, ce qui est
  * exactement ce qu'on veut quand on se rend compte qu'un prix était faux.
  */
 export async function poserPrixGrilleAction(nature: NatureGrilleServeur, cle: string, prix: string) {
   const ctx = await getCurrentCtx();
+  await exigerProprietaire(ctx, "poser un prix dans vos grilles");
   await poserPrixGrille(ctx, nature, cle, prix, "saisi");
   revalidatePath("/reglages/prix");
 }

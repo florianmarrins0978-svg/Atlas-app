@@ -14053,3 +14053,552 @@ Toutes les suites d'envoi chiffraient **avant** d'ouvrir l'écran du devis — p
 restait invisible. Le nouveau cas chiffre **sur l'écran du devis, après son
 ouverture** : c'est le geste réel du patron, et le seul qui prenne le défaut. Il
 a été vu rouge contre l'ancien code.
+---
+
+## 160. Le mode nuit : ce qui rendait deux chartes sur sept illisibles
+
+*Payé le 22 août 2026, sur sa capture du planning en « Nuit » et six mots :*
+***« Le mode nuit est illisible. Corrige ça. »***
+
+### Le diagnostic, mesuré et non supposé
+
+Le dépôt refuse les correctifs imaginés (`AGENTS.md`) : avant de toucher une
+ligne, chaque écran a été ouvert dans un navigateur sous les deux chartes
+sombres, et le contraste de **chaque texte visible** calculé contre son fond
+réellement composé — pas contre le fond qu'on suppose, qui est presque toujours
+transparent sur l'élément lui-même.
+
+Trois familles de fautes en sont sorties, et **aucune ne pouvait se voir sur les
+cinq chartes claires** :
+
+| | Ce qui était écrit | Ce que ça donne en Nuit |
+|---|---|---|
+| **1. un crème sur l'accent** | `#faf9f5`, `#fff`, `fill="white"` sur `colors.rust` | **1,05** — un crème sur un crème |
+| **2. un voile d'encre** | `rgba(28,28,26,0.42)` sur un fond noir | **1,04** — du noir sur du noir |
+| **3. trois signaux figés** | `alert`, `bordeaux`, `vertPale` en clair | **1,5 / 1,76 / 2,5** |
+
+### 1. `surPlein` — ce qu'on écrit sur un aplat
+
+Sur les cinq chartes claires, l'accent est un vert pin sombre : un crème s'y lit
+très bien, et huit endroits du dépôt l'écrivaient en clair. **Sur Nuit et Sylve,
+l'accent EST l'encre** — la charte inverse les pôles, et le crème se retrouve
+sur du crème.
+
+`design-tokens.ts` expose donc `surPlein`, et **il vaut `card`**. Ce n'est pas
+un raccourci : dans chacune des sept chartes, la plage et l'accent sont aux deux
+bouts de l'échelle — l'un clair et l'autre sombre, ou l'inverse. Ce qui se lit
+sur la plage se lit sur l'accent, retourné. Et sur « Origine », `card` vaut
+`#faf9f5` **au caractère près** : les cinq claires ne bougent pas d'un pixel.
+
+La garantie n'est pas une intuition. `test-chartes-lisibles.ts` mesure le couple
+`card` / `rust` sur les sept chartes et refuse la moindre sous 4,5 — c'est ce
+qui autorise l'affirmation ci-dessus, et ce qui la défendra le jour où une
+huitième charte arrivera.
+
+### 2. `voile()` — un voile qui suit la charte
+
+Un `rgba(28,28,26,α)` dit « l'encre d'Origine, à α ». Sur une charte sombre,
+l'encre n'est plus celle-là, et le voile devient une teinte pleine posée sur son
+propre fond. `voile(colors.ink, 0.42)` s'écrit en `color-mix` et suit la
+variable.
+
+**Ce qui se passe si le navigateur ne connaît pas `color-mix`** — avant
+iOS 16.2 : la déclaration est ignorée et la couleur retombe sur celle qu'elle
+hérite, c'est-à-dire l'encre pleine. Le chiffre est alors **trop vu, jamais
+invisible**. La dégradation va du bon côté, et c'est délibéré : le défaut qu'on
+répare est l'effacement.
+
+### 3. Alerte, bordeaux, vert pâle : ce qui les figeait exigeait qu'elles bougent
+
+`design-tokens.ts` affirmait que ces trois-là n'avaient pas à suivre la charte,
+et donnait sa raison : dérivées de chaque charte, deux d'entre elles finiraient
+par se ressembler, et le mois cesserait de se lire d'un coup d'œil.
+
+**Le raisonnement était juste et la conclusion fausse.** C'est précisément parce
+que leur rôle est de se distinguer qu'elles doivent suivre : sur les deux
+sombres, l'accent plein DEVIENT clair, si bien qu'« incomplet » (vert pâle) et
+« complet » (l'accent) se lisaient tous deux comme deux blancs — **1,5 l'un
+contre l'autre**, quand les cinq claires tiennent de 6,6 à 9,5.
+
+Elles deviennent donc des jetons de charte, dérivés par `detacher()` :
+
+- **la teinte et la saturation du patron ne bougent pas**, seule la clarté se
+  décale. Mêler vers l'encre — le réflexe — tire le rouge d'alerte vers le
+  gris-vert : on obtient un brun terne qui ne dit plus « attention » et qui se
+  confond avec le bordeaux, c'est-à-dire exactement les deux couleurs qu'il
+  fallait garder distinctes ;
+- **elle ne bouge que si elle en a besoin.** Sur un fond clair le premier essai
+  passe déjà le seuil, et la valeur sort intacte : `#9C3B2E`, `#6E2433`,
+  `#b9c6b4`. Les cinq chartes claires sont donc identiques au caractère près,
+  et une suite le fixe ;
+- **le vert pâle descend là où les deux autres montent.** Sur un écran sombre,
+  plus la demi-journée est pleine, plus la barre est claire — l'inverse exact
+  d'un écran clair, et la même règle.
+
+### Deux contrôles, et aucun ne remplace l'autre
+
+| | Ce qu'il attrape | Ce qu'il ne peut pas voir |
+|---|---|---|
+| `test-chartes-lisibles.ts` | une charte dont un couple ne se lit plus — sept palettes, sans navigateur, dix secondes | une couleur écrite en clair DANS un écran |
+| `test-mode-sombre-lisible-e2e.ts` | exactement cela : il ouvre chaque écran en Origine puis en Nuit et compare **le même texte à lui-même** | ce qui n'est pas sur son parcours |
+
+Le second est celui qui aurait vu « Julien ＋ ». Les deux ont été confrontés à
+l'état d'avant le lot et rougissent en nommant le texte fautif et ses deux
+mesures — 1,17 en Nuit contre 11,15 en Origine.
+
+**Aucun seuil n'a été inventé, et c'est la §5 bis de `CLAUDE.md`.** Sur Origine,
+le bordeaux et le vert pin tiennent **1,10** l'un contre l'autre — ils se
+distinguent par la teinte, rouge contre vert — et le chevron de navigation
+2,6. Ce sont ses choix, relevés sur son site. Une suite qui exigerait 4,5
+partout accuserait le dessin qu'il a validé et rendrait son écran impossible à
+changer. La règle retenue est donc : **le sombre ne fait pas moins bien que le
+clair**, et le clair se mesure au lieu de s'écrire — le plancher de `muted` est
+celui de Moka (3,24), calculé, jamais recopié.
+
+### Ce qui reste non couvert, et qu'il faut savoir
+
+Le parcours de la suite navigateur porte six écrans — l'accueil, le planning
+avec une journée ouverte, les terminés, le paysage, les réglages, l'apparence.
+**Ce qui n'y est pas n'est pas éprouvé** : les états qui ne s'ouvrent qu'au
+doigt (feuilles, tiroirs, listes déroulantes) et les écrans plus profonds. La
+suite refuse de conclure sur moins de six textes comparables — un contrôle qui
+mesure zéro ne mesure rien (`CLAUDE.md` §5) —, mais elle ne prétend pas couvrir
+l'application entière.
+
+## 161. Le message au client : un gabarit, et la phrase du document
+
+**Sa demande du 23 août 2026**, et ses trois réponses : le réglage dans « Devis
+& factures », le lien obligatoire, un seul message pour les trois documents.
+
+### Pourquoi une pastille `[document]` et pas quatre textes
+
+Un texte unique et littéral ne peut pas servir les trois envois : la facture
+porte un numéro et une échéance, le devis se répond, le compte rendu ne se paie
+pas. **Il l'a vu en images avant de choisir** (`appli/mon-message-au-client.html`,
+six bulles) et a retenu la « façon 1 » : il écrit le cadre, `phraseDuDocument`
+pose le milieu.
+
+| Où | Quoi |
+|---|---|
+| `MESSAGE_PAR_DEFAUT` | le gabarit d'origine — celui qu'il recevait avant |
+| `refusDuMessage` | **la même fonction pour l'écran ET le serveur.** Deux règles pour un refus finiraient par diverger, et il verrait un bouton allumé sur un message rejeté |
+| `phraseDuDocument` | ce qui distingue les trois envois, et rien d'autre |
+| `rendreMessage` | **une seule fonction pour l'aperçu et pour l'envoi.** Une copie ferait mentir l'aperçu, et c'est l'envoi que le client lit |
+
+### `null` suit le produit, un texte lui appartient
+
+La colonne `entreprises.message_client` est nulle tant qu'il n'a rien écrit —
+et **le texte d'Atlas retapé à l'identique y redevient nul**. Sans cette règle,
+un aller-retour par « Remettre celui d'Atlas » figerait l'entreprise sur la
+version du jour, et une correction ultérieure ne l'atteindrait plus.
+
+### `modeleMessage`, jamais `messageClient`
+
+Le nom `messageClient` était **déjà pris** dans l'écran du devis parti, où il
+désigne l'inverse : le mot que le CLIENT a laissé en répondant. La collision a
+été trouvée par le compilateur ; deux choses opposées sous un même nom, sur le
+même écran, se confondent à la première relecture.
+
+### Ce qui ne se règle pas, et pourquoi
+
+L'**objet** du courriel : il doit rester reconnaissable dans une boîte de
+réception, et un objet vide ou trompeur envoie le message aux indésirables. Il
+ne se lit d'ailleurs jamais par SMS.
+
+### Le seul contrôle qui prouve le câblage
+
+`test-message-au-client-e2e.ts` va de l'écran des réglages jusqu'à l'adresse
+`sms:` du client. Les suites pures de `message-client` diraient vert même si
+l'écran n'enregistrait rien, ou si l'écran d'envoi ignorait ce qui est
+enregistré : c'est le FIL qu'il faut tenir, et lui seul le traverse.
+---
+
+## 162. Audit de sécurité, lot 1 : ce qui a été décidé, et ce qui a failli casser
+
+**23 août 2026.** Un audit hostile complet a été mené (base montée, RLS attaquée
+directement en SQL sous `atlas_app`, historique Git balayé, `npm audit`). Le
+rapport nomme trente constats ; ce lot en corrige six. Ce §-ci ne les répète
+pas — `CHANGELOG.md` le fait — il garde **les décisions structurantes et leur
+pourquoi**, c'est-à-dire ce qu'une prochaine session refera de travers faute de
+le savoir.
+
+### Ce qui a tenu, et qu'il ne faut pas croire fragile
+
+L'isolation entre entreprises a été attaquée, pas relue : 42 tables sur 42
+portant `entreprise_id` sont en `FORCE ROW LEVEL SECURITY`, l'écriture croisée
+est refusée par la base, la lecture sans contexte rend zéro ligne, et les 189
+appels à `withEntreprise` passent tous `ctx`. **Aucun correctif de ce lot ne
+touche à ce mécanisme**, et c'est délibéré : on ne remanie pas ce qui tient
+pendant qu'on répare ce qui ne tient pas.
+
+### La décision qui commande C1 : le compteur d'échecs vit EN BASE
+
+La limitation de débit d'Atlas vit dans Redis, et Redis tombe — il est tombé le
+12 août sur l'espace du patron. La réparation d'alors laissait tout passer quand
+le magasin ne répondait plus : juste dans son intention (ne pas enfermer
+l'artisan dehors), trop loin dans sa conclusion. **Il suffisait donc d'attendre
+une panne de Redis pour n'avoir plus aucune limite de connexion.**
+
+D'où la migration 0062 : le compteur d'échecs consécutifs est une table. Il ne
+dépend d'aucun service annexe, il est là tant qu'Atlas sert. Trois conséquences
+qu'il faut garder en tête :
+
+| | |
+|---|---|
+| le blocage est **plafonné** à un quart d'heure | sans plafond, taper trois fois à côté sur l'adresse d'un artisan l'empêcherait d'entrer chez lui — on aurait remplacé une porte trop faible par une porte murée |
+| il s'**oublie** au bout d'une heure sans échec | sinon, cinq fautes réparties sur trois mois temporiseraient quelqu'un pour des gestes sans rapport |
+| une connexion réussie l'**efface** | celui qui retrouve son mot de passe ne doit pas rester à un doigt de la temporisation |
+
+Et le magasin de limitation, lui, bascule désormais sur son compteur **mémoire**
+quand le principal ne répond pas : dégradé (un compteur par instance), jamais
+absent. Personne n'est enfermé dehors, personne n'entre en rafale.
+
+### La règle générale que ce lot pose : ne jamais croire un en-tête du client
+
+`x-forwarded-for` est écrit par celui qui frappe. Le lire naïvement, c'était
+offrir un compteur neuf à chaque essai. La règle vaut au-delà de la connexion :
+**une valeur transmise ne vaut que par le mandataire qui l'a écrite**, et sans
+savoir combien de mandataires de confiance nous précèdent, aucune position dans
+la liste n'est fiable. `ATLAS_PROXY_SAUTS` dit ce nombre ; à défaut, on ne tire
+rien de l'en-tête. Voir `src/lib/source-visiteur.ts`.
+
+*(Deux autres endroits lisent encore cet en-tête à titre de PREUVE — l'adresse
+consignée sur l'acceptation d'un devis, sur celle des documents légaux. C'est
+un autre usage : elle documente, elle ne décide de rien, et les commentaires le
+disent déjà. Ne pas les « corriger » sans y penser.)*
+
+### Les trois endroits où la correction évidente cassait quelque chose
+
+C'est la partie la plus importante de ce §, parce que ces pièges se
+re-tendront.
+
+**1. Le mot de passe de démonstration.** L'audit demandait qu'il cesse d'être
+fixe et public. Le tirer au hasard aurait cassé **136 fichiers** — les trente-
+trois suites navigateur et `verifier-connexion.mjs`, c'est-à-dire la dernière
+étape de la batterie de livraison. Il reste donc `demo1234` **par défaut**, et
+ce défaut ne peut s'appliquer que là où effacer est sans conséquence : dès
+qu'il faut forcer la garde, `ATLAS_MDP_DEMO` devient obligatoire.
+
+**2. Les redirections CalDAV.** Interdire tout changement d'hôte aurait cassé
+**tout raccordement Apple** : iCloud répond `301` depuis `caldav.icloud.com`
+vers le serveur qui héberge réellement le compte (`p42-caldav.icloud.com`), et
+le code suit ce renvoi exprès. La règle juste n'est pas « aucune redirection »
+mais « aucune SORTIE du domaine ».
+
+**3. Le profil banc en production.** Le critère ne peut pas être `NODE_ENV` :
+le banc d'essai **est**, littéralement, « production + profil banc », puisque
+`next start` impose `NODE_ENV=production` et que `.devcontainer/demarrer.sh`
+pose `ATLAS_PROFIL=banc` juste à côté. Refuser là-dessus aurait éteint la
+machine du patron à la seconde, pour une correction censée le protéger. Ce
+qu'on cherche est une **contradiction** — le profil d'une machine d'essai posé
+en même temps qu'un signe qu'aucun banc ne peut produire : un compartiment S3,
+ou `ATLAS_DEPLOIEMENT=production`.
+
+### Où une garde de rôle se pose, et où elle ne se pose JAMAIS
+
+E3 réservait les prix de vente au propriétaire. La garde est sur **l'action et
+l'écran**, jamais dans le dépôt — parce que `src/server/services/apprendre-grille.ts`
+appelle `poserPrixGrille` tout seul, pendant qu'un devis s'établit, avec
+l'origine `devis`. La poser un cran plus bas aurait empêché un salarié
+d'établir un devis, et personne n'aurait relié cette panne à un contrôle de
+rôle. **Règle générale : une garde de rôle appartient au geste de l'utilisateur,
+pas à l'écriture qu'il déclenche.**
+
+### Ce qui reste dépendant de l'infrastructure
+
+Deux variables doivent être posées le jour du déploiement, et leur absence se
+paie différemment :
+
+| | Sans elle |
+|---|---|
+| `AUTH_TRUST_HOST` (ou `AUTH_URL`) | **plus personne ne se connecte** — Auth.js refuse l'hôte, l'artisan lit « une erreur » |
+| `ATLAS_PROXY_SAUTS` | le seuil par visiteur redevient commun à tout le monde : il protège encore, moins finement |
+
+La temporisation par compte, elle, ne dépend d'aucune des deux.
+
+---
+
+## 163. Face ID : pourquoi le fournisseur `passkey` d'Auth.js est ÉCARTÉ
+
+**Sa demande du 23 août 2026 :** *« je veux bien que tu me codes le Face ID pour
+le mot de passe, et bien entendu qu'il faut conserver le mot de passe.
+L'utilisateur va commencer par créer son compte avec son mot de passe et ensuite
+il décidera s'il veut ouvrir sa session avec le mot de passe ou le Face ID. »*
+
+### Le chemin évident, et pourquoi il casserait la session de tout le monde
+
+`next-auth` porte un fournisseur tout fait — `next-auth/providers/passkey`, il
+est déjà dans `node_modules`. Le prendre paraît être le choix par défaut. Il ne
+l'est pas, et ce n'est **pas une supposition** : `@auth/core/lib/utils/assert.js`
+refuse le WebAuthn sans adaptateur de base de données —
+
+    if (!adapter) return new MissingAdapter("WebAuthn requires an adapter")
+
+Or Atlas n'a **aucun adaptateur** : la session est un **JWT**, sans table.
+Brancher un adaptateur ferait naître `accounts`, `sessions`,
+`verificationTokens`, changerait la façon dont chaque requête retrouve
+l'utilisateur, et **remettrait en jeu tout ce qui pend au jeton** — le contexte
+d'entreprise, `middleware.ts`, `session-ctx.ts`, la déconnexion partout. Pour un
+bouton sur la porte.
+
+### Ce qui est retenu : un SECOND fournisseur `Credentials`
+
+Le fournisseur reçoit l'assertion WebAuthn, la vérifie avec
+`@simplewebauthn/server`, et rend l'utilisateur. **Rien d'autre ne bouge** :
+même jeton, même cookie, mêmes rappels, même `middleware`. La couche session
+ignore qu'un second chemin existe.
+
+Ce que ça coûte : la vérification de l'assertion est à notre charge — le
+`challenge`, l'origine, le compteur anti-rejeu. Ce que ça évite : réécrire
+l'authentification d'une application qui marche.
+
+### Trois règles qui viennent de LUI, et qui ne se négocient pas
+
+| | Pourquoi |
+|---|---|
+| **le mot de passe ne se retire jamais** | c'est ce qui fait entrer sur un téléphone neuf ; une clé d'appareil perdue avec le téléphone murerait le compte |
+| **le compte se crée au mot de passe** | Face ID s'active ensuite, depuis un écran déjà connecté — sans quoi l'inscription dépendrait d'un matériel |
+| **un échec de visage ne compte AUCUNE tentative ratée** | sinon un visage mal reconnu ferait temporiser son propre compte : la faute du 6 août 2026, refaite par un autre bord |
+
+### Ce qu'il a tranché, et ce que le code en a fait
+
+**Sa réponse du 24 août 2026 : B.** La porte d'aujourd'hui, plus une ligne
+au-dessus — `src/app/login/LigneFaceId.tsx`. `name="email"`, `name="password"`
+et `type="submit"` n'ont pas bougé d'un pixel : vingt scripts de capture et
+`verifier-connexion.mjs` en dépendent.
+
+| Où | Quoi |
+|---|---|
+| `src/lib/origine-webauthn.ts` | sous quel **domaine** une clé est posée — règle pure |
+| `src/lib/cle-appareil.ts` | ce que l'artisan lit, et ce qu'il ne lit jamais |
+| `src/server/cle-appareil.ts` | les deux échanges avec le téléphone, et le défi |
+| `src/server/repositories/cles-appareil.ts` | la base, sans RLS et avec ce qui la remplace |
+| migration `0063` | la table, et ce qu'elle ne contient pas |
+
+**Le défi vit dans un cookie `httpOnly`, `sameSite: strict`, effacé dès qu'il a
+servi.** Pas de table : une table de défis se remplirait de lignes que personne
+n'utilise — il suffit de toucher le bouton puis de partir — et il faudrait la
+balayer. Le cookie meurt tout seul.
+
+**`ATLAS_RP_ID` est obligatoire en production, et son absence REFUSE.** Une clé
+WebAuthn est attachée à un domaine ; le déduire de l'hôte annoncé reviendrait à
+croire un en-tête que le client écrit — la faute que le lot 1 vient de fermer sur
+`x-forwarded-for`. Le dégât resterait borné (le navigateur refuserait de créer
+une clé pour un domaine qui n'est pas celui de la page), mais **le résultat pour
+l'artisan serait une porte muette**, et personne ne saurait pourquoi.
+
+**Un défaut trouvé par la suite, pas par une relecture** : `domaineDe` découpait
+sur le premier `:` avant de valider. Sur `https://atlas.fr`, le morceau restant
+valait `https` — un mot fait de lettres, donc accepté. Atlas aurait enregistré
+des clés sous le domaine « https », et aucune ne se serait jamais rouverte.
+**Découper avant de valider, c'est valider autre chose que ce qu'on a reçu.**
+
+### La planche d'abord — `appli/face-id.html` (planche 94)
+
+`CLAUDE.md` §3 bis : c'est un **geste** sur la porte, il se dessine avant de
+toucher à `src/`. Deux places sont proposées, **A** le visage d'abord, **B**
+l'écran d'aujourd'hui plus une ligne ; tout le reste est identique dans les deux,
+et c'est la seule question posée.
+
+**La fenêtre Face ID de la planche est un DESSIN, et elle l'écrit.** Aucune page
+web n'affiche celle d'iOS — et surtout, appeler `navigator.credentials` depuis
+une maquette **poserait une vraie clé sur son téléphone**, pour un domaine qui
+n'est pas celui d'Atlas. On ne pose pas de clé chez lui pour une image.
+
+`appli/tests/essai-face-id.mjs` la parcourt en entier avant publication, et
+**barre le déploiement** : elle a été vue rouge contre une porte A privée de son
+chemin vers le mot de passe, et contre un échec de visage qui accusait le mot de
+passe.
+
+---
+
+## 164. L'allure de ses documents : une typographie, deux couleurs, un logo
+
+*Sa demande du 23 août 2026 : « il faudrait que l'utilisateur puisse avoir un
+endroit dédié à la modification de son devis. S'il veut rajouter son logo,
+changer la typographie, changer le fond de page. » Puis, devant la planche
+`appli/allure-de-mes-devis.html` : **B** (dans « Devis & factures »), « juste
+pour devis facture », « fais-en une dizaine », et « le fond teinté fais-le
+modifiable […] les réglages actuels doivent être par défaut ».*
+
+### Le défaut est le document d'avant, et c'est le contrôle le plus important
+
+Un réglage neuf ne doit changer l'allure d'aucun devis tant qu'il n'y a pas
+touché. C'est sa règle, et elle est plus fragile qu'elle n'en a l'air : elle
+s'est cassée **deux fois** dans la même journée.
+
+| Ce qui l'a cassée | Ce qui l'a rattrapée |
+|---|---|
+| `ALLURE_PAR_DEFAUT.fond` écrit « #ece9e1 » — une teinte lue sur la maquette, que ses devis n'ont jamais portée (c'est `#faf9f5`) | `test-allure-pdf.ts`, en comparant deux devis **octet pour octet** |
+| les teintes calculées ne retombent pas d'elles-mêmes sur les six constantes d'origine : ouvrir le réglage et le refermer suffisait à faire dériver l'encre douce, le trait clair et la mention légale | le même contrôle |
+
+D'où deux règles qui tiennent l'invariant plutôt que d'espérer qu'il coïncide :
+
+1. `ALLURE_PAR_DEFAUT` **reprend `couleursDocument`**, il ne le retape pas ;
+2. `teintesDe` a une **porte** : allure absente **ou égale au défaut** → on rend
+   exactement la palette d'avant, sans rien calculer.
+
+Et en base, le défaut **s'écrit vide** : trois colonnes `NULL`, jamais la
+couleur du jour en clair. Sans quoi ses documents cesseraient de suivre la
+charte le jour où elle bougerait, et personne ne saurait pourquoi.
+
+### Le devis et la facture SEULEMENT
+
+La feuille de chantier sort de la **même fabrique** que le devis, par
+`sansChiffrage`. Sans filtre, elle aurait pris la marque et les couleurs
+réservées à ce que le client garde. D'où, dans `devis-pdf.ts` :
+
+```ts
+allure: sansPrix ? null : options.allure,
+logo:   sansPrix ? null : options.logo,
+```
+
+Ce n'est pas une précaution : c'est la règle, et `test-allure-pdf.ts` la tient.
+
+### L'encre suit le fond, elle ne se choisit pas
+
+Il peut mettre **n'importe quelle** couleur de fond, c'est sa décision. Lui
+offrir un second réglage pour l'encre ne ferait que déplacer le piège d'un
+cran : un fond nuit avec une encre noire donne un devis illisible, et il ne
+s'en apercevrait qu'à l'impression, chez son client. `encreSurFond` tranche
+sur la luminosité perçue, et la même fonction sert l'écran et le PDF.
+
+### Les polices sont RÉDUITES dans le dépôt, et embarquées ENTIÈRES
+
+C'est l'inverse de ce qu'on écrit d'ordinaire, et ça a été payé.
+
+| | Ce qui se passe |
+|---|---|
+| `embedFont(…, { subset: true })` | **perd des caractères en silence** : un devis complet en EB Garamond ne sortait plus que « e e e Roc e e ». Pas d'erreur, pas de journal |
+| `embedFont(…, { subset: false })` sur les fichiers d'origine | Archivo Narrow fait **tomber** `pdf-lib` (`RangeError` dans le lecteur de glyphes) |
+
+Ni l'un ni l'autre n'est sûr avec le fontkit que `pdf-lib` embarque. Les
+dix-huit fichiers ont donc été réduits **une fois pour toutes**, hors ligne, au
+latin dont ses documents ont besoin — 3,9 Mo → 570 ko —, et le PDF les prend
+tels quels. Un devis habillé pèse 40 à 60 ko.
+
+La commande est dans `src/server/pdf/polices/LISEZ-MOI.md`.
+`scripts/test-polices-documents.ts` monte la garde : chaque caractère qu'un
+devis sait écrire doit avoir un dessin, la police doit s'embarquer sans tomber,
+et aucun fichier non réduit ne doit être reposé là.
+
+### L'écran servait du Georgia en annonçant « Playfair Display »
+
+Le navigateur ne connaît aucune des neuf familles : les quatre serif
+retombaient toutes sur Georgia, les cinq linéales sur la police de l'appareil.
+Il aurait choisi en regardant autre chose, et découvert la vraie sur le devis
+parti chez son client.
+
+`/api/polices/[fichier]` sert donc **exactement les fichiers que le PDF
+embarque** — pas une copie dans `public/`, qui divergerait. Le nom demandé
+n'est jamais concaténé au chemin : il est cherché dans `TYPOGRAPHIES`, tout le
+reste repart en 404.
+
+**Ce défaut ne s'est vu qu'à la capture.** C'est la sixième fois dans ce dépôt
+(`CLAUDE.md` §5). Le contrôle qui le tient désormais mesure la **même phrase**
+dans Archivo Narrow et Merriweather : si rien n'est chargé, les deux tombent
+sur la même police et la même largeur.
+
+### Le logo : au-dessus du nom, jamais à côté
+
+Les références du devis — numéro, date, validité — occupent le quart droit de
+la même bande. Un logo posé à gauche du nom viendrait les toucher dès qu'il est
+un peu large, et un numéro de devis illisible coûte plus cher qu'un en-tête
+d'un centimètre plus haut. Hauteur fixe (34 pt), largeur libre jusqu'à 150 pt,
+proportions gardées : un logo en bandeau et un logo carré n'ont rien à voir.
+
+Le nom **descend** sous l'image ; les références, elles, **ne bougent pas** —
+elles ont leur propre colonne.
+
+Et rien de tout cela n'empêche un devis de sortir : un fichier illisible, un
+compartiment vidé, une clef écrite par une autre instance donnent un document
+**sans logo**, journalisé. Lever priverait son client du devis pour une
+question d'apparence.
+
+### Ce que chaque contrôle tient, et pourquoi il en faut quatre
+
+| Suite | Ce qu'elle voit que les autres ne voient pas |
+|---|---|
+| `test-allure-documents.ts` | la règle seule — la lisibilité de l'encre sur seize fonds, les proportions du logo |
+| `test-polices-documents.ts` | qu'une police s'imprime vraiment — le défaut muet |
+| `test-allure-pdf.ts` | le document : le devis d'avant inchangé, la feuille non habillée, le logo qui ne mange pas les références |
+| `test-allure-documents-db.ts` | les colonnes : le défaut écrit vide, et l'isolation entre entreprises |
+| `test-allure-de-mes-devis-e2e.ts` | **le fil** — il choisit, ça s'enregistre, ça survit au rechargement, et l'écran ne ment pas |
+
+Chacune resterait verte si l'écran n'enregistrait rien. C'est la dernière qui
+compte, et elle ne remplace aucune des autres.
+
+---
+
+## 165. Audit de sécurité, lot 2 : les fichiers déposés, et le piège de la correction
+
+**24 août 2026.** Six constats de l'audit portaient sur ce qu'un artisan dépose
+— photos, tickets, croquis, listes de prix. Ce §-ci garde **ce qui se serait
+refait de travers**, pas la liste des corrections (`CHANGELOG.md` la porte).
+
+### Deux constats du brief n'existaient pas comme décrits
+
+**La bombe zip ne venait pas des entrées multiples.** `lireEntreeZip` parcourt
+le répertoire central sans rien décompresser et n'inflate **que** l'entrée dont
+le nom correspond. Cent entrées piégées ne coûtent rien. Le vrai vecteur tenait
+en une seule : `deflate` dépasse mille pour un sur du texte répété, donc les
+5 Mo qu'accepte l'écran rendaient plusieurs gigaoctets. Une option —
+`maxOutputLength` — et c'est fermé.
+
+**Le plafond d'octets existait déjà**, et le réécrire aurait été du risque
+contre rien : `bodySizeLimit` dans `next.config.ts`, et `fichier.size` lu avant
+tout `arrayBuffer()`. Next.js met le corps en mémoire avant de rendre la main :
+il n'y a **pas de flux à interrompre** à notre niveau.
+
+### `nosniff` ne ferme pas ce qu'on croit
+
+La route des fichiers renvoyait le type MIME **déclaré par le navigateur** au
+dépôt. `image/svg+xml` faisait donc servir un document SVG depuis notre propre
+domaine — et un SVG porte du script.
+
+**`X-Content-Type-Options: nosniff` était déjà posé sur toutes les routes, et
+n'y changeait rien** : il interdit de *deviner* un type, pas d'en *annoncer*
+un. La politique de sécurité du contenu ne rattrapait pas davantage — elle
+autorise l'inline pour les scripts d'hydratation de Next.js.
+
+Le type se déduit désormais de l'extension de la clé, que **le serveur** a
+posée (`src/lib/type-de-fichier.ts`). Une extension inconnue rend
+`application/octet-stream` : le navigateur propose d'enregistrer plutôt que
+d'ouvrir, ce qui est le défaut sûr.
+
+### LE PIÈGE DE CE LOT : la correction qui aggrave
+
+**Resserrer la liste des types d'image côté serveur, seul, refuse les photos
+d'iPhone.** Un iPhone photographie en HEIC ; s'il transcode en JPEG à l'envoi,
+c'est **parce que l'attribut `accept` du champ le lui demande**. Trois écrans
+portaient `accept="image/*"` — donc aucune raison de transcoder.
+
+D'où **deux listes, et elles ne se confondent pas** :
+
+| | Ce qu'elle répond |
+|---|---|
+| `TYPES_IMAGE_ACCEPTES` | « sais-je retirer les métadonnées de ce format ? » |
+| `TYPES_PHOTO_ACCEPTES` | « ai-je le droit de le ranger ? » — plus large, HEIC compris |
+| `ACCEPT_PHOTOS` | ce que l'écran propose — **sans le HEIC**, pour qu'iOS transcode |
+
+**Et la troisième ligne est contre-intuitive au point qu'un contrôle la
+garde** : ajouter `image/heic` à l'`accept` ferait *cesser* le transcodage, et
+nous recevrions des HEIC bruts — que le nettoyage ne sait pas lire, donc rangés
+avec leurs coordonnées GPS. La correction qu'on croirait bonne rendrait la
+situation pire qu'avant.
+
+### Un échec de nettoyage ne refuse JAMAIS la photo
+
+`retirerMetadonnees` rend `{ nettoye: false }` et les octets d'origine sur un
+format qu'il ne sait pas lire. L'appelant range, et **journalise** — il ne lève
+pas. C'est un arbitrage, et il se dit : perdre le cliché d'un artisan qui vient
+de le prendre, sur un chantier, coûte plus cher que garder des métadonnées sur
+une photo de haie. *Un outil qui refuse la photo qu'on vient de prendre est pire
+que le risque qu'il évite.*
+
+### Ce que le brief n'avait pas vu
+
+Le **croquis d'arrosage** envoie la photo à un fournisseur d'IA : il bornait la
+taille et rien d'autre — ni type, ni cadence. Il porte désormais les deux, avec
+le seuil du diagnostic végétal, parce que ce seuil-là ne protège pas un service :
+**il borne une facture**.

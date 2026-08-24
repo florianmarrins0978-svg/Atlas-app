@@ -96,6 +96,7 @@
 <li><a href="#22-mes-outils-de-calcul-on-les-range-où-dans-lapplication-">Mes outils de calcul, on les range où dans l'application ?</a></li>
 <li><a href="#23-lapplication-est-elle-trop-compliquée-pour-un-artisan-pressé-">L'application est-elle trop compliquée pour un artisan pressé ?</a></li>
 <li><a href="#24-faut-il-une-licence-pour-se-servir-des-données-de-linrae-">Faut-il une licence pour se servir des données de l'INRAE ?</a></li>
+<li><a href="#25-peut-on-ouvrir-atlas-avec-face-id-au-lieu-dun-mot-de-passe-">Peut-on ouvrir Atlas avec Face ID, au lieu d'un mot de passe ?</a></li>
 </ol>
 <hr>
 <h2 id="1-le-compte-développeur-apple--qui-paie-et-combien-de-temps-">1. Le compte développeur Apple : qui paie, et combien de temps ?</h2>
@@ -499,8 +500,31 @@
 </tr>
 </tbody></table></div>
 <p><strong>Attention à un mot qui trompe :</strong> dans Atlas, une « équipe » n'est pas un groupe de personnes, c'est une <strong>file du planning</strong> — combien de chantiers partent en même temps. « Équipe B » peut désigner deux ouvriers qui n'ouvriront jamais l'application ; un commercial a un compte et ne conduit aucun chantier. Les réglages tiennent donc <strong>deux listes séparées</strong> : <em>qui a accès</em>, et <em>vos équipes</em>.</p>
+<h3 id="précisé-le-23-août-2026--le-commercial-sélargit-le-salarié-se-resserre">Précisé le 23 août 2026 : le commercial s'élargit, le salarié se resserre</h3>
+<p>Question posée en corrigeant la sécurité des prix. Votre réponse :</p>
+<blockquote><em>« Si le salarié a accès au devis, c'est que c'est un commercial, et donc il aura accès au prix. Néanmoins, les salariés qui n'auront pas accès au prix seront ceux qui auront pour seul accès le planning. C'est pour ça que je t'ai demandé de mettre le PDF du devis sans les prix au planning. Les commerciaux auront accès à l'entièreté de l'application, sauf aux réglages pour modifier la mise en page des devis et aux informations liées à l'entreprise. Et les salariés, eux, auront accès qu'à la catégorie planning. »</em></blockquote>
+<p><strong>Deux choses bougent par rapport au 13 août</strong>, et il faut les dire plutôt que de laisser les deux versions cohabiter :</p>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th>Le 13 août</th>
+<th>Le 23 août</th>
+</tr></thead><tbody>
+<tr>
+<td><strong>Le commercial</strong></td>
+<td>chantiers, planning, devis et prix — <em>ni factures, ni TVA, ni IBAN, ni accès, ni abonnement</em></td>
+<td><strong>toute l'application</strong>, sauf la mise en page des devis et les informations de l'entreprise</td>
+</tr>
+<tr>
+<td><strong>Le salarié</strong></td>
+<td>le planning et ses chantiers, les devis sans montant</td>
+<td><strong>le planning, et rien d'autre</strong></td>
+</tr>
+</tbody></table></div>
+<p><strong>Ce qui NE bouge pas, et qui répond à la question des prix :</strong> <em>« il lit les tarifs, il ne les change pas »</em> (13 août). Un commercial se sert des prix pour chiffrer ; il ne redessine pas vos grilles. C'est exactement ce qui a été codé le 23 août — l'écran « Mes prix » et l'action qui y pose un montant sont réservés au patron, côté serveur et plus seulement à l'affichage.</p>
+<p><strong>Et le PDF sans les prix prend enfin tout son sens.</strong> Si le salarié ne voit que le planning, c'est là — et nulle part ailleurs — qu'il ouvre la feuille de son chantier. Le document sans montants n'est pas un confort : c'est <strong>le seul</strong> document qu'il verra jamais.</p>
 <h3 id="ce-qui-reste-vrai-et-qui-nest-pas-encore-fait">Ce qui reste vrai, et qui n'est pas encore fait</h3>
-<p><strong>Rien de ce tableau n'est en place au 13 août 2026.</strong> La base ne connaît que deux rôles (propriétaire et membre), aucun écran ne permet de donner un accès, et surtout <strong>rien ne filtre ce qui est envoyé</strong> : un membre voit aujourd'hui tous les prix et tous les montants. Le dessin de ces écrans existe (<code>maquettes/atlas-reglages-equipe.html</code>) ; le code, non.</p>
+<p><strong>Rien de ce tableau n'est en place au 23 août 2026.</strong> La base ne connaît toujours que deux rôles (propriétaire et membre), aucun écran ne permet de donner un accès, et <strong>rien ne filtre encore l'application par rôle</strong> : un membre atteint aujourd'hui tous les écrans sauf ceux qui ont reçu une garde explicite.</p>
+<p>Ce qui a changé le 23 août, et qui n'est qu'un début : les écrans réservés au patron refusent désormais <strong>côté serveur</strong>, et non plus seulement en se cachant du sommaire. Le reste — les quatre rôles en base, l'écran qui donne un accès, le cloisonnement du salarié sur le seul planning — reste à faire, et c'est un lot à lui seul. Le dessin existe (<code>maquettes/atlas-reglages-equipe.html</code>) ; le code, non.</p>
 <hr>
 <h2 id="11-quest-ce-quatlas-doit-faire-sur-la-plateforme-de-facturation-">11. Qu'est-ce qu'Atlas doit faire sur la plateforme de facturation ?</h2>
 <a class="retour" href="#sommaire">↑ Sommaire</a>
@@ -1192,6 +1216,30 @@
 <p><strong>La limite de ces documents-là</strong>, et c'est pour cela qu'on regarde du côté de l'INRAE : ce sont surtout des bilans régionaux. Ils nomment les problèmes et disent leur importance, mais décrivent rarement les symptômes assez précisément pour qu'Atlas puisse les reconnaître sur une photo. Ephytia, lui, est fait de fiches descriptives — exactement ce qu'il faut.</p>
 <h3 id="ce-qui-nest-pas-de-lavis-dun-juriste">Ce qui n'est pas de l'avis d'un juriste</h3>
 <p>Ce qui précède est une lecture raisonnable du droit français et européen, pas une consultation. Si le module devient un argument commercial d'Atlas, la question mérite d'être posée une fois à un professionnel — en même temps que le contrat de sous-traitance, qui attend déjà (<code>docs/A-FAIRE.md</code>).</p>
+<hr>
+<h2 id="25-peut-on-ouvrir-atlas-avec-face-id-au-lieu-dun-mot-de-passe-">25. Peut-on ouvrir Atlas avec Face ID, au lieu d'un mot de passe ?</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><em>Question posée le 23 août 2026, en corrigeant la sécurité des mots de passe.</em></p>
+<h3 id="oui--et-cest-mieux-quun-mot-de-passe-pas-seulement-plus-pratique">Oui — et c'est mieux qu'un mot de passe, pas seulement plus pratique</h3>
+<p>Le nom technique est <strong>passkey</strong>. Sur iPhone, elle s'ouvre avec Face ID ; sur Android, avec l'empreinte. Rien à retenir, rien à taper, rien à noter sur un carnet de chantier.</p>
+<p><strong>Ce que ça règle vraiment.</strong> Un mot de passe se devine : on en essaie des milliers jusqu'à tomber juste. C'est tout le travail fait le 23 août pour ramener ça de 28 800 essais par jour à une centaine. Une passkey, elle, <strong>ne se devine pas du tout</strong> — il n'y a rien à essayer. Le secret ne quitte jamais le téléphone, et Atlas n'en garde qu'une moitié qui ne sert à rien toute seule.</p>
+<p>Autrement dit : le durcissement des mots de passe protège ceux qui en gardent un ; la passkey supprime le problème pour ceux qui l'activent.</p>
+<h3 id="cest-fait--le-24-août-2026">C'est fait — le 24 août 2026</h3>
+<p>Vous avez choisi la <strong>proposition B</strong> sur la planche : votre écran de connexion n'a pas bougé, une ligne « Ouvrir avec Face ID » s'est ajoutée au-dessus.</p>
+<p>Comment ça se passe chez vous : vous entrez une fois avec votre mot de passe, puis <strong>Réglages › Connexion › Enregistrer cet appareil</strong>. La fois suivante, un doigt sur la ligne, votre visage, et vous êtes dedans — sans même taper votre adresse.</p>
+<p><strong>Une correction à ce qui était écrit ici le 23 août, et elle a compté.</strong> Cette réponse disait <em>« la brique est déjà là — Atlas s'appuie sur Auth.js, qui sait faire les passkeys, et les tables nécessaires existent déjà »</em>. <strong>C'était faux.</strong> Le module tout fait d'Auth.js exige de changer la façon dont Atlas retient votre session — donc de remettre en jeu la connexion de tout le monde, pour un bouton. Il a été écarté, et le raccourci passe par un chemin qui ne touche à rien de l'existant.</p>
+<p>Ce qu'il reste, et qui ne dépend pas de nous : <strong>l'essayer sur votre iPhone</strong>. Ici, le parcours entier est joué avec le capteur simulé du navigateur — mais personne ne peut vérifier votre visage à votre place.</p>
+<h3 id="ce-que-ça-demandait">Ce que ça demandait</h3>
+<p>Deux exigences qui ne se négocient pas :</p>
+<ul>
+<li><strong>Le mot de passe reste en secours.</strong> Un téléphone perdu, cassé, ou changé ne doit jamais vous enfermer dehors de votre propre application. La passkey s'ajoute, elle ne remplace pas.</li>
+<li><strong>Plusieurs appareils.</strong> Le téléphone et l'ordinateur du bureau enregistrent chacun le leur — sans quoi il faut ressortir le mot de passe à chaque fois, et la passkey ne sert plus à rien.</li>
+</ul>
+<h3 id="ce-qui-peut-être-éprouvé-et-ce-qui-ne-le-sera-pas">Ce qui peut être éprouvé, et ce qui ne le sera pas</h3>
+<p>Le navigateur d'essai sait <strong>simuler</strong> un capteur biométrique : le parcours entier — enregistrer, se déconnecter, revenir, ouvrir sans mot de passe — a été joué ici, au vert, avant de vous être donné. Y compris le jour où ça rate : un appareil retiré qui insiste ne peut pas ouvrir la porte, <strong>et ne bloque pas votre compte</strong> pour autant.</p>
+<p>Ce qui ne se vérifie que chez vous : que Face ID s'ouvre bien sur <strong>votre</strong> iPhone, avec <strong>votre</strong> visage. Aucun banc d'essai ne peut le dire à votre place.</p>
+<h3 id="le-lien-avec-la-double-authentification">Le lien avec la double authentification</h3>
+<p>L'audit du 23 août réclamait une double authentification. La passkey y répond mieux qu'un code à six chiffres reçu par SMS : elle vaut <strong>à elle seule</strong> deux facteurs — le téléphone qu'on possède, et le visage qui l'ouvre. Sans code à recopier sur un chantier, les mains sales.</p>
 </main>
 </body>
 </html>

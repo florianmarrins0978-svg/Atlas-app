@@ -45,6 +45,7 @@ export default function FactureClient({
   initialFacture,
   origine,
   entrepriseNom,
+  modeleMessage,
   clientId,
   clientTelephone,
   clientEmail,
@@ -57,6 +58,13 @@ export default function FactureClient({
   /** Adresse complète du site, bâtie côté serveur : un chemin seul ne s'ouvre nulle part. */
   origine: string;
   entrepriseNom: string;
+  /**
+   * Son gabarit de message, écrit dans « Devis & factures ». `null` : Atlas.
+   *
+   * **`modeleMessage`, jamais `messageClient`** : ce nom est pris ailleurs dans
+   * l'application, où il désigne le mot laissé par le CLIENT — l'inverse.
+   */
+  modeleMessage: string | null;
   clientId: string | null;
   clientTelephone: string | null;
   clientEmail: string | null;
@@ -181,6 +189,7 @@ export default function FactureClient({
             clientCivilite: initialFacture.clientCivilite,
             clientNom: initialFacture.clientNom ?? "",
             entrepriseNom,
+            modele: modeleMessage,
             numeroFacture: initialFacture.numeroCommercial,
             echeanceLisible: initialFacture.dateEcheance
               ? jourLisible(initialFacture.dateEcheance)
@@ -352,6 +361,7 @@ export default function FactureClient({
               clientNom={initialFacture.clientNom ?? ""}
               clientCivilite={initialFacture.clientCivilite}
               entrepriseNom={entrepriseNom}
+              modeleMessage={modeleMessage}
               numeroFacture={initialFacture.numeroCommercial}
               echeanceLisible={
                 initialFacture.dateEcheance ? jourLisible(initialFacture.dateEcheance) : null

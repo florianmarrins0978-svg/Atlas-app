@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { colors, font, smallCaps } from "@/lib/design-tokens";
 import { getCurrentCtx } from "@/server/session-ctx";
+import { estProprietaire } from "@/server/autorisation";
+import RubriqueReservee from "../RubriqueReservee";
 import { lireGrillePrix } from "@/server/repositories/grille-prix";
 import { lireGrilles } from "@/server/repositories/grilles-reglables";
 import GrillesPrixClient from "./GrillesPrixClient";
@@ -26,6 +28,36 @@ export const dynamic = "force-dynamic";
  */
 export default async function GrillesPrixPage() {
   const ctx = await getCurrentCtx();
+
+  /**
+   * **RÉSERVÉE AU PROPRIÉTAIRE — corrigé le 23 août 2026** (audit, constat E3).
+   *
+   * Cet écran affirmait plus haut : « Visible par l'entreprise, pas réservée à
+   * l'éditeur ». C'était vrai sur le premier point et faux sur ce qui compte :
+   * ce sont **ses prix de vente**, et la règle du patron du 13 août 2026 ne
+   * souffre aucune lecture ambiguë — *« un salarié peut changer ses
+   * notifications ou son mot de passe, mais il ne doit évidemment pas pouvoir
+   * modifier les tarifs »*. `docs/QUESTIONS.md` §10 va plus loin : ce qu'un
+   * rôle n'a pas le droit de voir **ne doit pas sortir du serveur**.
+   *
+   * Le sommaire ne montrait déjà pas cette rubrique à un membre
+   * (`src/lib/rubriques-reglages.ts`). Mais **une rubrique absente du sommaire
+   * n'est pas une rubrique fermée** : l'adresse se tape, se garde en favori.
+   * La protection ne vivait donc que dans l'affichage — exactement ce que le
+   * dépôt s'interdit ailleurs.
+   *
+   * **AVANT toute lecture**, et l'ordre des lignes est la garantie : rien ne
+   * doit avoir quitté la base quand on refuse.
+   */
+  if (!(await estProprietaire(ctx))) {
+    return (
+      <RubriqueReservee
+        titre="Mes prix"
+        quoi="Les prix de vente ne se consultent pas depuis un compte salarié."
+      />
+    );
+  }
+
   // Ses grilles à lui depuis le 14 août 2026 : titres, tranches et façons
   // viennent de la base, avec les valeurs de départ tant qu'il n'a rien touché.
   const grilles = await lireGrilles(ctx);

@@ -17,6 +17,7 @@ import {
 } from "@/server/repositories/paiements-facture";
 import { exigerProprietaire } from "@/server/autorisation";
 import type { Exigibilite } from "@/lib/exigibilite-tva";
+import { extensionPhoto, MESSAGE_PHOTO_REFUSEE, photoAcceptee, retirerMetadonnees } from "@/lib/exif";
 
 /**
  * Enregistrer un achat, et le retirer.
@@ -97,7 +98,11 @@ export type ResultatTicket =
 export async function rangerTicketAction(formData: FormData): Promise<ResultatTicket> {
   const fichier = formData.get("ticket");
   if (!(fichier instanceof File)) return { ok: false, raison: "Aucune photo reçue." };
-  if (!fichier.type.startsWith("image/")) return { ok: false, raison: "Le fichier doit être une image." };
+  // **Liste blanche, plus `startsWith("image/")`** — audit du 23 août 2026,
+  // constat M2 : l'ancienne ligne acceptait `image/svg+xml`, qui est un
+  // document porteur de script, pas une image. Le HEIC de l'iPhone reste
+  // accepté (`src/lib/exif.ts`) : c'est avec ça qu'il photographie ses tickets.
+  if (!photoAcceptee(fichier.type)) return { ok: false, raison: MESSAGE_PHOTO_REFUSEE };
 
   // Vérifié via `size`, sans lire le contenu : un fichier surdimensionné ne
   // doit pas passer par la mémoire avant d'être refusé.
@@ -108,9 +113,25 @@ export async function rangerTicketAction(formData: FormData): Promise<ResultatTi
   const limite = await verifierLimite(`televersement:${ctx.entrepriseId}`, LIMITES.televersementFichier);
   if (!limite.autorise) return { ok: false, raison: limite.message };
 
-  const octets = Buffer.from(await fichier.arrayBuffer());
-  const ext = fichier.type === "image/png" ? ".png" : fichier.type === "image/webp" ? ".webp" : ".jpg";
-  const objet = await enregistrerObjet(`entreprises/${ctx.entrepriseId}/tickets`, octets, ext);
+  const brut = Buffer.from(await fichier.arrayBuffer());
+
+  /**
+   * **Les métadonnées partent avant le rangement** — constat M3. Un ticket
+   * photographié porte les coordonnées GPS de la station-service, l'heure
+   * exacte, le modèle du téléphone. Aucune de ces trois choses n'entre dans une
+   * déclaration de TVA.
+   *
+   * **Et un échec de nettoyage ne refuse jamais le ticket** : il est rangé tel
+   * quel. Le geste du patron est sur le trottoir, la station derrière lui — ce
+   * n'est pas le moment de lui opposer un refus (`termines/tva`, en-tête).
+   */
+  const nettoye = retirerMetadonnees(brut, fichier.type);
+  const octets = Buffer.from(nettoye.octets);
+  const objet = await enregistrerObjet(
+    `entreprises/${ctx.entrepriseId}/tickets`,
+    octets,
+    extensionPhoto(fichier.type)
+  );
 
   // **La photo est rangée AVANT la lecture, et le reste quoi qu'elle donne.**
   // Si le fournisseur d'IA est absent, refuse ou se trompe, le patron garde sa

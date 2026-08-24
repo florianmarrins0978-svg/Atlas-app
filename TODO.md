@@ -9,6 +9,155 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
+## ⚠ `ARCHITECTURE.md` porte SIX paragraphes pour trois numéros (23 août 2026)
+
+Trois numéros sont pris deux fois, et cela existe déjà sur `main` — ce n'est
+donc pas une fusion à rattraper, c'est un état à corriger une fois :
+
+| N° | Le premier | Le second |
+|---|---|---|
+| **134** | Chercher un client : la règle vit hors de l'écran | Le troisième document : une option dans le moteur |
+| **135** | Un écran atteint depuis deux endroits | Le diagnostic végétal : le modèle observe, la base décide |
+| **136** | Deux constructions au démarrage | « Choisir la date » : l'écran du milieu disparaît |
+
+C'est exactement ce que `CLAUDE.md` §6 B annonce : *« son numéro n'est pas
+réservé »*, six sessions écrivent en parallèle, et deux d'entre elles ont pris
+le même à quelques heures d'écart. La règle dit de renuméroter **le sien** — mais
+ici les deux sont sur `main` depuis, et plus aucune n'est « la sienne ».
+
+**Ce qu'il faut faire, et pourquoi ce n'est pas urgent :** renuméroter le second
+jeu à la suite du dernier paragraphe existant, et corriger les renvois qui le
+citent (`grep -n '§13[456]'`). Un renvoi vers « §135 » ne dit aujourd'hui pas
+lequel des deux — c'est une gêne à la relecture, pas un défaut de produit.
+
+**Ce qu'il ne faut PAS faire : le corriger au milieu d'un autre lot.** Toucher
+onze mille lignes d'`ARCHITECTURE.md` pendant que cinq sessions y ajoutent des
+paragraphes fabrique exactement les conflits que le §6 décrit. À faire seul, et
+poussé aussitôt.
+
+## ⚠ `ss` ne rend RIEN dans cet environnement — un port se mesure autrement (23 août 2026)
+
+**Payé trois batteries d'affilée ce soir**, chacune tombée sur un
+« Port 3000 déjà utilisé » alors que le port venait d'être déclaré libre.
+
+`ss -lptn` ne rend **aucune ligne** ici : le conteneur n'a pas le droit de
+rattacher une socket à son processus. La commande sort donc vide, sans erreur
+et sans code de retour fâché — exactement le piège que le dépôt nomme
+lui-même : **« un contrôle qui mesure ZÉRO ne mesure rien, et il est pire
+qu'absent »** (`CLAUDE.md` §5). Trois fois de suite, « le port est libre » n'a
+rien affirmé du tout.
+
+Le vrai coupable était un serveur de captures lancé par cette session
+même — `next dev -p 3000`, PID 3438, et son enfant `next-server` 3450.
+
+**Ce qui mesure vraiment, ici :**
+
+```bash
+fuser -n tcp 3000            # rend les PID qui tiennent le port
+curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:3000/   # 000 = personne
+```
+
+`fuser` nomme le processus, `curl` dit ce qu'un client voit. Les deux ensemble
+tranchent ; `ss` seul ne tranche rien. Et devant un port occupé, chercher
+**ses propres serveurs** avant de soupçonner la machine : une capture d'écran
+prise plus tôt dans la session laisse un `next dev` derrière elle.
+## Face ID — ~~à coder~~ **fait le 24 août 2026** (planche 94, réponse **B**)
+
+Migration 0063, règles pures, second fournisseur `Credentials`, porte et écran
+d'activation. Parcouru en navigateur (`test-face-id-e2e.ts`).
+`ARCHITECTURE.md` §163.
+
+**Ce qui reste, et qui ne dépend plus de nous :**
+
+- **poser `ATLAS_RP_ID` le jour du déploiement** — sans elle, Atlas refuse
+  d'enregistrer une clé en production (et le dit dans son journal). C'est
+  volontaire : deviner le domaine depuis un en-tête que le client écrit serait
+  la faute que le lot 1 vient de fermer sur `x-forwarded-for` ;
+- **le faire essayer sur SON iPhone.** Rien ici ne peut le remplacer : la suite
+  emploie l'appareil simulé de Chrome, qui exerce la vraie implémentation du
+  navigateur mais pas la puce d'Apple ni la fenêtre d'iOS.
+
+---
+
+## Audit de sécurité : ~~le lot 2~~ **fait le 24 août 2026**, et les suivants
+
+Le **lot 1 est fait** — C1, E1, E2, E3, M7, M8 (`ARCHITECTURE.md` §162). Le
+**lot 2 aussi** — M1 à M5, plus le croquis d'arrosage (`ARCHITECTURE.md` §165) ;
+M6 n'avait pas lieu d'être. Ce qui suit vient du même audit et attend son tour.
+Rien ici n'est théorique : chaque point a été constaté dans le code.
+
+### Avant d'ouvrir Atlas à d'autres artisans
+
+- **Sauvegardes.** Il n'y en a aucune. « Télécharger mes données » est un export
+  manuel pour le patron, pas une sauvegarde. Il faut une sauvegarde automatique
+  de PostgreSQL **et** du compartiment objet, plus **une restauration réellement
+  jouée une fois** — un contrôle jamais vu réussir ne prouve rien (`AGENTS.md`).
+  C'est ce qui rendait E1 grave : il n'y a pas de filet.
+- **M11 — la double authentification**, et une session plus courte que trente
+  jours (le défaut d'Auth.js s'applique aujourd'hui). Le lot 1 a durci le mot de
+  passe et la temporisation ; c'est la marche suivante.
+
+### ~~Les téléversements : quatre chemins, un seul fait bien~~ — **réglé le 24 août 2026**
+
+Les quatre chemins font désormais la même chose (`ARCHITECTURE.md` §165). Les
+constats sont barrés ci-dessous plutôt que supprimés : savoir qu'ils ont été
+traités évite de les rouvrir.
+
+- ~~**M2 — le type d'image n'est pas contrôlé** sur les photos de chantier
+  (`photos-actions.ts`) ni sur les tickets de TVA : `startsWith("image/")`
+  accepte `image/svg+xml`, et `/api/fichiers/[...key]` renvoie ce type tel quel.
+  Un SVG ouvert en navigation directe exécute son script sur l'origine d'Atlas.
+  **Le diagnostic végétal fait déjà tout bien** (`typeImageAccepte` +
+  `retirerMetadonnees`) : il n'y a qu'à reprendre.~~
+- ~~**M3 — les photos de chantier gardent leurs métadonnées**, coordonnées GPS
+  comprises — donc l'adresse du domicile d'un client. Celles du diagnostic sont
+  nettoyées, avec un commentaire qui explique pourquoi. Même correction.~~
+- ~~**M1 — traversée de chemin** : `local-storage.ts` n'assainit pas le dossier
+  alors que `s3-storage.ts` le fait, et le dossier contient un `chantierId` venu
+  d'une action serveur. Vérifié : `../../../../tmp/x` sort de `.storage`. Le
+  stockage local étant refusé en production, cela vise le banc — mais la clé
+  ainsi fabriquée part ensuite dans l'archive ZIP de l'export.~~
+- ~~**M4 — `lireLeCroquis` (arrosage) n'a aucune limite de débit**, ni liste
+  blanche de type, ni retrait de métadonnées — alors que le diagnostic a les
+  trois. Chaque appel est une facture chez le fournisseur de vision.~~
+
+  *Nuance retenue le 24 août : le croquis N'EST PAS nettoyé de ses métadonnées.
+  C'est un dessin sur une feuille, pas une photo de la maison du client, et il
+  n'est jamais rangé — il part au fournisseur puis disparaît. Le type et la
+  cadence, eux, sont posés.*
+
+### Robustesse
+
+- ~~**M5 — bombe de décompression** : `inflateRawSync` sans `maxOutputLength` dans
+  `lire-classeur.ts`, sur un `.xlsx` téléversé.~~ **Fait le 24 août** — borne à
+  32 Mo gonflés, plus une borne sur le nombre d'entrées et sur les décalages lus
+  dans l'archive. `test-classeur-bombe.ts` assemble une vraie bombe.
+- ~~**M6 — corps de requête non borné** : `/api/notes-vocales/[chantierId]` fait
+  `formData()` avant toute vérification de taille, et la limite des actions
+  serveur ne s'applique pas aux routes.~~ **Fait le 24 août** — `content-length`
+  est lu avant `formData()`, et rend un 413. L'en-tête vient du client : c'est le
+  premier rempart, pas le seul (`fichier.size` tranche ensuite).
+- **M10 — dépendances** : 11 avis, dont Next lui-même (16.2.12 → 16.3.2) et
+  `next-auth` encore en bêta sur le chemin d'authentification.
+
+### Défense en profondeur
+
+- **M9 — `users` n'a aucune RLS**, et `atlas_app` y lit `password_hash`. Le code
+  se discipline (toute lecture bornée par `ctx.utilisateurId`), mais rien en base
+  ne rattraperait un `where` oublié. Idem pour `audios_a_purger` et
+  `photos_diagnostic_a_purger`, qui portent un `entreprise_id` sans politique.
+- **M12 — `mettreAJourApplicationAction` n'exige pas le rôle propriétaire** :
+  sur le banc, tout salarié peut tirer du code et redémarrer le serveur.
+- **F1 à F13** — treize points mineurs, listés dans le rapport d'audit. Les plus
+  utiles : **F6** (deux paires de migrations partagent un numéro — à traiter
+  avant qu'un conflit réel n'arrive) et **F7** (les droits RGPD d'accès et
+  d'effacement sont codés et testés, mais aucun écran ne les appelle).
+- **Journal d'audit** : les connexions réussies, les changements de rôle, les
+  exports et les effacements ne laissent aucune trace exploitable.
+
+---
+
+
 ## Arrosage : l'interface pour discuter le plan (23 août 2026)
 
 Le plan se dessine (`ARCHITECTURE.md` §150). Reste ce qu'il a demandé le 21 :
@@ -105,6 +254,33 @@ le produit. **Ne pas rouvrir** sans qu'il le redemande.
 
 La planche 92 (`appli/calendrier-aujourdhui.html`) reste : elle raconte le
 chemin, et le prochain qui trouvera deux cases entourées saura pourquoi.
+## Mode nuit : ce que le lot du 22 août ne couvre PAS (22 août 2026)
+
+Le défaut qu'il a signalé est réparé (`ARCHITECTURE.md` §160), et deux contrôles
+le tiennent. Ce qui reste dehors, et qu'il faut savoir avant de croire
+l'application entièrement lisible en Nuit :
+
+| Ce qui n'est pas éprouvé | Pourquoi |
+|---|---|
+| **les états qui ne s'ouvrent qu'au doigt** — feuilles, tiroirs, listes déroulantes, champs en cours de saisie | la suite navigateur parcourt des écrans au repos ; ouvrir chaque geste demanderait un scénario par écran |
+| **les écrans profonds** — fiche chantier, devis complet, facture, catalogue, arrosage | le parcours porte neuf écrans, pas l'application entière |
+| **la pastille d'équipe elle-même**, dans la CI | le jeu de démonstration n'a qu'une équipe et aucun chantier planifié : le cas exact de sa capture ne se rejoue qu'avec deux équipes en base |
+
+Le troisième point est le plus gênant : c'est celui qu'il a signalé, et la suite
+le mesurerait s'il y avait de quoi le mesurer. Le corriger demande soit
+d'enrichir le jeu de démonstration — qui sert aux quatre-vingts suites de la
+batterie —, soit de faire poser un chantier et une seconde équipe par la suite
+elle-même, à travers les écrans. La seconde voie est la plus sûre et n'a pas été
+prise faute de temps.
+
+**Les pages publiques du client restent volontairement claires** — devis,
+facture, fiche d'entretien, documents légaux. Un devis ne part pas en noir chez
+le client parce que l'artisan a choisi « Nuit » (`design-tokens.ts`,
+`couleursDocument`). Ce n'est pas un manque, c'est une décision, et elle est
+tenue.
+
+---
+
 ## Arrosage : deux calculs manquent encore, et il ne les a pas commandés (22 août 2026)
 
 Sa question du 22 août — *« quel calcul utilisent-ils pour savoir cela ? »* — a
@@ -533,7 +709,7 @@ charge de la machine finit par être ignoré.
 
 ---
 
-## ⏳ `test-fiche-client-e2e.ts` a rougi une fois sur trois — non reproduit
+## ⏳ `test-fiche-client-e2e.ts` rougit sous charge — deux occurrences, deux causes possibles
 
 **Le 20 août 2026**, sur une batterie parmi trois jouées d'affilée, trois cas de
 cette suite sont tombés ensemble :
@@ -557,6 +733,36 @@ refonte que le patron vient de demander.
 besoin, au lieu de compter sur ceux qu'une suite d'avant a produits — ou qu'elle
 refuse de conclure sur une colonne vide, plutôt que de mesurer zéro pixel
 (`CLAUDE.md` §5). Non reproduit ici : à confirmer avant de corriger.
+
+### Deuxième occurrence, le 23 août 2026 — et elle désigne AUTRE CHOSE
+
+Trois cas sont retombés dans une batterie complète, mais **pas les mêmes**, et
+le message change tout :
+
+    ✗ elle porte son nom, et les informations sous le nom
+      le nom du client manque :
+      ATLAS
+      Chargement…
+      CHANTIERS PLANNING TERMINÉS PAYSAGE RÉGLAGES
+
+**« Chargement… », c'est l'écran qui n'a pas fini de se rendre** — pas une base
+vide. La lecture de 20 août (« les colonnes étaient VIDES, une suite d'avant n'a
+rien laissé ») ne couvre donc pas ce cas-ci : ici la page n'a simplement pas eu
+le temps. Les deux occurrences n'ont peut-être pas la même cause, et **traiter
+la seconde avec l'explication de la première ferait chercher au mauvais
+endroit** — ce que ce dépôt paie régulièrement.
+
+**Vérifié avant de conclure**, comme pour `test-lecons-prix-e2e.ts` :
+
+- le lot en cours ne touche **rien** de ce chemin (photo d'une fiche phyto,
+  script de capture, documents) — `git diff --name-only` le dit ;
+- rejouée **seule** juste après : **13 cas sur 13 au vert** ;
+- 105 des 106 suites de la même batterie sont vertes.
+
+**Ce qu'il faudrait, et c'est le même remède que pour `test-prix-e2e.ts` :**
+attendre **ce qu'on affirme** — le nom du client à l'écran — plutôt que la fin
+d'un chargement réseau. `networkidle` ne dit rien du rendu, et une machine
+chargée fait le reste.
 
 ---
 
@@ -2593,7 +2799,92 @@ vanne, son tuyau visite toutes ses têtes où qu'elles soient, et le départ se
 mesure depuis le regard — sa règle du 21 août. Regardé à l'écran sur les trois
 jardins d'exemple, pas seulement compté.
 
-### 0 quinvicies septies. Son message au client, et l'allure de ses devis — **DEUX PLANCHES, RIEN N'EST CODÉ**
+### 0 quinvicies septies. Son message au client et l'allure de ses devis — **LES DEUX SONT CODÉS** (23 et 24 août 2026)
+
+**SES RÉPONSES DU 23 AOÛT AU SOIR, sur le message :** *« Message client A. Liens
+obligatoire. Et message pour tous. »*
+
+| | Tranché |
+|---|---|
+| Où il se règle | **A** — dans « Devis & factures », en dernier bloc |
+| Le lien | **obligatoire** : Atlas REFUSE d'enregistrer un message sans lui, il ne se contente pas de prévenir |
+| Combien de messages | **un seul, pour les trois documents** |
+
+**RESTE UN POINT, ET UN SEUL** — il l'a demandé en images : *« pas compris,
+montre des exemples »*. Un texte unique se heurte à ce que le milieu du message
+n'est pas le même selon ce qui part. La planche montre les deux façons, avec
+les trois téléphones côte à côte :
+
+- **façon 1** — une pastille `[document]` : il écrit le bonjour, la formule et
+  la signature ; Atlas pose la phrase juste — « votre devis, choisissez votre
+  date », « votre facture n° F2026-0008, à régler avant le 21 septembre », « le
+  compte rendu de mon passage ». Rien n'est perdu ;
+- **façon 2** — le même texte mot pour mot : sa facture dit alors *« Voici votre
+  devis… choisir votre date d'intervention »*, et l'échéance disparaît.
+
+**La planche a dû être REFAITE pour qu'il puisse choisir.** Sa première version
+affichait « [document] » en clair dans les bulles de la façon 2 : cela ne
+montrait rien qu'un écran cassé, au lieu de sa facture parlant d'un devis. Un
+contrôle le tient désormais (`verifier-maquette-message-et-allure.mjs`, éprouvé
+rouge sur ce défaut précis).
+
+**IL A RÉPONDU « FAÇON 1 », ET C'EST CODÉ** (`ARCHITECTURE.md` §161) : colonne
+`entreprises.message_client`, bloc dans « Devis & factures », refus du message
+sans lien à l'écran ET au serveur, aperçu des trois documents, et le gabarit
+descend jusqu'aux trois écrans d'envoi. Éprouvé de bout en bout —
+`test-message-au-client-e2e.ts` va des réglages jusqu'à l'adresse `sms:`.
+
+**Ce qui a changé dans ce que ses clients reçoivent, et qu'il faut savoir :** la
+phrase du devis tenait en deux morceaux, de part et d'autre du lien ; un seul
+emplacement ne peut pas porter les deux. Elles sont réunies avant le lien. Idem
+pour l'échéance de la facture.
+
+**Reste ouvert sur le message :** rien.
+
+**SES RÉPONSES DU 23 AOÛT AU SOIR, sur l'allure :** *« Allure des devis B, juste
+pour devis facture. Fais-en une dizaine. Le fond teinté fais-le modifiable et
+choisiront s'ils le gardent ou s'ils mettent autre chose ; les réglages actuels
+doivent être par défaut. »*
+
+| | Tranché |
+|---|---|
+| Où ça se règle | **B** — un bloc dans « Devis & factures », pas de rubrique de plus |
+| Sur quoi ça porte | **le devis et la facture SEULEMENT.** La feuille de chantier et le compte rendu d'entretien gardent leur allure |
+| Typographies | **dix**, la première étant celle d'aujourd'hui |
+| Fond de page | **modifiable — n'importe quelle couleur**, pas une liste de trois |
+| Le départ | **ses réglages d'aujourd'hui** : crème, or, police de l'appareil |
+
+**C'EST CODÉ, le 24 août 2026** (`ARCHITECTURE.md` §164) : migration
+`0063_allure_documents.sql`, bloc dans « Devis & factures », dix typographies,
+deux nuanciers libres, un logo — et le devis comme la facture les portent.
+
+**Ce que ça a coûté, et qu'il faut savoir :**
+
+| | |
+|---|---|
+| les polices | dans le dépôt, **réduites une fois pour toutes** au latin (3,9 Mo → 570 ko) et embarquées **entières** — le découpeur de `pdf-lib` perd des caractères en silence |
+| un devis habillé | **40 à 60 ko**, contre 5 ko sans typographie choisie |
+| l'écran | sert les **mêmes fichiers** que le PDF, par `/api/polices/[fichier]` — jamais Google Fonts |
+
+**Reste ouvert sur l'allure :** rien de bloquant. Deux points de confort, à lui
+demander seulement s'il les évoque — le logo ne sort pas encore sur la **page
+publique** du devis (elle n'est pas un PDF, c'est un autre chemin), et le
+compte rendu d'entretien garde son allure, ce qu'il a demandé.
+
+**Deux leçons d'outillage, payées ici :**
+
+- **un contrôle ne doit pas accuser une panne de réseau.** Le mandataire de
+  l'agent refuse `fonts.googleapis.com` : le contrôle rougissait sur « Failed to
+  load resource », c'est-à-dire sur la planche, pour une panne qui n'est pas la
+  sienne. Il ignore désormais ce seul domaine et rapporte toutes les autres
+  ressources manquantes. Le choix des dix reste mesurable sans elles : on
+  compare les **piles déclarées**, pas les glyphes rendus ;
+- **un contrôle qui PLANTE n'accuse personne.** En retirant une typographie pour
+  l'éprouver, le clic sur la dixième a levé une exception et le rapport n'a
+  jamais été écrit — une pile d'appels au lieu de « neuf au lieu de dix ». Tout
+  le corps est sous filet : une panne devient un souci comme un autre, et le
+  verdict s'écrit toujours.
+
 
 **Sa demande du 23 août 2026**, en deux morceaux : *« y a-t-il un endroit dans
 les réglages où l'utilisateur peut rédiger ce message automatique ? S'il n'y en
@@ -2640,6 +2931,51 @@ fin, et le fond figé.
 **Ce qui restera scellé quoi qu'il choisisse**, et la planche le dit : mentions
 obligatoires, disposition des colonnes, ordre des totaux. Un devis mal posé
 n'est pas un devis moins joli, c'est un devis qu'on peut lui contester.
+
+### 0 trigies sexies. Deux suites navigateur rougissent encore sous charge — **CONSTATÉ le 24 août 2026, PAS RÉPARÉ**
+
+**Écrit parce que le silence coûterait l'enquête une seconde fois.** Ce n'est
+pas une réparation annoncée : c'est un constat, et il n'a pas été corrigé.
+
+| Suite | Ce qu'elle rend | Où |
+|---|---|---|
+| `test-facture-au-client-e2e` | « L'écran laisse croire que la facture est partie » | sur la branche du lot de l'allure, **deux fois sur trois** |
+| `test-tva-au-paiement-e2e` | `waitForFunction: Timeout 15000ms exceeded` sur l'acompte | sur **`main`**, sans aucun changement |
+| `test-periodicite-tva-e2e` | « "Tous les trimestres" n'a pas été enregistré » après trois rechargements | sur la branche du lot 2 de sécurité, **une fois sur une** |
+
+**La troisième s'ajoute le 24 août 2026, et elle confirme la lecture ci-dessus.**
+Le lot de sécurité ne touche ni la périodicité ni l'écran « Mon entreprise » —
+sa seule ligne dans `src/app/reglages/actions.ts` vit à l'intérieur de
+`analyserFichierTarifsAction`, que cette suite n'appelle jamais. Jouée seule :
+7/7. **Trois suites, trois branches, trois symptômes différents** — c'est bien
+la charge.
+
+Et celle-ci porte un indice de plus : son propre commentaire dit qu'elle
+recharge **trois fois** en laissant du temps à l'action, précisément parce que
+le défaut avait déjà été vu le 13 août. Trois chances ne suffisent plus. La
+piste est donc la même que pour les deux autres — on attend une valeur à
+l'écran sur une montre, au lieu d'attendre que la base ait bougé.
+
+**Les deux sont VERTES jouées seules**, et c'est la question qui tranche
+(§ ci-dessous). Surtout : **ce ne sont pas les mêmes** d'une branche à l'autre.
+Un lot qui ne touche ni la facture ni la TVA ne peut pas faire tomber l'une
+pendant que l'autre tombe sur `main` : c'est la charge, pas le code.
+
+**Ce qu'il faudra regarder**, et personne ne l'a fait :
+
+- `test-facture-au-client` lit l'écran **après** avoir attendu « arrêtée ». Or
+  l'écran d'après porte un jeton, donc la phrase « votre client ne l'a pas
+  encore reçue » **disparaît**. Le contrôle semble donc dépendre du fait que
+  `router.refresh()` n'a pas encore atterri : ce serait une course écrite dans
+  la suite elle-même, pas dans le produit. À vérifier avant de toucher quoi que
+  ce soit ;
+- `test-tva-au-paiement` attend une valeur à l'écran par `waitForFunction` :
+  c'est exactement le mal des cinq suites d'à côté (0 trigies quinquies), et le
+  remède est connu — **relire la base en boucle**, jamais l'écran sur une montre.
+
+**Ce que ça ne doit PAS devenir :** une raison de rejouer la batterie jusqu'à ce
+qu'elle passe. Une suite qui rougit une fois sur trois barre la publication une
+fois sur trois, et c'est déjà arrivé (`CLAUDE.md` §5).
 
 ### 0 trigies quinquies. ~~Cinq suites du devis rougissaient une batterie sur deux~~ — **RÉPARÉES le 23 août 2026**
 

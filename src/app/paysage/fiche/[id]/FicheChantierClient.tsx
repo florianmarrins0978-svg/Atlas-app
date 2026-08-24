@@ -57,12 +57,20 @@ export default function FicheChantierClient({
   clients,
   origine,
   entrepriseNom,
+  modeleMessage,
 }: {
   passage: PassageAffiche;
   clients: Client[];
   /** `https://…`, bâtie par le serveur — jamais lue depuis `window` (voir la page). */
   origine: string;
   entrepriseNom: string;
+  /**
+   * Son gabarit de message, écrit dans « Devis & factures ». `null` : Atlas.
+   *
+   * **`modeleMessage`, jamais `messageClient`** : ce nom est pris ailleurs dans
+   * l'application, où il désigne le mot laissé par le CLIENT — l'inverse.
+   */
+  modeleMessage: string | null;
 }) {
   const [lignes, setLignes] = useState(passage.lignes);
   const [clientId, setClientId] = useState(passage.clientId);
@@ -218,6 +226,7 @@ export default function FicheChantierClient({
       clientNom: clientNom ?? "",
       clientCivilite: (civilite ?? undefined) as CiviliteChoisie | undefined,
       entrepriseNom,
+      modele: modeleMessage,
       lien: `${origine}/entretien/${jetonNeuf}`,
     });
     ouvrirAdresse(lienTransmission({ canal, destinataire, message }), canal);

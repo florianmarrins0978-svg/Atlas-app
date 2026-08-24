@@ -7,6 +7,8 @@ import { calculerPlan } from "@/lib/arrosage/calcul.js";
 import { trajetLePlusLong, poserSurLeTerrain } from "@/lib/arrosage/geometrie-croquis";
 import { debitRetenu, SEAU_LITRES } from "@/lib/arrosage/mesure-debit";
 import { dessinerPlan, type Dessin, type ZoneDessinee } from "@/lib/arrosage/plan-dessine";
+import { MESSAGE_PHOTO_REFUSEE, photoAcceptee } from "@/lib/exif";
+import { verifierLimite, LIMITES } from "@/server/rate-limit";
 
 /**
  * Les gestes de l'écran « Plan d'arrosage ».
@@ -110,12 +112,25 @@ export type EtatPlan =
 
 export async function lireLeCroquis(_precedent: EtatPlan, formulaire: FormData): Promise<EtatPlan> {
   // La session est exigée avant tout : cet écran fait travailler l'IA, et
-  // c'est un coût. Personne d'anonyme ne le déclenche.
-  await getCurrentCtx();
+  // c'est un coût. Personne d'anonyme ne le déclenche — et l'entreprise sert
+  // désormais à compter la cadence, plus bas.
+  const ctx = await getCurrentCtx();
 
   const photo = formulaire.get("croquis");
   if (!(photo instanceof File) || photo.size === 0) {
     return { etat: "refus", raison: "Aucune photo n’a été jointe." };
+  }
+  /**
+   * **Une liste blanche, et une cadence** — hors du brief du lot 2, mais de la
+   * même famille (audit du 23 août 2026). Ce chemin-ci envoie la photo à un
+   * fournisseur d'IA : il bornait la taille et rien d'autre.
+   *
+   * Ce que chacune arrête : la liste blanche empêche d'envoyer autre chose
+   * qu'une image à un service qu'on paie ; la cadence borne **une facture**,
+   * comme sur le diagnostic végétal — personne ne lit dix croquis à la minute.
+   */
+  if (!photoAcceptee(photo.type)) {
+    return { etat: "refus", raison: MESSAGE_PHOTO_REFUSEE };
   }
   // **Une borne dure sur la taille.** Une photo de téléphone moderne pèse
   // 10 Mo ; l'envoyer entière au fournisseur coûte pour rien et fait parfois
@@ -123,6 +138,9 @@ export async function lireLeCroquis(_precedent: EtatPlan, formulaire: FormData):
   if (photo.size > 8 * 1024 * 1024) {
     return { etat: "refus", raison: "Cette photo dépasse 8 Mo. Reprenez-la en plus petit." };
   }
+
+  const limite = await verifierLimite(`croquis:${ctx.entrepriseId}`, LIMITES.diagnosticVegetal);
+  if (!limite.autorise) return { etat: "refus", raison: limite.message };
 
   const base64 = Buffer.from(await photo.arrayBuffer()).toString("base64");
   const lu = await lireCroquis(base64, photo.type || "image/jpeg");

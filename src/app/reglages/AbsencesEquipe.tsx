@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { colors, font, libelleCaps } from "@/lib/design-tokens";
+import { colors, font, libelleCaps, voile } from "@/lib/design-tokens";
 import BottomSheet from "@/components/atlas/BottomSheet";
 import { equipesAffichees, libelleEquipe } from "@/lib/equipes";
 import { libelleAbsence, phraseDuRefus, refusDeLAbsence } from "@/lib/absences-equipe";
@@ -289,7 +289,7 @@ export default function AbsencesEquipe({
 
         <p
           className="mt-2.5 rounded-xl px-3.5 py-3 text-[12.5px] leading-[1.5]"
-          style={{ backgroundColor: "rgba(185,139,71,0.10)", color: "#7d6234" }}
+          style={{ backgroundColor: voile(colors.or, 0.1), color: colors.or }}
         >
           {refusSaisi ? (
             phraseDuRefus(refusSaisi)

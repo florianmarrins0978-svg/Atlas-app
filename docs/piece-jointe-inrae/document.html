@@ -1,0 +1,288 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>L'anthracnose du platane dans mon application</title>
+<style>
+  @page { size: A4; margin: 18mm 17mm; }
+
+  :root {
+    --cream:   #f5f3ee;
+    --ink:     #1c1c1a;
+    --inkSoft: #3a3a35;
+    --muted:   #6f6a60;
+    --or:      #8a6a34;
+    --line:    rgba(28,28,26,0.18);
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: "Liberation Serif", Georgia, "Times New Roman", serif;
+    color: var(--ink);
+    background: #fff;
+    font-size: 10.5pt;
+    line-height: 1.6;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .page { page-break-after: always; }
+  .page:last-child { page-break-after: auto; }
+
+  h1 { font-size: 16pt; font-weight: normal; line-height: 1.25; margin: 0 0 10px; }
+  h2 { font-size: 12pt; font-weight: bold; margin: 0 0 8px; }
+  p  { margin: 0 0 10px; }
+  .serre { margin-bottom: 6px; }
+
+  /* ── L'écran et le texte, côte à côte ─────────────────────────────────── */
+  .deux { display: flex; gap: 20px; align-items: flex-start; margin-top: 4px; }
+  .colonne-ecran { width: 30%; flex: 0 0 30%; }
+  .colonne-texte { flex: 1; }
+
+  .telephone {
+    border: 4px solid #33332f;
+    border-radius: 12px;
+    overflow: hidden;
+    background: var(--cream);
+  }
+  .telephone img { display: block; width: 100%; }
+
+  /* ── La lecture de l'écran, ligne à ligne ─────────────────────────────── */
+  ol.lecture { margin: 0; padding-left: 18px; }
+  ol.lecture > li { margin-bottom: 9px; }
+  ol.lecture .quoi { font-weight: bold; }
+
+  .capture-source {
+    border: 1px solid var(--line);
+    background: var(--cream);
+    overflow: hidden;
+    margin: 12px 0 14px;
+    width: 64%;
+  }
+  .capture-source img { display: block; width: 100%; }
+
+  table { width: 100%; border-collapse: collapse; font-size: 10pt; margin-top: 4px; }
+  th, td { text-align: left; vertical-align: top; padding: 7px 12px 7px 0; }
+  th {
+    font-family: "Liberation Sans", Arial, sans-serif;
+    font-size: 8.5pt; color: var(--muted); font-weight: bold;
+    border-bottom: 1px solid var(--line); padding-bottom: 5px;
+  }
+  td { border-bottom: 1px solid var(--line); color: var(--inkSoft); }
+  td.regle { color: var(--ink); width: 40%; }
+
+  ul.puces { margin: 0 0 12px; padding-left: 18px; }
+  ul.puces li { margin-bottom: 7px; }
+
+  .signature { margin-top: 20px; }
+  .signature .nom { font-size: 11pt; }
+
+  .pied {
+    margin-top: 18px;
+    font-family: "Liberation Sans", Arial, sans-serif;
+    font-size: 8pt; color: var(--muted);
+    text-align: right;
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════ PAGE 1 ═══════════════════════════ -->
+<section class="page">
+
+  <h1>L'anthracnose du platane, telle qu'elle apparaît dans mon application</h1>
+
+  <p>
+    Plutôt que de décrire mon travail, je préfère vous en montrer le résultat sur
+    un cas précis. La fiche ci-dessous a été rédigée à partir de votre page
+    consacrée à l'anthracnose du platane. Voici ce qu'un paysagiste lit sur son
+    téléphone, et d'où vient chacune des lignes qu'il a sous les yeux.
+  </p>
+
+  <div class="deux">
+
+    <div class="colonne-ecran">
+      <div class="telephone">
+        <img src="inrae-ecran.jpg" alt="L'écran de résultat : anthracnose du platane">
+      </div>
+    </div>
+
+    <div class="colonne-texte">
+      <ol class="lecture">
+        <li>
+          <span class="quoi">Le nom.</span> « Anthracnose du platane »,
+          <em>Apiognomonia veneta</em>. Je l'ai recopié de votre fiche. Aucun nom
+          de maladie n'est produit par le logiciel : il est lu dans ma base.
+        </li>
+        <li>
+          <span class="quoi">Le niveau de certitude.</span> Trois mots, et trois
+          seulement : élevée, probable, incertaine. Je n'affiche jamais de
+          pourcentage, parce que je n'ai aucun moyen sérieux d'en calculer un.
+        </li>
+        <li>
+          <span class="quoi">La description.</span> Elle vient de votre section
+          « Symptômes et éléments de diagnostic ». Je n'ai pas reformulé les
+          critères.
+        </li>
+        <li>
+          <span class="quoi">La photographie.</span> Elle ne vient pas de chez
+          vous : c'est un cliché du domaine public (Clemson University — USDA
+          Cooperative Extension Slide Series, Bugwood.org, via Wikimedia
+          Commons). L'usage de vos images fait l'objet de ma troisième question,
+          et de celle-là seulement.
+        </li>
+        <li>
+          <span class="quoi">La gravité.</span> « Faible », parce que votre fiche
+          écrit elle-même que le dégât est spectaculaire mais rarement grave.
+        </li>
+        <li>
+          <span class="quoi">La conduite à tenir.</span> C'est la phrase que lira
+          l'artisan avant d'intervenir sur un arbre. Je la recopie sans la
+          résumer.
+        </li>
+      </ol>
+    </div>
+
+  </div>
+
+  <div class="pied">
+    <span>1 / 3</span>
+  </div>
+
+</section>
+
+<!-- ═══════════════════════════ PAGE 2 ═══════════════════════════ -->
+<section class="page">
+
+  <h2>Votre nom apparaît sur l'écran, pas en fin de document</h2>
+  <p>
+    En dépliant « Voir les détails », l'utilisateur trouve l'organisme, le titre
+    exact de la fiche et la date à laquelle je l'ai consultée. La liste qui suit
+    indique quels champs de l'écran cette source appuie. L'adresse de la page est
+    enregistrée avec la fiche.
+  </p>
+
+  <div class="capture-source">
+    <img src="inrae-sources.jpg" alt="Le bloc « D'où vient cette fiche »">
+  </div>
+
+  <h2 style="margin-top:22px;">Comment une fiche est constituée</h2>
+  <p>
+    Je lis la page, je la découpe en champs — hôtes, organes touchés, symptômes,
+    gravité, conduite à tenir — et je les saisis un par un. Ce que la page ne dit
+    pas reste vide. Je ne complète jamais avec une autre source sans le noter.
+  </p>
+  <p>
+    Une fois la fiche enregistrée, le programme la relit et la compare champ par
+    champ au document dont elle est tirée. Tant que la comparaison n'est pas
+    exacte, la fiche ne peut pas être mise en service. C'est ce contrôle qui m'a
+    fait corriger, en écrivant ce document, la mention de crédit de la
+    photographie de la page précédente.
+  </p>
+
+  <h2 style="margin-top:22px;">Ce que fait la photographie prise sur le chantier</h2>
+  <p>
+    Le cliché pris par l'utilisateur sert uniquement à décrire ce qui est
+    visible : une tache, sa couleur, l'organe où elle se trouve. Cette
+    description est ensuite confrontée aux fiches de ma base par un programme
+    ordinaire, qui écarte les maladies incompatibles avec l'essence et l'organe
+    observés. Le résultat affiché est toujours la recopie d'un champ de fiche.
+    Une maladie, une gravité ou un traitement inventés ne sont pas seulement
+    interdits : ils sont impossibles, faute d'un endroit où les écrire.
+  </p>
+  <p>
+    Si l'essence de l'arbre n'est pas certaine, l'application demande une
+    seconde photographie, puis renonce à conclure. Je préfère qu'elle ne dise
+    rien plutôt qu'elle se trompe.
+  </p>
+
+  <div class="pied">
+    <span>2 / 3</span>
+  </div>
+
+</section>
+
+<!-- ═══════════════════════════ PAGE 3 ═══════════════════════════ -->
+<section class="page">
+
+  <h2>Les règles que je me suis fixées</h2>
+  <table>
+    <thead>
+      <tr><th>La règle</th><th>Ce qu'elle évite</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="regle">Rien n'est complété de mémoire</td>
+        <td>Ce que la source ne dit pas reste vide. Un champ sans origine n'est jamais rempli par déduction.</td>
+      </tr>
+      <tr>
+        <td class="regle">Chaque affirmation qui engage porte sa source</td>
+        <td>La conduite à tenir, la gravité, un traitement, le statut réglementaire. Une bibliographie générale ne suffirait pas : c'est la source de cette ligne-là qui est enregistrée.</td>
+      </tr>
+      <tr>
+        <td class="regle">La certitude ne dépasse pas ce que la source autorise</td>
+        <td>Quand une fiche indique qu'une analyse en laboratoire est nécessaire, l'écran le dit et n'affiche jamais un diagnostic confirmé.</td>
+      </tr>
+      <tr>
+        <td class="regle">L'essence est identifiée avant la maladie</td>
+        <td>Sans identification certaine de l'arbre, l'application demande une photographie de plus, puis refuse de conclure.</td>
+      </tr>
+      <tr>
+        <td class="regle">Une fiche est relue mot à mot après saisie</td>
+        <td>La comparaison se fait champ par champ avec le document d'origine. Le moindre écart empêche la mise en service.</td>
+      </tr>
+      <tr>
+        <td class="regle">Une photographie sans licence établie n'entre pas</td>
+        <td>Le crédit et la licence sont obligatoires et affichés sous l'image. Une mention de droits réservés est refusée.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2 style="margin-top:22px;">Ce que je vous demande</h2>
+  <ul class="puces">
+    <li>
+      M'appuyer sur vos fiches relatives aux forêts et aux arbres d'ornement, en
+      citant l'INRAE et Ephytia, avec l'adresse de la page et sa date de
+      consultation.
+    </li>
+    <li>
+      Reprendre de courts extraits lorsque la formulation exacte importe, par
+      exemple un critère qui distingue deux problèmes voisins.
+    </li>
+    <li>
+      Utiliser certaines de vos photographies, avec leur crédit. C'est le point
+      auquel je tiens le plus, et je m'en explique ci-dessous. J'ai vu que
+      plusieurs portent un crédit nominatif : si un accord doit être obtenu
+      auprès des auteurs, dites-moi lesquels et je ferai la démarche.
+    </li>
+  </ul>
+
+  <p>
+    J'insiste sur ce dernier point. Sur un chantier, on ne conclut pas sur une
+    description : on compare. Voir la nécrose de la fiche, sur le même organe et
+    au même stade, est ce qui permet d'écarter une confusion. Les images libres
+    trouvables ailleurs sont rares et le plus souvent américaines, sur des
+    essences qui ne sont pas les nôtres ; les vôtres sont prises en France, sur
+    les arbres que nous rencontrons.
+  </p>
+
+  <p>
+    Un mot du contexte, puisqu'il compte pour votre réponse : outil
+    professionnel, diffusé auprès d'autres artisans, donc à usage éventuellement
+    commercial ; quelques dizaines de fiches aujourd'hui, peut-être quelques
+    centaines à terme. Si une convention est nécessaire, je m'y conformerai.
+  </p>
+
+  <div class="signature">
+    <div class="nom">Florian Martins</div>
+  </div>
+
+  <div class="pied">
+    <span>3 / 3</span>
+  </div>
+
+</section>
+
+</body>
+</html>

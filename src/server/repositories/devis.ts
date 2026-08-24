@@ -1,5 +1,6 @@
 import { desc, eq, sql } from "drizzle-orm";
 import { withEntreprise } from "../db/with-entreprise";
+import { allureDesDocuments } from "./entreprises";
 import { conditionsDepuisEntreprise } from "@/lib/conditions-documents";
 import { totauxAvecReduction, pourcentValide } from "@/lib/reduction-devis";
 import type { DbOrTx } from "../db/client";
@@ -216,6 +217,7 @@ export async function genererPdfPourApercu(ctx: Ctx, devisId: string): Promise<U
     const [d] = await tx.select().from(devis).where(eq(devis.id, devisId)).limit(1);
     if (!d) throw new Error("Devis introuvable");
     const lignes = await tx.select().from(lignesDevis).where(eq(lignesDevis.devisId, devisId));
+    const habillage = await allureDesDocuments(tx, ctx.entrepriseId);
     return genererPdfDevis({
       numeroCommercial: d.numeroCommercial,
       numeroVersion: d.numeroVersion,
@@ -249,7 +251,7 @@ export async function genererPdfPourApercu(ctx: Ctx, devisId: string): Promise<U
         prixUnitaire: l.prixUnitaire,
         montant: l.montant,
       })),
-    });
+    }, habillage);
   });
 }
 
@@ -264,6 +266,7 @@ export async function envoyerDevis(ctx: Ctx, devisId: string) {
     if (avant.statut === "envoye") throw new Error("Ce devis a déjà été envoyé.");
 
     const lignes = await tx.select().from(lignesDevis).where(eq(lignesDevis.devisId, devisId));
+    const habillage = await allureDesDocuments(tx, ctx.entrepriseId);
     const pdfBytes = await genererPdfDevis({
       numeroCommercial: avant.numeroCommercial,
       numeroVersion: avant.numeroVersion,
@@ -294,7 +297,7 @@ export async function envoyerDevis(ctx: Ctx, devisId: string) {
         prixUnitaire: l.prixUnitaire,
         montant: l.montant,
       })),
-    });
+    }, habillage);
 
     const objet = await enregistrerObjet(
       `chantiers/${avant.chantierId}/devis`,
@@ -409,6 +412,7 @@ export async function genererDevisSansPrix(
     const d = await devisÀImprimer(tx, chantierId);
     if (!d) return null;
     const lignes = await tx.select().from(lignesDevis).where(eq(lignesDevis.devisId, d.id));
+    const habillage = await allureDesDocuments(tx, ctx.entrepriseId);
     return genererPdfDevis(
       {
         numeroCommercial: d.numeroCommercial,
@@ -444,7 +448,7 @@ export async function genererDevisSansPrix(
           montant: l.montant,
         })),
       },
-      { sansChiffrage: true }
+      { sansChiffrage: true, ...habillage }
     );
   });
 }

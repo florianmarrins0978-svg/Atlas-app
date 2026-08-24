@@ -4,6 +4,11 @@ import { withEntreprise } from "../db/with-entreprise";
 import { entreprises, entrepriseCompteurs, users, membresEntreprise } from "../db/schema";
 import type { Ctx } from "./context";
 import { normaliserConditions, type ConditionsLues } from "@/lib/conditions-documents";
+import { refusDuMessage, MESSAGE_PAR_DEFAUT } from "@/lib/message-client";
+import { estLAllureParDefaut, normaliserAllure, type Allure } from "@/lib/allure-documents";
+import { lireObjet } from "../storage";
+import type { LogoDocument } from "../pdf/document-commun";
+import { logger } from "../logger";
 
 // Cas particulier : à la création, l'entreprise n'existe pas encore, donc
 // withEntreprise() (qui exige une adhésion préexistante) ne peut pas s'appliquer.
@@ -89,6 +94,29 @@ export async function mettreAJourEntreprise(
      * et bretelles (`src/lib/conditions-documents.ts`).
      */
     conditions?: ConditionsLues;
+    /**
+     * Son message au client (migration 0062).
+     *
+     * **`null` REMET celui d'Atlas**, une chaîne vide aussi : c'est ainsi qu'il
+     * revient au message d'origine sans avoir à le retaper de mémoire.
+     */
+    messageClient?: string | null;
+    /**
+     * L'allure de ses documents (migration 0063).
+     *
+     * **`null` REMET celle d'aujourd'hui** — les trois colonnes repassent à
+     * vide, et la fabrique de PDF reprend le chemin d'avant le 23 août 2026.
+     * C'est ce que fait son bouton « Revenir aux réglages d'aujourd'hui ».
+     */
+    allure?: Allure | null;
+    /**
+     * Son logo, déjà déposé dans le stockage — ou `null` pour l'enlever.
+     *
+     * **On ne reçoit ici que la CLEF, jamais les octets.** Écrire l'image et
+     * écrire la ligne sont deux gestes : les mêler ferait une transaction qui
+     * tient ouverte le temps d'un téléversement.
+     */
+    logo?: { storageKey: string; mime: string } | null;
   }
 ) {
   return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
@@ -110,6 +138,46 @@ export async function mettreAJourEntreprise(
       valeurs.moyensPaiement = c.moyensPaiement;
       valeurs.rappelerPenalitesDevis = c.rappelerPenalites;
       valeurs.textePiedDocuments = c.textePied;
+    }
+
+    // **Le message est REFUSÉ ici aussi, pas seulement à l'écran.** La même
+    // fonction sert les deux (`refusDuMessage`) : une action serveur qui
+    // accepterait ce que l'écran refuse laisserait passer un message sans lien
+    // — par une adresse tapée à la main, ou par un écran resté ouvert depuis
+    // une version d'avant. Un refus se garde au plus près de la base.
+    if (data.messageClient !== undefined) {
+      const texte = data.messageClient?.trim() ?? "";
+      // Vide = il revient au message d'Atlas. Ce n'est pas un refus : c'est le
+      // seul moyen de retrouver l'original sans le retaper de mémoire.
+      // **Le texte d'Atlas retapé à l'identique reste « celui d'Atlas ».** Sans
+      // cette ligne, un aller-retour par « Remettre celui d'Atlas » figerait
+      // l'entreprise sur la version du jour : une correction ultérieure ne
+      // l'atteindrait plus, et personne ne s'en apercevrait.
+      if (texte === "" || texte === MESSAGE_PAR_DEFAUT.trim()) valeurs.messageClient = null;
+      else if (refusDuMessage(texte) === null) valeurs.messageClient = texte;
+      // Sinon : on n'écrit rien. Le réglage reste celui d'avant, et l'écran a
+      // déjà dit pourquoi — lever ici rendrait un identifiant opaque au patron.
+    }
+
+    if (data.allure !== undefined) {
+      // **Rien n'est cru sur parole** : `normaliserAllure` retient une couleur
+      // qui s'écrit et une typographie qui existe, et retombe sur le défaut
+      // sinon. La base porte le même `CHECK` sur la forme des couleurs —
+      // ceinture et bretelles, comme pour les conditions.
+      const a = data.allure === null ? null : normaliserAllure(data.allure);
+      // **Le défaut s'écrit VIDE, pas en clair.** Poser « #ece9e1 » en base
+      // figerait ses documents sur le crème d'aujourd'hui : le jour où la
+      // charte bougerait, ses devis ne suivraient plus, et personne ne saurait
+      // qu'un réglage jamais touché en est la cause.
+      const rienDeChoisi = a === null || estLAllureParDefaut(a);
+      valeurs.docTypographie = rienDeChoisi ? null : a.typographie;
+      valeurs.docFond = rienDeChoisi ? null : a.fond;
+      valeurs.docAccent = rienDeChoisi ? null : a.accent;
+    }
+
+    if (data.logo !== undefined) {
+      valeurs.logoStorageKey = data.logo?.storageKey ?? null;
+      valeurs.logoMime = data.logo?.mime ?? null;
     }
 
     // Le régime n'est PAS traité comme les autres : il n'a pas de « vide ». Une
@@ -134,4 +202,73 @@ export async function mettreAJourEntreprise(
       .returning();
     return e ?? null;
   });
+}
+
+/**
+ * L'allure des documents de l'entreprise — ou `null` si elle n'a rien réglé.
+ *
+ * **Elle se lit sur la TRANSACTION en cours**, pas par une seconde connexion :
+ * les PDF se composent à l'intérieur d'un `withEntreprise`, et rouvrir un
+ * contexte d'isolation à l'intérieur d'un autre est le genre de chose qui
+ * marche jusqu'au jour où elle ne marche plus.
+ *
+ * **`null` veut dire « comme aujourd'hui »** : la fabrique de PDF reprend alors
+ * exactement les couleurs et les polices d'avant le 23 août 2026.
+ */
+export async function allureDesDocuments(
+  tx: { select: typeof db.select },
+  entrepriseId: string
+): Promise<{ allure: Allure | null; logo: LogoDocument | null }> {
+  const [e] = await tx
+    .select({
+      typographie: entreprises.docTypographie,
+      fond: entreprises.docFond,
+      accent: entreprises.docAccent,
+      logoStorageKey: entreprises.logoStorageKey,
+      logoMime: entreprises.logoMime,
+    })
+    .from(entreprises)
+    .where(eq(entreprises.id, entrepriseId))
+    .limit(1);
+  if (!e) return { allure: null, logo: null };
+
+  // Rien de réglé : on rend `null` plutôt que le défaut, pour que la fabrique
+  // reprenne le chemin d'avant — celui qu'aucun contrôle d'apparence ne doit
+  // voir changer.
+  const allure =
+    !e.typographie && !e.fond && !e.accent
+      ? null
+      : normaliserAllure({
+          typographie: e.typographie ?? undefined,
+          fond: e.fond ?? undefined,
+          accent: e.accent ?? undefined,
+        });
+
+  return { allure, logo: await logoLu(e.logoStorageKey, e.logoMime) };
+}
+
+/**
+ * Le logo lu dans le stockage — ou `null`, quoi qu'il arrive.
+ *
+ * **Un logo introuvable ne doit PAS empêcher le devis de sortir.** Le
+ * compartiment peut avoir été vidé, la clef écrite par une autre instance : le
+ * document part alors sans logo, ce qui est très largement préférable à un
+ * client qui n'a pas de devis du tout. Mais l'incident se journalise — sans
+ * quoi personne ne saurait jamais pourquoi le logo a disparu de ses documents
+ * (`AGENTS.md` : un défaut muet se rend d'abord bavard).
+ */
+async function logoLu(
+  storageKey: string | null,
+  mime: string | null
+): Promise<LogoDocument | null> {
+  if (!storageKey || !mime) return null;
+  try {
+    return { octets: await lireObjet(storageKey), mime };
+  } catch (err) {
+    logger.error("Logo de l'entreprise illisible, document composé sans lui", {
+      storageKey,
+      erreur: err instanceof Error ? err.message : String(err),
+    });
+    return null;
+  }
 }

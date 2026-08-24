@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { colors, font } from "@/lib/design-tokens";
+import { colors, font, surPlein } from "@/lib/design-tokens";
 import { agendaPrisEnCompte, titreEtatAgenda } from "@/lib/agenda-externe";
 import type { EtatAgenda } from "@/server/repositories/agendas-externes";
 import {
@@ -204,7 +204,7 @@ export default function AgendaClient({ etat, issue }: { etat: EtatAgenda; issue:
               <p
                 role="alert"
                 className="mt-3 rounded-[4px] px-4 py-3 text-[13px] leading-snug"
-                style={{ backgroundColor: "#fff", borderLeft: `3px solid ${colors.alert}` }}
+                style={{ backgroundColor: colors.card, borderLeft: `3px solid ${colors.alert}` }}
               >
                 {motifRefus}
               </p>
@@ -221,7 +221,7 @@ export default function AgendaClient({ etat, issue }: { etat: EtatAgenda; issue:
                 disabled={enCours}
                 onClick={enregistrerIdentifiants}
                 className="rounded-full px-5 py-3 text-[15px] font-medium"
-                style={{ backgroundColor: colors.rust, color: "#fff", opacity: enCours ? 0.6 : 1 }}
+                style={{ backgroundColor: colors.rust, color: surPlein, opacity: enCours ? 0.6 : 1 }}
               >
                 Enregistrer
               </button>
@@ -248,7 +248,7 @@ export default function AgendaClient({ etat, issue }: { etat: EtatAgenda; issue:
             disabled={enCours}
             onClick={() => demarrer(() => void demarrerRaccordementAction())}
             className="rounded-full px-5 py-3 text-[15px] font-medium"
-            style={{ backgroundColor: colors.rust, color: "#fff", opacity: enCours ? 0.6 : 1 }}
+            style={{ backgroundColor: colors.rust, color: surPlein, opacity: enCours ? 0.6 : 1 }}
           >
             {etat.relie ? "Rebrancher mon agenda Google" : "Relier mon agenda Google"}
           </button>
@@ -291,7 +291,7 @@ export default function AgendaClient({ etat, issue }: { etat: EtatAgenda; issue:
                   disabled={enCours}
                   onClick={() => demarrer(() => void debrancherAgendaAction())}
                   className="rounded-full px-4 py-2 text-[14px] font-medium"
-                  style={{ backgroundColor: colors.alert, color: "#fff" }}
+                  style={{ backgroundColor: colors.alert, color: surPlein }}
                 >
                   Débrancher
                 </button>
@@ -344,7 +344,7 @@ function Champ({
         autoComplete="off"
         spellCheck={false}
         className="w-full rounded-[4px] px-4 py-3 text-[15px]"
-        style={{ backgroundColor: "#fff", color: colors.ink, border: `1px solid ${colors.line}` }}
+        style={{ backgroundColor: colors.card, color: colors.ink, border: `1px solid ${colors.line}` }}
       />
     </label>
   );

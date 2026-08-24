@@ -2,6 +2,7 @@ import { eq, isNotNull, sql } from "drizzle-orm";
 import Decimal from "decimal.js";
 import { hashSync } from "bcryptjs";
 import { pool, db } from "./client";
+import { garderSeed, phraseDeRefus } from "../../lib/garde-seed";
 import { createHash } from "node:crypto";
 import { attribuerNumeroDevis } from "../repositories/devis";
 import { genererPdfDevis } from "../pdf/devis-pdf";
@@ -178,6 +179,58 @@ import {
 // SECURITY s'applique même au rôle propriétaire (atlas_owner), donc même ce
 // script de seed doit passer par le contexte, comme n'importe quel appel réel.
 
+/**
+ * Le mot de passe du compte de démonstration.
+ *
+ * **Il n'est plus écrit en dur, et il reste `demo1234` par défaut.** Les deux
+ * moitiés comptent.
+ *
+ * L'audit du 23 août 2026 (constat E1) demandait qu'il cesse d'être un mot de
+ * passe fixe publiquement connu — le dépôt est public. Mais **cent trente-six
+ * fichiers en dépendent**, dont les trente-trois suites navigateur et
+ * `verifier-connexion.mjs`, c'est-à-dire la dernière étape de la batterie de
+ * livraison. Le tirer au hasard aurait rendu `npm run verifier:avant-livraison`
+ * impossible à passer au vert, et le patron n'aurait plus pu entrer sur son
+ * banc après un rafraîchissement du jeu d'essai.
+ *
+ * La réponse tient dans la garde : ce défaut ne s'applique QUE là où effacer
+ * est sans conséquence (`src/lib/garde-seed.ts`). Dès qu'il faut forcer pour
+ * atteindre la base, `ATLAS_MDP_DEMO` devient obligatoire — le mot de passe du
+ * dépôt ne peut donc jamais se poser ailleurs que sur une base d'essai.
+ */
+const MOT_DE_PASSE_DEMO = process.env.ATLAS_MDP_DEMO?.trim() || "demo1234";
+
+/**
+ * **La garde, AVANT tout le reste — et avant la moindre ligne effacée.**
+ *
+ * Placée ici plutôt que dans la transaction : rien de ce qui suit ne doit
+ * pouvoir s'exécuter si la cible n'est pas prouvée. La règle elle-même est une
+ * fonction pure, éprouvée sans base sur les cas qu'on ne veut surtout pas jouer
+ * en vrai (`scripts/test-garde-seed.ts`).
+ */
+function verifierLaCible(): void {
+  const verdict = garderSeed({
+    databaseUrl: process.env.DATABASE_URL,
+    nodeEnv: process.env.NODE_ENV,
+    forcage: process.env.ATLAS_SEED_FORCER,
+    motDePasseDemo: process.env.ATLAS_MDP_DEMO,
+  });
+
+  if (!verdict.ok) {
+    console.error(phraseDeRefus(verdict));
+    process.exit(1);
+  }
+
+  if (verdict.force) {
+    console.warn(
+      `⚠️  Garde-fous FORCÉS : la base « ${verdict.base} » va être entièrement vidée.\n` +
+        `   Si ce n'était pas l'intention, interrompez maintenant.\n`
+    );
+  } else {
+    console.log(`→ Base d'essai reconnue : ${verdict.base}`);
+  }
+}
+
 async function main() {
   await db.transaction(async (tx) => {
     // **Ce que l'artisan a tapé À LA MAIN ne se jette pas avec la démonstration.**
@@ -229,11 +282,25 @@ async function main() {
     }
 
     console.log("Nettoyage des données de démonstration existantes...");
+    // **`tentatives_connexion` ne descend d'aucune entreprise : CASCADE ne
+    // l'emporte pas**, il faut la nommer.
+    //
+    // Trouvé le 23 août 2026 par `npm run verifier:connexion`, et par lui seul :
+    // le jeu de démonstration venait d'être refait, le compte recréé — et
+    // l'écran répondait « Trop de tentatives sur ce compte. Réessayez dans
+    // 1 minute ». La temporisation d'échecs survivait au compte auquel elle se
+    // rapportait. C'est le fantôme du 10 août 2026 sous une autre forme : un
+    // état qui reste alors que ce qu'il décrivait a disparu.
+    //
+    // **Et ce commentaire vit ICI, hors du gabarit de chaîne** : écrit à
+    // l'intérieur, ses accents graves refermaient la chaîne, et la batterie
+    // entière tombait sur « Expected ) but found CASCADE ».
     await tx.execute(sql`
       TRUNCATE TABLE
         lignes_facture, factures, lignes_devis, devis, lignes_prix, photos, notes_vocales,
         materiel, prestations, chantiers, clients, tarifs,
-        entreprise_compteurs, membres_entreprise, entreprises, users
+        entreprise_compteurs, membres_entreprise, entreprises, users,
+        tentatives_connexion, cles_appareil
       RESTART IDENTITY CASCADE
     `);
 
@@ -280,7 +347,7 @@ async function main() {
         // production (STORAGE_PROVIDER/AUTH_SECRET imposent une configuration
         // distincte en production ; ce seed n'est de toute façon jamais
         // exécuté contre une base de production).
-        passwordHash: hashSync("demo1234", 10),
+        passwordHash: hashSync(MOT_DE_PASSE_DEMO, 10),
       })
       .returning();
 
@@ -686,6 +753,12 @@ async function seedCatalogue() {
     categorie: "matériel élévation",
   });
 }
+
+// **RIEN ne s'exécute avant la garde** — pas même le catalogue partagé, qui
+// écrit lui aussi. Appelée ici, au point d'entrée, plutôt qu'au début de
+// `main()` : `seedCatalogue()` passe en premier, et l'oublier reviendrait à
+// laisser une écriture franchir le contrôle censé tout arrêter.
+verifierLaCible();
 
 seedCatalogue()
   .then(() => main())

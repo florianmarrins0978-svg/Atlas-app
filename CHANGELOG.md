@@ -7,6 +7,155 @@ Format : le plus récent en tête.
 
 ---
 
+## 2026-08-24
+
+### Audit de sécurité, lot 2 : ce qu'on dépose dans Atlas
+
+**Un classeur piégé ne couche plus le serveur.** Un `.xlsx` est une archive, et
+`deflate` dépasse mille pour un sur du texte répété : les 5 Mo qu'accepte
+l'écran d'import rendaient plusieurs gigaoctets, et le processus mourait
+d'épuisement mémoire — sans message, en emportant les requêtes de tout le monde.
+Une borne à trente-deux mégaoctets gonflés, et l'import de tarifs reçoit enfin
+une cadence : c'était le seul chemin d'Atlas qui décompresse, et le seul sans
+seuil. `test-classeur-bombe.ts` assemble une vraie bombe de 200 Mo et a été vue
+rouge contre la version d'avant.
+
+**Le type d'un fichier servi ne vient plus du navigateur.** La route des
+fichiers renvoyait le type déclaré au dépôt : annoncer `image/svg+xml` faisait
+servir un document porteur de script depuis notre propre domaine.
+`nosniff` était déjà posé et n'y changeait rien — il interdit de *deviner* un
+type, pas d'en *annoncer* un. Le type se déduit désormais de l'extension que le
+serveur a posée.
+
+**Les photos de chantier et les tickets de TVA perdent leurs coordonnées GPS**,
+et n'acceptent plus n'importe quoi. `startsWith("image/")` laissait passer le
+SVG ; une liste blanche le ferme. Le diagnostic végétal faisait déjà tout bien
+depuis toujours — il n'y avait qu'à reprendre.
+
+**Le piège de ce lot, et il valait d'être trouvé avant de livrer :** resserrer
+les types côté serveur, seul, aurait refusé les photos d'iPhone. Un iPhone
+photographie en HEIC ; s'il transcode en JPEG, c'est **parce que l'attribut
+`accept` du champ le lui demande**, et trois écrans portaient `image/*`. Les
+attributs et la liste serveur bougent donc ensemble, le HEIC est accepté en
+filet, et **un échec de nettoyage ne refuse jamais la photo** : elle est rangée
+telle quelle, et journalisée. Un artisan sur un chantier, ticket en main, ne
+doit pas lire un refus.
+
+**Hors brief, même famille :** le croquis d'arrosage envoyait la photo à un
+fournisseur d'IA sans vérifier son type ni compter les appels. Il porte
+maintenant les deux — ce seuil-là ne protège pas un service, il borne une
+facture.
+
+`ARCHITECTURE.md` §165. Rien de M6 n'a été touché : le plafond d'octets existait
+déjà, et le réécrire aurait été du risque contre rien.
+
+
+### Face ID est codé — sa réponse B, et le mot de passe intact
+
+Il a tranché : **B**, la porte d'aujourd'hui plus une ligne au-dessus. Rien n'a
+changé de place — `name="email"`, `name="password"` et `type="submit"` sont où
+ils étaient, ce dont dépendent vingt scripts de capture et
+`verifier-connexion.mjs`.
+
+**Ce qu'il gagne :** on enregistre son téléphone une fois depuis Réglages ›
+Connexion, et la porte s'ouvre ensuite d'un doigt, **sans taper son adresse**
+(clés découvrables). Le mot de passe reste actif et ne peut pas se retirer.
+
+**Ce qui n'arrive JAMAIS en base : aucune donnée biométrique.** Le visage ne
+quitte pas la puce du téléphone ; Atlas ne garde qu'une clé **publique** — de
+quoi vérifier une signature, jamais d'en produire une. L'écran le dit à
+l'artisan, et une suite vérifie qu'il le dit.
+
+**La règle qui a commandé tout le reste : un visage refusé ne compte AUCUNE
+tentative ratée.** Sans elle, un téléphone qui ne reconnaît pas son
+propriétaire — poussière, casquette, lumière rasante — finirait par temporiser
+son propre compte : la panne du 6 août 2026 refaite par l'autre bord.
+`test-face-id-e2e.ts` l'éprouve avec un appareil réglé pour échouer, et a été
+vue rouge contre un `noterEchec` posé exprès sur ce chemin.
+
+**`next-auth/providers/passkey` est écarté, vérifié plutôt que supposé :**
+`@auth/core` refuse le WebAuthn sans adaptateur de base (« WebAuthn requires an
+adapter »). Atlas n'en a aucun — session JWT, sans table —, et en brancher un
+remettrait en jeu le contexte d'entreprise, le `middleware` et « me déconnecter
+partout », pour un bouton sur la porte. Retenu : un **second fournisseur
+`Credentials`** vérifiant l'assertion avec `@simplewebauthn/server`
+(`ARCHITECTURE.md` §163).
+
+**Un défaut trouvé par une suite, pas par une relecture :** la lecture du
+domaine découpait sur le premier `:` avant de valider. Sur `https://atlas.fr`,
+le morceau restant valait `https` — accepté. Atlas aurait posé des clés sous le
+domaine « https », et aucune ne se serait jamais rouverte.
+
+**À poser le jour du déploiement : `ATLAS_RP_ID`.** Sans elle, Atlas **refuse**
+d'enregistrer une clé en production plutôt que de deviner le domaine depuis un
+en-tête que le client écrit.
+
+Parcouru en entier dans un vrai navigateur, avec l'appareil simulé de Chrome :
+enregistrement, déconnexion, ouverture au visage, échec, retrait.
+
+### Face ID : la planche avant le code, et un chemin d'implémentation vérifié
+
+Sa demande du 23 août — *« le Face ID pour le mot de passe, et bien entendu
+qu'il faut conserver le mot de passe »* — est un **geste sur la porte** : il se
+dessine avant de toucher à `src/` (`CLAUDE.md` §3 bis). `appli/face-id.html`
+(planche 94) propose deux places, **A** le visage d'abord, **B** l'écran
+d'aujourd'hui plus une ligne, et **ne pose qu'une question** : tout le reste est
+identique dans les deux. Elle se manipule — le visage ouvre une fenêtre, un
+interrupteur le **fait échouer** exprès, un autre l'**éteint** et la porte
+redevient exactement celle d'aujourd'hui.
+
+**Ce qui n'est pas une question, et que la planche écrit** : le mot de passe ne
+se retire pas (son interrupteur est allumé et inerte), le compte se crée au mot
+de passe, l'activation est **par appareil**, et un échec de visage **ne compte
+aucune tentative ratée** — sinon un visage mal reconnu ferait temporiser son
+propre compte, la faute du 6 août refaite par un autre bord.
+
+**Le fournisseur `passkey` d'Auth.js est écarté, et c'est vérifié, pas supposé :**
+`@auth/core` refuse le WebAuthn sans adaptateur de base (« WebAuthn requires an
+adapter »). Atlas n'en a aucun — la session est un JWT sans table —, et en
+brancher un remettrait en jeu le contexte d'entreprise, le `middleware` et la
+déconnexion partout, pour un bouton sur la porte. Retenu : un **second
+fournisseur `Credentials`** qui vérifie l'assertion avec `@simplewebauthn/server`
+et laisse le jeton, le cookie et les rappels intacts (`ARCHITECTURE.md` §163).
+
+`appli/tests/essai-face-id.mjs` parcourt la planche dans un vrai navigateur et
+**barre la publication** ; elle a été vue rouge contre une porte A privée de son
+chemin vers le mot de passe, et contre un échec de visage qui accusait le mot de
+passe. **Rien n'est codé dans `src/`.**
+
+### L'allure de ses documents : typographie, fond, accent, logo
+
+*Sa demande du 23 août : « un endroit dédié à la modification de son devis —
+s'il veut rajouter son logo, changer la typographie, changer le fond de page ».*
+
+Le réglage vit dans **Réglages › Devis & factures**, sous son message au client
+(sa réponse **B**). Dix typographies, deux couleurs libres, un logo. **Le devis
+et la facture seulement** : la feuille de chantier est interne, il ne l'a pas
+demandée. Migration `0063_allure_documents.sql`.
+
+**Ce que ça évite.** Le défaut, c'est le document d'aujourd'hui — au pixel
+près, et ce n'était pas acquis : `ALLURE_PAR_DEFAUT` portait « #ece9e1 », une
+teinte lue sur la maquette que ses devis n'ont jamais eue, et les teintes
+calculées ne retombaient pas d'elles-mêmes sur les constantes d'origine. Ouvrir
+le réglage et le refermer sans rien changer aurait suffi à repeindre tous ses
+devis. Attrapé en comparant deux PDF octet pour octet.
+
+**Un défaut MUET, corrigé : les polices ne s'imprimaient pas.** `pdf-lib` sait
+découper une police lui-même — et son découpeur perd des caractères sans un
+mot. Un devis complet en EB Garamond ne sortait que « e e e Roc e e ». Les
+dix-huit fichiers ont été réduits une fois pour toutes (3,9 Mo → 570 ko) et
+sont désormais embarqués entiers. `scripts/test-polices-documents.ts` monte la
+garde.
+
+**Et l'écran mentait.** Il proposait neuf typographies dont aucune n'était
+chargée : « Playfair Display » s'affichait en Georgia. Vu à la capture, jamais
+par un test. `/api/polices/[fichier]` sert maintenant les fichiers mêmes que le
+PDF embarque.
+
+`ARCHITECTURE.md` §164.
+
+---
+
 ## 2026-08-23
 
 ### Planche 92 — un blanc à reflets bleutés, quatre allures qui s'essaient
@@ -48,6 +197,106 @@ touche (64 px), la page s'ouvre, les boutons répondent. Trois fois une adresse
 lui a été transmise sans que personne ne l'ait ouverte, et trois fois c'est lui
 qui a trouvé le défaut.
 
+### Son message au client s'écrit — un seul, pour ses trois documents
+
+*« Y a-t-il un endroit dans les réglages où l'utilisateur peut rédiger ce
+message automatique ? S'il n'y en a pas, il faut en créer un. »* Il n'y en avait
+pas : le texte vivait dans le code, identique pour toutes les entreprises.
+
+**Ses trois décisions, et elles commandent tout :** le réglage vit dans « Devis
+& factures » (A) ; **le lien est obligatoire** — Atlas refuse d'enregistrer sans
+lui, à l'écran comme au serveur ; et c'est **un seul message pour les trois
+documents**.
+
+**La troisième demandait un arbitrage, et il l'a pris en images.** Un texte
+unique et littéral ferait dire à sa facture *« Voici votre devis, choisissez
+votre date »*, et l'échéance disparaîtrait. Devant les six bulles de la planche
+— ses trois documents, dans les deux façons de faire — il a répondu **« façon
+1 »** : il écrit le cadre, Atlas pose la phrase du milieu, à l'endroit où il
+met `[document]`.
+
+**Ce qui change dans ce que ses clients reçoivent, et il faut le dire.** La
+phrase du devis tenait en deux morceaux, l'un avant le lien, l'autre après ;
+un seul emplacement ne peut pas porter les deux. Les deux idées sont réunies
+avant le lien — et le « vous POUVEZ » qu'il avait corrigé le 13 août est
+resté, un contrôle l'exigeait. L'échéance de la facture, elle, remonte avant le
+lien pour la même raison.
+
+**`null` en base veut dire « celui d'Atlas », jamais « vide ».** Recopier le
+texte par défaut dans la colonne figerait chaque entreprise sur la version du
+jour : une correction ultérieure ne l'atteindrait plus, et personne ne s'en
+apercevrait. Le texte d'Atlas retapé à l'identique redevient donc `null`.
+
+**L'objet du courriel ne se règle pas** : il ne se lit que par courriel, jamais
+par SMS, et un objet vide ou trompeur envoie le message aux indésirables.
+
+### La pièce jointe à l'INRAE réécrite de sa main, et non de la nôtre
+
+*« J'ai peur qu'il reconnaisse que ça soit fait par une IA. Or je n'ai pas envie
+qu'il pense cela, car aujourd'hui l'IA fait encore peur. […] Toutes tes petites
+phrases annexes que tu mets en gris pour expliquer, supprime-le. »*
+
+Le document est repris à la première personne, en serif de bout en bout, et
+signé. Sont partis : les légendes grises sous les images, les mots surlignés en
+doré au fil du texte, la ligne « Document établi à l'intention de… », le « nous »
+de société, et le titre « Le principe : le modèle observe, la base décide » — une
+formule de conception, qui n'avait rien à faire devant un destinataire.
+
+**Un paragraphe a été conservé contre la lecture littérale de sa demande**, et
+cela lui a été dit : celui qui décrit ce que fait la photographie prise sur le
+chantier. Son propre courriel l'écrit déjà de sa main — *« j'ai fait le choix de
+ne jamais laisser une intelligence artificielle inventer un diagnostic »* — et
+une annexe qui décrirait autre chose que la lettre qu'elle accompagne se
+contredirait sous les yeux du lecteur. Surtout, une autorisation obtenue sur une
+description fausse ne protège de rien le jour où l'institut ouvre l'application.
+
+Ce qui a changé, c'est sa PLACE : le fonctionnement n'est plus le titre d'une
+page, c'est un paragraphe parmi d'autres. Et il joue en sa faveur — ce que le
+lecteur y voit, c'est un artisan qui a bridé son outil.
+
+### La photo du platane : la licence tenait, la citation non
+
+Sa question, devant la pièce jointe destinée à l'INRAE : *« tu es sûr que la
+photo utilisée n'est pas une photo de l'INRAE, parce qu'il ne faut pas les
+prendre pour des cons »*. Elle visait juste — c'est la seule affirmation du
+document qui pouvait se retourner contre lui.
+
+**Rien n'était éprouvable ici** : le mandataire bloque `commons.wikimedia.org`,
+et la vignette servie par Commons ne porte aucune métadonnée. Il a ouvert la
+page sur son téléphone. Le bandeau est bien **PD-USDA** — la licence enregistrée
+était juste, mot pour mot.
+
+**Mais la page demande une citation nommée que le dépôt ne portait pas :**
+« Cite: Clemson University - USDA Cooperative Extension Slide Series,
+Bugwood.org ». Le crédit disait « USDA, via Wikimedia Commons » : pas faux, et
+pas ce que la source réclame. Corrigé dans la fiche, sous la photo à l'écran et
+dans l'annotation n° 4 du document — une demande d'autorisation qui cite mal une
+autre source se dessert elle-même.
+
+**Ce que cela apprend, au-delà de cette photo :** une licence recopiée sans la
+page qui la porte laisse passer ce que la page EXIGE en plus. Le contrôle
+d'intégrité compare le fichier source à la base ; il ne compare rien à
+l'original hors du dépôt. Pour toute image future, relever aussi le champ
+**Permission**, pas seulement le bandeau de licence.
+
+**Et la capture d'écran de la pièce jointe se refait désormais en une commande**
+(`scripts/capture-inrae.mts`). Elle se remontait de mémoire, décrite en prose
+dans un mode d'emploi : c'est exactement pourquoi elle a failli partir chez
+l'INRAE avec l'ancien crédit affiché dessous. Le script refuse de rendre une
+image si la fiche n'est pas en base, si une photo n'est pas chargée ou si une
+boîte mesure zéro pixel.
+
+### Le courriel à l'INRAE reprend sa version
+
+Il a reformulé la première partie — d'où il vient, et pourquoi il fait cet
+outil : des arbres abattus sous prétexte de maladie, sans diagnostic. Seuls
+l'orthographe et quelques tournures sont corrigées ; l'ordre de ses idées ne
+bouge pas, parce qu'un institut lit la différence entre un artisan qui explique
+son métier et un texte lissé.
+
+Deux écarts rendus plutôt que tranchés en silence : « célèbre » retiré devant le
+nom de son école, et « pourrait atteindre quelques centaines » conservé — c'est
+ce chiffre-là qui rend l'autorisation nécessaire.
 
 ### Les prix tapés sur l'écran du devis partent enfin chez le client
 
@@ -277,7 +526,72 @@ sous-commandes (`scripts/test-ouvrir-port.ts`) : `ouvert`, `non-declare`,
 environnement n'est pas un espace GitHub. Le nouveau mot `non-declare` est
 éprouvé sur la règle qui le lit, pas sur un vrai relais — c'est au prochain
 allumage de son espace que la fiche le dira, ou non.
+### Audit de sécurité, lot 1 : six trous fermés, dont trois qui ouvraient un compte
 
+Un audit hostile complet a été mené sur le dépôt (base montée, RLS attaquée en
+SQL, historique Git balayé, `npm audit`). **L'isolation entre entreprises a
+tenu** : 42 tables sur 42 sous RLS forcée, écriture croisée refusée, lecture
+sans contexte à zéro ligne, 189 appels à `withEntreprise` sur 189 conformes.
+Ce qui manquait était autour d'elle.
+
+**C1 — deviner un mot de passe n'était pas empêché.** Le seuil « cinq essais
+par quart d'heure » se calait sur `x-forwarded-for`, un en-tête que celui qui
+frappe écrit lui-même : il suffisait de le changer à chaque essai. Le
+garde-fou de second rang laissait passer 28 800 essais par jour et par compte.
+Et **tout disparaissait dès que Redis toussait**, puisqu'un magasin en panne
+laissait tout passer. Trois couches désormais : la source n'est crue que
+derrière un mandataire déclaré (`ATLAS_PROXY_SAUTS`) ; un compteur d'échecs
+**en base** temporise par paliers, s'oublie au bout d'une heure et s'efface à
+la première connexion réussie ; et un magasin de limitation en panne bascule
+sur le compteur mémoire au lieu d'ouvrir la porte. Mesuré : **103 essais par
+jour au lieu de 28 800**. Le mot de passe minimal passe de 8 à 12 caractères —
+à la création et au changement seulement, aucun compte existant n'est mis
+dehors.
+
+**E1 — `npm run db:seed` pouvait vider une vraie base.** Son `TRUNCATE …
+CASCADE` sur `entreprises` et `users` n'avait pour garde-fou qu'un commentaire.
+Il exige maintenant de prouver sa cible : nom de base connu, hôte local, et
+`NODE_ENV` qui n'est pas `production`. Forcer se dit en toutes lettres et
+oblige alors à poser un mot de passe de démonstration — celui du dépôt est
+public. Le banc et les 136 fichiers qui dépendent de `demo1234` sont intacts.
+
+**E2 — l'agenda iCloud était une porte vers le réseau interne.** L'adresse du
+calendrier d'écriture arrivait du navigateur, n'était vérifiée nulle part, et
+servait d'adresse à `fetch` avec le mot de passe iCloud de l'artisan dans
+l'en-tête. Un propriétaire d'entreprise pouvait faire émettre au serveur des
+`PUT` vers le service de métadonnées de l'hébergeur. Désormais : `https`
+obligatoire, domaine `icloud.com` obligatoire, adresses privées et de
+bouclage refusées en v4 comme en v6, **chaque redirection revérifiée**, et le
+calendrier choisi doit être l'un de ceux qu'Apple rend pour ce compte. Le
+renvoi normal `caldav.icloud.com` → `p42-caldav.icloud.com` continue de passer.
+
+**E3 — un salarié pouvait réécrire les prix de vente.** `poserPrixGrilleAction`
+était la seule action de son fichier sans garde de rôle, et les écrans
+`/reglages/prix` et `/reglages/prix/mesures` n'en avaient aucune : la
+protection ne vivait que dans le sommaire des réglages. La règle du 13 août —
+*« un salarié ne doit évidemment pas pouvoir modifier les tarifs »* — est
+maintenant tenue par le serveur. **La garde est sur l'action et l'écran, jamais
+dans le dépôt** : `apprendre-grille.ts` apprend les prix tout seul depuis les
+devis, et la poser plus bas aurait empêché un salarié d'en établir un.
+
+**M7 — `src/auth.ts` écrasait `trustHost`.** `auth.config.ts` calculait la
+valeur avec soin et promettait qu'elle protégeait la production ; trois lignes
+plus bas, un `trustHost: true` inconditionnel la remplaçait. La documentation
+décrivait donc une protection qui n'existait pas — le pire des deux mondes.
+Une seule règle désormais (`src/lib/confiance-hote.ts`). **Un déploiement
+derrière un mandataire devra poser `AUTH_TRUST_HOST`**, sans quoi Auth.js
+refusera chaque connexion : c'est écrit dans `.env.example`.
+
+**M8 — une variable suffisait à ouvrir toute l'application.** Le profil banc
+d'essai désactive la protection contre le CSRF des actions serveur. Posé par
+erreur sur un vrai déploiement, il ouvrait tout. `src/server/env.ts` refuse
+maintenant de démarrer sur la contradiction — profil banc **et** compartiment
+S3, ou profil banc **et** `ATLAS_DEPLOIEMENT=production`. **Le critère n'est
+surtout pas `NODE_ENV`** : le banc EST « production + profil banc », puisque
+`next start` l'impose, et refuser là-dessus l'aurait éteint à la seconde.
+
+Huit suites neuves, toutes écrites pour rougir sur l'ancien code. Ce qui reste
+à faire (M1 à M12 hors M7/M8, F1 à F13) est dans `TODO.md`.
 ### Le banc accusait le mauvais coupable — Atlas signe maintenant ses réponses
 
 *« L'appli ne se lance plus »*, puis une capture : son téléphone propose de
@@ -664,6 +978,34 @@ texte nu.
 Mesuré dans un vrai navigateur, à 390 px : durée sous le nom, nom sur une seule
 ligne (23 px), et `border-top: 0px` au-dessus du « + ».
 
+### Rien à poser : le geste « Ajouter un chantier » disparaît
+
+**Sa remarque, capture à l'appui :** *« lorsqu'aucun chantier n'attend de jour,
+il ne faudrait pas que le bouton "Ajouter un chantier" apparaisse à l'écran, car
+il peut nous induire en erreur »*.
+
+**Il avait raison au sens strict, et c'est ce qui rend la correction évidente :
+ce geste ne CRÉE pas de chantier.** Il ouvre la liste de ceux qui attendent une
+date, et les pose sur la journée. Sans aucun chantier en attente, il ne pouvait
+mener qu'à « Aucun chantier n'attend de jour » — une promesse suivie d'un refus.
+Et la même phrase s'écrivait déjà sous « Sans date », deux lignes plus bas :
+l'écran la disait deux fois.
+
+**Le bouton DISPARAÎT, il ne se grise pas.** Un rond doré éteint reste un rond
+doré : on appuie dessus pour savoir pourquoi il est éteint, et l'on retombe dans
+le même cul-de-sac par un chemin plus long.
+
+Le repli « Aucun chantier n'attend de jour » qui vivait dans ce geste est retiré
+avec lui : on ne peut plus y arriver, et le garder aurait été une branche morte.
+
+**Deux mesures, et la seconde tient la première.** L'une éprouve qu'aucun bouton
+ne subsiste quand rien n'attend — l'état est installé par la base, puis rendu, y
+compris si la mesure échoue, car le compte de démonstration sert aux cent quatre
+suites. L'autre éprouve qu'il **revient** dès qu'un chantier attend : sans elle,
+un bouton supprimé pour de bon passerait au vert.
+
+---
+
 ## 2026-08-22
 
 ### Planche 92 : le temps passé, montré ou non sur le compte rendu du client
@@ -702,6 +1044,57 @@ Le contrôle (`scripts/verifier-maquette-temps-sur-la-fiche.mjs`, branché sur
 qu'il prétend attraper : une ligne cachée par une simple opacité — donc encore
 lue et encore à sa place —, la phrase « reste enregistré » supprimée, et un
 interrupteur qui survivait à l'envoi.
+
+## 2026-08-22
+
+### Le mode nuit se lit — huit couleurs claires écrites en dur, et trois signaux tenus pour immuables
+
+**Sa capture du planning, en « Nuit », et six mots :** *« Le mode nuit est
+illisible. Corrige ça. »* La pastille d'équipe portait « Julien ＋ » en blanc
+sur un fond blanc cassé, les chiffres du week-end n'existaient pas, et
+« incomplet » et « complet » étaient devenus deux blancs.
+
+**Trois familles de fautes, toutes invisibles sur les cinq chartes claires.**
+
+1. **Un crème écrit en dur sur l'accent.** Huit endroits posaient `#faf9f5`,
+   `#fff` ou `fill="white"` sur `colors.rust`. Sur les claires, l'accent est un
+   vert pin sombre : parfait. Sur Nuit et Sylve, **l'accent EST l'encre** — un
+   crème sur un crème, 1,05 de contraste. `surPlein` remplace le tout, et vaut
+   `card` : dans chacune des sept chartes, la plage et l'accent sont aux deux
+   bouts de l'échelle. Sur Origine, `card` vaut `#faf9f5` au caractère près.
+2. **Un voile d'encre écrit en dur.** Le calendrier éteignait ses week-ends
+   avec `rgba(28,28,26,0.42)` — l'encre d'Origine. Sur un fond noir, du noir à
+   42 % est du noir : les « 29 » et « 30 » de sa capture n'existaient pas
+   (1,04). `voile(colors.ink, 0.42)` suit la charte, et retombe sur l'encre
+   pleine là où `color-mix` manque : trop vu, jamais invisible.
+3. **Trois couleurs de signal tenues pour immuables.** `design-tokens.ts`
+   affirmait qu'alerte, bordeaux et vert pâle n'avaient pas à suivre la charte.
+   Leur rôle est pourtant que quatre états se distinguent d'un coup d'œil — et
+   sur les sombres, « incomplet » et « complet » tenaient 1,5, le dépassement
+   1,76 contre son fond, un refus 2,5. Elles deviennent des jetons : la TEINTE
+   du patron ne bouge pas, seule la clarté s'accorde au fond, et **uniquement
+   quand elle en a besoin**.
+
+**Les cinq chartes claires ne bougent pas d'un caractère**, et c'est vérifié :
+la dérivation ne remonte la clarté que si le contraste manque, ce qui n'arrive
+jamais sur un fond clair. Ce qu'il regarde tous les jours est intact.
+
+**Deux contrôles, et aucun ne remplace l'autre.**
+`test-chartes-lisibles.ts` mesure les sept palettes sans navigateur, en dix
+secondes. `test-mode-sombre-lisible-e2e.ts` ouvre chaque écran deux fois — en
+Origine puis en Nuit — et compare **le même texte à lui-même** : c'est le seul
+qui pouvait voir une couleur écrite DANS un écran, hors de toute charte. Les
+deux ont été confrontés à l'état d'avant le lot, et ils rougissent en nommant
+« Julien ＋ » et les chiffres du week-end.
+
+**Aucun seuil inventé.** Sur Origine, le bordeaux et le vert pin tiennent 1,10
+l'un contre l'autre, et le chevron de navigation 2,6 : ce sont ses choix. Une
+suite qui les ferait rougir accuserait le dessin qu'il a validé (`CLAUDE.md`
+§5 bis). La règle retenue est *le sombre ne fait pas moins bien que le clair*,
+et le clair se mesure au lieu de s'écrire.
+
+Le détail : `ARCHITECTURE.md` §160.
+
 
 ### « Choisir la date » ouvre le calendrier du planning, et dit qui est déjà là
 

@@ -104,8 +104,13 @@ async function main() {
       1,
       "l'anneau manque : le bouton de la dictée a été retiré sans que la dictée arrive"
     );
+    // **On vise la MARQUE, pas la valeur de l'attribut.** Cette ligne cherchait
+    // `accept="image/*"` : la liste blanche d'images du 24 août (audit, constat
+    // M2) l'a fait rougir sur du code juste. Ce qu'il faut tenir ici, c'est que
+    // le carré photo EXISTE — pas ce qu'il accepte, qui a vocation à bouger
+    // (`CLAUDE.md` §5 bis).
     assert.ok(
-      await page.locator('input[type="file"][accept="image/*"]').count(),
+      await page.locator('input[type="file"][data-atlas="carre-photo"]').count(),
       "le carré photo manque sur la fiche client"
     );
   });

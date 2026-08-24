@@ -15,14 +15,30 @@
  * **Ce que cette règle NE fait pas, délibérément :** aucune exigence de
  * majuscule, de chiffre ou de caractère spécial. Elles ne rendent pas un mot de
  * passe plus sûr qu'une phrase longue, et sur un chantier elles produisent des
- * mots de passe notés sur un carnet. Huit caractères, et c'est tout.
+ * mots de passe notés sur un carnet. Une longueur, et c'est tout.
+ *
+ * ─────────────────────────────────────────────────────────────────────────────
+ * **De huit à douze caractères, le 23 août 2026.** L'audit de sécurité (constat
+ * C1) a montré que rien n'empêchait réellement de deviner un mot de passe :
+ * 28 800 essais par jour et par compte, et aucune limite du tout les jours où
+ * Redis tombait. Ce lot ferme les deux (`src/lib/tentatives-connexion.ts`), et
+ * allonge la barre — les trois vont ensemble, aucune ne suffit seule.
+ *
+ * **Le principe reste le sien** : une longueur, jamais une grammaire. Douze
+ * caractères, c'est trois mots courts collés — pas un code à retenir.
+ *
+ * **CE QUE CETTE RÈGLE NE TOUCHE PAS, et c'est essentiel :** la vérification
+ * d'un mot de passe existant. Elle ne s'applique qu'à la CRÉATION et au
+ * CHANGEMENT. Un compte dont le mot de passe fait huit caractères continue
+ * d'ouvrir normalement — durcir la barre ne doit jamais mettre dehors quelqu'un
+ * qui n'a rien demandé. La comparaison bcrypt de `src/auth.ts` est intacte.
  */
 
-/** Huit caractères : ce que l'écran annonce, et ce que le serveur exige. */
-export const LONGUEUR_MINIMALE = 8;
+/** Douze caractères : ce que l'écran annonce, et ce que le serveur exige. */
+export const LONGUEUR_MINIMALE = 12;
 
 export type RefusMotDePasse =
-  /** Moins de huit caractères. */
+  /** Plus court que `LONGUEUR_MINIMALE`. */
   | "trop-court"
   /** La confirmation ne redit pas la même chose. */
   | "confirmation-differente"
