@@ -4,7 +4,7 @@
 vous ne savez rien de ce qui précède — c'est exactement le cas de figure qu'il
 sert.
 
-**Point de reprise :** 2026-08-23 · `main`
+**Point de reprise :** 2026-08-24 · `main`
 (l'historique fait foi : `git log --oneline -20`)
 
 ---
@@ -24,6 +24,108 @@ position de la ligne dans le gestionnaire, et la restaure en `useLayoutEffect`
 
 Le même piège guette partout où un panneau se referme au-dessus du point
 regardé. Détail : `ARCHITECTURE.md` §157.
+## QUATRE MIGRATIONS, DEUX NUMÉROS EN DOUBLE — et ce n'est pas cassé
+
+Le 23-24 août 2026, plusieurs sessions ont travaillé en parallèle et se sont
+croisées sur la numérotation :
+
+| Numéro | Les deux fichiers |
+|---|---|
+| **0062** | `message_client` · `tentatives_connexion` |
+| **0063** | `allure_documents` · `cles_appareil` |
+
+**Rien ne casse** : `run-migrations.ts` trie par nom de fichier complet et
+retient chaque nom séparément dans `_migrations`. Les quatre s'appliquent,
+toujours dans le même ordre, et aucune ne dépend d'une autre.
+
+**Ce qu'il ne faut PAS faire : en renommer une.** Le suivi est keyé sur le nom
+du fichier ; le changer ferait rejouer la migration sur toute base qui l'a déjà.
+
+**Et la leçon, elle, se retient :** un numéro de migration ne se réserve pas.
+Avant d'en poser un, regarder `git branch -r --sort=-committerdate` et le
+`drizzle/` des branches vivantes (`CLAUDE.md` §6, point A). La suite reprend à
+**0064**.
+
+---
+
+## FACE ID : CODÉ LE 24 AOÛT 2026 — SA RÉPONSE EST **B**
+
+Planche 94 (`appli/face-id.html`), tranchée : la porte d'aujourd'hui, **plus une
+ligne au-dessus**. Rien n'a changé de place — `name="email"`, `name="password"`
+et `type="submit"` sont où ils étaient, ce dont dépendent vingt scripts de
+capture et `verifier-connexion.mjs`. Détail complet : `ARCHITECTURE.md` §163.
+
+**À POSER LE JOUR DU DÉPLOIEMENT : `ATLAS_RP_ID`** (le domaine nu, `atlas.fr`).
+Sans elle, Atlas **refuse** d'enregistrer une clé en production — et le dit dans
+son journal, pas à l'écran. C'est volontaire : deviner le domaine depuis
+l'en-tête `Host` reviendrait à croire ce que le client écrit.
+
+**Le piège de ce lot, et il est déjà désamorcé : `next-auth` porte un
+fournisseur `passkey` tout fait, il est dans `node_modules`, et le prendre
+paraît évident. `@auth/core` refuse le WebAuthn **sans adaptateur de base**
+(« WebAuthn requires an adapter ») ; Atlas n'en a aucun, sa session est un JWT
+sans table. En brancher un ferait naître `accounts`/`sessions`, changerait la
+façon dont chaque requête retrouve l'utilisateur, et remettrait en jeu le
+contexte d'entreprise, `middleware.ts` et la déconnexion partout — **pour un
+bouton sur la porte**. Le chemin retenu est un **second fournisseur
+`Credentials`** qui vérifie l'assertion avec `@simplewebauthn/server` : la couche
+session ne bouge pas (`ARCHITECTURE.md` §163).
+
+**Trois choses viennent de lui et ne se rouvrent pas :** le mot de passe ne se
+retire jamais, le compte se crée au mot de passe, et **un échec de visage ne
+compte aucune tentative ratée** — appeler `noterEchec` sur ce chemin ferait
+temporiser son compte parce que son téléphone ne l'a pas reconnu, c'est-à-dire la
+panne du 6 août 2026 refaite par un autre bord.
+
+**Et un piège de CONTRÔLE, payé le 24 août.** La suite qui garde cette
+troisième règle a d'abord été écrite avec un appareil simulé réglé pour refuser
+le visage. Elle est restée **verte contre un `noterEchec` posé exprès** : le
+navigateur refusait de lui-même, le serveur n'était jamais atteint, et
+l'assertion ne mesurait rien. Le cas qui prouve quelque chose est celui où le
+téléphone signe **correctement** et où c'est Atlas qui ne connaît plus la clé —
+la clé retirée depuis un autre appareil. Avant d'écrire un contrôle sur ce
+chemin : *le serveur est-il seulement atteint ?*
+
+---
+
+## SÉCURITÉ : CE QUI A CHANGÉ LE 23 AOÛT 2026, ET LES TROIS PIÈGES À NE PAS REFAIRE
+
+Un audit hostile a été mené, et son **lot 1** est corrigé. Le détail est en
+`ARCHITECTURE.md` §162 ; la suite est dans `TODO.md`. Ce qu'il faut avoir en
+tête avant de toucher à ces zones :
+
+**Ce qui a changé, en une ligne chacun :**
+
+| | |
+|---|---|
+| `src/lib/tentatives-connexion.ts` + migration 0062 | la temporisation par compte, **en base** — elle survit à une panne de Redis |
+| `src/lib/source-visiteur.ts` | `x-forwarded-for` n'est cru que derrière `ATLAS_PROXY_SAUTS` |
+| `src/lib/garde-seed.ts` | `db:seed` doit prouver sa cible avant tout `TRUNCATE` |
+| `src/lib/destination-caldav.ts` | où Atlas a le droit d'aller frapper en CalDAV |
+| `src/lib/confiance-hote.ts` | `trustHost`, **une seule fois** |
+| `src/server/env.ts` | refuse « profil banc + déploiement réel » |
+
+**LES TROIS PIÈGES — ils se re-tendront, et chacun casse quelque chose qui
+marche :**
+
+1. **Ne pas tirer au hasard le mot de passe de démonstration.** `demo1234` est
+   attendu par **136 fichiers**, dont `verifier-connexion.mjs` — la dernière
+   étape de la batterie de livraison. Il reste le défaut, et la garde du seed
+   fait qu'il ne peut s'appliquer que sur une base d'essai.
+2. **Ne pas interdire les redirections CalDAV.** iCloud renvoie `301` de
+   `caldav.icloud.com` vers `p42-caldav.icloud.com` : l'interdire casserait
+   **tout raccordement Apple**. Ce qui est interdit, c'est de SORTIR du domaine.
+3. **Ne pas refuser le banc sur `NODE_ENV=production`.** Le banc EST
+   « production + profil banc » — `next start` l'impose. Le critère est la
+   contradiction : profil banc **et** S3, ou profil banc **et**
+   `ATLAS_DEPLOIEMENT=production`.
+
+**Et une règle qui vaut au-delà de ce lot :** une garde de rôle se pose sur
+**l'action et l'écran**, jamais dans le dépôt. `apprendre-grille.ts` écrit des
+prix tout seul pendant qu'un devis s'établit ; une garde posée trop bas aurait
+empêché un salarié d'établir un devis, et personne n'aurait relié la panne à un
+contrôle de rôle.
+
 
 ---
 
@@ -4947,6 +5049,9 @@ DATABASE_URL=postgresql://postgres:postgres_ci_pw@localhost:5432/atlas_test \
 | Facture, fin de chantier, relevé de TVA | `src/server/repositories/factures.ts` |
 | Conservation, purge, effacement | `src/server/retention.ts`, `src/server/repositories/donnees-client.ts` |
 | Schéma complet | `src/server/db/schema.ts` + `drizzle/*.sql` |
+| Le message qui part chez son client | `src/lib/message-client.ts` |
+| L'allure de ses devis (typo, fond, accent, logo) | `src/lib/allure-documents.ts` |
+| Les polices embarquées dans les PDF | `src/server/pdf/polices/LISEZ-MOI.md` — **réduites, et embarquées entières** |
 
 ## Le compte de démonstration
 

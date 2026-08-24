@@ -18,11 +18,37 @@ export type ObjetStocke = {
   checksum: string;
 };
 
+/**
+ * Le chemin d'une clé — **et il ne sort JAMAIS de `.storage`.**
+ *
+ * ───────────────────────────────────────────────────────────────────────────
+ * **Le commentaire qui vivait ici affirmait le contraire de la réalité**, et
+ * c'est ce qui empêchait de s'en apercevoir (audit du 23 août 2026). Il
+ * disait : *« storageKey ne contient que des segments alphanumériques […]
+ * jamais construits à partir d'une entrée utilisateur brute — pas de risque de
+ * traversée de répertoire »*.
+ *
+ * Or le dossier passé à `enregistrerObjet` porte un `chantierId` venu d'une
+ * action serveur, et `path.join` **résout les `..`** : une clé
+ * `../../../../tmp/x` sortait de `.storage`. L'adaptateur S3, lui, assainit
+ * depuis toujours (`s3-storage.ts`) — deux implémentations du même contrat, une
+ * seule prudente, et c'est la faible qui servait sur le banc.
+ *
+ * **La vérification est faite APRÈS résolution, pas avant.** Chercher `..` dans
+ * la chaîne se contourne (encodages, séparateurs mêlés) ; comparer le chemin
+ * résolu à la racine ne se contourne pas. C'est la seule façon qui tienne.
+ *
+ * **Lève plutôt que de rendre un chemin de repli** : un repli silencieux
+ * rangerait le fichier ailleurs que là où la base croit qu'il est, et l'on ne
+ * s'en apercevrait qu'en tentant de le relire — des semaines plus tard.
+ */
 function cheminPour(storageKey: string): string {
-  // storageKey ne contient que des segments alphanumériques/tirets/points/slashes
-  // contrôlés par cette fonction elle-même (jamais construits à partir d'une
-  // entrée utilisateur brute) — pas de risque de traversée de répertoire.
-  return path.join(RACINE_STOCKAGE, storageKey);
+  const chemin = path.resolve(RACINE_STOCKAGE, storageKey);
+  const racine = path.resolve(RACINE_STOCKAGE);
+  if (chemin !== racine && !chemin.startsWith(racine + path.sep)) {
+    throw new Error("Clé de stockage hors du dossier de stockage — refusée.");
+  }
+  return chemin;
 }
 
 // mimeType : imposé par le contrat partagé avec l'adaptateur S3

@@ -5,8 +5,10 @@ import {
   type DonneesDocument,
   type LigneDocument,
   type TraceDocument,
+  type LogoDocument,
 } from "./document-commun";
 import { jourNumerique } from "../../lib/jour";
+import type { Allure } from "@/lib/allure-documents";
 
 // Le devis, à l'image du modèle d'Arborea (`appli/devis-modele.html`).
 //
@@ -67,7 +69,20 @@ function libelleValiditeDevis(jours: number | null | undefined): string | null {
  * (`document-commun.ts`, `sansChiffrage`). Le rebâtir aurait fait deux mises en
  * page qui divergent sur les feuilles d'un même artisan.
  */
-export type OptionsDevisPdf = { sansChiffrage?: boolean };
+export type OptionsDevisPdf = {
+  sansChiffrage?: boolean;
+  /**
+   * L'allure réglée par le patron (23 août 2026). Absente : le devis d'avant.
+   *
+   * **Elle ne sert PAS la feuille de chantier**, et c'est sa décision : le
+   * réglage porte sur « le devis et la facture seulement ». Or la feuille sort
+   * d'ici, par `sansChiffrage` — d'où le filtre plus bas, qui est la règle et
+   * pas une précaution.
+   */
+  allure?: Allure | null;
+  /** Son logo, lu par le dépôt. Suit exactement le sort de l'allure. */
+  logo?: LogoDocument | null;
+};
 
 export async function composerDevisPdf(
   data: DevisPdfData,
@@ -76,6 +91,15 @@ export async function composerDevisPdf(
   const sansPrix = Boolean(options.sansChiffrage);
   return composerDocument(data, {
     sansChiffrage: options.sansChiffrage,
+    // **Sa décision du 23 août : le devis et la facture SEULEMENT.** La feuille
+    // de chantier sort de la même fabrique, avec `sansChiffrage` — sans ce
+    // filtre, elle aurait pris l'allure réglée pour les documents du client
+    // alors qu'elle est interne, et il ne l'aurait pas demandé.
+    allure: sansPrix ? null : options.allure,
+    // **Le logo suit la même règle que l'allure, et pour la même raison.** La
+    // feuille de chantier est interne : elle n'a pas à porter la marque qu'on
+    // met sur ce que le client garde, et il ne l'a pas demandé.
+    logo: sansPrix ? null : options.logo,
     // **Sans les prix, ce n'est plus un devis : c'est la feuille de travail.**
     // Garder le titre « DEVIS » sur un document qu'un salarié emporte ferait
     // croire à un devis amputé — et le client à qui on le montrerait par erreur

@@ -3,6 +3,7 @@ import { notFound, redirect } from "next/navigation";
 import EnTeteEcran from "@/components/atlas/EnTeteEcran";
 import { colors, font } from "@/lib/design-tokens";
 import { getCurrentCtx } from "@/server/session-ctx";
+import { getEntreprise } from "@/server/repositories/entreprises";
 import { getChantier } from "@/server/repositories/chantiers";
 import { getClient } from "@/server/repositories/clients";
 import { canalPourJoindre } from "@/lib/message-client";
@@ -143,6 +144,7 @@ export default async function ExportPage({ params }: { params: Promise<{ id: str
           clientTelephone={client?.telephone ?? devisRow.clientTelephone ?? ""}
           clientEmail={client?.email ?? devisRow.clientEmail ?? ""}
           entrepriseNom={devisRow.entrepriseNom ?? "Votre entreprise"}
+          modeleMessage={(await getEntreprise(ctx))?.messageClient ?? null}
           canalClient={canalClient}
           totalTtc={devisRow.totalTtc}
           numeroDevis={devisRow.numeroCommercial}

@@ -4,6 +4,8 @@ import { useState, useTransition } from "react";
 import { colors, font, libelleCaps, texteSituation } from "@/lib/design-tokens";
 import { etatConfirmation, verifierNouveauMotDePasse, LONGUEUR_MINIMALE } from "@/lib/mot-de-passe";
 import { changerMotDePasseAction, deconnecterPartoutAction } from "./actions";
+import SectionFaceId from "./SectionFaceId";
+import type { CleAppareil } from "@/lib/cle-appareil";
 
 /**
  * « Connexion » — `maquettes/atlas-reglages-moi.html`, écran 3.
@@ -23,7 +25,7 @@ import { changerMotDePasseAction, deconnecterPartoutAction } from "./actions";
  * mauvais sens : un bouton allumé sur une saisie que le serveur refuse
  * (`CLAUDE.md` §3).
  */
-export default function ConnexionClient() {
+export default function ConnexionClient({ cles }: { cles: CleAppareil[] }) {
   const [actuel, setActuel] = useState("");
   const [nouveau, setNouveau] = useState("");
   const [confirmation, setConfirmation] = useState("");
@@ -125,6 +127,12 @@ export default function ConnexionClient() {
           sousTeinte={etat ? (etat.identiques ? colors.or : colors.alert) : undefined}
         />
       </section>
+
+      {/* **Face ID vient APRÈS le mot de passe, et ce n'est pas un hasard de
+          mise en page.** Sa règle du 23 août : on crée son compte au mot de
+          passe, puis on décide. L'ordre de l'écran dit la même chose que la
+          règle — le mot de passe d'abord, le raccourci ensuite. */}
+      <SectionFaceId clesInitiales={cles} />
 
       <section
         className="mx-[26px] mt-[30px] border-t pt-[18px]"

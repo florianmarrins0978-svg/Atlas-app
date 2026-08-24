@@ -66,6 +66,7 @@ export default async function FacturePage({ params }: { params: Promise<{ id: st
           regimeTva={regimeTva}
           origine={origine}
           entrepriseNom={entreprise?.nom ?? ""}
+          modeleMessage={entreprise?.messageClient ?? null}
           // Sans lui, une coordonnée manquante ne peut se saisir nulle part :
           // il n'existe aucun écran de fiche client (voir `TransmettreLaFacture`).
           clientId={chantier.clientId ?? null}

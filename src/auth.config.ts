@@ -1,5 +1,6 @@
 import type { NextAuthConfig } from "next-auth";
 import { estBancDEssai } from "@/profil-banc";
+import { faireConfianceALHote } from "@/lib/confiance-hote";
 
 // Configuration MINIMALE, compatible avec le runtime Edge du middleware —
 // aucune dépendance Node (bcrypt, pg) ici. Le provider Credentials complet
@@ -30,8 +31,24 @@ export const authConfig = {
    * pas le profil banc, et retrouve le refus entier. Elle devra poser
    * `AUTH_TRUST_HOST` en connaissance de cause, ce qui est exactement la
    * décision qu'Auth.js veut rendre explicite.
+   *
+   * ─────────────────────────────────────────────────────────────────────────
+   * **CE COMMENTAIRE A ÉTÉ FAUX DU 9 AU 23 AOÛT 2026, et c'est pire qu'un
+   * défaut** (audit, constat M7). La phrase ci-dessus décrivait une protection
+   * qui n'existait pas : `src/auth.ts` écrasait cette valeur par un
+   * `trustHost: true` inconditionnel, trois lignes plus bas. En production,
+   * Atlas faisait donc confiance à l'hôte annoncé — pendant que le dépôt
+   * affirmait le contraire, ce qui empêchait de s'en apercevoir.
+   *
+   * La règle vit désormais dans `src/lib/confiance-hote.ts`, **une seule
+   * fois**, et `src/auth.ts` ne la contredit plus. Ce qu'elle rend est
+   * éprouvé par `scripts/test-confiance-hote.ts`, dans les deux sens.
    */
-  trustHost: process.env.NODE_ENV !== "production" || estBancDEssai(),
+  trustHost: faireConfianceALHote({
+    nodeEnv: process.env.NODE_ENV,
+    bancDEssai: estBancDEssai(),
+    authTrustHost: process.env.AUTH_TRUST_HOST,
+  }),
   providers: [],
   callbacks: {
     async session({ session, token }) {

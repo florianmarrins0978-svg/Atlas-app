@@ -6,6 +6,16 @@ import { AuthError } from "next-auth";
 import { redirect } from "next/navigation";
 import { verifierLimite, LIMITES } from "@/server/rate-limit";
 import { logger } from "@/server/logger";
+import { getEnv } from "@/server/env";
+import { messageAttente as messageTemporisation, porteeTemporisation } from "@/lib/tentatives-connexion";
+import { sourceDepuisEntetes } from "@/lib/source-visiteur";
+import { attenteAvantEssai, noterEchec, oublierEchecs } from "@/server/repositories/tentatives-connexion";
+import { messageRefusCle } from "@/lib/cle-appareil";
+import { optionsConnexion } from "@/server/cle-appareil";
+import type { PublicKeyCredentialRequestOptionsJSON } from "@simplewebauthn/types";
+
+/** Ce que le navigateur attend pour ouvrir la fenêtre du système. */
+type OptionsPubliquesConnexion = PublicKeyCredentialRequestOptionsJSON;
 
 const MESSAGE_GENERIQUE = "Email ou mot de passe incorrect.";
 
@@ -58,16 +68,65 @@ function messageAttente(secondes: number): string {
 }
 
 /**
- * L'adresse du visiteur, telle que la voit le serveur.
+ * De qui vient cette tentative — **et seulement quand on peut le savoir.**
  *
- * Derrière le proxy de Codespaces comme derrière un hébergeur, l'adresse réelle
- * n'arrive que par `x-forwarded-for`. Absente, on retombe sur une clé commune :
- * le comptage redevient alors celui d'avant, jamais plus permissif.
+ * ───────────────────────────────────────────────────────────────────────────
+ * **Le défaut réparé le 23 août 2026 (audit, constat C1).** La version
+ * précédente lisait ceci :
+ *
+ *     const transmise = entetes.get("x-forwarded-for")?.split(",")[0]?.trim();
+ *
+ * `x-forwarded-for` est un en-tête **que celui qui frappe écrit lui-même**. En
+ * prendre la première valeur, c'est offrir un compteur neuf à chaque essai : il
+ * suffisait d'incrémenter un chiffre pour ne jamais atteindre aucun seuil. La
+ * protection « cinq essais par quart d'heure » n'existait donc pas dès qu'on
+ * pensait à la contourner.
+ *
+ * **Ce qu'on fait à la place, et pourquoi c'est la seule chose honnête.**
+ * Une adresse transmise ne vaut que par le mandataire qui l'a écrite. Sans
+ * savoir combien de mandataires de confiance nous précèdent, aucune position
+ * dans la liste n'est fiable — et deviner reviendrait à faire confiance à
+ * l'attaquant. On distingue donc trois cas :
+ *
+ *   1. `ATLAS_PROXY_SAUTS` est posé — on sait combien de mandataires ajoutent
+ *      leur ligne, donc laquelle a été écrite par le nôtre. Elle fait foi ;
+ *   2. l'en-tête existe mais rien ne dit qui l'a écrit — **on n'en tire aucune
+ *      valeur** : toutes ces tentatives partagent un seul et même seau. C'est
+ *      exactement le comportement d'avant lorsqu'aucun en-tête n'arrivait, donc
+ *      jamais plus permissif qu'aujourd'hui ;
+ *   3. aucun en-tête — connexion directe, un seul seau également.
+ *
+ * **Ce qui reste à configurer en production, et il faut le dire :** poser
+ * `ATLAS_PROXY_SAUTS` au nombre de mandataires de confiance placés devant
+ * Atlas (1 pour un hébergeur ordinaire), ET s'assurer que ce mandataire
+ * **écrase** `x-forwarded-for` au lieu d'y ajouter la valeur du client. Sans
+ * les deux, ce seuil-ci reste commun à tout le monde — ce qui protège encore,
+ * mais moins finement. Le compteur par compte, lui, ne dépend de rien de tout
+ * cela (voir plus bas).
  */
-async function adresseVisiteur(): Promise<string> {
+async function sourceDuVisiteur(horsProduction: boolean): Promise<string> {
   const entetes = await headers();
-  const transmise = entetes.get("x-forwarded-for")?.split(",")[0]?.trim();
-  return transmise || entetes.get("x-real-ip") || "inconnue";
+  // La règle vit dans `src/lib/source-visiteur.ts` — fonction pure, éprouvée
+  // sans requête HTTP. Ici, on ne fait que lui donner ce que le serveur voit.
+  return sourceDepuisEntetes({
+    xff: entetes.get("x-forwarded-for"),
+    sauts: getEnv().proxySauts,
+    horsProduction,
+  });
+}
+
+/**
+ * Sommes-nous ailleurs qu'en production réelle ?
+ *
+ * **Une seule notion, deux usages**, et il ne faut pas qu'ils divergent : elle
+ * décide si l'on distingue encore les visiteurs par leur adresse, ET sur quoi
+ * la temporisation se compte. Les deux répondent à la même question — « ce
+ * serveur sert-il de vrais clients ? » — et un banc d'essai, qui sert une
+ * version bâtie, répond non malgré son `NODE_ENV`.
+ */
+function horsProductionReelle(): boolean {
+  const env = getEnv();
+  return env.nodeEnv !== "production" || env.bancDEssai;
 }
 
 export async function connexionAction(
@@ -81,8 +140,9 @@ export async function connexionAction(
 
   // Par visiteur d'abord — c'est ce seuil qui protège du martèlement, et lui
   // seul peut bloquer quelqu'un de bonne foi, d'où un message qui le dit.
-  const ip = await adresseVisiteur();
-  const parVisiteur = await verifierLimite(`connexion:${email}:${ip}`, LIMITES.connexion);
+  const horsProduction = horsProductionReelle();
+  const source = await sourceDuVisiteur(horsProduction);
+  const parVisiteur = await verifierLimite(`connexion:${email}:${source}`, LIMITES.connexion);
   if (!parVisiteur.autorise) {
     logger.warn("Limite de tentatives de connexion atteinte (visiteur)", { email });
     return { erreur: messageAttente(parVisiteur.retryAfterSecondes) };
@@ -103,6 +163,43 @@ export async function connexionAction(
     return { erreur: messageAttente(parCompte.retryAfterSecondes) };
   }
 
+  /**
+   * **La couche qui tient quand les deux précédentes ne tiennent plus.**
+   *
+   * Les deux seuils ci-dessus vivent dans Redis, et Redis tombe : le 12 août
+   * 2026 il est tombé sur l'espace du patron, et depuis, un magasin qui ne
+   * répond pas ne refuse plus rien (`server/rate-limit/index.ts` — la bascule
+   * sur le compteur mémoire est de ce lot-ci, mais elle reste par instance).
+   * Autrement dit, avant aujourd'hui, il suffisait d'attendre une panne pour
+   * n'avoir plus aucune limite du tout.
+   *
+   * Celle-ci vit **en base**, avec les données. Elle est là tant qu'Atlas sert,
+   * elle compte les échecs CONSÉCUTIFS de ce compte, elle s'oublie toute seule
+   * au bout d'une heure sans nouvel échec, et une connexion réussie l'efface.
+   * La règle des paliers est une fonction pure, éprouvée sans base :
+   * `src/lib/tentatives-connexion.ts`.
+   *
+   * **Posée AVANT `signIn`**, donc avant toute comparaison de condensat : c'est
+   * ce qui rend la temporisation réelle plutôt que cosmétique.
+   */
+  /**
+   * **SUR QUOI on compte, et pourquoi ce n'est pas toujours le seul compte.**
+   *
+   * La règle vit dans `src/lib/tentatives-connexion.ts` et s'y explique : le
+   * compte seul en production — c'est ce qui casse une attaque répartie sur
+   * beaucoup d'adresses —, le compte ET la source ailleurs, pour que les
+   * visiteurs d'un banc partageant un compte unique ne se verrouillent pas les
+   * uns les autres. C'est l'invariant du 6 août 2026, et une suite le tient
+   * (`test-connexion-limite-e2e.ts`).
+   */
+  const portee = porteeTemporisation({ email, source, horsProduction });
+
+  const attente = await attenteAvantEssai(portee);
+  if (attente !== null) {
+    logger.warn("Connexion temporisée : trop d'échecs consécutifs sur ce compte", { email });
+    return { erreur: messageTemporisation(attente) };
+  }
+
   try {
     await signIn("credentials", { email, password, redirect: false });
   } catch (err) {
@@ -113,6 +210,11 @@ export async function connexionAction(
       // c'est accuser le patron de se tromper de mot de passe pendant qu'un
       // service est couché, et il n'a alors aucun moyen de le comprendre.
       if (err.type === "CredentialsSignin") {
+        // **Un échec, et un seul type d'échec, fait avancer le compteur.** Une
+        // base couchée ou un secret manquant ne sont pas des essais ratés :
+        // les compter temporiserait l'artisan pour une panne qui n'est pas la
+        // sienne — le piège que la branche du dessous existe pour éviter.
+        await noterEchec(portee);
         return { erreur: MESSAGE_GENERIQUE };
       }
       // Bruyant à dessein : c'est la seule trace qui restera, et le message
@@ -126,6 +228,79 @@ export async function connexionAction(
     }
     throw err;
   }
+
+  // **Le compteur repart de zéro — et il faut que ce soit ici.** Un artisan qui
+  // se trompe quatre fois puis se rappelle son mot de passe ne doit pas rester
+  // à un doigt de la temporisation pendant l'heure qui suit. Posé avant
+  // `redirect()`, qui lève et ne rend jamais la main.
+  await oublierEchecs(portee);
+  redirect("/");
+}
+
+/**
+ * « Ouvrir avec Face ID », premier temps : le défi qu'on envoie au téléphone.
+ *
+ * **Rendu en valeur, jamais levé.** Sur cette page, une exception d'action
+ * serveur n'arrive pas jusqu'à l'artisan — Next.js la remplace en production
+ * par un identifiant opaque (`HANDOVER.md`, piège 0 ter). Un refus se rend.
+ */
+export async function defiConnexionAction(): Promise<
+  { ok: true; options: OptionsPubliquesConnexion } | { ok: false }
+> {
+  const source = await sourceDuVisiteur(horsProductionReelle());
+  const limite = await verifierLimite(`cle-appareil:${source}`, LIMITES.cleAppareil);
+  if (!limite.autorise) {
+    logger.warn("Trop de demandes de défi Face ID depuis cette source");
+    return { ok: false };
+  }
+
+  const r = await optionsConnexion();
+  if (!r.ok) return { ok: false };
+  return { ok: true, options: r.options };
+}
+
+/**
+ * « Ouvrir avec Face ID », second temps : la signature, et la session.
+ *
+ * ─────────────────────────────────────────────────────────────────────────────
+ * **CE CHEMIN N'APPELLE JAMAIS `noterEchec`, et c'est délibéré.** Un visage mal
+ * reconnu — poussière sur l'objectif, lumière rasante, casquette — n'est pas un
+ * essai de mot de passe raté. Le compter temporiserait le compte de l'artisan
+ * parce que son propre téléphone ne l'a pas reconnu : ce serait la panne du
+ * 6 août 2026 refaite par l'autre bord, et il ne comprendrait pas davantage.
+ *
+ * Ce qui borne l'abus ici, c'est le seuil ci-dessus — un coût, pas un secret :
+ * une signature ne se devine pas (`src/server/rate-limit/types.ts`).
+ *
+ * **Et il n'efface pas non plus le compteur du mot de passe.** Entrer par le
+ * visage ne prouve rien sur les essais de mot de passe qui ont précédé : si
+ * quelqu'un martèle le compte, la temporisation doit tenir.
+ */
+export async function connexionParCleAction(reponse: string): Promise<{ erreur?: string }> {
+  const source = await sourceDuVisiteur(horsProductionReelle());
+  const limite = await verifierLimite(`cle-appareil:${source}`, LIMITES.cleAppareil);
+  if (!limite.autorise) return { erreur: messageRefusCle("panne") ?? MESSAGE_GENERIQUE };
+
+  try {
+    await signIn("cle-appareil", { reponse, redirect: false });
+  } catch (err) {
+    if (err instanceof AuthError) {
+      if (err.type === "CredentialsSignin") {
+        // La cause exacte est déjà au journal, écrite par `ouvrirAvecCle` — la
+        // refaire parler ici demanderait de rejouer la vérification, donc de
+        // l'écrire deux fois (`CLAUDE.md` §3). Ce que lit l'artisan ne
+        // l'accuse pas, et surtout n'accuse pas son mot de passe.
+        return { erreur: messageRefusCle("panne") ?? undefined };
+      }
+      logger.error("Face ID impossible : la vérification a échoué", {
+        type: err.type,
+        cause: err.cause instanceof Error ? err.cause.message : String(err.cause ?? ""),
+      });
+      return { erreur: MESSAGE_SERVICE_INDISPONIBLE };
+    }
+    throw err;
+  }
+
   redirect("/");
 }
 

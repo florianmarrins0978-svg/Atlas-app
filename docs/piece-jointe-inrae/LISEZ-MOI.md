@@ -10,6 +10,142 @@ chaque ligne affichée, et ce que l'outil s'interdit.
 d'autorisation adressée à un institut de recherche dit à peu près l'inverse de ce
 que le courriel affirme sur le sérieux du travail.
 
+## Le TON du document, et pourquoi il ne se « remet pas au propre »
+
+**Sa demande du 23 août 2026 :** *« j'ai peur qu'il reconnaisse que ça soit fait
+par une IA. Or je n'ai pas envie qu'il pense cela, car aujourd'hui l'IA fait
+encore peur et j'aimerais qu'il pense que je code une application et que je veux
+utiliser leurs données. […] Toutes tes petites phrases annexes que tu mets en
+gris pour expliquer, supprime-le. »*
+
+Le document a donc été réécrit, et **ce qui a été retiré ne doit pas revenir** :
+
+| Retiré | Pourquoi |
+|---|---|
+| les légendes grises sous les images | c'est sa demande, mot pour mot |
+| les mots surlignés en doré au fil du texte | un texte qui se souligne lui-même se lit comme une notice, pas comme une lettre |
+| la ligne « Document établi à l'intention de… » | un appareil de rapport, dans un courrier d'une page |
+| le titre « Le principe : le modèle observe, la base décide » | une formule de conception, qui n'a rien à faire devant un destinataire |
+| le « nous » de société | il écrit seul, et c'est ce qui rend la demande crédible |
+
+La police est passée en serif de bout en bout, et le document est **signé**.
+
+**CE QUI RESTE, ET QUI NE SE RETIRE PAS.** Un paragraphe de la page 2 dit ce que
+fait la photographie prise sur le chantier, et il nomme le fonctionnement réel.
+Il a été conservé **contre la lecture littérale de sa demande**, pour deux
+raisons dites franchement :
+
+1. **son propre courriel l'écrit déjà de sa main** — *« j'ai fait le choix de ne
+   jamais laisser une intelligence artificielle inventer un diagnostic »*. Une
+   annexe qui décrirait autre chose que la lettre qu'elle accompagne se
+   contredirait sous les yeux du lecteur ;
+2. **une autorisation obtenue sur une description fausse ne protège de rien.**
+   Le jour où l'INRAE ouvre l'application, c'est la demande entière qui tombe —
+   et le crédit d'un artisan avec elle.
+
+Ce qui a changé, c'est la **place** : le fonctionnement n'est plus le titre d'une
+page, il est un paragraphe parmi d'autres, après la constitution des fiches. Et
+il joue en sa faveur : ce que le lecteur y voit, c'est quelqu'un qui a bridé son
+outil — pas de champ où écrire un nom de maladie, refus de conclure sans
+identification de l'arbre.
+
+**Sa deuxième passe, le 23 août au soir.** Sont partis en plus : la phrase
+« et je ne complète jamais de mémoire », **le nom Atlas partout** — en-tête,
+pieds de page, titre du fichier, texte alternatif des images — et les lignes
+grises « Atlas — annexe à ma demande d'autorisation ». Les bandeaux d'en-tête
+ont disparu avec eux ; il ne reste qu'un numéro de page, à droite. Le document
+ne porte plus de marque : il parle d'« mon application », et c'est tout.
+
+**Et il a fait retourner la demande d'images**, qui était formulée à l'envers :
+*« tu dis que si certaines de leurs photos ne peuvent pas être utilisées, ce
+n'est pas grave, l'appli fonctionne sans — sauf qu'il faut absolument qu'ils
+acceptent qu'on utilise aussi leurs photos »*. La porte de sortie —
+« l'application fonctionne sans aucune image » — est supprimée. À la place, la
+raison de métier : on ne conclut pas sur une description, on compare ; et les
+images libres trouvables ailleurs sont américaines, sur des essences qui ne sont
+pas les nôtres. **Ne pas remettre la formule d'abandon** : elle offrait un refus
+tout prêt sur le point auquel il tient le plus.
+
+**Sa troisième passe, le 24 août au matin.** La ligne grise « Paysagiste-élagueur »
+sous sa signature est partie ; il ne reste que son nom. Et **le nom du fichier
+lui-même** ne porte plus la marque : `Anthracnose-du-platane.pdf`, c'est la
+première chose qu'un destinataire lit, avant même d'ouvrir.
+
+**Le PDF pesait 2,8 Mo, et son téléphone renonçait à l'afficher** — un écran
+noir avec une icône de fichier, et un bouton « Ouvrir ». Le fichier n'avait
+rien : `%PDF-1.4`, table des objets correcte, trois pages. C'était l'aperçu qui
+abandonnait. La cause était la capture d'écran, prise à `deviceScaleFactor: 3`
+alors qu'elle est posée sur 30 % d'une A4, soit 54 mm : plus de 500 points par
+pouce, pour une image qu'aucune imprimante ne rendra à ce détail. À 2, elle
+reste au-dessus de 350 et le PDF tombe à 1,4 Mo.
+
+**Sur « un vrai PDF non modifiable » :** celui-ci en est déjà un. Il ne porte ni
+champ de formulaire ni couche de texte modifiable — c'est du texte figé et deux
+images. Y ajouter un mot de passe de protection **desservirait** la demande :
+cela met une barrière devant un institut à qui l'on demande une faveur, et
+n'importe quel outil de bureau la retire en une minute. Ne pas le faire sans
+qu'il le redemande en connaissance de cause.
+
+## Le document doit avoir une ADRESSE, pas seulement un fichier
+
+**Payé le 24 août 2026.** Son application de courrier a répondu *« Impossible
+d'ajouter la pièce jointe »*. Le fichier n'était nulle part sur son téléphone :
+il ne l'avait reçu que dans une conversation, dont l'aperçu refusait déjà de
+s'ouvrir. On lui demandait donc d'envoyer un document qu'il n'avait pas.
+
+C'est la même leçon que `CLAUDE.md` §3 bis, dans l'autre sens : une planche
+qu'il doit REGARDER vit dans `appli/`, parce que c'est le seul dossier publié.
+Un document qu'il doit **envoyer** aussi. Le PDF est donc copié dans
+`appli/anthracnose-du-platane.pdf`, et son adresse est **vérifiée en ligne**
+par `pages.yml` — sans quoi on lui transmettrait une adresse dont rien ne prouve
+qu'elle répond, ce qui est déjà arrivé trois fois.
+
+    https://florianmarrins0978-svg.github.io/Atlas-app/anthracnose-du-platane.pdf
+    https://florianmarrins0978-svg.github.io/Atlas-app/ecran-anthracnose-platane.png
+
+La copie d'écran seule y est aussi : il l'a demandée à part, et une image reçue
+dans une conversation n'est pas plus attachable qu'un PDF.
+
+**Après chaque modification du document, refaire ces DEUX copies.** Le PDF de
+`captures/` n'est pas publié : `captures/` est ignoré. Un document corrigé dans
+`docs/` et jamais recopié dans `appli/` laisse en ligne la version d'avant, et
+c'est celle-là qu'il enverra.
+
+**Et le poids compte.** 2,8 Mo puis 1,4 Mo : deux tailles auxquelles son
+téléphone renonçait. Les captures passent maintenant en JPEG dans
+`composer-pdf.mjs` — 375 ko pour le même document, sans perte visible.
+
+## Joindre le document à un courriel depuis ici : ce qui est possible, et ce qui ne l'est pas
+
+**Sa demande du 24 août 2026 :** *« il faut que tu puisses les télécharger et
+les mettre dans l'e-mail pour l'envoyer »*.
+
+**Ce qui a été fait :** le brouillon est créé dans son Gmail — destinataires,
+objet, corps du message — par le connecteur Gmail (`create_draft`).
+
+**Ce qui ne l'est PAS, et pourquoi.** Aucun outil disponible ici n'accepte un
+CHEMIN de fichier : Gmail comme Drive veulent le contenu encodé en base64,
+c'est-à-dire recopié caractère par caractère dans l'appel. Le PDF fait
+177 596 caractères une fois encodé, et sur une telle longueur la transcription
+n'est pas fiable. **Un PDF corrompu envoyé à un institut de recherche est pire
+qu'une absence de pièce jointe** — et il ne s'en apercevrait qu'après l'envoi.
+
+C'est donc écrit comme non fait, plutôt que tenté au jugé (`AGENTS.md` : *« ne
+jamais transmettre une commande non vérifiée sans le dire »*).
+
+**Ce qui reste à sa charge, et c'est deux gestes :** ouvrir l'adresse publiée
+ci-dessus depuis son téléphone, « Partager » → « Enregistrer dans Fichiers »,
+puis le trombone du brouillon.
+
+**Si une session future trouve un outil qui prend un chemin de fichier**, c'est
+le moment de refaire ce chemin en entier. Le poids est déjà réglé : le PDF
+descend à 133 ko (images ramenées à 400 px de large, JPEG à 0,70), ce qui reste
+au-dessus de 180 points par pouce à la taille où elles sont posées.
+
+**Devant une demande d'aller plus loin dans ce sens, le lui dire plutôt que de
+l'exécuter.** Ce n'est pas une réserve de style : c'est la différence entre une
+demande d'autorisation et une demande obtenue par omission.
+
 ## Regénérer le PDF
 
 `document.html` est la source. Il appelle deux captures qui **ne sont pas dans le
@@ -91,15 +227,33 @@ contre lui.
 | les figures d'Ephytia | **écartées à dessein** : deux portent un « © » nominatif (CHAMONT S. (INRA), Arnaud Giraudel, Jean-Pierre Henry) |
 | l'import | **refuse** toute image dont la licence porte « © » ou « droits réservés » (`import-fiches-phyto.ts`, refus n° 7) |
 
-**Ce qui n'a PAS pu être vérifié depuis l'environnement de l'agent :** la page
-Commons elle-même. Le mandataire réseau bloque `commons.wikimedia.org`, et le
-fichier local ne porte aucune métadonnée — la vignette servie par Commons les
-retire. La mention « domaine public, travail d'un employé de l'USDA » vient donc
-de ce que le patron a transmis le 20 août avec la photo, pas d'un relevé fait
-ici. **Le dire ainsi plutôt que de laisser croire à une vérification qui n'a pas
-eu lieu** (`AGENTS.md`).
+**VÉRIFIÉ LE 23 AOÛT 2026 — et la vérification a corrigé quelque chose.** Le
+mandataire réseau bloque `commons.wikimedia.org` depuis l'environnement de
+l'agent, et la vignette servie par Commons ne porte aucune métadonnée : rien
+n'était donc éprouvable ici. C'est le patron qui a ouvert la page sur son
+téléphone et transmis trois captures.
 
-**Ce qui la vérifie en dix secondes, depuis un navigateur :** ouvrir
-<https://commons.wikimedia.org/wiki/File:Apiognomonia_veneta_leaf.JPG> et lire
-le bandeau de licence. S'il n'annonce pas le domaine public, la photo sort de la
-fiche et le document se refait — la phrase de la page 1 deviendrait fausse.
+| Ce que la page dit | Ce que le dépôt en a fait |
+|---|---|
+| bandeau **PD-USDA** — *« work of a United States Department of Agriculture employee, taken or made as part of that person's official duties […] the image is in the public domain »* | la licence enregistrée était **juste**, mot pour mot |
+| **Author : Clemson University** | absent du dépôt |
+| **Permission : « Cite: Clemson University - USDA Cooperative Extension Slide Series, Bugwood.org »** | le crédit disait « USDA, via Wikimedia Commons » — pas faux, mais **pas la citation demandée** |
+| Source : Forestry Images / The Bugwood Network (University of Georgia, USDA Forest Service), image n° 1234089, 18 août 2003 | absent du dépôt |
+| Description : *« Symptoms of the fungal plant pathogen Apiognomonia veneta on the leaf of a Platanus occidentalis tree »* | conforme à la légende enregistrée |
+
+**Le crédit a donc été corrigé** pour porter la citation que la source réclame,
+dans la fiche, sous la photo à l'écran et dans l'annotation n° 4 du document.
+Une demande d'autorisation qui cite mal une autre source se dessert elle-même —
+et c'est précisément la question que le patron a posée : *« il ne faut pas les
+prendre pour des cons »*.
+
+**La leçon, plus large que cette photo :** une licence recopiée sans la page qui
+la porte laisse passer ce que la page EXIGE en plus. Le contrôle d'intégrité
+compare le fichier source à la base ; il ne compare rien à l'original hors du
+dépôt. Pour toute image future, relever aussi le champ **Permission** de la page
+Commons, pas seulement son bandeau de licence.
+
+**Si la photo change un jour**, la page à rouvrir est
+<https://commons.wikimedia.org/wiki/File:Apiognomonia_veneta_leaf.JPG>. Sans
+bandeau de domaine public, la photo sort de la fiche et le document se refait :
+la phrase de la page 1 deviendrait fausse.

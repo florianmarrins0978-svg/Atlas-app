@@ -2,29 +2,27 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<title>Atlas — Ce qu'il advient d'une fiche Ephytia</title>
+<title>L'anthracnose du platane dans mon application</title>
 <style>
-  @page { size: A4; margin: 16mm 15mm; }
+  @page { size: A4; margin: 18mm 17mm; }
 
   :root {
     --cream:   #f5f3ee;
-    --card:    #faf9f5;
     --ink:     #1c1c1a;
-    --inkSoft: #4a4a44;
-    --muted:   #8a8578;
-    --or:      #B98B47;
-    --vert:    #2b3a2e;
-    --line:    rgba(28,28,26,0.14);
+    --inkSoft: #3a3a35;
+    --muted:   #6f6a60;
+    --or:      #8a6a34;
+    --line:    rgba(28,28,26,0.18);
   }
 
   * { box-sizing: border-box; }
   html, body { margin: 0; padding: 0; }
   body {
-    font-family: "Liberation Sans", "DejaVu Sans", Arial, sans-serif;
+    font-family: "Liberation Serif", Georgia, "Times New Roman", serif;
     color: var(--ink);
     background: #fff;
-    font-size: 10pt;
-    line-height: 1.55;
+    font-size: 10.5pt;
+    line-height: 1.6;
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
   }
@@ -32,126 +30,59 @@
   .page { page-break-after: always; }
   .page:last-child { page-break-after: auto; }
 
-  /* ── En-tête ─────────────────────────────────────────────────────────── */
-  .bandeau {
-    display: flex; align-items: baseline; justify-content: space-between;
-    border-bottom: 1.5px solid var(--ink);
-    padding-bottom: 6px; margin-bottom: 14px;
-  }
-  .marque {
-    font-family: "Liberation Serif", Georgia, serif;
-    font-size: 17pt; letter-spacing: .06em; color: var(--ink);
-  }
-  .marque span { color: var(--or); }
-  .bandeau .quoi {
-    font-size: 7.5pt; letter-spacing: .16em; text-transform: uppercase;
-    color: var(--muted);
-  }
+  h1 { font-size: 16pt; font-weight: normal; line-height: 1.25; margin: 0 0 10px; }
+  h2 { font-size: 12pt; font-weight: bold; margin: 0 0 8px; }
+  p  { margin: 0 0 10px; }
+  .serre { margin-bottom: 6px; }
 
-  h1 {
-    font-family: "Liberation Serif", Georgia, serif;
-    font-size: 18pt; font-weight: normal; line-height: 1.15;
-    margin: 0 0 5px;
-  }
-  .chapo {
-    color: var(--inkSoft); font-size: 10pt; margin: 0 0 3px; max-width: 62em;
-  }
-  .destinataire {
-    font-size: 8.5pt; color: var(--muted); margin: 0 0 14px;
-  }
-
-  h2 {
-    font-size: 8pt; letter-spacing: .16em; text-transform: uppercase;
-    color: var(--or); font-weight: bold;
-    margin: 0 0 10px; padding-bottom: 5px;
-    border-bottom: 1px solid var(--line);
-  }
-
-  /* ── Deux colonnes : l'écran et ce qu'il porte ────────────────────────── */
-  .deux { display: flex; gap: 16px; align-items: flex-start; }
-  .colonne-ecran { width: 29%; flex: 0 0 29%; }
+  /* ── L'écran et le texte, côte à côte ─────────────────────────────────── */
+  .deux { display: flex; gap: 20px; align-items: flex-start; margin-top: 4px; }
+  .colonne-ecran { width: 30%; flex: 0 0 30%; }
   .colonne-texte { flex: 1; }
 
   .telephone {
-    border: 5px solid #2a2a28;
-    border-radius: 14px;
+    border: 4px solid #33332f;
+    border-radius: 12px;
     overflow: hidden;
     background: var(--cream);
-    box-shadow: 0 2px 10px rgba(0,0,0,.12);
   }
   .telephone img { display: block; width: 100%; }
-  .legende-ecran {
-    font-size: 7.5pt; color: var(--muted); text-align: center;
-    margin-top: 7px; line-height: 1.4;
-  }
 
-  /* ── La liste annotée ────────────────────────────────────────────────── */
-  ol.repere { list-style: none; margin: 0; padding: 0; counter-reset: r; }
-  ol.repere > li {
-    counter-increment: r;
-    position: relative;
-    padding-left: 24px;
-    margin-bottom: 11px;
-  }
-  ol.repere > li::before {
-    content: counter(r);
-    position: absolute; left: 0; top: 1px;
-    width: 16px; height: 16px; border-radius: 50%;
-    background: var(--vert); color: #fff;
-    font-size: 8pt; line-height: 16px; text-align: center;
-  }
-  ol.repere .quoi {
-    font-weight: bold; font-size: 9.5pt;
-  }
-  ol.repere .dou {
-    display: block; font-size: 8.5pt; color: var(--inkSoft); line-height: 1.5;
-  }
-  .venant { color: var(--or); font-weight: bold; }
+  /* ── La lecture de l'écran, ligne à ligne ─────────────────────────────── */
+  ol.lecture { margin: 0; padding-left: 18px; }
+  ol.lecture > li { margin-bottom: 9px; }
+  ol.lecture .quoi { font-weight: bold; }
 
-  /* ── Encadrés ────────────────────────────────────────────────────────── */
-  .encadre {
-    background: var(--card);
-    border-left: 3px solid var(--or);
-    padding: 11px 14px;
-    margin: 16px 0;
-  }
-  .encadre p { margin: 0; font-size: 9pt; color: var(--inkSoft); }
-  .encadre p + p { margin-top: 7px; }
-  .encadre strong { color: var(--ink); }
-
-  /* La vignette de la copie d'écran reste à une taille d'écran, pas d'affiche :
-     agrandie à pleine largeur, elle donnait à trois lignes de texte l'allure
-     d'un titre, et le document en perdait son sérieux. */
   .capture-source {
     border: 1px solid var(--line);
     background: var(--cream);
     overflow: hidden;
-    margin-top: 10px;
-    width: 62%;
+    margin: 12px 0 14px;
+    width: 64%;
   }
   .capture-source img { display: block; width: 100%; }
 
-  /* ── Tableau des garanties ───────────────────────────────────────────── */
-  table { width: 100%; border-collapse: collapse; font-size: 9pt; }
-  th, td { text-align: left; vertical-align: top; padding: 8px 10px 8px 0; }
+  table { width: 100%; border-collapse: collapse; font-size: 10pt; margin-top: 4px; }
+  th, td { text-align: left; vertical-align: top; padding: 7px 12px 7px 0; }
   th {
-    font-size: 7.5pt; letter-spacing: .1em; text-transform: uppercase;
-    color: var(--muted); font-weight: bold;
-    border-bottom: 1px solid var(--line);
-    padding-bottom: 5px;
+    font-family: "Liberation Sans", Arial, sans-serif;
+    font-size: 8.5pt; color: var(--muted); font-weight: bold;
+    border-bottom: 1px solid var(--line); padding-bottom: 5px;
   }
   td { border-bottom: 1px solid var(--line); color: var(--inkSoft); }
-  td.regle { color: var(--ink); font-weight: bold; width: 38%; }
+  td.regle { color: var(--ink); width: 40%; }
 
-  ul.puces { margin: 0; padding-left: 16px; font-size: 9.5pt; color: var(--inkSoft); }
-  ul.puces li { margin-bottom: 6px; }
-  ul.puces strong { color: var(--ink); }
+  ul.puces { margin: 0 0 12px; padding-left: 18px; }
+  ul.puces li { margin-bottom: 7px; }
+
+  .signature { margin-top: 20px; }
+  .signature .nom { font-size: 11pt; }
 
   .pied {
-    margin-top: 22px; padding-top: 8px;
-    border-top: 1px solid var(--line);
-    font-size: 7.5pt; color: var(--muted);
-    display: flex; justify-content: space-between;
+    margin-top: 18px;
+    font-family: "Liberation Sans", Arial, sans-serif;
+    font-size: 8pt; color: var(--muted);
+    text-align: right;
   }
 </style>
 </head>
@@ -160,71 +91,55 @@
 <!-- ═══════════════════════════ PAGE 1 ═══════════════════════════ -->
 <section class="page">
 
-  <div class="bandeau">
-    <div class="marque">Atlas<span>.</span></div>
-    <div class="quoi">Pièce jointe à une demande d'autorisation</div>
-  </div>
+  <h1>L'anthracnose du platane, telle qu'elle apparaît dans mon application</h1>
 
-  <h1>Ce qu'Atlas fait d'une fiche Ephytia</h1>
-  <p class="chapo">
-    Un exemple complet, du document source à l'écran vu par l'artisan :
-    l'anthracnose du platane, rédigée à partir de votre fiche.
-  </p>
-  <p class="destinataire">
-    Document établi à l'intention de l'INRAE — Ephytia · Atlas, outil d'assistance pour paysagistes et élagueurs
+  <p>
+    Plutôt que de décrire mon travail, je préfère vous en montrer le résultat sur
+    un cas précis. La fiche ci-dessous a été rédigée à partir de votre page
+    consacrée à l'anthracnose du platane. Voici ce qu'un paysagiste lit sur son
+    téléphone, et d'où vient chacune des lignes qu'il a sous les yeux.
   </p>
 
   <div class="deux">
 
     <div class="colonne-ecran">
       <div class="telephone">
-        <img src="inrae-ecran.png" alt="Écran de résultat d'Atlas : anthracnose du platane">
+        <img src="inrae-ecran.jpg" alt="L'écran de résultat : anthracnose du platane">
       </div>
-      <p class="legende-ecran">
-        L'écran tel qu'il se présente sur le téléphone d'un professionnel,
-        après photographie d'une feuille.
-      </p>
     </div>
 
     <div class="colonne-texte">
-      <h2>Chaque ligne, et d'où elle vient</h2>
-      <ol class="repere">
+      <ol class="lecture">
         <li>
-          <span class="quoi">Le nom du problème</span>
-          <span class="dou">« Anthracnose du platane », <em>Apiognomonia veneta</em>.
-          <span class="venant">Recopié de votre fiche.</span> Un nom n'est jamais
-          produit par une intelligence artificielle : il est lu dans notre base.</span>
+          <span class="quoi">Le nom.</span> « Anthracnose du platane »,
+          <em>Apiognomonia veneta</em>. Je l'ai recopié de votre fiche. Aucun nom
+          de maladie n'est produit par le logiciel : il est lu dans ma base.
         </li>
         <li>
-          <span class="quoi">Le niveau de certitude</span>
-          <span class="dou">Trois mots seulement — élevée, probable, incertaine —
-          et <span class="venant">jamais de pourcentage</span>. Aucun modèle employé
-          ne fournit de probabilité calibrée ; en afficher une serait un chiffre inventé.</span>
+          <span class="quoi">Le niveau de certitude.</span> Trois mots, et trois
+          seulement : élevée, probable, incertaine. Je n'affiche jamais de
+          pourcentage, parce que je n'ai aucun moyen sérieux d'en calculer un.
         </li>
         <li>
-          <span class="quoi">La description</span>
-          <span class="dou">Établie à partir de votre section « Symptômes et éléments
-          de diagnostic », <span class="venant">sans reformulation des critères</span>.</span>
+          <span class="quoi">La description.</span> Elle vient de votre section
+          « Symptômes et éléments de diagnostic ». Je n'ai pas reformulé les
+          critères.
         </li>
         <li>
-          <span class="quoi">La photo de référence</span>
-          <span class="dou">Ici <strong>une photographie du domaine public</strong>
-          (USDA, via Wikimedia Commons), et <strong>non</strong> une photographie
-          INRAE — c'est l'objet de la troisième question de notre courriel. Le crédit
-          et la licence sont affichés dessous, et l'écran précise qu'une ressemblance
-          ne vaut pas preuve.</span>
+          <span class="quoi">La photographie.</span> Elle ne vient pas de chez
+          vous : c'est un cliché du domaine public (Clemson University — USDA
+          Cooperative Extension Slide Series, Bugwood.org, via Wikimedia
+          Commons). L'usage de vos images fait l'objet de ma troisième question,
+          et de celle-là seulement.
         </li>
         <li>
-          <span class="quoi">La gravité</span>
-          <span class="dou">« Faible », parce que votre fiche relativise elle-même le
-          dégât. <span class="venant">Une source précise appuie ce mot</span>, et elle
-          est nommée.</span>
+          <span class="quoi">La gravité.</span> « Faible », parce que votre fiche
+          écrit elle-même que le dégât est spectaculaire mais rarement grave.
         </li>
         <li>
-          <span class="quoi">La conduite à tenir</span>
-          <span class="dou">La phrase que lira l'artisan avant d'intervenir sur un
-          arbre. <span class="venant">Recopiée</span> : jamais résumée, jamais
-          « améliorée ».</span>
+          <span class="quoi">La conduite à tenir.</span> C'est la phrase que lira
+          l'artisan avant d'intervenir sur un arbre. Je la recopie sans la
+          résumer.
         </li>
       </ol>
     </div>
@@ -232,8 +147,7 @@
   </div>
 
   <div class="pied">
-    <span>Atlas — ce qu'il advient d'une fiche Ephytia</span>
-    <span>Page 1 sur 3</span>
+    <span>1 / 3</span>
   </div>
 
 </section>
@@ -241,46 +155,50 @@
 <!-- ═══════════════════════════ PAGE 2 ═══════════════════════════ -->
 <section class="page">
 
-  <div class="bandeau">
-    <div class="marque">Atlas<span>.</span></div>
-    <div class="quoi">Pièce jointe à une demande d'autorisation</div>
-  </div>
-
-  <h2>Le principe : le modèle observe, la base décide</h2>
-
-  <div class="encadre" style="margin-top:0;">
-    <p>
-      L'intelligence artificielle décrit ce qu'elle voit sur la photographie — une
-      tache, sa couleur, sa localisation sur l'organe — dans un vocabulaire fermé
-      d'une centaine de mots. <strong>Elle n'a aucun moyen de nommer une
-      maladie</strong> : le format de sa réponse ne comporte pas de champ pour
-      cela. C'est ensuite un programme déterministe qui confronte cette
-      description aux fiches de notre base.
-    </p>
-    <p>
-      Tout ce qui s'affiche à l'écran est donc la recopie d'un champ de fiche.
-      Une maladie inventée, une gravité inventée ou un traitement inventé sont
-      impossibles par construction, et non par bonne volonté.
-    </p>
-  </div>
-
-  <h2 style="margin-top:24px;">La source est citée sur l'écran, pas dans un colophon</h2>
-  <p class="chapo" style="font-size:9.5pt; margin-bottom:12px;">
-    Sous « Voir les détails », l'artisan lit l'organisme, le titre exact de la
-    fiche, la date à laquelle elle a été consultée — et la liste des champs que
-    cette source appuie.
+  <h2>Votre nom apparaît sur l'écran, pas en fin de document</h2>
+  <p>
+    En dépliant « Voir les détails », l'utilisateur trouve l'organisme, le titre
+    exact de la fiche et la date à laquelle je l'ai consultée. La liste qui suit
+    indique quels champs de l'écran cette source appuie. L'adresse de la page est
+    enregistrée avec la fiche.
   </p>
 
   <div class="capture-source">
-    <img src="inrae-sources.png" alt="Le bloc « D'où vient cette fiche » sur l'écran d'Atlas">
+    <img src="inrae-sources.jpg" alt="Le bloc « D'où vient cette fiche »">
   </div>
-  <p class="legende-ecran" style="text-align:left;">
-    Copie d'écran. L'adresse de la page consultée est enregistrée avec la fiche.
+
+  <h2 style="margin-top:22px;">Comment une fiche est constituée</h2>
+  <p>
+    Je lis la page, je la découpe en champs — hôtes, organes touchés, symptômes,
+    gravité, conduite à tenir — et je les saisis un par un. Ce que la page ne dit
+    pas reste vide. Je ne complète jamais avec une autre source sans le noter.
+  </p>
+  <p>
+    Une fois la fiche enregistrée, le programme la relit et la compare champ par
+    champ au document dont elle est tirée. Tant que la comparaison n'est pas
+    exacte, la fiche ne peut pas être mise en service. C'est ce contrôle qui m'a
+    fait corriger, en écrivant ce document, la mention de crédit de la
+    photographie de la page précédente.
+  </p>
+
+  <h2 style="margin-top:22px;">Ce que fait la photographie prise sur le chantier</h2>
+  <p>
+    Le cliché pris par l'utilisateur sert uniquement à décrire ce qui est
+    visible : une tache, sa couleur, l'organe où elle se trouve. Cette
+    description est ensuite confrontée aux fiches de ma base par un programme
+    ordinaire, qui écarte les maladies incompatibles avec l'essence et l'organe
+    observés. Le résultat affiché est toujours la recopie d'un champ de fiche.
+    Une maladie, une gravité ou un traitement inventés ne sont pas seulement
+    interdits : ils sont impossibles, faute d'un endroit où les écrire.
+  </p>
+  <p>
+    Si l'essence de l'arbre n'est pas certaine, l'application demande une
+    seconde photographie, puis renonce à conclure. Je préfère qu'elle ne dise
+    rien plutôt qu'elle se trompe.
   </p>
 
   <div class="pied">
-    <span>Atlas — ce qu'il advient d'une fiche Ephytia</span>
-    <span>Page 2 sur 3</span>
+    <span>2 / 3</span>
   </div>
 
 </section>
@@ -288,70 +206,80 @@
 <!-- ═══════════════════════════ PAGE 3 ═══════════════════════════ -->
 <section class="page">
 
-  <div class="bandeau">
-    <div class="marque">Atlas<span>.</span></div>
-    <div class="quoi">Pièce jointe à une demande d'autorisation</div>
-  </div>
-
-  <h2>Ce qu'Atlas s'interdit</h2>
+  <h2>Les règles que je me suis fixées</h2>
   <table>
     <thead>
       <tr><th>La règle</th><th>Ce qu'elle évite</th></tr>
     </thead>
     <tbody>
       <tr>
-        <td class="regle">Aucune donnée n'est complétée de mémoire</td>
-        <td>Ce que la source ne dit pas reste vide. Un champ sans origine n'est jamais rempli par déduction, ni par une autre source.</td>
+        <td class="regle">Rien n'est complété de mémoire</td>
+        <td>Ce que la source ne dit pas reste vide. Un champ sans origine n'est jamais rempli par déduction.</td>
       </tr>
       <tr>
-        <td class="regle">Chaque affirmation qui engage est reliée à sa source</td>
-        <td>La conduite à tenir, la gravité, un éventuel traitement, le statut réglementaire. Une bibliographie générale ne suffit pas : c'est la source de cette ligne-là qui est enregistrée.</td>
+        <td class="regle">Chaque affirmation qui engage porte sa source</td>
+        <td>La conduite à tenir, la gravité, un traitement, le statut réglementaire. Une bibliographie générale ne suffirait pas : c'est la source de cette ligne-là qui est enregistrée.</td>
       </tr>
       <tr>
-        <td class="regle">La certitude ne dépasse jamais ce que la source autorise</td>
-        <td>Lorsqu'une fiche indique qu'une confirmation en laboratoire est nécessaire, Atlas l'écrit à l'écran et n'affiche jamais un diagnostic « confirmé ».</td>
+        <td class="regle">La certitude ne dépasse pas ce que la source autorise</td>
+        <td>Quand une fiche indique qu'une analyse en laboratoire est nécessaire, l'écran le dit et n'affiche jamais un diagnostic confirmé.</td>
       </tr>
       <tr>
         <td class="regle">L'essence est identifiée avant la maladie</td>
-        <td>Sans identification certaine de l'arbre, Atlas demande une photographie complémentaire, puis refuse de conclure. Mieux vaut ne rien dire qu'un diagnostic faux.</td>
+        <td>Sans identification certaine de l'arbre, l'application demande une photographie de plus, puis refuse de conclure.</td>
       </tr>
       <tr>
-        <td class="regle">Une fiche est vérifiée mot à mot après enregistrement</td>
-        <td>Le contenu enregistré est relu et comparé au document d'origine, champ par champ. Le moindre écart empêche la mise en service de la fiche.</td>
+        <td class="regle">Une fiche est relue mot à mot après saisie</td>
+        <td>La comparaison se fait champ par champ avec le document d'origine. Le moindre écart empêche la mise en service.</td>
       </tr>
       <tr>
         <td class="regle">Une photographie sans licence établie n'entre pas</td>
-        <td>Le crédit et la licence sont obligatoires et affichés sous l'image ; une mention de droits réservés est refusée automatiquement.</td>
+        <td>Le crédit et la licence sont obligatoires et affichés sous l'image. Une mention de droits réservés est refusée.</td>
       </tr>
     </tbody>
   </table>
 
-  <h2 style="margin-top:26px;">Ce que nous vous demandons</h2>
+  <h2 style="margin-top:22px;">Ce que je vous demande</h2>
   <ul class="puces">
-    <li><strong>Nous appuyer sur vos fiches</strong> relatives aux forêts et aux
-      arbres d'ornement pour rédiger des fiches Atlas, en citant systématiquement
-      l'INRAE et Ephytia, avec l'adresse de la page et sa date de consultation.</li>
-    <li><strong>Reprendre de courts extraits</strong> lorsque la formulation exacte
-      importe — un critère qui distingue deux problèmes voisins, par exemple.</li>
-    <li><strong>Utiliser certaines de vos photographies</strong>, à titre
-      illustratif et avec leur crédit. Nous avons relevé que plusieurs portent un
-      crédit nominatif ; si l'accord de chaque auteur est nécessaire, ce point peut
-      être écarté sans conséquence — <em>l'outil fonctionne sans aucune image.</em></li>
+    <li>
+      M'appuyer sur vos fiches relatives aux forêts et aux arbres d'ornement, en
+      citant l'INRAE et Ephytia, avec l'adresse de la page et sa date de
+      consultation.
+    </li>
+    <li>
+      Reprendre de courts extraits lorsque la formulation exacte importe, par
+      exemple un critère qui distingue deux problèmes voisins.
+    </li>
+    <li>
+      Utiliser certaines de vos photographies, avec leur crédit. C'est le point
+      auquel je tiens le plus, et je m'en explique ci-dessous. J'ai vu que
+      plusieurs portent un crédit nominatif : si un accord doit être obtenu
+      auprès des auteurs, dites-moi lesquels et je ferai la démarche.
+    </li>
   </ul>
 
-  <div class="encadre" style="margin-top:20px;">
-    <p>
-      <strong>Le contexte, puisqu'il compte pour votre réponse :</strong> Atlas est
-      un outil professionnel destiné à d'autres artisans, donc à usage
-      potentiellement commercial. Le nombre de fiches visé se compte en dizaines
-      aujourd'hui et pourrait atteindre quelques centaines. Si une convention ou
-      une mention particulière est nécessaire, nous nous y conformerons.
-    </p>
+  <p>
+    J'insiste sur ce dernier point. Sur un chantier, on ne conclut pas sur une
+    description : on compare. Voir la nécrose de la fiche, sur le même organe et
+    au même stade, est ce qui permet d'écarter une confusion. Les images libres
+    trouvables ailleurs sont rares et le plus souvent américaines, sur des
+    essences qui ne sont pas les nôtres ; les vôtres sont prises en France, sur
+    les arbres que nous rencontrons.
+  </p>
+
+  <p>
+    Un mot du contexte, puisqu'il compte pour votre réponse : outil
+    professionnel, diffusé auprès d'autres artisans, donc à usage éventuellement
+    commercial ; quelques dizaines de fiches aujourd'hui, peut-être quelques
+    centaines à terme. Si une convention est nécessaire, je m'y conformerai.
+  </p>
+
+  <div class="signature">
+    <div class="nom">Florian Martins</div>
   </div>
 
   <div class="pied">
-    <span>Atlas — ce qu'il advient d'une fiche Ephytia</span>
-    <span>Page 3 sur 3</span>
+    <span>3 / 3</span>
   </div>
 
 </section>

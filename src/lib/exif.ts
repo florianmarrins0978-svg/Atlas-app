@@ -45,6 +45,86 @@ export function typeImageAccepte(mimeType: string): boolean {
 }
 
 /**
+ * ─────────────────────────────────────────────────────────────────────────────
+ * CE QU'ON ACCEPTE DE RANGER — plus large que ce qu'on sait nettoyer
+ * ─────────────────────────────────────────────────────────────────────────────
+ *
+ * **Deux listes, et ce n'est pas une duplication : elles répondent à deux
+ * questions différentes.** « Sais-je retirer les métadonnées de ce format ? »
+ * (ci-dessus) et « ai-je le droit de le ranger ? » (ci-dessous). Les confondre
+ * ferait refuser des photos parfaitement inoffensives.
+ *
+ * **Le vrai danger n'est pas le format d'image, c'est le SVG.** Un SVG est un
+ * document, pas une image : il porte du script, et servi depuis notre domaine
+ * il s'exécute avec la session de l'artisan (audit du 23 août 2026, constat
+ * M1). `startsWith("image/")` — ce que faisaient les photos de chantier et les
+ * tickets de TVA — l'acceptait.
+ *
+ * **HEIC et HEIF sont dans la liste, et c'est délibéré.** Ce sont les formats
+ * natifs de l'iPhone. Ils ne portent aucun script. Les refuser, ce serait un
+ * artisan sur un chantier qui photographie son ticket de caisse et lit un refus
+ * qu'il ne comprend pas — *un outil qui refuse la photo qu'on vient de prendre
+ * est pire que le risque qu'il évite*.
+ */
+export const TYPES_PHOTO_ACCEPTES = [
+  "image/jpeg",
+  "image/png",
+  "image/webp",
+  "image/heic",
+  "image/heif",
+] as const;
+
+export function photoAcceptee(mimeType: string): boolean {
+  return (TYPES_PHOTO_ACCEPTES as readonly string[]).includes(mimeType.split(";")[0].trim().toLowerCase());
+}
+
+/**
+ * L'attribut `accept` des champs photo — **et il ne contient PAS le HEIC.**
+ *
+ * ─────────────────────────────────────────────────────────────────────────────
+ * **C'est le point le plus contre-intuitif de ce lot, et l'écrire ici évite
+ * qu'on le « corrige » un jour en croyant bien faire.**
+ *
+ * iOS regarde cette liste. Quand le HEIC n'y figure pas, il **transcode en
+ * JPEG** avant l'envoi — appareil photo comme photothèque. C'est ce que fait
+ * déjà le diagnostic végétal, et c'est pourquoi il reçoit toujours des JPEG
+ * qu'il sait nettoyer.
+ *
+ * **Y ajouter `image/heic` ferait donc l'inverse de ce qu'on croit** : iOS
+ * cesserait de transcoder, et nous recevrions des HEIC bruts — que nous ne
+ * savons pas nettoyer, donc rangés avec leurs coordonnées GPS.
+ *
+ * La liste serveur, elle, reste plus large (`TYPES_PHOTO_ACCEPTES`) : c'est le
+ * filet pour l'appareil qui ne transcoderait pas. Accepter vaut mieux que
+ * refuser ; ne pas provoquer vaut mieux qu'accepter.
+ */
+export const ACCEPT_PHOTOS = TYPES_IMAGE_ACCEPTES.join(",");
+
+/** Le refus à montrer, dans ses mots, quand le format n'est pas une photo. */
+export const MESSAGE_PHOTO_REFUSEE =
+  "Ce fichier n'est pas une photo. Prenez-la avec votre appareil, ou choisissez un JPEG, un PNG ou un WebP.";
+
+/**
+ * L'extension à poser sur la clé de stockage — **et c'est elle qui décidera du
+ * type servi** (`src/lib/type-de-fichier.ts`). Une extension fausse ferait
+ * afficher une image comme autre chose.
+ */
+export function extensionPhoto(mimeType: string): string {
+  switch (mimeType.split(";")[0].trim().toLowerCase()) {
+    case "image/png":
+      return ".png";
+    case "image/webp":
+      return ".webp";
+    case "image/heic":
+      return ".heic";
+    case "image/heif":
+      return ".heif";
+    default:
+      return ".jpg";
+  }
+}
+
+/**
  * Nettoyer selon le type déclaré.
  *
  * **Le type n'est jamais deviné depuis le contenu, et le contenu doit

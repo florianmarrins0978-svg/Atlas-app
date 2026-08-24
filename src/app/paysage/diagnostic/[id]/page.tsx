@@ -343,7 +343,11 @@ async function Details({
             recommander un produit phytosanitaire engage l'artisan. */}
         <Ligne cle="Traitement" valeur={resultat.details.traitement} />
 
-        <div className="mt-[18px] border-t pt-[14px]" style={{ borderColor: colors.line }}>
+        <div
+          className="mt-[18px] border-t pt-[14px]"
+          style={{ borderColor: colors.line }}
+          data-atlas="diagnostic-sources"
+        >
           <p className={libelleCaps} style={{ color: colors.muted }}>
             D’où vient cette fiche
           </p>

@@ -43,6 +43,14 @@ const TABLES = [
   "membres_entreprise",
   "entreprises",
   "users",
+  // Ne descend d'aucune entreprise : `CASCADE` ne l'emporte pas. Sans elle ici,
+  // les échecs de connexion d'une suite temporiseraient la suivante — et la
+  // batterie rougirait sur un défaut qu'elle aurait fabriqué elle-même.
+  "tentatives_connexion",
+  // `CASCADE` l'emporterait déjà par `users`, mais on la nomme : une table qui
+  // porte des PORTES d'accès ne doit pas dépendre d'un effet de bord pour être
+  // vidée entre deux suites.
+  "cles_appareil",
 ];
 
 // Connexion courte et dédiée : les suites terminent par pool.end() sur le pool

@@ -4,6 +4,7 @@ import { getCurrentCtx } from "@/server/session-ctx";
 import { db } from "@/server/db/client";
 import { imagesPhyto } from "@/server/db/schema";
 import { lireObjet } from "@/server/storage";
+import { typeDepuisCle } from "@/lib/type-de-fichier";
 
 /**
  * Servir une image de référence de la base phytosanitaire.
@@ -67,11 +68,4 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
   } catch {
     return NextResponse.json({ erreur: "Image introuvable." }, { status: 404 });
   }
-}
-
-/** Le type est déduit de l'extension posée à l'import, qui est une liste blanche. */
-function typeDepuisCle(cle: string): string {
-  if (cle.endsWith(".png")) return "image/png";
-  if (cle.endsWith(".webp")) return "image/webp";
-  return "image/jpeg";
 }

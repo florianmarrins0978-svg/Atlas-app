@@ -23,6 +23,7 @@ import {
   char,
   boolean,
   jsonb,
+  bigint,
   type AnyPgColumn,
 } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
@@ -127,6 +128,36 @@ export const entreprises = pgTable("entreprises", {
   moyensPaiement: text("moyens_paiement"),
   rappelerPenalitesDevis: boolean("rappeler_penalites_devis").notNull().default(false),
   textePiedDocuments: text("texte_pied_documents"),
+
+  /**
+   * Le message qui part au client avec le devis, la facture ou le rapport
+   * (migration 0062, sa demande du 23 août 2026).
+   *
+   * **`null` veut dire « celui d'Atlas »**, jamais « vide » : recopier le texte
+   * par défaut ici à la création figerait chaque entreprise sur la version du
+   * jour, et une correction ultérieure ne l'atteindrait plus.
+   *
+   * Le lien y est OBLIGATOIRE — c'est sa règle, et `refusDuMessage` la tient
+   * pour l'écran comme pour le serveur.
+   */
+  messageClient: text("message_client"),
+
+  /**
+   * L'allure de son devis et de sa facture (migration 0063, 23 août 2026).
+   *
+   * **`null` veut dire « comme aujourd'hui »** — sa règle : *« les réglages
+   * actuels doivent être par défaut »*. Les valeurs vivent dans
+   * `src/lib/allure-documents.ts`, jamais recopiées ici.
+   *
+   * **La feuille de chantier et le compte rendu ne sont PAS concernés** : sa
+   * décision du même jour. L'une est interne, l'autre est une page web.
+   */
+  docTypographie: text("doc_typographie"),
+  docFond: text("doc_fond"),
+  docAccent: text("doc_accent"),
+  /** Le logo vit dans le stockage, comme une photo — la base garde sa clef. */
+  logoStorageKey: text("logo_storage_key"),
+  logoMime: text("logo_mime"),
 
   /**
    * Les deux rappels de la rubrique « Notifications » (migration 0043).
@@ -2231,4 +2262,58 @@ export const photosDiagnosticAPurger = pgTable(
     unique("photos_diagnostic_a_purger_uk").on(t.photoId),
     index("photos_diagnostic_a_purger_echeance_idx").on(t.purgerLe),
   ]
+);
+
+// --- Échecs de connexion (migration 0062, audit C1 du 23 août 2026) ---------
+//
+// **La seule protection contre le bourrage qui survive à une panne de Redis.**
+// Le raisonnement complet — pourquoi une empreinte plutôt que l'adresse,
+// pourquoi aucune politique d'isolation ici, pourquoi le blocage est plafonné —
+// vit en tête de `drizzle/0062_tentatives_connexion.sql`. La règle des paliers,
+// elle, est une fonction pure : `src/lib/tentatives-connexion.ts`.
+export const tentativesConnexion = pgTable("tentatives_connexion", {
+  /** SHA-256 hexadécimal de l'adresse normalisée — jamais l'adresse elle-même. */
+  empreinte: text("empreinte").primaryKey(),
+  /** Échecs CONSÉCUTIFS : une connexion réussie efface la ligne. */
+  echecs: integer("echecs").notNull().default(0),
+  dernierEchecAt: timestamp("dernier_echec_at", { withTimezone: true }).notNull().defaultNow(),
+  bloqueJusqua: timestamp("bloque_jusqua", { withTimezone: true }),
+});
+
+// --- Clés d'appareil : « Ouvrir avec Face ID » (migration 0063) -------------
+//
+// **Aucune donnée biométrique ici.** Le visage ne quitte jamais le téléphone :
+// ce qui arrive en base est une clé PUBLIQUE — de quoi vérifier une signature,
+// jamais d'en produire une. Volée, elle n'ouvre rien.
+//
+// Le raisonnement complet — pourquoi aucune politique d'isolation, pourquoi le
+// compteur ne peut pas servir de garde-fou seul — vit en tête de
+// `drizzle/0063_cles_appareil.sql`. Les règles, elles, sont pures :
+// `src/lib/cle-appareil.ts`.
+export const clesAppareil = pgTable(
+  "cles_appareil",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    utilisateurId: uuid("utilisateur_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    /** L'identifiant que l'authentificateur donne à sa clé, en base64url. */
+    identifiantCle: text("identifiant_cle").notNull().unique(),
+    /** La clé PUBLIQUE, en base64url. */
+    clePublique: text("cle_publique").notNull(),
+    /**
+     * Le nombre de signatures annoncé par l'appareil. **Zéro est ordinaire** —
+     * les clés de plateforme d'Apple n'en tiennent aucun (voir `estRejeu`).
+     *
+     * `mode: "number"` : la valeur reste très en deçà de ce qu'un nombre
+     * JavaScript représente exactement, et un `bigint` ici obligerait chaque
+     * comparaison de la règle pure à changer de type pour rien.
+     */
+    compteur: bigint("compteur", { mode: "number" }).notNull().default(0),
+    /** « iPhone », « Mac » — deviné, renommable, et qui ne décide de RIEN. */
+    nomAppareil: text("nom_appareil").notNull(),
+    creeLe: timestamp("cree_le", { withTimezone: true }).notNull().defaultNow(),
+    dernierUsageLe: timestamp("dernier_usage_le", { withTimezone: true }),
+  },
+  (t) => [index("cles_appareil_utilisateur_idx").on(t.utilisateurId)]
 );

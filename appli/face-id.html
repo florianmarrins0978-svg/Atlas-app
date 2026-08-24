@@ -1,0 +1,448 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Ouvrir Atlas avec Face ID</title>
+<style>
+  /*
+    OUVRIR ATLAS AVEC FACE ID — la planche, avant le code.
+
+    Sa demande du 23 août 2026 : « je veux bien que tu me codes le Face ID pour
+    le mot de passe, et bien entendu qu'il faut conserver le mot de passe.
+    L'utilisateur va commencer par créer son compte avec son mot de passe et
+    ensuite il décidera s'il veut ouvrir sa session avec le mot de passe ou le
+    Face ID. »
+
+    `CLAUDE.md` §3 bis : une demande de GESTE se dessine, se montre, et ne
+    touche à `src/` qu'une fois choisie. Rien n'est codé.
+
+    **CE QUI EST SIMULÉ ICI, ET IL FAUT LE DIRE.** La fenêtre de Face ID
+    appartient à iOS : aucune page web ne la dessine, et celle de cette planche
+    est un DESSIN. Sur le vrai téléphone, c'est le système qui s'affiche, et il
+    ressemble à ce qu'il montre déjà pour payer. Ce qui est fidèle ici, c'est
+    l'ENCHAÎNEMENT — ce qu'on touche, dans quel ordre, et ce qui se passe quand
+    ça rate.
+  */
+  :root{
+    --fond:#f5f3ee; --plage:#faf9f5; --encre:#1c1c1a; --encre-douce:#4a4a44;
+    --gris:#8a8578; --pin:#2f3b2f; --papier:#ece9e1;
+    --or:#B98B47; --trait:rgba(28,28,26,.12); --rouille:#B5502F; --alerte:#8C3A2B;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:#e6e3dc}
+  body{font:16px/1.5 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;color:var(--encre);
+       -webkit-text-size-adjust:100%;padding:0 0 48px}
+  .bandeau{background:#1c1c1a;color:#f5f3ee;padding:16px 20px;font-size:14px;line-height:1.55}
+  .bandeau b{color:#fff}
+
+  .bloc{max-width:430px;margin:26px auto 0;padding:0 20px}
+  .bloc h2{margin:0 0 8px;font:700 10px/1 ui-sans-serif,sans-serif;letter-spacing:.2em;
+           text-transform:uppercase;color:var(--or)}
+  .bloc p{margin:0 0 10px;font-size:14.5px;line-height:1.55;color:var(--encre-douce)}
+  .bloc p b{color:var(--encre)}
+
+  /* ── La porte, telle qu'elle est dessinée aujourd'hui ─────────────── */
+  .porte{max-width:430px;margin:10px auto 0;background:var(--plage);border-radius:14px;
+         padding:30px 26px 32px;box-shadow:0 10px 28px rgba(20,18,14,.13);text-align:center}
+  .sceau{width:56px;height:56px;margin:0 auto;border-radius:999px;border:1.5px solid var(--or);
+         display:grid;place-items:center;color:var(--or);font-size:21px}
+  .marque{display:block;margin:14px 0 26px;font:400 20px/1 ui-serif,Georgia,serif;letter-spacing:.3em}
+  .etiq{display:block;text-align:left;font:700 10px/1 ui-sans-serif,sans-serif;letter-spacing:.2em;
+        text-transform:uppercase;color:var(--gris);margin:0 0 7px}
+  .champ{width:100%;border:0;border-bottom:1px solid var(--trait);background:transparent;
+         padding:6px 0 8px;font:400 16px/1.4 ui-sans-serif,-apple-system,sans-serif;color:var(--encre);
+         margin-bottom:20px;-webkit-tap-highlight-color:transparent}
+  .champ:focus{outline:none;border-bottom-color:var(--or)}
+  .entrer{display:inline-block;border:0;border-radius:999px;background:var(--rouille);color:#faf9f5;
+          padding:13px 34px;font:400 17px/1 ui-serif,Georgia,serif;cursor:pointer;
+          -webkit-tap-highlight-color:transparent}
+  .refus{min-height:19px;margin:0 0 12px;font-size:13px;line-height:19px;color:var(--alerte)}
+
+  /* Le grand bouton visage — proposition A. */
+  .visage{display:flex;align-items:center;justify-content:center;gap:12px;width:100%;border:0;
+          border-radius:999px;background:var(--pin);color:#faf9f5;padding:15px 20px;
+          font:400 17px/1 ui-serif,Georgia,serif;cursor:pointer;
+          -webkit-tap-highlight-color:transparent}
+  .visage svg{flex-shrink:0}
+  .ou{margin:16px 0 0;font-size:14px;color:var(--gris)}
+  .lien{border:0;background:transparent;padding:4px 0;font-size:14.5px;color:var(--or);
+        cursor:pointer;text-decoration:underline;-webkit-tap-highlight-color:transparent}
+
+  /* La ligne discrète — proposition B. */
+  .ligne-visage{display:flex;align-items:center;gap:10px;width:100%;border:1px solid var(--trait);
+                border-radius:12px;background:var(--papier);padding:12px 14px;margin-bottom:24px;
+                font-size:15px;color:var(--encre);cursor:pointer;text-align:left;
+                -webkit-tap-highlight-color:transparent}
+  .ligne-visage svg{flex-shrink:0;color:var(--pin)}
+
+  .cache{display:none}
+
+  /* ── La fenêtre d'iOS, DESSINÉE ───────────────────────────────────── */
+  .systeme{position:fixed;inset:0;background:rgba(12,11,10,.55);display:none;
+           align-items:center;justify-content:center;padding:24px;z-index:9}
+  .systeme.ouverte{display:flex}
+  .sheet{width:100%;max-width:280px;background:#efeeec;border-radius:18px;padding:22px 20px 0;
+         text-align:center;color:#111;font:400 15px/1.4 -apple-system,ui-sans-serif,sans-serif;
+         box-shadow:0 22px 60px rgba(0,0,0,.4)}
+  .sheet .titre{font-weight:600;font-size:16px}
+  .sheet .sous{margin:6px 0 16px;font-size:13px;color:#5b5b5f}
+  .sheet .face{width:52px;height:52px;margin:2px auto 14px;border-radius:12px;
+               border:2px solid #111;display:grid;place-items:center}
+  .sheet .barres{display:flex;border-top:1px solid #c9c8c6;margin-top:14px}
+  .sheet .barres button{flex:1;border:0;background:transparent;padding:12px 4px;font-size:15px;
+                        color:#0a72e8;cursor:pointer;-webkit-tap-highlight-color:transparent}
+  .sheet .barres button + button{border-left:1px solid #c9c8c6;font-weight:600}
+  .avert{max-width:280px;margin:10px auto 0;font-size:11.5px;line-height:1.45;color:#efeeec;
+         text-align:center}
+
+  /* ── Réglages → Connexion ─────────────────────────────────────────── */
+  .carte{max-width:430px;margin:10px auto 0;background:var(--plage);border-radius:14px;
+         padding:18px 18px 20px;box-shadow:0 10px 28px rgba(20,18,14,.13)}
+  .carte .chapeau{font:700 10px/1 ui-sans-serif,sans-serif;letter-spacing:.2em;
+                  text-transform:uppercase;color:var(--or);margin:0 0 12px}
+  .rang{display:flex;align-items:flex-start;gap:14px;padding:12px 0;border-top:1px solid var(--trait)}
+  .rang:first-of-type{border-top:0}
+  .rang .texte{flex:1;min-width:0}
+  .rang .nom{font-size:15.5px}
+  .rang .sous{margin-top:4px;font-size:13px;line-height:1.5;color:var(--gris)}
+  .inter{flex-shrink:0;width:50px;height:30px;border-radius:999px;border:0;background:#cfccc3;
+         position:relative;cursor:pointer;transition:background .16s;
+         -webkit-tap-highlight-color:transparent}
+  .inter .pastille{position:absolute;top:3px;left:3px;width:24px;height:24px;border-radius:999px;
+                   background:#fff;transition:left .16s;box-shadow:0 1px 3px rgba(0,0,0,.25)}
+  .inter[aria-pressed="true"]{background:var(--pin)}
+  .inter[aria-pressed="true"] .pastille{left:23px}
+
+  .verdict{max-width:430px;margin:12px auto 0;padding:14px 18px;border-radius:14px;
+           font-size:14.5px;line-height:1.55;background:var(--papier);color:var(--encre-douce)}
+  .verdict b{color:var(--encre)}
+  .verdict.vert{background:#e6ece2;color:#2f3b2f}
+  .verdict.vert b{color:#1f2a1f}
+
+  .acquis{max-width:430px;margin:26px auto 0;padding:16px 18px;border-radius:14px;
+          background:var(--papier);font-size:14.5px;line-height:1.6}
+  .acquis > b:first-child{display:block;margin-bottom:10px;font-size:15.5px}
+  .acquis ul{margin:0;padding-left:20px}
+  .acquis li{margin-top:7px}
+
+  .question{max-width:430px;margin:26px auto 0;padding:16px 18px;border-radius:14px;
+            background:#1c1c1a;color:#e9e5dc;font-size:15px;line-height:1.6}
+  .question > b:first-child{display:block;margin-bottom:10px;font-size:16px;color:#fff}
+  .question .choix{margin-top:12px;padding-top:12px;border-top:1px solid rgba(233,229,220,.18)}
+  .question .choix div{display:flex;align-items:baseline;gap:10px;margin-top:8px}
+  .question .choix .mot{flex-shrink:0;width:26px;font-weight:700;color:var(--or)}
+</style>
+</head>
+<body>
+
+<div class="bandeau">
+  <b>Ta demande :</b> « je veux bien que tu me codes le Face ID pour le mot de
+  passe, et <b>bien entendu qu'il faut conserver le mot de passe</b>. L'utilisateur
+  va commencer par créer son compte avec son mot de passe et ensuite il décidera
+  s'il veut ouvrir sa session avec le mot de passe ou le Face ID. »<br><br>
+  <b>Rien n'est codé.</b> Deux façons de poser le geste sur la porte —
+  <b>touche-les, elles répondent</b>. Puis l'endroit où on l'allume, et ce qui se
+  passe le jour où ça rate.
+</div>
+
+<!-- ═══ A ═══════════════════════════════════════════════════════════ -->
+<div class="bloc">
+  <h2>A — le visage d'abord</h2>
+  <p>Face ID prend la place du bouton. <b>Un doigt, tu es dedans</b> — pas de
+     clavier, pas d'adresse à taper. Le mot de passe descend en une ligne
+     dessous, toujours là.</p>
+  <p>Ce que ça coûte : sur un téléphone où Face ID n'a jamais été allumé, le
+     grand bouton ne sert à rien et il occupe le haut de l'écran.</p>
+</div>
+<div class="porte" data-porte="A">
+  <div class="sceau">✦</div>
+  <span class="marque">ATLAS</span>
+
+  <div data-vue="visage">
+    <button class="visage" data-face="A">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M3 8V5a2 2 0 0 1 2-2h3M16 3h3a2 2 0 0 1 2 2v3M21 16v3a2 2 0 0 1-2 2h-3M8 21H5a2 2 0 0 1-2-2v-3"/><path d="M9 10v1.5M15 10v1.5M12 10v3.2h-1M9 15.6c1.6 1.2 4.4 1.2 6 0"/></svg>
+      Ouvrir avec Face ID
+    </button>
+    <p class="ou">ou <button class="lien" data-mdp="A">entrer avec mon mot de passe</button></p>
+  </div>
+
+  <div data-vue="mdp" class="cache">
+    <span class="etiq">Adresse</span>
+    <input class="champ" type="email" autocomplete="off" value="florian@edennature.fr">
+    <span class="etiq">Mot de passe</span>
+    <input class="champ" type="password" autocomplete="off" value="">
+    <p class="refus" data-refus="A"></p>
+    <button class="entrer" data-entrer="A">Entrer</button>
+    <p class="ou"><button class="lien" data-retour="A">← revenir à Face ID</button></p>
+  </div>
+
+  <div data-vue="dedans" class="cache">
+    <p style="margin:0;font:400 22px/1.3 ui-serif,Georgia,serif">Bonjour Florian</p>
+    <p style="margin:8px 0 16px;font-size:14px;color:var(--gris)">Vous êtes dans Atlas.</p>
+    <button class="lien" data-recommencer="A">recommencer la planche</button>
+  </div>
+</div>
+
+<!-- ═══ B ═══════════════════════════════════════════════════════════ -->
+<div class="bloc">
+  <h2>B — l'écran d'aujourd'hui, plus une ligne</h2>
+  <p>La porte ne bouge pas : l'adresse, le mot de passe, « Entrer ». <b>Face ID
+     s'ajoute au-dessus</b>, dans un encadré discret. Rien de ce que tu connais ne
+     change de place.</p>
+  <p>Ce que ça coûte : le geste rapide est moins évident — il faut le voir avant
+     de descendre au clavier.</p>
+</div>
+<div class="porte" data-porte="B">
+  <div class="sceau">✦</div>
+  <span class="marque">ATLAS</span>
+
+  <div data-vue="tout">
+    <button class="ligne-visage" data-face="B">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M3 8V5a2 2 0 0 1 2-2h3M16 3h3a2 2 0 0 1 2 2v3M21 16v3a2 2 0 0 1-2 2h-3M8 21H5a2 2 0 0 1-2-2v-3"/><path d="M9 10v1.5M15 10v1.5M12 10v3.2h-1M9 15.6c1.6 1.2 4.4 1.2 6 0"/></svg>
+      Ouvrir avec Face ID
+    </button>
+    <span class="etiq">Adresse</span>
+    <input class="champ" type="email" autocomplete="off" value="florian@edennature.fr">
+    <span class="etiq">Mot de passe</span>
+    <input class="champ" type="password" autocomplete="off" value="">
+    <p class="refus" data-refus="B"></p>
+    <button class="entrer" data-entrer="B">Entrer</button>
+  </div>
+
+  <div data-vue="dedans" class="cache">
+    <p style="margin:0;font:400 22px/1.3 ui-serif,Georgia,serif">Bonjour Florian</p>
+    <p style="margin:8px 0 16px;font-size:14px;color:var(--gris)">Vous êtes dans Atlas.</p>
+    <button class="lien" data-recommencer="B">recommencer la planche</button>
+  </div>
+</div>
+
+<!-- ═══ L'ÉCHEC ═════════════════════════════════════════════════════ -->
+<div class="bloc">
+  <h2>Le jour où ça ne marche pas</h2>
+  <p>Un visage pas reconnu, un téléphone neuf, une tablette empruntée, une
+     batterie changée : <b>Face ID ne suit pas</b>. C'est le cas normal, pas
+     l'exception — et c'est pour ça que le mot de passe reste.</p>
+  <p><b>Essaie :</b> ci-dessous, le visage est réglé pour échouer. Touche-le sur
+     l'une ou l'autre des deux portes.</p>
+</div>
+<div class="carte">
+  <div class="rang">
+    <div class="texte">
+      <div class="nom">Faire échouer Face ID</div>
+      <div class="sous">Les deux portes ci-dessus refuseront le visage, et te
+        renverront au mot de passe. Rien d'autre ne change.</div>
+    </div>
+    <button class="inter" data-echec aria-pressed="false"><span class="pastille"></span></button>
+  </div>
+</div>
+<div class="verdict"><b>Ce qui doit se produire, et c'est le cœur de la
+  proposition :</b> l'échec ne bloque rien, ne compte aucune tentative, n'accuse
+  personne. Il ramène au mot de passe, <b>avec l'adresse déjà remplie</b>. Sur A,
+  le clavier s'ouvre tout seul.</div>
+
+<!-- ═══ L'ACTIVATION ════════════════════════════════════════════════ -->
+<div class="bloc">
+  <h2>Où on l'allume — Réglages › Connexion</h2>
+  <p><b>Le compte se crée toujours au mot de passe</b>, comme tu l'as dit. Face ID
+     ne s'allume qu'ensuite, ici, et téléphone par téléphone.</p>
+</div>
+<div class="carte">
+  <p class="chapeau">Connexion</p>
+  <div class="rang">
+    <div class="texte">
+      <div class="nom">Ouvrir avec Face ID</div>
+      <div class="sous" data-sous-face>Sur <b>cet appareil</b> seulement. Votre visage
+        ne quitte jamais votre téléphone : Atlas ne reçoit qu'une preuve, jamais
+        une image.</div>
+    </div>
+    <button class="inter" data-faceid aria-pressed="true"><span class="pastille"></span></button>
+  </div>
+  <div class="rang">
+    <div class="texte">
+      <div class="nom">Mot de passe</div>
+      <div class="sous">Toujours actif. <b>Il ne peut pas se retirer</b> — c'est ce
+        qui vous fait entrer sur un téléphone neuf.</div>
+    </div>
+    <button class="inter" data-mdp-toujours aria-pressed="true" disabled style="opacity:.55;cursor:default"><span class="pastille"></span></button>
+  </div>
+</div>
+<div class="verdict" data-verdict-activation>Touche l'interrupteur : la porte du
+  haut change dans la foulée.</div>
+
+<!-- ═══ CE QUI EST DÉJÀ TRANCHÉ ═════════════════════════════════════ -->
+<div class="acquis">
+  <b>Ce que je ne te demande pas — c'est décidé</b>
+  <ul>
+    <li><b>Le mot de passe reste, toujours.</b> Il ne se désactive pas. Face ID
+      est une porte de plus, jamais une porte à la place.</li>
+    <li><b>Le compte se crée au mot de passe.</b> Face ID s'allume après, depuis
+      les Réglages, sur un téléphone déjà connecté.</li>
+    <li><b>C'est par appareil.</b> Allumé sur ton iPhone, il ne l'est pas sur
+      l'iPad — chacun s'allume une fois. Ce n'est pas un défaut : c'est ce qui
+      fait que personne ne peut entrer avec ton visage depuis ailleurs.</li>
+    <li><b>Ça marche aussi ailleurs qu'Apple.</b> Le même geste ouvre l'empreinte
+      sur Android et Windows Hello sur un ordinateur. On l'appelle « Face ID »
+      parce que c'est ce que tu as sous les yeux.</li>
+    <li><b>Un échec ne compte pas comme une tentative ratée.</b> Il ne peut pas
+      te faire temporiser ton propre compte.</li>
+  </ul>
+</div>
+
+<!-- ═══ LA QUESTION ═════════════════════════════════════════════════ -->
+<div class="question">
+  <b>La seule chose que j'attends de toi</b>
+  A ou B ? C'est la place du geste sur la porte, et rien d'autre — tout le reste
+  est identique dans les deux.
+  <div class="choix">
+    <div><span class="mot">A</span><span>le visage d'abord, le mot de passe en
+      dessous. Le geste rapide saute aux yeux.</span></div>
+    <div><span class="mot">B</span><span>ta porte d'aujourd'hui, plus une ligne
+      au-dessus. Rien ne change de place.</span></div>
+  </div>
+</div>
+
+<!-- ═══ La fenêtre d'iOS, dessinée ══════════════════════════════════ -->
+<div class="systeme" data-systeme>
+  <div>
+    <div class="sheet">
+      <div class="face" data-face-dessin>
+        <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M3 8V5a2 2 0 0 1 2-2h3M16 3h3a2 2 0 0 1 2 2v3M21 16v3a2 2 0 0 1-2 2h-3M8 21H5a2 2 0 0 1-2-2v-3"/><path d="M9 10v1.5M15 10v1.5M12 10v3.2h-1M9 15.6c1.6 1.2 4.4 1.2 6 0"/></svg>
+      </div>
+      <div class="titre" data-sheet-titre>Face ID</div>
+      <div class="sous" data-sheet-sous>Se connecter à Atlas</div>
+      <div class="barres">
+        <button data-annuler>Annuler</button>
+        <button data-regarder>Regarder</button>
+      </div>
+    </div>
+    <p class="avert">Ceci est un <b>dessin</b>. Sur ton téléphone, c'est la
+      fenêtre d'iOS qui s'affiche — la même que pour payer.</p>
+  </div>
+</div>
+
+<script>
+/*
+  AUCUNE VRAIE AUTHENTIFICATION ICI. La planche joue l'enchaînement, elle ne
+  demande rien au téléphone : appeler `navigator.credentials` sur une page de
+  maquette ferait naître une vraie clé sur son appareil, pour un domaine qui
+  n'est pas celui d'Atlas. On ne pose pas de clé chez lui pour une image.
+*/
+const systeme = document.querySelector('[data-systeme]');
+const sheetTitre = document.querySelector('[data-sheet-titre]');
+const sheetSous  = document.querySelector('[data-sheet-sous]');
+const faceDessin = document.querySelector('[data-face-dessin]');
+let enAttente = null;   // { porte } — quelle porte a ouvert la fenêtre
+let faceAllume = true;  // l'interrupteur des Réglages — la planche s'ouvre allumé
+                        // pour qu'il puisse essayer A et B tout de suite.
+let faceEchoue = false; // l'interrupteur « faire échouer »
+
+function porte(nom){ return document.querySelector(`[data-porte="${nom}"]`); }
+function vue(nom, quelle){
+  const p = porte(nom);
+  p.querySelectorAll('[data-vue]').forEach(v => {
+    v.classList.toggle('cache', v.dataset.vue !== quelle);
+  });
+}
+
+/* ── La fenêtre système ───────────────────────────────────────────── */
+function ouvrirSysteme(nom){
+  enAttente = nom;
+  sheetTitre.textContent = 'Face ID';
+  sheetSous.textContent = 'Se connecter à Atlas';
+  faceDessin.style.borderColor = '#111';
+  faceDessin.style.color = '#111';
+  systeme.classList.add('ouverte');
+}
+function fermerSysteme(){ systeme.classList.remove('ouverte'); enAttente = null; }
+
+document.querySelector('[data-annuler]').addEventListener('click', () => {
+  const nom = enAttente; fermerSysteme(); if (nom) versMotDePasse(nom, '');
+});
+
+document.querySelector('[data-regarder]').addEventListener('click', () => {
+  const nom = enAttente;
+  if (!nom) return;
+  if (faceEchoue){
+    // On montre le refus DANS la fenêtre, comme iOS le fait, avant de rendre
+    // la main : sinon on croit avoir touché à côté.
+    sheetTitre.textContent = 'Face ID non reconnu';
+    sheetSous.textContent = 'Réessayez ou utilisez votre mot de passe';
+    faceDessin.style.borderColor = '#b3261e';
+    faceDessin.style.color = '#b3261e';
+    setTimeout(() => {
+      fermerSysteme();
+      versMotDePasse(nom, 'Face ID n’a pas reconnu votre visage. Entrez votre mot de passe.');
+    }, 900);
+    return;
+  }
+  fermerSysteme();
+  vue(nom, 'dedans');
+});
+
+/* ── Le retour au mot de passe, après un refus ou une annulation ──── */
+function versMotDePasse(nom, message){
+  const p = porte(nom);
+  if (nom === 'A') vue('A', 'mdp');
+  p.querySelector(`[data-refus="${nom}"]`).textContent = message;
+  const mdp = [...p.querySelectorAll('.champ')].find(c => c.type === 'password');
+  // L'adresse reste remplie : la retaper sur un téléphone pour un visage mal
+  // reconnu serait une double peine.
+  if (mdp) mdp.focus({ preventScroll: true });
+}
+
+/* ── Les deux portes ──────────────────────────────────────────────── */
+for (const nom of ['A','B']){
+  const p = porte(nom);
+  p.querySelector(`[data-face="${nom}"]`).addEventListener('click', () => ouvrirSysteme(nom));
+  p.querySelector(`[data-entrer="${nom}"]`).addEventListener('click', () => {
+    const mdp = [...p.querySelectorAll('.champ')].find(c => c.type === 'password');
+    if (!mdp.value){
+      p.querySelector(`[data-refus="${nom}"]`).textContent = 'Entrez votre mot de passe.';
+      mdp.focus({ preventScroll: true });
+      return;
+    }
+    vue(nom, 'dedans');
+  });
+  p.querySelector(`[data-recommencer="${nom}"]`).addEventListener('click', () => {
+    const mdp = [...p.querySelectorAll('.champ')].find(c => c.type === 'password');
+    if (mdp) mdp.value = '';
+    p.querySelector(`[data-refus="${nom}"]`).textContent = '';
+    appliquerAllumage();
+  });
+}
+porte('A').querySelector('[data-mdp="A"]').addEventListener('click', () => vue('A','mdp'));
+porte('A').querySelector('[data-retour="A"]').addEventListener('click', () => vue('A','visage'));
+
+/* ── Les interrupteurs ────────────────────────────────────────────── */
+const interFace = document.querySelector('[data-faceid]');
+const interEchec = document.querySelector('[data-echec]');
+const verdict = document.querySelector('[data-verdict-activation]');
+
+function appliquerAllumage(){
+  // Éteint, Face ID n'apparaît NULLE PART : proposer un geste qui ne peut pas
+  // aboutir est pire que ne rien proposer. C'est aussi l'état de tout compte
+  // neuf — la porte redevient exactement celle d'aujourd'hui.
+  vue('A', faceAllume ? 'visage' : 'mdp');
+  vue('B', 'tout');
+  porte('B').querySelector('[data-face="B"]').style.display = faceAllume ? '' : 'none';
+  porte('A').querySelector('[data-retour="A"]').style.display = faceAllume ? '' : 'none';
+  verdict.innerHTML = faceAllume
+    ? '<b>Allumé</b> — c\u2019est ce que la planche te montre en haut. Le mot de passe reste joignable sur les deux portes : c\u2019est la règle, pas une option. <b>Éteins-le</b> pour voir ce que voit un compte neuf.'
+    : '<b>Éteint — l\u2019état de tout compte neuf.</b> Les deux portes du haut sont redevenues <b>exactement</b> l\u2019écran que tu connais aujourd\u2019hui : rien n\u2019a bougé tant qu\u2019on ne l\u2019allume pas.';
+}
+
+interFace.addEventListener('click', () => {
+  faceAllume = !faceAllume;
+  interFace.setAttribute('aria-pressed', String(faceAllume));
+  appliquerAllumage();
+});
+interEchec.addEventListener('click', () => {
+  faceEchoue = !faceEchoue;
+  interEchec.setAttribute('aria-pressed', String(faceEchoue));
+});
+
+appliquerAllumage();
+</script>
+</body>
+</html>
