@@ -179,7 +179,7 @@ function buseALaPression(b){
   return corrigee;
 }
 
-function modelePour(type, plusPetitCote, dims){
+function modelePour(type, plusPetitCote, dims, refImposee){
   var marque = marqueCourante();
 
   // **Les buses sont ramenées à la pression du chantier AVANT tout choix.**
@@ -196,7 +196,14 @@ function modelePour(type, plusPetitCote, dims){
     .sort(function(x, y){ return y.rayon - x.rayon; });
   if (buses.length){
     var b = null;
-    if (dims && dims.L > 0 && dims.l > 0){
+    // **Une buse peut être IMPOSÉE** — c'est ainsi que `poser()` essaie les
+    // autres avant de trancher (23 août 2026). Sans cela, il faudrait recopier
+    // ici le pavage, le quinconce et le calcul de débit, c'est-à-dire écrire une
+    // seconde façon de poser des arroseurs (`CLAUDE.md` §3).
+    if (refImposee){
+      for (var k = 0; k < buses.length; k++) if (buses[k].ref === refImposee) b = buses[k];
+    }
+    if (!b && dims && dims.L > 0 && dims.l > 0){
       // De la plus grande portée à la plus petite : la première qui pave les
       // deux côtés selon sa règle est la bonne — c'est le moins d'arroseurs
       // possible SANS enfreindre l'écart minimum.
@@ -228,6 +235,13 @@ function modelePour(type, plusPetitCote, dims){
         famille: 'Arroseurs'
       },
       emprunte: false,
+      // Les autres buses de cette marque qui PAVENT la zone, du plus grand
+      // rayon au plus petit. C'est le champ des possibles que `poser()` explore.
+      candidates: (dims && dims.L > 0 && dims.l > 0)
+        ? buses.filter(function(x){
+            return paveSelonSaRegle(dims.L, x.rayon) && paveSelonSaRegle(dims.l, x.rayon);
+          }).map(function(x){ return x.ref; })
+        : [],
       // Corps de CETTE marque, pas tous marques confondues : Rain Bird peut
       // être complet pendant que Toro n'a encore aucun corps.
       sansCorps: CATALOGUE.corps.filter(function(c){ return c.marqueCle === marque; }).length === 0
@@ -778,14 +792,14 @@ function couvreTout(points, portee, L, l){
   return true;
 }
 
-function poser(z){
+function poser(z, refImposee){
   var petitCote = Math.min(Number(z.L)||0, Number(z.l)||0);
   var dims = { L: Number(z.L)||0, l: Number(z.l)||0 };
   var cle = materielDe(z), choix;
   if (cle === 'gaine'){
     choix = { m: CATALOGUE.gaines[0], emprunte: CATALOGUE.gaines[0].marqueCle === 'generique' };
   } else {
-    choix = modelePour(cle, petitCote || null, dims);
+    choix = modelePour(cle, petitCote || null, dims, refImposee);
     // Si le type retenu d'office ne donne aucune pose valable, on essaie
     // l'autre AVANT de rendre une alerte : une turbine qui ne tient pas sur une
     // petite zone n'est pas une fatalité, c'est une tuyère.
@@ -854,6 +868,18 @@ function poser(z){
         var ex2 = L / (ax - 1), ey2 = l / (ay - 1);
         var damier = pointsDeLaPose(ax, ay, ex2, ey2, true);
         if (damier.length >= alignes.length) break;      // plus rien à gagner
+        // **ON NE RESSERRE PAS SOUS LA PORTÉE — sa règle du 17 août :** *« jamais
+        // moins que la portée »*. La boucle resserrait tant que le damier ne
+        // couvrait pas, sans plancher : sur un 12 × 12 en 3504 buse 0,75, elle
+        // finissait à 4 m d'écart pour une portée de 5,14.
+        //
+        // **Ce que cela coûtait, et qu'il a vu le 23 août** (« cinq réseaux pour
+        // ça ??????? ») : la pose sortait marquée « trop serrée », donc écartée
+        // au moment de comparer les buses — et c'est précisément celle qui
+        // tenait sur UNE vanne. Le tour de vis de trop disqualifiait la bonne
+        // réponse. Quand le damier ne couvre pas en respectant l'écart, on
+        // garde la grille ALIGNÉE, qui couvre par construction.
+        if (ex2 < m.portee - 0.01 || ey2 < m.portee - 0.01) break;
         if (couvreTout(damier, m.portee, L, l)){
           essai = { pts: damier, nx: ax, ny: ay, ecartX: ex2, ecartY: ey2 };
           break;
@@ -891,6 +917,45 @@ function poser(z){
       pt.debit = pt.zone === 'coin' ? q : (pt.zone === 'bord' ? d : m.debit360);
     });
     r.sansCorps = choix.sansCorps;
+
+    // ── LE MOINS DE VANNES D'ABORD, LE MOINS D'ARROSEURS ENSUITE ──────────
+    //
+    // **Sa colère du 23 août 2026 : « cinq réseaux pour ça ??????? »** — sur un
+    // jardin de 12 × 12 et 8 × 8. Il avait raison, et le critère était à
+    // l'envers.
+    //
+    // `modelePour` prenait LA PLUS GRANDE buse qui pave : le moins d'arroseurs
+    // possible. Mais une grosse buse boit beaucoup. Sur son 12 × 12, quatre
+    // 5000 Plus buse 3,0 demandaient 2,79 m³/h — soit TROIS vannes à elles
+    // seules, quand une voie n'en passe que 1,53. Les mêmes 144 m² en 3504
+    // buse 0,75 tiennent sur UNE vanne : neuf arroseurs, mais neuf arroseurs se
+    // posent une fois, alors qu'une vanne coûte une électrovanne, une station
+    // de programmateur, sa tranchée et son créneau d'arrosage.
+    //
+    // **On mesure donc chaque buse au lieu de la supposer.** C'est pour cela
+    // que la boucle rappelle `poser()` plutôt que de recalculer un pavage :
+    // deux façons de poser des arroseurs finiraient par diverger
+    // (`CLAUDE.md` §3). L'appel récursif porte une buse imposée, donc il ne
+    // rappelle pas cette boucle — la profondeur est de un.
+    if (!refImposee && choix.candidates && choix.candidates.length > 1){
+      var plafond = limiteParVoie();
+      var vannesDe = function(debit){
+        return plafond > 0 ? Math.ceil((debit - 1e-9) / plafond) : 1;
+      };
+      var meilleur = { r: r, vannes: vannesDe(r.debit), nombre: r.nombre };
+      choix.candidates.forEach(function(ref){
+        if (m && ref === m.ref) return;
+        var autre = poser(z, ref);
+        if (!autre.m || !(autre.debit > 0) || autre.tropSerre) return;
+        var v = vannesDe(autre.debit);
+        // À nombre de vannes égal, le moins d'arroseurs — c'est l'ancien
+        // critère, qui redevient le départage et non plus la règle.
+        if (v < meilleur.vannes || (v === meilleur.vannes && autre.nombre < meilleur.nombre)){
+          meilleur = { r: autre, vannes: v, nombre: autre.nombre };
+        }
+      });
+      if (meilleur.r !== r) return meilleur.r;
+    }
   } else if (TYPES[z.type].forme === 'nappe') {
     // Des lignes parallèles dans la largeur, à l'écart qu'il a donné. La
     // première et la dernière longent les bords : d'où le « + 1 ».
@@ -984,6 +1049,16 @@ function saisonCourante(){
    sur une pression que rien ne garantit. */
 var PLANCHER_UTILE = 0.5;   // bar : sous ce reste, on ne raffine plus, on alerte
 
+/* Ce qu'une seule voie peut porter, en m³/h : le plus petit de la source et du
+   tuyau. **Sortie en fonction le 23 août 2026** parce que le CHOIX DE LA BUSE en
+   a besoin lui aussi — et deux façons de calculer la même limite finiraient par
+   choisir une buse pour un plafond que le découpage n'applique pas. */
+function limiteParVoie(){
+  var duTuyau = debitMaxDe(CATALOGUE.tuyaux.pe25.dInterieur);
+  var deLaSource = debitDisponible() * MARGE;
+  return duTuyau > 0 ? Math.min(deLaSource, duTuyau) : deLaSource;
+}
+
 function decouper(){
   // **La passe 1 part TOUJOURS de la source**, sinon un appel précédent
   // laisserait sa pression derrière lui et deux plans identiques
@@ -1031,7 +1106,7 @@ function decouperUneFois(){
   var dispo = debitDisponible();
   var duTuyau = debitMaxDe(CATALOGUE.tuyaux.pe25.dInterieur);
   var deLaSource = dispo * MARGE;
-  var limite = duTuyau > 0 ? Math.min(deLaSource, duTuyau) : deLaSource;
+  var limite = limiteParVoie();
   var groupes = {}, ordre = [];
   etat.zones.forEach(function(z){
     var p = poser(z);

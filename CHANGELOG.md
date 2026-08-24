@@ -232,6 +232,30 @@ touche (64 px), la page s'ouvre, les boutons répondent. Trois fois une adresse
 lui a été transmise sans que personne ne l'ait ouverte, et trois fois c'est lui
 qui a trouvé le défaut.
 
+### Cinq réseaux pour 208 m² : le critère de choix des buses était à l'envers
+
+*« Cinq réseaux pour ça ??????? »*, devant un plan de 12 × 12 et 8 × 8.
+
+**On prenait la plus GRANDE buse qui pave** — le moins d'arroseurs possible. Mais
+une grosse buse boit : son carré de 12 m partait en quatre 5000 Plus à
+2,79 m³/h, soit **trois vannes à lui seul** quand une voie n'en passe que 1,53.
+Les mêmes 144 m² en 3504 buse 0,75 tiennent sur **une** vanne.
+
+Le critère est retourné : **le moins de vannes d'abord, le moins d'arroseurs
+ensuite**. Neuf arroseurs se posent une fois ; une vanne coûte une électrovanne,
+une station de programmateur, sa tranchée et son créneau d'arrosage.
+
+**Le vrai fond du défaut était ailleurs**, et plus vicieux : le quinconce
+resserrait les arroseurs tant que le damier ne couvrait pas, **sans plancher** —
+jusqu'à 4 m d'écart pour une portée de 5,14. La pose sortait « trop serrée »,
+donc écartée à la comparaison : la seule buse qui tenait sur une vanne était
+disqualifiée par un tour de vis qui enfreignait déjà sa règle du 17 août,
+*« jamais moins que la portée »*. Le damier ne se resserre plus sous la portée.
+
+**Son jardin passe de cinq réseaux à deux**, et le carré de 12 m reçoit les
+neuf 3504 buse 0,75 qu'il avait dessinés à la main le 21 août.
+
+Détail : `ARCHITECTURE.md` §166.
 ### Son message au client s'écrit — un seul, pour ses trois documents
 
 *« Y a-t-il un endroit dans les réglages où l'utilisateur peut rédiger ce
