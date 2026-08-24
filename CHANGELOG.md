@@ -158,7 +158,42 @@ PDF embarque.
 
 ## 2026-08-23
 
-### Planche 92 — un blanc à reflets bleutés, quatre allures qui s'essaient
+### Planche 92 — un blanc à reflets bleutés, neuf écrans qui s'essaient
+
+**Trois demandes en une soirée, et chacune a corrigé la précédente.**
+
+| Ce qu'il a dit | Ce que ça a changé |
+|---|---|
+| *« un fond blanc avec des reflets bleutés un peu »* | la planche |
+| *« j'ai que le visuel de Brume »* | **trois bleus distincts**, pas un seul en trois habits |
+| *« des maquettes pour chaque page, que je voie comment ça va rendre »* | **neuf écrans**, la barre du bas fonctionne |
+
+**Ce que la demande mélangeait, et que la planche sépare :** la **couleur** tient
+dans les huit valeurs de `chartes.ts` sans toucher un écran ; l'**allure** —
+typographie, rayons, ombre, air — les touche tous. Deux réglages indépendants,
+douze combinaisons, sur chacun des neuf écrans.
+
+**Pourquoi neuf et pas cinquante-sept.** Ce qu'il faut éprouver n'est pas le
+nombre d'écrans mais **les formes de contenu qui cassent une allure** : le
+planning (42 cases, deux barres par jour) et le devis (tableau de lignes et
+totaux) sont là pour ça. Une allure qui tient sur trois cartes de chantier ne
+prouve rien.
+
+**DEUX DÉFAUTS SORTIS D'UNE CAPTURE, JAMAIS D'UN TEST** — les cinquième et
+sixième de ce dépôt :
+
+1. la **barre du bas** gardait le crème d'Origine sur les allures bleutées. Un
+   jeton composé (`--barre-fond:var(--fond)`) déclaré sur `:root` est substitué
+   **là où il est déclaré**, pas là où il est lu ;
+2. le **panneau de réglages masquait le titre** de l'écran quand on changeait de
+   page — on jugeait donc une allure sans voir son en-tête, ce qui est
+   exactement ce qu'on lui demandait de juger.
+
+Les deux sont désormais tenus par le parcours navigateur, qui **refuse aussi de
+conclure sur un titre de hauteur nulle** : l'absence de matière à mesurer n'est
+pas un succès.
+
+### La première version de cette planche — trois habits pour un seul bleu
 
 Sa demande, capture de « Apparence » à l'appui : *« crée-moi une version de
 l'appli plus stylée dans le style des applis d'aujourd'hui, avec un fond blanc

@@ -9,14 +9,18 @@
 <style>
   /*
     ————————————————————————————————————————————————————————————————
-    UN BLANC À REFLETS BLEUTÉS — maquette ESSAYABLE
+    UN BLANC À REFLETS BLEUTÉS — maquette ESSAYABLE, NEUF ÉCRANS
     ————————————————————————————————————————————————————————————————
 
     Sa demande du 23 août 2026, capture de « Apparence » à l'appui :
 
       « Crée-moi une version de l'appli plus stylée dans le style des applis
-        d'aujourd'hui, avec un fond blanc avec des reflets bleutés un peu.
-        Propose avant de coder quoi que ce soit. »
+        d'aujourd'hui, avec un fond blanc avec des reflets bleutés un peu. »
+
+    Puis, devant la première planche : *« j'ai que le visuel de Brume »* — les
+    trois propositions portaient le même bleu, seules les formes changeaient.
+    Puis, enfin : *« crée-moi des maquettes dynamiques pour chaque page, que je
+    voie comment ça va rendre. Code rien. »*
 
     Rien dans `src/` tant qu'il n'a pas choisi — `CLAUDE.md` §3 bis. Et la
     planche vit dans `appli/`, pas dans `docs/maquettes/` : c'est le seul
@@ -24,64 +28,73 @@
     puisse ouvrir depuis son téléphone.
 
     ————————————————————————————————————————————————————————————————
-    SA CORRECTION, LE SOIR MÊME : « J'AI QUE LE VISUEL DE BRUME »
+    NEUF ÉCRANS, ET POURQUOI CEUX-LÀ
     ————————————————————————————————————————————————————————————————
 
-    La première version proposait A, B et C — et les trois portaient **le même
-    bleu**. Seules les formes changeaient. Trois boutons, un seul visuel : il
-    l'a vu tout de suite, et il avait raison. Un choix qui n'en est pas un fait
-    perdre le temps qu'on croyait faire gagner.
+    L'application en porte **cinquante-sept**. Les dessiner tous produirait une
+    planche que personne ne parcourt jusqu'au bout — et surtout, cinquante-sept
+    variations du même problème. Ce qu'il faut éprouver, ce n'est pas le nombre
+    d'écrans : c'est **les formes de contenu** qui peuvent casser une allure.
 
-    **D'où deux réglages SÉPARÉS, à croiser librement**, parce que ce sont deux
-    décisions indépendantes et qu'elles n'ont ni le même coût ni le même risque :
+    | L'écran | Ce qu'il met à l'épreuve |
+    |---|---|
+    | Chantiers | la liste ordinaire — le cas courant |
+    | Un chantier | des actions empilées, un titre long |
+    | Planning | **une grille dense** : 42 cases, deux barres par jour |
+    | Terminés | des montants alignés, un feuilletage par mois |
+    | Un devis | **un tableau de lignes et des totaux** — le plus dense |
+    | Relevé de TVA | des chiffres en colonnes, rien d'autre |
+    | Nouveau chantier | des champs, un gros bouton de dictée |
+    | Paysage | des cartes d'outils, sans données |
+    | Réglages · Apparence | sa capture — les vignettes de charte |
+
+    **Une allure qui tient sur une liste peut se défaire sur une grille.** Le
+    planning et le devis sont là pour ça : c'est sur eux que « Verre » se juge,
+    pas sur trois cartes de chantier.
+
+    ————————————————————————————————————————————————————————————————
+    DEUX RÉGLAGES SÉPARÉS, À CROISER
+    ————————————————————————————————————————————————————————————————
 
       · **LA COULEUR** (trois bleus, plus le gris-vert d'aujourd'hui). Elle tient
         entièrement dans le système de chartes qui existe déjà
         (`src/lib/chartes.ts`) : huit valeurs entrent, tout le reste se déduit.
         **Aucun écran n'est touché** ;
-      · **L'ALLURE** (celle d'aujourd'hui, moderne, ou verre). Là, ce n'est plus
-        une couleur : c'est la typographie — son Georgia serif contre un
-        sans-serif —, les rayons, l'ombre, l'air. **Cela touche tous les écrans.**
+      · **L'ALLURE** (celle d'aujourd'hui, moderne, ou verre). Typographie,
+        rayons, ombre, air. **Cela touche tous les écrans.**
 
-    Douze combinaisons, toutes vivantes. **Appuyez sur les boutons** : l'écran
-    change pour de bon, ce n'est pas une image.
+    Douze combinaisons × neuf écrans, toutes vivantes. **La barre du bas
+    fonctionne** — c'est par elle qu'on passe d'un écran à l'autre, comme dans
+    l'application.
 
     ————————————————————————————————————————————————————————————————
     CE QUI EST DÉLIBÉRÉMENT GARDÉ, DANS TOUTES
     ————————————————————————————————————————————————————————————————
 
       · **44 px de haut au moins** sur tout ce qui se touche. C'est un pouce,
-        sur un chantier, parfois avec des gants. Aucune mode ne rachète un
-        bouton qu'on rate ;
-      · **l'or reste un signe, jamais une décoration** : il dit « à faire ».
-        Une couleur qui parle à tort s'apprend à être ignorée ;
-      · **les montants restent alignés à droite**, en chiffres tabulaires. On
-        les compare d'un coup d'œil ou on ne les compare pas ;
-      · **le texte principal reste très contrasté.** Un blanc bleuté très pâle
-        invite à écrire en gris clair — et cet écran se lit dehors, en plein
-        soleil.
+        sur un chantier, parfois avec des gants ;
+      · **l'or reste un signe, jamais une décoration** : il dit « à faire » ;
+      · **les montants restent alignés à droite**, en chiffres tabulaires ;
+      · **le texte principal reste très contrasté** — cet écran se lit dehors.
 
     ————————————————————————————————————————————————————————————————
-    CE QUE CETTE PLANCHE NE PROUVE PAS
+    CE QUE CETTE PLANCHE NE PROUVE TOUJOURS PAS
     ————————————————————————————————————————————————————————————————
 
-    Elle montre UN écran — « Chantiers » — et un morceau d'« Apparence ».
-    L'application en porte une trentaine. Une allure qui tient ici peut se
-    défaire sur un tableau de TVA ou un plan d'arrosage, et c'est au moment de
-    coder qu'on le découvrirait. *Une règle éprouvée sur un seul cas n'est pas
-    une règle éprouvée.*
+    Les données sont celles du jeu de démonstration, pas les siennes. Un nom de
+    client à rallonge, une adresse sur deux lignes, un devis à trente lignes :
+    ces cas-là ne sont pas ici, et ce sont eux qui cassent une mise en page.
+    *Une règle éprouvée sur un seul cas n'est pas une règle éprouvée.*
   */
 
   /* ═══════════════════════════════════════════════════════════════
-     LA COULEUR — quatre chartes
-     ═══════════════════════════════════════════════════════════════
-     Chacune ne pose QUE des couleurs. Aucune ne touche à une forme :
-     c'est ce qui permet de les croiser avec les allures ci-dessous sans
-     que le résultat dépende de l'ordre dans lequel on appuie.
-  */
+     LA COULEUR — quatre chartes. Que des couleurs, aucune forme :
+     c'est ce qui permet de les croiser sans que le résultat dépende
+     de l'ordre dans lequel on appuie.
+     ═══════════════════════════════════════════════════════════════ */
   :root{
-    /* Origine — recopiée du produit, pas dérivée. Une seule valeur qui
-       s'écarterait ferait comparer les bleus à un gris-vert qui n'existe pas. */
+    /* Origine — recopiée du produit, pas dérivée. Une valeur qui s'écarterait
+       ferait comparer les bleus à un gris-vert qui n'existe pas. */
     --fond:#f5f3ee; --plage:#faf9f5; --encre:#1c1c1a; --encre-douce:#4a4a44;
     --gris:#8a8578; --plein:#2f3b2f; --or:#B98B47;
     --ligne:rgba(28,28,26,.12); --ligne-fine:rgba(28,28,26,.07);
@@ -94,10 +107,10 @@
     --ombre:none; --air:26px; --halos:0; --flou:none;
   }
 
-  /* BRUME — le blanc froid. Le fond n'est pas #fff mais #f4f7fb : le blanc pur,
-     sur une dalle de téléphone en plein soleil, éblouit et fait perdre les
-     séparations fines. Le bleu d'action est marine — un bleu clair aurait la
-     valeur d'un lien, et l'on appuierait dessus par erreur. */
+  /* BRUME — le blanc froid. Pas #fff mais #f4f7fb : le blanc pur, sur une dalle
+     de téléphone en plein soleil, éblouit et fait perdre les séparations fines.
+     Le bleu d'action est marine — un bleu clair aurait la valeur d'un lien, et
+     l'on appuierait dessus par erreur. */
   [data-couleur="brume"]{
     --fond:#f4f7fb; --plage:#ffffff; --encre:#111823; --encre-douce:#43505f;
     --gris:#78838f; --plein:#22456d; --or:#B98B47;
@@ -105,9 +118,9 @@
     --halo1:rgba(126,170,224,.30); --halo2:rgba(163,196,236,.26);
   }
 
-  /* ARDOISE — le plus sobre des trois. Le fond tire vers le gris-bleu, l'encre
-     est presque noire, l'accent est un bleu acier éteint. C'est celui qui
-     ressemble le moins à une application grand public, et le plus à un outil. */
+  /* ARDOISE — le plus sobre. Fond gris-bleu, encre presque noire, accent bleu
+     acier éteint. Celui qui ressemble le moins à une application grand public,
+     et le plus à un outil de métier. */
   [data-couleur="ardoise"]{
     --fond:#eceff3; --plage:#f8fafc; --encre:#0f1418; --encre-douce:#3b444d;
     --gris:#6f7883; --plein:#33505f; --or:#B98B47;
@@ -115,12 +128,10 @@
     --halo1:rgba(120,150,175,.24); --halo2:rgba(140,165,185,.20);
   }
 
-  /* AZUR — le plus franc. Blanc quasi pur, accent bleu vif : c'est la couleur
-     des applications qu'on installe aujourd'hui. **C'est aussi le plus risqué
-     des trois**, et pas pour une raison de goût — un bleu vif attire l'œil
-     partout où il se pose, et il finit par concurrencer l'or qui, lui, veut
-     dire « à faire ». Deux couleurs qui réclament l'attention en même temps
-     n'en obtiennent aucune. */
+  /* AZUR — le plus franc, et le plus risqué. Un bleu vif attire l'œil partout
+     où il se pose, et il finit par concurrencer l'or qui, lui, veut dire « à
+     faire ». Deux couleurs qui réclament l'attention en même temps n'en
+     obtiennent aucune. */
   [data-couleur="azur"]{
     --fond:#f7fafd; --plage:#ffffff; --encre:#0b1220; --encre-douce:#3f4a5c;
     --gris:#7b8595; --plein:#1f6feb; --or:#B98B47;
@@ -129,34 +140,26 @@
   }
 
   /* ═══════════════════════════════════════════════════════════════
-     L'ALLURE — trois formes
-     ═══════════════════════════════════════════════════════════════
-     Chacune ne pose QUE des formes. Aucune ne touche à une couleur.
-  */
-
-  /* MODERNE — le serif part, les rayons doublent, une ombre bleutée très basse
-     remplace le trait de contour, et l'air entre les blocs augmente d'un tiers. */
+     L'ALLURE — trois formes. Que des formes, aucune couleur.
+     ═══════════════════════════════════════════════════════════════ */
   [data-forme="moderne"]{
     --titre:var(--sans);
     --rayon:14px; --rayon-carte:20px;
     --ombre:0 1px 2px rgba(17,35,68,.04), 0 8px 24px -12px rgba(17,35,68,.14);
     --air:30px;
   }
-
-  /* VERRE — on va au bout : le fond porte deux halos très larges, les cartes
-     flottent, la barre du bas est dépolie. C'est le plus proche des
-     applications d'aujourd'hui, et le plus cher à tenir sur trente écrans. */
   [data-forme="verre"]{
     --titre:var(--sans);
     --rayon:16px; --rayon-carte:24px;
     --ombre:0 1px 1px rgba(16,38,74,.04), 0 12px 32px -14px rgba(16,38,74,.22);
     --air:32px; --halos:1; --flou:saturate(180%) blur(18px);
   }
-
+</style>
+<style>
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
   body{margin:0;background:#e9e7e1;color:#1c1c1a;
        font:16px/1.55 -apple-system,"Segoe UI",Roboto,sans-serif;
-       padding:30px 0 70px;-webkit-text-size-adjust:100%}
+       padding:28px 0 70px;-webkit-text-size-adjust:100%}
   .page{max-width:470px;margin:0 auto;padding:0 20px}
 
   .sur{margin:0;font-size:9.5px;font-weight:500;letter-spacing:.3em;
@@ -166,13 +169,13 @@
   .chapo{margin:12px 0 0;font-size:14.5px;color:#4a4a44;line-height:1.62}
   .chapo b{color:#1c1c1a}
 
-  /* ── Les deux réglages ───────────────────────────────────────── */
-  .choix{position:sticky;top:0;z-index:20;margin:20px -20px 0;padding:11px 20px 12px;
+  /* ── Les deux réglages, toujours sous la main ────────────────── */
+  .choix{position:sticky;top:0;z-index:20;margin:18px -20px 0;padding:11px 20px 12px;
          background:#e9e7e1e8;backdrop-filter:saturate(180%) blur(12px);
          -webkit-backdrop-filter:saturate(180%) blur(12px)}
   .quoi-regle{margin:0 0 6px;font-size:9px;font-weight:500;letter-spacing:.26em;
               text-transform:uppercase;color:#8a8578}
-  .quoi-regle:not(:first-child){margin-top:11px}
+  .quoi-regle:not(:first-child){margin-top:10px}
   .rangee{display:flex;gap:6px}
   .onglet{flex:1;min-height:46px;border:0;border-radius:12px;background:#faf9f5;
           box-shadow:inset 0 0 0 1px rgba(28,28,26,.12);
@@ -188,36 +191,37 @@
   .onglet[aria-pressed="true"] .pastille{box-shadow:inset 0 0 0 1px rgba(255,255,255,.5)}
 
   /* ── Le téléphone ────────────────────────────────────────────── */
-  .tel{margin:18px 0 0;border-radius:30px;overflow:hidden;background:var(--fond);
+  .tel{margin:16px 0 0;border-radius:30px;overflow:hidden;background:var(--fond);
        box-shadow:0 2px 3px rgba(28,28,26,.07), 0 24px 50px -22px rgba(28,28,26,.4);
        position:relative}
   /* Les halos existent toujours ; c'est leur OPACITÉ que l'allure commande.
-     Les poser ou les retirer en JavaScript aurait fait une seconde définition
-     du look, qui aurait divergé de la feuille de style. */
-  .tel::before{content:"";position:absolute;inset:0;pointer-events:none;
+     Les poser en JavaScript aurait fait une seconde définition du look, qui
+     aurait divergé de la feuille de style (`CLAUDE.md` §3). */
+  .tel::before{content:"";position:absolute;inset:0;pointer-events:none;z-index:0;
     opacity:var(--halos);transition:opacity .18s;
     background:
-      radial-gradient(120% 80% at 12% -8%, var(--halo1) 0%, transparent 60%),
-      radial-gradient(110% 70% at 108% 12%, var(--halo2) 0%, transparent 62%)}
-  .ecran{padding:26px 0 0;min-height:560px;display:flex;flex-direction:column;
+      radial-gradient(120% 60% at 12% -6%, var(--halo1) 0%, transparent 60%),
+      radial-gradient(110% 55% at 108% 10%, var(--halo2) 0%, transparent 62%)}
+  .ecran{padding:24px 0 0;min-height:600px;display:flex;flex-direction:column;
          position:relative;z-index:1}
   .corps{padding:0 22px;flex:1}
+  [data-page]{display:none}
+  [data-page].ouvert{display:flex;flex-direction:column;flex:1}
 
   .oeil{margin:0;font-size:9.5px;font-weight:500;letter-spacing:.3em;
         text-transform:uppercase;color:var(--or)}
-  h2.ecran-titre{margin:9px 0 0;font-family:var(--titre);font-weight:400;font-size:33px;
-                 line-height:1.06;letter-spacing:-.02em;color:var(--encre)}
+  h2.ecran-titre{margin:9px 0 0;font-family:var(--titre);font-weight:400;font-size:31px;
+                 line-height:1.08;letter-spacing:-.02em;color:var(--encre)}
   [data-forme="moderne"] h2.ecran-titre,
-  [data-forme="verre"] h2.ecran-titre{font-weight:640;letter-spacing:-.032em;font-size:32px}
+  [data-forme="verre"] h2.ecran-titre{font-weight:640;letter-spacing:-.032em;font-size:30px}
 
-  .dit{margin:12px 0 0;font-size:13.5px;line-height:1.62;color:var(--encre-douce)}
+  .dit{margin:11px 0 0;font-size:13.5px;line-height:1.62;color:var(--encre-douce)}
   .dit b{color:var(--encre)}
-
-  .famille{margin:var(--air) 0 11px;font-size:9.5px;font-weight:500;letter-spacing:.28em;
+  .famille{margin:var(--air) 0 10px;font-size:9.5px;font-weight:500;letter-spacing:.28em;
            text-transform:uppercase;color:var(--gris)}
 
-  /* ── Une carte de chantier ───────────────────────────────────── */
-  .carte{background:var(--plage);border-radius:var(--rayon-carte);padding:15px 17px;
+  /* ── La carte, pièce commune à presque tous les écrans ───────── */
+  .carte{background:var(--plage);border-radius:var(--rayon-carte);padding:14px 16px;
          margin-bottom:9px;box-shadow:var(--ombre);min-height:64px;
          display:flex;gap:12px;align-items:flex-start}
   /* Le trait de contour n'existe QUE là où il n'y a pas d'ombre : superposés,
@@ -225,12 +229,11 @@
   .tel:not([data-forme="moderne"]):not([data-forme="verre"]) .carte{
     box-shadow:inset 0 0 0 1px var(--ligne)}
   [data-forme="verre"] .carte{box-shadow:var(--ombre), inset 0 0 0 1px rgba(255,255,255,.6)}
-
   .carte .gauche{flex:1;min-width:0}
-  .carte .client{display:block;font-family:var(--titre);font-size:18px;line-height:1.25;
+  .carte .client{display:block;font-family:var(--titre);font-size:17.5px;line-height:1.25;
                  color:var(--encre);letter-spacing:-.01em}
   [data-forme="moderne"] .carte .client,
-  [data-forme="verre"] .carte .client{font-weight:600;font-size:16.5px;letter-spacing:-.012em}
+  [data-forme="verre"] .carte .client{font-weight:600;font-size:16px;letter-spacing:-.012em}
   .carte .ou{display:block;margin-top:4px;font-size:12.5px;color:var(--gris);line-height:1.5;
              overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .carte .droite{text-align:right;flex-shrink:0}
@@ -241,71 +244,165 @@
   .carte .etat{display:block;margin-top:5px;font-size:11px;color:var(--gris)}
   .carte .etat.attend{color:var(--or)}
 
-  /* ── L'écran « Apparence » ───────────────────────────────────── */
-  .charte{display:flex;align-items:center;gap:15px;padding:15px 2px;
-          border-bottom:1px solid var(--ligne-fine)}
-  .vignette{width:52px;height:52px;border-radius:10px;flex-shrink:0;position:relative;
-            box-shadow:inset 0 0 0 1px var(--ligne);overflow:hidden;background:var(--fond)}
-  .vignette i{position:absolute;display:block;border-radius:2px}
-  .vignette .h{left:9px;top:11px;width:22px;height:5px;background:var(--encre)}
-  .vignette .b{left:9px;top:29px;width:26px;height:8px;background:var(--plein)}
-  .vignette .p{right:8px;top:30px;width:7px;height:7px;border-radius:50%;background:var(--or)}
-  .charte .nom{flex:1;min-width:0}
-  .charte .nom b{display:block;font-family:var(--titre);font-weight:400;font-size:18px;
-                 color:var(--encre);line-height:1.2}
-  [data-forme="moderne"] .charte .nom b,
-  [data-forme="verre"] .charte .nom b{font-weight:600;font-size:16.5px}
-  .charte .nom span{display:block;margin-top:4px;font-size:12.5px;color:var(--gris);line-height:1.5}
-  .rond{width:22px;height:22px;border-radius:50%;flex-shrink:0;background:var(--or);
-        box-shadow:inset 0 0 0 4px var(--plage), inset 0 0 0 5.5px var(--or)}
+  /* ── Le planning : la grille qui met une allure à l'épreuve ──── */
+  .mois{display:flex;align-items:center;justify-content:space-between;
+        margin-top:var(--air);min-height:44px}
+  .mois b{font-family:var(--titre);font-weight:400;font-size:19px;color:var(--encre)}
+  [data-forme="moderne"] .mois b,[data-forme="verre"] .mois b{font-weight:600;font-size:17.5px}
+  .fleche{width:44px;height:44px;border-radius:var(--rayon);background:var(--plage);
+          box-shadow:inset 0 0 0 1px var(--ligne);color:var(--encre-douce);
+          display:flex;align-items:center;justify-content:center;font-size:17px}
+  [data-forme="verre"] .fleche{box-shadow:var(--ombre)}
+  .jours{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-top:12px}
+  .jours .nom{text-align:center;font-size:9px;letter-spacing:.1em;text-transform:uppercase;
+              color:var(--gris);padding-bottom:4px}
+  .case{aspect-ratio:1/1.15;border-radius:calc(var(--rayon) - 4px);background:var(--plage);
+        box-shadow:inset 0 0 0 1px var(--ligne-fine);padding:4px 0 0;display:flex;
+        flex-direction:column;align-items:center;gap:3px;font-size:11.5px;color:var(--encre-douce);
+        font-variant-numeric:tabular-nums}
+  .case.week{background:color-mix(in srgb, var(--plein) 5%, var(--plage))}
+  .case.vide{background:transparent;box-shadow:none}
+  .case .barres{display:flex;flex-direction:column;gap:2px;width:62%;margin-top:auto;
+                margin-bottom:5px}
+  .case i{display:block;height:3px;border-radius:2px;background:var(--ligne)}
+  .case i.demi{background:color-mix(in srgb, var(--plein) 42%, transparent)}
+  .case i.plein{background:var(--plein)}
+  .case.ici{box-shadow:inset 0 0 0 2px var(--plein);font-weight:600;color:var(--encre)}
 
-  /* ── La barre du bas ─────────────────────────────────────────── */
-  /* **Le fond se lit ici, PAS dans un jeton composé.** Un `--barre-fond:var(--fond)`
-     déclaré sur `:root` est substitué à l'endroit où il est DÉCLARÉ : il valait
-     le crème de la racine, et la barre restait beige sur les allures bleutées.
-     Aucun test ne le voyait — le défaut est sorti d'une capture regardée. */
-  .barre{margin-top:auto;display:flex;padding:14px 8px 20px;background:var(--fond);
-         backdrop-filter:var(--flou);-webkit-backdrop-filter:var(--flou);
-         border-top:1px solid var(--ligne-fine)}
-  .barre a{flex:1;text-align:center;font-size:9px;letter-spacing:.16em;text-transform:uppercase;
-           color:var(--gris);text-decoration:none;padding:8px 0 9px;min-height:44px;
-           display:flex;align-items:center;justify-content:center}
-  .barre a.ici{color:var(--encre);border-bottom:2px solid var(--or)}
-  [data-forme="moderne"] .barre a.ici,
-  [data-forme="verre"] .barre a.ici{border-bottom:0;background:color-mix(in srgb, var(--plein) 11%, transparent);
-                                    border-radius:11px;color:var(--plein)}
+  /* ── Le devis : un tableau, le plus dense de tous ────────────── */
+  .lignes{margin-top:14px;background:var(--plage);border-radius:var(--rayon-carte);
+          box-shadow:var(--ombre);overflow:hidden}
+  .tel:not([data-forme="moderne"]):not([data-forme="verre"]) .lignes{
+    box-shadow:inset 0 0 0 1px var(--ligne)}
+  .lg{display:flex;gap:10px;padding:12px 15px;border-bottom:1px solid var(--ligne-fine);
+      align-items:baseline}
+  .lg:last-child{border-bottom:0}
+  .lg .quoi{flex:1;min-width:0;font-size:13.5px;color:var(--encre);line-height:1.45}
+  .lg .qte{font-size:11.5px;color:var(--gris);font-variant-numeric:tabular-nums;flex-shrink:0}
+  .lg .pu{font-size:13.5px;color:var(--encre);font-variant-numeric:tabular-nums;
+          flex-shrink:0;min-width:74px;text-align:right}
+  .totaux{margin-top:11px;padding:13px 15px;background:var(--plage);border-radius:var(--rayon-carte);
+          box-shadow:var(--ombre)}
+  .tel:not([data-forme="moderne"]):not([data-forme="verre"]) .totaux{
+    box-shadow:inset 0 0 0 1px var(--ligne)}
+  .tot{display:flex;justify-content:space-between;padding:5px 0;font-size:13.5px;
+       color:var(--encre-douce);font-variant-numeric:tabular-nums}
+  .tot.gros{padding-top:11px;margin-top:5px;border-top:1px solid var(--ligne);
+            font-size:16px;color:var(--encre)}
+  [data-forme="moderne"] .tot.gros,[data-forme="verre"] .tot.gros{font-weight:700}
+
+  /* ── Réglages : des rubriques, rien d'autre ──────────────────── */
+  .rub{display:flex;align-items:center;gap:14px;min-height:56px;padding:13px 2px;
+       border-bottom:1px solid var(--ligne-fine)}
+  .rub .nom{flex:1;min-width:0}
+  .rub .nom b{display:block;font-family:var(--titre);font-weight:400;font-size:16.5px;
+              color:var(--encre);line-height:1.25}
+  [data-forme="moderne"] .rub .nom b,[data-forme="verre"] .rub .nom b{font-weight:600;font-size:15.5px}
+  .rub .nom span{display:block;margin-top:3px;font-size:12px;color:var(--gris);line-height:1.45}
+  .rub .chev{color:var(--gris);font-size:17px;flex-shrink:0}
+
+  /* ── Apparence : sa capture ──────────────────────────────────── */
+  .vignette{width:52px;height:52px;border-radius:10px;flex-shrink:0;position:relative;
+            box-shadow:inset 0 0 0 1px var(--ligne);overflow:hidden}
+  .vignette i{position:absolute;display:block;border-radius:2px}
+  .vignette .h{left:9px;top:11px;width:22px;height:5px}
+  .vignette .b{left:9px;top:29px;width:26px;height:8px}
+  .vignette .p{right:8px;top:30px;width:7px;height:7px;border-radius:50%}
+  .rond{width:22px;height:22px;border-radius:50%;flex-shrink:0;
+        box-shadow:inset 0 0 0 1.5px var(--ligne)}
+  .rond.pris{background:var(--or);box-shadow:inset 0 0 0 4px var(--plage),
+             inset 0 0 0 5.5px var(--or)}
+
+  /* ── Nouveau chantier : des champs et une dictée ─────────────── */
+  .champ{margin-top:12px;background:var(--plage);border-radius:var(--rayon);
+         box-shadow:inset 0 0 0 1px var(--ligne);padding:11px 14px;min-height:52px}
+  [data-forme="verre"] .champ{box-shadow:var(--ombre)}
+  .champ .et{display:block;font-size:10px;letter-spacing:.16em;text-transform:uppercase;
+             color:var(--gris)}
+  .champ .val{display:block;margin-top:4px;font-size:15px;color:var(--encre)}
+  .champ .val.creux{color:var(--gris)}
+  .dictee{margin-top:16px;min-height:88px;border-radius:var(--rayon-carte);
+          background:color-mix(in srgb, var(--plein) 8%, var(--plage));
+          box-shadow:inset 0 0 0 1px color-mix(in srgb, var(--plein) 22%, transparent);
+          display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;
+          color:var(--plein);font-size:13.5px}
+  .dictee .pastille-micro{width:40px;height:40px;border-radius:50%;background:var(--plein);
+                          display:flex;align-items:center;justify-content:center;
+                          color:#fff;font-size:17px}
+
+  /* ── Paysage : des outils, sans données ──────────────────────── */
+  .outil{display:flex;align-items:center;gap:14px;background:var(--plage);
+         border-radius:var(--rayon-carte);padding:15px 16px;margin-bottom:9px;
+         box-shadow:var(--ombre);min-height:70px}
+  .tel:not([data-forme="moderne"]):not([data-forme="verre"]) .outil{
+    box-shadow:inset 0 0 0 1px var(--ligne)}
+  .outil .rondel{width:42px;height:42px;border-radius:50%;flex-shrink:0;
+                 background:color-mix(in srgb, var(--plein) 11%, transparent);
+                 display:flex;align-items:center;justify-content:center;font-size:18px}
+  .outil .txt{flex:1;min-width:0}
+  .outil .txt b{display:block;font-family:var(--titre);font-weight:400;font-size:16.5px;
+                color:var(--encre)}
+  [data-forme="moderne"] .outil .txt b,[data-forme="verre"] .outil .txt b{font-weight:600;font-size:15.5px}
+  .outil .txt span{display:block;margin-top:3px;font-size:12px;color:var(--gris);line-height:1.45}
+
+  /* ── TVA : des chiffres en colonnes ──────────────────────────── */
+  .tva{margin-top:14px;background:var(--plage);border-radius:var(--rayon-carte);
+       box-shadow:var(--ombre);overflow:hidden}
+  .tel:not([data-forme="moderne"]):not([data-forme="verre"]) .tva{
+    box-shadow:inset 0 0 0 1px var(--ligne)}
+  .tva .tl{display:flex;justify-content:space-between;padding:12px 15px;
+           border-bottom:1px solid var(--ligne-fine);font-size:13.5px;
+           font-variant-numeric:tabular-nums;color:var(--encre-douce)}
+  .tva .tl:last-child{border-bottom:0}
+  .tva .tl b{color:var(--encre);font-weight:400}
+  [data-forme="moderne"] .tva .tl b,[data-forme="verre"] .tva .tl b{font-weight:600}
 
   /* ── Le bouton d'action ──────────────────────────────────────── */
-  .action{display:block;width:calc(100% - 44px);margin:20px 22px 6px;min-height:52px;
+  .action{display:block;width:calc(100% - 44px);margin:18px 22px 6px;min-height:52px;
           border:0;border-radius:var(--rayon);background:var(--plein);color:#fff;
           font:500 15px/1.3 -apple-system,"Segoe UI",Roboto,sans-serif;cursor:pointer}
   [data-forme="moderne"] .action{border-radius:16px;font-weight:600}
   [data-forme="verre"] .action{border-radius:999px;font-weight:600}
 
+  /* ── La barre du bas — elle FONCTIONNE ───────────────────────── */
+  /* **Le fond se lit ici, PAS dans un jeton composé.** Un `--barre-fond:var(--fond)`
+     déclaré sur `:root` est substitué à l'endroit où il est DÉCLARÉ : il valait
+     le crème de la racine, et la barre restait beige sur les allures bleutées.
+     Aucun test ne le voyait — le défaut est sorti d'une capture regardée. */
+  .barre{margin-top:auto;display:flex;padding:12px 8px 18px;background:var(--fond);
+         backdrop-filter:var(--flou);-webkit-backdrop-filter:var(--flou);
+         border-top:1px solid var(--ligne-fine)}
+  .barre button{flex:1;text-align:center;font:inherit;font-size:9px;letter-spacing:.14em;
+                text-transform:uppercase;color:var(--gris);background:none;border:0;
+                padding:8px 0 9px;min-height:44px;cursor:pointer}
+  .barre button.ici{color:var(--encre);border-bottom:2px solid var(--or)}
+  [data-forme="moderne"] .barre button.ici,
+  [data-forme="verre"] .barre button.ici{border-bottom:0;
+      background:color-mix(in srgb, var(--plein) 11%, transparent);
+      border-radius:11px;color:var(--plein)}
+
   /* ── Ce que chaque choix coûte ───────────────────────────────── */
-  .fiche{margin-top:16px;padding:17px 19px;background:#faf9f5;border-radius:14px;
+  .fiche{margin-top:14px;padding:16px 18px;background:#faf9f5;border-radius:14px;
          box-shadow:inset 0 0 0 1px rgba(28,28,26,.1);font-size:13.5px;line-height:1.65;
          color:#4a4a44}
-  .fiche .t{display:block;margin-bottom:9px;font-size:9.5px;font-weight:500;
+  .fiche .t{display:block;margin-bottom:8px;font-size:9.5px;font-weight:500;
             letter-spacing:.28em;text-transform:uppercase;color:#B98B47}
   .fiche b{color:#1c1c1a}
   .fiche[hidden]{display:none}
 
-  .question{margin-top:24px;padding:19px;background:#1c1c1a;border-radius:14px;color:#e9e7e1;
+  .question{margin-top:22px;padding:19px;background:#1c1c1a;border-radius:14px;color:#e9e7e1;
             font-size:13.5px;line-height:1.68}
   .question .t{display:block;margin-bottom:10px;font-size:9.5px;font-weight:500;
                letter-spacing:.28em;text-transform:uppercase;color:#C9A15E}
   .question b{color:#faf9f5}
   .question ol{margin:12px 0 0;padding-left:19px}
   .question li{margin-bottom:9px}
-
-  .pied{margin-top:20px;font-size:12.5px;line-height:1.65;color:#6b675e;text-align:center}
+  .pied{margin-top:18px;font-size:12.5px;line-height:1.65;color:#6b675e;text-align:center}
 </style>
-
 <div class="page">
   <p class="sur">Atlas · planche 92</p>
   <h1 class="grand">Un blanc à reflets bleutés</h1>
-  <p class="chapo">Votre demande du 23 août. <b>Deux réglages qui se croisent</b> — la couleur d’un côté, la forme de l’autre. Appuyez : l’écran change pour de bon. <b>Rien n’est codé.</b></p>
+  <p class="chapo">Neuf écrans, <b>la barre du bas fonctionne</b>. Deux réglages qui se croisent : la couleur d’un côté, la forme de l’autre. <b>Rien n’est codé.</b></p>
 
   <div class="choix">
     <p class="quoi-regle">La couleur — 8 valeurs, aucun écran touché</p>
@@ -315,7 +412,6 @@
       <button class="onglet" data-couleur="ardoise" aria-pressed="false"><span class="pastille" style="background:#33505f"></span>Ardoise</button>
       <button class="onglet" data-couleur="azur"    aria-pressed="false"><span class="pastille" style="background:#1f6feb"></span>Azur</button>
     </div>
-
     <p class="quoi-regle">La forme — elle touche tous les écrans</p>
     <div class="rangee" role="group" aria-label="L’allure">
       <button class="onglet" data-forme="origine" aria-pressed="true">Aujourd’hui</button>
@@ -326,84 +422,192 @@
 
   <div class="tel" id="tel" data-couleur="origine" data-forme="origine">
     <div class="ecran">
-      <div class="corps">
+
+      <!-- ═══ 1 · CHANTIERS — la liste ordinaire ═══════════════ -->
+      <section class="corps ouvert" data-page="chantiers">
         <p class="oeil">Aujourd’hui</p>
         <h2 class="ecran-titre">Chantiers</h2>
         <p class="dit"><b>3 en cours</b>, 1 devis en attente de réponse.</p>
-
         <p class="famille">Cette semaine</p>
+        <div class="carte"><span class="gauche"><span class="client">Mme Larousse</span><span class="ou">12 chemin des Vignes · Taille de haie</span></span><span class="droite"><span class="euros">1 240,00 €</span><span class="etat">En cours</span></span></div>
+        <div class="carte"><span class="gauche"><span class="client">M. Berthier</span><span class="ou">4 rue du Moulin · Création de massif</span></span><span class="droite"><span class="euros">2 380,00 €</span><span class="etat attend">Devis à envoyer</span></span></div>
+        <div class="carte"><span class="gauche"><span class="client">Copropriété Les Tilleuls</span><span class="ou">8 avenue Gambetta · Tonte mensuelle</span></span><span class="droite"><span class="euros">640,00 €</span><span class="etat">En cours</span></span></div>
+        <p class="famille">Sans date</p>
+        <div class="carte"><span class="gauche"><span class="client">M. Vasseur</span><span class="ou">2 impasse des Lilas · Élagage d’un tilleul</span></span><span class="droite"><span class="euros">890,00 €</span><span class="etat attend">À planifier</span></span></div>
+      </section>
 
-        <div class="carte">
-          <span class="gauche">
-            <span class="client">Mme Larousse</span>
-            <span class="ou">12 chemin des Vignes · Taille de haie</span>
-          </span>
-          <span class="droite">
-            <span class="euros">1 240,00 €</span>
-            <span class="etat">En cours</span>
-          </span>
+      <!-- ═══ 2 · UN CHANTIER — des actions empilées ═══════════ -->
+      <section class="corps" data-page="chantier">
+        <p class="oeil">Chantier</p>
+        <h2 class="ecran-titre">Mme Larousse</h2>
+        <p class="dit">12 chemin des Vignes, 33240 Saint-André<br><b>Taille de haie</b> · vendredi 21 août, matin</p>
+        <p class="famille">Ce qu’il reste à faire</p>
+        <div class="carte"><span class="gauche"><span class="client">Envoyer le devis</span><span class="ou">Rédigé le 19 août, jamais parti</span></span><span class="droite"><span class="etat attend">À faire</span></span></div>
+        <p class="famille">Le chantier</p>
+        <div class="rub"><span class="nom"><b>Prix et prestations</b><span>4 lignes · 1 240,00 €</span></span><span class="chev">›</span></div>
+        <div class="rub"><span class="nom"><b>Note vocale</b><span>2 dictées, transcrites</span></span><span class="chev">›</span></div>
+        <div class="rub"><span class="nom"><b>Photos</b><span>6 photos</span></span><span class="chev">›</span></div>
+        <div class="rub"><span class="nom"><b>Coordonnées</b><span>06 12 34 56 78</span></span><span class="chev">›</span></div>
+      </section>
+
+      <!-- ═══ 3 · PLANNING — la grille dense ═══════════════════ -->
+      <section class="corps" data-page="planning">
+        <p class="oeil">Semaine 34</p>
+        <h2 class="ecran-titre">Planning</h2>
+        <div class="mois"><span class="fleche">‹</span><b>Août 2026</b><span class="fleche">›</span></div>
+        <div class="jours">
+          <span class="nom">L</span><span class="nom">M</span><span class="nom">M</span><span class="nom">J</span><span class="nom">V</span><span class="nom">S</span><span class="nom">D</span>
+          <span class="case vide"></span><span class="case vide"></span><span class="case vide"></span><span class="case vide"></span>
+          <span class="case">1<span class="barres"><i></i><i></i></span></span>
+          <span class="case week">2<span class="barres"><i></i><i></i></span></span>
+          <span class="case week">3<span class="barres"><i></i><i></i></span></span>
+          <span class="case">4<span class="barres"><i class="demi"></i><i></i></span></span>
+          <span class="case">5<span class="barres"><i class="plein"></i><i class="plein"></i></span></span>
+          <span class="case">6<span class="barres"><i class="demi"></i><i class="demi"></i></span></span>
+          <span class="case">7<span class="barres"><i></i><i class="demi"></i></span></span>
+          <span class="case">8<span class="barres"><i class="plein"></i><i></i></span></span>
+          <span class="case week">9<span class="barres"><i></i><i></i></span></span>
+          <span class="case week">10<span class="barres"><i></i><i></i></span></span>
+          <span class="case">11<span class="barres"><i class="plein"></i><i class="demi"></i></span></span>
+          <span class="case">12<span class="barres"><i class="demi"></i><i></i></span></span>
+          <span class="case">13<span class="barres"><i class="plein"></i><i class="plein"></i></span></span>
+          <span class="case">14<span class="barres"><i></i><i></i></span></span>
+          <span class="case">15<span class="barres"><i class="demi"></i><i class="demi"></i></span></span>
+          <span class="case week">16<span class="barres"><i></i><i></i></span></span>
+          <span class="case week">17<span class="barres"><i></i><i></i></span></span>
+          <span class="case">18<span class="barres"><i class="plein"></i><i class="demi"></i></span></span>
+          <span class="case">19<span class="barres"><i class="demi"></i><i class="plein"></i></span></span>
+          <span class="case">20<span class="barres"><i class="plein"></i><i class="plein"></i></span></span>
+          <span class="case ici">21<span class="barres"><i class="plein"></i><i class="demi"></i></span></span>
+          <span class="case">22<span class="barres"><i class="demi"></i><i></i></span></span>
+          <span class="case week">23<span class="barres"><i></i><i></i></span></span>
+          <span class="case week">24<span class="barres"><i></i><i></i></span></span>
+          <span class="case">25<span class="barres"><i class="demi"></i><i></i></span></span>
+          <span class="case">26<span class="barres"><i></i><i></i></span></span>
+          <span class="case">27<span class="barres"><i class="plein"></i><i></i></span></span>
+          <span class="case">28<span class="barres"><i></i><i></i></span></span>
+          <span class="case">29<span class="barres"><i></i><i></i></span></span>
+          <span class="case week">30<span class="barres"><i></i><i></i></span></span>
+          <span class="case week">31<span class="barres"><i></i><i></i></span></span>
         </div>
+        <p class="famille">Vendredi 21 août</p>
+        <div class="carte"><span class="gauche"><span class="client">Mme Larousse</span><span class="ou">Matin · Équipe 1 · Taille de haie</span></span></div>
+        <div class="carte"><span class="gauche"><span class="client">Copropriété Les Tilleuls</span><span class="ou">Après-midi · Équipe 2 · Tonte</span></span></div>
+      </section>
 
-        <div class="carte">
-          <span class="gauche">
-            <span class="client">M. Berthier</span>
-            <span class="ou">4 rue du Moulin · Création de massif</span>
-          </span>
-          <span class="droite">
-            <span class="euros">2 380,00 €</span>
-            <span class="etat attend">Devis à envoyer</span>
-          </span>
+      <!-- ═══ 4 · TERMINÉS ═════════════════════════════════════ -->
+      <section class="corps" data-page="termines">
+        <p class="oeil">Moi</p>
+        <h2 class="ecran-titre">Terminés</h2>
+        <div class="mois"><span class="fleche">‹</span><b>Août 2026</b><span class="fleche">›</span></div>
+        <p class="dit" style="font-weight:700"><b>3 à facturer · 8 facturés</b></p>
+        <div class="carte"><span class="gauche"><span class="client">M. Delaunay</span><span class="ou">Terminé le 18 août · Débroussaillage</span></span><span class="droite"><span class="euros">1 480,00 €</span><span class="etat attend">Pas encore facturé</span></span></div>
+        <div class="carte"><span class="gauche"><span class="client">Mme Ferrand</span><span class="ou">Terminé le 14 août · Plantation</span></span><span class="droite"><span class="euros">2 060,00 €</span><span class="etat">Facturé le 20 août</span></span></div>
+        <div class="carte"><span class="gauche"><span class="client">M. Aubert</span><span class="ou">Terminé le 11 août · Tonte + haie</span></span><span class="droite"><span class="euros">720,00 €</span><span class="etat">Facturé le 12 août</span></span></div>
+        <div class="rub"><span class="nom"><b>Relevé de TVA collectée</b><span>Août 2026 · 1 005,60 €</span></span><span class="chev">›</span></div>
+      </section>
+
+      <!-- ═══ 5 · UN DEVIS — le plus dense ═════════════════════ -->
+      <section class="corps" data-page="devis">
+        <p class="oeil">Devis D2026-0042</p>
+        <h2 class="ecran-titre">Mme Larousse</h2>
+        <p class="dit">12 chemin des Vignes · <b>4 lignes</b></p>
+        <div class="lignes">
+          <div class="lg"><span class="quoi">Taille de haie de laurier, 24 ml</span><span class="qte">24 ml</span><span class="pu">648,00 €</span></div>
+          <div class="lg"><span class="quoi">Évacuation des déchets verts</span><span class="qte">1 forfait</span><span class="pu">180,00 €</span></div>
+          <div class="lg"><span class="quoi">Tonte de la pelouse arrière</span><span class="qte">320 m²</span><span class="pu">256,00 €</span></div>
+          <div class="lg"><span class="quoi">Désherbage des allées gravillonnées</span><span class="qte">1 forfait</span><span class="pu">156,00 €</span></div>
         </div>
-
-        <div class="carte">
-          <span class="gauche">
-            <span class="client">Copropriété Les Tilleuls</span>
-            <span class="ou">8 avenue Gambetta · Tonte mensuelle</span>
-          </span>
-          <span class="droite">
-            <span class="euros">640,00 €</span>
-            <span class="etat">En cours</span>
-          </span>
+        <div class="totaux">
+          <div class="tot"><span>Total HT</span><span>1 240,00 €</span></div>
+          <div class="tot"><span>TVA 20 %</span><span>248,00 €</span></div>
+          <div class="tot gros"><span>Total TTC</span><span>1 488,00 €</span></div>
         </div>
+      </section>
 
+      <!-- ═══ 6 · RELEVÉ DE TVA — des chiffres seuls ═══════════ -->
+      <section class="corps" data-page="tva">
+        <p class="oeil">Août 2026</p>
+        <h2 class="ecran-titre">TVA collectée</h2>
+        <p class="dit">Sur les <b>8 factures</b> émises ce mois-ci.</p>
+        <div class="tva">
+          <div class="tl"><span>Base HT à 20 %</span><b>4 028,00 €</b></div>
+          <div class="tl"><span>TVA à 20 %</span><b>805,60 €</b></div>
+          <div class="tl"><span>Base HT à 10 %</span><b>2 000,00 €</b></div>
+          <div class="tl"><span>TVA à 10 %</span><b>200,00 €</b></div>
+          <div class="tl"><span>Total collecté</span><b>1 005,60 €</b></div>
+        </div>
+        <p class="dit" style="margin-top:16px">Ce relevé <b>ne remplace pas votre déclaration</b> : il la prépare.</p>
+      </section>
+
+      <!-- ═══ 7 · NOUVEAU CHANTIER — champs et dictée ══════════ -->
+      <section class="corps" data-page="nouveau">
+        <p class="oeil">Nouveau</p>
+        <h2 class="ecran-titre">Chantier</h2>
+        <div class="dictee"><span class="pastille-micro">●</span>Dictez votre devis</div>
+        <p class="famille">Ou écrivez</p>
+        <div class="champ"><span class="et">Client</span><span class="val creux">Nom ou entreprise</span></div>
+        <div class="champ"><span class="et">Adresse</span><span class="val creux">Rue, code postal, ville</span></div>
+        <div class="champ"><span class="et">Ce qu’il y a à faire</span><span class="val creux">Taille, tonte, plantation…</span></div>
+      </section>
+
+      <!-- ═══ 8 · PAYSAGE — des outils, sans données ═══════════ -->
+      <section class="corps" data-page="paysage">
+        <p class="oeil">Métier</p>
+        <h2 class="ecran-titre">Paysage</h2>
+        <p class="dit">Vos outils de terrain.</p>
+        <div class="outil"><span class="rondel">◍</span><span class="txt"><b>Plan d’arrosage</b><span>Photographiez votre croquis coté</span></span><span class="chev">›</span></div>
+        <div class="outil"><span class="rondel">✦</span><span class="txt"><b>Diagnostic végétal</b><span>Une photo, un avis</span></span><span class="chev">›</span></div>
+        <div class="outil"><span class="rondel">▤</span><span class="txt"><b>Fiche d’entretien</b><span>À laisser au client</span></span><span class="chev">›</span></div>
+      </section>
+
+      <!-- ═══ 9 · RÉGLAGES · APPARENCE — sa capture ════════════ -->
+      <section class="corps" data-page="reglages">
+        <p class="oeil">Moi</p>
+        <h2 class="ecran-titre">Apparence</h2>
+        <p class="dit">La couleur change <b>toute l’application</b>, tout de suite. Vos devis et vos factures gardent leur apparence.</p>
         <p class="famille">Votre charte</p>
+        <div class="rub"><span class="vignette" style="background:#f5f3ee"><i class="h" style="background:#1c1c1a"></i><i class="b" style="background:#2f3b2f"></i><i class="p" style="background:#B98B47"></i></span><span class="nom"><b>Origine</b><span>Gris-vert, or, vert pin pour l’action.</span></span><span class="rond" data-pour="origine"></span></div>
+        <div class="rub"><span class="vignette" style="background:#f4f7fb"><i class="h" style="background:#111823"></i><i class="b" style="background:#22456d"></i><i class="p" style="background:#B98B47"></i></span><span class="nom"><b>Brume</b><span>Blanc froid, encre bleutée, bleu marine.</span></span><span class="rond" data-pour="brume"></span></div>
+        <div class="rub"><span class="vignette" style="background:#eceff3"><i class="h" style="background:#0f1418"></i><i class="b" style="background:#33505f"></i><i class="p" style="background:#B98B47"></i></span><span class="nom"><b>Ardoise</b><span>Gris-bleu, bleu acier éteint. Aucun éclat.</span></span><span class="rond" data-pour="ardoise"></span></div>
+        <div class="rub"><span class="vignette" style="background:#f7fafd"><i class="h" style="background:#0b1220"></i><i class="b" style="background:#1f6feb"></i><i class="p" style="background:#B98B47"></i></span><span class="nom"><b>Azur</b><span>Blanc quasi pur, bleu vif.</span></span><span class="rond" data-pour="azur"></span></div>
+      </section>
 
-        <div class="charte">
-          <span class="vignette"><i class="h"></i><i class="b"></i><i class="p"></i></span>
-          <span class="nom"><b id="nom">Origine</b><span id="dit">Vos couleurs actuelles : gris-vert, or, et le vert pin pour l’action.</span></span>
-          <span class="rond"></span>
-        </div>
-      </div>
-
-      <button class="action">Nouveau chantier</button>
+      <button class="action" id="bouton">Nouveau chantier</button>
 
       <nav class="barre">
-        <a href="#" class="ici">Chantiers</a>
-        <a href="#">Planning</a>
-        <a href="#">Terminés</a>
-        <a href="#">Paysage</a>
-        <a href="#">Réglages</a>
+        <button data-va="chantiers" class="ici">Chantiers</button>
+        <button data-va="planning">Planning</button>
+        <button data-va="termines">Terminés</button>
+        <button data-va="paysage">Paysage</button>
+        <button data-va="reglages">Réglages</button>
       </nav>
     </div>
   </div>
 
-  <!-- Ce que chaque choix coûte VRAIMENT. Un choix d'apparence se paie en
-       écrans à reprendre, et ce chiffre-là ne se lit sur aucune capture. -->
+  <p class="quoi-regle" style="margin-top:14px">Les écrans qui ne sont pas dans la barre</p>
+  <div class="rangee">
+    <button class="onglet" data-va="chantier">Un chantier</button>
+    <button class="onglet" data-va="devis">Un devis</button>
+    <button class="onglet" data-va="tva">TVA</button>
+    <button class="onglet" data-va="nouveau">Nouveau</button>
+  </div>
+
   <div class="fiche" data-fiche="origine">
     <span class="t">Origine — pour comparer</span>
     Le gris-vert crème que vous ouvrez ce soir. Il est là pour que les trois bleus se jugent contre quelque chose, pas dans le vide.
   </div>
   <div class="fiche" data-fiche="brume" hidden>
     <span class="t">Brume — le blanc froid</span>
-    Un blanc légèrement bleuté, une encre presque marine, un bleu profond pour l’action. <b>Le plus proche de ce que vous décrivez</b> : il fait « propre » sans faire clinique. L’or reste parfaitement lisible dessus.
+    Un blanc légèrement bleuté, une encre presque marine, un bleu profond pour l’action. <b>Le plus proche de ce que vous décrivez</b> : propre sans être clinique. L’or reste parfaitement lisible dessus.
   </div>
   <div class="fiche" data-fiche="ardoise" hidden>
     <span class="t">Ardoise — le plus sobre</span>
-    Le fond tire vers le gris-bleu, l’encre est presque noire, l’accent est un bleu acier éteint. <b>Celui qui ressemble le moins à une application grand public</b>, et le plus à un outil de métier. C’est aussi le plus reposant sur une longue journée.
+    Fond gris-bleu, encre presque noire, accent bleu acier éteint. <b>Celui qui ressemble le moins à une application grand public</b>, et le plus à un outil de métier. Le plus reposant sur une longue journée.
   </div>
   <div class="fiche" data-fiche="azur" hidden>
     <span class="t">Azur — le plus franc</span>
-    Blanc quasi pur, bleu vif : la couleur des applications qu’on installe aujourd’hui. <b>Réserve, et elle compte :</b> un bleu vif attire l’œil partout où il se pose, et il finit par concurrencer l’or — qui, lui, veut dire « à faire ». Deux couleurs qui réclament l’attention en même temps n’en obtiennent aucune.
+    Blanc quasi pur, bleu vif : la couleur des applications qu’on installe aujourd’hui. <b>Réserve, et elle compte :</b> un bleu vif attire l’œil partout où il se pose, et il finit par concurrencer l’or — qui, lui, veut dire « à faire ». <b>Regardez l’écran Terminés</b> : c’est là que les deux se disputent.
   </div>
 
   <div class="fiche" data-forme-fiche="origine">
@@ -412,18 +616,18 @@
   </div>
   <div class="fiche" data-forme-fiche="moderne" hidden>
     <span class="t">Forme moderne</span>
-    La police du téléphone remplace le Georgia, les cartes s’arrondissent à 20 px, une ombre bleutée très basse remplace le trait, l’air augmente d’un tiers. <b>Coût :</b> quatre pièces partagées — le bouton, l’en-tête, les cartes, la barre du bas — et la trentaine d’écrans en hérite. <b>À reprendre à l’œil</b> sur les écrans denses : le tableau de TVA, le plan d’arrosage, la liste des pièces.
+    La police du téléphone remplace le Georgia, les cartes s’arrondissent à 20 px, une ombre bleutée remplace le trait, l’air augmente d’un tiers. <b>Coût :</b> quatre pièces partagées — bouton, en-tête, cartes, barre du bas — et les cinquante-sept écrans en héritent. <b>Regardez le Planning et le Devis</b> : c’est là qu’une allure se défait, pas sur trois cartes.
   </div>
   <div class="fiche" data-forme-fiche="verre" hidden>
     <span class="t">Forme verre</span>
-    Le fond porte deux halos, les cartes flottent, la barre du bas est dépolie, le bouton devient une pastille pleine. <b>Réserve, et elle n’est pas esthétique :</b> le flou coûte à l’affichage — sur un téléphone de trois ans, une liste de quarante chantiers peut saccader au défilement. Et le dépoli <b>baisse le contraste</b> là où il s’applique : en plein soleil, sur un chantier, c’est ce qu’on ne veut pas.
+    Le fond porte deux halos, les cartes flottent, la barre du bas est dépolie, le bouton devient une pastille pleine. <b>Réserve, et elle n’est pas esthétique :</b> le flou coûte à l’affichage — sur un téléphone de trois ans, une liste de quarante chantiers peut saccader au défilement. Et le dépoli <b>baisse le contraste</b> : en plein soleil, sur un chantier, c’est ce qu’on ne veut pas.
   </div>
 
   <div class="question">
     <span class="t">Ce que je ne peux pas décider à votre place</span>
     <ol>
       <li><b>Quelle couleur ?</b> Brume, Ardoise ou Azur.</li>
-      <li><b>Quelle forme ?</b> On peut garder celle d’aujourd’hui et ne changer que la couleur — c’est le chemin le moins cher, et il se fait ce soir.</li>
+      <li><b>Quelle forme ?</b> On peut garder celle d’aujourd’hui et ne changer que la couleur — c’est le chemin le moins cher, et il se fait en une fois.</li>
       <li><b>Ça remplace Origine, ou ça s’ajoute</b> comme une charte de plus dans « Apparence » ? S’ajouter ne coûte rien de plus et ne vous engage pas.</li>
       <li><b>Vos devis et vos factures suivent-ils ?</b> Aujourd’hui ils gardent leur apparence quoi que vous choisissiez. Un client reçoit le document, pas l’application.</li>
     </ol>
@@ -431,37 +635,72 @@
 
   <p class="pied">Rien n’est écrit dans l’application. Dites-moi <b>une couleur</b> et <b>une forme</b>, et je code celle-là.</p>
 </div>
-
 <script>
   /*
-    Le seul travail du script : poser deux attributs. Toute l'apparence tient
-    dans les jetons CSS — refaire ici ce que la feuille de style sait faire
-    produirait deux définitions du même look, qui divergeraient (`CLAUDE.md` §3).
+    Le seul travail du script : poser trois attributs — la couleur, la forme,
+    l'écran ouvert. Toute l'apparence tient dans les jetons CSS ; la refaire
+    ici produirait une seconde définition du même look, qui divergerait
+    (`CLAUDE.md` §3).
   */
+  var premier = true;
   var tel = document.getElementById("tel");
-  var NOMS = {
-    origine: ["Origine", "Vos couleurs actuelles : gris-vert, or, et le vert pin pour l’action."],
-    brume:   ["Brume",   "Un blanc froid, une encre bleutée, un bleu marine pour l’action."],
-    ardoise: ["Ardoise", "Gris-bleu, encre presque noire, un bleu acier éteint. Aucun éclat."],
-    azur:    ["Azur",    "Blanc quasi pur et bleu vif — la couleur des applis d’aujourd’hui."]
+  var bouton = document.getElementById("bouton");
+
+  /* Le bouton d'action n'est pas le même d'un écran à l'autre — un « Nouveau
+     chantier » au bas d'un devis n'a aucun sens, et c'est le genre de détail
+     qui fait douter de toute la planche. `null` = pas de bouton du tout. */
+  var BOUTON = {
+    chantiers: "Nouveau chantier",
+    chantier:  "Envoyer le devis",
+    planning:  "Planifier un chantier",
+    termines:  "Facturer les 3 en attente",
+    devis:     "Envoyer à Mme Larousse",
+    tva:       "Exporter le relevé",
+    nouveau:   "Créer le chantier",
+    paysage:   null,
+    reglages:  null
   };
+
+  /* La hauteur du panneau se MESURE, elle ne se devine pas : elle change avec
+     la largeur de l'écran, et un nombre écrit en dur serait faux sur la moitié
+     des téléphones. */
+  function remonter() {
+    var panneau = document.querySelector(".choix");
+    var haut = tel.getBoundingClientRect().top + window.pageYOffset;
+    window.scrollTo({ top: Math.max(0, haut - panneau.offsetHeight - 10), behavior: "smooth" });
+  }
+
+  function ouvrir(page) {
+    document.querySelectorAll("[data-page]").forEach(function (s) {
+      s.classList.toggle("ouvert", s.dataset.page === page);
+    });
+    document.querySelectorAll("[data-va]").forEach(function (b) {
+      var actif = b.dataset.va === page;
+      if (b.closest(".barre")) b.classList.toggle("ici", actif);
+      else b.setAttribute("aria-pressed", String(actif));
+    });
+    var libelle = BOUTON[page];
+    bouton.hidden = !libelle;
+    if (libelle) bouton.textContent = libelle;
+    if (!premier) remonter();
+  }
 
   function poser(quoi, valeur) {
     tel.setAttribute("data-" + quoi, valeur);
-
-    document.querySelectorAll("[data-" + quoi + "]").forEach(function (b) {
-      if (b === tel) return;
+    document.querySelectorAll("button[data-" + quoi + "]").forEach(function (b) {
       b.setAttribute("aria-pressed", String(b.dataset[quoi] === valeur));
     });
-
     var cle = quoi === "couleur" ? "data-fiche" : "data-forme-fiche";
     document.querySelectorAll("[" + cle + "]").forEach(function (f) {
       f.hidden = f.getAttribute(cle) !== valeur;
     });
-
+    // L'écran « Apparence » doit cocher la charte RÉELLEMENT choisie : une
+    // pastille qui reste sur Origine pendant qu'on regarde Azur ferait douter
+    // de ce que l'écran montre.
     if (quoi === "couleur") {
-      document.getElementById("nom").textContent = NOMS[valeur][0];
-      document.getElementById("dit").textContent = NOMS[valeur][1];
+      document.querySelectorAll(".rond[data-pour]").forEach(function (r) {
+        r.classList.toggle("pris", r.dataset.pour === valeur);
+      });
     }
   }
 
@@ -471,9 +710,14 @@
   document.querySelectorAll("button[data-forme]").forEach(function (b) {
     b.addEventListener("click", function () { poser("forme", b.dataset.forme); });
   });
+  document.querySelectorAll("button[data-va]").forEach(function (b) {
+    b.addEventListener("click", function () { ouvrir(b.dataset.va); });
+  });
 
   poser("couleur", "origine");
   poser("forme", "origine");
+  ouvrir("chantiers");
+  premier = false;
 </script>
 </body>
 </html>
