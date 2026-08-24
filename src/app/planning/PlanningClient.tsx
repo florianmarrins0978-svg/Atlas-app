@@ -632,18 +632,38 @@ export default function PlanningClient({
             Aucun chantier posé cette semaine.
           </p>
         ) : (
-          joursAvecChantiers.map((jour, rangJour) => (
-            <div
-              key={jour}
-              data-atlas="jour-planifie"
-              className="mx-[18px] mt-4 pt-[13px]"
-              style={{ borderTop: rangJour === 0 ? "none" : `1px solid ${colors.line}` }}
-            >
-              <p
-                className="text-center text-[12.5px] font-bold uppercase leading-none"
-                style={{ letterSpacing: "0.14em", color: colors.ink }}
-              >
-                {jourLisibleCourt(jour)}
+          joursAvecChantiers.map((jour) => (
+            /* ─── LA DATE DANS UNE PASTILLE — sa proposition D, choisie ────────
+               Sa question du 23 août 2026 : *« comment on peut faire pour que la
+               date ressorte par rapport au nom du client ? »*, puis, la planche
+               en main (`appli/la-date-qui-ressort.html`, quatre propositions
+               qu'il a comparées du doigt) : ***« D »***.
+
+               **CE QUI N'ALLAIT PAS, ET IL SE MESURE.** La date et le nom
+               portaient exactement la même encre — `colors.ink` — et le nom fait
+               19 px en serif contre 12,5 px en capitales. Deux tailles ne font
+               pas une hiérarchie quand la couleur est identique : la date se
+               lisait comme une étiquette de plus, pas comme une séparation.
+
+               **Le filet disparaît avec elle.** Il séparait deux journées ; la
+               pastille le fait mieux et le garder poserait deux séparateurs pour
+               une seule couture. C'est aussi ce que la planche montrait.
+
+               **Ce que ça coûte, et il l'a accepté en choisissant :** l'écran a
+               été refait sans un seul aplat inutile, et voici trois blocs de
+               couleur de plus sur une semaine chargée. Le papier (`rustTint`)
+               est le plus discret des fonds de la charte — et il est dérivé du
+               FOND, donc il reste sombre sur Nuit et sur Sylve au lieu de poser
+               un pavé blanc au milieu de l'écran. */
+            <div key={jour} data-atlas="jour-planifie" className="mx-[18px] mt-5">
+              <p className="text-center leading-none">
+                <span
+                  data-atlas="date-planifiee"
+                  className="inline-block rounded-full px-[15px] py-[7px] text-[12px] font-bold uppercase"
+                  style={{ letterSpacing: "0.14em", background: colors.rustTint, color: colors.ink }}
+                >
+                  {jourLisibleCourt(jour)}
+                </span>
               </p>
               {chantiersDuJour(jour).map((c) => {
                 const toutes = [...new Set([...c.equipes.matin, ...c.equipes.apres_midi])].sort(
