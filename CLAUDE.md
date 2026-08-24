@@ -239,7 +239,17 @@ qu'il ne s'est pas prononcé.)*
 Concrètement, pour toute planche dont on attend un choix :
 
 1. le fichier va dans **`appli/`** ;
-2. un lien l'ajoute à **`appli/essais.html`** — c'est l'adresse qu'on lui donne ;
+2. un lien l'ajoute à **`appli/essais.html`** ;
+2 bis. **ON LUI DONNE L'ADRESSE ENTIÈRE, jamais tronquée.** Payé le 24 août
+   2026 : la planche était en ligne, publiée et vérifiée — et il a répondu
+   *« je t'ai demandé des maquettes dynamiques en .html pour que je puisse
+   avoir un visuel avant de choisir !!!! »*, parce qu'on lui avait écrit
+   `…github.io/Atlas-app/essais.html`. **Des points de suspension, ça ne se
+   tape pas sur un téléphone.** L'adresse complète, et celle de la planche
+   elle-même plutôt que celle du sommaire :
+   `https://florianmarrins0978-svg.github.io/Atlas-app/<la-planche>.html`.
+   C'est la quatrième fois qu'une adresse lui coûte un aller-retour, et les
+   quatre fois le code était juste ;
 3. rien d'autre à faire pour qu'elle soit vérifiée en ligne : depuis le
    20 août 2026, `pages.yml` **déduit sa liste des liens d'`essais.html`** —
    une liste tenue à la main s'oubliait à chaque page neuve, et l'oubli ne se
@@ -351,6 +361,27 @@ au mauvais endroit, et une tranchée ne se déplace pas.
 **Informer n'est pas proposer.** S'il demande ce que change tel ou tel
 emplacement, on répond avec des chiffres — l'amenée s'allonge, les lignes
 raccourcissent. On ne dit jamais où le mettre.
+
+**LA DISCUSSION POSE UN PARAMÈTRE, ELLE NE DESSINE JAMAIS.** Sa demande du
+21 août, codée le 23. Ce qui sort d'un message est **une consigne** prise dans
+une liste fermée — marque, corps, matériel d'une zone, buse d'une zone, sonde —
+et c'est le calcul qui refait le plan. Un plan retouché à la main ne se
+recalcule plus.
+
+Deux bornes qu'il a posées : **la discussion ne crée jamais un plan** (le fil ne
+s'affiche qu'avec un plan déjà calculé), et **aucune phrase pré-écrite** (un
+champ libre, rien d'autre).
+
+**LE MOINS DE VANNES D'ABORD, LE MOINS D'ARROSEURS ENSUITE — sa colère du
+23 août 2026 :** *« cinq réseaux pour ça ??????? »*, devant 208 m² de pelouse.
+On ne choisit plus la plus grande buse qui pave : on choisit celle qui demande
+le moins de vannes, et l'on départage sur le nombre d'arroseurs. Neuf arroseurs
+se posent une fois ; une vanne coûte une électrovanne, une station de
+programmateur, sa tranchée et son créneau d'arrosage.
+
+**Et le quinconce ne se resserre JAMAIS sous la portée** — sa règle du 17 août.
+Quand le damier ne couvre pas à cet écart-là, on garde la grille alignée. Le
+resserrement sans plancher disqualifiait la seule pose qui tenait sur une vanne.
 
 **UN CROQUIS À MAIN LEVÉE SE LIT QUAND MÊME — sa correction du 23 août 2026 :**
 *« les utilisateurs ne vont pas s'amuser à faire des croquis à l'échelle à

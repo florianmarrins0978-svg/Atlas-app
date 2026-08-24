@@ -212,6 +212,23 @@ environnement** — la fonction pure `lireReponseCroquis` est éprouvée
 (`test-lecture-croquis.ts`), l'appel au fournisseur ne l'est pas. Premier essai à
 faire sur son banc.
 
+### LA DISCUSSION POSE UN PARAMÈTRE, ELLE NE DESSINE PAS (23 août 2026)
+
+Ce qui sort d'un message est **une consigne** prise dans une liste fermée
+(`consignes.ts`) : marque, corps, matériel d'une zone, buse d'une zone, sonde.
+Rien d'autre. C'est le calcul qui refait le plan.
+
+**Ne pas élargir cette liste sans y réfléchir** : un plan retouché à la main ne
+se recalcule plus, et la fois d'après le tracé, les métrés et les pièces ne
+viennent plus de la même source.
+
+**La nourrice n'y est pas, et ne doit pas y entrer** (`CLAUDE.md` §4 bis). Elle
+voyage dans les paramètres parce que le DESSIN en a besoin, pas parce qu'elle
+serait réglable.
+
+**Le fil ne s'affiche qu'avec un plan** — sa borne : *« la discussion ne doit
+jamais créer un plan »*. C'est l'absence qui est éprouvée en e2e.
+
 ### DEUX ÉCHELLES, ET NE PAS LES CONFONDRE (23 août 2026)
 
 | | Ce qu'elle sert | Devant un dessin approximatif |

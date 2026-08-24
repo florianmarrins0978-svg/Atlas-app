@@ -155,6 +155,35 @@ positions des zones et l'endroit de la nourrice, et **cela n'a pas pu être
 
 Le détail : `ARCHITECTURE.md` §150.
 
+### Discuter le plan (23 août 2026)
+
+| | État |
+|---|---|
+| Un fil et un **champ libre** sous le plan | **fait** (`DiscuterLePlan.tsx`) |
+| Atlas pose une **consigne**, jamais un tracé | **fait** (`consignes.ts`) |
+| La discussion ne s'affiche **qu'avec un plan** | **fait**, et éprouvé par l'absence |
+| **Aucune phrase pré-écrite** | **fait** |
+| La nourrice **ne se discute pas** | **fait**, et l'écran le dit |
+| Une référence hors catalogue est **refusée** | **fait**, sans jeter la réponse |
+| Rien n'est enregistré — les paramètres voyagent | **fait** |
+
+**Non vérifié ici :** le parcours entier (il faut une clé de vision pour obtenir
+un plan). Les règles pures le sont : `test-consignes-arrosage.ts`,
+`test-discussion-plan.ts`.
+
+Le détail : `ARCHITECTURE.md` §167.
+
+### Le moins de vannes, pas le moins d'arroseurs (23 août 2026)
+
+| | État |
+|---|---|
+| Le choix de buse vise **le moins de vannes** | **fait** — l'ancien critère devient le départage |
+| Le quinconce ne se resserre plus **sous la portée** | **fait** — sa règle du 17 août |
+| Son jardin du 23 août : **2 réseaux** au lieu de 5 | **fait**, et éprouvé |
+| Le carré de 12 m : **9 × 3504 buse 0,75** | **fait** — sa pose du 21 août |
+
+Le détail : `ARCHITECTURE.md` §166.
+
 ### Lire un croquis à main levée (23 août 2026)
 
 | | État |

@@ -3,129 +3,168 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>La date des planifiés — quatre façons de la faire ressortir</title>
+<title>La date qui ressort — touchez une lettre, l’écran se refait</title>
 <style>
-  /* ─── LES VALEURS DE L'ÉCRAN, RELEVÉES DANS LE CODE ────────────────────────
-     Aucune n'est approchée à l'œil : elles sont recopiées de
-     `src/app/planning/PlanningClient.tsx` et de `src/lib/chartes.ts`. Une
-     planche qui inventerait ses mesures ne dirait rien de l'écran réel. */
+  /* ─── LES JETONS DES DEUX CHARTES, RELEVÉS DANS LE CODE ────────────────────
+     Sortis de `src/lib/chartes.ts` par un script, jamais approchés à l'œil :
+     `origine` et `nuit`, au caractère près. C'est ce qui permet de juger une
+     proposition sur l'écran qu'il aura vraiment, y compris en mode nuit — où
+     l'accent est CLAIR et le fond SOMBRE, les pôles inversés. */
   :root{
-    --fond:#f5f3ee; --plage:#faf9f5; --encre:#1c1c1a; --encre-douce:#4a4a44;
-    --gris:#8a8578; --pin:#2f3b2f; --papier:#ece9e1;
-    --or:#B98B47; --trait:rgba(28,28,26,.12); --chevron:rgba(28,28,26,.28);
+    --cream:#f5f3ee; --card:#faf9f5; --ink:#1c1c1a; --inkSoft:#4a4a44;
+    --muted:#8a8578; --rust:#2f3b2f; --rustTint:#ece9e1; --or:#B98B47;
+    --line:rgba(28,28,26,0.12); --chevron:rgba(28,28,26,0.28);
+    --hors:#e6e3dc; --horsTexte:#4a4a44; --horsFort:#1c1c1a;
+  }
+  body[data-charte="nuit"]{
+    --cream:#101210; --card:#1a1d19; --ink:#e9e8de; --inkSoft:#c1c2b6;
+    --muted:#84887b; --rust:#e9e8de; --rustTint:#1f211e; --or:#c6a15b;
+    --line:rgba(233,232,222,0.12); --chevron:rgba(233,232,222,0.28);
+    --hors:#0a0b0a; --horsTexte:#c1c2b6; --horsFort:#e9e8de;
   }
   *{box-sizing:border-box}
-  html,body{margin:0;background:#e6e3dc}
-  body{font:16px/1.5 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;color:var(--encre);
-       -webkit-text-size-adjust:100%;padding:0 0 48px}
+  html,body{margin:0}
+  body{background:var(--hors);color:var(--horsTexte);
+       font:16px/1.5 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+       -webkit-text-size-adjust:100%;padding:0 0 30px;
+       transition:background .25s,color .25s}
 
   .bandeau{background:#1c1c1a;color:#f5f3ee;padding:15px 18px;font-size:13px;line-height:1.5}
   .bandeau b{color:#fff}
 
-  .tel{max-width:430px;margin:20px auto 0;background:var(--fond);
-       border-radius:26px;overflow:hidden;box-shadow:0 18px 46px rgba(20,18,14,.18);
-       padding:0 0 18px}
-  .etiquette{background:var(--pin);color:var(--plage);padding:11px 18px;font-size:12px;
-             line-height:1.45;letter-spacing:.02em}
-  .etiquette b{font-weight:700}
-  .etiquette .lettre{display:inline-block;min-width:20px;font-weight:800;letter-spacing:.06em}
+  /* ─── LE CHOIX — cinq cibles de 46 px ─────────────────────────────────────
+     Il regarde cet écran sur un chantier, souvent avec un gant. Une pastille
+     élégante qu'on rate deux fois sur trois n'est pas élégante, elle est
+     ratée : 46 px de haut, jamais moins. */
+  .choix{position:sticky;top:0;z-index:5;background:var(--hors);
+         padding:12px 12px 10px;display:flex;gap:7px;justify-content:center;
+         flex-wrap:wrap;box-shadow:0 6px 18px -12px rgba(0,0,0,.45);
+         transition:background .25s}
+  .choix button{min-height:46px;min-width:46px;padding:0 14px;border-radius:999px;
+                border:1px solid var(--line);background:var(--card);color:var(--ink);
+                font:600 13px/1 ui-sans-serif,sans-serif;letter-spacing:.06em;
+                cursor:pointer;-webkit-tap-highlight-color:transparent;
+                transition:background .18s,color .18s,border-color .18s}
+  .choix button[aria-pressed="true"]{background:var(--rust);color:var(--card);
+                                     border-color:var(--rust)}
+  .choix .temoin{font-weight:700}
+  .choix .nuit{margin-left:6px}
 
-  .titre-section{margin:22px 18px 0;text-align:center;font:700 13px/1 ui-sans-serif,sans-serif;
-                 letter-spacing:.16em;text-transform:uppercase;color:var(--encre)}
+  /* ─── LE TÉLÉPHONE ────────────────────────────────────────────────────────*/
+  .tel{max-width:430px;margin:16px auto 0;background:var(--cream);
+       border-radius:26px;overflow:hidden;box-shadow:0 18px 46px rgba(20,18,14,.22);
+       padding:0 0 20px;transition:background .25s}
+  .titre-section{margin:22px 18px 0;text-align:center;
+                 font:700 13px/1 ui-sans-serif,sans-serif;letter-spacing:.16em;
+                 text-transform:uppercase;color:var(--ink)}
+  .semaine{margin:14px 18px 0;display:flex;align-items:center;justify-content:space-between;gap:10px}
+  .fleche{width:44px;height:44px;border-radius:999px;border:1px solid var(--line);
+          background:var(--card);color:var(--inkSoft);font-size:19px;cursor:default}
+  .semaine .quand{flex:1;text-align:center;font:700 14px/1 ui-sans-serif,sans-serif;color:var(--ink)}
 
-  /* ─── LA LIGNE D'UN CHANTIER — identique dans les quatre propositions ─────
-     Serif 19 px, la durée en or 12,5 px trois pixels sous le nom, la pastille
-     d'équipe en vert pin, le chevron discret. Rien de tout cela ne bouge :
-     seule la DATE change d'une proposition à l'autre, sans quoi on ne saurait
-     pas ce qu'on compare. */
-  .jour{margin:16px 18px 0;border-top:1px solid var(--trait);padding-top:13px}
+  /* ─── LA LIGNE D'UN CHANTIER — elle ne bouge JAMAIS ───────────────────────
+     Serif 19 px, la durée en or 3 px sous le nom, la pastille d'équipe, le
+     chevron. Seule la DATE change d'une proposition à l'autre : sans cela on
+     ne saurait pas ce qu'on compare. */
+  .jour{margin:16px 18px 0;border-top:1px solid var(--line);padding-top:13px}
   .jour:first-of-type{border-top:0;padding-top:4px}
   .ligne{margin-top:12px;display:flex;align-items:center;gap:10px}
-  .nom{flex:1;min-width:0;font:400 19px/1.2 ui-serif,Georgia,"Iowan Old Style",serif}
+  .nom{flex:1;min-width:0;font:400 19px/1.2 ui-serif,Georgia,"Iowan Old Style",serif;color:var(--ink)}
   .duree{display:block;margin-top:3px;font:400 12.5px/1.35 ui-sans-serif,sans-serif;color:var(--or)}
-  .equipe{flex:none;border-radius:999px;background:var(--pin);color:var(--plage);
+  .equipe{flex:none;border-radius:999px;background:var(--rust);color:var(--card);
           padding:6px 12px;font-size:12.5px;white-space:nowrap}
   .chev{flex:none;color:var(--chevron);font-size:19px;line-height:1}
 
-  /* ─── TÉMOIN — ce que l'écran fait AUJOURD'HUI ────────────────────────────
-     12,5 px, gras, capitales, 0,14 em d'écart, centré, ENCRE. La date porte
-     exactement la même couleur que le nom du client : c'est là que le regard
-     se perd. */
-  .date-actuelle{text-align:center;font:700 12.5px/1 ui-sans-serif,sans-serif;
-                 letter-spacing:.14em;text-transform:uppercase;color:var(--encre)}
+  /* ═══ LES CINQ TRAITEMENTS DE LA DATE ═════════════════════════════════════*/
 
-  /* ─── A — LA DATE PREND L'OR ──────────────────────────────────────────────
-     Un seul caractère change dans le code : la couleur. L'or porte déjà, dans
-     toute l'application, ce qu'on LIT (l'accueil, les statuts, les traits) ;
-     le vert pin porte ce qu'on FAIT. Une date est exactement ce qu'on lit. */
-  .date-a{text-align:center;font:700 12.5px/1 ui-sans-serif,sans-serif;
-          letter-spacing:.14em;text-transform:uppercase;color:var(--or)}
+  /* TÉMOIN — 12,5 px, gras, capitales, 0,14 em, centré, ENCRE.
+     La date porte exactement la même couleur que le nom : c'est là que le
+     regard se perd. */
+  [data-vue="temoin"] .date{text-align:center;font:700 12.5px/1 ui-sans-serif,sans-serif;
+                            letter-spacing:.14em;text-transform:uppercase;color:var(--ink)}
 
-  /* ─── B — LA DATE S'ASSOIT SUR LE FILET ───────────────────────────────────
-     Le trait de séparation passe DERRIÈRE la date, qui le coupe. Aucune
-     couleur ne change : c'est la position qui sépare. La date cesse d'être un
-     titre de plus au-dessus d'une liste, elle devient la couture entre deux
-     journées. */
-  .jour-b{margin:22px 18px 0;padding-top:0;border-top:0;position:relative}
-  .jour-b:first-of-type{margin-top:10px}
-  .date-b{position:relative;text-align:center;margin:0 0 2px}
-  .date-b::before{content:"";position:absolute;left:0;right:0;top:50%;height:1px;
-                  background:var(--trait)}
-  .date-b span{position:relative;background:var(--fond);padding:0 12px;
-               font:700 12.5px/1 ui-sans-serif,sans-serif;letter-spacing:.14em;
-               text-transform:uppercase;color:var(--encre-douce)}
+  /* A — LA DATE PREND L'OR. Un seul mot change dans le code. */
+  [data-vue="a"] .date{text-align:center;font:700 12.5px/1 ui-sans-serif,sans-serif;
+                       letter-spacing:.14em;text-transform:uppercase;color:var(--or)}
 
-  /* ─── C — LE JOUR EN CHIFFRE, À GAUCHE ────────────────────────────────────
-     Le chiffre reprend le serif et la taille du calendrier juste au-dessus
-     (17 px, `font-display`) : l'œil retrouve le même objet à deux endroits de
-     l'écran. Le jour de la semaine se lit en petit dessous. La date n'est plus
-     alignée sur les noms — elle occupe sa propre colonne, et c'est ce décalage
-     qui la fait ressortir, pas une couleur. */
-  .jour-c{margin:18px 18px 0;border-top:1px solid var(--trait);padding-top:14px}
-  .jour-c:first-of-type{border-top:0;padding-top:4px}
-  .date-c{display:flex;align-items:baseline;gap:9px}
-  .date-c .num{font:400 26px/1 ui-serif,Georgia,serif;color:var(--encre)}
-  .date-c .mot{font:700 11px/1 ui-sans-serif,sans-serif;letter-spacing:.18em;
-               text-transform:uppercase;color:var(--gris)}
-  .jour-c .ligne{padding-left:36px}
+  /* B — LA DATE S'ASSOIT SUR LE FILET, qui passe derrière elle. Aucune couleur
+     ne change : c'est la place qui sépare. */
+  [data-vue="b"] .jour{border-top:0;padding-top:0;margin-top:22px}
+  [data-vue="b"] .jour:first-of-type{margin-top:10px}
+  [data-vue="b"] .date{position:relative;text-align:center}
+  [data-vue="b"] .date::before{content:"";position:absolute;left:0;right:0;top:50%;
+                               height:1px;background:var(--line)}
+  [data-vue="b"] .date i{position:relative;font-style:normal;background:var(--cream);
+                         padding:0 12px;font:700 12.5px/1 ui-sans-serif,sans-serif;
+                         letter-spacing:.14em;text-transform:uppercase;color:var(--inkSoft)}
 
-  /* ─── D — LA DATE DANS UNE PASTILLE ───────────────────────────────────────
-     Un aplat de papier (`rustTint`), le même fond que les encarts de
-     l'application. La date devient un objet qu'on voit avant de la lire — ce
-     qui est exactement ce qu'on demande à un séparateur de journée quand on
-     fait défiler la semaine du pouce. */
-  .jour-d{margin:20px 18px 0;border-top:0;padding-top:0}
-  .date-d{text-align:center}
-  .date-d span{display:inline-block;background:var(--papier);border-radius:999px;
-               padding:6px 15px;font:700 12px/1 ui-sans-serif,sans-serif;
-               letter-spacing:.14em;text-transform:uppercase;color:var(--encre)}
+  /* C — LE JOUR EN CHIFFRE, À GAUCHE. Le chiffre reprend le serif du
+     calendrier juste au-dessus ; les noms se décalent de 36 px. */
+  [data-vue="c"] .jour{padding-top:14px;margin-top:18px}
+  [data-vue="c"] .date{display:flex;align-items:baseline;gap:9px}
+  [data-vue="c"] .date .num{font:400 26px/1 ui-serif,Georgia,serif;color:var(--ink)}
+  [data-vue="c"] .date .mot{font:700 11px/1 ui-sans-serif,sans-serif;letter-spacing:.18em;
+                            text-transform:uppercase;color:var(--muted)}
+  [data-vue="c"] .ligne{padding-left:36px}
 
-  .note{max-width:430px;margin:14px auto 0;padding:0 22px;font-size:13px;line-height:1.55;
-        color:#4a4a44}
-  .note b{color:#1c1c1a}
-  .pied{max-width:430px;margin:26px auto 0;padding:0 22px;font-size:12.5px;line-height:1.6;
-        color:#4a4a44}
-  .pied h2{font:700 12px/1 ui-sans-serif,sans-serif;letter-spacing:.18em;text-transform:uppercase;
-           color:#1c1c1a;margin:22px 0 8px}
+  /* D — LA DATE DANS UNE PASTILLE de papier — le fond des encarts. */
+  [data-vue="d"] .jour{border-top:0;padding-top:0;margin-top:20px}
+  [data-vue="d"] .date{text-align:center}
+  [data-vue="d"] .date i{display:inline-block;font-style:normal;background:var(--rustTint);
+                         border-radius:999px;padding:7px 15px;
+                         font:700 12px/1 ui-sans-serif,sans-serif;letter-spacing:.14em;
+                         text-transform:uppercase;color:var(--ink)}
+
+  /* Ce qui n'appartient pas à la vue courante ne s'affiche pas. */
+  .date .plein,.date .num,.date .mot,.date i{display:none}
+  [data-vue="temoin"] .date .plein,[data-vue="a"] .date .plein{display:inline}
+  [data-vue="b"] .date i,[data-vue="d"] .date i{display:inline-block}
+  [data-vue="c"] .date .num,[data-vue="c"] .date .mot{display:inline}
+
+  /* ─── CE QUE LA PROPOSITION COÛTE ─────────────────────────────────────────*/
+  .verdict{max-width:430px;margin:16px auto 0;padding:0 22px}
+  .verdict h2{font:700 12px/1 ui-sans-serif,sans-serif;letter-spacing:.18em;
+              text-transform:uppercase;color:var(--horsFort);margin:0 0 9px}
+  .verdict p{margin:0 0 10px;font-size:13.5px;line-height:1.55}
+  .verdict b{color:var(--horsFort)}
+  .verdict .defaut{border-left:2px solid var(--or);padding-left:12px}
+
+  .pied{max-width:430px;margin:26px auto 0;padding:0 22px;font-size:12.5px;line-height:1.6}
+  .pied h2{font:700 12px/1 ui-sans-serif,sans-serif;letter-spacing:.18em;
+           text-transform:uppercase;color:var(--horsFort);margin:20px 0 8px}
 </style>
 </head>
-<body>
+<body data-charte="origine">
 
 <div class="bandeau">
-  <b>La date des « Planifiés » — comment la faire ressortir du nom du client.</b><br>
+  <b>La date des « Planifiés » — touchez une lettre, l’écran se refait.</b><br>
   Votre question du 23 août. Aujourd’hui la date et le nom portent <b>la même
-  couleur</b> — l’encre — et le nom est trois fois plus gros : c’est lui qui gagne,
-  et la date se lit comme une étiquette de plus. Quatre façons de la redresser,
-  <b>sur vos vrais chantiers</b>. Rien n’est codé. Dites-moi la lettre.
+  encre</b>, et le nom est trois fois plus gros : c’est lui qui gagne. Quatre
+  façons de redresser ça, sur vos vrais chantiers. <b>Rien n’est codé</b> —
+  dites-moi la lettre.
 </div>
 
-<!-- ═══ TÉMOIN ═══════════════════════════════════════════════════════════ -->
-<div class="tel">
-  <div class="etiquette"><b>AUJOURD’HUI</b> — ce que vous avez sous les yeux.</div>
+<div class="choix">
+  <button type="button" data-vue="temoin" class="temoin" aria-pressed="true">Aujourd’hui</button>
+  <button type="button" data-vue="a" aria-pressed="false">A</button>
+  <button type="button" data-vue="b" aria-pressed="false">B</button>
+  <button type="button" data-vue="c" aria-pressed="false">C</button>
+  <button type="button" data-vue="d" aria-pressed="false">D</button>
+  <button type="button" id="bascule-nuit" class="nuit" aria-pressed="false">Nuit</button>
+</div>
+
+<div class="tel" id="tel" data-vue="temoin">
   <p class="titre-section">Planifiés</p>
+  <div class="semaine">
+    <button class="fleche" type="button" tabindex="-1" aria-hidden="true">‹</button>
+    <span class="quand">24 – 30 août</span>
+    <button class="fleche" type="button" tabindex="-1" aria-hidden="true">›</button>
+  </div>
 
   <div class="jour">
-    <p class="date-actuelle">Mardi 25 août</p>
+    <p class="date" data-jour="25">
+      <span class="plein">Mardi 25 août</span><i>Mardi 25 août</i><span class="num">25</span><span class="mot">Mardi</span>
+    </p>
     <div class="ligne">
       <span class="nom">Mr. Eric<span class="duree">une journée</span></span>
       <span class="equipe">Julien, Antoine</span><span class="chev">›</span>
@@ -133,7 +172,9 @@
   </div>
 
   <div class="jour">
-    <p class="date-actuelle">Mercredi 26 août</p>
+    <p class="date" data-jour="26">
+      <span class="plein">Mercredi 26 août</span><i>Mercredi 26 août</i><span class="num">26</span><span class="mot">Mercredi</span>
+    </p>
     <div class="ligne">
       <span class="nom">Mr. Marco<span class="duree">2 jours</span></span>
       <span class="equipe">Julien, Antoine</span><span class="chev">›</span>
@@ -145,185 +186,89 @@
   </div>
 
   <div class="jour">
-    <p class="date-actuelle">Jeudi 27 août</p>
+    <p class="date" data-jour="27">
+      <span class="plein">Jeudi 27 août</span><i>Jeudi 27 août</i><span class="num">27</span><span class="mot">Jeudi</span>
+    </p>
     <div class="ligne">
       <span class="nom">Mr. Marco<span class="duree">2 jours</span></span>
       <span class="equipe">Julien, Antoine</span><span class="chev">›</span>
     </div>
   </div>
 </div>
-<p class="note">Le nom fait <b>19 px</b> en serif, la date <b>12,5 px</b> —
-et les deux sont <b>de la même encre</b>. Deux tailles ne suffisent pas à faire
-une hiérarchie quand la couleur est identique.</p>
 
-<!-- ═══ A ═════════════════════════════════════════════════════════════════ -->
-<div class="tel">
-  <div class="etiquette"><span class="lettre">A</span> <b>La date prend l’or.</b>
-    Un seul mot change dans le code.</div>
-  <p class="titre-section">Planifiés</p>
-
-  <div class="jour">
-    <p class="date-a">Mardi 25 août</p>
-    <div class="ligne">
-      <span class="nom">Mr. Eric<span class="duree">une journée</span></span>
-      <span class="equipe">Julien, Antoine</span><span class="chev">›</span>
-    </div>
-  </div>
-  <div class="jour">
-    <p class="date-a">Mercredi 26 août</p>
-    <div class="ligne">
-      <span class="nom">Mr. Marco<span class="duree">2 jours</span></span>
-      <span class="equipe">Julien, Antoine</span><span class="chev">›</span>
-    </div>
-    <div class="ligne">
-      <span class="nom">Chantier test — Abri Pornic<span class="duree">une demi-journée</span></span>
-      <span class="equipe">Julien</span><span class="chev">›</span>
-    </div>
-  </div>
-  <div class="jour">
-    <p class="date-a">Jeudi 27 août</p>
-    <div class="ligne">
-      <span class="nom">Mr. Marco<span class="duree">2 jours</span></span>
-      <span class="equipe">Julien, Antoine</span><span class="chev">›</span>
-    </div>
-  </div>
-</div>
-<p class="note">Dans toute l’application, <b>l’or porte ce qu’on LIT</b> et le
-vert pin ce qu’on FAIT. Une date est exactement ce qu’on lit.
-<b>Le défaut à regarder :</b> la durée sous le nom est déjà en or. Deux ors sur
-le même écran — celui de la journée et celui du chantier — se répondent-ils, ou
-se marchent-ils dessus ? C’est la seule question de cette proposition.</p>
-
-<!-- ═══ B ═════════════════════════════════════════════════════════════════ -->
-<div class="tel">
-  <div class="etiquette"><span class="lettre">B</span> <b>La date s’assoit sur le
-    filet.</b> Aucune couleur ne change — c’est la place qui sépare.</div>
-  <p class="titre-section">Planifiés</p>
-
-  <div class="jour jour-b">
-    <p class="date-b"><span>Mardi 25 août</span></p>
-    <div class="ligne">
-      <span class="nom">Mr. Eric<span class="duree">une journée</span></span>
-      <span class="equipe">Julien, Antoine</span><span class="chev">›</span>
-    </div>
-  </div>
-  <div class="jour jour-b">
-    <p class="date-b"><span>Mercredi 26 août</span></p>
-    <div class="ligne">
-      <span class="nom">Mr. Marco<span class="duree">2 jours</span></span>
-      <span class="equipe">Julien, Antoine</span><span class="chev">›</span>
-    </div>
-    <div class="ligne">
-      <span class="nom">Chantier test — Abri Pornic<span class="duree">une demi-journée</span></span>
-      <span class="equipe">Julien</span><span class="chev">›</span>
-    </div>
-  </div>
-  <div class="jour jour-b">
-    <p class="date-b"><span>Jeudi 27 août</span></p>
-    <div class="ligne">
-      <span class="nom">Mr. Marco<span class="duree">2 jours</span></span>
-      <span class="equipe">Julien, Antoine</span><span class="chev">›</span>
-    </div>
-  </div>
-</div>
-<p class="note">Le trait passe <b>derrière</b> la date, qui le coupe. La date
-cesse d’être un titre de plus posé au-dessus d’une liste : elle devient la
-<b>couture entre deux journées</b>. C’est la plus sobre des quatre — et celle
-qui tient le mieux si vous ajoutez un jour très chargé.</p>
-
-<!-- ═══ C ═════════════════════════════════════════════════════════════════ -->
-<div class="tel">
-  <div class="etiquette"><span class="lettre">C</span> <b>Le jour en chiffre, à
-    gauche.</b> Le même chiffre que dans le calendrier au-dessus.</div>
-  <p class="titre-section">Planifiés</p>
-
-  <div class="jour jour-c">
-    <p class="date-c"><span class="num">25</span><span class="mot">Mardi</span></p>
-    <div class="ligne">
-      <span class="nom">Mr. Eric<span class="duree">une journée</span></span>
-      <span class="equipe">Julien, Antoine</span><span class="chev">›</span>
-    </div>
-  </div>
-  <div class="jour jour-c">
-    <p class="date-c"><span class="num">26</span><span class="mot">Mercredi</span></p>
-    <div class="ligne">
-      <span class="nom">Mr. Marco<span class="duree">2 jours</span></span>
-      <span class="equipe">Julien, Antoine</span><span class="chev">›</span>
-    </div>
-    <div class="ligne">
-      <span class="nom">Chantier test — Abri Pornic<span class="duree">une demi-journée</span></span>
-      <span class="equipe">Julien</span><span class="chev">›</span>
-    </div>
-  </div>
-  <div class="jour jour-c">
-    <p class="date-c"><span class="num">27</span><span class="mot">Jeudi</span></p>
-    <div class="ligne">
-      <span class="nom">Mr. Marco<span class="duree">2 jours</span></span>
-      <span class="equipe">Julien, Antoine</span><span class="chev">›</span>
-    </div>
-  </div>
-</div>
-<p class="note">La date quitte l’axe des noms et prend <b>sa propre colonne</b> :
-c’est le décalage qui la fait ressortir, pas une couleur. Le chiffre reprend le
-serif du calendrier juste au-dessus — l’œil retrouve le même objet à deux
-endroits de l’écran. <b>Le prix à payer :</b> les noms se décalent de 36 px vers
-la droite, donc « Chantier test — Abri Pornic » a moins de place avant de casser
-en deux lignes.</p>
-
-<!-- ═══ D ═════════════════════════════════════════════════════════════════ -->
-<div class="tel">
-  <div class="etiquette"><span class="lettre">D</span> <b>La date dans une
-    pastille.</b> On la voit avant de la lire.</div>
-  <p class="titre-section">Planifiés</p>
-
-  <div class="jour jour-d">
-    <p class="date-d"><span>Mardi 25 août</span></p>
-    <div class="ligne">
-      <span class="nom">Mr. Eric<span class="duree">une journée</span></span>
-      <span class="equipe">Julien, Antoine</span><span class="chev">›</span>
-    </div>
-  </div>
-  <div class="jour jour-d">
-    <p class="date-d"><span>Mercredi 26 août</span></p>
-    <div class="ligne">
-      <span class="nom">Mr. Marco<span class="duree">2 jours</span></span>
-      <span class="equipe">Julien, Antoine</span><span class="chev">›</span>
-    </div>
-    <div class="ligne">
-      <span class="nom">Chantier test — Abri Pornic<span class="duree">une demi-journée</span></span>
-      <span class="equipe">Julien</span><span class="chev">›</span>
-    </div>
-  </div>
-  <div class="jour jour-d">
-    <p class="date-d"><span>Jeudi 27 août</span></p>
-    <div class="ligne">
-      <span class="nom">Mr. Marco<span class="duree">2 jours</span></span>
-      <span class="equipe">Julien, Antoine</span><span class="chev">›</span>
-    </div>
-  </div>
-</div>
-<p class="note">Le même papier que les encarts de l’application. En faisant
-défiler la semaine du pouce, <b>on repère les journées sans lire un mot</b>.
-<b>Le défaut à regarder :</b> l’écran a été refait sans un seul aplat inutile —
-une pastille par journée, c’est trois blocs de couleur de plus sur une semaine
-chargée.</p>
+<div class="verdict" id="verdict"></div>
 
 <div class="pied">
-  <h2>Ce que je ne fais pas sans votre réponse</h2>
-  <p>Rien n’est codé. Ces quatre pages ne changent pas l’application : elles la
-  montrent. <b>Dites-moi la lettre</b> — ou dites qu’aucune ne va, c’est une
-  réponse aussi.</p>
-
   <h2>Ce qui ne bouge dans aucune des quatre</h2>
   <p>Le nom du client en serif 19 px, la durée en or sous le nom, la pastille
-  d’équipe, le chevron. <b>Seule la date change</b> — sans quoi on ne saurait
-  pas ce qu’on compare.</p>
-
-  <h2>Et en mode nuit</h2>
-  <p>Aucune de ces propositions n’écrit une couleur en dur : elles prennent les
-  jetons de la charte. Sur <b>Nuit</b> et sur <b>Sylve</b>, où le fond est
-  sombre et l’encre claire, elles se retournent toutes seules.</p>
+  d’équipe, le chevron. <b>Seule la date change</b> — sans quoi on ne saurait pas
+  ce qu’on compare.</p>
+  <h2>Le bouton « Nuit »</h2>
+  <p>Il repeint la planche avec les vraies couleurs de votre charte Nuit, sorties
+  du code. <b>Une proposition qui ne tient qu’en clair n’est pas une
+  proposition</b> : l’accent y devient clair et le fond sombre, les pôles
+  s’inversent.</p>
+  <h2>Rien n’est codé</h2>
+  <p>Cette page ne change pas l’application : elle la montre. Dites-moi la
+  lettre — ou qu’aucune ne va, c’est une réponse aussi.</p>
 </div>
+
+<script>
+/* Le texte qui accompagne chaque proposition. **Chacune porte son défaut** :
+   une planche qui ne dit que ses avantages ne se choisit pas, elle se subit. */
+const VERDICTS = {
+  temoin: {
+    titre: "Aujourd’hui — ce que vous avez sous les yeux",
+    quoi: "Le nom fait <b>19 px</b> en serif, la date <b>12,5 px</b> en capitales — et les deux sont <b>de la même encre</b>.",
+    defaut: "Deux tailles ne font pas une hiérarchie quand la couleur est identique : la date se lit comme une étiquette de plus, pas comme une séparation."
+  },
+  a: {
+    titre: "A — la date prend l’or",
+    quoi: "Un seul mot change dans le code. Dans toute l’application, <b>l’or porte ce qu’on LIT</b> et le vert pin ce qu’on FAIT — une date est exactement ce qu’on lit.",
+    defaut: "La durée sous le nom est <b>déjà en or</b>. Deux ors sur le même écran — celui de la journée et celui du chantier : se répondent-ils, ou se marchent-ils dessus ? C’est la seule question de cette proposition."
+  },
+  b: {
+    titre: "B — la date s’assoit sur le filet",
+    quoi: "Le trait de séparation passe <b>derrière</b> la date, qui le coupe. Aucune couleur ne change : c’est la place qui sépare. La date cesse d’être un titre posé au-dessus d’une liste, elle devient <b>la couture entre deux journées</b>.",
+    defaut: "La plus sobre des quatre — donc la moins voyante. Si ce que vous cherchez, c’est repérer une journée <b>en faisant défiler au pouce sans lire</b>, elle en fait peut-être trop peu."
+  },
+  c: {
+    titre: "C — le jour en chiffre, à gauche",
+    quoi: "La date quitte l’axe des noms et prend <b>sa propre colonne</b> : c’est le décalage qui la fait ressortir, pas une couleur. Le chiffre reprend le serif du calendrier juste au-dessus — l’œil retrouve le même objet à deux endroits de l’écran.",
+    defaut: "Les noms se décalent de <b>36 px</b> vers la droite. « Chantier test — Abri Pornic » a d’autant moins de place avant de casser en deux lignes — <b>regardez-le sur le mercredi</b>."
+  },
+  d: {
+    titre: "D — la date dans une pastille",
+    quoi: "Le même papier que les encarts de l’application. En faisant défiler la semaine du pouce, <b>on repère les journées sans lire un mot</b>.",
+    defaut: "L’écran a été refait sans un seul aplat inutile. Une pastille par journée, c’est <b>trois blocs de couleur de plus</b> sur une semaine chargée — et davantage sur une semaine pleine."
+  }
+};
+
+const tel = document.getElementById("tel");
+const verdict = document.getElementById("verdict");
+const boutons = [...document.querySelectorAll(".choix button[data-vue]")];
+
+function montrer(vue) {
+  tel.dataset.vue = vue;
+  for (const b of boutons) b.setAttribute("aria-pressed", String(b.dataset.vue === vue));
+  const v = VERDICTS[vue];
+  verdict.innerHTML =
+    "<h2>" + v.titre + "</h2><p>" + v.quoi + "</p>" +
+    "<p class='defaut'><b>Ce qu’elle coûte : </b>" + v.defaut + "</p>";
+}
+
+for (const b of boutons) b.addEventListener("click", () => montrer(b.dataset.vue));
+montrer("temoin");
+
+/* Le mode nuit — les vraies couleurs de la charte, pas une approximation. */
+const nuit = document.getElementById("bascule-nuit");
+nuit.addEventListener("click", () => {
+  const sombre = document.body.dataset.charte === "nuit";
+  document.body.dataset.charte = sombre ? "origine" : "nuit";
+  nuit.setAttribute("aria-pressed", String(!sombre));
+  nuit.textContent = sombre ? "Nuit" : "Clair";
+});
+</script>
 
 </body>
 </html>
