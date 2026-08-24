@@ -15,6 +15,7 @@ import {
   majPassageAction,
   nommerClientAction,
 } from "../actions";
+import { PHRASE_ADRESSE_LOCALE, ouvrableParLeClient } from "@/lib/adresse-du-client";
 
 // La fiche qu'il coche sur un chantier — arrangement C, 17 août 2026.
 //
@@ -222,6 +223,23 @@ export default function FicheChantierClient({
 
     const destinataire = canal === "sms" ? telephone : email;
     if (!destinataire?.trim()) return;
+
+    // **LE LIEN NE PART PAS S'IL NE MÈNE NULLE PART — sa capture du 24 août
+    // 2026 : « Connexion au serveur impossible. »** Le client avait ouvert le
+    // SMS de sa fiche et atterri sur `localhost`, c'est-à-dire sur son propre
+    // téléphone. Le rapport existait, son jeton était bon ; c'est l'adresse qui
+    // ne désignait qu'une machine.
+    //
+    // **Le refus vient APRÈS le figeage, et c'est délibéré.** Le rapport est
+    // enregistré — son jeton vaut depuis n'importe quelle adresse, et le lui
+    // refuser l'obligerait à recocher toute sa fiche pour une raison qui n'a
+    // rien à voir avec son chantier. Ce qu'on lui épargne, c'est le message
+    // mort ; ce qu'on lui garde, c'est son travail.
+    if (!ouvrableParLeClient(origine)) {
+      setPhrase(PHRASE_ADRESSE_LOCALE);
+      return;
+    }
+
     const message = composerMessageEntretien({
       clientNom: clientNom ?? "",
       clientCivilite: (civilite ?? undefined) as CiviliteChoisie | undefined,
@@ -751,6 +769,18 @@ function RapportParti({
   // ni e-mail. Là, elle n'est pas un doublon du bouton — elle EST le seul
   // moyen de transmettre le rapport, et la retirer laisserait un rapport figé
   // sans aucune issue.
+  // **Le même refus que sur le geste d'envoi, et il doit être ici AUSSI.** Un
+  // rapport figé se rouvre : le bouton se retouche des jours plus tard, depuis
+  // l'adresse du moment. Ne garder le contrôle que sur le premier envoi
+  // laisserait passer exactement le second.
+  if (!ouvrableParLeClient(lien)) {
+    return (
+      <p className="text-center text-[13px] leading-[1.6]" style={{ color: colors.rust }} data-refus>
+        {PHRASE_ADRESSE_LOCALE}
+      </p>
+    );
+  }
+
   return (
     <div>
       {destinataire ? (

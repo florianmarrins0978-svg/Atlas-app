@@ -9,6 +9,30 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
+## Le devis et la facture n'ont pas encore le refus d'adresse locale (24 août 2026)
+
+Le lien envoyé au client prenait l'adresse du navigateur qui l'avait fabriqué —
+et son client a reçu une page morte sur `localhost` (`ARCHITECTURE.md` §167).
+
+**Ce qui est fait pour les quatre écrans** : l'adresse se calcule au même
+endroit, et `ATLAS_URL_PUBLIQUE` la commande quand elle est posée.
+
+**Ce qui n'est fait que sur la fiche de chantier** : le REFUS de composer un
+message avec une adresse locale, et la phrase qui le dit. Le devis parti, le
+devis complet et la facture peuvent donc encore envoyer un lien mort quand Atlas
+est ouvert par une redirection de port.
+
+| | |
+|---|---|
+| ce qu'il faut | poser `ouvrableParLeClient` sur leurs trois gestes d'envoi |
+| qui peut le faire | n'importe quelle session — la règle pure existe déjà |
+| pourquoi ce n'est pas fait ici | trois écrans de plus dans un lot déjà large, et leurs suites à reprendre une par une |
+
+Ce n'est pas urgent tant qu'il envoie depuis l'adresse de son espace de travail
+— mais c'est exactement l'hypothèse qui vient d'être démentie.
+
+---
+
 ## ~~Supprimer une fiche en cours, et retrouver où la fiche se compose~~ (fait le 24 août 2026)
 
 Ses deux phrases du jour. Les deux sont livrées — `ARCHITECTURE.md` §166.

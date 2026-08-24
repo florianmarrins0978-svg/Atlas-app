@@ -24,6 +24,30 @@ position de la ligne dans le gestionnaire, et la restaure en `useLayoutEffect`
 
 Le même piège guette partout où un panneau se referme au-dessus du point
 regardé. Détail : `ARCHITECTURE.md` §157.
+## PIÈGE : UN LIEN ENVOYÉ AU CLIENT PREND L'ADRESSE DU NAVIGATEUR (24 août 2026)
+
+**Devant « le client ne reçoit rien » ou « connexion au serveur impossible » :
+regarder d'abord PAR QUELLE ADRESSE il a ouvert Atlas.**
+
+Un lien fabriqué depuis `http://localhost:3000` — la redirection de port de son
+éditeur — désigne le téléphone du client. Le rapport, le devis ou la facture
+existent, leur jeton est bon ; seule l'adresse ne mène nulle part.
+
+Atlas refuse maintenant de composer le message et le DIT (`ouvrableParLeClient`,
+`src/lib/adresse-du-client.ts`). Deux choses à savoir :
+
+- **`ATLAS_URL_PUBLIQUE`** est la réponse d'un déploiement derrière un mandataire
+  muet — posée, elle commande. Son banc ne la pose pas, et n'en a pas besoin tant
+  qu'il ouvre Atlas par l'adresse de son espace.
+- **Les suites navigateur DÉCLARENT une adresse publique** (`run-e2e-tests.ts`) :
+  sans cela, tournant sur `localhost`, elles rougiraient toutes en accusant
+  l'envoi. Le refus lui-même s'éprouve sans navigateur
+  (`test-adresse-du-client.ts`).
+
+Détail : `ARCHITECTURE.md` §167.
+
+---
+
 ## Fiche de chantier : ce que le 24 août a changé (aucune migration)
 
 Deux plaintes de sa part, un même mécanisme derrière : **un écran qui retire ce

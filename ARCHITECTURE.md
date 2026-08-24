@@ -14736,3 +14736,90 @@ Aucune maquette n'a précédé ces gestes, et c'est délibéré (`CLAUDE.md` §3
 aucun n'est neuf. Le retrait réversible avec son tiroir est le SIEN, celui du
 10 août, déjà à l'œuvre à huit endroits ; lui en donner une neuvième variante
 sur l'écran qu'il ouvre le plus lui ferait apprendre deux fois la même chose.
+
+---
+
+## 167. Le lien qui part chez un client ne peut pas être une adresse de sa machine
+
+**Sa capture du 24 août 2026 : « Connexion au serveur impossible. »** Son client
+ouvre le SMS de sa fiche de chantier et tombe sur une page morte, sur
+`localhost`.
+
+Le rapport existait, son jeton était bon, la page fonctionnait. **C'est
+l'adresse qui désignait le téléphone du client lui-même.**
+
+### Pourquoi cela n'arrivait que par moments
+
+L'adresse d'un lien était celle du navigateur qui l'avait fabriqué :
+
+| Comment il ouvre Atlas | Ce que le client reçoit |
+|---|---|
+| par l'adresse publique de son espace | un lien qui s'ouvre |
+| par la redirection de port de son éditeur — `localhost:3000` | une page morte |
+
+Rien à l'écran ne distinguait les deux, et le message partait pareil. Il a donc
+envoyé des rapports valides à des clients qui n'ont rien pu lire — sans qu'aucun
+des deux ne sache pourquoi.
+
+### Le dépôt connaissait déjà ce piège — ailleurs
+
+Le 9 août 2026, le retour d'autorisation Google renvoyait l'artisan vers
+`localhost:3000` : même cause, même page morte. C'est ce jour-là qu'est né
+`adressePublique`. Ce qui manquait, c'est qu'**aucune règle ne DISAIT qu'une
+adresse pareille ne se donne pas à quelqu'un d'autre**.
+
+### Trois choses, et la troisième est celle qui protège
+
+1. **`originePublique`** remplace quatre copies. Les mêmes quatre lignes
+   vivaient dans le devis parti, le devis complet, la facture et la fiche de
+   chantier — chacune avec un commentaire disant qu'elle faisait comme la
+   voisine. Quatre endroits à corriger le jour où la règle change, et ce jour
+   est arrivé (`CLAUDE.md` §3).
+2. **`ATLAS_URL_PUBLIQUE` commande quand elle est posée.** C'est le seul moyen
+   qu'a un déploiement derrière un mandataire muet de dire son adresse. Elle
+   n'existait pas ; elle est documentée dans `.env.example`.
+3. **`ouvrableParLeClient` refuse de composer le message**, et l'écran le dit.
+   Parce que le point 2 ne suffit pas : sur son espace de travail, aucune
+   variable ne peut deviner par quelle porte il est entré.
+
+**La plus traître n'est pas `localhost`, c'est `192.168.x.x`** — elle s'ouvre au
+bureau, donc l'essai réussit, et elle échoue chez tout le monde. Les plages
+privées, les adresses de lien local et `.local` sont donc refusées avec elle.
+
+### Le refus vient APRÈS le figeage, et c'est délibéré
+
+Le rapport est enregistré avant que le message se compose. Refuser plus tôt
+l'obligerait à recocher toute sa fiche pour une raison qui n'a rien à voir avec
+son chantier. **Ce qu'on lui épargne, c'est le message mort ; ce qu'on lui
+garde, c'est son travail** — et la phrase le dit, sans quoi il croirait avoir
+tout perdu.
+
+Le même refus est posé **sur l'écran figé**, pas seulement sur le premier envoi :
+un rapport se rouvre des jours plus tard, depuis l'adresse du moment.
+
+### Ce que les suites peuvent, et ce qu'elles ne peuvent pas
+
+Elles tournent sur `http://localhost:3000` : sans rien faire, chaque écran
+d'envoi rendrait le refus et une dizaine de suites rougiraient en accusant
+l'envoi. Le serveur des suites **déclare donc une adresse publique**, comme le
+ferait un vrai déploiement.
+
+**Conséquence à dire plutôt qu'à taire :** le refus lui-même ne se joue pas au
+navigateur — un seul serveur tourne, avec une seule adresse.
+`test-adresse-du-client.ts` l'éprouve dans les deux sens, sans navigateur. Et le
+garde-fou a bien été vu ROUGE : la suite de la fiche de chantier, rejouée sans
+l'adresse déclarée, tombe sur « n'a ouvert aucune messagerie » et « n'offre
+aucun moyen de le transmettre » — exactement là où son client est tombé.
+
+### Ce qui n'est PAS réglé ici, et qui lui appartient
+
+Il a écrit : *« Il est sensé recevoir la fiche par pdf ! »* Ce n'est pas ce que
+le dépôt fait, et ce n'est pas un oubli — `docs/QUESTIONS.md` §3 porte
+l'arbitrage du 3 août 2026 : *« Dans Atlas, la livraison est la page du
+client »*, et *« joindre le PDF serait désormais nuisible »*. Le tableau de la
+même question dit pourquoi les deux ne se cumulent pas : un lien `sms:` ou
+`mailto:` remplit le destinataire mais **ne peut porter aucune pièce jointe** ;
+le partage natif joint le fichier mais n'a pas de champ destinataire.
+
+Le destinataire prérempli est ce qu'il a demandé le 3 août. Revenir au PDF, ce
+serait le rendre. **La question lui est posée, elle n'est pas tranchée ici.**

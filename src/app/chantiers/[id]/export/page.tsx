@@ -1,4 +1,5 @@
 import { headers } from "next/headers";
+import { originePublique } from "@/server/origine-publique";
 import { notFound, redirect } from "next/navigation";
 import EnTeteEcran from "@/components/atlas/EnTeteEcran";
 import { colors, font } from "@/lib/design-tokens";
@@ -85,14 +86,9 @@ export default async function ExportPage({ params }: { params: Promise<{ id: str
     redirect(`/chantiers/${id}/devis-complet`);
   }
 
-  // L'adresse complète du lien est bâtie ICI, côté serveur, et non depuis
-  // `window` : composée dans le navigateur, elle diffère de ce que le serveur a
-  // rendu, et React régénère alors tout l'arbre. Le patron doit pouvoir copier
-  // une adresse entière — un chemin seul ne s'ouvre nulle part.
-  const entetes = await headers();
-  const hote = entetes.get("x-forwarded-host") ?? entetes.get("host") ?? "";
-  const protocole = entetes.get("x-forwarded-proto") ?? (hote.startsWith("localhost") ? "http" : "https");
-  const origine = hote ? `${protocole}://${hote}` : "";
+  // Le pourquoi vit dans `originePublique` : quatre écrans recopiaient ces
+  // quatre lignes, et le 24 août 2026 la règle a changé pour tous à la fois.
+  const origine = originePublique(await headers());
 
   return (
     // **`atlas-ecran`, la convention de l'écran d'accueil — pas une soustraction

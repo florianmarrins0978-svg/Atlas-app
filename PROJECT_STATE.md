@@ -15,6 +15,24 @@ ligne « fait » qui ne l'est pas coûte plus cher qu'une ligne absente.
 
 ---
 
+## Le lien envoyé au client ne peut plus être une adresse locale (24 août 2026)
+
+Son client lisait « Connexion au serveur impossible » : le lien portait
+`localhost`.
+
+| | État |
+|---|---|
+| Une adresse locale ne part plus dans un message | **fait** (`ouvrableParLeClient`) |
+| L'écran le dit, et dit que le rapport est sauf | **fait** |
+| `ATLAS_URL_PUBLIQUE` pour un mandataire muet | **fait**, documentée dans `.env.example` |
+| Les quatre copies du calcul d'adresse réunies | **fait** (`originePublique`) |
+| Le garde-fou confronté à l'état dégradé | **fait** — la suite de la fiche rougit sans adresse déclarée |
+| Le même refus sur le devis et la facture | **NON** — leur adresse est corrigée, mais aucun refus n'y est posé |
+
+Le détail et les partis pris : `ARCHITECTURE.md` §167.
+
+---
+
 ## La fiche de chantier : supprimer un brouillon, retrouver où elle se compose (24 août 2026)
 
 Ses deux phrases, sur une capture : *« Je ne peux pas supprimer les fiches en

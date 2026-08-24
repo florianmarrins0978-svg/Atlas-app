@@ -1,4 +1,5 @@
 import { headers } from "next/headers";
+import { originePublique } from "@/server/origine-publique";
 import { notFound } from "next/navigation";
 import EnTeteEcran from "@/components/atlas/EnTeteEcran";
 import { getCurrentCtx } from "@/server/session-ctx";
@@ -32,17 +33,10 @@ export default async function FichePage({ params }: { params: Promise<{ id: stri
   const [clients, entreprise] = await Promise.all([listerClients(ctx), getEntreprise(ctx)]);
   const entrepriseNom = entreprise?.nom ?? "";
 
-  // **L'adresse complète est bâtie ICI, côté serveur, et jamais depuis
-  // `window`.** Composée dans le navigateur, elle diffère de ce que le serveur
-  // a rendu, et React régénère alors tout l'arbre en annonçant « Hydration
-  // failed » — c'est l'erreur que le patron a signalée le 13 août sur la page
-  // de sa facture (`ARCHITECTURE.md` §68, §81). L'écran d'envoi du devis
-  // procède déjà exactement ainsi.
-  const entetes = await headers();
-  const hote = entetes.get("x-forwarded-host") ?? entetes.get("host") ?? "";
-  const protocole =
-    entetes.get("x-forwarded-proto") ?? (hote.startsWith("localhost") ? "http" : "https");
-  const origine = hote ? `${protocole}://${hote}` : "";
+  // Le pourquoi vit dans `originePublique`. **Ce qu'elle rend n'est pas
+  // forcément donnable à un client** — c'est `ouvrableParLeClient` qui tranche,
+  // au moment de composer le message.
+  const origine = originePublique(await headers());
 
   return (
     <main className="min-h-dvh">

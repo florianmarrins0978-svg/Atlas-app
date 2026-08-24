@@ -9,6 +9,30 @@ Format : le plus récent en tête.
 
 ## 2026-08-24
 
+### Un lien envoyé à un client ne peut plus être une adresse de sa machine
+
+**« Connexion au serveur impossible. »** C'est ce que lisait son client en
+ouvrant le SMS de sa fiche de chantier. Le rapport existait et son jeton était
+bon : c'est l'adresse qui portait `localhost`, c'est-à-dire le téléphone du
+client lui-même. Le lien prenait l'adresse du navigateur qui l'avait fabriqué —
+juste quand Atlas est ouvert par son adresse publique, faux dès qu'il passe par
+la redirection de port de son éditeur, et rien à l'écran ne distinguait les
+deux.
+
+Atlas refuse désormais de composer un message avec une adresse qui ne sort pas
+d'une machine — `localhost`, mais aussi `192.168.x.x`, qui est la plus traître :
+elle s'ouvre au bureau, donc l'essai réussit, et elle échoue chez tout le monde.
+L'écran le dit, et dit que le rapport est enregistré : sans cela il recocherait
+toute sa fiche.
+
+**`ATLAS_URL_PUBLIQUE`** répond pour un déploiement dont les en-têtes ne
+trahissent pas l'adresse (documentée dans `.env.example`), et **les quatre
+copies de ce calcul** — devis parti, devis complet, facture, fiche de chantier —
+n'en font plus qu'une. Le garde-fou a été vu rouge : la suite de la fiche,
+rejouée sans adresse déclarée, tombe exactement là où son client est tombé.
+Détail : `ARCHITECTURE.md` §167.
+
+
 ### La fiche en cours se supprime, et l'endroit où elle se compose se retrouve
 
 **Rien n'effaçait un brouillon.** Une fiche s'ouvre à chaque geste, et l'écran
