@@ -154,7 +154,59 @@ PDF embarque.
 
 `ARCHITECTURE.md` §164.
 
----
+### « Brume moderne » entre dans Apparence — et l'application ne bouge pas
+
+Son choix devant la planche 92 : *« ajoute-moi le Brume moderne comme style,
+mais ne change pas l'appli »*. Les deux moitiés commandent ensemble : la charte
+s'ajoute aux sept, `origine` reste le défaut, et rien ne change pour qui ne la
+choisit pas.
+
+**Une charte peut désormais porter une FORME, pas seulement des couleurs.** Le
+champ `formes` est à part de `jetons`, et ce n'est pas un rangement : les
+dérivations — `estSombre`, `contraste`, la remontée des couleurs de signal —
+parcourent les jetons en supposant que chaque valeur est une couleur. Y glisser
+une pile de polices ferait calculer une luminance sur « ui-sans-serif », et le
+résultat ne serait pas une erreur, ce serait **un nombre faux, en silence**.
+
+| Ce que Brume porte | Ce qu'elle ne porte pas encore |
+|---|---|
+| les huit couleurs de la planche | les rayons de 20 px |
+| les **titres** dans la police du téléphone | l'ombre bleutée, l'air en plus |
+
+La typographie passait déjà par `--font-display` : elle suit la charte sans
+qu'aucun écran soit touché. Les rayons, non — **soixante-six fichiers** les
+écrivent en dur (`rounded-[13px]`), et une charte ne peut rien sur ce qui ne
+passe pas par elle. C'est annoncé, pas fait.
+
+### Le gabarit recopiait les couleurs au lieu de les demander
+
+**Le défaut qui a fait perdre le plus de temps ce soir-là, et il était
+invisible.** `layout.tsx` reparcourait `c.jetons` de son côté
+(`variablesEnStyle`) alors que `variablesCss` existait : **deux implémentations
+de la même règle**, ce que `CLAUDE.md` §3 interdit précisément parce qu'elles
+finissent par diverger. Elles ont divergé au premier changement — la police de
+Brume était émise par l'une et pas par l'autre. À l'écran : le réglage
+s'écrivait, les couleurs changeaient, **la typographie non**, et rien ne le
+disait.
+
+Les deux formes dérivent maintenant de `variablesCharte`. Un contrôle compare
+les deux sorties charte par charte, et **interdit au gabarit de reparcourir les
+jetons**.
+
+**Sa première version ne savait pas échouer**, et c'est le genre de contrôle
+qui rassure sans rien tenir : elle se contentait de chercher le mot
+`variablesCharte` dans le fichier — or l'import y reste même quand le corps
+recopie. Confrontée au défaut qu'elle prétendait attraper, elle est restée
+verte. Elle vise désormais le parcours lui-même.
+
+### Le script de capture était aveugle à la charte neuve
+
+`capture-chartes.mts` énumérait les sept noms **à la main**. « Brume moderne »
+n'a donc pas été capturée : l'outil qui existe pour *regarder l'écran* ne
+montrait pas la seule chose qu'on venait d'ajouter. Il lit la liste maintenant.
+
+Une énumération recopiée ne suit jamais la source qu'elle prétend montrer —
+c'est la même faute que celle du gabarit, dans l'outillage.
 
 ## 2026-08-23
 
