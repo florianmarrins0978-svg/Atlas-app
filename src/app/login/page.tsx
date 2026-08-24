@@ -4,6 +4,7 @@ import { useActionState, useState } from "react";
 import { connexionAction } from "./actions";
 import { SceauAtlas } from "@/components/atlas/MarqueAtlas";
 import { colors, font, libelleCaps } from "@/lib/design-tokens";
+import LigneFaceId from "./LigneFaceId";
 
 /**
  * La porte d'Atlas — refaite le 12 août 2026, à sa demande.
@@ -109,6 +110,13 @@ export default function LoginPage() {
         >
           ATLAS
         </span>
+
+        {/* **Sa proposition B, tranchée le 24 août 2026** (planche 94,
+            `appli/face-id.html`) : « ta porte d'aujourd'hui, plus une ligne
+            au-dessus. Rien ne change de place. » Tout ce qui suit est
+            inchangé — y compris `name="email"`, `name="password"` et
+            `type="submit"`, dont vingt scripts de capture dépendent. */}
+        <LigneFaceId />
 
         <label
           htmlFor="email"

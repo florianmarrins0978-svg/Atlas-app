@@ -59,6 +59,18 @@ export type Env = {
    * hébergeur ordinaire). Voir `src/app/login/actions.ts`.
    */
   proxySauts: number;
+  /**
+   * `ATLAS_RP_ID` — le domaine sous lequel « Ouvrir avec Face ID » enregistre
+   * les clés d'appareil.
+   *
+   * **Obligatoire en production**, et refusée autrement : une clé WebAuthn est
+   * attachée à un domaine, et le déduire de l'hôte annoncé reviendrait à croire
+   * un en-tête que le client écrit — la faute que ce dépôt vient de fermer sur
+   * `x-forwarded-for`. Hors production, l'hôte de la requête suffit : l'adresse
+   * du banc change à chaque espace de travail. Voir
+   * `src/lib/origine-webauthn.ts`.
+   */
+  rpId?: string;
   redisUrl?: string;
   cronSecret?: string;
   sentryDsn?: string;
@@ -445,6 +457,7 @@ function construireEnv(): Env {
     // adresse transmise n'est crue. Une valeur illisible ou négative vaut zéro
     // plutôt que d'ouvrir une confiance que personne n'a accordée.
     proxySauts: Math.max(0, Math.trunc(Number(optionnel("ATLAS_PROXY_SAUTS")) || 0)),
+    rpId: optionnel("ATLAS_RP_ID")?.trim().toLowerCase() || undefined,
     redisUrl: process.env.REDIS_URL,
     cronSecret,
     sentryDsn: process.env.SENTRY_DSN,

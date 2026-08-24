@@ -300,7 +300,7 @@ async function main() {
         lignes_facture, factures, lignes_devis, devis, lignes_prix, photos, notes_vocales,
         materiel, prestations, chantiers, clients, tarifs,
         entreprise_compteurs, membres_entreprise, entreprises, users,
-        tentatives_connexion
+        tentatives_connexion, cles_appareil
       RESTART IDENTITY CASCADE
     `);
 

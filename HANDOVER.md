@@ -9,14 +9,19 @@ sert.
 
 ---
 
-## FACE ID : LA PLANCHE EST POSÉE, LE CODE ATTEND SA RÉPONSE
+## FACE ID : CODÉ LE 24 AOÛT 2026 — SA RÉPONSE EST **B**
 
-**Ne pas commencer à coder Face ID avant qu'il ait dit A ou B.** La planche
-`appli/face-id.html` (n° 94) lui demande la place du geste sur la porte, et rien
-d'autre — c'est `CLAUDE.md` §3 bis, et le code écrit avant l'accord devrait être
-défait si l'accord ne vient pas.
+Planche 94 (`appli/face-id.html`), tranchée : la porte d'aujourd'hui, **plus une
+ligne au-dessus**. Rien n'a changé de place — `name="email"`, `name="password"`
+et `type="submit"` sont où ils étaient, ce dont dépendent vingt scripts de
+capture et `verifier-connexion.mjs`. Détail complet : `ARCHITECTURE.md` §157.
 
-**Le piège de ce lot, et il est déjà désamorcé :** `next-auth` porte un
+**À POSER LE JOUR DU DÉPLOIEMENT : `ATLAS_RP_ID`** (le domaine nu, `atlas.fr`).
+Sans elle, Atlas **refuse** d'enregistrer une clé en production — et le dit dans
+son journal, pas à l'écran. C'est volontaire : deviner le domaine depuis
+l'en-tête `Host` reviendrait à croire ce que le client écrit.
+
+**Le piège de ce lot, et il est déjà désamorcé : `next-auth` porte un
 fournisseur `passkey` tout fait, il est dans `node_modules`, et le prendre
 paraît évident. `@auth/core` refuse le WebAuthn **sans adaptateur de base**
 (« WebAuthn requires an adapter ») ; Atlas n'en a aucun, sa session est un JWT
@@ -32,6 +37,15 @@ retire jamais, le compte se crée au mot de passe, et **un échec de visage ne
 compte aucune tentative ratée** — appeler `noterEchec` sur ce chemin ferait
 temporiser son compte parce que son téléphone ne l'a pas reconnu, c'est-à-dire la
 panne du 6 août 2026 refaite par un autre bord.
+
+**Et un piège de CONTRÔLE, payé le 24 août.** La suite qui garde cette
+troisième règle a d'abord été écrite avec un appareil simulé réglé pour refuser
+le visage. Elle est restée **verte contre un `noterEchec` posé exprès** : le
+navigateur refusait de lui-même, le serveur n'était jamais atteint, et
+l'assertion ne mesurait rien. Le cas qui prouve quelque chose est celui où le
+téléphone signe **correctement** et où c'est Atlas qui ne connaît plus la clé —
+la clé retirée depuis un autre appareil. Avant d'écrire un contrôle sur ce
+chemin : *le serveur est-il seulement atteint ?*
 
 ---
 

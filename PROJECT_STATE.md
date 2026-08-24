@@ -12,17 +12,19 @@ ligne « fait » qui ne l'est pas coûte plus cher qu'une ligne absente.
 
 ---
 
-## Face ID : la planche est posée, le code attend sa réponse (24 août 2026)
+## Face ID : fait (24 août 2026) — sa réponse est **B**
 
 | | État |
 |---|---|
-| La planche essayable — `appli/face-id.html`, planche 94 | **faite et publiée**, liée depuis `essais.html` |
-| La suite qui la parcourt — `appli/tests/essai-face-id.mjs` | **faite**, vue rouge deux fois contre de vrais défauts, et elle barre la publication |
-| Le chemin d'implémentation — second fournisseur `Credentials` + `@simplewebauthn/server` | **arrêté et vérifié** (`ARCHITECTURE.md` §157) |
-| **A ou B — la place du geste sur la porte** | **en attente de sa réponse** |
-| Le code dans `src/` | **rien**, et c'est délibéré (`CLAUDE.md` §3 bis) |
+| La planche essayable — `appli/face-id.html`, planche 94 | **faite**, et **tranchée : B** |
+| La porte — une ligne au-dessus, rien d'autre ne bouge | **faite** (`src/app/login/LigneFaceId.tsx`) |
+| Réglages › Connexion : enregistrer, lister, retirer un appareil | **fait** |
+| Migration 0063 + règles pures + second fournisseur `Credentials` | **fait** (`ARCHITECTURE.md` §157) |
+| Parcouru en navigateur, appareil simulé de Chrome | **fait** (`test-face-id-e2e.ts`) |
+| `ATLAS_RP_ID` posée en production | **à faire le jour du déploiement** — sans elle, Atlas refuse d'enregistrer une clé |
+| Essayé sur SON iPhone, avec SON visage | **pas fait**, et personne ici ne peut le faire à sa place |
 
-Ce qui est déjà tranché et n'a pas à être rouvert : le mot de passe ne se retire
+Ce qui est tranché et n'a pas à être rouvert : le mot de passe ne se retire
 jamais, le compte se crée au mot de passe, l'activation est par appareil, et un
 échec de visage ne compte aucune tentative ratée.
 

@@ -9,19 +9,21 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
-## Face ID — en attente de SA réponse (24 août 2026)
+## Face ID — ~~à coder~~ **fait le 24 août 2026** (planche 94, réponse **B**)
 
-`appli/face-id.html` (planche 94) est publiée et il doit dire **A ou B** : la
-place du geste sur la porte, rien d'autre. **Tant qu'il n'a pas répondu, aucune
-ligne dans `src/`** (`CLAUDE.md` §3 bis).
+Migration 0063, règles pures, second fournisseur `Credentials`, porte et écran
+d'activation. Parcouru en navigateur (`test-face-id-e2e.ts`).
+`ARCHITECTURE.md` §157.
 
-Le chemin d'implémentation est arrêté et vérifié — second fournisseur
-`Credentials` + `@simplewebauthn/server`, la couche session ne bouge pas
-(`ARCHITECTURE.md` §157). Reste à faire une fois la place choisie : la migration
-de la table des clés, les règles pures dans `src/lib/`, l'écran d'activation dans
-Réglages › Connexion, et le retour au mot de passe sur échec **sans compter de
-tentative** (`src/lib/tentatives-connexion.ts` ne doit pas être appelé sur ce
-chemin).
+**Ce qui reste, et qui ne dépend plus de nous :**
+
+- **poser `ATLAS_RP_ID` le jour du déploiement** — sans elle, Atlas refuse
+  d'enregistrer une clé en production (et le dit dans son journal). C'est
+  volontaire : deviner le domaine depuis un en-tête que le client écrit serait
+  la faute que le lot 1 vient de fermer sur `x-forwarded-for` ;
+- **le faire essayer sur SON iPhone.** Rien ici ne peut le remplacer : la suite
+  emploie l'appareil simulé de Chrome, qui exerce la vraie implémentation du
+  navigateur mais pas la puce d'Apple ni la fenêtre d'iOS.
 
 ---
 

@@ -10,6 +10,12 @@ import { getEnv } from "@/server/env";
 import { messageAttente as messageTemporisation, porteeTemporisation } from "@/lib/tentatives-connexion";
 import { sourceDepuisEntetes } from "@/lib/source-visiteur";
 import { attenteAvantEssai, noterEchec, oublierEchecs } from "@/server/repositories/tentatives-connexion";
+import { messageRefusCle } from "@/lib/cle-appareil";
+import { optionsConnexion } from "@/server/cle-appareil";
+import type { PublicKeyCredentialRequestOptionsJSON } from "@simplewebauthn/types";
+
+/** Ce que le navigateur attend pour ouvrir la fenêtre du système. */
+type OptionsPubliquesConnexion = PublicKeyCredentialRequestOptionsJSON;
 
 const MESSAGE_GENERIQUE = "Email ou mot de passe incorrect.";
 
@@ -228,6 +234,73 @@ export async function connexionAction(
   // à un doigt de la temporisation pendant l'heure qui suit. Posé avant
   // `redirect()`, qui lève et ne rend jamais la main.
   await oublierEchecs(portee);
+  redirect("/");
+}
+
+/**
+ * « Ouvrir avec Face ID », premier temps : le défi qu'on envoie au téléphone.
+ *
+ * **Rendu en valeur, jamais levé.** Sur cette page, une exception d'action
+ * serveur n'arrive pas jusqu'à l'artisan — Next.js la remplace en production
+ * par un identifiant opaque (`HANDOVER.md`, piège 0 ter). Un refus se rend.
+ */
+export async function defiConnexionAction(): Promise<
+  { ok: true; options: OptionsPubliquesConnexion } | { ok: false }
+> {
+  const source = await sourceDuVisiteur(horsProductionReelle());
+  const limite = await verifierLimite(`cle-appareil:${source}`, LIMITES.cleAppareil);
+  if (!limite.autorise) {
+    logger.warn("Trop de demandes de défi Face ID depuis cette source");
+    return { ok: false };
+  }
+
+  const r = await optionsConnexion();
+  if (!r.ok) return { ok: false };
+  return { ok: true, options: r.options };
+}
+
+/**
+ * « Ouvrir avec Face ID », second temps : la signature, et la session.
+ *
+ * ─────────────────────────────────────────────────────────────────────────────
+ * **CE CHEMIN N'APPELLE JAMAIS `noterEchec`, et c'est délibéré.** Un visage mal
+ * reconnu — poussière sur l'objectif, lumière rasante, casquette — n'est pas un
+ * essai de mot de passe raté. Le compter temporiserait le compte de l'artisan
+ * parce que son propre téléphone ne l'a pas reconnu : ce serait la panne du
+ * 6 août 2026 refaite par l'autre bord, et il ne comprendrait pas davantage.
+ *
+ * Ce qui borne l'abus ici, c'est le seuil ci-dessus — un coût, pas un secret :
+ * une signature ne se devine pas (`src/server/rate-limit/types.ts`).
+ *
+ * **Et il n'efface pas non plus le compteur du mot de passe.** Entrer par le
+ * visage ne prouve rien sur les essais de mot de passe qui ont précédé : si
+ * quelqu'un martèle le compte, la temporisation doit tenir.
+ */
+export async function connexionParCleAction(reponse: string): Promise<{ erreur?: string }> {
+  const source = await sourceDuVisiteur(horsProductionReelle());
+  const limite = await verifierLimite(`cle-appareil:${source}`, LIMITES.cleAppareil);
+  if (!limite.autorise) return { erreur: messageRefusCle("panne") ?? MESSAGE_GENERIQUE };
+
+  try {
+    await signIn("cle-appareil", { reponse, redirect: false });
+  } catch (err) {
+    if (err instanceof AuthError) {
+      if (err.type === "CredentialsSignin") {
+        // La cause exacte est déjà au journal, écrite par `ouvrirAvecCle` — la
+        // refaire parler ici demanderait de rejouer la vérification, donc de
+        // l'écrire deux fois (`CLAUDE.md` §3). Ce que lit l'artisan ne
+        // l'accuse pas, et surtout n'accuse pas son mot de passe.
+        return { erreur: messageRefusCle("panne") ?? undefined };
+      }
+      logger.error("Face ID impossible : la vérification a échoué", {
+        type: err.type,
+        cause: err.cause instanceof Error ? err.cause.message : String(err.cause ?? ""),
+      });
+      return { erreur: MESSAGE_SERVICE_INDISPONIBLE };
+    }
+    throw err;
+  }
+
   redirect("/");
 }
 

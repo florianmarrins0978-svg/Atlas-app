@@ -1620,12 +1620,29 @@ téléphone, et Atlas n'en garde qu'une moitié qui ne sert à rien toute seule.
 Autrement dit : le durcissement des mots de passe protège ceux qui en gardent
 un ; la passkey supprime le problème pour ceux qui l'activent.
 
-### Ce que ça demande
+### C'est fait — le 24 août 2026
 
-La brique est déjà là — Atlas s'appuie sur Auth.js, qui sait faire les
-passkeys, et les tables nécessaires existent déjà au schéma. Il manque de quoi
-ranger les clés, un écran pour enregistrer son téléphone, et le branchement.
-**Un lot à lui seul**, pas une case à cocher.
+Vous avez choisi la **proposition B** sur la planche : votre écran de connexion
+n'a pas bougé, une ligne « Ouvrir avec Face ID » s'est ajoutée au-dessus.
+
+Comment ça se passe chez vous : vous entrez une fois avec votre mot de passe,
+puis **Réglages › Connexion › Enregistrer cet appareil**. La fois suivante, un
+doigt sur la ligne, votre visage, et vous êtes dedans — sans même taper votre
+adresse.
+
+**Une correction à ce qui était écrit ici le 23 août, et elle a compté.** Cette
+réponse disait *« la brique est déjà là — Atlas s'appuie sur Auth.js, qui sait
+faire les passkeys, et les tables nécessaires existent déjà »*. **C'était
+faux.** Le module tout fait d'Auth.js exige de changer la façon dont Atlas
+retient votre session — donc de remettre en jeu la connexion de tout le monde,
+pour un bouton. Il a été écarté, et le raccourci passe par un chemin qui ne
+touche à rien de l'existant.
+
+Ce qu'il reste, et qui ne dépend pas de nous : **l'essayer sur votre iPhone**.
+Ici, le parcours entier est joué avec le capteur simulé du navigateur — mais
+personne ne peut vérifier votre visage à votre place.
+
+### Ce que ça demandait
 
 Deux exigences qui ne se négocient pas :
 
@@ -1639,8 +1656,10 @@ Deux exigences qui ne se négocient pas :
 ### Ce qui peut être éprouvé, et ce qui ne le sera pas
 
 Le navigateur d'essai sait **simuler** un capteur biométrique : le parcours
-entier — enregistrer, se déconnecter, revenir, ouvrir sans mot de passe — se
-vérifie ici, au vert, avant de vous être donné.
+entier — enregistrer, se déconnecter, revenir, ouvrir sans mot de passe — a été
+joué ici, au vert, avant de vous être donné. Y compris le jour où ça rate : un
+appareil retiré qui insiste ne peut pas ouvrir la porte, **et ne bloque pas
+votre compte** pour autant.
 
 Ce qui ne se vérifie que chez vous : que Face ID s'ouvre bien sur **votre**
 iPhone, avec **votre** visage. Aucun banc d'essai ne peut le dire à votre place.

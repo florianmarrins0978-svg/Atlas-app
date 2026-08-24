@@ -6,6 +6,8 @@ import { db } from "./server/db/client";
 import { users } from "./server/db/schema";
 import { getEnv } from "./server/env";
 import { authConfig } from "./auth.config";
+import { ouvrirAvecCle } from "./server/cle-appareil";
+import type { AuthenticationResponseJSON } from "@simplewebauthn/types";
 
 // Provider Credentials : aucun accès réseau externe requis (contrairement à
 // un provider OAuth), donc utilisable tel quel dans n'importe quel
@@ -49,6 +51,63 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         if (!motDePasseValide) return null;
 
         return { id: utilisateur.id, email: utilisateur.email, name: utilisateur.nom ?? undefined };
+      },
+    }),
+
+    /**
+     * « Ouvrir avec Face ID » — un SECOND fournisseur `Credentials`, et le
+     * choix d'architecture le plus important de ce lot.
+     *
+     * ─────────────────────────────────────────────────────────────────────────
+     * **POURQUOI PAS `next-auth/providers/passkey`, qui existe et est déjà
+     * installé.** Parce qu'il ne peut pas fonctionner ici, et ce n'est pas une
+     * supposition : `@auth/core/lib/utils/assert.js` refuse le WebAuthn sans
+     * adaptateur de base de données —
+     *
+     *     if (!adapter) return new MissingAdapter("WebAuthn requires an adapter")
+     *
+     * Or Atlas n'en a **aucun** : la session est un JWT, sans table. En
+     * brancher un ferait naître `accounts`, `sessions`, `verification_tokens`,
+     * changerait la façon dont chaque requête retrouve l'utilisateur, et
+     * remettrait en jeu tout ce qui pend au jeton — le contexte d'entreprise,
+     * `middleware.ts`, `session-ctx.ts`, « me déconnecter partout ». **Pour un
+     * bouton sur la porte.**
+     *
+     * Passer par un second fournisseur `Credentials` laisse la couche session
+     * intacte : même jeton, même cookie, mêmes rappels. Elle ignore qu'un
+     * second chemin existe.
+     *
+     * ─────────────────────────────────────────────────────────────────────────
+     * **TOUTE la vérification vit dans `ouvrirAvecCle`, et une seule fois.**
+     * L'action serveur ne pré-vérifie rien avant d'appeler `signIn` : deux
+     * rédactions de la même règle divergeraient, et ici la divergence
+     * s'appellerait « connexion acceptée d'un côté, refusée de l'autre »
+     * (`CLAUDE.md` §3).
+     *
+     * **`noterEchec` n'est JAMAIS appelé sur ce chemin.** Un visage mal reconnu
+     * ne doit pas temporiser le compte de son propriétaire : ce serait la panne
+     * du 6 août 2026 refaite par l'autre bord.
+     */
+    Credentials({
+      id: "cle-appareil",
+      name: "Face ID",
+      credentials: { reponse: { label: "Réponse de l'appareil", type: "text" } },
+      async authorize(credentials) {
+        const brut = typeof credentials?.reponse === "string" ? credentials.reponse : "";
+        if (!brut) return null;
+
+        let reponse: AuthenticationResponseJSON;
+        try {
+          reponse = JSON.parse(brut) as AuthenticationResponseJSON;
+        } catch {
+          // Une saisie illisible n'est pas une panne d'Atlas : on refuse, sans
+          // bruit dans le journal, sinon n'importe qui le remplirait.
+          return null;
+        }
+
+        const compte = await ouvrirAvecCle(reponse);
+        if (!compte) return null;
+        return { id: compte.id, email: compte.email, name: compte.nom ?? undefined };
       },
     }),
   ],

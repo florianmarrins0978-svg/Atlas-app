@@ -9,6 +9,49 @@ Format : le plus récent en tête.
 
 ## 2026-08-24
 
+### Face ID est codé — sa réponse B, et le mot de passe intact
+
+Il a tranché : **B**, la porte d'aujourd'hui plus une ligne au-dessus. Rien n'a
+changé de place — `name="email"`, `name="password"` et `type="submit"` sont où
+ils étaient, ce dont dépendent vingt scripts de capture et
+`verifier-connexion.mjs`.
+
+**Ce qu'il gagne :** on enregistre son téléphone une fois depuis Réglages ›
+Connexion, et la porte s'ouvre ensuite d'un doigt, **sans taper son adresse**
+(clés découvrables). Le mot de passe reste actif et ne peut pas se retirer.
+
+**Ce qui n'arrive JAMAIS en base : aucune donnée biométrique.** Le visage ne
+quitte pas la puce du téléphone ; Atlas ne garde qu'une clé **publique** — de
+quoi vérifier une signature, jamais d'en produire une. L'écran le dit à
+l'artisan, et une suite vérifie qu'il le dit.
+
+**La règle qui a commandé tout le reste : un visage refusé ne compte AUCUNE
+tentative ratée.** Sans elle, un téléphone qui ne reconnaît pas son
+propriétaire — poussière, casquette, lumière rasante — finirait par temporiser
+son propre compte : la panne du 6 août 2026 refaite par l'autre bord.
+`test-face-id-e2e.ts` l'éprouve avec un appareil réglé pour échouer, et a été
+vue rouge contre un `noterEchec` posé exprès sur ce chemin.
+
+**`next-auth/providers/passkey` est écarté, vérifié plutôt que supposé :**
+`@auth/core` refuse le WebAuthn sans adaptateur de base (« WebAuthn requires an
+adapter »). Atlas n'en a aucun — session JWT, sans table —, et en brancher un
+remettrait en jeu le contexte d'entreprise, le `middleware` et « me déconnecter
+partout », pour un bouton sur la porte. Retenu : un **second fournisseur
+`Credentials`** vérifiant l'assertion avec `@simplewebauthn/server`
+(`ARCHITECTURE.md` §157).
+
+**Un défaut trouvé par une suite, pas par une relecture :** la lecture du
+domaine découpait sur le premier `:` avant de valider. Sur `https://atlas.fr`,
+le morceau restant valait `https` — accepté. Atlas aurait posé des clés sous le
+domaine « https », et aucune ne se serait jamais rouverte.
+
+**À poser le jour du déploiement : `ATLAS_RP_ID`.** Sans elle, Atlas **refuse**
+d'enregistrer une clé en production plutôt que de deviner le domaine depuis un
+en-tête que le client écrit.
+
+Parcouru en entier dans un vrai navigateur, avec l'appareil simulé de Chrome :
+enregistrement, déconnexion, ouverture au visage, échec, retrait.
+
 ### Face ID : la planche avant le code, et un chemin d'implémentation vérifié
 
 Sa demande du 23 août — *« le Face ID pour le mot de passe, et bien entendu

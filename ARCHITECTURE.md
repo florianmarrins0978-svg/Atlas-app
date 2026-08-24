@@ -13923,6 +13923,39 @@ l'authentification d'une application qui marche.
 | **le compte se crée au mot de passe** | Face ID s'active ensuite, depuis un écran déjà connecté — sans quoi l'inscription dépendrait d'un matériel |
 | **un échec de visage ne compte AUCUNE tentative ratée** | sinon un visage mal reconnu ferait temporiser son propre compte : la faute du 6 août 2026, refaite par un autre bord |
 
+### Ce qu'il a tranché, et ce que le code en a fait
+
+**Sa réponse du 24 août 2026 : B.** La porte d'aujourd'hui, plus une ligne
+au-dessus — `src/app/login/LigneFaceId.tsx`. `name="email"`, `name="password"`
+et `type="submit"` n'ont pas bougé d'un pixel : vingt scripts de capture et
+`verifier-connexion.mjs` en dépendent.
+
+| Où | Quoi |
+|---|---|
+| `src/lib/origine-webauthn.ts` | sous quel **domaine** une clé est posée — règle pure |
+| `src/lib/cle-appareil.ts` | ce que l'artisan lit, et ce qu'il ne lit jamais |
+| `src/server/cle-appareil.ts` | les deux échanges avec le téléphone, et le défi |
+| `src/server/repositories/cles-appareil.ts` | la base, sans RLS et avec ce qui la remplace |
+| migration `0063` | la table, et ce qu'elle ne contient pas |
+
+**Le défi vit dans un cookie `httpOnly`, `sameSite: strict`, effacé dès qu'il a
+servi.** Pas de table : une table de défis se remplirait de lignes que personne
+n'utilise — il suffit de toucher le bouton puis de partir — et il faudrait la
+balayer. Le cookie meurt tout seul.
+
+**`ATLAS_RP_ID` est obligatoire en production, et son absence REFUSE.** Une clé
+WebAuthn est attachée à un domaine ; le déduire de l'hôte annoncé reviendrait à
+croire un en-tête que le client écrit — la faute que le lot 1 vient de fermer sur
+`x-forwarded-for`. Le dégât resterait borné (le navigateur refuserait de créer
+une clé pour un domaine qui n'est pas celui de la page), mais **le résultat pour
+l'artisan serait une porte muette**, et personne ne saurait pourquoi.
+
+**Un défaut trouvé par la suite, pas par une relecture** : `domaineDe` découpait
+sur le premier `:` avant de valider. Sur `https://atlas.fr`, le morceau restant
+valait `https` — un mot fait de lettres, donc accepté. Atlas aurait enregistré
+des clés sous le domaine « https », et aucune ne se serait jamais rouverte.
+**Découper avant de valider, c'est valider autre chose que ce qu'on a reçu.**
+
 ### La planche d'abord — `appli/face-id.html` (planche 94)
 
 `CLAUDE.md` §3 bis : c'est un **geste** sur la porte, il se dessine avant de
