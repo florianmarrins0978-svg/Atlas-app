@@ -10,6 +10,7 @@ import {
   type AgendaDistant,
 } from "../../lib/caldav";
 import { lireEvenementsIcs } from "../../lib/ics";
+import { destinationAutorisee } from "../../lib/destination-caldav";
 
 /**
  * Le raccordement à l'agenda iCloud, par CalDAV.
@@ -86,6 +87,25 @@ function autorisation(id: IdentifiantsApple): string {
   return `Basic ${Buffer.from(`${id.compte}:${id.motDePasse}`, "utf8").toString("base64")}`;
 }
 
+/**
+ * Une adresse qu'Atlas refuse de joindre.
+ *
+ * **Distincte de `RefusApple` à dessein** : celle-là dit qu'Apple a répondu
+ * non, celle-ci dit qu'on n'a même pas composé le numéro. Les confondre
+ * enverrait l'artisan refaire son mot de passe pour une adresse malformée —
+ * une erreur qui accuse à tort coûte plus cher que pas d'erreur du tout
+ * (`AGENTS.md`).
+ */
+export class DestinationRefusee extends Error {
+  constructor(
+    readonly adresse: string,
+    readonly phrase: string
+  ) {
+    super(`Atlas refuse de joindre cette adresse. ${phrase}`);
+    this.name = "DestinationRefusee";
+  }
+}
+
 /** Une adresse rendue par le serveur, ramenée à une URL complète. */
 function absolue(base: string, chemin: string): string {
   try {
@@ -104,6 +124,18 @@ function absolue(base: string, chemin: string): string {
  * automatique de `fetch` peut retomber sur `GET` — un `PROPFIND` transformé en
  * `GET` rend une page, pas un `multistatus`, et l'erreur qui suit accuse le
  * mauvais coupable.
+ *
+ * ───────────────────────────────────────────────────────────────────────────
+ * **CHAQUE SAUT EST VÉRIFIÉ, y compris le premier** (audit du 23 août 2026,
+ * constat E2). L'adresse de départ pouvait venir du navigateur, et l'adresse
+ * de renvoi vient d'un serveur distant : ni l'une ni l'autre n'est à nous.
+ * Sans ce contrôle, un `Location:` suffisait à faire partir l'en-tête
+ * `Authorization` du compte iCloud de l'artisan chez qui l'avait écrit.
+ *
+ * **La règle autorise le renvoi de `caldav.icloud.com` vers
+ * `p42-caldav.icloud.com`** — c'est le fonctionnement normal d'iCloud, et
+ * l'interdire aurait cassé tout raccordement. Ce qu'elle refuse, c'est de
+ * SORTIR du domaine.
  */
 async function appel(
   id: IdentifiantsApple,
@@ -114,6 +146,13 @@ async function appel(
   let courante = url;
 
   for (let saut = 0; saut < 5; saut++) {
+    // **Avant d'ouvrir la connexion, et avant de poser l'en-tête.** Placé
+    // ici plutôt qu'à l'entrée de la fonction : la boucle repasse par là à
+    // chaque renvoi, et c'est le renvoi qu'on ne contrôle pas.
+    const destination = destinationAutorisee(courante);
+    if (!destination.ok) {
+      throw new DestinationRefusee(courante, destination.phrase);
+    }
     const entetes: Record<string, string> = {
       authorization: autorisation(id),
       "user-agent": "Atlas/1.0",

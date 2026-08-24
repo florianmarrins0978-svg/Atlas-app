@@ -61,6 +61,88 @@ curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:3000/   # 000 = personne
 tranchent ; `ss` seul ne tranche rien. Et devant un port occupé, chercher
 **ses propres serveurs** avant de soupçonner la machine : une capture d'écran
 prise plus tôt dans la session laisse un `next dev` derrière elle.
+## Face ID — ~~à coder~~ **fait le 24 août 2026** (planche 94, réponse **B**)
+
+Migration 0063, règles pures, second fournisseur `Credentials`, porte et écran
+d'activation. Parcouru en navigateur (`test-face-id-e2e.ts`).
+`ARCHITECTURE.md` §163.
+
+**Ce qui reste, et qui ne dépend plus de nous :**
+
+- **poser `ATLAS_RP_ID` le jour du déploiement** — sans elle, Atlas refuse
+  d'enregistrer une clé en production (et le dit dans son journal). C'est
+  volontaire : deviner le domaine depuis un en-tête que le client écrit serait
+  la faute que le lot 1 vient de fermer sur `x-forwarded-for` ;
+- **le faire essayer sur SON iPhone.** Rien ici ne peut le remplacer : la suite
+  emploie l'appareil simulé de Chrome, qui exerce la vraie implémentation du
+  navigateur mais pas la puce d'Apple ni la fenêtre d'iOS.
+
+---
+
+## Audit de sécurité : les lots 2 et suivants (23 août 2026)
+
+Le **lot 1 est fait** — C1, E1, E2, E3, M7, M8 (`ARCHITECTURE.md` §162,
+`CHANGELOG.md` du 23 août). Ce qui suit vient du même audit et attend son tour.
+Rien ici n'est théorique : chaque point a été constaté dans le code.
+
+### Avant d'ouvrir Atlas à d'autres artisans
+
+- **Sauvegardes.** Il n'y en a aucune. « Télécharger mes données » est un export
+  manuel pour le patron, pas une sauvegarde. Il faut une sauvegarde automatique
+  de PostgreSQL **et** du compartiment objet, plus **une restauration réellement
+  jouée une fois** — un contrôle jamais vu réussir ne prouve rien (`AGENTS.md`).
+  C'est ce qui rendait E1 grave : il n'y a pas de filet.
+- **M11 — la double authentification**, et une session plus courte que trente
+  jours (le défaut d'Auth.js s'applique aujourd'hui). Le lot 1 a durci le mot de
+  passe et la temporisation ; c'est la marche suivante.
+
+### Les téléversements : quatre chemins, un seul fait bien
+
+- **M2 — le type d'image n'est pas contrôlé** sur les photos de chantier
+  (`photos-actions.ts`) ni sur les tickets de TVA : `startsWith("image/")`
+  accepte `image/svg+xml`, et `/api/fichiers/[...key]` renvoie ce type tel quel.
+  Un SVG ouvert en navigation directe exécute son script sur l'origine d'Atlas.
+  **Le diagnostic végétal fait déjà tout bien** (`typeImageAccepte` +
+  `retirerMetadonnees`) : il n'y a qu'à reprendre.
+- **M3 — les photos de chantier gardent leurs métadonnées**, coordonnées GPS
+  comprises — donc l'adresse du domicile d'un client. Celles du diagnostic sont
+  nettoyées, avec un commentaire qui explique pourquoi. Même correction.
+- **M1 — traversée de chemin** : `local-storage.ts` n'assainit pas le dossier
+  alors que `s3-storage.ts` le fait, et le dossier contient un `chantierId` venu
+  d'une action serveur. Vérifié : `../../../../tmp/x` sort de `.storage`. Le
+  stockage local étant refusé en production, cela vise le banc — mais la clé
+  ainsi fabriquée part ensuite dans l'archive ZIP de l'export.
+- **M4 — `lireLeCroquis` (arrosage) n'a aucune limite de débit**, ni liste
+  blanche de type, ni retrait de métadonnées — alors que le diagnostic a les
+  trois. Chaque appel est une facture chez le fournisseur de vision.
+
+### Robustesse
+
+- **M5 — bombe de décompression** : `inflateRawSync` sans `maxOutputLength` dans
+  `lire-classeur.ts`, sur un `.xlsx` téléversé.
+- **M6 — corps de requête non borné** : `/api/notes-vocales/[chantierId]` fait
+  `formData()` avant toute vérification de taille, et la limite des actions
+  serveur ne s'applique pas aux routes.
+- **M10 — dépendances** : 11 avis, dont Next lui-même (16.2.12 → 16.3.2) et
+  `next-auth` encore en bêta sur le chemin d'authentification.
+
+### Défense en profondeur
+
+- **M9 — `users` n'a aucune RLS**, et `atlas_app` y lit `password_hash`. Le code
+  se discipline (toute lecture bornée par `ctx.utilisateurId`), mais rien en base
+  ne rattraperait un `where` oublié. Idem pour `audios_a_purger` et
+  `photos_diagnostic_a_purger`, qui portent un `entreprise_id` sans politique.
+- **M12 — `mettreAJourApplicationAction` n'exige pas le rôle propriétaire** :
+  sur le banc, tout salarié peut tirer du code et redémarrer le serveur.
+- **F1 à F13** — treize points mineurs, listés dans le rapport d'audit. Les plus
+  utiles : **F6** (deux paires de migrations partagent un numéro — à traiter
+  avant qu'un conflit réel n'arrive) et **F7** (les droits RGPD d'accès et
+  d'effacement sont codés et testés, mais aucun écran ne les appelle).
+- **Journal d'audit** : les connexions réussies, les changements de rôle, les
+  exports et les effacements ne laissent aucune trace exploitable.
+
+---
+
 
 ## Arrosage : l'interface pour discuter le plan (23 août 2026)
 

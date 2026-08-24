@@ -97,6 +97,13 @@ jobs:
           # s'ouvre, ses quatre onglets s'affichent et ses boutons se pressent
           # dans un vrai navigateur avant qu'elle parte en ligne.
           jouer test:termines
+          # **Une planche dont on ATTEND un choix se parcourt d'abord ici.**
+          # Celle-ci porte la seule chose qu'il ait posée comme non
+          # négociable — « bien entendu qu'il faut conserver le mot de passe » :
+          # la suite refuse une porte où Face ID serait le seul chemin. Une
+          # planche qui lui ferait valider autre chose que sa demande, c'est la
+          # porte de l'application qui en sortirait.
+          jouer test:face-id
 
           if [ -n "$ECHECS" ]; then
             echo "::error::Suites en échec :$ECHECS"

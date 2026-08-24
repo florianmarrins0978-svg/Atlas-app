@@ -14211,3 +14211,202 @@ ne se lit d'ailleurs jamais par SMS.
 `sms:` du client. Les suites pures de `message-client` diraient vert même si
 l'écran n'enregistrait rien, ou si l'écran d'envoi ignorait ce qui est
 enregistré : c'est le FIL qu'il faut tenir, et lui seul le traverse.
+---
+
+## 162. Audit de sécurité, lot 1 : ce qui a été décidé, et ce qui a failli casser
+
+**23 août 2026.** Un audit hostile complet a été mené (base montée, RLS attaquée
+directement en SQL sous `atlas_app`, historique Git balayé, `npm audit`). Le
+rapport nomme trente constats ; ce lot en corrige six. Ce §-ci ne les répète
+pas — `CHANGELOG.md` le fait — il garde **les décisions structurantes et leur
+pourquoi**, c'est-à-dire ce qu'une prochaine session refera de travers faute de
+le savoir.
+
+### Ce qui a tenu, et qu'il ne faut pas croire fragile
+
+L'isolation entre entreprises a été attaquée, pas relue : 42 tables sur 42
+portant `entreprise_id` sont en `FORCE ROW LEVEL SECURITY`, l'écriture croisée
+est refusée par la base, la lecture sans contexte rend zéro ligne, et les 189
+appels à `withEntreprise` passent tous `ctx`. **Aucun correctif de ce lot ne
+touche à ce mécanisme**, et c'est délibéré : on ne remanie pas ce qui tient
+pendant qu'on répare ce qui ne tient pas.
+
+### La décision qui commande C1 : le compteur d'échecs vit EN BASE
+
+La limitation de débit d'Atlas vit dans Redis, et Redis tombe — il est tombé le
+12 août sur l'espace du patron. La réparation d'alors laissait tout passer quand
+le magasin ne répondait plus : juste dans son intention (ne pas enfermer
+l'artisan dehors), trop loin dans sa conclusion. **Il suffisait donc d'attendre
+une panne de Redis pour n'avoir plus aucune limite de connexion.**
+
+D'où la migration 0062 : le compteur d'échecs consécutifs est une table. Il ne
+dépend d'aucun service annexe, il est là tant qu'Atlas sert. Trois conséquences
+qu'il faut garder en tête :
+
+| | |
+|---|---|
+| le blocage est **plafonné** à un quart d'heure | sans plafond, taper trois fois à côté sur l'adresse d'un artisan l'empêcherait d'entrer chez lui — on aurait remplacé une porte trop faible par une porte murée |
+| il s'**oublie** au bout d'une heure sans échec | sinon, cinq fautes réparties sur trois mois temporiseraient quelqu'un pour des gestes sans rapport |
+| une connexion réussie l'**efface** | celui qui retrouve son mot de passe ne doit pas rester à un doigt de la temporisation |
+
+Et le magasin de limitation, lui, bascule désormais sur son compteur **mémoire**
+quand le principal ne répond pas : dégradé (un compteur par instance), jamais
+absent. Personne n'est enfermé dehors, personne n'entre en rafale.
+
+### La règle générale que ce lot pose : ne jamais croire un en-tête du client
+
+`x-forwarded-for` est écrit par celui qui frappe. Le lire naïvement, c'était
+offrir un compteur neuf à chaque essai. La règle vaut au-delà de la connexion :
+**une valeur transmise ne vaut que par le mandataire qui l'a écrite**, et sans
+savoir combien de mandataires de confiance nous précèdent, aucune position dans
+la liste n'est fiable. `ATLAS_PROXY_SAUTS` dit ce nombre ; à défaut, on ne tire
+rien de l'en-tête. Voir `src/lib/source-visiteur.ts`.
+
+*(Deux autres endroits lisent encore cet en-tête à titre de PREUVE — l'adresse
+consignée sur l'acceptation d'un devis, sur celle des documents légaux. C'est
+un autre usage : elle documente, elle ne décide de rien, et les commentaires le
+disent déjà. Ne pas les « corriger » sans y penser.)*
+
+### Les trois endroits où la correction évidente cassait quelque chose
+
+C'est la partie la plus importante de ce §, parce que ces pièges se
+re-tendront.
+
+**1. Le mot de passe de démonstration.** L'audit demandait qu'il cesse d'être
+fixe et public. Le tirer au hasard aurait cassé **136 fichiers** — les trente-
+trois suites navigateur et `verifier-connexion.mjs`, c'est-à-dire la dernière
+étape de la batterie de livraison. Il reste donc `demo1234` **par défaut**, et
+ce défaut ne peut s'appliquer que là où effacer est sans conséquence : dès
+qu'il faut forcer la garde, `ATLAS_MDP_DEMO` devient obligatoire.
+
+**2. Les redirections CalDAV.** Interdire tout changement d'hôte aurait cassé
+**tout raccordement Apple** : iCloud répond `301` depuis `caldav.icloud.com`
+vers le serveur qui héberge réellement le compte (`p42-caldav.icloud.com`), et
+le code suit ce renvoi exprès. La règle juste n'est pas « aucune redirection »
+mais « aucune SORTIE du domaine ».
+
+**3. Le profil banc en production.** Le critère ne peut pas être `NODE_ENV` :
+le banc d'essai **est**, littéralement, « production + profil banc », puisque
+`next start` impose `NODE_ENV=production` et que `.devcontainer/demarrer.sh`
+pose `ATLAS_PROFIL=banc` juste à côté. Refuser là-dessus aurait éteint la
+machine du patron à la seconde, pour une correction censée le protéger. Ce
+qu'on cherche est une **contradiction** — le profil d'une machine d'essai posé
+en même temps qu'un signe qu'aucun banc ne peut produire : un compartiment S3,
+ou `ATLAS_DEPLOIEMENT=production`.
+
+### Où une garde de rôle se pose, et où elle ne se pose JAMAIS
+
+E3 réservait les prix de vente au propriétaire. La garde est sur **l'action et
+l'écran**, jamais dans le dépôt — parce que `src/server/services/apprendre-grille.ts`
+appelle `poserPrixGrille` tout seul, pendant qu'un devis s'établit, avec
+l'origine `devis`. La poser un cran plus bas aurait empêché un salarié
+d'établir un devis, et personne n'aurait relié cette panne à un contrôle de
+rôle. **Règle générale : une garde de rôle appartient au geste de l'utilisateur,
+pas à l'écriture qu'il déclenche.**
+
+### Ce qui reste dépendant de l'infrastructure
+
+Deux variables doivent être posées le jour du déploiement, et leur absence se
+paie différemment :
+
+| | Sans elle |
+|---|---|
+| `AUTH_TRUST_HOST` (ou `AUTH_URL`) | **plus personne ne se connecte** — Auth.js refuse l'hôte, l'artisan lit « une erreur » |
+| `ATLAS_PROXY_SAUTS` | le seuil par visiteur redevient commun à tout le monde : il protège encore, moins finement |
+
+La temporisation par compte, elle, ne dépend d'aucune des deux.
+
+---
+
+## 163. Face ID : pourquoi le fournisseur `passkey` d'Auth.js est ÉCARTÉ
+
+**Sa demande du 23 août 2026 :** *« je veux bien que tu me codes le Face ID pour
+le mot de passe, et bien entendu qu'il faut conserver le mot de passe.
+L'utilisateur va commencer par créer son compte avec son mot de passe et ensuite
+il décidera s'il veut ouvrir sa session avec le mot de passe ou le Face ID. »*
+
+### Le chemin évident, et pourquoi il casserait la session de tout le monde
+
+`next-auth` porte un fournisseur tout fait — `next-auth/providers/passkey`, il
+est déjà dans `node_modules`. Le prendre paraît être le choix par défaut. Il ne
+l'est pas, et ce n'est **pas une supposition** : `@auth/core/lib/utils/assert.js`
+refuse le WebAuthn sans adaptateur de base de données —
+
+    if (!adapter) return new MissingAdapter("WebAuthn requires an adapter")
+
+Or Atlas n'a **aucun adaptateur** : la session est un **JWT**, sans table.
+Brancher un adaptateur ferait naître `accounts`, `sessions`,
+`verificationTokens`, changerait la façon dont chaque requête retrouve
+l'utilisateur, et **remettrait en jeu tout ce qui pend au jeton** — le contexte
+d'entreprise, `middleware.ts`, `session-ctx.ts`, la déconnexion partout. Pour un
+bouton sur la porte.
+
+### Ce qui est retenu : un SECOND fournisseur `Credentials`
+
+Le fournisseur reçoit l'assertion WebAuthn, la vérifie avec
+`@simplewebauthn/server`, et rend l'utilisateur. **Rien d'autre ne bouge** :
+même jeton, même cookie, mêmes rappels, même `middleware`. La couche session
+ignore qu'un second chemin existe.
+
+Ce que ça coûte : la vérification de l'assertion est à notre charge — le
+`challenge`, l'origine, le compteur anti-rejeu. Ce que ça évite : réécrire
+l'authentification d'une application qui marche.
+
+### Trois règles qui viennent de LUI, et qui ne se négocient pas
+
+| | Pourquoi |
+|---|---|
+| **le mot de passe ne se retire jamais** | c'est ce qui fait entrer sur un téléphone neuf ; une clé d'appareil perdue avec le téléphone murerait le compte |
+| **le compte se crée au mot de passe** | Face ID s'active ensuite, depuis un écran déjà connecté — sans quoi l'inscription dépendrait d'un matériel |
+| **un échec de visage ne compte AUCUNE tentative ratée** | sinon un visage mal reconnu ferait temporiser son propre compte : la faute du 6 août 2026, refaite par un autre bord |
+
+### Ce qu'il a tranché, et ce que le code en a fait
+
+**Sa réponse du 24 août 2026 : B.** La porte d'aujourd'hui, plus une ligne
+au-dessus — `src/app/login/LigneFaceId.tsx`. `name="email"`, `name="password"`
+et `type="submit"` n'ont pas bougé d'un pixel : vingt scripts de capture et
+`verifier-connexion.mjs` en dépendent.
+
+| Où | Quoi |
+|---|---|
+| `src/lib/origine-webauthn.ts` | sous quel **domaine** une clé est posée — règle pure |
+| `src/lib/cle-appareil.ts` | ce que l'artisan lit, et ce qu'il ne lit jamais |
+| `src/server/cle-appareil.ts` | les deux échanges avec le téléphone, et le défi |
+| `src/server/repositories/cles-appareil.ts` | la base, sans RLS et avec ce qui la remplace |
+| migration `0063` | la table, et ce qu'elle ne contient pas |
+
+**Le défi vit dans un cookie `httpOnly`, `sameSite: strict`, effacé dès qu'il a
+servi.** Pas de table : une table de défis se remplirait de lignes que personne
+n'utilise — il suffit de toucher le bouton puis de partir — et il faudrait la
+balayer. Le cookie meurt tout seul.
+
+**`ATLAS_RP_ID` est obligatoire en production, et son absence REFUSE.** Une clé
+WebAuthn est attachée à un domaine ; le déduire de l'hôte annoncé reviendrait à
+croire un en-tête que le client écrit — la faute que le lot 1 vient de fermer sur
+`x-forwarded-for`. Le dégât resterait borné (le navigateur refuserait de créer
+une clé pour un domaine qui n'est pas celui de la page), mais **le résultat pour
+l'artisan serait une porte muette**, et personne ne saurait pourquoi.
+
+**Un défaut trouvé par la suite, pas par une relecture** : `domaineDe` découpait
+sur le premier `:` avant de valider. Sur `https://atlas.fr`, le morceau restant
+valait `https` — un mot fait de lettres, donc accepté. Atlas aurait enregistré
+des clés sous le domaine « https », et aucune ne se serait jamais rouverte.
+**Découper avant de valider, c'est valider autre chose que ce qu'on a reçu.**
+
+### La planche d'abord — `appli/face-id.html` (planche 94)
+
+`CLAUDE.md` §3 bis : c'est un **geste** sur la porte, il se dessine avant de
+toucher à `src/`. Deux places sont proposées, **A** le visage d'abord, **B**
+l'écran d'aujourd'hui plus une ligne ; tout le reste est identique dans les deux,
+et c'est la seule question posée.
+
+**La fenêtre Face ID de la planche est un DESSIN, et elle l'écrit.** Aucune page
+web n'affiche celle d'iOS — et surtout, appeler `navigator.credentials` depuis
+une maquette **poserait une vraie clé sur son téléphone**, pour un domaine qui
+n'est pas celui d'Atlas. On ne pose pas de clé chez lui pour une image.
+
+`appli/tests/essai-face-id.mjs` la parcourt en entier avant publication, et
+**barre le déploiement** : elle a été vue rouge contre une porte A privée de son
+chemin vers le mot de passe, et contre un échec de visage qui accusait le mot de
+passe.
+
