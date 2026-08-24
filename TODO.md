@@ -6368,3 +6368,10 @@ et c'est déjà arrivé.
 - ~~Rédiger le devis entièrement à la main, depuis la fiche du chantier~~ — 2026-08-04
 - ~~Retirer la case « Nom du chantier » : plus rien n'est obligatoire à la création~~ — 2026-08-05
 - ~~« Rédiger à la main » ouvre le devis ENTIER, à l'image du modèle, et il reste dans Atlas~~ — 2026-08-05
+- [ ] **Rendre la composition d'un PDF reproductible.** `pdf-lib` grave l'instant
+  de fabrication dans chaque document : deux compositions du même devis ne
+  rendent pas les mêmes octets. La suite le contourne en figeant l'horloge
+  (`aLaMemeSeconde`, `scripts/test-allure-pdf.ts`), mais le produit reste
+  non déterministe — un même devis renvoyé n'est jamais identique au précédent.
+  Corriger demande de toucher le composeur, donc les documents du patron :
+  à faire dans un lot qui les regarde, pas en passant. *(24 août 2026)*

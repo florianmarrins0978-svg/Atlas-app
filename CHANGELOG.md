@@ -178,6 +178,34 @@ qu'aucun écran soit touché. Les rayons, non — **soixante-six fichiers** les
 écrivent en dur (`rounded-[13px]`), et une charte ne peut rien sur ce qui ne
 passe pas par elle. C'est annoncé, pas fait.
 
+### Un contrôle de devis comparait une pendule, pas un document
+
+**Il accusait le code le plus grave de la suite, et il avait tort.** *« Sans
+réglage, le devis est EXACTEMENT celui d'avant »* — le contrôle qui garantit
+qu'aucun artisan ne voit son devis changer parce qu'un écran est apparu. Il
+rougissait environ une fois sur cinq, sur du code qui n'avait pas bougé d'une
+ligne.
+
+La cause : `pdf-lib` grave dans chaque document sa date de création, à la
+seconde. Les deux compositions comparées tombaient de part et d'autre d'une
+seconde, et les octets différaient.
+
+**Mesuré, pas supposé** — le même devis composé à 1,5 s d'écart rend deux
+fichiers de même taille dont quelques octets diffèrent. **Et ces octets sont
+dans un flux compressé** : c'est ce qui a fait échouer la première correction,
+qui effaçait les dates dans le *texte* du PDF. Elles n'y sont pas. On ne peut
+pas les ôter après coup — on peut seulement empêcher l'horloge d'avancer entre
+les deux compositions, et c'est ce que fait `aLaMemeSeconde`.
+
+**Ce n'est pas un assouplissement**, et il fallait le vérifier plutôt que
+l'affirmer : confronté à deux documents réellement différents, le contrôle
+rougit toujours et le dit. Stable sur six exécutions d'affilée.
+
+**Ce qui reste à trancher, et qui n'est pas de ce lot** : rendre la composition
+reproductible côté produit — dates fixées à l'émission plutôt qu'à la
+fabrication. Cela touche le composeur, donc les documents du patron. Noté dans
+`TODO.md` plutôt que fait en passant.
+
 ### Le gabarit recopiait les couleurs au lieu de les demander
 
 **Le défaut qui a fait perdre le plus de temps ce soir-là, et il était
