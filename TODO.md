@@ -2941,6 +2941,20 @@ pas une réparation annoncée : c'est un constat, et il n'a pas été corrigé.
 |---|---|---|
 | `test-facture-au-client-e2e` | « L'écran laisse croire que la facture est partie » | sur la branche du lot de l'allure, **deux fois sur trois** |
 | `test-tva-au-paiement-e2e` | `waitForFunction: Timeout 15000ms exceeded` sur l'acompte | sur **`main`**, sans aucun changement |
+| `test-periodicite-tva-e2e` | « "Tous les trimestres" n'a pas été enregistré » après trois rechargements | sur la branche du lot 2 de sécurité, **une fois sur une** |
+
+**La troisième s'ajoute le 24 août 2026, et elle confirme la lecture ci-dessus.**
+Le lot de sécurité ne touche ni la périodicité ni l'écran « Mon entreprise » —
+sa seule ligne dans `src/app/reglages/actions.ts` vit à l'intérieur de
+`analyserFichierTarifsAction`, que cette suite n'appelle jamais. Jouée seule :
+7/7. **Trois suites, trois branches, trois symptômes différents** — c'est bien
+la charge.
+
+Et celle-ci porte un indice de plus : son propre commentaire dit qu'elle
+recharge **trois fois** en laissant du temps à l'action, précisément parce que
+le défaut avait déjà été vu le 13 août. Trois chances ne suffisent plus. La
+piste est donc la même que pour les deux autres — on attend une valeur à
+l'écran sur une montre, au lieu d'attendre que la base ait bougé.
 
 **Les deux sont VERTES jouées seules**, et c'est la question qui tranche
 (§ ci-dessous). Surtout : **ce ne sont pas les mêmes** d'une branche à l'autre.

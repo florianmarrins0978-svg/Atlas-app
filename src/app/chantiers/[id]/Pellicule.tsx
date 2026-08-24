@@ -124,6 +124,13 @@ export default function Pellicule({
       <div className="atlas-pellicule -mx-[26px] mt-0.5 px-[26px] pb-4 pt-0.5">
         <input
           ref={champ}
+          // **Une marque STABLE pour les contrôles**, comme
+          // `anneau-note-vocale` juste à côté. `test-devis-main-depuis-creation`
+          // visait `accept="image/*"` en dur : la liste blanche du 24 août l'a
+          // fait rougir sur du code juste, pour une correction de sécurité. Ce
+          // qu'une suite doit fixer, c'est la RÈGLE — « le carré photo est sur
+          // la fiche » — pas la valeur d'un attribut (`CLAUDE.md` §5 bis).
+          data-atlas="carre-photo"
           type="file"
           accept={ACCEPT_PHOTOS}
           multiple
