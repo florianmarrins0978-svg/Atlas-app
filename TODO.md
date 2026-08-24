@@ -116,6 +116,21 @@ d'activation. Parcouru en navigateur (`test-face-id-e2e.ts`).
 
 ---
 
+## Le type AUDIO n'est pas vérifié — signalé le 24 août 2026, non traité
+
+Trouvé en dressant le tableau transversal des téléversements du lot 2B. Les
+images voient leur **signature** vérifiée depuis ce lot ; les dictées, non : un
+fichier annoncé `audio/webm` qui n'en est pas serait rangé.
+
+**Ce qui borne la portée :** le type servi est dérivé de la clé (liste blanche,
+jamais rien d'exécutable) et `nosniff` couvre toutes les routes. Ce qui reste
+possible est de ranger un fichier inerte sous une extension audio.
+
+**Non traité à dessein** : hors de M3 (aucune métadonnée d'image) et de M6
+(aucune question de mémoire), et l'on n'ouvre pas un lot sans qu'il soit demandé.
+
+---
+
 ## Audit de sécurité : ~~le lot 2~~ **fait le 24 août 2026**, et les suivants
 
 Le **lot 1 est fait** — C1, E1, E2, E3, M7, M8 (`ARCHITECTURE.md` §162). Le

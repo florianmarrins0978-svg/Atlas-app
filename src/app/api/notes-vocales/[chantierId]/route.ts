@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { recevoirNoteVocale } from "@/server/services/note-vocale-entrante";
 import { LIMITE_TELEVERSEMENT_OCTETS, MESSAGE_FICHIER_TROP_VOLUMINEUX } from "@/server/upload-limits";
+import { CorpsTropGros, formDataBornee } from "@/server/corps-borne";
 
 /**
  * Ce que le corps entier a le droit de peser.
@@ -43,32 +44,33 @@ export async function POST(
   const { chantierId } = await params;
 
   /**
-   * **UNE BORNE AVANT DE LIRE LE CORPS** — audit du 23 août 2026, constat M6.
+   * **UNE BORNE QUI TIENT PENDANT LA LECTURE, pas seulement avant** — constat
+   * M6, resserré le 24 août 2026.
    *
-   * `bodySizeLimit` de `next.config.ts` ne couvre **que les actions serveur** :
-   * une route comme celle-ci n'en voit rien. `formData()` mettait donc en
-   * mémoire tout ce qu'on voulait bien lui envoyer, sans qu'aucune ligne ne
-   * l'arrête — et cette route est ouverte par une URL, précisément pour
-   * survivre à une reconstruction du serveur.
+   * La première version refusait sur `content-length` puis appelait
+   * `requete.formData()`. C'était un progrès et **pas une preuve** : cet
+   * en-tête est annoncé par le client. Le sous-déclarer — ou envoyer en
+   * `Transfer-Encoding: chunked`, qui n'en porte aucun — laissait `formData()`
+   * avaler ce qu'on voulait, et `fichier.size` n'était consulté qu'après.
    *
-   * **On lit l'en-tête plutôt que le corps.** `content-length` est annoncé par
-   * le client, donc il ne fait pas foi — mais un envoi honnête l'annonce juste,
-   * et un envoi malveillant qui le sous-déclare se heurte de toute façon à la
-   * vérification de taille du service, qui lit `fichier.size` après coup. Ce
-   * refus-ci est le premier rempart, pas le seul.
+   * `formDataBornee` garde le refus rapide sur l'en-tête ET coupe le flux en
+   * passant, si bien que le parseur ne voit jamais plus que la limite
+   * (`src/server/corps-borne.ts`).
+   *
+   * **Pourquoi ici et pas dans la configuration :** `serverActions.bodySizeLimit`
+   * ne couvre que les actions serveur, et aucune limite native n'existe pour
+   * les *route handlers*. Vérifié dans la documentation de Next, pas supposé.
    */
-  const annonce = Number(requete.headers.get("content-length") ?? "");
-  if (Number.isFinite(annonce) && annonce > LIMITE_CORPS_OCTETS) {
-    return NextResponse.json(
-      { ok: false, raison: MESSAGE_FICHIER_TROP_VOLUMINEUX },
-      { status: 413 }
-    );
-  }
-
   let formData: FormData;
   try {
-    formData = await requete.formData();
-  } catch {
+    formData = await formDataBornee(requete, LIMITE_CORPS_OCTETS);
+  } catch (erreur) {
+    if (erreur instanceof CorpsTropGros) {
+      return NextResponse.json(
+        { ok: false, raison: MESSAGE_FICHIER_TROP_VOLUMINEUX },
+        { status: 413 }
+      );
+    }
     // Le corps n'est pas arrivé entier : coupure en cours d'envoi, ou format
     // inattendu. Ce n'est pas la faute de l'enregistrement.
     return NextResponse.json(

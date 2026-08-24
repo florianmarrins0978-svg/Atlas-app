@@ -22,6 +22,7 @@ import {
   ACCEPT_PHOTOS,
   MESSAGE_PHOTO_REFUSEE,
   TYPES_IMAGE_ACCEPTES,
+  MESSAGE_HEIC_REFUSE,
   TYPES_PHOTO_ACCEPTES,
   extensionPhoto,
   photoAcceptee,
@@ -65,11 +66,28 @@ essai("« image/ » suivi de n'importe quoi ne suffit plus", () => {
 
 // ─── CE QUI RESTE OUVERT, ET QUI COMPTE AUTANT ──────────────────────────────
 
-essai("LA PHOTO D'UN IPHONE N'EST JAMAIS REFUSÉE", () => {
-  // Le HEIC ne porte aucun script. Le refuser ne protégerait de rien, et
-  // coûterait une photo prise sur un chantier.
-  assert.equal(photoAcceptee("image/heic"), true);
-  assert.equal(photoAcceptee("image/heif"), true);
+/**
+ * **CE CONTRÔLE A ÉTÉ RETOURNÉ LE 24 AOÛT 2026 — et c'est délibéré.**
+ *
+ * Il exigeait l'inverse : *« la photo d'un iPhone n'est JAMAIS refusée »*,
+ * parce que le HEIC ne porte aucun script. Le raisonnement était juste sur le
+ * risque de script et **passait à côté du sujet** : nous ne savons pas retirer
+ * les métadonnées d'un HEIC, donc l'accepter revenait à ranger les coordonnées
+ * GPS du domicile d'un client.
+ *
+ * `CLAUDE.md` §5 bis : quand une suite rougit après un changement voulu, on
+ * adapte le contrôle — on ne remet pas le comportement.
+ */
+essai("LE HEIC BRUT EST REFUSÉ — retournement assumé du 24 août", () => {
+  assert.equal(photoAcceptee("image/heic"), false);
+  assert.equal(photoAcceptee("image/heif"), false);
+});
+
+essai("…et le refus DIT LE GESTE, pour que ce ne soit pas un mur", () => {
+  // C'est ce qui rend le retournement supportable : son téléphone décide du
+  // format, pas lui, et il ne sait pas que ça se règle.
+  assert.match(MESSAGE_HEIC_REFUSE, /Réglages/i);
+  assert.match(MESSAGE_HEIC_REFUSE, /compatible/i);
 });
 
 essai("les formats ordinaires passent, avec ou sans paramètre", () => {
@@ -97,11 +115,22 @@ essai("L'ATTRIBUT `accept` NE CONTIENT PAS LE HEIC — et c'est délibéré", ()
   }
 });
 
-essai("la liste SERVEUR est plus large que l'attribut — c'est le filet", () => {
-  // Un appareil qui ne transcode pas ne doit pas se heurter à un mur.
-  assert.ok(
-    TYPES_PHOTO_ACCEPTES.length > ACCEPT_PHOTOS.split(",").length,
-    "le filet a disparu : le serveur n'accepte pas plus que ce que l'écran propose"
+/**
+ * **L'AUTRE MOITIÉ DU RETOURNEMENT.** Ce contrôle exigeait que la liste serveur
+ * soit PLUS LARGE que l'attribut de l'écran — « c'est le filet ». C'était
+ * exactement le trou : le filet laissait entrer ce qu'on ne sait pas nettoyer.
+ *
+ * Les deux listes disent désormais la même chose, et il faut le vérifier dans
+ * les deux sens : l'écran ne propose rien que le serveur refuse (un bouton qui
+ * mène à un mur), et le serveur n'accepte rien que l'écran ne propose (un
+ * chemin détourné qu'aucun écran n'exerce, donc que personne ne surveille).
+ */
+essai("L'ÉCRAN ET LE SERVEUR DISENT LA MÊME CHOSE — plus de filet trop large", () => {
+  const proposes = ACCEPT_PHOTOS.split(",").map((t) => t.trim());
+  assert.deepEqual(
+    [...proposes].sort(),
+    [...TYPES_PHOTO_ACCEPTES].sort(),
+    "l'écran et le serveur ne s'accordent plus"
   );
   for (const type of TYPES_IMAGE_ACCEPTES) {
     assert.ok((TYPES_PHOTO_ACCEPTES as readonly string[]).includes(type), `${type} manque au serveur`);
@@ -181,9 +210,18 @@ essai("…et ce contrôle SAIT ENCORE voir un vrai `image/*`", () => {
 
 // ─── LE NETTOYAGE : il ne refuse jamais ─────────────────────────────────────
 
-essai("UN FORMAT QU'ON NE SAIT PAS NETTOYER SE RANGE QUAND MÊME", () => {
-  // La règle qui décide de tout le reste. `retirerMetadonnees` rend les octets
-  // d'origine plutôt que de lever : l'appelant range, et journalise.
+essai("LE NETTOYEUR SIGNALE son échec, il ne LÈVE pas — et c'est la porte qui refuse", () => {
+  /**
+   * **Le nom de ce contrôle disait l'inverse jusqu'au 24 août** — « se range
+   * quand même » —, et c'était la politique d'alors. Ce qu'il vérifie n'a pas
+   * changé et compte toujours : `retirerMetadonnees` rend `{ nettoye: false }`
+   * plutôt que de lever.
+   *
+   * Ce qui a changé, c'est ce que l'appelant en fait. Lever ferait remonter une
+   * exception opaque jusqu'à l'artisan ; signaler laisse
+   * `preparerPhotoEntrante` **refuser avec une phrase utile** — et surtout, ne
+   * rien ranger.
+   */
   const heic = new Uint8Array([0, 0, 0, 24, 0x66, 0x74, 0x79, 0x70, 0x68, 0x65, 0x69, 0x63]);
   const r = retirerMetadonnees(heic, "image/heic");
   assert.equal(r.nettoye, false, "un HEIC serait annoncé comme nettoyé — la colonne mentirait");

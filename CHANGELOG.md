@@ -9,6 +9,51 @@ Format : le plus récent en tête.
 
 ## 2026-08-24
 
+### Lot 2B : une image ne se range plus jamais sans être nettoyée
+
+**Le revirement du jour, et il est assumé.** Ce dépôt écrivait le matin même :
+*« un échec de nettoyage ne refuse JAMAIS la photo »*. La règle venait d'un vrai
+principe — un outil qui refuse la photo qu'on vient de prendre est pire que le
+risque qu'il évite — et **elle protégeait le geste de l'artisan en sacrifiant la
+donnée de son client** : un fichier qu'on ne savait pas lire était rangé avec ses
+coordonnées GPS.
+
+Désormais : **taille → format → nettoyage → refus si le nettoyage échoue**, dans
+une porte unique (`src/server/photo-entrante.ts`) que les cinq chemins d'image
+traversent. Rien n'en sort que des octets nettoyés.
+
+**Le HEIC est refusé**, et le refus donne le geste : *Réglages › Appareil photo ›
+Formats › « Le plus compatible »*. Convertir côté serveur aurait demandé un
+décodeur natif analysant un fichier hostile — plus de surface d'attaque que ce
+qu'on referme.
+
+**Ce qui était le plus exposé n'était dans aucun brief : le logo d'entreprise.**
+Une enseigne photographiée au téléphone porte les coordonnées GPS de l'endroit,
+et ce fichier est **embarqué dans chaque devis et chaque facture** envoyés aux
+clients. Il n'était nettoyé nulle part.
+
+**Un bénéfice non cherché :** le nettoyeur vérifie la signature du fichier.
+Refuser sur échec refuse donc aussi tout fichier maquillé — un SVG annoncé
+`image/jpeg` ne passe plus.
+
+### Lot 2B : le corps d'une requête est borné PENDANT sa lecture
+
+Le correctif du matin refusait sur `content-length` puis appelait
+`requete.formData()`. **C'était un premier rempart et pas une preuve** : cet
+en-tête est écrit par le client. Le sous-déclarer, ou envoyer en
+`Transfer-Encoding: chunked` qui n'en porte aucun, laissait le parseur avaler ce
+qu'on voulait.
+
+Vérifié dans la documentation de Next plutôt que supposé : `bodySizeLimit` ne
+couvre **que les actions serveur**, et **aucune limite native n'existe** pour les
+*route handlers*. Le corps traverse donc un compteur qui **casse le flux** au-delà
+de la borne (`src/server/corps-borne.ts`) — cassé, pas tronqué : un multipart
+amputé se lirait comme un fichier valide mais incomplet.
+
+Une suite compte les octets qui sortent réellement du flux borné quand on lui
+donne un corps dix fois trop gros.
+
+
 ### Un lien envoyé à un client ne peut plus être une adresse de sa machine
 
 **« Connexion au serveur impossible. »** C'est ce que lisait son client en

@@ -15,6 +15,19 @@ ligne « fait » qui ne l'est pas coûte plus cher qu'une ligne absente.
 
 ---
 
+## Sécurité : lot 2B — M3 et M6 fermés (24 août 2026)
+
+| | État |
+|---|---|
+| Une image n'est **jamais** rangée ni envoyée sans nettoyage | **fait** — porte unique, `ARCHITECTURE.md` §164 |
+| Les cinq chemins d'image la traversent (le **logo** compris) | **fait** — 3 contrôles structurels l'empêchent de diverger |
+| HEIC/HEIF refusés, avec le geste qui le règle | **fait** (solution B assumée) |
+| Le corps d'une requête est borné **pendant** sa lecture | **fait** — `ARCHITECTURE.md` §165 |
+| Le type AUDIO reste le type déclaré (aucune signature vérifiée) | **signalé, non traité** — hors M3/M6 |
+| Sauvegardes | **toujours aucune** — le point le plus grave du dépôt |
+
+---
+
 ## Le lien envoyé au client ne peut plus être une adresse locale (24 août 2026)
 
 Son client lisait « Connexion au serveur impossible » : le lien portait
