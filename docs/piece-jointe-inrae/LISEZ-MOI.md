@@ -115,6 +115,33 @@ c'est celle-là qu'il enverra.
 téléphone renonçait. Les captures passent maintenant en JPEG dans
 `composer-pdf.mjs` — 375 ko pour le même document, sans perte visible.
 
+## Joindre le document à un courriel depuis ici : ce qui est possible, et ce qui ne l'est pas
+
+**Sa demande du 24 août 2026 :** *« il faut que tu puisses les télécharger et
+les mettre dans l'e-mail pour l'envoyer »*.
+
+**Ce qui a été fait :** le brouillon est créé dans son Gmail — destinataires,
+objet, corps du message — par le connecteur Gmail (`create_draft`).
+
+**Ce qui ne l'est PAS, et pourquoi.** Aucun outil disponible ici n'accepte un
+CHEMIN de fichier : Gmail comme Drive veulent le contenu encodé en base64,
+c'est-à-dire recopié caractère par caractère dans l'appel. Le PDF fait
+177 596 caractères une fois encodé, et sur une telle longueur la transcription
+n'est pas fiable. **Un PDF corrompu envoyé à un institut de recherche est pire
+qu'une absence de pièce jointe** — et il ne s'en apercevrait qu'après l'envoi.
+
+C'est donc écrit comme non fait, plutôt que tenté au jugé (`AGENTS.md` : *« ne
+jamais transmettre une commande non vérifiée sans le dire »*).
+
+**Ce qui reste à sa charge, et c'est deux gestes :** ouvrir l'adresse publiée
+ci-dessus depuis son téléphone, « Partager » → « Enregistrer dans Fichiers »,
+puis le trombone du brouillon.
+
+**Si une session future trouve un outil qui prend un chemin de fichier**, c'est
+le moment de refaire ce chemin en entier. Le poids est déjà réglé : le PDF
+descend à 133 ko (images ramenées à 400 px de large, JPEG à 0,70), ce qui reste
+au-dessus de 180 points par pouce à la taille où elles sont posées.
+
 **Devant une demande d'aller plus loin dans ce sens, le lui dire plutôt que de
 l'exécuter.** Ce n'est pas une réserve de style : c'est la différence entre une
 demande d'autorisation et une demande obtenue par omission.
