@@ -33,12 +33,21 @@ function essai(nom: string, fn: () => void) {
 
 console.log("=== Le mot de passe : ce qui passe, et ce qui bloque ===\n");
 
-essai("huit caractères suffisent, confirmés", () => {
-  assert.equal(verifierNouveauMotDePasse("bruyere1", "bruyere1"), null);
+essai("douze caractères suffisent, confirmés", () => {
+  assert.equal(verifierNouveauMotDePasse("bruyere-42-nord", "bruyere-42-nord"), null);
 });
 
-essai("sept caractères ne suffisent pas", () => {
-  assert.equal(verifierNouveauMotDePasse("bruyer1", "bruyer1"), "trop-court");
+essai("onze caractères ne suffisent pas", () => {
+  assert.equal(verifierNouveauMotDePasse("bruyere-42n", "bruyere-42n"), "trop-court");
+});
+
+// **La barre est montée de huit à douze le 23 août 2026** (audit, constat C1).
+// Ce cas fige l'ancienne valeur pour qu'un retour en arrière se voie : huit
+// caractères étaient acceptés, ils ne le sont plus. Sans lui, quelqu'un
+// pourrait remettre 8 dans la constante et toute la suite resterait verte —
+// c'est exactement ce qu'un contrôle doit empêcher.
+essai("ce qui passait avant — huit caractères — est désormais refusé", () => {
+  assert.equal(verifierNouveauMotDePasse("bruyere1", "bruyere1"), "trop-court");
 });
 
 essai("la limite annoncée à l'écran est CELLE-CI, pas une autre", () => {
@@ -49,7 +58,7 @@ essai("la limite annoncée à l'écran est CELLE-CI, pas une autre", () => {
 });
 
 essai("une confirmation différente bloque", () => {
-  assert.equal(verifierNouveauMotDePasse("bruyere42", "bruyere43"), "confirmation-differente");
+  assert.equal(verifierNouveauMotDePasse("bruyere-42-nord", "bruyere-42-sud"), "confirmation-differente");
 });
 
 // **La longueur passe AVANT la confirmation, et l'ordre n'est pas indifférent.**
@@ -61,25 +70,25 @@ essai("sur une saisie doublement fautive, c'est la longueur qui est nommée", ()
 });
 
 essai("reprendre son mot de passe actuel ne change rien, et se refuse", () => {
-  assert.equal(verifierNouveauMotDePasse("bruyere42", "bruyere42", "bruyere42"), "sans-changement");
+  assert.equal(verifierNouveauMotDePasse("bruyere-42-nord", "bruyere-42-nord", "bruyere-42-nord"), "sans-changement");
 });
 
 essai("mais un mot de passe différent de l'actuel passe", () => {
-  assert.equal(verifierNouveauMotDePasse("bruyere42", "bruyere42", "chene-tordu"), null);
+  assert.equal(verifierNouveauMotDePasse("bruyere-42-nord", "bruyere-42-nord", "chene-tordu"), null);
 });
 
 // L'actuel n'est pas toujours connu de l'appelant : l'écran, lui, ne l'a jamais
 // en clair confronté au condensat. Sans cette tolérance, il devrait inventer
 // une seconde règle — exactement ce que cette suite empêche.
 essai("sans mot de passe actuel fourni, la règle ne s'invente rien", () => {
-  assert.equal(verifierNouveauMotDePasse("bruyere42", "bruyere42"), null);
-  assert.equal(verifierNouveauMotDePasse("bruyere42", "bruyere42", ""), null);
+  assert.equal(verifierNouveauMotDePasse("bruyere-42-nord", "bruyere-42-nord"), null);
+  assert.equal(verifierNouveauMotDePasse("bruyere-42-nord", "bruyere-42-nord", ""), null);
 });
 
 // **Les espaces comptent.** Les rogner enregistrerait autre chose que ce qui a
 // été tapé, et la reconnexion échouerait sans que rien ne l'explique.
 essai("une espace finale fait une confirmation différente", () => {
-  assert.equal(verifierNouveauMotDePasse("bruyere42", "bruyere42 "), "confirmation-differente");
+  assert.equal(verifierNouveauMotDePasse("bruyere-42-nord", "bruyere-42-nord "), "confirmation-differente");
 });
 
 // **Ce contrôle a d'abord refusé « n'est pas celui-là » à cause de son trait
@@ -106,15 +115,15 @@ essai("le refus de l'actuel DÉSIGNE l'actuel", () => {
 console.log("");
 
 essai("tant que la confirmation est vide, rien ne s'affiche", () => {
-  assert.equal(etatConfirmation("bruyere42", ""), null);
+  assert.equal(etatConfirmation("bruyere-42-nord", ""), null);
 });
 
 essai("dès qu'il retape, l'écran dit si les deux se rejoignent", () => {
-  assert.deepEqual(etatConfirmation("bruyere42", "bru"), {
+  assert.deepEqual(etatConfirmation("bruyere-42-nord", "bru"), {
     identiques: false,
     message: "Les deux saisies ne sont pas identiques.",
   });
-  assert.deepEqual(etatConfirmation("bruyere42", "bruyere42"), {
+  assert.deepEqual(etatConfirmation("bruyere-42-nord", "bruyere-42-nord"), {
     identiques: true,
     message: "Les deux sont identiques ✓",
   });

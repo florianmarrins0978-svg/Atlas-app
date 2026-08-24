@@ -2,6 +2,9 @@
 
 **Dernière mise à jour :** 2026-08-23 · branche `main`
 · dernière migration `drizzle/0061_note_chantier.sql`
+**Dernière mise à jour :** 2026-08-24 · branche `main`
+· dernière migration `drizzle/0062_tentatives_connexion.sql`
+
 
 *(Le numéro du dernier commit ne figure plus ici : il était faux dès le commit
 suivant, et une ligne fausse coûte plus cher qu'une ligne absente. `git log
@@ -26,6 +29,49 @@ Son défaut : le client haut sur l'écran disparaît quand on le touche.
 Le détail et les partis pris : `ARCHITECTURE.md` §157.
 
 ---
+
+## Face ID : fait (24 août 2026) — sa réponse est **B**
+
+| | État |
+|---|---|
+| La planche essayable — `appli/face-id.html`, planche 94 | **faite**, et **tranchée : B** |
+| La porte — une ligne au-dessus, rien d'autre ne bouge | **faite** (`src/app/login/LigneFaceId.tsx`) |
+| Réglages › Connexion : enregistrer, lister, retirer un appareil | **fait** |
+| Migration 0063 + règles pures + second fournisseur `Credentials` | **fait** (`ARCHITECTURE.md` §163) |
+| Parcouru en navigateur, appareil simulé de Chrome | **fait** (`test-face-id-e2e.ts`) |
+| `ATLAS_RP_ID` posée en production | **à faire le jour du déploiement** — sans elle, Atlas refuse d'enregistrer une clé |
+| Essayé sur SON iPhone, avec SON visage | **pas fait**, et personne ici ne peut le faire à sa place |
+
+Ce qui est tranché et n'a pas à être rouvert : le mot de passe ne se retire
+jamais, le compte se crée au mot de passe, l'activation est par appareil, et un
+échec de visage ne compte aucune tentative ratée.
+
+---
+
+## Sécurité : le lot 1 de l'audit est corrigé (23 août 2026)
+
+Un audit hostile complet a été mené sur le dépôt. Le détail des décisions est en
+`ARCHITECTURE.md` §162 ; ce qui reste à faire est dans `TODO.md`.
+
+| | État |
+|---|---|
+| **L'isolation entre entreprises** — 42 tables sur 42 en RLS forcée | **tient**, éprouvée en attaquant, pas en relisant |
+| C1 — bourrage d'identifiants (28 800 essais/jour → 103) | **fait** |
+| C1 — la protection survit à une panne de Redis | **fait** (compteur en base, migration 0062) |
+| C1 — mot de passe à 12 caractères, sans mettre dehors les comptes existants | **fait** |
+| E1 — `db:seed` ne peut plus vider une vraie base | **fait** |
+| E2 — SSRF par l'agenda iCloud | **fait** (domaine, schéma, adresses internes, redirections) |
+| E3 — les prix de vente réservés au propriétaire | **fait**, côté serveur |
+| M7 — `trustHost` : une seule source de vérité | **fait** |
+| M8 — le profil banc ne peut plus servir en production | **fait** |
+| Sauvegardes et restauration | **RIEN** — c'est le premier point du lot suivant |
+| M1–M6, M9–M12, F1–F13 | **à faire**, listés dans `TODO.md` |
+
+**Deux variables à poser le jour du déploiement**, et leur absence ne se paie pas
+pareil : sans `AUTH_TRUST_HOST` (ou `AUTH_URL`), **plus personne ne se
+connecte** ; sans `ATLAS_PROXY_SAUTS`, le seuil par visiteur redevient commun à
+tout le monde. La temporisation par compte, elle, ne dépend d'aucune des deux.
+
 
 ## Le plan d'arrosage dessiné (23 août 2026)
 
@@ -1401,7 +1447,7 @@ demandés par lui et tranchés sur planche.
 ne change tant qu'il n'y touche pas — et cela se vérifie, pas seulement se dit :
 `test-allure-pdf.ts` compare deux devis octet pour octet.
 
-`ARCHITECTURE.md` §161 et §162.
+`ARCHITECTURE.md` §161 et §164.
 
 ## Vérifications au dernier point
 

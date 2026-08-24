@@ -12,6 +12,7 @@ import {
   type IdentifiantsApple,
 } from "../agenda/apple";
 import { chiffrer, dechiffrer } from "../agenda/secret-au-repos";
+import { destinationAutorisee } from "../../lib/destination-caldav";
 import { agendasExternes, chantiers, clients } from "../db/schema";
 import { creneauxDuChantier, type Moment } from "../disponibilites";
 import {
@@ -211,6 +212,54 @@ export async function reglerEcritureApple(
       : reglage.calendrier === null
         ? { href: null, nom: null }
         : { href: reglage.calendrier.href, nom: reglage.calendrier.nom };
+
+  /**
+   * **L'adresse d'écriture vient du NAVIGATEUR : elle se vérifie** (audit du
+   * 23 août 2026, constat E2).
+   *
+   * Elle était rangée telle quelle, puis servait directement d'adresse à
+   * `fetch`, avec l'en-tête d'authentification iCloud dessus. Un propriétaire
+   * d'entreprise pouvait donc faire émettre au serveur des `PUT` vers
+   * n'importe quelle adresse — le service de métadonnées de l'hébergeur, une
+   * administration interne — et faire partir ce mot de passe où il voulait.
+   *
+   * **Deux barrières, et la seconde est la vraie.** La forme d'abord (https,
+   * domaine reconnu, aucune adresse interne) ; puis l'appartenance : ce
+   * calendrier doit être l'un de ceux qu'APPLE nous rend pour CE compte. Une
+   * adresse bien formée sous `icloud.com` mais inventée ne mène nulle part —
+   * et surtout, elle n'est plus choisie par celui qui poste le formulaire.
+   *
+   * **On ne vérifie que ce qui CHANGE.** Éteindre l'écriture, ou la laisser sur
+   * le calendrier déjà enregistré, ne doit pas dépendre de la disponibilité
+   * d'Apple : sinon une panne de leur côté empêcherait de débrancher.
+   */
+  if (reglage.calendrier != null) {
+    const forme = destinationAutorisee(reglage.calendrier.href);
+    if (!forme.ok) {
+      throw new Error(`Ce calendrier n'est pas une adresse qu'Atlas peut servir. ${forme.phrase}`);
+    }
+
+    const ident = await identifiants(executer, ctx.entrepriseId);
+    if (!ident) throw new Error("Aucun agenda iCloud n'est relié.");
+    const connus = await decouvrirAgendas(ident.id);
+    const memeAdresse = (a: string, b: string) => {
+      // Comparaison d'URL ANALYSÉES, jamais de texte : `https://icloud.com@ailleurs.example/`
+      // commence par la bonne chaîne et mène ailleurs (`CLAUDE.md` §3 — et
+      // c'est exactement le piège que ce lot ferme).
+      try {
+        const x = new URL(a);
+        const y = new URL(b);
+        return x.origin === y.origin && x.pathname.replace(/\/$/, "") === y.pathname.replace(/\/$/, "");
+      } catch {
+        return false;
+      }
+    };
+    if (!connus.some((c) => memeAdresse(c.href, reglage.calendrier!.href))) {
+      throw new Error(
+        "Ce calendrier ne fait pas partie de ceux qu'Apple rend pour ce compte. Rouvrez la liste et choisissez-en un."
+      );
+    }
+  }
 
   if (reglage.active && !calendrier.href) {
     throw new Error("Choisissez d'abord dans quel calendrier Atlas doit écrire.");

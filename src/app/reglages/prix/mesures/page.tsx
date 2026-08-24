@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { colors, font, smallCaps } from "@/lib/design-tokens";
 import { getCurrentCtx } from "@/server/session-ctx";
+import { estProprietaire } from "@/server/autorisation";
+import RubriqueReservee from "../../RubriqueReservee";
 import { lireGrilles, prixParTranche } from "@/server/repositories/grilles-reglables";
 import type { NomAxe } from "@/lib/grille-prix";
 import MesMesuresClient from "./MesMesuresClient";
@@ -18,6 +20,22 @@ export const dynamic = "force-dynamic";
  */
 export default async function MesMesuresPage() {
   const ctx = await getCurrentCtx();
+
+  // **Réservée au propriétaire, comme « Mes prix »** (audit du 23 août 2026,
+  // constat E3). Cet écran-ci ne montre pas les montants, mais il compte
+  // combien de prix chaque tranche porte — de quoi lire la structure tarifaire
+  // de l'entreprise. Et surtout : il ouvre sur « Mes prix », qui les montre.
+  // Fermer l'un sans l'autre, c'est la protection incohérente que l'audit
+  // cherchait.
+  if (!(await estProprietaire(ctx))) {
+    return (
+      <RubriqueReservee
+        titre="Mes mesures"
+        quoi="Les tranches servent à calculer les prix de vente, qui ne se consultent pas depuis un compte salarié."
+      />
+    );
+  }
+
   const grilles = await lireGrilles(ctx);
 
   const axes: NomAxe[] = ["diametre", "hauteur", "technique"];

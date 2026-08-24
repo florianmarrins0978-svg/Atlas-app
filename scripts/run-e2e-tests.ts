@@ -28,6 +28,11 @@ function attendre(ms: number) {
 // Suppose REDIS_URL : avec l'adaptateur mémoire, le compteur vit dans le
 // processus serveur et reste hors d'atteinte.
 async function reinitialiserLimiteConnexion() {
+  await reinitialiserSeuilRedis();
+  await reinitialiserTemporisationEnBase();
+}
+
+async function reinitialiserSeuilRedis() {
   const url = process.env.REDIS_URL;
   if (!url) return;
   const redis = new Redis(url, { lazyConnect: true, maxRetriesPerRequest: 1 });
@@ -38,6 +43,38 @@ async function reinitialiserLimiteConnexion() {
     console.warn(`⚠ Réinitialisation de la limite de connexion impossible : ${err instanceof Error ? err.message : err}`);
   } finally {
     await redis.quit();
+  }
+}
+
+/**
+ * **La seconde moitié, ajoutée le 23 août 2026 avec la temporisation par
+ * compte** (audit, constat C1) — et sans elle, la batterie se serait mordu la
+ * queue.
+ *
+ * Le raisonnement du haut de ce fichier vaut mot pour mot pour la nouvelle
+ * couche : une suite qui éprouve délibérément des connexions ratées
+ * (`test-connexion-limite-e2e.ts`) laisse derrière elle un compte temporisé.
+ * La suite suivante, qui n'a rien demandé, aurait alors échoué sur une
+ * redirection post-connexion qui n'arrive jamais — le symptôme exact qui a
+ * motivé la remise à zéro de Redis, un cran plus bas.
+ *
+ * **Cette couche-ci vit en base**, précisément pour survivre à une panne de
+ * Redis : elle ne se vide donc pas avec lui.
+ */
+async function reinitialiserTemporisationEnBase() {
+  const url = process.env.DATABASE_URL;
+  if (!url) return;
+  const { Client } = await import("pg");
+  const client = new Client({ connectionString: url });
+  try {
+    await client.connect();
+    await client.query("DELETE FROM tentatives_connexion");
+  } catch (err) {
+    console.warn(
+      `⚠ Réinitialisation de la temporisation de connexion impossible : ${err instanceof Error ? err.message : err}`
+    );
+  } finally {
+    await client.end().catch(() => undefined);
   }
 }
 

@@ -66,6 +66,82 @@ images libres trouvables ailleurs sont américaines, sur des essences qui ne son
 pas les nôtres. **Ne pas remettre la formule d'abandon** : elle offrait un refus
 tout prêt sur le point auquel il tient le plus.
 
+**Sa troisième passe, le 24 août au matin.** La ligne grise « Paysagiste-élagueur »
+sous sa signature est partie ; il ne reste que son nom. Et **le nom du fichier
+lui-même** ne porte plus la marque : `Anthracnose-du-platane.pdf`, c'est la
+première chose qu'un destinataire lit, avant même d'ouvrir.
+
+**Le PDF pesait 2,8 Mo, et son téléphone renonçait à l'afficher** — un écran
+noir avec une icône de fichier, et un bouton « Ouvrir ». Le fichier n'avait
+rien : `%PDF-1.4`, table des objets correcte, trois pages. C'était l'aperçu qui
+abandonnait. La cause était la capture d'écran, prise à `deviceScaleFactor: 3`
+alors qu'elle est posée sur 30 % d'une A4, soit 54 mm : plus de 500 points par
+pouce, pour une image qu'aucune imprimante ne rendra à ce détail. À 2, elle
+reste au-dessus de 350 et le PDF tombe à 1,4 Mo.
+
+**Sur « un vrai PDF non modifiable » :** celui-ci en est déjà un. Il ne porte ni
+champ de formulaire ni couche de texte modifiable — c'est du texte figé et deux
+images. Y ajouter un mot de passe de protection **desservirait** la demande :
+cela met une barrière devant un institut à qui l'on demande une faveur, et
+n'importe quel outil de bureau la retire en une minute. Ne pas le faire sans
+qu'il le redemande en connaissance de cause.
+
+## Le document doit avoir une ADRESSE, pas seulement un fichier
+
+**Payé le 24 août 2026.** Son application de courrier a répondu *« Impossible
+d'ajouter la pièce jointe »*. Le fichier n'était nulle part sur son téléphone :
+il ne l'avait reçu que dans une conversation, dont l'aperçu refusait déjà de
+s'ouvrir. On lui demandait donc d'envoyer un document qu'il n'avait pas.
+
+C'est la même leçon que `CLAUDE.md` §3 bis, dans l'autre sens : une planche
+qu'il doit REGARDER vit dans `appli/`, parce que c'est le seul dossier publié.
+Un document qu'il doit **envoyer** aussi. Le PDF est donc copié dans
+`appli/anthracnose-du-platane.pdf`, et son adresse est **vérifiée en ligne**
+par `pages.yml` — sans quoi on lui transmettrait une adresse dont rien ne prouve
+qu'elle répond, ce qui est déjà arrivé trois fois.
+
+    https://florianmarrins0978-svg.github.io/Atlas-app/anthracnose-du-platane.pdf
+    https://florianmarrins0978-svg.github.io/Atlas-app/ecran-anthracnose-platane.png
+
+La copie d'écran seule y est aussi : il l'a demandée à part, et une image reçue
+dans une conversation n'est pas plus attachable qu'un PDF.
+
+**Après chaque modification du document, refaire ces DEUX copies.** Le PDF de
+`captures/` n'est pas publié : `captures/` est ignoré. Un document corrigé dans
+`docs/` et jamais recopié dans `appli/` laisse en ligne la version d'avant, et
+c'est celle-là qu'il enverra.
+
+**Et le poids compte.** 2,8 Mo puis 1,4 Mo : deux tailles auxquelles son
+téléphone renonçait. Les captures passent maintenant en JPEG dans
+`composer-pdf.mjs` — 375 ko pour le même document, sans perte visible.
+
+## Joindre le document à un courriel depuis ici : ce qui est possible, et ce qui ne l'est pas
+
+**Sa demande du 24 août 2026 :** *« il faut que tu puisses les télécharger et
+les mettre dans l'e-mail pour l'envoyer »*.
+
+**Ce qui a été fait :** le brouillon est créé dans son Gmail — destinataires,
+objet, corps du message — par le connecteur Gmail (`create_draft`).
+
+**Ce qui ne l'est PAS, et pourquoi.** Aucun outil disponible ici n'accepte un
+CHEMIN de fichier : Gmail comme Drive veulent le contenu encodé en base64,
+c'est-à-dire recopié caractère par caractère dans l'appel. Le PDF fait
+177 596 caractères une fois encodé, et sur une telle longueur la transcription
+n'est pas fiable. **Un PDF corrompu envoyé à un institut de recherche est pire
+qu'une absence de pièce jointe** — et il ne s'en apercevrait qu'après l'envoi.
+
+C'est donc écrit comme non fait, plutôt que tenté au jugé (`AGENTS.md` : *« ne
+jamais transmettre une commande non vérifiée sans le dire »*).
+
+**Ce qui reste à sa charge, et c'est deux gestes :** ouvrir l'adresse publiée
+ci-dessus depuis son téléphone, « Partager » → « Enregistrer dans Fichiers »,
+puis le trombone du brouillon.
+
+**Si une session future trouve un outil qui prend un chemin de fichier**, c'est
+le moment de refaire ce chemin en entier. Le poids est déjà réglé : le PDF
+descend à 133 ko (images ramenées à 400 px de large, JPEG à 0,70), ce qui reste
+au-dessus de 180 points par pouce à la taille où elles sont posées.
+
 **Devant une demande d'aller plus loin dans ce sens, le lui dire plutôt que de
 l'exécuter.** Ce n'est pas une réserve de style : c'est la différence entre une
 demande d'autorisation et une demande obtenue par omission.

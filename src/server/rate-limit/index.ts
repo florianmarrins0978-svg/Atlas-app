@@ -6,6 +6,18 @@ export { LIMITES } from "./types";
 
 let magasin: MagasinLimite | null = null;
 
+/**
+ * Le magasin de SECOURS, en mémoire, pour les jours où le principal ne répond
+ * pas. Créé seulement s'il sert — une installation dont Redis tient n'en a
+ * jamais l'usage. Voir `verifierLimite` pour ce qu'il répare.
+ */
+let secours: MagasinLimiteMemoire | null = null;
+
+function getSecours(): MagasinLimiteMemoire {
+  if (!secours) secours = new MagasinLimiteMemoire();
+  return secours;
+}
+
 function getMagasin(): MagasinLimite {
   if (magasin) return magasin;
   const env = getEnv();
@@ -39,36 +51,49 @@ export async function verifierLimite(
     resultat = await getMagasin().verifierEtIncrementer(cle, limite.max, limite.fenetreMs);
   } catch (erreur) {
     // ─────────────────────────────────────────────────────────────────────────
-    // **Un limiteur en panne ne doit JAMAIS mettre le patron dehors.**
+    // **Un limiteur en panne ne doit JAMAIS mettre le patron dehors — et il ne
+    // doit pas non plus ouvrir la porte en grand.**
     //
     // Le 12 août 2026 : *« ça ne marche pas, je n'arrive pas à me connecter »*.
     // Redis était tombé sur son espace. Cet appel levait alors
     // `MaxRetriesPerRequestError`, l'action de connexion mourait avec — et
-    // l'écran restait sur la page de connexion, **sans un mot**. Rien ne
-    // pouvait lui dire que ce n'était ni son mot de passe ni son compte, mais
-    // un service annexe couché.
+    // l'écran restait sur la page de connexion, **sans un mot**.
     //
-    // Le raisonnement, et il vaut d'être écrit : la limitation protège d'un
-    // ABUS. Refuser tout le monde quand son magasin tombe, ce n'est pas
-    // protéger — c'est infliger soi-même la panne dont on se protégeait, et la
-    // première victime est celui qui a le droit d'entrer.
+    // La première réparation laissait passer TOUT LE MONDE. Le raisonnement
+    // était juste — refuser tout le monde quand son magasin tombe, c'est
+    // s'infliger la panne dont on se protégeait — mais la conclusion allait
+    // trop loin : l'audit du 23 août 2026 (constat C1) l'a relevée comme la
+    // quatrième pièce du bourrage d'identifiants. Il suffisait d'attendre une
+    // panne de Redis pour n'avoir plus aucune limite du tout.
     //
-    // **Ce que cela coûte, dit franchement :** pendant la panne du magasin, la
-    // protection contre les essais de mots de passe en rafale n'existe plus.
-    // C'est un risque accepté et BORNÉ — il ne dure que la panne — contre une
-    // certitude : sans cela, l'artisan est enfermé dehors, et il n'a aucun
-    // moyen de le comprendre.
+    // **Il existait pourtant un troisième terme, et il était déjà dans le
+    // dépôt :** le magasin en mémoire. Il ne vaut pas Redis — chaque instance a
+    // le sien, donc le compte se divise par le nombre d'instances — mais une
+    // protection divisée par trois n'est pas une protection absente. On bascule
+    // donc dessus, le temps de la panne. Personne n'est enfermé dehors, et
+    // personne n'entre en rafale.
     //
-    // Le journal, lui, est bruyant : c'est la seule trace qui reste, et c'est
-    // elle qui doit permettre de nommer la cause du premier coup.
+    // **Ce que cela ne suffit PAS à protéger, et qui compte :** la connexion.
+    // Elle ne dépend plus de ce magasin — son compteur d'échecs vit en base
+    // (`repositories/tentatives-connexion.ts`, migration 0062), précisément
+    // pour survivre à ce genre de soirée.
+    //
+    // Le journal reste bruyant : c'est la seule trace qui dise pourquoi les
+    // seuils se comportent autrement ce jour-là.
     // ─────────────────────────────────────────────────────────────────────────
     console.error(
-      "[limite] le magasin de limitation n'a pas répondu — la demande est LAISSÉE PASSER " +
-        "pour ne pas enfermer l'utilisateur dehors. La protection contre les rafales est " +
-        "suspendue jusqu'au retour du service.",
+      "[limite] le magasin de limitation n'a pas répondu — bascule sur le compteur EN MÉMOIRE, " +
+        "propre à cette instance. La protection reste, dégradée, jusqu'au retour du service.",
       { cle, erreur }
     );
-    return { autorise: true };
+    try {
+      resultat = await getSecours().verifierEtIncrementer(cle, limite.max, limite.fenetreMs);
+    } catch {
+      // Le magasin mémoire ne peut pas échouer ; si l'impossible arrive, on
+      // laisse passer plutôt que d'enfermer dehors — c'est la décision du
+      // 12 août, et elle reste la bonne en dernier recours.
+      return { autorise: true };
+    }
   }
   if (resultat.autorise) return { autorise: true };
   return {
@@ -97,6 +122,7 @@ export async function verifierLimite(
 export async function fermerLimiteur(): Promise<void> {
   const actuel = magasin;
   magasin = null;
+  secours = null;
   await actuel?.fermer?.();
 }
 
@@ -106,4 +132,8 @@ export function _forcerMagasinPourTests(m: MagasinLimite): void {
 }
 export function _reinitialiserMagasinPourTests(): void {
   magasin = null;
+  // Le secours aussi : sans cela, un cas de test qui a fait tomber le magasin
+  // principal laisserait ses compteurs au cas suivant, qui rougirait sans que
+  // rien ne dise pourquoi.
+  secours = null;
 }

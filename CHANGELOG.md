@@ -9,6 +9,79 @@ Format : le plus récent en tête.
 
 ## 2026-08-24
 
+### Face ID est codé — sa réponse B, et le mot de passe intact
+
+Il a tranché : **B**, la porte d'aujourd'hui plus une ligne au-dessus. Rien n'a
+changé de place — `name="email"`, `name="password"` et `type="submit"` sont où
+ils étaient, ce dont dépendent vingt scripts de capture et
+`verifier-connexion.mjs`.
+
+**Ce qu'il gagne :** on enregistre son téléphone une fois depuis Réglages ›
+Connexion, et la porte s'ouvre ensuite d'un doigt, **sans taper son adresse**
+(clés découvrables). Le mot de passe reste actif et ne peut pas se retirer.
+
+**Ce qui n'arrive JAMAIS en base : aucune donnée biométrique.** Le visage ne
+quitte pas la puce du téléphone ; Atlas ne garde qu'une clé **publique** — de
+quoi vérifier une signature, jamais d'en produire une. L'écran le dit à
+l'artisan, et une suite vérifie qu'il le dit.
+
+**La règle qui a commandé tout le reste : un visage refusé ne compte AUCUNE
+tentative ratée.** Sans elle, un téléphone qui ne reconnaît pas son
+propriétaire — poussière, casquette, lumière rasante — finirait par temporiser
+son propre compte : la panne du 6 août 2026 refaite par l'autre bord.
+`test-face-id-e2e.ts` l'éprouve avec un appareil réglé pour échouer, et a été
+vue rouge contre un `noterEchec` posé exprès sur ce chemin.
+
+**`next-auth/providers/passkey` est écarté, vérifié plutôt que supposé :**
+`@auth/core` refuse le WebAuthn sans adaptateur de base (« WebAuthn requires an
+adapter »). Atlas n'en a aucun — session JWT, sans table —, et en brancher un
+remettrait en jeu le contexte d'entreprise, le `middleware` et « me déconnecter
+partout », pour un bouton sur la porte. Retenu : un **second fournisseur
+`Credentials`** vérifiant l'assertion avec `@simplewebauthn/server`
+(`ARCHITECTURE.md` §163).
+
+**Un défaut trouvé par une suite, pas par une relecture :** la lecture du
+domaine découpait sur le premier `:` avant de valider. Sur `https://atlas.fr`,
+le morceau restant valait `https` — accepté. Atlas aurait posé des clés sous le
+domaine « https », et aucune ne se serait jamais rouverte.
+
+**À poser le jour du déploiement : `ATLAS_RP_ID`.** Sans elle, Atlas **refuse**
+d'enregistrer une clé en production plutôt que de deviner le domaine depuis un
+en-tête que le client écrit.
+
+Parcouru en entier dans un vrai navigateur, avec l'appareil simulé de Chrome :
+enregistrement, déconnexion, ouverture au visage, échec, retrait.
+
+### Face ID : la planche avant le code, et un chemin d'implémentation vérifié
+
+Sa demande du 23 août — *« le Face ID pour le mot de passe, et bien entendu
+qu'il faut conserver le mot de passe »* — est un **geste sur la porte** : il se
+dessine avant de toucher à `src/` (`CLAUDE.md` §3 bis). `appli/face-id.html`
+(planche 94) propose deux places, **A** le visage d'abord, **B** l'écran
+d'aujourd'hui plus une ligne, et **ne pose qu'une question** : tout le reste est
+identique dans les deux. Elle se manipule — le visage ouvre une fenêtre, un
+interrupteur le **fait échouer** exprès, un autre l'**éteint** et la porte
+redevient exactement celle d'aujourd'hui.
+
+**Ce qui n'est pas une question, et que la planche écrit** : le mot de passe ne
+se retire pas (son interrupteur est allumé et inerte), le compte se crée au mot
+de passe, l'activation est **par appareil**, et un échec de visage **ne compte
+aucune tentative ratée** — sinon un visage mal reconnu ferait temporiser son
+propre compte, la faute du 6 août refaite par un autre bord.
+
+**Le fournisseur `passkey` d'Auth.js est écarté, et c'est vérifié, pas supposé :**
+`@auth/core` refuse le WebAuthn sans adaptateur de base (« WebAuthn requires an
+adapter »). Atlas n'en a aucun — la session est un JWT sans table —, et en
+brancher un remettrait en jeu le contexte d'entreprise, le `middleware` et la
+déconnexion partout, pour un bouton sur la porte. Retenu : un **second
+fournisseur `Credentials`** qui vérifie l'assertion avec `@simplewebauthn/server`
+et laisse le jeton, le cookie et les rappels intacts (`ARCHITECTURE.md` §163).
+
+`appli/tests/essai-face-id.mjs` parcourt la planche dans un vrai navigateur et
+**barre la publication** ; elle a été vue rouge contre une porte A privée de son
+chemin vers le mot de passe, et contre un échec de visage qui accusait le mot de
+passe. **Rien n'est codé dans `src/`.**
+
 ### L'allure de ses documents : typographie, fond, accent, logo
 
 *Sa demande du 23 août : « un endroit dédié à la modification de son devis —
@@ -38,7 +111,7 @@ chargée : « Playfair Display » s'affichait en Georgia. Vu à la capture, jama
 par un test. `/api/polices/[fichier]` sert maintenant les fichiers mêmes que le
 PDF embarque.
 
-`ARCHITECTURE.md` §162.
+`ARCHITECTURE.md` §164.
 
 ---
 
@@ -373,6 +446,73 @@ sous-commandes (`scripts/test-ouvrir-port.ts`) : `ouvert`, `non-declare`,
 environnement n'est pas un espace GitHub. Le nouveau mot `non-declare` est
 éprouvé sur la règle qui le lit, pas sur un vrai relais — c'est au prochain
 allumage de son espace que la fiche le dira, ou non.
+### Audit de sécurité, lot 1 : six trous fermés, dont trois qui ouvraient un compte
+
+Un audit hostile complet a été mené sur le dépôt (base montée, RLS attaquée en
+SQL, historique Git balayé, `npm audit`). **L'isolation entre entreprises a
+tenu** : 42 tables sur 42 sous RLS forcée, écriture croisée refusée, lecture
+sans contexte à zéro ligne, 189 appels à `withEntreprise` sur 189 conformes.
+Ce qui manquait était autour d'elle.
+
+**C1 — deviner un mot de passe n'était pas empêché.** Le seuil « cinq essais
+par quart d'heure » se calait sur `x-forwarded-for`, un en-tête que celui qui
+frappe écrit lui-même : il suffisait de le changer à chaque essai. Le
+garde-fou de second rang laissait passer 28 800 essais par jour et par compte.
+Et **tout disparaissait dès que Redis toussait**, puisqu'un magasin en panne
+laissait tout passer. Trois couches désormais : la source n'est crue que
+derrière un mandataire déclaré (`ATLAS_PROXY_SAUTS`) ; un compteur d'échecs
+**en base** temporise par paliers, s'oublie au bout d'une heure et s'efface à
+la première connexion réussie ; et un magasin de limitation en panne bascule
+sur le compteur mémoire au lieu d'ouvrir la porte. Mesuré : **103 essais par
+jour au lieu de 28 800**. Le mot de passe minimal passe de 8 à 12 caractères —
+à la création et au changement seulement, aucun compte existant n'est mis
+dehors.
+
+**E1 — `npm run db:seed` pouvait vider une vraie base.** Son `TRUNCATE …
+CASCADE` sur `entreprises` et `users` n'avait pour garde-fou qu'un commentaire.
+Il exige maintenant de prouver sa cible : nom de base connu, hôte local, et
+`NODE_ENV` qui n'est pas `production`. Forcer se dit en toutes lettres et
+oblige alors à poser un mot de passe de démonstration — celui du dépôt est
+public. Le banc et les 136 fichiers qui dépendent de `demo1234` sont intacts.
+
+**E2 — l'agenda iCloud était une porte vers le réseau interne.** L'adresse du
+calendrier d'écriture arrivait du navigateur, n'était vérifiée nulle part, et
+servait d'adresse à `fetch` avec le mot de passe iCloud de l'artisan dans
+l'en-tête. Un propriétaire d'entreprise pouvait faire émettre au serveur des
+`PUT` vers le service de métadonnées de l'hébergeur. Désormais : `https`
+obligatoire, domaine `icloud.com` obligatoire, adresses privées et de
+bouclage refusées en v4 comme en v6, **chaque redirection revérifiée**, et le
+calendrier choisi doit être l'un de ceux qu'Apple rend pour ce compte. Le
+renvoi normal `caldav.icloud.com` → `p42-caldav.icloud.com` continue de passer.
+
+**E3 — un salarié pouvait réécrire les prix de vente.** `poserPrixGrilleAction`
+était la seule action de son fichier sans garde de rôle, et les écrans
+`/reglages/prix` et `/reglages/prix/mesures` n'en avaient aucune : la
+protection ne vivait que dans le sommaire des réglages. La règle du 13 août —
+*« un salarié ne doit évidemment pas pouvoir modifier les tarifs »* — est
+maintenant tenue par le serveur. **La garde est sur l'action et l'écran, jamais
+dans le dépôt** : `apprendre-grille.ts` apprend les prix tout seul depuis les
+devis, et la poser plus bas aurait empêché un salarié d'en établir un.
+
+**M7 — `src/auth.ts` écrasait `trustHost`.** `auth.config.ts` calculait la
+valeur avec soin et promettait qu'elle protégeait la production ; trois lignes
+plus bas, un `trustHost: true` inconditionnel la remplaçait. La documentation
+décrivait donc une protection qui n'existait pas — le pire des deux mondes.
+Une seule règle désormais (`src/lib/confiance-hote.ts`). **Un déploiement
+derrière un mandataire devra poser `AUTH_TRUST_HOST`**, sans quoi Auth.js
+refusera chaque connexion : c'est écrit dans `.env.example`.
+
+**M8 — une variable suffisait à ouvrir toute l'application.** Le profil banc
+d'essai désactive la protection contre le CSRF des actions serveur. Posé par
+erreur sur un vrai déploiement, il ouvrait tout. `src/server/env.ts` refuse
+maintenant de démarrer sur la contradiction — profil banc **et** compartiment
+S3, ou profil banc **et** `ATLAS_DEPLOIEMENT=production`. **Le critère n'est
+surtout pas `NODE_ENV`** : le banc EST « production + profil banc », puisque
+`next start` l'impose, et refuser là-dessus l'aurait éteint à la seconde.
+
+Huit suites neuves, toutes écrites pour rougir sur l'ancien code. Ce qui reste
+à faire (M1 à M12 hors M7/M8, F1 à F13) est dans `TODO.md`.
+
 
 ### Le banc accusait le mauvais coupable — Atlas signe maintenant ses réponses
 
