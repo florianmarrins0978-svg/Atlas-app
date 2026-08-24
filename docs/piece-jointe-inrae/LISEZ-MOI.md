@@ -10,6 +10,66 @@ chaque ligne affichée, et ce que l'outil s'interdit.
 d'autorisation adressée à un institut de recherche dit à peu près l'inverse de ce
 que le courriel affirme sur le sérieux du travail.
 
+## Le TON du document, et pourquoi il ne se « remet pas au propre »
+
+**Sa demande du 23 août 2026 :** *« j'ai peur qu'il reconnaisse que ça soit fait
+par une IA. Or je n'ai pas envie qu'il pense cela, car aujourd'hui l'IA fait
+encore peur et j'aimerais qu'il pense que je code une application et que je veux
+utiliser leurs données. […] Toutes tes petites phrases annexes que tu mets en
+gris pour expliquer, supprime-le. »*
+
+Le document a donc été réécrit, et **ce qui a été retiré ne doit pas revenir** :
+
+| Retiré | Pourquoi |
+|---|---|
+| les légendes grises sous les images | c'est sa demande, mot pour mot |
+| les mots surlignés en doré au fil du texte | un texte qui se souligne lui-même se lit comme une notice, pas comme une lettre |
+| la ligne « Document établi à l'intention de… » | un appareil de rapport, dans un courrier d'une page |
+| le titre « Le principe : le modèle observe, la base décide » | une formule de conception, qui n'a rien à faire devant un destinataire |
+| le « nous » de société | il écrit seul, et c'est ce qui rend la demande crédible |
+
+La police est passée en serif de bout en bout, et le document est **signé**.
+
+**CE QUI RESTE, ET QUI NE SE RETIRE PAS.** Un paragraphe de la page 2 dit ce que
+fait la photographie prise sur le chantier, et il nomme le fonctionnement réel.
+Il a été conservé **contre la lecture littérale de sa demande**, pour deux
+raisons dites franchement :
+
+1. **son propre courriel l'écrit déjà de sa main** — *« j'ai fait le choix de ne
+   jamais laisser une intelligence artificielle inventer un diagnostic »*. Une
+   annexe qui décrirait autre chose que la lettre qu'elle accompagne se
+   contredirait sous les yeux du lecteur ;
+2. **une autorisation obtenue sur une description fausse ne protège de rien.**
+   Le jour où l'INRAE ouvre l'application, c'est la demande entière qui tombe —
+   et le crédit d'un artisan avec elle.
+
+Ce qui a changé, c'est la **place** : le fonctionnement n'est plus le titre d'une
+page, il est un paragraphe parmi d'autres, après la constitution des fiches. Et
+il joue en sa faveur : ce que le lecteur y voit, c'est quelqu'un qui a bridé son
+outil — pas de champ où écrire un nom de maladie, refus de conclure sans
+identification de l'arbre.
+
+**Sa deuxième passe, le 23 août au soir.** Sont partis en plus : la phrase
+« et je ne complète jamais de mémoire », **le nom Atlas partout** — en-tête,
+pieds de page, titre du fichier, texte alternatif des images — et les lignes
+grises « Atlas — annexe à ma demande d'autorisation ». Les bandeaux d'en-tête
+ont disparu avec eux ; il ne reste qu'un numéro de page, à droite. Le document
+ne porte plus de marque : il parle d'« mon application », et c'est tout.
+
+**Et il a fait retourner la demande d'images**, qui était formulée à l'envers :
+*« tu dis que si certaines de leurs photos ne peuvent pas être utilisées, ce
+n'est pas grave, l'appli fonctionne sans — sauf qu'il faut absolument qu'ils
+acceptent qu'on utilise aussi leurs photos »*. La porte de sortie —
+« l'application fonctionne sans aucune image » — est supprimée. À la place, la
+raison de métier : on ne conclut pas sur une description, on compare ; et les
+images libres trouvables ailleurs sont américaines, sur des essences qui ne sont
+pas les nôtres. **Ne pas remettre la formule d'abandon** : elle offrait un refus
+tout prêt sur le point auquel il tient le plus.
+
+**Devant une demande d'aller plus loin dans ce sens, le lui dire plutôt que de
+l'exécuter.** Ce n'est pas une réserve de style : c'est la différence entre une
+demande d'autorisation et une demande obtenue par omission.
+
 ## Regénérer le PDF
 
 `document.html` est la source. Il appelle deux captures qui **ne sont pas dans le
@@ -91,15 +151,33 @@ contre lui.
 | les figures d'Ephytia | **écartées à dessein** : deux portent un « © » nominatif (CHAMONT S. (INRA), Arnaud Giraudel, Jean-Pierre Henry) |
 | l'import | **refuse** toute image dont la licence porte « © » ou « droits réservés » (`import-fiches-phyto.ts`, refus n° 7) |
 
-**Ce qui n'a PAS pu être vérifié depuis l'environnement de l'agent :** la page
-Commons elle-même. Le mandataire réseau bloque `commons.wikimedia.org`, et le
-fichier local ne porte aucune métadonnée — la vignette servie par Commons les
-retire. La mention « domaine public, travail d'un employé de l'USDA » vient donc
-de ce que le patron a transmis le 20 août avec la photo, pas d'un relevé fait
-ici. **Le dire ainsi plutôt que de laisser croire à une vérification qui n'a pas
-eu lieu** (`AGENTS.md`).
+**VÉRIFIÉ LE 23 AOÛT 2026 — et la vérification a corrigé quelque chose.** Le
+mandataire réseau bloque `commons.wikimedia.org` depuis l'environnement de
+l'agent, et la vignette servie par Commons ne porte aucune métadonnée : rien
+n'était donc éprouvable ici. C'est le patron qui a ouvert la page sur son
+téléphone et transmis trois captures.
 
-**Ce qui la vérifie en dix secondes, depuis un navigateur :** ouvrir
-<https://commons.wikimedia.org/wiki/File:Apiognomonia_veneta_leaf.JPG> et lire
-le bandeau de licence. S'il n'annonce pas le domaine public, la photo sort de la
-fiche et le document se refait — la phrase de la page 1 deviendrait fausse.
+| Ce que la page dit | Ce que le dépôt en a fait |
+|---|---|
+| bandeau **PD-USDA** — *« work of a United States Department of Agriculture employee, taken or made as part of that person's official duties […] the image is in the public domain »* | la licence enregistrée était **juste**, mot pour mot |
+| **Author : Clemson University** | absent du dépôt |
+| **Permission : « Cite: Clemson University - USDA Cooperative Extension Slide Series, Bugwood.org »** | le crédit disait « USDA, via Wikimedia Commons » — pas faux, mais **pas la citation demandée** |
+| Source : Forestry Images / The Bugwood Network (University of Georgia, USDA Forest Service), image n° 1234089, 18 août 2003 | absent du dépôt |
+| Description : *« Symptoms of the fungal plant pathogen Apiognomonia veneta on the leaf of a Platanus occidentalis tree »* | conforme à la légende enregistrée |
+
+**Le crédit a donc été corrigé** pour porter la citation que la source réclame,
+dans la fiche, sous la photo à l'écran et dans l'annotation n° 4 du document.
+Une demande d'autorisation qui cite mal une autre source se dessert elle-même —
+et c'est précisément la question que le patron a posée : *« il ne faut pas les
+prendre pour des cons »*.
+
+**La leçon, plus large que cette photo :** une licence recopiée sans la page qui
+la porte laisse passer ce que la page EXIGE en plus. Le contrôle d'intégrité
+compare le fichier source à la base ; il ne compare rien à l'original hors du
+dépôt. Pour toute image future, relever aussi le champ **Permission** de la page
+Commons, pas seulement son bandeau de licence.
+
+**Si la photo change un jour**, la page à rouvrir est
+<https://commons.wikimedia.org/wiki/File:Apiognomonia_veneta_leaf.JPG>. Sans
+bandeau de domaine public, la photo sort de la fiche et le document se refait :
+la phrase de la page 1 deviendrait fausse.

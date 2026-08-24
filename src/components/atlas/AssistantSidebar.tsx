@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import { colors, font } from "@/lib/design-tokens";
+import { colors, font, surPlein } from "@/lib/design-tokens";
 import { useAssistant } from "./assistant-contexte";
 import { rendreMarkdownSimple } from "./rendreMarkdownSimple";
 import { poserQuestionAction } from "@/app/assistant/actions";
@@ -263,7 +263,7 @@ export default function AssistantSidebar() {
                 className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full disabled:opacity-40"
                 style={{ backgroundColor: colors.rust }}
               >
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="white">
+                <svg width="16" height="16" viewBox="0 0 24 24" style={{ fill: surPlein }}>
                   <path d="M3 20l18-8L3 4v6l12 2-12 2z" />
                 </svg>
               </button>

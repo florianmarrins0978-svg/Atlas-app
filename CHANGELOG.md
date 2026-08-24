@@ -42,6 +42,73 @@ apercevrait. Le texte d'Atlas retapé à l'identique redevient donc `null`.
 **L'objet du courriel ne se règle pas** : il ne se lit que par courriel, jamais
 par SMS, et un objet vide ou trompeur envoie le message aux indésirables.
 
+### La pièce jointe à l'INRAE réécrite de sa main, et non de la nôtre
+
+*« J'ai peur qu'il reconnaisse que ça soit fait par une IA. Or je n'ai pas envie
+qu'il pense cela, car aujourd'hui l'IA fait encore peur. […] Toutes tes petites
+phrases annexes que tu mets en gris pour expliquer, supprime-le. »*
+
+Le document est repris à la première personne, en serif de bout en bout, et
+signé. Sont partis : les légendes grises sous les images, les mots surlignés en
+doré au fil du texte, la ligne « Document établi à l'intention de… », le « nous »
+de société, et le titre « Le principe : le modèle observe, la base décide » — une
+formule de conception, qui n'avait rien à faire devant un destinataire.
+
+**Un paragraphe a été conservé contre la lecture littérale de sa demande**, et
+cela lui a été dit : celui qui décrit ce que fait la photographie prise sur le
+chantier. Son propre courriel l'écrit déjà de sa main — *« j'ai fait le choix de
+ne jamais laisser une intelligence artificielle inventer un diagnostic »* — et
+une annexe qui décrirait autre chose que la lettre qu'elle accompagne se
+contredirait sous les yeux du lecteur. Surtout, une autorisation obtenue sur une
+description fausse ne protège de rien le jour où l'institut ouvre l'application.
+
+Ce qui a changé, c'est sa PLACE : le fonctionnement n'est plus le titre d'une
+page, c'est un paragraphe parmi d'autres. Et il joue en sa faveur — ce que le
+lecteur y voit, c'est un artisan qui a bridé son outil.
+
+### La photo du platane : la licence tenait, la citation non
+
+Sa question, devant la pièce jointe destinée à l'INRAE : *« tu es sûr que la
+photo utilisée n'est pas une photo de l'INRAE, parce qu'il ne faut pas les
+prendre pour des cons »*. Elle visait juste — c'est la seule affirmation du
+document qui pouvait se retourner contre lui.
+
+**Rien n'était éprouvable ici** : le mandataire bloque `commons.wikimedia.org`,
+et la vignette servie par Commons ne porte aucune métadonnée. Il a ouvert la
+page sur son téléphone. Le bandeau est bien **PD-USDA** — la licence enregistrée
+était juste, mot pour mot.
+
+**Mais la page demande une citation nommée que le dépôt ne portait pas :**
+« Cite: Clemson University - USDA Cooperative Extension Slide Series,
+Bugwood.org ». Le crédit disait « USDA, via Wikimedia Commons » : pas faux, et
+pas ce que la source réclame. Corrigé dans la fiche, sous la photo à l'écran et
+dans l'annotation n° 4 du document — une demande d'autorisation qui cite mal une
+autre source se dessert elle-même.
+
+**Ce que cela apprend, au-delà de cette photo :** une licence recopiée sans la
+page qui la porte laisse passer ce que la page EXIGE en plus. Le contrôle
+d'intégrité compare le fichier source à la base ; il ne compare rien à
+l'original hors du dépôt. Pour toute image future, relever aussi le champ
+**Permission**, pas seulement le bandeau de licence.
+
+**Et la capture d'écran de la pièce jointe se refait désormais en une commande**
+(`scripts/capture-inrae.mts`). Elle se remontait de mémoire, décrite en prose
+dans un mode d'emploi : c'est exactement pourquoi elle a failli partir chez
+l'INRAE avec l'ancien crédit affiché dessous. Le script refuse de rendre une
+image si la fiche n'est pas en base, si une photo n'est pas chargée ou si une
+boîte mesure zéro pixel.
+
+### Le courriel à l'INRAE reprend sa version
+
+Il a reformulé la première partie — d'où il vient, et pourquoi il fait cet
+outil : des arbres abattus sous prétexte de maladie, sans diagnostic. Seuls
+l'orthographe et quelques tournures sont corrigées ; l'ordre de ses idées ne
+bouge pas, parce qu'un institut lit la différence entre un artisan qui explique
+son métier et un texte lissé.
+
+Deux écarts rendus plutôt que tranchés en silence : « célèbre » retiré devant le
+nom de son école, et « pourrait atteindre quelques centaines » conservé — c'est
+ce chiffre-là qui rend l'autorisation nécessaire.
 
 ### Les prix tapés sur l'écran du devis partent enfin chez le client
 
@@ -271,10 +338,6 @@ sous-commandes (`scripts/test-ouvrir-port.ts`) : `ouvert`, `non-declare`,
 environnement n'est pas un espace GitHub. Le nouveau mot `non-declare` est
 éprouvé sur la règle qui le lit, pas sur un vrai relais — c'est au prochain
 allumage de son espace que la fiche le dira, ou non.
-
----
-
-## 2026-08-23
 
 ### Le banc accusait le mauvais coupable — Atlas signe maintenant ses réponses
 
@@ -662,6 +725,34 @@ texte nu.
 Mesuré dans un vrai navigateur, à 390 px : durée sous le nom, nom sur une seule
 ligne (23 px), et `border-top: 0px` au-dessus du « + ».
 
+### Rien à poser : le geste « Ajouter un chantier » disparaît
+
+**Sa remarque, capture à l'appui :** *« lorsqu'aucun chantier n'attend de jour,
+il ne faudrait pas que le bouton "Ajouter un chantier" apparaisse à l'écran, car
+il peut nous induire en erreur »*.
+
+**Il avait raison au sens strict, et c'est ce qui rend la correction évidente :
+ce geste ne CRÉE pas de chantier.** Il ouvre la liste de ceux qui attendent une
+date, et les pose sur la journée. Sans aucun chantier en attente, il ne pouvait
+mener qu'à « Aucun chantier n'attend de jour » — une promesse suivie d'un refus.
+Et la même phrase s'écrivait déjà sous « Sans date », deux lignes plus bas :
+l'écran la disait deux fois.
+
+**Le bouton DISPARAÎT, il ne se grise pas.** Un rond doré éteint reste un rond
+doré : on appuie dessus pour savoir pourquoi il est éteint, et l'on retombe dans
+le même cul-de-sac par un chemin plus long.
+
+Le repli « Aucun chantier n'attend de jour » qui vivait dans ce geste est retiré
+avec lui : on ne peut plus y arriver, et le garder aurait été une branche morte.
+
+**Deux mesures, et la seconde tient la première.** L'une éprouve qu'aucun bouton
+ne subsiste quand rien n'attend — l'état est installé par la base, puis rendu, y
+compris si la mesure échoue, car le compte de démonstration sert aux cent quatre
+suites. L'autre éprouve qu'il **revient** dès qu'un chantier attend : sans elle,
+un bouton supprimé pour de bon passerait au vert.
+
+---
+
 ## 2026-08-22
 
 ### Planche 92 : le temps passé, montré ou non sur le compte rendu du client
@@ -700,6 +791,57 @@ Le contrôle (`scripts/verifier-maquette-temps-sur-la-fiche.mjs`, branché sur
 qu'il prétend attraper : une ligne cachée par une simple opacité — donc encore
 lue et encore à sa place —, la phrase « reste enregistré » supprimée, et un
 interrupteur qui survivait à l'envoi.
+
+## 2026-08-22
+
+### Le mode nuit se lit — huit couleurs claires écrites en dur, et trois signaux tenus pour immuables
+
+**Sa capture du planning, en « Nuit », et six mots :** *« Le mode nuit est
+illisible. Corrige ça. »* La pastille d'équipe portait « Julien ＋ » en blanc
+sur un fond blanc cassé, les chiffres du week-end n'existaient pas, et
+« incomplet » et « complet » étaient devenus deux blancs.
+
+**Trois familles de fautes, toutes invisibles sur les cinq chartes claires.**
+
+1. **Un crème écrit en dur sur l'accent.** Huit endroits posaient `#faf9f5`,
+   `#fff` ou `fill="white"` sur `colors.rust`. Sur les claires, l'accent est un
+   vert pin sombre : parfait. Sur Nuit et Sylve, **l'accent EST l'encre** — un
+   crème sur un crème, 1,05 de contraste. `surPlein` remplace le tout, et vaut
+   `card` : dans chacune des sept chartes, la plage et l'accent sont aux deux
+   bouts de l'échelle. Sur Origine, `card` vaut `#faf9f5` au caractère près.
+2. **Un voile d'encre écrit en dur.** Le calendrier éteignait ses week-ends
+   avec `rgba(28,28,26,0.42)` — l'encre d'Origine. Sur un fond noir, du noir à
+   42 % est du noir : les « 29 » et « 30 » de sa capture n'existaient pas
+   (1,04). `voile(colors.ink, 0.42)` suit la charte, et retombe sur l'encre
+   pleine là où `color-mix` manque : trop vu, jamais invisible.
+3. **Trois couleurs de signal tenues pour immuables.** `design-tokens.ts`
+   affirmait qu'alerte, bordeaux et vert pâle n'avaient pas à suivre la charte.
+   Leur rôle est pourtant que quatre états se distinguent d'un coup d'œil — et
+   sur les sombres, « incomplet » et « complet » tenaient 1,5, le dépassement
+   1,76 contre son fond, un refus 2,5. Elles deviennent des jetons : la TEINTE
+   du patron ne bouge pas, seule la clarté s'accorde au fond, et **uniquement
+   quand elle en a besoin**.
+
+**Les cinq chartes claires ne bougent pas d'un caractère**, et c'est vérifié :
+la dérivation ne remonte la clarté que si le contraste manque, ce qui n'arrive
+jamais sur un fond clair. Ce qu'il regarde tous les jours est intact.
+
+**Deux contrôles, et aucun ne remplace l'autre.**
+`test-chartes-lisibles.ts` mesure les sept palettes sans navigateur, en dix
+secondes. `test-mode-sombre-lisible-e2e.ts` ouvre chaque écran deux fois — en
+Origine puis en Nuit — et compare **le même texte à lui-même** : c'est le seul
+qui pouvait voir une couleur écrite DANS un écran, hors de toute charte. Les
+deux ont été confrontés à l'état d'avant le lot, et ils rougissent en nommant
+« Julien ＋ » et les chiffres du week-end.
+
+**Aucun seuil inventé.** Sur Origine, le bordeaux et le vert pin tiennent 1,10
+l'un contre l'autre, et le chevron de navigation 2,6 : ce sont ses choix. Une
+suite qui les ferait rougir accuserait le dessin qu'il a validé (`CLAUDE.md`
+§5 bis). La règle retenue est *le sombre ne fait pas moins bien que le clair*,
+et le clair se mesure au lieu de s'écrire.
+
+Le détail : `ARCHITECTURE.md` §160.
+
 
 ### « Choisir la date » ouvre le calendrier du planning, et dit qui est déjà là
 

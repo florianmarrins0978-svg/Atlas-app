@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { colors, font, libelleCaps } from "@/lib/design-tokens";
+import { colors, font, libelleCaps, surPlein } from "@/lib/design-tokens";
 import BottomSheet from "@/components/atlas/BottomSheet";
 import PointsQuiSoufflent from "@/components/atlas/PointsQuiSoufflent";
 import PrimaryButton from "@/components/atlas/PrimaryButton";
@@ -206,7 +206,7 @@ export default function DicterDansLeDevis({
           // simplement — vu à la capture, jamais à la mesure. La maquette 54 le
           // montrait posé sur la page, et c'est ce qu'il a validé.
           backgroundColor: enCours ? colors.alert : colors.card,
-          color: enCours ? "#FFFFFF" : colors.rust,
+          color: enCours ? surPlein : colors.rust,
         }}
       >
         {travaille ? (

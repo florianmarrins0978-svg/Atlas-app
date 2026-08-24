@@ -169,6 +169,15 @@ langage. Rien n'y entre sans son accord explicite (voir `AGENTS.md`).
 - **Jamais de règle dupliquée entre l'affichage et la vérification.** La même
   fonction sert à construire un écran et à revalider ce qu'il renvoie — deux
   implémentations finissent toujours par diverger.
+- **Aucune couleur écrite en clair dans un écran.** Sept chartes cohabitent,
+  dont **deux sombres** : sur Nuit et Sylve, l'accent est CLAIR et le fond est
+  SOMBRE — les pôles s'inversent. Un `#faf9f5` posé sur `colors.rust` est donc
+  juste cinq fois sur sept, et illisible deux fois. C'est exactement ce que le
+  patron a signalé le 22 août 2026 : *« le mode nuit est illisible »*. Ce qui
+  s'écrit à la place : `surPlein` pour ce qu'on pose SUR un aplat,
+  `voile(colors.ink, α)` pour un voile, et les jetons pour les signaux
+  (`ARCHITECTURE.md` §160). En dix secondes :
+  `npx tsx scripts/test-chartes-lisibles.ts`.
 
 ## 3 ter. Lui répondre court
 
@@ -1052,6 +1061,22 @@ Trois règles qui en découlent, et qui ne se négocient pas :
    11 août.
 3. **Fusionner juste avant de pousser, pas la veille.** Entre la vérification et
    la poussée, `main` a pu bouger encore. Vérifier une dernière fois.
+4. **NE PAS ATTENDRE LES AUTRES SESSIONS.** Sa consigne du 23 août 2026 —
+   *« si vous savez qu'il y a plusieurs sessions qui tournent, organisez-vous
+   les gars »* — après une soirée où un lot vert a refusionné trois fois sans
+   jamais atteindre `main`.
+
+   **Attendre est un blocage, pas une politesse :** ce soir-là, six sessions
+   tournaient sur l'application, chacune verte et prête. Si chacune attend que
+   les autres aient fini, aucune ne pousse jamais. Ce qui raccourcit vraiment
+   la course, c'est de **pousser dans la minute qui suit le vert** — la fenêtre
+   où `main` peut bouger se compte alors en secondes, pas en dizaines de
+   minutes.
+
+   Et le tableau ci-dessous n'est pas une formalité à cocher : rejouer soixante
+   suites parce qu'une autre session a touché le même fichier, alors qu'elle
+   travaillait à l'autre bout, c'est repayer dix minutes pour n'apprendre rien
+   — et laisser `main` bouger encore pendant ce temps.
 
 **Après une fusion, rejouer la batterie SEULEMENT si le code arrivé touche ce
 qu'on vient de faire.** Sa décision du 13 août 2026 : *« seulement quand le code

@@ -9,6 +9,32 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
+## ⚠ `ARCHITECTURE.md` porte SIX paragraphes pour trois numéros (23 août 2026)
+
+Trois numéros sont pris deux fois, et cela existe déjà sur `main` — ce n'est
+donc pas une fusion à rattraper, c'est un état à corriger une fois :
+
+| N° | Le premier | Le second |
+|---|---|---|
+| **134** | Chercher un client : la règle vit hors de l'écran | Le troisième document : une option dans le moteur |
+| **135** | Un écran atteint depuis deux endroits | Le diagnostic végétal : le modèle observe, la base décide |
+| **136** | Deux constructions au démarrage | « Choisir la date » : l'écran du milieu disparaît |
+
+C'est exactement ce que `CLAUDE.md` §6 B annonce : *« son numéro n'est pas
+réservé »*, six sessions écrivent en parallèle, et deux d'entre elles ont pris
+le même à quelques heures d'écart. La règle dit de renuméroter **le sien** — mais
+ici les deux sont sur `main` depuis, et plus aucune n'est « la sienne ».
+
+**Ce qu'il faut faire, et pourquoi ce n'est pas urgent :** renuméroter le second
+jeu à la suite du dernier paragraphe existant, et corriger les renvois qui le
+citent (`grep -n '§13[456]'`). Un renvoi vers « §135 » ne dit aujourd'hui pas
+lequel des deux — c'est une gêne à la relecture, pas un défaut de produit.
+
+**Ce qu'il ne faut PAS faire : le corriger au milieu d'un autre lot.** Toucher
+onze mille lignes d'`ARCHITECTURE.md` pendant que cinq sessions y ajoutent des
+paragraphes fabrique exactement les conflits que le §6 décrit. À faire seul, et
+poussé aussitôt.
+
 ## ⚠ `ss` ne rend RIEN dans cet environnement — un port se mesure autrement (23 août 2026)
 
 **Payé trois batteries d'affilée ce soir**, chacune tombée sur un
@@ -132,6 +158,33 @@ le produit. **Ne pas rouvrir** sans qu'il le redemande.
 
 La planche 92 (`appli/calendrier-aujourdhui.html`) reste : elle raconte le
 chemin, et le prochain qui trouvera deux cases entourées saura pourquoi.
+## Mode nuit : ce que le lot du 22 août ne couvre PAS (22 août 2026)
+
+Le défaut qu'il a signalé est réparé (`ARCHITECTURE.md` §160), et deux contrôles
+le tiennent. Ce qui reste dehors, et qu'il faut savoir avant de croire
+l'application entièrement lisible en Nuit :
+
+| Ce qui n'est pas éprouvé | Pourquoi |
+|---|---|
+| **les états qui ne s'ouvrent qu'au doigt** — feuilles, tiroirs, listes déroulantes, champs en cours de saisie | la suite navigateur parcourt des écrans au repos ; ouvrir chaque geste demanderait un scénario par écran |
+| **les écrans profonds** — fiche chantier, devis complet, facture, catalogue, arrosage | le parcours porte neuf écrans, pas l'application entière |
+| **la pastille d'équipe elle-même**, dans la CI | le jeu de démonstration n'a qu'une équipe et aucun chantier planifié : le cas exact de sa capture ne se rejoue qu'avec deux équipes en base |
+
+Le troisième point est le plus gênant : c'est celui qu'il a signalé, et la suite
+le mesurerait s'il y avait de quoi le mesurer. Le corriger demande soit
+d'enrichir le jeu de démonstration — qui sert aux quatre-vingts suites de la
+batterie —, soit de faire poser un chantier et une seconde équipe par la suite
+elle-même, à travers les écrans. La seconde voie est la plus sûre et n'a pas été
+prise faute de temps.
+
+**Les pages publiques du client restent volontairement claires** — devis,
+facture, fiche d'entretien, documents légaux. Un devis ne part pas en noir chez
+le client parce que l'artisan a choisi « Nuit » (`design-tokens.ts`,
+`couleursDocument`). Ce n'est pas un manque, c'est une décision, et elle est
+tenue.
+
+---
+
 ## Arrosage : deux calculs manquent encore, et il ne les a pas commandés (22 août 2026)
 
 Sa question du 22 août — *« quel calcul utilisent-ils pour savoir cela ? »* — a
@@ -560,7 +613,7 @@ charge de la machine finit par être ignoré.
 
 ---
 
-## ⏳ `test-fiche-client-e2e.ts` a rougi une fois sur trois — non reproduit
+## ⏳ `test-fiche-client-e2e.ts` rougit sous charge — deux occurrences, deux causes possibles
 
 **Le 20 août 2026**, sur une batterie parmi trois jouées d'affilée, trois cas de
 cette suite sont tombés ensemble :
@@ -584,6 +637,36 @@ refonte que le patron vient de demander.
 besoin, au lieu de compter sur ceux qu'une suite d'avant a produits — ou qu'elle
 refuse de conclure sur une colonne vide, plutôt que de mesurer zéro pixel
 (`CLAUDE.md` §5). Non reproduit ici : à confirmer avant de corriger.
+
+### Deuxième occurrence, le 23 août 2026 — et elle désigne AUTRE CHOSE
+
+Trois cas sont retombés dans une batterie complète, mais **pas les mêmes**, et
+le message change tout :
+
+    ✗ elle porte son nom, et les informations sous le nom
+      le nom du client manque :
+      ATLAS
+      Chargement…
+      CHANTIERS PLANNING TERMINÉS PAYSAGE RÉGLAGES
+
+**« Chargement… », c'est l'écran qui n'a pas fini de se rendre** — pas une base
+vide. La lecture de 20 août (« les colonnes étaient VIDES, une suite d'avant n'a
+rien laissé ») ne couvre donc pas ce cas-ci : ici la page n'a simplement pas eu
+le temps. Les deux occurrences n'ont peut-être pas la même cause, et **traiter
+la seconde avec l'explication de la première ferait chercher au mauvais
+endroit** — ce que ce dépôt paie régulièrement.
+
+**Vérifié avant de conclure**, comme pour `test-lecons-prix-e2e.ts` :
+
+- le lot en cours ne touche **rien** de ce chemin (photo d'une fiche phyto,
+  script de capture, documents) — `git diff --name-only` le dit ;
+- rejouée **seule** juste après : **13 cas sur 13 au vert** ;
+- 105 des 106 suites de la même batterie sont vertes.
+
+**Ce qu'il faudrait, et c'est le même remède que pour `test-prix-e2e.ts` :**
+attendre **ce qu'on affirme** — le nom du client à l'écran — plutôt que la fin
+d'un chargement réseau. `networkidle` ne dit rien du rendu, et une machine
+chargée fait le reste.
 
 ---
 
@@ -2649,7 +2732,7 @@ montrait rien qu'un écran cassé, au lieu de sa facture parlant d'un devis. Un
 contrôle le tient désormais (`verifier-maquette-message-et-allure.mjs`, éprouvé
 rouge sur ce défaut précis).
 
-**IL A RÉPONDU « FAÇON 1 », ET C'EST CODÉ** (`ARCHITECTURE.md` §157) : colonne
+**IL A RÉPONDU « FAÇON 1 », ET C'EST CODÉ** (`ARCHITECTURE.md` §161) : colonne
 `entreprises.message_client`, bloc dans « Devis & factures », refus du message
 sans lien à l'écran ET au serveur, aperçu des trois documents, et le gabarit
 descend jusqu'aux trois écrans d'envoi. Éprouvé de bout en bout —

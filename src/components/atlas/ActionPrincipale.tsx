@@ -1,4 +1,4 @@
-import { colors, font } from "@/lib/design-tokens";
+import { colors, font, voile } from "@/lib/design-tokens";
 
 // L'action principale, à la forme d'Arborea (`.primary` dans `appli/app.html`).
 //
@@ -44,7 +44,7 @@ export default function ActionPrincipale({
       <span
         aria-hidden="true"
         className="flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-full"
-        style={{ backgroundColor: "rgba(255,255,255,0.13)" }}
+        style={{ backgroundColor: voile(colors.cream, 0.13) }}
       >
         {icone}
       </span>
@@ -56,7 +56,7 @@ export default function ActionPrincipale({
         >
           {titre}
         </strong>
-        <span className="mt-0.5 block text-[14.4px] leading-snug" style={{ color: "rgba(245,243,238,0.82)" }}>
+        <span className="mt-0.5 block text-[14.4px] leading-snug" style={{ color: voile(colors.cream, 0.82) }}>
           {sousTitre}
         </span>
       </span>

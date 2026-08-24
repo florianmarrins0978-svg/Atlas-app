@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { colors } from "@/lib/design-tokens";
+import { colors, surPlein } from "@/lib/design-tokens";
 import PointsQuiSoufflent from "@/components/atlas/PointsQuiSoufflent";
 import {
   etapeAttente,
@@ -208,7 +208,7 @@ export default function DicterCoordonnees({
         className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-full"
         style={{
           backgroundColor: enCours ? colors.alert : colors.rustTint,
-          color: enCours ? "#FFFFFF" : colors.rust,
+          color: enCours ? surPlein : colors.rust,
           // **Pas de demi-effacement pendant le traitement.** Il y en avait un,
           // et c'était la moitié du défaut signalé le 13 août : un bouton à
           // moitié effacé, c'est le vocabulaire d'un bouton ÉTEINT, pas d'un
