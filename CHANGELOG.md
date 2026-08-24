@@ -7,6 +7,40 @@ Format : le plus récent en tête.
 
 ---
 
+## 2026-08-24
+
+### Face ID : la planche avant le code, et un chemin d'implémentation vérifié
+
+Sa demande du 23 août — *« le Face ID pour le mot de passe, et bien entendu
+qu'il faut conserver le mot de passe »* — est un **geste sur la porte** : il se
+dessine avant de toucher à `src/` (`CLAUDE.md` §3 bis). `appli/face-id.html`
+(planche 94) propose deux places, **A** le visage d'abord, **B** l'écran
+d'aujourd'hui plus une ligne, et **ne pose qu'une question** : tout le reste est
+identique dans les deux. Elle se manipule — le visage ouvre une fenêtre, un
+interrupteur le **fait échouer** exprès, un autre l'**éteint** et la porte
+redevient exactement celle d'aujourd'hui.
+
+**Ce qui n'est pas une question, et que la planche écrit** : le mot de passe ne
+se retire pas (son interrupteur est allumé et inerte), le compte se crée au mot
+de passe, l'activation est **par appareil**, et un échec de visage **ne compte
+aucune tentative ratée** — sinon un visage mal reconnu ferait temporiser son
+propre compte, la faute du 6 août refaite par un autre bord.
+
+**Le fournisseur `passkey` d'Auth.js est écarté, et c'est vérifié, pas supposé :**
+`@auth/core` refuse le WebAuthn sans adaptateur de base (« WebAuthn requires an
+adapter »). Atlas n'en a aucun — la session est un JWT sans table —, et en
+brancher un remettrait en jeu le contexte d'entreprise, le `middleware` et la
+déconnexion partout, pour un bouton sur la porte. Retenu : un **second
+fournisseur `Credentials`** qui vérifie l'assertion avec `@simplewebauthn/server`
+et laisse le jeton, le cookie et les rappels intacts (`ARCHITECTURE.md` §157).
+
+`appli/tests/essai-face-id.mjs` parcourt la planche dans un vrai navigateur et
+**barre la publication** ; elle a été vue rouge contre une porte A privée de son
+chemin vers le mot de passe, et contre un échec de visage qui accusait le mot de
+passe. **Rien n'est codé dans `src/`.**
+
+---
+
 ## 2026-08-23
 
 ### Audit de sécurité, lot 1 : six trous fermés, dont trois qui ouvraient un compte

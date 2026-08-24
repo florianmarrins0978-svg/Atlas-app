@@ -9,6 +9,22 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
+## Face ID — en attente de SA réponse (24 août 2026)
+
+`appli/face-id.html` (planche 94) est publiée et il doit dire **A ou B** : la
+place du geste sur la porte, rien d'autre. **Tant qu'il n'a pas répondu, aucune
+ligne dans `src/`** (`CLAUDE.md` §3 bis).
+
+Le chemin d'implémentation est arrêté et vérifié — second fournisseur
+`Credentials` + `@simplewebauthn/server`, la couche session ne bouge pas
+(`ARCHITECTURE.md` §157). Reste à faire une fois la place choisie : la migration
+de la table des clés, les règles pures dans `src/lib/`, l'écran d'activation dans
+Réglages › Connexion, et le retour au mot de passe sur échec **sans compter de
+tentative** (`src/lib/tentatives-connexion.ts` ne doit pas être appelé sur ce
+chemin).
+
+---
+
 ## Audit de sécurité : les lots 2 et suivants (23 août 2026)
 
 Le **lot 1 est fait** — C1, E1, E2, E3, M7, M8 (`ARCHITECTURE.md` §156,

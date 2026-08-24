@@ -1,6 +1,6 @@
 # État du projet
 
-**Dernière mise à jour :** 2026-08-23 · branche `main`
+**Dernière mise à jour :** 2026-08-24 · branche `main`
 · dernière migration `drizzle/0062_tentatives_connexion.sql`
 
 *(Le numéro du dernier commit ne figure plus ici : il était faux dès le commit
@@ -9,6 +9,22 @@ suivant, et une ligne fausse coûte plus cher qu'une ligne absente. `git log
 
 Ce fichier dit **où en est le produit**, pas ce qu'on aimerait qu'il soit. Une
 ligne « fait » qui ne l'est pas coûte plus cher qu'une ligne absente.
+
+---
+
+## Face ID : la planche est posée, le code attend sa réponse (24 août 2026)
+
+| | État |
+|---|---|
+| La planche essayable — `appli/face-id.html`, planche 94 | **faite et publiée**, liée depuis `essais.html` |
+| La suite qui la parcourt — `appli/tests/essai-face-id.mjs` | **faite**, vue rouge deux fois contre de vrais défauts, et elle barre la publication |
+| Le chemin d'implémentation — second fournisseur `Credentials` + `@simplewebauthn/server` | **arrêté et vérifié** (`ARCHITECTURE.md` §157) |
+| **A ou B — la place du geste sur la porte** | **en attente de sa réponse** |
+| Le code dans `src/` | **rien**, et c'est délibéré (`CLAUDE.md` §3 bis) |
+
+Ce qui est déjà tranché et n'a pas à être rouvert : le mot de passe ne se retire
+jamais, le compte se crée au mot de passe, l'activation est par appareil, et un
+échec de visage ne compte aucune tentative ratée.
 
 ---
 

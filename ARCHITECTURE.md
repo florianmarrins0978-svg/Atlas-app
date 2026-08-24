@@ -13878,3 +13878,64 @@ paie différemment :
 | `ATLAS_PROXY_SAUTS` | le seuil par visiteur redevient commun à tout le monde : il protège encore, moins finement |
 
 La temporisation par compte, elle, ne dépend d'aucune des deux.
+
+---
+
+## 157. Face ID : pourquoi le fournisseur `passkey` d'Auth.js est ÉCARTÉ
+
+**Sa demande du 23 août 2026 :** *« je veux bien que tu me codes le Face ID pour
+le mot de passe, et bien entendu qu'il faut conserver le mot de passe.
+L'utilisateur va commencer par créer son compte avec son mot de passe et ensuite
+il décidera s'il veut ouvrir sa session avec le mot de passe ou le Face ID. »*
+
+### Le chemin évident, et pourquoi il casserait la session de tout le monde
+
+`next-auth` porte un fournisseur tout fait — `next-auth/providers/passkey`, il
+est déjà dans `node_modules`. Le prendre paraît être le choix par défaut. Il ne
+l'est pas, et ce n'est **pas une supposition** : `@auth/core/lib/utils/assert.js`
+refuse le WebAuthn sans adaptateur de base de données —
+
+    if (!adapter) return new MissingAdapter("WebAuthn requires an adapter")
+
+Or Atlas n'a **aucun adaptateur** : la session est un **JWT**, sans table.
+Brancher un adaptateur ferait naître `accounts`, `sessions`,
+`verificationTokens`, changerait la façon dont chaque requête retrouve
+l'utilisateur, et **remettrait en jeu tout ce qui pend au jeton** — le contexte
+d'entreprise, `middleware.ts`, `session-ctx.ts`, la déconnexion partout. Pour un
+bouton sur la porte.
+
+### Ce qui est retenu : un SECOND fournisseur `Credentials`
+
+Le fournisseur reçoit l'assertion WebAuthn, la vérifie avec
+`@simplewebauthn/server`, et rend l'utilisateur. **Rien d'autre ne bouge** :
+même jeton, même cookie, mêmes rappels, même `middleware`. La couche session
+ignore qu'un second chemin existe.
+
+Ce que ça coûte : la vérification de l'assertion est à notre charge — le
+`challenge`, l'origine, le compteur anti-rejeu. Ce que ça évite : réécrire
+l'authentification d'une application qui marche.
+
+### Trois règles qui viennent de LUI, et qui ne se négocient pas
+
+| | Pourquoi |
+|---|---|
+| **le mot de passe ne se retire jamais** | c'est ce qui fait entrer sur un téléphone neuf ; une clé d'appareil perdue avec le téléphone murerait le compte |
+| **le compte se crée au mot de passe** | Face ID s'active ensuite, depuis un écran déjà connecté — sans quoi l'inscription dépendrait d'un matériel |
+| **un échec de visage ne compte AUCUNE tentative ratée** | sinon un visage mal reconnu ferait temporiser son propre compte : la faute du 6 août 2026, refaite par un autre bord |
+
+### La planche d'abord — `appli/face-id.html` (planche 94)
+
+`CLAUDE.md` §3 bis : c'est un **geste** sur la porte, il se dessine avant de
+toucher à `src/`. Deux places sont proposées, **A** le visage d'abord, **B**
+l'écran d'aujourd'hui plus une ligne ; tout le reste est identique dans les deux,
+et c'est la seule question posée.
+
+**La fenêtre Face ID de la planche est un DESSIN, et elle l'écrit.** Aucune page
+web n'affiche celle d'iOS — et surtout, appeler `navigator.credentials` depuis
+une maquette **poserait une vraie clé sur son téléphone**, pour un domaine qui
+n'est pas celui d'Atlas. On ne pose pas de clé chez lui pour une image.
+
+`appli/tests/essai-face-id.mjs` la parcourt en entier avant publication, et
+**barre le déploiement** : elle a été vue rouge contre une porte A privée de son
+chemin vers le mot de passe, et contre un échec de visage qui accusait le mot de
+passe.

@@ -4,8 +4,34 @@
 vous ne savez rien de ce qui précède — c'est exactement le cas de figure qu'il
 sert.
 
-**Point de reprise :** 2026-08-23 · `main`
+**Point de reprise :** 2026-08-24 · `main`
 (l'historique fait foi : `git log --oneline -20`)
+
+---
+
+## FACE ID : LA PLANCHE EST POSÉE, LE CODE ATTEND SA RÉPONSE
+
+**Ne pas commencer à coder Face ID avant qu'il ait dit A ou B.** La planche
+`appli/face-id.html` (n° 94) lui demande la place du geste sur la porte, et rien
+d'autre — c'est `CLAUDE.md` §3 bis, et le code écrit avant l'accord devrait être
+défait si l'accord ne vient pas.
+
+**Le piège de ce lot, et il est déjà désamorcé :** `next-auth` porte un
+fournisseur `passkey` tout fait, il est dans `node_modules`, et le prendre
+paraît évident. `@auth/core` refuse le WebAuthn **sans adaptateur de base**
+(« WebAuthn requires an adapter ») ; Atlas n'en a aucun, sa session est un JWT
+sans table. En brancher un ferait naître `accounts`/`sessions`, changerait la
+façon dont chaque requête retrouve l'utilisateur, et remettrait en jeu le
+contexte d'entreprise, `middleware.ts` et la déconnexion partout — **pour un
+bouton sur la porte**. Le chemin retenu est un **second fournisseur
+`Credentials`** qui vérifie l'assertion avec `@simplewebauthn/server` : la couche
+session ne bouge pas (`ARCHITECTURE.md` §157).
+
+**Trois choses viennent de lui et ne se rouvrent pas :** le mot de passe ne se
+retire jamais, le compte se crée au mot de passe, et **un échec de visage ne
+compte aucune tentative ratée** — appeler `noterEchec` sur ce chemin ferait
+temporiser son compte parce que son téléphone ne l'a pas reconnu, c'est-à-dire la
+panne du 6 août 2026 refaite par un autre bord.
 
 ---
 
