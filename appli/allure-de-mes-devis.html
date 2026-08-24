@@ -161,10 +161,11 @@
   <div class="reglage">
     <p class="etiquette">Fond de page</p>
     <div class="couleur-ligne">
-      <input type="color" id="fond-libre" value="#ece9e1" aria-label="Couleur du fond de page">
-      <span class="valeur" id="fond-valeur">#ECE9E1</span>
+      <input type="color" id="fond-libre" value="#faf9f5" aria-label="Couleur du fond de page">
+      <span class="valeur" id="fond-valeur">#FAF9F5</span>
       <div class="pastilles" id="fond-rapide">
-        <button type="button" data-valeur="#ece9e1" style="background:#ece9e1" aria-pressed="true" aria-label="Crème — celui d'aujourd'hui"></button>
+        <button type="button" data-valeur="#faf9f5" style="background:#faf9f5" aria-pressed="true" aria-label="Celui d'aujourd'hui"></button>
+        <button type="button" data-valeur="#ece9e1" style="background:#ece9e1" aria-pressed="false" aria-label="Crème"></button>
         <button type="button" data-valeur="#ffffff" style="background:#ffffff" aria-pressed="false" aria-label="Blanc"></button>
         <button type="button" data-valeur="#e8e8e6" style="background:#e8e8e6" aria-pressed="false" aria-label="Gris clair"></button>
       </div>
@@ -246,7 +247,9 @@ const POLICES = [
 /* **Les réglages d'aujourd'hui**, et rien d'inventé : le crème et l'or sont
    ceux de ses documents, la police est celle de l'appareil. C'est ce que rend
    « Revenir aux réglages d'aujourd'hui ». */
-const AUJOURDHUI = { police: 0, fond: "#ece9e1", accent: "#b98b47", logo: false };
+// Le fond des devis d'aujourd'hui est #faf9f5 (`couleursDocument.papier`).
+// La planche a d'abord montré #ece9e1, lu nulle part : corrigé le 24 août 2026.
+const AUJOURDHUI = { police: 0, fond: "#faf9f5", accent: "#b98b47", logo: false };
 const choix = { ...AUJOURDHUI };
 let document_ = "devis";
 

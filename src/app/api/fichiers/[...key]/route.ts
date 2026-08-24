@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { eq } from "drizzle-orm";
 import { getCurrentCtx } from "@/server/session-ctx";
 import { withEntreprise } from "@/server/db/with-entreprise";
-import { photos, notesVocales } from "@/server/db/schema";
+import { photos, notesVocales, entreprises } from "@/server/db/schema";
 import { lireObjet } from "@/server/storage";
 
 // Équivalent local d'une URL signée : jamais de lien direct stocké, la clé est
@@ -26,7 +26,16 @@ export async function GET(_req: Request, { params }: { params: Promise<{ key: st
       .from(notesVocales)
       .where(eq(notesVocales.storageKey, storageKey))
       .limit(1);
-    return note?.mimeType ?? null;
+    if (note) return note.mimeType;
+    // **Le logo de l'entreprise passe par le même guichet.** La ligne
+    // `entreprises` est déjà bornée par l'isolation : une clef d'une autre
+    // entreprise ne trouve rien ici, exactement comme une photo.
+    const [e] = await tx
+      .select({ mimeType: entreprises.logoMime })
+      .from(entreprises)
+      .where(eq(entreprises.logoStorageKey, storageKey))
+      .limit(1);
+    return e?.mimeType ?? null;
   });
 
   if (!mimeType) {

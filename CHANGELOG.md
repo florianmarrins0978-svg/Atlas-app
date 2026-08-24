@@ -82,6 +82,37 @@ et laisse le jeton, le cookie et les rappels intacts (`ARCHITECTURE.md` §163).
 chemin vers le mot de passe, et contre un échec de visage qui accusait le mot de
 passe. **Rien n'est codé dans `src/`.**
 
+### L'allure de ses documents : typographie, fond, accent, logo
+
+*Sa demande du 23 août : « un endroit dédié à la modification de son devis —
+s'il veut rajouter son logo, changer la typographie, changer le fond de page ».*
+
+Le réglage vit dans **Réglages › Devis & factures**, sous son message au client
+(sa réponse **B**). Dix typographies, deux couleurs libres, un logo. **Le devis
+et la facture seulement** : la feuille de chantier est interne, il ne l'a pas
+demandée. Migration `0063_allure_documents.sql`.
+
+**Ce que ça évite.** Le défaut, c'est le document d'aujourd'hui — au pixel
+près, et ce n'était pas acquis : `ALLURE_PAR_DEFAUT` portait « #ece9e1 », une
+teinte lue sur la maquette que ses devis n'ont jamais eue, et les teintes
+calculées ne retombaient pas d'elles-mêmes sur les constantes d'origine. Ouvrir
+le réglage et le refermer sans rien changer aurait suffi à repeindre tous ses
+devis. Attrapé en comparant deux PDF octet pour octet.
+
+**Un défaut MUET, corrigé : les polices ne s'imprimaient pas.** `pdf-lib` sait
+découper une police lui-même — et son découpeur perd des caractères sans un
+mot. Un devis complet en EB Garamond ne sortait que « e e e Roc e e ». Les
+dix-huit fichiers ont été réduits une fois pour toutes (3,9 Mo → 570 ko) et
+sont désormais embarqués entiers. `scripts/test-polices-documents.ts` monte la
+garde.
+
+**Et l'écran mentait.** Il proposait neuf typographies dont aucune n'était
+chargée : « Playfair Display » s'affichait en Georgia. Vu à la capture, jamais
+par un test. `/api/polices/[fichier]` sert maintenant les fichiers mêmes que le
+PDF embarque.
+
+`ARCHITECTURE.md` §164.
+
 ---
 
 ## 2026-08-23

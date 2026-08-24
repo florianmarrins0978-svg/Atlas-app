@@ -4,6 +4,7 @@ import { getCurrentCtx } from "@/server/session-ctx";
 import { estProprietaire } from "@/server/autorisation";
 import { getEntreprise } from "@/server/repositories/entreprises";
 import { conditionsDepuisEntreprise } from "@/lib/conditions-documents";
+import { normaliserAllure, ALLURE_PAR_DEFAUT } from "@/lib/allure-documents";
 import RubriqueReservee from "../RubriqueReservee";
 import DocumentsClient from "./DocumentsClient";
 
@@ -47,6 +48,19 @@ export default async function DocumentsPage() {
         // L'aperçu signe avec SON nom, pas « votre entreprise » : c'est ce que
         // son client lira, et un exemple générique ne se juge pas.
         entrepriseNom={entreprise?.nom ?? ""}
+        // **Rien de réglé rend le DÉFAUT, pas du vide.** L'écran doit s'ouvrir
+        // sur ce que ses documents portent aujourd'hui — sinon il croit devoir
+        // tout choisir pour ne rien changer.
+        allureInitiale={
+          entreprise?.docTypographie || entreprise?.docFond || entreprise?.docAccent
+            ? normaliserAllure({
+                typographie: entreprise.docTypographie ?? undefined,
+                fond: entreprise.docFond ?? undefined,
+                accent: entreprise.docAccent ?? undefined,
+              })
+            : { ...ALLURE_PAR_DEFAUT }
+        }
+        logoInitial={entreprise?.logoStorageKey ?? null}
       />
     </div>
   );

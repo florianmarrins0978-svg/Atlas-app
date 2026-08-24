@@ -2785,7 +2785,7 @@ vanne, son tuyau visite toutes ses têtes où qu'elles soient, et le départ se
 mesure depuis le regard — sa règle du 21 août. Regardé à l'écran sur les trois
 jardins d'exemple, pas seulement compté.
 
-### 0 quinvicies septies. Son message au client — **CODÉ le 23 août 2026** — et l'allure de ses devis, qui attend encore
+### 0 quinvicies septies. Son message au client et l'allure de ses devis — **LES DEUX SONT CODÉS** (23 et 24 août 2026)
 
 **SES RÉPONSES DU 23 AOÛT AU SOIR, sur le message :** *« Message client A. Liens
 obligatoire. Et message pour tous. »*
@@ -2840,16 +2840,22 @@ doivent être par défaut. »*
 | Fond de page | **modifiable — n'importe quelle couleur**, pas une liste de trois |
 | Le départ | **ses réglages d'aujourd'hui** : crème, or, police de l'appareil |
 
-**CE QU'IL FAUDRA CODER, ET CE QUE ÇA COÛTE — mesuré, pas supposé.** Le PDF est
-fait par `pdf-lib` et n'embarque que **Times et Helvetica**, les polices
-standard du format (`src/server/pdf/document-commun.ts`). Les dix typographies
-demandent donc `@pdf-lib/fontkit` et un fichier par famille, embarqué dans
-chaque devis. C'est faisable ; ce n'est pas gratuit, et la planche le lui dit.
+**C'EST CODÉ, le 24 août 2026** (`ARCHITECTURE.md` §164) : migration
+`0063_allure_documents.sql`, bloc dans « Devis & factures », dix typographies,
+deux nuanciers libres, un logo — et le devis comme la facture les portent.
 
-**Et la planche charge ces polices depuis Google Fonts.** Acceptable pour une
-maquette qu'il ouvre sur son téléphone ; **pas pour le produit** — l'allure d'un
-document ne doit pas dépendre d'un domaine tiers. Au codage, les fichiers vivent
-dans le dépôt, et ils serviront à la fois l'écran et le PDF.
+**Ce que ça a coûté, et qu'il faut savoir :**
+
+| | |
+|---|---|
+| les polices | dans le dépôt, **réduites une fois pour toutes** au latin (3,9 Mo → 570 ko) et embarquées **entières** — le découpeur de `pdf-lib` perd des caractères en silence |
+| un devis habillé | **40 à 60 ko**, contre 5 ko sans typographie choisie |
+| l'écran | sert les **mêmes fichiers** que le PDF, par `/api/polices/[fichier]` — jamais Google Fonts |
+
+**Reste ouvert sur l'allure :** rien de bloquant. Deux points de confort, à lui
+demander seulement s'il les évoque — le logo ne sort pas encore sur la **page
+publique** du devis (elle n'est pas un PDF, c'est un autre chemin), et le
+compte rendu d'entretien garde son allure, ce qu'il a demandé.
 
 **Deux leçons d'outillage, payées ici :**
 
@@ -2911,6 +2917,37 @@ fin, et le fond figé.
 **Ce qui restera scellé quoi qu'il choisisse**, et la planche le dit : mentions
 obligatoires, disposition des colonnes, ordre des totaux. Un devis mal posé
 n'est pas un devis moins joli, c'est un devis qu'on peut lui contester.
+
+### 0 trigies sexies. Deux suites navigateur rougissent encore sous charge — **CONSTATÉ le 24 août 2026, PAS RÉPARÉ**
+
+**Écrit parce que le silence coûterait l'enquête une seconde fois.** Ce n'est
+pas une réparation annoncée : c'est un constat, et il n'a pas été corrigé.
+
+| Suite | Ce qu'elle rend | Où |
+|---|---|---|
+| `test-facture-au-client-e2e` | « L'écran laisse croire que la facture est partie » | sur la branche du lot de l'allure, **deux fois sur trois** |
+| `test-tva-au-paiement-e2e` | `waitForFunction: Timeout 15000ms exceeded` sur l'acompte | sur **`main`**, sans aucun changement |
+
+**Les deux sont VERTES jouées seules**, et c'est la question qui tranche
+(§ ci-dessous). Surtout : **ce ne sont pas les mêmes** d'une branche à l'autre.
+Un lot qui ne touche ni la facture ni la TVA ne peut pas faire tomber l'une
+pendant que l'autre tombe sur `main` : c'est la charge, pas le code.
+
+**Ce qu'il faudra regarder**, et personne ne l'a fait :
+
+- `test-facture-au-client` lit l'écran **après** avoir attendu « arrêtée ». Or
+  l'écran d'après porte un jeton, donc la phrase « votre client ne l'a pas
+  encore reçue » **disparaît**. Le contrôle semble donc dépendre du fait que
+  `router.refresh()` n'a pas encore atterri : ce serait une course écrite dans
+  la suite elle-même, pas dans le produit. À vérifier avant de toucher quoi que
+  ce soit ;
+- `test-tva-au-paiement` attend une valeur à l'écran par `waitForFunction` :
+  c'est exactement le mal des cinq suites d'à côté (0 trigies quinquies), et le
+  remède est connu — **relire la base en boucle**, jamais l'écran sur une montre.
+
+**Ce que ça ne doit PAS devenir :** une raison de rejouer la batterie jusqu'à ce
+qu'elle passe. Une suite qui rougit une fois sur trois barre la publication une
+fois sur trois, et c'est déjà arrivé (`CLAUDE.md` §5).
 
 ### 0 trigies quinquies. ~~Cinq suites du devis rougissaient une batterie sur deux~~ — **RÉPARÉES le 23 août 2026**
 

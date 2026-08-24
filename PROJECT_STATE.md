@@ -1433,6 +1433,22 @@ et §17).
 
 ---
 
+## Ce qu'il peut régler sur ses documents — 23 et 24 août 2026
+
+Deux réglages neufs, tous deux dans **Réglages › Devis & factures**, tous deux
+demandés par lui et tranchés sur planche.
+
+| | Ce qu'il règle | Ce qui ne se règle pas |
+|---|---|---|
+| **Son message au client** | le texte qui part avec le devis, la facture et le compte rendu | l'objet du courriel, et le **lien** — Atlas refuse un message sans lui |
+| **L'allure de ses devis** | dix typographies, le fond, l'accent, son logo | la feuille de chantier et le compte rendu, qui gardent leur allure (sa décision) |
+
+**Le défaut est, dans les deux cas, ce que ses documents portaient déjà.** Rien
+ne change tant qu'il n'y touche pas — et cela se vérifie, pas seulement se dit :
+`test-allure-pdf.ts` compare deux devis octet pour octet.
+
+`ARCHITECTURE.md` §161 et §164.
+
 ## Vérifications au dernier point
 
 | | |
