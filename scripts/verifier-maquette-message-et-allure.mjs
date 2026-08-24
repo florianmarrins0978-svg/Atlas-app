@@ -117,6 +117,7 @@ for (const nom of [
 const planche = readFileSync("appli/mon-message-au-client.html", "utf8");
 for (const phrase of [
   "Voici votre devis. Vous pouvez le consulter et choisir votre date ",
+  "vous pouvez en proposer une autre. Tout se fait sur cette page :",
   "Vous pouvez la consulter et la télécharger ici :",
   "Voici le compte rendu de mon passage chez vous :",
 ]) {

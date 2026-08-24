@@ -45,6 +45,19 @@ type Props = {
   /** Ce qu'il a choisi au-dessus du nom (migration 0038). */
   clientCivilite: Civilite | null;
   entrepriseNom: string;
+  /**
+   * Le gabarit qu'il a écrit dans « Devis & factures ». `null` : celui d'Atlas.
+   *
+   * **`modeleMessage`, et surtout PAS `messageClient` :** ce nom-là est déjà
+   * pris dans cet écran, et il désigne l'inverse — le mot que le CLIENT a
+   * laissé en répondant. Deux choses opposées sous un même nom, sur le même
+   * écran, c'est la confusion garantie à la première relecture.
+   *
+   * **Il descend depuis le serveur, il ne se relit pas ici.** Le composer au
+   * vol dans le navigateur obligerait à interroger l'entreprise depuis l'écran,
+   * et une page ouverte avant qu'il change son message enverrait l'ancien.
+   */
+  modeleMessage: string | null;
   /** Le canal convenu sur la fiche du client — un défaut, pas une contrainte. */
   canal: CanalClient;
   telephone: string;
@@ -88,6 +101,7 @@ export default function TransmettreAuClient({
   clientNom,
   clientCivilite,
   entrepriseNom,
+  modeleMessage,
   canal,
   telephone,
   email,
@@ -115,7 +129,7 @@ export default function TransmettreAuClient({
   // sans jamais être parti.
   useRetourDeMessagerie();
 
-  const message = composerMessageClient({ clientNom, clientCivilite, entrepriseNom, lien });
+  const message = composerMessageClient({ clientNom, clientCivilite, entrepriseNom, lien, modele: modeleMessage });
   const autre: CanalClient = canalChoisi === "sms" ? "email" : "sms";
   const destinataire = coordonnees[canalChoisi];
 

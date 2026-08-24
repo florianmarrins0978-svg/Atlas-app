@@ -129,6 +129,19 @@ export const entreprises = pgTable("entreprises", {
   textePiedDocuments: text("texte_pied_documents"),
 
   /**
+   * Le message qui part au client avec le devis, la facture ou le rapport
+   * (migration 0062, sa demande du 23 août 2026).
+   *
+   * **`null` veut dire « celui d'Atlas »**, jamais « vide » : recopier le texte
+   * par défaut ici à la création figerait chaque entreprise sur la version du
+   * jour, et une correction ultérieure ne l'atteindrait plus.
+   *
+   * Le lien y est OBLIGATOIRE — c'est sa règle, et `refusDuMessage` la tient
+   * pour l'écran comme pour le serveur.
+   */
+  messageClient: text("message_client"),
+
+  /**
    * Les deux rappels de la rubrique « Notifications » (migration 0043).
    *
    * `null` = éteint. Ce sont des CONFORTS, et c'est pour cela qu'ils se

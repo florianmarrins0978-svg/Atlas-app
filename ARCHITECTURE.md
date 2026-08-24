@@ -14164,3 +14164,50 @@ doigt (feuilles, tiroirs, listes déroulantes) et les écrans plus profonds. La
 suite refuse de conclure sur moins de six textes comparables — un contrôle qui
 mesure zéro ne mesure rien (`CLAUDE.md` §5) —, mais elle ne prétend pas couvrir
 l'application entière.
+
+## 161. Le message au client : un gabarit, et la phrase du document
+
+**Sa demande du 23 août 2026**, et ses trois réponses : le réglage dans « Devis
+& factures », le lien obligatoire, un seul message pour les trois documents.
+
+### Pourquoi une pastille `[document]` et pas quatre textes
+
+Un texte unique et littéral ne peut pas servir les trois envois : la facture
+porte un numéro et une échéance, le devis se répond, le compte rendu ne se paie
+pas. **Il l'a vu en images avant de choisir** (`appli/mon-message-au-client.html`,
+six bulles) et a retenu la « façon 1 » : il écrit le cadre, `phraseDuDocument`
+pose le milieu.
+
+| Où | Quoi |
+|---|---|
+| `MESSAGE_PAR_DEFAUT` | le gabarit d'origine — celui qu'il recevait avant |
+| `refusDuMessage` | **la même fonction pour l'écran ET le serveur.** Deux règles pour un refus finiraient par diverger, et il verrait un bouton allumé sur un message rejeté |
+| `phraseDuDocument` | ce qui distingue les trois envois, et rien d'autre |
+| `rendreMessage` | **une seule fonction pour l'aperçu et pour l'envoi.** Une copie ferait mentir l'aperçu, et c'est l'envoi que le client lit |
+
+### `null` suit le produit, un texte lui appartient
+
+La colonne `entreprises.message_client` est nulle tant qu'il n'a rien écrit —
+et **le texte d'Atlas retapé à l'identique y redevient nul**. Sans cette règle,
+un aller-retour par « Remettre celui d'Atlas » figerait l'entreprise sur la
+version du jour, et une correction ultérieure ne l'atteindrait plus.
+
+### `modeleMessage`, jamais `messageClient`
+
+Le nom `messageClient` était **déjà pris** dans l'écran du devis parti, où il
+désigne l'inverse : le mot que le CLIENT a laissé en répondant. La collision a
+été trouvée par le compilateur ; deux choses opposées sous un même nom, sur le
+même écran, se confondent à la première relecture.
+
+### Ce qui ne se règle pas, et pourquoi
+
+L'**objet** du courriel : il doit rester reconnaissable dans une boîte de
+réception, et un objet vide ou trompeur envoie le message aux indésirables. Il
+ne se lit d'ailleurs jamais par SMS.
+
+### Le seul contrôle qui prouve le câblage
+
+`test-message-au-client-e2e.ts` va de l'écran des réglages jusqu'à l'adresse
+`sms:` du client. Les suites pures de `message-client` diraient vert même si
+l'écran n'enregistrait rien, ou si l'écran d'envoi ignorait ce qui est
+enregistré : c'est le FIL qu'il faut tenir, et lui seul le traverse.

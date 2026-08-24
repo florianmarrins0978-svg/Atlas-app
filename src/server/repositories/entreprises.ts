@@ -4,6 +4,7 @@ import { withEntreprise } from "../db/with-entreprise";
 import { entreprises, entrepriseCompteurs, users, membresEntreprise } from "../db/schema";
 import type { Ctx } from "./context";
 import { normaliserConditions, type ConditionsLues } from "@/lib/conditions-documents";
+import { refusDuMessage, MESSAGE_PAR_DEFAUT } from "@/lib/message-client";
 
 // Cas particulier : à la création, l'entreprise n'existe pas encore, donc
 // withEntreprise() (qui exige une adhésion préexistante) ne peut pas s'appliquer.
@@ -89,6 +90,13 @@ export async function mettreAJourEntreprise(
      * et bretelles (`src/lib/conditions-documents.ts`).
      */
     conditions?: ConditionsLues;
+    /**
+     * Son message au client (migration 0062).
+     *
+     * **`null` REMET celui d'Atlas**, une chaîne vide aussi : c'est ainsi qu'il
+     * revient au message d'origine sans avoir à le retaper de mémoire.
+     */
+    messageClient?: string | null;
   }
 ) {
   return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
@@ -110,6 +118,25 @@ export async function mettreAJourEntreprise(
       valeurs.moyensPaiement = c.moyensPaiement;
       valeurs.rappelerPenalitesDevis = c.rappelerPenalites;
       valeurs.textePiedDocuments = c.textePied;
+    }
+
+    // **Le message est REFUSÉ ici aussi, pas seulement à l'écran.** La même
+    // fonction sert les deux (`refusDuMessage`) : une action serveur qui
+    // accepterait ce que l'écran refuse laisserait passer un message sans lien
+    // — par une adresse tapée à la main, ou par un écran resté ouvert depuis
+    // une version d'avant. Un refus se garde au plus près de la base.
+    if (data.messageClient !== undefined) {
+      const texte = data.messageClient?.trim() ?? "";
+      // Vide = il revient au message d'Atlas. Ce n'est pas un refus : c'est le
+      // seul moyen de retrouver l'original sans le retaper de mémoire.
+      // **Le texte d'Atlas retapé à l'identique reste « celui d'Atlas ».** Sans
+      // cette ligne, un aller-retour par « Remettre celui d'Atlas » figerait
+      // l'entreprise sur la version du jour : une correction ultérieure ne
+      // l'atteindrait plus, et personne ne s'en apercevrait.
+      if (texte === "" || texte === MESSAGE_PAR_DEFAUT.trim()) valeurs.messageClient = null;
+      else if (refusDuMessage(texte) === null) valeurs.messageClient = texte;
+      // Sinon : on n'écrit rien. Le réglage reste celui d'avant, et l'écran a
+      // déjà dit pourquoi — lever ici rendrait un identifiant opaque au patron.
     }
 
     // Le régime n'est PAS traité comme les autres : il n'a pas de « vide ». Une

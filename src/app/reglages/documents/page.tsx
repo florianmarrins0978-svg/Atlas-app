@@ -41,7 +41,13 @@ export default async function DocumentsPage() {
         titre="Devis & factures"
         retour={{ href: "/reglages", libelle: "Retour aux réglages" }}
       />
-      <DocumentsClient initial={conditionsDepuisEntreprise(entreprise)} />
+      <DocumentsClient
+        initial={conditionsDepuisEntreprise(entreprise)}
+        messageInitial={entreprise?.messageClient ?? null}
+        // L'aperçu signe avec SON nom, pas « votre entreprise » : c'est ce que
+        // son client lira, et un exemple générique ne se juge pas.
+        entrepriseNom={entreprise?.nom ?? ""}
+      />
     </div>
   );
 }

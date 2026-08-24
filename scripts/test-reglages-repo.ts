@@ -3,6 +3,7 @@ import { pool } from "../src/server/db/client";
 import * as entreprisesRepo from "../src/server/repositories/entreprises";
 import * as tarifsRepo from "../src/server/repositories/tarifs";
 import { nettoyerBase } from "./_test-db";
+import { MESSAGE_PAR_DEFAUT } from "../src/lib/message-client";
 
 let passed = 0;
 let failed = 0;
@@ -86,6 +87,51 @@ async function main() {
     assert.equal(resultat, undefined, "RLS doit filtrer silencieusement, pas d'exception");
     const liste = await tarifsRepo.listerTarifs(A);
     assert.equal(liste.find((x) => x.id === tarifId)?.prix, "300.00", "Le tarif de A ne doit pas être affecté");
+  });
+
+  // ─── SON MESSAGE AU CLIENT — sa décision du 23 août 2026 ─────────────────
+  //
+  // *« Message client A. Liens obligatoire. Et message pour tous. »*
+
+  await test("le message s'écrit, se relit, et le lien y est obligatoire", async () => {
+    const sien = "Salut [client] !\n[document]\n[lien]\nÀ bientôt, [entreprise]";
+    await entreprisesRepo.mettreAJourEntreprise(A, { messageClient: sien });
+    assert.strictEqual((await entreprisesRepo.getEntreprise(A))?.messageClient, sien);
+
+    // **Le serveur REFUSE aussi, pas seulement l'écran.** Une adresse tapée à la
+    // main, ou une page restée ouverte depuis une version d'avant, arriverait
+    // sinon jusqu'ici — et le message partirait sans lien.
+    await entreprisesRepo.mettreAJourEntreprise(A, { messageClient: "Bonjour [client], sans lien." });
+    assert.strictEqual(
+      (await entreprisesRepo.getEntreprise(A))?.messageClient,
+      sien,
+      "un message sans lien a été écrit en base"
+    );
+  });
+
+  await test("vide, ou le texte d'Atlas retapé : on retombe sur celui d'Atlas", async () => {
+    // **`null` suit le produit, un texte lui appartient.** Figer le message par
+    // défaut dans la colonne ferait qu'une correction ultérieure de ce texte
+    // n'atteindrait plus cette entreprise, et personne ne s'en apercevrait.
+    await entreprisesRepo.mettreAJourEntreprise(A, { messageClient: "" });
+    assert.strictEqual((await entreprisesRepo.getEntreprise(A))?.messageClient, null);
+
+    await entreprisesRepo.mettreAJourEntreprise(A, { messageClient: MESSAGE_PAR_DEFAUT });
+    assert.strictEqual(
+      (await entreprisesRepo.getEntreprise(A))?.messageClient,
+      null,
+      "le texte d'Atlas retapé a été figé dans la colonne"
+    );
+  });
+
+  await test("le message d'une AUTRE entreprise reste hors de portée", async () => {
+    const sien = "Bonjour [client], voici [document] : [lien] — [entreprise]";
+    await entreprisesRepo.mettreAJourEntreprise(A, { messageClient: sien });
+    await entreprisesRepo.mettreAJourEntreprise(B, { messageClient: "Message de B [lien]" });
+
+    assert.strictEqual((await entreprisesRepo.getEntreprise(A))?.messageClient, sien,
+      "le message de A a été touché par B");
+    assert.strictEqual((await entreprisesRepo.getEntreprise(B))?.messageClient, "Message de B [lien]");
   });
 
   console.log(`\n${passed} test(s) réussi(s), ${failed} échoué(s).`);

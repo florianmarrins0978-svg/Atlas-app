@@ -25,6 +25,170 @@ export type MessageClient = {
   corps: string;
 };
 
+/* ═══ SON MESSAGE, ÉCRIT PAR LUI — sa décision du 23 août 2026 ═══════════
+ *
+ * *« Y a-t-il un endroit dans les réglages où l'utilisateur peut rédiger ce
+ * message automatique ? S'il n'y en a pas, il faut en créer un. »* Il n'y en
+ * avait pas : ce texte vivait ici, en dur, identique pour tout le monde.
+ *
+ * **Trois choses qu'il a tranchées, et qui commandent tout ce qui suit :**
+ *
+ *   1. le réglage vit dans « Devis & factures » (sa réponse : A) ;
+ *   2. **le lien est OBLIGATOIRE** — Atlas REFUSE d'enregistrer un message qui
+ *      ne le porte pas, il ne se contente pas de prévenir. Sans lui, le message
+ *      part et le client ne peut rien ouvrir : ce serait un envoi perdu, et le
+ *      patron ne l'apprendrait qu'au téléphone ;
+ *   3. **UN SEUL message pour ses trois documents** — devis, facture, compte
+ *      rendu de passage.
+ *
+ * **Et c'est la troisième qui demande `[document]`.** Un texte unique et
+ * littéral ferait dire à sa facture *« Voici votre devis, choisissez votre date
+ * d'intervention »*, et l'échéance disparaîtrait. Il l'a vu en images, sur les
+ * six bulles de `appli/mon-message-au-client.html`, et a répondu : **« façon
+ * 1 »** — il écrit le cadre, Atlas pose la phrase du milieu.
+ */
+
+/** Ce qu'Atlas remplace. Une pastille inconnue reste telle quelle, en clair. */
+export const PASTILLES = ["[client]", "[document]", "[lien]", "[entreprise]"] as const;
+
+/**
+ * Le message tant qu'il n'a rien écrit — et c'est SON message d'aujourd'hui.
+ *
+ * `null` en base veut dire « celui-ci » : recopier ce texte dans la colonne à
+ * la création d'une entreprise l'y figerait, et le jour où l'on corrige une
+ * virgule, les anciennes garderaient l'ancienne version sans que personne ne
+ * s'en aperçoive.
+ */
+export const MESSAGE_PAR_DEFAUT = [
+  "Bonjour [client],",
+  "",
+  "[document]",
+  // **Une ligne vide de chaque côté, et le lien SEUL sur la sienne.** Le patron,
+  // le 10 août 2026 : *« le lien n'est pas cliquable, je suis obligé de le
+  // copier »*. Collé sous une phrase, un lien est lu par beaucoup de messageries
+  // comme la suite du paragraphe ; isolé, il redevient une adresse à leurs yeux.
+  "",
+  "[lien]",
+  "",
+  "Bien à vous,",
+  "[entreprise]",
+].join("\n");
+
+/**
+ * La borne. Un message est un message, pas une lettre.
+ *
+ * Tronquer serait pire que refuser ici — à l'inverse de la note de chantier :
+ * un message coupé part QUAND MÊME, et c'est le client qui lit la moitié d'une
+ * phrase. On refuse donc, et l'écran le dit avant l'enregistrement.
+ */
+export const MESSAGE_MAX = 2000;
+
+/**
+ * Pourquoi ce message ne peut pas être enregistré — ou `null` s'il le peut.
+ *
+ * **Rend une phrase, jamais une exception** : le message d'une exception levée
+ * par une action serveur n'arrive jamais jusqu'au patron (`HANDOVER.md`,
+ * piège 0 ter). Et c'est la MÊME fonction qui sert l'écran et le serveur : deux
+ * règles pour un seul refus finiraient par diverger, et il verrait un bouton
+ * allumé sur un message que le serveur rejette.
+ */
+export function refusDuMessage(modele: string): string | null {
+  const texte = modele.trim();
+  if (!texte) return "Écrivez votre message : il ne peut pas être vide.";
+  if (modele.length > MESSAGE_MAX) {
+    return `Votre message dépasse ${MESSAGE_MAX} caractères. Raccourcissez-le pour l'enregistrer.`;
+  }
+  if (!modele.includes("[lien]")) {
+    return (
+      "Le lien est obligatoire : sans lui, votre client ne peut ni ouvrir son " +
+      "document ni choisir sa date. Reposez-le pour enregistrer."
+    );
+  }
+  return null;
+}
+
+/**
+ * La phrase du milieu — celle qu'Atlas pose à la place de `[document]`.
+ *
+ * **Elle porte tout ce qui distingue les trois envois**, et c'est pour cela
+ * qu'elle n'est pas dans son texte : le numéro de la facture, son échéance, et
+ * le fait qu'un devis se répond quand une facture se règle.
+ *
+ * **La phrase du devis a changé le 23 août 2026, et il faut le savoir.** Elle
+ * tenait en deux morceaux — l'un avant le lien, l'autre après (« si aucune des
+ * dates proposées ne vous convient… »). Un seul emplacement ne peut pas porter
+ * les deux : les deux idées sont donc réunies en une phrase, avant le lien.
+ * Rien n'est perdu, et le « vous POUVEZ » qu'il avait corrigé le 13 août reste.
+ */
+export function phraseDuDocument(
+  doc:
+    | { genre: "devis" }
+    | { genre: "facture"; numero: string; echeanceLisible?: string | null }
+    | { genre: "entretien" }
+): string {
+  if (doc.genre === "devis") {
+    // **SES DEUX PHRASES SURVIVENT MOT POUR MOT, et un contrôle l'exige.**
+    // Un premier jet les avait fondues en une seule — « ou en proposer une autre
+    // si aucune ne vous convient » — et `test-message-client` a rougi : il
+    // défend le « vous POUVEZ » qu'il a corrigé lui-même le 13 août 2026, le
+    // futur repoussant le geste à plus tard. On réordonne, on ne réécrit pas.
+    return (
+      "Voici votre devis. Vous pouvez le consulter et choisir votre date " +
+      "d'intervention — et si aucune des dates proposées ne vous convient, " +
+      "vous pouvez en proposer une autre. Tout se fait sur cette page :"
+    );
+  }
+  if (doc.genre === "facture") {
+    const echeance = doc.echeanceLisible ? `, à régler avant le ${doc.echeanceLisible}` : "";
+    return (
+      `Voici votre facture ${doc.numero}${echeance}. ` +
+      "Vous pouvez la consulter et la télécharger ici :"
+    );
+  }
+  return "Voici le compte rendu de mon passage chez vous :";
+}
+
+/**
+ * Le message final, pastilles remplacées.
+ *
+ * **Une seule fonction pour l'aperçu et pour l'envoi.** L'écran des réglages
+ * montre ce que le client recevra en appelant celle-ci ; s'il en avait une
+ * copie, l'aperçu et le vrai message finiraient par ne plus dire la même chose
+ * — et c'est le second que le client lit (`CLAUDE.md` §3).
+ */
+export function rendreMessage(
+  modele: string,
+  valeurs: { client: string; document: string; lien: string; entreprise: string }
+): string {
+  const rendu = modele
+    .replace(/\[client\]/g, valeurs.client)
+    .replace(/\[document\]/g, valeurs.document)
+    .replace(/\[lien\]/g, valeurs.lien)
+    .replace(/\[entreprise\]/g, valeurs.entreprise);
+
+  // **UN CLIENT SANS NOM NE DOIT PAS DONNER « Bonjour , ».**
+  //
+  // Il arrive : un chantier créé au vol, un client nommé plus tard. Le message
+  // par défaut écrit « Bonjour [client], » — la virgule est à lui, pas à nous.
+  // Une pastille vide laisse donc une espace orpheline devant elle, et c'est le
+  // client qui la lit.
+  //
+  // **Le nettoyage ne s'applique QUE dans ce cas**, et c'est important : le
+  // français met une espace insécable devant « ; », « : », « ! » et « ? », et
+  // rogner à tout coup abîmerait ce qu'il a tapé lui-même.
+  if (valeurs.client === "") return rendu.replace(/[ \t]+,/g, ",").replace(/[ \t]{2,}/g, " ");
+  return rendu;
+}
+
+/** « Bonjour Mr. Martins, », ou « Bonjour, » quand on ne sait pas son nom. */
+function nommer(clientNom: string, clientCivilite?: CiviliteChoisie): string {
+  // **La civilité vient de `src/lib/civilite.ts`** — la même qui nomme le client
+  // sur l'écran du devis. La recopier ici ferait dire « Mr. Martins » à l'écran
+  // et « Martins » dans le message que le client reçoit, c'est-à-dire au seul
+  // endroit qui compte (le patron, le 13 août 2026).
+  return clientNom.trim() ? avecCivilite(clientNom, clientCivilite) : "";
+}
+
 /**
  * Compose le message remettant le devis au client.
  *
@@ -39,46 +203,22 @@ export function composerMessageClient(params: {
   clientCivilite?: CiviliteChoisie;
   entrepriseNom: string;
   lien: string;
+  /** Son message, s'il en a écrit un. Absent : `MESSAGE_PAR_DEFAUT`. */
+  modele?: string | null;
 }): MessageClient {
-  const { clientNom, clientCivilite, entrepriseNom, lien } = params;
-
-  // **« Bonjour Mr. Martins », et non « Bonjour Martins ».** Le patron, le
-  // 13 août 2026, capture du SMS à l'appui : *« pareil pour le message tout
-  // prêt, c'est Bonjour Mr Martins »*. La civilité vient de
-  // `src/lib/civilite.ts` — la même qui nomme le client sur l'écran du devis.
-  // La recopier ici ferait dire « Mr. Martins » à l'écran et « Martins » dans
-  // le message que le client reçoit, c'est-à-dire au seul endroit qui compte.
-  const bonjour = clientNom.trim() ? `Bonjour ${avecCivilite(clientNom, clientCivilite)},` : "Bonjour,";
-
+  const { clientNom, clientCivilite, entrepriseNom, lien, modele } = params;
   return {
+    // **L'objet ne se règle pas, et c'est délibéré.** Il ne se lit que par
+    // courriel — jamais par SMS —, il doit rester reconnaissable dans une boîte
+    // de réception, et un objet vide ou trompeur envoie le message aux
+    // indésirables. Ce qu'il écrit, c'est le corps.
     objet: `Votre devis — ${entrepriseNom}`,
-    corps: [
-      bonjour,
-      "",
-      "Voici votre devis. Vous pouvez le consulter et choisir votre date d'intervention en suivant ce lien :",
-      // **Une ligne vide de chaque côté, et le lien SEUL sur la sienne.**
-      // Le patron, le 10 août 2026 : *« le lien n'est pas cliquable, je suis
-      // obligé de le copier »*. Collé juste sous sa phrase, un lien est lu par
-      // beaucoup de messageries comme la suite du paragraphe : elles n'y
-      // reconnaissent plus une adresse et ne le rendent pas cliquable. Isolé
-      // entre deux lignes vides, il redevient une adresse à leurs yeux.
-      //
-      // Rien de mieux n'est possible tant que le message part en texte brut :
-      // `mailto:` ne transporte pas de HTML, donc pas de vrai lien habillé.
-      // Le jour où Atlas enverra lui-même (docs/A-FAIRE.md §5), ce sera un
-      // bouton.
-      "",
+    corps: rendreMessage(modele?.trim() || MESSAGE_PAR_DEFAUT, {
+      client: nommer(clientNom, clientCivilite),
+      document: phraseDuDocument({ genre: "devis" }),
       lien,
-      "",
-            // **« vous POUVEZ », et non « vous pourrez ».** Sa correction du 13 août
-      // 2026. Le futur repoussait le geste à plus tard, comme s'il fallait
-      // d'abord faire autre chose ; le présent dit que c'est possible tout de
-      // suite, sur la page qu'il vient d'ouvrir.
-      "Si aucune des dates proposées ne vous convient, vous pouvez en proposer une autre.",
-      "",
-      "Bien à vous,",
-      entrepriseNom,
-    ].join("\n"),
+      entreprise: entrepriseNom,
+    }),
   };
 }
 
@@ -97,28 +237,22 @@ export function composerMessageFacture(params: {
   numeroFacture: string;
   echeanceLisible?: string | null;
   lien: string;
+  modele?: string | null;
 }): MessageClient {
-  const { clientNom, clientCivilite, entrepriseNom, numeroFacture, echeanceLisible, lien } = params;
-  // Même civilité que le devis (`src/lib/civilite.ts`) : un client abordé
-  // « Mr. Martins » sur son devis et « Martins » sur sa facture douterait
-  // qu'elles viennent du même artisan.
-  const bonjour = clientNom.trim() ? `Bonjour ${avecCivilite(clientNom, clientCivilite)},` : "Bonjour,";
-
+  const { clientNom, clientCivilite, entrepriseNom, numeroFacture, echeanceLisible, lien, modele } =
+    params;
   return {
     objet: `Votre facture ${numeroFacture} — ${entrepriseNom}`,
-    corps: [
-      bonjour,
-      "",
-      `Voici votre facture ${numeroFacture}. Vous pouvez la consulter et la télécharger ici :`,
-      // Isolé entre deux lignes vides, comme pour le devis, et pour la même
-      // raison : sans cela les messageries ne le rendent pas cliquable.
-      "",
+    corps: rendreMessage(modele?.trim() || MESSAGE_PAR_DEFAUT, {
+      client: nommer(clientNom, clientCivilite),
+      // **L'échéance entre dans la phrase du document, avant le lien.** Elle
+      // vivait après lui, sur sa propre ligne ; un seul emplacement ne peut pas
+      // porter les deux, et c'est la seule chose que le client doit savoir sans
+      // ouvrir la pièce.
+      document: phraseDuDocument({ genre: "facture", numero: numeroFacture, echeanceLisible }),
       lien,
-      "",
-      ...(echeanceLisible ? [`Elle est à régler avant le ${echeanceLisible}.`, ""] : []),
-      "Bien à vous,",
-      entrepriseNom,
-    ].join("\n"),
+      entreprise: entrepriseNom,
+    }),
   };
 }
 
@@ -140,22 +274,17 @@ export function composerMessageEntretien(params: {
   clientCivilite?: CiviliteChoisie;
   entrepriseNom: string;
   lien: string;
+  modele?: string | null;
 }): MessageClient {
-  const { clientNom, clientCivilite, entrepriseNom, lien } = params;
-  const bonjour = clientNom.trim() ? `Bonjour ${avecCivilite(clientNom, clientCivilite)},` : "Bonjour,";
-
+  const { clientNom, clientCivilite, entrepriseNom, lien, modele } = params;
   return {
     objet: `Compte rendu de passage — ${entrepriseNom}`,
-    corps: [
-      bonjour,
-      "",
-      "Voici le compte rendu de mon passage chez vous :",
-      "",
+    corps: rendreMessage(modele?.trim() || MESSAGE_PAR_DEFAUT, {
+      client: nommer(clientNom, clientCivilite),
+      document: phraseDuDocument({ genre: "entretien" }),
       lien,
-      "",
-      "Bien à vous,",
-      entrepriseNom,
-    ].join("\n"),
+      entreprise: entrepriseNom,
+    }),
   };
 }
 
