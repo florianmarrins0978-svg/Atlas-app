@@ -8,6 +8,7 @@ import { lireLeCroquis, type EtatPlan } from "./actions";
 import { quantiteEcrite } from "@/lib/arrosage/calcul.js";
 import PlanDessine from "./PlanDessine";
 import PointsQuiSoufflent from "@/components/atlas/PointsQuiSoufflent";
+import { ACCEPT_PHOTOS } from "@/lib/exif";
 
 /**
  * L'écran « Plan d'arrosage » — deux gestes, et le plan sort.
@@ -264,7 +265,7 @@ export default function ArrosageClient({
           id="croquis"
           name="croquis"
           type="file"
-          accept="image/*"
+          accept={ACCEPT_PHOTOS}
           // **PAS de `capture` — sa demande du 21 août 2026 :** « soit je peux
           // mettre une photo de ma bibliothèque, soit prendre une photo ; le
           // même schéma que pour ajouter des photos à la fiche client ».

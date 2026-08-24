@@ -79,10 +79,11 @@ d'activation. Parcouru en navigateur (`test-face-id-e2e.ts`).
 
 ---
 
-## Audit de sécurité : les lots 2 et suivants (23 août 2026)
+## Audit de sécurité : ~~le lot 2~~ **fait le 24 août 2026**, et les suivants
 
-Le **lot 1 est fait** — C1, E1, E2, E3, M7, M8 (`ARCHITECTURE.md` §162,
-`CHANGELOG.md` du 23 août). Ce qui suit vient du même audit et attend son tour.
+Le **lot 1 est fait** — C1, E1, E2, E3, M7, M8 (`ARCHITECTURE.md` §162). Le
+**lot 2 aussi** — M1 à M5, plus le croquis d'arrosage (`ARCHITECTURE.md` §165) ;
+M6 n'avait pas lieu d'être. Ce qui suit vient du même audit et attend son tour.
 Rien ici n'est théorique : chaque point a été constaté dans le code.
 
 ### Avant d'ouvrir Atlas à d'autres artisans
@@ -96,33 +97,46 @@ Rien ici n'est théorique : chaque point a été constaté dans le code.
   jours (le défaut d'Auth.js s'applique aujourd'hui). Le lot 1 a durci le mot de
   passe et la temporisation ; c'est la marche suivante.
 
-### Les téléversements : quatre chemins, un seul fait bien
+### ~~Les téléversements : quatre chemins, un seul fait bien~~ — **réglé le 24 août 2026**
 
-- **M2 — le type d'image n'est pas contrôlé** sur les photos de chantier
+Les quatre chemins font désormais la même chose (`ARCHITECTURE.md` §165). Les
+constats sont barrés ci-dessous plutôt que supprimés : savoir qu'ils ont été
+traités évite de les rouvrir.
+
+- ~~**M2 — le type d'image n'est pas contrôlé** sur les photos de chantier
   (`photos-actions.ts`) ni sur les tickets de TVA : `startsWith("image/")`
   accepte `image/svg+xml`, et `/api/fichiers/[...key]` renvoie ce type tel quel.
   Un SVG ouvert en navigation directe exécute son script sur l'origine d'Atlas.
   **Le diagnostic végétal fait déjà tout bien** (`typeImageAccepte` +
-  `retirerMetadonnees`) : il n'y a qu'à reprendre.
-- **M3 — les photos de chantier gardent leurs métadonnées**, coordonnées GPS
+  `retirerMetadonnees`) : il n'y a qu'à reprendre.~~
+- ~~**M3 — les photos de chantier gardent leurs métadonnées**, coordonnées GPS
   comprises — donc l'adresse du domicile d'un client. Celles du diagnostic sont
-  nettoyées, avec un commentaire qui explique pourquoi. Même correction.
-- **M1 — traversée de chemin** : `local-storage.ts` n'assainit pas le dossier
+  nettoyées, avec un commentaire qui explique pourquoi. Même correction.~~
+- ~~**M1 — traversée de chemin** : `local-storage.ts` n'assainit pas le dossier
   alors que `s3-storage.ts` le fait, et le dossier contient un `chantierId` venu
   d'une action serveur. Vérifié : `../../../../tmp/x` sort de `.storage`. Le
   stockage local étant refusé en production, cela vise le banc — mais la clé
-  ainsi fabriquée part ensuite dans l'archive ZIP de l'export.
-- **M4 — `lireLeCroquis` (arrosage) n'a aucune limite de débit**, ni liste
+  ainsi fabriquée part ensuite dans l'archive ZIP de l'export.~~
+- ~~**M4 — `lireLeCroquis` (arrosage) n'a aucune limite de débit**, ni liste
   blanche de type, ni retrait de métadonnées — alors que le diagnostic a les
-  trois. Chaque appel est une facture chez le fournisseur de vision.
+  trois. Chaque appel est une facture chez le fournisseur de vision.~~
+
+  *Nuance retenue le 24 août : le croquis N'EST PAS nettoyé de ses métadonnées.
+  C'est un dessin sur une feuille, pas une photo de la maison du client, et il
+  n'est jamais rangé — il part au fournisseur puis disparaît. Le type et la
+  cadence, eux, sont posés.*
 
 ### Robustesse
 
-- **M5 — bombe de décompression** : `inflateRawSync` sans `maxOutputLength` dans
-  `lire-classeur.ts`, sur un `.xlsx` téléversé.
-- **M6 — corps de requête non borné** : `/api/notes-vocales/[chantierId]` fait
+- ~~**M5 — bombe de décompression** : `inflateRawSync` sans `maxOutputLength` dans
+  `lire-classeur.ts`, sur un `.xlsx` téléversé.~~ **Fait le 24 août** — borne à
+  32 Mo gonflés, plus une borne sur le nombre d'entrées et sur les décalages lus
+  dans l'archive. `test-classeur-bombe.ts` assemble une vraie bombe.
+- ~~**M6 — corps de requête non borné** : `/api/notes-vocales/[chantierId]` fait
   `formData()` avant toute vérification de taille, et la limite des actions
-  serveur ne s'applique pas aux routes.
+  serveur ne s'applique pas aux routes.~~ **Fait le 24 août** — `content-length`
+  est lu avant `formData()`, et rend un 413. L'en-tête vient du client : c'est le
+  premier rempart, pas le seul (`fichier.size` tranche ensuite).
 - **M10 — dépendances** : 11 avis, dont Next lui-même (16.2.12 → 16.3.2) et
   `next-auth` encore en bêta sur le chemin d'authentification.
 

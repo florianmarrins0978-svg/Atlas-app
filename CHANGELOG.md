@@ -9,6 +9,47 @@ Format : le plus récent en tête.
 
 ## 2026-08-24
 
+### Audit de sécurité, lot 2 : ce qu'on dépose dans Atlas
+
+**Un classeur piégé ne couche plus le serveur.** Un `.xlsx` est une archive, et
+`deflate` dépasse mille pour un sur du texte répété : les 5 Mo qu'accepte
+l'écran d'import rendaient plusieurs gigaoctets, et le processus mourait
+d'épuisement mémoire — sans message, en emportant les requêtes de tout le monde.
+Une borne à trente-deux mégaoctets gonflés, et l'import de tarifs reçoit enfin
+une cadence : c'était le seul chemin d'Atlas qui décompresse, et le seul sans
+seuil. `test-classeur-bombe.ts` assemble une vraie bombe de 200 Mo et a été vue
+rouge contre la version d'avant.
+
+**Le type d'un fichier servi ne vient plus du navigateur.** La route des
+fichiers renvoyait le type déclaré au dépôt : annoncer `image/svg+xml` faisait
+servir un document porteur de script depuis notre propre domaine.
+`nosniff` était déjà posé et n'y changeait rien — il interdit de *deviner* un
+type, pas d'en *annoncer* un. Le type se déduit désormais de l'extension que le
+serveur a posée.
+
+**Les photos de chantier et les tickets de TVA perdent leurs coordonnées GPS**,
+et n'acceptent plus n'importe quoi. `startsWith("image/")` laissait passer le
+SVG ; une liste blanche le ferme. Le diagnostic végétal faisait déjà tout bien
+depuis toujours — il n'y avait qu'à reprendre.
+
+**Le piège de ce lot, et il valait d'être trouvé avant de livrer :** resserrer
+les types côté serveur, seul, aurait refusé les photos d'iPhone. Un iPhone
+photographie en HEIC ; s'il transcode en JPEG, c'est **parce que l'attribut
+`accept` du champ le lui demande**, et trois écrans portaient `image/*`. Les
+attributs et la liste serveur bougent donc ensemble, le HEIC est accepté en
+filet, et **un échec de nettoyage ne refuse jamais la photo** : elle est rangée
+telle quelle, et journalisée. Un artisan sur un chantier, ticket en main, ne
+doit pas lire un refus.
+
+**Hors brief, même famille :** le croquis d'arrosage envoyait la photo à un
+fournisseur d'IA sans vérifier son type ni compter les appels. Il porte
+maintenant les deux — ce seuil-là ne protège pas un service, il borne une
+facture.
+
+`ARCHITECTURE.md` §165. Rien de M6 n'a été touché : le plafond d'octets existait
+déjà, et le réécrire aurait été du risque contre rien.
+
+
 ### Face ID est codé — sa réponse B, et le mot de passe intact
 
 Il a tranché : **B**, la porte d'aujourd'hui plus une ligne au-dessus. Rien n'a

@@ -30,6 +30,27 @@ Le détail et les partis pris : `ARCHITECTURE.md` §157.
 
 ---
 
+## Sécurité : le lot 2 est corrigé (24 août 2026)
+
+Ce qu'on dépose dans Atlas — photos, tickets, croquis, listes de prix.
+`ARCHITECTURE.md` §165.
+
+| | État |
+|---|---|
+| M5 — bombe de décompression sur l'import de tarifs | **fait** (borne à 32 Mo gonflés) |
+| M4 — cadence sur l'import de tarifs | **fait** (les autres chemins l'avaient déjà) |
+| M1 — le type servi ne vient plus du navigateur | **fait** (déduit de l'extension) |
+| M2 — liste blanche d'images (le SVG passait) | **fait**, sur les quatre écrans |
+| M3 — coordonnées GPS retirées des photos et des tickets | **fait** |
+| Hors brief — type et cadence sur le croquis d'arrosage | **fait** |
+| M6 — plafond d'octets | **déjà en place**, rien touché |
+
+**Ce qui n'est pas fait, et qui ne se règle pas en codant :** les sauvegardes.
+Il n'y en a aucune. C'est le point le plus grave du dépôt aujourd'hui
+(`TODO.md`).
+
+---
+
 ## Face ID : fait (24 août 2026) — sa réponse est **B**
 
 | | État |

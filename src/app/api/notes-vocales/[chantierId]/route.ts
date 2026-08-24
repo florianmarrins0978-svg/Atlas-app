@@ -1,5 +1,15 @@
 import { NextResponse } from "next/server";
 import { recevoirNoteVocale } from "@/server/services/note-vocale-entrante";
+import { LIMITE_TELEVERSEMENT_OCTETS, MESSAGE_FICHIER_TROP_VOLUMINEUX } from "@/server/upload-limits";
+
+/**
+ * Ce que le corps entier a le droit de peser.
+ *
+ * La même valeur que pour un fichier, plus une marge : un envoi multipart porte
+ * ses frontières, ses en-têtes de partie et les autres champs du formulaire.
+ * Serrer au ras du fichier refuserait des dictées parfaitement valables.
+ */
+const LIMITE_CORPS_OCTETS = LIMITE_TELEVERSEMENT_OCTETS + 1024 * 1024;
 
 export const dynamic = "force-dynamic";
 
@@ -31,6 +41,29 @@ export async function POST(
   { params }: { params: Promise<{ chantierId: string }> }
 ) {
   const { chantierId } = await params;
+
+  /**
+   * **UNE BORNE AVANT DE LIRE LE CORPS** — audit du 23 août 2026, constat M6.
+   *
+   * `bodySizeLimit` de `next.config.ts` ne couvre **que les actions serveur** :
+   * une route comme celle-ci n'en voit rien. `formData()` mettait donc en
+   * mémoire tout ce qu'on voulait bien lui envoyer, sans qu'aucune ligne ne
+   * l'arrête — et cette route est ouverte par une URL, précisément pour
+   * survivre à une reconstruction du serveur.
+   *
+   * **On lit l'en-tête plutôt que le corps.** `content-length` est annoncé par
+   * le client, donc il ne fait pas foi — mais un envoi honnête l'annonce juste,
+   * et un envoi malveillant qui le sous-déclare se heurte de toute façon à la
+   * vérification de taille du service, qui lit `fichier.size` après coup. Ce
+   * refus-ci est le premier rempart, pas le seul.
+   */
+  const annonce = Number(requete.headers.get("content-length") ?? "");
+  if (Number.isFinite(annonce) && annonce > LIMITE_CORPS_OCTETS) {
+    return NextResponse.json(
+      { ok: false, raison: MESSAGE_FICHIER_TROP_VOLUMINEUX },
+      { status: 413 }
+    );
+  }
 
   let formData: FormData;
   try {

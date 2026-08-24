@@ -14527,3 +14527,78 @@ question d'apparence.
 
 Chacune resterait verte si l'écran n'enregistrait rien. C'est la dernière qui
 compte, et elle ne remplace aucune des autres.
+
+---
+
+## 165. Audit de sécurité, lot 2 : les fichiers déposés, et le piège de la correction
+
+**24 août 2026.** Six constats de l'audit portaient sur ce qu'un artisan dépose
+— photos, tickets, croquis, listes de prix. Ce §-ci garde **ce qui se serait
+refait de travers**, pas la liste des corrections (`CHANGELOG.md` la porte).
+
+### Deux constats du brief n'existaient pas comme décrits
+
+**La bombe zip ne venait pas des entrées multiples.** `lireEntreeZip` parcourt
+le répertoire central sans rien décompresser et n'inflate **que** l'entrée dont
+le nom correspond. Cent entrées piégées ne coûtent rien. Le vrai vecteur tenait
+en une seule : `deflate` dépasse mille pour un sur du texte répété, donc les
+5 Mo qu'accepte l'écran rendaient plusieurs gigaoctets. Une option —
+`maxOutputLength` — et c'est fermé.
+
+**Le plafond d'octets existait déjà**, et le réécrire aurait été du risque
+contre rien : `bodySizeLimit` dans `next.config.ts`, et `fichier.size` lu avant
+tout `arrayBuffer()`. Next.js met le corps en mémoire avant de rendre la main :
+il n'y a **pas de flux à interrompre** à notre niveau.
+
+### `nosniff` ne ferme pas ce qu'on croit
+
+La route des fichiers renvoyait le type MIME **déclaré par le navigateur** au
+dépôt. `image/svg+xml` faisait donc servir un document SVG depuis notre propre
+domaine — et un SVG porte du script.
+
+**`X-Content-Type-Options: nosniff` était déjà posé sur toutes les routes, et
+n'y changeait rien** : il interdit de *deviner* un type, pas d'en *annoncer*
+un. La politique de sécurité du contenu ne rattrapait pas davantage — elle
+autorise l'inline pour les scripts d'hydratation de Next.js.
+
+Le type se déduit désormais de l'extension de la clé, que **le serveur** a
+posée (`src/lib/type-de-fichier.ts`). Une extension inconnue rend
+`application/octet-stream` : le navigateur propose d'enregistrer plutôt que
+d'ouvrir, ce qui est le défaut sûr.
+
+### LE PIÈGE DE CE LOT : la correction qui aggrave
+
+**Resserrer la liste des types d'image côté serveur, seul, refuse les photos
+d'iPhone.** Un iPhone photographie en HEIC ; s'il transcode en JPEG à l'envoi,
+c'est **parce que l'attribut `accept` du champ le lui demande**. Trois écrans
+portaient `accept="image/*"` — donc aucune raison de transcoder.
+
+D'où **deux listes, et elles ne se confondent pas** :
+
+| | Ce qu'elle répond |
+|---|---|
+| `TYPES_IMAGE_ACCEPTES` | « sais-je retirer les métadonnées de ce format ? » |
+| `TYPES_PHOTO_ACCEPTES` | « ai-je le droit de le ranger ? » — plus large, HEIC compris |
+| `ACCEPT_PHOTOS` | ce que l'écran propose — **sans le HEIC**, pour qu'iOS transcode |
+
+**Et la troisième ligne est contre-intuitive au point qu'un contrôle la
+garde** : ajouter `image/heic` à l'`accept` ferait *cesser* le transcodage, et
+nous recevrions des HEIC bruts — que le nettoyage ne sait pas lire, donc rangés
+avec leurs coordonnées GPS. La correction qu'on croirait bonne rendrait la
+situation pire qu'avant.
+
+### Un échec de nettoyage ne refuse JAMAIS la photo
+
+`retirerMetadonnees` rend `{ nettoye: false }` et les octets d'origine sur un
+format qu'il ne sait pas lire. L'appelant range, et **journalise** — il ne lève
+pas. C'est un arbitrage, et il se dit : perdre le cliché d'un artisan qui vient
+de le prendre, sur un chantier, coûte plus cher que garder des métadonnées sur
+une photo de haie. *Un outil qui refuse la photo qu'on vient de prendre est pire
+que le risque qu'il évite.*
+
+### Ce que le brief n'avait pas vu
+
+Le **croquis d'arrosage** envoie la photo à un fournisseur d'IA : il bornait la
+taille et rien d'autre — ni type, ni cadence. Il porte désormais les deux, avec
+le seuil du diagnostic végétal, parce que ce seuil-là ne protège pas un service :
+**il borne une facture**.

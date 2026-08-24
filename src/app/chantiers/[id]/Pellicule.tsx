@@ -8,6 +8,7 @@ import PointsQuiSoufflent from "@/components/atlas/PointsQuiSoufflent";
 import TiroirDesRetires from "@/components/atlas/TiroirDesRetires";
 import { useRetraits } from "@/components/atlas/useRetraits";
 import { ajouterPhotoAction, supprimerPhotoAction } from "./photos-actions";
+import { ACCEPT_PHOTOS } from "@/lib/exif";
 
 export type VignettePhoto = { id: string; storageKey: string };
 
@@ -124,7 +125,7 @@ export default function Pellicule({
         <input
           ref={champ}
           type="file"
-          accept="image/*"
+          accept={ACCEPT_PHOTOS}
           multiple
           hidden
           aria-label="Ajouter des photos"
