@@ -15,6 +15,25 @@ ligne « fait » qui ne l'est pas coûte plus cher qu'une ligne absente.
 
 ---
 
+## La fiche de chantier : supprimer un brouillon, retrouver où elle se compose (24 août 2026)
+
+Ses deux phrases, sur une capture : *« Je ne peux pas supprimer les fiches en
+cours »* et *« l'endroit où je pouvais créer ma fiche sur mesure […] a
+disparu »*.
+
+| | État |
+|---|---|
+| Une fiche EN COURS se retire depuis la liste, avec « Annuler » | **fait** (`FichesEnCours`, `supprimerPassage`) |
+| Un rapport PARTI ne se supprime pas — et ne porte pas de croix | **fait**, tenu par une suite base ET une suite navigateur |
+| L'endroit où la fiche se compose, atteignable en permanence | **fait** — en bas de la liste, propriétaire seulement |
+| Créer une catégorie en la NOMMANT | **fait** — elle ne tombe plus dans « Divers » |
+| Retirer une catégorie d'un geste | **fait** (`retirerFamille`) |
+| Les écrans regardés, pas seulement testés | **fait** — trois défauts corrigés qu'aucune suite ne voyait |
+
+Le détail et les partis pris : `ARCHITECTURE.md` §166.
+
+---
+
 ## Le client touché ne remonte plus (23 août 2026)
 
 Son défaut : le client haut sur l'écran disparaît quand on le touche.

@@ -9,6 +9,19 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
+## ~~Supprimer une fiche en cours, et retrouver où la fiche se compose~~ (fait le 24 août 2026)
+
+Ses deux phrases du jour. Les deux sont livrées — `ARCHITECTURE.md` §166.
+
+**Ce qui reste ouvert, et qui n'est PAS un oubli :** un rapport déjà envoyé ne
+se supprime toujours pas, et c'est une décision, pas une lacune. Son lien vit
+chez le client. Le jour où il demandera de pouvoir en retirer un, la question à
+lui poser n'est pas « peut-on ? » mais **« que doit lire le client qui rouvre
+son SMS ? »** — une page morte, ou une page qui dit que le rapport a été
+retiré. Le second demande une colonne ; le premier ne demande rien et ment.
+
+---
+
 ## ⚠ `ARCHITECTURE.md` porte SIX paragraphes pour trois numéros (23 août 2026)
 
 Trois numéros sont pris deux fois, et cela existe déjà sur `main` — ce n'est

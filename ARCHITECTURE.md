@@ -14602,3 +14602,137 @@ Le **croquis d'arrosage** envoie la photo à un fournisseur d'IA : il bornait la
 taille et rien d'autre — ni type, ni cadence. Il porte désormais les deux, avec
 le seuil du diagnostic végétal, parce que ce seuil-là ne protège pas un service :
 **il borne une facture**.
+
+---
+
+## 166. La fiche en cours se supprime — et l'endroit où elle se compose cesse de disparaître
+
+**Ses deux phrases du 24 août 2026**, sur une capture de « Fiche de chantier » :
+*« Je ne peux pas supprimer les fiches en cours. Il faut pouvoir les
+supprimer. »* Et : *« Avant, il y avait un endroit où je pouvais créer ma fiche
+sur mesure. Ajouter des catégories, en enlever, en créer. Aujourd'hui, cet
+endroit a disparu. »*
+
+Deux plaintes, deux défauts sans rapport apparent — et pourtant le même
+mécanisme : **un écran qui retire ce dont on se sert au moment où l'on commence
+à s'en servir.**
+
+### 1. Rien n'effaçait un brouillon
+
+Une fiche s'ouvre à chaque geste, et rien ne la refermait. Il en fait quatre ou
+cinq par jour ; une ouverte sur le mauvais jour, une autre pour un jardin qu'il
+n'a finalement pas fait, et l'écran qu'il ouvre chaque matin devient une pile.
+Sur sa capture, deux brouillons attendaient déjà.
+
+`supprimerPassage` retire la fiche et ses lignes. Trois choses en font le tour :
+
+| | |
+|---|---|
+| **le geste** | celui du 10 août — la ligne part, « Annuler » reste, rien n'est écrit tant que le tiroir est ouvert (`useRetraits`) |
+| **le refus** | un rapport PARTI ne se supprime pas |
+| **les lignes** | effacées explicitement, sous contexte d'entreprise |
+
+**Le refus est le cœur, pas une précaution.** Le lien d'un rapport envoyé vit
+chez le client, dans un SMS qu'il a peut-être gardé : effacer la fiche
+changerait cette adresse en page morte, sans que personne ne l'ait voulu ni ne
+puisse le savoir. C'est l'invariant du 16 août — un rapport parti ne change plus
+— poussé jusqu'à sa conséquence : il ne disparaît pas non plus. L'écran ne pose
+donc pas de croix sur la section « Rapports envoyés », et une suite navigateur
+le tient : sans elle, la croix se poserait sur les deux au premier remaniement.
+
+**Les lignes ne s'en remettent pas à la cascade** de la migration 0055. Elle
+tient, mais elle s'exécute hors de la politique d'isolation : lui confier la
+suppression reviendrait à retirer la RLS du chemin le plus destructeur de cette
+table. Deux `delete` sous contexte coûtent une ligne de code.
+
+### 2. L'endroit n'avait pas disparu : il ne s'affichait plus
+
+Il existe, et il n'a jamais bougé — Réglages → Fiche d'entretien. Mais le lien
+qui y menait depuis « Fiche de chantier » vivait dans l'encart de la fiche VIDE,
+celui qui s'efface dès la première prestation posée.
+
+**L'écran retirait donc sa propre porte à l'instant précis où le patron
+commençait à s'en servir.** Il l'a vue une fois, le premier jour, puis plus
+jamais — et sa conclusion était la bonne, vue de sa place : l'endroit avait
+disparu.
+
+Une ligne permanente le rouvre, **en bas de la liste** : ce qu'il vient faire
+ici neuf fois sur dix, c'est ouvrir une fiche, pas la recomposer. Elle ne paraît
+que pour le propriétaire — la rubrique lui est réservée, et un lien qui n'ouvre
+qu'un « Rubrique réservée » est pire qu'aucun lien. Et le contrôle vise
+l'ADRESSE, jamais le libellé (`CLAUDE.md` §5 bis).
+
+### 3. Les catégories : deux verbes sur trois ne tenaient pas
+
+Sa phrase décrit l'écran par ce qu'il y fait — *« ajouter des catégories, en
+enlever, en créer »*. Vérification faite, l'écran n'en tenait qu'un :
+
+| Son mot | Ce que l'écran faisait |
+|---|---|
+| ajouter une prestation | ✓ |
+| **créer** une catégorie | rangeait la ligne dans « Divers », à lui de renommer le titre au-dessus |
+| **enlever** une catégorie | rien — six retraits au pouce, et la famille tombait avec sa dernière ligne |
+
+Le nom se saisit désormais **avec** sa première prestation, et un bouton retire
+la famille entière par le même tiroir que les lignes. Une famille n'étant pas
+une ligne en base mais une colonne de texte (§ sur `renommerFamille`), la
+retirer c'est supprimer ses prestations — et `lower()` compare les noms, sinon
+une casse différente couperait la famille en deux sans un mot.
+
+### Ce que les captures ont attrapé, et qu'aucune suite ne voyait
+
+Trois défauts, tous sortis d'une image — la sixième fois dans ce dépôt
+(`CLAUDE.md` §5) :
+
+1. **« EN COURS » restait seul**, sans une ligne dessous, pendant les six
+   secondes du délai d'annulation. Un écran qui paraît cassé à l'instant précis
+   où il vient de toucher une croix, et où il se demande s'il a effacé plus que
+   prévu. Le titre part maintenant avec sa dernière ligne ; le tiroir reste,
+   c'est lui qui raconte.
+2. **La croix d'une FAMILLE était le jumeau exact de celle d'une ligne** — même
+   signe, même taille, même colonne. Rien à l'œil ne disait que l'une retire une
+   prestation et l'autre en emporte six. Elle s'écrit désormais : « Retirer la
+   famille ».
+3. **La porte du modèle butait sur la barre d'onglets** — 60 px, contre 116 px
+   avec la marge des réglages. Mesuré, pas supposé : elle n'était pas cachée, et
+   la dire cachée aurait été annoncer une panne corrigée là où seul le confort
+   l'était.
+
+### 4. Le rapport figé : deux paragraphes gris en moins, un bouton qui dit ce qu'il fait
+
+**Ses mots, le même soir, sur une capture de l'écran figé** : *« Ce rapport est
+figé en gris supprime, et tout ce qui est en gris en dessous supprime également
+! »* Puis : *« Ouvrir le sms tout prêt corrigé par envoyer par sms si on a
+sélectionné sms, sinon envoyer par email si on a sélectionné email. »*
+
+**Ce qui est parti :** la phrase « Ce rapport est figé. Il ne se modifie plus —
+c'est ce qui en fait une preuve de passage », et l'adresse du rapport recopiée
+en toutes lettres sous le bouton. Aucune des deux n'apprenait quoi que ce soit :
+l'état figé se lit déjà — les cases ne se cochent plus, la molette ne tourne
+plus — et l'adresse est DANS le message que le bouton compose.
+
+**L'adresse en clair survit à un seul endroit**, et il faut le savoir avant de
+la retirer tout à fait : le client qui n'a ni téléphone ni e-mail. Là, elle
+n'est plus un doublon du bouton — elle est le seul moyen de transmettre le
+rapport.
+
+**Le canal était DÉDUIT, il est maintenant CHOISI.** L'écran figé lisait « un
+téléphone existe, donc ce sera un SMS ». Chez un client qui a les deux, choisir
+l'e-mail sous son nom ne changeait donc rien : le bouton annonçait un canal que
+personne n'avait demandé. Il retombe encore sur ce qui existe — mais seulement
+quand le canal choisi n'a plus de coordonnée, une fiche client pouvant changer
+entre le jour où le rapport a été figé et celui où on le rouvre.
+
+**Et un contrôle a été ADAPTÉ, pas contourné.** Une suite navigateur exigeait le
+mot « figé » à l'écran — celui qu'il vient de faire retirer. Écrire une suite
+qui réclame ce qu'il a fait enlever rend son écran impossible à changer
+(`CLAUDE.md` §5 bis) : elle vise désormais ce qui restera vrai quel que soit le
+mot — plus de bouton d'enregistrement, un et un seul moyen de transmettre, et
+c'est celui qu'il a choisi.
+
+### Ce qui n'a PAS été fait, et pourquoi
+
+Aucune maquette n'a précédé ces gestes, et c'est délibéré (`CLAUDE.md` §3 bis) :
+aucun n'est neuf. Le retrait réversible avec son tiroir est le SIEN, celui du
+10 août, déjà à l'œuvre à huit endroits ; lui en donner une neuvième variante
+sur l'écran qu'il ouvre le plus lui ferait apprendre deux fois la même chose.

@@ -9,6 +9,45 @@ Format : le plus récent en tête.
 
 ## 2026-08-24
 
+### La fiche en cours se supprime, et l'endroit où elle se compose se retrouve
+
+**Rien n'effaçait un brouillon.** Une fiche s'ouvre à chaque geste, et l'écran
+qu'il ouvre chaque matin devenait une pile — une fiche du mauvais jour, une
+autre pour un jardin qu'il n'a pas fait. Une croix les retire, avec le geste du
+10 août : la ligne part, « Annuler » reste, rien n'est écrit tant que le tiroir
+est ouvert. **Un rapport déjà parti, lui, ne se supprime pas** et n'a pas de
+croix : son lien vit chez le client, et l'effacer changerait cette adresse en
+page morte sans que personne puisse le savoir.
+
+**L'endroit où la fiche se compose n'avait pas disparu : il ne s'affichait
+plus.** Le lien vers Réglages → Fiche d'entretien vivait dans l'encart de la
+fiche VIDE, celui qui s'efface à la première prestation posée — l'écran retirait
+sa porte à l'instant où le patron commençait à s'en servir. Elle est désormais
+en bas de la liste, en permanence, pour le propriétaire.
+
+**Deux verbes sur trois ne tenaient pas** dans l'écran qui compose la fiche.
+« Créer une catégorie » rangeait la ligne dans « Divers », à lui de renommer le
+titre au-dessus ; « en enlever » n'existait pas — six retraits au pouce. Le nom
+se saisit maintenant avec sa première prestation, et un bouton retire la famille
+entière.
+
+**Le rapport figé perd ses deux lignes grises**, à sa demande : la phrase sur la
+preuve de passage et l'adresse recopiée sous le bouton. Aucune n'apprenait rien
+— l'état figé se lit déjà aux cases qui ne se cochent plus. L'adresse survit là
+où elle sert vraiment : chez un client sans téléphone ni e-mail, elle est le
+seul moyen de transmettre. **Et le bouton dit enfin par quoi ça part** :
+« Envoyer par SMS » ou « Envoyer par e-mail », selon ce qu'il a choisi sous le
+nom du client — l'écran le déduisait des coordonnées, et annonçait donc un canal
+que personne n'avait demandé.
+
+**Trois défauts trouvés en REGARDANT les captures**, aucune suite ne rougissait :
+« EN COURS » restait seul sans une ligne dessous pendant le délai d'annulation ;
+la croix d'une famille était le jumeau exact de celle d'une ligne (elle s'écrit
+maintenant « Retirer la famille ») ; la porte du modèle butait sur la barre
+d'onglets — mesuré à 60 px, contre 116 px après. Détail : `ARCHITECTURE.md`
+§166.
+
+
 ### Audit de sécurité, lot 2 : ce qu'on dépose dans Atlas
 
 **Un classeur piégé ne couche plus le serveur.** Un `.xlsx` est une archive, et

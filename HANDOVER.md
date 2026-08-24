@@ -24,6 +24,32 @@ position de la ligne dans le gestionnaire, et la restaure en `useLayoutEffect`
 
 Le même piège guette partout où un panneau se referme au-dessus du point
 regardé. Détail : `ARCHITECTURE.md` §157.
+## Fiche de chantier : ce que le 24 août a changé (aucune migration)
+
+Deux plaintes de sa part, un même mécanisme derrière : **un écran qui retire ce
+dont on se sert au moment où l'on commence à s'en servir.**
+
+- **Un brouillon se supprime** depuis la liste — croix, puis « Annuler » pendant
+  six secondes (`useRetraits`, sa règle du 10 août). **Un rapport parti, non** :
+  son lien vit chez le client, et l'effacer changerait cette adresse en page
+  morte. `supprimerPassage` refuse, et l'écran ne pose pas de croix dessus.
+- **L'endroit où la fiche se compose n'avait pas disparu** : son lien vivait
+  dans l'encart de la fiche VIDE, qui s'efface à la première prestation posée.
+  Il est désormais en bas de `/paysage/fiche`, en permanence, pour le seul
+  propriétaire.
+- **Les catégories se créent nommées et se retirent d'un geste** — avant, créer
+  rangeait dans « Divers » et retirer n'existait pas.
+
+**Rien en base** : aucune migration, la table `passages_entretien` portait déjà
+son `GRANT DELETE` et sa politique d'isolation (migration 0055).
+
+**Et ce qui vaut d'être retenu :** trois défauts de ce lot sont sortis de
+CAPTURES REGARDÉES, aucun d'une suite rouge — un titre resté seul, deux croix
+identiques aux conséquences très différentes, une ligne serrée contre la barre
+d'onglets. C'est la sixième fois dans ce dépôt. Détail : `ARCHITECTURE.md` §166.
+
+---
+
 ## QUATRE MIGRATIONS, DEUX NUMÉROS EN DOUBLE — et ce n'est pas cassé
 
 Le 23-24 août 2026, plusieurs sessions ont travaillé en parallèle et se sont

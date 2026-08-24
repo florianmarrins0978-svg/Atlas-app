@@ -436,6 +436,7 @@ export default function FicheChantierClient({
             clientNom={clientNom}
             entrepriseNom={entrepriseNom}
             clientCivilite={civilite}
+            canal={canal}
             telephone={telephone}
             email={email}
           />
@@ -691,6 +692,7 @@ function RapportParti({
   clientNom,
   clientCivilite,
   entrepriseNom,
+  canal: choisi,
   telephone,
   email,
 }: {
@@ -699,6 +701,8 @@ function RapportParti({
   clientNom: string | null;
   clientCivilite: string | null;
   entrepriseNom: string;
+  /** Ce qu'il a choisi sous le nom du client — « envoyé par SMS / par e-mail ». */
+  canal: "sms" | "email";
   telephone: string | null;
   email: string | null;
 }) {
@@ -707,47 +711,72 @@ function RapportParti({
   // c'est là que se logent les défauts payés : un numéro espacé qui ouvre un
   // SMS sans destinataire, un lien collé au texte qui n'est pas cliquable
   // (`src/lib/message-client.ts`).
-  const canal: "sms" | "email" = telephone ? "sms" : "email";
+  //
+  // **LE CANAL EST CELUI QU'IL A CHOISI — corrigé le 24 août 2026**, sur sa
+  // demande : *« envoyer par SMS si on a sélectionné SMS, sinon envoyer par
+  // email si on a sélectionné email »*. Cet écran le déduisait des coordonnées
+  // du client — « un téléphone existe, donc ce sera un SMS » —, et le bouton
+  // annonçait alors un canal que personne n'avait demandé. Chez un client qui a
+  // les deux, choisir l'e-mail juste au-dessus ne changeait rien ici.
+  //
+  // **Il retombe sur ce qui EXISTE, et seulement là.** Le canal choisi sans
+  // coordonnée n'ouvrirait qu'un message sans destinataire — le refus d'envoi
+  // le barre avant (`empechementEnvoi`), mais un rapport figé hier se rouvre
+  // aujourd'hui sur une fiche client qui a pu changer.
+  const disponible = (c: "sms" | "email") => (c === "sms" ? telephone : email)?.trim();
+  const canal: "sms" | "email" = disponible(choisi)
+    ? choisi
+    : disponible("sms")
+      ? "sms"
+      : "email";
   const message = composerMessageEntretien({
     clientNom: clientNom ?? "",
     clientCivilite: (clientCivilite ?? undefined) as CiviliteChoisie | undefined,
     entrepriseNom,
     lien,
   });
-  const destinataire = telephone ?? email;
+  const destinataire = canal === "sms" ? telephone : email;
 
+  // **Deux paragraphes gris ont été RETIRÉS le 24 août 2026, à sa demande** :
+  // *« Ce rapport est figé en gris supprime, et tout ce qui est en gris en
+  // dessous supprime également »*. La phrase sur la preuve de passage et
+  // l'adresse du rapport recopiée en toutes lettres sous le bouton.
+  //
+  // **Ce n'était pas de l'ornement, et c'est ce qui rend le retrait sûr :**
+  // l'état figé se lit déjà sans elles — les cases ne se cochent plus, la
+  // molette ne tourne plus, et le bouton dit « Envoyer ». Une phrase qui répète
+  // ce que l'écran montre déjà occupe la place de ce qu'il vient chercher.
+  //
+  // **L'adresse en clair SURVIT à un seul endroit** : le client sans téléphone
+  // ni e-mail. Là, elle n'est pas un doublon du bouton — elle EST le seul
+  // moyen de transmettre le rapport, et la retirer laisserait un rapport figé
+  // sans aucune issue.
   return (
     <div>
-      <p className="text-center text-[13px] leading-[1.6]" style={{ color: colors.muted }}>
-        Ce rapport est figé. Il ne se modifie plus — c&apos;est ce qui en fait une preuve de
-        passage.
-      </p>
-
-      <div className="mt-[16px]">
-        {destinataire ? (
-          <PrimaryButton
-            repere={canal === "sms" ? "ouvrir-sms-fiche" : "ouvrir-email-fiche"}
-            href={lienTransmission({ canal, destinataire, message })}
-          >
-            {canal === "sms" ? "Ouvrir le SMS tout prêt" : "Ouvrir l'e-mail tout prêt"}
-          </PrimaryButton>
-        ) : (
-          // **Ni téléphone ni courriel : le dire, et donner le lien quand même.**
-          // Un écran qui n'offrirait rien laisserait un rapport figé sans moyen
-          // de le transmettre — et il n'aurait aucun moyen de savoir pourquoi.
+      {destinataire ? (
+        <PrimaryButton
+          repere={canal === "sms" ? "ouvrir-sms-fiche" : "ouvrir-email-fiche"}
+          href={lienTransmission({ canal, destinataire, message })}
+        >
+          {canal === "sms" ? "Envoyer par SMS" : "Envoyer par e-mail"}
+        </PrimaryButton>
+      ) : (
+        // **Ni téléphone ni courriel : le dire, et donner le lien quand même.**
+        // Un écran qui n'offrirait rien laisserait un rapport figé sans moyen
+        // de le transmettre — et il n'aurait aucun moyen de savoir pourquoi.
+        <>
           <p className="text-center text-[12.5px] leading-[1.6]" style={{ color: colors.muted }}>
             Ce client n&apos;a ni téléphone ni e-mail dans sa fiche. Copiez le lien ci-dessous.
           </p>
-        )}
-      </div>
-
-      {lien && (
-        <p
-          className="mt-[14px] break-all text-center text-[11.5px] leading-[1.6]"
-          style={{ color: colors.muted }}
-        >
-          {lien}
-        </p>
+          {lien && (
+            <p
+              className="mt-[14px] break-all text-center text-[11.5px] leading-[1.6]"
+              style={{ color: colors.muted }}
+            >
+              {lien}
+            </p>
+          )}
+        </>
       )}
     </div>
   );
