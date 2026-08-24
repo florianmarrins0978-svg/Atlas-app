@@ -24,16 +24,27 @@ position de la ligne dans le gestionnaire, et la restaure en `useLayoutEffect`
 
 Le même piège guette partout où un panneau se referme au-dessus du point
 regardé. Détail : `ARCHITECTURE.md` §157.
-## DEUX MIGRATIONS PORTENT LE NUMÉRO 0062 — et ce n'est pas cassé
+## QUATRE MIGRATIONS, DEUX NUMÉROS EN DOUBLE — et ce n'est pas cassé
 
-`0062_message_client.sql` et `0062_tentatives_connexion.sql` sont nées le même
-jour dans deux sessions parallèles. **Rien ne casse** : `run-migrations.ts` trie
-par nom de fichier et retient chaque nom séparément dans `_migrations`, donc les
-deux s'appliquent, toujours dans le même ordre.
+Le 23-24 août 2026, plusieurs sessions ont travaillé en parallèle et se sont
+croisées sur la numérotation :
+
+| Numéro | Les deux fichiers |
+|---|---|
+| **0062** | `message_client` · `tentatives_connexion` |
+| **0063** | `allure_documents` · `cles_appareil` |
+
+**Rien ne casse** : `run-migrations.ts` trie par nom de fichier complet et
+retient chaque nom séparément dans `_migrations`. Les quatre s'appliquent,
+toujours dans le même ordre, et aucune ne dépend d'une autre.
 
 **Ce qu'il ne faut PAS faire : en renommer une.** Le suivi est keyé sur le nom
 du fichier ; le changer ferait rejouer la migration sur toute base qui l'a déjà.
-La suite reprend à **0064**.
+
+**Et la leçon, elle, se retient :** un numéro de migration ne se réserve pas.
+Avant d'en poser un, regarder `git branch -r --sort=-committerdate` et le
+`drizzle/` des branches vivantes (`CLAUDE.md` §6, point A). La suite reprend à
+**0064**.
 
 ---
 

@@ -42,7 +42,7 @@ pour une raison qui mérite d'être dite : **`nosniff` ne ferme pas ce trou-là.
 
 ### Le constat
 
-`src/app/api/fichiers/[...key]/route.ts:39`
+`src/app/api/fichiers/[...key]/route.ts:48`
 
 ```ts
 headers: { "Content-Type": mimeType, "Cache-Control": "private, max-age=3600" }
