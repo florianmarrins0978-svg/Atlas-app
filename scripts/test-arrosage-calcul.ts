@@ -416,8 +416,14 @@ dire(
     ],
   });
   const noms = (surLaLimite.secteurs as { nom: string }[]).map((x) => x.nom);
+  // **On éprouve la RÈGLE, pas la mise en page.** La première version figeait
+  // « deux vannes nommées Devant et Derrière » : le 23 août, le choix de buse a
+  // changé, la coupe est tombée à trois vannes, et le contrôle a rougi sur un
+  // plan parfaitement juste. Ce qui doit tenir, c'est qu'une vanne ne s'annonce
+  // jamais sous le nom d'une zone qu'elle n'arrose pas — donc jamais deux noms
+  // là où la coupe ne mêle pas réellement deux zones.
   dire(
-    noms.length === 2 && noms[0] === "Devant" && noms[1] === "Derrière",
+    noms.length >= 2 && noms.every((n) => n === "Devant" || n === "Derrière"),
     `chaque vanne nomme la zone qu'elle arrose, pas tout son groupe (${noms.join(" · ")})`,
   );
 }
@@ -509,7 +515,20 @@ dire(
   // plus le même débit, donc elle ne perd plus la même chose. **Vérifié en
   // remettant la pluviométrie dans la clé : la valeur redevient 0,442.** Ce
   // n'est pas la formule qui a changé, c'est le jardin qu'on lui donne.
-  const PERTE_RESEAU_ATTENDUE = 0.436;
+  //
+  // **ELLE A REBOUGÉ LE 23 AOÛT AU SOIR, DE 0,436 À 0,386.** Même raison qu'une
+  // heure plus tôt, autre cause : ce n'est plus le découpage qui a changé, c'est
+  // LE CHOIX DE LA BUSE. Sa colère — *« cinq réseaux pour ça ??????? »* — a
+  // retourné le critère : on ne prend plus la plus grande buse qui pave, mais
+  // celle qui demande le moins de vannes. Sur ce jardin :
+  //
+  //   avant : « Devant » 3504 buse 1,5 · 4 têtes    → deux vannes
+  //   après : « Devant » 3504 buse 0,75 · 8 têtes   → trois vannes, plus fines
+  //
+  // Des buses plus fines font des lignes qui portent moins de débit, donc qui
+  // perdent moins. Ce n'est toujours pas la formule qui a changé : c'est le plan
+  // qu'on lui donne.
+  const PERTE_RESEAU_ATTENDUE = 0.386;
   dire(
     Math.abs(p.perteReseau - PERTE_RESEAU_ATTENDUE) < 0.005,
     `la perte du réseau vaut ${p.perteReseau.toFixed(3)} bar (${PERTE_RESEAU_ATTENDUE} attendu — ` +
@@ -582,6 +601,39 @@ dire(
   dire(
     !reducteur(arroseursAHautePression),
     "à 6 bar sans goutte-à-goutte : toujours aucun réducteur — c'est l'emploi qui décide, pas la pression",
+  );
+}
+
+// ── LE MOINS DE VANNES D'ABORD, LE MOINS D'ARROSEURS ENSUITE ────────────────
+//
+// **Sa colère du 23 août 2026 : « cinq réseaux pour ça ??????? »** — sur un
+// jardin de 12 × 12 et 8 × 8. Le critère était à l'envers : on prenait la plus
+// GRANDE buse qui pave, donc le moins d'arroseurs. Mais une grosse buse boit,
+// et son 12 × 12 partait en quatre 5000 Plus à 2,79 m³/h, soit trois vannes à
+// lui seul quand une voie n'en passe que 1,53.
+//
+// **Neuf arroseurs se posent une fois ; une vanne coûte une électrovanne, une
+// station de programmateur, sa tranchée et son créneau d'arrosage.**
+{
+  const sienDu23 = calculerPlan({
+    seau: 10, temps: 20, pression: 3, compteur: "oui",
+    zones: [
+      { id: 1, type: "gazon", nom: "Haut", L: 12, l: 12 },
+      { id: 2, type: "gazon", nom: "Bas", L: 8, l: 8 },
+    ],
+  });
+  const zones = sienDu23.dessin as { nom: string; buse: string | null; points: unknown[] }[];
+  dire(
+    sienDu23.secteurs.length <= 2,
+    `son jardin du 23 août tient sur ${sienDu23.secteurs.length} réseau(x) — ` +
+      zones.map((z) => `${z.points.length}× ${z.buse}`).join(" + "),
+  );
+  // Et c'est bien le plan qu'il avait dessiné à la main le 21 août : neuf 3504
+  // buse 0,75 sur le carré de douze.
+  const haut = zones.find((z) => z.nom === "Haut");
+  dire(
+    haut?.points.length === 9 && /0,75/.test(haut?.buse ?? ""),
+    `le carré de 12 m reçoit ${haut?.points.length} × ${haut?.buse} — sa pose du 21 août`,
   );
 }
 

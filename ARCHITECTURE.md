@@ -14602,3 +14602,64 @@ Le **croquis d'arrosage** envoie la photo à un fournisseur d'IA : il bornait la
 taille et rien d'autre — ni type, ni cadence. Il porte désormais les deux, avec
 le seuil du diagnostic végétal, parce que ce seuil-là ne protège pas un service :
 **il borne une facture**.
+
+---
+
+## 166. Le moins de VANNES, pas le moins d'arroseurs
+
+**Sa colère du 23 août 2026 :** *« cinq réseaux pour ça ??????? »* — devant un
+plan de 12 × 12 et 8 × 8, soit 208 m² de pelouse.
+
+### Le critère était à l'envers
+
+`modelePour` prenait **la plus grande buse qui pave**. C'est le moins
+d'arroseurs possible — et c'est le mauvais objectif, parce qu'une grosse buse
+boit. Sur son carré de 12 m :
+
+| | Arroseurs | Débit | Vannes |
+|---|---|---|---|
+| 5000 Plus buse 3,0 (l'ancien choix) | 4 | 2,79 m³/h | **3** |
+| 3504 buse 0,75 (sa pose du 21 août) | 9 | 1,24 m³/h | **1** |
+
+**Neuf arroseurs se posent une fois. Une vanne coûte une électrovanne, une
+station de programmateur, sa tranchée et son créneau d'arrosage** — et elle
+revient chaque été dans la durée totale d'arrosage.
+
+Le critère est donc : **le moins de vannes d'abord, le moins d'arroseurs
+ensuite**. L'ancien critère n'est pas jeté, il devient le départage.
+
+### Comment, sans écrire une seconde façon de poser
+
+`poser()` s'appelle **lui-même** avec une buse imposée, pour chaque buse qui
+pave. Recalculer un pavage dans `modelePour` aurait fabriqué une seconde
+implémentation du quinconce et du débit par angle — exactement ce que le §3
+interdit. La récursion est de profondeur un : l'appel qui porte une buse imposée
+ne relance pas la boucle.
+
+`limiteParVoie()` est sortie de `decouper()` pour être partagée : choisir une
+buse pour un plafond que le découpage n'applique pas serait le pire des deux
+mondes.
+
+### Le tour de vis de trop, qui cachait la bonne réponse
+
+**Et c'est le vrai fond du défaut.** Le quinconce resserrait les arroseurs
+**tant que le damier ne couvrait pas**, sans plancher. Sur le carré de 12 m en
+buse 0,75, il finissait à 4 m d'écart pour une portée de 5,14 — donc une pose
+marquée « trop serrée », donc écartée au moment de comparer les buses. La seule
+qui tenait sur une vanne était disqualifiée par un resserrement qui enfreignait
+déjà sa règle du 17 août : *« jamais moins que la portée »*.
+
+Le damier ne se resserre plus sous la portée. Quand il ne couvre pas à cet
+écart-là, on garde la **grille alignée**, qui couvre par construction — et c'est
+elle qui rend les neuf arroseurs qu'il avait dessinés.
+
+### Deux valeurs de référence ont bougé, sciemment
+
+La perte de charge du réseau passe de 0,436 à 0,386 bar : des buses plus fines
+font des lignes qui portent moins de débit, donc qui perdent moins. Ce n'est pas
+la formule qui a changé, c'est le plan qu'on lui donne — et la ligne de la suite
+porte la raison à côté d'elle (`CLAUDE.md` §4 ter).
+
+Un contrôle figeait aussi *« deux vannes, nommées Devant et Derrière »* : il
+éprouve désormais la RÈGLE — une vanne ne s'annonce jamais sous le nom d'une
+zone qu'elle n'arrose pas — et non la mise en page, qui dépend du choix de buse.

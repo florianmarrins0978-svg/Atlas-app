@@ -158,6 +158,104 @@ PDF embarque.
 
 ## 2026-08-23
 
+### Planche 92 — un blanc à reflets bleutés, neuf écrans qui s'essaient
+
+**Trois demandes en une soirée, et chacune a corrigé la précédente.**
+
+| Ce qu'il a dit | Ce que ça a changé |
+|---|---|
+| *« un fond blanc avec des reflets bleutés un peu »* | la planche |
+| *« j'ai que le visuel de Brume »* | **trois bleus distincts**, pas un seul en trois habits |
+| *« des maquettes pour chaque page, que je voie comment ça va rendre »* | **neuf écrans**, la barre du bas fonctionne |
+
+**Ce que la demande mélangeait, et que la planche sépare :** la **couleur** tient
+dans les huit valeurs de `chartes.ts` sans toucher un écran ; l'**allure** —
+typographie, rayons, ombre, air — les touche tous. Deux réglages indépendants,
+douze combinaisons, sur chacun des neuf écrans.
+
+**Pourquoi neuf et pas cinquante-sept.** Ce qu'il faut éprouver n'est pas le
+nombre d'écrans mais **les formes de contenu qui cassent une allure** : le
+planning (42 cases, deux barres par jour) et le devis (tableau de lignes et
+totaux) sont là pour ça. Une allure qui tient sur trois cartes de chantier ne
+prouve rien.
+
+**DEUX DÉFAUTS SORTIS D'UNE CAPTURE, JAMAIS D'UN TEST** — les cinquième et
+sixième de ce dépôt :
+
+1. la **barre du bas** gardait le crème d'Origine sur les allures bleutées. Un
+   jeton composé (`--barre-fond:var(--fond)`) déclaré sur `:root` est substitué
+   **là où il est déclaré**, pas là où il est lu ;
+2. le **panneau de réglages masquait le titre** de l'écran quand on changeait de
+   page — on jugeait donc une allure sans voir son en-tête, ce qui est
+   exactement ce qu'on lui demandait de juger.
+
+Les deux sont désormais tenus par le parcours navigateur, qui **refuse aussi de
+conclure sur un titre de hauteur nulle** : l'absence de matière à mesurer n'est
+pas un succès.
+
+### La première version de cette planche — trois habits pour un seul bleu
+
+Sa demande, capture de « Apparence » à l'appui : *« crée-moi une version de
+l'appli plus stylée dans le style des applis d'aujourd'hui, avec un fond blanc
+avec des reflets bleutés un peu. Propose avant de coder quoi que ce soit. »*
+Rien dans `src/` — `CLAUDE.md` §3 bis.
+
+**Ce que la demande mélange, et que la planche sépare.** Elle porte deux choses
+qui n'ont ni le même coût ni le même risque :
+
+| | Ce que ça touche |
+|---|---|
+| **la couleur** | huit valeurs dans `chartes.ts`. **Aucun écran** |
+| **l'allure** — typographie, rayons, ombres, air | **tous** les écrans |
+
+D'où trois propositions du moins cher au plus engageant — A · Brume (la couleur
+seule), B · Brume+ (couleur et allure), C · Verre (halos, cartes flottantes,
+barre dépolie) — et l'allure d'aujourd'hui gardée comme quatrième bouton, pour
+qu'elles se jugent contre quelque chose plutôt que dans le vide.
+
+**Sous chacune, ce qu'elle coûte ET ce qu'elle risque.** C est la plus proche de
+ce qu'il décrit, et c'est aussi celle dont le flou peut faire saccader une liste
+de quarante chantiers sur un téléphone de trois ans — un choix d'apparence se
+paie en écrans à reprendre et en images par seconde, et cela ne se lit sur
+aucune capture.
+
+**UN DÉFAUT SORTI D'UNE CAPTURE, JAMAIS D'UN TEST — la cinquième fois dans ce
+dépôt.** La barre du bas gardait le crème d'Origine sur les deux allures
+bleutées. La cause est un piège de CSS qui ne se voit pas à la lecture : un jeton
+composé (`--barre-fond:var(--fond)`) déclaré sur `:root` est substitué **là où il
+est déclaré**, donc contre le fond de la racine — pas contre celui du look. Le
+parcours navigateur passait au vert pendant ce temps. Il compare désormais le
+fond de la barre à celui de la page, allure par allure.
+
+**Le chemin entier a été parcouru**, d'`essais.html` à la planche : la tuile se
+touche (64 px), la page s'ouvre, les boutons répondent. Trois fois une adresse
+lui a été transmise sans que personne ne l'ait ouverte, et trois fois c'est lui
+qui a trouvé le défaut.
+
+### Cinq réseaux pour 208 m² : le critère de choix des buses était à l'envers
+
+*« Cinq réseaux pour ça ??????? »*, devant un plan de 12 × 12 et 8 × 8.
+
+**On prenait la plus GRANDE buse qui pave** — le moins d'arroseurs possible. Mais
+une grosse buse boit : son carré de 12 m partait en quatre 5000 Plus à
+2,79 m³/h, soit **trois vannes à lui seul** quand une voie n'en passe que 1,53.
+Les mêmes 144 m² en 3504 buse 0,75 tiennent sur **une** vanne.
+
+Le critère est retourné : **le moins de vannes d'abord, le moins d'arroseurs
+ensuite**. Neuf arroseurs se posent une fois ; une vanne coûte une électrovanne,
+une station de programmateur, sa tranchée et son créneau d'arrosage.
+
+**Le vrai fond du défaut était ailleurs**, et plus vicieux : le quinconce
+resserrait les arroseurs tant que le damier ne couvrait pas, **sans plancher** —
+jusqu'à 4 m d'écart pour une portée de 5,14. La pose sortait « trop serrée »,
+donc écartée à la comparaison : la seule buse qui tenait sur une vanne était
+disqualifiée par un tour de vis qui enfreignait déjà sa règle du 17 août,
+*« jamais moins que la portée »*. Le damier ne se resserre plus sous la portée.
+
+**Son jardin passe de cinq réseaux à deux**, et le carré de 12 m reçoit les
+neuf 3504 buse 0,75 qu'il avait dessinés à la main le 21 août.
+
+Détail : `ARCHITECTURE.md` §166.
 ### Son message au client s'écrit — un seul, pour ses trois documents
 
 *« Y a-t-il un endroit dans les réglages où l'utilisateur peut rédiger ce
@@ -553,8 +651,6 @@ surtout pas `NODE_ENV`** : le banc EST « production + profil banc », puisque
 
 Huit suites neuves, toutes écrites pour rougir sur l'ancien code. Ce qui reste
 à faire (M1 à M12 hors M7/M8, F1 à F13) est dans `TODO.md`.
-
-
 ### Le banc accusait le mauvais coupable — Atlas signe maintenant ses réponses
 
 *« L'appli ne se lance plus »*, puis une capture : son téléphone propose de
