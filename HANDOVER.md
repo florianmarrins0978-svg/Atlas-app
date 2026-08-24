@@ -44,7 +44,7 @@ Atlas refuse maintenant de composer le message et le DIT (`ouvrableParLeClient`,
   l'envoi. Le refus lui-même s'éprouve sans navigateur
   (`test-adresse-du-client.ts`).
 
-Détail : `ARCHITECTURE.md` §167.
+Détail : `ARCHITECTURE.md` §169.
 
 ---
 
@@ -70,7 +70,7 @@ son `GRANT DELETE` et sa politique d'isolation (migration 0055).
 **Et ce qui vaut d'être retenu :** trois défauts de ce lot sont sortis de
 CAPTURES REGARDÉES, aucun d'une suite rouge — un titre resté seul, deux croix
 identiques aux conséquences très différentes, une ligne serrée contre la barre
-d'onglets. C'est la sixième fois dans ce dépôt. Détail : `ARCHITECTURE.md` §166.
+d'onglets. C'est la sixième fois dans ce dépôt. Détail : `ARCHITECTURE.md` §168.
 
 ---
 

@@ -14605,7 +14605,7 @@ le seuil du diagnostic végétal, parce que ce seuil-là ne protège pas un serv
 
 ---
 
-## 166. La fiche en cours se supprime — et l'endroit où elle se compose cesse de disparaître
+## 168. La fiche en cours se supprime — et l'endroit où elle se compose cesse de disparaître
 
 **Ses deux phrases du 24 août 2026**, sur une capture de « Fiche de chantier » :
 *« Je ne peux pas supprimer les fiches en cours. Il faut pouvoir les
@@ -14739,7 +14739,7 @@ sur l'écran qu'il ouvre le plus lui ferait apprendre deux fois la même chose.
 
 ---
 
-## 167. Le lien qui part chez un client ne peut pas être une adresse de sa machine
+## 169. Le lien qui part chez un client ne peut pas être une adresse de sa machine
 
 **Sa capture du 24 août 2026 : « Connexion au serveur impossible. »** Son client
 ouvre le SMS de sa fiche de chantier et tombe sur une page morte, sur

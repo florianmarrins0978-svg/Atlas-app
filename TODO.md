@@ -12,7 +12,7 @@ langage, et rien n'y entre sans son accord.
 ## Le devis et la facture n'ont pas encore le refus d'adresse locale (24 août 2026)
 
 Le lien envoyé au client prenait l'adresse du navigateur qui l'avait fabriqué —
-et son client a reçu une page morte sur `localhost` (`ARCHITECTURE.md` §167).
+et son client a reçu une page morte sur `localhost` (`ARCHITECTURE.md` §169).
 
 **Ce qui est fait pour les quatre écrans** : l'adresse se calcule au même
 endroit, et `ATLAS_URL_PUBLIQUE` la commande quand elle est posée.
@@ -35,7 +35,7 @@ Ce n'est pas urgent tant qu'il envoie depuis l'adresse de son espace de travail
 
 ## ~~Supprimer une fiche en cours, et retrouver où la fiche se compose~~ (fait le 24 août 2026)
 
-Ses deux phrases du jour. Les deux sont livrées — `ARCHITECTURE.md` §166.
+Ses deux phrases du jour. Les deux sont livrées — `ARCHITECTURE.md` §168.
 
 **Ce qui reste ouvert, et qui n'est PAS un oubli :** un rapport déjà envoyé ne
 se supprime toujours pas, et c'est une décision, pas une lacune. Son lien vit

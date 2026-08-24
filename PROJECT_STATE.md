@@ -29,7 +29,7 @@ Son client lisait « Connexion au serveur impossible » : le lien portait
 | Le garde-fou confronté à l'état dégradé | **fait** — la suite de la fiche rougit sans adresse déclarée |
 | Le même refus sur le devis et la facture | **NON** — leur adresse est corrigée, mais aucun refus n'y est posé |
 
-Le détail et les partis pris : `ARCHITECTURE.md` §167.
+Le détail et les partis pris : `ARCHITECTURE.md` §169.
 
 ---
 
@@ -48,7 +48,7 @@ disparu »*.
 | Retirer une catégorie d'un geste | **fait** (`retirerFamille`) |
 | Les écrans regardés, pas seulement testés | **fait** — trois défauts corrigés qu'aucune suite ne voyait |
 
-Le détail et les partis pris : `ARCHITECTURE.md` §166.
+Le détail et les partis pris : `ARCHITECTURE.md` §168.
 
 ---
 

@@ -30,7 +30,7 @@ trahissent pas l'adresse (documentée dans `.env.example`), et **les quatre
 copies de ce calcul** — devis parti, devis complet, facture, fiche de chantier —
 n'en font plus qu'une. Le garde-fou a été vu rouge : la suite de la fiche,
 rejouée sans adresse déclarée, tombe exactement là où son client est tombé.
-Détail : `ARCHITECTURE.md` §167.
+Détail : `ARCHITECTURE.md` §169.
 
 
 ### La fiche en cours se supprime, et l'endroit où elle se compose se retrouve
@@ -69,7 +69,7 @@ que personne n'avait demandé.
 la croix d'une famille était le jumeau exact de celle d'une ligne (elle s'écrit
 maintenant « Retirer la famille ») ; la porte du modèle butait sur la barre
 d'onglets — mesuré à 60 px, contre 116 px après. Détail : `ARCHITECTURE.md`
-§166.
+§168.
 
 
 ### Audit de sécurité, lot 2 : ce qu'on dépose dans Atlas
