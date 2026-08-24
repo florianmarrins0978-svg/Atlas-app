@@ -254,6 +254,33 @@ le produit. **Ne pas rouvrir** sans qu'il le redemande.
 
 La planche 92 (`appli/calendrier-aujourdhui.html`) reste : elle raconte le
 chemin, et le prochain qui trouvera deux cases entourées saura pourquoi.
+## `verifier:maquette` est ROUGE sur `main`, et ce n'est pas le mode nuit (23 août 2026)
+
+`scripts/verifier-maquette-message-et-allure.mjs` échoue sur `main` nu, à
+l'identique, depuis le commit `5fa4d25` (« Rendre au patron le message qui part
+à ses clients ») :
+
+```
+• le fond de départ est rgb(250, 249, 245) au lieu du crème d'aujourd'hui
+• le retour ne rend pas le crème : rgb(250, 249, 245)
+```
+
+Il lit `#faf9f5` — la **plage** — là où il attend `#f5f3ee`, le **crème** de la
+page. Les deux se ressemblent à l'œil et ne sont pas la même chose : c'est
+typiquement une planche qui a changé de fond sans que son contrôle suive, ou
+l'inverse.
+
+**Vérifié sur `main` sans aucun lot par-dessus**, dans un arbre séparé : le
+défaut n'appartient à personne d'autre qu'à ce commit-là. Il est noté ici plutôt
+que corrigé au passage — élargir un lot de maquette pour réparer celui d'une
+autre session, c'est mêler deux changements et masquer les erreurs de chacun.
+
+**Conséquence pratique tant que ce n'est pas réglé :** `npm run verifier:maquette`
+s'arrête là et ne joue PAS les contrôles qui suivent dans la chaîne. Ce qui est
+en aval passe pour vérifié sans l'avoir été.
+
+---
+
 ## Mode nuit : ce que le lot du 22 août ne couvre PAS (22 août 2026)
 
 Le défaut qu'il a signalé est réparé (`ARCHITECTURE.md` §160), et deux contrôles
