@@ -344,7 +344,10 @@ export default function DocumentsClient({
               data-atlas={`apercu-${a.clef}`}
               aria-pressed={apercuSur === a.clef}
               onClick={() => setApercuSur(a.clef)}
-              className="min-h-[44px] flex-1 rounded-[6px] text-[13.5px]"
+              // **`rounded-full`, comme tous ses boutons depuis le 12 août 2026.**
+              // `test-boutons-arrondis` l'a attrapé : un rayon de 6 px était resté
+              // ici, et un seul bouton carré dans l'application se voit.
+              className="min-h-[44px] flex-1 rounded-full text-[13.5px]"
               style={
                 apercuSur === a.clef
                   ? { backgroundColor: colors.card, color: colors.ink, boxShadow: `inset 0 0 0 1px ${colors.or}` }
