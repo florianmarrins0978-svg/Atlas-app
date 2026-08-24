@@ -49,6 +49,23 @@ il joue en sa faveur : ce que le lecteur y voit, c'est quelqu'un qui a bridé so
 outil — pas de champ où écrire un nom de maladie, refus de conclure sans
 identification de l'arbre.
 
+**Sa deuxième passe, le 23 août au soir.** Sont partis en plus : la phrase
+« et je ne complète jamais de mémoire », **le nom Atlas partout** — en-tête,
+pieds de page, titre du fichier, texte alternatif des images — et les lignes
+grises « Atlas — annexe à ma demande d'autorisation ». Les bandeaux d'en-tête
+ont disparu avec eux ; il ne reste qu'un numéro de page, à droite. Le document
+ne porte plus de marque : il parle d'« mon application », et c'est tout.
+
+**Et il a fait retourner la demande d'images**, qui était formulée à l'envers :
+*« tu dis que si certaines de leurs photos ne peuvent pas être utilisées, ce
+n'est pas grave, l'appli fonctionne sans — sauf qu'il faut absolument qu'ils
+acceptent qu'on utilise aussi leurs photos »*. La porte de sortie —
+« l'application fonctionne sans aucune image » — est supprimée. À la place, la
+raison de métier : on ne conclut pas sur une description, on compare ; et les
+images libres trouvables ailleurs sont américaines, sur des essences qui ne sont
+pas les nôtres. **Ne pas remettre la formule d'abandon** : elle offrait un refus
+tout prêt sur le point auquel il tient le plus.
+
 **Devant une demande d'aller plus loin dans ce sens, le lui dire plutôt que de
 l'exécuter.** Ce n'est pas une réserve de style : c'est la différence entre une
 demande d'autorisation et une demande obtenue par omission.

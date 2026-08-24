@@ -47,6 +47,13 @@ const nav = await chromium.launch({ executablePath: navigateurPreInstalle() });
 // A4 : l'image du téléphone, posée en pourcentage, grandit d'autant et la page
 // paraît déborder de 466 px alors que le PDF tient en trois pages. 210 mm
 // − 30 mm de marges = 180 mm, soit 680 px à 96 dpi : c'est LÀ qu'on mesure.
+//
+// **Et la borne est 970, pas 1002.** Le 23 août 2026, une page mesurée à 1002
+// pile est passée au vert et le PDF est sorti en QUATRE pages : la pagination
+// de Chromium arrondit, et une page qui touche exactement sa limite bascule.
+// Un contrôle qui accepte le cas limite ne protège pas du cas limite — c'est
+// pour cela qu'il reste 32 px de marge, et que le compte de pages du PDF a le
+// dernier mot juste en dessous.
 const page = await nav.newPage({ viewport: { width: 680, height: 1002 } });
 await page.emulateMedia({ media: "print" });
 await page.goto(pathToFileURL(atelier).href, { waitUntil: "networkidle" });
@@ -61,9 +68,9 @@ if (hauteurs.length !== 3) {
 if (hauteurs.some((h) => h === 0)) {
   throw new Error(`une page mesure 0 px (${hauteurs.join(" · ")}) — la mise en page n'est pas appliquée.`);
 }
-console.log("hauteurs à la largeur d'une A4 :", hauteurs.join(" · "), "(limite 1002)");
-const trop = hauteurs.filter((h) => h > 1002);
-if (trop.length > 0) throw new Error(`débordement : ${trop.join(", ")} px pour 1002 disponibles.`);
+console.log("hauteurs à la largeur d'une A4 :", hauteurs.join(" · "), "(limite 970)");
+const trop = hauteurs.filter((h) => h > 970);
+if (trop.length > 0) throw new Error(`débordement : ${trop.join(", ")} px pour 970 tolérés (1002 disponibles, 32 de marge).`);
 
 await page.pdf({ path: sortie, format: "A4", printBackground: true });
 await nav.close();

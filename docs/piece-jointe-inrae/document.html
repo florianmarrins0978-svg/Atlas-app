@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<title>Atlas — Ce qu'il advient d'une fiche Ephytia</title>
+<title>L'anthracnose du platane dans mon application</title>
 <style>
   @page { size: A4; margin: 18mm 17mm; }
 
@@ -29,18 +29,6 @@
 
   .page { page-break-after: always; }
   .page:last-child { page-break-after: auto; }
-
-  /* ── En-tête ─────────────────────────────────────────────────────────── */
-  .bandeau {
-    display: flex; align-items: baseline; justify-content: space-between;
-    border-bottom: 1px solid var(--ink);
-    padding-bottom: 5px; margin-bottom: 18px;
-  }
-  .marque { font-size: 15pt; letter-spacing: .05em; }
-  .bandeau .quoi {
-    font-family: "Liberation Sans", Arial, sans-serif;
-    font-size: 8pt; color: var(--muted);
-  }
 
   h1 { font-size: 16pt; font-weight: normal; line-height: 1.25; margin: 0 0 10px; }
   h2 { font-size: 12pt; font-weight: bold; margin: 0 0 8px; }
@@ -75,7 +63,7 @@
   .capture-source img { display: block; width: 100%; }
 
   table { width: 100%; border-collapse: collapse; font-size: 10pt; margin-top: 4px; }
-  th, td { text-align: left; vertical-align: top; padding: 8px 12px 8px 0; }
+  th, td { text-align: left; vertical-align: top; padding: 7px 12px 7px 0; }
   th {
     font-family: "Liberation Sans", Arial, sans-serif;
     font-size: 8.5pt; color: var(--muted); font-weight: bold;
@@ -87,16 +75,15 @@
   ul.puces { margin: 0 0 12px; padding-left: 18px; }
   ul.puces li { margin-bottom: 7px; }
 
-  .signature { margin-top: 26px; }
+  .signature { margin-top: 20px; }
   .signature .nom { font-size: 11pt; }
   .signature .qualite { font-size: 9.5pt; color: var(--muted); }
 
   .pied {
-    margin-top: 24px; padding-top: 7px;
-    border-top: 1px solid var(--line);
+    margin-top: 18px;
     font-family: "Liberation Sans", Arial, sans-serif;
     font-size: 8pt; color: var(--muted);
-    display: flex; justify-content: space-between;
+    text-align: right;
   }
 </style>
 </head>
@@ -104,11 +91,6 @@
 
 <!-- ═══════════════════════════ PAGE 1 ═══════════════════════════ -->
 <section class="page">
-
-  <div class="bandeau">
-    <div class="marque">Atlas</div>
-    <div class="quoi">Annexe à ma demande d'autorisation</div>
-  </div>
 
   <h1>L'anthracnose du platane, telle qu'elle apparaît dans mon application</h1>
 
@@ -123,7 +105,7 @@
 
     <div class="colonne-ecran">
       <div class="telephone">
-        <img src="inrae-ecran.png" alt="Écran d'Atlas : anthracnose du platane">
+        <img src="inrae-ecran.png" alt="L'écran de résultat : anthracnose du platane">
       </div>
     </div>
 
@@ -166,7 +148,6 @@
   </div>
 
   <div class="pied">
-    <span>Atlas — annexe à ma demande d'autorisation</span>
     <span>1 / 3</span>
   </div>
 
@@ -174,11 +155,6 @@
 
 <!-- ═══════════════════════════ PAGE 2 ═══════════════════════════ -->
 <section class="page">
-
-  <div class="bandeau">
-    <div class="marque">Atlas</div>
-    <div class="quoi">Annexe à ma demande d'autorisation</div>
-  </div>
 
   <h2>Votre nom apparaît sur l'écran, pas en fin de document</h2>
   <p>
@@ -196,8 +172,7 @@
   <p>
     Je lis la page, je la découpe en champs — hôtes, organes touchés, symptômes,
     gravité, conduite à tenir — et je les saisis un par un. Ce que la page ne dit
-    pas reste vide. Je ne complète jamais avec une autre source sans le noter,
-    et je ne complète jamais de mémoire.
+    pas reste vide. Je ne complète jamais avec une autre source sans le noter.
   </p>
   <p>
     Une fois la fiche enregistrée, le programme la relit et la compare champ par
@@ -224,7 +199,6 @@
   </p>
 
   <div class="pied">
-    <span>Atlas — annexe à ma demande d'autorisation</span>
     <span>2 / 3</span>
   </div>
 
@@ -232,11 +206,6 @@
 
 <!-- ═══════════════════════════ PAGE 3 ═══════════════════════════ -->
 <section class="page">
-
-  <div class="bandeau">
-    <div class="marque">Atlas</div>
-    <div class="quoi">Annexe à ma demande d'autorisation</div>
-  </div>
 
   <h2>Les règles que je me suis fixées</h2>
   <table>
@@ -250,7 +219,7 @@
       </tr>
       <tr>
         <td class="regle">Chaque affirmation qui engage porte sa source</td>
-        <td>La conduite à tenir, la gravité, un traitement, le statut réglementaire. Une bibliographie en fin d'application ne suffirait pas : c'est la source de cette ligne-là qui est enregistrée.</td>
+        <td>La conduite à tenir, la gravité, un traitement, le statut réglementaire. Une bibliographie générale ne suffirait pas : c'est la source de cette ligne-là qui est enregistrée.</td>
       </tr>
       <tr>
         <td class="regle">La certitude ne dépasse pas ce que la source autorise</td>
@@ -271,31 +240,39 @@
     </tbody>
   </table>
 
-  <h2 style="margin-top:26px;">Ce que je vous demande</h2>
+  <h2 style="margin-top:22px;">Ce que je vous demande</h2>
   <ul class="puces">
     <li>
-      M'appuyer sur vos fiches relatives aux forêts et aux arbres d'ornement pour
-      rédiger les miennes, en citant l'INRAE et Ephytia, avec l'adresse de la
-      page et sa date de consultation.
+      M'appuyer sur vos fiches relatives aux forêts et aux arbres d'ornement, en
+      citant l'INRAE et Ephytia, avec l'adresse de la page et sa date de
+      consultation.
     </li>
     <li>
       Reprendre de courts extraits lorsque la formulation exacte importe, par
       exemple un critère qui distingue deux problèmes voisins.
     </li>
     <li>
-      Utiliser certaines de vos photographies, à titre illustratif et avec leur
-      crédit. J'ai vu que plusieurs portent un crédit nominatif. Si l'accord de
-      chaque auteur est nécessaire, ce point peut être écarté sans conséquence :
-      l'application fonctionne sans aucune image.
+      Utiliser certaines de vos photographies, avec leur crédit. C'est le point
+      auquel je tiens le plus, et je m'en explique ci-dessous. J'ai vu que
+      plusieurs portent un crédit nominatif : si un accord doit être obtenu
+      auprès des auteurs, dites-moi lesquels et je ferai la démarche.
     </li>
   </ul>
 
   <p>
-    Je préfère préciser le contexte, puisqu'il compte pour votre réponse. Il
-    s'agit d'un outil professionnel, que je souhaite diffuser auprès d'autres
-    artisans, donc à usage éventuellement commercial. Je vise quelques dizaines
-    de fiches aujourd'hui, et peut-être quelques centaines à terme. Si une
-    convention ou une mention particulière est nécessaire, je m'y conformerai.
+    J'insiste sur ce dernier point. Sur un chantier, on ne conclut pas sur une
+    description : on compare. Voir la nécrose de la fiche, sur le même organe et
+    au même stade, est ce qui permet d'écarter une confusion. Les images libres
+    trouvables ailleurs sont rares et le plus souvent américaines, sur des
+    essences qui ne sont pas les nôtres ; les vôtres sont prises en France, sur
+    les arbres que nous rencontrons.
+  </p>
+
+  <p>
+    Un mot du contexte, puisqu'il compte pour votre réponse : outil
+    professionnel, diffusé auprès d'autres artisans, donc à usage éventuellement
+    commercial ; quelques dizaines de fiches aujourd'hui, peut-être quelques
+    centaines à terme. Si une convention est nécessaire, je m'y conformerai.
   </p>
 
   <div class="signature">
@@ -304,7 +281,6 @@
   </div>
 
   <div class="pied">
-    <span>Atlas — annexe à ma demande d'autorisation</span>
     <span>3 / 3</span>
   </div>
 
