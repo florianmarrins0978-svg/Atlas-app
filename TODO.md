@@ -2928,6 +2928,13 @@ pas une réparation annoncée : c'est un constat, et il n'a pas été corrigé.
 | `test-facture-au-client-e2e` | « L'écran laisse croire que la facture est partie » | sur la branche du lot de l'allure, **deux fois sur trois** |
 | `test-tva-au-paiement-e2e` | `waitForFunction: Timeout 15000ms exceeded` sur l'acompte | sur **`main`**, sans aucun changement |
 
+**Et ATTENTION à ne pas confondre deux rouges dans cette même suite.** Le
+24 août au soir, elle a rougi une seconde fois — sur un autre cas, et pour une
+tout autre raison : elle **exigeait la phrase grise** que le patron venait de
+faire retirer de l'écran de la facture. Ce rouge-là n'avait rien d'instable, et
+il a été corrigé en visant plus profond (`CLAUDE.md` §5 bis). Le premier, lui,
+tient toujours.
+
 **Les deux sont VERTES jouées seules**, et c'est la question qui tranche
 (§ ci-dessous). Surtout : **ce ne sont pas les mêmes** d'une branche à l'autre.
 Un lot qui ne touche ni la facture ni la TVA ne peut pas faire tomber l'une

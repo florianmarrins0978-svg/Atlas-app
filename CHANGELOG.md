@@ -82,6 +82,35 @@ et laisse le jeton, le cookie et les rappels intacts (`ARCHITECTURE.md` §163).
 chemin vers le mot de passe, et contre un échec de visage qui accusait le mot de
 passe. **Rien n'est codé dans `src/`.**
 
+### L'écran de la facture arrêtée : ses sept corrections
+
+*Capture à l'appui, le 24 août 2026 au soir.*
+
+| Ce qu'il a demandé | Ce qui a changé |
+|---|---|
+| *« la facture en PDF, enlève la petite flèche, mais un petit plus pour qu'on comprenne que c'est cliquable »* | la flèche part, le lien est souligné |
+| *« Total TTC et Télécharger, mets-les en noir, pas gris »* | fait |
+| *« tout ce qui est en gris sous facture F2026, supprime »* | le paragraphe sur l'avoir et le relevé de TVA est retiré |
+| *« pareil sous ouvrir le SMS tout prêt »* | le destinataire et le lien en clair sont retirés |
+| *« corrige en envoyer par SMS, retire la flèche »* | fait |
+| *« corrige envoyer par e-mail en gras doré »* | or, gras, 15 px — la même allure que sur l'écran du devis |
+| *« colle-le sous envoyer par SMS »* | fait |
+
+**Et le lien doré ENVOIE désormais, il ne bascule plus.** C'est la condition
+pour que son libellé soit vrai : appeler un lien « Envoyer par e-mail » alors
+qu'il se contente d'intervertir deux boutons, c'est un écran qui ment — il
+appuie, rien ne s'ouvre, et il appuie encore. Quand le client n'a pas d'adresse,
+il bascule encore, et c'est le seul cas où il le doit : c'est ainsi que le champ
+de saisie apparaît.
+
+**Ce qui est perdu, et qu'il faut savoir avant de le rétablir :** il ne voit
+plus à qui le message part avant d'ouvrir sa messagerie. Sa messagerie le lui
+montre juste après, et rien n'est envoyé par Atlas. C'est son arbitrage.
+
+`test-facture-au-client-e2e` ne cherche plus le bouton par son libellé mais par
+son repère : un contrôle accroché au texte serait mort sur une demande exaucée
+(`CLAUDE.md` §5 bis).
+
 ### L'allure de ses documents : typographie, fond, accent, logo
 
 *Sa demande du 23 août : « un endroit dédié à la modification de son devis —

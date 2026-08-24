@@ -134,10 +134,28 @@ async function main() {
       !/figure au relevé de TVA collectée/.test(ecran),
       "l'écran promet encore que la facture est au relevé"
     );
-    assert.ok(
-      /entrera au relevé de TVA le jour où votre client vous paiera/.test(ecran),
-      `l'écran ne dit pas ce qui manque. Lu : « ${ecran.slice(0, 400)} »`
-    );
+    // **La seconde assertion exigeait une PHRASE, et il l'a fait retirer.**
+    // Le 24 août 2026, capture à l'appui : *« tout ce qui est en gris sous
+    // facture F2026, supprime »*. Elle réclamait « entrera au relevé de TVA le
+    // jour où votre client vous paiera » — un mécanisme, exactement ce qu'il ne
+    // veut plus lire. Un contrôle qui réclame ce qu'il a fait enlever rend son
+    // écran impossible à changer (`CLAUDE.md` §5 bis) : on vise plus profond.
+    //
+    // Ce que la règle dit vraiment, et qui ne dépend d'aucun libellé : **rien,
+    // sur cet écran, ne doit affirmer que la facture est au relevé**. Elle n'y
+    // est pas tant qu'elle n'est pas payée, et le cas suivant le vérifie en
+    // base, sur le total collecté lui-même.
+    for (const promesse of [
+      /figure au relevé/i,
+      /est au relevé/i,
+      /entre dans votre TVA/i,
+      /portée au relevé/i,
+    ]) {
+      assert.ok(
+        !promesse.test(ecran),
+        `l'écran promet que la facture est au relevé (« ${promesse} »). Lu : « ${ecran.slice(0, 400)} »`
+      );
+    }
   });
 
   await test("LA FACTURE ATTEND, ET LE RELEVÉ NE BOUGE PAS", async () => {
