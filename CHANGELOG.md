@@ -576,6 +576,59 @@ faute que le délai fixe, dans une robe plus convaincante.
 
 ---
 
+## 2026-08-25
+
+### Le banc RÉPARE une dépendance manquante, au lieu de retenter la même construction
+
+**Sa plainte : « l'application est en mode lent, et elle crash ».** Sa fiche
+d'espace donnait la cause au mot près, sans qu'on ait à supposer quoi que ce
+soit (`CLAUDE.md` §1 bis) :
+
+```
+Error: Cannot find module
+'/workspaces/Atlas-app/node_modules/@swc/helpers/cjs/_interop_require_default.cjs'
+```
+
+**Une cause, ses deux symptômes.** Un paquet absent de ses `node_modules` fait
+tomber la construction : le banc reste en mode développement, où chaque écran se
+compile à l'ouverture — c'est la lenteur. Et le même paquet manquant fait tomber
+les écrans à l'exécution — c'est le crash. Il ne signalait pas deux pannes.
+
+**Le défaut réel n'était pas l'échec, c'était l'absence de réparation.** Le
+veilleur retentait la MÊME construction, trois fois à dix minutes puis toutes
+les demi-heures, indéfiniment. Contre un fichier absent, insister ne répare
+rien : l'espace pouvait rester lent une nuit entière sans que personne y touche.
+
+**C'était la DEUXIÈME fois.** Le 22 août, `Cannot find module './detect-typo'`
+dans `node_modules/next` avait éteint son espace toute une soirée, et il avait
+fallu lui faire taper `rm -rf node_modules && npm ci` depuis son téléphone. Un
+défaut qui revient et qu'on répare deux fois à la main n'est pas réparé.
+
+**Désormais** : quand la construction tombe sur un module absent **sous
+`node_modules`**, le banc réinstalle les dépendances et reconstruit — une fois.
+Si elle retombe, il s'arrête et le témoin d'échec garde les deux sorties.
+
+**`npm install`, jamais `npm ci`**, et c'est délibéré : `ci` efface
+`node_modules` avant de réinstaller, or le serveur de développement TOURNE
+pendant ce temps et sert le patron. Lui retirer le sol coûterait sa session pour
+réparer une lenteur. `install` complète en place, ce qui suffit à un paquet
+absent — le cas que sa fiche montre.
+
+**Le contrôle joue la reconnaissance EXTRAITE du banc**, jamais une copie : une
+seconde expression régulière finirait par éprouver une règle que le produit
+n'applique plus. Il la confronte aux **deux pannes réelles**, recopiées de ses
+fiches, et à quatre cas où réinstaller serait une perte de temps — une erreur de
+types, un import cassé du dépôt, un fichier du dépôt absent, une construction
+réussie.
+
+**Deux trous trouvés dans ce contrôle avant de le livrer**, en le confrontant aux
+états dégradés : renommer la constante du banc le faisait **mourir sur une pile
+d'appels** au lieu d'accuser, et retirer la clause `node_modules` ne faisait
+rougir personne — elle n'était donc défendue par rien. Les deux sont comblés, et
+les trois sabotages rougissent maintenant en nommant ce qui manque.
+
+---
+
 ## 2026-08-24
 
 ### Le lien que reçoit le client partait vers `localhost` — deux causes, deux correctifs
