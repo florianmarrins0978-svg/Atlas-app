@@ -137,6 +137,48 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     // session-ctx.ts), jamais fait confiance depuis le jeton lui-même.
     async jwt({ token, user }) {
       if (user?.id) token.utilisateurId = user.id;
+
+      /**
+       * **CE QUI IDENTIFIE UNE SESSION, ET DEPUIS QUAND ELLE EXISTE.**
+       *
+       * ───────────────────────────────────────────────────────────────────────
+       * **Pourquoi Atlas doit les poser lui-même — mesuré, pas supposé.**
+       *
+       * `@auth/core` réémet le jeton (`lib/actions/session.js:46`) et, à chaque
+       * réémission :
+       *
+       *     .setIssuedAt()                    // ← iat remis à maintenant
+       *     .setJti(crypto.randomUUID())      // ← jti neuf
+       *
+       * **Ni `iat` ni `jti` ne survit donc à une réémission**
+       * (`scripts/sonde-jeton-session.mts` le montre sur la version installée).
+       * Aucun des deux ne peut porter « une session logique ».
+       *
+       * ───────────────────────────────────────────────────────────────────────
+       * **LE DÉFAUT QUE CELA RÉPARE, et il était exploitable.**
+       *
+       * « Me déconnecter partout » avance `users.jetons_valides_depuis`, et
+       * `getCurrentCtx` refusait les jetons dont l'`iat` précédait la coupure.
+       * Mais `GET /api/auth/session` est une route publique qui réémet le jeton
+       * sans consulter la coupure : un cookie volé s'y redonnait un `iat` neuf,
+       * postérieur à la coupure, et **rentrait**. Reproduit dans un navigateur
+       * le 25 août 2026 (`scripts/sonde-coupure-contournable.mts`).
+       *
+       * `connexionLe` est posé **une seule fois**, à la connexion, et recopié
+       * tel quel ensuite — une réémission ne l'avance plus. La coupure devient
+       * insensible au contournement, **sans toucher à la route d'Auth.js ni au
+       * middleware**, qui ne peuvent pas lire la base (`session-ctx.ts` le fait
+       * côté Node, et c'est délibéré).
+       *
+       * `sessionId` sert la ré-authentification récente de M11 : une preuve lui
+       * est attachée, donc une autre session — qui porte un autre identifiant —
+       * n'en profite jamais. Il vit dans le JWT chiffré : le navigateur ne peut
+       * ni le lire ni le choisir.
+       */
+      if (user?.id) {
+        token.connexionLe = Math.floor(Date.now() / 1000);
+        token.sessionId = crypto.randomUUID();
+      }
       return token;
     },
   },

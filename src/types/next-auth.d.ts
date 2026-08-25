@@ -14,6 +14,19 @@ declare module "next-auth" {
        * déconnecterait tout le monde au déploiement.
        */
       emisLe?: number;
+      /**
+       * L'instant de la CONNEXION, en secondes — posé une fois, jamais avancé.
+       *
+       * C'est lui que « me déconnecter partout » doit comparer. `emisLe` est
+       * remis à l'instant présent à chaque réémission du jeton par Auth.js, et
+       * la coupure se contournait donc par `GET /api/auth/session`.
+       */
+      connexionLe?: number;
+      /**
+       * Ce qui identifie UNE session — posé par Atlas, car ni `jti` ni `iat`
+       * ne survit à une réémission. Porte la ré-authentification récente.
+       */
+      sessionId?: string;
     } & DefaultSession["user"];
   }
 }
@@ -21,5 +34,9 @@ declare module "next-auth" {
 declare module "next-auth/jwt" {
   interface JWT {
     utilisateurId?: string;
+    /** Posé une fois à la connexion, recopié aux réémissions. */
+    connexionLe?: number;
+    /** Idem — ce qui identifie une session pour la ré-authentification. */
+    sessionId?: string;
   }
 }

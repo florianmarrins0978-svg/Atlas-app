@@ -29,16 +29,19 @@
 // Cette sonde y répond par un parcours réel, sans rien supposer.
 //
 // ─────────────────────────────────────────────────────────────────────────────
-// **RÉPONSE, LE 25 AOÛT 2026 : OUI, ELLE SE CONTOURNE.** Reproduit dans un vrai
-// navigateur, sur le parcours d'un attaquant.
+// **ELLE SE CONTOURNAIT, LE 25 AOÛT 2026 AU MATIN — reproduit au navigateur.**
 //
-// **C'est une SONDE et non une suite de la batterie** (`.mts`, hors de la
-// découverte automatique) : elle constate un défaut ouvert. L'inscrire à la
-// batterie la rendrait rouge en permanence, et un rouge permanent s'apprend à
-// être ignoré. Elle deviendra `test-…-e2e.ts` le jour où le défaut sera fermé —
-// elle sera alors le contrôle qui l'empêche de revenir.
+//     → /api/auth/session a répondu 200 (sans avoir visité d'écran)
+//     ✗✗ LA COUPURE SE CONTOURNE : la session refusée est revenue.
 //
-//     npx tsx scripts/sonde-coupure-contournable.mts   (serveur déjà démarré)
+// **Le correctif ne touche ni la route d'Auth.js ni le middleware** — aucun des
+// deux ne peut lire la base. Le jeton porte désormais `connexionLe`, posé une
+// seule fois à la connexion et recopié aux réémissions, et c'est LUI que la
+// coupure compare (`src/auth.ts`, `src/server/session-ctx.ts`). Réémettre
+// n'avance plus rien.
+//
+// Cette suite est le contrôle qui empêche le défaut de revenir : elle a été vue
+// ROUGE sur le code d'avant, sur ce parcours exact.
 
 import assert from "node:assert/strict";
 import { Pool } from "pg";

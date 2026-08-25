@@ -9,6 +9,40 @@ Format : le plus récent en tête.
 
 ## 2026-08-25
 
+### « Me déconnecter partout » se contournait — reproduit, puis fermé
+
+**Un cookie volé, pourtant coupé, se redonnait un jeton neuf et rentrait.**
+`GET /api/auth/session` est une route publique d'Auth.js : elle décode le
+cookie, rejoue les rappels et **repose un cookie neuf** — sans jamais consulter
+la coupure. Or `@auth/core` remet `iat` à l'instant présent à chaque réémission,
+et c'est `iat` que la coupure comparait.
+
+Le jeton porte désormais `connexionLe`, posé **une seule fois** à la connexion et
+recopié aux réémissions. Réémettre n'avance plus rien. **Ni la route d'Auth.js
+ni le middleware ne sont touchés** — aucun des deux ne peut lire la base, et
+c'est délibéré.
+
+**Ce que la recherche a d'abord rendu, et qui était faux.** Une première sonde
+visitait un écran protégé avant d'essayer le contournement. Cet écran renvoie
+vers la route qui **efface le cookie** : elle mesurait un navigateur déjà vidé et
+annonçait « la coupure tient » — sans avoir joué l'attaque. Un attaquant ne
+visite aucun écran. *Le contrôle qui mesure zéro, dans une robe neuve.*
+
+### Ni `jti` ni `iat` n'identifie une session — mesuré
+
+`@auth/core` fait `.setIssuedAt()` **et** `.setJti(crypto.randomUUID())` à chaque
+réémission : aucun des deux ne survit. Atlas pose donc son propre `sessionId`,
+dans le JWT chiffré — le navigateur ne peut ni le lire ni le choisir. Il portera
+la ré-authentification récente de M11.
+
+### Une clé Face ID survit à tout — CONSTATÉ, PAS ENCORE CORRIGÉ
+
+`deconnecterPartout` et le changement de mot de passe ne touchent **pas**
+`cles_appareil`, et `ouvrirAvecCle` ne lit **jamais** la coupure. Une clé
+enregistrée depuis une session volée ouvre donc encore, après que le patron a
+tout changé. Consigné dans `TODO.md` ; le correctif suit.
+
+
 ### Le condensat du mot de passe sort de portée du rôle applicatif (lot 3, M9)
 
 **Une seule requête métier fautive suffisait à sortir les mots de passe de tous

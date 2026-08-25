@@ -69,7 +69,26 @@ export async function getCurrentCtx(): Promise<Ctx> {
    * déconnecté tout le monde au déploiement — un geste que personne n'a demandé.
    */
   const coupure = await coupureDesJetons(utilisateurId);
-  if (coupure && typeof session.user.emisLe === "number" && session.user.emisLe * 1000 < coupure.getTime()) {
+  /**
+   * **ON COMPARE L'INSTANT DE LA CONNEXION, PLUS CELUI DE LA SIGNATURE.**
+   *
+   * `emisLe` (l'`iat` du JWT) est **remis à l'instant présent** à chaque
+   * réémission par `@auth/core`. Or `GET /api/auth/session` est une route
+   * publique qui réémet le jeton sans consulter cette coupure : un cookie
+   * pourtant coupé s'y redonnait un `iat` neuf et **rentrait**. Reproduit dans
+   * un navigateur le 25 août 2026 (`scripts/sonde-coupure-contournable.mts`).
+   *
+   * `connexionLe` est posé une seule fois, à la connexion (`src/auth.ts`), et
+   * recopié aux réémissions : le contournement ne l'avance pas.
+   *
+   * **Le repli sur `emisLe` est délibéré** : un jeton signé avant cette version
+   * ne porte pas `connexionLe`, et le refuser d'office déconnecterait tout le
+   * monde au déploiement — un geste que personne n'a demandé. Ce repli s'éteint
+   * de lui-même quand les anciens jetons expirent.
+   */
+  const instantSession =
+    typeof session.user.connexionLe === "number" ? session.user.connexionLe : session.user.emisLe;
+  if (coupure && typeof instantSession === "number" && instantSession * 1000 < coupure.getTime()) {
     // La même sortie que pour un compte disparu : la route efface les cookies
     // puis renvoie à la connexion. Lever ici afficherait un écran d'erreur, en
     // laissant le cookie mort dans le navigateur — c'est le piège du 10 août
