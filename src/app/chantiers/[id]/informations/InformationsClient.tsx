@@ -219,12 +219,17 @@ export default function InformationsClient({
               dernier élément finit dessous une fois la page déroulée à fond. Une
               pile de notifications avait déjà poussé du contenu hors de l'écran
               — trouvé sur une capture, pas par un test. */}
+          {/* **« Écrire le devis », en or gras, sans flèche** — sa demande du
+              25 août 2026, une fois qu'il a su que le bouton du dessus ouvre
+              l'écran Prix et non le devis. Même allure que la seconde voie de
+              l'écran de la facture : c'est le même geste, la sortie de secours
+              qui saute une étape. */}
           <a
             href={`/chantiers/${chantierId}/devis-complet`}
-            className={`block pb-10 text-center ${libelleCaps}`}
-            style={{ color: colors.rust }}
+            className="block pb-10 text-center text-[15px] font-bold"
+            style={{ color: colors.or }}
           >
-            Ou écrire le devis moi-même →
+            Écrire le devis
           </a>
         </div>
 
