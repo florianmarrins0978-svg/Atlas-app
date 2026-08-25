@@ -212,6 +212,24 @@ async function main() {
     );
     await porte.first().click();
     await page.waitForURL(/\/clients\/[0-9a-f-]{36}/, { timeout: 15_000 });
+    /**
+     * **L'adresse change avant que la fiche soit là.** `waitForURL` rend la main
+     * dès que l'URL correspond ; le corps de la page porte encore
+     * « Chargement… » (`src/app/loading.tsx`).
+     *
+     * Sous la batterie complète, le cas suivant lisait donc cet écran d'attente
+     * et annonçait « le nom du client manque » — un contrôle qui accuse à tort
+     * coûte plus cher que pas de contrôle (`CLAUDE.md` §5), et celui-ci ne
+     * mesurait rien du tout. Constaté le 25 août 2026.
+     *
+     * L'attente est bornée : si la fiche ne vient jamais, les assertions qui
+     * suivent rougissent exactement comme avant.
+     */
+    await page
+      .getByText("Chargement…")
+      .first()
+      .waitFor({ state: "hidden", timeout: 30_000 })
+      .catch(() => undefined);
   });
 
   await cas("elle porte son nom, et les informations sous le nom", async () => {
@@ -570,6 +588,12 @@ async function main() {
   await cas("un nom de la liste ouvre sa fiche", async () => {
     await page.getByRole("link", { name: new RegExp(nomClient.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")) }).click();
     await page.waitForURL(/\/clients\/[0-9a-f-]{36}/, { timeout: 15_000 });
+    // Même piège qu'au premier cas : l'adresse change avant la fiche.
+    await page
+      .getByText("Chargement…")
+      .first()
+      .waitFor({ state: "hidden", timeout: 30_000 })
+      .catch(() => undefined);
     assert.match(await page.locator("body").innerText(), new RegExp(nomClient.split(" ")[0]));
   });
 

@@ -54,6 +54,18 @@ avant.
 *Le second cas portait déjà, en commentaire, le même diagnostic daté du 12 août
 2026. Une cause connue et laissée en place se repaie.*
 
+### Et une troisième lisait un écran qui affichait encore « Chargement… »
+
+Au tour d'après, `test-fiche-client-e2e` : `waitForURL` rend la main dès que
+l'adresse correspond, alors que le corps de la page porte encore l'écran
+d'attente. Le contrôle lisait celui-ci et annonçait « le nom du client manque ».
+
+**Il ne mesurait rien du tout** — la faute du 15 août, dans une autre robe. Les
+deux endroits du fichier attendent maintenant que l'écran d'attente s'efface.
+
+*Cherché ailleurs plutôt que corrigé sur place : les autres `waitForURL` du
+dépôt lisent par des localisateurs, qui attendent d'eux-mêmes.*
+
 ## 2026-08-24
 
 ### Lot 2B : une image ne se range plus jamais sans être nettoyée
