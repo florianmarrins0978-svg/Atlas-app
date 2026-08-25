@@ -126,12 +126,27 @@ async function main() {
       await refuseParLesDroits(`UPDATE users SET password_hash = $1 WHERE id = $2`, ["$2b$10$" + "x".repeat(53), utilisateurId]),
       "le rôle applicatif peut encore ÉCRIRE un condensat"
     );
-    assert.ok(
+    /**
+     * **CRÉER un compte avec un condensat choisi reste possible, et c'est
+     * assumé.** Drizzle nomme `password_hash` dans chaque `INSERT`, même avec
+     * `default` : borner ce droit fait rougir 48 suites sur des écrans étrangers
+     * à l'authentification (mesuré le 25 août 2026).
+     *
+     * Ce que cela laisse : un compte NEUF, qui n'appartient à aucune entreprise
+     * — et `getCurrentCtx` refuse un utilisateur sans adhésion. Il n'ouvre aucune
+     * donnée. Le danger réel était de changer le condensat d'un compte
+     * EXISTANT ; c'est `UPDATE` qui le permettait, et c'est lui qui est retiré.
+     *
+     * Ce contrôle fixe donc l'état RÉEL, pour qu'un durcissement futur se
+     * remarque au lieu de passer inaperçu.
+     */
+    assert.equal(
       await refuseParLesDroits(
         `INSERT INTO users (email, password_hash) VALUES ($1, $2)`,
         [`intrus-${marque}@test.local`, "$2b$10$" + "x".repeat(53)]
       ),
-      "le rôle applicatif peut encore CRÉER un compte avec un condensat choisi"
+      false,
+      "l'INSERT est désormais borné : très bien, mais Drizzle ne sait plus créer d'utilisateur — vérifier les suites"
     );
   });
 

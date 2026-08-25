@@ -158,13 +158,31 @@ GRANT EXECUTE ON FUNCTION public.changer_mot_de_passe(uuid, text, text) TO atlas
 -- pourrait poser un condensat connu sur un compte et entrer avec — sans jamais
 -- avoir lu quoi que ce soit.
 --
--- `INSERT` est borné pour la même raison : créer un utilisateur avec un
--- condensat choisi reviendrait au même.
-REVOKE SELECT, INSERT, UPDATE ON public.users FROM atlas_app;
+-- **`INSERT` RESTE AU NIVEAU DE LA TABLE, et ce n'est pas un oubli.** Le borner
+-- a été essayé, et il casse tout : Drizzle **nomme** chaque colonne dans ses
+-- `INSERT`, `password_hash` comprise, même quand la valeur est `default` —
+--
+--     insert into "users" ("id","email","nom",…,"password_hash",…) values (default, $1, …)
+--
+-- Or PostgreSQL exige le droit sur toute colonne **citée**, valeur ou pas. La
+-- version bornée a fait rougir 48 suites d'un coup, sur des écrans qui n'ont
+-- rien à voir avec l'authentification (25 août 2026).
+--
+-- **Ce que cela laisse ouvert, dit franchement, et pourquoi c'est acceptable :**
+-- une injection capable d'exécuter une instruction entière pourrait CRÉER un
+-- utilisateur avec un condensat qu'elle connaît. Elle n'obtiendrait rien pour
+-- autant — ce compte neuf n'appartient à aucune entreprise, et `getCurrentCtx`
+-- refuse explicitement un utilisateur sans adhésion (`test-auth-autorisation`).
+-- Il lui faudrait une seconde écriture dans `membres_entreprise`, protégée par
+-- `FORCE ROW LEVEL SECURITY`.
+--
+-- **Le danger réel était ailleurs, et il est fermé** : changer le condensat d'un
+-- compte EXISTANT — celui du patron — sans rien avoir à lire. C'est `UPDATE` qui
+-- le permettait, et c'est `UPDATE` qui est retiré.
+REVOKE SELECT, UPDATE ON public.users FROM atlas_app;
+GRANT INSERT ON public.users TO atlas_app;
 
 GRANT SELECT (id, email, nom, email_verified, image, jetons_valides_depuis, charte, created_at, updated_at)
-  ON public.users TO atlas_app;
-GRANT INSERT (id, email, nom, email_verified, image, jetons_valides_depuis, charte, created_at, updated_at)
   ON public.users TO atlas_app;
 GRANT UPDATE (email, nom, email_verified, image, jetons_valides_depuis, charte, updated_at)
   ON public.users TO atlas_app;
