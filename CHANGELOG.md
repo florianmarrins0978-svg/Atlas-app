@@ -9,6 +9,102 @@ Format : le plus récent en tête.
 
 ## 2026-08-25
 
+### Le lot 2B est au vert — et sept contrôles fragiles avec lui
+
+`verifier:avant-livraison` : **223/223** suites base, **110/110** suites
+navigateur, connexion réelle dans un navigateur derrière une origine étrangère.
+Verdict complet dans `docs/lot-2b-securite-verdict.md`.
+
+**Il a fallu cinq passages, et aucun rouge ne venait du lot.** Le détail des sept
+contrôles réparés est ci-dessous ; ils ont un point commun, et c'est le seul qui
+mérite d'être retenu : **ils attendaient un délai plutôt qu'un signal**, ou ils
+guettaient une formulation plutôt qu'une règle. Aucun n'a été affaibli — les
+assertions défendent la même chose, elles regardent seulement au bon moment.
+
+
+### Deux suites de dates rougissaient un jour sur trente, sur un écran juste
+
+La batterie du lot 2B a franchi minuit, et deux suites navigateur sont tombées
+d'un coup — **sans qu'une ligne du lot ne touche un calendrier**. Le 25 août est
+le premier jour où :
+
+| | |
+|---|---|
+| `test-date-lointaine-e2e` | la date à six mois tombe un **1er**. L'écran écrit « 1er mars » — le seul ordinal du français —, la suite cherchait « 1 mars » |
+| `test-deux-dates-calendrier-e2e` | il ne reste que **deux** jours ouvrés au mois affiché, alors que la suite en exige trois |
+
+**C'est le pire des rouges : celui qui accuse un code juste.** Une suite qui
+tombe un jour sur trente s'apprend à être ignorée, et l'on perd le garde-fou
+sans s'en apercevoir.
+
+La première **redisait la règle d'écriture** au lieu de l'employer — exactement
+la duplication que `CLAUDE.md` §3 interdit. Elle passe désormais par
+`jourLisible`, la fonction qui rend la page du client : ordinal compris, elle
+suit la règle au lieu de la deviner.
+
+La seconde supposait que le mois affiché offrait toujours trois jours. Elle fait
+maintenant le geste du patron : quand son mois est plein, elle passe au suivant.
+
+*Établi avant de corriger : la date du jour suffit à reproduire les deux
+échecs, et le diff du lot ne touche aucun fichier de calendrier.*
+
+### Deux autres suites mesuraient la vitesse de la machine, pas la règle
+
+Au tour suivant de la même batterie, deux suites **différentes** sont tombées —
+et vertes dans la foulée jouées seules (7/7). Aucune ne touche une image ni un
+corps de requête.
+
+| | Ce qu'elle attendait |
+|---|---|
+| `test-fiche-chantier-e2e` | `waitForTimeout(900)` puis lecture en base. Sous la batterie, l'enregistrement dépasse ce délai : le contrôle accusait le produit de perdre le temps saisi |
+| `test-facture-au-client-e2e` | le corps de la page était lu entre les deux mentions : « arrêtée » était là, « ne l'a pas encore reçue » pas encore |
+
+Les deux attendent désormais **le signal réel** — la valeur en base, la mention à
+l'écran — au lieu d'un délai fixe. Les attentes sont bornées et les assertions
+inchangées : si le signal ne vient jamais, elles rougissent exactement comme
+avant.
+
+*Le second cas portait déjà, en commentaire, le même diagnostic daté du 12 août
+2026. Une cause connue et laissée en place se repaie.*
+
+### Et une troisième lisait un écran qui affichait encore « Chargement… »
+
+Au tour d'après, `test-fiche-client-e2e` : `waitForURL` rend la main dès que
+l'adresse correspond, alors que le corps de la page porte encore l'écran
+d'attente. Le contrôle lisait celui-ci et annonçait « le nom du client manque ».
+
+**Il ne mesurait rien du tout** — la faute du 15 août, dans une autre robe. Les
+deux endroits du fichier attendent maintenant que l'écran d'attente s'efface.
+
+*Cherché ailleurs plutôt que corrigé sur place : les autres `waitForURL` du
+dépôt lisent par des localisateurs, qui attendent d'eux-mêmes.*
+
+### Un contrôle guettait un état qui ne dure qu'un instant
+
+`test-facture-au-client-e2e` exigeait la phrase « Votre client ne l'a pas encore
+reçue ». Or `TransmettreLaFacture` a **deux visages** :
+
+| Lien du client pas encore préparé | Lien préparé |
+|---|---|
+| « Votre client ne l'a pas encore reçue. » | « … — c'est vous qui l'envoyez. » |
+
+Depuis l'appui unique du 22 août, le même geste arrête la facture, prépare le
+lien, ouvre la messagerie, puis rafraîchit l'écran : **on passe du premier visage
+au second pendant que la suite regarde.** Le contrôle n'attendait que le premier,
+et tombait selon la vitesse de la machine.
+
+**Les deux phrases disent la même chose, et c'est elle la règle** : la facture est
+arrêtée, et c'est encore à lui de l'envoyer. Le contrôle vise désormais la règle,
+pas l'une de ses deux formulations — un écran qui laisserait croire la facture
+partie ne porte ni l'une ni l'autre, et il rougit.
+
+### Et « 0 == 1 » n'accusait personne
+
+`test-ia-02-e2e` écrivait la prestation puis attendait trois cents millisecondes
+avant de vérifier qu'elle avait survécu à l'assistant. Sous la batterie, l'action
+serveur dépasse ce délai : l'assistant était accusé d'un effacement qui n'avait
+pas eu lieu. Elle attend maintenant que la requête soit partie — et son message
+nomme le coupable, au lieu d'un « 0 == 1 » qui envoyait chercher partout.
 ### L'accueil vide ne dit plus qu'il est vide
 
 **Sa demande, capture à l'appui :** *« supprime la phrase "aucun chantier pour
@@ -33,6 +129,51 @@ grossier, et c'est plus honnête qu'un vert qui ne prouve rien
 ---
 
 ## 2026-08-24
+
+### Lot 2B : une image ne se range plus jamais sans être nettoyée
+
+**Le revirement du jour, et il est assumé.** Ce dépôt écrivait le matin même :
+*« un échec de nettoyage ne refuse JAMAIS la photo »*. La règle venait d'un vrai
+principe — un outil qui refuse la photo qu'on vient de prendre est pire que le
+risque qu'il évite — et **elle protégeait le geste de l'artisan en sacrifiant la
+donnée de son client** : un fichier qu'on ne savait pas lire était rangé avec ses
+coordonnées GPS.
+
+Désormais : **taille → format → nettoyage → refus si le nettoyage échoue**, dans
+une porte unique (`src/server/photo-entrante.ts`) que les cinq chemins d'image
+traversent. Rien n'en sort que des octets nettoyés.
+
+**Le HEIC est refusé**, et le refus donne le geste : *Réglages › Appareil photo ›
+Formats › « Le plus compatible »*. Convertir côté serveur aurait demandé un
+décodeur natif analysant un fichier hostile — plus de surface d'attaque que ce
+qu'on referme.
+
+**Ce qui était le plus exposé n'était dans aucun brief : le logo d'entreprise.**
+Une enseigne photographiée au téléphone porte les coordonnées GPS de l'endroit,
+et ce fichier est **embarqué dans chaque devis et chaque facture** envoyés aux
+clients. Il n'était nettoyé nulle part.
+
+**Un bénéfice non cherché :** le nettoyeur vérifie la signature du fichier.
+Refuser sur échec refuse donc aussi tout fichier maquillé — un SVG annoncé
+`image/jpeg` ne passe plus.
+
+### Lot 2B : le corps d'une requête est borné PENDANT sa lecture
+
+Le correctif du matin refusait sur `content-length` puis appelait
+`requete.formData()`. **C'était un premier rempart et pas une preuve** : cet
+en-tête est écrit par le client. Le sous-déclarer, ou envoyer en
+`Transfer-Encoding: chunked` qui n'en porte aucun, laissait le parseur avaler ce
+qu'on voulait.
+
+Vérifié dans la documentation de Next plutôt que supposé : `bodySizeLimit` ne
+couvre **que les actions serveur**, et **aucune limite native n'existe** pour les
+*route handlers*. Le corps traverse donc un compteur qui **casse le flux** au-delà
+de la borne (`src/server/corps-borne.ts`) — cassé, pas tronqué : un multipart
+amputé se lirait comme un fichier valide mais incomplet.
+
+Une suite compte les octets qui sortent réellement du flux borné quand on lui
+donne un corps dix fois trop gros.
+
 
 ### Un lien envoyé à un client ne peut plus être une adresse de sa machine
 

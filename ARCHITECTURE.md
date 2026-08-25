@@ -14968,3 +14968,75 @@ le partage natif joint le fichier mais n'a pas de champ destinataire.
 
 Le destinataire prérempli est ce qu'il a demandé le 3 août. Revenir au PDF, ce
 serait le rendre. **La question lui est posée, elle n'est pas tranchée ici.**
+
+
+---
+
+## 164. Les images d'utilisateur : une seule porte, qui REFUSE
+
+**Ce paragraphe existe parce que la règle a été retournée le 24 août 2026**, et
+qu'un retournement non écrit se re-retourne.
+
+### La propriété tenue
+
+> Une image d'utilisateur n'est **jamais** rangée ni envoyée à un fournisseur
+> d'IA tant qu'Atlas n'en détient pas une version dont il peut garantir le
+> nettoyage.
+
+Autrement dit : **si le nettoyage échoue, on refuse**. `src/server/photo-entrante.ts`
+est la seule porte, et les cinq chemins la traversent — photos de chantier,
+tickets de TVA, diagnostic végétal, croquis d'arrosage, logo d'entreprise.
+
+### Ce que cela a remplacé, et pourquoi
+
+L'ancienne règle — *« un échec de nettoyage ne refuse JAMAIS la photo »* — venait
+d'un principe juste du patron. Elle rangeait pourtant des coordonnées GPS : un
+fichier qu'on ne sait pas lire est un fichier dont on ne retire rien.
+
+**Et sa protection était un attribut d'écran.** On comptait sur `accept` pour
+faire transcoder iOS en JPEG. C'est vrai d'un iPhone honnête et ne vaut rien
+contre qui poste au serveur : `accept` est un confort, pas une frontière. **Ne
+jamais rebâtir une garantie de sécurité sur un attribut HTML.**
+
+### Trois règles qui en découlent
+
+1. **La liste serveur ne contient QUE ce qu'on sait nettoyer.** C'est sa seule
+   définition tenable. Y remettre le HEIC rouvrirait le trou.
+2. **Aucun écran ne lit les octets bruts d'une image.** Un `.arrayBuffer()` dans
+   un chemin d'image est un contournement de la porte — un contrôle le refuse.
+3. **Un refus donne le geste**, pas seulement le verdict. Le format d'une photo
+   est choisi par le téléphone, pas par l'artisan : lui dire « format non pris en
+   charge » le laisse sans rien à faire.
+
+---
+
+## 165. Le corps d'une requête : la borne vit DANS la lecture
+
+**`content-length` ne prouve rien** — il est écrit par le client. Le sous-déclarer,
+ou employer `Transfer-Encoding: chunked` qui n'en porte aucun, contourne tout
+contrôle posé sur lui seul.
+
+### Ce que la pile fait vraiment, constaté le 24 août 2026
+
+| | |
+|---|---|
+| `serverActions.bodySizeLimit` | ne couvre **que les actions serveur** (documentation de Next, mot pour mot) |
+| Route Handlers | **aucune limite native**, et aucune configuration ne l'ajoute |
+| `request.formData()` | décode le multipart dans `undici`, **après** avoir consommé le corps |
+
+### La forme retenue
+
+`src/server/corps-borne.ts` fait traverser `request.body` par un
+`TransformStream` qui compte et **casse** le flux au-delà de la borne. Le parseur
+ne voit jamais plus que la limite.
+
+**Cassé, pas tronqué :** tronquer rendrait un multipart amputé, que le parseur
+lirait comme un fichier valide mais incomplet — un fichier corrompu rangé en
+silence.
+
+**Pas de double copie :** on ne rassemble pas le corps pour le mesurer puis le
+re-parser. On borne en passant.
+
+**Ce que cela ne couvre pas :** ce que Node met en tampon avant de rendre la main
+à Next dépend de l'hébergeur. La garantie commence à l'objet `Request` ; une
+limite au mandataire reste souhaitable et ne remplace pas celle-ci.

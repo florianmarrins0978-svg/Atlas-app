@@ -33,6 +33,25 @@ Ce n'est pas urgent tant qu'il envoie depuis l'adresse de son espace de travail
 
 ---
 
+## ⚠ `verifier-maquette-message-et-allure` est ROUGE sur main (24 août 2026)
+
+```
+❌ Les planches du 23 août ne tiennent pas :
+   • le fond de départ est rgb(250, 249, 245) au lieu du crème d'aujourd'hui
+   • le retour ne rend pas le crème : rgb(250, 249, 245)
+```
+
+**Ce n'est pas une régression d'un lot en cours** : vérifié dépôt propre, sans
+aucune modification locale — il tombe déjà. Il porte sur les planches
+« Mon message au client » et « Allure bleutée », livrées par une autre session le
+23 août.
+
+**Laissé à la session qui les a écrites**, qui saura si c'est le contrôle ou la
+planche qui a raison. Signalé ici plutôt que corrigé au jugé : toucher à l'allure
+d'une planche qu'on n'a pas dessinée, c'est risquer de défaire un choix du patron
+qu'on ne connaît pas.
+
+
 ## ~~Supprimer une fiche en cours, et retrouver où la fiche se compose~~ (fait le 24 août 2026)
 
 Ses deux phrases du jour. Les deux sont livrées — `ARCHITECTURE.md` §168.
@@ -113,6 +132,21 @@ d'activation. Parcouru en navigateur (`test-face-id-e2e.ts`).
 - **le faire essayer sur SON iPhone.** Rien ici ne peut le remplacer : la suite
   emploie l'appareil simulé de Chrome, qui exerce la vraie implémentation du
   navigateur mais pas la puce d'Apple ni la fenêtre d'iOS.
+
+---
+
+## Le type AUDIO n'est pas vérifié — signalé le 24 août 2026, non traité
+
+Trouvé en dressant le tableau transversal des téléversements du lot 2B. Les
+images voient leur **signature** vérifiée depuis ce lot ; les dictées, non : un
+fichier annoncé `audio/webm` qui n'en est pas serait rangé.
+
+**Ce qui borne la portée :** le type servi est dérivé de la clé (liste blanche,
+jamais rien d'exécutable) et `nosniff` couvre toutes les routes. Ce qui reste
+possible est de ranger un fichier inerte sous une extension audio.
+
+**Non traité à dessein** : hors de M3 (aucune métadonnée d'image) et de M6
+(aucune question de mémoire), et l'on n'ouvre pas un lot sans qu'il soit demandé.
 
 ---
 
@@ -352,7 +386,7 @@ payée avec les contrôles qui mesurent zéro.
 
 ---
 
-## DEUX SUITES NAVIGATEUR ROUGES SUR `main`, et aucune n'est un défaut du produit (25 août 2026)
+## ~~DEUX SUITES NAVIGATEUR ROUGES SUR `main`~~ — **RÉPARÉES le 25 août 2026**
 
 **Vérifié sur `main` nu**, dans un arbre séparé, sans aucun lot par-dessus : les
 deux rougissent à l'identique. Elles ne viennent pas de la pastille des dates.
@@ -381,10 +415,14 @@ chercher du côté de la fenêtre de dates offerte au client et du jeu de
 démonstration — pas du côté du calendrier lui-même, dont les autres suites
 passent.
 
-**Aucune des deux n'est corrigée ici, et c'est délibéré :** élargir un lot de
-planning pour réparer deux suites d'un autre, c'est mêler deux changements et
-masquer les erreurs de chacun. Elles sont notées pour que la session qui les
-possède les voie.
+~~**Aucune des deux n'est corrigée ici, et c'est délibéré**~~ — **les deux l'ont
+été le 25 août 2026**, par la session du lot 2B, dont la batterie les avait
+trouvées le même jour.
+
+**Ce constat-ci avait raison sur les deux points, et sa cible était la bonne :**
+la première passe désormais par `jourLisible()`, la seconde tourne la page du
+mois quand celui qui s'affiche n'offre pas trois jours. Rien n'a été touché au
+produit. Détail dans `CHANGELOG.md` du 25 août.
 
 ---
 
@@ -3093,7 +3131,7 @@ fin, et le fond figé.
 obligatoires, disposition des colonnes, ordre des totaux. Un devis mal posé
 n'est pas un devis moins joli, c'est un devis qu'on peut lui contester.
 
-### 0 trigies septies. Deux suites de calendrier tombent EN FIN DE MOIS — **CONSTATÉ le 25 août 2026, PAS RÉPARÉ**
+### ~~0 trigies septies. Deux suites de calendrier tombent EN FIN DE MOIS~~ — **RÉPARÉES le 25 août 2026**
 
 **Elles rougissent sur `main`, sans aucun changement**, et elles bloquent la
 livraison de toutes les sessions tant qu'on est en fin de mois. Vérifié : même
@@ -3102,14 +3140,29 @@ rouge, au même endroit, sur `origin/main` seul.
 | Suite | Ce qu'elle rend | Pourquoi |
 |---|---|---|
 | `test-deux-dates-calendrier-e2e` | « Le calendrier n'offre que 2 jour(s) : trop peu pour éprouver » | elle ne lit que **le mois affiché**. Le 25 août, le délai minimal écarté, il ne reste que le 28 et le 31. Elle n'a jamais su tourner la page du mois |
-| `test-date-lointaine-e2e` | « Le client ne voit pas la date proposée (« 1 mars ») » | « dans six mois » puis « prochain lundi » tombe au **1ᵉʳ mars 2027**, soit six mois **et quatre jours** — au-delà de la fenêtre du client |
+| `test-date-lointaine-e2e` | « Le client ne voit pas la date proposée (« 1 mars ») » | ~~au-delà de la fenêtre du client~~ — **ce diagnostic était FAUX**, voir ci-dessous |
+
+**LA SECONDE LIGNE ÉTAIT FAUSSE, ET IL FAUT LE DIRE.** La date n'était pas hors
+fenêtre : le client la voyait parfaitement. L'écran écrivait **« lundi 1er mars
+2027 »** — le seul ordinal du français, porté par `src/lib/jour.ts` — et la suite
+cherchait « 1 mars ». Elle **redisait la règle d'écriture** au lieu d'employer la
+fonction qui la rend, ce que `CLAUDE.md` §3 interdit.
+
+*La preuve : passée par `jourLisible()`, sans une ligne changée au produit, elle
+affiche « ✓ le client la voit sur sa page, en toutes lettres ». Aucune fenêtre
+n'a été élargie.*
 
 **Ce qu'il faut regarder, et personne ne l'a fait :**
 
-- la première est un défaut de la SUITE : elle doit tourner au mois suivant
-  quand celui qui s'affiche n'offre pas assez de jours. Rien à changer au
-  produit ;
-- **la seconde est peut-être un vrai défaut du PRODUIT**, et c'est pour cela
+- ~~la première est un défaut de la SUITE~~ — **juste, et fait** : elle tourne
+  désormais la page du mois quand celui qui s'affiche n'offre pas trois jours.
+  Rien n'a changé au produit ;
+- ~~**la seconde est peut-être un vrai défaut du PRODUIT**~~ — **non, et c'est
+  vérifié** : la date proposée à six mois arrive chez le client et s'y affiche.
+  Ce qui suit reste néanmoins une bonne question à lui poser, indépendamment de
+  ce rouge-là. Ce n'est plus un point bloquant.
+
+  *Rédaction d'origine, conservée :* et c'est pour cela
   qu'elle ne doit pas être « réparée » à la légère. Elle garde exactement le
   piège que son propre commentaire nomme : *« une date validée à l'envoi puis
   refusée à la lecture, parce que la fenêtre du client ne la couvre pas »*. Le

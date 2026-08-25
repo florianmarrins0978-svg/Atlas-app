@@ -4,8 +4,36 @@
 vous ne savez rien de ce qui précède — c'est exactement le cas de figure qu'il
 sert.
 
-**Point de reprise :** 2026-08-24 · `main`
+**Point de reprise :** 2026-08-25 · `main`
 (l'historique fait foi : `git log --oneline -20`)
+
+---
+
+## LOT 2B FERMÉ, ET SEPT CONTRÔLES RÉPARÉS AVEC LUI (25 août 2026)
+
+M3 et M6 sont clos. Ce qu'il faut savoir avant d'y toucher :
+
+| | |
+|---|---|
+| **Une seule porte pour les images** | `src/server/photo-entrante.ts`. Cinq chemins la traversent, **le logo d'entreprise compris**. Trois contrôles structurels empêchent qu'un sixième fasse sa propre cuisine |
+| **Si le nettoyage échoue, on REFUSE** | c'est l'inverse de la règle du matin même, et le revirement est assumé : un fichier illisible était rangé avec ses coordonnées GPS |
+| **Le corps est borné PENDANT sa lecture** | `src/server/corps-borne.ts`. `content-length` est un premier refus, jamais la garantie — il est écrit par le client |
+
+**Et le piège qui a coûté cinq batteries.** Sept suites navigateur sont tombées
+en chemin, **aucune à cause du lot**, toutes vertes rejouées seules. Deux causes,
+et elles reviendront :
+
+1. **un délai fixe à la place d'un signal** — `waitForTimeout(300)` après une
+   action serveur, `waitForURL` suivi d'un `innerText` alors que la page porte
+   encore « Chargement… ». Sous la batterie complète, ces délais sont dépassés,
+   et le contrôle accuse alors le produit ;
+2. **une formulation à la place d'une règle** — la date « 1 mars » quand
+   le français écrit « 1er mars », ou l'une des deux phrases d'un écran qui en
+   a deux selon son état.
+
+Devant une suite navigateur rouge, **la jouer seule d'abord** :
+`npm run test:e2e -- --seulement "<un bout du nom>"`. Verte seule, rouge en
+batterie : c'est l'une de ces deux causes, jamais un défaut du produit.
 
 ---
 

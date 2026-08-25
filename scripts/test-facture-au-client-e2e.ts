@@ -128,14 +128,42 @@ async function main() {
     .first()
     .waitFor({ state: "visible", timeout: 30_000 })
     .catch(() => undefined);
-
   // --- 1. « Arrêtée » n'est pas « partie » ---------------------------------
   const ecran = await page.locator("body").innerText();
   assert.match(ecran, /arrêtée/i, `La facture n'a pas été arrêtée. Écran :\n${ecran.slice(0, 500)}`);
-  assert.match(
-    ecran,
-    /ne l'a pas encore reçue/i,
-    "L'écran laisse croire que la facture est partie alors que rien ne la porte au client."
+  /**
+   * **« ARRÊTÉE » N'EST PAS « PARTIE » — et l'écran le dit de DEUX façons.**
+   *
+   * `TransmettreLaFacture` a deux visages, selon que le lien du client a déjà
+   * été préparé ou non (`src/app/chantiers/[id]/facture/TransmettreLaFacture.tsx`) :
+   *
+   * | Lien pas encore préparé | Lien préparé |
+   * |---|---|
+   * | la phrase « Votre client ne l'a pas encore reçue. » | le bouton qui ouvre le message tout prêt (`data-atlas^="transmission-"`) |
+   *
+   * Depuis l'appui unique du 22 août, le même geste arrête la facture, prépare
+   * le lien et ouvre la messagerie, puis rafraîchit l'écran : **on passe du
+   * premier visage au second pendant que la suite regarde**. Ce contrôle
+   * n'attendait que le premier — il guettait donc un état transitoire, et
+   * rougissait selon la vitesse de la machine. Constaté le 25 août 2026, deux
+   * batteries de suite, vert joué seul.
+   *
+   * **Les deux visages disent la même chose, et c'est ELLE la règle** : la
+   * facture est arrêtée, et c'est encore à lui de l'envoyer.
+   *
+   * **Le second visage se lit par un REPÈRE, jamais par un libellé.** Une
+   * première version citait « c'est vous qui l'envoyez » : cette phrase a été
+   * retirée le 24 août, à sa demande — *« tout ce qui est en gris, supprime »*.
+   * Un contrôle accroché au texte serait mort sur une demande exaucée, et l'on
+   * aurait été tenté de rétablir le mot pour le faire taire (`CLAUDE.md` §5 bis).
+   * C'est le même repère que celui du point 2 plus bas.
+   */
+  const encoreAEnvoyer =
+    /ne l'a pas encore reçue/i.test(ecran) ||
+    (await page.locator("a[data-atlas^='transmission-']").count()) > 0;
+  assert.ok(
+    encoreAEnvoyer,
+    `L'écran laisse croire que la facture est partie alors que rien ne la porte au client. Écran :\n${ecran.slice(0, 800)}`
   );
   console.log("  ✓ une facture arrêtée dit qu'elle n'est pas encore partie, et propose de l'envoyer");
 
