@@ -207,16 +207,34 @@ async function main() {
     await page.selectOption('select[aria-label="Minutes"]', "45");
     await page.fill("textarea", "La haie du fond est à reprendre en octobre.");
     await page.locator("textarea").blur();
-    await page.waitForTimeout(900);
+
+    /**
+     * **On attend que l'enregistrement soit ARRIVÉ, pas qu'une seconde passe.**
+     *
+     * Ce contrôle tenait sur un `waitForTimeout(900)` : sous la batterie
+     * complète, la sauvegarde dépasse ce délai et l'assertion accusait alors le
+     * produit de perdre le temps saisi. Rouge le 25 août 2026, vert dans la
+     * foulée jouée seule — un contrôle qui mesure la vitesse de la machine
+     * plutôt que la règle s'apprend à être ignoré (`AGENTS.md`).
+     *
+     * **Il sait toujours échouer** : si la valeur n'arrive jamais, la boucle
+     * s'épuise et l'assertion qui suit rougit exactement comme avant.
+     */
+    let enregistre: { minutes: number | null; observations: string | null } | undefined;
+    for (let essai = 0; essai < 40; essai++) {
+      const { rows } = await pool.query(
+        `SELECT p.minutes, p.observations FROM passages_entretien p
+           JOIN clients c ON c.id = p.client_id WHERE c.nom = $1`,
+        [CLIENT]
+      );
+      enregistre = rows[0];
+      if (enregistre?.minutes === 105) break;
+      await page.waitForTimeout(250);
+    }
     await capturer(page, "07-temps-et-observations");
 
-    const { rows } = await pool.query(
-      `SELECT p.minutes, p.observations FROM passages_entretien p
-         JOIN clients c ON c.id = p.client_id WHERE c.nom = $1`,
-      [CLIENT]
-    );
-    assert.equal(rows[0].minutes, 105, "le temps n'est pas arrivé en base");
-    assert.match(rows[0].observations ?? "", /haie du fond/);
+    assert.equal(enregistre?.minutes, 105, "le temps n'est pas arrivé en base");
+    assert.match(enregistre?.observations ?? "", /haie du fond/);
   });
 
   await test("Le temps se masque au client, et la durée reste au patron", async () => {

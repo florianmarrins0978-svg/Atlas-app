@@ -35,6 +35,25 @@ maintenant le geste du patron : quand son mois est plein, elle passe au suivant.
 *Établi avant de corriger : la date du jour suffit à reproduire les deux
 échecs, et le diff du lot ne touche aucun fichier de calendrier.*
 
+### Deux autres suites mesuraient la vitesse de la machine, pas la règle
+
+Au tour suivant de la même batterie, deux suites **différentes** sont tombées —
+et vertes dans la foulée jouées seules (7/7). Aucune ne touche une image ni un
+corps de requête.
+
+| | Ce qu'elle attendait |
+|---|---|
+| `test-fiche-chantier-e2e` | `waitForTimeout(900)` puis lecture en base. Sous la batterie, l'enregistrement dépasse ce délai : le contrôle accusait le produit de perdre le temps saisi |
+| `test-facture-au-client-e2e` | le corps de la page était lu entre les deux mentions : « arrêtée » était là, « ne l'a pas encore reçue » pas encore |
+
+Les deux attendent désormais **le signal réel** — la valeur en base, la mention à
+l'écran — au lieu d'un délai fixe. Les attentes sont bornées et les assertions
+inchangées : si le signal ne vient jamais, elles rougissent exactement comme
+avant.
+
+*Le second cas portait déjà, en commentaire, le même diagnostic daté du 12 août
+2026. Une cause connue et laissée en place se repaie.*
+
 ## 2026-08-24
 
 ### Lot 2B : une image ne se range plus jamais sans être nettoyée

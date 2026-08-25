@@ -128,6 +128,25 @@ async function main() {
     .first()
     .waitFor({ state: "visible", timeout: 30_000 })
     .catch(() => undefined);
+  /**
+   * **Et qu'il dise aussi qu'elle n'est pas partie** — les deux mentions ne
+   * paraissent pas au même instant.
+   *
+   * Sans cette attente, le corps de la page était lu entre les deux : « arrêtée »
+   * était là, « ne l'a pas encore reçue » pas encore, et le contrôle accusait le
+   * produit de laisser croire la facture envoyée. Rouge sous la batterie
+   * complète le 25 août 2026, vert dans la foulée joué seul — le même faux rouge
+   * que celui déjà noté ici le 12 août.
+   *
+   * **L'attente ne rend rien complaisant** : elle est bornée, et c'est
+   * l'assertion qui suit qui tranche. Si la mention ne vient jamais, elle rougit
+   * exactement comme avant.
+   */
+  await page
+    .getByText(/ne l'a pas encore reçue/i)
+    .first()
+    .waitFor({ state: "visible", timeout: 30_000 })
+    .catch(() => undefined);
 
   // --- 1. « Arrêtée » n'est pas « partie » ---------------------------------
   const ecran = await page.locator("body").innerText();
