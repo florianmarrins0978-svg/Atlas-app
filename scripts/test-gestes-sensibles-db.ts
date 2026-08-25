@@ -125,6 +125,71 @@ async function main() {
     assert.equal(r.ok, true, `réenvoyer le même IBAN réclame une preuve : ${JSON.stringify(r)}`);
   });
 
+  await essai("AUCUNE ÉCRITURE DE REPRÉSENTATION NE CONTOURNE LA GARDE", async () => {
+    /**
+     * **La nuance « seulement si ça change vraiment » crée une condition de
+     * SÉCURITÉ, et elle doit être exacte dans les deux sens.**
+     *
+     * Le sens dangereux : un IBAN réellement différent qui passerait pour
+     * identique. Il n'existe pas — `trim() || null` ne peut pas confondre deux
+     * comptes distincts. Chacun des cas ci-dessous change le compte, et chacun
+     * doit donc être refusé sans preuve.
+     *
+     * Les espacements et la casse penchent, eux, du côté SÛR : « FR76 3000 » et
+     * « FR763000 » désignent le même compte, et la garde redemande quand même.
+     * Redemander à tort coûte une saisie ; ne pas demander coûte un virement.
+     */
+    const depart = await ibanEnBase();
+    const changements: [string, string][] = [
+      ["un autre compte", "FR1420041010050500013M02606"],
+      ["le même en minuscules", (depart ?? "").toLowerCase()],
+      ["le même, espacé", (depart ?? "").replace(/(.{4})/g, "$1 ").trim()],
+      ["effacé", ""],
+      ["effacé par des espaces", "   "],
+    ];
+    const passes: string[] = [];
+    for (const [quoi, valeur] of changements) {
+      await effacerPreuves(utilisateurId);
+      const r = await majIdentiteAction({ iban: valeur });
+      if (r.ok) passes.push(quoi);
+      // Et rien n'a bougé, dans tous les cas.
+      if ((await ibanEnBase()) !== depart) passes.push(`${quoi} (ÉCRIT MALGRÉ TOUT)`);
+    }
+    assert.deepEqual(passes, [], `Ces changements bancaires n'ont demandé aucune preuve : ${passes.join(", ")}`);
+  });
+
+  await essai("POSER un IBAN là où il n'y en avait AUCUN demande une preuve", async () => {
+    // Le cas le plus dangereux du lot : un compte vide qu'on remplit sans bruit.
+    await poserPreuve(utilisateurId, SESSION);
+    await majIdentiteAction({ iban: "" });
+    assert.equal(await ibanEnBase(), null, "le montage n'a pas vidé l'IBAN");
+
+    await effacerPreuves(utilisateurId);
+    const r = await majIdentiteAction({ iban: "FR1420041010050500013M02606" });
+    assert.equal(r.ok, false, "UN IBAN A ÉTÉ POSÉ SUR UN COMPTE VIDE SANS PREUVE");
+    assert.equal(await ibanEnBase(), null);
+  });
+
+  await essai("changer un champ ORDINAIRE en même temps ne fait pas passer l'IBAN", async () => {
+    // Le contournement le plus naturel : noyer le changement bancaire dans un
+    // enregistrement qui touche aussi l'adresse.
+    await effacerPreuves(utilisateurId);
+    const r = await majIdentiteAction({
+      iban: "FR1420041010050500013M02606",
+      telephone: "06 99 99 99 99",
+      adresse: "3 rue des Tilleuls",
+    });
+    assert.equal(r.ok, false, "l'IBAN est passé en même temps qu'un champ ordinaire");
+    assert.equal(await ibanEnBase(), null, "L'IBAN A ÉTÉ ÉCRIT");
+  });
+
+  await essai("le TITULAIRE du compte compte autant que l'IBAN", async () => {
+    // Détourner un virement ne demande pas forcément de changer le numéro.
+    await effacerPreuves(utilisateurId);
+    const r = await majIdentiteAction({ titulaireCompte: "Quelqu'un d'autre" });
+    assert.equal(r.ok, false, "le titulaire du compte a changé sans preuve");
+  });
+
   // ─── 2. Les clés d'appareil ───────────────────────────────────────────────
 
   console.log("");
