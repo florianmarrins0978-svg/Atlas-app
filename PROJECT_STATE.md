@@ -13,6 +13,18 @@ ligne « fait » qui ne l'est pas coûte plus cher qu'une ligne absente.
 
 ---
 
+## L'échéance de la facture : proposée, modifiable (25 août 2026)
+
+| | État |
+|---|---|
+| La facture porte une échéance dès sa création, depuis **son délai de paiement réglé** (0 = comptant), 30 j à défaut | **fait** — `factures.ts`, `echeanceFacture` ; plus de « 30 » en dur |
+| L'échéance se **corrige** sur l'écran de la facture, tant qu'elle est brouillon | **fait** — `FactureClient`, `majEcheanceFactureAction` |
+| Une facture arrêtée fige son échéance (champ caché ET refus serveur) | **fait** — `majEcheanceFacture` refuse hors brouillon |
+| Règle de saisie pure (pas avant la facture, pas au-delà d'un an, comptant permis) | **fait** — `src/lib/echeance-facture.ts`, éprouvée sans base |
+| Isolation entre entreprises | **fait** — tenue par la RLS (`test-factures`, rôle `atlas_app`) |
+
+---
+
 ## Photographier un devis pour en reprendre l'allure (25 août 2026)
 
 | | État |

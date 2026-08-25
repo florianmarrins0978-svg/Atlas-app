@@ -46,6 +46,30 @@ prestation : vert seul, rouge dans la batterie complète, en accusant « les
 tarifs de démonstration » — le mauvais coupable. Il redemande maintenant la page
 une fois avant de conclure.
 
+### L'échéance de la facture : proposée, et modifiable avant l'envoi
+
+*« Il faut qu'il propose une date par défaut et ensuite si l'utilisateur veut la
+modifier qu'il puisse. Parce que si l'utilisateur envoie la facture avant de
+modifier, faut qu'elle parte avec une date et pas avec [échéance]. »*
+
+Deux choses en découlent :
+
+- **La date par défaut suit désormais son délai de paiement réglé** (0 = comptant),
+  30 jours à défaut — au lieu d'un « 30 » écrit en dur qui pouvait contredire la
+  mention « Paiement à X jours » imprimée sur la pièce. La facture a donc
+  **toujours** une vraie échéance dès sa création : elle ne part jamais avec un
+  vide.
+- **Elle se corrige à l'écran de la facture**, tant qu'elle n'est pas arrêtée. Une
+  facture émise est partie chez le client et inscrite au relevé : sa date se fige
+  alors (le champ disparaît, et `majEcheanceFacture` refuse quand même — l'écran
+  n'est qu'une politesse, le dépôt est le garde-fou).
+
+La saisie repasse par une règle pure (`src/lib/echeance-facture.ts`, éprouvée
+sans base) : une échéance ne précède jamais la facture, ne dépasse pas un an (au-
+delà, c'est l'année mal tapée), et le comptant — échéance = émission — est permis.
+L'isolation est tenue par la RLS : la facture d'une autre entreprise n'existe tout
+simplement pas pour cette requête (`test-factures`).
+
 ### Le message au client, simplifié : plus de pastilles à poser
 
 *« On comprend rien, trop compliqué pour modifier »*, puis, devant la maquette
