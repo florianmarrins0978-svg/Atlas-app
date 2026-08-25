@@ -154,7 +154,9 @@ async function main() {
 
   await cas("elle porte la terre cuite des documents, comme le devis", async () => {
     const { trace } = await composerFacturePdf(FACTURE);
-    for (const intertitre of ["ÉMETTEUR", "CLIENT"]) {
+    // **Un seul intertitre de partie depuis le 18 août 2026** : l'émetteur
+    // figurait deux fois — en-tête et bloc du bas — et le bloc a disparu.
+    for (const intertitre of ["CLIENT"]) {
       const pose = trace.textes.find((t) => t.contenu === intertitre);
       assert.ok(pose, `« ${intertitre} » manque à la facture.`);
       assert.equal(
@@ -174,7 +176,7 @@ async function main() {
       numeroVersion: 1,
       statut: "envoye",
     });
-    const reperes = ["ÉMETTEUR", "CLIENT", "DESCRIPTION", "QTÉ", "PRIX UNITAIRE HT", "Total TTC"];
+    const reperes = ["CLIENT", "DESCRIPTION", "QTÉ", "PRIX UNITAIRE HT", "Total TTC"];
     for (const repere of reperes) {
       const pf = f.textes.find((t) => t.contenu === repere);
       const pd = d.textes.find((t) => t.contenu === repere);

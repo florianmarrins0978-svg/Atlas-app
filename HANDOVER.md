@@ -1689,9 +1689,13 @@ numérotation continue, conservation légale).
 2. **Le cloisonnement par rôle n'est pas codé.** Ne pas conclure de la maquette
    qu'un salarié ne voit pas les prix : `QUESTIONS.md` §10 exige que la donnée
    ne SORTE pas du serveur, et rien de tel n'est en place aujourd'hui.
-3. **Le logo n'existe pas** — `document-commun.ts` ne pose aucune image.
-   Remplacer le devis entier par un modèle importé n'est pas possible sans
-   perdre les totaux, la TVA et la numérotation — à dire avant d'y revenir.
+3. **Le logo existe depuis le 24 août 2026** — `document-commun.ts` le pose
+   au-dessus du nom (`imageDuLogo`), et l'écran de rédaction aussi depuis le
+   25 (`ARCHITECTURE.md` §173). Cette ligne affirmait le contraire : elle a été
+   corrigée le 25 août, elle envoyait chercher au mauvais endroit.
+   Ce qui reste vrai : remplacer le devis entier par un **modèle importé** n'est
+   pas possible sans perdre les totaux, la TVA et la numérotation — à dire avant
+   d'y revenir.
 
    **Les conditions, elles, se règlent depuis le 14 août 2026**
    (`ARCHITECTURE.md` §102) : « 30 jours » n'est plus en dur dans
@@ -2150,11 +2154,24 @@ reviendra à la prochaine page supprimée.
 
 ## Ce qui vient d'être terminé
 
-**SON LOGO SUR L'ÉCRAN DU DEVIS (18 août).** Il l'avait posé dans « Devis &
-factures » et ne le voyait pas là où il rédige. Le PDF le portait déjà ; c'est
-l'écran qui compose son en-tête à la main, sans passer par la fabrique de
-documents. **Deux écritures du même en-tête** — si un troisième élément arrive
-un jour (une mention, un cachet), penser aux DEUX. `ARCHITECTURE.md` §173.
+**L'EN-TÊTE DU DEVIS, DEUX LOTS DE SUITE (25 août).**
+
+1. **Son logo sur l'écran du devis.** Il l'avait posé dans « Devis & factures »
+   et ne le voyait pas là où il rédige. Le PDF le portait déjà ; c'est l'écran
+   qui compose son en-tête à la main, sans passer par la fabrique de documents.
+   `ARCHITECTURE.md` §173.
+2. **L'émetteur n'apparaît plus deux fois, et une ligne par information.**
+   *« Pourquoi il y a deux fois l'émetteur sur l'aperçu ? »* — le bloc
+   « ÉMETTEUR » du bas est retiré, l'en-tête prend tout (nom, adresse,
+   téléphone, e-mail, SIRET, **une ligne chacun**), le client passe à gauche.
+   `ARCHITECTURE.md` §174.
+
+**Deux écritures du même en-tête, et c'est le piège du coin** — `document-commun.ts`
+(devis *et* facture) et `DevisCompletClient.tsx`. Le premier lot l'a découvert,
+le second l'a payé le lendemain. Si un troisième élément arrive un jour (une
+mention, un cachet), **penser aux DEUX** — et regarder l'image, pas seulement le
+vert des suites : c'est une capture qui dit si une ligne de plus vient toucher
+les références du devis (`scripts/capture-allure-devis.mts`).
 
 
 **LE PENSE-BÊTE DE LA FEUILLE DE CHANTIER (23 août).** *« Entre "Copier

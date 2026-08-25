@@ -625,9 +625,15 @@ export async function composerDocument(
   // ─── En-tête : l'entreprise à gauche, les références à droite ───────────
   ecrire(ctx, data.entrepriseNom, MARGE, y, { taille: 22, police: ctx.sans });
 
+  // **UNE LIGNE PAR INFORMATION**, sa demande du 25 août 2026 : *« en haut à
+  // gauche il y a un tiret entre le numéro de tél et l'adresse e-mail, change
+  // ça, il faut sauter une ligne, une ligne par information »*. Le téléphone et
+  // l'e-mail tenaient sur la même ligne, séparés d'un tiret cadratin — c'est
+  // lisible sur un écran large, c'est un pâté sur un devis imprimé.
   const coordonnees = [
     data.entrepriseAdresse,
-    [data.entrepriseTelephone, data.entrepriseEmail].filter(Boolean).join(" — ") || null,
+    data.entrepriseTelephone,
+    data.entrepriseEmail,
     data.entrepriseSiret ? `SIRET ${data.entrepriseSiret}` : null,
   ].filter((l): l is string => !!l);
 
@@ -673,8 +679,9 @@ export async function composerDocument(
     y -= 20;
   }
 
-  // ─── Émetteur et client, côte à côte ────────────────────────────────────
-  const colonneDroite = MARGE + (DROITE - MARGE) / 2 + 10;
+  // ─── Le client, seul ────────────────────────────────────────────────────
+  // Le client occupe la moitié gauche : au-delà, une adresse longue viendrait
+  // courir sous les références du devis, qui tiennent le quart droit.
   const largeurColonne = (DROITE - MARGE) / 2 - 10;
 
   // Ces deux-là sont des `h3` dans le modèle : ils prennent donc la serif, là
@@ -683,18 +690,19 @@ export async function composerDocument(
   // Helvetica, les polices standard du format. C'est ce qui l'a mis d'accord
   // tout seul avec l'écran le 10 août 2026, quand l'application est passée aux
   // polices de l'appareil.
+  // **L'ÉMETTEUR N'APPARAÎT PLUS DEUX FOIS.** Sa question du 25 août 2026 :
+  // *« pourquoi il y a deux fois l'émetteur sur l'aperçu ? »*. Il avait raison,
+  // et ce n'était pas une convention : l'en-tête porte déjà le nom, l'adresse et
+  // le SIRET, et le bloc du bas les réécrivait mot pour mot, dix centimètres
+  // plus bas. Rien ne l'exigeait — les mentions obligatoires doivent figurer,
+  // pas figurer deux fois.
+  //
+  // **Le client passe donc à gauche**, seul de sa rangée : une colonne
+  // « CLIENT » restée à droite avec un vide en face se serait lue comme un
+  // bloc oublié à l'impression.
   const etiquettePartie: Style = { taille: 8.5, police: ctx.serif, couleur: ctx.teintes.titrePartie };
-  ecrireEspace(ctx, "ÉMETTEUR", MARGE, y, APPROCHE_ETIQUETTE, etiquettePartie);
-  ecrireEspace(ctx, "CLIENT", colonneDroite, y, APPROCHE_ETIQUETTE, etiquettePartie);
+  ecrireEspace(ctx, "CLIENT", MARGE, y, APPROCHE_ETIQUETTE, etiquettePartie);
   y -= 15;
-
-  const emetteur = [
-    data.entrepriseNom,
-    data.entrepriseAdresse,
-    data.entrepriseSiret ? `SIRET ${data.entrepriseSiret}` : null,
-  ]
-    .filter((l): l is string => !!l)
-    .flatMap((l) => enLignes(l, ctx.sans, 9, largeurColonne));
 
   const client = [
     // **Le papier nomme le client comme l'écran et le message.** Une seule
@@ -713,9 +721,8 @@ export async function composerDocument(
     .filter((l): l is string => !!l)
     .flatMap((l) => enLignes(l, ctx.sans, 9, largeurColonne));
 
-  emetteur.forEach((l, i) => ecrire(ctx, l, MARGE, y - i * 12, { taille: 9 }));
-  client.forEach((l, i) => ecrire(ctx, l, colonneDroite, y - i * 12, { taille: 9 }));
-  y -= Math.max(emetteur.length, client.length) * 12 + 22;
+  client.forEach((l, i) => ecrire(ctx, l, MARGE, y - i * 12, { taille: 9 }));
+  y -= client.length * 12 + 22;
 
   // ─── Tableau des lignes ─────────────────────────────────────────────────
   const xQte = DROITE - 240;

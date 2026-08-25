@@ -9,6 +9,37 @@ Format : le plus récent en tête.
 
 ## 2026-08-25
 
+### L'émetteur n'était sur le devis qu'une fois de trop
+
+*« Pourquoi il y a deux fois l'émetteur sur l'aperçu ? »* — il avait raison, et
+ce n'était pas une convention : l'en-tête portait déjà son identité, et un bloc
+« ÉMETTEUR » la réécrivait mot pour mot dix centimètres plus bas. Les mentions
+obligatoires doivent figurer, pas figurer deux fois. Le bloc du bas est retiré,
+l'en-tête prend tout — nom, adresse, téléphone, e-mail, SIRET — et le client
+passe à gauche, seul de sa rangée : une colonne « CLIENT » restée à droite avec
+un vide en face se lit comme un bloc oublié à l'impression.
+
+### Une ligne par information, en haut à gauche
+
+*« Il y a un tiret entre le numéro de tél et l'adresse e-mail, change ça, il
+faut sauter une ligne, une ligne par information. »* Le `join(" — ")` est parti :
+adresse, téléphone, e-mail, SIRET prennent chacun leur ligne, et les absents ne
+laissent pas de trou.
+
+**Les deux en-têtes ont bougé ensemble** — le PDF (devis *et* facture, même
+moteur) et l'écran où il rédige, qui compose le sien à la main. C'est la leçon
+de la veille appliquée le lendemain : corriger un seul des deux recrée
+exactement l'écart qui lui avait caché son logo.
+
+Les contrôles ne se contentent plus de lire « CLIENT » : ils **refusent**
+qu'« ÉMETTEUR » reparaisse et exigent que le nom de l'entreprise n'apparaisse
+qu'une seule fois. Et l'image a été regardée, fond clair et fond sombre, logo
+carré et logo en bandeau. `ARCHITECTURE.md` §174.
+
+---
+
+## 2026-08-25
+
 ### L'accueil perd son salut et son trait
 
 *« Supprime le bonjour compte »*, et *« une sans le trait gris »* — ses deux
