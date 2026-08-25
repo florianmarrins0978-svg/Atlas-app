@@ -45,6 +45,19 @@ export async function getCurrentCtx(): Promise<Ctx> {
     return {
       utilisateurId: process.env.AUTH_TEST_UTILISATEUR_ID,
       entrepriseId: await resoudreEntrepriseId(process.env.AUTH_TEST_UTILISATEUR_ID),
+      /**
+       * **De quoi éprouver la ré-authentification récente, et rien de plus.**
+       *
+       * Sans identité de session, une suite ne pourrait jouer QUE le refus : la
+       * garde de M11 refuse toujours quand elle manque. Ce qu'on ne pourrait pas
+       * éprouver, c'est le cas d'après — celui où la preuve est là et le geste
+       * doit aboutir.
+       *
+       * **Elle n'affaiblit rien** : cette branche entière est déjà refusée en
+       * production, et elle exige que la suite pose elle-même la variable. Sans
+       * elle, `sessionId` reste absent — donc aucune preuve, donc refus.
+       */
+      sessionId: process.env.AUTH_TEST_SESSION_ID,
     };
   }
 
