@@ -1,29 +1,30 @@
-# Atlas — Lot 3 : rapport d'étape
+# Atlas — Lot 3 : rapport d'étape n° 2
 
 **Document destiné à ChatGPT.** 25 août 2026.
 
-> **CE N'EST PAS LE RAPPORT FINAL.** Le brief demande un rapport complet A→K
-> avec un verdict. **Un seul point sur sept est terminé** — M12. Le déclarer
-> validé maintenant reviendrait à transformer un « à faire » en « fait », ce que
-> le brief interdit lui-même au point 7.
+> **CE N'EST PAS LE RAPPORT FINAL.** M12, M10 et M9 sont clos et éprouvés. M11
+> est **à moitié fait** : la partie la plus dure — l'identité de session — est
+> posée et prouvée, la preuve récente ne l'est pas encore. F1–F13, l'audio et les
+> sauvegardes ne sont pas commencés.
 
 ## Où en est le lot
 
-| | État | Preuve |
-|---|---|---|
-| **M12** — mise à jour du banc | **FAIT ET ÉPROUVÉ** | suite rouge sur l'ancien code, verte sur le neuf |
-| **M10** — dépendances | pas commencé | `npm audit` relevé, non corrigé |
-| **M9** — `password_hash` | **cartographié**, pas codé | 11 accès recensés, terrain vérifié |
-| **M11** — ré-authentification | analyse de menace à faire d'abord | — |
-| **F1 → F13** | pas commencé | quatre points déjà instruits (voir plus bas) |
-| **Audio** | pas commencé | état constaté |
-| **Sauvegardes** | rien à coder | **BLOQUANT PRODUCTION** |
+| | État |
+|---|---|
+| **M12** — mise à jour du banc | **CLOS**, batterie verte |
+| **M10** — dépendances | **CLOS**, batterie verte |
+| **M9** — `password_hash` | **CLOS**, batterie verte |
+| **VULNÉRABILITÉ HORS LOT** — coupure contournable | **TROUVÉE, REPRODUITE, FERMÉE** |
+| **M11** — ré-authentification | **A et B faits** ; C partiellement ; D→G à faire |
+| F1 → F13 | 4 instruits sur 13 |
+| Audio | constaté, rien changé |
+| Sauvegardes | **BLOQUANT PRODUCTION** |
 
 ---
 
 ## A — M12 : la mise à jour du banc
 
-### État constaté (avant)
+### Avant
 
 ```ts
 export async function mettreAJourApplicationAction(): Promise<ResultatMiseAJour> {
@@ -31,302 +32,298 @@ export async function mettreAJourApplicationAction(): Promise<ResultatMiseAJour>
   if (process.env.ATLAS_BANC_ESSAI !== "1") { … }   // ← et le profil ignoré
 ```
 
-**L'audit disait vrai, et le défaut était double.**
+**Deux défauts, pas un.** N'importe quel compte connecté — un salarié — pouvait
+tirer du code et jouer des migrations sur le banc du patron. Et `ATLAS_PROFIL=banc`
+était ignoré, alors que `.devcontainer/demarrer.sh` ne pose **que** celui-là.
 
-1. **N'importe quel compte connecté** — un membre, c'est-à-dire un salarié à qui
-   le patron a ouvert un accès — pouvait déclencher un `git pull` et des
-   migrations sur le banc. Ce geste change ce que l'application sert.
-2. **`ATLAS_PROFIL=banc` était ignoré.** Or `src/profil-banc.ts` est la seule
-   fonction qui décide de ce qu'est un banc, et `.devcontainer/demarrer.sh` ne
-   pose **que** cette variable-là.
+### Ce que la recherche a ajouté au brief
 
-### Ce que la recherche a trouvé en plus du brief
+Le second défaut touchait **trois** fichiers, pas un — dont
+`src/server/version-executee.ts`, c'est-à-dire l'écran que le patron
+photographie pour répondre à *« mes correctifs sont-ils arrivés ? »*.
 
-Le second défaut ne touchait pas un endroit mais **trois** :
+### Correction et preuve
 
-| Fichier | Ce que ça donnait sur un banc démarré par `demarrer.sh` |
-|---|---|
-| `src/app/reglages/actions.ts` | le bouton refusait sans raison |
-| `src/app/reglages/page.tsx` | la phrase sur la branche suivie ne s'affichait pas |
-| `src/server/version-executee.ts` | « version inconnue » |
+`exigerProprietaire()` **avant** `estBancDEssai()` — cet ordre permet d'éprouver
+le refus de rôle sans qu'un `git pull` puisse partir. Le bouton est masqué en
+plus, jamais à la place.
 
-Le troisième est le plus coûteux : c'est l'écran que le patron photographie pour
-répondre à *« est-ce que mes correctifs sont arrivés ? »*.
+`scripts/test-mise-a-jour-role-db.ts` — **5/5**. Sur la source d'avant,
+restaurée : **3 échecs**, nommant les trois fichiers coupables.
 
-### Correction
-
-```ts
-export async function mettreAJourApplicationAction(): Promise<ResultatMiseAJour> {
-  const ctx = await getCurrentCtx();
-  await exigerProprietaire(ctx, "mettre à jour l'application");
-
-  if (!estBancDEssai()) { … }
-```
-
-**L'ordre des deux gardes est délibéré** : le rôle avant le banc, le banc avant
-le script. C'est ce qui permet à une suite d'éprouver le refus de rôle **sans
-qu'un `git pull` puisse partir pendant la batterie**.
-
-Le bouton est aussi masqué pour un membre (`page.tsx`). **Ce masquage ne protège
-rien** — la garde qui compte est dans l'action, et elle refuse même appelée
-directement. Il évite seulement de proposer un geste qu'on refusera.
-
-### Tests — et la question du brief : « rouge sur l'ancien code ? »
-
-`scripts/test-mise-a-jour-role-db.ts`, cinq vérifications.
-
-**Oui, démontré.** Sur la source d'avant, restaurée pour l'occasion :
-
-```
-✗ UN MEMBRE EST REFUSÉ — et c'est bien le RÔLE qui le refuse
-✗ LES DEUX MARQUES DU BANC sont reconnues — plus une seule
-✗ PLUS AUCUN ÉCRAN ne lit la marque du banc en direct
-    Ces fichiers décident seuls de ce qu'est un banc, et ignorent donc
-    ATLAS_PROFIL : src/app/reglages/actions.ts, src/app/reglages/page.tsx,
-    src/server/version-executee.ts
-Mise à jour du banc — 3 échec(s).
-```
-
-Sur le code corrigé : **5/5**.
-
-**Le piège que ce contrôle devait éviter, et qui mérite d'être dit.** Le banc est
-laissé *éteint* dans le cas du membre. L'ancien code refusait alors lui aussi —
-mais pour le mauvais motif (« n'existe que sur le banc d'essai »). Un contrôle
-qui se serait contenté de constater *un* refus aurait été **vert sur le code
-défectueux**. Ce qui est exigé est le refus **de rôle**, qui n'existait pas.
-
-**Un garde-fou en plus :** un contrôle structurel interdit désormais à tout
-fichier de `src/` de lire `process.env.ATLAS_BANC_ESSAI` en direct, sauf
-`profil-banc.ts` (qui décide) et `env.ts` (qui refuse une configuration
-contradictoire, et doit donc voir les deux variables séparément). Sans lui, le
-prochain écran recopierait la même faute.
-
-### Risque résiduel
-
-`exigerProprietaire` **lève** au lieu de rendre une valeur de retour. C'est la
-convention du dépôt (`creerTarifAction` fait de même), mais le message d'une
-exception levée par une action serveur n'atteint jamais l'écran en production
-(`AGENTS.md`). Un membre qui appellerait l'action directement verrait donc une
-erreur opaque. **C'est acceptable ici** : l'écran ne lui propose pas le bouton,
-et la propriété de sécurité — l'action ne s'exécute pas — est tenue.
+Un contrôle structurel interdit désormais toute lecture directe de
+`process.env.ATLAS_BANC_ESSAI` hors des deux fichiers qui en ont le droit.
 
 ---
 
-## B — M10 : dépendances (RELEVÉ, PAS CORRIGÉ)
+## B — M10 : dépendances
 
-### `npm audit` — AVANT, résultat exact
-
-```
-11 vulnerabilities (4 moderate, 7 high)
-```
-
-| Paquet | Nature | Direct ? | Correctif annoncé |
-|---|---|---|---|
-| `postcss` | lecture de fichier arbitraire via `sourceMappingURL` (3 avis) | **non** — `node_modules/next/node_modules/postcss` | `next@16.3.2` |
-| `sharp` / libvips | CVE-2026-33327, 33328, 35590, 35591 | **non** — tiré par Next | `next@16.3.2` |
-
-**Ni `sharp` ni `postcss` ne sont déclarés dans `package.json`.** Les onze
-alertes viennent toutes de `next: "16.2.12"`.
-
-### Ce qui sera fait, et ce qui ne le sera pas
-
-- montée **manuelle** de Next vers 16.3.2 — une **mineure**, pas une majeure.
-  L'avertissement *« outside the stated dependency range »* ne dit que ceci : la
-  version est épinglée au patch dans `package.json` ;
-- **aucun `npm audit fix --force`** ;
-- **aucune migration de `next-auth`** : la 5.0.0-beta est celle qu'Atlas éprouve
-  depuis le début, Face ID compris. Le brief autorise à documenter plutôt qu'à
-  refondre.
-
-### APRÈS
-
-*Non disponible : la montée n'est pas faite.*
-
----
-
-## C — M11 : le modèle de session RÉEL (constaté, rien codé)
-
-```ts
-// src/auth.ts:35
-session: { strategy: "jwt" },
-```
-
-**Aucun `maxAge` n'est posé** → la valeur par défaut d'Auth.js s'applique :
-**trente jours, glissants**. Le constat de l'audit tient.
-
-### Face ID n'est PAS une 2FA — l'architecture, pas l'affirmation
-
-| | Ce qu'Atlas fait réellement |
-|---|---|
-| **Ce que c'est** | un **second fournisseur `Credentials`** dans `src/auth.ts`, à côté du mot de passe |
-| **Donc** | un **premier facteur alternatif** : on entre *soit* par mot de passe, *soit* par la clé de l'appareil |
-| **Ce que ce n'est pas** | un second facteur — rien n'exige jamais les deux |
-| **Ce qui est vérifié** | une signature WebAuthn, contre un défi posé dans un cookie `httpOnly`/`sameSite=strict`, consommé à la lecture |
-| **Ce qui n'entre jamais dans Atlas** | Face ID au sens d'Apple : il déverrouille la clé sur l'appareil ; c'est la **clé** qui signe |
-
-### Le point que le brief soulève, et qui est juste
-
-Une date globale `derniere_preuve_at` par utilisateur **profiterait à une session
-volée** : le patron se ré-authentifie sur son iPhone, et l'ordinateur volé en
-bénéficie dans la seconde. **Rien ne sera codé avant d'avoir résolu ce point** —
-la preuve devra être liée à la session qui l'a obtenue, pas à l'utilisateur.
-
-`session.maxAge` **ne sera pas modifié** dans ce lot : un artisan déconnecté sur
-un chantier coûte plus cher que le risque traité.
-
----
-
-## D — M9 : cartographie (rien codé)
-
-Le brief demandait de tout recenser avant de toucher. Fait — et le terrain est
-plus favorable que l'audit ne le laissait croire.
-
-### Les onze accès à `users`
-
-| Où | Colonnes | Après un retrait du droit sur `password_hash` |
+| | AVANT | APRÈS |
 |---|---|---|
-| `src/auth.ts:47` | **`select()` nu** | **à router** — la connexion |
-| `src/server/repositories/compte.ts:80` | `{passwordHash}` | **à router** — vérifier l'ancien mot de passe |
-| `src/server/repositories/compte.ts:101` | `UPDATE set passwordHash` | **à router** — écrire le nouveau |
-| `src/server/repositories/entreprises.ts:27` | `INSERT … returning()` **nu** | **à borner** — `RETURNING` exige le droit de lecture |
-| `compte.ts:32` | `{nom, email}` | intact |
-| `compte.ts:136` | `{jetonsValidesDepuis}` | intact — **coupure des sessions** |
-| `charte-personne.ts:27` | `{charte}` | intact |
-| `editeur.ts:37` | `{email}` | intact |
-| `documents-legaux.ts:169` | `{id}` | intact |
-| `session-ctx.ts:114` | `{id}` | intact |
-| `cles-appareil.ts:106` | `{id}` | intact |
+| `npm audit` | **11** (4 modérées, 7 hautes) | **4** (4 modérées) |
 
-**Un seul `SELECT *` dans tout le dépôt**, et c'est la connexion.
+**Fermé :** `postcss` (3 avis, lecture de fichier arbitraire par
+`sourceMappingURL`) et `sharp`/libvips (4 CVE). **Ce sont les seules qui
+traitaient une entrée d'utilisateur** — une image téléversée, une feuille de
+style construite.
 
-**Face ID ne lit jamais `password_hash`** — `cles-appareil.ts` ne touche que la
-table des clés. C'est important : le durcissement ne peut pas le casser par ce
-biais.
+**Comment :** montée **manuelle** `next` 16.2.12 → **16.3.2**, plus
+`eslint-config-next`. Une **mineure**. L'avertissement d'npm — *« outside the
+stated dependency range »* — ne disait qu'une chose : la version était épinglée
+au patch. **Aucun `npm audit fix --force`.** `package.json` n'a bougé que de deux
+lignes.
 
-### Le terrain, vérifié en base
+**Ce qui reste, et pourquoi je refuse de le fermer :** `esbuild` via
+`drizzle-kit`, **développement seul**. Le correctif imposerait un retour
+0.31 → **0.18** sur l'outil qui écrit les migrations. Le remède serait pire que
+le mal.
 
-| Question | Réponse constatée |
-|---|---|
-| `pgcrypto` disponible ? | **oui**, 1.3, pas encore installée |
-| `atlas_app` peut-il créer dans `public` ? | **non** (`has_schema_privilege` = `f`) |
-
-La seconde réponse répond directement à l'exigence du brief — *« l'impossibilité
-pour `atlas_app` de modifier/remplacer les objets auxquels la fonction fait
-confiance »* : il n'a aucun droit de DDL, cette propriété est **déjà** tenue.
-
-### La forme envisagée (à éprouver, rien n'est décidé)
-
-- `REVOKE SELECT (password_hash), UPDATE (password_hash) ON users FROM atlas_app` ;
-- une fonction `SECURITY DEFINER` appartenant à `atlas_owner`, `search_path`
-  épinglé, références qualifiées, `REVOKE ALL … FROM PUBLIC` puis `GRANT EXECUTE`
-  au seul `atlas_app`, qui **rend un identifiant, jamais un condensat** ;
-- le retrait du droit d'**écriture** compte autant que celui de lecture : sans
-  lui, une injection pourrait poser un condensat connu et entrer.
-
-**`PUBLIC` reçoit `EXECUTE` par défaut sur toute fonction** — le brief a raison
-de le pointer, et le `REVOKE` sera explicite.
+**`next-auth` n'a pas bougé, et pas seulement parce qu'il est en bêta :** il
+n'existe **aucune version stable de la v5** — la marque `latest` pointe encore
+sur `4.24.15`, la ligne incompatible. Question tranchée par le registre, pas par
+une opinion.
 
 ---
 
-## E — F1 → F13 : quatre points déjà instruits
+## C — M9 : le condensat hors de portée
 
-| | État constaté | Décision |
+### La propriété tenue
+
+> `atlas_app` ne peut plus lire `users.password_hash` — même en SQL direct — mais
+> peut demander à la base de vérifier **un** mot de passe sans jamais en recevoir
+> le condensat.
+
+`drizzle/0064_secret_authentification.sql` : trois fonctions `SECURITY DEFINER`
+appartenant à `atlas_owner`, `search_path` épinglé, tout qualifié, `EXECUTE`
+retiré à `PUBLIC` puis accordé au seul `atlas_app`. **Aucune signature ne peut
+rendre un condensat** — elles rendent un `uuid` ou un `boolean`, et la suite le
+vérifie sur `pg_proc`, pas sur leur commentaire.
+
+**Pas de RLS par entreprise sur `users`**, et ce n'est pas un renoncement : un
+utilisateur n'est rattaché à une entreprise qu'**après** s'être identifié.
+
+### Le piège qui a failli tout fermer — mesuré, pas supposé
+
+`pgcrypto` ne relit que les condensats préfixés `$2a$` ; `bcryptjs` écrit `$2b$`.
+**La première version rendait faux sur le BON mot de passe** : la porte fermée
+pour tout le monde.
+
+Les deux moteurs ont été comparés sur six cas, **au positif et au négatif** :
+
+| Cas | pgcrypto | bcryptjs |
 |---|---|---|
-| **F3** `/api/health/diagnostic` | la route **borne déjà** son calcul d'origines en production (`NODE_ENV === "production"` → `[]`). Reste à constater ce que le **corps** de la réponse rend | à vérifier par un contrôle, pas à supposer |
-| **F6** migrations en double | **FAUX PROBLÈME.** `scripts/run-migrations.ts` suit les migrations par **nom de fichier** dans `_migrations`. Deux noms distincts sont deux migrations distinctes | **ne rien faire** — renommer serait la seule façon de casser quelque chose |
-| **F10** CSP `unsafe-inline` | présent (`next.config.ts:21-22`) | **hors de ce lot** : une CSP à nonce se joue dans le `middleware`, et mal posée elle rend l'application blanche |
-| **F13** `robots.txt` | **absent**, vérifié | à ajouter — trivial et sans risque |
+| court, accents, emoji | accepte le bon, refuse le mauvais | identique |
+| 255, 256, 300 octets | accepte le bon, **accepte aussi un mauvais** | **identique** |
 
-Les neuf autres n'ont pas encore été instruits.
+La seconde ligne n'est pas une faiblesse de `pgcrypto` : **bcrypt tronque à 72
+octets**, et `bcryptjs` fait exactement pareil aujourd'hui. Rien de ce qui était
+accepté ne change. *(Cette troncature est une faiblesse ancienne d'Atlas, notée
+dans `TODO.md` — la corriger invaliderait tous les mots de passe.)*
+
+### Tests — 17/17 sous `atlas_app`, 7 rouges sur les anciens droits
+
+Refusés : `SELECT` global, condensat ciblé, sous-requête, agrégat, `ORDER BY`,
+`SELECT *`, `COPY`, et l'**écriture**. Intacts : connexion, mauvais mot de passe,
+adresse inconnue, changement de mot de passe, ancien devenu inopérant, Face ID,
+coupure des sessions.
+
+### Deux régressions rencontrées, et ce qu'elles apprennent
+
+| | |
+|---|---|
+| borner `INSERT` par colonne | Drizzle **nomme** `password_hash` dans chaque insertion, même avec `default`, et PostgreSQL exige le droit sur toute colonne **citée**. **48 suites rouges** d'un coup |
+| `returning()` nu | `RETURNING` exige de lire les colonnes rendues |
+
+**Risque résiduel assumé :** `INSERT` reste au niveau table. Une injection
+pourrait donc **créer** un compte avec un condensat connu — mais ce compte
+n'appartient à aucune entreprise, et `getCurrentCtx` refuse un utilisateur sans
+adhésion. Le danger réel était de **changer** le condensat d'un compte existant :
+c'est `UPDATE`, et il est retiré.
 
 ---
 
-## F — Audio : état constaté, rien changé
+## D — LA VULNÉRABILITÉ TROUVÉE PENDANT M11 (ce n'est PAS M11)
 
-```ts
-// src/server/upload-limits.ts:46
-export function verifierTypeAudio(mimeType: string) {
-  const base = mimeType.split(";")[0].trim().toLowerCase();
-  if (!TYPES_AUDIO_AUTORISES.includes(base)) …
+### Constat
+
+> **« Me déconnecter partout » se contournait.**
+
+`GET /api/auth/session` est une route publique d'Auth.js. Elle décode le cookie,
+rejoue les rappels et **repose un cookie neuf** — sans jamais consulter la
+coupure. Or `@auth/core` fait, à chaque réémission :
+
+```js
+.setIssuedAt()                    // ← iat remis à maintenant
+.setJti(crypto.randomUUID())      // ← jti neuf
 ```
 
-**Le type déclaré par le navigateur, et rien d'autre.** Nous l'avions déjà écrit
-au Lot 2B — ce n'est pas une découverte du brief.
+…et c'est `iat` que la coupure comparait. Un cookie volé, pourtant coupé, se
+redonnait donc un `iat` postérieur à la coupure et **rentrait**.
+
+### Reproduit dans un vrai navigateur
+
+```
+  ✓ connecté
+  → /api/auth/session a répondu 200 (sans avoir visité d'écran)
+  ✗✗ LA COUPURE SE CONTOURNE : la session refusée est revenue.
+```
+
+### La faute de méthode, à écrire noir sur blanc
+
+**Ma première sonde a annoncé « la coupure tient ».** Elle visitait un écran
+protégé avant d'essayer le contournement — or cet écran renvoie vers la route qui
+**efface le cookie**. Elle mesurait un navigateur déjà vidé, **sans avoir joué
+l'attaque**. Un attaquant ne visite aucun écran.
+
+*C'est le contrôle qui mesure zéro (`CLAUDE.md` §5), dans une robe neuve : le
+premier verdict était vert et ne prouvait rien.*
+
+### Correction — centrale, pas propre à une route
+
+Le brief demandait de ne pas rustiner `/api/auth/session` seule. **Je n'ai touché
+ni la route ni le *middleware*** : aucun des deux ne peut lire la base, et c'est
+délibéré.
+
+À la place, le jeton porte deux marques posées par Atlas :
+
+| `sessionId` | l'identité — la preuve de M11 s'y accroche |
+| `authentifieLe` | l'ancienneté — **c'est elle que la coupure compare** |
+
+Les deux sont posées **une seule fois**, à une vraie authentification, et
+recopiées à l'identique aux réémissions. **Réémettre ne rajeunit plus rien**,
+quel que soit le chemin Auth.js emprunté.
+
+**Où la propriété vit :** `getCurrentCtx`. Les 20 routes de `src/app/api` ont été
+auditées — **tout chemin qui sert ou écrit une donnée métier y passe**. Les
+seules qui ne l'appellent pas sont Auth.js lui-même, le cron (secret dédié), les
+routes de santé, les polices, et la route qui efface les cookies.
+
+**Pas de boucle** : `getCurrentCtx` lit la session, puis la base, puis compare.
+
+### Preuves
+
+- `scripts/test-coupure-sessions-e2e.ts` — le parcours de l'attaquant, **vu rouge
+  sur le code d'avant**, vert maintenant ;
+- `scripts/test-identite-session.ts` — **13/13**, sans base ni navigateur : deux
+  connexions donnent deux identités, dix réémissions n'usent rien, et une session
+  volée reste coupée après dix réémissions.
+
+### Le repli, et pourquoi il est délibéré
+
+Un jeton signé avant cette version ne porte pas `authentifieLe` : il retombe sur
+son `iat`. **Le refuser d'office déconnecterait tout le monde au déploiement** —
+un geste que personne n'a demandé. Le repli s'éteint seul quand les anciens
+jetons expirent.
+
+---
+
+## E — M11 : ce qui est fait, ce qui ne l'est pas
+
+### Fait, et prouvé
+
+L'identité stable de session (ci-dessus). C'était le verrou : sans elle, une
+preuve récente n'aurait pas su à quelle session appartenir.
+
+### Constaté, et qui contredit trois hypothèses du brief
+
+| Hypothèse | Ce que dit le code |
+|---|---|
+| « changement de rôle » | **n'existe pas** dans Atlas |
+| « changement de mot de passe à protéger » | **déjà une preuve récente** — il exige le mot de passe actuel, vérifié en base depuis M9 |
+| « `exporterClient` / `effacerClient` » | **aucun écran ne les appelle** (confirme F7) |
+
+### Ce que « me déconnecter partout » révoque, exactement
+
+| Révoque | **les sessions** — toutes celles authentifiées avant la coupure |
+| Ne révoque PAS | **les clés Face ID.** Elles peuvent produire une NOUVELLE session après la coupure, et c'est voulu |
+
+**Une correction à faire, et elle n'était dans aucun brief :** l'écran laisse
+aujourd'hui croire que ce bouton sécurise un compte compromis. Il ne le fait pas.
+Un libellé qui promet plus qu'il ne tient est un mensonge, pas une nuance — je le
+rectifierai avec M11.
+
+### Reste à faire
+
+Preuve récente de **10 minutes**, liée au `sessionId`, pour quatre gestes :
+IBAN, ajout d'une clé, suppression d'une clé, export complet. Plus l'isolation
+entre deux sessions du même utilisateur.
+
+---
+
+## F — F1 → F13 : 4 instruits sur 13
+
+| | Constat | Décision |
+|---|---|---|
+| **F3** `/api/health/diagnostic` | borne déjà son calcul d'origines en production | vérifier le **corps** de la réponse par un contrôle |
+| **F6** migrations en double | **FAUX PROBLÈME** — le lanceur les suit par nom de fichier | **ne rien faire** ; renommer serait la seule façon de casser |
+| **F7** `exporterClient` / `effacerClient` | **confirmé** : aucun appelant | décision produit, pas de sécurité |
+| **F10** CSP `unsafe-inline` | présent | **hors lot** — une CSP à nonce mal posée rend l'application blanche |
+| **F13** `robots.txt` | **absent** | à ajouter, trivial |
+
+---
+
+## G — Audio
+
+`verifierTypeAudio` ne regarde que **le type déclaré** — inchangé.
 
 **Ce qui borne le risque, et que le brief ne dit pas :** depuis M1, le type
-**servi** n'est plus le type déclaré — il est dérivé de l'extension de la clé,
-choisie par le serveur. Ce qui reste possible est de **ranger** un fichier inerte
-sous une extension audio, pas de le faire exécuter.
-
-Le piège d'une vérification par signature est identifié : un iPhone envoie du
-MP4/AAC, un navigateur Android du WebM/Opus. Une liste trop étroite ferait
-refuser des dictées réelles sur un chantier.
+**servi** est dérivé de l'extension de la clé, choisie par le serveur. Ce qui
+reste possible est de **ranger** un fichier inerte sous une extension audio, pas
+de le faire exécuter.
 
 ---
 
-## G — Sauvegardes
+## H — Sauvegardes
 
 **BLOQUANT PRODUCTION — SAUVEGARDE/RESTAURATION NON ÉPROUVÉE.**
 
-Aucun fournisseur d'hébergement PostgreSQL ni de stockage objet n'est déclaré
-dans le dépôt. Rien ne sera écrit qui ressemble à une sauvegarde de production.
-
----
-
-## H — Tests réellement exécutés
-
-| Commande | Résultat exact |
-|---|---|
-| `npx tsc --noEmit` | 0 erreur |
-| `npm run lint` | 0 erreur |
-| `npm run verifier:memoire` | cohérente (8 fichiers) |
-| `npx tsx scripts/test-mise-a-jour-role-db.ts` | **5/5** — et **3 échecs** sur la source d'avant |
-| suites base (`npm test`) | **224/224** |
-| suites navigateur | *batterie en cours au moment d'écrire* |
-| `npm audit` | 11 alertes (relevé, non corrigé) |
+Aucun fournisseur n'est déclaré dans le dépôt. **NON VÉRIFIABLE DEPUIS LE DÉPÔT.**
 
 ---
 
 ## I — Régressions rencontrées pendant ce lot
 
-**Aucune du fait de M12.** Pour mémoire, celles rencontrées en fermant le Lot 2B
-juste avant, toutes dans les SUITES et jamais dans le produit : sept contrôles
-qui attendaient un délai plutôt qu'un signal, ou une formulation plutôt qu'une
-règle. Détail dans `CHANGELOG.md` du 25 août.
+| | Rattrapée par |
+|---|---|
+| `INSERT` borné par colonne → 48 suites rouges | la batterie |
+| `returning()` nu → 3 suites rouges | la batterie |
+| une sonde qui annonçait « la coupure tient » sans jouer l'attaque | la relecture de son propre ordre de gestes |
+| `require()` dans une suite, devenu erreur avec le lint de Next 16.3 | le lint |
 
 ---
 
 ## J — Fichiers et migrations
 
-| Fichier | Nature |
-|---|---|
-| `scripts/test-mise-a-jour-role-db.ts` | **créé** — 5 vérifications |
-| `src/app/reglages/actions.ts` | rôle propriétaire + `estBancDEssai()` |
-| `src/app/reglages/page.tsx` | bouton masqué pour un membre, `estBancDEssai()` |
-| `src/server/version-executee.ts` | `estBancDEssai()` |
-| `CHANGELOG.md`, `docs/lot-3-securite-lecture.md` | mémoire du dépôt |
+**Migration :** `drizzle/0064_secret_authentification.sql` (la seule).
 
-**Aucune migration.**
+**Créés :** `src/server/secret-authentification.ts`, `src/lib/identite-session.ts`,
+`scripts/test-mise-a-jour-role-db.ts`, `scripts/test-secret-authentification-db.ts`,
+`scripts/test-identite-session.ts`, `scripts/test-coupure-sessions-e2e.ts`,
+`scripts/sonde-jeton-session.mts`.
+
+**Modifiés :** `src/auth.ts`, `src/auth.config.ts`, `src/server/session-ctx.ts`,
+`src/types/next-auth.d.ts`, `src/app/reglages/actions.ts`,
+`src/app/reglages/page.tsx`, `src/server/version-executee.ts`,
+`src/server/repositories/compte.ts`, `src/server/repositories/entreprises.ts`,
+`package.json`, plus trois suites adaptées.
 
 ---
 
 ## K — Reste à faire
 
-1. **M10** — monter Next manuellement, batterie complète, `npm audit` après ;
-2. **M9** — le vrai sujet : `REVOKE` de colonne + fonction verrouillée, avec les
-   neuf tests négatifs demandés, **joués sous `atlas_app`** ;
-3. **M11** — résoudre d'abord la liaison preuve ↔ session, puis la liste exacte
-   des opérations sensibles, puis coder ;
-4. **F1, F2, F4, F5, F7, F8, F9, F11, F12** — à instruire ; **F13** à ajouter ;
-5. **Audio** — étudier la signature, ou laisser ouvert et le dire ;
-6. **Sauvegardes** — rien à coder.
+1. **M11** — la preuve récente de 10 minutes et les quatre gestes ;
+2. le **libellé** de « me déconnecter partout », qui promet trop ;
+3. **F1, F2, F4, F5, F8, F9, F11, F12** à instruire ; **F13** à ajouter ;
+4. **Audio** — signature légère, ou point laissé ouvert et dit comme tel ;
+5. **Sauvegardes** — rien à coder tant que l'hébergement n'est pas choisi.
 
 ---
 
 ## Verdict
 
-**LOT 3 NON VALIDÉ — parce qu'il n'est pas terminé.**
+**LOT 3 PARTIELLEMENT VALIDÉ.**
 
-Ce n'est pas un échec : c'est l'état réel après le premier des sept points. M12
-est fait, prouvé rouge sur l'ancien code, et vert sur le neuf. Le reste n'est pas
-commencé, et l'annoncer autrement serait exactement ce que le brief interdit.
+Trois points sur sept sont clos et éprouvés, plus une vulnérabilité hors
+périmètre trouvée, reproduite et fermée. M11 a franchi son verrou. Le reste n'est
+pas commencé, et l'annoncer autrement serait transformer un « à faire » en
+« fait ».
