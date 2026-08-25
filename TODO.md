@@ -9,6 +9,41 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
+## Photographier son devis / sa facture pour en reprendre l'allure (25 août 2026)
+
+**Sa demande :** *« faut également que l'utilisateur puisse prendre la photo de
+son devis et que l'outil recopie trait pour trait son devis, pareil pour sa
+facture »* — venue juste après *« on comprend rien, trop compliqué pour modifier,
+faut simplifier tout ça »* sur l'écran Réglages → Documents (allure + message).
+
+**Ce que ça remplace, et pourquoi c'est une simplification.** Aujourd'hui il
+règle à la main le logo, la typographie, la couleur et le message (un écran de
+près de 1000 lignes qu'il trouve illisible). L'idée : il photographie un de ses
+devis existants, et l'appli **en tire l'allure** pour ses futurs documents — le
+long réglage manuel disparaît derrière un seul bouton.
+
+**Franchise à tenir, dite le 25 août :** « trait pour trait » à l'identique n'est
+ni faisable ni souhaitable — une photo n'est pas modifiable, et l'appli doit
+produire un vrai PDF propre (bon lien, bons montants). Ce qu'on reproduit, c'est
+l'**allure** et les **mentions**, pas une copie pixel.
+
+**Ce qu'il a tranché (25 août)**, sur trois choix proposés :
+
+| L'appli reprend de la photo | Retenu ? |
+|---|---|
+| l'allure : logo, couleurs, police, mise en page | **oui** |
+| les mentions : conditions de paiement, mentions légales, politesse | **oui** |
+| les lignes et les prix de ce devis-là | **non** |
+
+| | |
+|---|---|
+| ce qu'il faut | un écran « Photographier mon devis », la lecture par l'IA vision (le même patron que `lire-ticket.ts` et le croquis d'arrosage), et l'écriture du résultat dans l'allure (`allure-documents.ts`) et les conditions (`conditions-documents.ts`) déjà en base |
+| qui peut le faire | moi — c'est du code, la brique vision existe |
+| d'abord | **la maquette** (§3 bis), qu'il a demandée avant tout code |
+| pas vérifiable ici | la lecture d'image réelle demande une clé de vision, absente de cet environnement — à jouer sur son espace |
+
+---
+
 ## Le devis et la facture n'ont pas encore le refus d'adresse locale (24 août 2026)
 
 Le lien envoyé au client prenait l'adresse du navigateur qui l'avait fabriqué —
