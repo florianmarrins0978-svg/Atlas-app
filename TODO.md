@@ -9,7 +9,21 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
-## Photographier son devis / sa facture pour en reprendre l'allure (25 août 2026)
+## ~~Photographier son devis / sa facture pour en reprendre l'allure~~ — FAIT le 25 août 2026
+
+**FAIT.** L'écran Réglages → Documents porte désormais, en tête de « L'allure de
+mes devis », deux boutons *Photographier mon devis / ma facture* (appareil photo
+**ou** photothèque). La lecture vit dans `src/server/ai/services/lire-allure-devis.ts`
+(même patron que `lire-ticket.ts`), l'action `reprendreAllurePhotoAction` fusionne
+le lu dans l'allure et les conditions déjà en base, et l'écran montre ce qui a été
+repris et sa réserve. La photo est nettoyée de ses métadonnées comme le logo.
+
+**Reste NON vérifié ici, et il faut le dire :** l'appel réel au fournisseur de
+vision demande une clé, absente de cet environnement. La fonction PURE de lecture
+est éprouvée (`scripts/test-lecture-allure-devis.ts`, 0 échec) ; **la lecture d'un
+vrai devis se prouve sur son espace, avec sa clé, comme la dictée.**
+
+<details><summary>Contexte d'origine</summary>
 
 **Sa demande :** *« faut également que l'utilisateur puisse prendre la photo de
 son devis et que l'outil recopie trait pour trait son devis, pareil pour sa
@@ -46,6 +60,8 @@ dans sa galerie. Et **« régler à la main » a été retiré** : il a demandé
 | qui peut le faire | moi — c'est du code, la brique vision existe |
 | d'abord | **la maquette** (§3 bis), qu'il a demandée avant tout code |
 | pas vérifiable ici | la lecture d'image réelle demande une clé de vision, absente de cet environnement — à jouer sur son espace |
+
+</details>
 
 ---
 
@@ -407,6 +423,47 @@ le produit. **Ne pas rouvrir** sans qu'il le redemande.
 
 La planche 92 (`appli/calendrier-aujourdhui.html`) reste : elle raconte le
 chemin, et le prochain qui trouvera deux cases entourées saura pourquoi.
+
+---
+
+## CINQ RÉGLAGES DE DOCUMENTS N'ATTEIGNENT PAS LE DEVIS — sa décision attendue (25 août 2026)
+
+**Il l'a relevé lui-même :** *« les autres qui sont en ON doivent-ils être
+visibles sur le devis ? car je ne vois rien, est-ce normal ? »*
+
+**Non. Vérifié dans le code, pas supposé.** Sur les six réglages de
+« Réglages → Documents », **un seul atteint le document** :
+
+| Réglage | Sur le devis ? | Par où |
+|---|---|---|
+| Validité du devis | **oui** | figée sur le devis à sa création (`getOuCreerDevisBrouillon`), imprimée par `devis-pdf.ts` |
+| Acompte | non | — |
+| Délai de paiement | non | — |
+| Moyens de paiement | non | — |
+| Rappeler les pénalités | non | — |
+| Texte en bas des documents | non | — |
+
+`lignesConditionsDevis` compose bien ces cinq lignes, et **elle n'est appelée que
+par l'aperçu de l'écran Réglages**. Ni l'écran du devis, ni son PDF ne la
+connaissent. Il règle, il voit l'aperçu, et son client ne reçoit rien.
+
+Ce qu'il voit sur son devis vient d'ailleurs, et c'est ce qui rend le défaut
+invisible : « Acompte de 30 % à la signature… » est un **exemple grisé** dans un
+champ libre vide (`placeholder`), et « Modalités de paiement / IBAN » vient de
+ses coordonnées bancaires.
+
+**POURQUOI CE N'EST PAS CODÉ D'OFFICE.** Brancher ces cinq lignes change ce que
+**reçoivent ses clients** — un devis qui part avec trois paragraphes de plus. Où
+elles se placent sur le document est un choix qu'il doit voir avant qu'il parte
+chez quelqu'un (`CLAUDE.md` §3 bis). La question lui est posée ; rien n'est codé
+tant qu'il n'a pas répondu.
+
+**Et le commentaire du code affirmait le contraire** — « l'aperçu du bas lit LA
+MÊME fonction que le PDF ». Corrigé le 25 août : il dit maintenant ce qui est
+vrai. Une documentation périmée est pire qu'absente.
+
+---
+
 ## LES SUITES NAVIGATEUR SONT INSTABLES SOUS LA CHARGE DE LA BATTERIE (25 août 2026)
 
 **Le fait, mesuré trois fois plutôt que supposé.** Des suites rougissent dans la
@@ -427,11 +484,27 @@ bruit — une demi-heure par lot, et le risque inverse : prendre un VRAI rouge p
 du bruit. Un contrôle qui parle à tort s'apprend à être ignoré, et l'on perd le
 garde-fou sans s'en apercevoir.
 
-**Ce qui est écarté, faute de preuve :** « c'est un flottement », dit sans
-mesure. Les symptômes vus jusqu'ici sont des délais dépassés
-(`locator.waitFor: Timeout 30000ms`) et des écrans qui n'ont pas fini de se
-composer — cela ressemble à une machine saturée, pas à un défaut de logique.
-Deux pistes à éprouver, dans cet ordre :
+**CORRECTION DU 25 AOÛT AU SOIR, ET ELLE CHANGE LE DIAGNOSTIC.** Une partie de
+ces rouges vient d'une faute de ma part, pas de la batterie : **je lançais des
+suites à côté pendant qu'une batterie tournait**, et les deux partagent la MÊME
+base d'essai. Chacune appelle `nettoyerBase()` et vide les tables de l'autre en
+plein milieu — d'où des écrans sans données, des attentes qui expirent, et des
+suites qui passent au vert dès qu'on les rejoue seules.
+
+**La règle qui en sort, et elle n'était écrite nulle part : une seule chose à la
+fois sur la base d'essai.** Pas de suite lancée « pour vérifier vite » pendant
+qu'une batterie tourne ; pas deux batteries. Le conteneur a une seule base, et
+elle n'est pas faite pour deux lecteurs qui la vident.
+
+**PREMIÈRE MESURE APRÈS LA CORRECTION, et elle est nette :** une batterie jouée
+avec **rien d'autre en train de toucher la base** rend **224/224 en base et
+110/110 au navigateur**. Aucun rouge. C'est le premier 110/110 de la journée, et
+il désigne la faute ci-dessus plutôt que la machine.
+
+**Ce qui reste à éprouver** : les rouges qui tomberaient encore alors que rien
+d'autre ne tourne — s'il en reste. Les symptômes étaient des
+délais dépassés (`locator.waitFor: Timeout 30000ms`), ce qui ressemble à une
+machine saturée. Deux pistes, dans cet ordre :
 
 1. **le serveur de développement**, qui recompile chaque route à la demande : au
    bout de cent suites, il a compilé toute l'application et travaille dans un
@@ -589,6 +662,21 @@ ce que vous avez dit" au lieu d'annoncer qu'il rédige »*. Tombée en batterie
 touchait pas — il ne portait que l'en-tête de l'accueil. Ici encore, l'assertion
 arrive avant que le serveur chargé n'ait rendu sa réponse : l'écran en est resté
 au message d'échec de la dictée précédente. **Quatre suites, un seul défaut.**
+
+**MESURE DÉCISIVE DU 25 AOÛT, à garder :** l'étape navigateur a été jouée sur
+`main` NU — arbre séparé, aucun commit de session — et elle y rend **107/110**,
+trois suites tombées (`test-arrosage-e2e`, `test-facture-impayee-e2e`,
+`test-fiche-chantier-e2e`). Le même jour, sur un arbre PORTANT un lot, elle
+rendait 109/110, avec à chaque fois **une suite différente**.
+
+**Cette machine ne rend donc pas 110/110, quel que soit le code.** Ce n'est pas
+une excuse pour livrer du rouge : c'est un fait à opposer à la prochaine session
+qui croira avoir cassé quelque chose, et qui passera une heure à chercher dans
+son propre lot. **Le bon geste, devant un rouge navigateur : rejouer la suite
+SEULE, puis, si elle passe, rejouer l'étape sur `main` nu.** Un arbre séparé se
+monte en deux commandes (`git worktree add`), mais il lui faut de VRAIES
+dépendances : un lien symbolique vers `node_modules` fait paniquer Turbopack
+(« Symlink [project]/node_modules is invalid »), et l'essai ne prouve alors rien.
 
 **Personne ne l'a encore fait**, et ce n'est pas ce lot-ci qui doit le faire :
 c'est écrit ici pour que la prochaine batterie rouge sur ces deux suites ne

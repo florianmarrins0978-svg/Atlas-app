@@ -46,9 +46,55 @@ prestation : vert seul, rouge dans la batterie complète, en accusant « les
 tarifs de démonstration » — le mauvais coupable. Il redemande maintenant la page
 une fois avant de conclure.
 
----
+### Le message au client, simplifié : plus de pastilles à poser
 
-## 2026-08-25
+*« On comprend rien, trop compliqué pour modifier »*, puis, devant la maquette
+`appli/message-au-client-simple.html` : *« la modification est parfaite, tu peux
+coder »*. Il réglait son message en POSANT à la main quatre pastilles
+(« le client », « le document », « le lien », « mon entreprise »).
+
+Fini : **un simple texte**. Le prénom, la phrase du document et le lien se
+remplissent seuls — il n'a plus rien à placer. Ce qui s'adapte se **montre**, en
+doré, dans **deux aperçus côte à côte** : « Envoi d'un devis » et « Envoi d'une
+facture », à message identique. On y voit le mot changer tout seul — le devis dit
+*« choisir votre date »*, la facture *« F… à régler avant le… »* (sa « façon 1 »,
+re-confirmée le 25 août : Atlas adapte le milieu, il garde le bonjour et la
+signature).
+
+Partis avec : la rangée de pastilles, la bascule d'aperçu, la ligne
+« l'objet n'est pas modifiable ». Le lien reste **obligatoire** — le serveur
+refuse toujours un message sans lui —, et un seul filet demeure : reprendre le
+message d'Atlas s'il l'a défait.
+
+**Ce qui reste tenu :** le fil entier — de l'écran jusqu'au téléphone du client
+— est éprouvé au navigateur (`test-message-au-client-e2e`), et les deux aperçus
+lisent les MÊMES valeurs que l'envoi (`apercuColore` coupe le modèle sur les
+mêmes pastilles que `rendreMessage` : jamais une seconde rédaction).
+
+### Photographier un devis pour en reprendre l'allure
+
+*« faut que l'utilisateur puisse prendre la photo de son devis […] pareil pour
+sa facture »*, après *« on comprend rien, trop compliqué pour modifier »* sur
+l'écran des documents. Il règle aujourd'hui logo, police, couleur et mentions à
+la main, sur près de mille lignes qu'il trouve illisibles.
+
+En tête de « L'allure de mes devis », deux boutons photographient un devis ou
+une facture — **appareil photo ou photothèque**, son devis étant parfois déjà
+une image. L'appli en reprend **l'allure** (couleurs, police reconnue) et les
+**mentions** (conditions, politesse), **jamais les lignes ni les prix**, jamais
+le logo — un modèle décrit une image, il ne la découpe pas, et l'écran le dit en
+réserve plutôt que de le laisser croire.
+
+**Ce qui protège du faux.** On ne pose une police que sur une famille reconnue
+parmi les neuf que le PDF sait embarquer ; une couleur mal lue vaut `null` et
+laisse celle d'avant ; un acompte hors bornes tombe. Chaque perte se dit à
+l'écran. La photo est nettoyée de ses métadonnées comme le logo (coordonnées GPS
+du lieu de la prise), avant de partir chez le fournisseur de vision.
+
+**Ce qui n'est PAS éprouvé ici, et l'est ailleurs.** La fonction pure de lecture
+est testée sans clé (`test-lecture-allure-devis.ts`), là où vivent les pièges.
+L'appel réel au fournisseur demande une clé absente de cet environnement : il se
+prouve sur son espace, avec un vrai devis — comme la dictée.
 
 ### L'accueil perd son salut et son trait
 
@@ -71,10 +117,6 @@ dans sa version B ; sa consigne était : *« pour la mienne, fais seulement les
 changements que je t'ai demandés »*. Elles restent sur la planche, où il peut les
 comparer. Une proposition ne se glisse pas dans la version de quelqu'un sous
 prétexte qu'elle l'améliore. `ARCHITECTURE.md` §172.
-
----
-
-## 2026-08-25
 
 ### Le lot 2B est au vert — et sept contrôles fragiles avec lui
 
@@ -172,6 +214,29 @@ avant de vérifier qu'elle avait survécu à l'assistant. Sous la batterie, l'ac
 serveur dépasse ce délai : l'assistant était accusé d'un effacement qui n'avait
 pas eu lieu. Elle attend maintenant que la requête soit partie — et son message
 nomme le coupable, au lieu d'un « 0 == 1 » qui envoyait chercher partout.
+### Deux phrases retirées, et un seul contrôle pour toutes celles à venir
+
+**Ses deux demandes du 25 août :** *« supprime la phrase "aucun chantier pour
+l'instant" »*, puis *« supprime la phrase en gris "tout s'enregistre au fur et à
+mesure" »* — celle-ci sous l'aperçu du PDF, sur l'écran du devis.
+
+La seconde rassurait sur un doute qu'il n'a plus : il connaît son outil, et rien
+ne part effectivement avant qu'il ne le décide. Une phrase qui répond à une
+question qu'on ne se pose plus n'informe plus, elle occupe.
+
+**Un seul contrôle, et non un fichier par phrase.** Il en a fait retirer deux en
+deux jours et il en fera retirer d'autres : `scripts/test-phrases-retirees.ts`
+porte une ligne par retrait — sa demande à la lettre, la date, le fichier — et le
+tableau est la documentation. `test-accueil-liste-vide.ts`, écrit la veille pour
+la première, y est absorbé.
+
+**Il fixe aussi ce qui doit RESTER**, parce que c'est là que se cache le vrai
+risque : les bandeaux sur l'accueil vide, et « Aperçu du PDF » sur l'écran du
+devis — le lien vivait juste au-dessus de la phrase retirée. Vu rouge contre le
+retour des deux phrases.
+
+---
+
 ### L'accueil vide ne dit plus qu'il est vide
 
 **Sa demande, capture à l'appui :** *« supprime la phrase "aucun chantier pour
@@ -191,7 +256,7 @@ aucun chantier — est hors de portée des suites navigateur, qui partagent le
 compte de démonstration et en portent toujours. Une suite qui « vérifierait »
 l'absence sur un accueil plein serait verte sans avoir rien mesuré. C'est
 grossier, et c'est plus honnête qu'un vert qui ne prouve rien
-(`scripts/test-accueil-liste-vide.ts`, vu rouge contre le retour de la phrase).
+(`scripts/test-phrases-retirees.ts`, vu rouge contre le retour de la phrase).
 
 ### Choisir une date se fait d'un seul doigt
 
