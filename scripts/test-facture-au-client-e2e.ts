@@ -154,7 +154,10 @@ async function main() {
   assert.match(
     ecran,
     /ne l'a pas encore reçue/i,
-    "L'écran laisse croire que la facture est partie alors que rien ne la porte au client."
+    "L'écran laisse croire que la facture est partie alors que rien ne la porte au client.\n" +
+      `Écran lu EN ENTIER :\n${ecran}\n` +
+      `Bloc d'envoi présent : ${await page.locator('[data-atlas="transmission-sms"], [data-atlas="transmission-email"]').count()} · ` +
+      `refus d'adresse : ${await page.locator("[data-refus]").count()}`
   );
   console.log("  ✓ une facture arrêtée dit qu'elle n'est pas encore partie, et propose de l'envoyer");
 
