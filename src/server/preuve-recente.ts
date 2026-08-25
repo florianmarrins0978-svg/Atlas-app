@@ -6,7 +6,6 @@ import {
   messagePreuveExigee,
   preuveEstRecente,
   type GesteSensible,
-  type MethodePreuve,
 } from "../lib/preuve-recente";
 
 /**
@@ -54,18 +53,40 @@ export type ContextePreuve = { utilisateurId: string; sessionId?: string };
  * ré-authentifier rafraîchit la sienne au lieu d'empiler des lignes que rien ne
  * nettoierait.
  */
-export async function poserPreuve(
+export async function poserPreuveParMotDePasse(
   utilisateurId: string,
   sessionId: string,
-  methode: MethodePreuve
-): Promise<void> {
-  await db
-    .insert(preuvesAuthentification)
-    .values({ utilisateurId, sessionId, methode, prouveLe: new Date() })
-    .onConflictDoUpdate({
-      target: [preuvesAuthentification.utilisateurId, preuvesAuthentification.sessionId],
-      set: { prouveLe: new Date(), methode },
-    });
+  motDePasse: string
+): Promise<boolean> {
+  /**
+   * **C'EST LE MOTEUR QUI TIENT LA PROPRIÉTÉ, PLUS LE CODE.**
+   *
+   * La première version écrivait la ligne depuis ici, après avoir vérifié le mot
+   * de passe une instruction plus tôt. Mesuré sous `atlas_app`, cela donnait :
+   *
+   *     INSERT INTO preuves_authentification (…) VALUES (…, 'cle-appareil');
+   *     → INSERT 0 1
+   *
+   * Une injection SQL dans n'importe quelle requête métier aurait donc pu poser
+   * une preuve — pour n'importe qui, n'importe quelle session, en prétendant
+   * même dans le journal qu'une clé d'appareil avait signé. La propriété ne
+   * tenait qu'à la discipline du code.
+   *
+   * `atlas_app` a perdu `INSERT` et `UPDATE` sur cette table
+   * (`drizzle/0066_preuve_par_le_moteur.sql`). La vérification et l'écriture
+   * vivent maintenant dans **une seule instruction**, à l'intérieur de la base :
+   * il n'existe plus de chemin par lequel l'une aille sans l'autre.
+   *
+   * `methode` est écrite par la fonction, jamais reçue : tant qu'aucun chemin
+   * WebAuthn n'existe, aucune preuve ne peut prétendre en venir.
+   */
+  const resultat = await db.execute(
+    sql`SELECT public.poser_preuve_par_mot_de_passe(${utilisateurId}::uuid, ${sessionId}, ${motDePasse}) AS ok`
+  );
+  const lignes = Array.isArray(resultat)
+    ? (resultat as { ok?: boolean }[])
+    : ((resultat as { rows?: { ok?: boolean }[] })?.rows ?? []);
+  return lignes[0]?.ok === true;
 }
 
 /** Cette session a-t-elle prouvé son identité assez récemment ? */

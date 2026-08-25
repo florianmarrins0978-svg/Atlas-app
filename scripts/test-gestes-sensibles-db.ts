@@ -16,11 +16,13 @@
 // Éprouvée SOUS `atlas_app`, comme la production.
 
 import assert from "node:assert/strict";
+import { Pool } from "pg";
+import { hash as bcrypt } from "bcryptjs";
 import { pool, db } from "../src/server/db/client";
 import { users, clesAppareil, entreprises } from "../src/server/db/schema";
 import { eq } from "drizzle-orm";
 import * as entreprisesRepo from "../src/server/repositories/entreprises";
-import { poserPreuve, effacerPreuves } from "../src/server/preuve-recente";
+import { poserPreuveParMotDePasse, effacerPreuves } from "../src/server/preuve-recente";
 import { majIdentiteAction } from "../src/app/reglages/identite/actions";
 import { retirerCleAction } from "../src/app/reglages/connexion/actions";
 import { deconnecterPartoutAction } from "../src/app/reglages/connexion/actions";
@@ -46,6 +48,27 @@ async function main() {
     { email: `gestes-${marque}@test.local`, nom: "Patron" }
   );
   const SESSION = `session-gestes-${marque}`;
+
+  // Une preuve ne naît plus que d'un mot de passe juste, vérifié DANS la base.
+  const MOT_DE_PASSE = "le-mot-de-passe-des-gestes";
+  await pool.query(`UPDATE users SET password_hash = $1 WHERE id = $2`, [
+    await bcrypt(MOT_DE_PASSE, 10),
+    utilisateurId,
+  ]).catch(async () => {
+    const proprio = new Pool({
+      connectionString:
+        process.env.DATABASE_ADMIN_URL ?? "postgresql://atlas_owner:atlas_owner_ci_pw@localhost:5432/atlas_test",
+    });
+    await proprio.query(`UPDATE users SET password_hash = $1 WHERE id = $2`, [
+      await bcrypt(MOT_DE_PASSE, 10),
+      utilisateurId,
+    ]);
+    await proprio.end();
+  });
+  const poserPreuve = async (id: string, session: string) => {
+    const ok = await poserPreuveParMotDePasse(id, session, MOT_DE_PASSE);
+    if (!ok) throw new Error("le montage n'a pas pu poser de preuve");
+  };
 
   process.env.AUTH_TEST_UTILISATEUR_ID = utilisateurId;
   process.env.AUTH_TEST_SESSION_ID = SESSION;
@@ -74,7 +97,7 @@ async function main() {
   });
 
   await essai("IBAN AVEC preuve : il change", async () => {
-    await poserPreuve(utilisateurId, SESSION, "mot-de-passe");
+    await poserPreuve(utilisateurId, SESSION);
     const nouveau = "FR7630004000031234567890143";
     const r = await majIdentiteAction({ iban: nouveau });
     assert.equal(r.ok, true, `refusé alors que la preuve est là : ${JSON.stringify(r)}`);
@@ -131,13 +154,13 @@ async function main() {
      * Le cœur de M11, joué sur un vrai geste : la preuve du téléphone du patron
      * ne sert pas à l'ordinateur du voleur.
      */
-    await poserPreuve(utilisateurId, `une-autre-session-${marque}`, "mot-de-passe");
+    await poserPreuve(utilisateurId, `une-autre-session-${marque}`);
     const r = await retirerCleAction(idCle);
     assert.equal(r.ok, false, "LA PREUVE D'UNE AUTRE SESSION A SUFFI");
   });
 
   await essai("AVEC la preuve de CETTE session, la clé se retire", async () => {
-    await poserPreuve(utilisateurId, SESSION, "mot-de-passe");
+    await poserPreuve(utilisateurId, SESSION);
     const r = await retirerCleAction(idCle);
     assert.equal(r.ok, true, `refusé alors que la preuve est là : ${JSON.stringify(r)}`);
     const restantes = await db
@@ -164,7 +187,7 @@ async function main() {
   });
 
   await essai("…et il EFFACE les preuves : elles n'attestent plus de rien", async () => {
-    await poserPreuve(utilisateurId, SESSION, "mot-de-passe");
+    await poserPreuve(utilisateurId, SESSION);
     await deconnecterPartoutAction();
     await effacerPreuves(utilisateurId); // idempotent — on vérifie l'effet réel
     const { rows } = await pool.query(

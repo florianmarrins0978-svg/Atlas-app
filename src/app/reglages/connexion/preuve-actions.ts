@@ -1,8 +1,7 @@
 "use server";
 
 import { getCurrentCtx } from "@/server/session-ctx";
-import { motDePasseEstCeluiDe } from "@/server/secret-authentification";
-import { poserPreuve, preuveRecenteExiste } from "@/server/preuve-recente";
+import { poserPreuveParMotDePasse, preuveRecenteExiste } from "@/server/preuve-recente";
 import { verifierLimite, LIMITES } from "@/server/rate-limit";
 
 /**
@@ -46,11 +45,14 @@ export async function prouverParMotDePasseAction(motDePasse: string): Promise<Re
     return { ok: false, raison: "Trop d'essais. Réessayez dans un instant." };
   }
 
-  if (!(await motDePasseEstCeluiDe(ctx.utilisateurId, motDePasse))) {
+  /**
+   * **Vérifier et écrire ne font plus qu'un geste, DANS la base.** Les séparer
+   * laissait `atlas_app` capable d'écrire une preuve sans avoir rien vérifié —
+   * mesuré, puis refermé (`drizzle/0066_preuve_par_le_moteur.sql`).
+   */
+  if (!(await poserPreuveParMotDePasse(ctx.utilisateurId, ctx.sessionId, motDePasse))) {
     return { ok: false, raison: "Ce n'est pas votre mot de passe." };
   }
-
-  await poserPreuve(ctx.utilisateurId, ctx.sessionId, "mot-de-passe");
   return { ok: true };
 }
 
