@@ -24,7 +24,6 @@ await p.goto("file://" + chemin, { waitUntil: "networkidle" });
 const lire = async () => p.evaluate(() => {
   const d = document.querySelector("#tel .date") as HTMLElement;
   const visible = [...d.children].filter((e) => getComputedStyle(e).display !== "none");
-  const st = getComputedStyle(d);
   const nom = document.querySelector("#tel .nom") as HTMLElement;
   return {
     vue: (document.getElementById("tel") as HTMLElement).dataset.vue,

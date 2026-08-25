@@ -27,7 +27,7 @@ import { fileURLToPath } from "node:url";
 import { chromium } from "playwright";
 
 const RACINE = join(dirname(fileURLToPath(import.meta.url)), "..");
-const PLANCHE = join(RACINE, "docs", "maquettes", "65-choisir-l-heure.html");
+const PLANCHE = join(RACINE, "appli", "choisir-l-heure.html");
 const CHEMIN_SANDBOX = "/opt/pw-browsers/chromium-1194/chrome-linux/chrome";
 
 let echecs = 0;
