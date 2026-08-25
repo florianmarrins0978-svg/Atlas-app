@@ -551,9 +551,19 @@ export default function FactureClient({
             </p>
           </div>
 
-          <p className="text-center text-[12.5px]" style={{ color: colors.muted }}>
-            Votre messagerie s&apos;ouvre aussitôt. Rien ne part tant que vous ne l&apos;envoyez pas.
-          </p>
+          {/* **« Votre messagerie s'ouvre aussitôt » a été RETIRÉ le 25 août
+              2026**, à sa demande, capture à l'appui : *« supprime le message
+              en gris »*.
+
+              Elle avait sa raison le 22 août, quand les trois appuis sont
+              devenus un : il fallait dire que le geste ouvrait la messagerie
+              sans rien envoyer. Depuis, il l'a fait des dizaines de fois — la
+              phrase n'apprenait plus rien et poussait vers le bas
+              l'avertissement qui, lui, compte : la facture s'arrête.
+
+              **Ne pas la remettre au motif qu'elle rassure.** L'encadré doré
+              au-dessus dit déjà ce que le geste engage, et c'est le seul qui
+              doive être lu. */}
         </>
       )}
     </div>

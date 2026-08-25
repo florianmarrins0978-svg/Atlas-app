@@ -423,7 +423,7 @@ chemin, et le prochain qui trouvera deux cases entourées saura pourquoi.
 
 ---
 
-## CINQ RÉGLAGES DE DOCUMENTS N'ATTEIGNENT PAS LE DEVIS — sa décision attendue (25 août 2026)
+## ~~CINQ RÉGLAGES DE DOCUMENTS N'ATTEIGNENT PAS LE DEVIS~~ — **BRANCHÉS le 25 août 2026**
 
 **Il l'a relevé lui-même :** *« les autres qui sont en ON doivent-ils être
 visibles sur le devis ? car je ne vois rien, est-ce normal ? »*
@@ -449,11 +449,24 @@ invisible : « Acompte de 30 % à la signature… » est un **exemple grisé** d
 champ libre vide (`placeholder`), et « Modalités de paiement / IBAN » vient de
 ses coordonnées bancaires.
 
-**POURQUOI CE N'EST PAS CODÉ D'OFFICE.** Brancher ces cinq lignes change ce que
-**reçoivent ses clients** — un devis qui part avec trois paragraphes de plus. Où
-elles se placent sur le document est un choix qu'il doit voir avant qu'il parte
-chez quelqu'un (`CLAUDE.md` §3 bis). La question lui est posée ; rien n'est codé
-tant qu'il n'a pas répondu.
+**SA RÉPONSE, le 25 août : « branche-les »**, avec une question — *« si je
+décoche le bouton OFF, ils sont censés disparaître ? »* Oui, et c'est éprouvé.
+
+**Fait.** Migration 0064 : les cinq conditions se figent sur le devis à sa
+création, comme la validité. Elles s'impriment sous « NOTES / CONDITIONS »,
+**après** ce qu'il a écrit à la main — son champ libre n'est ni remplacé ni
+réécrit. Rien sur la feuille de chantier du salarié, qui part sans un prix. Le
+détail et le pourquoi sont dans `ARCHITECTURE.md` §177.
+
+**Ce que cela ferme sans qu'il ait eu à trancher :** la planche 60 lui proposait
+A (les conditions seules), B (les siennes d'abord) ou C (deux blocs). B a été
+codée, et elle **devient** A quand il n'a rien écrit. S'il veut C — deux blocs
+séparés d'un filet —, il le dira.
+
+**Ce qui reste ouvert, et qui n'est pas bloquant :** l'ÉCRAN du devis ne montre
+toujours pas ces cinq lignes ; il faut ouvrir « Aperçu du PDF » pour les voir.
+Les poser à l'écran est un changement d'apparence, donc une maquette d'abord
+(`CLAUDE.md` §3 bis).
 
 **Et le commentaire du code affirmait le contraire** — « l'aperçu du bas lit LA
 MÊME fonction que le PDF ». Corrigé le 25 août : il dit maintenant ce qui est
@@ -492,6 +505,26 @@ suites qui passent au vert dès qu'on les rejoue seules.
 fois sur la base d'essai.** Pas de suite lancée « pour vérifier vite » pendant
 qu'une batterie tourne ; pas deux batteries. Le conteneur a une seule base, et
 elle n'est pas faite pour deux lecteurs qui la vident.
+
+**UN CONTRÔLE QUI SUPPOSE L'ÉTAT COMMUN ROUGIT SUR DU CODE JUSTE — deux fois
+le même soir.** `test-reste-equipes-e2e` a été écrit trois fois : il supposait
+d'abord le jour voisin libre, puis que le même jour redevenait libre après
+retrait de son propre chantier. Les deux fois, une autre suite avait laissé de
+quoi occuper ce jour-là, et **le message accusait l'écran de « parler à tort »
+sur un jour où il disait vrai** — le pire des rouges, il envoie corriger du code
+juste.
+
+La troisième version ne suppose plus rien : elle lit ce que la base porte
+réellement — chantiers ET absences —, le passe par **la règle du produit**, et
+exige que l'écran dise exactement ça. Elle fixe la RÈGLE, pas un arrangement
+particulier des données (`CLAUDE.md` §5 bis).
+
+**ET LA MÊME FAUTE A ÉTÉ REFAITE LE 25 AOÛT AU SOIR.** Une batterie tournait
+pendant que des contrôles de maquette et des captures ouvraient leurs propres
+navigateurs. Résultat : `test-lecons-prix-e2e` est tombé sur un délai de 30 s
+d'attente de réponse — et il passe seul, sur la même branche, sans rien toucher.
+**La règle n'est pas « une seule chose sur la base », c'est « une seule chose sur
+la MACHINE »** : un navigateur de plus suffit, même s'il ne lit que des fichiers.
 
 **PREMIÈRE MESURE APRÈS LA CORRECTION, et elle est nette :** une batterie jouée
 avec **rien d'autre en train de toucher la base** rend **224/224 en base et
@@ -700,6 +733,19 @@ avant toute autre hypothèse.
 l'enregistrement plutôt qu'un délai — la même leçon que le `networkidle` du
 15 août. Il reste à l'appliquer aux quatre.
 
+## ⚠ `CHANGELOG.md` porte DEUX en-têtes « 2026-08-24 » (25 août 2026)
+
+`CLAUDE.md` §C l'interdit nommément : *« une entrée neuve se glisse sous
+l'en-tête du jour qui existe déjà ; on n'en crée jamais un second »*. La règle
+existe parce que trois en-têtes du 23 août avaient déjà dû être réunies à la
+main.
+
+**Non corrigé ici, et c'est délibéré** : réunir les deux sections déplacerait
+quelques centaines de lignes écrites par une autre session, peut-être encore
+ouverte. Le faire sous ses doigts lui vaudrait un conflit sur tout le fichier.
+**À réunir par la prochaine session qui trouvera le champ libre**, ou par
+l'auteur de la seconde en-tête.
+
 ## 🔴 `verifier-maquette-message-et-allure.mjs` est ROUGE sur `main` (24 août 2026)
 
 **Constaté en jouant `npm run verifier:maquette` sur un `main` fraîchement
@@ -735,6 +781,19 @@ est dans `CHANGELOG.md`.
 **Une question reste ouverte, et elle est indépendante** : les dix polices
 tiennent sur cinq rangées. S'il préfère une seule ligne qui défile de côté,
 l'aperçu remonte d'autant — il ne s'est pas prononcé.
+
+**DEUX SESSIONS L'ONT CODÉ LE MÊME JOUR**, et c'est à noter : le 25 août, une
+seconde a posé un aperçu collé identique, sans voir celui-ci. Un seul survit — la
+place de `main` —, et son ombre suit désormais la charte (`voile`) au lieu d'un
+noir écrit en dur, qui ne se voit pas sur les deux chartes sombres.
+**Trente secondes de `git branch -r --sort=-committerdate` l'auraient évité**
+(`CLAUDE.md` §6-A).
+
+**Le contrôle sait rougir**, et c'est ce qui le rend croyable :
+`scripts/test-apercu-colle-e2e.ts` remis en A — l'aperçu simplement remonté en
+tête — tombe en nommant A et en citant ce que la planche en disait. A et B ne
+diffèrent que pendant le DÉFILEMENT : un contrôle qui n'aurait pas descendu
+serait resté vert sur la moitié de réponse qu'il a écartée.
 
 ## ⚠ La planche 90 a DÉRIVÉ de l'écran « Terminés » qu'elle référence (23 août 2026)
 
@@ -779,7 +838,7 @@ client a lu. Le détail est dans `CHANGELOG.md`.
 | **Le réglage de départ** | Codé sur **Visible**, ce que l'application faisait déjà. S'il préfère que chaque fiche parte **Masquée**, c'est le défaut de la colonne à retourner (une migration d'une ligne) |
 | **Masquer ou ne rien saisir ?** | Aujourd'hui masquer garde la durée pour lui. S'il voulait pouvoir ne rien saisir du tout, la molette devrait pouvoir revenir à « — », ce qu'elle ne sait pas faire |
 
-## ⚠ EN ATTENTE DE SA RÉPONSE — deux chantiers le même jour ? (22 août 2026)
+## ~~EN ATTENTE DE SA RÉPONSE — deux chantiers le même jour ?~~ — **B CODÉE le 25 août 2026**
 
 Sa colère du 22 août : *« je peux proposer le 24 alors qu'un client a validé le
 24 — corrige-moi ça ! Ça ne doit jamais se reproduire, c'est une erreur
@@ -796,10 +855,28 @@ un jour vide d'un jour à moitié pris.
 
 Planche 88, `appli/envoi-jour-deja-pris.html`. Deux questions posées, pas une :
 
-| | |
-|---|---|
-| **A / B / C** | ne rien écrire · « 1 chantier sur 2 équipes » · deux carrés comme au planning |
-| **Le fond** | veut-il **interdire** deux chantiers le même jour, ou seulement le voir ? |
+**SA RÉPONSE, le 25 août : B** — avec une réserve : *« par contre "1 chantier
+sur 2" on ne comprend pas très bien, comment on peut faire pour comprendre
+mieux ? »*
+
+**Le libellé a donc changé, et il avait raison.** « 1 chantier sur 2 équipes »
+compte ce qui est PRIS, alors que ce qu'il décide dépend de ce qui RESTE : il est
+en train de proposer une date, et la question est *puis-je encore envoyer
+quelqu'un ce jour-là*. D'où **« Reste 1 équipe sur 2 »** — même information,
+tournée du côté du geste. La planche 88 porte le nouveau libellé, et un contrôle
+interdit aux deux de diverger.
+
+**Codé** sur la liste des dates retenues, dans l'écran d'envoi : c'est le dernier
+endroit où il peut retirer une date, et le seul qu'il relit avant de partir. Le
+PIRE des deux demi-journées commande — un matin plein et un après-midi libre ne
+font pas « une équipe et demie ». Rien ne s'écrit sur un jour entièrement libre,
+ni quand il n'a qu'une équipe.
+
+**Sur le fond — interdire ou seulement voir —, il n'a pas répondu en ces
+termes**, et choisir B (une mention) plutôt qu'un refus se lit comme
+« seulement le voir ». C'est aussi le sens sûr : interdire bloquerait un jour où
+il peut réellement envoyer quelqu'un. **S'il veut l'interdiction, il le dira** —
+c'est une ligne de plus dans `verifierJourPropose`.
 
 **Sa liste — 24, 25, 26, 27, 28, 31 — était compatible avec les deux causes**,
 et rien dans sa capture ne permettait de trancher. Ne pas conclure à sa place :
@@ -3641,7 +3718,31 @@ neutralise est un contrôle perdu, et celui-ci tient la pièce maîtresse d'un
 | Le temps passé | **une molette**, pas un clavier (`65-choisir-l-heure.html`) — trois gestes proposés, le mien recommandé est la molette Atlas |
 | Où se compose la fiche | dans les **Réglages**, « Ma fiche d'entretien » — modèle fourni, modifiable |
 
-**Deux choses restent à trancher, et aucune n'est du rangement :**
+**LES DEUX SONT TRANCHÉES le 25 août 2026**, une fois les planches enfin
+publiées — elles vivaient dans `docs/maquettes/`, que `pages.yml` ne publie pas,
+et l'on attendait depuis le 16 août un choix qu'il n'avait pas les moyens de
+faire.
+
+| Sa réponse du 25 août | Ce que ça ferme |
+|---|---|
+| **« Planche une, la A »** | **une seule liste**, tenue dans les Réglages, pré-remplie à chaque envoi. Rien n'est rangé par client |
+| **« Planche 2, la molette, mais avec d'un côté les heures qu'on peut bouger et de l'autre les minutes qu'on peut bouger séparément »** | la molette Atlas **en deux colonnes** — proposition D, dessinée le jour même |
+
+**Ce que la D change, et pourquoi il a raison.** D'un seul tenant, la molette
+compte cinquante-trois crans de 0 h 00 à 4 h 00 : aller de 0 h 05 à 3 h 30
+demande quarante et un crans, donc plusieurs élans du pouce. Séparées, la même
+valeur se pose en deux gestes courts. Et c'est le geste de la molette de son
+iPhone, qu'il connaît déjà — ce qui était l'argument de la A, retenue le 16 août
+puis remplacée par celle-ci.
+
+**Ce que ça coûte, et c'est dit sur la planche :** deux gestes au lieu d'un. Sur
+une durée ronde — « deux heures » —, la C se posait d'un seul élan.
+
+**RIEN N'EST CODÉ**, et c'est la règle : la planche se regarde d'abord
+(`CLAUDE.md` §3 bis). Ce qui reste à faire est du développement ordinaire — la
+molette, la liste des prestations, l'écran des Réglages.
+
+**Ce qui restait à trancher, et qui l'est maintenant :**
 
 **a) La molette** — la native du téléphone (gratuite, ressemble à un
 formulaire), les quarts d'heure (un appui, mais imprécise), ou la molette Atlas

@@ -124,6 +124,26 @@ fi
 # descend avec le code.
 export ATLAS_PROFIL=banc
 
+# ─── L'ADRESSE QUE LE CLIENT RECEVRA ────────────────────────────────────────
+#
+# **Sa capture du 24 août 2026 : « Connexion au serveur impossible », sur
+# `localhost`.** Son client ouvre le SMS et tombe sur une page morte — car
+# `localhost`, sur le téléphone du client, désigne le téléphone du client.
+#
+# **Le lien prend l'adresse par laquelle ATLAS A ÉTÉ OUVERT.** Ouvert par
+# l'adresse publique de l'espace, il est bon ; ouvert par la redirection de port
+# de l'éditeur — `http://localhost:3000` —, il ne vaut que sur sa machine. Rien
+# à l'écran ne distingue les deux, et le message part pareil.
+#
+# **Cette variable tranche : posée, elle COMMANDE** (`src/server/origine-publique.ts`),
+# et le lien devient bon quelle que soit la porte par laquelle il entre. Le
+# script la calculait déjà quelques centaines de lignes plus bas — pour
+# l'AFFICHER dans le terminal — sans jamais la donner au serveur. Elle monte
+# donc ici, avant tout ce qui démarre.
+if [ -n "${CODESPACE_NAME:-}" ] && [ -n "${GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN:-}" ]; then
+  export ATLAS_URL_PUBLIQUE="https://${CODESPACE_NAME}-3000.${GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN}"
+fi
+
 # La version exécutée, transmise à l'application pour qu'elle l'affiche.
 # Le format est fait pour être lu sur une capture d'écran, pas par une machine.
 #
@@ -257,9 +277,11 @@ PORT_PUBLIC="$(bash "$(dirname "$0")/ouvrir-port.sh" 3000)"
 # que personne ne relit — la fiche, elle, se lit.
 printf '%s\n' "$PORT_PUBLIC" > /tmp/atlas-port.txt 2>/dev/null || true
 
-ADRESSE=""
-if [ -n "${CODESPACE_NAME:-}" ] && [ -n "${GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN:-}" ]; then
-  ADRESSE="https://${CODESPACE_NAME}-3000.${GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN}"
+# **La MÊME adresse que celle donnée au serveur**, jamais recomposée : deux
+# formules pour une seule adresse finiraient par ne plus dire la même chose, et
+# c'est celle du terminal qu'il mettrait en favori.
+ADRESSE="${ATLAS_URL_PUBLIQUE:-}"
+if [ -n "$ADRESSE" ]; then
   # Déposée dans un fichier aussi : le terminal défile et se perd, ce fichier
   # non. `docs/ESSAYER.md` y renvoie.
   printf '%s\n' "$ADRESSE" > /tmp/adresse-atlas.txt 2>/dev/null || true
