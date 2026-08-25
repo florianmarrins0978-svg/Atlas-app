@@ -206,6 +206,22 @@ Le contrôle rouvre maintenant l'écran jusqu'à ce que la prestation s'y montre
 Il ne s'affaiblit pas : passé sept secondes, il rougit comme avant, et une
 prestation vraiment effacée par l'assistant ne reviendrait jamais.
 
+**Et ce n'était toujours pas la bonne cause.** Deux corrections ont échoué avant
+qu'on regarde au bon endroit : attendre le réseau, puis relire l'écran quatre
+fois. Aucune ne pouvait marcher — **la prestation n'avait jamais été écrite**.
+
+Le décor la posait ainsi : appuyer sur « + Ajouter une prestation », patienter
+300 ms, puis écrire dans « le premier champ d'un formulaire ». Sous la batterie,
+la ligne neuve n'est pas encore rendue : le texte partait dans le champ d'à
+côté. Ce champ ne porte ni étiquette ni marque, son seul repère est sa place —
+on attend donc que le NOMBRE de champs augmente, ce qui est la seule chose qui
+dise que la ligne existe.
+
+**Un décor qui échoue doit s'accuser lui-même.** Le message nommait l'assistant
+et l'accusait d'effacer une prestation, sur un code parfaitement sain ; il y a
+maintenant une assertion distincte, avant l'échange, qui dit que c'est la suite
+qui n'a pas su écrire. Trois batteries ont été payées à cette confusion.
+
 **Attendre « le réseau » n'est pas attendre « le résultat ».** C'est la même
 faute que le délai fixe, dans une robe plus convaincante.
 
