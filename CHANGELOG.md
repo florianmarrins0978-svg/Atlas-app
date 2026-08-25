@@ -9,6 +9,27 @@ Format : le plus récent en tête.
 
 ## 2026-08-25
 
+### Le message : les phrases par défaut, modifiables — les mots en doré verrouillés
+
+*« Le message au client doit comporter les phrases par défaut et l'utilisateur les
+modifiera s'il le désire ; seuls les mots en doré ne peuvent être modifiés. »*
+
+Le cadre du message n'est plus un `<textarea>` mais un vrai éditeur
+(`EditeurMessage`) : il porte le message par défaut, en clair, et l'artisan modifie
+ce qu'il veut — le bonjour, la formule de fin, ses propres phrases. Ce qu'Atlas
+remplit tout seul — le prénom, la phrase du document (qui s'adapte au devis comme
+à la facture), le lien, son nom — est posé **en doré et verrouillé** : on ne peut
+ni le retaper, ni le couper.
+
+**Le piège du champ « riche », désamorcé :** les retours à la ligne. Un
+`contenteditable` laissé seul insère un `<div>` ou un `<br>` selon le navigateur,
+et les deux se relisent mal. On intercepte donc Entrée pour poser un simple « \n »
+de texte ; la relecture n'a plus qu'à concaténer texte et pastilles, et rend
+EXACTEMENT le modèle. Une seule règle de découpe (`segmentsDuModele`) sert
+l'éditeur et les aperçus : la concaténation des morceaux redonne le modèle
+(éprouvé sans base), et le fil complet — de l'écran au téléphone du client — reste
+tenu au navigateur (`test-message-au-client-e2e`).
+
 ### L'échéance de la facture : proposée, et modifiable avant l'envoi
 
 *« Il faut qu'il propose une date par défaut et ensuite si l'utilisateur veut la
