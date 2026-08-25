@@ -1,6 +1,15 @@
 import { factureParJeton } from "@/server/repositories/envois-factures";
 import { jourLisible } from "@/lib/jour";
 import NumeroDeDocument from "@/components/atlas/NumeroDeDocument";
+import { colors, surPlein } from "@/lib/design-tokens";
+
+// **Aux couleurs de l'application — sa demande du 25 août 2026.** La page portait
+// des couleurs écrites en dur (une terre cuite abandonnée le 3 août pour le bouton)
+// qui n'étaient plus celles du produit. On passe par les jetons de la charte
+// (`design-tokens`), qui retombent sur la charte d'Arborea par défaut ici, faute
+// de session — c'est exactement « la couleur de l'application » (`CLAUDE.md` §3,
+// aucune couleur en clair dans un écran).
+const SERIF = "ui-serif, Georgia, serif";
 
 // La page que voit le client quand il touche le lien de sa facture.
 //
@@ -25,12 +34,20 @@ const euros = (montant: string) =>
 
 function Cadre({ titre, texte }: { titre: string; texte: string }) {
   return (
-    <div className="flex min-h-dvh items-center justify-center bg-[#F4EFE8] p-6">
-      <div className="w-full max-w-sm rounded-2xl bg-white p-6 text-center shadow-sm">
-        <h1 className="text-[18px] font-semibold" style={{ fontFamily: "ui-serif, Georgia, serif" }}>
+    <div
+      className="flex min-h-dvh items-center justify-center p-6"
+      style={{ backgroundColor: colors.cream, color: colors.ink }}
+    >
+      <div
+        className="w-full max-w-sm rounded-2xl p-6 text-center shadow-sm"
+        style={{ backgroundColor: colors.card, border: `1px solid ${colors.line}` }}
+      >
+        <h1 className="text-[18px] font-semibold" style={{ fontFamily: SERIF }}>
           {titre}
         </h1>
-        <p className="mt-2 text-[14px] leading-relaxed opacity-70">{texte}</p>
+        <p className="mt-2 text-[14px] leading-relaxed" style={{ color: colors.muted }}>
+          {texte}
+        </p>
       </div>
     </div>
   );
@@ -52,28 +69,56 @@ export default async function PageFactureClient({ params }: { params: Promise<{ 
   }
 
   return (
-    <div className="flex min-h-dvh items-center justify-center bg-[#F4EFE8] p-6">
-      <div className="w-full max-w-sm rounded-2xl bg-white p-6 text-center shadow-sm">
-        <p className="text-[12px] font-semibold uppercase tracking-[0.12em] opacity-50">Facture</p>
-        <h1 className="mt-1 text-[20px] font-semibold" style={{ fontFamily: "ui-serif, Georgia, serif" }}>
+    <div
+      className="flex min-h-dvh items-center justify-center p-6"
+      style={{ backgroundColor: colors.cream, color: colors.ink }}
+    >
+      <div
+        className="w-full max-w-sm rounded-2xl p-6 text-center shadow-sm"
+        style={{ backgroundColor: colors.card, border: `1px solid ${colors.line}` }}
+      >
+        <p
+          className="text-[12px] font-semibold uppercase tracking-[0.12em]"
+          style={{ color: colors.muted }}
+        >
+          Facture
+        </p>
+        <h1 className="mt-1 text-[20px] font-semibold" style={{ fontFamily: SERIF }}>
           <NumeroDeDocument valeur={facture.numeroCommercial} />
         </h1>
-        <p className="mt-1 text-[14px] opacity-70">{facture.entrepriseNom}</p>
+        <p className="mt-1 text-[14px]" style={{ color: colors.muted }}>
+          {facture.entrepriseNom}
+        </p>
 
-        <p className="mt-6 text-[32px] font-semibold leading-none" style={{ fontFamily: "ui-serif, Georgia, serif" }}>
+        <p className="mt-6 text-[32px] font-semibold leading-none" style={{ fontFamily: SERIF }}>
           {euros(facture.totalTtc)}
         </p>
         {facture.echeanceLe && (
-          <p className="mt-2 text-[14px] opacity-70">À régler avant le {jourLisible(facture.echeanceLe)}</p>
+          <p className="mt-2 text-[14px]" style={{ color: colors.muted }}>
+            À régler avant le {jourLisible(facture.echeanceLe)}
+          </p>
         )}
 
+        {/* Deux gestes : consulter, et GARDER. Sa demande du 25 août — « un
+            bouton pour que le client puisse télécharger sa facture ». « Voir »
+            ouvre le PDF ; « Télécharger » le range (l'en-tête `attachment` du
+            `?telecharger=1` décide, l'attribut `download` ne suffit pas sur iOS). */}
         <a
           href={`/factures/${encodeURIComponent(jeton)}/pdf`}
           target="_blank"
           rel="noopener"
-          className="mt-6 block rounded-full bg-[#8C4A2F] px-5 py-3 text-[15px] font-medium text-white"
+          className="mt-6 block rounded-full px-5 py-3 text-[15px] font-medium"
+          style={{ backgroundColor: colors.rust, color: surPlein }}
         >
           Voir la facture en PDF
+        </a>
+        <a
+          href={`/factures/${encodeURIComponent(jeton)}/pdf?telecharger=1`}
+          download
+          className="mt-3 block rounded-full px-5 py-3 text-[15px] font-medium"
+          style={{ color: colors.rust, boxShadow: `inset 0 0 0 1px ${colors.rust}` }}
+        >
+          Télécharger ma facture
         </a>
       </div>
     </div>
