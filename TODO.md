@@ -347,6 +347,47 @@ le produit. **Ne pas rouvrir** sans qu'il le redemande.
 
 La planche 92 (`appli/calendrier-aujourdhui.html`) reste : elle raconte le
 chemin, et le prochain qui trouvera deux cases entourées saura pourquoi.
+
+---
+
+## CINQ RÉGLAGES DE DOCUMENTS N'ATTEIGNENT PAS LE DEVIS — sa décision attendue (25 août 2026)
+
+**Il l'a relevé lui-même :** *« les autres qui sont en ON doivent-ils être
+visibles sur le devis ? car je ne vois rien, est-ce normal ? »*
+
+**Non. Vérifié dans le code, pas supposé.** Sur les six réglages de
+« Réglages → Documents », **un seul atteint le document** :
+
+| Réglage | Sur le devis ? | Par où |
+|---|---|---|
+| Validité du devis | **oui** | figée sur le devis à sa création (`getOuCreerDevisBrouillon`), imprimée par `devis-pdf.ts` |
+| Acompte | non | — |
+| Délai de paiement | non | — |
+| Moyens de paiement | non | — |
+| Rappeler les pénalités | non | — |
+| Texte en bas des documents | non | — |
+
+`lignesConditionsDevis` compose bien ces cinq lignes, et **elle n'est appelée que
+par l'aperçu de l'écran Réglages**. Ni l'écran du devis, ni son PDF ne la
+connaissent. Il règle, il voit l'aperçu, et son client ne reçoit rien.
+
+Ce qu'il voit sur son devis vient d'ailleurs, et c'est ce qui rend le défaut
+invisible : « Acompte de 30 % à la signature… » est un **exemple grisé** dans un
+champ libre vide (`placeholder`), et « Modalités de paiement / IBAN » vient de
+ses coordonnées bancaires.
+
+**POURQUOI CE N'EST PAS CODÉ D'OFFICE.** Brancher ces cinq lignes change ce que
+**reçoivent ses clients** — un devis qui part avec trois paragraphes de plus. Où
+elles se placent sur le document est un choix qu'il doit voir avant qu'il parte
+chez quelqu'un (`CLAUDE.md` §3 bis). La question lui est posée ; rien n'est codé
+tant qu'il n'a pas répondu.
+
+**Et le commentaire du code affirmait le contraire** — « l'aperçu du bas lit LA
+MÊME fonction que le PDF ». Corrigé le 25 août : il dit maintenant ce qui est
+vrai. Une documentation périmée est pire qu'absente.
+
+---
+
 ## LES SUITES NAVIGATEUR SONT INSTABLES SOUS LA CHARGE DE LA BATTERIE (25 août 2026)
 
 **Le fait, mesuré trois fois plutôt que supposé.** Des suites rougissent dans la
@@ -379,8 +420,13 @@ fois sur la base d'essai.** Pas de suite lancée « pour vérifier vite » penda
 qu'une batterie tourne ; pas deux batteries. Le conteneur a une seule base, et
 elle n'est pas faite pour deux lecteurs qui la vident.
 
-**Ce qui reste à éprouver**, une fois cette faute écartée : les rouges tombés
-alors que RIEN d'autre ne tournait — s'il en reste. Les symptômes étaient des
+**PREMIÈRE MESURE APRÈS LA CORRECTION, et elle est nette :** une batterie jouée
+avec **rien d'autre en train de toucher la base** rend **224/224 en base et
+110/110 au navigateur**. Aucun rouge. C'est le premier 110/110 de la journée, et
+il désigne la faute ci-dessus plutôt que la machine.
+
+**Ce qui reste à éprouver** : les rouges qui tomberaient encore alors que rien
+d'autre ne tourne — s'il en reste. Les symptômes étaient des
 délais dépassés (`locator.waitFor: Timeout 30000ms`), ce qui ressemble à une
 machine saturée. Deux pistes, dans cet ordre :
 
