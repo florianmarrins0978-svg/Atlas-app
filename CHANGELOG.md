@@ -36,6 +36,16 @@ qu'« ÉMETTEUR » reparaisse et exigent que le nom de l'entreprise n'apparaisse
 qu'une seule fois. Et l'image a été regardée, fond clair et fond sombre, logo
 carré et logo en bandeau. `ARCHITECTURE.md` §174.
 
+**Deux contrôles remis d'aplomb au passage.** L'empreinte au pixel du devis et
+de la facture (`test-fiche-chantier-pdf.ts`) décrivait la mise en page qu'il a
+fait retirer : elle a été relevée à neuf — après avoir REGARDÉ le document —, et
+la suite affiche désormais l'empreinte lue quand elle diverge, pour qu'un
+changement voulu ne demande plus d'instrumenter le fichier. Et
+`test-devis-doublon-e2e.ts` attendait 800 ms fixes après l'enregistrement d'une
+prestation : vert seul, rouge dans la batterie complète, en accusant « les
+tarifs de démonstration » — le mauvais coupable. Il redemande maintenant la page
+une fois avant de conclure.
+
 ---
 
 ## 2026-08-25
