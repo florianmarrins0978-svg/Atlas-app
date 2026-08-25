@@ -45,6 +45,50 @@ export const LIMITES = {
    * quinze minutes d'attente ne gênent que celui qui cherche.
    */
   preuveRecente: { max: 5, fenetreMs: 15 * 60 * 1000 },
+  /**
+   * RÉPONDRE À UN DEVIS depuis le lien public (constat F9).
+   *
+   * **Ce que ce seuil protège, et ce qu'il ne protège PAS.** Il ne défend aucun
+   * secret : le jeton du lien fait 256 bits tirés au sort
+   * (`envois-devis.ts`, `randomBytes(32)`), il ne se devine pas, et aucun
+   * nombre d'essais n'y changerait rien. Le dire compte — une alerte qui
+   * exagère s'apprend à être ignorée.
+   *
+   * Ce qu'il borne, c'est le COÛT : c'est la seule écriture d'Atlas ouverte
+   * SANS session, donc la seule qu'on puisse marteler sans rien voler. Chaque
+   * appel lit le jeton en base, écrit la réponse, et peut poser une date de
+   * chantier.
+   *
+   * **Deux compteurs, parce qu'ils ne bornent pas la même chose :**
+   *
+   * | | |
+   * |---|---|
+   * | par JETON | un lien précis noyé sous les réponses, depuis n'importe où |
+   * | par SOURCE | quelqu'un qui martèle, quel que soit le lien employé |
+   *
+   * Dix par minute sur un lien : un client répond une fois, et recommence tout
+   * au plus deux ou trois fois — « cette date vient d'être retenue, choisissez-en
+   * une autre » est un aller-retour normal.
+   *
+   * **Et le compteur par source NE S'APPLIQUE QUE SI LA SOURCE EST ÉTABLIE.**
+   * Corrigé à la revue hostile de ce lot, avant toute livraison. Sans
+   * `ATLAS_PROXY_SAUTS` posé, `sourceDuVisiteur` rend délibérément une valeur
+   * commune (`src/lib/source-visiteur.ts`) : tous les clients partagent alors
+   * un seul seau, et ce seuil devenait **une arme retournée** — soixante appels
+   * depuis n'importe où, et plus aucun client de plus aucun artisan ne peut
+   * signer son devis. Une dépense de calcul échangée contre un blocage
+   * commercial n'est pas une protection.
+   *
+   * La condition vit au point d'appel (`src/app/devis/[jeton]/actions.ts`), là
+   * où la source est lue. Le seuil par jeton, lui, s'applique toujours : il ne
+   * borne qu'un lien, celui qu'on martèle.
+   *
+   * Soixante reste large à dessein, même quand la source est établie : derrière
+   * un mandataire d'entreprise, plusieurs clients peuvent partager une adresse.
+   * Même raisonnement que `rechercheAdresse` et `cleAppareil`.
+   */
+  reponseDevis: { max: 10, fenetreMs: 60 * 1000 },
+  reponseDevisParSource: { max: 60, fenetreMs: 60 * 1000 },
   assistant: { max: 20, fenetreMs: 60 * 1000 }, // 20 requêtes IA / minute / entreprise
   confirmationProposition: { max: 30, fenetreMs: 60 * 1000 },
   televersementFichier: { max: 20, fenetreMs: 60 * 1000 },

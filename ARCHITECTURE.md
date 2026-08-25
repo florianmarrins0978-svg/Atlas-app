@@ -15040,3 +15040,158 @@ re-parser. On borne en passant.
 **Ce que cela ne couvre pas :** ce que Node met en tampon avant de rendre la main
 à Next dépend de l'hébergeur. La garantie commence à l'objet `Request` ; une
 limite au mandataire reste souhaitable et ne remplace pas celle-ci.
+
+---
+
+## 170. Audit de sécurité, lot 3 : les constats F1 → F13, et ce qu'ils valaient vraiment
+
+**Le rapport d'audit qui nomme F1 à F13 n'est PAS dans le dépôt, et n'y a jamais
+été.** Seuls deux des treize points citaient un fichier. Les onze autres ont donc
+été traités comme des *hypothèses à mesurer*, jamais comme des constats acquis —
+et c'est ce qui a permis d'écarter quatre faux problèmes sans rien casser.
+
+Sept points ont été codés (F1, F2, F5, F8, F9, F12, F13), deux ont reçu un
+contrôle sans que leur code bouge (F3, F8 structurel), quatre ont été refusés.
+
+### Ce qui a été refusé, et pourquoi c'est le plus important
+
+| | |
+|---|---|
+| **F4** | le nom du fichier de devis est **engendré par le serveur** (`devis-${numero}.pdf`), jamais par l'utilisateur : il n'y a rien à échapper |
+| **F6** | `run-migrations.ts` suit les migrations **par nom de fichier**. Renommer une migration pour « lever un doublon » créerait exactement le défaut qu'on prétend corriger : elle se rejouerait partout |
+| **F7** | l'export et l'effacement d'un client existent sans écran. C'est une décision **produit / RGPD**, pas une correction de sécurité |
+| **F10** | `unsafe-inline` dans la CSP : réel, mais c'est un lot à soi — le retirer sans nonce casse l'application |
+| **F11** | déjà fermé par le lot 1, et un contrôle le prouve depuis |
+
+### F2 — un site tiers ne doit pas pouvoir déconnecter le patron
+
+`/api/session-perimee` efface six cookies sur un simple `GET` : une page
+étrangère qui pose `<img src="…/api/session-perimee">` mettait le patron dehors
+en silence. Ce n'est pas un vol — c'est une nuisance gratuite.
+
+**`Sec-Fetch-Site`, et surtout PAS `Sec-Fetch-Dest`.** `Dest: document` paraissait
+plus simple et **aurait cassé un vrai parcours** : quatre des cinq appels
+légitimes viennent d'un `redirect()` côté serveur, que le routeur de Next va
+chercher en `fetch` — `Dest` vaut alors `empty`, et le cookie mort du 10 août
+2026 ne s'effacerait plus jamais.
+
+L'en-tête absente laisse passer, et c'est raisonné : un navigateur ne permet pas
+de la retirer ; ce qui n'en envoie pas est un client sans cookie à effacer.
+
+**Ce que le contrôle a appris en rougissant :** la réponse refusée porte quand
+même des `Set-Cookie` — ceux d'Auth.js, qui rafraîchit la session dans la couche
+au-dessus, valeurs pleines et expiration future. Rafraîchir n'est pas
+déconnecter. Le contrôle ne compte donc plus les `Set-Cookie`, il cherche les
+EFFACEMENTS.
+
+### F5 — le contexte vide levait au lieu de rendre zéro
+
+`corrections_dictee` portait encore `current_setting('app.entreprise_id',
+true)::uuid` sans `NULLIF`. **Ce n'est pas une fuite** : sans contexte, la valeur
+est NULL, la politique est fausse, la table est vide. Ce qui casse, c'est le
+contexte **vide** — PostgreSQL remet un réglage de session à `''` après certaines
+transactions sur une connexion mutualisée, et `''::uuid` LÈVE. L'écran tombe en
+erreur au lieu de se montrer vide, et le message accuse un type de données là où
+le coupable est un contexte perdu.
+
+La migration 0002 avait corrigé cela pour les douze tables de janvier ; 0025 a
+créé cette table quatre mois plus tard sans reprendre la leçon, parce qu'aucun
+contrôle ne regardait la FORME des politiques. **0067 la répare, et
+`test-isolation-contexte-vide-db.ts` empêche la prochaine** — il mesure les
+41 tables une par une sous `atlas_app`, contexte forcé à `''`.
+
+**Une migration déjà appliquée ne se réécrit pas**, et ne se renomme pas
+davantage : `_migrations` porte son nom, elle ne se rejouera jamais, et la
+corriger sur le disque ne changerait que les bases neuves — donc pas celles où
+le défaut existe.
+
+### F8 — la seule rubrique du patron sans garde, et la règle qui manquait
+
+« Intégrations » (`/reglages/agenda`) lisait l'état du calendrier relié du
+patron — son compte iCloud ou Google — avant de savoir à qui elle parlait. Le
+lien était caché à un salarié, ce qui ne protège rien : **une adresse se tape**.
+Les écritures, elles, étaient déjà gardées.
+
+Le défaut n'était pas « une garde oubliée » mais **« rien ne disait qu'il en
+fallait une »**. D'où `scripts/test-reglages-gardes.ts`, qui ne regarde aucune
+rubrique en particulier : toute rubrique non personnelle pose une garde de rôle,
+et elle la pose **avant** la première lecture. Trois rubriques sont
+explicitement personnelles — compte, connexion, apparence.
+
+**Ce contrôle a été vert deux fois sur le défaut qu'il porte dans son nom**, et
+il n'a été cru qu'après avoir rougi pour de bon :
+
+| Ce qu'il regardait | Pourquoi il passait |
+|---|---|
+| le nom de la garde n'importe où dans le fichier | la ligne `import { estProprietaire }` suffisait |
+| le fichier commentaires compris | le commentaire qui EXPLIQUE la garde cite son nom |
+| la ligne entière pour trouver une lecture | `const [etat, etatApple, params] = await Promise.all(` contient le mot `params`, qui était dans la liste des attentes anodines |
+
+Il blanchit désormais les commentaires, ne regarde que le corps de la fonction,
+et ne compare que **ce qui suit `await`**.
+
+**Et `adressesAutorisees()` mentait.** Son commentaire promettait que « la liste
+des rubriques est l'unique source » et qu'« une rubrique retirée ferme son
+adresse au même instant ». Aucune page ne l'a jamais appelée : ses seuls
+appelants sont des contrôles. C'est ce qui explique le trou — la prose laissait
+croire à une garde centrale. Elle **n'est pas branchée pour autant** : un
+`layout` déduit du sommaire fermerait `/reglages/prix/mesures` et
+`/reglages/vocabulaire`, qui n'y figurent pas. Le commentaire dit maintenant ce
+qu'elle est : ce que le sommaire ouvre, et pas une frontière.
+
+### F9 — la seule écriture ouverte sans session
+
+Répondre à un devis depuis le lien public n'avait aucune borne de cadence.
+Partout ailleurs, une cadence se compte par entreprise ou par utilisateur ; ici
+personne ne s'est nommé, et cette action ne rentrait dans aucun des deux moules.
+
+**Ce n'est pas un secret qu'on défend** : le jeton fait 256 bits tirés au sort,
+il ne se devine pas. C'est le COÛT qu'on borne.
+
+**Et la revue hostile a corrigé le correctif avant toute livraison.** Deux
+compteurs avaient été posés — par jeton, et par source. Or sans
+`ATLAS_PROXY_SAUTS`, `sourceDuVisiteur` rend délibérément une valeur commune :
+**tous les clients partagent alors un seul seau**. Soixante appels depuis
+n'importe où, et plus aucun client de plus aucun artisan ne signe son devis. Le
+seuil devenait une arme retournée — une dépense de calcul échangée contre un
+blocage commercial. Il ne s'applique donc que **si la source est établie** ; le
+seuil par jeton, lui, s'applique toujours.
+
+`sourceDuVisiteur` et `horsProductionReelle` ont quitté `login/actions.ts` pour
+`src/server/source-visiteur.ts` : les recopier aurait fabriqué une seconde façon
+de décider qui est « le même visiteur ».
+
+### F12 — les maquettes gelées ne sont pas servies aux artisans
+
+Douze pages `/design/*`, **gelées depuis le 1er août 2026**, affichent
+`mock-data.ts`. Aucune donnée réelle, et le middleware exige déjà une session :
+ce n'est pas une fuite, c'est de la **surface** — des pages que plus personne ne
+relit, et qui ne suivent plus les corrections des écrans réels.
+
+Une seule mise en page (`src/app/design/layout.tsx`) les couvre toutes,
+aujourd'hui comme demain : douze gardes recopiées, c'est douze occasions d'en
+oublier une. `notFound()` plutôt qu'un refus — un « accès refusé » confirme
+qu'il y a quelque chose à trouver.
+
+**Le banc du patron est traité comme la production**, contrairement à l'usage du
+reste du dépôt : il est ouvert sur l'internet, et les planches qu'il doit voir
+vivent dans `appli/`, publiées par `pages.yml`.
+
+### F13 — `robots.txt`, et ce qu'il n'est pas
+
+**Ce n'est pas une frontière de sécurité**, et le fichier le dit lui-même : une
+demande, pas une serrure. Rien n'en dépend — les écrans du patron sont fermés
+par le middleware, ceux du client par un jeton de 256 bits.
+
+Ce qu'il apporte est modeste et réel : les liens envoyés par SMS ou courriel
+(`/devis/<jeton>`, `/factures/<jeton>`, `/entretien/<jeton>`) voyagent par des
+canaux qui les font parfois suivre. Il suffit d'une fois pour qu'un devis
+nominatif entre dans un index public, et il n'en sortira plus.
+
+**Le piège, et il était réel :** le middleware renvoie à `/login` tout ce qui
+n'est pas explicitement laissé de côté. Mesuré — sans l'exclusion,
+`GET /robots.txt` rend **307**. Un moteur aurait reçu une redirection au lieu de
+la consigne, et l'on aurait cru le garde-fou en place. `robots.txt` a donc
+rejoint `favicon.ico` dans le `matcher`.
+
+Pas de `sitemap` : un plan de site est exactement ce qu'on ne veut pas publier.

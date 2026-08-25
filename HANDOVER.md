@@ -9,6 +9,28 @@ sert.
 
 ---
 
+## LOT 3 FERMÉ — F1 À F13 (25 août 2026)
+
+Sept constats codés, quatre refusés, deux gardés sans toucher au code. Ce qu'il
+faut savoir avant d'y revenir :
+
+| | |
+|---|---|
+| **Le rapport d'audit n'est PAS dans le dépôt** | onze des treize points ne citaient aucun fichier. Ils ont été mesurés, pas crus — et quatre étaient faux |
+| **Aucun des sept n'était une fuite de données** | F5 est une panne d'écran, F12 de la surface, F13 une demande polie aux moteurs. Le dire est un choix : une alerte qui exagère s'apprend à être ignorée |
+| **NE JAMAIS renommer une migration** | `run-migrations.ts` les suit par nom de fichier. C'était F6, et « le corriger » l'aurait fait rejouer sur toutes les bases |
+| **Chaque rubrique de réglages pose SA garde** | `adressesAutorisees()` promettait une garde centrale qui n'a jamais existé. `scripts/test-reglages-gardes.ts` tient la règle à sa place |
+| **Le seuil par source ne s'applique que si la source est ÉTABLIE** | sans `ATLAS_PROXY_SAUTS`, tous les clients partagent un seau : le seuil deviendrait une arme retournée |
+
+**Le piège de ce lot, et il reviendra : un contrôle structurel est vert pour de
+mauvaises raisons.** Celui de F8 a passé trois fois sur le défaut qu'il porte
+dans son nom — une ligne d'import, puis un commentaire qui cite la garde, puis
+le mot `params` dans une destructuration. **Un contrôle qui lit du source
+blanchit ses commentaires, ne regarde que le corps de la fonction, et compare ce
+qui suit `await` — jamais la ligne entière.**
+
+---
+
 ## LOT 2B FERMÉ, ET SEPT CONTRÔLES RÉPARÉS AVEC LUI (25 août 2026)
 
 M3 et M6 sont clos. Ce qu'il faut savoir avant d'y toucher :

@@ -9,6 +9,52 @@ Format : le plus récent en tête.
 
 ## 2026-08-25
 
+### Audit lot 3 : sept constats F fermés, quatre refusés — et un correctif corrigé avant livraison
+
+**Le rapport qui nomme F1 à F13 n'est pas dans le dépôt.** Onze des treize points
+ne citaient aucun fichier : ils ont été mesurés, pas crus. Quatre étaient de faux
+problèmes, et les refuser valait mieux que de les « corriger » —  renommer une
+migration (F6) aurait fait rejouer partout une migration déjà passée.
+
+**Ce qui a été fermé.**
+
+| | |
+|---|---|
+| **F1** | l'issue de la dernière mise à jour se lisait sans compte : elle porte, sur un échec, un chemin du disque et ce que `git` a écrit |
+| **F2** | une page étrangère mettait le patron dehors avec un `<img>` — six cookies effacés sur un simple `GET` |
+| **F5** | `corrections_dictee` LEVAIT sur un contexte vide au lieu de rendre zéro ligne |
+| **F8** | « Intégrations » lisait le calendrier relié du patron avant de savoir à qui elle parlait |
+| **F9** | répondre à un devis, seule écriture ouverte sans session, n'avait aucune cadence |
+| **F12** | douze maquettes gelées étaient servies aux artisans |
+| **F13** | les liens envoyés aux clients pouvaient s'indexer |
+
+**Aucun de ces sept n'était une fuite de données**, et le dire compte : une
+alerte qui exagère s'apprend à être ignorée. F5 est une panne d'écran, F12 de la
+surface, F13 une demande polie aux moteurs.
+
+**La revue hostile a corrigé mon propre correctif.** F9 posait deux compteurs,
+dont un par source. Sans `ATLAS_PROXY_SAUTS`, la source n'est pas établie et
+**tous les clients partagent un seul seau** : soixante appels depuis n'importe
+où, et plus aucun client de plus aucun artisan ne signe son devis. Le seuil
+devenait une arme retournée. Il ne s'applique plus que si la source est établie.
+
+**Et trois contrôles ont été verts sur le défaut qu'ils portaient dans leur
+nom**, avant d'être crus : celui de F8 passait sur une ligne d'import, puis sur
+un commentaire, puis parce que `const [etat, etatApple, params] = await
+Promise.all(` contient le mot `params`. Le détail est dans `ARCHITECTURE.md`
+§170 — c'est la quatrième fois que ce dépôt paie « un contrôle trop tolérant ne
+prouve rien ».
+
+**Ce qui a été trouvé en le mesurant :** sans son exclusion du `matcher`,
+`GET /robots.txt` rend **307**. Le fichier aurait existé, et n'aurait servi à
+rien.
+
+**`adressesAutorisees()` mentait** depuis sa naissance : son commentaire
+promettait une garde centrale des réglages, et aucune page ne l'a jamais
+appelée. C'est ce qui explique le trou de F8. Elle n'est pas branchée pour
+autant — un `layout` déduit du sommaire fermerait deux écrans réels.
+
+
 ### « Me déconnecter partout » se contournait — reproduit, puis fermé
 
 **Un cookie volé, pourtant coupé, se redonnait un jeton neuf et rentrait.**

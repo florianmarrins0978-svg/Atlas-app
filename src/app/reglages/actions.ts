@@ -444,8 +444,32 @@ async function noterIssue(etat: string): Promise<void> {
   }
 }
 
-/** Ce que le dernier essai a donné, pour l'écran. `null` si aucun essai. */
+/**
+ * Ce que le dernier essai a donné, pour l'écran. `null` si aucun essai.
+ *
+ * **RÉSERVÉE AU PROPRIÉTAIRE, comme le geste qu'elle raconte — constat F1.**
+ *
+ * Un module `"use server"` transforme chaque fonction exportée en point
+ * d'entrée réseau : celle-ci se laissait donc appeler par n'importe qui, sans
+ * même une session, et rendait le contenu de `/tmp/atlas-mise-a-jour.txt`. Ce
+ * fichier ne porte pas que « faite » : sur un échec, il porte
+ * `impossible : ${message}` — les deux cents premiers caractères de ce que
+ * `execFile` a levé, c'est-à-dire un chemin sur le disque et ce que `git` a
+ * écrit sur sa sortie d'erreur.
+ *
+ * L'écran, lui, ne l'appelle que derrière `role === "proprietaire"` : la garde
+ * ne retire donc rien à personne. C'est exactement la leçon de M12 — cacher un
+ * bouton ne protège pas l'action qui est dessous, et la seule frontière qui
+ * tienne est celle que la fonction pose elle-même.
+ *
+ * **Elle LÈVE plutôt que de rendre `null`**, et c'est délibéré : `null` veut
+ * déjà dire « aucun essai encore ». Confondre « rien à dire » et « je vous le
+ * refuse » rendrait un appel hostile indiscernable d'un espace tout neuf.
+ */
 export async function derniereIssueMiseAJour(): Promise<string | null> {
+  const ctx = await getCurrentCtx();
+  await exigerProprietaire(ctx, "lire l'issue de la dernière mise à jour");
+
   try {
     const { readFile } = await import("node:fs/promises");
     return (await readFile(FICHIER_ISSUE, "utf8")).trim() || null;

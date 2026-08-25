@@ -193,11 +193,39 @@ export function surtitreReglages(role: RoleReglages | null): string {
 }
 
 /**
- * Les adresses qu'un rôle a le droit d'ouvrir dans les réglages.
+ * Les adresses qu'un rôle voit dans le SOMMAIRE des réglages.
  *
- * Sert à ce qu'une page ne se garde pas elle-même « à peu près » : la liste des
- * rubriques est l'unique source, et une rubrique retirée ferme son adresse au
- * même instant.
+ * ─────────────────────────────────────────────────────────────────────────────
+ * **CE COMMENTAIRE A ÉTÉ FAUX, ET C'EST F8 QUI L'A RÉVÉLÉ (25 août 2026).**
+ *
+ * Il disait : *« sert à ce qu'une page ne se garde pas elle-même à peu près :
+ * la liste des rubriques est l'unique source, et une rubrique retirée ferme son
+ * adresse au même instant »*. **Rien de tout cela n'existait.** Aucune page,
+ * aucun `layout`, aucun middleware n'a jamais appelé cette fonction : ses seuls
+ * appelants sont les contrôles de `scripts/test-rubriques-reglages.ts`.
+ *
+ * Une prose qui promet une protection inexistante est pire qu'un silence — on
+ * s'y fie encore. C'est exactement ce qui explique le trou de F8 :
+ * « Intégrations » n'avait pas de garde, et la liste laissait croire qu'il n'en
+ * fallait pas.
+ *
+ * ─────────────────────────────────────────────────────────────────────────────
+ * **POURQUOI ON NE LA BRANCHE PAS, MAINTENANT QU'ON SAIT.**
+ *
+ * C'était la tentation : un `layout` de réglages qui refuserait tout ce qui
+ * n'est pas dans cette liste. Il **casserait deux écrans réels** —
+ * `/reglages/prix/mesures` et `/reglages/vocabulaire` n'y figurent pas : le
+ * premier est une sous-page, le second est réservé à l'éditeur et s'atteint
+ * depuis « Atlas IA ». Une garde centrale déduite d'un sommaire ferme ce que le
+ * sommaire ne nomme pas, et un sommaire n'a jamais eu vocation à tout nommer.
+ *
+ * Ce qui tient à la place : **chaque page pose sa propre garde**, et
+ * `scripts/test-reglages-gardes.ts` refuse qu'une rubrique non personnelle en
+ * soit dépourvue — ou qu'elle la pose après avoir déjà lu.
+ *
+ * Cette fonction reste donc ce qu'elle a toujours été : ce que le SOMMAIRE
+ * ouvre, employé pour vérifier qu'il ne propose à un salarié aucune adresse de
+ * l'entreprise. C'est utile, et ce n'est pas une frontière.
  */
 export function adressesAutorisees(role: RoleReglages | null): string[] {
   return rubriquesReglages(role)

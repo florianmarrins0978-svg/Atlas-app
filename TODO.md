@@ -9,6 +9,44 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
+## `ATLAS_PROXY_SAUTS` n'est posé nulle part en production (25 août 2026)
+
+Tant qu'il ne l'est pas, `sourceDuVisiteur` rend délibérément une valeur commune
+(`src/lib/source-visiteur.ts`) : **tous les visiteurs partagent le même seau**, et
+tous les seuils comptés « par source » sont en réalité globaux.
+
+Conséquences, à connaître avant de régler un seuil :
+
+| | |
+|---|---|
+| connexion, clé d'appareil, recherche d'adresse | ces seuils protègent encore, mais moins finement |
+| réponse à un devis (F9) | le seuil par source **se désactive** plutôt que de bloquer tout le monde — un seul seau en aurait fait une arme retournée. Le seuil par jeton, lui, tient toujours |
+
+**Qui peut le faire :** celui qui déploie. Poser `ATLAS_PROXY_SAUTS` au nombre de
+mandataires de confiance devant Atlas (1 pour un hébergeur ordinaire), **et**
+s'assurer que ce mandataire ÉCRASE `x-forwarded-for` au lieu d'y ajouter la
+valeur du client. Sans les deux, poser la variable serait pire que de ne rien
+faire : on ferait alors confiance à ce que l'attaquant écrit.
+
+---
+
+## `ARCHITECTURE.md` porte deux fois §164 et §165 (relevé le 25 août 2026)
+
+Dette d'une fusion antérieure, **déjà sur `main`** : quatre paragraphes pour deux
+numéros. Les références croisées de `PROJECT_STATE.md`, `TODO.md` et
+`CHANGELOG.md` pointent vers les deux sens à la fois, sans qu'on puisse dire
+lequel depuis le numéro seul.
+
+**Non corrigé pendant le lot 3, délibérément** : démêler les références dépasse
+ce lot, et une renumérotation faite à moitié laisserait des renvois faux — pires
+que des renvois ambigus, parce qu'ils ont l'air justes.
+
+**Ce qu'il faut faire :** renuméroter les deux paragraphes de FIN de fichier
+(« Les images d'utilisateur », « Le corps d'une requête ») en §171 et §172, puis
+reprendre chaque renvoi un par un. §170 est pris par le lot 3.
+
+---
+
 ## Le devis et la facture n'ont pas encore le refus d'adresse locale (24 août 2026)
 
 Le lien envoyé au client prenait l'adresse du navigateur qui l'avait fabriqué —

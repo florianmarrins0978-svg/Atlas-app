@@ -37,7 +37,19 @@ async function reinitialiserSeuilRedis() {
   if (!url) return;
   const redis = new Redis(url, { lazyConnect: true, maxRetriesPerRequest: 1 });
   try {
-    const cles = await redis.keys("ratelimit:connexion:*");
+    // **`reponse-devis:*` a rejoint la liste le 25 août 2026, avec F9.**
+    //
+    // Le compteur par SOURCE de cette action est commun à tout le monde tant
+    // que `ATLAS_PROXY_SAUTS` n'est pas posé — ce qui est le cas ici, où tout
+    // part de 127.0.0.1 sans mandataire. Les suites qui répondent à un devis
+    // s'additionnent donc dans un seul seau, d'une suite à l'autre : sans ce
+    // nettoyage, la batterie finirait par se bloquer elle-même, et le refus
+    // arriverait sur la trentième suite plutôt que sur celle qui l'a causé.
+    // C'est exactement le piège déjà payé sur `connexion:`.
+    const cles = [
+      ...(await redis.keys("ratelimit:connexion:*")),
+      ...(await redis.keys("ratelimit:reponse-devis:*")),
+    ];
     if (cles.length > 0) await redis.del(...cles);
   } catch (err) {
     console.warn(`⚠ Réinitialisation de la limite de connexion impossible : ${err instanceof Error ? err.message : err}`);

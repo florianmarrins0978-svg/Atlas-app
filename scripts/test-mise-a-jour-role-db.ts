@@ -76,7 +76,9 @@ async function main() {
   console.log("=== La mise à jour du banc : qui a le droit ===\n");
 
   const { AccesRoleRefuseError } = await import("../src/server/autorisation");
-  const { mettreAJourApplicationAction } = await import("../src/app/reglages/actions");
+  const { mettreAJourApplicationAction, derniereIssueMiseAJour } = await import(
+    "../src/app/reglages/actions"
+  );
 
   const marque = Date.now();
   const { entreprise, utilisateurId: proprietaireId } = await entreprisesRepo.creerEntreprise(
@@ -139,6 +141,49 @@ async function main() {
       (r as { erreur: string }).erreur,
       /banc d'essai/i,
       "le refus hors banc ne nomme plus le banc"
+    );
+  });
+
+  // ─── CE QUE LA MISE À JOUR RACONTE EST AUSSI RÉSERVÉ — constat F1 ─────────
+
+  await essai("L'ISSUE DE LA DERNIÈRE MISE À JOUR est refusée à un membre", async () => {
+    /**
+     * **Cacher le bouton ne protégeait pas ce qu'il y a dessous.** C'est la
+     * leçon de M12, appliquée une seconde fois : `derniereIssueMiseAJour` est
+     * exportée d'un module `"use server"`, donc c'est un point d'entrée réseau
+     * à part entière — et elle rendait à qui la demandait le contenu de
+     * `/tmp/atlas-mise-a-jour.txt`, qui porte sur un échec un chemin du disque
+     * et ce que `git` a écrit sur sa sortie d'erreur.
+     *
+     * L'écran ne l'appelle que derrière `role === "proprietaire"` : la garde ne
+     * retire donc rien à personne — c'est le contrôle d'après qui le montre.
+     */
+    delete process.env.ATLAS_BANC_ESSAI;
+    delete process.env.ATLAS_PROFIL;
+    process.env.AUTH_TEST_UTILISATEUR_ID = membre.id;
+
+    let leve: unknown = null;
+    try {
+      const issue = await derniereIssueMiseAJour();
+      assert.fail(`Un membre a pu lire l'issue de la mise à jour : ${JSON.stringify(issue)}`);
+    } catch (e) {
+      leve = e;
+    }
+    assert.ok(
+      leve instanceof AccesRoleRefuseError,
+      `Le refus n'est pas un refus de rôle : ${leve instanceof Error ? leve.message : String(leve)}`
+    );
+  });
+
+  await essai("LE PROPRIÉTAIRE, lui, la lit toujours — la garde ne casse pas l'écran", async () => {
+    // La moitié qui protège du remède. Une garde qui refuserait aussi le
+    // propriétaire ferait tomber l'écran Réglages en erreur, là où il ne
+    // portait qu'une ligne d'information.
+    process.env.AUTH_TEST_UTILISATEUR_ID = proprietaireId;
+    const issue = await derniereIssueMiseAJour();
+    assert.ok(
+      issue === null || typeof issue === "string",
+      `le propriétaire devrait obtenir une issue ou null — reçu ${JSON.stringify(issue)}`
     );
   });
 

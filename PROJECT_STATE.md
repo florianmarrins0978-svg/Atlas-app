@@ -13,6 +13,28 @@ ligne « fait » qui ne l'est pas coûte plus cher qu'une ligne absente.
 
 ---
 
+## Sécurité : lot 3 — M9 à M12 et F1 à F13 fermés (25 août 2026)
+
+| | État |
+|---|---|
+| **M9** — `password_hash` hors de portée d'`atlas_app` | **fait** — trois fonctions `SECURITY DEFINER`, droits par colonne |
+| **M10** — les onze alertes de dépendances | **fait** — Next monté à la main en 16.3.2 |
+| **M11** — se prouver à nouveau avant un geste sensible | **fait**, plus un contournement de « me déconnecter partout » trouvé hors brief |
+| **M12** — la mise à jour du banc réservée au propriétaire | **fait** |
+| **F1, F2, F5, F8, F9, F12, F13** | **fait** — aucun n'était une fuite de données |
+| **F3** | **inchangé, et gardé** — 5 contrôles neufs contre une variable ajoutée demain |
+| **F4, F6** | **faux problèmes** — refusés. Renommer une migration (F6) l'aurait fait rejouer partout |
+| **F7** — l'écran RGPD (export / effacement client) | **décision du patron**, aucune interface construite |
+| **F10** — la CSP `unsafe-inline` | **réel, lot à soi** — le retirer sans `nonce` casse l'application |
+| **F11** | **déjà fermé par le lot 1** |
+| `ATLAS_PROXY_SAUTS` en production | **à poser** — sans lui, tous les seuils par source restent communs |
+| Sauvegardes | **toujours aucune** — le point le plus grave du dépôt |
+
+Rapport transmissible : `docs/lot-3-fermeture-f1-f13.md`. Le raisonnement complet
+est dans `ARCHITECTURE.md` §170.
+
+---
+
 ## Sécurité : lot 2B — M3 et M6 fermés (24 août 2026)
 
 | | État |

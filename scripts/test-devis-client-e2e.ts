@@ -205,6 +205,68 @@ async function main() {
     await page.close();
   });
 
+  await test("marteler la réponse finit par être borné, et le refus dit quoi faire", async () => {
+    /**
+     * **LA SEULE ÉCRITURE D'ATLAS OUVERTE SANS SESSION — constat F9.**
+     *
+     * Ce contrôle martèle pour de bon : onze envois du formulaire, par le vrai
+     * chemin HTTP, sur le vrai limiteur. Rien n'est simulé — c'est ce qui le
+     * distingue d'un contrôle qui relirait les seuils dans `LIMITES` et se
+     * croirait quitte.
+     *
+     * **Le levier, et pourquoi il fallait le chercher :** un jeton ne se répond
+     * qu'une fois, donc le formulaire disparaît après une réponse acceptée. On
+     * passe donc par le refus « choisissez une date », qui LAISSE le formulaire
+     * en place — et qui survient APRÈS la borne de cadence, donc chaque essai
+     * compte pour un.
+     *
+     * Ce qui est vérifié tient en deux moitiés, et la seconde compte autant :
+     * le dixième essai passe encore (on ne gêne pas un client qui hésite), et
+     * le onzième est refusé par un message qui dit quoi faire et rassure sur le
+     * devis. Un refus muet ferait conclure au client que l'application est
+     * cassée — la leçon du 6 août 2026.
+     */
+    const { envoi } = await preparerEnvoi("cadence", [12]);
+    const page = await context.newPage();
+    await page.goto(`${BASE}/devis/${envoi.jeton}`, { waitUntil: "networkidle" });
+
+    const alerte = page.locator('p[role="alert"]');
+    let dernier = "";
+    for (let essai = 1; essai <= 10; essai++) {
+      await page.click('button:has-text("J\'accepte ce devis")');
+      await page.waitForSelector('p[role="alert"]', { timeout: 10000 });
+      dernier = await alerte.innerText();
+      assert.ok(
+        dernier.includes("date"),
+        `essai ${essai} : le seuil s'est déclenché trop tôt — reçu « ${dernier} ». ` +
+          `Dix essais doivent passer : un client qui hésite ne doit pas être mis dehors.`
+      );
+    }
+
+    await page.click('button:has-text("J\'accepte ce devis")');
+    // Le message change de contenu sans changer d'élément : on attend le
+    // changement lui-même, jamais un délai fixe.
+    await page.waitForFunction(
+      (avant) => document.querySelector('p[role="alert"]')?.textContent?.trim() !== avant,
+      dernier.trim(),
+      { timeout: 15000 }
+    );
+    const refus = await alerte.innerText();
+    assert.ok(
+      /patientez/i.test(refus),
+      `le onzième essai n'est pas borné — reçu « ${refus} »`
+    );
+    assert.ok(
+      /devis reste valable/i.test(refus),
+      `le refus ne rassure pas le client sur son devis — reçu « ${refus} »`
+    );
+
+    // Et il n'a rien enregistré : une cadence atteinte n'est pas une réponse.
+    const relu = await lireParJeton(envoi.jeton);
+    assert.strictEqual(relu?.reponse, null, "un refus de cadence a enregistré une réponse");
+    await page.close();
+  });
+
   await test("un devis déjà accepté ne peut plus être répondu", async () => {
     const { envoi, maintenant } = await preparerEnvoi("rejoue", [15]);
     const page = await context.newPage();
