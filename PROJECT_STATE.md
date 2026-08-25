@@ -1126,7 +1126,11 @@ avait que deux, et le vocabulaire du dépôt trompait.
 | **Fiche de chantier** | `fiche-chantier-pdf.ts`, `/api/chantiers/[chantierId]/fiche/pdf` | ce qui a été fait, le matériel, les observations, les photos — **aucun prix** |
 
 Les trois sortent du **même moteur** (`document-commun.ts`) : même papier, même
-en-tête, même bloc émetteur/client, même pied. Trois moteurs auraient produit
+en-tête, même bloc client, même pied. **L'en-tête porte l'identité de
+l'entreprise en entier — nom, adresse, téléphone, e-mail, SIRET, une ligne
+chacun — et le bloc du bas ne nomme plus que le client** (25 août 2026,
+`ARCHITECTURE.md` §174) : il était écrit deux fois, et c'est le patron qui l'a
+vu. Trois moteurs auraient produit
 trois mises en page qui divergent, et c'est le client qui verrait la différence
 entre les feuilles d'un même artisan.
 
