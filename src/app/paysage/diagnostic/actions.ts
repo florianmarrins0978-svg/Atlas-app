@@ -1,14 +1,12 @@
 "use server";
 
-import { createHash } from "node:crypto";
 import { revalidatePath } from "next/cache";
 import { getCurrentCtx } from "@/server/session-ctx";
 import { verifierLimite, LIMITES } from "@/server/rate-limit";
-import { verifierTailleFichier } from "@/server/upload-limits";
 import { enregistrerObjet, lireObjet } from "@/server/storage";
 import { getEnv } from "@/server/env";
 import { logger } from "@/server/logger";
-import { retirerMetadonnees, typeImageAccepte } from "@/lib/exif";
+import { preparerPhotoEntrante } from "@/server/photo-entrante";
 import { lirePolitique } from "@/lib/retention-diagnostic";
 import { analyser } from "@/server/diagnostic/moteur";
 import {
@@ -33,8 +31,6 @@ import type { Partie } from "@/lib/diagnostic-vegetal";
  */
 export type Resultat = { ok: true; id: string } | { ok: false; phrase: string };
 
-const PHRASE_IMAGE_REFUSEE =
-  "Ce fichier n’est pas une photo lisible. Prenez une photo au format JPEG, PNG ou WebP.";
 
 /** La politique de conservation, lue à chaque geste — jamais gravée. */
 function politique() {
@@ -49,6 +45,8 @@ type PhotoPrete = {
   base64: string;
   mimeType: string;
   octets: Buffer;
+  /** Posée par `preparerPhotoEntrante` — plus par une seconde table locale. */
+  extension: string;
   checksum: string;
   exifRetire: boolean;
 };
@@ -73,37 +71,29 @@ type PhotoPrete = {
  * affirmer.
  */
 async function preparerPhoto(fichier: unknown): Promise<{ ok: true; photo: PhotoPrete } | { ok: false; phrase: string }> {
-  if (!(fichier instanceof File) || fichier.size === 0) {
-    return { ok: false, phrase: "Aucune photo reçue." };
-  }
-  const taille = verifierTailleFichier(fichier);
-  if (!taille.ok) return { ok: false, phrase: taille.message };
-  if (!typeImageAccepte(fichier.type)) return { ok: false, phrase: PHRASE_IMAGE_REFUSEE };
+  /**
+   * **CET ÉCRAN FAISAIT DÉJÀ TOUT BIEN — il ne le fait plus tout seul.**
+   *
+   * Il vérifiait le format, nettoyait, et refusait quand le nettoyage échouait :
+   * c'est de lui que la règle a été reprise pour les trois autres chemins. Mais
+   * il en tenait sa propre copie, y compris une seconde table `extensionPour`.
+   * Deux rédactions de la même règle divergent toujours (`CLAUDE.md` §3) — et
+   * ici la divergence s'appellerait « un chemin qui range un original ».
+   */
+  const prete = await preparerPhotoEntrante(fichier, "diagnostic végétal");
+  if (!prete.ok) return { ok: false, phrase: prete.raison };
 
-  const brut = new Uint8Array(await fichier.arrayBuffer());
-  const nettoye = retirerMetadonnees(brut, fichier.type);
-  if (!nettoye.nettoye) return { ok: false, phrase: PHRASE_IMAGE_REFUSEE };
-  if (nettoye.retires.length > 0) {
-    logger.info("Diagnostic végétal : métadonnées retirées", { blocs: nettoye.retires });
-  }
-
-  const octets = Buffer.from(nettoye.octets);
   return {
     ok: true,
     photo: {
-      octets,
-      base64: octets.toString("base64"),
-      mimeType: fichier.type.split(";")[0].trim().toLowerCase(),
-      checksum: createHash("sha256").update(octets).digest("hex"),
+      octets: prete.photo.octets,
+      base64: prete.photo.octets.toString("base64"),
+      mimeType: prete.photo.mimeType,
+      extension: prete.photo.extension,
+      checksum: prete.photo.checksum,
       exifRetire: true,
     },
   };
-}
-
-function extensionPour(mimeType: string): string {
-  if (mimeType === "image/png") return ".png";
-  if (mimeType === "image/webp") return ".webp";
-  return ".jpg";
 }
 
 /**
@@ -126,7 +116,7 @@ export async function analyserPhotoAction(formData: FormData): Promise<Resultat>
   const objet = await enregistrerObjet(
     `entreprises/${ctx.entrepriseId}/diagnostics`,
     prete.photo.octets,
-    extensionPour(prete.photo.mimeType)
+    prete.photo.extension
   );
   await ajouterPhoto(
     ctx,
@@ -173,7 +163,7 @@ export async function ajouterComplementAction(diagnosticId: string, formData: Fo
   const objet = await enregistrerObjet(
     `entreprises/${ctx.entrepriseId}/diagnostics`,
     prete.photo.octets,
-    extensionPour(prete.photo.mimeType)
+    prete.photo.extension
   );
   await ajouterPhoto(
     ctx,
