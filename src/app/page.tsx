@@ -7,7 +7,6 @@ import {
 import { ongletDuChantier } from "@/lib/onglet-chantier";
 import { jourIso } from "@/lib/jour";
 import { lieuDuChantier, lieuEstManquant } from "@/lib/nom-chantier";
-import { auth } from "@/auth";
 import { getCurrentCtx } from "@/server/session-ctx";
 import { listerChantiersPourAffichage } from "@/server/repositories/chantiers";
 import { notificationsPatron, envoisCaducs } from "@/server/repositories/envois-devis";
@@ -48,17 +47,17 @@ export default async function ChantiersPage() {
   // 7 jours » calculé sur l'un puis comparé à l'autre finit par osciller autour
   // de son seuil d'un rechargement à l'autre.
   const maintenant = new Date();
-  const [session, chantiers, notifications, caducs, rappels] = await Promise.all([
-    auth(),
+  // **`auth()` n'est plus appelé ici depuis le 24 août 2026.** Il ne servait
+  // qu'au « Bonjour … », retiré à sa demande (planche 95) : garder la requête
+  // pour n'en rien faire coûterait un aller-retour à chaque ouverture de son
+  // écran d'accueil, et laisserait croire à la prochaine lecture que la session
+  // sert encore à quelque chose ici.
+  const [chantiers, notifications, caducs, rappels] = await Promise.all([
     listerChantiersPourAffichage(ctx),
     notificationsPatron(ctx),
     envoisCaducs(ctx),
     rappelsEnCours(ctx, maintenant),
   ]);
-
-  // Le prénom, jamais le nom complet : « Bonjour Florian Marrins » sonne comme
-  // un courrier administratif. Absent, on n'invente rien — le salut disparaît.
-  const prenom = session?.user?.name?.trim().split(/\s+/)[0] ?? null;
 
   // **Cette liste ne montre que ce qui reste à préparer.** Un chantier passé au
   // planning vit au planning ; facturé, terminé, ou dont la date est dépassée,
@@ -117,7 +116,6 @@ export default async function ChantiersPage() {
 
   return (
     <EcranChantiers
-      prenom={prenom}
       chantiers={brins}
       bandeaux={
         <>

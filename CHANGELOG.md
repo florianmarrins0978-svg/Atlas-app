@@ -9,6 +9,57 @@ Format : le plus récent en tête.
 
 ## 2026-08-25
 
+### Photographier un devis pour en reprendre l'allure
+
+*« faut que l'utilisateur puisse prendre la photo de son devis […] pareil pour
+sa facture »*, après *« on comprend rien, trop compliqué pour modifier »* sur
+l'écran des documents. Il règle aujourd'hui logo, police, couleur et mentions à
+la main, sur près de mille lignes qu'il trouve illisibles.
+
+En tête de « L'allure de mes devis », deux boutons photographient un devis ou
+une facture — **appareil photo ou photothèque**, son devis étant parfois déjà
+une image. L'appli en reprend **l'allure** (couleurs, police reconnue) et les
+**mentions** (conditions, politesse), **jamais les lignes ni les prix**, jamais
+le logo — un modèle décrit une image, il ne la découpe pas, et l'écran le dit en
+réserve plutôt que de le laisser croire.
+
+**Ce qui protège du faux.** On ne pose une police que sur une famille reconnue
+parmi les neuf que le PDF sait embarquer ; une couleur mal lue vaut `null` et
+laisse celle d'avant ; un acompte hors bornes tombe. Chaque perte se dit à
+l'écran. La photo est nettoyée de ses métadonnées comme le logo (coordonnées GPS
+du lieu de la prise), avant de partir chez le fournisseur de vision.
+
+**Ce qui n'est PAS éprouvé ici, et l'est ailleurs.** La fonction pure de lecture
+est testée sans clé (`test-lecture-allure-devis.ts`), là où vivent les pièges.
+L'appel réel au fournisseur demande une clé absente de cet environnement : il se
+prouve sur son espace, avec un vrai devis — comme la dictée.
+
+### L'accueil perd son salut et son trait
+
+*« Supprime le bonjour compte »*, et *« une sans le trait gris »* — ses deux
+demandes sur la planche 95, puis *« code la mienne »*.
+
+Ce qu'il lisait n'était pas son prénom mais le mot **« Compte »**, le nom du
+compte faute de prénom renseigné. Un salut qui se trompe de nom vaut moins que
+pas de salut, et il occupait la première ligne de l'écran qu'il ouvre vingt fois
+par jour. Le prénom n'est plus lu du tout, et la lecture de session qui ne
+servait qu'à lui a disparu avec.
+
+**Le point qui compte : ce trait, il l'avait DEMANDÉ le 11 août**, et le fichier
+portait la consigne inverse en toutes lettres. Elle a été récrite, pas
+contournée — sans cela, la prochaine session l'aurait remis de bonne foi en
+citant une consigne devenue fausse.
+
+**Et rien d'autre n'a bougé.** La planche proposait trois autres améliorations,
+dans sa version B ; sa consigne était : *« pour la mienne, fais seulement les
+changements que je t'ai demandés »*. Elles restent sur la planche, où il peut les
+comparer. Une proposition ne se glisse pas dans la version de quelqu'un sous
+prétexte qu'elle l'améliore. `ARCHITECTURE.md` §172.
+
+---
+
+## 2026-08-25
+
 ### Le lot 2B est au vert — et sept contrôles fragiles avec lui
 
 `verifier:avant-livraison` : **223/223** suites base, **110/110** suites
@@ -198,7 +249,7 @@ le devis moi-même » *si* « Valider et calculer le prix » ouvrait le devis. C
 n'est pas le cas : ce bouton ouvre l'écran PRIX. Le lien saute cette étape —
 c'est la sortie de secours qu'il avait demandée le 3 août 2026. Il reste.
 
-`ARCHITECTURE.md` §171.
+`ARCHITECTURE.md` §172.
 
 ---
 
@@ -1661,7 +1712,7 @@ suite qui les ferait rougir accuserait le dessin qu'il a validé (`CLAUDE.md`
 §5 bis). La règle retenue est *le sombre ne fait pas moins bien que le clair*,
 et le clair se mesure au lieu de s'écrire.
 
-Le détail : `ARCHITECTURE.md` §160.
+Le détail : `ARCHITECTURE.md` §172.
 
 
 ### « Choisir la date » ouvre le calendrier du planning, et dit qui est déjà là
@@ -4519,6 +4570,31 @@ réparer tout seul. Elle dit maintenant le rythme des tentatives.
 6 h 10. La mémoire était encore ample à cet instant — ce n'est donc pas la
 saturation du 17 août, et la cause n'a pas été reproduite ici. Ouvert dans
 `TODO.md`.
+
+---
+
+## 2026-08-18
+
+### Son logo était partout, sauf sur l'écran qu'il regarde
+
+**Sa remarque, capture à l'appui :** *« j'ai rajouté un logo en haut à gauche
+mais il n'est pas visible »*. Le logo n'était pas perdu — il partait sur le PDF
+et s'affichait dans l'aperçu de « Devis & factures ». Il manquait au seul
+endroit où l'artisan passe son temps : **l'écran où il rédige son devis**.
+
+**La cause, et elle vaut d'être retenue :** cet écran compose son en-tête à la
+main, sans passer par la fabrique de documents. Deux écritures du même en-tête,
+et c'est la seconde qui a vieilli le jour où le logo est arrivé.
+
+Le logo se pose donc avec **les mêmes règles que le PDF** : au-dessus du nom,
+hauteur fixe, largeur libre — un logo en bandeau et un logo carré n'ont rien à
+voir, et une boîte carrée écraserait le premier.
+
+**Le contrôle refuse de croire une balise.** Il pose le logo comme lui le pose,
+ouvre un devis, et vérifie que l'image est **chargée** (`naturalWidth > 0`), pas
+seulement présente : une mauvaise adresse rend une balise, et c'est lui qui
+verrait le carré vide. Puis qu'elle est au-dessus du nom, et pas écrasée. Vu
+rouge avant d'être livré. `ARCHITECTURE.md` §173.
 
 ---
 

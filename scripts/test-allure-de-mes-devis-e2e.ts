@@ -21,8 +21,11 @@
 // Usage : npm run test:e2e -- --seulement allure-de-mes-devis
 import assert from "node:assert/strict";
 import { Pool } from "pg";
+import { mkdirSync } from "node:fs";
 import { lancerNavigateur } from "./e2e-browser";
+import { creerPuisFiche } from "./_creer-chantier-e2e";
 
+const CAPTURES = process.env.CAPTURES_E2E ?? "/tmp/captures-atlas";
 const BASE = "http://localhost:3000";
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 
@@ -196,6 +199,68 @@ async function main() {
     // on appuie, rien ne bouge, et l'on ne sait plus si l'écran répond.
     await page.waitForTimeout(400);
     assert.equal(await page.locator('[data-atlas="allure-defaut"]').count(), 0);
+  });
+
+  // ── SON LOGO, sur l'écran où il rédige (18 août 2026) ─────────────────────
+  //
+  // *« Je viens de modifier l'apparence de mon devis, j'ai rajouté un logo en
+  // haut à gauche mais il n'est pas visible. »* Le logo partait bien sur le PDF
+  // et s'affichait dans l'aperçu de ce réglage — mais l'écran où il RÉDIGE son
+  // devis, celui qu'il regarde le plus, ne le montrait nulle part.
+  //
+  // Le contrôle va d'un bout à l'autre : on POSE le logo comme lui le pose,
+  // puis on ouvre un devis et on regarde. Vérifier la seule présence de la
+  // balise ne suffirait pas — une image cassée est aussi une balise.
+  await cas("le logo posé dans les réglages apparaît sur le devis", async () => {
+    await page.goto(`${BASE}/reglages/documents`, { waitUntil: "networkidle" });
+    // Le champ de fichier est CACHÉ derrière son bouton (c'est la forme de
+    // l'écran) : on attend le bouton, et l'on pose le fichier dans le champ.
+    await page.waitForSelector('[data-atlas="logo-choisir"]', { timeout: 30_000 });
+
+    // Un vrai PNG, minuscule mais valide — un pixel.
+    const pixel = Buffer.from(
+      "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==",
+      "base64"
+    );
+    await page.setInputFiles('[data-atlas="logo-fichier"]', {
+      name: "logo.png",
+      mimeType: "image/png",
+      buffer: pixel,
+    });
+    await page.waitForSelector('[data-atlas="logo-case"] img', { timeout: 30_000 });
+
+    // Un chantier avec son devis, comme il y arrive.
+    await page.goto(`${BASE}/chantiers/nouveau`, { waitUntil: "networkidle" });
+    await page.fill('input[placeholder="Bernard"]', `M. Logo ${Date.now()}`);
+    // Le chemin partagé, plutôt qu'un bouton nommé à la main : « Créer le
+    // chantier » a disparu de l'écran le 22 août, et deux copies de la même
+    // manœuvre divergent toujours.
+    const idChantier = await creerPuisFiche(page, BASE);
+    await page.goto(`${BASE}/chantiers/${idChantier}/devis-complet`, { waitUntil: "networkidle" });
+
+    const logo = page.locator('[data-atlas="logo-devis"]');
+    await logo.waitFor({ timeout: 30_000 });
+
+    // **Chargée pour de bon, et pas seulement présente.** `naturalWidth` vaut
+    // zéro sur une image cassée : sans cette mesure, une adresse fausse
+    // passerait au vert et c'est lui qui verrait le carré vide.
+    const chargee = await logo.evaluate((el) => (el as HTMLImageElement).naturalWidth > 0);
+    assert.ok(chargee, "le logo est dans la page mais ne se charge pas : l'adresse ne sert rien");
+
+    // Et il est AU-DESSUS du nom de l'entreprise, comme sur le document.
+    const boiteLogo = await logo.boundingBox();
+    const boiteNom = await page.locator('[aria-label="Nom de l\'entreprise"]').first().boundingBox();
+    assert.ok(boiteLogo && boiteNom, "impossible de mesurer le logo ou le nom");
+    assert.ok(
+      boiteLogo.y + boiteLogo.height <= boiteNom.y + 4,
+      `le logo doit être au-dessus du nom (logo à ${Math.round(boiteLogo.y)}, nom à ${Math.round(boiteNom.y)})`
+    );
+    assert.ok(boiteLogo.height > 10, `le logo est écrasé : ${Math.round(boiteLogo.height)} px de haut`);
+
+    // **Une capture, pour être REGARDÉE** : quatre défauts de ce dépôt sont
+    // sortis d'une image et d'aucun test (`CLAUDE.md` §5).
+    mkdirSync(CAPTURES, { recursive: true });
+    await page.screenshot({ path: `${CAPTURES}/devis-avec-logo.png` });
   });
 
   await contexte.close();
