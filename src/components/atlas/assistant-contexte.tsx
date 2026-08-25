@@ -29,7 +29,29 @@ type Assistant = {
 
 const Contexte = createContext<Assistant | null>(null);
 
-export function FournisseurAssistant({ children }: { children: React.ReactNode }) {
+/**
+ * **`disponible: false` éteint l'assistant pour de bon**, bouton compris.
+ *
+ * Un salarié n'y a pas droit : l'assistant reconstitue au serveur les chantiers,
+ * les clients, les prestations et les PRIX de l'entreprise (`assistant-service`).
+ * Le lui laisser rouvrirait par une conversation tout ce que les rôles viennent
+ * de fermer — et par la porte la plus difficile à surveiller, puisqu'il suffit
+ * de demander.
+ *
+ * **Ce n'est pas ce qui protège.** `poserQuestionAction` refuse au SERVEUR ; ceci
+ * évite seulement de lui montrer un bouton qui ne répondrait pas.
+ *
+ * Rendre le fournisseur inerte plutôt que d'ajouter un test dans le bouton :
+ * `useAssistant()` rend déjà `null` hors fournisseur, et le bouton sait déjà se
+ * taire dans ce cas. Un seul chemin, celui qui existe.
+ */
+export function FournisseurAssistant({
+  children,
+  disponible = true,
+}: {
+  children: React.ReactNode;
+  disponible?: boolean;
+}) {
   const [ouvert, setOuvert] = useState(false);
   const valeur = useMemo<Assistant>(
     () => ({
@@ -39,7 +61,7 @@ export function FournisseurAssistant({ children }: { children: React.ReactNode }
     }),
     [ouvert],
   );
-  return <Contexte.Provider value={valeur}>{children}</Contexte.Provider>;
+  return <Contexte.Provider value={disponible ? valeur : null}>{children}</Contexte.Provider>;
 }
 
 /**

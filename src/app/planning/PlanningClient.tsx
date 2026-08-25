@@ -7,6 +7,7 @@ import { getPlanificationEtat, trierParDatePlanifiee } from "@/lib/chantier-etat
 import { estAuPlanning } from "@/lib/onglet-chantier";
 import { jourIso } from "@/lib/jour";
 import EnTeteEcran from "@/components/atlas/EnTeteEcran";
+import { cheminAutorise, type Role } from "@/lib/acces-roles";
 import { colors, font, libelleCaps, surPlein } from "@/lib/design-tokens";
 import MoisCharge, { fondDeLEtat } from "@/components/atlas/MoisCharge";
 import {
@@ -158,7 +159,7 @@ export default function PlanningClient({
   equipesNommees = [],
   agenda = { configure: false, relie: false, actif: false, enPanne: false },
   absences = [],
-  ficheOuverte = true,
+  role = null,
 }: {
   initialChantiers: ChantierPlanning[];
   nombreEquipes?: number;
@@ -173,16 +174,28 @@ export default function PlanningClient({
    */
   absences?: AbsenceEquipe[];
   /**
-   * Le chevron qui mène à la fiche du chantier — devis, prix, facture.
+   * Le RÔLE de la personne, résolu au serveur (`src/app/planning/page.tsx`).
    *
-   * **Faux pour un salarié**, dont c'est tout le sens : il a le planning et sa
-   * feuille sans montants, jamais la fiche. Le lien est alors ABSENT, pas grisé
-   * — un chevron inerte se lit comme une panne, et `GardeAcces` le renverrait de
-   * toute façon. Ce n'est pas cette valeur qui protège : elle évite seulement de
-   * lui montrer une porte close (`docs/QUESTIONS.md` §10).
+   * **Il ne protège rien** — c'est `GardeAcces` qui refuse — mais il évite de
+   * dessiner des portes closes : le chevron qui mène à la fiche du chantier
+   * (devis, prix, facture) et le lien qui relie l'agenda de l'entreprise. Un
+   * salarié qui les appuierait serait renvoyé ici même, et un renvoi sans
+   * explication se lit comme une panne.
+   *
+   * **Le filtre est la MÊME fonction que celle qui refuse** (`cheminAutorise`),
+   * jamais une seconde liste : un lien caché dont l'adresse répondrait quand
+   * même serait un mensonge, et l'inverse une panne (`CLAUDE.md` §3).
    */
-  ficheOuverte?: boolean;
+  role?: Role | null;
 }) {
+  // Les deux portes que cet écran propose, décidées par la règle des rôles —
+  // jamais par une liste écrite ici. Sans rôle (cas d'un rendu hors session),
+  // on ne retire rien : l'écran est celui d'avant ce lot.
+  const ouvertes = {
+    fiche: role === null || cheminAutorise(role, "/chantiers"),
+    agenda: role === null || cheminAutorise(role, "/reglages/agenda"),
+  };
+
   const [chantiers, setChantiers] = useState<ChantierPlanning[]>(initialChantiers);
   const aujourdHui = jourIso(new Date());
 
@@ -556,7 +569,10 @@ export default function PlanningClient({
             personne ne le voit. La planche ne le montre pas parce qu'elle
             n'avait pas d'agenda ; le retirer laisserait un client retenir un
             jour où le patron est déjà pris. */}
-        {(!agenda.relie || !agenda.actif || agenda.enPanne) && (
+        {/* **Pas pour un salarié** : relier l'agenda de l'entreprise est un
+            réglage du patron, et le lien le renverrait ici même. Un renvoi sans
+            explication se lit comme une panne. */}
+        {ouvertes.agenda && (!agenda.relie || !agenda.actif || agenda.enPanne) && (
           <div className="mt-5 px-[26px]">
             <Link
               href="/reglages/agenda"
@@ -797,7 +813,7 @@ export default function PlanningClient({
                           *« il se range dans les chantiers planifiés, mais
                           comment moi je fais pour avoir accès au devis ? »* — et
                           la réponse redeviendrait : on ne peut pas. */}
-                      {ficheOuverte && (
+                      {ouvertes.fiche && (
                         <Link
                           href={`/chantiers/${c.id}`}
                           aria-label={`Ouvrir le chantier — ${c.nom}`}

@@ -33,7 +33,9 @@ uniquement en masquant des boutons ». La règle elle-même est tranchée dans
 | Le dernier patron ne peut ni se rétrograder ni se retirer | **fait** — `donner-un-acces.ts` |
 | Isolation entre entreprises sur les accès eux-mêmes | **fait** — éprouvée sous `atlas_app` (`test-acces-roles-db.ts`) |
 | **Un commercial LIT les tarifs sans les changer** (règle du 13 août) | **PAS FAIT** — `/reglages/tarifs` et `/reglages/prix` restent au patron seul, comme avant ce lot. Voir `TODO.md` |
-| Vu à l'écran | **PAS ENCORE** — l'écran « Qui a accès » n'a pas été capturé ici |
+| L'assistant est fermé au salarié — il reconstitue chantiers, clients et prix | **fait** — refus dans `poserQuestionAction`, bouton non rendu |
+| La connexion mène chacun chez lui, sans renvoi enchaîné | **fait** — `src/server/accueil-apres-connexion.ts` ; sans quoi le salarié voyait une page blanche |
+| Vu à l'écran | **fait pour le planning du salarié** (deux onglets, ni assistant ni lien d'agenda) et pour celui du patron (cinq onglets, inchangé). **L'écran « Qui a accès » n'a pas encore été capturé** |
 
 ---
 

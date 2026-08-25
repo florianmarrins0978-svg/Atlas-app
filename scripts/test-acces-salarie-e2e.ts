@@ -2,6 +2,7 @@ import { lancerNavigateur } from "./e2e-browser";
 import assert from "node:assert/strict";
 import { Pool } from "pg";
 import { donnerUnAcces, listerAcces } from "../src/server/repositories/membres-entreprise";
+import { documentsAAccepter, enregistrerAcceptations } from "../src/server/repositories/documents-legaux";
 import type { Ctx } from "../src/server/repositories/context";
 
 // UN VRAI SALARIÉ, DANS UN VRAI NAVIGATEUR — et ce qu'il n'obtient pas.
@@ -76,6 +77,31 @@ async function main() {
   });
   assert.deepEqual(donne, { ok: true }, "le compte du salarié n'a pas pu être créé");
 
+  /**
+   * **Les documents légaux, acceptés d'avance — et c'est cette suite qui l'a
+   * appris.**
+   *
+   * Sa première version attendait `/planning` partout et rendait cinq rouges :
+   * un compte NEUF est renvoyé à `/documents-legaux` tant qu'il n'a pas accepté
+   * les conditions, et cette garde-là s'exécute avant celle des rôles. Le
+   * produit avait raison — le salarié était bien refusé, simplement ailleurs.
+   *
+   * On accepte donc ici, pour que la suite éprouve ce qu'elle prétend éprouver :
+   * le cloisonnement par RÔLE, et non le passage obligé par les conditions, qui
+   * a sa propre suite. Sans cela, elle serait restée verte le jour où le rôle
+   * cesserait de refuser quoi que ce soit — tout le monde tombant sur
+   * `/documents-legaux`.
+   */
+  const lui = (await listerAcces(ctxPatron)).find((l) => l.email === email)!;
+  const aAccepter = await documentsAAccepter(lui.utilisateurId);
+  if (aAccepter.length > 0) {
+    await enregistrerAcceptations(
+      lui.utilisateurId,
+      aAccepter.map((d) => d.id),
+      { adresseIp: "127.0.0.1", agentUtilisateur: "suite d'essai" }
+    );
+  }
+
   // Un devis et une facture réels de l'entreprise : sans eux, un 404 ne
   // prouverait rien — il dirait seulement que la pièce n'existe pas.
   const { rows: pieces } = await pool.query(
@@ -102,9 +128,15 @@ async function main() {
   });
 
   await cas("il ne voit que deux onglets", async () => {
+    // **On ATTEND la barre avant de la lire.** Sa première version lisait juste
+    // après la redirection : elle a rendu une liste VIDE, et « aucun onglet
+    // interdit » serait passé pour un succès alors que rien n'avait été mesuré
+    // (`CLAUDE.md` §5 — un contrôle qui mesure zéro ne mesure rien).
+    await page.waitForSelector('nav[aria-label="Navigation principale"] a', { timeout: 30_000 });
     const onglets = await page.$$eval('nav[aria-label="Navigation principale"] a', (as) =>
       as.map((a) => (a.textContent ?? "").trim())
     );
+    assert.ok(onglets.length > 0, "la barre du bas n'a rendu aucun onglet : rien n'a été mesuré");
     assert.deepEqual(onglets, ["Planning", "Réglages"]);
   });
 

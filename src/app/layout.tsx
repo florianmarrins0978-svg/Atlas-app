@@ -242,7 +242,10 @@ export default async function RootLayout({
           // Il n'entoure QUE le cadre, sans en changer la hauteur : celle-ci
           // tient compte du bandeau du banc (`minHeight` ci-dessous), et un
           // fournisseur ne rend aucun élément.
-          <FournisseurAssistant>
+          // L'assistant reconstitue au serveur les chantiers, les clients et les
+          // prix : un salarié n'y a pas droit. Le refus est dans l'action
+          // (`poserQuestionAction`) ; ici, on ne lui montre pas le bouton.
+          <FournisseurAssistant disponible={role !== "salarie"}>
             <div
               className="mx-auto flex max-w-md flex-col bg-paper"
               style={{ minHeight: banc ? "calc(100dvh - 40px)" : "100dvh" }}
@@ -252,7 +255,7 @@ export default async function RootLayout({
                 marge laisserait un vide en bas de page. */}
             <main className="atlas-contenu flex-1">{children}</main>
             <AtlasBottomNav role={role} />
-            <AssistantSidebar />
+            {role !== "salarie" && <AssistantSidebar />}
           </div>
           </FournisseurAssistant>
         )}

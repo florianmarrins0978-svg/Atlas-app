@@ -26,9 +26,10 @@ export default async function PlanningPage() {
       equipesNommees={contexte.equipesNommees}
       absences={contexte.absences}
       agenda={{ configure: agenda.configure, relie: agenda.relie, actif: agenda.actif, enPanne: Boolean(agenda.derniereErreur) }}
-      // Un salarié n'a pas la fiche du chantier : le chevron qui y mène ne lui
-      // est pas dessiné. Ce qui REFUSE l'adresse, c'est `GardeAcces`.
-      ficheOuverte={role !== "salarie"}
+      // Le rôle décide des portes que l'écran propose — la fiche d'un chantier,
+      // le raccordement de l'agenda. Ce qui REFUSE les adresses, c'est
+      // `GardeAcces` ; ceci évite seulement de dessiner des portes closes.
+      role={role}
     />
   );
 }

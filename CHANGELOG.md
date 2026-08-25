@@ -39,6 +39,19 @@ d'API.
 pendant qu'un compte non propriétaire atteignait tous les écrans sauf quatre.
 `membre` devient `salarie`, le plus fermé des trois.
 
+**Trois défauts trouvés EN REGARDANT l'écran, qu'aucun test vert ne voyait :**
+
+1. **un salarié qui se connectait voyait une page BLANCHE.** L'adresse affichait
+   bien `/planning` — la suite navigateur la lisait et passait au vert — mais la
+   page rendue était le « 404 » de Next : 9 540 octets au lieu de 61 208, aucun
+   onglet. Cause : deux renvois enchaînés (`/` puis la garde de rôle) dans la
+   réponse d'une action serveur. Chacun entre désormais directement chez lui ;
+2. **l'assistant restait ouvert au salarié** — et il reconstitue au serveur les
+   chantiers, les clients et les PRIX. Tout ce que les rôles ferment se serait
+   rouvert en le DEMANDANT. Refusé au serveur, et le bouton ne s'affiche plus ;
+3. **le lien « Relier mon agenda Google »** s'affichait sur son planning et le
+   renvoyait à son planning. Un renvoi sans explication se lit comme une panne.
+
 **Ce qui reste ouvert :** un commercial ne lit pas encore les tarifs, alors que
 la règle du 13 août dit qu'il les lit sans les changer. Détail dans `TODO.md`.
 
