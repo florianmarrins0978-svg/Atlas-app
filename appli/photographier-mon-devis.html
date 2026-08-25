@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas — photographier mon devis</title>
+<style>
+  /*
+    PHOTOGRAPHIER MON DEVIS — sa demande du 25 août 2026, juste après
+    « on comprend rien, trop compliqué pour modifier, faut simplifier tout ça »
+    sur l'écran Réglages → Documents (logo, police, couleur, message) :
+
+      « faut également que l'utilisateur puisse prendre la photo de son devis et
+        que l'outil recopie trait pour trait son devis, pareil pour sa facture. »
+
+    ─────────────────────────────────────────────────────────────────────────
+    CE QUE CETTE PLANCHE PROPOSE, ET CE QU'ELLE NE PROMET PAS.
+
+    L'écran d'aujourd'hui fait tout régler à la main — logo, une police parmi
+    neuf, une couleur, un message. Il le trouve illisible. Ici, un seul geste :
+    il photographie un de ses devis, et l'appli en REPREND l'allure.
+
+    « Trait pour trait » à l'identique n'est ni faisable ni souhaitable : une
+    photo n'est pas modifiable, et l'appli doit produire un vrai PDF propre (le
+    bon lien du client, les bons montants). Ce qu'on reproduit, c'est l'ALLURE
+    et les MENTIONS — pas une copie pixel. Il l'a tranché le 25 août : l'appli
+    reprend le logo, les couleurs, la police, la mise en page ET les mentions
+    (conditions, politesse) — mais PAS les lignes ni les prix de ce devis-là.
+
+    ─────────────────────────────────────────────────────────────────────────
+    AUCUN SCRIPT. La planche se lit telle quelle : son lecteur n'exécute pas
+    toujours le JavaScript, et une planche qui s'ouvre blanche ne prouve rien.
+    L'exemple « ce que l'appli a repris » est une ILLUSTRATION de l'écran, pas
+    une donnée réelle : le vrai remplissage vient de la lecture de sa photo.
+  */
+  :root{
+    --bone:#f5f3ee; --cream:#faf9f5; --paper:#ece9e1;
+    --charcoal:#1c1c1a; --charcoal-soft:#4a4a44; --muted:#8a8578;
+    --pine:#2f3b2f; --or:#B98B47; --alerte:#9C3B2E;
+    --line:rgba(28,28,26,.12); --line-soft:rgba(28,28,26,.07);
+    --display:ui-serif,Georgia,"Iowan Old Style","Palatino Linotype",serif;
+    --body:ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  body{margin:0;background:#d9d6cf;font-family:var(--body);color:var(--charcoal)}
+  .tel{max-width:414px;margin:0 auto;min-height:100vh;background:var(--bone);
+       display:flex;flex-direction:column}
+  .haut{padding:26px 26px 0}
+  .retour{display:inline-flex;align-items:center;gap:7px;font-size:13px;
+          font-weight:600;color:var(--or);text-decoration:none}
+  .chev-g{width:8px;height:8px;border-left:1.6px solid currentColor;
+          border-bottom:1.6px solid currentColor;transform:rotate(45deg)}
+  .surtitre{display:block;margin-top:18px;font-size:12px;font-weight:600;
+            letter-spacing:.2em;text-transform:uppercase;color:var(--or)}
+  h1{margin:8px 0 0;font-family:var(--display);font-weight:500;font-size:32px;
+     line-height:1.1;letter-spacing:-.01em}
+  .chapo{margin:12px 0 0;font-size:14.5px;line-height:1.5;color:var(--charcoal-soft)}
+
+  .corps{padding:22px 26px 0}
+
+  /* ── Le geste, en grand ─────────────────────────────────────────────────
+     Un seul bouton par document. Le reste du réglage se range derrière. */
+  .prendre{display:flex;align-items:center;gap:16px;width:100%;text-align:left;
+           background:var(--pine);color:var(--bone);border:none;border-radius:16px;
+           padding:18px 20px;margin-top:14px;text-decoration:none}
+  .prendre .rond{flex:none;width:46px;height:46px;border-radius:50%;
+                 background:rgba(245,243,238,.14);display:grid;place-items:center}
+  .prendre .rond svg{width:24px;height:24px}
+  .prendre .quoi{display:block;font-family:var(--display);font-size:19px;line-height:1.15}
+  .prendre .sous{display:block;margin-top:3px;font-size:12.5px;line-height:1.35;
+                 color:rgba(245,243,238,.72)}
+
+  /* ── Ce que l'appli reprend ─────────────────────────────────────────────── */
+  .repris{margin-top:22px;background:var(--cream);border-radius:14px;
+          padding:16px 17px;border:1px solid var(--line-soft)}
+  .repris .t{display:block;font-size:9.5px;font-weight:600;letter-spacing:.24em;
+             text-transform:uppercase;color:var(--muted)}
+  .repris ul{margin:12px 0 0;padding:0;list-style:none}
+  .repris li{display:flex;align-items:center;gap:12px;padding:9px 0;
+             border-top:1px solid var(--line-soft);font-size:14.5px}
+  .repris li:first-child{border-top:0}
+  .repris .coche{flex:none;width:20px;height:20px;border-radius:50%;
+                 background:var(--pine);position:relative}
+  .repris .coche::after{content:"";position:absolute;left:7px;top:4px;width:4px;height:8px;
+                        transform:rotate(42deg);border-right:1.7px solid #fff;border-bottom:1.7px solid #fff}
+  .repris .ap{margin-left:auto;display:flex;align-items:center;gap:7px}
+  .swatch{width:16px;height:16px;border-radius:4px;border:1px solid var(--line)}
+  .aa{font-family:var(--display);font-size:16px;color:var(--charcoal-soft)}
+  .mini-logo{width:22px;height:22px;border-radius:50%;background:var(--paper);
+             display:grid;place-items:center;font-size:11px}
+
+  .non{margin-top:12px;font-size:12.5px;line-height:1.45;color:var(--muted)}
+  .non b{color:var(--charcoal-soft);font-weight:600}
+
+  .amain{display:block;margin:20px 0 0;text-align:center;font-size:13.5px;
+         font-weight:600;color:var(--or);text-decoration:none}
+
+  /* ── Ce que ça remplace ─────────────────────────────────────────────────── */
+  .avant{margin:26px 26px 0;background:var(--paper);border-radius:14px;padding:16px 17px}
+  .avant .t{display:block;font-size:9.5px;font-weight:600;letter-spacing:.24em;
+            text-transform:uppercase;color:var(--muted)}
+  .avant p{margin:9px 0 0;font-size:13px;line-height:1.5;color:var(--charcoal-soft)}
+  .avant .liste{margin:9px 0 0;padding-left:16px;font-size:13px;line-height:1.6;color:var(--charcoal-soft)}
+
+  .barre{margin-top:auto;display:flex;justify-content:space-between;
+         padding:15px 20px 26px;border-top:1px solid var(--line);
+         font-size:9.5px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;
+         color:var(--muted)}
+  .barre .actif{color:var(--charcoal);position:relative}
+  .barre .actif::after{content:"";position:absolute;left:0;right:0;bottom:-6px;
+                       height:2px;background:var(--or)}
+</style>
+</head>
+<body>
+<div class="tel">
+
+  <div class="haut">
+    <a class="retour" href="#"><span class="chev-g"></span>Réglages</a>
+    <span class="surtitre">Mes documents</span>
+    <h1>À votre image</h1>
+  </div>
+
+  <div class="corps">
+    <a class="prendre" href="#">
+      <span class="rond" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#f5f3ee" stroke-width="1.6"
+             stroke-linecap="round" stroke-linejoin="round">
+          <path d="M4 8h3l1.5-2h7L17 8h3a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z"/>
+          <circle cx="12" cy="13" r="3.4"/>
+        </svg>
+      </span>
+      <span>
+        <span class="quoi">Photographier mon devis</span>
+        <span class="sous">Sur papier ou à l'écran.</span>
+      </span>
+    </a>
+
+    <a class="prendre" href="#" style="background:var(--charcoal)">
+      <span class="rond" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#f5f3ee" stroke-width="1.6"
+             stroke-linecap="round" stroke-linejoin="round">
+          <path d="M4 8h3l1.5-2h7L17 8h3a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z"/>
+          <circle cx="12" cy="13" r="3.4"/>
+        </svg>
+      </span>
+      <span>
+        <span class="quoi">Photographier ma facture</span>
+        <span class="sous">Même geste.</span>
+      </span>
+    </a>
+
+    <div class="repris">
+      <span class="t">Ce qu'Atlas reprend de la photo</span>
+      <ul>
+        <li><span class="coche" aria-hidden="true"></span>Votre logo
+          <span class="ap"><span class="mini-logo">🌳</span></span></li>
+        <li><span class="coche" aria-hidden="true"></span>Vos couleurs
+          <span class="ap"><span class="swatch" style="background:#2f3b2f"></span>
+            <span class="swatch" style="background:#B98B47"></span></span></li>
+        <li><span class="coche" aria-hidden="true"></span>Votre police
+          <span class="ap"><span class="aa">Aa</span></span></li>
+        <li><span class="coche" aria-hidden="true"></span>Vos mentions &amp; conditions
+          <span class="ap"><span class="aa" style="font-size:12.5px;color:var(--muted)">acompte 30 %…</span></span></li>
+      </ul>
+      <p class="non"><b>Pas</b> les lignes ni les prix — juste l'allure.</p>
+    </div>
+
+    <a class="amain" href="#">Régler à la main plutôt</a>
+  </div>
+
+  <div class="barre">
+    <span>Chantiers</span><span>Planning</span><span>Terminés</span>
+    <span>Paysage</span><span class="actif">Réglages</span>
+  </div>
+
+</div>
+</body>
+</html>

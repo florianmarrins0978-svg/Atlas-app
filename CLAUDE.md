@@ -226,6 +226,19 @@ retransmet — un document périmé le ferait travailler sur une version disparu
   `withEntreprise(utilisateurId, entrepriseId, fn)` — c'est ce qui pose le
   contexte d'isolation. Une requête hors de ce cadre ne renvoie rien,
   *silencieusement*.
+- **À l'écran, le moins de mots possible.** Sa consigne du 25 août 2026 :
+  *« pense toujours à mettre le moins de mots possible sinon on se perd dans
+  toutes ces lignes ; retire les phrases inutiles qui expliquent »*. Un écran
+  n'explique pas son propre fonctionnement — il le montre. Une phrase qui décrit
+  ce que fait le bouton d'à côté est du bruit : elle se supprime. Vaut pour les
+  écrans **et** les maquettes.
+- **Pas de flèches décoratives au bout des libellés.** Sa consigne du 25 août
+  2026 : *« arrête de mettre des flèches, c'est moche »*. Le « → » (et le « › »)
+  ajouté à la fin d'un bouton ou d'un lien — « Régler à la main → », « Créer le
+  devis → » — est de l'ornement : un bouton n'a pas besoin d'une flèche pour dire
+  qu'on l'appuie. On l'enlève. (Les chevrons de navigation qui portent une VRAIE
+  fonction — retour « ‹ », feuilletage — ne sont pas visés : eux montrent un
+  sens, ils ne décorent pas.) Vaut pour les écrans **et** les maquettes.
 - **Les règles métier vivent dans des fonctions pures**, dans `src/lib/`,
   testables sans base. Un écran ne décide de rien : il affiche le résultat.
 - **Jamais de règle dupliquée entre l'affichage et la vérification.** La même
