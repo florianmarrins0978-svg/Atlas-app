@@ -139,7 +139,7 @@ async function main() {
    *
    * | Lien pas encore préparé | Lien préparé |
    * |---|---|
-   * | « Votre client ne l'a pas encore reçue. » | « … — c'est vous qui l'envoyez. » |
+   * | la phrase « Votre client ne l'a pas encore reçue. » | le bouton qui ouvre le message tout prêt (`data-atlas^="transmission-"`) |
    *
    * Depuis l'appui unique du 22 août, le même geste arrête la facture, prépare
    * le lien et ouvre la messagerie, puis rafraîchit l'écran : **on passe du
@@ -149,13 +149,20 @@ async function main() {
    * batteries de suite, vert joué seul.
    *
    * **Les deux visages disent la même chose, et c'est ELLE la règle** : la
-   * facture est arrêtée, et c'est encore à lui de l'envoyer. Un écran qui
-   * laisserait croire le contraire ne porte ni l'une ni l'autre phrase, et ce
-   * contrôle rougit — ce qu'il a toujours eu à défendre.
+   * facture est arrêtée, et c'est encore à lui de l'envoyer.
+   *
+   * **Le second visage se lit par un REPÈRE, jamais par un libellé.** Une
+   * première version citait « c'est vous qui l'envoyez » : cette phrase a été
+   * retirée le 24 août, à sa demande — *« tout ce qui est en gris, supprime »*.
+   * Un contrôle accroché au texte serait mort sur une demande exaucée, et l'on
+   * aurait été tenté de rétablir le mot pour le faire taire (`CLAUDE.md` §5 bis).
+   * C'est le même repère que celui du point 2 plus bas.
    */
-  assert.match(
-    ecran,
-    /ne l'a pas encore reçue|c'est vous qui l'envoyez/i,
+  const encoreAEnvoyer =
+    /ne l'a pas encore reçue/i.test(ecran) ||
+    (await page.locator("a[data-atlas^='transmission-']").count()) > 0;
+  assert.ok(
+    encoreAEnvoyer,
     `L'écran laisse croire que la facture est partie alors que rien ne la porte au client. Écran :\n${ecran.slice(0, 800)}`
   );
   console.log("  ✓ une facture arrêtée dit qu'elle n'est pas encore partie, et propose de l'envoyer");
