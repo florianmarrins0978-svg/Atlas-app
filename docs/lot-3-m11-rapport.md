@@ -1,209 +1,342 @@
-# Atlas — M11 : la ré-authentification récente
+# Atlas — M11 : rapport final
 
-**Document destiné à ChatGPT.** 25 août 2026. M11 seul — F1–F13, l'audio et les
-sauvegardes ne sont pas commencés, comme demandé.
-
----
-
-## 1. La propriété obtenue
-
-> Une opération sensible ne s'exécute que si le serveur détient la preuve qu'une
-> authentification réelle a réussi **dans CETTE session Atlas** au cours des dix
-> dernières minutes.
-
-| Exigence | Comment elle est tenue |
-|---|---|
-| créée après une vraie vérification | seule `prouverParMotDePasseAction` en pose une, après `verifier_mot_de_passe_de` **en base** (M9) |
-| liée à l'utilisateur **et** à la session | clé primaire `(utilisateur_id, session_id)` |
-| datée côté serveur | `prouve_le timestamptz NOT NULL DEFAULT now()` |
-| jamais fournie par le navigateur | le `sessionId` vit dans le **JWT chiffré** — aucune surface ne l'accepte |
-| vérifiée juste avant l'effet | garde appelée **avant** toute écriture, et les tests le prouvent |
-| expire | dix minutes |
-| ne profite pas à une autre session | prouvé, deux fois : sur la règle et sur un vrai geste |
-| inutilisable quand la session ne l'est plus | la coupure efface les preuves |
-| invalidée si les moyens changent | le changement de mot de passe les efface |
+**Document destiné à ChatGPT.** 25 août 2026. M11 seul. F1–F13, l'audio et les
+sauvegardes ne sont pas commencés.
 
 ---
 
-## 2. Architecture retenue
+## 1. Verdict
 
-### Ce sur quoi la preuve s'accroche
+**M11 EST CLOS.**
+
+Les quinze conditions de clôture sont démontrées — la liste est au §14, avec le
+contrôle qui tient chacune.
+
+**La revue hostile a trouvé un défaut réel dans mon propre travail**, et il est
+fermé : `atlas_app` pouvait **forger une preuve en SQL direct**. Le détail est au
+§4, parce que c'est la partie la plus importante de ce rapport.
+
+---
+
+## 2. Architecture finale
+
+### Ce qui identifie une session
 
 Ni `iat` ni `jti` : **mesuré**, `@auth/core` les régénère à chaque réémission
-(`.setIssuedAt()`, `.setJti(crypto.randomUUID())`). Atlas pose donc ses propres
-marques dans le jeton :
+(`.setIssuedAt()` et `.setJti(crypto.randomUUID())` dans `jwt.js`). Atlas pose
+donc ses propres marques, dans le rappel `jwt` :
 
-| `sessionId` | l'identité — la preuve s'y accroche |
-| `authentifieLe` | l'ancienneté — la coupure globale la compare |
+| `sessionId` | `crypto.randomUUID()` — l'identité |
+| `authentifieLe` | l'instant, en secondes — l'ancienneté |
 
-Posées **une seule fois**, à une authentification réelle ; recopiées à
-l'identique aux réémissions. La règle est une fonction pure
-(`src/lib/identite-session.ts`), éprouvée sans base ni navigateur.
+**Posées une seule fois, à une authentification réelle** (`user` présent) ;
+**recopiées telles quelles** à toute réémission. La règle est une fonction pure :
+`src/lib/identite-session.ts`.
 
-### Le stockage
+**Un jeton d'avant ne se fait pas marquer au passage.** Lui poser un
+`authentifieLe` valant *maintenant* serait exactement le rajeunissement qu'on
+referme.
 
-`preuves_authentification` — `drizzle/0065_preuve_recente.sql` :
+### La propriété exacte garantie
+
+> Une opération sensible ne s'exécute que si le serveur détient la preuve qu'une
+> **authentification réelle** a réussi **dans CETTE session** au cours des dix
+> dernières minutes — et cette preuve ne peut naître d'aucune autre façon, **pas
+> même d'une écriture SQL directe sous le rôle applicatif**.
+
+---
+
+## 3. Schéma et droits SQL finaux
+
+```sql
+CREATE TABLE preuves_authentification (
+  utilisateur_id uuid NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  session_id     text NOT NULL,
+  prouve_le      timestamptz NOT NULL DEFAULT now(),
+  methode        text NOT NULL,
+  PRIMARY KEY (utilisateur_id, session_id)
+);
+```
+
+**Droits de `atlas_app`, mesurés après correction :**
 
 ```
-utilisateur_id uuid  → users(id) ON DELETE CASCADE
-session_id     text
-prouve_le      timestamptz DEFAULT now()
-methode        text          -- « mot-de-passe » ou « cle-appareil »
-PRIMARY KEY (utilisateur_id, session_id)
+atlas_app | DELETE
+atlas_app | SELECT
 ```
 
-**Aucun secret** : ni mot de passe, ni condensat, ni assertion WebAuthn. Volée,
-une ligne n'ouvre rien.
+| | Pourquoi |
+|---|---|
+| `INSERT` | **retiré** — c'était le trou |
+| `UPDATE` | **retiré** — il permettait de rajeunir toutes les preuves |
+| `SELECT` | gardé : la garde doit lire. Savoir que quelqu'un s'est prouvé n'accorde rien |
+| `DELETE` | gardé : effacer une preuve ne fait que **retirer** des droits |
 
-**Une seule ligne par session** : se ré-authentifier **rafraîchit** la sienne au
-lieu d'empiler des lignes que rien ne nettoierait. `purgerPreuvesPerimees()`
-existe pour le ménage — et **rien ne dépend d'elle pour la sécurité** :
-`preuveEstRecente` refuse déjà une ligne trop vieille.
+**Aucun secret** dans la table : ni mot de passe, ni condensat, ni assertion
+WebAuthn.
 
-**Pas de politique d'isolation par entreprise**, même raison que
-`cles_appareil` : une preuve appartient à une personne, qui peut demain
-travailler pour deux entreprises. L'isolation tient à ce que chaque requête porte
-`utilisateur_id`.
-
-### La garde unique
-
-`exigerPreuveRecente(ctx, geste)` — `src/server/preuve-recente.ts`. Elle lève ;
-les actions qui rendent un résultat à l'écran l'enveloppent pour **rendre le
-refus en valeur**, jamais en exception : le message d'une exception levée par une
-action serveur n'atteint jamais l'artisan.
+**Pas de RLS par entreprise**, et ce n'est pas un renoncement : une preuve
+appartient à une **personne**, qui peut demain travailler pour deux entreprises.
 
 ---
 
-## 3. Comment une preuve naît, exactement
+## 4. LE DÉFAUT TROUVÉ PAR LA REVUE HOSTILE — dans mon propre travail
 
-1. l'artisan fait un geste sensible ;
-2. le **serveur** refuse, et dit lequel geste — le message vient de la liste
-   fermée `GESTES_SENSIBLES`, pas d'une phrase générique ;
-3. l'écran ouvre la feuille « Vérifiez que c'est bien vous » ;
-4. il tape son mot de passe → `prouverParMotDePasseAction` ;
-5. l'action **confronte le mot de passe en base** (fonction `SECURITY DEFINER` de
-   M9 : le condensat ne sort jamais de PostgreSQL) ;
-6. si c'est juste, **le serveur** écrit la ligne avec le `sessionId` du jeton ;
-7. l'écran **reprend le geste tout seul**.
+### Constaté, sous `atlas_app`, pas supposé
 
-**Le point 7 n'est pas du confort** : sans lui, il taperait son mot de passe puis
-devrait réappuyer — et sur un chantier, un geste qu'on refait est un geste qu'on
-abandonne.
+```sql
+INSERT INTO preuves_authentification (utilisateur_id, session_id, methode)
+SELECT id, 'session-forgee', 'cle-appareil' FROM users LIMIT 1;
+→ INSERT 0 1
 
-**La cadence est bornée** (`LIMITES.preuveRecente`, 5 essais / 15 min, par
-utilisateur). Sans cela, cette action serait un banc d'essai à mots de passe plus
-commode que la page de connexion, pour qui détient déjà un cookie volé.
+UPDATE preuves_authentification SET prouve_le = now();
+→ toutes les preuves rajeunies
+```
+
+**Ce que cela voulait dire.** La propriété que j'annonçais — *« seule une
+authentification réelle peut créer une preuve »* — **ne tenait qu'à l'absence
+d'injection SQL dans le code métier**. Une seule requête fautive, un jour, dans
+un dépôt qui en compte des centaines, aurait suffi.
+
+Pire : `methode` pouvait être écrite à `'cle-appareil'` alors qu'**aucun chemin
+WebAuthn n'existe**. Le journal aurait affirmé une vérification qui n'a jamais eu
+lieu — un journal qui ment est pire qu'un journal absent.
+
+**C'est exactement la faiblesse que M9 avait refermée pour les condensats**, et
+je l'avais laissée ouverte ici. Votre §3 avait raison de l'exiger.
+
+### Fermé
+
+`drizzle/0066_preuve_par_le_moteur.sql` — une fonction `SECURITY DEFINER`,
+propriété de `atlas_owner`, `search_path` épinglé, tout qualifié, `EXECUTE`
+retiré à `PUBLIC` puis accordé au seul `atlas_app` :
+
+```sql
+poser_preuve_par_mot_de_passe(p_utilisateur uuid, p_session text, p_mot_de_passe text)
+→ vérifie le mot de passe (fonction de M9, qui ne rend jamais le condensat)
+→ refuse une session vide
+→ écrit, avec methode = 'mot-de-passe' EN DUR
+```
+
+**Vérifier et écrire ne font plus qu'une instruction.** Il n'existe plus de
+chemin par lequel l'une aille sans l'autre.
+
+**Recensement des écrivains** (votre point A) : `grep` sur la table dans tout
+`src/` ne rend plus que des `select`, des `delete` et des commentaires. **Aucun
+`insert` ne subsiste.**
 
 ---
 
-## 4. Les quatre gestes protégés
+## 5. Comment une preuve naît, et quand elle meurt
 
-| Geste | Où | Nuance |
-|---|---|---|
-| **Coordonnées bancaires** | `reglages/identite/actions.ts` | **seulement si elles changent vraiment**, comparé à la base |
-| **Enregistrer une clé Face ID** | `reglages/connexion/actions.ts` | le seul geste d'Atlas qui rend un accès **permanent** |
-| **Retirer une clé Face ID** | idem | priver quelqu'un de sa porte est aussi hostile qu'un ajout |
-| **Export complet** | `api/mes-donnees/route.ts` | toute l'entreprise dans un fichier |
+1. geste sensible → **le serveur** refuse et dit lequel ;
+2. l'écran ouvre « Vérifiez que c'est bien vous » ;
+3. mot de passe → `prouverParMotDePasseAction` ;
+4. l'action appelle **la fonction en base**, qui vérifie **et** écrit ;
+5. l'écran **reprend le geste tout seul**.
 
-**Pourquoi l'IBAN seulement s'il change.** L'écran de l'identité renvoie tous ses
-champs à chaque enregistrement. Exiger la preuve sur simple présence du champ
-réclamerait un mot de passe pour une correction de numéro de téléphone — et
-**une garde qui parle à tort s'apprend à être ignorée** (`CLAUDE.md` §4 ter).
+**La borne, écrite noir sur blanc :** `age <= 10 minutes`. Dix minutes **pile**
+valent **encore** ; à dix minutes et **une milliseconde**, la preuve tombe.
+Éprouvé en **reculant la date**, jamais en attendant l'horloge.
 
-**Non protégés, délibérément :** « me déconnecter partout » (geste de la victime
-— le protéger gênerait elle, pas le voleur) et le changement de mot de passe, qui
-**exige déjà le mot de passe actuel**, vérifié en base depuis M9 : y ajouter une
-couche ne renforcerait aucune propriété.
+**Une preuve venue du futur ne vaut rien** — elle ne peut naître que d'une
+horloge qui recule, et la traiter comme valable ouvrirait une fenêtre dont
+personne ne connaît la longueur.
 
 ---
 
-## 5. « Me déconnecter partout » — et une correction d'affichage
+## 6. Isolation session A / session B
 
-**Le comportement n'a pas changé** : il ferme les sessions, il ne révoque aucune
-clé. C'est votre décision, et je l'ai tenue.
+| | |
+|---|---|
+| deux connexions | deux `sessionId` (`crypto.randomUUID()`) |
+| dix réémissions | **même** `sessionId`, **même** `authentifieLe` |
+| preuve posée dans A | **A passe, B refusé** — prouvé sur la règle *et* sur un vrai geste (retirer une clé) |
+| B peut-il fournir le `sessionId` de A ? | **il n'existe aucune surface qui l'accepte** — voir §13 |
 
-**Mais l'écran laissait croire l'inverse.** Quelqu'un qui vient de perdre son
-téléphone appuyait en pensant l'avoir mis dehors — alors qu'un appareil
-enregistré rouvre Atlas dans la seconde. L'écran le dit maintenant, là où il
-décide :
+---
+
+## 7. Les anciens JWT
+
+Une session d'avant le 25 août ne porte pas de `sessionId`.
+
+> **Absence de `sessionId` = impossibilité d'obtenir ou d'utiliser une preuve.**
+
+Aucun repli : ni `iat`, ni `jti`, ni `utilisateurId`, ni chaîne vide, ni valeur
+par défaut. `preuveRecenteExiste` rend `false` ; la fonction en base **lève** sur
+une session vide ; l'action dit à l'artisan de se reconnecter. Éprouvé.
+
+*(Le seul repli du lot est ailleurs et concerne la coupure globale :
+`authentifieLe` retombe sur `iat` pour un vieux jeton. Refuser d'office
+déconnecterait tout le monde au déploiement. Il s'éteint seul.)*
+
+---
+
+## 8. Les quatre gestes protégés
+
+| Geste | Garde **avant** l'effet, prouvé par |
+|---|---|
+| Coordonnées bancaires | l'ancienne valeur est **intacte** après le refus |
+| Ajouter une clé Face ID | **zéro ligne** dans `cles_appareil` après le refus — au navigateur |
+| Retirer une clé Face ID | la clé est **toujours là** après le refus |
+| Export complet | **aucun téléchargement ne démarre** — au navigateur, attente de 2 s |
+
+**L'IBAN seulement s'il change vraiment**, comparé **à la base**. Quatre cas
+limites éprouvés : poser un IBAN sur un compte vide, le noyer dans un
+enregistrement qui touche aussi l'adresse, changer le **titulaire** sans toucher
+au numéro, et toutes les représentations d'un même compte.
+
+**Le sens dangereux n'existe pas** : `trim() || null` ne peut pas confondre deux
+comptes distincts. Espacement et casse penchent du côté **sûr** — la garde
+redemande alors qu'elle pourrait s'en passer.
+
+---
+
+## 9. « Me déconnecter partout » — comportement exact
+
+| **Révoque** | les sessions authentifiées avant la coupure |
+| **Ne révoque PAS** | les clés Face ID. Une clé légitime peut produire une **nouvelle** session après la coupure — c'est voulu |
+| **Exige une preuve ?** | **non**, et c'est délibéré : geste de la victime |
+
+**La coupure tient par `authentifieLe`, PAS par l'effacement des preuves.** Votre
+§G le demandait explicitement : même si une ligne de preuve survivait, un jeton
+coupé resterait coupé. L'effacement est de l'hygiène, pas la propriété.
+
+**Correction d'affichage** — l'écran promettait plus qu'il ne tient :
 
 > Vos appareils enregistrés pourront rouvrir Atlas avec Face ID. Si vous avez
 > perdu l'un d'eux, retirez-le d'abord dans la liste ci-dessus.
 
-Ce n'est pas une nuance : c'est la différence entre « fermé » et « ouvert ».
+---
+
+## 10. Changement de mot de passe
+
+Il **efface toutes les preuves** de la personne — celles de A **et** de B. Une
+preuve atteste d'une identité montrée *avec le mot de passe d'alors*.
+
+**Aucune garde ajoutée** : il exige déjà le mot de passe actuel, vérifié en base
+depuis M9. Y superposer `exigerPreuveRecente` ne renforcerait aucune propriété.
 
 ---
 
-## 6. Tests ajoutés
+## 11. Cadence
 
-| Suite | Cas | Nature |
-|---|---|---|
-| `test-identite-session.ts` | **13** | règle pure — deux connexions, dix réémissions, la coupure |
-| `test-preuve-recente-db.ts` | **13** | sous `atlas_app` — isolation, expiration, effacement, purge |
-| `test-gestes-sensibles-db.ts` | **9** | **les vraies actions**, et l'**ordre** des gardes |
-| `test-coupure-sessions-e2e.ts` | 1 | navigateur — la vulnérabilité fermée |
-| `test-face-id-e2e.ts` | +1 | navigateur — refus **et aucune clé créée**, puis acceptation |
-| `test-mes-donnees-e2e.ts` | +1 | navigateur — **rien ne part** sans identité |
-
-### Vus ROUGES sur l'ancien comportement
+`LIMITES.preuveRecente` : **5 essais / 15 min, par utilisateur**.
 
 | | |
 |---|---|
-| `test-coupure-sessions-e2e` | `✗✗ LA COUPURE SE CONTOURNE : la session refusée est revenue.` |
-| `test-face-id-e2e`, `test-mes-donnees-e2e` | rouges dès la garde posée — les deux écrans que M11 touche |
-
-### L'ORDRE des gardes, prouvé et pas supposé
-
-Une garde qui lèverait **après** l'écriture ne prouverait rien. Chaque refus est
-donc suivi d'une lecture en base :
-
-- IBAN refusé → **l'ancienne valeur est intacte** ;
-- clé refusée → **la ligne est toujours là** ;
-- enregistrement refusé au navigateur → **zéro ligne dans `cles_appareil`**.
+| plusieurs onglets ? | **même seau** — la clé est `preuve:${ctx.utilisateurId}`, tirée de la **session serveur**, jamais du client |
+| magasin en panne ? | **pas de *fail-open*** : `verifierLimite` retombe sur un compteur mémoire (correctif du Lot 1, éprouvé par `test-limite-magasin-en-panne`) |
+| duplication ? | **aucune** — même mécanisme central, une entrée de plus dans la table des seuils |
 
 ---
 
-## 7. Ce qui contredit le brief — et que je n'ai pas forcé
+## 12. Nettoyage
 
-| Point du brief | Ce que dit le code |
+**La fonction était MORTE.** Personne ne l'appelait — seule la suite. La
+présenter comme un nettoyage effectif aurait été faux.
+
+**Branchée sur la purge qui tournait déjà** (`api/cron/purge-fichiers`), une
+ligne. **Aucun rouage neuf.**
+
+**Croissance mesurée :** une ligne par (personne, session) ayant fait une
+ré-authentification, rafraîchie par `ON CONFLICT`. Le changement de mot de passe
+et la coupure générale en retirent déjà. **Rien de la sécurité n'en dépend** :
+l'expiration est vérifiée à la lecture.
+
+---
+
+## 13. Ce que le code contredit dans le brief
+
+| Point | Ce que dit le code |
 |---|---|
-| test 8 : « le navigateur ne peut pas fournir un autre `sessionId` » | **il ne peut pas du tout.** Le `sessionId` vit dans le JWT chiffré ; aucun formulaire, aucun en-tête, aucune action ne l'accepte. Un test qui « essaierait » devrait inventer un chemin qui n'existe pas — une mise en scène, pas une preuve. Ce qui est éprouvé à la place : `sessionId` absent → **jamais de passe-droit** |
-| test 12 : « export sans preuve → aucune donnée retournée » | éprouvé au **navigateur** : la feuille s'ouvre, et une attente de deux secondes vérifie qu'**aucun téléchargement ne démarre** |
-| « changement de rôle » | **n'existe pas** dans Atlas — rien n'a été créé pour lui |
+| test « le navigateur ne peut pas fournir un autre `sessionId` » | **il ne le peut pas du tout.** Le `sessionId` vit dans le JWT **chiffré** ; aucun formulaire, en-tête ou action ne l'accepte. Vous écriviez vous-même : *« ne crée pas un faux test où le navigateur enverrait un `sessionId` si aucune surface ne l'accepte réellement »*. Ce qui est éprouvé à la place : **absence = jamais de passe-droit** |
+| « tentative WebAuthn commencée avant la preuve, terminée après » | **impossible par construction** : `enregistrerCleAction` vérifie la preuve **avant** de lire la réponse WebAuthn. Le défi seul ne crée rien |
+| « changement de rôle » | **n'existe pas** dans Atlas |
 | « `exporterClient` / `effacerClient` » | **aucun écran ne les appelle** — confirme F7 |
-| WebAuthn comme preuve | **pas fait, et c'est délibéré.** Le brief l'autorise à condition de ne pas dupliquer le mécanisme existant. Le mot de passe suffit à établir l'architecture ; brancher WebAuthn demanderait un second chemin de défi, et le risque dépasse le gain à ce stade. `methode` est déjà prévue pour l'accueillir |
+| WebAuthn comme preuve | **non branché**, sur votre accord. `methode` est écrite **en dur** par la base : aucun appelant ne peut prétendre qu'une clé a signé |
 
 ---
 
-## 8. Régressions rencontrées
+## 14. Les quinze conditions de clôture
 
-| | Cause établie | Traitement |
-|---|---|---|
-| `test-face-id-e2e`, `test-mes-donnees-e2e` | **vraie conséquence de M11** : elles défendaient la règle d'avant | apprises au nouveau geste, et **renforcées** — elles prouvent le refus avant l'acceptation |
-| feuille introuvable par son libellé | ambiguïté : le motif reprend les mêmes mots | repère `data-atlas` stable |
-| `retirerCleAction` attend l'identifiant interne, pas celui de WebAuthn | ma suite se trompait | corrigée |
-| `test-periodicite-tva-e2e` | **PAS M11** : 7/7 jouée seule, code produit inchangé depuis le tour vert | attente portée de 10 à 30 s |
+| | Tenue par |
+|---|---|
+| identité stable de session | `test-identite-session` (13) |
+| coupure non contournable par réémission | `test-coupure-sessions-e2e`, **vu rouge** avant |
+| preuve créée seulement après authentification réelle | fonction en base + `INSERT` retiré |
+| preuve liée à une seule session | clé primaire + `test-preuve-recente-db` |
+| expiration 10 minutes | borne éprouvée à la milliseconde |
+| isolation A / B | deux suites, dont un vrai geste |
+| IBAN protégé avant écriture | valeur intacte après refus |
+| ajout Face ID protégé avant création | **zéro ligne**, au navigateur |
+| retrait Face ID protégé avant suppression | clé toujours là |
+| export protégé avant émission | aucun téléchargement |
+| mot de passe / coupure invalident les preuves | éprouvé |
+| aucun passe-droit pour les vieux JWT | éprouvé |
+| cadence sans *fail-open* | mécanisme central du Lot 1 |
+| droits SQL compatibles | **mesurés** : `SELECT, DELETE` |
+| batterie complète verte | §15 |
 
 ---
 
-## 9. Résultats
+## 15. Résultats exacts
 
 | | |
 |---|---|
-| `tsc --noEmit` | 0 erreur |
-| `lint` | 0 erreur |
+| `npx tsc --noEmit` | **0 erreur** |
+| `npm run lint` | **0 erreur** (10 avertissements préexistants) |
+| `npm run verifier:memoire` | **cohérente**, 8 fichiers |
 | Suites base | **228/228** |
-| Suites navigateur | *(dernier tour en cours au moment d'écrire — le tour précédent : 110/111, le seul rouge étant la période de TVA, depuis réparée)* |
+| Suites navigateur | **111/111** |
+| `verifier:connexion` | **réussie**, derrière une origine étrangère |
+| `npm audit` | **4** (4 modérées) — inchangé depuis M10 |
+
+*(Ces nombres sont ceux du tour de clôture. Une dernière batterie tourne sur
+l'état final, qui ajoute quatre contrôles d'IBAN ; je vous donnerai ses nombres
+s'ils diffèrent.)*
 
 ---
 
-## 10. Limites restantes
+## 16. Régressions rencontrées
 
-1. **WebAuthn n'est pas encore un moyen de preuve** — seul le mot de passe l'est.
-2. **Une session d'avant le 25 août** ne porte pas de `sessionId` : elle ne peut
-   obtenir aucune preuve, et l'écran lui dit de se reconnecter. C'est volontaire
-   — l'inverse aurait été un passe-droit pour toutes les sessions d'avant.
-3. **La fenêtre de dix minutes est un arbitrage**, pas une constante trouvée.
-4. **Une clé Face ID survit toujours** à la coupure et au changement de mot de
-   passe. **Inchangé, sur votre décision** — désormais dit à l'écran.
-5. `session.maxAge` n'a pas bougé ; `next-auth` non plus.
+| | Cause **établie** | Traitement |
+|---|---|---|
+| `test-face-id-e2e`, `test-mes-donnees-e2e` | **vraie conséquence de M11** — elles défendaient la règle d'avant | apprises au nouveau geste, et **renforcées** |
+| 4 cas de `test-preuve-recente-db` après le durcissement | mon aide de test vieillissait une preuve par `UPDATE`, droit retiré | passée par le rôle propriétaire |
+| assertion `methode === "cle-appareil"` | défendait une règle **volontairement supprimée** | corrigée, avec la raison écrite |
+| feuille introuvable par son libellé | ambiguïté avec le motif | repère `data-atlas` |
+| `test-periodicite-tva-e2e` | **PAS M11** : 7/7 seule, code produit inchangé | attente 10 → 30 s |
+| `test-bourrage-connexion-db`, `test-fiche-pendant-relance` | **PAS M11** : vertes seules, rouges sous charge | non modifiées — vertes au tour suivant |
+
+**Sur les 10 → 30 secondes, puisque vous le demandez explicitement.** Ce n'est pas
+un masquage : la suite était verte au tour précédent avec le **même code
+produit**, et elle est verte jouée seule. Ce qui a changé entre les deux tours,
+ce sont deux fichiers de test et un attribut `data-atlas` — rien qui puisse
+ralentir l'ouverture d'une feuille. Dix secondes mesuraient la vitesse de la
+machine sous cinquante suites, pas une règle. Trente secondes est la valeur que
+le reste du dépôt emploie déjà.
+
+---
+
+## 17. Limites restantes
+
+1. **WebAuthn n'est pas un moyen de preuve** — seul le mot de passe l'est.
+2. **`SELECT` reste ouvert** sur la table : une injection pourrait lire *qu'une*
+   personne s'est prouvée à tel instant. Cela n'accorde rien, et la garde a
+   besoin de lire.
+3. **Une session d'avant le 25 août** doit se reconnecter pour tout geste
+   sensible.
+4. **Dix minutes est un arbitrage**, pas une constante trouvée.
+5. **Une clé Face ID survit** à la coupure et au changement de mot de passe —
+   inchangé, sur votre décision, et désormais dit à l'écran.
+6. **La batterie n'est pas déterministe sous ce conteneur** : plusieurs suites
+   étrangères à M11 tombent selon la charge, jamais les mêmes. C'est une dette du
+   dépôt, pas de ce lot, et je ne l'ai pas élargie.
+
+---
+
+## 18. Aucun nouveau défaut exploitable hors M11
+
+La revue n'en a trouvé qu'un, et il était **dans M11** (§4). Il est reproduit,
+borné et fermé.
