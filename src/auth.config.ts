@@ -74,7 +74,7 @@ export const authConfig = {
          * **L'instant de la CONNEXION, et l'identité de la session.**
          *
          * Posés une fois par le rappel `jwt` (`src/auth.ts`), recopiés aux
-         * réémissions. `connexionLe` est ce que la coupure doit comparer :
+         * réémissions. `authentifieLe` est ce que la coupure doit comparer :
          * `emisLe` avance à chaque réémission, et se laissait donc contourner.
          * `sessionId` porte la ré-authentification récente.
          *
@@ -83,7 +83,7 @@ export const authConfig = {
          * défaut déconnecterait tout le monde au déploiement — un geste que
          * personne n'a demandé.
          */
-        session.user.connexionLe = typeof token.connexionLe === "number" ? token.connexionLe : undefined;
+        session.user.authentifieLe = typeof token.authentifieLe === "number" ? token.authentifieLe : undefined;
         session.user.sessionId = typeof token.sessionId === "string" ? token.sessionId : undefined;
       }
       return session;

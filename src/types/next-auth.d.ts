@@ -21,7 +21,7 @@ declare module "next-auth" {
        * remis à l'instant présent à chaque réémission du jeton par Auth.js, et
        * la coupure se contournait donc par `GET /api/auth/session`.
        */
-      connexionLe?: number;
+      authentifieLe?: number;
       /**
        * Ce qui identifie UNE session — posé par Atlas, car ni `jti` ni `iat`
        * ne survit à une réémission. Porte la ré-authentification récente.
@@ -35,7 +35,7 @@ declare module "next-auth/jwt" {
   interface JWT {
     utilisateurId?: string;
     /** Posé une fois à la connexion, recopié aux réémissions. */
-    connexionLe?: number;
+    authentifieLe?: number;
     /** Idem — ce qui identifie une session pour la ré-authentification. */
     sessionId?: string;
   }

@@ -7,6 +7,7 @@ import { getEnv } from "./server/env";
 import { authConfig } from "./auth.config";
 import { ouvrirAvecCle } from "./server/cle-appareil";
 import { identifiantSiMotDePasseJuste } from "./server/secret-authentification";
+import { marquerSession } from "./lib/identite-session";
 import type { AuthenticationResponseJSON } from "@simplewebauthn/types";
 
 // Provider Credentials : aucun accès réseau externe requis (contrairement à
@@ -175,11 +176,15 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
        * n'en profite jamais. Il vit dans le JWT chiffré : le navigateur ne peut
        * ni le lire ni le choisir.
        */
-      if (user?.id) {
-        token.connexionLe = Math.floor(Date.now() / 1000);
-        token.sessionId = crypto.randomUUID();
-      }
-      return token;
+      /**
+       * La règle vit dans `src/lib/identite-session.ts`, éprouvée sans base ni
+       * navigateur. `user` n'est présent QUE lorsqu'un fournisseur vient de
+       * vérifier une identité : c'est exactement « une vraie authentification »,
+       * et toute autre invocation est une réémission technique.
+       */
+      return marquerSession(token, Boolean(user?.id), Math.floor(Date.now() / 1000), () =>
+        crypto.randomUUID()
+      );
     },
   },
 });

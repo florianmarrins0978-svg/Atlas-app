@@ -5,6 +5,7 @@ import { db } from "./db/client";
 import { membresEntreprise, users } from "./db/schema";
 import type { Ctx } from "./repositories/context";
 import { coupureDesJetons } from "./repositories/compte";
+import { instantDAuthentification, sessionCoupee } from "../lib/identite-session";
 import { enrichirContexteRequete } from "./request-context";
 
 export class NonAuthentifieError extends Error {
@@ -78,7 +79,7 @@ export async function getCurrentCtx(): Promise<Ctx> {
    * pourtant coupé s'y redonnait un `iat` neuf et **rentrait**. Reproduit dans
    * un navigateur le 25 août 2026 (`scripts/sonde-coupure-contournable.mts`).
    *
-   * `connexionLe` est posé une seule fois, à la connexion (`src/auth.ts`), et
+   * `authentifieLe` est posé une seule fois, à l'authentification, et
    * recopié aux réémissions : le contournement ne l'avance pas.
    *
    * **Le repli sur `emisLe` est délibéré** : un jeton signé avant cette version
@@ -86,9 +87,8 @@ export async function getCurrentCtx(): Promise<Ctx> {
    * monde au déploiement — un geste que personne n'a demandé. Ce repli s'éteint
    * de lui-même quand les anciens jetons expirent.
    */
-  const instantSession =
-    typeof session.user.connexionLe === "number" ? session.user.connexionLe : session.user.emisLe;
-  if (coupure && typeof instantSession === "number" && instantSession * 1000 < coupure.getTime()) {
+  const instantSession = instantDAuthentification(session.user);
+  if (sessionCoupee(instantSession, coupure)) {
     // La même sortie que pour un compte disparu : la route efface les cookies
     // puis renvoie à la connexion. Lever ici afficherait un écran d'erreur, en
     // laissant le cookie mort dans le navigateur — c'est le piège du 10 août
