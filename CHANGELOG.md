@@ -9,6 +9,45 @@ Format : le plus récent en tête.
 
 ## 2026-08-25
 
+### La facture du client : aux couleurs de l'app, et un bouton pour la garder
+
+*« Mets cette page aux couleurs de l'application »* et *« il faut rajouter un
+bouton pour que le client puisse télécharger sa facture »*, sur la page publique
+que le client ouvre depuis son lien.
+
+Elle portait des couleurs écrites en dur — dont une terre cuite (`#8C4A2F`)
+abandonnée le 3 août — qui n'étaient plus celles du produit. Elle passe par les
+jetons de la charte (`design-tokens`), qui retombent sur la charte d'Arborea par
+défaut faute de session : c'est bien « la couleur de l'application », et plus
+aucune couleur n'est écrite en clair (`CLAUDE.md` §3).
+
+Et le client peut désormais **garder** sa facture : à côté de « Voir la facture en
+PDF » (qui l'ouvre), un bouton « Télécharger ma facture » la range. C'est l'en-tête
+`Content-Disposition: attachment` du `?telecharger=1` qui décide — l'attribut
+`download` du lien ne suffit pas, iOS l'ignore —, le même mécanisme que l'écran du
+patron.
+
+### Le message : les phrases par défaut, modifiables — les mots en doré verrouillés
+
+*« Le message au client doit comporter les phrases par défaut et l'utilisateur les
+modifiera s'il le désire ; seuls les mots en doré ne peuvent être modifiés. »*
+
+Le cadre du message n'est plus un `<textarea>` mais un vrai éditeur
+(`EditeurMessage`) : il porte le message par défaut, en clair, et l'artisan modifie
+ce qu'il veut — le bonjour, la formule de fin, ses propres phrases. Ce qu'Atlas
+remplit tout seul — le prénom, la phrase du document (qui s'adapte au devis comme
+à la facture), le lien, son nom — est posé **en doré et verrouillé** : on ne peut
+ni le retaper, ni le couper.
+
+**Le piège du champ « riche », désamorcé :** les retours à la ligne. Un
+`contenteditable` laissé seul insère un `<div>` ou un `<br>` selon le navigateur,
+et les deux se relisent mal. On intercepte donc Entrée pour poser un simple « \n »
+de texte ; la relecture n'a plus qu'à concaténer texte et pastilles, et rend
+EXACTEMENT le modèle. Une seule règle de découpe (`segmentsDuModele`) sert
+l'éditeur et les aperçus : la concaténation des morceaux redonne le modèle
+(éprouvé sans base), et le fil complet — de l'écran au téléphone du client — reste
+tenu au navigateur (`test-message-au-client-e2e`).
+
 ### L'émetteur n'était sur le devis qu'une fois de trop
 
 *« Pourquoi il y a deux fois l'émetteur sur l'aperçu ? »* — il avait raison, et
@@ -333,6 +372,55 @@ c'est la sortie de secours qu'il avait demandée le 3 août 2026. Il reste.
 
 `ARCHITECTURE.md` §172.
 
+### Et un huitième, trouvé en parallèle : la remise lue avant d'être écrite
+
+Même famille que les sept ci-dessus, et découvert par une autre session le même
+jour — les deux récits se rejoignent, celui-ci ne garde que ce que l'autre ne
+porte pas.
+
+Le contrôle de `test-reduction-devis-e2e` tapait « 15 », attendait 900 ms
+choisies au doigt mouillé, puis lisait la base. Sous cent dix suites,
+l'enregistrement n'était pas retombé : la base portait encore « 5.00 » et le
+contrôle accusait le produit d'écrire un chiffre faux sur un devis.
+
+Il relit désormais jusqu'à ce que la valeur vienne, avec une attente qui monte.
+Il n'y perd rien : il exige toujours 15,00 exactement, et rend le contenu réel
+de la ligne quand elle ne vient pas — un vrai désaccord entre l'écran et la base
+rougirait encore.
+
+### Et un neuvième, qui avait déjà été « réparé » le matin même
+
+`test-ia-02-e2e` vérifie qu'un échange avec l'assistant n'efface aucune
+prestation. Une première correction du 25 août avait remplacé un délai de trois
+cents millisecondes par une attente de réseau au calme. **La suite a rougi de
+nouveau à la batterie suivante**, et la leçon vaut d'être écrite : le réseau se
+tait dès que l'action serveur est PARTIE — rien ne dit qu'elle a fini d'écrire,
+ni que l'écran d'après la relira.
+
+Le contrôle rouvre maintenant l'écran jusqu'à ce que la prestation s'y montre.
+Il ne s'affaiblit pas : passé sept secondes, il rougit comme avant, et une
+prestation vraiment effacée par l'assistant ne reviendrait jamais.
+
+**Et ce n'était toujours pas la bonne cause.** Deux corrections ont échoué avant
+qu'on regarde au bon endroit : attendre le réseau, puis relire l'écran quatre
+fois. Aucune ne pouvait marcher — **la prestation n'avait jamais été écrite**.
+
+Le décor la posait ainsi : appuyer sur « + Ajouter une prestation », patienter
+300 ms, puis écrire dans « le premier champ d'un formulaire ». Sous la batterie,
+la ligne neuve n'est pas encore rendue : le texte partait dans le champ d'à
+côté. Ce champ ne porte ni étiquette ni marque, son seul repère est sa place —
+on attend donc que le NOMBRE de champs augmente, ce qui est la seule chose qui
+dise que la ligne existe.
+
+**Un décor qui échoue doit s'accuser lui-même.** Le message nommait l'assistant
+et l'accusait d'effacer une prestation, sur un code parfaitement sain ; il y a
+maintenant une assertion distincte, avant l'échange, qui dit que c'est la suite
+qui n'a pas su écrire. Trois batteries ont été payées à cette confusion.
+
+**Attendre « le réseau » n'est pas attendre « le résultat ».** C'est la même
+faute que le délai fixe, dans une robe plus convaincante.
+
+
 ---
 
 ## 2026-08-24
@@ -357,10 +445,15 @@ pour une seule adresse finiraient par ne plus dire la même chose.
 
 **Cause 2 : le garde-fou n'existait que sur la fiche d'entretien**, là où le
 défaut avait été trouvé la veille. Le devis et la facture partent par le même
-chemin et prennent la même adresse : ils envoyaient le lien mort. Les trois
-écrans qui écrivent à un client passent maintenant par le même verdict
-(`ouvrableParLeClient`) et la même phrase. Une règle vaut pour tous les écrans
-qui la portent, ou elle ne vaut pas (`CLAUDE.md` §3).
+chemin et prennent la même adresse : ils envoyaient le lien mort.
+
+**Ce second correctif est venu d'une AUTRE SESSION, et c'est la sienne qui a été
+gardée à la fusion.** Nous avions écrit le même refus au même endroit, à une
+heure d'intervalle ; la sienne va plus loin — la phrase y est paramétrable
+(`phraseAdresseLocale("votre devis")`) au lieu d'un texte unique pour les trois
+documents. Reporter la nôtre par-dessus aurait été une régression. Ce lot n'y
+laisse que le contrôle, qui tient désormais la règle pour les trois écrans :
+un quatrième écran qui écrirait à un client sans ce verdict le fera rougir.
 
 **Les deux sont nécessaires, et pas l'un OU l'autre** : le premier rend le lien
 juste, le second empêche d'en envoyer un faux le jour où la variable manque sur
@@ -448,6 +541,14 @@ copies de ce calcul** — devis parti, devis complet, facture, fiche de chantier
 n'en font plus qu'une. Le garde-fou a été vu rouge : la suite de la fiche,
 rejouée sans adresse déclarée, tombe exactement là où son client est tombé.
 Détail : `ARCHITECTURE.md` §169.
+
+**Et le devis et la facture partaient par le même mauvais chemin** — il n'avait
+signalé que la fiche. Le refus est donc posé sur les cinq gestes qui envoient un
+lien à un client. Le pire d'entre eux était l'envoi qui ouvre la messagerie dans
+la foulée : le message s'ouvrait tout prêt, avec l'adresse d'une machine dedans,
+et rien n'invitait à se méfier avant d'appuyer sur « Envoyer ». Rien n'est
+défait pour autant — un devis envoyé reste envoyé, une facture arrêtée reste
+arrêtée : c'est le message mort qu'on barre, pas son travail.
 
 
 ### La fiche en cours se supprime, et l'endroit où elle se compose se retrouve

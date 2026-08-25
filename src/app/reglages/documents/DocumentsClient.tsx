@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState, useTransition } from "react";
+import { useMemo, useRef, useState, useTransition } from "react";
 import { colors, font, libelleCaps, surPlein, texteSituation } from "@/lib/design-tokens";
 import {
   BORNES,
@@ -30,6 +30,7 @@ import {
   reprendreAllurePhotoAction,
   retirerLogoAction,
 } from "./actions";
+import EditeurMessage from "./EditeurMessage";
 
 /**
  * « Devis & factures » — ce qui s'imprime en plus, et ce qui ne se coupe pas.
@@ -135,7 +136,19 @@ export default function DocumentsClient({
   const [enCours, demarrer] = useTransition();
   const [aEcrire, setAEcrire] = useState(false);
   const [message, setMessage] = useState(messageInitial ?? MESSAGE_PAR_DEFAUT);
-  const zone = useRef<HTMLTextAreaElement | null>(null);
+
+  // Ce que chaque pastille AFFICHE, en doré et verrouillé, dans le cadre. Le nom
+  // de l'entreprise est le sien, réel ; les autres sont ce qu'Atlas y posera
+  // (le prénom du client, la phrase qui s'adapte au document, le lien).
+  const libellesJetons = useMemo<Record<string, string>>(
+    () => ({
+      "[client]": "le prénom",
+      "[document]": "la phrase de votre devis / facture",
+      "[lien]": "le lien",
+      "[entreprise]": entrepriseNom || "votre entreprise",
+    }),
+    [entrepriseNom]
+  );
 
   // ── L'allure : elle s'enregistre SEULE, dès qu'il touche une couleur ──
   // Le bouton du bas engage les conditions, qui lient l'entreprise. Une couleur
@@ -360,33 +373,23 @@ export default function DocumentsClient({
           choisie après avoir vu ce que l'autre coûtait : une facture qui parle
           d'un devis, et l'échéance perdue. */}
       <Bloc titre="Mon message au client">
-        {/* **Un simple texte — sa demande du 25 août 2026.** Plus de pastilles à
-            poser à la main : le prénom, la phrase du document (qui s'adapte au
-            devis comme à la facture, sa « façon 1 ») et le lien se remplissent
-            seuls. Ce qui bouge est montré en DORÉ dans les deux aperçus. */}
+        {/* **Sa demande du 25 août 2026 :** le message par défaut est déjà
+            écrit, il modifie ce qu'il veut, et « seuls les mots en doré ne
+            peuvent être modifiés » — le prénom, la phrase du document (qui
+            s'adapte au devis comme à la facture, sa « façon 1 »), le lien et son
+            nom. C'est `EditeurMessage` qui les verrouille. */}
         <p className={`mb-3 ${texteSituation}`} style={{ color: colors.muted }}>
-          Le prénom, le mot du document et le lien se remplissent tout seuls.
+          Modifiez ce que vous voulez. Les mots en doré se remplissent tout seuls
+          et ne se modifient pas.
         </p>
 
-        <textarea
-          ref={zone}
-          value={message}
-          onChange={(e) => {
-            setMessage(e.target.value);
+        <EditeurMessage
+          valeur={message}
+          libelles={libellesJetons}
+          invalide={refusMessage !== null}
+          onChange={(m) => {
+            setMessage(m);
             setAEcrire(true);
-          }}
-          data-atlas="message-client"
-          aria-label="Votre message au client"
-          rows={9}
-          className="w-full rounded-[6px] px-[13px] py-[11px] leading-[1.5]"
-          style={{
-            // **16 px, jamais moins.** En dessous, iOS grossit la page à la
-            // première frappe et l'écran saute sous son doigt.
-            fontSize: 16,
-            backgroundColor: colors.card,
-            color: colors.ink,
-            border: `1px solid ${refusMessage ? colors.alert : colors.line}`,
-            resize: "vertical",
           }}
         />
 

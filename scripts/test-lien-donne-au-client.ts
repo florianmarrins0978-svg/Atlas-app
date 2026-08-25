@@ -145,8 +145,12 @@ for (const [quoi, chemin] of ECRANS_QUI_ECRIVENT_AU_CLIENT) {
       `${chemin} compose un message pour un client sans passer par ouvrableParLeClient : ` +
         `il enverra le lien mort de sa capture du 24 août.`
     );
+    // **La phrase se nomme `phraseAdresseLocale(...)` depuis le 25 août** :
+    // une autre session l'a rendue paramétrable, pour qu'elle dise « votre
+    // devis » ou « votre facture » plutôt qu'un mot pour tous. Le contrôle
+    // accepte les deux écritures — il défend qu'une phrase existe, pas laquelle.
     assert.ok(
-      source.includes("PHRASE_ADRESSE_LOCALE"),
+      /PHRASE_ADRESSE_LOCALE|phraseAdresseLocale\(/.test(source),
       `${chemin} refuse peut-être, mais sans phrase : un écran qui se tait passe pour cassé.`
     );
   });

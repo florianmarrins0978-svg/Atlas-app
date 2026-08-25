@@ -4,8 +4,8 @@ import { useState } from "react";
 import PrimaryButton from "@/components/atlas/PrimaryButton";
 import { colors } from "@/lib/design-tokens";
 import { composerMessageClient, lienTransmission, type CanalClient } from "@/lib/message-client";
+import { ouvrableParLeClient, phraseAdresseLocale } from "@/lib/adresse-du-client";
 import { destinataireLisible } from "@/lib/numero-lisible";
-import { PHRASE_ADRESSE_LOCALE, ouvrableParLeClient } from "@/lib/adresse-du-client";
 import { marquerDepartMessagerie, useRetourDeMessagerie } from "@/lib/depart-messagerie";
 import { enregistrerCoordonneeClientAction } from "./actions";
 import type { Civilite } from "@/lib/civilite";
@@ -169,26 +169,15 @@ export default function TransmettreAuClient({
     }
   }
 
-  // **LE MÊME REFUS QUE SUR LA FICHE D'ENTRETIEN — sa capture du 24 août 2026 :
-  // « Connexion au serveur impossible », sur `localhost`.**
-  //
-  // Le garde-fou n'existait que sur la fiche d'entretien, là où le défaut avait
-  // été trouvé. Or le devis part par le même chemin et prend la même adresse :
-  // ne le poser qu'à un endroit, c'était laisser le devis envoyer le lien mort.
-  // Une règle vaut pour tous les écrans qui la portent, ou elle ne vaut pas
-  // (`CLAUDE.md` §3).
-  //
-  // **Le devis, lui, est déjà parti** — c'est son lien qu'on transmet. Refuser
-  // le message ne défait rien : ce qu'on lui épargne, c'est un client qui reçoit
-  // une page morte et qu'il faut rappeler.
+  // **UN LIEN QUI NE MÈNE QU'À SA MACHINE NE PART PAS — posé le 24 août 2026.**
+  // Son client avait reçu « Connexion au serveur impossible » sur une fiche de
+  // chantier ; le devis part par le même chemin et souffrait du même mal
+  // (`ARCHITECTURE.md` §169). Ici le devis EST déjà envoyé et figé : ce qu'on
+  // barre, c'est le message mort, pas son travail — et la phrase le dit.
   if (!ouvrableParLeClient(lien)) {
     return (
-      <p
-        className="text-center text-[13px] leading-[1.6]"
-        style={{ color: colors.rust }}
-        data-atlas="refus-adresse-locale"
-      >
-        {PHRASE_ADRESSE_LOCALE}
+      <p className="text-center text-[13px] leading-[1.6]" style={{ color: colors.rust }} data-refus>
+        {phraseAdresseLocale("votre devis")}
       </p>
     );
   }

@@ -16,6 +16,7 @@
 // Usage : npm run test:e2e -- --seulement message-au-client
 import assert from "node:assert/strict";
 import { Pool } from "pg";
+import type { Page } from "playwright";
 import { lancerNavigateur } from "./e2e-browser";
 import { creerPuisFiche } from "./_creer-chantier-e2e";
 
@@ -71,6 +72,22 @@ const messageEnBase = async () =>
     `SELECT message_client FROM entreprises ORDER BY created_at LIMIT 1`
   )).rows[0]?.message_client ?? null;
 
+/**
+ * Écrit dans le cadre du message — qui est un `contenteditable`, pas un
+ * `<textarea>` (`EditeurMessage`, 25 août 2026). On pose le texte et on déclenche
+ * l'événement `input` que l'éditeur écoute pour reconstruire le modèle : c'est le
+ * chemin réel de la saisie, celui qui finit en base.
+ */
+async function ecrireMessage(p: Page, texte: string) {
+  await p.evaluate((t) => {
+    const el = document.querySelector('[data-atlas="message-client"]');
+    if (!el) throw new Error("le cadre du message est introuvable");
+    el.textContent = t;
+    el.dispatchEvent(new InputEvent("input", { bubbles: true }));
+  }, texte);
+  await p.waitForTimeout(150);
+}
+
 async function main() {
   const navigateur = await lancerNavigateur();
   const contexte = await navigateur.newContext();
@@ -122,8 +139,7 @@ async function main() {
 
   // ── 2. LE LIEN EST OBLIGATOIRE — et c'est un REFUS, pas un avertissement
   await cas("sans le lien, l'écran refuse et le bouton s'éteint", async () => {
-    await page.fill('[data-atlas="message-client"]', "Bonjour [client], voici [document]. [entreprise]");
-    await page.waitForTimeout(200);
+    await ecrireMessage(page, "Bonjour [client], voici [document]. [entreprise]");
     const refus = await page.locator('[data-atlas="message-refus"]').innerText();
     assert.ok(/obligatoire/i.test(refus), `le refus ne dit pas que le lien est obligatoire : « ${refus} »`);
     // **Le bouton s'éteint AVEC le message.** Un bouton resté allumé s'appuie,
@@ -143,8 +159,7 @@ async function main() {
 
   // ── 3. SON MESSAGE S'ENREGISTRE
   await cas("son message s'écrit et s'enregistre", async () => {
-    await page.fill('[data-atlas="message-client"]', SIEN);
-    await page.waitForTimeout(200);
+    await ecrireMessage(page, SIEN);
     assert.equal(
       await page.locator('[data-atlas="message-refus"]').count(),
       0,
