@@ -33,6 +33,25 @@ Ce n'est pas urgent tant qu'il envoie depuis l'adresse de son espace de travail
 
 ---
 
+## ⚠ `verifier-maquette-message-et-allure` est ROUGE sur main (24 août 2026)
+
+```
+❌ Les planches du 23 août ne tiennent pas :
+   • le fond de départ est rgb(250, 249, 245) au lieu du crème d'aujourd'hui
+   • le retour ne rend pas le crème : rgb(250, 249, 245)
+```
+
+**Ce n'est pas une régression d'un lot en cours** : vérifié dépôt propre, sans
+aucune modification locale — il tombe déjà. Il porte sur les planches
+« Mon message au client » et « Allure bleutée », livrées par une autre session le
+23 août.
+
+**Laissé à la session qui les a écrites**, qui saura si c'est le contrôle ou la
+planche qui a raison. Signalé ici plutôt que corrigé au jugé : toucher à l'allure
+d'une planche qu'on n'a pas dessinée, c'est risquer de défaire un choix du patron
+qu'on ne connaît pas.
+
+
 ## ~~Supprimer une fiche en cours, et retrouver où la fiche se compose~~ (fait le 24 août 2026)
 
 Ses deux phrases du jour. Les deux sont livrées — `ARCHITECTURE.md` §168.

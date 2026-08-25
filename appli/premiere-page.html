@@ -1,0 +1,349 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas — La première page, revue</title>
+</head>
+<body>
+<style>
+  /*
+    ————————————————————————————————————————————————————————————————
+    LA PREMIÈRE PAGE, REVUE — maquette ESSAYABLE
+    ————————————————————————————————————————————————————————————————
+
+    Sa demande du 24 août 2026, capture de l'accueil à l'appui :
+
+      « Fais-moi une maquette dynamique en .html de la première page
+        améliorée, ne code rien. Pas de photo, je veux pouvoir essayer —
+        je te laisse proposer. Ensuite tu m'en fais une sans le trait gris.
+        Supprime le bonjour compte. »
+
+    ─── CE QUE SA CAPTURE MONTRE, ET QU'IL N'A PAS DEMANDÉ DE CORRIGER ──────
+
+    Son écran dit trois choses qui se contredisent, dans cet ordre :
+
+        EN COURS  0
+        [ Mr. Martins — parti depuis 11 jours… ]
+        [ Mme Grospiron — le client a accepté… ]
+        « Aucun chantier pour l'instant. Créez votre premier chantier. »
+
+    Le code a raison : les deux cartes sont des AVIS, pas des chantiers, et il
+    n'a effectivement aucun chantier en cours. Mais l'œil ne lit pas le code.
+    Il lit un compteur à zéro au-dessus de deux cartes, puis une phrase qui nie
+    ce qu'il vient de voir.
+
+    **Rien n'est cassé ; tout est mal rangé.** C'est là que porte la
+    proposition B, et c'est la seule chose de fond que cette planche change.
+
+    ─── LES TROIS PROPOSITIONS ──────────────────────────────────────────────
+
+    A — SON ÉCRAN D'AUJOURD'HUI, recopié fidèlement. Il est là pour comparer,
+        pas pour être choisi.
+
+    B — LES AVIS SE DISTINGUENT DES CHANTIERS. Un intertitre « À VOIR », un
+        filet or à gauche, un fond légèrement plus clair : l'œil sépare les
+        deux familles sans qu'un mot de plus soit écrit. Et la phrase
+        « Aucun chantier pour l'instant » ne paraît QUE s'il n'y a vraiment
+        rien à l'écran — ni chantier, ni avis. « Créer un devis » devient un
+        vrai bouton : sur sa capture, c'est un titre gris avec un petit rond,
+        et rien ne dit qu'on peut appuyer dessus.
+
+    C — LA SIENNE : la B, sans le trait gris sous « Vos clients », et sans
+        « BONJOUR COMPTE ».
+
+    ─── CE QUI EST ESSAYABLE, ET QU'IL FAUT ESSAYER ─────────────────────────
+
+    · Changez de proposition : le téléphone se refait sous vos yeux.
+    · Touchez « J'ai vu » : l'avis part pour de bon, et le reste se replace.
+    · Ajoutez des chantiers avec « + » et « − » : c'est en passant de 0 à 1
+      que la contradiction de la A saute aux yeux, et qu'on voit ce que la B
+      change vraiment.
+
+    RIEN N'EST CODÉ. Les noms — Mr. Martins, Mme Grospiron — et les phrases
+    sont ceux de sa capture du 24 août.
+  */
+  :root{
+    --fond:#f5f3ee; --plage:#faf9f5; --encre:#1c1c1a; --encre-douce:#4a4a44;
+    --gris:#8a8578; --pin:#2f3b2f; --papier:#ece9e1;
+    --or:#B98B47; --trait:rgba(28,28,26,.12); --trait-doux:rgba(28,28,26,.07);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:#e6e3dc}
+  body{font:16px/1.5 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;color:var(--encre);
+       -webkit-text-size-adjust:100%;padding:0 0 44px}
+  [hidden]{display:none !important}
+
+  .bandeau{background:var(--encre);color:#f2efe8;padding:14px 18px;text-align:center;font-size:13px;line-height:1.55}
+  .bandeau b{color:#fff}
+
+  .barre{max-width:560px;margin:18px auto 0;padding:0 14px}
+  .choix{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+  .choix button{flex:1 1 auto;min-width:132px;border:1px solid var(--trait);background:var(--plage);
+    color:var(--encre-douce);border-radius:999px;padding:11px 14px;font:600 13px/1.2 inherit;cursor:pointer;
+    -webkit-tap-highlight-color:transparent}
+  .choix button[aria-pressed="true"]{background:var(--pin);border-color:var(--pin);color:#f2efe8}
+
+  .reglages{display:flex;gap:10px;align-items:center;justify-content:center;margin-top:12px;
+    font-size:12.5px;color:var(--gris);flex-wrap:wrap}
+  .reglages .cpt{display:flex;align-items:center;gap:8px;background:var(--plage);border:1px solid var(--trait);
+    border-radius:999px;padding:5px 6px 5px 14px}
+  .reglages .cpt b{color:var(--encre);font-variant-numeric:tabular-nums;min-width:12px;text-align:center}
+  .reglages .cpt button{width:30px;height:30px;border-radius:999px;border:1px solid var(--trait);
+    background:var(--fond);font-size:17px;line-height:1;cursor:pointer;color:var(--encre-douce)}
+
+  .scene{max-width:430px;margin:20px auto 0;padding:0 14px}
+  .tel{background:var(--fond);border-radius:26px;overflow:hidden;box-shadow:0 18px 46px rgba(20,18,14,.18)}
+  .marque{text-align:center;font-size:10px;letter-spacing:.34em;color:var(--gris);padding:18px 0 0}
+
+  .eyebrow{margin:22px 26px 0;font:600 10.5px/1 ui-sans-serif,sans-serif;letter-spacing:.2em;
+    text-transform:uppercase;color:var(--or)}
+  .ligne-titre{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;margin:8px 26px 0}
+  h1{margin:0;font:400 33px/1.02 ui-serif,Georgia,serif;letter-spacing:-.02em}
+  .bulle{flex:none;width:52px;height:52px;border-radius:999px;background:var(--pin);color:#f2efe8;
+    display:flex;align-items:center;justify-content:center;font-size:21px;border:0;cursor:pointer}
+  .clients{display:inline-flex;align-items:center;gap:5px;margin:9px 26px 0;font:600 10.5px/1 ui-sans-serif,sans-serif;
+    letter-spacing:.16em;text-transform:uppercase;color:var(--or);background:none;border:0;padding:0;cursor:pointer}
+  .filet{height:1px;background:var(--trait);margin:16px 26px 0}
+
+  /* ── « Créer un devis » ────────────────────────────────────────────────
+     En A : un titre gris centré, avec un petit rond à côté. Rien ne dit
+     qu'on peut appuyer. En B et C : une capsule pleine largeur, la forme
+     que porte tout ce sur quoi on appuie dans Atlas. */
+  .creer-a{display:flex;align-items:center;justify-content:center;gap:16px;margin:26px 26px 0;
+    font:700 13px/1 ui-sans-serif,sans-serif;letter-spacing:.16em;text-transform:uppercase;color:var(--encre)}
+  .creer-a i{width:42px;height:42px;border-radius:999px;border:1px solid var(--trait);color:var(--or);
+    font-style:normal;font-size:19px;display:flex;align-items:center;justify-content:center}
+  .creer-b{display:flex;align-items:center;justify-content:center;gap:10px;margin:22px 26px 0;width:calc(100% - 52px);
+    background:var(--pin);color:#f2efe8;border:0;border-radius:999px;padding:16px;cursor:pointer;
+    font:600 15px/1 inherit;-webkit-tap-highlight-color:transparent}
+  .creer-b span{font-size:19px;line-height:1}
+
+  .compteur{display:flex;align-items:baseline;gap:10px;margin:30px 26px 4px;
+    font:500 9.5px/1 ui-sans-serif,sans-serif;letter-spacing:.28em;text-transform:uppercase;color:var(--encre-douce)}
+  .compteur b{font-size:12px;letter-spacing:.06em;color:var(--encre);font-variant-numeric:tabular-nums}
+
+  /* ── Les AVIS ──────────────────────────────────────────────────────────
+     En A ils ont exactement l'allure d'un chantier : même plage, même
+     arrondi, même place. C'est ce qui fait lire « deux chantiers » sous un
+     compteur à zéro. En B ils portent un intertitre et un filet or. */
+  .avis{margin:10px 26px 0;background:var(--plage);border-radius:14px;padding:15px 16px}
+  .avis.marque-or{border-left:3px solid var(--or);border-radius:4px 14px 14px 4px;background:#fbfaf6}
+  .avis .cle{font:600 10px/1 ui-sans-serif,sans-serif;letter-spacing:.18em;text-transform:uppercase;
+    color:var(--gris);margin:0 0 7px}
+  .avis h3{margin:0;font:400 20px/1.15 ui-serif,Georgia,serif}
+  .avis p{margin:6px 0 0;font-size:14px;line-height:1.5;color:var(--encre-douce)}
+  .avis .mot{margin:10px 0 0;padding-left:11px;border-left:2px solid var(--trait);font-size:14.5px;color:var(--encre)}
+  .avis .gestes{display:flex;align-items:center;gap:18px;margin-top:12px}
+  .avis .gestes button{background:none;border:0;padding:0;font:600 15px/1 inherit;color:var(--encre);cursor:pointer;
+    -webkit-tap-highlight-color:transparent}
+  .avis .gestes button.discret{color:var(--gris);font-weight:400}
+  .titre-avis{margin:26px 26px 0;font:600 10.5px/1 ui-sans-serif,sans-serif;letter-spacing:.16em;
+    text-transform:uppercase;color:var(--or)}
+
+  .chantier{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:10px 26px 0;
+    background:var(--plage);border-radius:14px;padding:15px 16px}
+  .chantier h3{margin:0;font:400 20px/1.15 ui-serif,Georgia,serif}
+  .chantier .quand{margin:3px 0 0;font-size:13px;color:var(--gris)}
+  .chantier .fl{color:var(--gris);font-size:19px}
+
+  .vide{margin:14px 26px 0;font-size:13px;line-height:1.55;color:var(--gris)}
+
+  .nav{display:flex;justify-content:space-between;gap:4px;margin-top:26px;padding:14px 20px 18px;
+    border-top:1px solid var(--trait);background:var(--fond)}
+  .nav span{font:500 9.5px/1 ui-sans-serif,sans-serif;letter-spacing:.13em;text-transform:uppercase;color:var(--gris)}
+  .nav span.on{color:var(--encre);border-bottom:2px solid var(--or);padding-bottom:5px}
+
+  .note{max-width:560px;margin:18px auto 0;padding:0 16px;font-size:14px;line-height:1.62;color:var(--encre-douce)}
+  .note p{margin:0 0 10px}
+  .note b{color:var(--encre)}
+  .verdict{max-width:560px;margin:18px auto 0;padding:14px 16px;background:#fbf6ea;
+    border-left:3px solid var(--or);border-radius:0 12px 12px 0;font-size:14px;line-height:1.6}
+</style>
+
+<div class="bandeau">
+  <b>La première page, revue.</b> Touchez une proposition, puis <b>ajoutez un chantier</b> :
+  c'est en passant de 0 à 1 que se voit ce qui cloche aujourd'hui. <b>Rien n'est codé.</b>
+</div>
+
+<div class="barre">
+  <div class="choix" role="group" aria-label="Propositions">
+    <button type="button" data-p="A" aria-pressed="true">A · aujourd'hui</button>
+    <button type="button" data-p="B" aria-pressed="false">B · les avis se distinguent</button>
+    <button type="button" data-p="C" aria-pressed="false">C · la vôtre</button>
+  </div>
+  <div class="reglages">
+    <span class="cpt">chantiers en cours
+      <b id="nb">0</b>
+      <button type="button" id="moins" aria-label="Un chantier de moins">−</button>
+      <button type="button" id="plus" aria-label="Un chantier de plus">+</button>
+    </span>
+    <button type="button" id="rendre" style="border:1px solid var(--trait);background:var(--plage);
+      border-radius:999px;padding:8px 14px;font:600 12.5px/1 inherit;color:var(--encre-douce);cursor:pointer">
+      Remettre les avis</button>
+  </div>
+</div>
+
+<div class="scene">
+  <div class="tel" id="tel"></div>
+</div>
+
+<div class="verdict" id="verdict"></div>
+
+<div class="note">
+  <p><b>Ce que la B change, et rien d'autre.</b> Les deux cartes de votre capture ne sont pas
+  des chantiers : ce sont des <b>avis</b>. Le compteur « En cours 0 » disait donc vrai, et la
+  phrase « Aucun chantier pour l'instant » aussi — mais l'œil, lui, lisait deux chantiers entre
+  les deux. Un intertitre, un filet or, un fond un peu plus clair : les deux familles se séparent
+  sans un mot de plus.</p>
+  <p><b>Et la phrase d'accueil se tait quand l'écran n'est pas vide.</b> « Aucun chantier pour
+  l'instant » sous deux avis, c'est l'application qui nie ce qu'elle vient de montrer. Elle ne
+  paraît plus que s'il n'y a vraiment rien — ni chantier, ni avis. Retirez les deux avis avec
+  « J'ai vu », chantiers à 0 : elle revient, et là elle est juste.</p>
+  <p><b>« Créer un devis » devient un bouton.</b> Sur votre capture c'est un titre gris avec un
+  petit rond à côté — rien ne dit qu'on peut appuyer. En capsule, c'est la forme que porte tout
+  ce sur quoi on appuie dans Atlas, et c'est le geste que vous faites le plus.</p>
+  <p><b>Ce que je n'ai pas touché, faute de savoir :</b> le mot « BONJOUR COMPTE » affiche
+  visiblement le nom du compte au lieu du vôtre. Vous l'avez fait retirer en C, ce qui règle
+  l'écran — mais si le nom est faux ailleurs, dites-le et je chercherai la cause.</p>
+</div>
+
+<script>
+(function () {
+  var $ = function (s) { return document.querySelector(s); };
+
+  // L'état : la proposition, le nombre de chantiers, les avis encore là.
+  var prop = "A";
+  var chantiers = 0;
+  var avis = ["martins", "grospiron"];
+
+  var CHANTIERS = [
+    { nom: "M. Bernard",  quand: "Jeudi 28 août · une journée" },
+    { nom: "Mme Larousse", quand: "Lundi 31 août · matin" },
+    { nom: "M. Faucher",  quand: "Mardi 1er septembre · une journée" }
+  ];
+
+  function echapper(t) { return String(t).replace(/&/g, "&amp;").replace(/</g, "&lt;"); }
+
+  // ── Un avis, dans l'allure de la proposition en cours ────────────────
+  // En A il est indiscernable d'un chantier : c'est le défaut qu'on montre.
+  function unAvis(id) {
+    var orne = prop === "A" ? "" : " marque-or";
+    if (id === "martins") {
+      return '<div class="avis' + orne + '" data-avis="martins">' +
+        (prop === "A" ? "" : '<p class="cle">Sans réponse</p>') +
+        '<h3>Mr. Martins</h3>' +
+        '<p>Parti depuis 11 jours, sans un mot du client. Vous pouvez le relancer vous-même.</p>' +
+        '<div class="gestes"><button type="button" data-ouvrir="1">Ouvrir le chantier</button>' +
+        '<button type="button" class="discret" data-vu="martins">J\'ai vu</button></div></div>';
+    }
+    return '<div class="avis' + orne + '" data-avis="grospiron">' +
+      '<p class="cle">Autre date proposée</p>' +
+      '<h3>Mme Grospiron</h3>' +
+      '<p>Le client a accepté, et retenu le vendredi 28 août.</p>' +
+      '<p class="mot">« Mon fils sera là »</p>' +
+      '<div class="gestes"><button type="button" data-ouvrir="1">Ouvrir le devis validé</button>' +
+      '<button type="button" class="discret" data-vu="grospiron">J\'ai vu</button></div></div>';
+  }
+
+  function peindre() {
+    var h = '<p class="marque">ATLAS</p>';
+
+    // **« BONJOUR COMPTE » : présent en A et B, retiré en C, à sa demande.**
+    if (prop !== "C") h += '<p class="eyebrow">Bonjour Compte</p>';
+
+    h += '<div class="ligne-titre"><h1>Vos chantiers</h1>' +
+         '<button class="bulle" type="button" aria-label="Écrire à Atlas">&#128172;</button></div>';
+    h += '<button class="clients" type="button">Vos clients &rsaquo;</button>';
+
+    // **Le trait gris : gardé en A et B, retiré en C, à sa demande.**
+    if (prop !== "C") h += '<div class="filet"></div>';
+
+    h += prop === "A"
+      ? '<div class="creer-a">Créer un devis <i>+</i></div>'
+      : '<button class="creer-b" type="button"><span>+</span> Créer un devis</button>';
+
+    h += '<div class="compteur">En cours <b>' + chantiers + '</b></div>';
+
+    // ── Les avis ────────────────────────────────────────────────────────
+    if (avis.length) {
+      if (prop !== "A") h += '<p class="titre-avis">À voir</p>';
+      for (var i = 0; i < avis.length; i++) h += unAvis(avis[i]);
+    }
+
+    // ── Les chantiers ───────────────────────────────────────────────────
+    for (var j = 0; j < chantiers; j++) {
+      var c = CHANTIERS[j % CHANTIERS.length];
+      h += '<div class="chantier"><span><h3>' + echapper(c.nom) + '</h3>' +
+           '<p class="quand">' + echapper(c.quand) + '</p></span><span class="fl">&rsaquo;</span></div>';
+    }
+
+    // ── La phrase d'accueil ─────────────────────────────────────────────
+    // **En A elle paraît dès qu'il n'y a pas de CHANTIER**, même sous deux
+    // avis — et elle nie alors ce que l'écran vient de montrer. En B et C
+    // elle attend que l'écran soit vraiment vide.
+    var vide = prop === "A" ? chantiers === 0 : (chantiers === 0 && avis.length === 0);
+    if (vide) h += '<p class="vide">Aucun chantier pour l\'instant. Créez votre premier chantier pour commencer.</p>';
+
+    h += '<div class="nav"><span class="on">Chantiers</span><span>Planning</span>' +
+         '<span>Terminés</span><span>Paysage</span><span>Réglages</span></div>';
+
+    $("#tel").innerHTML = h;
+    $("#nb").textContent = chantiers;
+    verdict();
+  }
+
+  // **Le verdict se recompose à chaque geste** : c'est lui qui répond à la
+  // question qu'il pose vraiment — « qu'est-ce qui cloche, au juste ? ».
+  function verdict() {
+    var v = $("#verdict");
+    if (prop === "A" && chantiers === 0 && avis.length > 0) {
+      v.innerHTML = "<b>Voilà ce que vous voyez aujourd'hui :</b> « En cours 0 », puis " +
+        avis.length + " carte" + (avis.length > 1 ? "s" : "") + ", puis « Aucun chantier pour l'instant ». " +
+        "Les trois sont vraies — les cartes sont des avis, pas des chantiers — mais elles se contredisent à l'œil. " +
+        "<b>Touchez B.</b>";
+      v.hidden = false;
+      return;
+    }
+    if (prop !== "A" && chantiers === 0 && avis.length > 0) {
+      v.innerHTML = "<b>Les avis sont sous « À voir », le compteur parle des chantiers, " +
+        "et la phrase d'accueil se tait</b> — elle reviendra quand l'écran sera vraiment vide. " +
+        "Retirez les deux avis avec « J'ai vu » pour la voir revenir à sa place.";
+      v.hidden = false;
+      return;
+    }
+    if (chantiers === 0 && avis.length === 0) {
+      v.innerHTML = "<b>Là, la phrase est juste :</b> il n'y a vraiment rien. C'est le seul moment " +
+        "où elle doit paraître.";
+      v.hidden = false;
+      return;
+    }
+    v.hidden = true;
+  }
+
+  document.addEventListener("click", function (e) {
+    var b = e.target.closest ? e.target.closest("button") : null;
+    if (!b) return;
+
+    if (b.dataset.p) {
+      prop = b.dataset.p;
+      var tous = document.querySelectorAll(".choix button");
+      for (var i = 0; i < tous.length; i++) tous[i].setAttribute("aria-pressed", String(tous[i] === b));
+      peindre();
+      return;
+    }
+    if (b.dataset.vu) {
+      avis = avis.filter(function (a) { return a !== b.dataset.vu; });
+      peindre();
+      return;
+    }
+    if (b.id === "plus")  { chantiers = Math.min(3, chantiers + 1); peindre(); return; }
+    if (b.id === "moins") { chantiers = Math.max(0, chantiers - 1); peindre(); return; }
+    if (b.id === "rendre") { avis = ["martins", "grospiron"]; peindre(); return; }
+  });
+
+  peindre();
+})();
+</script>
+</body>
+</html>
