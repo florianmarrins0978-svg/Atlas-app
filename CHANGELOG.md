@@ -4525,6 +4525,31 @@ saturation du 17 août, et la cause n'a pas été reproduite ici. Ouvert dans
 
 ---
 
+## 2026-08-18
+
+### Son logo était partout, sauf sur l'écran qu'il regarde
+
+**Sa remarque, capture à l'appui :** *« j'ai rajouté un logo en haut à gauche
+mais il n'est pas visible »*. Le logo n'était pas perdu — il partait sur le PDF
+et s'affichait dans l'aperçu de « Devis & factures ». Il manquait au seul
+endroit où l'artisan passe son temps : **l'écran où il rédige son devis**.
+
+**La cause, et elle vaut d'être retenue :** cet écran compose son en-tête à la
+main, sans passer par la fabrique de documents. Deux écritures du même en-tête,
+et c'est la seconde qui a vieilli le jour où le logo est arrivé.
+
+Le logo se pose donc avec **les mêmes règles que le PDF** : au-dessus du nom,
+hauteur fixe, largeur libre — un logo en bandeau et un logo carré n'ont rien à
+voir, et une boîte carrée écraserait le premier.
+
+**Le contrôle refuse de croire une balise.** Il pose le logo comme lui le pose,
+ouvre un devis, et vérifie que l'image est **chargée** (`naturalWidth > 0`), pas
+seulement présente : une mauvaise adresse rend une balise, et c'est lui qui
+verrait le carré vide. Puis qu'elle est au-dessus du nom, et pas écrasée. Vu
+rouge avant d'être livré. `ARCHITECTURE.md` §173.
+
+---
+
 ## 2026-08-19
 
 ### La légende ne promet plus un compte qu'elle ne tient pas
