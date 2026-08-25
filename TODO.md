@@ -509,6 +509,13 @@ fois sur la base d'essai.** Pas de suite lancée « pour vérifier vite » penda
 qu'une batterie tourne ; pas deux batteries. Le conteneur a une seule base, et
 elle n'est pas faite pour deux lecteurs qui la vident.
 
+**ET LA MÊME FAUTE A ÉTÉ REFAITE LE 25 AOÛT AU SOIR.** Une batterie tournait
+pendant que des contrôles de maquette et des captures ouvraient leurs propres
+navigateurs. Résultat : `test-lecons-prix-e2e` est tombé sur un délai de 30 s
+d'attente de réponse — et il passe seul, sur la même branche, sans rien toucher.
+**La règle n'est pas « une seule chose sur la base », c'est « une seule chose sur
+la MACHINE »** : un navigateur de plus suffit, même s'il ne lit que des fichiers.
+
 **PREMIÈRE MESURE APRÈS LA CORRECTION, et elle est nette :** une batterie jouée
 avec **rien d'autre en train de toucher la base** rend **224/224 en base et
 110/110 au navigateur**. Aucun rouge. C'est le premier 110/110 de la journée, et
