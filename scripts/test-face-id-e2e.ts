@@ -75,6 +75,22 @@ async function interrogerLaBase<T>(requete: string, valeurs: unknown[] = []): Pr
   }
 }
 
+/**
+ * **DONNER SON MOT DE PASSE QUAND ATLAS LE REDEMANDE — le geste de M11.**
+ *
+ * Depuis le 25 août 2026, enregistrer ou retirer une clé exige une identité
+ * prouvée dans les dix minutes, DEPUIS CETTE SESSION. C'est ce qui empêche une
+ * session volée d'enregistrer la clé de l'attaquant — le seul geste d'Atlas qui
+ * transforme un vol de cookie en accès permanent.
+ */
+async function donnerSonIdentite(page: import("playwright").Page) {
+  const feuille = page.locator('[data-atlas="demander-preuve"]');
+  await feuille.waitFor({ state: "visible", timeout: 15_000 });
+  await page.getByLabel("Votre mot de passe").fill(MOT_DE_PASSE);
+  await page.locator('[data-atlas="prouver-identite"]').click();
+  await feuille.waitFor({ state: "hidden", timeout: 15_000 });
+}
+
 async function main() {
   const navigateur: Navigateur = await lancerNavigateur();
   let echecs = 0;
@@ -134,8 +150,26 @@ async function main() {
     assert.match(texte, /mot de passe reste actif/i);
   });
 
-  await cas("l'appareil s'enregistre pour de bon, et la base porte une clé", async () => {
+  await cas("UNE SESSION SEULE NE SUFFIT PLUS — et aucune clé n'est créée", async () => {
+    /**
+     * **LE CONTRÔLE QUI PORTE TOUT M11, joué dans un vrai navigateur.**
+     *
+     * Une session parfaitement valide tente d'enregistrer une clé. Elle est
+     * refusée, et surtout : **rien n'arrive en base**. Sans ce cas, la suite ne
+     * dirait que « l'enregistrement marche » — ce qu'elle disait déjà avant la
+     * protection.
+     */
     await page.getByRole("button", { name: /Enregistrer cet appareil/i }).click();
+    await page.locator('[data-atlas="demander-preuve"]').waitFor({ state: "visible", timeout: 15_000 });
+
+    const lignes = await interrogerLaBase<{ n: string }>("SELECT count(*)::text AS n FROM cles_appareil");
+    assert.equal(lignes[0].n, "0", "UNE CLÉ A ÉTÉ CRÉÉE SANS QU'ON DEMANDE QUI C'EST");
+  });
+
+  await cas("l'appareil s'enregistre pour de bon, et la base porte une clé", async () => {
+    // La feuille est ouverte depuis le cas précédent : on donne l'identité, et
+    // l'écran REPREND le geste tout seul.
+    await donnerSonIdentite(page);
     await page.waitForTimeout(2500);
     const texte = await page.locator("body").innerText();
     assert.match(texte, /Cet appareil est enregistré/i, `lu à l'écran : « ${texte.slice(0, 300)} »`);
@@ -199,6 +233,9 @@ async function main() {
     await page.goto(`${BASE}/reglages/connexion`, { waitUntil: "networkidle" });
     await page.waitForTimeout(800);
     await page.getByRole("button", { name: /^Retirer$/ }).first().click();
+    // Retirer aussi exige l'identité : priver quelqu'un de sa porte est un geste
+    // hostile autant qu'un ajout.
+    await donnerSonIdentite(page);
     await page.waitForTimeout(2000);
 
     const texte = await page.locator("body").innerText();

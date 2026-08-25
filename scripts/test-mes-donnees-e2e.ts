@@ -59,9 +59,28 @@ async function main() {
       `Le lien annonce « ${nomSurLeLien ?? "(rien)"} » : sur iPhone, la sauvegarde arrivera sous le nom de la page, sans extension, et ne s'ouvrira pas.`
     );
 
-    // --- Le geste, et le fichier qui en sort -------------------------------
-    const attenteTelechargement = page.waitForEvent("download", { timeout: 60000 });
+    // --- LE REFUS D'ABORD : sans identité récente, rien ne part -------------
+    //
+    // **Depuis M11 (25 août 2026), ce fichier exige une identité récente.** Il
+    // contient toute l'entreprise — clients, prix, factures, photos —, et une
+    // session volée ne doit pas suffire à l'emporter.
+    //
+    // Ce contrôle-ci est la moitié qui compte : il prouve qu'une session
+    // parfaitement valide **ne suffit pas**. Sans lui, la suite ne dirait que
+    // « le téléchargement marche », ce qu'elle disait déjà avant la protection.
     await bouton.click();
+    const feuille = page.locator('[data-atlas="demander-preuve"]');
+    await feuille.waitFor({ state: "visible", timeout: 15_000 });
+    const rienNEstParti = await page
+      .waitForEvent("download", { timeout: 2_000 })
+      .then(() => false)
+      .catch(() => true);
+    assert.ok(rienNEstParti, "LE FICHIER EST PARTI SANS QU'ON AIT DEMANDÉ QUI C'EST");
+
+    // --- Puis le geste réel, une fois l'identité donnée ---------------------
+    await page.getByLabel("Votre mot de passe").fill("demo1234");
+    const attenteTelechargement = page.waitForEvent("download", { timeout: 60000 });
+    await page.locator('[data-atlas="prouver-identite"]').click();
     const telechargement = await attenteTelechargement;
 
     const nomPropose = telechargement.suggestedFilename();

@@ -73,7 +73,15 @@ export default function DemanderPreuve({
 
   return (
     <BottomSheet open={ouvert} onBackdropClick={onAbandon}>
-      <p className="mb-2 text-center text-[17px]" style={{ color: colors.ink }}>
+      {/* **Un repère stable, pour que les contrôles accusent le bon coupable.**
+          Cherchée par son libellé, cette feuille se confondait avec le motif
+          juste dessous, qui reprend les mêmes mots — et le contrôle mourait sur
+          une ambiguïté plutôt que sur ce qu'il défend. */}
+      <p
+        data-atlas="demander-preuve"
+        className="mb-2 text-center text-[17px]"
+        style={{ color: colors.ink }}
+      >
         Vérifiez que c&apos;est bien vous
       </p>
       <p className="mb-5 text-center text-[13px] leading-[1.5]" style={{ color: colors.muted }}>
