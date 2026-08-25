@@ -9,6 +9,30 @@ Format : le plus récent en tête.
 
 ## 2026-08-25
 
+### Le rapport repart chez le client : l'adresse venait du serveur, pas du navigateur
+
+*Sa capture : « je ne peux pas l'envoyer au client », devant le refus posé la
+veille — alors que sa barre d'adresse portait bien une adresse web.*
+
+Le garde-fou du 24 août barre un lien qui ne mène qu'à sa machine, et il a
+raison. Mais il jugeait l'adresse que le SERVEUR voit — et derrière le tunnel de
+son espace de travail, le serveur ne voit que `localhost`. Il était donc bloqué
+sur un lien parfaitement bon.
+
+Le lien prend désormais l'adresse de sa barre d'adresse, la seule qui ne mente
+jamais : c'est celle par laquelle il a ouvert Atlas, donc celle qui s'ouvrira
+chez son client. **Le refus reste entier** — ouvert par la redirection de port
+de son éditeur, le lien est barré comme avant, et un contrôle le tient.
+
+Corrigé sur les quatre écrans qui envoient : la fiche de chantier, le devis
+parti, la facture et son message tout prêt. Le refus ne s'affiche plus non plus
+en double.
+
+`ARCHITECTURE.md` §175.
+
+---
+
+
 ### Le message : les phrases par défaut, modifiables — les mots en doré verrouillés
 
 *« Le message au client doit comporter les phrases par défaut et l'utilisateur les

@@ -15371,3 +15371,63 @@ le doublon sans rien dire.
 clair comme sur fond sombre, avec logo carré et logo en bandeau. C'est la seule
 manière de voir qu'une ligne de plus dans l'en-tête ne vient pas toucher les
 références du devis.
+
+---
+
+## 175. L'adresse du lien vient du NAVIGATEUR, pas de ce que le serveur croit
+
+*Sa capture du 25 août 2026 : « je ne peux pas l'envoyer au client », devant le
+refus posé la veille — et sa barre d'adresse portait `…-3000.app.github.dev`.*
+
+### Le garde-fou avait raison sur ce qu'il savait, et tort sur la réalité
+
+`ouvrableParLeClient` barre un lien qui ne mène qu'à la machine de l'artisan
+(§169), et c'est juste : son client avait reçu « Connexion au serveur
+impossible ». Mais l'adresse qu'on lui donnait à juger venait du SERVEUR, et
+derrière le tunnel de son espace de travail le serveur ne voit que
+`localhost:3000` — aucun en-tête ne porte l'adresse publique.
+
+`origine-publique.ts` le disait déjà, noir sur blanc : *« la fonction rend alors
+honnêtement `http://localhost:3000` — c'est à celui qui met cette adresse dans
+un message de refuser »*. Ce qui manquait, c'est que **celui qui refuse
+disposait d'une meilleure source et ne la lisait pas.**
+
+| Source | Ce qu'elle vaut |
+|---|---|
+| `ATLAS_URL_PUBLIQUE` | juste quand elle est posée — elle ne l'est pas chez lui |
+| `x-forwarded-host` / `host` | **`localhost` derrière son tunnel** |
+| `window.location.origin` | **l'adresse par laquelle il a ouvert Atlas** — exactement celle qui s'ouvrira chez son client |
+
+### Pourquoi ce n'est pas le retour du défaut d'hydratation
+
+Le dépôt interdit de composer une adresse depuis `window` **pendant le rendu**
+(§68, §81) : serveur et navigateur diffèrent, React régénère tout l'arbre, et le
+patron a signalé cette erreur le 13 août. La règle tient toujours, et elle est
+respectée de deux façons :
+
+- **dans un GESTE** — au moment où il appuie — `window` se lit sans risque :
+  rien n'est comparé à un rendu ;
+- **pour un texte AFFICHÉ**, le premier rendu reprend l'adresse du serveur, mot
+  pour mot, et un `useEffect` la corrige **après** le montage. C'est le seul
+  ordre qui ne fasse pas diverger les deux.
+
+### Ce qui a été ÉCARTÉ, et qu'il ne faut pas rouvrir
+
+Déduire l'adresse de `CODESPACE_NAME`. C'est tentant — le nom est là, le domaine
+aussi. Mais le dépôt sait déjà que cette variable **manque** dans un espace créé
+avant qu'elle ne soit écrite dans `docker-compose.yml` : *« deux correctifs de
+suite ont échoué chez le patron pour ce motif »* (`src/middleware.ts`). Un
+troisième aurait échoué pareil, et sans un mot.
+
+### Le refus reste entier
+
+C'est le contrôle qui compte le plus dans ce lot : prendre l'adresse du
+navigateur ne doit pas rouvrir la porte que le 24 août a fermée. Ouvert par la
+redirection de port de son éditeur, `window.location.origin` vaut
+`http://localhost:3000` — le lien est barré, comme avant.
+
+### Et le refus ne s'écrit plus DEUX FOIS
+
+Sa capture le montrait en double : `RapportParti` porte le sien une fois le
+rapport figé, et celui de la tentative précédente restait affiché. **Deux fois
+la même phrase se lit comme un écran cassé**, et c'est un défaut à part entière.
