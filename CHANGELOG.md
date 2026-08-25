@@ -50,6 +50,22 @@ Elle tient désormais la règle et non le libellé d'un seul état : *« arrêt�
 n'est pas « partie »*. Les deux états de l'écran le démentent, chacun avec ses
 mots. Confrontée à des phrases absentes, elle rougit ; rétablie, elle passe.
 
+### Et un quatrième : la remise lue avant d'être écrite
+
+Même famille. Le contrôle tapait « 15 », attendait 900 ms choisies au doigt
+mouillé, puis lisait la base. Sous cent dix suites, l'enregistrement n'était pas
+retombé : la base portait encore « 5.00 » et le contrôle accusait le produit
+d'écrire un chiffre faux sur un devis — le pire des rouges.
+
+Il attend maintenant l'état, comme le dépôt le fait ailleurs, et il n'y perd
+rien : il exige toujours la valeur exacte, et dit ce que la base portait quand
+elle ne vient pas. Un vrai désaccord entre l'écran et la base rougirait encore.
+
+**Quatre contrôles en un jour, aucun défaut de produit derrière.** Deux
+cassaient à minuit sur le calendrier, deux lisaient un écran ou une base avant
+qu'ils aient fini de s'écrire. Le point commun : *ils mesuraient un instant, pas
+un état.*
+
 ---
 
 ## 2026-08-24
