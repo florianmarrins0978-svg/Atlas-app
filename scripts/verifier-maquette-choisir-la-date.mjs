@@ -152,10 +152,21 @@ if (rendu) {
   await page.waitForTimeout(120);
   await page.locator(`.case[data-jour="${rendu}"]`).click();
   await page.waitForTimeout(120);
-  const bouton = page.locator("[data-retenir]");
-  if (await bouton.count()) await bouton.first().click();
+  // **Toucher SUFFIT — sa demande du 25 août 2026.** Le contrôle appuyait
+  // auparavant sur « Proposer ce jour » quand ce bouton existait, et laissait
+  // passer son absence : il serait donc resté vert sur une planche où toucher
+  // un jour ne fait plus rien. C'est le geste qu'on éprouve, pas le bouton.
+  dire(
+    (await page.locator("[data-retenir]").count()) === 0,
+    "la fiche porte encore « Proposer ce jour » : il faut deux gestes là où il en veut un"
+  );
+  dire(await page.locator("#retenu-dit").isVisible(), "toucher un jour ne le propose pas");
+  // Et retoucher le rend : sans quoi une date posée par erreur ne s'enlève plus.
+  await page.locator(`.case[data-jour="${rendu}"]`).click();
   await page.waitForTimeout(120);
-  dire(await page.locator("#retenu-dit").isVisible(), "le jour retenu ne s'écrit nulle part");
+  dire(await page.locator("#retenu-dit").isHidden(), "retoucher un jour proposé ne le retire pas");
+  await page.locator(`.case[data-jour="${rendu}"]`).click();
+  await page.waitForTimeout(120);
   await page.selectOption("#duree", "4");
   await page.waitForTimeout(150);
   dire(await page.locator("#retenu-dit").isHidden(), "un jour devenu impossible reste proposé au client");

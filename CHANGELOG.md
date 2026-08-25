@@ -29,7 +29,7 @@ citant une consigne devenue fausse.
 dans sa version B ; sa consigne était : *« pour la mienne, fais seulement les
 changements que je t'ai demandés »*. Elles restent sur la planche, où il peut les
 comparer. Une proposition ne se glisse pas dans la version de quelqu'un sous
-prétexte qu'elle l'améliore. `ARCHITECTURE.md` §160.
+prétexte qu'elle l'améliore. `ARCHITECTURE.md` §171.
 
 ---
 
@@ -151,6 +151,21 @@ compte de démonstration et en portent toujours. Une suite qui « vérifierait �
 l'absence sur un accueil plein serait verte sans avoir rien mesuré. C'est
 grossier, et c'est plus honnête qu'un vert qui ne prouve rien
 (`scripts/test-accueil-liste-vide.ts`, vu rouge contre le retour de la phrase).
+
+### Choisir une date se fait d'un seul doigt
+
+**« Proposer ce jour » est retiré** — sa demande : *« je dois pouvoir
+sélectionner les jours juste en les touchant, pas besoin de cliquer sur
+proposer »*. Toucher une case du calendrier ouvre toujours la fiche de la
+journée — qui est déjà là, avec quelle équipe — mais elle n'engage plus rien :
+c'est la case qui engage, et la retoucher retire la date. Un appui par date
+économisé sur chaque devis.
+
+Ce qui ne change pas : le serveur tranche toujours avant qu'une case s'allume,
+et un jour refusé s'ouvre quand même en disant pourquoi. Ce qui a été ajouté au
+passage : deux cases touchées coup sur coup ne se marchent plus dessus — la
+réponse tardive de la première ne vient plus cocher un jour déjà quitté.
+
 
 ---
 
@@ -1569,7 +1584,7 @@ suite qui les ferait rougir accuserait le dessin qu'il a validé (`CLAUDE.md`
 §5 bis). La règle retenue est *le sombre ne fait pas moins bien que le clair*,
 et le clair se mesure au lieu de s'écrire.
 
-Le détail : `ARCHITECTURE.md` §160.
+Le détail : `ARCHITECTURE.md` §171.
 
 
 ### « Choisir la date » ouvre le calendrier du planning, et dit qui est déjà là

@@ -33,6 +33,26 @@ Ce n'est pas urgent tant qu'il envoie depuis l'adresse de son espace de travail
 
 ---
 
+## ⚠ Six numéros de section en DOUBLE dans `ARCHITECTURE.md` (25 août 2026)
+
+`## 125`, `## 134`, `## 135`, `## 136`, `## 164`, `## 165` désignent chacun
+**deux sections différentes**. Constaté sur `main` nu, sans modification locale :
+ce n'est la faute d'aucun lot en cours.
+
+**Ce que ça coûte :** un renvoi « `ARCHITECTURE.md` §164 » écrit dans le code ne
+désigne plus rien de sûr — et c'est par ces renvois qu'on retrouve le POURQUOI
+d'une décision. Le dépôt en compte des dizaines.
+
+**Pourquoi ce n'est pas corrigé ici :** renuméroter suppose de reprendre tous les
+renvois qui pointent dessus, dans un fichier où trois ou quatre sessions écrivent
+en même temps. Fait au milieu de leurs lots, cela produirait des conflits sur
+chacun et des renvois faux partout.
+
+**À faire d'un coup, par une session qui n'a que ça à faire** : renuméroter les
+six seconds, corriger les renvois, et poser un contrôle qui refuse un numéro
+déjà pris — sans quoi la même dérive recommence dès la semaine suivante.
+
+
 ## ⚠ `verifier-maquette-message-et-allure` est ROUGE sur main (24 août 2026)
 
 ```
