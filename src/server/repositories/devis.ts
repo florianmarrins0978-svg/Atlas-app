@@ -548,3 +548,107 @@ async function devisÀImprimer(tx: DbOrTx, chantierId: string) {
     .limit(1);
   return brouillon ?? null;
 }
+
+// --- Reprendre une ligne du devis d'un autre client -----------------------
+
+/**
+ * Une ligne de devis retrouvée ailleurs, avec de quoi la reconnaître.
+ *
+ * **Le nom du client vient du devis, pas de la fiche client.** Un devis fige le
+ * nom de son destinataire au jour où il est établi (colonne `clientNom`) :
+ * c'est ce nom-là qui est sur la feuille qu'il a sous les yeux, et donc celui
+ * qu'il cite quand il demande « la ligne du devis de Bernard ».
+ */
+export type LigneDevisAilleurs = {
+  ligneId: string;
+  libelle: string;
+  montant: string;
+  quantite: string;
+  prixUnitaire: string;
+  client: string | null;
+  chantier: string;
+  numeroDevis: string;
+  dateEmission: string;
+};
+
+/**
+ * Cherche une ligne de devis dans TOUTE l'entreprise — tous clients confondus.
+ *
+ * **Sa demande du 25 août 2026 :** *« qu'il soit en mesure d'aller chercher une
+ * ligne dans un devis de n'importe quel client et la poser sur un devis déjà
+ * ouvert de n'importe quel client »*.
+ *
+ * **Ce qui borne la recherche, c'est la RLS, pas un filtre écrit ici.**
+ * `withEntreprise` pose le contexte d'isolation : une entreprise voisine ne
+ * remonte rien, silencieusement. C'est la seule barrière qui tienne — un `WHERE
+ * entreprise_id = …` écrit à la main serait une seconde règle, et c'est
+ * exactement ce que `CLAUDE.md` §3 interdit.
+ *
+ * **Deux filtres, tous deux facultatifs** : un mot du libellé, un bout du nom du
+ * client. Sans aucun des deux, on ne rend rien plutôt que le devis entier de
+ * l'entreprise : une liste de trois cents lignes ne se lit pas, et l'assistant
+ * choisirait alors au hasard.
+ */
+export async function rechercherLignesDevisEntreprise(
+  ctx: Ctx,
+  filtres: { motCle?: string | null; client?: string | null },
+  maximum = 12
+): Promise<LigneDevisAilleurs[]> {
+  const motCle = (filtres.motCle ?? "").trim();
+  const nomClient = (filtres.client ?? "").trim();
+  if (!motCle && !nomClient) return [];
+
+  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    const conditions = [];
+    if (motCle) conditions.push(sql`${lignesDevis.libelle} ILIKE ${"%" + motCle + "%"}`);
+    if (nomClient) conditions.push(sql`${devis.clientNom} ILIKE ${"%" + nomClient + "%"}`);
+
+    const lignes = await tx
+      .select({
+        ligneId: lignesDevis.id,
+        libelle: lignesDevis.libelle,
+        montant: lignesDevis.montant,
+        quantite: lignesDevis.quantite,
+        prixUnitaire: lignesDevis.prixUnitaire,
+        client: devis.clientNom,
+        chantier: chantiers.nom,
+        numeroDevis: devis.numeroCommercial,
+        dateEmission: devis.dateEmission,
+      })
+      .from(lignesDevis)
+      .innerJoin(devis, eq(lignesDevis.devisId, devis.id))
+      .innerJoin(chantiers, eq(devis.chantierId, chantiers.id))
+      .where(sql.join(conditions, sql` AND `))
+      .orderBy(desc(devis.dateEmission), lignesDevis.ordre)
+      .limit(maximum);
+
+    return lignes.map((l) => ({ ...l, dateEmission: String(l.dateEmission) }));
+  });
+}
+
+/**
+ * Relit UNE ligne par son identifiant, au moment de la recopier.
+ *
+ * **Le montant ne voyage jamais.** Ni le navigateur ni le modèle ne le
+ * réémettent : ils ne portent que l'identifiant de la ligne d'origine, et le
+ * prix est relu ici, à l'instant où l'on écrit. C'est le même remède que pour
+ * un tarif (`ajouter_ligne_prix`), et pour la même raison : un montant transmis
+ * est un montant qu'on peut changer en chemin, sur un document qui part chez un
+ * client.
+ *
+ * Rend `null` quand la ligne a disparu — ou qu'elle appartient à une autre
+ * entreprise, ce que la RLS rend indiscernable, et c'est très bien ainsi.
+ */
+export async function getLigneDevisPourCopie(
+  ctx: Ctx,
+  ligneId: string
+): Promise<{ libelle: string; montant: string } | null> {
+  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    const [ligne] = await tx
+      .select({ libelle: lignesDevis.libelle, montant: lignesDevis.montant })
+      .from(lignesDevis)
+      .where(eq(lignesDevis.id, ligneId))
+      .limit(1);
+    return ligne ?? null;
+  });
+}

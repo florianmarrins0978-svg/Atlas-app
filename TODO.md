@@ -9,6 +9,24 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
+## Le mode d'emploi de l'assistant : le tenir vivant
+
+**FAIT le 25 août 2026** pour l'essentiel (`ARCHITECTURE.md` §178). Ce qui reste,
+et qui ne se règle pas en une fois :
+
+- **Les fiches couvrent les écrans principaux, pas encore chaque recoin.**
+  Manquent notamment : le détail de l'écran Réglages → Devis & factures (chaque
+  réglage un par un), les mesures de la grille de prix, l'écran d'abonnement, et
+  la fiche du diagnostic végétal une fois la photo prise. Chaque ajout se prouve
+  contre le code, comme les autres.
+- **La formulation d'un vrai modèle n'a pas été vue ici** (aucune clé) : la
+  chaîne entière est éprouvée par le fournisseur `dev`. À regarder sur son
+  espace, en lui posant trois ou quatre « comment je fais pour… ».
+- **Quand il signale un geste faux, c'est une fiche à corriger**, pas une
+  consigne à ajouter au modèle.
+
+---
+
 ## ~~Photographier son devis / sa facture pour en reprendre l'allure~~ — FAIT le 25 août 2026
 
 **FAIT.** L'écran Réglages → Documents porte désormais, en tête de « L'allure de

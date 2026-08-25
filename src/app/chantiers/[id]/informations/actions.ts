@@ -13,6 +13,7 @@ import { mettreAJourDureeEquipe, marquerInformationsVerifiees } from "@/server/r
 import { listerPrestations } from "@/server/repositories/prestations";
 import { listerMateriel } from "@/server/repositories/materiel";
 import { getTarif } from "@/server/repositories/tarifs";
+import { getLigneDevisPourCopie } from "@/server/repositories/devis";
 import { ajouterLignePrixDirectAction } from "@/app/chantiers/[id]/prix/actions";
 import { chargerDevisAction } from "@/app/chantiers/[id]/export/actions";
 import { extraire } from "@/server/ai/services/extraction-service";
@@ -22,6 +23,7 @@ import { PropositionExtractionSchema, type PropositionExtraction } from "@/serve
 import type { ResultatApplicationProposition, ResultatConfirmation, CategorieConflit } from "@/server/ai/propositions";
 import { reclamerProposition } from "@/server/repositories/propositions-ia";
 import { AccesRefuseError } from "@/server/db/with-entreprise";
+import { estProprietaire } from "@/server/autorisation";
 import { logger } from "@/server/logger";
 import { verifierLimite, LIMITES } from "@/server/rate-limit";
 
@@ -163,6 +165,25 @@ export async function confirmerBrouillonAction(chantierId: string) {
 // globalement : chaque proposition est traitée indépendamment.
 export async function appliquerPropositionsAction(chantierId: string, propositionIds: string[]): Promise<ResultatConfirmation> {
   const ctx = await getCurrentCtx();
+
+  // **La même barrière que pour poser la question** (`src/app/assistant/actions.ts`).
+  // Un salarié ne peut pas obtenir de propositions ; encore faut-il qu'il ne
+  // puisse pas appliquer celles d'un autre en rejouant l'action avec leurs
+  // identifiants. Un refus en valeur de retour, jamais une exception : le
+  // message d'une exception levée par une action serveur n'arrive jamais
+  // jusqu'à l'écran (`AGENTS.md`).
+  if (!(await estProprietaire(ctx))) {
+    return {
+      resultats: propositionIds.map((id) => ({
+        propositionId: id,
+        type: "inconnu",
+        description: "",
+        statut: "conflit" as const,
+        categorie: "acces_refuse" as const,
+        message: "L'assistant est réservé au responsable de l'entreprise.",
+      })),
+    };
+  }
 
   const limite = await verifierLimite(`confirmation:${ctx.entrepriseId}`, LIMITES.confirmationProposition);
   if (!limite.autorise) {
@@ -353,6 +374,38 @@ export async function appliquerPropositionsAction(chantierId: string, propositio
           // Remédiation (transaction) : un seul appel, une seule transaction —
           // jamais de ligne vide intermédiaire.
           await ajouterLignePrixDirectAction(chantierId, libelle, montant);
+          uneLigneDePrixAjoutee = true;
+          resultats.push({ ...base, statut: "appliquee" });
+          break;
+        }
+        case "copier_ligne_devis": {
+          // **Reprendre la ligne d'un AUTRE client sur le devis ouvert** (sa
+          // demande du 25 août 2026). Seul l'identifiant de la ligne d'origine
+          // a voyagé : le libellé et le montant sont relus ICI, en base, à
+          // l'instant où l'on écrit. Un montant transmis par le navigateur ou
+          // formulé par le modèle est un montant qu'on peut changer en chemin —
+          // sur un document qui part chez un client. Même remède que pour un
+          // tarif, ci-dessus.
+          //
+          // La RLS borne la lecture à l'entreprise : une ligne d'une société
+          // voisine est indiscernable d'une ligne disparue, et rend le même
+          // conflit.
+          const ligneOrigineId = String(donnees.ligneOrigineId ?? "");
+          if (!ligneOrigineId) {
+            resultats.push({ ...base, statut: "conflit", categorie: "donnee_invalide", message: "Ligne d'origine manquante." });
+            break;
+          }
+          const origine = await getLigneDevisPourCopie(ctx, ligneOrigineId);
+          if (!origine) {
+            resultats.push({
+              ...base,
+              statut: "conflit",
+              categorie: "conflit_metier",
+              message: "Cette ligne de devis n'existe plus.",
+            });
+            break;
+          }
+          await ajouterLignePrixDirectAction(chantierId, origine.libelle, origine.montant);
           uneLigneDePrixAjoutee = true;
           resultats.push({ ...base, statut: "appliquee" });
           break;

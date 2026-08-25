@@ -13,6 +13,22 @@ ligne « fait » qui ne l'est pas coûte plus cher qu'une ligne absente.
 
 ---
 
+## L'assistant explique l'appli, et sert le patron seul (25 août 2026)
+
+| | État |
+|---|---|
+| Le mode d'emploi, écrit et cherchable — une soixantaine de gestes, écran par écran | **fait** — `src/lib/mode-emploi.ts`, outil `RechercherModeEmploi` |
+| Chaque fiche **prouvée contre le code** (fichier source + morceaux de texte attendus) | **fait** — `scripts/test-mode-emploi.ts`, et le contrôle sait échouer |
+| L'assistant récite le geste sans le reformuler, et **dit qu'il ne sait pas** quand il ne trouve rien | **fait** — consigne système + `chercherFiches` rend vide |
+| « Comment je supprime… » ne déclenche plus une suppression de données | **fait** — le mode d'emploi passe en tête de la chaîne du fournisseur |
+| Aller chercher une ligne dans le devis de n'importe quel client, la poser sur le devis ouvert | **fait** — `RechercherLignesDevis` + proposition `copier_ligne_devis` |
+| Le montant est relu en base à la validation, jamais transmis | **fait** — `getLigneDevisPourCopie` ; un test exige que `donnees` ne porte que l'identifiant |
+| Isolation entre entreprises sur cette recherche | **fait** — tenue par la RLS, éprouvée sous `atlas_app` avec deux lignes homonymes |
+| L'assistant réservé au **responsable** : bouton absent, et les deux actions serveur relisent le rôle | **fait** — `poserQuestionAction`, `appliquerPropositionsAction` |
+| Ce qu'un vrai fournisseur en fait | **non vérifié ici** (aucune clé) — la chaîne entière est éprouvée par le fournisseur `dev` ; la formulation d'un modèle réel est à voir sur son espace |
+
+---
+
 ## L'échéance de la facture : proposée, modifiable (25 août 2026)
 
 | | État |

@@ -9,6 +9,46 @@ Format : le plus récent en tête.
 
 ## 2026-08-25
 
+### L'assistant explique l'application, et reprend une ligne chez un autre client
+
+*« J'aimerais que l'assistant qui se trouve dans l'application puisse expliquer
+chaque fonctionnalité de l'appli »*, avec son exemple : *« comment je fais pour
+supprimer un client en attente de rédaction de son devis sur la page chantier »*
+→ *« slide de droite à gauche puis appuie sur retire »*.
+
+**Ce que ça évite.** Un modèle qui n'a pas l'écran sous les yeux invente un geste
+plausible ; l'artisan le cherche cinq minutes avant de conclure que
+l'application est cassée. Le mode d'emploi est donc **écrit**
+(`src/lib/mode-emploi.ts`, une soixantaine de fiches), l'assistant le récite
+sans le reformuler, et **il dit qu'il ne sait pas** quand il ne trouve rien.
+
+**Chaque fiche se prouve contre le code** : elle porte son fichier source et des
+morceaux de texte qui doivent s'y trouver. Le contrôle a rougi à son premier
+passage — une fiche annonçait un bouton « Connecter » pour l'agenda là où l'écran
+dit « Relier mon agenda Google ».
+
+**Et un défaut trouvé à l'image, pas par un test :** la réponse enchaînait les
+trois fiches trouvées — trois gestes pour une question. Une seule sort désormais,
+et un contrôle compte les titres.
+
+**Un piège fermé au passage :** « comment je supprime un client ? » tombait dans
+la branche des suppressions — l'assistant allait lire les prestations et
+proposait d'en retirer une. Il demandait un geste, on lui modifiait ses données.
+
+**Et il va chercher une ligne chez n'importe quel client** pour la poser sur le
+devis ouvert. Le montant ne voyage jamais : la proposition ne porte que
+l'identifiant de la ligne d'origine, et le prix est relu en base au moment de la
+validation. La recherche est bornée par la RLS, pas par un filtre écrit à la
+main.
+
+**L'assistant est désormais réservé au responsable de l'entreprise** — *« au
+service de l'utilisateur principal seulement le principal »*. Il lit les tarifs,
+les marges et les devis de tous les clients : ouvert à un salarié, il rendrait
+par la conversation ce que les réglages lui refusent écran par écran. Le rôle est
+relu en base dans les deux actions serveur, pas seulement sur le bouton.
+
+Détail : `ARCHITECTURE.md` §178.
+
 ### La phrase grise sous « Envoyer la facture » a été retirée
 
 *« Supprime le message en gris : votre messagerie s'ouvre aussitôt. »*

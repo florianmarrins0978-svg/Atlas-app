@@ -29,21 +29,41 @@ type Assistant = {
 
 const Contexte = createContext<Assistant | null>(null);
 
-export function FournisseurAssistant({ children }: { children: React.ReactNode }) {
+/**
+ * **`disponible` : l'assistant est réservé au patron** (sa demande du 25 août
+ * 2026, *« au service de l'utilisateur principal seulement le principal »*).
+ *
+ * Le rôle est décidé AU SERVEUR, dans le gabarit racine, et voyage jusqu'ici en
+ * simple booléen — le navigateur ne le calcule pas et ne peut pas le retourner.
+ *
+ * **Ce n'est pas la barrière**, seulement ce qui évite d'offrir un bouton qui
+ * refuserait : les deux actions serveur de l'assistant relisent le rôle en base
+ * (`src/app/assistant/actions.ts`). Un écran ne protège rien.
+ */
+export function FournisseurAssistant({
+  disponible = true,
+  children,
+}: {
+  disponible?: boolean;
+  children: React.ReactNode;
+}) {
   const [ouvert, setOuvert] = useState(false);
-  const valeur = useMemo<Assistant>(
-    () => ({
-      ouvert,
-      basculer: () => setOuvert((o) => !o),
-      fermer: () => setOuvert(false),
-    }),
-    [ouvert],
+  const valeur = useMemo<Assistant | null>(
+    () =>
+      disponible
+        ? {
+            ouvert,
+            basculer: () => setOuvert((o) => !o),
+            fermer: () => setOuvert(false),
+          }
+        : null,
+    [ouvert, disponible],
   );
   return <Contexte.Provider value={valeur}>{children}</Contexte.Provider>;
 }
 
 /**
- * **Rend `null` hors du fournisseur, au lieu de lever.**
+ * **Rend `null` hors du fournisseur — ET pour qui n'y a pas droit.**
  *
  * Le bouton vit dans `EnTeteEcran`, une pièce que onze écrans emploient — et
  * qu'une page hors du gabarit (un écran public par jeton, une page d'erreur)
@@ -51,7 +71,8 @@ export function FournisseurAssistant({ children }: { children: React.ReactNode }
  * pour un bouton d'agrément ; et une action serveur qui plante rend au patron un
  * identifiant opaque, jamais la cause (`HANDOVER.md`, piège 0 ter). Le bouton se
  * tait donc et disparaît, ce qui est le comportement juste : sans panneau pour
- * l'entendre, il n'aurait rien ouvert.
+ * l'entendre, il n'aurait rien ouvert. C'est exactement ce qu'on veut aussi
+ * pour un salarié : la pastille disparaît, sans rien griser ni expliquer.
  */
 export function useAssistant(): Assistant | null {
   return useContext(Contexte);

@@ -11,6 +11,7 @@ import { FournisseurAssistant } from "@/components/atlas/assistant-contexte";
 import GardeDocumentsLegaux from "@/components/atlas/GardeDocumentsLegaux";
 import BandeauBanc from "@/components/atlas/BandeauBanc";
 import { laVersionRapideSeConstruit } from "@/server/etat-banc";
+import { personneConnecteeEstProprietaire } from "@/server/autorisation";
 
 // **Plus aucune police n'est téléchargée depuis le 10 août 2026.** L'écran que
 // le patron a retenu était une maquette autonome : elle ne pouvait charger
@@ -155,6 +156,17 @@ async function charteDeLaPersonne(): Promise<Charte | null> {
   }
 }
 
+async function assistantOffert(): Promise<boolean> {
+  try {
+    return await personneConnecteeEstProprietaire();
+  } catch {
+    // Base injoignable : on n'offre pas le bouton. L'inverse — l'offrir par
+    // défaut — mènerait à un refus après coup, et un geste qui échoue coûte plus
+    // cher qu'un geste absent.
+    return false;
+  }
+}
+
 export default async function RootLayout({
   children,
 }: Readonly<{
@@ -197,6 +209,19 @@ export default async function RootLayout({
    */
   const charteChoisie = pageDuClient ? null : await charteDeLaPersonne();
 
+  /**
+   * **L'assistant n'est offert qu'au patron** (sa demande du 25 août 2026).
+   *
+   * Décidé ici, au serveur, comme la charte — et pour la même raison : un
+   * bouton posé puis retiré au navigateur se voit apparaître, et l'on aurait
+   * montré une seconde une porte fermée.
+   *
+   * **Muet en cas de doute.** Visiteur sans session, base injoignable : on
+   * n'offre pas le bouton. Le contraire — l'offrir par défaut — mènerait à un
+   * refus après coup, et un geste qui échoue coûte plus cher qu'un geste absent.
+   */
+  const assistantDisponible = pageDuClient ? false : await assistantOffert();
+
   return (
     // **Les variables sont posées sur `<html>`, pas sur `<body>`.**
     // `globals.css` les relit depuis `:root` — c'est-à-dire `<html>` — pour
@@ -226,7 +251,7 @@ export default async function RootLayout({
           // Il n'entoure QUE le cadre, sans en changer la hauteur : celle-ci
           // tient compte du bandeau du banc (`minHeight` ci-dessous), et un
           // fournisseur ne rend aucun élément.
-          <FournisseurAssistant>
+          <FournisseurAssistant disponible={assistantDisponible}>
             <div
               className="mx-auto flex max-w-md flex-col bg-paper"
               style={{ minHeight: banc ? "calc(100dvh - 40px)" : "100dvh" }}

@@ -9,6 +9,20 @@ sert.
 
 ---
 
+## L'ASSISTANT RÉCITE UN MODE D'EMPLOI ÉCRIT (25 août 2026)
+
+Avant d'y toucher :
+
+| | |
+|---|---|
+| **Les gestes vivent dans un fichier, pas dans le modèle** | `src/lib/mode-emploi.ts`. L'assistant les récite **tels quels** : ne pas lui laisser reformuler, ce serait une seconde version du mode d'emploi |
+| **Une fiche se PROUVE** | elle porte `source` (un fichier) et `preuves` (des morceaux de texte qui doivent s'y trouver). Vous changez un libellé d'écran ? `npx tsx scripts/test-mode-emploi.ts` vous dira quelle fiche vient de mentir |
+| **Rougir est le comportement voulu** | ne « réparez » pas une fiche en retirant sa preuve : corrigez le geste. Une fiche sans preuve n'est plus confrontable, et le contrôle l'interdit |
+| **La recherche doit savoir NE RIEN trouver** | deux mots communs minimum, un mot-clé plein minimum. Relâcher ces seuils fait répondre à des questions qui n'en sont pas, et l'on cesse alors de croire l'assistant |
+| **Le mode d'emploi passe EN TÊTE de la chaîne du fournisseur** | sinon « comment je supprime un client ? » repart dans la branche des suppressions et propose de modifier ses données. C'est le défaut qui a motivé l'ordre actuel de `src/server/ai/providers/llm/dev.ts` |
+| **Regarder l'écran, pas seulement le vert** | `npx tsx scripts/capture-assistant-mode-emploi.mts <dossier>` (serveur démarré). C'est lui qui a montré la réponse à trois gestes que douze tests verts ne voyaient pas |
+| **L'assistant est réservé au propriétaire** | le bouton disparaît, mais la barrière est dans les deux actions serveur. Ne pas la retirer « parce que le bouton n'est pas là » |
+
 ## PHOTOGRAPHIER UN DEVIS POUR EN REPRENDRE L'ALLURE (25 août 2026)
 
 Nouvelle brique, sur l'écran Réglages → Documents. Avant d'y toucher :

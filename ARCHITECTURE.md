@@ -15610,3 +15610,111 @@ redirection de port de son éditeur, `window.location.origin` vaut
 Sa capture le montrait en double : `RapportParti` porte le sien une fois le
 rapport figé, et celui de la tentative précédente restait affiché. **Deux fois
 la même phrase se lit comme un écran cassé**, et c'est un défaut à part entière.
+
+---
+
+## 178. L'assistant explique l'application — et il ne sert que le patron
+
+**Ses trois demandes du 25 août 2026**, dans un même message : *« j'aimerais que
+l'assistant qui se trouve dans l'application puisse expliquer chaque
+fonctionnalité de l'appli »* — avec son exemple, *« comment je fais pour
+supprimer un client en attente de rédaction de son devis sur la page chantier »*
+→ *« slide de droite à gauche puis appuie sur retire »* — ; *« qu'il soit en
+mesure d'aller chercher une ligne dans un devis de n'importe quel client et la
+poser sur un devis déjà ouvert »* ; et *« qu'il se comporte comme un vrai
+assistant au service de l'utilisateur principal seulement le principal »*.
+
+### Un mode d'emploi ÉCRIT, pas un modèle qui devine
+
+`src/lib/mode-emploi.ts` porte une soixantaine de fiches : l'écran, où il se
+trouve, ce qu'on cherche à faire, **le geste**, sa réserve, et les mots par
+lesquels il le demandera. L'outil `RechercherModeEmploi` y cherche ; le service
+impose de réciter le geste tel qu'il est écrit.
+
+**Pourquoi une liste, et pas le modèle seul.** Un modèle de langage qui n'a pas
+l'écran sous les yeux invente un geste *plausible* — « allez dans les réglages,
+puis Supprimer ». L'artisan le cherche cinq minutes, puis conclut que
+l'application est cassée. C'est la règle des prix, appliquée aux gestes : ce qui
+n'a pas de source ne se dit pas.
+
+**Et une fiche se PROUVE contre le code.** Chacune porte son fichier source et
+des `preuves` — des morceaux de texte qui doivent s'y trouver.
+`scripts/test-mode-emploi.ts` les confronte, et le contrôle sait échouer : il est
+retourné, dans la même suite, contre une fiche qui invente un bouton et contre
+une fiche dont le fichier a disparu. **Il a d'ailleurs rougi à son premier
+passage** — une fiche annonçait un bouton « Connecter » pour l'agenda, quand
+l'écran dit « Relier mon agenda Google ». Le geste était faux avant même d'avoir
+servi.
+
+**Le refus fait la moitié du travail.** `chercherFiches` rend un tableau **vide**
+plutôt qu'une fiche au hasard, et l'assistant dit alors qu'il ne connaît pas ce
+geste. Deux règles le tiennent : au moins un mot-clé plein, et **deux mots
+communs, pas un** — « quel temps fait-il ? » partageait « temps » avec la fiche
+de la durée d'un chantier, et sortait une réponse à une question qui n'en était
+pas une. Une réponse qui parle à tort s'apprend à être ignorée, et l'on perd le
+garde-fou entier.
+
+**Trois détails de la recherche, payés en essais :** les mots se comparent **par
+préfixe au-delà de quatre lettres** (il tape « facture », la fiche dit
+« facturer ») ; les trois sources de score **s'ajoutent** au lieu de s'exclure
+(sinon deux fiches à égalité se départageaient par ordre alphabétique — « comment
+on fait une facture » sortait la fiche des clients avant celle qui facture) ; et
+les mots vides sont écartés, sans quoi « pour », « un », « je » décident du
+classement.
+
+### UNE fiche à l'écran, et c'est la capture qui l'a dit
+
+La recherche rend jusqu'à trois fiches — pour que le modèle CHOISISSE, pas pour
+qu'il les énumère. La première version les enchaînait toutes : « comment je
+supprime un client ? » répondait le retrait, puis la création d'un chantier,
+puis la saisie du client. **Trois gestes pour une question, sur un téléphone**,
+alors que sa règle du 25 août dit l'inverse : *« mets le moins de mots possible
+sinon on se perd dans toutes ces lignes »*.
+
+**Aucune suite ne le voyait** — chacune vérifiait que le bon geste était là, et
+il l'était. C'est la capture (`scripts/capture-assistant-mode-emploi.mts`) qui
+l'a montré, la cinquième fois dans ce dépôt qu'un défaut sort d'une image et
+d'aucun test. Un contrôle garde la porte fermée depuis : il compte les titres de
+la réponse, et il rougit quand on lui remet les trois.
+
+### Le piège que cela a failli créer
+
+« Comment je fais pour supprimer un client ? » tombait dans la branche des
+suppressions du fournisseur : il allait lire les prestations du chantier et
+proposait d'en retirer une. **Il demandait un geste, on lui modifiait ses
+données.** La détection du mode d'emploi passe donc **en tête** de la chaîne du
+fournisseur, avant les suppressions et avant la préparation d'un devis ; un test
+garde la porte fermée.
+
+### Reprendre une ligne du devis d'un autre client
+
+`RechercherLignesDevis` cherche dans les devis de **toute l'entreprise**, par un
+mot du libellé et/ou par le nom du client — jamais sans l'un des deux : rendre
+trois cents lignes reviendrait à choisir au hasard.
+
+**Ce qui borne la recherche, c'est la RLS**, pas un `WHERE entreprise_id` écrit à
+la main : `withEntreprise` pose le contexte, et une société voisine ne remonte
+rien, silencieusement. Deux tests l'exigent, sous le rôle `atlas_app`, avec deux
+lignes homonymes à des prix différents dans deux entreprises.
+
+**Le montant ne voyage jamais.** La proposition `copier_ligne_devis` ne porte que
+`ligneOrigineId` ; le libellé et le prix sont relus en base au moment où il
+valide (`getLigneDevisPourCopie`). Un montant qui traverse le modèle puis le
+navigateur est un montant qu'on peut changer en chemin, sur un document qui part
+chez un client — c'est le même remède que pour un tarif, et pour la même raison.
+Un test vérifie que `donnees` ne contient **que** cette clé.
+
+### « Seulement le principal »
+
+Ce n'est pas une préférence d'usage, c'est un cloisonnement. L'assistant lit les
+tarifs, les marges, l'historique des prix — et il sait désormais chercher dans le
+devis de n'importe quel client. Ouvert à un salarié, il rendrait par la
+conversation exactement ce que les réglages lui refusent écran par écran (§ la
+liste des rubriques, sa règle du 13 août 2026).
+
+**Trois barrières, et la première ne compte pas.** Le bouton disparaît de
+l'en-tête (décidé au serveur, dans le gabarit racine : posé puis retiré au
+navigateur, on l'aurait vu apparaître une seconde). Mais un écran ne protège
+rien : `poserQuestionAction` **et** `appliquerPropositionsAction` relisent le
+rôle en base à chaque appel. Sans la seconde, il aurait suffi de rejouer l'action
+avec les identifiants de propositions préparées pour le patron.
