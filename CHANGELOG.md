@@ -105,6 +105,29 @@ avant de vérifier qu'elle avait survécu à l'assistant. Sous la batterie, l'ac
 serveur dépasse ce délai : l'assistant était accusé d'un effacement qui n'avait
 pas eu lieu. Elle attend maintenant que la requête soit partie — et son message
 nomme le coupable, au lieu d'un « 0 == 1 » qui envoyait chercher partout.
+### Deux phrases retirées, et un seul contrôle pour toutes celles à venir
+
+**Ses deux demandes du 25 août :** *« supprime la phrase "aucun chantier pour
+l'instant" »*, puis *« supprime la phrase en gris "tout s'enregistre au fur et à
+mesure" »* — celle-ci sous l'aperçu du PDF, sur l'écran du devis.
+
+La seconde rassurait sur un doute qu'il n'a plus : il connaît son outil, et rien
+ne part effectivement avant qu'il ne le décide. Une phrase qui répond à une
+question qu'on ne se pose plus n'informe plus, elle occupe.
+
+**Un seul contrôle, et non un fichier par phrase.** Il en a fait retirer deux en
+deux jours et il en fera retirer d'autres : `scripts/test-phrases-retirees.ts`
+porte une ligne par retrait — sa demande à la lettre, la date, le fichier — et le
+tableau est la documentation. `test-accueil-liste-vide.ts`, écrit la veille pour
+la première, y est absorbé.
+
+**Il fixe aussi ce qui doit RESTER**, parce que c'est là que se cache le vrai
+risque : les bandeaux sur l'accueil vide, et « Aperçu du PDF » sur l'écran du
+devis — le lien vivait juste au-dessus de la phrase retirée. Vu rouge contre le
+retour des deux phrases.
+
+---
+
 ### L'accueil vide ne dit plus qu'il est vide
 
 **Sa demande, capture à l'appui :** *« supprime la phrase "aucun chantier pour
@@ -124,7 +147,7 @@ aucun chantier — est hors de portée des suites navigateur, qui partagent le
 compte de démonstration et en portent toujours. Une suite qui « vérifierait »
 l'absence sur un accueil plein serait verte sans avoir rien mesuré. C'est
 grossier, et c'est plus honnête qu'un vert qui ne prouve rien
-(`scripts/test-accueil-liste-vide.ts`, vu rouge contre le retour de la phrase).
+(`scripts/test-phrases-retirees.ts`, vu rouge contre le retour de la phrase).
 
 ---
 

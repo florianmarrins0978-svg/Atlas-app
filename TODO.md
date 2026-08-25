@@ -367,11 +367,22 @@ bruit — une demi-heure par lot, et le risque inverse : prendre un VRAI rouge p
 du bruit. Un contrôle qui parle à tort s'apprend à être ignoré, et l'on perd le
 garde-fou sans s'en apercevoir.
 
-**Ce qui est écarté, faute de preuve :** « c'est un flottement », dit sans
-mesure. Les symptômes vus jusqu'ici sont des délais dépassés
-(`locator.waitFor: Timeout 30000ms`) et des écrans qui n'ont pas fini de se
-composer — cela ressemble à une machine saturée, pas à un défaut de logique.
-Deux pistes à éprouver, dans cet ordre :
+**CORRECTION DU 25 AOÛT AU SOIR, ET ELLE CHANGE LE DIAGNOSTIC.** Une partie de
+ces rouges vient d'une faute de ma part, pas de la batterie : **je lançais des
+suites à côté pendant qu'une batterie tournait**, et les deux partagent la MÊME
+base d'essai. Chacune appelle `nettoyerBase()` et vide les tables de l'autre en
+plein milieu — d'où des écrans sans données, des attentes qui expirent, et des
+suites qui passent au vert dès qu'on les rejoue seules.
+
+**La règle qui en sort, et elle n'était écrite nulle part : une seule chose à la
+fois sur la base d'essai.** Pas de suite lancée « pour vérifier vite » pendant
+qu'une batterie tourne ; pas deux batteries. Le conteneur a une seule base, et
+elle n'est pas faite pour deux lecteurs qui la vident.
+
+**Ce qui reste à éprouver**, une fois cette faute écartée : les rouges tombés
+alors que RIEN d'autre ne tournait — s'il en reste. Les symptômes étaient des
+délais dépassés (`locator.waitFor: Timeout 30000ms`), ce qui ressemble à une
+machine saturée. Deux pistes, dans cet ordre :
 
 1. **le serveur de développement**, qui recompile chaque route à la demande : au
    bout de cent suites, il a compilé toute l'application et travaille dans un

@@ -781,9 +781,6 @@ export default function DevisCompletClient(props: Props) {
         >
           Aperçu du PDF
         </a>
-        <p className="pb-1 text-center text-[12px]" style={{ color: colors.muted }}>
-          Tout s&apos;enregistre au fur et à mesure. Rien ne part avant que vous ne le décidiez.
-        </p>
       </div>
       </article>
 
