@@ -51,10 +51,28 @@ async function main() {
   assert.ok(await page.locator("li", { hasText: "Prestations" }).isVisible(), "La source 'Prestations' doit être affichée");
 
   // --- Aucune mutation : la prestation existante est toujours là après l'échange ---
-  await page.goto(`${chantierUrl}/informations`, { waitUntil: "networkidle" });
+  //
+  // **`networkidle` ne suffisait pas, et il a fallu deux passages pour le
+  // voir.** Une première correction, le 25 août 2026, a remplacé un délai de
+  // trois cents millisecondes par une attente de réseau au calme (voir plus
+  // haut) : la suite a rougi de nouveau à la batterie suivante. Le réseau se
+  // tait dès que l'action serveur est PARTIE ; rien ne dit qu'elle a fini
+  // d'écrire, ni que l'écran d'après la relira.
+  //
+  // On rouvre donc l'écran jusqu'à ce que la prestation s'y montre, avec une
+  // attente qui monte. **Le contrôle ne s'affaiblit pas** : si elle n'y est
+  // toujours pas au bout de sept secondes, il rougit comme avant — et une
+  // prestation vraiment effacée par l'assistant ne reviendrait jamais.
+  let combien = 0;
+  for (const essai of [0, 1, 2, 3]) {
+    if (essai > 0) await page.waitForTimeout(essai * 600);
+    await page.goto(`${chantierUrl}/informations`, { waitUntil: "networkidle" });
+    combien = await page.locator('input[value="Poser la faïence murale"]').count();
+    if (combien === 1) break;
+  }
   // **Le message nomme le coupable** : « 0 == 1 » envoyait chercher partout.
   assert.equal(
-    await page.locator('input[value="Poser la faïence murale"]').count(),
+    combien,
     1,
     "la prestation a disparu après l'échange avec l'assistant — ou elle n'a jamais été enregistrée"
   );

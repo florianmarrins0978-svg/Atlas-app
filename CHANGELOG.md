@@ -193,6 +193,22 @@ Il n'y perd rien : il exige toujours 15,00 exactement, et rend le contenu réel
 de la ligne quand elle ne vient pas — un vrai désaccord entre l'écran et la base
 rougirait encore.
 
+### Et un neuvième, qui avait déjà été « réparé » le matin même
+
+`test-ia-02-e2e` vérifie qu'un échange avec l'assistant n'efface aucune
+prestation. Une première correction du 25 août avait remplacé un délai de trois
+cents millisecondes par une attente de réseau au calme. **La suite a rougi de
+nouveau à la batterie suivante**, et la leçon vaut d'être écrite : le réseau se
+tait dès que l'action serveur est PARTIE — rien ne dit qu'elle a fini d'écrire,
+ni que l'écran d'après la relira.
+
+Le contrôle rouvre maintenant l'écran jusqu'à ce que la prestation s'y montre.
+Il ne s'affaiblit pas : passé sept secondes, il rougit comme avant, et une
+prestation vraiment effacée par l'assistant ne reviendrait jamais.
+
+**Attendre « le réseau » n'est pas attendre « le résultat ».** C'est la même
+faute que le délai fixe, dans une robe plus convaincante.
+
 
 ---
 
