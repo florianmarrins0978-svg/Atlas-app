@@ -71,7 +71,7 @@ Son client lisait « Connexion au serveur impossible » : le lien portait
 | `ATLAS_URL_PUBLIQUE` pour un mandataire muet | **fait**, documentée dans `.env.example` |
 | Les quatre copies du calcul d'adresse réunies | **fait** (`originePublique`) |
 | Le garde-fou confronté à l'état dégradé | **fait** — la suite de la fiche rougit sans adresse déclarée |
-| Le même refus sur le devis et la facture | **NON** — leur adresse est corrigée, mais aucun refus n'y est posé |
+| Le même refus sur le devis et la facture | **fait** — les cinq gestes d'envoi le portent |
 
 Le détail et les partis pris : `ARCHITECTURE.md` §169.
 

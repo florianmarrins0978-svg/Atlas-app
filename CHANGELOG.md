@@ -491,6 +491,55 @@ c'est la sortie de secours qu'il avait demandée le 3 août 2026. Il reste.
 
 `ARCHITECTURE.md` §172.
 
+### Et un huitième, trouvé en parallèle : la remise lue avant d'être écrite
+
+Même famille que les sept ci-dessus, et découvert par une autre session le même
+jour — les deux récits se rejoignent, celui-ci ne garde que ce que l'autre ne
+porte pas.
+
+Le contrôle de `test-reduction-devis-e2e` tapait « 15 », attendait 900 ms
+choisies au doigt mouillé, puis lisait la base. Sous cent dix suites,
+l'enregistrement n'était pas retombé : la base portait encore « 5.00 » et le
+contrôle accusait le produit d'écrire un chiffre faux sur un devis.
+
+Il relit désormais jusqu'à ce que la valeur vienne, avec une attente qui monte.
+Il n'y perd rien : il exige toujours 15,00 exactement, et rend le contenu réel
+de la ligne quand elle ne vient pas — un vrai désaccord entre l'écran et la base
+rougirait encore.
+
+### Et un neuvième, qui avait déjà été « réparé » le matin même
+
+`test-ia-02-e2e` vérifie qu'un échange avec l'assistant n'efface aucune
+prestation. Une première correction du 25 août avait remplacé un délai de trois
+cents millisecondes par une attente de réseau au calme. **La suite a rougi de
+nouveau à la batterie suivante**, et la leçon vaut d'être écrite : le réseau se
+tait dès que l'action serveur est PARTIE — rien ne dit qu'elle a fini d'écrire,
+ni que l'écran d'après la relira.
+
+Le contrôle rouvre maintenant l'écran jusqu'à ce que la prestation s'y montre.
+Il ne s'affaiblit pas : passé sept secondes, il rougit comme avant, et une
+prestation vraiment effacée par l'assistant ne reviendrait jamais.
+
+**Et ce n'était toujours pas la bonne cause.** Deux corrections ont échoué avant
+qu'on regarde au bon endroit : attendre le réseau, puis relire l'écran quatre
+fois. Aucune ne pouvait marcher — **la prestation n'avait jamais été écrite**.
+
+Le décor la posait ainsi : appuyer sur « + Ajouter une prestation », patienter
+300 ms, puis écrire dans « le premier champ d'un formulaire ». Sous la batterie,
+la ligne neuve n'est pas encore rendue : le texte partait dans le champ d'à
+côté. Ce champ ne porte ni étiquette ni marque, son seul repère est sa place —
+on attend donc que le NOMBRE de champs augmente, ce qui est la seule chose qui
+dise que la ligne existe.
+
+**Un décor qui échoue doit s'accuser lui-même.** Le message nommait l'assistant
+et l'accusait d'effacer une prestation, sur un code parfaitement sain ; il y a
+maintenant une assertion distincte, avant l'échange, qui dit que c'est la suite
+qui n'a pas su écrire. Trois batteries ont été payées à cette confusion.
+
+**Attendre « le réseau » n'est pas attendre « le résultat ».** C'est la même
+faute que le délai fixe, dans une robe plus convaincante.
+
+
 ---
 
 ## 2026-08-24
@@ -562,6 +611,14 @@ copies de ce calcul** — devis parti, devis complet, facture, fiche de chantier
 n'en font plus qu'une. Le garde-fou a été vu rouge : la suite de la fiche,
 rejouée sans adresse déclarée, tombe exactement là où son client est tombé.
 Détail : `ARCHITECTURE.md` §169.
+
+**Et le devis et la facture partaient par le même mauvais chemin** — il n'avait
+signalé que la fiche. Le refus est donc posé sur les cinq gestes qui envoient un
+lien à un client. Le pire d'entre eux était l'envoi qui ouvre la messagerie dans
+la foulée : le message s'ouvrait tout prêt, avec l'adresse d'une machine dedans,
+et rien n'invitait à se méfier avant d'appuyer sur « Envoyer ». Rien n'est
+défait pour autant — un devis envoyé reste envoyé, une facture arrêtée reste
+arrêtée : c'est le message mort qu'on barre, pas son travail.
 
 
 ### La fiche en cours se supprime, et l'endroit où elle se compose se retrouve

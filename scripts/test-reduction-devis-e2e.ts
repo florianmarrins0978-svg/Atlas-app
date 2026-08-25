@@ -156,13 +156,37 @@ async function main() {
   });
 
   await cas("la base porte ce que l'écran affiche", async () => {
-    const { rows } = await pool.query(
-      `SELECT reduction_pourcent, reduction_montant, total_ht, total_tva, total_ttc
-         FROM devis WHERE chantier_id = $1 ORDER BY numero_version DESC LIMIT 1`,
-      [chantierId]
-    );
+    // **ON ATTEND L'ÉTAT, JAMAIS UN DÉLAI FIXE — corrigé le 25 août 2026.**
+    //
+    // L'écriture suit la saisie de loin : le cas précédent tape « 15 », attend
+    // 900 ms choisies au doigt mouillé, et celui-ci lit la base. Jouée seule, la
+    // suite passe ; sous cent dix suites, l'enregistrement n'était pas retombé
+    // et la base portait encore « 5.00 » — le contrôle accusait alors le produit
+    // d'écrire un chiffre faux sur un devis, ce qui est le pire des rouges
+    // (`AGENTS.md`).
+    //
+    // **Le contrôle ne s'affaiblit pas pour autant** : il exige toujours la
+    // valeur exacte, et il dit ce que la base portait quand elle ne vient pas.
+    // Un vrai désaccord entre l'écran et la base rougirait donc encore — c'est
+    // la seule chose que ce cas ait à défendre.
+    let rows: Record<string, string>[] = [];
+    for (const essai of [0, 1, 2, 3, 4, 5]) {
+      if (essai > 0) await page.waitForTimeout(essai * 700);
+      rows = (
+        await pool.query(
+          `SELECT reduction_pourcent, reduction_montant, total_ht, total_tva, total_ttc
+             FROM devis WHERE chantier_id = $1 ORDER BY numero_version DESC LIMIT 1`,
+          [chantierId]
+        )
+      ).rows;
+      if (rows[0]?.reduction_pourcent === "15.00") break;
+    }
     assert.equal(rows.length, 1, "aucun devis en base");
-    assert.equal(rows[0].reduction_pourcent, "15.00");
+    assert.equal(
+      rows[0].reduction_pourcent,
+      "15.00",
+      `la base ne porte pas les 15 % affichés, même après attente : ${JSON.stringify(rows[0])}`
+    );
     assert.equal(rows[0].reduction_montant, "130.50");
     assert.equal(rows[0].total_ht, "739.50", "le HT en base n'est pas net : le PDF partirait faux");
     assert.equal(rows[0].total_tva, "147.90");
