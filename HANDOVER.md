@@ -2164,6 +2164,28 @@ planches) : la batterie devrait nettoyer ces dossiers avant l'étape
 « Construction » de `scripts/verifier-avant-livraison.ts`. Sans quoi le piège
 reviendra à la prochaine page supprimée.
 
+## ⚠ LANCER UNE SUITE NAVIGATEUR À LA MAIN : DEUX PIÈGES QUI FONT ACCUSER LE CODE
+
+Posé le 25 août 2026, après une heure perdue à croire `main` cassé.
+
+**1. `ATLAS_URL_PUBLIQUE` n'est PAS optionnelle.** `run-e2e-tests.ts` la pose
+lui-même (`https://atlas-suites.test`) sur le serveur qu'il démarre. Lancée
+contre un `npm run dev` ordinaire, une suite d'envoi voit une adresse LOCALE :
+Atlas refuse alors d'ouvrir la messagerie — à juste titre, le lien ne mènerait
+nulle part (`ARCHITECTURE.md` §169) — et renvoie vers l'écran du devis parti au
+lieu de l'accueil. `test-envoi-client-e2e` rendait **5 sur 11**, et le produit
+n'y était pour rien. Sur le banc du patron, dont l'adresse est publique, tout
+fonctionne.
+
+```bash
+ATLAS_URL_PUBLIQUE=https://atlas-suites.test npm run dev   # pour jouer une suite à la main
+```
+
+**2. Le PREMIER passage sur un écran compile.** Un serveur qui vient de démarrer
+peut dépasser le délai d'une suite sur la seule compilation de la route. La même
+suite, rejouée sur le serveur chaud, passe. **Avant d'accuser son propre lot :
+rejouer.** J'ai bien failli défaire un changement juste pour cette raison.
+
 ## Ce qui vient d'être terminé
 
 **L'EN-TÊTE DU DEVIS, DEUX LOTS DE SUITE (25 août).**

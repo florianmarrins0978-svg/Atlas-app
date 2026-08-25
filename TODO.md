@@ -733,6 +733,19 @@ avant toute autre hypothèse.
 l'enregistrement plutôt qu'un délai — la même leçon que le `networkidle` du
 15 août. Il reste à l'appliquer aux quatre.
 
+## ⚠ `CHANGELOG.md` porte DEUX en-têtes « 2026-08-24 » (25 août 2026)
+
+`CLAUDE.md` §C l'interdit nommément : *« une entrée neuve se glisse sous
+l'en-tête du jour qui existe déjà ; on n'en crée jamais un second »*. La règle
+existe parce que trois en-têtes du 23 août avaient déjà dû être réunies à la
+main.
+
+**Non corrigé ici, et c'est délibéré** : réunir les deux sections déplacerait
+quelques centaines de lignes écrites par une autre session, peut-être encore
+ouverte. Le faire sous ses doigts lui vaudrait un conflit sur tout le fichier.
+**À réunir par la prochaine session qui trouvera le champ libre**, ou par
+l'auteur de la seconde en-tête.
+
 ## 🔴 `verifier-maquette-message-et-allure.mjs` est ROUGE sur `main` (24 août 2026)
 
 **Constaté en jouant `npm run verifier:maquette` sur un `main` fraîchement
