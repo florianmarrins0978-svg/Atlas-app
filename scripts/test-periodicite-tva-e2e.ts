@@ -115,7 +115,11 @@ async function main() {
 
   await test("Le calendrier montre quatre trimestres, pas douze mois", async () => {
     await page.getByRole("button", { name: "Choisir une période" }).click();
-    await page.waitForSelector("text=Revenir à la période en cours", { timeout: 10_000 });
+    // **Trente secondes, et non dix.** Sous la batterie complète, l'ouverture de
+    // cette feuille dépasse dix secondes, et le cas suivant — qui compte sur
+    // elle — tombait alors à sa suite. Vert joué seul, rouge en batterie : c'est
+    // la machine qu'on mesurait, pas la règle (25 août 2026).
+    await page.waitForSelector("text=Revenir à la période en cours", { timeout: 30_000 });
     // Le nom accessible d'un pavé de trimestre porte AUSSI ses mois
     // (« 1er trimestre janv. – mars ») : c'est précisément ce qu'on a voulu y
     // mettre, « 3e trimestre » ne disant pas à qui cherche une facture d'août
@@ -141,7 +145,11 @@ async function main() {
     const titre = await titreTva(page);
     assert.ok(!/trimestre/i.test(titre), `le titre dit encore « ${titre} »`);
     await page.getByRole("button", { name: "Choisir une période" }).click();
-    await page.waitForSelector("text=Revenir à la période en cours", { timeout: 10_000 });
+    // **Trente secondes, et non dix.** Sous la batterie complète, l'ouverture de
+    // cette feuille dépasse dix secondes, et le cas suivant — qui compte sur
+    // elle — tombait alors à sa suite. Vert joué seul, rouge en batterie : c'est
+    // la machine qu'on mesurait, pas la règle (25 août 2026).
+    await page.waitForSelector("text=Revenir à la période en cours", { timeout: 30_000 });
     assert.equal(await page.getByRole("button", { name: "Décembre", exact: true }).count(), 1);
     assert.equal(await page.getByRole("button", { name: /trimestre/ }).count(), 0);
   });
