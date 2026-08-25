@@ -24,10 +24,17 @@ export async function GET(req: Request, { params }: { params: Promise<{ jeton: s
     return NextResponse.redirect(new URL(`/factures/${encodeURIComponent(jeton)}`, req.url), 303);
   }
 
+  // **`?telecharger=1` fait RANGER le fichier au lieu de l'ouvrir** — sa demande
+  // du 25 août 2026 : « un bouton pour que le client puisse télécharger sa
+  // facture ». C'est l'en-tête qui décide, pas seulement l'attribut `download`
+  // du lien : iOS l'ignore souvent, et c'est alors `Content-Disposition` qui
+  // tranche (c'est ce que fait déjà l'écran du patron). « Voir » reste `inline`.
+  const telecharger = new URL(req.url).searchParams.get("telecharger") === "1";
+
   return new NextResponse(new Uint8Array(fichier.octets), {
     headers: {
       "Content-Type": "application/pdf",
-      "Content-Disposition": `inline; filename="${fichier.nom}"`,
+      "Content-Disposition": `${telecharger ? "attachment" : "inline"}; filename="${fichier.nom}"`,
       // Une facture n'a rien à faire dans un cache partagé ni dans un index.
       "Cache-Control": "no-store",
       "X-Robots-Tag": "noindex, nofollow",

@@ -9,6 +9,24 @@ Format : le plus récent en tête.
 
 ## 2026-08-25
 
+### La facture du client : aux couleurs de l'app, et un bouton pour la garder
+
+*« Mets cette page aux couleurs de l'application »* et *« il faut rajouter un
+bouton pour que le client puisse télécharger sa facture »*, sur la page publique
+que le client ouvre depuis son lien.
+
+Elle portait des couleurs écrites en dur — dont une terre cuite (`#8C4A2F`)
+abandonnée le 3 août — qui n'étaient plus celles du produit. Elle passe par les
+jetons de la charte (`design-tokens`), qui retombent sur la charte d'Arborea par
+défaut faute de session : c'est bien « la couleur de l'application », et plus
+aucune couleur n'est écrite en clair (`CLAUDE.md` §3).
+
+Et le client peut désormais **garder** sa facture : à côté de « Voir la facture en
+PDF » (qui l'ouvre), un bouton « Télécharger ma facture » la range. C'est l'en-tête
+`Content-Disposition: attachment` du `?telecharger=1` qui décide — l'attribut
+`download` du lien ne suffit pas, iOS l'ignore —, le même mécanisme que l'écran du
+patron.
+
 ### Le message : les phrases par défaut, modifiables — les mots en doré verrouillés
 
 *« Le message au client doit comporter les phrases par défaut et l'utilisateur les
