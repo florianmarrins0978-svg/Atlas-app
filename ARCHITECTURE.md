@@ -14602,3 +14602,73 @@ Le **croquis d'arrosage** envoie la photo à un fournisseur d'IA : il bornait la
 taille et rien d'autre — ni type, ni cadence. Il porte désormais les deux, avec
 le seuil du diagnostic végétal, parce que ce seuil-là ne protège pas un service :
 **il borne une facture**.
+
+---
+
+## 166. Toucher un jour, c'est le proposer — le geste en deux temps est retiré
+
+**Sa demande du 25 août 2026**, capture à l'appui, sur l'écran d'envoi au
+client : *« je dois pouvoir sélectionner les jours juste en les touchant, pas
+besoin de cliquer sur proposer »*.
+
+### Ce que ça défait, et pourquoi ce n'est pas un retour en arrière
+
+Le 22 août, les deux gestes avaient été **séparés** à sa demande (planche 91,
+§159) : toucher une case OUVRAIT la journée — qui est déjà là, à quelle
+demi-journée, avec quelle équipe —, et un bouton « Proposer ce jour » engageait
+la date. La raison tenait : *« un jour consulté par erreur partait chez
+quelqu'un »*.
+
+**Ce qu'il a demandé le 25 ne remet pas le calendrier nu.** La fiche reste, et
+c'est elle qui portait toute la valeur du 22 août : elle montre l'occupation de
+la journée, elle dit ce que le serveur en pense. Ce qui disparaît, c'est le
+**second appui** — un geste par date, sur chaque devis, pour une confirmation
+que la case elle-même donne déjà en s'allumant.
+
+| | Avant le 25 août | Depuis |
+|---|---|---|
+| toucher une case | ouvre la fiche | ouvre la fiche **et** propose la date |
+| retoucher la même | referme la fiche | **retire** la date, la fiche reste |
+| « Proposer ce jour » | engage la date | n'existe plus |
+| un jour refusé | bouton éteint | la case ne s'allume pas, la fiche dit pourquoi |
+
+Le risque du 22 août — proposer sans avoir voulu — ne disparaît pas, il change
+de coût : **il se défait du même doigt**, et la case s'éteint sous les yeux.
+C'est ce que le bouton achetait cher.
+
+### Trois partis pris, dans `EnvoiAuClient.toucherLeJour`
+
+1. **Le retrait ne se fait pas attendre.** Le jour est déjà passé par le
+   serveur pour entrer ; le redemander pour sortir serait attendre pour rien —
+   et une case qui met une seconde à s'éteindre se retouche, donc se remet.
+2. **L'ajout, si.** Le calendrier ne connaît que la fenêtre proche ; au-delà,
+   seul `verifierJourPropose` sait si la journée tient. Proposer un jour que
+   l'envoi refuserait ensuite coûte un aller-retour au client. La case ne
+   s'allume donc qu'après le verdict.
+3. **Un verdict en retard ne retient plus rien.** Chercher deux dates, c'est
+   toucher deux cases coup sur coup ; sur un réseau de chantier, la réponse de
+   la première reviendrait cocher un jour qu'il a quitté. `dernierTouche` — une
+   `ref`, pas un état : la fonction qui attend le serveur lirait sinon la
+   valeur figée au moment de son appel — jette tout verdict périmé.
+
+### Ce qui reste sur la fiche
+
+Le bouton est remplacé par un **mot**, `proposé`, et ce n'est pas décoratif :
+la phrase de gauche appartient au serveur et cède la place à un avertissement
+dès qu'il y en a un (« ce jour est complet »). Sans ce mot, un jour à la fois
+proposé et signalé complet ne se lisait plus que par la teinte de sa case.
+
+### Ce que les contrôles éprouvent maintenant
+
+Trois suites navigateur appuyaient sur `[data-atlas="retenir-le-jour"]`, et
+deux d'entre elles **refermaient la fiche par un second appui sur la case** —
+ce geste-là retire aujourd'hui la date qu'on vient de poser. Elles visent donc
+la règle et non le widget (`CLAUDE.md` §5 bis) : la case porte-t-elle
+`data-etat="retenu"` ? Un jour trop proche ne l'obtient pas, **et la fiche dit
+pourquoi** — une case qui ne s'allume pas sans un mot se lit comme une panne.
+
+Le contrôle de la planche (`verifier-maquette-choisir-la-date.mjs`) tolérait
+l'absence du bouton (`if (await bouton.count())`) : il serait resté vert sur une
+planche où toucher un jour ne fait plus rien. Il exige désormais l'inverse — pas
+de bouton, et un jour proposé au premier appui —, et il a été **vu rouge** sur
+la planche d'avant.

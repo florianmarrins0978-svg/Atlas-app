@@ -71,8 +71,13 @@ async function main() {
   // sur sa demande (planche 91), **toutes les cases restent touchables** :
   // *« un jour complet reste touchable — c'est justement celui sur lequel vous
   // voulez regarder avant de décider »*. Le refus a donc changé de place : il
-  // n'éteint plus la case, il s'écrit sous elle, et c'est « Proposer ce jour »
-  // qui reste hors d'atteinte.
+  // n'éteint plus la case, il s'écrit sous elle.
+  //
+  // **Et depuis le 25 août, ce qu'on éprouve est la RÈGLE, plus le bouton.**
+  // Toucher une case la propose désormais — le bouton n'existe plus, et un
+  // contrôle qui l'exigeait réclamerait ce que le patron a fait retirer
+  // (`CLAUDE.md` §5 bis). Ce qu'il faut prouver n'a pas bougé : un jour trop
+  // proche ne part pas chez le client, quoi que touche le doigt.
   const demain = versJourIso(ajouterJours(aujourdHui, 1));
   const caseDemain = page.locator(`[data-jour="${demain}"]`);
   if ((await caseDemain.count()) > 0) {
@@ -84,20 +89,21 @@ async function main() {
       undefined,
       { timeout: 30_000 }
     );
-    // **Le bouton existe toujours, week-end compris** — sa règle du 23 août
-    // 2026. Ce contrôle-ci ne porte pas sur le week-end mais sur le DÉLAI
-    // MINIMAL : demain est trop proche, quel que soit le jour de la semaine.
-    // Le repli « la fiche dit Jamais proposé » n'a donc plus lieu d'être, et il
-    // aurait rendu ce contrôle vert sur un samedi sans rien prouver du délai.
-    const bouton = page.locator('[data-atlas="retenir-le-jour"]');
-    assert.equal(await bouton.count(), 1, "la fiche du jour n'offre pas son bouton");
-    assert.ok(
-      await bouton.isDisabled(),
-      `Le calendrier laisse PROPOSER ${demain} (délai minimal : ${DELAI_MINIMAL_JOURS} jours).`
+    // Ce contrôle-ci ne porte pas sur le week-end mais sur le DÉLAI MINIMAL :
+    // demain est trop proche, quel que soit le jour de la semaine.
+    assert.equal(
+      await page.locator(`[data-jour="${demain}"][data-etat="retenu"]`).count(),
+      0,
+      `Le calendrier a PROPOSÉ ${demain} au client (délai minimal : ${DELAI_MINIMAL_JOURS} jours).`
     );
-    // On referme, pour repartir d'un écran propre.
-    await caseDemain.first().click();
-    await page.waitForTimeout(200);
+    // **Et il doit DIRE pourquoi.** Une case qui ne s'allume pas, sans un mot,
+    // se lit comme une panne : c'est le défaut que la planche 91 a corrigé, et
+    // il reviendrait si l'écran se contentait de ne rien faire.
+    const dit = await page.locator('[data-atlas="verdict-du-jour"]').innerText();
+    assert.ok(
+      dit.trim().length > 0 && !/Vérification/.test(dit),
+      `La fiche du ${demain} ne dit pas pourquoi il est refusé. Lue : « ${dit.trim()} »`
+    );
   }
 
   // --- 2. Une date à six mois est acceptée, et elle se voit ----------------
@@ -121,8 +127,7 @@ async function main() {
   }
   const cible = page.locator(`[data-jour="${dansSixMois}"]`);
   assert.equal(await cible.count(), 1, `${dansSixMois} reste introuvable dans le calendrier.`);
-  // **Regarder, puis proposer** — les deux gestes de sa planche 91 : le premier
-  // ouvre la journée pour voir qui y est, le second seul engage la date.
+  // **Un seul geste depuis le 25 août 2026** : la case s'ouvre ET s'engage.
   await cible.click();
   await page.waitForSelector('[data-atlas="journee-regardee"]', { timeout: 30_000 });
   await page.waitForFunction(
@@ -130,9 +135,12 @@ async function main() {
     undefined,
     { timeout: 60_000 }
   );
-  const proposer = page.locator('[data-atlas="retenir-le-jour"]');
-  assert.ok(await proposer.isEnabled(), `${dansSixMois} est refusé alors qu'il est libre.`);
-  await proposer.click();
+  await page
+    .locator(`[data-jour="${dansSixMois}"][data-etat="retenu"]`)
+    .waitFor({ state: "visible", timeout: 20_000 })
+    .catch(() => {
+      throw new Error(`${dansSixMois} n'est pas proposé alors qu'il est libre.`);
+    });
   console.log("  ✓ une autre date se choisit, d'après-demain à dix-huit mois");
   await page.waitForTimeout(2500);
 

@@ -4,8 +4,21 @@
 vous ne savez rien de ce qui précède — c'est exactement le cas de figure qu'il
 sert.
 
-**Point de reprise :** 2026-08-24 · `main`
+**Point de reprise :** 2026-08-25 · `main`
 (l'historique fait foi : `git log --oneline -20`)
+
+---
+
+## LE CALENDRIER D'ENVOI : TOUCHER, C'EST PROPOSER (25 août 2026)
+
+Sa demande — *« je dois pouvoir sélectionner les jours juste en les touchant,
+pas besoin de cliquer sur proposer »* — a retiré « Proposer ce jour » de la
+fiche du jour, sur l'écran d'envoi au client.
+
+**Le piège si vous touchez à ces suites :** deux d'entre elles refermaient la
+fiche par un SECOND appui sur la même case. Ce geste retire aujourd'hui la date
+qu'on vient de poser — une suite qui le garde compte une date sur deux, et
+accuse le code. Détail : `ARCHITECTURE.md` §166.
 
 ---
 

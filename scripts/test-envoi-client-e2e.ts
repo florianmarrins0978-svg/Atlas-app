@@ -188,12 +188,15 @@ async function main() {
   });
 
   /**
-   * Retenir un jour au calendrier — le geste complet depuis la planche 91.
+   * Retenir un jour au calendrier — un seul geste depuis le 25 août 2026.
    *
-   * **Toucher une case ne retient plus rien** : elle OUVRE la fiche du jour,
-   * pour qu'il voie ce qui s'y trouve avant de décider. C'est « Proposer ce
-   * jour » qui retient. Écrit une fois ici : deux copies de ce geste
-   * finiraient par diverger (`CLAUDE.md` §3).
+   * *« Je dois pouvoir sélectionner les jours juste en les touchant, pas besoin
+   * de cliquer sur proposer. »* Toucher la case OUVRE la fiche — il voit qui
+   * est déjà là — et engage la date du même doigt. Écrit une fois ici : deux
+   * copies de ce geste finiraient par diverger (`CLAUDE.md` §3).
+   *
+   * **On n'appuie plus une seconde fois pour refermer** : ce second appui
+   * retirerait la date qu'on vient de poser.
    */
   async function retenirAuCalendrier(page: Page, jour: string) {
     await page.locator(`[data-jour="${jour}"]`).click();
@@ -201,12 +204,12 @@ async function main() {
       .locator("text=Vérification de votre planning…")
       .waitFor({ state: "hidden", timeout: 20_000 })
       .catch(() => undefined);
-    const bouton = page.locator('[data-atlas="retenir-le-jour"]');
-    await bouton.waitFor({ state: "visible", timeout: 20_000 });
-    await bouton.click();
-    // On referme la fiche : la suivante s'ouvrira sur un écran propre.
-    await page.locator(`[data-jour="${jour}"]`).click();
-    await page.waitForTimeout(250);
+    // La case se peint quand le serveur a dit oui : l'attendre vaut mieux qu'un
+    // délai, et rougir ici désigne le bon coupable — le jour a été refusé.
+    await page
+      .locator(`[data-jour="${jour}"][data-etat="retenu"]`)
+      .waitFor({ state: "visible", timeout: 20_000 });
+    await page.waitForTimeout(150);
   }
 
   await test("le patron ne propose jamais plus de deux dates", async () => {
