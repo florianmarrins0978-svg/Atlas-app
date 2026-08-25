@@ -25,7 +25,6 @@ import assert from "node:assert/strict";
 import { Pool } from "pg";
 import { lancerNavigateur } from "./e2e-browser";
 import { creerPuisFiche } from "./_creer-chantier-e2e";
-import { ditCeQuiResteCeJour, equipesLibresCeJour } from "../src/lib/planning-jour";
 
 const BASE = "http://localhost:3000";
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
@@ -78,7 +77,7 @@ async function nettoyer() {
  * **Un contrôle ne suppose pas l'état commun, il le lit.** Les suites partagent
  * une base ; ce qui n'est pas posé par soi ne s'invente pas.
  */
-async function jourLibreDEssai(): Promise<string> {
+async function joursLibresDEssai(): Promise<[string, string]> {
   const { rows } = await pool.query<{ jour: string; duree: number | null }>(
     `SELECT date_planifiee::text AS jour, duree_demi_journees AS duree
        FROM chantiers WHERE date_planifiee IS NOT NULL AND deleted_at IS NULL`
@@ -121,44 +120,19 @@ async function jourLibreDEssai(): Promise<string> {
   const d = new Date();
   d.setDate(d.getDate() + 5);
   const mois = d.getMonth();
-  while (d.getMonth() === mois) {
+  const libres: string[] = [];
+  while (d.getMonth() === mois && libres.length < 2) {
     const jour = d.toISOString().slice(0, 10);
-    if (!pris.has(jour)) return jour;
+    if (!pris.has(jour)) libres.push(jour);
     d.setDate(d.getDate() + 1);
   }
-  throw new Error(
-    "aucun jour libre dans le mois affiché : rien à mesurer. " +
-      "Ce n'est pas un défaut du produit, c'est une base d'essai trop chargée."
-  );
-}
-
-/**
- * Ce que la BASE dit de l'occupation d'un jour, passé par la règle du produit.
- *
- * **Une seule règle, ici comme à l'écran** (`CLAUDE.md` §3) : recompter les
- * équipes à la main dans ce fichier serait une seconde implémentation, et c'est
- * elle qu'on croirait le jour où les deux divergent.
- *
- * **Les absences comptent** : une équipe partie retire de la place exactement
- * comme un chantier (`useOccupation`), et l'oublier ferait tenir pour libre un
- * jour où il n'y a plus personne à envoyer.
- */
-async function equipesLibresEnBase(jour: string, nombreEquipes: number): Promise<number> {
-  const chantiersDuJour = await pool.query<{ n: string }>(
-    `SELECT count(*)::text AS n FROM chantiers
-      WHERE deleted_at IS NULL AND date_planifiee IS NOT NULL
-        AND $1::date >= date_planifiee
-        AND $1::date < date_planifiee + (GREATEST(1, ceil(COALESCE(duree_demi_journees, 2) / 2.0)))::int`,
-    [jour]
-  );
-  const absencesDuJour = await pool.query<{ n: string }>(
-    `SELECT count(*)::text AS n FROM absences_equipe
-      WHERE deleted_at IS NULL AND $1::date BETWEEN premier_jour AND dernier_jour`,
-    [jour]
-  );
-  const occupees = Number(chantiersDuJour.rows[0].n) + Number(absencesDuJour.rows[0].n);
-  const charge = Math.min(1, occupees / Math.max(1, nombreEquipes));
-  return equipesLibresCeJour(charge, charge, nombreEquipes);
+  if (libres.length < 2) {
+    throw new Error(
+      "moins de deux jours libres dans le mois affiché : rien à mesurer, et ce n'est " +
+        "pas un succès. Ce n'est pas un défaut du produit — c'est une base d'essai trop chargée."
+    );
+  }
+  return [libres[0], libres[1]];
 }
 
 async function main() {
@@ -169,7 +143,7 @@ async function main() {
   //
   // **Le nettoyage passe AVANT le choix** : sans cela, un reliquat d'une
   // exécution précédente ferait écarter un jour parfaitement libre.
-  const jour = await jourLibreDEssai();
+  const [jour, jourLibre] = await joursLibresDEssai();
   equipesAvant =
     (await pool.query(`SELECT nombre_equipes FROM entreprises LIMIT 1`)).rows[0]?.nombre_equipes ?? 1;
 
@@ -246,34 +220,28 @@ async function main() {
     );
   });
 
-  // ─── LA CONTRE-ÉPREUVE : L'ÉCRAN DIT L'OCCUPATION RÉELLE ────────────────
+  // ─── LA CONTRE-ÉPREUVE, DANS LA MÊME PAGE ───────────────────────────────
   //
-  // **DEUX VERSIONS DE CE CAS ONT ROUGI SUR DU CODE JUSTE**, les 25 août 2026 :
-  // la première supposait le jour voisin libre, la seconde supposait que le
-  // même jour redevenait libre après retrait de MON chantier. Les deux fois,
-  // c'était l'état commun — d'autres suites partagent cette base — et les deux
-  // fois le message accusait l'écran de « parler à tort » sur un jour où il
-  // disait vrai. **Le pire des rouges : il envoie corriger du code juste**
+  // **TROIS VERSIONS DE CE CAS ONT ROUGI SUR DU CODE JUSTE**, le 25 août 2026 :
+  //
+  //   1. elle supposait le jour voisin libre — une autre suite y avait posé un
+  //      chantier ; cette base est partagée ;
+  //   2. elle supprimait le chantier puis rechargeait la page — et l'écran
+  //      servait encore le planning d'avant, donc « Reste 1 équipe sur 2 » sur
+  //      un jour que la base disait libre.
+  //
+  // Les trois fois, le message accusait l'écran de « parler à tort » sur un jour
+  // où il disait vrai. **Le pire des rouges : il envoie corriger du code juste**
   // (`AGENTS.md`).
   //
-  // **Alors on ne suppose plus rien.** On lit ce que la base porte réellement ce
-  // jour-là — chantiers ET absences, une équipe partie retire de la place comme
-  // un chantier —, on passe cela par la règle du produit, et l'on exige que
-  // l'écran dise exactement ça. Le contrôle fixe alors la RÈGLE, pas un
-  // arrangement particulier des données (`CLAUDE.md` §5 bis).
-  await cas("l'écran dit l'occupation réelle du jour, quelle qu'elle soit", async () => {
-    await pool.query(`DELETE FROM chantiers WHERE nom LIKE $1`, [`${MARQUE}%`]);
-
-    const attendu = ditCeQuiResteCeJour(
-      await equipesLibresEnBase(jour, 2),
-      2
-    );
-
-    await page.goto(`${url}/devis-complet`, { waitUntil: "networkidle" });
-    await page.click("text=Choisir la date");
-    await page.waitForSelector('[data-atlas="invite-dates"]', { timeout: 30_000 });
-    const case_ = page.locator(`[data-jour="${jour}"]`);
-    assert.ok(await case_.count(), `le ${jour} n'est plus au calendrier : rien à mesurer`);
+  // **D'où cette version : deux jours LUS LIBRES DANS LA BASE, un seul occupé
+  // par nous, et les deux retenus dans la MÊME page.** Rien n'est supposé, rien
+  // n'est rechargé — il n'y a plus ni état commun ni fraîcheur à espérer. Et
+  // c'est une preuve plus forte : la mention suit le JOUR, elle ne se pose pas
+  // sur toutes les lignes.
+  await cas("le jour libre retenu à côté n'en porte aucune", async () => {
+    const case_ = page.locator(`[data-jour="${jourLibre}"]`);
+    assert.ok(await case_.count(), `le ${jourLibre} n'est pas au calendrier : rien à mesurer`);
     await case_.first().click();
     await page
       .locator("text=Vérification de votre planning…")
@@ -285,17 +253,20 @@ async function main() {
       .locator('button[aria-pressed="true"]')
       .filter({ hasText: /proposée/ })
       .count();
-    assert.ok(retenues >= 1, "aucune date retenue : rien à mesurer, pas un succès");
+    assert.equal(retenues, 2, `${retenues} date(s) retenues au lieu de deux : rien à comparer`);
 
-    const mentions = page.locator('[data-atlas="reste-equipes"]');
-    const lu = (await mentions.count()) ? (await mentions.first().innerText()).trim() : null;
+    const mentions = await page.locator('[data-atlas="reste-equipes"]').count();
+    // **Le message doit désigner le BON coupable** : zéro et deux sont deux
+    // défauts opposés, et un seul message pour les deux enverrait chercher au
+    // mauvais endroit (`CLAUDE.md` §5). Vu en débranchant la mention exprès.
     assert.equal(
-      lu,
-      attendu,
-      attendu === null
-        ? `l'écran écrit « ${lu} » sur un jour que la base dit entièrement libre : ` +
-          `un avertissement qui parle à tort s'apprend à être ignoré`
-        : `l'écran écrit « ${lu} » là où la base dit « ${attendu} »`
+      mentions,
+      1,
+      mentions === 0
+        ? "aucune mention sur les deux dates : celle du jour à moitié pris a disparu"
+        : `${mentions} mentions pour deux dates dont une seule est prise : la mention ne suit ` +
+          `pas le jour, elle se pose sur toutes les lignes — et un avertissement qui parle ` +
+          `partout s'apprend à être ignoré`
     );
   });
 
