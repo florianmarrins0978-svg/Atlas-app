@@ -9,6 +9,45 @@ Format : le plus récent en tête.
 
 ## 2026-08-25
 
+### Le condensat du mot de passe sort de portée du rôle applicatif (lot 3, M9)
+
+**Une seule requête métier fautive suffisait à sortir les mots de passe de tous
+les utilisateurs.** `atlas_app` — le rôle sous lequel tourne l'application —
+détenait `SELECT` sur toute la table `users`. Il ne peut plus lire la colonne,
+ni par sous-requête, ni par agrégat, ni par `ORDER BY`, ni par `COPY`. Il peut
+toujours demander à la base de vérifier **un** mot de passe, sans jamais en
+recevoir le condensat (`drizzle/0064_secret_authentification.sql`).
+
+**Le retrait d'`UPDATE` compte autant que celui de `SELECT`** : sans lui, il
+suffit de poser un condensat que l'on connaît sur le compte du patron pour
+entrer — sans rien avoir lu.
+
+**Pas de RLS par entreprise sur `users`**, et ce n'est pas un renoncement : un
+utilisateur n'est rattaché à une entreprise qu'**après** s'être identifié. Une
+politique par `entreprise_id` rendrait la connexion impossible.
+
+**Le piège qui a failli tout casser, mesuré et non supposé.** `pgcrypto` ne
+relit que les condensats préfixés `$2a$` ; `bcryptjs` écrit `$2b$`. La première
+version rendait donc **faux sur le bon mot de passe** — la porte fermée pour
+tout le monde. Les deux moteurs ont été comparés sur six cas, au positif et au
+négatif : court, accents, emoji, 255, 256 et 300 octets. Ils sont équivalents,
+y compris sur la troncature à 72 octets — **qui est une propriété de bcrypt, pas
+une faiblesse de l'un des deux**. Rien de ce qui était accepté ne change.
+
+**Deux régressions rencontrées, et ce qu'elles apprennent :**
+
+| | |
+|---|---|
+| borner `INSERT` par colonne | Drizzle **nomme** `password_hash` dans chaque insertion, même avec `default`, et PostgreSQL exige le droit sur toute colonne citée. **48 suites rouges** sur des écrans étrangers à l'authentification |
+| `returning()` nu | `RETURNING` exige de lire les colonnes rendues. Trois suites et un dépôt le faisaient sans employer le résultat |
+
+### Et trois suites visent désormais la règle, pas le stockage
+
+Elles lisaient le condensat pour dire « il n'a pas bougé ». La question qui
+compte n'a jamais été quelle chaîne est en base, mais **si ce mot de passe ouvre
+encore**. Aucune n'est affaiblie — celle du voisin gagne même une assertion.
+
+
 ### La mise à jour du banc n'était réservée à personne (lot 3, M12)
 
 **N'importe quel compte connecté pouvait tirer du code et jouer des migrations
