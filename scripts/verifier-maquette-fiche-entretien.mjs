@@ -34,7 +34,7 @@ const RACINE = join(dirname(fileURLToPath(import.meta.url)), "..");
 const MAQUETTES = join(RACINE, "docs", "maquettes");
 const FICHE = join(MAQUETTES, "62-la-fiche-dentretien.html");
 const RAPPORT = join(MAQUETTES, "63-le-rapport-au-client.html");
-const MODELE = join(MAQUETTES, "64-composer-sa-fiche.html");
+const MODELE = join(RACINE, "appli", "composer-sa-fiche.html");
 
 const CHEMIN_SANDBOX = "/opt/pw-browsers/chromium-1194/chrome-linux/chrome";
 
