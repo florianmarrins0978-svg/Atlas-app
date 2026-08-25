@@ -80,10 +80,25 @@ export function ouvrableParLeClient(origine: string | null | undefined): boolean
  *
  * **Elle dit le geste, pas le mécanisme** (`CLAUDE.md` §3 ter). Il n'a pas à
  * savoir ce qu'est une redirection de port : il a à savoir par quelle adresse
- * rouvrir Atlas. Le rapport, lui, est déjà enregistré — le dire évite qu'il
- * recommence toute la fiche en croyant l'avoir perdue.
+ * rouvrir Atlas.
+ *
+ * **Et elle dit que son travail est SAUF**, ce qui compte autant que le reste :
+ * le rapport est figé, le devis envoyé, la facture arrêtée. Sans cette moitié
+ * de phrase, il recommencerait — et sur une facture, il rappuierait sur un
+ * bouton qui a déjà engagé sa comptabilité.
+ *
+ * **`quoi` se termine par un verbe neutre — « vous attend ici ».** Écrire
+ * « est enregistré » obligerait à accorder : « votre facture est enregistré »
+ * est le genre de faute que le patron relève, et il a raison.
+ *
+ * @param quoi ce qui est en jeu, tel qu'on le lui nomme : « votre rapport »,
+ *             « votre devis », « votre facture ».
  */
-export const PHRASE_ADRESSE_LOCALE =
-  "Atlas est ouvert sur une adresse qui n'existe que sur votre machine : le lien " +
-  "s'ouvrirait sur le téléphone de votre client, pas sur son rapport. Rouvrez Atlas " +
-  "par son adresse web, puis renvoyez — le rapport est enregistré, rien n'est perdu.";
+export function phraseAdresseLocale(quoi: string): string {
+  return (
+    "Atlas est ouvert sur une adresse qui n'existe que sur votre machine : le lien " +
+    "s'ouvrirait sur le téléphone de votre client, pas sur son document. Rouvrez " +
+    `Atlas par son adresse web, puis renvoyez — ${quoi} vous attend ici, rien n'est ` +
+    "perdu."
+  );
+}
