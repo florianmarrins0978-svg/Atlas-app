@@ -101,7 +101,7 @@ async function main() {
     const [utilisateurOrphelin] = await db
       .insert(users)
       .values({ email: `orphelin-${Date.now()}@test.local`, nom: "Orphelin" })
-      .returning();
+      .returning({ id: users.id });
     process.env.AUTH_TEST_UTILISATEUR_ID = utilisateurOrphelin.id;
     let leve = false;
     try {
@@ -142,7 +142,7 @@ async function main() {
     const [membreUser] = await db
       .insert(users)
       .values({ email: `membre-${Date.now()}@test.local`, nom: "Membre" })
-      .returning();
+      .returning({ id: users.id });
     await ajouterMembre(entreprise.id, membreUser.id, "membre");
 
     const ctxMembre = { entrepriseId: entreprise.id, utilisateurId: membreUser.id };
@@ -171,7 +171,7 @@ async function main() {
     const [membreUser] = await db
       .insert(users)
       .values({ email: `tarif-membre-${Date.now()}@test.local`, nom: "Membre" })
-      .returning();
+      .returning({ id: users.id });
     await ajouterMembre(entreprise.id, membreUser.id, "membre");
 
     process.env.AUTH_TEST_UTILISATEUR_ID = membreUser.id;
