@@ -5,6 +5,7 @@ import { estProprietaire } from "@/server/autorisation";
 import { getEntreprise } from "@/server/repositories/entreprises";
 import { nomFichierSauvegarde } from "@/lib/nom-sauvegarde";
 import RubriqueReservee from "../RubriqueReservee";
+import BoutonTelecharger from "./BoutonTelecharger";
 
 export const dynamic = "force-dynamic";
 
@@ -59,14 +60,7 @@ export default async function DonneesPage() {
               **Et le nom change avec l'adresse.** Servi depuis
               `/reglages/donnees`, le repli de Safari donnerait « donnees » :
               raison de plus pour ne pas s'en remettre à lui. */}
-          <a
-            href="/api/mes-donnees"
-            download={nomFichierSauvegarde(entreprise?.nom ?? "Entreprise", new Date())}
-            className="inline-block rounded-full px-5 py-3 text-[15px] font-medium"
-            style={{ backgroundColor: colors.rust, color: colors.cream }}
-          >
-            Télécharger mes données
-          </a>
+          <BoutonTelecharger nomFichier={nomFichierSauvegarde(entreprise?.nom ?? "Entreprise", new Date())} />
 
           <p className="mt-[10px] text-[13px] leading-snug" style={{ color: colors.inkSoft }}>
             Un seul fichier, qui contient vos clients, vos chantiers, vos devis, vos factures, vos photos et vos

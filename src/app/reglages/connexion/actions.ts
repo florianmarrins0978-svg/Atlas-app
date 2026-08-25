@@ -1,8 +1,8 @@
 "use server";
 
 import { getCurrentCtx } from "@/server/session-ctx";
-import { exigerPreuveRecente } from "@/server/preuve-recente";
-import { GESTES_SENSIBLES } from "@/lib/preuve-recente";
+import { exigerPreuveRecente, PreuveRecenteExigeeError } from "@/server/preuve-recente";
+import { GESTES_SENSIBLES, type GesteSensible } from "@/lib/preuve-recente";
 import { changerMotDePasse, deconnecterPartout, lireCompte } from "@/server/repositories/compte";
 import { messageRefus } from "@/lib/mot-de-passe";
 import { messageRefusCle, type CleAppareil } from "@/lib/cle-appareil";
@@ -110,7 +110,38 @@ export async function defiEnregistrementAction(): Promise<DefiEnregistrement> {
   return { ok: true, options: r.options };
 }
 
-export type ResultatCle = { ok: true; cles: CleAppareil[] } | { ok: false; raison: string };
+/**
+ * **Un refus attendu se rend en VALEUR, jamais en exception.**
+ *
+ * Le message d'une exception levée par une action serveur n'arrive jamais
+ * jusqu'à l'artisan : Next.js le remplace en production par un identifiant
+ * opaque, et le banc sert une version bâtie (`AGENTS.md`, `HANDOVER.md` piège
+ * 0 ter). Une preuve manquante n'est pas une panne — c'est un refus prévu, dont
+ * l'écran doit pouvoir faire quelque chose.
+ */
+async function refusFautePreuve(
+  ctx: { utilisateurId: string; sessionId?: string },
+  geste: GesteSensible
+): Promise<{ ok: false; raison: string; preuveExigee: true } | null> {
+  try {
+    await exigerPreuveRecente(ctx, geste);
+    return null;
+  } catch (erreur) {
+    if (erreur instanceof PreuveRecenteExigeeError) {
+      return { ok: false, raison: erreur.message, preuveExigee: true };
+    }
+    throw erreur;
+  }
+}
+
+export type ResultatCle =
+  | { ok: true; cles: CleAppareil[] }
+  /**
+   * `preuveExigee` dit à l'écran d'OUVRIR la demande de mot de passe plutôt que
+   * d'afficher un refus sec. **Ce n'est pas une autorisation** : le serveur a
+   * refusé, et il refusera encore tant qu'aucune preuve ne sera posée en base.
+   */
+  | { ok: false; raison: string; preuveExigee?: boolean };
 
 export async function enregistrerCleAction(reponse: string): Promise<ResultatCle> {
   const ctx = await getCurrentCtx();
@@ -126,7 +157,8 @@ export async function enregistrerCleAction(reponse: string): Promise<ResultatCle
    * une ré-authentification faite sur le téléphone du patron ne sert pas à
    * l'ordinateur du voleur.
    */
-  await exigerPreuveRecente(ctx, GESTES_SENSIBLES.ajouterCleAppareil);
+  const manquePreuve = await refusFautePreuve(ctx, GESTES_SENSIBLES.ajouterCleAppareil);
+  if (manquePreuve) return manquePreuve;
   let lue: RegistrationResponseJSON;
   try {
     lue = JSON.parse(reponse) as RegistrationResponseJSON;
@@ -157,7 +189,8 @@ export async function retirerCleAction(id: string): Promise<ResultatCle> {
   const ctx = await getCurrentCtx();
   // Retirer un appareil prive son propriétaire de sa porte : c'est un geste
   // hostile autant qu'un ajout, et il mérite la même exigence.
-  await exigerPreuveRecente(ctx, GESTES_SENSIBLES.retirerCleAppareil);
+  const manquePreuveRetrait = await refusFautePreuve(ctx, GESTES_SENSIBLES.retirerCleAppareil);
+  if (manquePreuveRetrait) return manquePreuveRetrait;
   try {
     // `retirerCle` porte `utilisateur_id` dans son `WHERE` : un identifiant venu
     // d'ailleurs ne retire rien. Aucune RLS ne couvre cette table.
