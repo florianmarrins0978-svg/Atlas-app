@@ -9,6 +9,23 @@ Format : le plus récent en tête.
 
 ## 2026-08-25
 
+### Ses journées se comptaient à Greenwich
+
+*« Ce soir à 00 h 00 il passe dans Terminés ? »* — non : à **2 h du matin**. Le
+jour d'Atlas était le jour UTC, et la France est à UTC+2 l'été. Entre minuit et
+deux heures, un chantier fini restait au planning, une facture faite en rentrant
+portait la date d'hier, et le calendrier marquait le mauvais jour comme
+« aujourd'hui ». Deux heures, mais précisément celles où un artisan range ses
+papiers.
+
+Une seule fonction change (`jourIso`, `src/lib/jour.ts`), et tout suit : onglets,
+dates d'émission et d'échéance, relevé de TVA, calendrier. Elle passe par `Intl`
+sur `Europe/Paris` — un `+2` figé se serait trompé la moitié de l'année.
+
+Le contrôle prend l'été et l'hiver, des deux côtés de minuit, et a été **joué
+rouge** contre l'ancienne version. `ARCHITECTURE.md` §177.
+
+
 ### L'émetteur n'était sur le devis qu'une fois de trop
 
 *« Pourquoi il y a deux fois l'émetteur sur l'aperçu ? »* — il avait raison, et
