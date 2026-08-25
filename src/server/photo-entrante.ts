@@ -118,8 +118,6 @@ export async function preparerPhotoEntrante(
 
   // **Le HEIC a son propre refus**, avant le refus générique : « ce n'est pas
   // une photo » serait faux — c'en est une —, et ne dirait pas quoi faire.
-  // **Le HEIC a son propre refus**, avant le refus générique : « ce n'est pas
-  // une photo » serait faux — c'en est une —, et ne dirait pas quoi faire.
   if (estHeic(mimeType)) {
     logger.info("Photo refusée : HEIC brut", { quoi });
     return { ok: false, raison: MESSAGE_HEIC_REFUSE };

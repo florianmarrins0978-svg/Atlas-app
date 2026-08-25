@@ -129,8 +129,35 @@ async function main() {
     await page.waitForTimeout(250);
   }
 
-  const offerts = await joursOffertsAuChoix();
-  assert.ok(offerts.length >= 3, `Le calendrier n'offre que ${offerts.length} jour(s) : trop peu pour éprouver.`);
+  /**
+   * **Le mois affiché n'offre pas toujours trois jours, et c'est une affaire de
+   * calendrier, pas de code.** Cette suite a besoin de trois journées au-delà du
+   * délai minimal. En fin de mois il n'en reste pas trois : le 25 août 2026 il
+   * n'en restait que deux, et la suite rougissait sur un écran juste — le pire
+   * des rouges, celui qu'on apprend à ignorer (`AGENTS.md`).
+   *
+   * Le geste imité est celui du patron : quand son mois est plein, il passe au
+   * suivant. Trois mois consultés suffisent largement ; au-delà, c'est la
+   * navigation qui est bornée trop tôt, et le message le dit.
+   */
+  async function troisJoursAuMoins(): Promise<string[]> {
+    let dernierCompte = 0;
+    for (let mois = 0; mois < 3; mois++) {
+      const trouves = await joursOffertsAuChoix();
+      if (trouves.length >= 3) return trouves;
+      dernierCompte = trouves.length;
+      const suivant = page.getByRole("button", { name: /^Mois suivant/ });
+      assert.ok(
+        await suivant.isEnabled(),
+        `Le calendrier n'offre que ${dernierCompte} jour(s) et ne va pas plus loin.`
+      );
+      await suivant.click();
+      await page.waitForTimeout(250);
+    }
+    assert.fail(`Trois mois consultés sans trouver trois jours à proposer (dernier mois : ${dernierCompte}).`);
+  }
+
+  const offerts = await troisJoursAuMoins();
   const [premier, second, troisieme] = offerts;
 
   // --- 1. Deux jours pris au calendrier se marquent TOUS LES DEUX ----------

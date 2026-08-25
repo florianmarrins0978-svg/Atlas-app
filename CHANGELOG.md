@@ -7,6 +7,34 @@ Format : le plus récent en tête.
 
 ---
 
+## 2026-08-25
+
+### Deux suites de dates rougissaient un jour sur trente, sur un écran juste
+
+La batterie du lot 2B a franchi minuit, et deux suites navigateur sont tombées
+d'un coup — **sans qu'une ligne du lot ne touche un calendrier**. Le 25 août est
+le premier jour où :
+
+| | |
+|---|---|
+| `test-date-lointaine-e2e` | la date à six mois tombe un **1er**. L'écran écrit « 1er mars » — le seul ordinal du français —, la suite cherchait « 1 mars » |
+| `test-deux-dates-calendrier-e2e` | il ne reste que **deux** jours ouvrés au mois affiché, alors que la suite en exige trois |
+
+**C'est le pire des rouges : celui qui accuse un code juste.** Une suite qui
+tombe un jour sur trente s'apprend à être ignorée, et l'on perd le garde-fou
+sans s'en apercevoir.
+
+La première **redisait la règle d'écriture** au lieu de l'employer — exactement
+la duplication que `CLAUDE.md` §3 interdit. Elle passe désormais par
+`jourLisible`, la fonction qui rend la page du client : ordinal compris, elle
+suit la règle au lieu de la deviner.
+
+La seconde supposait que le mois affiché offrait toujours trois jours. Elle fait
+maintenant le geste du patron : quand son mois est plein, elle passe au suivant.
+
+*Établi avant de corriger : la date du jour suffit à reproduire les deux
+échecs, et le diff du lot ne touche aucun fichier de calendrier.*
+
 ## 2026-08-24
 
 ### Lot 2B : une image ne se range plus jamais sans être nettoyée
