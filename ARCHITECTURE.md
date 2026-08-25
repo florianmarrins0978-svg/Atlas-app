@@ -15111,7 +15111,83 @@ planche où toucher un jour ne fait plus rien. Il exige désormais l'inverse —
 de bouton, et un jour proposé au premier appui —, et il a été **vu rouge** sur
 la planche d'avant.
 
-## 171. L'en-tête de l'accueil : ni salut, ni trait — et une consigne révoquée
+---
+
+## 171. Le brouillon de la dictée après confirmation : ce qui se fige, ce qui s'écrit
+
+*Ses captures du 25 août 2026 : « je peux rien modifier, les cases ne sont pas
+cliquables », puis « le à confirmer est trop long, synthétise-le. Moins de
+mots ! ».*
+
+### Le verrou protégeait ce qui n'existait qu'ici
+
+Confirmer un brouillon le passait **entièrement** en lecture seule. L'intention
+était juste : confirmer RECOPIE les prestations, le matériel, la durée et
+l'équipe dans le chantier, et corriger la copie du brouillon ne toucherait plus
+l'original — il aurait eu sous les yeux deux versions dont une seule compte.
+
+Ce que l'intention n'avait pas vu : **trois champs n'ont aucune autre case dans
+toute l'application.**
+
+| | Après confirmation |
+|---|---|
+| prestations, matériel, durée, équipe | recopiés dans le chantier, **et éditables juste en dessous** |
+| déchets, contraintes d'accès, remarques | **nulle part ailleurs** — figés, donc perdus |
+
+La règle qui en sort, et qui vaut au-delà de cet écran : **ce qu'on fige doit
+avoir une autre porte.** Sans elle, figer n'est pas protéger, c'est effacer.
+
+D'où le parti retenu : après confirmation, l'encart **retire** les copies de ce
+qui vit ailleurs et **garde, éditables**, les trois notes qui n'ont que lui.
+L'écran raccourcit du même geste, ce qu'il demande par ailleurs.
+
+### Un champ en lecture seule n'ouvre pas le clavier sur iPhone
+
+C'est ce qui rendait sa plainte littérale — *« les cases ne sont pas
+cliquables »*. Rien n'était grisé, rien ne disait « verrouillé » : il appuyait,
+et il ne se passait rien. **Un état qui ne se voit pas se lit comme une panne.**
+À retenir avant de reposer un `readOnly` quelque part.
+
+### Le piège caché sous le déverrouillage
+
+`enregistrerCorrectionHumaine` remettait `statut: "brouillon"` et effaçait
+`confirmeAt` à chaque écriture. C'était **du code mort** tant que tout était
+verrouillé après confirmation. Le déverrouillage le ramenait à la vie, et il
+devenait faux : écrire une remarque aurait dé-confirmé le chantier, fait
+réapparaître « Confirmer et ajouter au chantier », et un second appui aurait
+réécrit sa durée et son équipe depuis la dictée par-dessus ses corrections.
+
+**Une ligne qui ne sert plus n'est pas inoffensive : elle attend.** En retirer
+la garde en fait une régression, et rien ne l'annonce.
+
+### « Moins de mots » : deux leviers, parce qu'un seul ne suffit pas
+
+| | Ce qu'il fait | Ce qu'il ne peut pas faire |
+|---|---|---|
+| la consigne au modèle (`extraction-service.ts`) | des groupes nominaux de six mots, cinq lignes au plus | rien pour les brouillons **déjà enregistrés** |
+| `src/lib/brouillon-reserves.ts` | plafonne la liste à cinq, **et dit ce qui reste** | rien pour la longueur d'une ligne |
+
+**Le texte n'est PAS raccourci à l'affichage, et c'est délibéré.** Couper une
+réserve à six mots donnerait « Il est mentionné 'des herbages, des massifs' » —
+l'entrée en matière sans la question qu'elle pose. Ce qui se coupe proprement,
+c'est le NOMBRE ; la brièveté d'une ligne se joue à l'écriture.
+
+**Et ce qui est coupé se dit** (« + 2 autres »). Une liste tronquée en silence
+se lit comme une liste complète : il chiffrerait sans la réserve qu'on lui
+cache. C'est la règle du plan d'arrosage (`CLAUDE.md` §4 ter), appliquée ici.
+
+### Une question posée sous condition se vérifie avant d'agir
+
+*« Ce bouton ouvre le devis ? Si oui la phrase en-dessous est obsolète, donc la
+supprimer. »* La condition était fausse : « Valider et calculer le prix » ouvre
+l'écran **Prix**, la proposition de montants. Le lien « Ou écrire le devis
+moi-même » saute cette étape — c'est la sortie de secours qu'il avait lui-même
+demandée le 3 août 2026. Il reste, et la réponse lui a été donnée en une ligne.
+
+Supprimer sur un « si » non vérifié aurait retiré un chemin qu'il réclame
+depuis trois semaines.
+
+## 172. L'en-tête de l'accueil : ni salut, ni trait — et une consigne révoquée
 
 **Ses deux demandes du 24 août 2026**, sur la planche 95
 (`appli/premiere-page.html`), puis : *« code la mienne »*.

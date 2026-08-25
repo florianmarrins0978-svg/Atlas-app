@@ -101,7 +101,20 @@ export async function enregistrerCorrectionHumaine(
   return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
     const [row] = await tx
       .update(brouillonsInformations)
-      .set({ contenu, modifieParHumain: true, statut: "brouillon", confirmeAt: null, updatedAt: new Date() })
+      // **Le statut NE BOUGE PLUS, et c'est un correctif du 25 août 2026.**
+      //
+      // Cette ligne remettait « brouillon » et effaçait la date de
+      // confirmation. C'était sans effet tant que TOUT était en lecture seule
+      // une fois confirmé — donc du code mort. Depuis que les trois notes
+      // (déchets, contraintes d'accès, remarques) restent corrigeables après
+      // coup, il reprend vie et devient faux : écrire une remarque
+      // dé-confirmerait le chantier, ferait réapparaître « Confirmer et
+      // ajouter au chantier », et un second appui réécrirait sa durée et son
+      // équipe depuis la dictée par-dessus ce qu'il vient de corriger.
+      //
+      // Corriger une note n'annule pas une confirmation. Ce qui l'annule, et
+      // qui a son propre chemin, c'est de régénérer depuis la dictée.
+      .set({ contenu, modifieParHumain: true, updatedAt: new Date() })
       .where(eq(brouillonsInformations.chantierId, chantierId))
       .returning();
     return row ? versBrouillon(row) : null;

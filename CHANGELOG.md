@@ -29,7 +29,7 @@ citant une consigne devenue fausse.
 dans sa version B ; sa consigne était : *« pour la mienne, fais seulement les
 changements que je t'ai demandés »*. Elles restent sur la planche, où il peut les
 comparer. Une proposition ne se glisse pas dans la version de quelqu'un sous
-prétexte qu'elle l'améliore. `ARCHITECTURE.md` §171.
+prétexte qu'elle l'améliore. `ARCHITECTURE.md` §172.
 
 ---
 
@@ -166,6 +166,42 @@ et un jour refusé s'ouvre quand même en disant pourquoi. Ce qui a été ajout�
 passage : deux cases touchées coup sur coup ne se marchent plus dessus — la
 réponse tardive de la première ne vient plus cocher un jour déjà quitté.
 
+### L'écran Informations : ses cases s'écrivent de nouveau, et il y a moins à lire
+
+*Ses captures du 25 août : « je peux rien modifier, les cases ne sont pas
+cliquables », « le à confirmer est trop long, synthétise-le. Moins de mots ! »,
+« le sert à calculer le prix en gris, supprime-le ».*
+
+**Le défaut qui comptait.** Une fois le brouillon confirmé, TOUTES ses cases
+passaient en lecture seule — et sur iPhone, un champ en lecture seule n'ouvre
+même pas le clavier : on tape, rien ne se passe, on croit à une panne. Or
+« Déchets », « Contraintes d'accès » et « Remarques » n'ont aucune autre case
+dans l'application : cette information devenait impossible à corriger, pour
+toujours.
+
+Elles s'écrivent désormais après confirmation. Ce qui a été RECOPIÉ dans le
+chantier — prestations, matériel, durée, équipe — disparaît au contraire de
+l'encart : les vraies cases sont juste en dessous, et corriger la copie n'aurait
+touché à rien. Le dépôt cessait aussi de dé-confirmer le chantier à chaque
+frappe (`brouillons-informations.ts`), ce qui aurait réécrit sa durée par-dessus
+sa correction au geste suivant.
+
+**Moins à lire.** Les réserves du brouillon tenaient en quatorze lignes de gris
+avant d'arriver aux prestations. La consigne donnée au modèle exige maintenant
+des groupes nominaux de six mots, cinq au plus ; et à l'écran la liste est
+plafonnée à cinq, **le reste étant annoncé** (« + 2 autres ») — une liste
+tronquée en silence se lit comme une liste complète.
+
+Trois phrases grises partent aussi, sur sa demande : sous « Ce chantier prend »,
+sous « Ou écrire le devis moi-même », et la flèche de « Valider et calculer le
+prix ».
+
+**Ce qui n'a PAS été fait, et pourquoi.** Il demandait de supprimer « Ou écrire
+le devis moi-même » *si* « Valider et calculer le prix » ouvrait le devis. Ce
+n'est pas le cas : ce bouton ouvre l'écran PRIX. Le lien saute cette étape —
+c'est la sortie de secours qu'il avait demandée le 3 août 2026. Il reste.
+
+`ARCHITECTURE.md` §172.
 
 ---
 
@@ -1584,7 +1620,7 @@ suite qui les ferait rougir accuserait le dessin qu'il a validé (`CLAUDE.md`
 §5 bis). La règle retenue est *le sombre ne fait pas moins bien que le clair*,
 et le clair se mesure au lieu de s'écrire.
 
-Le détail : `ARCHITECTURE.md` §171.
+Le détail : `ARCHITECTURE.md` §172.
 
 
 ### « Choisir la date » ouvre le calendrier du planning, et dit qui est déjà là

@@ -3160,6 +3160,20 @@ obligatoires, disposition des colonnes, ordre des totaux. Un devis mal posé
 n'est pas un devis moins joli, c'est un devis qu'on peut lui contester.
 
 ### ~~0 trigies septies. Deux suites de calendrier tombent EN FIN DE MOIS~~ — **RÉPARÉES le 25 août 2026**
+### 0 trigies octies. ~~Le brouillon confirmé ne se corrigeait plus~~ — **RÉPARÉ le 25 août 2026**
+
+Ses trois notes — déchets, contraintes d'accès, remarques — n'ont aucune autre
+case dans l'application, et le brouillon confirmé les figeait. Elles s'écrivent
+de nouveau ; les copies de ce qui vit ailleurs (prestations, matériel, durée,
+équipe) quittent l'encart. `ARCHITECTURE.md` §171.
+
+**Ce qui reste à surveiller, et qui n'est pas mesurable ici :** la consigne
+donnée au modèle exige désormais des réserves de six mots. **Aucune clé d'IA sur
+ce poste** — ça se juge sur son espace, à la première dictée (`CLAUDE.md`
+§1 ter). L'écran, lui, plafonne à cinq lignes quoi que le modèle rende, et c'est
+éprouvé (`test-brouillon-reserves.ts`).
+
+### 0 trigies septies. Deux suites de calendrier tombent EN FIN DE MOIS — **CONSTATÉ le 25 août 2026, PAS RÉPARÉ**
 
 **Elles rougissent sur `main`, sans aucun changement**, et elles bloquent la
 livraison de toutes les sessions tant qu'on est en fin de mois. Vérifié : même
