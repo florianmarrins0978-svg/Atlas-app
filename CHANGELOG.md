@@ -9,6 +9,67 @@ Format : le plus récent en tête.
 
 ## 2026-08-25
 
+### L'émetteur n'était sur le devis qu'une fois de trop
+
+*« Pourquoi il y a deux fois l'émetteur sur l'aperçu ? »* — il avait raison, et
+ce n'était pas une convention : l'en-tête portait déjà son identité, et un bloc
+« ÉMETTEUR » la réécrivait mot pour mot dix centimètres plus bas. Les mentions
+obligatoires doivent figurer, pas figurer deux fois. Le bloc du bas est retiré,
+l'en-tête prend tout — nom, adresse, téléphone, e-mail, SIRET — et le client
+passe à gauche, seul de sa rangée : une colonne « CLIENT » restée à droite avec
+un vide en face se lit comme un bloc oublié à l'impression.
+
+### Une ligne par information, en haut à gauche
+
+*« Il y a un tiret entre le numéro de tél et l'adresse e-mail, change ça, il
+faut sauter une ligne, une ligne par information. »* Le `join(" — ")` est parti :
+adresse, téléphone, e-mail, SIRET prennent chacun leur ligne, et les absents ne
+laissent pas de trou.
+
+**Les deux en-têtes ont bougé ensemble** — le PDF (devis *et* facture, même
+moteur) et l'écran où il rédige, qui compose le sien à la main. C'est la leçon
+de la veille appliquée le lendemain : corriger un seul des deux recrée
+exactement l'écart qui lui avait caché son logo.
+
+Les contrôles ne se contentent plus de lire « CLIENT » : ils **refusent**
+qu'« ÉMETTEUR » reparaisse et exigent que le nom de l'entreprise n'apparaisse
+qu'une seule fois. Et l'image a été regardée, fond clair et fond sombre, logo
+carré et logo en bandeau. `ARCHITECTURE.md` §174.
+
+**Deux contrôles remis d'aplomb au passage.** L'empreinte au pixel du devis et
+de la facture (`test-fiche-chantier-pdf.ts`) décrivait la mise en page qu'il a
+fait retirer : elle a été relevée à neuf — après avoir REGARDÉ le document —, et
+la suite affiche désormais l'empreinte lue quand elle diverge, pour qu'un
+changement voulu ne demande plus d'instrumenter le fichier. Et
+`test-devis-doublon-e2e.ts` attendait 800 ms fixes après l'enregistrement d'une
+prestation : vert seul, rouge dans la batterie complète, en accusant « les
+tarifs de démonstration » — le mauvais coupable. Il redemande maintenant la page
+une fois avant de conclure.
+
+### L'échéance de la facture : proposée, et modifiable avant l'envoi
+
+*« Il faut qu'il propose une date par défaut et ensuite si l'utilisateur veut la
+modifier qu'il puisse. Parce que si l'utilisateur envoie la facture avant de
+modifier, faut qu'elle parte avec une date et pas avec [échéance]. »*
+
+Deux choses en découlent :
+
+- **La date par défaut suit désormais son délai de paiement réglé** (0 = comptant),
+  30 jours à défaut — au lieu d'un « 30 » écrit en dur qui pouvait contredire la
+  mention « Paiement à X jours » imprimée sur la pièce. La facture a donc
+  **toujours** une vraie échéance dès sa création : elle ne part jamais avec un
+  vide.
+- **Elle se corrige à l'écran de la facture**, tant qu'elle n'est pas arrêtée. Une
+  facture émise est partie chez le client et inscrite au relevé : sa date se fige
+  alors (le champ disparaît, et `majEcheanceFacture` refuse quand même — l'écran
+  n'est qu'une politesse, le dépôt est le garde-fou).
+
+La saisie repasse par une règle pure (`src/lib/echeance-facture.ts`, éprouvée
+sans base) : une échéance ne précède jamais la facture, ne dépasse pas un an (au-
+delà, c'est l'année mal tapée), et le comptant — échéance = émission — est permis.
+L'isolation est tenue par la RLS : la facture d'une autre entreprise n'existe tout
+simplement pas pour cette requête (`test-factures`).
+
 ### Le message au client, simplifié : plus de pastilles à poser
 
 *« On comprend rien, trop compliqué pour modifier »*, puis, devant la maquette
@@ -80,10 +141,6 @@ dans sa version B ; sa consigne était : *« pour la mienne, fais seulement les
 changements que je t'ai demandés »*. Elles restent sur la planche, où il peut les
 comparer. Une proposition ne se glisse pas dans la version de quelqu'un sous
 prétexte qu'elle l'améliore. `ARCHITECTURE.md` §172.
-
----
-
-## 2026-08-25
 
 ### Le lot 2B est au vert — et sept contrôles fragiles avec lui
 
@@ -181,6 +238,29 @@ avant de vérifier qu'elle avait survécu à l'assistant. Sous la batterie, l'ac
 serveur dépasse ce délai : l'assistant était accusé d'un effacement qui n'avait
 pas eu lieu. Elle attend maintenant que la requête soit partie — et son message
 nomme le coupable, au lieu d'un « 0 == 1 » qui envoyait chercher partout.
+### Deux phrases retirées, et un seul contrôle pour toutes celles à venir
+
+**Ses deux demandes du 25 août :** *« supprime la phrase "aucun chantier pour
+l'instant" »*, puis *« supprime la phrase en gris "tout s'enregistre au fur et à
+mesure" »* — celle-ci sous l'aperçu du PDF, sur l'écran du devis.
+
+La seconde rassurait sur un doute qu'il n'a plus : il connaît son outil, et rien
+ne part effectivement avant qu'il ne le décide. Une phrase qui répond à une
+question qu'on ne se pose plus n'informe plus, elle occupe.
+
+**Un seul contrôle, et non un fichier par phrase.** Il en a fait retirer deux en
+deux jours et il en fera retirer d'autres : `scripts/test-phrases-retirees.ts`
+porte une ligne par retrait — sa demande à la lettre, la date, le fichier — et le
+tableau est la documentation. `test-accueil-liste-vide.ts`, écrit la veille pour
+la première, y est absorbé.
+
+**Il fixe aussi ce qui doit RESTER**, parce que c'est là que se cache le vrai
+risque : les bandeaux sur l'accueil vide, et « Aperçu du PDF » sur l'écran du
+devis — le lien vivait juste au-dessus de la phrase retirée. Vu rouge contre le
+retour des deux phrases.
+
+---
+
 ### L'accueil vide ne dit plus qu'il est vide
 
 **Sa demande, capture à l'appui :** *« supprime la phrase "aucun chantier pour
@@ -200,7 +280,7 @@ aucun chantier — est hors de portée des suites navigateur, qui partagent le
 compte de démonstration et en portent toujours. Une suite qui « vérifierait »
 l'absence sur un accueil plein serait verte sans avoir rien mesuré. C'est
 grossier, et c'est plus honnête qu'un vert qui ne prouve rien
-(`scripts/test-accueil-liste-vide.ts`, vu rouge contre le retour de la phrase).
+(`scripts/test-phrases-retirees.ts`, vu rouge contre le retour de la phrase).
 
 ### Choisir une date se fait d'un seul doigt
 

@@ -105,7 +105,6 @@ async function main() {
       "Date",
       "Validité",
       "DEVIS",
-      "ÉMETTEUR",
       "CLIENT",
       "DESCRIPTION",
       "QTÉ",
@@ -121,8 +120,17 @@ async function main() {
     }
 
     const rang = (t: string) => textes.indexOf(t);
-    assert.ok(rang("DEVIS") < rang("ÉMETTEUR"), "Le titre doit précéder les parties.");
-    assert.ok(rang("ÉMETTEUR") < rang("DESCRIPTION"), "Les parties précèdent le tableau.");
+    assert.ok(rang("DEVIS") < rang("CLIENT"), "Le titre doit précéder les parties.");
+    assert.ok(rang("CLIENT") < rang("DESCRIPTION"), "Les parties précèdent le tableau.");
+
+    // **L'ÉMETTEUR N'APPARAÎT QU'UNE FOIS**, et c'est sa question du 18 août
+    // 2026 : *« pourquoi il y a deux fois l'émetteur ? »*. L'en-tête le porte
+    // en entier ; le bloc du bas le réécrivait mot pour mot. Le contrôle tient
+    // les deux bouts — l'étiquette a disparu, et le nom de l'entreprise n'est
+    // plus écrit deux fois.
+    assert.ok(!textes.includes("ÉMETTEUR"), "le bloc « ÉMETTEUR » est revenu : il double l'en-tête");
+    const foisLeNom = textes.filter((t) => t === DEVIS.entrepriseNom).length;
+    assert.equal(foisLeNom, 1, `le nom de l'entreprise est écrit ${foisLeNom} fois sur le devis`);
     assert.ok(rang("DESCRIPTION") < rang("Total TTC"), "Le tableau précède les totaux.");
     assert.ok(rang("Total TTC") < rang("NOTES / CONDITIONS"), "Les totaux précèdent les notes.");
   });
@@ -173,7 +181,7 @@ async function main() {
     // La première version comparait à `colors.rust` : le jour où l'application
     // a repris le vert d'Arborea, ce contrôle a rougi — et il avait raison, le
     // devis suivait un jeton qui ne le concernait plus.
-    for (const intertitre of ["ÉMETTEUR", "CLIENT"]) {
+    for (const intertitre of ["CLIENT"]) {
       const pose = trace.textes.find((t) => t.contenu === intertitre);
       assert.ok(pose, `« ${intertitre} » manque au devis.`);
       assert.equal(

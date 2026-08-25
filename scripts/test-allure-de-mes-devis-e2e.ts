@@ -277,7 +277,7 @@ async function main() {
     assert.equal(await page.locator('[data-atlas="allure-defaut"]').count(), 0);
   });
 
-  // ── SON LOGO, sur l'écran où il rédige (18 août 2026) ─────────────────────
+  // ── SON LOGO, sur l'écran où il rédige (25 août 2026) ─────────────────────
   //
   // *« Je viens de modifier l'apparence de mon devis, j'ai rajouté un logo en
   // haut à gauche mais il n'est pas visible. »* Le logo partait bien sur le PDF

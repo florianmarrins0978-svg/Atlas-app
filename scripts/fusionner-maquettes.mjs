@@ -21,6 +21,18 @@ import { fileURLToPath } from "node:url";
 const SOURCE = join(dirname(fileURLToPath(import.meta.url)), "..", "docs", "maquettes");
 const SORTIE_PAR_DEFAUT = join(SOURCE, "toutes-les-maquettes.html");
 
+// **UNE PLANCHE PEUT VIVRE DANS `appli/`, et il faut la trouver là aussi.**
+// `pages.yml` ne publie que `appli/` : une planche dont on attend un choix y
+// est déplacée pour avoir une adresse (`CLAUDE.md` §3 bis). Sans ce second
+// dossier, ce recueil se plaindrait d'une planche « introuvable » alors
+// qu'elle est simplement publiée — et le message accuserait le mauvais
+// coupable (`CLAUDE.md` §5).
+const APPLI = join(dirname(fileURLToPath(import.meta.url)), "..", "appli");
+function ou(fichier) {
+  const chez = join(SOURCE, fichier);
+  return existsSync(chez) ? chez : join(APPLI, fichier);
+}
+
 const MAQUETTES = [
   {
     fichier: "01-reference-du-patron.html",
@@ -314,13 +326,13 @@ const MAQUETTES = [
     quoi: "La sortie de la fiche. L’autre application lui montre seize fois « Faux » sur un passage qu’il paie : tout, seulement ce qui a été fait, ou le reste replié en une phrase.",
   },
   {
-    fichier: "64-composer-sa-fiche.html",
+    fichier: "composer-sa-fiche.html",
     titre: "Composer sa fiche d’entretien",
     famille: "L’entretien récurrent",
     quoi: "Dans les Réglages : ajouter, retirer, renommer ses prestations. La question qui reste — une seule fiche pour tous, ou un modèle puis une fiche par client.",
   },
   {
-    fichier: "65-choisir-l-heure.html",
+    fichier: "choisir-l-heure.html",
     titre: "Choisir l’heure au pouce",
     famille: "L’entretien récurrent",
     quoi: "« Ne pas avoir à l’écrire » : la molette du téléphone, les quarts d’heure, ou une vraie molette Atlas — faite sans une ligne de JavaScript. Faites-la tourner au doigt.",
@@ -504,8 +516,8 @@ function verifierLaListe() {
     }
   }
   for (const m of MAQUETTES) {
-    if (!existsSync(join(SOURCE, m.fichier))) {
-      plaintes.push(`« ${m.fichier} » est inscrite mais introuvable dans ${SOURCE}.`);
+    if (!existsSync(ou(m.fichier))) {
+      plaintes.push(`« ${m.fichier} » est inscrite mais introuvable, ni dans ${SOURCE} ni dans ${APPLI}.`);
     }
   }
   // Un lien mort dans le sommaire est le défaut d'origine de ce dossier : le
@@ -732,7 +744,7 @@ function idsDeFamille(corps) {
 function lire(maquette, indice) {
   const numero = String(indice + 1).padStart(2, "0");
   const hote = `#s${numero}`;
-  const brut = readFileSync(join(SOURCE, maquette.fichier), "utf8");
+  const brut = readFileSync(ou(maquette.fichier), "utf8");
 
   const style = brut.match(/<style>([\s\S]*?)<\/style>/);
   if (!style) throw new Error(`${maquette.fichier} : pas de <style>`);

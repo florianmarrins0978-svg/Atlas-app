@@ -94,7 +94,10 @@ async function main() {
   // en-têtes de colonnes (sur grand écran) — vérifiés juste après.
   const document = await page.locator("body").innerText();
   for (const partie of [
-    "Émetteur",
+    // **« Émetteur » a disparu le 18 août 2026**, et c'est voulu : l'en-tête
+    // porte le nom, l'adresse, le téléphone, l'e-mail et le SIRET — le bloc du
+    // bas les réécrivait. Sa question : *« pourquoi il y a deux fois
+    // l'émetteur ? »*.
     "Devis n°",
     "Validité",
     "Client",

@@ -41,10 +41,25 @@ import {
  * réglage coupé invite à le remplir pour rien — c'est le parti arrêté sur la
  * planche du plan, et il tient ici.
  *
- * **L'aperçu du bas lit LA MÊME fonction que le PDF** (`lignesConditionsDevis`).
- * Deux rédactions finiraient par diverger, et c'est le client qui lirait la
- * mauvaise (`CLAUDE.md` §3). Il ne porte aucun montant : le total d'un devis à
- * venir n'existe pas, et un chiffre inventé là finirait imprimé.
+ * **ATTENTION — CE COMMENTAIRE ÉTAIT FAUX, corrigé le 25 août 2026.** Il
+ * affirmait que « l'aperçu du bas lit LA MÊME fonction que le PDF ». Vérifié :
+ * `lignesConditionsDevis` n'est appelée **que par cet aperçu**. Ni l'écran du
+ * devis, ni son PDF ne la connaissent.
+ *
+ * Autrement dit, sur les six réglages de ce bloc, **un seul atteint le document**
+ * — la validité, figée sur le devis à sa création et imprimée par
+ * `devis-pdf.ts`. L'acompte, le délai, les moyens de paiement, le rappel des
+ * pénalités et le texte de pied s'enregistrent, s'affichent ici… et le client
+ * n'en voit rien. C'est le patron qui l'a relevé : *« les autres qui sont en ON
+ * doivent-ils être visibles sur le devis ? car je ne vois rien »*.
+ *
+ * **Branché à rien, cet aperçu ment donc à l'écran.** Le brancher change ce que
+ * REÇOIVENT ses clients : c'est sa décision, pas la nôtre, et c'est écrit dans
+ * `TODO.md`. Ce commentaire dit la vérité en attendant — une documentation
+ * périmée est pire qu'absente (`CLAUDE.md` §1).
+ *
+ * L'aperçu ne porte aucun montant : le total d'un devis à venir n'existe pas, et
+ * un chiffre inventé là finirait imprimé.
  */
 /**
  * L'aperçu, coloré : ce qu'Atlas remplit tout seul s'affiche en doré.

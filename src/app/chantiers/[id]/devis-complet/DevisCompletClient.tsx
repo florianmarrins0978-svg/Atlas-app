@@ -74,7 +74,7 @@ type Props = {
   /**
    * La clef de son logo dans le stockage, ou `null`.
    *
-   * **Il l'avait posé et ne le voyait pas** (18 août 2026) : le PDF le portait,
+   * **Il l'avait posé et ne le voyait pas** (25 août 2026) : le PDF le portait,
    * l'aperçu des réglages aussi, mais l'écran où il RÉDIGE son devis — celui
    * qu'il regarde le plus — ne le montrait nulle part.
    */
@@ -393,12 +393,24 @@ export default function DevisCompletClient(props: Props) {
             onChange={(v) => setEmetteur({ ...emetteur, nom: v })}
             onFini={() => majEmetteurAction({ nom: emetteur.nom })}
           />
+          {/* **Toute son identité ICI, et une seule fois** (25 août 2026). Sa
+              question : *« pourquoi il y a deux fois l'émetteur sur l'aperçu ? »*
+              — l'adresse et le SIRET vivaient dans un bloc « Émetteur » plus
+              bas, pendant que le nom, le téléphone et l'e-mail vivaient ici.
+              L'ordre est celui du document : nom, adresse, téléphone, e-mail,
+              SIRET, **une ligne par information**. */}
+          <ChampNu long valeur={emetteur.adresse} fige={fige} placeholder="Adresse du siège social" aria="Adresse de l'entreprise"
+            onChange={(v) => setEmetteur({ ...emetteur, adresse: v })}
+            onFini={() => majEmetteurAction({ adresse: emetteur.adresse })} />
           <ChampNu valeur={emetteur.telephone} fige={fige} placeholder="Téléphone" aria="Téléphone de l'entreprise"
             onChange={(v) => setEmetteur({ ...emetteur, telephone: v })}
             onFini={() => majEmetteurAction({ telephone: emetteur.telephone })} />
           <ChampNu valeur={emetteur.email} fige={fige} placeholder="E-mail" aria="E-mail de l'entreprise"
             onChange={(v) => setEmetteur({ ...emetteur, email: v })}
             onFini={() => majEmetteurAction({ email: emetteur.email })} />
+          <ChampNu valeur={emetteur.siret} fige={fige} placeholder="N° SIREN / SIRET" aria="SIREN / SIRET"
+            onChange={(v) => setEmetteur({ ...emetteur, siret: v })}
+            onFini={() => majEmetteurAction({ siret: emetteur.siret })} />
         </div>
 
         <div className="w-full sm:w-[280px] sm:shrink-0">
@@ -414,18 +426,14 @@ export default function DevisCompletClient(props: Props) {
         DEVIS
       </h1>
 
-      {/* --- Émetteur et client, côte à côte comme sur le papier ------------- */}
+      {/* --- Le client, seul : l'émetteur est déjà en haut ------------------
+          Sa question du 25 août 2026 : *« est-ce que c'est normal qu'il y ait
+          2 fois l'émetteur ? »*. Non — l'en-tête le porte en entier, et ce bloc
+          le réécrivait juste dessous. Le client passe donc à gauche, à la place
+          qu'occupait l'émetteur : une colonne restée à droite avec un vide en
+          face se lirait comme un bloc oublié. Le document imprimé fait
+          exactement pareil (`document-commun.ts`). */}
       <section className="grid gap-7 sm:grid-cols-2">
-        <div>
-          <Intertitre>Émetteur</Intertitre>
-          <ChampNu long valeur={emetteur.adresse} fige={fige} placeholder="Adresse du siège social" aria="Adresse de l'entreprise"
-            onChange={(v) => setEmetteur({ ...emetteur, adresse: v })}
-            onFini={() => majEmetteurAction({ adresse: emetteur.adresse })} />
-          <ChampNu valeur={emetteur.siret} fige={fige} placeholder="N° SIREN / SIRET" aria="SIREN / SIRET"
-            onChange={(v) => setEmetteur({ ...emetteur, siret: v })}
-            onFini={() => majEmetteurAction({ siret: emetteur.siret })} />
-        </div>
-
         <div>
           <Intertitre>Client</Intertitre>
           {props.clientId ? (
@@ -803,9 +811,6 @@ export default function DevisCompletClient(props: Props) {
         >
           Aperçu du PDF
         </a>
-        <p className="pb-1 text-center text-[12px]" style={{ color: colors.muted }}>
-          Tout s&apos;enregistre au fur et à mesure. Rien ne part avant que vous ne le décidiez.
-        </p>
       </div>
       </article>
 
