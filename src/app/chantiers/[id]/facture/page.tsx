@@ -80,6 +80,7 @@ export default async function FacturePage({ params }: { params: Promise<{ id: st
                   statut: existante.facture.statut,
                   clientNom: existante.facture.clientNom,
                   clientCivilite: existante.facture.clientCivilite,
+                  dateEmission: existante.facture.dateEmission,
                   dateEcheance: existante.facture.dateEcheance,
                   tauxTva: existante.facture.tauxTva,
                   totalHt: existante.facture.totalHt,
