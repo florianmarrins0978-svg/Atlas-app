@@ -726,28 +726,15 @@ session, qui la tient peut-être encore ouverte. La corriger à l'aveugle
 risquerait de défaire son travail en cours. **À reprendre par qui l'a écrite**,
 ou par la prochaine session si personne ne s'en saisit.
 
-## ⚠ EN ATTENTE DE SA RÉPONSE — voir son devis pendant qu'on le change (24 août 2026)
+## ~~Voir son devis pendant qu'on le change~~ — **CODÉ le 24 août 2026 : sa proposition B**
 
-Sa demande : *« lorsque je modifie mon devis, je suis obligé de descendre pour
-voir les modifications ; il faut mieux organiser la page pour pouvoir voir ce
-qu'on modifie. Propose, ne code rien. »*
+Planche 96, trois rangements ; il a répondu **« la B »**. L'aperçu est collé en
+tête du bloc « L'allure de mes devis » et suit tout ce qu'on touche. Le détail
+est dans `CHANGELOG.md`.
 
-**Planche 96 : `appli/allure-mieux-rangee.html`. RIEN N'EST CODÉ.** Trois
-rangements manipulables — A l'aperçu en tête, B l'aperçu collé, C la feuille
-pleine page avec les réglages en tiroir. Le détail et ce que chacun coûte sont
-dans `CHANGELOG.md`.
-
-**Deux questions attendent sa réponse :**
-
-| | |
-|---|---|
-| **Lequel des trois ?** | ou aucun — ne rien changer est une réponse |
-| **Les dix polices sur cinq rangées** | s'il préfère une seule ligne qui défile de côté, l'aperçu remonte d'autant. C'est un second choix, indépendant du premier |
-
-**Ce que coder demandera**, écrit ici pour que la prochaine session ne le
-redécouvre pas : tout se joue dans le bloc « L'allure de mes devis » de
-`src/app/reglages/documents/DocumentsClient.tsx` — l'ordre du JSX pour A, un
-conteneur `sticky` pour B, un tiroir pour C. Aucune donnée, aucune migration.
+**Une question reste ouverte, et elle est indépendante** : les dix polices
+tiennent sur cinq rangées. S'il préfère une seule ligne qui défile de côté,
+l'aperçu remonte d'autant — il ne s'est pas prononcé.
 
 ## ⚠ La planche 90 a DÉRIVÉ de l'écran « Terminés » qu'elle référence (23 août 2026)
 

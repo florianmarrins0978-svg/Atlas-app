@@ -15283,7 +15283,7 @@ qu'elle l'améliore.** Elles restent sur la planche, où il peut les comparer.
 
 ## 173. Son logo était partout, sauf sur l'écran qu'il regarde
 
-**Sa remarque du 18 août 2026, capture à l'appui :** *« je viens de modifier
+**Sa remarque du 25 août 2026, capture à l'appui :** *« je viens de modifier
 l'apparence de mon devis, j'ai rajouté un logo en haut à gauche mais il n'est
 pas visible »*.
 
@@ -15317,3 +15317,57 @@ adresse est une balise : elle passerait au vert et c'est lui qui verrait le
 carré vide. Ensuite : le logo est **au-dessus** du nom, et il n'est pas écrasé.
 
 Éprouvé rouge avant d'être livré, en retirant l'image de l'écran.
+
+---
+
+## 174. L'émetteur n'apparaît plus deux fois — et une ligne par information
+
+**Ses deux remarques du 25 août 2026, à la suite de la précédente :**
+*« pourquoi il y a deux fois l'émetteur sur l'aperçu ? »* et *« en haut à gauche
+il y a un tiret entre le numéro de tél et l'adresse e-mail, change ça, il faut
+sauter une ligne, une ligne par information »*.
+
+### Deux fois l'émetteur : ce n'était pas une convention
+
+Le document portait son identité **à deux endroits** : l'en-tête (nom,
+téléphone, e-mail) et, dix centimètres plus bas, un bloc « ÉMETTEUR » qui
+réécrivait le nom, l'adresse et le SIRET. Rien ne l'exigeait — les mentions
+obligatoires d'un devis doivent **figurer**, pas figurer deux fois. C'était un
+reste du modèle d'origine, jamais relu depuis que l'en-tête s'était étoffé.
+
+**L'en-tête a donc pris toute l'identité** — nom, adresse, téléphone, e-mail,
+SIRET — et le bloc du bas a disparu.
+
+**Le client passe à gauche, seul de sa rangée.** Une colonne « CLIENT » restée
+à droite avec un vide en face se serait lue comme un bloc oublié à
+l'impression : c'est le genre de détail qu'un client remarque sur le seul papier
+qu'il garde.
+
+### Une ligne par information
+
+Le téléphone et l'e-mail tenaient sur la même ligne, joints par un tiret
+cadratin (`[tel, email].join(" — ")`). C'est lisible sur un écran large ; c'est
+un pâté sur un devis imprimé, et il l'a vu tout de suite. Les coordonnées sont
+maintenant une liste — adresse, téléphone, e-mail, SIRET — dont chaque entrée
+prend sa ligne, et les absentes ne laissent pas de trou.
+
+### Les deux en-têtes ont bougé ENSEMBLE
+
+C'est la leçon de §173, appliquée le lendemain : l'écran de rédaction compose
+son propre en-tête, et il aurait suffi de corriger le PDF pour recréer l'écart.
+Les deux ont donc changé dans le même lot — `document-commun.ts` (devis **et**
+facture, même moteur) et `DevisCompletClient.tsx`, où l'adresse et le SIRET
+descendent de l'ancien bloc « Émetteur » vers l'en-tête, et restent modifiables.
+
+### Ce que les contrôles vérifient maintenant
+
+`test-devis-pdf.ts` et `test-facture-pdf.ts` ne cherchent plus « ÉMETTEUR » : ils
+**refusent** qu'il reparaisse (`!textes.includes("ÉMETTEUR")`) et exigent que le
+nom de l'entreprise n'apparaisse **qu'une seule fois** dans le corps du
+document. Un contrôle qui se contente de lire « CLIENT » aurait laissé revenir
+le doublon sans rien dire.
+
+**Et l'image a été regardée** (`scripts/capture-allure-devis.mts`) : sur fond
+clair comme sur fond sombre, avec logo carré et logo en bandeau. C'est la seule
+manière de voir qu'une ligne de plus dans l'en-tête ne vient pas toucher les
+références du devis.

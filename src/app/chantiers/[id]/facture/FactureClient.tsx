@@ -12,8 +12,15 @@ import { ouvrirAdresse } from "@/lib/ouvrir-messagerie";
 import { ouvrableParLeClient, phraseAdresseLocale } from "@/lib/adresse-du-client";
 import ChoixCanal from "@/components/atlas/ChoixCanal";
 import TransmettreLaFacture from "./TransmettreLaFacture";
-import { terminerChantierAction, emettreFactureAction, preparerLienFactureAction } from "./actions";
+import {
+  terminerChantierAction,
+  emettreFactureAction,
+  preparerLienFactureAction,
+  majEcheanceFactureAction,
+} from "./actions";
 import { avecCivilite } from "@/lib/civilite";
+import { ECHEANCE_MAX_JOURS } from "@/lib/echeance-facture";
+import { jourIso } from "@/lib/jour";
 
 // Arrêt 3 (docs/AGENT.md §2.3). Cet écran EST le contrôle : les montants du
 // devis sont déjà là, il n'y a rien à saisir. Franchissable en un geste quand
@@ -33,6 +40,8 @@ export type FacturePourEcran = {
   clientNom: string | null;
   /** Recopiée sur la facture à son établissement (migration 0038). */
   clientCivilite: "mr" | "mme" | null;
+  /** La date de la facture — borne basse de l'échéance modifiable. */
+  dateEmission: string;
   dateEcheance: string | null;
   tauxTva: string;
   totalHt: string;
@@ -94,6 +103,28 @@ export default function FactureClient({
   const [enCours, setEnCours] = useState(false);
   const [erreur, setErreur] = useState<string | null>(null);
   const [emise, setEmise] = useState(initialFacture?.statut === "emise");
+
+  // L'échéance — proposée par défaut à la création (son délai de paiement, ou
+  // 30 jours), et modifiable ICI tant que la facture n'est pas arrêtée. Sa
+  // demande du 25 août : « qu'il puisse la modifier », et si elle part sans
+  // qu'il y touche, elle part quand même avec une VRAIE date, jamais un vide.
+  const [dateEcheance, setDateEcheance] = useState<string | null>(initialFacture?.dateEcheance ?? null);
+  const [refusEcheance, setRefusEcheance] = useState<string | null>(null);
+  const [echeanceEnCours, setEcheanceEnCours] = useState(false);
+
+  async function changerEcheance(valeur: string) {
+    if (!initialFacture) return;
+    setEcheanceEnCours(true);
+    setRefusEcheance(null);
+    try {
+      const r = await majEcheanceFactureAction(initialFacture.id, valeur);
+      // On affiche ce que la BASE porte : une saisie hors bornes y est retombée.
+      if (r.succes) setDateEcheance(r.dateEcheance);
+      else setRefusEcheance(r.erreur);
+    } finally {
+      setEcheanceEnCours(false);
+    }
+  }
 
   // Le canal convenu avec le client ; à défaut, celui dont on a la coordonnée.
   // Ce n'est qu'un DÉPART : depuis le 12 août, l'écran offre l'autre voie sans
@@ -207,9 +238,7 @@ export default function FactureClient({
             entrepriseNom,
             modele: modeleMessage,
             numeroFacture: initialFacture.numeroCommercial,
-            echeanceLisible: initialFacture.dateEcheance
-              ? jourLisible(initialFacture.dateEcheance)
-              : null,
+            echeanceLisible: dateEcheance ? jourLisible(dateEcheance) : null,
             lien: `${origine}/factures/${lien.jeton}`,
           }),
         }),
@@ -251,6 +280,12 @@ export default function FactureClient({
     );
   }
 
+  // La borne haute du sélecteur : un an après la facture (au-delà, c'est
+  // l'année mal tapée). La borne basse est la date de la facture elle-même.
+  const maxEcheance = jourIso(
+    new Date(Date.parse(`${initialFacture.dateEmission}T00:00:00Z`) + ECHEANCE_MAX_JOURS * 86_400_000)
+  );
+
   return (
     <div className="mt-6 flex flex-col gap-4 px-6">
       <div className="rounded-[4px] px-5 py-5" style={{ backgroundColor: colors.card }}>
@@ -261,10 +296,47 @@ export default function FactureClient({
           <NumeroDeDocument valeur={initialFacture.numeroCommercial} /> —{" "}
           {avecCivilite(initialFacture.clientNom, initialFacture.clientCivilite) || "Client non renseigné"}
         </p>
-        {initialFacture.dateEcheance && (
-          <p className="mt-1 text-[13px]" style={{ color: colors.muted }}>
-            À régler avant le {jourLisible(initialFacture.dateEcheance)}
-          </p>
+        {/* L'ÉCHÉANCE — proposée, et modifiable tant que la facture n'est pas
+            arrêtée (sa demande du 25 août). Émise, elle est partie chez le
+            client et inscrite au relevé : on la fige. */}
+        {dateEcheance && (
+          <div className="mt-1.5">
+            {emise ? (
+              <p className="text-[13px]" style={{ color: colors.muted }}>
+                À régler avant le {jourLisible(dateEcheance)}
+              </p>
+            ) : (
+              <>
+                <label className="flex flex-wrap items-center gap-2 text-[13px]" style={{ color: colors.muted }}>
+                  À régler avant le
+                  <input
+                    type="date"
+                    data-atlas="echeance-facture"
+                    value={dateEcheance}
+                    min={initialFacture.dateEmission}
+                    max={maxEcheance}
+                    disabled={echeanceEnCours}
+                    onChange={(e) => {
+                      if (e.target.value) changerEcheance(e.target.value);
+                    }}
+                    // 16 px : sous ce seuil, iOS zoome à l'ouverture du sélecteur.
+                    className="rounded-[4px] px-2 py-1"
+                    style={{
+                      fontSize: 16,
+                      backgroundColor: colors.cream,
+                      color: colors.ink,
+                      border: `1px solid ${refusEcheance ? colors.alert : colors.line}`,
+                    }}
+                  />
+                </label>
+                {refusEcheance && (
+                  <p role="alert" data-atlas="echeance-refus" className="mt-1 text-[12px]" style={{ color: colors.alert }}>
+                    {refusEcheance}
+                  </p>
+                )}
+              </>
+            )}
+          </div>
         )}
       </div>
 
@@ -393,9 +465,7 @@ export default function FactureClient({
               entrepriseNom={entrepriseNom}
               modeleMessage={modeleMessage}
               numeroFacture={initialFacture.numeroCommercial}
-              echeanceLisible={
-                initialFacture.dateEcheance ? jourLisible(initialFacture.dateEcheance) : null
-              }
+              echeanceLisible={dateEcheance ? jourLisible(dateEcheance) : null}
               canal={canalEnvoi}
               jetonInitial={jetonDejaPrepare}
               telephone={clientTelephone ?? ""}

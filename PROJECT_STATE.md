@@ -13,6 +13,18 @@ ligne « fait » qui ne l'est pas coûte plus cher qu'une ligne absente.
 
 ---
 
+## L'échéance de la facture : proposée, modifiable (25 août 2026)
+
+| | État |
+|---|---|
+| La facture porte une échéance dès sa création, depuis **son délai de paiement réglé** (0 = comptant), 30 j à défaut | **fait** — `factures.ts`, `echeanceFacture` ; plus de « 30 » en dur |
+| L'échéance se **corrige** sur l'écran de la facture, tant qu'elle est brouillon | **fait** — `FactureClient`, `majEcheanceFactureAction` |
+| Une facture arrêtée fige son échéance (champ caché ET refus serveur) | **fait** — `majEcheanceFacture` refuse hors brouillon |
+| Règle de saisie pure (pas avant la facture, pas au-delà d'un an, comptant permis) | **fait** — `src/lib/echeance-facture.ts`, éprouvée sans base |
+| Isolation entre entreprises | **fait** — tenue par la RLS (`test-factures`, rôle `atlas_app`) |
+
+---
+
 ## Photographier un devis pour en reprendre l'allure (25 août 2026)
 
 | | État |
@@ -1114,7 +1126,11 @@ avait que deux, et le vocabulaire du dépôt trompait.
 | **Fiche de chantier** | `fiche-chantier-pdf.ts`, `/api/chantiers/[chantierId]/fiche/pdf` | ce qui a été fait, le matériel, les observations, les photos — **aucun prix** |
 
 Les trois sortent du **même moteur** (`document-commun.ts`) : même papier, même
-en-tête, même bloc émetteur/client, même pied. Trois moteurs auraient produit
+en-tête, même bloc client, même pied. **L'en-tête porte l'identité de
+l'entreprise en entier — nom, adresse, téléphone, e-mail, SIRET, une ligne
+chacun — et le bloc du bas ne nomme plus que le client** (25 août 2026,
+`ARCHITECTURE.md` §174) : il était écrit deux fois, et c'est le patron qui l'a
+vu. Trois moteurs auraient produit
 trois mises en page qui divergent, et c'est le client qui verrait la différence
 entre les feuilles d'un même artisan.
 
