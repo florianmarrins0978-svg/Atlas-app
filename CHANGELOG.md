@@ -11,6 +11,15 @@ Format : le plus récent en tête.
 
 ### Plus une seule flèche décorative dans les écrans
 
+**Complété le soir même, à sa demande :** *« fais-moi une photo de chaque flèche
+que tu as supprimée, parce qu'il y a des flèches qui servent à faire des retours
+ou ouvrir des pages »*. La planche `appli/fleches-retirees.html` montre chaque
+libellé en photo, pris sur l'application qui tourne, séparé en deux : ceux qui
+étaient sur un bouton, et ceux qui étaient au bout d'un lien qui ouvre une page
+— c'est lui qui tranche sur les seconds. Ce qui n'a pas été touché y est listé
+aussi. Sept libellés n'ont pas pu être photographiés (leur écran ne s'atteint
+pas depuis ce banc) : la planche le DIT, plutôt que de les taire.
+
 *« Retire la flèche ! Il m'avait semblé t'avoir demandé de supprimer toutes les
 flèches de l'application ! »* — capture à l'appui, devant « Créer la facture → ».
 
