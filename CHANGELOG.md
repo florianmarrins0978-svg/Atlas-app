@@ -32,6 +32,14 @@ n'en font plus qu'une. Le garde-fou a été vu rouge : la suite de la fiche,
 rejouée sans adresse déclarée, tombe exactement là où son client est tombé.
 Détail : `ARCHITECTURE.md` §169.
 
+**Et le devis et la facture partaient par le même mauvais chemin** — il n'avait
+signalé que la fiche. Le refus est donc posé sur les cinq gestes qui envoient un
+lien à un client. Le pire d'entre eux était l'envoi qui ouvre la messagerie dans
+la foulée : le message s'ouvrait tout prêt, avec l'adresse d'une machine dedans,
+et rien n'invitait à se méfier avant d'appuyer sur « Envoyer ». Rien n'est
+défait pour autant — un devis envoyé reste envoyé, une facture arrêtée reste
+arrêtée : c'est le message mort qu'on barre, pas son travail.
+
 
 ### La fiche en cours se supprime, et l'endroit où elle se compose se retrouve
 

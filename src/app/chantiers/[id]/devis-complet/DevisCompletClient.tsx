@@ -821,7 +821,7 @@ export default function DevisCompletClient(props: Props) {
           //
           // L'envoi rend maintenant le canal ET le destinataire qu'il vient de
           // relire en base. Une seule source, la bonne, et rien à rafraîchir.
-          ouvrirLaMessagerie({
+          const ouverture = ouvrirLaMessagerie({
             chemin: envoi.lien,
             origine: props.origine,
             canalClient: envoi.canal,
@@ -831,6 +831,17 @@ export default function DevisCompletClient(props: Props) {
             clientCivilite: client.civilite,
             entrepriseNom: emetteur.nom,
           });
+
+          // **UNE ADRESSE LOCALE NE RAMÈNE PAS À L'ACCUEIL — posé le 24 août
+          // 2026.** L'accueil ne dirait rien, et le devis serait parti avec un
+          // lien mort (`ARCHITECTURE.md` §169). On l'envoie donc là où la
+          // phrase l'attend : l'écran du devis parti, qui porte le message tout
+          // prêt et, ici, la raison de son absence. Le devis, lui, est bien
+          // envoyé — rien à défaire.
+          if (!ouverture.ok && ouverture.motif === "adresse-locale") {
+            router.push(`/chantiers/${props.chantierId}/export`);
+            return;
+          }
           // **DROIT À L'ACCUEIL — sa demande du 21 août 2026**, capture à
           // l'appui : *« juste derrière, il y a cette page-là qui s'affiche et je
           // n'ai pas besoin qu'elle s'affiche […] il faut qu'une fois que le devis

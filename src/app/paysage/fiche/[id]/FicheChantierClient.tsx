@@ -15,7 +15,7 @@ import {
   majPassageAction,
   nommerClientAction,
 } from "../actions";
-import { PHRASE_ADRESSE_LOCALE, ouvrableParLeClient } from "@/lib/adresse-du-client";
+import { ouvrableParLeClient, phraseAdresseLocale } from "@/lib/adresse-du-client";
 
 // La fiche qu'il coche sur un chantier — arrangement C, 17 août 2026.
 //
@@ -236,7 +236,7 @@ export default function FicheChantierClient({
     // rien à voir avec son chantier. Ce qu'on lui épargne, c'est le message
     // mort ; ce qu'on lui garde, c'est son travail.
     if (!ouvrableParLeClient(origine)) {
-      setPhrase(PHRASE_ADRESSE_LOCALE);
+      setPhrase(phraseAdresseLocale("votre rapport"));
       return;
     }
 
@@ -776,7 +776,7 @@ function RapportParti({
   if (!ouvrableParLeClient(lien)) {
     return (
       <p className="text-center text-[13px] leading-[1.6]" style={{ color: colors.rust }} data-refus>
-        {PHRASE_ADRESSE_LOCALE}
+        {phraseAdresseLocale("votre rapport")}
       </p>
     );
   }

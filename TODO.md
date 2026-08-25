@@ -9,7 +9,7 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
-## Le devis et la facture n'ont pas encore le refus d'adresse locale (24 août 2026)
+## ~~Le devis et la facture n'ont pas encore le refus d'adresse locale~~ (fait le 24 août 2026)
 
 Le lien envoyé au client prenait l'adresse du navigateur qui l'avait fabriqué —
 et son client a reçu une page morte sur `localhost` (`ARCHITECTURE.md` §169).
@@ -17,19 +17,14 @@ et son client a reçu une page morte sur `localhost` (`ARCHITECTURE.md` §169).
 **Ce qui est fait pour les quatre écrans** : l'adresse se calcule au même
 endroit, et `ATLAS_URL_PUBLIQUE` la commande quand elle est posée.
 
-**Ce qui n'est fait que sur la fiche de chantier** : le REFUS de composer un
-message avec une adresse locale, et la phrase qui le dit. Le devis parti, le
-devis complet et la facture peuvent donc encore envoyer un lien mort quand Atlas
-est ouvert par une redirection de port.
+**Réglé le même soir, sur sa réponse « oui tu peux le faire ».** Les cinq
+gestes qui envoient un lien à un client portent le refus — fiche de chantier
+(envoi et rapport rouvert), devis parti, message tout prêt de la facture, envoi
+de la facture, envoi depuis le devis complet.
 
-| | |
-|---|---|
-| ce qu'il faut | poser `ouvrableParLeClient` sur leurs trois gestes d'envoi |
-| qui peut le faire | n'importe quelle session — la règle pure existe déjà |
-| pourquoi ce n'est pas fait ici | trois écrans de plus dans un lot déjà large, et leurs suites à reprendre une par une |
-
-Ce n'est pas urgent tant qu'il envoie depuis l'adresse de son espace de travail
-— mais c'est exactement l'hypothèse qui vient d'être démentie.
+Ce qui reste vrai et mérite d'être su : le refus arrive APRÈS l'enregistrement,
+partout. Un devis envoyé reste envoyé, une facture arrêtée reste arrêtée — on ne
+défait pas une écriture comptable pour une histoire d'adresse.
 
 ---
 

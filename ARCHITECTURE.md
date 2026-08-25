@@ -14956,6 +14956,40 @@ garde-fou a bien été vu ROUGE : la suite de la fiche de chantier, rejouée san
 l'adresse déclarée, tombe sur « n'a ouvert aucune messagerie » et « n'offre
 aucun moyen de le transmettre » — exactement là où son client est tombé.
 
+### Les QUATRE chemins, et non le seul qu'il a signalé
+
+Il a signalé la fiche de chantier ; le devis et la facture partaient par le même
+mauvais chemin. Le refus est donc posé partout où un lien s'en va chez un
+client :
+
+| Le geste | Où le refus se lit |
+|---|---|
+| fiche de chantier — envoyer, ou rouvrir un rapport figé | sous le bouton |
+| devis parti — « envoyer », « relancer » | à la place du bouton |
+| facture — le message tout prêt | à la place du bouton |
+| facture — l'envoi qui ouvre la messagerie dans la foulée | en rouge sur l'écran |
+| devis complet — l'envoi qui ouvre la messagerie | voir ci-dessous |
+
+**Le quatrième cas est le pire, et c'est celui qu'on ne voit pas venir :** la
+messagerie s'ouvre TOUTE PRÊTE, avec l'adresse d'une machine dedans, et il
+appuie sur « Envoyer » sans avoir la moindre raison de se méfier. Ne rien ouvrir
+est déjà mieux ; le dire est mieux encore.
+
+**D'où un refus qui REMONTE au lieu d'être avalé.** `ouvrirLaMessagerie` rend
+désormais un verdict : c'est l'appelant qui sait où le patron doit atterrir.
+L'envoi depuis le devis complet ramenait à l'accueil — qui ne dirait rien — et
+mène maintenant à l'écran du devis parti, celui qui porte la phrase. Le devis,
+lui, est bien envoyé : on ne défait rien, on barre le message.
+
+**Le même arbitrage vaut pour la facture, et il compte double** : elle est déjà
+ARRÊTÉE quand le refus tombe. Son émission a engagé sa comptabilité — on ne la
+défait pas pour une histoire d'adresse.
+
+**Et la phrase se termine par un verbe qui ne s'accorde pas** — « votre facture
+vous attend ici ». « Est enregistré » aurait obligé à accorder par document, et
+« votre facture est enregistré » est exactement le genre de faute que le patron
+relève.
+
 ### Ce qui n'est PAS réglé ici, et qui lui appartient
 
 Il a écrit : *« Il est sensé recevoir la fiche par pdf ! »* Ce n'est pas ce que

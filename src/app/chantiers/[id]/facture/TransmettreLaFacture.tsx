@@ -4,6 +4,7 @@ import { useState } from "react";
 import PrimaryButton from "@/components/atlas/PrimaryButton";
 import { colors } from "@/lib/design-tokens";
 import { composerMessageFacture, lienTransmission, type CanalClient } from "@/lib/message-client";
+import { ouvrableParLeClient, phraseAdresseLocale } from "@/lib/adresse-du-client";
 import { marquerDepartMessagerie } from "@/lib/depart-messagerie";
 import { enregistrerCoordonneeClientAction } from "../export/actions";
 import { preparerLienFactureAction } from "./actions";
@@ -213,6 +214,18 @@ export default function TransmettreLaFacture({
     } finally {
       setEnCours(false);
     }
+  }
+
+  // **Le même refus que sur le devis et la fiche** (`ARCHITECTURE.md` §169).
+  // Sur l'origine plutôt que sur le lien : celui-ci se prépare à l'appui, et
+  // laisser composer d'abord pour refuser ensuite arrêterait une facture pour
+  // rien. Ici la facture est déjà émise — c'est le message qu'on barre.
+  if (!ouvrableParLeClient(origine)) {
+    return (
+      <p className="text-center text-[13px] leading-[1.6]" style={{ color: colors.rust }} data-refus>
+        {phraseAdresseLocale("votre facture")}
+      </p>
+    );
   }
 
   return (

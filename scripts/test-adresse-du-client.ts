@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { PHRASE_ADRESSE_LOCALE, ouvrableParLeClient } from "../src/lib/adresse-du-client";
+import { ouvrableParLeClient, phraseAdresseLocale } from "../src/lib/adresse-du-client";
 import { originePublique } from "../src/server/origine-publique";
 
 // L'adresse qu'on met dans un message à un client.
@@ -77,11 +77,20 @@ cas("une adresse absente ou illisible ne vaut pas mieux qu'une mauvaise", () => 
   assert.equal(ouvrableParLeClient("file:///tmp/rapport.html"), false);
 });
 
-cas("la phrase dit le GESTE, et rassure sur le rapport", () => {
+cas("la phrase dit le GESTE, et rassure sur ce qui est en jeu", () => {
   // `CLAUDE.md` §3 ter : pas de mécanisme dans ce qu'il lit. Et surtout, elle
-  // doit dire que le rapport est sauf — sinon il recoche toute sa fiche.
+  // doit dire que son travail est sauf — sinon il recoche toute sa fiche, ou
+  // pire, il rappuie sur un bouton qui a déjà engagé sa comptabilité.
+  const PHRASE_ADRESSE_LOCALE = phraseAdresseLocale("votre rapport");
   assert.match(PHRASE_ADRESSE_LOCALE, /adresse web/i, "elle ne dit pas quoi faire");
-  assert.match(PHRASE_ADRESSE_LOCALE, /rien n'est perdu/i, "elle ne dit pas que le rapport est sauf");
+  assert.match(PHRASE_ADRESSE_LOCALE, /rien n'est perdu/i, "elle ne dit pas que le travail est sauf");
+
+  // **Les trois documents, et l'ACCORD qui va avec.** « votre facture est
+  // enregistré » est exactement la faute que le patron relève ; la phrase se
+  // termine donc par un verbe qui ne s'accorde pas.
+  for (const quoi of ["votre rapport", "votre devis", "votre facture"]) {
+    assert.match(phraseAdresseLocale(quoi), new RegExp(`${quoi} vous attend ici`));
+  }
   // **Les bornes de mot ne sont pas une coquetterie** : sans elles, `/port/`
   // trouve « ra-pport » et ce contrôle accuse la phrase d'un jargon qu'elle n'a
   // pas. Une erreur qui envoie chercher au mauvais endroit coûte plus cher que

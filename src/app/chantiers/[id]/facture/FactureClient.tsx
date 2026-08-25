@@ -9,6 +9,7 @@ import { jourLisible } from "@/lib/jour";
 import { composerMessageFacture, lienTransmission, type CanalClient } from "@/lib/message-client";
 import { useRetourDeMessagerie, marquerDepartMessagerie } from "@/lib/depart-messagerie";
 import { ouvrirAdresse } from "@/lib/ouvrir-messagerie";
+import { ouvrableParLeClient, phraseAdresseLocale } from "@/lib/adresse-du-client";
 import ChoixCanal from "@/components/atlas/ChoixCanal";
 import TransmettreLaFacture from "./TransmettreLaFacture";
 import { terminerChantierAction, emettreFactureAction, preparerLienFactureAction } from "./actions";
@@ -176,6 +177,21 @@ export default function FactureClient({
           `Facture arrêtée, mais le lien n'a pas pu être préparé — ${lien.erreur} ` +
             `Le message tout prêt vous attend ci-dessous.`
         );
+        router.refresh();
+        return;
+      }
+
+      // **LE MESSAGE MORT NE PART PAS — posé le 24 août 2026.** Le lien prend
+      // l'adresse par laquelle Atlas est ouvert ; celle d'une redirection de
+      // port ne désigne que sa machine, et son client reçoit « Connexion au
+      // serveur impossible » (`ARCHITECTURE.md` §169).
+      //
+      // **La facture est déjà ARRÊTÉE ici**, et c'est tout le sens du refus :
+      // on ne défait pas son émission — elle a engagé sa comptabilité — on
+      // barre le seul message qui n'arriverait nulle part. L'écran d'après
+      // porte `TransmettreLaFacture`, qui redit la même chose sous le bouton.
+      if (!ouvrableParLeClient(origine)) {
+        setErreur(phraseAdresseLocale("votre facture"));
         router.refresh();
         return;
       }

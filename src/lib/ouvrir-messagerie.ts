@@ -1,6 +1,7 @@
 "use client";
 
 import { composerMessageClient, lienTransmission } from "@/lib/message-client";
+import { ouvrableParLeClient } from "./adresse-du-client";
 import type { CiviliteChoisie } from "@/lib/civilite";
 
 /**
@@ -57,6 +58,17 @@ export type OuvertureMessagerie = {
  * quelque chose qui ne répond pas.
  * ──────────────────────────────────────────────────────────────────────────
  */
+/**
+ * Ce que l'ouverture a fait — et pourquoi elle ne l'a pas fait.
+ *
+ * **Rendu plutôt que journalisé** : deux refus existent, et ils n'appellent pas
+ * le même geste. Sans coordonnée, l'écran de repli la demande ; sur une adresse
+ * locale, c'est Atlas qu'il faut rouvrir autrement.
+ */
+export type VerdictOuverture =
+  | { ok: true }
+  | { ok: false; motif: "sans-destinataire" | "adresse-locale" };
+
 export function ouvrirLaMessagerie({
   chemin,
   origine,
@@ -66,11 +78,22 @@ export function ouvrirLaMessagerie({
   clientNom,
   clientCivilite,
   entrepriseNom,
-}: OuvertureMessagerie) {
+}: OuvertureMessagerie): VerdictOuverture {
   const destinataire = canalClient === "sms" ? clientTelephone : clientEmail;
   // Sans coordonnée, il n'y a rien à ouvrir — l'écran de repli la demande.
   // (L'envoi est d'ailleurs déjà bloqué en amont dans ce cas.)
-  if (!destinataire.trim()) return;
+  if (!destinataire.trim()) return { ok: false, motif: "sans-destinataire" };
+
+  // **NE PAS OUVRIR UNE MESSAGERIE SUR UN LIEN MORT — posé le 24 août 2026.**
+  // C'est le pire des cas, pire que de ne rien ouvrir : le message s'ouvre
+  // tout prêt, avec l'adresse d'une machine dedans, et il appuie sur
+  // « Envoyer » sans avoir de raison de se méfier. Son client reçoit alors
+  // « Connexion au serveur impossible » (`ARCHITECTURE.md` §169).
+  //
+  // **Le refus REMONTE plutôt que d'être avalé** : c'est l'appelant qui sait
+  // où le patron doit atterrir pour lire la phrase — ici, l'écran du devis
+  // parti, qui la porte.
+  if (!ouvrableParLeClient(origine)) return { ok: false, motif: "adresse-locale" };
 
   const message = composerMessageClient({
     clientNom,
@@ -101,6 +124,7 @@ export function ouvrirLaMessagerie({
   // annulerait la navigation sur certains navigateurs, et priverait le
   // contrôle de la seule trace qu'il puisse lire.
   ouvrirAdresse(lienTransmission({ canal: canalClient, destinataire, message }), canalClient);
+  return { ok: true };
 }
 
 /**

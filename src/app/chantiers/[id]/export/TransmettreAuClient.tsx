@@ -4,6 +4,7 @@ import { useState } from "react";
 import PrimaryButton from "@/components/atlas/PrimaryButton";
 import { colors } from "@/lib/design-tokens";
 import { composerMessageClient, lienTransmission, type CanalClient } from "@/lib/message-client";
+import { ouvrableParLeClient, phraseAdresseLocale } from "@/lib/adresse-du-client";
 import { destinataireLisible } from "@/lib/numero-lisible";
 import { marquerDepartMessagerie, useRetourDeMessagerie } from "@/lib/depart-messagerie";
 import { enregistrerCoordonneeClientAction } from "./actions";
@@ -166,6 +167,19 @@ export default function TransmettreAuClient({
     } finally {
       setEnregistrement(false);
     }
+  }
+
+  // **UN LIEN QUI NE MÈNE QU'À SA MACHINE NE PART PAS — posé le 24 août 2026.**
+  // Son client avait reçu « Connexion au serveur impossible » sur une fiche de
+  // chantier ; le devis part par le même chemin et souffrait du même mal
+  // (`ARCHITECTURE.md` §169). Ici le devis EST déjà envoyé et figé : ce qu'on
+  // barre, c'est le message mort, pas son travail — et la phrase le dit.
+  if (!ouvrableParLeClient(lien)) {
+    return (
+      <p className="text-center text-[13px] leading-[1.6]" style={{ color: colors.rust }} data-refus>
+        {phraseAdresseLocale("votre devis")}
+      </p>
+    );
   }
 
   return (
