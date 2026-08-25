@@ -9,6 +9,31 @@ Format : le plus récent en tête.
 
 ## 2026-08-25
 
+### Photographier un devis pour en reprendre l'allure
+
+*« faut que l'utilisateur puisse prendre la photo de son devis […] pareil pour
+sa facture »*, après *« on comprend rien, trop compliqué pour modifier »* sur
+l'écran des documents. Il règle aujourd'hui logo, police, couleur et mentions à
+la main, sur près de mille lignes qu'il trouve illisibles.
+
+En tête de « L'allure de mes devis », deux boutons photographient un devis ou
+une facture — **appareil photo ou photothèque**, son devis étant parfois déjà
+une image. L'appli en reprend **l'allure** (couleurs, police reconnue) et les
+**mentions** (conditions, politesse), **jamais les lignes ni les prix**, jamais
+le logo — un modèle décrit une image, il ne la découpe pas, et l'écran le dit en
+réserve plutôt que de le laisser croire.
+
+**Ce qui protège du faux.** On ne pose une police que sur une famille reconnue
+parmi les neuf que le PDF sait embarquer ; une couleur mal lue vaut `null` et
+laisse celle d'avant ; un acompte hors bornes tombe. Chaque perte se dit à
+l'écran. La photo est nettoyée de ses métadonnées comme le logo (coordonnées GPS
+du lieu de la prise), avant de partir chez le fournisseur de vision.
+
+**Ce qui n'est PAS éprouvé ici, et l'est ailleurs.** La fonction pure de lecture
+est testée sans clé (`test-lecture-allure-devis.ts`), là où vivent les pièges.
+L'appel réel au fournisseur demande une clé absente de cet environnement : il se
+prouve sur son espace, avec un vrai devis — comme la dictée.
+
 ### L'accueil perd son salut et son trait
 
 *« Supprime le bonjour compte »*, et *« une sans le trait gris »* — ses deux

@@ -9,7 +9,21 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
-## Photographier son devis / sa facture pour en reprendre l'allure (25 août 2026)
+## ~~Photographier son devis / sa facture pour en reprendre l'allure~~ — FAIT le 25 août 2026
+
+**FAIT.** L'écran Réglages → Documents porte désormais, en tête de « L'allure de
+mes devis », deux boutons *Photographier mon devis / ma facture* (appareil photo
+**ou** photothèque). La lecture vit dans `src/server/ai/services/lire-allure-devis.ts`
+(même patron que `lire-ticket.ts`), l'action `reprendreAllurePhotoAction` fusionne
+le lu dans l'allure et les conditions déjà en base, et l'écran montre ce qui a été
+repris et sa réserve. La photo est nettoyée de ses métadonnées comme le logo.
+
+**Reste NON vérifié ici, et il faut le dire :** l'appel réel au fournisseur de
+vision demande une clé, absente de cet environnement. La fonction PURE de lecture
+est éprouvée (`scripts/test-lecture-allure-devis.ts`, 0 échec) ; **la lecture d'un
+vrai devis se prouve sur son espace, avec sa clé, comme la dictée.**
+
+<details><summary>Contexte d'origine</summary>
 
 **Sa demande :** *« faut également que l'utilisateur puisse prendre la photo de
 son devis et que l'outil recopie trait pour trait son devis, pareil pour sa
@@ -46,6 +60,8 @@ dans sa galerie. Et **« régler à la main » a été retiré** : il a demandé
 | qui peut le faire | moi — c'est du code, la brique vision existe |
 | d'abord | **la maquette** (§3 bis), qu'il a demandée avant tout code |
 | pas vérifiable ici | la lecture d'image réelle demande une clé de vision, absente de cet environnement — à jouer sur son espace |
+
+</details>
 
 ---
 

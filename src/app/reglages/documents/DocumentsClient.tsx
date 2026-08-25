@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState, useTransition } from "react";
-import { colors, font, libelleCaps, texteSituation } from "@/lib/design-tokens";
+import { colors, font, libelleCaps, surPlein, texteSituation } from "@/lib/design-tokens";
 import {
   BORNES,
   lireConditions,
@@ -29,6 +29,7 @@ import {
   majAllureAction,
   majConditionsAction,
   poserLogoAction,
+  reprendreAllurePhotoAction,
   retirerLogoAction,
 } from "./actions";
 
@@ -122,6 +123,32 @@ export default function DocumentsClient({
   const [refusAllure, setRefusAllure] = useState<string | null>(null);
   const [allureEnCours, demarrerAllure] = useTransition();
   const choixImage = useRef<HTMLInputElement | null>(null);
+
+  // ── Reprendre l'allure d'un document PHOTOGRAPHIÉ — sa demande du 25 août ──
+  // Ce que la photo a repris (couleurs, police, mentions) et ce qu'elle n'a pas
+  // su faire (réserve). Le même geste, la même transition que le réglage à la
+  // main juste dessous : photographier n'est qu'une autre façon de le remplir.
+  const [reprise, setReprise] = useState<{ repris: string[]; reserve: string | null } | null>(null);
+  const choixPhoto = useRef<HTMLInputElement | null>(null);
+
+  function reprendrePhoto(f: File) {
+    setRefusAllure(null);
+    setReprise(null);
+    const formulaire = new FormData();
+    formulaire.append("fichier", f);
+    demarrerAllure(async () => {
+      const r = await reprendreAllurePhotoAction(formulaire);
+      if (!r.ok) {
+        setRefusAllure(r.raison);
+        return;
+      }
+      // On affiche ce que la base porte — l'allure et les mentions relues —,
+      // jamais ce que la photo a cru voir : c'est ce qui s'imprimera.
+      setAllure(r.allure);
+      setC(lireConditions(r.conditions));
+      setReprise({ repris: r.repris, reserve: r.reserve });
+    });
+  }
 
   function poserAllure(partiel: Partial<Allure>) {
     const prochaine = { ...allure, ...partiel };
@@ -458,6 +485,80 @@ export default function DocumentsClient({
           Elle habille votre devis et votre facture. La feuille de chantier, elle,
           ne change pas : personne d&apos;autre que vous ne la lit.
         </p>
+
+        {/* ── PHOTOGRAPHIER UN DEVIS — sa demande du 25 août 2026 ─────────────
+            *« faut que l'utilisateur puisse prendre la photo de son devis […]
+            pareil pour sa facture »*, après *« on comprend rien, trop compliqué
+            pour modifier »*. Dessiné d'abord (`appli/photographier-mon-devis.html`)
+            et tranché ainsi : la photo reprend l'ALLURE (couleurs, police) et les
+            MENTIONS — jamais les lignes ni les prix, jamais le logo.
+
+            **La photo d'abord, le réglage à la main dessous** : son choix devant
+            la question du 25 août. Un seul champ, sans `capture` : le navigateur
+            offre alors l'appareil photo OU la photothèque — son devis est parfois
+            déjà une image dans sa galerie. */}
+        <div
+          className="mb-5 rounded-[6px] p-4"
+          style={{ backgroundColor: colors.card, boxShadow: `inset 0 0 0 1px ${colors.line}` }}
+        >
+          <input
+            ref={choixPhoto}
+            type="file"
+            accept="image/*"
+            className="hidden"
+            data-atlas="photo-fichier"
+            onChange={(e) => {
+              const f = e.target.files?.[0];
+              e.target.value = "";
+              if (f) reprendrePhoto(f);
+            }}
+          />
+          {/* Deux gestes, un pour chaque document — comme sur la maquette. La
+              lecture est la même : ce sont ses mots qui changent, pas le calcul. */}
+          <button
+            type="button"
+            data-atlas="photo-devis"
+            disabled={allureEnCours}
+            onClick={() => choixPhoto.current?.click()}
+            className="flex min-h-[52px] w-full items-center justify-center rounded-full px-4 text-[15px]"
+            style={{ backgroundColor: colors.rust, color: surPlein, opacity: allureEnCours ? 0.6 : 1 }}
+          >
+            {allureEnCours ? "Lecture…" : "Photographier mon devis"}
+          </button>
+          <button
+            type="button"
+            data-atlas="photo-facture"
+            disabled={allureEnCours}
+            onClick={() => choixPhoto.current?.click()}
+            className="mt-2 flex min-h-[52px] w-full items-center justify-center rounded-full px-4 text-[15px]"
+            style={{ color: colors.ink, boxShadow: `inset 0 0 0 1px ${colors.line}`, opacity: allureEnCours ? 0.6 : 1 }}
+          >
+            Photographier ma facture
+          </button>
+
+          {reprise && (
+            <div data-atlas="photo-repris" className="mt-3">
+              {reprise.repris.length > 0 ? (
+                <p className="text-[14px] leading-[1.5]" style={{ color: colors.ink }}>
+                  Repris : {reprise.repris.join(", ")}.
+                </p>
+              ) : (
+                <p className="text-[14px] leading-[1.5]" style={{ color: colors.muted }}>
+                  Rien n&apos;a pu être repris de cette photo.
+                </p>
+              )}
+              {reprise.reserve && (
+                <p className={`mt-1 ${texteSituation}`} style={{ color: colors.muted }}>
+                  {reprise.reserve}
+                </p>
+              )}
+            </div>
+          )}
+
+          <p className={`mt-2 ${texteSituation}`} style={{ color: colors.muted }}>
+            Les couleurs, la police et les mentions. Ni les lignes, ni les prix.
+          </p>
+        </div>
 
         {refusAllure && (
           <p role="alert" data-atlas="allure-refus" className={`mb-3 ${texteSituation}`} style={{ color: colors.alert }}>
