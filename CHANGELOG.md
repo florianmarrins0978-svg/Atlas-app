@@ -578,6 +578,55 @@ faute que le délai fixe, dans une robe plus convaincante.
 
 ## 2026-08-24
 
+### Le lien que reçoit le client partait vers `localhost` — deux causes, deux correctifs
+
+**Sa capture : « Connexion au serveur impossible », sur `localhost`.** Son client
+ouvre le message et tombe sur une page morte. Le document existait, son jeton
+était bon, la page fonctionnait — mais l'adresse envoyée désignait **le
+téléphone du client lui-même**.
+
+**Cause 1 : l'espace ne DONNAIT PAS son adresse publique au serveur.** Le script
+de démarrage la composait déjà — pour l'afficher dans le terminal, à mettre en
+favori — sans jamais la poser dans l'environnement. Or le lien prend l'adresse
+par laquelle Atlas a été OUVERT : par l'adresse publique de l'espace il est bon,
+par la redirection de port de l'éditeur (`http://localhost:3000`) il ne vaut que
+sur sa machine. Rien à l'écran ne distinguait les deux. `ATLAS_URL_PUBLIQUE` est
+désormais exportée au démarrage, avant tout ce qui se lance : posée, elle
+commande, et le lien devient juste **quelle que soit la porte par laquelle il
+entre**. L'affichage du terminal réemploie cette même variable — deux formules
+pour une seule adresse finiraient par ne plus dire la même chose.
+
+**Cause 2 : le garde-fou n'existait que sur la fiche d'entretien**, là où le
+défaut avait été trouvé la veille. Le devis et la facture partent par le même
+chemin et prennent la même adresse : ils envoyaient le lien mort.
+
+**Ce second correctif est venu d'une AUTRE SESSION, et c'est la sienne qui a été
+gardée à la fusion.** Nous avions écrit le même refus au même endroit, à une
+heure d'intervalle ; la sienne va plus loin — la phrase y est paramétrable
+(`phraseAdresseLocale("votre devis")`) au lieu d'un texte unique pour les trois
+documents. Reporter la nôtre par-dessus aurait été une régression. Ce lot n'y
+laisse que le contrôle, qui tient désormais la règle pour les trois écrans :
+un quatrième écran qui écrirait à un client sans ce verdict le fera rougir.
+
+**Les deux sont nécessaires, et pas l'un OU l'autre** : le premier rend le lien
+juste, le second empêche d'en envoyer un faux le jour où la variable manque sur
+une machine qu'on n'a pas prévue.
+
+**Le contrôle EXÉCUTE le bloc du script de démarrage**, il ne le relit pas :
+chercher la chaîne « export ATLAS_URL_PUBLIQUE » passerait au vert sur un
+`export` commenté, ou placé après le lancement du serveur. Le bloc est extrait
+du fichier tel qu'il est, joué dans un bash à part avec les variables que GitHub
+pose, et l'on lit ce qui en sort. **Vu rougir** contre l'export retiré, et
+contre le garde-fou du devis désactivé.
+
+**Ce que le contrôle des trois écrans NE prouve pas, et c'est écrit dedans** :
+il lit la source. L'éprouver au navigateur demanderait de servir Atlas sur une
+adresse locale, or la batterie pose délibérément `ATLAS_URL_PUBLIQUE` pour que
+les suites aient des liens valides — le refus ne s'y déclencherait jamais, et un
+vert n'y prouverait rien.
+
+
+
 ### Lot 2B : une image ne se range plus jamais sans être nettoyée
 
 **Le revirement du jour, et il est assumé.** Ce dépôt écrivait le matin même :
