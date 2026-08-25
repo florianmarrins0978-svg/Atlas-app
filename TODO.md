@@ -542,6 +542,14 @@ il coûte cher : il fait douter d'un lot juste, et il apprend à ignorer un roug
 Le corriger, c'est attendre la trace de l'enregistrement plutôt qu'un délai —
 la même leçon que le `networkidle` du 15 août.
 
+**`test-attente-dictee-e2e.ts` a rejoint la liste le 25 août**, avec la même
+signature à un détail près : *« l'écran affiche "Aucune coordonnée reconnue dans
+ce que vous avez dit" au lieu d'annoncer qu'il rédige »*. Tombée en batterie
+(109/110), **verte seule** dans la foulée, sur du code que le lot en cours ne
+touchait pas — il ne portait que l'en-tête de l'accueil. Ici encore, l'assertion
+arrive avant que le serveur chargé n'ait rendu sa réponse : l'écran en est resté
+au message d'échec de la dictée précédente. **Quatre suites, un seul défaut.**
+
 **Personne ne l'a encore fait**, et ce n'est pas ce lot-ci qui doit le faire :
 c'est écrit ici pour que la prochaine batterie rouge sur ces deux suites ne
 relance pas l'enquête depuis zéro.
