@@ -166,7 +166,12 @@ async function main() {
   // reste ici est le message tout prêt de l'écran d'après — celui qui rattrape
   // le cas où le téléphone aurait refusé d'ouvrir la messagerie.
 
-  const lien = page.getByRole("link", { name: /Ouvrir le (SMS|e-mail) tout prêt/ });
+  // **Repéré par son `data-atlas`, plus par son libellé.** Le 24 août 2026, le
+  // patron a fait renommer ce bouton — *« corrige en envoyer par SMS, retire la
+  // flèche »*. Un contrôle accroché au texte serait mort sur une demande
+  // exaucée, et l'on aurait été tenté de rétablir le mot pour le faire taire
+  // (`CLAUDE.md` §5 bis). Ce repère-ci survit au prochain changement de mot.
+  const lien = page.locator("a[data-atlas^='transmission-']");
   // **Attendre le lien, jamais un délai fixe.** Ce contrôle a échoué une fois
   // au milieu de la batterie complète, et passé seul dans la foulée : sous
   // trente-cinq suites enchaînées sur un même serveur de développement, la

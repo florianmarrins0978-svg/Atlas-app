@@ -65,7 +65,15 @@ export type JetonsCharte = {
   vertPale: string;
 };
 
-export type NomCharte = "origine" | "pierre" | "beurre" | "moka" | "prune" | "sylve" | "nuit";
+export type NomCharte =
+  | "origine"
+  | "brume"
+  | "pierre"
+  | "beurre"
+  | "moka"
+  | "prune"
+  | "sylve"
+  | "nuit";
 
 export type Charte = {
   nom: NomCharte;
@@ -76,6 +84,12 @@ export type Charte = {
   /** Sombre : l'écran est plus foncé que l'encre ne l'est claire. */
   sombre: boolean;
   jetons: JetonsCharte;
+  /**
+   * Ce que la charte change au-delà de la couleur. Absent = la forme
+   * d'aujourd'hui, au pixel près — c'est ce qui garantit qu'ajouter une charte
+   * ne touche à rien.
+   */
+  formes?: FormesCharte;
 };
 
 /** `origine` est le défaut. Sa valeur ne se devine pas : elle est écrite ici. */
@@ -251,6 +265,38 @@ const ALERTE_ORIGINE = "#9C3B2E";
 const BORDEAUX_ORIGINE = "#6E2433";
 const VERT_PALE_ORIGINE = "#b9c6b4";
 
+/**
+ * ─── CE QU'UNE CHARTE PEUT CHANGER EN PLUS DE LA COULEUR ────────────────────
+ *
+ * **Sa demande du 24 août 2026, planche 92 en main :** *« ajoute-moi le Brume
+ * moderne comme style, mais ne change pas l'appli »*. Les deux moitiés
+ * commandent ensemble : la charte porte donc aussi la FORME, et rien ne bouge
+ * tant qu'il ne l'a pas choisie.
+ *
+ * **Pourquoi un champ à part, et pas un jeton de plus.** `JetonsCharte` est
+ * parcouru par les dérivations — `estSombre`, `contraste`, la remontée des
+ * couleurs de signal — qui supposent toutes que chaque valeur est une couleur.
+ * Y glisser une pile de polices ferait calculer une luminance sur
+ * « ui-sans-serif », et le résultat ne serait pas une erreur : ce serait un
+ * nombre faux, en silence.
+ *
+ * **Ce que la forme NE porte pas encore, et il faut le dire** (`AGENTS.md`) :
+ * les rayons, les ombres et l'air de la planche « Moderne ». Ils sont écrits en
+ * dur dans soixante-six fichiers (`rounded-[13px]`, `inset 0 0 0 1px`), et une
+ * charte ne peut rien sur ce qui ne passe pas par elle. Les convertir est un
+ * lot à part — annoncé, pas fait ici.
+ */
+export type FormesCharte = {
+  /**
+   * La pile de polices des TITRES — `--font-display`.
+   *
+   * C'est la moitié visible de « Moderne » : le Georgia serif contre la police
+   * du téléphone. Elle passe déjà par une variable CSS (`globals.css`), donc
+   * elle suit la charte sans qu'aucun écran soit touché.
+   */
+  policeTitres?: string;
+};
+
 export const CHARTES: Charte[] = [
   {
     nom: "origine",
@@ -276,6 +322,59 @@ export const CHARTES: Charte[] = [
       alerte: ALERTE_ORIGINE,
       bordeaux: BORDEAUX_ORIGINE,
       vertPale: VERT_PALE_ORIGINE,
+    },
+  },
+  {
+    /**
+     * ─── BRUME MODERNE — SON CHOIX DU 24 AOÛT 2026, PLANCHE 92 ──────────────
+     *
+     * *« Ajoute-moi le Brume moderne comme style, mais ne change pas
+     * l'appli. »* Elle s'ajoute donc aux sept, sans en remplacer aucune, et
+     * `origine` reste le défaut : tant qu'il ne la choisit pas, rien ne bouge.
+     *
+     * **Les couleurs sont celles de la planche, au caractère près** — pas
+     * redérivées. Une seule valeur qui s'écarterait ferait servir autre chose
+     * que ce qu'il a validé au pouce.
+     *
+     * **Pourquoi le fond n'est pas `#ffffff`.** Le blanc pur, sur une dalle de
+     * téléphone en plein soleil, éblouit et fait disparaître les séparations
+     * fines — or cet écran se lit dehors, sur un chantier. `#f4f7fb` est un
+     * blanc froid : il porte le reflet bleuté qu'il demandait sans le prix du
+     * blanc pur.
+     *
+     * **Pourquoi le bleu d'action est marine et non vif.** Un bleu clair a la
+     * valeur d'un lien, et l'on appuie dessus par erreur. Surtout, il
+     * concurrencerait l'or — qui, ici, veut dire « à faire ». Deux couleurs qui
+     * réclament l'attention en même temps n'en obtiennent aucune. C'est la
+     * réserve écrite sur la planche à côté d'« Azur », et c'est pour cela
+     * qu'Azur n'est pas celle-ci.
+     */
+    nom: "brume",
+    libelle: "Brume moderne",
+    dit: "Un blanc froid à reflets bleutés, un bleu marine pour l'action, et les titres dans la police du téléphone.",
+    sombre: false,
+    jetons: depuisPlanche({
+      fond: "#f4f7fb", plage: "#ffffff", encre: "#111823", gris: "#78838f",
+      bronze: "#B98B47", plein: "#22456d", pleinSigne: "#6f95c4",
+    }),
+    /**
+     * **La moitié « moderne », et c'est tout ce que la charte peut en porter.**
+     * Les titres quittent le Georgia pour la police du système — celle que son
+     * téléphone dessine le mieux, et celle des applications d'aujourd'hui.
+     *
+     * `ui-sans-serif` d'abord : sur iOS c'est San Francisco, dessiné pour être
+     * lu à bout de bras. Les suivantes ne servent qu'aux appareils qui ne la
+     * connaissent pas — une pile sans repli rendrait un Times par défaut, soit
+     * exactement le contraire de ce qui est demandé.
+     *
+     * Ce qui MANQUE encore par rapport à la planche — les rayons de 20 px,
+     * l'ombre bleutée, l'air en plus — est écrit au-dessus de `FormesCharte` :
+     * soixante-six fichiers écrivent ces valeurs en dur, et une charte ne peut
+     * rien sur ce qui ne passe pas par elle.
+     */
+    formes: {
+      policeTitres:
+        'ui-sans-serif, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif',
     },
   },
   {
@@ -359,8 +458,35 @@ export function normaliserCharte(nom: string | null | undefined): NomCharte | nu
  * sont `design-tokens.ts` et lui seul qui les consomment, et un second
  * vocabulaire entre les deux se serait traduit de travers un jour ou l'autre.
  */
+/**
+ * Les variables d'une charte, sous forme de paires — LA source unique.
+ *
+ * **Elle est née d'un défaut, le 24 août 2026.** `variablesCss` existait déjà,
+ * mais le gabarit ne s'en servait pas : il reparcourait `c.jetons` de son côté
+ * (`variablesEnStyle` dans `layout.tsx`). Deux implémentations de la même
+ * règle — ce que le §3 de `CLAUDE.md` interdit —, et elles ont divergé au
+ * premier changement : la police de « Brume moderne » était bien émise par
+ * `variablesCss`, et l'application ne la voyait pas. Le réglage s'écrivait, les
+ * couleurs changeaient, la typographie non, et rien ne le disait.
+ *
+ * Les deux formes dérivent désormais d'ici : ajouter une variable la donne aux
+ * deux, ou à aucune.
+ */
+export function variablesCharte(c: Charte): Record<string, string> {
+  const sortie: Record<string, string> = {};
+  for (const cle of Object.keys(c.jetons) as (keyof JetonsCharte)[]) {
+    sortie[`--atlas-${cle}`] = c.jetons[cle];
+  }
+  // **Une forme absente n'écrit RIEN**, et c'est ce qui tient sa consigne du
+  // 24 août : « ne change pas l'appli ». Poser `--atlas-police-titres:initial`
+  // sur les chartes sans forme aurait écrasé le repli de `globals.css` — donc
+  // changé la typographie de tout le monde pour ajouter une option à un seul.
+  if (c.formes?.policeTitres) sortie["--atlas-police-titres"] = c.formes.policeTitres;
+  return sortie;
+}
+
 export function variablesCss(c: Charte): string {
-  return (Object.keys(c.jetons) as (keyof JetonsCharte)[])
-    .map((cle) => `--atlas-${cle}:${c.jetons[cle]}`)
-    .join(";");
+  const couleurs = Object.entries(variablesCharte(c)).map(([cle, v]) => `${cle}:${v}`);
+
+  return couleurs.join(";");
 }

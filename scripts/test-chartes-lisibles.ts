@@ -2,7 +2,7 @@ import assert from "node:assert";
 import { CHARTES, contraste, estSombre, type Charte } from "../src/lib/chartes";
 
 /**
- * LES SEPT CHARTES SE LISENT — chacune, et sur chaque couple que l'écran pose.
+ * TOUTES LES CHARTES SE LISENT — chacune, et sur chaque couple que l'écran pose.
  *
  * ─────────────────────────────────────────────────────────────────────────────
  * **Le défaut qu'elle empêche de revenir, et il a été payé le 22 août 2026.**
@@ -80,7 +80,7 @@ const APLAT = 3;
  */
 type Couple = { quoi: string; devant: (c: Charte) => string; derriere: (c: Charte) => string };
 
-/** Ce qui doit passer sur les SEPT chartes, sans exception. */
+/** Ce qui doit passer sur TOUTES les chartes, sans exception. */
 const ABSOLUS: (Couple & { seuil: number })[] = [
   { quoi: "l'encre sur le fond de page", devant: (c) => c.jetons.ink, derriere: (c) => c.jetons.cream, seuil: TEXTE },
   { quoi: "l'encre sur une plage", devant: (c) => c.jetons.ink, derriere: (c) => c.jetons.card, seuil: TEXTE },
@@ -122,7 +122,7 @@ const PAS_PIRE_QUE_LE_CLAIR: Couple[] = [
   { quoi: "l'or sur le fond de page", devant: (c) => c.jetons.or, derriere: (c) => c.jetons.cream },
 ];
 
-console.log("=== Les sept chartes se lisent ===\n");
+console.log(`=== Les ${CHARTES.length} chartes se lisent ===\n`);
 
 for (const c of CHARTES) {
   test(`${c.libelle} — chaque couple de l'écran se lit`, () => {
@@ -174,7 +174,7 @@ for (const p of PAS_PIRE_QUE_LE_CLAIR) {
 // condition qu'il n'a pas eu à poser : il regarde « Origine » tous les jours, et
 // une correction du mode nuit qui repeindrait son écran de tous les jours ne
 // serait pas une correction.
-test("Les cinq chartes claires gardent les valeurs du patron, au caractère près", () => {
+test("Les chartes CLAIRES gardent les valeurs du patron, au caractère près", () => {
   for (const c of CHARTES.filter((x) => !estSombre(x.jetons))) {
     assert.equal(c.jetons.alerte.toLowerCase(), "#9c3b2e", `${c.libelle} a bougé son rouge d'alerte`);
     assert.equal(c.jetons.bordeaux.toLowerCase(), "#6e2433", `${c.libelle} a bougé son bordeaux`);

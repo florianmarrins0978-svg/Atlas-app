@@ -328,6 +328,42 @@ le produit. **Ne pas rouvrir** sans qu'il le redemande.
 
 La planche 92 (`appli/calendrier-aujourdhui.html`) reste : elle raconte le
 chemin, et le prochain qui trouvera deux cases entourées saura pourquoi.
+## DEUX SUITES NAVIGATEUR ROUGES SUR `main`, et aucune n'est un défaut du produit (25 août 2026)
+
+**Vérifié sur `main` nu**, dans un arbre séparé, sans aucun lot par-dessus : les
+deux rougissent à l'identique. Elles ne viennent pas de la pastille des dates.
+
+### 1. `test-date-lointaine-e2e.ts` — le contrôle a vieilli, pas l'écran
+
+Il exige `/1 mars/i` et l'écran affiche **« lundi 1er mars 2027 »**. L'écran a
+raison : `src/lib/jour.ts` porte la règle en toutes lettres — *« le premier du
+mois est le seul ordinal en français : 1er août, jamais 1 août »*. C'est le
+contrôle qui n'a pas suivi.
+
+**Le corriger, ce n'est PAS remettre « 1 mars »** : ce serait réclamer une faute
+de français. La bonne cible est `/1er mars/i`, ou mieux, la date composée par
+`jourLisible()` — une suite qui recopie un format finit toujours par diverger de
+la fonction qui l'écrit (`CLAUDE.md` §3).
+
+### 2. `test-deux-dates-calendrier-e2e.ts` — son garde-fou parle
+
+*« Le calendrier n'offre que 2 jour(s) : trop peu pour éprouver. »* Il refuse de
+conclure, et c'est exactement ce qu'on lui demande — un contrôle qui mesure zéro
+ne mesure rien (`CLAUDE.md` §5). Mais il refuse **tous les jours**, ce qui en
+fait un rouge permanent plutôt qu'un garde-fou.
+
+Il lui faut au moins trois jours proposables ; il n'en trouve que deux. À
+chercher du côté de la fenêtre de dates offerte au client et du jeu de
+démonstration — pas du côté du calendrier lui-même, dont les autres suites
+passent.
+
+**Aucune des deux n'est corrigée ici, et c'est délibéré :** élargir un lot de
+planning pour réparer deux suites d'un autre, c'est mêler deux changements et
+masquer les erreurs de chacun. Elles sont notées pour que la session qui les
+possède les voie.
+
+---
+
 ## `verifier:maquette` est ROUGE sur `main`, et ce n'est pas le mode nuit (23 août 2026)
 
 `scripts/verifier-maquette-message-et-allure.mjs` échoue sur `main` nu, à
@@ -3033,6 +3069,37 @@ fin, et le fond figé.
 obligatoires, disposition des colonnes, ordre des totaux. Un devis mal posé
 n'est pas un devis moins joli, c'est un devis qu'on peut lui contester.
 
+### 0 trigies septies. Deux suites de calendrier tombent EN FIN DE MOIS — **CONSTATÉ le 25 août 2026, PAS RÉPARÉ**
+
+**Elles rougissent sur `main`, sans aucun changement**, et elles bloquent la
+livraison de toutes les sessions tant qu'on est en fin de mois. Vérifié : même
+rouge, au même endroit, sur `origin/main` seul.
+
+| Suite | Ce qu'elle rend | Pourquoi |
+|---|---|---|
+| `test-deux-dates-calendrier-e2e` | « Le calendrier n'offre que 2 jour(s) : trop peu pour éprouver » | elle ne lit que **le mois affiché**. Le 25 août, le délai minimal écarté, il ne reste que le 28 et le 31. Elle n'a jamais su tourner la page du mois |
+| `test-date-lointaine-e2e` | « Le client ne voit pas la date proposée (« 1 mars ») » | « dans six mois » puis « prochain lundi » tombe au **1ᵉʳ mars 2027**, soit six mois **et quatre jours** — au-delà de la fenêtre du client |
+
+**Ce qu'il faut regarder, et personne ne l'a fait :**
+
+- la première est un défaut de la SUITE : elle doit tourner au mois suivant
+  quand celui qui s'affiche n'offre pas assez de jours. Rien à changer au
+  produit ;
+- **la seconde est peut-être un vrai défaut du PRODUIT**, et c'est pour cela
+  qu'elle ne doit pas être « réparée » à la légère. Elle garde exactement le
+  piège que son propre commentaire nomme : *« une date validée à l'envoi puis
+  refusée à la lecture, parce que la fenêtre du client ne la couvre pas »*. Le
+  patron peut proposer à dix-huit mois (`HORIZON_PATRON_JOURS`), le client ne
+  voit qu'une fenêtre plus courte (`fenetrePourDates`). **La question à trancher
+  avec lui** : un client doit-il pouvoir retenir une date que son artisan lui a
+  proposée à six mois ? Si oui, la fenêtre du client doit s'ouvrir autour de
+  cette date — la marge existe déjà dans le code, elle ne suffit visiblement
+  pas.
+
+**Ce que ça ne doit PAS devenir :** une raison de repousser la vérification à
+septembre. Le premier du mois, les deux repasseront au vert toutes seules — et
+le défaut, lui, sera toujours là.
+
 ### 0 trigies sexies. Deux suites navigateur rougissent encore sous charge — **CONSTATÉ le 24 août 2026, PAS RÉPARÉ**
 
 **Écrit parce que le silence coûterait l'enquête une seconde fois.** Ce n'est
@@ -3056,6 +3123,13 @@ recharge **trois fois** en laissant du temps à l'action, précisément parce qu
 le défaut avait déjà été vu le 13 août. Trois chances ne suffisent plus. La
 piste est donc la même que pour les deux autres — on attend une valeur à
 l'écran sur une montre, au lieu d'attendre que la base ait bougé.
+
+**Et ATTENTION à ne pas confondre deux rouges dans cette même suite.** Le
+24 août au soir, elle a rougi une seconde fois — sur un autre cas, et pour une
+tout autre raison : elle **exigeait la phrase grise** que le patron venait de
+faire retirer de l'écran de la facture. Ce rouge-là n'avait rien d'instable, et
+il a été corrigé en visant plus profond (`CLAUDE.md` §5 bis). Le premier, lui,
+tient toujours.
 
 **Les deux sont VERTES jouées seules**, et c'est la question qui tranche
 (§ ci-dessous). Surtout : **ce ne sont pas les mêmes** d'une branche à l'autre.
@@ -6442,3 +6516,22 @@ et c'est déjà arrivé.
 - ~~Rédiger le devis entièrement à la main, depuis la fiche du chantier~~ — 2026-08-04
 - ~~Retirer la case « Nom du chantier » : plus rien n'est obligatoire à la création~~ — 2026-08-05
 - ~~« Rédiger à la main » ouvre le devis ENTIER, à l'image du modèle, et il reste dans Atlas~~ — 2026-08-05
+- [ ] **La batterie rougit sur des suites DIFFÉRENTES à chaque exécution**, et
+  chacune passe seule sur le même code. Relevé le 24 août 2026, trois
+  exécutions d'affilée : d'abord `test-planning-vers-facture-e2e` (un texte
+  attendu qui n'apparaît pas), puis `test-fiche-chantier-e2e` et
+  `test-prix-e2e` (un prix lu à `0.00` au lieu de `34.50`). **Rejouées seules,
+  les trois sont vertes.** Ce n'est donc pas le produit : c'est l'interférence
+  entre suites — le lanceur partage UN serveur et UNE base entre toutes.
+  Écarté au passage : le gel d'horloge de `test-allure-pdf` ne peut pas fuir,
+  chaque suite est lancée par `spawnSync` dans son propre processus.
+  **Pourquoi ça compte plus qu'un agacement** : un rouge qui tombe au hasard
+  s'apprend à être ignoré, et le jour où il dit vrai personne ne le croit —
+  c'est exactement ce qui a coûté une soirée avec `test:arrosage`. *(24 août 2026)*
+- [ ] **Rendre la composition d'un PDF reproductible.** `pdf-lib` grave l'instant
+  de fabrication dans chaque document : deux compositions du même devis ne
+  rendent pas les mêmes octets. La suite le contourne en figeant l'horloge
+  (`aLaMemeSeconde`, `scripts/test-allure-pdf.ts`), mais le produit reste
+  non déterministe — un même devis renvoyé n'est jamais identique au précédent.
+  Corriger demande de toucher le composeur, donc les documents du patron :
+  à faire dans un lot qui les regarde, pas en passant. *(24 août 2026)*

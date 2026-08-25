@@ -330,6 +330,35 @@ et laisse le jeton, le cookie et les rappels intacts (`ARCHITECTURE.md` §163).
 chemin vers le mot de passe, et contre un échec de visage qui accusait le mot de
 passe. **Rien n'est codé dans `src/`.**
 
+### L'écran de la facture arrêtée : ses sept corrections
+
+*Capture à l'appui, le 24 août 2026 au soir.*
+
+| Ce qu'il a demandé | Ce qui a changé |
+|---|---|
+| *« la facture en PDF, enlève la petite flèche, mais un petit plus pour qu'on comprenne que c'est cliquable »* | la flèche part, le lien est souligné |
+| *« Total TTC et Télécharger, mets-les en noir, pas gris »* | fait |
+| *« tout ce qui est en gris sous facture F2026, supprime »* | le paragraphe sur l'avoir et le relevé de TVA est retiré |
+| *« pareil sous ouvrir le SMS tout prêt »* | le destinataire et le lien en clair sont retirés |
+| *« corrige en envoyer par SMS, retire la flèche »* | fait |
+| *« corrige envoyer par e-mail en gras doré »* | or, gras, 15 px — la même allure que sur l'écran du devis |
+| *« colle-le sous envoyer par SMS »* | fait |
+
+**Et le lien doré ENVOIE désormais, il ne bascule plus.** C'est la condition
+pour que son libellé soit vrai : appeler un lien « Envoyer par e-mail » alors
+qu'il se contente d'intervertir deux boutons, c'est un écran qui ment — il
+appuie, rien ne s'ouvre, et il appuie encore. Quand le client n'a pas d'adresse,
+il bascule encore, et c'est le seul cas où il le doit : c'est ainsi que le champ
+de saisie apparaît.
+
+**Ce qui est perdu, et qu'il faut savoir avant de le rétablir :** il ne voit
+plus à qui le message part avant d'ouvrir sa messagerie. Sa messagerie le lui
+montre juste après, et rien n'est envoyé par Atlas. C'est son arbitrage.
+
+`test-facture-au-client-e2e` ne cherche plus le bouton par son libellé mais par
+son repère : un contrôle accroché au texte serait mort sur une demande exaucée
+(`CLAUDE.md` §5 bis).
+
 ### L'allure de ses documents : typographie, fond, accent, logo
 
 *Sa demande du 23 août : « un endroit dédié à la modification de son devis —
@@ -361,7 +390,87 @@ PDF embarque.
 
 `ARCHITECTURE.md` §164.
 
----
+### « Brume moderne » entre dans Apparence — et l'application ne bouge pas
+
+Son choix devant la planche 92 : *« ajoute-moi le Brume moderne comme style,
+mais ne change pas l'appli »*. Les deux moitiés commandent ensemble : la charte
+s'ajoute aux sept, `origine` reste le défaut, et rien ne change pour qui ne la
+choisit pas.
+
+**Une charte peut désormais porter une FORME, pas seulement des couleurs.** Le
+champ `formes` est à part de `jetons`, et ce n'est pas un rangement : les
+dérivations — `estSombre`, `contraste`, la remontée des couleurs de signal —
+parcourent les jetons en supposant que chaque valeur est une couleur. Y glisser
+une pile de polices ferait calculer une luminance sur « ui-sans-serif », et le
+résultat ne serait pas une erreur, ce serait **un nombre faux, en silence**.
+
+| Ce que Brume porte | Ce qu'elle ne porte pas encore |
+|---|---|
+| les huit couleurs de la planche | les rayons de 20 px |
+| les **titres** dans la police du téléphone | l'ombre bleutée, l'air en plus |
+
+La typographie passait déjà par `--font-display` : elle suit la charte sans
+qu'aucun écran soit touché. Les rayons, non — **soixante-six fichiers** les
+écrivent en dur (`rounded-[13px]`), et une charte ne peut rien sur ce qui ne
+passe pas par elle. C'est annoncé, pas fait.
+
+### Un contrôle de devis comparait une pendule, pas un document
+
+**Il accusait le code le plus grave de la suite, et il avait tort.** *« Sans
+réglage, le devis est EXACTEMENT celui d'avant »* — le contrôle qui garantit
+qu'aucun artisan ne voit son devis changer parce qu'un écran est apparu. Il
+rougissait environ une fois sur cinq, sur du code qui n'avait pas bougé d'une
+ligne.
+
+La cause : `pdf-lib` grave dans chaque document sa date de création, à la
+seconde. Les deux compositions comparées tombaient de part et d'autre d'une
+seconde, et les octets différaient.
+
+**Mesuré, pas supposé** — le même devis composé à 1,5 s d'écart rend deux
+fichiers de même taille dont quelques octets diffèrent. **Et ces octets sont
+dans un flux compressé** : c'est ce qui a fait échouer la première correction,
+qui effaçait les dates dans le *texte* du PDF. Elles n'y sont pas. On ne peut
+pas les ôter après coup — on peut seulement empêcher l'horloge d'avancer entre
+les deux compositions, et c'est ce que fait `aLaMemeSeconde`.
+
+**Ce n'est pas un assouplissement**, et il fallait le vérifier plutôt que
+l'affirmer : confronté à deux documents réellement différents, le contrôle
+rougit toujours et le dit. Stable sur six exécutions d'affilée.
+
+**Ce qui reste à trancher, et qui n'est pas de ce lot** : rendre la composition
+reproductible côté produit — dates fixées à l'émission plutôt qu'à la
+fabrication. Cela touche le composeur, donc les documents du patron. Noté dans
+`TODO.md` plutôt que fait en passant.
+
+### Le gabarit recopiait les couleurs au lieu de les demander
+
+**Le défaut qui a fait perdre le plus de temps ce soir-là, et il était
+invisible.** `layout.tsx` reparcourait `c.jetons` de son côté
+(`variablesEnStyle`) alors que `variablesCss` existait : **deux implémentations
+de la même règle**, ce que `CLAUDE.md` §3 interdit précisément parce qu'elles
+finissent par diverger. Elles ont divergé au premier changement — la police de
+Brume était émise par l'une et pas par l'autre. À l'écran : le réglage
+s'écrivait, les couleurs changeaient, **la typographie non**, et rien ne le
+disait.
+
+Les deux formes dérivent maintenant de `variablesCharte`. Un contrôle compare
+les deux sorties charte par charte, et **interdit au gabarit de reparcourir les
+jetons**.
+
+**Sa première version ne savait pas échouer**, et c'est le genre de contrôle
+qui rassure sans rien tenir : elle se contentait de chercher le mot
+`variablesCharte` dans le fichier — or l'import y reste même quand le corps
+recopie. Confrontée au défaut qu'elle prétendait attraper, elle est restée
+verte. Elle vise désormais le parcours lui-même.
+
+### Le script de capture était aveugle à la charte neuve
+
+`capture-chartes.mts` énumérait les sept noms **à la main**. « Brume moderne »
+n'a donc pas été capturée : l'outil qui existe pour *regarder l'écran* ne
+montrait pas la seule chose qu'on venait d'ajouter. Il lit la liste maintenant.
+
+Une énumération recopiée ne suit jamais la source qu'elle prétend montrer —
+c'est la même faute que celle du gabarit, dans l'outillage.
 
 ## 2026-08-23
 

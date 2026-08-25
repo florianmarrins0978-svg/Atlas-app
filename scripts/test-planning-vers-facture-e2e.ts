@@ -357,7 +357,12 @@ async function main() {
     // reste sur l'écran d'après, pour le cas où le téléphone aurait refusé.
     await page.click('[data-atlas="envoyer-la-facture"]');
     await page.waitForSelector("text=arrêtée", { timeout: 15000 });
-    await page.waitForSelector("text=Ouvrir le", { timeout: 15000 });
+    // **Attendu par son REPÈRE, plus par son libellé.** Le 24 août 2026 le
+    // patron a fait renommer ce bouton — « Envoyer par SMS » remplace « Ouvrir
+    // le SMS tout prêt ». Un contrôle accroché au mot serait mort sur une
+    // demande exaucée, et l'on aurait été tenté de rétablir le mot pour le
+    // faire taire (`CLAUDE.md` §5 bis).
+    await page.waitForSelector("a[data-atlas^='transmission-']", { timeout: 15000 });
 
     const { rows } = await inspecter(
       "SELECT statut, numero_commercial FROM factures WHERE chantier_id = $1",
