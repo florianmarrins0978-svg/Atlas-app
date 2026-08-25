@@ -3698,7 +3698,31 @@ neutralise est un contrôle perdu, et celui-ci tient la pièce maîtresse d'un
 | Le temps passé | **une molette**, pas un clavier (`65-choisir-l-heure.html`) — trois gestes proposés, le mien recommandé est la molette Atlas |
 | Où se compose la fiche | dans les **Réglages**, « Ma fiche d'entretien » — modèle fourni, modifiable |
 
-**Deux choses restent à trancher, et aucune n'est du rangement :**
+**LES DEUX SONT TRANCHÉES le 25 août 2026**, une fois les planches enfin
+publiées — elles vivaient dans `docs/maquettes/`, que `pages.yml` ne publie pas,
+et l'on attendait depuis le 16 août un choix qu'il n'avait pas les moyens de
+faire.
+
+| Sa réponse du 25 août | Ce que ça ferme |
+|---|---|
+| **« Planche une, la A »** | **une seule liste**, tenue dans les Réglages, pré-remplie à chaque envoi. Rien n'est rangé par client |
+| **« Planche 2, la molette, mais avec d'un côté les heures qu'on peut bouger et de l'autre les minutes qu'on peut bouger séparément »** | la molette Atlas **en deux colonnes** — proposition D, dessinée le jour même |
+
+**Ce que la D change, et pourquoi il a raison.** D'un seul tenant, la molette
+compte cinquante-trois crans de 0 h 00 à 4 h 00 : aller de 0 h 05 à 3 h 30
+demande quarante et un crans, donc plusieurs élans du pouce. Séparées, la même
+valeur se pose en deux gestes courts. Et c'est le geste de la molette de son
+iPhone, qu'il connaît déjà — ce qui était l'argument de la A, retenue le 16 août
+puis remplacée par celle-ci.
+
+**Ce que ça coûte, et c'est dit sur la planche :** deux gestes au lieu d'un. Sur
+une durée ronde — « deux heures » —, la C se posait d'un seul élan.
+
+**RIEN N'EST CODÉ**, et c'est la règle : la planche se regarde d'abord
+(`CLAUDE.md` §3 bis). Ce qui reste à faire est du développement ordinaire — la
+molette, la liste des prestations, l'écran des Réglages.
+
+**Ce qui restait à trancher, et qui l'est maintenant :**
 
 **a) La molette** — la native du téléphone (gratuite, ressemble à un
 formulaire), les quarts d'heure (un appui, mais imprécise), ou la molette Atlas

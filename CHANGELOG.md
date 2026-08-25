@@ -100,6 +100,41 @@ Le contrôle a été vu rouge en le remettant en A. A et B ne diffèrent que pen
 le DÉFILEMENT — un contrôle qui n'aurait pas descendu serait resté vert sur la
 proposition qu'il a écartée.
 
+### La molette du temps passé se dédouble : heures d'un côté, minutes de l'autre
+
+*« La molette, mais avec d'un côté les heures qu'on peut bouger et de l'autre les
+minutes qu'on peut bouger séparément. »* Dessiné le jour même, proposition D de
+`appli/choisir-l-heure.html` — **rien n'est codé**.
+
+**Pourquoi il a raison.** D'un seul tenant, la molette compte cinquante-trois
+crans de 0 h 00 à 4 h 00 : aller de 0 h 05 à 3 h 30 demande quarante et un crans,
+donc plusieurs élans du pouce. Séparées, la même valeur se pose en deux gestes
+courts. Et c'est le geste de la molette de son iPhone — l'argument qui lui avait
+fait retenir la A le 16 août.
+
+**Ce que ça coûte, et c'est écrit sur la planche :** deux gestes au lieu d'un sur
+une durée ronde.
+
+Un seul repère traverse les deux colonnes : un repère par colonne se lirait comme
+deux réglages sans rapport, alors que c'est une seule durée. Toujours sans une
+ligne de JavaScript.
+
+**Et un chiffre faux a été retiré au passage** : l'écart affichait « − 50 min »
+écrit en dur, qui ne suivait pas la molette — 2 h 35 sur 2 h 30 prévues
+s'annonçait « − 50 min ». Deux chiffres qui se contredisent dans le même écran,
+et c'est toute la liste qu'on cesse de croire.
+
+**Le contrôle a été resserré après avoir été vu FAUSSEMENT vert :** il comptait
+les colonnes n'importe où sous la planche, et un enveloppement des deux dans une
+seule zone de défilement — c'est-à-dire l'ancienne molette redessinée — passait
+au vert. Trouvé en fabriquant exactement cette dégradation.
+
+### La fiche d'entretien : une seule liste, pas une par client
+
+*« Planche une, la A »* — la question posée le 16 août, restée sans réponse faute
+d'adresse pour consulter la planche, est tranchée. Une seule liste tenue dans les
+Réglages, pré-remplie à chaque envoi ; rien n'est rangé par client.
+
 ### Deux planches sans adresse en ont enfin une
 
 *« Je veux les voir »* — « Composer sa fiche d'entretien » et « Choisir l'heure
