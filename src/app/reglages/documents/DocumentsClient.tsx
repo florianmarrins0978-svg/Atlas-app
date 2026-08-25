@@ -465,6 +465,54 @@ export default function DocumentsClient({
           </p>
         )}
 
+        {/* ── L'APERÇU EN TÊTE, ET IL RESTE COLLÉ — sa proposition B, 24 août 2026
+            ────────────────────────────────────────────────────────────────────
+            *« Lorsque je modifie mon devis, je suis obligé de descendre pour
+            voir les modifications ; il faut mieux organiser la page pour
+            pouvoir voir ce qu'on modifie. »* Trois rangements lui ont été
+            dessinés (planche 96, `appli/allure-mieux-rangee.html`), et il a
+            répondu : **« la B »**.
+
+            **Le défaut était un défaut d'ORDRE, pas de contenu.** L'aperçu
+            fermait ce bloc, après dix pastilles de typographie sur cinq rangées
+            et deux nuanciers : il tombait à plus de 900 px du haut. Toucher une
+            police, c'était descendre, regarder, remonter — dix-huit trajets
+            pour essayer les neuf.
+
+            **Pourquoi COLLÉ et pas seulement remonté** (la proposition A, qu'il
+            n'a pas retenue) : posé en tête sans collage, l'aperçu se voit en
+            arrivant puis ressort de l'écran dès qu'on descend aux polices. La
+            moitié du problème seulement, et la planche le mesurait.
+
+            **`sticky` et non `fixed`** : la feuille suit tant que CE bloc est à
+            l'écran, et s'en va avec lui. Fixée, elle recouvrirait les réglages
+            du message et du numéro, où elle n'a rien à faire.
+
+            **Le fond est opaque, à dessein** : les pastilles défilent dessous,
+            et sans lui on lirait « Merriweather » à travers le devis. */}
+        <div
+          data-atlas="allure-apercu-colle"
+          className="sticky top-0 z-10 -mx-[26px] mb-5 px-[26px] pb-3 pt-2"
+          // **Une ombre courte sous le bord**, et rien de plus : sans elle, les
+          // pastilles qui défilent semblent s'effacer au milieu de nulle part.
+          // Elle dit qu'il y a un dessus et un dessous.
+          style={{
+            backgroundColor: colors.cream,
+            boxShadow: "0 8px 14px -12px rgba(20,18,14,0.5)",
+          }}
+        >
+          {/* **Un aperçu d'APPARENCE, et rien d'autre.** Il ne porte aucun
+              montant calculé, aucune condition : ce serait une seconde écriture
+              du devis, qui finirait par ne plus dire ce que le PDF dit
+              (`CLAUDE.md` §3). Ce qu'il montre — le fond, l'accent, la
+              typographie, la place du logo — est exactement ce que la fabrique
+              de PDF pose, et rien de plus. */}
+          <p className={`mb-2 ${libelleCaps}`} style={{ color: colors.muted }}>
+            L&apos;allure de la page
+          </p>
+          <Feuille allure={allure} logo={logo} nom={entrepriseNom} />
+        </div>
+
         <p className={`mb-2 ${libelleCaps}`} style={{ color: colors.muted }}>Mon logo</p>
         <div className="mb-1 flex items-center gap-3">
           <span
@@ -611,16 +659,6 @@ export default function DocumentsClient({
           ]}
           onChoisir={(v) => poserAllure({ accent: v })}
         />
-
-        {/* **Un aperçu d'APPARENCE, et rien d'autre.** Il ne porte aucun
-            montant calculé, aucune condition : ce serait une seconde écriture du
-            devis, qui finirait par ne plus dire ce que le PDF dit (`CLAUDE.md`
-            §3). Ce qu'il montre — le fond, l'accent, la typographie, la place du
-            logo — est exactement ce que la fabrique de PDF pose, et rien de plus. */}
-        <p className={`mb-2 mt-5 ${libelleCaps}`} style={{ color: colors.muted }}>
-          L&apos;allure de la page
-        </p>
-        <Feuille allure={allure} logo={logo} nom={entrepriseNom} />
 
         {!estLAllureParDefaut(allure) && (
           <button
