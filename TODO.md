@@ -6593,6 +6593,13 @@ et c'est déjà arrivé.
 - ~~Rédiger le devis entièrement à la main, depuis la fiche du chantier~~ — 2026-08-04
 - ~~Retirer la case « Nom du chantier » : plus rien n'est obligatoire à la création~~ — 2026-08-05
 - ~~« Rédiger à la main » ouvre le devis ENTIER, à l'image du modèle, et il reste dans Atlas~~ — 2026-08-05
+- [x] ~~**Le calendrier n'offre que 2 jours sur une base fraîchement montée.**~~
+  Réglé le 24 août 2026 par une autre session, dans l'heure — les deux suites
+  (`test-deux-dates-calendrier-e2e`, `test-date-lointaine-e2e`) passent après
+  fusion. **Ce qui reste à en retenir** : elles étaient vertes deux heures plus
+  tôt sur la même version, et rouges sur une base neuve. Un contrôle qui dépend
+  de l'âge de la base accuse au hasard — c'est la même leçon que l'instabilité
+  notée juste au-dessus.
 - [ ] **La batterie rougit sur des suites DIFFÉRENTES à chaque exécution**, et
   chacune passe seule sur le même code. Relevé le 24 août 2026, trois
   exécutions d'affilée : d'abord `test-planning-vers-facture-e2e` (un texte

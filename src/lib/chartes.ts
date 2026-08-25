@@ -295,6 +295,23 @@ export type FormesCharte = {
    * elle suit la charte sans qu'aucun écran soit touché.
    */
   policeTitres?: string;
+  /**
+   * Le marqueur de l'onglet courant, dans la barre du bas.
+   *
+   * **Sa demande du 24 août 2026, devant la planche 92 :** *« modifie aussi la
+   * sélection des catégories, juste pour Brume moderne »*. Sur la planche,
+   * l'onglet courant y est une pastille arrondie tenue par l'accent ; dans
+   * l'application, c'est un trait doré qui glisse.
+   *
+   * **`undefined` garde le trait**, et c'est ce qui tient sa consigne : les
+   * sept autres chartes ne bougent pas d'un pixel.
+   *
+   * **Le mouvement, lui, ne change pas.** Le marqueur glisse d'un onglet à
+   * l'autre sur la même courbe — celle que le patron a retenue en la voyant
+   * (« ce G »). Seule son apparence suit la charte ; remplacer le glissement
+   * aurait défait un choix qu'il a déjà fait.
+   */
+  ongletCourant?: "pastille";
 };
 
 export const CHARTES: Charte[] = [
@@ -375,6 +392,7 @@ export const CHARTES: Charte[] = [
     formes: {
       policeTitres:
         'ui-sans-serif, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif',
+      ongletCourant: "pastille",
     },
   },
   {
@@ -482,6 +500,21 @@ export function variablesCharte(c: Charte): Record<string, string> {
   // sur les chartes sans forme aurait écrasé le repli de `globals.css` — donc
   // changé la typographie de tout le monde pour ajouter une option à un seul.
   if (c.formes?.policeTitres) sortie["--atlas-police-titres"] = c.formes.policeTitres;
+
+  // **La pastille se décrit en variables, pas en drapeau lu par un écran.** La
+  // barre du bas ne doit rien savoir de la charte : le jour où une deuxième
+  // charte voudra ce marqueur, il n'y a rien à rouvrir dans le composant.
+  // Chaque variable a pour repli la valeur d'aujourd'hui (`globals.css`), si
+  // bien qu'une charte muette laisse le trait doré intact.
+  if (c.formes?.ongletCourant === "pastille") {
+    sortie["--atlas-onglet-haut"] = "10px";
+    sortie["--atlas-onglet-hauteur"] = "100%";
+    sortie["--atlas-onglet-rayon"] = "11px";
+    // L'accent à 11 % : assez pour se voir, trop peu pour concurrencer l'or —
+    // qui, lui, veut dire « à faire ».
+    sortie["--atlas-onglet-fond"] = `color-mix(in srgb, ${c.jetons.rust} 11%, transparent)`;
+    sortie["--atlas-onglet-encre"] = c.jetons.rust;
+  }
   return sortie;
 }
 
