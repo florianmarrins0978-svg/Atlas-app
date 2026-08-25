@@ -191,11 +191,22 @@ const ENTREPRISE: Rubrique[] = [
  */
 export function rubriquesReglages(role: RoleReglages | null): EnsembleRubriques[] {
   /**
-   * **Un rôle illisible ferme tout**, et c'est délibéré : devant une valeur
-   * qu'on ne sait pas lire, on ne montre que ce qui appartient à la personne.
-   * L'inverse ouvrirait l'entreprise entière à une faute de frappe en base.
+   * **Un rôle illisible est traité comme un SALARIÉ**, jamais comme rien.
+   *
+   * Devant une valeur qu'on ne sait pas lire, on prend le rôle le plus fermé —
+   * l'inverse ouvrirait l'entreprise entière à une faute de frappe en base.
+   * Mais « le plus fermé » n'est pas « vide » : les quatre réglages de la
+   * rubrique « Moi » appartiennent à la PERSONNE (son mot de passe, ses
+   * notifications) et ne portent aucune donnée d'entreprise. Les lui retirer
+   * l'enfermerait dehors — il ne pourrait plus changer son propre mot de passe
+   * parce qu'une lecture de rôle a hoqueté.
+   *
+   * **Écrit d'abord « ferme tout », et c'est `test-rubriques-reglages.ts` qui
+   * l'a redressé** : il exige depuis toujours que le rôle inconnu reçoive
+   * exactement ce que reçoit un membre. Le contrôle avait raison.
    */
-  const visible = (r: Rubrique) => role !== null && r.href !== null && cheminAutorise(role, r.href);
+  const effectif: Role = role ?? "salarie";
+  const visible = (r: Rubrique) => r.href !== null && cheminAutorise(effectif, r.href);
 
   /**
    * **Le sommaire OBÉIT à `cheminAutorise`, il ne redit pas la règle.**
@@ -208,7 +219,7 @@ export function rubriquesReglages(role: RoleReglages | null): EnsembleRubriques[
    * **Une rubrique pas encore codée (`href: null`) reste visible au patron
    * seul** — c'est le drapeau « bientôt », et il n'a de sens que pour lui.
    */
-  const entreprise = ENTREPRISE.filter((r) => (r.href === null ? role === "proprietaire" : visible(r)));
+  const entreprise = ENTREPRISE.filter((r) => (r.href === null ? effectif === "proprietaire" : visible(r)));
   const moi = MOI.filter(visible);
 
   // Un salarié ne reçoit pas une liste plus courte : il reçoit une AUTRE liste.
