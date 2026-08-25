@@ -654,7 +654,13 @@ export default function PlanningClient({
                couleur de plus sur une semaine chargée. Le papier (`rustTint`)
                est le plus discret des fonds de la charte — et il est dérivé du
                FOND, donc il reste sombre sur Nuit et sur Sylve au lieu de poser
-               un pavé blanc au milieu de l'écran. */
+               un pavé blanc au milieu de l'écran.
+
+               **Le contrôle a été VU ROUGE** contre le défaut qu'il prétend
+               attraper : la pastille rendue transparente le fait tomber en
+               donnant la couleur lue — « la date ne porte aucun fond :
+               rgba(0, 0, 0, 0) ». Un contrôle jamais vu rouge ne prouve rien
+               (`AGENTS.md`). */
             <div key={jour} data-atlas="jour-planifie" className="mx-[18px] mt-5">
               <p className="text-center leading-none">
                 <span

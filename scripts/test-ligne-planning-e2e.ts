@@ -321,8 +321,9 @@ async function main() {
   // #1f211e. On mesure donc ce qui compte : la date porte un FOND, le nom n'en
   // porte pas, et les deux se distinguent.
   //
-  // Sait échouer : rendue à un fond transparent, la première mesure tombe en
-  // donnant la couleur lue.
+  // **VU ROUGE** le 24 août 2026, contre la pastille rendue transparente :
+  // « la date ne porte aucun fond : rgba(0, 0, 0, 0) ». Il désigne le bon
+  // coupable et donne la valeur lue.
   await test("La date porte une pastille, et le nom n'en porte pas", async () => {
     await allerAuPlanning();
     await amenerSurLaSemaineDesCas();
