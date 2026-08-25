@@ -241,6 +241,31 @@ qu'aucun écran soit touché. Les rayons, non — **soixante-six fichiers** les
 écrivent en dur (`rounded-[13px]`), et une charte ne peut rien sur ce qui ne
 passe pas par elle. C'est annoncé, pas fait.
 
+### L'onglet courant devient une pastille — sur Brume moderne, et nulle part ailleurs
+
+*« Modifie aussi la sélection des catégories, juste pour Brume moderne. »* Sur
+la planche 92, l'onglet courant de la barre du bas est une pastille arrondie
+tenue par l'accent ; dans l'application, c'est un trait doré qui glisse.
+
+**Le « juste » est la moitié qui compte.** Le marqueur se décrit en variables
+CSS dont **le repli est la valeur d'aujourd'hui** — une charte muette garde donc
+son trait, au pixel près. Mesuré sur trois chartes : Origine 1 px sans rayon,
+Brume 29 px avec un rayon de 11, Pierre 1 px sans rayon.
+
+**Ce qui ne change PAS, et c'est délibéré : le mouvement.** Le marqueur glisse
+d'un onglet à l'autre sur la même courbe, celle que le patron a retenue en la
+voyant. Seule son apparence suit la charte — remplacer le glissement aurait
+défait un choix déjà fait.
+
+**Un piège que la pastille réveille et que le trait cachait :** le marqueur est
+rendu APRÈS les liens dans le document. Haut d'un pixel au ras du bas, l'ordre
+était sans conséquence ; devenu pastille, il passerait par-dessus le libellé.
+Les liens prennent donc `relative z-[1]`, et le contrôle l'exige.
+
+**La barre du bas ne sait rien de la charte**, et c'est ce qui compte pour la
+suite : le jour où une deuxième charte voudra ce marqueur, il n'y a rien à
+rouvrir dans le composant.
+
 ### Un contrôle de devis comparait une pendule, pas un document
 
 **Il accusait le code le plus grave de la suite, et il avait tort.** *« Sans
