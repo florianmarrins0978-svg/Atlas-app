@@ -15283,3 +15283,92 @@ adresse est une balise : elle passerait au vert et c'est lui qui verrait le
 carré vide. Ensuite : le logo est **au-dessus** du nom, et il n'est pas écrasé.
 
 Éprouvé rouge avant d'être livré, en retirant l'image de l'écran.
+
+---
+
+## 174. Cinq réglages qui n'atteignaient aucun document
+
+**Son constat du 25 août 2026, et il l'a trouvé seul :** *« les autres qui sont
+en ON doivent-ils être visibles sur le devis ? car je ne vois rien, est-ce
+normal ? »*
+
+Non. Depuis la migration 0040 — le 14 août —, six conditions se réglaient dans
+« Réglages → Documents ». **Une seule atteignait le document** : la validité.
+
+| Le réglage | Avant le 25 août | Depuis |
+|---|---|---|
+| Validité du devis | sur le devis | inchangé |
+| Acompte | nulle part | sur le devis, avec son montant |
+| Délai de paiement | nulle part | sur le devis |
+| Moyens de paiement | nulle part | sur le devis |
+| Rappel des pénalités | nulle part | sur le devis |
+| Texte de bas de page | nulle part | sur le devis |
+
+### Ce qui a caché le défaut onze jours
+
+Trois choses, et aucune n'était un mensonge :
+
+1. **`lignesConditionsDevis` existait et composait les bonnes phrases.** Elle
+   n'était appelée que par **l'aperçu de l'écran de réglages**. Il réglait, il
+   voyait les phrases, et le document ne les portait pas ;
+2. **Son écran de devis affiche « Acompte de 30 % à la signature… »** — en gris,
+   comme exemple dans un champ libre vide (`placeholder`). Un texte parfaitement
+   plausible, à l'endroit exact où le réglage aurait dû apparaître ;
+3. **« Modalités de paiement / IBAN » s'imprime bien**, et vient de ses
+   coordonnées bancaires. De quoi croire que le bloc des conditions marchait.
+
+### Ce que les contrôles ne pouvaient pas voir, et qui vaut au-delà de ce cas
+
+Une suite éprouvait `lignesConditionsDevis` : les bons réglages donnent les
+bonnes phrases. Elle était verte, et elle avait raison — **la fonction n'a
+jamais été en cause**. Ce qui manquait, c'est le **chemin** entre le réglage et
+le papier.
+
+> Un contrôle qui éprouve la RÈGLE ne voit pas une pièce DÉBRANCHÉE. Il faut, au
+> moins une fois, parcourir la chaîne entière : l'écran, la base, le document.
+
+C'est exactement la faute du 8 août sur le lien de facture (§34), sous une autre
+forme : chaque morceau juste, et rien qui les relie.
+
+### Les conditions se FIGENT sur le devis
+
+Migration 0064, cinq colonnes sur `devis`, recopiées à la création — comme la
+validité (§102) et l'identité (§94). Les relire à l'impression ferait changer
+les conditions d'un devis **déjà envoyé** parce qu'un réglage a bougé depuis,
+pendant que le client a une autre feuille sous les yeux, et que c'est celle-là
+qui l'engage.
+
+**Aucun rattrapage, et c'est délibéré.** La 0040 avait posé 30 jours sur les
+devis existants, parce que 30 jours était ce que la constante imprimait déjà.
+Ces cinq lignes-ci ne figuraient sur **aucun** devis : les poser rétroactivement
+ajouterait des conditions à des documents partis sans elles. `NULL` partout, et
+les anciens devis sortent identiques à eux-mêmes.
+
+### Où elles se posent, et pourquoi là
+
+Sous « NOTES / CONDITIONS », **après** ce qu'il a écrit à la main. Ce qu'il écrit
+parle de CE chantier — l'accès par le portail de gauche, la cour à dégager la
+veille ; les conditions de paiement sont les mêmes sur tous ses devis. Son champ
+libre n'est ni remplacé ni réécrit.
+
+Quand il n'a rien écrit, le bloc ne porte que les conditions — ce qui est la
+proposition A de la planche 60, sans qu'il ait eu à trancher entre A et B.
+
+**Rien de tout cela sur la feuille de chantier** (`sansChiffrage`) : elle part
+chez un salarié, délibérément sans un prix (§133), et « acompte de 30 % — soit
+313,20 € » y serait un montant. C'est la règle que suit déjà l'IBAN.
+
+**Le montant de l'acompte s'écrit dans le PDF**, pas dans l'aperçu des réglages :
+là seulement le total est connu. Ailleurs la fonction le tait plutôt que
+d'inventer un chiffre — un montant supposé à cet endroit finirait imprimé.
+
+### Éteindre en fait disparaître
+
+Sa question, le même jour : *« si je décoche le bouton OFF, ils sont censés
+disparaître ? »* Oui, et c'est éprouvé : un réglage qu'on ne pourrait plus
+retirer serait pire que pas de réglage du tout.
+
+`scripts/test-conditions-sur-le-devis.ts` lit la **trace du PDF**, et sait
+rougir : débrancher le raccordement fait tomber trois cas en nommant la ligne
+absente. `scripts/capture-conditions-devis.mts` rend les trois états en image —
+parce que ce défaut-là s'est vu à l'œil et par aucun test.

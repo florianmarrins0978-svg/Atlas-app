@@ -9,6 +9,57 @@ Format : le plus récent en tête.
 
 ## 2026-08-25
 
+### Les cinq conditions réglées arrivent enfin sur le devis
+
+*« Les autres qui sont en ON doivent-ils être visibles sur le devis ? car je ne
+vois rien, est-ce normal ? »* — non. Depuis le 14 août, six conditions se
+réglaient dans « Réglages → Documents » et **une seule atteignait le document** :
+la validité. L'acompte, le délai de paiement, les moyens de paiement, le rappel
+des pénalités et le texte de bas de page s'enregistraient, s'affichaient dans
+l'aperçu de cet écran… et le client n'en voyait rien.
+
+**Ce que ça évite :** un artisan qui règle un acompte de 30 %, le voit à l'écran,
+et envoie un devis qui n'en parle pas. Il ne s'en aperçoit qu'au moment où le
+client ne verse rien — ou jamais.
+
+**Ce qui a caché le défaut onze jours**, et c'est le plus instructif : son écran
+de devis affiche « Acompte de 30 % à la signature… » en gris, comme **exemple**
+dans un champ libre vide, et « MODALITÉS DE PAIEMENT / IBAN » s'imprime pour de
+bon. Deux choses vraies donnaient l'impression que le réglage marchait.
+
+**Et pourquoi aucun test ne l'a vu :** une suite éprouvait déjà
+`lignesConditionsDevis` — les bons réglages donnent les bonnes phrases — et elle
+avait raison, la fonction n'a jamais été en cause. Ce qui manquait, c'est le
+CHEMIN entre le réglage et le papier. *Un contrôle qui éprouve la règle ne voit
+pas une pièce débranchée.*
+
+Migration 0064 : les cinq conditions se **figent** sur le devis à sa création,
+comme la validité — les relire à l'impression ferait changer ce qui engage un
+devis déjà parti. **Aucun rattrapage sur les anciens** : ils ne portaient pas ces
+lignes, les poser rétroactivement ajouterait des conditions à des documents déjà
+chez des clients.
+
+Elles s'écrivent sous « NOTES / CONDITIONS », **après** son texte à lui — ce
+qu'il écrit parle de CE chantier, les conditions sont les mêmes partout. Son
+champ libre n'est ni remplacé ni réécrit. Rien sur la feuille de chantier du
+salarié : elle part sans un prix, et un acompte y serait un montant.
+
+*« Si je décoche le bouton OFF, ils sont censés disparaître ? »* Oui — éprouvé,
+et le contrôle a été vu rouge en débranchant le raccordement exprès. Trois
+captures rendent les trois états en image, parce que ce défaut-là s'est vu à
+l'œil et par aucun test. `ARCHITECTURE.md` §174.
+
+### Deux planches sans adresse en ont enfin une
+
+*« Je veux les voir »* — « Composer sa fiche d'entretien » et « Choisir l'heure
+au pouce » vivaient dans `docs/maquettes/`, que `pages.yml` ne publie pas. On
+attendait de lui depuis le 16 août un choix qu'il n'avait aucun moyen de faire.
+
+Déplacées dans `appli/`, pas recopiées : deux exemplaires auraient divergé. Le
+recueil des maquettes sait désormais chercher dans les deux dossiers — sans quoi
+il se serait plaint d'une planche « introuvable » alors qu'elle est publiée.
+
+
 ### Le message au client, simplifié : plus de pastilles à poser
 
 *« On comprend rien, trop compliqué pour modifier »*, puis, devant la maquette
@@ -80,10 +131,6 @@ dans sa version B ; sa consigne était : *« pour la mienne, fais seulement les
 changements que je t'ai demandés »*. Elles restent sur la planche, où il peut les
 comparer. Une proposition ne se glisse pas dans la version de quelqu'un sous
 prétexte qu'elle l'améliore. `ARCHITECTURE.md` §172.
-
----
-
-## 2026-08-25
 
 ### Le lot 2B est au vert — et sept contrôles fragiles avec lui
 

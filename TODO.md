@@ -426,7 +426,7 @@ chemin, et le prochain qui trouvera deux cases entourées saura pourquoi.
 
 ---
 
-## CINQ RÉGLAGES DE DOCUMENTS N'ATTEIGNENT PAS LE DEVIS — sa décision attendue (25 août 2026)
+## ~~CINQ RÉGLAGES DE DOCUMENTS N'ATTEIGNENT PAS LE DEVIS~~ — **BRANCHÉS le 25 août 2026**
 
 **Il l'a relevé lui-même :** *« les autres qui sont en ON doivent-ils être
 visibles sur le devis ? car je ne vois rien, est-ce normal ? »*
@@ -452,11 +452,24 @@ invisible : « Acompte de 30 % à la signature… » est un **exemple grisé** d
 champ libre vide (`placeholder`), et « Modalités de paiement / IBAN » vient de
 ses coordonnées bancaires.
 
-**POURQUOI CE N'EST PAS CODÉ D'OFFICE.** Brancher ces cinq lignes change ce que
-**reçoivent ses clients** — un devis qui part avec trois paragraphes de plus. Où
-elles se placent sur le document est un choix qu'il doit voir avant qu'il parte
-chez quelqu'un (`CLAUDE.md` §3 bis). La question lui est posée ; rien n'est codé
-tant qu'il n'a pas répondu.
+**SA RÉPONSE, le 25 août : « branche-les »**, avec une question — *« si je
+décoche le bouton OFF, ils sont censés disparaître ? »* Oui, et c'est éprouvé.
+
+**Fait.** Migration 0064 : les cinq conditions se figent sur le devis à sa
+création, comme la validité. Elles s'impriment sous « NOTES / CONDITIONS »,
+**après** ce qu'il a écrit à la main — son champ libre n'est ni remplacé ni
+réécrit. Rien sur la feuille de chantier du salarié, qui part sans un prix. Le
+détail et le pourquoi sont dans `ARCHITECTURE.md` §174.
+
+**Ce que cela ferme sans qu'il ait eu à trancher :** la planche 60 lui proposait
+A (les conditions seules), B (les siennes d'abord) ou C (deux blocs). B a été
+codée, et elle **devient** A quand il n'a rien écrit. S'il veut C — deux blocs
+séparés d'un filet —, il le dira.
+
+**Ce qui reste ouvert, et qui n'est pas bloquant :** l'ÉCRAN du devis ne montre
+toujours pas ces cinq lignes ; il faut ouvrir « Aperçu du PDF » pour les voir.
+Les poser à l'écran est un changement d'apparence, donc une maquette d'abord
+(`CLAUDE.md` §3 bis).
 
 **Et le commentaire du code affirmait le contraire** — « l'aperçu du bas lit LA
 MÊME fonction que le PDF ». Corrigé le 25 août : il dit maintenant ce qui est

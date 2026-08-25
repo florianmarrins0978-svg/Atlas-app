@@ -110,11 +110,24 @@ export async function getOuCreerDevisBrouillon(ctx: Ctx, chantierId: string) {
       .orderBy(desc(devis.numeroVersion))
       .limit(1);
 
+    // **Les six conditions se figent ici**, avec l'identité : les relire au
+    // moment de composer le PDF ferait changer ce qui engage un devis DÉJÀ
+    // envoyé, parce qu'un réglage a bougé depuis (`ARCHITECTURE.md` §102).
+    //
+    // **Les cinq autres n'y étaient pas avant le 25 août 2026**, et c'est LUI
+    // qui l'a vu : *« les autres qui sont en ON doivent-ils être visibles sur le
+    // devis ? car je ne vois rien »*. Elles se réglaient, s'affichaient dans
+    // l'aperçu des Réglages, et n'atteignaient aucun document.
+    const conditions = conditionsDepuisEntreprise(entreprise);
+
     const snapshotEnTete = {
-      // **La validité se fige ici**, avec l'identité : lire le réglage au moment
-      // de composer le PDF ferait changer la durée d'engagement d'un devis déjà
-      // envoyé (`ARCHITECTURE.md` §102).
-      validiteJours: conditionsDepuisEntreprise(entreprise).validiteJours,
+      validiteJours: conditions.validiteJours,
+      acomptePourcent:
+        conditions.acomptePourcent === null ? null : String(conditions.acomptePourcent),
+      delaiPaiementJours: conditions.delaiPaiementJours,
+      moyensPaiement: conditions.moyensPaiement,
+      rappelerPenalites: conditions.rappelerPenalites,
+      textePied: conditions.textePied,
       entrepriseNom: entreprise.nom,
       entrepriseAdresse: entreprise.adresse,
       entrepriseSiret: entreprise.siret,
@@ -238,6 +251,16 @@ export async function genererPdfPourApercu(ctx: Ctx, devisId: string): Promise<U
       adresseChantier: d.adresseChantier,
       conditionsPaiement: d.conditionsPaiement,
       validiteJours: d.validiteJours,
+      // Les cinq conditions figées à la création (migration 0064). C'est le PDF
+      // qui les met en phrases, parce que le total y est connu — le montant de
+      // l'acompte en dépend.
+      conditionsReglees: {
+        acomptePourcent: d.acomptePourcent,
+        delaiPaiementJours: d.delaiPaiementJours,
+        moyensPaiement: d.moyensPaiement,
+        rappelerPenalites: d.rappelerPenalites,
+        textePied: d.textePied,
+      },
       devise: d.devise,
       tauxTva: d.tauxTva,
       totalHt: d.totalHt,

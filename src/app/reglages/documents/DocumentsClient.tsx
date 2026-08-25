@@ -41,25 +41,33 @@ import {
  * réglage coupé invite à le remplir pour rien — c'est le parti arrêté sur la
  * planche du plan, et il tient ici.
  *
- * **ATTENTION — CE COMMENTAIRE ÉTAIT FAUX, corrigé le 25 août 2026.** Il
- * affirmait que « l'aperçu du bas lit LA MÊME fonction que le PDF ». Vérifié :
- * `lignesConditionsDevis` n'est appelée **que par cet aperçu**. Ni l'écran du
- * devis, ni son PDF ne la connaissent.
+ * **L'APERÇU DU BAS DIT ENFIN LA VÉRITÉ — branché le 25 août 2026.**
  *
- * Autrement dit, sur les six réglages de ce bloc, **un seul atteint le document**
- * — la validité, figée sur le devis à sa création et imprimée par
- * `devis-pdf.ts`. L'acompte, le délai, les moyens de paiement, le rappel des
- * pénalités et le texte de pied s'enregistrent, s'affichent ici… et le client
- * n'en voit rien. C'est le patron qui l'a relevé : *« les autres qui sont en ON
- * doivent-ils être visibles sur le devis ? car je ne vois rien »*.
+ * Il ne l'a pas toujours dite, et c'est le patron qui l'a vu : *« les autres qui
+ * sont en ON doivent-ils être visibles sur le devis ? car je ne vois rien, est-ce
+ * normal ? »* Non. Pendant onze jours, `lignesConditionsDevis` n'était appelée
+ * **que par cet aperçu** : il réglait, l'aperçu montrait les phrases, et son
+ * client ne recevait qu'une chose — la validité. Cet écran promettait ce
+ * qu'aucun document ne tenait.
  *
- * **Branché à rien, cet aperçu ment donc à l'écran.** Le brancher change ce que
- * REÇOIVENT ses clients : c'est sa décision, pas la nôtre, et c'est écrit dans
- * `TODO.md`. Ce commentaire dit la vérité en attendant — une documentation
- * périmée est pire qu'absente (`CLAUDE.md` §1).
+ * **Depuis, les cinq autres se figent sur le devis à sa création** (migration
+ * 0064), comme la validité et pour la même raison : corriger un réglage ne doit
+ * pas réécrire un devis déjà parti. Le PDF les met en phrases avec CETTE
+ * fonction-ci — deux rédactions finiraient par diverger, et c'est le client qui
+ * lirait la mauvaise (`CLAUDE.md` §3).
+ *
+ * **Éteindre en fait disparaître**, et c'est sa question du même jour : *« si je
+ * décoche le bouton OFF, ils sont censés disparaître ? »* Oui.
+ * `scripts/test-conditions-sur-le-devis.ts` le tient, sur la trace du PDF.
+ *
+ * **Ce qui a laissé passer le défaut onze jours, et qu'il faut retenir :** les
+ * contrôles éprouvaient la RÈGLE — les bonnes phrases pour les bons réglages —,
+ * jamais le CHEMIN entre le réglage et le papier. Une pièce débranchée passe
+ * entre les deux, en restant verte.
  *
  * L'aperçu ne porte aucun montant : le total d'un devis à venir n'existe pas, et
- * un chiffre inventé là finirait imprimé.
+ * un chiffre inventé là finirait imprimé. Le PDF, lui, le connaît — c'est là que
+ * le montant de l'acompte s'écrit.
  */
 /**
  * L'aperçu, coloré : ce qu'Atlas remplit tout seul s'affiche en doré.
