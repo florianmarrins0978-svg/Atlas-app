@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas — M11 — Les deux questions, et leurs réponses mesurées</title>
+<style>
+  :root{
+    --ground:#f5f3ee; --surface:#faf9f5; --raised:#ece9e1;
+    --ink:#1c1c1a; --ink-soft:#4a4a44; --muted:#8a8578;
+    --accent:#2f3b2f; --alert:#b5562a; --line:rgba(28,28,26,0.13);
+    --serif:Georgia,'Times New Roman',serif;
+    --sans:system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --ground:#161815; --surface:#1d201c; --raised:#252924;
+      --ink:#eae7df; --ink-soft:#c2bdb1; --muted:#948f83;
+      --accent:#9fbd82; --alert:#e0885a; --line:rgba(234,231,223,0.17);
+    }
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--sans);
+    line-height:1.65;}
+  main{max-width:44rem;margin:0 auto;padding:2.5rem 1.2rem 5rem;}
+  h1,h2,h3,h4{font-family:var(--serif);font-weight:600;line-height:1.2;
+    text-wrap:balance;margin:2rem 0 0.6rem;scroll-margin-top:1rem;}
+  h1{font-size:2rem;margin-top:0;}
+  h2{font-size:1.5rem;padding-top:1.2rem;border-top:1px solid var(--line);}
+  h3{font-size:1.12rem;}
+  h4{font-size:1rem;}
+  p{margin:0 0 0.9rem;}
+  a{color:var(--accent);text-underline-offset:3px;}
+  a:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:3px;}
+  ul,ol{margin:0 0 1rem;padding-left:1.3rem;}
+  li{margin-bottom:0.4rem;}
+  li::marker{color:var(--muted);}
+  /* Le sommaire : des cibles larges, confortables au doigt sur téléphone. */
+  ol li a{display:inline-block;padding:0.15rem 0;}
+  blockquote{margin:1rem 0;padding:0.85rem 1.05rem;background:var(--raised);
+    border-left:3px solid var(--accent);border-radius:0 10px 10px 0;color:var(--ink-soft);}
+  code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:0.87em;
+    background:var(--raised);padding:0.1rem 0.35rem;border-radius:5px;}
+  hr{border:0;border-top:1px solid var(--line);margin:2rem 0;}
+  .tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px;
+    background:var(--surface);margin:0 0 1.2rem;}
+  table{border-collapse:collapse;width:100%;font-size:0.92rem;min-width:22rem;}
+  th,td{text-align:left;padding:0.55rem 0.8rem;border-bottom:1px solid var(--line);
+    vertical-align:top;}
+  th{font-size:0.72rem;letter-spacing:0.08em;text-transform:uppercase;
+    color:var(--muted);white-space:nowrap;}
+  tr:last-child td{border-bottom:none;}
+  .retour{display:inline-block;font-size:0.76rem;color:var(--muted);
+    text-decoration:none;margin:-0.3rem 0 1rem;}
+  .retour:hover{color:var(--accent);text-decoration:underline;}
+</style>
+</head>
+<body>
+<main>
+<h1 id="m11--les-deux-questions-et-leurs-réponses-mesurées">M11 — Les deux questions, et leurs réponses mesurées</h1>
+<p><strong>Document destiné à ChatGPT.</strong> 25 août 2026. Rien n'est codé : ce sont des constatations, obtenues sur la version réellement installée.</p>
+<blockquote><strong>AVERTISSEMENT.</strong> La question A a fait apparaître une <strong>vulnérabilité exploitable, reproduite dans un navigateur</strong>, qui dépasse le périmètre de M11. Elle est décrite en partie C.</blockquote>
+<hr>
+<h2 id="question-a--quest-ce-qui-identifie-une-session-atlas-">QUESTION A — Qu'est-ce qui identifie une session Atlas ?</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<h3 id="ce-que-fait-authcore--lu-puis-mesuré">Ce que fait <code>@auth/core</code> — lu, puis mesuré</h3>
+<p>``<code>js // node_modules/@auth/core/jwt.js — encode() return await new EncryptJWT(token) .setProtectedHeader({ alg, enc, kid: thumbprint }) .setIssuedAt()                    // ← iat REMIS À L'INSTANT PRÉSENT .setExpirationTime(now() + maxAge) .setJti(crypto.randomUUID())      // ← jti REGÉNÉRÉ .encrypt(encryptionSecret); </code>``</p>
+<p><strong>Mesuré</strong> (<code>scripts/sonde-jeton-session.mts</code>), en rejouant la réémission telle qu'Auth.js la fait — il redonne à <code>encode</code> le contenu décodé :</p>
+<p>``` 1er jeton   → jti=f5c59008-…  iat=1787669228 réémis      → jti=eaffbf89-…  iat=1787669229</p>
+<p>jti STABLE à la réémission ? NON iat STABLE à la réémission ? NON ```</p>
+<h3 id="réponse-à-la-question-a">Réponse à la question A</h3>
+<div class="tablewrap"><table><thead><tr>
+<th>Question</th>
+<th>Réponse</th>
+</tr></thead><tbody>
+<tr>
+<td><code>jti</code> existe-t-il ?</td>
+<td><strong>oui</strong></td>
+</tr>
+<tr>
+<td>unique par connexion ?</td>
+<td>oui</td>
+</tr>
+<tr>
+<td><strong>stable pendant la session ?</strong></td>
+<td><strong>NON</strong> — <code>crypto.randomUUID()</code> à chaque réémission</td>
+</tr>
+<tr>
+<td>Auth.js réémet-il pendant une session ?</td>
+<td><strong>oui</strong>, dans <code>lib/actions/session.js:46</code></td>
+</tr>
+<tr>
+<td><code>iat</code> change-t-il alors ?</td>
+<td><strong>oui</strong>, <code>setIssuedAt()</code> sans argument</td>
+</tr>
+<tr>
+<td>que devient une preuve attachée à l'ancien <code>iat</code> ?</td>
+<td><strong>elle serait perdue</strong></td>
+</tr>
+<tr>
+<td>deux connexions partagent-elles autre chose que l'identité ?</td>
+<td>non</td>
+</tr>
+</tbody></table></div>
+<p><strong>Aucun identifiant existant ne satisfait la propriété demandée.</strong> Ni <code>jti</code> ni <code>iat</code> ne représente « une session logique, stable ». <strong>Je ne forcerai donc pas <code>iat</code> par commodité</strong> — mon analyse précédente proposait exactement cela, et elle était fausse sur ce point.</p>
+<h3 id="ce-qui-sauve-le-mécanisme-actuel-et-ce-qui-ne-le-sauvera-pas">Ce qui sauve le mécanisme actuel, et ce qui ne le sauvera pas</h3>
+<p><strong>Atlas n'appelle jamais <code>useSession</code> ni <code>SessionProvider</code></strong>, et aucun code n'appelle <code>/api/auth/session</code> : en usage normal, le jeton n'est donc réémis <strong>jamais</strong>, et <code>iat</code> reste celui de la connexion. C'est pourquoi « me déconnecter partout » fonctionne aujourd'hui.</p>
+<p><strong>Mais cela ne tient qu'à un usage, pas à une garantie</strong> — et c'est exactement le sujet de la partie C.</p>
+<hr>
+<h2 id="question-b--que-deviennent-les-clés-webauthn-">QUESTION B — Que deviennent les clés WebAuthn ?</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<h3 id="constaté-dans-le-code-fonction-par-fonction">Constaté dans le code, fonction par fonction</h3>
+<div class="tablewrap"><table><thead><tr>
+<th>Événement</th>
+<th>Ce qu'il fait</th>
+<th>Touche <code>cles_appareil</code> ?</th>
+</tr></thead><tbody>
+<tr>
+<td>« Me déconnecter partout »</td>
+<td>avance <code>users.jetons_valides_depuis</code> (<code>compte.ts:130</code>)</td>
+<td><strong>NON</strong></td>
+</tr>
+<tr>
+<td>Changement de mot de passe</td>
+<td>écrit le condensat</td>
+<td><strong>NON</strong></td>
+</tr>
+<tr>
+<td>Retirer une clé</td>
+<td>supprime <strong>cette</strong> ligne</td>
+<td>oui, celle-là seulement</td>
+</tr>
+</tbody></table></div>
+<p>Et <code>ouvrirAvecCle</code> (<code>src/server/cle-appareil.ts:240</code>) vérifie : l'origine, le défi, la signature, le compteur anti-rejeu. <strong>Il ne lit jamais <code>jetons_valides_depuis</code>.</strong></p>
+<h3 id="réponse-à-la-question-b">Réponse à la question B</h3>
+<blockquote><strong>Une clé WebAuthn enregistrée reste pleinement utilisable après « me déconnecter partout » ET après un changement de mot de passe.</strong> Elle permet d'obtenir immédiatement un jeton NEUF.</blockquote>
+<p>Votre intuition était exacte, et la distinction que vous demandiez est réelle :</p>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th></th>
+</tr></thead><tbody>
+<tr>
+<td><strong>Fermer les sessions existantes</strong></td>
+<td>c'est tout ce que fait <code>jetons_valides_depuis</code></td>
+</tr>
+<tr>
+<td><strong>Révoquer les moyens d'authentification persistants</strong></td>
+<td><strong>n'existe pas</strong> dans Atlas</td>
+</tr>
+</tbody></table></div>
+<h3 id="la-chaîne-dattaque-complète-aujourdhui">La chaîne d'attaque complète, aujourd'hui</h3>
+<ol>
+<li>une session est volée (cookie) ;</li>
+<li>l'attaquant enregistre <strong>sa propre</strong> clé Face ID — aucune preuve n'est exigée ;</li>
+<li>le patron s'aperçoit de quelque chose : il change son mot de passe <strong>et</strong> se déconnecte partout ;</li>
+<li><strong>l'attaquant entre toujours</strong>, avec sa clé, indéfiniment.</li>
+</ol>
+<p>Rien à l'écran ne le lui dirait : la liste des appareils montrerait un appareil de plus, sans qu'on sache qu'il n'est pas à lui.</p>
+<hr>
+<h2 id="c--la-vulnérabilité-trouvée-en-cherchant-hors-périmètre-m11">C — LA VULNÉRABILITÉ TROUVÉE EN CHERCHANT (hors périmètre M11)</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<h3 id="-me-déconnecter-partout--se-contourne">« Me déconnecter partout » se contourne</h3>
+<p><code>GET /api/auth/session</code> est montée (<code>src/app/api/auth/[...nextauth]/route.ts</code>). Elle décode le cookie, rejoue les rappels, et <strong>repose un cookie neuf</strong> dont l'<code>iat</code> vaut <em>maintenant</em> — donc postérieur à la coupure. Elle ne consulte jamais <code>jetons_valides_depuis</code>.</p>
+<p><strong>Reproduit dans un vrai navigateur</strong> (<code>scripts/sonde-coupure-contournable.mts</code>) :</p>
+<p>``` ✓ connecté → /api/auth/session a répondu 200 (sans avoir visité d'écran)</p>
+<p>✗✗ LA COUPURE SE CONTOURNE : la session refusée est revenue par la route de session. url après contournement : http://localhost:3000/ ```</p>
+<h3 id="lordre-des-gestes-est-tout--et-ma-première-sonde-sest-trompée">L'ORDRE DES GESTES EST TOUT — et ma première sonde s'est trompée</h3>
+<p>Sa première version visitait un écran protégé avant d'essayer le contournement. Cet écran renvoie vers <code>/api/session-perimee</code>, <strong>qui efface le cookie</strong> : elle mesurait donc un navigateur déjà vidé, et annonçait « la coupure tient » <strong>sans avoir joué l'attaque</strong>. Un attaquant ne visite aucun écran ; il va droit à la route qui réémet.</p>
+<p><em>C'est le piège du contrôle qui mesure zéro (<code>CLAUDE.md</code> §5), dans une robe neuve : le premier verdict était vert, et il ne prouvait rien.</em></p>
+<h3 id="pourquoi-ce-nest-pas-visible-autrement">Pourquoi ce n'est pas visible autrement</h3>
+<p>La sonde est un <code>.mts</code>, <strong>hors de la batterie</strong>, et c'est délibéré : elle constate un défaut ouvert, et un rouge permanent s'apprend à être ignoré. Elle deviendra une suite le jour où le défaut sera fermé.</p>
+<hr>
+<h2 id="ce-que-ces-constatations-changent-pour-larchitecture-de-m11">Ce que ces constatations changent pour l'architecture de M11</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><strong>Il faut un identifiant de session posé par Atlas</strong>, puisque la pile n'en offre aucun de stable. Le plus petit geste possible :</p>
+<ul>
+<li>le rappel <code>jwt</code> d'Auth.js pose, <strong>à la connexion seulement</strong>, un <code>sessionId = crypto.randomUUID()</code> dans le jeton ;</li>
+<li>il est <strong>recopié tel quel</strong> aux réémissions — le rappel reçoit le jeton décodé, donc il suffit de ne pas le réécrire ;</li>
+<li>il vit <strong>dans le JWT chiffré et signé</strong> : le navigateur ne peut ni le lire ni le choisir ;</li>
+<li>il est exposé au serveur par le rappel <code>session</code>, comme <code>emisLe</code> l'est déjà.</li>
+</ul>
+<p>Cela ne touche ni la stratégie de session, ni <code>maxAge</code>, ni les fournisseurs : deux lignes dans <code>auth.config.ts</code>.</p>
+<p><strong>Et il faudra trancher trois questions de produit</strong> avant de coder :</p>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th></th>
+</tr></thead><tbody>
+<tr>
+<td><strong>1</strong></td>
+<td>« Me déconnecter partout » doit-il <strong>aussi</strong> révoquer les clés Face ID ? Sinon il ne déconnecte pas vraiment partout</td>
+</tr>
+<tr>
+<td><strong>2</strong></td>
+<td>Si oui, faut-il les supprimer, ou les suspendre jusqu'à une ré-authentification ? Supprimer oblige à réenregistrer chaque appareil</td>
+</tr>
+<tr>
+<td><strong>3</strong></td>
+<td>La route <code>/api/auth/session</code> doit-elle refuser de réémettre un jeton coupé ?</td>
+</tr>
+</tbody></table></div>
+<p>Je ne les tranche pas seul : la première change ce que le patron obtient quand il appuie sur un bouton d'urgence.</p>
+</main>
+</body>
+</html>
