@@ -7,6 +7,29 @@ Format : le plus récent en tête.
 
 ---
 
+## 2026-08-25
+
+### Deux suites cassaient À MINUIT, et pas depuis du code
+
+Elles étaient vertes le 24 août à 22 h 27, rouges le 25 à 9 h 29, sur le même
+dépôt. Ni l'une ni l'autre n'avait rien à voir avec ce qu'on venait d'écrire :
+c'est le calendrier qui avait tourné.
+
+- **La date à six mois** se comparait à « 1 mars », fabriqué à la main dans la
+  suite — alors que l'écran écrit « 1er mars », le premier du mois étant le seul
+  ordinal du français (`src/lib/jour.ts`). Verte toute l'année, rouge les quatre
+  jours où la cible tombe sur un 1er. C'est la règle dupliquée que le dépôt
+  interdit (`CLAUDE.md` §3) : la suite lit désormais `jourLisible`.
+- **Le calendrier à deux dates** cherchait trois jours libres dans le mois EN
+  COURS. Le 25 août, il n'en restait que deux passé le délai minimal. Elle appuie
+  maintenant sur « Mois suivant » quand le mois est trop court — le geste que le
+  patron fait sans y penser.
+
+*Une règle éprouvée un seul jour n'est pas éprouvée.* Les deux suites ont été
+rejouées vertes après correction.
+
+---
+
 ## 2026-08-24
 
 ### Un lien envoyé à un client ne peut plus être une adresse de sa machine

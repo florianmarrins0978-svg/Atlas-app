@@ -3,6 +3,7 @@ import { lancerNavigateur } from "./e2e-browser";
 import { Pool } from "pg";
 import { ajouterJours, versJourIso, HORIZON_PATRON_JOURS, DELAI_MINIMAL_JOURS } from "../src/server/disponibilites";
 import { creerPuisFiche } from "./_creer-chantier-e2e";
+import { jourLisible } from "../src/lib/jour";
 
 // **« Comment je fais si je dois lui proposer une date dans six mois ? »**
 // — le patron, le 8 août 2026, en ajoutant : *« c'est un problème qui va se
@@ -146,7 +147,9 @@ async function main() {
   const [, moisChoisi, jourChoisi] = dansSixMois.split("-");
   assert.match(
     apresLeChoix,
-    new RegExp(`${Number(jourChoisi)}\\s+${MOIS[Number(moisChoisi) - 1]}`, "i"),
+    // `(?:er)?` : le premier du mois s'écrit « 1er » partout où l'écran passe
+    // par `jourLisible`. Le même piège que ci-dessous, encore en dormance ici.
+    new RegExp(`${Number(jourChoisi)}(?:er)?\\s+${MOIS[Number(moisChoisi) - 1]}`, "i"),
     "La date choisie n'apparaît nulle part : le patron enverrait sans savoir ce qu'il propose."
   );
   console.log("  ✓ une date à six mois est retenue, et affichée");
@@ -181,11 +184,19 @@ async function main() {
   const pageClient = await contexte.newPage();
   await pageClient.goto(`${BASE}/devis/${rows[0].jeton}`, { waitUntil: "networkidle" });
   const vueClient = await pageClient.locator("body").innerText();
-  const [, mois, jourDuMois] = dansSixMois.split("-");
-  const enClair = `${Number(jourDuMois)} ${MOIS[Number(mois) - 1]}`;
-  assert.match(
-    vueClient,
-    new RegExp(enClair, "i"),
+  // **La date attendue vient de `jourLisible`, jamais recomposée ici.**
+  //
+  // Payé le 25 août 2026, à minuit pile. Cette ligne fabriquait « 1 mars » à la
+  // main ; l'écran écrit « 1er mars », parce que le premier du mois est le seul
+  // ordinal du français (`src/lib/jour.ts`). La suite était donc verte 361 jours
+  // par an et rouge les quatre autres — le jour où la cible tombe sur un 1er.
+  //
+  // C'est très exactement la règle dupliquée que le dépôt interdit
+  // (`CLAUDE.md` §3) : deux façons d'écrire une date finissent par diverger, et
+  // celle-ci a divergé sur un cas que personne n'avait joué.
+  const enClair = jourLisible(dansSixMois);
+  assert.ok(
+    vueClient.includes(enClair),
     `Le client ne voit pas la date proposée (« ${enClair} »). Lu : « ${vueClient.replace(/\s+/g, " ").slice(0, 400)} »`
   );
   console.log("  ✓ le client la voit sur sa page, en toutes lettres");
