@@ -254,6 +254,42 @@ le produit. **Ne pas rouvrir** sans qu'il le redemande.
 
 La planche 92 (`appli/calendrier-aujourdhui.html`) reste : elle raconte le
 chemin, et le prochain qui trouvera deux cases entourées saura pourquoi.
+## DEUX SUITES NAVIGATEUR ROUGES SUR `main`, et aucune n'est un défaut du produit (25 août 2026)
+
+**Vérifié sur `main` nu**, dans un arbre séparé, sans aucun lot par-dessus : les
+deux rougissent à l'identique. Elles ne viennent pas de la pastille des dates.
+
+### 1. `test-date-lointaine-e2e.ts` — le contrôle a vieilli, pas l'écran
+
+Il exige `/1 mars/i` et l'écran affiche **« lundi 1er mars 2027 »**. L'écran a
+raison : `src/lib/jour.ts` porte la règle en toutes lettres — *« le premier du
+mois est le seul ordinal en français : 1er août, jamais 1 août »*. C'est le
+contrôle qui n'a pas suivi.
+
+**Le corriger, ce n'est PAS remettre « 1 mars »** : ce serait réclamer une faute
+de français. La bonne cible est `/1er mars/i`, ou mieux, la date composée par
+`jourLisible()` — une suite qui recopie un format finit toujours par diverger de
+la fonction qui l'écrit (`CLAUDE.md` §3).
+
+### 2. `test-deux-dates-calendrier-e2e.ts` — son garde-fou parle
+
+*« Le calendrier n'offre que 2 jour(s) : trop peu pour éprouver. »* Il refuse de
+conclure, et c'est exactement ce qu'on lui demande — un contrôle qui mesure zéro
+ne mesure rien (`CLAUDE.md` §5). Mais il refuse **tous les jours**, ce qui en
+fait un rouge permanent plutôt qu'un garde-fou.
+
+Il lui faut au moins trois jours proposables ; il n'en trouve que deux. À
+chercher du côté de la fenêtre de dates offerte au client et du jeu de
+démonstration — pas du côté du calendrier lui-même, dont les autres suites
+passent.
+
+**Aucune des deux n'est corrigée ici, et c'est délibéré :** élargir un lot de
+planning pour réparer deux suites d'un autre, c'est mêler deux changements et
+masquer les erreurs de chacun. Elles sont notées pour que la session qui les
+possède les voie.
+
+---
+
 ## `verifier:maquette` est ROUGE sur `main`, et ce n'est pas le mode nuit (23 août 2026)
 
 `scripts/verifier-maquette-message-et-allure.mjs` échoue sur `main` nu, à
