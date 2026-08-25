@@ -3018,6 +3018,37 @@ fin, et le fond figé.
 obligatoires, disposition des colonnes, ordre des totaux. Un devis mal posé
 n'est pas un devis moins joli, c'est un devis qu'on peut lui contester.
 
+### 0 trigies septies. Deux suites de calendrier tombent EN FIN DE MOIS — **CONSTATÉ le 25 août 2026, PAS RÉPARÉ**
+
+**Elles rougissent sur `main`, sans aucun changement**, et elles bloquent la
+livraison de toutes les sessions tant qu'on est en fin de mois. Vérifié : même
+rouge, au même endroit, sur `origin/main` seul.
+
+| Suite | Ce qu'elle rend | Pourquoi |
+|---|---|---|
+| `test-deux-dates-calendrier-e2e` | « Le calendrier n'offre que 2 jour(s) : trop peu pour éprouver » | elle ne lit que **le mois affiché**. Le 25 août, le délai minimal écarté, il ne reste que le 28 et le 31. Elle n'a jamais su tourner la page du mois |
+| `test-date-lointaine-e2e` | « Le client ne voit pas la date proposée (« 1 mars ») » | « dans six mois » puis « prochain lundi » tombe au **1ᵉʳ mars 2027**, soit six mois **et quatre jours** — au-delà de la fenêtre du client |
+
+**Ce qu'il faut regarder, et personne ne l'a fait :**
+
+- la première est un défaut de la SUITE : elle doit tourner au mois suivant
+  quand celui qui s'affiche n'offre pas assez de jours. Rien à changer au
+  produit ;
+- **la seconde est peut-être un vrai défaut du PRODUIT**, et c'est pour cela
+  qu'elle ne doit pas être « réparée » à la légère. Elle garde exactement le
+  piège que son propre commentaire nomme : *« une date validée à l'envoi puis
+  refusée à la lecture, parce que la fenêtre du client ne la couvre pas »*. Le
+  patron peut proposer à dix-huit mois (`HORIZON_PATRON_JOURS`), le client ne
+  voit qu'une fenêtre plus courte (`fenetrePourDates`). **La question à trancher
+  avec lui** : un client doit-il pouvoir retenir une date que son artisan lui a
+  proposée à six mois ? Si oui, la fenêtre du client doit s'ouvrir autour de
+  cette date — la marge existe déjà dans le code, elle ne suffit visiblement
+  pas.
+
+**Ce que ça ne doit PAS devenir :** une raison de repousser la vérification à
+septembre. Le premier du mois, les deux repasseront au vert toutes seules — et
+le défaut, lui, sera toujours là.
+
 ### 0 trigies sexies. Deux suites navigateur rougissent encore sous charge — **CONSTATÉ le 24 août 2026, PAS RÉPARÉ**
 
 **Écrit parce que le silence coûterait l'enquête une seconde fois.** Ce n'est
