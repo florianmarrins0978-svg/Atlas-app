@@ -129,35 +129,30 @@ async function main() {
     .waitFor({ state: "visible", timeout: 30_000 })
     .catch(() => undefined);
 
-  // **ON ATTEND LA PHRASE QU'ON VA EXIGER, pas une autre — corrigé le 25 août
-  // 2026.** L'attente ci-dessus porte sur « arrêtée », qui appartient à l'écran
-  // de la facture ; l'assertion qui suit porte sur « ne l'a pas encore reçue »,
-  // qui appartient au bloc d'envoi, rendu APRÈS lui. Jouée seule, la suite ne
-  // voyait jamais l'écart ; sous une batterie de cent dix suites, le bloc
-  // arrivait après la lecture et le contrôle accusait le produit de laisser
-  // croire la facture partie.
-  //
-  // Rouge une fois le 25 août, verte seule dans la foulée — et c'est le même
-  // symptôme que le faux rouge du 12 août noté plus haut. Ce n'est pas une
-  // suite « instable » : c'est une attente qui visait à côté. Elle ne masque
-  // rien, elle laisse au bloc le temps d'exister, et son absence reste un
-  // échec — dit par l'assertion, avec l'écran sous les yeux.
-  await page
-    .getByText(/ne l'a pas encore reçue/i)
-    .first()
-    .waitFor({ state: "visible", timeout: 30_000 })
-    .catch(() => undefined);
 
   // --- 1. « Arrêtée » n'est pas « partie » ---------------------------------
   const ecran = await page.locator("body").innerText();
   assert.match(ecran, /arrêtée/i, `La facture n'a pas été arrêtée. Écran :\n${ecran.slice(0, 500)}`);
-  assert.match(
-    ecran,
-    /ne l'a pas encore reçue/i,
+  // **CE CONTRÔLE VISAIT UN ÉTAT FUGACE, ET IL EST REDRESSÉ (25 août 2026).**
+  //
+  // Il exigeait « Votre client ne l'a pas encore reçue » — la phrase de l'écran
+  // AVANT que le lien soit préparé. Depuis l'appui unique du 22 août, ce lien
+  // se prépare dans la foulée de l'arrêt : la phrase ne vit donc plus que le
+  // temps d'un aller-retour au serveur. La suite était verte quand elle lisait
+  // l'écran assez vite, rouge quand la préparation avait eu le temps
+  // d'aboutir — c'est-à-dire verte pour une mauvaise raison.
+  //
+  // **Ce qu'il faut tenir, c'est la RÈGLE : « arrêtée » n'est pas « partie ».**
+  // Le patron a lu « facture arrêtée » et cru son client servi. Les deux états
+  // de l'écran le démentent, chacun avec ses mots — et viser l'un des deux,
+  // c'est rendre l'écran impossible à changer (`CLAUDE.md` §5 bis).
+  const ditQueRienNEstParti =
+    /ne l'a pas encore reçue/i.test(ecran) ||
+    /rien ne part tant que vous ne l'envoyez pas/i.test(ecran);
+  assert.ok(
+    ditQueRienNEstParti,
     "L'écran laisse croire que la facture est partie alors que rien ne la porte au client.\n" +
-      `Écran lu EN ENTIER :\n${ecran}\n` +
-      `Bloc d'envoi présent : ${await page.locator('[data-atlas="transmission-sms"], [data-atlas="transmission-email"]').count()} · ` +
-      `refus d'adresse : ${await page.locator("[data-refus]").count()}`
+      `Écran lu :\n${ecran.replace(/\s+/g, " ").slice(0, 600)}`
   );
   console.log("  ✓ une facture arrêtée dit qu'elle n'est pas encore partie, et propose de l'envoyer");
 

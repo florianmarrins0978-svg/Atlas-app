@@ -28,18 +28,27 @@ c'est le calendrier qui avait tourné.
 *Une règle éprouvée un seul jour n'est pas éprouvée.* Les deux suites ont été
 rejouées vertes après correction.
 
-### Une attente qui visait à côté, sur la facture au client
+### Un contrôle qui exigeait un état FUGACE, sur la facture au client
 
-Rouge une fois sous la batterie complète, verte seule dans la foulée. La cause
-n'est pas la charge en soi : le contrôle **attendait un mot du parent puis
-affirmait sur un mot de l'enfant**. « Arrêtée » appartient à l'écran de la
-facture ; « ne l'a pas encore reçue » appartient au bloc d'envoi, rendu après
-lui. Jouée seule, la suite ne voyait jamais l'écart ; sous cent dix suites, elle
-lisait l'écran avant que le bloc existe et accusait le produit de laisser croire
-la facture partie.
+Rouge sous la batterie complète, verte seule — trois fois. **Une première
+explication a été tentée et s'est révélée fausse** : on a cru à une attente qui
+visait un mot du parent pendant que l'assertion visait un mot de l'enfant. La
+correction n'a rien changé, ce qui l'a réfutée.
 
-Elle attend maintenant la phrase qu'elle exige. Rien n'est masqué : son absence
-reste un échec, dit avec l'écran sous les yeux.
+Le message d'échec a alors été instrumenté pour rendre l'écran ENTIER. Il a
+tranché en une lecture : le bloc d'envoi était bien là, aucun refus d'adresse ne
+s'affichait — le garde-fou du jour était donc hors de cause — et l'écran portait
+le lien tout prêt.
+
+**La vraie cause :** le contrôle exigeait « Votre client ne l'a pas encore
+reçue », la phrase de l'écran AVANT que le lien soit préparé. Depuis l'appui
+unique du 22 août, ce lien se prépare dans la foulée de l'arrêt : la phrase ne
+vit plus que le temps d'un aller-retour au serveur. La suite était verte quand
+elle lisait assez vite — c'est-à-dire **verte pour une mauvaise raison**.
+
+Elle tient désormais la règle et non le libellé d'un seul état : *« arrêtée »
+n'est pas « partie »*. Les deux états de l'écran le démentent, chacun avec ses
+mots. Confrontée à des phrases absentes, elle rougit ; rétablie, elle passe.
 
 ---
 
