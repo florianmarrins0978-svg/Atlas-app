@@ -228,7 +228,11 @@ async function main() {
         [CLIENT]
       );
       enregistre = rows[0];
-      if (enregistre?.minutes === 105) break;
+      // **LES DEUX, et non le premier arrivé.** Le temps et les observations
+      // partent par DEUX écritures distinctes : n'attendre que le temps laissait
+      // lire des observations encore vides. Constaté le 25 août 2026, après un
+      // premier correctif qui ne guettait que `minutes`.
+      if (enregistre?.minutes === 105 && /haie du fond/.test(enregistre?.observations ?? "")) break;
       await page.waitForTimeout(250);
     }
     await capturer(page, "07-temps-et-observations");
