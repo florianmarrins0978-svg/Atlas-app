@@ -6427,6 +6427,21 @@ et c'est déjà arrivé.
 - ~~Rédiger le devis entièrement à la main, depuis la fiche du chantier~~ — 2026-08-04
 - ~~Retirer la case « Nom du chantier » : plus rien n'est obligatoire à la création~~ — 2026-08-05
 - ~~« Rédiger à la main » ouvre le devis ENTIER, à l'image du modèle, et il reste dans Atlas~~ — 2026-08-05
+- [ ] **Le calendrier n'offre que 2 jours sur une base FRAÎCHEMENT montée.**
+  `test-deux-dates-calendrier-e2e` tombe sur *« Le calendrier n'offre que
+  2 jour(s) : trop peu pour éprouver »*, et `test-date-lointaine-e2e` avec elle.
+  **Ce n'est ni un lot ni une fusion** : reproduit à l'identique sur trois
+  commits différents (`fbddb7e`, `9d64de8`, `26c7fa6`). Et ces deux suites
+  étaient VERTES deux heures plus tôt, sur la même version — ce qui a changé
+  entre-temps, c'est la base : elle a été détruite et remontée à neuf.
+  **Piste à suivre, à ne pas confondre :** le jeu de démonstration remplit
+  vraisemblablement le mois courant, et le calendrier ne propose que ce qui
+  reste libre. Sur une base vieillie par les essais, il restait des jours ; sur
+  une base neuve au 24 août, il n'en reste que deux. Si c'est cela, **le défaut
+  n'est pas dans le calendrier mais dans le contrôle**, qui suppose une
+  disponibilité que rien ne garantit. À trancher avant de toucher au calendrier :
+  un contrôle qui accuse à tort coûte plus cher que pas de contrôle du tout.
+  *(24 août 2026)*
 - [ ] **La batterie rougit sur des suites DIFFÉRENTES à chaque exécution**, et
   chacune passe seule sur le même code. Relevé le 24 août 2026, trois
   exécutions d'affilée : d'abord `test-planning-vers-facture-e2e` (un texte
