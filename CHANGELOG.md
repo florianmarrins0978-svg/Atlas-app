@@ -9,6 +9,23 @@ Format : le plus récent en tête.
 
 ## 2026-08-25
 
+### La phrase grise sous « Envoyer la facture » a été retirée
+
+*« Supprime le message en gris : votre messagerie s'ouvre aussitôt. »*
+
+Elle avait sa raison le 22 août, quand les trois appuis sont devenus un : il
+fallait dire que le geste ouvrait la messagerie sans rien envoyer. Depuis, il l'a
+fait des dizaines de fois — la phrase n'apprenait plus rien, et poussait vers le
+bas l'avertissement qui, lui, compte : la facture s'arrête et une correction
+passerait par un avoir.
+
+**Et deux pièges d'outillage écrits dans `HANDOVER.md`**, qui ont coûté une heure
+à croire `main` cassé : une suite d'envoi lancée à la main sans
+`ATLAS_URL_PUBLIQUE` voit une adresse locale et rougit sur du code juste ; et le
+premier passage sur un écran le compile, ce qui peut dépasser le délai d'une
+suite. Rejouée sur serveur chaud, elle passe.
+
+
 ### Le message : les phrases par défaut, modifiables — les mots en doré verrouillés
 
 *« Le message au client doit comporter les phrases par défaut et l'utilisateur les
