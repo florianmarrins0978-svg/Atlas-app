@@ -7,6 +7,31 @@ Format : le plus récent en tête.
 
 ---
 
+## 2026-08-25
+
+### L'accueil vide ne dit plus qu'il est vide
+
+**Sa demande, capture à l'appui :** *« supprime la phrase "aucun chantier pour
+l'instant" »*.
+
+Elle disait deux choses, et les deux étaient déjà à l'écran : que la liste est
+vide — cela se voit — et par où commencer, alors que « CRÉER UN DEVIS » et son
+rond doré sont juste au-dessus. Une phrase qui répète ce qu'on voit prend la
+place des bandeaux, qui, eux, appellent une action.
+
+**Les bandeaux restent, et c'est la moitié qui compte** : ils portent les
+réponses de ses clients — un devis accepté, une autre date proposée — et elles
+arrivent justement quand plus aucun chantier n'est en cours.
+
+**Le contrôle lit la SOURCE, et il faut savoir pourquoi.** L'état à mesurer —
+aucun chantier — est hors de portée des suites navigateur, qui partagent le
+compte de démonstration et en portent toujours. Une suite qui « vérifierait »
+l'absence sur un accueil plein serait verte sans avoir rien mesuré. C'est
+grossier, et c'est plus honnête qu'un vert qui ne prouve rien
+(`scripts/test-accueil-liste-vide.ts`, vu rouge contre le retour de la phrase).
+
+---
+
 ## 2026-08-24
 
 ### Un lien envoyé à un client ne peut plus être une adresse de sa machine

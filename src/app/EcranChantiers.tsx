@@ -324,12 +324,18 @@ export default function EcranChantiers({
         </div>
 
         {restants.length === 0 ? (
-          <div className="atlas-fil-defile pt-4">
-            {bandeaux}
-            <p className="px-[26px] pt-2 text-[13px]" style={{ color: colors.muted }}>
-              Aucun chantier pour l&apos;instant. Créez votre premier chantier pour commencer.
-            </p>
-          </div>
+          /* **AUCUNE PHRASE QUAND LA LISTE EST VIDE** — sa demande du 25 août
+             2026 : *« supprime la phrase "aucun chantier pour l'instant" »*.
+
+             Elle disait deux choses, et les deux étaient déjà à l'écran : que
+             la liste est vide — on le voit —, et par où commencer — « CRÉER UN
+             DEVIS » et son rond doré sont juste au-dessus. Une phrase qui
+             répète ce qu'on voit occupe la place des bandeaux, qui, eux,
+             appellent une action.
+
+             Les bandeaux restent : ce sont les réponses de ses clients, et
+             elles arrivent justement quand plus aucun chantier n'est en cours. */
+          <div className="atlas-fil-defile pt-4">{bandeaux}</div>
         ) : (
           <div className="atlas-fil-defile pb-3 pt-2.5">
             {/* **Les bandeaux défilent AVEC la liste, ils ne la repoussent
