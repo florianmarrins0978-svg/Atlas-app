@@ -124,7 +124,7 @@ export function messageRefusCle(refus: RefusCle): string | null {
       // se tait. Un message ici serait un reproche pour un geste normal.
       return null;
     case "sans-cle":
-      return "Aucun appareil n’est encore enregistré sur ce compte. Entrez votre mot de passe, puis activez Face ID dans Réglages › Connexion.";
+      return "Aucun appareil n’est encore enregistré sur ce compte. Entrez votre mot de passe, puis activez Face ID dans Réglages, Connexion.";
     case "cle-inconnue":
       return "Cet appareil n’est plus reconnu. Entrez votre mot de passe, puis réactivez Face ID.";
     case "rejeu":

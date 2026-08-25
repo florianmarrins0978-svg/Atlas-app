@@ -77,7 +77,7 @@ export default function NouveauChantierMockup() {
 
           {/* 6 — Action principale, toujours active : plus rien n'est exigé */}
           <div className="pt-4">
-            <PrimaryButton>Créer le chantier →</PrimaryButton>
+            <PrimaryButton>Créer le chantier</PrimaryButton>
           </div>
           <p className="text-center text-[13px]" style={{ color: colors.muted }}>
             Vous pourrez compléter les informations manquantes depuis la fiche du chantier.

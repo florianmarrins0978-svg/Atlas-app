@@ -16,6 +16,17 @@ import { colors, font, voile } from "@/lib/design-tokens";
 // carte ouvre l'écran de dictée, ici elle ouvre un formulaire. Un micro y
 // serait une petite tromperie, répétée à chaque ouverture de l'application.
 //
+// **Ce composant n'est monté nulle part aujourd'hui** (aucun `import` dans
+// `src/`) : il reste comme référence de la carte retenue le 3 août. Sa flèche
+// était donc invisible — raison de plus pour qu'elle parte : elle serait
+// revenue à l'écran le jour où on le remonte.
+//
+// **Pas de flèche au bout, et elle ne doit pas revenir.** Le modèle d'Arborea
+// en portait une ; le patron l'a fait retirer partout le 25 août 2026 — *« il
+// m'avait semblé t'avoir demandé de supprimer toutes les flèches »*. Une carte
+// pleine, avec son rond et son ombre, dit déjà qu'on l'appuie. Le contrôle qui
+// la refuse : `scripts/test-aucune-fleche.ts`.
+//
 // Les mesures viennent du modèle : 20px de rayon, 56px pour le rond, titre en
 // Playfair 600 à 1,35rem, sous-ligne à 0,9rem, ombre teintée de vert pin.
 
@@ -59,10 +70,6 @@ export default function ActionPrincipale({
         <span className="mt-0.5 block text-[14.4px] leading-snug" style={{ color: voile(colors.cream, 0.82) }}>
           {sousTitre}
         </span>
-      </span>
-
-      <span aria-hidden="true" className="flex-shrink-0 text-[22px]" style={{ opacity: 0.85 }}>
-        →
       </span>
     </a>
   );

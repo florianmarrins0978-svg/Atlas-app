@@ -445,7 +445,7 @@ function EcranDevisParti({
             className="mt-4 text-[14px] font-medium"
             style={{ color: colors.ink }}
           >
-            Modifier mon devis ›
+            Modifier mon devis
           </button>
         )}
       </div>

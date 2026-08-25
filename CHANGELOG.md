@@ -9,6 +9,23 @@ Format : le plus récent en tête.
 
 ## 2026-08-25
 
+### Plus une seule flèche décorative dans les écrans
+
+*« Retire la flèche ! Il m'avait semblé t'avoir demandé de supprimer toutes les
+flèches de l'application ! »* — capture à l'appui, devant « Créer la facture → ».
+
+La règle datait du matin même ; vingt-huit libellés en portaient encore une le
+soir. Elles sont parties partout : boutons, liens, chemins de navigation écrits
+dans une phrase, légende du plan d'arrosage.
+
+Restent celles qui FONT quelque chose — feuilletage des calendriers, période de
+TVA précédente et suivante, « ← Aujourd'hui », le rond d'envoi de la discussion,
+et le « 250 € → 350 € » d'une correction de devis, où la flèche porte le sens.
+
+Ce que ça évite : qu'elles reviennent une troisième fois.
+`scripts/test-aucune-fleche.ts` les refuse, chaque flèche gardée y étant
+déclarée avec sa raison. Détail en `ARCHITECTURE.md` §176.
+
 ### Savoir ce que l'application a coûté en temps — `scripts/compter-heures.mjs`
 
 *« Combien d'heures avons-nous passé à créer cette application ? »* — puis, la

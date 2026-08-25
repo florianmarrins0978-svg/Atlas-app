@@ -362,7 +362,7 @@ export default function DevisCompletClient(props: Props) {
             className="mt-2 block text-[13px] font-semibold"
             style={{ color: colors.rust }}
           >
-            Le corriger et le renvoyer →
+            Le corriger et le renvoyer
           </Link>
         </div>
       )}

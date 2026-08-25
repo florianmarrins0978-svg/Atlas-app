@@ -258,7 +258,7 @@ export default function FactureClient({
           </p>
         )}
         <PrimaryButton disabled={enCours} onClick={terminer}>
-          {enCours ? "Préparation…" : "Créer la facture →"}
+          {enCours ? "Préparation…" : "Créer la facture"}
         </PrimaryButton>
       </div>
     );

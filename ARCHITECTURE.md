@@ -15387,3 +15387,72 @@ Au 25 août 2026 : **122 h mesurées**, 31 à 76 h estimées avant, soit un tota
 d'**Arborea** (`CHANGELOG.md`, 31 juillet 2026) : écrans, calculs et tests
 repris d'un dépôt précédent. Le temps passé là-bas n'est dans aucun fichier
 d'ici, et aucun calcul fait ici ne peut l'inventer.
+
+---
+
+## 176. Les flèches décoratives sont parties, et un contrôle les empêche de revenir
+
+**Sa correction du 25 août 2026, capture à l'appui :** *« Retire la flèche ! Il
+m'avait semblé t'avoir demandé de supprimer toutes les flèches de
+l'application ! »* — devant « Créer la facture → », sur l'écran de facture.
+
+Il avait déjà posé la règle **le matin même** (`CLAUDE.md` §3, *« arrête de
+mettre des flèches, c'est moche »*). Elle était écrite, et vingt-huit libellés
+en portaient encore une le soir : la règle avait été appliquée là où on
+regardait, pas là où elle valait.
+
+### Ce qui est parti
+
+Le « → » et le « › » ajoutés **au bout d'un bouton ou d'un lien** — « Créer la
+facture → », « Préparer le devis → », « Modifier mon devis › », « Enregistrer
+→ », « Composer ma fiche → »… La carte d'action `ActionPrincipale` portait la
+sienne dans un `<span>` séparé, héritée du modèle d'Arborea — ce composant
+n'est monté nulle part aujourd'hui, et sa flèche serait revenue à l'écran le
+jour où on le remonte.
+
+Sont partis aussi les chemins de navigation écrits **dans une phrase** —
+« dans Réglages → Mes prix », « Réglages › Appareil photo › Formats »,
+« Terminés › TVA › En attente de paiement » : la virgule dit la même chose sans
+ornement. Et la légende du plan d'arrosage, où la flèche voulait dire « donc »
+(« la ligne continue → té taraudé »), porte maintenant un point médian.
+
+### Ce qui reste, et pourquoi ce n'est pas une exception de confort
+
+| Où | Quoi | Sa fonction |
+|---|---|---|
+| calendriers, planning, terminés | `‹` `›` | feuilleter — le chevron EST le geste |
+| TVA, période précédente/suivante | `←` `→` | sa demande du 12 août : *« le calendrier se glisse ENTRE les deux flèches »* |
+| carte du mois | `← Aujourd'hui` | revenir au mois courant |
+| discussion du plan d'arrosage | `↑` seul, dans un rond | le bouton d'envoi : la flèche est TOUT le bouton, il n'y a pas de libellé à décorer |
+| retouches de devis | `250 € → 350 €` | avant/après — retirer la flèche retirerait le sens |
+
+La ligne de partage n'est pas « on y tient » mais : **la flèche fait-elle
+quelque chose, ou suit-elle un mot qui le dit déjà ?**
+
+### Le contrôle, et ce qu'il refuse de croire
+
+`scripts/test-aucune-fleche.ts` lit tout `src/`, **commentaires retirés** — sans
+quoi il rougirait sur les explications de ce dépôt, qui citent les libellés
+d'hier pour dire pourquoi ils sont partis, et un contrôle qui interdit
+d'expliquer se fait contourner.
+
+Trois choix qui comptent :
+
+- **La liste des flèches permises vise la LIGNE, pas le fichier.** Autoriser
+  `Calendrier.tsx` en entier laisserait passer un libellé fléché ajouté
+  dedans demain.
+- **Chaque flèche permise porte sa raison, en français, dans le fichier.** Une
+  liste d'exceptions sans motif s'allonge toute seule.
+- **Il refuse de conclure sur une lecture vide.** Moins de dix mille lignes lues
+  et il rougit : sans cela, un `src/` illisible rendrait « aucune flèche » en
+  vert — la faute du 15 août 2026 (`CLAUDE.md` §5, « un contrôle qui mesure ZÉRO
+  ne mesure rien »).
+
+Il a été vu rouge avant d'être cru : il a trouvé deux flèches que la recherche
+faite à la main avait manquées (le `← Aujourd'hui` de la carte du mois, le `↑`
+du bouton d'envoi), puis il a rougi de nouveau quand « Créer la facture → » a
+été remis pour l'éprouver.
+
+**Ce qu'il ne couvre pas :** les maquettes d'`appli/`, qui en portent encore.
+Elles ne sont pas l'application, et certaines sont des planches archivées dont
+le patron a déjà tranché le contenu — les réécrire changerait ce qu'il a validé.
