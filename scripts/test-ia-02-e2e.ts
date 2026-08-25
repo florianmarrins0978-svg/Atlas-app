@@ -30,13 +30,33 @@ async function main() {
   await inputs.first().fill("Poser la faïence murale");
   await inputs.first().blur();
   /**
-   * **On attend que l'enregistrement soit PARTI, pas que trois cents
-   * millisecondes passent.** La prestation est écrite par une action serveur ;
-   * sous la batterie complète elle dépasse ce délai, et le contrôle plus bas
-   * — « la prestation est toujours là » — accusait alors l'assistant de l'avoir
-   * effacée. Rouge le 25 août 2026, vert joué seul.
+   * **On attend que la prestation soit VRAIMENT en base**, et on le vérifie en
+   * rechargeant l'écran — pas en laissant passer un délai.
+   *
+   * Deux correctifs ont échoué avant celui-ci, et il vaut mieux les écrire :
+   *
+   * | `waitForTimeout(300)` | sous la batterie, l'action serveur dépasse ce délai |
+   * | `waitForLoadState("networkidle")` | **il se résout tout de suite** : la page était déjà au repos, et il n'attend pas une requête à VENIR |
+   *
+   * Les deux fois, le contrôle plus bas — « la prestation est toujours là » —
+   * accusait l'assistant d'un effacement qui n'avait pas eu lieu : elle n'avait
+   * simplement jamais été écrite.
+   *
+   * **Et ce n'est pas qu'une attente : c'est ce qui rend la suite honnête.**
+   * Sans cette vérification, le contrôle final était vert par accident quand
+   * l'écriture avait marché, et rouge en accusant l'assistant quand elle avait
+   * traîné. Il compare maintenant deux états réellement observés.
    */
-  await page.waitForLoadState("networkidle");
+  let enregistree = false;
+  for (let essai = 0; essai < 20 && !enregistree; essai++) {
+    await page.waitForTimeout(300);
+    await page.reload({ waitUntil: "networkidle" });
+    enregistree = (await page.locator('input[value="Poser la faïence murale"]').count()) > 0;
+  }
+  assert.ok(
+    enregistree,
+    "la prestation n'a jamais été enregistrée : la suite ne prouverait rien de l'assistant"
+  );
 
   // --- Ouverture de l'assistant ---
   await page.goto(chantierUrl, { waitUntil: "networkidle" });
