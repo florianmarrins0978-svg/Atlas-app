@@ -292,9 +292,19 @@ l'expiration est vérifiée à la lecture.
 | `verifier:connexion` | **réussie**, derrière une origine étrangère |
 | `npm audit` | **4** (4 modérées) — inchangé depuis M10 |
 
-*(Ces nombres sont ceux du tour de clôture. Une dernière batterie tourne sur
-l'état final, qui ajoute quatre contrôles d'IBAN ; je vous donnerai ses nombres
-s'ils diffèrent.)*
+**Ce sont les nombres de l'état EXACT à livrer**, batterie rejouée après l'ajout
+des quatre contrôles d'IBAN — et verte **deux tours de suite**. Les 228 et 111
+comptent des SUITES : les contrôles ajoutés vivent à l'intérieur de suites qui
+existaient déjà, d'où un total de suites inchangé.
+
+**Le détail des suites de M11 :**
+
+| `test-identite-session.ts` | **13/13** |
+| `test-preuve-recente-db.ts` | **18/18** — dont les écritures SQL refusées |
+| `test-gestes-sensibles-db.ts` | **13/13** — dont les quatre cas limites d'IBAN |
+| `test-coupure-sessions-e2e.ts` | **1/1** — navigateur |
+| `test-face-id-e2e.ts` | **11/11** — dont le refus puis l'acceptation |
+| `test-mes-donnees-e2e.ts` | vert — dont « rien ne part sans identité » |
 
 ---
 
