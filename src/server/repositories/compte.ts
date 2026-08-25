@@ -5,6 +5,7 @@ import { users } from "../db/schema";
 import { verifierNouveauMotDePasse, type RefusMotDePasse } from "../../lib/mot-de-passe";
 import type { Ctx } from "./context";
 import { motDePasseEstCeluiDe, poserNouveauCondensat } from "../secret-authentification";
+import { effacerPreuves } from "../preuve-recente";
 
 /**
  * Le compte de la personne — son nom, son e-mail, son mot de passe.
@@ -112,6 +113,18 @@ export async function changerMotDePasse(
   // Le seul cas qui reste : l'actuel a changé entre les deux vérifications —
   // une autre session vient de le modifier. Le refus désigne le bon champ.
   if (!pose) return { ok: false, refus: "actuel-faux" };
+  /**
+   * **Les preuves récentes tombent avec l'ancien mot de passe.**
+   *
+   * Une preuve atteste qu'une session a montré patte blanche *avec le mot de
+   * passe d'alors*. Il vient de changer — souvent parce qu'on le croit
+   * compromis. Les laisser vivre offrirait à une session volée ses dix dernières
+   * minutes de droits sur le compte qu'on est en train de reprendre.
+   *
+   * Celle de la session qui change le mot de passe tombe aussi : elle vient de
+   * prouver son identité à l'instant, elle la reprouvera sans peine.
+   */
+  await effacerPreuves(ctx.utilisateurId);
   return { ok: true };
 }
 
@@ -129,6 +142,9 @@ export async function changerMotDePasse(
  */
 export async function deconnecterPartout(ctx: Ctx): Promise<Date> {
   const coupure = new Date(Math.ceil(Date.now() / 1000) * 1000);
+  // Les sessions tombent : leurs preuves n'attestent donc plus de rien. Les
+  // laisser serait laisser derrière soi des droits sans porteur.
+  await effacerPreuves(ctx.utilisateurId);
   await db
     .update(users)
     .set({ jetonsValidesDepuis: coupure, updatedAt: new Date() })

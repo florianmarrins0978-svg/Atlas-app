@@ -32,6 +32,19 @@ export const LIMITES = {
    * jour où Atlas en sert plusieurs. Même raisonnement que `rechercheAdresse`.
    */
   cleAppareil: { max: 120, fenetreMs: 60 * 1000 },
+  /**
+   * SE PROUVER À NOUVEAU avant un geste sensible (M11).
+   *
+   * **Ce seuil existe parce que cette action est plus commode à marteler que la
+   * page de connexion** : elle est atteignable avec une session déjà ouverte, et
+   * elle dit oui ou non sur un mot de passe. Sans borne, elle serait un banc
+   * d'essai pour qui a volé un cookie et cherche le mot de passe.
+   *
+   * Compté par UTILISATEUR — à cet instant il est nommé, contrairement à la
+   * connexion. Cinq essais couvrent largement une faute de frappe ; au-delà,
+   * quinze minutes d'attente ne gênent que celui qui cherche.
+   */
+  preuveRecente: { max: 5, fenetreMs: 15 * 60 * 1000 },
   assistant: { max: 20, fenetreMs: 60 * 1000 }, // 20 requêtes IA / minute / entreprise
   confirmationProposition: { max: 30, fenetreMs: 60 * 1000 },
   televersementFichier: { max: 20, fenetreMs: 60 * 1000 },

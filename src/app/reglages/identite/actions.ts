@@ -2,6 +2,9 @@
 
 import { getCurrentCtx } from "@/server/session-ctx";
 import { exigerProprietaire } from "@/server/autorisation";
+import { exigerPreuveRecente, PreuveRecenteExigeeError } from "@/server/preuve-recente";
+import { GESTES_SENSIBLES } from "@/lib/preuve-recente";
+import { coordonneesBancairesChangent } from "@/server/repositories/entreprises";
 import { mettreAJourEntreprise } from "@/server/repositories/entreprises";
 
 /**
@@ -23,7 +26,15 @@ import { mettreAJourEntreprise } from "@/server/repositories/entreprises";
  * remplace en production par un identifiant opaque, et son banc sert une version
  * bâtie (`HANDOVER.md`, piège 0 ter). Un refus attendu se rend donc en valeur.
  */
-export type ResultatIdentite = { ok: true } | { ok: false; raison: string };
+export type ResultatIdentite =
+  | { ok: true }
+  /**
+   * `preuveExigee` dit à l'écran d'OUVRIR la demande de mot de passe, au lieu
+   * d'afficher un refus sec devant lequel le patron n'a rien à faire. Ce n'est
+   * pas une autorisation : le serveur a déjà refusé, et il refusera encore tant
+   * qu'aucune preuve ne sera posée.
+   */
+  | { ok: false; raison: string; preuveExigee?: boolean };
 
 export async function majIdentiteAction(data: {
   nom?: string;
@@ -48,6 +59,35 @@ export async function majIdentiteAction(data: {
   // chaque document, et une pièce sans émetteur n'est pas une pièce.
   if (data.nom !== undefined && data.nom.trim() === "") {
     return { ok: false, raison: "Le nom de l'entreprise ne peut pas être vide." };
+  }
+
+  /**
+   * **UNE PREUVE RÉCENTE — mais SEULEMENT pour les coordonnées bancaires.**
+   *
+   * C'est là que l'argent des clients arrive : changer l'IBAN sans bruit détourne
+   * un virement, et le patron ne s'en aperçoit qu'à la fin du mois. Ce champ-là
+   * mérite qu'on redemande qui vous êtes.
+   *
+   * **Le reste de cet écran ne le mérite pas**, et l'exiger partout serait une
+   * mauvaise protection : corriger un numéro de téléphone n'engage rien, et
+   * réclamer un mot de passe pour cela apprend à le taper sans lire — ce qui
+   * affaiblit la garde le jour où elle compte vraiment.
+   *
+   * Comparé à ce qui est EN BASE, jamais à ce que l'écran renvoie : réenvoyer le
+   * même IBAN ne demande rien, le changer demande la preuve.
+   */
+  const toucheAuBancaire =
+    (data.iban !== undefined || data.titulaireCompte !== undefined) &&
+    (await coordonneesBancairesChangent(ctx, data));
+  if (toucheAuBancaire) {
+    try {
+      await exigerPreuveRecente(ctx, GESTES_SENSIBLES.coordonneesBancaires);
+    } catch (erreur) {
+      if (erreur instanceof PreuveRecenteExigeeError) {
+        return { ok: false, raison: erreur.message, preuveExigee: true };
+      }
+      throw erreur;
+    }
   }
 
   try {

@@ -14,6 +14,7 @@
 // `scripts/test-coupure-sessions-e2e.ts`, qui a été vu ROUGE sur le code d'avant.
 
 import assert from "node:assert/strict";
+import type { MarquesSession } from "../src/lib/identite-session";
 import {
   marquerSession,
   instantDAuthentification,
@@ -44,14 +45,14 @@ function main() {
   // ─── 1. Deux authentifications = deux sessions ────────────────────────────
 
   essai("DEUX CONNEXIONS donnent deux sessionId différents", () => {
-    const a = marquerSession({}, true, 1000, tirages("session-A"));
-    const b = marquerSession({}, true, 1000, tirages("session-B"));
+    const a = marquerSession<MarquesSession>({}, true, 1000, tirages("session-A"));
+    const b = marquerSession<MarquesSession>({}, true, 1000, tirages("session-B"));
     assert.notEqual(a.sessionId, b.sessionId, "deux connexions partagent une identité de session");
   });
 
   essai("…et chacune porte SON instant d'authentification", () => {
-    const a = marquerSession({}, true, 1000, tirages("A"));
-    const b = marquerSession({}, true, 2000, tirages("B"));
+    const a = marquerSession<MarquesSession>({}, true, 1000, tirages("A"));
+    const b = marquerSession<MarquesSession>({}, true, 2000, tirages("B"));
     assert.equal(a.authentifieLe, 1000);
     assert.equal(b.authentifieLe, 2000);
   });
@@ -59,7 +60,7 @@ function main() {
   // ─── 2. La réémission ne change RIEN ──────────────────────────────────────
 
   essai("UNE RÉÉMISSION garde le même sessionId", () => {
-    const ouverture = marquerSession({}, true, 1000, tirages("session-A"));
+    const ouverture = marquerSession<MarquesSession>({}, true, 1000, tirages("session-A"));
     const reemis = marquerSession(ouverture, false, 9999, tirages("session-VOLEE"));
     assert.equal(reemis.sessionId, "session-A", "la réémission a changé l'identité de la session");
   });
@@ -70,13 +71,13 @@ function main() {
      * session coupée redeviendrait valable en se faisant simplement réémettre —
      * c'est exactement le contournement reproduit au navigateur le 25 août 2026.
      */
-    const ouverture = marquerSession({}, true, 1000, tirages("A"));
+    const ouverture = marquerSession<MarquesSession>({}, true, 1000, tirages("A"));
     const reemis = marquerSession(ouverture, false, 9999, tirages("A"));
     assert.equal(reemis.authentifieLe, 1000, "LA RÉÉMISSION A RAJEUNI LA SESSION");
   });
 
   essai("dix réémissions n'usent pas davantage les marques", () => {
-    let jeton = marquerSession({}, true, 1000, tirages("A"));
+    let jeton = marquerSession<MarquesSession>({}, true, 1000, tirages("A"));
     for (let i = 0; i < 10; i++) jeton = marquerSession(jeton, false, 5000 + i, tirages("AUTRE"));
     assert.equal(jeton.sessionId, "A");
     assert.equal(jeton.authentifieLe, 1000);
@@ -89,7 +90,7 @@ function main() {
      * rajeunissement qu'on referme. Il reste nu, et le repli sur `iat` s'en
      * charge.
      */
-    const ancien = marquerSession({}, false, 9999, tirages("NEUF"));
+    const ancien = marquerSession<MarquesSession>({}, false, 9999, tirages("NEUF"));
     assert.equal(ancien.sessionId, undefined);
     assert.equal(ancien.authentifieLe, undefined);
   });
@@ -131,7 +132,7 @@ function main() {
      * Le parcours de l'attaquant, joué sur la règle : il vole un cookie, le
      * patron coupe, l'attaquant se fait réémettre autant qu'il veut.
      */
-    const volee = marquerSession({}, true, 1000, tirages("VOLEE"));
+    const volee = marquerSession<MarquesSession>({}, true, 1000, tirages("VOLEE"));
     const coupure = new Date(2_000_000); // le patron coupe à t=2000 s
     let apres = volee;
     for (let i = 0; i < 10; i++) apres = marquerSession(apres, false, 5000 + i, tirages("X"));

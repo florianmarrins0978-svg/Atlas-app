@@ -1,6 +1,8 @@
 "use server";
 
 import { getCurrentCtx } from "@/server/session-ctx";
+import { exigerPreuveRecente } from "@/server/preuve-recente";
+import { GESTES_SENSIBLES } from "@/lib/preuve-recente";
 import { changerMotDePasse, deconnecterPartout, lireCompte } from "@/server/repositories/compte";
 import { messageRefus } from "@/lib/mot-de-passe";
 import { messageRefusCle, type CleAppareil } from "@/lib/cle-appareil";
@@ -112,6 +114,19 @@ export type ResultatCle = { ok: true; cles: CleAppareil[] } | { ok: false; raiso
 
 export async function enregistrerCleAction(reponse: string): Promise<ResultatCle> {
   const ctx = await getCurrentCtx();
+  /**
+   * **LE GESTE LE PLUS GRAVE DE CET ÉCRAN, et il n'était dans aucun audit.**
+   *
+   * Une session volée qui enregistre SA PROPRE clé obtient une porte qui
+   * **survit au changement de mot de passe** : le patron reprend son compte, et
+   * l'intrus entre toujours, indéfiniment. C'est le seul geste d'Atlas qui rend
+   * un accès permanent.
+   *
+   * La preuve exigée est liée à CETTE session (`src/server/preuve-recente.ts`) :
+   * une ré-authentification faite sur le téléphone du patron ne sert pas à
+   * l'ordinateur du voleur.
+   */
+  await exigerPreuveRecente(ctx, GESTES_SENSIBLES.ajouterCleAppareil);
   let lue: RegistrationResponseJSON;
   try {
     lue = JSON.parse(reponse) as RegistrationResponseJSON;
@@ -140,6 +155,9 @@ export async function enregistrerCleAction(reponse: string): Promise<ResultatCle
  */
 export async function retirerCleAction(id: string): Promise<ResultatCle> {
   const ctx = await getCurrentCtx();
+  // Retirer un appareil prive son propriétaire de sa porte : c'est un geste
+  // hostile autant qu'un ajout, et il mérite la même exigence.
+  await exigerPreuveRecente(ctx, GESTES_SENSIBLES.retirerCleAppareil);
   try {
     // `retirerCle` porte `utilisateur_id` dans son `WHERE` : un identifiant venu
     // d'ailleurs ne retire rien. Aucune RLS ne couvre cette table.

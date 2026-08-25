@@ -96,7 +96,13 @@ export async function getCurrentCtx(): Promise<Ctx> {
     redirect("/api/session-perimee");
   }
 
-  return { entrepriseId: await resoudreEntrepriseId(utilisateurId), utilisateurId };
+  return {
+    entrepriseId: await resoudreEntrepriseId(utilisateurId),
+    utilisateurId,
+    // Recopié du jeton signé : c'est ce à quoi une preuve de ré-authentification
+    // s'accroche, pour qu'une autre session du même utilisateur n'en profite pas.
+    sessionId: session.user.sessionId,
+  };
 }
 
 async function resoudreEntrepriseId(utilisateurId: string): Promise<string> {
