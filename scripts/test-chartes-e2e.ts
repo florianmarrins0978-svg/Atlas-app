@@ -1,7 +1,15 @@
 import type { Page } from "playwright";
 import { lancerNavigateur } from "./e2e-browser";
+import { CHARTES } from "../src/lib/chartes";
 
-// Les sept chartes de couleurs, à l'écran — rubrique « Apparence ».
+// Les chartes de couleurs, à l'écran — rubrique « Apparence ».
+//
+// **LE COMPTE SE DÉDUIT DE `CHARTES`, il ne s'écrit plus ici.** Le 24 août 2026,
+// une session a ajouté « Brume moderne » — une huitième — et cette suite est
+// passée au rouge sur `main`, bloquant la livraison de toutes les autres. Le
+// contrôle ne défendait rien : le nombre de chartes n'est pas une règle, c'est
+// une liste qui grandit. Ce qui compte, et qui est vérifié plus bas, c'est
+// qu'aucune ne manque à l'appel et que choisir REPEINT l'application.
 //
 // **CE QUE CETTE SUITE TIENT, ET QU'AUCUNE RÈGLE PURE NE PEUT DIRE :**
 //
@@ -71,7 +79,19 @@ async function main() {
     // ── 2. L'écran propose les sept, et dit laquelle est prise ────────────
     await page.goto(`${BASE}/reglages/apparence`, { waitUntil: "networkidle" });
     const lignes = await page.locator("button[data-charte]").count();
-    verifie("les sept chartes sont proposées", lignes === 7, `${lignes}`);
+    verifie(
+      `les ${CHARTES.length} chartes du dépôt sont toutes proposées`,
+      lignes === CHARTES.length,
+      `${lignes} à l'écran pour ${CHARTES.length} au dépôt`
+    );
+    // Et chacune est là NOMMÉMENT : un compte juste avec une charte manquante
+    // et une en double passerait, et c'est le genre d'erreur qu'on ne voit pas.
+    const proposees = await page.locator("button[data-charte]").evaluateAll((n) =>
+      n.map((b) => b.getAttribute("data-charte"))
+    );
+    for (const c of CHARTES) {
+      verifie(`« ${c.libelle} » est proposée`, proposees.includes(c.nom), proposees.join(" "));
+    }
 
     const prise = await page.locator('button[data-charte][aria-pressed="true"]').getAttribute("data-charte");
     verifie("« Origine » est prise au départ", prise === "origine", String(prise));

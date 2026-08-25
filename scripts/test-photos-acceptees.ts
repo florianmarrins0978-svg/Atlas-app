@@ -119,11 +119,23 @@ essai("la liste SERVEUR est plus large que l'attribut — c'est le filet", () =>
  * `test-boutons-arrondis.ts`, même remède : on cherche du CODE.
  */
 function codeSeul(chemin: string): string {
-  return readFileSync(chemin, "utf-8")
-    .replace(/\/\*[\s\S]*?\*\//g, "")
-    .split("\n")
-    .filter((l) => !l.trim().startsWith("//"))
-    .join("\n");
+  return (
+    readFileSync(chemin, "utf-8")
+      .split("\n")
+      // **LES LIGNES `//` D'ABORD, LES BLOCS ENSUITE — et l'ordre est tout.**
+      //
+      // La chaîne qu'on cherche, `image/*`, contient elle-même `/*`. Retirer
+      // les blocs en premier faisait donc ouvrir un faux commentaire sur la
+      // ligne de commentaire qui la cite, et le stripper avalait tout jusqu'au
+      // `*/` suivant — c'est-à-dire l'attribut réel qu'on venait vérifier. Le
+      // contrôle rougissait sur un écran parfaitement juste.
+      //
+      // Trouvé en sondant ce que `codeSeul` rend vraiment, plutôt qu'en
+      // raisonnant sur ce qu'il devrait rendre.
+      .filter((l) => !l.trim().startsWith("//"))
+      .join("\n")
+      .replace(/\/\*[\s\S]*?\*\//g, "")
+  );
 }
 
 essai("LES QUATRE ÉCRANS emploient le même attribut — jamais `image/*` recopié", () => {
@@ -137,9 +149,15 @@ essai("LES QUATRE ÉCRANS emploient le même attribut — jamais `image/*` recop
     "src/app/paysage/diagnostic/PrendreUnePhoto.tsx",
   ];
   for (const ecran of ecrans) {
-    assert.ok(
-      !/accept="image\/\*"/.test(codeSeul(path.join(racine, ecran))),
-      `${ecran} porte encore accept="image/*"`
+    const code = codeSeul(path.join(racine, ecran));
+    assert.ok(!/accept="image\/\*"/.test(code), `${ecran} porte encore accept="image/*"`);
+    // **Et l'absence de `image/*` ne suffit PAS.** Le diagnostic recopiait la
+    // liste à l'identique — donc juste, donc invisible, jusqu'au jour où la
+    // liste bouge ailleurs et où lui reste en arrière. On exige la constante.
+    assert.match(
+      code,
+      /accept=\{ACCEPT_PHOTOS\}/,
+      `${ecran} recopie la liste au lieu d'employer ACCEPT_PHOTOS`
     );
   }
 });

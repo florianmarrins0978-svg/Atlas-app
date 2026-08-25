@@ -793,6 +793,12 @@ function couvreTout(points, portee, L, l){
 }
 
 function poser(z, refImposee){
+  // **Sa buse imposée à la zone gagne sur tout** — ajouté le 23 août 2026 avec
+  // la discussion. Quand il demande « passe en 15-VAN », c'est un paramètre du
+  // calcul qui se pose, pas un dessin qu'on retouche : le plan se refait
+  // entièrement, et la boucle du « moins de vannes » se tait, puisqu'il a
+  // choisi. Il reste averti de ce que ça coûte (`discuter-plan.ts`).
+  if (!refImposee && z.buse) refImposee = z.buse;
   var petitCote = Math.min(Number(z.L)||0, Number(z.l)||0);
   var dims = { L: Number(z.L)||0, l: Number(z.l)||0 };
   var cle = materielDe(z), choix;

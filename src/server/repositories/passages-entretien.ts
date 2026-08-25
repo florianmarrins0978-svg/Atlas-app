@@ -362,6 +362,54 @@ export async function figerPassage(
 }
 
 /**
+ * Supprime une fiche **encore en cours**, et ses lignes avec elle.
+ *
+ * **Sa demande du 24 août 2026** : *« Je ne peux pas supprimer les fiches en
+ * cours. Il faut pouvoir les supprimer. »* Elles s'accumulaient sans issue —
+ * une fiche ouverte sur le mauvais jour, une autre pour un jardin qu'il n'a
+ * finalement pas fait, et rien pour les faire disparaître de l'écran qu'il
+ * ouvre chaque matin.
+ *
+ * **UN RAPPORT PARTI NE SE SUPPRIME PAS**, et le refus est le cœur de cette
+ * fonction. Son lien vit chez le client, dans un SMS qu'il a peut-être gardé :
+ * effacer la fiche transformerait cette adresse en page morte, sans que
+ * personne ne l'ait voulu ni ne puisse le savoir. C'est le même invariant que
+ * le 16 août — un rapport parti ne change plus —, poussé jusqu'à sa
+ * conséquence : il ne disparaît pas non plus.
+ *
+ * **Les lignes se suppriment ICI, explicitement**, plutôt que de s'en remettre
+ * au `ON DELETE CASCADE` de la migration 0055. La cascade tient, mais elle
+ * s'exécute hors de la politique d'isolation : la faire porter une suppression
+ * revient à retirer la RLS du chemin le plus destructeur de cette table
+ * (`CLAUDE.md` §4). Deux `delete` sous contexte coûtent une ligne de code et
+ * gardent le garde-fou.
+ */
+export async function supprimerPassage(
+  ctx: Ctx,
+  passageId: string
+): Promise<{ ok: true } | { ok: false; refus: RefusPassage }> {
+  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    const [p] = await tx
+      .select({ envoyeLe: passagesEntretien.envoyeLe })
+      .from(passagesEntretien)
+      .where(
+        and(eq(passagesEntretien.id, passageId), eq(passagesEntretien.entrepriseId, ctx.entrepriseId))
+      )
+      .limit(1);
+    if (!p) return { ok: false as const, refus: "introuvable" as const };
+    if (p.envoyeLe !== null) return { ok: false as const, refus: "deja_envoye" as const };
+
+    await tx.delete(lignesPassage).where(eq(lignesPassage.passageId, passageId));
+    await tx
+      .delete(passagesEntretien)
+      .where(
+        and(eq(passagesEntretien.id, passageId), eq(passagesEntretien.entrepriseId, ctx.entrepriseId))
+      );
+    return { ok: true as const };
+  });
+}
+
+/**
  * Ce qu'il retrouve en ouvrant l'outil : ses brouillons, puis ses rapports.
  *
  * **Les brouillons d'abord, et c'est le sens de l'écran** : une fiche laissée

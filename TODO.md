@@ -9,6 +9,43 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
+## Le devis et la facture n'ont pas encore le refus d'adresse locale (24 août 2026)
+
+Le lien envoyé au client prenait l'adresse du navigateur qui l'avait fabriqué —
+et son client a reçu une page morte sur `localhost` (`ARCHITECTURE.md` §169).
+
+**Ce qui est fait pour les quatre écrans** : l'adresse se calcule au même
+endroit, et `ATLAS_URL_PUBLIQUE` la commande quand elle est posée.
+
+**Ce qui n'est fait que sur la fiche de chantier** : le REFUS de composer un
+message avec une adresse locale, et la phrase qui le dit. Le devis parti, le
+devis complet et la facture peuvent donc encore envoyer un lien mort quand Atlas
+est ouvert par une redirection de port.
+
+| | |
+|---|---|
+| ce qu'il faut | poser `ouvrableParLeClient` sur leurs trois gestes d'envoi |
+| qui peut le faire | n'importe quelle session — la règle pure existe déjà |
+| pourquoi ce n'est pas fait ici | trois écrans de plus dans un lot déjà large, et leurs suites à reprendre une par une |
+
+Ce n'est pas urgent tant qu'il envoie depuis l'adresse de son espace de travail
+— mais c'est exactement l'hypothèse qui vient d'être démentie.
+
+---
+
+## ~~Supprimer une fiche en cours, et retrouver où la fiche se compose~~ (fait le 24 août 2026)
+
+Ses deux phrases du jour. Les deux sont livrées — `ARCHITECTURE.md` §168.
+
+**Ce qui reste ouvert, et qui n'est PAS un oubli :** un rapport déjà envoyé ne
+se supprime toujours pas, et c'est une décision, pas une lacune. Son lien vit
+chez le client. Le jour où il demandera de pouvoir en retirer un, la question à
+lui poser n'est pas « peut-on ? » mais **« que doit lire le client qui rouvre
+son SMS ? »** — une page morte, ou une page qui dit que le rapport a été
+retiré. Le second demande une colonne ; le premier ne demande rien et ment.
+
+---
+
 ## ⚠ `ARCHITECTURE.md` porte SIX paragraphes pour trois numéros (23 août 2026)
 
 Trois numéros sont pris deux fois, et cela existe déjà sur `main` — ce n'est
@@ -158,7 +195,29 @@ traités évite de les rouvrir.
 ---
 
 
-## Arrosage : l'interface pour discuter le plan (23 août 2026)
+## ⏳ `verifier-maquette-message-et-allure.mjs` est rouge, et ce n'est pas l'arrosage
+
+Constaté le 23 août 2026 au soir, sur `main` :
+
+```
+❌ Les planches du 23 août ne tiennent pas :
+   • le fond de départ est rgb(250, 249, 245) au lieu du crème d'aujourd'hui
+   • le retour ne rend pas le crème : rgb(250, 249, 245)
+```
+
+**Vérifié rouge AVANT le lot arrosage**, en mettant celui-ci de côté : il n'en
+vient pas. Les planches sont `appli/mon-message-au-client.html` et
+`appli/allure-de-mes-devis.html`, arrivées avec la branche
+`claude/devis-dicte-ecrit-buttons-x7iw0c`.
+
+**Écrit ici plutôt que corrigé au jugé** : le fond attendu est une décision de
+cette maquette-là. La deviner ferait passer un contrôle au vert sur la mauvaise
+couleur, ce qui est pire que rouge.
+
+---
+
+
+## ~~Arrosage : l'interface pour discuter le plan~~ — **FAIT le 23 août 2026** (`ARCHITECTURE.md` §167)
 
 Le plan se dessine (`ARCHITECTURE.md` §150). Reste ce qu'il a demandé le 21 :
 *« j'ai besoin que si l'utilisateur a besoin de te demander de faire une
@@ -2995,6 +3054,37 @@ fin, et le fond figé.
 obligatoires, disposition des colonnes, ordre des totaux. Un devis mal posé
 n'est pas un devis moins joli, c'est un devis qu'on peut lui contester.
 
+### 0 trigies septies. Deux suites de calendrier tombent EN FIN DE MOIS — **CONSTATÉ le 25 août 2026, PAS RÉPARÉ**
+
+**Elles rougissent sur `main`, sans aucun changement**, et elles bloquent la
+livraison de toutes les sessions tant qu'on est en fin de mois. Vérifié : même
+rouge, au même endroit, sur `origin/main` seul.
+
+| Suite | Ce qu'elle rend | Pourquoi |
+|---|---|---|
+| `test-deux-dates-calendrier-e2e` | « Le calendrier n'offre que 2 jour(s) : trop peu pour éprouver » | elle ne lit que **le mois affiché**. Le 25 août, le délai minimal écarté, il ne reste que le 28 et le 31. Elle n'a jamais su tourner la page du mois |
+| `test-date-lointaine-e2e` | « Le client ne voit pas la date proposée (« 1 mars ») » | « dans six mois » puis « prochain lundi » tombe au **1ᵉʳ mars 2027**, soit six mois **et quatre jours** — au-delà de la fenêtre du client |
+
+**Ce qu'il faut regarder, et personne ne l'a fait :**
+
+- la première est un défaut de la SUITE : elle doit tourner au mois suivant
+  quand celui qui s'affiche n'offre pas assez de jours. Rien à changer au
+  produit ;
+- **la seconde est peut-être un vrai défaut du PRODUIT**, et c'est pour cela
+  qu'elle ne doit pas être « réparée » à la légère. Elle garde exactement le
+  piège que son propre commentaire nomme : *« une date validée à l'envoi puis
+  refusée à la lecture, parce que la fenêtre du client ne la couvre pas »*. Le
+  patron peut proposer à dix-huit mois (`HORIZON_PATRON_JOURS`), le client ne
+  voit qu'une fenêtre plus courte (`fenetrePourDates`). **La question à trancher
+  avec lui** : un client doit-il pouvoir retenir une date que son artisan lui a
+  proposée à six mois ? Si oui, la fenêtre du client doit s'ouvrir autour de
+  cette date — la marge existe déjà dans le code, elle ne suffit visiblement
+  pas.
+
+**Ce que ça ne doit PAS devenir :** une raison de repousser la vérification à
+septembre. Le premier du mois, les deux repasseront au vert toutes seules — et
+le défaut, lui, sera toujours là.
+
 ### 0 trigies sexies. Deux suites navigateur rougissent encore sous charge — **CONSTATÉ le 24 août 2026, PAS RÉPARÉ**
 
 **Écrit parce que le silence coûterait l'enquête une seconde fois.** Ce n'est
@@ -3018,6 +3108,13 @@ recharge **trois fois** en laissant du temps à l'action, précisément parce qu
 le défaut avait déjà été vu le 13 août. Trois chances ne suffisent plus. La
 piste est donc la même que pour les deux autres — on attend une valeur à
 l'écran sur une montre, au lieu d'attendre que la base ait bougé.
+
+**Et ATTENTION à ne pas confondre deux rouges dans cette même suite.** Le
+24 août au soir, elle a rougi une seconde fois — sur un autre cas, et pour une
+tout autre raison : elle **exigeait la phrase grise** que le patron venait de
+faire retirer de l'écran de la facture. Ce rouge-là n'avait rien d'instable, et
+il a été corrigé en visant plus profond (`CLAUDE.md` §5 bis). Le premier, lui,
+tient toujours.
 
 **Les deux sont VERTES jouées seules**, et c'est la question qui tranche
 (§ ci-dessous). Surtout : **ce ne sont pas les mêmes** d'une branche à l'autre.
@@ -6404,3 +6501,22 @@ et c'est déjà arrivé.
 - ~~Rédiger le devis entièrement à la main, depuis la fiche du chantier~~ — 2026-08-04
 - ~~Retirer la case « Nom du chantier » : plus rien n'est obligatoire à la création~~ — 2026-08-05
 - ~~« Rédiger à la main » ouvre le devis ENTIER, à l'image du modèle, et il reste dans Atlas~~ — 2026-08-05
+- [ ] **La batterie rougit sur des suites DIFFÉRENTES à chaque exécution**, et
+  chacune passe seule sur le même code. Relevé le 24 août 2026, trois
+  exécutions d'affilée : d'abord `test-planning-vers-facture-e2e` (un texte
+  attendu qui n'apparaît pas), puis `test-fiche-chantier-e2e` et
+  `test-prix-e2e` (un prix lu à `0.00` au lieu de `34.50`). **Rejouées seules,
+  les trois sont vertes.** Ce n'est donc pas le produit : c'est l'interférence
+  entre suites — le lanceur partage UN serveur et UNE base entre toutes.
+  Écarté au passage : le gel d'horloge de `test-allure-pdf` ne peut pas fuir,
+  chaque suite est lancée par `spawnSync` dans son propre processus.
+  **Pourquoi ça compte plus qu'un agacement** : un rouge qui tombe au hasard
+  s'apprend à être ignoré, et le jour où il dit vrai personne ne le croit —
+  c'est exactement ce qui a coûté une soirée avec `test:arrosage`. *(24 août 2026)*
+- [ ] **Rendre la composition d'un PDF reproductible.** `pdf-lib` grave l'instant
+  de fabrication dans chaque document : deux compositions du même devis ne
+  rendent pas les mêmes octets. La suite le contourne en figeant l'horloge
+  (`aLaMemeSeconde`, `scripts/test-allure-pdf.ts`), mais le produit reste
+  non déterministe — un même devis renvoyé n'est jamais identique au précédent.
+  Corriger demande de toucher le composeur, donc les documents du patron :
+  à faire dans un lot qui les regarde, pas en passant. *(24 août 2026)*

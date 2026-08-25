@@ -109,6 +109,59 @@ async function essai(nom: string, fn: () => Promise<void>) {
   }
 }
 
+/**
+ * Composer deux documents **à la même seconde**, quoi qu'il arrive.
+ *
+ * ─── POURQUOI, ET CE QUE ÇA A COÛTÉ LE 24 AOÛT 2026 ─────────────────────────
+ *
+ * Ce contrôle comparait les octets de deux PDF composés l'un après l'autre. Or
+ * `pdf-lib` grave dans chaque document sa `CreationDate` et sa `ModDate` —
+ * l'instant de la composition, à la seconde. Les deux appels tombaient donc de
+ * part et d'autre d'une seconde environ une fois sur cinq, et le contrôle
+ * rougissait en annonçant *« le devis sans réglage a changé »* : l'accusation
+ * la plus grave de cette suite, portée contre un code qui n'avait pas bougé.
+ *
+ * **Mesuré, pas supposé** : le même devis composé à 1,5 s d'écart rend deux
+ * fichiers de même taille dont quelques octets diffèrent — et ces octets sont
+ * **à l'intérieur d'un flux compressé**. C'est ce qui a fait échouer la
+ * première correction, qui effaçait les dates dans le TEXTE du PDF : elles n'y
+ * sont pas. On ne peut pas les ôter après coup ; on peut seulement empêcher
+ * l'horloge d'avancer entre les deux compositions.
+ *
+ * **Ce n'est PAS un assouplissement.** Ce que le contrôle défend — « aucun
+ * artisan ne voit son devis changer parce qu'un écran est apparu » — porte sur
+ * ce que le client reçoit : la mise en page, les montants, les mentions. Pas
+ * sur l'heure de fabrication du fichier, qui diffère de toute façon d'un envoi
+ * à l'autre. Figer l'horloge compare le document, pas la montre.
+ *
+ * **Ce qui reste à trancher, et qui n'est pas de ce lot** : rendre la
+ * composition reproductible côté produit. Cela touche le composeur, donc les
+ * documents du patron — noté dans `TODO.md` plutôt que fait en passant.
+ */
+async function aLaMemeSeconde<T>(fn: () => Promise<T>): Promise<T> {
+  const vraieDate = globalThis.Date;
+  const instant = vraieDate.now();
+  class DateFigee extends vraieDate {
+    // `new Date()` rend l'instant figé ; `new Date(x)` garde son sens, sans quoi
+    // les dates du devis lui-même seraient écrasées.
+    constructor(...args: unknown[]) {
+      if (args.length === 0) super(instant);
+      else super(...(args as [number]));
+    }
+    static now() {
+      return instant;
+    }
+  }
+  globalThis.Date = DateFigee as DateConstructor;
+  try {
+    return await fn();
+  } finally {
+    // Rendue quoi qu'il arrive : une horloge laissée figée ferait mentir toutes
+    // les suites suivantes, et l'erreur accuserait le mauvais coupable.
+    globalThis.Date = vraieDate;
+  }
+}
+
 async function main() {
   console.log("=== L'allure sur le devis et la facture ===\n");
 
@@ -116,8 +169,10 @@ async function main() {
     // **Le contrôle le plus important de cette suite.** Le réglage est neuf :
     // aucun artisan ne doit voir son devis changer parce qu'un écran est
     // apparu quelque part. On compare octet pour octet, pas à l'œil.
-    const avant = await composerDevisPdf(DEVIS);
-    const rien = await composerDevisPdf(DEVIS, { allure: null, logo: null });
+    const { avant, rien } = await aLaMemeSeconde(async () => ({
+      avant: await composerDevisPdf(DEVIS),
+      rien: await composerDevisPdf(DEVIS, { allure: null, logo: null }),
+    }));
     const empreinte = (o: Uint8Array) => createHash("sha256").update(o).digest("hex");
     assert.equal(empreinte(avant.pdf), empreinte(rien.pdf), "le devis sans réglage a changé");
     assert.equal(avant.trace.fonds[0].couleur, ALLURE_PAR_DEFAUT.fond);
