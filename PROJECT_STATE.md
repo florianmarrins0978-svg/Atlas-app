@@ -71,6 +71,25 @@ Le détail et les partis pris : `ARCHITECTURE.md` §168.
 
 ---
 
+## Choisir la date : un seul geste (25 août 2026)
+
+Sa demande : *« je dois pouvoir sélectionner les jours juste en les touchant,
+pas besoin de cliquer sur proposer »*.
+
+| | État |
+|---|---|
+| Toucher une case propose la date | **fait** |
+| Retoucher la retire | **fait** |
+| La fiche du jour reste, sans bouton | **fait** (elle dit `proposé`) |
+| Un jour refusé s'ouvre et dit pourquoi | **fait** |
+| Deux cases touchées coup sur coup | **fait** — le verdict périmé est jeté |
+| La planche 91 porte le même geste | **fait** (`appli/choisir-la-date.html`) |
+
+Le détail et les partis pris : `ARCHITECTURE.md` §170.
+
+
+---
+
 ## Le client touché ne remonte plus (23 août 2026)
 
 Son défaut : le client haut sur l'écran disparaît quand on le touche.
@@ -201,7 +220,7 @@ Le détail : `ARCHITECTURE.md` §167.
 | Son jardin du 23 août : **2 réseaux** au lieu de 5 | **fait**, et éprouvé |
 | Le carré de 12 m : **9 × 3504 buse 0,75** | **fait** — sa pose du 21 août |
 
-Le détail : `ARCHITECTURE.md` §166.
+Le détail : `ARCHITECTURE.md` §170.
 
 ### Lire un croquis à main levée (23 août 2026)
 

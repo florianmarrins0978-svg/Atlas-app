@@ -6,7 +6,13 @@
 <title>Choisir la date — avec le calendrier du planning</title>
 <!--
   ════════════════════════════════════════════════════════════════════════════
-  SA DEMANDE DU 22 AOÛT 2026 — et RIEN N'EST CODÉ.
+  SA DEMANDE DU 22 AOÛT 2026 — codée depuis, et AMENDÉE LE 25.
+
+  *« Je dois pouvoir sélectionner les jours juste en les touchant, pas besoin
+  de cliquer sur proposer. »* La planche portait deux gestes : toucher pour
+  voir, « Proposer ce jour » pour engager. Le second est retiré — de la
+  planche comme de l'application, le même jour, pour qu'elles ne racontent pas
+  deux écrans différents.
 
   *« Lorsqu'on clique sur "Choisir la date" et que le calendrier s'affiche pour
   proposer une date au client, on devrait avoir le visuel du calendrier qui se
@@ -196,6 +202,8 @@
   .verdict button{flex-shrink:0;border:0;border-radius:999px;background:var(--pin);color:#faf9f5;
                   padding:9px 15px;font:600 12.5px/1 ui-sans-serif,sans-serif;cursor:pointer;font-family:inherit}
   .verdict button[disabled]{background:transparent;color:var(--gris);box-shadow:inset 0 0 0 1px var(--trait);cursor:not-allowed}
+  .verdict .propose{flex-shrink:0;font-size:11px;font-weight:600;text-transform:uppercase;
+    letter-spacing:.12em;color:var(--pin)}
 
   .retenu-dit{margin:18px 18px 0;padding:12px 14px;border-radius:10px;background:var(--papier);
               font-size:13.5px;color:var(--encre);text-align:center}
@@ -215,7 +223,8 @@
 
 <p class="bandeau">
   <b>Votre demande du 22 août</b> — le calendrier du planning à la place du calendrier nu,
-  quand vous proposez une date. <b>Rien n’est codé :</b> l’application n’a pas bougé.
+  quand vous proposez une date. <b>C’est codé, et amendé le 25 :</b> toucher un jour le
+  propose, le retoucher le retire. Plus de bouton « Proposer ce jour ».
   Touchez les jours, changez de mois, changez la durée.
 </p>
 
@@ -486,15 +495,18 @@ function dessinerFicheDuJour() {
     return `${e.pris.length} chantier${e.pris.length > 1 ? "s" : ""}`;
   };
 
+  // **La fiche ne porte plus de bouton** — sa demande du 25 août 2026 : *« je
+  // dois pouvoir sélectionner les jours juste en les touchant, pas besoin de
+  // cliquer sur proposer »*. C'est la case qui engage la date ; il reste ici à
+  // DIRE qu'elle l'est, la phrase de gauche cédant la place à tout refus.
   const v = tient(jourTouche, nbDemies);
+  const marque = jourRetenu === jourTouche ? '<span class="propose">proposé</span>' : "";
   const verdict = v.possible
     ? `<div class="verdict">
-         <span class="mot">Il reste de la place pour Madame Lucie.</span>
-         <button type="button" data-retenir="${jourTouche}">Proposer ce jour</button>
+         <span class="mot">Il reste de la place pour Madame Lucie.</span>${marque}
        </div>`
     : `<div class="verdict non">
          <span class="mot">${echappe(v.motif)}</span>
-         <button type="button" disabled>Proposer ce jour</button>
        </div>`;
 
   return `<div class="jour-ouvert">
@@ -560,9 +572,16 @@ $("#calendrier").addEventListener("click", (e) => {
     // sans avoir rien vu.
     if (vue === "avant") jourRetenu = cible.dataset.jour;
     else {
-      jourTouche = cible.dataset.jour === jourTouche ? null : cible.dataset.jour;
+      // **Toucher, c'est proposer** — sa demande du 25 août 2026. La fiche
+      // s'ouvre toujours (il voit qui est là), mais elle n'engage plus rien :
+      // le doigt engage. Une case retouchée se rend ; un jour qui ne tient pas
+      // s'ouvre sans se retenir, et la fiche dit pourquoi.
+      const j = cible.dataset.jour;
+      jourTouche = j;
+      if (jourRetenu === j) jourRetenu = null;
+      else if (tient(j, nbDemies).possible) jourRetenu = j;
       // Une case d'un autre mois fait basculer le calendrier, comme au planning.
-      const d = enDate(cible.dataset.jour);
+      const d = enDate(j);
       if (d.getUTCFullYear() !== curseur.annee || d.getUTCMonth() !== curseur.mois) {
         curseur = { annee: d.getUTCFullYear(), mois: d.getUTCMonth() };
       }

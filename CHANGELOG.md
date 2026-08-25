@@ -126,6 +126,21 @@ l'absence sur un accueil plein serait verte sans avoir rien mesuré. C'est
 grossier, et c'est plus honnête qu'un vert qui ne prouve rien
 (`scripts/test-accueil-liste-vide.ts`, vu rouge contre le retour de la phrase).
 
+### Choisir une date se fait d'un seul doigt
+
+**« Proposer ce jour » est retiré** — sa demande : *« je dois pouvoir
+sélectionner les jours juste en les touchant, pas besoin de cliquer sur
+proposer »*. Toucher une case du calendrier ouvre toujours la fiche de la
+journée — qui est déjà là, avec quelle équipe — mais elle n'engage plus rien :
+c'est la case qui engage, et la retoucher retire la date. Un appui par date
+économisé sur chaque devis.
+
+Ce qui ne change pas : le serveur tranche toujours avant qu'une case s'allume,
+et un jour refusé s'ouvre quand même en disant pourquoi. Ce qui a été ajouté au
+passage : deux cases touchées coup sur coup ne se marchent plus dessus — la
+réponse tardive de la première ne vient plus cocher un jour déjà quitté.
+
+
 ---
 
 ## 2026-08-24
