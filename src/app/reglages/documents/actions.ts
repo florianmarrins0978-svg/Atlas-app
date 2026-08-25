@@ -8,6 +8,7 @@ import { refusDuMessage, MESSAGE_PAR_DEFAUT } from "@/lib/message-client";
 import { normaliserAllure, refusDuLogo, type Allure } from "@/lib/allure-documents";
 import { enregistrerObjet, supprimerObjet } from "@/server/storage";
 import { verifierLimite, LIMITES } from "@/server/rate-limit";
+import { preparerPhotoEntrante } from "@/server/photo-entrante";
 import { logger } from "@/server/logger";
 
 /**
@@ -147,16 +148,34 @@ export async function poserLogoAction(
     );
     if (!limite.autorise) return { ok: false, raison: limite.message };
 
+    /**
+     * **LE LOGO EST NETTOYÉ, LUI AUSSI — et il partait le plus loin de tous.**
+     *
+     * Trouvé le 24 août 2026 en recensant les chemins d'image pour M3 : ce
+     * chemin-ci n'était dans aucun des six points du brief, et c'est celui qui
+     * expose le plus. Un logo choisi dans la photothèque — une enseigne
+     * photographiée au téléphone, ce que fait un artisan — porte les
+     * coordonnées GPS de l'endroit où la photo a été prise. Et ce fichier est
+     * **embarqué dans chaque devis et chaque facture** envoyés aux clients :
+     * les métadonnées voyageaient avec, chez des tiers, indéfiniment.
+     *
+     * `refusDuLogo` reste AVANT : son message parle du PDF (« ce format ne
+     * s'imprime pas sur un devis »), ce que la porte commune ne saurait pas
+     * dire. Elle vient ensuite, pour nettoyer et pour refuser un fichier qui
+     * n'est pas ce qu'il prétend être.
+     */
+    const prete = await preparerPhotoEntrante(fichier, "logo d'entreprise");
+    if (!prete.ok) return { ok: false, raison: prete.raison };
+
     const avant = await getEntreprise(ctx);
-    const octets = Buffer.from(await fichier.arrayBuffer());
     const objet = await enregistrerObjet(
       `entreprises/${ctx.entrepriseId}/logo`,
-      octets,
-      fichier.type === "image/png" ? ".png" : ".jpg",
-      fichier.type
+      prete.photo.octets,
+      prete.photo.extension,
+      prete.photo.mimeType
     );
     await mettreAJourEntreprise(ctx, {
-      logo: { storageKey: objet.storageKey, mime: fichier.type },
+      logo: { storageKey: objet.storageKey, mime: prete.photo.mimeType },
     });
     if (avant?.logoStorageKey) await supprimerObjet(avant.logoStorageKey);
     return { ok: true, logo: objet.storageKey };

@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { lancerNavigateur } from "./e2e-browser";
 import { Pool } from "pg";
 import { ajouterJours, versJourIso, HORIZON_PATRON_JOURS, DELAI_MINIMAL_JOURS } from "../src/server/disponibilites";
+import { jourLisible } from "../src/lib/jour";
 import { creerPuisFiche } from "./_creer-chantier-e2e";
 
 // **« Comment je fais si je dois lui proposer une date dans six mois ? »**
@@ -181,11 +182,20 @@ async function main() {
   const pageClient = await contexte.newPage();
   await pageClient.goto(`${BASE}/devis/${rows[0].jeton}`, { waitUntil: "networkidle" });
   const vueClient = await pageClient.locator("body").innerText();
-  const [, mois, jourDuMois] = dansSixMois.split("-");
-  const enClair = `${Number(jourDuMois)} ${MOIS[Number(mois) - 1]}`;
-  assert.match(
-    vueClient,
-    new RegExp(enClair, "i"),
+  /**
+   * **La règle d'écriture ne se redit pas ici.** La page du client rend
+   * `jourLisible` ; la refaire à la main dans la suite, c'est une seconde
+   * implémentation — et elle a divergé (`CLAUDE.md` §3).
+   *
+   * Le 25 août 2026, la date à six mois est tombée un **1er**, que le français
+   * écrit « 1er mars » et que cette suite cherchait comme « 1 mars ». Rouge sur
+   * un écran parfaitement juste, un jour sur trente — le pire des rouges, celui
+   * qu'on apprend à ignorer. En passant par la fonction d'affichage, la suite
+   * suit désormais la règle au lieu de la deviner, ordinal compris.
+   */
+  const enClair = jourLisible(dansSixMois);
+  assert.ok(
+    vueClient.replace(/\s+/g, " ").includes(enClair),
     `Le client ne voit pas la date proposée (« ${enClair} »). Lu : « ${vueClient.replace(/\s+/g, " ").slice(0, 400)} »`
   );
   console.log("  ✓ le client la voit sur sa page, en toutes lettres");

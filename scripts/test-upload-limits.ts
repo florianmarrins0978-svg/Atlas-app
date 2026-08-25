@@ -1,4 +1,5 @@
 import assert from "node:assert";
+import { jpegDeTaille } from "./_images-temoins";
 import { verifierTailleFichier, LIMITE_TELEVERSEMENT_OCTETS, MESSAGE_FICHIER_TROP_VOLUMINEUX } from "../src/server/upload-limits";
 import { pool } from "../src/server/db/client";
 import * as entreprisesRepo from "../src/server/repositories/entreprises";
@@ -24,6 +25,19 @@ async function test(nom: string, fn: () => Promise<void>) {
 
 function fichierDeTaille(octets: number, type: string, nom: string): File {
   return new File([new Uint8Array(octets)], nom, { type });
+}
+
+/**
+ * **Une VRAIE photo, pas un tampon de zéros.**
+ *
+ * Depuis le 24 août 2026, `preparerPhotoEntrante` vérifie la signature du
+ * fichier : un demi-mégaoctet de zéros annoncé `image/jpeg` est refusé, et
+ * c'est exactement ce que le lot 2B ferme. Les cas qui éprouvent la BORNE DE
+ * TAILLE doivent donc porter une image que le serveur peut lire, sans quoi ils
+ * mesurent le refus de format et non celui de la taille.
+ */
+function photoDeTaille(octets: number, nom: string): File {
+  return new File([new Uint8Array(jpegDeTaille(octets))], nom, { type: "image/jpeg" });
 }
 
 async function main() {
@@ -58,7 +72,7 @@ async function main() {
 
   await test("Régression : une photo normale (sous la limite) est toujours acceptée par l'action réelle", async () => {
     const formData = new FormData();
-    formData.set("fichier", fichierDeTaille(500 * 1024, "image/jpeg", "photo-normale.jpg"));
+    formData.set("fichier", photoDeTaille(500 * 1024, "photo-normale.jpg"));
     const photo = await ajouterPhotoAction(chantier.id, formData);
     assert.ok(photo);
     const liste = await photosRepo.listerPhotos({ entrepriseId: entreprise.id, utilisateurId }, chantier.id);
@@ -67,7 +81,7 @@ async function main() {
 
   await test("Upload photo : un fichier surdimensionné est rejeté par l'action réelle, message utilisateur propre", async () => {
     const formData = new FormData();
-    formData.set("fichier", fichierDeTaille(LIMITE_TELEVERSEMENT_OCTETS + 1024, "image/jpeg", "photo-trop-grosse.jpg"));
+    formData.set("fichier", photoDeTaille(LIMITE_TELEVERSEMENT_OCTETS + 1024, "photo-trop-grosse.jpg"));
     let leve = false;
     let message = "";
     try {

@@ -29,7 +29,14 @@ async function main() {
   const inputs = page.locator("form input");
   await inputs.first().fill("Poser la faïence murale");
   await inputs.first().blur();
-  await page.waitForTimeout(300);
+  /**
+   * **On attend que l'enregistrement soit PARTI, pas que trois cents
+   * millisecondes passent.** La prestation est écrite par une action serveur ;
+   * sous la batterie complète elle dépasse ce délai, et le contrôle plus bas
+   * — « la prestation est toujours là » — accusait alors l'assistant de l'avoir
+   * effacée. Rouge le 25 août 2026, vert joué seul.
+   */
+  await page.waitForLoadState("networkidle");
 
   // --- Ouverture de l'assistant ---
   await page.goto(chantierUrl, { waitUntil: "networkidle" });
@@ -45,7 +52,12 @@ async function main() {
 
   // --- Aucune mutation : la prestation existante est toujours là après l'échange ---
   await page.goto(`${chantierUrl}/informations`, { waitUntil: "networkidle" });
-  assert.equal(await page.locator('input[value="Poser la faïence murale"]').count(), 1);
+  // **Le message nomme le coupable** : « 0 == 1 » envoyait chercher partout.
+  assert.equal(
+    await page.locator('input[value="Poser la faïence murale"]').count(),
+    1,
+    "la prestation a disparu après l'échange avec l'assistant — ou elle n'a jamais été enregistrée"
+  );
 
   // --- Fermeture ---
   await page.goto(chantierUrl, { waitUntil: "networkidle" });
