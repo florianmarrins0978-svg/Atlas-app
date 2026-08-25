@@ -9,6 +9,31 @@ Format : le plus récent en tête.
 
 ## 2026-08-25
 
+### Le message au client, simplifié : plus de pastilles à poser
+
+*« On comprend rien, trop compliqué pour modifier »*, puis, devant la maquette
+`appli/message-au-client-simple.html` : *« la modification est parfaite, tu peux
+coder »*. Il réglait son message en POSANT à la main quatre pastilles
+(« le client », « le document », « le lien », « mon entreprise »).
+
+Fini : **un simple texte**. Le prénom, la phrase du document et le lien se
+remplissent seuls — il n'a plus rien à placer. Ce qui s'adapte se **montre**, en
+doré, dans **deux aperçus côte à côte** : « Envoi d'un devis » et « Envoi d'une
+facture », à message identique. On y voit le mot changer tout seul — le devis dit
+*« choisir votre date »*, la facture *« F… à régler avant le… »* (sa « façon 1 »,
+re-confirmée le 25 août : Atlas adapte le milieu, il garde le bonjour et la
+signature).
+
+Partis avec : la rangée de pastilles, la bascule d'aperçu, la ligne
+« l'objet n'est pas modifiable ». Le lien reste **obligatoire** — le serveur
+refuse toujours un message sans lui —, et un seul filet demeure : reprendre le
+message d'Atlas s'il l'a défait.
+
+**Ce qui reste tenu :** le fil entier — de l'écran jusqu'au téléphone du client
+— est éprouvé au navigateur (`test-message-au-client-e2e`), et les deux aperçus
+lisent les MÊMES valeurs que l'envoi (`apercuColore` coupe le modèle sur les
+mêmes pastilles que `rendreMessage` : jamais une seconde rédaction).
+
 ### Photographier un devis pour en reprendre l'allure
 
 *« faut que l'utilisateur puisse prendre la photo de son devis […] pareil pour

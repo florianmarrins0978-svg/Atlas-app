@@ -10,10 +10,8 @@ import {
 } from "@/lib/conditions-documents";
 import {
   MESSAGE_PAR_DEFAUT,
-  PASTILLES,
   phraseDuDocument,
   refusDuMessage,
-  rendreMessage,
 } from "@/lib/message-client";
 import {
   ALLURE_PAR_DEFAUT,
@@ -63,13 +61,42 @@ import {
  * L'aperçu ne porte aucun montant : le total d'un devis à venir n'existe pas, et
  * un chiffre inventé là finirait imprimé.
  */
-/** Ce que chaque pastille dit, dans SES mots — pas « [client] » en clair. */
-const MOTS: Record<(typeof PASTILLES)[number], string> = {
-  "[client]": "le client",
-  "[document]": "le document",
-  "[lien]": "le lien",
-  "[entreprise]": "mon entreprise",
-};
+/**
+ * L'aperçu, coloré : ce qu'Atlas remplit tout seul s'affiche en doré.
+ *
+ * **Ce n'est PAS une seconde rédaction du message** (`CLAUDE.md` §3) : on coupe
+ * le modèle sur les mêmes pastilles que `rendreMessage`, on y pose les mêmes
+ * valeurs, et la concaténation des morceaux redonne exactement le texte que le
+ * client recevra. Le doré ne fait que MONTRER ce qui bouge — le prénom, la
+ * phrase du document, le lien — pour qu'il le voie sans avoir à poser quoi que
+ * ce soit à la main. Le nom de l'entreprise se pose aussi, mais en encre : il ne
+ * « bouge » pas d'un envoi à l'autre.
+ */
+function apercuColore(
+  modele: string,
+  valeurs: { client: string; document: string; lien: string; entreprise: string }
+) {
+  return modele.split(/(\[client\]|\[document\]|\[lien\]|\[entreprise\])/).map((bout, i) => {
+    if (bout === "[client]") return <b key={i} style={{ color: colors.or, fontWeight: 600 }}>{valeurs.client}</b>;
+    if (bout === "[document]") return <b key={i} style={{ color: colors.or, fontWeight: 600 }}>{valeurs.document}</b>;
+    if (bout === "[lien]") return <b key={i} style={{ color: colors.or, fontWeight: 600, wordBreak: "break-all" }}>{valeurs.lien}</b>;
+    if (bout === "[entreprise]") return <span key={i}>{valeurs.entreprise}</span>;
+    return <span key={i}>{bout}</span>;
+  });
+}
+
+/** Les deux envois qui diffèrent le plus — c'est le mot qui change qu'il veut voir. */
+const APERCUS_MESSAGE = [
+  { clef: "devis", titre: "Envoi d'un devis", phrase: phraseDuDocument({ genre: "devis" }), lien: "https://…/devis/…" },
+  {
+    clef: "facture",
+    titre: "Envoi d'une facture",
+    // Un numéro et une échéance d'exemple, reconnaissables comme tels : les
+    // siens n'existent pas tant qu'aucune facture n'est émise.
+    phrase: phraseDuDocument({ genre: "facture", numero: "F2026-0008", echeanceLisible: "21 septembre" }),
+    lien: "https://…/facture/…",
+  },
+] as const;
 
 /**
  * Les `@font-face` des neuf familles — écrits DEPUIS la liste, jamais à la main.
@@ -86,24 +113,6 @@ const FACES = TYPOGRAPHIES.flatMap((t) =>
       ]
     : []
 ).join("");
-
-/** Les trois documents de l'aperçu, et ce qu'Atlas écrit à la place de `[document]`. */
-const APERCUS = [
-  { clef: "devis", nom: "Devis", phrase: phraseDuDocument({ genre: "devis" }) },
-  {
-    clef: "facture",
-    nom: "Facture",
-    // Un numéro et une échéance d'exemple, reconnaissables comme tels : les
-    // siens n'existent pas tant qu'aucune facture n'est émise, et en inventer
-    // un vrai lui ferait croire qu'il regarde une facture existante.
-    phrase: phraseDuDocument({
-      genre: "facture",
-      numero: "F2026-0008",
-      echeanceLisible: "21 septembre",
-    }),
-  },
-  { clef: "entretien", nom: "Compte rendu", phrase: phraseDuDocument({ genre: "entretien" }) },
-] as const;
 
 export default function DocumentsClient({
   initial,
@@ -126,7 +135,6 @@ export default function DocumentsClient({
   const [enCours, demarrer] = useTransition();
   const [aEcrire, setAEcrire] = useState(false);
   const [message, setMessage] = useState(messageInitial ?? MESSAGE_PAR_DEFAUT);
-  const [apercuSur, setApercuSur] = useState<(typeof APERCUS)[number]["clef"]>("devis");
   const zone = useRef<HTMLTextAreaElement | null>(null);
 
   // ── L'allure : elle s'enregistre SEULE, dès qu'il touche une couleur ──
@@ -352,9 +360,12 @@ export default function DocumentsClient({
           choisie après avoir vu ce que l'autre coûtait : une facture qui parle
           d'un devis, et l'échéance perdue. */}
       <Bloc titre="Mon message au client">
+        {/* **Un simple texte — sa demande du 25 août 2026.** Plus de pastilles à
+            poser à la main : le prénom, la phrase du document (qui s'adapte au
+            devis comme à la facture, sa « façon 1 ») et le lien se remplissent
+            seuls. Ce qui bouge est montré en DORÉ dans les deux aperçus. */}
         <p className={`mb-3 ${texteSituation}`} style={{ color: colors.muted }}>
-          Il part avec votre devis, votre facture et votre compte rendu de passage.
-          Ce que vous posez entre crochets, Atlas le remplace.
+          Le prénom, le mot du document et le lien se remplissent tout seuls.
         </p>
 
         <textarea
@@ -366,7 +377,7 @@ export default function DocumentsClient({
           }}
           data-atlas="message-client"
           aria-label="Votre message au client"
-          rows={10}
+          rows={9}
           className="w-full rounded-[6px] px-[13px] py-[11px] leading-[1.5]"
           style={{
             // **16 px, jamais moins.** En dessous, iOS grossit la page à la
@@ -379,35 +390,10 @@ export default function DocumentsClient({
           }}
         />
 
-        <div className="mt-2.5 flex flex-wrap items-center gap-2">
-          <span className={texteSituation} style={{ color: colors.muted }}>
-            Poser :
-          </span>
-          {PASTILLES.map((pastille) => (
-            <button
-              key={pastille}
-              type="button"
-              data-atlas={`pastille-${pastille.slice(1, -1)}`}
-              onClick={() => {
-                // **Posée LÀ OÙ LE CURSEUR EST**, pas à la fin : un mot qui
-                // atterrit au bas du message oblige à le déplacer au doigt.
-                const z = zone.current;
-                const debut = z?.selectionStart ?? message.length;
-                const fin = z?.selectionEnd ?? debut;
-                const prochain = message.slice(0, debut) + pastille + message.slice(fin);
-                setMessage(prochain);
-                setAEcrire(true);
-                requestAnimationFrame(() => {
-                  z?.focus();
-                  z?.setSelectionRange(debut + pastille.length, debut + pastille.length);
-                });
-              }}
-              className="rounded-full px-3 py-2 text-[13px]"
-              style={{ color: colors.or, boxShadow: `inset 0 0 0 1px ${colors.or}` }}
-            >
-              {MOTS[pastille]}
-            </button>
-          ))}
+        {/* Le seul filet de sécurité qui reste : reprendre le message d'Atlas
+            s'il l'a défait (par exemple en retirant le lien, que le serveur
+            refuse). Montré seulement quand le sien en diffère. */}
+        {message.trim() !== MESSAGE_PAR_DEFAUT && (
           <button
             type="button"
             data-atlas="message-defaut"
@@ -415,12 +401,12 @@ export default function DocumentsClient({
               setMessage(MESSAGE_PAR_DEFAUT);
               setAEcrire(true);
             }}
-            className="rounded-full px-3 py-2 text-[13px]"
+            className="mt-2.5 min-h-[44px] rounded-full px-4 text-[13.5px]"
             style={{ color: colors.muted, boxShadow: `inset 0 0 0 1px ${colors.line}` }}
           >
-            Remettre celui d&apos;Atlas
+            Remettre le message d&apos;Atlas
           </button>
-        </div>
+        )}
 
         {refusMessage && (
           <p
@@ -433,52 +419,53 @@ export default function DocumentsClient({
           </p>
         )}
 
-        {/* **L'aperçu passe par la MÊME fonction que l'envoi** (`rendreMessage`).
-            Une seconde rédaction ici finirait par ne plus dire la même chose que
-            ce que le client reçoit — et c'est le second qui compte. */}
-        <p className={`mb-2 mt-5 ${libelleCaps}`} style={{ color: colors.muted }}>
-          Ce que votre client recevra
-        </p>
-        <div className="mb-2.5 flex gap-2">
-          {APERCUS.map((a) => (
-            <button
+        {/* **Les deux aperçus passent par les mêmes valeurs que l'envoi.** Le
+            doré ne fait que montrer ce qu'Atlas remplit ; côte à côte, ils
+            prouvent que le mot change — « devis » ici, « facture » là — sans
+            qu'il réécrive rien. */}
+        <div className="mb-2 mt-5 flex items-baseline gap-2">
+          <span className={libelleCaps} style={{ color: colors.muted }}>
+            Ce que votre client recevra
+          </span>
+          <span className={texteSituation} style={{ color: colors.muted }}>
+            · <b style={{ color: colors.or, fontWeight: 600 }}>doré</b> = rempli tout seul
+          </span>
+        </div>
+        <div className="grid grid-cols-2 gap-2">
+          {APERCUS_MESSAGE.map((a) => (
+            <div
               key={a.clef}
-              type="button"
               data-atlas={`apercu-${a.clef}`}
-              aria-pressed={apercuSur === a.clef}
-              onClick={() => setApercuSur(a.clef)}
-              // **`rounded-full`, comme tous ses boutons depuis le 12 août 2026.**
-              // `test-boutons-arrondis` l'a attrapé : un rayon de 6 px était resté
-              // ici, et un seul bouton carré dans l'application se voit.
-              className="min-h-[44px] flex-1 rounded-full text-[13.5px]"
-              style={
-                apercuSur === a.clef
-                  ? { backgroundColor: colors.card, color: colors.ink, boxShadow: `inset 0 0 0 1px ${colors.or}` }
-                  : { color: colors.muted, boxShadow: `inset 0 0 0 1px ${colors.line}` }
-              }
+              className="overflow-hidden rounded-[6px]"
+              style={{ border: `1px solid ${colors.lineSoft}` }}
             >
-              {a.nom}
-            </button>
+              <div
+                className={libelleCaps}
+                style={{
+                  padding: "7px 11px",
+                  backgroundColor: colors.rustTint,
+                  color: colors.muted,
+                  borderBottom: `1px solid ${colors.lineSoft}`,
+                }}
+              >
+                {a.titre}
+              </div>
+              <p
+                className="whitespace-pre-wrap px-[11px] py-[11px] text-[12px] leading-[1.5]"
+                style={{ backgroundColor: colors.card, color: colors.inkSoft }}
+              >
+                {apercuColore(message.trim() || MESSAGE_PAR_DEFAUT, {
+                  client: "Mme Larousse",
+                  document: a.phrase,
+                  // Une adresse d'exemple, reconnaissable comme telle : le vrai
+                  // lien n'existe qu'au moment de l'envoi.
+                  lien: a.lien,
+                  entreprise: entrepriseNom,
+                })}
+              </p>
+            </div>
           ))}
         </div>
-        <p
-          data-atlas="message-apercu"
-          className="whitespace-pre-wrap rounded-[6px] px-[13px] py-[11px] text-[14px] leading-[1.5]"
-          style={{ backgroundColor: colors.card, color: colors.inkSoft }}
-        >
-          {rendreMessage(message.trim() || MESSAGE_PAR_DEFAUT, {
-            client: "Mme Larousse",
-            document: APERCUS.find((a) => a.clef === apercuSur)!.phrase,
-            // Une adresse d'exemple, reconnaissable comme telle : le vrai lien
-            // n'existe qu'au moment de l'envoi, et un lien inventé se toucherait.
-            lien: "https://…/devis/…",
-            entreprise: entrepriseNom,
-          })}
-        </p>
-        <p className={`mt-2 ${texteSituation}`} style={{ color: colors.muted }}>
-          L&apos;objet du courriel n&apos;est pas modifiable : il doit rester
-          reconnaissable dans une boîte de réception.
-        </p>
       </Bloc>
 
       {/* ── L'ALLURE DE SES DOCUMENTS — sa demande du 23 août 2026 ─────────

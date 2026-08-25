@@ -103,16 +103,21 @@ async function main() {
     await page.waitForSelector('[data-atlas="message-client"]', { timeout: 30_000 });
   });
 
-  await cas("les quatre pastilles sont là, et « le document » avec elles", async () => {
-    // Sans `[document]`, la « façon 1 » n'existe pas : c'est elle qui met la
-    // bonne phrase sur chacun des trois envois.
+  await cas("les pastilles à poser à la main ont disparu — « un simple texte » (25 août)", async () => {
+    // **Sa demande du 25 août 2026 : « un simple texte ».** Plus de pastilles à
+    // POSER — ce qui s'adapte se MONTRE (les deux aperçus en doré), il ne se
+    // place plus au doigt. On fixe le retrait pour qu'un futur lot ne les
+    // ramène pas de bonne foi (`CLAUDE.md` §5 bis).
     for (const mot of ["client", "document", "lien", "entreprise"]) {
       assert.equal(
         await page.locator(`[data-atlas="pastille-${mot}"]`).count(),
-        1,
-        `la pastille « ${mot} » manque`
+        0,
+        `la pastille « ${mot} » est revenue : il avait demandé « un simple texte »`
       );
     }
+    // Les deux aperçus, eux, sont là — c'est par eux qu'il voit ce qui bouge.
+    assert.equal(await page.locator('[data-atlas="apercu-devis"]').count(), 1, "l'aperçu du devis manque");
+    assert.equal(await page.locator('[data-atlas="apercu-facture"]').count(), 1, "l'aperçu de la facture manque");
   });
 
   // ── 2. LE LIEN EST OBLIGATOIRE — et c'est un REFUS, pas un avertissement
@@ -150,26 +155,24 @@ async function main() {
     assert.equal(enBase, SIEN, "le message n'est pas arrivé en base");
   });
 
-  await cas("l'aperçu montre les TROIS documents, et chacun dit le sien", async () => {
-    const lire = async (onglet: string) => {
-      await page.locator(`[data-atlas="apercu-${onglet}"]`).click();
-      await page.waitForTimeout(150);
-      return page.locator('[data-atlas="message-apercu"]').innerText();
-    };
-    const devis = await lire("devis");
-    const facture = await lire("facture");
-    const rapport = await lire("entretien");
+  await cas("les deux aperçus, côte à côte, disent chacun le sien", async () => {
+    // **Plus de bascule : les deux envois se voient ENSEMBLE** (sa maquette
+    // `message-au-client-simple.html`). Le mot change tout seul — c'est ce que
+    // la « façon 2 » lui coûtait : une facture qui parle d'un devis, l'échéance
+    // perdue. Le compte rendu, lui, n'est pas prévisualisé ici — sa maquette ne
+    // montre que devis et facture ; son adaptation reste tenue par la suite pure
+    // `test-message-client`.
+    const devis = await page.locator('[data-atlas="apercu-devis"]').innerText();
+    const facture = await page.locator('[data-atlas="apercu-facture"]').innerText();
 
-    // Le cadre est le sien sur les trois — c'est « un message pour tous ».
-    for (const [quoi, corps] of [["devis", devis], ["facture", facture], ["rapport", rapport]]) {
-      assert.ok(corps.startsWith("Salut "), `l'aperçu du ${quoi} ne porte pas son message : ${corps.slice(0, 40)}`);
-    }
-    // Le milieu, lui, ne l'est pas — et c'est ce que la « façon 2 » lui coûtait.
+    // Le cadre est le sien sur les deux — c'est « un message pour tous ».
+    assert.ok(devis.includes("Salut "), `l'aperçu du devis ne porte pas son message : ${devis.slice(0, 60)}`);
+    assert.ok(facture.includes("Salut "), `l'aperçu de la facture ne porte pas son message : ${facture.slice(0, 60)}`);
+    // Le milieu, lui, s'adapte.
     assert.match(devis, /votre devis/i, "l'aperçu du devis ne se nomme pas");
     assert.match(facture, /votre facture/i, "l'aperçu de la facture ne se nomme pas");
     assert.match(facture, /à régler avant le/i, "l'échéance manque à l'aperçu de la facture");
     assert.doesNotMatch(facture, /votre devis/i, "l'aperçu de la facture parle d'un devis");
-    assert.match(rapport, /compte rendu/i, "l'aperçu du compte rendu ne se nomme pas");
   });
 
   // ── 4. LE FIL ENTIER : ce qu'il a écrit arrive au TÉLÉPHONE du client
