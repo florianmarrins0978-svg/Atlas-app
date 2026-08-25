@@ -15,7 +15,7 @@
 // resterait verte si personne n'appelait la règle depuis l'écran — c'est
 // exactement le défaut du 25 août sur les conditions du devis :
 // `lignesConditionsDevis` composait les bonnes phrases depuis onze jours, et
-// aucun document ne les portait (`ARCHITECTURE.md` §174). *Un contrôle qui
+// aucun document ne les portait (`ARCHITECTURE.md` §175). *Un contrôle qui
 // éprouve la règle ne voit pas une pièce débranchée.* Celle-ci parcourt le
 // chemin : deux équipes en base, un chantier posé un jour, et la mention lue à
 // l'écran.

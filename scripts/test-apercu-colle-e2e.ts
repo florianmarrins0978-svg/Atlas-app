@@ -54,7 +54,7 @@ async function main() {
   // toutes les mesures qui suivent vaudraient zéro.
   await page.goto(`${BASE}/reglages/documents`, { waitUntil: "networkidle" });
 
-  const apercu = page.locator('[data-atlas="apercu-colle"]');
+  const apercu = page.locator('[data-atlas="allure-apercu-colle"]');
   const feuille = page.locator('[data-atlas="allure-feuille"]');
 
   await cas("l'aperçu existe, et il a une hauteur mesurable", async () => {

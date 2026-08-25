@@ -11,6 +11,7 @@ import * as prixRepo from "../src/server/repositories/lignes-prix";
 import {
   terminerChantier,
   emettreFacture,
+  majEcheanceFacture,
   getFacturePourChantier,
   listerChantiersTermines,
   releveTvaCollectee,
@@ -148,6 +149,74 @@ async function main() {
     const b = await terminerChantier(ctx, chantierId, MAINTENANT);
 
     assert.strictEqual(a.id, b.id, "deux factures pour un chantier doubleraient la TVA collectée");
+  });
+
+  // ---- L'échéance : proposée, puis modifiable (sa demande du 25 août 2026)
+  await test("l'échéance est PROPOSÉE depuis son délai de paiement, 30 jours à défaut", async () => {
+    // Sans délai réglé : 30 jours (2026-05-20 → 2026-06-19).
+    const ctx = await contexte("echeance-defaut");
+    const { chantierId } = await chantierDevise(ctx, "400.00");
+    const f1 = await terminerChantier(ctx, chantierId, MAINTENANT);
+    assert.strictEqual(f1.dateEcheance, "2026-06-19", "l'échéance par défaut n'est pas à 30 jours");
+
+    // Avec son délai réglé (45 jours), la facture le suit — plus de « 30 » en dur
+    // qui contredisait la mention « Paiement à X jours ».
+    const ctx2 = await contexte("echeance-45");
+    await entreprisesRepo.mettreAJourEntreprise(ctx2, {
+      conditions: {
+        validiteJours: null,
+        acomptePourcent: null,
+        delaiPaiementJours: 45,
+        moyensPaiement: null,
+        rappelerPenalites: false,
+        textePied: null,
+      },
+    });
+    const { chantierId: c2 } = await chantierDevise(ctx2, "400.00");
+    const f2 = await terminerChantier(ctx2, c2, MAINTENANT);
+    assert.strictEqual(f2.dateEcheance, "2026-07-04", "l'échéance ne suit pas le délai réglé (45 j)");
+  });
+
+  await test("l'échéance d'un brouillon se corrige, et la base garde la valeur relue", async () => {
+    const ctx = await contexte("echeance-maj");
+    const { chantierId } = await chantierDevise(ctx, "400.00");
+    const f = await terminerChantier(ctx, chantierId, MAINTENANT);
+    const r = await majEcheanceFacture(ctx, f.id, "2026-07-15");
+    assert.ok(r.ok, "la correction d'échéance a été refusée");
+    if (r.ok) assert.strictEqual(r.dateEcheance, "2026-07-15");
+    const relu = await getFacturePourChantier(ctx, chantierId);
+    assert.strictEqual(relu?.facture.dateEcheance, "2026-07-15", "la nouvelle échéance n'est pas en base");
+  });
+
+  await test("une échéance AVANT la facture est refusée, et rien ne bouge en base", async () => {
+    const ctx = await contexte("echeance-avant");
+    const { chantierId } = await chantierDevise(ctx, "400.00");
+    const f = await terminerChantier(ctx, chantierId, MAINTENANT); // échéance par défaut 2026-06-19
+    const r = await majEcheanceFacture(ctx, f.id, "2026-05-19");
+    assert.strictEqual(r.ok, false, "une échéance avant la facture a été acceptée");
+    const relu = await getFacturePourChantier(ctx, chantierId);
+    assert.strictEqual(relu?.facture.dateEcheance, "2026-06-19", "une échéance refusée a quand même bougé");
+  });
+
+  await test("une facture ARRÊTÉE ne laisse plus changer son échéance", async () => {
+    const ctx = await contexte("echeance-emise");
+    const { chantierId } = await chantierDevise(ctx, "400.00");
+    const f = await terminerChantier(ctx, chantierId, MAINTENANT);
+    await emettreFacture(ctx, f.id, MAINTENANT);
+    const r = await majEcheanceFacture(ctx, f.id, "2026-07-15");
+    assert.strictEqual(r.ok, false, "l'échéance d'une facture émise a pu changer");
+    if (!r.ok) assert.match(r.raison, /arrêtée/i);
+  });
+
+  await test("la facture d'une AUTRE entreprise n'existe pas pour changer son échéance", async () => {
+    const ctxA = await contexte("echeance-iso-a");
+    const { chantierId } = await chantierDevise(ctxA, "400.00");
+    const f = await terminerChantier(ctxA, chantierId, MAINTENANT);
+    const ctxB = await contexte("echeance-iso-b");
+    const r = await majEcheanceFacture(ctxB, f.id, "2026-07-15");
+    assert.strictEqual(r.ok, false, "une entreprise a pu toucher la facture d'une autre");
+    const relu = await getFacturePourChantier(ctxA, chantierId);
+    assert.strictEqual(relu?.facture.dateEcheance, "2026-06-19", "la facture de A a bougé depuis B");
   });
 
   await test("un devis resté brouillon ne peut pas être facturé", async () => {

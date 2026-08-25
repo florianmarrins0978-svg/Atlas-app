@@ -9,6 +9,88 @@ Format : le plus récent en tête.
 
 ## 2026-08-25
 
+### Le message : les phrases par défaut, modifiables — les mots en doré verrouillés
+
+*« Le message au client doit comporter les phrases par défaut et l'utilisateur les
+modifiera s'il le désire ; seuls les mots en doré ne peuvent être modifiés. »*
+
+Le cadre du message n'est plus un `<textarea>` mais un vrai éditeur
+(`EditeurMessage`) : il porte le message par défaut, en clair, et l'artisan modifie
+ce qu'il veut — le bonjour, la formule de fin, ses propres phrases. Ce qu'Atlas
+remplit tout seul — le prénom, la phrase du document (qui s'adapte au devis comme
+à la facture), le lien, son nom — est posé **en doré et verrouillé** : on ne peut
+ni le retaper, ni le couper.
+
+**Le piège du champ « riche », désamorcé :** les retours à la ligne. Un
+`contenteditable` laissé seul insère un `<div>` ou un `<br>` selon le navigateur,
+et les deux se relisent mal. On intercepte donc Entrée pour poser un simple « \n »
+de texte ; la relecture n'a plus qu'à concaténer texte et pastilles, et rend
+EXACTEMENT le modèle. Une seule règle de découpe (`segmentsDuModele`) sert
+l'éditeur et les aperçus : la concaténation des morceaux redonne le modèle
+(éprouvé sans base), et le fil complet — de l'écran au téléphone du client — reste
+tenu au navigateur (`test-message-au-client-e2e`).
+
+### L'émetteur n'était sur le devis qu'une fois de trop
+
+*« Pourquoi il y a deux fois l'émetteur sur l'aperçu ? »* — il avait raison, et
+ce n'était pas une convention : l'en-tête portait déjà son identité, et un bloc
+« ÉMETTEUR » la réécrivait mot pour mot dix centimètres plus bas. Les mentions
+obligatoires doivent figurer, pas figurer deux fois. Le bloc du bas est retiré,
+l'en-tête prend tout — nom, adresse, téléphone, e-mail, SIRET — et le client
+passe à gauche, seul de sa rangée : une colonne « CLIENT » restée à droite avec
+un vide en face se lit comme un bloc oublié à l'impression.
+
+### Une ligne par information, en haut à gauche
+
+*« Il y a un tiret entre le numéro de tél et l'adresse e-mail, change ça, il
+faut sauter une ligne, une ligne par information. »* Le `join(" — ")` est parti :
+adresse, téléphone, e-mail, SIRET prennent chacun leur ligne, et les absents ne
+laissent pas de trou.
+
+**Les deux en-têtes ont bougé ensemble** — le PDF (devis *et* facture, même
+moteur) et l'écran où il rédige, qui compose le sien à la main. C'est la leçon
+de la veille appliquée le lendemain : corriger un seul des deux recrée
+exactement l'écart qui lui avait caché son logo.
+
+Les contrôles ne se contentent plus de lire « CLIENT » : ils **refusent**
+qu'« ÉMETTEUR » reparaisse et exigent que le nom de l'entreprise n'apparaisse
+qu'une seule fois. Et l'image a été regardée, fond clair et fond sombre, logo
+carré et logo en bandeau. `ARCHITECTURE.md` §174.
+
+**Deux contrôles remis d'aplomb au passage.** L'empreinte au pixel du devis et
+de la facture (`test-fiche-chantier-pdf.ts`) décrivait la mise en page qu'il a
+fait retirer : elle a été relevée à neuf — après avoir REGARDÉ le document —, et
+la suite affiche désormais l'empreinte lue quand elle diverge, pour qu'un
+changement voulu ne demande plus d'instrumenter le fichier. Et
+`test-devis-doublon-e2e.ts` attendait 800 ms fixes après l'enregistrement d'une
+prestation : vert seul, rouge dans la batterie complète, en accusant « les
+tarifs de démonstration » — le mauvais coupable. Il redemande maintenant la page
+une fois avant de conclure.
+
+### L'échéance de la facture : proposée, et modifiable avant l'envoi
+
+*« Il faut qu'il propose une date par défaut et ensuite si l'utilisateur veut la
+modifier qu'il puisse. Parce que si l'utilisateur envoie la facture avant de
+modifier, faut qu'elle parte avec une date et pas avec [échéance]. »*
+
+Deux choses en découlent :
+
+- **La date par défaut suit désormais son délai de paiement réglé** (0 = comptant),
+  30 jours à défaut — au lieu d'un « 30 » écrit en dur qui pouvait contredire la
+  mention « Paiement à X jours » imprimée sur la pièce. La facture a donc
+  **toujours** une vraie échéance dès sa création : elle ne part jamais avec un
+  vide.
+- **Elle se corrige à l'écran de la facture**, tant qu'elle n'est pas arrêtée. Une
+  facture émise est partie chez le client et inscrite au relevé : sa date se fige
+  alors (le champ disparaît, et `majEcheanceFacture` refuse quand même — l'écran
+  n'est qu'une politesse, le dépôt est le garde-fou).
+
+La saisie repasse par une règle pure (`src/lib/echeance-facture.ts`, éprouvée
+sans base) : une échéance ne précède jamais la facture, ne dépasse pas un an (au-
+delà, c'est l'année mal tapée), et le comptant — échéance = émission — est permis.
+L'isolation est tenue par la RLS : la facture d'une autre entreprise n'existe tout
+simplement pas pour cette requête (`test-factures`).
+
 ### Les cinq conditions réglées arrivent enfin sur le devis
 
 *« Les autres qui sont en ON doivent-ils être visibles sur le devis ? car je ne
@@ -47,7 +129,7 @@ salarié : elle part sans un prix, et un acompte y serait un montant.
 *« Si je décoche le bouton OFF, ils sont censés disparaître ? »* Oui — éprouvé,
 et le contrôle a été vu rouge en débranchant le raccordement exprès. Trois
 captures rendent les trois états en image, parce que ce défaut-là s'est vu à
-l'œil et par aucun test. `ARCHITECTURE.md` §174.
+l'œil et par aucun test. `ARCHITECTURE.md` §175.
 
 ### Un jour à moitié pris le dit : « Reste 1 équipe sur 2 »
 
@@ -803,6 +885,39 @@ Une énumération recopiée ne suit jamais la source qu'elle prétend montrer �
 c'est la même faute que celle du gabarit, dans l'outillage.
 
 ## 2026-08-24
+
+### L'aperçu du devis reste sous les yeux pendant qu'on le change — sa proposition B
+
+**Sa plainte, puis sa réponse.** *« Lorsque je modifie mon devis, je suis obligé
+de descendre pour voir les modifications ; il faut mieux organiser la page pour
+pouvoir voir ce qu'on modifie. »* Trois rangements lui ont été dessinés
+(planche 96) ; devant les trois, il a répondu : **« la B »** — l'aperçu collé en
+tête du bloc.
+
+**Le défaut était un défaut d'ORDRE, pas de contenu.** L'aperçu fermait le bloc,
+après dix pastilles de typographie sur cinq rangées et deux nuanciers : il
+tombait à plus de 900 px du haut. Toucher une police, c'était descendre,
+regarder, remonter — dix-huit trajets pour essayer les neuf. Rien n'était de
+trop sur cet écran ; tout y était rangé dans le sens qui l'obligeait à voyager.
+
+**`sticky`, et non `fixed`** : la feuille suit tant que le bloc de l'allure est
+à l'écran, et s'en va avec lui. Fixée, elle recouvrirait les réglages du message
+et du numéro de document, où elle n'a rien à faire.
+
+**Le contrôle mesure le GESTE, pas la feuille de style.** Vérifier que
+`position: sticky` est écrit prouverait qu'une propriété existe, pas qu'elle
+agit — un parent en `overflow: hidden` la neutralise sans rien changer au CSS.
+La suite descend donc jusqu'à la dernière police et regarde où est la feuille,
+comme lui : elle exige au moins la moitié de l'aperçu dans l'écran, puis touche
+une police et vérifie que la feuille restée en haut s'est repeinte. **Vu rougir**
+contre un `relative` : « il ne reste que 0 px d'aperçu sur 217 ».
+
+**Deux pièges d'outillage, payés ici :** le contrôle visait Playfair, qu'un cas
+plus haut dans la même suite avait déjà posé — il comparait la même famille
+avant et après et accusait un écran juste ; il lit désormais l'état et vise
+ailleurs. Et il **repose ce qu'il a trouvé** : le cas suivant vérifie que le
+choix survit au rechargement et attend Playfair, si bien que laisser Inter
+derrière soi le faisait rougir sur du code juste.
 
 ### Planche 96 : voir son devis pendant qu'on le change
 

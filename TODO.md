@@ -459,7 +459,7 @@ décoche le bouton OFF, ils sont censés disparaître ? »* Oui, et c'est éprou
 création, comme la validité. Elles s'impriment sous « NOTES / CONDITIONS »,
 **après** ce qu'il a écrit à la main — son champ libre n'est ni remplacé ni
 réécrit. Rien sur la feuille de chantier du salarié, qui part sans un prix. Le
-détail et le pourquoi sont dans `ARCHITECTURE.md` §174.
+détail et le pourquoi sont dans `ARCHITECTURE.md` §175.
 
 **Ce que cela ferme sans qu'il ait eu à trancher :** la planche 60 lui proposait
 A (les conditions seules), B (les siennes d'abord) ou C (deux blocs). B a été
@@ -749,38 +749,28 @@ session, qui la tient peut-être encore ouverte. La corriger à l'aveugle
 risquerait de défaire son travail en cours. **À reprendre par qui l'a écrite**,
 ou par la prochaine session si personne ne s'en saisit.
 
-## ~~EN ATTENTE DE SA RÉPONSE — voir son devis pendant qu'on le change~~ — **B CODÉE le 25 août 2026**
+## ~~Voir son devis pendant qu'on le change~~ — **CODÉ le 24 août 2026 : sa proposition B**
 
-Sa demande : *« lorsque je modifie mon devis, je suis obligé de descendre pour
-voir les modifications ; il faut mieux organiser la page pour pouvoir voir ce
-qu'on modifie. Propose, ne code rien. »*
+Planche 96, trois rangements ; il a répondu **« la B »**. L'aperçu est collé en
+tête du bloc « L'allure de mes devis » et suit tout ce qu'on touche. Le détail
+est dans `CHANGELOG.md`.
 
-**Planche 96 : `appli/allure-mieux-rangee.html`. RIEN N'EST CODÉ.** Trois
-rangements manipulables — A l'aperçu en tête, B l'aperçu collé, C la feuille
-pleine page avec les réglages en tiroir. Le détail et ce que chacun coûte sont
-dans `CHANGELOG.md`.
+**Une question reste ouverte, et elle est indépendante** : les dix polices
+tiennent sur cinq rangées. S'il préfère une seule ligne qui défile de côté,
+l'aperçu remonte d'autant — il ne s'est pas prononcé.
 
-**SA RÉPONSE, le 25 août : B** — l'aperçu reste collé en haut.
+**DEUX SESSIONS L'ONT CODÉ LE MÊME JOUR**, et c'est à noter : le 25 août, une
+seconde a posé un aperçu collé identique, sans voir celui-ci. Un seul survit — la
+place de `main` —, et son ombre suit désormais la charte (`voile`) au lieu d'un
+noir écrit en dur, qui ne se voit pas sur les deux chartes sombres.
+**Trente secondes de `git branch -r --sort=-committerdate` l'auraient évité**
+(`CLAUDE.md` §6-A).
 
-**Codé.** Il colle au haut de la RUBRIQUE de l'allure, pas de l'écran : ailleurs
-il recouvrirait les conditions de paiement, qui n'ont rien à voir avec
-l'apparence. Fond opaque, sinon les réglages défilent au travers et l'on ne juge
-plus une couleur sur un fond qui bouge.
-
-`scripts/test-apercu-colle-e2e.ts` le tient et **sait rougir** : remis en A — le
-simple remontée en tête —, il tombe en nommant A et en citant ce que la planche
-en disait. A et B ne diffèrent que pendant le DÉFILEMENT : un contrôle qui
-n'aurait pas descendu serait resté vert sur la moitié de réponse qu'il a
-écartée.
-
-**Ce qui reste ouvert, et qui ne bloque pas :** les dix polices tiennent sur cinq
-rangées. S'il préfère une seule ligne qui défile de côté, l'aperçu remonte
-d'autant. Second choix, indépendant du premier — il ne s'est pas prononcé.
-
-**Ce que coder demandera**, écrit ici pour que la prochaine session ne le
-redécouvre pas : tout se joue dans le bloc « L'allure de mes devis » de
-`src/app/reglages/documents/DocumentsClient.tsx` — l'ordre du JSX pour A, un
-conteneur `sticky` pour B, un tiroir pour C. Aucune donnée, aucune migration.
+**Le contrôle sait rougir**, et c'est ce qui le rend croyable :
+`scripts/test-apercu-colle-e2e.ts` remis en A — l'aperçu simplement remonté en
+tête — tombe en nommant A et en citant ce que la planche en disait. A et B ne
+diffèrent que pendant le DÉFILEMENT : un contrôle qui n'aurait pas descendu
+serait resté vert sur la moitié de réponse qu'il a écartée.
 
 ## ⚠ La planche 90 a DÉRIVÉ de l'écran « Terminés » qu'elle référence (23 août 2026)
 
