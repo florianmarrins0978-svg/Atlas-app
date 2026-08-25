@@ -728,6 +728,39 @@ c'est la même faute que celle du gabarit, dans l'outillage.
 
 ## 2026-08-24
 
+### L'aperçu du devis reste sous les yeux pendant qu'on le change — sa proposition B
+
+**Sa plainte, puis sa réponse.** *« Lorsque je modifie mon devis, je suis obligé
+de descendre pour voir les modifications ; il faut mieux organiser la page pour
+pouvoir voir ce qu'on modifie. »* Trois rangements lui ont été dessinés
+(planche 96) ; devant les trois, il a répondu : **« la B »** — l'aperçu collé en
+tête du bloc.
+
+**Le défaut était un défaut d'ORDRE, pas de contenu.** L'aperçu fermait le bloc,
+après dix pastilles de typographie sur cinq rangées et deux nuanciers : il
+tombait à plus de 900 px du haut. Toucher une police, c'était descendre,
+regarder, remonter — dix-huit trajets pour essayer les neuf. Rien n'était de
+trop sur cet écran ; tout y était rangé dans le sens qui l'obligeait à voyager.
+
+**`sticky`, et non `fixed`** : la feuille suit tant que le bloc de l'allure est
+à l'écran, et s'en va avec lui. Fixée, elle recouvrirait les réglages du message
+et du numéro de document, où elle n'a rien à faire.
+
+**Le contrôle mesure le GESTE, pas la feuille de style.** Vérifier que
+`position: sticky` est écrit prouverait qu'une propriété existe, pas qu'elle
+agit — un parent en `overflow: hidden` la neutralise sans rien changer au CSS.
+La suite descend donc jusqu'à la dernière police et regarde où est la feuille,
+comme lui : elle exige au moins la moitié de l'aperçu dans l'écran, puis touche
+une police et vérifie que la feuille restée en haut s'est repeinte. **Vu rougir**
+contre un `relative` : « il ne reste que 0 px d'aperçu sur 217 ».
+
+**Deux pièges d'outillage, payés ici :** le contrôle visait Playfair, qu'un cas
+plus haut dans la même suite avait déjà posé — il comparait la même famille
+avant et après et accusait un écran juste ; il lit désormais l'état et vise
+ailleurs. Et il **repose ce qu'il a trouvé** : le cas suivant vérifie que le
+choix survit au rechargement et attend Playfair, si bien que laisser Inter
+derrière soi le faisait rougir sur du code juste.
+
 ### Planche 96 : voir son devis pendant qu'on le change
 
 **Sa demande**, capture de l'écran des réglages à l'appui : *« problème : lorsque
