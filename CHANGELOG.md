@@ -28,6 +28,19 @@ c'est le calendrier qui avait tourné.
 *Une règle éprouvée un seul jour n'est pas éprouvée.* Les deux suites ont été
 rejouées vertes après correction.
 
+### Une attente qui visait à côté, sur la facture au client
+
+Rouge une fois sous la batterie complète, verte seule dans la foulée. La cause
+n'est pas la charge en soi : le contrôle **attendait un mot du parent puis
+affirmait sur un mot de l'enfant**. « Arrêtée » appartient à l'écran de la
+facture ; « ne l'a pas encore reçue » appartient au bloc d'envoi, rendu après
+lui. Jouée seule, la suite ne voyait jamais l'écart ; sous cent dix suites, elle
+lisait l'écran avant que le bloc existe et accusait le produit de laisser croire
+la facture partie.
+
+Elle attend maintenant la phrase qu'elle exige. Rien n'est masqué : son absence
+reste un échec, dit avec l'écran sous les yeux.
+
 ---
 
 ## 2026-08-24

@@ -129,6 +129,25 @@ async function main() {
     .waitFor({ state: "visible", timeout: 30_000 })
     .catch(() => undefined);
 
+  // **ON ATTEND LA PHRASE QU'ON VA EXIGER, pas une autre — corrigé le 25 août
+  // 2026.** L'attente ci-dessus porte sur « arrêtée », qui appartient à l'écran
+  // de la facture ; l'assertion qui suit porte sur « ne l'a pas encore reçue »,
+  // qui appartient au bloc d'envoi, rendu APRÈS lui. Jouée seule, la suite ne
+  // voyait jamais l'écart ; sous une batterie de cent dix suites, le bloc
+  // arrivait après la lecture et le contrôle accusait le produit de laisser
+  // croire la facture partie.
+  //
+  // Rouge une fois le 25 août, verte seule dans la foulée — et c'est le même
+  // symptôme que le faux rouge du 12 août noté plus haut. Ce n'est pas une
+  // suite « instable » : c'est une attente qui visait à côté. Elle ne masque
+  // rien, elle laisse au bloc le temps d'exister, et son absence reste un
+  // échec — dit par l'assertion, avec l'écran sous les yeux.
+  await page
+    .getByText(/ne l'a pas encore reçue/i)
+    .first()
+    .waitFor({ state: "visible", timeout: 30_000 })
+    .catch(() => undefined);
+
   // --- 1. « Arrêtée » n'est pas « partie » ---------------------------------
   const ecran = await page.locator("body").innerText();
   assert.match(ecran, /arrêtée/i, `La facture n'a pas été arrêtée. Écran :\n${ecran.slice(0, 500)}`);
