@@ -49,8 +49,16 @@
         vrai bouton : sur sa capture, c'est un titre gris avec un petit rond,
         et rien ne dit qu'on peut appuyer dessus.
 
-    C — LA SIENNE : la B, sans le trait gris sous « Vos clients », et sans
-        « BONJOUR COMPTE ».
+    C — LA SIENNE, ET RIEN DE PLUS. Sa consigne du 24 août, après avoir vu la
+        planche : « pour la mienne, fais seulement les changements que je t'ai
+        demandés, le reste laisse-le comme il est aujourd'hui. »
+
+        Elle part donc de la A — son écran d'aujourd'hui — et lui retire les
+        deux choses qu'il a nommées : le trait gris, et « Bonjour compte ».
+        Le bouton en capsule, l'intertitre « À voir », le filet or, la phrase
+        d'accueil qui se tait : rien de tout cela ne s'y invite. Ce sont des
+        propositions, elles vivent dans la B et n'en sortent pas tant qu'il ne
+        l'a pas dit.
 
     ─── CE QUI EST ESSAYABLE, ET QU'IL FAUT ESSAYER ─────────────────────────
 
@@ -170,7 +178,7 @@
   <div class="choix" role="group" aria-label="Propositions">
     <button type="button" data-p="A" aria-pressed="true">A · aujourd'hui</button>
     <button type="button" data-p="B" aria-pressed="false">B · les avis se distinguent</button>
-    <button type="button" data-p="C" aria-pressed="false">C · la vôtre</button>
+    <button type="button" data-p="C" aria-pressed="false">C · la vôtre, telle quelle</button>
   </div>
   <div class="reglages">
     <span class="cpt">chantiers en cours
@@ -203,6 +211,10 @@
   <p><b>« Créer un devis » devient un bouton.</b> Sur votre capture c'est un titre gris avec un
   petit rond à côté — rien ne dit qu'on peut appuyer. En capsule, c'est la forme que porte tout
   ce sur quoi on appuie dans Atlas, et c'est le geste que vous faites le plus.</p>
+  <p><b>La C ne porte QUE vos deux demandes.</b> Votre écran d'aujourd'hui, moins le
+  trait gris et moins « Bonjour compte ». Le bouton en capsule, l'intertitre « À voir »
+  et la phrase d'accueil qui se tait restent dans la B : ce sont des propositions, pas
+  des corrections, et elles attendent votre mot.</p>
   <p><b>Ce que je n'ai pas touché, faute de savoir :</b> le mot « BONJOUR COMPTE » affiche
   visiblement le nom du compte au lieu du vôtre. Vous l'avez fait retirer en C, ce qui règle
   l'écran — mais si le nom est faux ailleurs, dites-le et je chercherai la cause.</p>
@@ -228,10 +240,14 @@
   // ── Un avis, dans l'allure de la proposition en cours ────────────────
   // En A il est indiscernable d'un chantier : c'est le défaut qu'on montre.
   function unAvis(id) {
-    var orne = prop === "A" ? "" : " marque-or";
+    // **Seule la B orne les avis.** La C est son écran d'aujourd'hui, moins les
+    // deux choses qu'il a nommées — rien d'autre ne bouge (sa consigne du
+    // 24 août : « pour la mienne fais seulement les changements que je t'ai
+    // demandés, le reste laisse-le comme il est aujourd'hui »).
+    var orne = prop === "B" ? " marque-or" : "";
     if (id === "martins") {
       return '<div class="avis' + orne + '" data-avis="martins">' +
-        (prop === "A" ? "" : '<p class="cle">Sans réponse</p>') +
+        (prop === "B" ? '<p class="cle">Sans réponse</p>' : "") +
         '<h3>Mr. Martins</h3>' +
         '<p>Parti depuis 11 jours, sans un mot du client. Vous pouvez le relancer vous-même.</p>' +
         '<div class="gestes"><button type="button" data-ouvrir="1">Ouvrir le chantier</button>' +
@@ -259,15 +275,17 @@
     // **Le trait gris : gardé en A et B, retiré en C, à sa demande.**
     if (prop !== "C") h += '<div class="filet"></div>';
 
-    h += prop === "A"
-      ? '<div class="creer-a">Créer un devis <i>+</i></div>'
-      : '<button class="creer-b" type="button"><span>+</span> Créer un devis</button>';
+    // Le bouton en capsule est une proposition de la B, pas une correction :
+    // il ne s'invite pas dans la sienne.
+    h += prop === "B"
+      ? '<button class="creer-b" type="button"><span>+</span> Créer un devis</button>'
+      : '<div class="creer-a">Créer un devis <i>+</i></div>';
 
     h += '<div class="compteur">En cours <b>' + chantiers + '</b></div>';
 
     // ── Les avis ────────────────────────────────────────────────────────
     if (avis.length) {
-      if (prop !== "A") h += '<p class="titre-avis">À voir</p>';
+      if (prop === "B") h += '<p class="titre-avis">À voir</p>';
       for (var i = 0; i < avis.length; i++) h += unAvis(avis[i]);
     }
 
@@ -282,7 +300,7 @@
     // **En A elle paraît dès qu'il n'y a pas de CHANTIER**, même sous deux
     // avis — et elle nie alors ce que l'écran vient de montrer. En B et C
     // elle attend que l'écran soit vraiment vide.
-    var vide = prop === "A" ? chantiers === 0 : (chantiers === 0 && avis.length === 0);
+    var vide = prop === "B" ? (chantiers === 0 && avis.length === 0) : chantiers === 0;
     if (vide) h += '<p class="vide">Aucun chantier pour l\'instant. Créez votre premier chantier pour commencer.</p>';
 
     h += '<div class="nav"><span class="on">Chantiers</span><span>Planning</span>' +
@@ -297,15 +315,17 @@
   // question qu'il pose vraiment — « qu'est-ce qui cloche, au juste ? ».
   function verdict() {
     var v = $("#verdict");
-    if (prop === "A" && chantiers === 0 && avis.length > 0) {
+    if (prop !== "B" && chantiers === 0 && avis.length > 0) {
       v.innerHTML = "<b>Voilà ce que vous voyez aujourd'hui :</b> « En cours 0 », puis " +
         avis.length + " carte" + (avis.length > 1 ? "s" : "") + ", puis « Aucun chantier pour l'instant ». " +
         "Les trois sont vraies — les cartes sont des avis, pas des chantiers — mais elles se contredisent à l'œil. " +
-        "<b>Touchez B.</b>";
+        (prop === "C"
+          ? "<b>Votre version garde ce point</b>, puisque vous n'avez demandé que le trait et le bonjour. Touchez B pour voir l'autre chemin."
+          : "<b>Touchez B.</b>");
       v.hidden = false;
       return;
     }
-    if (prop !== "A" && chantiers === 0 && avis.length > 0) {
+    if (prop === "B" && chantiers === 0 && avis.length > 0) {
       v.innerHTML = "<b>Les avis sont sous « À voir », le compteur parle des chantiers, " +
         "et la phrase d'accueil se tait</b> — elle reviendra quand l'écran sera vraiment vide. " +
         "Retirez les deux avis avec « J'ai vu » pour la voir revenir à sa place.";
