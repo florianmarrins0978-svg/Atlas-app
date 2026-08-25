@@ -15157,7 +15157,7 @@ seuil devenait une arme retournée — une dépense de calcul échangée contre 
 blocage commercial. Il ne s'applique donc que **si la source est établie** ; le
 seuil par jeton, lui, s'applique toujours.
 
-`sourceDuVisiteur` et `horsProductionReelle` ont quitté `login/actions.ts` pour
+`sourceDuVisiteur` et `horsProductionReelle` ont quitté `src/app/login/actions.ts` pour
 `src/server/source-visiteur.ts` : les recopier aurait fabriqué une seconde façon
 de décider qui est « le même visiteur ».
 
