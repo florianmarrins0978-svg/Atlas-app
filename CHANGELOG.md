@@ -9,6 +9,32 @@ Format : le plus récent en tête.
 
 ## 2026-08-25
 
+### L'accueil perd son salut et son trait
+
+*« Supprime le bonjour compte »*, et *« une sans le trait gris »* — ses deux
+demandes sur la planche 95, puis *« code la mienne »*.
+
+Ce qu'il lisait n'était pas son prénom mais le mot **« Compte »**, le nom du
+compte faute de prénom renseigné. Un salut qui se trompe de nom vaut moins que
+pas de salut, et il occupait la première ligne de l'écran qu'il ouvre vingt fois
+par jour. Le prénom n'est plus lu du tout, et la lecture de session qui ne
+servait qu'à lui a disparu avec.
+
+**Le point qui compte : ce trait, il l'avait DEMANDÉ le 11 août**, et le fichier
+portait la consigne inverse en toutes lettres. Elle a été récrite, pas
+contournée — sans cela, la prochaine session l'aurait remis de bonne foi en
+citant une consigne devenue fausse.
+
+**Et rien d'autre n'a bougé.** La planche proposait trois autres améliorations,
+dans sa version B ; sa consigne était : *« pour la mienne, fais seulement les
+changements que je t'ai demandés »*. Elles restent sur la planche, où il peut les
+comparer. Une proposition ne se glisse pas dans la version de quelqu'un sous
+prétexte qu'elle l'améliore. `ARCHITECTURE.md` §160.
+
+---
+
+## 2026-08-25
+
 ### Le lot 2B est au vert — et sept contrôles fragiles avec lui
 
 `verifier:avant-livraison` : **223/223** suites base, **110/110** suites

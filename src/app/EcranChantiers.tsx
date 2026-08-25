@@ -22,10 +22,11 @@ import ListeChantiers, { type BrinChantier } from "./ListeChantiers";
 // **Trois choses qu'il a explicitement refusées, et qu'il ne faut pas
 // remettre :**
 //
-//   1. Aucun cheveu entre ATLAS et « Bonjour ». Seul reste celui qui FERME
-//      l'en-tête, juste au-dessus de « Nouveau chantier » — celui-là, il l'a
-//      demandé deux échanges plus tôt, et les confondre reviendrait à défaire
-//      ce qu'il venait de valider.
+//   1. Aucun cheveu dans l'en-tête. **Y COMPRIS celui qui le fermait** : il
+//      l'avait demandé le 11 août, il l'a fait retirer le 24 sur planche 95
+//      — « une sans le trait gris », puis « code la mienne ». La consigne
+//      d'avant disait de le garder ; elle est révoquée par son auteur, et
+//      c'est écrit ici pour qu'on ne le remette pas en la citant.
 //   2. Aucune boîte autour d'un chantier. Le fil remplace les cartes.
 //   3. Aucune couleur qui ne veuille rien dire. L'or ne se pose que sur ce qui
 //      attend un geste de lui.
@@ -63,11 +64,9 @@ const GRAINS = [
 ] as const;
 
 export default function EcranChantiers({
-  prenom,
   chantiers,
   bandeaux,
 }: {
-  prenom: string | null;
   chantiers: BrinChantier[];
   /** Notifications et annonces, rendues par le serveur et posées sous le titre. */
   bandeaux: ReactNode;
@@ -166,15 +165,18 @@ export default function EcranChantiers({
           ATLAS
         </p>
 
+        {/* **« Bonjour … » a été RETIRÉ le 24 août 2026**, sur planche 95, à sa
+            demande : *« supprime le bonjour compte »*.
+
+            Ce qu'il voyait n'était pas son prénom mais le mot « Compte » — le
+            nom du compte de démonstration, faute de prénom renseigné. Un salut
+            qui se trompe de nom vaut moins que pas de salut, et il occupait la
+            première ligne de l'écran qu'il ouvre vingt fois par jour.
+
+            **Le prénom n'est plus lu du tout** : le garder pour ne rien en
+            faire aurait laissé croire, à la prochaine lecture, qu'il servait
+            encore quelque part. */}
         <div className="px-[26px] pt-[34px]">
-          {prenom && (
-            <p
-              className="text-[9.5px] font-medium uppercase"
-              style={{ color: colors.or, letterSpacing: "0.28em" }}
-            >
-              Bonjour {prenom}
-            </p>
-          )}
           {/*
             **L'assistant se pose à côté du titre**, comme sur les autres écrans
             — cet accueil ne passe pas par `EnTeteEcran`, la pièce partagée ne
@@ -230,8 +232,15 @@ export default function EcranChantiers({
           </Link>
         </div>
 
-        {/* Le seul trait de l'en-tête : celui qui le ferme. */}
-        <div className="mx-[26px] mt-[26px] h-px" style={{ backgroundColor: colors.line }} />
+        {/* **LE TRAIT DE L'EN-TÊTE A ÉTÉ RETIRÉ le 24 août 2026**, sur planche
+            95 : *« une sans le trait gris »*, puis *« code la mienne »*.
+
+            **C'est bien le trait qu'il avait DEMANDÉ le 11 août**, et c'est
+            délibéré des deux côtés — le point 1 de l'en-tête de ce fichier a
+            été récrit en conséquence. Ne pas le remettre en citant l'ancienne
+            consigne : elle a été révoquée par son auteur, planche à l'appui.
+
+            L'espace suffit désormais à fermer l'en-tête. */}
 
         {/* ── L'action ───────────────────────────────────────────────────
             **L'aplat vert a été refusé le 11 août 2026** — « ce gros bouton en
