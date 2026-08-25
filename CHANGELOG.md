@@ -570,6 +570,50 @@ montrait pas la seule chose qu'on venait d'ajouter. Il lit la liste maintenant.
 Une énumération recopiée ne suit jamais la source qu'elle prétend montrer —
 c'est la même faute que celle du gabarit, dans l'outillage.
 
+## 2026-08-24
+
+### Planche 96 : voir son devis pendant qu'on le change
+
+**Sa demande**, capture de l'écran des réglages à l'appui : *« problème : lorsque
+je modifie mon devis, je suis obligé de descendre pour voir les modifications ;
+il faut mieux organiser la page pour pouvoir voir ce qu'on modifie. Propose, ne
+code rien. »*
+
+**Rien n'est codé** (`CLAUDE.md` §3 bis). La planche est à
+`appli/allure-mieux-rangee.html`, n° 96.
+
+**Un défaut d'ORDRE, pas de contenu.** L'écran range logo → dix typographies
+(cinq rangées) → fond de page → couleur d'accent → **puis** « L'allure de la
+page ». L'aperçu tombe donc à plus de 900 px du haut du bloc : essayer neuf
+polices coûte dix-huit trajets. Rien n'est de trop sur cet écran ; tout y est
+rangé dans le sens qui l'oblige à voyager.
+
+**Trois rangements, et chacun dit ce qu'il coûte :**
+
+| | Ce qu'il donne | Ce qu'il coûte |
+|---|---|---|
+| **A** l'aperçu en tête | on le voit en arrivant | arrivé aux polices, il ressort de l'écran — la moitié du problème seulement |
+| **B** l'aperçu collé en haut | il suit chaque choix, sans un aller-retour | le tiers haut de l'écran, en permanence |
+| **C** feuille pleine page, réglages en tiroir | la plus grande feuille, proche de ce que le client reçoit | un geste de plus à apprendre |
+
+**La planche se mesure elle-même** : sous le téléphone, elle annonce à chaque
+instant si la feuille est dans l'écran, et de combien de pixels il faudrait
+remonter sinon. Dire « c'est trop bas » sans chiffre est une opinion.
+
+**Le contrôle a été vu rougir quatre fois**, et le quatrième a changé le
+dessin : le tiroir de C, à 74 % de l'écran, recouvrait la feuille entière — on
+réglait de nouveau à l'aveugle, c'est-à-dire le défaut qu'il signale. Ramené à
+62 %, l'en-tête du devis reste sous les yeux, et le contrôle l'exige désormais.
+
+**Un défaut de la planche trouvé par son propre contrôle**, et qui aurait passé
+inaperçu à l'œil : les piles de polices contiennent des guillemets doubles
+(`"Playfair Display", …`), et elles finissaient dans un attribut `style="…"`
+construit à la main — le guillemet refermait l'attribut au milieu, et la police
+ne s'appliquait pas, **en silence**. Le contrôle lisait deux fois la même
+famille avant et après le choix.
+
+---
+
 ## 2026-08-23
 
 ### On peut enfin discuter du plan — et Atlas ne dessine pas, il pose un paramètre

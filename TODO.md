@@ -547,6 +547,55 @@ avant toute autre hypothèse.
 l'enregistrement plutôt qu'un délai — la même leçon que le `networkidle` du
 15 août. Il reste à l'appliquer aux quatre.
 
+## 🔴 `verifier-maquette-message-et-allure.mjs` est ROUGE sur `main` (24 août 2026)
+
+**Constaté en jouant `npm run verifier:maquette` sur un `main` fraîchement
+fusionné, sur un lot qui ne touche NI cette planche NI ce contrôle.** Deux
+échecs, tous deux sur la même valeur :
+
+```
+• le fond de départ est rgb(250, 249, 245) au lieu du crème d'aujourd'hui
+• le retour ne rend pas le crème : rgb(250, 249, 245)
+```
+
+**Vérifié pré-existant** : le contrôle rougit à l'identique sur `main` seul,
+sans aucune de mes modifications. Ce n'est donc pas une régression de ce lot.
+
+`rgb(250, 249, 245)` est `#faf9f5` — la **plage** de l'application
+(`colors.card`), pas le **crème du document** `#ece9e1` (`couleursDocument.papier`,
+la valeur d'`ALLURE_PAR_DEFAUT.fond`). La planche part donc sur la couleur des
+cartes de l'écran au lieu de celle du papier. **C'est exactement la confusion
+que `ARCHITECTURE.md` sépare** entre les jetons d'écran et ceux du document :
+le patron, lui, verrait une planche annonçant un fond que ses devis n'ont pas.
+
+**Non corrigé ici, et c'est délibéré** : la planche appartient à une autre
+session, qui la tient peut-être encore ouverte. La corriger à l'aveugle
+risquerait de défaire son travail en cours. **À reprendre par qui l'a écrite**,
+ou par la prochaine session si personne ne s'en saisit.
+
+## ⚠ EN ATTENTE DE SA RÉPONSE — voir son devis pendant qu'on le change (24 août 2026)
+
+Sa demande : *« lorsque je modifie mon devis, je suis obligé de descendre pour
+voir les modifications ; il faut mieux organiser la page pour pouvoir voir ce
+qu'on modifie. Propose, ne code rien. »*
+
+**Planche 96 : `appli/allure-mieux-rangee.html`. RIEN N'EST CODÉ.** Trois
+rangements manipulables — A l'aperçu en tête, B l'aperçu collé, C la feuille
+pleine page avec les réglages en tiroir. Le détail et ce que chacun coûte sont
+dans `CHANGELOG.md`.
+
+**Deux questions attendent sa réponse :**
+
+| | |
+|---|---|
+| **Lequel des trois ?** | ou aucun — ne rien changer est une réponse |
+| **Les dix polices sur cinq rangées** | s'il préfère une seule ligne qui défile de côté, l'aperçu remonte d'autant. C'est un second choix, indépendant du premier |
+
+**Ce que coder demandera**, écrit ici pour que la prochaine session ne le
+redécouvre pas : tout se joue dans le bloc « L'allure de mes devis » de
+`src/app/reglages/documents/DocumentsClient.tsx` — l'ordre du JSX pour A, un
+conteneur `sticky` pour B, un tiroir pour C. Aucune donnée, aucune migration.
+
 ## ⚠ La planche 90 a DÉRIVÉ de l'écran « Terminés » qu'elle référence (23 août 2026)
 
 `src/app/termines/page.tsx` dit d'elle : *« la planche reste la référence — toute
