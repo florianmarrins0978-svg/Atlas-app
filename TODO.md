@@ -35,9 +35,14 @@ l'**allure** et les **mentions**, pas une copie pixel.
 | les mentions : conditions de paiement, mentions légales, politesse | **oui** |
 | les lignes et les prix de ce devis-là | **non** |
 
+**Précisions du 25 août (sur la maquette) :** l'entrée doit proposer
+**l'appareil photo OU la photothèque** — son devis est parfois déjà une photo
+dans sa galerie. Et **« régler à la main » a été retiré** : il a demandé à quoi
+ça servait, et si la photo fait tout, la porte de secours ne sert plus.
+
 | | |
 |---|---|
-| ce qu'il faut | un écran « Photographier mon devis », la lecture par l'IA vision (le même patron que `lire-ticket.ts` et le croquis d'arrosage), et l'écriture du résultat dans l'allure (`allure-documents.ts`) et les conditions (`conditions-documents.ts`) déjà en base |
+| ce qu'il faut | un écran « Photographier mon devis » (appareil photo **ou** photothèque), la lecture par l'IA vision (le même patron que `lire-ticket.ts` et le croquis d'arrosage), et l'écriture du résultat dans l'allure (`allure-documents.ts`) et les conditions (`conditions-documents.ts`) déjà en base |
 | qui peut le faire | moi — c'est du code, la brique vision existe |
 | d'abord | **la maquette** (§3 bis), qu'il a demandée avant tout code |
 | pas vérifiable ici | la lecture d'image réelle demande une clé de vision, absente de cet environnement — à jouer sur son espace |
