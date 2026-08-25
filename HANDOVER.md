@@ -2154,7 +2154,7 @@ reviendra à la prochaine page supprimée.
 factures » et ne le voyait pas là où il rédige. Le PDF le portait déjà ; c'est
 l'écran qui compose son en-tête à la main, sans passer par la fabrique de
 documents. **Deux écritures du même en-tête** — si un troisième élément arrive
-un jour (une mention, un cachet), penser aux DEUX. `ARCHITECTURE.md` §140.
+un jour (une mention, un cachet), penser aux DEUX. `ARCHITECTURE.md` §173.
 
 
 **LE PENSE-BÊTE DE LA FEUILLE DE CHANTIER (23 août).** *« Entre "Copier

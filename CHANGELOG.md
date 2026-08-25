@@ -9,6 +9,32 @@ Format : le plus récent en tête.
 
 ## 2026-08-25
 
+### L'accueil perd son salut et son trait
+
+*« Supprime le bonjour compte »*, et *« une sans le trait gris »* — ses deux
+demandes sur la planche 95, puis *« code la mienne »*.
+
+Ce qu'il lisait n'était pas son prénom mais le mot **« Compte »**, le nom du
+compte faute de prénom renseigné. Un salut qui se trompe de nom vaut moins que
+pas de salut, et il occupait la première ligne de l'écran qu'il ouvre vingt fois
+par jour. Le prénom n'est plus lu du tout, et la lecture de session qui ne
+servait qu'à lui a disparu avec.
+
+**Le point qui compte : ce trait, il l'avait DEMANDÉ le 11 août**, et le fichier
+portait la consigne inverse en toutes lettres. Elle a été récrite, pas
+contournée — sans cela, la prochaine session l'aurait remis de bonne foi en
+citant une consigne devenue fausse.
+
+**Et rien d'autre n'a bougé.** La planche proposait trois autres améliorations,
+dans sa version B ; sa consigne était : *« pour la mienne, fais seulement les
+changements que je t'ai demandés »*. Elles restent sur la planche, où il peut les
+comparer. Une proposition ne se glisse pas dans la version de quelqu'un sous
+prétexte qu'elle l'améliore. `ARCHITECTURE.md` §172.
+
+---
+
+## 2026-08-25
+
 ### Le lot 2B est au vert — et sept contrôles fragiles avec lui
 
 `verifier:avant-livraison` : **223/223** suites base, **110/110** suites
@@ -175,7 +201,7 @@ le devis moi-même » *si* « Valider et calculer le prix » ouvrait le devis. C
 n'est pas le cas : ce bouton ouvre l'écran PRIX. Le lien saute cette étape —
 c'est la sortie de secours qu'il avait demandée le 3 août 2026. Il reste.
 
-`ARCHITECTURE.md` §171.
+`ARCHITECTURE.md` §172.
 
 ---
 
@@ -569,6 +595,50 @@ montrait pas la seule chose qu'on venait d'ajouter. Il lit la liste maintenant.
 
 Une énumération recopiée ne suit jamais la source qu'elle prétend montrer —
 c'est la même faute que celle du gabarit, dans l'outillage.
+
+## 2026-08-24
+
+### Planche 96 : voir son devis pendant qu'on le change
+
+**Sa demande**, capture de l'écran des réglages à l'appui : *« problème : lorsque
+je modifie mon devis, je suis obligé de descendre pour voir les modifications ;
+il faut mieux organiser la page pour pouvoir voir ce qu'on modifie. Propose, ne
+code rien. »*
+
+**Rien n'est codé** (`CLAUDE.md` §3 bis). La planche est à
+`appli/allure-mieux-rangee.html`, n° 96.
+
+**Un défaut d'ORDRE, pas de contenu.** L'écran range logo → dix typographies
+(cinq rangées) → fond de page → couleur d'accent → **puis** « L'allure de la
+page ». L'aperçu tombe donc à plus de 900 px du haut du bloc : essayer neuf
+polices coûte dix-huit trajets. Rien n'est de trop sur cet écran ; tout y est
+rangé dans le sens qui l'oblige à voyager.
+
+**Trois rangements, et chacun dit ce qu'il coûte :**
+
+| | Ce qu'il donne | Ce qu'il coûte |
+|---|---|---|
+| **A** l'aperçu en tête | on le voit en arrivant | arrivé aux polices, il ressort de l'écran — la moitié du problème seulement |
+| **B** l'aperçu collé en haut | il suit chaque choix, sans un aller-retour | le tiers haut de l'écran, en permanence |
+| **C** feuille pleine page, réglages en tiroir | la plus grande feuille, proche de ce que le client reçoit | un geste de plus à apprendre |
+
+**La planche se mesure elle-même** : sous le téléphone, elle annonce à chaque
+instant si la feuille est dans l'écran, et de combien de pixels il faudrait
+remonter sinon. Dire « c'est trop bas » sans chiffre est une opinion.
+
+**Le contrôle a été vu rougir quatre fois**, et le quatrième a changé le
+dessin : le tiroir de C, à 74 % de l'écran, recouvrait la feuille entière — on
+réglait de nouveau à l'aveugle, c'est-à-dire le défaut qu'il signale. Ramené à
+62 %, l'en-tête du devis reste sous les yeux, et le contrôle l'exige désormais.
+
+**Un défaut de la planche trouvé par son propre contrôle**, et qui aurait passé
+inaperçu à l'œil : les piles de polices contiennent des guillemets doubles
+(`"Playfair Display", …`), et elles finissaient dans un attribut `style="…"`
+construit à la main — le guillemet refermait l'attribut au milieu, et la police
+ne s'appliquait pas, **en silence**. Le contrôle lisait deux fois la même
+famille avant et après le choix.
+
+---
 
 ## 2026-08-23
 
@@ -1594,7 +1664,7 @@ suite qui les ferait rougir accuserait le dessin qu'il a validé (`CLAUDE.md`
 §5 bis). La règle retenue est *le sombre ne fait pas moins bien que le clair*,
 et le clair se mesure au lieu de s'écrire.
 
-Le détail : `ARCHITECTURE.md` §160.
+Le détail : `ARCHITECTURE.md` §172.
 
 
 ### « Choisir la date » ouvre le calendrier du planning, et dit qui est déjà là
@@ -4476,7 +4546,7 @@ voir, et une boîte carrée écraserait le premier.
 ouvre un devis, et vérifie que l'image est **chargée** (`naturalWidth > 0`), pas
 seulement présente : une mauvaise adresse rend une balise, et c'est lui qui
 verrait le carré vide. Puis qu'elle est au-dessus du nom, et pas écrasée. Vu
-rouge avant d'être livré. `ARCHITECTURE.md` §140.
+rouge avant d'être livré. `ARCHITECTURE.md` §173.
 
 ---
 

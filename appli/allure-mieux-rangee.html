@@ -1,0 +1,410 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas — Voir son devis pendant qu'on le change</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=Lato:wght@400;700&family=Source+Sans+3:wght@400;700&family=Work+Sans:wght@400;700&family=Archivo+Narrow:wght@400;700&family=EB+Garamond:wght@400;700&family=Libre+Baskerville:wght@400;700&family=Merriweather:wght@400;700&family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+<style>
+  /*
+    ————————————————————————————————————————————————————————————————
+    VOIR SON DEVIS PENDANT QU'ON LE CHANGE — trois rangements essayables
+    ————————————————————————————————————————————————————————————————
+
+    Sa demande du 24 août 2026, capture de l'écran à l'appui :
+
+      « Problème : lorsque je modifie mon devis, je suis obligé de descendre
+        pour voir les modifications. Il faut mieux organiser la page pour
+        pouvoir voir ce qu'on modifie. Propose, ne code rien. »
+
+    ─── CE QUE L'ÉCRAN D'AUJOURD'HUI LUI IMPOSE, MESURÉ ──────────────────────
+
+    L'ordre codé est : logo → typographie (DIX pastilles, sur cinq rangées) →
+    fond de page → couleur d'accent → **puis** « L'allure de la page ». Sur son
+    téléphone, l'aperçu tombe à plus de 900 px du haut du bloc. Toucher une
+    police, c'est donc : descendre, regarder, remonter, toucher la suivante,
+    redescendre. Neuf polices à essayer font dix-huit trajets.
+
+    C'est un défaut d'ORDRE, pas de contenu : rien n'est de trop sur cet écran,
+    tout y est simplement rangé dans le sens qui l'oblige à voyager.
+
+    ─── LES TROIS PROPOSITIONS ───────────────────────────────────────────────
+
+    A. **L'aperçu monte en tête.** Le plus simple : la feuille passe avant les
+       réglages. On la voit en arrivant — mais dès qu'on descend jusqu'aux
+       polices, elle est de nouveau hors de l'écran. Elle règle la moitié du
+       problème, et il faut le dire.
+
+    B. **L'aperçu reste collé en haut.** Il suit pendant qu'on fait défiler les
+       réglages : la feuille est TOUJOURS là, quel que soit ce qu'on touche.
+       C'est la réponse directe à sa phrase. Elle coûte de la hauteur — la
+       feuille occupe le tiers haut de l'écran en permanence.
+
+    C. **La feuille occupe l'écran, les réglages sont dans un tiroir.** On tire
+       le tiroir vers le haut pour régler, vers le bas pour regarder. La feuille
+       est alors GRANDE, à peu près telle que son client la recevra. C'est le
+       geste des applications de photo — mais c'est un geste de plus à
+       apprendre, et il ne l'a pas demandé.
+
+    RIEN N'EST CODÉ. Les dix typographies, les quatre fonds, les quatre accents
+    et le dessin de la feuille sont recopiés du code
+    (`src/lib/allure-documents.ts`, `DocumentsClient.tsx`) — pas inventés.
+
+    **Les polices arrivent ici de Google Fonts**, alors que l'application sert
+    les fichiers du PDF (`src/server/pdf/polices/*.ttf`). Ce sont les mêmes
+    familles ; recopier neuf fichiers dans `appli/` aurait fait une seconde
+    copie qui finit par diverger.
+  */
+
+  :root{
+    --fond:#f5f3ee; --plage:#faf9f5; --encre:#1c1c1a; --encre-douce:#4a4a44;
+    --gris:#8a8578; --pin:#2f3b2f; --papier:#ece9e1;
+    --or:#B98B47; --trait:rgba(28,28,26,.12);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:#e6e3dc}
+  body{font:16px/1.5 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;color:var(--encre);
+       -webkit-text-size-adjust:100%;padding:0 0 48px}
+
+  .bandeau{background:var(--encre);color:#f2efe8;padding:14px 18px;text-align:center;font-size:13px;line-height:1.55}
+  .bandeau b{color:#fff}
+
+  /* ── Le choix de l'arrangement, au-dessus du téléphone ─────────────── */
+  .choix{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin:18px auto 0;max-width:560px;padding:0 14px}
+  .choix button{border:0;background:var(--plage);box-shadow:inset 0 0 0 1px var(--trait);
+                border-radius:999px;padding:11px 18px;font:600 13px/1 ui-sans-serif,sans-serif;
+                color:var(--encre-douce);cursor:pointer}
+  .choix button[aria-pressed="true"]{background:var(--encre);color:#f2efe8;box-shadow:none}
+
+  .dit{max-width:560px;margin:12px auto 0;padding:0 18px;font-size:13.5px;line-height:1.65;color:var(--encre-douce)}
+  .dit b{color:var(--encre)}
+
+  /* ── LE TÉLÉPHONE — hauteur FIXE, sinon rien ne se démontre ──────────
+     Une maquette qui laisse la page s'allonger ne montre pas le défaut : c'est
+     précisément parce que l'écran est court que l'aperçu sort du champ. 664 px,
+     la dalle de son iPhone une fois les barres retirées. */
+  .tel{position:relative;width:390px;height:664px;margin:16px auto 0;background:var(--fond);
+       border-radius:26px;overflow:hidden;box-shadow:0 18px 46px rgba(20,18,14,.2)}
+  .defile{position:absolute;inset:0;overflow-y:auto;-webkit-overflow-scrolling:touch}
+
+  .entete{padding:16px 22px 0}
+  .entete h1{margin:0;font:400 26px/1.1 ui-serif,Georgia,serif}
+  .entete p{margin:5px 0 0;font-size:12.5px;color:var(--gris)}
+
+  .caps{font:600 10.5px/1 ui-sans-serif,sans-serif;letter-spacing:.16em;text-transform:uppercase;color:var(--gris)}
+
+  .reglages{padding:0 22px 26px}
+  .bloc{margin-top:20px}
+  .bloc>.caps{display:block;margin-bottom:9px}
+
+  .typos{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .typos button{min-height:60px;border:0;background:transparent;box-shadow:inset 0 0 0 1px var(--trait);
+                border-radius:999px;padding:9px 18px;text-align:left;cursor:pointer;
+                -webkit-tap-highlight-color:transparent}
+  .typos button[aria-pressed="true"]{background:var(--plage);box-shadow:inset 0 0 0 1px var(--or)}
+  .typos .nom{display:block;font-size:15px;color:var(--encre);line-height:1.2}
+  .typos .quoi{display:block;margin-top:2px;font-size:11.5px;color:var(--gris);line-height:1.3}
+
+  .couleur{display:flex;align-items:center;gap:12px}
+  .couleur .pave{width:56px;height:44px;border-radius:8px;flex:none;box-shadow:inset 0 0 0 1px var(--trait)}
+  .couleur .hexa{font-size:14px;color:var(--encre-douce);flex:1}
+  .pastilles{display:flex;gap:9px;flex:none}
+  .pastilles button{width:34px;height:34px;border-radius:999px;border:0;cursor:pointer;padding:0;
+                    box-shadow:inset 0 0 0 1px var(--trait)}
+  .pastilles button[aria-pressed="true"]{box-shadow:0 0 0 2px var(--or)}
+  .aide{margin:7px 0 0;font-size:11.5px;line-height:1.5;color:var(--gris)}
+
+  /* ── LA FEUILLE — le dessin de `Feuille` dans DocumentsClient.tsx ───── */
+  .feuille{border-radius:6px;padding:16px;box-shadow:inset 0 0 0 1px var(--trait)}
+  .feuille .nom{font-size:17px;line-height:1.2;margin:0}
+  .feuille .coord{margin:4px 0 0;font-size:10px}
+  .feuille .filet{height:1px;margin:10px 0}
+  .feuille .mot{margin:0;text-align:center;font-size:13px;letter-spacing:.2em}
+  .feuille .inter{margin:10px 0 0;font-size:9px;letter-spacing:.14em}
+  .feuille .ligne{display:flex;justify-content:space-between;font-size:11px;padding-bottom:4px;
+                  border-bottom:1px solid;margin-top:6px}
+  .feuille .total{margin:8px 0 0;text-align:right;font-size:13px}
+
+  /* Petite, elle sert de repère ; grande, elle se juge. */
+  .feuille.grande{padding:22px}
+  .feuille.grande .nom{font-size:23px}
+  .feuille.grande .coord{font-size:12px}
+  .feuille.grande .mot{font-size:16px}
+  .feuille.grande .inter{font-size:11px}
+  .feuille.grande .ligne{font-size:13.5px}
+  .feuille.grande .total{font-size:16px}
+
+  /* ── B : l'aperçu collé en haut ─────────────────────────────────────── */
+  .colle{position:sticky;top:0;z-index:3;background:var(--fond);padding:12px 22px 12px;
+         box-shadow:0 8px 14px -12px rgba(20,18,14,.5)}
+  .colle .caps{display:block;margin-bottom:7px}
+
+  /* ── C : la feuille pleine page, les réglages en tiroir ─────────────── */
+  .scene-c{position:absolute;inset:0;display:flex;flex-direction:column}
+  .scene-c .page{flex:1;overflow:auto;padding:16px 18px 0}
+  .tiroir{position:absolute;left:0;right:0;bottom:0;background:var(--plage);
+          border-radius:22px 22px 0 0;box-shadow:0 -12px 30px -18px rgba(20,18,14,.55);
+          /* **62 %, et pas davantage.** À 74 % le tiroir ouvert recouvrait la
+             feuille entière : on réglait de nouveau à l'aveugle, ce qui est
+             exactement le défaut qu'il signale. Il faut que l'en-tête — le nom,
+             le filet, « DEVIS », l'intitulé d'accent — reste sous les yeux. */
+          height:62%;transform:translateY(calc(100% - 92px));transition:transform .26s ease;
+          display:flex;flex-direction:column}
+  .tiroir.ouvert{transform:translateY(0)}
+  .poignee{flex:none;padding:10px 0 8px;border:0;background:none;width:100%;cursor:pointer;
+           -webkit-tap-highlight-color:transparent}
+  .poignee i{display:block;width:44px;height:5px;border-radius:999px;background:var(--trait);margin:0 auto}
+  .poignee span{display:block;margin-top:8px;font:600 12.5px/1 ui-sans-serif,sans-serif;color:var(--encre-douce)}
+  .tiroir .dedans{flex:1;overflow-y:auto;padding:0 22px 22px}
+
+  /* ── Ce qu'on lui demande ───────────────────────────────────────────── */
+  .question{max-width:560px;margin:22px auto 0;padding:0 16px}
+  .question .cadre{background:var(--plage);box-shadow:inset 0 0 0 1px var(--trait);border-radius:18px;
+                   padding:17px 19px;font-size:13.5px;line-height:1.65;color:var(--encre-douce)}
+  .question h4{margin:0 0 8px;font:600 10.5px/1 ui-sans-serif,sans-serif;letter-spacing:.16em;
+               text-transform:uppercase;color:var(--gris)}
+  .question p{margin:0 0 9px}
+  .question p:last-child{margin:0}
+  .question b{color:var(--encre)}
+
+  .mesure{max-width:560px;margin:10px auto 0;padding:0 18px;font-size:12.5px;color:var(--gris);text-align:center}
+  .mesure b{color:var(--encre)}
+</style>
+
+<p class="bandeau">
+  <b>« Je suis obligé de descendre pour voir les modifications »</b> — votre demande du 24 août.<br>
+  Trois rangements, à essayer du doigt. <b>Rien n’est codé.</b>
+</p>
+
+<div class="choix" id="choix"></div>
+<p class="dit" id="dit"></p>
+
+<div class="tel" id="tel"></div>
+<p class="mesure" id="mesure"></p>
+
+<div class="question">
+  <div class="cadre">
+    <h4>Ce que j’attends de vous</h4>
+    <p><b>Laquelle ?</b> A, B ou C — ou aucune, c’est une réponse. Touchez les
+      polices et les couleurs dans chacune : c’est en les essayant qu’on sent la
+      différence, pas en les lisant.</p>
+    <p><b>Ce que chacune coûte.</b> <b>A</b> ne règle que la moitié : arrivé aux
+      polices, l’aperçu est de nouveau hors de l’écran. <b>B</b> le règle
+      entièrement mais mange le tiers haut de l’écran en permanence. <b>C</b>
+      donne la plus grande feuille — à peu près ce que votre client recevra —
+      au prix d’un geste de plus à apprendre.</p>
+    <p><b>Un détail à trancher aussi</b> : les dix polices tiennent sur cinq
+      rangées. Si vous préférez qu’elles se réduisent à une seule ligne qui
+      défile de côté, dites-le — l’aperçu remonte alors d’autant.</p>
+  </div>
+</div>
+
+<script>
+  /* ── LES DONNÉES, RECOPIÉES DU CODE ────────────────────────────────────
+     `TYPOGRAPHIES` et `ALLURE_PAR_DEFAUT` de `src/lib/allure-documents.ts`,
+     les quatre raccourcis de couleur de `DocumentsClient.tsx`. Inventer une
+     police ou une teinte ici ferait juger un écran qui n'existe pas. */
+  var TYPOS = [
+    { clef:'systeme',           nom:"Celle d'aujourd'hui", quoi:"Celle de l'appareil",           css:null },
+    { clef:'inter',             nom:'Inter',               quoi:'Linéale, neutre',               css:'Inter, ui-sans-serif, system-ui, sans-serif' },
+    { clef:'lato',              nom:'Lato',                quoi:'Linéale, ronde',                css:'Lato, ui-sans-serif, system-ui, sans-serif' },
+    { clef:'source-sans',       nom:'Source Sans',         quoi:'Linéale, sobre',                css:"'Source Sans 3', ui-sans-serif, system-ui, sans-serif" },
+    { clef:'work-sans',         nom:'Work Sans',           quoi:'Linéale, franche',              css:"'Work Sans', ui-sans-serif, system-ui, sans-serif" },
+    { clef:'archivo-narrow',    nom:'Archivo Narrow',      quoi:'Étroite — tient plus de lignes',css:"'Archivo Narrow', ui-sans-serif, system-ui, sans-serif" },
+    { clef:'eb-garamond',       nom:'EB Garamond',         quoi:'Empattements, classique',       css:"'EB Garamond', ui-serif, Georgia, serif" },
+    { clef:'libre-baskerville', nom:'Libre Baskerville',   quoi:'Empattements, lisible',         css:"'Libre Baskerville', ui-serif, Georgia, serif" },
+    { clef:'merriweather',      nom:'Merriweather',        quoi:'Empattements, solide',          css:'Merriweather, ui-serif, Georgia, serif' },
+    { clef:'playfair',          nom:'Playfair Display',    quoi:'Empattements, contrasté',       css:"'Playfair Display', ui-serif, Georgia, serif" }
+  ];
+  /* **Les noms de familles sont entre apostrophes SIMPLES, là où le code met des
+     guillemets doubles.** Ce n'est pas une coquetterie : ces piles finissent
+     dans un attribut `style="…"` construit à la main, et un guillemet double le
+     refermait au milieu — la police ne s'appliquait pas, en silence. Trouvé par
+     le contrôle, qui lisait deux fois la même famille avant et après le choix.
+     En CSS les deux écritures sont équivalentes. */
+  var DEFAUT = { typographie:'systeme', fond:'#ece9e1', accent:'#b98b47' };
+  var FONDS   = [[DEFAUT.fond,"Celui d’aujourd’hui"],['#ffffff','Blanc'],['#ece9e1','Crème'],['#e8e8e6','Gris clair']];
+  var ACCENTS = [[DEFAUT.accent,"Celui d’aujourd’hui"],['#2f3b2f','Vert pin'],['#6e2433','Bordeaux'],['#1c1c1a','Noir']];
+
+  var allure = { typographie:DEFAUT.typographie, fond:DEFAUT.fond, accent:DEFAUT.accent };
+  var rangement = 'A';
+  var tiroirOuvert = false;
+
+  /* **L'encre suit le fond, comme `encreSurFond` du dépôt.** Un fond sombre
+     éclaircit le texte tout seul — l'aperçu doit le montrer, sinon il annonce
+     une feuille illisible que le PDF, lui, rendra correctement. */
+  function encreSurFond(hex) {
+    var r = parseInt(hex.slice(1,3),16), v = parseInt(hex.slice(3,5),16), b = parseInt(hex.slice(5,7),16);
+    var clair = (0.299*r + 0.587*v + 0.114*b) / 255 > 0.55;
+    return clair ? { encre:'#1c1c1a', douce:'rgba(28,28,26,.55)' }
+                 : { encre:'#f5f3ee', douce:'rgba(245,243,238,.62)' };
+  }
+  function typoDe(clef) { for (var i=0;i<TYPOS.length;i++) if (TYPOS[i].clef===clef) return TYPOS[i]; return TYPOS[0]; }
+
+  /* Exposée pour que le contrôle puisse éprouver la règle sur un fond sombre :
+     aucune des quatre pastilles n'en pose un, et un contrôle qui ne mesurerait
+     que des teintes claires rendrait un vert qui ne prouve rien. */
+  window.encreSurFond = encreSurFond;
+
+  function feuille(grande) {
+    var e = encreSurFond(allure.fond), t = typoDe(allure.typographie);
+    var lignes = ['Taille de haie','Évacuation des déchets'].map(function (l) {
+      return '<div class="ligne" style="border-color:' + e.douce + '"><span>' + l +
+             '</span><span style="color:' + e.douce + '">—</span></div>';
+    }).join('');
+    return '<div class="feuille' + (grande ? ' grande' : '') + '" style="background:' + allure.fond +
+           ';color:' + e.encre + (t.css ? ';font-family:' + t.css : '') + '">' +
+           '<p class="nom">Éden Nature</p>' +
+           '<p class="coord" style="color:' + e.douce + '">Adresse · SIRET · téléphone</p>' +
+           '<div class="filet" style="background:' + e.encre + '"></div>' +
+           '<p class="mot">DEVIS</p>' +
+           '<p class="inter" style="color:' + allure.accent + '">ÉMETTEUR · CLIENT</p>' +
+           lignes +
+           '<p class="total" style="color:' + allure.accent + '">Total TTC</p>' +
+           '</div>';
+  }
+
+  function blocTypos() {
+    return '<div class="bloc"><span class="caps">Typographie</span><div class="typos">' +
+      TYPOS.map(function (t) {
+        return '<button type="button" data-typo="' + t.clef + '" aria-pressed="' +
+          (allure.typographie === t.clef) + '">' +
+          '<span class="nom"' + (t.css ? ' style="font-family:' + t.css + '"' : '') + '>' + t.nom + '</span>' +
+          '<span class="quoi">' + t.quoi + (t.clef === DEFAUT.typographie ? ' · par défaut' : '') + '</span>' +
+          '</button>';
+      }).join('') + '</div></div>';
+  }
+
+  function blocCouleur(titre, quoi, valeur, choix, aide) {
+    return '<div class="bloc"><span class="caps">' + titre + '</span>' +
+      '<div class="couleur"><span class="pave" style="background:' + valeur + '"></span>' +
+      '<span class="hexa">' + valeur.toUpperCase() + '</span>' +
+      '<span class="pastilles">' + choix.map(function (c) {
+        return '<button type="button" data-couleur="' + quoi + '" data-valeur="' + c[0] + '" title="' + c[1] +
+               '" aria-label="' + c[1] + '" aria-pressed="' + (valeur === c[0]) +
+               '" style="background:' + c[0] + '"></button>';
+      }).join('') + '</span></div>' +
+      '<p class="aide">' + aide + '</p></div>';
+  }
+
+  var AIDE_FOND = "N’importe quelle couleur. Un fond sombre éclaircit le texte tout seul.";
+  var AIDE_ACCENT = "Le trait sous le titre, les intitulés, et le total à payer.";
+
+  function reglages() {
+    return '<div class="reglages">' +
+      '<div class="bloc"><span class="caps">Mon logo</span>' +
+      '<p class="aide" style="margin-top:0">En haut à gauche, au-dessus de vos coordonnées.</p></div>' +
+      blocTypos() +
+      blocCouleur('Fond de page', 'fond', allure.fond, FONDS, AIDE_FOND) +
+      blocCouleur("Couleur d’accent", 'accent', allure.accent, ACCENTS, AIDE_ACCENT) +
+      '</div>';
+  }
+
+  function peindre() {
+    var tel = document.getElementById('tel');
+
+    if (rangement === 'A') {
+      tel.innerHTML =
+        '<div class="defile" id="defile">' +
+          '<div class="entete"><h1>L’allure de mes devis</h1>' +
+          '<p>Elle habille votre devis et votre facture.</p></div>' +
+          '<div style="padding:14px 22px 0"><span class="caps" style="display:block;margin-bottom:8px">L’allure de la page</span>' +
+          feuille(false) + '</div>' +
+          reglages() +
+        '</div>';
+    } else if (rangement === 'B') {
+      tel.innerHTML =
+        '<div class="defile" id="defile">' +
+          '<div class="entete"><h1>L’allure de mes devis</h1>' +
+          '<p>Elle habille votre devis et votre facture.</p></div>' +
+          '<div class="colle"><span class="caps">L’allure de la page</span>' + feuille(false) + '</div>' +
+          reglages() +
+        '</div>';
+    } else {
+      tel.innerHTML =
+        '<div class="scene-c">' +
+          '<div class="page" id="defile">' + feuille(true) + '</div>' +
+          '<div class="tiroir' + (tiroirOuvert ? ' ouvert' : '') + '" id="tiroir">' +
+            '<button type="button" class="poignee" id="poignee"><i></i>' +
+            '<span>' + (tiroirOuvert ? 'Fermer les réglages' : 'Régler l’allure') + '</span></button>' +
+            '<div class="dedans">' + reglages() + '</div>' +
+          '</div>' +
+        '</div>';
+      document.getElementById('poignee').addEventListener('click', function () {
+        tiroirOuvert = !tiroirOuvert; peindre();
+      });
+    }
+
+    tel.querySelectorAll('[data-typo]').forEach(function (b) {
+      b.addEventListener('click', function () {
+        allure.typographie = b.getAttribute('data-typo');
+        var d = document.getElementById('defile');
+        var y = d ? d.scrollTop : 0;
+        peindre();
+        var d2 = document.getElementById('defile'); if (d2) d2.scrollTop = y;
+      });
+    });
+    tel.querySelectorAll('[data-couleur]').forEach(function (b) {
+      b.addEventListener('click', function () {
+        allure[b.getAttribute('data-couleur')] = b.getAttribute('data-valeur');
+        var d = document.getElementById('defile');
+        var y = d ? d.scrollTop : 0;
+        peindre();
+        var d2 = document.getElementById('defile'); if (d2) d2.scrollTop = y;
+      });
+    });
+
+    mesurer();
+  }
+
+  /* **La planche se mesure elle-même.** Dire « l'aperçu est trop bas » sans
+     chiffre, c'est une opinion ; dire à combien de pixels il tombe, et s'il est
+     visible quand on touche la dernière police, c'est une constatation. */
+  function mesurer() {
+    var tel = document.getElementById('tel');
+    var f = tel.querySelector('.feuille');
+    var m = document.getElementById('mesure');
+    if (!f) { m.textContent = ''; return; }
+    var r = f.getBoundingClientRect(), rt = tel.getBoundingClientRect();
+    var dedans = r.bottom > rt.top && r.top < rt.bottom;
+    m.innerHTML = dedans
+      ? 'La feuille est <b>visible</b> — elle commence à ' + Math.round(r.top - rt.top) + ' px du haut de l’écran.'
+      : 'La feuille est <b>hors de l’écran</b> : il faut remonter de ' +
+        Math.abs(Math.round(r.bottom - rt.top)) + ' px pour la revoir.';
+  }
+
+  var DITS = {
+    A: "<b>A — l’aperçu monte en tête.</b> Le plus simple : la feuille passe avant les réglages, on la voit en arrivant. <b>Descendez jusqu’aux polices</b> : elle sort de l’écran, et la mesure sous le téléphone vous le dit. Elle règle la moitié du problème.",
+    B: "<b>B — l’aperçu reste collé en haut.</b> Il suit pendant qu’on fait défiler. <b>Descendez jusqu’aux polices et touchez-en une</b> : la feuille change sous vos yeux, sans un seul aller-retour. Elle occupe le tiers haut de l’écran en permanence — c’est ce qu’elle coûte.",
+    C: "<b>C — la feuille occupe l’écran, les réglages sont dans un tiroir.</b> Touchez « Régler l’allure », changez une police, refermez. La feuille est <b>grande</b>, à peu près telle que votre client la recevra. C’est un geste de plus à apprendre."
+  };
+
+  var choix = document.getElementById('choix');
+  ['A','B','C'].forEach(function (c) {
+    var b = document.createElement('button');
+    b.type = 'button';
+    b.textContent = c === 'A' ? 'A · L’aperçu en tête'
+                  : c === 'B' ? 'B · L’aperçu collé'
+                  : 'C · Feuille pleine page';
+    b.setAttribute('aria-pressed', String(c === rangement));
+    b.addEventListener('click', function () {
+      rangement = c; tiroirOuvert = false;
+      choix.querySelectorAll('button').forEach(function (x, i) {
+        x.setAttribute('aria-pressed', String(['A','B','C'][i] === rangement));
+      });
+      document.getElementById('dit').innerHTML = DITS[rangement];
+      peindre();
+    });
+    choix.appendChild(b);
+  });
+
+  document.getElementById('dit').innerHTML = DITS[rangement];
+  peindre();
+  document.getElementById('tel').addEventListener('scroll', mesurer, true);
+</script>
+</body>
+</html>

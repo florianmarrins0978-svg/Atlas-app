@@ -15187,9 +15187,67 @@ demandée le 3 août 2026. Il reste, et la réponse lui a été donnée en une l
 Supprimer sur un « si » non vérifié aurait retiré un chemin qu'il réclame
 depuis trois semaines.
 
+## 172. L'en-tête de l'accueil : ni salut, ni trait — et une consigne révoquée
+
+**Ses deux demandes du 24 août 2026**, sur la planche 95
+(`appli/premiere-page.html`), puis : *« code la mienne »*.
+
+### Ce qui est parti, et pourquoi
+
+**« Bonjour Compte ».** Ce qu'il lisait n'était pas son prénom mais le mot
+« Compte » — le nom du compte, faute de prénom renseigné. Un salut qui se trompe
+de nom vaut moins que pas de salut, et il occupait la première ligne de l'écran
+qu'il ouvre vingt fois par jour.
+
+Le prénom n'est plus lu **du tout**, et `auth()` a disparu de `page.tsx` avec
+lui : il n'y servait qu'à ce salut. Garder la requête pour n'en rien faire aurait
+coûté un aller-retour à chaque ouverture, et laissé croire à la prochaine lecture
+qu'elle servait encore.
+
+**Le filet qui fermait l'en-tête**, sous « Vos clients ». L'espace suffit.
+
+### Le point qui compte : une consigne de ce dépôt a été RÉVOQUÉE
+
+**Ce trait, il l'avait demandé le 11 août 2026**, et `EcranChantiers.tsx` portait
+la consigne inverse en toutes lettres : *« seul reste celui qui FERME l'en-tête ;
+il l'a demandé deux échanges plus tôt, et les confondre reviendrait à défaire ce
+qu'il venait de valider »*.
+
+Elle a donc été **récrite**, pas simplement contournée. Sans cela, la prochaine
+session l'aurait remis de parfaite bonne foi, en citant une consigne devenue
+fausse — c'est déjà arrivé deux fois ici.
+
+### Le contrôle lit la SOURCE, et c'est délibéré
+
+`scripts/test-accueil-en-tete.ts`. Un retrait ne se prouve que par une **absence**,
+et une absence se mesure là où la chose s'écrirait. Le salut, en particulier, ne
+paraît que si le compte porte un nom : une suite navigateur sur un compte sans
+prénom serait **verte sans avoir rien mesuré**. Même méthode, et même raison, que
+`test-accueil-liste-vide.ts`.
+
+Il ignore les commentaires — une consigne CITÉE ne doit rien déclencher — et il
+vérifie aussi que **l'en-tête du fichier dit le retrait**, sans quoi le code et
+son mode d'emploi se contrediraient.
+
+Les deux mesures ont été vues rouges, chacune contre son propre défaut.
+
+### Ce qu'il n'a PAS demandé, et qui n'a donc pas été fait
+
+La planche 95 proposait trois autres choses, retenues dans sa proposition B : un
+bouton « Créer un devis » en capsule, un intertitre « À voir » séparant les avis
+des chantiers, et la phrase d'accueil qui se tait tant que l'écran n'est pas
+vide. Sa consigne, après avoir vu la planche : *« pour la mienne, fais seulement
+les changements que je t'ai demandés, le reste laisse-le comme il est
+aujourd'hui »*.
+
+**Une proposition ne se glisse pas dans la version de quelqu'un sous prétexte
+qu'elle l'améliore.** Elles restent sur la planche, où il peut les comparer.
+
 ---
 
-## 140. Son logo était partout, sauf sur l'écran qu'il regarde
+---
+
+## 173. Son logo était partout, sauf sur l'écran qu'il regarde
 
 **Sa remarque du 18 août 2026, capture à l'appui :** *« je viens de modifier
 l'apparence de mon devis, j'ai rajouté un logo en haut à gauche mais il n'est
