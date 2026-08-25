@@ -92,9 +92,6 @@ async function main() {
    * ensuite.
    */
   async function joursOffertsAuChoix(): Promise<string[]> {
-    const tous = await page
-      .locator('[data-jour][data-etat="regardable"]')
-      .evaluateAll((els) => els.map((e) => e.getAttribute("data-jour")!).filter(Boolean));
     // **Assez loin pour que le serveur les accepte.** Le mois affiché commence
     // au 1er : ses premiers jours ouvrés sont derrière nous, et le délai minimal
     // en écarte deux de plus. Les prendre ferait rougir cette suite sur un refus
@@ -102,7 +99,28 @@ async function main() {
     const plancher = new Date();
     plancher.setDate(plancher.getDate() + DELAI_MINIMAL_JOURS + 1);
     const depuis = plancher.toISOString().slice(0, 10);
-    return tous.filter((j) => j >= depuis);
+
+    // **ET LE MOIS COURANT NE SUFFIT PAS TOUJOURS** — ce contrôle rougissait le
+    // 25 août 2026 : passé le délai minimal, août n'offrait plus que le 28 et le
+    // 31, les 29 et 30 étant un week-end (une case de week-end porte son propre
+    // état, jamais « regardable »). La suite accusait le code d'un défaut qui
+    // n'était que la fin d'un mois — et elle aurait recommencé chaque fin de
+    // mois, ce qui apprend à ignorer son rouge.
+    //
+    // On feuillette donc comme le patron feuillette, jusqu'à trouver de quoi
+    // éprouver. Trois mois couvrent largement : aucun n'a moins de trois jours
+    // ouvrés, et s'arrêter là fait dire à l'échec la bonne chose plutôt que de
+    // laisser courir un délai d'attente.
+    for (let mois = 0; mois < 3; mois++) {
+      const tous = await page
+        .locator('[data-jour][data-etat="regardable"]')
+        .evaluateAll((els) => els.map((e) => e.getAttribute("data-jour")!).filter(Boolean));
+      const offerts = tous.filter((j) => j >= depuis);
+      if (offerts.length >= 3) return offerts;
+      await page.getByRole("button", { name: /^Mois suivant/ }).click();
+      await page.waitForTimeout(250);
+    }
+    return [];
   }
 
   /**

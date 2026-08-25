@@ -3,6 +3,7 @@ import { lancerNavigateur } from "./e2e-browser";
 import { Pool } from "pg";
 import { ajouterJours, versJourIso, HORIZON_PATRON_JOURS, DELAI_MINIMAL_JOURS } from "../src/server/disponibilites";
 import { creerPuisFiche } from "./_creer-chantier-e2e";
+import { jourLisible } from "../src/lib/jour";
 
 // **« Comment je fais si je dois lui proposer une date dans six mois ? »**
 // — le patron, le 8 août 2026, en ajoutant : *« c'est un problème qui va se
@@ -151,11 +152,16 @@ async function main() {
     `L'écran refuse une date à six mois. Lu : « ${ecran.replace(/\s+/g, " ").slice(0, 300) }»`
   );
   const apresLeChoix = await page.locator("body").innerText();
-  const [, moisChoisi, jourChoisi] = dansSixMois.split("-");
-  assert.match(
-    apresLeChoix,
-    new RegExp(`${Number(jourChoisi)}\\s+${MOIS[Number(moisChoisi) - 1]}`, "i"),
-    "La date choisie n'apparaît nulle part : le patron enverrait sans savoir ce qu'il propose."
+  // **La date se lit avec LA FONCTION QUI L'ÉCRIT**, jamais avec une seconde
+  // façon de la mettre en français (`CLAUDE.md` §3). Ce contrôle recomposait
+  // « 1 mars » à la main : le premier du mois est le seul ordinal en français,
+  // l'écran écrit « 1er mars », et la suite rougissait sur un écran juste —
+  // uniquement les jours où la date visée tombait un premier. Trouvé le
+  // 25 août 2026, six mois plus loin étant le 1er mars 2027.
+  const enClair = jourLisible(dansSixMois);
+  assert.ok(
+    apresLeChoix.includes(enClair),
+    `La date choisie (« ${enClair} ») n'apparaît nulle part : le patron enverrait sans savoir ce qu'il propose.`
   );
   console.log("  ✓ une date à six mois est retenue, et affichée");
 
@@ -189,11 +195,8 @@ async function main() {
   const pageClient = await contexte.newPage();
   await pageClient.goto(`${BASE}/devis/${rows[0].jeton}`, { waitUntil: "networkidle" });
   const vueClient = await pageClient.locator("body").innerText();
-  const [, mois, jourDuMois] = dansSixMois.split("-");
-  const enClair = `${Number(jourDuMois)} ${MOIS[Number(mois) - 1]}`;
-  assert.match(
-    vueClient,
-    new RegExp(enClair, "i"),
+  assert.ok(
+    vueClient.includes(enClair),
     `Le client ne voit pas la date proposée (« ${enClair} »). Lu : « ${vueClient.replace(/\s+/g, " ").slice(0, 400)} »`
   );
   console.log("  ✓ le client la voit sur sa page, en toutes lettres");
@@ -202,11 +205,6 @@ async function main() {
   await navigateur.close();
   console.log("✅ Une date à six mois se choisit, s'envoie, et arrive chez le client.");
 }
-
-const MOIS = [
-  "janvier", "février", "mars", "avril", "mai", "juin",
-  "juillet", "août", "septembre", "octobre", "novembre", "décembre",
-];
 
 /** Le lundi de cette semaine-là ou de la suivante — jamais un week-end. */
 function prochainLundi(depuis: Date): string {
