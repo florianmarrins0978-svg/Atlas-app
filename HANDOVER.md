@@ -350,6 +350,41 @@ ne se déduit jamais du point d'eau (`CLAUDE.md` §4 bis).
 avec `appli/` : la distance est passée en entrée (`regardVersZone`).
 
 Détail : `ARCHITECTURE.md` §149.
+## « LE SERVEUR N'A JAMAIS RÉPONDU » ALORS QU'IL DIT « READY » : `rm -rf .next` (24 août 2026)
+
+**Symptôme, et il ment sur sa cause.** Les suites navigateur s'arrêtent net :
+
+```
+Démarrage du serveur (mode développement)...
+❌ Le serveur n'a jamais répondu — abandon.
+--- Dernières lignes du serveur de développement ---
+  ✓ Ready in 391ms
+```
+
+Le journal dit « prêt », le socket **écoute vraiment** (`/proc/net/tcp`, état
+`0A`), et aucune requête n'obtient de réponse — **même au bout de cinq
+minutes**, mesuré. Ce n'est donc pas une compilation lente : c'est un blocage.
+
+**La cause : le cache `.next` corrompu.** Un `rm -rf .next` suffit, et la
+première requête répond alors en sept secondes, cache vide compris.
+
+**Ce qui envoie chercher au mauvais endroit**, et m'a coûté trois tentatives :
+`npm run verifier:connexion` passe au vert dans la même batterie, juste après —
+il démarre un `next start` (version bâtie), qui n'emprunte pas ce cache. On croit
+donc que le serveur va bien et que ce sont les suites qui échouent.
+
+**Devant ce message, dans cet ordre :**
+
+1. `rm -rf .next`, puis relancer — c'est presque toujours cela ;
+2. vérifier qu'aucun **orphelin** ne tient le port 3000 : `next start` laissé par
+   l'étape « connexion derrière un proxy » d'une batterie précédente ne se
+   nettoie pas toujours ;
+3. et ne pas viser `pkill -f next` : le motif se trouve dans la ligne de commande
+   du shell qui l'exécute, et l'on tue sa propre session. Viser
+   `next-server` et `next dev -p 3000`, en s'excluant soi-même.
+
+---
+
 ## UNE COULEUR ÉCRITE EN CLAIR EST JUSTE SUR CINQ CHARTES ET FAUSSE SUR DEUX (22 août 2026)
 
 **Sa capture du planning en « Nuit », six mots :** *« Le mode nuit est
