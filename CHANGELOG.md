@@ -149,6 +149,57 @@ l'absence sur un accueil plein serait verte sans avoir rien mesuré. C'est
 grossier, et c'est plus honnête qu'un vert qui ne prouve rien
 (`scripts/test-phrases-retirees.ts`, vu rouge contre le retour de la phrase).
 
+### Choisir une date se fait d'un seul doigt
+
+**« Proposer ce jour » est retiré** — sa demande : *« je dois pouvoir
+sélectionner les jours juste en les touchant, pas besoin de cliquer sur
+proposer »*. Toucher une case du calendrier ouvre toujours la fiche de la
+journée — qui est déjà là, avec quelle équipe — mais elle n'engage plus rien :
+c'est la case qui engage, et la retoucher retire la date. Un appui par date
+économisé sur chaque devis.
+
+Ce qui ne change pas : le serveur tranche toujours avant qu'une case s'allume,
+et un jour refusé s'ouvre quand même en disant pourquoi. Ce qui a été ajouté au
+passage : deux cases touchées coup sur coup ne se marchent plus dessus — la
+réponse tardive de la première ne vient plus cocher un jour déjà quitté.
+
+### L'écran Informations : ses cases s'écrivent de nouveau, et il y a moins à lire
+
+*Ses captures du 25 août : « je peux rien modifier, les cases ne sont pas
+cliquables », « le à confirmer est trop long, synthétise-le. Moins de mots ! »,
+« le sert à calculer le prix en gris, supprime-le ».*
+
+**Le défaut qui comptait.** Une fois le brouillon confirmé, TOUTES ses cases
+passaient en lecture seule — et sur iPhone, un champ en lecture seule n'ouvre
+même pas le clavier : on tape, rien ne se passe, on croit à une panne. Or
+« Déchets », « Contraintes d'accès » et « Remarques » n'ont aucune autre case
+dans l'application : cette information devenait impossible à corriger, pour
+toujours.
+
+Elles s'écrivent désormais après confirmation. Ce qui a été RECOPIÉ dans le
+chantier — prestations, matériel, durée, équipe — disparaît au contraire de
+l'encart : les vraies cases sont juste en dessous, et corriger la copie n'aurait
+touché à rien. Le dépôt cessait aussi de dé-confirmer le chantier à chaque
+frappe (`brouillons-informations.ts`), ce qui aurait réécrit sa durée par-dessus
+sa correction au geste suivant.
+
+**Moins à lire.** Les réserves du brouillon tenaient en quatorze lignes de gris
+avant d'arriver aux prestations. La consigne donnée au modèle exige maintenant
+des groupes nominaux de six mots, cinq au plus ; et à l'écran la liste est
+plafonnée à cinq, **le reste étant annoncé** (« + 2 autres ») — une liste
+tronquée en silence se lit comme une liste complète.
+
+Trois phrases grises partent aussi, sur sa demande : sous « Ce chantier prend »,
+sous « Ou écrire le devis moi-même », et la flèche de « Valider et calculer le
+prix ».
+
+**Ce qui n'a PAS été fait, et pourquoi.** Il demandait de supprimer « Ou écrire
+le devis moi-même » *si* « Valider et calculer le prix » ouvrait le devis. Ce
+n'est pas le cas : ce bouton ouvre l'écran PRIX. Le lien saute cette étape —
+c'est la sortie de secours qu'il avait demandée le 3 août 2026. Il reste.
+
+`ARCHITECTURE.md` §171.
+
 ---
 
 ## 2026-08-24
@@ -459,6 +510,31 @@ qu'aucun écran soit touché. Les rayons, non — **soixante-six fichiers** les
 écrivent en dur (`rounded-[13px]`), et une charte ne peut rien sur ce qui ne
 passe pas par elle. C'est annoncé, pas fait.
 
+### L'onglet courant devient une pastille — sur Brume moderne, et nulle part ailleurs
+
+*« Modifie aussi la sélection des catégories, juste pour Brume moderne. »* Sur
+la planche 92, l'onglet courant de la barre du bas est une pastille arrondie
+tenue par l'accent ; dans l'application, c'est un trait doré qui glisse.
+
+**Le « juste » est la moitié qui compte.** Le marqueur se décrit en variables
+CSS dont **le repli est la valeur d'aujourd'hui** — une charte muette garde donc
+son trait, au pixel près. Mesuré sur trois chartes : Origine 1 px sans rayon,
+Brume 29 px avec un rayon de 11, Pierre 1 px sans rayon.
+
+**Ce qui ne change PAS, et c'est délibéré : le mouvement.** Le marqueur glisse
+d'un onglet à l'autre sur la même courbe, celle que le patron a retenue en la
+voyant. Seule son apparence suit la charte — remplacer le glissement aurait
+défait un choix déjà fait.
+
+**Un piège que la pastille réveille et que le trait cachait :** le marqueur est
+rendu APRÈS les liens dans le document. Haut d'un pixel au ras du bas, l'ordre
+était sans conséquence ; devenu pastille, il passerait par-dessus le libellé.
+Les liens prennent donc `relative z-[1]`, et le contrôle l'exige.
+
+**La barre du bas ne sait rien de la charte**, et c'est ce qui compte pour la
+suite : le jour où une deuxième charte voudra ce marqueur, il n'y a rien à
+rouvrir dans le composant.
+
 ### Un contrôle de devis comparait une pendule, pas un document
 
 **Il accusait le code le plus grave de la suite, et il avait tort.** *« Sans
@@ -516,6 +592,50 @@ montrait pas la seule chose qu'on venait d'ajouter. Il lit la liste maintenant.
 
 Une énumération recopiée ne suit jamais la source qu'elle prétend montrer —
 c'est la même faute que celle du gabarit, dans l'outillage.
+
+## 2026-08-24
+
+### Planche 96 : voir son devis pendant qu'on le change
+
+**Sa demande**, capture de l'écran des réglages à l'appui : *« problème : lorsque
+je modifie mon devis, je suis obligé de descendre pour voir les modifications ;
+il faut mieux organiser la page pour pouvoir voir ce qu'on modifie. Propose, ne
+code rien. »*
+
+**Rien n'est codé** (`CLAUDE.md` §3 bis). La planche est à
+`appli/allure-mieux-rangee.html`, n° 96.
+
+**Un défaut d'ORDRE, pas de contenu.** L'écran range logo → dix typographies
+(cinq rangées) → fond de page → couleur d'accent → **puis** « L'allure de la
+page ». L'aperçu tombe donc à plus de 900 px du haut du bloc : essayer neuf
+polices coûte dix-huit trajets. Rien n'est de trop sur cet écran ; tout y est
+rangé dans le sens qui l'oblige à voyager.
+
+**Trois rangements, et chacun dit ce qu'il coûte :**
+
+| | Ce qu'il donne | Ce qu'il coûte |
+|---|---|---|
+| **A** l'aperçu en tête | on le voit en arrivant | arrivé aux polices, il ressort de l'écran — la moitié du problème seulement |
+| **B** l'aperçu collé en haut | il suit chaque choix, sans un aller-retour | le tiers haut de l'écran, en permanence |
+| **C** feuille pleine page, réglages en tiroir | la plus grande feuille, proche de ce que le client reçoit | un geste de plus à apprendre |
+
+**La planche se mesure elle-même** : sous le téléphone, elle annonce à chaque
+instant si la feuille est dans l'écran, et de combien de pixels il faudrait
+remonter sinon. Dire « c'est trop bas » sans chiffre est une opinion.
+
+**Le contrôle a été vu rougir quatre fois**, et le quatrième a changé le
+dessin : le tiroir de C, à 74 % de l'écran, recouvrait la feuille entière — on
+réglait de nouveau à l'aveugle, c'est-à-dire le défaut qu'il signale. Ramené à
+62 %, l'en-tête du devis reste sous les yeux, et le contrôle l'exige désormais.
+
+**Un défaut de la planche trouvé par son propre contrôle**, et qui aurait passé
+inaperçu à l'œil : les piles de polices contiennent des guillemets doubles
+(`"Playfair Display", …`), et elles finissaient dans un attribut `style="…"`
+construit à la main — le guillemet refermait l'attribut au milieu, et la police
+ne s'appliquait pas, **en silence**. Le contrôle lisait deux fois la même
+famille avant et après le choix.
+
+---
 
 ## 2026-08-23
 

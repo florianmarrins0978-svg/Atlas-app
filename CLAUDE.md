@@ -226,6 +226,12 @@ retransmet — un document périmé le ferait travailler sur une version disparu
   `withEntreprise(utilisateurId, entrepriseId, fn)` — c'est ce qui pose le
   contexte d'isolation. Une requête hors de ce cadre ne renvoie rien,
   *silencieusement*.
+- **À l'écran, le moins de mots possible.** Sa consigne du 25 août 2026 :
+  *« pense toujours à mettre le moins de mots possible sinon on se perd dans
+  toutes ces lignes ; retire les phrases inutiles qui expliquent »*. Un écran
+  n'explique pas son propre fonctionnement — il le montre. Une phrase qui décrit
+  ce que fait le bouton d'à côté est du bruit : elle se supprime. Vaut pour les
+  écrans **et** les maquettes.
 - **Les règles métier vivent dans des fonctions pures**, dans `src/lib/`,
   testables sans base. Un écran ne décide de rien : il affiche le résultat.
 - **Jamais de règle dupliquée entre l'affichage et la vérification.** La même

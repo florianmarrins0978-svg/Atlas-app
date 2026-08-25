@@ -9,6 +9,41 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
+## Photographier son devis / sa facture pour en reprendre l'allure (25 août 2026)
+
+**Sa demande :** *« faut également que l'utilisateur puisse prendre la photo de
+son devis et que l'outil recopie trait pour trait son devis, pareil pour sa
+facture »* — venue juste après *« on comprend rien, trop compliqué pour modifier,
+faut simplifier tout ça »* sur l'écran Réglages → Documents (allure + message).
+
+**Ce que ça remplace, et pourquoi c'est une simplification.** Aujourd'hui il
+règle à la main le logo, la typographie, la couleur et le message (un écran de
+près de 1000 lignes qu'il trouve illisible). L'idée : il photographie un de ses
+devis existants, et l'appli **en tire l'allure** pour ses futurs documents — le
+long réglage manuel disparaît derrière un seul bouton.
+
+**Franchise à tenir, dite le 25 août :** « trait pour trait » à l'identique n'est
+ni faisable ni souhaitable — une photo n'est pas modifiable, et l'appli doit
+produire un vrai PDF propre (bon lien, bons montants). Ce qu'on reproduit, c'est
+l'**allure** et les **mentions**, pas une copie pixel.
+
+**Ce qu'il a tranché (25 août)**, sur trois choix proposés :
+
+| L'appli reprend de la photo | Retenu ? |
+|---|---|
+| l'allure : logo, couleurs, police, mise en page | **oui** |
+| les mentions : conditions de paiement, mentions légales, politesse | **oui** |
+| les lignes et les prix de ce devis-là | **non** |
+
+| | |
+|---|---|
+| ce qu'il faut | un écran « Photographier mon devis », la lecture par l'IA vision (le même patron que `lire-ticket.ts` et le croquis d'arrosage), et l'écriture du résultat dans l'allure (`allure-documents.ts`) et les conditions (`conditions-documents.ts`) déjà en base |
+| qui peut le faire | moi — c'est du code, la brique vision existe |
+| d'abord | **la maquette** (§3 bis), qu'il a demandée avant tout code |
+| pas vérifiable ici | la lecture d'image réelle demande une clé de vision, absente de cet environnement — à jouer sur son espace |
+
+---
+
 ## Le devis et la facture n'ont pas encore le refus d'adresse locale (24 août 2026)
 
 Le lien envoyé au client prenait l'adresse du navigateur qui l'avait fabriqué —
@@ -603,6 +638,55 @@ avant toute autre hypothèse.
 **Le remède est connu et tient en une ligne** : attendre la trace de
 l'enregistrement plutôt qu'un délai — la même leçon que le `networkidle` du
 15 août. Il reste à l'appliquer aux quatre.
+
+## 🔴 `verifier-maquette-message-et-allure.mjs` est ROUGE sur `main` (24 août 2026)
+
+**Constaté en jouant `npm run verifier:maquette` sur un `main` fraîchement
+fusionné, sur un lot qui ne touche NI cette planche NI ce contrôle.** Deux
+échecs, tous deux sur la même valeur :
+
+```
+• le fond de départ est rgb(250, 249, 245) au lieu du crème d'aujourd'hui
+• le retour ne rend pas le crème : rgb(250, 249, 245)
+```
+
+**Vérifié pré-existant** : le contrôle rougit à l'identique sur `main` seul,
+sans aucune de mes modifications. Ce n'est donc pas une régression de ce lot.
+
+`rgb(250, 249, 245)` est `#faf9f5` — la **plage** de l'application
+(`colors.card`), pas le **crème du document** `#ece9e1` (`couleursDocument.papier`,
+la valeur d'`ALLURE_PAR_DEFAUT.fond`). La planche part donc sur la couleur des
+cartes de l'écran au lieu de celle du papier. **C'est exactement la confusion
+que `ARCHITECTURE.md` sépare** entre les jetons d'écran et ceux du document :
+le patron, lui, verrait une planche annonçant un fond que ses devis n'ont pas.
+
+**Non corrigé ici, et c'est délibéré** : la planche appartient à une autre
+session, qui la tient peut-être encore ouverte. La corriger à l'aveugle
+risquerait de défaire son travail en cours. **À reprendre par qui l'a écrite**,
+ou par la prochaine session si personne ne s'en saisit.
+
+## ⚠ EN ATTENTE DE SA RÉPONSE — voir son devis pendant qu'on le change (24 août 2026)
+
+Sa demande : *« lorsque je modifie mon devis, je suis obligé de descendre pour
+voir les modifications ; il faut mieux organiser la page pour pouvoir voir ce
+qu'on modifie. Propose, ne code rien. »*
+
+**Planche 96 : `appli/allure-mieux-rangee.html`. RIEN N'EST CODÉ.** Trois
+rangements manipulables — A l'aperçu en tête, B l'aperçu collé, C la feuille
+pleine page avec les réglages en tiroir. Le détail et ce que chacun coûte sont
+dans `CHANGELOG.md`.
+
+**Deux questions attendent sa réponse :**
+
+| | |
+|---|---|
+| **Lequel des trois ?** | ou aucun — ne rien changer est une réponse |
+| **Les dix polices sur cinq rangées** | s'il préfère une seule ligne qui défile de côté, l'aperçu remonte d'autant. C'est un second choix, indépendant du premier |
+
+**Ce que coder demandera**, écrit ici pour que la prochaine session ne le
+redécouvre pas : tout se joue dans le bloc « L'allure de mes devis » de
+`src/app/reglages/documents/DocumentsClient.tsx` — l'ordre du JSX pour A, un
+conteneur `sticky` pour B, un tiroir pour C. Aucune donnée, aucune migration.
 
 ## ⚠ La planche 90 a DÉRIVÉ de l'écran « Terminés » qu'elle référence (23 août 2026)
 
@@ -3189,6 +3273,20 @@ obligatoires, disposition des colonnes, ordre des totaux. Un devis mal posé
 n'est pas un devis moins joli, c'est un devis qu'on peut lui contester.
 
 ### ~~0 trigies septies. Deux suites de calendrier tombent EN FIN DE MOIS~~ — **RÉPARÉES le 25 août 2026**
+### 0 trigies octies. ~~Le brouillon confirmé ne se corrigeait plus~~ — **RÉPARÉ le 25 août 2026**
+
+Ses trois notes — déchets, contraintes d'accès, remarques — n'ont aucune autre
+case dans l'application, et le brouillon confirmé les figeait. Elles s'écrivent
+de nouveau ; les copies de ce qui vit ailleurs (prestations, matériel, durée,
+équipe) quittent l'encart. `ARCHITECTURE.md` §171.
+
+**Ce qui reste à surveiller, et qui n'est pas mesurable ici :** la consigne
+donnée au modèle exige désormais des réserves de six mots. **Aucune clé d'IA sur
+ce poste** — ça se juge sur son espace, à la première dictée (`CLAUDE.md`
+§1 ter). L'écran, lui, plafonne à cinq lignes quoi que le modèle rende, et c'est
+éprouvé (`test-brouillon-reserves.ts`).
+
+### 0 trigies septies. Deux suites de calendrier tombent EN FIN DE MOIS — **CONSTATÉ le 25 août 2026, PAS RÉPARÉ**
 
 **Elles rougissent sur `main`, sans aucun changement**, et elles bloquent la
 livraison de toutes les sessions tant qu'on est en fin de mois. Vérifié : même
@@ -6650,6 +6748,13 @@ et c'est déjà arrivé.
 - ~~Rédiger le devis entièrement à la main, depuis la fiche du chantier~~ — 2026-08-04
 - ~~Retirer la case « Nom du chantier » : plus rien n'est obligatoire à la création~~ — 2026-08-05
 - ~~« Rédiger à la main » ouvre le devis ENTIER, à l'image du modèle, et il reste dans Atlas~~ — 2026-08-05
+- [x] ~~**Le calendrier n'offre que 2 jours sur une base fraîchement montée.**~~
+  Réglé le 24 août 2026 par une autre session, dans l'heure — les deux suites
+  (`test-deux-dates-calendrier-e2e`, `test-date-lointaine-e2e`) passent après
+  fusion. **Ce qui reste à en retenir** : elles étaient vertes deux heures plus
+  tôt sur la même version, et rouges sur une base neuve. Un contrôle qui dépend
+  de l'âge de la base accuse au hasard — c'est la même leçon que l'instabilité
+  notée juste au-dessus.
 - [ ] **La batterie rougit sur des suites DIFFÉRENTES à chaque exécution**, et
   chacune passe seule sur le même code. Relevé le 24 août 2026, trois
   exécutions d'affilée : d'abord `test-planning-vers-facture-e2e` (un texte

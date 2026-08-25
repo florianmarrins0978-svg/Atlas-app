@@ -15040,3 +15040,149 @@ re-parser. On borne en passant.
 **Ce que cela ne couvre pas :** ce que Node met en tampon avant de rendre la main
 à Next dépend de l'hébergeur. La garantie commence à l'objet `Request` ; une
 limite au mandataire reste souhaitable et ne remplace pas celle-ci.
+
+---
+
+## 170. Toucher un jour, c'est le proposer — le geste en deux temps est retiré
+
+**Sa demande du 25 août 2026**, capture à l'appui, sur l'écran d'envoi au
+client : *« je dois pouvoir sélectionner les jours juste en les touchant, pas
+besoin de cliquer sur proposer »*.
+
+### Ce que ça défait, et pourquoi ce n'est pas un retour en arrière
+
+Le 22 août, les deux gestes avaient été **séparés** à sa demande (planche 91,
+§159) : toucher une case OUVRAIT la journée — qui est déjà là, à quelle
+demi-journée, avec quelle équipe —, et un bouton « Proposer ce jour » engageait
+la date. La raison tenait : *« un jour consulté par erreur partait chez
+quelqu'un »*.
+
+**Ce qu'il a demandé le 25 ne remet pas le calendrier nu.** La fiche reste, et
+c'est elle qui portait toute la valeur du 22 août : elle montre l'occupation de
+la journée, elle dit ce que le serveur en pense. Ce qui disparaît, c'est le
+**second appui** — un geste par date, sur chaque devis, pour une confirmation
+que la case elle-même donne déjà en s'allumant.
+
+| | Avant le 25 août | Depuis |
+|---|---|---|
+| toucher une case | ouvre la fiche | ouvre la fiche **et** propose la date |
+| retoucher la même | referme la fiche | **retire** la date, la fiche reste |
+| « Proposer ce jour » | engage la date | n'existe plus |
+| un jour refusé | bouton éteint | la case ne s'allume pas, la fiche dit pourquoi |
+
+Le risque du 22 août — proposer sans avoir voulu — ne disparaît pas, il change
+de coût : **il se défait du même doigt**, et la case s'éteint sous les yeux.
+C'est ce que le bouton achetait cher.
+
+### Trois partis pris, dans `EnvoiAuClient.toucherLeJour`
+
+1. **Le retrait ne se fait pas attendre.** Le jour est déjà passé par le
+   serveur pour entrer ; le redemander pour sortir serait attendre pour rien —
+   et une case qui met une seconde à s'éteindre se retouche, donc se remet.
+2. **L'ajout, si.** Le calendrier ne connaît que la fenêtre proche ; au-delà,
+   seul `verifierJourPropose` sait si la journée tient. Proposer un jour que
+   l'envoi refuserait ensuite coûte un aller-retour au client. La case ne
+   s'allume donc qu'après le verdict.
+3. **Un verdict en retard ne retient plus rien.** Chercher deux dates, c'est
+   toucher deux cases coup sur coup ; sur un réseau de chantier, la réponse de
+   la première reviendrait cocher un jour qu'il a quitté. `dernierTouche` — une
+   `ref`, pas un état : la fonction qui attend le serveur lirait sinon la
+   valeur figée au moment de son appel — jette tout verdict périmé.
+
+### Ce qui reste sur la fiche
+
+Le bouton est remplacé par un **mot**, `proposé`, et ce n'est pas décoratif :
+la phrase de gauche appartient au serveur et cède la place à un avertissement
+dès qu'il y en a un (« ce jour est complet »). Sans ce mot, un jour à la fois
+proposé et signalé complet ne se lisait plus que par la teinte de sa case.
+
+### Ce que les contrôles éprouvent maintenant
+
+Trois suites navigateur appuyaient sur `[data-atlas="retenir-le-jour"]`, et
+deux d'entre elles **refermaient la fiche par un second appui sur la case** —
+ce geste-là retire aujourd'hui la date qu'on vient de poser. Elles visent donc
+la règle et non le widget (`CLAUDE.md` §5 bis) : la case porte-t-elle
+`data-etat="retenu"` ? Un jour trop proche ne l'obtient pas, **et la fiche dit
+pourquoi** — une case qui ne s'allume pas sans un mot se lit comme une panne.
+
+Le contrôle de la planche (`verifier-maquette-choisir-la-date.mjs`) tolérait
+l'absence du bouton (`if (await bouton.count())`) : il serait resté vert sur une
+planche où toucher un jour ne fait plus rien. Il exige désormais l'inverse — pas
+de bouton, et un jour proposé au premier appui —, et il a été **vu rouge** sur
+la planche d'avant.
+
+---
+
+## 171. Le brouillon de la dictée après confirmation : ce qui se fige, ce qui s'écrit
+
+*Ses captures du 25 août 2026 : « je peux rien modifier, les cases ne sont pas
+cliquables », puis « le à confirmer est trop long, synthétise-le. Moins de
+mots ! ».*
+
+### Le verrou protégeait ce qui n'existait qu'ici
+
+Confirmer un brouillon le passait **entièrement** en lecture seule. L'intention
+était juste : confirmer RECOPIE les prestations, le matériel, la durée et
+l'équipe dans le chantier, et corriger la copie du brouillon ne toucherait plus
+l'original — il aurait eu sous les yeux deux versions dont une seule compte.
+
+Ce que l'intention n'avait pas vu : **trois champs n'ont aucune autre case dans
+toute l'application.**
+
+| | Après confirmation |
+|---|---|
+| prestations, matériel, durée, équipe | recopiés dans le chantier, **et éditables juste en dessous** |
+| déchets, contraintes d'accès, remarques | **nulle part ailleurs** — figés, donc perdus |
+
+La règle qui en sort, et qui vaut au-delà de cet écran : **ce qu'on fige doit
+avoir une autre porte.** Sans elle, figer n'est pas protéger, c'est effacer.
+
+D'où le parti retenu : après confirmation, l'encart **retire** les copies de ce
+qui vit ailleurs et **garde, éditables**, les trois notes qui n'ont que lui.
+L'écran raccourcit du même geste, ce qu'il demande par ailleurs.
+
+### Un champ en lecture seule n'ouvre pas le clavier sur iPhone
+
+C'est ce qui rendait sa plainte littérale — *« les cases ne sont pas
+cliquables »*. Rien n'était grisé, rien ne disait « verrouillé » : il appuyait,
+et il ne se passait rien. **Un état qui ne se voit pas se lit comme une panne.**
+À retenir avant de reposer un `readOnly` quelque part.
+
+### Le piège caché sous le déverrouillage
+
+`enregistrerCorrectionHumaine` remettait `statut: "brouillon"` et effaçait
+`confirmeAt` à chaque écriture. C'était **du code mort** tant que tout était
+verrouillé après confirmation. Le déverrouillage le ramenait à la vie, et il
+devenait faux : écrire une remarque aurait dé-confirmé le chantier, fait
+réapparaître « Confirmer et ajouter au chantier », et un second appui aurait
+réécrit sa durée et son équipe depuis la dictée par-dessus ses corrections.
+
+**Une ligne qui ne sert plus n'est pas inoffensive : elle attend.** En retirer
+la garde en fait une régression, et rien ne l'annonce.
+
+### « Moins de mots » : deux leviers, parce qu'un seul ne suffit pas
+
+| | Ce qu'il fait | Ce qu'il ne peut pas faire |
+|---|---|---|
+| la consigne au modèle (`extraction-service.ts`) | des groupes nominaux de six mots, cinq lignes au plus | rien pour les brouillons **déjà enregistrés** |
+| `src/lib/brouillon-reserves.ts` | plafonne la liste à cinq, **et dit ce qui reste** | rien pour la longueur d'une ligne |
+
+**Le texte n'est PAS raccourci à l'affichage, et c'est délibéré.** Couper une
+réserve à six mots donnerait « Il est mentionné 'des herbages, des massifs' » —
+l'entrée en matière sans la question qu'elle pose. Ce qui se coupe proprement,
+c'est le NOMBRE ; la brièveté d'une ligne se joue à l'écriture.
+
+**Et ce qui est coupé se dit** (« + 2 autres »). Une liste tronquée en silence
+se lit comme une liste complète : il chiffrerait sans la réserve qu'on lui
+cache. C'est la règle du plan d'arrosage (`CLAUDE.md` §4 ter), appliquée ici.
+
+### Une question posée sous condition se vérifie avant d'agir
+
+*« Ce bouton ouvre le devis ? Si oui la phrase en-dessous est obsolète, donc la
+supprimer. »* La condition était fausse : « Valider et calculer le prix » ouvre
+l'écran **Prix**, la proposition de montants. Le lien « Ou écrire le devis
+moi-même » saute cette étape — c'est la sortie de secours qu'il avait lui-même
+demandée le 3 août 2026. Il reste, et la réponse lui a été donnée en une ligne.
+
+Supprimer sur un « si » non vérifié aurait retiré un chemin qu'il réclame
+depuis trois semaines.

@@ -87,9 +87,15 @@ export default function AtlasBottomNav() {
               key={t.href}
               href={t.href}
               aria-current={actif ? "page" : undefined}
-              className="pb-2 text-center text-[8.5px] font-medium uppercase"
+              // `relative z-[1]` : le marqueur est rendu APRÈS les liens dans le
+              // document. Tant qu'il faisait un trait d'un pixel au ras du bas,
+              // l'ordre était sans conséquence ; devenu pastille, il passerait
+              // PAR-DESSUS le libellé et le rendrait illisible.
+              className="relative z-[1] pb-2 text-center text-[8.5px] font-medium uppercase"
               style={{
-                color: actif ? colors.ink : colors.muted,
+                // Le repli EST la valeur d'aujourd'hui : une charte qui ne dit
+                // rien laisse l'encre en place, au caractère près.
+                color: actif ? `var(--atlas-onglet-encre, ${colors.ink})` : colors.muted,
                 letterSpacing: "0.14em",
                 transform: actif ? "translateY(-2px)" : "none",
                 transition:
@@ -105,16 +111,30 @@ export default function AtlasBottomNav() {
             son déplacement se fait en pourcentage de sa propre largeur, donc il
             reste juste quel que soit l'écran. La courbe dépasse légèrement (1.4
             en troisième point) : c'est ce « G » que le patron a retenu. */}
+        {/* **Son apparence suit la charte, son MOUVEMENT jamais.** Sa demande du
+            24 août 2026 : « modifie aussi la sélection des catégories, juste
+            pour Brume moderne ». Le marqueur devient une pastille sur cette
+            charte-là ; partout ailleurs il reste le trait doré, parce que
+            chaque variable a pour repli la valeur d'aujourd'hui. Le glissement,
+            lui, ne bouge pas : c'est un choix qu'il a déjà fait en le voyant. */}
         <span
           aria-hidden="true"
-          className="pointer-events-none absolute bottom-2 left-3.5"
+          className="pointer-events-none absolute bottom-2 left-3.5 z-0"
           style={{
             width: "calc((100% - 1.75rem) / 5)",
+            top: "var(--atlas-onglet-haut, auto)",
             transform: `translateX(${indexActif * 100}%)`,
             transition: "transform 540ms cubic-bezier(0.34,1.4,0.5,1)",
           }}
         >
-          <span className="block h-px" style={{ backgroundColor: colors.or }} />
+          <span
+            className="block"
+            style={{
+              height: "var(--atlas-onglet-hauteur, 1px)",
+              borderRadius: "var(--atlas-onglet-rayon, 0)",
+              backgroundColor: `var(--atlas-onglet-fond, ${colors.or})`,
+            }}
+          />
         </span>
       </div>
     </nav>
