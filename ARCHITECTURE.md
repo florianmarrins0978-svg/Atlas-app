@@ -15371,3 +15371,164 @@ le doublon sans rien dire.
 clair comme sur fond sombre, avec logo carré et logo en bandeau. C'est la seule
 manière de voir qu'une ligne de plus dans l'en-tête ne vient pas toucher les
 références du devis.
+
+---
+
+## 175. Cinq réglages qui n'atteignaient aucun document
+
+**Son constat du 25 août 2026, et il l'a trouvé seul :** *« les autres qui sont
+en ON doivent-ils être visibles sur le devis ? car je ne vois rien, est-ce
+normal ? »*
+
+Non. Depuis la migration 0040 — le 14 août —, six conditions se réglaient dans
+« Réglages → Documents ». **Une seule atteignait le document** : la validité.
+
+| Le réglage | Avant le 25 août | Depuis |
+|---|---|---|
+| Validité du devis | sur le devis | inchangé |
+| Acompte | nulle part | sur le devis, avec son montant |
+| Délai de paiement | nulle part | sur le devis |
+| Moyens de paiement | nulle part | sur le devis |
+| Rappel des pénalités | nulle part | sur le devis |
+| Texte de bas de page | nulle part | sur le devis |
+
+### Ce qui a caché le défaut onze jours
+
+Trois choses, et aucune n'était un mensonge :
+
+1. **`lignesConditionsDevis` existait et composait les bonnes phrases.** Elle
+   n'était appelée que par **l'aperçu de l'écran de réglages**. Il réglait, il
+   voyait les phrases, et le document ne les portait pas ;
+2. **Son écran de devis affiche « Acompte de 30 % à la signature… »** — en gris,
+   comme exemple dans un champ libre vide (`placeholder`). Un texte parfaitement
+   plausible, à l'endroit exact où le réglage aurait dû apparaître ;
+3. **« Modalités de paiement / IBAN » s'imprime bien**, et vient de ses
+   coordonnées bancaires. De quoi croire que le bloc des conditions marchait.
+
+### Ce que les contrôles ne pouvaient pas voir, et qui vaut au-delà de ce cas
+
+Une suite éprouvait `lignesConditionsDevis` : les bons réglages donnent les
+bonnes phrases. Elle était verte, et elle avait raison — **la fonction n'a
+jamais été en cause**. Ce qui manquait, c'est le **chemin** entre le réglage et
+le papier.
+
+> Un contrôle qui éprouve la RÈGLE ne voit pas une pièce DÉBRANCHÉE. Il faut, au
+> moins une fois, parcourir la chaîne entière : l'écran, la base, le document.
+
+C'est exactement la faute du 8 août sur le lien de facture (§34), sous une autre
+forme : chaque morceau juste, et rien qui les relie.
+
+### Les conditions se FIGENT sur le devis
+
+Migration 0064, cinq colonnes sur `devis`, recopiées à la création — comme la
+validité (§102) et l'identité (§94). Les relire à l'impression ferait changer
+les conditions d'un devis **déjà envoyé** parce qu'un réglage a bougé depuis,
+pendant que le client a une autre feuille sous les yeux, et que c'est celle-là
+qui l'engage.
+
+**Aucun rattrapage, et c'est délibéré.** La 0040 avait posé 30 jours sur les
+devis existants, parce que 30 jours était ce que la constante imprimait déjà.
+Ces cinq lignes-ci ne figuraient sur **aucun** devis : les poser rétroactivement
+ajouterait des conditions à des documents partis sans elles. `NULL` partout, et
+les anciens devis sortent identiques à eux-mêmes.
+
+### Où elles se posent, et pourquoi là
+
+Sous « NOTES / CONDITIONS », **après** ce qu'il a écrit à la main. Ce qu'il écrit
+parle de CE chantier — l'accès par le portail de gauche, la cour à dégager la
+veille ; les conditions de paiement sont les mêmes sur tous ses devis. Son champ
+libre n'est ni remplacé ni réécrit.
+
+Quand il n'a rien écrit, le bloc ne porte que les conditions — ce qui est la
+proposition A de la planche 60, sans qu'il ait eu à trancher entre A et B.
+
+**Rien de tout cela sur la feuille de chantier** (`sansChiffrage`) : elle part
+chez un salarié, délibérément sans un prix (§133), et « acompte de 30 % — soit
+313,20 € » y serait un montant. C'est la règle que suit déjà l'IBAN.
+
+**Le montant de l'acompte s'écrit dans le PDF**, pas dans l'aperçu des réglages :
+là seulement le total est connu. Ailleurs la fonction le tait plutôt que
+d'inventer un chiffre — un montant supposé à cet endroit finirait imprimé.
+
+### Éteindre en fait disparaître
+
+Sa question, le même jour : *« si je décoche le bouton OFF, ils sont censés
+disparaître ? »* Oui, et c'est éprouvé : un réglage qu'on ne pourrait plus
+retirer serait pire que pas de réglage du tout.
+
+`scripts/test-conditions-sur-le-devis.ts` lit la **trace du PDF**, et sait
+rougir : débrancher le raccordement fait tomber trois cas en nommant la ligne
+absente. `scripts/capture-conditions-devis.mts` rend les trois états en image —
+parce que ce défaut-là s'est vu à l'œil et par aucun test.
+
+---
+
+## 176. Un jour à moitié pris le dit, il ne se refuse pas
+
+**Sa colère du 22 août 2026 :** *« je peux proposer le 24 alors qu'un client a
+validé le 24 — corrige-moi ça ! Ça ne doit jamais se reproduire, c'est une
+erreur gravissime !!!! »*
+
+Deux choses se cachaient derrière, et il ne fallait pas les confondre :
+
+| | |
+|---|---|
+| **un vrai défaut** | un chantier commencé avant la fenêtre et encore en cours dedans n'était compté nulle part — réparé le jour même |
+| **un fonctionnement voulu** | avec **deux équipes**, un jour où une seule est prise reste proposable. Mais aucun écran ne le disait |
+
+### Ce qui a été codé, et ce qui ne l'a pas été
+
+**Sa réponse du 25 août : B**, la mention écrite en toutes lettres. Pas
+l'interdiction. Choisir une mention plutôt qu'un refus se lit comme « seulement
+le voir », et c'est aussi le sens sûr : interdire bloquerait un jour où il peut
+réellement envoyer quelqu'un.
+
+### Le libellé, qu'il a redressé lui-même
+
+La planche 88 proposait **« 1 chantier sur 2 équipes »**. Sa remarque en
+retenant B : *« on ne comprend pas très bien, comment on peut faire pour
+comprendre mieux ? »*
+
+Il avait raison, et la raison est nette : cette phrase compte ce qui est **pris**,
+alors que ce qu'il décide dépend de ce qui **reste**. Il est en train de proposer
+une date ; sa question est *puis-je encore envoyer quelqu'un ce jour-là*. D'où :
+
+> **Reste 1 équipe sur 2**
+
+Même information, tournée du côté du geste. La planche a été corrigée avec le
+code, et **un contrôle interdit aux deux de diverger** — une planche qui
+n'annonce plus ce que l'écran écrit lui fait valider une phrase qu'il ne verra
+jamais.
+
+### Le pire des deux demi-journées commande
+
+Un jour dont le matin est plein et l'après-midi libre n'a pas « une équipe et
+demie » de libre : il a un moment où il n'y a personne, et c'est celui-là qui
+contraint. **La moyenne annoncerait de la place là où il n'y en a pas** —
+exactement la faute qu'il a signalée, sous une autre forme. Le contrôle a été vu
+rouge en remplaçant le maximum par la moyenne.
+
+### Deux silences, et ils sont voulus
+
+- **rien sur un jour entièrement libre** ;
+- **rien quand il n'a qu'une équipe** : « Reste 0 équipe sur 1 » n'apprend rien à
+  qui n'a personne d'autre à envoyer, et le serveur refuse déjà ce jour-là.
+
+Un avertissement qui parle à tort s'apprend à être ignoré, et l'on perd le
+garde-fou sans s'en apercevoir (`CLAUDE.md` §4 ter).
+
+### Où la mention se pose
+
+Sur la **liste des dates retenues**, dans l'écran d'envoi — pas sur la case du
+calendrier. C'est le dernier endroit où il peut retirer une date, et le seul
+qu'il relit avant d'envoyer.
+
+### Deux contrôles, et pourquoi le second
+
+`test-reste-equipes.ts` balaie la règle pour toutes les combinaisons de *k*
+équipes prises sur *n*, virgule flottante comprise. `test-reste-equipes-e2e.ts`
+parcourt le chemin : deux équipes en base, un chantier posé, la mention lue à
+l'écran — et le jour libre d'à côté qui n'en porte aucune, dans la même liste.
+
+Le second existe à cause du défaut du même jour (§175) : *un contrôle qui éprouve
+la règle ne voit pas une pièce débranchée.*

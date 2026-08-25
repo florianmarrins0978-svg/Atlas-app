@@ -828,6 +828,24 @@ export const devis = pgTable(
      * feuille sous les yeux (`ARCHITECTURE.md` §102).
      */
     validiteJours: integer("validite_jours"),
+    /**
+     * Les cinq autres conditions, RECOPIÉES elles aussi (migration 0064).
+     *
+     * Elles ne parvenaient nulle part avant le 25 août 2026 : six réglages se
+     * saisissaient, un seul atteignait le document. C'est lui qui l'a vu —
+     * *« les autres qui sont en ON doivent-ils être visibles sur le devis ? car
+     * je ne vois rien »*.
+     *
+     * Figées pour la même raison que la validité juste au-dessus : corriger un
+     * réglage ne doit pas réécrire les conditions d'un devis déjà parti. `null`
+     * veut dire « rien ne s'imprime », donc les devis d'avant la 0064 sortent
+     * identiques à eux-mêmes.
+     */
+    acomptePourcent: numeric("acompte_pourcent", { precision: 5, scale: 2 }),
+    delaiPaiementJours: integer("delai_paiement_jours"),
+    moyensPaiement: text("moyens_paiement"),
+    rappelerPenalites: boolean("rappeler_penalites").notNull().default(false),
+    textePied: text("texte_pied"),
     conditionsPaiement: text("conditions_paiement"),
     devise: char("devise", { length: 3 }).notNull().default("EUR"),
 

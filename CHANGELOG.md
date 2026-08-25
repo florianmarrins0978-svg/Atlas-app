@@ -25,6 +25,23 @@ passerait par un avoir.
 premier passage sur un écran le compile, ce qui peut dépasser le délai d'une
 suite. Rejouée sur serveur chaud, elle passe.
 
+### La facture du client : aux couleurs de l'app, et un bouton pour la garder
+
+*« Mets cette page aux couleurs de l'application »* et *« il faut rajouter un
+bouton pour que le client puisse télécharger sa facture »*, sur la page publique
+que le client ouvre depuis son lien.
+
+Elle portait des couleurs écrites en dur — dont une terre cuite (`#8C4A2F`)
+abandonnée le 3 août — qui n'étaient plus celles du produit. Elle passe par les
+jetons de la charte (`design-tokens`), qui retombent sur la charte d'Arborea par
+défaut faute de session : c'est bien « la couleur de l'application », et plus
+aucune couleur n'est écrite en clair (`CLAUDE.md` §3).
+
+Et le client peut désormais **garder** sa facture : à côté de « Voir la facture en
+PDF » (qui l'ouvre), un bouton « Télécharger ma facture » la range. C'est l'en-tête
+`Content-Disposition: attachment` du `?telecharger=1` qui décide — l'attribut
+`download` du lien ne suffit pas, iOS l'ignore —, le même mécanisme que l'écran du
+patron.
 
 ### Le message : les phrases par défaut, modifiables — les mots en doré verrouillés
 
@@ -107,6 +124,143 @@ sans base) : une échéance ne précède jamais la facture, ne dépasse pas un a
 delà, c'est l'année mal tapée), et le comptant — échéance = émission — est permis.
 L'isolation est tenue par la RLS : la facture d'une autre entreprise n'existe tout
 simplement pas pour cette requête (`test-factures`).
+
+### Les cinq conditions réglées arrivent enfin sur le devis
+
+*« Les autres qui sont en ON doivent-ils être visibles sur le devis ? car je ne
+vois rien, est-ce normal ? »* — non. Depuis le 14 août, six conditions se
+réglaient dans « Réglages → Documents » et **une seule atteignait le document** :
+la validité. L'acompte, le délai de paiement, les moyens de paiement, le rappel
+des pénalités et le texte de bas de page s'enregistraient, s'affichaient dans
+l'aperçu de cet écran… et le client n'en voyait rien.
+
+**Ce que ça évite :** un artisan qui règle un acompte de 30 %, le voit à l'écran,
+et envoie un devis qui n'en parle pas. Il ne s'en aperçoit qu'au moment où le
+client ne verse rien — ou jamais.
+
+**Ce qui a caché le défaut onze jours**, et c'est le plus instructif : son écran
+de devis affiche « Acompte de 30 % à la signature… » en gris, comme **exemple**
+dans un champ libre vide, et « MODALITÉS DE PAIEMENT / IBAN » s'imprime pour de
+bon. Deux choses vraies donnaient l'impression que le réglage marchait.
+
+**Et pourquoi aucun test ne l'a vu :** une suite éprouvait déjà
+`lignesConditionsDevis` — les bons réglages donnent les bonnes phrases — et elle
+avait raison, la fonction n'a jamais été en cause. Ce qui manquait, c'est le
+CHEMIN entre le réglage et le papier. *Un contrôle qui éprouve la règle ne voit
+pas une pièce débranchée.*
+
+Migration 0064 : les cinq conditions se **figent** sur le devis à sa création,
+comme la validité — les relire à l'impression ferait changer ce qui engage un
+devis déjà parti. **Aucun rattrapage sur les anciens** : ils ne portaient pas ces
+lignes, les poser rétroactivement ajouterait des conditions à des documents déjà
+chez des clients.
+
+Elles s'écrivent sous « NOTES / CONDITIONS », **après** son texte à lui — ce
+qu'il écrit parle de CE chantier, les conditions sont les mêmes partout. Son
+champ libre n'est ni remplacé ni réécrit. Rien sur la feuille de chantier du
+salarié : elle part sans un prix, et un acompte y serait un montant.
+
+*« Si je décoche le bouton OFF, ils sont censés disparaître ? »* Oui — éprouvé,
+et le contrôle a été vu rouge en débranchant le raccordement exprès. Trois
+captures rendent les trois états en image, parce que ce défaut-là s'est vu à
+l'œil et par aucun test. `ARCHITECTURE.md` §175.
+
+### Un jour à moitié pris le dit : « Reste 1 équipe sur 2 »
+
+*« Je peux proposer le 24 alors qu'un client a validé le 24 — corrige-moi ça ! »*
+Le défaut de code avait été réparé le 22 août. Ce qui restait n'en était pas un :
+avec deux équipes, un jour où une seule est prise **reste proposable**, et c'est
+voulu — mais rien ne le disait, et rien ne distinguait un jour vide d'un jour à
+moitié pris.
+
+**Ce que ça évite :** proposer une date en croyant la journée entière, découvrir
+sur place qu'une équipe est déjà ailleurs, et devoir rappeler le client.
+
+**Le libellé n'est pas celui de la planche, et c'est lui qui l'a redressé** :
+elle proposait « 1 chantier sur 2 équipes », il a répondu *« on ne comprend pas
+très bien »*. Il avait raison — cela compte ce qui est PRIS quand ce qu'il décide
+dépend de ce qui RESTE. La planche porte le nouveau libellé, et un contrôle
+interdit aux deux de diverger : une planche qui n'annonce plus ce que l'écran
+écrit lui fait valider une phrase qu'il ne verra jamais.
+
+**Le pire des deux demi-journées commande.** Un matin plein et un après-midi
+libre ne font pas « une équipe et demie » : il y a un moment de la journée où il
+n'y a personne. La moyenne annoncerait de la place là où il n'y en a pas — la
+faute exacte qu'il a signalée, sous une autre forme.
+
+Rien ne s'écrit sur un jour entièrement libre, ni quand il n'a qu'une équipe : un
+avertissement qui parle à tort s'apprend à être ignoré.
+
+**Deux contrôles, et le second existe à cause du défaut du même jour** : la règle
+est balayée pour toutes les combinaisons d'équipes prises sur n, et un second
+parcourt le chemin entier — deux équipes en base, un chantier posé, la mention
+lue à l'écran. *Un contrôle qui éprouve la règle ne voit pas une pièce
+débranchée* : les cinq conditions du devis venaient de le prouver.
+
+### L'aperçu du devis reste collé pendant qu'on le règle
+
+*« Lorsque je modifie mon devis, je suis obligé de descendre pour voir les
+modifications »* — trois rangements lui ont été montrés, il a répondu **B** :
+l'aperçu reste sous les yeux pendant qu'on fait défiler les réglages.
+
+**Ce que ça évite :** régler une police ou un fond à l'aveugle, puis remonter
+pour voir, puis redescendre pour corriger. A — l'aperçu simplement remonté en
+tête — ne réglait que la moitié du problème, et c'était écrit sur la planche.
+
+Il colle au haut de la **rubrique**, pas de l'écran : collé à l'écran entier, il
+aurait recouvert les conditions de paiement, qui n'ont rien à voir avec
+l'apparence. Fond opaque : translucide, les réglages défilent au travers et l'on
+ne juge plus une couleur de fond sur un fond qui bouge.
+
+Le contrôle a été vu rouge en le remettant en A. A et B ne diffèrent que pendant
+le DÉFILEMENT — un contrôle qui n'aurait pas descendu serait resté vert sur la
+proposition qu'il a écartée.
+
+### La molette du temps passé se dédouble : heures d'un côté, minutes de l'autre
+
+*« La molette, mais avec d'un côté les heures qu'on peut bouger et de l'autre les
+minutes qu'on peut bouger séparément. »* Dessiné le jour même, proposition D de
+`appli/choisir-l-heure.html` — **rien n'est codé**.
+
+**Pourquoi il a raison.** D'un seul tenant, la molette compte cinquante-trois
+crans de 0 h 00 à 4 h 00 : aller de 0 h 05 à 3 h 30 demande quarante et un crans,
+donc plusieurs élans du pouce. Séparées, la même valeur se pose en deux gestes
+courts. Et c'est le geste de la molette de son iPhone — l'argument qui lui avait
+fait retenir la A le 16 août.
+
+**Ce que ça coûte, et c'est écrit sur la planche :** deux gestes au lieu d'un sur
+une durée ronde.
+
+Un seul repère traverse les deux colonnes : un repère par colonne se lirait comme
+deux réglages sans rapport, alors que c'est une seule durée. Toujours sans une
+ligne de JavaScript.
+
+**Et un chiffre faux a été retiré au passage** : l'écart affichait « − 50 min »
+écrit en dur, qui ne suivait pas la molette — 2 h 35 sur 2 h 30 prévues
+s'annonçait « − 50 min ». Deux chiffres qui se contredisent dans le même écran,
+et c'est toute la liste qu'on cesse de croire.
+
+**Le contrôle a été resserré après avoir été vu FAUSSEMENT vert :** il comptait
+les colonnes n'importe où sous la planche, et un enveloppement des deux dans une
+seule zone de défilement — c'est-à-dire l'ancienne molette redessinée — passait
+au vert. Trouvé en fabriquant exactement cette dégradation.
+
+### La fiche d'entretien : une seule liste, pas une par client
+
+*« Planche une, la A »* — la question posée le 16 août, restée sans réponse faute
+d'adresse pour consulter la planche, est tranchée. Une seule liste tenue dans les
+Réglages, pré-remplie à chaque envoi ; rien n'est rangé par client.
+
+### Deux planches sans adresse en ont enfin une
+
+*« Je veux les voir »* — « Composer sa fiche d'entretien » et « Choisir l'heure
+au pouce » vivaient dans `docs/maquettes/`, que `pages.yml` ne publie pas. On
+attendait de lui depuis le 16 août un choix qu'il n'avait aucun moyen de faire.
+
+Déplacées dans `appli/`, pas recopiées : deux exemplaires auraient divergé. Le
+recueil des maquettes sait désormais chercher dans les deux dossiers — sans quoi
+il se serait plaint d'une planche « introuvable » alors qu'elle est publiée.
+
 
 ### Le message au client, simplifié : plus de pastilles à poser
 
