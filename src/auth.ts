@@ -1,12 +1,12 @@
 import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
-import { compare } from "bcryptjs";
 import { eq } from "drizzle-orm";
 import { db } from "./server/db/client";
 import { users } from "./server/db/schema";
 import { getEnv } from "./server/env";
 import { authConfig } from "./auth.config";
 import { ouvrirAvecCle } from "./server/cle-appareil";
+import { identifiantSiMotDePasseJuste } from "./server/secret-authentification";
 import type { AuthenticationResponseJSON } from "@simplewebauthn/types";
 
 // Provider Credentials : aucun accès réseau externe requis (contrairement à
@@ -44,11 +44,30 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         const password = typeof credentials?.password === "string" ? credentials.password : "";
         if (!email || !password) return null;
 
-        const [utilisateur] = await db.select().from(users).where(eq(users.email, email)).limit(1);
-        if (!utilisateur?.passwordHash) return null;
+        /**
+         * **LE CONDENSAT NE REMONTE PLUS JUSQU'ICI** — constat M9, 25 août 2026.
+         *
+         * Cette ligne était le seul `select()` nu du dépôt : elle ramenait la
+         * ligne entière, `password_hash` compris. Le rôle applicatif n'a plus le
+         * droit de lire cette colonne, et la vérification se fait en base
+         * (`src/server/secret-authentification.ts`).
+         *
+         * Ce qui revient ici est un identifiant, ou rien. Les trois refus —
+         * adresse inconnue, compte sans mot de passe, mot de passe faux — sont
+         * délibérément indiscernables : les séparer dirait à un inconnu quelles
+         * adresses existent.
+         */
+        const utilisateurId = await identifiantSiMotDePasseJuste(email, password);
+        if (!utilisateurId) return null;
 
-        const motDePasseValide = await compare(password, utilisateur.passwordHash);
-        if (!motDePasseValide) return null;
+        // Les colonnes ordinaires, une fois l'identité établie. `atlas_app` les
+        // lit toujours : seul le condensat lui a été retiré.
+        const [utilisateur] = await db
+          .select({ id: users.id, email: users.email, nom: users.nom })
+          .from(users)
+          .where(eq(users.id, utilisateurId))
+          .limit(1);
+        if (!utilisateur) return null;
 
         return { id: utilisateur.id, email: utilisateur.email, name: utilisateur.nom ?? undefined };
       },

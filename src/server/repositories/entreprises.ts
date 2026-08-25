@@ -24,7 +24,15 @@ export async function creerEntreprise(
     let utilisateurId = utilisateur.id;
     if (!utilisateurId) {
       if (!utilisateur.email) throw new Error("email requis pour créer un nouvel utilisateur");
-      const [u] = await tx.insert(users).values({ email: utilisateur.email, nom: utilisateur.nom }).returning();
+      // **`returning()` NU RAMENAIT LA LIGNE ENTIÈRE**, condensat compris — et
+      // `RETURNING` exige le droit de lire les colonnes rendues. Depuis M9, le
+      // rôle applicatif ne l'a plus sur `password_hash` : sans cette liste
+      // explicite, créer une entreprise échouerait. On ne demande que ce qu'on
+      // utilise, ce qui est de toute façon la règle.
+      const [u] = await tx
+        .insert(users)
+        .values({ email: utilisateur.email, nom: utilisateur.nom })
+        .returning({ id: users.id });
       utilisateurId = u.id;
     }
 
