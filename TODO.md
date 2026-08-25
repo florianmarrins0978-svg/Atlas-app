@@ -818,7 +818,7 @@ client a lu. Le détail est dans `CHANGELOG.md`.
 | **Le réglage de départ** | Codé sur **Visible**, ce que l'application faisait déjà. S'il préfère que chaque fiche parte **Masquée**, c'est le défaut de la colonne à retourner (une migration d'une ligne) |
 | **Masquer ou ne rien saisir ?** | Aujourd'hui masquer garde la durée pour lui. S'il voulait pouvoir ne rien saisir du tout, la molette devrait pouvoir revenir à « — », ce qu'elle ne sait pas faire |
 
-## ⚠ EN ATTENTE DE SA RÉPONSE — deux chantiers le même jour ? (22 août 2026)
+## ~~EN ATTENTE DE SA RÉPONSE — deux chantiers le même jour ?~~ — **B CODÉE le 25 août 2026**
 
 Sa colère du 22 août : *« je peux proposer le 24 alors qu'un client a validé le
 24 — corrige-moi ça ! Ça ne doit jamais se reproduire, c'est une erreur
@@ -835,10 +835,28 @@ un jour vide d'un jour à moitié pris.
 
 Planche 88, `appli/envoi-jour-deja-pris.html`. Deux questions posées, pas une :
 
-| | |
-|---|---|
-| **A / B / C** | ne rien écrire · « 1 chantier sur 2 équipes » · deux carrés comme au planning |
-| **Le fond** | veut-il **interdire** deux chantiers le même jour, ou seulement le voir ? |
+**SA RÉPONSE, le 25 août : B** — avec une réserve : *« par contre "1 chantier
+sur 2" on ne comprend pas très bien, comment on peut faire pour comprendre
+mieux ? »*
+
+**Le libellé a donc changé, et il avait raison.** « 1 chantier sur 2 équipes »
+compte ce qui est PRIS, alors que ce qu'il décide dépend de ce qui RESTE : il est
+en train de proposer une date, et la question est *puis-je encore envoyer
+quelqu'un ce jour-là*. D'où **« Reste 1 équipe sur 2 »** — même information,
+tournée du côté du geste. La planche 88 porte le nouveau libellé, et un contrôle
+interdit aux deux de diverger.
+
+**Codé** sur la liste des dates retenues, dans l'écran d'envoi : c'est le dernier
+endroit où il peut retirer une date, et le seul qu'il relit avant de partir. Le
+PIRE des deux demi-journées commande — un matin plein et un après-midi libre ne
+font pas « une équipe et demie ». Rien ne s'écrit sur un jour entièrement libre,
+ni quand il n'a qu'une équipe.
+
+**Sur le fond — interdire ou seulement voir —, il n'a pas répondu en ces
+termes**, et choisir B (une mention) plutôt qu'un refus se lit comme
+« seulement le voir ». C'est aussi le sens sûr : interdire bloquerait un jour où
+il peut réellement envoyer quelqu'un. **S'il veut l'interdiction, il le dira** —
+c'est une ligne de plus dans `verifierJourPropose`.
 
 **Sa liste — 24, 25, 26, 27, 28, 31 — était compatible avec les deux causes**,
 et rien dans sa capture ne permettait de trancher. Ne pas conclure à sa place :

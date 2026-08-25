@@ -49,6 +49,38 @@ et le contrôle a été vu rouge en débranchant le raccordement exprès. Trois
 captures rendent les trois états en image, parce que ce défaut-là s'est vu à
 l'œil et par aucun test. `ARCHITECTURE.md` §174.
 
+### Un jour à moitié pris le dit : « Reste 1 équipe sur 2 »
+
+*« Je peux proposer le 24 alors qu'un client a validé le 24 — corrige-moi ça ! »*
+Le défaut de code avait été réparé le 22 août. Ce qui restait n'en était pas un :
+avec deux équipes, un jour où une seule est prise **reste proposable**, et c'est
+voulu — mais rien ne le disait, et rien ne distinguait un jour vide d'un jour à
+moitié pris.
+
+**Ce que ça évite :** proposer une date en croyant la journée entière, découvrir
+sur place qu'une équipe est déjà ailleurs, et devoir rappeler le client.
+
+**Le libellé n'est pas celui de la planche, et c'est lui qui l'a redressé** :
+elle proposait « 1 chantier sur 2 équipes », il a répondu *« on ne comprend pas
+très bien »*. Il avait raison — cela compte ce qui est PRIS quand ce qu'il décide
+dépend de ce qui RESTE. La planche porte le nouveau libellé, et un contrôle
+interdit aux deux de diverger : une planche qui n'annonce plus ce que l'écran
+écrit lui fait valider une phrase qu'il ne verra jamais.
+
+**Le pire des deux demi-journées commande.** Un matin plein et un après-midi
+libre ne font pas « une équipe et demie » : il y a un moment de la journée où il
+n'y a personne. La moyenne annoncerait de la place là où il n'y en a pas — la
+faute exacte qu'il a signalée, sous une autre forme.
+
+Rien ne s'écrit sur un jour entièrement libre, ni quand il n'a qu'une équipe : un
+avertissement qui parle à tort s'apprend à être ignoré.
+
+**Deux contrôles, et le second existe à cause du défaut du même jour** : la règle
+est balayée pour toutes les combinaisons d'équipes prises sur n, et un second
+parcourt le chemin entier — deux équipes en base, un chantier posé, la mention
+lue à l'écran. *Un contrôle qui éprouve la règle ne voit pas une pièce
+débranchée* : les cinq conditions du devis venaient de le prouver.
+
 ### L'aperçu du devis reste collé pendant qu'on le règle
 
 *« Lorsque je modifie mon devis, je suis obligé de descendre pour voir les

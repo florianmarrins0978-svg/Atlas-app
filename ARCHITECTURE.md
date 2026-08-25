@@ -15372,3 +15372,75 @@ retirer serait pire que pas de réglage du tout.
 rougir : débrancher le raccordement fait tomber trois cas en nommant la ligne
 absente. `scripts/capture-conditions-devis.mts` rend les trois états en image —
 parce que ce défaut-là s'est vu à l'œil et par aucun test.
+
+---
+
+## 175. Un jour à moitié pris le dit, il ne se refuse pas
+
+**Sa colère du 22 août 2026 :** *« je peux proposer le 24 alors qu'un client a
+validé le 24 — corrige-moi ça ! Ça ne doit jamais se reproduire, c'est une
+erreur gravissime !!!! »*
+
+Deux choses se cachaient derrière, et il ne fallait pas les confondre :
+
+| | |
+|---|---|
+| **un vrai défaut** | un chantier commencé avant la fenêtre et encore en cours dedans n'était compté nulle part — réparé le jour même |
+| **un fonctionnement voulu** | avec **deux équipes**, un jour où une seule est prise reste proposable. Mais aucun écran ne le disait |
+
+### Ce qui a été codé, et ce qui ne l'a pas été
+
+**Sa réponse du 25 août : B**, la mention écrite en toutes lettres. Pas
+l'interdiction. Choisir une mention plutôt qu'un refus se lit comme « seulement
+le voir », et c'est aussi le sens sûr : interdire bloquerait un jour où il peut
+réellement envoyer quelqu'un.
+
+### Le libellé, qu'il a redressé lui-même
+
+La planche 88 proposait **« 1 chantier sur 2 équipes »**. Sa remarque en
+retenant B : *« on ne comprend pas très bien, comment on peut faire pour
+comprendre mieux ? »*
+
+Il avait raison, et la raison est nette : cette phrase compte ce qui est **pris**,
+alors que ce qu'il décide dépend de ce qui **reste**. Il est en train de proposer
+une date ; sa question est *puis-je encore envoyer quelqu'un ce jour-là*. D'où :
+
+> **Reste 1 équipe sur 2**
+
+Même information, tournée du côté du geste. La planche a été corrigée avec le
+code, et **un contrôle interdit aux deux de diverger** — une planche qui
+n'annonce plus ce que l'écran écrit lui fait valider une phrase qu'il ne verra
+jamais.
+
+### Le pire des deux demi-journées commande
+
+Un jour dont le matin est plein et l'après-midi libre n'a pas « une équipe et
+demie » de libre : il a un moment où il n'y a personne, et c'est celui-là qui
+contraint. **La moyenne annoncerait de la place là où il n'y en a pas** —
+exactement la faute qu'il a signalée, sous une autre forme. Le contrôle a été vu
+rouge en remplaçant le maximum par la moyenne.
+
+### Deux silences, et ils sont voulus
+
+- **rien sur un jour entièrement libre** ;
+- **rien quand il n'a qu'une équipe** : « Reste 0 équipe sur 1 » n'apprend rien à
+  qui n'a personne d'autre à envoyer, et le serveur refuse déjà ce jour-là.
+
+Un avertissement qui parle à tort s'apprend à être ignoré, et l'on perd le
+garde-fou sans s'en apercevoir (`CLAUDE.md` §4 ter).
+
+### Où la mention se pose
+
+Sur la **liste des dates retenues**, dans l'écran d'envoi — pas sur la case du
+calendrier. C'est le dernier endroit où il peut retirer une date, et le seul
+qu'il relit avant d'envoyer.
+
+### Deux contrôles, et pourquoi le second
+
+`test-reste-equipes.ts` balaie la règle pour toutes les combinaisons de *k*
+équipes prises sur *n*, virgule flottante comprise. `test-reste-equipes-e2e.ts`
+parcourt le chemin : deux équipes en base, un chantier posé, la mention lue à
+l'écran — et le jour libre d'à côté qui n'en porte aucune, dans la même liste.
+
+Le second existe à cause du défaut du même jour (§174) : *un contrôle qui éprouve
+la règle ne voit pas une pièce débranchée.*

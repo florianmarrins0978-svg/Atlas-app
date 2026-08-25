@@ -7,6 +7,7 @@ import PrimaryButton from "@/components/atlas/PrimaryButton";
 import { jourIso, jourLisible } from "@/lib/jour";
 import MoisCharge from "@/components/atlas/MoisCharge";
 import { useOccupation } from "@/components/atlas/useOccupation";
+import { ditCeQuiResteCeJour, equipesLibresCeJour } from "@/lib/planning-jour";
 import JourneeRegardee from "./JourneeRegardee";
 import { basculerJour } from "@/lib/calendrier";
 import { MOTIF_DEVIS_VIDE } from "@/lib/devis-envoyable";
@@ -166,9 +167,13 @@ function Contenu({
    * (`preparerEnvoiAction`) : sans lui, l'écran peindrait un mois vide et
    * annoncerait libre ce que l'envoi refuse.
    */
+  // Lu une fois : la liste des dates retenues l'interroge pour chaque ligne, et
+  // le relire dans la boucle n'aurait pas la même valeur si la préparation
+  // changeait entre deux lignes.
+  const nombreEquipes = preparation?.planning.nombreEquipes ?? 1;
   const { occupationDe, nomEquipe } = useOccupation({
     chantiers: preparation?.planning.chantiers ?? [],
-    nombreEquipes: preparation?.planning.nombreEquipes ?? 1,
+    nombreEquipes,
     absences: preparation?.planning.absences ?? [],
     equipesNommees: preparation?.planning.equipesNommees ?? [],
   });
@@ -621,8 +626,51 @@ function Contenu({
                     className="flex items-center justify-between rounded-full px-4 py-3 text-[15px]"
                     style={{ backgroundColor: colors.rustTint, color: colors.ink }}
                   >
-                    <span>{jourLisible(jour)}</span>
-                    <span className="text-[13px] font-medium" style={{ color: colors.rust }}>
+                    <span className="min-w-0 flex-1 text-left">
+                      <span className="block">{jourLisible(jour)}</span>
+                      {/* **CE QUI RESTE D'ÉQUIPES CE JOUR-LÀ — sa réponse B du
+                          25 août 2026** (planche 88).
+
+                          Sa colère du 22 août : *« je peux proposer le 24 alors
+                          qu'un client a validé le 24 »*. Le défaut de code a été
+                          réparé le jour même ; ce qui restait n'en était pas un
+                          — avec deux équipes, un jour à moitié pris reste
+                          proposable, et c'est voulu. Mais rien ne le disait.
+
+                          **Et le libellé n'est pas celui de la planche.** Elle
+                          proposait « 1 chantier sur 2 équipes » ; il a répondu
+                          *« on ne comprend pas très bien »*, et il a raison :
+                          cela compte ce qui est PRIS quand ce qu'il décide
+                          dépend de ce qui RESTE. La règle vit dans
+                          `planning-jour.ts` — une phrase écrite ici serait une
+                          seconde rédaction, invérifiable sans navigateur
+                          (`CLAUDE.md` §3).
+
+                          **Ici, et pas sur la case du calendrier.** C'est la
+                          liste de ce qu'il s'apprête à ENVOYER : c'est le
+                          dernier endroit où il peut retirer une date, et le seul
+                          qu'il relit avant de partir. */}
+                      {(() => {
+                        const reste = ditCeQuiResteCeJour(
+                          equipesLibresCeJour(
+                            occupationDe(jour, "matin").charge,
+                            occupationDe(jour, "apres_midi").charge,
+                            nombreEquipes
+                          ),
+                          nombreEquipes
+                        );
+                        return reste ? (
+                          <span
+                            data-atlas="reste-equipes"
+                            className="mt-0.5 block text-[12px]"
+                            style={{ color: colors.muted }}
+                          >
+                            {reste}
+                          </span>
+                        ) : null;
+                      })()}
+                    </span>
+                    <span className="ml-3 shrink-0 text-[13px] font-medium" style={{ color: colors.rust }}>
                       proposée
                     </span>
                   </button>
