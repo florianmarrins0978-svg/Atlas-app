@@ -5,6 +5,7 @@ import PrimaryButton from "@/components/atlas/PrimaryButton";
 import { colors } from "@/lib/design-tokens";
 import { composerMessageClient, lienTransmission, type CanalClient } from "@/lib/message-client";
 import { destinataireLisible } from "@/lib/numero-lisible";
+import { PHRASE_ADRESSE_LOCALE, ouvrableParLeClient } from "@/lib/adresse-du-client";
 import { marquerDepartMessagerie, useRetourDeMessagerie } from "@/lib/depart-messagerie";
 import { enregistrerCoordonneeClientAction } from "./actions";
 import type { Civilite } from "@/lib/civilite";
@@ -166,6 +167,30 @@ export default function TransmettreAuClient({
     } finally {
       setEnregistrement(false);
     }
+  }
+
+  // **LE MÊME REFUS QUE SUR LA FICHE D'ENTRETIEN — sa capture du 24 août 2026 :
+  // « Connexion au serveur impossible », sur `localhost`.**
+  //
+  // Le garde-fou n'existait que sur la fiche d'entretien, là où le défaut avait
+  // été trouvé. Or le devis part par le même chemin et prend la même adresse :
+  // ne le poser qu'à un endroit, c'était laisser le devis envoyer le lien mort.
+  // Une règle vaut pour tous les écrans qui la portent, ou elle ne vaut pas
+  // (`CLAUDE.md` §3).
+  //
+  // **Le devis, lui, est déjà parti** — c'est son lien qu'on transmet. Refuser
+  // le message ne défait rien : ce qu'on lui épargne, c'est un client qui reçoit
+  // une page morte et qu'il faut rappeler.
+  if (!ouvrableParLeClient(lien)) {
+    return (
+      <p
+        className="text-center text-[13px] leading-[1.6]"
+        style={{ color: colors.rust }}
+        data-atlas="refus-adresse-locale"
+      >
+        {PHRASE_ADRESSE_LOCALE}
+      </p>
+    );
   }
 
   return (

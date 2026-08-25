@@ -5,6 +5,7 @@ import PrimaryButton from "@/components/atlas/PrimaryButton";
 import { colors } from "@/lib/design-tokens";
 import { composerMessageFacture, lienTransmission, type CanalClient } from "@/lib/message-client";
 import { marquerDepartMessagerie } from "@/lib/depart-messagerie";
+import { PHRASE_ADRESSE_LOCALE, ouvrableParLeClient } from "@/lib/adresse-du-client";
 import { enregistrerCoordonneeClientAction } from "../export/actions";
 import { preparerLienFactureAction } from "./actions";
 
@@ -216,6 +217,26 @@ export default function TransmettreLaFacture({
     } finally {
       setEnCours(false);
     }
+  }
+
+  // **LE MÊME REFUS QUE SUR LA FICHE D'ENTRETIEN ET SUR LE DEVIS** — sa capture
+  // du 24 août 2026 : « Connexion au serveur impossible », sur `localhost`.
+  //
+  // **On mesure `origine`, pas `lienFacture`** : celui-ci est nul tant que le
+  // lien n'a pas été préparé, et une adresse absente se confondrait alors avec
+  // une adresse locale. C'est l'ADRESSE qui est en cause, et elle est là dès
+  // l'ouverture de l'écran — le dire avant qu'il prépare le lien lui évite un
+  // geste pour rien.
+  if (!ouvrableParLeClient(origine)) {
+    return (
+      <p
+        className="text-center text-[13px] leading-[1.6]"
+        style={{ color: colors.rust }}
+        data-atlas="refus-adresse-locale"
+      >
+        {PHRASE_ADRESSE_LOCALE}
+      </p>
+    );
   }
 
   return (
