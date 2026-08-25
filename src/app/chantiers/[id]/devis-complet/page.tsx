@@ -109,6 +109,12 @@ export default async function DevisCompletPage({ params }: { params: Promise<{ i
         dateEmission={devisRow.dateEmission}
         validite={VALIDITE}
         statut={devisRow.statut as "brouillon" | "envoye"}
+        // **Son logo, sur l'écran où il regarde son devis** (18 août 2026).
+        // Il l'avait posé dans « Devis & factures », vu dans l'aperçu de ce
+        // réglage, puis constaté qu'il n'apparaissait pas ici : *« j'ai rajouté
+        // un logo en haut à gauche mais il n'est pas visible »*. Le PDF le
+        // portait déjà — c'est cet écran-ci qui ne le montrait pas.
+        logo={entreprise?.logoStorageKey ?? null}
         emetteur={{
           nom: entreprise?.nom ?? "",
           adresse: entreprise?.adresse ?? "",

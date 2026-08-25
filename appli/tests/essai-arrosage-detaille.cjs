@@ -75,11 +75,14 @@ function cas(n, c, d){ if (c) { ok++; console.log('  ✓ ' + n); } else { ko++; 
   // 6,1 mm/h), ne partagent plus une vanne. Sa règle « ça ne se mélange
   // jamais », appliquée à la lettre — le plan les coloriait de la même
   // couleur, c'est ainsi que le défaut s'est vu.
-  // 5 depuis SON CROQUIS DU 18 AOÛT sur le quinconce : le damier retire une
-  // tête sur deux là où il couvre encore (vérifié, pas supposé). Moins de
-  // têtes, moins de débit, moins de vannes — c'est tout l'intérêt de sa règle,
-  // et il se lit ici.
-  cas('le jardin de départ donne 5 secteurs', secteurs === 5, 'lu : ' + secteurs);
+  // 6 depuis le 24 août 2026 (commit « Viser le moins de VANNES, et cesser de
+  // resserrer sous la portée »). Le « 5 » d'avant venait d'un quinconce qui se
+  // resserrait SOUS la portée pour retirer une tête — ce que sa règle du
+  // 17 août interdit (« jamais moins que la portée »). Le damier ne se resserre
+  // plus : quand il ne couvre pas à cet écart-là, on garde la grille alignée,
+  // qui pose une tête de plus ici, mais honnêtement. Six est la pose qui tient
+  // sans tricher.
+  cas('le jardin de départ donne 6 secteurs', secteurs === 6, 'lu : ' + secteurs);
 
   // **UN SECTEUR, UN MATÉRIEL** — et ce contrôle a CHANGÉ DE RÈGLE le 23 août
   // 2026, parce que le patron a changé la sienne.
@@ -146,19 +149,20 @@ function cas(n, c, d){ if (c) { ok++; console.log('  ✓ ' + n); } else { ko++; 
   cas('la pose est annoncée (carré ou quinconce)',
       /en quinconce|en carré/.test(resume), resume.slice(0, 90));
 
-  // ── LE QUINCONCE COÛTE MOINS CHER QUE LA GRILLE, ET IL COUVRE ───────────
+  // ── LE QUINCONCE N'EST RETENU QUE S'IL RETIRE DES TÊTES ────────────────
   //
-  // **Ce contrôle visait le nombre 11, et il est devenu faux le 18 août** —
-  // le jour où son croquis a montré ce qu'est vraiment un quinconce : un
-  // couloir à 14 arroseurs alignés se pose à **7**, une tête sur deux en
-  // alternant les bords. L'ancienne règle ne décalait que les rangées
-  // intérieures et n'économisait qu'un point par rangée décalée.
+  // **Ce contrôle a changé de règle le 24 août 2026, avec le calcul.** Il
+  // exigeait que la pelouse soit TOUJOURS en quinconce et TOUJOURS moins dense
+  // que l'aligné. Or le quinconce ne se resserre plus sous la portée (sa règle
+  // du 17 août) : quand le damier ne couvre pas à cet écart-là, on garde la
+  // grille alignée. La pelouse de départ tombe justement dans ce cas — quinconce
+  // et aligné y posent le même nombre de têtes —, et exiger le quinconce rendait
+  // rouge une pose devenue juste.
   //
-  // **Un nombre écrit en dur ne dit pas ce qu'il garde.** La règle, elle, ne
-  // bouge pas et se dit en deux temps : le quinconce pose **strictement
-  // moins** de têtes que la grille alignée, et il **couvre quand même**. La
-  // seconde moitié est la plus importante : sans elle, « moins d'arroseurs »
-  // se satisferait d'un jardin à sec.
+  // **La règle, elle, ne bouge pas et se dit en deux temps :** la pose retenue
+  // ne compte JAMAIS plus de têtes que la grille alignée, et le quinconce n'est
+  // retenu QUE quand il en retire — sinon l'aligné. Et il couvre (plus bas) :
+  // sans quoi « moins d'arroseurs » se satisferait d'un jardin à sec.
   const quinc = await page.evaluate(() => {
     const z = etat.zones.filter(x => TYPES[x.type].forme === 'surface')[0];
     const p = poser(z);
@@ -170,11 +174,10 @@ function cas(n, c, d){ if (c) { ok++; console.log('  ✓ ' + n); } else { ko++; 
       couvre: couvreTout(p.points, p.m.portee, L, l),
     };
   });
-  cas('la pelouse est bien posée en quinconce', quinc.quinconce === true,
-      JSON.stringify(quinc));
-  cas('le quinconce pose STRICTEMENT moins de têtes que la grille alignée',
-      quinc.quinconce && quinc.nombre > 0 && quinc.nombre < quinc.alignes,
-      JSON.stringify(quinc));
+  cas('la pose ne compte jamais plus de têtes que la grille alignée',
+      quinc.nombre > 0 && quinc.nombre <= quinc.alignes, JSON.stringify(quinc));
+  cas('le quinconce n’est retenu QUE quand il retire des têtes',
+      !quinc.quinconce || quinc.nombre < quinc.alignes, JSON.stringify(quinc));
   // Et il arrose tout : c'est ce qui interdit d'économiser une tête de trop.
   cas('et il arrose quand même toute la pelouse', quinc.couvre === true,
       JSON.stringify(quinc));

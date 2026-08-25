@@ -13,6 +13,19 @@ ligne « fait » qui ne l'est pas coûte plus cher qu'une ligne absente.
 
 ---
 
+## Photographier un devis pour en reprendre l'allure (25 août 2026)
+
+| | État |
+|---|---|
+| L'écran Réglages → Documents porte deux boutons *Photographier mon devis / ma facture*, **en tête** de « L'allure de mes devis » | **fait** — `DocumentsClient.tsx` ; appareil photo **ou** photothèque (`accept="image/*"`, sans `capture`) |
+| Lecture de l'allure (couleurs, police reconnue) et des mentions | **fait** — `src/server/ai/services/lire-allure-devis.ts`, même patron que `lire-ticket.ts` |
+| Jamais les lignes ni les prix ; jamais le logo (dit en réserve) | **fait** — la réserve du logo est **toujours** posée |
+| La photo est nettoyée de ses métadonnées comme le logo | **fait** — `preparerPhotoEntrante` |
+| Fonction pure de lecture éprouvée sans clé | **fait** — `scripts/test-lecture-allure-devis.ts`, 0 échec |
+| L'appel réel au fournisseur de vision | **NON vérifié ici** (aucune clé) — à jouer sur son espace, comme la dictée |
+
+---
+
 ## Sécurité : lot 2B — M3 et M6 fermés (24 août 2026)
 
 | | État |

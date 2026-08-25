@@ -9,6 +9,18 @@ sert.
 
 ---
 
+## PHOTOGRAPHIER UN DEVIS POUR EN REPRENDRE L'ALLURE (25 août 2026)
+
+Nouvelle brique, sur l'écran Réglages → Documents. Avant d'y toucher :
+
+| | |
+|---|---|
+| **La lecture vit dans un service** | `src/server/ai/services/lire-allure-devis.ts`. `lireReponseAllure` est PURE et éprouvée sans clé (`scripts/test-lecture-allure-devis.ts`) ; `lireAllureDevis` appelle le fournisseur de vision — **non vérifié ici**, à jouer sur son espace avec sa clé, comme la dictée |
+| **L'action fusionne, elle n'écrase pas** | `reprendreAllurePhotoAction` (`actions.ts`) : un champ non lu (`null`) laisse la valeur d'avant. On ne pose une police que sur une famille reconnue ; une couleur mal lue vaut `null` ; un acompte hors bornes tombe |
+| **Le logo n'est JAMAIS repris** | un modèle décrit une image, il ne la découpe pas. La réserve le dit toujours — ne pas « améliorer » ça en croyant reprendre le logo |
+| **La photo passe par la porte unique** | `preparerPhotoEntrante`, comme le logo : métadonnées GPS retirées avant tout envoi |
+| **Vu à l'écran** | `npx tsx scripts/capture-documents-photo.mts <dossier>` (serveur bâti + connecté). Le `next dev` de ce conteneur ne découvre pas les routes — servir une version **bâtie** (`next build` + `next start`, `ATLAS_PROFIL=banc AUTH_TRUST_HOST=true`) |
+
 ## LOT 2B FERMÉ, ET SEPT CONTRÔLES RÉPARÉS AVEC LUI (25 août 2026)
 
 M3 et M6 sont clos. Ce qu'il faut savoir avant d'y toucher :
@@ -2149,6 +2161,13 @@ planches) : la batterie devrait nettoyer ces dossiers avant l'étape
 reviendra à la prochaine page supprimée.
 
 ## Ce qui vient d'être terminé
+
+**SON LOGO SUR L'ÉCRAN DU DEVIS (18 août).** Il l'avait posé dans « Devis &
+factures » et ne le voyait pas là où il rédige. Le PDF le portait déjà ; c'est
+l'écran qui compose son en-tête à la main, sans passer par la fabrique de
+documents. **Deux écritures du même en-tête** — si un troisième élément arrive
+un jour (une mention, un cachet), penser aux DEUX. `ARCHITECTURE.md` §173.
+
 
 **LE PENSE-BÊTE DE LA FEUILLE DE CHANTIER (23 août).** *« Entre "Copier
 l'adresse" et "Ouvrir le PDF", un petit encadré où marquer quelque chose. »*
