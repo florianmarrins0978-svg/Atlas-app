@@ -15186,3 +15186,42 @@ demandée le 3 août 2026. Il reste, et la réponse lui a été donnée en une l
 
 Supprimer sur un « si » non vérifié aurait retiré un chemin qu'il réclame
 depuis trois semaines.
+
+---
+
+## 140. Son logo était partout, sauf sur l'écran qu'il regarde
+
+**Sa remarque du 18 août 2026, capture à l'appui :** *« je viens de modifier
+l'apparence de mon devis, j'ai rajouté un logo en haut à gauche mais il n'est
+pas visible »*.
+
+**Il avait raison, et le logo n'était pourtant pas perdu.** Il partait bien sur
+le PDF (`document-commun.ts`, « Le logo, au-dessus du nom ») et s'affichait dans
+l'aperçu de « Devis & factures » (`Feuille`). Le seul endroit où il manquait est
+celui où l'artisan passe son temps : **l'écran où il rédige son devis**.
+
+### Pourquoi ce trou existait, et ce qu'il enseigne
+
+L'écran du devis compose son en-tête **à la main** — nom, téléphone, e-mail,
+références à droite — sans passer par la fabrique de documents. Deux écritures
+du même en-tête, donc, et c'est la seconde qui a vieilli : le jour où le logo
+est arrivé, elle ne l'a pas su. C'est exactement le piège que `CLAUDE.md` §3
+nomme : *jamais de règle dupliquée entre l'affichage et la vérification*, et il
+vaut aussi entre deux affichages.
+
+**Ce qui n'a PAS été fait, et pourquoi.** Fusionner cet écran avec la fabrique
+de PDF serait la vraie réparation, mais elle est lourde : l'un est modifiable au
+doigt, l'autre est figé et paginé. Le logo est donc posé ici avec **les mêmes
+règles que le PDF** — au-dessus du nom, hauteur fixe et largeur libre — et le
+contrôle mesure les deux propriétés qui comptent.
+
+### Le contrôle, et ce qu'il refuse de croire
+
+`test-allure-de-mes-devis-e2e.ts` **pose le logo comme lui le pose** — dans les
+réglages, par le champ de fichier — puis ouvre un devis. Il vérifie trois
+choses, et la première est la moins évidente : **l'image est CHARGÉE**
+(`naturalWidth > 0`), pas seulement présente. Une balise avec une mauvaise
+adresse est une balise : elle passerait au vert et c'est lui qui verrait le
+carré vide. Ensuite : le logo est **au-dessus** du nom, et il n'est pas écrasé.
+
+Éprouvé rouge avant d'être livré, en retirant l'image de l'écran.

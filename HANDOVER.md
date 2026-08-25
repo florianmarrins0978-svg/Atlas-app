@@ -2150,6 +2150,13 @@ reviendra à la prochaine page supprimée.
 
 ## Ce qui vient d'être terminé
 
+**SON LOGO SUR L'ÉCRAN DU DEVIS (18 août).** Il l'avait posé dans « Devis &
+factures » et ne le voyait pas là où il rédige. Le PDF le portait déjà ; c'est
+l'écran qui compose son en-tête à la main, sans passer par la fabrique de
+documents. **Deux écritures du même en-tête** — si un troisième élément arrive
+un jour (une mention, un cachet), penser aux DEUX. `ARCHITECTURE.md` §140.
+
+
 **LE PENSE-BÊTE DE LA FEUILLE DE CHANTIER (23 août).** *« Entre "Copier
 l'adresse" et "Ouvrir le PDF", un petit encadré où marquer quelque chose. »*
 Proposition A retenue : cadre ouvert en permanence. Colonne `chantiers.note`,
