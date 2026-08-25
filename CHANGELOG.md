@@ -9,6 +9,19 @@ Format : le plus récent en tête.
 
 ## 2026-08-25
 
+### Le lot 2B est au vert — et sept contrôles fragiles avec lui
+
+`verifier:avant-livraison` : **223/223** suites base, **110/110** suites
+navigateur, connexion réelle dans un navigateur derrière une origine étrangère.
+Verdict complet dans `docs/lot-2b-securite-verdict.md`.
+
+**Il a fallu cinq passages, et aucun rouge ne venait du lot.** Le détail des sept
+contrôles réparés est ci-dessous ; ils ont un point commun, et c'est le seul qui
+mérite d'être retenu : **ils attendaient un délai plutôt qu'un signal**, ou ils
+guettaient une formulation plutôt qu'une règle. Aucun n'a été affaibli — les
+assertions défendent la même chose, elles regardent seulement au bon moment.
+
+
 ### Deux suites de dates rougissaient un jour sur trente, sur un écran juste
 
 La batterie du lot 2B a franchi minuit, et deux suites navigateur sont tombées

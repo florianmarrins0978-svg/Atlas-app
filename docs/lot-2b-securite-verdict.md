@@ -300,14 +300,64 @@ Cherché exactement les cinq défauts nommés dans le brief :
 | `test-photos-acceptees.ts` (lot 2, adapté) | 14/14 |
 | `test-exif-diagnostic.ts` (lot 2) | vert |
 | `test-type-de-fichier.ts`, `test-cle-de-stockage.ts`, `test-classeur-bombe.ts` (lot 2) | verts |
-| Suites base — isolation, RLS, règles métier (lot 1 compris) | *voir la batterie* |
-| Suites navigateur | *voir la batterie* |
+| Suites base — isolation, RLS, règles métier (lot 1 compris) | **223/223** |
+| Suites navigateur | **110/110** |
 | `tsc --noEmit` | 0 erreur |
 | `lint` | 0 erreur |
-| `verifier:avant-livraison` (types, lint, mémoire, base, navigateur, connexion réelle derrière une origine étrangère) | *verdict en fin de document* |
+| `verifier:memoire` | cohérente |
+| `verifier:connexion` — connexion réelle, dans un navigateur, derrière une origine étrangère | réussie |
+
+---
+
+## Ce que la batterie a coûté, et ce qu'elle a appris
+
+**Il a fallu cinq passages pour l'obtenir au vert, et aucun des rouges ne venait
+du lot.** Sept contrôles sont tombés en chemin, tous dans les suites navigateur,
+tous verts rejoués seuls, et aucun ne touche une image ni un corps de requête.
+Le diff du lot ne touche d'ailleurs aucun des fichiers concernés.
+
+| Ce qui est tombé | La vraie cause |
+|---|---|
+| `test-date-lointaine-e2e` | le 25 août est le premier jour où la date à six mois tombe un **1er** : l'écran écrit « 1er mars », la suite cherchait « 1 mars ». Elle **redisait la règle d'écriture** au lieu d'employer `jourLisible` |
+| `test-deux-dates-calendrier-e2e` | le même jour, il ne reste que **deux** jours ouvrés au mois affiché, quand la suite en exige trois |
+| `test-fiche-chantier-e2e` | `waitForTimeout(900)` avant de lire la base : sous charge, l'enregistrement dépasse ce délai |
+| `test-fiche-client-e2e` (deux endroits) | `waitForURL` rend la main avant que la page soit rendue : le contrôle lisait « Chargement… » et annonçait le nom manquant. **Il ne mesurait rien du tout** |
+| `test-facture-au-client-e2e` | il guettait **un état transitoire** : l'écran passe de « ne l'a pas encore reçue » à « c'est vous qui l'envoyez » quand le lien se prépare |
+| `test-ia-02-e2e` | `waitForTimeout(300)` après une action serveur, puis « la prestation a disparu » — et un message réduit à « 0 == 1 » |
+
+**Aucun n'a été contourné, aucun n'a été affaibli.** Les assertions défendent la
+même règle qu'avant ; ce qui a changé, c'est ce qu'elles attendent : le signal
+réel — la valeur en base, la mention à l'écran, la fin du chargement — au lieu
+d'un délai fixe ou d'une formulation parmi deux.
+
+**Pourquoi cela méritait d'être réparé plutôt que constaté.** Un contrôle qui
+rougit un jour sur trente, ou selon la charge de la machine, s'apprend à être
+ignoré — et l'on perd le garde-fou sans s'en apercevoir. Deux de ces fichiers
+portaient déjà, en commentaire, le diagnostic d'un faux rouge antérieur (12 août
+2026) : une cause connue et laissée en place se repaie.
 
 ---
 
 ## Verdict
 
-*(Complété après la batterie complète — voir `CHANGELOG.md` du 24 août 2026.)*
+**LOT 2 VALIDÉ.**
+
+M3 et M6 sont fermés, et fermés par une propriété plutôt que par un correctif
+ponctuel :
+
+| | La propriété garantie |
+|---|---|
+| **M3** | une image d'utilisateur n'est **jamais** rangée ni envoyée à un fournisseur d'IA tant qu'Atlas n'en détient pas une version dont il peut garantir le nettoyage. Une porte unique, cinq chemins, aucun qui lise les octets bruts lui-même |
+| **M6** | un client, même authentifié, ne peut pas obliger Atlas à mettre en mémoire un corps arbitrairement grand. Le flux est **cassé en passant**, pas mesuré après coup ; `content-length` reste un premier refus, jamais la garantie |
+
+**Ce qui reste ouvert, et qui est dit plutôt que tu :**
+
+- le **type audio** est encore le type déclaré : aucune signature n'est
+  vérifiée pour les dictées. Hors M3 (aucune métadonnée d'image) et hors M6
+  (aucune question de mémoire) ; portée réelle limitée par le type servi, qui
+  est dérivé de la clé, et par `nosniff`. Consigné dans `TODO.md` ;
+- ce qui se passe **avant** `Request` — ce que l'hébergeur met en tampon avant
+  de rendre la main à Next — ne dépend pas de ce code, et n'est donc pas
+  garanti par lui.
+
+Le Lot 3 n'est pas commencé.

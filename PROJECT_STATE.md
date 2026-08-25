@@ -1,9 +1,7 @@
 # État du projet
 
-**Dernière mise à jour :** 2026-08-23 · branche `main`
-· dernière migration `drizzle/0061_note_chantier.sql`
-**Dernière mise à jour :** 2026-08-24 · branche `main`
-· dernière migration `drizzle/0062_tentatives_connexion.sql`
+**Dernière mise à jour :** 2026-08-25 · branche `main`
+· dernière migration `drizzle/0063_cles_appareil.sql`
 
 
 *(Le numéro du dernier commit ne figure plus ici : il était faux dès le commit
@@ -25,6 +23,14 @@ ligne « fait » qui ne l'est pas coûte plus cher qu'une ligne absente.
 | Le corps d'une requête est borné **pendant** sa lecture | **fait** — `ARCHITECTURE.md` §165 |
 | Le type AUDIO reste le type déclaré (aucune signature vérifiée) | **signalé, non traité** — hors M3/M6 |
 | Sauvegardes | **toujours aucune** — le point le plus grave du dépôt |
+
+**Batterie complète au vert le 25 août 2026** : 223/223 suites base, 110/110
+suites navigateur, connexion réelle derrière une origine étrangère. Verdict
+transmissible : `docs/lot-2b-securite-verdict.md`.
+
+**Sept contrôles de suites navigateur ont été réparés au passage**, tous
+étrangers au lot : ils attendaient un délai plutôt qu'un signal, ou guettaient
+une formulation plutôt qu'une règle (`CHANGELOG.md` du 25 août).
 
 ---
 
