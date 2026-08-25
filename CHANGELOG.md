@@ -105,6 +105,41 @@ avant de vérifier qu'elle avait survécu à l'assistant. Sous la batterie, l'ac
 serveur dépasse ce délai : l'assistant était accusé d'un effacement qui n'avait
 pas eu lieu. Elle attend maintenant que la requête soit partie — et son message
 nomme le coupable, au lieu d'un « 0 == 1 » qui envoyait chercher partout.
+### L'accueil vide ne dit plus qu'il est vide
+
+**Sa demande, capture à l'appui :** *« supprime la phrase "aucun chantier pour
+l'instant" »*.
+
+Elle disait deux choses, et les deux étaient déjà à l'écran : que la liste est
+vide — cela se voit — et par où commencer, alors que « CRÉER UN DEVIS » et son
+rond doré sont juste au-dessus. Une phrase qui répète ce qu'on voit prend la
+place des bandeaux, qui, eux, appellent une action.
+
+**Les bandeaux restent, et c'est la moitié qui compte** : ils portent les
+réponses de ses clients — un devis accepté, une autre date proposée — et elles
+arrivent justement quand plus aucun chantier n'est en cours.
+
+**Le contrôle lit la SOURCE, et il faut savoir pourquoi.** L'état à mesurer —
+aucun chantier — est hors de portée des suites navigateur, qui partagent le
+compte de démonstration et en portent toujours. Une suite qui « vérifierait »
+l'absence sur un accueil plein serait verte sans avoir rien mesuré. C'est
+grossier, et c'est plus honnête qu'un vert qui ne prouve rien
+(`scripts/test-accueil-liste-vide.ts`, vu rouge contre le retour de la phrase).
+
+### Choisir une date se fait d'un seul doigt
+
+**« Proposer ce jour » est retiré** — sa demande : *« je dois pouvoir
+sélectionner les jours juste en les touchant, pas besoin de cliquer sur
+proposer »*. Toucher une case du calendrier ouvre toujours la fiche de la
+journée — qui est déjà là, avec quelle équipe — mais elle n'engage plus rien :
+c'est la case qui engage, et la retoucher retire la date. Un appui par date
+économisé sur chaque devis.
+
+Ce qui ne change pas : le serveur tranche toujours avant qu'une case s'allume,
+et un jour refusé s'ouvre quand même en disant pourquoi. Ce qui a été ajouté au
+passage : deux cases touchées coup sur coup ne se marchent plus dessus — la
+réponse tardive de la première ne vient plus cocher un jour déjà quitté.
+
 ### L'écran Informations : ses cases s'écrivent de nouveau, et il y a moins à lire
 
 *Ses captures du 25 août : « je peux rien modifier, les cases ne sont pas
@@ -140,7 +175,7 @@ le devis moi-même » *si* « Valider et calculer le prix » ouvrait le devis. C
 n'est pas le cas : ce bouton ouvre l'écran PRIX. Le lien saute cette étape —
 c'est la sortie de secours qu'il avait demandée le 3 août 2026. Il reste.
 
-`ARCHITECTURE.md` §170.
+`ARCHITECTURE.md` §171.
 
 ---
 
@@ -451,6 +486,31 @@ La typographie passait déjà par `--font-display` : elle suit la charte sans
 qu'aucun écran soit touché. Les rayons, non — **soixante-six fichiers** les
 écrivent en dur (`rounded-[13px]`), et une charte ne peut rien sur ce qui ne
 passe pas par elle. C'est annoncé, pas fait.
+
+### L'onglet courant devient une pastille — sur Brume moderne, et nulle part ailleurs
+
+*« Modifie aussi la sélection des catégories, juste pour Brume moderne. »* Sur
+la planche 92, l'onglet courant de la barre du bas est une pastille arrondie
+tenue par l'accent ; dans l'application, c'est un trait doré qui glisse.
+
+**Le « juste » est la moitié qui compte.** Le marqueur se décrit en variables
+CSS dont **le repli est la valeur d'aujourd'hui** — une charte muette garde donc
+son trait, au pixel près. Mesuré sur trois chartes : Origine 1 px sans rayon,
+Brume 29 px avec un rayon de 11, Pierre 1 px sans rayon.
+
+**Ce qui ne change PAS, et c'est délibéré : le mouvement.** Le marqueur glisse
+d'un onglet à l'autre sur la même courbe, celle que le patron a retenue en la
+voyant. Seule son apparence suit la charte — remplacer le glissement aurait
+défait un choix déjà fait.
+
+**Un piège que la pastille réveille et que le trait cachait :** le marqueur est
+rendu APRÈS les liens dans le document. Haut d'un pixel au ras du bas, l'ordre
+était sans conséquence ; devenu pastille, il passerait par-dessus le libellé.
+Les liens prennent donc `relative z-[1]`, et le contrôle l'exige.
+
+**La barre du bas ne sait rien de la charte**, et c'est ce qui compte pour la
+suite : le jour où une deuxième charte voudra ce marqueur, il n'y a rien à
+rouvrir dans le composant.
 
 ### Un contrôle de devis comparait une pendule, pas un document
 

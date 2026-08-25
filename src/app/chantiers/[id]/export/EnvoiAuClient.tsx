@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { colors, font, smallCaps } from "@/lib/design-tokens";
 import BottomSheet from "@/components/atlas/BottomSheet";
 import PrimaryButton from "@/components/atlas/PrimaryButton";
@@ -145,6 +145,14 @@ function Contenu({
   const [verdict, setVerdict] = useState<VerdictJour | null>(null);
   const [verification, setVerification] = useState(false);
   /**
+   * Le dernier jour touché, hors du cycle de rendu.
+   *
+   * Il ne s'affiche nulle part : il sert à jeter le verdict d'une case qu'il a
+   * déjà quittée. Un `useState` ne conviendrait pas — la fonction qui attend le
+   * serveur lirait la valeur figée au moment de son appel.
+   */
+  const dernierTouche = useRef("");
+  /**
    * Le mois affiché.
    *
    * **`null` tant que la préparation n'est pas là**, pour partir sur le mois
@@ -241,43 +249,46 @@ function Contenu({
   }
 
   /**
-   * Un jour touché AU CALENDRIER.
+   * Un jour TOUCHÉ au calendrier : il s'ouvre, et il se propose du même geste.
    *
-   * Déjà retenu → on le retire tout de suite : il est passé par le serveur, et
-   * le redemander pour l'enlever serait attendre pour rien.
+   * **Sa demande du 25 août 2026 :** *« je dois pouvoir sélectionner les jours
+   * juste en les touchant, pas besoin de cliquer sur proposer »*.
    *
-   * Sinon → on demande d'abord au serveur, et on ne le retient que s'il tient.
-   * Le calendrier ne connaît que la fenêtre proche : au-delà, lui seul sait si
-   * la journée est libre (`verifierJourPropose`). Proposer un jour que l'envoi
-   * refuserait ensuite coûte un aller-retour avec le client.
+   * Les deux gestes avaient été séparés le 22 août, pour qu'il puisse
+   * CONSULTER une journée chargée sans l'engager (planche 91). La consultation
+   * demeure — la fiche s'ouvre dessous et dit qui est déjà là —, mais elle
+   * n'engage plus rien : c'est la case qui engage, et un jour touché par
+   * erreur se retire du même doigt, sa case s'éteignant sous ses yeux. Le
+   * bouton, lui, coûtait un second geste par date et sur chaque devis.
+   *
+   * Trois partis pris, et aucun n'est indifférent :
+   *
+   * 1. **le retrait ne se fait pas attendre.** Le jour est déjà passé par le
+   *    serveur pour entrer ; le redemander pour sortir serait attendre pour
+   *    rien, et une case qui met une seconde à s'éteindre se retouche.
+   * 2. **l'ajout, si.** Le calendrier ne connaît que la fenêtre proche ;
+   *    au-delà, seul `verifierJourPropose` sait si la journée tient. Proposer
+   *    un jour que l'envoi refuserait ensuite coûte un aller-retour au client.
+   * 3. **un verdict en retard ne retient plus rien.** Deux cases touchées coup
+   *    sur coup — ce qui est le geste ordinaire quand on cherche deux dates —,
+   *    et la réponse de la première reviendrait cocher un jour qu'il a quitté.
    */
-  /**
-   * **REGARDER un jour n'est plus le RETENIR** — sa demande du 22 août 2026,
-   * validée sur planche 91 : *« la possibilité de cliquer sur les jours pour
-   * voir quels chantiers y sont déjà affectés, comme ça on peut savoir si oui
-   * ou non on peut rajouter des clients »*.
-   *
-   * Jusque-là, toucher un jour au calendrier le proposait au client dans la
-   * foulée. Or ce qu'il veut d'abord, c'est CONSULTER une journée chargée pour
-   * juger s'il peut s'y glisser — et un jour consulté par erreur partait chez
-   * quelqu'un. Le second geste, « Proposer ce jour », vit sur la fiche du jour.
-   *
-   * Le serveur est interrogé dès le regard : le calendrier ne connaît que la
-   * fenêtre proche, et lui seul sait si la journée tient au-delà.
-   */
-  async function regarderLeJour(jour: string) {
-    // Retoucher le jour déjà ouvert le referme — le même geste qu'au planning.
-    if (jourInterroge === jour) {
-      setJourInterroge("");
-      setVerdict(null);
-      return;
-    }
+  async function toucherLeJour(jour: string) {
+    const retirer = selection.includes(jour);
+    dernierTouche.current = jour;
     setJourInterroge(jour);
     setVerdict(null);
     setVerification(true);
+    if (retirer) basculer(jour);
     try {
-      setVerdict(await verifierJourProposeAction(chantierId, jour, preparation?.dureeDemiJournees));
+      const rendu = await verifierJourProposeAction(chantierId, jour, preparation?.dureeDemiJournees);
+      if (dernierTouche.current !== jour) return;
+      setVerdict(rendu);
+      // Un jour refusé se REGARDE quand même : la fiche dit pourquoi, la case
+      // reste éteinte. C'est ce qui reste du geste en deux temps.
+      if (!retirer && rendu.retenable) basculer(jour);
     } catch {
+      if (dernierTouche.current !== jour) return;
       setVerdict({
         jour,
         retenable: false,
@@ -285,7 +296,7 @@ function Contenu({
         alternative: null,
       });
     } finally {
-      setVerification(false);
+      if (dernierTouche.current === jour) setVerification(false);
     }
   }
 
@@ -543,7 +554,7 @@ function Contenu({
                   setCurseur={(maj) => setCurseur((c) => (c ? maj(c) : c))}
                   aujourdHui={jourIso(new Date())}
                   jourTouche={jourInterroge || null}
-                  onToucherJour={regarderLeJour}
+                  onToucherJour={toucherLeJour}
                   occupationDe={occupationDe}
                   jourRetenus={selection}
                   reperePrefixe="envoi-"
@@ -561,7 +572,6 @@ function Contenu({
                 nomEquipe={nomEquipe}
                 verdict={verification || !verdict ? null : verdict}
                 dejaRetenu={selection.includes(jourInterroge)}
-                onRetenir={() => basculer(jourInterroge)}
               />
             )}
 
@@ -572,11 +582,16 @@ function Contenu({
               <p className="mt-1.5 text-center text-[13px]" style={{ color: colors.muted }}>
                 <button
                   type="button"
-                  onClick={() => regarderLeJour(verdict.alternative!)}
+                  onClick={() => toucherLeJour(verdict.alternative!)}
                   className="font-medium underline"
                   style={{ color: colors.rust }}
                 >
-                  Voir le {jourLisible(verdict.alternative)}
+                  {/* **« Voir » serait devenu un mensonge le 25 août 2026** :
+                      ce lien fait exactement ce que fait la case du calendrier,
+                      et la case propose maintenant. Un bouton qui engage une
+                      date sous un mot qui promet de regarder, c'est le défaut
+                      que le geste en deux temps prétendait éviter. */}
+                  Proposer le {jourLisible(verdict.alternative)}
                 </button>
               </p>
             )}

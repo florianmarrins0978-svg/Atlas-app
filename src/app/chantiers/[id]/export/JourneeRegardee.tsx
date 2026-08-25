@@ -25,10 +25,12 @@ import type { JourIso } from "@/server/disponibilites";
  * 1. **Un chantier est nommé UNE fois**, ses demi-journées se lisent dessous.
  *    Deux lignes pour le même client se lisaient comme deux chantiers — sa
  *    correction du 21 août, sur le planning.
- * 2. **Elle ne se manipule pas.** La fiche du planning déplace, change
- *    d'équipe, retire ; ici on REGARDE avant de proposer une date. Y remettre
- *    des gestes ferait deux écrans qui modifient la même journée, et le patron
- *    ne saurait plus lequel fait foi.
+ * 2. **Elle ne se manipule pas** — et depuis le 25 août 2026, plus du tout.
+ *    Elle portait « Proposer ce jour » ; sa demande — *« je dois pouvoir
+ *    sélectionner les jours juste en les touchant, pas besoin de cliquer sur
+ *    proposer »* — l'a rendue à son seul rôle : DIRE ce qu'il y a ce jour-là.
+ *    C'est la case du calendrier qui engage la date, et elle seule : deux
+ *    endroits pour le même geste, et l'on ne sait plus lequel fait foi.
  * 3. **Le verdict est celui du serveur**, jamais recalculé ici : proposer un
  *    jour que l'envoi refuserait ensuite coûte un aller-retour avec le client.
  * ───────────────────────────────────────────────────────────────────────────
@@ -38,7 +40,6 @@ export default function JourneeRegardee({
   occupationDe,
   nomEquipe,
   verdict,
-  onRetenir,
   dejaRetenu,
 }: {
   jour: JourIso;
@@ -47,7 +48,6 @@ export default function JourneeRegardee({
   nomEquipe: (rang: number) => string;
   /** Ce que le serveur répond pour CE jour : `null` tant qu'il n'a pas répondu. */
   verdict: { retenable: boolean; raison: string | null } | null;
-  onRetenir: () => void;
   dejaRetenu: boolean;
 }) {
   // **Un samedi se regarde et se propose comme un mardi.** Sa règle du 23 août
@@ -167,20 +167,22 @@ export default function JourneeRegardee({
                 ? "Ce jour est proposé à votre client."
                 : "Il reste de la place."}
         </span>
-        <button
-          type="button"
-          data-atlas="retenir-le-jour"
-          onClick={onRetenir}
-          disabled={!verdict?.retenable}
-          className="flex-shrink-0 rounded-full px-[15px] py-[9px] text-[12.5px] font-semibold disabled:cursor-not-allowed"
-          style={
-            verdict?.retenable
-              ? { backgroundColor: colors.rust, color: colors.card }
-              : { backgroundColor: "transparent", color: colors.muted, boxShadow: `inset 0 0 0 1px ${colors.line}` }
-          }
-        >
-          {dejaRetenu ? "Ne plus proposer" : "Proposer ce jour"}
-        </button>
+        {/* **Plus un bouton, un ÉTAT** — sa demande du 25 août 2026 : *« je dois
+            pouvoir sélectionner les jours juste en les touchant, pas besoin de
+            cliquer sur proposer »*. La case du calendrier engage la date ; il
+            reste à DIRE ici que ce jour-là est engagé, car la phrase de gauche
+            appartient au serveur et cède la place à un avertissement dès qu'il
+            y en a un. Sans ce mot, un jour proposé ET signalé complet ne se
+            lisait plus que par la teinte de sa case. */}
+        {dejaRetenu && (
+          <span
+            data-atlas="jour-propose"
+            className="flex-shrink-0 text-[11px] font-semibold uppercase leading-none"
+            style={{ letterSpacing: "0.12em", color: colors.rust }}
+          >
+            proposé
+          </span>
+        )}
       </div>
     </Cadre>
   );

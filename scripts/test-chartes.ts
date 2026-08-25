@@ -87,6 +87,49 @@ essai("le repli de --font-display EST la serif d'aujourd'hui", () => {
   );
 });
 
+essai("le marqueur d'onglet ne bouge QUE pour Brume", () => {
+  // **Sa demande du 24 août 2026 :** *« modifie aussi la sélection des
+  // catégories, juste pour Brume moderne »*. Le « juste » est la moitié qui
+  // compte : sept chartes doivent garder le trait doré.
+  for (const c of CHARTES) {
+    const v = variablesCharte(c);
+    const marqueur = Object.keys(v).filter((k) => k.startsWith("--atlas-onglet"));
+    if (c.nom === "brume") {
+      assert.ok(marqueur.length > 0, "Brume ne pose pas la pastille : sa barre du bas garde le trait");
+      assert.ok(
+        v["--atlas-onglet-fond"]?.includes(charte("brume").jetons.rust),
+        "la pastille n'est pas teintée de l'accent de la charte"
+      );
+    } else {
+      assert.deepEqual(
+        marqueur,
+        [],
+        `« ${c.libelle} » pose ${marqueur.join(", ")} : sa barre du bas changerait alors qu'il ne l'a pas demandé`
+      );
+    }
+  }
+});
+
+essai("la barre du bas garde le trait doré en REPLI", () => {
+  // Si le composant cessait de replier sur la valeur d'aujourd'hui, les sept
+  // autres chartes perdraient leur trait — et rien ne le dirait avant une
+  // capture.
+  const nav = readFileSync(new URL("../src/components/atlas/AtlasBottomNav.tsx", import.meta.url), "utf8");
+  for (const [variable, repli] of [
+    ["--atlas-onglet-fond", "colors.or"],
+    ["--atlas-onglet-hauteur", "1px"],
+    ["--atlas-onglet-haut", "auto"],
+    ["--atlas-onglet-rayon", "0"],
+  ]) {
+    assert.ok(
+      new RegExp(`var\\(${variable},\\s*\\$?\\{?${repli.replace(".", "\\.")}`).test(nav),
+      `${variable} n'a pas « ${repli} » pour repli : les autres chartes perdraient leur trait`
+    );
+  }
+  // Et la pastille doit passer DERRIÈRE le libellé, sinon elle le recouvre.
+  assert.ok(/relative z-\[1\]/.test(nav), "les libellés ne passent pas au-dessus du marqueur");
+});
+
 essai("le GABARIT et la chaîne CSS disent la même chose", () => {
   // **Le défaut du 24 août 2026, et aucun contrôle ne le voyait.** `layout.tsx`
   // reparcourait `c.jetons` de son côté au lieu d'appeler la source commune :

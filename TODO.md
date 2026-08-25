@@ -347,6 +347,45 @@ le produit. **Ne pas rouvrir** sans qu'il le redemande.
 
 La planche 92 (`appli/calendrier-aujourdhui.html`) reste : elle raconte le
 chemin, et le prochain qui trouvera deux cases entourées saura pourquoi.
+## LES SUITES NAVIGATEUR SONT INSTABLES SOUS LA CHARGE DE LA BATTERIE (25 août 2026)
+
+**Le fait, mesuré trois fois plutôt que supposé.** Des suites rougissent dans la
+batterie complète — 110 suites d'affilée — et **passent au vert jouées seules**,
+sur la même branche ET sur `main` nu. Ce ne sont jamais les mêmes :
+
+| Batterie | Ce qui a rougi | Seule sur ma branche | Seule sur `main` nu |
+|---|---|---|---|
+| 24 août | `test-periodicite-tva-e2e` | 7/7 vert | 7/7 vert |
+| 24 août, `main` nu | `test-ia-02-e2e` | — | (clé IA absente : normal ici) |
+| 25 août | `test-facture-au-client-e2e` | vert | vert |
+| 25 août | `test-fiche-chantier-e2e` | 14/14 vert | — |
+
+**Ce que cela coûte, et c'est le vrai problème.** La batterie est ce qui autorise
+une livraison (`CLAUDE.md` §5). Une batterie qui rougit au hasard force chaque
+session à rejouer des suites une par une pour distinguer son propre défaut du
+bruit — une demi-heure par lot, et le risque inverse : prendre un VRAI rouge pour
+du bruit. Un contrôle qui parle à tort s'apprend à être ignoré, et l'on perd le
+garde-fou sans s'en apercevoir.
+
+**Ce qui est écarté, faute de preuve :** « c'est un flottement », dit sans
+mesure. Les symptômes vus jusqu'ici sont des délais dépassés
+(`locator.waitFor: Timeout 30000ms`) et des écrans qui n'ont pas fini de se
+composer — cela ressemble à une machine saturée, pas à un défaut de logique.
+Deux pistes à éprouver, dans cet ordre :
+
+1. **le serveur de développement**, qui recompile chaque route à la demande : au
+   bout de cent suites, il a compilé toute l'application et travaille dans un
+   cache énorme. La batterie pourrait servir une version BÂTIE (`next build` puis
+   `next start`), comme le fait déjà `verifier:connexion` — c'est d'ailleurs
+   l'étape qui ne rougit jamais ;
+2. **la mémoire du conteneur**, à mesurer pendant une batterie avant de conclure.
+
+**Ne pas « réparer » en allongeant les délais** : cela masquerait un vrai défaut
+de lenteur le jour où il arrivera, et c'est exactement la faute que ce dépôt a
+payée avec les contrôles qui mesurent zéro.
+
+---
+
 ## ~~DEUX SUITES NAVIGATEUR ROUGES SUR `main`~~ — **RÉPARÉES le 25 août 2026**
 
 **Vérifié sur `main` nu**, dans un arbre séparé, sans aucun lot par-dessus : les
@@ -3098,7 +3137,7 @@ n'est pas un devis moins joli, c'est un devis qu'on peut lui contester.
 Ses trois notes — déchets, contraintes d'accès, remarques — n'ont aucune autre
 case dans l'application, et le brouillon confirmé les figeait. Elles s'écrivent
 de nouveau ; les copies de ce qui vit ailleurs (prestations, matériel, durée,
-équipe) quittent l'encart. `ARCHITECTURE.md` §170.
+équipe) quittent l'encart. `ARCHITECTURE.md` §171.
 
 **Ce qui reste à surveiller, et qui n'est pas mesurable ici :** la consigne
 donnée au modèle exige désormais des réserves de six mots. **Aucune clé d'IA sur
@@ -6568,6 +6607,13 @@ et c'est déjà arrivé.
 - ~~Rédiger le devis entièrement à la main, depuis la fiche du chantier~~ — 2026-08-04
 - ~~Retirer la case « Nom du chantier » : plus rien n'est obligatoire à la création~~ — 2026-08-05
 - ~~« Rédiger à la main » ouvre le devis ENTIER, à l'image du modèle, et il reste dans Atlas~~ — 2026-08-05
+- [x] ~~**Le calendrier n'offre que 2 jours sur une base fraîchement montée.**~~
+  Réglé le 24 août 2026 par une autre session, dans l'heure — les deux suites
+  (`test-deux-dates-calendrier-e2e`, `test-date-lointaine-e2e`) passent après
+  fusion. **Ce qui reste à en retenir** : elles étaient vertes deux heures plus
+  tôt sur la même version, et rouges sur une base neuve. Un contrôle qui dépend
+  de l'âge de la base accuse au hasard — c'est la même leçon que l'instabilité
+  notée juste au-dessus.
 - [ ] **La batterie rougit sur des suites DIFFÉRENTES à chaque exécution**, et
   chacune passe seule sur le même code. Relevé le 24 août 2026, trois
   exécutions d'affilée : d'abord `test-planning-vers-facture-e2e` (un texte
