@@ -15337,3 +15337,53 @@ le doublon sans rien dire.
 clair comme sur fond sombre, avec logo carré et logo en bandeau. C'est la seule
 manière de voir qu'une ligne de plus dans l'en-tête ne vient pas toucher les
 références du devis.
+
+---
+
+## 175. `git log` ne date pas le début du projet — l'historique a été remis à plat
+
+**Sa question du 25 août 2026 :** *« combien d'heures avons-nous passé à créer
+cette application ? »* — puis, devant la première réponse : *« on a commencé
+avant le 10 août »*. Il avait raison, et le dépôt disait le contraire.
+
+### Ce qui s'est passé
+
+Le premier commit de l'historique, `b1ceb76` du 10 août 2026 à 22 h 12, n'est
+pas un début de projet : c'est **un écrasement**. 684 fichiers, 129 867 lignes
+d'un coup — l'application entière, déjà écrite, réenregistrée en un bloc. Les
+onze jours qui précèdent ont perdu leurs dates à cette occasion.
+
+`git log --reverse | head -1` répond donc **10 août** à la question « depuis
+quand ? », et cette réponse est fausse de onze jours. Le `CHANGELOG.md`, lui,
+remonte au **31 juillet**, et `docs/PRODUCTION_BACKUP_RESTORE.md` porte des
+exercices du **29 juillet**.
+
+### La règle qui en découle
+
+| Pour dater… | Ne pas se fier à | Lire |
+|---|---|---|
+| le début du projet | `git log --reverse` | `CHANGELOG.md`, sa plus ancienne en-tête |
+| l'âge d'un fichier | `git log --follow` | il ne remonte pas avant l'écrasement |
+| le rythme depuis le 10 août | — | `git log`, qui est exact **à partir de là** |
+
+Ce n'est pas un défaut à réparer — réécrire un historique effacé n'est pas
+possible, et le code, lui, n'a rien perdu. C'est un piège à connaître : toute
+question de chronologie posée à `git` avant le 10 août 2026 reçoit une réponse
+plausible et fausse.
+
+### Ce que le dépôt sait quand même en dire
+
+`scripts/compter-heures.mjs` mesure la période visible (regroupement des commits
+en séances, une pause de deux heures les sépare) et **estime** la période
+effacée par trois règles de trois indépendantes — volume de code déjà présent au
+moment de l'écrasement, lots notés au journal, jours travaillés. Elles ne
+tombent pas d'accord : le script les affiche toutes les trois plutôt que d'en
+moyenner une quatrième, fausse et rassurante.
+
+Au 25 août 2026 : **122 h mesurées**, 31 à 76 h estimées avant, soit un total de
+153 à 198 h. La réponse en langage courant est en `docs/QUESTIONS.md` §26.
+
+**Et ce compte ne remonte pas plus loin qu'Atlas.** Le produit est la reprise
+d'**Arborea** (`CHANGELOG.md`, 31 juillet 2026) : écrans, calculs et tests
+repris d'un dépôt précédent. Le temps passé là-bas n'est dans aucun fichier
+d'ici, et aucun calcul fait ici ne peut l'inventer.

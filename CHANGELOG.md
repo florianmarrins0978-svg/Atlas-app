@@ -9,6 +9,22 @@ Format : le plus récent en tête.
 
 ## 2026-08-25
 
+### Savoir ce que l'application a coûté en temps — `scripts/compter-heures.mjs`
+
+*« Combien d'heures avons-nous passé à créer cette application ? »* — puis, la
+réponse donnée : *« on a commencé avant le 10 août »*. Il avait raison.
+
+Le premier commit du dépôt est **un écrasement** (684 fichiers, 129 867 lignes
+d'un coup) : `git log` fait donc commencer le projet le 10 août, onze jours trop
+tard. Le nouveau script mesure ce qui est horodaté et **estime** le reste par
+trois règles de trois indépendantes, qu'il affiche toutes plutôt que d'en
+moyenner une quatrième, fausse et rassurante.
+
+Ce que ça évite : un chiffre recopié à la main dans un document, qui serait faux
+au commit suivant et dont personne ne saurait dire d'où il sort. Le piège de
+datation est écrit en `ARCHITECTURE.md` §175 ; la réponse en langage courant en
+`docs/QUESTIONS.md` §26.
+
 ### Le message : les phrases par défaut, modifiables — les mots en doré verrouillés
 
 *« Le message au client doit comporter les phrases par défaut et l'utilisateur les
