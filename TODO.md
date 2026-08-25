@@ -742,7 +742,7 @@ session, qui la tient peut-être encore ouverte. La corriger à l'aveugle
 risquerait de défaire son travail en cours. **À reprendre par qui l'a écrite**,
 ou par la prochaine session si personne ne s'en saisit.
 
-## ⚠ EN ATTENTE DE SA RÉPONSE — voir son devis pendant qu'on le change (24 août 2026)
+## ~~EN ATTENTE DE SA RÉPONSE — voir son devis pendant qu'on le change~~ — **B CODÉE le 25 août 2026**
 
 Sa demande : *« lorsque je modifie mon devis, je suis obligé de descendre pour
 voir les modifications ; il faut mieux organiser la page pour pouvoir voir ce
@@ -753,12 +753,22 @@ rangements manipulables — A l'aperçu en tête, B l'aperçu collé, C la feuil
 pleine page avec les réglages en tiroir. Le détail et ce que chacun coûte sont
 dans `CHANGELOG.md`.
 
-**Deux questions attendent sa réponse :**
+**SA RÉPONSE, le 25 août : B** — l'aperçu reste collé en haut.
 
-| | |
-|---|---|
-| **Lequel des trois ?** | ou aucun — ne rien changer est une réponse |
-| **Les dix polices sur cinq rangées** | s'il préfère une seule ligne qui défile de côté, l'aperçu remonte d'autant. C'est un second choix, indépendant du premier |
+**Codé.** Il colle au haut de la RUBRIQUE de l'allure, pas de l'écran : ailleurs
+il recouvrirait les conditions de paiement, qui n'ont rien à voir avec
+l'apparence. Fond opaque, sinon les réglages défilent au travers et l'on ne juge
+plus une couleur sur un fond qui bouge.
+
+`scripts/test-apercu-colle-e2e.ts` le tient et **sait rougir** : remis en A — le
+simple remontée en tête —, il tombe en nommant A et en citant ce que la planche
+en disait. A et B ne diffèrent que pendant le DÉFILEMENT : un contrôle qui
+n'aurait pas descendu serait resté vert sur la moitié de réponse qu'il a
+écartée.
+
+**Ce qui reste ouvert, et qui ne bloque pas :** les dix polices tiennent sur cinq
+rangées. S'il préfère une seule ligne qui défile de côté, l'aperçu remonte
+d'autant. Second choix, indépendant du premier — il ne s'est pas prononcé.
 
 **Ce que coder demandera**, écrit ici pour que la prochaine session ne le
 redécouvre pas : tout se joue dans le bloc « L'allure de mes devis » de

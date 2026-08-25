@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState, useTransition } from "react";
-import { colors, font, libelleCaps, surPlein, texteSituation } from "@/lib/design-tokens";
+import { colors, font, libelleCaps, surPlein, texteSituation, voile } from "@/lib/design-tokens";
 import {
   BORNES,
   lireConditions,
@@ -496,6 +496,46 @@ export default function DocumentsClient({
           ne change pas : personne d&apos;autre que vous ne la lit.
         </p>
 
+        {/* ── L'APERÇU RESTE COLLÉ EN HAUT — sa réponse B, le 25 août 2026 ────
+            Sa demande : *« lorsque je modifie mon devis, je suis obligé de
+            descendre pour voir les modifications ; il faut mieux organiser la
+            page pour pouvoir voir ce qu'on modifie. »* Trois rangements lui ont
+            été montrés (`appli/allure-mieux-rangee.html`) ; il a choisi B.
+
+            **Pourquoi COLLÉ et pas seulement remonté.** A — l'aperçu simplement
+            en tête — ne règle que la moitié du problème : dès qu'on descend
+            jusqu'aux polices, la feuille est de nouveau hors de l'écran, et
+            c'est exactement là qu'on a besoin de la voir. C'était écrit sur la
+            planche, et il a tranché en connaissance de cause.
+
+            **Il colle au HAUT DE LA RUBRIQUE, pas de l'écran.** `sticky` dans
+            cette section-ci : l'aperçu suit tant qu'on règle l'allure, et s'en
+            va avec elle. Collé à l'écran entier, il aurait recouvert le haut des
+            conditions de paiement, qui n'ont rien à voir avec l'apparence.
+
+            **Le fond est opaque, délibérément.** Un aperçu translucide laisse
+            passer les réglages qui défilent dessous : on ne juge plus une
+            couleur de fond sur un fond qui bouge.
+
+            **Un aperçu d'APPARENCE, et rien d'autre.** Il ne porte aucun montant
+            calculé, aucune condition : ce serait une seconde écriture du devis,
+            qui finirait par ne plus dire ce que le PDF dit (`CLAUDE.md` §3). Ce
+            qu'il montre — le fond, l'accent, la typographie, la place du logo —
+            est exactement ce que la fabrique de PDF pose, et rien de plus. */}
+        <div
+          data-atlas="apercu-colle"
+          className="sticky top-0 z-[3] -mx-[26px] mb-5 px-[26px] pb-3 pt-1"
+          style={{
+            backgroundColor: colors.cream,
+            boxShadow: `0 8px 14px -12px ${voile(colors.ink, 0.5)}`,
+          }}
+        >
+          <p className={`mb-2 ${libelleCaps}`} style={{ color: colors.muted }}>
+            L&apos;allure de la page
+          </p>
+          <Feuille allure={allure} logo={logo} nom={entrepriseNom} />
+        </div>
+
         {/* ── PHOTOGRAPHIER UN DEVIS — sa demande du 25 août 2026 ─────────────
             *« faut que l'utilisateur puisse prendre la photo de son devis […]
             pareil pour sa facture »*, après *« on comprend rien, trop compliqué
@@ -723,15 +763,6 @@ export default function DocumentsClient({
           onChoisir={(v) => poserAllure({ accent: v })}
         />
 
-        {/* **Un aperçu d'APPARENCE, et rien d'autre.** Il ne porte aucun
-            montant calculé, aucune condition : ce serait une seconde écriture du
-            devis, qui finirait par ne plus dire ce que le PDF dit (`CLAUDE.md`
-            §3). Ce qu'il montre — le fond, l'accent, la typographie, la place du
-            logo — est exactement ce que la fabrique de PDF pose, et rien de plus. */}
-        <p className={`mb-2 mt-5 ${libelleCaps}`} style={{ color: colors.muted }}>
-          L&apos;allure de la page
-        </p>
-        <Feuille allure={allure} logo={logo} nom={entrepriseNom} />
 
         {!estLAllureParDefaut(allure) && (
           <button

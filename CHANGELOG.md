@@ -49,6 +49,25 @@ et le contrôle a été vu rouge en débranchant le raccordement exprès. Trois
 captures rendent les trois états en image, parce que ce défaut-là s'est vu à
 l'œil et par aucun test. `ARCHITECTURE.md` §174.
 
+### L'aperçu du devis reste collé pendant qu'on le règle
+
+*« Lorsque je modifie mon devis, je suis obligé de descendre pour voir les
+modifications »* — trois rangements lui ont été montrés, il a répondu **B** :
+l'aperçu reste sous les yeux pendant qu'on fait défiler les réglages.
+
+**Ce que ça évite :** régler une police ou un fond à l'aveugle, puis remonter
+pour voir, puis redescendre pour corriger. A — l'aperçu simplement remonté en
+tête — ne réglait que la moitié du problème, et c'était écrit sur la planche.
+
+Il colle au haut de la **rubrique**, pas de l'écran : collé à l'écran entier, il
+aurait recouvert les conditions de paiement, qui n'ont rien à voir avec
+l'apparence. Fond opaque : translucide, les réglages défilent au travers et l'on
+ne juge plus une couleur de fond sur un fond qui bouge.
+
+Le contrôle a été vu rouge en le remettant en A. A et B ne diffèrent que pendant
+le DÉFILEMENT — un contrôle qui n'aurait pas descendu serait resté vert sur la
+proposition qu'il a écartée.
+
 ### Deux planches sans adresse en ont enfin une
 
 *« Je veux les voir »* — « Composer sa fiche d'entretien » et « Choisir l'heure
