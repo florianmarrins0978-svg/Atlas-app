@@ -606,6 +606,21 @@ touchait pas — il ne portait que l'en-tête de l'accueil. Ici encore, l'assert
 arrive avant que le serveur chargé n'ait rendu sa réponse : l'écran en est resté
 au message d'échec de la dictée précédente. **Quatre suites, un seul défaut.**
 
+**MESURE DÉCISIVE DU 25 AOÛT, à garder :** l'étape navigateur a été jouée sur
+`main` NU — arbre séparé, aucun commit de session — et elle y rend **107/110**,
+trois suites tombées (`test-arrosage-e2e`, `test-facture-impayee-e2e`,
+`test-fiche-chantier-e2e`). Le même jour, sur un arbre PORTANT un lot, elle
+rendait 109/110, avec à chaque fois **une suite différente**.
+
+**Cette machine ne rend donc pas 110/110, quel que soit le code.** Ce n'est pas
+une excuse pour livrer du rouge : c'est un fait à opposer à la prochaine session
+qui croira avoir cassé quelque chose, et qui passera une heure à chercher dans
+son propre lot. **Le bon geste, devant un rouge navigateur : rejouer la suite
+SEULE, puis, si elle passe, rejouer l'étape sur `main` nu.** Un arbre séparé se
+monte en deux commandes (`git worktree add`), mais il lui faut de VRAIES
+dépendances : un lien symbolique vers `node_modules` fait paniquer Turbopack
+(« Symlink [project]/node_modules is invalid »), et l'essai ne prouve alors rien.
+
 **Personne ne l'a encore fait**, et ce n'est pas ce lot-ci qui doit le faire :
 c'est écrit ici pour que la prochaine batterie rouge sur ces deux suites ne
 relance pas l'enquête depuis zéro.
