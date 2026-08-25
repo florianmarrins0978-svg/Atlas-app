@@ -9,6 +9,37 @@ Format : le plus récent en tête.
 
 ## 2026-08-25
 
+### La mise à jour du banc n'était réservée à personne (lot 3, M12)
+
+**N'importe quel compte connecté pouvait tirer du code et jouer des migrations
+sur le banc du patron.** La seule garde était `getCurrentCtx()` : un salarié à
+qui l'on a ouvert un accès pouvait changer ce que l'application sert. Le rôle
+propriétaire est désormais exigé, **avant** la garde du banc — dans cet ordre,
+pour qu'une suite puisse éprouver le refus sans qu'un `git pull` puisse partir.
+
+Le bouton est aussi masqué pour un membre. **Ce masquage ne protège rien** : la
+garde qui compte est dans l'action, et elle refuse même appelée directement.
+
+### Et trois écrans décidaient seuls de ce qu'est un banc
+
+En cherchant le premier défaut, un second : `ATLAS_PROFIL=banc` était **ignoré**
+par trois endroits qui lisaient `ATLAS_BANC_ESSAI` à la main.
+
+| Où | Ce que ça donnait sur un banc démarré par `demarrer.sh` |
+|---|---|
+| l'action de mise à jour | le bouton refusait sans raison |
+| la phrase sur la branche suivie | elle ne s'affichait pas |
+| le calcul de la version servie | « version inconnue » |
+
+Or `.devcontainer/demarrer.sh` ne pose **que** `ATLAS_PROFIL`. Les trois passent
+maintenant par `estBancDEssai()`, la seule fonction qui en décide — et **un
+contrôle interdit à tout autre fichier de lire la variable en direct**, pour que
+la divergence ne revienne pas au prochain écran.
+
+*Éprouvé contre l'ancien code : la suite y rend trois échecs, et nomme les trois
+fichiers.*
+
+
 ### Le lot 2B est au vert — et sept contrôles fragiles avec lui
 
 `verifier:avant-livraison` : **223/223** suites base, **110/110** suites
