@@ -509,6 +509,19 @@ fois sur la base d'essai.** Pas de suite lancée « pour vérifier vite » penda
 qu'une batterie tourne ; pas deux batteries. Le conteneur a une seule base, et
 elle n'est pas faite pour deux lecteurs qui la vident.
 
+**UN CONTRÔLE QUI SUPPOSE L'ÉTAT COMMUN ROUGIT SUR DU CODE JUSTE — deux fois
+le même soir.** `test-reste-equipes-e2e` a été écrit trois fois : il supposait
+d'abord le jour voisin libre, puis que le même jour redevenait libre après
+retrait de son propre chantier. Les deux fois, une autre suite avait laissé de
+quoi occuper ce jour-là, et **le message accusait l'écran de « parler à tort »
+sur un jour où il disait vrai** — le pire des rouges, il envoie corriger du code
+juste.
+
+La troisième version ne suppose plus rien : elle lit ce que la base porte
+réellement — chantiers ET absences —, le passe par **la règle du produit**, et
+exige que l'écran dise exactement ça. Elle fixe la RÈGLE, pas un arrangement
+particulier des données (`CLAUDE.md` §5 bis).
+
 **ET LA MÊME FAUTE A ÉTÉ REFAITE LE 25 AOÛT AU SOIR.** Une batterie tournait
 pendant que des contrôles de maquette et des captures ouvraient leurs propres
 navigateurs. Résultat : `test-lecons-prix-e2e` est tombé sur un délai de 30 s

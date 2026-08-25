@@ -25,6 +25,7 @@ import assert from "node:assert/strict";
 import { Pool } from "pg";
 import { lancerNavigateur } from "./e2e-browser";
 import { creerPuisFiche } from "./_creer-chantier-e2e";
+import { ditCeQuiResteCeJour, equipesLibresCeJour } from "../src/lib/planning-jour";
 
 const BASE = "http://localhost:3000";
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
@@ -65,7 +66,8 @@ async function nettoyer() {
  * rien à mesurer.
  */
 /**
- * UN JOUR QUE PERSONNE D'AUTRE N'OCCUPE, choisi dans la base plutôt que supposé.
+ * UN JOUR QUE PERSONNE D'AUTRE N'OCCUPE — ni chantier, ni absence d'équipe —,
+ * choisi dans la base plutôt que supposé.
  *
  * **Payé le 25 août 2026, en batterie complète.** La première version prenait
  * « aujourd'hui + 5 » et son voisin, en supposant le second libre. Seule, la
@@ -93,6 +95,27 @@ async function jourLibreDEssai(): Promise<string> {
       d.setDate(d.getDate() + 1);
     }
   }
+
+  // **LES ABSENCES OCCUPENT AUSSI, ET LES OUBLIER A COÛTÉ DEUX BATTERIES.**
+  // Une équipe partie retire de la place exactement comme un chantier
+  // (`useOccupation`) : un jour sans le moindre chantier peut n'avoir plus
+  // personne à envoyer. La première version ne lisait que `chantiers` — seule
+  // elle passait, et en batterie complète `test-absence-equipe-e2e`, qui tourne
+  // avant celle-ci, laissait une absence sur le jour choisi. Le rouge accusait
+  // alors l'écran de « parler à tort » sur un jour où il disait vrai : le pire
+  // des rouges, il envoie corriger du code juste (`AGENTS.md`).
+  const abs = await pool.query<{ premier: string; dernier: string }>(
+    `SELECT premier_jour::text AS premier, dernier_jour::text AS dernier
+       FROM absences_equipe WHERE deleted_at IS NULL`
+  );
+  for (const a of abs.rows) {
+    const d = new Date(a.premier);
+    const fin = new Date(a.dernier);
+    while (d <= fin) {
+      pris.add(d.toISOString().slice(0, 10));
+      d.setDate(d.getDate() + 1);
+    }
+  }
   // Assez loin pour que le délai minimal d'envoi l'accepte, assez proche pour
   // être DANS le mois sur lequel le calendrier s'ouvre.
   const d = new Date();
@@ -107,6 +130,35 @@ async function jourLibreDEssai(): Promise<string> {
     "aucun jour libre dans le mois affiché : rien à mesurer. " +
       "Ce n'est pas un défaut du produit, c'est une base d'essai trop chargée."
   );
+}
+
+/**
+ * Ce que la BASE dit de l'occupation d'un jour, passé par la règle du produit.
+ *
+ * **Une seule règle, ici comme à l'écran** (`CLAUDE.md` §3) : recompter les
+ * équipes à la main dans ce fichier serait une seconde implémentation, et c'est
+ * elle qu'on croirait le jour où les deux divergent.
+ *
+ * **Les absences comptent** : une équipe partie retire de la place exactement
+ * comme un chantier (`useOccupation`), et l'oublier ferait tenir pour libre un
+ * jour où il n'y a plus personne à envoyer.
+ */
+async function equipesLibresEnBase(jour: string, nombreEquipes: number): Promise<number> {
+  const chantiersDuJour = await pool.query<{ n: string }>(
+    `SELECT count(*)::text AS n FROM chantiers
+      WHERE deleted_at IS NULL AND date_planifiee IS NOT NULL
+        AND $1::date >= date_planifiee
+        AND $1::date < date_planifiee + (GREATEST(1, ceil(COALESCE(duree_demi_journees, 2) / 2.0)))::int`,
+    [jour]
+  );
+  const absencesDuJour = await pool.query<{ n: string }>(
+    `SELECT count(*)::text AS n FROM absences_equipe
+      WHERE deleted_at IS NULL AND $1::date BETWEEN premier_jour AND dernier_jour`,
+    [jour]
+  );
+  const occupees = Number(chantiersDuJour.rows[0].n) + Number(absencesDuJour.rows[0].n);
+  const charge = Math.min(1, occupees / Math.max(1, nombreEquipes));
+  return equipesLibresCeJour(charge, charge, nombreEquipes);
 }
 
 async function main() {
@@ -194,19 +246,28 @@ async function main() {
     );
   });
 
-  // ─── LA CONTRE-ÉPREUVE, SUR LE MÊME JOUR ────────────────────────────────
+  // ─── LA CONTRE-ÉPREUVE : L'ÉCRAN DIT L'OCCUPATION RÉELLE ────────────────
   //
-  // **Elle portait d'abord sur le jour VOISIN, supposé libre — et c'est ce qui
-  // l'a fait rougir en batterie complète le 25 août 2026** : une autre suite y
-  // avait posé un chantier, la mention s'écrivait donc sur les deux lignes, et
-  // le message accusait l'écran de « parler partout » alors qu'il disait vrai.
+  // **DEUX VERSIONS DE CE CAS ONT ROUGI SUR DU CODE JUSTE**, les 25 août 2026 :
+  // la première supposait le jour voisin libre, la seconde supposait que le
+  // même jour redevenait libre après retrait de MON chantier. Les deux fois,
+  // c'était l'état commun — d'autres suites partagent cette base — et les deux
+  // fois le message accusait l'écran de « parler à tort » sur un jour où il
+  // disait vrai. **Le pire des rouges : il envoie corriger du code juste**
+  // (`AGENTS.md`).
   //
-  // Sur le MÊME jour, avant et après retrait du chantier, il n'y a plus rien à
-  // supposer : c'est l'occupation qui change, et elle seule. C'est aussi une
-  // preuve plus forte — la mention suit la CHARGE du jour, pas la place de la
-  // ligne dans la liste.
-  await cas("le même jour, une fois libéré, n'en porte plus aucune", async () => {
+  // **Alors on ne suppose plus rien.** On lit ce que la base porte réellement ce
+  // jour-là — chantiers ET absences, une équipe partie retire de la place comme
+  // un chantier —, on passe cela par la règle du produit, et l'on exige que
+  // l'écran dise exactement ça. Le contrôle fixe alors la RÈGLE, pas un
+  // arrangement particulier des données (`CLAUDE.md` §5 bis).
+  await cas("l'écran dit l'occupation réelle du jour, quelle qu'elle soit", async () => {
     await pool.query(`DELETE FROM chantiers WHERE nom LIKE $1`, [`${MARQUE}%`]);
+
+    const attendu = ditCeQuiResteCeJour(
+      await equipesLibresEnBase(jour, 2),
+      2
+    );
 
     await page.goto(`${url}/devis-complet`, { waitUntil: "networkidle" });
     await page.click("text=Choisir la date");
@@ -225,13 +286,16 @@ async function main() {
       .filter({ hasText: /proposée/ })
       .count();
     assert.ok(retenues >= 1, "aucune date retenue : rien à mesurer, pas un succès");
-    const mentions = await page.locator('[data-atlas="reste-equipes"]').count();
+
+    const mentions = page.locator('[data-atlas="reste-equipes"]');
+    const lu = (await mentions.count()) ? (await mentions.first().innerText()).trim() : null;
     assert.equal(
-      mentions,
-      0,
-      `${mentions} mention(s) sur un jour redevenu entièrement libre : un avertissement ` +
-        `qui parle à tort s'apprend à être ignoré, et l'on perd le garde-fou sans s'en ` +
-        `apercevoir`
+      lu,
+      attendu,
+      attendu === null
+        ? `l'écran écrit « ${lu} » sur un jour que la base dit entièrement libre : ` +
+          `un avertissement qui parle à tort s'apprend à être ignoré`
+        : `l'écran écrit « ${lu} » là où la base dit « ${attendu} »`
     );
   });
 
