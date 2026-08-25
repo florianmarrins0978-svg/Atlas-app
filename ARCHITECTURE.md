@@ -15532,3 +15532,201 @@ l'écran — et le jour libre d'à côté qui n'en porte aucune, dans la même l
 
 Le second existe à cause du défaut du même jour (§175) : *un contrôle qui éprouve
 la règle ne voit pas une pièce débranchée.*
+## 177. L'adresse du lien vient du NAVIGATEUR, pas de ce que le serveur croit
+
+*Sa capture du 25 août 2026 : « je ne peux pas l'envoyer au client », devant le
+refus posé la veille — et sa barre d'adresse portait `…-3000.app.github.dev`.*
+
+### Le garde-fou avait raison sur ce qu'il savait, et tort sur la réalité
+
+`ouvrableParLeClient` barre un lien qui ne mène qu'à la machine de l'artisan
+(§169), et c'est juste : son client avait reçu « Connexion au serveur
+impossible ». Mais l'adresse qu'on lui donnait à juger venait du SERVEUR, et
+derrière le tunnel de son espace de travail le serveur ne voit que
+`localhost:3000` — aucun en-tête ne porte l'adresse publique.
+
+`origine-publique.ts` le disait déjà, noir sur blanc : *« la fonction rend alors
+honnêtement `http://localhost:3000` — c'est à celui qui met cette adresse dans
+un message de refuser »*. Ce qui manquait, c'est que **celui qui refuse
+disposait d'une meilleure source et ne la lisait pas.**
+
+| Source | Ce qu'elle vaut |
+|---|---|
+| `ATLAS_URL_PUBLIQUE` | juste quand elle est posée — elle ne l'est pas chez lui |
+| `x-forwarded-host` / `host` | **`localhost` derrière son tunnel** |
+| `window.location.origin` | **l'adresse par laquelle il a ouvert Atlas** — exactement celle qui s'ouvrira chez son client |
+
+### Pourquoi ce n'est pas le retour du défaut d'hydratation
+
+Le dépôt interdit de composer une adresse depuis `window` **pendant le rendu**
+(§68, §81) : serveur et navigateur diffèrent, React régénère tout l'arbre, et le
+patron a signalé cette erreur le 13 août. La règle tient toujours, et elle est
+respectée de deux façons :
+
+- **dans un GESTE** — au moment où il appuie — `window` se lit sans risque :
+  rien n'est comparé à un rendu ;
+- **pour un texte AFFICHÉ**, le premier rendu reprend l'adresse du serveur, mot
+  pour mot, et un `useEffect` la corrige **après** le montage. C'est le seul
+  ordre qui ne fasse pas diverger les deux.
+
+### DEUX correctifs, et il faut les deux — ne pas retirer l'un pour l'autre
+
+Le même soir, une autre session a traité le même défaut **par l'autre bout** :
+`.devcontainer/demarrer.sh` calcule `ATLAS_URL_PUBLIQUE` depuis `CODESPACE_NAME`
+et la donne au serveur au démarrage. C'est juste, et c'est mieux quand ça marche :
+le serveur connaît alors la bonne adresse pour TOUT — les PDF, les courriels, ce
+qui ne passe par aucun navigateur.
+
+**Ce n'est pas la même règle écrite deux fois** (`CLAUDE.md` §3), ce sont deux
+SOURCES pour une seule règle, et leur ordre est déjà écrit dans
+`origine-publique.ts` :
+
+| | Quand elle vaut |
+|---|---|
+| `ATLAS_URL_PUBLIQUE` (leur correctif) | l'espace a redémarré depuis, et `CODESPACE_NAME` y est |
+| les en-têtes | un vrai déploiement derrière un mandataire qui parle |
+| **le navigateur** (celui-ci) | **toujours** — et c'est le seul filet quand les deux premiers manquent |
+
+**Pourquoi le navigateur reste nécessaire.** `CODESPACE_NAME` manque dans un
+espace créé avant que la variable n'y soit écrite : *« deux correctifs de suite
+ont échoué chez le patron pour ce motif »* (`src/middleware.ts`). Un espace qu'il
+n'a pas recréé garde donc l'ancien démarrage — et sans ce filet, il resterait
+bloqué sans un mot.
+
+**Et ils ne se contredisent jamais.** L'adresse du navigateur ne remplace celle
+du serveur que si elle est ouvrable : ouvert par `localhost` alors que
+`ATLAS_URL_PUBLIQUE` est posée, c'est celle du serveur qui gagne, et le lien
+reste bon.
+
+### Le refus reste entier
+
+C'est le contrôle qui compte le plus dans ce lot : prendre l'adresse du
+navigateur ne doit pas rouvrir la porte que le 24 août a fermée. Ouvert par la
+redirection de port de son éditeur, `window.location.origin` vaut
+`http://localhost:3000` — le lien est barré, comme avant.
+
+### Et le refus ne s'écrit plus DEUX FOIS
+
+Sa capture le montrait en double : `RapportParti` porte le sien une fois le
+rapport figé, et celui de la tentative précédente restait affiché. **Deux fois
+la même phrase se lit comme un écran cassé**, et c'est un défaut à part entière.
+
+---
+---
+
+## 178. `git log` ne date pas le début du projet — l'historique a été remis à plat
+
+**Sa question du 25 août 2026 :** *« combien d'heures avons-nous passé à créer
+cette application ? »* — puis, devant la première réponse : *« on a commencé
+avant le 10 août »*. Il avait raison, et le dépôt disait le contraire.
+
+### Ce qui s'est passé
+
+Le premier commit de l'historique, `b1ceb76` du 10 août 2026 à 22 h 12, n'est
+pas un début de projet : c'est **un écrasement**. 684 fichiers, 129 867 lignes
+d'un coup — l'application entière, déjà écrite, réenregistrée en un bloc. Les
+onze jours qui précèdent ont perdu leurs dates à cette occasion.
+
+`git log --reverse | head -1` répond donc **10 août** à la question « depuis
+quand ? », et cette réponse est fausse de onze jours. Le `CHANGELOG.md`, lui,
+remonte au **31 juillet**, et `docs/PRODUCTION_BACKUP_RESTORE.md` porte des
+exercices du **29 juillet**.
+
+### La règle qui en découle
+
+| Pour dater… | Ne pas se fier à | Lire |
+|---|---|---|
+| le début du projet | `git log --reverse` | `CHANGELOG.md`, sa plus ancienne en-tête |
+| l'âge d'un fichier | `git log --follow` | il ne remonte pas avant l'écrasement |
+| le rythme depuis le 10 août | — | `git log`, qui est exact **à partir de là** |
+
+Ce n'est pas un défaut à réparer — réécrire un historique effacé n'est pas
+possible, et le code, lui, n'a rien perdu. C'est un piège à connaître : toute
+question de chronologie posée à `git` avant le 10 août 2026 reçoit une réponse
+plausible et fausse.
+
+### Ce que le dépôt sait quand même en dire
+
+`scripts/compter-heures.mjs` mesure la période visible (regroupement des commits
+en séances, une pause de deux heures les sépare) et **estime** la période
+effacée par trois règles de trois indépendantes — volume de code déjà présent au
+moment de l'écrasement, lots notés au journal, jours travaillés. Elles ne
+tombent pas d'accord : le script les affiche toutes les trois plutôt que d'en
+moyenner une quatrième, fausse et rassurante.
+
+Au 25 août 2026 : **122 h mesurées**, 31 à 76 h estimées avant, soit un total de
+153 à 198 h. La réponse en langage courant est en `docs/QUESTIONS.md` §26.
+
+**Et ce compte ne remonte pas plus loin qu'Atlas.** Le produit est la reprise
+d'**Arborea** (`CHANGELOG.md`, 31 juillet 2026) : écrans, calculs et tests
+repris d'un dépôt précédent. Le temps passé là-bas n'est dans aucun fichier
+d'ici, et aucun calcul fait ici ne peut l'inventer.
+
+---
+
+## 179. Les flèches décoratives sont parties, et un contrôle les empêche de revenir
+
+**Sa correction du 25 août 2026, capture à l'appui :** *« Retire la flèche ! Il
+m'avait semblé t'avoir demandé de supprimer toutes les flèches de
+l'application ! »* — devant « Créer la facture → », sur l'écran de facture.
+
+Il avait déjà posé la règle **le matin même** (`CLAUDE.md` §3, *« arrête de
+mettre des flèches, c'est moche »*). Elle était écrite, et vingt-huit libellés
+en portaient encore une le soir : la règle avait été appliquée là où on
+regardait, pas là où elle valait.
+
+### Ce qui est parti
+
+Le « → » et le « › » ajoutés **au bout d'un bouton ou d'un lien** — « Créer la
+facture → », « Préparer le devis → », « Modifier mon devis › », « Enregistrer
+→ », « Composer ma fiche → »… La carte d'action `ActionPrincipale` portait la
+sienne dans un `<span>` séparé, héritée du modèle d'Arborea — ce composant
+n'est monté nulle part aujourd'hui, et sa flèche serait revenue à l'écran le
+jour où on le remonte.
+
+Sont partis aussi les chemins de navigation écrits **dans une phrase** —
+« dans Réglages → Mes prix », « Réglages › Appareil photo › Formats »,
+« Terminés › TVA › En attente de paiement » : la virgule dit la même chose sans
+ornement. Et la légende du plan d'arrosage, où la flèche voulait dire « donc »
+(« la ligne continue → té taraudé »), porte maintenant un point médian.
+
+### Ce qui reste, et pourquoi ce n'est pas une exception de confort
+
+| Où | Quoi | Sa fonction |
+|---|---|---|
+| calendriers, planning, terminés | `‹` `›` | feuilleter — le chevron EST le geste |
+| TVA, période précédente/suivante | `←` `→` | sa demande du 12 août : *« le calendrier se glisse ENTRE les deux flèches »* |
+| carte du mois | `← Aujourd'hui` | revenir au mois courant |
+| discussion du plan d'arrosage | `↑` seul, dans un rond | le bouton d'envoi : la flèche est TOUT le bouton, il n'y a pas de libellé à décorer |
+| retouches de devis | `250 € → 350 €` | avant/après — retirer la flèche retirerait le sens |
+
+La ligne de partage n'est pas « on y tient » mais : **la flèche fait-elle
+quelque chose, ou suit-elle un mot qui le dit déjà ?**
+
+### Le contrôle, et ce qu'il refuse de croire
+
+`scripts/test-aucune-fleche.ts` lit tout `src/`, **commentaires retirés** — sans
+quoi il rougirait sur les explications de ce dépôt, qui citent les libellés
+d'hier pour dire pourquoi ils sont partis, et un contrôle qui interdit
+d'expliquer se fait contourner.
+
+Trois choix qui comptent :
+
+- **La liste des flèches permises vise la LIGNE, pas le fichier.** Autoriser
+  `Calendrier.tsx` en entier laisserait passer un libellé fléché ajouté
+  dedans demain.
+- **Chaque flèche permise porte sa raison, en français, dans le fichier.** Une
+  liste d'exceptions sans motif s'allonge toute seule.
+- **Il refuse de conclure sur une lecture vide.** Moins de dix mille lignes lues
+  et il rougit : sans cela, un `src/` illisible rendrait « aucune flèche » en
+  vert — la faute du 15 août 2026 (`CLAUDE.md` §5, « un contrôle qui mesure ZÉRO
+  ne mesure rien »).
+
+Il a été vu rouge avant d'être cru : il a trouvé deux flèches que la recherche
+faite à la main avait manquées (le `← Aujourd'hui` de la carte du mois, le `↑`
+du bouton d'envoi), puis il a rougi de nouveau quand « Créer la facture → » a
+été remis pour l'éprouver.
+
+**Ce qu'il ne couvre pas :** les maquettes d'`appli/`, qui en portent encore.
+Elles ne sont pas l'application, et certaines sont des planches archivées dont
+le patron a déjà tranché le contenu — les réécrire changerait ce qu'il a validé.

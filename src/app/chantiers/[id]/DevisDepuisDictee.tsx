@@ -235,7 +235,7 @@ export default function DevisDepuisDictee({
           className={`px-2 py-2 disabled:opacity-40 ${libelleCaps}`}
           style={{ color: colors.or }}
         >
-          {libelleEnCours(etat) ?? "Mon devis →"}
+          {libelleEnCours(etat) ?? "Mon devis"}
         </button>
       ) : variante === "principal" ? (
         <button
@@ -290,7 +290,7 @@ export default function DevisDepuisDictee({
               className="rounded-full px-4 py-2.5 text-[14px] font-medium"
               style={{ backgroundColor: colors.rust, color: colors.cream }}
             >
-              Ouvrir le devis et poser les prix →
+              Ouvrir le devis et poser les prix
             </button>
             <button
               type="button"

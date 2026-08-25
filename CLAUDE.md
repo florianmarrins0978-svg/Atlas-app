@@ -239,6 +239,10 @@ retransmet — un document périmé le ferait travailler sur une version disparu
   qu'on l'appuie. On l'enlève. (Les chevrons de navigation qui portent une VRAIE
   fonction — retour « ‹ », feuilletage — ne sont pas visés : eux montrent un
   sens, ils ne décorent pas.) Vaut pour les écrans **et** les maquettes.
+  **Il a dû le redire le soir même**, capture à l'appui, devant « Créer la
+  facture → » : vingt-huit libellés en portaient encore une. La règle ne vit
+  donc plus seulement ici — `scripts/test-aucune-fleche.ts` les refuse, et une
+  flèche qui porte une vraie fonction s'y déclare **avec sa raison**.
 - **Les règles métier vivent dans des fonctions pures**, dans `src/lib/`,
   testables sans base. Un écran ne décide de rien : il affiche le résultat.
 - **Jamais de règle dupliquée entre l'affichage et la vérification.** La même

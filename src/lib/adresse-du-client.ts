@@ -102,3 +102,39 @@ export function phraseAdresseLocale(quoi: string): string {
     "perdu."
   );
 }
+
+/**
+ * L'ADRESSE À METTRE DANS LE MESSAGE — celle du navigateur d'abord.
+ *
+ * **Sa capture du 25 août 2026 :** *« je ne peux pas l'envoyer au client »*,
+ * devant le refus ci-dessus — alors que sa barre d'adresse portait bien
+ * `…-3000.app.github.dev`, une vraie adresse web. Le serveur, lui, ne voyait que
+ * `localhost:3000` : le tunnel de son espace de travail lui livre la requête
+ * sans en-tête qui porte l'adresse publique. Le refus était donc juste sur ce
+ * que le serveur savait, et faux sur la réalité.
+ *
+ * **La seule source qui ne se trompe jamais, c'est le navigateur lui-même** :
+ * `window.location.origin` EST l'adresse par laquelle il a ouvert Atlas, donc
+ * exactement celle qui s'ouvrira chez son client.
+ *
+ * **Pourquoi ce n'est PAS le retour du défaut d'hydratation** (`ARCHITECTURE.md`
+ * §68, §81) : cette fonction se lit dans un GESTE — au moment où il appuie —,
+ * jamais pendant le rendu. Composer une adresse pendant le rendu ferait diverger
+ * le serveur et le navigateur ; la lire à l'appui ne regarde rien de ce qui est
+ * déjà affiché.
+ *
+ * **Ce qui a été ÉCARTÉ, et il faut le savoir avant d'y revenir :** déduire
+ * l'adresse de `CODESPACE_NAME`. Le dépôt sait déjà que cette variable manque
+ * dans un espace créé avant qu'elle n'y soit écrite — *« deux correctifs de
+ * suite ont échoué chez le patron pour ce motif »* (`src/middleware.ts`). Un
+ * troisième aurait échoué pareil, et sans un mot.
+ *
+ * @param depuisLeServeur ce que la page a calculé au rendu — le repli.
+ */
+export function adressePourLeClient(depuisLeServeur: string): string {
+  if (typeof window !== "undefined") {
+    const duNavigateur = window.location.origin;
+    if (ouvrableParLeClient(duNavigateur)) return duNavigateur;
+  }
+  return depuisLeServeur;
+}
