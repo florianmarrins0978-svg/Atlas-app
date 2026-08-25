@@ -128,33 +128,35 @@ async function main() {
     .first()
     .waitFor({ state: "visible", timeout: 30_000 })
     .catch(() => undefined);
-  /**
-   * **Et qu'il dise aussi qu'elle n'est pas partie** — les deux mentions ne
-   * paraissent pas au même instant.
-   *
-   * Sans cette attente, le corps de la page était lu entre les deux : « arrêtée »
-   * était là, « ne l'a pas encore reçue » pas encore, et le contrôle accusait le
-   * produit de laisser croire la facture envoyée. Rouge sous la batterie
-   * complète le 25 août 2026, vert dans la foulée joué seul — le même faux rouge
-   * que celui déjà noté ici le 12 août.
-   *
-   * **L'attente ne rend rien complaisant** : elle est bornée, et c'est
-   * l'assertion qui suit qui tranche. Si la mention ne vient jamais, elle rougit
-   * exactement comme avant.
-   */
-  await page
-    .getByText(/ne l'a pas encore reçue/i)
-    .first()
-    .waitFor({ state: "visible", timeout: 30_000 })
-    .catch(() => undefined);
-
   // --- 1. « Arrêtée » n'est pas « partie » ---------------------------------
   const ecran = await page.locator("body").innerText();
   assert.match(ecran, /arrêtée/i, `La facture n'a pas été arrêtée. Écran :\n${ecran.slice(0, 500)}`);
+  /**
+   * **« ARRÊTÉE » N'EST PAS « PARTIE » — et l'écran le dit de DEUX façons.**
+   *
+   * `TransmettreLaFacture` a deux visages, selon que le lien du client a déjà
+   * été préparé ou non (`src/app/chantiers/[id]/facture/TransmettreLaFacture.tsx`) :
+   *
+   * | Lien pas encore préparé | Lien préparé |
+   * |---|---|
+   * | « Votre client ne l'a pas encore reçue. » | « … — c'est vous qui l'envoyez. » |
+   *
+   * Depuis l'appui unique du 22 août, le même geste arrête la facture, prépare
+   * le lien et ouvre la messagerie, puis rafraîchit l'écran : **on passe du
+   * premier visage au second pendant que la suite regarde**. Ce contrôle
+   * n'attendait que le premier — il guettait donc un état transitoire, et
+   * rougissait selon la vitesse de la machine. Constaté le 25 août 2026, deux
+   * batteries de suite, vert joué seul.
+   *
+   * **Les deux visages disent la même chose, et c'est ELLE la règle** : la
+   * facture est arrêtée, et c'est encore à lui de l'envoyer. Un écran qui
+   * laisserait croire le contraire ne porte ni l'une ni l'autre phrase, et ce
+   * contrôle rougit — ce qu'il a toujours eu à défendre.
+   */
   assert.match(
     ecran,
-    /ne l'a pas encore reçue/i,
-    "L'écran laisse croire que la facture est partie alors que rien ne la porte au client."
+    /ne l'a pas encore reçue|c'est vous qui l'envoyez/i,
+    `L'écran laisse croire que la facture est partie alors que rien ne la porte au client. Écran :\n${ecran.slice(0, 800)}`
   );
   console.log("  ✓ une facture arrêtée dit qu'elle n'est pas encore partie, et propose de l'envoyer");
 

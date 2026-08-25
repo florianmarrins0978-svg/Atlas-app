@@ -66,6 +66,33 @@ deux endroits du fichier attendent maintenant que l'écran d'attente s'efface.
 *Cherché ailleurs plutôt que corrigé sur place : les autres `waitForURL` du
 dépôt lisent par des localisateurs, qui attendent d'eux-mêmes.*
 
+### Un contrôle guettait un état qui ne dure qu'un instant
+
+`test-facture-au-client-e2e` exigeait la phrase « Votre client ne l'a pas encore
+reçue ». Or `TransmettreLaFacture` a **deux visages** :
+
+| Lien du client pas encore préparé | Lien préparé |
+|---|---|
+| « Votre client ne l'a pas encore reçue. » | « … — c'est vous qui l'envoyez. » |
+
+Depuis l'appui unique du 22 août, le même geste arrête la facture, prépare le
+lien, ouvre la messagerie, puis rafraîchit l'écran : **on passe du premier visage
+au second pendant que la suite regarde.** Le contrôle n'attendait que le premier,
+et tombait selon la vitesse de la machine.
+
+**Les deux phrases disent la même chose, et c'est elle la règle** : la facture est
+arrêtée, et c'est encore à lui de l'envoyer. Le contrôle vise désormais la règle,
+pas l'une de ses deux formulations — un écran qui laisserait croire la facture
+partie ne porte ni l'une ni l'autre, et il rougit.
+
+### Et « 0 == 1 » n'accusait personne
+
+`test-ia-02-e2e` écrivait la prestation puis attendait trois cents millisecondes
+avant de vérifier qu'elle avait survécu à l'assistant. Sous la batterie, l'action
+serveur dépasse ce délai : l'assistant était accusé d'un effacement qui n'avait
+pas eu lieu. Elle attend maintenant que la requête soit partie — et son message
+nomme le coupable, au lieu d'un « 0 == 1 » qui envoyait chercher partout.
+
 ## 2026-08-24
 
 ### Lot 2B : une image ne se range plus jamais sans être nettoyée
