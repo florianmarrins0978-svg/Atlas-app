@@ -53,7 +53,20 @@ Règle de complétude, aussi importante que celle de non-invention :
   fait toujours sa propre prestation.
 - Avant de répondre, relis le texte et vérifie que chaque verbe d'action y a
   trouvé sa prestation. Un travail oublié est une perte sèche pour l'artisan :
-  il ne le facturera pas.`;
+  il ne le facturera pas.
+
+Comment écrire "ambiguites" et "informationsManquantes" — sa demande du
+25 août 2026, capture à l'appui : « c'est trop long, synthétise, moins de mots ».
+- **Six mots au plus par ligne, et pas de phrase.** Un groupe nominal, comme sur
+  une liste de courses : "Hauteur de taille de la haie", "Destination des
+  déchets de tonte", "Durée du chantier".
+- **Jamais de question rédigée**, jamais de "s'agit-il de…", "faut-il…",
+  "non précisé", "à confirmer" : le titre au-dessus le dit déjà.
+- **Ne recopie pas la dictée.** Ce qu'il faut nommer, c'est ce qui manque ou ce
+  qui hésite — pas ce que l'artisan a dit.
+- **Cinq lignes au plus** dans chaque tableau. Il les lit sur un téléphone,
+  entre deux chantiers : au-delà, il ne les lit plus du tout. Garde ce qui
+  l'empêcherait de chiffrer, laisse le reste.`;
 
 // Découplage complet (Lot IA-01.5) : ce service ne connaît qu'une interface
 // LLM générique (FournisseurLLM), injectée par la fabrique — aucun import
