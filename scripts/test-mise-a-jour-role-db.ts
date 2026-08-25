@@ -33,6 +33,7 @@
 
 import assert from "node:assert/strict";
 import { readFileSync, readdirSync } from "node:fs";
+import { estBancDEssai } from "../src/profil-banc";
 import path from "node:path";
 import { pool, db } from "../src/server/db/client";
 import { users } from "../src/server/db/schema";
@@ -175,9 +176,6 @@ async function main() {
   await essai("un banc déclaré par ATLAS_PROFIL seul est bien un banc", () => {
     // La fonction centrale, éprouvée pour elle-même : c'est elle que l'action
     // emploie désormais, d'après le contrôle précédent.
-    const { estBancDEssai } = require("../src/profil-banc") as {
-      estBancDEssai: (env: { ATLAS_PROFIL?: string; ATLAS_BANC_ESSAI?: string }) => boolean;
-    };
     assert.equal(estBancDEssai({ ATLAS_PROFIL: "banc" }), true);
     assert.equal(estBancDEssai({ ATLAS_BANC_ESSAI: "1" }), true);
     assert.equal(estBancDEssai({}), false);
