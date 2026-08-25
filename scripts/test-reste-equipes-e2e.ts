@@ -117,22 +117,50 @@ async function joursLibresDEssai(): Promise<[string, string]> {
   }
   // Assez loin pour que le délai minimal d'envoi l'accepte, assez proche pour
   // être DANS le mois sur lequel le calendrier s'ouvre.
+  // **TROIS JOURS D'AVANCE, PAS CINQ.** C'est le plancher que le serveur accepte
+  // (`test-envoi-client-e2e` retient le même), et cinq jours ne laissaient que
+  // deux dates candidates quand le mois se termine — le 25 août, le 30 et le 31.
+  // Il a suffi qu'une suite antérieure en occupe une pour que celle-ci s'arrête
+  // faute de matière (batterie du 25 août au soir).
+  //
+  // **Et l'on déborde sur le mois SUIVANT** plutôt que de renoncer : le
+  // calendrier sait avancer d'un mois, et une fin de mois chargée ne doit pas
+  // rendre ce contrôle muet. Un contrôle qui se tait selon la date du jour
+  // s'apprend à être ignoré (`ARCHITECTURE.md`, la suite qui rougissait le
+  // samedi).
   const d = new Date();
-  d.setDate(d.getDate() + 5);
-  const mois = d.getMonth();
+  d.setDate(d.getDate() + 3);
   const libres: string[] = [];
-  while (d.getMonth() === mois && libres.length < 2) {
+  for (let i = 0; i < 70 && libres.length < 2; i++) {
     const jour = d.toISOString().slice(0, 10);
     if (!pris.has(jour)) libres.push(jour);
     d.setDate(d.getDate() + 1);
   }
   if (libres.length < 2) {
     throw new Error(
-      "moins de deux jours libres dans le mois affiché : rien à mesurer, et ce n'est " +
-        "pas un succès. Ce n'est pas un défaut du produit — c'est une base d'essai trop chargée."
+      "moins de deux jours libres sur les dix semaines à venir : rien à mesurer, et ce " +
+        "n'est pas un succès. Ce n'est pas un défaut du produit — c'est une base d'essai " +
+        "trop chargée."
     );
   }
   return [libres[0], libres[1]];
+}
+
+/**
+ * Amène le calendrier sur le mois d'un jour donné, et rend sa case.
+ *
+ * **Le calendrier s'ouvre sur le mois courant** : une date choisie au-delà n'a
+ * pas de case, et le contrôle s'arrêterait sur « rien à mesurer » alors que le
+ * produit va très bien.
+ */
+async function caseDuJour(page: import("playwright").Page, jour: string) {
+  for (let i = 0; i < 4; i++) {
+    const c = page.locator(`[data-jour="${jour}"]`);
+    if (await c.count()) return c.first();
+    await page.getByRole("button", { name: "Mois suivant" }).click();
+    await page.waitForTimeout(350);
+  }
+  throw new Error(`le ${jour} reste introuvable après quatre mois : rien à mesurer`);
 }
 
 async function main() {
@@ -196,9 +224,8 @@ async function main() {
   await page.waitForSelector('[data-atlas="invite-dates"]', { timeout: 30_000 });
 
   await cas("le jour à moitié pris annonce ce qu'il reste", async () => {
-    const case_ = page.locator(`[data-jour="${jour}"]`);
-    assert.ok(await case_.count(), `le ${jour} n'est pas au calendrier : rien à mesurer`);
-    await case_.first().click();
+    const case_ = await caseDuJour(page, jour);
+    await case_.click();
     await page
       .locator("text=Vérification de votre planning…")
       .waitFor({ state: "hidden", timeout: 20_000 })
@@ -240,9 +267,8 @@ async function main() {
   // c'est une preuve plus forte : la mention suit le JOUR, elle ne se pose pas
   // sur toutes les lignes.
   await cas("le jour libre retenu à côté n'en porte aucune", async () => {
-    const case_ = page.locator(`[data-jour="${jourLibre}"]`);
-    assert.ok(await case_.count(), `le ${jourLibre} n'est pas au calendrier : rien à mesurer`);
-    await case_.first().click();
+    const case_ = await caseDuJour(page, jourLibre);
+    await case_.click();
     await page
       .locator("text=Vérification de votre planning…")
       .waitFor({ state: "hidden", timeout: 20_000 })
