@@ -9,6 +9,64 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
+## ~~Photographier son devis / sa facture pour en reprendre l'allure~~ — FAIT le 25 août 2026
+
+**FAIT.** L'écran Réglages → Documents porte désormais, en tête de « L'allure de
+mes devis », deux boutons *Photographier mon devis / ma facture* (appareil photo
+**ou** photothèque). La lecture vit dans `src/server/ai/services/lire-allure-devis.ts`
+(même patron que `lire-ticket.ts`), l'action `reprendreAllurePhotoAction` fusionne
+le lu dans l'allure et les conditions déjà en base, et l'écran montre ce qui a été
+repris et sa réserve. La photo est nettoyée de ses métadonnées comme le logo.
+
+**Reste NON vérifié ici, et il faut le dire :** l'appel réel au fournisseur de
+vision demande une clé, absente de cet environnement. La fonction PURE de lecture
+est éprouvée (`scripts/test-lecture-allure-devis.ts`, 0 échec) ; **la lecture d'un
+vrai devis se prouve sur son espace, avec sa clé, comme la dictée.**
+
+<details><summary>Contexte d'origine</summary>
+
+**Sa demande :** *« faut également que l'utilisateur puisse prendre la photo de
+son devis et que l'outil recopie trait pour trait son devis, pareil pour sa
+facture »* — venue juste après *« on comprend rien, trop compliqué pour modifier,
+faut simplifier tout ça »* sur l'écran Réglages → Documents (allure + message).
+
+**Ce que ça remplace, et pourquoi c'est une simplification.** Aujourd'hui il
+règle à la main le logo, la typographie, la couleur et le message (un écran de
+près de 1000 lignes qu'il trouve illisible). L'idée : il photographie un de ses
+devis existants, et l'appli **en tire l'allure** pour ses futurs documents — le
+long réglage manuel disparaît derrière un seul bouton.
+
+**Franchise à tenir, dite le 25 août :** « trait pour trait » à l'identique n'est
+ni faisable ni souhaitable — une photo n'est pas modifiable, et l'appli doit
+produire un vrai PDF propre (bon lien, bons montants). Ce qu'on reproduit, c'est
+l'**allure** et les **mentions**, pas une copie pixel.
+
+**Ce qu'il a tranché (25 août)**, sur trois choix proposés :
+
+| L'appli reprend de la photo | Retenu ? |
+|---|---|
+| l'allure : logo, couleurs, police, mise en page | **oui** |
+| les mentions : conditions de paiement, mentions légales, politesse | **oui** |
+| les lignes et les prix de ce devis-là | **non** |
+
+**Précisions du 25 août (sur la maquette) :** l'entrée doit proposer
+**l'appareil photo OU la photothèque** — son devis est parfois déjà une photo
+dans sa galerie. Et **« régler à la main » a été retiré** : il a demandé à quoi
+ça servait, et si la photo fait tout, la porte de secours ne sert plus.
+
+| | |
+|---|---|
+| ce qu'il faut | un écran « Photographier mon devis » (appareil photo **ou** photothèque), la lecture par l'IA vision (le même patron que `lire-ticket.ts` et le croquis d'arrosage), et l'écriture du résultat dans l'allure (`allure-documents.ts`) et les conditions (`conditions-documents.ts`) déjà en base |
+| qui peut le faire | moi — c'est du code, la brique vision existe |
+| d'abord | **la maquette** (§3 bis), qu'il a demandée avant tout code |
+| pas vérifiable ici | la lecture d'image réelle demande une clé de vision, absente de cet environnement — à jouer sur son espace |
+
+</details>
+
+---
+
+## Le devis et la facture n'ont pas encore le refus d'adresse locale (24 août 2026)
+
 ## ~~Le devis et la facture n'ont pas encore le refus d'adresse locale~~ (fait le 24 août 2026)
 
 Le lien envoyé au client prenait l'adresse du navigateur qui l'avait fabriqué —
@@ -27,6 +85,26 @@ partout. Un devis envoyé reste envoyé, une facture arrêtée reste arrêtée �
 défait pas une écriture comptable pour une histoire d'adresse.
 
 ---
+
+## ⚠ Six numéros de section en DOUBLE dans `ARCHITECTURE.md` (25 août 2026)
+
+`## 125`, `## 134`, `## 135`, `## 136`, `## 164`, `## 165` désignent chacun
+**deux sections différentes**. Constaté sur `main` nu, sans modification locale :
+ce n'est la faute d'aucun lot en cours.
+
+**Ce que ça coûte :** un renvoi « `ARCHITECTURE.md` §164 » écrit dans le code ne
+désigne plus rien de sûr — et c'est par ces renvois qu'on retrouve le POURQUOI
+d'une décision. Le dépôt en compte des dizaines.
+
+**Pourquoi ce n'est pas corrigé ici :** renuméroter suppose de reprendre tous les
+renvois qui pointent dessus, dans un fichier où trois ou quatre sessions écrivent
+en même temps. Fait au milieu de leurs lots, cela produirait des conflits sur
+chacun et des renvois faux partout.
+
+**À faire d'un coup, par une session qui n'a que ça à faire** : renuméroter les
+six seconds, corriger les renvois, et poser un contrôle qui refuse un numéro
+déjà pris — sans quoi la même dérive recommence dès la semaine suivante.
+
 
 ## ⚠ `verifier-maquette-message-et-allure` est ROUGE sur main (24 août 2026)
 
@@ -342,6 +420,47 @@ le produit. **Ne pas rouvrir** sans qu'il le redemande.
 
 La planche 92 (`appli/calendrier-aujourdhui.html`) reste : elle raconte le
 chemin, et le prochain qui trouvera deux cases entourées saura pourquoi.
+
+---
+
+## CINQ RÉGLAGES DE DOCUMENTS N'ATTEIGNENT PAS LE DEVIS — sa décision attendue (25 août 2026)
+
+**Il l'a relevé lui-même :** *« les autres qui sont en ON doivent-ils être
+visibles sur le devis ? car je ne vois rien, est-ce normal ? »*
+
+**Non. Vérifié dans le code, pas supposé.** Sur les six réglages de
+« Réglages → Documents », **un seul atteint le document** :
+
+| Réglage | Sur le devis ? | Par où |
+|---|---|---|
+| Validité du devis | **oui** | figée sur le devis à sa création (`getOuCreerDevisBrouillon`), imprimée par `devis-pdf.ts` |
+| Acompte | non | — |
+| Délai de paiement | non | — |
+| Moyens de paiement | non | — |
+| Rappeler les pénalités | non | — |
+| Texte en bas des documents | non | — |
+
+`lignesConditionsDevis` compose bien ces cinq lignes, et **elle n'est appelée que
+par l'aperçu de l'écran Réglages**. Ni l'écran du devis, ni son PDF ne la
+connaissent. Il règle, il voit l'aperçu, et son client ne reçoit rien.
+
+Ce qu'il voit sur son devis vient d'ailleurs, et c'est ce qui rend le défaut
+invisible : « Acompte de 30 % à la signature… » est un **exemple grisé** dans un
+champ libre vide (`placeholder`), et « Modalités de paiement / IBAN » vient de
+ses coordonnées bancaires.
+
+**POURQUOI CE N'EST PAS CODÉ D'OFFICE.** Brancher ces cinq lignes change ce que
+**reçoivent ses clients** — un devis qui part avec trois paragraphes de plus. Où
+elles se placent sur le document est un choix qu'il doit voir avant qu'il parte
+chez quelqu'un (`CLAUDE.md` §3 bis). La question lui est posée ; rien n'est codé
+tant qu'il n'a pas répondu.
+
+**Et le commentaire du code affirmait le contraire** — « l'aperçu du bas lit LA
+MÊME fonction que le PDF ». Corrigé le 25 août : il dit maintenant ce qui est
+vrai. Une documentation périmée est pire qu'absente.
+
+---
+
 ## LES SUITES NAVIGATEUR SONT INSTABLES SOUS LA CHARGE DE LA BATTERIE (25 août 2026)
 
 **Le fait, mesuré trois fois plutôt que supposé.** Des suites rougissent dans la
@@ -362,11 +481,27 @@ bruit — une demi-heure par lot, et le risque inverse : prendre un VRAI rouge p
 du bruit. Un contrôle qui parle à tort s'apprend à être ignoré, et l'on perd le
 garde-fou sans s'en apercevoir.
 
-**Ce qui est écarté, faute de preuve :** « c'est un flottement », dit sans
-mesure. Les symptômes vus jusqu'ici sont des délais dépassés
-(`locator.waitFor: Timeout 30000ms`) et des écrans qui n'ont pas fini de se
-composer — cela ressemble à une machine saturée, pas à un défaut de logique.
-Deux pistes à éprouver, dans cet ordre :
+**CORRECTION DU 25 AOÛT AU SOIR, ET ELLE CHANGE LE DIAGNOSTIC.** Une partie de
+ces rouges vient d'une faute de ma part, pas de la batterie : **je lançais des
+suites à côté pendant qu'une batterie tournait**, et les deux partagent la MÊME
+base d'essai. Chacune appelle `nettoyerBase()` et vide les tables de l'autre en
+plein milieu — d'où des écrans sans données, des attentes qui expirent, et des
+suites qui passent au vert dès qu'on les rejoue seules.
+
+**La règle qui en sort, et elle n'était écrite nulle part : une seule chose à la
+fois sur la base d'essai.** Pas de suite lancée « pour vérifier vite » pendant
+qu'une batterie tourne ; pas deux batteries. Le conteneur a une seule base, et
+elle n'est pas faite pour deux lecteurs qui la vident.
+
+**PREMIÈRE MESURE APRÈS LA CORRECTION, et elle est nette :** une batterie jouée
+avec **rien d'autre en train de toucher la base** rend **224/224 en base et
+110/110 au navigateur**. Aucun rouge. C'est le premier 110/110 de la journée, et
+il désigne la faute ci-dessus plutôt que la machine.
+
+**Ce qui reste à éprouver** : les rouges qui tomberaient encore alors que rien
+d'autre ne tourne — s'il en reste. Les symptômes étaient des
+délais dépassés (`locator.waitFor: Timeout 30000ms`), ce qui ressemble à une
+machine saturée. Deux pistes, dans cet ordre :
 
 1. **le serveur de développement**, qui recompile chaque route à la demande : au
    bout de cent suites, il a compilé toute l'application et travaille dans un
@@ -517,6 +652,29 @@ il coûte cher : il fait douter d'un lot juste, et il apprend à ignorer un roug
 Le corriger, c'est attendre la trace de l'enregistrement plutôt qu'un délai —
 la même leçon que le `networkidle` du 15 août.
 
+**`test-attente-dictee-e2e.ts` a rejoint la liste le 25 août**, avec la même
+signature à un détail près : *« l'écran affiche "Aucune coordonnée reconnue dans
+ce que vous avez dit" au lieu d'annoncer qu'il rédige »*. Tombée en batterie
+(109/110), **verte seule** dans la foulée, sur du code que le lot en cours ne
+touchait pas — il ne portait que l'en-tête de l'accueil. Ici encore, l'assertion
+arrive avant que le serveur chargé n'ait rendu sa réponse : l'écran en est resté
+au message d'échec de la dictée précédente. **Quatre suites, un seul défaut.**
+
+**MESURE DÉCISIVE DU 25 AOÛT, à garder :** l'étape navigateur a été jouée sur
+`main` NU — arbre séparé, aucun commit de session — et elle y rend **107/110**,
+trois suites tombées (`test-arrosage-e2e`, `test-facture-impayee-e2e`,
+`test-fiche-chantier-e2e`). Le même jour, sur un arbre PORTANT un lot, elle
+rendait 109/110, avec à chaque fois **une suite différente**.
+
+**Cette machine ne rend donc pas 110/110, quel que soit le code.** Ce n'est pas
+une excuse pour livrer du rouge : c'est un fait à opposer à la prochaine session
+qui croira avoir cassé quelque chose, et qui passera une heure à chercher dans
+son propre lot. **Le bon geste, devant un rouge navigateur : rejouer la suite
+SEULE, puis, si elle passe, rejouer l'étape sur `main` nu.** Un arbre séparé se
+monte en deux commandes (`git worktree add`), mais il lui faut de VRAIES
+dépendances : un lien symbolique vers `node_modules` fait paniquer Turbopack
+(« Symlink [project]/node_modules is invalid »), et l'essai ne prouve alors rien.
+
 **Personne ne l'a encore fait**, et ce n'est pas ce lot-ci qui doit le faire :
 c'est écrit ici pour que la prochaine batterie rouge sur ces deux suites ne
 relance pas l'enquête depuis zéro.
@@ -541,6 +699,55 @@ avant toute autre hypothèse.
 **Le remède est connu et tient en une ligne** : attendre la trace de
 l'enregistrement plutôt qu'un délai — la même leçon que le `networkidle` du
 15 août. Il reste à l'appliquer aux quatre.
+
+## 🔴 `verifier-maquette-message-et-allure.mjs` est ROUGE sur `main` (24 août 2026)
+
+**Constaté en jouant `npm run verifier:maquette` sur un `main` fraîchement
+fusionné, sur un lot qui ne touche NI cette planche NI ce contrôle.** Deux
+échecs, tous deux sur la même valeur :
+
+```
+• le fond de départ est rgb(250, 249, 245) au lieu du crème d'aujourd'hui
+• le retour ne rend pas le crème : rgb(250, 249, 245)
+```
+
+**Vérifié pré-existant** : le contrôle rougit à l'identique sur `main` seul,
+sans aucune de mes modifications. Ce n'est donc pas une régression de ce lot.
+
+`rgb(250, 249, 245)` est `#faf9f5` — la **plage** de l'application
+(`colors.card`), pas le **crème du document** `#ece9e1` (`couleursDocument.papier`,
+la valeur d'`ALLURE_PAR_DEFAUT.fond`). La planche part donc sur la couleur des
+cartes de l'écran au lieu de celle du papier. **C'est exactement la confusion
+que `ARCHITECTURE.md` sépare** entre les jetons d'écran et ceux du document :
+le patron, lui, verrait une planche annonçant un fond que ses devis n'ont pas.
+
+**Non corrigé ici, et c'est délibéré** : la planche appartient à une autre
+session, qui la tient peut-être encore ouverte. La corriger à l'aveugle
+risquerait de défaire son travail en cours. **À reprendre par qui l'a écrite**,
+ou par la prochaine session si personne ne s'en saisit.
+
+## ⚠ EN ATTENTE DE SA RÉPONSE — voir son devis pendant qu'on le change (24 août 2026)
+
+Sa demande : *« lorsque je modifie mon devis, je suis obligé de descendre pour
+voir les modifications ; il faut mieux organiser la page pour pouvoir voir ce
+qu'on modifie. Propose, ne code rien. »*
+
+**Planche 96 : `appli/allure-mieux-rangee.html`. RIEN N'EST CODÉ.** Trois
+rangements manipulables — A l'aperçu en tête, B l'aperçu collé, C la feuille
+pleine page avec les réglages en tiroir. Le détail et ce que chacun coûte sont
+dans `CHANGELOG.md`.
+
+**Deux questions attendent sa réponse :**
+
+| | |
+|---|---|
+| **Lequel des trois ?** | ou aucun — ne rien changer est une réponse |
+| **Les dix polices sur cinq rangées** | s'il préfère une seule ligne qui défile de côté, l'aperçu remonte d'autant. C'est un second choix, indépendant du premier |
+
+**Ce que coder demandera**, écrit ici pour que la prochaine session ne le
+redécouvre pas : tout se joue dans le bloc « L'allure de mes devis » de
+`src/app/reglages/documents/DocumentsClient.tsx` — l'ordre du JSX pour A, un
+conteneur `sticky` pour B, un tiroir pour C. Aucune donnée, aucune migration.
 
 ## ⚠ La planche 90 a DÉRIVÉ de l'écran « Terminés » qu'elle référence (23 août 2026)
 

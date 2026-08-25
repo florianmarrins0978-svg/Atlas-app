@@ -71,6 +71,14 @@ type Props = {
   dateEmission: string;
   validite: string;
   statut: "brouillon" | "envoye";
+  /**
+   * La clef de son logo dans le stockage, ou `null`.
+   *
+   * **Il l'avait posé et ne le voyait pas** (18 août 2026) : le PDF le portait,
+   * l'aperçu des réglages aussi, mais l'écran où il RÉDIGE son devis — celui
+   * qu'il regarde le plus — ne le montrait nulle part.
+   */
+  logo: string | null;
   emetteur: { nom: string; adresse: string; siret: string; telephone: string; email: string; iban: string };
   clientId: string | null;
   client: { nom: string; civilite: Civilite | null; adresse: string; telephone: string; email: string };
@@ -362,6 +370,20 @@ export default function DevisCompletClient(props: Props) {
       {/* --- En-tête : l'entreprise à gauche, les références à droite -------- */}
       <header className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
         <div className="min-w-0 flex-1">
+          {/* **Le logo AU-DESSUS du nom**, comme sur le document imprimé
+              (`document-commun.ts` : « Le logo, au-dessus du nom »). Une hauteur
+              fixe et une largeur libre : un logo en bandeau et un logo carré
+              n'ont rien à voir, et imposer une boîte carrée écraserait le
+              premier. Même règle que le PDF, à l'échelle de l'écran. */}
+          {props.logo && (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={`/api/fichiers/${props.logo}`}
+              alt=""
+              data-atlas="logo-devis"
+              className="mb-2 h-[44px] w-auto max-w-[180px] object-contain object-left"
+            />
+          )}
           <ChampNu
             valeur={emetteur.nom}
             fige={fige}
@@ -781,9 +803,6 @@ export default function DevisCompletClient(props: Props) {
         >
           Aperçu du PDF
         </a>
-        <p className="pb-1 text-center text-[12px]" style={{ color: colors.muted }}>
-          Tout s&apos;enregistre au fur et à mesure. Rien ne part avant que vous ne le décidiez.
-        </p>
       </div>
       </article>
 

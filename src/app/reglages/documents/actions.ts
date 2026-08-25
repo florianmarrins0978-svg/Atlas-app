@@ -6,6 +6,7 @@ import { mettreAJourEntreprise, getEntreprise } from "@/server/repositories/entr
 import { conditionsDepuisEntreprise, type ConditionsLues } from "@/lib/conditions-documents";
 import { refusDuMessage, MESSAGE_PAR_DEFAUT } from "@/lib/message-client";
 import { normaliserAllure, refusDuLogo, type Allure } from "@/lib/allure-documents";
+import { lireAllureDevis } from "@/server/ai/services/lire-allure-devis";
 import { enregistrerObjet, supprimerObjet } from "@/server/storage";
 import { verifierLimite, LIMITES } from "@/server/rate-limit";
 import { preparerPhotoEntrante } from "@/server/photo-entrante";
@@ -184,6 +185,120 @@ export async function poserLogoAction(
       erreur: err instanceof Error ? err.message : String(err),
     });
     return { ok: false, raison: "Cette image n'a pas pu être enregistrée. Réessayez." };
+  }
+}
+
+/**
+ * Reprendre l'allure d'un devis PHOTOGRAPHIÉ — sa demande du 25 août 2026.
+ *
+ * **Ce qui est repris, et ce qui ne l'est pas** (tranché sur la maquette
+ * `appli/photographier-mon-devis.html`) : les couleurs, la police reconnue et
+ * les mentions/conditions. Jamais les lignes ni les prix. Le logo non plus — on
+ * ne le découpe pas d'une photo —, et l'action le DIT dans sa réserve.
+ *
+ * **On ne remplace que ce qui a été LU.** Un champ que la lecture n'a pas su
+ * tirer (`null`) laisse la valeur d'avant : photographier un devis ne doit pas
+ * effacer une couleur qu'il avait posée à la main et que la photo n'a pas vue.
+ *
+ * **La photo est nettoyée comme le logo** (`preparerPhotoEntrante`) : un devis
+ * photographié porte les coordonnées GPS du lieu de la prise, et ce fichier ne
+ * doit pas traîner. Le refus se rend en valeur, jamais en exception
+ * (`AGENTS.md`).
+ */
+export async function reprendreAllurePhotoAction(
+  formData: FormData
+): Promise<
+  | { ok: true; repris: string[]; reserve: string | null; allure: Allure; conditions: ConditionsLues }
+  | { ok: false; raison: string }
+> {
+  const ctx = await getCurrentCtx();
+  try {
+    await exigerProprietaire(ctx, "reprendre l'allure d'un document photographié");
+
+    const fichier = formData.get("fichier");
+    if (!(fichier instanceof File)) return { ok: false, raison: "Aucune image reçue." };
+
+    const limite = await verifierLimite(
+      `televersement:${ctx.entrepriseId}`,
+      LIMITES.televersementFichier
+    );
+    if (!limite.autorise) return { ok: false, raison: limite.message };
+
+    const prete = await preparerPhotoEntrante(fichier, "photo d'un devis");
+    if (!prete.ok) return { ok: false, raison: prete.raison };
+
+    const lu = await lireAllureDevis(prete.photo.octets.toString("base64"), prete.photo.mimeType);
+    if (!lu.ok) return { ok: false, raison: lu.raison };
+
+    // **On fusionne : le lu prime, l'existant comble.** Un champ non lu (`null`)
+    // ne doit pas écraser ce qu'il avait posé.
+    const e = await getEntreprise(ctx);
+    const actuelle = normaliserAllure({
+      typographie: e?.docTypographie ?? undefined,
+      fond: e?.docFond ?? undefined,
+      accent: e?.docAccent ?? undefined,
+    });
+    const allure: Allure = {
+      typographie: lu.allure.typographie ?? actuelle.typographie,
+      fond: lu.allure.fond ?? actuelle.fond,
+      accent: lu.allure.accent ?? actuelle.accent,
+    };
+
+    const actuelles = conditionsDepuisEntreprise(e);
+    const cl = lu.allure.conditions;
+    const conditions: ConditionsLues = {
+      validiteJours: cl.validiteJours ?? actuelles.validiteJours,
+      acomptePourcent: cl.acomptePourcent ?? actuelles.acomptePourcent,
+      delaiPaiementJours: cl.delaiPaiementJours ?? actuelles.delaiPaiementJours,
+      moyensPaiement: cl.moyensPaiement ?? actuelles.moyensPaiement,
+      rappelerPenalites: cl.rappelerPenalites ?? actuelles.rappelerPenalites,
+      textePied: cl.textePied ?? actuelles.textePied,
+    };
+
+    await mettreAJourEntreprise(ctx, { allure, conditions });
+
+    // **On relit la base, jamais ce qu'on vient de demander.** Une couleur mal
+    // formée y est retombée sur le défaut, et l'écran doit montrer ce qui
+    // s'imprimera — c'est la règle des deux autres actions de cet écran.
+    const apres = await getEntreprise(ctx);
+    const allureRelue = normaliserAllure({
+      typographie: apres?.docTypographie ?? undefined,
+      fond: apres?.docFond ?? undefined,
+      accent: apres?.docAccent ?? undefined,
+    });
+    const cRelues = conditionsDepuisEntreprise(apres);
+    const conditionsRelues: ConditionsLues = {
+      validiteJours: cRelues.validiteJours,
+      acomptePourcent: cRelues.acomptePourcent,
+      delaiPaiementJours: cRelues.delaiPaiementJours,
+      moyensPaiement: cRelues.moyensPaiement,
+      rappelerPenalites: cRelues.rappelerPenalites,
+      textePied: cRelues.textePied,
+    };
+
+    // Ce qui a réellement été repris — pour que l'écran le montre, et ne
+    // laisse pas croire qu'il a pris ce que la photo n'a pas vu.
+    const repris: string[] = [];
+    if (lu.allure.fond !== null || lu.allure.accent !== null) repris.push("vos couleurs");
+    if (lu.allure.typographie !== null) repris.push("votre police");
+    const aDesConditions =
+      cl.validiteJours !== null ||
+      cl.acomptePourcent !== null ||
+      cl.delaiPaiementJours !== null ||
+      cl.moyensPaiement !== null ||
+      cl.rappelerPenalites !== null ||
+      cl.textePied !== null;
+    if (aDesConditions) repris.push("vos mentions");
+
+    return { ok: true, repris, reserve: lu.allure.reserve, allure: allureRelue, conditions: conditionsRelues };
+  } catch (err) {
+    logger.error("Reprise de l'allure depuis une photo impossible", {
+      erreur: err instanceof Error ? err.message : String(err),
+    });
+    return {
+      ok: false,
+      raison: "Cette photo n'a pas pu être lue. Réessayez dans un instant.",
+    };
   }
 }
 

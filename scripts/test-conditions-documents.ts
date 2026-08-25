@@ -79,10 +79,43 @@ async function main() {
     assert.equal(normaliserConditions({ delaiPaiementJours: -5 }).delaiPaiementJours, 0);
   });
 
-  await essai("un champ vide éteint le réglage", () => {
-    const c = normaliserConditions({ acomptePourcent: "", moyensPaiement: "   " });
-    assert.equal(c.acomptePourcent, null);
+  // ─── LE DÉFAUT DU 25 AOÛT 2026 : « ça saute automatiquement » ─────────────
+  //
+  // Cette suite exigeait qu'« un champ vide ÉTEIGNE le réglage » — et c'est ce
+  // qui empêchait le patron d'allumer « Texte en bas de vos documents » :
+  // l'interrupteur s'allume en envoyant une chaîne vide, elle repartait en
+  // `null`, et `null` veut dire éteint. Le geste s'annulait lui-même.
+  //
+  // **Ce qu'elle défendait vraiment reste vrai** — un champ vide n'imprime
+  // rien —, mais cela se vérifie à l'IMPRESSION, pas sur l'interrupteur
+  // (`CLAUDE.md` §5 bis : fixer la règle, pas la façon dont un écran la montre).
+  await essai("un champ vide reste ALLUMÉ — il n'est pas encore rempli", () => {
+    const c = normaliserConditions({ moyensPaiement: "   ", textePied: "" });
+    assert.equal(c.moyensPaiement, "", "un champ vidé a éteint l'interrupteur");
+    assert.equal(c.textePied, "", "allumer sans rien écrire a éteint l'interrupteur");
+  });
+
+  await essai("mais un champ vide n'imprime RIEN sur le devis", () => {
+    const lignes = lignesConditionsDevis(lireConditions({ moyensPaiement: "", textePied: "" }));
+    assert.ok(
+      !lignes.some((l) => /Moyens de paiement/.test(l)),
+      `une ligne de moyens vide s'imprime : ${lignes.join(" | ")}`
+    );
+    assert.ok(
+      !lignes.some((l) => l.trim() === ""),
+      `une ligne vide s'imprime sur le devis : ${JSON.stringify(lignes)}`
+    );
+  });
+
+  await essai("l'interrupteur ÉTEINT, lui, rend bien null", () => {
+    const c = normaliserConditions({ moyensPaiement: null, textePied: null });
     assert.equal(c.moyensPaiement, null);
+    assert.equal(c.textePied, null);
+  });
+
+  await essai("un pourcentage vide éteint bien l'acompte", () => {
+    // Celui-ci n'a pas d'interrupteur : un acompte sans chiffre n'existe pas.
+    assert.equal(normaliserConditions({ acomptePourcent: "" }).acomptePourcent, null);
   });
 
   await essai("zéro jour de délai veut dire comptant, pas éteint", () => {

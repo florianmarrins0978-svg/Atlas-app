@@ -246,7 +246,14 @@ dire(await polices.first().getAttribute("aria-pressed") === "true",
   "la police par défaut n'est pas « celle d'aujourd'hui »");
 dire(/par défaut/i.test(await polices.first().innerText()),
   "rien ne dit laquelle est celle d'aujourd'hui");
-dire(depart2.fond === "rgb(236, 233, 225)", `le fond de départ est ${depart2.fond} au lieu du crème d'aujourd'hui`);
+// **Le fond d'aujourd'hui est #faf9f5, PAS #ece9e1** — corrigé le 25 août 2026.
+// Ce contrôle épinglait #ece9e1, qui est `rustTint` (une teinte d'écran), là où
+// le papier d'un document est `couleursDocument.papier` dans
+// `src/lib/design-tokens.ts`. La planche, elle, avait déjà été corrigée sur la
+// bonne source : le rouge accusait donc la maquette pour une faute du contrôle,
+// et envoyait défaire ce qui était juste (`CLAUDE.md` §5).
+const PAPIER_AUJOURDHUI = "rgb(250, 249, 245)"; // #faf9f5
+dire(depart2.fond === PAPIER_AUJOURDHUI, `le fond de départ est ${depart2.fond} au lieu du papier d'aujourd'hui`);
 dire(depart2.accent === "rgb(185, 139, 71)", `l'accent de départ est ${depart2.accent} au lieu de l'or d'aujourd'hui`);
 dire(depart2.logo === false, "un logo est posé au départ : ce n'est pas son réglage d'aujourd'hui");
 
@@ -291,7 +298,7 @@ dire((await etatFeuille()).logo === true, "poser un logo ne le fait pas apparaî
 await page.locator("#revenir").click();
 await page.waitForTimeout(200);
 const revenu = await etatFeuille();
-dire(revenu.fond === "rgb(236, 233, 225)", `le retour ne rend pas le crème : ${revenu.fond}`);
+dire(revenu.fond === PAPIER_AUJOURDHUI, `le retour ne rend pas le papier d'aujourd'hui : ${revenu.fond}`);
 dire(revenu.accent === "rgb(185, 139, 71)", `le retour ne rend pas l'or : ${revenu.accent}`);
 dire(revenu.police === depart2.police, "le retour ne rend pas la police d'aujourd'hui");
 dire(revenu.logo === false, "le retour laisse le logo posé");

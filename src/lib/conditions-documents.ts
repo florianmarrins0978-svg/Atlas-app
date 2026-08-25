@@ -83,9 +83,34 @@ function nombre(valeur: unknown, bornes: { min: number; max: number }): number |
   return Math.min(bornes.max, Math.max(bornes.min, Math.round(n * 100) / 100));
 }
 
+/**
+ * Un champ libre commandé par un interrupteur : trois états, jamais deux.
+ *
+ * ─── LE DÉFAUT DU 25 AOÛT 2026, ET IL SE VOIT À L'ŒIL ───────────────────────
+ *
+ * *Le patron :* ***« le texte en bas de vos documents ne passe pas en ON, il
+ * saute automatiquement »***.
+ *
+ * L'interrupteur s'allumait en envoyant une chaîne VIDE — il n'y a rien
+ * d'écrit —, cette fonction la ramenait à `null`, l'écran relisait ce que la
+ * base porte, et `null` veut dire ÉTEINT. Il ne pouvait donc jamais l'allumer :
+ * le geste s'annulait lui-même, en une fraction de seconde.
+ *
+ * **Deux états ne suffisent pas à en décrire trois :**
+ *
+ * | En base | Ce que ça veut dire |
+ * |---|---|
+ * | `null` / absent | l'interrupteur est **éteint** — rien ne s'imprime |
+ * | `""` | **allumé**, mais rien n'est encore écrit |
+ * | du texte | allumé, et voilà ce qui s'imprime |
+ *
+ * **Ce qui NE change pas, et c'est ce que défendait la suite d'avant :** un
+ * champ vide n'imprime rien. Cela se décide à l'IMPRESSION
+ * (`lignesConditionsDevis`), là où c'est vrai — et non en éteignant un
+ * interrupteur que le patron vient d'allumer.
+ */
 function texte(valeur: unknown): string | null {
-  const t = typeof valeur === "string" ? valeur.trim() : "";
-  return t === "" ? null : t;
+  return typeof valeur === "string" ? valeur.trim() : null;
 }
 
 /** Ce que la base rend, mis en forme — avec le défaut d'Atlas là où rien n'a été dit. */
@@ -164,7 +189,10 @@ export function lignesConditionsDevis(c: Conditions, totalTtc?: number): string[
     );
   }
 
-  if (c.moyensPaiement !== null) lignes.push(`Moyens de paiement acceptés : ${c.moyensPaiement}.`);
+  // **`!== null` ne suffit plus** : une chaîne vide veut dire « allumé, rien
+  // écrit » depuis le 25 août 2026, et elle imprimerait « Moyens de paiement
+  // acceptés : . » sur le devis d'un client.
+  if (c.moyensPaiement) lignes.push(`Moyens de paiement acceptés : ${c.moyensPaiement}.`);
 
   if (c.rappelerPenalites) {
     // Le TEXTE de la facture, rappelé mot pour mot : deux formulations
@@ -175,7 +203,9 @@ export function lignesConditionsDevis(c: Conditions, totalTtc?: number): string[
     );
   }
 
-  if (c.textePied !== null) lignes.push(c.textePied);
+  // Même règle : allumé sans rien écrire n'ajoute pas une ligne vide au bas du
+  // devis.
+  if (c.textePied) lignes.push(c.textePied);
 
   return lignes;
 }
