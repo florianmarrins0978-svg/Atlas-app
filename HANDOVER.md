@@ -4,8 +4,50 @@
 vous ne savez rien de ce qui précède — c'est exactement le cas de figure qu'il
 sert.
 
-**Point de reprise :** 2026-08-24 · `main`
+**Point de reprise :** 2026-08-25 · `main`
 (l'historique fait foi : `git log --oneline -20`)
+
+---
+
+## LOT 2B FERMÉ, ET SEPT CONTRÔLES RÉPARÉS AVEC LUI (25 août 2026)
+
+M3 et M6 sont clos. Ce qu'il faut savoir avant d'y toucher :
+
+| | |
+|---|---|
+| **Une seule porte pour les images** | `src/server/photo-entrante.ts`. Cinq chemins la traversent, **le logo d'entreprise compris**. Trois contrôles structurels empêchent qu'un sixième fasse sa propre cuisine |
+| **Si le nettoyage échoue, on REFUSE** | c'est l'inverse de la règle du matin même, et le revirement est assumé : un fichier illisible était rangé avec ses coordonnées GPS |
+| **Le corps est borné PENDANT sa lecture** | `src/server/corps-borne.ts`. `content-length` est un premier refus, jamais la garantie — il est écrit par le client |
+
+**Et le piège qui a coûté cinq batteries.** Sept suites navigateur sont tombées
+en chemin, **aucune à cause du lot**, toutes vertes rejouées seules. Deux causes,
+et elles reviendront :
+
+1. **un délai fixe à la place d'un signal** — `waitForTimeout(300)` après une
+   action serveur, `waitForURL` suivi d'un `innerText` alors que la page porte
+   encore « Chargement… ». Sous la batterie complète, ces délais sont dépassés,
+   et le contrôle accuse alors le produit ;
+2. **une formulation à la place d'une règle** — la date « 1 mars » quand
+   le français écrit « 1er mars », ou l'une des deux phrases d'un écran qui en
+   a deux selon son état.
+
+Devant une suite navigateur rouge, **la jouer seule d'abord** :
+`npm run test:e2e -- --seulement "<un bout du nom>"`. Verte seule, rouge en
+batterie : c'est l'une de ces deux causes, jamais un défaut du produit.
+
+---
+
+## LE CALENDRIER D'ENVOI : TOUCHER, C'EST PROPOSER (25 août 2026)
+
+Sa demande — *« je dois pouvoir sélectionner les jours juste en les touchant,
+pas besoin de cliquer sur proposer »* — a retiré « Proposer ce jour » de la
+fiche du jour, sur l'écran d'envoi au client.
+
+**Le piège si vous touchez à ces suites :** deux d'entre elles refermaient la
+fiche par un SECOND appui sur la même case. Ce geste retire aujourd'hui la date
+qu'on vient de poser — une suite qui le garde compte une date sur deux, et
+accuse le code. Détail : `ARCHITECTURE.md` §170.
+
 
 ---
 
@@ -350,6 +392,41 @@ ne se déduit jamais du point d'eau (`CLAUDE.md` §4 bis).
 avec `appli/` : la distance est passée en entrée (`regardVersZone`).
 
 Détail : `ARCHITECTURE.md` §149.
+## « LE SERVEUR N'A JAMAIS RÉPONDU » ALORS QU'IL DIT « READY » : `rm -rf .next` (24 août 2026)
+
+**Symptôme, et il ment sur sa cause.** Les suites navigateur s'arrêtent net :
+
+```
+Démarrage du serveur (mode développement)...
+❌ Le serveur n'a jamais répondu — abandon.
+--- Dernières lignes du serveur de développement ---
+  ✓ Ready in 391ms
+```
+
+Le journal dit « prêt », le socket **écoute vraiment** (`/proc/net/tcp`, état
+`0A`), et aucune requête n'obtient de réponse — **même au bout de cinq
+minutes**, mesuré. Ce n'est donc pas une compilation lente : c'est un blocage.
+
+**La cause : le cache `.next` corrompu.** Un `rm -rf .next` suffit, et la
+première requête répond alors en sept secondes, cache vide compris.
+
+**Ce qui envoie chercher au mauvais endroit**, et m'a coûté trois tentatives :
+`npm run verifier:connexion` passe au vert dans la même batterie, juste après —
+il démarre un `next start` (version bâtie), qui n'emprunte pas ce cache. On croit
+donc que le serveur va bien et que ce sont les suites qui échouent.
+
+**Devant ce message, dans cet ordre :**
+
+1. `rm -rf .next`, puis relancer — c'est presque toujours cela ;
+2. vérifier qu'aucun **orphelin** ne tient le port 3000 : `next start` laissé par
+   l'étape « connexion derrière un proxy » d'une batterie précédente ne se
+   nettoie pas toujours ;
+3. et ne pas viser `pkill -f next` : le motif se trouve dans la ligne de commande
+   du shell qui l'exécute, et l'on tue sa propre session. Viser
+   `next-server` et `next dev -p 3000`, en s'excluant soi-même.
+
+---
+
 ## UNE COULEUR ÉCRITE EN CLAIR EST JUSTE SUR CINQ CHARTES ET FAUSSE SUR DEUX (22 août 2026)
 
 **Sa capture du planning en « Nuit », six mots :** *« Le mode nuit est

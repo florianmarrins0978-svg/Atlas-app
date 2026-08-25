@@ -28,6 +28,25 @@ défait pas une écriture comptable pour une histoire d'adresse.
 
 ---
 
+## ⚠ `verifier-maquette-message-et-allure` est ROUGE sur main (24 août 2026)
+
+```
+❌ Les planches du 23 août ne tiennent pas :
+   • le fond de départ est rgb(250, 249, 245) au lieu du crème d'aujourd'hui
+   • le retour ne rend pas le crème : rgb(250, 249, 245)
+```
+
+**Ce n'est pas une régression d'un lot en cours** : vérifié dépôt propre, sans
+aucune modification locale — il tombe déjà. Il porte sur les planches
+« Mon message au client » et « Allure bleutée », livrées par une autre session le
+23 août.
+
+**Laissé à la session qui les a écrites**, qui saura si c'est le contrôle ou la
+planche qui a raison. Signalé ici plutôt que corrigé au jugé : toucher à l'allure
+d'une planche qu'on n'a pas dessinée, c'est risquer de défaire un choix du patron
+qu'on ne connaît pas.
+
+
 ## ~~Supprimer une fiche en cours, et retrouver où la fiche se compose~~ (fait le 24 août 2026)
 
 Ses deux phrases du jour. Les deux sont livrées — `ARCHITECTURE.md` §168.
@@ -108,6 +127,21 @@ d'activation. Parcouru en navigateur (`test-face-id-e2e.ts`).
 - **le faire essayer sur SON iPhone.** Rien ici ne peut le remplacer : la suite
   emploie l'appareil simulé de Chrome, qui exerce la vraie implémentation du
   navigateur mais pas la puce d'Apple ni la fenêtre d'iOS.
+
+---
+
+## Le type AUDIO n'est pas vérifié — signalé le 24 août 2026, non traité
+
+Trouvé en dressant le tableau transversal des téléversements du lot 2B. Les
+images voient leur **signature** vérifiée depuis ce lot ; les dictées, non : un
+fichier annoncé `audio/webm` qui n'en est pas serait rangé.
+
+**Ce qui borne la portée :** le type servi est dérivé de la clé (liste blanche,
+jamais rien d'exécutable) et `nosniff` couvre toutes les routes. Ce qui reste
+possible est de ranger un fichier inerte sous une extension audio.
+
+**Non traité à dessein** : hors de M3 (aucune métadonnée d'image) et de M6
+(aucune question de mémoire), et l'on n'ouvre pas un lot sans qu'il soit demandé.
 
 ---
 
@@ -308,6 +342,85 @@ le produit. **Ne pas rouvrir** sans qu'il le redemande.
 
 La planche 92 (`appli/calendrier-aujourdhui.html`) reste : elle raconte le
 chemin, et le prochain qui trouvera deux cases entourées saura pourquoi.
+## LES SUITES NAVIGATEUR SONT INSTABLES SOUS LA CHARGE DE LA BATTERIE (25 août 2026)
+
+**Le fait, mesuré trois fois plutôt que supposé.** Des suites rougissent dans la
+batterie complète — 110 suites d'affilée — et **passent au vert jouées seules**,
+sur la même branche ET sur `main` nu. Ce ne sont jamais les mêmes :
+
+| Batterie | Ce qui a rougi | Seule sur ma branche | Seule sur `main` nu |
+|---|---|---|---|
+| 24 août | `test-periodicite-tva-e2e` | 7/7 vert | 7/7 vert |
+| 24 août, `main` nu | `test-ia-02-e2e` | — | (clé IA absente : normal ici) |
+| 25 août | `test-facture-au-client-e2e` | vert | vert |
+| 25 août | `test-fiche-chantier-e2e` | 14/14 vert | — |
+
+**Ce que cela coûte, et c'est le vrai problème.** La batterie est ce qui autorise
+une livraison (`CLAUDE.md` §5). Une batterie qui rougit au hasard force chaque
+session à rejouer des suites une par une pour distinguer son propre défaut du
+bruit — une demi-heure par lot, et le risque inverse : prendre un VRAI rouge pour
+du bruit. Un contrôle qui parle à tort s'apprend à être ignoré, et l'on perd le
+garde-fou sans s'en apercevoir.
+
+**Ce qui est écarté, faute de preuve :** « c'est un flottement », dit sans
+mesure. Les symptômes vus jusqu'ici sont des délais dépassés
+(`locator.waitFor: Timeout 30000ms`) et des écrans qui n'ont pas fini de se
+composer — cela ressemble à une machine saturée, pas à un défaut de logique.
+Deux pistes à éprouver, dans cet ordre :
+
+1. **le serveur de développement**, qui recompile chaque route à la demande : au
+   bout de cent suites, il a compilé toute l'application et travaille dans un
+   cache énorme. La batterie pourrait servir une version BÂTIE (`next build` puis
+   `next start`), comme le fait déjà `verifier:connexion` — c'est d'ailleurs
+   l'étape qui ne rougit jamais ;
+2. **la mémoire du conteneur**, à mesurer pendant une batterie avant de conclure.
+
+**Ne pas « réparer » en allongeant les délais** : cela masquerait un vrai défaut
+de lenteur le jour où il arrivera, et c'est exactement la faute que ce dépôt a
+payée avec les contrôles qui mesurent zéro.
+
+---
+
+## ~~DEUX SUITES NAVIGATEUR ROUGES SUR `main`~~ — **RÉPARÉES le 25 août 2026**
+
+**Vérifié sur `main` nu**, dans un arbre séparé, sans aucun lot par-dessus : les
+deux rougissent à l'identique. Elles ne viennent pas de la pastille des dates.
+
+### 1. `test-date-lointaine-e2e.ts` — le contrôle a vieilli, pas l'écran
+
+Il exige `/1 mars/i` et l'écran affiche **« lundi 1er mars 2027 »**. L'écran a
+raison : `src/lib/jour.ts` porte la règle en toutes lettres — *« le premier du
+mois est le seul ordinal en français : 1er août, jamais 1 août »*. C'est le
+contrôle qui n'a pas suivi.
+
+**Le corriger, ce n'est PAS remettre « 1 mars »** : ce serait réclamer une faute
+de français. La bonne cible est `/1er mars/i`, ou mieux, la date composée par
+`jourLisible()` — une suite qui recopie un format finit toujours par diverger de
+la fonction qui l'écrit (`CLAUDE.md` §3).
+
+### 2. `test-deux-dates-calendrier-e2e.ts` — son garde-fou parle
+
+*« Le calendrier n'offre que 2 jour(s) : trop peu pour éprouver. »* Il refuse de
+conclure, et c'est exactement ce qu'on lui demande — un contrôle qui mesure zéro
+ne mesure rien (`CLAUDE.md` §5). Mais il refuse **tous les jours**, ce qui en
+fait un rouge permanent plutôt qu'un garde-fou.
+
+Il lui faut au moins trois jours proposables ; il n'en trouve que deux. À
+chercher du côté de la fenêtre de dates offerte au client et du jeu de
+démonstration — pas du côté du calendrier lui-même, dont les autres suites
+passent.
+
+~~**Aucune des deux n'est corrigée ici, et c'est délibéré**~~ — **les deux l'ont
+été le 25 août 2026**, par la session du lot 2B, dont la batterie les avait
+trouvées le même jour.
+
+**Ce constat-ci avait raison sur les deux points, et sa cible était la bonne :**
+la première passe désormais par `jourLisible()`, la seconde tourne la page du
+mois quand celui qui s'affiche n'offre pas trois jours. Rien n'a été touché au
+produit. Détail dans `CHANGELOG.md` du 25 août.
+
+---
+
 ## `verifier:maquette` est ROUGE sur `main`, et ce n'est pas le mode nuit (23 août 2026)
 
 `scripts/verifier-maquette-message-et-allure.mjs` échoue sur `main` nu, à
@@ -3013,6 +3126,66 @@ fin, et le fond figé.
 obligatoires, disposition des colonnes, ordre des totaux. Un devis mal posé
 n'est pas un devis moins joli, c'est un devis qu'on peut lui contester.
 
+### ~~0 trigies septies. Deux suites de calendrier tombent EN FIN DE MOIS~~ — **RÉPARÉES le 25 août 2026**
+### 0 trigies octies. ~~Le brouillon confirmé ne se corrigeait plus~~ — **RÉPARÉ le 25 août 2026**
+
+Ses trois notes — déchets, contraintes d'accès, remarques — n'ont aucune autre
+case dans l'application, et le brouillon confirmé les figeait. Elles s'écrivent
+de nouveau ; les copies de ce qui vit ailleurs (prestations, matériel, durée,
+équipe) quittent l'encart. `ARCHITECTURE.md` §171.
+
+**Ce qui reste à surveiller, et qui n'est pas mesurable ici :** la consigne
+donnée au modèle exige désormais des réserves de six mots. **Aucune clé d'IA sur
+ce poste** — ça se juge sur son espace, à la première dictée (`CLAUDE.md`
+§1 ter). L'écran, lui, plafonne à cinq lignes quoi que le modèle rende, et c'est
+éprouvé (`test-brouillon-reserves.ts`).
+
+### 0 trigies septies. Deux suites de calendrier tombent EN FIN DE MOIS — **CONSTATÉ le 25 août 2026, PAS RÉPARÉ**
+
+**Elles rougissent sur `main`, sans aucun changement**, et elles bloquent la
+livraison de toutes les sessions tant qu'on est en fin de mois. Vérifié : même
+rouge, au même endroit, sur `origin/main` seul.
+
+| Suite | Ce qu'elle rend | Pourquoi |
+|---|---|---|
+| `test-deux-dates-calendrier-e2e` | « Le calendrier n'offre que 2 jour(s) : trop peu pour éprouver » | elle ne lit que **le mois affiché**. Le 25 août, le délai minimal écarté, il ne reste que le 28 et le 31. Elle n'a jamais su tourner la page du mois |
+| `test-date-lointaine-e2e` | « Le client ne voit pas la date proposée (« 1 mars ») » | ~~au-delà de la fenêtre du client~~ — **ce diagnostic était FAUX**, voir ci-dessous |
+
+**LA SECONDE LIGNE ÉTAIT FAUSSE, ET IL FAUT LE DIRE.** La date n'était pas hors
+fenêtre : le client la voyait parfaitement. L'écran écrivait **« lundi 1er mars
+2027 »** — le seul ordinal du français, porté par `src/lib/jour.ts` — et la suite
+cherchait « 1 mars ». Elle **redisait la règle d'écriture** au lieu d'employer la
+fonction qui la rend, ce que `CLAUDE.md` §3 interdit.
+
+*La preuve : passée par `jourLisible()`, sans une ligne changée au produit, elle
+affiche « ✓ le client la voit sur sa page, en toutes lettres ». Aucune fenêtre
+n'a été élargie.*
+
+**Ce qu'il faut regarder, et personne ne l'a fait :**
+
+- ~~la première est un défaut de la SUITE~~ — **juste, et fait** : elle tourne
+  désormais la page du mois quand celui qui s'affiche n'offre pas trois jours.
+  Rien n'a changé au produit ;
+- ~~**la seconde est peut-être un vrai défaut du PRODUIT**~~ — **non, et c'est
+  vérifié** : la date proposée à six mois arrive chez le client et s'y affiche.
+  Ce qui suit reste néanmoins une bonne question à lui poser, indépendamment de
+  ce rouge-là. Ce n'est plus un point bloquant.
+
+  *Rédaction d'origine, conservée :* et c'est pour cela
+  qu'elle ne doit pas être « réparée » à la légère. Elle garde exactement le
+  piège que son propre commentaire nomme : *« une date validée à l'envoi puis
+  refusée à la lecture, parce que la fenêtre du client ne la couvre pas »*. Le
+  patron peut proposer à dix-huit mois (`HORIZON_PATRON_JOURS`), le client ne
+  voit qu'une fenêtre plus courte (`fenetrePourDates`). **La question à trancher
+  avec lui** : un client doit-il pouvoir retenir une date que son artisan lui a
+  proposée à six mois ? Si oui, la fenêtre du client doit s'ouvrir autour de
+  cette date — la marge existe déjà dans le code, elle ne suffit visiblement
+  pas.
+
+**Ce que ça ne doit PAS devenir :** une raison de repousser la vérification à
+septembre. Le premier du mois, les deux repasseront au vert toutes seules — et
+le défaut, lui, sera toujours là.
+
 ### 0 trigies sexies. Deux suites navigateur rougissent encore sous charge — **CONSTATÉ le 24 août 2026, PAS RÉPARÉ**
 
 **Écrit parce que le silence coûterait l'enquête une seconde fois.** Ce n'est
@@ -3036,6 +3209,13 @@ recharge **trois fois** en laissant du temps à l'action, précisément parce qu
 le défaut avait déjà été vu le 13 août. Trois chances ne suffisent plus. La
 piste est donc la même que pour les deux autres — on attend une valeur à
 l'écran sur une montre, au lieu d'attendre que la base ait bougé.
+
+**Et ATTENTION à ne pas confondre deux rouges dans cette même suite.** Le
+24 août au soir, elle a rougi une seconde fois — sur un autre cas, et pour une
+tout autre raison : elle **exigeait la phrase grise** que le patron venait de
+faire retirer de l'écran de la facture. Ce rouge-là n'avait rien d'instable, et
+il a été corrigé en visant plus profond (`CLAUDE.md` §5 bis). Le premier, lui,
+tient toujours.
 
 **Les deux sont VERTES jouées seules**, et c'est la question qui tranche
 (§ ci-dessous). Surtout : **ce ne sont pas les mêmes** d'une branche à l'autre.
@@ -6422,3 +6602,29 @@ et c'est déjà arrivé.
 - ~~Rédiger le devis entièrement à la main, depuis la fiche du chantier~~ — 2026-08-04
 - ~~Retirer la case « Nom du chantier » : plus rien n'est obligatoire à la création~~ — 2026-08-05
 - ~~« Rédiger à la main » ouvre le devis ENTIER, à l'image du modèle, et il reste dans Atlas~~ — 2026-08-05
+- [x] ~~**Le calendrier n'offre que 2 jours sur une base fraîchement montée.**~~
+  Réglé le 24 août 2026 par une autre session, dans l'heure — les deux suites
+  (`test-deux-dates-calendrier-e2e`, `test-date-lointaine-e2e`) passent après
+  fusion. **Ce qui reste à en retenir** : elles étaient vertes deux heures plus
+  tôt sur la même version, et rouges sur une base neuve. Un contrôle qui dépend
+  de l'âge de la base accuse au hasard — c'est la même leçon que l'instabilité
+  notée juste au-dessus.
+- [ ] **La batterie rougit sur des suites DIFFÉRENTES à chaque exécution**, et
+  chacune passe seule sur le même code. Relevé le 24 août 2026, trois
+  exécutions d'affilée : d'abord `test-planning-vers-facture-e2e` (un texte
+  attendu qui n'apparaît pas), puis `test-fiche-chantier-e2e` et
+  `test-prix-e2e` (un prix lu à `0.00` au lieu de `34.50`). **Rejouées seules,
+  les trois sont vertes.** Ce n'est donc pas le produit : c'est l'interférence
+  entre suites — le lanceur partage UN serveur et UNE base entre toutes.
+  Écarté au passage : le gel d'horloge de `test-allure-pdf` ne peut pas fuir,
+  chaque suite est lancée par `spawnSync` dans son propre processus.
+  **Pourquoi ça compte plus qu'un agacement** : un rouge qui tombe au hasard
+  s'apprend à être ignoré, et le jour où il dit vrai personne ne le croit —
+  c'est exactement ce qui a coûté une soirée avec `test:arrosage`. *(24 août 2026)*
+- [ ] **Rendre la composition d'un PDF reproductible.** `pdf-lib` grave l'instant
+  de fabrication dans chaque document : deux compositions du même devis ne
+  rendent pas les mêmes octets. La suite le contourne en figeant l'horloge
+  (`aLaMemeSeconde`, `scripts/test-allure-pdf.ts`), mais le produit reste
+  non déterministe — un même devis renvoyé n'est jamais identique au précédent.
+  Corriger demande de toucher le composeur, donc les documents du patron :
+  à faire dans un lot qui les regarde, pas en passant. *(24 août 2026)*

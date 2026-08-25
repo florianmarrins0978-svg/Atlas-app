@@ -9,7 +9,7 @@ import { debitRetenu, SEAU_LITRES } from "@/lib/arrosage/mesure-debit";
 import { dessinerPlan, type Dessin, type ZoneDessinee } from "@/lib/arrosage/plan-dessine";
 import { appliquer, type ParametresPlan } from "@/lib/arrosage/consignes";
 import { discuterLePlan, etatDuPlanEnClair, type Tour } from "@/server/ai/services/discuter-plan";
-import { MESSAGE_PHOTO_REFUSEE, photoAcceptee } from "@/lib/exif";
+import { preparerPhotoEntrante } from "@/server/photo-entrante";
 import { verifierLimite, LIMITES } from "@/server/rate-limit";
 
 /**
@@ -120,34 +120,32 @@ export async function lireLeCroquis(_precedent: EtatPlan, formulaire: FormData):
   // désormais à compter la cadence, plus bas.
   const ctx = await getCurrentCtx();
 
-  const photo = formulaire.get("croquis");
-  if (!(photo instanceof File) || photo.size === 0) {
-    return { etat: "refus", raison: "Aucune photo n’a été jointe." };
-  }
-  /**
-   * **Une liste blanche, et une cadence** — hors du brief du lot 2, mais de la
-   * même famille (audit du 23 août 2026). Ce chemin-ci envoie la photo à un
-   * fournisseur d'IA : il bornait la taille et rien d'autre.
-   *
-   * Ce que chacune arrête : la liste blanche empêche d'envoyer autre chose
-   * qu'une image à un service qu'on paie ; la cadence borne **une facture**,
-   * comme sur le diagnostic végétal — personne ne lit dix croquis à la minute.
-   */
-  if (!photoAcceptee(photo.type)) {
-    return { etat: "refus", raison: MESSAGE_PHOTO_REFUSEE };
-  }
-  // **Une borne dure sur la taille.** Une photo de téléphone moderne pèse
-  // 10 Mo ; l'envoyer entière au fournisseur coûte pour rien et fait parfois
-  // tomber l'appel. Au-delà, on le dit plutôt que d'échouer sans raison.
-  if (photo.size > 8 * 1024 * 1024) {
-    return { etat: "refus", raison: "Cette photo dépasse 8 Mo. Reprenez-la en plus petit." };
-  }
-
   const limite = await verifierLimite(`croquis:${ctx.entrepriseId}`, LIMITES.diagnosticVegetal);
   if (!limite.autorise) return { etat: "refus", raison: limite.message };
 
-  const base64 = Buffer.from(await photo.arrayBuffer()).toString("base64");
-  const lu = await lireCroquis(base64, photo.type || "image/jpeg");
+  /**
+   * **LE CROQUIS EST NETTOYÉ AVANT DE PARTIR CHEZ LE FOURNISSEUR** — constat
+   * M3, resserré le 24 août 2026.
+   *
+   * Ce chemin ne range rien, et c'est ce qui l'avait fait oublier : il
+   * **envoie**. Un croquis photographié dans le jardin d'un client porte les
+   * coordonnées GPS de ce jardin, et elles partaient telles quelles chez un
+   * tiers — ce qui est pire que de les ranger chez nous.
+   *
+   * `preparerPhotoEntrante` refuse quand elle ne sait pas nettoyer : l'original
+   * ne part donc jamais. C'est la même porte que les photos de chantier et les
+   * tickets, une seule implémentation (`CLAUDE.md` §3).
+   */
+  const prete = await preparerPhotoEntrante(formulaire.get("croquis"), "croquis d'arrosage", {
+    // **La borne à 8 Mo reste**, plus serrée que le téléversement ordinaire :
+    // elle ne protège pas la mémoire, elle borne une facture de vision et évite
+    // un appel qui tombe. Passer par la porte commune ne doit pas la perdre.
+    octets: 8 * 1024 * 1024,
+    message: "Cette photo dépasse 8 Mo. Reprenez-la en plus petit.",
+  });
+  if (!prete.ok) return { etat: "refus", raison: prete.raison };
+
+  const lu = await lireCroquis(prete.photo.octets.toString("base64"), prete.photo.mimeType);
   if (!lu.ok) return { etat: "refus", raison: lu.raison };
 
   // **Les zones sans cote ne partent PAS au calcul.** Une pelouse dont on

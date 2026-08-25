@@ -4,7 +4,6 @@ import { getCurrentCtx } from "@/server/session-ctx";
 import { creerAchatTva, supprimerAchatTva } from "@/server/repositories/achats-tva";
 import { enregistrerObjet } from "@/server/storage";
 import { verifierLimite, LIMITES } from "@/server/rate-limit";
-import { verifierTailleFichier } from "@/server/upload-limits";
 import { achatComplet, montantSaisi, type SaisieAchat } from "@/lib/achat-tva";
 import { lireTicket, type TicketLu } from "@/server/ai/services/lire-ticket";
 import { revalidatePath } from "next/cache";
@@ -17,7 +16,7 @@ import {
 } from "@/server/repositories/paiements-facture";
 import { exigerProprietaire } from "@/server/autorisation";
 import type { Exigibilite } from "@/lib/exigibilite-tva";
-import { extensionPhoto, MESSAGE_PHOTO_REFUSEE, photoAcceptee, retirerMetadonnees } from "@/lib/exif";
+import { preparerPhotoEntrante } from "@/server/photo-entrante";
 
 /**
  * Enregistrer un achat, et le retirer.
@@ -96,41 +95,30 @@ export type ResultatTicket =
  * formelle. L'écran le dit plutôt que de le laisser supposer.
  */
 export async function rangerTicketAction(formData: FormData): Promise<ResultatTicket> {
-  const fichier = formData.get("ticket");
-  if (!(fichier instanceof File)) return { ok: false, raison: "Aucune photo reçue." };
-  // **Liste blanche, plus `startsWith("image/")`** — audit du 23 août 2026,
-  // constat M2 : l'ancienne ligne acceptait `image/svg+xml`, qui est un
-  // document porteur de script, pas une image. Le HEIC de l'iPhone reste
-  // accepté (`src/lib/exif.ts`) : c'est avec ça qu'il photographie ses tickets.
-  if (!photoAcceptee(fichier.type)) return { ok: false, raison: MESSAGE_PHOTO_REFUSEE };
-
-  // Vérifié via `size`, sans lire le contenu : un fichier surdimensionné ne
-  // doit pas passer par la mémoire avant d'être refusé.
-  const taille = verifierTailleFichier(fichier);
-  if (!taille.ok) return { ok: false, raison: taille.message };
-
   const ctx = await getCurrentCtx();
   const limite = await verifierLimite(`televersement:${ctx.entrepriseId}`, LIMITES.televersementFichier);
   if (!limite.autorise) return { ok: false, raison: limite.message };
 
-  const brut = Buffer.from(await fichier.arrayBuffer());
-
   /**
-   * **Les métadonnées partent avant le rangement** — constat M3. Un ticket
-   * photographié porte les coordonnées GPS de la station-service, l'heure
-   * exacte, le modèle du téléphone. Aucune de ces trois choses n'entre dans une
-   * déclaration de TVA.
+   * **Le ticket ne se range QUE nettoyé** — constat M3, resserré le 24 août.
    *
-   * **Et un échec de nettoyage ne refuse jamais le ticket** : il est rangé tel
-   * quel. Le geste du patron est sur le trottoir, la station derrière lui — ce
-   * n'est pas le moment de lui opposer un refus (`termines/tva`, en-tête).
+   * Un ticket photographié porte les coordonnées GPS de la station-service,
+   * l'heure exacte, le modèle du téléphone. Aucune de ces trois choses n'entre
+   * dans une déclaration de TVA.
+   *
+   * **La version d'avant rangeait le ticket même quand le nettoyage échouait**,
+   * au nom du geste du patron sur le trottoir. Le geste est sauvé de toute
+   * façon : le refus lui dit quoi faire, et sa photo est encore à l'écran. Ce
+   * que l'ancienne version ne sauvait pas, c'était la donnée.
    */
-  const nettoye = retirerMetadonnees(brut, fichier.type);
-  const octets = Buffer.from(nettoye.octets);
+  const prete = await preparerPhotoEntrante(formData.get("ticket"), "ticket de TVA");
+  if (!prete.ok) return { ok: false, raison: prete.raison };
+
+  const octets = prete.photo.octets;
   const objet = await enregistrerObjet(
     `entreprises/${ctx.entrepriseId}/tickets`,
     octets,
-    extensionPhoto(fichier.type)
+    prete.photo.extension
   );
 
   // **La photo est rangée AVANT la lecture, et le reste quoi qu'elle donne.**
@@ -140,7 +128,7 @@ export async function rangerTicketAction(formData: FormData): Promise<ResultatTi
   let lu: TicketLu | null = null;
   let lecture: string | null = null;
   try {
-    const r = await lireTicket(octets.toString("base64"), fichier.type);
+    const r = await lireTicket(octets.toString("base64"), prete.photo.mimeType);
     if (r.ok) {
       lu = r.ticket;
       lecture = r.ticket.reserve;

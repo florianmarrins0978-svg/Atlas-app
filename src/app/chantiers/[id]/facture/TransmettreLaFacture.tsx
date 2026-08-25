@@ -37,16 +37,19 @@ const LIBELLE: Record<
   { bouton: string; bascule: string; champ: string; exemple: string; manque: string; invite: string }
 > = {
   sms: {
-    bouton: "Ouvrir le SMS tout prêt",
-    bascule: "Plutôt par SMS",
+    // **Sa demande du 24 août 2026 :** *« corrige en envoyer par SMS, retire la
+    // flèche »*. « Ouvrir le SMS tout prêt » décrivait le mécanisme — ce qui
+    // s'ouvre — au lieu du geste. Et la flèche promettait un écran de plus.
+    bouton: "Envoyer par SMS",
+    bascule: "Envoyer par SMS",
     champ: "Numéro de téléphone",
     exemple: "06 12 34 56 78",
     manque: "n'a pas de numéro enregistré",
     invite: "saisissez-le ci-dessous.",
   },
   email: {
-    bouton: "Ouvrir l'e-mail tout prêt",
-    bascule: "Plutôt par e-mail",
+    bouton: "Envoyer par e-mail",
+    bascule: "Envoyer par e-mail",
     champ: "Adresse e-mail",
     exemple: "client@exemple.fr",
     manque: "n'a pas d'adresse e-mail enregistrée",
@@ -117,10 +120,10 @@ export default function TransmettreLaFacture({
    * alors lisible dans la page, donc vérifiable. Un message qui s'ouvre sans
    * destinataire ne se voit sinon que dans la messagerie du patron — trop tard.
    */
-  function adresse(cible: string): string {
+  function adresse(cible: string, canalCible: CanalClient = canalChoisi): string {
     if (!lienFacture) return "";
     return lienTransmission({
-      canal: canalChoisi,
+      canal: canalCible,
       destinataire: cible,
       message: composerMessageFacture({
         clientCivilite,
@@ -250,18 +253,16 @@ export default function TransmettreLaFacture({
             onClick={() => marquerDepartMessagerie("facture", clientNom)}
             repere={`transmission-${canalChoisi}`}
           >
-            {LIBELLE[canalChoisi].bouton} →
+            {LIBELLE[canalChoisi].bouton}
           </PrimaryButton>
-          {/* Dire à qui : le patron doit voir le destinataire AVANT d'ouvrir sa
-              messagerie, pas le découvrir dedans. La phrase est d'un seul
-              tenant — coupée en morceaux, JSX avale l'espace avant le tiret et
-              affiche « Au 0679984514— c'est vous ». */}
-          <p className="mt-2 text-center text-[12px]" style={{ color: colors.muted }}>
-            {`${canalChoisi === "sms" ? "Au" : "À"} ${destinataire} — c'est vous qui l'envoyez.`}
-          </p>
-          <p className="mt-2 break-all text-center text-[12px]" style={{ color: colors.muted }}>
-            {lienFacture}
-          </p>
+          {/* **Le destinataire et le lien qui vivaient ici sont RETIRÉS** — sa
+              demande du 24 août 2026 : *« pareil sous ouvrir le SMS tout prêt »*,
+              après *« tout ce qui est en gris, supprime »*.
+
+              Ce qu'on perd, et qu'il faut savoir avant de le rétablir : il ne
+              voit plus À QUI le message part avant d'ouvrir sa messagerie. Sa
+              messagerie le lui montre juste après, et il peut encore reculer —
+              rien n'est envoyé par Atlas. C'est son arbitrage, pas un oubli. */}
         </>
       ) : lienFacture ? (
         <p className="text-center text-[13px]" style={{ color: colors.muted }}>
@@ -299,25 +300,45 @@ export default function TransmettreLaFacture({
         </div>
       )}
 
-      {/* Changer d'avis, à tout moment — y compris avant d'avoir préparé le
-          lien. Jamais présélectionné : la voie normale reste celle convenue
-          avec le client sur sa fiche. */}
-      <button
-        type="button"
-        onClick={basculer}
-        data-bascule-canal={autre}
-        className="mt-3 block w-full text-center text-[14px] font-medium"
-        style={{ color: colors.rust }}
-      >
-        {LIBELLE[autre].bascule} →
-      </button>
+      {/* ── L'AUTRE VOIE, collée sous la première ──────────────────────────
+          Sa demande du 24 août 2026 : *« corrige envoyé par e-mail en gras
+          doré, colle-le sous envoyer par SMS »*.
 
-      {/* La phrase ne vaut que lorsqu'un message existe : promise au-dessus d'un
-          champ vide, elle annonce un geste qui n'est pas encore possible. */}
-      {lienFacture && destinataire && (
-        <p className="mt-2 text-center text-[12px]" style={{ color: colors.muted }}>
-          Le message s&apos;ouvre dans votre messagerie. Rien ne part tant que vous ne l&apos;envoyez pas.
-        </p>
+          **ET IL ENVOIE POUR DE BON, il ne bascule plus.** C'est la condition
+          pour que ce libellé soit vrai : appeler un bouton « Envoyer par
+          e-mail » alors qu'il se contente d'intervertir deux boutons, c'est un
+          écran qui ment — il appuie, rien ne s'ouvre, et il appuie encore.
+          Quand le client a l'adresse, ce lien ouvre le courriel tout prêt,
+          exactement comme la capsule au-dessus fait pour le SMS.
+
+          **Sans coordonnée, il bascule encore** — et c'est le seul cas où il le
+          doit : c'est ainsi que le champ de saisie apparaît, et sans lui la
+          voie serait fermée pour toujours. */}
+      {lienFacture && coordonnees[autre] ? (
+        <a
+          href={adresse(coordonnees[autre], autre)}
+          onClick={() => {
+            marquerDepartMessagerie("facture", clientNom);
+            // Le registre doit dire par où la facture est REELLEMENT partie.
+            // L'échec ne le concerne pas : son message part quand même.
+            void preparerLienFactureAction(factureId, autre).catch(() => undefined);
+          }}
+          data-bascule-canal={autre}
+          className="mt-2 block w-full text-center text-[15px] font-bold"
+          style={{ color: colors.or }}
+        >
+          {LIBELLE[autre].bascule}
+        </a>
+      ) : (
+        <button
+          type="button"
+          onClick={basculer}
+          data-bascule-canal={autre}
+          className="mt-2 block w-full text-center text-[15px] font-bold"
+          style={{ color: colors.or }}
+        >
+          {LIBELLE[autre].bascule}
+        </button>
       )}
 
       {erreur && (

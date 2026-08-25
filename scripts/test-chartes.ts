@@ -12,7 +12,14 @@
 
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
-import { CHARTES, CHARTE_PAR_DEFAUT, charte, normaliserCharte, variablesCss } from "../src/lib/chartes";
+import {
+  CHARTES,
+  CHARTE_PAR_DEFAUT,
+  charte,
+  normaliserCharte,
+  variablesCharte,
+  variablesCss,
+} from "../src/lib/chartes";
 import { colors } from "../src/lib/design-tokens";
 
 let echecs = 0;
@@ -27,7 +34,149 @@ function essai(nom: string, fn: () => void) {
   }
 }
 
-console.log("=== Les sept chartes, et l'application qui ne bouge pas ===\n");
+console.log("=== Les huit chartes, et l'application qui ne bouge pas ===\n");
+
+// ─── « NE CHANGE PAS L'APPLI » — sa consigne du 24 août 2026 ─────────────────
+//
+// Il a choisi « Brume moderne » (planche 92) et l'a demandée EN OPTION : *« mais
+// ne change pas l'appli »*. Les deux moitiés commandent ensemble, et c'est la
+// seconde qui est fragile — une charte qui pose un jeton de forme sans que les
+// autres le posent aussi ferait basculer la typographie de tout le monde.
+
+essai("aucune charte SAUF Brume ne touche à la forme", () => {
+  for (const c of CHARTES) {
+    if (c.nom === "brume") continue;
+    assert.equal(
+      c.formes,
+      undefined,
+      `« ${c.libelle} » porte une forme : la typographie de ceux qui ne l'ont pas choisie bougerait`
+    );
+  }
+});
+
+essai("une charte sans forme n'écrit AUCUNE variable de police", () => {
+  // Poser `--atlas-police-titres:initial` écraserait le repli de `globals.css`,
+  // donc changerait la police de tout le monde pour ajouter une option à un
+  // seul. Le contrôle vise l'absence, pas une valeur.
+  const css = variablesCss(charte("origine"));
+  assert.ok(
+    !css.includes("police-titres"),
+    `« origine » écrit une police : ${css.split(";").filter((d) => d.includes("police")).join(", ")}`
+  );
+});
+
+essai("Brume, elle, pose bien sa police — et c'est une SANS-SERIF", () => {
+  const css = variablesCss(charte("brume"));
+  assert.ok(css.includes("--atlas-police-titres"), "Brume n'écrit aucune police : la moitié « moderne » manque");
+  assert.match(
+    css,
+    /--atlas-police-titres:[^;]*sans-serif/,
+    "la pile de Brume ne finit pas sur une sans-serif : un appareil qui ne connaît pas les premières rendrait un Times"
+  );
+});
+
+essai("le repli de --font-display EST la serif d'aujourd'hui", () => {
+  // Si la variable de charte n'a pas de repli, ou un repli différent, alors
+  // l'application change pour tout le monde — exactement ce qu'il a interdit.
+  const css = readFileSync(new URL("../src/app/globals.css", import.meta.url), "utf8");
+  const bloc = css.slice(css.indexOf("--font-display:"), css.indexOf("--font-body:"));
+  assert.ok(bloc.includes("--atlas-police-titres"), "--font-display ne suit pas la charte");
+  assert.ok(
+    bloc.includes("ui-serif") && bloc.includes("Georgia"),
+    "le repli n'est plus la serif d'aujourd'hui : la typographie de tout le monde a changé"
+  );
+});
+
+essai("le marqueur d'onglet ne bouge QUE pour Brume", () => {
+  // **Sa demande du 24 août 2026 :** *« modifie aussi la sélection des
+  // catégories, juste pour Brume moderne »*. Le « juste » est la moitié qui
+  // compte : sept chartes doivent garder le trait doré.
+  for (const c of CHARTES) {
+    const v = variablesCharte(c);
+    const marqueur = Object.keys(v).filter((k) => k.startsWith("--atlas-onglet"));
+    if (c.nom === "brume") {
+      assert.ok(marqueur.length > 0, "Brume ne pose pas la pastille : sa barre du bas garde le trait");
+      assert.ok(
+        v["--atlas-onglet-fond"]?.includes(charte("brume").jetons.rust),
+        "la pastille n'est pas teintée de l'accent de la charte"
+      );
+    } else {
+      assert.deepEqual(
+        marqueur,
+        [],
+        `« ${c.libelle} » pose ${marqueur.join(", ")} : sa barre du bas changerait alors qu'il ne l'a pas demandé`
+      );
+    }
+  }
+});
+
+essai("la barre du bas garde le trait doré en REPLI", () => {
+  // Si le composant cessait de replier sur la valeur d'aujourd'hui, les sept
+  // autres chartes perdraient leur trait — et rien ne le dirait avant une
+  // capture.
+  const nav = readFileSync(new URL("../src/components/atlas/AtlasBottomNav.tsx", import.meta.url), "utf8");
+  for (const [variable, repli] of [
+    ["--atlas-onglet-fond", "colors.or"],
+    ["--atlas-onglet-hauteur", "1px"],
+    ["--atlas-onglet-haut", "auto"],
+    ["--atlas-onglet-rayon", "0"],
+  ]) {
+    assert.ok(
+      new RegExp(`var\\(${variable},\\s*\\$?\\{?${repli.replace(".", "\\.")}`).test(nav),
+      `${variable} n'a pas « ${repli} » pour repli : les autres chartes perdraient leur trait`
+    );
+  }
+  // Et la pastille doit passer DERRIÈRE le libellé, sinon elle le recouvre.
+  assert.ok(/relative z-\[1\]/.test(nav), "les libellés ne passent pas au-dessus du marqueur");
+});
+
+essai("le GABARIT et la chaîne CSS disent la même chose", () => {
+  // **Le défaut du 24 août 2026, et aucun contrôle ne le voyait.** `layout.tsx`
+  // reparcourait `c.jetons` de son côté au lieu d'appeler la source commune :
+  // la police de Brume était émise par `variablesCss` et pas par le gabarit.
+  // Le réglage s'écrivait, les couleurs changeaient, la typographie non — et
+  // rien ne le disait. Ce contrôle compare les DEUX formes, charte par charte.
+  const layout = readFileSync(new URL("../src/app/layout.tsx", import.meta.url), "utf8");
+  assert.ok(
+    layout.includes("variablesCharte"),
+    "le gabarit n'emploie pas la source commune : il reconstruit les variables à sa façon"
+  );
+  // **La présence de l'import ne prouvait rien** — la première version de ce
+  // contrôle s'en contentait, et elle restait verte avec le gabarit remis à sa
+  // recopie. Ce qu'il faut interdire, c'est le PARCOURS des jetons : c'est lui
+  // qui fabrique la seconde implémentation.
+  assert.ok(
+    !/Object\.(entries|keys)\(\s*c\.jetons\s*\)/.test(layout),
+    "le gabarit reparcourt `c.jetons` : c'est une seconde implémentation, et elle divergera"
+  );
+
+  for (const c of CHARTES) {
+    const parPaires = Object.entries(variablesCharte(c))
+      .map(([cle, v]) => `${cle}:${v}`)
+      .sort();
+    const parChaine = variablesCss(c).split(";").sort();
+    assert.deepEqual(
+      parChaine,
+      parPaires,
+      `« ${c.libelle} » : le gabarit et la chaîne CSS ne posent pas les mêmes variables`
+    );
+  }
+});
+
+essai("Brume est proposée juste après Origine", () => {
+  // Une liste où son choix se trouve en sixième position se parcourt pour rien.
+  assert.equal(CHARTES[0].nom, "origine", "Origine n'ouvre plus la liste");
+  assert.equal(CHARTES[1].nom, "brume", "Brume n'est pas à côté d'Origine");
+});
+
+essai("le défaut reste Origine", () => {
+  assert.equal(CHARTE_PAR_DEFAUT, "origine", "le défaut a changé : l'application bouge sans qu'il l'ait demandé");
+});
+
+essai("« brume » se reconnaît comme un nom de charte", () => {
+  assert.equal(normaliserCharte("brume"), "brume");
+});
+
 
 /** Ce que `design-tokens.ts` portait en clair avant ce lot. Recopié ici. */
 const AVANT_LE_LOT: Record<string, string> = {
@@ -46,10 +195,13 @@ const AVANT_LE_LOT: Record<string, string> = {
   chevron: "rgba(28,28,26,0.28)",
 };
 
-essai("les sept chartes sont là, dans l'ordre qu'il a donné", () => {
+essai("les huit chartes sont là, dans l'ordre qu'il a donné", () => {
+  // **« Brume moderne » s'est AJOUTÉE le 24 août 2026**, sur son choix devant
+  // la planche 92 — elle n'a remplacé personne, et elle se pose en deuxième
+  // parce que c'est celle qu'il a prise.
   assert.deepEqual(
     CHARTES.map((c) => c.nom),
-    ["origine", "pierre", "beurre", "moka", "prune", "sylve", "nuit"]
+    ["origine", "brume", "pierre", "beurre", "moka", "prune", "sylve", "nuit"]
   );
 });
 
@@ -98,7 +250,7 @@ console.log("");
 // laisse un écran à demi repeint, et c'est ce défaut-là qui coûte cher.
 const JETONS_ATTENDUS = Object.keys(charte("origine").jetons).sort();
 
-essai("les sept chartes portent les mêmes jetons, aucun vide", () => {
+essai("les huit chartes portent les mêmes jetons, aucun vide", () => {
   for (const c of CHARTES) {
     const cles = Object.keys(c.jetons);
     assert.deepEqual(

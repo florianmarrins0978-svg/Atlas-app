@@ -71,10 +71,13 @@ export default function MoisCharge({
   /**
    * Les jours RETENUS, peints en plein.
    *
-   * **Distinct de `jourTouche`, et c'est tout le sujet sur l'écran d'envoi :**
-   * on regarde une journée pour savoir qui y est déjà, on en retient une pour
-   * la proposer au client. Confondre les deux ferait proposer un jour qu'on
-   * voulait seulement consulter — sur un devis, cela part chez quelqu'un.
+   * **Distinct de `jourTouche`, et il doit le rester** : au planning on touche
+   * une journée pour l'ouvrir sans rien retenir. Sur l'écran d'envoi, depuis sa
+   * demande du 25 août 2026 — *« je dois pouvoir sélectionner les jours juste
+   * en les touchant, pas besoin de cliquer sur proposer »* —, le même doigt
+   * fait les deux ; mais c'est L'ÉCRAN qui l'a décidé, pas le calendrier. Un
+   * calendrier qui retiendrait de lui-même le ferait aussi au planning, où
+   * cela n'a aucun sens.
    */
   jourRetenu?: JourIso | null;
   jourRetenus?: readonly JourIso[];

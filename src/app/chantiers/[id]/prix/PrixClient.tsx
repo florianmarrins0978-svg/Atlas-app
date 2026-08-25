@@ -31,7 +31,7 @@ export default function PrixClient({
   chantierId: string;
   initialLignes: Ligne[];
   propositionInitiale: PropositionPrix | null;
-  /** Arrivée par « Ou écrire le devis moi-même → » : la proposition part repliée. */
+  /** Arrivée par « Écrire le devis » : la proposition part repliée. */
   saisieManuelle?: boolean;
 }) {
   const router = useRouter();

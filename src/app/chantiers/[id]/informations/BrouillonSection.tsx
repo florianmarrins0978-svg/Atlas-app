@@ -4,6 +4,7 @@ import { useState } from "react";
 import { colors, libelleCaps, texteSituation, font } from "@/lib/design-tokens";
 import type { PropositionExtraction, LigneExtraite, LectureDictee } from "@/server/ai/schemas/extraction";
 import type { EtatFraicheurBrouillon } from "@/lib/brouillon-etat";
+import { reservesLisibles, phraseDuReste } from "@/lib/brouillon-reserves";
 import DevisDepuisDictee from "../DevisDepuisDictee";
 import {
   genererBrouillonAction,
@@ -233,90 +234,92 @@ export default function BrouillonSection({
 
       {contenu && (
         <div className="flex flex-col gap-4">
-          <ListeLignes
-            titre="Prestations"
-            lignes={contenu.prestations}
-            lectureSeule={statut === "confirme"}
-            onChange={(i, champ, v) => majLigne("prestations", i, champ, v)}
-            onCommit={() => persister(contenu)}
-            onRetirer={(i) => retirerLigne("prestations", i)}
-          />
+          {/* ── UNE FOIS CONFIRMÉ, CE QUI A UNE VRAIE CASE EN DESSOUS DISPARAÎT ──
+              **Sa capture du 25 août 2026 :** *« je peux rien modifier, les
+              cases ne sont pas cliquables »*. Elles étaient en lecture seule —
+              et sur iPhone, un champ en lecture seule n'ouvre même pas le
+              clavier : rien ne se passe, il croit à une panne.
 
-          <div className="grid grid-cols-2 gap-3">
-            <ChampBrouillon
-              label="Durée"
-              value={contenu.dureePrevue ?? ""}
-              lectureSeule={statut === "confirme"}
-              onChange={(v) => majChamp("dureePrevue", v)}
-              onCommit={() => persister(contenu)}
-            />
-            <ChampBrouillon
-              label="Équipe"
-              value={contenu.tailleEquipe ?? ""}
-              lectureSeule={statut === "confirme"}
-              onChange={(v) => majChamp("tailleEquipe", v)}
-              onCommit={() => persister(contenu)}
-            />
-          </div>
+              Ce n'était pas un bête verrou à retirer. Confirmer RECOPIE les
+              prestations, le matériel, la durée et l'équipe dans le chantier :
+              corriger la ligne du brouillon ne toucherait plus la vraie, et il
+              aurait sous les yeux deux versions dont une seule compte. On les
+              retire donc de l'écran une fois confirmés — les vraies sont juste
+              en dessous, et elles, elles s'écrivent.
 
-          <ListeLignes
-            titre="Matériel"
-            lignes={contenu.materiel}
-            lectureSeule={statut === "confirme"}
-            onChange={(i, champ, v) => majLigne("materiel", i, champ, v)}
-            onCommit={() => persister(contenu)}
-            onRetirer={(i) => retirerLigne("materiel", i)}
-          />
+              **Les trois notes, elles, restent ET s'écrivent** : déchets,
+              contraintes d'accès, remarques n'ont AUCUNE autre case dans toute
+              l'application. Les figer, c'était perdre l'information pour de
+              bon. C'est ce que la lecture seule faisait. */}
+          {statut !== "confirme" && (
+            <>
+              <ListeLignes
+                titre="Prestations"
+                lignes={contenu.prestations}
+                lectureSeule={false}
+                onChange={(i, champ, v) => majLigne("prestations", i, champ, v)}
+                onCommit={() => persister(contenu)}
+                onRetirer={(i) => retirerLigne("prestations", i)}
+              />
+
+              <div className="grid grid-cols-2 gap-3">
+                <ChampBrouillon
+                  label="Durée"
+                  value={contenu.dureePrevue ?? ""}
+                  lectureSeule={false}
+                  onChange={(v) => majChamp("dureePrevue", v)}
+                  onCommit={() => persister(contenu)}
+                />
+                <ChampBrouillon
+                  label="Équipe"
+                  value={contenu.tailleEquipe ?? ""}
+                  lectureSeule={false}
+                  onChange={(v) => majChamp("tailleEquipe", v)}
+                  onCommit={() => persister(contenu)}
+                />
+              </div>
+
+              <ListeLignes
+                titre="Matériel"
+                lignes={contenu.materiel}
+                lectureSeule={false}
+                onChange={(i, champ, v) => majLigne("materiel", i, champ, v)}
+                onCommit={() => persister(contenu)}
+                onRetirer={(i) => retirerLigne("materiel", i)}
+              />
+            </>
+          )}
 
           <ChampBrouillon
             label="Déchets / branchages"
             value={contenu.gestionDechets ?? ""}
-            lectureSeule={statut === "confirme"}
+            lectureSeule={false}
             onChange={(v) => majChamp("gestionDechets", v)}
             onCommit={() => persister(contenu)}
           />
           <ChampBrouillon
             label="Contraintes d'accès"
             value={contenu.contraintesAcces ?? ""}
-            lectureSeule={statut === "confirme"}
+            lectureSeule={false}
             onChange={(v) => majChamp("contraintesAcces", v)}
             onCommit={() => persister(contenu)}
           />
           <ChampBrouillon
             label="Remarques"
             value={contenu.remarques ?? ""}
-            lectureSeule={statut === "confirme"}
+            lectureSeule={false}
             onChange={(v) => majChamp("remarques", v)}
             onCommit={() => persister(contenu)}
           />
 
           {/* « À confirmer » est la seule chose de cet encart qui réclame un
               geste du patron : c'est donc la seule à porter l'or. */}
-          {contenu.ambiguites.length > 0 && (
-            <div className="flex flex-col gap-1.5">
-              <span className={libelleCaps} style={{ color: colors.or }}>
-                À confirmer
-              </span>
-              {contenu.ambiguites.map((a, i) => (
-                <p key={i} className={texteSituation} style={{ color: colors.muted }}>
-                  {a}
-                </p>
-              ))}
-            </div>
-          )}
-
-          {contenu.informationsManquantes.length > 0 && (
-            <div className="flex flex-col gap-1.5">
-              <span className={libelleCaps} style={{ color: colors.muted }}>
-                Non mentionné dans la dictée
-              </span>
-              {contenu.informationsManquantes.map((m, i) => (
-                <p key={i} className={texteSituation} style={{ color: colors.muted }}>
-                  {m}
-                </p>
-              ))}
-            </div>
-          )}
+          <Reserves titre="À confirmer" teinte={colors.or} items={contenu.ambiguites} />
+          <Reserves
+            titre="Non mentionné dans la dictée"
+            teinte={colors.muted}
+            items={contenu.informationsManquantes}
+          />
 
           {statut !== "confirme" && (
             <div className="flex flex-col gap-2.5">
@@ -397,6 +400,39 @@ export default function BrouillonSection({
 // Un avertissement qui ne s'entoure pas d'un fond teinté : un cheveu d'or à
 // gauche, comme l'« ourlet » de la maquette, où le trait prend la couleur
 // d'attente uniquement là où quelque chose est dû. Ici, la relecture est due.
+/**
+ * Une liste de réserves, plafonnée — et ce qui est coupé se dit.
+ *
+ * **Sa demande du 25 août 2026 :** *« le à confirmer est trop long, synthétise-le.
+ * Moins de mots ! »* Quatorze lignes de gris le séparaient de ses prestations.
+ *
+ * **Le reste s'affiche en compte, jamais en silence.** Une liste tronquée sans
+ * un mot se lit comme une liste complète : il chiffrerait sans la réserve qu'on
+ * lui a cachée (`CLAUDE.md` §4 ter).
+ */
+function Reserves({ titre, teinte, items }: { titre: string; teinte: string; items: string[] }) {
+  const { montrees, reste } = reservesLisibles(items);
+  if (montrees.length === 0) return null;
+  const suite = phraseDuReste(reste);
+  return (
+    <div className="flex flex-col gap-1.5">
+      <span className={libelleCaps} style={{ color: teinte }}>
+        {titre}
+      </span>
+      {montrees.map((t, i) => (
+        <p key={i} className={texteSituation} style={{ color: colors.muted }}>
+          {t}
+        </p>
+      ))}
+      {suite && (
+        <p className={texteSituation} style={{ color: colors.muted }}>
+          {suite}
+        </p>
+      )}
+    </div>
+  );
+}
+
 function Avertissement({ children }: { children: React.ReactNode }) {
   return (
     <p

@@ -310,6 +310,53 @@ async function main() {
     );
   });
 
+  // ─── LA DATE RESSORT DU NOM — sa proposition D, du 24 août 2026 ──────────
+  //
+  // *« Comment on peut faire pour que la date ressorte par rapport au nom du
+  // client ? »*, puis, les quatre propositions comparées du doigt : **« D »**.
+  //
+  // **Ce qui se fixe ici n'est PAS un dessin, c'est la RÈGLE qu'il a choisie :**
+  // la date doit se détacher du nom. Écrire « le fond vaut #ece9e1 » ferait
+  // rougir la suite le jour où il change de charte — et le papier de Nuit vaut
+  // #1f211e. On mesure donc ce qui compte : la date porte un FOND, le nom n'en
+  // porte pas, et les deux se distinguent.
+  //
+  // **VU ROUGE** le 24 août 2026, contre la pastille rendue transparente :
+  // « la date ne porte aucun fond : rgba(0, 0, 0, 0) ». Il désigne le bon
+  // coupable et donne la valeur lue.
+  await test("La date porte une pastille, et le nom n'en porte pas", async () => {
+    await allerAuPlanning();
+    await amenerSurLaSemaineDesCas();
+    const vu = await page.evaluate(() => {
+      const date = document.querySelector('[data-atlas="date-planifiee"]') as HTMLElement | null;
+      const nom = document.querySelector('[data-atlas="nom-planifie"]') as HTMLElement | null;
+      if (!date || !nom) return null;
+      const r = date.getBoundingClientRect();
+      return {
+        fondDate: getComputedStyle(date).backgroundColor,
+        fondNom: getComputedStyle(nom).backgroundColor,
+        rayon: parseFloat(getComputedStyle(date).borderTopLeftRadius),
+        hauteur: Math.round(r.height),
+        largeur: Math.round(r.width),
+        // Le filet est parti avec le filet : deux séparateurs pour une couture
+        // se verraient, et la planche n'en montre qu'un.
+        filet: parseFloat(getComputedStyle(date.closest('[data-atlas="jour-planifie"]')!).borderTopWidth),
+      };
+    });
+    assert.ok(vu, "ni date ni nom sur l'écran : il n'y a rien à mesurer");
+    // Un aplat transparent n'est pas une pastille — et un contrôle qui mesure
+    // zéro ne mesure rien (`CLAUDE.md` §5).
+    assert.ok(
+      !/rgba\(0, 0, 0, 0\)|transparent/.test(vu!.fondDate),
+      `la date ne porte aucun fond : ${vu!.fondDate}`
+    );
+    assert.notEqual(vu!.fondDate, vu!.fondNom, "la date porte le même fond que le nom : elle ne ressort pas");
+    assert.ok(vu!.rayon >= 999 || vu!.rayon >= vu!.hauteur / 2, `la pastille n'est pas ronde (rayon ${vu!.rayon})`);
+    assert.ok(vu!.hauteur >= 24, `la pastille fait ${vu!.hauteur} px de haut`);
+    assert.ok(vu!.largeur >= 80, `la pastille fait ${vu!.largeur} px de large`);
+    assert.equal(vu!.filet, 0, `un filet subsiste au-dessus de la journée (${vu!.filet} px)`);
+  });
+
   await test("Toute la phrase est en or, et non grise", async () => {
     await allerAuPlanning();
     await amenerSurLaSemaineDesCas();

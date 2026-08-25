@@ -2,8 +2,8 @@ import assert from "node:assert/strict";
 import { lancerNavigateur } from "./e2e-browser";
 import { Pool } from "pg";
 import { ajouterJours, versJourIso, HORIZON_PATRON_JOURS, DELAI_MINIMAL_JOURS } from "../src/server/disponibilites";
-import { creerPuisFiche } from "./_creer-chantier-e2e";
 import { jourLisible } from "../src/lib/jour";
+import { creerPuisFiche } from "./_creer-chantier-e2e";
 
 // **« Comment je fais si je dois lui proposer une date dans six mois ? »**
 // — le patron, le 8 août 2026, en ajoutant : *« c'est un problème qui va se
@@ -72,8 +72,13 @@ async function main() {
   // sur sa demande (planche 91), **toutes les cases restent touchables** :
   // *« un jour complet reste touchable — c'est justement celui sur lequel vous
   // voulez regarder avant de décider »*. Le refus a donc changé de place : il
-  // n'éteint plus la case, il s'écrit sous elle, et c'est « Proposer ce jour »
-  // qui reste hors d'atteinte.
+  // n'éteint plus la case, il s'écrit sous elle.
+  //
+  // **Et depuis le 25 août, ce qu'on éprouve est la RÈGLE, plus le bouton.**
+  // Toucher une case la propose désormais — le bouton n'existe plus, et un
+  // contrôle qui l'exigeait réclamerait ce que le patron a fait retirer
+  // (`CLAUDE.md` §5 bis). Ce qu'il faut prouver n'a pas bougé : un jour trop
+  // proche ne part pas chez le client, quoi que touche le doigt.
   const demain = versJourIso(ajouterJours(aujourdHui, 1));
   const caseDemain = page.locator(`[data-jour="${demain}"]`);
   if ((await caseDemain.count()) > 0) {
@@ -85,20 +90,21 @@ async function main() {
       undefined,
       { timeout: 30_000 }
     );
-    // **Le bouton existe toujours, week-end compris** — sa règle du 23 août
-    // 2026. Ce contrôle-ci ne porte pas sur le week-end mais sur le DÉLAI
-    // MINIMAL : demain est trop proche, quel que soit le jour de la semaine.
-    // Le repli « la fiche dit Jamais proposé » n'a donc plus lieu d'être, et il
-    // aurait rendu ce contrôle vert sur un samedi sans rien prouver du délai.
-    const bouton = page.locator('[data-atlas="retenir-le-jour"]');
-    assert.equal(await bouton.count(), 1, "la fiche du jour n'offre pas son bouton");
-    assert.ok(
-      await bouton.isDisabled(),
-      `Le calendrier laisse PROPOSER ${demain} (délai minimal : ${DELAI_MINIMAL_JOURS} jours).`
+    // Ce contrôle-ci ne porte pas sur le week-end mais sur le DÉLAI MINIMAL :
+    // demain est trop proche, quel que soit le jour de la semaine.
+    assert.equal(
+      await page.locator(`[data-jour="${demain}"][data-etat="retenu"]`).count(),
+      0,
+      `Le calendrier a PROPOSÉ ${demain} au client (délai minimal : ${DELAI_MINIMAL_JOURS} jours).`
     );
-    // On referme, pour repartir d'un écran propre.
-    await caseDemain.first().click();
-    await page.waitForTimeout(200);
+    // **Et il doit DIRE pourquoi.** Une case qui ne s'allume pas, sans un mot,
+    // se lit comme une panne : c'est le défaut que la planche 91 a corrigé, et
+    // il reviendrait si l'écran se contentait de ne rien faire.
+    const dit = await page.locator('[data-atlas="verdict-du-jour"]').innerText();
+    assert.ok(
+      dit.trim().length > 0 && !/Vérification/.test(dit),
+      `La fiche du ${demain} ne dit pas pourquoi il est refusé. Lue : « ${dit.trim()} »`
+    );
   }
 
   // --- 2. Une date à six mois est acceptée, et elle se voit ----------------
@@ -122,8 +128,7 @@ async function main() {
   }
   const cible = page.locator(`[data-jour="${dansSixMois}"]`);
   assert.equal(await cible.count(), 1, `${dansSixMois} reste introuvable dans le calendrier.`);
-  // **Regarder, puis proposer** — les deux gestes de sa planche 91 : le premier
-  // ouvre la journée pour voir qui y est, le second seul engage la date.
+  // **Un seul geste depuis le 25 août 2026** : la case s'ouvre ET s'engage.
   await cible.click();
   await page.waitForSelector('[data-atlas="journee-regardee"]', { timeout: 30_000 });
   await page.waitForFunction(
@@ -131,9 +136,12 @@ async function main() {
     undefined,
     { timeout: 60_000 }
   );
-  const proposer = page.locator('[data-atlas="retenir-le-jour"]');
-  assert.ok(await proposer.isEnabled(), `${dansSixMois} est refusé alors qu'il est libre.`);
-  await proposer.click();
+  await page
+    .locator(`[data-jour="${dansSixMois}"][data-etat="retenu"]`)
+    .waitFor({ state: "visible", timeout: 20_000 })
+    .catch(() => {
+      throw new Error(`${dansSixMois} n'est pas proposé alors qu'il est libre.`);
+    });
   console.log("  ✓ une autre date se choisit, d'après-demain à dix-huit mois");
   await page.waitForTimeout(2500);
 
@@ -144,13 +152,16 @@ async function main() {
     `L'écran refuse une date à six mois. Lu : « ${ecran.replace(/\s+/g, " ").slice(0, 300) }»`
   );
   const apresLeChoix = await page.locator("body").innerText();
-  const [, moisChoisi, jourChoisi] = dansSixMois.split("-");
-  assert.match(
-    apresLeChoix,
-    // `(?:er)?` : le premier du mois s'écrit « 1er » partout où l'écran passe
-    // par `jourLisible`. Le même piège que ci-dessous, encore en dormance ici.
-    new RegExp(`${Number(jourChoisi)}(?:er)?\\s+${MOIS[Number(moisChoisi) - 1]}`, "i"),
-    "La date choisie n'apparaît nulle part : le patron enverrait sans savoir ce qu'il propose."
+  // **La date se lit avec LA FONCTION QUI L'ÉCRIT**, jamais avec une seconde
+  // façon de la mettre en français (`CLAUDE.md` §3). Ce contrôle recomposait
+  // « 1 mars » à la main : le premier du mois est le seul ordinal en français,
+  // l'écran écrit « 1er mars », et la suite rougissait sur un écran juste —
+  // uniquement les jours où la date visée tombait un premier. Trouvé le
+  // 25 août 2026, six mois plus loin étant le 1er mars 2027.
+  const enClair = jourLisible(dansSixMois);
+  assert.ok(
+    apresLeChoix.includes(enClair),
+    `La date choisie (« ${enClair} ») n'apparaît nulle part : le patron enverrait sans savoir ce qu'il propose.`
   );
   console.log("  ✓ une date à six mois est retenue, et affichée");
 
@@ -184,19 +195,11 @@ async function main() {
   const pageClient = await contexte.newPage();
   await pageClient.goto(`${BASE}/devis/${rows[0].jeton}`, { waitUntil: "networkidle" });
   const vueClient = await pageClient.locator("body").innerText();
-  // **La date attendue vient de `jourLisible`, jamais recomposée ici.**
-  //
-  // Payé le 25 août 2026, à minuit pile. Cette ligne fabriquait « 1 mars » à la
-  // main ; l'écran écrit « 1er mars », parce que le premier du mois est le seul
-  // ordinal du français (`src/lib/jour.ts`). La suite était donc verte 361 jours
-  // par an et rouge les quatre autres — le jour où la cible tombe sur un 1er.
-  //
-  // C'est très exactement la règle dupliquée que le dépôt interdit
-  // (`CLAUDE.md` §3) : deux façons d'écrire une date finissent par diverger, et
-  // celle-ci a divergé sur un cas que personne n'avait joué.
-  const enClair = jourLisible(dansSixMois);
+  // La même lecture qu'au contrôle précédent, et le même `enClair` : la page du
+  // client rend `jourLisible`, on la lit avec la fonction qui l'écrit. Les
+  // espaces sont normalisés parce qu'un retour à la ligne peut couper la date.
   assert.ok(
-    vueClient.includes(enClair),
+    vueClient.replace(/\s+/g, " ").includes(enClair),
     `Le client ne voit pas la date proposée (« ${enClair} »). Lu : « ${vueClient.replace(/\s+/g, " ").slice(0, 400)} »`
   );
   console.log("  ✓ le client la voit sur sa page, en toutes lettres");
@@ -205,11 +208,6 @@ async function main() {
   await navigateur.close();
   console.log("✅ Une date à six mois se choisit, s'envoie, et arrive chez le client.");
 }
-
-const MOIS = [
-  "janvier", "février", "mars", "avril", "mai", "juin",
-  "juillet", "août", "septembre", "octobre", "novembre", "décembre",
-];
 
 /** Le lundi de cette semaine-là ou de la suivante — jamais un week-end. */
 function prochainLundi(depuis: Date): string {

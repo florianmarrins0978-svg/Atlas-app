@@ -60,49 +60,84 @@ export function typeImageAccepte(mimeType: string): boolean {
  * M1). `startsWith("image/")` — ce que faisaient les photos de chantier et les
  * tickets de TVA — l'acceptait.
  *
- * **HEIC et HEIF sont dans la liste, et c'est délibéré.** Ce sont les formats
- * natifs de l'iPhone. Ils ne portent aucun script. Les refuser, ce serait un
- * artisan sur un chantier qui photographie son ticket de caisse et lit un refus
- * qu'il ne comprend pas — *un outil qui refuse la photo qu'on vient de prendre
- * est pire que le risque qu'il évite*.
+ * ─────────────────────────────────────────────────────────────────────────────
+ * **HEIC ET HEIF ONT ÉTÉ RETIRÉS DE CETTE LISTE LE 24 AOÛT 2026, ET C'EST UN
+ * REVIREMENT — il faut dire pourquoi, sinon quelqu'un les remettra.**
+ *
+ * Le matin même, ils y étaient : « ils ne portent aucun script, les refuser
+ * serait un artisan qui photographie son ticket et lit un refus ». Le
+ * raisonnement était juste sur le risque de script, et **il passait à côté du
+ * vrai sujet** : nous ne savons pas retirer les métadonnées d'un HEIC. Les
+ * accepter, c'était donc ranger les coordonnées GPS du domicile d'un client —
+ * exactement ce que ce fichier existe pour empêcher.
+ *
+ * **Et le garde-fou était le mauvais.** On comptait sur iOS pour transcoder en
+ * JPEG parce que l'attribut `accept` ne propose pas le HEIC. C'est vrai d'un
+ * iPhone honnête, et cela ne vaut rien comme protection : `accept` est un
+ * confort d'écran, pas une frontière. Qui poste directement au serveur ne
+ * regarde aucun attribut.
+ *
+ * **Cette liste ne contient donc plus que ce qu'on sait NETTOYER**, et c'est sa
+ * seule définition tenable. Le refus d'un HEIC brut, lui, se dit dans les mots
+ * de l'artisan et lui donne le geste (`MESSAGE_HEIC_REFUSE`).
+ *
+ * **Ce qui a été écarté : convertir le HEIC côté serveur.** Il faudrait un
+ * décodeur natif (libheif) — une bibliothèque en C qui analyserait un fichier
+ * hostile, soit plus de surface d'attaque que ce qu'on referme. On refuse, on
+ * l'explique, et le réglage de son iPhone règle le cas une fois pour toutes.
  */
-export const TYPES_PHOTO_ACCEPTES = [
-  "image/jpeg",
-  "image/png",
-  "image/webp",
-  "image/heic",
-  "image/heif",
-] as const;
+export const TYPES_PHOTO_ACCEPTES = TYPES_IMAGE_ACCEPTES;
 
 export function photoAcceptee(mimeType: string): boolean {
   return (TYPES_PHOTO_ACCEPTES as readonly string[]).includes(mimeType.split(";")[0].trim().toLowerCase());
 }
 
+/** Le format natif de l'iPhone — accepté nulle part, et nommé pour être expliqué. */
+const TYPES_HEIC = ["image/heic", "image/heif", "image/heic-sequence", "image/heif-sequence"];
+
+export function estHeic(mimeType: string): boolean {
+  return TYPES_HEIC.includes(mimeType.split(";")[0].trim().toLowerCase());
+}
+
 /**
  * L'attribut `accept` des champs photo — **et il ne contient PAS le HEIC.**
  *
- * ─────────────────────────────────────────────────────────────────────────────
- * **C'est le point le plus contre-intuitif de ce lot, et l'écrire ici évite
- * qu'on le « corrige » un jour en croyant bien faire.**
+ * iOS regarde cette liste : quand le HEIC n'y figure pas, il **transcode en
+ * JPEG** avant l'envoi, appareil photo comme photothèque. C'est ce qui fait
+ * qu'un iPhone ordinaire n'atteint jamais le refus du serveur.
  *
- * iOS regarde cette liste. Quand le HEIC n'y figure pas, il **transcode en
- * JPEG** avant l'envoi — appareil photo comme photothèque. C'est ce que fait
- * déjà le diagnostic végétal, et c'est pourquoi il reçoit toujours des JPEG
- * qu'il sait nettoyer.
- *
- * **Y ajouter `image/heic` ferait donc l'inverse de ce qu'on croit** : iOS
- * cesserait de transcoder, et nous recevrions des HEIC bruts — que nous ne
- * savons pas nettoyer, donc rangés avec leurs coordonnées GPS.
- *
- * La liste serveur, elle, reste plus large (`TYPES_PHOTO_ACCEPTES`) : c'est le
- * filet pour l'appareil qui ne transcoderait pas. Accepter vaut mieux que
- * refuser ; ne pas provoquer vaut mieux qu'accepter.
+ * **Mais ce n'est PAS ce qui protège**, et la nuance a coûté un revirement le
+ * 24 août : `accept` est un confort d'écran. La protection est la liste
+ * serveur, qui ne contient que ce qu'on sait nettoyer. Les deux se ressemblent
+ * désormais parce qu'elles disent la même chose, plus parce que l'une couvre
+ * l'autre.
  */
 export const ACCEPT_PHOTOS = TYPES_IMAGE_ACCEPTES.join(",");
 
 /** Le refus à montrer, dans ses mots, quand le format n'est pas une photo. */
 export const MESSAGE_PHOTO_REFUSEE =
   "Ce fichier n'est pas une photo. Prenez-la avec votre appareil, ou choisissez un JPEG, un PNG ou un WebP.";
+
+/**
+ * Le refus d'un HEIC — **il donne le geste, pas seulement le verdict**.
+ *
+ * Un artisan qui lit « format non pris en charge » sur un chantier n'a aucun
+ * moyen d'avancer : c'est son téléphone qui décide du format, pas lui, et il ne
+ * sait pas que ça se règle. La phrase nomme donc l'endroit exact.
+ */
+export const MESSAGE_HEIC_REFUSE =
+  "Votre iPhone a envoyé cette photo au format HEIC, dont Atlas ne sait pas retirer les données de localisation. " +
+  "Sur votre téléphone : Réglages › Appareil photo › Formats › « Le plus compatible ». Reprenez ensuite la photo.";
+
+/**
+ * Le refus quand le fichier n'est pas ce qu'il prétend être.
+ *
+ * **Ce cas-là n'est pas un format exotique : c'est un fichier maquillé.** Le
+ * nettoyage vérifie la signature ; un SVG annoncé `image/jpeg` échoue ici, et
+ * c'est ce refus qu'il lit.
+ */
+export const MESSAGE_PHOTO_ILLISIBLE =
+  "Cette photo n'a pas pu être lue — elle est peut-être abîmée, ou ce n'est pas le format annoncé. Reprenez-la.";
 
 /**
  * L'extension à poser sur la clé de stockage — **et c'est elle qui décidera du

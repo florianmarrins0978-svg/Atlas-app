@@ -128,31 +128,42 @@ async function main() {
     .first()
     .waitFor({ state: "visible", timeout: 30_000 })
     .catch(() => undefined);
-
-
   // --- 1. « Arrêtée » n'est pas « partie » ---------------------------------
   const ecran = await page.locator("body").innerText();
   assert.match(ecran, /arrêtée/i, `La facture n'a pas été arrêtée. Écran :\n${ecran.slice(0, 500)}`);
-  // **CE CONTRÔLE VISAIT UN ÉTAT FUGACE, ET IL EST REDRESSÉ (25 août 2026).**
-  //
-  // Il exigeait « Votre client ne l'a pas encore reçue » — la phrase de l'écran
-  // AVANT que le lien soit préparé. Depuis l'appui unique du 22 août, ce lien
-  // se prépare dans la foulée de l'arrêt : la phrase ne vit donc plus que le
-  // temps d'un aller-retour au serveur. La suite était verte quand elle lisait
-  // l'écran assez vite, rouge quand la préparation avait eu le temps
-  // d'aboutir — c'est-à-dire verte pour une mauvaise raison.
-  //
-  // **Ce qu'il faut tenir, c'est la RÈGLE : « arrêtée » n'est pas « partie ».**
-  // Le patron a lu « facture arrêtée » et cru son client servi. Les deux états
-  // de l'écran le démentent, chacun avec ses mots — et viser l'un des deux,
-  // c'est rendre l'écran impossible à changer (`CLAUDE.md` §5 bis).
-  const ditQueRienNEstParti =
+  /**
+   * **« ARRÊTÉE » N'EST PAS « PARTIE » — et l'écran le dit de DEUX façons.**
+   *
+   * `TransmettreLaFacture` a deux visages, selon que le lien du client a déjà
+   * été préparé ou non (`src/app/chantiers/[id]/facture/TransmettreLaFacture.tsx`) :
+   *
+   * | Lien pas encore préparé | Lien préparé |
+   * |---|---|
+   * | la phrase « Votre client ne l'a pas encore reçue. » | le bouton qui ouvre le message tout prêt (`data-atlas^="transmission-"`) |
+   *
+   * Depuis l'appui unique du 22 août, le même geste arrête la facture, prépare
+   * le lien et ouvre la messagerie, puis rafraîchit l'écran : **on passe du
+   * premier visage au second pendant que la suite regarde**. Ce contrôle
+   * n'attendait que le premier — il guettait donc un état transitoire, et
+   * rougissait selon la vitesse de la machine. Constaté le 25 août 2026, deux
+   * batteries de suite, vert joué seul.
+   *
+   * **Les deux visages disent la même chose, et c'est ELLE la règle** : la
+   * facture est arrêtée, et c'est encore à lui de l'envoyer.
+   *
+   * **Le second visage se lit par un REPÈRE, jamais par un libellé.** Une
+   * première version citait « c'est vous qui l'envoyez » : cette phrase a été
+   * retirée le 24 août, à sa demande — *« tout ce qui est en gris, supprime »*.
+   * Un contrôle accroché au texte serait mort sur une demande exaucée, et l'on
+   * aurait été tenté de rétablir le mot pour le faire taire (`CLAUDE.md` §5 bis).
+   * C'est le même repère que celui du point 2 plus bas.
+   */
+  const encoreAEnvoyer =
     /ne l'a pas encore reçue/i.test(ecran) ||
-    /rien ne part tant que vous ne l'envoyez pas/i.test(ecran);
+    (await page.locator("a[data-atlas^='transmission-']").count()) > 0;
   assert.ok(
-    ditQueRienNEstParti,
-    "L'écran laisse croire que la facture est partie alors que rien ne la porte au client.\n" +
-      `Écran lu :\n${ecran.replace(/\s+/g, " ").slice(0, 600)}`
+    encoreAEnvoyer,
+    `L'écran laisse croire que la facture est partie alors que rien ne la porte au client. Écran :\n${ecran.slice(0, 800)}`
   );
   console.log("  ✓ une facture arrêtée dit qu'elle n'est pas encore partie, et propose de l'envoyer");
 
@@ -162,7 +173,12 @@ async function main() {
   // reste ici est le message tout prêt de l'écran d'après — celui qui rattrape
   // le cas où le téléphone aurait refusé d'ouvrir la messagerie.
 
-  const lien = page.getByRole("link", { name: /Ouvrir le (SMS|e-mail) tout prêt/ });
+  // **Repéré par son `data-atlas`, plus par son libellé.** Le 24 août 2026, le
+  // patron a fait renommer ce bouton — *« corrige en envoyer par SMS, retire la
+  // flèche »*. Un contrôle accroché au texte serait mort sur une demande
+  // exaucée, et l'on aurait été tenté de rétablir le mot pour le faire taire
+  // (`CLAUDE.md` §5 bis). Ce repère-ci survit au prochain changement de mot.
+  const lien = page.locator("a[data-atlas^='transmission-']");
   // **Attendre le lien, jamais un délai fixe.** Ce contrôle a échoué une fois
   // au milieu de la batterie complète, et passé seul dans la foulée : sous
   // trente-cinq suites enchaînées sur un même serveur de développement, la

@@ -140,12 +140,14 @@
   <b>La date des « Planifiés » — touchez une lettre, l’écran se refait.</b><br>
   Votre question du 23 août. Aujourd’hui la date et le nom portent <b>la même
   encre</b>, et le nom est trois fois plus gros : c’est lui qui gagne. Quatre
-  façons de redresser ça, sur vos vrais chantiers. <b>Rien n’est codé</b> —
-  dites-moi la lettre.
+  façons de redresser ça, sur vos vrais chantiers.<br>
+  <b>RETENUE ET CODÉE le 24 août 2026 : la proposition D</b>, la pastille. La
+  planche reste ouverte dessus — touchez « Aujourd’hui » pour revoir ce qu’il y
+  avait avant.
 </div>
 
 <div class="choix">
-  <button type="button" data-vue="temoin" class="temoin" aria-pressed="true">Aujourd’hui</button>
+  <button type="button" data-vue="temoin" class="temoin" aria-pressed="false">Aujourd’hui</button>
   <button type="button" data-vue="a" aria-pressed="false">A</button>
   <button type="button" data-vue="b" aria-pressed="false">B</button>
   <button type="button" data-vue="c" aria-pressed="false">C</button>
@@ -208,9 +210,11 @@
   du code. <b>Une proposition qui ne tient qu’en clair n’est pas une
   proposition</b> : l’accent y devient clair et le fond sombre, les pôles
   s’inversent.</p>
-  <h2>Rien n’est codé</h2>
-  <p>Cette page ne change pas l’application : elle la montre. Dites-moi la
-  lettre — ou qu’aucune ne va, c’est une réponse aussi.</p>
+  <h2>Ce qui a été retenu</h2>
+  <p><b>La D</b>, le 24 août 2026 — elle est <b>codée dans l’application</b>, et
+  le filet qui séparait deux journées est parti avec : la pastille fait la
+  couture, et deux séparateurs pour une seule se verraient. Les trois autres
+  restent ici, pour savoir ce qui a été écarté et pourquoi.</p>
 </div>
 
 <script>
@@ -238,7 +242,7 @@ const VERDICTS = {
     defaut: "Les noms se décalent de <b>36 px</b> vers la droite. « Chantier test — Abri Pornic » a d’autant moins de place avant de casser en deux lignes — <b>regardez-le sur le mercredi</b>."
   },
   d: {
-    titre: "D — la date dans une pastille",
+    titre: "D — la date dans une pastille · RETENUE ET CODÉE",
     quoi: "Le même papier que les encarts de l’application. En faisant défiler la semaine du pouce, <b>on repère les journées sans lire un mot</b>.",
     defaut: "L’écran a été refait sans un seul aplat inutile. Une pastille par journée, c’est <b>trois blocs de couleur de plus</b> sur une semaine chargée — et davantage sur une semaine pleine."
   }
@@ -258,7 +262,7 @@ function montrer(vue) {
 }
 
 for (const b of boutons) b.addEventListener("click", () => montrer(b.dataset.vue));
-montrer("temoin");
+montrer("d");   // sa proposition retenue le 24 août 2026
 
 /* Le mode nuit — les vraies couleurs de la charte, pas une approximation. */
 const nuit = document.getElementById("bascule-nuit");

@@ -9,66 +9,239 @@ Format : le plus récent en tête.
 
 ## 2026-08-25
 
-### Deux suites cassaient À MINUIT, et pas depuis du code
+### Le lot 2B est au vert — et sept contrôles fragiles avec lui
 
-Elles étaient vertes le 24 août à 22 h 27, rouges le 25 à 9 h 29, sur le même
-dépôt. Ni l'une ni l'autre n'avait rien à voir avec ce qu'on venait d'écrire :
-c'est le calendrier qui avait tourné.
+`verifier:avant-livraison` : **223/223** suites base, **110/110** suites
+navigateur, connexion réelle dans un navigateur derrière une origine étrangère.
+Verdict complet dans `docs/lot-2b-securite-verdict.md`.
 
-- **La date à six mois** se comparait à « 1 mars », fabriqué à la main dans la
-  suite — alors que l'écran écrit « 1er mars », le premier du mois étant le seul
-  ordinal du français (`src/lib/jour.ts`). Verte toute l'année, rouge les quatre
-  jours où la cible tombe sur un 1er. C'est la règle dupliquée que le dépôt
-  interdit (`CLAUDE.md` §3) : la suite lit désormais `jourLisible`.
-- **Le calendrier à deux dates** cherchait trois jours libres dans le mois EN
-  COURS. Le 25 août, il n'en restait que deux passé le délai minimal. Elle appuie
-  maintenant sur « Mois suivant » quand le mois est trop court — le geste que le
-  patron fait sans y penser.
+**Il a fallu cinq passages, et aucun rouge ne venait du lot.** Le détail des sept
+contrôles réparés est ci-dessous ; ils ont un point commun, et c'est le seul qui
+mérite d'être retenu : **ils attendaient un délai plutôt qu'un signal**, ou ils
+guettaient une formulation plutôt qu'une règle. Aucun n'a été affaibli — les
+assertions défendent la même chose, elles regardent seulement au bon moment.
 
-*Une règle éprouvée un seul jour n'est pas éprouvée.* Les deux suites ont été
-rejouées vertes après correction.
 
-### Un contrôle qui exigeait un état FUGACE, sur la facture au client
+### Deux suites de dates rougissaient un jour sur trente, sur un écran juste
 
-Rouge sous la batterie complète, verte seule — trois fois. **Une première
-explication a été tentée et s'est révélée fausse** : on a cru à une attente qui
-visait un mot du parent pendant que l'assertion visait un mot de l'enfant. La
-correction n'a rien changé, ce qui l'a réfutée.
+La batterie du lot 2B a franchi minuit, et deux suites navigateur sont tombées
+d'un coup — **sans qu'une ligne du lot ne touche un calendrier**. Le 25 août est
+le premier jour où :
 
-Le message d'échec a alors été instrumenté pour rendre l'écran ENTIER. Il a
-tranché en une lecture : le bloc d'envoi était bien là, aucun refus d'adresse ne
-s'affichait — le garde-fou du jour était donc hors de cause — et l'écran portait
-le lien tout prêt.
+| | |
+|---|---|
+| `test-date-lointaine-e2e` | la date à six mois tombe un **1er**. L'écran écrit « 1er mars » — le seul ordinal du français —, la suite cherchait « 1 mars » |
+| `test-deux-dates-calendrier-e2e` | il ne reste que **deux** jours ouvrés au mois affiché, alors que la suite en exige trois |
 
-**La vraie cause :** le contrôle exigeait « Votre client ne l'a pas encore
-reçue », la phrase de l'écran AVANT que le lien soit préparé. Depuis l'appui
-unique du 22 août, ce lien se prépare dans la foulée de l'arrêt : la phrase ne
-vit plus que le temps d'un aller-retour au serveur. La suite était verte quand
-elle lisait assez vite — c'est-à-dire **verte pour une mauvaise raison**.
+**C'est le pire des rouges : celui qui accuse un code juste.** Une suite qui
+tombe un jour sur trente s'apprend à être ignorée, et l'on perd le garde-fou
+sans s'en apercevoir.
 
-Elle tient désormais la règle et non le libellé d'un seul état : *« arrêtée »
-n'est pas « partie »*. Les deux états de l'écran le démentent, chacun avec ses
-mots. Confrontée à des phrases absentes, elle rougit ; rétablie, elle passe.
+La première **redisait la règle d'écriture** au lieu de l'employer — exactement
+la duplication que `CLAUDE.md` §3 interdit. Elle passe désormais par
+`jourLisible`, la fonction qui rend la page du client : ordinal compris, elle
+suit la règle au lieu de la deviner.
 
-### Et un quatrième : la remise lue avant d'être écrite
+La seconde supposait que le mois affiché offrait toujours trois jours. Elle fait
+maintenant le geste du patron : quand son mois est plein, elle passe au suivant.
 
-Même famille. Le contrôle tapait « 15 », attendait 900 ms choisies au doigt
-mouillé, puis lisait la base. Sous cent dix suites, l'enregistrement n'était pas
-retombé : la base portait encore « 5.00 » et le contrôle accusait le produit
-d'écrire un chiffre faux sur un devis — le pire des rouges.
+*Établi avant de corriger : la date du jour suffit à reproduire les deux
+échecs, et le diff du lot ne touche aucun fichier de calendrier.*
 
-Il attend maintenant l'état, comme le dépôt le fait ailleurs, et il n'y perd
-rien : il exige toujours la valeur exacte, et dit ce que la base portait quand
-elle ne vient pas. Un vrai désaccord entre l'écran et la base rougirait encore.
+### Deux autres suites mesuraient la vitesse de la machine, pas la règle
 
-**Quatre contrôles en un jour, aucun défaut de produit derrière.** Deux
-cassaient à minuit sur le calendrier, deux lisaient un écran ou une base avant
-qu'ils aient fini de s'écrire. Le point commun : *ils mesuraient un instant, pas
-un état.*
+Au tour suivant de la même batterie, deux suites **différentes** sont tombées —
+et vertes dans la foulée jouées seules (7/7). Aucune ne touche une image ni un
+corps de requête.
+
+| | Ce qu'elle attendait |
+|---|---|
+| `test-fiche-chantier-e2e` | `waitForTimeout(900)` puis lecture en base. Sous la batterie, l'enregistrement dépasse ce délai : le contrôle accusait le produit de perdre le temps saisi |
+| `test-facture-au-client-e2e` | le corps de la page était lu entre les deux mentions : « arrêtée » était là, « ne l'a pas encore reçue » pas encore |
+
+Les deux attendent désormais **le signal réel** — la valeur en base, la mention à
+l'écran — au lieu d'un délai fixe. Les attentes sont bornées et les assertions
+inchangées : si le signal ne vient jamais, elles rougissent exactement comme
+avant.
+
+*Le second cas portait déjà, en commentaire, le même diagnostic daté du 12 août
+2026. Une cause connue et laissée en place se repaie.*
+
+### Et une troisième lisait un écran qui affichait encore « Chargement… »
+
+Au tour d'après, `test-fiche-client-e2e` : `waitForURL` rend la main dès que
+l'adresse correspond, alors que le corps de la page porte encore l'écran
+d'attente. Le contrôle lisait celui-ci et annonçait « le nom du client manque ».
+
+**Il ne mesurait rien du tout** — la faute du 15 août, dans une autre robe. Les
+deux endroits du fichier attendent maintenant que l'écran d'attente s'efface.
+
+*Cherché ailleurs plutôt que corrigé sur place : les autres `waitForURL` du
+dépôt lisent par des localisateurs, qui attendent d'eux-mêmes.*
+
+### Un contrôle guettait un état qui ne dure qu'un instant
+
+`test-facture-au-client-e2e` exigeait la phrase « Votre client ne l'a pas encore
+reçue ». Or `TransmettreLaFacture` a **deux visages** :
+
+| Lien du client pas encore préparé | Lien préparé |
+|---|---|
+| « Votre client ne l'a pas encore reçue. » | « … — c'est vous qui l'envoyez. » |
+
+Depuis l'appui unique du 22 août, le même geste arrête la facture, prépare le
+lien, ouvre la messagerie, puis rafraîchit l'écran : **on passe du premier visage
+au second pendant que la suite regarde.** Le contrôle n'attendait que le premier,
+et tombait selon la vitesse de la machine.
+
+**Les deux phrases disent la même chose, et c'est elle la règle** : la facture est
+arrêtée, et c'est encore à lui de l'envoyer. Le contrôle vise désormais la règle,
+pas l'une de ses deux formulations — un écran qui laisserait croire la facture
+partie ne porte ni l'une ni l'autre, et il rougit.
+
+### Et « 0 == 1 » n'accusait personne
+
+`test-ia-02-e2e` écrivait la prestation puis attendait trois cents millisecondes
+avant de vérifier qu'elle avait survécu à l'assistant. Sous la batterie, l'action
+serveur dépasse ce délai : l'assistant était accusé d'un effacement qui n'avait
+pas eu lieu. Elle attend maintenant que la requête soit partie — et son message
+nomme le coupable, au lieu d'un « 0 == 1 » qui envoyait chercher partout.
+### L'accueil vide ne dit plus qu'il est vide
+
+**Sa demande, capture à l'appui :** *« supprime la phrase "aucun chantier pour
+l'instant" »*.
+
+Elle disait deux choses, et les deux étaient déjà à l'écran : que la liste est
+vide — cela se voit — et par où commencer, alors que « CRÉER UN DEVIS » et son
+rond doré sont juste au-dessus. Une phrase qui répète ce qu'on voit prend la
+place des bandeaux, qui, eux, appellent une action.
+
+**Les bandeaux restent, et c'est la moitié qui compte** : ils portent les
+réponses de ses clients — un devis accepté, une autre date proposée — et elles
+arrivent justement quand plus aucun chantier n'est en cours.
+
+**Le contrôle lit la SOURCE, et il faut savoir pourquoi.** L'état à mesurer —
+aucun chantier — est hors de portée des suites navigateur, qui partagent le
+compte de démonstration et en portent toujours. Une suite qui « vérifierait »
+l'absence sur un accueil plein serait verte sans avoir rien mesuré. C'est
+grossier, et c'est plus honnête qu'un vert qui ne prouve rien
+(`scripts/test-accueil-liste-vide.ts`, vu rouge contre le retour de la phrase).
+
+### Choisir une date se fait d'un seul doigt
+
+**« Proposer ce jour » est retiré** — sa demande : *« je dois pouvoir
+sélectionner les jours juste en les touchant, pas besoin de cliquer sur
+proposer »*. Toucher une case du calendrier ouvre toujours la fiche de la
+journée — qui est déjà là, avec quelle équipe — mais elle n'engage plus rien :
+c'est la case qui engage, et la retoucher retire la date. Un appui par date
+économisé sur chaque devis.
+
+Ce qui ne change pas : le serveur tranche toujours avant qu'une case s'allume,
+et un jour refusé s'ouvre quand même en disant pourquoi. Ce qui a été ajouté au
+passage : deux cases touchées coup sur coup ne se marchent plus dessus — la
+réponse tardive de la première ne vient plus cocher un jour déjà quitté.
+
+### L'écran Informations : ses cases s'écrivent de nouveau, et il y a moins à lire
+
+*Ses captures du 25 août : « je peux rien modifier, les cases ne sont pas
+cliquables », « le à confirmer est trop long, synthétise-le. Moins de mots ! »,
+« le sert à calculer le prix en gris, supprime-le ».*
+
+**Le défaut qui comptait.** Une fois le brouillon confirmé, TOUTES ses cases
+passaient en lecture seule — et sur iPhone, un champ en lecture seule n'ouvre
+même pas le clavier : on tape, rien ne se passe, on croit à une panne. Or
+« Déchets », « Contraintes d'accès » et « Remarques » n'ont aucune autre case
+dans l'application : cette information devenait impossible à corriger, pour
+toujours.
+
+Elles s'écrivent désormais après confirmation. Ce qui a été RECOPIÉ dans le
+chantier — prestations, matériel, durée, équipe — disparaît au contraire de
+l'encart : les vraies cases sont juste en dessous, et corriger la copie n'aurait
+touché à rien. Le dépôt cessait aussi de dé-confirmer le chantier à chaque
+frappe (`brouillons-informations.ts`), ce qui aurait réécrit sa durée par-dessus
+sa correction au geste suivant.
+
+**Moins à lire.** Les réserves du brouillon tenaient en quatorze lignes de gris
+avant d'arriver aux prestations. La consigne donnée au modèle exige maintenant
+des groupes nominaux de six mots, cinq au plus ; et à l'écran la liste est
+plafonnée à cinq, **le reste étant annoncé** (« + 2 autres ») — une liste
+tronquée en silence se lit comme une liste complète.
+
+Trois phrases grises partent aussi, sur sa demande : sous « Ce chantier prend »,
+sous « Ou écrire le devis moi-même », et la flèche de « Valider et calculer le
+prix ».
+
+**Ce qui n'a PAS été fait, et pourquoi.** Il demandait de supprimer « Ou écrire
+le devis moi-même » *si* « Valider et calculer le prix » ouvrait le devis. Ce
+n'est pas le cas : ce bouton ouvre l'écran PRIX. Le lien saute cette étape —
+c'est la sortie de secours qu'il avait demandée le 3 août 2026. Il reste.
+
+`ARCHITECTURE.md` §171.
+
+### Et un huitième, trouvé en parallèle : la remise lue avant d'être écrite
+
+Même famille que les sept ci-dessus, et découvert par une autre session le même
+jour — les deux récits se rejoignent, celui-ci ne garde que ce que l'autre ne
+porte pas.
+
+Le contrôle de `test-reduction-devis-e2e` tapait « 15 », attendait 900 ms
+choisies au doigt mouillé, puis lisait la base. Sous cent dix suites,
+l'enregistrement n'était pas retombé : la base portait encore « 5.00 » et le
+contrôle accusait le produit d'écrire un chiffre faux sur un devis.
+
+Il relit désormais jusqu'à ce que la valeur vienne, avec une attente qui monte.
+Il n'y perd rien : il exige toujours 15,00 exactement, et rend le contenu réel
+de la ligne quand elle ne vient pas — un vrai désaccord entre l'écran et la base
+rougirait encore.
+
 
 ---
 
 ## 2026-08-24
+
+### Lot 2B : une image ne se range plus jamais sans être nettoyée
+
+**Le revirement du jour, et il est assumé.** Ce dépôt écrivait le matin même :
+*« un échec de nettoyage ne refuse JAMAIS la photo »*. La règle venait d'un vrai
+principe — un outil qui refuse la photo qu'on vient de prendre est pire que le
+risque qu'il évite — et **elle protégeait le geste de l'artisan en sacrifiant la
+donnée de son client** : un fichier qu'on ne savait pas lire était rangé avec ses
+coordonnées GPS.
+
+Désormais : **taille → format → nettoyage → refus si le nettoyage échoue**, dans
+une porte unique (`src/server/photo-entrante.ts`) que les cinq chemins d'image
+traversent. Rien n'en sort que des octets nettoyés.
+
+**Le HEIC est refusé**, et le refus donne le geste : *Réglages › Appareil photo ›
+Formats › « Le plus compatible »*. Convertir côté serveur aurait demandé un
+décodeur natif analysant un fichier hostile — plus de surface d'attaque que ce
+qu'on referme.
+
+**Ce qui était le plus exposé n'était dans aucun brief : le logo d'entreprise.**
+Une enseigne photographiée au téléphone porte les coordonnées GPS de l'endroit,
+et ce fichier est **embarqué dans chaque devis et chaque facture** envoyés aux
+clients. Il n'était nettoyé nulle part.
+
+**Un bénéfice non cherché :** le nettoyeur vérifie la signature du fichier.
+Refuser sur échec refuse donc aussi tout fichier maquillé — un SVG annoncé
+`image/jpeg` ne passe plus.
+
+### Lot 2B : le corps d'une requête est borné PENDANT sa lecture
+
+Le correctif du matin refusait sur `content-length` puis appelait
+`requete.formData()`. **C'était un premier rempart et pas une preuve** : cet
+en-tête est écrit par le client. Le sous-déclarer, ou envoyer en
+`Transfer-Encoding: chunked` qui n'en porte aucun, laissait le parseur avaler ce
+qu'on voulait.
+
+Vérifié dans la documentation de Next plutôt que supposé : `bodySizeLimit` ne
+couvre **que les actions serveur**, et **aucune limite native n'existe** pour les
+*route handlers*. Le corps traverse donc un compteur qui **casse le flux** au-delà
+de la borne (`src/server/corps-borne.ts`) — cassé, pas tronqué : un multipart
+amputé se lirait comme un fichier valide mais incomplet.
+
+Une suite compte les octets qui sortent réellement du flux borné quand on lui
+donne un corps dix fois trop gros.
+
 
 ### Un lien envoyé à un client ne peut plus être une adresse de sa machine
 
@@ -255,6 +428,35 @@ et laisse le jeton, le cookie et les rappels intacts (`ARCHITECTURE.md` §163).
 chemin vers le mot de passe, et contre un échec de visage qui accusait le mot de
 passe. **Rien n'est codé dans `src/`.**
 
+### L'écran de la facture arrêtée : ses sept corrections
+
+*Capture à l'appui, le 24 août 2026 au soir.*
+
+| Ce qu'il a demandé | Ce qui a changé |
+|---|---|
+| *« la facture en PDF, enlève la petite flèche, mais un petit plus pour qu'on comprenne que c'est cliquable »* | la flèche part, le lien est souligné |
+| *« Total TTC et Télécharger, mets-les en noir, pas gris »* | fait |
+| *« tout ce qui est en gris sous facture F2026, supprime »* | le paragraphe sur l'avoir et le relevé de TVA est retiré |
+| *« pareil sous ouvrir le SMS tout prêt »* | le destinataire et le lien en clair sont retirés |
+| *« corrige en envoyer par SMS, retire la flèche »* | fait |
+| *« corrige envoyer par e-mail en gras doré »* | or, gras, 15 px — la même allure que sur l'écran du devis |
+| *« colle-le sous envoyer par SMS »* | fait |
+
+**Et le lien doré ENVOIE désormais, il ne bascule plus.** C'est la condition
+pour que son libellé soit vrai : appeler un lien « Envoyer par e-mail » alors
+qu'il se contente d'intervertir deux boutons, c'est un écran qui ment — il
+appuie, rien ne s'ouvre, et il appuie encore. Quand le client n'a pas d'adresse,
+il bascule encore, et c'est le seul cas où il le doit : c'est ainsi que le champ
+de saisie apparaît.
+
+**Ce qui est perdu, et qu'il faut savoir avant de le rétablir :** il ne voit
+plus à qui le message part avant d'ouvrir sa messagerie. Sa messagerie le lui
+montre juste après, et rien n'est envoyé par Atlas. C'est son arbitrage.
+
+`test-facture-au-client-e2e` ne cherche plus le bouton par son libellé mais par
+son repère : un contrôle accroché au texte serait mort sur une demande exaucée
+(`CLAUDE.md` §5 bis).
+
 ### L'allure de ses documents : typographie, fond, accent, logo
 
 *Sa demande du 23 août : « un endroit dédié à la modification de son devis —
@@ -286,7 +488,112 @@ PDF embarque.
 
 `ARCHITECTURE.md` §164.
 
----
+### « Brume moderne » entre dans Apparence — et l'application ne bouge pas
+
+Son choix devant la planche 92 : *« ajoute-moi le Brume moderne comme style,
+mais ne change pas l'appli »*. Les deux moitiés commandent ensemble : la charte
+s'ajoute aux sept, `origine` reste le défaut, et rien ne change pour qui ne la
+choisit pas.
+
+**Une charte peut désormais porter une FORME, pas seulement des couleurs.** Le
+champ `formes` est à part de `jetons`, et ce n'est pas un rangement : les
+dérivations — `estSombre`, `contraste`, la remontée des couleurs de signal —
+parcourent les jetons en supposant que chaque valeur est une couleur. Y glisser
+une pile de polices ferait calculer une luminance sur « ui-sans-serif », et le
+résultat ne serait pas une erreur, ce serait **un nombre faux, en silence**.
+
+| Ce que Brume porte | Ce qu'elle ne porte pas encore |
+|---|---|
+| les huit couleurs de la planche | les rayons de 20 px |
+| les **titres** dans la police du téléphone | l'ombre bleutée, l'air en plus |
+
+La typographie passait déjà par `--font-display` : elle suit la charte sans
+qu'aucun écran soit touché. Les rayons, non — **soixante-six fichiers** les
+écrivent en dur (`rounded-[13px]`), et une charte ne peut rien sur ce qui ne
+passe pas par elle. C'est annoncé, pas fait.
+
+### L'onglet courant devient une pastille — sur Brume moderne, et nulle part ailleurs
+
+*« Modifie aussi la sélection des catégories, juste pour Brume moderne. »* Sur
+la planche 92, l'onglet courant de la barre du bas est une pastille arrondie
+tenue par l'accent ; dans l'application, c'est un trait doré qui glisse.
+
+**Le « juste » est la moitié qui compte.** Le marqueur se décrit en variables
+CSS dont **le repli est la valeur d'aujourd'hui** — une charte muette garde donc
+son trait, au pixel près. Mesuré sur trois chartes : Origine 1 px sans rayon,
+Brume 29 px avec un rayon de 11, Pierre 1 px sans rayon.
+
+**Ce qui ne change PAS, et c'est délibéré : le mouvement.** Le marqueur glisse
+d'un onglet à l'autre sur la même courbe, celle que le patron a retenue en la
+voyant. Seule son apparence suit la charte — remplacer le glissement aurait
+défait un choix déjà fait.
+
+**Un piège que la pastille réveille et que le trait cachait :** le marqueur est
+rendu APRÈS les liens dans le document. Haut d'un pixel au ras du bas, l'ordre
+était sans conséquence ; devenu pastille, il passerait par-dessus le libellé.
+Les liens prennent donc `relative z-[1]`, et le contrôle l'exige.
+
+**La barre du bas ne sait rien de la charte**, et c'est ce qui compte pour la
+suite : le jour où une deuxième charte voudra ce marqueur, il n'y a rien à
+rouvrir dans le composant.
+
+### Un contrôle de devis comparait une pendule, pas un document
+
+**Il accusait le code le plus grave de la suite, et il avait tort.** *« Sans
+réglage, le devis est EXACTEMENT celui d'avant »* — le contrôle qui garantit
+qu'aucun artisan ne voit son devis changer parce qu'un écran est apparu. Il
+rougissait environ une fois sur cinq, sur du code qui n'avait pas bougé d'une
+ligne.
+
+La cause : `pdf-lib` grave dans chaque document sa date de création, à la
+seconde. Les deux compositions comparées tombaient de part et d'autre d'une
+seconde, et les octets différaient.
+
+**Mesuré, pas supposé** — le même devis composé à 1,5 s d'écart rend deux
+fichiers de même taille dont quelques octets diffèrent. **Et ces octets sont
+dans un flux compressé** : c'est ce qui a fait échouer la première correction,
+qui effaçait les dates dans le *texte* du PDF. Elles n'y sont pas. On ne peut
+pas les ôter après coup — on peut seulement empêcher l'horloge d'avancer entre
+les deux compositions, et c'est ce que fait `aLaMemeSeconde`.
+
+**Ce n'est pas un assouplissement**, et il fallait le vérifier plutôt que
+l'affirmer : confronté à deux documents réellement différents, le contrôle
+rougit toujours et le dit. Stable sur six exécutions d'affilée.
+
+**Ce qui reste à trancher, et qui n'est pas de ce lot** : rendre la composition
+reproductible côté produit — dates fixées à l'émission plutôt qu'à la
+fabrication. Cela touche le composeur, donc les documents du patron. Noté dans
+`TODO.md` plutôt que fait en passant.
+
+### Le gabarit recopiait les couleurs au lieu de les demander
+
+**Le défaut qui a fait perdre le plus de temps ce soir-là, et il était
+invisible.** `layout.tsx` reparcourait `c.jetons` de son côté
+(`variablesEnStyle`) alors que `variablesCss` existait : **deux implémentations
+de la même règle**, ce que `CLAUDE.md` §3 interdit précisément parce qu'elles
+finissent par diverger. Elles ont divergé au premier changement — la police de
+Brume était émise par l'une et pas par l'autre. À l'écran : le réglage
+s'écrivait, les couleurs changeaient, **la typographie non**, et rien ne le
+disait.
+
+Les deux formes dérivent maintenant de `variablesCharte`. Un contrôle compare
+les deux sorties charte par charte, et **interdit au gabarit de reparcourir les
+jetons**.
+
+**Sa première version ne savait pas échouer**, et c'est le genre de contrôle
+qui rassure sans rien tenir : elle se contentait de chercher le mot
+`variablesCharte` dans le fichier — or l'import y reste même quand le corps
+recopie. Confrontée au défaut qu'elle prétendait attraper, elle est restée
+verte. Elle vise désormais le parcours lui-même.
+
+### Le script de capture était aveugle à la charte neuve
+
+`capture-chartes.mts` énumérait les sept noms **à la main**. « Brume moderne »
+n'a donc pas été capturée : l'outil qui existe pour *regarder l'écran* ne
+montrait pas la seule chose qu'on venait d'ajouter. Il lit la liste maintenant.
+
+Une énumération recopiée ne suit jamais la source qu'elle prétend montrer —
+c'est la même faute que celle du gabarit, dans l'outillage.
 
 ## 2026-08-23
 

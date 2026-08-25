@@ -123,6 +123,10 @@ async function main() {
     // au 1er : ses premiers jours ouvrés sont derrière nous, et le délai minimal
     // en écarte deux de plus. Les prendre ferait rougir cette suite sur un refus
     // parfaitement juste — le pire des rouges (`AGENTS.md`).
+    //
+    // Le mois qui n'en offre pas trois se feuillette, et c'est `troisJoursAuMoins`
+    // qui s'en charge, plus bas : deux feuilletages superposés seraient la même
+    // règle écrite deux fois.
     const plancher = new Date();
     plancher.setDate(plancher.getDate() + DELAI_MINIMAL_JOURS + 1);
     const depuis = plancher.toISOString().slice(0, 10);
@@ -130,31 +134,56 @@ async function main() {
   }
 
   /**
-   * Regarde un jour, puis le retient — ou le rend s'il l'était déjà.
+   * Touche un jour : il se propose, ou se rend s'il l'était déjà.
    *
-   * **Deux gestes, et c'est le sujet du 22 août :** toucher la case OUVRE la
-   * journée pour voir qui y est ; c'est « Proposer ce jour » qui engage la date.
-   * Un jour consulté par erreur partait auparavant chez le client.
+   * **UN SEUL GESTE depuis le 25 août 2026** — *« je dois pouvoir sélectionner
+   * les jours juste en les touchant, pas besoin de cliquer sur proposer »*. Le
+   * second appui, qui refermait la fiche, RETIRERAIT maintenant la date : cette
+   * suite l'a fait tomber la première, et c'est exactement ce qu'on veut d'elle.
    */
   async function toucher(jour: string) {
     await page.locator(`[data-jour="${jour}"]`).click();
     await page.locator('[data-atlas="journee-regardee"]').waitFor({ state: "visible", timeout: 30_000 });
-    // Le verdict vient du serveur : on attend qu'il ait cessé de vérifier,
-    // plutôt qu'un délai fixe qui échouerait au hasard sous la batterie
-    // complète — un contrôle qui rougit sans raison apprend à ignorer le rouge.
+    // Le verdict vient du serveur, et c'est LUI qui retient : on attend qu'il
+    // ait cessé de vérifier, plutôt qu'un délai fixe qui échouerait au hasard
+    // sous la batterie complète — un contrôle qui rougit sans raison apprend à
+    // ignorer le rouge.
     await page
       .locator("text=Vérification de votre planning…")
       .waitFor({ state: "hidden", timeout: 20_000 })
       .catch(() => undefined);
-    const bouton = page.locator('[data-atlas="retenir-le-jour"]');
-    if ((await bouton.count()) > 0 && (await bouton.isEnabled())) await bouton.click();
-    // On referme la fiche : la suivante s'ouvrira sur un écran propre.
-    await page.locator(`[data-jour="${jour}"]`).click();
     await page.waitForTimeout(250);
   }
 
-  const offerts = await joursOffertsAuChoix();
-  assert.ok(offerts.length >= 3, `Le calendrier n'offre que ${offerts.length} jour(s) : trop peu pour éprouver.`);
+  /**
+   * **Le mois affiché n'offre pas toujours trois jours, et c'est une affaire de
+   * calendrier, pas de code.** Cette suite a besoin de trois journées au-delà du
+   * délai minimal. En fin de mois il n'en reste pas trois : le 25 août 2026 il
+   * n'en restait que deux, et la suite rougissait sur un écran juste — le pire
+   * des rouges, celui qu'on apprend à ignorer (`AGENTS.md`).
+   *
+   * Le geste imité est celui du patron : quand son mois est plein, il passe au
+   * suivant. Trois mois consultés suffisent largement ; au-delà, c'est la
+   * navigation qui est bornée trop tôt, et le message le dit.
+   */
+  async function troisJoursAuMoins(): Promise<string[]> {
+    let dernierCompte = 0;
+    for (let mois = 0; mois < 3; mois++) {
+      const trouves = await joursOffertsAuChoix();
+      if (trouves.length >= 3) return trouves;
+      dernierCompte = trouves.length;
+      const suivant = page.getByRole("button", { name: /^Mois suivant/ });
+      assert.ok(
+        await suivant.isEnabled(),
+        `Le calendrier n'offre que ${dernierCompte} jour(s) et ne va pas plus loin.`
+      );
+      await suivant.click();
+      await page.waitForTimeout(250);
+    }
+    assert.fail(`Trois mois consultés sans trouver trois jours à proposer (dernier mois : ${dernierCompte}).`);
+  }
+
+  const offerts = await troisJoursAuMoins();
   const [premier, second, troisieme] = offerts;
 
   // --- 1. Deux jours pris au calendrier se marquent TOUS LES DEUX ----------

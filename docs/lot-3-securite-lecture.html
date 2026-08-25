@@ -1,0 +1,301 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas — Atlas — Lot 3 : lecture avant tout code</title>
+<style>
+  :root{
+    --ground:#f5f3ee; --surface:#faf9f5; --raised:#ece9e1;
+    --ink:#1c1c1a; --ink-soft:#4a4a44; --muted:#8a8578;
+    --accent:#2f3b2f; --alert:#b5562a; --line:rgba(28,28,26,0.13);
+    --serif:Georgia,'Times New Roman',serif;
+    --sans:system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --ground:#161815; --surface:#1d201c; --raised:#252924;
+      --ink:#eae7df; --ink-soft:#c2bdb1; --muted:#948f83;
+      --accent:#9fbd82; --alert:#e0885a; --line:rgba(234,231,223,0.17);
+    }
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--sans);
+    line-height:1.65;}
+  main{max-width:44rem;margin:0 auto;padding:2.5rem 1.2rem 5rem;}
+  h1,h2,h3,h4{font-family:var(--serif);font-weight:600;line-height:1.2;
+    text-wrap:balance;margin:2rem 0 0.6rem;scroll-margin-top:1rem;}
+  h1{font-size:2rem;margin-top:0;}
+  h2{font-size:1.5rem;padding-top:1.2rem;border-top:1px solid var(--line);}
+  h3{font-size:1.12rem;}
+  h4{font-size:1rem;}
+  p{margin:0 0 0.9rem;}
+  a{color:var(--accent);text-underline-offset:3px;}
+  a:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:3px;}
+  ul,ol{margin:0 0 1rem;padding-left:1.3rem;}
+  li{margin-bottom:0.4rem;}
+  li::marker{color:var(--muted);}
+  /* Le sommaire : des cibles larges, confortables au doigt sur téléphone. */
+  ol li a{display:inline-block;padding:0.15rem 0;}
+  blockquote{margin:1rem 0;padding:0.85rem 1.05rem;background:var(--raised);
+    border-left:3px solid var(--accent);border-radius:0 10px 10px 0;color:var(--ink-soft);}
+  code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:0.87em;
+    background:var(--raised);padding:0.1rem 0.35rem;border-radius:5px;}
+  hr{border:0;border-top:1px solid var(--line);margin:2rem 0;}
+  .tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px;
+    background:var(--surface);margin:0 0 1.2rem;}
+  table{border-collapse:collapse;width:100%;font-size:0.92rem;min-width:22rem;}
+  th,td{text-align:left;padding:0.55rem 0.8rem;border-bottom:1px solid var(--line);
+    vertical-align:top;}
+  th{font-size:0.72rem;letter-spacing:0.08em;text-transform:uppercase;
+    color:var(--muted);white-space:nowrap;}
+  tr:last-child td{border-bottom:none;}
+  .retour{display:inline-block;font-size:0.76rem;color:var(--muted);
+    text-decoration:none;margin:-0.3rem 0 1rem;}
+  .retour:hover{color:var(--accent);text-decoration:underline;}
+</style>
+</head>
+<body>
+<main>
+<h1 id="atlas--lot-3--lecture-avant-tout-code">Atlas — Lot 3 : lecture avant tout code</h1>
+<p><strong>Document destiné à ChatGPT</strong>, en réponse à son brief « Sécurité Lot 3 ». 25 août 2026. <strong>Aucune ligne de code n'a été écrite.</strong></p>
+<p>Conformément à la règle du dépôt (<code>CLAUDE.md</code> §2 bis), un texte transmis par le patron se lit et se confronte au code <strong>avant</strong> d'être exécuté. Ce qui suit dit, point par point : ce qui est fondé, ce qui est déjà fait, ce qui est faux, et ce qui casserait l'application.</p>
+<hr>
+<h2 id="en-un-tableau">En un tableau</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th>Verdict</th>
+<th>Fondé sur</th>
+</tr></thead><tbody>
+<tr>
+<td><strong>M9</strong> — <code>password_hash</code> accessible à <code>atlas_app</code></td>
+<td><strong>FONDÉ</strong></td>
+<td>aucune politique RLS ni <code>REVOKE</code> sur <code>users</code> dans <code>drizzle/*.sql</code></td>
+</tr>
+<tr>
+<td><strong>M10</strong> — dépendances</td>
+<td><strong>FONDÉ</strong>, mais son remède est un piège</td>
+<td><code>npm audit</code> : 11 alertes, <strong>toutes</strong> transitives par Next</td>
+</tr>
+<tr>
+<td><strong>M11</strong> — session longue, pas de ré-authentification</td>
+<td><strong>FONDÉ</strong></td>
+<td><code>src/auth.ts:35</code> — <code>session: { strategy: "jwt" }</code>, <strong>sans <code>maxAge</code></strong></td>
+</tr>
+<tr>
+<td><strong>M12</strong> — mise à jour du banc sans rôle</td>
+<td><strong>FONDÉ, et pire que décrit</strong></td>
+<td><code>src/app/reglages/actions.ts:294</code></td>
+</tr>
+<tr>
+<td><strong>F6</strong> — migrations en double</td>
+<td><strong>FAUX PROBLÈME</strong></td>
+<td>le lanceur suit les <strong>noms de fichiers</strong></td>
+</tr>
+<tr>
+<td><strong>F13</strong> — pas de <code>robots.txt</code></td>
+<td><strong>VRAI</strong>, et trivial</td>
+<td>aucun fichier</td>
+</tr>
+<tr>
+<td><strong>Audio</strong></td>
+<td><strong>VRAI</strong>, et déjà consigné par nous</td>
+<td><code>src/server/upload-limits.ts:46</code></td>
+</tr>
+<tr>
+<td><strong>Sauvegardes</strong></td>
+<td><strong>VRAI</strong></td>
+<td>aucun fournisseur déclaré dans le dépôt</td>
+</tr>
+</tbody></table></div>
+<hr>
+<h2 id="m9--le-point-le-plus-important-du-lot-et-le-plus-facile-à-casser">M9 — le point le plus important du lot, et le plus facile à casser</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<h3 id="ce-qui-est-constaté">Ce qui est constaté</h3>
+<p><code>users</code> n'a <strong>aucune</strong> politique RLS, et aucun <code>REVOKE</code> ne restreint la colonne. <code>atlas_app</code> peut donc lire tous les condensats. Le constat est juste.</p>
+<h3 id="ce-que-le-brief-ne-dit-pas-et-qui-rend-la-correction-faisable">Ce que le brief ne dit pas, et qui rend la correction faisable</h3>
+<p><strong>Seuls trois endroits touchent réellement <code>password_hash</code></strong> :</p>
+<div class="tablewrap"><table><thead><tr>
+<th>Où</th>
+<th>Quoi</th>
+<th>Contexte disponible</th>
+</tr></thead><tbody>
+<tr>
+<td><code>src/auth.ts:48-50</code></td>
+<td>vérifier le mot de passe à la connexion</td>
+<td><strong>aucun</strong> — ni utilisateur, ni entreprise</td>
+</tr>
+<tr>
+<td><code>src/server/repositories/compte.ts:79</code></td>
+<td>vérifier l'ancien mot de passe</td>
+<td><code>utilisateurId</code></td>
+</tr>
+<tr>
+<td><code>src/server/repositories/compte.ts:101</code></td>
+<td>écrire le nouveau</td>
+<td><code>utilisateurId</code></td>
+</tr>
+</tbody></table></div>
+<p><em>(<code>seed.ts</code> écrit la démonstration ; il tourne sous le rôle propriétaire.)</em></p>
+<p><strong>Face ID ne lit pas <code>password_hash</code></strong> — c'est important, et cela contredit l'inquiétude implicite du brief : <code>src/server/repositories/cles-appareil.ts</code> ne touche que la table des clés.</p>
+<h3 id="la-solution-que-je-retiendrais-et-pourquoi">La solution que je retiendrais, et pourquoi</h3>
+<p><strong>Un <code>REVOKE</code> de colonne, pas une RLS.</strong> PostgreSQL sait retirer le droit sur une seule colonne :</p>
+<p>``<code>sql REVOKE SELECT (password_hash) ON users FROM atlas_app; </code>``</p>
+<p><code>atlas_app</code> garde <code>SELECT</code> sur le reste — les écrans d'équipe lisent des noms et des courriels —, et perd exactement ce qu'on veut lui retirer. La propriété demandée par le brief est alors tenue <strong>par le moteur</strong>, pas par une convention.</p>
+<p>Les trois lectures ci-dessus passent alors par une <strong>fonction <code>SECURITY DEFINER</code> qui ne rend jamais le condensat</strong> : elle prend un mot de passe et répond oui ou non. Le condensat ne sort plus de la base du tout.</p>
+<p><strong>Le brief a raison de refuser une RLS par <code>entreprise_id</code> sur <code>users</code></strong> : un utilisateur est rattaché à une entreprise <em>après</em> s'être identifié, et la connexion se fait sans contexte. Une RLS y rendrait la connexion impossible.</p>
+<h3 id="ce-qui-casserait-et-quil-faut-avoir-en-tête">CE QUI CASSERAIT, et qu'il faut avoir en tête</h3>
+<ol>
+<li>*<em>Un <code>SELECT </em></code> sur <code>users</code> échouerait.** Il faut d'abord vérifier qu'aucun appel Drizzle ne sélectionne la table entière — sinon le correctif fait tomber des écrans qui n'ont rien à voir avec l'authentification.</li>
+<li><strong>L'échec serait invisible ici.</strong> Nos suites tournent parfois sous un rôle qui traverse la RLS. Un contrôle sous <code>atlas_app</code> est indispensable, sans quoi on livrerait une connexion cassée en croyant l'avoir durcie.</li>
+<li><strong>La migration doit être jouée sur son banc</strong> avant toute production.</li>
+</ol>
+<hr>
+<h2 id="m10--le-constat-est-juste-le-remède-proposé-est-le-vrai-danger">M10 — le constat est juste, le remède proposé est le vrai danger</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<h3 id="ce-que-npm-audit-rend-aujourdhui">Ce que <code>npm audit</code> rend aujourd'hui</h3>
+<p>``<code> 11 vulnerabilities (4 moderate, 7 high) </code>``</p>
+<div class="tablewrap"><table><thead><tr>
+<th>Paquet</th>
+<th>Nature</th>
+<th>Direct ?</th>
+<th>Correctif annoncé</th>
+</tr></thead><tbody>
+<tr>
+<td><code>postcss</code></td>
+<td>lecture de fichier arbitraire par <code>sourceMappingURL</code></td>
+<td><strong>non</strong> — <code>node_modules/next/node_modules/postcss</code></td>
+<td><code>next@16.3.2</code></td>
+</tr>
+<tr>
+<td><code>sharp</code> / libvips</td>
+<td>4 CVE</td>
+<td><strong>non</strong> — tiré par Next</td>
+<td><code>next@16.3.2</code></td>
+</tr>
+</tbody></table></div>
+<p><strong>Aucune des deux n'est une dépendance directe d'Atlas.</strong> <code>package.json</code> ne déclare ni <code>sharp</code> ni <code>postcss</code> : les deux viennent de <code>next: "16.2.12"</code>.</p>
+<h3 id="le-piège-et-il-est-exactement-où-le-brief-le-craint">Le piège, et il est exactement où le brief le craint</h3>
+<p><code>npm audit</code> propose <code>npm audit fix --force</code> et annonce <em>« Will install next@16.3.2, which is outside the stated dependency range »</em>. Cette phrase fait peur à tort <strong>et</strong> rassure à tort :</p>
+<ul>
+<li><strong>elle fait peur à tort</strong> : 16.2 → 16.3 est une montée <strong>mineure</strong>, pas majeure. « Hors plage » ne dit que ceci : la version est <strong>épinglée au patch</strong> dans <code>package.json</code> ;</li>
+<li><strong>elle rassure à tort</strong> : <code>--force</code> ne s'arrêterait pas là, et le dépôt interdit ce geste.</li>
+</ul>
+<p><strong>Ce que je propose :</strong> monter Next à <code>16.3.2</code> <strong>à la main</strong>, une ligne, puis la batterie complète. C'est le seul geste qui ferme les onze alertes, et il ne touche pas à l'authentification.</p>
+<p><strong>Ce que je ne propose pas :</strong> migrer <code>next-auth</code> hors de sa bêta. La version 5.0.0-beta est celle qu'Atlas éprouve depuis le début, Face ID compris. Le brief autorise lui-même à documenter plutôt qu'à refondre — c'est le bon choix.</p>
+<hr>
+<h2 id="m11--le-constat-est-juste-et-une-correction-de-fond-mérite-dêtre-faite">M11 — le constat est juste, et une correction de fond mérite d'être faite</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<h3 id="ce-que-le-code-fait-vraiment-sans-complaisance">Ce que le code fait VRAIMENT, sans complaisance</h3>
+<p>``<code>ts // src/auth.ts:35 session: { strategy: "jwt" }, </code>``</p>
+<p><strong>Aucun <code>maxAge</code> n'est posé.</strong> La session dure donc ce que Auth.js décide par défaut — <strong>trente jours, glissants</strong>. Le constat de l'audit tient.</p>
+<h3 id="face-id-nest-pas-une-2fa--et-il-faut-le-dire-net">Face ID n'est PAS une 2FA — et il faut le dire net</h3>
+<p>Le brief demande de ne jamais l'affirmer sans démontrer l'architecture. Voici l'architecture réelle :</p>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th>Ce qu'Atlas fait</th>
+</tr></thead><tbody>
+<tr>
+<td><strong>Ce que c'est</strong></td>
+<td>un <strong>second fournisseur <code>Credentials</code></strong> dans <code>src/auth.ts</code>, à côté du mot de passe</td>
+</tr>
+<tr>
+<td><strong>Ce que cela veut dire</strong></td>
+<td>c'est un <strong>premier facteur alternatif</strong> : on entre <em>soit</em> par mot de passe, <em>soit</em> par la clé de l'appareil</td>
+</tr>
+<tr>
+<td><strong>Ce que ce n'est pas</strong></td>
+<td>un second facteur. Rien n'exige les deux</td>
+</tr>
+<tr>
+<td><strong>Ce qui est vraiment vérifié</strong></td>
+<td>une signature WebAuthn, contre un défi posé dans un cookie <code>httpOnly</code>/<code>sameSite=strict</code> et consommé à la lecture</td>
+</tr>
+</tbody></table></div>
+<p><strong>Face ID au sens d'Apple n'entre jamais dans Atlas</strong> : il déverrouille la clé sur l'appareil ; c'est la <strong>clé</strong> qui signe, et c'est la signature qu'Atlas vérifie.</p>
+<h3 id="la-ré-authentification-récente--daccord-et-voici-la-seule-forme-qui-tient">La ré-authentification récente : d'accord, et voici la seule forme qui tient</h3>
+<p>L'idée du brief est bonne, et sa borne l'est aussi : <strong>la preuve doit être vérifiée côté serveur</strong>. Concrètement, cela veut dire :</p>
+<ul>
+<li><strong>pas</strong> un booléen dans un état React ;</li>
+<li><strong>pas</strong> un champ de formulaire ;</li>
+<li>une <strong>marque datée, posée par le serveur</strong> au moment où le mot de passe ou la clé a réellement été vérifié, et relue par l'action sensible.</li>
+</ul>
+<p>Ce que je vérifierais avant de coder : où poser cette marque sans toucher à la session (le dépôt tient à ne pas remuer cette couche). Un enregistrement en base portant <code>utilisateur_id</code> et l'instant de la dernière preuve est le candidat le plus simple, et il survit à un renouvellement de jeton.</p>
+<p><strong>Sur <code>session.maxAge</code> :</strong> je ne le changerais <strong>pas</strong> dans ce lot. Un artisan qui se fait déconnecter sur un chantier appellera le patron, et le remède aurait coûté plus cher que le mal. La ré-authentification récente traite le vrai risque — une session volée qui peut tout — sans toucher au travail ordinaire.</p>
+<hr>
+<h2 id="m12--fondé-et-le-brief-a-raison-de-parler-des-deux-mécanismes">M12 — fondé, et le brief a raison de parler des DEUX mécanismes</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<h3 id="ce-qui-est-constaté-mot-pour-mot">Ce qui est constaté, mot pour mot</h3>
+<p>```ts // src/app/reglages/actions.ts:294 export async function mettreAJourApplicationAction(): Promise&lt;ResultatMiseAJour&gt; { await getCurrentCtx(); // Réservé à quelqu'un de connecté, comme le reste de l'écran.</p>
+<p>if (process.env.ATLAS_BANC_ESSAI !== "1") { ```</p>
+<p><strong>N'importe quel compte connecté</strong> — un membre, pas seulement le propriétaire — peut donc lancer un <code>git pull</code> et des migrations sur le banc. L'audit dit vrai.</p>
+<h3 id="et-lincohérence-que-le-brief-redoutait-existe">Et l'incohérence que le brief redoutait EXISTE</h3>
+<p>Le dépôt porte une fonction unique pour reconnaître le banc :</p>
+<p>``<code>ts // src/profil-banc.ts:55 return env.ATLAS_PROFIL?.trim().toLowerCase() === "banc" || env.ATLAS_BANC_ESSAI?.trim() === "1"; </code>``</p>
+<p><strong>Cette action ne l'emploie pas</strong> : elle lit <code>ATLAS_BANC_ESSAI</code> en direct. Sur un banc démarré par <code>ATLAS_PROFIL=banc</code> seul — ce que fait <code>.devcontainer/demarrer.sh</code> — le bouton <strong>refuserait</strong>. C'est un défaut réel, trouvé grâce à sa question.</p>
+<p><strong>Correction : <code>exigerProprietaire()</code> + <code>estBancDEssai()</code>.</strong> Deux lignes, aucun risque, et un contrôle de rôle qui rougit sur l'ancien code.</p>
+<hr>
+<h2 id="ce-qui-est-faux-ou-déjà-réglé">Ce qui est FAUX, ou déjà réglé</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<h3 id="f6--migrations-en-double--ne-rien-faire-et-surtout-ne-rien-renommer">F6 — migrations en double : ne rien faire, et surtout ne rien renommer</h3>
+<p><code>drizzle/</code> porte deux fichiers <code>0063_*</code>. <strong>Ce n'est pas un défaut</strong> : <code>scripts/run-migrations.ts</code> suit les migrations par <strong>nom de fichier</strong> dans une table <code>_migrations</code>, et les applique par ordre alphabétique. Deux noms distincts sont deux migrations distinctes.</p>
+<p><strong>Renommer serait la seule façon de casser quelque chose</strong> : le nouveau nom serait vu comme une migration jamais appliquée, et rejoué. C'est déjà écrit dans <code>HANDOVER.md</code> §77.</p>
+<h3 id="f3--la-route-de-diagnostic-est-déjà-bornée">F3 — la route de diagnostic est déjà bornée</h3>
+<p>Le brief craint qu'elle expose l'environnement en production. Elle porte déjà <code>if (process.env.NODE_ENV === "production") return []</code> sur le calcul des origines. <strong>Reste à vérifier</strong> ce que le corps de la réponse rend en production — c'est un contrôle à écrire, pas une correction à supposer.</p>
+<h3 id="audio--déjà-constaté-et-consigné-par-nous-au-lot-2b">Audio — déjà constaté et consigné par nous, au Lot 2B</h3>
+<p><code>verifierTypeAudio</code> ne regarde que le type déclaré (<code>src/server/upload-limits.ts:46</code>). Nous l'avions écrit dans le verdict du Lot 2B et dans <code>TODO.md</code> — ce n'est pas une découverte du brief, et c'est bien.</p>
+<p><strong>Ce que le brief ne dit pas, et qui borne le risque :</strong> le type <strong>servi</strong> n'est plus le type déclaré depuis M1 — il est dérivé de l'extension de la clé, choisie par le serveur. Ce qui reste possible est de <strong>ranger</strong> un fichier inerte sous une extension audio, pas de le faire exécuter.</p>
+<p>Une vérification par signature est faisable et légère (WebM/Matroska, MP4/M4A, OGG, WAV ont des en-têtes courts et stables). <strong>Le piège</strong> : un iPhone envoie du MP4/AAC et un navigateur Android du WebM/Opus ; une liste trop étroite ferait refuser des dictées réelles sur un chantier. C'est à éprouver avant de livrer, pas après.</p>
+<hr>
+<h2 id="ce-que-je-dirais-du-périmètre">Ce que je dirais du périmètre</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><strong>Ce brief n'est pas un lot, c'en est trois ou quatre.</strong> M9 seul touche à la connexion — ce qui casse le plus mal et se voit le plus tard. M11 demande une pièce nouvelle. À quoi s'ajoutent treize constats et une politique de sauvegarde.</p>
+<p>L'ordre que je propose, du plus utile au moins risqué :</p>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th>Pourquoi d'abord</th>
+</tr></thead><tbody>
+<tr>
+<td><strong>1. M12</strong></td>
+<td>deux lignes, aucun risque, et un vrai trou de rôle</td>
+</tr>
+<tr>
+<td><strong>2. M10</strong></td>
+<td>une ligne, ferme onze alertes, et la batterie tranche</td>
+</tr>
+<tr>
+<td><strong>3. M9</strong></td>
+<td>le vrai sujet, et celui qui demande le plus de contrôles</td>
+</tr>
+<tr>
+<td><strong>4. M11</strong></td>
+<td>la pièce neuve, une fois le reste stable</td>
+</tr>
+<tr>
+<td><strong>5. F1–F13</strong></td>
+<td>à trier, la plupart sont des minutes</td>
+</tr>
+<tr>
+<td><strong>6. Audio</strong></td>
+<td>faisable, à éprouver sur de vraies dictées</td>
+</tr>
+<tr>
+<td><strong>7. Sauvegardes</strong></td>
+<td><strong>rien à coder</strong> tant que l'hébergement n'est pas choisi</td>
+</tr>
+</tbody></table></div>
+<p><strong>Sur les sauvegardes, je suis d'accord avec lui sans réserve</strong> : le dépôt ne peut pas produire une sauvegarde de production, et un script local présenté comme telle serait pire que rien. Le point reste :</p>
+<blockquote><strong>BLOQUANT PRODUCTION — SAUVEGARDE/RESTAURATION NON ÉPROUVÉE.</strong></blockquote>
+<hr>
+<h2 id="ce-que-je-ne-ferai-pas-sans-son-accord">Ce que je ne ferai pas sans son accord</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<ul>
+<li><strong>toucher à <code>session.maxAge</code></strong> — cela se voit sur son téléphone, pas ici ;</li>
+<li><strong>migrer <code>next-auth</code></strong> hors de sa bêta ;</li>
+<li><strong>supprimer <code>unsafe-inline</code></strong> de la CSP (F10) : Next pose des scripts en ligne, et une CSP à nonce se joue dans le <code>middleware</code>. Faisable, mais c'est un lot à soi — et une CSP mal posée rend l'application blanche ;</li>
+<li><strong>construire une interface d'export/effacement client</strong> (F7) : c'est une décision produit et RGPD, pas une correction de sécurité.</li>
+</ul>
+</main>
+</body>
+</html>

@@ -10,6 +10,7 @@ import type { Page } from "playwright";
 import { mkdirSync } from "node:fs";
 import path from "node:path";
 import { Client } from "pg";
+import { CHARTES } from "../src/lib/chartes";
 
 const BASE = process.env.ATLAS_BASE ?? "http://localhost:3000";
 const dossier = process.argv[2] ?? "/tmp/captures-chartes";
@@ -48,7 +49,12 @@ try {
 
   // Chaque charte est POSÉE EN BASE puis l'accueil rechargé : c'est le chemin
   // réel, celui que le gabarit lit à chaque page.
-  for (const nom of ["origine", "prune", "beurre", "moka", "pierre", "sylve", "nuit"]) {
+  // **LA LISTE SE LIT, ELLE NE SE RECOPIE PLUS.** Elle était écrite à la main
+  // ici, et « Brume moderne » — ajoutée le 24 août 2026 sur son choix — n'a donc
+  // PAS été capturée : l'outil qui existe pour regarder l'écran était aveugle à
+  // la seule charte neuve. Une énumération recopiée ne suit jamais la source
+  // qu'elle prétend montrer.
+  for (const nom of CHARTES.map((c) => c.nom)) {
     await client.query(`UPDATE users SET charte = $1 WHERE email = 'demo@atlas.local'`, [
       nom === "origine" ? null : nom,
     ]);

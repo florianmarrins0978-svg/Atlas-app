@@ -301,7 +301,10 @@ export default function FactureClient({
         <Ligne label="Total HT" valeur={initialFacture.totalHt} />
         <Ligne label={`TVA ${Number(initialFacture.tauxTva)} %`} valeur={initialFacture.totalTva} />
         <div className="mt-3 border-t pt-3 text-center" style={{ borderColor: colors.line }}>
-          <p className={smallCaps} style={{ color: colors.muted, marginBottom: 6 }}>
+          {/* **En noir, pas en gris** — sa demande du 24 août 2026, capture à
+              l'appui. C'est l'intitulé du montant qu'il vérifie ; en gris, il
+              passait pour une mention de bas de page. */}
+          <p className={smallCaps} style={{ color: colors.ink, marginBottom: 6 }}>
             Total TTC
           </p>
           <p
@@ -318,15 +321,22 @@ export default function FactureClient({
         {/* Sans ce lien, la facture existe sans que personne puisse la
             regarder : le patron valide un montant sans avoir vu la pièce que
             son client recevra. C'est justement ce que l'arrêt 3 lui demande de
-            vérifier (docs/AGENT.md §2.3). */}
+            vérifier (docs/AGENT.md §2.3).
+
+            **Sans flèche, mais SOULIGNÉ** — sa demande du 24 août 2026 :
+            *« enlève la petite flèche, mais un petit plus pour qu'on comprenne
+            que c'est cliquable »*. La flèche partie, il ne restait qu'une ligne
+            de texte teintée : rien ne disait qu'on pouvait appuyer dessus. Le
+            soulignement se lit comme un lien partout, sans ajouter un signe de
+            plus à l'écran. */}
         <a
           href={`/api/factures/${initialFacture.id}/pdf`}
           target="_blank"
           rel="noopener"
-          className="mt-4 block text-center text-[14px] font-medium"
+          className="mt-4 block text-center text-[14px] font-medium underline underline-offset-4"
           style={{ color: colors.rust }}
         >
-          Voir la facture en PDF →
+          Voir la facture en PDF
         </a>
 
         {/* **Ouvrir n'est pas garder.** Le patron, le 10 août 2026 : il ne
@@ -341,8 +351,8 @@ export default function FactureClient({
           href={`/api/factures/${initialFacture.id}/pdf?telecharger=1`}
           download={nomDuFichier(initialFacture, emise)}
           data-atlas="telecharger-facture"
-          className="mt-2 block text-center text-[13px]"
-          style={{ color: colors.muted }}
+          className="mt-2 block text-center text-[13px] underline underline-offset-4"
+          style={{ color: colors.ink }}
         >
           Télécharger ({nomDuFichier(initialFacture, emise)})
         </a>
@@ -359,11 +369,15 @@ export default function FactureClient({
           <p className="text-center text-[15px]" style={{ color: colors.ink }}>
             Facture <NumeroDeDocument valeur={initialFacture.numeroCommercial} /> arrêtée.
           </p>
-          <p className="mt-2 text-center text-[13px]" style={{ color: colors.muted }}>
-            {regimeTva === "encaissements"
-              ? "Elle ne peut plus être modifiée — une correction passerait par un avoir. Elle entrera au relevé de TVA le jour où votre client vous paiera : notez-le dans Ma TVA."
-              : "Elle figure au relevé de TVA collectée et ne peut plus être modifiée — une correction passerait par un avoir."}
-          </p>
+          {/* **Le paragraphe qui vivait ici est RETIRÉ** — sa demande du
+              24 août 2026 : *« tout ce qui est en gris sous facture F2026,
+              supprime »*. Il expliquait l'avoir et le relevé de TVA ; c'est un
+              mécanisme, et sa règle est claire (`CLAUDE.md` §3 ter). Ce qui
+              compte pour lui à cet instant tient dans la ligne au-dessus : la
+              facture est arrêtée. Le reste, il le retrouve dans « Ma TVA ».
+
+              **Ne pas le remettre au prochain doute** : une suite qui le
+              réclamerait serait à corriger, pas l'écran (`CLAUDE.md` §5 bis). */}
 
           {/* **« Arrêtée » n'est pas « partie ».**
               Le patron a lu « facture arrêtée » et compris que son client

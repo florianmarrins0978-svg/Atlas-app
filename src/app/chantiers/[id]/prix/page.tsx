@@ -18,7 +18,7 @@ export default async function PrixPage({
 }) {
   const { id } = await params;
 
-  // Arrivée par « Ou écrire le devis moi-même → » depuis l'écran Informations.
+  // Arrivée par « Écrire le devis » depuis l'écran Informations.
   // La proposition de prix est alors repliée : le patron a demandé cette voie
   // parce qu'il veut écrire lui-même, pas discuter une suggestion. Elle reste à
   // un geste de distance — la replier n'est pas la supprimer.

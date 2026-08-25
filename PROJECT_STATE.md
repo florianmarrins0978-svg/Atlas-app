@@ -1,9 +1,7 @@
 # État du projet
 
-**Dernière mise à jour :** 2026-08-23 · branche `main`
-· dernière migration `drizzle/0061_note_chantier.sql`
-**Dernière mise à jour :** 2026-08-24 · branche `main`
-· dernière migration `drizzle/0062_tentatives_connexion.sql`
+**Dernière mise à jour :** 2026-08-25 · branche `main`
+· dernière migration `drizzle/0063_cles_appareil.sql`
 
 
 *(Le numéro du dernier commit ne figure plus ici : il était faux dès le commit
@@ -12,6 +10,27 @@ suivant, et une ligne fausse coûte plus cher qu'une ligne absente. `git log
 
 Ce fichier dit **où en est le produit**, pas ce qu'on aimerait qu'il soit. Une
 ligne « fait » qui ne l'est pas coûte plus cher qu'une ligne absente.
+
+---
+
+## Sécurité : lot 2B — M3 et M6 fermés (24 août 2026)
+
+| | État |
+|---|---|
+| Une image n'est **jamais** rangée ni envoyée sans nettoyage | **fait** — porte unique, `ARCHITECTURE.md` §164 |
+| Les cinq chemins d'image la traversent (le **logo** compris) | **fait** — 3 contrôles structurels l'empêchent de diverger |
+| HEIC/HEIF refusés, avec le geste qui le règle | **fait** (solution B assumée) |
+| Le corps d'une requête est borné **pendant** sa lecture | **fait** — `ARCHITECTURE.md` §165 |
+| Le type AUDIO reste le type déclaré (aucune signature vérifiée) | **signalé, non traité** — hors M3/M6 |
+| Sauvegardes | **toujours aucune** — le point le plus grave du dépôt |
+
+**Batterie complète au vert le 25 août 2026** : 223/223 suites base, 110/110
+suites navigateur, connexion réelle derrière une origine étrangère. Verdict
+transmissible : `docs/lot-2b-securite-verdict.md`.
+
+**Sept contrôles de suites navigateur ont été réparés au passage**, tous
+étrangers au lot : ils attendaient un délai plutôt qu'un signal, ou guettaient
+une formulation plutôt qu'une règle (`CHANGELOG.md` du 25 août).
 
 ---
 
@@ -49,6 +68,25 @@ disparu »*.
 | Les écrans regardés, pas seulement testés | **fait** — trois défauts corrigés qu'aucune suite ne voyait |
 
 Le détail et les partis pris : `ARCHITECTURE.md` §168.
+
+---
+
+## Choisir la date : un seul geste (25 août 2026)
+
+Sa demande : *« je dois pouvoir sélectionner les jours juste en les touchant,
+pas besoin de cliquer sur proposer »*.
+
+| | État |
+|---|---|
+| Toucher une case propose la date | **fait** |
+| Retoucher la retire | **fait** |
+| La fiche du jour reste, sans bouton | **fait** (elle dit `proposé`) |
+| Un jour refusé s'ouvre et dit pourquoi | **fait** |
+| Deux cases touchées coup sur coup | **fait** — le verdict périmé est jeté |
+| La planche 91 porte le même geste | **fait** (`appli/choisir-la-date.html`) |
+
+Le détail et les partis pris : `ARCHITECTURE.md` §170.
+
 
 ---
 
@@ -182,7 +220,7 @@ Le détail : `ARCHITECTURE.md` §167.
 | Son jardin du 23 août : **2 réseaux** au lieu de 5 | **fait**, et éprouvé |
 | Le carré de 12 m : **9 × 3504 buse 0,75** | **fait** — sa pose du 21 août |
 
-Le détail : `ARCHITECTURE.md` §166.
+Le détail : `ARCHITECTURE.md` §170.
 
 ### Lire un croquis à main levée (23 août 2026)
 
