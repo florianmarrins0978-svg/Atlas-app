@@ -15532,9 +15532,89 @@ l'écran — et le jour libre d'à côté qui n'en porte aucune, dans la même l
 
 Le second existe à cause du défaut du même jour (§175) : *un contrôle qui éprouve
 la règle ne voit pas une pièce débranchée.*
+## 177. L'adresse du lien vient du NAVIGATEUR, pas de ce que le serveur croit
+
+*Sa capture du 25 août 2026 : « je ne peux pas l'envoyer au client », devant le
+refus posé la veille — et sa barre d'adresse portait `…-3000.app.github.dev`.*
+
+### Le garde-fou avait raison sur ce qu'il savait, et tort sur la réalité
+
+`ouvrableParLeClient` barre un lien qui ne mène qu'à la machine de l'artisan
+(§169), et c'est juste : son client avait reçu « Connexion au serveur
+impossible ». Mais l'adresse qu'on lui donnait à juger venait du SERVEUR, et
+derrière le tunnel de son espace de travail le serveur ne voit que
+`localhost:3000` — aucun en-tête ne porte l'adresse publique.
+
+`origine-publique.ts` le disait déjà, noir sur blanc : *« la fonction rend alors
+honnêtement `http://localhost:3000` — c'est à celui qui met cette adresse dans
+un message de refuser »*. Ce qui manquait, c'est que **celui qui refuse
+disposait d'une meilleure source et ne la lisait pas.**
+
+| Source | Ce qu'elle vaut |
+|---|---|
+| `ATLAS_URL_PUBLIQUE` | juste quand elle est posée — elle ne l'est pas chez lui |
+| `x-forwarded-host` / `host` | **`localhost` derrière son tunnel** |
+| `window.location.origin` | **l'adresse par laquelle il a ouvert Atlas** — exactement celle qui s'ouvrira chez son client |
+
+### Pourquoi ce n'est pas le retour du défaut d'hydratation
+
+Le dépôt interdit de composer une adresse depuis `window` **pendant le rendu**
+(§68, §81) : serveur et navigateur diffèrent, React régénère tout l'arbre, et le
+patron a signalé cette erreur le 13 août. La règle tient toujours, et elle est
+respectée de deux façons :
+
+- **dans un GESTE** — au moment où il appuie — `window` se lit sans risque :
+  rien n'est comparé à un rendu ;
+- **pour un texte AFFICHÉ**, le premier rendu reprend l'adresse du serveur, mot
+  pour mot, et un `useEffect` la corrige **après** le montage. C'est le seul
+  ordre qui ne fasse pas diverger les deux.
+
+### DEUX correctifs, et il faut les deux — ne pas retirer l'un pour l'autre
+
+Le même soir, une autre session a traité le même défaut **par l'autre bout** :
+`.devcontainer/demarrer.sh` calcule `ATLAS_URL_PUBLIQUE` depuis `CODESPACE_NAME`
+et la donne au serveur au démarrage. C'est juste, et c'est mieux quand ça marche :
+le serveur connaît alors la bonne adresse pour TOUT — les PDF, les courriels, ce
+qui ne passe par aucun navigateur.
+
+**Ce n'est pas la même règle écrite deux fois** (`CLAUDE.md` §3), ce sont deux
+SOURCES pour une seule règle, et leur ordre est déjà écrit dans
+`origine-publique.ts` :
+
+| | Quand elle vaut |
+|---|---|
+| `ATLAS_URL_PUBLIQUE` (leur correctif) | l'espace a redémarré depuis, et `CODESPACE_NAME` y est |
+| les en-têtes | un vrai déploiement derrière un mandataire qui parle |
+| **le navigateur** (celui-ci) | **toujours** — et c'est le seul filet quand les deux premiers manquent |
+
+**Pourquoi le navigateur reste nécessaire.** `CODESPACE_NAME` manque dans un
+espace créé avant que la variable n'y soit écrite : *« deux correctifs de suite
+ont échoué chez le patron pour ce motif »* (`src/middleware.ts`). Un espace qu'il
+n'a pas recréé garde donc l'ancien démarrage — et sans ce filet, il resterait
+bloqué sans un mot.
+
+**Et ils ne se contredisent jamais.** L'adresse du navigateur ne remplace celle
+du serveur que si elle est ouvrable : ouvert par `localhost` alors que
+`ATLAS_URL_PUBLIQUE` est posée, c'est celle du serveur qui gagne, et le lien
+reste bon.
+
+### Le refus reste entier
+
+C'est le contrôle qui compte le plus dans ce lot : prendre l'adresse du
+navigateur ne doit pas rouvrir la porte que le 24 août a fermée. Ouvert par la
+redirection de port de son éditeur, `window.location.origin` vaut
+`http://localhost:3000` — le lien est barré, comme avant.
+
+### Et le refus ne s'écrit plus DEUX FOIS
+
+Sa capture le montrait en double : `RapportParti` porte le sien une fois le
+rapport figé, et celui de la tentative précédente restait affiché. **Deux fois
+la même phrase se lit comme un écran cassé**, et c'est un défaut à part entière.
+
+---
 ---
 
-## 177. `git log` ne date pas le début du projet — l'historique a été remis à plat
+## 178. `git log` ne date pas le début du projet — l'historique a été remis à plat
 
 **Sa question du 25 août 2026 :** *« combien d'heures avons-nous passé à créer
 cette application ? »* — puis, devant la première réponse : *« on a commencé
@@ -15584,7 +15664,7 @@ d'ici, et aucun calcul fait ici ne peut l'inventer.
 
 ---
 
-## 178. Les flèches décoratives sont parties, et un contrôle les empêche de revenir
+## 179. Les flèches décoratives sont parties, et un contrôle les empêche de revenir
 
 **Sa correction du 25 août 2026, capture à l'appui :** *« Retire la flèche ! Il
 m'avait semblé t'avoir demandé de supprimer toutes les flèches de

@@ -479,7 +479,7 @@ décoche le bouton OFF, ils sont censés disparaître ? »* Oui, et c'est éprou
 création, comme la validité. Elles s'impriment sous « NOTES / CONDITIONS »,
 **après** ce qu'il a écrit à la main — son champ libre n'est ni remplacé ni
 réécrit. Rien sur la feuille de chantier du salarié, qui part sans un prix. Le
-détail et le pourquoi sont dans `ARCHITECTURE.md` §175.
+détail et le pourquoi sont dans `ARCHITECTURE.md` §177.
 
 **Ce que cela ferme sans qu'il ait eu à trancher :** la planche 60 lui proposait
 A (les conditions seules), B (les siennes d'abord) ou C (deux blocs). B a été

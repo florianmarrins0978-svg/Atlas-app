@@ -5,6 +5,7 @@ import PrimaryButton from "@/components/atlas/PrimaryButton";
 import { colors } from "@/lib/design-tokens";
 import { composerMessageClient, lienTransmission, type CanalClient } from "@/lib/message-client";
 import { ouvrableParLeClient, phraseAdresseLocale } from "@/lib/adresse-du-client";
+import { useLienPourLeClient } from "@/lib/use-adresse-client";
 import { destinataireLisible } from "@/lib/numero-lisible";
 import { marquerDepartMessagerie, useRetourDeMessagerie } from "@/lib/depart-messagerie";
 import { enregistrerCoordonneeClientAction } from "./actions";
@@ -130,7 +131,17 @@ export default function TransmettreAuClient({
   // sans jamais être parti.
   useRetourDeMessagerie();
 
-  const message = composerMessageClient({ clientNom, clientCivilite, entrepriseNom, lien, modele: modeleMessage });
+  // L'origine du lien, remplacée par celle du navigateur dès qu'il a la main
+  // (`use-adresse-client.ts`).
+  const lienOuvrable = useLienPourLeClient(lien);
+
+  const message = composerMessageClient({
+    clientNom,
+    clientCivilite,
+    entrepriseNom,
+    lien: lienOuvrable,
+    modele: modeleMessage,
+  });
   const autre: CanalClient = canalChoisi === "sms" ? "email" : "sms";
   const destinataire = coordonnees[canalChoisi];
 
@@ -174,7 +185,7 @@ export default function TransmettreAuClient({
   // chantier ; le devis part par le même chemin et souffrait du même mal
   // (`ARCHITECTURE.md` §169). Ici le devis EST déjà envoyé et figé : ce qu'on
   // barre, c'est le message mort, pas son travail — et la phrase le dit.
-  if (!ouvrableParLeClient(lien)) {
+  if (!ouvrableParLeClient(lienOuvrable)) {
     return (
       <p className="text-center text-[13px] leading-[1.6]" style={{ color: colors.rust }} data-refus>
         {phraseAdresseLocale("votre devis")}

@@ -33,7 +33,7 @@ et le « 250 € → 350 € » d'une correction de devis, où la flèche porte 
 
 Ce que ça évite : qu'elles reviennent une troisième fois.
 `scripts/test-aucune-fleche.ts` les refuse, chaque flèche gardée y étant
-déclarée avec sa raison. Détail en `ARCHITECTURE.md` §178.
+déclarée avec sa raison. Détail en `ARCHITECTURE.md` §179.
 
 ### Savoir ce que l'application a coûté en temps — `scripts/compter-heures.mjs`
 
@@ -48,7 +48,7 @@ moyenner une quatrième, fausse et rassurante.
 
 Ce que ça évite : un chiffre recopié à la main dans un document, qui serait faux
 au commit suivant et dont personne ne saurait dire d'où il sort. Le piège de
-datation est écrit en `ARCHITECTURE.md` §177 ; la réponse en langage courant en
+datation est écrit en `ARCHITECTURE.md` §178 ; la réponse en langage courant en
 `docs/QUESTIONS.md` §26.
 ### La phrase grise sous « Envoyer la facture » a été retirée
 
@@ -83,6 +83,29 @@ PDF » (qui l'ouvre), un bouton « Télécharger ma facture » la range. C'est l
 `Content-Disposition: attachment` du `?telecharger=1` qui décide — l'attribut
 `download` du lien ne suffit pas, iOS l'ignore —, le même mécanisme que l'écran du
 patron.
+### Le rapport repart chez le client : l'adresse venait du serveur, pas du navigateur
+
+*Sa capture : « je ne peux pas l'envoyer au client », devant le refus posé la
+veille — alors que sa barre d'adresse portait bien une adresse web.*
+
+Le garde-fou du 24 août barre un lien qui ne mène qu'à sa machine, et il a
+raison. Mais il jugeait l'adresse que le SERVEUR voit — et derrière le tunnel de
+son espace de travail, le serveur ne voit que `localhost`. Il était donc bloqué
+sur un lien parfaitement bon.
+
+Le lien prend désormais l'adresse de sa barre d'adresse, la seule qui ne mente
+jamais : c'est celle par laquelle il a ouvert Atlas, donc celle qui s'ouvrira
+chez son client. **Le refus reste entier** — ouvert par la redirection de port
+de son éditeur, le lien est barré comme avant, et un contrôle le tient.
+
+Corrigé sur les quatre écrans qui envoient : la fiche de chantier, le devis
+parti, la facture et son message tout prêt. Le refus ne s'affiche plus non plus
+en double.
+
+`ARCHITECTURE.md` §177.
+
+---
+
 
 ### Le message : les phrases par défaut, modifiables — les mots en doré verrouillés
 
@@ -204,7 +227,7 @@ salarié : elle part sans un prix, et un acompte y serait un montant.
 *« Si je décoche le bouton OFF, ils sont censés disparaître ? »* Oui — éprouvé,
 et le contrôle a été vu rouge en débranchant le raccordement exprès. Trois
 captures rendent les trois états en image, parce que ce défaut-là s'est vu à
-l'œil et par aucun test. `ARCHITECTURE.md` §175.
+l'œil et par aucun test. `ARCHITECTURE.md` §177.
 
 ### Un jour à moitié pris le dit : « Reste 1 équipe sur 2 »
 
