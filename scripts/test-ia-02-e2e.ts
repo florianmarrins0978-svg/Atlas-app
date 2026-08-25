@@ -23,20 +23,52 @@ async function main() {
   const chantierUrl = page.url();
 
   // Ajoute une prestation réelle pour que l'assistant ait quelque chose à lire.
+  //
+  // ─── CE DÉCOR A ACCUSÉ L'ASSISTANT PENDANT TROIS BATTERIES ────────────────
+  //
+  // **Le contrôle du bas — « la prestation est toujours là après l'échange » —
+  // rougissait alors qu'elle n'avait JAMAIS été posée.** Deux corrections ont
+  // échoué avant de regarder au bon endroit : un délai de 300 ms remplacé par
+  // une attente de réseau, puis une relecture de l'écran quatre fois de suite.
+  // Aucune ne pouvait marcher, parce que l'écriture n'avait pas eu lieu.
+  //
+  // La cause est ici : `page.click("+ Ajouter une prestation")`, puis 300 ms au
+  // doigt mouillé, puis `form input` **premier du lot**. Sous la batterie, la
+  // ligne neuve n'est pas encore rendue quand on écrit — le texte part dans le
+  // champ d'à côté, et il n'y a pas de prestation à retrouver.
+  //
+  // **Un décor qui échoue doit s'accuser LUI-MÊME** (`AGENTS.md`) : le message
+  // du bas nommait l'assistant, et l'on aurait fini par chercher un défaut de
+  // mutation dans un code parfaitement sain.
+  // ──────────────────────────────────────────────────────────────────────────
+  const laPrestation = 'input[value="Poser la faïence murale"]';
+  for (const essai of [0, 1, 2]) {
+    await page.goto(`${chantierUrl}/informations`, { waitUntil: "networkidle" });
+    if ((await page.locator(laPrestation).count()) === 1) break;
+    if (essai > 0) await page.waitForTimeout(essai * 700);
+    // **On attend que la ligne APPARAISSE, pas 300 ms.** Ce champ ne porte ni
+    // étiquette ni marque (`InformationsClient.ListeTextes`) : le seul repère
+    // est sa place, et elle n'existe qu'une fois la ligne rendue. On compte
+    // donc les champs avant et après — c'est leur nombre qui dit que la ligne
+    // est là, et rien d'autre ne le dirait.
+    const champs = page.locator("form input");
+    const avantAjout = await champs.count();
+    await page.click("text=+ Ajouter une prestation");
+    for (const attente of [0, 200, 400, 800, 1600, 3200]) {
+      if (attente > 0) await page.waitForTimeout(attente);
+      if ((await champs.count()) > avantAjout) break;
+    }
+    await champs.first().fill("Poser la faïence murale");
+    await champs.first().blur();
+    await page.waitForLoadState("networkidle");
+  }
   await page.goto(`${chantierUrl}/informations`, { waitUntil: "networkidle" });
-  await page.click("text=+ Ajouter une prestation");
-  await page.waitForTimeout(300);
-  const inputs = page.locator("form input");
-  await inputs.first().fill("Poser la faïence murale");
-  await inputs.first().blur();
-  /**
-   * **On attend que l'enregistrement soit PARTI, pas que trois cents
-   * millisecondes passent.** La prestation est écrite par une action serveur ;
-   * sous la batterie complète elle dépasse ce délai, et le contrôle plus bas
-   * — « la prestation est toujours là » — accusait alors l'assistant de l'avoir
-   * effacée. Rouge le 25 août 2026, vert joué seul.
-   */
-  await page.waitForLoadState("networkidle");
+  assert.equal(
+    await page.locator(laPrestation).count(),
+    1,
+    "LE DÉCOR a échoué : la prestation n'a pas pu être posée AVANT l'échange. " +
+      "Rien n'est reproché à l'assistant ici — c'est cette suite qui n'a pas su écrire."
+  );
 
   // --- Ouverture de l'assistant ---
   await page.goto(chantierUrl, { waitUntil: "networkidle" });
@@ -51,10 +83,28 @@ async function main() {
   assert.ok(await page.locator("li", { hasText: "Prestations" }).isVisible(), "La source 'Prestations' doit être affichée");
 
   // --- Aucune mutation : la prestation existante est toujours là après l'échange ---
-  await page.goto(`${chantierUrl}/informations`, { waitUntil: "networkidle" });
+  //
+  // **`networkidle` ne suffisait pas, et il a fallu deux passages pour le
+  // voir.** Une première correction, le 25 août 2026, a remplacé un délai de
+  // trois cents millisecondes par une attente de réseau au calme (voir plus
+  // haut) : la suite a rougi de nouveau à la batterie suivante. Le réseau se
+  // tait dès que l'action serveur est PARTIE ; rien ne dit qu'elle a fini
+  // d'écrire, ni que l'écran d'après la relira.
+  //
+  // On rouvre donc l'écran jusqu'à ce que la prestation s'y montre, avec une
+  // attente qui monte. **Le contrôle ne s'affaiblit pas** : si elle n'y est
+  // toujours pas au bout de sept secondes, il rougit comme avant — et une
+  // prestation vraiment effacée par l'assistant ne reviendrait jamais.
+  let combien = 0;
+  for (const essai of [0, 1, 2, 3]) {
+    if (essai > 0) await page.waitForTimeout(essai * 600);
+    await page.goto(`${chantierUrl}/informations`, { waitUntil: "networkidle" });
+    combien = await page.locator('input[value="Poser la faïence murale"]').count();
+    if (combien === 1) break;
+  }
   // **Le message nomme le coupable** : « 0 == 1 » envoyait chercher partout.
   assert.equal(
-    await page.locator('input[value="Poser la faïence murale"]').count(),
+    combien,
     1,
     "la prestation a disparu après l'échange avec l'assistant — ou elle n'a jamais été enregistrée"
   );

@@ -92,6 +92,30 @@ async function main() {
    * ensuite.
    */
   async function joursOffertsAuChoix(): Promise<string[]> {
+    // **ON AVANCE D'UN MOIS QUAND CELUI-CI N'A PLUS ASSEZ DE JOURS — corrigé le
+    // 25 août 2026, à minuit pile.**
+    //
+    // Le calendrier ouvre sur le mois EN COURS. En fin de mois, ce qui reste au
+    // delà du délai minimal se compte sur les doigts : le 25 août, il restait
+    // le 28 et le 31 — deux jours, et la suite s'arrêtait sur « trop peu pour
+    // éprouver ». Verte tout le mois, rouge les cinq derniers jours : *une
+    // règle éprouvée un seul jour n'est pas éprouvée* (`CLAUDE.md` §5).
+    //
+    // Le patron, lui, appuie sur « Mois suivant » sans y penser. La suite fait
+    // désormais le même geste — et elle ne le fait QUE si le mois courant est
+    // trop court, pour continuer d'éprouver le cas ordinaire le reste du temps.
+    for (let mois = 0; mois < 2; mois++) {
+      if ((await recolter()).length >= 3) break;
+      const suivant = page.getByRole("button", { name: /^Mois suivant/ });
+      if ((await suivant.count()) === 0 || !(await suivant.isEnabled())) break;
+      await suivant.click();
+      await page.waitForTimeout(250);
+    }
+    return recolter();
+  }
+
+  /** Ce que le mois affiché offre, une fois le délai minimal retiré. */
+  async function recolter(): Promise<string[]> {
     const tous = await page
       .locator('[data-jour][data-etat="regardable"]')
       .evaluateAll((els) => els.map((e) => e.getAttribute("data-jour")!).filter(Boolean));
