@@ -441,7 +441,28 @@ export const membresEntreprise = pgTable(
     utilisateurId: uuid("utilisateur_id")
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),
-    role: text("role", { enum: ["proprietaire", "membre"] }).notNull().default("membre"),
+    /**
+     * **Trois rôles depuis la migration 0065**, et `membre` n'existe plus :
+     * il a été repris en `salarie`, le plus fermé des trois. La contrainte qui
+     * les tient vit en BASE, pas seulement ici — cette énumération-ci ne produit
+     * aucun garde-fou côté PostgreSQL.
+     *
+     * Ce que chaque rôle atteint est décidé une seule fois, dans
+     * `src/lib/acces-roles.ts` : ni cet écran-ci ni cette table ne le savent.
+     */
+    role: text("role", { enum: ["proprietaire", "commercial", "salarie"] }).notNull().default("salarie"),
+    /**
+     * Ce que la personne voit du planning — un réglage PAR PERSONNE, jamais par
+     * rôle (sa décision du 13 août 2026). Le défaut est « tout » : restreindre
+     * est un geste.
+     */
+    porteePlanning: text("portee_planning", { enum: ["tout", "ses_equipes"] }).notNull().default("tout"),
+    /**
+     * La file du planning que cette personne tient. **NULL est l'état normal**
+     * pour un patron, un commercial, et un salarié qui voit tout : dans Atlas
+     * une équipe est une file du planning, pas un groupe de personnes.
+     */
+    equipeId: uuid("equipe_id").references(() => equipes.id, { onDelete: "set null" }),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (t) => [unique("membres_entreprise_uk").on(t.entrepriseId, t.utilisateurId)]

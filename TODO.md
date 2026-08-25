@@ -9,6 +9,28 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
+## Un commercial doit LIRE les tarifs sans pouvoir les changer
+
+*Né du lot « rôles et accès » du 25 août 2026, et laissé ouvert délibérément.*
+
+La règle est du patron, le 13 août : *« il lit les tarifs, il ne les change
+pas »*. Elle n'est **pas** tenue aujourd'hui : `/reglages/tarifs` et
+`/reglages/prix` refusent tout compte qui n'est pas patron, exactement comme
+avant le lot. Un commercial ne voit donc pas les grilles qu'il est censé
+employer pour chiffrer.
+
+**Ce que ça demande, et pourquoi ça n'a pas été fait dans la foulée :** rendre
+ces deux écrans *lisibles sans être modifiables* est un travail d'ÉCRAN — que
+devient un champ de prix qu'on ne peut pas toucher, que devient le bouton
+« ajouter une ligne », que lit-on à la place. Cela se dessine avant de se coder
+(`CLAUDE.md` §3 bis), et cela se montre au patron.
+
+**Ce qui n'est PAS en jeu :** l'écriture est déjà fermée côté serveur. Les
+actions de tarifs et de grille portent `exigerProprietaire` depuis le 23 août —
+ouvrir la lecture ne rouvrira rien.
+
+---
+
 ## ~~Photographier son devis / sa facture pour en reprendre l'allure~~ — FAIT le 25 août 2026
 
 **FAIT.** L'écran Réglages → Documents porte désormais, en tête de « L'allure de
@@ -1555,13 +1577,14 @@ faux.
 1. **Les prix cachés dans les libellés.** Une ligne de devis peut porter son
    prix dans son texte — « forfait 350 € », « remise de 10 % ». Retirer les
    colonnes ne suffit pas : il faut décider ce qu'on fait de ces libellés-là.
-2. **Un compte `membre` voit aujourd'hui ce que voit le propriétaire.** Le rôle
-   existe en base (`membres.role`, `proprietaire` | `membre`) mais rien ne
-   restreint la lecture des montants. Cacher les prix sur la feuille ne servirait
-   à rien tant qu'il peut ouvrir le devis par une autre porte.
-3. **Par où le salarié entre.** Il n'a pas de compte aujourd'hui. Compte nominatif
-   ou lien par jeton comme la page publique du client ? Le second est plus rapide
-   à faire ; le premier est le seul qui permette de dire QUI a vu quoi.
+2. ~~**Un compte `membre` voit aujourd'hui ce que voit le propriétaire.**~~
+   **RÉGLÉ le 25 août 2026** : trois rôles en base, et le refus est au serveur
+   (`ARCHITECTURE.md` §177). Un salarié n'ouvre plus ni le devis, ni son PDF, ni
+   la fiche du chantier — seulement le planning et sa feuille sans montants.
+3. ~~**Par où le salarié entre.**~~ **TRANCHÉ le 25 août 2026 : compte
+   nominatif**, créé par le patron dans Réglages → Équipe. Le lien par jeton a
+   été écarté pour la raison même qui était notée ici — lui seul permet de dire
+   QUI a vu quoi.
 
 **Ce que la maquette ajoute, et qu'il faudra tenir en codant :** toucher un jour
 du mois amène la liste sur SA semaine. Sans ce lien, l'écran porterait deux

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { eq } from "drizzle-orm";
 import { getCurrentCtx } from "@/server/session-ctx";
+import { exigerOuverture } from "@/server/garde-route";
 import { db } from "@/server/db/client";
 import { imagesPhyto } from "@/server/db/schema";
 import { lireObjet } from "@/server/storage";
@@ -42,7 +43,11 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
     return NextResponse.json({ erreur: "Image introuvable." }, { status: 404 });
   }
 
-  await getCurrentCtx();
+  const ctx = await getCurrentCtx();
+  // Une photo de diagnostic est une donnée d'entreprise : elle suit le rôle,
+  // comme un devis. Un salarié n'a que le planning et sa feuille sans montants.
+  const refus = await exigerOuverture(ctx);
+  if (refus) return refus;
 
   const [image] = await db
     .select({ storageKey: imagesPhyto.storageKey })

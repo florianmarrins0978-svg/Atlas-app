@@ -522,9 +522,30 @@
 </tbody></table></div>
 <p><strong>Ce qui NE bouge pas, et qui répond à la question des prix :</strong> <em>« il lit les tarifs, il ne les change pas »</em> (13 août). Un commercial se sert des prix pour chiffrer ; il ne redessine pas vos grilles. C'est exactement ce qui a été codé le 23 août — l'écran « Mes prix » et l'action qui y pose un montant sont réservés au patron, côté serveur et plus seulement à l'affichage.</p>
 <p><strong>Et le PDF sans les prix prend enfin tout son sens.</strong> Si le salarié ne voit que le planning, c'est là — et nulle part ailleurs — qu'il ouvre la feuille de son chantier. Le document sans montants n'est pas un confort : c'est <strong>le seul</strong> document qu'il verra jamais.</p>
-<h3 id="ce-qui-reste-vrai-et-qui-nest-pas-encore-fait">Ce qui reste vrai, et qui n'est pas encore fait</h3>
-<p><strong>Rien de ce tableau n'est en place au 23 août 2026.</strong> La base ne connaît toujours que deux rôles (propriétaire et membre), aucun écran ne permet de donner un accès, et <strong>rien ne filtre encore l'application par rôle</strong> : un membre atteint aujourd'hui tous les écrans sauf ceux qui ont reçu une garde explicite.</p>
-<p>Ce qui a changé le 23 août, et qui n'est qu'un début : les écrans réservés au patron refusent désormais <strong>côté serveur</strong>, et non plus seulement en se cachant du sommaire. Le reste — les quatre rôles en base, l'écran qui donne un accès, le cloisonnement du salarié sur le seul planning — reste à faire, et c'est un lot à lui seul. Le dessin existe (<code>maquettes/atlas-reglages-equipe.html</code>) ; le code, non.</p>
+<h3 id="fait-le-25-août-2026--ce-paragraphe-disait-le-contraire-jusque-là">Fait le 25 août 2026 — ce paragraphe disait le contraire jusque-là</h3>
+<p><strong>Ce qui suit remplace un paragraphe devenu faux</strong>, et c'est pour cela qu'il est réécrit plutôt que complété : il disait <em>« rien de ce tableau n'est en place »</em>, et s'y fier aujourd'hui ferait redemander un travail déjà livré.</p>
+<p>Le 25 août, vous avez redemandé la même chose dans vos mots — <em>« il faut qu'il leur crée un compte salarié […] chaque utilisateur possède son propre compte et sa propre session »</em>, et <em>« les restrictions doivent être appliquées côté serveur, et pas uniquement en masquant des boutons ou des pages »</em>. C'est exactement ce qui a été codé.</p>
+<p><strong>Où ça se passe :</strong> Réglages → Équipe → « Qui a accès ». Vous y créez un compte — un nom, une adresse, un mot de passe que vous lui dites —, vous choisissez son rôle, et vous le retirez quand il part. Deux listes sur cet écran, jamais mélangées : <em>qui a accès</em> (des comptes) et <em>vos équipes</em> (des files du planning).</p>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th>Ce qu'il atteint</th>
+</tr></thead><tbody>
+<tr>
+<td><strong>Patron</strong></td>
+<td>tout Atlas</td>
+</tr>
+<tr>
+<td><strong>Commercial</strong></td>
+<td>toute l'application, sauf la mise en page des devis, l'identité de l'entreprise, les accès, l'abonnement et l'export</td>
+</tr>
+<tr>
+<td><strong>Salarié</strong></td>
+<td>le planning, sa feuille de chantier sans un seul montant, et ses propres réglages</td>
+</tr>
+</tbody></table></div>
+<p><strong>Et « sans les prix » n'est plus un masquage.</strong> Un salarié qui taperait l'adresse d'un devis, de son PDF ou d'une facture est refusé <strong>par le serveur</strong> : la page n'est pas rendue, le fichier n'est pas produit. C'est ce que ce paragraphe-ci exigeait depuis le 7 août, et c'est tenu.</p>
+<p><strong>Ce que le patron voit du planning d'un salarié :</strong> tout, ou les seuls chantiers de son équipe — un réglage <strong>par personne</strong>, comme vous l'aviez demandé. Le défaut est « tout ».</p>
+<p><strong>Ce qui reste ouvert, et il faut le dire :</strong> un commercial ne LIT pas encore vos tarifs, alors que votre règle du 13 août dit qu'il les lit sans les changer. Cet écran-là doit être dessiné avant d'être codé — un prix qu'on ne peut pas toucher, ça se montre. Il est noté dans <code>TODO.md</code>.</p>
 <hr>
 <h2 id="11-quest-ce-quatlas-doit-faire-sur-la-plateforme-de-facturation-">11. Qu'est-ce qu'Atlas doit faire sur la plateforme de facturation ?</h2>
 <a class="retour" href="#sommaire">↑ Sommaire</a>

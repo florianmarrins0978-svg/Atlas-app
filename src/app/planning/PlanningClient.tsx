@@ -158,6 +158,7 @@ export default function PlanningClient({
   equipesNommees = [],
   agenda = { configure: false, relie: false, actif: false, enPanne: false },
   absences = [],
+  ficheOuverte = true,
 }: {
   initialChantiers: ChantierPlanning[];
   nombreEquipes?: number;
@@ -171,6 +172,16 @@ export default function PlanningClient({
    * client — deux vérités sur la même capacité, sur deux écrans qui se suivent.
    */
   absences?: AbsenceEquipe[];
+  /**
+   * Le chevron qui mène à la fiche du chantier — devis, prix, facture.
+   *
+   * **Faux pour un salarié**, dont c'est tout le sens : il a le planning et sa
+   * feuille sans montants, jamais la fiche. Le lien est alors ABSENT, pas grisé
+   * — un chevron inerte se lit comme une panne, et `GardeAcces` le renverrait de
+   * toute façon. Ce n'est pas cette valeur qui protège : elle évite seulement de
+   * lui montrer une porte close (`docs/QUESTIONS.md` §10).
+   */
+  ficheOuverte?: boolean;
 }) {
   const [chantiers, setChantiers] = useState<ChantierPlanning[]>(initialChantiers);
   const aujourdHui = jourIso(new Date());
@@ -786,14 +797,16 @@ export default function PlanningClient({
                           *« il se range dans les chantiers planifiés, mais
                           comment moi je fais pour avoir accès au devis ? »* — et
                           la réponse redeviendrait : on ne peut pas. */}
-                      <Link
-                        href={`/chantiers/${c.id}`}
-                        aria-label={`Ouvrir le chantier — ${c.nom}`}
-                        className="cursor-pointer px-0.5 text-[19px] no-underline"
-                        style={{ color: colors.chevron }}
-                      >
-                        ›
-                      </Link>
+                      {ficheOuverte && (
+                        <Link
+                          href={`/chantiers/${c.id}`}
+                          aria-label={`Ouvrir le chantier — ${c.nom}`}
+                          className="cursor-pointer px-0.5 text-[19px] no-underline"
+                          style={{ color: colors.chevron }}
+                        >
+                          ›
+                        </Link>
+                      )}
                     </div>
                     {deplie && (
                       <CarteDuJour

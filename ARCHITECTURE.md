@@ -15532,3 +15532,109 @@ l'écran — et le jour libre d'à côté qui n'en porte aucune, dans la même l
 
 Le second existe à cause du défaut du même jour (§175) : *un contrôle qui éprouve
 la règle ne voit pas une pièce débranchée.*
+
+---
+
+## 177. Trois rôles, trois sessions — et le refus est au serveur
+
+*Demandé le 25 août 2026 : « je voudrais que l'utilisateur principal puisse
+donner accès qu'au planning à ses salariés […] chaque utilisateur possède son
+propre compte et sa propre session. Les restrictions d'accès doivent être
+appliquées côté serveur, et pas uniquement en masquant des boutons. »*
+
+La règle elle-même n'est pas neuve : elle est tranchée dans `docs/QUESTIONS.md`
+§10 depuis le 13 août, précisée le 23. Ce qui manquait, c'était **tout le code**.
+
+### Ce qu'il y avait avant, et pourquoi c'était pire que rien
+
+La base connaissait deux rôles, `proprietaire` et `membre`, et `membre` ne
+restreignait **rien** : un compte non propriétaire atteignait tous les écrans
+sauf les quatre ou cinq qui avaient reçu une garde écrite à la main. Le sommaire
+des réglages, lui, cachait des rubriques — donc l'application *avait l'air*
+cloisonnée. C'est l'état que §10 nomme d'avance : *« pire que pas de restriction
+du tout, puisque vous vous croyiez protégé »*.
+
+### Où la règle vit, et pourquoi elle est seule
+
+`src/lib/acces-roles.ts`, fonction pure. La même fonction dessine la barre du
+bas, filtre le sommaire des réglages, et **refuse une adresse tapée à la main**.
+Deux rédactions de cette règle divergeraient au premier écran neuf, et la
+divergence porterait un nom : un onglet caché dont l'adresse répond quand même.
+
+### Deux sens opposés, et c'est délibéré
+
+| Rôle | Comment la liste se lit |
+|---|---|
+| commercial | **tout, SAUF** les cinq adresses nommées |
+| salarié | **rien, SAUF** ce qui lui est ouvert |
+
+Le salarié se garde par liste blanche pour qu'un écran ajouté demain, par une
+autre session, lui soit **fermé d'office**. Une liste noire l'aurait ouvert en
+silence, et personne ne l'aurait su avant qu'il y lise un prix.
+
+### Trois endroits refusent, et il en faut trois
+
+| Quoi | Qui refuse | Pourquoi pas les autres |
+|---|---|---|
+| un écran | `GardeAcces`, dans `layout.tsx` | tout écran le traverse — impossible à oublier |
+| une route d'API | `exigerOuverture()`, dans le handler | **une route ne traverse aucune mise en page** |
+| une action serveur | `exigerProprietaire(ctx, …)` | une action se poste à l'adresse de la PAGE qui l'a rendue — la garder par le chemin reviendrait à la garder par l'écran d'où l'on croit qu'elle vient |
+
+`scripts/test-acces-routes-gardees.ts` lit les routes du dossier `src/app/api` et
+rougit dès qu'une route neuve n'appelle pas la garde et n'est pas inscrite,
+raison écrite, dans sa liste d'exemptions. C'est le seul des trois qui puisse
+s'oublier ; c'est donc le seul qui a besoin d'un contrôle.
+
+### Ce que le commercial n'atteint pas, et les trois lignes qui ne sont pas dans sa phrase
+
+Ses mots du 23 août : la mise en page des devis, les informations de
+l'entreprise. S'y ajoutent, et il faut le dire plutôt que de le glisser :
+
+- **les accès** — un commercial qui donne les accès se nomme patron en deux
+  appuis, et le rôle entier cesse de vouloir dire quelque chose. Ce n'est pas
+  une restriction de plus, c'est ce qui rend les autres vraies ;
+- **l'abonnement** et **l'export des données** — le contrat Atlas, le moyen de
+  paiement, l'export intégral. Même famille que « les informations liées à
+  l'entreprise », et sa table du 13 août les excluait déjà mot pour mot.
+
+### « Ses chantiers autorisés » : la portée du planning
+
+Réglage **par personne**, pas par rôle (sa décision du 13 août : *« le patron
+choisira s'il a accès qu'à ses chantiers ou à tout »*). Le défaut est « tout » —
+restreindre est un geste. Le tamis est posé dans `contextePlanning`, c'est-à-dire
+**au chargement**, jamais à l'écran : filtrer au navigateur laisserait descendre
+les noms de clients, les adresses et les pense-bêtes de tous les chantiers.
+
+**Une portée resserrée sans équipe rattachée ne montre RIEN, jamais tout.**
+L'inverse rendrait le resserrement silencieusement inopérant — et il y a un
+chemin réel vers cet état : supprimer une file du planning met `equipe_id` à NULL
+en laissant la portée resserrée. Sans ce choix, supprimer une équipe rouvrirait
+le planning entier à un salarié restreint, sans un mot.
+
+### Un mot de passe provisoire, et pas une invitation par courriel
+
+Atlas n'envoie aucun courriel à un utilisateur d'Atlas — les envois existants
+vont au CLIENT de l'artisan, par un canal qu'il a choisi. Un parcours
+d'invitation demanderait une table de jetons, une expiration, une page publique
+de plus, et surtout **un envoi qui, s'il n'arrive pas, laisse le salarié dehors
+sans que personne le sache**. Le patron est à côté de son salarié : il tape un
+mot de passe et le lui dit. Le salarié le change ensuite dans « Mon compte », qui
+lui reste ouvert.
+
+Le mot de passe suit la règle commune (douze caractères) : un compte de salarié
+ouvre le planning de l'entreprise, il n'a aucune raison d'être moins tenu.
+
+### `membre` a disparu, et il est devenu `salarie`
+
+Migration 0065. **Le rôle le plus fermé, pas le plus ouvert** : une reprise qui
+aurait laissé un compte existant plus large qu'avant serait exactement la faute
+que ce lot répare. La contrainte `CHECK` qui tient les trois rôles est posée en
+base — elle n'existait pas, l'énumération vivant dans TypeScript seul.
+
+### Ce qui reste ouvert
+
+Le commercial **ne lit pas encore les tarifs**, alors que la règle du 13 août dit
+qu'il les lit sans les changer. `/reglages/tarifs` et `/reglages/prix` restent
+réservés au patron, comme avant ce lot : les rendre lisibles sans être modifiables
+est un travail d'écran, qui demande son œil. Voir `TODO.md`.
+

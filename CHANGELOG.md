@@ -9,6 +9,41 @@ Format : le plus récent en tête.
 
 ## 2026-08-25
 
+### Trois rôles, trois sessions — et le refus est au serveur
+
+*« Je voudrais que l'utilisateur principal puisse donner accès qu'au planning à
+ses salariés […] chaque utilisateur possède son propre compte et sa propre
+session. Les restrictions d'accès doivent être appliquées côté serveur, et pas
+uniquement en masquant des boutons ou des pages. »*
+
+**Ce qui existe maintenant.** Réglages → Équipe → « Qui a accès » : le patron
+crée un compte (nom, adresse, mot de passe, rôle), change un rôle, règle ce qu'un
+salarié voit du planning, retire un accès. Chaque personne ouvre sa propre
+session.
+
+| | Ce qu'il atteint |
+|---|---|
+| **Patron** | tout Atlas |
+| **Commercial** | toute l'application, sauf la mise en page des devis, l'identité de l'entreprise, les accès, l'abonnement et l'export |
+| **Salarié** | le planning, sa feuille de chantier sans un seul montant, et ses propres réglages |
+
+**Et le refus est au serveur, aux trois endroits qui comptent** — les écrans
+(`GardeAcces`, dans la mise en page racine), les routes d'API
+(`exigerOuverture`), les actions (`exigerProprietaire`). Ce qu'un rôle n'atteint
+pas ne sort pas de la base : ni dans la page, ni dans le PDF, ni dans une réponse
+d'API.
+
+**Ce qui a été trouvé en le faisant.** La base ne connaissait que
+`proprietaire` et `membre`, et `membre` ne restreignait rien : l'application
+*avait l'air* cloisonnée — le sommaire des réglages cachait des rubriques —
+pendant qu'un compte non propriétaire atteignait tous les écrans sauf quatre.
+`membre` devient `salarie`, le plus fermé des trois.
+
+**Ce qui reste ouvert :** un commercial ne lit pas encore les tarifs, alors que
+la règle du 13 août dit qu'il les lit sans les changer. Détail dans `TODO.md`.
+
+Détail et raisons : `ARCHITECTURE.md` §177 ; la règle, `docs/QUESTIONS.md` §10.
+
 ### La phrase grise sous « Envoyer la facture » a été retirée
 
 *« Supprime le message en gris : votre messagerie s'ouvre aussitôt. »*
