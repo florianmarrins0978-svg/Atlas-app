@@ -29,26 +29,44 @@ qu'elles : trois mois consultés sans trouver, et elle nomme la navigation.
 **Éprouvé sur 730 jours** (2026 et 2027, changements d'année compris) : 114 jours
 rouges sans le remède, **730/730 verts avec**, et jamais plus d'un tour de page.
 
-## Essayer une VRAIE dictée d'iPhone contre la reconnaissance de format (26 août 2026)
+## ~~Essayer une vraie dictée d'iPhone~~ — FAIT, et RÉUSSI le 26 août 2026
 
-**Le seul point du lot Audio qui n'a pas pu être éprouvé ici.** Ce poste n'a ni
-iPhone ni Safari. Le témoin MP4 de `scripts/_temoins-audio.ts` reproduit ce que
-Safari écrit — relevé de la spécification ISO-BMFF, pas d'un appareil.
+Le patron a dicté depuis son propre iPhone, dans Safari, sur son banc : le
+fichier a été accepté, la note traitée, et le parcours est allé jusqu'à la
+génération des informations du devis. **La reconnaissance de format ne casse pas
+la dictée réelle sur iPhone.**
 
-**Ce qui est déjà éprouvé, et qui rassure sans suffire :** un WebM produit par le
-VRAI enregistreur de Chromium traverse la porte (`test-anneau-dictee-e2e.ts`,
-micro simulé). Android et PC sont donc couverts par une preuve réelle. iPhone ne
-l'est pas.
+*Ce qui reste vrai :* cette machine n'a toujours ni iPhone ni Safari. C'est un
+essai HUMAIN qui a levé la réserve, pas un test automatique — un futur
+changement de `signature-audio.ts` demandera le même essai.
 
-**Qui peut le faire :** le patron, sur son espace — une dictée depuis son
-téléphone, sur une fiche de chantier.
+---
 
-**Et si elle est refusée, la marche à suivre est écrite et ne se négocie pas :**
-relever les premiers octets du fichier, et **élargir `src/lib/signature-audio.ts`**.
-On n'ouvre PAS de repli sur `fichier.type` : ce serait rouvrir la moitié du
-défaut qu'on vient de fermer. Sa décision du 26 août — *« je préfère conserver le
-point Audio ouvert plutôt que déclarer sécurisé un chemin qui continue à faire
-confiance au MIME pour les cas difficiles »*.
+## LOT À VENIR — la QUALITÉ de ce qui sort de la dictée (26 août 2026)
+
+**Constaté par le patron pendant l'essai iPhone**, et **délibérément séparé du
+lot Audio** : le fichier entre bien, c'est ce qu'on en fait qui déçoit.
+
+| Ce qu'il a relevé |
+|---|
+| certaines prestations sont mal organisées |
+| certaines quantités ou unités sont mal interprétées |
+| certaines propositions de prix, ou reprises de prix historiques, sont incohérentes |
+
+**Le parcours à reprendre :** transcription → compréhension de la dictée →
+extraction des prestations → quantités et unités → rapprochement avec
+l'historique → proposition des prix → construction du devis → affichage.
+
+**Pourquoi c'est un lot à soi, et pourquoi il ne faut pas mélanger.** Le lot
+Audio garantissait l'ENTRÉE du fichier — enregistrement, réception,
+reconnaissance du format, validation, stockage ou transcription. Ce parcours-là
+fonctionne, éprouvé sur un vrai iPhone. Ce qui suit relève du jugement de l'IA
+et des règles de chiffrage : mêler les deux rendrait les deux illisibles, et
+ferait douter d'un lot qui, lui, tient.
+
+**Ce qu'il faudra avant de coder :** des exemples RÉELS de ses dictées et du
+devis produit — sans quoi on corrigerait une qualité imaginée. C'est lui qui les
+a.
 
 ---
 

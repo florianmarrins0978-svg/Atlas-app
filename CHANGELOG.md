@@ -33,6 +33,16 @@ binaire.
 témoins fabriqués. **Aucun iPhone n'a pu être essayé ici**, et c'est écrit tel
 quel : à vérifier sur son espace.
 
+**ESSAI RÉEL SUR IPHONE : RÉUSSI.** Le patron a dicté depuis son propre appareil,
+dans Safari, sur son banc — le fichier est passé, la note a été traitée, et le
+parcours est allé jusqu'à la génération des informations du devis. La réserve
+est levée par une mesure, plus par une déduction.
+
+**Et l'essai a ouvert un LOT SÉPARÉ**, à sa demande : la QUALITÉ de ce qui sort
+de la dictée — prestations mal organisées, quantités et unités mal lues, prix
+historiques incohérents. Le lot Audio ne garantissait que l'entrée du fichier ;
+mêler les deux rendrait les deux illisibles.
+
 Détail : `ARCHITECTURE.md` §171 · rapport : `docs/lot-audio-rapport.md`.
 
 ---

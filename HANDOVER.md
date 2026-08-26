@@ -18,7 +18,8 @@ sert.
 | **Une porte unique** | `src/server/audio-entrant.ts`, et 3 contrôles structurels empêchent le cinquième chemin de faire sa cuisine |
 | **Ni bibliothèque, ni parseur** | lire un conteneur entier sur une entrée hostile serait pire que le défaut |
 | **MP3 et AAC : une CHAÎNE de trames** | deux octets `FF Ex` apparaissent par hasard dans n'importe quel binaire |
-| **Aucun iPhone essayé ici** | ce poste n'a pas Safari. À vérifier sur son espace avec une vraie dictée |
+| **L'iPhone A ÉTÉ essayé, et ça passe** | 26 août 2026, sur son propre appareil, jusqu'à la génération des informations du devis. Ce poste n'a toujours pas Safari : c'est un essai HUMAIN qui l'a prouvé, et un futur changement de `signature-audio.ts` en redemandera un |
+| **Ne pas confondre avec le lot QUALITÉ** | ce qui SORT de la dictée — prestations, quantités, prix historiques — est un lot à part, ouvert le 26 août (`TODO.md`). Le lot Audio ne garantit que l'ENTRÉE du fichier |
 
 **Le piège de ce lot, et il reviendra : un contrôle en base qui mesure ZÉRO.**
 `notes_vocales` porte `FORCE ROW LEVEL SECURITY` — **le propriétaire y est

@@ -2,6 +2,27 @@
 
 *26 août 2026 · branche `claude/atlas-securite-lot3` · **pas fusionné sur `main`***
 
+> ## ✅ ESSAI RÉEL SUR IPHONE — RÉUSSI, le 26 août 2026
+>
+> **Le patron a dicté depuis son propre iPhone, dans Safari, sur son banc.** Pas
+> un témoin fabriqué, pas une simulation : une note vocale telle qu'il s'en sert
+> pour rédiger un devis.
+>
+> | | |
+> |---|---|
+> | l'enregistrement | a fonctionné |
+> | le fichier | **a été accepté** |
+> | la note | a été traitée |
+> | le parcours | est allé jusqu'à la génération des informations du devis |
+>
+> **La réserve du §10.1 est LEVÉE.** Le durcissement ne casse pas la dictée
+> réelle sur iPhone/Safari — ce n'est plus une déduction, c'est une mesure.
+>
+> **Ce que cet essai a fait apparaître, et qui n'est PAS de ce lot :** la qualité
+> de ce qui sort du traitement — organisation des prestations, quantités et
+> unités, reprise des prix historiques. **Lot séparé**, décidé par lui le
+> 26 août. Le mélanger à celui-ci rendrait les deux illisibles.
+
 ---
 
 ## 1. Les formats finalement reconnus
@@ -194,11 +215,16 @@ vrai WebM. Exactement la leçon des photos au lot 2B, un lot plus tard.
 
 ## 10. Les limites restantes, dites franchement
 
-**1. Aucun iPhone n'a été essayé.** Il n'y a ni iPhone ni Safari sur cette
-machine. Le témoin MP4 reproduit ce que Safari écrit, relevé de la
-spécification — **ce n'est pas une vraie dictée d'iPhone**. C'est le point à
-vérifier sur votre espace. Si un enregistrement réel est refusé, la règle est
-posée : on élargit la reconnaissance, on n'ouvre pas de repli sur le MIME.
+**1. ~~Aucun iPhone n'a été essayé~~ — LEVÉE le 26 août 2026.** L'essai réel a
+eu lieu sur son iPhone, dans Safari, sur son banc : l'enregistrement est passé,
+la note a été traitée, et le parcours est allé jusqu'à la génération des
+informations du devis.
+
+*Ce qui reste vrai, et qu'il ne faut pas oublier :* cette machine n'a toujours ni
+iPhone ni Safari. Le témoin MP4 des suites reste une reproduction de la
+spécification. **C'est un essai humain qui a levé la réserve, pas un test
+automatique** — et un futur changement de la reconnaissance demandera le même
+essai.
 
 **2. Reconnaître n'est pas garantir qu'un son se décode.** Un enregistrement
 coupé garde son en-tête et reste reconnaissable. S'il porte du son, c'est la
@@ -225,7 +251,8 @@ et un enregistrement de cette longueur ne porte de toute façon aucune parole.
 | | Pour qui |
 |---|---|
 | **Fusionner sur `main`** | vous — rien n'est fusionné |
-| **Essayer une vraie dictée d'iPhone** | vous, sur votre espace |
+| ~~Essayer une vraie dictée d'iPhone~~ | **fait le 26 août 2026 — réussi** |
+| **La QUALITÉ de ce qui sort de la dictée** | lot séparé : prestations, quantités, unités, prix historiques |
 | **F7** — l'écran RGPD | décision produit |
 | **F10** — le lot CSP | développement, lot à soi |
 | **`/catalogue`** | attend les rôles Salarié / Commercial |

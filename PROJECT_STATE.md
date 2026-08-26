@@ -21,7 +21,8 @@ ligne « fait » qui ne l'est pas coûte plus cher qu'une ligne absente.
 | Le type et l'extension rangés viennent du format réel | **fait** — `extensionPour(mimeType)` est morte |
 | Les quatre chemins passent par une porte unique | **fait** — 3 contrôles structurels |
 | L'IA n'est jamais appelée avant la validation | **fait** — éprouvé en base |
-| Une vraie dictée d'iPhone | **NON ÉPROUVÉ ICI** — pas de Safari sur ce poste, à essayer sur son espace |
+| Une vraie dictée d'iPhone | **ÉPROUVÉE ET RÉUSSIE le 26 août 2026** — sur son propre iPhone, jusqu'à la génération des informations du devis |
+| La QUALITÉ de ce que la dictée produit | **LOT SÉPARÉ** — prestations mal organisées, quantités et unités mal lues, prix historiques incohérents (`TODO.md`) |
 | Sauvegardes | **toujours aucune** — le point le plus grave du dépôt |
 
 **Batterie complète au vert le 26 août 2026** : 234/234 suites base, 110/110

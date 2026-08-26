@@ -15274,8 +15274,26 @@ mois refera le défaut en silence.
   annoncé `audio/webm` soit accepté. On adapte le contrôle, on ne restaure pas
   l'ancien comportement (`CLAUDE.md` §5 bis).
 
-### La limite qu'il faut dire
+### L'essai réel, et ce qu'il prouve
 
-**Aucun iPhone n'a été essayé** : ce poste n'en a pas. Le témoin MP4 reproduit ce
-que Safari écrit, relevé de la spécification. La vérification finale se fait sur
-son espace, avec une vraie dictée.
+**Un iPhone A été essayé, le 26 août 2026, et il passe.** Le patron a dicté
+depuis son propre appareil, dans Safari, sur son banc : le fichier a été accepté,
+la note traitée, et le parcours est allé jusqu'à la génération des informations
+du devis.
+
+**Ce qui reste vrai, et qui compte pour la suite :** ce poste n'a toujours ni
+iPhone ni Safari, et le témoin MP4 des suites reste une reproduction de la
+spécification. C'est un essai HUMAIN qui a levé la réserve, pas un test
+automatique — **un futur changement de `signature-audio.ts` en redemandera un.**
+
+### Ce que cet essai a fait apparaître, et qui n'est PAS de ce lot
+
+La qualité de ce qui SORT de la dictée : prestations mal organisées, quantités et
+unités mal interprétées, reprises de prix historiques incohérentes. **Lot séparé**,
+décidé par le patron le jour même.
+
+La frontière est nette et il faut la tenir : ce lot-ci garantit l'ENTRÉE du
+fichier — enregistrement, réception, reconnaissance du format, validation,
+stockage ou transcription. Ce qui suit relève du jugement de l'IA et des règles
+de chiffrage. Mêler les deux rendrait les deux illisibles, et ferait douter d'un
+lot qui, lui, tient.
