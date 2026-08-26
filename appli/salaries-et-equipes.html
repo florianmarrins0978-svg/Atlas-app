@@ -1,0 +1,602 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas — Ses salariés, et ce qui remplit le planning</title>
+</head>
+<body>
+<style>
+  /*
+    ————————————————————————————————————————————————————————————————
+    SES SALARIÉS, ET CE QUI REMPLIT LE PLANNING — maquette ESSAYABLE
+    ————————————————————————————————————————————————————————————————
+
+    Sa demande du 25 août 2026 :
+
+      « Je choisis la C. Ensuite il faut avoir un curseur + ou − qui définit le
+        nombre de salariés que possède l'entreprise et pouvoir affilier des
+        noms. Ceux-là permettront d'ajouter ces noms au chantier, et plus les
+        équipes A ou B. Néanmoins les équipes doivent toujours servir à définir
+        le niveau de remplissage du planning : 2 équipes = 2 chantiers par
+        jour, comme avant, ça ne bouge pas. »
+
+    ─── CE QUE ÇA CHANGE VRAIMENT ────────────────────────────────────────────
+
+    Aujourd'hui, UN nombre fait deux métiers : il dit combien de chantiers
+    tiennent dans une journée, ET il fabrique les noms qu'on lit au planning
+    (« Équipe A », « Équipe B »).
+
+    Il veut séparer les deux, et il a raison — ce sont deux questions
+    différentes :
+
+      · **combien de chantiers par jour** — une capacité, un chiffre ;
+      · **qui part** — des gens, avec leurs noms.
+
+    Un artisan peut avoir quatre salariés et ne tenir qu'un chantier à la fois.
+    L'inverse aussi : deux chantiers menés par deux personnes seules.
+
+    ─── LA QUESTION QUE JE NE TRANCHE PAS ────────────────────────────────────
+
+    **Comment les gens arrivent-ils sur un chantier ?** Deux chemins, et ils ne
+    donnent pas la même application :
+
+      A — ON COCHE LES GENS, directement sur le chantier. Les équipes ne sont
+          plus qu'un nombre, sans nom ni existence à l'écran.
+
+      B — LES GENS SONT RANGÉS DANS DES ÉQUIPES. Le chantier prend une équipe,
+          et le planning écrit les gens qui la composent au lieu de sa lettre.
+
+    La A est plus simple et colle à sa phrase. La B garde une notion d'équipe
+    utile quand les mêmes personnes partent toujours ensemble — on ne recoche
+    pas trois noms à chaque chantier.
+
+    ─── ET UNE OBSERVATION QUI VAUT UNE TROISIÈME PROPOSITION ────────────────
+
+    C — **PAS DE CURSEUR POUR LES SALARIÉS.** Il en demande un ; mais un
+        curseur À CÔTÉ d'une liste de noms crée deux vérités sur la même
+        question. Le curseur dit 3, il a écrit 2 noms : lequel croire ? C'est
+        exactement ce que `CLAUDE.md` §3 interdit — jamais une règle à deux
+        endroits.
+
+        On ajoute une personne, on la retire, et le nombre se compte tout seul.
+        **C'est à lui de trancher** : le curseur est peut-être ce qu'il a en
+        tête pour une autre raison que je ne vois pas.
+
+    Le curseur des ÉQUIPES, lui, reste dans les trois — c'est une capacité, elle
+    n'a pas de nom, et rien ne la compte à sa place.
+
+    ─── CE QU'IL FAUT ESSAYER ────────────────────────────────────────────────
+
+    · Ajoutez des salariés, nommez-les. Le planning en bas se refait.
+    · Montez les équipes à 2 : une seconde ligne apparaît dans la journée.
+    · En A et C, touchez un chantier pour cocher qui part.
+    · Mettez la même personne sur les deux chantiers du jour — et regardez ce
+      que l'écran en dit.
+
+    RIEN N'EST CODÉ.
+  */
+  :root{
+    --fond:#f5f3ee; --plage:#faf9f5; --encre:#1c1c1a; --encre-douce:#4a4a44;
+    --gris:#8a8578; --pin:#2f3b2f; --papier:#ece9e1; --bordeaux:#7c2d33;
+    --or:#B98B47; --trait:rgba(28,28,26,.12);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:#e6e3dc}
+  body{font:16px/1.5 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;color:var(--encre);
+       -webkit-text-size-adjust:100%;padding:0 0 44px}
+  [hidden]{display:none !important}
+
+  .bandeau{background:var(--encre);color:#f2efe8;padding:14px 18px;text-align:center;font-size:13px;line-height:1.55}
+  .bandeau b{color:#fff}
+
+  .barre{max-width:620px;margin:18px auto 0;padding:0 14px}
+  .choix{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+  /* 44 px partout où le pouce se pose : sur un chantier, on touche l'écran
+     debout, avec un gant, une main déjà prise. */
+  .choix button{flex:1 1 auto;min-width:170px;min-height:44px;border:1px solid var(--trait);background:var(--plage);
+    color:var(--encre-douce);border-radius:999px;padding:11px 14px;font:600 13px/1.25 inherit;cursor:pointer;
+    -webkit-tap-highlight-color:transparent}
+  .choix button[aria-pressed="true"]{background:var(--pin);border-color:var(--pin);color:#f2efe8}
+
+  .scene{display:flex;flex-wrap:wrap;gap:20px;justify-content:center;align-items:flex-start;
+    max-width:920px;margin:20px auto 0;padding:0 14px}
+  .colonne{flex:1 1 380px;max-width:420px}
+  .etiquette{text-align:center;font:600 10.5px/1.4 ui-sans-serif,sans-serif;letter-spacing:.2em;
+    text-transform:uppercase;color:var(--gris);margin:0 0 8px}
+  .tel{background:var(--fond);border-radius:26px;overflow:hidden;box-shadow:0 18px 46px rgba(20,18,14,.18);
+    padding-bottom:20px}
+
+  .retour{width:44px;height:44px;border-radius:999px;background:var(--papier);margin:16px 0 0 22px;
+    display:flex;align-items:center;justify-content:center;color:var(--encre-douce);font-size:19px}
+  h1{margin:6px 26px 0;font:400 31px/1.04 ui-serif,Georgia,serif;letter-spacing:-.02em}
+  .surtitre{margin:5px 26px 0;font:600 10.5px/1 ui-sans-serif,sans-serif;letter-spacing:.2em;
+    text-transform:uppercase;color:var(--or)}
+
+  .cle{margin:28px 26px 0;font:600 10.5px/1.35 ui-sans-serif,sans-serif;letter-spacing:.16em;
+    text-transform:uppercase;color:var(--gris)}
+  .compteur{display:flex;align-items:center;justify-content:center;gap:26px;margin-top:12px}
+  .pas{width:44px;height:44px;border-radius:999px;box-shadow:inset 0 0 0 1px var(--trait);background:none;
+    display:flex;align-items:center;justify-content:center;font:400 20px/1 ui-serif,Georgia,serif;
+    color:var(--encre);cursor:pointer;-webkit-tap-highlight-color:transparent}
+  .pas:disabled{color:var(--gris);opacity:.32;cursor:default}
+  .nb{min-width:2ch;text-align:center;font:400 46px/1 ui-serif,Georgia,serif;letter-spacing:-.03em;
+    font-variant-numeric:tabular-nums}
+  .dit{margin:8px 26px 0;text-align:center;font-size:12.5px;line-height:1.6;color:var(--gris)}
+
+  .gens{margin:14px 26px 0}
+  /* Un intertitre ne se souligne pas : sa première ligne perd son filet. */
+  .gens .cle + .l{border-top:0}
+  .gens .l{display:flex;align-items:center;gap:12px;min-height:52px;padding:4px 0;border-top:1px solid var(--trait)}
+  .gens input{flex:1;min-width:0;border:0;background:none;font:17px/1.2 inherit;color:var(--encre);padding:0}
+  .gens input::placeholder{color:var(--gris)}
+  .gens .oter{background:none;border:0;color:var(--gris);font-size:19px;cursor:pointer;padding:0;
+    width:44px;height:44px;display:flex;align-items:center;justify-content:center;flex:0 0 auto}
+  .ajouter{display:flex;align-items:center;min-height:44px;gap:12px;margin:12px 26px 0;background:none;border:0;
+    font:17px/1 inherit;color:var(--encre);cursor:pointer;padding:0}
+  .ajouter i{font-style:normal;color:var(--gris);font-size:20px}
+
+  /* ── Le planning, en bas : c'est là que se voit l'effet ──────────────── */
+  .planning{margin:26px 18px 0;background:var(--plage);border-radius:14px;padding:14px 16px}
+  .planning .jour{font:600 10.5px/1 ui-sans-serif,sans-serif;letter-spacing:.16em;text-transform:uppercase;
+    color:var(--or);margin:0 0 10px}
+  .chantier{border-top:1px solid var(--trait);padding:11px 0}
+  .chantier:first-of-type{border-top:0}
+  .chantier .nom{font:400 19px/1.2 ui-serif,Georgia,serif}
+  .chantier .qui{margin-top:4px;font-size:13px;color:var(--gris)}
+  .chantier .qui b{color:var(--encre);font-weight:400}
+  .chantier .cocher{display:flex;flex-wrap:wrap;gap:7px;margin-top:9px}
+  .chantier .cocher button{border:1px solid var(--trait);background:var(--fond);border-radius:999px;
+    min-height:44px;padding:0 16px;font:13px/1 inherit;color:var(--encre-douce);cursor:pointer;
+    display:inline-flex;align-items:center}
+  .chantier .cocher button[aria-pressed="true"]{background:var(--pin);border-color:var(--pin);color:#f2efe8}
+  .alerte{margin-top:9px;padding-left:11px;border-left:2px solid var(--bordeaux);font-size:12.5px;
+    line-height:1.5;color:var(--bordeaux)}
+
+  .note{max-width:620px;margin:18px auto 0;padding:0 16px;font-size:14px;line-height:1.62;color:var(--encre-douce)}
+  .note p{margin:0 0 10px}
+  .note b{color:var(--encre)}
+  .verdict{max-width:620px;margin:18px auto 0;padding:14px 16px;background:#fbf6ea;
+    border-left:3px solid var(--or);border-radius:0 12px 12px 0;font-size:14px;line-height:1.6}
+  .question{max-width:620px;margin:16px auto 0;padding:14px 16px;background:var(--plage);
+    border-radius:12px;font-size:14px;line-height:1.6;box-shadow:inset 0 0 0 1px var(--trait)}
+  .question b{color:var(--encre)}
+</style>
+
+<div class="bandeau">
+  <b>Vos salariés, et ce qui remplit le planning.</b><br>
+  Trois façons. Touchez-les, comparez — puis dites-moi laquelle.
+</div>
+
+<div class="barre">
+  <div class="choix" role="group" aria-label="Les trois propositions">
+    <button type="button" data-p="A" aria-pressed="true">A · On coche les gens</button>
+    <button type="button" data-p="B" aria-pressed="false">B · Les gens dans des équipes</button>
+    <button type="button" data-p="C" aria-pressed="false">C · Sans curseur pour les gens</button>
+  </div>
+</div>
+
+<div class="scene">
+
+  <div class="colonne">
+    <p class="etiquette">Réglages</p>
+    <div class="tel">
+      <div class="retour">‹</div>
+      <p class="surtitre">Votre entreprise</p>
+      <h1 id="titreReglages">Qui travaille avec vous</h1>
+
+      <p class="cle">Chantiers menés en même temps</p>
+      <div class="compteur">
+        <button class="pas" type="button" id="eqMoins" aria-label="Une équipe de moins">−</button>
+        <span class="nb" id="eqNb">2</span>
+        <button class="pas" type="button" id="eqPlus" aria-label="Une équipe de plus">+</button>
+      </div>
+      <p class="dit" id="eqDit"></p>
+
+      <div id="blocSalaries">
+        <p class="cle" id="clefGens">Vos salariés</p>
+        <div class="compteur" id="compteurGens">
+          <button class="pas" type="button" id="saMoins" aria-label="Un salarié de moins">−</button>
+          <span class="nb" id="saNb">3</span>
+          <button class="pas" type="button" id="saPlus" aria-label="Un salarié de plus">+</button>
+        </div>
+        <p class="dit" id="saDit"></p>
+        <div class="gens" id="listeGens"></div>
+        <button class="ajouter" type="button" id="ajouterGens"><i>+</i> Ajouter quelqu'un</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="colonne">
+    <p class="etiquette">Planning · mardi 8 septembre</p>
+    <div class="tel">
+      <div class="retour">‹</div>
+      <p class="surtitre">Votre semaine</p>
+      <h1>Mardi</h1>
+      <div class="planning" id="planning"></div>
+      <p class="dit" id="planDit" style="margin-top:14px"></p>
+    </div>
+  </div>
+
+</div>
+
+<div class="note" id="note"></div>
+
+<div class="question">
+  <b>La question que je ne tranche pas à votre place.</b><br>
+  Aujourd'hui <b>un seul nombre fait deux métiers</b> : il dit combien de
+  chantiers tiennent dans une journée, <i>et</i> il fabrique les noms qu'on lit
+  au planning — « Équipe A », « Équipe B ». Vous demandez de séparer les deux,
+  et vous avez raison : on peut avoir quatre salariés et ne mener qu'un chantier
+  à la fois. Reste à savoir <b>comment les gens arrivent sur un chantier</b> :
+  on les coche un par un (A, C), ou on range une fois pour toutes qui part avec
+  qui (B).
+</div>
+
+<div class="verdict">
+  <b>Une remarque sur le curseur des salariés.</b> Vous en demandez un. Mais un
+  curseur <i>à côté</i> d'une liste de noms crée deux vérités sur la même
+  question : le curseur dit 3, vous avez écrit 2 noms — lequel croire ? En A,
+  essayez : montez le curseur sans taper de nom, et regardez le planning.
+  <br><br>
+  La <b>C</b> supprime le curseur des salariés — on ajoute quelqu'un, on le
+  retire, et le nombre se compte tout seul. Le curseur des <b>équipes</b>, lui,
+  reste dans les trois : c'est une capacité, elle n'a pas de nom, rien ne la
+  compte à sa place. <b>C'est votre appel</b> — vous avez peut-être une raison
+  de vouloir le chiffre que je ne vois pas.
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  /* Des noms inventés : la maquette ne doit rien emprunter à de vrais gens. */
+  var suite = 0;
+  function personne(nom, eq){ return { id: ++suite, nom: nom, eq: eq || 0 }; }
+
+  var CHANTIERS = [
+    { nom: "Tilleul à tailler",   ou: "rue des Vergers" },
+    { nom: "Haie de charmes",     ou: "clos Marceau" },
+    { nom: "Cèdre à démonter",    ou: "impasse du Four" },
+    { nom: "Broyage des rémanents", ou: "chemin de la Combe" }
+  ];
+
+  var etat = {
+    p: "A",
+    equipes: 2,
+    cible: 3,                                   /* le curseur « salariés » — A seulement */
+    gens: [ personne("Marc", 0), personne("Léo", 0), personne("Sofiane", 1) ],
+    /* qui part sur chaque chantier : un tableau d'identifiants (A, C) */
+    surLeChantier: [ [], [], [], [] ],
+    /* quelle équipe part sur chaque chantier (B) */
+    equipeDuChantier: [ 0, 1, 0, 1 ]
+  };
+
+  var $ = function(id){ return document.getElementById(id); };
+
+  /* En A, le curseur peut annoncer plus de salariés qu'il n'y a de noms
+     écrits. On ne masque pas l'écart : c'est justement ce qu'il faut voir. */
+  function effectif(){
+    if (etat.p === "A") return Math.max(etat.cible, etat.gens.length);
+    return etat.gens.length;
+  }
+  function anonymes(){
+    return etat.p === "A" ? Math.max(0, etat.cible - etat.gens.length) : 0;
+  }
+  function nomDe(id){
+    var g = etat.gens.filter(function(x){ return x.id === id; })[0];
+    if (!g) return "sans nom";
+    return g.nom.trim() || "sans nom";
+  }
+
+  /* ── Les réglages ──────────────────────────────────────────────────── */
+  function dessinerReglages(){
+    $("eqNb").textContent = etat.equipes;
+    $("eqMoins").disabled = etat.equipes <= 1;
+    $("eqPlus").disabled  = etat.equipes >= 4;
+    $("eqDit").textContent = etat.equipes === 1
+      ? "Un chantier par jour. C'est ce qui remplit votre planning."
+      : etat.equipes + " chantiers par jour. C'est ce qui remplit votre planning.";
+
+    $("titreReglages").textContent = etat.p === "B"
+      ? "Vos équipes" : "Qui travaille avec vous";
+
+    var curseur = $("compteurGens");
+    curseur.hidden = (etat.p !== "A");
+    $("saDit").hidden = (etat.p !== "A");
+
+    if (etat.p === "A"){
+      $("saNb").textContent = etat.cible;
+      $("saMoins").disabled = etat.cible <= 0;
+      $("saPlus").disabled  = etat.cible >= 9;
+      var ecart = etat.cible - etat.gens.length;
+      $("saDit").textContent = ecart > 0
+        ? (ecart === 1 ? "Un salarié annoncé n'a pas encore de nom."
+                       : ecart + " salariés annoncés n'ont pas encore de nom.")
+        : (ecart < 0 ? "Vous avez écrit " + etat.gens.length + " noms pour "
+                       + etat.cible + " salariés annoncés."
+                     : "Chaque salarié annoncé porte un nom.");
+    }
+
+    $("clefGens").textContent = etat.p === "B"
+      ? "Qui part avec qui"
+      : "Vos salariés — " + etat.gens.length + (etat.gens.length > 1 ? " personnes" : " personne");
+
+    var liste = $("listeGens");
+    liste.textContent = "";
+
+    if (etat.p === "B"){
+      for (var e = 0; e < etat.equipes; e++){
+        (function(e){
+          var titre = document.createElement("p");
+          titre.className = "cle";
+          titre.style.margin = "18px 0 0";
+          titre.textContent = "Équipe " + (e + 1);
+          liste.appendChild(titre);
+          etat.gens.filter(function(g){ return g.eq === e; }).forEach(function(g){
+            liste.appendChild(ligne(g));
+          });
+          var plus = document.createElement("button");
+          plus.type = "button"; plus.className = "ajouter";
+          plus.style.margin = "10px 0 0";
+          plus.innerHTML = "<i>+</i> Ajouter quelqu'un";
+          plus.addEventListener("click", function(){
+            etat.gens.push(personne("", e)); dessiner(); focusDernier();
+          });
+          liste.appendChild(plus);
+        })(e);
+      }
+      /* Une personne rangée dans une équipe qui n'existe plus doit rester
+         visible — sinon on la perd sans jamais l'avoir retirée. */
+      var orphelins = etat.gens.filter(function(g){ return g.eq >= etat.equipes; });
+      if (orphelins.length){
+        var t = document.createElement("p");
+        t.className = "cle"; t.style.margin = "18px 0 0";
+        t.style.color = "var(--bordeaux)";
+        t.textContent = "Sans équipe";
+        liste.appendChild(t);
+        orphelins.forEach(function(g){ liste.appendChild(ligne(g)); });
+        var av = document.createElement("p");
+        av.className = "alerte"; av.style.margin = "9px 0 0";
+        av.textContent = "Leur équipe a disparu quand vous avez baissé le compteur. "
+          + "Remontez-le, ou remettez-les dans une équipe.";
+        liste.appendChild(av);
+      }
+      $("ajouterGens").hidden = true;
+    } else {
+      etat.gens.forEach(function(g){ liste.appendChild(ligne(g)); });
+      for (var i = 0; i < anonymes(); i++){
+        var vide = document.createElement("div");
+        vide.className = "l";
+        vide.innerHTML = "<span style='flex:1;color:var(--gris)'>Salarié sans nom</span>";
+        liste.appendChild(vide);
+      }
+      $("ajouterGens").hidden = false;
+    }
+  }
+
+  function ligne(g){
+    var l = document.createElement("div");
+    l.className = "l";
+    var champ = document.createElement("input");
+    champ.type = "text"; champ.value = g.nom; champ.placeholder = "Son prénom";
+    champ.setAttribute("aria-label", "Prénom");
+    champ.addEventListener("input", function(){
+      g.nom = champ.value;
+      dessinerPlanning();            /* le planning suit la frappe, pas le contraire */
+      dessinerCles();
+    });
+    var oter = document.createElement("button");
+    oter.type = "button"; oter.className = "oter"; oter.textContent = "×";
+    oter.setAttribute("aria-label", "Retirer " + (g.nom || "cette personne"));
+    oter.addEventListener("click", function(){
+      etat.gens = etat.gens.filter(function(x){ return x.id !== g.id; });
+      etat.surLeChantier = etat.surLeChantier.map(function(t){
+        return t.filter(function(id){ return id !== g.id; });
+      });
+      if (etat.p === "A" && etat.cible > etat.gens.length) etat.cible = etat.gens.length;
+      dessiner();
+    });
+    l.appendChild(champ); l.appendChild(oter);
+    return l;
+  }
+
+  /* Redessiner l'écran entier pendant la frappe déplacerait le curseur du
+     champ. On ne remet à jour que ce qui compte les gens. */
+  function dessinerCles(){
+    if (etat.p !== "B"){
+      $("clefGens").textContent = "Vos salariés — " + etat.gens.length
+        + (etat.gens.length > 1 ? " personnes" : " personne");
+    }
+  }
+
+  function focusDernier(){
+    var champs = $("listeGens").querySelectorAll("input");
+    if (champs.length) champs[champs.length - 1].focus();
+  }
+
+  /* ── Le planning ───────────────────────────────────────────────────── */
+  function dessinerPlanning(){
+    var p = $("planning");
+    p.textContent = "";
+    var jour = document.createElement("p");
+    jour.className = "jour";
+    jour.textContent = etat.equipes + (etat.equipes > 1 ? " chantiers" : " chantier") + " ce jour-là";
+    p.appendChild(jour);
+
+    /* Qui se retrouve sur deux chantiers le même jour ? */
+    var compte = {};
+    for (var k = 0; k < etat.equipes; k++){
+      if (etat.p === "B"){
+        var e = etat.equipeDuChantier[k];
+        compte["e" + e] = (compte["e" + e] || 0) + 1;
+      } else {
+        etat.surLeChantier[k].forEach(function(id){
+          compte["g" + id] = (compte["g" + id] || 0) + 1;
+        });
+      }
+    }
+
+    for (var i = 0; i < etat.equipes; i++){
+      (function(i){
+        var c = CHANTIERS[i];
+        var bloc = document.createElement("div");
+        bloc.className = "chantier";
+
+        var nom = document.createElement("p");
+        nom.className = "nom";
+        nom.style.margin = "0";
+        nom.textContent = c ? c.nom : "Rien de posé";
+        bloc.appendChild(nom);
+
+        var ou = document.createElement("p");
+        ou.className = "qui";
+        ou.style.margin = "2px 0 0";
+        ou.textContent = c ? c.ou : "cette place est libre";
+        bloc.appendChild(ou);
+
+        var qui = document.createElement("p");
+        qui.className = "qui";
+        qui.style.margin = "6px 0 0";
+        var doublons = [];
+
+        if (etat.p === "B"){
+          var e = etat.equipeDuChantier[i];
+          var membres = etat.gens.filter(function(g){ return g.eq === e; });
+          qui.innerHTML = membres.length
+            ? "<b>" + membres.map(function(g){ return g.nom.trim() || "sans nom"; }).join(" · ") + "</b>"
+            : "Équipe " + (e + 1) + " — personne dedans";
+          if (compte["e" + e] > 1) doublons.push("L'équipe " + (e + 1));
+        } else {
+          var ids = etat.surLeChantier[i];
+          var noms = ids.map(nomDe);
+          qui.innerHTML = noms.length ? "<b>" + noms.join(" · ") + "</b>" : "Personne n'est encore dessus";
+          ids.forEach(function(id){ if (compte["g" + id] > 1) doublons.push(nomDe(id)); });
+        }
+        bloc.appendChild(qui);
+
+        /* Les pastilles : c'est là qu'on choisit qui part. */
+        var choix = document.createElement("div");
+        choix.className = "cocher";
+        if (etat.p === "B"){
+          for (var e2 = 0; e2 < etat.equipes; e2++){
+            (function(e2){
+              var b = document.createElement("button");
+              b.type = "button";
+              b.textContent = "Équipe " + (e2 + 1);
+              b.setAttribute("aria-pressed", etat.equipeDuChantier[i] === e2 ? "true" : "false");
+              b.addEventListener("click", function(){ etat.equipeDuChantier[i] = e2; dessinerPlanning(); });
+              choix.appendChild(b);
+            })(e2);
+          }
+        } else {
+          etat.gens.forEach(function(g){
+            var b = document.createElement("button");
+            b.type = "button";
+            b.textContent = g.nom.trim() || "sans nom";
+            var dessus = etat.surLeChantier[i].indexOf(g.id) >= 0;
+            b.setAttribute("aria-pressed", dessus ? "true" : "false");
+            b.addEventListener("click", function(){
+              if (dessus) etat.surLeChantier[i] = etat.surLeChantier[i].filter(function(x){ return x !== g.id; });
+              else etat.surLeChantier[i] = etat.surLeChantier[i].concat([g.id]);
+              dessinerPlanning();
+            });
+            choix.appendChild(b);
+          });
+          if (!etat.gens.length){
+            var rien = document.createElement("span");
+            rien.style.cssText = "font-size:13px;color:var(--gris)";
+            rien.textContent = "Ajoutez d'abord quelqu'un dans les réglages.";
+            choix.appendChild(rien);
+          }
+        }
+        bloc.appendChild(choix);
+
+        if (doublons.length){
+          var a = document.createElement("p");
+          a.className = "alerte";
+          a.style.margin = "9px 0 0";
+          a.textContent = doublons.length === 1
+            ? doublons[0] + " est déjà sur un autre chantier ce jour-là."
+            : doublons.join(" et ") + " sont déjà sur un autre chantier ce jour-là.";
+          bloc.appendChild(a);
+        }
+        p.appendChild(bloc);
+      })(i);
+    }
+
+    var d = $("planDit");
+    if (etat.p === "A" && anonymes() > 0){
+      d.innerHTML = "Le curseur annonce " + etat.cible + " salariés, vous avez écrit "
+        + etat.gens.length + " noms. <b>Les pastilles ne connaissent que les noms</b> — "
+        + "un salarié sans nom ne peut pas être mis sur un chantier.";
+    } else if (etat.p === "B"){
+      d.textContent = "Le planning n'écrit plus « Équipe A » : il écrit les gens qui la composent.";
+    } else {
+      d.textContent = "Le nombre de lignes vient du compteur d'équipes. Les noms viennent de vous.";
+    }
+  }
+
+  /* ── Le mot d'accompagnement, propre à chaque proposition ──────────── */
+  var NOTES = {
+    A: "<p><b>A — on coche les gens.</b> Un curseur pour les équipes (la capacité du "
+      + "planning), un curseur pour les salariés, et une liste de noms. Sur chaque "
+      + "chantier, on touche les pastilles pour dire qui part.</p>"
+      + "<p><b>Essayez ceci :</b> montez le curseur des salariés à 5 sans taper de nom. "
+      + "L'écran annonce 5 salariés — et le chantier n'en connaît que 3. "
+      + "C'est le défaut que la C corrige.</p>",
+    B: "<p><b>B — les gens sont rangés dans des équipes.</b> On range une fois pour "
+      + "toutes qui part avec qui, et le chantier prend une équipe entière. Le planning "
+      + "n'écrit plus la lettre : il écrit les prénoms.</p>"
+      + "<p><b>Ce que ça vous évite :</b> recocher les trois mêmes noms à chaque chantier "
+      + "quand ce sont toujours les mêmes qui partent. <b>Ce que ça coûte :</b> le jour où "
+      + "l'un d'eux part avec l'autre équipe, il faut le déplacer dans les réglages. "
+      + "Baissez le compteur d'équipes à 1 pour voir ce que deviennent les gens de la "
+      + "seconde.</p>",
+    C: "<p><b>C — pas de curseur pour les salariés.</b> Le reste est identique à la A : "
+      + "on coche les gens sur le chantier. Mais le nombre de salariés n'est plus "
+      + "déclaré, il se compte : vous ajoutez quelqu'un, il apparaît ; vous le retirez, "
+      + "il disparaît.</p>"
+      + "<p><b>Une seule vérité</b> — la liste. Rien ne peut plus la contredire.</p>"
+  };
+
+  function dessiner(){
+    dessinerReglages();
+    dessinerPlanning();
+    $("note").innerHTML = NOTES[etat.p];
+  }
+
+  /* ── Les gestes ────────────────────────────────────────────────────── */
+  $("eqMoins").addEventListener("click", function(){
+    if (etat.equipes > 1){ etat.equipes--; dessiner(); }
+  });
+  $("eqPlus").addEventListener("click", function(){
+    if (etat.equipes < 4){ etat.equipes++; dessiner(); }
+  });
+  $("saMoins").addEventListener("click", function(){
+    if (etat.cible > 0){ etat.cible--; dessiner(); }
+  });
+  $("saPlus").addEventListener("click", function(){
+    if (etat.cible < 9){ etat.cible++; dessiner(); }
+  });
+  $("ajouterGens").addEventListener("click", function(){
+    etat.gens.push(personne("", 0));
+    if (etat.p === "A" && etat.cible < etat.gens.length) etat.cible = etat.gens.length;
+    dessiner(); focusDernier();
+  });
+
+  Array.prototype.forEach.call(document.querySelectorAll(".choix button"), function(b){
+    b.addEventListener("click", function(){
+      etat.p = b.dataset.p;
+      Array.prototype.forEach.call(document.querySelectorAll(".choix button"), function(x){
+        x.setAttribute("aria-pressed", x === b ? "true" : "false");
+      });
+      dessiner();
+    });
+  });
+
+  dessiner();
+})();
+</script>
+</body>
+</html>

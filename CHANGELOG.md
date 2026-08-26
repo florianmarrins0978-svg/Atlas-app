@@ -9,6 +9,73 @@ Format : le plus récent en tête.
 
 ## 2026-08-26
 
+### Ses salariés se comptent à part de ses équipes — et ce sont leurs noms qu'on coche
+
+**Sa réponse à la planche 97 : A.** Puis, en tranchant : *« il ne faut pas
+changer la méthode d'affiliation des gars sur les chantiers — juste, au lieu que
+ce soit les équipes, ce sera les noms qu'on affilie. On garde la même façon de
+faire. »*
+
+**Ce que ça débloque.** `entreprises.nombre_equipes` portait deux métiers : la
+capacité du planning ET combien de noms se règlent. Un paysagiste à quatre
+salariés qui ne mène qu'un chantier à la fois n'avait aucun moyen de le dire —
+il devait choisir entre nommer ses gars et dire la vérité sur son planning.
+`nombre_salaries` (migration 0067) porte désormais le second.
+
+**Ce qui n'a pas bougé, parce qu'il l'a interdit** : la pastille sur la
+demi-journée, la liste qui s'ouvre, les cases cochées une à une, « Terminé ».
+Même action serveur, même table, même indépendance matin / après-midi. Seuls les
+libellés changent — « Équipe A » a disparu, le repli est « Salarié 3 ».
+
+**Le point délicat, et il est traité :** on coche désormais des GENS, et trois
+gars peuvent tenir sur une entreprise à deux chantiers par jour. La charge est
+donc plafonnée à la capacité (`equipesMobilisees`) — sans quoi un chantier à
+trois gars fermerait à lui seul une journée qui en accepte deux, et l'écran
+d'envoi refuserait au client des jours réellement libres. **À effectif égal, le
+résultat est identique à celui d'avant** : c'est le cas de son entreprise, dont
+le compteur a été repris du nombre d'équipes.
+
+**Un artisan seul reste à zéro salarié**, et non un : sans cette ligne dans la
+reprise, il aurait vu apparaître du jour au lendemain une case « Salarié 1 » à
+cocher sur chacune de ses demi-journées.
+
+**Aucune table n'a été créée** — la table `equipes` porte déjà un rang et un nom
+facultatif, et il y écrit des prénoms depuis le 10 août : ces lignes SONT les
+gars. Le renommage `equipes` → `salaries` est une tâche à part (`TODO.md`) :
+vingt-trois fichiers, les politiques RLS et les contraintes, à ne pas mêler à un
+changement de comportement.
+
+`ARCHITECTURE.md` §192.
+
+### Planche 97 — ses salariés, et ce qui remplit le planning
+
+Sa demande : *« un curseur + ou − qui définit le nombre de salariés, et pouvoir
+affilier des noms ; ceux-là permettront d'ajouter ces noms au chantier, et plus
+les équipes A ou B. Néanmoins les équipes doivent toujours servir à définir le
+remplissage du planning — 2 équipes = 2 chantiers par jour, ça ne bouge pas. »*
+
+**Rien n'est codé dans `src/`** (`CLAUDE.md` §3 bis) : trois propositions
+essayables, et il tranche.
+
+**Ce que le code dit, et qui justifie sa demande.** `entreprise.nombreEquipes`
+porte aujourd'hui DEUX responsabilités : la capacité du planning, et la fabrique
+des libellés « Équipe A / B » (`src/lib/equipes.ts`, `libelleEquipe`). Il veut
+les séparer — c'est juste : on peut avoir quatre salariés et ne mener qu'un
+chantier à la fois.
+
+**Ce que la planche rend touchable plutôt que d'affirmer.** Un curseur *à côté*
+d'une liste de noms crée deux vérités sur la même question. En proposition A, on
+monte le curseur à 5 sans taper de nom : l'écran annonce 5 salariés quand le
+chantier n'en connaît que 3. C'est la seule raison de la proposition C, qui
+supprime ce curseur et compte les noms — **et c'est son appel**, puisque c'est
+lui qui l'a demandé.
+
+Le curseur des **équipes** reste dans les trois, comme il l'a exigé.
+
+**Le contrôle ouvre un navigateur, et il a trouvé un vrai défaut** : les
+pastilles et les croix de la planche faisaient moins de 40 px. Corrigé à 44 —
+il touche cet écran debout, avec un gant.
+
 ### Maquette : « Quand je reverse la TVA » — les deux phrases du relevé
 
 *« Quand le client le paye / quand je met la facture. C'est pas clair, on
@@ -27,7 +94,6 @@ affiché, y compris quand il n'y change rien.**
 
 Rien n'est codé : `appli/quand-je-reverse-la-tva.html`, en attente de son choix
 entre A et B.
-
 
 ### « Sans date » disparaît quand rien n'attend de jour
 
@@ -285,7 +351,7 @@ recherche de chantier a été gardée (elle emploie la règle de l'écran), et l
 outil qui CRÉAIT une fiche tout seul est devenu une proposition — les deux
 règles qu'il portait, reprises telles quelles.
 
-Détail : `ARCHITECTURE.md` §189.
+Détail : `ARCHITECTURE.md` §188.
 
 ### Le filet d'intertitre était revenu sur l'écran des accès
 
@@ -1737,10 +1803,18 @@ porte sur la TVA due et qu'Atlas ne connaît que la collectée. C'est cela qu'il
 mesure désormais, et non un libellé que le patron peut vouloir réécrire demain
 (`CLAUDE.md` §5 bis).
 
-**Ce que le retrait coûte, et c'est à lui d'en juger** : l'écran ne dit plus que
-le mois est le défaut légal. Les deux boutons — « Tous les mois », « Tous les
-trimestres » — se présentent maintenant comme un choix libre, alors que le
-trimestre est une option sous condition. Dit ici plutôt que corrigé sans lui.
+**Il a tranché dans la foulée** — *« tu peux faire une phrase courte »* — et
+elle tient sur une ligne : **« Le mois est le défaut ; le trimestre s'obtient
+sous condition. »** Sans elle, les deux boutons se lisaient comme un choix
+libre, et le mauvais coûte un rappel de l'administration.
+
+**Ce qu'elle ne dit pas, délibérément :** laquelle lui convient. Le seuil porte
+sur la TVA DUE, donc sur ses achats, qu'Atlas ne voit pas.
+
+Le contrôle défend désormais **le fait, pas la formule** : un motif large
+(« mois » près de « défaut »), pour qu'il puisse la réécrire demain sans faire
+rougir la batterie. **Vu rouge** en remplaçant la phrase par « Choisissez votre
+rythme » — il tombe, et montre le texte fautif.
 
 ### L'adresse écrite deux fois : sa question du 24 août
 

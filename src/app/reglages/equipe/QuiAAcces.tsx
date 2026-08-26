@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useState, useTransition } from "react";
 import { colors, font, libelleCaps, surPlein, voile } from "@/lib/design-tokens";
 import { libelleRole, type PorteePlanning, type Role } from "@/lib/acces-roles";
-import { libelleEquipe } from "@/lib/equipes";
+import { libelleSalarie } from "@/lib/equipes";
 import ChoixRole from "./ChoixRole";
 import { changerLaPorteeAction, changerLeRoleAction, retirerUnAccesAction } from "./actions";
 
@@ -32,7 +32,7 @@ export default function QuiAAcces({
   acces,
   moi,
   equipes,
-  nombreEquipes,
+  nombreSalaries,
 }: {
   acces: {
     id: string;
@@ -46,7 +46,7 @@ export default function QuiAAcces({
   /** L'id du compte connecté : « Vous », et le seul qu'on ne peut pas retirer. */
   moi: string;
   equipes: { id: string; rang: number; nom: string | null }[];
-  nombreEquipes: number;
+  nombreSalaries: number;
 }) {
   const [ouvert, setOuvert] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
@@ -111,7 +111,7 @@ export default function QuiAAcces({
                       portee={p.porteePlanning}
                       equipeId={p.equipeId}
                       equipes={equipes}
-                      nombreEquipes={nombreEquipes}
+                      nombreSalaries={nombreSalaries}
                       inerte={enCours}
                       onChoisir={(portee, equipeId) =>
                         agir(() => changerLaPorteeAction(p.id, portee, equipeId))
@@ -177,20 +177,20 @@ function ChoixPortee({
   portee,
   equipeId,
   equipes,
-  nombreEquipes,
+  nombreSalaries,
   inerte,
   onChoisir,
 }: {
   portee: PorteePlanning;
   equipeId: string | null;
   equipes: { id: string; rang: number; nom: string | null }[];
-  nombreEquipes: number;
+  nombreSalaries: number;
   inerte: boolean;
   onChoisir: (portee: PorteePlanning, equipeId: string | null) => void;
 }) {
   // On ne propose que les files qui existent vraiment : le compteur de
   // l'entreprise fait autorité sur le nombre, la table ne porte que des noms.
-  const proposables = equipes.filter((e) => e.rang <= nombreEquipes);
+  const proposables = equipes.filter((e) => e.rang <= nombreSalaries);
 
   return (
     <div className="mt-4">
@@ -246,7 +246,7 @@ function ChoixPortee({
                   : { border: `1px solid ${colors.line}`, color: colors.muted }
               }
             >
-              {libelleEquipe({ rang: e.rang, nom: e.nom }, nombreEquipes) ?? `Équipe ${e.rang}`}
+              {libelleSalarie({ rang: e.rang, nom: e.nom }, nombreSalaries) ?? `Salarié ${e.rang}`}
             </button>
           ))}
         </div>

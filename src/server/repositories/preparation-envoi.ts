@@ -238,7 +238,7 @@ export async function preparerEnvoi(
       );
 
     const occupation = fusionnerOccupationExterne(
-      fusionnerAbsences(compterOccupation(planifies), absences, nombreEquipes),
+      fusionnerAbsences(compterOccupation(planifies, nombreEquipes), absences, nombreEquipes),
       periodesExterieures,
       nombreEquipes
     );
@@ -449,7 +449,7 @@ export async function verifierJourPropose(
   // L'occupation est relue sur l'horizon entier : celle de `preparerEnvoi` ne
   // porte que sur trois mois, et un jour à six mois y serait vu libre à tort —
   // faute de savoir ce qui s'y trouve, pas parce qu'il l'est.
-  const contrainte = await contrainteSurHorizon(ctx, chantierId, horizon);
+  const contrainte = await contrainteSurHorizon(ctx, chantierId, horizon, preparation.nombreEquipes);
 
   const libre = (j: JourIso) => jourRetenable(j, preparation.dureeDemiJournees, contrainte, preparation.nombreEquipes, horizon);
   if (libre(jour)) {
@@ -522,7 +522,13 @@ function jourLibreLePlusProche(
 async function contrainteSurHorizon(
   ctx: Ctx,
   chantierId: string,
-  horizon: FenetreProposition
+  horizon: FenetreProposition,
+  /**
+   * La capacité, pour plafonner la charge exactement comme `preparerEnvoi` le
+   * fait. Sans elle, cette relecture sur dix-huit mois compterait sans plafond
+   * et refuserait un jour que l'écran venait d'annoncer libre.
+   */
+  nombreEquipes: number
 ): Promise<ReadonlyMap<string, number>> {
   return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
     const rows = await tx
@@ -554,7 +560,8 @@ async function contrainteSurHorizon(
           moment: r.moment === "matin" || r.moment === "apres_midi" ? r.moment : null,
           dureeDemiJournees: r.duree,
           equipesParDemi: equipesPosees.get(r.id) ?? null,
-        }))
+        })),
+      nombreEquipes
     );
   });
 }

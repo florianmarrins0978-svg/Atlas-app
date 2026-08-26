@@ -1,18 +1,27 @@
-// La règle de nommage des équipes, sans base de données.
+// La règle de nommage des salariés, et la charge qu'ils mettent sur une
+// demi-journée — sans base de données.
 //
-// **Ce que le patron a demandé, le 2026-08-10 :** *« soit équipe A équipe B,
-// soit des noms et prénoms. Mais s'il n'a pas d'équipe et qu'il ne met rien, il
-// ne faut pas qu'il y ait quand même écrit équipe A équipe B. »*
+// **Sa demande du 2026-08-10 :** *« soit équipe A équipe B, soit des noms et
+// prénoms. Mais s'il n'a pas d'équipe et qu'il ne met rien, il ne faut pas
+// qu'il y ait quand même écrit équipe A équipe B. »*
 //
-// Le principe qui tient les deux cas : **on n'invente jamais un nom, et on ne
-// laisse jamais deux lignes indiscernables.**
+// **Sa demande du 2026-08-26** (planche 97, réponse **A**) : les noms
+// remplacent « les équipes A ou B » sur les chantiers, *« néanmoins les équipes
+// doivent toujours servir à définir le niveau de remplissage du planning :
+// 2 équipes = 2 chantiers par jour, comme avant, ça ne bouge pas »*.
+//
+// Le principe qui tient tous les cas : **on n'invente jamais un nom, on ne
+// laisse jamais deux lignes indiscernables, et on ne ferme jamais une journée
+// qui reste ouverte.**
 
 import assert from "node:assert/strict";
 import {
-  libelleEquipe,
-  lettreDeRepli,
-  equipesAffichees,
+  libelleSalarie,
+  salariesAffiches,
+  equipesMobilisees,
   phraseDuCompteur,
+  phraseDesSalaries,
+  MAX_SALARIES,
   MAX_EQUIPES,
 } from "../src/lib/equipes";
 
@@ -28,94 +37,155 @@ function essai(nom: string, fn: () => void) {
   }
 }
 
-console.log("=== Nommer les équipes — et se taire quand il n'y a personne ===");
+console.log("=== Nommer les salariés — et se taire quand il n'y a personne ===");
 
-essai("seul, on n'écrit RIEN — pas même la lettre", () => {
-  assert.equal(libelleEquipe({ rang: 1, nom: null }, 1), null);
-  // Et même si un nom traîne en base : à une équipe il n'y a personne à
-  // distinguer. Le cas arrive dès qu'on redescend le compteur après avoir
-  // nommé — la ligne survit exprès, elle ne doit pas se mettre à parler.
-  assert.equal(libelleEquipe({ rang: 1, nom: "Théo" }, 1), null);
+essai("seul, on n'écrit RIEN", () => {
+  assert.equal(libelleSalarie({ rang: 1, nom: null }, 0), null);
+  // Et même si un nom traîne en base : à zéro salarié il n'y a personne à
+  // distinguer, et le planning n'a rien à écrire.
+  assert.equal(libelleSalarie({ rang: 1, nom: "Théo" }, 0), null);
 });
 
-essai("à deux et sans nom, on lit « Équipe A » et « Équipe B »", () => {
-  assert.equal(libelleEquipe({ rang: 1, nom: null }, 2), "Équipe A");
-  assert.equal(libelleEquipe({ rang: 2, nom: null }, 2), "Équipe B");
-});
-
-essai("nommer l'une n'oblige pas l'autre", () => {
-  assert.equal(libelleEquipe({ rang: 1, nom: "Théo" }, 2), "Théo");
-  assert.equal(libelleEquipe({ rang: 2, nom: null }, 2), "Équipe B");
-});
-
-essai("un champ blanc n'est pas un nom", () => {
-  // Sinon la ligne s'affiche vide, indiscernable de sa voisine — exactement ce
-  // que le repli existe pour empêcher.
-  assert.equal(libelleEquipe({ rang: 2, nom: "   " }, 2), "Équipe B");
-  assert.equal(libelleEquipe({ rang: 1, nom: "" }, 3), "Équipe A");
-});
-
-essai("un nom écrit garde ses espaces intérieurs, perd celles des bords", () => {
-  assert.equal(libelleEquipe({ rang: 1, nom: "  Jean Dupont  " }, 2), "Jean Dupont");
-});
-
-essai("vingt équipes, vingt lettres — et rien au-delà", () => {
-  assert.equal(MAX_EQUIPES, 20);
-  assert.equal(lettreDeRepli(1), "A");
-  assert.equal(lettreDeRepli(20), "T");
-  assert.equal(lettreDeRepli(21), null);
-  assert.equal(libelleEquipe({ rang: 21, nom: null }, 20), null);
-});
-
-essai("une équipe absente de la base existe quand même à l'écran", () => {
-  // Le patron peut avoir nommé la troisième sans toucher la deuxième.
-  const lignes = equipesAffichees([{ rang: 3, nom: "Nadia" }], 3);
-  assert.deepEqual(
-    lignes.map((e) => libelleEquipe(e, 3)),
-    ["Équipe A", "Équipe B", "Nadia"]
-  );
-});
-
-essai("une ligne au-delà du compteur ne se montre pas — mais elle survit", () => {
-  // `entreprises.nombre_equipes` fait autorité sur le NOMBRE ; la table ne
-  // porte que des noms. Redescendre puis remonter ne doit pas perdre un nom
-  // saisi à la main.
-  const enBase = [
-    { rang: 1, nom: "Théo" },
-    { rang: 2, nom: null },
-    { rang: 3, nom: "Nadia" },
-  ];
-  assert.deepEqual(
-    equipesAffichees(enBase, 2).map((e) => libelleEquipe(e, 2)),
-    ["Théo", "Équipe B"]
-  );
-  // Remontée : le nom de la troisième est toujours là.
-  assert.deepEqual(
-    equipesAffichees(enBase, 3).map((e) => libelleEquipe(e, 3)),
-    ["Théo", "Équipe B", "Nadia"]
-  );
-});
-
-essai("un compteur aberrant ne fabrique pas de nom", () => {
-  assert.equal(libelleEquipe({ rang: 1, nom: null }, 0), null);
-  assert.equal(libelleEquipe({ rang: 1, nom: null }, Number.NaN), null);
-  assert.equal(equipesAffichees([], 0).length, 1);
-  assert.equal(equipesAffichees([], 99).length, MAX_EQUIPES);
-});
-
-essai("la phrase du compteur ne contient aucun mot de métier", () => {
-  // « chantiers de front » a été soumis au patron et rejeté : « pour moi rien ».
-  assert.equal(phraseDuCompteur(1), "Un chantier à la fois : un jour pris n'est plus proposé.");
-  assert.equal(phraseDuCompteur(2), "Un jour reste proposé tant qu'une équipe est libre.");
-  for (const n of [1, 2, 7, 20]) {
-    assert.ok(!/de front|effectif|ressource/i.test(phraseDuCompteur(n)), `phrase(${n}) emploie un mot de métier`);
+essai("sans nom écrit, le repli est le RANG — jamais « Équipe A »", () => {
+  assert.equal(libelleSalarie({ rang: 1, nom: null }, 2), "Salarié 1");
+  assert.equal(libelleSalarie({ rang: 2, nom: null }, 2), "Salarié 2");
+  // Sa demande du 26 août : « plus les équipes A ou B ». Le mot doit avoir
+  // disparu de ce que l'écran peut écrire, pas seulement du cas courant.
+  for (let rang = 1; rang <= MAX_SALARIES; rang++) {
+    const dit = libelleSalarie({ rang, nom: null }, MAX_SALARIES) ?? "";
+    assert.ok(!/[ÉE]quipe/i.test(dit), `rang ${rang} écrit encore « ${dit} »`);
   }
 });
 
-essai("aucune équipe transmise : on n'écrit rien plutôt que d'inventer", () => {
-  assert.equal(libelleEquipe(null, 3), null);
-  assert.equal(libelleEquipe(undefined, 3), null);
+essai("un nom écrit l'emporte sur le repli", () => {
+  assert.equal(libelleSalarie({ rang: 1, nom: "Théo" }, 2), "Théo");
+  assert.equal(libelleSalarie({ rang: 2, nom: null }, 2), "Salarié 2");
 });
 
-console.log(`\n${echecs === 0 ? "✅" : "❌"} Nommage des équipes — ${echecs} échec(s).`);
+essai("un champ d'espaces n'est pas un nom", () => {
+  assert.equal(libelleSalarie({ rang: 2, nom: "   " }, 2), "Salarié 2");
+  assert.equal(libelleSalarie({ rang: 1, nom: "" }, 3), "Salarié 1");
+});
+
+essai("les espaces autour d'un nom sont retirés", () => {
+  assert.equal(libelleSalarie({ rang: 1, nom: "  Jean Dupont  " }, 2), "Jean Dupont");
+});
+
+essai("hors des bornes de la base, on n'écrit rien", () => {
+  // Le `rang` est contraint entre 1 et 20 en base (migration 0034). Un rang
+  // au-delà ne peut pas exister : lui fabriquer un libellé donnerait à l'écran
+  // une ligne que l'écriture refuserait ensuite, sans rien expliquer.
+  assert.equal(MAX_SALARIES, 20);
+  assert.equal(MAX_EQUIPES, 20);
+  assert.equal(libelleSalarie({ rang: 21, nom: null }, 20), null);
+  assert.equal(libelleSalarie({ rang: 0, nom: null }, 20), null);
+});
+
+essai("les rangs manquants sont complétés, dans l'ordre", () => {
+  const lignes = salariesAffiches([{ rang: 3, nom: "Nadia" }], 3);
+  assert.deepEqual(
+    lignes.map((e) => libelleSalarie(e, 3)),
+    ["Salarié 1", "Salarié 2", "Nadia"]
+  );
+});
+
+essai("redescendre puis remonter le compteur ne perd aucun nom", () => {
+  const enBase = [
+    { rang: 1, nom: "Marc" },
+    { rang: 2, nom: "Léo" },
+    { rang: 3, nom: "Sofia" },
+  ];
+  assert.deepEqual(
+    salariesAffiches(enBase, 2).map((e) => libelleSalarie(e, 2)),
+    ["Marc", "Léo"]
+  );
+  assert.deepEqual(
+    salariesAffiches(enBase, 3).map((e) => libelleSalarie(e, 3)),
+    ["Marc", "Léo", "Sofia"]
+  );
+});
+
+essai("ZÉRO salarié ne montre AUCUNE ligne — le plancher n'est pas un", () => {
+  // C'est ce qui distingue ce compteur de celui des équipes. Une ligne
+  // « Salarié 1 » offerte à un artisan seul l'inviterait à se nommer lui-même,
+  // et ferait apparaître une case à cocher sur chacune de ses demi-journées.
+  assert.equal(salariesAffiches([], 0).length, 0);
+  assert.equal(salariesAffiches([], -3).length, 0);
+  assert.equal(salariesAffiches([], Number.NaN).length, 0);
+  assert.equal(salariesAffiches([], 99).length, MAX_SALARIES);
+});
+
+essai("aucun salarié transmis : on n'écrit rien plutôt que d'inventer", () => {
+  assert.equal(libelleSalarie(null, 3), null);
+  assert.equal(libelleSalarie(undefined, 3), null);
+  assert.equal(libelleSalarie({ rang: 1, nom: null }, Number.NaN), null);
+});
+
+console.log("\n=== La charge d'une demi-journée : sa règle qui NE BOUGE PAS ===");
+
+essai("à effectif égal, la charge est celle d'avant la coupure", () => {
+  // C'est la propriété qui garantit qu'il ne verra aucune différence : son
+  // compteur de salariés a été repris du nombre d'équipes (migration 0067).
+  // Avant, cocher deux équipes mobilisait deux équipes.
+  assert.equal(equipesMobilisees(2, 2), 2);
+  assert.equal(equipesMobilisees(1, 2), 1);
+  // Sa correction du 22 août 2026 — Julien ET Antoine chez Mr Eric ferment
+  // bien la demi-journée.
+  assert.equal(equipesMobilisees(2, 2) / 2, 1);
+});
+
+essai("plus de gars que d'équipes ne ferme pas une journée ouverte", () => {
+  // Sans le plafond, trois gars sur un chantier rempliraient à eux seuls une
+  // journée qui en accepte deux — et le planning refuserait au client des jours
+  // réellement libres.
+  assert.equal(equipesMobilisees(3, 2), 2);
+  assert.equal(equipesMobilisees(9, 2), 2);
+  assert.equal(equipesMobilisees(20, 1), 1);
+});
+
+essai("un chantier sans personne coché occupe quand même sa place", () => {
+  // Le compter zéro afficherait libre une journée déjà prise.
+  assert.equal(equipesMobilisees(0, 2), 1);
+  assert.equal(equipesMobilisees(-4, 3), 1);
+});
+
+essai("une capacité aberrante ne rend jamais zéro ni l'infini", () => {
+  assert.equal(equipesMobilisees(2, 0), 1);
+  assert.equal(equipesMobilisees(2, Number.NaN), 1);
+});
+
+console.log("\n=== Les deux phrases, et ce qu'elles ne disent pas ===");
+
+essai("la phrase du compteur d'équipes ne contient aucun mot de métier", () => {
+  // « chantiers de front » a été soumis au patron et rejeté : « pour moi rien ».
+  // **Sa dictée du 26 août 2026 :** *« en dessous en gris marque 2 chantiers par
+  // jour, c'est ce qui remplit votre planning — le chiffre bouge en fonction du
+  // nombre d'équipes »*. C'est le CHIFFRE qui doit suivre, pas seulement le mot.
+  assert.equal(phraseDuCompteur(1), "Un chantier par jour. C'est ce qui remplit votre planning.");
+  assert.equal(phraseDuCompteur(2), "2 chantiers par jour. C'est ce qui remplit votre planning.");
+  assert.equal(phraseDuCompteur(5), "5 chantiers par jour. C'est ce qui remplit votre planning.");
+  for (const n of [2, 7, 20]) {
+    assert.ok(
+      phraseDuCompteur(n).startsWith(`${n} chantiers`),
+      `phrase(${n}) ne porte pas le chiffre du compteur : « ${phraseDuCompteur(n)} »`
+    );
+  }
+  for (const n of [1, 2, 7, 20]) {
+    assert.ok(!/de front|effectif|ressource/i.test(phraseDuCompteur(n)), `phrase(${n}) emploie un mot de métier`);
+  }
+  // Une valeur aberrante ne doit pas écrire « 0 chantiers par jour » : le
+  // compteur est borné à 1 partout ailleurs, et la phrase le suit.
+  assert.equal(phraseDuCompteur(0), "Un chantier par jour. C'est ce qui remplit votre planning.");
+});
+
+essai("la phrase des salariés ne parle jamais d'équipes", () => {
+  // Les deux compteurs sont côte à côte : les mélanger dans une phrase
+  // remettrait dans sa tête la confusion qu'on vient de retirer du code.
+  for (const n of [0, 1, 3, 20]) {
+    assert.ok(!/[ÉE]quipe/i.test(phraseDesSalaries(n)), `phrase(${n}) parle d'équipes`);
+  }
+  assert.equal(phraseDesSalaries(0), "Seul : rien à cocher sur un chantier.");
+});
+
+console.log(`\n${echecs === 0 ? "✅" : "❌"} Salariés, noms et charge — ${echecs} échec(s).`);
 process.exit(echecs === 0 ? 0 : 1);

@@ -71,10 +71,13 @@ export async function contextePlanning(ctx: Ctx, maintenant: Date) {
 
   return {
     chantiers: chantiersVisibles,
-    // Le compteur fait autorité sur le NOMBRE ; la table ne porte que des noms
-    // (`ARCHITECTURE.md` §51). Les deux traversent : un écran ne peut pas
-    // décider d'un libellé sans les deux.
+    // **Les deux compteurs traversent, et ils ne font pas le même métier**
+    // (sa demande du 26 août 2026) : celui des équipes dit la CAPACITÉ du
+    // planning, celui des salariés dit combien de gens se cochent sur une
+    // demi-journée. Un écran ne peut décider ni d'une charge ni d'un libellé
+    // sans les deux, et la table ne porte que des noms (`ARCHITECTURE.md` §51).
     nombreEquipes: entreprise?.nombreEquipes ?? 1,
+    nombreSalaries: entreprise?.nombreSalaries ?? 0,
     equipesNommees: equipesNommees.map((e) => ({ rang: e.rang, nom: e.nom })),
     absences,
   };

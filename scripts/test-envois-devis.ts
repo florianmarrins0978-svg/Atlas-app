@@ -102,7 +102,7 @@ async function main() {
     // celle qu'emploie tout ce fichier.
     const f = fenetreProposition(MAINTENANT);
     const UNE_JOURNEE = 2;
-    const pris = compterOccupation([{ jour: dans(10), moment: "matin", dureeDemiJournees: UNE_JOURNEE }]);
+    const pris = compterOccupation([{ jour: dans(10), moment: "matin", dureeDemiJournees: UNE_JOURNEE }], 1);
     assert.strictEqual(jourRetenable(dans(10), UNE_JOURNEE, pris, 1, f), false);
     assert.strictEqual(jourRetenable(dans(11), UNE_JOURNEE, pris, 1, f), true);
   });
