@@ -3,7 +3,6 @@
 import { revalidatePath } from "next/cache";
 import { getCurrentCtx } from "@/server/session-ctx";
 import { exigerProprietaire } from "@/server/autorisation";
-import { LONGUEUR_MINIMALE } from "@/lib/mot-de-passe";
 import { messageRefusAcces } from "@/lib/donner-un-acces";
 import {
   changerLaPortee,
@@ -34,13 +33,14 @@ import type { Role } from "@/lib/acces-roles";
  */
 
 function phrase(refus: Parameters<typeof messageRefusAcces>[0]): { ok: false; message: string } {
-  return { ok: false, message: messageRefusAcces(refus, LONGUEUR_MINIMALE) };
+  return { ok: false, message: messageRefusAcces(refus) };
 }
 
 export async function donnerUnAccesAction(saisie: {
   nom: string;
   email: string;
   motDePasse: string;
+  confirmation: string;
   role: Role;
 }): Promise<{ ok: true } | { ok: false; message: string }> {
   const ctx = await getCurrentCtx();

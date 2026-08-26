@@ -15953,17 +15953,33 @@ question se tranche. `peutUtiliserLAssistant` s'y est ajoutée à côté de
 `peutVoirLesMontants`, et elle est **plus stricte** — le commercial voit les
 montants, et n'a pourtant pas l'assistant.
 
-**Elle a été plus stricte pendant une soirée, et LUI l'a rouverte.** Livrée au
-patron seul le 25 août — ses mots : *« seulement le principal »* —, la règle a
-été portée au commercial le 26, sur sa réponse : *« oui tu peux l'ouvrir aux
-commerciaux »*.
+**ELLE A CHANGÉ TROIS FOIS EN DEUX JOURS, et son dernier mot revient au
+premier.** Il faut les écrire toutes les trois : une décision dont on ne garde
+que le dernier état se repose trois mois plus tard, et l'on refait le chemin.
 
-**Ce qui avait fait hésiter**, et qu'il faut garder écrit pour ne pas
-re-hésiter : §10 a été tranché le 13 août, quand l'assistant ne savait lire que
-le chantier courant. Depuis le 25, il cherche dans le devis de N'IMPORTE QUEL
-client — un commercial y lit ce que chacun a payé pour la même prestation. Le
-patron a jugé que cela ne changeait rien : il voit déjà ces prix écran par
-écran, c'est son métier de vendre.
+| Quand | Ses mots | Ce que ça donnait |
+|---|---|---|
+| 25 août | *« seulement le principal »* | patron seul |
+| 26 août, dans la journée | *« oui tu peux l'ouvrir aux commerciaux »* | patron + commercial |
+| **26 août, le soir** | *« les salariés et commerciaux ne doivent pas avoir accès à l'assistant IA »* | **patron seul, à nouveau** |
+
+**Et `peutUtiliserLAssistant` N'APPELLE PLUS `peutVoirLesMontants`.** Tant que
+les deux disaient la même chose, l'une appelait l'autre, et c'était juste. Elles
+disent maintenant deux choses différentes — garder l'appel aurait été pire
+qu'une erreur : le jour où quelqu'un élargirait la règle des montants,
+l'assistant s'ouvrirait avec, en silence.
+
+**La différence n'est pas le prix, c'est la PORTÉE.** Un commercial voit les
+montants écran par écran, parce que c'est son métier de vendre. L'assistant, lui,
+parcourt l'entreprise entière et répond en une phrase, sans qu'on ait à savoir où
+regarder. C'est un accès transversal, et seul celui qui a déjà tout l'a.
+
+**Ce qui avait fait hésiter**, et qui a fini par donner raison à l'hésitation :
+§10 a été tranché le 13 août, quand l'assistant ne savait lire que le chantier
+courant. Depuis le 25, il cherche dans le devis de N'IMPORTE QUEL client — un
+commercial y lirait ce que chacun a payé pour la même prestation. La question lui
+a été posée ; il a d'abord jugé que cela ne changeait rien, puis il a refermé le
+soir même.
 
 **Ce que ça a coûté d'y penser, et pourquoi ce n'était pas perdu :** la question
 lui a été posée en une ligne, et la réponse tenait en un mot. Le contraire —
