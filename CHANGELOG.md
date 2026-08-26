@@ -29,7 +29,43 @@ déroulé jusqu'en bas, `bottom` du texte contre `top` de la barre — **rien n'
 recouvert**. Le piège est écrit dans `HANDOVER.md` : c'est la deuxième fois
 aujourd'hui qu'il trompe.
 
+### Le numéro de ses documents se choisit — et le millésime n'est plus écrit en dur
 
+*« Dans la catégorie facture il faut rajouter le format de numéro, c'est
+obligatoire il me semble. »* Puis, devant la planche : *« garde le F »*,
+*« 6 chiffres »*, *« oui remettre à 0 chaque début d'année »*, *« l'utilisateur
+peut choisir entre ces 5 façons ? Si oui code ça »*.
+
+**Ce qui existe maintenant.** Réglages → Devis & factures → « Le numéro de mes
+documents » : cinq formats, chacun montrant ce qu'il donne, et le changement
+s'enregistre seul.
+
+| Format | Le prochain devis | La prochaine facture |
+|---|---|---|
+| Année et 4 chiffres | 2026-0012 | F2026-0012 |
+| **Année et 6 chiffres** (défaut) | 2026-000012 | F2026-000012 |
+| Année courte | 26-0012 | F26-0012 |
+| Année, mois, numéro | 2026-08-012 | F2026-08-012 |
+| Une suite sans année | 0012 | F0012 |
+
+**Le compteur repart à 1 le 1ᵉʳ janvier**, sauf sur « une suite sans année » —
+sinon deux documents porteraient le même numéro à un an d'écart, ce que la loi
+interdit. L'écran le dit au lieu d'en faire un second réglage.
+
+**CE QUI ÉTAIT CASSÉ, et qu'aucune suite ne voyait.** Le millésime était écrit
+en dur dans le dépôt : `2026-…` pour les devis, `F2026-…` pour les factures.
+**En janvier 2027, ses factures auraient encore dit 2026** — un défaut à
+retardement, invisible tant qu'on teste aujourd'hui, et qui ne serait apparu que
+sur un document déjà parti chez un client.
+
+**Ce que le changement ne fait pas :** il ne renumérote rien. Les documents déjà
+émis gardent leur numéro — les réécrire creuserait un trou dans la suite.
+
+**Éprouvé** par `test-numero-documents.ts` (la règle, 10 cas),
+`test-numero-documents-db.ts` (le compteur et sa remise à zéro au 1ᵉʳ janvier,
+9 cas, dont deux factures émises à la même seconde) et
+`test-format-numero-e2e.ts` (le fil entier : il choisit, et le devis suivant
+porte le format choisi).
 
 ### Face ID marche enfin derrière son tunnel — et le bouton du mot de passe remonte
 
@@ -97,9 +133,50 @@ périmètre affiché ne suivait pas le rôle coché, si bien qu'on lisait « le
 planning et rien d'autre » sous « Commercial ». Une maquette qui ment sur ce que
 fait un rôle est pire qu'une maquette absente.
 
+### Les deux fiches, côte à côte — une maquette pour trancher
+
+*« La fiche d'entretien c'est la fiche de chantier »*, puis *« ressors-moi les
+deux pages côte à côte dans une maquette dynamique que je comprenne bien »*.
+
+Ce ne sont pas deux fois le même écran : à gauche **la liste** (Réglages), à
+droite **la fiche d'un jour** (Paysage), qui en naît. Supprimer la première
+laisserait la seconde sans rien à cocher — elle refuse d'ailleurs de s'ouvrir
+sur une liste vide. Un troisième objet porte le même nom, et il fallait le dire :
+le **PDF « Fiche de chantier »**, le devis sans les prix.
+
+`appli/deux-fiches.html`, trois onglets sans une ligne de JavaScript : les deux
+écrans, ce qui les relie, et ce qu'un renommage changerait. Les vingt
+prestations sont **celles du code** — `verifier-maquette-deux-fiches.mjs` refuse
+la moindre invention, et il a été joué rouge contre une prestation inventée puis
+contre un script glissé dans la page.
+
+**La question qui reste pour lui :** renommer celle des Réglages en « Les
+prestations de ma fiche ». Rien n'a été codé avant sa réponse.
+
 ---
 
 ## 2026-08-25
+
+### Un septième contrôle, et la leçon qui vaut pour tous
+
+`test-lecons-prix-e2e` guettait la réponse HTTP de l'action serveur. Son délai
+avait déjà été relevé de 30 à 60 secondes le matin même, pour la même raison ;
+sous la batterie entière, soixante ne suffisaient pas non plus.
+
+**Quatre-vingt-dix n'auraient fait que repousser le mur.** Une attente calée sur
+la vitesse de la machine finit toujours par mesurer la machine — et le rouge
+qu'elle produit accuse un produit sain.
+
+Ce que la suite veut savoir n'est pas qu'une requête est passée : c'est que le
+prix est en base, car c'est cela seul qui apprend quelque chose à l'agent. Elle
+regarde donc la base, et l'échec dit ce qu'elle portait vraiment (« lu :
+1400.00 »). Confrontée à un prix qui n'arrive jamais, elle rougit.
+
+**Sept contrôles réparés en une journée, aucun défaut de produit derrière.**
+Deux cassaient à minuit, trois lisaient trop tôt, un exigeait un état fugace, un
+guettait le réseau au lieu du résultat. Le fil commun tient en une phrase :
+*ils mesuraient un instant, ou une vitesse, plutôt qu'un état.*
+
 
 ### Ses journées se comptaient à Greenwich
 

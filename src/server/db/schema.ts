@@ -152,6 +152,13 @@ export const entreprises = pgTable("entreprises", {
    * **La feuille de chantier et le compte rendu ne sont PAS concernés** : sa
    * décision du même jour. L'une est interne, l'autre est une page web.
    */
+  /**
+   * Le format de ses numéros (migration 0066). `null` : celui par défaut.
+   *
+   * Les valeurs vivent dans `src/lib/numero-documents.ts`, jamais recopiées ici.
+   */
+  formatNumero: text("format_numero"),
+
   docTypographie: text("doc_typographie"),
   docFond: text("doc_fond"),
   docAccent: text("doc_accent"),
@@ -428,6 +435,17 @@ export const entrepriseCompteurs = pgTable("entreprise_compteurs", {
   // Suite distincte de celle des devis : mêler les deux rendrait illisible
   // la numérotation continue qu'attend un contrôle fiscal.
   prochainNumeroFacture: integer("prochain_numero_facture").notNull().default(1),
+  /**
+   * L'année à laquelle chaque compteur se rapporte (migration 0066).
+   *
+   * **Sa décision du 26 août 2026 : le compteur repart à 1 au 1ᵉʳ janvier.**
+   * Sans cette colonne, rien ne dirait si le dernier numéro attribué est de
+   * cette année ou de la précédente — on ne saurait pas s'il faut continuer ou
+   * recommencer. Deux suites distinctes, donc deux années : un devis peut
+   * partir en décembre et sa facture en janvier.
+   */
+  anneeDevis: integer("annee_devis"),
+  anneeFacture: integer("annee_facture"),
 });
 
 // Correction v2.1 §1 : remplace le lien direct utilisateur → entreprise.

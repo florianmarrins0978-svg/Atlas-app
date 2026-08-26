@@ -1,6 +1,6 @@
 import { and, asc, desc, eq, sql } from "drizzle-orm";
 import { withEntreprise } from "../db/with-entreprise";
-import { allureDesDocuments } from "./entreprises";
+import { allureDesDocuments, formatNumeroDe } from "./entreprises";
 import { conditionsDepuisEntreprise } from "@/lib/conditions-documents";
 import { totauxAvecReduction, pourcentValide } from "@/lib/reduction-devis";
 import type { DbOrTx } from "../db/client";
@@ -8,21 +8,46 @@ import { devis, lignesDevis, lignesPrix, chantiers, clients, entreprises } from 
 import type { Ctx } from "./context";
 import { genererPdfDevis } from "../pdf/devis-pdf";
 import { enregistrerObjet } from "../storage";
+import { ecrireNumero, repartChaqueAnnee } from "@/lib/numero-documents";
 
 const TAUX_TVA_DEFAUT = "20.00";
 
 // Numérotation atomique — le verrou de ligne posé par cet UPDATE sérialise les
 // créations concurrentes pour une même entreprise (voir tests de concurrence).
 // `prochain_numero_devis` représente le PROCHAIN numéro disponible, pas le dernier attribué.
+//
+// **LE MILLÉSIME N'EST PLUS ÉCRIT EN DUR — correctif du 26 août 2026.** Cette
+// fonction rendait `` `2026-${…}` ``. En janvier 2027, ses devis auraient encore
+// dit 2026 : un défaut à retardement, que le typage ne voit pas et qu'aucune
+// suite n'attrape puisqu'elles tournent aujourd'hui.
+//
+// **LA REMISE À 1 SE FAIT DANS LE MÊME UPDATE, et c'est la seule façon sûre.**
+// La lire d'abord pour l'écrire ensuite ouvrirait une fenêtre où deux devis
+// créés à la même seconde le 1ᵉʳ janvier prendraient tous deux le numéro 1 —
+// un doublon, exactement ce que la loi interdit. Le `CASE` tranche à l'intérieur
+// du verrou de ligne.
 export async function attribuerNumeroDevis(tx: DbOrTx, entrepriseId: string): Promise<string> {
+  const maintenant = new Date();
+  const annee = maintenant.getFullYear();
+  const mois = maintenant.getMonth() + 1;
+
+  const format = await formatNumeroDe(tx, entrepriseId);
+  // Sans année au numéro, le compteur ne repart jamais : le remettre à 1
+  // ferait deux documents de même numéro à un an d'écart.
+  const remise = repartChaqueAnnee(format);
+
   const result: unknown = await tx.execute(sql`
     UPDATE entreprise_compteurs
-    SET prochain_numero_devis = prochain_numero_devis + 1
+    SET prochain_numero_devis = CASE
+          WHEN ${remise} AND annee_devis IS DISTINCT FROM ${annee} THEN 2
+          ELSE prochain_numero_devis + 1
+        END,
+        annee_devis = ${annee}
     WHERE entreprise_id = ${entrepriseId}
     RETURNING prochain_numero_devis - 1 AS numero
   `);
   const numero = (result as { rows: { numero: number }[] }).rows[0].numero;
-  return `2026-${String(numero).padStart(4, "0")}`;
+  return ecrireNumero(format, "devis", { annee, mois, numero });
 }
 
 /**
