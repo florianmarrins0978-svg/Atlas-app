@@ -163,6 +163,18 @@ par un autre.
 
 ---
 
+## ✅ ~~« Terminés » : les traits, et la carte de TVA~~ — fait le 26 août 2026
+
+~~Ses deux demandes du 26 août, planche `appli/termines-sans-traits.html`, sa
+réponse « le 3 ».~~ `ARCHITECTURE.md` §193.
+
+**Ce qui reste à surveiller, et qui n'est pas une tâche :** la démarcation sous
+la phrase de compte ne tient plus que sur 22 px, depuis que son trait est parti.
+`test-tva-en-tete-e2e.ts` les mesure — une rangée qui reviendrait à 19 px la
+ferait disparaître, et le contrôle est la seule chose qui le dira.
+
+---
+
 ## ✅ ~~Le format des numéros de devis et de factures~~ — fait le 26 août 2026
 
 ~~Sa demande du 26 août : « dans la catégorie facture il faut rajouter le format

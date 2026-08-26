@@ -80,10 +80,10 @@ export default function ListeTermines({
           à trois centimètres l'une de l'autre, faisaient hésiter — est-ce le
           même chiffre ? */}
       <div className="mx-[26px] mt-[22px] flex gap-2">
-        <Onglet actif={onglet === "tout"} onClick={() => setOnglet("tout")}>
+        <Onglet repere="tout" actif={onglet === "tout"} onClick={() => setOnglet("tout")}>
           Tout
         </Onglet>
-        <Onglet actif={onglet === "attente"} onClick={() => setOnglet("attente")}>
+        <Onglet repere="attente" actif={onglet === "attente"} onClick={() => setOnglet("attente")}>
           À facturer
         </Onglet>
       </div>
@@ -130,19 +130,26 @@ export default function ListeTermines({
                   disaient donc des sommes que la liste en dessous ne montrait
                   pas — trois chiffres d'origines différentes sur deux lignes.
 
-                  **Le trait sous elle est la démarcation qu'il a demandée** —
-                  *« essaye de laisser un peu d'espace entre cette phrase-là et
-                  le premier client, histoire qu'on fasse bien la démarcation »*.
-                  De l'espace seul se serait mangé au premier ajout de contenu ;
-                  un trait tient.
+                  **Le trait sous elle était la démarcation qu'il a demandée**
+                  le 23 août — *« essaye de laisser un peu d'espace entre cette
+                  phrase-là et le premier client, histoire qu'on fasse bien la
+                  démarcation »*. **Il est parti le 26** : *« tous les traits
+                  supprimés entre chaque ligne »*.
+
+                  **C'est l'espace qui le remplace, et c'est ce qu'il avait
+                  demandé au départ** — le trait avait été préféré parce que de
+                  l'espace seul se mange au premier ajout de contenu. La
+                  démarcation tient donc maintenant sur les 22 px de la première
+                  ligne, et c'est à surveiller : une ligne qui reviendrait à 19
+                  la ferait disparaître sans que rien ne rougisse.
 
                   **Toute la phrase est en noir gras** — c'était déjà sa demande
                   du 22 août pour le compte des factures, et les montants partis,
                   il ne reste plus rien à mettre en retrait : deux graisses pour
                   deux mots feraient une hiérarchie sans objet. */}
               <p
-                className="mb-[9px] mt-3.5 pb-[15px] text-[14px] font-bold leading-[1.6]"
-                style={{ color: colors.ink, borderBottom: `1px solid ${colors.line}` }}
+                className="mb-[9px] mt-3.5 text-[14px] font-bold leading-[1.6]"
+                style={{ color: colors.ink }}
                 data-atlas="compte-du-mois"
               >
                 {attente.length > 0 && (
@@ -253,8 +260,8 @@ function Fleche({
 function Compte({ children }: { children: React.ReactNode }) {
   return (
     <p
-      className="mb-[9px] mt-1.5 pb-[15px] text-[13px] font-bold leading-[1.55]"
-      style={{ color: colors.ink, borderBottom: `1px solid ${colors.line}` }}
+      className="mb-[9px] mt-1.5 text-[13px] font-bold leading-[1.55]"
+      style={{ color: colors.ink }}
       data-atlas="compte-du-mois"
     >
       {children}
@@ -263,10 +270,19 @@ function Compte({ children }: { children: React.ReactNode }) {
 }
 
 function Onglet({
+  repere,
   actif,
   onClick,
   children,
 }: {
+  /**
+   * Ce que vise un contrôle, plutôt que le libellé.
+   *
+   * **Posé le 26 août 2026.** Une suite cherchait l'onglet par son texte —
+   * « À facturer » — et le jour où il le fera changer, elle rougira sur du code
+   * juste (`CLAUDE.md` §5 bis). Un repère survit au mot.
+   */
+  repere: "tout" | "attente";
   actif: boolean;
   onClick: () => void;
   children: React.ReactNode;
@@ -275,6 +291,7 @@ function Onglet({
     <button
       type="button"
       onClick={onClick}
+      data-atlas={`onglet-${repere}`}
       aria-pressed={actif}
       className="min-h-10 rounded-full px-4 text-[13px]"
       style={{
@@ -310,8 +327,19 @@ function Ligne({ ligne }: { ligne: LigneAffichee }) {
       // étages de texte et parfois une capsule de 44 px ; à 14 px de marge, le
       // trait du dessous touchait presque le second étage, et douze lignes se
       // lisaient comme un bloc.
-      className="flex items-center gap-3.5 py-[19px]"
-      style={{ borderBottom: `1px solid ${colors.line}`, minWidth: 0 }}
+      //
+      // **LE TRAIT EST PARTI LE 26 AOÛT 2026** — *« tous les traits supprimés
+      // entre chaque ligne »*, planche `appli/termines-sans-traits.html`.
+      //
+      // **Et l'espace a dû grandir avec, ce n'est pas un retrait sec.** Le
+      // trait faisait la moitié du travail : c'est lui qui séparait le second
+      // étage d'une ligne du nom de la suivante. Retiré à marge égale, deux
+      // rangées voisines se lisent comme une seule — le nom du chantier suivant
+      // paraît appartenir à l'état du précédent. 19 px de respiration deviennent
+      // donc 24, et la PREMIÈRE ligne en garde 22 pour tenir la démarcation
+      // qu'il avait demandée le 23 août sous la phrase de compte.
+      className="flex items-center gap-3.5 py-[24px] first:pt-[22px]"
+      style={{ minWidth: 0 }}
     >
       <span className="min-w-0 flex-1">
         <b

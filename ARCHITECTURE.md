@@ -16836,3 +16836,110 @@ pas.
 **Confrontés à l'état dégradé** (`CLAUDE.md` §5) : plafond retiré de
 `equipesMobilisees`, les deux premières suites rougissent — et sur la bonne
 ligne, pas sur un effet de bord trois écrans plus loin.
+
+---
+
+## 193. « Terminés » sans traits, et une carte de TVA qui se voit cliquable
+
+**Sa demande du 26 août 2026**, capture de l'écran à l'appui : *« tous les
+traits supprimés entre chaque ligne »*, et *« le "Ma TVA à déclarer", on ne
+comprend pas trop qu'on peut cliquer dessus, corrige ça — mais garde ce style
+et cette forme, j'aime bien »*. Puis, devant `appli/termines-sans-traits.html` :
+**« le 3 »**, le contour doré.
+
+### Un défaut d'AFFORDANCE ne casse rien — et c'est pourquoi rien ne le voyait
+
+Le 23 août, il disait de cette même carte *« elle est cachée, on ne la voit pas
+trop »*. Elle est montée en tête de l'écran, et trois contrôles ont été écrits
+pour tenir sa place (§ `test-tva-en-tete-e2e.ts`). **Tous les trois étaient
+verts le 26**, sur une carte dont il ne savait toujours pas qu'on pouvait
+l'appuyer.
+
+Les deux plaintes se ressemblent et ne sont pas la même :
+
+| | |
+|---|---|
+| *« elle est cachée »* | un défaut de **place** — il ne la trouvait pas |
+| *« on ne comprend pas qu'on peut cliquer »* | un défaut d'**affordance** — il la voit, et croit lire un bandeau |
+
+Le second ne casse rien : la carte marchait, elle menait au relevé, elle portait
+son montant. Il se lit sur un écran, ou jamais — c'est la quatrième fois dans ce
+dépôt qu'un défaut sort d'une image et d'aucun test.
+
+### Pourquoi elle se lisait comme un bandeau
+
+Son fond (`card`, `#faf9f5`) est à deux points du fond de l'écran (`cream`,
+`#f5f3ee`). Sans bord, sans ombre, et sans rien qui ressemble aux boutons du
+même écran, un aplat de cette couleur-là n'est pas un objet : c'est un
+bandeau d'information.
+
+**Deux réponses lui ont été dessinées, et elles ne disaient pas la même chose :**
+
+| | Ce que ça emploie |
+|---|---|
+| **la capsule** — le montant prend la forme de « Facturer » | le vocabulaire du geste que la page connaît déjà |
+| **le contour** — la carte prend un bord doré | rien de neuf : elle devient simplement un objet |
+
+Il a retenu le contour, et c'est cohérent avec sa phrase : la capsule aurait
+changé quelque chose à l'intérieur, le contour laisse la forme intacte.
+
+**Il est doré, jamais gris**, parce que l'or est déjà la couleur du titre de
+cette carte : un bord gris en aurait fait deux objets — un cadre, et un contenu
+sans rapport. **Et il est posé en `boxShadow` interne, pas en `border`** : une
+bordure vraie déplacerait le contenu de 1,5 px et désalignerait la carte des
+lignes en dessous.
+
+### Le trait n'était pas décoratif, et le retirer sec aurait cassé la lecture
+
+Sa demande sur les traits est tranchée — il n'y avait rien à proposer. Mais
+**le trait faisait la moitié du travail de séparation** : c'est lui qui tenait
+le second étage d'une rangée (« Pas encore facturé · 360,00 € prévus ») à
+distance du nom de la suivante. Retiré à marge égale, deux rangées voisines se
+lisent comme une seule, et le nom d'un chantier paraît appartenir à l'état du
+précédent.
+
+19 px de respiration deviennent donc **24**, et la première rangée en garde
+**22** — parce que le trait sous la phrase de compte portait, lui, une demande
+explicite du 23 août : *« laisser un peu d'espace entre cette phrase-là et le
+premier client, histoire qu'on fasse bien la démarcation »*. Il avait demandé
+de l'espace ; un trait avait été préféré parce que de l'espace seul se mange au
+premier ajout de contenu. La démarcation ne tient plus que sur ces 22 px, et
+c'est exactement pour cela qu'un contrôle les mesure.
+
+### Ce que les contrôles mesurent, et ce qu'ils refusent
+
+Compter les traits ne suffit pas : **un écran vide n'en a pas non plus**. Trois
+cas ont donc été ajoutés à `test-tva-en-tete-e2e.ts`, et chacun refuse de
+conclure plutôt que de rendre un vert :
+
+| Ce qui est mesuré | Pourquoi pas plus simple |
+|---|---|
+| aucune bordure sur les rangées ni sur la phrase de compte | c'est la demande, littéralement |
+| l'espace **réellement vu** entre deux rangées ≥ 34 px | une valeur de rembourrage lue dans le code ne dit rien de ce qui s'affiche |
+| l'espace sous la phrase de compte ≥ 24 px | c'est tout ce qui reste de sa démarcation du 23 août |
+
+Les trois ont été confrontés à l'écran d'avant, et les trois rougissent.
+
+### La suite POSE ses propres rangées, et c'est ce qui a coûté le plus
+
+Trois pièges se sont refermés en écrivant ces contrôles, tous du même genre —
+un contrôle qui accuse le mauvais coupable :
+
+1. **le jeu de démonstration ne porte aucun chantier daté du passé.** L'écran
+   remplace alors la liste entière par une phrase : ni onglets, ni rangées. Le
+   `waitForSelector` expirait au bout de trente secondes **en désignant la
+   rangée**, c'est-à-dire en envoyant chercher dans l'écran un défaut qui était
+   dans la base ;
+2. **et sous la batterie, elle passait par chance** : d'autres suites laissent
+   derrière elles des chantiers terminés. Un contrôle qui ne mesure que si une
+   voisine a tourné avant lui n'en est pas un — il se taira le jour où l'ordre
+   change. La suite insère donc ses deux chantiers, et les retire en partant ;
+3. **`tsx` casse toute fonction nommée à l'intérieur d'un `page.evaluate`.**
+   Il conserve les noms en injectant un `__name` qui n'existe pas dans la page :
+   le contrôle rougissait sur un « __name is not defined » sans rapport avec
+   l'écran. Tout ce qui s'exécute dans la page se fait donc en boucles.
+
+**Et l'onglet se vise par un repère, jamais par son libellé.** `data-atlas` a
+été posé sur les deux onglets (`onglet-tout`, `onglet-attente`) : « À facturer »
+est un mot qu'il peut faire changer demain, et une suite qui le réclame rend
+l'écran impossible à modifier (`CLAUDE.md` §5 bis).

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { colors, font, libelleCaps } from "@/lib/design-tokens";
+import { colors, font, libelleCaps, voile } from "@/lib/design-tokens";
 import EnTeteEcran from "@/components/atlas/EnTeteEcran";
 import { getCurrentCtx } from "@/server/session-ctx";
 import { listerChantiersTermines } from "@/server/repositories/factures";
@@ -80,12 +80,44 @@ export default async function TerminesPage() {
             réserve dite devant la planche avant qu'il ne choisisse : ce montant
             n'est pas dû le jour où il le lit. Il dépend de son rythme et de son
             régime, et n'est exigible qu'à l'échéance. Sans ces deux mots, la
-            carte se lirait « ce que je dois aujourd'hui ». */}
+            carte se lirait « ce que je dois aujourd'hui ».
+
+            **ELLE PORTE UN CONTOUR DEPUIS LE 26 AOÛT 2026, et c'est son choix
+            — la proposition 3** de `appli/termines-sans-traits.html` : *« on ne
+            comprend pas trop qu'on peut cliquer dessus, corrige ça, mais garde
+            ce style et cette forme, j'aime bien »*.
+
+            **Pourquoi elle ne se voyait pas.** Son fond (`card`, #faf9f5) est à
+            deux points du fond de l'écran (`cream`, #f5f3ee). Sans bord, sans
+            ombre et sans rien qui ressemble aux boutons du même écran, elle
+            avait la forme d'un BANDEAU D'INFORMATION — un chiffre affiché, pas
+            un objet qu'on touche. Déplacer la carte en tête le 23 août avait
+            réglé « on ne la voit pas » ; restait « on ne sait pas qu'on peut
+            appuyer », qui n'est pas la même chose.
+
+            **Un contour, et pas une capsule.** Les deux lui ont été dessinées.
+            La capsule aurait réemployé le seul signe du geste que cette page
+            connaît déjà ; il a retenu le contour, qui laisse la forme
+            rigoureusement intacte.
+
+            **Il est doré, jamais gris.** L'or est déjà la couleur du titre de
+            cette carte : un bord gris en aurait fait deux objets — un cadre, et
+            un contenu sans rapport. Et il est posé en `boxShadow` interne
+            plutôt qu'en `border` : une bordure vraie déplacerait le contenu de
+            1,5 px et désalignerait la carte des lignes en dessous.
+
+            **Ce qui a été écarté, et qu'il ne faut pas ramener :** une flèche au
+            bout (*« arrête de mettre des flèches, c'est moche »*, 25 août, redit
+            le soir même) et un « Voir le relevé » sous le montant (*« le moins
+            de mots possible »*, même jour). */}
         <Link
           href="/termines/tva"
           data-atlas="carte-tva"
           className="mx-[26px] mt-[18px] flex items-center justify-between gap-3 rounded-[4px] px-[15px] py-[17px]"
-          style={{ backgroundColor: colors.card }}
+          style={{
+            backgroundColor: colors.card,
+            boxShadow: `inset 0 0 0 1.5px ${voile(colors.or, 0.55)}`,
+          }}
         >
           <span className="min-w-0">
             {/* **En or et en gras — sa demande du 23 août 2026 au soir.** Ce

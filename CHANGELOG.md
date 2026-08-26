@@ -9,6 +9,36 @@ Format : le plus récent en tête.
 
 ## 2026-08-26
 
+### « Terminés » : les traits partent, et la carte de TVA se voit cliquable
+
+*« Tous les traits supprimés entre chaque ligne »*, et *« le "Ma TVA à
+déclarer", on ne comprend pas trop qu'on peut cliquer dessus, corrige ça — mais
+garde ce style et cette forme, j'aime bien »*. Puis, devant la planche
+`appli/termines-sans-traits.html` : **« le 3 »**.
+
+**Ce qui change à l'écran.** Plus aucun trait entre les rangées ni sous la
+phrase de compte. La carte de TVA prend un contour doré — sa forme, son titre,
+son mois et son montant sont rigoureusement les mêmes.
+
+**Pourquoi elle ne se voyait pas.** Son fond est à deux points de celui de
+l'écran. Sans bord ni rien qui ressemble aux boutons de la même page, elle avait
+la forme d'un bandeau d'information. La monter en tête le 23 août avait réglé
+« on ne la voit pas » ; restait « on ne sait pas qu'on peut appuyer », qui n'est
+pas la même chose — et qu'aucun contrôle ne pouvait voir, puisque la carte
+marchait.
+
+**Le trait n'était pas décoratif, et il a fallu le remplacer.** C'est lui qui
+tenait le second étage d'une rangée à distance du nom de la suivante. Retiré
+sec, deux rangées se seraient lues comme une seule. La respiration passe donc de
+19 à 24 px, et la première rangée en garde 22 — c'est tout ce qui reste de la
+démarcation demandée le 23 août.
+
+**Écartés, et écrits pour qu'on n'y revienne pas :** une flèche au bout de la
+carte, et un « Voir le relevé » sous le montant.
+
+**Éprouvé** par trois cas neufs de `test-tva-en-tete-e2e.ts`, confrontés à
+l'écran d'avant : les trois rougissent.
+
 ### Ses salariés se comptent à part de ses équipes — et ce sont leurs noms qu'on coche
 
 **Sa réponse à la planche 97 : A.** Puis, en tranchant : *« il ne faut pas

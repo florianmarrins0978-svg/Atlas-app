@@ -53,6 +53,19 @@ qu'`onChange` — est dans `ARCHITECTURE.md` §191.
 
 ---
 
+## « Terminés » : plus de traits, et la TVA se voit cliquable (26 août 2026)
+
+*Ses deux demandes, planche `appli/termines-sans-traits.html`, sa réponse :
+« le 3 ». Le détail est dans `ARCHITECTURE.md` §193.*
+
+**Fait.** Plus aucun trait entre les rangées. La carte « Ma TVA à déclarer »
+porte un contour doré — même forme, même titre, même montant.
+
+**Ce qui a demandé plus que le retrait.** Le trait tenait le second étage d'une
+rangée à distance du nom de la suivante : retiré sec, deux rangées se liraient
+comme une seule. La respiration passe de 19 à 24 px, et la première rangée garde
+22 px — tout ce qui reste de la démarcation qu'il avait demandée le 23 août.
+
 ## Le numéro de ses documents se choisit (26 août 2026)
 
 *Sa demande : « dans la catégorie facture il faut rajouter le format de numéro,
