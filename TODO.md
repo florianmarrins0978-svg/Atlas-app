@@ -9,6 +9,21 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
+## ✅ ~~Le format des numéros de devis et de factures~~ — fait le 26 août 2026
+
+~~Sa demande du 26 août : « dans la catégorie facture il faut rajouter le format
+de numéro ». Cinq formats au choix, le compteur qui repart au 1ᵉʳ janvier, et
+surtout le millésime qui n'est plus écrit en dur.~~ `ARCHITECTURE.md` §188.
+
+**Ce qui reste ouvert, et qui n'est pas ce lot :** le numéro de la première
+facture d'une entreprise qui reprendrait une suite existante. Aujourd'hui elle
+repart de 1 ; un artisan qui migre depuis un autre logiciel voudra continuer à
+0148. Il ne l'a pas demandé, et rien ne presse — mais le jour où il le
+demandera, c'est une colonne de départ sur `entreprise_compteurs`, pas un
+nouveau format.
+
+---
+
 ## ⏳ `test-envoi-client-e2e.ts` — deux cas rouges, et ce n'est PAS une régression
 
 **Le 26 août 2026**, dans la batterie du lot « rôles et accès » :
@@ -836,6 +851,12 @@ ce que vous avez dit" au lieu d'annoncer qu'il rédige »*. Tombée en batterie
 touchait pas — il ne portait que l'en-tête de l'accueil. Ici encore, l'assertion
 arrive avant que le serveur chargé n'ait rendu sa réponse : l'écran en est resté
 au message d'échec de la dictée précédente. **Quatre suites, un seul défaut.**
+
+**`test-lecons-prix-e2e.ts` a rejoint la liste**, et elle est la première à
+tomber DEUX FOIS — le 25 août, sur deux batteries séparées, chaque fois verte
+seule dans la foulée, et sur des lots qui ne touchaient rien de son sujet. Elle
+tombe sur une attente de réponse dépassée : même signature que les quatre
+autres. **Cinq suites, un seul défaut.**
 
 **MESURE DÉCISIVE DU 25 AOÛT, à garder :** l'étape navigateur a été jouée sur
 `main` NU — arbre séparé, aucun commit de session — et elle y rend **107/110**,

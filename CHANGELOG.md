@@ -9,6 +9,64 @@ Format : le plus récent en tête.
 
 ## 2026-08-26
 
+### Les filets à côté des intertitres partent, les séparateurs restent
+
+*« Ça aussi tu peux retirer »*, capture de l'écran Équipe à l'appui — le filet
+qui partait du mot et filait jusqu'au bord : « QUI A ACCÈS ————— ». Et dans le
+même souffle : *« ceux qui séparent les blocs, laisse-les »*.
+
+Les deux se ressemblent et ne disent pas la même chose. Un séparateur porte une
+information — deux choses sont distinctes. Le filet d'intertitre n'ornait qu'un
+mot. Le contrôle ne traque donc que la seconde forme, reconnue à ce qui la
+caractérise : un filet d'un pixel qui prend la place restante (`flex-1`). Vu
+rouge contre un filet remis, et vert avec les séparateurs en place.
+
+**Et une fausse alerte, corrigée avant de coder quoi que ce soit.** Je lui avais
+signalé que la barre du bas recouvrait un paragraphe de cet écran : c'était un
+artefact de ma capture. Une capture *pleine page* dessine les éléments fixés à
+leur place d'écran, donc au milieu d'une longue page. Mesuré pour de bon —
+déroulé jusqu'en bas, `bottom` du texte contre `top` de la barre — **rien n'est
+recouvert**. Le piège est écrit dans `HANDOVER.md` : c'est la deuxième fois
+aujourd'hui qu'il trompe.
+
+### Le numéro de ses documents se choisit — et le millésime n'est plus écrit en dur
+
+*« Dans la catégorie facture il faut rajouter le format de numéro, c'est
+obligatoire il me semble. »* Puis, devant la planche : *« garde le F »*,
+*« 6 chiffres »*, *« oui remettre à 0 chaque début d'année »*, *« l'utilisateur
+peut choisir entre ces 5 façons ? Si oui code ça »*.
+
+**Ce qui existe maintenant.** Réglages → Devis & factures → « Le numéro de mes
+documents » : cinq formats, chacun montrant ce qu'il donne, et le changement
+s'enregistre seul.
+
+| Format | Le prochain devis | La prochaine facture |
+|---|---|---|
+| Année et 4 chiffres | 2026-0012 | F2026-0012 |
+| **Année et 6 chiffres** (défaut) | 2026-000012 | F2026-000012 |
+| Année courte | 26-0012 | F26-0012 |
+| Année, mois, numéro | 2026-08-012 | F2026-08-012 |
+| Une suite sans année | 0012 | F0012 |
+
+**Le compteur repart à 1 le 1ᵉʳ janvier**, sauf sur « une suite sans année » —
+sinon deux documents porteraient le même numéro à un an d'écart, ce que la loi
+interdit. L'écran le dit au lieu d'en faire un second réglage.
+
+**CE QUI ÉTAIT CASSÉ, et qu'aucune suite ne voyait.** Le millésime était écrit
+en dur dans le dépôt : `2026-…` pour les devis, `F2026-…` pour les factures.
+**En janvier 2027, ses factures auraient encore dit 2026** — un défaut à
+retardement, invisible tant qu'on teste aujourd'hui, et qui ne serait apparu que
+sur un document déjà parti chez un client.
+
+**Ce que le changement ne fait pas :** il ne renumérote rien. Les documents déjà
+émis gardent leur numéro — les réécrire creuserait un trou dans la suite.
+
+**Éprouvé** par `test-numero-documents.ts` (la règle, 10 cas),
+`test-numero-documents-db.ts` (le compteur et sa remise à zéro au 1ᵉʳ janvier,
+9 cas, dont deux factures émises à la même seconde) et
+`test-format-numero-e2e.ts` (le fil entier : il choisit, et le devis suivant
+porte le format choisi).
+
 ### Face ID marche enfin derrière son tunnel — et le bouton du mot de passe remonte
 
 *« Le Face ID ne fonctionne pas »*, capture à l'appui — et *« le bouton changer
@@ -75,10 +133,6 @@ périmètre affiché ne suivait pas le rôle coché, si bien qu'on lisait « le
 planning et rien d'autre » sous « Commercial ». Une maquette qui ment sur ce que
 fait un rôle est pire qu'une maquette absente.
 
----
-
-## 2026-08-26
-
 ### La liste, dans Paysage — deux emplacements à choisir
 
 Sa proposition, une fois la planche des deux fiches comprise : *« est-ce qu'on
@@ -120,6 +174,27 @@ prestations de ma fiche ». Rien n'a été codé avant sa réponse.
 ---
 
 ## 2026-08-25
+
+### Un septième contrôle, et la leçon qui vaut pour tous
+
+`test-lecons-prix-e2e` guettait la réponse HTTP de l'action serveur. Son délai
+avait déjà été relevé de 30 à 60 secondes le matin même, pour la même raison ;
+sous la batterie entière, soixante ne suffisaient pas non plus.
+
+**Quatre-vingt-dix n'auraient fait que repousser le mur.** Une attente calée sur
+la vitesse de la machine finit toujours par mesurer la machine — et le rouge
+qu'elle produit accuse un produit sain.
+
+Ce que la suite veut savoir n'est pas qu'une requête est passée : c'est que le
+prix est en base, car c'est cela seul qui apprend quelque chose à l'agent. Elle
+regarde donc la base, et l'échec dit ce qu'elle portait vraiment (« lu :
+1400.00 »). Confrontée à un prix qui n'arrive jamais, elle rougit.
+
+**Sept contrôles réparés en une journée, aucun défaut de produit derrière.**
+Deux cassaient à minuit, trois lisaient trop tôt, un exigeait un état fugace, un
+guettait le réseau au lieu du résultat. Le fil commun tient en une phrase :
+*ils mesuraient un instant, ou une vitesse, plutôt qu'un état.*
+
 
 ### Ses journées se comptaient à Greenwich
 

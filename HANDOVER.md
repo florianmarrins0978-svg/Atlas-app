@@ -2214,6 +2214,24 @@ planches) : la batterie devrait nettoyer ces dossiers avant l'étape
 « Construction » de `scripts/verifier-avant-livraison.ts`. Sans quoi le piège
 reviendra à la prochaine page supprimée.
 
+## ⚠ UNE CAPTURE PLEINE PAGE MENT SUR LA BARRE DU BAS
+
+Posé le 25 août 2026, après avoir signalé au patron un défaut qui n'existait pas.
+
+`page.screenshot({ fullPage: true })` dessine les éléments **fixés** une seule
+fois, à la place qu'ils occupent dans le CADRE — donc au milieu d'une longue
+page. La barre du bas paraît alors couper un paragraphe en deux, et l'image est
+convaincante.
+
+**Ce n'est pas ce que voit le patron.** Pour savoir si un texte passe vraiment
+dessous : dérouler jusqu'en bas, puis comparer le `bottom` de chaque texte au
+`top` de `.atlas-nav-basse`. Mesuré ainsi sur l'écran Équipe : **rien n'était
+recouvert**.
+
+**Le vrai recouvrement existe pourtant** — `.atlas-contenu` et les `pb-*` sont là
+pour ça, et `IdentiteClient` porte `pb-40` pour une raison. Ne pas conclure du
+faux au vrai : **mesurer, chaque fois.**
+
 ## ⚠ LANCER UNE SUITE NAVIGATEUR À LA MAIN : DEUX PIÈGES QUI FONT ACCUSER LE CODE
 
 Posé le 25 août 2026, après une heure perdue à croire `main` cassé.

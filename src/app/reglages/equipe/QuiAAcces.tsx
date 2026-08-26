@@ -71,9 +71,8 @@ export default function QuiAAcces({
 
   return (
     <section className="mt-7 px-[26px]">
-      <p className={`mb-1.5 flex items-center gap-3 ${libelleCaps}`} style={{ color: colors.muted }}>
+      <p className={`mb-1.5 ${libelleCaps}`} style={{ color: colors.muted }}>
         Qui a accès
-        <i className="h-px flex-1" style={{ backgroundColor: colors.line }} />
       </p>
 
       <ul className="mt-1">
