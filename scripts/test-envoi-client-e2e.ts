@@ -3,6 +3,7 @@ import { mkdirSync } from "node:fs";
 import type { Page, BrowserContext } from "playwright";
 import { lancerNavigateur } from "./e2e-browser";
 import { creerPuisFiche } from "./_creer-chantier-e2e";
+import { joursAProposer } from "./_calendrier-e2e";
 
 // L'envoi du devis au client, vu depuis l'écran du patron (docs/AGENT.md §2.2).
 //
@@ -221,24 +222,17 @@ async function main() {
     // qu'on a le mois complet »* —, donc `button[aria-pressed]` ne rend plus
     // que les dates DÉJÀ retenues. La règle éprouvée ici, elle, n'a pas
     // changé : jamais plus de deux.
-    const cases = page.locator('[data-jour][data-etat="regardable"]');
-    const total = await cases.count();
-    assert.ok(total >= 3, `pas assez de jours libres au calendrier (${total})`);
-
     // Une date est déjà retenue à l'ouverture : on en retient deux de plus, et
     // la troisième doit chasser la première — jamais trois.
-    // **Assez loin pour que le serveur les accepte.** Le mois affiché commence
-    // au 1er : ses premiers jours sont derrière nous, et le délai minimal en
-    // écarte deux de plus. Les prendre ferait rougir cette suite sur un refus
-    // parfaitement juste — le pire des rouges (`AGENTS.md`), et c'est ce qui
-    // vient d'arriver : « Proposer ce jour » restait désactivé.
-    const plancher = new Date();
-    plancher.setDate(plancher.getDate() + 3);
-    const depuis = plancher.toISOString().slice(0, 10);
-    const aRetenir = (
-      await cases.evaluateAll((els) => els.map((e) => e.getAttribute("data-jour")!).filter(Boolean))
-    ).filter((j) => j >= depuis);
-    assert.ok(aRetenir.length >= 2, `pas assez de jours acceptables (${aRetenir.length})`);
+    //
+    // **La recherche des jours TOURNE LA PAGE DU MOIS si besoin** (26 août
+    // 2026, `scripts/_calendrier-e2e.ts`). Elle ne relâche rien : la règle
+    // éprouvée plus bas — jamais plus de deux dates — est intacte. Ce qui a
+    // changé est en amont, et c'est de la matière à mesurer : le mois affiché
+    // s'ouvre au 1er, et en fin de mois il ne restait parfois qu'un seul jour
+    // ouvrable au-delà du délai minimal. La suite s'arrêtait là, sur un écran
+    // parfaitement juste — 57 jours de l'année, mesurés.
+    const aRetenir = await joursAProposer(page, 2);
     for (const jour of aRetenir.slice(0, 2)) await retenirAuCalendrier(page, jour);
 
     // **On compte des JOURS, pas des boutons pressés.** Depuis le 12 août 2026,
@@ -612,14 +606,11 @@ async function main() {
 
     // Deux dates, comme sur sa capture — un seul jour proposé change le libellé
     // du choix, et un contrôle qui n'éprouve qu'une forme laisse passer l'autre.
-    const cases = page.locator('[data-jour][data-etat="regardable"]');
-    const plancher = new Date();
-    plancher.setDate(plancher.getDate() + 3);
-    const depuis = plancher.toISOString().slice(0, 10);
-    const libres = (
-      await cases.evaluateAll((els) => els.map((e) => e.getAttribute("data-jour")!).filter(Boolean))
-    ).filter((j) => j >= depuis);
-    assert.ok(libres.length >= 2, `pas assez de jours libres au calendrier (${libres.length})`);
+    // Même remède qu'au-dessus, et pour la même raison : trouver deux jours,
+    // en tournant la page du mois si celui-ci est trop entamé. Ce qui est
+    // éprouvé ensuite — la cliente peut proposer un jour sans que le patron ait
+    // rien touché — n'a pas bougé d'un caractère.
+    const libres = await joursAProposer(page, 2);
     for (const jour of libres.slice(0, 2)) await retenirAuCalendrier(page, jour);
 
     await page.getByRole("button", { name: "Envoyer le devis" }).click();
