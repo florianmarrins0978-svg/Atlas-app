@@ -200,11 +200,25 @@ Le contrôle a été vu rouge en le remettant en A. A et B ne diffèrent que pen
 le DÉFILEMENT — un contrôle qui n'aurait pas descendu serait resté vert sur la
 proposition qu'il a écartée.
 
-### La molette du temps passé se dédouble : heures d'un côté, minutes de l'autre
+### La molette du temps passé : sa demande décrivait ce qui existait déjà
 
 *« La molette, mais avec d'un côté les heures qu'on peut bouger et de l'autre les
-minutes qu'on peut bouger séparément. »* Dessiné le jour même, proposition D de
-`appli/choisir-l-heure.html` — **rien n'est codé**.
+minutes qu'on peut bouger séparément. »* Dessiné le jour même — puis, la planche
+livrée : *« la molette a déjà été codée, vérifie »*. **Il avait raison.**
+
+`MoletteDuree` (`src/app/paysage/fiche/[id]/FicheChantierClient.tsx`) pose depuis
+le 16 août **deux listes natives : les heures à gauche, les minutes à droite**,
+chacune au doigt, au pas de cinq minutes. Sa demande décrivait exactement cela.
+
+**La faute est du même genre que celle de la planche 56** — dessiner un écran qui
+existe déjà —, et l'inverse de celle du 20 août, où l'on avait déclaré impossible
+un travail à moitié fait. `CLAUDE.md` §5 ter le dit dans les deux sens :
+*chercher avant d'affirmer*. Trente secondes de `grep -rn molette src/`.
+
+**Ce qui reste ouvert n'est plus le geste mais l'APPARENCE** : les molettes de
+son téléphone (en place) ou celles dessinées par Atlas. La planche le dit
+maintenant en toutes lettres, et un contrôle l'exige — une planche qui annonce
+codé ce qui ne l'est pas, ou l'inverse, lui coûte un aller-retour.
 
 **Pourquoi il a raison.** D'un seul tenant, la molette compte cinquante-trois
 crans de 0 h 00 à 4 h 00 : aller de 0 h 05 à 3 h 30 demande quarante et un crans,

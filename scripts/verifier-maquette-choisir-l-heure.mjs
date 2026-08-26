@@ -78,14 +78,29 @@ await cas("les quatre gestes existent, et le RETENU s'ouvre le premier", async (
   for (const v of ["h-a", "h-b", "h-c", "h-d"]) {
     assert((await page.locator(`label[for="${v}"]`).count()) === 1, `le geste ${v} a disparu`);
   }
-  // **Sa décision du 25 août 2026 : la molette, MAIS EN DEUX COLONNES** — *« la
-  // molette, mais avec d'un côté les heures qu'on peut bouger et de l'autre les
-  // minutes qu'on peut bouger séparément »*. Elle remplace « la A » du 16 août,
-  // et c'est elle qui doit s'ouvrir : une planche qui rouvrirait sur un autre
-  // geste lui montrerait, dans six mois, autre chose que ce qu'il a choisi.
+  // **LA PLANCHE S'OUVRE SUR LA D, ET CE N'EST PAS UN CHOIX RETENU.**
+  //
+  // Le 25 août 2026 il a demandé *« la molette, mais avec d'un côté les heures
+  // qu'on peut bouger et de l'autre les minutes qu'on peut bouger séparément »*
+  // — puis, la planche livrée, il a corrigé : *« la molette a déjà été codée,
+  // vérifie »*. **Et il avait raison** : `MoletteDuree`
+  // (`src/app/paysage/fiche/[id]/FicheChantierClient.tsx`) pose deux listes
+  // natives, heures à gauche, minutes à droite, chacune au doigt. C'est la A,
+  // codée le 16 août — sa demande décrivait ce qui existait déjà.
+  //
+  // Il ne reste qu'une question d'apparence : les molettes du téléphone, ou
+  // celles d'Atlas. La planche s'ouvre donc sur la **D**, qui est la seule chose
+  // qu'il n'a pas encore vue.
   assert(
     /id="h-d" class="etat" checked/.test(source),
-    "la planche ne s'ouvre plus sur les deux colonnes, retenues le 25 août 2026"
+    "la planche ne s'ouvre plus sur la D, la seule proposition qu'il n'a pas déjà en main"
+  );
+  // **Et elle ne doit pas prétendre que la D est retenue.** Une planche qui
+  // annonce codé ce qui ne l'est pas — ou l'inverse — lui fait perdre un
+  // aller-retour, et c'est la quatrième fois dans ce dépôt (`CLAUDE.md` §3 bis).
+  assert(
+    /EN PLACE dans l'appli/.test(source),
+    "la planche ne dit plus que la molette du téléphone est CELLE QUI EST CODÉE"
   );
 });
 

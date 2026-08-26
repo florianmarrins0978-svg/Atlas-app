@@ -3713,9 +3713,27 @@ faire.
 | Sa réponse du 25 août | Ce que ça ferme |
 |---|---|
 | **« Planche une, la A »** | **une seule liste**, tenue dans les Réglages, pré-remplie à chaque envoi. Rien n'est rangé par client |
-| **« Planche 2, la molette, mais avec d'un côté les heures qu'on peut bouger et de l'autre les minutes qu'on peut bouger séparément »** | la molette Atlas **en deux colonnes** — proposition D, dessinée le jour même |
+| **« Planche 2, la molette, mais avec d'un côté les heures qu'on peut bouger et de l'autre les minutes qu'on peut bouger séparément »** | **rien à coder : c'était DÉJÀ le cas** — voir ci-dessous |
 
-**Ce que la D change, et pourquoi il a raison.** D'un seul tenant, la molette
+**SA DEMANDE DÉCRIVAIT CE QUI EXISTAIT DÉJÀ, et c'est lui qui l'a vu :** *« la
+molette a déjà été codée, vérifie »*. Vérifié — `MoletteDuree`
+(`src/app/paysage/fiche/[id]/FicheChantierClient.tsx`) pose **deux listes
+natives, les heures à gauche, les minutes à droite**, chacune au doigt, au pas de
+cinq minutes. C'est la proposition A, codée le 16 août.
+
+**La faute est de mon côté, et elle se répète :** une planche a été dessinée sans
+chercher d'abord ce que le dépôt faisait déjà. C'est la même que la planche 56
+— décrire un écran qui existe — et l'inverse du 20 août, où l'on avait déclaré
+impossible un travail à moitié fait (`CLAUDE.md` §5 ter : *chercher avant
+d'affirmer, dans les deux sens*). Trente secondes de `grep -rn molette src/`
+l'auraient évité.
+
+**Ce qui reste réellement ouvert, et c'est une question d'APPARENCE :** les
+molettes de son téléphone (en place) ou celles dessinées par Atlas (D). Le geste
+est identique ; seul l'aspect change. La planche le dit maintenant en toutes
+lettres, et un contrôle l'exige.
+
+**Ce que la D changerait, si elle était retenue.** D'un seul tenant, la molette
 compte cinquante-trois crans de 0 h 00 à 4 h 00 : aller de 0 h 05 à 3 h 30
 demande quarante et un crans, donc plusieurs élans du pouce. Séparées, la même
 valeur se pose en deux gestes courts. Et c'est le geste de la molette de son
