@@ -170,29 +170,36 @@ async function main() {
     await page.waitForTimeout(200);
     verifie("annulé, la session tient toujours", page.url().includes("/reglages/connexion"));
 
-    // ── 7. La barre du bouton ne recouvre pas la navigation ──────────────
+    // ── 7. Les onglets ne recouvrent pas le bouton ───────────────────────
     //
+    // **Ce que ce contrôle défend n'a PAS changé le 26 août 2026 ; la façon de
+    // le mesurer, si.** Le bouton vivait sur une barre fixe, et l'on vérifiait
+    // que cette barre se posait au-dessus des onglets. Le patron l'a fait
+    // remonter sous ses propres champs (`ARCHITECTURE.md` §183) : il n'y a plus
+    // de barre, donc plus rien à mesurer — et le contrôle réclamait un élément
+    // que sa demande venait de supprimer (`CLAUDE.md` §5 bis).
+    //
+    // La règle, elle, tient : **aucun geste ne doit être recouvert par les
+    // onglets**. On amène donc le bouton sous les yeux et on regarde s'il l'est.
     // Le défaut ne se voit que sur SON écran : sur un grand, tout tient sans
     // effort. C'est la mesure, pas l'œil.
-    // Le type est ÉCRIT, et pas déduit : deux formes de retour selon qu'on
-    // trouve la barre ou non se déduisent en un objet aux champs facultatifs,
-    // et `tsc` refuse alors la comparaison. Un seul objet, trois champs.
+    await page.getByRole("button", { name: "Changer mon mot de passe" }).scrollIntoViewIfNeeded();
+    await page.waitForTimeout(250);
     const place: { ecart: number | null; avecNav: boolean; erreur: string | null } = await page.evaluate(() => {
-      // La barre est désignée PAR SON BOUTON, pas par un rang dans le document :
-      // « le premier `div.fixed` » a changé de sens le jour où un autre élément
-      // fixe est arrivé, et l'échec accusait alors la barre du bas.
       const bouton = [...document.querySelectorAll("button")]
         .find((b) => /Changer mon mot de passe/.test(b.textContent ?? ""));
-      const barre = bouton?.closest("div.fixed");
       const nav = document.querySelector('nav[aria-label="Navigation principale"]');
-      if (!barre) return { ecart: null, avecNav: Boolean(nav), erreur: "barre introuvable" };
-      const b = barre.getBoundingClientRect();
+      if (!bouton) return { ecart: null, avecNav: Boolean(nav), erreur: "bouton introuvable" };
+      const b = bouton.getBoundingClientRect();
+      // **Une boîte de zéro pixel ne prouve rien** (`CLAUDE.md` §5) : la mise en
+      // page ne serait pas appliquée, et « 0 ≥ 0 » rendrait un vert vide.
+      if (b.height < 10) return { ecart: null, avecNav: Boolean(nav), erreur: `bouton haut de ${b.height} px` };
       // Sans navigation sur cet écran, la référence est le bas de la fenêtre :
       // ce qu'on veut savoir, c'est qu'aucun geste n'est recouvert.
       const bas = nav ? nav.getBoundingClientRect().y : window.innerHeight;
       return { ecart: bas - (b.y + b.height), avecNav: Boolean(nav), erreur: null };
     });
-    verifie("le bouton se pose au-dessus des onglets, jamais dessous",
+    verifie("les onglets ne recouvrent pas le bouton du mot de passe",
       place.ecart !== null && place.ecart >= -1.5,
       place.erreur ?? `${place.ecart?.toFixed(1)} px (navigation ${place.avecNav ? "présente" : "absente"})`);
   } finally {

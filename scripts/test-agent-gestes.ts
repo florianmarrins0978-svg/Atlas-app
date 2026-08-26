@@ -72,18 +72,19 @@ async function main() {
 
   await test("RechercherChantier retrouve un chantier par le nom du client", async () => {
     const outil = getOutil("RechercherChantier")!;
-    const r = (await outil.executer({ ctx: A, chantierId: null }, { motCle: "bernard" })) as {
-      trouve: boolean;
-      chantiers: { chantierId: string; nom: string }[];
+    // Leur outil (celui de `main`) prend `nom` et emploie la règle de l'écran.
+    const r = (await outil.executer({ ctx: A, chantierId: null }, { nom: "bernard" })) as {
+      trouves: { chantierId: string; chantierNom: string }[];
     };
-    assert.equal(r.trouve, true);
-    assert.equal(r.chantiers[0].chantierId, chantier.id);
+    assert.equal(r.trouves[0].chantierId, chantier.id);
   });
 
   await test("Isolation : l'entreprise voisine ne voit aucun de ces chantiers", async () => {
     const outil = getOutil("RechercherChantier")!;
-    const r = (await outil.executer({ ctx: B, chantierId: null }, { motCle: "bernard" })) as { trouve: boolean };
-    assert.equal(r.trouve, false);
+    const r = (await outil.executer({ ctx: B, chantierId: null }, { nom: "bernard" })) as {
+      trouves: unknown[];
+    };
+    assert.equal(r.trouves.length, 0);
   });
 
   await test("LireClients rend l'identifiant, sans quoi on corrigerait le mauvais Martin", async () => {
@@ -106,11 +107,13 @@ async function main() {
 
   await test("Créer un chantier — sans aucun chantier ouvert (migration 0066)", async () => {
     const { resultats } = await confirmer(A, null, [
-      { type: "creer_chantier", description: "Créer le chantier : Haie Durand", donnees: { nom: "Haie Durand" } },
+      { type: "creer_chantier", description: "Créer la fiche : Durand", donnees: { client: "Durand" } },
     ]);
     assert.equal(resultats[0].statut, "appliquee", resultats[0].message);
-    const tous = await chantiersRepo.listerChantiers(A);
-    assert.ok(tous.some((c) => c.nom === "Haie Durand"));
+    // **Le nom se DÉDUIT du client** (sa règle du 5 août 2026 : un chantier ne
+    // se baptise pas), par la même fonction que l'écran de création.
+    const tous = await chantiersRepo.listerChantiersPourAffichage(A);
+    assert.ok(tous.some((c) => c.nom.includes("Durand")), "aucune fiche ouverte pour Durand");
   });
 
   await test("Corriger un client — et SEULS les champs donnés bougent", async () => {

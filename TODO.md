@@ -11,7 +11,7 @@ langage, et rien n'y entre sans son accord.
 
 ## L'agent : ce qu'il ne sait pas encore faire
 
-**FAIT le 26 août 2026** pour l'essentiel (`ARCHITECTURE.md` §183). Ce qui reste
+**FAIT le 26 août 2026** pour l'essentiel (`ARCHITECTURE.md` §188). Ce qui reste
 ouvert, et qu'il faudra sans doute lui demander :
 
 - **Des gestes non couverts** : composer la fiche d'entretien, régler les

@@ -73,8 +73,8 @@ export default function ConnexionClient({ cles }: { cles: CleAppareil[] }) {
   }
 
   return (
-    // `pb-40` : la barre du bouton s'ajoute aux onglets.
-    <div className="pb-40">
+    // `pb-24` : plus que les onglets à loger — le bouton a rejoint ses champs.
+    <div className="pb-24">
       {refus && (
         <p
           role="alert"
@@ -127,6 +127,37 @@ export default function ConnexionClient({ cles }: { cles: CleAppareil[] }) {
           sousTeinte={etat ? (etat.identiques ? colors.or : colors.alert) : undefined}
         />
       </section>
+
+      {/* **LE BOUTON SOUS SES PROPRES CHAMPS — sa demande du 26 août 2026 :**
+          *« le bouton changer mon mot de passe doit se trouver au-dessus de
+          ouvrir avec Face ID »*.
+
+          Il était collé en bas de l'écran, sur une barre fixe. Deux rubriques
+          l'en séparaient — Face ID, puis « Ailleurs » —, et l'on remplissait
+          trois champs pour aller chercher, tout en bas, un bouton qui parlait
+          d'eux. Pire : rien ne disait qu'il leur appartenait, et il restait là
+          pendant qu'on réglait Face ID, comme si c'était le bouton de l'écran
+          entier.
+
+          Sous ses champs, il ne peut plus se lire autrement. */}
+      <div className="mx-[26px] mt-[22px]">
+        <button
+          type="button"
+          onClick={changer}
+          disabled={!pret}
+          className="block w-full rounded-full py-[15px] text-center text-[16px]"
+          style={{
+            backgroundColor: pret ? colors.rust : colors.card,
+            color: pret ? colors.cream : colors.muted,
+            boxShadow: pret ? "none" : `inset 0 0 0 1px ${colors.line}`,
+          }}
+        >
+          {enCours ? "En cours…" : "Changer mon mot de passe"}
+        </button>
+        <p className={`mt-2 text-center ${texteSituation}`} style={{ color: colors.muted }}>
+          Vous resterez connecté sur cet appareil.
+        </p>
+      </div>
 
       {/* **Face ID vient APRÈS le mot de passe, et ce n'est pas un hasard de
           mise en page.** Sa règle du 23 août : on crée son compte au mot de
@@ -202,28 +233,6 @@ export default function ConnexionClient({ cles }: { cles: CleAppareil[] }) {
         Un téléphone perdu, un ordinateur prêté : ce qu&apos;on veut, ce n&apos;est pas lire une liste, c&apos;est
         fermer tout d&apos;un coup.
       </p>
-
-      <div
-        className="fixed inset-x-0 z-10 mx-auto max-w-md border-t px-[26px] pb-4 pt-3.5"
-        style={{ bottom: "var(--atlas-barre)", backgroundColor: colors.cream, borderColor: colors.line }}
-      >
-        <button
-          type="button"
-          onClick={changer}
-          disabled={!pret}
-          className="block w-full rounded-full py-[15px] text-center text-[16px]"
-          style={{
-            backgroundColor: pret ? colors.rust : colors.card,
-            color: pret ? colors.cream : colors.muted,
-            boxShadow: pret ? "none" : `inset 0 0 0 1px ${colors.line}`,
-          }}
-        >
-          {enCours ? "En cours…" : "Changer mon mot de passe"}
-        </button>
-        <p className={`mt-2 text-center ${texteSituation}`} style={{ color: colors.muted }}>
-          Vous resterez connecté sur cet appareil.
-        </p>
-      </div>
     </div>
   );
 }

@@ -23,7 +23,10 @@ import {
   mettreAJourAdresseChantier,
   getChantier,
 } from "@/server/repositories/chantiers";
-import { getClient, mettreAJourClient } from "@/server/repositories/clients";
+import { getClient, mettreAJourClient, trouverOuCreerClient } from "@/server/repositories/clients";
+import { listerChantiersPourAffichage } from "@/server/repositories/chantiers";
+import { nomDuChantier } from "@/lib/nom-chantier";
+import { filtrerClientsParNom } from "@/lib/recherche-client";
 import { creerTarif, modifierTarif } from "@/server/repositories/tarifs";
 import { terminerChantier } from "@/server/repositories/factures";
 import { estUnJourValide, estUnMomentValide, type QuandChantier } from "@/lib/planning-jour";
@@ -472,18 +475,58 @@ export async function appliquerPropositionsAction(
         // pu désigner un chantier disparu entre sa proposition et le doigt du
         // patron ; l'écrire quand même serait une erreur silencieuse.
         case "creer_chantier": {
-          const nom = String(donnees.nom ?? "").trim();
-          if (!nom) {
-            resultats.push({ ...base, statut: "conflit", categorie: "donnee_invalide", message: "Nom du chantier manquant." });
+          /**
+           * **Ouvrir une fiche pour un client** — sa demande du 25 août 2026
+           * (*« ça aussi il doit pouvoir le faire »*), devenue une PROPOSITION
+           * le 26 sur sa réponse : *« très important que ça reste le doigt du
+           * patron »*. Il SAIT le faire ; c'est lui qui appuie.
+           *
+           * **Deux règles reprises de l'outil qu'elle remplace, jamais
+           * réécrites** — les perdre en changeant de mécanique aurait été une
+           * régression silencieuse :
+           */
+          const nomClient = String(donnees.client ?? donnees.nom ?? "").trim();
+          if (!nomClient) {
+            resultats.push({ ...base, statut: "conflit", categorie: "donnee_invalide", message: "Aucun nom de client." });
             break;
           }
           const adresse = String(donnees.adresse ?? "").trim() || undefined;
-          const clientId = donnees.clientId ? String(donnees.clientId) : null;
-          if (clientId && !(await getClient(ctx, clientId))) {
-            resultats.push({ ...base, statut: "conflit", categorie: "conflit_metier", message: "Ce client n'existe plus." });
-            break;
+
+          // 1. **Un jardin ne se dédouble pas en silence.** Un paysagiste
+          //    repasse chez les mêmes gens : deux fiches pour un même jardin,
+          //    c'est un désordre qu'on ne défait plus. Il faut une seconde
+          //    intention explicite.
+          if (!donnees.confirmerDoublon) {
+            const dejaLa = filtrerClientsParNom(
+              (await listerChantiersPourAffichage(ctx))
+                .filter((c) => c.clientNom)
+                .map((c) => ({ ...c, nom: c.clientNom! })),
+              nomClient
+            );
+            if (dejaLa.length > 0) {
+              resultats.push({
+                ...base,
+                statut: "conflit",
+                categorie: "conflit_metier",
+                message: `${nomClient} a déjà ${dejaLa.length} chantier${dejaLa.length > 1 ? "s" : ""} dans Atlas.`,
+              });
+              break;
+            }
           }
-          await creerChantier(ctx, { nom, adresseChantier: adresse, clientId });
+
+          // 2. **Un chantier ne se BAPTISE pas** (sa demande du 5 août 2026) :
+          //    son étiquette se déduit du client, sinon de l'adresse, sinon du
+          //    jour — par la MÊME fonction que l'écran de création. La composer
+          //    ici donnerait une seconde règle de nommage, et l'écart se verrait
+          //    dans sa liste (`CLAUDE.md` §3).
+          const { client: fiche } = await trouverOuCreerClient(ctx, { nom: nomClient });
+          const nom = nomDuChantier({
+            nomClient: fiche.nom,
+            civilite: fiche.civilite,
+            adresseChantier: adresse ?? null,
+            jour: new Date().toISOString().slice(0, 10),
+          });
+          await creerChantier(ctx, { nom, clientId: fiche.id, ...(adresse ? { adresseChantier: adresse } : {}) });
           resultats.push({ ...base, statut: "appliquee" });
           break;
         }

@@ -702,7 +702,16 @@ function traiterGeste(
   // 1. Il faut d'abord CHERCHER la cible.
   if (lecture && (!dernier || dernier.role !== "outil" || dernier.outil !== lecture)) {
     if (!outils.some((o) => o.nom === lecture)) return null;
-    return { succes: true, type: "appel_outil", outil: lecture, parametres: { motCle: nomCite(texte) } };
+    // **Chaque outil a SON paramètre.** `RechercherChantier` (la version de
+    // l'écran) attend `nom` ; `LireClients` attend `motCle`. Se tromper rend
+    // `undefined`, et l'outil tombe au lieu de chercher.
+    const cherche = nomCite(texte) ?? "";
+    return {
+      succes: true,
+      type: "appel_outil",
+      outil: lecture,
+      parametres: lecture === "RechercherChantier" ? { nom: cherche } : { motCle: cherche },
+    };
   }
 
   // 2. La cible est connue (ou le geste n'en demande pas) : on propose.
@@ -771,10 +780,11 @@ function proposer(type: string, description: string, donnees: Record<string, unk
 function premiereCible(dernier: MessageConversation | undefined): { id: string; nom: string } | null {
   if (!dernier || dernier.role !== "outil") return null;
   const r = dernier.resultat as {
-    chantiers?: { chantierId: string; nom: string }[];
+    // `RechercherChantier` (la version de l'écran) rend `trouves`.
+    trouves?: { chantierId: string; chantierNom: string }[];
     clients?: { clientId: string; nom: string }[];
   };
-  if (r.chantiers?.[0]) return { id: r.chantiers[0].chantierId, nom: r.chantiers[0].nom };
+  if (r.trouves?.[0]) return { id: r.trouves[0].chantierId, nom: r.trouves[0].chantierNom };
   if (r.clients?.[0]) return { id: r.clients[0].clientId, nom: r.clients[0].nom };
   return null;
 }
