@@ -9,6 +9,26 @@ Format : le plus récent en tête.
 
 ## 2026-08-26
 
+### Une règle de plus dans `CLAUDE.md` : ne rien jouer à la main pendant la batterie
+
+**Cinq suites navigateur rouges d'un coup, et l'étape « Connexion derrière un
+proxy » avec elles. Aucune n'avait de défaut.**
+
+`nettoyerBase()` vide la base — c'est ce que fait toute suite base. Jouée en
+parallèle d'une batterie, elle fait disparaître le jeu de démonstration sous les
+pieds des suites navigateur, qui accusent alors le produit : « Timeout » sur des
+adresses de chantiers évaporés.
+
+**Le message juste existait, et il arrivait trop tard** : « le compte de
+démonstration est absent : la base n'est pas amorcée » n'est écrit qu'à la
+DERNIÈRE étape. Les quatre suites tombées avant lui ne nommaient que le
+symptôme.
+
+**Vérifié plutôt que supposé**, et c'est ce qui permet de l'écrire : les cinq
+suites et la connexion derrière proxy sont vertes rejouées sur une base fraîche.
+
+La batterie est une machine à un seul occupant : on la lance, et on attend.
+
 ### Les filets à côté des intertitres partent, les séparateurs restent
 
 *« Ça aussi tu peux retirer »*, capture de l'écran Équipe à l'appui — le filet
