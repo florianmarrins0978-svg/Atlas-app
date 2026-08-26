@@ -13,6 +13,30 @@ ligne « fait » qui ne l'est pas coûte plus cher qu'une ligne absente.
 
 ---
 
+## Ses salariés se comptent à part de ses équipes (26 août 2026)
+
+**Sa réponse à la planche 97 : A**, arrêtée sur maquette puis codée le jour même
+(`appli/salaries-et-equipes.html`, migration 0067, `ARCHITECTURE.md` §192).
+
+Deux compteurs là où il n'y en avait qu'un : **les équipes** disent combien de
+chantiers tiennent dans une journée, **les salariés** disent qui part. Régler
+l'un ne dérègle plus l'autre — un paysagiste à quatre salariés peut enfin ne
+mener qu'un chantier à la fois.
+
+Sur le chantier, **la façon de faire n'a pas bougé d'un geste** (sa consigne) :
+la pastille sur la demi-journée, la liste qui s'ouvre, les cases cochées une à
+une, « Terminé ». Ce sont les libellés qui changent — « Équipe A » a disparu, le
+repli est « Salarié 3 ».
+
+La charge du planning est plafonnée à la capacité : trois gars sur un même
+chantier ne ferment pas une journée qui en accepte deux. **À effectif égal —
+son cas — le planning se remplit exactement comme avant.**
+
+Un artisan seul reste à **zéro** salarié : aucune case à cocher, rien n'a changé
+pour lui.
+
+Reste ouvert : le renommage `equipes` → `salaries` en base et dans le code, tenu
+à part parce qu'il touche vingt-trois fichiers (`TODO.md`).
 ## Un choix fait par erreur se défait (26 août 2026)
 
 *Sa demande : « si par erreur j'ai sélectionné un des 3 champs je ne peux plus

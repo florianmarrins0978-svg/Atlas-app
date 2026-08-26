@@ -171,9 +171,13 @@ function Contenu({
   // le relire dans la boucle n'aurait pas la même valeur si la préparation
   // changeait entre deux lignes.
   const nombreEquipes = preparation?.planning.nombreEquipes ?? 1;
+  // **Les deux compteurs, depuis le 26 août 2026** : celui des équipes plafonne
+  // la charge, celui des salariés décide des noms écrits sur une journée.
+  const nombreSalaries = preparation?.planning.nombreSalaries ?? 0;
   const { occupationDe, nomEquipe } = useOccupation({
     chantiers: preparation?.planning.chantiers ?? [],
     nombreEquipes,
+    nombreSalaries,
     absences: preparation?.planning.absences ?? [],
     equipesNommees: preparation?.planning.equipesNommees ?? [],
   });
