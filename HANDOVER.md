@@ -94,6 +94,19 @@ jour.
 remède est écrit : `joursRetenables` tourne la page du mois quand celui-ci est
 trop court. Toute suite neuve qui compte des jours doit faire de même.
 
+## PIÈGE : UN MESSAGE QUI ACCUSE LE PATRON (26 août 2026)
+
+**« L'assistant a mal formé sa demande à un outil interne. Reformulez votre
+question. »** — il a reformulé trois fois, et c'est exactement ce qu'on lui
+demandait de faire. La faute était le nom d'un champ, côté modèle.
+
+| | |
+|---|---|
+| **Un outil mal appelé n'est pas une panne** | le refus part AU MODÈLE, avec les champs qui manquent, et il rappelle. Ne pas remettre un `return` d'erreur à cet endroit |
+| **Les alias sont volontaires** | `nom`, `motCle` et `question` désignent la même idée selon l'outil : les quatre acceptent les trois. Ne pas « nettoyer » ça |
+| **Jamais de JSON à l'écran** | une erreur d'outil est adressée au MODÈLE. `direEnFrancais` s'en charge côté fournisseur d'essai |
+| **Le point d'injection de `fabrique.ts`** | sert à éprouver un modèle qui SE TROMPE. Sans lui, ce défaut ne se retient pas |
+
 ## L'ASSISTANT EST UN AGENT : CE QU'IL FAUT SAVOIR AVANT D'Y TOUCHER (26 août 2026)
 
 | | |

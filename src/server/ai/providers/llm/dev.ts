@@ -199,11 +199,46 @@ export const fournisseurLLMDev: FournisseurLLM = {
           return propositionSuppressionOuModification("materiel", cible, estSuppression);
         }
       }
-      return {
-        succes: true,
-        type: "texte",
-        texte: `D'après ${dernier.outil}, voici ce que j'ai trouvé : ${JSON.stringify(dernier.resultat)}`,
-      };
+      /**
+       * **Un outil qui dit la SUITE À DONNER, on la suit.**
+       *
+       * Vu à la capture le 26 août 2026, sur ses propres questions : *« Peux-tu
+       * me sortir le devis de Lucie »* rendait, en toutes lettres à l'écran,
+       * `{"erreur":"Aucun chantier visé. Employez RechercherChantier…"}`. Cette
+       * phrase est adressée AU MODÈLE, pas au patron — et le modèle d'essai la
+       * recopiait au lieu de faire ce qu'elle demande.
+       *
+       * Un vrai fournisseur, lui, obéit. Le fournisseur d'essai doit en faire
+       * autant, sinon les captures de ce dépôt racontent une application qui
+       * n'existe pas.
+       */
+      const resultat = dernier.resultat as { erreur?: string } | null;
+      const chantierDejaCherche = historique.some((m) => m.role === "outil" && m.outil === "RechercherChantier");
+      if (resultat?.erreur && /RechercherChantier/.test(resultat.erreur) && !chantierDejaCherche) {
+        const cherche = nomCite(texte);
+        if (cherche) {
+          return { succes: true, type: "appel_outil", outil: "RechercherChantier", parametres: { nom: cherche } };
+        }
+        return { succes: true, type: "texte", texte: "De quel client parlez-vous ?" };
+      }
+
+      // La recherche a rendu un chantier : on rappelle l'outil qui l'attendait.
+      if (dernier.outil === "RechercherChantier") {
+        const cible = premiereCible(dernier);
+        const aRappeler = [...historique]
+          .reverse()
+          .find((m): m is Extract<MessageConversation, { role: "outil" }> => m.role === "outil" && m.outil !== "RechercherChantier");
+        if (cible && aRappeler) {
+          return { succes: true, type: "appel_outil", outil: aRappeler.outil, parametres: { chantierId: cible.id } };
+        }
+        if (!cible) {
+          return { succes: true, type: "texte", texte: "Je n'ai trouvé aucun chantier à ce nom." };
+        }
+      }
+
+      // **Jamais de JSON à l'écran.** Ce qui reste se dit en français, même
+      // approximativement : un objet brut se lit comme une panne.
+      return { succes: true, type: "texte", texte: direEnFrancais(dernier.outil, dernier.resultat) };
     }
 
     if (!texte.trim()) {
@@ -800,4 +835,53 @@ function apres(texte: string, motif: RegExp): string | null {
   if (!m || m.index === undefined) return null;
   const reste = texte.slice(m.index + m[0].length).trim();
   return reste ? reste.replace(/\s+/g, " ").slice(0, 120) : null;
+}
+
+/**
+ * Mettre en français ce qu'un outil a rendu — **jamais du JSON**.
+ *
+ * Le fournisseur d'essai n'a pas de modèle pour rédiger : il énumère
+ * platement, et c'est assumé. Ce qui ne l'est pas, c'est un objet brut à
+ * l'écran : sa capture du 26 août 2026 en montrait deux, accolades comprises.
+ * Un vrai fournisseur rédige ; celui-ci doit au moins rester lisible.
+ */
+function direEnFrancais(outil: string, resultat: unknown): string {
+  if (resultat === null || resultat === undefined) return "Je n'ai rien trouvé.";
+  if (typeof resultat === "string") return resultat;
+  const r = resultat as Record<string, unknown>;
+
+  if (typeof r.phrase === "string") return r.phrase;
+  if (typeof r.erreur === "string") return r.erreur;
+  if (typeof r.raison === "string") return r.raison;
+
+  /**
+   * **Un « non » se DIT.** Vu à la capture le 26 août 2026 : `{existe: false}`
+   * — le chantier n'a pas encore de devis — sortait « Rien à signaler du côté
+   * de LireDevis ». Ce n'est pas rien à signaler, c'est justement la réponse à
+   * sa question. Un message qui escamote la réponse vaut un défaut.
+   */
+  if (r.existe === false) return "Ce chantier n'a pas encore de devis.";
+  if (r.trouve === false) return "Je n'ai rien trouvé qui corresponde.";
+  if (r.disponible === false) return "Ce n'est pas disponible sur ce chantier.";
+
+  const lignes: string[] = [];
+  for (const [cle, valeur] of Object.entries(r)) {
+    if (valeur === null || valeur === undefined || valeur === false) continue;
+    if (Array.isArray(valeur)) {
+      if (valeur.length === 0) continue;
+      lignes.push(`${cle} : ${valeur.map(unElement).join(", ")}`);
+    } else if (typeof valeur === "object") {
+      lignes.push(`${cle} : ${Object.values(valeur as object).filter(Boolean).join(" · ")}`);
+    } else if (valeur !== true) {
+      lignes.push(`${cle} : ${String(valeur)}`);
+    }
+  }
+  return lignes.length > 0 ? lignes.join("\n") : `Rien à signaler du côté de ${outil}.`;
+}
+
+/** Un élément de liste, dit par ses valeurs plutôt que par sa forme. */
+function unElement(v: unknown): string {
+  if (v === null || v === undefined) return "";
+  if (typeof v === "object") return Object.values(v as object).filter((x) => x !== null && x !== undefined).join(" · ");
+  return String(v);
 }

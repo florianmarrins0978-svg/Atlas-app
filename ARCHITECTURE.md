@@ -16836,3 +16836,70 @@ pas.
 **Confrontés à l'état dégradé** (`CLAUDE.md` §5) : plafond retiré de
 `equipesMobilisees`, les deux premières suites rougissent — et sur la bonne
 ligne, pas sur un effet de bord trois écrans plus loin.
+
+---
+
+## 193. « Il comprend rien » — un outil mal appelé ne doit pas tuer la réponse
+
+**Sa capture du 26 août 2026 au soir**, trois échanges de suite :
+
+| Ce qu'il tape | Ce qu'il lit |
+|---|---|
+| *« À quelle heure ouvre le cgr de Mantes-la-Jolie ? »* | « Je ne réponds qu'aux questions sur Atlas. » ✔ |
+| *« Peux-tu me sortir le devis de Lucie »* | **« L'assistant a mal formé sa demande à un outil interne. Reformulez votre question. »** |
+| *« Sors-moi le dernier devis de Bernard »* | la même |
+| *« Je veux le dernier devis de Bernard »* | la même |
+
+Sa réaction : **« il comprend rien »**.
+
+### Le pire des messages : celui qui accuse celui qui n'y est pour rien
+
+**Reformuler n'y pouvait rien.** Ses phrases étaient parfaites. Ce qui n'allait
+pas, c'était le nom d'un champ, côté modèle — et l'écran lui demandait de
+réparer une chose qu'il ne voyait pas. Il a reformulé trois fois, ce qui est
+exactement ce qu'on lui demandait, et trois fois il a reçu la même phrase.
+
+**Un message d'erreur qui désigne le mauvais coupable coûte plus cher que pas
+d'erreur du tout** (`AGENTS.md`). Celui-ci le faisait deux fois : il accusait sa
+formulation, et il masquait la vraie cause.
+
+### Trois défauts derrière, et le premier est structurel
+
+**1. La boucle s'ARRÊTAIT au premier écart.** Un outil mal appelé n'est pas une
+panne : c'est un aller-retour ordinaire d'une boucle d'outils. Le refus part
+désormais **au modèle**, avec les champs qui manquent, et il rappelle l'outil
+correctement — jusqu'à deux fois, puis on rend la main en demandant le nom du
+client. C'est ce qui fait la différence entre un agent et une chaîne qui casse.
+
+**2. Le registre nommait la même idée de trois façons** — `nom` pour
+`RechercherChantier`, `motCle` pour `LireClients` et `RechercherLignesDevis`,
+`question` pour `RechercherModeEmploi`. **La faute est du côté du dépôt**, pas
+du modèle : trois noms pour une chose, c'est une invitation à se tromper. Les
+quatre outils acceptent maintenant les alias, sans que la description en cite
+qu'un seul — celui à employer. Un appel VRAIMENT vide reste refusé.
+
+**3. Le fournisseur d'essai recopiait du JSON à l'écran.** Vu à la capture, deux
+fois, accolades comprises : `{"erreur":"Aucun chantier visé. Employez
+RechercherChantier…"}`. Cette phrase est adressée **au modèle**. Un vrai
+fournisseur, lui, obéit à l'instruction et va chercher le chantier ; celui
+d'essai la recopiait. Il chaîne désormais comme le ferait un vrai — et ce n'est
+pas un détail d'outillage : **les captures de ce dépôt racontaient une
+application qui n'existe pas.**
+
+### « Rien à signaler » là où la réponse était « pas encore de devis »
+
+Le même rendu escamotait les `false` : un chantier sans devis sortait « Rien à
+signaler du côté de LireDevis ». Ce n'est pas rien à signaler — c'est
+précisément la réponse à sa question. Un « non » se dit.
+
+### Ce qui l'a trouvé, et ce qui le garde fermé
+
+**La capture, encore** (`scripts/capture-assistant-mode-emploi.mts`, qui porte
+désormais ses trois questions mot pour mot). Aucune suite ne voyait rien : elles
+posaient toutes leurs questions depuis un chantier ouvert, et avec un
+fournisseur qui ne se trompe jamais.
+
+`scripts/test-assistant-se-corrige.ts` tient les quatre points, dont un qui
+demandait un fournisseur **qui se trompe exprès** — d'où le point d'injection de
+`fabrique.ts`, doublement fermé comme la dérogation de session : hors
+production, et seulement si une suite l'a posé.

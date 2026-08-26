@@ -9,6 +9,29 @@ Format : le plus récent en tête.
 
 ## 2026-08-26
 
+### « Il comprend rien » — l'assistant se reprend au lieu d'abandonner
+
+Sa capture du soir : *« Peux-tu me sortir le devis de Lucie »*, puis deux
+reformulations, et trois fois **« L'assistant a mal formé sa demande à un outil
+interne. Reformulez votre question. »**
+
+**Reformuler n'y pouvait rien** : ses phrases étaient parfaites, c'est le nom
+d'un champ qui n'allait pas côté modèle. Le message accusait celui qui n'y était
+pour rien.
+
+- **Un outil mal appelé ne tue plus la réponse** : le refus part au modèle avec
+  ce qui manque, et il rappelle correctement. Deux reprises, puis on rend la
+  main en demandant le nom du client — jamais en parlant de schéma.
+- **Le dépôt nommait la même idée de trois façons** (`nom`, `motCle`,
+  `question`). Les quatre outils acceptent les alias : la faute était de notre
+  côté, pas du modèle.
+- **Plus de JSON à l'écran**, et l'assistant va CHERCHER le chantier au lieu de
+  recopier l'instruction qui lui disait de le faire.
+- **Un « non » se dit** : un chantier sans devis répondait « Rien à signaler ».
+
+Trouvé à la capture, avec ses trois questions mot pour mot. Détail :
+`ARCHITECTURE.md` §193.
+
 ### Ses salariés se comptent à part de ses équipes — et ce sont leurs noms qu'on coche
 
 **Sa réponse à la planche 97 : A.** Puis, en tranchant : *« il ne faut pas
