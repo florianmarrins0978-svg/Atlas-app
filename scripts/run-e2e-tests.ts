@@ -243,7 +243,6 @@ if (process.argv.includes("--list")) {
     // `CLAUDE.md` §5 décrit : il ne dit pas « rouge », il ne dit rien — et il
     // gonfle le chiffre auquel on se fie.
     .filter((f) => !f.startsWith("_"))
-    .filter((f) => !f.startsWith("_"))  // pièces communes, voir plus haut
     .filter((f) => f.endsWith("-e2e.ts") || SUITES_SERVEUR.includes(f))
     .filter((f) => (motifDemande === null ? true : f.includes(motifDemande)))
     .sort();
@@ -425,6 +424,7 @@ async function main() {
   }
 
   const fichiers = readdirSync(DOSSIER)
+    .filter((f) => !f.startsWith("_"))  // pièces communes, jamais des suites — voir plus haut
     .filter((f) => f.endsWith("-e2e.ts") || SUITES_SERVEUR.includes(f))
     .filter((f) => (motifDemande === null ? true : f.includes(motifDemande)))
     .sort();
