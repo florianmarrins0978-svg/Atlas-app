@@ -163,23 +163,28 @@ async function main() {
   await ajouterMembre(entreprise.id, commercial.id, "commercial");
 
   await test("La règle d'accès à l'assistant vit à UN seul endroit", async () => {
-    // Pinée ici parce qu'elle est plus stricte que « voir les montants » : le
-    // commercial voit les prix, et n'a pourtant pas l'assistant — il y lirait,
-    // en une phrase, ce que chaque client a payé pour la même prestation.
+    // **Ouvert au commercial le 26 août 2026, sur sa réponse.** Il voit déjà les
+    // prix écran par écran ; la conversation ne lui apprend rien de plus. Le
+    // salarié, lui, reste dehors : sa feuille de chantier part sans prix, et
+    // l'assistant les rendrait en une phrase.
     assert.equal(peutUtiliserLAssistant("proprietaire"), true);
-    assert.equal(peutUtiliserLAssistant("commercial"), false);
+    assert.equal(peutUtiliserLAssistant("commercial"), true);
     assert.equal(peutUtiliserLAssistant("salarie"), false);
     assert.equal(await getRole({ entrepriseId: entreprise.id, utilisateurId: salarie.id }), "salarie");
+    assert.equal(await getRole({ entrepriseId: entreprise.id, utilisateurId: commercial.id }), "commercial");
     assert.equal(await getRole(P), "proprietaire");
   });
 
-  await test("Ni le salarié ni le commercial ne peuvent poser de question", async () => {
-    for (const compte of [salarie, commercial]) {
-      process.env.AUTH_TEST_UTILISATEUR_ID = compte.id;
-      const reponse = await poserQuestionAction(chantier.id, [], "Quels sont les tarifs de l'entreprise ?");
-      assert.equal(reponse.succes, false, `${compte.email} ne devrait pas obtenir de réponse`);
-      if (!reponse.succes) assert.match(reponse.erreur, /pas disponible pour votre compte/i);
-    }
+  await test("Le salarié ne peut pas poser de question — le commercial, si", async () => {
+    process.env.AUTH_TEST_UTILISATEUR_ID = salarie.id;
+    const refus = await poserQuestionAction(chantier.id, [], "Quels sont les tarifs de l'entreprise ?");
+    assert.equal(refus.succes, false, "un salarié ne doit pas obtenir de réponse");
+    if (!refus.succes) assert.match(refus.erreur, /pas disponible pour votre compte/i);
+
+    process.env.AUTH_TEST_UTILISATEUR_ID = commercial.id;
+    const passe = await poserQuestionAction(chantier.id, [], "comment je crée un chantier ?");
+    assert.equal(passe.succes, true, "un commercial doit passer depuis le 26 août");
+
     process.env.AUTH_TEST_UTILISATEUR_ID = patron;
   });
 

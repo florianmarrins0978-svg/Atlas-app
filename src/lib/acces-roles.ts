@@ -237,21 +237,26 @@ export function peutVoirLesMontants(role: Role): boolean {
  * L'assistant, est-ce pour cette personne ?
  *
  * **Sa demande du 25 août 2026 :** *« qu'il se comporte comme un vrai assistant
- * au service de l'utilisateur principal seulement le principal »*.
+ * au service de l'utilisateur principal seulement le principal »*. Livré ce
+ * jour-là au patron seul — puis **ouvert aux commerciaux le 26, sur sa réponse :
+ * *« oui tu peux l'ouvrir aux commerciaux »*.**
  *
- * **C'est plus strict que « voir les montants », et c'est délibéré.** Depuis le
- * même jour, l'assistant sait chercher une ligne dans le devis de N'IMPORTE QUEL
- * client de l'entreprise (`RechercherLignesDevis`) : un commercial y lirait, en
- * une phrase, ce que chacun a payé pour la même prestation — et le prix accordé
- * à l'un est la chose qu'on ne montre pas à qui négocie avec l'autre. Ce n'est
- * pas ce qu'on lui refuse écran par écran ; c'est autre chose, et ça n'existait
- * pas quand §10 a été tranché.
+ * Il suit donc `peutVoirLesMontants`, et ce n'est pas une paraphrase : c'est un
+ * appel. Les deux règles pourraient diverger demain — c'est même pour cela que
+ * celle-ci porte son propre nom —, mais tant qu'elles disent la même chose,
+ * elles ne s'écrivent qu'une fois (`CLAUDE.md` §3).
  *
- * **À rouvrir au commercial dès qu'il le dira** : une ligne ici, et rien
- * d'autre. C'est tout l'intérêt de l'écrire là plutôt que dans l'action.
+ * **Ce qui avait fait hésiter, et qu'il a tranché.** Depuis le 25 août,
+ * l'assistant cherche une ligne dans le devis de N'IMPORTE QUEL client
+ * (`RechercherLignesDevis`) : un commercial y lit ce que chacun a payé pour la
+ * même prestation. Il voit déjà ces prix écran par écran — c'est son métier de
+ * vendre —, et le patron a jugé que la conversation ne changeait rien à cela.
+ *
+ * **Le salarié, lui, reste dehors**, et pour la raison de toujours : la feuille
+ * de chantier part sans prix, et l'assistant les rendrait en une phrase.
  */
 export function peutUtiliserLAssistant(role: Role): boolean {
-  return role === "proprietaire";
+  return peutVoirLesMontants(role);
 }
 
 /**

@@ -15953,11 +15953,23 @@ question se tranche. `peutUtiliserLAssistant` s'y est ajoutée à côté de
 `peutVoirLesMontants`, et elle est **plus stricte** — le commercial voit les
 montants, et n'a pourtant pas l'assistant.
 
-**Pourquoi plus stricte, et ce n'était pas évident.** §10 a été tranché le
-13 août, quand l'assistant ne savait lire que le chantier courant. Depuis le
-25 août il cherche dans le devis de N'IMPORTE QUEL client : un commercial y
-lirait en une phrase ce que chacun a payé pour la même prestation — et le prix
-accordé à l'un est précisément ce qu'on ne montre pas à qui négocie avec
-l'autre. La demande du patron le dit d'ailleurs mot pour mot : *« seulement le
-principal »*. **À rouvrir au commercial dès qu'il le dira : une ligne dans
-`acces-roles.ts`, et rien d'autre** — c'est tout l'intérêt de l'y avoir écrite.
+**Elle a été plus stricte pendant une soirée, et LUI l'a rouverte.** Livrée au
+patron seul le 25 août — ses mots : *« seulement le principal »* —, la règle a
+été portée au commercial le 26, sur sa réponse : *« oui tu peux l'ouvrir aux
+commerciaux »*.
+
+**Ce qui avait fait hésiter**, et qu'il faut garder écrit pour ne pas
+re-hésiter : §10 a été tranché le 13 août, quand l'assistant ne savait lire que
+le chantier courant. Depuis le 25, il cherche dans le devis de N'IMPORTE QUEL
+client — un commercial y lit ce que chacun a payé pour la même prestation. Le
+patron a jugé que cela ne changeait rien : il voit déjà ces prix écran par
+écran, c'est son métier de vendre.
+
+**Ce que ça a coûté d'y penser, et pourquoi ce n'était pas perdu :** la question
+lui a été posée en une ligne, et la réponse tenait en un mot. Le contraire —
+ouvrir d'office et le découvrir sur un chantier — se serait payé chez un client.
+
+`peutUtiliserLAssistant` **appelle** donc `peutVoirLesMontants` plutôt que de la
+recopier : tant que les deux règles disent la même chose, elles ne s'écrivent
+qu'une fois. Elle garde son nom parce qu'elles peuvent rediverger demain, et
+qu'il faut alors UN endroit où le dire.

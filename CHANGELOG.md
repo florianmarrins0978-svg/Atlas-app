@@ -131,14 +131,16 @@ l'identifiant de la ligne d'origine, et le prix est relu en base au moment de la
 validation. La recherche est bornée par la RLS, pas par un filtre écrit à la
 main.
 
-**L'assistant est désormais réservé au patron** — *« au service de l'utilisateur
+**L'assistant n'est pas pour un salarié** — *« au service de l'utilisateur
 principal seulement le principal »*. Il lit les tarifs, les marges et les devis
-de tous les clients : ouvert à quelqu'un d'autre, il rendrait par la conversation
-ce que les rôles ferment écran par écran. La règle vit à un seul endroit
-(`peutUtiliserLAssistant`, à côté des autres), et elle est **plus stricte que
-« voir les montants »** : le commercial voit les prix, et n'a pourtant pas
-l'assistant — il y lirait ce que chaque client a payé pour la même prestation.
-Une ligne suffira à la rouvrir s'il le demande.
+de tous les clients : ouvert à un salarié, il rendrait en une phrase ce que sa
+feuille de chantier tait. La règle vit à un seul endroit
+(`peutUtiliserLAssistant`, à côté des autres).
+
+**Livrée au patron seul, puis ouverte aux commerciaux le 26 sur sa réponse** —
+*« oui tu peux l'ouvrir aux commerciaux »*. La question lui a été posée parce
+que l'assistant sait désormais lire le devis de n'importe quel client ; il a
+jugé qu'un commercial voit déjà ces prix écran par écran.
 
 Détail : `ARCHITECTURE.md` §181.
 
