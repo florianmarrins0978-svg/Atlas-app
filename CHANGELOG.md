@@ -58,6 +58,32 @@ La décision du téléphone n'a pas bougé : aucun champ ici, et le contrôle le
 refuse toujours. Ce que ce lot change, c'est qu'il refuse désormais aussi le
 RETOUR des phrases retirées, au lieu de les exiger.
 
+### Le port du banc s'ouvre quand le serveur répond, plus avant lui
+
+*« Problème pas de port connecté »*, capture de son onglet PORTS à l'appui. Sa
+fiche portait le mot exact : *« error updating port 3000 to public: error getting
+tunnel port: […] 404 Not Found »*.
+
+**Le relais ne connaissait pas encore le port.** `demarrer.sh` en demandait
+l'ouverture juste après avoir posé le veilleur — dont la construction dure des
+minutes. Au moment de la demande, **rien n'écoutait sur 3000** : GitHub n'avait
+aucun port à rendre public, et répondait 404. Le serveur démarrait ensuite, le
+port se déclarait tout seul… **et restait privé**, parce que plus rien ne
+redemandait.
+
+**Ce que ça évite :** GitHub qui sert sa page de connexion à la place d'Atlas.
+Depuis son téléphone, non connecté, il n'y a alors rien à voir — c'est le
+symptôme du 10 août, sous une autre cause.
+
+**Une tentative unique au démarrage avait lieu au seul moment où elle ne pouvait
+pas aboutir.** Le veilleur redemande donc là où il sait que le serveur répond,
+donc que le port existe ; une fois obtenu, il n'y revient plus — `gh` interroge
+le réseau, et l'appeler tous les quarts de minute userait un quota sans rien
+apprendre. La fiche est mise à jour du même geste, sans quoi elle annoncerait
+encore le refus et l'enverrait réparer ce qui marche.
+
+Le contrôle a été vu rouge en retirant l'appel.
+
 ### Une règle de plus dans `CLAUDE.md` : ne rien jouer à la main pendant la batterie
 
 **Cinq suites navigateur rouges d'un coup, et l'étape « Connexion derrière un
