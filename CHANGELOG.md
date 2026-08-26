@@ -9,6 +9,39 @@ Format : le plus récent en tête.
 
 ## 2026-08-26
 
+### L'envoi du devis : trois phrases de moins
+
+*« Supprime la phrase par SMS au + repris de votre dictée + le client pourra
+aussi en proposer une. »*
+
+Partent aussi leurs variantes, qui ne se montraient que dans d'autres états — il
+les aurait rencontrées demain. Une seule ligne reste sous la molette, la seule
+qui apprenne quelque chose : un chantier long réserve plusieurs jours d'affilée.
+
+Ce qu'on perd, et c'est le même arbitrage qu'il a rendu le 24 août sur la
+facture : il ne voit plus le canal ni le destinataire avant d'ouvrir sa
+messagerie — laquelle les lui montre, et où il peut encore reculer.
+
+Trois contrôles lisaient ces phrases. Ils éprouvent maintenant la règle : la
+messagerie qui s'ouvre pour de bon, les deux dates listées, le sous-titre de
+l'interrupteur qui suit l'interrupteur. Détail en `ARCHITECTURE.md` §194.
+### Changer le rythme de la TVA fait enfin bouger l'écran
+
+*« Quand je change entre tous les mois et tous les trois mois, c'est pareil,
+rien ne se passe. »* Reproduit : l'écran gardait « Août 2026 » après le passage
+au trimestre.
+
+La base était bien écrite — le réglage revenait au rechargement suivant. Ce qui
+manquait est la **revalidation** : le routeur reservait sa copie en cache de la
+page, sans appeler le serveur. `force-dynamic` ne protège pas de cela, et c'est
+le piège — il fait recalculer le serveur à chaque demande, encore faut-il qu'une
+demande parte.
+
+**Aucun contrôle ne pouvait le voir** : tous passaient par Réglages puis
+rouvraient le relevé par une navigation neuve, et une page rouverte est toujours
+juste. Le cas ajouté rejoue SA séquence — basculer sans quitter l'écran — et a
+été vu rouge avant d'être vert. `ARCHITECTURE.md` §193.
+
 ### « Il comprend rien » — l'assistant se reprend au lieu d'abandonner
 
 Sa capture du soir : *« Peux-tu me sortir le devis de Lucie »*, puis deux
@@ -30,7 +63,7 @@ pour rien.
 - **Un « non » se dit** : un chantier sans devis répondait « Rien à signaler ».
 
 Trouvé à la capture, avec ses trois questions mot pour mot. Détail :
-`ARCHITECTURE.md` §193.
+`ARCHITECTURE.md` §196.
 
 ### Ses salariés se comptent à part de ses équipes — et ce sont leurs noms qu'on coche
 
@@ -98,6 +131,35 @@ Le curseur des **équipes** reste dans les trois, comme il l'a exigé.
 **Le contrôle ouvre un navigateur, et il a trouvé un vrai défaut** : les
 pastilles et les croix de la planche faisaient moins de 40 px. Corrigé à 44 —
 il touche cet écran debout, avec un gant.
+
+### Maquette : « Quand je reverse la TVA » — les deux phrases du relevé
+
+*« Quand le client le paye / quand je met la facture. C'est pas clair, on
+comprend rien. Qu'est-ce que ça signifie ? »* Puis : *« et lorsque je change
+entre les deux, rien ne se passe, c'est normal ? »*
+
+**La seconde question n'était PAS une panne, et le calcul est juste :** quand
+toutes les factures d'un mois ont été payées dans le mois, les deux régimes
+tombent sur le même chiffre. L'écart n'existe que sur une facture émise un mois
+et encaissée le suivant — ou jamais payée.
+
+Mais un écran qui ne bouge pas sans rien dire se lit comme une panne. La
+planche porte donc deux réécritures des libellés — le verbe manquant est
+« je reverse » — et **la ligne qui dit ce que le choix change sur le mois
+affiché, y compris quand il n'y change rien.**
+
+**Il a tranché le soir même : B, sans le tableau d'exemple** — et c'est
+**codé**. L'écran porte maintenant un surtitre qui dit le geste, deux lignes qui
+répondent à « et alors ? », et la phrase qui annonce ce que le choix change sur
+le mois affiché.
+
+**Sa première version a été refusée par son propre contrôle** : elle suivait le
+doigt et devançait le grand chiffre pendant l'aller-retour avec le serveur —
+deux montants qui se contredisaient une seconde. Elle nomme désormais les deux
+régimes. Et la capture a montré un espace mangé par la compilation
+(« 1 400,00 €dès l'envoi »), que rien n'aurait vu autrement.
+`ARCHITECTURE.md` §195.
+
 ### « Sans date » disparaît quand rien n'attend de jour
 
 **Sa question :** *« est-ce que la catégorie sans date a un réel besoin

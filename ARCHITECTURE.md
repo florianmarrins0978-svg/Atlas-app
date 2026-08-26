@@ -16839,7 +16839,181 @@ ligne, pas sur un effet de bord trois écrans plus loin.
 
 ---
 
-## 193. « Il comprend rien » — un outil mal appelé ne doit pas tuer la réponse
+## 193. « Rien ne se passe » : `force-dynamic` ne fait pas partir la demande
+
+**Sa plainte du 26 août 2026 :** *« quand je change entre tous les mois et tous
+les trois mois, c'est pareil, rien ne se passe »*. Il avait raison, et le défaut
+était réel : sur l'écran de TVA, basculer le rythme laissait « Août 2026 » sous
+ses yeux au lieu d'afficher le trimestre.
+
+### Ce qui marchait, et ce qui ne marchait pas
+
+| | |
+|---|---|
+| la base | **écrite** — le réglage revenait au rechargement suivant |
+| le calcul | **juste** — `test-periode-tva.ts` était vert, et le reste |
+| l'écran | **figé** sur la période d'avant |
+
+### Le piège, et il est contre-intuitif
+
+`src/app/termines/tva/page.tsx` porte `export const dynamic = "force-dynamic"`.
+On lit cette ligne comme « cette page est toujours fraîche » — elle ne dit rien
+de tel. Elle commande au **serveur** de recalculer à chaque demande ; encore
+faut-il **qu'une demande parte**. Le routeur du navigateur garde sa propre copie
+de `/termines/tva`, et sans revalidation il la reservait sans appeler personne.
+
+`revalidatePath` n'est donc pas une précaution de fin de fonction ici : c'est la
+moitié du geste. Le voisin immédiat le faisait déjà — `reglerExigibiliteAction`,
+écrite le même mois pour le régime de TVA, appelle `revalidatePath` ; celle de la
+périodicité, plus ancienne, ne l'avait jamais fait.
+
+### Pourquoi AUCUN contrôle ne le voyait
+
+`test-periodicite-tva-e2e.ts` couvrait pourtant le rythme depuis le 12 août, et
+il était vert. Son `choisir()` passe par **Réglages**, puis rouvre le relevé par
+une navigation neuve — et **une page rouverte est toujours juste**.
+
+Lui bascule depuis l'écran de TVA, sans le quitter. C'est sa **séquence** qu'il
+fallait rejouer, pas son geste (`AGENTS.md`) — la même leçon que la page vieillie
+du 12 août, sur un autre mécanisme.
+
+Le cas ajouté ne recharge rien : il touche les deux mots soulignés du haut,
+attend que le titre change, et refait le chemin en sens inverse — une correction
+qui ne fonctionnerait que dans un sens laisserait la moitié du défaut. Vu rouge
+sur « l'écran dit toujours "Août 2026" » avant d'être vert.
+
+### Ce qui n'était PAS un défaut, et qu'il a signalé le même soir
+
+*« Et lorsque je change entre les deux régimes, rien ne se passe, c'est
+normal ? »* — **oui.** Quand toutes les factures d'un mois ont été payées dans
+le mois, encaissements et débits tombent sur le même chiffre : c'est le calcul,
+pas le cache. Ce qui manque là est une **phrase** qui le dise, et elle est en
+maquette (`appli/quand-je-reverse-la-tva.html`), pas un correctif.
+
+Les deux plaintes se ressemblaient mot pour mot ; une seule était un bogue. Les
+séparer a demandé de rejouer chacune plutôt que de traiter la seconde comme la
+première.
+
+---
+## 194. L'écran d'envoi du devis perd trois phrases, et n'apprend rien de moins
+
+**Ses trois demandes du 26 août 2026, capture à l'appui :** *« supprime la
+phrase par SMS au + repris de votre dictée + le client pourra aussi en proposer
+une »*.
+
+### Ce qui part, et ce que ça coûte
+
+| Phrase | Ce qu'elle disait | Ce qui la remplace |
+|---|---|---|
+| « Par SMS au 0679984514 » | le canal et le destinataire | **rien** — sa messagerie les lui montre juste après |
+| « Repris de votre dictée. Corrigez-le si besoin… » | que la molette se tourne | la molette |
+| « Le client pourra aussi en proposer une autre… » | ce que l'interrupteur d'à côté dit déjà | l'interrupteur, et son sous-titre |
+
+**Le seul vrai coût est le premier**, et c'est un arbitrage qu'il a déjà rendu :
+le 24 août, sur l'écran de la facture, il a fait retirer le destinataire pour la
+même raison (`TransmettreLaFacture`). Il ne voit plus à qui le devis part avant
+d'ouvrir sa messagerie — laquelle le lui montre, et où il peut encore reculer :
+**rien n'est envoyé par Atlas**.
+
+### Les phrases sœurs partent avec elles, et c'est délibéré
+
+Chacune de ces lignes avait des variantes qui ne se montraient que dans
+d'autres états — deux dates plutôt qu'une, interrupteur fermé, durée saisie à
+la main. Les laisser, c'était les lui faire découvrir demain et payer le même
+aller-retour. Une seule survit, parce qu'elle APPREND quelque chose :
+« 4 jours ouvrés d'affilée seront réservés à partir de la date retenue » — un
+chantier long bloque le planning, et rien d'autre ne le dit.
+
+### Trois contrôles visaient les libellés ; ils visent maintenant la règle
+
+C'est le vrai travail de ce lot (`CLAUDE.md` §5 bis) :
+
+| Ce qu'il lisait | Ce qu'il éprouve maintenant |
+|---|---|
+| « Par e-mail au dupuis@exemple.fr » | la messagerie qui s'ouvre est bien `mailto:` sur cette adresse |
+| « Le client choisira entre ces deux dates » | **deux** dates sont listées à l'envoi |
+| la phrase qui suivait l'interrupteur | le **sous-titre de l'interrupteur** suit l'interrupteur — et l'ancienne phrase ne revient pas |
+
+Le premier est le plus important : il éprouve désormais le défaut du 20 août
+2026 lui-même — *« j'ai choisi d'envoyer par e-mail, et c'est le SMS qui s'est
+ouvert »* — au lieu d'une phrase qui l'annonçait.
+
+---
+## 195. Le régime de TVA dit enfin ce qu'il commande, et ce qu'il change
+
+**Ses deux phrases du 26 août 2026**, capture à l'appui : *« quand le client le
+paye / quand je met la facture. C'est pas clair, on comprend rien. Qu'est-ce que
+ça signifie ? »* Puis : *« et lorsque je change entre les deux, rien ne se passe,
+c'est normal ? »*
+
+**Deux plaintes qui se ressemblaient mot pour mot, et une seule était un bogue.**
+Celle du rythme en était un (§193) ; celle-ci n'en était pas un. Les séparer a
+demandé de rejouer chacune plutôt que de traiter la seconde comme la première.
+
+### Le verbe manquait
+
+« Quand le client me paie » nomme un **instant** sans dire ce qui s'y produit :
+lu seul, cela ressemble à un réglage d'affichage. Le surtitre porte donc le
+verbe, et chaque ligne répond à « et alors ? ».
+
+| Avant | Après |
+|---|---|
+| *(aucun surtitre)* | **Je reverse ma TVA aux impôts** |
+| Quand le client me paie · *le régime par défaut d'une prestation de services* | Le mois où mon client me paie · *une facture pas encore payée n'est pas déclarée* |
+| Quand j'émets la facture · *le régime des débits — sur option auprès des impôts* | Le mois où j'envoie la facture · *même si le client n'a pas encore payé* |
+
+Les mentions savantes — « régime des débits », « prestation de services » — sont
+parties du sous-titre : elles nommaient la règle sans dire ce qu'elle fait. Ce
+qui est resté est la phrase du bas, qui dit ce qui l'engage vraiment : *« ce
+choix doit correspondre à ce que les impôts savent de vous »*.
+
+### Et la ligne qui répond à « rien ne se passe »
+
+Le calcul était juste : quand toutes les factures d'un mois ont été payées dans
+le mois, les deux régimes tombent sur le même chiffre. **Un écran qui ne bouge
+pas sans rien dire se lit comme une panne** — il a cru l'application cassée.
+
+L'écran annonce donc, sous les boutons, ce que le choix change **sur le mois
+affiché** : *« sur Août 2026 : 300,00 € en attendant le paiement, 1 400,00 € dès
+l'envoi »*, ou *« ce choix ne change rien — 1 088,00 € dans les deux cas »*.
+
+**Le second total sort du MÊME calcul**, avec le régime en paramètre
+(`relevesSousLesDeuxRegimes`, une seule lecture des factures pour deux
+assemblages). Une addition écrite dans l'écran aurait été une seconde
+implémentation de la même règle, et elle aurait divergé (`CLAUDE.md` §3).
+
+### Ce que la première version a coûté, et ce qui l'a attrapée
+
+Elle disait *« X avec cette ligne, Y avec l'autre »* et **suivait le doigt** :
+l'écran coche la ligne avant que le serveur réponde, mais le grand chiffre
+« Collectée », lui, attend la réponse. Pendant l'aller-retour, la phrase
+annonçait déjà le montant de l'autre régime tandis que le bloc portait encore
+l'ancien — **deux chiffres qui se contredisent dans le même écran**, et c'est
+toute la liste qu'on cesse alors de croire.
+
+C'est son propre contrôle qui l'a refusée, sur « après bascule, la phrase ne
+suit plus l'écran ». La phrase **nomme donc les deux régimes** au lieu de
+désigner une ligne cochée : elle ne dépend plus de la sélection, et reste vraie
+au milieu du geste.
+
+### Et l'espace qu'aucune mesure ne voyait
+
+L'écran a affiché **« 1 400,00 €dès l'envoi »**. Un montant et le mot suivant
+sont deux nœuds ; l'espace écrit entre `</strong>` et le texte disparaît à la
+compilation. Trouvé en lisant le HTML rendu — la sixième fois dans ce dépôt
+qu'un défaut sort d'un écran regardé et d'aucun test vert. Le contrôle refuse
+désormais tout caractère collé à un « € ».
+
+### Ce qui a été écarté, et qu'il ne faut pas reproposer
+
+Un **tableau d'exemple** (« facture envoyée le 28 août, payée le 12 septembre,
+déclarée en septembre »), porté sur planche puis retiré par le patron le même
+soir : *« le tableau, tu peux l'enlever »*. Il EXPLIQUE, et un écran n'explique
+pas son propre fonctionnement (`CLAUDE.md` §3) — deux lignes à relire chaque
+fois qu'il ouvre sa TVA, pour une règle qu'il connaît après l'avoir lue une
+fois. Planche : `appli/quand-je-reverse-la-tva.html`.
+
+## 196. « Il comprend rien » — un outil mal appelé ne doit pas tuer la réponse
 
 **Sa capture du 26 août 2026 au soir**, trois échanges de suite :
 
