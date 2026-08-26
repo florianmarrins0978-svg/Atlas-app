@@ -11,6 +11,41 @@ langage, et rien n'y entre sans son accord.
 
 ## Dictée → devis : ce que l'audit du 26 août a trouvé
 
+### Le plan ajusté après cartographie (26 août 2026)
+
+`docs/audit-dictee-devis-cartographie.md`. Les suites A→H sont écrites et
+rouges ; la batterie complète est à 247/249, et les deux échecs sont elles.
+
+**Ce qui a changé par rapport au plan d'hier :**
+
+- **P6 « vocabulaire au transcripteur » est RETIRÉ** — le patron l'a mis hors
+  périmètre : *« ne modifie ni Whisper ni les paramètres de transcription dans
+  ce lot »*. La seconde moitié de P6 (la branche catalogue) reste ouverte, mais
+  **elle n'est pas morte** : `ai/tools/calculer-chiffrage.ts` la fait vivre pour
+  l'assistant. Seule la dictée ne l'appelle pas.
+- **P1 se dédouble.** La migration peut partir seule ; la quantité écrite sur la
+  ligne ne peut PAS partir sans nettoyer le libellé le même jour, sinon la
+  feuille de chantier affiche « Haie (tout genre) (800 ml) — 800 »
+  (`tachesDuChantier`, `devis.ts` l. 584).
+- **H commence par l'interface, pas par le plafond.** `stop_reason` est jeté par
+  le fournisseur Anthropic ; `ResultatLLM` ne porte que `{ succes, texte }`.
+  Relever `max_tokens` sans porter la marque de coupure ne ferait que déplacer
+  le silence.
+
+**Six migrations additives**, aucune destructive : M1/M2 (modèle métier sur
+`prestations`), M3 (`prestation_id` sur `lignes_prix` — le lien manquant),
+M4 (état « non chiffré »), M5 (`unite` sur `lignes_devis`), M6 (`signature_v2`
+**à côté** de la V1, jamais à la place).
+
+**Une question ouverte pour le patron** (§6 du document) : rendre le prix
+nullable toucherait `lignes_facture`, donc la facturation, qu'il a mise hors
+périmètre. Un drapeau sur `lignes_prix` seule y reste. À trancher avant M4.
+
+**Le seuil de comparabilité ne sera pas inventé.** Rien dans le dépôt ne
+justifie un ×2 ou un ×5 ; ce que les données permettent, ce sont des critères
+éliminatoires. Le facteur d'écart sur la quantité demande de regarder ses vrais
+devis — à signaler plutôt qu'à fixer au jugé.
+
 Lecture seule, **aucun code écrit** — le patron a demandé de ne rien corriger
 avant son feu vert. Le détail complet, fichiers et numéros de ligne, est dans
 `docs/audit-dictee-devis.md`. Ce qui suit est la liste de travail qui en sort,

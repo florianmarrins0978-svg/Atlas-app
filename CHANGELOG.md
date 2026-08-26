@@ -9,6 +9,41 @@ Format : le plus récent en tête.
 
 ## 2026-08-26
 
+### Dictée → devis : la cartographie, et neuf contrôles rouges avant correction
+
+Son brief du 26 août (relayé de ChatGPT, lu et confronté au code) : cartographier
+la chaîne, écrire les tests AVANT de corriger, ne rien refondre sans son accord.
+
+`docs/audit-dictee-devis-cartographie.md`. Deux suites neuves, rouges par
+construction — `test-dictee-devis-identite.ts` (sans base, sans clé) et
+`test-dictee-devis-identite-db.ts`. **247/249 suites réussies : les deux seules
+en échec sont les deux neuves.** La chaîne d'aujourd'hui est cohérente avec
+elle-même, autour d'un modèle de données faux.
+
+**La corruption est désormais chiffrée**, et c'est ce qui manquait hier : un prix
+de 1 500 € posé sur la ligne qui porte la tonte ET le démontage a **écrasé** la
+case `demontage_retention|d40` de la grille, de 800 € à 1 500 €.
+
+**Sept dépendances cachées, aucune n'était dans le brief.** Les deux qui
+comptent : `tachesDuChantier` écrit déjà la quantité sur la feuille de l'équipe
+(elle se tait tant qu'elle vaut 1 — poser 800 fera lire « Haie (800 ml) — 800 »),
+et `unite` n'existe **pas** sur `lignes_devis` ni `lignes_facture`, donc l'unité
+s'arrête avant le document du client.
+
+**Trois points du brief contredisent ses propres décisions**, et le document le
+dit noir sur blanc : le 0 € vient de sa demande du 7 août (« le devis ne comporte
+aucune ligne, gros bug ») ; la répartition 850 + 250 est sa règle, ce n'est que
+le repli qui est arbitraire ; et le découpage n'a jamais séparé les actions, il
+sépare ce que le client peut refuser seul.
+
+**Correction de ce que le lot précédent affirmait :** la branche catalogue n'est
+pas morte — elle est morte du côté de la dictée, vivante du côté de l'assistant
+(`ai/tools/calculer-chiffrage.ts` passe le mot-clé). La supprimer casserait
+l'assistant.
+
+**Ces deux suites ne doivent pas atteindre `main`** avant l'étape 5 du plan : une
+batterie rouge cesse d'être lue par les autres sessions.
+
 ### Audit de la chaîne dictée → devis (lecture seule, aucun code)
 
 Le patron, devant son devis dicté depuis l'iPhone : « Haie (tout genre)
