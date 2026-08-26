@@ -20,6 +20,7 @@
 //   4. un chantier supprimé ne pèse plus.
 
 import assert from "node:assert/strict";
+import { jourIso } from "../src/lib/jour";
 import { pool } from "../src/server/db/client";
 import { nettoyerBase } from "./_test-db";
 import { creerEntreprise } from "../src/server/repositories/entreprises";
@@ -93,7 +94,12 @@ async function main() {
     // daté de la veille de l'émission : `noterPaiement` le refusait poliment,
     // le test l'ignorait, et le cas rougissait en accusant le calcul du reste
     // dû — un contrôle qui accuse à tort coûte plus cher que pas de contrôle.
-    const aujourdHui = new Date().toISOString().slice(0, 10);
+    // **`jourIso`, jamais `toISOString`** — c'est tout le §182 : le second rend
+    // le jour de GREENWICH. Entre minuit et 2 h du matin en France, il rend la
+    // veille, le règlement tombe alors avant sa facture, et `noterPaiement` le
+    // refuse à juste titre. Vu rouge le 27 août 2026 à 0 h passée : le produit
+    // était sain, c'est la suite qui comptait ses journées à Londres.
+    const aujourdHui = jourIso(new Date());
     const regle = await noterPaiement(ctx, factureId, { date: aujourdHui, montant: "500.00" });
     assert.ok(regle.ok, `le règlement d'essai a été refusé : ${regle.ok ? "" : regle.raison}`);
 

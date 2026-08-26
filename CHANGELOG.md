@@ -42,6 +42,20 @@ rouvraient le relevé par une navigation neuve, et une page rouverte est toujour
 juste. Le cas ajouté rejoue SA séquence — basculer sans quitter l'écran — et a
 été vu rouge avant d'être vert. `ARCHITECTURE.md` §193.
 
+### Deux journées comptées à Greenwich, dont une sur un devis parti chez un client
+
+Trouvé le 27 août 2026 à minuit passé, une suite rouge à l'appui : entre minuit
+et 2 h du matin en France, `new Date().toISOString()` rend **la veille**. C'est
+tout le §182, et deux endroits l'ignoraient encore.
+
+- **La date d'émission d'un devis** portait la veille — sur un document qui part
+  chez un client, et dont la validité se compte à partir de cette date.
+- Le nom de repli d'un chantier créé par l'assistant, même défaut.
+
+`jourIso` est la seule définition du jour de ce dépôt ; plus rien dans `src/` ne
+la contourne. La suite de la liste des clients, qui rougissait sur du code sain,
+l'emploie aussi.
+
 ### « Il comprend rien » — l'assistant se reprend au lieu d'abandonner
 
 Sa capture du soir : *« Peux-tu me sortir le devis de Lucie »*, puis deux

@@ -26,6 +26,7 @@ import {
 import { getClient, mettreAJourClient, trouverOuCreerClient } from "@/server/repositories/clients";
 import { listerChantiersPourAffichage } from "@/server/repositories/chantiers";
 import { nomDuChantier } from "@/lib/nom-chantier";
+import { jourIso } from "@/lib/jour";
 import { filtrerClientsParNom } from "@/lib/recherche-client";
 import { creerTarif, modifierTarif } from "@/server/repositories/tarifs";
 import { terminerChantier } from "@/server/repositories/factures";
@@ -524,7 +525,8 @@ export async function appliquerPropositionsAction(
             nomClient: fiche.nom,
             civilite: fiche.civilite,
             adresseChantier: adresse ?? null,
-            jour: new Date().toISOString().slice(0, 10),
+            // `jourIso` et non `toISOString` : le jour du patron, pas celui de Greenwich (§182).
+            jour: jourIso(new Date()),
           });
           await creerChantier(ctx, { nom, clientId: fiche.id, ...(adresse ? { adresseChantier: adresse } : {}) });
           resultats.push({ ...base, statut: "appliquee" });

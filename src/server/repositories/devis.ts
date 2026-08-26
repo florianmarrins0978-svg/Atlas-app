@@ -8,6 +8,7 @@ import { devis, lignesDevis, lignesPrix, chantiers, clients, entreprises } from 
 import type { Ctx } from "./context";
 import { genererPdfDevis } from "../pdf/devis-pdf";
 import { enregistrerObjet } from "../storage";
+import { jourIso } from "@/lib/jour";
 import { ecrireNumero, repartChaqueAnnee } from "@/lib/numero-documents";
 
 const TAUX_TVA_DEFAUT = "20.00";
@@ -269,7 +270,11 @@ export async function getOuCreerDevisBrouillon(ctx: Ctx, chantierId: string) {
         numeroVersion,
         statut: "brouillon",
         ...snapshotEnTete,
-        dateEmission: new Date().toISOString().slice(0, 10),
+        // **`jourIso`, jamais `toISOString`** (§182) : le second rend le jour de
+        // GREENWICH. Un devis composé à minuit et demi portait la VEILLE — sur
+        // un document qui part chez un client, et dont la validité se compte à
+        // partir de cette date.
+        dateEmission: jourIso(new Date()),
         tauxTva: TAUX_TVA_DEFAUT,
         ...totaux,
         createdBy: ctx.utilisateurId,
