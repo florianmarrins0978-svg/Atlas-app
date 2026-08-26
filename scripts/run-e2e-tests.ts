@@ -233,6 +233,17 @@ const motifDemande = (() => {
 
 if (process.argv.includes("--list")) {
   const fichiers = readdirSync(DOSSIER)
+    // **Un fichier préfixé `_` est une PIÈCE COMMUNE, pas une suite.**
+    //
+    // Trouvé le 26 août 2026, et c'était un faux vert : `_creer-chantier-e2e.ts`
+    // et `_calendrier-e2e.ts` n'exportent que des fonctions — joués seuls, ils
+    // n'affichent rien et sortent en 0. La batterie les comptait donc comme des
+    // suites RÉUSSIES, et annonçait 112/112 là où 110 seulement mesuraient
+    // quelque chose. C'est exactement le contrôle qui mesure zéro que
+    // `CLAUDE.md` §5 décrit : il ne dit pas « rouge », il ne dit rien — et il
+    // gonfle le chiffre auquel on se fie.
+    .filter((f) => !f.startsWith("_"))
+    .filter((f) => !f.startsWith("_"))  // pièces communes, voir plus haut
     .filter((f) => f.endsWith("-e2e.ts") || SUITES_SERVEUR.includes(f))
     .filter((f) => (motifDemande === null ? true : f.includes(motifDemande)))
     .sort();
