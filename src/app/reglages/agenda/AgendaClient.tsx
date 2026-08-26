@@ -164,7 +164,7 @@ export default function AgendaClient({ etat, issue }: { etat: EtatAgenda; issue:
             className="px-1 text-[14px] font-medium"
             style={{ color: colors.rust }}
           >
-            {etat.configure ? "Changer mes identifiants Google" : "Coller mes identifiants Google"} →
+            {etat.configure ? "Changer mes identifiants Google" : "Coller mes identifiants Google"}
           </button>
         )}
 

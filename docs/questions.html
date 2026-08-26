@@ -97,6 +97,7 @@
 <li><a href="#23-lapplication-est-elle-trop-compliquée-pour-un-artisan-pressé-">L'application est-elle trop compliquée pour un artisan pressé ?</a></li>
 <li><a href="#24-faut-il-une-licence-pour-se-servir-des-données-de-linrae-">Faut-il une licence pour se servir des données de l'INRAE ?</a></li>
 <li><a href="#25-peut-on-ouvrir-atlas-avec-face-id-au-lieu-dun-mot-de-passe-">Peut-on ouvrir Atlas avec Face ID, au lieu d'un mot de passe ?</a></li>
+<li><a href="#26-combien-dheures-avons-nous-passé-à-créer-atlas-">Combien d'heures avons-nous passé à créer Atlas ?</a></li>
 </ol>
 <hr>
 <h2 id="1-le-compte-développeur-apple--qui-paie-et-combien-de-temps-">1. Le compte développeur Apple : qui paie, et combien de temps ?</h2>
@@ -522,9 +523,30 @@
 </tbody></table></div>
 <p><strong>Ce qui NE bouge pas, et qui répond à la question des prix :</strong> <em>« il lit les tarifs, il ne les change pas »</em> (13 août). Un commercial se sert des prix pour chiffrer ; il ne redessine pas vos grilles. C'est exactement ce qui a été codé le 23 août — l'écran « Mes prix » et l'action qui y pose un montant sont réservés au patron, côté serveur et plus seulement à l'affichage.</p>
 <p><strong>Et le PDF sans les prix prend enfin tout son sens.</strong> Si le salarié ne voit que le planning, c'est là — et nulle part ailleurs — qu'il ouvre la feuille de son chantier. Le document sans montants n'est pas un confort : c'est <strong>le seul</strong> document qu'il verra jamais.</p>
-<h3 id="ce-qui-reste-vrai-et-qui-nest-pas-encore-fait">Ce qui reste vrai, et qui n'est pas encore fait</h3>
-<p><strong>Rien de ce tableau n'est en place au 23 août 2026.</strong> La base ne connaît toujours que deux rôles (propriétaire et membre), aucun écran ne permet de donner un accès, et <strong>rien ne filtre encore l'application par rôle</strong> : un membre atteint aujourd'hui tous les écrans sauf ceux qui ont reçu une garde explicite.</p>
-<p>Ce qui a changé le 23 août, et qui n'est qu'un début : les écrans réservés au patron refusent désormais <strong>côté serveur</strong>, et non plus seulement en se cachant du sommaire. Le reste — les quatre rôles en base, l'écran qui donne un accès, le cloisonnement du salarié sur le seul planning — reste à faire, et c'est un lot à lui seul. Le dessin existe (<code>maquettes/atlas-reglages-equipe.html</code>) ; le code, non.</p>
+<h3 id="fait-le-25-août-2026--ce-paragraphe-disait-le-contraire-jusque-là">Fait le 25 août 2026 — ce paragraphe disait le contraire jusque-là</h3>
+<p><strong>Ce qui suit remplace un paragraphe devenu faux</strong>, et c'est pour cela qu'il est réécrit plutôt que complété : il disait <em>« rien de ce tableau n'est en place »</em>, et s'y fier aujourd'hui ferait redemander un travail déjà livré.</p>
+<p>Le 25 août, vous avez redemandé la même chose dans vos mots — <em>« il faut qu'il leur crée un compte salarié […] chaque utilisateur possède son propre compte et sa propre session »</em>, et <em>« les restrictions doivent être appliquées côté serveur, et pas uniquement en masquant des boutons ou des pages »</em>. C'est exactement ce qui a été codé.</p>
+<p><strong>Où ça se passe :</strong> Réglages → Équipe → « Qui a accès ». Vous y créez un compte — un nom, une adresse, un mot de passe que vous lui dites —, vous choisissez son rôle, et vous le retirez quand il part. Deux listes sur cet écran, jamais mélangées : <em>qui a accès</em> (des comptes) et <em>vos équipes</em> (des files du planning).</p>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th>Ce qu'il atteint</th>
+</tr></thead><tbody>
+<tr>
+<td><strong>Patron</strong></td>
+<td>tout Atlas</td>
+</tr>
+<tr>
+<td><strong>Commercial</strong></td>
+<td>toute l'application, sauf la mise en page des devis, l'identité de l'entreprise, les accès, l'abonnement et l'export</td>
+</tr>
+<tr>
+<td><strong>Salarié</strong></td>
+<td>le planning, sa feuille de chantier sans un seul montant, et ses propres réglages</td>
+</tr>
+</tbody></table></div>
+<p><strong>Et « sans les prix » n'est plus un masquage.</strong> Un salarié qui taperait l'adresse d'un devis, de son PDF ou d'une facture est refusé <strong>par le serveur</strong> : la page n'est pas rendue, le fichier n'est pas produit. C'est ce que ce paragraphe-ci exigeait depuis le 7 août, et c'est tenu.</p>
+<p><strong>Ce que le patron voit du planning d'un salarié :</strong> tout, ou les seuls chantiers de son équipe — un réglage <strong>par personne</strong>, comme vous l'aviez demandé. Le défaut est « tout ».</p>
+<p><strong>Ce qui reste ouvert, et il faut le dire :</strong> un commercial ne LIT pas encore vos tarifs, alors que votre règle du 13 août dit qu'il les lit sans les changer. Cet écran-là doit être dessiné avant d'être codé — un prix qu'on ne peut pas toucher, ça se montre. Il est noté dans <code>TODO.md</code>.</p>
 <hr>
 <h2 id="11-quest-ce-quatlas-doit-faire-sur-la-plateforme-de-facturation-">11. Qu'est-ce qu'Atlas doit faire sur la plateforme de facturation ?</h2>
 <a class="retour" href="#sommaire">↑ Sommaire</a>
@@ -1240,6 +1262,55 @@
 <p>Ce qui ne se vérifie que chez vous : que Face ID s'ouvre bien sur <strong>votre</strong> iPhone, avec <strong>votre</strong> visage. Aucun banc d'essai ne peut le dire à votre place.</p>
 <h3 id="le-lien-avec-la-double-authentification">Le lien avec la double authentification</h3>
 <p>L'audit du 23 août réclamait une double authentification. La passkey y répond mieux qu'un code à six chiffres reçu par SMS : elle vaut <strong>à elle seule</strong> deux facteurs — le téléphone qu'on possède, et le visage qui l'ouvre. Sans code à recopier sur un chantier, les mains sales.</p>
+<hr>
+<h2 id="26-combien-dheures-avons-nous-passé-à-créer-atlas-">26. Combien d'heures avons-nous passé à créer Atlas ?</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><strong>Environ 150 à 200 heures</strong>, en un peu moins d'un mois — du 31 juillet au 25 août 2026.</p>
+<p>La fourchette est large, et c'est honnête : une partie du travail n'a pas laissé de trace datée. Le détail est plus bas.</p>
+<h3 id="ce-qui-est-mesuré-et-ce-qui-est-estimé">Ce qui est mesuré, et ce qui est estimé</h3>
+<div class="tablewrap"><table><thead><tr>
+<th>Période</th>
+<th>Ce qu'on en sait</th>
+<th>Temps</th>
+</tr></thead><tbody>
+<tr>
+<td>10 → 25 août</td>
+<td>652 enregistrements horodatés, à la minute près</td>
+<td><strong>122 h</strong></td>
+</tr>
+<tr>
+<td>31 juillet → 10 août</td>
+<td>aucune trace horodatée : l'historique a été remis à plat le 10 août</td>
+<td><strong>31 à 76 h</strong></td>
+</tr>
+</tbody></table></div>
+<p>Le 10 août, tout le travail existant a été réenregistré <strong>en un seul bloc</strong> — 684 fichiers d'un coup. Les dates des onze jours précédents ont disparu à cette occasion. Ce n'est pas une perte de code : l'application entière était là. C'est une perte de <strong>chronomètre</strong>.</p>
+<h3 id="comment-les-31-à-76-heures-sont-estimées">Comment les 31 à 76 heures sont estimées</h3>
+<p>Trois façons de compter, qui ne donnent pas la même réponse :</p>
+<div class="tablewrap"><table><thead><tr>
+<th>On compare</th>
+<th>Ce que ça donne</th>
+</tr></thead><tbody>
+<tr>
+<td>le <strong>code déjà écrit</strong> au 10 août (76 000 lignes) à celui écrit depuis</td>
+<td>74 h</td>
+</tr>
+<tr>
+<td>le nombre de <strong>jours travaillés</strong> avant et après</td>
+<td>76 h</td>
+</tr>
+<tr>
+<td>le nombre de <strong>lots de travail</strong> notés au journal, avant et après</td>
+<td>31 h</td>
+</tr>
+</tbody></table></div>
+<p>Les deux premières se rejoignent ; la troisième est plus basse, parce qu'au début le journal notait des lots plus gros. La vérité est probablement du côté haut — les onze premiers jours ont produit l'application entière.</p>
+<h3 id="le-chiffre-se-recalcule-tout-seul">Le chiffre se recalcule tout seul</h3>
+<p>Il vieillit à chaque enregistrement. Plutôt que de le recopier ici et de le laisser se périmer, une commande le refait :</p>
+<p>``<code> node scripts/compter-heures.mjs </code>``</p>
+<h3 id="ce-qui-nest-pas-compté">Ce qui n'est PAS compté</h3>
+<p><strong>Arborea.</strong> Atlas en est la reprise — écrans, calculs et tests repris le 31 juillet. Le temps passé sur Arborea n'existe dans aucun fichier de ce dépôt, donc il n'est pas dans ces chiffres.</p>
+<p>Et ces heures sont du <strong>temps écoulé</strong>, pas de l'effort cumulé : plusieurs sessions travaillent souvent en parallèle sur des parties différentes. Une soirée de trois heures avec quatre sessions reste trois heures dans ce compte.</p>
 </main>
 </body>
 </html>

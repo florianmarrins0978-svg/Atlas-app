@@ -63,7 +63,7 @@ export default function HubMockupPage() {
 
         {/* Action principale — une seule, contextuelle à l'état du chantier */}
         <div className="px-6 pt-7">
-          <PrimaryButton href={nextAction.href}>{nextAction.label} →</PrimaryButton>
+          <PrimaryButton href={nextAction.href}>{nextAction.label}</PrimaryButton>
         </div>
 
         {/* Étapes secondaires — discrètes, liste plate, pas de cartes */}

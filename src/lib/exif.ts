@@ -127,7 +127,7 @@ export const MESSAGE_PHOTO_REFUSEE =
  */
 export const MESSAGE_HEIC_REFUSE =
   "Votre iPhone a envoyé cette photo au format HEIC, dont Atlas ne sait pas retirer les données de localisation. " +
-  "Sur votre téléphone : Réglages › Appareil photo › Formats › « Le plus compatible ». Reprenez ensuite la photo.";
+  "Sur votre téléphone : Réglages, Appareil photo, Formats, « Le plus compatible ». Reprenez ensuite la photo.";
 
 /**
  * Le refus quand le fichier n'est pas ce qu'il prétend être.

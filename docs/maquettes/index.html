@@ -668,6 +668,13 @@
     <span class="quoi">Sa réponse : <b>« il doit y avoir le nombre de jour, le matin, l’après-midi et la journée comme infos possible »</b>, puis <b>« je veux journée et toute la ligne »</b>. La date, le moment de départ et la durée, sur les <b>cinq</b> cas du produit — dont celui qui part l’après-midi et déborde sur le lendemain matin. <b>Codée le 15 août</b> (`ARCHITECTURE.md` §111).</span>
   </a>
 
+  <p class="famille">Les accès de ses salariés</p>
+
+  <a class="item" href="../../appli/donner-un-acces.html">
+    <span class="no">▶</span><span class="titre">Donner un accès — ESSAYABLE</span><span class="fleche">→</span>
+    <span class="quoi">Ses trois reproches du 26 août 2026, capture à l&rsquo;appui, sur l&rsquo;écran livré le matin même : <b>« mettre le petit œil à côté du mdp […] et il faut confirmer son mdp donc l&rsquo;écrire deux fois »</b>, <b>« pour valider un compte c&rsquo;est pas clair, la case est déjà noire comme la catégorie salarié »</b>, <b>« la démarcation entre vous patron et le compte qu&rsquo;on est en train d&rsquo;attribuer n&rsquo;est pas bien séparée »</b>. <b>Les trois ont la même racine</b> : le formulaire du compte NEUF avait été posé dans la liste des comptes EXISTANTS, sans rien entre les deux. L&rsquo;œil et la double saisie sont <b>recopiés de l&rsquo;écran qu&rsquo;il a arrêté le 14 août</b> (<code>atlas-reglages-moi.html</code>), pas réinventés. Le rôle choisi devient <b>teinté avec un coche</b> au lieu de noir plein — la charte le disait déjà : le plein porte ce qu&rsquo;on FAIT, et le seul bouton de l&rsquo;écran redevient celui qui crée le compte. Deux séparations proposées : <b>A</b> une carte posée sur la liste, <b>B</b> un écran à lui seul. <b>Tout se touche sans une ligne de JavaScript</b> — les deux yeux, les rôles, l&rsquo;ouverture du formulaire. <b>Un défaut trouvé en la regardant</b> : le périmètre affiché ne suivait pas le rôle coché, si bien qu&rsquo;on lisait « le planning et rien d&rsquo;autre » sous « Commercial ». <b>Rien n&rsquo;est codé — en attente de sa réponse, A ou B.</b></span>
+  </a>
+
   <p class="famille">Ce qui part chez le client, et son allure</p>
 
   <a class="item" href="../../appli/allure-bleutee.html">
@@ -683,6 +690,10 @@
   <a class="item" href="../../appli/allure-mieux-rangee.html">
     <span class="no">96</span><span class="titre">Voir son devis pendant qu’on le change</span><span class="fleche">→</span>
     <span class="quoi">Sa demande du 24 août 2026, capture à l’appui : <b>« lorsque je modifie mon devis, je suis obligé de descendre pour voir les modifications ; il faut mieux organiser la page pour pouvoir voir ce qu’on modifie — propose, ne code rien »</b>. <b>Un défaut d’ORDRE, pas de contenu</b> : l’écran range logo → dix typographies (cinq rangées) → fond → accent → <b>puis</b> l’aperçu, qui tombe à plus de 900 px du haut. Neuf polices à essayer font dix-huit trajets. <b>Trois rangements, tous manipulables</b> — <b>A</b> l’aperçu en tête, qui ne règle que la moitié et le dit ; <b>B</b> l’aperçu collé en haut, qui suit chaque choix au prix du tiers haut de l’écran ; <b>C</b> la feuille pleine page et les réglages en tiroir, la plus grande feuille contre un geste de plus à apprendre. <b>La planche se mesure elle-même</b> : elle annonce si la feuille est dans l’écran, et de combien de pixels il faudrait remonter sinon. Les dix polices, les quatre fonds et les quatre accents sont <b>recopiés du code</b>, jamais inventés — et le contrôle les compare à <code>src/lib/allure-documents.ts</code> à chaque exécution. Il a été <b>vu rougir</b> quatre fois : sans le collage de B, sur une police inventée, sur une feuille de C qui ne grandit pas, et sur un tiroir qui recouvre la feuille — ce dernier a fait ramener le tiroir de 74 % à 62 % de l’écran. <b>En attente de sa réponse ; rien n’est codé.</b></span>
+  </a>
+
+  <a class="item" href="../../appli/format-de-numero.html">
+    Le numéro de mes devis et factures — cinq formats, et le défaut du « 2026 » figé
   </a>
 
   <a class="item" href="../../appli/allure-de-mes-devis.html">

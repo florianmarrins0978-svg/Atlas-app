@@ -89,7 +89,7 @@ async function main() {
     await tx.insert(membresEntreprise).values({
       entrepriseId: a.entreprise.id,
       utilisateurId: salarie.id,
-      role: "membre",
+      role: "salarie",
     });
   });
   const ctxSalarie: Ctx = { utilisateurId: salarie.id, entrepriseId: a.entreprise.id };

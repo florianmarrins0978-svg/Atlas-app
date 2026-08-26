@@ -9,6 +9,32 @@ sert.
 
 ---
 
+## PIÈGE : UNE SUITE QUI LIT LE MOIS AFFICHÉ ROUGIT EN FIN DE MOIS (26 août 2026)
+
+`test-envoi-client-e2e` a rougi le 26 août — **et à l'identique sur `main`**. Elle
+cherchait deux jours libres au-delà du délai minimal (J+3) dans le mois AFFICHÉ,
+qui commence toujours au 1er. À deux jours de la fin du mois, il n'en restait
+qu'un. Le produit était sain ; c'est le contrôle qui n'avait pas prévu la date du
+jour.
+
+**Devant une suite de calendrier rouge, regarder d'abord le quantième.** Le
+remède est écrit : `joursRetenables` tourne la page du mois quand celui-ci est
+trop court. Toute suite neuve qui compte des jours doit faire de même.
+
+## L'ASSISTANT RÉCITE UN MODE D'EMPLOI ÉCRIT (25 août 2026)
+
+Avant d'y toucher :
+
+| | |
+|---|---|
+| **Les gestes vivent dans un fichier, pas dans le modèle** | `src/lib/mode-emploi.ts`. L'assistant les récite **tels quels** : ne pas lui laisser reformuler, ce serait une seconde version du mode d'emploi |
+| **Une fiche se PROUVE** | elle porte `source` (un fichier) et `preuves` (des morceaux de texte qui doivent s'y trouver). Vous changez un libellé d'écran ? `npx tsx scripts/test-mode-emploi.ts` vous dira quelle fiche vient de mentir |
+| **Rougir est le comportement voulu** | ne « réparez » pas une fiche en retirant sa preuve : corrigez le geste. Une fiche sans preuve n'est plus confrontable, et le contrôle l'interdit |
+| **La recherche doit savoir NE RIEN trouver** | deux mots communs minimum, un mot-clé plein minimum. Relâcher ces seuils fait répondre à des questions qui n'en sont pas, et l'on cesse alors de croire l'assistant |
+| **Le mode d'emploi passe EN TÊTE de la chaîne du fournisseur** | sinon « comment je supprime un client ? » repart dans la branche des suppressions et propose de modifier ses données. C'est le défaut qui a motivé l'ordre actuel de `src/server/ai/providers/llm/dev.ts` |
+| **Regarder l'écran, pas seulement le vert** | `npx tsx scripts/capture-assistant-mode-emploi.mts <dossier>` (serveur démarré). C'est lui qui a montré la réponse à trois gestes que douze tests verts ne voyaient pas |
+| **L'assistant est réservé au propriétaire** | le bouton disparaît, mais la barrière est dans les deux actions serveur. Ne pas la retirer « parce que le bouton n'est pas là » |
+
 ## PHOTOGRAPHIER UN DEVIS POUR EN REPRENDRE L'ALLURE (25 août 2026)
 
 Nouvelle brique, sur l'écran Réglages → Documents. Avant d'y toucher :
@@ -20,6 +46,30 @@ Nouvelle brique, sur l'écran Réglages → Documents. Avant d'y toucher :
 | **Le logo n'est JAMAIS repris** | un modèle décrit une image, il ne la découpe pas. La réserve le dit toujours — ne pas « améliorer » ça en croyant reprendre le logo |
 | **La photo passe par la porte unique** | `preparerPhotoEntrante`, comme le logo : métadonnées GPS retirées avant tout envoi |
 | **Vu à l'écran** | `npx tsx scripts/capture-documents-photo.mts <dossier>` (serveur bâti + connecté). Le `next dev` de ce conteneur ne découvre pas les routes — servir une version **bâtie** (`next build` + `next start`, `ATLAS_PROFIL=banc AUTH_TRUST_HOST=true`) |
+
+## RÔLES ET ACCÈS : ce qu'il faut savoir avant d'y toucher (25 août 2026)
+
+Le cloisonnement par rôle existe depuis ce jour-là. Trois choses à connaître
+avant d'écrire un écran ou une route :
+
+| | |
+|---|---|
+| **La règle est UNE fonction pure** | `src/lib/acces-roles.ts`. Elle dessine la barre du bas, filtre le sommaire des réglages, ET refuse les adresses. Ne pas en écrire une seconde |
+| **Un ÉCRAN neuf n'a rien à faire** | il traverse `layout.tsx`, donc `GardeAcces`. Fermé d'office au salarié (liste blanche), ouvert au commercial |
+| **Une ROUTE d'API neuve, SI** | elle ne traverse aucune mise en page. `const refus = await exigerOuverture(ctx); if (refus) return refus;` en tête du handler. `scripts/test-acces-routes-gardees.ts` rougit sinon |
+
+**Le piège à connaître, et il a coûté un rouge pendant ce lot :** écrire dans
+`membres_entreprise` par `db` en direct, hors `withEntreprise`. La RLS refuse
+**sans erreur** — zéro ligne touchée, aucun message —, et le contrôle rougit
+alors en accusant tout autre chose. C'est `CLAUDE.md` §3, rencontré dans un test.
+
+**Ce qu'un salarié ATTEINT, et rien d'autre :** `/planning`, ses quatre réglages
+personnels, `/documents-legaux`, et `/api/chantiers/<id>/feuille/pdf` — le devis
+sans un seul montant. Ouvrir un cinquième chemin se fait dans `OUVERT_AU_SALARIE`
+et se paie d'une ligne dans `scripts/test-acces-roles.ts`, à la main. C'est
+voulu : c'est le seul moment où quelqu'un regarde.
+
+---
 
 ## LOT 2B FERMÉ, ET SEPT CONTRÔLES RÉPARÉS AVEC LUI (25 août 2026)
 
@@ -2163,6 +2213,28 @@ rm -rf .next-batie .next-verification   # engendrés, ignorés par git
 planches) : la batterie devrait nettoyer ces dossiers avant l'étape
 « Construction » de `scripts/verifier-avant-livraison.ts`. Sans quoi le piège
 reviendra à la prochaine page supprimée.
+
+## ⚠ LANCER UNE SUITE NAVIGATEUR À LA MAIN : DEUX PIÈGES QUI FONT ACCUSER LE CODE
+
+Posé le 25 août 2026, après une heure perdue à croire `main` cassé.
+
+**1. `ATLAS_URL_PUBLIQUE` n'est PAS optionnelle.** `run-e2e-tests.ts` la pose
+lui-même (`https://atlas-suites.test`) sur le serveur qu'il démarre. Lancée
+contre un `npm run dev` ordinaire, une suite d'envoi voit une adresse LOCALE :
+Atlas refuse alors d'ouvrir la messagerie — à juste titre, le lien ne mènerait
+nulle part (`ARCHITECTURE.md` §169) — et renvoie vers l'écran du devis parti au
+lieu de l'accueil. `test-envoi-client-e2e` rendait **5 sur 11**, et le produit
+n'y était pour rien. Sur le banc du patron, dont l'adresse est publique, tout
+fonctionne.
+
+```bash
+ATLAS_URL_PUBLIQUE=https://atlas-suites.test npm run dev   # pour jouer une suite à la main
+```
+
+**2. Le PREMIER passage sur un écran compile.** Un serveur qui vient de démarrer
+peut dépasser le délai d'une suite sur la seule compilation de la route. La même
+suite, rejouée sur le serveur chaud, passe. **Avant d'accuser son propre lot :
+rejouer.** J'ai bien failli défaire un changement juste pour cette raison.
 
 ## Ce qui vient d'être terminé
 

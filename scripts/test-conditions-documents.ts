@@ -180,6 +180,49 @@ async function main() {
     assert.equal(devis.validiteJours, 15, "le devis a suivi le réglage");
   });
 
+  // ─── LE CHEMIN ENTIER : son écran de réglages → la base → le devis ──────
+  //
+  // **C'EST CE MAILLON-LÀ QUI MANQUAIT, ET AUCUN CONTRÔLE NE LE VOYAIT.** Son
+  // constat du 25 août 2026 : *« les autres qui sont en ON doivent-ils être
+  // visibles sur le devis ? car je ne vois rien, est-ce normal ? »* Six réglages
+  // se saisissaient, **un seul** atteignait le document. Les cas ci-dessus
+  // étaient tous verts pendant ces onze jours : ils éprouvaient la RÈGLE, jamais
+  // le CHEMIN. Une pièce débranchée passe entre les deux (`CLAUDE.md` §5).
+  await essai("les cinq autres conditions se figent AUSSI dans le devis", async () => {
+    const ctx = await monter();
+    await mettreAJourEntreprise(ctx, {
+      conditions: {
+        acomptePourcent: 30,
+        delaiPaiementJours: 30,
+        moyensPaiement: "virement, chèque",
+        rappelerPenalites: true,
+        textePied: "Sous réserve d'accès au chantier.",
+      },
+    });
+    const chantier = await creerChantier(ctx, { nom: "Élagage" });
+    const d = await getOuCreerDevisBrouillon(ctx, chantier.id);
+
+    assert.equal(Number(d.acomptePourcent), 30, "l'acompte n'a pas été recopié dans le devis");
+    assert.equal(d.delaiPaiementJours, 30, "le délai n'a pas été recopié");
+    assert.equal(d.moyensPaiement, "virement, chèque", "les moyens de paiement n'ont pas été recopiés");
+    assert.equal(d.rappelerPenalites, true, "le rappel des pénalités n'a pas été recopié");
+    assert.equal(d.textePied, "Sous réserve d'accès au chantier.", "le texte de pied n'a pas été recopié");
+  });
+
+  // **Sa question, le même jour : « si je décoche le bouton OFF, ils sont censés
+  // disparaître ? »** — oui, et c'est ce cas qui le tient. Un réglage qu'on ne
+  // peut plus retirer serait pire que pas de réglage du tout.
+  await essai("éteints, les cinq ne se posent pas sur le devis", async () => {
+    const ctx = await monter();
+    const chantier = await creerChantier(ctx, { nom: "Taille de haie" });
+    const d = await getOuCreerDevisBrouillon(ctx, chantier.id);
+    assert.equal(d.acomptePourcent, null);
+    assert.equal(d.delaiPaiementJours, null);
+    assert.equal(d.moyensPaiement, null);
+    assert.equal(d.rappelerPenalites, false);
+    assert.equal(d.textePied, null);
+  });
+
   await essai("une entreprise neuve porte les 30 jours d'avant", async () => {
     const ctx = await monter();
     const e = await getEntreprise(ctx);

@@ -85,7 +85,11 @@ async function main() {
     // machine chargée, un délai en dur ferait rougir un produit correct.
     const enregistre = page.waitForResponse(
       (r) => r.request().method() === "POST" && r.url().includes("/devis-complet"),
-      { timeout: 30000 }
+      // 60 s comme les attentes d'écran ci-dessus, et pas 30 : sous la batterie
+      // entière, la machine est chargée et l'action serveur met plus longtemps
+      // à répondre. Le 25 août 2026, cette suite a rougi en batterie et passait
+      // seule — le défaut était le délai, pas le produit (`HANDOVER.md`).
+      { timeout: 60000 }
     );
     await prixUnitaire.blur();
     await enregistre;
@@ -112,7 +116,11 @@ async function main() {
     assert.equal(await reprendre.count(), 1, "Le rappel s'affiche mais ne se reprend pas d'un geste.");
     const reprise = page.waitForResponse(
       (r) => r.request().method() === "POST" && r.url().includes("/devis-complet"),
-      { timeout: 30000 }
+      // 60 s comme les attentes d'écran ci-dessus, et pas 30 : sous la batterie
+      // entière, la machine est chargée et l'action serveur met plus longtemps
+      // à répondre. Le 25 août 2026, cette suite a rougi en batterie et passait
+      // seule — le défaut était le délai, pas le produit (`HANDOVER.md`).
+      { timeout: 60000 }
     );
     await reprendre.click();
     await reprise;

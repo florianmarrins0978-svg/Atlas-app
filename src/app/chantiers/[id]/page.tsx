@@ -315,7 +315,7 @@ export default async function FicheChantierPage({ params }: { params: Promise<{ 
         // le corps de la fiche ne dit rien.
         resume={{
           gauche: "Le chantier",
-          droite: !note && nextAction ? `${nextAction.label} →` : statutLabel[statut],
+          droite: !note && nextAction ? nextAction.label : statutLabel[statut],
         }}
       />
     </div>

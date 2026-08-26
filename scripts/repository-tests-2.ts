@@ -70,7 +70,7 @@ async function main() {
       { nom: "Entreprise jetable (pour créer un 2e utilisateur)" },
       { email: "second-membre@test.local", nom: "Second" }
     );
-    await membresRepo.ajouterMembre(A, second, "membre");
+    await membresRepo.ajouterMembre(A, second, "salarie");
     const membres = await membresRepo.listerMembres(A);
     assert.equal(membres.length, 2);
   });
