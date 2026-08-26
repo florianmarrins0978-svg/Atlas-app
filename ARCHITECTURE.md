@@ -16605,3 +16605,45 @@ où tout geste en visait un ; il survivait à la migration 0067.
 un chantier. C'est la sixième fois dans ce dépôt qu'un défaut sort d'une image et
 d'aucun test. Le même appui rendait d'ailleurs le bouton « Appliquer » inerte
 côté écran — un bouton qui s'enfonce sans rien faire se lit comme une panne.
+
+---
+
+## 190. « Mon compte » : quarante mots de moins, et rien de perdu
+
+**Ses quatre demandes du 26 août 2026, sur capture :** *« supprime la phrase
+sous enregistrer »*, *« supprime ce compte sous compte démo »*, et — pour les
+deux lignes grises sous Nom et E-mail — *« elles me semblent inutiles, qu'en
+penses-tu ? Si tu es d'accord on les supprime, sinon il faut les raccourcir,
+elles sont beaucoup beaucoup trop longues pour rien »*.
+
+### Ce qui est parti, et ce qui reste
+
+| Ligne | Verdict |
+|---|---|
+| « Ce compte », sous son nom | **partie** — l'écran s'appelle « Mon compte » |
+| « Ce nom ne part pas chez le client… » | **partie** — et elle se lisait de travers : « c'est celui de votre entreprise » se comprend à l'envers en diagonale |
+| « C'est aussi l'identifiant… il ne se change pas encore… » (40 mots) | **raccourcie à 7** : « Sert aussi à vous connecter. Pas encore modifiable. » |
+| « Pas de téléphone ici, et c'est voulu… » (4 lignes) | **partie** |
+
+### Pourquoi la ligne de l'e-mail n'a PAS été supprimée
+
+C'est le seul désaccord, et il tient en une phrase : **un champ qui ne s'ouvre
+pas quand on le touche se lit comme une panne.** Sans cette ligne, il appuierait,
+rien ne se passerait, et il chercherait ce qu'il a mal fait — exactement le
+genre de silence que ce dépôt paie cher.
+
+Ce qui a été retiré, c'est le POURQUOI : rien ne permettrait de vérifier une
+nouvelle adresse, et une faute de frappe fermerait le compte pour de bon. Cela
+reste vrai, et c'est ici que ça vit, pas sous ses yeux.
+
+### La décision du téléphone n'a pas bougé, seule son explication est partie
+
+Le paragraphe disait pourquoi il n'y a pas de champ téléphone — sa réponse « A »
+du 14 août. Il vivait **sous le bouton**, donc à moitié caché par la barre
+d'enregistrement : une explication qu'on ne lit pas ne protège de rien.
+
+**Aucun champ téléphone ici**, et `test-compte-connexion-e2e.ts` le refuse
+toujours. Le contrôle qui réclamait la PHRASE, lui, aurait rougi sur du code
+juste pour une demande exaucée (`CLAUDE.md` §5 bis) : il refuse désormais
+qu'elle revienne, au lieu de l'exiger. Trois libellés retirés sont gardés de la
+même façon.

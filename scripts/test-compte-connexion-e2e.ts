@@ -79,13 +79,29 @@ async function main() {
     // apercevrait avant qu'il ne le voie sur une capture.
     verifie("AUCUN champ téléphone — c'est sa réponse « A » du 14 août",
       await page.getByLabel(/téléphone/i).count() === 0);
-    verifie("et l'écran DIT pourquoi il n'y en a pas",
-      /Pas de téléphone ici/i.test(compte), compte.slice(0, 160));
 
-    // Changer l'e-mail fermerait le compte sans recours : aucun canal ne
-    // permet de vérifier la nouvelle adresse. L'écran doit le dire.
-    verifie("l'e-mail ne se saisit pas, et l'écran l'explique",
-      await page.getByLabel("E-mail").count() === 0 && /ne se change pas encore/i.test(compte));
+    // **Le paragraphe qui l'expliquait a été retiré le 26 août 2026**, à sa
+    // demande — quatre lignes sous le bouton, à moitié cachées par la barre.
+    // Le contrôle qui le réclamait aurait rougi sur du code juste, pour une
+    // demande exaucée (`CLAUDE.md` §5 bis) : ce qu'on défend, c'est l'ABSENCE
+    // du champ, pas la phrase qui la commentait. Et on refuse qu'elle revienne.
+    verifie("et l'écran ne l'explique plus — l'absence se suffit",
+      !/Pas de téléphone ici/i.test(compte), compte.slice(0, 160));
+
+    // **L'e-mail ne se saisit pas, et l'écran le dit en six mots.** Sans cette
+    // ligne, un champ qui ne s'ouvre pas se lirait comme une panne. Le POURQUOI
+    // — rien ne permet de vérifier une nouvelle adresse — a quitté l'écran le
+    // 26 août : il vit dans `ARCHITECTURE.md`, pas sous ses yeux.
+    verifie("l'e-mail ne se saisit pas, et l'écran le dit COURT",
+      await page.getByLabel("E-mail").count() === 0 && /Pas encore modifiable/i.test(compte),
+      compte.slice(0, 200));
+    verifie("et la longue explication n'est pas revenue",
+      !/ne se change pas encore/i.test(compte));
+
+    // **Ce que le patron a fait retirer le 26 août ne doit pas repousser.**
+    verifie("« Ce compte » et la phrase sous le nom sont partis",
+      !/Ce compte\b/i.test(compte) && !/ne part pas chez le client/i.test(compte),
+      compte.slice(0, 200));
 
     verifie("le bouton du bas est là, et dit que tout est écrit",
       /Enregistré/.test(await page.locator("button", { hasText: /Enregistr/ }).first().innerText()));

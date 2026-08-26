@@ -9,6 +9,25 @@ Format : le plus récent en tête.
 
 ## 2026-08-26
 
+### « Mon compte » : quarante mots de moins
+
+*« Supprime la phrase sous enregistrer »*, *« supprime ce compte sous compte
+démo »*, et sur les deux lignes grises : *« elles sont beaucoup beaucoup trop
+longues pour rien »*.
+
+Trois sont parties — « Ce compte », la phrase sous le nom, et les quatre lignes
+qui expliquaient l'absence de champ téléphone (elles vivaient sous le bouton,
+donc à moitié cachées).
+
+**Une a été gardée, raccourcie de 40 mots à 7 :** celle de l'e-mail. Un champ
+qui ne s'ouvre pas quand on le touche se lit comme une panne — sans elle, il
+appuierait et chercherait ce qu'il a mal fait. Le pourquoi, lui, a quitté
+l'écran pour `ARCHITECTURE.md` §190.
+
+La décision du téléphone n'a pas bougé : aucun champ ici, et le contrôle le
+refuse toujours. Ce que ce lot change, c'est qu'il refuse désormais aussi le
+RETOUR des phrases retirées, au lieu de les exiger.
+
 ### Une règle de plus dans `CLAUDE.md` : ne rien jouer à la main pendant la batterie
 
 **Cinq suites navigateur rouges d'un coup, et l'étape « Connexion derrière un
