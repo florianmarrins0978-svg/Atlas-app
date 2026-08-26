@@ -7,7 +7,7 @@ import { nomDuChantier } from "@/lib/nom-chantier";
 import type { Civilite } from "@/lib/civilite";
 import { jourIso } from "@/lib/jour";
 import { verifierLimite, LIMITES } from "@/server/rate-limit";
-import { verifierTailleFichier, verifierTypeAudio } from "@/server/upload-limits";
+import { preparerAudioEntrant } from "@/server/audio-entrant";
 import { lireCoordonneesDictees } from "@/server/ai/services/coordonnees-service";
 
 export type CreerChantierInput = {
@@ -107,15 +107,16 @@ export async function dicterCoordonneesAction(formData: FormData) {
   const fichier = formData.get("fichier");
   if (!(fichier instanceof File)) throw new Error("Aucun enregistrement reçu.");
 
-  const taille = verifierTailleFichier(fichier);
-  if (!taille.ok) throw new Error(taille.message);
-  const type = verifierTypeAudio(fichier.type);
-  if (!type.ok) throw new Error(type.message);
 
   const ctx = await getCurrentCtx();
   const limite = await verifierLimite(`televersement:${ctx.entrepriseId}`, LIMITES.televersementFichier);
   if (!limite.autorise) throw new Error(limite.message);
 
-  const octets = Buffer.from(await fichier.arrayBuffer());
-  return lireCoordonneesDictees(octets, fichier.type || "audio/webm");
+  // **LA PORTE COMMUNE** — le format se lit dans les octets, jamais dans ce que
+  // le téléphone annonce (`src/server/audio-entrant.ts`). Ce chemin ne stocke
+  // rien : il transcrit. Ce qui se joue ici est donc l'appel — et sa facture —
+  // chez le fournisseur d'IA, qui ne part plus sur un fichier non reconnu.
+  const audio = await preparerAudioEntrant(fichier);
+  if (!audio.ok) throw new Error(audio.message);
+  return lireCoordonneesDictees(audio.octets, audio.mime);
 }
