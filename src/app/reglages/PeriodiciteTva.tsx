@@ -77,15 +77,6 @@ export default function PeriodiciteTvaReglage({ initiale }: { initiale: Periodic
         })}
       </div>
 
-      {/* **On ne conseille pas, on situe.** Dire « vous pouvez passer au
-          trimestre » supposerait de connaître la TVA due — donc les achats,
-          que l'application ne voit pas. */}
-      <p className="pt-3 text-[12.5px] leading-[1.65]" style={{ color: colors.muted }}>
-        La déclaration est <b style={{ color: colors.ink, fontWeight: 500 }}>mensuelle par défaut</b> ;
-        le trimestre est une option, sous condition de TVA due.{" "}
-        <b style={{ color: colors.ink, fontWeight: 500 }}>Votre comptable dit lequel vous concerne</b> —
-        Atlas ne voit que la TVA collectée, jamais vos achats.
-      </p>
     </section>
   );
 }

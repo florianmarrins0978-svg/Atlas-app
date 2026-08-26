@@ -436,6 +436,50 @@ qu'aucun écran soit touché. Les rayons, non — **soixante-six fichiers** les
 écrivent en dur (`rounded-[13px]`), et une charte ne peut rien sur ce qui ne
 passe pas par elle. C'est annoncé, pas fait.
 
+### « Mon entreprise » perd six phrases, et l'adresse cesse de s'écrire en double
+
+*« Supprime la phrase en gris : vos identifiants + comment vous vous nommez +
+où vous êtes établi + pour vous joindre + les espaces se posent tout seuls +
+ces informations remplissent vos devis (toute la phrase) + le trimestre est une
+option (toute la phrase). »*
+
+**Deux en-têtes restent, et ce n'est pas un oubli** : « Votre régime de TVA » et
+« Pour être payé » ne figurent pas dans sa liste. Elles coiffent plusieurs
+champs dont le lien ne se devine pas — un IBAN et son titulaire, un régime et un
+numéro intracommunautaire. Les quatre retirées, elles, ne disaient rien de plus
+que le champ juste dessous : « COMMENT VOUS VOUS NOMMEZ » au-dessus de « Nom de
+l'entreprise ».
+
+**Vérifié à l'écran, et dans les deux sens** : les six phrases ont disparu, les
+deux autres sont restées. Un contrôle qui ne vérifierait que la disparition
+laisserait passer un retrait trop large.
+
+### L'adresse écrite deux fois : sa question du 24 août
+
+*« Pourquoi l'adresse est marquée 2 fois de suite ? »* Son siège s'écrivait dans
+le champ — « 10 rue denfert rochereau 78200 Mantes la jolie » — et la
+proposition juste dessous répétait la même adresse dans son écriture officielle,
+« 10 Rue Denfert Rochereau 78200 Mantes-la-Jolie ». Deux lignes, une seule
+adresse.
+
+Ce n'était pas un défaut de recherche : **pour une machine, les deux textes
+diffèrent** — majuscules, traits d'union — et se ressemblaient assez pour qu'un
+œil y voie un doublon. Une liste qui répète ce qui est déjà écrit ne propose
+rien : elle occupe la place et fait douter de la saisie.
+
+**Ce qui a été refusé, et c'est délibéré :** réécrire sa saisie dans la forme
+officielle. Corriger sous ses doigts un champ qui finira en tête de ses devis,
+sans qu'il l'ait demandé, n'est pas de notre ressort (`CLAUDE.md` §4). On cache
+la répétition ; on ne touche pas à ce qu'il a écrit.
+
+**NON ÉPROUVÉ DANS UN NAVIGATEUR ICI, et il faut le dire** (`AGENTS.md`) : la
+Base Adresse Nationale est refusée par le mandataire de cet environnement, et la
+liste de propositions ne s'ouvre pas — **vérifié : elle ne s'ouvrait pas
+davantage AVANT cette correction**, zéro requête dans les deux cas. Ce qui est
+éprouvé, c'est la règle elle-même, en fonction pure : son cas exact, les
+chiffres qui distinguent le 10 du 100, deux vides qui ne sont pas « la même
+adresse », et une adresse plus précise qui reste une proposition.
+
 ### L'onglet courant devient une pastille — sur Brume moderne, et nulle part ailleurs
 
 *« Modifie aussi la sélection des catégories, juste pour Brume moderne. »* Sur
