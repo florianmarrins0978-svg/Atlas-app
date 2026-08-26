@@ -115,6 +115,30 @@ fait un rôle est pire qu'une maquette absente.
 
 ---
 
+## 2026-08-26
+
+### Les deux fiches, côte à côte — une maquette pour trancher
+
+*« La fiche d'entretien c'est la fiche de chantier »*, puis *« ressors-moi les
+deux pages côte à côte dans une maquette dynamique que je comprenne bien »*.
+
+Ce ne sont pas deux fois le même écran : à gauche **la liste** (Réglages), à
+droite **la fiche d'un jour** (Paysage), qui en naît. Supprimer la première
+laisserait la seconde sans rien à cocher — elle refuse d'ailleurs de s'ouvrir
+sur une liste vide. Un troisième objet porte le même nom, et il fallait le dire :
+le **PDF « Fiche de chantier »**, le devis sans les prix.
+
+`appli/deux-fiches.html`, trois onglets sans une ligne de JavaScript : les deux
+écrans, ce qui les relie, et ce qu'un renommage changerait. Les vingt
+prestations sont **celles du code** — `verifier-maquette-deux-fiches.mjs` refuse
+la moindre invention, et il a été joué rouge contre une prestation inventée puis
+contre un script glissé dans la page.
+
+**La question qui reste pour lui :** renommer celle des Réglages en « Les
+prestations de ma fiche ». Rien n'a été codé avant sa réponse.
+
+---
+
 ## 2026-08-25
 
 ### Ses journées se comptaient à Greenwich

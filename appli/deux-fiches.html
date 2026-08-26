@@ -1,0 +1,257 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Les deux fiches, côte à côte</title>
+<style>
+  /*
+    LES DEUX FICHES CÔTE À CÔTE — sa demande du 26 août 2026.
+
+    « La fiche d'entretien c'est la fiche de chantier. D'ailleurs Fiche de
+    chantier dans Paysage appelle la fiche d'entretien, et je pense qu'il faut
+    supprimer la catégorie Fiche d'entretien dans les réglages, qu'en
+    penses-tu ? » — puis : « ressors-moi les deux pages côte à côte dans une
+    maquette dynamique que je comprenne bien ».
+
+    CE QUE CETTE PAGE DOIT MONTRER, ET RIEN D'AUTRE : ce ne sont pas deux fois
+    le même écran. À gauche LA LISTE (une seule, dans les Réglages) ; à droite
+    LA FICHE D'UN JOUR, qui naît de cette liste. Supprimer la gauche laisserait
+    la droite sans rien à cocher — elle refuse d'ailleurs de s'ouvrir sur une
+    liste vide.
+
+    AUCUN SCRIPT. Les trois onglets sont des boutons radio et du CSS : la page
+    s'ouvre hors ligne, sur un téléphone qui n'exécute rien.
+
+    LES VINGT PRESTATIONS SONT CELLES DU CODE (`src/lib/prestations-entretien.ts`,
+    MODELE_FOURNI) — pas des exemples inventés. Un contrôle le vérifie
+    (`scripts/verifier-maquette-deux-fiches.mjs`) : une maquette qui montre du
+    matériel qu'il ne retrouvera pas est pire qu'aucune maquette.
+  */
+  :root{
+    --bone:#f5f3ee; --cream:#faf9f5; --paper:#ece9e1;
+    --charcoal:#1c1c1a; --charcoal-soft:#4a4a44; --muted:#8a8578;
+    --pine:#2f3b2f; --or:#B98B47; --line:rgba(28,28,26,.12);
+    --lien:rgba(185,139,71,.14);
+  }
+  @media (prefers-color-scheme: dark){
+    :root{ --bone:#171613; --cream:#1e1c18; --paper:#262420; --charcoal:#e9e5dc;
+           --charcoal-soft:#c9c4b8; --muted:#8a867c; --or:#C9A15E; --pine:#3d4c3d;
+           --line:rgba(233,229,220,.16); --lien:rgba(201,161,94,.16); }
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  body{margin:0;background:var(--bone);color:var(--charcoal);
+       font:16px/1.55 -apple-system,"Segoe UI",Roboto,sans-serif;
+       padding:28px 0 56px;-webkit-text-size-adjust:100%}
+  .page{max-width:760px;margin:0 auto;padding:0 16px}
+  .sur{margin:0;font-size:9.5px;font-weight:500;letter-spacing:.3em;
+       text-transform:uppercase;color:var(--or)}
+  h1{margin:10px 0 0;font-family:Georgia,serif;font-weight:400;font-size:30px;
+     line-height:1.08;letter-spacing:-.018em}
+  .chapo{margin:10px 0 0;font-size:14px;color:var(--charcoal-soft);line-height:1.6}
+  .chapo b{color:var(--charcoal)}
+
+  /* ── Les trois onglets : des radios, pas du script ───────────────────── */
+  .choix{position:absolute;opacity:0;pointer-events:none}
+  .onglets{display:flex;gap:6px;margin:20px 0 14px}
+  .onglets label{flex:1;text-align:center;padding:10px 4px;border-radius:10px;
+                 font-size:11.5px;line-height:1.3;cursor:pointer;
+                 background:var(--cream);color:var(--charcoal-soft);
+                 box-shadow:inset 0 0 0 1px var(--line)}
+  #t1:checked ~ .page .o1, #t2:checked ~ .page .o2, #t3:checked ~ .page .o3{
+    background:var(--pine);color:#faf9f5;box-shadow:none;font-weight:600}
+
+  /* ── Les deux téléphones, côte à côte ───────────────────────────────── */
+  .duo{display:flex;gap:10px;align-items:flex-start}
+  .tel{flex:1 1 0;min-width:0;background:var(--cream);border-radius:16px;
+       padding:13px 12px 16px;box-shadow:inset 0 0 0 1px var(--line)}
+  .ou{margin:0 0 9px;font-size:8.5px;font-weight:600;letter-spacing:.22em;
+      text-transform:uppercase;color:var(--or)}
+  .tel h2{margin:0;font-family:Georgia,serif;font-weight:400;font-size:17px;
+          line-height:1.15;letter-spacing:-.01em}
+  .dit{margin:7px 0 0;font-size:10.5px;line-height:1.5;color:var(--muted)}
+  /* **« Retirer la famille » n'est PAS sur cette maquette**, et c'est délibéré :
+     dans une colonne de cette largeur il se collait au nom de la famille. Le
+     « × » de chaque ligne et « + Ajouter une prestation » disent déjà que la
+     liste se modifie — le reste est du mot en trop (`CLAUDE.md` §3). */
+  .famille{margin:15px 0 4px;font-size:8.5px;font-weight:600;letter-spacing:.2em;
+           text-transform:uppercase;color:var(--or)}
+  .ligne{display:flex;justify-content:space-between;align-items:center;gap:6px;
+         padding:8px 0;border-bottom:1px solid var(--line);font-size:12px;line-height:1.3}
+  .ligne .x{color:var(--muted);font-size:13px;flex:0 0 auto}
+  .ajout{display:block;margin-top:9px;font-size:11.5px;color:var(--or)}
+  .champ{margin-top:5px;background:var(--bone);border-radius:9px;padding:9px 10px;
+         font-size:12px;box-shadow:inset 0 0 0 1px var(--line)}
+  .etiq{margin:13px 0 0;font-size:10.5px;color:var(--muted)}
+  .bouton{display:block;margin:11px auto 0;background:var(--pine);color:#faf9f5;
+          border-radius:999px;padding:9px 14px;text-align:center;font-size:12px}
+  .titraille{margin:16px 0 5px;font-size:8.5px;font-weight:600;letter-spacing:.2em;
+             text-transform:uppercase;color:var(--muted)}
+  .rapport{padding:8px 0;border-bottom:1px solid var(--line)}
+  .rapport .qui{font-family:Georgia,serif;font-size:13px;line-height:1.2}
+  .rapport .quand{display:block;margin-top:2px;font-size:10px;color:var(--muted)}
+  .brouillon{float:right;font-size:8px;letter-spacing:.16em;text-transform:uppercase;color:var(--or)}
+
+  /* La case à cocher de la fiche ouverte — vide, comme sur un chantier. */
+  .case{display:flex;align-items:center;gap:7px;padding:7px 0;
+        border-bottom:1px solid var(--line);font-size:11.5px}
+  .case i{flex:0 0 auto;width:14px;height:14px;border-radius:4px;
+          box-shadow:inset 0 0 0 1.5px var(--line)}
+  .case.faite i{background:var(--pine);box-shadow:none}
+  .case.faite i::after{content:"";display:block;width:4px;height:8px;margin:1px 0 0 5px;
+                       border:solid #faf9f5;border-width:0 1.5px 1.5px 0;transform:rotate(45deg)}
+
+  /* ── Ce qui change d'un onglet à l'autre ────────────────────────────── */
+  .siRelie, .siNom, .fiche-ouverte{display:none}
+  #t2:checked ~ .page .siRelie{display:block}
+  #t2:checked ~ .page .fiche-ouverte{display:block}
+  #t2:checked ~ .page .fiche-fermee{display:none}
+  #t2:checked ~ .page .ligne{background:var(--lien)}
+  #t3:checked ~ .page .siNom{display:block}
+  #t3:checked ~ .page .nomAujourdhui{display:none}
+  #t1:checked ~ .page .nomPropose, #t2:checked ~ .page .nomPropose{display:none}
+
+  .note{margin-top:22px;background:var(--cream);border-radius:13px;padding:15px 16px;
+        font-size:12.5px;line-height:1.6;color:var(--charcoal-soft);
+        box-shadow:inset 0 0 0 1px var(--line)}
+  .note .t{display:block;margin-bottom:5px;font-size:9px;font-weight:600;
+           letter-spacing:.2em;text-transform:uppercase;color:var(--or)}
+  .note b{color:var(--charcoal)}
+  .fleche{margin:12px 0 0;text-align:center;font-size:11.5px;color:var(--or)}
+</style>
+</head>
+<body>
+
+<input class="choix" type="radio" name="vue" id="t1" checked>
+<input class="choix" type="radio" name="vue" id="t2">
+<input class="choix" type="radio" name="vue" id="t3">
+
+<div class="page">
+  <p class="sur">Ce qu'il faut trancher</p>
+  <h1>Les deux fiches</h1>
+  <p class="chapo">Ce ne sont pas deux fois le même écran. À gauche <b>la liste</b>,
+     à droite <b>la fiche d'un jour</b>.</p>
+
+  <div class="onglets">
+    <label class="o1" for="t1">Les deux écrans</label>
+    <label class="o2" for="t2">Ce qui les relie</label>
+    <label class="o3" for="t3">Le nom proposé</label>
+  </div>
+
+  <div class="duo">
+
+    <!-- ─── GAUCHE : la liste, dans les Réglages ─────────────────────── -->
+    <div class="tel">
+      <p class="ou">Réglages</p>
+      <h2 class="nomAujourdhui">Fiche d'entretien</h2>
+      <h2 class="nomPropose">Les prestations de ma fiche</h2>
+      <p class="dit">20 prestations, rangées par famille. C'est cette liste que
+         vous cocherez sur un chantier.</p>
+
+      <p class="famille">Pelouse</p>
+      <div class="ligne"><span class="mot">Tonte et ébarbage</span><span class="x">×</span></div>
+      <div class="ligne"><span class="mot">Traitement pelouse</span><span class="x">×</span></div>
+      <div class="ligne"><span class="mot">Scarification</span><span class="x">×</span></div>
+      <div class="ligne"><span class="mot">Engrais</span><span class="x">×</span></div>
+
+      <p class="famille">Tailles</p>
+      <div class="ligne"><span class="mot">Taille arbuste automne</span><span class="x">×</span></div>
+      <div class="ligne"><span class="mot">Taille arbuste printemps</span><span class="x">×</span></div>
+      <div class="ligne"><span class="mot">Taille de haie automne</span><span class="x">×</span></div>
+      <div class="ligne"><span class="mot">Taille de haie printemps</span><span class="x">×</span></div>
+      <div class="ligne"><span class="mot">Taille des rosiers</span><span class="x">×</span></div>
+
+      <p class="famille">Massifs</p>
+      <div class="ligne"><span class="mot">Bêchage</span><span class="x">×</span></div>
+      <div class="ligne"><span class="mot">Bordures massifs</span><span class="x">×</span></div>
+      <div class="ligne"><span class="mot">Griffage massifs</span><span class="x">×</span></div>
+      <div class="ligne"><span class="mot">Désherbage massifs</span><span class="x">×</span></div>
+      <div class="ligne"><span class="mot">Coupe des fleurs fanées</span><span class="x">×</span></div>
+
+      <p class="famille">Propreté</p>
+      <div class="ligne"><span class="mot">Nettoyage pied de haies</span><span class="x">×</span></div>
+      <div class="ligne"><span class="mot">Désherbant allée</span><span class="x">×</span></div>
+      <div class="ligne"><span class="mot">Lierre, liseron, liane</span><span class="x">×</span></div>
+      <div class="ligne"><span class="mot">Démoussage voirie</span><span class="x">×</span></div>
+      <div class="ligne"><span class="mot">Ramassage des feuilles</span><span class="x">×</span></div>
+      <div class="ligne"><span class="mot">Évacuation des déchets</span><span class="x">×</span></div>
+
+      <span class="ajout">+ Ajouter une prestation</span>
+    </div>
+
+    <!-- ─── DROITE : la fiche d'un jour, dans Paysage ────────────────── -->
+    <div class="tel">
+      <p class="ou">Paysage</p>
+      <h2>Fiche de chantier</h2>
+
+      <div class="fiche-fermee">
+        <p class="etiq">Jour du passage</p>
+        <div class="champ">26 août 2026</div>
+        <span class="bouton">Ouvrir une fiche</span>
+
+        <p class="titraille">En cours</p>
+        <div class="rapport">
+          <span class="brouillon">Brouillon</span>
+          <span class="qui">Bernard</span>
+          <span class="quand">jeudi 20 août · 0 prestation</span>
+        </div>
+
+        <p class="titraille">Rapports envoyés</p>
+        <div class="rapport">
+          <span class="qui">M. Bernard</span>
+          <span class="quand">mardi 25 août · 6 prestations · 3 h 30</span>
+        </div>
+        <div class="rapport">
+          <span class="qui">Monsieur Martin</span>
+          <span class="quand">lundi 24 août · 3 prestations</span>
+        </div>
+        <div class="rapport">
+          <span class="qui">Madame Lucie</span>
+          <span class="quand">lundi 24 août · 6 prestations</span>
+        </div>
+      </div>
+
+      <div class="fiche-ouverte">
+        <p class="dit">La fiche du jour, ouverte : les mêmes prestations,
+           en cases à cocher.</p>
+        <p class="famille">Pelouse</p>
+        <div class="case faite"><i></i>Tonte et ébarbage</div>
+        <div class="case"><i></i>Traitement pelouse</div>
+        <div class="case"><i></i>Scarification</div>
+        <div class="case"><i></i>Engrais</div>
+        <p class="famille">Tailles</p>
+        <div class="case faite"><i></i>Taille de haie automne</div>
+        <div class="case"><i></i>Taille des rosiers</div>
+        <p class="famille">Propreté</p>
+        <div class="case faite"><i></i>Ramassage des feuilles</div>
+        <div class="case"><i></i>Évacuation des déchets</div>
+      </div>
+    </div>
+
+  </div>
+
+  <p class="fleche siRelie">La liste de gauche devient les cases de droite.</p>
+
+  <div class="note siRelie"><span class="t">Ce qui se passe à l'ouverture</span>
+    Les prestations sont <b>recopiées</b> dans la fiche du jour. Vous les cochez,
+    vous en retirez, vous en ajoutez : <b>la liste de gauche ne bouge pas</b>, et
+    un rapport déjà envoyé ne change plus jamais.
+  </div>
+
+  <div class="note siNom"><span class="t">Ce qui changerait</span>
+    Seul le <b>titre à gauche</b>. L'écran reste, et tout ce qu'il fait aussi.
+    Un seul écran s'appellerait alors « Fiche de chantier ».
+  </div>
+
+  <div class="note"><span class="t">Si l'on supprimait celui de gauche</span>
+    Plus rien ne permettrait d'ajouter, de retirer ou de renommer une prestation
+    — et la fiche de droite <b>refuse de s'ouvrir</b> tant que la liste est vide.
+  </div>
+
+  <div class="note"><span class="t">Un troisième porte le même nom</span>
+    Le <b>PDF « Fiche de chantier »</b> — votre devis sans les prix, celui que
+    vous laissez au client. Ce n'est ni l'un ni l'autre de ces deux écrans.
+  </div>
+</div>
+</body>
+</html>
