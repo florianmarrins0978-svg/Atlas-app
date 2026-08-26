@@ -15973,3 +15973,107 @@ ouvrir d'office et le découvrir sur un chantier — se serait payé chez un cli
 recopier : tant que les deux règles disent la même chose, elles ne s'écrivent
 qu'une fois. Elle garde son nom parce qu'elles peuvent rediverger demain, et
 qu'il faut alors UN endroit où le dire.
+
+---
+
+## 182. Face ID était muet chez lui : Atlas se nommait « localhost »
+
+**Sa capture du 26 août 2026 :** *« le Face ID ne fonctionne pas »* — l'écran
+Réglages › Connexion portait un bandeau rouge, et sa barre d'adresse
+`…-3000.app.github.dev`.
+
+### La cause, et c'est la MÊME que celle du §177
+
+Une clé WebAuthn est attachée à un domaine, et ne s'ouvre que là. Atlas doit
+donc dire au téléphone sous quel domaine il enregistre — le `rpId`. Il le
+déduisait de l'en-tête `Host`.
+
+Or derrière la redirection de port de son espace de travail, **le serveur ne
+reçoit que `localhost:3000`** : aucun en-tête ne porte l'adresse publique. Atlas
+demandait donc une clé pour « localhost » à une page servie depuis
+`…app.github.dev`, et le navigateur refusait — à juste titre.
+
+| Source | Ce qu'elle vaut chez lui |
+|---|---|
+| `ATLAS_RP_ID` | non posée — elle n'a de sens qu'en production |
+| `x-forwarded-host` / `host` | **`localhost`** |
+| `window.location.origin` | **l'adresse par laquelle il a ouvert Atlas** |
+
+C'est la troisième fois que ce tunnel coûte un défaut (§169, §177) ; c'est la
+première fois qu'il coûte une fonctionnalité entière.
+
+### Ce qui a été ajouté, et les deux bornes qui l'encadrent
+
+L'écran transmet `window.location.origin` **dans le geste** — jamais pendant le
+rendu, ce que §68 et §81 interdisent. La règle pure décide, et elle ne suit le
+navigateur que dans un seul cas :
+
+| | |
+|---|---|
+| en production | `ATLAS_RP_ID` commande ; rien de ce que le client envoie ne le déplace |
+| hors production, en-tête déjà public | l'en-tête garde la main — le navigateur n'est qu'un filet |
+| hors production, en-tête **local** | l'adresse du navigateur fait foi |
+
+Et elle est filtrée : une adresse en clair, locale, ou illisible est ignorée
+plutôt que suivie — le navigateur refuserait ensuite, sans un mot.
+
+**Pourquoi ce n'est pas un affaiblissement.** Là où l'adresse du navigateur est
+suivie, la seule autre source est l'en-tête `Host` — écrit lui aussi par le
+client. On ne remplace pas une source sûre par une source faible : on remplace
+une source faible et fausse par une source faible et juste. En production, où
+la question devient une question de sécurité, rien n'a bougé.
+
+### Le défi retient SON origine
+
+L'enregistrement se fait en deux requêtes : le défi, puis la vérification. La
+seconde recalculait l'origine — donc pouvait vérifier sous un domaine différent
+de celui qui a servi à fabriquer la clé. Le cookie du défi (`httpOnly`, non
+modifiable depuis la page) porte désormais l'origine avec lui, et c'est elle qui
+sert à vérifier.
+
+### Deux défauts trouvés en RENDANT LA PANNE BAVARDE
+
+`AGENTS.md` demande de faire parler un défaut muet avant de le corriger. Le
+journal posé sur les deux écrans a rendu deux choses qu'aucun test ne voyait :
+
+1. **Le message des Réglages était le mauvais.** Il disait *« Entrez votre mot
+   de passe »* — sur un écran où l'on est déjà entré, donc un geste impossible.
+   `messageRefusCle("panne-activation")` existait pour exactement ce cas, et
+   n'était pas employé.
+2. **La porte prenait une RÉUSSITE pour une panne.** Une action serveur qui
+   redirige le fait en levant ; cette levée tombait dans le `catch` de
+   `LigneFaceId`, qui affichait « Face ID n'a pas pu aboutir » **au moment même
+   où l'on entrait**. La navigation ayant lieu quand même, aucune suite ne
+   pouvait le voir : il a fallu écouter la console de la page, ce que la suite
+   fait maintenant.
+
+### Ce qui est éprouvé ici, et ce qui ne peut pas l'être
+
+| | |
+|---|---|
+| la règle du domaine, tous les cas y compris le tunnel | `scripts/test-origine-webauthn.ts` — vu rouge contre le défaut |
+| le parcours entier, enregistrer puis ouvrir | `scripts/test-face-id-e2e.ts` |
+| **que Face ID s'ouvre sur SON iPhone, derrière SON tunnel** | **impossible ici** — aucun visage, aucun tunnel |
+
+Le dernier point se vérifie chez lui, et nulle part ailleurs.
+
+---
+
+## 183. « Changer mon mot de passe » a rejoint ses propres champs
+
+**Sa demande du 26 août 2026, dans le même message :** *« le bouton changer mon
+mdp doit se trouver au-dessus de ouvrir avec Face ID »*.
+
+Il vivait sur une barre **fixe**, en bas de l'écran. Entre ses trois champs et
+lui s'intercalaient deux rubriques — Face ID, puis « Ailleurs » —, et il restait
+affiché pendant qu'on réglait Face ID : à cet endroit, il ne se lisait plus
+comme le bouton du mot de passe mais comme celui de l'écran entier.
+
+Sous ses champs, l'ambiguïté n'existe plus. Le talon de la page passe de `pb-40`
+à `pb-24` : il n'a plus que les onglets à loger.
+
+**Le contrôle mesure DEUX ORDONNÉES, il ne lit aucun libellé** (`CLAUDE.md`
+§5 bis) : le jour où l'un des deux textes change, il défendra encore l'ordre.
+Il refuse de conclure sur une boîte de zéro pixel — sans quoi une page non mise
+en page rendrait « 0 < 0 », c'est-à-dire un vert qui ne prouve rien
+(`CLAUDE.md` §5).

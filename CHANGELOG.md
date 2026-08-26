@@ -9,6 +9,33 @@ Format : le plus récent en tête.
 
 ## 2026-08-26
 
+### Face ID marche enfin derrière son tunnel — et le bouton du mot de passe remonte
+
+*« Le Face ID ne fonctionne pas »*, capture à l'appui — et *« le bouton changer
+mon mdp doit se trouver au-dessus de ouvrir avec Face ID »*.
+
+Atlas enregistrait les clés sous le domaine « localhost » : derrière la
+redirection de port de son espace, le serveur ne voit que ça, et une clé posée
+pour un domaine ne s'ouvre nulle part ailleurs. L'écran transmet désormais
+l'adresse de sa barre d'adresse, comme pour le lien du client (§177) — et
+seulement là où l'en-tête est local, jamais en production.
+
+En rendant la panne bavarde, deux défauts de plus sont sortis : le message des
+Réglages demandait d'entrer un mot de passe sur un écran où l'on est déjà entré,
+et la porte prenait une RÉUSSITE pour une panne — une action qui redirige le
+fait en levant, et cette levée tombait dans le filet à erreurs.
+
+Le bouton du mot de passe quitte la barre fixe du bas et rejoint ses champs. Le
+contrôle compare deux ordonnées plutôt qu'un libellé.
+
+Ce que ça évite : un raccourci qu'il ne peut pas allumer, et un message rouge
+au moment exact où il entre. `ARCHITECTURE.md` §182 et §183.
+
+**Non vérifié ici, et il faut le dire :** que Face ID s'ouvre sur SON iPhone
+derrière SON tunnel. Cet environnement n'a ni visage ni tunnel — la règle du
+domaine et le parcours entier sont éprouvés, l'ouverture réelle se prouve chez
+lui.
+
 ### Donner un accès : une planche, avant de retoucher l'écran
 
 **Ses trois reproches, capture à l'appui, sur l'écran livré le matin même :**

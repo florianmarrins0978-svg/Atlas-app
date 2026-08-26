@@ -168,6 +168,109 @@ essai("la casse ne fabrique pas un domaine neuf", () => {
   assert.equal(a.ok && b.ok && a.origine.origine === b.origine.origine, true);
 });
 
+// ─── LE TUNNEL DE SON ESPACE : le serveur ne voit que localhost ─────────────
+//
+// Le défaut du 26 août 2026, et il ne se voyait qu'en le VIVANT : « le Face ID
+// ne fonctionne pas », capture à l'appui. Derrière la redirection de port de son
+// espace de travail, la requête arrive avec `host: localhost:3000` et aucun
+// en-tête d'adresse publique (`ARCHITECTURE.md` §177) — Atlas enregistrait donc
+// les clés sous « localhost » pendant que la page vivait sur `…app.github.dev`,
+// et le navigateur refusait. À juste titre : une clé posée pour un domaine ne
+// s'ouvre nulle part ailleurs.
+
+essai("HORS PRODUCTION, derrière le tunnel, l'adresse du NAVIGATEUR fait foi", () => {
+  const v = origineWebAuthn({
+    hote: "localhost:3000",
+    protocole: null,
+    horsProduction: true,
+    origineNavigateur: "https://del-jr4j6wwg6vjg34rv-3000.app.github.dev",
+  });
+  assert.equal(v.ok, true);
+  if (v.ok) {
+    assert.equal(v.origine.rpId, "del-jr4j6wwg6vjg34rv-3000.app.github.dev");
+    assert.equal(v.origine.origine, "https://del-jr4j6wwg6vjg34rv-3000.app.github.dev");
+  }
+});
+
+essai("sans cette adresse, le même cas retombe sur localhost — c'était LE défaut", () => {
+  // Cette assertion garde la preuve du défaut : elle rougirait si quelqu'un
+  // faisait deviner l'adresse publique au serveur, ce qui redonnerait un vert
+  // sans que le cas réel soit traité.
+  const v = origineWebAuthn({ hote: "localhost:3000", protocole: null, horsProduction: true });
+  assert.equal(v.ok, true);
+  if (v.ok) assert.equal(v.origine.rpId, "localhost");
+});
+
+essai("EN PRODUCTION, le navigateur ne déplace RIEN — le domaine épinglé commande", () => {
+  const v = origineWebAuthn({
+    hote: "atlas.fr",
+    protocole: "https",
+    domaineEpingle: "atlas.fr",
+    horsProduction: false,
+    origineNavigateur: "https://pirate.example",
+  });
+  assert.equal(v.ok, true);
+  if (v.ok) assert.equal(v.origine.rpId, "atlas.fr");
+});
+
+essai("un domaine épinglé ferme la porte au navigateur, même hors production", () => {
+  const v = origineWebAuthn({
+    hote: "localhost:3000",
+    protocole: null,
+    domaineEpingle: "atlas.fr",
+    horsProduction: true,
+    origineNavigateur: "https://pirate.example",
+  });
+  // Épinglé et servi depuis localhost : c'est la discordance d'avant, et elle
+  // se dit. Le navigateur n'a pas le droit de la faire disparaître.
+  assert.equal(v.ok, false);
+  if (!v.ok) assert.equal(v.code, "domaine-discordant");
+});
+
+essai("un hôte DÉJÀ public garde la main : le navigateur n'est qu'un filet", () => {
+  const v = origineWebAuthn({
+    hote: "atlas-3000.app.github.dev",
+    protocole: "https",
+    horsProduction: true,
+    origineNavigateur: "https://autre.example",
+  });
+  assert.equal(v.ok, true);
+  if (v.ok) assert.equal(v.origine.rpId, "atlas-3000.app.github.dev");
+});
+
+essai("une adresse de navigateur en clair, locale ou illisible est IGNORÉE", () => {
+  for (const dit of [
+    "http://del-3000.app.github.dev", // http : le navigateur refuserait ensuite
+    "https://localhost:3000", // local : on n'a rien gagné
+    "https://127.0.0.1:3000",
+    "pas une adresse",
+    "",
+  ]) {
+    const v = origineWebAuthn({
+      hote: "localhost:3000",
+      protocole: null,
+      horsProduction: true,
+      origineNavigateur: dit,
+    });
+    assert.equal(v.ok, true, `« ${dit} » : on doit retomber sur l'hôte, pas refuser`);
+    if (v.ok) assert.equal(v.origine.rpId, "localhost", `« ${dit} » n'aurait pas dû être suivi`);
+  }
+});
+
+essai("le port de l'adresse du navigateur reste dans l'origine, jamais dans le rpId", () => {
+  const v = origineWebAuthn({
+    hote: "localhost:3000",
+    protocole: null,
+    horsProduction: true,
+    origineNavigateur: "https://essai.example:8443",
+  });
+  assert.equal(v.ok, true);
+  if (v.ok) {
+    assert.equal(v.origine.rpId, "essai.example");
+    assert.equal(v.origine.origine, "https://essai.example:8443");
+  }
+});
+
 console.log("");
 console.log(`Origine WebAuthn — ${echecs} échec(s).`);
 process.exit(echecs > 0 ? 1 : 0);
