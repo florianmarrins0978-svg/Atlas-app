@@ -23,6 +23,19 @@ export type RappelAffiche = {
    *  deux calculs du même délai finiraient par se contredire. */
   depuisJours: number;
   /**
+   * QUAND cette situation a commencé, en millisecondes.
+   *
+   * **Sert à ORDONNER, jamais à écrire.** Le délai reste mis en mots au serveur
+   * (`depuisTexte`) : deux calculs du même délai finiraient par se contredire à
+   * l'écran. Celui-ci ne s'affiche nulle part — il ne fait que ranger.
+   *
+   * Sans lui, l'accueil ne pouvait pas comparer un rappel à une réponse de
+   * client : les deux sortes n'avaient aucune date commune, et l'ordre se
+   * décidait par SORTE. Sa demande du 26 août 2026 : *« le plus récent en
+   * haut »*.
+   */
+  quand: number;
+  /**
    * Ce que porte le seul rappel d'impayé.
    *
    * **Le montant est ce qu'il cherche**, et c'est le RESTE dû : sur une facture
@@ -60,6 +73,16 @@ type Carte = {
   rappel?: boolean;
   chantierId: string;
   chantierNom: string;
+  /**
+   * QUAND cette carte est apparue dans son monde, en millisecondes.
+   *
+   * **C'est ce qui range l'accueil depuis le 26 août 2026** — sa demande, une
+   * capture à l'appui : *« je viens de recevoir un devis retourné, il devrait
+   * apparaître en premier. Le plus récent en haut. »*
+   *
+   * Il ne s'affiche nulle part : le délai reste mis en mots au serveur.
+   */
+  quand: number;
   /** Réclame l'attention (fond teinté) plutôt que d'informer. */
   urgent: boolean;
   titre: string;
@@ -113,6 +136,15 @@ function versCarte(n: NotificationPatron): Carte {
     envoiId: n.envoiId,
     chantierId: n.chantierId,
     chantierNom: n.chantierNom,
+    // **L'instant où le CLIENT a répondu**, pas celui où le devis est parti :
+    // c'est la nouvelle qui vient d'arriver chez lui.
+    //
+    // **Sans date, la carte passe en TÊTE et non à la fin.** `responduAt` est
+    // posé en même temps que la réponse elle-même — il ne manque jamais en
+    // pratique. S'il manquait quand même, la ranger comme très ancienne
+    // l'enverrait derrière « N autres devis à regarder », c'est-à-dire nulle
+    // part : une réponse de client ne se perd pas pour une date absente.
+    quand: n.responduAt ? n.responduAt.getTime() : Number.MAX_SAFE_INTEGER,
     // Une correction attend un geste autant qu'un refus — davantage, même :
     // le chantier est presque acquis, il ne tient qu'à une reprise.
     urgent: refus || correction,
@@ -128,6 +160,10 @@ function caducVersCarte(e: EnvoiCaduc): Carte {
     envoiId: e.envoiId,
     chantierId: e.chantierId,
     chantierNom: e.chantierNom,
+    // **L'instant de l'EXPIRATION**, pas celui de l'envoi : c'est l'expiration
+    // qui est la nouvelle. Trier sur l'envoi mettrait en tête un devis parti
+    // hier dont le lien court encore.
+    quand: e.expireAt.getTime(),
     urgent: true,
     titre: "Devis caduc",
     texte:
@@ -155,6 +191,7 @@ function rappelVersCarte(r: RappelAffiche): Carte {
       envoiId: `rappel-${r.genre}-${r.facture.id}`,
       chantierId: r.chantierId,
       chantierNom: r.chantierNom,
+      quand: r.quand,
       // **Il ne crie pas.** Le fond teinté reste au devis jamais parti, seul
       // cas où RIEN n'est encore parti au client. Une facture impayée décrit un
       // travail fait qui attend son règlement — comme les deux autres.
@@ -184,6 +221,7 @@ function rappelVersCarte(r: RappelAffiche): Carte {
     envoiId: `rappel-${r.genre}-${r.chantierId}`,
     chantierId: r.chantierId,
     chantierNom: r.chantierNom,
+    quand: r.quand,
     // **Les deux rappels d'origine ne crient pas.** Le fond teinté était
     // réservé à ce qui appelle une décision : un refus, un lien mort. Un rappel
     // de confort qui crierait aussi fort ferait baisser le volume des autres.
@@ -247,31 +285,33 @@ export default function Notifications({
    */
   const [refus, setRefus] = useState<{ chantierId: string; message: string } | null>(null);
 
-  // **LES RAPPELS D'ABORD, MAIS PAS TOUTE LA PLACE — ses deux décisions du
-  // 16 août 2026 : « fait la B », puis « fait le » pour la place garantie.**
+  // **LE PLUS RÉCENT EN HAUT, ET RIEN D'AUTRE — sa demande du 26 août 2026.**
   //
-  // La règle d'origine disait l'inverse : *« les réponses d'abord, quelqu'un a
-  // agi, cela prime sur un silence »*. Elle se défendait, et elle avait un
-  // défaut que seule une photo a montré : dès DEUX réponses en attente, son
-  // rappel passait derrière « N autres devis à regarder ». Un rappel qu'il faut
-  // déplier n'est plus un rappel.
+  // *« Je viens de recevoir un devis retourné, il devrait apparaître en premier.
+  // L'ordre doit être dernier arrivé en tête de liste. »* Sur sa capture, la
+  // nouvelle du jour était deuxième, sous un rappel vieux de treize jours.
   //
-  // Puis la batterie a montré le défaut symétrique, et trois suites l'ont dit
-  // en rougissant : avec les rappels devant, trois chantiers sans devis
-  // suffisaient à masquer TOUTES les réponses de clients. Photographié
-  // (`scripts/capture-place-garantie.sh`), puis tranché.
+  // **Deux arrangements par SORTE l'ont précédée, et chacun avait son défaut.**
+  // D'abord les réponses devant : dès deux réponses en attente, son rappel
+  // passait derrière « N autres devis à regarder ». Puis les rappels devant
+  // avec une place garantie (16 août) : trois chantiers sans devis suffisaient
+  // à masquer toutes les réponses, d'où la place réservée.
   //
-  // **Le partage vit dans `src/lib/ordre-notifications.ts`**, pure et éprouvée
+  // **La date répond aux deux, et par la règle plutôt que par l'exception :**
+  // une réponse qui vient d'arriver est la plus récente, donc la première. Ce
+  // que le tressage obtenait en réservant, l'ordre chronologique l'obtient tout
+  // seul — et il s'explique en une phrase, ce qu'aucun tressage ne faisait.
+  //
+  // **La règle vit dans `src/lib/ordre-notifications.ts`**, pure et éprouvée
   // sur les cas limites : ici on ne fait que lui donner les deux sortes.
   //
-  // **On tresse APRÈS avoir retiré les cartes acquittées**, et l'ordre compte :
-  // tresser d'abord réserverait une place à une réponse que le patron vient de
-  // marquer « J'ai vu » — une place vide, au profit de rien.
+  // **On range APRÈS avoir retiré les cartes acquittées** : ranger d'abord
+  // ferait compter une réponse que le patron vient de marquer « J'ai vu ».
   const lesRappels = rappels.map(rappelVersCarte).filter((n) => !masquees.includes(n.envoiId));
   const lesReponses = [...initiales.map(versCarte), ...caducs.map(caducVersCarte)].filter(
     (n) => !masquees.includes(n.envoiId)
   );
-  const restantes = ordonnerLesCartes(lesRappels, lesReponses, VISIBLES_PAR_DEFAUT);
+  const restantes = ordonnerLesCartes(lesRappels, lesReponses);
   if (restantes.length === 0) return null;
 
   const visibles = toutVoir ? restantes : restantes.slice(0, VISIBLES_PAR_DEFAUT);
