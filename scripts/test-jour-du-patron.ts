@@ -9,6 +9,8 @@
  * Ce contrôle sait rougir : joué contre l'ancienne version (`toISOString`),
  * trois de ses sept cas tombent — vérifié avant de le livrer.
  */
+import { readdirSync, readFileSync } from "node:fs";
+import { join } from "node:path";
 import { jourIso } from "../src/lib/jour";
 import { ongletDepuisJalons } from "../src/lib/onglet-chantier";
 
@@ -41,6 +43,34 @@ dire(
   ongletDepuisJalons(chantier, jourIso(new Date("2026-08-25T22:30:00Z"))) === "termines",
   "à 00 h 30, il est passé dans Terminés — pas à 2 h",
 );
+
+// ── ET PLUS AUCUN ENDROIT NE COMPTE LES JOURS EN UTC ────────────────────────
+//
+// **La définition unique ne vaut que si tout la traverse.** Trois endroits
+// écrivaient encore `new Date().toISOString().slice(0, 10)` — la date d'émission
+// d'un devis, le jour qui nomme un chantier, et une suite qui datait un
+// règlement. Après minuit, ils portaient la veille pendant que l'écran affichait
+// le lendemain. Corriger `jourIso` ne les corrigeait pas : ils passaient à côté.
+{
+  const enUtc: string[] = [];
+  const parcourir = (dossier: string) => {
+    for (const e of readdirSync(dossier, { withFileTypes: true })) {
+      const chemin = join(dossier, e.name);
+      if (e.isDirectory()) parcourir(chemin);
+      else if (/\.(ts|tsx)$/.test(e.name) && !e.name.startsWith("test-jour-du-patron")) {
+        const t = readFileSync(chemin, "utf8");
+        if (/new Date\(\)\.toISOString\(\)\.slice\(0, 10\)/.test(t)) enUtc.push(chemin);
+      }
+    }
+  };
+  parcourir("src");
+  dire(
+    enUtc.length === 0,
+    enUtc.length === 0
+      ? "aucun écran ne compte les jours en UTC — tout passe par `jourIso`"
+      : `comptent encore les jours en UTC : ${enUtc.join(", ")}`
+  );
+}
 
 console.log(`\n${echecs.length === 0 ? "✅" : "❌"} Le jour du patron — ${echecs.length} échec(s).`);
 process.exit(echecs.length === 0 ? 0 : 1);

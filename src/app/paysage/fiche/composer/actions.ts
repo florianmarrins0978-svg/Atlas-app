@@ -13,7 +13,7 @@ import {
 } from "@/server/repositories/prestations-entretien";
 import { revalidatePath } from "next/cache";
 
-// Les gestes de l'écran « Fiche d'entretien ».
+// Les gestes de l'écran « Composer ma fiche ».
 //
 // **Les refus se RENDENT, ils ne lèvent jamais** (`HANDOVER.md`, piège 0 ter) :
 // l'exception d'une action serveur n'arrive pas jusqu'au patron — Next.js la
@@ -44,7 +44,7 @@ export async function ajouterPrestationAction(
   if (!ctx) return refus("non_autorise");
   const r = await ajouterPrestation(ctx, { famille, libelle });
   if (!r.ok) return refus(r.refus);
-  revalidatePath("/reglages/fiche-entretien");
+  revalidatePath("/paysage/fiche/composer");
   return { ok: true };
 }
 
@@ -53,7 +53,7 @@ export async function retirerPrestationAction(id: string): Promise<Resultat> {
   if (!ctx) return refus("non_autorise");
   const r = await retirerPrestation(ctx, id);
   if (!r.ok) return refus(r.refus);
-  revalidatePath("/reglages/fiche-entretien");
+  revalidatePath("/paysage/fiche/composer");
   return { ok: true };
 }
 
@@ -62,7 +62,7 @@ export async function renommerPrestationAction(id: string, libelle: string): Pro
   if (!ctx) return refus("non_autorise");
   const r = await renommerPrestation(ctx, id, libelle);
   if (!r.ok) return refus(r.refus);
-  revalidatePath("/reglages/fiche-entretien");
+  revalidatePath("/paysage/fiche/composer");
   return { ok: true };
 }
 
@@ -71,7 +71,7 @@ export async function renommerFamilleAction(ancienne: string, nouvelle: string):
   if (!ctx) return refus("non_autorise");
   const r = await renommerFamille(ctx, ancienne, nouvelle);
   if (!r.ok) return refus(r.refus);
-  revalidatePath("/reglages/fiche-entretien");
+  revalidatePath("/paysage/fiche/composer");
   return { ok: true };
 }
 
@@ -89,7 +89,7 @@ export async function retirerFamilleAction(famille: string): Promise<Resultat> {
   if (!ctx) return refus("non_autorise");
   const r = await retirerFamille(ctx, famille);
   if (!r.ok) return refus(r.refus);
-  revalidatePath("/reglages/fiche-entretien");
+  revalidatePath("/paysage/fiche/composer");
   return { ok: true };
 }
 
@@ -98,6 +98,6 @@ export async function poserModeleFourniAction(): Promise<Resultat> {
   if (!ctx) return refus("non_autorise");
   const r = await poserModeleFourni(ctx);
   if (!r.ok) return refus(r.refus);
-  revalidatePath("/reglages/fiche-entretien");
+  revalidatePath("/paysage/fiche/composer");
   return { ok: true };
 }

@@ -9215,6 +9215,14 @@ refus de client qui disparaîtrait sans que rien ne le signale.
 **Le tressage se fait APRÈS le retrait des cartes acquittées.** Dans l'autre
 sens, une place serait réservée à une réponse que le patron vient de marquer
 « J'ai vu » — une place vide, au profit de rien.
+
+#### ⚠ TOUT CE QUI PRÉCÈDE A ÉTÉ REMPLACÉ LE 26 AOÛT 2026 — voir §196
+
+Le tressage par SORTE — les rappels devant, la place garantie aux réponses — ne
+tient plus. Il a été remplacé par un ordre **chronologique** : le plus récent en
+haut, quelle que soit la sorte. Ce passage reste comme trace du chemin, parce
+qu'il dit ce que la nouvelle règle doit continuer d'obtenir.
+
 ---
 
 ---
@@ -16938,7 +16946,245 @@ Le premier est le plus important : il éprouve désormais le défaut du 20 août
 2026 lui-même — *« j'ai choisi d'envoyer par e-mail, et c'est le SMS qui s'est
 ouvert »* — au lieu d'une phrase qui l'annonçait.
 
-## 195. « Terminés » sans traits, et une carte de TVA qui se voit cliquable
+---
+## 195. Le régime de TVA dit enfin ce qu'il commande, et ce qu'il change
+
+**Ses deux phrases du 26 août 2026**, capture à l'appui : *« quand le client le
+paye / quand je met la facture. C'est pas clair, on comprend rien. Qu'est-ce que
+ça signifie ? »* Puis : *« et lorsque je change entre les deux, rien ne se passe,
+c'est normal ? »*
+
+**Deux plaintes qui se ressemblaient mot pour mot, et une seule était un bogue.**
+Celle du rythme en était un (§193) ; celle-ci n'en était pas un. Les séparer a
+demandé de rejouer chacune plutôt que de traiter la seconde comme la première.
+
+### Le verbe manquait
+
+« Quand le client me paie » nomme un **instant** sans dire ce qui s'y produit :
+lu seul, cela ressemble à un réglage d'affichage. Le surtitre porte donc le
+verbe, et chaque ligne répond à « et alors ? ».
+
+| Avant | Après |
+|---|---|
+| *(aucun surtitre)* | **Je reverse ma TVA aux impôts** |
+| Quand le client me paie · *le régime par défaut d'une prestation de services* | Le mois où mon client me paie · *une facture pas encore payée n'est pas déclarée* |
+| Quand j'émets la facture · *le régime des débits — sur option auprès des impôts* | Le mois où j'envoie la facture · *même si le client n'a pas encore payé* |
+
+Les mentions savantes — « régime des débits », « prestation de services » — sont
+parties du sous-titre : elles nommaient la règle sans dire ce qu'elle fait. Ce
+qui est resté est la phrase du bas, qui dit ce qui l'engage vraiment : *« ce
+choix doit correspondre à ce que les impôts savent de vous »*.
+
+### Et la ligne qui répond à « rien ne se passe »
+
+Le calcul était juste : quand toutes les factures d'un mois ont été payées dans
+le mois, les deux régimes tombent sur le même chiffre. **Un écran qui ne bouge
+pas sans rien dire se lit comme une panne** — il a cru l'application cassée.
+
+L'écran annonce donc, sous les boutons, ce que le choix change **sur le mois
+affiché** : *« sur Août 2026 : 300,00 € en attendant le paiement, 1 400,00 € dès
+l'envoi »*, ou *« ce choix ne change rien — 1 088,00 € dans les deux cas »*.
+
+**Le second total sort du MÊME calcul**, avec le régime en paramètre
+(`relevesSousLesDeuxRegimes`, une seule lecture des factures pour deux
+assemblages). Une addition écrite dans l'écran aurait été une seconde
+implémentation de la même règle, et elle aurait divergé (`CLAUDE.md` §3).
+
+### Ce que la première version a coûté, et ce qui l'a attrapée
+
+Elle disait *« X avec cette ligne, Y avec l'autre »* et **suivait le doigt** :
+l'écran coche la ligne avant que le serveur réponde, mais le grand chiffre
+« Collectée », lui, attend la réponse. Pendant l'aller-retour, la phrase
+annonçait déjà le montant de l'autre régime tandis que le bloc portait encore
+l'ancien — **deux chiffres qui se contredisent dans le même écran**, et c'est
+toute la liste qu'on cesse alors de croire.
+
+C'est son propre contrôle qui l'a refusée, sur « après bascule, la phrase ne
+suit plus l'écran ». La phrase **nomme donc les deux régimes** au lieu de
+désigner une ligne cochée : elle ne dépend plus de la sélection, et reste vraie
+au milieu du geste.
+
+### Et l'espace qu'aucune mesure ne voyait
+
+L'écran a affiché **« 1 400,00 €dès l'envoi »**. Un montant et le mot suivant
+sont deux nœuds ; l'espace écrit entre `</strong>` et le texte disparaît à la
+compilation. Trouvé en lisant le HTML rendu — la sixième fois dans ce dépôt
+qu'un défaut sort d'un écran regardé et d'aucun test vert. Le contrôle refuse
+désormais tout caractère collé à un « € ».
+
+### Ce qui a été écarté, et qu'il ne faut pas reproposer
+
+Un **tableau d'exemple** (« facture envoyée le 28 août, payée le 12 septembre,
+déclarée en septembre »), porté sur planche puis retiré par le patron le même
+soir : *« le tableau, tu peux l'enlever »*. Il EXPLIQUE, et un écran n'explique
+pas son propre fonctionnement (`CLAUDE.md` §3) — deux lignes à relire chaque
+fois qu'il ouvre sa TVA, pour une règle qu'il connaît après l'avoir lue une
+fois. Planche : `appli/quand-je-reverse-la-tva.html`.
+
+---
+
+## 196. L'accueil se range par date : le plus récent en haut
+
+**Sa demande du 26 août 2026, capture à l'appui :** *« Je viens de recevoir un
+devis retourné, il devrait apparaître en premier. L'ordre doit être dernier
+arrivé en tête de liste. Le plus récent en haut. »*
+
+Sur son écran, la nouvelle du jour était **deuxième**, sous un rappel vieux de
+treize jours. Rien ne le lui expliquait — et rien ne pouvait le lui expliquer :
+l'ordre se décidait par **sorte** de carte, jamais par date.
+
+### Deux arrangements par sorte l'ont précédé, et chacun avait son défaut
+
+| | Ce qu'il produisait |
+|---|---|
+| **les réponses devant** (règle d'origine) | dès deux réponses en attente, son rappel passait derrière le repli. Un rappel qu'il faut déplier n'est plus un rappel |
+| **les rappels devant** (son choix B, 16 août) | trois chantiers sans devis suffisaient à masquer **toutes** les réponses de clients |
+| **la place garantie** (même jour) | le correctif du précédent : la dernière place visible revenait à une réponse |
+
+Chacun réparait le défaut de l'autre en ajoutant une exception. Aucun ne
+s'expliquait en une phrase — et **un ordre qu'on ne peut pas expliquer est un
+ordre qu'on croit cassé**, ce qui vient d'arriver.
+
+### La date répond aux deux, par la règle plutôt que par l'exception
+
+Une réponse qui vient d'arriver est, par construction, la plus récente : elle
+passe en tête **sans qu'aucune place ait besoin d'être réservée**. Ce que le
+tressage obtenait en réservant, la date l'obtient toute seule.
+
+**Ce que cela coûte, et il faut le dire :** une réponse **ancienne** et non
+acquittée peut désormais passer derrière des rappels plus frais. L'ancien
+tressage lui gardait une place ; celui-ci non. C'est un cas éprouvé plutôt que
+supposé (`scripts/test-ordre-notifications.ts`), et il est là pour que personne
+ne le « répare » en croyant à un défaut.
+
+### Quelle date porte chaque carte
+
+Chaque carte porte l'instant où elle est **apparue dans son monde**, et le choix
+n'est pas indifférent :
+
+| La carte | Sa date |
+|---|---|
+| une réponse de client | le moment où **le client a répondu** — pas l'envoi du devis |
+| un lien expiré | l'**expiration** — trier sur l'envoi mettrait en tête un devis parti hier dont le lien court encore |
+| un rappel | le début de la situation : ouverture du chantier, envoi du devis, fin de chantier, échéance |
+
+**Cette date range, elle ne s'affiche jamais.** Le délai reste mis en mots au
+serveur (`depuisTexte`) : deux calculs du même délai finiraient par se
+contredire à l'écran.
+
+**Une réponse sans date connue passe en TÊTE, jamais à la fin.** `responduAt`
+est posé en même temps que la réponse — il ne manque jamais en pratique. S'il
+manquait, la ranger comme très ancienne l'enverrait derrière « N autres devis à
+regarder », c'est-à-dire nulle part, et une réponse de client ne se perd pas
+pour une date absente.
+
+### Les deux contrôles qui exigeaient l'ancien ordre ont été réécrits
+
+`test-ordre-notifications.ts` et `test-devis-qui-tarde-e2e.ts` réclamaient le
+tressage. **Une suite qui exige ce que le patron a fait retirer rend son écran
+impossible à changer** (`CLAUDE.md` §5 bis) : elles fixent désormais la règle
+chronologique, et le contrôle pur a été vu rouge en retirant le tri.
+
+Le contrôle navigateur lit **le nombre de jours écrit sur chaque carte** — ce
+que le patron lit lui-même — plutôt qu'un détail de mise en page : une carte
+peut changer de forme sans qu'il cesse de mesurer l'ordre. Et il refuse de
+conclure sur moins de deux dates lisibles, une seule mesure ne disant rien d'un
+ordre.
+
+---
+---
+
+## 197. « Composer ma fiche » quitte les Réglages pour Paysage
+
+**Sa proposition du 26 août 2026**, une fois compris que les deux écrans n'en
+font pas un : *« est-ce qu'on peut la déplacer dans la fiche de chantier, dans
+la catégorie Paysage, sous une rubrique type "création des rubriques de ma fiche
+de chantier" ? Et comme ça on ne la voit plus dans la catégorie Réglages. »*
+Puis, devant les deux emplacements proposés : *« la B, mais il faut que la
+rubrique se trouve sous le titre en premier, et son titre doré doit être
+"composer ma fiche" ou "ma fiche perso". »*
+
+### Ce qui a bougé
+
+| | Avant | Après |
+|---|---|---|
+| l'écran | `/reglages/fiche-entretien` | `/paysage/fiche/composer` |
+| son titre | « Fiche d'entretien » | « Composer ma fiche » |
+| la porte | en bas de la liste des passages | **en tête**, sous le titre de l'écran |
+| les Réglages | une rubrique de plus | **plus rien** |
+
+Rien d'autre : la table `prestations_entretien`, le dépôt, les gestes, les
+refus, la réserve au propriétaire — tout est déplacé tel quel. Un déplacement
+qui en profite pour changer une règle est un déplacement qu'on ne peut plus
+relire.
+
+### Pourquoi il a fallu une planche AVANT
+
+Sa première formulation était *« la fiche d'entretien c'est la fiche de
+chantier »*, et il proposait de **supprimer** celle des Réglages. C'était faux
+d'un cheveu, et le cheveu comptait : l'une tient LA LISTE, l'autre la fiche d'un
+JOUR qui en naît. Supprimer la première aurait laissé la seconde sans rien à
+cocher — elle refuse d'ailleurs de s'ouvrir sur une liste vide
+(`passages-entretien.ts`, refus `modele_vide`).
+
+`appli/deux-fiches.html` a montré la différence en trois onglets ; il a alors
+reformulé lui-même la bonne solution — déplacer, pas supprimer. **Une planche
+vaut mieux qu'un « non ».**
+
+### La consigne qu'il a fallu RÉCRIRE, pas contourner
+
+La porte avait été mise « en bas et permanent » le 24 août, et le fichier
+portait le motif en toutes lettres : *neuf fois sur dix il vient ouvrir une
+fiche, pas la recomposer*. Ce raisonnement était le nôtre ; sa place est la
+sienne, et elle l'emporte. Le commentaire a donc été récrit **au moment du
+déplacement** — laissé tel quel, il aurait fait redescendre la rubrique par la
+prochaine session, de bonne foi, en citant un texte devenu faux. C'est
+exactement la faute du trait gris (§172).
+
+Même précaution dans `rubriques-reglages.ts` : à la place de l'entrée retirée,
+un commentaire dit **pourquoi elle est partie** et interdit de la remettre — son
+motif d'origine (sa demande du 16 août) reste vrai dans l'historique et suffirait
+à l'y ramener.
+
+### Ce que les contrôles tiennent maintenant
+
+- `test-rubriques-reglages.ts` : « Fiche d'entretien » **n'est plus** dans le
+  sommaire, ni pour le patron ni pour un salarié — un contrôle qui l'exigeait
+  aurait rendu son écran impossible à changer (`CLAUDE.md` §5 bis).
+- `test-fiche-entretien-e2e.ts` : le chemin part de la **fiche de chantier**, et
+  la rubrique est **mesurée au-dessus** de « Jour du passage » — l'ordre du HTML
+  ne prouve rien, une mise en page peut le renverser. Le contrôle refuse de
+  conclure sur une boîte de zéro pixel, exige 44 px de haut pour le pouce, et
+  **a été vu rouge** en décalant la rubrique de 900 px.
+- Une capture est prise au passage : quatre défauts réels de ce dépôt sont sortis
+  d'une image et d'aucun test.
+
+### La forme a suivi, une heure plus tard
+
+*« C'est bien mais juste une phrase, on la trouve difficilement ; je pense qu'un
+onglet carré serait le mieux »*, puis *« une carte mais fais-la moins large »*.
+
+La première version était **une ligne de texte au milieu d'un écran de texte** :
+rien ne la distinguait d'un intertitre — ni fond, ni cadre, ni couleur d'action
+—, et un chevron de huit pixels pour seul aveu qu'on peut appuyer. C'est une
+carte depuis, **à la largeur de son texte** : pleine largeur, elle aurait fait
+jeu égal avec « Ouvrir une fiche », qui est le geste de tous les jours. Le
+plafond (`max-w-[270px]`) tient chez qui grossit les caractères de son
+téléphone.
+
+Trois formes lui ont été montrées avant de coder (`appli/ou-composer-ma-fiche.html`) :
+la carte, deux carrés côte à côte, un bouton d'en-tête. **La place, elle, ne se
+rouvrait pas** — il l'avait tranchée une heure plus tôt, et la planche le disait,
+sans quoi on lui redemandait ce qu'il venait de décider.
+
+### Un piège de charte, trouvé à l'image
+
+Le titre demandé « doré » avait d'abord été écrit `colors.rust` — le nom promet
+une terre cuite, la valeur vaut le **vert pin** depuis la reprise de la charte
+d'Arborea. À l'écran, un titre presque noir. L'or de la charte est `colors.or`,
+celui du surtitre juste au-dessus. Aucun test ne l'aurait vu.
+
+## 198. « Terminés » sans traits, et une carte de TVA qui se voit cliquable
 
 **Sa demande du 26 août 2026**, capture de l'écran à l'appui : *« tous les
 traits supprimés entre chaque ligne »*, et *« le "Ma TVA à déclarer", on ne

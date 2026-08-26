@@ -37,6 +37,16 @@ pour lui.
 
 Reste ouvert : le renommage `equipes` → `salaries` en base et dans le code, tenu
 à part parce qu'il touche vingt-trois fichiers (`TODO.md`).
+## Les phrases du régime de TVA, réécrites (26 août 2026)
+
+*« Quand le client le paye / quand je met la facture. C'est pas clair, on
+comprend rien. »* **Fait.** Le surtitre dit le geste — « je reverse ma TVA aux
+impôts » —, chaque ligne répond à « et alors ? », et une phrase annonce ce que
+le choix change sur le mois affiché, y compris quand il n'y change rien.
+`ARCHITECTURE.md` §195.
+
+---
+
 ## Le rythme de la TVA fait bouger l'écran (26 août 2026)
 
 *Sa plainte : « quand je change entre tous les mois et tous les trois mois,
@@ -45,8 +55,8 @@ et `force-dynamic` ne la remplace pas (`ARCHITECTURE.md` §193).
 
 **Sa seconde plainte du même soir n'était PAS un défaut** : entre les deux
 régimes de TVA, rien ne change quand toutes les factures du mois ont été payées
-dans le mois. Ce qui manque est une phrase à l'écran — en maquette,
-`appli/quand-je-reverse-la-tva.html`, en attente de son choix entre A et B.
+dans le mois. Ce qui manquait est une phrase à l'écran : **codée** le soir même
+(`ARCHITECTURE.md` §195).
 
 ---
 
@@ -69,7 +79,7 @@ qu'`onChange` — est dans `ARCHITECTURE.md` §191.
 ## « Terminés » : plus de traits, et la TVA se voit cliquable (26 août 2026)
 
 *Ses deux demandes, planche `appli/termines-sans-traits.html`, sa réponse :
-« le 3 ». Le détail est dans `ARCHITECTURE.md` §195.*
+« le 3 ». Le détail est dans `ARCHITECTURE.md` §198.*
 
 **Fait.** Plus aucun trait entre les rangées. La carte « Ma TVA à déclarer »
 porte un contour doré — même forme, même titre, même montant.

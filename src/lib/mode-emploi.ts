@@ -574,14 +574,16 @@ export const FICHES_MODE_EMPLOI: FicheModeEmploi[] = [
     preuves: ["Équipe", "Combien partent en même temps, leurs noms et leurs absences"],
   },
   {
-    id: "reglages-fiche-entretien",
-    ecran: "Fiche d'entretien",
-    ou: "Réglages, puis Fiche d'entretien",
+    id: "paysage-composer-ma-fiche",
+    ecran: "Composer ma fiche",
+    // **Elle a quitté les Réglages le 26 août 2026**, à sa demande. Le mode
+    // d'emploi le dit à l'endroit où il cherchera : « Paysage », pas « Réglages ».
+    ou: "Paysage, Fiche de chantier, puis Composer ma fiche",
     intitule: "Composer la fiche qu'on coche sur un chantier d'entretien",
-    motsCles: ["fiche", "entretien", "modele", "composer", "famille", "prestation", "cocher", "tonte"],
-    geste: "Ouvrez « Fiche d'entretien », partez du modèle Atlas ou composez la vôtre.",
+    motsCles: ["fiche", "entretien", "modele", "composer", "famille", "prestation", "cocher", "tonte", "rubrique"],
+    geste: "Ouvrez « Composer ma fiche », partez du modèle Atlas ou composez la vôtre.",
     reserve: "La modifier ne change aucun rapport déjà envoyé.",
-    source: "src/app/reglages/fiche-entretien/FicheEntretienClient.tsx",
+    source: "src/app/paysage/fiche/composer/ComposerMaFiche.tsx",
     preuves: ["Partir du modèle Atlas", "Je préfère composer la mienne"],
   },
   {
