@@ -614,7 +614,13 @@ export const FICHES_MODE_EMPLOI: FicheModeEmploi[] = [
     intitule: "Télécharger toutes ses données",
     motsCles: ["donnee", "donnees", "export", "telecharger", "sauvegarde", "copie", "rgpd", "effacer"],
     geste: "Ouvrez « Sécurité & données », puis « Télécharger mes données ».",
-    source: "src/app/reglages/donnees/page.tsx",
+    // **Le bouton a DÉMÉNAGÉ avec M11, et ce contrôle l'a vu.** Il vivait dans
+    // la page ; il est devenu un composant client pour pouvoir demander à qui
+    // l'on parle avant d'ouvrir l'export — un export porte tout ce que
+    // l'entreprise sait de ses clients. La fiche suit le bouton, sinon
+    // l'assistant enseignerait un geste dont la preuve n'existe plus là où elle
+    // est annoncée. Trouvé à la fusion du 26 août 2026.
+    source: "src/app/reglages/donnees/BoutonTelecharger.tsx",
     preuves: ["Télécharger mes données"],
   },
   {

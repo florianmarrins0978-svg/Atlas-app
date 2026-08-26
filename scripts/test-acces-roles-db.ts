@@ -22,6 +22,7 @@
 // Éprouvée SOUS `atlas_app`, comme la production : un rôle qui traverse la RLS
 // ferait passer le point 4 pour la mauvaise raison.
 
+import { identifiantSiMotDePasseJuste } from "../src/server/secret-authentification";
 import assert from "node:assert/strict";
 import { compare } from "bcryptjs";
 import { eq } from "drizzle-orm";
@@ -94,14 +95,30 @@ async function main() {
   await essai("ce compte OUVRE vraiment — le mot de passe est celui qui a été donné", async () => {
     // Sans ce contrôle, on aurait pu créer un compte que personne ne peut
     // ouvrir, et c'est le salarié qui l'aurait découvert au pied du chantier.
-    const [ligne] = await db
-      .select({ hash: users.passwordHash })
-      .from(users)
-      .where(eq(users.email, "malik@essai.local"))
-      .limit(1);
-    assert.ok(ligne?.hash, "le compte n'a aucun mot de passe");
-    assert.equal(await compare(MOT_DE_PASSE, ligne.hash), true);
-    assert.equal(await compare("autre-chose-de-long", ligne.hash), false);
+    //
+    // ─────────────────────────────────────────────────────────────────────────
+    // **RÉÉCRIT À LA FUSION DU 26 AOÛT 2026, ET LE ROUGE AVAIT RAISON.**
+    //
+    // Ce contrôle lisait `users.password_hash` en direct pour le comparer
+    // lui-même. Depuis M9 (migration 0064), `atlas_app` n'a plus le SELECT sur
+    // cette colonne : la requête est refusée — **c'est la protection qui parle,
+    // pas une panne**.
+    //
+    // La règle éprouvée ne bouge pas d'un pouce : « ce compte s'ouvre avec le
+    // mot de passe donné, et pas avec un autre ». Seul le MOYEN change — on
+    // passe par la porte prévue, une fonction `SECURITY DEFINER` enfermée dans
+    // PostgreSQL. **Et le contrôle en devient meilleur** : il éprouve le vrai
+    // chemin de connexion au lieu d'une comparaison refaite à côté.
+    assert.notEqual(
+      await identifiantSiMotDePasseJuste("malik@essai.local", MOT_DE_PASSE),
+      null,
+      "le compte ne s'ouvre pas avec le mot de passe qui lui a été donné"
+    );
+    assert.equal(
+      await identifiantSiMotDePasseJuste("malik@essai.local", "autre-chose-de-long"),
+      null,
+      "n'importe quel mot de passe ouvre ce compte"
+    );
   });
 
   await essai("son rôle se lit depuis SA session, pas depuis celle du patron", async () => {
