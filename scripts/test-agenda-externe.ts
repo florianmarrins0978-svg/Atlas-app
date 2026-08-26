@@ -149,7 +149,7 @@ cas("un rendez-vous tard le soir ne déborde pas sur le lendemain", () => {
 console.log("\n=== La fusion : une seule carte d'occupation, jamais deux ===");
 
 cas("une journée entière d'agenda rend le jour improposable", () => {
-  const occupation = compterOccupation([]);
+  const occupation = compterOccupation([], 1);
   const fenetre = fenetreProposition(new Date("2026-08-01T09:00:00Z"), 90);
   assert.ok(
     jourRetenable("2026-08-12", 2, occupation, 1, fenetre),
@@ -174,12 +174,12 @@ cas("un rendez-vous du matin repousse le départ à l'après-midi", () => {
   // peut démarrer l'après-midi et finir le lendemain matin. Le jour reste donc
   // proposable — c'est le DÉPART du matin qui disparaît, et lui seul.
   const fusionnee = fusionnerOccupationExterne(
-    compterOccupation([]),
+    compterOccupation([], 1),
     [{ debut: paris("2026-08-12", "09:00"), fin: paris("2026-08-12", "11:00") }],
     1
   );
   assert.equal(
-    departPossible("2026-08-12", 2, compterOccupation([]), 1),
+    departPossible("2026-08-12", 2, compterOccupation([], 1), 1),
     "matin",
     "le scénario ne prouve rien : le matin était déjà pris sans agenda"
   );
@@ -195,7 +195,7 @@ cas("un rendez-vous bloque même quand l'artisan a plusieurs équipes", () => {
   // combien de fois l'artisan peut être à deux endroits. Atlas ne sait pas si
   // une équipe part sans lui — le supposer reprendrait le pari qu'on supprime.
   const fusionnee = fusionnerOccupationExterne(
-    compterOccupation([]),
+    compterOccupation([], 1),
     [{ debut: paris("2026-08-12", "09:00"), fin: paris("2026-08-12", "17:00") }],
     3
   );
@@ -208,7 +208,7 @@ cas("un rendez-vous bloque même quand l'artisan a plusieurs équipes", () => {
 
 cas("une demi-journée reste utilisable si l'agenda ne prend que l'autre", () => {
   const fusionnee = fusionnerOccupationExterne(
-    compterOccupation([]),
+    compterOccupation([], 1),
     [{ debut: paris("2026-08-12", "09:00"), fin: paris("2026-08-12", "11:00") }],
     1
   );
@@ -224,7 +224,7 @@ cas("sans agenda relié, l'occupation ne bouge pas d'un créneau", () => {
   // décision du 9 août. Ce contrôle est ce qui la tient dans le code.
   const occupation = compterOccupation([
     { jour: "2026-08-12", moment: "matin", dureeDemiJournees: 2 },
-  ]);
+  ], 1);
   const fusionnee = fusionnerOccupationExterne(occupation, [], 1);
   assert.deepEqual([...fusionnee.entries()].sort(), [...occupation.entries()].sort());
 });
@@ -232,7 +232,7 @@ cas("sans agenda relié, l'occupation ne bouge pas d'un créneau", () => {
 cas("la carte reçue n'est jamais modifiée", () => {
   // Une carte mutée à distance est un défaut qu'on ne retrouve qu'au troisième
   // écran : celle-ci sert aussi ailleurs, dans le même appel.
-  const occupation = compterOccupation([]);
+  const occupation = compterOccupation([], 1);
   const avant = occupation.size;
   fusionnerOccupationExterne(
     occupation,
@@ -244,7 +244,7 @@ cas("la carte reçue n'est jamais modifiée", () => {
 
 cas("deux rendez-vous le même matin ne comptent pas double", () => {
   const fusionnee = fusionnerOccupationExterne(
-    compterOccupation([]),
+    compterOccupation([], 1),
     [
       { debut: paris("2026-08-12", "09:00"), fin: paris("2026-08-12", "10:00") },
       { debut: paris("2026-08-12", "11:00"), fin: paris("2026-08-12", "12:00") },
@@ -258,7 +258,7 @@ cas("un chantier déjà posé n'est pas effacé par un agenda plus permissif", (
   const occupation = compterOccupation([
     { jour: "2026-08-12", moment: "matin", dureeDemiJournees: 1 },
     { jour: "2026-08-12", moment: "matin", dureeDemiJournees: 1 },
-  ]);
+  ], 1);
   assert.equal(occupation.get("2026-08-12:matin"), 2);
   const fusionnee = fusionnerOccupationExterne(
     occupation,
