@@ -208,7 +208,7 @@ export async function poserQuestion(
       }
       /**
        * **Une proposition sans chantier est un cas NORMAL depuis le 26 août
-       * 2026** (migration 0066). Ce refus global était là quand tout geste
+       * 2026** (migration 0067). Ce refus global était là quand tout geste
        * visait le chantier ouvert ; il rendait désormais un message technique —
        * *« Aucun chantier dans le contexte courant »* — à qui demandait
        * simplement « crée un chantier pour Madame Lucie » depuis l'accueil. Et

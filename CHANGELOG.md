@@ -9,6 +9,86 @@ Format : le plus récent en tête.
 
 ## 2026-08-26
 
+### Les filets à côté des intertitres partent, les séparateurs restent
+
+*« Ça aussi tu peux retirer »*, capture de l'écran Équipe à l'appui — le filet
+qui partait du mot et filait jusqu'au bord : « QUI A ACCÈS ————— ». Et dans le
+même souffle : *« ceux qui séparent les blocs, laisse-les »*.
+
+Les deux se ressemblent et ne disent pas la même chose. Un séparateur porte une
+information — deux choses sont distinctes. Le filet d'intertitre n'ornait qu'un
+mot. Le contrôle ne traque donc que la seconde forme, reconnue à ce qui la
+caractérise : un filet d'un pixel qui prend la place restante (`flex-1`). Vu
+rouge contre un filet remis, et vert avec les séparateurs en place.
+
+**Et une fausse alerte, corrigée avant de coder quoi que ce soit.** Je lui avais
+signalé que la barre du bas recouvrait un paragraphe de cet écran : c'était un
+artefact de ma capture. Une capture *pleine page* dessine les éléments fixés à
+leur place d'écran, donc au milieu d'une longue page. Mesuré pour de bon —
+déroulé jusqu'en bas, `bottom` du texte contre `top` de la barre — **rien n'est
+recouvert**. Le piège est écrit dans `HANDOVER.md` : c'est la deuxième fois
+aujourd'hui qu'il trompe.
+
+### Le numéro de ses documents se choisit — et le millésime n'est plus écrit en dur
+
+*« Dans la catégorie facture il faut rajouter le format de numéro, c'est
+obligatoire il me semble. »* Puis, devant la planche : *« garde le F »*,
+*« 6 chiffres »*, *« oui remettre à 0 chaque début d'année »*, *« l'utilisateur
+peut choisir entre ces 5 façons ? Si oui code ça »*.
+
+**Ce qui existe maintenant.** Réglages → Devis & factures → « Le numéro de mes
+documents » : cinq formats, chacun montrant ce qu'il donne, et le changement
+s'enregistre seul.
+
+| Format | Le prochain devis | La prochaine facture |
+|---|---|---|
+| Année et 4 chiffres | 2026-0012 | F2026-0012 |
+| **Année et 6 chiffres** (défaut) | 2026-000012 | F2026-000012 |
+| Année courte | 26-0012 | F26-0012 |
+| Année, mois, numéro | 2026-08-012 | F2026-08-012 |
+| Une suite sans année | 0012 | F0012 |
+
+**Le compteur repart à 1 le 1ᵉʳ janvier**, sauf sur « une suite sans année » —
+sinon deux documents porteraient le même numéro à un an d'écart, ce que la loi
+interdit. L'écran le dit au lieu d'en faire un second réglage.
+
+**CE QUI ÉTAIT CASSÉ, et qu'aucune suite ne voyait.** Le millésime était écrit
+en dur dans le dépôt : `2026-…` pour les devis, `F2026-…` pour les factures.
+**En janvier 2027, ses factures auraient encore dit 2026** — un défaut à
+retardement, invisible tant qu'on teste aujourd'hui, et qui ne serait apparu que
+sur un document déjà parti chez un client.
+
+**Ce que le changement ne fait pas :** il ne renumérote rien. Les documents déjà
+émis gardent leur numéro — les réécrire creuserait un trou dans la suite.
+
+**Éprouvé** par `test-numero-documents.ts` (la règle, 10 cas),
+`test-numero-documents-db.ts` (le compteur et sa remise à zéro au 1ᵉʳ janvier,
+9 cas, dont deux factures émises à la même seconde) et
+`test-format-numero-e2e.ts` (le fil entier : il choisit, et le devis suivant
+porte le format choisi).
+
+### L'assistant redevient le seul outil du patron
+
+*« Les salariés et commerciaux ne doivent pas avoir accès à l'assistant IA. »*
+
+Ouvert aux commerciaux plus tôt dans la journée, sur sa réponse d'alors. Il a
+refermé le soir même, et **son dernier mot revient au premier** — celui du
+25 août : *« seulement le principal »*.
+
+**La règle a cessé d'en suivre une autre**, et c'est le vrai changement :
+`peutUtiliserLAssistant` appelait `peutVoirLesMontants`, ce qui était juste tant
+que les deux disaient la même chose. Elles disent maintenant deux choses
+différentes. Garder l'appel aurait été pire qu'une erreur — le jour où quelqu'un
+élargirait la règle des montants, l'assistant se serait rouvert **en silence**.
+
+**Et la différence n'est pas le prix, c'est la portée.** Un commercial voit les
+montants écran par écran, c'est son métier. L'assistant, lui, parcourt
+l'entreprise entière et répond en une phrase.
+
+Les trois états de la décision sont écrits dans `ARCHITECTURE.md` §181, avec
+leurs dates : une décision dont on ne garde que le dernier état se repose trois
+mois plus tard.
+
 ### Face ID marche enfin derrière son tunnel — et le bouton du mot de passe remonte
 
 *« Le Face ID ne fonctionne pas »*, capture à l'appui — et *« le bouton changer
@@ -69,7 +149,7 @@ recherche de chantier a été gardée (elle emploie la règle de l'écran), et l
 outil qui CRÉAIT une fiche tout seul est devenu une proposition — les deux
 règles qu'il portait, reprises telles quelles.
 
-Détail : `ARCHITECTURE.md` §188.
+Détail : `ARCHITECTURE.md` §189.
 ### L'en-tête inversé : le titre d'abord, le surtitre doré en dessous
 
 *« Sur plusieurs catégories le titre était en dessous du sous-titre en doré,
@@ -85,6 +165,33 @@ en serif gris) reste au-dessus, elle, comme sa maquette du 11 août.
 Regardé à l'image (Paysage et un chantier), et le garde-fou d'alignement du
 bouton d'assistant (`test-assistant-en-tete-e2e`) reste vert : la pastille tient
 toujours sur la ligne du titre.
+
+### « Donner un accès » prend un écran à lui seul — sa réponse « B »
+
+*« B, tu peux coder »*, le 26 août 2026, sur `appli/donner-un-acces.html`.
+
+| Sa remarque | Ce qui a changé |
+|---|---|
+| le mot de passe s'écrivait une fois, à l'aveugle | **deux saisies, un œil sur chacune** — et la seconde est vérifiée **au serveur**, pas seulement à l'écran |
+| *« la case est déjà noire comme la catégorie salarié »* | le rôle choisi est **teinté avec un coche** ; le seul aplat plein de l'écran est le bouton qui crée le compte |
+| *« la démarcation […] n'est pas bien séparée »* | le formulaire **quitte la liste** : `/reglages/equipe/nouveau`, un écran d'où sa propre ligne a disparu |
+
+**La règle du mot de passe n'a pas été réécrite** : `verifierNouveauMotDePasse`
+la porte depuis le 14 août pour « Mon compte », et les deux écrans la partagent.
+La redire ici en aurait fait la seconde — et le jour où la barre passerait de
+douze à quatorze caractères, un des deux l'aurait ignorée.
+
+**Les pastilles de rôle sont dessinées UNE fois** (`ChoixRole.tsx`) et servent
+aux deux endroits : l'écran de création, et la fiche d'une personne déjà là.
+Deux rédactions auraient ramené le défaut par la moitié de l'écran qu'on aurait
+oubliée — c'est d'ailleurs ce que le contrôle a vérifié.
+
+**`test-nouveau-compte-e2e.ts` MESURE sa remarque** plutôt que de lire un
+libellé : il compare le fond de la pastille cochée à celui du bouton et exige
+qu'ils diffèrent. **Vu rouge** en remettant l'aplat plein — et il rougit sur les
+deux écrans à la fois.
+
+---
 
 ### Donner un accès : une planche, avant de retoucher l'écran
 
@@ -110,9 +217,23 @@ périmètre affiché ne suivait pas le rôle coché, si bien qu'on lisait « le
 planning et rien d'autre » sous « Commercial ». Une maquette qui ment sur ce que
 fait un rôle est pire qu'une maquette absente.
 
----
+### La liste, dans Paysage — deux emplacements à choisir
 
-## 2026-08-26
+Sa proposition, une fois la planche des deux fiches comprise : *« est-ce qu'on
+peut la déplacer dans la fiche de chantier, dans la catégorie Paysage, sous une
+rubrique type "création des rubriques de ma fiche de chantier" ? Et comme ça on
+ne la voit plus dans la catégorie Réglages. »*
+
+Il a raison sur le fond : l'outil est mieux là où il sert, et l'écran de Paysage
+sait **déjà** que seul le patron peut y toucher (`estProprietaire`) — la réserve
+ne se perd donc pas au passage. Restent deux façons de le poser, et elles ne se
+valent pas : **sur l'écran** (tout se voit, mais les rapports envoyés passent
+au-dessus de vingt lignes qu'il touche deux fois par an) ou **derrière une
+porte** (l'écran reste court, un appui de plus). Chacune porte son défaut écrit
+sous elle.
+
+`appli/ma-fiche-rangee.html`. Rien n'est codé dans `src/` (§3 bis) : il tranche
+d'abord.
 
 ### Les deux fiches, côte à côte — une maquette pour trancher
 
@@ -137,6 +258,27 @@ prestations de ma fiche ». Rien n'a été codé avant sa réponse.
 ---
 
 ## 2026-08-25
+
+### Un septième contrôle, et la leçon qui vaut pour tous
+
+`test-lecons-prix-e2e` guettait la réponse HTTP de l'action serveur. Son délai
+avait déjà été relevé de 30 à 60 secondes le matin même, pour la même raison ;
+sous la batterie entière, soixante ne suffisaient pas non plus.
+
+**Quatre-vingt-dix n'auraient fait que repousser le mur.** Une attente calée sur
+la vitesse de la machine finit toujours par mesurer la machine — et le rouge
+qu'elle produit accuse un produit sain.
+
+Ce que la suite veut savoir n'est pas qu'une requête est passée : c'est que le
+prix est en base, car c'est cela seul qui apprend quelque chose à l'agent. Elle
+regarde donc la base, et l'échec dit ce qu'elle portait vraiment (« lu :
+1400.00 »). Confrontée à un prix qui n'arrive jamais, elle rougit.
+
+**Sept contrôles réparés en une journée, aucun défaut de produit derrière.**
+Deux cassaient à minuit, trois lisaient trop tôt, un exigeait un état fugace, un
+guettait le réseau au lieu du résultat. Le fil commun tient en une phrase :
+*ils mesuraient un instant, ou une vitesse, plutôt qu'un état.*
+
 
 ### Ses journées se comptaient à Greenwich
 
@@ -314,10 +456,11 @@ de tous les clients : ouvert à un salarié, il rendrait en une phrase ce que sa
 feuille de chantier tait. La règle vit à un seul endroit
 (`peutUtiliserLAssistant`, à côté des autres).
 
-**Livrée au patron seul, puis ouverte aux commerciaux le 26 sur sa réponse** —
-*« oui tu peux l'ouvrir aux commerciaux »*. La question lui a été posée parce
-que l'assistant sait désormais lire le devis de n'importe quel client ; il a
-jugé qu'un commercial voit déjà ces prix écran par écran.
+**Ouverte aux commerciaux le 26 dans la journée, REFERMÉE le soir même** —
+*« les salariés et commerciaux ne doivent pas avoir accès à l'assistant IA »*.
+Son dernier mot revient au premier, celui du 25 août. Les trois états sont
+écrits dans `ARCHITECTURE.md` §181 : une décision dont on ne garde que le
+dernier état se repose trois mois plus tard.
 
 Détail : `ARCHITECTURE.md` §181.
 

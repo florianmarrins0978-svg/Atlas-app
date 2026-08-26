@@ -10,7 +10,7 @@ import type { ActionProposee } from "../ai/propositions";
 export async function enregistrerPropositions(
   ctx: Ctx,
   // `null` quand le geste ne concerne aucun chantier — créer un chantier,
-  // régler un tarif, corriger un client (migration 0066).
+  // régler un tarif, corriger un client (migration 0067).
   chantierId: string | null,
   propositions: ActionProposee[]
 ) {

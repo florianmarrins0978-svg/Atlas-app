@@ -15953,17 +15953,33 @@ question se tranche. `peutUtiliserLAssistant` s'y est ajoutée à côté de
 `peutVoirLesMontants`, et elle est **plus stricte** — le commercial voit les
 montants, et n'a pourtant pas l'assistant.
 
-**Elle a été plus stricte pendant une soirée, et LUI l'a rouverte.** Livrée au
-patron seul le 25 août — ses mots : *« seulement le principal »* —, la règle a
-été portée au commercial le 26, sur sa réponse : *« oui tu peux l'ouvrir aux
-commerciaux »*.
+**ELLE A CHANGÉ TROIS FOIS EN DEUX JOURS, et son dernier mot revient au
+premier.** Il faut les écrire toutes les trois : une décision dont on ne garde
+que le dernier état se repose trois mois plus tard, et l'on refait le chemin.
 
-**Ce qui avait fait hésiter**, et qu'il faut garder écrit pour ne pas
-re-hésiter : §10 a été tranché le 13 août, quand l'assistant ne savait lire que
-le chantier courant. Depuis le 25, il cherche dans le devis de N'IMPORTE QUEL
-client — un commercial y lit ce que chacun a payé pour la même prestation. Le
-patron a jugé que cela ne changeait rien : il voit déjà ces prix écran par
-écran, c'est son métier de vendre.
+| Quand | Ses mots | Ce que ça donnait |
+|---|---|---|
+| 25 août | *« seulement le principal »* | patron seul |
+| 26 août, dans la journée | *« oui tu peux l'ouvrir aux commerciaux »* | patron + commercial |
+| **26 août, le soir** | *« les salariés et commerciaux ne doivent pas avoir accès à l'assistant IA »* | **patron seul, à nouveau** |
+
+**Et `peutUtiliserLAssistant` N'APPELLE PLUS `peutVoirLesMontants`.** Tant que
+les deux disaient la même chose, l'une appelait l'autre, et c'était juste. Elles
+disent maintenant deux choses différentes — garder l'appel aurait été pire
+qu'une erreur : le jour où quelqu'un élargirait la règle des montants,
+l'assistant s'ouvrirait avec, en silence.
+
+**La différence n'est pas le prix, c'est la PORTÉE.** Un commercial voit les
+montants écran par écran, parce que c'est son métier de vendre. L'assistant, lui,
+parcourt l'entreprise entière et répond en une phrase, sans qu'on ait à savoir où
+regarder. C'est un accès transversal, et seul celui qui a déjà tout l'a.
+
+**Ce qui avait fait hésiter**, et qui a fini par donner raison à l'hésitation :
+§10 a été tranché le 13 août, quand l'assistant ne savait lire que le chantier
+courant. Depuis le 25, il cherche dans le devis de N'IMPORTE QUEL client — un
+commercial y lirait ce que chacun a payé pour la même prestation. La question lui
+a été posée ; il a d'abord jugé que cela ne changeait rien, puis il a refermé le
+soir même.
 
 **Ce que ça a coûté d'y penser, et pourquoi ce n'était pas perdu :** la question
 lui a été posée en une ligne, et la réponse tenait en un mot. Le contraire —
@@ -16346,7 +16362,124 @@ en page rendrait « 0 < 0 », c'est-à-dire un vert qui ne prouve rien
 
 ---
 
-## 188. L'agent : dix gestes de plus, un périmètre fermé, et toujours son doigt
+## 188. Le numéro de ses documents : un format choisi, et un millésime qui n'est plus écrit en dur
+
+**Sa demande du 26 août 2026**, capture d'une autre application à l'appui :
+*« dans la catégorie facture il faut rajouter le format de numéro, c'est
+obligatoire il me semble »*. Puis, devant la planche
+`appli/format-de-numero.html` : *« garde le F »*, *« 6 chiffres »*, *« oui
+remettre à 0 chaque début d'année »*, et enfin *« l'utilisateur peut choisir
+entre ces 5 façons ? Si oui code ça »*.
+
+### Ce qui est obligatoire, et ce qui ne l'est pas
+
+Il le disait avec un doute — *« il me semble »* — et il avait raison à moitié.
+Ce que la loi exige d'une facture, c'est un numéro pris dans une **suite
+chronologique, sans trou ni doublon**. **Aucun format particulier n'est
+imposé.** Atlas tenait déjà la suite : un compteur atomique par entreprise,
+posé en base, incrémenté dans la transaction qui crée le document. Ce qui
+manquait, c'était le choix de l'habillage — et, sous cet habillage, un défaut.
+
+### CE QUI ÉTAIT CASSÉ, et qu'aucune suite ne voyait
+
+Le millésime était **écrit en dur** :
+
+| Fichier | Ce qu'il écrivait |
+|---|---|
+| `src/server/repositories/devis.ts` | `` `2026-${…}` `` |
+| `src/server/repositories/factures.ts` | `` `F2026-${…}` `` |
+
+**En janvier 2027, ses factures auraient encore dit 2026.** Un défaut à
+retardement : aucune suite ne pouvait le voir, puisqu'elles tournent
+aujourd'hui et qu'aujourd'hui la constante tombe juste. Il ne serait apparu
+qu'au premier document de l'année suivante — c'est-à-dire chez son client, sur
+une facture qu'on ne réémet pas.
+
+C'est le même piège que la portée d'arroseur supposée (§4 ter de `CLAUDE.md`) :
+une valeur plausible, jamais confrontée, qui ne se démentira qu'une fois posée.
+
+### La remise à zéro est ATOMIQUE, et elle ne s'écrit pas en deux temps
+
+Sa décision — *« oui remettre à 0 chaque début d'année »* — se joue dans le même
+`UPDATE … RETURNING` que l'incrément, jamais dans un `if` au-dessus :
+
+```sql
+UPDATE entreprise_compteurs
+SET prochain_numero_facture = CASE
+      WHEN <remise> AND annee_facture IS DISTINCT FROM <annee> THEN 2
+      ELSE prochain_numero_facture + 1
+    END,
+    annee_facture = <annee>
+WHERE entreprise_id = …
+RETURNING prochain_numero_facture - 1 AS numero
+```
+
+**Lire l'année, décider, puis écrire** aurait ouvert exactement la fenêtre que
+le compteur atomique existait pour fermer : deux factures émises à la même
+seconde le 1ᵉʳ janvier auraient toutes deux lu « année différente », toutes deux
+remis le compteur à 1, et **porté le même numéro**. Un doublon dans la suite est
+précisément ce que la loi interdit. La colonne `annee_devis` / `annee_facture`
+est là pour ça, et pour rien d'autre.
+
+### La règle qui repart n'est PAS un réglage à part
+
+`repartChaqueAnnee(clef)` se **déduit** du format et ne s'expose jamais comme un
+second interrupteur. Sur « une suite sans année », cocher « repartir chaque
+année » ferait succéder `0148` à `0147` puis repartir à `0001` : deux documents
+du même numéro à un an d'écart. Un réglage qu'on peut poser dans un état
+interdit finit toujours par y être posé.
+
+L'écran **dit** la conséquence (`data-atlas="format-consequence"`) au lieu de la
+proposer.
+
+### Une seule fonction écrit le numéro, pour l'écran comme pour la base
+
+`ecrireNumero(clef, genre, {annee, mois, numero})` sert l'aperçu des réglages
+**et** le numéro réellement attribué. Deux écritures d'une même règle finissent
+par diverger (`CLAUDE.md` §3), et ici la divergence serait invisible : l'écran
+montrerait fièrement `2026-08-012` pendant que le client recevrait `2026-0148`.
+
+**Et l'exemple de l'écran prend son année à l'horloge**, jamais un millésime
+tapé à la main — refaire à l'écran la faute qu'on vient de corriger dans le
+dépôt aurait été le comble. `test-format-numero-e2e.ts` l'exige.
+
+### Ce qui a coûté deux faux verts, et qui n'est pas dans le produit
+
+Le compteur se vieillit pour éprouver le 1ᵉʳ janvier. Deux versions de ce
+vieillissement ont rendu un vert qui ne prouvait rien :
+
+| Version | Ce qui se passait |
+|---|---|
+| `pool.query` sous `atlas_app` | la RLS bloquait l'`UPDATE`, `rowCount` valait 0, **sans erreur** |
+| `pool.query` sous `atlas_owner` | bloqué aussi — `FORCE ROW LEVEL SECURITY` s'applique **au propriétaire** |
+
+Trois cas rougissaient en accusant le produit, qui était juste. Corrigé en
+jouant l'`UPDATE` dans `withEntreprise` **et en exigeant `rowCount === 1`** :
+un contrôle qui ne peut pas mesurer doit refuser de conclure, jamais rendre un
+vert (`CLAUDE.md` §5).
+
+### Un contrôle qui épinglait l'ancien format, et ce qu'il a appris
+
+`test-facture-au-client-e2e.ts` exigeait que le PDF téléchargé s'appelle
+`F\d{4}-\d{4}.pdf`. Le format choisi passé à six chiffres, il a rougi — sur du
+code juste, pour un réglage exaucé. C'est `CLAUDE.md` §5 bis mot pour mot : on
+adapte le contrôle, on ne remet pas ce que le patron a fait changer.
+
+**Et l'on vise plus profond que la forme.** Ce qui compte n'a jamais été le
+nombre de chiffres : c'est qu'il retrouve SA facture dans son dossier de
+téléchargements. Le contrôle compare donc le nom du fichier au
+`numero_commercial` **relu en base**. Il survivra au prochain format, et il
+attrape en plus ce que la regex laissait passer — un nom qui aurait la bonne
+forme et le mauvais numéro.
+
+### Ce que le format ne fait pas
+
+Il ne renumérote **rien**. Les documents déjà émis gardent leur numéro — les
+réécrire creuserait un trou dans la suite, ce que la loi interdit — et l'écran
+le dit en une phrase. La suite reprend là où elle en était, dans le nouvel
+habillage.
+
+## 189. L'agent : dix gestes de plus, un périmètre fermé, et toujours son doigt
 
 **Ses deux demandes du 26 août 2026**, dans le même message : *« je veux que ce
 soit un vrai agent IA avec toutes les capacités possibles et imaginables sur
@@ -16380,7 +16513,7 @@ proposer. Entre la proposition et son doigt, le chantier a pu disparaître ;
 l'écrire quand même serait une erreur silencieuse. Un client effacé, un tarif
 supprimé, un chantier d'une autre société : le même conflit, en français.
 
-### Une proposition peut ne concerner AUCUN chantier (migration 0066)
+### Une proposition peut ne concerner AUCUN chantier (migration 0067)
 
 `propositions_ia.chantier_id` était obligatoire — normal quand tout geste visait
 le chantier ouvert. Créer un chantier n'en a pas encore ; régler un tarif n'en
@@ -16428,6 +16561,21 @@ facture. `preparer_facture` s'arrête au brouillon : la facture existe, elle n'e
 pas partie. C'est la règle de toujours (§4 de `CLAUDE.md`), et il l'a
 reconfirmée le 26 août. Un devis parti chez un client ne se rattrape pas.
 
+### L'assistant ouvert aux commerciaux le matin, refermé le midi
+
+**Deux paroles opposées, le même jour, à deux sessions différentes.** À moi,
+sur la question du périmètre : *« oui tu peux l'ouvrir aux commerciaux »*. À une
+autre, quelques heures plus tard, en majuscules : **« LES SALARIÉS ET
+COMMERCIAUX NE DOIVENT PAS AVOIR ACCÈS À L'ASSISTANT IA »**.
+
+**C'est la seconde qui vaut** — la dernière, la plus nette, et celle qui est sur
+`main`. Écrit ici pour que personne ne la rouvre en croyant retrouver un oubli.
+
+**Et la règle n'appelle plus `peutVoirLesMontants`**, ce qui est le vrai point :
+un commercial voit les prix écran par écran sans avoir l'assistant. Les faire
+suivre l'une l'autre rouvrirait l'assistant en silence le jour où l'on
+élargirait les montants — une porte qu'on ne verrait pas s'ouvrir.
+
 ### Deux sessions, le même jour, sur le même agent
 
 **§183, §184 et §185 sont d'une autre session**, écrits le 25 août pendant que
@@ -16451,7 +16599,7 @@ adaptée au geste proposé, pas supprimée (`CLAUDE.md` §5 bis).
 Depuis l'accueil, *« crée un chantier pour Madame Lucie »* répondait **« Aucun
 chantier dans le contexte courant »** — un message technique, et faux : créer un
 chantier ne demande justement aucun chantier ouvert. Le refus datait de l'époque
-où tout geste en visait un ; il survivait à la migration 0066.
+où tout geste en visait un ; il survivait à la migration 0067.
 
 **Aucune suite ne le voyait**, parce que toutes posaient leurs questions depuis
 un chantier. C'est la sixième fois dans ce dépôt qu'un défaut sort d'une image et

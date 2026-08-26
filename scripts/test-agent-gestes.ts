@@ -105,7 +105,7 @@ async function main() {
 
   // --- Les gestes, un par un ---------------------------------------------
 
-  await test("Créer un chantier — sans aucun chantier ouvert (migration 0066)", async () => {
+  await test("Créer un chantier — sans aucun chantier ouvert (migration 0067)", async () => {
     const { resultats } = await confirmer(A, null, [
       { type: "creer_chantier", description: "Créer la fiche : Durand", donnees: { client: "Durand" } },
     ]);

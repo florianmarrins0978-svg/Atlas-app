@@ -183,7 +183,7 @@ export async function confirmerBrouillonAction(chantierId: string) {
 export async function appliquerPropositionsAction(
   // **`null` est un cas normal depuis le 26 août 2026** : créer un chantier,
   // régler un tarif ou corriger un client ne se rattache à aucun chantier, et
-  // l'assistant s'ouvre sur tous les écrans (migration 0066).
+  // l'assistant s'ouvre sur tous les écrans (migration 0067).
   chantierId: string | null,
   propositionIds: string[]
 ): Promise<ResultatConfirmation> {
