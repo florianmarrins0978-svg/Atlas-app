@@ -16650,8 +16650,71 @@ même façon.
 
 ---
 
+## 191. Un choix fait par erreur doit pouvoir se défaire
 
-## 191. Un seul nombre faisait deux métiers : les salariés se comptent à part des équipes
+**Sa demande du 26 août 2026**, capture de la page que reçoit son client à
+l'appui : *« si par erreur j'ai sélectionné un des 3 champs je ne peux plus le
+désélectionner ! Faut corriger ça, je dois pouvoir désélectionner. »*
+
+**Ce n'était pas un défaut du produit, c'était le navigateur.** Un bouton radio
+ne se décoche pas : par construction, il ne connaît que « passer de l'un à
+l'autre ». Le client qui touchait la mauvaise ligne restait donc engagé sur une
+date qu'il n'avait pas choisie, sans aucun moyen de revenir en arrière — et
+cette date est celle où l'artisan se déplace.
+
+### Pourquoi `onClick`, et pas `onChange`
+
+| L'appui | `onChange` | `onClick` |
+|---|---|---|
+| sur une ligne neuve | part | part |
+| sur la ligne DÉJÀ cochée | **ne part jamais** | part |
+
+Le navigateur ne signale un changement que s'il y en a un ; c'est précisément le
+cas qu'on doit attraper. `onClick` est donc le seul geste qui existe ici.
+
+### Et la comparaison tient sans drapeau
+
+React ne repeint pas entre deux gestionnaires d'un même événement : à l'entrée
+de `onClick`, l'état porte encore la valeur **d'avant** l'appui.
+
+- ligne neuve : elle diffère de l'état → on ne défait rien, `onChange` choisit ;
+- ligne déjà cochée : elle est égale → on vide, et `onChange` ne partira pas.
+
+Les deux cas passent par la même ligne. Un drapeau « je viens de cocher » aurait
+survécu à un rendu et défait le choix suivant.
+
+Le clavier continue de passer par `onChange` : les flèches changent de ligne
+sans jamais rien défaire, ce qui est le comportement attendu d'un groupe radio.
+
+### Ce que le contrôle garde, et ce qu'il empêche
+
+`scripts/test-devis-client-e2e.ts`, cas « UN CHOIX FAIT PAR ERREUR SE DÉFAIT ».
+Vu rouge contre la version d'avant, sur l'assertion attendue.
+
+Il tient quatre choses, et la deuxième est la plus importante :
+
+1. le second appui défait, et **rien ne se coche à la place** ;
+2. **un appui sur une AUTRE ligne choisit toujours** — « défaire à chaque
+   appui » passerait le point 1 et rendrait le formulaire inutilisable ;
+3. la case de rétractation **s'en va avec la date qui l'a fait naître** : sans
+   cela, l'écran garderait une autorisation légale de démarrage anticipé
+   rattachée à une date effacée ;
+4. « une autre date » se défait pareil, et **referme son calendrier**.
+
+### Ce qui n'a pas bougé, et qui est déjà tenu
+
+Le serveur refusait déjà une acceptation sans date (`date_manquante`,
+`repondreAction`) : tout défaire puis appuyer sur « J'accepte ce devis » rend
+un message clair, pas un enregistrement muet. La règle n'existe qu'à un endroit.
+
+**Le même piège dort ailleurs**, sur le choix entre deux tarifs ambigus
+(`PropositionPrixSection.tsx`). Il ne l'a pas signalé et l'enjeu y est moindre —
+il peut toucher l'autre tarif —, mais c'est le même `type="radio"` et le même
+appui sans retour possible. Noté dans `TODO.md`.
+
+---
+
+## 192. Un seul nombre faisait deux métiers : les salariés se comptent à part des équipes
 
 **Sa demande du 26 août 2026, éprouvée sur la planche 97
 (`appli/salaries-et-equipes.html`) avant d'être codée — il a répondu **A** :**

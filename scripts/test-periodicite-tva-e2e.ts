@@ -163,17 +163,27 @@ async function main() {
   // des 4 000 € porte sur la TVA due ; Atlas ne connaît que la collectée. Un
   // écran qui conseillerait « passez au trimestre » inventerait une donnée
   // (`CLAUDE.md` §4).
-  await test("L'écran renvoie au comptable, et ne conseille jamais de périodicité", async () => {
+  await test("L'écran ne conseille JAMAIS une périodicité", async () => {
     // La périodicité a rejoint le régime de TVA dans « Mon entreprise » le
   // 14 août 2026 : deux réglages fiscaux à deux endroits (ARCHITECTURE.md §96).
   await page.goto(`${BASE}/reglages/identite`, { waitUntil: "domcontentloaded" });
     await page.waitForSelector("text=Votre TVA", { timeout: 30_000 });
     const texte = (await page.locator("section:has-text('Votre TVA')").last().textContent()) ?? "";
-    assert.ok(/comptable/i.test(texte), "l'écran doit renvoyer au comptable");
-    assert.ok(
-      /mensuelle par défaut/i.test(texte),
-      "l'écran doit dire que le mois est le défaut, sinon le trimestre paraît équivalent"
-    );
+    // **CE CONTRÔLE A ÉTÉ RE-VISÉ le 24 août 2026, pas assoupli.**
+    //
+    // Il exigeait deux phrases — « votre comptable dit lequel vous concerne » et
+    // « mensuelle par défaut » — que le patron a fait retirer le même jour :
+    // *« le trimestre est une option (toute la phrase) »*. Un contrôle qui
+    // réclame ce qu'il a fait enlever rend son écran impossible à changer
+    // (`CLAUDE.md` §5 bis).
+    //
+    // Ce qu'il défendait vraiment survit, et c'est la seule chose qui compte :
+    // **l'écran ne conseille JAMAIS une périodicité**. Le seuil des 4 000 €
+    // porte sur la TVA due ; Atlas ne connaît que la collectée. Conseiller
+    // reviendrait à inventer une donnée (`CLAUDE.md` §4) — et c'est cela qu'on
+    // mesure désormais, sur le texte, pas sur un libellé qu'il peut vouloir
+    // réécrire demain.
+    assert.ok(texte.trim().length > 0, "la rubrique « Votre TVA » est vide : rien n'est mesuré");
     assert.ok(
       !/vous pouvez passer|nous vous conseillons|éligible|vous avez droit/i.test(texte),
       `l'écran conseille une périodicité qu'il ne peut pas connaître : ${texte.slice(0, 160)}`

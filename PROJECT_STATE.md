@@ -16,7 +16,7 @@ ligne « fait » qui ne l'est pas coûte plus cher qu'une ligne absente.
 ## Ses salariés se comptent à part de ses équipes (26 août 2026)
 
 **Sa réponse à la planche 97 : A**, arrêtée sur maquette puis codée le jour même
-(`appli/salaries-et-equipes.html`, migration 0067, `ARCHITECTURE.md` §191).
+(`appli/salaries-et-equipes.html`, migration 0067, `ARCHITECTURE.md` §192).
 
 Deux compteurs là où il n'y en avait qu'un : **les équipes** disent combien de
 chantiers tiennent dans une journée, **les salariés** disent qui part. Régler
@@ -37,6 +37,19 @@ pour lui.
 
 Reste ouvert : le renommage `equipes` → `salaries` en base et dans le code, tenu
 à part parce qu'il touche vingt-trois fichiers (`TODO.md`).
+## Un choix fait par erreur se défait (26 août 2026)
+
+*Sa demande : « si par erreur j'ai sélectionné un des 3 champs je ne peux plus
+le désélectionner ! Je dois pouvoir désélectionner ».*
+
+Sur la page que reçoit son client, un second appui sur la date déjà cochée la
+**défait**, et rien ne se coche à la place. Vaut aussi pour « une autre date »,
+dont le calendrier se referme. Le détail — et pourquoi `onClick` plutôt
+qu'`onChange` — est dans `ARCHITECTURE.md` §191.
+
+**Le même piège dort sur le choix entre deux tarifs ambigus**
+(`PropositionPrixSection.tsx`) : il ne l'a pas signalé, c'est noté dans
+`TODO.md`.
 
 ---
 

@@ -559,7 +559,7 @@ export const FICHES_MODE_EMPLOI: FicheModeEmploi[] = [
     ecran: "Équipe",
     ou: "Réglages, puis Équipe",
     // **Deux réglages distincts depuis le 26 août 2026** (`ARCHITECTURE.md`
-    // §191) : combien de chantiers partent en même temps, et combien de gens
+    // §192) : combien de chantiers partent en même temps, et combien de gens
     // travaillent avec lui. Les confondre dans la réponse de l'assistant
     // remettrait dans sa tête la confusion qu'on vient de retirer du code.
     intitule: "Régler combien de chantiers partent en même temps, vos salariés et leurs absences",

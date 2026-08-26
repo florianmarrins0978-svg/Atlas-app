@@ -44,7 +44,7 @@ de défaut « pour simplifier ».
 Le remonter ferait apparaître une case « Salarié 1 » à cocher sur chacune de ses
 demi-journées.
 
-Le détail : `ARCHITECTURE.md` §191, migration `drizzle/0067_salaries_a_part.sql`.
+Le détail : `ARCHITECTURE.md` §192, migration `drizzle/0067_salaries_a_part.sql`.
 
 ---
 
@@ -58,6 +58,27 @@ sa réponse (`CLAUDE.md` §3 bis).
   Équipe ou retourne dans « Absences ». **Non codée.**
 - **Planche 97** — `appli/salaries-et-equipes.html`. **Répondue (A) et codée le
   26 août** : voir le paragraphe ci-dessus.
+## PIÈGE : UN BOUTON RADIO NE SE DÉCOCHE PAS (26 août 2026)
+
+Sa plainte du 26 août, sur la page de son client : *« je ne peux plus le
+désélectionner »*. Ce n'était pas le produit — **le navigateur ne sait pas
+décocher un radio**, il ne connaît que « passer de l'un à l'autre ».
+
+Ce qu'il faut savoir avant d'y retoucher, et qui ne se devine pas :
+
+- **`onChange` ne part JAMAIS** sur une case déjà cochée : le navigateur ne
+  signale un changement que s'il y en a un. C'est `onClick` qui attrape ce
+  geste-là, et lui seul ;
+- **React ne repeint pas entre deux gestionnaires d'un même événement** : à
+  l'entrée de `onClick`, l'état porte encore la valeur d'avant l'appui. La
+  comparaison « c'est déjà celle-ci ? » suffit donc, sans drapeau — un drapeau
+  survivrait à un rendu et défairait le choix suivant ;
+- **le contrôle qui compte n'est pas « ça se défait »**, c'est *« un appui sur
+  une AUTRE ligne choisit toujours »* : défaire à chaque appui passe le premier
+  et rend le formulaire inutilisable.
+
+`src/app/devis/[jeton]/formulaire.tsx`, `ARCHITECTURE.md` §191. Le même piège
+dort sur `PropositionPrixSection.tsx` (`TODO.md`).
 
 ---
 

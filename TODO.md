@@ -58,7 +58,7 @@ Sa demande du 26 août 2026, et **la planche 97 lui pose la question** :
 `appli/salaries-et-equipes.html`. Trois propositions, rien n'est codé.
 
 **Sa réponse : A**, et *« on garde la même façon de faire »* pour l'affiliation.
-Codé le jour même — `ARCHITECTURE.md` §191, migration 0067.
+Codé le jour même — `ARCHITECTURE.md` §192, migration 0067.
 
 **Ce qui reste ouvert, et qui n'est pas ce lot :** l'étiquette de repli
 « Salarié 3 » est plus large que le « Équipe ? » que dessine la planche 84, et
@@ -119,6 +119,26 @@ d'exister ? »*. Réponse : oui — c'est le seul endroit d'où un chantier reç
 date, et « Retirer » l'y renvoie —, mais **vide**, elle ne rendait qu'un titre
 et un refus. Elle disparaît quand rien n'attend de jour, et revient dès qu'un
 chantier attend. Le détail est dans `CHANGELOG.md`.
+
+---
+
+## ⏳ Le même piège de bouton radio dort sur le choix des tarifs ambigus
+
+`src/app/chantiers/[id]/prix/PropositionPrixSection.tsx` — quand deux tarifs
+peuvent convenir, le patron en coche un et **ne peut plus le décocher**, comme
+son client ne pouvait plus décocher sa date (`ARCHITECTURE.md` §191).
+
+Il ne l'a pas signalé, et l'enjeu y est moindre : il peut toucher l'autre tarif,
+alors que son client n'avait aucune sortie. Mais c'est le même `type="radio"` et
+le même appui sans retour.
+
+**Ce que ça coûte à faire :** deux lignes, exactement celles du formulaire du
+client — un `onClick` qui vide l'état quand la valeur touchée est déjà celle
+retenue. **Ce qu'il faut vérifier avant :** que « aucun tarif retenu » soit un
+état tenable pour le bouton qui applique le prix, sinon on remplace un blocage
+par un autre.
+
+---
 
 ## ✅ ~~Le format des numéros de devis et de factures~~ — fait le 26 août 2026
 
@@ -189,8 +209,27 @@ avant toute écriture »* — rouge en batterie, **vert rejoué seul**. Il lit l
 juste après un appui, avant que l'action serveur n'ait répondu : sous cent
 suites, la réponse arrive avant la lecture et le cas s'inverse.
 
+*(Une autre session a relevé le même soir le même phénomène sur trois autres
+suites — voir « Trois suites navigateur rougissent SOUS LA BATTERIE » en tête de
+ce fichier. C'est un seul sujet, pas deux.)*
+
+**Et un CINQUIÈME, le 26 août 2026 au soir :**
+`test-planning-vers-facture-e2e.ts`, cas *« clôturé AVANT sa date : il quitte le
+planning pour les terminés »* — rouge en batterie sur `Timeout 15000ms` en
+attendant « Rien n'a changé depuis le devis ? », **vert rejoué seul** (7/7).
+
+Ce fichier connaît déjà ce piège et s'en défend à moitié : son `ouvrir()` retente
+l'OUVERTURE d'un écran puis rend le contrôle « non concluant » plutôt que rouge.
+Ce qui a lâché ici est un cran plus loin — l'appui sur « Créer la facture » et la
+confirmation qui suit, qui n'ont, eux, aucune tolérance.
+
+**Ce qui n'est PAS établi**, et ne doit pas être supposé : pourquoi ce cas-là et
+pas les trois autres du même fichier, qui attendent la même phrase avec le même
+délai et passent. Un simple relèvement du délai serait un pansement sur une cause
+non trouvée — et c'est exactement ce que ce dépôt refuse.
+
 Avec `test-lecons-prix-e2e` (§ plus bas) et la suite du veilleur, cela fait
-**quatre** contrôles qui rougissent au hasard de la machine. C'est le vrai sujet,
+**cinq** contrôles qui rougissent au hasard de la machine. C'est le vrai sujet,
 et il grossit : un rouge qui tombe au hasard apprend à ignorer le rouge, et l'on
 perd alors tout ce qu'il surveille. Ce qu'il faut : attendre un SIGNAL — la
 réponse du serveur, un attribut qui change — jamais un instant.
@@ -7256,6 +7295,16 @@ et c'est déjà arrivé.
   tôt sur la même version, et rouges sur une base neuve. Un contrôle qui dépend
   de l'âge de la base accuse au hasard — c'est la même leçon que l'instabilité
   notée juste au-dessus.
+- [ ] **Le calendrier manque de jours libres sur une base fraîche — la racine
+  n'est pas traitée.** Deux suites de dates ont été réparées le 24 août par une
+  autre session, mais le même symptôme est réapparu le soir même sur une
+  troisième : `test-envoi-client-e2e` tombe sur *« pas assez de jours
+  acceptables (1) »* et *« pas assez de jours libres au calendrier (1) »*.
+  **Ce sont les suites qui ont été rendues tolérantes, pas la cause qui a été
+  ôtée.** La cause probable : le jeu de démonstration remplit le mois courant,
+  et il ne reste presque rien à proposer quand on l'amorce à neuf en fin de
+  mois. Tant qu'elle tient, ces rouges reviendront sur une suite ou une autre —
+  et un rouge qui tourne s'apprend à être ignoré. *(24 août 2026)*
 - [ ] **La batterie rougit sur des suites DIFFÉRENTES à chaque exécution**, et
   chacune passe seule sur le même code. Relevé le 24 août 2026, trois
   exécutions d'affilée : d'abord `test-planning-vers-facture-e2e` (un texte
