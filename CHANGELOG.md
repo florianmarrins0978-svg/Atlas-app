@@ -9,6 +9,27 @@ Format : le plus récent en tête.
 
 ## 2026-08-25
 
+### L'assistant retrouve un devis à partir d'un NOM, sans qu'on ouvre la fiche
+
+*« Peux-tu me ressortir le premier devis de M. Bernard ? »* — il répondait qu'il
+n'avait *« aucun chantier ouvert »* et renvoyait le patron ouvrir la fiche
+lui-même. Tous ses outils partaient du chantier courant ; ouvert depuis la
+liste, il n'avait aucun chemin entre un nom et un dossier. Il en a désormais un,
+qui cherche dans le nom du client comme dans celui du chantier, avec la règle de
+l'écran — casse, accents et ordre des mots ignorés.
+
+**Et il affirmait une chose fausse :** *« Atlas conserve uniquement le dernier
+devis par chantier »*. Un brouillon se réécrit, mais un devis envoyé est
+conservé et le suivant devient une version 2. Ce n'est pas le modèle qui
+inventait : l'outil lui rendait la dernière version sans jamais dire qu'il en
+existait d'autres. Il annonce maintenant toutes les versions à chaque appel, et
+sait rendre celle qu'on demande — « le premier » étant la version 1.
+
+Éprouvé contre le décor exact de sa capture, un confrère au même nom compris ;
+rejoué contre l'ancien outil, il rougit sur trois cas. Détail :
+`ARCHITECTURE.md` §175.
+
+
 ### Le message : les phrases par défaut, modifiables — les mots en doré verrouillés
 
 *« Le message au client doit comporter les phrases par défaut et l'utilisateur les

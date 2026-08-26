@@ -15371,3 +15371,78 @@ le doublon sans rien dire.
 clair comme sur fond sombre, avec logo carré et logo en bandeau. C'est la seule
 manière de voir qu'une ligne de plus dans l'en-tête ne vient pas toucher les
 références du devis.
+
+---
+
+## 175. L'assistant sait enfin partir d'un NOM — et il ne prétend plus qu'un ancien devis a disparu
+
+**Sa capture du 25 août 2026.** Il demande : *« Peux-tu me ressortir le premier
+devis de M. Bernard ? »* L'assistant répond qu'il n'a *« aucun chantier
+ouvert »*, lui explique comment aller ouvrir la fiche lui-même, et ajoute :
+*« Atlas conserve uniquement le dernier devis par chantier »*. Sa réponse :
+**« c'est justement ça que je veux qu'il soit capable de faire »**.
+
+Deux défauts, et le second est le plus grave.
+
+### 1. Aucun outil ne partait d'un nom
+
+Tous les outils de l'assistant lisent `ContexteOutil.chantierId` — le chantier
+d'où l'on a ouvert le panneau. Ouvert depuis la LISTE, il est nul, et chacun
+refuse à son tour. Le modèle n'inventait rien : il n'avait littéralement aucun
+chemin entre « M. Bernard » et un dossier.
+
+`RechercherChantier` est le seul outil qui fonctionne **sans** chantier courant,
+et il est en tête du registre pour cette raison. Il cherche dans le nom du
+client **et** dans celui du chantier — il dit « le chantier de la mairie » aussi
+souvent qu'il dit un nom de client, et l'outil doit suivre sa façon de parler,
+pas la colonne où c'est rangé.
+
+**La règle de comparaison est CELLE DE L'ÉCRAN** (`src/lib/recherche-client.ts`,
+`filtrerClientsParNom`) : casse et accents ignorés, n'importe où dans la ligne,
+mots dans le désordre. En écrire une seconde ici, c'est promettre à l'assistant
+de trouver ce que l'écran ne trouve pas — ou l'inverse (`CLAUDE.md` §3).
+
+### 2. Un outil muet fait inventer une explication
+
+**« Atlas conserve uniquement le dernier devis » est FAUX.** Un brouillon se
+réécrit en place, mais **un devis envoyé est conservé** et le suivant devient
+une version 2 (`getOuCreerDevisBrouillon`). Ses anciens devis étaient là.
+
+Ce qui a produit la phrase fausse n'est pas le modèle : c'est l'outil. Il rendait
+la dernière version, sans jamais dire qu'il en existait d'autres. **Le modèle ne
+dispose que de ce qu'on lui rend** — le reste, il le comble.
+
+D'où deux changements qui vont ensemble :
+
+| | |
+|---|---|
+| `LireDevis` prend une `version` | « le premier » = la version 1 |
+| il rend **toujours** `versionsDisponibles` | même quand on ne demande rien : c'est ce qui empêche de conclure qu'il n'y en a qu'une |
+
+`listerVersionsDevis` trie en **croissant**, contre l'usage du reste du dépôt :
+ici on lit une histoire, on ne cherche pas l'état courant, et « le premier » doit
+être le premier de la liste.
+
+### Ce qu'un refus doit dire
+
+Sans chantier, `LireDevis` ne répond plus « aucun chantier dans le contexte » —
+il nomme **la suite à donner** : employer `RechercherChantier`, puis rappeler
+avec l'identifiant obtenu. Une suite le vérifie, et vérifie aussi que le refus
+ne renvoie **plus** le patron ouvrir une fiche à la main : c'est précisément ce
+qu'il a reproché.
+
+La consigne système va dans le même sens, en toutes lettres : *ne demande jamais
+au patron d'aller ouvrir une fiche pour te donner accès — c'est ton travail de
+la trouver.*
+
+### Éprouvé contre la version qui lui a répondu
+
+`test-ia-09-chercher-par-nom.ts` monte le décor exact de sa capture : un client
+« Mr. Bernard », un premier devis **envoyé** — l'envoi seul fige la version 1 —,
+puis un second. Rejouée contre l'ancien outil, elle rougit sur trois cas : la
+version 1, les versions annoncées, et le refus d'une version absente.
+
+**Et un confrère au même nom.** Une seconde entreprise porte elle aussi un
+« Mr. Bernard » : c'est le seul décor où un défaut d'isolation se verrait, et il
+montrerait les devis de quelqu'un d'autre. Les deux sens sont vérifiés — sans
+quoi le cas serait vert avec une recherche qui ne rend jamais rien.
