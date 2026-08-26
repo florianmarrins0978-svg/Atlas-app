@@ -70,7 +70,11 @@ essai("aucune sorte ne passe devant l'autre — la date seule décide", () => {
 // tressage gardait une place à une réponse ancienne ; celui-ci non. Ce cas
 // existe pour que personne ne « répare » ce comportement en croyant à un
 // défaut : il est voulu, et il est le prix d'un ordre qui s'explique.
-essai("une réponse ancienne passe DERRIÈRE des rappels frais — voulu", () => {
+// **ET IL A ACCEPTÉ CE COÛT, le 26 août 2026**, la question lui ayant été posée :
+// *« ça me gêne pas »*. Ce cas ne défend donc pas un choix d'ingénierie mais une
+// décision du patron — le rétablir en « place garantie » serait défaire ce qu'il
+// a tranché.
+essai("une réponse ancienne passe DERRIÈRE des rappels frais — voulu, et accepté", () => {
   const rappels = [carte("r1", 0), carte("r2", 1), carte("r3", 2)];
   const reponses = [carte("reponse-vieille", 9)];
   assert.equal(

@@ -17057,6 +17057,14 @@ tressage lui gardait une place ; celui-ci non. C'est un cas éprouvé plutôt qu
 supposé (`scripts/test-ordre-notifications.ts`), et il est là pour que personne
 ne le « répare » en croyant à un défaut.
 
+**CE COÛT LUI A ÉTÉ DIT, ET IL L'A ACCEPTÉ** — le 26 août 2026, la question lui
+ayant été posée en ces termes : *« une réponse ancienne que tu n'as pas
+acquittée peut désormais passer sous des rappels plus frais ; dis-moi si ça te
+gêne. »* Sa réponse : **« ça me gêne pas »**.
+
+Ce n'est donc pas un arbitrage laissé à qui passera par là : **ne pas rétablir
+la place garantie** sans qu'il le redemande.
+
 ### Quelle date porte chaque carte
 
 Chaque carte porte l'instant où elle est **apparue dans son monde**, et le choix
