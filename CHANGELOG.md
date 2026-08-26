@@ -150,6 +150,15 @@ outil qui CRÉAIT une fiche tout seul est devenu une proposition — les deux
 règles qu'il portait, reprises telles quelles.
 
 Détail : `ARCHITECTURE.md` §189.
+
+### Le filet d'intertitre était revenu sur l'écran des accès
+
+*« Ça aussi tu peux retirer »* (25 août) : le trait qui part du mot et file
+jusqu'au bord. Il est réapparu le lendemain sur « Son rôle », un écran neuf.
+`test-accueil-en-tete.ts` l'a repris tout seul — c'est exactement pourquoi ce
+contrôle existe. Les séparateurs de blocs, eux, restent : *« ceux qui séparent
+les blocs, laisse-les »*.
+
 ### L'en-tête inversé : le titre d'abord, le surtitre doré en dessous
 
 *« Sur plusieurs catégories le titre était en dessous du sous-titre en doré,

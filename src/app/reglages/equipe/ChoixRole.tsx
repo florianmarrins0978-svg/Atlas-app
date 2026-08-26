@@ -55,10 +55,12 @@ export default function ChoixRole({
   return (
     <>
       {titre && (
-        <p className={`mb-2 flex items-center gap-3 ${libelleCaps}`} style={{ color: colors.muted }}>
-          Son rôle
-          <i className="h-px flex-1" style={{ backgroundColor: colors.line }} />
-        </p>
+        // **Sans filet.** Sa demande du 25 août 2026, capture à l'appui : *« ça
+        // aussi tu peux retirer »* — le trait qui part du mot et file jusqu'au
+        // bord. Il était revenu ici le 26, sur un écran neuf ;
+        // `test-accueil-en-tete.ts` l'a repris. Les séparateurs de BLOCS, eux,
+        // restent : *« ceux qui séparent les blocs, laisse-les »*.
+        <p className={`mb-2 ${libelleCaps}`} style={{ color: colors.muted }}>Son rôle</p>
       )}
 
       <div className="flex gap-2">
