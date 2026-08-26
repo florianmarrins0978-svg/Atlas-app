@@ -53,6 +53,20 @@ réponse du serveur, un attribut qui change — jamais un instant.
 
 ---
 
+## ⏳ « Donner un accès » : sa réponse attendue, A ou B
+
+Planche : **https://florianmarrins0978-svg.github.io/Atlas-app/donner-un-acces.html**
+
+Ses trois reproches du 26 août 2026 sur l'écran livré le matin (l'œil et la
+double saisie du mot de passe, le bouton noir confondu avec la pastille de rôle,
+la démarcation avec son propre compte). Les deux propositions ne diffèrent que
+sur la SÉPARATION : **A** une carte posée sur la liste, **B** un écran à lui
+seul. Le reste — œil, double saisie, rôle teinté au lieu de noir — est commun
+aux deux et ne se rediscute pas : il vient de décisions déjà prises.
+
+**Rien n'est codé tant qu'il n'a pas répondu.** L'écran de production porte
+encore le défaut qu'il a photographié.
+
 ## Un commercial doit LIRE les tarifs sans pouvoir les changer
 
 *Né du lot « rôles et accès » du 25 août 2026, et laissé ouvert délibérément.*

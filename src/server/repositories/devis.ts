@@ -1,4 +1,4 @@
-import { desc, eq, sql } from "drizzle-orm";
+import { and, asc, desc, eq, sql } from "drizzle-orm";
 import { withEntreprise } from "../db/with-entreprise";
 import { allureDesDocuments, formatNumeroDe } from "./entreprises";
 import { conditionsDepuisEntreprise } from "@/lib/conditions-documents";
@@ -81,6 +81,57 @@ export async function getDevisPourChantier(ctx: Ctx, chantierId: string) {
       .select()
       .from(devis)
       .where(eq(devis.chantierId, chantierId))
+      .orderBy(desc(devis.numeroVersion))
+      .limit(1);
+    return rows[0] ?? null;
+  });
+}
+
+/**
+ * Les versions de devis d'un chantier, de la plus ancienne à la plus récente.
+ *
+ * **Née de sa question du 25 août 2026** : *« ressors-moi le PREMIER devis de
+ * M. Bernard »*. L'assistant n'avait que `getDevisPourChantier`, qui rend la
+ * dernière — et il en a conclu, devant le patron, qu'Atlas ne gardait que
+ * celle-là. C'est faux : un devis envoyé est conservé, et le suivant devient
+ * une version 2 (`getOuCreerDevisBrouillon`).
+ *
+ * **Croissante, et non décroissante comme partout ailleurs :** ici on lit une
+ * histoire, on ne cherche pas l'état courant. « Le premier » doit être le
+ * premier de la liste.
+ */
+export async function listerVersionsDevis(ctx: Ctx, chantierId: string) {
+  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    const rows = await tx
+      .select({
+        numeroVersion: devis.numeroVersion,
+        numeroCommercial: devis.numeroCommercial,
+        statut: devis.statut,
+        totalTtc: devis.totalTtc,
+      })
+      .from(devis)
+      .where(eq(devis.chantierId, chantierId))
+      .orderBy(asc(devis.numeroVersion));
+    return rows;
+  });
+}
+
+/**
+ * Une version précise d'un devis — ou la plus récente si l'on n'en nomme aucune.
+ *
+ * Un seul chemin pour les deux cas : deux fonctions voisines finiraient par
+ * filtrer différemment, et l'écart se verrait sur un devis qu'on croit lire.
+ */
+export async function lireVersionDevis(ctx: Ctx, chantierId: string, version?: number) {
+  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    const rows = await tx
+      .select()
+      .from(devis)
+      .where(
+        version === undefined
+          ? eq(devis.chantierId, chantierId)
+          : and(eq(devis.chantierId, chantierId), eq(devis.numeroVersion, version))
+      )
       .orderBy(desc(devis.numeroVersion))
       .limit(1);
     return rows[0] ?? null;

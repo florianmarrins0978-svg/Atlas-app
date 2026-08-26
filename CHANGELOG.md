@@ -7,7 +7,125 @@ Format : le plus récent en tête.
 
 ---
 
+## 2026-08-26
+
+### Face ID marche enfin derrière son tunnel — et le bouton du mot de passe remonte
+
+*« Le Face ID ne fonctionne pas »*, capture à l'appui — et *« le bouton changer
+mon mdp doit se trouver au-dessus de ouvrir avec Face ID »*.
+
+Atlas enregistrait les clés sous le domaine « localhost » : derrière la
+redirection de port de son espace, le serveur ne voit que ça, et une clé posée
+pour un domaine ne s'ouvre nulle part ailleurs. L'écran transmet désormais
+l'adresse de sa barre d'adresse, comme pour le lien du client (§177) — et
+seulement là où l'en-tête est local, jamais en production.
+
+En rendant la panne bavarde, deux défauts de plus sont sortis : le message des
+Réglages demandait d'entrer un mot de passe sur un écran où l'on est déjà entré,
+et la porte prenait une RÉUSSITE pour une panne — une action qui redirige le
+fait en levant, et cette levée tombait dans le filet à erreurs.
+
+Le bouton du mot de passe quitte la barre fixe du bas et rejoint ses champs. Le
+contrôle compare deux ordonnées plutôt qu'un libellé.
+
+Ce que ça évite : un raccourci qu'il ne peut pas allumer, et un message rouge
+au moment exact où il entre. `ARCHITECTURE.md` §186 et §187.
+
+**Non vérifié ici, et il faut le dire :** que Face ID s'ouvre sur SON iPhone
+derrière SON tunnel. Cet environnement n'a ni visage ni tunnel — la règle du
+domaine et le parcours entier sont éprouvés, l'ouverture réelle se prouve chez
+lui.
+### L'en-tête inversé : le titre d'abord, le surtitre doré en dessous
+
+*« Sur plusieurs catégories le titre était en dessous du sous-titre en doré,
+inversez-les »* — puis, sans ambiguïté : *« partout »*.
+
+La grammaire du 10 août posait l'accroche dorée AU-DESSUS du titre. Il la veut
+SOUS le titre, là où on lit un sous-titre. Comme l'en-tête est une seule pièce
+partagée (`EnTeteEcran`), le changement se propage à tous les écrans d'un coup —
+c'est ce qu'il demande. Sur la fiche de chantier, le statut (porté par le
+surtitre) passe donc sous le nom du chantier ; la précision « avant » (le client,
+en serif gris) reste au-dessus, elle, comme sa maquette du 11 août.
+
+Regardé à l'image (Paysage et un chantier), et le garde-fou d'alignement du
+bouton d'assistant (`test-assistant-en-tete-e2e`) reste vert : la pastille tient
+toujours sur la ligne du titre.
+
+### Donner un accès : une planche, avant de retoucher l'écran
+
+**Ses trois reproches, capture à l'appui, sur l'écran livré le matin même :**
+l'œil et la double saisie du mot de passe manquaient ; *« pour valider un compte
+c'est pas clair, la case est déjà noire comme la catégorie salarié »* ; *« la
+démarcation entre vous patron et le compte qu'on est en train d'attribuer n'est
+pas bien séparée »*.
+
+**Les trois ont la même racine**, et c'est ce qui rend la correction simple : le
+formulaire du compte NEUF avait été posé dans la liste des comptes EXISTANTS,
+sans rien pour dire où l'un finit et où l'autre commence.
+
+Deux séparations proposées, **et rien n'est codé** (`CLAUDE.md` §3 bis) :
+`appli/donner-un-acces.html` — **A** une carte posée sur la liste, **B** un écran
+à lui seul. L'œil et la double saisie sont recopiés de l'écran qu'il a arrêté le
+14 août, jamais réinventés. Le rôle choisi devient teinté avec un coche : la
+charte le disait déjà — le plein porte ce qu'on FAIT, et le seul bouton plein de
+l'écran redevient celui qui crée le compte.
+
+**Un défaut trouvé en regardant la planche**, avant de la lui donner : le
+périmètre affiché ne suivait pas le rôle coché, si bien qu'on lisait « le
+planning et rien d'autre » sous « Commercial ». Une maquette qui ment sur ce que
+fait un rôle est pire qu'une maquette absente.
+
+---
+
 ## 2026-08-25
+
+### Ses journées se comptaient à Greenwich
+
+*« Ce soir à 00 h 00 il passe dans Terminés ? »* — non : à **2 h du matin**. Le
+jour d'Atlas était le jour UTC, et la France est à UTC+2 l'été. Entre minuit et
+deux heures, un chantier fini restait au planning, une facture faite en rentrant
+portait la date d'hier, et le calendrier marquait le mauvais jour comme
+« aujourd'hui ». Deux heures, mais précisément celles où un artisan range ses
+papiers.
+
+Une seule fonction change (`jourIso`, `src/lib/jour.ts`), et tout suit : onglets,
+dates d'émission et d'échéance, relevé de TVA, calendrier. Elle passe par `Intl`
+sur `Europe/Paris` — un `+2` figé se serait trompé la moitié de l'année.
+
+Le contrôle prend l'été et l'hiver, des deux côtés de minuit, et a été **joué
+rouge** contre l'ancienne version. `ARCHITECTURE.md` §182.
+
+**Trois suites qui dépendaient du jour où on les jouait.** Deux posaient leurs
+dates avec `CURRENT_DATE` — le jour de PostgreSQL, en UTC — et divergeaient donc
+de l'écran pendant ces deux heures ; une troisième lisait le calendrier du mois
+COURANT, si bien qu'en fin de mois il n'y restait plus assez de jours ouvrables
+et qu'elle accusait le produit. Elles lisent maintenant la même définition du
+jour que l'application, et tournent la page du mois quand il le faut. Aucune ne
+mesurait un vrai défaut : c'est le pire des rouges, celui qui accuse à tort.
+
+### Plus aucun trait sous les titres, et le texte des données raccourci
+
+*« Souvent sous les titres il y avait un trait comme celui-là, supprime tous les
+traits sous les titres »*, capture de « Sécurité & données » à l'appui.
+
+Il l'avait déjà fait retirer de l'accueil la veille. Le trait vivait en réalité
+dans l'**en-tête partagé**, allumé par défaut : il paraissait donc sur chaque
+écran qui l'emploie. Retiré une fois, il disparaît partout — et le réglage qui
+permettait de le rallumer écran par écran a disparu avec, sans quoi il serait
+revenu par la porte de service.
+
+*« Le texte sous télécharger est beaucoup beaucoup trop long, synthétise-le. »*
+Cinq lignes deviennent deux. **Gardé :** que le fichier s'ouvre sans Atlas — c'est
+ce qui en fait une copie de secours et non un objet captif —, et qu'il porte les
+coordonnées de ses clients, ce qui l'oblige à le ranger et ne se devine pas.
+**Parti :** l'inventaire de ce que le fichier contient, qu'il verra en l'ouvrant,
+et l'explication d'une sauvegarde automatique qui n'existe pas encore — un écran
+n'a pas à expliquer ce qu'il ne fait pas.
+
+Le contrôle des en-têtes couvre désormais la pièce partagée, et il a été vu rouge
+contre le trait remis en place.
+
+
 
 ### Trois rôles, trois sessions — et le refus est au serveur
 
@@ -208,9 +326,76 @@ Corrigé sur les quatre écrans qui envoient : la fiche de chantier, le devis
 parti, la facture et son message tout prêt. Le refus ne s'affiche plus non plus
 en double.
 
-`ARCHITECTURE.md` §177.
+`ARCHITECTURE.md` §185.
 
 ---
+
+### Le calendrier de fin de mois a fait rougir une TROISIÈME suite
+
+Même mal que les deux du matin : le calendrier ouvre sur le mois en cours, et
+passé le délai minimal il ne reste qu'un ou deux jours ouvrés en fin de mois.
+`test-envoi-client-e2e` s'est arrêté sur « pas assez de jours » — sur un
+calendrier parfaitement juste.
+
+Elle appuie maintenant sur « Mois suivant », comme le patron le ferait sans y
+penser, et seulement quand le mois courant est trop court : le reste du temps
+elle continue d'éprouver le cas ordinaire. Une seule fonction porte la règle
+pour les deux contrôles concernés.
+
+**Ce défaut revient chaque mois.** Trois suites l'ont eu le même jour ; le
+prochain qui verra « pas assez de jours » saura où regarder.
+
+
+### L'assistant répond enfin depuis n'importe quel écran
+
+*« Je veux pouvoir faire ça peu importe où je l'ouvre. »* Le panneau était déjà
+sur tous les écrans ; ce sont ses outils qui ne suivaient pas. Cinq d'entre eux
+refusaient dès qu'aucun chantier n'était ouvert — c'est-à-dire partout sauf sur
+une fiche, là où il a déjà l'information sous les yeux.
+
+Ils acceptent maintenant qu'on leur nomme un chantier, et le chantier ouvert
+reste le défaut : l'usage d'avant ne bouge pas. Quand il n'y en a vraiment
+aucun, le refus dit la suite à donner au lieu de renvoyer le patron ouvrir une
+fiche lui-même. Détail : `ARCHITECTURE.md` §185.
+
+
+### L'assistant ouvre une fiche chantier quand on le lui demande
+
+*« Crée-moi une nouvelle fiche chantier du nom de Fernandez »* — il répondait
+qu'il n'était pas en mesure de le faire et donnait trois étapes à suivre à la
+main. C'est désormais la **seule écriture** qu'on lui accorde, et elle est
+étroite : une fiche vide, pour un client, sans prix ni prestation ni envoi. Tout
+le reste passe encore par une proposition qu'il confirme d'un doigt.
+
+Le nom n'est pas inventé : dans Atlas un chantier ne se baptise pas, son
+étiquette se déduit du client (sa règle du 5 août). Et le client existant est
+repris plutôt que dupliqué — il dit « bernard » là où sa fiche porte
+« Mr. Bernard ».
+
+**Un doublon se refuse d'abord** : si ce client a déjà des chantiers, rien n'est
+créé et l'assistant demande. Deux fiches pour un même jardin, ça ne se défait
+plus. Détail : `ARCHITECTURE.md` §184.
+
+
+### L'assistant retrouve un devis à partir d'un NOM, sans qu'on ouvre la fiche
+
+*« Peux-tu me ressortir le premier devis de M. Bernard ? »* — il répondait qu'il
+n'avait *« aucun chantier ouvert »* et renvoyait le patron ouvrir la fiche
+lui-même. Tous ses outils partaient du chantier courant ; ouvert depuis la
+liste, il n'avait aucun chemin entre un nom et un dossier. Il en a désormais un,
+qui cherche dans le nom du client comme dans celui du chantier, avec la règle de
+l'écran — casse, accents et ordre des mots ignorés.
+
+**Et il affirmait une chose fausse :** *« Atlas conserve uniquement le dernier
+devis par chantier »*. Un brouillon se réécrit, mais un devis envoyé est
+conservé et le suivant devient une version 2. Ce n'est pas le modèle qui
+inventait : l'outil lui rendait la dernière version sans jamais dire qu'il en
+existait d'autres. Il annonce maintenant toutes les versions à chaque appel, et
+sait rendre celle qu'on demande — « le premier » étant la version 1.
+
+Éprouvé contre le décor exact de sa capture, un confrère au même nom compris ;
+rejoué contre l'ancien outil, il rougit sur trois cas. Détail :
+`ARCHITECTURE.md` §183.
 
 
 ### Le message : les phrases par défaut, modifiables — les mots en doré verrouillés
@@ -333,7 +518,7 @@ salarié : elle part sans un prix, et un acompte y serait un montant.
 *« Si je décoche le bouton OFF, ils sont censés disparaître ? »* Oui — éprouvé,
 et le contrôle a été vu rouge en débranchant le raccordement exprès. Trois
 captures rendent les trois états en image, parce que ce défaut-là s'est vu à
-l'œil et par aucun test. `ARCHITECTURE.md` §177.
+l'œil et par aucun test. `ARCHITECTURE.md` §185.
 
 ### Un jour à moitié pris le dit : « Reste 1 équipe sur 2 »
 

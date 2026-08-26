@@ -52,15 +52,36 @@ export function jourNumerique(iso: string): string {
   return `${j}/${m}/${a}`;
 }
 
+/** Le fuseau du patron. Ses journées se comptent chez lui, pas à Greenwich. */
+export const FUSEAU_DU_PATRON = "Europe/Paris";
+
 /**
- * Le jour d'un instant, au format « AAAA-MM-JJ » (UTC).
+ * Le jour d'un instant, au format « AAAA-MM-JJ », **à l'heure de son atelier**.
  *
  * Une seule définition pour tout le dépôt : les dates d'émission, d'échéance et
  * de création doivent toutes désigner le même jour, sans quoi une facture
  * pourrait porter une date et le relevé de TVA en compter une autre.
+ *
+ * **ELLE COMPTAIT LES JOURS EN UTC, et il l'a vu** (25 août 2026) : *« ce soir
+ * à 00 h 00 il passe dans terminé ? »*. Non — il passait à **2 h du matin**,
+ * l'été. Entre minuit et deux heures, Atlas croyait qu'on était encore la
+ * veille : un chantier de la journée restait au planning, et une facture faite
+ * en rentrant portait la date d'hier. Deux heures suffisent pour cela, et cette
+ * fenêtre-là est précisément celle où un artisan finit sa journée.
+ *
+ * `Intl` est la seule source qui connaisse les vraies règles du fuseau —
+ * l'heure d'été comprise. Un `+1` ou un `+2` figé se trompe la moitié de
+ * l'année, et l'erreur ne se voit qu'un jour sur trente.
  */
 export function jourIso(instant: Date): string {
-  return instant.toISOString().slice(0, 10);
+  // « en-CA » rend « AAAA-MM-JJ », l'ordre dont on a besoin. Le composer à la
+  // main depuis les parties reviendrait au même au prix de trois lignes.
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: FUSEAU_DU_PATRON,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(instant);
 }
 
 /** Délai légal de rétractation pour une acceptation à distance. */

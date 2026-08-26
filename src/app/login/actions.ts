@@ -246,7 +246,7 @@ export async function connexionAction(
  * serveur n'arrive pas jusqu'à l'artisan — Next.js la remplace en production
  * par un identifiant opaque (`HANDOVER.md`, piège 0 ter). Un refus se rend.
  */
-export async function defiConnexionAction(): Promise<
+export async function defiConnexionAction(origineNavigateur?: string): Promise<
   { ok: true; options: OptionsPubliquesConnexion } | { ok: false }
 > {
   const source = await sourceDuVisiteur(horsProductionReelle());
@@ -256,7 +256,7 @@ export async function defiConnexionAction(): Promise<
     return { ok: false };
   }
 
-  const r = await optionsConnexion();
+  const r = await optionsConnexion(origineNavigateur);
   if (!r.ok) return { ok: false };
   return { ok: true, options: r.options };
 }

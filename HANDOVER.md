@@ -2238,6 +2238,14 @@ rejouer.** J'ai bien failli défaire un changement juste pour cette raison.
 
 ## Ce qui vient d'être terminé
 
+**LE JOUR SE COMPTE CHEZ LUI, PLUS À GREENWICH (25 août).** `jourIso` rendait le
+jour UTC : entre minuit et 2 h du matin, l'été, Atlas croyait qu'on était encore
+la veille. Il l'a trouvé en demandant quand son chantier passerait dans
+Terminés. **Une seule fonction porte la définition du jour** — c'est ce qui a
+permis de tout corriger d'un coup, et ce qu'il faut préserver : ne jamais
+recopier un `toISOString().slice(0, 10)` quelque part. `ARCHITECTURE.md` §182.
+
+
 **L'EN-TÊTE DU DEVIS, DEUX LOTS DE SUITE (25 août).**
 
 1. **Son logo sur l'écran du devis.** Il l'avait posé dans « Devis & factures »
