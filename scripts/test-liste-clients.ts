@@ -20,6 +20,7 @@
 //   4. un chantier supprimé ne pèse plus.
 
 import assert from "node:assert/strict";
+import { jourIso } from "../src/lib/jour";
 import { pool } from "../src/server/db/client";
 import { nettoyerBase } from "./_test-db";
 import { creerEntreprise } from "../src/server/repositories/entreprises";
@@ -93,7 +94,12 @@ async function main() {
     // daté de la veille de l'émission : `noterPaiement` le refusait poliment,
     // le test l'ignorait, et le cas rougissait en accusant le calcul du reste
     // dû — un contrôle qui accuse à tort coûte plus cher que pas de contrôle.
-    const aujourdHui = new Date().toISOString().slice(0, 10);
+    // **Le jour se lit comme l'application le compte** (`jourIso`, à l'heure de
+    // l'atelier), et non en UTC : la facture est émise avec l'un, le règlement
+    // daté avec l'autre, et entre minuit et 2 h du matin les deux diffèrent
+    // d'un jour. Le refus était alors juste — « daté d'avant la facture » — et
+    // le rouge accusait le calcul du reste dû. Une nuit sur douze.
+    const aujourdHui = jourIso(new Date());
     const regle = await noterPaiement(ctx, factureId, { date: aujourdHui, montant: "500.00" });
     assert.ok(regle.ok, `le règlement d'essai a été refusé : ${regle.ok ? "" : regle.raison}`);
 

@@ -465,6 +465,17 @@ périmètre affiché ne suivait pas le rôle coché, si bien qu'on lisait « le
 planning et rien d'autre » sous « Commercial ». Une maquette qui ment sur ce que
 fait un rôle est pire qu'une maquette absente.
 
+### Trois endroits comptaient encore les jours à Greenwich
+
+La correction d'hier soir n'allait pas jusqu'au bout : la **date d'émission d'un
+devis**, le **jour qui nomme un chantier** et une suite qui datait un règlement
+écrivaient encore `toISOString()` — ils passaient à côté de `jourIso` et
+portaient donc la veille après minuit. C'est exactement le défaut qu'il avait
+signalé, resté vivant dans les endroits qu'on n'avait pas regardés.
+
+Un contrôle refuse maintenant qu'un écran recompte les jours pour son compte : la
+définition unique ne vaut que si tout la traverse. `ARCHITECTURE.md` §182.
+
 ### La carte, moins large — et à 4 px, comme les autres plages
 
 *« Une carte mais fais-la moins large. »* C'est fait : elle prend la largeur de
