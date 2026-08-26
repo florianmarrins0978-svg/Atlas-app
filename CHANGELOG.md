@@ -7,6 +7,34 @@ Format : le plus récent en tête.
 
 ---
 
+## 2026-08-26
+
+### Donner un accès : une planche, avant de retoucher l'écran
+
+**Ses trois reproches, capture à l'appui, sur l'écran livré le matin même :**
+l'œil et la double saisie du mot de passe manquaient ; *« pour valider un compte
+c'est pas clair, la case est déjà noire comme la catégorie salarié »* ; *« la
+démarcation entre vous patron et le compte qu'on est en train d'attribuer n'est
+pas bien séparée »*.
+
+**Les trois ont la même racine**, et c'est ce qui rend la correction simple : le
+formulaire du compte NEUF avait été posé dans la liste des comptes EXISTANTS,
+sans rien pour dire où l'un finit et où l'autre commence.
+
+Deux séparations proposées, **et rien n'est codé** (`CLAUDE.md` §3 bis) :
+`appli/donner-un-acces.html` — **A** une carte posée sur la liste, **B** un écran
+à lui seul. L'œil et la double saisie sont recopiés de l'écran qu'il a arrêté le
+14 août, jamais réinventés. Le rôle choisi devient teinté avec un coche : la
+charte le disait déjà — le plein porte ce qu'on FAIT, et le seul bouton plein de
+l'écran redevient celui qui crée le compte.
+
+**Un défaut trouvé en regardant la planche**, avant de la lui donner : le
+périmètre affiché ne suivait pas le rôle coché, si bien qu'on lisait « le
+planning et rien d'autre » sous « Commercial ». Une maquette qui ment sur ce que
+fait un rôle est pire qu'une maquette absente.
+
+---
+
 ## 2026-08-25
 
 ### Trois rôles, trois sessions — et le refus est au serveur
