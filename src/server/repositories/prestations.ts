@@ -9,14 +9,59 @@ export async function listerPrestations(ctx: Ctx, chantierId: string) {
   );
 }
 
-export async function ajouterPrestation(ctx: Ctx, chantierId: string, libelle: string) {
+/**
+ * Ce qu'une prestation peut porter en plus de son nom, depuis le 26 août 2026.
+ *
+ * **Facultatif partout, et c'est la clé de la compatibilité.** Une prestation
+ * créée à la main sur l'écran Informations n'en fournit aucun, et doit
+ * continuer à s'enregistrer exactement comme avant. Ce qui n'est pas donné
+ * reste `NULL` en base — « on ne sait pas », jamais une valeur par défaut.
+ */
+export type StructurePrestation = {
+  quantite?: string | null;
+  unite?: string | null;
+  nature?: string | null;
+  espece?: string | null;
+  methode?: string | null;
+  caracteristiques?: Record<string, number | string> | null;
+  aConfirmer?: boolean | null;
+};
+
+export async function ajouterPrestation(
+  ctx: Ctx,
+  chantierId: string,
+  libelle: string,
+  structure: StructurePrestation = {}
+) {
   return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
     const existantes = await tx.select().from(prestations).where(eq(prestations.chantierId, chantierId));
     const [row] = await tx
       .insert(prestations)
-      .values({ entrepriseId: ctx.entrepriseId, chantierId, libelle, ordre: existantes.length })
+      .values({ entrepriseId: ctx.entrepriseId, chantierId, libelle, ordre: existantes.length, ...structure })
       .returning();
     return row;
+  });
+}
+
+/**
+ * Complète les champs structurés d'une prestation déjà écrite.
+ *
+ * **Elle n'écrase jamais par du vide.** Seules les clés réellement fournies
+ * sont posées : un appelant qui ne connaît que la méthode ne doit pas effacer
+ * la quantité au passage. C'est ce qui permet à deux sources d'alimenter la
+ * même ligne — la dictée pour la mesure, ses réponses à l'arrêt pour la
+ * technique — sans se marcher dessus.
+ */
+export async function completerPrestation(ctx: Ctx, id: string, structure: StructurePrestation) {
+  const aPoser = Object.fromEntries(Object.entries(structure).filter(([, v]) => v !== undefined));
+  if (Object.keys(aPoser).length === 0) return null;
+  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    const [row] = await tx
+      .update(prestations)
+      .set({ ...aPoser, updatedAt: new Date() })
+      .where(eq(prestations.id, id))
+      .returning();
+    return row ?? null;
   });
 }
 

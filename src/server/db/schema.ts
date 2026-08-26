@@ -631,12 +631,34 @@ export const prestations = pgTable(
     entrepriseId: uuid("entreprise_id").notNull(),
     chantierId: uuid("chantier_id").notNull(),
     libelle: text("libelle").notNull().default(""),
+    // --- Ce que la dictée dit vraiment, chacun dans son champ (0068) --------
+    //
+    // Jusqu'au 26 août 2026, tout cela vivait collé dans `libelle` : le modèle
+    // rendait « 800 » et « ml », et on les recollait au nom faute d'endroit où
+    // les poser. Quatre morceaux de code les en ressortaient ensuite à coups
+    // d'expressions régulières.
+    //
+    // **Toutes nullables, `aConfirmer` compris.** NULL dit « on ne sait pas » ;
+    // `false` dirait « on a regardé, il n'y a pas de doute ». Les prestations
+    // d'avant cette date sont dans le premier cas, et rien ne doit prétendre le
+    // contraire.
+    quantite: numeric("quantite", { precision: 10, scale: 2 }),
+    unite: text("unite"),
+    nature: text("nature"),
+    espece: text("espece"),
+    methode: text("methode"),
+    /** Ce qui se mesure et gouverne le prix : `diametreCm`, `hauteurM`, `longueurMl`, `tonnageT`. */
+    caracteristiques: jsonb("caracteristiques").$type<Record<string, number | string>>(),
+    aConfirmer: boolean("a_confirmer"),
     ordre: integer("ordre").notNull().default(0),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (t) => [
     index("prestations_entreprise_chantier_idx").on(t.entrepriseId, t.chantierId),
+    // De quoi désigner une prestation sans pouvoir viser celle d'une autre
+    // société — la clé étrangère de `lignes_prix_prestations` porte les deux.
+    unique("prestations_id_entreprise_uk").on(t.id, t.entrepriseId),
     foreignKey({
       columns: [t.chantierId, t.entrepriseId],
       foreignColumns: [chantiers.id, chantiers.entrepriseId],
@@ -787,6 +809,57 @@ export const lignesPrix = pgTable(
     }).onDelete("cascade"),
   ]
 );
+
+// **Quelles prestations une ligne de devis vend réellement** (migration 0069).
+//
+// Le lien n'existait pas : une ligne et ses prestations ne se connaissaient que
+// par leur TEXTE, les libellés collés par des retours à la ligne. C'est de là
+// que vient la corruption du 26 août 2026 — un montant posé sur une ligne
+// portant deux travaux partait dans la case du premier mot reconnu.
+//
+// **La cardinalité a été inspectée, pas choisie par facilité** (`CLAUDE.md`
+// §3 ; le détail est dans la migration) :
+//
+//   * une ligne porte **1 à N** prestations — sa règle du 7 août, « l'abattage,
+//     le broyage et l'évacuation, c'est sur une ligne ». Une colonne
+//     `prestation_id` sur `lignes_prix` en aurait retenu une et perdu les deux
+//     autres ;
+//   * une prestation appartient à **0 ou 1** ligne — le découpage range chaque
+//     libellé dans un seul groupe ;
+//   * la plupart des lignes n'en portent **aucune** : une ligne à la main, une
+//     ligne dictée dans le devis, une ligne née d'un tarif.
+//
+// L'unicité vient du CODE et non d'une décision du patron : rien ne dit qu'un
+// travail ne pourrait pas se vendre sur deux lignes. On encode ce que
+// l'application fait, et retirer une unicité est une migration d'une ligne —
+// l'inverse ne l'est pas.
+export const lignesPrixPrestations = pgTable(
+  "lignes_prix_prestations",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    entrepriseId: uuid("entreprise_id").notNull(),
+    lignePrixId: uuid("ligne_prix_id").notNull(),
+    prestationId: uuid("prestation_id").notNull(),
+    /** L'ordre des prestations DANS la ligne — celui de la dictée, celui qu'il relit. */
+    ordre: integer("ordre").notNull().default(0),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    index("lignes_prix_prestations_ligne_idx").on(t.entrepriseId, t.lignePrixId, t.ordre),
+    unique("lignes_prix_prestations_une_seule_ligne").on(t.prestationId, t.entrepriseId),
+    foreignKey({
+      columns: [t.lignePrixId, t.entrepriseId],
+      foreignColumns: [lignesPrix.id, lignesPrix.entrepriseId],
+      name: "lignes_prix_prestations_ligne_fk",
+    }).onDelete("cascade"),
+    foreignKey({
+      columns: [t.prestationId, t.entrepriseId],
+      foreignColumns: [prestations.id, prestations.entrepriseId],
+      name: "lignes_prix_prestations_prestation_fk",
+    }).onDelete("cascade"),
+  ]
+);
+
 
 // --- Devis : versionné, instantané immuable après envoi (correction v2 §5, v2.1 §5/6) ---
 

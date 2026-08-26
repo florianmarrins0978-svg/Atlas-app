@@ -283,3 +283,19 @@ export function repartir(
         : ` Le total ne change pas : ${total.toFixed(2)} €.`),
   };
 }
+
+/**
+ * Les travaux qu'une ligne de devis réunit, relus depuis son libellé.
+ *
+ * **Le séparateur est un retour à la ligne, et il est nommé ICI plutôt que
+ * recopié.** C'est sa demande du 8 août — un point-virgule fait une phrase, et
+ * une phrase se lit comme une seule prestation. Trois modules avaient besoin de
+ * refaire ce découpage ; qu'un seul le fasse évite qu'ils divergent le jour où
+ * le séparateur change.
+ */
+export function membresDuLibelle(libelle: string): string[] {
+  return libelle
+    .split("\n")
+    .map((m) => m.trim())
+    .filter(Boolean);
+}

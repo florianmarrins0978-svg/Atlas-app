@@ -9,6 +9,45 @@ Format : le plus récent en tête.
 
 ## 2026-08-26
 
+### Lot B — la prestation a enfin des champs à elle
+
+Le modèle lisait bien « 800 » et « ml » ; la table `prestations` n'avait qu'une
+colonne de contenu, `libelle`, et la mesure y était recollée faute d'endroit où
+la poser. Deux migrations **additives** ouvrent cet endroit : `quantite`,
+`unite`, `nature`, `espece`, `methode`, `caracteristiques`, `a_confirmer`
+(0068), et une table de liaison qui dit enfin quelles prestations une ligne de
+devis vend (0069).
+
+**Le libellé continue de porter « (800 ml) », et ce n'est pas un oubli.** Quatre
+moteurs y relisent les mesures (`mesures-arbre.ts`) ; le leur retirer avant
+qu'ils sachent lire les colonnes ferait perdre à une haie son prix au mètre
+linéaire, sur un devis qui part chez un client. Les deux cohabitent le temps que
+les lecteurs migrent.
+
+**La cardinalité a été inspectée, pas choisie par facilité.** Une colonne
+`lignes_prix.prestation_id` aurait été FAUSSE : une ligne porte 1 à N
+prestations (sa règle du 7 août — abattage, broyage, évacuation ensemble), et
+elle n'en aurait retenu qu'une. D'où la table de liaison, avec une unicité sur
+la prestation qui encode ce que le découpage fait déjà. Le CASCADE porte sur la
+liaison, jamais sur ce qu'elle relie : supprimer une prestation n'emporte pas la
+ligne de devis, et supprimer la ligne n'emporte pas le travail à faire.
+
+**Rien n'est deviné.** Toutes les colonnes sont nullables, `a_confirmer`
+compris : NULL dit « on ne sait pas », `false` dirait « on a regardé ». Et
+`nature`/`espece` restent vides même sur une dictée neuve — le contrat
+d'extraction ne les demande pas au modèle, et les déduire du libellé serait
+recopier le défaut qu'on répare. `methode` et `caracteristiques`, eux, viennent
+d'une source déjà certaine : ses réponses à l'arrêt d'avant-chiffrage.
+
+**Une régression attrapée par un contrôle qui existait déjà**, et qui mérite
+d'être connue : le garde-fou RGPD interroge la BASE et exige que toute table
+portant un `entreprise_id` figure dans l'export de l'entreprise. La table de
+liaison n'y était pas — sans lui, une sauvegarde aurait rendu les lignes et les
+prestations sans dire lesquelles vont ensemble.
+
+Batterie : **250/252**. Les deux suites en échec sont celles des lots suivants,
+laissées rouges exprès — aucune assertion n'a été affaiblie.
+
 ### Lot A — un montant qui ne se laisse plus attribuer au premier mot venu
 
 La corruption mesurée la veille : un prix de 1 500 € posé sur la ligne qui porte

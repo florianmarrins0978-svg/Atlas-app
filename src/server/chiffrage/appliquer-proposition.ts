@@ -1,5 +1,10 @@
 import type { Ctx } from "../repositories/context";
-import { ajouterLignePrix, listerLignesPrix } from "../repositories/lignes-prix";
+import {
+  ajouterLignePrix,
+  listerLignesPrix,
+  lierPrestationsALaLigne,
+  prestationsDuLibelle,
+} from "../repositories/lignes-prix";
 import { getTarif } from "../repositories/tarifs";
 import { preparerPropositionPrix } from "./proposition-prix";
 import { ligneDejaAuDetail } from "../../lib/proposition-au-detail";
@@ -97,6 +102,18 @@ export async function appliquerPropositionPrix(
       continue;
     }
     const ligne = await ajouterLignePrix(ctx, chantierId, proposee.libelle, proposee.montant);
+
+    // **On note quelles prestations cette ligne vend.** Sans ce lien, une ligne
+    // et ses travaux ne se connaissent que par leur texte — et c'est de là que
+    // vient la case d'abattage passée de 800 € à 1 500 € le 26 août 2026.
+    //
+    // Jamais bloquant : un lien qu'on ne sait pas écrire ne doit pas empêcher
+    // un devis d'exister. C'est la règle de l'apprentissage, et elle vaut ici.
+    try {
+      await lierPrestationsALaLigne(ctx, ligne.id, await prestationsDuLibelle(ctx, chantierId, ligne.libelle));
+    } catch {
+      // Volontairement silencieux : voir ci-dessus.
+    }
     // Le détail relu en début de fonction ne connaît pas les lignes qu'on vient
     // d'écrire : sans cet ajout, deux lignes au même libellé passeraient toutes
     // les deux dans la même boucle.

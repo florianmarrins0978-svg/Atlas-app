@@ -14,6 +14,7 @@ import { termesPourConsigne, correctionsRecentes } from "../../repositories/term
 import { construireConsigneMetier } from "../../../lib/consigne-metier";
 import { estTranscriptionSimulee } from "../providers/transcription/dev";
 import type { PropositionExtraction, LigneExtraite } from "../schemas/extraction";
+import { structureDeLaPrestation } from "../../../lib/prestation-structuree";
 
 export type ResultatGeneration =
   | { statut: "genere"; brouillon: Brouillon }
@@ -141,7 +142,15 @@ export async function confirmerBrouillon(ctx: Ctx, chantierId: string): Promise<
     const libelle = libelleAvecQuantite(ligne);
     if (!libelle || prestationsConnues.has(libelle.toLowerCase())) continue;
     prestationsConnues.add(libelle.toLowerCase());
-    prestationsCreees.push(await ajouterPrestation(ctx, chantierId, libelle));
+    // **La structure part EN MÊME TEMPS que le libellé, pas à sa place.**
+    //
+    // Le libellé continue de porter « (800 ml) » — quatre moteurs le relisent
+    // encore pour retrouver une mesure, et le leur retirer aujourd'hui ferait
+    // perdre à une haie son prix au mètre linéaire, sur un devis qui part chez
+    // un client. Les deux cohabitent le temps que les lecteurs migrent.
+    prestationsCreees.push(
+      await ajouterPrestation(ctx, chantierId, libelle, structureDeLaPrestation(ligne))
+    );
   }
   const materielCree = [];
   for (const ligne of contenu.materiel) {

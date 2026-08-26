@@ -3,7 +3,12 @@ import { genererBrouillon, confirmerBrouillon } from "../ai/services/brouillon-s
 import { lancerTranscription } from "../ai/services/transcription-service";
 import { getBrouillon } from "../repositories/brouillons-informations";
 import { marquerInformationsVerifiees, marquerPrixValide } from "../repositories/chantiers";
-import { listerLignesPrix, ajouterLignePrix } from "../repositories/lignes-prix";
+import {
+  listerLignesPrix,
+  ajouterLignePrix,
+  lierPrestationsALaLigne,
+  prestationsDuLibelle,
+} from "../repositories/lignes-prix";
 import { noterPropositionDictee } from "../repositories/termes-metier";
 import { getNoteVocale } from "../repositories/notes-vocales";
 import { getOuCreerDevisBrouillon } from "../repositories/devis";
@@ -11,7 +16,8 @@ import { preparerPropositionPrix, type OriginePrix } from "../chiffrage/proposit
 import { appliquerPropositionPrix } from "../chiffrage/appliquer-proposition";
 import { peutPreparerDevis } from "../../lib/preparation-devis";
 import { listerPrecisions, enregistrerPrecisions, type Precision } from "../repositories/precisions-chantier";
-import { listerPrestations, modifierPrestation } from "../repositories/prestations";
+import { listerPrestations, modifierPrestation, completerPrestation } from "../repositories/prestations";
+import { structureDepuisPrecisions } from "../../lib/prestation-structuree";
 import { libelleEnrichi, questionsAvantChiffrage, type QuestionChiffrage } from "../../lib/questions-chiffrage";
 import { lireGrilles } from "../repositories/grilles-reglables";
 import { lignesVendables } from "../../lib/lignes-vendables";
@@ -278,6 +284,21 @@ async function ecrirePrecisionsSurLesPrestations(ctx: Ctx, chantierId: string): 
     if (enrichi !== prestation.libelle) {
       await modifierPrestation(ctx, prestation.id, enrichi);
     }
+
+    // **Et la même précision entre AUSSI dans ses colonnes, pas seulement dans
+    // le texte.** C'est la seule source sûre de la méthode et des mesures : le
+    // contrat d'extraction ne les demande pas au modèle, mais le patron les a
+    // saisies lui-même à l'arrêt qui vaut de l'argent. On déplace une donnée
+    // certaine, on n'en fabrique aucune.
+    //
+    // Le libellé continue de les porter en toutes lettres — « ⌀ 45 cm » est
+    // relu par `mesures-arbre.ts` pour trouver la case de sa grille, et le lui
+    // retirer avant que ce lecteur sache lire la colonne casserait le chiffrage
+    // en silence.
+    const siennes = precisions.filter(
+      (p) => p.libellePrestation.trim().toLowerCase() === entree[0]
+    );
+    await completerPrestation(ctx, prestation.id, structureDepuisPrecisions(siennes));
   }
 }
 
@@ -381,7 +402,14 @@ async function chiffrerEtPreparer(
     const prestations = await listerPrestations(ctx, chantierId);
     const aEcrire = lignesVendables(prestations.map((p) => p.libelle)).lignes.map((l) => l.libelle);
     for (const libelle of aEcrire) {
-      await ajouterLignePrix(ctx, chantierId, libelle, "0", { quantite: "1", prixUnitaire: "0" });
+      const ligne = await ajouterLignePrix(ctx, chantierId, libelle, "0", { quantite: "1", prixUnitaire: "0" });
+      // Le même lien que sur une ligne chiffrée : ces prestations-là sont bien
+      // vendues par cette ligne, même si son prix reste à poser.
+      try {
+        await lierPrestationsALaLigne(ctx, ligne.id, await prestationsDuLibelle(ctx, chantierId, libelle));
+      } catch {
+        // Jamais bloquant — un devis vaut mieux qu'un lien.
+      }
     }
     if (aEcrire.length > 0) {
       prixImpossible =
