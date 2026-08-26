@@ -441,7 +441,28 @@ export const membresEntreprise = pgTable(
     utilisateurId: uuid("utilisateur_id")
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),
-    role: text("role", { enum: ["proprietaire", "membre"] }).notNull().default("membre"),
+    /**
+     * **Trois rôles depuis la migration 0065**, et `membre` n'existe plus :
+     * il a été repris en `salarie`, le plus fermé des trois. La contrainte qui
+     * les tient vit en BASE, pas seulement ici — cette énumération-ci ne produit
+     * aucun garde-fou côté PostgreSQL.
+     *
+     * Ce que chaque rôle atteint est décidé une seule fois, dans
+     * `src/lib/acces-roles.ts` : ni cet écran-ci ni cette table ne le savent.
+     */
+    role: text("role", { enum: ["proprietaire", "commercial", "salarie"] }).notNull().default("salarie"),
+    /**
+     * Ce que la personne voit du planning — un réglage PAR PERSONNE, jamais par
+     * rôle (sa décision du 13 août 2026). Le défaut est « tout » : restreindre
+     * est un geste.
+     */
+    porteePlanning: text("portee_planning", { enum: ["tout", "ses_equipes"] }).notNull().default("tout"),
+    /**
+     * La file du planning que cette personne tient. **NULL est l'état normal**
+     * pour un patron, un commercial, et un salarié qui voit tout : dans Atlas
+     * une équipe est une file du planning, pas un groupe de personnes.
+     */
+    equipeId: uuid("equipe_id").references(() => equipes.id, { onDelete: "set null" }),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (t) => [unique("membres_entreprise_uk").on(t.entrepriseId, t.utilisateurId)]
@@ -828,6 +849,24 @@ export const devis = pgTable(
      * feuille sous les yeux (`ARCHITECTURE.md` §102).
      */
     validiteJours: integer("validite_jours"),
+    /**
+     * Les cinq autres conditions, RECOPIÉES elles aussi (migration 0064).
+     *
+     * Elles ne parvenaient nulle part avant le 25 août 2026 : six réglages se
+     * saisissaient, un seul atteignait le document. C'est lui qui l'a vu —
+     * *« les autres qui sont en ON doivent-ils être visibles sur le devis ? car
+     * je ne vois rien »*.
+     *
+     * Figées pour la même raison que la validité juste au-dessus : corriger un
+     * réglage ne doit pas réécrire les conditions d'un devis déjà parti. `null`
+     * veut dire « rien ne s'imprime », donc les devis d'avant la 0064 sortent
+     * identiques à eux-mêmes.
+     */
+    acomptePourcent: numeric("acompte_pourcent", { precision: 5, scale: 2 }),
+    delaiPaiementJours: integer("delai_paiement_jours"),
+    moyensPaiement: text("moyens_paiement"),
+    rappelerPenalites: boolean("rappeler_penalites").notNull().default(false),
+    textePied: text("texte_pied"),
     conditionsPaiement: text("conditions_paiement"),
     devise: char("devise", { length: 3 }).notNull().default("EUR"),
 

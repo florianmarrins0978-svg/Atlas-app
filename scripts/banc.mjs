@@ -695,6 +695,66 @@ if (raison) {
     ({ code, sortie } = await jouerEnRetenant("npx", ["next", "build"], { ...process.env, ATLAS_DIST_DIR: DIST }));
   }
 
+  // ─── UNE DÉPENDANCE MANQUANTE SE RÉPARE, ELLE NE S'ATTEND PAS ─────────────
+  //
+  // **Sa plainte du 25 août 2026 : « l'application est en mode lent, et elle
+  // crash ».** Sa fiche donnait la cause au mot près :
+  //
+  //     Error: Cannot find module
+  //     '/workspaces/Atlas-app/node_modules/@swc/helpers/cjs/_interop_require_default.cjs'
+  //
+  // Un paquet absent de ses `node_modules`. La construction tombe, le banc
+  // reste en développement — où chaque écran se compile à l'ouverture —, et le
+  // même paquet manquant fait tomber les écrans à l'exécution. **Une seule
+  // cause, ses deux symptômes.**
+  //
+  // **Le veilleur retentait indéfiniment la MÊME construction.** Trois fois à
+  // dix minutes, puis toutes les demi-heures : contre un fichier absent,
+  // insister ne répare rien. C'est le défaut réel — non pas que la
+  // construction échoue, mais que rien ne tente jamais ce qui la relèverait.
+  //
+  // **C'est la DEUXIÈME fois.** Le 22 août, `Cannot find module
+  // './detect-typo'` dans `node_modules/next` avait éteint son espace toute une
+  // soirée, et il avait fallu qu'on lui fasse taper la commande. Un défaut qui
+  // revient et qu'on répare deux fois à la main est un défaut qu'on n'a pas
+  // réparé.
+  //
+  // **`npm install` et non `npm ci`, à dessein.** `ci` efface `node_modules`
+  // avant de réinstaller — or le serveur de développement TOURNE pendant ce
+  // temps et sert le patron. Lui retirer le sol coûterait sa session pour
+  // réparer une lenteur. `install` complète en place, ce qui suffit à un paquet
+  // absent — le cas que sa fiche montre.
+  //
+  // **Une seule fois.** Si la construction retombe après la réinstallation, on
+  // s'arrête : le témoin d'échec garde les deux sorties, et la fiche de son
+  // espace les publiera. Insister davantage rendrait la boucle infinie qu'on
+  // vient de supprimer.
+  const dependanceManquante =
+    code !== 0 &&
+    /Cannot find module|MODULE_NOT_FOUND/i.test(sortie) &&
+    /node_modules/.test(sortie);
+
+  if (dependanceManquante) {
+    console.log(
+      "\n  Un paquet manque dans node_modules — la construction ne peut pas aboutir.\n" +
+        "  Réinstallation des dépendances, puis nouvelle tentative.\n"
+    );
+    const { code: codeInstall } = await jouerEnRetenant("npm", [
+      "install",
+      "--no-audit",
+      "--no-fund",
+    ]);
+    if (codeInstall === 0) {
+      await delogerConstructionsOrphelines({ dossierDist: DIST, dire: (m) => console.log(m) });
+      ({ code, sortie } = await jouerEnRetenant("npx", ["next", "build"], {
+        ...process.env,
+        ATLAS_DIST_DIR: DIST,
+      }));
+    } else {
+      console.log("\n  La réinstallation a échoué : le banc reste en mode développement.\n");
+    }
+  }
+
   if (code === 0) {
     try {
       mkdirSync(DIST, { recursive: true });

@@ -158,7 +158,7 @@ export default function NotificationsClient({ initial }: { initial: ReglagesRapp
               mange le blanc qui suit une balise en fin de ligne : la capture du
               16 août 2026 montrait « tout seuldès que » et « reste dûqui ». */}
           Le rappel s&apos;éteint <b style={{ color: colors.ink, fontWeight: 500 }}>tout seul</b>{" "}
-          dès que le règlement est enregistré, dans « Terminés › TVA › En attente de paiement ». Un acompte ne
+          dès que le règlement est enregistré, dans « Terminés, TVA, En attente de paiement ». Un acompte ne
           suffit pas : la facture reste rappelée, et c&apos;est le{" "}
           <b style={{ color: colors.ink, fontWeight: 500 }}>reste dû</b>{" "}
           qui s&apos;affiche.

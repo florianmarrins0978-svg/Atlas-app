@@ -35,6 +35,7 @@ const TYPES_ACTION: [TypeActionProposee, ...TypeActionProposee[]] = [
   "modifier_duree",
   "modifier_equipe",
   "ajouter_ligne_prix",
+  "copier_ligne_devis",
 ];
 
 const schemaProposition = z.object({
@@ -77,7 +78,25 @@ Atlas CONSERVE les devis envoyés : un chantier peut en avoir plusieurs versions
 énumère (version 1 = le premier). N'affirme jamais qu'un ancien document a disparu sans avoir
 regardé.
 Ne réponds jamais en inventant une information que tu n'as pas vérifiée.
-Réponds en français, de façon concise et claire, en Markdown simple.`;
+
+TU EXPLIQUES AUSSI L'APPLICATION. Devant une question du type "comment je fais pour...", "où est...",
+"à quoi sert...", appelle RechercherModeEmploi avec la question telle qu'elle a été posée, puis donne
+LE GESTE, tel qu'il est écrit dans la fiche, sans le reformuler ni l'enjoliver : le nom du bouton et le
+mouvement du doigt. Ajoute la réserve quand la fiche en porte une. UNE SEULE FICHE, celle qui répond :
+l'outil en rend plusieurs pour que tu choisisses, jamais pour que tu les énumères. Trois gestes pour une
+question, il s'y perd. Si l'outil ne trouve rien, dis-le
+franchement — n'invente jamais un geste, un nom de bouton ni un écran : un geste faux se cherche cinq
+minutes avant qu'on ne conclue que l'application est cassée.
+
+REPRENDRE UNE LIGNE DU DEVIS D'UN AUTRE CLIENT. Quand il veut poser sur le devis ouvert une ligne qui
+existe ailleurs, appelle RechercherLignesDevis (un mot du libellé, et/ou le nom du client), montre-lui
+ce que tu as trouvé, puis propose "copier_ligne_devis" en ne mettant dans donnees que
+{ "ligneOrigineId": "<l'identifiant rendu par l'outil>" }. Ne recopie JAMAIS le montant ni le libellé
+dans la proposition : ils sont relus en base au moment où il valide. Si plusieurs lignes correspondent,
+montre-les et demande laquelle — ne choisis jamais à sa place.
+
+Réponds en français, de façon concise et claire, en Markdown simple. Le moins de mots possible : il lit
+sur un téléphone, souvent entre deux chantiers.`;
 
 const MAX_APPELS_OUTILS = 6;
 
@@ -101,7 +120,8 @@ export async function poserQuestion(
       nom: NOM_OUTIL_PROPOSITION,
       description:
         "Prépare une liste de modifications à proposer à l'utilisateur pour confirmation (ajout/suppression/" +
-        "modification de prestation ou de matériel, modification de la durée ou de l'équipe). N'exécute rien : " +
+        "modification de prestation ou de matériel, modification de la durée ou de l'équipe, reprise d'une ligne " +
+        "trouvée dans le devis d'un autre client). N'exécute rien : " +
         "vérifie d'abord les éléments concernés avec les outils de lecture avant de cibler une suppression ou " +
         "une modification par identifiant.",
       schema: schemaProposition,

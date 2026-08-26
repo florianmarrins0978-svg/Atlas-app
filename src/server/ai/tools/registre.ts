@@ -16,6 +16,8 @@ import { rechercheSynonymes } from "./rechercher-synonymes";
 import { calculerChiffrage } from "./calculer-chiffrage";
 import { rechercherDocuments } from "./rechercher-documents";
 import { executerWorkflow } from "./executer-workflow";
+import { rechercherModeEmploi } from "./rechercher-mode-emploi";
+import { rechercherLignesDevis } from "./rechercher-lignes-devis";
 
 export const outilsDisponibles: Outil[] = [
   // **En tête, et ce n'est pas un rangement.** C'est le seul outil qui marche
@@ -40,6 +42,8 @@ export const outilsDisponibles: Outil[] = [
   calculerChiffrage,
   rechercherDocuments,
   executerWorkflow,
+  rechercherModeEmploi,
+  rechercherLignesDevis,
 ];
 
 export function getOutil(nom: string): Outil | undefined {

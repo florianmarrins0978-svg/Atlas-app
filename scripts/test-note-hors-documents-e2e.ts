@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { jourDuPatron } from "./_jour-e2e";
 import { devices } from "playwright";
 import type { Page } from "playwright";
 import { lancerNavigateur } from "./e2e-browser";
@@ -128,10 +129,14 @@ async function main() {
   // payée par `test-choisir-la-date-e2e.ts` le 20 août.
   const nom = `Note feuille ${Date.now()}`;
   const { rows } = await pool.query<{ id: string }>(
+    // **Pas `CURRENT_DATE`** : c'est le jour de PostgreSQL, en UTC, et
+    // l'application compte les siens à l'heure de l'atelier (§177). Entre
+    // minuit et 2 h du matin, le chantier « du jour » posé ainsi n'était plus
+    // au planning, et la feuille que cette suite ouvre n'existait pas.
     `INSERT INTO chantiers (entreprise_id, nom, date_planifiee, duree_demi_journees)
-     SELECT id, $1, CURRENT_DATE, 2 FROM entreprises WHERE nom = 'Atelier Démo'
+     SELECT id, $1, $2::date, 2 FROM entreprises WHERE nom = 'Atelier Démo'
      RETURNING id`,
-    [nom]
+    [nom, jourDuPatron()]
   );
   assert.ok(rows[0], "aucune entreprise « Atelier Démo » : la base de démonstration n'est pas montée");
   const chantierId = rows[0].id;

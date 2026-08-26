@@ -85,7 +85,7 @@ export default function ExportMockup() {
             </div>
           ) : (
             <PrimaryButton onClick={() => setConfirmationVisible(true)}>
-              Envoyer vers le système de devis →
+              Envoyer vers le système de devis
             </PrimaryButton>
           )}
         </div>

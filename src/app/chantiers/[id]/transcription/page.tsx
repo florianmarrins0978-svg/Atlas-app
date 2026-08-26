@@ -80,7 +80,7 @@ export default async function TranscriptionPage({ params }: { params: Promise<{ 
               className="mt-4 block text-center text-[14px] font-medium"
               style={{ color: colors.muted }}
             >
-              Ou vérifier les informations une par une →
+              Ou vérifier les informations une par une
             </a>
           </div>
         )}
@@ -91,7 +91,7 @@ export default async function TranscriptionPage({ params }: { params: Promise<{ 
             className="mt-5 block px-6 text-center text-[14px] font-medium"
             style={{ color: colors.rust }}
           >
-            Aller à la note vocale →
+            Aller à la note vocale
           </a>
         )}
       </div>
