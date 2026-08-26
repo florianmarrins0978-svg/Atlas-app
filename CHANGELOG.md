@@ -91,6 +91,19 @@ relu en base dans les deux actions serveur, pas seulement sur le bouton.
 
 Détail : `ARCHITECTURE.md` §180.
 
+### Deux contrôles réparés au passage, étrangers au lot
+
+**Une bombe à retardement de calendrier.** `test-envoi-client-e2e` lisait le
+seul mois AFFICHÉ, qui commence toujours au 1er : passé le 28, il ne reste plus
+assez de jours au-delà du délai minimal, et la suite rougissait sur un produit
+sain — chaque fin de mois. Vue rouge le 26 août, **à l'identique sur `main`**,
+puis désamorcée : la suite tourne la page du mois quand celui-ci est trop court.
+
+**Et un délai trop court** dans `test-lecons-prix-e2e` : trente secondes pour
+une action serveur, ce qui passe seule et tombe sous la batterie entière. Porté
+à soixante, comme les attentes d'écran de la même suite.
+
+
 ### La phrase grise sous « Envoyer la facture » a été retirée
 
 *« Supprime le message en gris : votre messagerie s'ouvre aussitôt. »*

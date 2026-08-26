@@ -9,6 +9,18 @@ sert.
 
 ---
 
+## PIÈGE : UNE SUITE QUI LIT LE MOIS AFFICHÉ ROUGIT EN FIN DE MOIS (26 août 2026)
+
+`test-envoi-client-e2e` a rougi le 26 août — **et à l'identique sur `main`**. Elle
+cherchait deux jours libres au-delà du délai minimal (J+3) dans le mois AFFICHÉ,
+qui commence toujours au 1er. À deux jours de la fin du mois, il n'en restait
+qu'un. Le produit était sain ; c'est le contrôle qui n'avait pas prévu la date du
+jour.
+
+**Devant une suite de calendrier rouge, regarder d'abord le quantième.** Le
+remède est écrit : `joursRetenables` tourne la page du mois quand celui-ci est
+trop court. Toute suite neuve qui compte des jours doit faire de même.
+
 ## L'ASSISTANT RÉCITE UN MODE D'EMPLOI ÉCRIT (25 août 2026)
 
 Avant d'y toucher :
