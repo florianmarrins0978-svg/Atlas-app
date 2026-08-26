@@ -240,6 +240,29 @@ export function blocsDeLaJournee<C>(
  */
 export type QuandChantier = "matin" | "apres" | "journee";
 
+/**
+ * Un jour écrit « 2026-08-31 », et rien d'autre.
+ *
+ * **Écrit ici, avec le reste de la règle du planning.** L'agent conversationnel
+ * peut proposer une date (sa demande du 26 août 2026) : sans ce contrôle, un
+ * « lundi prochain » mal traduit deviendrait une chaîne quelconque écrite en
+ * base, et le chantier disparaîtrait du calendrier sans qu'on sache pourquoi.
+ *
+ * **Il refuse aussi un jour qui n'existe pas** — le 31 février s'écrit
+ * parfaitement sur dix caractères. `Date` le décale au 3 mars ; on compare donc
+ * ce qu'elle rend à ce qu'on lui a donné.
+ */
+export function estUnJourValide(jour: string): boolean {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(jour)) return false;
+  const d = new Date(`${jour}T00:00:00Z`);
+  return !Number.isNaN(d.getTime()) && d.toISOString().slice(0, 10) === jour;
+}
+
+/** « matin », « apres » ou « journee » — les trois seuls moments de pose. */
+export function estUnMomentValide(quand: string): quand is QuandChantier {
+  return quand === "matin" || quand === "apres" || quand === "journee";
+}
+
 export const MOT_QUAND: Record<QuandChantier, string> = {
   matin: "Matin",
   apres: "Après-midi",

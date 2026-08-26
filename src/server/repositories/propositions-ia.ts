@@ -1,4 +1,4 @@
-import { and, eq } from "drizzle-orm";
+import { and, eq, sql } from "drizzle-orm";
 import { withEntreprise } from "../db/with-entreprise";
 import { propositionsIa } from "../db/schema";
 import type { Ctx } from "./context";
@@ -7,7 +7,13 @@ import type { ActionProposee } from "../ai/propositions";
 // Persiste chaque proposition générée par l'assistant, avec une identité
 // serveur stable. Le client ne reverra jamais ces données modifiables — à la
 // confirmation, il ne renvoie que l'id, jamais le contenu (montant compris).
-export async function enregistrerPropositions(ctx: Ctx, chantierId: string, propositions: ActionProposee[]) {
+export async function enregistrerPropositions(
+  ctx: Ctx,
+  // `null` quand le geste ne concerne aucun chantier — créer un chantier,
+  // régler un tarif, corriger un client (migration 0066).
+  chantierId: string | null,
+  propositions: ActionProposee[]
+) {
   if (propositions.length === 0) return [];
   return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
     return tx
@@ -27,7 +33,7 @@ export async function enregistrerPropositions(ctx: Ctx, chantierId: string, prop
 
 export type PropositionIaStockee = {
   id: string;
-  chantierId: string;
+  chantierId: string | null;
   type: string;
   description: string;
   donnees: Record<string, unknown>;
@@ -40,7 +46,7 @@ export type PropositionIaStockee = {
 // répétées (rejeu séquentiel ou concurrent) — c'est le verrou d'idempotence.
 export async function reclamerProposition(
   ctx: Ctx,
-  chantierId: string,
+  chantierId: string | null,
   propositionId: string
 ): Promise<{ statut: "reclamee"; proposition: PropositionIaStockee } | { statut: "introuvable" } | { statut: "deja_appliquee" }> {
   return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
@@ -51,7 +57,11 @@ export async function reclamerProposition(
         and(
           eq(propositionsIa.id, propositionId),
           eq(propositionsIa.entrepriseId, ctx.entrepriseId),
-          eq(propositionsIa.chantierId, chantierId)
+          // **`IS NOT DISTINCT FROM`, jamais `=`.** Une proposition sans
+          // chantier porte NULL, et `NULL = NULL` est faux en SQL : écrit avec
+          // `eq`, la réclamation ne l'aurait JAMAIS retrouvée, et le geste
+          // aurait été « introuvable » sans que rien ne dise pourquoi.
+          sql`${propositionsIa.chantierId} IS NOT DISTINCT FROM ${chantierId}`
         )
       )
       .limit(1);

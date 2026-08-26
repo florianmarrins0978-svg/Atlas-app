@@ -65,6 +65,18 @@ export const fournisseurLLMDev: FournisseurLLM = {
       }
     }
 
+    // --- Les gestes de l'agent (26 août 2026) -------------------------------
+    //
+    // **Une intention, un outil de lecture, puis une proposition.** Le vrai
+    // modèle fait de même : il CHERCHE la cible avant de la viser, parce que
+    // deux clients peuvent s'appeler Martin. Ce fournisseur le reproduit en
+    // surface, pour que la chaîne entière soit éprouvable sans clé.
+    const geste = intentionDeGeste(texteMinuscule);
+    if (geste && proposeDisponible) {
+      const suite = traiterGeste(geste, texte, dernier, outils);
+      if (suite) return suite;
+    }
+
     // --- Reprendre une ligne du devis d'un autre client (25 août 2026) ------
     //
     // Avant la branche des suppressions/modifications, elle aussi : « reprends
@@ -632,4 +644,150 @@ function propositionCopieDeLigne(resultat: unknown): ResultatLLMAvecOutils {
       ],
     },
   };
+}
+
+// --- Les gestes de l'agent (26 août 2026) ---------------------------------
+
+type Geste =
+  | "creer_chantier"
+  | "modifier_client"
+  | "noter_chantier"
+  | "planifier_chantier"
+  | "retirer_du_planning"
+  | "creer_tarif"
+  | "preparer_facture";
+
+/**
+ * Ce que la phrase demande — reconnu par ses verbes, jamais par un mot isolé.
+ *
+ * L'ordre compte : « planifie le chantier de Bernard » porte « chantier », et
+ * serait lu comme une création si l'on regardait ce mot d'abord.
+ */
+function intentionDeGeste(texteBrut: string): Geste | null {
+  // **Sans accents, sinon « crée » ne vaut pas « cree ».** Trouvé à l'essai le
+  // 26 août 2026 : « Crée un chantier pour Madame Lucie » ne déclenchait rien,
+  // parce que la minuscule ne retire pas l'accent. Il tape comme il parle.
+  const texte = texteBrut.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+  if (/\b(planifie|planifier|pose|poser|cale|caler)\b/.test(texte) && /chantier|lundi|mardi|mercredi|jeudi|vendredi|\d{4}-\d{2}-\d{2}/.test(texte))
+    return "planifier_chantier";
+  if (/\b(depose|deplanifie|retire du planning|enleve du planning)\b/.test(texte)) return "retirer_du_planning";
+  if (/\b(facture|facturer)\b/.test(texte) && /\b(prepare|preparer|cree|creer|fais|faire)\b/.test(texte)) return "preparer_facture";
+  if (/\b(cree|creer|ajoute|ajouter|nouveau|nouvelle)\b/.test(texte) && /\btarif\b/.test(texte)) return "creer_tarif";
+  if (/\b(cree|creer|ajoute|ajouter|nouveau|nouvelle)\b/.test(texte) && /\bchantier\b/.test(texte)) return "creer_chantier";
+  if (/\b(note|noter|marque|ecris)\b/.test(texte) && /\bchantier\b/.test(texte)) return "noter_chantier";
+  if (/\b(corrige|change|modifie|mets? a jour)\b/.test(texte) && /\b(client|telephone|numero|mail|e mail)\b/.test(texte))
+    return "modifier_client";
+  return null;
+}
+
+/** L'outil de lecture qui donne la cible de ce geste. */
+const LECTURE_AVANT_GESTE: Record<Geste, string | null> = {
+  creer_chantier: null,
+  creer_tarif: null,
+  modifier_client: "LireClients",
+  noter_chantier: "RechercherChantier",
+  planifier_chantier: "RechercherChantier",
+  retirer_du_planning: "RechercherChantier",
+  preparer_facture: "RechercherChantier",
+};
+
+function traiterGeste(
+  geste: Geste,
+  texte: string,
+  dernier: MessageConversation | undefined,
+  outils: DefinitionOutil[]
+): ResultatLLMAvecOutils | null {
+  const lecture = LECTURE_AVANT_GESTE[geste];
+
+  // 1. Il faut d'abord CHERCHER la cible.
+  if (lecture && (!dernier || dernier.role !== "outil" || dernier.outil !== lecture)) {
+    if (!outils.some((o) => o.nom === lecture)) return null;
+    return { succes: true, type: "appel_outil", outil: lecture, parametres: { motCle: nomCite(texte) } };
+  }
+
+  // 2. La cible est connue (ou le geste n'en demande pas) : on propose.
+  const cible = lecture ? premiereCible(dernier) : null;
+  if (lecture && !cible) {
+    return { succes: true, type: "texte", texte: "Je n'ai trouvé personne ni aucun chantier à ce nom." };
+  }
+
+  switch (geste) {
+    case "creer_chantier": {
+      const nom = apres(texte, /\bchantier\s+(?:pour\s+|chez\s+|de\s+)?/i) ?? "Nouveau chantier";
+      return proposer("creer_chantier", `Créer le chantier : ${nom}`, { nom });
+    }
+    case "creer_tarif": {
+      const prix = texte.match(/(\d+(?:[.,]\d{1,2})?)\s*(?:€|euros?)/i)?.[1]?.replace(",", ".");
+      const intitule = apres(texte, /\btarif\s+(?:pour\s+|de\s+|d'\s*)?/i) ?? "";
+      // **Sans prix, pas de tarif.** Un prix ne s'invente pas (`CLAUDE.md` §4) :
+      // on demande plutôt que d'en poser un plausible.
+      if (!prix || !intitule) {
+        return { succes: true, type: "texte", texte: "Il me faut l'intitulé ET le prix — je n'invente pas un prix." };
+      }
+      return proposer("creer_tarif", `Créer le tarif : ${intitule} — ${prix} €`, { intitule, prix });
+    }
+    case "modifier_client": {
+      const telephone = texte.match(/\b((?:0|\+33)[\d\s.]{8,})/)?.[1]?.replace(/[\s.]/g, "");
+      const email = texte.match(/[\w.+-]+@[\w-]+\.[\w.]+/)?.[0];
+      if (!telephone && !email) {
+        return { succes: true, type: "texte", texte: "Dites-moi le nouveau numéro ou la nouvelle adresse e-mail." };
+      }
+      const quoi = telephone ? `téléphone ${telephone}` : `e-mail ${email}`;
+      return proposer("modifier_client", `Corriger ${cible!.nom} : ${quoi}`, {
+        clientId: cible!.id,
+        ...(telephone ? { telephone } : {}),
+        ...(email ? { email } : {}),
+      });
+    }
+    case "noter_chantier": {
+      const note = apres(texte, /\b(?:note|noter|marque|ecris)\b\s*(?:que\s+|:\s*)?/i);
+      if (!note) return { succes: true, type: "texte", texte: "Que faut-il noter sur ce chantier ?" };
+      return proposer("noter_chantier", `Noter sur ${cible!.nom} : ${note}`, { chantierId: cible!.id, note });
+    }
+    case "planifier_chantier": {
+      const jour = texte.match(/\d{4}-\d{2}-\d{2}/)?.[0];
+      if (!jour) return { succes: true, type: "texte", texte: "Quel jour, exactement ? Donnez-moi une date." };
+      const quand = /matin/i.test(texte) ? "matin" : /apr[eè]s[- ]midi/i.test(texte) ? "apres" : "journee";
+      return proposer("planifier_chantier", `Poser ${cible!.nom} au ${jour}`, { chantierId: cible!.id, jour, quand });
+    }
+    case "retirer_du_planning":
+      return proposer("retirer_du_planning", `Retirer ${cible!.nom} du planning`, { chantierId: cible!.id });
+    case "preparer_facture":
+      return proposer("preparer_facture", `Préparer la facture de ${cible!.nom}`, { chantierId: cible!.id });
+  }
+}
+
+/** Une proposition, jamais une écriture — c'est tout le contrat de l'assistant. */
+function proposer(type: string, description: string, donnees: Record<string, unknown>): ResultatLLMAvecOutils {
+  return {
+    succes: true,
+    type: "appel_outil",
+    outil: NOM_OUTIL_PROPOSITION,
+    parametres: { texteIntroduction: "Voici ce que je propose :", propositions: [{ type, description, donnees }] },
+  };
+}
+
+/** La première cible rendue par la lecture — nom et identifiant. */
+function premiereCible(dernier: MessageConversation | undefined): { id: string; nom: string } | null {
+  if (!dernier || dernier.role !== "outil") return null;
+  const r = dernier.resultat as {
+    chantiers?: { chantierId: string; nom: string }[];
+    clients?: { clientId: string; nom: string }[];
+  };
+  if (r.chantiers?.[0]) return { id: r.chantiers[0].chantierId, nom: r.chantiers[0].nom };
+  if (r.clients?.[0]) return { id: r.clients[0].clientId, nom: r.clients[0].nom };
+  return null;
+}
+
+/** Le nom cité dans la phrase : « le chantier de Bernard » -> « Bernard ». */
+function nomCite(texte: string): string | null {
+  return texte.match(/\b(?:de|chez|pour|du client)\s+([A-ZÉÈÀ][\wÀ-ÿ'-]+)/)?.[1] ?? null;
+}
+
+/** Ce qui suit un motif, nettoyé — sert aux libellés libres. */
+function apres(texte: string, motif: RegExp): string | null {
+  const m = texte.match(motif);
+  if (!m || m.index === undefined) return null;
+  const reste = texte.slice(m.index + m[0].length).trim();
+  return reste ? reste.replace(/\s+/g, " ").slice(0, 120) : null;
 }

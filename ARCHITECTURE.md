@@ -16033,3 +16033,99 @@ une tâche de fond. Rien ne tourne la nuit : l'écran range au moment où on
 l'ouvre. Un chantier « passe » donc dans Terminés dès la première ouverture
 après minuit — il n'y a pas d'instant où quelque chose se déclenche, et c'est ce
 qui rend la règle sûre : aucune tâche à réveiller, rien à rattraper.
+
+---
+
+## 183. L'agent : dix gestes de plus, un périmètre fermé, et toujours son doigt
+
+**Ses deux demandes du 26 août 2026**, dans le même message : *« je veux que ce
+soit un vrai agent IA avec toutes les capacités possibles et imaginables sur
+l'appli »*, et — *« seulement pour l'appli : si on lui demande est-ce que le CGR
+de Mantes est ouvert, il ne doit pas y répondre »*.
+
+**Et sa réponse à la seule question que je lui ai posée** : rien en direct.
+*« Je pense qu'il ne doit pas pouvoir le faire. Très important que ça reste le
+doigt du patron. »* Tout ce qui suit est donc une PROPOSITION, cochée et
+confirmée — sans exception, y compris pour un numéro de téléphone.
+
+### Ce qu'il savait faire, et ce qui manquait
+
+Il lisait beaucoup et n'agissait qu'ici : prestations, matériel, durée, équipe,
+lignes de prix — **et toujours sur le chantier ouvert**, le seul qu'il connût.
+S'ajoutent dix gestes et trois lectures :
+
+| Lire | Faire (proposé) |
+|---|---|
+| `RechercherChantier` — par nom de client ou de chantier | créer un chantier, corriger son adresse, y laisser une note |
+| `LireClients` — avec l'identifiant | corriger une fiche client |
+| `LirePlanning` — le posé ET ce qui attend un jour | poser, déplacer, retirer du planning |
+| (`LireTarifs`, déjà là) | créer et corriger un tarif ; préparer une facture |
+
+**On vise par IDENTIFIANT, jamais par nom** — deux clients peuvent s'appeler
+Martin, et corriger le téléphone du mauvais, c'est un devis qui part chez
+quelqu'un d'autre. D'où les trois lectures : elles existent pour rendre l'id.
+
+**Chaque geste relit sa cible en base au moment d'ÉCRIRE**, pas au moment de
+proposer. Entre la proposition et son doigt, le chantier a pu disparaître ;
+l'écrire quand même serait une erreur silencieuse. Un client effacé, un tarif
+supprimé, un chantier d'une autre société : le même conflit, en français.
+
+### Une proposition peut ne concerner AUCUN chantier (migration 0066)
+
+`propositions_ia.chantier_id` était obligatoire — normal quand tout geste visait
+le chantier ouvert. Créer un chantier n'en a pas encore ; régler un tarif n'en
+concerne aucun. La colonne est donc nullable, et la réclamation compare avec
+**`IS NOT DISTINCT FROM`** : écrite avec `=`, elle n'aurait jamais retrouvé une
+proposition à `NULL` — `NULL = NULL` est faux — et le geste aurait été
+« introuvable » sans que rien ne dise pourquoi.
+
+**Ce que ça n'ouvre pas** : c'est `entreprise_id` que la RLS regarde, et il
+reste obligatoire.
+
+### Le périmètre : DEUX verrous, parce qu'une consigne ne se vérifie pas
+
+La consigne du service dit au modèle de s'en tenir à Atlas. Nécessaire, et
+insuffisant : une consigne se contourne, change avec le fournisseur, et surtout
+**ne s'éprouve pas**. `src/lib/perimetre-assistant.ts` décide donc du refus
+**avant** que le modèle soit appelé — gratuit, identique quel que soit le
+fournisseur, et éprouvable sans clé.
+
+**Il ne refuse que si les DEUX sont vraies** : la question porte une marque
+franche du dehors (cinéma, météo, recette, capitale…) **et** aucun mot d'Atlas.
+C'est là qu'est tout l'art : refuser sur le seul mot « cinéma » ferait taire
+l'assistant devant *« j'ai un chantier au cinéma de Mantes »* — une vraie
+question. Et un garde-fou qui parle à tort s'apprend à être ignoré : on perd
+alors le garde-fou entier.
+
+Les mots ambigus sont dehors de la liste, délibérément : « ouvert », « horaire »
+et surtout **« temps »**, qui dit aussi le temps PASSÉ sur un chantier. La météo
+s'attrape par des tournures entières — « quel temps fait-il » —, jamais par ce
+mot seul.
+
+**Le doute profite à la question** : elle part au modèle, qui a la consigne. Ce
+filtre attrape le cas franc — le sien —, pas la totalité, et c'est assumé.
+
+**La suite éprouve les DEUX moitiés**, et la seconde compte davantage : douze
+questions qui doivent passer, dont *« combien de temps a pris le chantier »*,
+*« la facture de l'hôtel des Voyageurs »*, *« j'ai un chantier au cinéma de
+Mantes »*. Une suite qui n'éprouverait que le refus laisserait passer un filtre
+qui refuse tout — et on ne s'en apercevrait qu'à l'usage.
+
+### Trois gestes ne sont jamais les siens
+
+**Envoyer** un devis ou une facture, **valider** un devis, **émettre** une
+facture. `preparer_facture` s'arrête au brouillon : la facture existe, elle n'est
+pas partie. C'est la règle de toujours (§4 de `CLAUDE.md`), et il l'a
+reconfirmée le 26 août. Un devis parti chez un client ne se rattrape pas.
+
+### Ce que la capture a trouvé, et aucun test
+
+Depuis l'accueil, *« crée un chantier pour Madame Lucie »* répondait **« Aucun
+chantier dans le contexte courant »** — un message technique, et faux : créer un
+chantier ne demande justement aucun chantier ouvert. Le refus datait de l'époque
+où tout geste en visait un ; il survivait à la migration 0066.
+
+**Aucune suite ne le voyait**, parce que toutes posaient leurs questions depuis
+un chantier. C'est la sixième fois dans ce dépôt qu'un défaut sort d'une image et
+d'aucun test. Le même appui rendait d'ailleurs le bouton « Appliquer » inerte
+côté écran — un bouton qui s'enfonce sans rien faire se lit comme une panne.

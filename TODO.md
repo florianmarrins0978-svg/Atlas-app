@@ -9,6 +9,26 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
+## L'agent : ce qu'il ne sait pas encore faire
+
+**FAIT le 26 août 2026** pour l'essentiel (`ARCHITECTURE.md` §183). Ce qui reste
+ouvert, et qu'il faudra sans doute lui demander :
+
+- **Des gestes non couverts** : composer la fiche d'entretien, régler les
+  documents (validité, acompte, mentions), gérer les absences d'équipe, lancer
+  un plan d'arrosage, créer un client SANS chantier, supprimer un chantier ou un
+  tarif. Chacun est une entrée de plus dans `TypeActionProposee` et un `case`
+  dans `appliquerPropositionsAction` — le patron est posé.
+- **Le filtre de périmètre attrape le cas franc, pas la totalité.** Une question
+  du dehors sans marque connue passe au modèle, qui a la consigne. S'il signale
+  une réponse hors-sujet, c'est une marque à ajouter dans `MARQUES_DU_DEHORS` —
+  **jamais** un mot ambigu, et jamais au prix d'un faux positif.
+- **La formulation d'un vrai modèle n'a pas été vue ici** (aucune clé) : la
+  chaîne entière est éprouvée par le fournisseur `dev`. À regarder sur son
+  espace, en lui demandant trois ou quatre gestes.
+
+---
+
 ## ⏳ `test-envoi-client-e2e.ts` — deux cas rouges, et ce n'est PAS une régression
 
 **Le 26 août 2026**, dans la batterie du lot « rôles et accès » :

@@ -9,6 +9,36 @@ Format : le plus récent en tête.
 
 ## 2026-08-26
 
+### L'assistant devient un agent : dix gestes de plus, et un périmètre fermé
+
+*« Je veux que ce soit un vrai agent IA avec toutes les capacités possibles et
+imaginables sur l'appli »*, et *« seulement pour l'appli : si on lui demande
+est-ce que le CGR de Mantes est ouvert, il ne doit pas y répondre »*.
+
+**Il sait désormais préparer** : créer un chantier, corriger une fiche client,
+changer l'adresse d'un chantier, y laisser une note, le poser au planning, l'y
+déplacer, l'en retirer, créer et corriger un tarif, préparer une facture. Et il
+sait enfin CHERCHER une cible — chantier, client, planning —, là où il ne
+connaissait que le chantier ouvert.
+
+**Tout reste une proposition qu'il coche.** Sa réponse du 26 août à la seule
+question posée : *« il ne doit pas pouvoir le faire, très important que ça reste
+le doigt du patron »*. Rien en direct, pas même un numéro de téléphone. Et trois
+gestes ne sont jamais les siens : envoyer, valider, émettre.
+
+**Le hors-sujet est refusé AVANT le modèle**, pas seulement dans sa consigne :
+une consigne se contourne et ne se vérifie pas. Le filtre ne refuse que si la
+question porte une marque franche du dehors ET aucun mot d'Atlas — sans quoi il
+ferait taire l'assistant devant « j'ai un chantier au cinéma de Mantes ». Un
+garde-fou qui parle à tort s'apprend à être ignoré.
+
+**Et un défaut trouvé à l'image, pas par un test :** depuis l'accueil, « crée un
+chantier pour Madame Lucie » répondait « Aucun chantier dans le contexte
+courant » — alors que créer un chantier n'en demande aucun. Le bouton
+« Appliquer » restait inerte par la même occasion.
+
+Détail : `ARCHITECTURE.md` §183.
+
 ### L'en-tête inversé : le titre d'abord, le surtitre doré en dessous
 
 *« Sur plusieurs catégories le titre était en dessous du sous-titre en doré,

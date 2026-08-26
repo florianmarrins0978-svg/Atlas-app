@@ -16,6 +16,9 @@ import { rechercherDocuments } from "./rechercher-documents";
 import { executerWorkflow } from "./executer-workflow";
 import { rechercherModeEmploi } from "./rechercher-mode-emploi";
 import { rechercherLignesDevis } from "./rechercher-lignes-devis";
+import { rechercherChantier } from "./rechercher-chantier";
+import { lireClients } from "./lire-clients";
+import { lirePlanning } from "./lire-planning";
 
 export const outilsDisponibles: Outil[] = [
   lireInformationsChantier,
@@ -35,6 +38,9 @@ export const outilsDisponibles: Outil[] = [
   executerWorkflow,
   rechercherModeEmploi,
   rechercherLignesDevis,
+  rechercherChantier,
+  lireClients,
+  lirePlanning,
 ];
 
 export function getOutil(nom: string): Outil | undefined {

@@ -25,8 +25,10 @@ mkdirSync(dossier, { recursive: true });
 /** Ses questions, dans ses mots — la première est celle de sa demande. */
 const QUESTIONS = [
   "comment je fais pour supprimer un client en attente de rédaction de son devis sur la page chantier",
-  "comment j'envoie le devis au client ?",
-  "comment je change mon mot de passe ?",
+  // Sa question du 26 août 2026, mot pour mot : elle doit se faire refuser.
+  "est-ce que le CGR de Mantes est ouvert ?",
+  // Un geste : il propose, il n'écrit pas.
+  "Crée un chantier pour Madame Lucie",
 ];
 
 async function connecter(page: Page) {
@@ -52,10 +54,17 @@ for (const [index, question] of QUESTIONS.entries()) {
   await page.press('input[placeholder="Votre question…"]', "Enter");
   // Attendre la RÉPONSE, pas un délai : sous une machine chargée, un délai fixe
   // capture « L'assistant réfléchit… » et l'on croit l'écran vide.
+  //
+  // **On compte les bulles, pas les « Sources : ».** Trouvé le 26 août 2026 :
+  // une réponse hors périmètre ne consulte AUCUN outil, donc n'affiche aucune
+  // source — la capture attendait alors un bloc qui ne viendrait jamais, et
+  // rougissait sur le comportement voulu.
   await page.waitForFunction(
-    (n) => document.body.innerText.split("Sources :").length > n,
+    (n) =>
+      document.querySelectorAll('[data-atlas="bulle-assistant"]').length >= n &&
+      !document.body.innerText.includes("réfléchit"),
     index + 1,
-    { timeout: 30_000 }
+    { timeout: 60_000 }
   );
   await page.screenshot({ path: path.join(dossier, `assistant-${index + 1}.png`) });
 }
