@@ -6,6 +6,7 @@ import { mettreAJourEntreprise, getEntreprise } from "@/server/repositories/entr
 import { conditionsDepuisEntreprise, type ConditionsLues } from "@/lib/conditions-documents";
 import { refusDuMessage, MESSAGE_PAR_DEFAUT } from "@/lib/message-client";
 import { normaliserAllure, refusDuLogo, type Allure } from "@/lib/allure-documents";
+import { FORMAT_PAR_DEFAUT } from "@/lib/numero-documents";
 import { lireAllureDevis } from "@/server/ai/services/lire-allure-devis";
 import { enregistrerObjet, supprimerObjet } from "@/server/storage";
 import { verifierLimite, LIMITES } from "@/server/rate-limit";
@@ -116,6 +117,36 @@ export async function majAllureAction(
     return {
       ok: false,
       raison: "Cette allure n'a pas pu être enregistrée. Réessayez dans un instant.",
+    };
+  }
+}
+
+/**
+ * Enregistre le format des numéros de devis et de factures.
+ *
+ * **Elle rend le format RELU en base**, comme `majAllureAction` : une clef
+ * inconnue y est restée celle d'avant, et l'écran doit montrer ce qui
+ * s'imprimera réellement — pas ce qu'on vient de lui demander.
+ *
+ * *Ce que le format change ne se rattrape pas :* les documents déjà émis
+ * gardent leur numéro, et la suite reprend à partir de là.
+ */
+export async function majFormatNumeroAction(
+  clef: string
+): Promise<{ ok: true; format: string } | { ok: false; raison: string }> {
+  const ctx = await getCurrentCtx();
+  try {
+    await exigerProprietaire(ctx, "modifier le format des numéros");
+    await mettreAJourEntreprise(ctx, { formatNumero: clef });
+    const e = await getEntreprise(ctx);
+    return { ok: true, format: e?.formatNumero ?? FORMAT_PAR_DEFAUT };
+  } catch (err) {
+    logger.error("Enregistrement du format de numéro impossible", {
+      erreur: err instanceof Error ? err.message : String(err),
+    });
+    return {
+      ok: false,
+      raison: "Ce format n'a pas pu être enregistré. Réessayez dans un instant.",
     };
   }
 }
