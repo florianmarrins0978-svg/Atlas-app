@@ -9,10 +9,27 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
+## ⏳ `test-periodicite-tva-e2e.ts` dépend de la charge — 26 août 2026
+
+Dans la batterie complète : *« Tous les trimestres n'a pas été enregistré : la
+case n'est pas cochée après rechargement. »* **Rejouée seule dans la minute :
+7/7, verte.** Le décor n'était pas en cause, le code non plus.
+
+Elle rejoint la liste de celles qui lâchent sous charge (§ plus bas). Le point
+commun : elles rechargent une page et relisent un état écrit juste avant.
+
+**Ce qu'il ne faut PAS faire** : allonger les délais au jugé jusqu'à ce que ça
+passe. Ce qui prouverait quelque chose, c'est d'attendre l'écriture plutôt que
+de la supposer — la case cochée, pas un compte à rebours.
+
+---
+
 ## ⏳ `test-fiche-pendant-relance.ts` — rouge sur `main`, et ce n'est PAS une régression
 
 **Mesuré le 26 août 2026, pas supposé :** rejouée sur `main` nu (`git stash`),
-la suite rougit exactement pareil. Son message est honnête — *« le veilleur n'a
+la suite rougit exactement pareil. **Et elle est repassée verte le soir même,
+dans une batterie complète jouée sur une machine reposée** — elle dépend donc
+aussi de la charge, comme celles listées plus bas. Son message est honnête — *« le veilleur n'a
 jamais tenté de relance : le montage ne reproduit pas le cas réel »* : c'est son
 auto-contrôle qui REFUSE de rendre un vert qui ne prouverait rien
 (`CLAUDE.md` §5). Le montage ne déclenche plus la relance dans cet
