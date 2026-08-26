@@ -652,7 +652,7 @@ async function prixDesGrumes(
       calcul: [],
       donneesManquantes: [
         `« ${ligne.libelle} » est sur sa propre ligne, sans prix : posez votre prix à la tonne ` +
-          "dans Réglages → Mes prix, et il servira à tous les devis suivants.",
+          "dans Réglages, Mes prix, et il servira à tous les devis suivants.",
       ],
     };
   }
@@ -693,7 +693,7 @@ async function prixDeLaHaie(
       calcul: [],
       donneesManquantes: [
         `« ${ligne.libelle} » est sur sa propre ligne, sans prix : posez votre prix au mètre linéaire ` +
-          "dans Réglages → Mes prix, et il servira à tous les devis suivants.",
+          "dans Réglages, Mes prix, et il servira à tous les devis suivants.",
       ],
     };
   }

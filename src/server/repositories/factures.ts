@@ -1,7 +1,8 @@
 import { and, asc, eq, isNotNull, isNull, or, sql } from "drizzle-orm";
 import Decimal from "decimal.js";
 import { withEntreprise } from "../db/with-entreprise";
-import { allureDesDocuments } from "./entreprises";
+import { allureDesDocuments, formatNumeroDe } from "./entreprises";
+import { ecrireNumero, repartChaqueAnnee } from "@/lib/numero-documents";
 import type { DbOrTx } from "../db/client";
 import {
   chantiers,
@@ -16,6 +17,8 @@ import type { Ctx } from "./context";
 import { genererPdfFacture, type FacturePdfData } from "../pdf/facture-pdf";
 import { enregistrerObjet } from "../storage";
 import { jourIso } from "../../lib/jour";
+import { echeanceFacture } from "../../lib/rappels";
+import { validerEcheance } from "../../lib/echeance-facture";
 import { totauxAvecReduction } from "../../lib/reduction-devis";
 import { ongletDepuisJalons } from "../../lib/onglet-chantier";
 import {
@@ -40,15 +43,35 @@ const DELAI_PAIEMENT_JOURS = 30;
 // Numérotation atomique, calquée sur celle des devis : le verrou de ligne posé
 // par cet UPDATE sérialise les créations concurrentes d'une même entreprise.
 // `prochain_numero_facture` est le PROCHAIN numéro libre, pas le dernier pris.
+//
+// **LE MILLÉSIME N'EST PLUS ÉCRIT EN DUR — correctif du 26 août 2026**, et la
+// remise à 1 du 1ᵉʳ janvier se joue DANS l'UPDATE : voir le commentaire jumeau
+// de `attribuerNumeroDevis`, qui porte le pourquoi en entier.
+//
+// **Les deux suites restent distinctes**, et c'est la règle du dessus : mêler
+// devis et factures rendrait illisible la numérotation continue qu'attend un
+// contrôle. D'où deux colonnes de compteur ET deux colonnes d'année — un devis
+// peut partir en décembre et sa facture en janvier.
 export async function attribuerNumeroFacture(tx: DbOrTx, entrepriseId: string): Promise<string> {
+  const maintenant = new Date();
+  const annee = maintenant.getFullYear();
+  const mois = maintenant.getMonth() + 1;
+
+  const format = await formatNumeroDe(tx, entrepriseId);
+  const remise = repartChaqueAnnee(format);
+
   const result: unknown = await tx.execute(sql`
     UPDATE entreprise_compteurs
-    SET prochain_numero_facture = prochain_numero_facture + 1
+    SET prochain_numero_facture = CASE
+          WHEN ${remise} AND annee_facture IS DISTINCT FROM ${annee} THEN 2
+          ELSE prochain_numero_facture + 1
+        END,
+        annee_facture = ${annee}
     WHERE entreprise_id = ${entrepriseId}
     RETURNING prochain_numero_facture - 1 AS numero
   `);
   const numero = (result as { rows: { numero: number }[] }).rows[0].numero;
-  return `F2026-${String(numero).padStart(4, "0")}`;
+  return ecrireNumero(format, "facture", { annee, mois, numero });
 }
 
 export class FinChantierImpossibleError extends Error {
@@ -107,15 +130,21 @@ export async function terminerChantier(ctx: Ctx, chantierId: string, maintenant:
 
     // Le régime de TVA se lit MAINTENANT, pour être figé dans la facture — une
     // pièce comptable garde ce qu'elle portait le jour de son émission
-    // (migration 0039).
+    // (migration 0039). Le délai de paiement se lit du même coup : c'est lui qui
+    // PROPOSE l'échéance par défaut, plutôt qu'un « 30 » écrit en dur qui
+    // contredisait la mention « Paiement à X jours » qu'il avait réglée.
     const [entrepriseCourante] = await tx
-      .select({ regimeTva: entreprises.regimeTva })
+      .select({ regimeTva: entreprises.regimeTva, delaiPaiementJours: entreprises.delaiPaiementJours })
       .from(entreprises)
       .where(eq(entreprises.id, ctx.entrepriseId))
       .limit(1);
 
     const numeroCommercial = await attribuerNumeroFacture(tx, ctx.entrepriseId);
-    const echeance = new Date(maintenant.getTime() + DELAI_PAIEMENT_JOURS * 86_400_000);
+    // Son délai réglé quand il en a posé un (0 = comptant), 30 jours à défaut.
+    const echeance = echeanceFacture(
+      maintenant,
+      entrepriseCourante?.delaiPaiementJours ?? DELAI_PAIEMENT_JOURS
+    );
 
     const [facture] = await tx
       .insert(factures)
@@ -203,6 +232,44 @@ export async function getFacturePourChantier(ctx: Ctx, chantierId: string) {
       .where(eq(lignesFacture.factureId, facture.id))
       .orderBy(asc(lignesFacture.ordre));
     return { facture, lignes };
+  });
+}
+
+/**
+ * Corrige l'échéance d'une facture ENCORE EN BROUILLON — sa demande du 25 août.
+ *
+ * **Le refus se rend en valeur, jamais en exception** (`AGENTS.md`) : le message
+ * d'une exception d'action serveur n'arrive pas jusqu'au patron.
+ *
+ * **Une facture ARRÊTÉE ne bouge plus.** Une fois émise, elle est partie chez le
+ * client et inscrite au relevé : changer sa date la ferait mentir. On refuse, et
+ * l'écran ne montre le champ que tant qu'elle est brouillon — la vérification
+ * ici est le vrai garde-fou, l'écran n'est qu'une politesse.
+ *
+ * **Elle rend la date RELUE en base**, jamais la saisie : une valeur hors bornes
+ * est retombée, et l'écran doit afficher ce qui s'imprimera.
+ */
+export async function majEcheanceFacture(
+  ctx: Ctx,
+  factureId: string,
+  dateEcheanceIso: string
+): Promise<{ ok: true; dateEcheance: string } | { ok: false; raison: string }> {
+  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    const [f] = await tx
+      .select({ dateEmission: factures.dateEmission, statut: factures.statut })
+      .from(factures)
+      .where(eq(factures.id, factureId))
+      .limit(1);
+    // `withEntreprise` borne déjà à son entreprise : une facture d'à côté n'est
+    // pas « refusée », elle n'existe tout simplement pas pour cette requête.
+    if (!f) return { ok: false, raison: "Cette facture est introuvable." };
+    if (f.statut !== "brouillon") {
+      return { ok: false, raison: "La facture est déjà arrêtée : son échéance ne change plus." };
+    }
+    const v = validerEcheance(f.dateEmission, dateEcheanceIso);
+    if (!v.ok) return v;
+    await tx.update(factures).set({ dateEcheance: v.iso }).where(eq(factures.id, factureId));
+    return { ok: true, dateEcheance: v.iso };
   });
 }
 

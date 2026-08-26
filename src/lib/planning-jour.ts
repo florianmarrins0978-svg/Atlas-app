@@ -240,6 +240,29 @@ export function blocsDeLaJournee<C>(
  */
 export type QuandChantier = "matin" | "apres" | "journee";
 
+/**
+ * Un jour écrit « 2026-08-31 », et rien d'autre.
+ *
+ * **Écrit ici, avec le reste de la règle du planning.** L'agent conversationnel
+ * peut proposer une date (sa demande du 26 août 2026) : sans ce contrôle, un
+ * « lundi prochain » mal traduit deviendrait une chaîne quelconque écrite en
+ * base, et le chantier disparaîtrait du calendrier sans qu'on sache pourquoi.
+ *
+ * **Il refuse aussi un jour qui n'existe pas** — le 31 février s'écrit
+ * parfaitement sur dix caractères. `Date` le décale au 3 mars ; on compare donc
+ * ce qu'elle rend à ce qu'on lui a donné.
+ */
+export function estUnJourValide(jour: string): boolean {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(jour)) return false;
+  const d = new Date(`${jour}T00:00:00Z`);
+  return !Number.isNaN(d.getTime()) && d.toISOString().slice(0, 10) === jour;
+}
+
+/** « matin », « apres » ou « journee » — les trois seuls moments de pose. */
+export function estUnMomentValide(quand: string): quand is QuandChantier {
+  return quand === "matin" || quand === "apres" || quand === "journee";
+}
+
 export const MOT_QUAND: Record<QuandChantier, string> = {
   matin: "Matin",
   apres: "Après-midi",
@@ -334,4 +357,59 @@ export function quandDuChantier(c: {
   // « matin » ou « après-midi », et la pastille tombe juste.
   if (duree === 2) return "journee";
   return c.creneauDebut === "apres_midi" ? "apres" : "matin";
+}
+
+/**
+ * CE QUI RESTE D'ÉQUIPES SUR UN JOUR QU'IL S'APPRÊTE À PROPOSER.
+ *
+ * ───────────────────────────────────────────────────────────────────────────
+ * **Sa colère du 22 août 2026 :** *« je peux proposer le 24 alors qu'un client a
+ * validé le 24 — corrige-moi ça ! »* Le défaut de code a été réparé le jour
+ * même ; ce qui restait n'en était pas un : **avec deux équipes, un jour où une
+ * seule est prise reste proposable**, et c'est voulu. Mais aucun écran ne le
+ * disait, et rien ne distinguait un jour vide d'un jour à moitié pris.
+ *
+ * **Sa réponse du 25 août : B**, avec une réserve — *« par contre "1 chantier
+ * sur 2" on ne comprend pas très bien, comment on peut faire pour comprendre
+ * mieux ? »*
+ *
+ * **Et il a raison.** « 1 chantier sur 2 équipes » compte ce qui est PRIS, alors
+ * que ce qu'il décide dépend de ce qui RESTE : il est en train de proposer une
+ * date, la question est « puis-je encore envoyer quelqu'un ce jour-là ». D'où
+ * « Reste 1 équipe sur 2 » — même information, tournée du côté du geste.
+ *
+ * **On retient le PIRE des deux demi-journées.** Un jour dont le matin est plein
+ * et l'après-midi libre n'a pas « une équipe et demie » de libre : il a un
+ * moment où il n'y a personne, et c'est celui-là qui contraint. Faire la moyenne
+ * annoncerait de la place là où il n'y en a pas — l'erreur exacte qu'il a
+ * signalée, sous une autre forme.
+ *
+ * **Rien ne s'écrit quand tout est libre.** Un avertissement qui parle à tort
+ * s'apprend à être ignoré, et l'on perd le garde-fou sans s'en apercevoir
+ * (`CLAUDE.md` §4 ter). Rien non plus quand il n'a qu'une équipe : « Reste
+ * 0 équipe sur 1 » n'apprend rien à qui n'a personne d'autre à envoyer, et le
+ * serveur refuse déjà le jour.
+ * ───────────────────────────────────────────────────────────────────────────
+ */
+export function equipesLibresCeJour(
+  chargeMatin: number,
+  chargeApresMidi: number,
+  nombreEquipes: number
+): number {
+  const equipes = Math.max(1, Math.trunc(nombreEquipes));
+  // La charge est une part d'équipes ; on la ramène en équipes entières. On
+  // ARRONDIT AU SUPÉRIEUR le nombre de prises — se tromper vers « il reste
+  // moins » est le sens sûr : annoncer une équipe libre qui ne l'est pas fait
+  // proposer un jour au client, et c'est lui qui rappelle pour décommander.
+  const prises = Math.ceil(Math.max(chargeMatin, chargeApresMidi) * equipes - 1e-9);
+  return Math.max(0, equipes - Math.min(equipes, prises));
+}
+
+/** « Reste 1 équipe sur 2 » — ou rien du tout, quand il n'y a rien à signaler. */
+export function ditCeQuiResteCeJour(libres: number, nombreEquipes: number): string | null {
+  const equipes = Math.max(1, Math.trunc(nombreEquipes));
+  if (equipes < 2) return null;
+  if (libres >= equipes) return null;
+  if (libres <= 0) return `Plus d'équipe libre sur ${equipes}`;
+  return `Reste ${libres} équipe${libres > 1 ? "s" : ""} sur ${equipes}`;
 }

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getCurrentCtx } from "@/server/session-ctx";
+import { exigerOuverture } from "@/server/garde-route";
 import { chargerFicheChantierPourPdf } from "@/server/repositories/fiche-chantier-pdf";
 import { genererPdfFicheChantier } from "@/server/pdf/fiche-chantier-pdf";
 
@@ -30,6 +31,10 @@ export async function GET(
   const { chantierId: id } = await params;
   const ctx = await getCurrentCtx();
 
+  // Le rôle referme ce que la barre du bas ne montre plus : une adresse d'API
+  // se tape, et une page retirée du sommaire répondait quand même.
+  const refus = await exigerOuverture(ctx);
+  if (refus) return refus;
   const fiche = await chargerFicheChantierPourPdf(ctx, id);
   // Chantier inexistant, supprimé, ou appartenant à une autre entreprise : les
   // trois se répondent de la même façon. Distinguer « il existe mais pas chez

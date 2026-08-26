@@ -189,12 +189,15 @@ async function main() {
   });
 
   /**
-   * Retenir un jour au calendrier — le geste complet depuis la planche 91.
+   * Retenir un jour au calendrier — un seul geste depuis le 25 août 2026.
    *
-   * **Toucher une case ne retient plus rien** : elle OUVRE la fiche du jour,
-   * pour qu'il voie ce qui s'y trouve avant de décider. C'est « Proposer ce
-   * jour » qui retient. Écrit une fois ici : deux copies de ce geste
-   * finiraient par diverger (`CLAUDE.md` §3).
+   * *« Je dois pouvoir sélectionner les jours juste en les touchant, pas besoin
+   * de cliquer sur proposer. »* Toucher la case OUVRE la fiche — il voit qui
+   * est déjà là — et engage la date du même doigt. Écrit une fois ici : deux
+   * copies de ce geste finiraient par diverger (`CLAUDE.md` §3).
+   *
+   * **On n'appuie plus une seconde fois pour refermer** : ce second appui
+   * retirerait la date qu'on vient de poser.
    */
   async function retenirAuCalendrier(page: Page, jour: string) {
     await page.locator(`[data-jour="${jour}"]`).click();
@@ -202,13 +205,53 @@ async function main() {
       .locator("text=Vérification de votre planning…")
       .waitFor({ state: "hidden", timeout: 20_000 })
       .catch(() => undefined);
-    const bouton = page.locator('[data-atlas="retenir-le-jour"]');
-    await bouton.waitFor({ state: "visible", timeout: 20_000 });
-    await bouton.click();
-    // On referme la fiche : la suivante s'ouvrira sur un écran propre.
-    await page.locator(`[data-jour="${jour}"]`).click();
-    await page.waitForTimeout(250);
+    // La case se peint quand le serveur a dit oui : l'attendre vaut mieux qu'un
+    // délai, et rougir ici désigne le bon coupable — le jour a été refusé.
+    await page
+      .locator(`[data-jour="${jour}"][data-etat="retenu"]`)
+      .waitFor({ state: "visible", timeout: 20_000 });
+    await page.waitForTimeout(150);
   }
+
+  /**
+   * Les jours qu'on peut RETENIR — au besoin en tournant la page du mois.
+   *
+   * **Une bombe à retardement, désamorcée le 26 août 2026.** Les deux contrôles
+   * ci-dessous lisaient le seul mois affiché, qui commence toujours au 1er :
+   * passé le 28, les jours restants au-delà du délai minimal (J+3) ne sont plus
+   * assez nombreux, et la suite rougissait sur un produit parfaitement sain —
+   * chaque fin de mois, et sur `main` comme ailleurs. Elle a été vue rouge ici
+   * le 26 août, à deux jours de la fin du mois.
+   *
+   * Le calendrier sait tourner la page ; la suite doit savoir le faire aussi.
+   * Une seule fois suffit : un mois entier porte toujours assez de jours.
+   */
+  /**
+   * **DEUX SESSIONS ONT RÉSOLU LE MÊME DÉFAUT LE MÊME JOUR**, et la fusion du
+   * 26 août 2026 a dû choisir.
+   *
+   * Ce fichier portait `joursRetenables`, écrite ici ; la branche du lot 3
+   * portait `joursAProposer`, dans `scripts/_calendrier-e2e.ts`. Les deux
+   * tournent la page du mois quand celui-ci est trop entamé. **Les garder
+   * toutes les deux aurait été la duplication elle-même** — celle que
+   * `CLAUDE.md` §3 interdit, et qui finit toujours par diverger.
+   *
+   * Ce qui a été retenu, et pourquoi :
+   *
+   * | | ici | pièce commune |
+   * |---|---|---|
+   * | portée | une seule suite | **deux suites** |
+   * | plancher | `+3` écrit en dur | **`DELAI_MINIMAL_JOURS`**, qui suivra le jour où il changera |
+   * | mois consultés | un de plus | jusqu'à trois |
+   *
+   * **Le nom d'ici SURVIT en délégation** : trois appels le nomment dans ce
+   * fichier, et les renommer aurait mêlé une réécriture à une fusion. Ce qui
+   * disparaît, c'est la seconde implémentation — jamais un point d'appel.
+   */
+  async function joursRetenables(page: Page, combien: number): Promise<string[]> {
+    return joursAProposer(page, combien);
+  }
+
 
   await test("le patron ne propose jamais plus de deux dates", async () => {
     const url = await creerChantierFacturable(page, "deuxmax");
@@ -225,13 +268,13 @@ async function main() {
     // Une date est déjà retenue à l'ouverture : on en retient deux de plus, et
     // la troisième doit chasser la première — jamais trois.
     //
-    // **La recherche des jours TOURNE LA PAGE DU MOIS si besoin** (26 août
-    // 2026, `scripts/_calendrier-e2e.ts`). Elle ne relâche rien : la règle
-    // éprouvée plus bas — jamais plus de deux dates — est intacte. Ce qui a
-    // changé est en amont, et c'est de la matière à mesurer : le mois affiché
-    // s'ouvre au 1er, et en fin de mois il ne restait parfois qu'un seul jour
-    // ouvrable au-delà du délai minimal. La suite s'arrêtait là, sur un écran
-    // parfaitement juste — 57 jours de l'année, mesurés.
+    // **La recherche des jours TOURNE LA PAGE DU MOIS si besoin**
+    // (`scripts/_calendrier-e2e.ts`). Elle ne relâche rien : la règle éprouvée
+    // plus bas — jamais plus de deux dates — est intacte. Ce qui a changé est en
+    // amont, et c'est de la matière à mesurer : le mois affiché s'ouvre au 1er,
+    // et en fin de mois il ne restait parfois qu'un seul jour ouvrable au-delà
+    // du délai minimal. La suite s'arrêtait là, sur un écran parfaitement juste
+    // — 57 jours de l'année, mesurés.
     const aRetenir = await joursAProposer(page, 2);
     for (const jour of aRetenir.slice(0, 2)) await retenirAuCalendrier(page, jour);
 
@@ -260,15 +303,7 @@ async function main() {
 
     // Deux dates : c'est le cas qui laisse le client choisir. Prise au
     // calendrier, la liste des six ayant disparu le 23 août 2026.
-    const plancherCycle = new Date();
-    plancherCycle.setDate(plancherCycle.getDate() + 3);
-    const depuisCycle = plancherCycle.toISOString().slice(0, 10);
-    const offerts = (
-      await page
-        .locator('[data-jour][data-etat="regardable"]')
-        .evaluateAll((els) => els.map((e) => e.getAttribute("data-jour")!).filter(Boolean))
-    ).filter((j) => j >= depuisCycle);
-    assert.ok(offerts.length >= 1, "aucun jour acceptable au calendrier");
+    const offerts = await joursRetenables(page, 1);
     await retenirAuCalendrier(page, offerts[0]);
     await page.getByRole("button", { name: "Envoyer le devis" }).click();
     await page.waitForURL(/localhost:3000\/$/, { timeout: 15000 }); // L'envoi ramène à L'ACCUEIL depuis le 21 août 2026 : c'est lui, le signal.

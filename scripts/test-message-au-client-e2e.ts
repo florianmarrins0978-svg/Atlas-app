@@ -16,6 +16,7 @@
 // Usage : npm run test:e2e -- --seulement message-au-client
 import assert from "node:assert/strict";
 import { Pool } from "pg";
+import type { Page } from "playwright";
 import { lancerNavigateur } from "./e2e-browser";
 import { creerPuisFiche } from "./_creer-chantier-e2e";
 
@@ -71,6 +72,22 @@ const messageEnBase = async () =>
     `SELECT message_client FROM entreprises ORDER BY created_at LIMIT 1`
   )).rows[0]?.message_client ?? null;
 
+/**
+ * Écrit dans le cadre du message — qui est un `contenteditable`, pas un
+ * `<textarea>` (`EditeurMessage`, 25 août 2026). On pose le texte et on déclenche
+ * l'événement `input` que l'éditeur écoute pour reconstruire le modèle : c'est le
+ * chemin réel de la saisie, celui qui finit en base.
+ */
+async function ecrireMessage(p: Page, texte: string) {
+  await p.evaluate((t) => {
+    const el = document.querySelector('[data-atlas="message-client"]');
+    if (!el) throw new Error("le cadre du message est introuvable");
+    el.textContent = t;
+    el.dispatchEvent(new InputEvent("input", { bubbles: true }));
+  }, texte);
+  await p.waitForTimeout(150);
+}
+
 async function main() {
   const navigateur = await lancerNavigateur();
   const contexte = await navigateur.newContext();
@@ -103,22 +120,26 @@ async function main() {
     await page.waitForSelector('[data-atlas="message-client"]', { timeout: 30_000 });
   });
 
-  await cas("les quatre pastilles sont là, et « le document » avec elles", async () => {
-    // Sans `[document]`, la « façon 1 » n'existe pas : c'est elle qui met la
-    // bonne phrase sur chacun des trois envois.
+  await cas("les pastilles à poser à la main ont disparu — « un simple texte » (25 août)", async () => {
+    // **Sa demande du 25 août 2026 : « un simple texte ».** Plus de pastilles à
+    // POSER — ce qui s'adapte se MONTRE (les deux aperçus en doré), il ne se
+    // place plus au doigt. On fixe le retrait pour qu'un futur lot ne les
+    // ramène pas de bonne foi (`CLAUDE.md` §5 bis).
     for (const mot of ["client", "document", "lien", "entreprise"]) {
       assert.equal(
         await page.locator(`[data-atlas="pastille-${mot}"]`).count(),
-        1,
-        `la pastille « ${mot} » manque`
+        0,
+        `la pastille « ${mot} » est revenue : il avait demandé « un simple texte »`
       );
     }
+    // Les deux aperçus, eux, sont là — c'est par eux qu'il voit ce qui bouge.
+    assert.equal(await page.locator('[data-atlas="apercu-devis"]').count(), 1, "l'aperçu du devis manque");
+    assert.equal(await page.locator('[data-atlas="apercu-facture"]').count(), 1, "l'aperçu de la facture manque");
   });
 
   // ── 2. LE LIEN EST OBLIGATOIRE — et c'est un REFUS, pas un avertissement
   await cas("sans le lien, l'écran refuse et le bouton s'éteint", async () => {
-    await page.fill('[data-atlas="message-client"]', "Bonjour [client], voici [document]. [entreprise]");
-    await page.waitForTimeout(200);
+    await ecrireMessage(page, "Bonjour [client], voici [document]. [entreprise]");
     const refus = await page.locator('[data-atlas="message-refus"]').innerText();
     assert.ok(/obligatoire/i.test(refus), `le refus ne dit pas que le lien est obligatoire : « ${refus} »`);
     // **Le bouton s'éteint AVEC le message.** Un bouton resté allumé s'appuie,
@@ -138,8 +159,7 @@ async function main() {
 
   // ── 3. SON MESSAGE S'ENREGISTRE
   await cas("son message s'écrit et s'enregistre", async () => {
-    await page.fill('[data-atlas="message-client"]', SIEN);
-    await page.waitForTimeout(200);
+    await ecrireMessage(page, SIEN);
     assert.equal(
       await page.locator('[data-atlas="message-refus"]').count(),
       0,
@@ -150,26 +170,24 @@ async function main() {
     assert.equal(enBase, SIEN, "le message n'est pas arrivé en base");
   });
 
-  await cas("l'aperçu montre les TROIS documents, et chacun dit le sien", async () => {
-    const lire = async (onglet: string) => {
-      await page.locator(`[data-atlas="apercu-${onglet}"]`).click();
-      await page.waitForTimeout(150);
-      return page.locator('[data-atlas="message-apercu"]').innerText();
-    };
-    const devis = await lire("devis");
-    const facture = await lire("facture");
-    const rapport = await lire("entretien");
+  await cas("les deux aperçus, côte à côte, disent chacun le sien", async () => {
+    // **Plus de bascule : les deux envois se voient ENSEMBLE** (sa maquette
+    // `message-au-client-simple.html`). Le mot change tout seul — c'est ce que
+    // la « façon 2 » lui coûtait : une facture qui parle d'un devis, l'échéance
+    // perdue. Le compte rendu, lui, n'est pas prévisualisé ici — sa maquette ne
+    // montre que devis et facture ; son adaptation reste tenue par la suite pure
+    // `test-message-client`.
+    const devis = await page.locator('[data-atlas="apercu-devis"]').innerText();
+    const facture = await page.locator('[data-atlas="apercu-facture"]').innerText();
 
-    // Le cadre est le sien sur les trois — c'est « un message pour tous ».
-    for (const [quoi, corps] of [["devis", devis], ["facture", facture], ["rapport", rapport]]) {
-      assert.ok(corps.startsWith("Salut "), `l'aperçu du ${quoi} ne porte pas son message : ${corps.slice(0, 40)}`);
-    }
-    // Le milieu, lui, ne l'est pas — et c'est ce que la « façon 2 » lui coûtait.
+    // Le cadre est le sien sur les deux — c'est « un message pour tous ».
+    assert.ok(devis.includes("Salut "), `l'aperçu du devis ne porte pas son message : ${devis.slice(0, 60)}`);
+    assert.ok(facture.includes("Salut "), `l'aperçu de la facture ne porte pas son message : ${facture.slice(0, 60)}`);
+    // Le milieu, lui, s'adapte.
     assert.match(devis, /votre devis/i, "l'aperçu du devis ne se nomme pas");
     assert.match(facture, /votre facture/i, "l'aperçu de la facture ne se nomme pas");
     assert.match(facture, /à régler avant le/i, "l'échéance manque à l'aperçu de la facture");
     assert.doesNotMatch(facture, /votre devis/i, "l'aperçu de la facture parle d'un devis");
-    assert.match(rapport, /compte rendu/i, "l'aperçu du compte rendu ne se nomme pas");
   });
 
   // ── 4. LE FIL ENTIER : ce qu'il a écrit arrive au TÉLÉPHONE du client

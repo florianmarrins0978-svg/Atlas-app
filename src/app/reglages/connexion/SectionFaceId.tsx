@@ -74,7 +74,10 @@ export default function SectionFaceId({ clesInitiales }: { clesInitiales: CleApp
     setFait(null);
     demarrer(async () => {
       try {
-        const defi = await defiEnregistrementAction();
+        // **Lu dans le GESTE, jamais pendant le rendu** — c'est ce qui
+        // distingue cet appel du défaut d'hydratation que le dépôt interdit
+        // (`ARCHITECTURE.md` §68, §81, §177).
+        const defi = await defiEnregistrementAction(window.location.origin);
         if (!defi.ok) {
           setRefus(defi.raison);
           return;
@@ -100,8 +103,15 @@ export default function SectionFaceId({ clesInitiales }: { clesInitiales: CleApp
         // La seule exception : `InvalidStateError`, que le navigateur rend quand
         // l'appareil est DÉJÀ enregistré — là, le taire laisserait croire que
         // rien ne s'est passé, et il réappuierait.
+        // **Le journal d'abord.** Le navigateur nomme la vraie cause —
+        // `SecurityError` quand le domaine ne s'accorde pas — et sans elle on
+        // répare une panne imaginée (`AGENTS.md`).
+        console.error("[face-id] activation refusée par le navigateur", nom, erreur);
         if (nom === "InvalidStateError") setRefus(messageRefusCle("deja-enregistree"));
-        else setRefus(estAbandon(nom) ? null : messageRefusCle("panne"));
+        // **« panne-activation », et non « panne ».** On est DÉJÀ entré ici :
+        // « entrez votre mot de passe » demanderait un geste qu'il vient de
+        // faire, et se lirait comme une panne d'Atlas.
+        else setRefus(estAbandon(nom) ? null : messageRefusCle("panne-activation"));
       }
     });
   }

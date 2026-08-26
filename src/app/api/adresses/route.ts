@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getCurrentCtx } from "@/server/session-ctx";
+import { exigerOuverture } from "@/server/garde-route";
 import { verifierLimite } from "@/server/rate-limit";
 import { LIMITES } from "@/server/rate-limit/types";
 import { chercherAdresses } from "@/server/adresses/base-adresse-nationale";
@@ -20,6 +21,10 @@ export const dynamic = "force-dynamic";
 export async function GET(requete: Request) {
   const ctx = await getCurrentCtx();
 
+  // Le rôle referme ce que la barre du bas ne montre plus : une adresse d'API
+  // se tape, et une page retirée du sommaire répondait quand même.
+  const refus = await exigerOuverture(ctx);
+  if (refus) return refus;
   // Par entreprise, comme le reste : un compte qui s'emballe ne doit pas couper
   // l'aide à la saisie de tous les autres.
   const limite = await verifierLimite(`adresses:${ctx.entrepriseId}`, LIMITES.rechercheAdresse);

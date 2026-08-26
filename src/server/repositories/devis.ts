@@ -1,6 +1,6 @@
-import { desc, eq, sql } from "drizzle-orm";
+import { and, asc, desc, eq, sql } from "drizzle-orm";
 import { withEntreprise } from "../db/with-entreprise";
-import { allureDesDocuments } from "./entreprises";
+import { allureDesDocuments, formatNumeroDe } from "./entreprises";
 import { conditionsDepuisEntreprise } from "@/lib/conditions-documents";
 import { totauxAvecReduction, pourcentValide } from "@/lib/reduction-devis";
 import type { DbOrTx } from "../db/client";
@@ -8,21 +8,46 @@ import { devis, lignesDevis, lignesPrix, chantiers, clients, entreprises } from 
 import type { Ctx } from "./context";
 import { genererPdfDevis } from "../pdf/devis-pdf";
 import { enregistrerObjet } from "../storage";
+import { ecrireNumero, repartChaqueAnnee } from "@/lib/numero-documents";
 
 const TAUX_TVA_DEFAUT = "20.00";
 
 // Numérotation atomique — le verrou de ligne posé par cet UPDATE sérialise les
 // créations concurrentes pour une même entreprise (voir tests de concurrence).
 // `prochain_numero_devis` représente le PROCHAIN numéro disponible, pas le dernier attribué.
+//
+// **LE MILLÉSIME N'EST PLUS ÉCRIT EN DUR — correctif du 26 août 2026.** Cette
+// fonction rendait `` `2026-${…}` ``. En janvier 2027, ses devis auraient encore
+// dit 2026 : un défaut à retardement, que le typage ne voit pas et qu'aucune
+// suite n'attrape puisqu'elles tournent aujourd'hui.
+//
+// **LA REMISE À 1 SE FAIT DANS LE MÊME UPDATE, et c'est la seule façon sûre.**
+// La lire d'abord pour l'écrire ensuite ouvrirait une fenêtre où deux devis
+// créés à la même seconde le 1ᵉʳ janvier prendraient tous deux le numéro 1 —
+// un doublon, exactement ce que la loi interdit. Le `CASE` tranche à l'intérieur
+// du verrou de ligne.
 export async function attribuerNumeroDevis(tx: DbOrTx, entrepriseId: string): Promise<string> {
+  const maintenant = new Date();
+  const annee = maintenant.getFullYear();
+  const mois = maintenant.getMonth() + 1;
+
+  const format = await formatNumeroDe(tx, entrepriseId);
+  // Sans année au numéro, le compteur ne repart jamais : le remettre à 1
+  // ferait deux documents de même numéro à un an d'écart.
+  const remise = repartChaqueAnnee(format);
+
   const result: unknown = await tx.execute(sql`
     UPDATE entreprise_compteurs
-    SET prochain_numero_devis = prochain_numero_devis + 1
+    SET prochain_numero_devis = CASE
+          WHEN ${remise} AND annee_devis IS DISTINCT FROM ${annee} THEN 2
+          ELSE prochain_numero_devis + 1
+        END,
+        annee_devis = ${annee}
     WHERE entreprise_id = ${entrepriseId}
     RETURNING prochain_numero_devis - 1 AS numero
   `);
   const numero = (result as { rows: { numero: number }[] }).rows[0].numero;
-  return `2026-${String(numero).padStart(4, "0")}`;
+  return ecrireNumero(format, "devis", { annee, mois, numero });
 }
 
 /**
@@ -56,6 +81,57 @@ export async function getDevisPourChantier(ctx: Ctx, chantierId: string) {
       .select()
       .from(devis)
       .where(eq(devis.chantierId, chantierId))
+      .orderBy(desc(devis.numeroVersion))
+      .limit(1);
+    return rows[0] ?? null;
+  });
+}
+
+/**
+ * Les versions de devis d'un chantier, de la plus ancienne à la plus récente.
+ *
+ * **Née de sa question du 25 août 2026** : *« ressors-moi le PREMIER devis de
+ * M. Bernard »*. L'assistant n'avait que `getDevisPourChantier`, qui rend la
+ * dernière — et il en a conclu, devant le patron, qu'Atlas ne gardait que
+ * celle-là. C'est faux : un devis envoyé est conservé, et le suivant devient
+ * une version 2 (`getOuCreerDevisBrouillon`).
+ *
+ * **Croissante, et non décroissante comme partout ailleurs :** ici on lit une
+ * histoire, on ne cherche pas l'état courant. « Le premier » doit être le
+ * premier de la liste.
+ */
+export async function listerVersionsDevis(ctx: Ctx, chantierId: string) {
+  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    const rows = await tx
+      .select({
+        numeroVersion: devis.numeroVersion,
+        numeroCommercial: devis.numeroCommercial,
+        statut: devis.statut,
+        totalTtc: devis.totalTtc,
+      })
+      .from(devis)
+      .where(eq(devis.chantierId, chantierId))
+      .orderBy(asc(devis.numeroVersion));
+    return rows;
+  });
+}
+
+/**
+ * Une version précise d'un devis — ou la plus récente si l'on n'en nomme aucune.
+ *
+ * Un seul chemin pour les deux cas : deux fonctions voisines finiraient par
+ * filtrer différemment, et l'écart se verrait sur un devis qu'on croit lire.
+ */
+export async function lireVersionDevis(ctx: Ctx, chantierId: string, version?: number) {
+  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    const rows = await tx
+      .select()
+      .from(devis)
+      .where(
+        version === undefined
+          ? eq(devis.chantierId, chantierId)
+          : and(eq(devis.chantierId, chantierId), eq(devis.numeroVersion, version))
+      )
       .orderBy(desc(devis.numeroVersion))
       .limit(1);
     return rows[0] ?? null;
@@ -110,11 +186,24 @@ export async function getOuCreerDevisBrouillon(ctx: Ctx, chantierId: string) {
       .orderBy(desc(devis.numeroVersion))
       .limit(1);
 
+    // **Les six conditions se figent ici**, avec l'identité : les relire au
+    // moment de composer le PDF ferait changer ce qui engage un devis DÉJÀ
+    // envoyé, parce qu'un réglage a bougé depuis (`ARCHITECTURE.md` §102).
+    //
+    // **Les cinq autres n'y étaient pas avant le 25 août 2026**, et c'est LUI
+    // qui l'a vu : *« les autres qui sont en ON doivent-ils être visibles sur le
+    // devis ? car je ne vois rien »*. Elles se réglaient, s'affichaient dans
+    // l'aperçu des Réglages, et n'atteignaient aucun document.
+    const conditions = conditionsDepuisEntreprise(entreprise);
+
     const snapshotEnTete = {
-      // **La validité se fige ici**, avec l'identité : lire le réglage au moment
-      // de composer le PDF ferait changer la durée d'engagement d'un devis déjà
-      // envoyé (`ARCHITECTURE.md` §102).
-      validiteJours: conditionsDepuisEntreprise(entreprise).validiteJours,
+      validiteJours: conditions.validiteJours,
+      acomptePourcent:
+        conditions.acomptePourcent === null ? null : String(conditions.acomptePourcent),
+      delaiPaiementJours: conditions.delaiPaiementJours,
+      moyensPaiement: conditions.moyensPaiement,
+      rappelerPenalites: conditions.rappelerPenalites,
+      textePied: conditions.textePied,
       entrepriseNom: entreprise.nom,
       entrepriseAdresse: entreprise.adresse,
       entrepriseSiret: entreprise.siret,
@@ -238,6 +327,16 @@ export async function genererPdfPourApercu(ctx: Ctx, devisId: string): Promise<U
       adresseChantier: d.adresseChantier,
       conditionsPaiement: d.conditionsPaiement,
       validiteJours: d.validiteJours,
+      // Les cinq conditions figées à la création (migration 0064). C'est le PDF
+      // qui les met en phrases, parce que le total y est connu — le montant de
+      // l'acompte en dépend.
+      conditionsReglees: {
+        acomptePourcent: d.acomptePourcent,
+        delaiPaiementJours: d.delaiPaiementJours,
+        moyensPaiement: d.moyensPaiement,
+        rappelerPenalites: d.rappelerPenalites,
+        textePied: d.textePied,
+      },
       devise: d.devise,
       tauxTva: d.tauxTva,
       totalHt: d.totalHt,
@@ -524,4 +623,108 @@ async function devisÀImprimer(tx: DbOrTx, chantierId: string) {
     .orderBy(desc(devis.numeroVersion))
     .limit(1);
   return brouillon ?? null;
+}
+
+// --- Reprendre une ligne du devis d'un autre client -----------------------
+
+/**
+ * Une ligne de devis retrouvée ailleurs, avec de quoi la reconnaître.
+ *
+ * **Le nom du client vient du devis, pas de la fiche client.** Un devis fige le
+ * nom de son destinataire au jour où il est établi (colonne `clientNom`) :
+ * c'est ce nom-là qui est sur la feuille qu'il a sous les yeux, et donc celui
+ * qu'il cite quand il demande « la ligne du devis de Bernard ».
+ */
+export type LigneDevisAilleurs = {
+  ligneId: string;
+  libelle: string;
+  montant: string;
+  quantite: string;
+  prixUnitaire: string;
+  client: string | null;
+  chantier: string;
+  numeroDevis: string;
+  dateEmission: string;
+};
+
+/**
+ * Cherche une ligne de devis dans TOUTE l'entreprise — tous clients confondus.
+ *
+ * **Sa demande du 25 août 2026 :** *« qu'il soit en mesure d'aller chercher une
+ * ligne dans un devis de n'importe quel client et la poser sur un devis déjà
+ * ouvert de n'importe quel client »*.
+ *
+ * **Ce qui borne la recherche, c'est la RLS, pas un filtre écrit ici.**
+ * `withEntreprise` pose le contexte d'isolation : une entreprise voisine ne
+ * remonte rien, silencieusement. C'est la seule barrière qui tienne — un `WHERE
+ * entreprise_id = …` écrit à la main serait une seconde règle, et c'est
+ * exactement ce que `CLAUDE.md` §3 interdit.
+ *
+ * **Deux filtres, tous deux facultatifs** : un mot du libellé, un bout du nom du
+ * client. Sans aucun des deux, on ne rend rien plutôt que le devis entier de
+ * l'entreprise : une liste de trois cents lignes ne se lit pas, et l'assistant
+ * choisirait alors au hasard.
+ */
+export async function rechercherLignesDevisEntreprise(
+  ctx: Ctx,
+  filtres: { motCle?: string | null; client?: string | null },
+  maximum = 12
+): Promise<LigneDevisAilleurs[]> {
+  const motCle = (filtres.motCle ?? "").trim();
+  const nomClient = (filtres.client ?? "").trim();
+  if (!motCle && !nomClient) return [];
+
+  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    const conditions = [];
+    if (motCle) conditions.push(sql`${lignesDevis.libelle} ILIKE ${"%" + motCle + "%"}`);
+    if (nomClient) conditions.push(sql`${devis.clientNom} ILIKE ${"%" + nomClient + "%"}`);
+
+    const lignes = await tx
+      .select({
+        ligneId: lignesDevis.id,
+        libelle: lignesDevis.libelle,
+        montant: lignesDevis.montant,
+        quantite: lignesDevis.quantite,
+        prixUnitaire: lignesDevis.prixUnitaire,
+        client: devis.clientNom,
+        chantier: chantiers.nom,
+        numeroDevis: devis.numeroCommercial,
+        dateEmission: devis.dateEmission,
+      })
+      .from(lignesDevis)
+      .innerJoin(devis, eq(lignesDevis.devisId, devis.id))
+      .innerJoin(chantiers, eq(devis.chantierId, chantiers.id))
+      .where(sql.join(conditions, sql` AND `))
+      .orderBy(desc(devis.dateEmission), lignesDevis.ordre)
+      .limit(maximum);
+
+    return lignes.map((l) => ({ ...l, dateEmission: String(l.dateEmission) }));
+  });
+}
+
+/**
+ * Relit UNE ligne par son identifiant, au moment de la recopier.
+ *
+ * **Le montant ne voyage jamais.** Ni le navigateur ni le modèle ne le
+ * réémettent : ils ne portent que l'identifiant de la ligne d'origine, et le
+ * prix est relu ici, à l'instant où l'on écrit. C'est le même remède que pour
+ * un tarif (`ajouter_ligne_prix`), et pour la même raison : un montant transmis
+ * est un montant qu'on peut changer en chemin, sur un document qui part chez un
+ * client.
+ *
+ * Rend `null` quand la ligne a disparu — ou qu'elle appartient à une autre
+ * entreprise, ce que la RLS rend indiscernable, et c'est très bien ainsi.
+ */
+export async function getLigneDevisPourCopie(
+  ctx: Ctx,
+  ligneId: string
+): Promise<{ libelle: string; montant: string } | null> {
+  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    const [ligne] = await tx
+      .select({ libelle: lignesDevis.libelle, montant: lignesDevis.montant })
+      .from(lignesDevis)
+      .where(eq(lignesDevis.id, ligneId))
+      .limit(1);
+    return ligne ?? null;
+  });
 }

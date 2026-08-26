@@ -3,10 +3,12 @@
 import { getCurrentCtx } from "@/server/session-ctx";
 import {
   emettreFacture,
+  majEcheanceFacture,
   terminerChantier,
   FactureDejaEmiseError,
   FinChantierImpossibleError,
 } from "@/server/repositories/factures";
+import { logger } from "@/server/logger";
 import {
   creerEnvoiFacture,
   dernierEnvoiFacture,
@@ -60,6 +62,33 @@ export async function emettreFactureAction(factureId: string): Promise<ResultatE
       return { succes: false, erreur: err.message };
     }
     throw err;
+  }
+}
+
+/**
+ * Corrige l'échéance de la facture avant qu'elle parte — sa demande du 25 août.
+ *
+ * **Le refus se rend en valeur** (`AGENTS.md`) : le message d'une exception
+ * d'action serveur n'atteint jamais le patron. Le contrôle vit dans le dépôt
+ * (`majEcheanceFacture`, `validerEcheance`), pas ici.
+ */
+export type ResultatEcheanceFacture =
+  | { succes: true; dateEcheance: string }
+  | { succes: false; erreur: string };
+
+export async function majEcheanceFactureAction(
+  factureId: string,
+  dateEcheance: string
+): Promise<ResultatEcheanceFacture> {
+  const ctx = await getCurrentCtx();
+  try {
+    const r = await majEcheanceFacture(ctx, factureId, dateEcheance);
+    return r.ok ? { succes: true, dateEcheance: r.dateEcheance } : { succes: false, erreur: r.raison };
+  } catch (err) {
+    logger.error("Échéance de facture non modifiée", {
+      erreur: err instanceof Error ? err.message : String(err),
+    });
+    return { succes: false, erreur: "L'échéance n'a pas pu être modifiée. Réessayez dans un instant." };
   }
 }
 

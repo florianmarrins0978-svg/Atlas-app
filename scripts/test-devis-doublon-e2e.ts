@@ -49,11 +49,21 @@ async function main() {
   const champPrestation = page.locator("form input").first();
   await champPrestation.fill("Dépose carrelage");
   await champPrestation.blur();
+
+  // **L'ATTENTE FIXE MENTAIT SOUS CHARGE.** Elle passait seule et rougissait
+  // dans la batterie complète, où l'enregistrement de la prestation met plus
+  // de 800 ms : la page des prix s'ouvrait avant que le serveur ait de quoi
+  // proposer, et le contrôle accusait « les tarifs de démonstration » — le
+  // mauvais coupable. La page des prix se REDEMANDE donc une fois, après une
+  // pause, avant de conclure que rien n'était calculable.
   await page.waitForTimeout(800);
 
-  await page.goto(prixUrl, { waitUntil: "networkidle" });
-
   const bouton = page.getByRole("button", { name: /Ajouter au détail|Déjà au détail/ });
+  await page.goto(prixUrl, { waitUntil: "networkidle" });
+  if ((await bouton.count()) === 0) {
+    await page.waitForTimeout(1500);
+    await page.goto(prixUrl, { waitUntil: "networkidle" });
+  }
   if ((await bouton.count()) === 0) {
     // Aucune proposition possible sur ce jeu de données : la suite n'a rien à
     // éprouver, et le dire vaut mieux que de passer au vert sans avoir regardé.

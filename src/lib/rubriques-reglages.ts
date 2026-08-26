@@ -19,8 +19,18 @@
  * donne un `href` et on retire le drapeau.
  */
 import type { NomIcone } from "@/app/reglages/icones";
+import { cheminAutorise, type Role } from "./acces-roles";
 
-export type RoleReglages = "proprietaire" | "membre";
+/**
+ * **Le rôle vient de `acces-roles.ts`, il ne se redéclare plus ici.**
+ *
+ * Cette ligne portait `"proprietaire" | "membre"`, écrit à la main — une seconde
+ * liste des rôles, qui a cessé d'être vraie le jour où le commercial et le
+ * salarié sont entrés en base (migration 0065). L'import est **de type
+ * seulement** : il s'efface à la compilation, et les deux fichiers peuvent donc
+ * se citer l'un l'autre sans tourner en rond à l'exécution.
+ */
+export type RoleReglages = Role;
 
 export type Rubrique = {
   /** Le libellé, tel qu'il est sur sa planche du 14 août 2026. */
@@ -180,16 +190,61 @@ const ENTREPRISE: Rubrique[] = [
  * une feuille de style.
  */
 export function rubriquesReglages(role: RoleReglages | null): EnsembleRubriques[] {
-  if (role !== "proprietaire") return [{ titre: "Moi", rubriques: MOI }];
+  /**
+   * **Un rôle illisible est traité comme un SALARIÉ**, jamais comme rien.
+   *
+   * Devant une valeur qu'on ne sait pas lire, on prend le rôle le plus fermé —
+   * l'inverse ouvrirait l'entreprise entière à une faute de frappe en base.
+   * Mais « le plus fermé » n'est pas « vide » : les quatre réglages de la
+   * rubrique « Moi » appartiennent à la PERSONNE (son mot de passe, ses
+   * notifications) et ne portent aucune donnée d'entreprise. Les lui retirer
+   * l'enfermerait dehors — il ne pourrait plus changer son propre mot de passe
+   * parce qu'une lecture de rôle a hoqueté.
+   *
+   * **Écrit d'abord « ferme tout », et c'est `test-rubriques-reglages.ts` qui
+   * l'a redressé** : il exige depuis toujours que le rôle inconnu reçoive
+   * exactement ce que reçoit un membre. Le contrôle avait raison.
+   */
+  const effectif: Role = role ?? "salarie";
+  const visible = (r: Rubrique) => r.href !== null && cheminAutorise(effectif, r.href);
+
+  /**
+   * **Le sommaire OBÉIT à `cheminAutorise`, il ne redit pas la règle.**
+   *
+   * Chaque rubrique passe par la fonction qui REFUSERA son adresse si elle est
+   * tapée à la main. Une rubrique affichée qui mènerait à un refus se lit comme
+   * une panne ; une rubrique cachée dont l'adresse répondrait quand même serait
+   * un mensonge. Les deux viennent désormais du même endroit.
+   *
+   * **Une rubrique pas encore codée (`href: null`) reste visible au patron
+   * seul** — c'est le drapeau « bientôt », et il n'a de sens que pour lui.
+   */
+  const entreprise = ENTREPRISE.filter((r) => (r.href === null ? effectif === "proprietaire" : visible(r)));
+  const moi = MOI.filter(visible);
+
+  // Un salarié ne reçoit pas une liste plus courte : il reçoit une AUTRE liste.
+  // Rien de l'entreprise n'en sort — ni grisé, ni masqué, ni rendu puis caché.
+  if (entreprise.length === 0) return [{ titre: "Moi", rubriques: moi }];
+
   return [
-    { titre: "L'entreprise", rubriques: ENTREPRISE },
-    { titre: "Moi", rubriques: MOI },
+    { titre: "L'entreprise", rubriques: entreprise },
+    { titre: "Moi", rubriques: moi },
   ];
 }
 
 /** Le surtitre de l'écran : l'entreprise ne lui appartient pas. */
 export function surtitreReglages(role: RoleReglages | null): string {
   return role === "proprietaire" ? "Mon entreprise" : "Mon compte";
+}
+
+/**
+ * L'écran des réglages est-il réservé au patron pour ce rôle ?
+ *
+ * Sert aux pages qui ne SONT pas des rubriques du sommaire — « Mes prix », le
+ * vocabulaire — et qui doivent quand même refuser, côté serveur.
+ */
+export function reservéAuPatron(role: RoleReglages | null): boolean {
+  return role !== "proprietaire";
 }
 
 /**
@@ -226,6 +281,20 @@ export function surtitreReglages(role: RoleReglages | null): string {
  * Cette fonction reste donc ce qu'elle a toujours été : ce que le SOMMAIRE
  * ouvre, employé pour vérifier qu'il ne propose à un salarié aucune adresse de
  * l'entreprise. C'est utile, et ce n'est pas une frontière.
+ *
+ * ─────────────────────────────────────────────────────────────────────────────
+ * **MISE À JOUR À LA FUSION DU 26 AOÛT 2026 — la frontière, elle, existe
+ * désormais, et elle est AILLEURS.**
+ *
+ * Le lot des rôles a posé `cheminAutorise` (`src/lib/acces-roles.ts`), appelée
+ * par `GardeAcces` dans la mise en page racine : c'est elle qui refuse une
+ * adresse tapée à la main, et elle sait lire les SOUS-CHEMINS — ce que cette
+ * liste-ci, comparée à l'identique, ne saura jamais faire.
+ *
+ * Rien ne change pour autant ici : `adressesAutorisees` n'a toujours aucun
+ * appelant hors des contrôles, et la brancher reste une mauvaise idée pour la
+ * raison ci-dessus. Le paragraphe est conservé parce qu'il explique POURQUOI la
+ * règle vit dans `acces-roles.ts` et non dans un sommaire.
  */
 export function adressesAutorisees(role: RoleReglages | null): string[] {
   return rubriquesReglages(role)

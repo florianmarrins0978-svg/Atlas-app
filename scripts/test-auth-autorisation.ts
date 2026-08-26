@@ -26,7 +26,7 @@ async function test(nom: string, fn: () => Promise<void>) {
 // directe en SQL brut (comme dans ces tests) doit fixer app.entreprise_id
 // pour la transaction, exactement comme le font déjà les repositories via
 // withEntreprise().
-async function ajouterMembre(entrepriseId: string, utilisateurId: string, role: "proprietaire" | "membre") {
+async function ajouterMembre(entrepriseId: string, utilisateurId: string, role: "proprietaire" | "salarie") {
   const client = await pool.connect();
   try {
     await client.query("BEGIN");
@@ -142,8 +142,16 @@ async function main() {
     const [membreUser] = await db
       .insert(users)
       .values({ email: `membre-${Date.now()}@test.local`, nom: "Membre" })
+      // **`returning({ id })` et NON `returning()` nu — c'est M9.** Depuis la
+      // migration 0064, `atlas_app` n'a plus le SELECT sur toutes les colonnes
+      // de `users` : un `RETURNING *` demande la lecture de `password_hash` et
+      // se fait refuser. Trois suites l'ont appris en rougissant.
+      //
+      // **Et le rôle est « salarie », pas « membre »** : la migration 0065 l'a
+      // renommé. Les deux moitiés viennent de deux lots différents, et la fusion
+      // du 26 août 2026 devait garder les deux — l'une seule aurait cassé.
       .returning({ id: users.id });
-    await ajouterMembre(entreprise.id, membreUser.id, "membre");
+    await ajouterMembre(entreprise.id, membreUser.id, "salarie");
 
     const ctxMembre = { entrepriseId: entreprise.id, utilisateurId: membreUser.id };
     const ctxProprietaire = { entrepriseId: entreprise.id, utilisateurId: proprietaireId };
@@ -171,8 +179,16 @@ async function main() {
     const [membreUser] = await db
       .insert(users)
       .values({ email: `tarif-membre-${Date.now()}@test.local`, nom: "Membre" })
+      // **`returning({ id })` et NON `returning()` nu — c'est M9.** Depuis la
+      // migration 0064, `atlas_app` n'a plus le SELECT sur toutes les colonnes
+      // de `users` : un `RETURNING *` demande la lecture de `password_hash` et
+      // se fait refuser. Trois suites l'ont appris en rougissant.
+      //
+      // **Et le rôle est « salarie », pas « membre »** : la migration 0065 l'a
+      // renommé. Les deux moitiés viennent de deux lots différents, et la fusion
+      // du 26 août 2026 devait garder les deux — l'une seule aurait cassé.
       .returning({ id: users.id });
-    await ajouterMembre(entreprise.id, membreUser.id, "membre");
+    await ajouterMembre(entreprise.id, membreUser.id, "salarie");
 
     process.env.AUTH_TEST_UTILISATEUR_ID = membreUser.id;
     let refuseMembre = false;
@@ -199,12 +215,12 @@ async function main() {
       { email: `multi-y-${Date.now()}@test.local`, nom: "MY" }
     );
     // Le même utilisateur devient membre simple d'une SECONDE entreprise.
-    await ajouterMembre(entY.id, utilisateurId, "membre");
+    await ajouterMembre(entY.id, utilisateurId, "salarie");
 
     const roleDansX = await getRole({ entrepriseId: entX.id, utilisateurId });
     const roleDansY = await getRole({ entrepriseId: entY.id, utilisateurId });
     assert.equal(roleDansX, "proprietaire");
-    assert.equal(roleDansY, "membre");
+    assert.equal(roleDansY, "salarie");
   });
 
   await test("Mot de passe : un hash bcrypt valide est bien vérifiable (base du provider Credentials)", async () => {

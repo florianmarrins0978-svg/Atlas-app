@@ -62,7 +62,7 @@ export function lireFichierTarifs(nom: string, octets: Uint8Array): ResultatLect
       raison:
         "Un PDF est une image de tableau : les colonnes n'y existent plus, et lire un prix " +
         "de travers est pire que ne pas le lire. Ouvrez la liste dans Excel puis " +
-        "« Enregistrer sous → CSV », et redéposez-la ici.",
+        "« Enregistrer sous », puis CSV, et redéposez-la ici.",
     };
   }
 

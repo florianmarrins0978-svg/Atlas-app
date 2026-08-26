@@ -79,10 +79,43 @@ async function main() {
     assert.equal(normaliserConditions({ delaiPaiementJours: -5 }).delaiPaiementJours, 0);
   });
 
-  await essai("un champ vide éteint le réglage", () => {
-    const c = normaliserConditions({ acomptePourcent: "", moyensPaiement: "   " });
-    assert.equal(c.acomptePourcent, null);
+  // ─── LE DÉFAUT DU 25 AOÛT 2026 : « ça saute automatiquement » ─────────────
+  //
+  // Cette suite exigeait qu'« un champ vide ÉTEIGNE le réglage » — et c'est ce
+  // qui empêchait le patron d'allumer « Texte en bas de vos documents » :
+  // l'interrupteur s'allume en envoyant une chaîne vide, elle repartait en
+  // `null`, et `null` veut dire éteint. Le geste s'annulait lui-même.
+  //
+  // **Ce qu'elle défendait vraiment reste vrai** — un champ vide n'imprime
+  // rien —, mais cela se vérifie à l'IMPRESSION, pas sur l'interrupteur
+  // (`CLAUDE.md` §5 bis : fixer la règle, pas la façon dont un écran la montre).
+  await essai("un champ vide reste ALLUMÉ — il n'est pas encore rempli", () => {
+    const c = normaliserConditions({ moyensPaiement: "   ", textePied: "" });
+    assert.equal(c.moyensPaiement, "", "un champ vidé a éteint l'interrupteur");
+    assert.equal(c.textePied, "", "allumer sans rien écrire a éteint l'interrupteur");
+  });
+
+  await essai("mais un champ vide n'imprime RIEN sur le devis", () => {
+    const lignes = lignesConditionsDevis(lireConditions({ moyensPaiement: "", textePied: "" }));
+    assert.ok(
+      !lignes.some((l) => /Moyens de paiement/.test(l)),
+      `une ligne de moyens vide s'imprime : ${lignes.join(" | ")}`
+    );
+    assert.ok(
+      !lignes.some((l) => l.trim() === ""),
+      `une ligne vide s'imprime sur le devis : ${JSON.stringify(lignes)}`
+    );
+  });
+
+  await essai("l'interrupteur ÉTEINT, lui, rend bien null", () => {
+    const c = normaliserConditions({ moyensPaiement: null, textePied: null });
     assert.equal(c.moyensPaiement, null);
+    assert.equal(c.textePied, null);
+  });
+
+  await essai("un pourcentage vide éteint bien l'acompte", () => {
+    // Celui-ci n'a pas d'interrupteur : un acompte sans chiffre n'existe pas.
+    assert.equal(normaliserConditions({ acomptePourcent: "" }).acomptePourcent, null);
   });
 
   await essai("zéro jour de délai veut dire comptant, pas éteint", () => {
@@ -145,6 +178,49 @@ async function main() {
     const e = await getEntreprise(ctx);
     assert.equal(e?.validiteDevisJours, 60, "le réglage n'a pas changé");
     assert.equal(devis.validiteJours, 15, "le devis a suivi le réglage");
+  });
+
+  // ─── LE CHEMIN ENTIER : son écran de réglages → la base → le devis ──────
+  //
+  // **C'EST CE MAILLON-LÀ QUI MANQUAIT, ET AUCUN CONTRÔLE NE LE VOYAIT.** Son
+  // constat du 25 août 2026 : *« les autres qui sont en ON doivent-ils être
+  // visibles sur le devis ? car je ne vois rien, est-ce normal ? »* Six réglages
+  // se saisissaient, **un seul** atteignait le document. Les cas ci-dessus
+  // étaient tous verts pendant ces onze jours : ils éprouvaient la RÈGLE, jamais
+  // le CHEMIN. Une pièce débranchée passe entre les deux (`CLAUDE.md` §5).
+  await essai("les cinq autres conditions se figent AUSSI dans le devis", async () => {
+    const ctx = await monter();
+    await mettreAJourEntreprise(ctx, {
+      conditions: {
+        acomptePourcent: 30,
+        delaiPaiementJours: 30,
+        moyensPaiement: "virement, chèque",
+        rappelerPenalites: true,
+        textePied: "Sous réserve d'accès au chantier.",
+      },
+    });
+    const chantier = await creerChantier(ctx, { nom: "Élagage" });
+    const d = await getOuCreerDevisBrouillon(ctx, chantier.id);
+
+    assert.equal(Number(d.acomptePourcent), 30, "l'acompte n'a pas été recopié dans le devis");
+    assert.equal(d.delaiPaiementJours, 30, "le délai n'a pas été recopié");
+    assert.equal(d.moyensPaiement, "virement, chèque", "les moyens de paiement n'ont pas été recopiés");
+    assert.equal(d.rappelerPenalites, true, "le rappel des pénalités n'a pas été recopié");
+    assert.equal(d.textePied, "Sous réserve d'accès au chantier.", "le texte de pied n'a pas été recopié");
+  });
+
+  // **Sa question, le même jour : « si je décoche le bouton OFF, ils sont censés
+  // disparaître ? »** — oui, et c'est ce cas qui le tient. Un réglage qu'on ne
+  // peut plus retirer serait pire que pas de réglage du tout.
+  await essai("éteints, les cinq ne se posent pas sur le devis", async () => {
+    const ctx = await monter();
+    const chantier = await creerChantier(ctx, { nom: "Taille de haie" });
+    const d = await getOuCreerDevisBrouillon(ctx, chantier.id);
+    assert.equal(d.acomptePourcent, null);
+    assert.equal(d.delaiPaiementJours, null);
+    assert.equal(d.moyensPaiement, null);
+    assert.equal(d.rappelerPenalites, false);
+    assert.equal(d.textePied, null);
   });
 
   await essai("une entreprise neuve porte les 30 jours d'avant", async () => {

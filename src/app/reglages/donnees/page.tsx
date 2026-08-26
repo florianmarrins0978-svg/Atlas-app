@@ -62,13 +62,25 @@ export default async function DonneesPage() {
               raison de plus pour ne pas s'en remettre à lui. */}
           <BoutonTelecharger nomFichier={nomFichierSauvegarde(entreprise?.nom ?? "Entreprise", new Date())} />
 
+          {/* **RACCOURCI le 25 août 2026, à sa demande** : *« le texte sous
+              télécharger est beaucoup beaucoup trop long, synthétise-le »*.
+              Cinq lignes sont devenues deux.
+
+              **Ce qui a été gardé, et pourquoi ces deux-là seulement.** Que le
+              fichier s'ouvre SANS Atlas — c'est ce qui en fait une copie de
+              secours plutôt qu'un objet captif. Et qu'il porte les coordonnées
+              de ses clients — c'est ce qui l'oblige à le ranger, et cela ne
+              peut pas se deviner.
+
+              **Ce qui est parti :** l'inventaire de ce que le fichier contient
+              (il le verra en l'ouvrant), et l'explication de la sauvegarde
+              automatique qui n'existe pas encore — un écran n'a pas à
+              expliquer ce qu'il ne fait pas. */}
           <p className="mt-[10px] text-[13px] leading-snug" style={{ color: colors.inkSoft }}>
-            Un seul fichier, qui contient vos clients, vos chantiers, vos devis, vos factures, vos photos et vos
-            enregistrements. Il s&apos;ouvre sans Atlas.
+            Tout ce qu&apos;Atlas garde pour vous, dans un fichier qui s&apos;ouvre sans lui.
           </p>
           <p className="mt-2 text-[12px] leading-snug" style={{ color: colors.muted }}>
-            Il contient les coordonnées de vos clients : à ranger comme un dossier client. La sauvegarde automatique,
-            elle, attend le choix d&apos;un hébergement — sans destination extérieure, elle ne protégerait de rien.
+            Il porte les coordonnées de vos clients : rangez-le comme un dossier client.
           </p>
         </section>
 

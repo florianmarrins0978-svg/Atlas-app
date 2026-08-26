@@ -1,7 +1,7 @@
 # État du projet
 
-**Dernière mise à jour :** 2026-08-25 · branche `main`
-· dernière migration `drizzle/0063_cles_appareil.sql`
+**Dernière mise à jour :** 2026-08-26 · branche `main`
+· dernière migration `drizzle/0066_format_numero.sql`
 
 
 *(Le numéro du dernier commit ne figure plus ici : il était faux dès le commit
@@ -13,6 +13,101 @@ ligne « fait » qui ne l'est pas coûte plus cher qu'une ligne absente.
 
 ---
 
+## Le numéro de ses documents se choisit (26 août 2026)
+
+*Sa demande : « dans la catégorie facture il faut rajouter le format de numéro,
+c'est obligatoire il me semble ». Puis « garde le F », « 6 chiffres », « oui
+remettre à 0 chaque début d'année ». Le détail est dans `ARCHITECTURE.md` §189.*
+
+**Fait.** Réglages → Devis & factures → « Le numéro de mes documents » : cinq
+formats, chacun montrant ce qu'il donne, enregistré au fur et à mesure. Le
+défaut est « Année et 6 chiffres », le « F » des factures reste, et le compteur
+repart à 1 le 1ᵉʳ janvier — sauf sur « une suite sans année », où repartir
+ferait deux documents du même numéro.
+
+**Et un défaut à retardement est parti avec.** Le millésime était écrit en dur
+dans le dépôt : en janvier 2027, ses factures auraient encore dit 2026. Aucune
+suite ne pouvait le voir, puisqu'elles tournent aujourd'hui.
+
+**Ce que ça ne fait pas :** renuméroter les documents déjà émis. Les réécrire
+creuserait un trou dans la suite, ce que la loi interdit.
+
+## L'assistant est devenu un agent (26 août 2026)
+
+| | État |
+|---|---|
+| Dix gestes de plus, tous **proposés** : chantier, client, adresse, note, planning (poser/déplacer/retirer), tarifs, facture | **fait** — `propositions.ts`, `appliquerPropositionsAction` |
+| Trois lectures pour viser : `RechercherChantier`, `LireClients`, `LirePlanning` | **fait** — 20 outils au total |
+| On vise par **identifiant**, jamais par nom | **fait** — et chaque geste relit sa cible en base à l'écriture |
+| Une proposition peut ne concerner **aucun** chantier | **fait** — migration `0067`, `IS NOT DISTINCT FROM` à la réclamation |
+| Rien en direct : *« que ça reste le doigt du patron »* | **fait** — aucun geste sans confirmation |
+| Envoyer, valider, émettre : **jamais** l'assistant | **fait** — `preparer_facture` s'arrête au brouillon |
+| Le hors-sujet refusé **avant** le modèle, avec ses deux conditions | **fait** — `perimetre-assistant.ts` |
+| Faux positifs éprouvés (12 questions qui doivent passer) | **fait** — `test-assistant-perimetre.ts` |
+| Ce qu'un vrai fournisseur en fait | **non vérifié ici** (aucune clé) — chaîne entière éprouvée par le fournisseur `dev` |
+
+## Trois rôles, trois sessions — qui atteint quoi (25 août 2026)
+
+*Sa demande du 25 août : « chaque utilisateur possède son propre compte et sa
+propre session […] les restrictions doivent être appliquées côté serveur, et pas
+uniquement en masquant des boutons ». La règle elle-même est tranchée dans
+`docs/QUESTIONS.md` §10 depuis le 13 août.*
+
+| | État |
+|---|---|
+| Trois rôles en base — `proprietaire`, `commercial`, `salarie` ; `membre` repris en `salarie` | **fait** — migration `0065`, contrainte `CHECK` en base |
+| La règle « qui atteint quoi », fonction pure et **unique source** | **fait** — `src/lib/acces-roles.ts` |
+| Les écrans refusent au serveur, sans qu'aucun ait à y penser | **fait** — `GardeAcces`, dans `src/app/layout.tsx` |
+| Les routes d'API refusent, et une route neuve ne peut pas l'oublier | **fait** — `exigerOuverture` ; `scripts/test-acces-routes-gardees.ts` rougit sur un oubli |
+| Les actions restent gardées par rôle | **inchangé** — `exigerProprietaire`, plus les quatre gestes des accès |
+| Écran Réglages → Équipe → « Qui a accès » : créer un compte, changer un rôle, retirer | **fait** — `src/app/reglages/equipe/QuiAAcces.tsx` |
+| Ce qu'un salarié voit du planning : tout, ou son équipe — **par personne** | **fait** — tamis dans `contextePlanning`, jamais à l'écran |
+| La barre du bas et le sommaire des réglages suivent le rôle | **fait** — même fonction que celle qui refuse |
+| Le dernier patron ne peut ni se rétrograder ni se retirer | **fait** — `donner-un-acces.ts` |
+| Isolation entre entreprises sur les accès eux-mêmes | **fait** — éprouvée sous `atlas_app` (`test-acces-roles-db.ts`) |
+| **Un commercial LIT les tarifs sans les changer** (règle du 13 août) | **PAS FAIT** — `/reglages/tarifs` et `/reglages/prix` restent au patron seul, comme avant ce lot. Voir `TODO.md` |
+| L'assistant est fermé au salarié — il reconstitue chantiers, clients et prix | **fait** — refus dans `poserQuestionAction`, bouton non rendu |
+| La connexion mène chacun chez lui, sans renvoi enchaîné | **fait** — `src/server/accueil-apres-connexion.ts` ; sans quoi le salarié voyait une page blanche |
+| Vu à l'écran | **fait pour le planning du salarié** (deux onglets, ni assistant ni lien d'agenda) et pour celui du patron (cinq onglets, inchangé). **L'écran « Qui a accès » n'a pas encore été capturé** |
+
+## L'assistant explique l'appli, et sert le patron seul (25 août 2026)
+
+| | État |
+|---|---|
+| Le mode d'emploi, écrit et cherchable — une soixantaine de gestes, écran par écran | **fait** — `src/lib/mode-emploi.ts`, outil `RechercherModeEmploi` |
+| Chaque fiche **prouvée contre le code** (fichier source + morceaux de texte attendus) | **fait** — `scripts/test-mode-emploi.ts`, et le contrôle sait échouer |
+| L'assistant récite le geste sans le reformuler, et **dit qu'il ne sait pas** quand il ne trouve rien | **fait** — consigne système + `chercherFiches` rend vide |
+| « Comment je supprime… » ne déclenche plus une suppression de données | **fait** — le mode d'emploi passe en tête de la chaîne du fournisseur |
+| Aller chercher une ligne dans le devis de n'importe quel client, la poser sur le devis ouvert | **fait** — `RechercherLignesDevis` + proposition `copier_ligne_devis` |
+| Le montant est relu en base à la validation, jamais transmis | **fait** — `getLigneDevisPourCopie` ; un test exige que `donnees` ne porte que l'identifiant |
+| Isolation entre entreprises sur cette recherche | **fait** — tenue par la RLS, éprouvée sous `atlas_app` avec deux lignes homonymes |
+| L'assistant réservé au **responsable** : bouton absent, et les deux actions serveur relisent le rôle | **fait** — `poserQuestionAction`, `appliquerPropositionsAction` |
+| Ce qu'un vrai fournisseur en fait | **non vérifié ici** (aucune clé) — la chaîne entière est éprouvée par le fournisseur `dev` ; la formulation d'un modèle réel est à voir sur son espace |
+
+---
+
+## L'échéance de la facture : proposée, modifiable (25 août 2026)
+
+| | État |
+|---|---|
+| La facture porte une échéance dès sa création, depuis **son délai de paiement réglé** (0 = comptant), 30 j à défaut | **fait** — `factures.ts`, `echeanceFacture` ; plus de « 30 » en dur |
+| L'échéance se **corrige** sur l'écran de la facture, tant qu'elle est brouillon | **fait** — `FactureClient`, `majEcheanceFactureAction` |
+| Une facture arrêtée fige son échéance (champ caché ET refus serveur) | **fait** — `majEcheanceFacture` refuse hors brouillon |
+| Règle de saisie pure (pas avant la facture, pas au-delà d'un an, comptant permis) | **fait** — `src/lib/echeance-facture.ts`, éprouvée sans base |
+| Isolation entre entreprises | **fait** — tenue par la RLS (`test-factures`, rôle `atlas_app`) |
+
+---
+
+## Photographier un devis pour en reprendre l'allure (25 août 2026)
+
+| | État |
+|---|---|
+| L'écran Réglages → Documents porte deux boutons *Photographier mon devis / ma facture*, **en tête** de « L'allure de mes devis » | **fait** — `DocumentsClient.tsx` ; appareil photo **ou** photothèque (`accept="image/*"`, sans `capture`) |
+| Lecture de l'allure (couleurs, police reconnue) et des mentions | **fait** — `src/server/ai/services/lire-allure-devis.ts`, même patron que `lire-ticket.ts` |
+| Jamais les lignes ni les prix ; jamais le logo (dit en réserve) | **fait** — la réserve du logo est **toujours** posée |
+| La photo est nettoyée de ses métadonnées comme le logo | **fait** — `preparerPhotoEntrante` |
+| Fonction pure de lecture éprouvée sans clé | **fait** — `scripts/test-lecture-allure-devis.ts`, 0 échec |
+| L'appel réel au fournisseur de vision | **NON vérifié ici** (aucune clé) — à jouer sur son espace, comme la dictée |
 ## Sécurité : lot Audio fermé (26 août 2026)
 
 | | État |
@@ -29,7 +124,7 @@ ligne « fait » qui ne l'est pas coûte plus cher qu'une ligne absente.
 suites navigateur, connexion réelle derrière une origine étrangère.
 
 Rapport transmissible : `docs/lot-audio-rapport.md`. Raisonnement :
-`ARCHITECTURE.md` §171.
+`ARCHITECTURE.md` §192.
 
 ---
 
@@ -55,8 +150,7 @@ suites navigateur, connexion réelle derrière une origine étrangère.
 
 Rapports transmissibles : `docs/lot-3-fermeture-f1-f13.md` puis
 `docs/lot-3-cloture-et-lecture-audio.md` (clôture + lecture du lot Audio). Le raisonnement complet
-est dans `ARCHITECTURE.md` §170.
-
+est dans `ARCHITECTURE.md` §191.
 ---
 
 ## Sécurité : lot 2B — M3 et M6 fermés (24 août 2026)
@@ -92,7 +186,7 @@ Son client lisait « Connexion au serveur impossible » : le lien portait
 | `ATLAS_URL_PUBLIQUE` pour un mandataire muet | **fait**, documentée dans `.env.example` |
 | Les quatre copies du calcul d'adresse réunies | **fait** (`originePublique`) |
 | Le garde-fou confronté à l'état dégradé | **fait** — la suite de la fiche rougit sans adresse déclarée |
-| Le même refus sur le devis et la facture | **NON** — leur adresse est corrigée, mais aucun refus n'y est posé |
+| Le même refus sur le devis et la facture | **fait** — les cinq gestes d'envoi le portent |
 
 Le détail et les partis pris : `ARCHITECTURE.md` §169.
 
@@ -114,6 +208,25 @@ disparu »*.
 | Les écrans regardés, pas seulement testés | **fait** — trois défauts corrigés qu'aucune suite ne voyait |
 
 Le détail et les partis pris : `ARCHITECTURE.md` §168.
+
+---
+
+## Choisir la date : un seul geste (25 août 2026)
+
+Sa demande : *« je dois pouvoir sélectionner les jours juste en les touchant,
+pas besoin de cliquer sur proposer »*.
+
+| | État |
+|---|---|
+| Toucher une case propose la date | **fait** |
+| Retoucher la retire | **fait** |
+| La fiche du jour reste, sans bouton | **fait** (elle dit `proposé`) |
+| Un jour refusé s'ouvre et dit pourquoi | **fait** |
+| Deux cases touchées coup sur coup | **fait** — le verdict périmé est jeté |
+| La planche 91 porte le même geste | **fait** (`appli/choisir-la-date.html`) |
+
+Le détail et les partis pris : `ARCHITECTURE.md` §170.
+
 
 ---
 
@@ -247,7 +360,7 @@ Le détail : `ARCHITECTURE.md` §167.
 | Son jardin du 23 août : **2 réseaux** au lieu de 5 | **fait**, et éprouvé |
 | Le carré de 12 m : **9 × 3504 buse 0,75** | **fait** — sa pose du 21 août |
 
-Le détail : `ARCHITECTURE.md` §166.
+Le détail : `ARCHITECTURE.md` §170.
 
 ### Lire un croquis à main levée (23 août 2026)
 
@@ -1128,7 +1241,11 @@ avait que deux, et le vocabulaire du dépôt trompait.
 | **Fiche de chantier** | `fiche-chantier-pdf.ts`, `/api/chantiers/[chantierId]/fiche/pdf` | ce qui a été fait, le matériel, les observations, les photos — **aucun prix** |
 
 Les trois sortent du **même moteur** (`document-commun.ts`) : même papier, même
-en-tête, même bloc émetteur/client, même pied. Trois moteurs auraient produit
+en-tête, même bloc client, même pied. **L'en-tête porte l'identité de
+l'entreprise en entier — nom, adresse, téléphone, e-mail, SIRET, une ligne
+chacun — et le bloc du bas ne nomme plus que le client** (25 août 2026,
+`ARCHITECTURE.md` §174) : il était écrit deux fois, et c'est le patron qui l'a
+vu. Trois moteurs auraient produit
 trois mises en page qui divergent, et c'est le client qui verrait la différence
 entre les feuilles d'un même artisan.
 

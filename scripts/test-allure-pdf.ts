@@ -204,9 +204,11 @@ async function main() {
 
   await essai("l'accent tient les intitulés de parties", async () => {
     const { trace } = await composerDevisPdf(DEVIS, { allure: SOMBRE });
-    const emetteur = trace.textes.find((t) => t.contenu.startsWith("É") && t.contenu.includes("M"));
-    assert.ok(emetteur, "« ÉMETTEUR » n'est pas sur le devis");
-    assert.equal(emetteur.couleur, SOMBRE.accent);
+    // « ÉMETTEUR » a disparu le 18 août 2026 — il doublait l'en-tête. C'est
+    // « CLIENT » qui porte désormais l'accent des parties, seul.
+    const partie = trace.textes.find((t) => t.contenu.replace(/\s/g, "") === "CLIENT");
+    assert.ok(partie, "« CLIENT » n'est pas sur le devis");
+    assert.equal(partie.couleur, SOMBRE.accent);
   });
 
   await essai("LA FEUILLE DE CHANTIER N'EST PAS HABILLÉE — sa décision du 23 août", async () => {

@@ -9,6 +9,273 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
+## ⚠ Trois suites navigateur rougissent SOUS LA BATTERIE, vertes jouées seules
+
+**Relevé le 26 août 2026, sur trois batteries d'affilée du même arbre.** À
+chaque tour, une ou deux suites tombent — et **jamais les mêmes** :
+
+| Tour | Ce qui est tombé |
+|---|---|
+| 1 | `test-reduction-devis-e2e` (8 cas), `test-tva-au-paiement-e2e` |
+| 2 | `test-lecons-prix-e2e` — « le prix 1400 n'est jamais arrivé en base : 0.00 » |
+
+**Les trois sont VERTES rejouées seules**, immédiatement après. Aucune n'est
+touchée par le lot en cours (le planning), et rien n'a été joué en parallèle de
+la batterie — la règle du 26 août a été respectée.
+
+**C'est le piège déjà écrit dans `HANDOVER.md` :** un délai fixe à la place d'un
+signal. Sous la batterie entière, la machine est chargée, l'action serveur met
+plus longtemps que le délai, et la suite lit l'écran d'avant. `test-lecons-prix`
+vient pourtant d'être porté de 30 à 60 secondes le même jour — **allonger ne
+suffit plus**, et c'est ce que ce constat ajoute.
+
+**Ce qu'il faudrait, pour qui reprend :** remplacer l'attente par un témoin — la
+valeur relue en base, la classe que le composant pose — plutôt que d'allonger
+les délais un à un. Le seuil suivant sera atteint par la machine suivante.
+
+## ~~« Sans date » vide sur le planning~~ — **CODÉ le 26 août 2026**
+
+Sa question : *« est-ce que la catégorie sans date a un réel besoin
+d'exister ? »*. Réponse : oui — c'est le seul endroit d'où un chantier reçoit sa
+date, et « Retirer » l'y renvoie —, mais **vide**, elle ne rendait qu'un titre
+et un refus. Elle disparaît quand rien n'attend de jour, et revient dès qu'un
+chantier attend. Le détail est dans `CHANGELOG.md`.
+
+## ✅ ~~Le format des numéros de devis et de factures~~ — fait le 26 août 2026
+
+~~Sa demande du 26 août : « dans la catégorie facture il faut rajouter le format
+de numéro ». Cinq formats au choix, le compteur qui repart au 1ᵉʳ janvier, et
+surtout le millésime qui n'est plus écrit en dur.~~ `ARCHITECTURE.md` §189.
+
+**Ce qui reste ouvert, et qui n'est pas ce lot :** le numéro de la première
+facture d'une entreprise qui reprendrait une suite existante. Aujourd'hui elle
+repart de 1 ; un artisan qui migre depuis un autre logiciel voudra continuer à
+0148. Il ne l'a pas demandé, et rien ne presse — mais le jour où il le
+demandera, c'est une colonne de départ sur `entreprise_compteurs`, pas un
+nouveau format.
+
+## L'agent : ce qu'il ne sait pas encore faire
+
+**FAIT le 26 août 2026** pour l'essentiel (`ARCHITECTURE.md` §188). Ce qui reste
+ouvert, et qu'il faudra sans doute lui demander :
+
+- **Des gestes non couverts** : composer la fiche d'entretien, régler les
+  documents (validité, acompte, mentions), gérer les absences d'équipe, lancer
+  un plan d'arrosage, créer un client SANS chantier, supprimer un chantier ou un
+  tarif. Chacun est une entrée de plus dans `TypeActionProposee` et un `case`
+  dans `appliquerPropositionsAction` — le patron est posé.
+- **Le filtre de périmètre attrape le cas franc, pas la totalité.** Une question
+  du dehors sans marque connue passe au modèle, qui a la consigne. S'il signale
+  une réponse hors-sujet, c'est une marque à ajouter dans `MARQUES_DU_DEHORS` —
+  **jamais** un mot ambigu, et jamais au prix d'un faux positif.
+- **La formulation d'un vrai modèle n'a pas été vue ici** (aucune clé) : la
+  chaîne entière est éprouvée par le fournisseur `dev`. À regarder sur son
+  espace, en lui demandant trois ou quatre gestes.
+
+---
+
+## ⏳ `test-envoi-client-e2e.ts` — deux cas rouges, et ce n'est PAS une régression
+
+**Le 26 août 2026**, dans la batterie du lot « rôles et accès » :
+
+    ❌ le patron ne propose jamais plus de deux dates
+       pas assez de jours acceptables (1)
+    ❌ SANS RIEN TOUCHER, la cliente peut proposer un jour
+       pas assez de jours libres au calendrier (1)
+
+**Vérifié avant de conclure, et dans cet ordre** — c'est ce qui compte ici, le
+reste n'est qu'une hypothèse :
+
+1. **rejouée seule**, sur l'arbre du lot : rouge à l'identique (donc pas la
+   charge de la batterie, contrairement à `test-lecons-prix-e2e`) ;
+2. **rejouée seule après un jeu de démonstration NEUF** (base vidée, `seed.ts`
+   rejoué) : rouge à l'identique (donc pas une pollution laissée par les suites
+   précédentes) ;
+3. **rejouée seule sur `origin/main`**, sans une ligne du lot : **rouge à
+   l'identique**. C'est la seule des trois qui tranche.
+
+**Ce n'est donc pas ce lot**, et le dire noir sur blanc évite qu'une prochaine
+session le cherche là où il n'est pas. Ce qui reste à faire, c'est de comprendre
+pourquoi le jeu de démonstration ne laisse plus qu'**un** jour libre là où ces
+deux cas en demandent deux : le calendrier du seed s'est-il rempli, ou la règle
+de capacité a-t-elle changé ? Le message dit le symptôme, pas la cause.
+
+**Ce que ça ne bloque pas :** rien du produit. Ces deux cas éprouvent que le
+client peut proposer une date — le refus vient d'un calendrier trop plein dans
+les DONNÉES d'essai, pas d'un écran cassé.
+
+**Et un TROISIÈME contrôle dépend de la charge**, trouvé le même jour :
+`test-reduction-devis-e2e.ts`, sur *« un appui rend le prix plein TOUT DE SUITE,
+avant toute écriture »* — rouge en batterie, **vert rejoué seul**. Il lit l'écran
+juste après un appui, avant que l'action serveur n'ait répondu : sous cent
+suites, la réponse arrive avant la lecture et le cas s'inverse.
+
+Avec `test-lecons-prix-e2e` (§ plus bas) et la suite du veilleur, cela fait
+**quatre** contrôles qui rougissent au hasard de la machine. C'est le vrai sujet,
+et il grossit : un rouge qui tombe au hasard apprend à ignorer le rouge, et l'on
+perd alors tout ce qu'il surveille. Ce qu'il faut : attendre un SIGNAL — la
+réponse du serveur, un attribut qui change — jamais un instant.
+
+---
+
+## ~~« Donner un accès » : sa réponse attendue, A ou B~~ — **RÉPONDU ET CODÉ le 26 août 2026**
+
+**Sa réponse : « B, tu peux coder ».** L'écran vit à `/reglages/equipe/nouveau`,
+la liste ne porte plus de formulaire, le mot de passe s'écrit deux fois avec un
+œil sur chacune, et le rôle choisi est teinté au lieu d'être un aplat plein.
+Détail dans `CHANGELOG.md`. Ce qui suit est gardé pour le chemin.
+
+Planche : **https://florianmarrins0978-svg.github.io/Atlas-app/donner-un-acces.html**
+
+Ses trois reproches du 26 août 2026 sur l'écran livré le matin (l'œil et la
+double saisie du mot de passe, le bouton noir confondu avec la pastille de rôle,
+la démarcation avec son propre compte). Les deux propositions ne diffèrent que
+sur la SÉPARATION : **A** une carte posée sur la liste, **B** un écran à lui
+seul. Le reste — œil, double saisie, rôle teinté au lieu de noir — est commun
+aux deux et ne se rediscute pas : il vient de décisions déjà prises.
+
+**Rien n'est codé tant qu'il n'a pas répondu.** L'écran de production porte
+encore le défaut qu'il a photographié.
+
+## Un commercial doit LIRE les tarifs sans pouvoir les changer
+
+*Né du lot « rôles et accès » du 25 août 2026, et laissé ouvert délibérément.*
+
+La règle est du patron, le 13 août : *« il lit les tarifs, il ne les change
+pas »*. Elle n'est **pas** tenue aujourd'hui : `/reglages/tarifs` et
+`/reglages/prix` refusent tout compte qui n'est pas patron, exactement comme
+avant le lot. Un commercial ne voit donc pas les grilles qu'il est censé
+employer pour chiffrer.
+
+**Ce que ça demande, et pourquoi ça n'a pas été fait dans la foulée :** rendre
+ces deux écrans *lisibles sans être modifiables* est un travail d'ÉCRAN — que
+devient un champ de prix qu'on ne peut pas toucher, que devient le bouton
+« ajouter une ligne », que lit-on à la place. Cela se dessine avant de se coder
+(`CLAUDE.md` §3 bis), et cela se montre au patron.
+
+**Ce qui n'est PAS en jeu :** l'écriture est déjà fermée côté serveur. Les
+actions de tarifs et de grille portent `exigerProprietaire` depuis le 23 août —
+ouvrir la lecture ne rouvrira rien.
+
+## Trois suites navigateur rougissent SOUS LA BATTERIE et passent seules
+
+**Constaté le 26 août 2026**, sur deux batteries complètes de suite :
+`test-fiche-chantier-e2e`, `test-lecons-prix-e2e` et `test-planning-vers-facture-e2e`
+tombent en batterie et rendent **toutes trois 100 % vert rejouées seules** —
+vérifié une par une. Ce n'est jamais la même qui tombe d'une batterie à l'autre.
+
+C'est la première des deux causes écrites en tête de `HANDOVER.md` : un délai
+plutôt qu'un signal. Sous les cent douze suites, cette machine met plus
+longtemps que le délai posé — quinze secondes pour un écran, trente puis
+soixante pour une action serveur.
+
+**Ce que ça coûte, et pourquoi ce n'est pas rien :** une batterie qu'on prend
+l'habitude de voir rouge cesse d'être lue, et le jour où elle attrape un vrai
+défaut, personne ne la croit.
+
+**Ce qu'il faudrait, pour qui reprend :** remplacer ces attentes par un signal
+(la réponse du serveur, la classe posée par le composant) plutôt que d'allonger
+les délais un à un — allonger ne fait que repousser le seuil, et la machine
+suivante sera plus lente encore.
+
+---
+
+## `test-fiche-pendant-relance.ts` rougit sur `main`, et ce n'est pas ce lot
+
+**Constaté le 25 août 2026.** La batterie complète rend `232/233` : seule
+`scripts/test-fiche-pendant-relance.ts` tombe, sur son deuxième cas —
+*« le veilleur est bien bloqué à relancer — sans quoi la suite ne prouve rien »*,
+avec la phrase *« le veilleur n'a jamais tenté de relance : le montage ne
+reproduit pas le cas réel »*.
+
+**Elle tombe à l'identique sur `origin/main`**, éprouvé dans un arbre de travail
+séparé au commit `77e0073` — ce n'est donc pas une régression du lot des flèches,
+et c'est écrit ici plutôt que tenu sous silence : une batterie qu'on prend l'habitude de voir
+rouge cesse d'être lue.
+
+**Ce qu'elle défend, et pourquoi ça compte** (`CLAUDE.md` §1 bis) : la fiche
+d'état de son espace doit continuer d'être publiée PENDANT que le veilleur
+relance le serveur. Le premier cas passe ; c'est le **montage** de la suite qui
+ne parvient plus à mettre le veilleur en situation de relance. Une suite dont le
+montage ne reproduit plus le cas réel rend un vert qui ne prouve rien — c'est
+exactement ce que son deuxième cas refuse, et il a raison de refuser.
+
+À reprendre par qui touche au veilleur : la suite est juste, c'est son décor qui
+a vieilli.
+
+---
+
+## Le mode d'emploi de l'assistant : le tenir vivant
+
+**FAIT le 25 août 2026** pour l'essentiel (`ARCHITECTURE.md` §180). Ce qui reste,
+et qui ne se règle pas en une fois :
+
+- **Les fiches couvrent les écrans principaux, pas encore chaque recoin.**
+  Manquent notamment : le détail de l'écran Réglages → Devis & factures (chaque
+  réglage un par un), les mesures de la grille de prix, l'écran d'abonnement, et
+  la fiche du diagnostic végétal une fois la photo prise. Chaque ajout se prouve
+  contre le code, comme les autres.
+- **La formulation d'un vrai modèle n'a pas été vue ici** (aucune clé) : la
+  chaîne entière est éprouvée par le fournisseur `dev`. À regarder sur son
+  espace, en lui posant trois ou quatre « comment je fais pour… ».
+- **Quand il signale un geste faux, c'est une fiche à corriger**, pas une
+  consigne à ajouter au modèle.
+
+---
+
+## ~~Photographier son devis / sa facture pour en reprendre l'allure~~ — FAIT le 25 août 2026
+
+**FAIT.** L'écran Réglages → Documents porte désormais, en tête de « L'allure de
+mes devis », deux boutons *Photographier mon devis / ma facture* (appareil photo
+**ou** photothèque). La lecture vit dans `src/server/ai/services/lire-allure-devis.ts`
+(même patron que `lire-ticket.ts`), l'action `reprendreAllurePhotoAction` fusionne
+le lu dans l'allure et les conditions déjà en base, et l'écran montre ce qui a été
+repris et sa réserve. La photo est nettoyée de ses métadonnées comme le logo.
+
+**Reste NON vérifié ici, et il faut le dire :** l'appel réel au fournisseur de
+vision demande une clé, absente de cet environnement. La fonction PURE de lecture
+est éprouvée (`scripts/test-lecture-allure-devis.ts`, 0 échec) ; **la lecture d'un
+vrai devis se prouve sur son espace, avec sa clé, comme la dictée.**
+
+<details><summary>Contexte d'origine</summary>
+
+**Sa demande :** *« faut également que l'utilisateur puisse prendre la photo de
+son devis et que l'outil recopie trait pour trait son devis, pareil pour sa
+facture »* — venue juste après *« on comprend rien, trop compliqué pour modifier,
+faut simplifier tout ça »* sur l'écran Réglages → Documents (allure + message).
+
+**Ce que ça remplace, et pourquoi c'est une simplification.** Aujourd'hui il
+règle à la main le logo, la typographie, la couleur et le message (un écran de
+près de 1000 lignes qu'il trouve illisible). L'idée : il photographie un de ses
+devis existants, et l'appli **en tire l'allure** pour ses futurs documents — le
+long réglage manuel disparaît derrière un seul bouton.
+
+**Franchise à tenir, dite le 25 août :** « trait pour trait » à l'identique n'est
+ni faisable ni souhaitable — une photo n'est pas modifiable, et l'appli doit
+produire un vrai PDF propre (bon lien, bons montants). Ce qu'on reproduit, c'est
+l'**allure** et les **mentions**, pas une copie pixel.
+
+**Ce qu'il a tranché (25 août)**, sur trois choix proposés :
+
+| L'appli reprend de la photo | Retenu ? |
+|---|---|
+| l'allure : logo, couleurs, police, mise en page | **oui** |
+| les mentions : conditions de paiement, mentions légales, politesse | **oui** |
+| les lignes et les prix de ce devis-là | **non** |
+
+**Précisions du 25 août (sur la maquette) :** l'entrée doit proposer
+**l'appareil photo OU la photothèque** — son devis est parfois déjà une photo
+dans sa galerie. Et **« régler à la main » a été retiré** : il a demandé à quoi
+ça servait, et si la photo fait tout, la porte de secours ne sert plus.
+
+| | |
+|---|---|
+| ce qu'il faut | un écran « Photographier mon devis » (appareil photo **ou** photothèque), la lecture par l'IA vision (le même patron que `lire-ticket.ts` et le croquis d'arrosage), et l'écriture du résultat dans l'allure (`allure-documents.ts`) et les conditions (`conditions-documents.ts`) déjà en base |
+| qui peut le faire | moi — c'est du code, la brique vision existe |
+| d'abord | **la maquette** (§3 bis), qu'il a demandée avant tout code |
+| pas vérifiable ici | la lecture d'image réelle demande une clé de vision, absente de cet environnement — à jouer sur son espace |
+
+</details>
 ## ~~`test-envoi-client-e2e.ts` dépend de la place qui reste dans le mois~~ — réglé le 26 août 2026
 
 **Le défaut, mesuré :** le mois affiché s'ouvre au 1er, le délai minimal écarte
@@ -134,12 +401,18 @@ ce lot, et une renumérotation faite à moitié laisserait des renvois faux — 
 que des renvois ambigus, parce qu'ils ont l'air justes.
 
 **Ce qu'il faut faire :** renuméroter les deux paragraphes de FIN de fichier
-(« Les images d'utilisateur », « Le corps d'une requête ») en §171 et §172, puis
-reprendre chaque renvoi un par un. §170 est pris par le lot 3.
+(« Les images d'utilisateur », « Le corps d'une requête ») aux deux prochains
+numéros libres, puis reprendre chaque renvoi un par un.
 
+**Mis à jour à la fusion du 26 août 2026 :** `main` est monté à §190, et le
+lot 3 a pris §191 et §192 — la règle dit de renuméroter CELUI QUI N'EST PAS
+ENCORE SUR MAIN, et c'était le nôtre. La dette de `main`, elle, s'est
+alourdie : §134, §135 et §136 sont eux aussi en double.
 ---
 
 ## Le devis et la facture n'ont pas encore le refus d'adresse locale (24 août 2026)
+
+## ~~Le devis et la facture n'ont pas encore le refus d'adresse locale~~ (fait le 24 août 2026)
 
 Le lien envoyé au client prenait l'adresse du navigateur qui l'avait fabriqué —
 et son client a reçu une page morte sur `localhost` (`ARCHITECTURE.md` §169).
@@ -147,21 +420,36 @@ et son client a reçu une page morte sur `localhost` (`ARCHITECTURE.md` §169).
 **Ce qui est fait pour les quatre écrans** : l'adresse se calcule au même
 endroit, et `ATLAS_URL_PUBLIQUE` la commande quand elle est posée.
 
-**Ce qui n'est fait que sur la fiche de chantier** : le REFUS de composer un
-message avec une adresse locale, et la phrase qui le dit. Le devis parti, le
-devis complet et la facture peuvent donc encore envoyer un lien mort quand Atlas
-est ouvert par une redirection de port.
+**Réglé le même soir, sur sa réponse « oui tu peux le faire ».** Les cinq
+gestes qui envoient un lien à un client portent le refus — fiche de chantier
+(envoi et rapport rouvert), devis parti, message tout prêt de la facture, envoi
+de la facture, envoi depuis le devis complet.
 
-| | |
-|---|---|
-| ce qu'il faut | poser `ouvrableParLeClient` sur leurs trois gestes d'envoi |
-| qui peut le faire | n'importe quelle session — la règle pure existe déjà |
-| pourquoi ce n'est pas fait ici | trois écrans de plus dans un lot déjà large, et leurs suites à reprendre une par une |
-
-Ce n'est pas urgent tant qu'il envoie depuis l'adresse de son espace de travail
-— mais c'est exactement l'hypothèse qui vient d'être démentie.
+Ce qui reste vrai et mérite d'être su : le refus arrive APRÈS l'enregistrement,
+partout. Un devis envoyé reste envoyé, une facture arrêtée reste arrêtée — on ne
+défait pas une écriture comptable pour une histoire d'adresse.
 
 ---
+
+## ⚠ Six numéros de section en DOUBLE dans `ARCHITECTURE.md` (25 août 2026)
+
+`## 125`, `## 134`, `## 135`, `## 136`, `## 164`, `## 165` désignent chacun
+**deux sections différentes**. Constaté sur `main` nu, sans modification locale :
+ce n'est la faute d'aucun lot en cours.
+
+**Ce que ça coûte :** un renvoi « `ARCHITECTURE.md` §164 » écrit dans le code ne
+désigne plus rien de sûr — et c'est par ces renvois qu'on retrouve le POURQUOI
+d'une décision. Le dépôt en compte des dizaines.
+
+**Pourquoi ce n'est pas corrigé ici :** renuméroter suppose de reprendre tous les
+renvois qui pointent dessus, dans un fichier où trois ou quatre sessions écrivent
+en même temps. Fait au milieu de leurs lots, cela produirait des conflits sur
+chacun et des renvois faux partout.
+
+**À faire d'un coup, par une session qui n'a que ça à faire** : renuméroter les
+six seconds, corriger les renvois, et poser un contrôle qui refuse un numéro
+déjà pris — sans quoi la même dérive recommence dès la semaine suivante.
+
 
 ## ⚠ `verifier-maquette-message-et-allure` est ROUGE sur main (24 août 2026)
 
@@ -477,6 +765,135 @@ le produit. **Ne pas rouvrir** sans qu'il le redemande.
 
 La planche 92 (`appli/calendrier-aujourdhui.html`) reste : elle raconte le
 chemin, et le prochain qui trouvera deux cases entourées saura pourquoi.
+
+---
+
+## ~~CINQ RÉGLAGES DE DOCUMENTS N'ATTEIGNENT PAS LE DEVIS~~ — **BRANCHÉS le 25 août 2026**
+
+**Il l'a relevé lui-même :** *« les autres qui sont en ON doivent-ils être
+visibles sur le devis ? car je ne vois rien, est-ce normal ? »*
+
+**Non. Vérifié dans le code, pas supposé.** Sur les six réglages de
+« Réglages → Documents », **un seul atteint le document** :
+
+| Réglage | Sur le devis ? | Par où |
+|---|---|---|
+| Validité du devis | **oui** | figée sur le devis à sa création (`getOuCreerDevisBrouillon`), imprimée par `devis-pdf.ts` |
+| Acompte | non | — |
+| Délai de paiement | non | — |
+| Moyens de paiement | non | — |
+| Rappeler les pénalités | non | — |
+| Texte en bas des documents | non | — |
+
+`lignesConditionsDevis` compose bien ces cinq lignes, et **elle n'est appelée que
+par l'aperçu de l'écran Réglages**. Ni l'écran du devis, ni son PDF ne la
+connaissent. Il règle, il voit l'aperçu, et son client ne reçoit rien.
+
+Ce qu'il voit sur son devis vient d'ailleurs, et c'est ce qui rend le défaut
+invisible : « Acompte de 30 % à la signature… » est un **exemple grisé** dans un
+champ libre vide (`placeholder`), et « Modalités de paiement / IBAN » vient de
+ses coordonnées bancaires.
+
+**SA RÉPONSE, le 25 août : « branche-les »**, avec une question — *« si je
+décoche le bouton OFF, ils sont censés disparaître ? »* Oui, et c'est éprouvé.
+
+**Fait.** Migration 0064 : les cinq conditions se figent sur le devis à sa
+création, comme la validité. Elles s'impriment sous « NOTES / CONDITIONS »,
+**après** ce qu'il a écrit à la main — son champ libre n'est ni remplacé ni
+réécrit. Rien sur la feuille de chantier du salarié, qui part sans un prix. Le
+détail et le pourquoi sont dans `ARCHITECTURE.md` §177.
+
+**Ce que cela ferme sans qu'il ait eu à trancher :** la planche 60 lui proposait
+A (les conditions seules), B (les siennes d'abord) ou C (deux blocs). B a été
+codée, et elle **devient** A quand il n'a rien écrit. S'il veut C — deux blocs
+séparés d'un filet —, il le dira.
+
+**Ce qui reste ouvert, et qui n'est pas bloquant :** l'ÉCRAN du devis ne montre
+toujours pas ces cinq lignes ; il faut ouvrir « Aperçu du PDF » pour les voir.
+Les poser à l'écran est un changement d'apparence, donc une maquette d'abord
+(`CLAUDE.md` §3 bis).
+
+**Et le commentaire du code affirmait le contraire** — « l'aperçu du bas lit LA
+MÊME fonction que le PDF ». Corrigé le 25 août : il dit maintenant ce qui est
+vrai. Une documentation périmée est pire qu'absente.
+
+---
+
+## LES SUITES NAVIGATEUR SONT INSTABLES SOUS LA CHARGE DE LA BATTERIE (25 août 2026)
+
+**Le fait, mesuré trois fois plutôt que supposé.** Des suites rougissent dans la
+batterie complète — 110 suites d'affilée — et **passent au vert jouées seules**,
+sur la même branche ET sur `main` nu. Ce ne sont jamais les mêmes :
+
+| Batterie | Ce qui a rougi | Seule sur ma branche | Seule sur `main` nu |
+|---|---|---|---|
+| 24 août | `test-periodicite-tva-e2e` | 7/7 vert | 7/7 vert |
+| 24 août, `main` nu | `test-ia-02-e2e` | — | (clé IA absente : normal ici) |
+| 25 août | `test-facture-au-client-e2e` | vert | vert |
+| 25 août | `test-fiche-chantier-e2e` | 14/14 vert | — |
+
+**Ce que cela coûte, et c'est le vrai problème.** La batterie est ce qui autorise
+une livraison (`CLAUDE.md` §5). Une batterie qui rougit au hasard force chaque
+session à rejouer des suites une par une pour distinguer son propre défaut du
+bruit — une demi-heure par lot, et le risque inverse : prendre un VRAI rouge pour
+du bruit. Un contrôle qui parle à tort s'apprend à être ignoré, et l'on perd le
+garde-fou sans s'en apercevoir.
+
+**CORRECTION DU 25 AOÛT AU SOIR, ET ELLE CHANGE LE DIAGNOSTIC.** Une partie de
+ces rouges vient d'une faute de ma part, pas de la batterie : **je lançais des
+suites à côté pendant qu'une batterie tournait**, et les deux partagent la MÊME
+base d'essai. Chacune appelle `nettoyerBase()` et vide les tables de l'autre en
+plein milieu — d'où des écrans sans données, des attentes qui expirent, et des
+suites qui passent au vert dès qu'on les rejoue seules.
+
+**La règle qui en sort, et elle n'était écrite nulle part : une seule chose à la
+fois sur la base d'essai.** Pas de suite lancée « pour vérifier vite » pendant
+qu'une batterie tourne ; pas deux batteries. Le conteneur a une seule base, et
+elle n'est pas faite pour deux lecteurs qui la vident.
+
+**UN CONTRÔLE QUI SUPPOSE L'ÉTAT COMMUN ROUGIT SUR DU CODE JUSTE — deux fois
+le même soir.** `test-reste-equipes-e2e` a été écrit trois fois : il supposait
+d'abord le jour voisin libre, puis que le même jour redevenait libre après
+retrait de son propre chantier. Les deux fois, une autre suite avait laissé de
+quoi occuper ce jour-là, et **le message accusait l'écran de « parler à tort »
+sur un jour où il disait vrai** — le pire des rouges, il envoie corriger du code
+juste.
+
+La troisième version ne suppose plus rien : elle lit ce que la base porte
+réellement — chantiers ET absences —, le passe par **la règle du produit**, et
+exige que l'écran dise exactement ça. Elle fixe la RÈGLE, pas un arrangement
+particulier des données (`CLAUDE.md` §5 bis).
+
+**ET LA MÊME FAUTE A ÉTÉ REFAITE LE 25 AOÛT AU SOIR.** Une batterie tournait
+pendant que des contrôles de maquette et des captures ouvraient leurs propres
+navigateurs. Résultat : `test-lecons-prix-e2e` est tombé sur un délai de 30 s
+d'attente de réponse — et il passe seul, sur la même branche, sans rien toucher.
+**La règle n'est pas « une seule chose sur la base », c'est « une seule chose sur
+la MACHINE »** : un navigateur de plus suffit, même s'il ne lit que des fichiers.
+
+**PREMIÈRE MESURE APRÈS LA CORRECTION, et elle est nette :** une batterie jouée
+avec **rien d'autre en train de toucher la base** rend **224/224 en base et
+110/110 au navigateur**. Aucun rouge. C'est le premier 110/110 de la journée, et
+il désigne la faute ci-dessus plutôt que la machine.
+
+**Ce qui reste à éprouver** : les rouges qui tomberaient encore alors que rien
+d'autre ne tourne — s'il en reste. Les symptômes étaient des
+délais dépassés (`locator.waitFor: Timeout 30000ms`), ce qui ressemble à une
+machine saturée. Deux pistes, dans cet ordre :
+
+1. **le serveur de développement**, qui recompile chaque route à la demande : au
+   bout de cent suites, il a compilé toute l'application et travaille dans un
+   cache énorme. La batterie pourrait servir une version BÂTIE (`next build` puis
+   `next start`), comme le fait déjà `verifier:connexion` — c'est d'ailleurs
+   l'étape qui ne rougit jamais ;
+2. **la mémoire du conteneur**, à mesurer pendant une batterie avant de conclure.
+
+**Ne pas « réparer » en allongeant les délais** : cela masquerait un vrai défaut
+de lenteur le jour où il arrivera, et c'est exactement la faute que ce dépôt a
+payée avec les contrôles qui mesurent zéro.
+
+---
+
 ## ~~DEUX SUITES NAVIGATEUR ROUGES SUR `main`~~ — **RÉPARÉES le 25 août 2026**
 
 **Vérifié sur `main` nu**, dans un arbre séparé, sans aucun lot par-dessus : les
@@ -613,6 +1030,35 @@ il coûte cher : il fait douter d'un lot juste, et il apprend à ignorer un roug
 Le corriger, c'est attendre la trace de l'enregistrement plutôt qu'un délai —
 la même leçon que le `networkidle` du 15 août.
 
+**`test-attente-dictee-e2e.ts` a rejoint la liste le 25 août**, avec la même
+signature à un détail près : *« l'écran affiche "Aucune coordonnée reconnue dans
+ce que vous avez dit" au lieu d'annoncer qu'il rédige »*. Tombée en batterie
+(109/110), **verte seule** dans la foulée, sur du code que le lot en cours ne
+touchait pas — il ne portait que l'en-tête de l'accueil. Ici encore, l'assertion
+arrive avant que le serveur chargé n'ait rendu sa réponse : l'écran en est resté
+au message d'échec de la dictée précédente. **Quatre suites, un seul défaut.**
+
+**`test-lecons-prix-e2e.ts` a rejoint la liste**, et elle est la première à
+tomber DEUX FOIS — le 25 août, sur deux batteries séparées, chaque fois verte
+seule dans la foulée, et sur des lots qui ne touchaient rien de son sujet. Elle
+tombe sur une attente de réponse dépassée : même signature que les quatre
+autres. **Cinq suites, un seul défaut.**
+
+**MESURE DÉCISIVE DU 25 AOÛT, à garder :** l'étape navigateur a été jouée sur
+`main` NU — arbre séparé, aucun commit de session — et elle y rend **107/110**,
+trois suites tombées (`test-arrosage-e2e`, `test-facture-impayee-e2e`,
+`test-fiche-chantier-e2e`). Le même jour, sur un arbre PORTANT un lot, elle
+rendait 109/110, avec à chaque fois **une suite différente**.
+
+**Cette machine ne rend donc pas 110/110, quel que soit le code.** Ce n'est pas
+une excuse pour livrer du rouge : c'est un fait à opposer à la prochaine session
+qui croira avoir cassé quelque chose, et qui passera une heure à chercher dans
+son propre lot. **Le bon geste, devant un rouge navigateur : rejouer la suite
+SEULE, puis, si elle passe, rejouer l'étape sur `main` nu.** Un arbre séparé se
+monte en deux commandes (`git worktree add`), mais il lui faut de VRAIES
+dépendances : un lien symbolique vers `node_modules` fait paniquer Turbopack
+(« Symlink [project]/node_modules is invalid »), et l'essai ne prouve alors rien.
+
 **Personne ne l'a encore fait**, et ce n'est pas ce lot-ci qui doit le faire :
 c'est écrit ici pour que la prochaine batterie rouge sur ces deux suites ne
 relance pas l'enquête depuis zéro.
@@ -637,6 +1083,68 @@ avant toute autre hypothèse.
 **Le remède est connu et tient en une ligne** : attendre la trace de
 l'enregistrement plutôt qu'un délai — la même leçon que le `networkidle` du
 15 août. Il reste à l'appliquer aux quatre.
+
+## ⚠ `CHANGELOG.md` porte DEUX en-têtes « 2026-08-24 » (25 août 2026)
+
+`CLAUDE.md` §C l'interdit nommément : *« une entrée neuve se glisse sous
+l'en-tête du jour qui existe déjà ; on n'en crée jamais un second »*. La règle
+existe parce que trois en-têtes du 23 août avaient déjà dû être réunies à la
+main.
+
+**Non corrigé ici, et c'est délibéré** : réunir les deux sections déplacerait
+quelques centaines de lignes écrites par une autre session, peut-être encore
+ouverte. Le faire sous ses doigts lui vaudrait un conflit sur tout le fichier.
+**À réunir par la prochaine session qui trouvera le champ libre**, ou par
+l'auteur de la seconde en-tête.
+
+## 🔴 `verifier-maquette-message-et-allure.mjs` est ROUGE sur `main` (24 août 2026)
+
+**Constaté en jouant `npm run verifier:maquette` sur un `main` fraîchement
+fusionné, sur un lot qui ne touche NI cette planche NI ce contrôle.** Deux
+échecs, tous deux sur la même valeur :
+
+```
+• le fond de départ est rgb(250, 249, 245) au lieu du crème d'aujourd'hui
+• le retour ne rend pas le crème : rgb(250, 249, 245)
+```
+
+**Vérifié pré-existant** : le contrôle rougit à l'identique sur `main` seul,
+sans aucune de mes modifications. Ce n'est donc pas une régression de ce lot.
+
+`rgb(250, 249, 245)` est `#faf9f5` — la **plage** de l'application
+(`colors.card`), pas le **crème du document** `#ece9e1` (`couleursDocument.papier`,
+la valeur d'`ALLURE_PAR_DEFAUT.fond`). La planche part donc sur la couleur des
+cartes de l'écran au lieu de celle du papier. **C'est exactement la confusion
+que `ARCHITECTURE.md` sépare** entre les jetons d'écran et ceux du document :
+le patron, lui, verrait une planche annonçant un fond que ses devis n'ont pas.
+
+**Non corrigé ici, et c'est délibéré** : la planche appartient à une autre
+session, qui la tient peut-être encore ouverte. La corriger à l'aveugle
+risquerait de défaire son travail en cours. **À reprendre par qui l'a écrite**,
+ou par la prochaine session si personne ne s'en saisit.
+
+## ~~Voir son devis pendant qu'on le change~~ — **CODÉ le 24 août 2026 : sa proposition B**
+
+Planche 96, trois rangements ; il a répondu **« la B »**. L'aperçu est collé en
+tête du bloc « L'allure de mes devis » et suit tout ce qu'on touche. Le détail
+est dans `CHANGELOG.md`.
+
+**Une question reste ouverte, et elle est indépendante** : les dix polices
+tiennent sur cinq rangées. S'il préfère une seule ligne qui défile de côté,
+l'aperçu remonte d'autant — il ne s'est pas prononcé.
+
+**DEUX SESSIONS L'ONT CODÉ LE MÊME JOUR**, et c'est à noter : le 25 août, une
+seconde a posé un aperçu collé identique, sans voir celui-ci. Un seul survit — la
+place de `main` —, et son ombre suit désormais la charte (`voile`) au lieu d'un
+noir écrit en dur, qui ne se voit pas sur les deux chartes sombres.
+**Trente secondes de `git branch -r --sort=-committerdate` l'auraient évité**
+(`CLAUDE.md` §6-A).
+
+**Le contrôle sait rougir**, et c'est ce qui le rend croyable :
+`scripts/test-apercu-colle-e2e.ts` remis en A — l'aperçu simplement remonté en
+tête — tombe en nommant A et en citant ce que la planche en disait. A et B ne
+diffèrent que pendant le DÉFILEMENT : un contrôle qui n'aurait pas descendu
+serait resté vert sur la moitié de réponse qu'il a écartée.
 
 ## ⚠ La planche 90 a DÉRIVÉ de l'écran « Terminés » qu'elle référence (23 août 2026)
 
@@ -681,7 +1189,7 @@ client a lu. Le détail est dans `CHANGELOG.md`.
 | **Le réglage de départ** | Codé sur **Visible**, ce que l'application faisait déjà. S'il préfère que chaque fiche parte **Masquée**, c'est le défaut de la colonne à retourner (une migration d'une ligne) |
 | **Masquer ou ne rien saisir ?** | Aujourd'hui masquer garde la durée pour lui. S'il voulait pouvoir ne rien saisir du tout, la molette devrait pouvoir revenir à « — », ce qu'elle ne sait pas faire |
 
-## ⚠ EN ATTENTE DE SA RÉPONSE — deux chantiers le même jour ? (22 août 2026)
+## ~~EN ATTENTE DE SA RÉPONSE — deux chantiers le même jour ?~~ — **B CODÉE le 25 août 2026**
 
 Sa colère du 22 août : *« je peux proposer le 24 alors qu'un client a validé le
 24 — corrige-moi ça ! Ça ne doit jamais se reproduire, c'est une erreur
@@ -698,10 +1206,28 @@ un jour vide d'un jour à moitié pris.
 
 Planche 88, `appli/envoi-jour-deja-pris.html`. Deux questions posées, pas une :
 
-| | |
-|---|---|
-| **A / B / C** | ne rien écrire · « 1 chantier sur 2 équipes » · deux carrés comme au planning |
-| **Le fond** | veut-il **interdire** deux chantiers le même jour, ou seulement le voir ? |
+**SA RÉPONSE, le 25 août : B** — avec une réserve : *« par contre "1 chantier
+sur 2" on ne comprend pas très bien, comment on peut faire pour comprendre
+mieux ? »*
+
+**Le libellé a donc changé, et il avait raison.** « 1 chantier sur 2 équipes »
+compte ce qui est PRIS, alors que ce qu'il décide dépend de ce qui RESTE : il est
+en train de proposer une date, et la question est *puis-je encore envoyer
+quelqu'un ce jour-là*. D'où **« Reste 1 équipe sur 2 »** — même information,
+tournée du côté du geste. La planche 88 porte le nouveau libellé, et un contrôle
+interdit aux deux de diverger.
+
+**Codé** sur la liste des dates retenues, dans l'écran d'envoi : c'est le dernier
+endroit où il peut retirer une date, et le seul qu'il relit avant de partir. Le
+PIRE des deux demi-journées commande — un matin plein et un après-midi libre ne
+font pas « une équipe et demie ». Rien ne s'écrit sur un jour entièrement libre,
+ni quand il n'a qu'une équipe.
+
+**Sur le fond — interdire ou seulement voir —, il n'a pas répondu en ces
+termes**, et choisir B (une mention) plutôt qu'un refus se lit comme
+« seulement le voir ». C'est aussi le sens sûr : interdire bloquerait un jour où
+il peut réellement envoyer quelqu'un. **S'il veut l'interdiction, il le dira** —
+c'est une ligne de plus dans `verifierJourPropose`.
 
 **Sa liste — 24, 25, 26, 27, 28, 31 — était compatible avec les deux causes**,
 et rien dans sa capture ne permettait de trancher. Ne pas conclure à sa place :
@@ -1380,13 +1906,14 @@ faux.
 1. **Les prix cachés dans les libellés.** Une ligne de devis peut porter son
    prix dans son texte — « forfait 350 € », « remise de 10 % ». Retirer les
    colonnes ne suffit pas : il faut décider ce qu'on fait de ces libellés-là.
-2. **Un compte `membre` voit aujourd'hui ce que voit le propriétaire.** Le rôle
-   existe en base (`membres.role`, `proprietaire` | `membre`) mais rien ne
-   restreint la lecture des montants. Cacher les prix sur la feuille ne servirait
-   à rien tant qu'il peut ouvrir le devis par une autre porte.
-3. **Par où le salarié entre.** Il n'a pas de compte aujourd'hui. Compte nominatif
-   ou lien par jeton comme la page publique du client ? Le second est plus rapide
-   à faire ; le premier est le seul qui permette de dire QUI a vu quoi.
+2. ~~**Un compte `membre` voit aujourd'hui ce que voit le propriétaire.**~~
+   **RÉGLÉ le 25 août 2026** : trois rôles en base, et le refus est au serveur
+   (`ARCHITECTURE.md` §180). Un salarié n'ouvre plus ni le devis, ni son PDF, ni
+   la fiche du chantier — seulement le planning et sa feuille sans montants.
+3. ~~**Par où le salarié entre.**~~ **TRANCHÉ le 25 août 2026 : compte
+   nominatif**, créé par le patron dans Réglages → Équipe. Le lien par jeton a
+   été écarté pour la raison même qui était notée ici — lui seul permet de dire
+   QUI a vu quoi.
 
 **Ce que la maquette ajoute, et qu'il faudra tenir en codant :** toucher un jour
 du mois amène la liste sur SA semaine. Sans ce lien, l'écran porterait deux
@@ -3223,6 +3750,53 @@ obligatoires, disposition des colonnes, ordre des totaux. Un devis mal posé
 n'est pas un devis moins joli, c'est un devis qu'on peut lui contester.
 
 ### ~~0 trigies septies. Deux suites de calendrier tombent EN FIN DE MOIS~~ — **RÉPARÉES le 25 août 2026**
+### 0 trigies nonies. Le format des numéros est FIGÉ À 2026 — **et ce n'est pas qu'un réglage manquant**
+
+**Sa demande du 26 août 2026**, capture d'une autre application à l'appui :
+*« dans la catégorie facture il faut rajouter le format de numéro, c'est
+obligatoire il me semble »*.
+
+**CHERCHÉ AVANT DE RÉPONDRE** (`CLAUDE.md` §5 ter), et ce qu'on a trouvé est
+pire que ce qu'il demandait :
+
+| | |
+|---|---|
+| ce qu'il croyait obligatoire | **le format ne l'est pas.** Ce que la loi exige, c'est une suite chronologique **sans trou ni doublon** — Atlas la tient déjà, par un compteur atomique par entreprise |
+| ce que personne n'avait vu | **le millésime est écrit en dur** : `` `2026-${…}` `` dans `devis.ts`, `` `F2026-${…}` `` dans `factures.ts`. **En janvier 2027, ses factures diront encore 2026** |
+
+**Le défaut a une DATE, et elle approche.** Il ne se verra pas d'ici là : le
+code est juste tant qu'on est en 2026. C'est exactement le genre de chose qu'une
+suite ne voit pas non plus — elle tourne aujourd'hui.
+
+**La planche est en ligne** (`appli/format-de-numero.html`), avec cinq formats
+qu'il essaie du doigt et trois questions au bas. **Rien n'est codé** tant qu'il
+n'a pas répondu (`CLAUDE.md` §3 bis).
+
+**Ce qu'il faudra tenir en codant, et qui n'est pas évident :**
+
+- **changer de format en cours d'année casse la suite** — c'est la seule vraie
+  contrainte légale du réglage, et elle est dite à l'écran, pas seulement ici ;
+- **un numéro déjà envoyé ne se réécrit jamais** : il est sur la facture du
+  client et dans sa comptabilité. Le changement ne vaut que pour les suivants ;
+- **le compteur doit repartir à 1 au 1ᵉʳ janvier** si l'année figure dans le
+  format — sinon `2027-0149` succède à `2026-0148`, ce qui se lit mal ;
+- **la suite des devis et celle des factures restent distinctes** : les mêler
+  rendrait illisible la numérotation continue qu'attend un contrôle.
+
+### 0 trigies octies. ~~Le brouillon confirmé ne se corrigeait plus~~ — **RÉPARÉ le 25 août 2026**
+
+Ses trois notes — déchets, contraintes d'accès, remarques — n'ont aucune autre
+case dans l'application, et le brouillon confirmé les figeait. Elles s'écrivent
+de nouveau ; les copies de ce qui vit ailleurs (prestations, matériel, durée,
+équipe) quittent l'encart. `ARCHITECTURE.md` §171.
+
+**Ce qui reste à surveiller, et qui n'est pas mesurable ici :** la consigne
+donnée au modèle exige désormais des réserves de six mots. **Aucune clé d'IA sur
+ce poste** — ça se juge sur son espace, à la première dictée (`CLAUDE.md`
+§1 ter). L'écran, lui, plafonne à cinq lignes quoi que le modèle rende, et c'est
+éprouvé (`test-brouillon-reserves.ts`).
+
+### 0 trigies septies. Deux suites de calendrier tombent EN FIN DE MOIS — **CONSTATÉ le 25 août 2026, PAS RÉPARÉ**
 
 **Elles rougissent sur `main`, sans aucun changement**, et elles bloquent la
 livraison de toutes les sessions tant qu'on est en fin de mois. Vérifié : même
@@ -3529,7 +4103,50 @@ neutralise est un contrôle perdu, et celui-ci tient la pièce maîtresse d'un
 | Le temps passé | **une molette**, pas un clavier (`65-choisir-l-heure.html`) — trois gestes proposés, le mien recommandé est la molette Atlas |
 | Où se compose la fiche | dans les **Réglages**, « Ma fiche d'entretien » — modèle fourni, modifiable |
 
-**Deux choses restent à trancher, et aucune n'est du rangement :**
+**LES DEUX SONT TRANCHÉES le 25 août 2026**, une fois les planches enfin
+publiées — elles vivaient dans `docs/maquettes/`, que `pages.yml` ne publie pas,
+et l'on attendait depuis le 16 août un choix qu'il n'avait pas les moyens de
+faire.
+
+| Sa réponse du 25 août | Ce que ça ferme |
+|---|---|
+| **« Planche une, la A »** | **une seule liste**, tenue dans les Réglages, pré-remplie à chaque envoi. Rien n'est rangé par client |
+| **« Planche 2, la molette, mais avec d'un côté les heures qu'on peut bouger et de l'autre les minutes qu'on peut bouger séparément »** | **rien à coder : c'était DÉJÀ le cas** — voir ci-dessous |
+
+**SA DEMANDE DÉCRIVAIT CE QUI EXISTAIT DÉJÀ, et c'est lui qui l'a vu :** *« la
+molette a déjà été codée, vérifie »*. Vérifié — `MoletteDuree`
+(`src/app/paysage/fiche/[id]/FicheChantierClient.tsx`) pose **deux listes
+natives, les heures à gauche, les minutes à droite**, chacune au doigt, au pas de
+cinq minutes. C'est la proposition A, codée le 16 août.
+
+**La faute est de mon côté, et elle se répète :** une planche a été dessinée sans
+chercher d'abord ce que le dépôt faisait déjà. C'est la même que la planche 56
+— décrire un écran qui existe — et l'inverse du 20 août, où l'on avait déclaré
+impossible un travail à moitié fait (`CLAUDE.md` §5 ter : *chercher avant
+d'affirmer, dans les deux sens*). Trente secondes de `grep -rn molette src/`
+l'auraient évité.
+
+**TRANCHÉ le 25 août 2026 : « je garde celle qui est présente. »** Les molettes
+natives du téléphone restent, et **rien n'est à coder**. La question ne portait
+plus que sur l'apparence — le geste était identique dans les deux cas.
+
+Le sujet est clos : **ne pas le rouvrir** sans qu'il le redemande.
+
+**Ce que la D aurait changé — gardé pour mémoire, elle n'a pas été retenue.** D'un seul tenant, la molette
+compte cinquante-trois crans de 0 h 00 à 4 h 00 : aller de 0 h 05 à 3 h 30
+demande quarante et un crans, donc plusieurs élans du pouce. Séparées, la même
+valeur se pose en deux gestes courts. Et c'est le geste de la molette de son
+iPhone, qu'il connaît déjà — ce qui était l'argument de la A, retenue le 16 août
+puis remplacée par celle-ci.
+
+**Ce que ça coûte, et c'est dit sur la planche :** deux gestes au lieu d'un. Sur
+une durée ronde — « deux heures » —, la C se posait d'un seul élan.
+
+**RIEN N'EST CODÉ**, et c'est la règle : la planche se regarde d'abord
+(`CLAUDE.md` §3 bis). Ce qui reste à faire est du développement ordinaire — la
+molette, la liste des prestations, l'écran des Réglages.
+
+**Ce qui restait à trancher, et qui l'est maintenant :**
 
 **a) La molette** — la native du téléphone (gratuite, ressemble à un
 formulaire), les quarts d'heure (un appui, mais imprécise), ou la molette Atlas
@@ -6684,6 +7301,13 @@ et c'est déjà arrivé.
 - ~~Rédiger le devis entièrement à la main, depuis la fiche du chantier~~ — 2026-08-04
 - ~~Retirer la case « Nom du chantier » : plus rien n'est obligatoire à la création~~ — 2026-08-05
 - ~~« Rédiger à la main » ouvre le devis ENTIER, à l'image du modèle, et il reste dans Atlas~~ — 2026-08-05
+- [x] ~~**Le calendrier n'offre que 2 jours sur une base fraîchement montée.**~~
+  Réglé le 24 août 2026 par une autre session, dans l'heure — les deux suites
+  (`test-deux-dates-calendrier-e2e`, `test-date-lointaine-e2e`) passent après
+  fusion. **Ce qui reste à en retenir** : elles étaient vertes deux heures plus
+  tôt sur la même version, et rouges sur une base neuve. Un contrôle qui dépend
+  de l'âge de la base accuse au hasard — c'est la même leçon que l'instabilité
+  notée juste au-dessus.
 - [ ] **La batterie rougit sur des suites DIFFÉRENTES à chaque exécution**, et
   chacune passe seule sur le même code. Relevé le 24 août 2026, trois
   exécutions d'affilée : d'abord `test-planning-vers-facture-e2e` (un texte

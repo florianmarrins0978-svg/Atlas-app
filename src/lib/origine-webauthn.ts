@@ -89,6 +89,40 @@ function estLocal(domaine: string): boolean {
   return domaine === "localhost" || domaine === "127.0.0.1" || domaine === "[::1]";
 }
 
+/**
+ * L'adresse annoncée par le navigateur, quand elle vaut mieux que l'en-tête.
+ *
+ * **Le cas réel, et il a coûté un Face ID muet le 26 août 2026.** Derrière le
+ * tunnel de son espace de travail, le serveur ne reçoit que `localhost:3000` —
+ * aucun en-tête ne porte l'adresse publique (`ARCHITECTURE.md` §177). Atlas
+ * enregistrait donc les clés sous le domaine « localhost » pendant que la page
+ * était servie depuis `…-3000.app.github.dev`, et le navigateur refusait — à
+ * juste titre : une clé posée pour un domaine ne s'ouvre nulle part ailleurs.
+ *
+ * **Elle ne remplace l'en-tête QUE hors production, et QUE si l'en-tête est
+ * local.** Un `Host` composé par celui qui frappe est déjà une source faible ;
+ * y ajouter une valeur du client ne l'affaiblit pas davantage là où elle est
+ * déjà crue. En production, `ATLAS_RP_ID` commande, et rien de ce que le client
+ * envoie ne peut le déplacer — c'est ce que la suite éprouve en premier.
+ */
+function duNavigateur(brut: string | null | undefined): { domaine: string; origine: string } | null {
+  const nu = (brut ?? "").trim().toLowerCase();
+  if (!nu) return null;
+  let url: URL;
+  try {
+    url = new URL(nu);
+  } catch {
+    return null;
+  }
+  // `https` seul : une page en clair ne peut de toute façon pas faire de
+  // WebAuthn, et l'accepter ici fabriquerait une origine que le navigateur
+  // rejetterait ensuite sans un mot.
+  if (url.protocol !== "https:") return null;
+  const domaine = domaineDe(url.host);
+  if (!domaine || estLocal(domaine)) return null;
+  return { domaine, origine: `${url.protocol}//${url.host}` };
+}
+
 export function origineWebAuthn(entree: {
   /** L'en-tête `host` (ou `x-forwarded-host`) de la requête. */
   hote: string | null | undefined;
@@ -98,6 +132,11 @@ export function origineWebAuthn(entree: {
   domaineEpingle?: string | null;
   /** Vrai en développement et sur le banc d'essai. */
   horsProduction: boolean;
+  /**
+   * `window.location.origin`, lu dans le GESTE et transmis par l'écran.
+   * Dernier recours, et seulement hors production — voir `duNavigateur`.
+   */
+  origineNavigateur?: string | null;
 }): VerdictOrigine {
   const epingle = entree.domaineEpingle?.trim().toLowerCase() || null;
 
@@ -121,6 +160,18 @@ export function origineWebAuthn(entree: {
   const domaineDeLaRequete = domaineDe(hote);
   if (!domaineDeLaRequete) {
     return { ok: false, code: "hote-illisible", raison: "L'hôte annoncé n'est pas un domaine." };
+  }
+
+  /**
+   * **Le filet du tunnel.** Hors production, et seulement quand l'en-tête ne
+   * porte qu'une adresse de machine, l'adresse par laquelle l'artisan a
+   * VRAIMENT ouvert Atlas fait foi. Ailleurs — production, ou en-tête déjà
+   * public — on n'y touche pas : une valeur venue du client ne doit pas
+   * pouvoir déplacer un domaine que le serveur connaît.
+   */
+  if (entree.horsProduction && !epingle && estLocal(domaineDeLaRequete)) {
+    const vu = duNavigateur(entree.origineNavigateur);
+    if (vu) return { ok: true, origine: { rpId: vu.domaine, origine: vu.origine } };
   }
 
   const rpId = epingle ?? domaineDeLaRequete;

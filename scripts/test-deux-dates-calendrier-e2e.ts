@@ -90,26 +90,24 @@ async function main() {
    * la main : il vient de `DELAI_MINIMAL_JOURS`.
    */
   /**
-   * Regarde un jour, puis le retient — ou le rend s'il l'était déjà.
+   * Touche un jour : il se propose, ou se rend s'il l'était déjà.
    *
-   * **Deux gestes, et c'est le sujet du 22 août :** toucher la case OUVRE la
-   * journée pour voir qui y est ; c'est « Proposer ce jour » qui engage la date.
-   * Un jour consulté par erreur partait auparavant chez le client.
+   * **UN SEUL GESTE depuis le 25 août 2026** — *« je dois pouvoir sélectionner
+   * les jours juste en les touchant, pas besoin de cliquer sur proposer »*. Le
+   * second appui, qui refermait la fiche, RETIRERAIT maintenant la date : cette
+   * suite l'a fait tomber la première, et c'est exactement ce qu'on veut d'elle.
    */
   async function toucher(jour: string) {
     await page.locator(`[data-jour="${jour}"]`).click();
     await page.locator('[data-atlas="journee-regardee"]').waitFor({ state: "visible", timeout: 30_000 });
-    // Le verdict vient du serveur : on attend qu'il ait cessé de vérifier,
-    // plutôt qu'un délai fixe qui échouerait au hasard sous la batterie
-    // complète — un contrôle qui rougit sans raison apprend à ignorer le rouge.
+    // Le verdict vient du serveur, et c'est LUI qui retient : on attend qu'il
+    // ait cessé de vérifier, plutôt qu'un délai fixe qui échouerait au hasard
+    // sous la batterie complète — un contrôle qui rougit sans raison apprend à
+    // ignorer le rouge.
     await page
       .locator("text=Vérification de votre planning…")
       .waitFor({ state: "hidden", timeout: 20_000 })
       .catch(() => undefined);
-    const bouton = page.locator('[data-atlas="retenir-le-jour"]');
-    if ((await bouton.count()) > 0 && (await bouton.isEnabled())) await bouton.click();
-    // On referme la fiche : la suivante s'ouvrira sur un écran propre.
-    await page.locator(`[data-jour="${jour}"]`).click();
     await page.waitForTimeout(250);
   }
 

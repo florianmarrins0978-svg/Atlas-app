@@ -9,10 +9,18 @@ import { jourLisible } from "@/lib/jour";
 import { composerMessageFacture, lienTransmission, type CanalClient } from "@/lib/message-client";
 import { useRetourDeMessagerie, marquerDepartMessagerie } from "@/lib/depart-messagerie";
 import { ouvrirAdresse } from "@/lib/ouvrir-messagerie";
+import { adressePourLeClient, ouvrableParLeClient, phraseAdresseLocale } from "@/lib/adresse-du-client";
 import ChoixCanal from "@/components/atlas/ChoixCanal";
 import TransmettreLaFacture from "./TransmettreLaFacture";
-import { terminerChantierAction, emettreFactureAction, preparerLienFactureAction } from "./actions";
+import {
+  terminerChantierAction,
+  emettreFactureAction,
+  preparerLienFactureAction,
+  majEcheanceFactureAction,
+} from "./actions";
 import { avecCivilite } from "@/lib/civilite";
+import { ECHEANCE_MAX_JOURS } from "@/lib/echeance-facture";
+import { jourIso } from "@/lib/jour";
 
 // Arrêt 3 (docs/AGENT.md §2.3). Cet écran EST le contrôle : les montants du
 // devis sont déjà là, il n'y a rien à saisir. Franchissable en un geste quand
@@ -32,6 +40,8 @@ export type FacturePourEcran = {
   clientNom: string | null;
   /** Recopiée sur la facture à son établissement (migration 0038). */
   clientCivilite: "mr" | "mme" | null;
+  /** La date de la facture — borne basse de l'échéance modifiable. */
+  dateEmission: string;
   dateEcheance: string | null;
   tauxTva: string;
   totalHt: string;
@@ -93,6 +103,28 @@ export default function FactureClient({
   const [enCours, setEnCours] = useState(false);
   const [erreur, setErreur] = useState<string | null>(null);
   const [emise, setEmise] = useState(initialFacture?.statut === "emise");
+
+  // L'échéance — proposée par défaut à la création (son délai de paiement, ou
+  // 30 jours), et modifiable ICI tant que la facture n'est pas arrêtée. Sa
+  // demande du 25 août : « qu'il puisse la modifier », et si elle part sans
+  // qu'il y touche, elle part quand même avec une VRAIE date, jamais un vide.
+  const [dateEcheance, setDateEcheance] = useState<string | null>(initialFacture?.dateEcheance ?? null);
+  const [refusEcheance, setRefusEcheance] = useState<string | null>(null);
+  const [echeanceEnCours, setEcheanceEnCours] = useState(false);
+
+  async function changerEcheance(valeur: string) {
+    if (!initialFacture) return;
+    setEcheanceEnCours(true);
+    setRefusEcheance(null);
+    try {
+      const r = await majEcheanceFactureAction(initialFacture.id, valeur);
+      // On affiche ce que la BASE porte : une saisie hors bornes y est retombée.
+      if (r.succes) setDateEcheance(r.dateEcheance);
+      else setRefusEcheance(r.erreur);
+    } finally {
+      setEcheanceEnCours(false);
+    }
+  }
 
   // Le canal convenu avec le client ; à défaut, celui dont on a la coordonnée.
   // Ce n'est qu'un DÉPART : depuis le 12 août, l'écran offre l'autre voie sans
@@ -180,6 +212,24 @@ export default function FactureClient({
         return;
       }
 
+      // **LE MESSAGE MORT NE PART PAS — posé le 24 août 2026.** Le lien prend
+      // l'adresse par laquelle Atlas est ouvert ; celle d'une redirection de
+      // port ne désigne que sa machine, et son client reçoit « Connexion au
+      // serveur impossible » (`ARCHITECTURE.md` §169).
+      //
+      // **La facture est déjà ARRÊTÉE ici**, et c'est tout le sens du refus :
+      // on ne défait pas son émission — elle a engagé sa comptabilité — on
+      // barre le seul message qui n'arriverait nulle part. L'écran d'après
+      // porte `TransmettreLaFacture`, qui redit la même chose sous le bouton.
+      // L'adresse du navigateur d'abord : derrière le tunnel de son espace de
+      // travail, le serveur ne voit que `localhost` (`adressePourLeClient`).
+      const adresse = adressePourLeClient(origine);
+      if (!ouvrableParLeClient(adresse)) {
+        setErreur(phraseAdresseLocale("votre facture"));
+        router.refresh();
+        return;
+      }
+
       marquerDepartMessagerie("facture", initialFacture.clientNom ?? "");
       ouvrirAdresse(
         lienTransmission({
@@ -191,10 +241,8 @@ export default function FactureClient({
             entrepriseNom,
             modele: modeleMessage,
             numeroFacture: initialFacture.numeroCommercial,
-            echeanceLisible: initialFacture.dateEcheance
-              ? jourLisible(initialFacture.dateEcheance)
-              : null,
-            lien: `${origine}/factures/${lien.jeton}`,
+            echeanceLisible: dateEcheance ? jourLisible(dateEcheance) : null,
+            lien: `${adresse}/factures/${lien.jeton}`,
           }),
         }),
         canalEnvoi
@@ -229,11 +277,17 @@ export default function FactureClient({
           </p>
         )}
         <PrimaryButton disabled={enCours} onClick={terminer}>
-          {enCours ? "Préparation…" : "Créer la facture →"}
+          {enCours ? "Préparation…" : "Créer la facture"}
         </PrimaryButton>
       </div>
     );
   }
+
+  // La borne haute du sélecteur : un an après la facture (au-delà, c'est
+  // l'année mal tapée). La borne basse est la date de la facture elle-même.
+  const maxEcheance = jourIso(
+    new Date(Date.parse(`${initialFacture.dateEmission}T00:00:00Z`) + ECHEANCE_MAX_JOURS * 86_400_000)
+  );
 
   return (
     <div className="mt-6 flex flex-col gap-4 px-6">
@@ -245,10 +299,47 @@ export default function FactureClient({
           <NumeroDeDocument valeur={initialFacture.numeroCommercial} /> —{" "}
           {avecCivilite(initialFacture.clientNom, initialFacture.clientCivilite) || "Client non renseigné"}
         </p>
-        {initialFacture.dateEcheance && (
-          <p className="mt-1 text-[13px]" style={{ color: colors.muted }}>
-            À régler avant le {jourLisible(initialFacture.dateEcheance)}
-          </p>
+        {/* L'ÉCHÉANCE — proposée, et modifiable tant que la facture n'est pas
+            arrêtée (sa demande du 25 août). Émise, elle est partie chez le
+            client et inscrite au relevé : on la fige. */}
+        {dateEcheance && (
+          <div className="mt-1.5">
+            {emise ? (
+              <p className="text-[13px]" style={{ color: colors.muted }}>
+                À régler avant le {jourLisible(dateEcheance)}
+              </p>
+            ) : (
+              <>
+                <label className="flex flex-wrap items-center gap-2 text-[13px]" style={{ color: colors.muted }}>
+                  À régler avant le
+                  <input
+                    type="date"
+                    data-atlas="echeance-facture"
+                    value={dateEcheance}
+                    min={initialFacture.dateEmission}
+                    max={maxEcheance}
+                    disabled={echeanceEnCours}
+                    onChange={(e) => {
+                      if (e.target.value) changerEcheance(e.target.value);
+                    }}
+                    // 16 px : sous ce seuil, iOS zoome à l'ouverture du sélecteur.
+                    className="rounded-[4px] px-2 py-1"
+                    style={{
+                      fontSize: 16,
+                      backgroundColor: colors.cream,
+                      color: colors.ink,
+                      border: `1px solid ${refusEcheance ? colors.alert : colors.line}`,
+                    }}
+                  />
+                </label>
+                {refusEcheance && (
+                  <p role="alert" data-atlas="echeance-refus" className="mt-1 text-[12px]" style={{ color: colors.alert }}>
+                    {refusEcheance}
+                  </p>
+                )}
+              </>
+            )}
+          </div>
         )}
       </div>
 
@@ -377,9 +468,7 @@ export default function FactureClient({
               entrepriseNom={entrepriseNom}
               modeleMessage={modeleMessage}
               numeroFacture={initialFacture.numeroCommercial}
-              echeanceLisible={
-                initialFacture.dateEcheance ? jourLisible(initialFacture.dateEcheance) : null
-              }
+              echeanceLisible={dateEcheance ? jourLisible(dateEcheance) : null}
               canal={canalEnvoi}
               jetonInitial={jetonDejaPrepare}
               telephone={clientTelephone ?? ""}
@@ -462,9 +551,19 @@ export default function FactureClient({
             </p>
           </div>
 
-          <p className="text-center text-[12.5px]" style={{ color: colors.muted }}>
-            Votre messagerie s&apos;ouvre aussitôt. Rien ne part tant que vous ne l&apos;envoyez pas.
-          </p>
+          {/* **« Votre messagerie s'ouvre aussitôt » a été RETIRÉ le 25 août
+              2026**, à sa demande, capture à l'appui : *« supprime le message
+              en gris »*.
+
+              Elle avait sa raison le 22 août, quand les trois appuis sont
+              devenus un : il fallait dire que le geste ouvrait la messagerie
+              sans rien envoyer. Depuis, il l'a fait des dizaines de fois — la
+              phrase n'apprenait plus rien et poussait vers le bas
+              l'avertissement qui, lui, compte : la facture s'arrête.
+
+              **Ne pas la remettre au motif qu'elle rassure.** L'encadré doré
+              au-dessus dit déjà ce que le geste engage, et c'est le seul qui
+              doive être lu. */}
         </>
       )}
     </div>

@@ -17,7 +17,25 @@ export type TypeActionProposee =
   | "modifier_materiel"
   | "modifier_duree"
   | "modifier_equipe"
-  | "ajouter_ligne_prix";
+  | "ajouter_ligne_prix"
+  // Reprendre, sur le devis courant, une ligne trouvée dans le devis d'un
+  // AUTRE client (sa demande du 25 août 2026). Ne porte que `ligneOrigineId` :
+  // le libellé et le montant sont relus en base à l'application, jamais
+  // transmis — voir `getLigneDevisPourCopie`.
+  | "copier_ligne_devis"
+  // --- Sa demande du 26 août 2026 : « un vrai agent avec toutes les
+  // capacités possibles sur l'appli ». Tous ces gestes restent des
+  // PROPOSITIONS : *« très important que ça reste le doigt du patron »*.
+  | "creer_chantier"
+  | "modifier_client"
+  | "modifier_adresse_chantier"
+  | "noter_chantier"
+  | "planifier_chantier"
+  | "deplacer_chantier"
+  | "retirer_du_planning"
+  | "creer_tarif"
+  | "modifier_tarif"
+  | "preparer_facture";
 
 export type ActionProposee = {
   type: TypeActionProposee;

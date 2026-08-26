@@ -6,6 +6,7 @@ import type { Ctx } from "./context";
 import { normaliserConditions, type ConditionsLues } from "@/lib/conditions-documents";
 import { refusDuMessage, MESSAGE_PAR_DEFAUT } from "@/lib/message-client";
 import { estLAllureParDefaut, normaliserAllure, type Allure } from "@/lib/allure-documents";
+import { FORMATS_NUMERO } from "@/lib/numero-documents";
 import { lireObjet } from "../storage";
 import type { LogoDocument } from "../pdf/document-commun";
 import { logger } from "../logger";
@@ -159,6 +160,15 @@ export async function mettreAJourEntreprise(
      * tient ouverte le temps d'un téléversement.
      */
     logo?: { storageKey: string; mime: string } | null;
+    /**
+     * Le format de ses numéros (migration 0066).
+     *
+     * **Rien n'est cru sur parole** : une clef inconnue est ignorée, et le
+     * réglage reste celui d'avant. Écrire n'importe quoi ici ferait des numéros
+     * que personne n'a choisis sur des documents qui engagent — et un numéro
+     * parti chez un client ne se réécrit pas.
+     */
+    formatNumero?: string | null;
   }
 ) {
   return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
@@ -215,6 +225,14 @@ export async function mettreAJourEntreprise(
       valeurs.docTypographie = rienDeChoisi ? null : a.typographie;
       valeurs.docFond = rienDeChoisi ? null : a.fond;
       valeurs.docAccent = rienDeChoisi ? null : a.accent;
+    }
+
+    if (data.formatNumero !== undefined) {
+      // `null` remet le format par défaut ; une clef inconnue ne rentre pas.
+      if (data.formatNumero === null) valeurs.formatNumero = null;
+      else if (FORMATS_NUMERO.some((f) => f.clef === data.formatNumero)) {
+        valeurs.formatNumero = data.formatNumero;
+      }
     }
 
     if (data.logo !== undefined) {
@@ -299,6 +317,26 @@ export async function allureDesDocuments(
  * quoi personne ne saurait jamais pourquoi le logo a disparu de ses documents
  * (`AGENTS.md` : un défaut muet se rend d'abord bavard).
  */
+/**
+ * Le format de numéro de l'entreprise — ou `null` si elle n'a rien réglé.
+ *
+ * **Lue sur la TRANSACTION en cours**, comme l'allure : les numéros
+ * s'attribuent à l'intérieur d'un `withEntreprise`, et rouvrir un contexte
+ * d'isolation dans un autre est le genre de chose qui marche jusqu'au jour où
+ * elle ne marche plus.
+ */
+export async function formatNumeroDe(
+  tx: { select: typeof db.select },
+  entrepriseId: string
+): Promise<string | null> {
+  const [e] = await tx
+    .select({ format: entreprises.formatNumero })
+    .from(entreprises)
+    .where(eq(entreprises.id, entrepriseId))
+    .limit(1);
+  return e?.format ?? null;
+}
+
 async function logoLu(
   storageKey: string | null,
   mime: string | null
