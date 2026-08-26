@@ -4,6 +4,8 @@ import { useState } from "react";
 import PrimaryButton from "@/components/atlas/PrimaryButton";
 import { colors } from "@/lib/design-tokens";
 import { composerMessageFacture, lienTransmission, type CanalClient } from "@/lib/message-client";
+import { ouvrableParLeClient, phraseAdresseLocale } from "@/lib/adresse-du-client";
+import { useAdressePourLeClient } from "@/lib/use-adresse-client";
 import { marquerDepartMessagerie } from "@/lib/depart-messagerie";
 import { enregistrerCoordonneeClientAction } from "../export/actions";
 import { preparerLienFactureAction } from "./actions";
@@ -110,7 +112,10 @@ export default function TransmettreLaFacture({
 
   const autre: CanalClient = canalChoisi === "sms" ? "email" : "sms";
   const destinataire = coordonnees[canalChoisi];
-  const lienFacture = jeton ? `${origine}/factures/${jeton}` : null;
+  // L'adresse du navigateur dès qu'il a la main (`use-adresse-client.ts`).
+  const adresseSite = useAdressePourLeClient(origine);
+
+  const lienFacture = jeton ? `${adresseSite}/factures/${jeton}` : null;
 
   /**
    * L'adresse `sms:` ou `mailto:`, destinataire compris.
@@ -207,7 +212,7 @@ export default function TransmettreLaFacture({
         modele: modeleMessage,
             numeroFacture,
             echeanceLisible,
-            lien: `${origine}/factures/${jetonPret}`,
+            lien: `${adresseSite}/factures/${jetonPret}`,
           }),
         })
       );
@@ -216,6 +221,18 @@ export default function TransmettreLaFacture({
     } finally {
       setEnCours(false);
     }
+  }
+
+  // **Le même refus que sur le devis et la fiche** (`ARCHITECTURE.md` §169).
+  // Sur l'origine plutôt que sur le lien : celui-ci se prépare à l'appui, et
+  // laisser composer d'abord pour refuser ensuite arrêterait une facture pour
+  // rien. Ici la facture est déjà émise — c'est le message qu'on barre.
+  if (!ouvrableParLeClient(adresseSite)) {
+    return (
+      <p className="text-center text-[13px] leading-[1.6]" style={{ color: colors.rust }} data-refus>
+        {phraseAdresseLocale("votre facture")}
+      </p>
+    );
   }
 
   return (
@@ -265,7 +282,7 @@ export default function TransmettreLaFacture({
             Votre client ne l&apos;a pas encore reçue.
           </p>
           <PrimaryButton disabled={enCours} onClick={envoyer}>
-            {enCours ? "Préparation…" : "Envoyer la facture au client →"}
+            {enCours ? "Préparation…" : "Envoyer la facture au client"}
           </PrimaryButton>
         </>
       )}

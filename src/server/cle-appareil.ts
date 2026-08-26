@@ -60,7 +60,7 @@ export type ContexteWebAuthn = { origine: OrigineWebAuthn; refus: null } | { ori
  * La règle est pure (`src/lib/origine-webauthn.ts`) ; ici on ne fait que lui
  * donner ce que la requête porte.
  */
-export async function contexteWebAuthn(): Promise<ContexteWebAuthn> {
+export async function contexteWebAuthn(origineNavigateur?: string | null): Promise<ContexteWebAuthn> {
   const env = getEnv();
   const entetes = await headers();
   const verdict = origineWebAuthn({
@@ -70,6 +70,9 @@ export async function contexteWebAuthn(): Promise<ContexteWebAuthn> {
     protocole: entetes.get("x-forwarded-proto"),
     domaineEpingle: env.rpId ?? null,
     horsProduction: env.nodeEnv !== "production" || estBancDEssai(),
+    // Le tunnel de son espace ne transmet AUCUN en-tête d'adresse publique :
+    // l'écran nous donne celle de la barre d'adresse (`ARCHITECTURE.md` §177).
+    origineNavigateur,
   });
   if (!verdict.ok) {
     // Journalisé, parce que ce refus-là n'est jamais la faute de l'artisan :
@@ -80,9 +83,23 @@ export async function contexteWebAuthn(): Promise<ContexteWebAuthn> {
   return { origine: verdict.origine, refus: null };
 }
 
+/**
+ * **Le défi ET l'origine sous laquelle il a été posé, dans le même cookie.**
+ *
+ * La vérification arrive dans une SECONDE requête, et rien ne garantit qu'elle
+ * porte la même adresse — l'écran pourrait ne pas la retransmettre, un onglet
+ * pourrait avoir changé. Recalculer l'origine à ce moment-là, c'est risquer de
+ * vérifier sous un domaine différent de celui qui a servi à fabriquer la clé :
+ * un refus incompréhensible, après un geste réussi.
+ *
+ * Le cookie est `httpOnly` : ce qu'on y range n'est pas modifiable depuis la
+ * page, donc le suivre n'affaiblit rien.
+ */
+type DefiPose = { defi: string; origine: OrigineWebAuthn };
+
 async function poserDefi(nom: string, defi: string, origine: OrigineWebAuthn): Promise<void> {
   const boite = await cookies();
-  boite.set(nom, defi, {
+  boite.set(nom, JSON.stringify({ defi, origine } satisfies DefiPose), {
     httpOnly: true,
     sameSite: "strict",
     secure: origine.origine.startsWith("https://"),
@@ -91,13 +108,24 @@ async function poserDefi(nom: string, defi: string, origine: OrigineWebAuthn): P
   });
 }
 
-async function prendreDefi(nom: string): Promise<string | null> {
+async function prendreDefi(nom: string): Promise<DefiPose | null> {
   const boite = await cookies();
   const valeur = boite.get(nom)?.value ?? null;
   // **Consommé à la lecture, réussite ou non.** Un défi qui survivrait à un
   // essai raté se rejouerait ; on préfère faire recommencer le geste.
   if (valeur) boite.delete(nom);
-  return valeur;
+  if (!valeur) return null;
+  try {
+    const lu = JSON.parse(valeur) as Partial<DefiPose>;
+    if (typeof lu?.defi !== "string" || !lu.defi) return null;
+    if (typeof lu?.origine?.rpId !== "string" || typeof lu?.origine?.origine !== "string") return null;
+    return { defi: lu.defi, origine: lu.origine };
+  } catch {
+    // Un cookie d'avant cette version : il portait le défi nu. Le faire
+    // recommencer vaut mieux que de vérifier sous une origine devinée.
+    console.warn("[cle-appareil] défi illisible — geste à refaire");
+    return null;
+  }
 }
 
 // ─── L'ENREGISTREMENT : poser une clé sur cet appareil ───────────────────────
@@ -126,12 +154,15 @@ export type OptionsEnregistrement =
  * clé pour le même appareil, et la liste des Réglages se remplirait de doublons
  * indiscernables.
  */
-export async function optionsEnregistrement(utilisateur: {
-  id: string;
-  email: string;
-  nom: string | null;
-}): Promise<OptionsEnregistrement> {
-  const ctx = await contexteWebAuthn();
+export async function optionsEnregistrement(
+  utilisateur: {
+    id: string;
+    email: string;
+    nom: string | null;
+  },
+  origineNavigateur?: string | null
+): Promise<OptionsEnregistrement> {
+  const ctx = await contexteWebAuthn(origineNavigateur);
   if (!ctx.origine) return { ok: false, raison: ctx.refus };
 
   const deja = await identifiantsDe(utilisateur.id);
@@ -165,27 +196,27 @@ export async function enregistrerCle(
   utilisateurId: string,
   reponse: RegistrationResponseJSON
 ): Promise<ResultatEnregistrement> {
-  const ctx = await contexteWebAuthn();
-  if (!ctx.origine) return { ok: false, refus: "panne" };
-
+  // **L'origine vient du DÉFI, pas d'un nouveau calcul.** La clé a été
+  // fabriquée sous celle-là ; la recalculer ici ferait échouer la vérification
+  // dès que la seconde requête ne porte pas la même adresse.
   const defi = await prendreDefi(DEFI_ENREGISTREMENT);
-  if (!defi) return { ok: false, refus: "panne" };
+  if (!defi) return { ok: false, refus: "panne-activation" };
 
   let verifie;
   try {
     verifie = await verifyRegistrationResponse({
       response: reponse,
-      expectedChallenge: defi,
-      expectedOrigin: ctx.origine.origine,
-      expectedRPID: ctx.origine.rpId,
+      expectedChallenge: defi.defi,
+      expectedOrigin: defi.origine.origine,
+      expectedRPID: defi.origine.rpId,
       requireUserVerification: true,
     });
   } catch (erreur) {
     console.error("[cle-appareil] enregistrement refusé par la vérification", erreur);
-    return { ok: false, refus: "panne" };
+    return { ok: false, refus: "panne-activation" };
   }
 
-  if (!verifie.verified || !verifie.registrationInfo) return { ok: false, refus: "panne" };
+  if (!verifie.verified || !verifie.registrationInfo) return { ok: false, refus: "panne-activation" };
 
   const { credentialID, credentialPublicKey, counter } = verifie.registrationInfo;
   const entetes = await headers();
@@ -217,8 +248,8 @@ export type OptionsConnexion =
  * demander — et cela dirait au passage, à n'importe qui, quelles clés sont
  * enregistrées sur une adresse donnée.
  */
-export async function optionsConnexion(): Promise<OptionsConnexion> {
-  const ctx = await contexteWebAuthn();
+export async function optionsConnexion(origineNavigateur?: string | null): Promise<OptionsConnexion> {
+  const ctx = await contexteWebAuthn(origineNavigateur);
   if (!ctx.origine) return { ok: false, raison: ctx.refus };
 
   const options = await generateAuthenticationOptions({
@@ -246,9 +277,8 @@ export type CompteOuvert = { id: string; email: string; nom: string | null };
  * 2026 refaite par l'autre bord (`src/lib/cle-appareil.ts`).
  */
 export async function ouvrirAvecCle(reponse: AuthenticationResponseJSON): Promise<CompteOuvert | null> {
-  const ctx = await contexteWebAuthn();
-  if (!ctx.origine) return null;
-
+  // Même raison qu'à l'enregistrement : l'origine qui a servi à SIGNER est
+  // celle du défi, jamais celle que la seconde requête laisse deviner.
   const defi = await prendreDefi(DEFI_CONNEXION);
   if (!defi) {
     console.warn("[cle-appareil] connexion sans défi en cours — geste trop tardif, ou cookie perdu");
@@ -265,9 +295,9 @@ export async function ouvrirAvecCle(reponse: AuthenticationResponseJSON): Promis
   try {
     verifie = await verifyAuthenticationResponse({
       response: reponse,
-      expectedChallenge: defi,
-      expectedOrigin: ctx.origine.origine,
-      expectedRPID: ctx.origine.rpId,
+      expectedChallenge: defi.defi,
+      expectedOrigin: defi.origine.origine,
+      expectedRPID: defi.origine.rpId,
       requireUserVerification: true,
       authenticator: {
         // L'identifiant TEL QU'IL EST EN BASE, jamais celui que la réponse

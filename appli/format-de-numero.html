@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Le numéro de mes devis et factures</title>
+<style>
+  :root{
+    --fond:#f5f3ee; --plage:#faf9f5; --encre:#1c1c1a; --encre-douce:#4a4a44;
+    --gris:#8a8578; --pin:#2f3b2f; --papier:#ece9e1;
+    --or:#B98B47; --trait:rgba(28,28,26,.12); --alerte:#8c2f22;
+  }
+  *{box-sizing:border-box}
+  /* `display:block` posé plus bas écrase la règle du navigateur pour `hidden` :
+     le bouton « revenir » restait visible sur le format par défaut. Vu à la
+     capture, pas au clic. */
+  [hidden]{display:none !important}
+  html,body{margin:0;background:#e6e3dc}
+  body{font:16px/1.5 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;color:var(--encre);
+       -webkit-text-size-adjust:100%;padding:0 0 44px}
+  .bandeau{background:#1c1c1a;color:#f5f3ee;padding:16px 20px;font-size:14px;line-height:1.55}
+  .bandeau b{color:#fff}
+  .bloc{max-width:430px;margin:24px auto 0;padding:0 20px}
+  .bloc h2{margin:0 0 8px;font:700 10px/1 ui-sans-serif,sans-serif;letter-spacing:.2em;
+           text-transform:uppercase;color:var(--or)}
+  .bloc p{margin:0 0 10px;font-size:14.5px;line-height:1.55;color:var(--encre-douce)}
+  .bloc p b{color:var(--encre)}
+
+  .ecran{max-width:430px;margin:10px auto 0;background:var(--fond);border-radius:14px;
+         padding:16px 16px 18px;box-shadow:0 10px 28px rgba(20,18,14,.13)}
+  .chapeau{font:700 10px/1 ui-sans-serif,sans-serif;letter-spacing:.2em;
+           text-transform:uppercase;color:var(--or);margin:0}
+  .titre{margin:8px 0 14px;font:400 26px/1.2 ui-serif,Georgia,serif}
+  .etiquette{font:700 10px/1 ui-sans-serif,sans-serif;letter-spacing:.2em;
+             text-transform:uppercase;color:var(--gris);margin:18px 0 8px}
+
+  .choix{display:flex;flex-direction:column;gap:8px}
+  .choix button{display:flex;align-items:baseline;justify-content:space-between;gap:12px;
+                width:100%;min-height:56px;padding:11px 18px;border:0;border-radius:999px;
+                background:transparent;box-shadow:inset 0 0 0 1px var(--trait);
+                text-align:left;font:inherit;color:var(--encre);cursor:pointer}
+  .choix button[aria-pressed="true"]{background:var(--plage);box-shadow:inset 0 0 0 1px var(--or)}
+  .choix .quoi{font-size:15px}
+  .choix .quoi small{display:block;margin-top:2px;font-size:12.5px;color:var(--gris)}
+  .choix .apercu{font-size:15px;color:var(--or);white-space:nowrap;font-variant-numeric:tabular-nums}
+
+  .feuille{margin-top:14px;background:var(--papier);border-radius:10px;padding:16px 18px}
+  .feuille .ligne{display:flex;justify-content:space-between;gap:12px;font-size:14px;padding:5px 0}
+  .feuille .ligne span:last-child{font-variant-numeric:tabular-nums;color:var(--encre-douce)}
+
+  .reserve{margin-top:16px;padding:2px 0 2px 14px;border-left:1px solid var(--or)}
+  .reserve p{margin:0;font-size:13.5px;line-height:1.5;color:var(--encre)}
+  .reserve p + p{margin-top:6px;color:var(--gris);font-size:12.5px}
+
+  .defaut{display:block;width:100%;min-height:48px;margin-top:14px;border:0;border-radius:999px;
+          background:transparent;box-shadow:inset 0 0 0 1px var(--trait);
+          font:700 11px/1 ui-sans-serif,sans-serif;letter-spacing:.16em;text-transform:uppercase;
+          color:var(--gris);cursor:pointer}
+
+  .question{max-width:430px;margin:26px auto 0;padding:16px 20px;background:#1c1c1a;
+            color:#f5f3ee;border-radius:14px}
+  .question h3{margin:0 0 8px;font:700 10px/1 ui-sans-serif,sans-serif;letter-spacing:.2em;
+               text-transform:uppercase;color:#d8c48a}
+  .question p{margin:0 0 8px;font-size:14.5px;line-height:1.55}
+  .question p:last-child{margin:0}
+  .question b{color:#fff}
+</style>
+</head>
+<body>
+
+<div class="bandeau">
+  <b>Le numéro de tes devis et de tes factures.</b> Tu as demandé le réglage du
+  format. Avant de le coder : ce qu'il y a derrière, et un défaut plus pressant
+  que le réglage lui-même.
+</div>
+
+<div class="bloc">
+  <h2>D'abord, le défaut</h2>
+  <p>Aujourd'hui le format est <b>écrit en dur dans le code</b> : tes devis
+  sortent en <b>2026-0001</b>, tes factures en <b>F2026-0001</b>. Le « 2026 »
+  ne bouge pas tout seul : <b>en janvier, tes factures diront encore 2026</b>.
+  C'est à corriger que le réglage existe ou non.</p>
+
+  <h2>Ce que la loi demande vraiment</h2>
+  <p>Aucun format n'est imposé. Ce qui l'est : une <b>suite chronologique, sans
+  trou et sans doublon</b>. Atlas la tient déjà — un compteur par entreprise,
+  qui ne saute jamais un numéro.</p>
+  <p>D'où la seule vraie contrainte du réglage : <b>changer de format en cours
+  d'année casse la suite</b>. C'est la réserve que porte l'écran ci-dessous.</p>
+</div>
+
+<div class="ecran">
+  <p class="chapeau">Réglages › Devis &amp; factures</p>
+  <p class="titre">Numéro de mes documents</p>
+
+  <p class="etiquette">Format</p>
+  <div class="choix" id="formats"></div>
+
+  <p class="etiquette">Ce que ça donne</p>
+  <div class="feuille" id="feuille"></div>
+
+  <div class="reserve" id="reserve" hidden>
+    <p id="reserve-titre"></p>
+    <p id="reserve-detail"></p>
+  </div>
+
+  <button class="defaut" type="button" id="revenir" hidden>Revenir au format d'aujourd'hui</button>
+</div>
+
+<div class="question">
+  <h3>Ce qu'il faut que tu tranches</h3>
+  <p><b>1. L'année doit-elle se remettre à 1 le 1<sup>er</sup> janvier ?</b>
+  C'est l'usage, et c'est accepté. Sinon le compteur continue sans fin :
+  2026-0148, puis 2027-0149.</p>
+  <p><b>2. Combien de chiffres ?</b> Quatre tiennent 9 999 documents par an.
+  Six, c'est ce que fait l'application de ta capture.</p>
+  <p><b>3. Le « F » des factures, tu le gardes ?</b> Il sépare les deux suites
+  d'un coup d'œil. Sans lui, un devis 2026-0012 et une facture 2026-0012 se
+  ressemblent.</p>
+</div>
+
+<script>
+const FORMATS = [
+  { clef:"annee-4",   nom:"Année et 4 chiffres", dit:"Ce que tu as aujourd'hui", devis:"2026-0012",   facture:"F2026-0012",   defaut:true },
+  { clef:"annee-6",   nom:"Année et 6 chiffres", dit:"Comme la capture que tu as envoyée", devis:"2026-000012", facture:"F2026-000012" },
+  { clef:"court",     nom:"Année courte",        dit:"Plus court à dicter au téléphone", devis:"26-0012",     facture:"F26-0012" },
+  { clef:"mois",      nom:"Année, mois, numéro", dit:"Le mois se lit sans ouvrir le document", devis:"2026-08-012", facture:"F2026-08-012" },
+  { clef:"suite",     nom:"Une suite sans année",dit:"Ne repart jamais à 1", devis:"0012",        facture:"F0012" },
+];
+
+let choisi = "annee-4";
+
+function dessiner(){
+  document.getElementById("formats").innerHTML = FORMATS.map(f =>
+    '<button type="button" data-clef="' + f.clef + '" aria-pressed="' + (f.clef === choisi) + '">'
+    + '<span class="quoi">' + f.nom + '<small>' + f.dit + (f.defaut ? " · par défaut" : "") + '</small></span>'
+    + '<span class="apercu">' + f.facture + '</span></button>').join("");
+
+  const f = FORMATS.find(x => x.clef === choisi);
+  document.getElementById("feuille").innerHTML =
+      '<div class="ligne"><span>Votre prochain devis</span><span>' + f.devis + '</span></div>'
+    + '<div class="ligne"><span>Votre prochaine facture</span><span>' + f.facture + '</span></div>'
+    + '<div class="ligne"><span>Le suivant</span><span>' + f.facture.replace(/(\d+)$/, (n) =>
+        String(Number(n) + 1).padStart(n.length, "0")) + '</span></div>';
+
+  const change = choisi !== "annee-4";
+  document.getElementById("reserve").hidden = !change;
+  document.getElementById("revenir").hidden = !change;
+  if (change) {
+    document.getElementById("reserve-titre").textContent =
+      "Vos 11 documents déjà émis gardent leur numéro. Le changement ne vaut que pour les suivants.";
+    document.getElementById("reserve-detail").textContent =
+      "Un numéro déjà envoyé à un client ne se réécrit pas : il est sur sa facture, et dans sa comptabilité.";
+  }
+}
+
+document.addEventListener("click", (e) => {
+  const b = e.target.closest("[data-clef]");
+  if (b) { choisi = b.dataset.clef; dessiner(); return; }
+  if (e.target.id === "revenir") { choisi = "annee-4"; dessiner(); }
+});
+
+dessiner();
+</script>
+
+</body>
+</html>

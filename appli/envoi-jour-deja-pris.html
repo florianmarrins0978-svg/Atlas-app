@@ -78,9 +78,13 @@
 <div class="tel" data-variante="A"></div>
 
 <div class="cas">
-  <h2>B — le dire en toutes lettres</h2>
-  <p>Le jour porte sa charge, écrite : <b>« 1 chantier sur 2 équipes »</b>. Rien à
+  <h2>B — le dire en toutes lettres <span style="color:#b98b47">· RETENUE ET CODÉE le 25 août 2026</span></h2>
+  <p>Le jour dit ce qu’il lui reste : <b>« Reste 1 équipe sur 2 »</b>. Rien à
      apprendre, rien à décoder.</p>
+  <p><b>Le libellé a changé, sur sa remarque</b> — il disait d’abord
+     « 1 chantier sur 2 équipes », et il a répondu <i>« on ne comprend pas très
+     bien »</i>. Il avait raison : cela comptait ce qui est <b>pris</b>, quand ce
+     qu’il décide dépend de ce qui <b>reste</b>.</p>
 </div>
 <div class="tel" data-variante="B"></div>
 
@@ -129,8 +133,22 @@ const EQUIPES = 2;
 function charge(j, variante) {
   if (variante === "A" || j.pris === 0) return "";
   if (variante === "B") {
-    const mot = j.pris === 1 ? "1 chantier" : `${j.pris} chantiers`;
-    return `<span class="charge">${mot} sur ${EQUIPES} équipes</span>`;
+    /* LIBELLÉ CORRIGÉ LE 25 AOÛT 2026, sur sa remarque en retenant B :
+       « par contre "1 chantier sur 2" on ne comprend pas très bien, comment on
+       peut faire pour comprendre mieux ? »
+
+       Il a raison. « 1 chantier sur 2 équipes » compte ce qui est PRIS, alors
+       que ce qu'il décide dépend de ce qui RESTE : il est en train de proposer
+       une date, et la question est « puis-je encore envoyer quelqu'un ce
+       jour-là ». Même information, tournée du côté du geste.
+
+       C'est le libellé CODÉ : la règle vit dans src/lib/planning-jour.ts
+       (ditCeQuiResteCeJour), et cette planche montre ce que l'écran écrit. */
+    const libres = EQUIPES - j.pris;
+    const mot = libres <= 0
+      ? `Plus d'équipe libre sur ${EQUIPES}`
+      : `Reste ${libres} équipe${libres > 1 ? "s" : ""} sur ${EQUIPES}`;
+    return `<span class="charge">${mot}</span>`;
   }
   let carres = "";
   for (let i = 0; i < EQUIPES; i++) carres += `<i class="${i < j.pris ? "prise" : ""}"></i>`;

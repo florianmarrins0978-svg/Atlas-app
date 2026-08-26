@@ -198,6 +198,52 @@ while true; do
   else
     MUET=0
 
+    # ─────────────────────────────────────────────────────────────────────────
+    # **LE PORT S'OUVRE QUAND LE SERVEUR RÉPOND, PAS AVANT.**
+    #
+    # Le patron, le 26 août 2026, capture de son onglet PORTS à l'appui :
+    # *« problème pas de port connecté »*. Sa fiche disait pourquoi, et le mot
+    # exact compte : *« error updating port 3000 to public: error getting
+    # tunnel port: […] 404 Not Found »*.
+    #
+    # **Le relais ne connaissait pas encore le port.** `demarrer.sh` demande son
+    # ouverture à la ligne 271 ; le veilleur, lui, vient d'être posé à la 212 et
+    # sa construction dure des minutes. Au moment de la demande, RIEN n'écoute
+    # sur 3000 — GitHub n'a donc aucun port à rendre public, et répond 404. Puis
+    # le serveur démarre, le port se déclare tout seul… **et reste PRIVÉ**,
+    # parce que plus rien ne redemande. C'est le symptôme du 10 août :
+    # GitHub sert sa page de connexion à la place d'Atlas, et depuis un
+    # téléphone non connecté il n'y a rien à voir.
+    #
+    # **Une seule tentative au démarrage ne pouvait pas marcher** : elle avait
+    # lieu au seul moment où elle ne pouvait pas aboutir.
+    #
+    # On redemande donc ICI, où l'on sait que le serveur répond — donc que le
+    # port existe. Une fois obtenu, on n'y revient plus : `gh` interroge le
+    # réseau, et l'appeler toutes les quinze secondes pour rien userait un
+    # quota sans rien apprendre.
+    if [ "${PORT_OUVERT:-non}" != "oui" ]; then
+      MOT_PORT="$(bash "$(dirname "$0")/ouvrir-port.sh" "$PORT" 2>/dev/null)"
+      # **La fiche lit ce fichier** (`diagnostiquer-espace.mjs`) : sans cette
+      # ligne, elle continuerait d'annoncer le refus du démarrage alors que le
+      # port est ouvert — et sa règle enverrait le patron réparer ce qui marche.
+      printf '%s\n' "$MOT_PORT" > /tmp/atlas-port.txt 2>/dev/null || true
+      case "$MOT_PORT" in
+        # Ces trois-là ne se retentent pas : hors Codespaces il n'y a pas de
+        # port à ouvrir, et sans `gh` aucune tentative n'aboutira jamais.
+        ouvert|hors-codespace|sans-gh)
+          PORT_OUVERT=oui
+          [ "$MOT_PORT" = "ouvert" ] && \
+            echo "$(date '+%d/%m %H:%M:%S') — port ${PORT} ouvert au public, une fois le serveur debout" >> "$JOURNAL"
+          ;;
+        # `non-declare` et les refus se retentent au tour suivant : le relais
+        # peut mettre quelques secondes de plus à enregistrer le port.
+        *)
+          echo "$(date '+%d/%m %H:%M:%S') — port ${PORT} pas encore public (${MOT_PORT}), on retentera" >> "$JOURNAL"
+          ;;
+      esac
+    fi
+
     # **Le serveur répond — mais sert-il la version rapide ?**
     #
     # `banc.mjs` efface ce témoin dès qu'une construction réussit : sa présence

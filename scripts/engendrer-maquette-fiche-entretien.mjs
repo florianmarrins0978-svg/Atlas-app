@@ -21,6 +21,7 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const DOSSIER = join(dirname(fileURLToPath(import.meta.url)), "..", "docs", "maquettes");
+const APPLI = join(dirname(fileURLToPath(import.meta.url)), "..", "appli");
 
 // La liste est relevée de SA capture, mot pour mot.
 // Ne rien inventer ici : une prestation qui n'existe pas chez lui ferait juger
@@ -810,7 +811,12 @@ ${lignesModele}
 
 writeFileSync(join(DOSSIER, "62-la-fiche-dentretien.html"), PLANCHE_FICHE);
 writeFileSync(join(DOSSIER, "63-le-rapport-au-client.html"), PLANCHE_RAPPORT);
-writeFileSync(join(DOSSIER, "64-composer-sa-fiche.html"), PLANCHE_MODELE);
+// **Celle-ci vit dans `appli/`, pas dans `docs/maquettes/` — déplacée le 25 août
+// 2026.** `pages.yml` ne publie que `appli/` : laissée ici, la planche n'avait
+// aucune adresse, et l'on attendait de lui un choix qu'il n'avait pas les moyens
+// de faire (`CLAUDE.md` §3 bis). Il l'a redemandée le 25 août — « je veux les
+// voir ».
+writeFileSync(join(APPLI, "composer-sa-fiche.html"), PLANCHE_MODELE);
 console.log(
   `✅ Quatre planches engendrées — ${TOUTES.length} prestations, dont ${FAITES.length} faites.`
 );

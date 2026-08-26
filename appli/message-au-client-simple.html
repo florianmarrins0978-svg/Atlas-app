@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas — mon message au client, simplifié</title>
+<style>
+  /*
+    MON MESSAGE AU CLIENT, SIMPLIFIÉ — ses réponses du 25 août 2026, sur
+    l'écran « CE QUE VOTRE CLIENT RECEVRA » qu'il trouve trop compliqué :
+
+      1. « un simple texte » — plus de pastilles [le client] / [le lien] à poser
+         à la main ;
+      2. « un seul pour tous, mais toi tu modifies juste le nom ; si c'est un
+         devis ou une facture tu changes en fonction — faut pas écrire devis
+         pour l'envoi d'une facture » — UN message, et l'appli échange toute
+         seule le prénom ET le mot du document ;
+      3. « toujours présent » — le lien ne se retire pas.
+
+    ─────────────────────────────────────────────────────────────────────────
+    LE PARTI : il écrit UN texte, en clair. Ce qui s'adapte tout seul est écrit
+    en DORÉ dans son cadre — le prénom, le mot du document, le lien. Il n'a rien
+    à insérer : il voit juste ce qui bougera. Les deux aperçus prouvent l'échange
+    du mot : « devis » d'un côté, « facture » de l'autre, à message identique.
+
+    AUCUN SCRIPT : la planche se lit telle quelle. Le doré et les deux aperçus
+    montrent le comportement sans qu'on ait à taper.
+  */
+  :root{
+    --bone:#f5f3ee; --cream:#faf9f5; --paper:#ece9e1;
+    --charcoal:#1c1c1a; --charcoal-soft:#4a4a44; --muted:#8a8578;
+    --pine:#2f3b2f; --or:#B98B47; --alerte:#9C3B2E;
+    --line:rgba(28,28,26,.12); --line-soft:rgba(28,28,26,.07);
+    --display:ui-serif,Georgia,"Iowan Old Style","Palatino Linotype",serif;
+    --body:ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  body{margin:0;background:#d9d6cf;font-family:var(--body);color:var(--charcoal)}
+  .tel{max-width:414px;margin:0 auto;min-height:100vh;background:var(--bone);
+       display:flex;flex-direction:column}
+  .haut{padding:26px 26px 0}
+  .retour{display:inline-flex;align-items:center;gap:7px;font-size:13px;
+          font-weight:600;color:var(--or);text-decoration:none}
+  .chev-g{width:8px;height:8px;border-left:1.6px solid currentColor;
+          border-bottom:1.6px solid currentColor;transform:rotate(45deg)}
+  .surtitre{display:block;margin-top:18px;font-size:12px;font-weight:600;
+            letter-spacing:.2em;text-transform:uppercase;color:var(--or)}
+  h1{margin:8px 0 0;font-family:var(--display);font-weight:500;font-size:31px;
+     line-height:1.12;letter-spacing:-.01em}
+  .chapo{margin:12px 0 0;font-size:14.5px;line-height:1.5;color:var(--charcoal-soft)}
+
+  .corps{padding:22px 26px 0}
+
+  /* ── Le cadre où il écrit ────────────────────────────────────────────────
+     Un vrai champ de texte, pas une liste de pastilles. Ce qui s'adapte tout
+     seul est en doré : il le voit, il n'a rien à poser. */
+  .champ-t{display:block;font-size:9.5px;font-weight:600;letter-spacing:.22em;
+           text-transform:uppercase;color:var(--muted);margin-bottom:9px}
+  .cadre{background:var(--cream);border:1px solid var(--line);border-radius:14px;
+         padding:17px 18px;font-size:15px;line-height:1.62;color:var(--charcoal)}
+  .cadre p{margin:0 0 14px}
+  .cadre p:last-child{margin-bottom:0}
+  .auto{color:var(--or);font-weight:600}
+  .lien{color:var(--or);font-weight:600;word-break:break-all}
+
+  .cle{margin-top:12px;display:flex;align-items:flex-start;gap:9px;
+       font-size:12.5px;line-height:1.5;color:var(--charcoal-soft)}
+  .cle .point{flex:none;width:11px;height:11px;border-radius:3px;margin-top:3px;
+              background:var(--or)}
+  .cle b{color:var(--charcoal);font-weight:600}
+
+  /* ── Ce que le client verra, selon le document ─────────────────────────── */
+  .apercus-t{margin:26px 0 10px;font-size:9.5px;font-weight:600;letter-spacing:.22em;
+             text-transform:uppercase;color:var(--muted)}
+  .deux{display:grid;grid-template-columns:1fr 1fr;gap:11px}
+  .tele{background:#fff;border:1px solid var(--line);border-radius:14px;overflow:hidden}
+  .tele .barre-doc{padding:8px 12px;font-size:10px;font-weight:600;letter-spacing:.1em;
+                   text-transform:uppercase;color:var(--muted);border-bottom:1px solid var(--line-soft);
+                   background:var(--paper)}
+  .tele .txt{padding:13px 13px 15px;font-size:12px;line-height:1.5;color:var(--charcoal-soft)}
+  .tele .txt .mot{color:var(--pine);font-weight:700}
+  .tele .txt .lien{font-size:11px}
+
+  .objet{margin:20px 26px 0;font-size:12.5px;line-height:1.5;color:var(--muted)}
+
+  .enreg{margin:20px 26px 6px;display:block;width:calc(100% - 52px);
+         background:var(--pine);color:var(--bone);border:none;border-radius:9999px;
+         padding:16px;font-family:var(--display);font-size:16px;text-align:center}
+
+  .barre{margin-top:auto;display:flex;justify-content:space-between;
+         padding:15px 20px 26px;border-top:1px solid var(--line);
+         font-size:9.5px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;
+         color:var(--muted)}
+  .barre .actif{color:var(--charcoal);position:relative}
+  .barre .actif::after{content:"";position:absolute;left:0;right:0;bottom:-6px;
+                       height:2px;background:var(--or)}
+</style>
+</head>
+<body>
+<div class="tel">
+
+  <div class="haut">
+    <a class="retour" href="#"><span class="chev-g"></span>Réglages</a>
+    <span class="surtitre">Mon message</span>
+    <h1>Votre message au client</h1>
+  </div>
+
+  <div class="corps">
+    <div class="cadre">
+      <p>Bonjour <span class="auto">Mme Larousse</span>,</p>
+      <p>Voici votre <span class="auto">devis</span>. Vous pouvez le consulter et
+        choisir votre date d’intervention. Et si aucune des dates proposées ne
+        vous convient, vous pouvez en proposer une autre. Tout se fait sur cette
+        page :</p>
+      <p><span class="lien">https://…/devis/…</span></p>
+      <p>Bien à vous,<br>Eden Nature</p>
+    </div>
+
+    <div class="cle">
+      <span class="point" aria-hidden="true"></span>
+      <span>En <b style="color:var(--or)">doré</b> : rempli tout seul. Le lien ne se retire pas.</span>
+    </div>
+
+    <p class="apercus-t">Ce que votre client verra</p>
+    <div class="deux">
+      <div class="tele">
+        <div class="barre-doc">Envoi d’un devis</div>
+        <div class="txt">Bonjour Mme Larousse, voici votre
+          <span class="mot">devis</span>. …choisir votre date… <br>
+          <span class="lien">https://…/devis/…</span></div>
+      </div>
+      <div class="tele">
+        <div class="barre-doc">Envoi d’une facture</div>
+        <div class="txt">Bonjour Mme Larousse, voici votre
+          <span class="mot">facture</span>. …choisir votre date… <br>
+          <span class="lien">https://…/facture/…</span></div>
+      </div>
+    </div>
+  </div>
+
+  <button class="enreg" type="button">Enregistrer</button>
+
+  <div class="barre">
+    <span>Chantiers</span><span>Planning</span><span>Terminés</span>
+    <span>Paysage</span><span class="actif">Réglages</span>
+  </div>
+
+</div>
+</body>
+</html>

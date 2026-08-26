@@ -1,0 +1,551 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas — Donner un accès : B, retenue et codée</title>
+</head>
+<body>
+<style>
+  /*
+    ————————————————————————————————————————————————————————————————
+    DONNER UN ACCÈS — deux façons de séparer le nouveau compte du vôtre
+    ————————————————————————————————————————————————————————————————
+
+    Sa capture du 26 août 2026, et ses trois reproches, mot pour mot :
+
+      1. « Mettre le petit œil à côté du mdp pour pouvoir voir ce qu'on écrit
+         et il faut confirmer son mdp donc l'écrire deux fois »
+      2. « Pour valider un compte c'est pas clair, la case est déjà noire comme
+         la catégorie salarié on comprend pas bien »
+      3. « La démarcation entre vous patron et le compte qu'on est en train
+         d'attribuer n'est pas bien séparée, pareil on comprend pas très bien »
+
+    LES TROIS ONT LA MÊME RACINE, et c'est ce qui rend la correction simple :
+    le formulaire du NOUVEAU compte a été posé dans la liste des comptes
+    EXISTANTS, sans rien pour dire où l'un finit et où l'autre commence. D'où
+    trois pastilles de rôle qui se ressemblent toutes (celles de la personne
+    ouverte, celles du compte qu'on crée), et un bouton d'action noir posé au
+    milieu de pastilles noires.
+
+    CE QUI EST DÉJÀ TRANCHÉ, ET QU'ON NE REDESSINE PAS : l'œil et la double
+    saisie viennent de sa demande du 14 août 2026, arrêtée sur
+    `maquettes/atlas-reglages-moi.html` (écran 3) — *« il faut pouvoir
+    confirmer son mdp 2× avant de le changer et met le petit œil à côté »*. Le
+    mécanisme est recopié tel quel, pas réinventé.
+
+    AUCUN SCRIPT DANS CETTE PAGE. Tout ce qui bouge — les deux yeux, le choix
+    du rôle, l'ouverture du formulaire — bouge en CSS pur (une case à cocher
+    cachée, et `:checked ~`). Une planche qui s'engendre en JavaScript lui rend
+    une page blanche si son lecteur ne l'exécute pas.
+
+    Les couleurs viennent de `src/lib/design-tokens.ts`, pas de l'œil. Les
+    écrans font 390 px — la largeur réelle de son téléphone.
+  */
+
+  :root{
+    --fond:#e7e3db;        /* le papier AUTOUR des téléphones, jamais dans l'app */
+    --cream:#f5f3ee;       /* colors.cream — le fond de page d'Atlas */
+    --card:#faf9f5;        /* colors.card — le fond des cartes */
+    --encre:#1c1c1a;       /* colors.ink */
+    --gris:#8a8578;        /* colors.muted */
+    --pin:#2f3b2f;         /* colors.rust — ce qu'on FAIT */
+    --pinTint:#ece9e1;     /* colors.rustTint */
+    --or:#B98B47;          /* colors.or — ce qu'on LIT */
+    --alerte:#9C3B2E;      /* colors.alert */
+    --trait:rgba(28,28,26,.12);
+    --traitDoux:rgba(28,28,26,.07);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --fond:#141310; --cream:#171613; --card:#1f1d19; --encre:#e9e5dc;
+      --gris:#8a867c; --pin:#cfd8c9; --pinTint:#26241f; --or:#C9A15E;
+      --trait:rgba(233,229,220,.16); --traitDoux:rgba(233,229,220,.09);
+    }
+  }
+  :root[data-theme="dark"]{
+    --fond:#141310; --cream:#171613; --card:#1f1d19; --encre:#e9e5dc;
+    --gris:#8a867c; --pin:#cfd8c9; --pinTint:#26241f; --or:#C9A15E;
+    --trait:rgba(233,229,220,.16); --traitDoux:rgba(233,229,220,.09);
+  }
+
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--fond);color:var(--encre);
+       font:16px/1.6 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+       padding:38px 16px 90px;-webkit-text-size-adjust:100%}
+  .page{max-width:900px;margin:0 auto}
+
+  h1{margin:0 0 6px;font:400 30px/1.15 ui-serif,Georgia,serif;letter-spacing:-.02em}
+  .sur{margin:0 0 22px;font-size:10px;letter-spacing:.28em;text-transform:uppercase;color:var(--or)}
+  .chapo{margin:0 0 30px;max-width:56ch;color:var(--gris);font-size:14.5px}
+
+  .constat{margin:0 0 34px;padding:16px 18px;border-radius:14px;
+           background:var(--card);border:1px solid var(--traitDoux)}
+  .constat p{margin:0 0 10px;font-size:10px;letter-spacing:.26em;
+             text-transform:uppercase;color:var(--gris)}
+  .constat ol{margin:0;padding-left:20px;font-size:14px}
+  .constat li{margin-bottom:6px}
+  .constat li:last-child{margin-bottom:0}
+  .constat b{font-weight:600}
+
+  .duo{display:flex;flex-wrap:wrap;gap:34px;align-items:flex-start;justify-content:center}
+  .prop{flex:0 0 auto;max-width:390px}
+  .etiquette{margin:0 0 10px;font-size:10px;letter-spacing:.26em;
+             text-transform:uppercase;color:var(--or)}
+  .titrePropo{margin:0 0 4px;font:400 21px/1.25 ui-serif,Georgia,serif}
+  .ditPropo{margin:0 0 16px;font-size:13px;color:var(--gris);max-width:38ch}
+
+  /* ═══ LE TÉLÉPHONE ══════════════════════════════════════════════════ */
+  .tel{width:390px;max-width:100%;border-radius:26px;overflow:hidden;
+       background:var(--cream);border:1px solid var(--trait);
+       box-shadow:0 12px 34px rgba(28,28,26,.10)}
+  .ecran{display:flex;flex-direction:column;min-height:660px}
+  .corps{flex:1;padding-bottom:14px}
+
+  .tete{padding:22px 26px 0}
+  .tete .st{margin:0 0 6px;font-size:9.5px;letter-spacing:.28em;
+            text-transform:uppercase;color:var(--or)}
+  .tete h2{margin:0;font:400 34px/1.05 ui-serif,Georgia,serif;letter-spacing:-.02em}
+  .filet{height:1px;background:var(--trait);margin:18px 26px 0}
+
+  /* La barre du bas, telle qu'elle est : cinq onglets pour le patron. */
+  .barre{display:grid;grid-template-columns:repeat(5,1fr);gap:0;
+         padding:15px 14px 13px;border-top:1px solid var(--trait);background:var(--cream)}
+  .barre span{text-align:center;font-size:8.5px;letter-spacing:.14em;
+              text-transform:uppercase;color:var(--gris)}
+  .barre span.actif{color:var(--encre);position:relative}
+  .barre span.actif::after{content:"";position:absolute;left:26%;right:26%;bottom:-9px;
+                           height:1.5px;background:var(--or)}
+
+  /* ═══ LA LISTE DES COMPTES ══════════════════════════════════════════ */
+  .section{padding:24px 26px 0}
+  .intitule{display:flex;align-items:center;gap:12px;margin:0 0 2px;
+            font-size:9.5px;letter-spacing:.28em;text-transform:uppercase;color:var(--gris)}
+  .intitule i{flex:1;height:1px;background:var(--trait)}
+
+  .pers{display:flex;align-items:center;gap:12px;padding:14px 0;
+        border-top:1px solid var(--trait)}
+  .pers .txt{flex:1;min-width:0}
+  .pers .nom{display:block;font-size:15px}
+  .pers .mail{display:block;font-size:12px;color:var(--gris)}
+  .pers .role{font-size:9.5px;letter-spacing:.28em;text-transform:uppercase;color:var(--gris)}
+
+  /* ═══ LES PASTILLES DE RÔLE ═════════════════════════════════════════
+     LE POINT N° 2 DE SA CAPTURE, ET LA CORRECTION.
+
+     Avant : la pastille du rôle CHOISI était noire pleine — exactement comme
+     le bouton « Donner l'accès » juste en dessous. Deux choses noires côte à
+     côte, l'une qui règle un état et l'autre qui déclenche une action : rien
+     ne disait laquelle faisait quoi.
+
+     La charte le disait déjà, et on ne l'avait pas suivie : le PLEIN porte ce
+     qu'on FAIT, jamais ce qu'on LIT (`design-tokens.ts`). Un rôle n'est pas
+     une action — c'est un état. Il se marque donc d'un fond teinté et d'un
+     coche, et le noir plein redevient ce qu'il n'aurait jamais dû cesser
+     d'être : LE bouton de l'écran, et le seul. */
+  .roles{display:flex;gap:8px;margin-top:2px}
+  .role_choix{flex:1;position:relative}
+  .radio_role{position:absolute;width:1px;height:1px;opacity:0;margin:0;pointer-events:none}
+  .role_choix label{display:flex;align-items:center;justify-content:center;gap:6px;
+                    min-height:40px;border-radius:999px;font-size:12.5px;
+                    border:1px solid var(--trait);color:var(--gris);cursor:pointer;
+                    -webkit-tap-highlight-color:transparent}
+  .role_choix .coche{display:none;width:13px;height:13px;flex:none}
+  .role_choix .coche svg{display:block;width:13px;height:13px;fill:none;
+                         stroke:currentColor;stroke-width:2.2;
+                         stroke-linecap:round;stroke-linejoin:round}
+  /* La radio n'est plus voisine de son libellé : on vise le libellé par son
+     `for`, ce qui marche quelle que soit sa place dans le document. */
+  #roleA1:checked ~ .roles label[for="roleA1"],
+  #roleA2:checked ~ .roles label[for="roleA2"],
+  #roleA3:checked ~ .roles label[for="roleA3"],
+  #roleB1:checked ~ .roles label[for="roleB1"],
+  #roleB2:checked ~ .roles label[for="roleB2"],
+  #roleB3:checked ~ .roles label[for="roleB3"]{background:var(--pinTint);color:var(--encre);
+                                               border-color:transparent;font-weight:600}
+  #roleA1:checked ~ .roles label[for="roleA1"] .coche,
+  #roleA2:checked ~ .roles label[for="roleA2"] .coche,
+  #roleA3:checked ~ .roles label[for="roleA3"] .coche,
+  #roleB1:checked ~ .roles label[for="roleB1"] .coche,
+  #roleB2:checked ~ .roles label[for="roleB2"] .coche,
+  #roleB3:checked ~ .roles label[for="roleB3"] .coche{display:block;color:var(--or)}
+
+  /* ═══ CE QUE LE RÔLE CHANGE — et la liste SUIT le rôle choisi ═══════
+     **Trouvé sur ma propre planche, en la regardant** : la première version
+     montrait « Commercial » coché et, dessous, le périmètre du SALARIÉ. Une
+     maquette qui ment sur ce que fait un rôle est pire qu'une maquette absente
+     — il aurait choisi « Commercial » en lisant « le planning et rien
+     d'autre ».
+
+     Les trois radios sont donc SŒURS des trois listes (et non enfermées dans
+     leurs pastilles) : `#role:checked ~ .change` peut alors les atteindre. Les
+     libellés `<label for=…>` restent où ils doivent être à l'écran, eux ne
+     dépendent pas de la place dans le document. */
+  .change{display:none}
+  #roleA1:checked ~ .change[data-role="proprietaire"],
+  #roleA2:checked ~ .change[data-role="commercial"],
+  #roleA3:checked ~ .change[data-role="salarie"],
+  #roleB1:checked ~ .change[data-role="proprietaire"],
+  #roleB2:checked ~ .change[data-role="commercial"],
+  #roleB3:checked ~ .change[data-role="salarie"]{display:block}
+
+  /* Les mots viennent de `src/lib/acces-roles.ts`, jamais de la tête. */
+  .change{margin:12px 0 0;padding:0;list-style:none;font-size:12.5px}
+  .change li{padding-left:15px;position:relative;margin-bottom:2px}
+  .change li::before{content:"";position:absolute;left:2px;top:9px;
+                     width:4px;height:4px;border-radius:50%;background:var(--or)}
+  .change li.non{color:var(--gris);text-decoration:line-through}
+  .change li.non::before{background:var(--trait)}
+
+  /* ═══ LE BOUTON, ET IL EST SEUL DE SON ESPÈCE ═══════════════════════ */
+  .capsule{display:flex;align-items:center;justify-content:center;
+           min-height:48px;border-radius:999px;background:var(--pin);
+           color:var(--card);font-size:14px;font-weight:600;
+           letter-spacing:.01em;cursor:pointer;-webkit-tap-highlight-color:transparent}
+  .secondaire{display:flex;align-items:center;justify-content:center;min-height:44px;
+              font-size:13px;color:var(--gris);cursor:pointer;
+              -webkit-tap-highlight-color:transparent}
+
+  /* ═══ L'ŒIL ET LA DOUBLE SAISIE ═════════════════════════════════════
+     LE POINT N° 1, et il ne se réinvente pas : c'est le mécanisme qu'il a
+     arrêté le 14 août 2026 (`maquettes/atlas-reglages-moi.html`, écran 3),
+     recopié au caractère près.
+
+     LES DEUX SAISIES PORTENT CHACUNE SON ŒIL. La seconde ne sert à rien si
+     l'on peut la remplir sans regarder : elle attrape la faute au moment où
+     elle se fait, l'œil la répare après coup. Les deux, pas l'un OU l'autre.
+
+     L'ŒIL EST GRIS AU REPOS, BRONZE UNE FOIS OUVERT. Plein et vert, un
+     pictogramme de 21 px au bord d'un champ se lit comme un bouton d'envoi —
+     et le geste voisin doit rester le seul plein de l'écran. */
+  .champ{display:block;padding:13px 0;border-bottom:1px solid var(--trait)}
+  .champ .et{display:block;margin-bottom:4px;font-size:11px;
+             letter-spacing:.06em;color:var(--gris)}
+  .interrupteur{position:absolute;width:1px;height:1px;opacity:0;margin:0;pointer-events:none}
+  .rang{display:flex;align-items:center;gap:12px;min-height:30px}
+  .rang .va{flex:1;min-width:0;display:block;font:400 17px/1.35 ui-serif,Georgia,serif}
+  .rang .va.creux{color:var(--gris)}
+  .rang .va.masque{letter-spacing:.22em;font-family:ui-sans-serif,-apple-system,sans-serif;
+                   font-size:16px}
+  .rang .va.clair{display:none;font-family:ui-sans-serif,-apple-system,sans-serif;
+                  font-size:16px;letter-spacing:.01em}
+  .oeil{flex:none;display:flex;align-items:center;justify-content:center;
+        width:40px;height:40px;margin-right:-10px;color:var(--gris);cursor:pointer;
+        -webkit-tap-highlight-color:transparent}
+  .oeil svg{display:block;width:21px;height:21px;fill:none;stroke:currentColor;
+            stroke-width:1.4;stroke-linecap:round;stroke-linejoin:round}
+  .oeil.ouvert{display:none}
+  .interrupteur:checked ~ .rang .va.masque,
+  .interrupteur:checked ~ .rang .oeil.ferme{display:none}
+  .interrupteur:checked ~ .rang .va.clair{display:block}
+  .interrupteur:checked ~ .rang .oeil.ouvert{display:flex;color:var(--or)}
+  .disent{display:block;margin-top:5px;font-size:11.5px;color:var(--or)}
+
+  /* ═══ LA SÉPARATION — LE POINT N° 3 ═════════════════════════════════
+     A : le nouveau compte vit dans une CARTE, avec son propre fond, son propre
+     titre et sa propre marge. Ce qui est à vous reste plat sur la page ; ce
+     qui se crée est posé dessus, comme une fiche qu'on remplit.
+
+     B : le nouveau compte prend TOUT L'ÉCRAN. Il n'y a alors plus rien à
+     confondre — la liste n'est plus là. */
+  .carte{margin-top:18px;padding:18px;border-radius:16px;background:var(--card);
+         border:1px solid var(--traitDoux);box-shadow:0 2px 10px rgba(28,28,26,.05)}
+  .carte .titreCarte{margin:0 0 2px;font:400 19px/1.2 ui-serif,Georgia,serif}
+  .carte .ditCarte{margin:0 0 12px;font-size:12px;color:var(--gris)}
+
+  .retour{display:flex;align-items:center;justify-content:center;width:38px;height:38px;
+          border-radius:50%;background:var(--pinTint);color:var(--encre);
+          font-size:17px;margin:16px 0 12px 26px}
+
+  .separation{display:flex;align-items:center;gap:12px;margin:26px 26px 0;
+              font-size:9.5px;letter-spacing:.28em;text-transform:uppercase;color:var(--gris)}
+  .separation i{flex:1;height:1px;background:var(--trait)}
+
+  /* Le repli quand le formulaire est fermé : la ligne « Donner un accès ». */
+  .bascule{position:absolute;width:1px;height:1px;opacity:0;margin:0;pointer-events:none}
+  .ouvrir{display:flex;align-items:center;gap:10px;padding:14px 0;font-size:15px;
+          border-top:1px solid var(--trait);cursor:pointer;
+          -webkit-tap-highlight-color:transparent}
+  .ouvrir .plus{color:var(--gris)}
+  .replie{display:none}
+  .bascule:checked ~ .ouvrir{display:none}
+  .bascule:checked ~ .replie{display:block}
+
+  .note{max-width:56ch;margin:28px auto 0;font-size:13px;color:var(--gris)}
+  .note b{color:var(--encre);font-weight:600}
+
+  .fin{max-width:56ch;margin:34px auto 0;padding:18px;border-radius:14px;
+       background:var(--card);border:1px solid var(--traitDoux)}
+  .fin p{margin:0 0 8px;font-size:14.5px}
+  .fin p:last-child{margin:0}
+
+  @media (max-width:420px){
+    body{padding:26px 10px 70px}
+    .tel{width:100%}
+    h1{font-size:25px}
+  }
+</style>
+
+<div class="page">
+
+  <p class="sur">Réglages · Équipe</p>
+  <h1>Donner un accès</h1>
+  <p class="chapo">
+    Vos trois remarques du 26 août, corrigées. Touchez les yeux, changez les rôles,
+    ouvrez le formulaire : tout répond.
+  </p>
+
+  <div class="constat" style="border-color:var(--or)">
+    <p style="color:var(--or)">Votre réponse, le 26 août</p>
+    <ol style="list-style:none;padding:0">
+      <li><b>« B, tu peux coder »</b> — c’est fait, et c’est dans l’application.</li>
+      <li style="color:var(--gris)">La proposition A reste ci-dessous : elle raconte le chemin, elle n’a pas été codée.</li>
+    </ol>
+  </div>
+
+  <div class="constat">
+    <p>Ce qui n’allait pas</p>
+    <ol>
+      <li>Le mot de passe s’écrivait <b>une seule fois</b>, et à l’aveugle.</li>
+      <li>Le bouton était <b>noir comme la pastille « Salarié »</b> : on ne savait plus lequel valide.</li>
+      <li>Votre compte et celui qu’on crée <b>se touchaient</b>, sans rien entre les deux.</li>
+    </ol>
+  </div>
+
+  <div class="duo">
+
+    <!-- ════════════════ PROPOSITION A ════════════════════════════════ -->
+    <div class="prop">
+      <p class="etiquette">Proposition A · écartée</p>
+      <h3 class="titrePropo">Une carte posée sur la page</h3>
+      <p class="ditPropo">
+        Le nouveau compte a son cadre, son titre, son fond. Vous ne quittez pas la liste.
+      </p>
+
+      <div class="tel"><div class="ecran">
+        <div class="corps">
+          <div class="tete">
+            <p class="st">Réglages</p>
+            <h2>Équipe</h2>
+          </div>
+          <div class="filet"></div>
+
+          <div class="section">
+            <p class="intitule">Qui a accès <i></i></p>
+
+            <div class="pers">
+              <span class="txt">
+                <span class="nom">Vous</span>
+                <span class="mail">demo@atlas.local</span>
+              </span>
+              <span class="role">Patron</span>
+            </div>
+
+            <!-- La bascule : fermée, c'est une ligne ; ouverte, c'est la carte. -->
+            <input class="bascule" type="checkbox" id="ouvrirA" checked>
+
+            <div class="ouvrir"><span class="plus">+</span> Donner un accès</div>
+
+            <div class="replie">
+              <!-- LA CARTE — c'est elle qui répond au point n° 3. -->
+              <div class="carte">
+                <h4 class="titreCarte">Nouveau compte</h4>
+                <p class="ditCarte">Il ouvrira Atlas avec ces identifiants.</p>
+
+                <label class="champ">
+                  <span class="et">Nom</span>
+                  <span class="rang"><span class="va">Julien</span></span>
+                </label>
+
+                <label class="champ">
+                  <span class="et">Adresse e-mail</span>
+                  <span class="rang"><span class="va">flo-speed@hotmail.fr</span></span>
+                </label>
+
+                <label class="champ">
+                  <span class="et">Mot de passe</span>
+                  <input class="interrupteur" type="checkbox" id="oeilA1">
+                  <span class="rang">
+                    <span class="va masque">••••••••••••</span>
+                    <span class="va clair">chene-tilleul-08</span>
+                    <span class="oeil ferme" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M2.4 12S6 5.8 12 5.8 21.6 12 21.6 12 18 18.2 12 18.2 2.4 12 2.4 12Z"/><circle cx="12" cy="12" r="3.1"/></svg></span>
+                    <span class="oeil ouvert" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M2.4 12S6 5.8 12 5.8 21.6 12 21.6 12 18 18.2 12 18.2 2.4 12 2.4 12Z"/><circle cx="12" cy="12" r="3.1"/><path d="M4 20 20 4"/></svg></span>
+                  </span>
+                </label>
+
+                <label class="champ">
+                  <span class="et">Confirmer le mot de passe</span>
+                  <input class="interrupteur" type="checkbox" id="oeilA2">
+                  <span class="rang">
+                    <span class="va masque">••••••••••••</span>
+                    <span class="va clair">chene-tilleul-08</span>
+                    <span class="oeil ferme" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M2.4 12S6 5.8 12 5.8 21.6 12 21.6 12 18 18.2 12 18.2 2.4 12 2.4 12Z"/><circle cx="12" cy="12" r="3.1"/></svg></span>
+                    <span class="oeil ouvert" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M2.4 12S6 5.8 12 5.8 21.6 12 21.6 12 18 18.2 12 18.2 2.4 12 2.4 12Z"/><circle cx="12" cy="12" r="3.1"/><path d="M4 20 20 4"/></svg></span>
+                  </span>
+                  <span class="disent">Les deux sont identiques</span>
+                </label>
+
+                <p class="intitule" style="margin-top:18px">Son rôle <i></i></p>
+                <input class="radio_role" type="radio" name="roleA" id="roleA1">
+                <input class="radio_role" type="radio" name="roleA" id="roleA2">
+                <input class="radio_role" type="radio" name="roleA" id="roleA3" checked>
+
+                <div class="roles">
+                  <span class="role_choix"><label for="roleA1"><span class="coche"><svg viewBox="0 0 24 24"><path d="m5 13 4.5 4.5L19 7"/></svg></span>Patron</label></span>
+                  <span class="role_choix"><label for="roleA2"><span class="coche"><svg viewBox="0 0 24 24"><path d="m5 13 4.5 4.5L19 7"/></svg></span>Commercial</label></span>
+                  <span class="role_choix"><label for="roleA3"><span class="coche"><svg viewBox="0 0 24 24"><path d="m5 13 4.5 4.5L19 7"/></svg></span>Salarié</label></span>
+                </div>
+
+                <ul class="change" data-role="proprietaire">
+                  <li>Tout Atlas</li>
+                  <li>Les tarifs, l&rsquo;identité, l&rsquo;IBAN, l&rsquo;abonnement</li>
+                  <li>Donner et retirer les accès</li>
+                </ul>
+                <ul class="change" data-role="commercial">
+                  <li>Les chantiers, le planning, les devis et les prix</li>
+                  <li>Les factures et le relevé de TVA</li>
+                  <li class="non">La mise en page des devis</li>
+                  <li class="non">L&rsquo;identité de l&rsquo;entreprise et l&rsquo;IBAN</li>
+                  <li class="non">Les accès et l&rsquo;abonnement</li>
+                </ul>
+                <ul class="change" data-role="salarie">
+                  <li>Le planning</li>
+                  <li>Sa feuille de chantier, sans un seul montant</li>
+                  <li class="non">Les prix, les devis, les factures</li>
+                  <li class="non">Les chantiers et les clients</li>
+                  <li class="non">Les réglages de l&rsquo;entreprise</li>
+                </ul>
+
+                <div class="capsule" style="margin-top:18px">Créer le compte</div>
+                <div class="secondaire">Annuler</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="barre">
+          <span>Chantiers</span><span>Planning</span><span>Terminés</span>
+          <span>Paysage</span><span class="actif">Réglages</span>
+        </div>
+      </div></div>
+    </div>
+
+    <!-- ════════════════ PROPOSITION B ════════════════════════════════ -->
+    <div class="prop">
+      <p class="etiquette">Proposition B · retenue et codée</p>
+      <h3 class="titrePropo">Un écran à lui seul</h3>
+      <p class="ditPropo">
+        « Donner un accès » ouvre une page vide de tout le reste. Plus rien à confondre :
+        la liste n’est plus là.
+      </p>
+
+      <div class="tel"><div class="ecran">
+        <div class="corps">
+          <div class="retour">‹</div>
+
+          <div class="tete" style="padding-top:0">
+            <p class="st">Équipe</p>
+            <h2>Nouveau compte</h2>
+          </div>
+          <div class="filet"></div>
+
+          <div class="section">
+            <label class="champ">
+              <span class="et">Nom</span>
+              <span class="rang"><span class="va">Julien</span></span>
+            </label>
+
+            <label class="champ">
+              <span class="et">Adresse e-mail</span>
+              <span class="rang"><span class="va">flo-speed@hotmail.fr</span></span>
+            </label>
+
+            <label class="champ">
+              <span class="et">Mot de passe</span>
+              <input class="interrupteur" type="checkbox" id="oeilB1">
+              <span class="rang">
+                <span class="va masque">••••••••••••</span>
+                <span class="va clair">chene-tilleul-08</span>
+                <span class="oeil ferme" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M2.4 12S6 5.8 12 5.8 21.6 12 21.6 12 18 18.2 12 18.2 2.4 12 2.4 12Z"/><circle cx="12" cy="12" r="3.1"/></svg></span>
+                <span class="oeil ouvert" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M2.4 12S6 5.8 12 5.8 21.6 12 21.6 12 18 18.2 12 18.2 2.4 12 2.4 12Z"/><circle cx="12" cy="12" r="3.1"/><path d="M4 20 20 4"/></svg></span>
+              </span>
+              <span class="disent" style="color:var(--gris)">Au moins 12 caractères</span>
+            </label>
+
+            <label class="champ">
+              <span class="et">Confirmer le mot de passe</span>
+              <input class="interrupteur" type="checkbox" id="oeilB2">
+              <span class="rang">
+                <span class="va masque">••••••••••••</span>
+                <span class="va clair">chene-tilleul-08</span>
+                <span class="oeil ferme" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M2.4 12S6 5.8 12 5.8 21.6 12 21.6 12 18 18.2 12 18.2 2.4 12 2.4 12Z"/><circle cx="12" cy="12" r="3.1"/></svg></span>
+                <span class="oeil ouvert" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M2.4 12S6 5.8 12 5.8 21.6 12 21.6 12 18 18.2 12 18.2 2.4 12 2.4 12Z"/><circle cx="12" cy="12" r="3.1"/><path d="M4 20 20 4"/></svg></span>
+              </span>
+              <span class="disent">Les deux sont identiques</span>
+            </label>
+          </div>
+
+          <p class="separation">Son rôle <i></i></p>
+
+          <div class="section" style="padding-top:8px">
+            <input class="radio_role" type="radio" name="roleB" id="roleB1">
+                <input class="radio_role" type="radio" name="roleB" id="roleB2">
+                <input class="radio_role" type="radio" name="roleB" id="roleB3" checked>
+
+                <div class="roles">
+                  <span class="role_choix"><label for="roleB1"><span class="coche"><svg viewBox="0 0 24 24"><path d="m5 13 4.5 4.5L19 7"/></svg></span>Patron</label></span>
+                  <span class="role_choix"><label for="roleB2"><span class="coche"><svg viewBox="0 0 24 24"><path d="m5 13 4.5 4.5L19 7"/></svg></span>Commercial</label></span>
+                  <span class="role_choix"><label for="roleB3"><span class="coche"><svg viewBox="0 0 24 24"><path d="m5 13 4.5 4.5L19 7"/></svg></span>Salarié</label></span>
+                </div>
+
+                <ul class="change" data-role="proprietaire">
+                  <li>Tout Atlas</li>
+                  <li>Les tarifs, l&rsquo;identité, l&rsquo;IBAN, l&rsquo;abonnement</li>
+                  <li>Donner et retirer les accès</li>
+                </ul>
+                <ul class="change" data-role="commercial">
+                  <li>Les chantiers, le planning, les devis et les prix</li>
+                  <li>Les factures et le relevé de TVA</li>
+                  <li class="non">La mise en page des devis</li>
+                  <li class="non">L&rsquo;identité de l&rsquo;entreprise et l&rsquo;IBAN</li>
+                  <li class="non">Les accès et l&rsquo;abonnement</li>
+                </ul>
+                <ul class="change" data-role="salarie">
+                  <li>Le planning</li>
+                  <li>Sa feuille de chantier, sans un seul montant</li>
+                  <li class="non">Les prix, les devis, les factures</li>
+                  <li class="non">Les chantiers et les clients</li>
+                  <li class="non">Les réglages de l&rsquo;entreprise</li>
+                </ul>
+
+            <div class="capsule" style="margin-top:22px">Créer le compte</div>
+            <div class="secondaire">Annuler</div>
+          </div>
+        </div>
+
+        <div class="barre">
+          <span>Chantiers</span><span>Planning</span><span>Terminés</span>
+          <span>Paysage</span><span class="actif">Réglages</span>
+        </div>
+      </div></div>
+    </div>
+
+  </div>
+
+  <p class="note">
+    <b>Dans les deux :</b> le rôle choisi est <b>teinté avec un coche</b>, jamais noir.
+    Le noir plein ne sert plus qu’à une chose sur l’écran — le bouton qui crée le compte.
+    C’est déjà la règle d’Atlas : le plein porte ce qu’on fait, pas ce qu’on lit.
+  </p>
+
+  <div class="fin">
+    <p><b>A</b> — vous restez sur la liste, le nouveau compte est une carte posée dessus.</p>
+    <p><b>B</b> — le nouveau compte prend l’écran entier, et rien ne peut plus se confondre.</p>
+    <p style="margin-top:12px;color:var(--gris);font-size:13px">
+      Dites-moi A ou B, et je code. Rien n’est touché dans l’application avant votre réponse.
+    </p>
+  </div>
+
+</div>
+</body>
+</html>

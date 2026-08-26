@@ -45,9 +45,8 @@ export default function PeriodiciteTvaReglage({ initiale }: { initiale: Periodic
 
   return (
     <section className="mt-7 px-[26px]">
-      <p className={`mb-1.5 flex items-center gap-3 ${libelleCaps}`} style={{ color: colors.muted }}>
+      <p className={`mb-1.5 ${libelleCaps}`} style={{ color: colors.muted }}>
         Votre TVA
-        <i className="h-px flex-1" style={{ backgroundColor: colors.line }} />
       </p>
 
       <p className="pb-3 pt-1 text-[13px] leading-[1.6]" style={{ color: colors.muted }}>

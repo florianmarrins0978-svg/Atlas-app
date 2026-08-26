@@ -21,8 +21,11 @@
 // Usage : npm run test:e2e -- --seulement allure-de-mes-devis
 import assert from "node:assert/strict";
 import { Pool } from "pg";
+import { mkdirSync } from "node:fs";
 import { lancerNavigateur } from "./e2e-browser";
+import { creerPuisFiche } from "./_creer-chantier-e2e";
 
+const CAPTURES = process.env.CAPTURES_E2E ?? "/tmp/captures-atlas";
 const BASE = "http://localhost:3000";
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 
@@ -172,6 +175,82 @@ async function main() {
     );
   });
 
+  await cas("L'APERÇU RESTE À L'ÉCRAN QUAND ON DESCEND CHOISIR UNE POLICE", async () => {
+    // **Sa plainte du 24 août 2026 :** *« lorsque je modifie mon devis, je suis
+    // obligé de descendre pour voir les modifications ».* Trois rangements lui
+    // ont été dessinés (planche 96) ; il a répondu **« la B »** — l'aperçu
+    // collé en tête du bloc.
+    //
+    // **Ce cas mesure le GESTE, pas la feuille de style.** Vérifier
+    // `position: sticky` prouverait qu'une propriété est écrite, pas qu'elle
+    // agit : un parent en `overflow: hidden` la neutralise sans rien changer au
+    // CSS. On descend donc jusqu'à la dernière police, et l'on regarde où est
+    // la feuille — comme lui.
+    await page.reload({ waitUntil: "networkidle" });
+    await page.waitForSelector('[data-atlas="typo-playfair"]', { timeout: 30_000 });
+
+    const derniere = page.locator('[data-atlas="typo-playfair"]');
+    await derniere.scrollIntoViewIfNeeded();
+    await page.waitForTimeout(400);
+
+    const vu = await page.evaluate(() => {
+      const f = document.querySelector('[data-atlas="allure-feuille"]');
+      if (!f) return null;
+      const r = f.getBoundingClientRect();
+      return { haut: r.top, bas: r.bottom, hauteur: r.height, ecran: window.innerHeight };
+    });
+    assert.ok(vu, "L'aperçu n'existe plus sur l'écran des documents.");
+    assert.ok(
+      vu!.hauteur > 0,
+      "L'aperçu mesure zéro pixel : rien n'est mesurable ici, et un vert ne prouverait rien."
+    );
+    // **Visible pour de bon** : au moins la moitié de la feuille dans l'écran.
+    // Un liseré de deux pixels n'est pas un aperçu.
+    const dedans = Math.max(0, Math.min(vu!.bas, vu!.ecran) - Math.max(vu!.haut, 0));
+    assert.ok(
+      dedans >= vu!.hauteur / 2,
+      `Descendu jusqu'à la dernière police, il ne reste que ${Math.round(dedans)} px d'aperçu ` +
+        `sur ${Math.round(vu!.hauteur)} : c'est l'écran d'avant sa proposition B, celui dont il ` +
+        `disait « je suis obligé de descendre pour voir les modifications ».`
+    );
+
+    // **Et il SUIT le choix**, sans qu'on remonte. Une feuille collée qui ne se
+    // repeindrait pas serait pire que l'écran d'avant : il la croirait à jour.
+    //
+    // **On touche une police QUI N'EST PAS DÉJÀ CHOISIE**, et c'est ce cas-ci
+    // qui l'a appris : un cas plus haut dans cette suite avait posé Playfair,
+    // si bien qu'on comparait la même famille avant et après — le contrôle
+    // accusait un écran juste. Il lit donc l'état, puis vise ailleurs.
+    const avant = await page.locator('[data-atlas="allure-feuille"]').evaluate(
+      (n) => getComputedStyle(n).fontFamily
+    );
+    const cible = /playfair/i.test(avant) ? "typo-inter" : "typo-playfair";
+    const autre = page.locator(`[data-atlas="${cible}"]`);
+    await autre.scrollIntoViewIfNeeded();
+    await page.waitForTimeout(300);
+    await autre.click();
+    await page.waitForTimeout(900);
+    const apres = await page.locator('[data-atlas="allure-feuille"]').evaluate(
+      (n) => getComputedStyle(n).fontFamily
+    );
+    assert.notEqual(
+      apres,
+      avant,
+      `Toucher « ${cible} » n'a pas repeint l'aperçu resté en haut (lu « ${apres} » avant comme après).`
+    );
+
+    // **On repose ce qu'on a trouvé.** Le cas suivant vérifie que le choix
+    // survit au rechargement, et il attend Playfair : laisser Inter derrière
+    // soi le ferait rougir sur du code juste. Un cas qui réécrit le décor de
+    // ses voisins déplace le défaut au lieu de l'attraper.
+    if (cible !== "typo-playfair") {
+      const playfair = page.locator('[data-atlas="typo-playfair"]');
+      await playfair.scrollIntoViewIfNeeded();
+      await playfair.click();
+      await page.waitForTimeout(900);
+    }
+  });
+
   await cas("le choix survit au rechargement — il n'est pas seulement à l'écran", async () => {
     await page.reload({ waitUntil: "networkidle" });
     await page.waitForSelector('[data-atlas="typo-playfair"]', { timeout: 30_000 });
@@ -196,6 +275,68 @@ async function main() {
     // on appuie, rien ne bouge, et l'on ne sait plus si l'écran répond.
     await page.waitForTimeout(400);
     assert.equal(await page.locator('[data-atlas="allure-defaut"]').count(), 0);
+  });
+
+  // ── SON LOGO, sur l'écran où il rédige (25 août 2026) ─────────────────────
+  //
+  // *« Je viens de modifier l'apparence de mon devis, j'ai rajouté un logo en
+  // haut à gauche mais il n'est pas visible. »* Le logo partait bien sur le PDF
+  // et s'affichait dans l'aperçu de ce réglage — mais l'écran où il RÉDIGE son
+  // devis, celui qu'il regarde le plus, ne le montrait nulle part.
+  //
+  // Le contrôle va d'un bout à l'autre : on POSE le logo comme lui le pose,
+  // puis on ouvre un devis et on regarde. Vérifier la seule présence de la
+  // balise ne suffirait pas — une image cassée est aussi une balise.
+  await cas("le logo posé dans les réglages apparaît sur le devis", async () => {
+    await page.goto(`${BASE}/reglages/documents`, { waitUntil: "networkidle" });
+    // Le champ de fichier est CACHÉ derrière son bouton (c'est la forme de
+    // l'écran) : on attend le bouton, et l'on pose le fichier dans le champ.
+    await page.waitForSelector('[data-atlas="logo-choisir"]', { timeout: 30_000 });
+
+    // Un vrai PNG, minuscule mais valide — un pixel.
+    const pixel = Buffer.from(
+      "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==",
+      "base64"
+    );
+    await page.setInputFiles('[data-atlas="logo-fichier"]', {
+      name: "logo.png",
+      mimeType: "image/png",
+      buffer: pixel,
+    });
+    await page.waitForSelector('[data-atlas="logo-case"] img', { timeout: 30_000 });
+
+    // Un chantier avec son devis, comme il y arrive.
+    await page.goto(`${BASE}/chantiers/nouveau`, { waitUntil: "networkidle" });
+    await page.fill('input[placeholder="Bernard"]', `M. Logo ${Date.now()}`);
+    // Le chemin partagé, plutôt qu'un bouton nommé à la main : « Créer le
+    // chantier » a disparu de l'écran le 22 août, et deux copies de la même
+    // manœuvre divergent toujours.
+    const idChantier = await creerPuisFiche(page, BASE);
+    await page.goto(`${BASE}/chantiers/${idChantier}/devis-complet`, { waitUntil: "networkidle" });
+
+    const logo = page.locator('[data-atlas="logo-devis"]');
+    await logo.waitFor({ timeout: 30_000 });
+
+    // **Chargée pour de bon, et pas seulement présente.** `naturalWidth` vaut
+    // zéro sur une image cassée : sans cette mesure, une adresse fausse
+    // passerait au vert et c'est lui qui verrait le carré vide.
+    const chargee = await logo.evaluate((el) => (el as HTMLImageElement).naturalWidth > 0);
+    assert.ok(chargee, "le logo est dans la page mais ne se charge pas : l'adresse ne sert rien");
+
+    // Et il est AU-DESSUS du nom de l'entreprise, comme sur le document.
+    const boiteLogo = await logo.boundingBox();
+    const boiteNom = await page.locator('[aria-label="Nom de l\'entreprise"]').first().boundingBox();
+    assert.ok(boiteLogo && boiteNom, "impossible de mesurer le logo ou le nom");
+    assert.ok(
+      boiteLogo.y + boiteLogo.height <= boiteNom.y + 4,
+      `le logo doit être au-dessus du nom (logo à ${Math.round(boiteLogo.y)}, nom à ${Math.round(boiteNom.y)})`
+    );
+    assert.ok(boiteLogo.height > 10, `le logo est écrasé : ${Math.round(boiteLogo.height)} px de haut`);
+
+    // **Une capture, pour être REGARDÉE** : quatre défauts de ce dépôt sont
+    // sortis d'une image et d'aucun test (`CLAUDE.md` §5).
+    mkdirSync(CAPTURES, { recursive: true });
+    await page.screenshot({ path: `${CAPTURES}/devis-avec-logo.png` });
   });
 
   await contexte.close();

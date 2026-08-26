@@ -8,6 +8,11 @@ import {
   type LogoDocument,
 } from "./document-commun";
 import { jourNumerique } from "../../lib/jour";
+import {
+  lireConditions,
+  lignesConditionsDevis,
+  type ConditionsLues,
+} from "@/lib/conditions-documents";
 import type { Allure } from "@/lib/allure-documents";
 
 // Le devis, à l'image du modèle d'Arborea (`appli/devis-modele.html`).
@@ -31,6 +36,18 @@ export type DevisPdfData = DonneesDocument & {
   dateEmission: string;
   /** Recopiée à la création. `null` : aucune durée ne s'imprime. */
   validiteJours?: number | null;
+  /**
+   * Les cinq autres conditions, recopiées elles aussi (migration 0064).
+   *
+   * **Elles n'arrivaient nulle part avant le 25 août 2026**, et c'est le patron
+   * qui l'a vu : *« les autres qui sont en ON doivent-ils être visibles sur le
+   * devis ? car je ne vois rien »*. `lignesConditionsDevis` composait déjà les
+   * phrases ; seul l'aperçu des Réglages l'appelait.
+   *
+   * Absentes (`undefined`) sur les devis d'avant la migration : rien de plus ne
+   * s'imprime, et ces documents-là sortent identiques à eux-mêmes.
+   */
+  conditionsReglees?: ConditionsLues | null;
 };
 
 /**
@@ -84,12 +101,46 @@ export type OptionsDevisPdf = {
   logo?: LogoDocument | null;
 };
 
+/**
+ * Le bloc « NOTES / CONDITIONS » : SON texte d'abord, les conditions réglées
+ * dessous.
+ *
+ * **Pourquoi cet ordre, et pas l'inverse.** Ce qu'il a écrit à la main parle de
+ * CE chantier — l'accès par le portail de gauche, la cour à dégager la veille.
+ * C'est ce que le client doit lire en premier ; les conditions de paiement sont
+ * les mêmes sur tous ses devis.
+ *
+ * **Et rien ne se perd.** Le champ libre n'est ni remplacé ni réécrit : les
+ * lignes réglées s'ajoutent dessous. Quand il n'a rien écrit, le bloc ne porte
+ * qu'elles — ce qui est exactement la proposition A de la planche 60, sans
+ * qu'il ait eu à choisir entre les deux.
+ *
+ * **Le montant de l'acompte s'écrit ICI parce que le total y est connu.** Dans
+ * l'aperçu des Réglages il ne l'est pas, et `lignesConditionsDevis` le tait
+ * plutôt que d'inventer un chiffre — un montant supposé à cet endroit finirait
+ * imprimé chez un client (`CLAUDE.md` §4).
+ */
+function blocNotes(data: DevisPdfData, sansPrix: boolean): string | null {
+  const sien = data.conditionsPaiement?.trim() || null;
+  // **Aucune condition sur la feuille de chantier.** Elle part chez un salarié,
+  // sans un prix : « acompte de 30 % » y serait un montant, et le document
+  // cesserait d'être ce qu'il annonce. C'est la règle que suit déjà l'IBAN.
+  if (sansPrix) return sien;
+
+  const lignes = lignesConditionsDevis(
+    lireConditions(data.conditionsReglees),
+    Number(data.totalTtc)
+  );
+  if (!lignes.length) return sien;
+  return [sien, ...lignes].filter(Boolean).join("\n");
+}
+
 export async function composerDevisPdf(
   data: DevisPdfData,
   options: OptionsDevisPdf = {}
 ): Promise<{ pdf: Uint8Array; trace: TraceDocument }> {
   const sansPrix = Boolean(options.sansChiffrage);
-  return composerDocument(data, {
+  return composerDocument({ ...data, conditionsPaiement: blocNotes(data, sansPrix) }, {
     sansChiffrage: options.sansChiffrage,
     // **Sa décision du 23 août : le devis et la facture SEULEMENT.** La feuille
     // de chantier sort de la même fabrique, avec `sansChiffrage` — sans ce

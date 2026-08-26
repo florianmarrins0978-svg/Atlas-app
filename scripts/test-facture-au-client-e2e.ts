@@ -216,7 +216,7 @@ async function main() {
   console.log(`  ✓ le message tout prêt porte la capsule (rayon ${rayon} px, ${Math.round(hauteur)} px de haut)`);
 
   const envoi = await pool.query(
-    `SELECT ef.jeton FROM envois_factures ef
+    `SELECT ef.jeton, f.numero_commercial FROM envois_factures ef
        JOIN factures f ON f.id = ef.facture_id
       WHERE f.chantier_id = $1`,
     [chantierId]
@@ -242,7 +242,17 @@ async function main() {
     remise.includes(`filename="${nomPropose}"`),
     `L'écran propose « ${nomPropose} » et le serveur range « ${remise} ».`
   );
-  assert.match(nomPropose, /^F\d{4}-\d{4}\.pdf$/, `Nom de fichier inexploitable : « ${nomPropose} »`);
+  // **Le nom se compare au numéro RÉEL de la facture, pas à une forme.** Ce
+  // contrôle exigeait `F\d{4}-\d{4}` : le 26 août 2026, le patron a choisi
+  // « six chiffres » et la suite a rougi sur du code juste, pour un réglage
+  // exaucé (`CLAUDE.md` §5 bis). Ce qui compte n'a jamais été le nombre de
+  // chiffres — c'est qu'il retrouve SA facture dans son dossier de
+  // téléchargements, donc que le nom porte le numéro qu'elle porte.
+  assert.equal(
+    nomPropose,
+    `${envoi.rows[0].numero_commercial}.pdf`,
+    `Nom de fichier inexploitable : « ${nomPropose} » pour la facture ${envoi.rows[0].numero_commercial}`
+  );
   // Et l'aperçu continue de s'ouvrir : la nouveauté s'ajoute, elle ne remplace pas.
   const apercu = await page.request.get(`${BASE}${cheminPdf.replace("?telecharger=1", "")}`);
   assert.ok(

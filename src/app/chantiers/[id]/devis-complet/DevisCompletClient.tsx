@@ -71,6 +71,14 @@ type Props = {
   dateEmission: string;
   validite: string;
   statut: "brouillon" | "envoye";
+  /**
+   * La clef de son logo dans le stockage, ou `null`.
+   *
+   * **Il l'avait posé et ne le voyait pas** (25 août 2026) : le PDF le portait,
+   * l'aperçu des réglages aussi, mais l'écran où il RÉDIGE son devis — celui
+   * qu'il regarde le plus — ne le montrait nulle part.
+   */
+  logo: string | null;
   emetteur: { nom: string; adresse: string; siret: string; telephone: string; email: string; iban: string };
   clientId: string | null;
   client: { nom: string; civilite: Civilite | null; adresse: string; telephone: string; email: string };
@@ -354,7 +362,7 @@ export default function DevisCompletClient(props: Props) {
             className="mt-2 block text-[13px] font-semibold"
             style={{ color: colors.rust }}
           >
-            Le corriger et le renvoyer →
+            Le corriger et le renvoyer
           </Link>
         </div>
       )}
@@ -362,6 +370,20 @@ export default function DevisCompletClient(props: Props) {
       {/* --- En-tête : l'entreprise à gauche, les références à droite -------- */}
       <header className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
         <div className="min-w-0 flex-1">
+          {/* **Le logo AU-DESSUS du nom**, comme sur le document imprimé
+              (`document-commun.ts` : « Le logo, au-dessus du nom »). Une hauteur
+              fixe et une largeur libre : un logo en bandeau et un logo carré
+              n'ont rien à voir, et imposer une boîte carrée écraserait le
+              premier. Même règle que le PDF, à l'échelle de l'écran. */}
+          {props.logo && (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={`/api/fichiers/${props.logo}`}
+              alt=""
+              data-atlas="logo-devis"
+              className="mb-2 h-[44px] w-auto max-w-[180px] object-contain object-left"
+            />
+          )}
           <ChampNu
             valeur={emetteur.nom}
             fige={fige}
@@ -371,12 +393,24 @@ export default function DevisCompletClient(props: Props) {
             onChange={(v) => setEmetteur({ ...emetteur, nom: v })}
             onFini={() => majEmetteurAction({ nom: emetteur.nom })}
           />
+          {/* **Toute son identité ICI, et une seule fois** (25 août 2026). Sa
+              question : *« pourquoi il y a deux fois l'émetteur sur l'aperçu ? »*
+              — l'adresse et le SIRET vivaient dans un bloc « Émetteur » plus
+              bas, pendant que le nom, le téléphone et l'e-mail vivaient ici.
+              L'ordre est celui du document : nom, adresse, téléphone, e-mail,
+              SIRET, **une ligne par information**. */}
+          <ChampNu long valeur={emetteur.adresse} fige={fige} placeholder="Adresse du siège social" aria="Adresse de l'entreprise"
+            onChange={(v) => setEmetteur({ ...emetteur, adresse: v })}
+            onFini={() => majEmetteurAction({ adresse: emetteur.adresse })} />
           <ChampNu valeur={emetteur.telephone} fige={fige} placeholder="Téléphone" aria="Téléphone de l'entreprise"
             onChange={(v) => setEmetteur({ ...emetteur, telephone: v })}
             onFini={() => majEmetteurAction({ telephone: emetteur.telephone })} />
           <ChampNu valeur={emetteur.email} fige={fige} placeholder="E-mail" aria="E-mail de l'entreprise"
             onChange={(v) => setEmetteur({ ...emetteur, email: v })}
             onFini={() => majEmetteurAction({ email: emetteur.email })} />
+          <ChampNu valeur={emetteur.siret} fige={fige} placeholder="N° SIREN / SIRET" aria="SIREN / SIRET"
+            onChange={(v) => setEmetteur({ ...emetteur, siret: v })}
+            onFini={() => majEmetteurAction({ siret: emetteur.siret })} />
         </div>
 
         <div className="w-full sm:w-[280px] sm:shrink-0">
@@ -392,18 +426,14 @@ export default function DevisCompletClient(props: Props) {
         DEVIS
       </h1>
 
-      {/* --- Émetteur et client, côte à côte comme sur le papier ------------- */}
+      {/* --- Le client, seul : l'émetteur est déjà en haut ------------------
+          Sa question du 25 août 2026 : *« est-ce que c'est normal qu'il y ait
+          2 fois l'émetteur ? »*. Non — l'en-tête le porte en entier, et ce bloc
+          le réécrivait juste dessous. Le client passe donc à gauche, à la place
+          qu'occupait l'émetteur : une colonne restée à droite avec un vide en
+          face se lirait comme un bloc oublié. Le document imprimé fait
+          exactement pareil (`document-commun.ts`). */}
       <section className="grid gap-7 sm:grid-cols-2">
-        <div>
-          <Intertitre>Émetteur</Intertitre>
-          <ChampNu long valeur={emetteur.adresse} fige={fige} placeholder="Adresse du siège social" aria="Adresse de l'entreprise"
-            onChange={(v) => setEmetteur({ ...emetteur, adresse: v })}
-            onFini={() => majEmetteurAction({ adresse: emetteur.adresse })} />
-          <ChampNu valeur={emetteur.siret} fige={fige} placeholder="N° SIREN / SIRET" aria="SIREN / SIRET"
-            onChange={(v) => setEmetteur({ ...emetteur, siret: v })}
-            onFini={() => majEmetteurAction({ siret: emetteur.siret })} />
-        </div>
-
         <div>
           <Intertitre>Client</Intertitre>
           {props.clientId ? (
@@ -781,9 +811,6 @@ export default function DevisCompletClient(props: Props) {
         >
           Aperçu du PDF
         </a>
-        <p className="pb-1 text-center text-[12px]" style={{ color: colors.muted }}>
-          Tout s&apos;enregistre au fur et à mesure. Rien ne part avant que vous ne le décidiez.
-        </p>
       </div>
       </article>
 
@@ -821,7 +848,7 @@ export default function DevisCompletClient(props: Props) {
           //
           // L'envoi rend maintenant le canal ET le destinataire qu'il vient de
           // relire en base. Une seule source, la bonne, et rien à rafraîchir.
-          ouvrirLaMessagerie({
+          const ouverture = ouvrirLaMessagerie({
             chemin: envoi.lien,
             origine: props.origine,
             canalClient: envoi.canal,
@@ -831,6 +858,17 @@ export default function DevisCompletClient(props: Props) {
             clientCivilite: client.civilite,
             entrepriseNom: emetteur.nom,
           });
+
+          // **UNE ADRESSE LOCALE NE RAMÈNE PAS À L'ACCUEIL — posé le 24 août
+          // 2026.** L'accueil ne dirait rien, et le devis serait parti avec un
+          // lien mort (`ARCHITECTURE.md` §169). On l'envoie donc là où la
+          // phrase l'attend : l'écran du devis parti, qui porte le message tout
+          // prêt et, ici, la raison de son absence. Le devis, lui, est bien
+          // envoyé — rien à défaire.
+          if (!ouverture.ok && ouverture.motif === "adresse-locale") {
+            router.push(`/chantiers/${props.chantierId}/export`);
+            return;
+          }
           // **DROIT À L'ACCUEIL — sa demande du 21 août 2026**, capture à
           // l'appui : *« juste derrière, il y a cette page-là qui s'affiche et je
           // n'ai pas besoin qu'elle s'affiche […] il faut qu'une fois que le devis

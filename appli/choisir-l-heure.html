@@ -97,7 +97,8 @@
                   font-size:13.5px;cursor:pointer;color:var(--gris)}
   #h-a:checked ~ .dedans label[for="h-a"],
   #h-b:checked ~ .dedans label[for="h-b"],
-  #h-c:checked ~ .dedans label[for="h-c"]{background:var(--pin);color:var(--papier);
+  #h-c:checked ~ .dedans label[for="h-c"],
+  #h-d:checked ~ .dedans label[for="h-d"]{background:var(--pin);color:var(--papier);
                                           border-color:var(--pin)}
 
   .rangee{display:flex;flex-wrap:wrap;gap:26px;align-items:flex-start}
@@ -116,10 +117,11 @@
   .champ-nom .prevu{font-size:11px;letter-spacing:0;color:var(--gris);
                     text-transform:none}
 
-  .ha,.hb,.hc{display:none}
+  .ha,.hb,.hc,.hd{display:none}
   #h-a:checked ~ .dedans .ha,
   #h-b:checked ~ .dedans .hb,
-  #h-c:checked ~ .dedans .hc{display:block}
+  #h-c:checked ~ .dedans .hc,
+  #h-d:checked ~ .dedans .hd{display:block}
 
   /* ═══ A · la molette du téléphone ═════════════════════════════════════════
      Deux listes natives. Sur un iPhone, c'est EXACTEMENT la molette qu'il
@@ -166,6 +168,51 @@
      scroll-snap-align:center;font-family:Georgia,serif;font-size:22px;
      color:var(--encre)}
 
+
+  /* ═══ D · heures et minutes séparées ══════════════════════════════════════
+     SA DEMANDE DU 25 AOÛT 2026, en retenant C : « la molette, mais avec d'un
+     côté les heures qu'on peut bouger et de l'autre les minutes qu'on peut
+     bouger séparément ».
+
+     CE QUE ÇA CHANGE, ET POURQUOI IL A RAISON. La molette d'un seul tenant
+     compte cinquante-trois crans de 0 h 00 à 4 h 00 : passer de 0 h 05 à 3 h 30
+     demande quarante et un crans, donc plusieurs élans du pouce. Séparées, la
+     même valeur se pose en deux gestes courts — trois crans d'un côté, six de
+     l'autre. C'est le geste de la molette d'un iPhone, qui est exactement ce
+     qu'il connaît (proposition A).
+
+     CE QUE ÇA COÛTE, ET IL FAUT LE DIRE : deux gestes au lieu d'un. Sur une
+     durée ronde — « deux heures » —, C se pose d'un seul élan là où D demande
+     de vérifier que les minutes sont bien sur 00.
+
+     LE REPÈRE EST UN SEUL TRAIT, POSÉ PAR-DESSUS LES DEUX COLONNES. Un repère
+     par colonne se lirait comme deux réglages sans rapport ; c'est UNE durée
+     qu'on choisit. Il est en `absolute` au centre du cadre — le centre tombe
+     juste par construction : la bande fait 196 px, le rembourrage du contenu
+     74 px et un cran 48 px, donc 74 + 24 = 98 = 196 ÷ 2. Et `pointer-events`
+     est coupé, sans quoi le trait avalerait le doigt au milieu de la molette,
+     c'est-à-dire exactement là où l'on pousse. */
+  .molette-2{position:relative;border-radius:18px;background:var(--teinte);
+             padding:0 6px;overflow:hidden}
+  .colonnes{display:flex;align-items:stretch}
+  .colonnes .bande{flex:1}
+  /* Le « h » ne défile pas : il appartient au cadre, pas à une colonne. */
+  .colonnes .entre{flex:none;width:26px;display:flex;align-items:center;
+                   justify-content:center;font-family:Georgia,serif;
+                   font-size:19px;color:var(--gris)}
+  .repere-2{position:absolute;left:8px;right:8px;top:50%;height:48px;
+            transform:translateY(-50%);border-radius:12px;z-index:2;
+            border-top:1px solid var(--or);border-bottom:1px solid var(--or);
+            background:rgba(185,139,71,.07);pointer-events:none}
+  /* Les deux colonnes portent le même chiffre au même corps : une heure n'est
+     pas plus importante qu'un quart d'heure, et la différence de taille se
+     lirait comme une hiérarchie. */
+  .colonnes .v{font-size:22px}
+  .sous-molette{margin-top:9px;display:flex;font-size:10.5px;letter-spacing:.13em;
+                text-transform:uppercase;color:var(--or)}
+  .sous-molette span{flex:1;text-align:center}
+  .sous-molette span.entre{flex:none;width:26px}
+
   .ecart{margin-top:12px;display:flex;justify-content:space-between;
          align-items:center;font-size:12.5px;color:var(--gris)}
   .ecart .pastille{background:var(--teinte);color:var(--pin);border-radius:999px;
@@ -189,9 +236,10 @@
   .note li{margin-bottom:6px}
 </style>
 
-<input type="radio" name="h" id="h-a" class="etat" checked>
+<input type="radio" name="h" id="h-a" class="etat">
 <input type="radio" name="h" id="h-b" class="etat">
 <input type="radio" name="h" id="h-c" class="etat">
+<input type="radio" name="h" id="h-d" class="etat" checked>
 
 <input type="radio" name="q" id="q1" class="etat">
 <input type="radio" name="q" id="q2" class="etat">
@@ -203,8 +251,8 @@
 <div class="dedans">
   <h1>Choisir l'heure au pouce</h1>
   <p class="intro">Le temps passé ne se tape plus. <b>Rien n'est codé.</b>
-    <b>Faites tourner la molette C avec le doigt</b> — elle s'accroche aux crans,
-    sans une ligne de JavaScript.</p>
+    <b>Tranché le 25 août 2026 : les molettes de votre téléphone restent</b> —
+    « je garde celle qui est présente ». Rien ne change dans l'application.</p>
 
   <p class="dit">« Ça serait bien de <b>ne pas avoir à l'écrire</b>, mais d'avoir
     une petite molette ou un truc sympa pour choisir l'heure. Tout en gardant à
@@ -213,9 +261,10 @@
   <div class="reglage">
     <span class="quoi">Comment il pose son temps</span>
     <div class="segments">
-      <label for="h-a">A · La molette du téléphone — <b>retenu</b></label>
+      <label for="h-a">A · La molette du téléphone — <b>RETENUE, et en place</b></label>
       <label for="h-b">B · Les quarts d'heure</label>
       <label for="h-c">C · La molette Atlas</label>
+      <label for="h-d">D · Heures et minutes séparées</label>
     </div>
   </div>
 
@@ -278,9 +327,39 @@
         </div>
       </div>
 
+
+      <!-- ═══ D · heures et minutes séparées ════════════════════════════════
+           Deux bandes indépendantes, chacune avec son accroche. Le repère est
+           posé PAR-DESSUS les deux : c'est une seule durée qu'on choisit. -->
+      <div class="hd">
+        <div class="molette-2">
+          <div class="repere-2"></div>
+          <div class="colonnes">
+            <div class="bande">
+              <div class="dedans-bande"><div class="v">0</div><div class="v">1</div><div class="v">2</div><div class="v">3</div><div class="v">4</div><div class="v">5</div><div class="v">6</div><div class="v">7</div><div class="v">8</div></div>
+            </div>
+            <span class="entre">h</span>
+            <div class="bande">
+              <div class="dedans-bande"><div class="v">00</div><div class="v">05</div><div class="v">10</div><div class="v">15</div><div class="v">20</div><div class="v">25</div><div class="v">30</div><div class="v">35</div><div class="v">40</div><div class="v">45</div><div class="v">50</div><div class="v">55</div></div>
+            </div>
+          </div>
+        </div>
+        <div class="sous-molette">
+          <span>heures</span><span class="entre"></span><span>minutes</span>
+        </div>
+      </div>
+
+      <!-- **L'ÉCART NE PORTE AUCUN CHIFFRE ICI, et c'est délibéré.** Il en
+           portait un — « − 50 min » — écrit en dur, qui ne suivait pas la
+           molette : dès qu'on la faisait tourner, l'écran affichait 2 h 35 sur
+           2 h 30 prévues et annonçait « − 50 min ». Deux chiffres qui se
+           contredisent dans le même écran, et c'est toute la liste qu'on cesse
+           de croire (CLAUDE.md §4 bis). Sans JavaScript, cette page ne peut pas
+           le recalculer : un chiffre sans source fiable reste donc vide et le
+           dit. Dans l'application, il suit. -->
       <div class="ecart">
         <span>Sur les 2 h 30 prévues</span>
-        <span class="pastille">− 50 min</span>
+        <span class="pastille">—</span>
       </div>
       <span class="bouton">Enregistrer et envoyer</span>
     </div>
@@ -314,10 +393,36 @@
         — le repère, l'accroche, la lecture de la valeur, et un cas que le
         clavier ne pose pas : accessible au lecteur d'écran, il faut lui adjoindre
         une liste invisible. Comptez une demi-journée, pas dix minutes.
-        Je l'avais recommandée ; <b>il a choisi la A</b>, et il a une bonne
-        raison de son côté : la molette du téléphone est celle qu'il connaît
-        déjà, elle ne coûte rien à tenir, et elle ne peut pas se désynchroniser.
-        Cette planche reste comme trace du chemin.</span>
+        <b>Elle n'a jamais été codée</b> : c'est la A qui l'a été, le 16 août.
+        Celle-ci reste comme trace du chemin.</span>
+      </div>
+
+      <div class="hd">
+        <span class="t">D · Heures et minutes séparées, dessinées par Atlas</span>
+        <b>ATTENTION — CE QUE VOUS AVEZ DÉJÀ FAIT CE QUE VOUS DEMANDIEZ.</b>
+        Votre demande du 25 août 2026 — « la molette, mais avec d'un côté les
+        heures qu'on peut bouger et de l'autre les minutes qu'on peut bouger
+        séparément » — <b>décrit exactement la A, qui est CODÉE depuis le
+        16 août</b> et qui est dans l'application, sur la fiche de chantier :
+        deux molettes natives, les heures à gauche, les minutes à droite, chacune
+        au doigt. C'est vous qui l'avez relevé.
+        <br><br>
+        <b>TRANCHÉ le 25 août 2026 : « je garde celle qui est présente. »</b> Ce
+        sont donc les molettes de votre téléphone qui restent, et rien ne change
+        dans l'application. Celle-ci reste comme trace du chemin — le geste
+        était le même, seule l'apparence différait.
+        <b>Faites tourner les deux colonnes au doigt</b> — elles sont
+        indépendantes, et le trait doré les traverse : c'est une seule durée.
+        <span class="cout"><b>Pourquoi il a raison.</b> D'un seul tenant, la
+        molette compte cinquante-trois crans de 0 h 00 à 4 h 00 : aller de
+        0 h 05 à 3 h 30 demande quarante et un crans, donc plusieurs élans du
+        pouce. Séparées, la même valeur se pose en deux gestes courts — trois
+        crans d'un côté, six de l'autre. Et c'est le geste de la molette de son
+        iPhone, qu'il connaît déjà.<br><br>
+        <b>Ce que ça coûte, et il faut le dire :</b> deux gestes au lieu d'un.
+        Sur une durée ronde — « deux heures » —, la C se pose d'un seul élan là
+        où la D demande de vérifier que les minutes sont bien sur 00. C'est le
+        seul point où elle est moins bonne.</span>
       </div>
     </div>
   </div>
@@ -332,7 +437,9 @@
         valeur est alors à un cran, pas à vingt. (La maquette part de zéro — sans
         JavaScript, une page ne peut pas se placer elle-même.)</li>
       <li><b>L'écart reste affiché</b> : c'est lui qui vous dit si le contrat est
-        bien taillé, et c'est la seule raison de rappeler le temps prévu.</li>
+        bien taillé, et c'est la seule raison de rappeler le temps prévu. (Ici il
+        est vide : sans JavaScript la page ne peut pas le suivre, et un chiffre
+        faux serait pire que pas de chiffre.)</li>
     </ul>
   </div>
 

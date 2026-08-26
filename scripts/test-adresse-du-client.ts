@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { PHRASE_ADRESSE_LOCALE, ouvrableParLeClient } from "../src/lib/adresse-du-client";
+import { adressePourLeClient, ouvrableParLeClient, phraseAdresseLocale } from "../src/lib/adresse-du-client";
 import { originePublique } from "../src/server/origine-publique";
 
 // L'adresse qu'on met dans un message à un client.
@@ -77,11 +77,20 @@ cas("une adresse absente ou illisible ne vaut pas mieux qu'une mauvaise", () => 
   assert.equal(ouvrableParLeClient("file:///tmp/rapport.html"), false);
 });
 
-cas("la phrase dit le GESTE, et rassure sur le rapport", () => {
+cas("la phrase dit le GESTE, et rassure sur ce qui est en jeu", () => {
   // `CLAUDE.md` §3 ter : pas de mécanisme dans ce qu'il lit. Et surtout, elle
-  // doit dire que le rapport est sauf — sinon il recoche toute sa fiche.
+  // doit dire que son travail est sauf — sinon il recoche toute sa fiche, ou
+  // pire, il rappuie sur un bouton qui a déjà engagé sa comptabilité.
+  const PHRASE_ADRESSE_LOCALE = phraseAdresseLocale("votre rapport");
   assert.match(PHRASE_ADRESSE_LOCALE, /adresse web/i, "elle ne dit pas quoi faire");
-  assert.match(PHRASE_ADRESSE_LOCALE, /rien n'est perdu/i, "elle ne dit pas que le rapport est sauf");
+  assert.match(PHRASE_ADRESSE_LOCALE, /rien n'est perdu/i, "elle ne dit pas que le travail est sauf");
+
+  // **Les trois documents, et l'ACCORD qui va avec.** « votre facture est
+  // enregistré » est exactement la faute que le patron relève ; la phrase se
+  // termine donc par un verbe qui ne s'accorde pas.
+  for (const quoi of ["votre rapport", "votre devis", "votre facture"]) {
+    assert.match(phraseAdresseLocale(quoi), new RegExp(`${quoi} vous attend ici`));
+  }
   // **Les bornes de mot ne sont pas une coquetterie** : sans elles, `/port/`
   // trouve « ra-pport » et ce contrôle accuse la phrase d'un jargon qu'elle n'a
   // pas. Une erreur qui envoie chercher au mauvais endroit coûte plus cher que
@@ -123,6 +132,64 @@ cas("ATLAS_URL_PUBLIQUE COMMANDE — c'est la réponse d'un mandataire muet", ()
   } finally {
     if (avant === undefined) delete process.env.ATLAS_URL_PUBLIQUE;
     else process.env.ATLAS_URL_PUBLIQUE = avant;
+  }
+});
+
+// ─── L'ADRESSE DU NAVIGATEUR PASSE DEVANT — sa capture du 25 août 2026 ──────
+//
+// *« Je ne peux pas l'envoyer au client »*, devant le refus — alors que sa barre
+// d'adresse portait `…-3000.app.github.dev`, une vraie adresse web. Le serveur,
+// lui, ne voyait que `localhost:3000` : derrière le tunnel de son espace, aucun
+// en-tête ne porte l'adresse publique. Le refus était juste sur ce que le
+// serveur savait, et faux sur ce qui était vrai.
+
+/** Fait croire au code qu'il tourne dans un navigateur, le temps d'un contrôle. */
+function avecNavigateur<T>(adresse: string | null, fn: () => T): T {
+  const global = globalThis as unknown as { window?: { location: { origin: string } } };
+  const avant = global.window;
+  if (adresse === null) delete global.window;
+  else global.window = { location: { origin: adresse } };
+  try {
+    return fn();
+  } finally {
+    if (avant === undefined) delete global.window;
+    else global.window = avant;
+  }
+}
+
+cas("l'adresse du navigateur l'emporte quand elle est ouvrable", () => {
+  const rendu = avecNavigateur("https://truc-3000.app.github.dev", () =>
+    adressePourLeClient("http://localhost:3000")
+  );
+  assert.equal(
+    rendu,
+    "https://truc-3000.app.github.dev",
+    "le lien serait parti sur localhost alors que son navigateur est sur une adresse publique"
+  );
+  assert.equal(ouvrableParLeClient(rendu), true);
+});
+
+cas("un navigateur SUR localhost ne sauve rien — le refus tient", () => {
+  // **Le contrôle qui empêche la correction d'aller trop loin.** Prendre
+  // l'adresse du navigateur ne doit pas rouvrir la porte que le 24 août a
+  // fermée : ouvert par la redirection de port de son éditeur, le lien ne vaut
+  // toujours que sur sa machine, et le message doit toujours être barré.
+  const rendu = avecNavigateur("http://localhost:3000", () =>
+    adressePourLeClient("http://localhost:3000")
+  );
+  assert.equal(rendu, "http://localhost:3000");
+  assert.equal(ouvrableParLeClient(rendu), false, "un lien mort repartirait chez le client");
+});
+
+cas("au SERVEUR, où il n'y a pas de navigateur, rien ne change", () => {
+  const rendu = avecNavigateur(null, () => adressePourLeClient("https://atlas.fr"));
+  assert.equal(rendu, "https://atlas.fr");
+});
+
+cas("un navigateur sur une adresse aberrante ne remplace rien", () => {
+  for (const aberrante of ["", "null", "about:blank", "file://"]) {
+    const rendu = avecNavigateur(aberrante, () => adressePourLeClient("https://atlas.fr"));
+    assert.equal(rendu, "https://atlas.fr", `« ${aberrante} » a remplacé l'adresse du serveur`);
   }
 });
 

@@ -1,7 +1,7 @@
 "use client";
 
-import { useRef, useState, useTransition } from "react";
-import { colors, font, libelleCaps, texteSituation } from "@/lib/design-tokens";
+import { useMemo, useRef, useState, useTransition } from "react";
+import { colors, font, libelleCaps, surPlein, texteSituation, voile } from "@/lib/design-tokens";
 import {
   BORNES,
   lireConditions,
@@ -10,11 +10,15 @@ import {
 } from "@/lib/conditions-documents";
 import {
   MESSAGE_PAR_DEFAUT,
-  PASTILLES,
   phraseDuDocument,
   refusDuMessage,
-  rendreMessage,
 } from "@/lib/message-client";
+import {
+  ecrireNumero,
+  FORMATS_NUMERO,
+  FORMAT_PAR_DEFAUT,
+  repartChaqueAnnee,
+} from "@/lib/numero-documents";
 import {
   ALLURE_PAR_DEFAUT,
   encreSurFond,
@@ -27,10 +31,13 @@ import {
 } from "@/lib/allure-documents";
 import {
   majAllureAction,
+  majFormatNumeroAction,
   majConditionsAction,
   poserLogoAction,
+  reprendreAllurePhotoAction,
   retirerLogoAction,
 } from "./actions";
+import EditeurMessage from "./EditeurMessage";
 
 /**
  * « Devis & factures » — ce qui s'imprime en plus, et ce qui ne se coupe pas.
@@ -42,18 +49,70 @@ import {
  * réglage coupé invite à le remplir pour rien — c'est le parti arrêté sur la
  * planche du plan, et il tient ici.
  *
- * **L'aperçu du bas lit LA MÊME fonction que le PDF** (`lignesConditionsDevis`).
- * Deux rédactions finiraient par diverger, et c'est le client qui lirait la
- * mauvaise (`CLAUDE.md` §3). Il ne porte aucun montant : le total d'un devis à
- * venir n'existe pas, et un chiffre inventé là finirait imprimé.
+ * **L'APERÇU DU BAS DIT ENFIN LA VÉRITÉ — branché le 25 août 2026.**
+ *
+ * Il ne l'a pas toujours dite, et c'est le patron qui l'a vu : *« les autres qui
+ * sont en ON doivent-ils être visibles sur le devis ? car je ne vois rien, est-ce
+ * normal ? »* Non. Pendant onze jours, `lignesConditionsDevis` n'était appelée
+ * **que par cet aperçu** : il réglait, l'aperçu montrait les phrases, et son
+ * client ne recevait qu'une chose — la validité. Cet écran promettait ce
+ * qu'aucun document ne tenait.
+ *
+ * **Depuis, les cinq autres se figent sur le devis à sa création** (migration
+ * 0064), comme la validité et pour la même raison : corriger un réglage ne doit
+ * pas réécrire un devis déjà parti. Le PDF les met en phrases avec CETTE
+ * fonction-ci — deux rédactions finiraient par diverger, et c'est le client qui
+ * lirait la mauvaise (`CLAUDE.md` §3).
+ *
+ * **Éteindre en fait disparaître**, et c'est sa question du même jour : *« si je
+ * décoche le bouton OFF, ils sont censés disparaître ? »* Oui.
+ * `scripts/test-conditions-sur-le-devis.ts` le tient, sur la trace du PDF.
+ *
+ * **Ce qui a laissé passer le défaut onze jours, et qu'il faut retenir :** les
+ * contrôles éprouvaient la RÈGLE — les bonnes phrases pour les bons réglages —,
+ * jamais le CHEMIN entre le réglage et le papier. Une pièce débranchée passe
+ * entre les deux, en restant verte.
+ *
+ * L'aperçu ne porte aucun montant : le total d'un devis à venir n'existe pas, et
+ * un chiffre inventé là finirait imprimé. Le PDF, lui, le connaît — c'est là que
+ * le montant de l'acompte s'écrit.
  */
-/** Ce que chaque pastille dit, dans SES mots — pas « [client] » en clair. */
-const MOTS: Record<(typeof PASTILLES)[number], string> = {
-  "[client]": "le client",
-  "[document]": "le document",
-  "[lien]": "le lien",
-  "[entreprise]": "mon entreprise",
-};
+/**
+ * L'aperçu, coloré : ce qu'Atlas remplit tout seul s'affiche en doré.
+ *
+ * **Ce n'est PAS une seconde rédaction du message** (`CLAUDE.md` §3) : on coupe
+ * le modèle sur les mêmes pastilles que `rendreMessage`, on y pose les mêmes
+ * valeurs, et la concaténation des morceaux redonne exactement le texte que le
+ * client recevra. Le doré ne fait que MONTRER ce qui bouge — le prénom, la
+ * phrase du document, le lien — pour qu'il le voie sans avoir à poser quoi que
+ * ce soit à la main. Le nom de l'entreprise se pose aussi, mais en encre : il ne
+ * « bouge » pas d'un envoi à l'autre.
+ */
+function apercuColore(
+  modele: string,
+  valeurs: { client: string; document: string; lien: string; entreprise: string }
+) {
+  return modele.split(/(\[client\]|\[document\]|\[lien\]|\[entreprise\])/).map((bout, i) => {
+    if (bout === "[client]") return <b key={i} style={{ color: colors.or, fontWeight: 600 }}>{valeurs.client}</b>;
+    if (bout === "[document]") return <b key={i} style={{ color: colors.or, fontWeight: 600 }}>{valeurs.document}</b>;
+    if (bout === "[lien]") return <b key={i} style={{ color: colors.or, fontWeight: 600, wordBreak: "break-all" }}>{valeurs.lien}</b>;
+    if (bout === "[entreprise]") return <span key={i}>{valeurs.entreprise}</span>;
+    return <span key={i}>{bout}</span>;
+  });
+}
+
+/** Les deux envois qui diffèrent le plus — c'est le mot qui change qu'il veut voir. */
+const APERCUS_MESSAGE = [
+  { clef: "devis", titre: "Envoi d'un devis", phrase: phraseDuDocument({ genre: "devis" }), lien: "https://…/devis/…" },
+  {
+    clef: "facture",
+    titre: "Envoi d'une facture",
+    // Un numéro et une échéance d'exemple, reconnaissables comme tels : les
+    // siens n'existent pas tant qu'aucune facture n'est émise.
+    phrase: phraseDuDocument({ genre: "facture", numero: "F2026-0008", echeanceLisible: "21 septembre" }),
+    lien: "https://…/facture/…",
+  },
+] as const;
 
 /**
  * Les `@font-face` des neuf familles — écrits DEPUIS la liste, jamais à la main.
@@ -71,28 +130,24 @@ const FACES = TYPOGRAPHIES.flatMap((t) =>
     : []
 ).join("");
 
-/** Les trois documents de l'aperçu, et ce qu'Atlas écrit à la place de `[document]`. */
-const APERCUS = [
-  { clef: "devis", nom: "Devis", phrase: phraseDuDocument({ genre: "devis" }) },
-  {
-    clef: "facture",
-    nom: "Facture",
-    // Un numéro et une échéance d'exemple, reconnaissables comme tels : les
-    // siens n'existent pas tant qu'aucune facture n'est émise, et en inventer
-    // un vrai lui ferait croire qu'il regarde une facture existante.
-    phrase: phraseDuDocument({
-      genre: "facture",
-      numero: "F2026-0008",
-      echeanceLisible: "21 septembre",
-    }),
-  },
-  { clef: "entretien", nom: "Compte rendu", phrase: phraseDuDocument({ genre: "entretien" }) },
-] as const;
+/**
+ * Le document d'exemple montré à côté de chaque format.
+ *
+ * **L'année vient de l'HORLOGE, jamais d'un millésime écrit à la main** —
+ * c'est exactement le défaut que ce lot corrige : le numéro des factures
+ * portait « 2026 » en dur, et en janvier 2027 il l'aurait porté encore.
+ */
+const EXEMPLE = {
+  annee: new Date().getFullYear(),
+  mois: new Date().getMonth() + 1,
+  numero: 12,
+};
 
 export default function DocumentsClient({
   initial,
   messageInitial,
   entrepriseNom,
+  formatInitial,
   allureInitiale,
   logoInitial,
 }: {
@@ -100,6 +155,8 @@ export default function DocumentsClient({
   /** Son message, ou `null` quand il n'a pas touché à celui d'Atlas. */
   messageInitial: string | null;
   entrepriseNom: string;
+  /** Le format de ses numéros, ou `null` quand il n'a rien choisi. */
+  formatInitial: string | null;
   /** L'allure réglée, ou celle d'aujourd'hui quand il n'a rien touché. */
   allureInitiale: Allure;
   /** La clef de son logo dans le stockage, ou `null`. */
@@ -110,8 +167,19 @@ export default function DocumentsClient({
   const [enCours, demarrer] = useTransition();
   const [aEcrire, setAEcrire] = useState(false);
   const [message, setMessage] = useState(messageInitial ?? MESSAGE_PAR_DEFAUT);
-  const [apercuSur, setApercuSur] = useState<(typeof APERCUS)[number]["clef"]>("devis");
-  const zone = useRef<HTMLTextAreaElement | null>(null);
+
+  // Ce que chaque pastille AFFICHE, en doré et verrouillé, dans le cadre. Le nom
+  // de l'entreprise est le sien, réel ; les autres sont ce qu'Atlas y posera
+  // (le prénom du client, la phrase qui s'adapte au document, le lien).
+  const libellesJetons = useMemo<Record<string, string>>(
+    () => ({
+      "[client]": "le prénom",
+      "[document]": "la phrase de votre devis / facture",
+      "[lien]": "le lien",
+      "[entreprise]": entrepriseNom || "votre entreprise",
+    }),
+    [entrepriseNom]
+  );
 
   // ── L'allure : elle s'enregistre SEULE, dès qu'il touche une couleur ──
   // Le bouton du bas engage les conditions, qui lient l'entreprise. Une couleur
@@ -122,6 +190,47 @@ export default function DocumentsClient({
   const [refusAllure, setRefusAllure] = useState<string | null>(null);
   const [allureEnCours, demarrerAllure] = useTransition();
   const choixImage = useRef<HTMLInputElement | null>(null);
+
+  // ── Le format des numéros : il s'enregistre seul, comme l'allure ──────
+  const [formatNumero, setFormatNumero] = useState(formatInitial ?? FORMAT_PAR_DEFAUT);
+  const [formatEnCours, demarrerFormat] = useTransition();
+
+  function poserFormat(clef: string) {
+    setFormatNumero(clef);
+    demarrerFormat(async () => {
+      const r = await majFormatNumeroAction(clef);
+      // On réaffiche ce que la base porte : une clef refusée y est restée
+      // celle d'avant, et l'écran doit montrer ce qui s'imprimera.
+      if (r.ok) setFormatNumero(r.format);
+      else setRefusAllure(r.raison);
+    });
+  }
+
+  // ── Reprendre l'allure d'un document PHOTOGRAPHIÉ — sa demande du 25 août ──
+  // Ce que la photo a repris (couleurs, police, mentions) et ce qu'elle n'a pas
+  // su faire (réserve). Le même geste, la même transition que le réglage à la
+  // main juste dessous : photographier n'est qu'une autre façon de le remplir.
+  const [reprise, setReprise] = useState<{ repris: string[]; reserve: string | null } | null>(null);
+  const choixPhoto = useRef<HTMLInputElement | null>(null);
+
+  function reprendrePhoto(f: File) {
+    setRefusAllure(null);
+    setReprise(null);
+    const formulaire = new FormData();
+    formulaire.append("fichier", f);
+    demarrerAllure(async () => {
+      const r = await reprendreAllurePhotoAction(formulaire);
+      if (!r.ok) {
+        setRefusAllure(r.raison);
+        return;
+      }
+      // On affiche ce que la base porte — l'allure et les mentions relues —,
+      // jamais ce que la photo a cru voir : c'est ce qui s'imprimera.
+      setAllure(r.allure);
+      setC(lireConditions(r.conditions));
+      setReprise({ repris: r.repris, reserve: r.reserve });
+    });
+  }
 
   function poserAllure(partiel: Partial<Allure>) {
     const prochaine = { ...allure, ...partiel };
@@ -310,62 +419,30 @@ export default function DocumentsClient({
           choisie après avoir vu ce que l'autre coûtait : une facture qui parle
           d'un devis, et l'échéance perdue. */}
       <Bloc titre="Mon message au client">
+        {/* **Sa demande du 25 août 2026 :** le message par défaut est déjà
+            écrit, il modifie ce qu'il veut, et « seuls les mots en doré ne
+            peuvent être modifiés » — le prénom, la phrase du document (qui
+            s'adapte au devis comme à la facture, sa « façon 1 »), le lien et son
+            nom. C'est `EditeurMessage` qui les verrouille. */}
         <p className={`mb-3 ${texteSituation}`} style={{ color: colors.muted }}>
-          Il part avec votre devis, votre facture et votre compte rendu de passage.
-          Ce que vous posez entre crochets, Atlas le remplace.
+          Modifiez ce que vous voulez. Les mots en doré se remplissent tout seuls
+          et ne se modifient pas.
         </p>
 
-        <textarea
-          ref={zone}
-          value={message}
-          onChange={(e) => {
-            setMessage(e.target.value);
+        <EditeurMessage
+          valeur={message}
+          libelles={libellesJetons}
+          invalide={refusMessage !== null}
+          onChange={(m) => {
+            setMessage(m);
             setAEcrire(true);
-          }}
-          data-atlas="message-client"
-          aria-label="Votre message au client"
-          rows={10}
-          className="w-full rounded-[6px] px-[13px] py-[11px] leading-[1.5]"
-          style={{
-            // **16 px, jamais moins.** En dessous, iOS grossit la page à la
-            // première frappe et l'écran saute sous son doigt.
-            fontSize: 16,
-            backgroundColor: colors.card,
-            color: colors.ink,
-            border: `1px solid ${refusMessage ? colors.alert : colors.line}`,
-            resize: "vertical",
           }}
         />
 
-        <div className="mt-2.5 flex flex-wrap items-center gap-2">
-          <span className={texteSituation} style={{ color: colors.muted }}>
-            Poser :
-          </span>
-          {PASTILLES.map((pastille) => (
-            <button
-              key={pastille}
-              type="button"
-              data-atlas={`pastille-${pastille.slice(1, -1)}`}
-              onClick={() => {
-                // **Posée LÀ OÙ LE CURSEUR EST**, pas à la fin : un mot qui
-                // atterrit au bas du message oblige à le déplacer au doigt.
-                const z = zone.current;
-                const debut = z?.selectionStart ?? message.length;
-                const fin = z?.selectionEnd ?? debut;
-                const prochain = message.slice(0, debut) + pastille + message.slice(fin);
-                setMessage(prochain);
-                setAEcrire(true);
-                requestAnimationFrame(() => {
-                  z?.focus();
-                  z?.setSelectionRange(debut + pastille.length, debut + pastille.length);
-                });
-              }}
-              className="rounded-full px-3 py-2 text-[13px]"
-              style={{ color: colors.or, boxShadow: `inset 0 0 0 1px ${colors.or}` }}
-            >
-              {MOTS[pastille]}
-            </button>
-          ))}
+        {/* Le seul filet de sécurité qui reste : reprendre le message d'Atlas
+            s'il l'a défait (par exemple en retirant le lien, que le serveur
+            refuse). Montré seulement quand le sien en diffère. */}
+        {message.trim() !== MESSAGE_PAR_DEFAUT && (
           <button
             type="button"
             data-atlas="message-defaut"
@@ -373,12 +450,12 @@ export default function DocumentsClient({
               setMessage(MESSAGE_PAR_DEFAUT);
               setAEcrire(true);
             }}
-            className="rounded-full px-3 py-2 text-[13px]"
+            className="mt-2.5 min-h-[44px] rounded-full px-4 text-[13.5px]"
             style={{ color: colors.muted, boxShadow: `inset 0 0 0 1px ${colors.line}` }}
           >
-            Remettre celui d&apos;Atlas
+            Remettre le message d&apos;Atlas
           </button>
-        </div>
+        )}
 
         {refusMessage && (
           <p
@@ -391,52 +468,53 @@ export default function DocumentsClient({
           </p>
         )}
 
-        {/* **L'aperçu passe par la MÊME fonction que l'envoi** (`rendreMessage`).
-            Une seconde rédaction ici finirait par ne plus dire la même chose que
-            ce que le client reçoit — et c'est le second qui compte. */}
-        <p className={`mb-2 mt-5 ${libelleCaps}`} style={{ color: colors.muted }}>
-          Ce que votre client recevra
-        </p>
-        <div className="mb-2.5 flex gap-2">
-          {APERCUS.map((a) => (
-            <button
+        {/* **Les deux aperçus passent par les mêmes valeurs que l'envoi.** Le
+            doré ne fait que montrer ce qu'Atlas remplit ; côte à côte, ils
+            prouvent que le mot change — « devis » ici, « facture » là — sans
+            qu'il réécrive rien. */}
+        <div className="mb-2 mt-5 flex items-baseline gap-2">
+          <span className={libelleCaps} style={{ color: colors.muted }}>
+            Ce que votre client recevra
+          </span>
+          <span className={texteSituation} style={{ color: colors.muted }}>
+            · <b style={{ color: colors.or, fontWeight: 600 }}>doré</b> = rempli tout seul
+          </span>
+        </div>
+        <div className="grid grid-cols-2 gap-2">
+          {APERCUS_MESSAGE.map((a) => (
+            <div
               key={a.clef}
-              type="button"
               data-atlas={`apercu-${a.clef}`}
-              aria-pressed={apercuSur === a.clef}
-              onClick={() => setApercuSur(a.clef)}
-              // **`rounded-full`, comme tous ses boutons depuis le 12 août 2026.**
-              // `test-boutons-arrondis` l'a attrapé : un rayon de 6 px était resté
-              // ici, et un seul bouton carré dans l'application se voit.
-              className="min-h-[44px] flex-1 rounded-full text-[13.5px]"
-              style={
-                apercuSur === a.clef
-                  ? { backgroundColor: colors.card, color: colors.ink, boxShadow: `inset 0 0 0 1px ${colors.or}` }
-                  : { color: colors.muted, boxShadow: `inset 0 0 0 1px ${colors.line}` }
-              }
+              className="overflow-hidden rounded-[6px]"
+              style={{ border: `1px solid ${colors.lineSoft}` }}
             >
-              {a.nom}
-            </button>
+              <div
+                className={libelleCaps}
+                style={{
+                  padding: "7px 11px",
+                  backgroundColor: colors.rustTint,
+                  color: colors.muted,
+                  borderBottom: `1px solid ${colors.lineSoft}`,
+                }}
+              >
+                {a.titre}
+              </div>
+              <p
+                className="whitespace-pre-wrap px-[11px] py-[11px] text-[12px] leading-[1.5]"
+                style={{ backgroundColor: colors.card, color: colors.inkSoft }}
+              >
+                {apercuColore(message.trim() || MESSAGE_PAR_DEFAUT, {
+                  client: "Mme Larousse",
+                  document: a.phrase,
+                  // Une adresse d'exemple, reconnaissable comme telle : le vrai
+                  // lien n'existe qu'au moment de l'envoi.
+                  lien: a.lien,
+                  entreprise: entrepriseNom,
+                })}
+              </p>
+            </div>
           ))}
         </div>
-        <p
-          data-atlas="message-apercu"
-          className="whitespace-pre-wrap rounded-[6px] px-[13px] py-[11px] text-[14px] leading-[1.5]"
-          style={{ backgroundColor: colors.card, color: colors.inkSoft }}
-        >
-          {rendreMessage(message.trim() || MESSAGE_PAR_DEFAUT, {
-            client: "Mme Larousse",
-            document: APERCUS.find((a) => a.clef === apercuSur)!.phrase,
-            // Une adresse d'exemple, reconnaissable comme telle : le vrai lien
-            // n'existe qu'au moment de l'envoi, et un lien inventé se toucherait.
-            lien: "https://…/devis/…",
-            entreprise: entrepriseNom,
-          })}
-        </p>
-        <p className={`mt-2 ${texteSituation}`} style={{ color: colors.muted }}>
-          L&apos;objet du courriel n&apos;est pas modifiable : il doit rester
-          reconnaissable dans une boîte de réception.
-        </p>
       </Bloc>
 
       {/* ── L'ALLURE DE SES DOCUMENTS — sa demande du 23 août 2026 ─────────
@@ -448,6 +526,99 @@ export default function DocumentsClient({
           planche `appli/allure-de-mes-devis.html`. **Le devis et la facture
           seulement** — la feuille de chantier est interne, et il ne l'a pas
           demandée. */}
+      {/* ── LE NUMÉRO DE SES DOCUMENTS — sa demande du 26 août 2026 ────────
+          *« Dans la catégorie facture il faut rajouter le format de numéro,
+          c'est obligatoire il me semble. »*
+
+          **Le format ne l'est pas ; la SUITE l'est** — chronologique, sans trou
+          ni doublon, ce qu'Atlas tenait déjà. Ce qui était cassé, en revanche,
+          c'est que le millésime était écrit en dur : en janvier 2027, ses
+          factures auraient encore dit 2026. */}
+      <Bloc titre="Le numéro de mes documents">
+        <p className={`mb-3 ${texteSituation}`} style={{ color: colors.muted }}>
+          Vos documents déjà émis gardent leur numéro.
+        </p>
+
+        <div className="mb-4 flex flex-col gap-2">
+          {FORMATS_NUMERO.map((f) => {
+            const choisi = formatNumero === f.clef;
+            return (
+              <button
+                key={f.clef}
+                type="button"
+                data-atlas={`format-${f.clef}`}
+                aria-pressed={choisi}
+                onClick={() => poserFormat(f.clef)}
+                // `rounded-full`, comme tous ses boutons depuis le 12 août 2026.
+                className="flex min-h-[62px] items-baseline justify-between gap-3 rounded-full px-5 py-2.5 text-left"
+                style={{
+                  backgroundColor: choisi ? colors.card : "transparent",
+                  boxShadow: `inset 0 0 0 1px ${choisi ? colors.or : colors.line}`,
+                }}
+              >
+                <span className="min-w-0">
+                  <span className="block text-[15px]" style={{ color: colors.ink }}>
+                    {f.nom}
+                  </span>
+                  {/* **La mention « par défaut » vit dans `dit`, et nulle part
+                      ailleurs.** L'ajouter ici la faisait lire deux fois sur le
+                      format concerné — « Le format par défaut · par défaut ».
+                      Vu à la capture, par aucun test (`CLAUDE.md` §5). */}
+                  <span className={`mt-0.5 block ${texteSituation}`} style={{ color: colors.muted }}>
+                    {f.dit}
+                  </span>
+                </span>
+                {/* **L'exemple vient de la MÊME fonction que le numéro réel**
+                    (`ecrireNumero`). Un aperçu écrit à part finirait par montrer
+                    autre chose que ce qui part chez le client (`CLAUDE.md` §3). */}
+                <span
+                  data-atlas={`exemple-${f.clef}`}
+                  className="flex-none text-[15px]"
+                  style={{ color: colors.or, fontVariantNumeric: "tabular-nums" }}
+                >
+                  {ecrireNumero(f.clef, "facture", EXEMPLE)}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+
+        <p className={`mb-2 ${libelleCaps}`} style={{ color: colors.muted }}>
+          Ce que ça donne
+        </p>
+        <div className="rounded-[6px] px-[15px] py-3" style={{ backgroundColor: colors.card }}>
+          {([
+            ["Votre prochain devis", ecrireNumero(formatNumero, "devis", EXEMPLE)],
+            ["Votre prochaine facture", ecrireNumero(formatNumero, "facture", EXEMPLE)],
+          ] as const).map(([quoi, valeur]) => (
+            <p key={quoi} className="flex justify-between gap-3 py-1 text-[14px]">
+              <span style={{ color: colors.ink }}>{quoi}</span>
+              <span style={{ color: colors.inkSoft, fontVariantNumeric: "tabular-nums" }}>
+                {valeur}
+              </span>
+            </p>
+          ))}
+        </div>
+
+        {/* **Ce que le format IMPLIQUE se dit, et ne se règle pas à part.** Un
+            second interrupteur « repartir chaque année » serait un piège : sur
+            une suite sans année, le cocher ferait deux documents du même numéro
+            à un an d'écart — un doublon, ce que la loi interdit. */}
+        <p
+          data-atlas="consequence-format"
+          className={`mt-3 ${texteSituation}`}
+          style={{ color: colors.muted }}
+        >
+          {repartChaqueAnnee(formatNumero)
+            ? "Le compteur repart à 1 le 1ᵉʳ janvier."
+            : "Le compteur ne repart jamais : sans l'année, deux documents porteraient le même numéro."}
+        </p>
+
+        <p className={`mt-3 ${texteSituation}`} style={{ color: colors.muted }}>
+          {formatEnCours ? "Enregistrement…" : "Enregistré au fur et à mesure."}
+        </p>
+      </Bloc>
+
       <Bloc titre="L'allure de mes devis">
         {/* **Les vraies polices, servies depuis les fichiers du PDF.** Sans
             elles, ce choix est un mensonge : le navigateur ne connaît aucune
@@ -459,11 +630,144 @@ export default function DocumentsClient({
           ne change pas : personne d&apos;autre que vous ne la lit.
         </p>
 
+        {/* ── PHOTOGRAPHIER UN DEVIS — sa demande du 25 août 2026 ─────────────
+            *« faut que l'utilisateur puisse prendre la photo de son devis […]
+            pareil pour sa facture »*, après *« on comprend rien, trop compliqué
+            pour modifier »*. Dessiné d'abord (`appli/photographier-mon-devis.html`)
+            et tranché ainsi : la photo reprend l'ALLURE (couleurs, police) et les
+            MENTIONS — jamais les lignes ni les prix, jamais le logo.
+
+            **La photo d'abord, le réglage à la main dessous** : son choix devant
+            la question du 25 août. Un seul champ, sans `capture` : le navigateur
+            offre alors l'appareil photo OU la photothèque — son devis est parfois
+            déjà une image dans sa galerie. */}
+        <div
+          className="mb-5 rounded-[6px] p-4"
+          style={{ backgroundColor: colors.card, boxShadow: `inset 0 0 0 1px ${colors.line}` }}
+        >
+          <input
+            ref={choixPhoto}
+            type="file"
+            accept="image/*"
+            className="hidden"
+            data-atlas="photo-fichier"
+            onChange={(e) => {
+              const f = e.target.files?.[0];
+              e.target.value = "";
+              if (f) reprendrePhoto(f);
+            }}
+          />
+          {/* Deux gestes, un pour chaque document — comme sur la maquette. La
+              lecture est la même : ce sont ses mots qui changent, pas le calcul. */}
+          <button
+            type="button"
+            data-atlas="photo-devis"
+            disabled={allureEnCours}
+            onClick={() => choixPhoto.current?.click()}
+            className="flex min-h-[52px] w-full items-center justify-center rounded-full px-4 text-[15px]"
+            style={{ backgroundColor: colors.rust, color: surPlein, opacity: allureEnCours ? 0.6 : 1 }}
+          >
+            {allureEnCours ? "Lecture…" : "Photographier mon devis"}
+          </button>
+          <button
+            type="button"
+            data-atlas="photo-facture"
+            disabled={allureEnCours}
+            onClick={() => choixPhoto.current?.click()}
+            className="mt-2 flex min-h-[52px] w-full items-center justify-center rounded-full px-4 text-[15px]"
+            style={{ color: colors.ink, boxShadow: `inset 0 0 0 1px ${colors.line}`, opacity: allureEnCours ? 0.6 : 1 }}
+          >
+            Photographier ma facture
+          </button>
+
+          {reprise && (
+            <div data-atlas="photo-repris" className="mt-3">
+              {reprise.repris.length > 0 ? (
+                <p className="text-[14px] leading-[1.5]" style={{ color: colors.ink }}>
+                  Repris : {reprise.repris.join(", ")}.
+                </p>
+              ) : (
+                <p className="text-[14px] leading-[1.5]" style={{ color: colors.muted }}>
+                  Rien n&apos;a pu être repris de cette photo.
+                </p>
+              )}
+              {reprise.reserve && (
+                <p className={`mt-1 ${texteSituation}`} style={{ color: colors.muted }}>
+                  {reprise.reserve}
+                </p>
+              )}
+            </div>
+          )}
+
+          <p className={`mt-2 ${texteSituation}`} style={{ color: colors.muted }}>
+            Les couleurs, la police et les mentions. Ni les lignes, ni les prix.
+          </p>
+        </div>
+
         {refusAllure && (
           <p role="alert" data-atlas="allure-refus" className={`mb-3 ${texteSituation}`} style={{ color: colors.alert }}>
             {refusAllure}
           </p>
         )}
+
+        {/* ── L'APERÇU EN TÊTE, ET IL RESTE COLLÉ — sa proposition B, 24 août 2026
+            ────────────────────────────────────────────────────────────────────
+            *« Lorsque je modifie mon devis, je suis obligé de descendre pour
+            voir les modifications ; il faut mieux organiser la page pour
+            pouvoir voir ce qu'on modifie. »* Trois rangements lui ont été
+            dessinés (planche 96, `appli/allure-mieux-rangee.html`), et il a
+            répondu : **« la B »**.
+
+            **Le défaut était un défaut d'ORDRE, pas de contenu.** L'aperçu
+            fermait ce bloc, après dix pastilles de typographie sur cinq rangées
+            et deux nuanciers : il tombait à plus de 900 px du haut. Toucher une
+            police, c'était descendre, regarder, remonter — dix-huit trajets
+            pour essayer les neuf.
+
+            **Pourquoi COLLÉ et pas seulement remonté** (la proposition A, qu'il
+            n'a pas retenue) : posé en tête sans collage, l'aperçu se voit en
+            arrivant puis ressort de l'écran dès qu'on descend aux polices. La
+            moitié du problème seulement, et la planche le mesurait.
+
+            **`sticky` et non `fixed`** : la feuille suit tant que CE bloc est à
+            l'écran, et s'en va avec lui. Fixée, elle recouvrirait les réglages
+            du message et du numéro, où elle n'a rien à faire.
+
+            **Le fond est opaque, à dessein** : les pastilles défilent dessous,
+            et sans lui on lirait « Merriweather » à travers le devis.
+
+            **POURQUOI COLLÉ ET PAS SEULEMENT REMONTÉ EN TÊTE.** Trois rangements
+            lui ont été montrés (`appli/allure-mieux-rangee.html`), et il a
+            répondu **B** le 25 août 2026. La proposition A — l'aperçu simplement
+            placé avant les réglages — ne règle que la moitié du problème : dès
+            qu'on descend jusqu'aux polices, la feuille est de nouveau hors de
+            l'écran, c'est-à-dire exactement là où l'on a besoin de la voir. La
+            planche le disait, et il a tranché en connaissance de cause. */}
+        <div
+          data-atlas="allure-apercu-colle"
+          className="sticky top-0 z-10 -mx-[26px] mb-5 px-[26px] pb-3 pt-2"
+          // **Une ombre courte sous le bord**, et rien de plus : sans elle, les
+          // pastilles qui défilent semblent s'effacer au milieu de nulle part.
+          // Elle dit qu'il y a un dessus et un dessous.
+          style={{
+            backgroundColor: colors.cream,
+            // **Aucune couleur en clair dans un écran** (`CLAUDE.md` §3) : sept
+            // chartes cohabitent, dont deux sombres où une ombre noire posée en
+            // dur ne se voit plus. `voile` la fait suivre l'encre de la charte.
+            boxShadow: `0 8px 14px -12px ${voile(colors.ink, 0.5)}`,
+          }}
+        >
+          {/* **Un aperçu d'APPARENCE, et rien d'autre.** Il ne porte aucun
+              montant calculé, aucune condition : ce serait une seconde écriture
+              du devis, qui finirait par ne plus dire ce que le PDF dit
+              (`CLAUDE.md` §3). Ce qu'il montre — le fond, l'accent, la
+              typographie, la place du logo — est exactement ce que la fabrique
+              de PDF pose, et rien de plus. */}
+          <p className={`mb-2 ${libelleCaps}`} style={{ color: colors.muted }}>
+            L&apos;allure de la page
+          </p>
+          <Feuille allure={allure} logo={logo} nom={entrepriseNom} />
+        </div>
 
         <p className={`mb-2 ${libelleCaps}`} style={{ color: colors.muted }}>Mon logo</p>
         <div className="mb-1 flex items-center gap-3">
@@ -611,16 +915,6 @@ export default function DocumentsClient({
           ]}
           onChoisir={(v) => poserAllure({ accent: v })}
         />
-
-        {/* **Un aperçu d'APPARENCE, et rien d'autre.** Il ne porte aucun
-            montant calculé, aucune condition : ce serait une seconde écriture du
-            devis, qui finirait par ne plus dire ce que le PDF dit (`CLAUDE.md`
-            §3). Ce qu'il montre — le fond, l'accent, la typographie, la place du
-            logo — est exactement ce que la fabrique de PDF pose, et rien de plus. */}
-        <p className={`mb-2 mt-5 ${libelleCaps}`} style={{ color: colors.muted }}>
-          L&apos;allure de la page
-        </p>
-        <Feuille allure={allure} logo={logo} nom={entrepriseNom} />
 
         {!estLAllureParDefaut(allure) && (
           <button

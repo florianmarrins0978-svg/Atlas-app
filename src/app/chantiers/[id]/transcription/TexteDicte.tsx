@@ -116,7 +116,7 @@ export default function TexteDicte({ chantierId, texteActuel, simulee }: Props) 
             className="mt-1 block text-[14px] font-medium"
             style={{ color: colors.rust }}
           >
-            Continuer vers les informations →
+            Continuer vers les informations
           </a>
         </>
       )}

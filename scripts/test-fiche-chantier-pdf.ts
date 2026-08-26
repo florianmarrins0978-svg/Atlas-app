@@ -29,9 +29,20 @@ const dire = (bon: boolean, quoi: string) => {
   if (!bon) echecs.push(quoi);
 };
 
-// ── Les empreintes d'avant, relevées sur le moteur intact ────────────────────
-const EMPREINTE_FACTURE = "d58887d361dd675edda96b354b288729646ccbfee1b4d3e6b7fd2a032b0536d1";
-const EMPREINTE_DEVIS = "682fb41206b6109c1549ac25142d7d9d42befa9530a3f0fb0cbf840580c92af3";
+// ── Les empreintes du dernier relevé ────────────────────────────────────────
+//
+// **RELEVÉES LE 25 AOÛT 2026**, après sa demande : l'en-tête porte désormais
+// toute l'identité de l'entreprise, une ligne par information, et le bloc
+// « ÉMETTEUR » du bas a disparu (`ARCHITECTURE.md` §174). Les valeurs d'avant
+// décrivaient une mise en page qu'il a fait retirer — les garder aurait rendu
+// son devis impossible à changer (`CLAUDE.md` §5 bis).
+//
+// **Ce qui autorise un nouveau relevé, et rien d'autre :** avoir REGARDÉ le
+// document rendu. Celui-ci l'a été, fond clair et fond sombre, logo carré et
+// logo en bandeau (`scripts/capture-allure-devis.mts`). Recopier l'empreinte
+// affichée sans ouvrir le PDF ne prouverait plus rien du tout.
+const EMPREINTE_FACTURE = "9ccd73aa285385eae884321093df687323d1fcccbfa2d78c877b12ed551c8fa1";
+const EMPREINTE_DEVIS = "e67aa8b9e5d62fabebf179204e383fa71c7019219061cf5d8993370abc6d5186";
 
 const DOCUMENT: FacturePdfData = {
   numeroCommercial: "F-2026-0004",
@@ -131,13 +142,25 @@ async function main() {
     numeroCommercial: "2026-0006",
     statut: "envoye",
   } as never);
-  dire(
-    empreinte(facture.trace) === EMPREINTE_FACTURE,
-    "la FACTURE est au pixel ce qu'elle était avant le mode sans chiffrage",
+  // **L'empreinte lue s'AFFICHE quand elle diverge.** Sans cela, une mise en
+  // page changée EXPRÈS — ce qui arrive, le patron en demande — oblige à
+  // rouvrir le fichier pour instrumenter le calcul avant de pouvoir relever la
+  // nouvelle valeur. Le contrôle garde toute sa force : il refuse toujours
+  // l'écart, il dit seulement par quoi le remplacer une fois le nouveau
+  // document REGARDÉ.
+  const compare = (lue: string, figee: string, quoi: string) => {
+    dire(lue === figee, quoi);
+    if (lue !== figee) console.log(`      empreinte lue : ${lue}`);
+  };
+  compare(
+    empreinte(facture.trace),
+    EMPREINTE_FACTURE,
+    "la FACTURE est au pixel ce qu'elle était au dernier relevé",
   );
-  dire(
-    empreinte(devis.trace) === EMPREINTE_DEVIS,
-    "le DEVIS est au pixel ce qu'il était avant le mode sans chiffrage",
+  compare(
+    empreinte(devis.trace),
+    EMPREINTE_DEVIS,
+    "le DEVIS est au pixel ce qu'il était au dernier relevé",
   );
 
   // ── 2. Ce que la fiche dit ────────────────────────────────────────────────

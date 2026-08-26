@@ -76,7 +76,7 @@ export default function InformationsMockup() {
             emptyMessage="Aucun matériel pour l'instant."
           />
 
-          <PrimaryButton>Valider et calculer le prix →</PrimaryButton>
+          <PrimaryButton>Valider et calculer le prix</PrimaryButton>
         </div>
       </div>
     </div>

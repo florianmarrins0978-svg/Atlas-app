@@ -15,7 +15,8 @@ import {
   majPassageAction,
   nommerClientAction,
 } from "../actions";
-import { PHRASE_ADRESSE_LOCALE, ouvrableParLeClient } from "@/lib/adresse-du-client";
+import { adressePourLeClient, ouvrableParLeClient, phraseAdresseLocale } from "@/lib/adresse-du-client";
+import { useAdressePourLeClient } from "@/lib/use-adresse-client";
 
 // La fiche qu'il coche sur un chantier — arrangement C, 17 août 2026.
 //
@@ -122,6 +123,10 @@ export default function FicheChantierClient({
   const [recherche, setRecherche] = useState("");
 
   const parti = envoyeLe !== null;
+
+  // L'adresse du navigateur dès qu'il a la main, celle du serveur au premier
+  // rendu — sans effet, donc sans rendu en cascade (`use-adresse-client.ts`).
+  const adressePublique = useAdressePourLeClient(origine);
   const familles = useMemo(() => parFamilles(lignes), [lignes]);
 
   const empechement = empechementEnvoi({
@@ -235,8 +240,13 @@ export default function FicheChantierClient({
     // refuser l'obligerait à recocher toute sa fiche pour une raison qui n'a
     // rien à voir avec son chantier. Ce qu'on lui épargne, c'est le message
     // mort ; ce qu'on lui garde, c'est son travail.
-    if (!ouvrableParLeClient(origine)) {
-      setPhrase(PHRASE_ADRESSE_LOCALE);
+    // **L'adresse vient du NAVIGATEUR quand elle est bonne** — sa capture du
+    // 25 août 2026 : le serveur ne voyait que `localhost:3000` derrière le
+    // tunnel de son espace, et le refus tombait sur une adresse pourtant
+    // publique (`adressePourLeClient`).
+    const adresse = adressePourLeClient(origine);
+    if (!ouvrableParLeClient(adresse)) {
+      setPhrase(phraseAdresseLocale("votre rapport"));
       return;
     }
 
@@ -245,7 +255,7 @@ export default function FicheChantierClient({
       clientCivilite: (civilite ?? undefined) as CiviliteChoisie | undefined,
       entrepriseNom,
       modele: modeleMessage,
-      lien: `${origine}/entretien/${jetonNeuf}`,
+      lien: `${adresse}/entretien/${jetonNeuf}`,
     });
     ouvrirAdresse(lienTransmission({ canal, destinataire, message }), canal);
   }
@@ -450,7 +460,7 @@ export default function FicheChantierClient({
       <section className="mx-[26px] mt-[30px]">
         {parti ? (
           <RapportParti
-            lien={jeton ? `${origine}/entretien/${jeton}` : ""}
+            lien={jeton ? `${adressePublique}/entretien/${jeton}` : ""}
             clientNom={clientNom}
             entrepriseNom={entrepriseNom}
             clientCivilite={civilite}
@@ -476,7 +486,12 @@ export default function FicheChantierClient({
           </>
         )}
 
-        {phrase && (
+        {/* **Jamais deux fois le même refus.** Sa capture du 25 août 2026 le
+            montrait écrit en double : `RapportParti` porte déjà celui de
+            l'adresse une fois le rapport figé, et celui-ci restait de la
+            tentative d'avant. Deux fois la même phrase, c'est un écran qui
+            paraît cassé. */}
+        {phrase && !(parti && phrase === phraseAdresseLocale("votre rapport")) && (
           <p
             className="mt-[14px] text-center text-[12.5px] leading-[1.6]"
             style={{ color: colors.alert }}
@@ -776,7 +791,7 @@ function RapportParti({
   if (!ouvrableParLeClient(lien)) {
     return (
       <p className="text-center text-[13px] leading-[1.6]" style={{ color: colors.rust }} data-refus>
-        {PHRASE_ADRESSE_LOCALE}
+        {phraseAdresseLocale("votre rapport")}
       </p>
     );
   }

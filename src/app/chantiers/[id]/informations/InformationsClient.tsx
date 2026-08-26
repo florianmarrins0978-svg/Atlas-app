@@ -161,7 +161,6 @@ export default function InformationsClient({
             setDuree(texte);
             void mettreAJourDureeEquipeAction(chantierId, { dureePrevue: texte });
           }}
-          aide="Sert à calculer le prix, et à savoir quels jours vous pouvez proposer au client."
         />
 
         <Field
@@ -185,7 +184,9 @@ export default function InformationsClient({
 
         <div className="flex flex-col gap-4">
           <PrimaryButton onClick={valider} disabled={validationEnCours}>
-            {validationEnCours ? "Validation…" : "Valider et calculer le prix →"}
+            {/* **Sans flèche** — sa demande du 25 août 2026. Elle promettait un
+                écran de plus ; l'appui, lui, valide les informations. */}
+            {validationEnCours ? "Validation…" : "Valider et calculer le prix"}
           </PrimaryButton>
 
           {/* La sortie de secours, demandée par le patron le 3 août 2026 après
@@ -200,21 +201,36 @@ export default function InformationsClient({
               ses lignes et ses montants sont ce que le client recevra. `saisie=
               manuelle` y replie la proposition automatique — sans la supprimer,
               car il doit pouvoir la rappeler. */}
+          {/* **La phrase grise qui vivait ici est RETIRÉE** — sa demande du
+              25 août 2026 : *« supprimer "vous saisissez chaque ligne" »*. Elle
+              décrivait le mécanisme du lien juste au-dessus, et son libellé le
+              dit déjà.
+
+              **Le lien, lui, RESTE.** Il a demandé, dans le même message : *« ce
+              bouton ouvre le devis ? Si oui la phrase en-dessous est obsolète »*.
+              La réponse est non — « Valider et calculer le prix » ouvre l'écran
+              PRIX, la proposition de montants. Ce lien-ci saute cette étape et
+              va au devis écrit à la main : c'est la sortie de secours qu'il a
+              lui-même demandée le 3 août 2026, *« je dois pouvoir cliquer sur
+              mon devis et le remplir manuellement si je le souhaite »*.
+
+              **La marge basse déménage ici, et elle n'est pas cosmétique** : la
+              bulle de l'assistant est fixée en bas à droite, et sans elle le
+              dernier élément finit dessous une fois la page déroulée à fond. Une
+              pile de notifications avait déjà poussé du contenu hors de l'écran
+              — trouvé sur une capture, pas par un test. */}
+          {/* **« Écrire le devis », en or gras, sans flèche** — sa demande du
+              25 août 2026, une fois qu'il a su que le bouton du dessus ouvre
+              l'écran Prix et non le devis. Même allure que la seconde voie de
+              l'écran de la facture : c'est le même geste, la sortie de secours
+              qui saute une étape. */}
           <a
             href={`/chantiers/${chantierId}/devis-complet`}
-            className={`block text-center ${libelleCaps}`}
-            style={{ color: colors.rust }}
+            className="block pb-10 text-center text-[15px] font-bold"
+            style={{ color: colors.or }}
           >
-            Ou écrire le devis moi-même →
+            Écrire le devis
           </a>
-          {/* La marge basse n'est pas cosmétique : la bulle de l'assistant est
-              fixée en bas à droite, et sans elle cette phrase finit dessous une
-              fois la page déroulée à fond. Une pile de notifications avait déjà
-              poussé du contenu hors de l'écran — trouvé sur une capture, pas
-              par un test. */}
-          <p className={`-mt-2 pb-10 text-center ${texteSituation}`} style={{ color: colors.muted }}>
-            Vous saisissez chaque ligne et son montant, sans passer par la proposition de prix.
-          </p>
         </div>
 
         <TiroirDesRetires

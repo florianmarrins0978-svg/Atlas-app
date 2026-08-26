@@ -9,6 +9,80 @@ sert.
 
 ---
 
+## PIÈGE : UNE SUITE QUI LIT LE MOIS AFFICHÉ ROUGIT EN FIN DE MOIS (26 août 2026)
+
+`test-envoi-client-e2e` a rougi le 26 août — **et à l'identique sur `main`**. Elle
+cherchait deux jours libres au-delà du délai minimal (J+3) dans le mois AFFICHÉ,
+qui commence toujours au 1er. À deux jours de la fin du mois, il n'en restait
+qu'un. Le produit était sain ; c'est le contrôle qui n'avait pas prévu la date du
+jour.
+
+**Devant une suite de calendrier rouge, regarder d'abord le quantième.** Le
+remède est écrit : `joursRetenables` tourne la page du mois quand celui-ci est
+trop court. Toute suite neuve qui compte des jours doit faire de même.
+
+## L'ASSISTANT EST UN AGENT : CE QU'IL FAUT SAVOIR AVANT D'Y TOUCHER (26 août 2026)
+
+| | |
+|---|---|
+| **Rien en direct, jamais** | tout geste est une proposition cochée. Sa règle : *« très important que ça reste le doigt du patron »*. Ne pas « simplifier » en exécutant un geste anodin |
+| **Envoyer, valider, émettre** | ne sont PAS des gestes de l'assistant, et ne le deviendront pas sans qu'il le redemande en face |
+| **On vise par identifiant** | jamais par nom. Un geste qui accepterait un nom corrigerait le mauvais Martin |
+| **La cible se relit à l'ÉCRITURE** | pas à la proposition. Entre les deux, il a pu la supprimer |
+| **Le périmètre a DEUX conditions** | marque du dehors **et** aucun mot d'Atlas. Retirer la seconde ferait taire l'assistant sur de vraies questions — c'est le piège, pas le refus |
+| **« temps » n'est pas un mot du dehors** | il dit aussi le temps passé sur un chantier. Les mots ambigus restent hors de la liste, délibérément |
+| **Une proposition peut n'avoir aucun chantier** | migration 0067. La réclamation compare avec `IS NOT DISTINCT FROM` : `= NULL` ne retrouverait rien |
+
+## L'ASSISTANT RÉCITE UN MODE D'EMPLOI ÉCRIT (25 août 2026)
+
+Avant d'y toucher :
+
+| | |
+|---|---|
+| **Les gestes vivent dans un fichier, pas dans le modèle** | `src/lib/mode-emploi.ts`. L'assistant les récite **tels quels** : ne pas lui laisser reformuler, ce serait une seconde version du mode d'emploi |
+| **Une fiche se PROUVE** | elle porte `source` (un fichier) et `preuves` (des morceaux de texte qui doivent s'y trouver). Vous changez un libellé d'écran ? `npx tsx scripts/test-mode-emploi.ts` vous dira quelle fiche vient de mentir |
+| **Rougir est le comportement voulu** | ne « réparez » pas une fiche en retirant sa preuve : corrigez le geste. Une fiche sans preuve n'est plus confrontable, et le contrôle l'interdit |
+| **La recherche doit savoir NE RIEN trouver** | deux mots communs minimum, un mot-clé plein minimum. Relâcher ces seuils fait répondre à des questions qui n'en sont pas, et l'on cesse alors de croire l'assistant |
+| **Le mode d'emploi passe EN TÊTE de la chaîne du fournisseur** | sinon « comment je supprime un client ? » repart dans la branche des suppressions et propose de modifier ses données. C'est le défaut qui a motivé l'ordre actuel de `src/server/ai/providers/llm/dev.ts` |
+| **Regarder l'écran, pas seulement le vert** | `npx tsx scripts/capture-assistant-mode-emploi.mts <dossier>` (serveur démarré). C'est lui qui a montré la réponse à trois gestes que douze tests verts ne voyaient pas |
+| **L'assistant est réservé au propriétaire** | le bouton disparaît, mais la barrière est dans les deux actions serveur. Ne pas la retirer « parce que le bouton n'est pas là » |
+
+## PHOTOGRAPHIER UN DEVIS POUR EN REPRENDRE L'ALLURE (25 août 2026)
+
+Nouvelle brique, sur l'écran Réglages → Documents. Avant d'y toucher :
+
+| | |
+|---|---|
+| **La lecture vit dans un service** | `src/server/ai/services/lire-allure-devis.ts`. `lireReponseAllure` est PURE et éprouvée sans clé (`scripts/test-lecture-allure-devis.ts`) ; `lireAllureDevis` appelle le fournisseur de vision — **non vérifié ici**, à jouer sur son espace avec sa clé, comme la dictée |
+| **L'action fusionne, elle n'écrase pas** | `reprendreAllurePhotoAction` (`actions.ts`) : un champ non lu (`null`) laisse la valeur d'avant. On ne pose une police que sur une famille reconnue ; une couleur mal lue vaut `null` ; un acompte hors bornes tombe |
+| **Le logo n'est JAMAIS repris** | un modèle décrit une image, il ne la découpe pas. La réserve le dit toujours — ne pas « améliorer » ça en croyant reprendre le logo |
+| **La photo passe par la porte unique** | `preparerPhotoEntrante`, comme le logo : métadonnées GPS retirées avant tout envoi |
+| **Vu à l'écran** | `npx tsx scripts/capture-documents-photo.mts <dossier>` (serveur bâti + connecté). Le `next dev` de ce conteneur ne découvre pas les routes — servir une version **bâtie** (`next build` + `next start`, `ATLAS_PROFIL=banc AUTH_TRUST_HOST=true`) |
+
+## RÔLES ET ACCÈS : ce qu'il faut savoir avant d'y toucher (25 août 2026)
+
+Le cloisonnement par rôle existe depuis ce jour-là. Trois choses à connaître
+avant d'écrire un écran ou une route :
+
+| | |
+|---|---|
+| **La règle est UNE fonction pure** | `src/lib/acces-roles.ts`. Elle dessine la barre du bas, filtre le sommaire des réglages, ET refuse les adresses. Ne pas en écrire une seconde |
+| **Un ÉCRAN neuf n'a rien à faire** | il traverse `layout.tsx`, donc `GardeAcces`. Fermé d'office au salarié (liste blanche), ouvert au commercial |
+| **Une ROUTE d'API neuve, SI** | elle ne traverse aucune mise en page. `const refus = await exigerOuverture(ctx); if (refus) return refus;` en tête du handler. `scripts/test-acces-routes-gardees.ts` rougit sinon |
+
+**Le piège à connaître, et il a coûté un rouge pendant ce lot :** écrire dans
+`membres_entreprise` par `db` en direct, hors `withEntreprise`. La RLS refuse
+**sans erreur** — zéro ligne touchée, aucun message —, et le contrôle rougit
+alors en accusant tout autre chose. C'est `CLAUDE.md` §3, rencontré dans un test.
+
+**Ce qu'un salarié ATTEINT, et rien d'autre :** `/planning`, ses quatre réglages
+personnels, `/documents-legaux`, et `/api/chantiers/<id>/feuille/pdf` — le devis
+sans un seul montant. Ouvrir un cinquième chemin se fait dans `OUVERT_AU_SALARIE`
+et se paie d'une ligne dans `scripts/test-acces-roles.ts`, à la main. C'est
+voulu : c'est le seul moment où quelqu'un regarde.
+
+---
+
 ## LOT 2B FERMÉ, ET SEPT CONTRÔLES RÉPARÉS AVEC LUI (25 août 2026)
 
 M3 et M6 sont clos. Ce qu'il faut savoir avant d'y toucher :
@@ -34,6 +108,20 @@ et elles reviendront :
 Devant une suite navigateur rouge, **la jouer seule d'abord** :
 `npm run test:e2e -- --seulement "<un bout du nom>"`. Verte seule, rouge en
 batterie : c'est l'une de ces deux causes, jamais un défaut du produit.
+
+---
+
+## LE CALENDRIER D'ENVOI : TOUCHER, C'EST PROPOSER (25 août 2026)
+
+Sa demande — *« je dois pouvoir sélectionner les jours juste en les touchant,
+pas besoin de cliquer sur proposer »* — a retiré « Proposer ce jour » de la
+fiche du jour, sur l'écran d'envoi au client.
+
+**Le piège si vous touchez à ces suites :** deux d'entre elles refermaient la
+fiche par un SECOND appui sur la même case. Ce geste retire aujourd'hui la date
+qu'on vient de poser — une suite qui le garde compte une date sur deux, et
+accuse le code. Détail : `ARCHITECTURE.md` §170.
+
 
 ---
 
@@ -1675,9 +1763,13 @@ numérotation continue, conservation légale).
 2. **Le cloisonnement par rôle n'est pas codé.** Ne pas conclure de la maquette
    qu'un salarié ne voit pas les prix : `QUESTIONS.md` §10 exige que la donnée
    ne SORTE pas du serveur, et rien de tel n'est en place aujourd'hui.
-3. **Le logo n'existe pas** — `document-commun.ts` ne pose aucune image.
-   Remplacer le devis entier par un modèle importé n'est pas possible sans
-   perdre les totaux, la TVA et la numérotation — à dire avant d'y revenir.
+3. **Le logo existe depuis le 24 août 2026** — `document-commun.ts` le pose
+   au-dessus du nom (`imageDuLogo`), et l'écran de rédaction aussi depuis le
+   25 (`ARCHITECTURE.md` §173). Cette ligne affirmait le contraire : elle a été
+   corrigée le 25 août, elle envoyait chercher au mauvais endroit.
+   Ce qui reste vrai : remplacer le devis entier par un **modèle importé** n'est
+   pas possible sans perdre les totaux, la TVA et la numérotation — à dire avant
+   d'y revenir.
 
    **Les conditions, elles, se règlent depuis le 14 août 2026**
    (`ARCHITECTURE.md` §102) : « 30 jours » n'est plus en dur dans
@@ -2134,7 +2226,75 @@ planches) : la batterie devrait nettoyer ces dossiers avant l'étape
 « Construction » de `scripts/verifier-avant-livraison.ts`. Sans quoi le piège
 reviendra à la prochaine page supprimée.
 
+## ⚠ UNE CAPTURE PLEINE PAGE MENT SUR LA BARRE DU BAS
+
+Posé le 25 août 2026, après avoir signalé au patron un défaut qui n'existait pas.
+
+`page.screenshot({ fullPage: true })` dessine les éléments **fixés** une seule
+fois, à la place qu'ils occupent dans le CADRE — donc au milieu d'une longue
+page. La barre du bas paraît alors couper un paragraphe en deux, et l'image est
+convaincante.
+
+**Ce n'est pas ce que voit le patron.** Pour savoir si un texte passe vraiment
+dessous : dérouler jusqu'en bas, puis comparer le `bottom` de chaque texte au
+`top` de `.atlas-nav-basse`. Mesuré ainsi sur l'écran Équipe : **rien n'était
+recouvert**.
+
+**Le vrai recouvrement existe pourtant** — `.atlas-contenu` et les `pb-*` sont là
+pour ça, et `IdentiteClient` porte `pb-40` pour une raison. Ne pas conclure du
+faux au vrai : **mesurer, chaque fois.**
+
+## ⚠ LANCER UNE SUITE NAVIGATEUR À LA MAIN : DEUX PIÈGES QUI FONT ACCUSER LE CODE
+
+Posé le 25 août 2026, après une heure perdue à croire `main` cassé.
+
+**1. `ATLAS_URL_PUBLIQUE` n'est PAS optionnelle.** `run-e2e-tests.ts` la pose
+lui-même (`https://atlas-suites.test`) sur le serveur qu'il démarre. Lancée
+contre un `npm run dev` ordinaire, une suite d'envoi voit une adresse LOCALE :
+Atlas refuse alors d'ouvrir la messagerie — à juste titre, le lien ne mènerait
+nulle part (`ARCHITECTURE.md` §169) — et renvoie vers l'écran du devis parti au
+lieu de l'accueil. `test-envoi-client-e2e` rendait **5 sur 11**, et le produit
+n'y était pour rien. Sur le banc du patron, dont l'adresse est publique, tout
+fonctionne.
+
+```bash
+ATLAS_URL_PUBLIQUE=https://atlas-suites.test npm run dev   # pour jouer une suite à la main
+```
+
+**2. Le PREMIER passage sur un écran compile.** Un serveur qui vient de démarrer
+peut dépasser le délai d'une suite sur la seule compilation de la route. La même
+suite, rejouée sur le serveur chaud, passe. **Avant d'accuser son propre lot :
+rejouer.** J'ai bien failli défaire un changement juste pour cette raison.
+
 ## Ce qui vient d'être terminé
+
+**LE JOUR SE COMPTE CHEZ LUI, PLUS À GREENWICH (25 août).** `jourIso` rendait le
+jour UTC : entre minuit et 2 h du matin, l'été, Atlas croyait qu'on était encore
+la veille. Il l'a trouvé en demandant quand son chantier passerait dans
+Terminés. **Une seule fonction porte la définition du jour** — c'est ce qui a
+permis de tout corriger d'un coup, et ce qu'il faut préserver : ne jamais
+recopier un `toISOString().slice(0, 10)` quelque part. `ARCHITECTURE.md` §182.
+
+
+**L'EN-TÊTE DU DEVIS, DEUX LOTS DE SUITE (25 août).**
+
+1. **Son logo sur l'écran du devis.** Il l'avait posé dans « Devis & factures »
+   et ne le voyait pas là où il rédige. Le PDF le portait déjà ; c'est l'écran
+   qui compose son en-tête à la main, sans passer par la fabrique de documents.
+   `ARCHITECTURE.md` §173.
+2. **L'émetteur n'apparaît plus deux fois, et une ligne par information.**
+   *« Pourquoi il y a deux fois l'émetteur sur l'aperçu ? »* — le bloc
+   « ÉMETTEUR » du bas est retiré, l'en-tête prend tout (nom, adresse,
+   téléphone, e-mail, SIRET, **une ligne chacun**), le client passe à gauche.
+   `ARCHITECTURE.md` §174.
+
+**Deux écritures du même en-tête, et c'est le piège du coin** — `document-commun.ts`
+(devis *et* facture) et `DevisCompletClient.tsx`. Le premier lot l'a découvert,
+le second l'a payé le lendemain. Si un troisième élément arrive un jour (une
+mention, un cachet), **penser aux DEUX** — et regarder l'image, pas seulement le
+vert des suites : c'est une capture qui dit si une ligne de plus vient toucher
+les références du devis (`scripts/capture-allure-devis.mts`).
+
 
 **LE PENSE-BÊTE DE LA FEUILLE DE CHANTIER (23 août).** *« Entre "Copier
 l'adresse" et "Ouvrir le PDF", un petit encadré où marquer quelque chose. »*

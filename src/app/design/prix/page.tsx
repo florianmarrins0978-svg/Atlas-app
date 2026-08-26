@@ -100,7 +100,7 @@ export default function PrixMockup() {
           )}
 
           <div className="pt-5">
-            <PrimaryButton>Préparer le devis →</PrimaryButton>
+            <PrimaryButton>Préparer le devis</PrimaryButton>
           </div>
         </form>
       </div>

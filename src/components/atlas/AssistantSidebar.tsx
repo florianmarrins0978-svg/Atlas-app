@@ -95,7 +95,10 @@ export default function AssistantSidebar() {
   }
 
   async function appliquerPropositions(indexMessage: number) {
-    if (!chantierId) return;
+    // **Plus de sortie muette sans chantier.** Depuis le 26 août 2026, un geste
+    // peut n'en concerner aucun — créer un chantier, régler un tarif. Ce
+    // `return` rendait alors le bouton « Appliquer » inerte : il s'enfonçait, et
+    // rien ne se passait, ce qui se lit comme une panne.
     const message = messages[indexMessage];
     if (!message.propositions) return;
     const idsRetenus = message.propositions.filter((p) => p.coche).map((p) => p.proposition.id);
@@ -144,13 +147,17 @@ export default function AssistantSidebar() {
             <div className="flex-1 overflow-y-auto px-4 py-3">
               {messages.length === 0 && (
                 <p className="text-[13px]" style={{ color: colors.muted }}>
-                  Posez une question sur ce chantier : prestations, matériel, transcription, devis, tarifs…
+                  Une question sur ce chantier, ou sur l&apos;application : « comment je supprime un chantier ? »
                 </p>
               )}
               <div className="flex flex-col gap-3">
                 {messages.map((m, i) => (
                   <div
                     key={i}
+                    // Une marque pour la capture : elle compte les RÉPONSES, et
+                    // une réponse hors périmètre n'affiche aucune source
+                    // (`scripts/capture-assistant-mode-emploi.mts`).
+                    data-atlas={m.role === "assistant" ? "bulle-assistant" : "bulle-question"}
                     className="max-w-[85%] rounded-[4px] px-3 py-2 text-[14px]"
                     style={{
                       alignSelf: m.role === "user" ? "flex-end" : "flex-start",
@@ -284,6 +291,8 @@ function libelleSource(nomOutil: string): string {
     LireNotes: "Notes vocales",
     LireDevis: "Devis",
     LireTarifs: "Tarifs",
+    RechercherModeEmploi: "Mode d'emploi",
+    RechercherLignesDevis: "Devis des autres clients",
   };
   return libelles[nomOutil] ?? nomOutil;
 }

@@ -92,6 +92,30 @@ async function main() {
    * ensuite.
    */
   async function joursOffertsAuChoix(): Promise<string[]> {
+    // **ON AVANCE D'UN MOIS QUAND CELUI-CI N'A PLUS ASSEZ DE JOURS — corrigé le
+    // 25 août 2026, à minuit pile.**
+    //
+    // Le calendrier ouvre sur le mois EN COURS. En fin de mois, ce qui reste au
+    // delà du délai minimal se compte sur les doigts : le 25 août, il restait
+    // le 28 et le 31 — deux jours, et la suite s'arrêtait sur « trop peu pour
+    // éprouver ». Verte tout le mois, rouge les cinq derniers jours : *une
+    // règle éprouvée un seul jour n'est pas éprouvée* (`CLAUDE.md` §5).
+    //
+    // Le patron, lui, appuie sur « Mois suivant » sans y penser. La suite fait
+    // désormais le même geste — et elle ne le fait QUE si le mois courant est
+    // trop court, pour continuer d'éprouver le cas ordinaire le reste du temps.
+    for (let mois = 0; mois < 2; mois++) {
+      if ((await recolter()).length >= 3) break;
+      const suivant = page.getByRole("button", { name: /^Mois suivant/ });
+      if ((await suivant.count()) === 0 || !(await suivant.isEnabled())) break;
+      await suivant.click();
+      await page.waitForTimeout(250);
+    }
+    return recolter();
+  }
+
+  /** Ce que le mois affiché offre, une fois le délai minimal retiré. */
+  async function recolter(): Promise<string[]> {
     const tous = await page
       .locator('[data-jour][data-etat="regardable"]')
       .evaluateAll((els) => els.map((e) => e.getAttribute("data-jour")!).filter(Boolean));
@@ -99,6 +123,10 @@ async function main() {
     // au 1er : ses premiers jours ouvrés sont derrière nous, et le délai minimal
     // en écarte deux de plus. Les prendre ferait rougir cette suite sur un refus
     // parfaitement juste — le pire des rouges (`AGENTS.md`).
+    //
+    // Le mois qui n'en offre pas trois se feuillette, et c'est `troisJoursAuMoins`
+    // qui s'en charge, plus bas : deux feuilletages superposés seraient la même
+    // règle écrite deux fois.
     const plancher = new Date();
     plancher.setDate(plancher.getDate() + DELAI_MINIMAL_JOURS + 1);
     const depuis = plancher.toISOString().slice(0, 10);
@@ -106,26 +134,24 @@ async function main() {
   }
 
   /**
-   * Regarde un jour, puis le retient — ou le rend s'il l'était déjà.
+   * Touche un jour : il se propose, ou se rend s'il l'était déjà.
    *
-   * **Deux gestes, et c'est le sujet du 22 août :** toucher la case OUVRE la
-   * journée pour voir qui y est ; c'est « Proposer ce jour » qui engage la date.
-   * Un jour consulté par erreur partait auparavant chez le client.
+   * **UN SEUL GESTE depuis le 25 août 2026** — *« je dois pouvoir sélectionner
+   * les jours juste en les touchant, pas besoin de cliquer sur proposer »*. Le
+   * second appui, qui refermait la fiche, RETIRERAIT maintenant la date : cette
+   * suite l'a fait tomber la première, et c'est exactement ce qu'on veut d'elle.
    */
   async function toucher(jour: string) {
     await page.locator(`[data-jour="${jour}"]`).click();
     await page.locator('[data-atlas="journee-regardee"]').waitFor({ state: "visible", timeout: 30_000 });
-    // Le verdict vient du serveur : on attend qu'il ait cessé de vérifier,
-    // plutôt qu'un délai fixe qui échouerait au hasard sous la batterie
-    // complète — un contrôle qui rougit sans raison apprend à ignorer le rouge.
+    // Le verdict vient du serveur, et c'est LUI qui retient : on attend qu'il
+    // ait cessé de vérifier, plutôt qu'un délai fixe qui échouerait au hasard
+    // sous la batterie complète — un contrôle qui rougit sans raison apprend à
+    // ignorer le rouge.
     await page
       .locator("text=Vérification de votre planning…")
       .waitFor({ state: "hidden", timeout: 20_000 })
       .catch(() => undefined);
-    const bouton = page.locator('[data-atlas="retenir-le-jour"]');
-    if ((await bouton.count()) > 0 && (await bouton.isEnabled())) await bouton.click();
-    // On referme la fiche : la suivante s'ouvrira sur un écran propre.
-    await page.locator(`[data-jour="${jour}"]`).click();
     await page.waitForTimeout(250);
   }
 
