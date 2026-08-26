@@ -149,8 +149,16 @@ pas les trois autres du même fichier, qui attendent la même phrase avec le mê
 délai et passent. Un simple relèvement du délai serait un pansement sur une cause
 non trouvée — et c'est exactement ce que ce dépôt refuse.
 
+**Et un SIXIÈME, le 26 août 2026 au soir :** `test-poser-une-date-e2e.ts`, cas
+*« depuis la fiche d'un jour, "Ajouter un chantier" le pose »* — rouge en
+batterie sur *« aucune date en base : la pose n'a rien enregistré »*, **vert
+rejoué seul** (5/5). Même forme que les autres : la base est lue avant que
+l'action serveur n'ait fini d'écrire. Le cas SUIVANT du même fichier — *« et il
+quitte Sans date »* — passait dans la même exécution, ce qui achève de dire que
+l'écriture arrivait, juste plus tard que la lecture.
+
 Avec `test-lecons-prix-e2e` (§ plus bas) et la suite du veilleur, cela fait
-**cinq** contrôles qui rougissent au hasard de la machine. C'est le vrai sujet,
+**six** contrôles qui rougissent au hasard de la machine. C'est le vrai sujet,
 et il grossit : un rouge qui tombe au hasard apprend à ignorer le rouge, et l'on
 perd alors tout ce qu'il surveille. Ce qu'il faut : attendre un SIGNAL — la
 réponse du serveur, un attribut qui change — jamais un instant.

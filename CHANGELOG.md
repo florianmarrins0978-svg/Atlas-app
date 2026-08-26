@@ -9,6 +9,23 @@ Format : le plus récent en tête.
 
 ## 2026-08-26
 
+### L'envoi du devis : trois phrases de moins
+
+*« Supprime la phrase par SMS au + repris de votre dictée + le client pourra
+aussi en proposer une. »*
+
+Partent aussi leurs variantes, qui ne se montraient que dans d'autres états — il
+les aurait rencontrées demain. Une seule ligne reste sous la molette, la seule
+qui apprenne quelque chose : un chantier long réserve plusieurs jours d'affilée.
+
+Ce qu'on perd, et c'est le même arbitrage qu'il a rendu le 24 août sur la
+facture : il ne voit plus le canal ni le destinataire avant d'ouvrir sa
+messagerie — laquelle les lui montre, et où il peut encore reculer.
+
+Trois contrôles lisaient ces phrases. Ils éprouvent maintenant la règle : la
+messagerie qui s'ouvre pour de bon, les deux dates listées, le sous-titre de
+l'interrupteur qui suit l'interrupteur. Détail en `ARCHITECTURE.md` §192.
+
 ### « Sans date » disparaît quand rien n'attend de jour
 
 **Sa question :** *« est-ce que la catégorie sans date a un réel besoin

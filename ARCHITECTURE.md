@@ -16711,3 +16711,48 @@ un message clair, pas un enregistrement muet. La règle n'existe qu'à un endroi
 (`PropositionPrixSection.tsx`). Il ne l'a pas signalé et l'enjeu y est moindre —
 il peut toucher l'autre tarif —, mais c'est le même `type="radio"` et le même
 appui sans retour possible. Noté dans `TODO.md`.
+
+---
+
+## 192. L'écran d'envoi du devis perd trois phrases, et n'apprend rien de moins
+
+**Ses trois demandes du 26 août 2026, capture à l'appui :** *« supprime la
+phrase par SMS au + repris de votre dictée + le client pourra aussi en proposer
+une »*.
+
+### Ce qui part, et ce que ça coûte
+
+| Phrase | Ce qu'elle disait | Ce qui la remplace |
+|---|---|---|
+| « Par SMS au 0679984514 » | le canal et le destinataire | **rien** — sa messagerie les lui montre juste après |
+| « Repris de votre dictée. Corrigez-le si besoin… » | que la molette se tourne | la molette |
+| « Le client pourra aussi en proposer une autre… » | ce que l'interrupteur d'à côté dit déjà | l'interrupteur, et son sous-titre |
+
+**Le seul vrai coût est le premier**, et c'est un arbitrage qu'il a déjà rendu :
+le 24 août, sur l'écran de la facture, il a fait retirer le destinataire pour la
+même raison (`TransmettreLaFacture`). Il ne voit plus à qui le devis part avant
+d'ouvrir sa messagerie — laquelle le lui montre, et où il peut encore reculer :
+**rien n'est envoyé par Atlas**.
+
+### Les phrases sœurs partent avec elles, et c'est délibéré
+
+Chacune de ces lignes avait des variantes qui ne se montraient que dans
+d'autres états — deux dates plutôt qu'une, interrupteur fermé, durée saisie à
+la main. Les laisser, c'était les lui faire découvrir demain et payer le même
+aller-retour. Une seule survit, parce qu'elle APPREND quelque chose :
+« 4 jours ouvrés d'affilée seront réservés à partir de la date retenue » — un
+chantier long bloque le planning, et rien d'autre ne le dit.
+
+### Trois contrôles visaient les libellés ; ils visent maintenant la règle
+
+C'est le vrai travail de ce lot (`CLAUDE.md` §5 bis) :
+
+| Ce qu'il lisait | Ce qu'il éprouve maintenant |
+|---|---|
+| « Par e-mail au dupuis@exemple.fr » | la messagerie qui s'ouvre est bien `mailto:` sur cette adresse |
+| « Le client choisira entre ces deux dates » | **deux** dates sont listées à l'envoi |
+| la phrase qui suivait l'interrupteur | le **sous-titre de l'interrupteur** suit l'interrupteur — et l'ancienne phrase ne revient pas |
+
+Le premier est le plus important : il éprouve désormais le défaut du 20 août
+2026 lui-même — *« j'ai choisi d'envoyer par e-mail, et c'est le SMS qui s'est
+ouvert »* — au lieu d'une phrase qui l'annonçait.
