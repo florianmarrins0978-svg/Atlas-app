@@ -196,6 +196,11 @@ réglé la question.
 TVA à déclarer », l'autre carte qu'on parcourt, et son exception est bornée à
 son repère — tout autre bouton carré de cet écran fait toujours rougir.
 
+**Une suite de plus attendait un délai plutôt qu'un signal** : elle lisait
+l'écran des coordonnées 400 ms après l'avoir ouvert — assez seule, pas sous la
+charge de la batterie, où la page en était encore à « CHARGEMENT… ». Elle
+accusait alors le produit pour un défaut de son propre montage.
+
 **Et un filet retiré le 25 août était revenu** avec l'écran « Donner un accès »
 d'une autre session : le trait qui prolonge « SON RÔLE » jusqu'au bord. Son
 contrôle l'a dénoncé, il est reparti — les séparateurs de blocs, eux, restent.
