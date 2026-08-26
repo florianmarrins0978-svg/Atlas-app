@@ -1,0 +1,270 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas — Atlas — Lot 3 : fermeture F1–F13</title>
+<style>
+  :root{
+    --ground:#f5f3ee; --surface:#faf9f5; --raised:#ece9e1;
+    --ink:#1c1c1a; --ink-soft:#4a4a44; --muted:#8a8578;
+    --accent:#2f3b2f; --alert:#b5562a; --line:rgba(28,28,26,0.13);
+    --serif:Georgia,'Times New Roman',serif;
+    --sans:system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --ground:#161815; --surface:#1d201c; --raised:#252924;
+      --ink:#eae7df; --ink-soft:#c2bdb1; --muted:#948f83;
+      --accent:#9fbd82; --alert:#e0885a; --line:rgba(234,231,223,0.17);
+    }
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--sans);
+    line-height:1.65;}
+  main{max-width:44rem;margin:0 auto;padding:2.5rem 1.2rem 5rem;}
+  h1,h2,h3,h4{font-family:var(--serif);font-weight:600;line-height:1.2;
+    text-wrap:balance;margin:2rem 0 0.6rem;scroll-margin-top:1rem;}
+  h1{font-size:2rem;margin-top:0;}
+  h2{font-size:1.5rem;padding-top:1.2rem;border-top:1px solid var(--line);}
+  h3{font-size:1.12rem;}
+  h4{font-size:1rem;}
+  p{margin:0 0 0.9rem;}
+  a{color:var(--accent);text-underline-offset:3px;}
+  a:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:3px;}
+  ul,ol{margin:0 0 1rem;padding-left:1.3rem;}
+  li{margin-bottom:0.4rem;}
+  li::marker{color:var(--muted);}
+  /* Le sommaire : des cibles larges, confortables au doigt sur téléphone. */
+  ol li a{display:inline-block;padding:0.15rem 0;}
+  blockquote{margin:1rem 0;padding:0.85rem 1.05rem;background:var(--raised);
+    border-left:3px solid var(--accent);border-radius:0 10px 10px 0;color:var(--ink-soft);}
+  code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:0.87em;
+    background:var(--raised);padding:0.1rem 0.35rem;border-radius:5px;}
+  hr{border:0;border-top:1px solid var(--line);margin:2rem 0;}
+  .tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px;
+    background:var(--surface);margin:0 0 1.2rem;}
+  table{border-collapse:collapse;width:100%;font-size:0.92rem;min-width:22rem;}
+  th,td{text-align:left;padding:0.55rem 0.8rem;border-bottom:1px solid var(--line);
+    vertical-align:top;}
+  th{font-size:0.72rem;letter-spacing:0.08em;text-transform:uppercase;
+    color:var(--muted);white-space:nowrap;}
+  tr:last-child td{border-bottom:none;}
+  .retour{display:inline-block;font-size:0.76rem;color:var(--muted);
+    text-decoration:none;margin:-0.3rem 0 1rem;}
+  .retour:hover{color:var(--accent);text-decoration:underline;}
+</style>
+</head>
+<body>
+<main>
+<h1 id="atlas--lot-3--fermeture-f1f13">Atlas — Lot 3 : fermeture F1–F13</h1>
+<p><em>25 août 2026 · branche <code>claude/atlas-securite-lot3</code> · pas encore sur <code>main</code></em></p>
+<p>Fait suite à <code>docs/lot-3-f1-f13-lecture.md</code> (l'instruction, sans code) et à <code>docs/lot-3-m11-rapport.md</code> (la clôture de M11).</p>
+<hr>
+<h2 id="0-avertissement">0. Avertissement</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><strong>Le rapport d'audit qui nomme F1 à F13 n'est pas dans le dépôt.</strong> Deux points seulement citaient un fichier ; les onze autres ont été traités comme des hypothèses à mesurer, jamais comme des constats acquis. C'est ce qui a permis d'en écarter quatre sans rien casser — et l'un d'eux, F6, aurait fait rejouer partout une migration déjà passée s'il avait été « corrigé ».</p>
+<hr>
+<h2 id="1-traitement-point-par-point">1. Traitement point par point</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th>Verdict</th>
+<th>Ce qui a changé</th>
+<th>Contrôle</th>
+</tr></thead><tbody>
+<tr>
+<td><strong>F1</strong></td>
+<td>fondé</td>
+<td><code>derniereIssueMiseAJour</code> exige le propriétaire</td>
+<td><code>test-mise-a-jour-role-db.ts</code> — 2 contrôles neufs, vus rouges</td>
+</tr>
+<tr>
+<td><strong>F2</strong></td>
+<td>fondé</td>
+<td><code>/api/session-perimee</code> refuse <code>Sec-Fetch-Site: cross-site</code></td>
+<td><code>test-session-perimee-e2e.ts</code> — 7 → 8, vu rouge</td>
+</tr>
+<tr>
+<td><strong>F3</strong></td>
+<td>partiellement fondé</td>
+<td><strong>rien</strong> (consigne tenue)</td>
+<td><code>test-diagnostic-sans-secret.ts</code> — 5 neufs, vert d'emblée, vu rouge contre une variable ajoutée</td>
+</tr>
+<tr>
+<td><strong>F4</strong></td>
+<td>faux problème</td>
+<td>rien</td>
+<td>—</td>
+</tr>
+<tr>
+<td><strong>F5</strong></td>
+<td>fondé</td>
+<td>migration <strong>0067</strong>, additive</td>
+<td><code>test-isolation-contexte-vide-db.ts</code> — 4 neufs, vus rouges</td>
+</tr>
+<tr>
+<td><strong>F6</strong></td>
+<td>faux problème</td>
+<td>rien, <strong>et aucun renommage</strong></td>
+<td>—</td>
+</tr>
+<tr>
+<td><strong>F7</strong></td>
+<td>décision produit</td>
+<td>rien</td>
+<td>—</td>
+</tr>
+<tr>
+<td><strong>F8</strong></td>
+<td>fondé</td>
+<td>garde de rôle sur <code>/reglages/agenda</code></td>
+<td><code>test-reglages-gardes.ts</code> — 4 neufs, vus rouges</td>
+</tr>
+<tr>
+<td><strong>F9</strong></td>
+<td>fondé</td>
+<td>cadence sur la réponse publique au devis</td>
+<td><code>test-devis-client-e2e.ts</code> — 11 → 12, vu rouge</td>
+</tr>
+<tr>
+<td><strong>F10</strong></td>
+<td>réel, hors lot</td>
+<td>rien</td>
+<td>—</td>
+</tr>
+<tr>
+<td><strong>F11</strong></td>
+<td>déjà fermé (lot 1)</td>
+<td>rien</td>
+<td>contrôle existant</td>
+</tr>
+<tr>
+<td><strong>F12</strong></td>
+<td>fondé</td>
+<td><code>src/app/design/layout.tsx</code></td>
+<td><code>test-maquettes-hors-production.ts</code> — 4 neufs, vus rouges</td>
+</tr>
+<tr>
+<td><strong>F13</strong></td>
+<td>fondé</td>
+<td><code>src/app/robots.ts</code> + <code>matcher</code></td>
+<td><code>test-pages-publiques-…-e2e.ts</code> — 6 → 7, vu rouge</td>
+</tr>
+</tbody></table></div>
+<p><strong>Aucun des sept fondés n'était une fuite de données.</strong> F5 est une panne d'écran, F12 de la surface, F13 une demande polie aux moteurs. Le dire est délibéré : une alerte qui exagère s'apprend à être ignorée, et l'on perd le garde-fou sans s'en apercevoir.</p>
+<hr>
+<h2 id="2-les-quatre-refus-et-ce-quils-auraient-coûté">2. Les quatre refus, et ce qu'ils auraient coûté</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th>Pourquoi c'est refusé</th>
+</tr></thead><tbody>
+<tr>
+<td><strong>F4</strong></td>
+<td>le nom du PDF est <strong>engendré par le serveur</strong> (<code>devis-${numero}.pdf</code>) : rien ne vient de l'utilisateur, donc rien à échapper</td>
+</tr>
+<tr>
+<td><strong>F6</strong></td>
+<td><code>run-migrations.ts</code> suit les migrations <strong>par nom de fichier</strong>, enregistré dans <code>_migrations</code>. Renommer une migration « pour lever un doublon » la ferait <strong>rejouer sur toutes les bases</strong> — précisément le défaut qu'on prétendait corriger</td>
+</tr>
+<tr>
+<td><strong>F7</strong></td>
+<td>export et effacement d'un client existent sans écran. C'est une <strong>décision produit / RGPD</strong> : qui peut effacer, avec quelle preuve, et que devient une facture émise. Aucune interface n'a été construite</td>
+</tr>
+<tr>
+<td><strong>F10</strong></td>
+<td><code>unsafe-inline</code> est bien là, et c'est réel. Le retirer sans mécanisme de <code>nonce</code> <strong>casse l'application</strong>. Lot à soi</td>
+</tr>
+</tbody></table></div>
+<hr>
+<h2 id="3-trois-enseignements-tirés-derreurs-commises-dans-ce-lot">3. Trois enseignements, tirés d'erreurs commises dans ce lot</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<h3 id="31-la-revue-hostile-a-corrigé-mon-propre-correctif--f9">3.1 La revue hostile a corrigé mon propre correctif — F9</h3>
+<p>Deux compteurs avaient été posés : par jeton, et par source. Or sans <code>ATLAS_PROXY_SAUTS</code> posé, <code>sourceDuVisiteur</code> rend <strong>délibérément</strong> une valeur commune — rien ne permet de savoir qui a écrit <code>x-forwarded-for</code>. Tous les clients partageaient donc un seul seau.</p>
+<p><strong>Soixante appels depuis n'importe où, et plus aucun client de plus aucun artisan ne peut signer son devis pendant une minute.</strong> Le seuil devenait une arme retournée : une dépense de calcul échangée contre un blocage commercial.</p>
+<p>Corrigé avant toute livraison : le seuil par source <strong>ne s'applique que si la source est établie</strong>. Celui par jeton, qui ne borne qu'un lien, s'applique toujours.</p>
+<h3 id="32-trois-contrôles-verts-sur-le-défaut-quils-portaient-dans-leur-nom">3.2 Trois contrôles verts sur le défaut qu'ils portaient dans leur nom</h3>
+<p>Le contrôle structurel de F8 a passé trois fois avec la garde retirée :</p>
+<div class="tablewrap"><table><thead><tr>
+<th>Ce qu'il regardait</th>
+<th>Pourquoi il passait</th>
+</tr></thead><tbody>
+<tr>
+<td>le nom de la garde n'importe où dans le fichier</td>
+<td>la ligne <code>import { estProprietaire }</code> suffisait</td>
+</tr>
+<tr>
+<td>le fichier, commentaires compris</td>
+<td>le commentaire qui <strong>explique</strong> la garde cite son nom</td>
+</tr>
+<tr>
+<td>la ligne entière, pour trouver une lecture</td>
+<td><code>const [etat, etatApple, params] = await Promise.all(</code> contient le mot <code>params</code></td>
+</tr>
+</tbody></table></div>
+<p>Il blanchit désormais les commentaires, ne lit que le corps de la fonction, et ne compare que <strong>ce qui suit <code>await</code></strong>.</p>
+<p>Et le contrôle hostile de F2 a rougi <strong>sur du code juste</strong> : la réponse refusée porte bien des <code>Set-Cookie</code> — ceux d'Auth.js, qui rafraîchit la session dans la couche au-dessus, valeurs pleines et expiration future. Rafraîchir n'est pas déconnecter. Il ne compte donc plus les <code>Set-Cookie</code>, il cherche les <strong>effacements</strong>.</p>
+<h3 id="33-adressesautorisees-mentait-depuis-sa-naissance">3.3 <code>adressesAutorisees()</code> mentait depuis sa naissance</h3>
+<p>Son commentaire promettait que <em>« la liste des rubriques est l'unique source, et une rubrique retirée ferme son adresse au même instant »</em>. <strong>Aucune page ne l'a jamais appelée</strong> : ses seuls appelants sont des contrôles. C'est ce qui explique le trou de F8 — la prose laissait croire à une garde centrale qui n'existait pas.</p>
+<p>Elle <strong>n'a pas été branchée</strong> pour autant : un <code>layout</code> déduit du sommaire fermerait <code>/reglages/prix/mesures</code> et <code>/reglages/vocabulaire</code>, qui n'y figurent pas. Ce qui tient à la place, c'est une garde par page <strong>plus</strong> le contrôle structurel qui refuse qu'on en oublie une.</p>
+<hr>
+<h2 id="4-une-mesure-qui-a-surpris">4. Une mesure qui a surpris</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p>Sans son exclusion du <code>matcher</code>, <strong><code>GET /robots.txt</code> rend 307</strong>. Le middleware renvoie à <code>/login</code> tout ce qui n'est pas explicitement écarté : un moteur aurait reçu une redirection au lieu de la consigne. Le fichier aurait existé, et n'aurait servi à rien — un garde-fou qu'on croit en place.</p>
+<hr>
+<h2 id="5-batterie">5. Batterie</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th></th>
+</tr></thead><tbody>
+<tr>
+<td>Types, lint, construction</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>Suites base</td>
+<td><strong>232 / 232</strong></td>
+</tr>
+<tr>
+<td>Suites navigateur</td>
+<td><strong>111 / 111</strong></td>
+</tr>
+<tr>
+<td>Connexion réelle derrière une origine étrangère</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>Mémoire du dépôt</td>
+<td>❌ sur un renvoi Markdown erroné, corrigé puis rejoué seul ✅</td>
+</tr>
+</tbody></table></div>
+<p>La batterie entière au vert reste à produire : elle le sera à la fusion, que <code>main</code> impose de toute façon — 107 fichiers arrivés, dont une migration neuve.</p>
+<hr>
+<h2 id="6-ce-qui-reste-ouvert">6. Ce qui reste ouvert</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th>Pour qui</th>
+</tr></thead><tbody>
+<tr>
+<td><strong>F7</strong> — l'écran RGPD (export / effacement d'un client)</td>
+<td>décision du patron</td>
+</tr>
+<tr>
+<td><strong>F10</strong> — le lot CSP, avec <code>nonce</code></td>
+<td>développement, lot à soi</td>
+</tr>
+<tr>
+<td><strong><code>ATLAS_PROXY_SAUTS</code></strong> à poser en production</td>
+<td>hébergement. Sans lui, tous les seuils par source restent communs — celui de F9 se désactive plutôt que de bloquer tout le monde</td>
+</tr>
+<tr>
+<td><strong><code>ARCHITECTURE.md</code> porte deux fois §164 et §165</strong></td>
+<td>dette d'une fusion antérieure, déjà sur <code>main</code>. Non corrigée ici : les renvois pointent vers les deux sens, et les démêler dépasse ce lot</td>
+</tr>
+</tbody></table></div>
+</main>
+</body>
+</html>

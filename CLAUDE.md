@@ -207,6 +207,39 @@ dictées — n'étaient dans aucun de ses six points.
    document qu'il lui retransmet. Deux de mes verdicts du lot 2 étaient
    inexacts ; les écrire a plus de valeur que les six points justes.
 
+**LE DOCUMENT DE RETOUR SE FAIT TOUT SEUL, À LA FIN DE CHAQUE LOT.**
+
+**Sa consigne du 26 août 2026, et elle a été donnée en colère :** *« fais-moi un
+document que je peux copier et lui envoyer comme on fait depuis le début !
+Enregistre, je veux ça à chaque fois sans avoir besoin de te le demander !!! »*
+
+Il l'avait demandé pour le lot 2, pour le lot 2B, pour M11, pour le lot 3 — à
+chaque fois en le redemandant, et à chaque fois après avoir lu un récapitulatif
+posé dans la conversation, qui ne se recopie pas depuis un téléphone. **Un
+récapitulatif écrit dans le fil n'est pas un livrable :** il se perd au message
+suivant, et il ne s'envoie pas.
+
+**Donc, à la clôture de tout lot, sans qu'on le demande :**
+
+| | |
+|---|---|
+| **où** | `docs/<nom-du-lot>.md`, dans le dépôt, commité avec le code |
+| **plus** | sa page consultable — `node scripts/md-en-page.mjs docs/<nom>.md` |
+| **et** | le fichier lui est **envoyé**, pas seulement mentionné |
+
+**Ce que le document porte, et rien d'autre :** un verdict par point, le fichier
+qui le fonde, ce qui a été fait autrement et pourquoi, ce qui a été refusé et ce
+qu'il aurait coûté, les chiffres exacts de la batterie, et ce qui reste ouvert —
+avec qui peut le trancher.
+
+**Ce qui a été dit et se révèle faux s'y corrige NOIR SUR BLANC.** Deux verdicts
+du lot 2 étaient inexacts ; les écrire a eu plus de valeur que les six points
+justes. Idem au lot 3, où la revue hostile a corrigé mon propre correctif avant
+livraison — c'est ce genre de paragraphe qui rend le reste croyable.
+
+**Et le récapitulatif de la conversation ne le remplace jamais** : il le résume
+en cinq lignes, et donne le chemin du document. Le détail vit dans le fichier.
+
 **Le document de retour se tient à jour.** `docs/lot-2-securite-verdict.md` est
 le modèle : un verdict par point, le fichier qui le fonde, ce qui a été fait
 autrement et pourquoi, ce qui a été refusé, et ce qui reste. Il le lui
