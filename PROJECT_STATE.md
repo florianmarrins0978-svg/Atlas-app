@@ -13,6 +13,25 @@ ligne « fait » qui ne l'est pas coûte plus cher qu'une ligne absente.
 
 ---
 
+## Sécurité : lot Audio fermé (26 août 2026)
+
+| | État |
+|---|---|
+| Le format d'un audio se lit dans ses OCTETS | **fait** — `src/lib/signature-audio.ts`, sans bibliothèque |
+| Le type et l'extension rangés viennent du format réel | **fait** — `extensionPour(mimeType)` est morte |
+| Les quatre chemins passent par une porte unique | **fait** — 3 contrôles structurels |
+| L'IA n'est jamais appelée avant la validation | **fait** — éprouvé en base |
+| Une vraie dictée d'iPhone | **NON ÉPROUVÉ ICI** — pas de Safari sur ce poste, à essayer sur son espace |
+| Sauvegardes | **toujours aucune** — le point le plus grave du dépôt |
+
+**Batterie complète au vert le 26 août 2026** : 234/234 suites base, 110/110
+suites navigateur, connexion réelle derrière une origine étrangère.
+
+Rapport transmissible : `docs/lot-audio-rapport.md`. Raisonnement :
+`ARCHITECTURE.md` §171.
+
+---
+
 ## Sécurité : lot 3 — M9 à M12 et F1 à F13 fermés (25 août 2026)
 
 | | État |

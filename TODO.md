@@ -29,6 +29,29 @@ qu'elles : trois mois consultés sans trouver, et elle nomme la navigation.
 **Éprouvé sur 730 jours** (2026 et 2027, changements d'année compris) : 114 jours
 rouges sans le remède, **730/730 verts avec**, et jamais plus d'un tour de page.
 
+## Essayer une VRAIE dictée d'iPhone contre la reconnaissance de format (26 août 2026)
+
+**Le seul point du lot Audio qui n'a pas pu être éprouvé ici.** Ce poste n'a ni
+iPhone ni Safari. Le témoin MP4 de `scripts/_temoins-audio.ts` reproduit ce que
+Safari écrit — relevé de la spécification ISO-BMFF, pas d'un appareil.
+
+**Ce qui est déjà éprouvé, et qui rassure sans suffire :** un WebM produit par le
+VRAI enregistreur de Chromium traverse la porte (`test-anneau-dictee-e2e.ts`,
+micro simulé). Android et PC sont donc couverts par une preuve réelle. iPhone ne
+l'est pas.
+
+**Qui peut le faire :** le patron, sur son espace — une dictée depuis son
+téléphone, sur une fiche de chantier.
+
+**Et si elle est refusée, la marche à suivre est écrite et ne se négocie pas :**
+relever les premiers octets du fichier, et **élargir `src/lib/signature-audio.ts`**.
+On n'ouvre PAS de repli sur `fichier.type` : ce serait rouvrir la moitié du
+défaut qu'on vient de fermer. Sa décision du 26 août — *« je préfère conserver le
+point Audio ouvert plutôt que déclarer sécurisé un chemin qui continue à faire
+confiance au MIME pour les cas difficiles »*.
+
+---
+
 ## Trois suites navigateur rougissent sous la batterie, jamais seules (26 août 2026)
 
 **Constaté sur deux tours de batterie, avec des suites DIFFÉRENTES à chaque

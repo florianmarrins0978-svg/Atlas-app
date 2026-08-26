@@ -9,6 +9,25 @@ sert.
 
 ---
 
+## LOT AUDIO FERMÉ (26 août 2026)
+
+| | |
+|---|---|
+| **Le format se lit dans les octets** | `src/lib/signature-audio.ts`. `fichier.type` ne décide plus de rien côté serveur |
+| **Format inconnu → REFUS** | et **si un format légitime est refusé chez lui, on n'ouvre PAS de repli sur `fichier.type` : on élargit la reconnaissance.** C'est sa règle, pas une préférence |
+| **Une porte unique** | `src/server/audio-entrant.ts`, et 3 contrôles structurels empêchent le cinquième chemin de faire sa cuisine |
+| **Ni bibliothèque, ni parseur** | lire un conteneur entier sur une entrée hostile serait pire que le défaut |
+| **MP3 et AAC : une CHAÎNE de trames** | deux octets `FF Ex` apparaissent par hasard dans n'importe quel binaire |
+| **Aucun iPhone essayé ici** | ce poste n'a pas Safari. À vérifier sur son espace avec une vraie dictée |
+
+**Le piège de ce lot, et il reviendra : un contrôle en base qui mesure ZÉRO.**
+`notes_vocales` porte `FORCE ROW LEVEL SECURITY` — **le propriétaire y est
+soumis aussi**. Un compte lu sans poser `app.entreprise_id` rend 0 quoi qu'il
+arrive, et ment dans les deux sens : « rien n'a été rangé » sur un fichier
+hostile réellement rangé.
+
+---
+
 ## LOT 3 FERMÉ — F1 À F13 (25 août 2026)
 
 Sept constats codés, quatre refusés, deux gardés sans toucher au code. Ce qu'il

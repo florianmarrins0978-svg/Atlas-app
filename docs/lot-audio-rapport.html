@@ -1,0 +1,350 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas — Atlas — Lot Audio : le format se lit dans les octets</title>
+<style>
+  :root{
+    --ground:#f5f3ee; --surface:#faf9f5; --raised:#ece9e1;
+    --ink:#1c1c1a; --ink-soft:#4a4a44; --muted:#8a8578;
+    --accent:#2f3b2f; --alert:#b5562a; --line:rgba(28,28,26,0.13);
+    --serif:Georgia,'Times New Roman',serif;
+    --sans:system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --ground:#161815; --surface:#1d201c; --raised:#252924;
+      --ink:#eae7df; --ink-soft:#c2bdb1; --muted:#948f83;
+      --accent:#9fbd82; --alert:#e0885a; --line:rgba(234,231,223,0.17);
+    }
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--sans);
+    line-height:1.65;}
+  main{max-width:44rem;margin:0 auto;padding:2.5rem 1.2rem 5rem;}
+  h1,h2,h3,h4{font-family:var(--serif);font-weight:600;line-height:1.2;
+    text-wrap:balance;margin:2rem 0 0.6rem;scroll-margin-top:1rem;}
+  h1{font-size:2rem;margin-top:0;}
+  h2{font-size:1.5rem;padding-top:1.2rem;border-top:1px solid var(--line);}
+  h3{font-size:1.12rem;}
+  h4{font-size:1rem;}
+  p{margin:0 0 0.9rem;}
+  a{color:var(--accent);text-underline-offset:3px;}
+  a:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:3px;}
+  ul,ol{margin:0 0 1rem;padding-left:1.3rem;}
+  li{margin-bottom:0.4rem;}
+  li::marker{color:var(--muted);}
+  /* Le sommaire : des cibles larges, confortables au doigt sur téléphone. */
+  ol li a{display:inline-block;padding:0.15rem 0;}
+  blockquote{margin:1rem 0;padding:0.85rem 1.05rem;background:var(--raised);
+    border-left:3px solid var(--accent);border-radius:0 10px 10px 0;color:var(--ink-soft);}
+  code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:0.87em;
+    background:var(--raised);padding:0.1rem 0.35rem;border-radius:5px;}
+  hr{border:0;border-top:1px solid var(--line);margin:2rem 0;}
+  .tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px;
+    background:var(--surface);margin:0 0 1.2rem;}
+  table{border-collapse:collapse;width:100%;font-size:0.92rem;min-width:22rem;}
+  th,td{text-align:left;padding:0.55rem 0.8rem;border-bottom:1px solid var(--line);
+    vertical-align:top;}
+  th{font-size:0.72rem;letter-spacing:0.08em;text-transform:uppercase;
+    color:var(--muted);white-space:nowrap;}
+  tr:last-child td{border-bottom:none;}
+  .retour{display:inline-block;font-size:0.76rem;color:var(--muted);
+    text-decoration:none;margin:-0.3rem 0 1rem;}
+  .retour:hover{color:var(--accent);text-decoration:underline;}
+</style>
+</head>
+<body>
+<main>
+<h1 id="atlas--lot-audio--le-format-se-lit-dans-les-octets">Atlas — Lot Audio : le format se lit dans les octets</h1>
+<p><em>26 août 2026 · branche <code>claude/atlas-securite-lot3</code> · <strong>pas fusionné sur <code>main</code></strong></em></p>
+<hr>
+<h2 id="1-les-formats-finalement-reconnus">1. Les formats finalement reconnus</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th>Format</th>
+<th>Ce qui le produit</th>
+</tr></thead><tbody>
+<tr>
+<td><strong>WebM / Matroska</strong></td>
+<td>Chrome sur Android et sur PC</td>
+</tr>
+<tr>
+<td><strong>MP4 / M4A</strong></td>
+<td><strong>Safari sur iPhone</strong></td>
+</tr>
+<tr>
+<td><strong>OGG</strong></td>
+<td>Firefox</td>
+</tr>
+<tr>
+<td><strong>WAV</strong></td>
+<td>import depuis un ordinateur</td>
+</tr>
+<tr>
+<td><strong>FLAC</strong></td>
+<td>import</td>
+</tr>
+<tr>
+<td><strong>MP3</strong></td>
+<td>import — le plus courant</td>
+</tr>
+<tr>
+<td><strong>AAC brut (ADTS)</strong></td>
+<td>import</td>
+</tr>
+</tbody></table></div>
+<hr>
+<h2 id="2-comment-chacun-est-reconnu">2. Comment chacun est reconnu</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><strong>Aucune bibliothèque. Aucun parseur de conteneur.</strong> Des en-têtes lus à des positions fixes, sur quelques kilo-octets au plus. Le précédent était dans le dépôt : <code>src/lib/exif.ts</code> vérifie déjà des signatures d'images en TypeScript nu.</p>
+<div class="tablewrap"><table><thead><tr>
+<th>Format</th>
+<th>Méthode</th>
+</tr></thead><tbody>
+<tr>
+<td><strong>WebM</strong></td>
+<td>la marque EBML <code>1A 45 DF A3</code>, <strong>plus le <code>DocType</code></strong> (<code>webm</code>/<code>matroska</code>) dans les 64 premiers octets. La marque seule couvrirait toute vidéo Matroska</td>
+</tr>
+<tr>
+<td><strong>MP4</strong></td>
+<td><code>ftyp</code> <strong>à l'octet 4</strong> — les quatre premiers portent la taille de la boîte. Plus trois contrôles : taille plausible (16 à 4096), alignée sur 4, et marque majeure imprimable</td>
+</tr>
+<tr>
+<td><strong>OGG</strong></td>
+<td><code>OggS</code>, version 0, drapeau « début de flux », <strong>plus le codec</strong> (<code>OpusHead</code>, <code>vorbis</code>, <code>Speex</code>, <code>FLAC</code>) — sans lui, une vidéo Theora passerait</td>
+</tr>
+<tr>
+<td><strong>WAV</strong></td>
+<td><code>RIFF</code> + <code>WAVE</code> + le morceau <code>fmt </code></td>
+</tr>
+<tr>
+<td><strong>FLAC</strong></td>
+<td><code>fLaC</code>, type de bloc ≤ 6, et un STREAMINFO de 34 octets exactement</td>
+</tr>
+<tr>
+<td><strong>MP3</strong></td>
+<td><strong>une CHAÎNE de trames.</strong> <code>ID3</code> est reconnu et sauté (taille <em>syncsafe</em>), puis au moins <strong>trois trames consécutives</strong> dont chacune tombe là où la précédente l'annonçait, avec la même version, la même couche et la même fréquence</td>
+</tr>
+<tr>
+<td><strong>AAC</strong></td>
+<td><strong>même méthode.</strong> L'en-tête ADTS porte sa propre longueur : trois trames enchaînées, mêmes profil, fréquence et canaux</td>
+</tr>
+</tbody></table></div>
+<h3 id="pourquoi-la-chaîne-de-trames-et-pas-deux-octets">Pourquoi la chaîne de trames, et pas deux octets</h3>
+<p><code>FF Ex</code> apparaît <strong>par hasard</strong> dans n'importe quel fichier binaire. Un contrôle qui s'y arrêterait accepterait une image, une archive, du texte. Ce qui prouve, c'est qu'une trame annonce où finit la suivante — et que la suivante y soit, trois fois de suite. C'est ce que fait un décodeur pour se synchroniser, <strong>sans rien décoder</strong>.</p>
+<p><strong>Le débit a le droit de changer d'une trame à l'autre</strong> — c'est le principe du débit variable, et l'exiger constant refuserait la moitié des MP3 du monde.</p>
+<p><strong>Et MPEG-2 en couche III compte 72 échantillons par trame, pas 144.</strong> L'oublier décale la trame suivante et casse la chaîne sur un fichier parfaitement valable.</p>
+<hr>
+<h2 id="3-les-formats-refusés">3. Les formats refusés</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p>Tout le reste. Éprouvé nommément : HTML, SVG, ZIP, texte quelconque, fichier vide, fichiers de 1, 2, 3 et 7 octets, faux MP3 (une synchro plausible, aucune trame derrière), faux AAC (même piège).</p>
+<hr>
+<h2 id="4-le-comportement-si-le-format-est-inconnu">4. Le comportement si le format est inconnu</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><strong>REFUS.</strong> C'est votre correction à ce que j'avais proposé, et elle était juste : « laisser passer quand la signature est illisible » aurait gardé une moitié du défaut.</p>
+<p>Le refus arrive <strong>avant</strong> le stockage et <strong>avant</strong> l'appel au fournisseur d'IA.</p>
+<p>Le message nomme ce que le téléphone avait annoncé — <em>« le téléphone a annoncé audio/webm »</em> — parce que sans cela, un format que son appareil produit et que la reconnaissance ignore resterait introuvable.</p>
+<p><strong>Et la marche à suivre est écrite dans le code, pas seulement ici :</strong> si un format légitime venait à être refusé, <strong>on n'ouvre pas de repli sur <code>fichier.type</code>, on élargit <code>signature-audio.ts</code>.</strong></p>
+<hr>
+<h2 id="5-le-mime-et-lextension-finalement-rangés">5. Le MIME et l'extension finalement rangés</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th>Format reconnu</th>
+<th>Type retenu</th>
+<th>Extension</th>
+</tr></thead><tbody>
+<tr>
+<td>webm</td>
+<td><code>audio/webm</code></td>
+<td><code>.webm</code></td>
+</tr>
+<tr>
+<td>mp4</td>
+<td><code>audio/mp4</code></td>
+<td><code>.m4a</code></td>
+</tr>
+<tr>
+<td>ogg</td>
+<td><code>audio/ogg</code></td>
+<td><code>.ogg</code></td>
+</tr>
+<tr>
+<td>wav</td>
+<td><code>audio/wav</code></td>
+<td><code>.wav</code></td>
+</tr>
+<tr>
+<td>flac</td>
+<td><code>audio/flac</code></td>
+<td><code>.flac</code></td>
+</tr>
+<tr>
+<td>mp3</td>
+<td><code>audio/mpeg</code></td>
+<td><code>.mp3</code></td>
+</tr>
+<tr>
+<td>aac</td>
+<td><code>audio/aac</code></td>
+<td><code>.aac</code></td>
+</tr>
+</tbody></table></div>
+<p><strong>C'est le cœur du lot.</strong> Avant, <code>extensionPour(fichier.type)</code> déduisait l'extension de la chaîne du navigateur — et cette extension décide plus tard, via <code>typeDepuisCle</code>, du <code>Content-Type</code> qu'Atlas annonce. Le téléphone commandait donc, indirectement, ce qu'Atlas dirait plus tard. <strong><code>extensionPour</code> est morte</strong>, avec son repli <code>.audio</code> que <code>typeDepuisCle</code> ne connaissait pas.</p>
+<p>Deux contrôles tiennent l'accord avec le reste du dépôt : chaque type rangé figure dans la liste blanche de l'application, et chaque extension rangée est connue de la route qui sert les fichiers.</p>
+<hr>
+<h2 id="6-les-quatre-chemins-couverts">6. Les quatre chemins couverts</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th>Chemin</th>
+<th>Route / action</th>
+</tr></thead><tbody>
+<tr>
+<td>Note vocale par URL</td>
+<td><code>POST /api/notes-vocales/[chantierId]</code></td>
+</tr>
+<tr>
+<td>Complément de note vocale</td>
+<td><code>completerNoteVocaleAction</code></td>
+</tr>
+<tr>
+<td>Coordonnées dictées</td>
+<td><code>dicterCoordonneesAction</code></td>
+</tr>
+<tr>
+<td>Retouches dictées</td>
+<td><code>dicterRetouchesAction</code></td>
+</tr>
+</tbody></table></div>
+<p>Tous passent par <code>preparerAudioEntrant</code> (<code>src/server/audio-entrant.ts</code>) :</p>
+<p>``<code> taille (sans lire un octet) → lecture, une seule fois → refus si vide, avec sa phrase à lui → FORMAT lu dans les octets → type et extension choisis par le SERVEUR → stockage ou transcription </code>``</p>
+<p><strong>Trois contrôles structurels empêchent qu'un cinquième chemin refasse sa propre cuisine</strong> — la leçon de M3, où cinq chemins d'image devaient traverser une porte unique : chaque chemin emploie la porte, aucun ne lit les octets en dehors d'elle, et personne ne déduit plus une extension d'un type MIME.</p>
+<hr>
+<h2 id="7-lia-nest-jamais-appelée-avant-la-validation">7. L'IA n'est jamais appelée avant la validation</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p>Éprouvé en base, à travers le service réel : cinq fichiers hostiles, cinq refus, <strong>aucune note écrite</strong> et aucun appel de transcription. Les deux chemins qui ne stockent pas — coordonnées et retouches — refusent également avant le fournisseur : c'est une facture qui ne part plus.</p>
+<hr>
+<h2 id="8-les-tests-rouges-avant-verts-après">8. Les tests, rouges avant, verts après</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th>Suite</th>
+<th>Contrôles</th>
+<th>Sur l'ancien comportement</th>
+</tr></thead><tbody>
+<tr>
+<td><code>test-signature-audio.ts</code></td>
+<td><strong>31</strong></td>
+<td><strong>5 rouges</strong></td>
+</tr>
+<tr>
+<td><code>test-audio-entrant-db.ts</code></td>
+<td><strong>9</strong></td>
+<td><strong>8 rouges</strong></td>
+</tr>
+<tr>
+<td><code>test-upload-limits.ts</code></td>
+<td>9</td>
+<td>1 rouge — <em>et il avait tort</em></td>
+</tr>
+</tbody></table></div>
+<p><strong>Les tests ont été écrits AVANT la fonction</strong>, dans l'ordre demandé : la première exécution a échoué sur « module introuvable ».</p>
+<p><strong>La moitié qui protège du remède compte autant que l'autre :</strong> refuser tout est facile ; ce qui est difficile, c'est de refuser les hostiles sans refuser une dictée de chantier. Neuf témoins de formats réels passent.</p>
+<h3 id="la-meilleure-preuve-disponible-sur-cette-machine">La meilleure preuve disponible sur cette machine</h3>
+<p><code>test-anneau-dictee-e2e.ts</code> enregistre avec <strong>le vrai MediaRecorder de Chromium</strong>, micro simulé, et POSTe le résultat. Un WebM produit par un vrai navigateur traverse la porte. Ce n'est pas un témoin fabriqué.</p>
+<h3 id="le-contrôle-de-taille-avait-tort-et-il-a-été-corrigé">Le contrôle de taille avait tort, et il a été corrigé</h3>
+<p><code>test-upload-limits.ts</code> exigeait qu'un tampon de zéros annoncé <code>audio/webm</code> soit accepté — <strong>c'est-à-dire le défaut lui-même</strong>. Ce n'est pas une régression du produit : c'est la prémisse du contrôle qui était fausse. Il porte désormais un vrai WebM. Exactement la leçon des photos au lot 2B, un lot plus tard.</p>
+<hr>
+<h2 id="9-la-batterie">9. La batterie</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th>Étape</th>
+<th>Résultat</th>
+</tr></thead><tbody>
+<tr>
+<td><code>npx tsc --noEmit</code></td>
+<td>✅</td>
+</tr>
+<tr>
+<td><code>npm run lint</code></td>
+<td>✅ 0 erreur, 12 avertissements préexistants</td>
+</tr>
+<tr>
+<td>Construction</td>
+<td>✅</td>
+</tr>
+<tr>
+<td><code>npm run verifier:memoire</code></td>
+<td>✅</td>
+</tr>
+<tr>
+<td>Suites base — RLS comprises</td>
+<td>✅ <strong>234 / 234</strong></td>
+</tr>
+<tr>
+<td>Suites navigateur</td>
+<td>✅ <strong>110 / 110</strong></td>
+</tr>
+<tr>
+<td><code>npm run verifier:connexion</code></td>
+<td>✅</td>
+</tr>
+<tr>
+<td><code>npm audit</code></td>
+<td>4 modérées, <code>drizzle-kit → esbuild</code>, dépendance de développement</td>
+</tr>
+</tbody></table></div>
+<h3 id="revue-hostile-du-diff">Revue hostile du diff</h3>
+<ul>
+<li><strong>aucun fichier</strong> de M9, M10, M11, de la CSP, du RGPD, de <code>/catalogue</code>, des sauvegardes, de <code>session.maxAge</code> ou de <code>next-auth</code> n'a été touché ;</li>
+<li><strong>aucun chemin audio</strong> ne lit les octets hors de la porte ;</li>
+<li><strong><code>fichier.type</code> ne décide plus nulle part</strong> côté serveur — il ne sert qu'au message de refus ;</li>
+<li>les <code>|| "audio/webm"</code> qui restent sont <strong>côté navigateur</strong>, dans le magnétophone : ils composent le type que le navigateur envoie, et le serveur ne l'écoute plus.</li>
+</ul>
+<hr>
+<h2 id="10-les-limites-restantes-dites-franchement">10. Les limites restantes, dites franchement</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><strong>1. Aucun iPhone n'a été essayé.</strong> Il n'y a ni iPhone ni Safari sur cette machine. Le témoin MP4 reproduit ce que Safari écrit, relevé de la spécification — <strong>ce n'est pas une vraie dictée d'iPhone</strong>. C'est le point à vérifier sur votre espace. Si un enregistrement réel est refusé, la règle est posée : on élargit la reconnaissance, on n'ouvre pas de repli sur le MIME.</p>
+<p><strong>2. Reconnaître n'est pas garantir qu'un son se décode.</strong> Un enregistrement coupé garde son en-tête et reste reconnaissable. S'il porte du son, c'est la transcription qui le dira. Le promettre serait mentir.</p>
+<p><strong>3. Un fichier reconnu peut toujours être du remplissage.</strong> Un vrai en-tête WebM suivi de 15 Mo de zéros est accepté — c'est un vrai WebM, vide. La borne de taille et la cadence restent les seules défenses sur ce point, et elles suffisaient déjà : ce lot ferme la fausse déclaration de format, pas l'abus de volume.</p>
+<p><strong>4. MP3 et AAC restent les plus fragiles</strong>, par nature : ils n'ont pas de signature. Trois trames enchaînées rendent un faux positif très improbable, pas impossible.</p>
+<p><strong>5. Un enregistrement très court</strong> — moins de trois trames MP3, soit environ un dixième de seconde — serait refusé. Aucune dictée réelle n'est aussi courte, et un enregistrement de cette longueur ne porte de toute façon aucune parole.</p>
+<hr>
+<h2 id="ce-qui-reste-ouvert">Ce qui reste ouvert</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th>Pour qui</th>
+</tr></thead><tbody>
+<tr>
+<td><strong>Fusionner sur <code>main</code></strong></td>
+<td>vous — rien n'est fusionné</td>
+</tr>
+<tr>
+<td><strong>Essayer une vraie dictée d'iPhone</strong></td>
+<td>vous, sur votre espace</td>
+</tr>
+<tr>
+<td><strong>F7</strong> — l'écran RGPD</td>
+<td>décision produit</td>
+</tr>
+<tr>
+<td><strong>F10</strong> — le lot CSP</td>
+<td>développement, lot à soi</td>
+</tr>
+<tr>
+<td><strong><code>/catalogue</code></strong></td>
+<td>attend les rôles Salarié / Commercial</td>
+</tr>
+<tr>
+<td><strong><code>ATLAS_PROXY_SAUTS</code></strong></td>
+<td>hébergement</td>
+</tr>
+<tr>
+<td><strong>Sauvegardes</strong></td>
+<td>toujours aucune — le point le plus grave du dépôt</td>
+</tr>
+</tbody></table></div>
+</main>
+</body>
+</html>

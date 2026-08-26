@@ -15195,3 +15195,87 @@ la consigne, et l'on aurait cru le garde-fou en place. `robots.txt` a donc
 rejoint `favicon.ico` dans le `matcher`.
 
 Pas de `sitemap` : un plan de site est exactement ce qu'on ne veut pas publier.
+
+
+---
+
+## 171. Le lot Audio : un format se lit dans les octets, jamais dans l'en-tête du navigateur
+
+**Le défaut, et sa portée réelle.** `verifierTypeAudio` ne lisait que la chaîne
+envoyée par le téléphone. Un fichier quelconque annoncé `audio/webm` était donc
+accepté, rangé, et envoyé au fournisseur de transcription.
+
+**Ce n'était PAS une porte d'exécution**, et l'écrire compte : depuis M1, le type
+servi vient de l'extension posée par le serveur (`typeDepuisCle`), `nosniff` est
+appliqué partout, et la table d'extensions ne peut rendre ni HTML ni SVG. Aucun
+chemin d'exploitation n'a pu être montré. Ce qui restait ouvert était un **abus
+de ressource** — 15 Mo de n'importe quoi rangés, et une facture d'IA pour un
+fichier qui n'est pas de l'audio.
+
+**Mais le vrai trou était ailleurs que dans le constat.** `extensionPour(mimeType)`
+déduisait l'extension de rangement de cette même chaîne — et c'est l'extension
+qui décide, plus tard, du `Content-Type` qu'Atlas annonce. **Le navigateur
+commandait donc, indirectement, ce qu'Atlas dirait de ses propres fichiers.**
+
+### La règle, telle que le patron l'a posée
+
+*« Un fichier audio n'est accepté, stocké ou envoyé à un fournisseur de
+transcription que si Atlas peut identifier son format avec un niveau de
+confiance suffisant. »* Et **format inconnu → refus**, contre ce qui avait été
+proposé : laisser passer une signature illisible aurait gardé une moitié du
+défaut.
+
+**La marche à suivre en cas d'échec est écrite et ne se négocie pas :** si un
+format légitime est refusé chez lui, **on n'ouvre pas de repli sur `fichier.type`,
+on élargit `signature-audio.ts`.**
+
+### Ce qui a été écrit, et ce qui a été refusé
+
+Ni bibliothèque, ni parseur de conteneur. Lire un Matroska ou un ISO-BMFF entier
+sur une entrée hostile remplacerait un abus de ressource par une vraie surface
+d'attaque. On lit des en-têtes à positions fixes, sur quelques kilo-octets.
+
+**Deux formats n'ont PAS de signature — MP3 et AAC.** `FF Ex` apparaît par hasard
+dans n'importe quel binaire. Ce qui prouve, c'est une **chaîne de trames** : trois
+d'affilée, chacune tombant là où la précédente l'annonçait, avec les mêmes
+caractéristiques. Le débit, lui, a le droit de varier — l'exiger constant
+refuserait la moitié des MP3. Et MPEG-2 en couche III compte 72 échantillons par
+trame et non 144 : l'oublier casse la chaîne sur un fichier valable.
+
+**Trois pièges de conteneur, relevés et fermés :**
+
+| | |
+|---|---|
+| `ftyp` est à l'octet **4** | les quatre premiers portent la taille. Une vérification « en tête » refuserait TOUTES les dictées d'iPhone |
+| la marque EBML seule ne suffit pas | elle couvre toute vidéo Matroska ; le `DocType` distingue |
+| « OggS » seul ne suffit pas | une vidéo Theora est un flux Ogg ; le codec du premier paquet distingue |
+
+### La porte unique, et pourquoi elle est structurelle
+
+Les quatre chemins audio passent par `preparerAudioEntrant` :
+taille → lecture → refus si vide → format → type et extension choisis par le
+serveur → stockage ou transcription.
+
+Trois contrôles structurels tiennent l'invariant — la leçon de M3 : chaque
+chemin emploie la porte, aucun ne lit les octets en dehors, et personne ne déduit
+plus une extension d'un type MIME. Sans eux, le cinquième chemin écrit dans six
+mois refera le défaut en silence.
+
+### Ce que les contrôles ont appris en rougissant
+
+- **Un contrôle en base mesurait ZÉRO, deux fois.** Il comptait les notes sous
+  `atlas_app` sans contexte, puis sous le PROPRIÉTAIRE — or `notes_vocales`
+  porte `FORCE ROW LEVEL SECURITY`, à laquelle le propriétaire est soumis aussi.
+  Il mentait dans les deux sens : « rien n'a été rangé » aurait été rendu sur un
+  fichier hostile réellement rangé.
+- **Une assertion était fausse, pas le code** : un chantier ne porte qu'UNE note
+  vocale, la suivante remplace la précédente et l'ancienne part en file de purge.
+- **`test-upload-limits.ts` exigeait le défaut lui-même** — qu'un tampon de zéros
+  annoncé `audio/webm` soit accepté. On adapte le contrôle, on ne restaure pas
+  l'ancien comportement (`CLAUDE.md` §5 bis).
+
+### La limite qu'il faut dire
+
+**Aucun iPhone n'a été essayé** : ce poste n'en a pas. Le témoin MP4 reproduit ce
+que Safari écrit, relevé de la spécification. La vérification finale se fait sur
+son espace, avec une vraie dictée.

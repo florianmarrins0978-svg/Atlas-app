@@ -7,6 +7,36 @@ Format : le plus récent en tête.
 
 ---
 
+## 2026-08-26
+
+### L'audio se reconnaît dans ses octets, plus dans ce que le téléphone annonce
+
+Un fichier quelconque annoncé `audio/webm` était accepté, rangé et envoyé au
+fournisseur de transcription. **Ce n'était pas une porte d'exécution** — depuis
+M1 le type servi vient de l'extension posée par le serveur, et `nosniff` est
+partout : aucun chemin d'exploitation n'a pu être montré. C'était un **abus de
+ressource**, et le dire évite d'apprendre à ignorer la prochaine alerte.
+
+**Le vrai trou était ailleurs que dans le constat :** l'extension de rangement
+sortait elle aussi de cette chaîne, et c'est elle qui décide plus tard du type
+qu'Atlas annonce. Le navigateur commandait donc, indirectement, ce qu'Atlas
+dirait de ses propres fichiers.
+
+**Format inconnu, c'est un refus** — décision du patron contre ce qui avait été
+proposé. Ni bibliothèque, ni parseur de conteneur : lire un Matroska entier sur
+une entrée hostile remplacerait un abus par une vraie surface d'attaque. Pour
+MP3 et AAC, qui n'ont pas de signature, c'est une **chaîne de trames** qui
+tranche — deux octets `FF Ex` apparaissent par hasard dans n'importe quel
+binaire.
+
+**Éprouvé avec le vrai enregistreur de Chromium**, pas seulement avec des
+témoins fabriqués. **Aucun iPhone n'a pu être essayé ici**, et c'est écrit tel
+quel : à vérifier sur son espace.
+
+Détail : `ARCHITECTURE.md` §171 · rapport : `docs/lot-audio-rapport.md`.
+
+---
+
 ## 2026-08-25
 
 ### Audit lot 3 : sept constats F fermés, quatre refusés — et un correctif corrigé avant livraison
