@@ -20,6 +20,33 @@ export default function FormulaireReponse({
   const [precision, setPrecision] = useState<string>("");
 
   const dateEffective = choixDate === "autre" ? dateAutre : choixDate;
+
+  /**
+   * Retoucher un choix déjà coché le DÉFAIT — sa demande du 26 août 2026 :
+   * *« si par erreur j'ai sélectionné un des 3 champs je ne peux plus le
+   * désélectionner »*.
+   *
+   * **Un bouton radio ne se défait pas, par construction** : le navigateur ne
+   * connaît que « passer de l'un à l'autre ». Le client qui touche la mauvaise
+   * ligne restait donc engagé sur une date qu'il n'a pas choisie — et c'est SA
+   * date de chantier qui en dépend.
+   *
+   * **Pourquoi `onClick` et pas `onChange`** : sur une case déjà cochée, le
+   * navigateur ne signale AUCUN changement, donc `onChange` ne se déclenche
+   * jamais. `onClick`, lui, part à chaque appui.
+   *
+   * **Et pourquoi la comparaison tient** : React ne repeint pas entre les deux
+   * gestionnaires d'un même événement. `choixDate` porte donc encore la valeur
+   * d'AVANT l'appui — sur une case neuve elle diffère et l'on ne défait rien,
+   * sur la case déjà cochée elle est égale et l'on vide. Les deux cas passent
+   * par la même ligne, sans drapeau à tenir.
+   *
+   * Le clavier continue de passer par `onChange` : les flèches changent de
+   * ligne sans jamais rien défaire, ce qui est le comportement attendu.
+   */
+  const devalider = (valeur: string) => {
+    if (choixDate === valeur) setChoixDate("");
+  };
   const montrerRetractation = dateEffective !== "" && dansDelaiRetractation(dateEffective, aujourdHui);
 
   if (etat && "succes" in etat) {
@@ -47,6 +74,7 @@ export default function FormulaireReponse({
                 value={d}
                 checked={choixDate === d}
                 onChange={(e) => setChoixDate(e.target.value)}
+                onClick={() => devalider(d)}
                 className="h-5 w-5"
               />
               <span>{jourLisible(d)}</span>
@@ -70,6 +98,7 @@ export default function FormulaireReponse({
                 name="choixDate"
                 value="autre"
                 checked={choixDate === "autre"}
+                onClick={() => devalider("autre")}
                 onChange={(e) => setChoixDate(e.target.value)}
                 className="h-5 w-5"
               />

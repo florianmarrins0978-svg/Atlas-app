@@ -9,6 +9,24 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
+## ⏳ Le même piège de bouton radio dort sur le choix des tarifs ambigus
+
+`src/app/chantiers/[id]/prix/PropositionPrixSection.tsx` — quand deux tarifs
+peuvent convenir, le patron en coche un et **ne peut plus le décocher**, comme
+son client ne pouvait plus décocher sa date (`ARCHITECTURE.md` §189).
+
+Il ne l'a pas signalé, et l'enjeu y est moindre : il peut toucher l'autre tarif,
+alors que son client n'avait aucune sortie. Mais c'est le même `type="radio"` et
+le même appui sans retour.
+
+**Ce que ça coûte à faire :** deux lignes, exactement celles du formulaire du
+client — un `onClick` qui vide l'état quand la valeur touchée est déjà celle
+retenue. **Ce qu'il faut vérifier avant :** que « aucun tarif retenu » soit un
+état tenable pour le bouton qui applique le prix, sinon on remplace un blocage
+par un autre.
+
+---
+
 ## ✅ ~~Le format des numéros de devis et de factures~~ — fait le 26 août 2026
 
 ~~Sa demande du 26 août : « dans la catégorie facture il faut rajouter le format

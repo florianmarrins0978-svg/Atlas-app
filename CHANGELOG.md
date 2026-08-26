@@ -9,6 +9,27 @@ Format : le plus récent en tête.
 
 ## 2026-08-26
 
+### Un choix fait par erreur se défait
+
+*« Si par erreur j'ai sélectionné un des 3 champs je ne peux plus le
+désélectionner ! Faut corriger ça, je dois pouvoir désélectionner. »*
+
+Sur la page que reçoit son client, un second appui sur la date déjà cochée la
+**défait** maintenant, et rien ne se coche à la place. Cela vaut aussi pour
+« une autre date », dont le calendrier se referme.
+
+Ce n'était pas le produit : un bouton radio ne se décoche pas, par
+construction — le navigateur ne connaît que « passer de l'un à l'autre ». Le
+client qui touchait la mauvaise ligne restait engagé sur une date qu'il n'avait
+pas choisie, et c'est le jour où l'artisan se déplace.
+
+Le contrôle qui le garde (`test-devis-client-e2e.ts`) a été vu rouge contre la
+version d'avant. Il tient surtout ce qui empêche la correction d'aller trop
+loin : **un appui sur une autre ligne choisit toujours** — défaire à chaque
+appui rendrait le formulaire inutilisable —, et la case de rétractation s'en va
+avec la date qui l'a fait naître. `ARCHITECTURE.md` §189.
+
+
 ### Le numéro de ses documents se choisit — et le millésime n'est plus écrit en dur
 
 *« Dans la catégorie facture il faut rajouter le format de numéro, c'est

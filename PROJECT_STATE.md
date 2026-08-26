@@ -13,6 +13,22 @@ ligne « fait » qui ne l'est pas coûte plus cher qu'une ligne absente.
 
 ---
 
+## Un choix fait par erreur se défait (26 août 2026)
+
+*Sa demande : « si par erreur j'ai sélectionné un des 3 champs je ne peux plus
+le désélectionner ! Je dois pouvoir désélectionner ».*
+
+Sur la page que reçoit son client, un second appui sur la date déjà cochée la
+**défait**, et rien ne se coche à la place. Vaut aussi pour « une autre date »,
+dont le calendrier se referme. Le détail — et pourquoi `onClick` plutôt
+qu'`onChange` — est dans `ARCHITECTURE.md` §189.
+
+**Le même piège dort sur le choix entre deux tarifs ambigus**
+(`PropositionPrixSection.tsx`) : il ne l'a pas signalé, c'est noté dans
+`TODO.md`.
+
+---
+
 ## Le numéro de ses documents se choisit (26 août 2026)
 
 *Sa demande : « dans la catégorie facture il faut rajouter le format de numéro,
