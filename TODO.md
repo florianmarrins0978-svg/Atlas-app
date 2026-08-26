@@ -516,6 +516,32 @@ a.
 
 ---
 
+## Les suites qui lisent l'heure doivent lire CELLE DU SERVEUR (26 août 2026)
+
+**Deux suites ont rougi le même jour pour la même famille de raison**, et
+c'était la nuit :
+
+| Suite | Ce qu'elle lisait | Ce que le serveur écrit |
+|---|---|---|
+| `test-envoi-client-e2e` | le mois affiché, sans le feuilleter | le mois en cours |
+| `test-liste-clients` | `toISOString()`, donc **UTC** | `jourIso()`, donc **heure du patron** |
+
+**La seconde ne mord que deux heures par nuit** — entre 22 h UTC et minuit, en
+été. La facture est alors émise « le 27 » quand la suite croit être « le 26 », et
+le règlement paraît antérieur à sa facture. **Le refus du produit a raison ; la
+suite avait tort.**
+
+**La règle qui en sort, et qui vaut pour toutes les suites à venir :** une suite
+ne calcule JAMAIS « aujourd'hui » avec `toISOString()`. Elle appelle `jourIso()`,
+comme le serveur. Deux façons de dire « aujourd'hui » finissent toujours par
+diverger, et celle-ci ne se voit qu'à deux heures du matin.
+
+**Ce qui reste à faire :** balayer les autres suites à la recherche du même
+mélange. Ce lot n'a corrigé que celle qui a rougi — corriger à l'aveugle ce qui
+n'a pas été mesuré serait aussi une faute.
+
+---
+
 ## Trois suites navigateur rougissent sous la batterie, jamais seules (26 août 2026)
 
 **Constaté sur deux tours de batterie, avec des suites DIFFÉRENTES à chaque
