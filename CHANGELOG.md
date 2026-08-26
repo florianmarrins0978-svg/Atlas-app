@@ -9,6 +9,91 @@ Format : le plus récent en tête.
 
 ## 2026-08-26
 
+### « Mon compte » : quarante mots de moins
+
+*« Supprime la phrase sous enregistrer »*, *« supprime ce compte sous compte
+démo »*, et sur les deux lignes grises : *« elles sont beaucoup beaucoup trop
+longues pour rien »*.
+
+Trois sont parties — « Ce compte », la phrase sous le nom, et les quatre lignes
+qui expliquaient l'absence de champ téléphone (elles vivaient sous le bouton,
+donc à moitié cachées).
+
+**Une a été gardée, raccourcie de 40 mots à 7 :** celle de l'e-mail. Un champ
+qui ne s'ouvre pas quand on le touche se lit comme une panne — sans elle, il
+appuierait et chercherait ce qu'il a mal fait. Le pourquoi, lui, a quitté
+l'écran pour `ARCHITECTURE.md` §190.
+
+La décision du téléphone n'a pas bougé : aucun champ ici, et le contrôle le
+refuse toujours. Ce que ce lot change, c'est qu'il refuse désormais aussi le
+RETOUR des phrases retirées, au lieu de les exiger.
+
+### Le port du banc s'ouvre quand le serveur répond, plus avant lui
+
+*« Problème pas de port connecté »*, capture de son onglet PORTS à l'appui. Sa
+fiche portait le mot exact : *« error updating port 3000 to public: error getting
+tunnel port: […] 404 Not Found »*.
+
+**Le relais ne connaissait pas encore le port.** `demarrer.sh` en demandait
+l'ouverture juste après avoir posé le veilleur — dont la construction dure des
+minutes. Au moment de la demande, **rien n'écoutait sur 3000** : GitHub n'avait
+aucun port à rendre public, et répondait 404. Le serveur démarrait ensuite, le
+port se déclarait tout seul… **et restait privé**, parce que plus rien ne
+redemandait.
+
+**Ce que ça évite :** GitHub qui sert sa page de connexion à la place d'Atlas.
+Depuis son téléphone, non connecté, il n'y a alors rien à voir — c'est le
+symptôme du 10 août, sous une autre cause.
+
+**Une tentative unique au démarrage avait lieu au seul moment où elle ne pouvait
+pas aboutir.** Le veilleur redemande donc là où il sait que le serveur répond,
+donc que le port existe ; une fois obtenu, il n'y revient plus — `gh` interroge
+le réseau, et l'appeler tous les quarts de minute userait un quota sans rien
+apprendre. La fiche est mise à jour du même geste, sans quoi elle annoncerait
+encore le refus et l'enverrait réparer ce qui marche.
+
+Le contrôle a été vu rouge en retirant l'appel.
+
+### Une règle de plus dans `CLAUDE.md` : ne rien jouer à la main pendant la batterie
+
+**Cinq suites navigateur rouges d'un coup, et l'étape « Connexion derrière un
+proxy » avec elles. Aucune n'avait de défaut.**
+
+`nettoyerBase()` vide la base — c'est ce que fait toute suite base. Jouée en
+parallèle d'une batterie, elle fait disparaître le jeu de démonstration sous les
+pieds des suites navigateur, qui accusent alors le produit : « Timeout » sur des
+adresses de chantiers évaporés.
+
+**Le message juste existait, et il arrivait trop tard** : « le compte de
+démonstration est absent : la base n'est pas amorcée » n'est écrit qu'à la
+DERNIÈRE étape. Les quatre suites tombées avant lui ne nommaient que le
+symptôme.
+
+**Vérifié plutôt que supposé**, et c'est ce qui permet de l'écrire : les cinq
+suites et la connexion derrière proxy sont vertes rejouées sur une base fraîche.
+
+La batterie est une machine à un seul occupant : on la lance, et on attend.
+
+### Les filets à côté des intertitres partent, les séparateurs restent
+
+*« Ça aussi tu peux retirer »*, capture de l'écran Équipe à l'appui — le filet
+qui partait du mot et filait jusqu'au bord : « QUI A ACCÈS ————— ». Et dans le
+même souffle : *« ceux qui séparent les blocs, laisse-les »*.
+
+Les deux se ressemblent et ne disent pas la même chose. Un séparateur porte une
+information — deux choses sont distinctes. Le filet d'intertitre n'ornait qu'un
+mot. Le contrôle ne traque donc que la seconde forme, reconnue à ce qui la
+caractérise : un filet d'un pixel qui prend la place restante (`flex-1`). Vu
+rouge contre un filet remis, et vert avec les séparateurs en place.
+
+**Et une fausse alerte, corrigée avant de coder quoi que ce soit.** Je lui avais
+signalé que la barre du bas recouvrait un paragraphe de cet écran : c'était un
+artefact de ma capture. Une capture *pleine page* dessine les éléments fixés à
+leur place d'écran, donc au milieu d'une longue page. Mesuré pour de bon —
+déroulé jusqu'en bas, `bottom` du texte contre `top` de la barre — **rien n'est
+recouvert**. Le piège est écrit dans `HANDOVER.md` : c'est la deuxième fois
+aujourd'hui qu'il trompe.
+
 ### Un choix fait par erreur se défait
 
 *« Si par erreur j'ai sélectionné un des 3 champs je ne peux plus le
@@ -27,7 +112,7 @@ Le contrôle qui le garde (`test-devis-client-e2e.ts`) a été vu rouge contre l
 version d'avant. Il tient surtout ce qui empêche la correction d'aller trop
 loin : **un appui sur une autre ligne choisit toujours** — défaire à chaque
 appui rendrait le formulaire inutilisable —, et la case de rétractation s'en va
-avec la date qui l'a fait naître. `ARCHITECTURE.md` §189.
+avec la date qui l'a fait naître. `ARCHITECTURE.md` §191.
 
 
 ### Le numéro de ses documents se choisit — et le millésime n'est plus écrit en dur
@@ -68,6 +153,28 @@ sur un document déjà parti chez un client.
 `test-format-numero-e2e.ts` (le fil entier : il choisit, et le devis suivant
 porte le format choisi).
 
+### L'assistant redevient le seul outil du patron
+
+*« Les salariés et commerciaux ne doivent pas avoir accès à l'assistant IA. »*
+
+Ouvert aux commerciaux plus tôt dans la journée, sur sa réponse d'alors. Il a
+refermé le soir même, et **son dernier mot revient au premier** — celui du
+25 août : *« seulement le principal »*.
+
+**La règle a cessé d'en suivre une autre**, et c'est le vrai changement :
+`peutUtiliserLAssistant` appelait `peutVoirLesMontants`, ce qui était juste tant
+que les deux disaient la même chose. Elles disent maintenant deux choses
+différentes. Garder l'appel aurait été pire qu'une erreur — le jour où quelqu'un
+élargirait la règle des montants, l'assistant se serait rouvert **en silence**.
+
+**Et la différence n'est pas le prix, c'est la portée.** Un commercial voit les
+montants écran par écran, c'est son métier. L'assistant, lui, parcourt
+l'entreprise entière et répond en une phrase.
+
+Les trois états de la décision sont écrits dans `ARCHITECTURE.md` §181, avec
+leurs dates : une décision dont on ne garde que le dernier état se repose trois
+mois plus tard.
+
 ### Face ID marche enfin derrière son tunnel — et le bouton du mot de passe remonte
 
 *« Le Face ID ne fonctionne pas »*, capture à l'appui — et *« le bouton changer
@@ -94,6 +201,50 @@ au moment exact où il entre. `ARCHITECTURE.md` §186 et §187.
 derrière SON tunnel. Cet environnement n'a ni visage ni tunnel — la règle du
 domaine et le parcours entier sont éprouvés, l'ouverture réelle se prouve chez
 lui.
+
+### L'assistant devient un agent : dix gestes de plus, et un périmètre fermé
+
+*« Je veux que ce soit un vrai agent IA avec toutes les capacités possibles et
+imaginables sur l'appli »*, et *« seulement pour l'appli : si on lui demande
+est-ce que le CGR de Mantes est ouvert, il ne doit pas y répondre »*.
+
+**Il sait désormais préparer** : créer un chantier, corriger une fiche client,
+changer l'adresse d'un chantier, y laisser une note, le poser au planning, l'y
+déplacer, l'en retirer, créer et corriger un tarif, préparer une facture. Et il
+sait enfin CHERCHER une cible — chantier, client, planning —, là où il ne
+connaissait que le chantier ouvert.
+
+**Tout reste une proposition qu'il coche.** Sa réponse du 26 août à la seule
+question posée : *« il ne doit pas pouvoir le faire, très important que ça reste
+le doigt du patron »*. Rien en direct, pas même un numéro de téléphone. Et trois
+gestes ne sont jamais les siens : envoyer, valider, émettre.
+
+**Le hors-sujet est refusé AVANT le modèle**, pas seulement dans sa consigne :
+une consigne se contourne et ne se vérifie pas. Le filtre ne refuse que si la
+question porte une marque franche du dehors ET aucun mot d'Atlas — sans quoi il
+ferait taire l'assistant devant « j'ai un chantier au cinéma de Mantes ». Un
+garde-fou qui parle à tort s'apprend à être ignoré.
+
+**Et un défaut trouvé à l'image, pas par un test :** depuis l'accueil, « crée un
+chantier pour Madame Lucie » répondait « Aucun chantier dans le contexte
+courant » — alors que créer un chantier n'en demande aucun. Le bouton
+« Appliquer » restait inerte par la même occasion.
+
+**Deux sessions travaillaient sur l'agent le même jour.** À la fusion : leur
+recherche de chantier a été gardée (elle emploie la règle de l'écran), et leur
+outil qui CRÉAIT une fiche tout seul est devenu une proposition — les deux
+règles qu'il portait, reprises telles quelles.
+
+Détail : `ARCHITECTURE.md` §189.
+
+### Le filet d'intertitre était revenu sur l'écran des accès
+
+*« Ça aussi tu peux retirer »* (25 août) : le trait qui part du mot et file
+jusqu'au bord. Il est réapparu le lendemain sur « Son rôle », un écran neuf.
+`test-accueil-en-tete.ts` l'a repris tout seul — c'est exactement pourquoi ce
+contrôle existe. Les séparateurs de blocs, eux, restent : *« ceux qui séparent
+les blocs, laisse-les »*.
+
 ### L'en-tête inversé : le titre d'abord, le surtitre doré en dessous
 
 *« Sur plusieurs catégories le titre était en dessous du sous-titre en doré,
@@ -109,6 +260,33 @@ en serif gris) reste au-dessus, elle, comme sa maquette du 11 août.
 Regardé à l'image (Paysage et un chantier), et le garde-fou d'alignement du
 bouton d'assistant (`test-assistant-en-tete-e2e`) reste vert : la pastille tient
 toujours sur la ligne du titre.
+
+### « Donner un accès » prend un écran à lui seul — sa réponse « B »
+
+*« B, tu peux coder »*, le 26 août 2026, sur `appli/donner-un-acces.html`.
+
+| Sa remarque | Ce qui a changé |
+|---|---|
+| le mot de passe s'écrivait une fois, à l'aveugle | **deux saisies, un œil sur chacune** — et la seconde est vérifiée **au serveur**, pas seulement à l'écran |
+| *« la case est déjà noire comme la catégorie salarié »* | le rôle choisi est **teinté avec un coche** ; le seul aplat plein de l'écran est le bouton qui crée le compte |
+| *« la démarcation […] n'est pas bien séparée »* | le formulaire **quitte la liste** : `/reglages/equipe/nouveau`, un écran d'où sa propre ligne a disparu |
+
+**La règle du mot de passe n'a pas été réécrite** : `verifierNouveauMotDePasse`
+la porte depuis le 14 août pour « Mon compte », et les deux écrans la partagent.
+La redire ici en aurait fait la seconde — et le jour où la barre passerait de
+douze à quatorze caractères, un des deux l'aurait ignorée.
+
+**Les pastilles de rôle sont dessinées UNE fois** (`ChoixRole.tsx`) et servent
+aux deux endroits : l'écran de création, et la fiche d'une personne déjà là.
+Deux rédactions auraient ramené le défaut par la moitié de l'écran qu'on aurait
+oubliée — c'est d'ailleurs ce que le contrôle a vérifié.
+
+**`test-nouveau-compte-e2e.ts` MESURE sa remarque** plutôt que de lire un
+libellé : il compare le fond de la pastille cochée à celui du bouton et exige
+qu'ils diffèrent. **Vu rouge** en remettant l'aplat plein — et il rougit sur les
+deux écrans à la fois.
+
+---
 
 ### Donner un accès : une planche, avant de retoucher l'écran
 
@@ -133,6 +311,24 @@ l'écran redevient celui qui crée le compte.
 périmètre affiché ne suivait pas le rôle coché, si bien qu'on lisait « le
 planning et rien d'autre » sous « Commercial ». Une maquette qui ment sur ce que
 fait un rôle est pire qu'une maquette absente.
+
+### La liste, dans Paysage — deux emplacements à choisir
+
+Sa proposition, une fois la planche des deux fiches comprise : *« est-ce qu'on
+peut la déplacer dans la fiche de chantier, dans la catégorie Paysage, sous une
+rubrique type "création des rubriques de ma fiche de chantier" ? Et comme ça on
+ne la voit plus dans la catégorie Réglages. »*
+
+Il a raison sur le fond : l'outil est mieux là où il sert, et l'écran de Paysage
+sait **déjà** que seul le patron peut y toucher (`estProprietaire`) — la réserve
+ne se perd donc pas au passage. Restent deux façons de le poser, et elles ne se
+valent pas : **sur l'écran** (tout se voit, mais les rapports envoyés passent
+au-dessus de vingt lignes qu'il touche deux fois par an) ou **derrière une
+porte** (l'écran reste court, un appui de plus). Chacune porte son défaut écrit
+sous elle.
+
+`appli/ma-fiche-rangee.html`. Rien n'est codé dans `src/` (§3 bis) : il tranche
+d'abord.
 
 ### Les deux fiches, côte à côte — une maquette pour trancher
 
@@ -355,10 +551,11 @@ de tous les clients : ouvert à un salarié, il rendrait en une phrase ce que sa
 feuille de chantier tait. La règle vit à un seul endroit
 (`peutUtiliserLAssistant`, à côté des autres).
 
-**Livrée au patron seul, puis ouverte aux commerciaux le 26 sur sa réponse** —
-*« oui tu peux l'ouvrir aux commerciaux »*. La question lui a été posée parce
-que l'assistant sait désormais lire le devis de n'importe quel client ; il a
-jugé qu'un commercial voit déjà ces prix écran par écran.
+**Ouverte aux commerciaux le 26 dans la journée, REFERMÉE le soir même** —
+*« les salariés et commerciaux ne doivent pas avoir accès à l'assistant IA »*.
+Son dernier mot revient au premier, celui du 25 août. Les trois états sont
+écrits dans `ARCHITECTURE.md` §181 : une décision dont on ne garde que le
+dernier état se repose trois mois plus tard.
 
 Détail : `ARCHITECTURE.md` §181.
 
@@ -671,11 +868,28 @@ Le contrôle a été vu rouge en le remettant en A. A et B ne diffèrent que pen
 le DÉFILEMENT — un contrôle qui n'aurait pas descendu serait resté vert sur la
 proposition qu'il a écartée.
 
-### La molette du temps passé se dédouble : heures d'un côté, minutes de l'autre
+### La molette du temps passé : sa demande décrivait ce qui existait déjà
 
 *« La molette, mais avec d'un côté les heures qu'on peut bouger et de l'autre les
-minutes qu'on peut bouger séparément. »* Dessiné le jour même, proposition D de
-`appli/choisir-l-heure.html` — **rien n'est codé**.
+minutes qu'on peut bouger séparément. »* Dessiné le jour même — puis, la planche
+livrée : *« la molette a déjà été codée, vérifie »*. **Il avait raison.**
+
+`MoletteDuree` (`src/app/paysage/fiche/[id]/FicheChantierClient.tsx`) pose depuis
+le 16 août **deux listes natives : les heures à gauche, les minutes à droite**,
+chacune au doigt, au pas de cinq minutes. Sa demande décrivait exactement cela.
+
+**La faute est du même genre que celle de la planche 56** — dessiner un écran qui
+existe déjà —, et l'inverse de celle du 20 août, où l'on avait déclaré impossible
+un travail à moitié fait. `CLAUDE.md` §5 ter le dit dans les deux sens :
+*chercher avant d'affirmer*. Trente secondes de `grep -rn molette src/`.
+
+**Et il a tranché dans la foulée : « je garde celle qui est présente. »** Les
+molettes natives restent, rien n'est à coder. La question ne portait plus que sur
+l'apparence — le geste était identique.
+
+La planche le dit maintenant en toutes lettres, et un contrôle l'exige : une
+planche qui annonce codé ce qui ne l'est pas, ou l'inverse, lui coûte un
+aller-retour, et c'est ce qui venait d'arriver.
 
 **Pourquoi il a raison.** D'un seul tenant, la molette compte cinquante-trois
 crans de 0 h 00 à 4 h 00 : aller de 0 h 05 à 3 h 30 demande quarante et un crans,

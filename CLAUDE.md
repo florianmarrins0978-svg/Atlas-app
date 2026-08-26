@@ -901,6 +901,21 @@ Elle enchaîne, dans cet ordre — les contrôles rapides d'abord :
 Elle ne s'arrête pas à la première erreur : savoir que trois choses cassent, et
 lesquelles, vaut mieux que de les découvrir une par une.
 
+**NE RIEN JOUER À LA MAIN PENDANT QU'ELLE TOURNE — surtout pas une suite
+base.** Payé le 26 août 2026. Pendant une batterie, cinq suites navigateur ont
+rougi d'un coup et l'étape « Connexion derrière un proxy » avec elles. Aucune
+n'avait de défaut : `nettoyerBase()` **vide la base** (`TRUNCATE … CASCADE`), et
+c'est ce que fait toute suite base jouée en parallèle. Le jeu de démonstration
+disparaît sous les pieds des suites navigateur, qui accusent alors le produit.
+
+Le message était pourtant clair — « le compte de démonstration est absent : la
+base n'est pas amorcée » —, mais il n'arrive qu'à la DERNIÈRE étape : les quatre
+suites tombées avant lui, elles, ne disaient que « Timeout » sur des adresses de
+chantiers évaporés. **Une demi-heure à soupçonner du code juste.**
+
+La batterie est une machine à un seul occupant : on la lance, et on attend. Pour
+diagnostiquer en parallèle, il faut une AUTRE base — pas la sienne.
+
 **Ne jamais la faire passer par `tail`.** Elle écrit son verdict à la fin, mais
 le nom de la suite tombée, lui, est écrit au milieu — parmi les cinquante-huit.
 Tronquée à ses dernières lignes, elle annonce « 57/58 » sans dire laquelle, et

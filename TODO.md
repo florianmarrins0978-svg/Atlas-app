@@ -13,7 +13,7 @@ langage, et rien n'y entre sans son accord.
 
 `src/app/chantiers/[id]/prix/PropositionPrixSection.tsx` — quand deux tarifs
 peuvent convenir, le patron en coche un et **ne peut plus le décocher**, comme
-son client ne pouvait plus décocher sa date (`ARCHITECTURE.md` §189).
+son client ne pouvait plus décocher sa date (`ARCHITECTURE.md` §191).
 
 Il ne l'a pas signalé, et l'enjeu y est moindre : il peut toucher l'autre tarif,
 alors que son client n'avait aucune sortie. Mais c'est le même `type="radio"` et
@@ -39,6 +39,24 @@ repart de 1 ; un artisan qui migre depuis un autre logiciel voudra continuer à
 0148. Il ne l'a pas demandé, et rien ne presse — mais le jour où il le
 demandera, c'est une colonne de départ sur `entreprise_compteurs`, pas un
 nouveau format.
+
+## L'agent : ce qu'il ne sait pas encore faire
+
+**FAIT le 26 août 2026** pour l'essentiel (`ARCHITECTURE.md` §188). Ce qui reste
+ouvert, et qu'il faudra sans doute lui demander :
+
+- **Des gestes non couverts** : composer la fiche d'entretien, régler les
+  documents (validité, acompte, mentions), gérer les absences d'équipe, lancer
+  un plan d'arrosage, créer un client SANS chantier, supprimer un chantier ou un
+  tarif. Chacun est une entrée de plus dans `TypeActionProposee` et un `case`
+  dans `appliquerPropositionsAction` — le patron est posé.
+- **Le filtre de périmètre attrape le cas franc, pas la totalité.** Une question
+  du dehors sans marque connue passe au modèle, qui a la consigne. S'il signale
+  une réponse hors-sujet, c'est une marque à ajouter dans `MARQUES_DU_DEHORS` —
+  **jamais** un mot ambigu, et jamais au prix d'un faux positif.
+- **La formulation d'un vrai modèle n'a pas été vue ici** (aucune clé) : la
+  chaîne entière est éprouvée par le fournisseur `dev`. À regarder sur son
+  espace, en lui demandant trois ou quatre gestes.
 
 ---
 
@@ -86,7 +104,12 @@ réponse du serveur, un attribut qui change — jamais un instant.
 
 ---
 
-## ⏳ « Donner un accès » : sa réponse attendue, A ou B
+## ~~« Donner un accès » : sa réponse attendue, A ou B~~ — **RÉPONDU ET CODÉ le 26 août 2026**
+
+**Sa réponse : « B, tu peux coder ».** L'écran vit à `/reglages/equipe/nouveau`,
+la liste ne porte plus de formulaire, le mot de passe s'écrit deux fois avec un
+œil sur chacune, et le rôle choisi est teinté au lieu d'être un aplat plein.
+Détail dans `CHANGELOG.md`. Ce qui suit est gardé pour le chemin.
 
 Planche : **https://florianmarrins0978-svg.github.io/Atlas-app/donner-un-acces.html**
 
@@ -869,6 +892,12 @@ ce que vous avez dit" au lieu d'annoncer qu'il rédige »*. Tombée en batterie
 touchait pas — il ne portait que l'en-tête de l'accueil. Ici encore, l'assertion
 arrive avant que le serveur chargé n'ait rendu sa réponse : l'écran en est resté
 au message d'échec de la dictée précédente. **Quatre suites, un seul défaut.**
+
+**`test-lecons-prix-e2e.ts` a rejoint la liste**, et elle est la première à
+tomber DEUX FOIS — le 25 août, sur deux batteries séparées, chaque fois verte
+seule dans la foulée, et sur des lots qui ne touchaient rien de son sujet. Elle
+tombe sur une attente de réponse dépassée : même signature que les quatre
+autres. **Cinq suites, un seul défaut.**
 
 **MESURE DÉCISIVE DU 25 AOÛT, à garder :** l'étape navigateur a été jouée sur
 `main` NU — arbre séparé, aucun commit de session — et elle y rend **107/110**,
@@ -3937,9 +3966,28 @@ faire.
 | Sa réponse du 25 août | Ce que ça ferme |
 |---|---|
 | **« Planche une, la A »** | **une seule liste**, tenue dans les Réglages, pré-remplie à chaque envoi. Rien n'est rangé par client |
-| **« Planche 2, la molette, mais avec d'un côté les heures qu'on peut bouger et de l'autre les minutes qu'on peut bouger séparément »** | la molette Atlas **en deux colonnes** — proposition D, dessinée le jour même |
+| **« Planche 2, la molette, mais avec d'un côté les heures qu'on peut bouger et de l'autre les minutes qu'on peut bouger séparément »** | **rien à coder : c'était DÉJÀ le cas** — voir ci-dessous |
 
-**Ce que la D change, et pourquoi il a raison.** D'un seul tenant, la molette
+**SA DEMANDE DÉCRIVAIT CE QUI EXISTAIT DÉJÀ, et c'est lui qui l'a vu :** *« la
+molette a déjà été codée, vérifie »*. Vérifié — `MoletteDuree`
+(`src/app/paysage/fiche/[id]/FicheChantierClient.tsx`) pose **deux listes
+natives, les heures à gauche, les minutes à droite**, chacune au doigt, au pas de
+cinq minutes. C'est la proposition A, codée le 16 août.
+
+**La faute est de mon côté, et elle se répète :** une planche a été dessinée sans
+chercher d'abord ce que le dépôt faisait déjà. C'est la même que la planche 56
+— décrire un écran qui existe — et l'inverse du 20 août, où l'on avait déclaré
+impossible un travail à moitié fait (`CLAUDE.md` §5 ter : *chercher avant
+d'affirmer, dans les deux sens*). Trente secondes de `grep -rn molette src/`
+l'auraient évité.
+
+**TRANCHÉ le 25 août 2026 : « je garde celle qui est présente. »** Les molettes
+natives du téléphone restent, et **rien n'est à coder**. La question ne portait
+plus que sur l'apparence — le geste était identique dans les deux cas.
+
+Le sujet est clos : **ne pas le rouvrir** sans qu'il le redemande.
+
+**Ce que la D aurait changé — gardé pour mémoire, elle n'a pas été retenue.** D'un seul tenant, la molette
 compte cinquante-trois crans de 0 h 00 à 4 h 00 : aller de 0 h 05 à 3 h 30
 demande quarante et un crans, donc plusieurs élans du pouce. Séparées, la même
 valeur se pose en deux gestes courts. Et c'est le geste de la molette de son
