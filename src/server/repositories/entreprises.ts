@@ -7,6 +7,7 @@ import { normaliserConditions, type ConditionsLues } from "@/lib/conditions-docu
 import { refusDuMessage, MESSAGE_PAR_DEFAUT } from "@/lib/message-client";
 import { estLAllureParDefaut, normaliserAllure, type Allure } from "@/lib/allure-documents";
 import { FORMATS_NUMERO } from "@/lib/numero-documents";
+import { MAX_EQUIPES, MAX_SALARIES } from "@/lib/equipes";
 import { lireObjet } from "../storage";
 import type { LogoDocument } from "../pdf/document-commun";
 import { logger } from "../logger";
@@ -76,6 +77,7 @@ export async function mettreAJourEntreprise(
   data: {
     nom?: string;
     nombreEquipes?: number;
+    nombreSalaries?: number;
     periodiciteTva?: "mensuelle" | "trimestrielle";
     adresse?: string | null;
     siret?: string | null;
@@ -203,7 +205,14 @@ export async function mettreAJourEntreprise(
     // la base le refuserait (contrainte `entreprises_regime_tva_ck`).
     if (data.regimeTva !== undefined) valeurs.regimeTva = data.regimeTva;
     if (data.nombreEquipes !== undefined) {
-      valeurs.nombreEquipes = Math.min(20, Math.max(1, Math.trunc(data.nombreEquipes)));
+      valeurs.nombreEquipes = Math.min(MAX_EQUIPES, Math.max(1, Math.trunc(data.nombreEquipes)));
+    }
+    // **Le plancher est ZÉRO ici, et un pour les équipes** : un artisan seul n'a
+    // aucun salarié, alors qu'il mène toujours au moins un chantier à la fois.
+    // Aligner les deux bornes lui ferait apparaître une case « Salarié 1 » à
+    // cocher sur chaque demi-journée, pour se nommer lui-même.
+    if (data.nombreSalaries !== undefined) {
+      valeurs.nombreSalaries = Math.min(MAX_SALARIES, Math.max(0, Math.trunc(data.nombreSalaries)));
     }
     // **Une valeur inattendue est ignorée, jamais écrite.** La base porte déjà
     // un `CHECK`, mais il lèverait une exception — et le message d'une exception

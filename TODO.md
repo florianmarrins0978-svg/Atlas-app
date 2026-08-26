@@ -9,17 +9,60 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
-## Séparer la capacité du planning et les gens qui partent — **attend sa réponse**
+## ⏳ `test-fiche-pendant-relance.ts` — rouge sur `main`, et ce n'est PAS une régression
+
+**Mesuré le 26 août 2026, pas supposé :** rejouée sur `main` nu (`git stash`),
+la suite rougit exactement pareil. Son message est honnête — *« le veilleur n'a
+jamais tenté de relance : le montage ne reproduit pas le cas réel »* : c'est son
+auto-contrôle qui REFUSE de rendre un vert qui ne prouverait rien
+(`CLAUDE.md` §5). Le montage ne déclenche plus la relance dans cet
+environnement.
+
+**Pourquoi ça compte :** c'est la suite qui défend la correction du 16 août — la
+fiche d'état publiée pendant que le veilleur relance le serveur. Tant qu'elle est
+rouge, ce garde-fou ne prouve rien, et c'est lui qui lui évite d'aller rallumer
+un espace qui tourne (`CLAUDE.md` §1 bis).
+
+À reprendre dans un lot à part : le sujet est le veilleur, pas le produit.
+
+---
+
+## Renommer `equipes` en `salaries` — la dette du lot du 26 août
+
+**Ce n'est pas un caprice de vocabulaire, c'est un piège pour la prochaine
+session :** la table `equipes` porte les SALARIÉS depuis la migration 0067,
+pendant que `entreprises.nombre_equipes` porte, lui, la vraie capacité du
+planning. Qui lit le schéma sans lire son commentaire se trompera.
+
+Ce que ça touche, compté et non estimé : **vingt-trois fichiers** de `src/`,
+quarante-quatre scripts de contrôle, les politiques RLS, les index et les
+contraintes nommées (`equipes_du_chantier_uk`,
+`equipes_du_chantier_chantier_entreprise_fk`, `equipes_entreprise_rang_uk`), plus
+`absences_equipe.equipe_id` et `utilisateurs.equipe_id`.
+
+**Pourquoi ça n'a pas été fait dans le même lot** : sa consigne du 24 août —
+*« ne fais rien qui peut endommager l'appli »*. Un renommage de cette taille
+mêlé à un changement de comportement rend la relecture impossible et la panne
+indémêlable. Séparés, chacun se vérifie.
+
+**Le jour où on le fera** : un lot à lui seul, aucune autre modification dedans,
+et la batterie complète avant ET après.
+
+---
+
+## ~~Séparer la capacité du planning et les gens qui partent~~ — **fait le 26 août 2026**
 
 Sa demande du 26 août 2026, et **la planche 97 lui pose la question** :
 `appli/salaries-et-equipes.html`. Trois propositions, rien n'est codé.
 
-**Ce qu'il a déjà tranché :** le curseur des équipes ne bouge pas — il continue
-de dire combien de chantiers tiennent dans une journée.
+**Sa réponse : A**, et *« on garde la même façon de faire »* pour l'affiliation.
+Codé le jour même — `ARCHITECTURE.md` §189, migration 0067.
 
-**Ce qu'il doit trancher :** comment les gens arrivent sur un chantier. **A** on
-les coche un par un ; **B** ils sont rangés dans des équipes et le chantier
-prend l'équipe entière ; **C** comme A, mais sans curseur pour les salariés.
+**Ce qui reste ouvert, et qui n'est pas ce lot :** l'étiquette de repli
+« Salarié 3 » est plus large que le « Équipe ? » que dessine la planche 84, et
+la ligne du planning déborde alors de quelques pixels chez une entreprise qui
+n'a nommé personne. Le corriger, c'est retoucher un dessin qu'il a validé
+(`CLAUDE.md` §3 bis) : à lui montrer d'abord.
 
 **Ce que le lot coûtera, le jour où il choisit** — établi en lisant le code,
 pas supposé :

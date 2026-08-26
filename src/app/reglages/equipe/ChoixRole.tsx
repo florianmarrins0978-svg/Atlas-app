@@ -54,10 +54,14 @@ export default function ChoixRole({
 
   return (
     <>
+      {/* **AUCUN FILET À CÔTÉ DE L'INTERTITRE** — sa demande du 25 août 2026,
+          capture à l'appui : *« ça aussi tu peux retirer »*. Celui-ci était
+          revenu avec cet écran ; `scripts/test-accueil-en-tete.ts` l'a repris.
+          Les filets qui SÉPARENT deux blocs restent — *« ceux qui séparent les
+          blocs, laisse-les »* —, ceux qui n'ornent qu'un mot partent. */}
       {titre && (
-        <p className={`mb-2 flex items-center gap-3 ${libelleCaps}`} style={{ color: colors.muted }}>
+        <p className={`mb-2 ${libelleCaps}`} style={{ color: colors.muted }}>
           Son rôle
-          <i className="h-px flex-1" style={{ backgroundColor: colors.line }} />
         </p>
       )}
 

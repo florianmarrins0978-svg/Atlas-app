@@ -9,6 +9,7 @@ import { listerAbsencesEquipe } from "@/server/repositories/absences-equipe";
 import { jourIso } from "@/lib/jour";
 import RubriqueReservee from "../RubriqueReservee";
 import VosEquipes from "../VosEquipes";
+import VosSalaries from "../VosSalaries";
 import QuiAAcces from "./QuiAAcces";
 import AbsencesEquipe from "../AbsencesEquipe";
 
@@ -78,11 +79,18 @@ export default async function EquipePage() {
           acces={acces}
           moi={ctx.utilisateurId}
           equipes={equipesRattachables}
-          nombreEquipes={entreprise?.nombreEquipes ?? 1}
+          nombreSalaries={entreprise?.nombreSalaries ?? 0}
         />
 
-        <VosEquipes
-          initialNombreEquipes={entreprise?.nombreEquipes ?? 1}
+        <VosEquipes initialNombreEquipes={entreprise?.nombreEquipes ?? 1} />
+
+        {/* **Les gens sous la capacité, et séparés d'elle** — sa demande du
+            26 août 2026. Le compteur du dessus dit combien de chantiers
+            tiennent dans une journée ; celui-ci dit qui part. Les mêler dans un
+            seul bloc remettrait sous ses yeux la confusion qu'on vient de
+            retirer du code. */}
+        <VosSalaries
+          initialNombreSalaries={entreprise?.nombreSalaries ?? 0}
           initialNoms={equipes.map((e) => ({ rang: e.rang, nom: e.nom }))}
         />
 
@@ -90,7 +98,7 @@ export default async function EquipePage() {
             proposition A) : c'est là que vivent les équipes, et c'est là qu'on
             va quand on prépare la semaine. */}
         <AbsencesEquipe
-          nombreEquipes={entreprise?.nombreEquipes ?? 1}
+          nombreSalaries={entreprise?.nombreSalaries ?? 0}
           noms={equipes.map((e) => ({ rang: e.rang, nom: e.nom }))}
           initialAbsences={absences.map((a) => ({
             id: a.id,
@@ -103,17 +111,14 @@ export default async function EquipePage() {
           aujourdHui={aujourdHui}
         />
 
-        {/* **Dire pourquoi le planning n'écrit rien à une seule équipe.** C'est
-            sa propre règle du 10 août — *« s'il n'a pas d'équipe et qu'il ne met
-            rien, il ne faut pas qu'il y ait quand même écrit équipe A équipe
-            B »* — mais elle ressemble à une panne quand on l'a oubliée. Il a
-            justement demandé le 14 août pourquoi les équipes « n'apparaissent
-            plus » sur son planning. */}
-        <p className="mx-[26px] mt-[30px] border-t pt-[18px] text-[12px] leading-[1.7]"
-           style={{ borderColor: colors.line, color: colors.muted }}>
-          À une seule équipe, le planning n&apos;écrit aucun nom : il n&apos;y a personne à
-          distinguer. Les noms apparaissent à partir de deux.
-        </p>
+        {/* **RETIRÉ le 26 août 2026 : la phrase qui expliquait pourquoi le
+            planning n'écrivait rien à une seule équipe.** Elle disait vrai tant
+            qu'un seul compteur portait les deux métiers ; elle est devenue
+            fausse en même temps que la coupure — et une phrase périmée sur un
+            écran est pire qu'absente, on s'y fie encore. Ce qu'elle apprenait
+            est désormais SOUS le compteur des salariés, là où il le lit
+            (`phraseDesSalaries`), et sa consigne du 25 août vaut ici : « le
+            moins de mots possible ». */}
 
       </div>
     </div>

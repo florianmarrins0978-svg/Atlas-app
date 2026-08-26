@@ -91,16 +91,21 @@ async function main() {
     );
   }
   await pool.query(
-    `UPDATE entreprises SET nombre_equipes = 2
+    // **Les DEUX compteurs, depuis sa demande du 26 août 2026** : celui des
+    // équipes dit combien de chantiers tiennent dans une journée, celui des
+    // salariés décide des noms cochables sur une demi-journée. Ne poser que le
+    // premier laisserait l'écran sans une seule case à cocher — et la suite
+    // accuserait le produit d'avoir perdu les équipes.
+    `UPDATE entreprises SET nombre_equipes = 2, nombre_salaries = 2
       WHERE id = (SELECT entreprise_id FROM chantiers WHERE id = $1)`,
     [chantierId]
   );
   // **Deux équipes NOMMÉES, comme sur la planche et comme chez lui.**
   //
-  // Sans nom, l'écran écrit son étiquette de repli — « Équipe A » —, qui mesure
-  // 91 px là où « Équipe ? » en fait 75 : seize de plus que tout ce que la
-  // planche 84 dessine, et la ligne déborde alors de quatre pixels. Ce cas-là
-  // existe (une entreprise qui n'a pas nommé ses équipes) et il est noté dans
+  // Sans nom, l'écran écrit son étiquette de repli — « Salarié 1 » depuis le
+  // 26 août 2026, « Équipe A » avant lui —, plus large que le « Équipe ? » que
+  // dessine la planche 84 : la ligne déborde alors de quelques pixels. Ce cas-là
+  // existe (une entreprise qui n'a pas nommé ses gars) et il est noté dans
   // `TODO.md` pour lui être montré — il ne se répare pas ici, parce que le
   // corriger, c'est retoucher un dessin qu'il a validé (`CLAUDE.md` §3 bis).
   //

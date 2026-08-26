@@ -14,7 +14,7 @@ import {
 } from "../db/schema";
 import type { Ctx } from "./context";
 import type { FicheChantierPdfData } from "../pdf/fiche-chantier-pdf";
-import { libelleEquipe } from "../../lib/equipes";
+import { libelleSalarie } from "../../lib/equipes";
 import { ditLesEquipes } from "../../lib/planning-jour";
 
 /**
@@ -123,12 +123,12 @@ export async function chargerFicheChantierPourPdf(
         : (chantier.datePlanifiee ?? null),
       creneau: chantier.creneauDebut,
       demiJournees: chantier.dureeDemiJournees,
-      // `libelleEquipe` rend `null` à une seule équipe : il n'y a personne à
-      // distinguer, et écrire « Équipe A » ferait exactement ce que le patron a
-      // interdit le 10 août (`src/lib/equipes.ts`).
+      // `libelleSalarie` rend `null` quand l'entreprise n'a aucun salarié : il
+      // n'y a personne à distinguer, et écrire un nom d'organisation ferait
+      // exactement ce que le patron a interdit le 10 août (`src/lib/equipes.ts`).
       equipe: ((): string | null => {
         const nommees = sesEquipes
-          .map((e) => libelleEquipe(e, entreprise?.nombreEquipes ?? 1))
+          .map((e) => libelleSalarie(e, entreprise?.nombreSalaries ?? 0))
           .filter((n): n is string => Boolean(n));
         return nommees.length === 0 ? null : ditLesEquipes(nommees);
       })(),

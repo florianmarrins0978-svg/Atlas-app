@@ -9,26 +9,55 @@ sert.
 
 ---
 
-## DEUX RÉPONSES ATTENDUES DE LUI — planches 96 et 97 (26 août 2026)
+## LES SALARIÉS NE SONT PLUS LES ÉQUIPES — à savoir avant d'y toucher (26 août 2026)
+
+**La chose à comprendre en trente secondes**, parce que le nommage n'a pas suivi :
+
+| Ce qu'on lit dans le code | Ce que ça veut dire depuis le 26 août |
+|---|---|
+| `entreprises.nombre_equipes` | la CAPACITÉ — combien de chantiers par jour |
+| `entreprises.nombre_salaries` | combien de GENS — donc de noms cochables |
+| table `equipes` | **les salariés** (rang + nom facultatif) |
+| table `equipes_du_chantier` | **qui part**, demi-journée par demi-journée |
+
+⚠ **La table `equipes` porte les gars, pas des files de planning.** Le renommage
+est une tâche à part (`TODO.md`) : vingt-trois fichiers, les politiques RLS, les
+contraintes. Ne pas le mêler à autre chose.
+
+**Ce qu'il a interdit de changer, mot pour mot :** *« il ne faut pas changer la
+méthode d'affiliation des gars sur les chantiers […] on garde la même façon de
+faire »*, et *« 2 équipes = 2 chantiers par jour, comme avant, ça ne bouge
+pas »*.
+
+**LE PIÈGE, si l'on touche à la charge du planning.** On coche désormais des
+GENS : trois gars peuvent tenir sur une entreprise à deux chantiers par jour.
+`equipesMobilisees` plafonne donc la charge à la capacité. Retirer ce plafond
+ferait fermer par un seul chantier une journée qui en accepte deux — et l'écran
+d'envoi refuserait au client des jours réellement libres, pendant que le
+planning les annonce.
+
+`compterOccupation` exige `nombreEquipes` **sans valeur par défaut**, et c'est
+délibéré : un appelant oublié compterait sans plafond en silence. Ne pas ajouter
+de défaut « pour simplifier ».
+
+**Et le plancher des salariés est ZÉRO**, pas un : un artisan seul n'a personne.
+Le remonter ferait apparaître une case « Salarié 1 » à cocher sur chacune de ses
+demi-journées.
+
+Le détail : `ARCHITECTURE.md` §189, migration `drizzle/0067_salaries_a_part.sql`.
+
+---
+
+## UNE RÉPONSE ENCORE ATTENDUE DE LUI — planche 96 (26 août 2026)
 
 Rien n'est codé dans `src/` pour ces deux-là, et il ne faut pas commencer sans
 sa réponse (`CLAUDE.md` §3 bis).
 
 - **Planche 96** — `appli/ecran-equipe.html`. Il a répondu **C** pour le titre
   et la synthèse. Reste à savoir si la phrase sur les congés reste sur l'écran
-  Équipe ou retourne dans « Absences ».
-- **Planche 97** — `appli/salaries-et-equipes.html`. Séparer la capacité du
-  planning et les gens qui partent. **A**, **B** ou **C** : voir `TODO.md`, qui
-  porte le coût de chacune.
-
-**Ce qu'il a déjà tranché sur la 97, et qu'on ne rediscute pas :** le curseur
-des équipes continue de dire combien de chantiers tiennent dans une journée —
-*« 2 équipes = 2 chantiers par jour, comme avant, ça ne bouge pas »*.
-
-**Ce qu'il faut savoir avant d'y toucher :** `entreprise.nombreEquipes` fait
-aujourd'hui deux métiers — la capacité du planning **et** la fabrique des
-libellés « Équipe A / B » (`src/lib/equipes.ts`, `libelleEquipe`). Les trois
-propositions séparent les deux ; c'est le cœur du lot, pas un détail.
+  Équipe ou retourne dans « Absences ». **Non codée.**
+- **Planche 97** — `appli/salaries-et-equipes.html`. **Répondue (A) et codée le
+  26 août** : voir le paragraphe ci-dessus.
 
 ---
 
