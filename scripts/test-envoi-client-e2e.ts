@@ -212,6 +212,44 @@ async function main() {
     await page.waitForTimeout(150);
   }
 
+  /**
+   * Les jours qu'on peut retenir — **en avançant d'un mois s'il le faut**.
+   *
+   * **Corrigé le 25 août 2026, et c'est la troisième suite du même mal.** Le
+   * calendrier ouvre sur le mois EN COURS ; passé le délai minimal, il ne reste
+   * en fin de mois qu'un ou deux jours ouvrés. Le 25 août, ces deux contrôles
+   * se sont arrêtés sur « pas assez de jours » — sur un calendrier parfaitement
+   * juste. C'est le pire des rouges, celui qui accuse un code sain
+   * (`AGENTS.md`), et il revient chaque mois.
+   *
+   * Le patron, lui, appuie sur « Mois suivant » sans y penser. La suite fait le
+   * même geste, et **seulement quand il le faut** : le reste du temps, elle
+   * continue d'éprouver le cas ordinaire, celui du mois courant.
+   */
+  async function joursRetenables(page: Page, combien: number): Promise<string[]> {
+    const cases = page.locator('[data-jour][data-etat="regardable"]');
+    // **Assez loin pour que le serveur les accepte.** Le mois affiché commence
+    // au 1er : ses premiers jours sont derrière nous, et le délai minimal en
+    // écarte deux de plus. Les prendre ferait rougir sur un refus juste.
+    const plancher = new Date();
+    plancher.setDate(plancher.getDate() + 3);
+    const depuis = plancher.toISOString().slice(0, 10);
+
+    for (let mois = 0; mois < 3; mois++) {
+      const libres = (
+        await cases.evaluateAll((els) => els.map((e) => e.getAttribute("data-jour")!).filter(Boolean))
+      ).filter((j) => j >= depuis);
+      if (libres.length >= combien) return libres;
+      const suivant = page.getByRole("button", { name: /^Mois suivant/ });
+      if ((await suivant.count()) === 0 || !(await suivant.isEnabled())) break;
+      await suivant.click();
+      await page.waitForTimeout(250);
+    }
+    return (
+      await cases.evaluateAll((els) => els.map((e) => e.getAttribute("data-jour")!).filter(Boolean))
+    ).filter((j) => j >= depuis);
+  }
+
   await test("le patron ne propose jamais plus de deux dates", async () => {
     const url = await creerChantierFacturable(page, "deuxmax");
     await page.goto(`${url}/devis-complet`, { waitUntil: "networkidle" });
@@ -224,23 +262,9 @@ async function main() {
     // qu'on a le mois complet »* —, donc `button[aria-pressed]` ne rend plus
     // que les dates DÉJÀ retenues. La règle éprouvée ici, elle, n'a pas
     // changé : jamais plus de deux.
-    const cases = page.locator('[data-jour][data-etat="regardable"]');
-    const total = await cases.count();
-    assert.ok(total >= 3, `pas assez de jours libres au calendrier (${total})`);
-
     // Une date est déjà retenue à l'ouverture : on en retient deux de plus, et
     // la troisième doit chasser la première — jamais trois.
-    // **Assez loin pour que le serveur les accepte.** Le mois affiché commence
-    // au 1er : ses premiers jours sont derrière nous, et le délai minimal en
-    // écarte deux de plus. Les prendre ferait rougir cette suite sur un refus
-    // parfaitement juste — le pire des rouges (`AGENTS.md`), et c'est ce qui
-    // vient d'arriver : « Proposer ce jour » restait désactivé.
-    const plancher = new Date();
-    plancher.setDate(plancher.getDate() + 3);
-    const depuis = plancher.toISOString().slice(0, 10);
-    const aRetenir = (
-      await cases.evaluateAll((els) => els.map((e) => e.getAttribute("data-jour")!).filter(Boolean))
-    ).filter((j) => j >= depuis);
+    const aRetenir = await joursRetenables(page, 2);
     assert.ok(aRetenir.length >= 2, `pas assez de jours acceptables (${aRetenir.length})`);
     for (const jour of aRetenir.slice(0, 2)) await retenirAuCalendrier(page, jour);
 
@@ -615,13 +639,7 @@ async function main() {
 
     // Deux dates, comme sur sa capture — un seul jour proposé change le libellé
     // du choix, et un contrôle qui n'éprouve qu'une forme laisse passer l'autre.
-    const cases = page.locator('[data-jour][data-etat="regardable"]');
-    const plancher = new Date();
-    plancher.setDate(plancher.getDate() + 3);
-    const depuis = plancher.toISOString().slice(0, 10);
-    const libres = (
-      await cases.evaluateAll((els) => els.map((e) => e.getAttribute("data-jour")!).filter(Boolean))
-    ).filter((j) => j >= depuis);
+    const libres = await joursRetenables(page, 2);
     assert.ok(libres.length >= 2, `pas assez de jours libres au calendrier (${libres.length})`);
     for (const jour of libres.slice(0, 2)) await retenirAuCalendrier(page, jour);
 

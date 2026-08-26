@@ -9,6 +9,22 @@ Format : le plus récent en tête.
 
 ## 2026-08-25
 
+### Le calendrier de fin de mois a fait rougir une TROISIÈME suite
+
+Même mal que les deux du matin : le calendrier ouvre sur le mois en cours, et
+passé le délai minimal il ne reste qu'un ou deux jours ouvrés en fin de mois.
+`test-envoi-client-e2e` s'est arrêté sur « pas assez de jours » — sur un
+calendrier parfaitement juste.
+
+Elle appuie maintenant sur « Mois suivant », comme le patron le ferait sans y
+penser, et seulement quand le mois courant est trop court : le reste du temps
+elle continue d'éprouver le cas ordinaire. Une seule fonction porte la règle
+pour les deux contrôles concernés.
+
+**Ce défaut revient chaque mois.** Trois suites l'ont eu le même jour ; le
+prochain qui verra « pas assez de jours » saura où regarder.
+
+
 ### L'assistant répond enfin depuis n'importe quel écran
 
 *« Je veux pouvoir faire ça peu importe où je l'ouvre. »* Le panneau était déjà
