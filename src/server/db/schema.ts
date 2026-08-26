@@ -152,6 +152,13 @@ export const entreprises = pgTable("entreprises", {
    * **La feuille de chantier et le compte rendu ne sont PAS concernés** : sa
    * décision du même jour. L'une est interne, l'autre est une page web.
    */
+  /**
+   * Le format de ses numéros (migration 0066). `null` : celui par défaut.
+   *
+   * Les valeurs vivent dans `src/lib/numero-documents.ts`, jamais recopiées ici.
+   */
+  formatNumero: text("format_numero"),
+
   docTypographie: text("doc_typographie"),
   docFond: text("doc_fond"),
   docAccent: text("doc_accent"),
@@ -428,6 +435,17 @@ export const entrepriseCompteurs = pgTable("entreprise_compteurs", {
   // Suite distincte de celle des devis : mêler les deux rendrait illisible
   // la numérotation continue qu'attend un contrôle fiscal.
   prochainNumeroFacture: integer("prochain_numero_facture").notNull().default(1),
+  /**
+   * L'année à laquelle chaque compteur se rapporte (migration 0066).
+   *
+   * **Sa décision du 26 août 2026 : le compteur repart à 1 au 1ᵉʳ janvier.**
+   * Sans cette colonne, rien ne dirait si le dernier numéro attribué est de
+   * cette année ou de la précédente — on ne saurait pas s'il faut continuer ou
+   * recommencer. Deux suites distinctes, donc deux années : un devis peut
+   * partir en décembre et sa facture en janvier.
+   */
+  anneeDevis: integer("annee_devis"),
+  anneeFacture: integer("annee_facture"),
 });
 
 // Correction v2.1 §1 : remplace le lien direct utilisateur → entreprise.
@@ -441,7 +459,28 @@ export const membresEntreprise = pgTable(
     utilisateurId: uuid("utilisateur_id")
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),
-    role: text("role", { enum: ["proprietaire", "membre"] }).notNull().default("membre"),
+    /**
+     * **Trois rôles depuis la migration 0065**, et `membre` n'existe plus :
+     * il a été repris en `salarie`, le plus fermé des trois. La contrainte qui
+     * les tient vit en BASE, pas seulement ici — cette énumération-ci ne produit
+     * aucun garde-fou côté PostgreSQL.
+     *
+     * Ce que chaque rôle atteint est décidé une seule fois, dans
+     * `src/lib/acces-roles.ts` : ni cet écran-ci ni cette table ne le savent.
+     */
+    role: text("role", { enum: ["proprietaire", "commercial", "salarie"] }).notNull().default("salarie"),
+    /**
+     * Ce que la personne voit du planning — un réglage PAR PERSONNE, jamais par
+     * rôle (sa décision du 13 août 2026). Le défaut est « tout » : restreindre
+     * est un geste.
+     */
+    porteePlanning: text("portee_planning", { enum: ["tout", "ses_equipes"] }).notNull().default("tout"),
+    /**
+     * La file du planning que cette personne tient. **NULL est l'état normal**
+     * pour un patron, un commercial, et un salarié qui voit tout : dans Atlas
+     * une équipe est une file du planning, pas un groupe de personnes.
+     */
+    equipeId: uuid("equipe_id").references(() => equipes.id, { onDelete: "set null" }),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (t) => [unique("membres_entreprise_uk").on(t.entrepriseId, t.utilisateurId)]
@@ -1154,7 +1193,15 @@ export const propositionsIa = pgTable(
     entrepriseId: uuid("entreprise_id")
       .notNull()
       .references(() => entreprises.id, { onDelete: "cascade" }),
-    chantierId: uuid("chantier_id").notNull(),
+    /**
+     * Le chantier concerné — **`null` quand le geste n'en concerne aucun**
+     * (migration 0067) : créer un chantier, régler un tarif, corriger un
+     * client depuis n'importe quel écran.
+     *
+     * Ce n'est pas un relâchement du cloisonnement : c'est `entrepriseId` que
+     * la RLS regarde, et il reste obligatoire.
+     */
+    chantierId: uuid("chantier_id"),
     type: text("type").notNull(),
     description: text("description").notNull(),
     donnees: jsonb("donnees").notNull(),

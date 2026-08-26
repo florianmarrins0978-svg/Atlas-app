@@ -329,6 +329,26 @@ Concrètement, pour toute planche dont on attend un choix :
    `https://florianmarrins0978-svg.github.io/Atlas-app/<la-planche>.html`.
    C'est la quatrième fois qu'une adresse lui coûte un aller-retour, et les
    quatre fois le code était juste ;
+2 ter. **ON NE LUI ENVOIE JAMAIS UNE CAPTURE DE LA MAQUETTE.** Sa consigne du
+   26 août 2026, excédée : *« une maquette ! Pas de photo ! Comme d'habitude,
+   enregistre une bonne fois pour toutes — certaines sessions le font très bien
+   sans que je demande »*. C'est **la sixième fois** qu'il doit le redire, et
+   c'est une règle du dépôt, pas un souvenir de conversation.
+
+   Une image d'une maquette est **exactement ce qu'il refuse** : il ne peut ni
+   toucher les onglets, ni faire défiler, ni essayer. Elle a l'air d'un livrable
+   et n'en est pas un — pire, elle laisse croire qu'on a répondu.
+
+   | | |
+   |---|---|
+   | une **maquette** | **l'adresse**, entière, et rien d'autre |
+   | un **écran de l'application** | une capture — il ne peut pas l'ouvrir autrement |
+
+   La distinction est là et nulle part ailleurs : on photographie ce qui EXISTE
+   dans l'application (§5, « regarder l'écran »), on donne à ESSAYER ce qui n'est
+   qu'une proposition. Regarder soi-même l'image d'une maquette avant de la
+   livrer reste obligatoire — c'est ce qui attrape un débordement ou un libellé
+   collé ; ce qui est interdit, c'est de **la lui envoyer à la place du lien** ;
 3. rien d'autre à faire pour qu'elle soit vérifiée en ligne : depuis le
    20 août 2026, `pages.yml` **déduit sa liste des liens d'`essais.html`** —
    une liste tenue à la main s'oubliait à chaque page neuve, et l'oubli ne se
@@ -880,6 +900,21 @@ Elle enchaîne, dans cet ordre — les contrôles rapides d'abord :
 
 Elle ne s'arrête pas à la première erreur : savoir que trois choses cassent, et
 lesquelles, vaut mieux que de les découvrir une par une.
+
+**NE RIEN JOUER À LA MAIN PENDANT QU'ELLE TOURNE — surtout pas une suite
+base.** Payé le 26 août 2026. Pendant une batterie, cinq suites navigateur ont
+rougi d'un coup et l'étape « Connexion derrière un proxy » avec elles. Aucune
+n'avait de défaut : `nettoyerBase()` **vide la base** (`TRUNCATE … CASCADE`), et
+c'est ce que fait toute suite base jouée en parallèle. Le jeu de démonstration
+disparaît sous les pieds des suites navigateur, qui accusent alors le produit.
+
+Le message était pourtant clair — « le compte de démonstration est absent : la
+base n'est pas amorcée » —, mais il n'arrive qu'à la DERNIÈRE étape : les quatre
+suites tombées avant lui, elles, ne disaient que « Timeout » sur des adresses de
+chantiers évaporés. **Une demi-heure à soupçonner du code juste.**
+
+La batterie est une machine à un seul occupant : on la lance, et on attend. Pour
+diagnostiquer en parallèle, il faut une AUTRE base — pas la sienne.
 
 **Ne jamais la faire passer par `tail`.** Elle écrit son verdict à la fin, mais
 le nom de la suite tombée, lui, est écrit au milieu — parmi les cinquante-huit.

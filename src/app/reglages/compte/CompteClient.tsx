@@ -37,8 +37,7 @@ export default function CompteClient({ initial }: { initial: { nom: string; emai
   const initiales = initialesDe(nom, initial.email);
 
   return (
-    // `pb-40` : la barre d'enregistrement s'ajoute aux onglets, et sans cette
-    // réserve le dernier paragraphe passe dessous.
+    // `pb-40` : la barre d'enregistrement s'ajoute aux onglets.
     <div className="pb-40">
       {refus && (
         <p
@@ -58,12 +57,12 @@ export default function CompteClient({ initial }: { initial: { nom: string; emai
         >
           {initiales}
         </span>
+        {/* **Le nom seul, sans « Ce compte » dessous.** Sa demande du 26 août
+            2026. Un écran qui s'appelle « Mon compte » n'a pas besoin de dire
+            sous chaque ligne qu'on y est. */}
         <span className="min-w-0 flex-1">
           <span className="block truncate" style={{ fontFamily: font.display, fontSize: 19, lineHeight: 1.25 }}>
             {nom.trim() === "" ? initial.email : nom}
-          </span>
-          <span className={`mt-0.5 block ${texteSituation}`} style={{ color: colors.muted }}>
-            Ce compte
           </span>
         </span>
       </div>
@@ -95,9 +94,6 @@ export default function CompteClient({ initial }: { initial: { nom: string; emai
             // point et il se retrouve avec un écran zoomé à rétablir à la main.
             style={{ fontFamily: font.display, fontSize: 17, lineHeight: 1.35, color: colors.ink }}
           />
-          <span className={`mt-1.5 block ${texteSituation}`} style={{ color: colors.muted }}>
-            Ce nom ne part pas chez le client : c&apos;est celui de votre entreprise qui s&apos;imprime sur le devis.
-          </span>
         </label>
 
         <div className="border-b py-[13px]" style={{ borderColor: colors.line }}>
@@ -110,24 +106,29 @@ export default function CompteClient({ initial }: { initial: { nom: string; emai
           >
             {initial.email}
           </span>
+          {/* **Six mots au lieu de quarante — sa demande du 26 août 2026.** Ce
+              qui a été retiré, c'est le POURQUOI : rien ne permet de vérifier
+              une nouvelle adresse, et une faute de frappe fermerait le compte.
+              Cela reste vrai, et c'est sa place ici (`ARCHITECTURE.md`), pas à
+              l'écran.
+
+              **Mais la ligne ne disparaît pas**, contrairement à celle du nom :
+              un champ qui ne s'ouvre pas quand on le touche se lit comme une
+              panne, et il chercherait ce qu'il a mal fait. */}
           <span className={`mt-1.5 block ${texteSituation}`} style={{ color: colors.muted }}>
-            C&apos;est aussi l&apos;identifiant avec lequel vous vous connectez. Il ne se change pas encore : rien ne
-            permettrait de vérifier la nouvelle adresse, et une faute de frappe fermerait le compte pour de bon.
+            Sert aussi à vous connecter. Pas encore modifiable.
           </span>
         </div>
       </section>
 
-      {/* **Pas de téléphone, et l'écran le DIT.** Sa réponse « A », le 14 août
-          2026. Une absence muette se lit comme un oubli, et la question
-          reviendrait dans un mois. */}
-      <p
-        className={`mx-[26px] mt-[30px] border-t pt-[18px] ${texteSituation}`}
-        style={{ borderColor: colors.line, color: colors.muted }}
-      >
-        Pas de téléphone ici, et c&apos;est voulu. Le numéro que vos clients voient est celui de l&apos;entreprise,
-        réglé dans « Mon entreprise » et imprimé sur vos documents. En ajouter un second, personnel, n&apos;enverrait
-        rien à personne : Atlas ne passe ni appel ni SMS.
-      </p>
+      {/* **Le paragraphe du téléphone est parti — sa demande du 26 août 2026 :**
+          *« supprime la phrase sous enregistrer »*. Il expliquait pourquoi il
+          n'y a pas de champ téléphone (sa réponse « A » du 14 août), en quatre
+          lignes, sous le bouton — donc à moitié caché par la barre.
+
+          **La décision, elle, n'a pas bougé** : aucun champ téléphone ici, et
+          `test-compte-connexion-e2e.ts` le refuse toujours. C'est l'explication
+          qui part, pas la règle. */}
 
       <BarreEnregistrer aEcrire={aEcrire} enCours={enCours} onEnregistrer={enregistrer} />
     </div>

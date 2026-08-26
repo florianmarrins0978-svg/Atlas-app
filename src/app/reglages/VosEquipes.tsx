@@ -54,11 +54,16 @@ export default function VosEquipes({
 
   return (
     <section className="mt-7 px-[26px]">
-      {/* Le titre de section, puis un filet qui prend la place restante — pas
-          de cadre. Même registre que le reste de la charte Origine. */}
-      <p className={`mb-1.5 flex items-center gap-3 ${libelleCaps}`} style={{ color: colors.muted }}>
+      {/* **PAS DE FILET À CÔTÉ DE L'INTERTITRE — retiré le 25 août 2026**, à sa
+          demande : *« ça aussi tu peux retirer »*, capture de l'écran Équipe à
+          l'appui. Il venait de faire retirer le trait sous les titres ; celui-ci
+          était de la même famille, et il l'a vu du même œil.
+
+          **Les filets qui SÉPARENT les blocs restent** — *« ceux qui séparent
+          les blocs, laisse-les »*. Ne pas les confondre : ceux-là disent que
+          deux choses sont distinctes ; celui-ci n'ornait qu'un mot. */}
+      <p className={`mb-1.5 ${libelleCaps}`} style={{ color: colors.muted }}>
         Combien partent en même temps
-        <i className="h-px flex-1" style={{ backgroundColor: colors.line }} />
       </p>
 
       {/* Le compteur. Deux ronds cerclés d'un filet, le nombre en serif entre
@@ -103,9 +108,8 @@ export default function VosEquipes({
 
       {nombre > 1 ? (
         <div className="mt-[30px]">
-          <p className={`mb-1.5 flex items-center gap-3 ${libelleCaps}`} style={{ color: colors.muted }}>
+          <p className={`mb-1.5 ${libelleCaps}`} style={{ color: colors.muted }}>
             Leurs noms
-            <i className="h-px flex-1" style={{ backgroundColor: colors.line }} />
           </p>
           {lignes.map((e) => (
             <LigneNom

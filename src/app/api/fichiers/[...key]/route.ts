@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { eq } from "drizzle-orm";
 import { getCurrentCtx } from "@/server/session-ctx";
+import { exigerOuverture } from "@/server/garde-route";
 import { withEntreprise } from "@/server/db/with-entreprise";
 import { photos, notesVocales, entreprises } from "@/server/db/schema";
 import { lireObjet } from "@/server/storage";
@@ -29,6 +30,14 @@ export async function GET(_req: Request, { params }: { params: Promise<{ key: st
 
   const ctx = await getCurrentCtx();
 
+
+  // Le rôle referme ce que la barre du bas ne montre plus : une adresse d'API
+
+  // se tape, et une page retirée du sommaire répondait quand même.
+
+  const refus = await exigerOuverture(ctx);
+
+  if (refus) return refus;
   const autorise = await withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
     const [photo] = await tx
       .select({ id: photos.id })

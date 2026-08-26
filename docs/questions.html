@@ -98,6 +98,7 @@
 <li><a href="#24-faut-il-une-licence-pour-se-servir-des-données-de-linrae-">Faut-il une licence pour se servir des données de l'INRAE ?</a></li>
 <li><a href="#25-peut-on-ouvrir-atlas-avec-face-id-au-lieu-dun-mot-de-passe-">Peut-on ouvrir Atlas avec Face ID, au lieu d'un mot de passe ?</a></li>
 <li><a href="#26-combien-dheures-avons-nous-passé-à-créer-atlas-">Combien d'heures avons-nous passé à créer Atlas ?</a></li>
+<li><a href="#27-le-format-de-mes-numéros-de-facture-cest-obligatoire-">Le format de mes numéros de facture, c'est obligatoire ?</a></li>
 </ol>
 <hr>
 <h2 id="1-le-compte-développeur-apple--qui-paie-et-combien-de-temps-">1. Le compte développeur Apple : qui paie, et combien de temps ?</h2>
@@ -523,9 +524,30 @@
 </tbody></table></div>
 <p><strong>Ce qui NE bouge pas, et qui répond à la question des prix :</strong> <em>« il lit les tarifs, il ne les change pas »</em> (13 août). Un commercial se sert des prix pour chiffrer ; il ne redessine pas vos grilles. C'est exactement ce qui a été codé le 23 août — l'écran « Mes prix » et l'action qui y pose un montant sont réservés au patron, côté serveur et plus seulement à l'affichage.</p>
 <p><strong>Et le PDF sans les prix prend enfin tout son sens.</strong> Si le salarié ne voit que le planning, c'est là — et nulle part ailleurs — qu'il ouvre la feuille de son chantier. Le document sans montants n'est pas un confort : c'est <strong>le seul</strong> document qu'il verra jamais.</p>
-<h3 id="ce-qui-reste-vrai-et-qui-nest-pas-encore-fait">Ce qui reste vrai, et qui n'est pas encore fait</h3>
-<p><strong>Rien de ce tableau n'est en place au 23 août 2026.</strong> La base ne connaît toujours que deux rôles (propriétaire et membre), aucun écran ne permet de donner un accès, et <strong>rien ne filtre encore l'application par rôle</strong> : un membre atteint aujourd'hui tous les écrans sauf ceux qui ont reçu une garde explicite.</p>
-<p>Ce qui a changé le 23 août, et qui n'est qu'un début : les écrans réservés au patron refusent désormais <strong>côté serveur</strong>, et non plus seulement en se cachant du sommaire. Le reste — les quatre rôles en base, l'écran qui donne un accès, le cloisonnement du salarié sur le seul planning — reste à faire, et c'est un lot à lui seul. Le dessin existe (<code>maquettes/atlas-reglages-equipe.html</code>) ; le code, non.</p>
+<h3 id="fait-le-25-août-2026--ce-paragraphe-disait-le-contraire-jusque-là">Fait le 25 août 2026 — ce paragraphe disait le contraire jusque-là</h3>
+<p><strong>Ce qui suit remplace un paragraphe devenu faux</strong>, et c'est pour cela qu'il est réécrit plutôt que complété : il disait <em>« rien de ce tableau n'est en place »</em>, et s'y fier aujourd'hui ferait redemander un travail déjà livré.</p>
+<p>Le 25 août, vous avez redemandé la même chose dans vos mots — <em>« il faut qu'il leur crée un compte salarié […] chaque utilisateur possède son propre compte et sa propre session »</em>, et <em>« les restrictions doivent être appliquées côté serveur, et pas uniquement en masquant des boutons ou des pages »</em>. C'est exactement ce qui a été codé.</p>
+<p><strong>Où ça se passe :</strong> Réglages → Équipe → « Qui a accès ». Vous y créez un compte — un nom, une adresse, un mot de passe que vous lui dites —, vous choisissez son rôle, et vous le retirez quand il part. Deux listes sur cet écran, jamais mélangées : <em>qui a accès</em> (des comptes) et <em>vos équipes</em> (des files du planning).</p>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th>Ce qu'il atteint</th>
+</tr></thead><tbody>
+<tr>
+<td><strong>Patron</strong></td>
+<td>tout Atlas</td>
+</tr>
+<tr>
+<td><strong>Commercial</strong></td>
+<td>toute l'application, sauf la mise en page des devis, l'identité de l'entreprise, les accès, l'abonnement et l'export</td>
+</tr>
+<tr>
+<td><strong>Salarié</strong></td>
+<td>le planning, sa feuille de chantier sans un seul montant, et ses propres réglages</td>
+</tr>
+</tbody></table></div>
+<p><strong>Et « sans les prix » n'est plus un masquage.</strong> Un salarié qui taperait l'adresse d'un devis, de son PDF ou d'une facture est refusé <strong>par le serveur</strong> : la page n'est pas rendue, le fichier n'est pas produit. C'est ce que ce paragraphe-ci exigeait depuis le 7 août, et c'est tenu.</p>
+<p><strong>Ce que le patron voit du planning d'un salarié :</strong> tout, ou les seuls chantiers de son équipe — un réglage <strong>par personne</strong>, comme vous l'aviez demandé. Le défaut est « tout ».</p>
+<p><strong>Ce qui reste ouvert, et il faut le dire :</strong> un commercial ne LIT pas encore vos tarifs, alors que votre règle du 13 août dit qu'il les lit sans les changer. Cet écran-là doit être dessiné avant d'être codé — un prix qu'on ne peut pas toucher, ça se montre. Il est noté dans <code>TODO.md</code>.</p>
 <hr>
 <h2 id="11-quest-ce-quatlas-doit-faire-sur-la-plateforme-de-facturation-">11. Qu'est-ce qu'Atlas doit faire sur la plateforme de facturation ?</h2>
 <a class="retour" href="#sommaire">↑ Sommaire</a>
@@ -1290,6 +1312,64 @@
 <h3 id="ce-qui-nest-pas-compté">Ce qui n'est PAS compté</h3>
 <p><strong>Arborea.</strong> Atlas en est la reprise — écrans, calculs et tests repris le 31 juillet. Le temps passé sur Arborea n'existe dans aucun fichier de ce dépôt, donc il n'est pas dans ces chiffres.</p>
 <p>Et ces heures sont du <strong>temps écoulé</strong>, pas de l'effort cumulé : plusieurs sessions travaillent souvent en parallèle sur des parties différentes. Une soirée de trois heures avec quatre sessions reste trois heures dans ce compte.</p>
+<hr>
+<h2 id="27-le-format-de-mes-numéros-de-facture-cest-obligatoire-">27. Le format de mes numéros de facture, c'est obligatoire ?</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><em>Question posée le 26 août 2026, capture d'une autre application à l'appui : « dans la catégorie facture il faut rajouter le format de numéro, c'est obligatoire il me semble ».</em></p>
+<h3 id="réponse-courte--à-moitié">Réponse courte : à moitié</h3>
+<p><strong>Le format ne l'est pas. La suite, oui.</strong></p>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th>Obligatoire ?</th>
+</tr></thead><tbody>
+<tr>
+<td>Que vos factures se suivent <strong>sans trou ni doublon</strong></td>
+<td><strong>oui</strong>, c'est la loi</td>
+</tr>
+<tr>
+<td>Qu'elles portent l'année, un « F », six chiffres plutôt que quatre</td>
+<td><strong>non</strong>, vous choisissez</td>
+</tr>
+</tbody></table></div>
+<p>Ce que le fisc demande, c'est de pouvoir vérifier qu'aucune facture n'a été retirée : les numéros doivent se suivre, dans l'ordre où les factures sont émises. Un <code>F2026-000012</code> et un <code>147</code> sont aussi valables l'un que l'autre — pourvu que le suivant soit <code>F2026-000013</code> et <code>148</code>.</p>
+<h3 id="ce-quatlas-faisait-déjà-et-ce-qui-manquait">Ce qu'Atlas faisait déjà, et ce qui manquait</h3>
+<p>La suite était tenue depuis le début : un compteur par entreprise, incrémenté au moment même où le document est créé. Deux factures émises à la même seconde ne peuvent pas prendre le même numéro.</p>
+<p>Ce qui manquait, c'était <strong>le choix de l'habillage</strong> — et, dessous, un défaut : l'année était écrite en dur dans le programme. <strong>En janvier 2027, vos factures auraient encore dit 2026.</strong> Personne ne l'aurait vu avant, puisque tant qu'on est en 2026 le chiffre tombe juste. Corrigé le même jour.</p>
+<h3 id="ce-que-vous-choisissez-dans-réglages--devis--factures">Ce que vous choisissez, dans Réglages › Devis &amp; factures</h3>
+<div class="tablewrap"><table><thead><tr>
+<th>Format</th>
+<th>Un devis</th>
+<th>Une facture</th>
+</tr></thead><tbody>
+<tr>
+<td>Année et 4 chiffres</td>
+<td>2026-0012</td>
+<td>F2026-0012</td>
+</tr>
+<tr>
+<td><strong>Année et 6 chiffres</strong> <em>(votre choix, par défaut)</em></td>
+<td>2026-000012</td>
+<td>F2026-000012</td>
+</tr>
+<tr>
+<td>Année courte</td>
+<td>26-0012</td>
+<td>F26-0012</td>
+</tr>
+<tr>
+<td>Année, mois, numéro</td>
+<td>2026-08-012</td>
+<td>F2026-08-012</td>
+</tr>
+<tr>
+<td>Une suite sans année</td>
+<td>0012</td>
+<td>F0012</td>
+</tr>
+</tbody></table></div>
+<h3 id="deux-choses-qui-ne-se-règlent-pas-et-pourquoi">Deux choses qui ne se règlent pas, et pourquoi</h3>
+<p><strong>Le compteur repart à 1 le 1ᵉʳ janvier</strong> — votre décision. Mais seulement si l'année figure dans le numéro. Sur « une suite sans année », repartir à 1 donnerait deux factures numérotées <code>0001</code> à un an d'écart : un doublon, ce que la loi interdit précisément. L'application le fait donc toute seule là où c'est possible, et le dit là où ça ne l'est pas.</p>
+<p><strong>Changer de format ne renumérote rien.</strong> Vos factures déjà émises gardent leur numéro. Les réécrire creuserait un trou dans la suite — exactement ce qu'on cherche à éviter.</p>
 </main>
 </body>
 </html>

@@ -1,0 +1,12 @@
+-- Une proposition de l'assistant peut ne concerner AUCUN chantier.
+--
+-- **Pourquoi maintenant.** Jusqu'ici l'assistant ne proposait que des gestes
+-- SUR le chantier ouvert : ajouter une prestation, corriger un prix. Sa demande
+-- du 26 août 2026 — *« un vrai agent avec toutes les capacités possibles sur
+-- l'appli »* — en ajoute qui n'en concernent aucun : créer un chantier (il
+-- n'existe pas encore), régler un tarif, corriger un client depuis n'importe
+-- quel écran.
+--
+-- **Ce qui NE change pas** : le cloisonnement par entreprise. `entreprise_id`
+-- reste obligatoire, et c'est lui que la RLS regarde — pas le chantier.
+ALTER TABLE propositions_ia ALTER COLUMN chantier_id DROP NOT NULL;

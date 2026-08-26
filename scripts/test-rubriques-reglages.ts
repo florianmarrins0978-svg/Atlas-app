@@ -79,7 +79,7 @@ essai("ses quatre priorités ouvrent l'ensemble de l'entreprise", () => {
 // vérifie qu'elle n'est PAS DANS LA LISTE. Ajouter « Tarifs & catalogue » à
 // l'ensemble d'un membre le fait rougir, même si l'écran la cachait ensuite.
 essai("un membre ne reçoit AUCUNE rubrique de l'entreprise", () => {
-  const noms = toutes("membre").map((r) => r.nom);
+  const noms = toutes("salarie").map((r) => r.nom);
   for (const interdite of [
     "Mon entreprise",
     "Équipe",
@@ -106,8 +106,8 @@ essai("un membre ne reçoit AUCUNE rubrique de l'entreprise", () => {
 // adresses ouvertes à un membre soient EXACTEMENT celles de l'ensemble « Moi »,
 // et aucune de celles de l'entreprise.
 essai("un membre n'ouvre QUE ses réglages personnels", () => {
-  const siennes = adressesAutorisees("membre");
-  const personnelles = rubriquesReglages("membre")
+  const siennes = adressesAutorisees("salarie");
+  const personnelles = rubriquesReglages("salarie")
     .flatMap((e) => e.rubriques)
     .map((r) => r.href)
     .filter((h): h is string => h !== null);
@@ -117,7 +117,7 @@ essai("un membre n'ouvre QUE ses réglages personnels", () => {
 });
 
 essai("et AUCUNE adresse de l'entreprise ne lui est ouverte", () => {
-  const siennes = adressesAutorisees("membre");
+  const siennes = adressesAutorisees("salarie");
   // **L'ensemble se désigne PAR SON TITRE, jamais par soustraction.** Écrit
   // « les adresses du patron moins celles du membre », le contrôle ne voyait
   // plus rien dès qu'une rubrique d'entreprise était DÉPLACÉE dans « Moi » :
@@ -139,11 +139,11 @@ essai("et AUCUNE adresse de l'entreprise ne lui est ouverte", () => {
 // pas retomber sur les droits du patron par défaut. `getRole` rend `null` dans
 // ce cas, et c'est un cas ordinaire, pas une anomalie.
 essai("un rôle inconnu est traité comme un membre, jamais comme le patron", () => {
-  assert.deepEqual(rubriquesReglages(null), rubriquesReglages("membre"));
+  assert.deepEqual(rubriquesReglages(null), rubriquesReglages("salarie"));
 });
 
 essai("un membre reçoit ses quatre réglages personnels, et le même ensemble", () => {
-  const ensembles = rubriquesReglages("membre");
+  const ensembles = rubriquesReglages("salarie");
   assert.equal(ensembles.length, 1);
   assert.equal(ensembles[0].titre, "Moi");
   assert.deepEqual(
@@ -157,13 +157,13 @@ essai("un membre reçoit ses quatre réglages personnels, et le même ensemble",
 // pas, ou l'inverse — et personne ne s'en apercevrait avant lui.
 essai("l'ensemble « Moi » est le même pour tous", () => {
   const duPatron = rubriquesReglages("proprietaire").find((e) => e.titre === "Moi");
-  const duMembre = rubriquesReglages("membre").find((e) => e.titre === "Moi");
+  const duMembre = rubriquesReglages("salarie").find((e) => e.titre === "Moi");
   assert.deepEqual(duPatron, duMembre);
 });
 
 essai("l'entreprise ne s'annonce pas à qui elle n'appartient pas", () => {
   assert.equal(surtitreReglages("proprietaire"), "Mon entreprise");
-  assert.equal(surtitreReglages("membre"), "Mon compte");
+  assert.equal(surtitreReglages("salarie"), "Mon compte");
   assert.equal(surtitreReglages(null), "Mon compte");
 });
 

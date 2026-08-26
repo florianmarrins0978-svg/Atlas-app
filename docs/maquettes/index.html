@@ -50,6 +50,11 @@
 
   <p class="famille">Tout d’un coup</p>
 
+  <a class="item" href="../../appli/ecran-equipe.html">
+    <span class="no">96</span><span class="titre">L’écran Équipe, dégraissé</span><span class="fleche">→</span>
+    <span class="quoi">Sa demande du 25 août 2026 : <b>« combien partent en même temps, ça ne veut pas dire grand-chose ; il y a beaucoup d’infos, il faut synthétiser »</b>. À une équipe, l’écran aligne QUATRE blocs, dont deux qui disent la même chose à quinze lignes d’écart. La planche <b>compte les mots</b> — 83 aujourd’hui contre 24 — plutôt que d’affirmer que c’est plus court. Trois propositions <b>essayables</b>, et le compteur se touche : c’est en passant de 1 à 2 que chaque proposition montre ce qu’elle garde.</span>
+  </a>
+
   <a class="item" href="../../appli/premiere-page.html">
     <span class="no">95</span><span class="titre">La première page, revue</span><span class="fleche">→</span>
     <span class="quoi">Sa demande du 24 août 2026 : <b>« fais-moi une maquette dynamique de la première page améliorée, je te laisse proposer »</b>, puis <b>« une sans le trait gris, supprime le bonjour compte »</b>. <b>Ce que sa capture montre et qu’il n’a pas signalé :</b> « En cours 0 », deux cartes, puis « Aucun chantier pour l’instant ». Les trois disent vrai — les cartes sont des AVIS, et le code a raison — mais l’œil lit une contradiction. Trois propositions <b>essayables</b> : la sienne d’aujourd’hui, les avis distingués par un intertitre et un filet or (la phrase d’accueil se taisant tant que l’écran n’est pas vide), et <b>la sienne</b> — son écran d’aujourd’hui, sans le trait ni le bonjour, et rien d’autre (sa consigne : « pour la mienne, fais seulement les changements que je t’ai demandés »). <b>Ajouter un chantier</b> fait apparaître le défaut ; « J’ai vu » retire l’avis pour de bon.</span>
@@ -66,6 +71,16 @@
   </a>
 
   <p class="famille">L’entretien récurrent</p>
+
+  <a class="item retenu" href="../../appli/ma-fiche-rangee.html">
+    <span class="no">▶</span><span class="titre">La liste, dans Paysage — ESSAYABLE</span><span class="fleche">→</span>
+    <span class="quoi">Sa proposition du 26 août 2026, après la planche des deux fiches : <b>sortir la liste des Réglages</b> et la ranger sous la fiche de chantier. Deux emplacements, <b>chacun avec son défaut écrit</b> — sur l’écran (long) ou derrière une porte (un appui de plus). La réserve au patron ne change pas.</span>
+  </a>
+
+  <a class="item retenu" href="../../appli/deux-fiches.html">
+    <span class="no">▶</span><span class="titre">Les deux fiches, côte à côte — ESSAYABLE</span><span class="fleche">→</span>
+    <span class="quoi">Sa question du 26 août 2026 : <b>« la fiche d’entretien c’est la fiche de chantier »</b>, et faut-il supprimer celle des Réglages. Non : à gauche <b>la liste</b>, à droite <b>la fiche d’un jour</b> qui en naît — trois onglets montrent ce qui les relie, et ce qu’un renommage changerait. Les vingt prestations sont celles du code, un contrôle le tient (<code>scripts/verifier-maquette-deux-fiches.mjs</code>).</span>
+  </a>
 
   <a class="item retenu" href="../../appli/composer-sa-fiche.html">
     <span class="no">▶</span><span class="titre">Composer sa fiche d’entretien — ESSAYABLE</span><span class="fleche">→</span>
@@ -668,6 +683,13 @@
     <span class="quoi">Sa réponse : <b>« il doit y avoir le nombre de jour, le matin, l’après-midi et la journée comme infos possible »</b>, puis <b>« je veux journée et toute la ligne »</b>. La date, le moment de départ et la durée, sur les <b>cinq</b> cas du produit — dont celui qui part l’après-midi et déborde sur le lendemain matin. <b>Codée le 15 août</b> (`ARCHITECTURE.md` §111).</span>
   </a>
 
+  <p class="famille">Les accès de ses salariés</p>
+
+  <a class="item" href="../../appli/donner-un-acces.html">
+    <span class="no">▶</span><span class="titre">Donner un accès — ESSAYABLE</span><span class="fleche">→</span>
+    <span class="quoi">Ses trois reproches du 26 août 2026, capture à l&rsquo;appui, sur l&rsquo;écran livré le matin même : <b>« mettre le petit œil à côté du mdp […] et il faut confirmer son mdp donc l&rsquo;écrire deux fois »</b>, <b>« pour valider un compte c&rsquo;est pas clair, la case est déjà noire comme la catégorie salarié »</b>, <b>« la démarcation entre vous patron et le compte qu&rsquo;on est en train d&rsquo;attribuer n&rsquo;est pas bien séparée »</b>. <b>Les trois ont la même racine</b> : le formulaire du compte NEUF avait été posé dans la liste des comptes EXISTANTS, sans rien entre les deux. L&rsquo;œil et la double saisie sont <b>recopiés de l&rsquo;écran qu&rsquo;il a arrêté le 14 août</b> (<code>atlas-reglages-moi.html</code>), pas réinventés. Le rôle choisi devient <b>teinté avec un coche</b> au lieu de noir plein — la charte le disait déjà : le plein porte ce qu&rsquo;on FAIT, et le seul bouton de l&rsquo;écran redevient celui qui crée le compte. Deux séparations proposées : <b>A</b> une carte posée sur la liste, <b>B</b> un écran à lui seul. <b>Tout se touche sans une ligne de JavaScript</b> — les deux yeux, les rôles, l&rsquo;ouverture du formulaire. <b>Un défaut trouvé en la regardant</b> : le périmètre affiché ne suivait pas le rôle coché, si bien qu&rsquo;on lisait « le planning et rien d&rsquo;autre » sous « Commercial ». <b>Sa réponse le jour même : « B, tu peux coder »</b> — l&rsquo;écran « Nouveau compte » vit désormais à son adresse, et la liste ne porte plus de formulaire. La proposition A est gardée sur la planche, écartée.</span>
+  </a>
+
   <p class="famille">Ce qui part chez le client, et son allure</p>
 
   <a class="item" href="../../appli/allure-bleutee.html">
@@ -683,6 +705,10 @@
   <a class="item" href="../../appli/allure-mieux-rangee.html">
     <span class="no">96</span><span class="titre">Voir son devis pendant qu’on le change</span><span class="fleche">→</span>
     <span class="quoi">Sa demande du 24 août 2026, capture à l’appui : <b>« lorsque je modifie mon devis, je suis obligé de descendre pour voir les modifications ; il faut mieux organiser la page pour pouvoir voir ce qu’on modifie — propose, ne code rien »</b>. <b>Un défaut d’ORDRE, pas de contenu</b> : l’écran range logo → dix typographies (cinq rangées) → fond → accent → <b>puis</b> l’aperçu, qui tombe à plus de 900 px du haut. Neuf polices à essayer font dix-huit trajets. <b>Trois rangements, tous manipulables</b> — <b>A</b> l’aperçu en tête, qui ne règle que la moitié et le dit ; <b>B</b> l’aperçu collé en haut, qui suit chaque choix au prix du tiers haut de l’écran ; <b>C</b> la feuille pleine page et les réglages en tiroir, la plus grande feuille contre un geste de plus à apprendre. <b>La planche se mesure elle-même</b> : elle annonce si la feuille est dans l’écran, et de combien de pixels il faudrait remonter sinon. Les dix polices, les quatre fonds et les quatre accents sont <b>recopiés du code</b>, jamais inventés — et le contrôle les compare à <code>src/lib/allure-documents.ts</code> à chaque exécution. Il a été <b>vu rougir</b> quatre fois : sans le collage de B, sur une police inventée, sur une feuille de C qui ne grandit pas, et sur un tiroir qui recouvre la feuille — ce dernier a fait ramener le tiroir de 74 % à 62 % de l’écran. <b>En attente de sa réponse ; rien n’est codé.</b></span>
+  </a>
+
+  <a class="item" href="../../appli/format-de-numero.html">
+    Le numéro de mes devis et factures — cinq formats, et le défaut du « 2026 » figé
   </a>
 
   <a class="item" href="../../appli/allure-de-mes-devis.html">
