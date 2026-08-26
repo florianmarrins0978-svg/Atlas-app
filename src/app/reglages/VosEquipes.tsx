@@ -7,7 +7,7 @@ import { mettreAJourNombreEquipesAction } from "./actions";
 import CompteurRond from "./CompteurRond";
 
 /**
- * « Combien partent en même temps » — la CAPACITÉ du planning, et rien d'autre.
+ * « Chantiers menés en même temps » — la CAPACITÉ du planning, et rien d'autre.
  *
  * *Demandé par le patron le 10 août 2026, arrêté sur maquette
  * (`maquettes/atlas-equipes.html`, `docs/INTEGRER-ORIGINE.md` §6 ter).*
@@ -55,7 +55,7 @@ export default function VosEquipes({
           les blocs, laisse-les »*. Ne pas les confondre : ceux-là disent que
           deux choses sont distinctes ; celui-ci n'ornait qu'un mot. */}
       <p className={`mb-1.5 ${libelleCaps}`} style={{ color: colors.muted }}>
-        Combien partent en même temps
+        Chantiers menés en même temps
       </p>
 
       <CompteurRond
@@ -67,9 +67,10 @@ export default function VosEquipes({
         onChanger={changerNombre}
       />
 
-      {/* Une seule phrase, qui change avec le compteur. **Aucun mot de
-          métier** : « chantiers de front » a été soumis au patron et rejeté —
-          « pour moi rien ». Elle dit ce que le réglage CHANGE. */}
+      {/* Une seule phrase, et **le chiffre y bouge avec le compteur** — sa
+          dictée du 26 août : *« en dessous en gris marque 2 chantiers par
+          jour ; le chiffre bouge en fonction du nombre d'équipes »*. Elle dit
+          ce que le réglage PRODUIT, pas comment il s'appelle. */}
       <p className="mt-2 text-center text-[12.5px] leading-[1.6]" style={{ color: colors.muted }}>
         {phraseDuCompteur(nombre)}
       </p>

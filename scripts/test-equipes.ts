@@ -158,11 +158,24 @@ console.log("\n=== Les deux phrases, et ce qu'elles ne disent pas ===");
 
 essai("la phrase du compteur d'équipes ne contient aucun mot de métier", () => {
   // « chantiers de front » a été soumis au patron et rejeté : « pour moi rien ».
-  assert.equal(phraseDuCompteur(1), "Un chantier à la fois : un jour pris n'est plus proposé.");
-  assert.equal(phraseDuCompteur(2), "Un jour reste proposé tant qu'une équipe est libre.");
+  // **Sa dictée du 26 août 2026 :** *« en dessous en gris marque 2 chantiers par
+  // jour, c'est ce qui remplit votre planning — le chiffre bouge en fonction du
+  // nombre d'équipes »*. C'est le CHIFFRE qui doit suivre, pas seulement le mot.
+  assert.equal(phraseDuCompteur(1), "Un chantier par jour. C'est ce qui remplit votre planning.");
+  assert.equal(phraseDuCompteur(2), "2 chantiers par jour. C'est ce qui remplit votre planning.");
+  assert.equal(phraseDuCompteur(5), "5 chantiers par jour. C'est ce qui remplit votre planning.");
+  for (const n of [2, 7, 20]) {
+    assert.ok(
+      phraseDuCompteur(n).startsWith(`${n} chantiers`),
+      `phrase(${n}) ne porte pas le chiffre du compteur : « ${phraseDuCompteur(n)} »`
+    );
+  }
   for (const n of [1, 2, 7, 20]) {
     assert.ok(!/de front|effectif|ressource/i.test(phraseDuCompteur(n)), `phrase(${n}) emploie un mot de métier`);
   }
+  // Une valeur aberrante ne doit pas écrire « 0 chantiers par jour » : le
+  // compteur est borné à 1 partout ailleurs, et la phrase le suit.
+  assert.equal(phraseDuCompteur(0), "Un chantier par jour. C'est ce qui remplit votre planning.");
 });
 
 essai("la phrase des salariés ne parle jamais d'équipes", () => {

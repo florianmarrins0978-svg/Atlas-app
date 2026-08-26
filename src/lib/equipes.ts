@@ -160,14 +160,23 @@ export function equipesMobilisees(salariesCoches: number, nombreEquipes: number)
 /**
  * La phrase qui accompagne le compteur d'ÉQUIPES, dans Réglages.
  *
+ * **Sa dictée du 26 août 2026, mot pour mot :** *« marque chantiers menés en
+ * même temps, et en dessous en gris marque "2 chantiers par jour, c'est ce qui
+ * remplit votre planning" — le chiffre bouge en fonction du nombre d'équipes »*.
+ *
+ * **Le chiffre est DANS la phrase, et c'est tout le point.** L'ancienne version
+ * décrivait la règle sans jamais la chiffrer — « un jour reste proposé tant
+ * qu'une équipe est libre » — si bien que le compteur et sa légende se lisaient
+ * séparément. Le nombre écrit deux fois, une fois gros et une fois dans la
+ * phrase, dit ce que le réglage PRODUIT et non ce qu'il est.
+ *
  * **Aucun mot de métier ici**, et c'est une consigne explicite : « chantiers de
- * front » a été soumis au patron et rejeté — *« pour moi rien »*. La phrase dit
- * ce que le réglage CHANGE, pas comment on l'appelle.
+ * front » a été soumis au patron et rejeté — *« pour moi rien »*.
  */
 export function phraseDuCompteur(nombreEquipes: number): string {
-  return nombreEquipes <= 1
-    ? "Un chantier à la fois : un jour pris n'est plus proposé."
-    : "Un jour reste proposé tant qu'une équipe est libre.";
+  const n = Math.max(1, Math.trunc(nombreEquipes) || 1);
+  const combien = n <= 1 ? "Un chantier" : `${n} chantiers`;
+  return `${combien} par jour. C'est ce qui remplit votre planning.`;
 }
 
 /**
