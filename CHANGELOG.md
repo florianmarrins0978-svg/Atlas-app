@@ -9,6 +9,72 @@ Format : le plus récent en tête.
 
 ## 2026-08-26
 
+### Ses salariés se comptent à part de ses équipes — et ce sont leurs noms qu'on coche
+
+**Sa réponse à la planche 97 : A.** Puis, en tranchant : *« il ne faut pas
+changer la méthode d'affiliation des gars sur les chantiers — juste, au lieu que
+ce soit les équipes, ce sera les noms qu'on affilie. On garde la même façon de
+faire. »*
+
+**Ce que ça débloque.** `entreprises.nombre_equipes` portait deux métiers : la
+capacité du planning ET combien de noms se règlent. Un paysagiste à quatre
+salariés qui ne mène qu'un chantier à la fois n'avait aucun moyen de le dire —
+il devait choisir entre nommer ses gars et dire la vérité sur son planning.
+`nombre_salaries` (migration 0067) porte désormais le second.
+
+**Ce qui n'a pas bougé, parce qu'il l'a interdit** : la pastille sur la
+demi-journée, la liste qui s'ouvre, les cases cochées une à une, « Terminé ».
+Même action serveur, même table, même indépendance matin / après-midi. Seuls les
+libellés changent — « Équipe A » a disparu, le repli est « Salarié 3 ».
+
+**Le point délicat, et il est traité :** on coche désormais des GENS, et trois
+gars peuvent tenir sur une entreprise à deux chantiers par jour. La charge est
+donc plafonnée à la capacité (`equipesMobilisees`) — sans quoi un chantier à
+trois gars fermerait à lui seul une journée qui en accepte deux, et l'écran
+d'envoi refuserait au client des jours réellement libres. **À effectif égal, le
+résultat est identique à celui d'avant** : c'est le cas de son entreprise, dont
+le compteur a été repris du nombre d'équipes.
+
+**Un artisan seul reste à zéro salarié**, et non un : sans cette ligne dans la
+reprise, il aurait vu apparaître du jour au lendemain une case « Salarié 1 » à
+cocher sur chacune de ses demi-journées.
+
+**Aucune table n'a été créée** — la table `equipes` porte déjà un rang et un nom
+facultatif, et il y écrit des prénoms depuis le 10 août : ces lignes SONT les
+gars. Le renommage `equipes` → `salaries` est une tâche à part (`TODO.md`) :
+vingt-trois fichiers, les politiques RLS et les contraintes, à ne pas mêler à un
+changement de comportement.
+
+`ARCHITECTURE.md` §192.
+
+### Planche 97 — ses salariés, et ce qui remplit le planning
+
+Sa demande : *« un curseur + ou − qui définit le nombre de salariés, et pouvoir
+affilier des noms ; ceux-là permettront d'ajouter ces noms au chantier, et plus
+les équipes A ou B. Néanmoins les équipes doivent toujours servir à définir le
+remplissage du planning — 2 équipes = 2 chantiers par jour, ça ne bouge pas. »*
+
+**Rien n'est codé dans `src/`** (`CLAUDE.md` §3 bis) : trois propositions
+essayables, et il tranche.
+
+**Ce que le code dit, et qui justifie sa demande.** `entreprise.nombreEquipes`
+porte aujourd'hui DEUX responsabilités : la capacité du planning, et la fabrique
+des libellés « Équipe A / B » (`src/lib/equipes.ts`, `libelleEquipe`). Il veut
+les séparer — c'est juste : on peut avoir quatre salariés et ne mener qu'un
+chantier à la fois.
+
+**Ce que la planche rend touchable plutôt que d'affirmer.** Un curseur *à côté*
+d'une liste de noms crée deux vérités sur la même question. En proposition A, on
+monte le curseur à 5 sans taper de nom : l'écran annonce 5 salariés quand le
+chantier n'en connaît que 3. C'est la seule raison de la proposition C, qui
+supprime ce curseur et compte les noms — **et c'est son appel**, puisque c'est
+lui qui l'a demandé.
+
+Le curseur des **équipes** reste dans les trois, comme il l'a exigé.
+
+**Le contrôle ouvre un navigateur, et il a trouvé un vrai défaut** : les
+pastilles et les croix de la planche faisaient moins de 40 px. Corrigé à 44 —
+il touche cet écran debout, avec un gant.
 ### « Sans date » disparaît quand rien n'attend de jour
 
 **Sa question :** *« est-ce que la catégorie sans date a un réel besoin
@@ -123,6 +189,27 @@ leur place d'écran, donc au milieu d'une longue page. Mesuré pour de bon —
 déroulé jusqu'en bas, `bottom` du texte contre `top` de la barre — **rien n'est
 recouvert**. Le piège est écrit dans `HANDOVER.md` : c'est la deuxième fois
 aujourd'hui qu'il trompe.
+
+### Un choix fait par erreur se défait
+
+*« Si par erreur j'ai sélectionné un des 3 champs je ne peux plus le
+désélectionner ! Faut corriger ça, je dois pouvoir désélectionner. »*
+
+Sur la page que reçoit son client, un second appui sur la date déjà cochée la
+**défait** maintenant, et rien ne se coche à la place. Cela vaut aussi pour
+« une autre date », dont le calendrier se referme.
+
+Ce n'était pas le produit : un bouton radio ne se décoche pas, par
+construction — le navigateur ne connaît que « passer de l'un à l'autre ». Le
+client qui touchait la mauvaise ligne restait engagé sur une date qu'il n'avait
+pas choisie, et c'est le jour où l'artisan se déplace.
+
+Le contrôle qui le garde (`test-devis-client-e2e.ts`) a été vu rouge contre la
+version d'avant. Il tient surtout ce qui empêche la correction d'aller trop
+loin : **un appui sur une autre ligne choisit toujours** — défaire à chaque
+appui rendrait le formulaire inutilisable —, et la case de rétractation s'en va
+avec la date qui l'a fait naître. `ARCHITECTURE.md` §191.
+
 
 ### Le numéro de ses documents se choisit — et le millésime n'est plus écrit en dur
 
@@ -244,7 +331,7 @@ recherche de chantier a été gardée (elle emploie la règle de l'écran), et l
 outil qui CRÉAIT une fiche tout seul est devenu une proposition — les deux
 règles qu'il portait, reprises telles quelles.
 
-Détail : `ARCHITECTURE.md` §189.
+Détail : `ARCHITECTURE.md` §188.
 
 ### Le filet d'intertitre était revenu sur l'écran des accès
 
@@ -392,7 +479,7 @@ de la dictée — prestations mal organisées, quantités et unités mal lues, p
 historiques incohérents. Le lot Audio ne garantissait que l'entrée du fichier ;
 mêler les deux rendrait les deux illisibles.
 
-Détail : `ARCHITECTURE.md` §192 · rapport : `docs/lot-audio-rapport.md`.
+Détail : `ARCHITECTURE.md` §194 · rapport : `docs/lot-audio-rapport.md`.
 ---
 
 ## 2026-08-25
@@ -1079,7 +1166,7 @@ devenait une arme retournée. Il ne s'applique plus que si la source est établi
 nom**, avant d'être crus : celui de F8 passait sur une ligne d'import, puis sur
 un commentaire, puis parce que `const [etat, etatApple, params] = await
 Promise.all(` contient le mot `params`. Le détail est dans `ARCHITECTURE.md`
-§191 — c'est la quatrième fois que ce dépôt paie « un contrôle trop tolérant ne
+§193 — c'est la quatrième fois que ce dépôt paie « un contrôle trop tolérant ne
 prouve rien ».
 
 **Ce qui a été trouvé en le mesurant :** sans son exclusion du `matcher`,
@@ -1850,6 +1937,73 @@ La typographie passait déjà par `--font-display` : elle suit la charte sans
 qu'aucun écran soit touché. Les rayons, non — **soixante-six fichiers** les
 écrivent en dur (`rounded-[13px]`), et une charte ne peut rien sur ce qui ne
 passe pas par elle. C'est annoncé, pas fait.
+
+### « Mon entreprise » perd six phrases, et l'adresse cesse de s'écrire en double
+
+*« Supprime la phrase en gris : vos identifiants + comment vous vous nommez +
+où vous êtes établi + pour vous joindre + les espaces se posent tout seuls +
+ces informations remplissent vos devis (toute la phrase) + le trimestre est une
+option (toute la phrase). »*
+
+**Deux en-têtes restent, et ce n'est pas un oubli** : « Votre régime de TVA » et
+« Pour être payé » ne figurent pas dans sa liste. Elles coiffent plusieurs
+champs dont le lien ne se devine pas — un IBAN et son titulaire, un régime et un
+numéro intracommunautaire. Les quatre retirées, elles, ne disaient rien de plus
+que le champ juste dessous : « COMMENT VOUS VOUS NOMMEZ » au-dessus de « Nom de
+l'entreprise ».
+
+**Vérifié à l'écran, et dans les deux sens** : les six phrases ont disparu, les
+deux autres sont restées. Un contrôle qui ne vérifierait que la disparition
+laisserait passer un retrait trop large.
+
+### Un contrôle réclamait la phrase qu'il venait de faire retirer
+
+Retirer *« le trimestre est une option… votre comptable dit lequel vous
+concerne »* a fait rougir `test-periodicite-tva-e2e`, qui exigeait ces mots. Le
+contrôle a été **re-visé, pas assoupli** : ce qu'il défendait vraiment survit —
+**l'écran ne conseille jamais une périodicité**, parce que le seuil des 4 000 €
+porte sur la TVA due et qu'Atlas ne connaît que la collectée. C'est cela qu'il
+mesure désormais, et non un libellé que le patron peut vouloir réécrire demain
+(`CLAUDE.md` §5 bis).
+
+**Il a tranché dans la foulée** — *« tu peux faire une phrase courte »* — et
+elle tient sur une ligne : **« Le mois est le défaut ; le trimestre s'obtient
+sous condition. »** Sans elle, les deux boutons se lisaient comme un choix
+libre, et le mauvais coûte un rappel de l'administration.
+
+**Ce qu'elle ne dit pas, délibérément :** laquelle lui convient. Le seuil porte
+sur la TVA DUE, donc sur ses achats, qu'Atlas ne voit pas.
+
+Le contrôle défend désormais **le fait, pas la formule** : un motif large
+(« mois » près de « défaut »), pour qu'il puisse la réécrire demain sans faire
+rougir la batterie. **Vu rouge** en remplaçant la phrase par « Choisissez votre
+rythme » — il tombe, et montre le texte fautif.
+
+### L'adresse écrite deux fois : sa question du 24 août
+
+*« Pourquoi l'adresse est marquée 2 fois de suite ? »* Son siège s'écrivait dans
+le champ — « 10 rue denfert rochereau 78200 Mantes la jolie » — et la
+proposition juste dessous répétait la même adresse dans son écriture officielle,
+« 10 Rue Denfert Rochereau 78200 Mantes-la-Jolie ». Deux lignes, une seule
+adresse.
+
+Ce n'était pas un défaut de recherche : **pour une machine, les deux textes
+diffèrent** — majuscules, traits d'union — et se ressemblaient assez pour qu'un
+œil y voie un doublon. Une liste qui répète ce qui est déjà écrit ne propose
+rien : elle occupe la place et fait douter de la saisie.
+
+**Ce qui a été refusé, et c'est délibéré :** réécrire sa saisie dans la forme
+officielle. Corriger sous ses doigts un champ qui finira en tête de ses devis,
+sans qu'il l'ait demandé, n'est pas de notre ressort (`CLAUDE.md` §4). On cache
+la répétition ; on ne touche pas à ce qu'il a écrit.
+
+**NON ÉPROUVÉ DANS UN NAVIGATEUR ICI, et il faut le dire** (`AGENTS.md`) : la
+Base Adresse Nationale est refusée par le mandataire de cet environnement, et la
+liste de propositions ne s'ouvre pas — **vérifié : elle ne s'ouvrait pas
+davantage AVANT cette correction**, zéro requête dans les deux cas. Ce qui est
+éprouvé, c'est la règle elle-même, en fonction pure : son cas exact, les
+chiffres qui distinguent le 10 du 100, deux vides qui ne sont pas « la même
+adresse », et une adresse plus précise qui reste une proposition.
 
 ### L'onglet courant devient une pastille — sur Brume moderne, et nulle part ailleurs
 

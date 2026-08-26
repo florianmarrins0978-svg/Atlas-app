@@ -215,6 +215,24 @@ export async function mettreAJourNombreEquipesAction(nombreEquipes: number) {
 }
 
 /**
+ * Combien de gens travaillent dans l'entreprise — sa demande du 26 août 2026.
+ *
+ * **Un compteur séparé de celui des équipes, et c'est tout l'objet du lot.**
+ * Celui-ci décide des noms qui se cochent sur une demi-journée de chantier ;
+ * celui des équipes décide de combien de chantiers tiennent dans une journée.
+ * Les deux n'ont aucune raison de coïncider.
+ *
+ * **Le repli est ZÉRO en cas d'entreprise absente**, et non un : rendre « 1 »
+ * ferait apparaître une ligne à nommer là où l'on ne sait rien.
+ */
+export async function mettreAJourNombreSalariesAction(nombreSalaries: number) {
+  const ctx = await getCurrentCtx();
+  await exigerProprietaire(ctx, "modifier le nombre de salariés");
+  const e = await mettreAJourEntreprise(ctx, { nombreSalaries });
+  return { nombreSalaries: e?.nombreSalaries ?? 0 };
+}
+
+/**
  * Noter qu'une équipe n'est pas là, et la retirer de la capacité ces jours-là.
  *
  * *Le patron, le 14 août 2026 : « une équipe qui doit partir en déplacement

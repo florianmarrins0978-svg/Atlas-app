@@ -15990,293 +15990,6 @@ recopier : tant que les deux règles disent la même chose, elles ne s'écrivent
 qu'une fois. Elle garde son nom parce qu'elles peuvent rediverger demain, et
 qu'il faut alors UN endroit où le dire.
 
----
-
-## 182. Ses journées se comptaient à Greenwich
-
-**Sa question du 25 août 2026, au soir :** *« on est le 25 au soir, donc le
-chantier Eric est terminé — quand est-ce qu'il passe automatiquement dans la
-catégorie Terminés ? »*, puis : *« donc ce soir à 00 h 00 il passe dans
-Terminés ? »*.
-
-**Non : à 2 h du matin.** Et personne dans le dépôt ne le savait.
-
-### Le défaut
-
-`jourIso` — la seule définition du « jour » de tout le dépôt — rendait
-`instant.toISOString().slice(0, 10)`, c'est-à-dire le jour **UTC**. La France
-est à UTC+2 l'été, UTC+1 l'hiver : entre minuit et deux heures, Atlas croyait
-qu'on était encore la veille.
-
-Ce que cela produisait, dans cette fenêtre-là :
-
-| | |
-|---|---|
-| un chantier dont la journée est finie | reste au **planning** |
-| une facture faite en rentrant | porte la **date d'hier** |
-| le jour marqué « aujourd'hui » au calendrier | est le **mauvais** |
-
-Deux heures paraissent peu. C'est exactement l'heure à laquelle un artisan finit
-sa journée et range ses papiers — la seule fenêtre où l'erreur se voit, et il
-l'a vue.
-
-### La correction
-
-`jourIso` passe par `Intl.DateTimeFormat` sur `Europe/Paris`
-(`FUSEAU_DU_PATRON`, `src/lib/jour.ts`). **Un décalage figé — `+1`, `+2` — se
-serait trompé la moitié de l'année**, et l'erreur n'aurait sauté aux yeux qu'au
-changement d'heure : `Intl` est la seule source qui connaisse les vraies règles
-d'un fuseau. Le dépôt le savait déjà pour les agendas (`src/lib/fuseau.ts`,
-`FUSEAU_ARTISAN`) ; c'est le calcul du jour qui était resté en arrière.
-
-**Une seule fonction change, et tout suit** — le rangement des onglets, les
-dates d'émission et d'échéance, le relevé de TVA, le calendrier. C'est le
-bénéfice de la définition unique : la corriger à un endroit les corrige tous, là
-où douze `toISOString()` recopiés auraient laissé la moitié du produit en UTC.
-
-### Ce que le contrôle refuse
-
-`scripts/test-jour-du-patron.ts` prend l'été **et** l'hiver, des deux côtés de
-minuit, puis vérifie ce qu'il demandait vraiment : son chantier du 25 est encore
-au planning à 23 h 59, et dans Terminés à 00 h 30. **Éprouvé rouge contre
-l'ancienne version** : trois cas sur sept tombent.
-
-### Ce qui n'a PAS changé, et c'est voulu
-
-La bascule vers « Terminés » reste **calculée à l'affichage**
-(`src/lib/onglet-chantier.ts`), jamais écrite en base et jamais déclenchée par
-une tâche de fond. Rien ne tourne la nuit : l'écran range au moment où on
-l'ouvre. Un chantier « passe » donc dans Terminés dès la première ouverture
-après minuit — il n'y a pas d'instant où quelque chose se déclenche, et c'est ce
-qui rend la règle sûre : aucune tâche à réveiller, rien à rattraper.
-
-## 183. L'assistant sait enfin partir d'un NOM — et il ne prétend plus qu'un ancien devis a disparu
-
-**Sa capture du 25 août 2026.** Il demande : *« Peux-tu me ressortir le premier
-devis de M. Bernard ? »* L'assistant répond qu'il n'a *« aucun chantier
-ouvert »*, lui explique comment aller ouvrir la fiche lui-même, et ajoute :
-*« Atlas conserve uniquement le dernier devis par chantier »*. Sa réponse :
-**« c'est justement ça que je veux qu'il soit capable de faire »**.
-
-Deux défauts, et le second est le plus grave.
-
-### 1. Aucun outil ne partait d'un nom
-
-Tous les outils de l'assistant lisent `ContexteOutil.chantierId` — le chantier
-d'où l'on a ouvert le panneau. Ouvert depuis la LISTE, il est nul, et chacun
-refuse à son tour. Le modèle n'inventait rien : il n'avait littéralement aucun
-chemin entre « M. Bernard » et un dossier.
-
-`RechercherChantier` est le seul outil qui fonctionne **sans** chantier courant,
-et il est en tête du registre pour cette raison. Il cherche dans le nom du
-client **et** dans celui du chantier — il dit « le chantier de la mairie » aussi
-souvent qu'il dit un nom de client, et l'outil doit suivre sa façon de parler,
-pas la colonne où c'est rangé.
-
-**La règle de comparaison est CELLE DE L'ÉCRAN** (`src/lib/recherche-client.ts`,
-`filtrerClientsParNom`) : casse et accents ignorés, n'importe où dans la ligne,
-mots dans le désordre. En écrire une seconde ici, c'est promettre à l'assistant
-de trouver ce que l'écran ne trouve pas — ou l'inverse (`CLAUDE.md` §3).
-
-### 2. Un outil muet fait inventer une explication
-
-**« Atlas conserve uniquement le dernier devis » est FAUX.** Un brouillon se
-réécrit en place, mais **un devis envoyé est conservé** et le suivant devient
-une version 2 (`getOuCreerDevisBrouillon`). Ses anciens devis étaient là.
-
-Ce qui a produit la phrase fausse n'est pas le modèle : c'est l'outil. Il rendait
-la dernière version, sans jamais dire qu'il en existait d'autres. **Le modèle ne
-dispose que de ce qu'on lui rend** — le reste, il le comble.
-
-D'où deux changements qui vont ensemble :
-
-| | |
-|---|---|
-| `LireDevis` prend une `version` | « le premier » = la version 1 |
-| il rend **toujours** `versionsDisponibles` | même quand on ne demande rien : c'est ce qui empêche de conclure qu'il n'y en a qu'une |
-
-`listerVersionsDevis` trie en **croissant**, contre l'usage du reste du dépôt :
-ici on lit une histoire, on ne cherche pas l'état courant, et « le premier » doit
-être le premier de la liste.
-
-### Ce qu'un refus doit dire
-
-Sans chantier, `LireDevis` ne répond plus « aucun chantier dans le contexte » —
-il nomme **la suite à donner** : employer `RechercherChantier`, puis rappeler
-avec l'identifiant obtenu. Une suite le vérifie, et vérifie aussi que le refus
-ne renvoie **plus** le patron ouvrir une fiche à la main : c'est précisément ce
-qu'il a reproché.
-
-La consigne système va dans le même sens, en toutes lettres : *ne demande jamais
-au patron d'aller ouvrir une fiche pour te donner accès — c'est ton travail de
-la trouver.*
-
-### Éprouvé contre la version qui lui a répondu
-
-`test-ia-09-chercher-par-nom.ts` monte le décor exact de sa capture : un client
-« Mr. Bernard », un premier devis **envoyé** — l'envoi seul fige la version 1 —,
-puis un second. Rejouée contre l'ancien outil, elle rougit sur trois cas : la
-version 1, les versions annoncées, et le refus d'une version absente.
-
-**Et un confrère au même nom.** Une seconde entreprise porte elle aussi un
-« Mr. Bernard » : c'est le seul décor où un défaut d'isolation se verrait, et il
-montrerait les devis de quelqu'un d'autre. Les deux sens sont vérifiés — sans
-quoi le cas serait vert avec une recherche qui ne rend jamais rien.
-## 191. Audit de sécurité, lot 3 : les constats F1 → F13, et ce qu'ils valaient vraiment
-
-**Le rapport d'audit qui nomme F1 à F13 n'est PAS dans le dépôt, et n'y a jamais
-été.** Seuls deux des treize points citaient un fichier. Les onze autres ont donc
-été traités comme des *hypothèses à mesurer*, jamais comme des constats acquis —
-et c'est ce qui a permis d'écarter quatre faux problèmes sans rien casser.
-
-Sept points ont été codés (F1, F2, F5, F8, F9, F12, F13), deux ont reçu un
-contrôle sans que leur code bouge (F3, F8 structurel), quatre ont été refusés.
-
-### Ce qui a été refusé, et pourquoi c'est le plus important
-
-| | |
-|---|---|
-| **F4** | le nom du fichier de devis est **engendré par le serveur** (`devis-${numero}.pdf`), jamais par l'utilisateur : il n'y a rien à échapper |
-| **F6** | `run-migrations.ts` suit les migrations **par nom de fichier**. Renommer une migration pour « lever un doublon » créerait exactement le défaut qu'on prétend corriger : elle se rejouerait partout |
-| **F7** | l'export et l'effacement d'un client existent sans écran. C'est une décision **produit / RGPD**, pas une correction de sécurité |
-| **F10** | `unsafe-inline` dans la CSP : réel, mais c'est un lot à soi — le retirer sans nonce casse l'application |
-| **F11** | déjà fermé par le lot 1, et un contrôle le prouve depuis |
-
-### F2 — un site tiers ne doit pas pouvoir déconnecter le patron
-
-`/api/session-perimee` efface six cookies sur un simple `GET` : une page
-étrangère qui pose `<img src="…/api/session-perimee">` mettait le patron dehors
-en silence. Ce n'est pas un vol — c'est une nuisance gratuite.
-
-**`Sec-Fetch-Site`, et surtout PAS `Sec-Fetch-Dest`.** `Dest: document` paraissait
-plus simple et **aurait cassé un vrai parcours** : quatre des cinq appels
-légitimes viennent d'un `redirect()` côté serveur, que le routeur de Next va
-chercher en `fetch` — `Dest` vaut alors `empty`, et le cookie mort du 10 août
-2026 ne s'effacerait plus jamais.
-
-L'en-tête absente laisse passer, et c'est raisonné : un navigateur ne permet pas
-de la retirer ; ce qui n'en envoie pas est un client sans cookie à effacer.
-
-**Ce que le contrôle a appris en rougissant :** la réponse refusée porte quand
-même des `Set-Cookie` — ceux d'Auth.js, qui rafraîchit la session dans la couche
-au-dessus, valeurs pleines et expiration future. Rafraîchir n'est pas
-déconnecter. Le contrôle ne compte donc plus les `Set-Cookie`, il cherche les
-EFFACEMENTS.
-
-### F5 — le contexte vide levait au lieu de rendre zéro
-
-`corrections_dictee` portait encore `current_setting('app.entreprise_id',
-true)::uuid` sans `NULLIF`. **Ce n'est pas une fuite** : sans contexte, la valeur
-est NULL, la politique est fausse, la table est vide. Ce qui casse, c'est le
-contexte **vide** — PostgreSQL remet un réglage de session à `''` après certaines
-transactions sur une connexion mutualisée, et `''::uuid` LÈVE. L'écran tombe en
-erreur au lieu de se montrer vide, et le message accuse un type de données là où
-le coupable est un contexte perdu.
-
-La migration 0002 avait corrigé cela pour les douze tables de janvier ; 0025 a
-créé cette table quatre mois plus tard sans reprendre la leçon, parce qu'aucun
-contrôle ne regardait la FORME des politiques. **0067 la répare, et
-`test-isolation-contexte-vide-db.ts` empêche la prochaine** — il mesure les
-41 tables une par une sous `atlas_app`, contexte forcé à `''`.
-
-**Une migration déjà appliquée ne se réécrit pas**, et ne se renomme pas
-davantage : `_migrations` porte son nom, elle ne se rejouera jamais, et la
-corriger sur le disque ne changerait que les bases neuves — donc pas celles où
-le défaut existe.
-
-### F8 — la seule rubrique du patron sans garde, et la règle qui manquait
-
-« Intégrations » (`/reglages/agenda`) lisait l'état du calendrier relié du
-patron — son compte iCloud ou Google — avant de savoir à qui elle parlait. Le
-lien était caché à un salarié, ce qui ne protège rien : **une adresse se tape**.
-Les écritures, elles, étaient déjà gardées.
-
-Le défaut n'était pas « une garde oubliée » mais **« rien ne disait qu'il en
-fallait une »**. D'où `scripts/test-reglages-gardes.ts`, qui ne regarde aucune
-rubrique en particulier : toute rubrique non personnelle pose une garde de rôle,
-et elle la pose **avant** la première lecture. Trois rubriques sont
-explicitement personnelles — compte, connexion, apparence.
-
-**Ce contrôle a été vert deux fois sur le défaut qu'il porte dans son nom**, et
-il n'a été cru qu'après avoir rougi pour de bon :
-
-| Ce qu'il regardait | Pourquoi il passait |
-|---|---|
-| le nom de la garde n'importe où dans le fichier | la ligne `import { estProprietaire }` suffisait |
-| le fichier commentaires compris | le commentaire qui EXPLIQUE la garde cite son nom |
-| la ligne entière pour trouver une lecture | `const [etat, etatApple, params] = await Promise.all(` contient le mot `params`, qui était dans la liste des attentes anodines |
-
-Il blanchit désormais les commentaires, ne regarde que le corps de la fonction,
-et ne compare que **ce qui suit `await`**.
-
-**Et `adressesAutorisees()` mentait.** Son commentaire promettait que « la liste
-des rubriques est l'unique source » et qu'« une rubrique retirée ferme son
-adresse au même instant ». Aucune page ne l'a jamais appelée : ses seuls
-appelants sont des contrôles. C'est ce qui explique le trou — la prose laissait
-croire à une garde centrale. Elle **n'est pas branchée pour autant** : un
-`layout` déduit du sommaire fermerait `/reglages/prix/mesures` et
-`/reglages/vocabulaire`, qui n'y figurent pas. Le commentaire dit maintenant ce
-qu'elle est : ce que le sommaire ouvre, et pas une frontière.
-
-### F9 — la seule écriture ouverte sans session
-
-Répondre à un devis depuis le lien public n'avait aucune borne de cadence.
-Partout ailleurs, une cadence se compte par entreprise ou par utilisateur ; ici
-personne ne s'est nommé, et cette action ne rentrait dans aucun des deux moules.
-
-**Ce n'est pas un secret qu'on défend** : le jeton fait 256 bits tirés au sort,
-il ne se devine pas. C'est le COÛT qu'on borne.
-
-**Et la revue hostile a corrigé le correctif avant toute livraison.** Deux
-compteurs avaient été posés — par jeton, et par source. Or sans
-`ATLAS_PROXY_SAUTS`, `sourceDuVisiteur` rend délibérément une valeur commune :
-**tous les clients partagent alors un seul seau**. Soixante appels depuis
-n'importe où, et plus aucun client de plus aucun artisan ne signe son devis. Le
-seuil devenait une arme retournée — une dépense de calcul échangée contre un
-blocage commercial. Il ne s'applique donc que **si la source est établie** ; le
-seuil par jeton, lui, s'applique toujours.
-
-`sourceDuVisiteur` et `horsProductionReelle` ont quitté `src/app/login/actions.ts` pour
-`src/server/source-visiteur.ts` : les recopier aurait fabriqué une seconde façon
-de décider qui est « le même visiteur ».
-
-### F12 — les maquettes gelées ne sont pas servies aux artisans
-
-Douze pages `/design/*`, **gelées depuis le 1er août 2026**, affichent
-`mock-data.ts`. Aucune donnée réelle, et le middleware exige déjà une session :
-ce n'est pas une fuite, c'est de la **surface** — des pages que plus personne ne
-relit, et qui ne suivent plus les corrections des écrans réels.
-
-Une seule mise en page (`src/app/design/layout.tsx`) les couvre toutes,
-aujourd'hui comme demain : douze gardes recopiées, c'est douze occasions d'en
-oublier une. `notFound()` plutôt qu'un refus — un « accès refusé » confirme
-qu'il y a quelque chose à trouver.
-
-**Le banc du patron est traité comme la production**, contrairement à l'usage du
-reste du dépôt : il est ouvert sur l'internet, et les planches qu'il doit voir
-vivent dans `appli/`, publiées par `pages.yml`.
-
-### F13 — `robots.txt`, et ce qu'il n'est pas
-
-**Ce n'est pas une frontière de sécurité**, et le fichier le dit lui-même : une
-demande, pas une serrure. Rien n'en dépend — les écrans du patron sont fermés
-par le middleware, ceux du client par un jeton de 256 bits.
-
-Ce qu'il apporte est modeste et réel : les liens envoyés par SMS ou courriel
-(`/devis/<jeton>`, `/factures/<jeton>`, `/entretien/<jeton>`) voyagent par des
-canaux qui les font parfois suivre. Il suffit d'une fois pour qu'un devis
-nominatif entre dans un index public, et il n'en sortira plus.
-
-**Le piège, et il était réel :** le middleware renvoie à `/login` tout ce qui
-n'est pas explicitement laissé de côté. Mesuré — sans l'exclusion,
-`GET /robots.txt` rend **307**. Un moteur aurait reçu une redirection au lieu de
-la consigne, et l'on aurait cru le garde-fou en place. `robots.txt` a donc
-rejoint `favicon.ico` dans le `matcher`.
-
-Pas de `sitemap` : un plan de site est exactement ce qu'on ne veut pas publier.
-
----
-
 ## 184. L'assistant OUVRE une fiche chantier — la seule écriture qu'on lui accorde
 
 > **REFERMÉE LE 26 AOÛT 2026, LE LENDEMAIN.** À la question posée de face —
@@ -16798,7 +16511,354 @@ toujours. Le contrôle qui réclamait la PHRASE, lui, aurait rougi sur du code
 juste pour une demande exaucée (`CLAUDE.md` §5 bis) : il refuse désormais
 qu'elle revienne, au lieu de l'exiger. Trois libellés retirés sont gardés de la
 même façon.
-## 192. Le lot Audio : un format se lit dans les octets, jamais dans l'en-tête du navigateur
+
+---
+
+## 191. Un choix fait par erreur doit pouvoir se défaire
+
+**Sa demande du 26 août 2026**, capture de la page que reçoit son client à
+l'appui : *« si par erreur j'ai sélectionné un des 3 champs je ne peux plus le
+désélectionner ! Faut corriger ça, je dois pouvoir désélectionner. »*
+
+**Ce n'était pas un défaut du produit, c'était le navigateur.** Un bouton radio
+ne se décoche pas : par construction, il ne connaît que « passer de l'un à
+l'autre ». Le client qui touchait la mauvaise ligne restait donc engagé sur une
+date qu'il n'avait pas choisie, sans aucun moyen de revenir en arrière — et
+cette date est celle où l'artisan se déplace.
+
+### Pourquoi `onClick`, et pas `onChange`
+
+| L'appui | `onChange` | `onClick` |
+|---|---|---|
+| sur une ligne neuve | part | part |
+| sur la ligne DÉJÀ cochée | **ne part jamais** | part |
+
+Le navigateur ne signale un changement que s'il y en a un ; c'est précisément le
+cas qu'on doit attraper. `onClick` est donc le seul geste qui existe ici.
+
+### Et la comparaison tient sans drapeau
+
+React ne repeint pas entre deux gestionnaires d'un même événement : à l'entrée
+de `onClick`, l'état porte encore la valeur **d'avant** l'appui.
+
+- ligne neuve : elle diffère de l'état → on ne défait rien, `onChange` choisit ;
+- ligne déjà cochée : elle est égale → on vide, et `onChange` ne partira pas.
+
+Les deux cas passent par la même ligne. Un drapeau « je viens de cocher » aurait
+survécu à un rendu et défait le choix suivant.
+
+Le clavier continue de passer par `onChange` : les flèches changent de ligne
+sans jamais rien défaire, ce qui est le comportement attendu d'un groupe radio.
+
+### Ce que le contrôle garde, et ce qu'il empêche
+
+`scripts/test-devis-client-e2e.ts`, cas « UN CHOIX FAIT PAR ERREUR SE DÉFAIT ».
+Vu rouge contre la version d'avant, sur l'assertion attendue.
+
+Il tient quatre choses, et la deuxième est la plus importante :
+
+1. le second appui défait, et **rien ne se coche à la place** ;
+2. **un appui sur une AUTRE ligne choisit toujours** — « défaire à chaque
+   appui » passerait le point 1 et rendrait le formulaire inutilisable ;
+3. la case de rétractation **s'en va avec la date qui l'a fait naître** : sans
+   cela, l'écran garderait une autorisation légale de démarrage anticipé
+   rattachée à une date effacée ;
+4. « une autre date » se défait pareil, et **referme son calendrier**.
+
+### Ce qui n'a pas bougé, et qui est déjà tenu
+
+Le serveur refusait déjà une acceptation sans date (`date_manquante`,
+`repondreAction`) : tout défaire puis appuyer sur « J'accepte ce devis » rend
+un message clair, pas un enregistrement muet. La règle n'existe qu'à un endroit.
+
+**Le même piège dort ailleurs**, sur le choix entre deux tarifs ambigus
+(`PropositionPrixSection.tsx`). Il ne l'a pas signalé et l'enjeu y est moindre —
+il peut toucher l'autre tarif —, mais c'est le même `type="radio"` et le même
+appui sans retour possible. Noté dans `TODO.md`.
+
+---
+
+## 192. Un seul nombre faisait deux métiers : les salariés se comptent à part des équipes
+
+**Sa demande du 26 août 2026, éprouvée sur la planche 97
+(`appli/salaries-et-equipes.html`) avant d'être codée — il a répondu **A** :**
+
+> *« Il faut avoir un curseur + ou − qui définit le nombre de salariés que
+> possède l'entreprise et pouvoir affilier des noms. Ceux-là permettront
+> d'ajouter ces noms au chantier, et plus les équipes A ou B. Néanmoins les
+> équipes doivent toujours servir à définir le niveau de remplissage du
+> planning : 2 équipes = 2 chantiers par jour, comme avant, ça ne bouge pas. »*
+
+Puis, en tranchant :
+
+> *« Il ne faut pas changer la méthode d'affiliation des gars sur les
+> chantiers — juste, au lieu que ce soit les équipes, ce sera les noms qu'on
+> affilie. On garde la même façon de faire. »*
+
+### Ce que `nombre_equipes` faisait de trop
+
+Un seul chiffre portait deux responsabilités sans rapport :
+
+| | Ce qu'il décidait |
+|---|---|
+| **la capacité** | combien de chantiers tiennent dans une journée |
+| **les gens** | combien de noms se règlent, et se cochent sur une demi-journée |
+
+Régler l'un déréglait donc l'autre, en silence. Monter la capacité à trois
+faisait apparaître une « Équipe C » que personne n'employait ; et un paysagiste
+à quatre salariés qui ne mène qu'un chantier à la fois n'avait **aucun moyen de
+le dire** — il devait choisir entre nommer ses gars et dire la vérité sur son
+planning.
+
+`entreprises.nombre_salaries` (migration 0067) porte désormais le second métier.
+`nombre_equipes` garde le premier, et rien de plus.
+
+### Ce qui N'A PAS bougé, parce qu'il l'a interdit
+
+La façon d'affilier quelqu'un à un chantier est **exactement** celle d'avant :
+la pastille sur la demi-journée, la liste qui s'ouvre, les cases qu'on coche
+une à une, « Terminé ». Même action serveur, même table
+(`equipes_du_chantier`), même indépendance matin / après-midi (migration 0058).
+Seuls les libellés changent.
+
+**Aucune table n'a été créée.** Ouvrir une table `salaries` aurait fabriqué une
+seconde liste de gens à côté de celle qui existe — deux vérités sur qui
+travaille dans l'entreprise (`CLAUDE.md` §3). La table `equipes` porte déjà un
+rang, un nom facultatif, et c'est elle que `equipes_du_chantier` relie à une
+demi-journée : **ces lignes ont toujours été les gars**, puisqu'il y écrit des
+prénoms depuis le 10 août 2026.
+
+⚠ **La dette de nommage est assumée et écrite** : la table s'appelle encore
+`equipes` alors qu'elle porte les salariés. Le renommage touche vingt-trois
+fichiers de `src/`, les politiques RLS et les contraintes ; le mêler à un
+changement de comportement aurait mis en risque une application qu'il utilise
+tous les jours (sa consigne du 24 août : *« ne fais rien qui peut endommager
+l'appli »*). C'est une tâche à part, dans `TODO.md`.
+
+### « Équipe A » a disparu du vocabulaire, et le repli est le rang
+
+Sa demande est explicite — *« et plus les équipes A ou B »*. `libelleEquipe` est
+devenue `libelleSalarie` : le nom écrit, sinon **« Salarié 3 »**.
+
+**Le repli EXISTE, et ce n'est pas du confort.** Le supprimer — c'est-à-dire ne
+montrer que les gens nommés, comme la proposition C de la planche — ferait
+disparaître les cases à cocher de tous ceux qui n'ont pas encore tapé les
+prénoms de leurs gars : leurs chantiers deviendraient du jour au lendemain
+impossibles à attribuer, sans un mot pour le dire.
+
+`LETTRES_EQUIPES` et `lettreDeRepli` ont été **retirées** : garder de quoi
+écrire « Équipe A » invitait à le refaire.
+
+### LE POINT DÉLICAT : la charge d'une demi-journée
+
+C'est le seul endroit où les deux nombres se rencontrent, et c'est là que se
+joue le « ça ne bouge pas ».
+
+Avant la coupure, l'écran cochait des ÉQUIPES : leur nombre ÉTAIT la charge, et
+il ne pouvait pas dépasser la capacité — il n'existait pas plus de cases que
+d'équipes. Maintenant qu'on coche des GENS, les deux se décollent : trois gars
+dans une entreprise à deux chantiers par jour, c'est possible.
+
+`equipesMobilisees(salariesCoches, nombreEquipes)` plafonne donc le compte à la
+capacité, plancher à un. **Le plafond n'est pas un ajustement, c'est ce qui
+évite la régression :** sans lui, un chantier à trois gars fermerait à lui seul
+une journée qui en accepte deux, et l'écran d'envoi refuserait au client des
+jours réellement libres.
+
+**Et à effectif égal, le résultat est identique à celui d'avant** — ce qui est
+exactement le cas de son entreprise, dont le compteur de salariés a été repris
+du nombre d'équipes par la migration. Sa correction du 22 août 2026 tient donc
+toujours : Julien ET Antoine chez Mr Eric ferment bien la demi-journée.
+
+**La même fonction sert à l'écran et au serveur.** `compterOccupation` la
+traverse désormais, et **son paramètre `nombreEquipes` est OBLIGATOIRE à
+dessein** : avec une valeur par défaut, un appelant oublié aurait continué de
+compter sans plafond, en silence — le planning plafonnant la charge et l'écran
+d'envoi non, si bien qu'un jour annoncé libre au patron aurait été refusé au
+client trois secondes plus tard (`CLAUDE.md` §3). Le compilateur a désigné les
+quatre appelants, plutôt que la production.
+
+### Le plancher est ZÉRO, et c'est ce qui distingue les deux compteurs
+
+Un artisan seul n'a **aucun** salarié — ce n'est pas un défaut de saisie. Lui
+proposer une ligne « Salarié 1 » l'inviterait à se nommer lui-même, et ferait
+apparaître une case à cocher sur chacune de ses demi-journées.
+
+La migration en tient compte dans sa reprise : `nombre_equipes = 1` sans nom
+écrit devient **zéro salarié**, et non un. Sans cette ligne, tous les artisans
+seuls auraient vu apparaître du jour au lendemain une organisation qu'ils n'ont
+pas.
+
+### Ce que les contrôles défendent
+
+| Où | Ce qui rougirait |
+|---|---|
+| `scripts/test-equipes.ts` | le repli qui réécrirait « Équipe », le plancher remonté à un, le plafond retiré |
+| `scripts/test-creneaux.ts` | trois gars sur un chantier qui fermeraient une journée à deux places |
+| `scripts/test-equipes-repo.ts` | un nom perdu en redescendant le compteur |
+
+**Confrontés à l'état dégradé** (`CLAUDE.md` §5) : plafond retiré de
+`equipesMobilisees`, les deux premières suites rougissent — et sur la bonne
+ligne, pas sur un effet de bord trois écrans plus loin.
+
+---
+
+## 193. Audit de sécurité, lot 3 : les constats F1 → F13, et ce qu'ils valaient vraiment
+
+**Le rapport d'audit qui nomme F1 à F13 n'est PAS dans le dépôt, et n'y a jamais
+été.** Seuls deux des treize points citaient un fichier. Les onze autres ont donc
+été traités comme des *hypothèses à mesurer*, jamais comme des constats acquis —
+et c'est ce qui a permis d'écarter quatre faux problèmes sans rien casser.
+
+Sept points ont été codés (F1, F2, F5, F8, F9, F12, F13), deux ont reçu un
+contrôle sans que leur code bouge (F3, F8 structurel), quatre ont été refusés.
+
+### Ce qui a été refusé, et pourquoi c'est le plus important
+
+| | |
+|---|---|
+| **F4** | le nom du fichier de devis est **engendré par le serveur** (`devis-${numero}.pdf`), jamais par l'utilisateur : il n'y a rien à échapper |
+| **F6** | `run-migrations.ts` suit les migrations **par nom de fichier**. Renommer une migration pour « lever un doublon » créerait exactement le défaut qu'on prétend corriger : elle se rejouerait partout |
+| **F7** | l'export et l'effacement d'un client existent sans écran. C'est une décision **produit / RGPD**, pas une correction de sécurité |
+| **F10** | `unsafe-inline` dans la CSP : réel, mais c'est un lot à soi — le retirer sans nonce casse l'application |
+| **F11** | déjà fermé par le lot 1, et un contrôle le prouve depuis |
+
+### F2 — un site tiers ne doit pas pouvoir déconnecter le patron
+
+`/api/session-perimee` efface six cookies sur un simple `GET` : une page
+étrangère qui pose `<img src="…/api/session-perimee">` mettait le patron dehors
+en silence. Ce n'est pas un vol — c'est une nuisance gratuite.
+
+**`Sec-Fetch-Site`, et surtout PAS `Sec-Fetch-Dest`.** `Dest: document` paraissait
+plus simple et **aurait cassé un vrai parcours** : quatre des cinq appels
+légitimes viennent d'un `redirect()` côté serveur, que le routeur de Next va
+chercher en `fetch` — `Dest` vaut alors `empty`, et le cookie mort du 10 août
+2026 ne s'effacerait plus jamais.
+
+L'en-tête absente laisse passer, et c'est raisonné : un navigateur ne permet pas
+de la retirer ; ce qui n'en envoie pas est un client sans cookie à effacer.
+
+**Ce que le contrôle a appris en rougissant :** la réponse refusée porte quand
+même des `Set-Cookie` — ceux d'Auth.js, qui rafraîchit la session dans la couche
+au-dessus, valeurs pleines et expiration future. Rafraîchir n'est pas
+déconnecter. Le contrôle ne compte donc plus les `Set-Cookie`, il cherche les
+EFFACEMENTS.
+
+### F5 — le contexte vide levait au lieu de rendre zéro
+
+`corrections_dictee` portait encore `current_setting('app.entreprise_id',
+true)::uuid` sans `NULLIF`. **Ce n'est pas une fuite** : sans contexte, la valeur
+est NULL, la politique est fausse, la table est vide. Ce qui casse, c'est le
+contexte **vide** — PostgreSQL remet un réglage de session à `''` après certaines
+transactions sur une connexion mutualisée, et `''::uuid` LÈVE. L'écran tombe en
+erreur au lieu de se montrer vide, et le message accuse un type de données là où
+le coupable est un contexte perdu.
+
+La migration 0002 avait corrigé cela pour les douze tables de janvier ; 0025 a
+créé cette table quatre mois plus tard sans reprendre la leçon, parce qu'aucun
+contrôle ne regardait la FORME des politiques. **0067 la répare, et
+`test-isolation-contexte-vide-db.ts` empêche la prochaine** — il mesure les
+41 tables une par une sous `atlas_app`, contexte forcé à `''`.
+
+**Une migration déjà appliquée ne se réécrit pas**, et ne se renomme pas
+davantage : `_migrations` porte son nom, elle ne se rejouera jamais, et la
+corriger sur le disque ne changerait que les bases neuves — donc pas celles où
+le défaut existe.
+
+### F8 — la seule rubrique du patron sans garde, et la règle qui manquait
+
+« Intégrations » (`/reglages/agenda`) lisait l'état du calendrier relié du
+patron — son compte iCloud ou Google — avant de savoir à qui elle parlait. Le
+lien était caché à un salarié, ce qui ne protège rien : **une adresse se tape**.
+Les écritures, elles, étaient déjà gardées.
+
+Le défaut n'était pas « une garde oubliée » mais **« rien ne disait qu'il en
+fallait une »**. D'où `scripts/test-reglages-gardes.ts`, qui ne regarde aucune
+rubrique en particulier : toute rubrique non personnelle pose une garde de rôle,
+et elle la pose **avant** la première lecture. Trois rubriques sont
+explicitement personnelles — compte, connexion, apparence.
+
+**Ce contrôle a été vert deux fois sur le défaut qu'il porte dans son nom**, et
+il n'a été cru qu'après avoir rougi pour de bon :
+
+| Ce qu'il regardait | Pourquoi il passait |
+|---|---|
+| le nom de la garde n'importe où dans le fichier | la ligne `import { estProprietaire }` suffisait |
+| le fichier commentaires compris | le commentaire qui EXPLIQUE la garde cite son nom |
+| la ligne entière pour trouver une lecture | `const [etat, etatApple, params] = await Promise.all(` contient le mot `params`, qui était dans la liste des attentes anodines |
+
+Il blanchit désormais les commentaires, ne regarde que le corps de la fonction,
+et ne compare que **ce qui suit `await`**.
+
+**Et `adressesAutorisees()` mentait.** Son commentaire promettait que « la liste
+des rubriques est l'unique source » et qu'« une rubrique retirée ferme son
+adresse au même instant ». Aucune page ne l'a jamais appelée : ses seuls
+appelants sont des contrôles. C'est ce qui explique le trou — la prose laissait
+croire à une garde centrale. Elle **n'est pas branchée pour autant** : un
+`layout` déduit du sommaire fermerait `/reglages/prix/mesures` et
+`/reglages/vocabulaire`, qui n'y figurent pas. Le commentaire dit maintenant ce
+qu'elle est : ce que le sommaire ouvre, et pas une frontière.
+
+### F9 — la seule écriture ouverte sans session
+
+Répondre à un devis depuis le lien public n'avait aucune borne de cadence.
+Partout ailleurs, une cadence se compte par entreprise ou par utilisateur ; ici
+personne ne s'est nommé, et cette action ne rentrait dans aucun des deux moules.
+
+**Ce n'est pas un secret qu'on défend** : le jeton fait 256 bits tirés au sort,
+il ne se devine pas. C'est le COÛT qu'on borne.
+
+**Et la revue hostile a corrigé le correctif avant toute livraison.** Deux
+compteurs avaient été posés — par jeton, et par source. Or sans
+`ATLAS_PROXY_SAUTS`, `sourceDuVisiteur` rend délibérément une valeur commune :
+**tous les clients partagent alors un seul seau**. Soixante appels depuis
+n'importe où, et plus aucun client de plus aucun artisan ne signe son devis. Le
+seuil devenait une arme retournée — une dépense de calcul échangée contre un
+blocage commercial. Il ne s'applique donc que **si la source est établie** ; le
+seuil par jeton, lui, s'applique toujours.
+
+`sourceDuVisiteur` et `horsProductionReelle` ont quitté `src/app/login/actions.ts` pour
+`src/server/source-visiteur.ts` : les recopier aurait fabriqué une seconde façon
+de décider qui est « le même visiteur ».
+
+### F12 — les maquettes gelées ne sont pas servies aux artisans
+
+Douze pages `/design/*`, **gelées depuis le 1er août 2026**, affichent
+`mock-data.ts`. Aucune donnée réelle, et le middleware exige déjà une session :
+ce n'est pas une fuite, c'est de la **surface** — des pages que plus personne ne
+relit, et qui ne suivent plus les corrections des écrans réels.
+
+Une seule mise en page (`src/app/design/layout.tsx`) les couvre toutes,
+aujourd'hui comme demain : douze gardes recopiées, c'est douze occasions d'en
+oublier une. `notFound()` plutôt qu'un refus — un « accès refusé » confirme
+qu'il y a quelque chose à trouver.
+
+**Le banc du patron est traité comme la production**, contrairement à l'usage du
+reste du dépôt : il est ouvert sur l'internet, et les planches qu'il doit voir
+vivent dans `appli/`, publiées par `pages.yml`.
+
+### F13 — `robots.txt`, et ce qu'il n'est pas
+
+**Ce n'est pas une frontière de sécurité**, et le fichier le dit lui-même : une
+demande, pas une serrure. Rien n'en dépend — les écrans du patron sont fermés
+par le middleware, ceux du client par un jeton de 256 bits.
+
+Ce qu'il apporte est modeste et réel : les liens envoyés par SMS ou courriel
+(`/devis/<jeton>`, `/factures/<jeton>`, `/entretien/<jeton>`) voyagent par des
+canaux qui les font parfois suivre. Il suffit d'une fois pour qu'un devis
+nominatif entre dans un index public, et il n'en sortira plus.
+
+**Le piège, et il était réel :** le middleware renvoie à `/login` tout ce qui
+n'est pas explicitement laissé de côté. Mesuré — sans l'exclusion,
+`GET /robots.txt` rend **307**. Un moteur aurait reçu une redirection au lieu de
+la consigne, et l'on aurait cru le garde-fou en place. `robots.txt` a donc
+rejoint `favicon.ico` dans le `matcher`.
+
+Pas de `sitemap` : un plan de site est exactement ce qu'on ne veut pas publier.
+
+---
+
+## 194. Le lot Audio : un format se lit dans les octets, jamais dans l'en-tête du navigateur
 
 **Le défaut, et sa portée réelle.** `verifierTypeAudio` ne lisait que la chaîne
 envoyée par le téléphone. Un fichier quelconque annoncé `audio/webm` était donc

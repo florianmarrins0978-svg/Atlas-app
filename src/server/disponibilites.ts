@@ -10,6 +10,7 @@
 // recopiée : l'écran du choix et la ligne du planning doivent dire le même mot,
 // et deux copies finissent toujours par diverger — voir `libelleDureeCourt`.
 import { DUREES } from "@/lib/durees-chantier";
+import { equipesMobilisees } from "@/lib/equipes";
 
 /** Fenêtre par défaut sur laquelle un client peut proposer une date. */
 export const FENETRE_PROPOSITION_JOURS = 90;
@@ -319,7 +320,7 @@ export type ChantierPlanifie = {
  * affectation ne pesait sur la capacité, et la plupart des chantiers n'en
  * portent donc aucune. Les compter zéro viderait le planning d'un coup.
  */
-export function equipesMobilisees(
+export function salariesDuDemi(
   p: Pick<ChantierPlanifie, "equipesParDemi">,
   moment: Moment
 ): number {
@@ -334,19 +335,39 @@ export function equipesMobilisees(
  * comportement qu'il avait. Ne rien supposer d'autre est ce qui garantit qu'une
  * migration ne libère pas, du jour au lendemain, des après-midis déjà pris.
  */
-export function compterOccupation(planifies: readonly ChantierPlanifie[]): Map<string, number> {
+export function compterOccupation(
+  planifies: readonly ChantierPlanifie[],
+  /**
+   * La capacité de l'entreprise — et **le paramètre est OBLIGATOIRE à dessein**.
+   *
+   * Avec une valeur par défaut, un appelant oublié aurait continué de compter
+   * sans plafond, en silence : le planning aurait plafonné la charge et l'écran
+   * d'envoi non, si bien qu'un jour annoncé libre au patron serait refusé au
+   * client trois secondes plus tard (`CLAUDE.md` §3). Le compilateur désigne
+   * donc chaque appelant, plutôt que la production.
+   */
+  nombreEquipes: number
+): Map<string, number> {
   const compte = new Map<string, number>();
   for (const p of planifies) {
     const depart: Creneau = { jour: p.jour, moment: p.moment ?? "matin" };
     const duree = p.dureeDemiJournees ?? DUREE_PAR_DEFAUT_DEMI_JOURNEES;
     for (const c of creneauxDuChantier(depart, duree)) {
       const cle = cleCreneau(c);
-      // **On compte les ÉQUIPES mobilisées, plus les chantiers.** Sa question du
-      // 22 août : ses deux équipes étaient chez Mr. Eric et le planning
-      // annonçait « incomplet », donc ce jour-là partait chez ses clients alors
-      // qu'il n'avait plus personne. Compter les chantiers ignorait
-      // précisément ce qu'il venait de renseigner.
-      compte.set(cle, (compte.get(cle) ?? 0) + equipesMobilisees(p, c.moment));
+      // **On compte les GENS mobilisés, plus les chantiers.** Sa question du
+      // 22 août : ses deux gars étaient chez Mr. Eric et le planning annonçait
+      // « incomplet », donc ce jour-là partait chez ses clients alors qu'il
+      // n'avait plus personne. Compter les chantiers ignorait précisément ce
+      // qu'il venait de renseigner.
+      //
+      // **Plafonné à la capacité depuis le 26 août 2026**, quand ce qu'on coche
+      // est devenu un SALARIÉ : trois gars sur un même chantier ne doivent pas
+      // fermer une journée qui accepte deux chantiers. La même fonction sert
+      // ici et aux écrans — deux implémentations divergeraient (`CLAUDE.md` §3).
+      compte.set(
+        cle,
+        (compte.get(cle) ?? 0) + equipesMobilisees(salariesDuDemi(p, c.moment), nombreEquipes)
+      );
     }
   }
   return compte;

@@ -138,6 +138,68 @@ async function main() {
     await page.close();
   });
 
+  await test("UN CHOIX FAIT PAR ERREUR SE DÉFAIT — sa demande du 26 août 2026", async () => {
+    // *« Si par erreur j'ai sélectionné un des 3 champs je ne peux plus le
+    // désélectionner ! Je dois pouvoir désélectionner. »*
+    //
+    // **Un bouton radio ne se décoche pas, par construction** : le navigateur
+    // ne connaît que « passer de l'un à l'autre ». Le client qui touchait la
+    // mauvaise ligne restait donc engagé sur une date qu'il n'avait pas
+    // choisie — et c'est la date où l'artisan viendra.
+    const { envoi, maintenant } = await preparerEnvoi("devalider", [5, 30]);
+    const page = await context.newPage();
+    await page.goto(`${BASE}/devis/${envoi.jeton}`, { waitUntil: "networkidle" });
+
+    const proche = versJourIso(ajouterJours(maintenant, 5));
+    const lointaine = versJourIso(ajouterJours(maintenant, 30));
+    const laProche = page.locator(`input[name="choixDate"][value="${proche}"]`);
+    const laLointaine = page.locator(`input[name="choixDate"][value="${lointaine}"]`);
+    const uneAutre = page.locator('input[name="choixDate"][value="autre"]');
+    const cochees = page.locator('input[name="choixDate"]:checked');
+
+    // 1. Le second appui sur la MÊME ligne la défait, et rien ne la remplace.
+    await laProche.click();
+    assert.ok(await laProche.isChecked(), "le premier appui ne coche rien");
+    await laProche.click();
+    assert.strictEqual(
+      await laProche.isChecked(),
+      false,
+      "le choix reste collé : c'est très exactement ce qu'il signale"
+    );
+    assert.strictEqual(await cochees.count(), 0, "une autre ligne s'est cochée à la place");
+
+    // 2. **Le contrôle qui empêche la correction d'aller trop loin.** Défaire
+    //    à chaque appui passerait le point 1 et rendrait le choix impossible :
+    //    changer d'avis doit toujours choisir la nouvelle date.
+    await laProche.click();
+    await laLointaine.click();
+    assert.ok(await laLointaine.isChecked(), "changer de date ne choisit plus rien");
+    assert.strictEqual(await laProche.isChecked(), false, "les deux dates sont cochées ensemble");
+
+    // 3. Ce qui dépendait de la date s'en va avec elle. Sans cela, l'écran
+    //    garderait la demande de démarrage anticipé d'une date effacée — et
+    //    c'est une autorisation légale que le client n'aurait plus donnée.
+    await laLointaine.click();
+    await laProche.click();
+    const retractation = page.locator('input[name="demarrageAnticipe"]');
+    assert.strictEqual(await retractation.count(), 1, "la date proche n'ouvre pas la rétractation");
+    await laProche.click();
+    assert.strictEqual(
+      await retractation.count(),
+      0,
+      "la case de rétractation survit à la date qui l'a fait naître"
+    );
+
+    // 4. « Une autre date » se défait pareil, et referme son calendrier.
+    await uneAutre.click();
+    assert.ok((await page.locator("[data-jour]").count()) > 0, "le calendrier ne s'ouvre pas");
+    await uneAutre.click();
+    assert.strictEqual(await uneAutre.isChecked(), false, "« une autre date » reste collée");
+    assert.strictEqual(await page.locator("[data-jour]").count(), 0, "le calendrier reste ouvert");
+
+    await page.close();
+  });
+
   await test("accepter une date proposée planifie le chantier", async () => {
     const { ctx, chantierId, envoi, maintenant } = await preparerEnvoi("accepte", [20, 24]);
     const page = await context.newPage();

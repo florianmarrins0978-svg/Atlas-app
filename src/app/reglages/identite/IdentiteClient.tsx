@@ -110,7 +110,7 @@ export default function IdentiteClient({ initial }: { initial: Identite }) {
         </p>
       )}
 
-      <Bloc titre="Comment vous vous nommez">
+      <Bloc>
         <Champ
           etiquette="Nom de l'entreprise"
           valeur={valeurs.nom}
@@ -128,7 +128,7 @@ export default function IdentiteClient({ initial }: { initial: Identite }) {
         />
       </Bloc>
 
-      <Bloc titre="Où vous êtes établi">
+      <Bloc>
         {/* **Le composant du client, posé ici le 14 août.** Il existait depuis
             le 7 août et n'avait jamais servi sur cet écran : le patron saisissait
             son propre siège à la main pendant que ses clients avaient la liste.
@@ -153,7 +153,7 @@ export default function IdentiteClient({ initial }: { initial: Identite }) {
         )}
       </Bloc>
 
-      <Bloc titre="Vos identifiants">
+      <Bloc>
         <Champ
           etiquette="SIRET"
           valeur={valeurs.siret}
@@ -199,7 +199,7 @@ export default function IdentiteClient({ initial }: { initial: Identite }) {
         )}
       </Bloc>
 
-      <Bloc titre="Pour vous joindre">
+      <Bloc>
         <ChampTelephone
           valeur={valeurs.telephone}
           onChange={(v) => ecrire("telephone", v)}
@@ -230,14 +230,6 @@ export default function IdentiteClient({ initial }: { initial: Identite }) {
           onFini={() => enregistrer({ titulaireCompte: valeurs.titulaireCompte })}
         />
       </Bloc>
-
-      <p className={`mx-[26px] mt-[30px] border-t pt-[18px] ${texteSituation}`}
-         style={{ borderColor: colors.line, color: colors.muted }}>
-        Ces informations remplissent vos devis et vos factures toutes seules.
-        Chaque document garde <b style={{ color: colors.ink, fontWeight: 400 }}>ce
-        qu&apos;elles disaient le jour où il a été créé</b> : les corriger
-        aujourd&apos;hui ne change aucun document déjà fait.
-      </p>
 
       <BarreEnregistrer
         aEcrire={Object.keys(aEcrire).length}
@@ -315,7 +307,21 @@ function BarreEnregistrer({
   );
 }
 
-function Bloc({ titre, children }: { titre: string; children: React.ReactNode }) {
+/**
+ * Une rubrique de l'écran, avec ou SANS en-tête.
+ *
+ * **Sa demande du 24 août 2026, capture à l'appui :** *« supprime la phrase en
+ * gris : vos identifiants + comment vous vous nommez + où vous êtes établi +
+ * pour vous joindre »*. Quatre en-têtes qui ne disaient rien de plus que le
+ * champ juste en dessous — « COMMENT VOUS VOUS NOMMEZ » au-dessus de « Nom de
+ * l'entreprise ».
+ *
+ * **Deux restent, et ce n'est pas un oubli** : « Votre régime de TVA » et
+ * « Pour être payé » ne figurent pas dans sa liste. Elles coiffent plusieurs
+ * champs dont le lien ne se devine pas — un IBAN et un titulaire, un régime et
+ * un numéro intracommunautaire.
+ */
+function Bloc({ titre, children }: { titre?: string; children: React.ReactNode }) {
   return (
     // `[&>*:last-child]:border-b-0` : LA DERNIÈRE LIGNE PERD SON FILET. Sans
     // cela, elle en pose un que le trait du bloc suivant redouble trente pixels
@@ -330,9 +336,11 @@ function Bloc({ titre, children }: { titre: string; children: React.ReactNode })
       className="mx-[26px] mt-[30px] border-t pt-[18px] first-of-type:mt-[26px] first-of-type:border-t-0 first-of-type:pt-0 [&>*:last-child]:border-b-0"
       style={{ borderColor: colors.line }}
     >
-      <p className={`mb-2.5 ${libelleCaps}`} style={{ color: colors.muted }}>
-        {titre}
-      </p>
+      {titre && (
+        <p className={`mb-2.5 ${libelleCaps}`} style={{ color: colors.muted }}>
+          {titre}
+        </p>
+      )}
       {children}
     </section>
   );

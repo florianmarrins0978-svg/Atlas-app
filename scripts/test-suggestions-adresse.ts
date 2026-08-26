@@ -1,5 +1,10 @@
 import assert from "node:assert/strict";
-import { lireSuggestions, meriteUneRecherche, MAX_SUGGESTIONS } from "../src/lib/suggestions-adresse";
+import {
+  lireSuggestions,
+  memeAdresse,
+  meriteUneRecherche,
+  MAX_SUGGESTIONS,
+} from "../src/lib/suggestions-adresse";
 
 // **Ce qu'Atlas retient d'une réponse venue de l'extérieur.**
 //
@@ -144,6 +149,41 @@ cas("moins de trois caractères : on n'appelle pas", () => {
 cas("dès trois caractères, espaces retirés, on appelle", () => {
   assert.equal(meriteUneRecherche(" rue "), true, "Trois caractères comptés APRÈS les espaces, pas avant.");
   assert.equal(meriteUneRecherche("20 rue de la paix"), true);
+});
+
+console.log("\n=== Une proposition ne répète pas ce qui est déjà écrit ===");
+
+cas("SON cas exact, du 24 août 2026", () => {
+  // « Pourquoi l'adresse est marquée 2 fois de suite ? » — le champ portait son
+  // écriture, la proposition la même adresse en forme officielle.
+  assert.equal(
+    memeAdresse(
+      "10 Rue Denfert Rochereau 78200 Mantes-la-Jolie",
+      "10 rue denfert rochereau 78200 Mantes la jolie"
+    ),
+    true,
+    "Casse et traits d'union ne font pas deux adresses différentes."
+  );
+});
+
+cas("les CHIFFRES, eux, distinguent", () => {
+  // Le seul écart qui compte vraiment : un numéro n'est pas l'autre, et les
+  // confondre enverrait un devis à la mauvaise porte.
+  assert.equal(memeAdresse("10 rue de la Paix", "100 rue de la Paix"), false);
+  assert.equal(memeAdresse("10 rue de la Paix 75002", "10 rue de la Paix 75009"), false);
+});
+
+cas("deux vides ne sont pas « la même adresse »", () => {
+  // Sans ce garde-fou, un champ vierge écarterait toutes les propositions —
+  // et la liste ne s'ouvrirait jamais.
+  assert.equal(memeAdresse("", ""), false);
+  assert.equal(memeAdresse("   ", " - "), false);
+});
+
+cas("une adresse plus précise reste une PROPOSITION", () => {
+  // Ce qui ajoute une information ne se cache pas : c'est justement ce que la
+  // liste sert à offrir.
+  assert.equal(memeAdresse("10 rue Denfert Rochereau 78200 Mantes-la-Jolie", "10 rue Denfert"), false);
 });
 
 console.log(`\n${echecs === 0 ? "✅" : "❌"} Suggestions d'adresse — ${echecs} échec(s).`);
