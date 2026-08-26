@@ -9,6 +9,44 @@ Format : le plus récent en tête.
 
 ## 2026-08-26
 
+### Le numéro de ses documents se choisit — et le millésime n'est plus écrit en dur
+
+*« Dans la catégorie facture il faut rajouter le format de numéro, c'est
+obligatoire il me semble. »* Puis, devant la planche : *« garde le F »*,
+*« 6 chiffres »*, *« oui remettre à 0 chaque début d'année »*, *« l'utilisateur
+peut choisir entre ces 5 façons ? Si oui code ça »*.
+
+**Ce qui existe maintenant.** Réglages → Devis & factures → « Le numéro de mes
+documents » : cinq formats, chacun montrant ce qu'il donne, et le changement
+s'enregistre seul.
+
+| Format | Le prochain devis | La prochaine facture |
+|---|---|---|
+| Année et 4 chiffres | 2026-0012 | F2026-0012 |
+| **Année et 6 chiffres** (défaut) | 2026-000012 | F2026-000012 |
+| Année courte | 26-0012 | F26-0012 |
+| Année, mois, numéro | 2026-08-012 | F2026-08-012 |
+| Une suite sans année | 0012 | F0012 |
+
+**Le compteur repart à 1 le 1ᵉʳ janvier**, sauf sur « une suite sans année » —
+sinon deux documents porteraient le même numéro à un an d'écart, ce que la loi
+interdit. L'écran le dit au lieu d'en faire un second réglage.
+
+**CE QUI ÉTAIT CASSÉ, et qu'aucune suite ne voyait.** Le millésime était écrit
+en dur dans le dépôt : `2026-…` pour les devis, `F2026-…` pour les factures.
+**En janvier 2027, ses factures auraient encore dit 2026** — un défaut à
+retardement, invisible tant qu'on teste aujourd'hui, et qui ne serait apparu que
+sur un document déjà parti chez un client.
+
+**Ce que le changement ne fait pas :** il ne renumérote rien. Les documents déjà
+émis gardent leur numéro — les réécrire creuserait un trou dans la suite.
+
+**Éprouvé** par `test-numero-documents.ts` (la règle, 10 cas),
+`test-numero-documents-db.ts` (le compteur et sa remise à zéro au 1ᵉʳ janvier,
+9 cas, dont deux factures émises à la même seconde) et
+`test-format-numero-e2e.ts` (le fil entier : il choisit, et le devis suivant
+porte le format choisi).
+
 ### Face ID marche enfin derrière son tunnel — et le bouton du mot de passe remonte
 
 *« Le Face ID ne fonctionne pas »*, capture à l'appui — et *« le bouton changer

@@ -9,6 +9,21 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
+## ✅ ~~Le format des numéros de devis et de factures~~ — fait le 26 août 2026
+
+~~Sa demande du 26 août : « dans la catégorie facture il faut rajouter le format
+de numéro ». Cinq formats au choix, le compteur qui repart au 1ᵉʳ janvier, et
+surtout le millésime qui n'est plus écrit en dur.~~ `ARCHITECTURE.md` §188.
+
+**Ce qui reste ouvert, et qui n'est pas ce lot :** le numéro de la première
+facture d'une entreprise qui reprendrait une suite existante. Aujourd'hui elle
+repart de 1 ; un artisan qui migre depuis un autre logiciel voudra continuer à
+0148. Il ne l'a pas demandé, et rien ne presse — mais le jour où il le
+demandera, c'est une colonne de départ sur `entreprise_compteurs`, pas un
+nouveau format.
+
+---
+
 ## ⏳ `test-envoi-client-e2e.ts` — deux cas rouges, et ce n'est PAS une régression
 
 **Le 26 août 2026**, dans la batterie du lot « rôles et accès » :
