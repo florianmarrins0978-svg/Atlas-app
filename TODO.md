@@ -9,6 +9,36 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
+## ⏳ Coder « Quand je reverse la TVA » — retenu le 26 août 2026
+
+Sa capture : *« quand le client le paye / quand je met la facture, c'est pas
+clair, on comprend rien »*. **Il a choisi**, planche
+`appli/quand-je-reverse-la-tva.html` : les libellés réécrits, **sans le tableau
+d'exemple**.
+
+Ce qu'il y a à faire, dans `src/app/termines/tva/RegimeTva.tsx` :
+
+| | |
+|---|---|
+| le surtitre | « Je reverse ma TVA aux impôts » — le verbe manquait |
+| ligne 1 | « Le mois où mon client me paie » · *Une facture pas encore payée n'est pas déclarée.* |
+| ligne 2 | « Le mois où j'envoie la facture » · *Même si le client n'a pas encore payé.* |
+
+**Et la ligne du bas, qui est le vrai sujet.** Elle dit ce que le choix change
+sur le mois affiché — *« sur août 2026, ce choix ne change rien : vos factures
+d'août ont été payées en août »*. C'est elle qui répond à sa seconde plainte du
+26 août, et sans elle il la reposera.
+
+**Ce qu'elle demande :** le total sous l'AUTRE régime. `releveTvaCollectee` ne
+sait calculer que celui qui est enregistré — il faut lui passer le régime en
+paramètre plutôt que d'écrire un second calcul (`CLAUDE.md` §3, jamais deux
+implémentations d'une même règle).
+
+**Ce qui ne bouge pas :** la phrase « ce choix doit correspondre à ce que les
+impôts savent de vous » reste sous les boutons.
+
+---
+
 ## Huit numéros de paragraphe en double dans `ARCHITECTURE.md`
 
 **§127, §128, §129, §134, §135, §136, §164, §165** portent chacun DEUX
@@ -166,7 +196,7 @@ par un autre.
 ## ✅ ~~« Terminés » : les traits, et la carte de TVA~~ — fait le 26 août 2026
 
 ~~Ses deux demandes du 26 août, planche `appli/termines-sans-traits.html`, sa
-réponse « le 3 ».~~ `ARCHITECTURE.md` §193.
+réponse « le 3 ».~~ `ARCHITECTURE.md` §195.
 
 **Ce qui reste à surveiller, et qui n'est pas une tâche :** la démarcation sous
 la phrase de compte ne tient plus que sur 22 px, depuis que son trait est parti.
@@ -263,8 +293,16 @@ pas les trois autres du même fichier, qui attendent la même phrase avec le mê
 délai et passent. Un simple relèvement du délai serait un pansement sur une cause
 non trouvée — et c'est exactement ce que ce dépôt refuse.
 
+**Et un SIXIÈME, le 26 août 2026 au soir :** `test-poser-une-date-e2e.ts`, cas
+*« depuis la fiche d'un jour, "Ajouter un chantier" le pose »* — rouge en
+batterie sur *« aucune date en base : la pose n'a rien enregistré »*, **vert
+rejoué seul** (5/5). Même forme que les autres : la base est lue avant que
+l'action serveur n'ait fini d'écrire. Le cas SUIVANT du même fichier — *« et il
+quitte Sans date »* — passait dans la même exécution, ce qui achève de dire que
+l'écriture arrivait, juste plus tard que la lecture.
+
 Avec `test-lecons-prix-e2e` (§ plus bas) et la suite du veilleur, cela fait
-**cinq** contrôles qui rougissent au hasard de la machine. C'est le vrai sujet,
+**six** contrôles qui rougissent au hasard de la machine. C'est le vrai sujet,
 et il grossit : un rouge qui tombe au hasard apprend à ignorer le rouge, et l'on
 perd alors tout ce qu'il surveille. Ce qu'il faut : attendre un SIGNAL — la
 réponse du serveur, un attribut qui change — jamais un instant.

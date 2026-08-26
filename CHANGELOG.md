@@ -39,6 +39,40 @@ carte, et un « Voir le relevé » sous le montant.
 **Éprouvé** par trois cas neufs de `test-tva-en-tete-e2e.ts`, confrontés à
 l'écran d'avant : les trois rougissent.
 
+### L'envoi du devis : trois phrases de moins
+
+*« Supprime la phrase par SMS au + repris de votre dictée + le client pourra
+aussi en proposer une. »*
+
+Partent aussi leurs variantes, qui ne se montraient que dans d'autres états — il
+les aurait rencontrées demain. Une seule ligne reste sous la molette, la seule
+qui apprenne quelque chose : un chantier long réserve plusieurs jours d'affilée.
+
+Ce qu'on perd, et c'est le même arbitrage qu'il a rendu le 24 août sur la
+facture : il ne voit plus le canal ni le destinataire avant d'ouvrir sa
+messagerie — laquelle les lui montre, et où il peut encore reculer.
+
+Trois contrôles lisaient ces phrases. Ils éprouvent maintenant la règle : la
+messagerie qui s'ouvre pour de bon, les deux dates listées, le sous-titre de
+l'interrupteur qui suit l'interrupteur. Détail en `ARCHITECTURE.md` §194.
+### Changer le rythme de la TVA fait enfin bouger l'écran
+
+*« Quand je change entre tous les mois et tous les trois mois, c'est pareil,
+rien ne se passe. »* Reproduit : l'écran gardait « Août 2026 » après le passage
+au trimestre.
+
+La base était bien écrite — le réglage revenait au rechargement suivant. Ce qui
+manquait est la **revalidation** : le routeur reservait sa copie en cache de la
+page, sans appeler le serveur. `force-dynamic` ne protège pas de cela, et c'est
+le piège — il fait recalculer le serveur à chaque demande, encore faut-il qu'une
+demande parte.
+
+**Aucun contrôle ne pouvait le voir** : tous passaient par Réglages puis
+rouvraient le relevé par une navigation neuve, et une page rouverte est toujours
+juste. Le cas ajouté rejoue SA séquence — basculer sans quitter l'écran — et a
+été vu rouge avant d'être vert. `ARCHITECTURE.md` §193.
+
+
 ### Ses salariés se comptent à part de ses équipes — et ce sont leurs noms qu'on coche
 
 **Sa réponse à la planche 97 : A.** Puis, en tranchant : *« il ne faut pas
@@ -122,8 +156,11 @@ planche porte donc deux réécritures des libellés — le verbe manquant est
 « je reverse » — et **la ligne qui dit ce que le choix change sur le mois
 affiché, y compris quand il n'y change rien.**
 
-Rien n'est codé : `appli/quand-je-reverse-la-tva.html`, en attente de son choix
-entre A et B.
+**Il a tranché le soir même : B, sans le tableau d'exemple.** Les libellés
+réécrits, plus la ligne qui dit ce que le choix change — le tableau expliquait,
+et un écran n'explique pas son propre fonctionnement (`CLAUDE.md` §3). La
+planche porte la version retenue et ce qui a été écarté :
+`appli/quand-je-reverse-la-tva.html`. Reste à coder.
 
 ### « Sans date » disparaît quand rien n'attend de jour
 

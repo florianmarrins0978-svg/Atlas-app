@@ -102,12 +102,6 @@
           color:var(--gris)}
   .change b{color:var(--encre);font-weight:600}
 
-  .ex{margin:12px 0 0;padding:0;border:0}
-  table{border-collapse:collapse;width:100%;font-size:12.5px;margin-top:8px}
-  th,td{text-align:left;padding:6px 8px;border-bottom:1px solid var(--trait)}
-  th{color:var(--or);font-weight:600;font-size:11px;letter-spacing:.08em;
-     text-transform:uppercase}
-  td b{font-weight:600}
 
   .note{margin:34px 0 0;padding:15px 16px;background:var(--papier);
         border:1px solid var(--trait);border-radius:12px;font-size:13px;
@@ -120,17 +114,17 @@
 <div class="dedans">
 
 <h1>Quand je reverse la TVA</h1>
-<p class="intro">Deux façons d’écrire le même réglage. <b>Touchez les
-boutons</b> : la ligne du bas dit ce que le choix change.</p>
+<p class="intro"><b>Version retenue le 26 août 2026</b> : les libellés réécrits,
+plus la ligne qui dit ce que le choix change. <b>Touchez les boutons.</b></p>
 
 <p class="dit">Le 26 août 2026 : <b>« Quand le client le paye / quand je met la
 facture. C’est pas clair, on comprend rien. »</b> Puis : <b>« et lorsque je
 change entre les deux, rien ne se passe, c’est normal ? »</b></p>
 
-<h2>A — Le verbe qui manquait</h2>
+<h2>Ce qu'il verra</h2>
 <p class="pourquoi">Les libellés d’aujourd’hui nomment un moment sans dire ce
-qui s’y produit. Ici le titre porte le verbe — <b>je reverse</b> — et chaque
-ligne répond à « et alors ? » en une phrase.</p>
+qui s’y produit. Le verbe manquant est <b>je reverse</b>, et chaque ligne répond
+à « et alors ? » en une phrase.</p>
 
 <div class="tel">
   <p class="surtitre">Je reverse ma TVA aux impôts</p>
@@ -150,53 +144,16 @@ ligne répond à « et alors ? » en une phrase.</p>
       <span class="sous">Même si le client n’a pas encore payé.</span>
     </span>
   </label>
-</div>
-
-<h2>B — Avec l’exemple, et ce que ça change ce mois-ci</h2>
-<p class="pourquoi">La même chose, plus les deux lignes qui répondent à sa
-seconde question : <b>un exemple daté</b>, et <b>ce que le choix fait au mois
-affiché</b> — y compris quand il n’y fait rien.</p>
-
-<div class="tel">
-  <p class="surtitre">Je reverse ma TVA aux impôts</p>
-  <input class="etat" type="radio" name="b" id="b1" checked>
-  <label class="choix" for="b1">
-    <span class="rond"></span>
-    <span>
-      <span class="titre">Le mois où mon client me paie</span>
-      <span class="sous">Une facture pas encore payée n’est pas déclarée.</span>
-    </span>
-  </label>
-  <input class="etat" type="radio" name="b" id="b2">
-  <label class="choix" for="b2">
-    <span class="rond"></span>
-    <span>
-      <span class="titre">Le mois où j’envoie la facture</span>
-      <span class="sous">Même si le client n’a pas encore payé.</span>
-    </span>
-  </label>
-
-  <table>
-    <tr><th>Exemple</th><th>Déclarée en</th></tr>
-    <tr>
-      <td>Facture envoyée le 28 août, payée le 12 septembre</td>
-      <td><b>septembre</b></td>
-    </tr>
-    <tr>
-      <td>La même, si vous choisissez la seconde ligne</td>
-      <td><b>août</b></td>
-    </tr>
-  </table>
-
   <div class="change">
     Sur <b>août 2026</b>, ce choix ne change rien : vos factures d’août ont été
     payées en août. <b>1 088,00 €</b> dans les deux cas.
   </div>
 </div>
 
-<p class="pourquoi" style="margin-top:16px">Et voici la même ligne
-<b>sur un mois où le choix change vraiment</b> — c’est elle qui manquait le
-26 août :</p>
+<h2>Et sur un mois où le choix change</h2>
+<p class="pourquoi">La même ligne, quand une facture est partie sans être
+payée. <b>C’est elle qui manquait le 26 août</b> — sans elle, un écran qui ne
+bouge pas se lit comme une panne.</p>
 
 <div class="tel">
   <p class="surtitre">Je reverse ma TVA aux impôts</p>
@@ -223,10 +180,16 @@ affiché</b> — y compris quand il n’y fait rien.</p>
   </div>
 </div>
 
+<h2>Ce qui a été écarté, et pourquoi</h2>
+<p class="pourquoi">Une seconde version portait un <b>tableau d’exemple</b> —
+« facture envoyée le 28 août, payée le 12 septembre, déclarée en septembre ».
+Écartée le 26 août : elle EXPLIQUE, et un écran n’explique pas son propre
+fonctionnement. Deux lignes de plus à relire chaque fois qu’il ouvre sa TVA,
+pour une règle qu’il connaît après l’avoir lue une fois.</p>
+
 <div class="note"><span class="t">Ce qui ne se négocie pas, quel que soit le choix</span>
 Le second régime — reverser dès l’envoi — <b>ne se prend pas dans Atlas</b> :
-il se demande aux impôts. La phrase qui le dit reste sous les boutons, elle
-n’est pas dans les propositions parce qu’elle ne change pas.
+il se demande aux impôts. La phrase qui le dit reste sous les boutons, inchangée.
 <br><br>
 Et ces pages ne touchent <b>ni à vos données ni à l’application</b> : ce sont
 des maquettes. Les <b>1 088,00 €</b> viennent de votre capture ; le reste est
