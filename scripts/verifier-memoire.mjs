@@ -63,6 +63,59 @@ for (const fichier of FICHIERS) {
     }
   }
 
+  // **DEUX PARAGRAPHES SOUS LE MÊME NUMÉRO** — le prix de sept sessions qui
+  // écrivent `ARCHITECTURE.md` en même temps.
+  //
+  // Le 26 août 2026, un seul lot a dû renuméroter son paragraphe TROIS fois :
+  // §189, §191, puis §192, à chaque refusion. Et ce n'est pas le pire cas —
+  // celui-là se voit, parce que git lève un conflit quand les deux titres
+  // tombent au même endroit. **Quand ils tombent à des endroits différents, la
+  // fusion réussit sans rien dire**, et le fichier se retrouve avec deux
+  // paragraphes de même numéro : c'est ainsi que six doublons se sont accumulés
+  // et ont dû être démêlés à la main.
+  //
+  // Ce contrôle ne les empêche pas de naître ; il les fait voir **avant la
+  // poussée**, au moment où l'on sait encore lequel est le sien.
+  // `CLAUDE.md` §6, règle B : c'est le nôtre qu'on renumérote, jamais celui de
+  // `main`, et il s'ajoute à la FIN.
+  if (fichier === "ARCHITECTURE.md") {
+    // **Les huit doublons DÉJÀ sur `main` au 26 août 2026.** Les renuméroter
+    // aujourd'hui voudrait dire toucher huit paragraphes d'un fichier que sept
+    // sessions écrivent en même temps, et faire mentir tous les renvois qui les
+    // citent : le remède serait pire que le mal, un soir de forte circulation.
+    // Ils sont donc NOMMÉS ici et inscrits dans `TODO.md`.
+    //
+    // **La liste doit rester EXACTE, et c'est ce qui l'empêche de pourrir** :
+    // un numéro qu'on y laisserait après l'avoir démêlé fait rougir le contrôle
+    // au même titre qu'un doublon neuf. On ne peut donc pas oublier de la
+    // raccourcir en nettoyant.
+    const DOUBLONS_CONNUS = new Set(["127", "128", "129", "134", "135", "136", "164", "165"]);
+
+    const vus = new Map();
+    for (const [, numero] of contenu.matchAll(
+      /^## §?([0-9]+(?: (?:bis|ter|quater|quinquies))?)\./gm
+    )) {
+      vus.set(numero, (vus.get(numero) ?? 0) + 1);
+    }
+    for (const [numero, combien] of vus) {
+      if (combien > 1 && !DOUBLONS_CONNUS.has(numero)) {
+        problemes.push(
+          `ARCHITECTURE.md — le paragraphe §${numero} existe ${combien} fois : ` +
+            "une fusion a laissé deux sessions sous le même numéro. Renuméroter LE SIEN " +
+            "(celui qui n'est pas encore sur `main`), et le poser à la fin (`CLAUDE.md` §6, règle B)."
+        );
+      }
+    }
+    for (const numero of DOUBLONS_CONNUS) {
+      if ((vus.get(numero) ?? 0) <= 1) {
+        problemes.push(
+          `scripts/verifier-memoire.mjs — §${numero} n'est plus en double : ` +
+            "le retirer de DOUBLONS_CONNUS, sinon la liste protège un doublon qui reviendrait."
+        );
+      }
+    }
+  }
+
   // Liens Markdown relatifs.
   for (const [, cible] of contenu.matchAll(/\]\(([^)#][^)]*)\)/g)) {
     if (/^(https?:|mailto:)/.test(cible)) continue;

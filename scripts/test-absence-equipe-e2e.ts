@@ -89,7 +89,7 @@ let equipesAvant: number | null = null;
 async function nettoyer() {
   await pool.query(`DELETE FROM absences_equipe WHERE motif = $1`, [MOTIF]);
   if (equipesAvant !== null) {
-    await pool.query(`UPDATE entreprises SET nombre_equipes = $1`, [equipesAvant]);
+    await pool.query(`UPDATE entreprises SET nombre_equipes = $1, nombre_salaries = $1`, [equipesAvant]);
   }
 }
 
@@ -101,7 +101,10 @@ async function main() {
   // **Deux équipes, sinon le bloc n'existe pas** — et c'est délibéré : seul,
   // noter son absence reviendrait à fermer l'entreprise. Le réglage est posé
   // ici plutôt que supposé, une autre suite le déplaçant.
-  await pool.query(`UPDATE entreprises SET nombre_equipes = 2`);
+  // **Les deux compteurs, depuis le 26 août 2026** : les équipes disent la
+  // capacité du planning, les salariés décident des noms cochables sur une
+  // demi-journée. Ne poser que le premier laisserait l'écran sans case.
+  await pool.query(`UPDATE entreprises SET nombre_equipes = 2, nombre_salaries = 2`);
 
   const browser = await lancerNavigateur();
   const context = await browser.newContext();
@@ -112,11 +115,18 @@ async function main() {
 
   await test("Le bloc « Absences » est là, sous les noms", async () => {
     // Sous les noms, comme il l'a retenu : l'ordre à l'écran EST le choix.
-    const y = async (texte: string) =>
-      (await page.locator(`text=${texte}`).first().boundingBox())?.y ?? -1;
-    const noms = await y("Leurs noms");
-    const absences = await y("Absences");
-    assert.ok(noms > 0 && absences > noms, `« Absences » (${absences}) devrait suivre « Leurs noms » (${noms})`);
+    //
+    // **On vise le BLOC, pas son intertitre** (`CLAUDE.md` §5 bis). Cette suite
+    // lisait « Leurs noms » — un libellé qui a disparu le 26 août 2026 quand les
+    // salariés ont pris leur propre bloc. Elle serait devenue rouge sur du code
+    // juste, et pour une demande exaucée. Ce qu'il a arrêté, c'est l'ORDRE des
+    // deux blocs ; c'est donc l'ordre qu'on fixe.
+    const boite = async (selecteur: string) =>
+      (await page.locator(selecteur).first().boundingBox())?.y ?? -1;
+    const noms = await boite('[data-atlas="vos-salaries"]');
+    const absences = await boite("text=Absences");
+    assert.ok(noms > 0, "le bloc des salariés est introuvable sur l'écran Équipe");
+    assert.ok(absences > noms, `« Absences » (${absences}) devrait suivre le bloc des salariés (${noms})`);
   });
 
   await test("Noter une absence : la feuille dit qui, et jusqu'à quand", async () => {

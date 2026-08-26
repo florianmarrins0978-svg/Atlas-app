@@ -25,7 +25,7 @@ import {
   ditLeCompteDuJour,
   ditLeQuand,
   ditLaDuree,
-  ditLesEquipes,
+  ditQuiPart,
   etatDemi,
   occupationDemi,
   partDeLaBarre,
@@ -101,10 +101,14 @@ essai("le compte de la journée prend la demi-journée la plus chargée", () => 
 
 // **Au-delà de deux noms on compte**, sinon la ligne déborde sur un téléphone.
 essai("la pastille compte au-delà de deux équipes", () => {
-  assert.equal(ditLesEquipes([]), "Équipe ?");
-  assert.equal(ditLesEquipes(["Julien"]), "Julien");
-  assert.equal(ditLesEquipes(["Julien", "Paul"]), "Julien, Paul");
-  assert.equal(ditLesEquipes(["Julien", "Paul", "Marc"]), "Julien +2");
+  // **« Qui ? » et non « Équipe ? » depuis le 26 août 2026** : ce qu'on coche
+  // sur une demi-journée est devenu une personne, et il a demandé que le mot
+  // « équipe » disparaisse de ce qui se coche.
+  assert.equal(ditQuiPart([]), "Qui ?");
+  assert.ok(!/[ÉE]quipe/i.test(ditQuiPart([])), "la pastille vide dit encore « équipe »");
+  assert.equal(ditQuiPart(["Julien"]), "Julien");
+  assert.equal(ditQuiPart(["Julien", "Paul"]), "Julien, Paul");
+  assert.equal(ditQuiPart(["Julien", "Paul", "Marc"]), "Julien +2");
 });
 
 // **« ½ journée » ne s'écrit plus** — sa remarque du 21 août : « il y a marqué

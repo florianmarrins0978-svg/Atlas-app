@@ -291,7 +291,12 @@ export const FICHES_MODE_EMPLOI: FicheModeEmploi[] = [
     geste: "Touchez les jours voulus dans le calendrier : les toucher suffit, il n'y a rien à valider.",
     reserve: "Le client ne verra que la date, jamais la demi-journée.",
     source: "src/app/chantiers/[id]/export/EnvoiAuClient.tsx",
-    preuves: ["Proposez une ou deux dates", "Votre client ne verra que la date, jamais la demi-journée."],
+    // **La preuve visait une phrase qu'il a fait retirer le 26 août 2026.**
+    // Elle vise maintenant le libellé de la molette, qui porte le geste — une
+    // preuve doit s'accrocher à ce que l'écran FAIT, pas à ce qu'il explique
+    // (`CLAUDE.md` §5 bis). La réserve ci-dessus, elle, reste vraie : c'est
+    // l'assistant qui la dit, pas l'écran.
+    preuves: ["Proposez une ou deux dates", "Ce chantier prend"],
   },
   {
     id: "devis-envoyer",
@@ -558,9 +563,13 @@ export const FICHES_MODE_EMPLOI: FicheModeEmploi[] = [
     id: "reglages-equipe",
     ecran: "Équipe",
     ou: "Réglages, puis Équipe",
-    intitule: "Régler combien d'équipes partent en même temps, et leurs absences",
-    motsCles: ["equipe", "equipes", "absence", "conge", "vacances", "salarie", "combien", "partent"],
-    geste: "Ouvrez « Équipe » : le nombre d'équipes et les absences s'y règlent.",
+    // **Deux réglages distincts depuis le 26 août 2026** (`ARCHITECTURE.md`
+    // §192) : combien de chantiers partent en même temps, et combien de gens
+    // travaillent avec lui. Les confondre dans la réponse de l'assistant
+    // remettrait dans sa tête la confusion qu'on vient de retirer du code.
+    intitule: "Régler combien de chantiers partent en même temps, vos salariés et leurs absences",
+    motsCles: ["equipe", "equipes", "salarie", "salaries", "nom", "prenom", "gars", "absence", "conge", "vacances", "combien", "partent"],
+    geste: "Ouvrez « Équipe » : le nombre de chantiers menés en même temps, vos salariés et leurs absences s'y règlent.",
     source: "src/lib/rubriques-reglages.ts",
     preuves: ["Équipe", "Combien partent en même temps, leurs noms et leurs absences"],
   },

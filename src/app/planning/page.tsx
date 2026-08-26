@@ -23,6 +23,7 @@ export default async function PlanningPage() {
     <PlanningClient
       initialChantiers={contexte.chantiers}
       nombreEquipes={contexte.nombreEquipes}
+      nombreSalaries={contexte.nombreSalaries}
       equipesNommees={contexte.equipesNommees}
       absences={contexte.absences}
       agenda={{ configure: agenda.configure, relie: agenda.relie, actif: agenda.actif, enPanne: Boolean(agenda.derniereErreur) }}

@@ -50,7 +50,7 @@ let equipesAvant: number | null = null;
 async function nettoyer() {
   await pool.query(`DELETE FROM chantiers WHERE nom LIKE $1`, [`${MARQUE}%`]);
   if (equipesAvant !== null) {
-    await pool.query(`UPDATE entreprises SET nombre_equipes = $1`, [equipesAvant]);
+    await pool.query(`UPDATE entreprises SET nombre_equipes = $1, nombre_salaries = $1`, [equipesAvant]);
   }
 }
 
@@ -178,7 +178,10 @@ async function main() {
   // **Deux équipes, sinon la mention ne s'écrit JAMAIS** — et c'est voulu :
   // « Reste 0 équipe sur 1 » n'apprend rien à qui n'a personne d'autre à
   // envoyer. Posé ici plutôt que supposé.
-  await pool.query(`UPDATE entreprises SET nombre_equipes = 2`);
+  // **Les deux compteurs, depuis le 26 août 2026** : les équipes disent la
+  // capacité du planning, les salariés décident des noms cochables sur une
+  // demi-journée. Ne poser que le premier laisserait l'écran sans case.
+  await pool.query(`UPDATE entreprises SET nombre_equipes = 2, nombre_salaries = 2`);
 
   const { rows: ent } = await pool.query<{ id: string }>(`SELECT id FROM entreprises LIMIT 1`);
   const entrepriseId = ent[0].id;

@@ -9,6 +9,99 @@ sert.
 
 ---
 
+## LES SALARIÉS NE SONT PLUS LES ÉQUIPES — à savoir avant d'y toucher (26 août 2026)
+
+**La chose à comprendre en trente secondes**, parce que le nommage n'a pas suivi :
+
+| Ce qu'on lit dans le code | Ce que ça veut dire depuis le 26 août |
+|---|---|
+| `entreprises.nombre_equipes` | la CAPACITÉ — combien de chantiers par jour |
+| `entreprises.nombre_salaries` | combien de GENS — donc de noms cochables |
+| table `equipes` | **les salariés** (rang + nom facultatif) |
+| table `equipes_du_chantier` | **qui part**, demi-journée par demi-journée |
+
+⚠ **La table `equipes` porte les gars, pas des files de planning.** Le renommage
+est une tâche à part (`TODO.md`) : vingt-trois fichiers, les politiques RLS, les
+contraintes. Ne pas le mêler à autre chose.
+
+**Ce qu'il a interdit de changer, mot pour mot :** *« il ne faut pas changer la
+méthode d'affiliation des gars sur les chantiers […] on garde la même façon de
+faire »*, et *« 2 équipes = 2 chantiers par jour, comme avant, ça ne bouge
+pas »*.
+
+**LE PIÈGE, si l'on touche à la charge du planning.** On coche désormais des
+GENS : trois gars peuvent tenir sur une entreprise à deux chantiers par jour.
+`equipesMobilisees` plafonne donc la charge à la capacité. Retirer ce plafond
+ferait fermer par un seul chantier une journée qui en accepte deux — et l'écran
+d'envoi refuserait au client des jours réellement libres, pendant que le
+planning les annonce.
+
+`compterOccupation` exige `nombreEquipes` **sans valeur par défaut**, et c'est
+délibéré : un appelant oublié compterait sans plafond en silence. Ne pas ajouter
+de défaut « pour simplifier ».
+
+**Et le plancher des salariés est ZÉRO**, pas un : un artisan seul n'a personne.
+Le remonter ferait apparaître une case « Salarié 1 » à cocher sur chacune de ses
+demi-journées.
+
+Le détail : `ARCHITECTURE.md` §192, migration `drizzle/0067_salaries_a_part.sql`.
+
+---
+
+## UNE RÉPONSE ENCORE ATTENDUE DE LUI — planche 96 (26 août 2026)
+
+Rien n'est codé dans `src/` pour ces deux-là, et il ne faut pas commencer sans
+sa réponse (`CLAUDE.md` §3 bis).
+
+- **Planche 96** — `appli/ecran-equipe.html`. Il a répondu **C** pour le titre
+  et la synthèse. Reste à savoir si la phrase sur les congés reste sur l'écran
+  Équipe ou retourne dans « Absences ». **Non codée.**
+- **Planche 97** — `appli/salaries-et-equipes.html`. **Répondue (A) et codée le
+  26 août** : voir le paragraphe ci-dessus.
+## PIÈGE : `force-dynamic` NE FAIT PAS PARTIR LA DEMANDE (26 août 2026)
+
+On lit `export const dynamic = "force-dynamic"` comme « cette page est toujours
+fraîche ». **Elle ne dit rien de tel** : elle commande au SERVEUR de recalculer
+à chaque demande — encore faut-il qu'une demande parte. Sans `revalidatePath`,
+le routeur du navigateur reserve sa copie et n'appelle personne.
+
+C'est ce qui a fait dire au patron *« rien ne se passe »* en basculant le rythme
+de sa TVA : base écrite, calcul juste, écran figé sur « Août 2026 ».
+
+**Toute action serveur qui change ce qu'un AUTRE écran affiche appelle
+`revalidatePath`**, même quand la page visée est `force-dynamic`.
+
+Et le contrôle qui l'attrape doit rejouer **sa séquence** : basculer sans
+quitter l'écran. Toutes les suites du rythme passaient par Réglages puis
+rouvraient le relevé — une page rouverte est toujours juste, et elles étaient
+vertes depuis le 12 août. `ARCHITECTURE.md` §193.
+
+---
+
+## PIÈGE : UN BOUTON RADIO NE SE DÉCOCHE PAS (26 août 2026)
+
+Sa plainte du 26 août, sur la page de son client : *« je ne peux plus le
+désélectionner »*. Ce n'était pas le produit — **le navigateur ne sait pas
+décocher un radio**, il ne connaît que « passer de l'un à l'autre ».
+
+Ce qu'il faut savoir avant d'y retoucher, et qui ne se devine pas :
+
+- **`onChange` ne part JAMAIS** sur une case déjà cochée : le navigateur ne
+  signale un changement que s'il y en a un. C'est `onClick` qui attrape ce
+  geste-là, et lui seul ;
+- **React ne repeint pas entre deux gestionnaires d'un même événement** : à
+  l'entrée de `onClick`, l'état porte encore la valeur d'avant l'appui. La
+  comparaison « c'est déjà celle-ci ? » suffit donc, sans drapeau — un drapeau
+  survivrait à un rendu et défairait le choix suivant ;
+- **le contrôle qui compte n'est pas « ça se défait »**, c'est *« un appui sur
+  une AUTRE ligne choisit toujours »* : défaire à chaque appui passe le premier
+  et rend le formulaire inutilisable.
+
+`src/app/devis/[jeton]/formulaire.tsx`, `ARCHITECTURE.md` §191. Le même piège
+dort sur `PropositionPrixSection.tsx` (`TODO.md`).
+
+---
+
 ## PIÈGE : UNE SUITE QUI LIT LE MOIS AFFICHÉ ROUGIT EN FIN DE MOIS (26 août 2026)
 
 `test-envoi-client-e2e` a rougi le 26 août — **et à l'identique sur `main`**. Elle
@@ -20,6 +113,18 @@ jour.
 **Devant une suite de calendrier rouge, regarder d'abord le quantième.** Le
 remède est écrit : `joursRetenables` tourne la page du mois quand celui-ci est
 trop court. Toute suite neuve qui compte des jours doit faire de même.
+
+## L'ASSISTANT EST UN AGENT : CE QU'IL FAUT SAVOIR AVANT D'Y TOUCHER (26 août 2026)
+
+| | |
+|---|---|
+| **Rien en direct, jamais** | tout geste est une proposition cochée. Sa règle : *« très important que ça reste le doigt du patron »*. Ne pas « simplifier » en exécutant un geste anodin |
+| **Envoyer, valider, émettre** | ne sont PAS des gestes de l'assistant, et ne le deviendront pas sans qu'il le redemande en face |
+| **On vise par identifiant** | jamais par nom. Un geste qui accepterait un nom corrigerait le mauvais Martin |
+| **La cible se relit à l'ÉCRITURE** | pas à la proposition. Entre les deux, il a pu la supprimer |
+| **Le périmètre a DEUX conditions** | marque du dehors **et** aucun mot d'Atlas. Retirer la seconde ferait taire l'assistant sur de vraies questions — c'est le piège, pas le refus |
+| **« temps » n'est pas un mot du dehors** | il dit aussi le temps passé sur un chantier. Les mots ambigus restent hors de la liste, délibérément |
+| **Une proposition peut n'avoir aucun chantier** | migration 0067. La réclamation compare avec `IS NOT DISTINCT FROM` : `= NULL` ne retrouverait rien |
 
 ## L'ASSISTANT RÉCITE UN MODE D'EMPLOI ÉCRIT (25 août 2026)
 
@@ -2261,7 +2366,7 @@ rejouer.** J'ai bien failli défaire un changement juste pour cette raison.
 Trois choses à ne pas défaire par mégarde : la rubrique ne revient pas dans les
 Réglages (un contrôle le tient), la porte ne redescend pas en bas (un
 commentaire du 24 août disait l'inverse — il a été récrit), et le titre doré est
-`colors.or`, jamais `colors.rust` qui vaut le vert pin. `ARCHITECTURE.md` §190.
+`colors.or`, jamais `colors.rust` qui vaut le vert pin. `ARCHITECTURE.md` §195.
 
 
 **LE JOUR SE COMPTE CHEZ LUI, PLUS À GREENWICH (25 août).** `jourIso` rendait le

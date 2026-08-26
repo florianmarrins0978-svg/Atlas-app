@@ -16128,6 +16128,21 @@ quoi le cas serait vert avec une recherche qui ne rend jamais rien.
 
 ## 184. L'assistant OUVRE une fiche chantier — la seule écriture qu'on lui accorde
 
+> **REFERMÉE LE 26 AOÛT 2026, LE LENDEMAIN.** À la question posée de face —
+> *« y a-t-il des gestes sans risque que tu veux qu'il fasse directement, sans
+> te demander ? »* —, le patron a répondu : **« Je pense qu'il ne doit pas
+> pouvoir le faire. Très important que ça reste le doigt du patron. »**
+>
+> L'outil `CreerChantier` a donc quitté le registre, et le geste est devenu la
+> proposition `creer_chantier` (§188). **Ses deux demandes tiennent ensemble** :
+> celle du 25 août était *« ça aussi il doit pouvoir le faire »* — il le peut
+> toujours —, celle du 26 dit seulement qui appuie.
+>
+> **Ce qui suit reste vrai et vaut d'être lu** : les deux règles que cet outil
+> portait — un chantier ne se baptise pas, un doublon ne se crée pas en silence
+> — ont été reprises telles quelles dans la proposition. Changer de mécanique
+> n'était pas une raison de les perdre.
+
 **Sa demande du 25 août 2026**, capture à l'appui : *« Crée-moi une nouvelle
 fiche chantier du nom de Fernandez »*. Réponse de l'assistant : *« je ne suis
 pas en mesure de créer une fiche chantier »*, suivie de trois étapes à faire à
@@ -16464,9 +16479,469 @@ réécrire creuserait un trou dans la suite, ce que la loi interdit — et l'éc
 le dit en une phrase. La suite reprend là où elle en était, dans le nouvel
 habillage.
 
+## 189. L'agent : dix gestes de plus, un périmètre fermé, et toujours son doigt
+
+**Ses deux demandes du 26 août 2026**, dans le même message : *« je veux que ce
+soit un vrai agent IA avec toutes les capacités possibles et imaginables sur
+l'appli »*, et — *« seulement pour l'appli : si on lui demande est-ce que le CGR
+de Mantes est ouvert, il ne doit pas y répondre »*.
+
+**Et sa réponse à la seule question que je lui ai posée** : rien en direct.
+*« Je pense qu'il ne doit pas pouvoir le faire. Très important que ça reste le
+doigt du patron. »* Tout ce qui suit est donc une PROPOSITION, cochée et
+confirmée — sans exception, y compris pour un numéro de téléphone.
+
+### Ce qu'il savait faire, et ce qui manquait
+
+Il lisait beaucoup et n'agissait qu'ici : prestations, matériel, durée, équipe,
+lignes de prix — **et toujours sur le chantier ouvert**, le seul qu'il connût.
+S'ajoutent dix gestes et trois lectures :
+
+| Lire | Faire (proposé) |
+|---|---|
+| `RechercherChantier` — par nom de client ou de chantier | créer un chantier, corriger son adresse, y laisser une note |
+| `LireClients` — avec l'identifiant | corriger une fiche client |
+| `LirePlanning` — le posé ET ce qui attend un jour | poser, déplacer, retirer du planning |
+| (`LireTarifs`, déjà là) | créer et corriger un tarif ; préparer une facture |
+
+**On vise par IDENTIFIANT, jamais par nom** — deux clients peuvent s'appeler
+Martin, et corriger le téléphone du mauvais, c'est un devis qui part chez
+quelqu'un d'autre. D'où les trois lectures : elles existent pour rendre l'id.
+
+**Chaque geste relit sa cible en base au moment d'ÉCRIRE**, pas au moment de
+proposer. Entre la proposition et son doigt, le chantier a pu disparaître ;
+l'écrire quand même serait une erreur silencieuse. Un client effacé, un tarif
+supprimé, un chantier d'une autre société : le même conflit, en français.
+
+### Une proposition peut ne concerner AUCUN chantier (migration 0067)
+
+`propositions_ia.chantier_id` était obligatoire — normal quand tout geste visait
+le chantier ouvert. Créer un chantier n'en a pas encore ; régler un tarif n'en
+concerne aucun. La colonne est donc nullable, et la réclamation compare avec
+**`IS NOT DISTINCT FROM`** : écrite avec `=`, elle n'aurait jamais retrouvé une
+proposition à `NULL` — `NULL = NULL` est faux — et le geste aurait été
+« introuvable » sans que rien ne dise pourquoi.
+
+**Ce que ça n'ouvre pas** : c'est `entreprise_id` que la RLS regarde, et il
+reste obligatoire.
+
+### Le périmètre : DEUX verrous, parce qu'une consigne ne se vérifie pas
+
+La consigne du service dit au modèle de s'en tenir à Atlas. Nécessaire, et
+insuffisant : une consigne se contourne, change avec le fournisseur, et surtout
+**ne s'éprouve pas**. `src/lib/perimetre-assistant.ts` décide donc du refus
+**avant** que le modèle soit appelé — gratuit, identique quel que soit le
+fournisseur, et éprouvable sans clé.
+
+**Il ne refuse que si les DEUX sont vraies** : la question porte une marque
+franche du dehors (cinéma, météo, recette, capitale…) **et** aucun mot d'Atlas.
+C'est là qu'est tout l'art : refuser sur le seul mot « cinéma » ferait taire
+l'assistant devant *« j'ai un chantier au cinéma de Mantes »* — une vraie
+question. Et un garde-fou qui parle à tort s'apprend à être ignoré : on perd
+alors le garde-fou entier.
+
+Les mots ambigus sont dehors de la liste, délibérément : « ouvert », « horaire »
+et surtout **« temps »**, qui dit aussi le temps PASSÉ sur un chantier. La météo
+s'attrape par des tournures entières — « quel temps fait-il » —, jamais par ce
+mot seul.
+
+**Le doute profite à la question** : elle part au modèle, qui a la consigne. Ce
+filtre attrape le cas franc — le sien —, pas la totalité, et c'est assumé.
+
+**La suite éprouve les DEUX moitiés**, et la seconde compte davantage : douze
+questions qui doivent passer, dont *« combien de temps a pris le chantier »*,
+*« la facture de l'hôtel des Voyageurs »*, *« j'ai un chantier au cinéma de
+Mantes »*. Une suite qui n'éprouverait que le refus laisserait passer un filtre
+qui refuse tout — et on ne s'en apercevrait qu'à l'usage.
+
+### Trois gestes ne sont jamais les siens
+
+**Envoyer** un devis ou une facture, **valider** un devis, **émettre** une
+facture. `preparer_facture` s'arrête au brouillon : la facture existe, elle n'est
+pas partie. C'est la règle de toujours (§4 de `CLAUDE.md`), et il l'a
+reconfirmée le 26 août. Un devis parti chez un client ne se rattrape pas.
+
+### L'assistant ouvert aux commerciaux le matin, refermé le midi
+
+**Deux paroles opposées, le même jour, à deux sessions différentes.** À moi,
+sur la question du périmètre : *« oui tu peux l'ouvrir aux commerciaux »*. À une
+autre, quelques heures plus tard, en majuscules : **« LES SALARIÉS ET
+COMMERCIAUX NE DOIVENT PAS AVOIR ACCÈS À L'ASSISTANT IA »**.
+
+**C'est la seconde qui vaut** — la dernière, la plus nette, et celle qui est sur
+`main`. Écrit ici pour que personne ne la rouvre en croyant retrouver un oubli.
+
+**Et la règle n'appelle plus `peutVoirLesMontants`**, ce qui est le vrai point :
+un commercial voit les prix écran par écran sans avoir l'assistant. Les faire
+suivre l'une l'autre rouvrirait l'assistant en silence le jour où l'on
+élargirait les montants — une porte qu'on ne verrait pas s'ouvrir.
+
+### Deux sessions, le même jour, sur le même agent
+
+**§183, §184 et §185 sont d'une autre session**, écrits le 25 août pendant que
+celui-ci se montait. Les deux se sont rencontrés à la fusion, et il fallait
+trancher plutôt que garder deux façons de faire (`CLAUDE.md` §3) :
+
+| | Ce qui a été gardé |
+|---|---|
+| `RechercherChantier` | **leur version** — elle emploie `recherche-client.ts`, la règle de l'ÉCRAN : accents, casse, mots dans le désordre. La mienne comparait à la main |
+| `chantier-vise.ts` | **leur version** — une règle partagée, là où j'avais mis la même logique dans chaque geste |
+| `CreerChantier` (outil qui ÉCRIT) | **refermé**, sur sa réponse du 26 août — devenu la proposition `creer_chantier` |
+| les deux règles de leur outil | **reprises telles quelles** : un chantier ne se baptise pas, un doublon ne se crée pas en silence |
+
+**Ce qui aurait été perdu sans y regarder :** en changeant de mécanique, le nom
+du chantier serait redevenu ce que le modèle écrit, et un second jardin se
+serait ouvert au même nom sans un mot. Leur suite les défendait ; elle a été
+adaptée au geste proposé, pas supprimée (`CLAUDE.md` §5 bis).
+
+### Ce que la capture a trouvé, et aucun test
+
+Depuis l'accueil, *« crée un chantier pour Madame Lucie »* répondait **« Aucun
+chantier dans le contexte courant »** — un message technique, et faux : créer un
+chantier ne demande justement aucun chantier ouvert. Le refus datait de l'époque
+où tout geste en visait un ; il survivait à la migration 0067.
+
+**Aucune suite ne le voyait**, parce que toutes posaient leurs questions depuis
+un chantier. C'est la sixième fois dans ce dépôt qu'un défaut sort d'une image et
+d'aucun test. Le même appui rendait d'ailleurs le bouton « Appliquer » inerte
+côté écran — un bouton qui s'enfonce sans rien faire se lit comme une panne.
+
 ---
 
-## 190. « Composer ma fiche » quitte les Réglages pour Paysage
+## 190. « Mon compte » : quarante mots de moins, et rien de perdu
+
+**Ses quatre demandes du 26 août 2026, sur capture :** *« supprime la phrase
+sous enregistrer »*, *« supprime ce compte sous compte démo »*, et — pour les
+deux lignes grises sous Nom et E-mail — *« elles me semblent inutiles, qu'en
+penses-tu ? Si tu es d'accord on les supprime, sinon il faut les raccourcir,
+elles sont beaucoup beaucoup trop longues pour rien »*.
+
+### Ce qui est parti, et ce qui reste
+
+| Ligne | Verdict |
+|---|---|
+| « Ce compte », sous son nom | **partie** — l'écran s'appelle « Mon compte » |
+| « Ce nom ne part pas chez le client… » | **partie** — et elle se lisait de travers : « c'est celui de votre entreprise » se comprend à l'envers en diagonale |
+| « C'est aussi l'identifiant… il ne se change pas encore… » (40 mots) | **raccourcie à 7** : « Sert aussi à vous connecter. Pas encore modifiable. » |
+| « Pas de téléphone ici, et c'est voulu… » (4 lignes) | **partie** |
+
+### Pourquoi la ligne de l'e-mail n'a PAS été supprimée
+
+C'est le seul désaccord, et il tient en une phrase : **un champ qui ne s'ouvre
+pas quand on le touche se lit comme une panne.** Sans cette ligne, il appuierait,
+rien ne se passerait, et il chercherait ce qu'il a mal fait — exactement le
+genre de silence que ce dépôt paie cher.
+
+Ce qui a été retiré, c'est le POURQUOI : rien ne permettrait de vérifier une
+nouvelle adresse, et une faute de frappe fermerait le compte pour de bon. Cela
+reste vrai, et c'est ici que ça vit, pas sous ses yeux.
+
+### La décision du téléphone n'a pas bougé, seule son explication est partie
+
+Le paragraphe disait pourquoi il n'y a pas de champ téléphone — sa réponse « A »
+du 14 août. Il vivait **sous le bouton**, donc à moitié caché par la barre
+d'enregistrement : une explication qu'on ne lit pas ne protège de rien.
+
+**Aucun champ téléphone ici**, et `test-compte-connexion-e2e.ts` le refuse
+toujours. Le contrôle qui réclamait la PHRASE, lui, aurait rougi sur du code
+juste pour une demande exaucée (`CLAUDE.md` §5 bis) : il refuse désormais
+qu'elle revienne, au lieu de l'exiger. Trois libellés retirés sont gardés de la
+même façon.
+
+---
+
+## 191. Un choix fait par erreur doit pouvoir se défaire
+
+**Sa demande du 26 août 2026**, capture de la page que reçoit son client à
+l'appui : *« si par erreur j'ai sélectionné un des 3 champs je ne peux plus le
+désélectionner ! Faut corriger ça, je dois pouvoir désélectionner. »*
+
+**Ce n'était pas un défaut du produit, c'était le navigateur.** Un bouton radio
+ne se décoche pas : par construction, il ne connaît que « passer de l'un à
+l'autre ». Le client qui touchait la mauvaise ligne restait donc engagé sur une
+date qu'il n'avait pas choisie, sans aucun moyen de revenir en arrière — et
+cette date est celle où l'artisan se déplace.
+
+### Pourquoi `onClick`, et pas `onChange`
+
+| L'appui | `onChange` | `onClick` |
+|---|---|---|
+| sur une ligne neuve | part | part |
+| sur la ligne DÉJÀ cochée | **ne part jamais** | part |
+
+Le navigateur ne signale un changement que s'il y en a un ; c'est précisément le
+cas qu'on doit attraper. `onClick` est donc le seul geste qui existe ici.
+
+### Et la comparaison tient sans drapeau
+
+React ne repeint pas entre deux gestionnaires d'un même événement : à l'entrée
+de `onClick`, l'état porte encore la valeur **d'avant** l'appui.
+
+- ligne neuve : elle diffère de l'état → on ne défait rien, `onChange` choisit ;
+- ligne déjà cochée : elle est égale → on vide, et `onChange` ne partira pas.
+
+Les deux cas passent par la même ligne. Un drapeau « je viens de cocher » aurait
+survécu à un rendu et défait le choix suivant.
+
+Le clavier continue de passer par `onChange` : les flèches changent de ligne
+sans jamais rien défaire, ce qui est le comportement attendu d'un groupe radio.
+
+### Ce que le contrôle garde, et ce qu'il empêche
+
+`scripts/test-devis-client-e2e.ts`, cas « UN CHOIX FAIT PAR ERREUR SE DÉFAIT ».
+Vu rouge contre la version d'avant, sur l'assertion attendue.
+
+Il tient quatre choses, et la deuxième est la plus importante :
+
+1. le second appui défait, et **rien ne se coche à la place** ;
+2. **un appui sur une AUTRE ligne choisit toujours** — « défaire à chaque
+   appui » passerait le point 1 et rendrait le formulaire inutilisable ;
+3. la case de rétractation **s'en va avec la date qui l'a fait naître** : sans
+   cela, l'écran garderait une autorisation légale de démarrage anticipé
+   rattachée à une date effacée ;
+4. « une autre date » se défait pareil, et **referme son calendrier**.
+
+### Ce qui n'a pas bougé, et qui est déjà tenu
+
+Le serveur refusait déjà une acceptation sans date (`date_manquante`,
+`repondreAction`) : tout défaire puis appuyer sur « J'accepte ce devis » rend
+un message clair, pas un enregistrement muet. La règle n'existe qu'à un endroit.
+
+**Le même piège dort ailleurs**, sur le choix entre deux tarifs ambigus
+(`PropositionPrixSection.tsx`). Il ne l'a pas signalé et l'enjeu y est moindre —
+il peut toucher l'autre tarif —, mais c'est le même `type="radio"` et le même
+appui sans retour possible. Noté dans `TODO.md`.
+
+---
+
+## 192. Un seul nombre faisait deux métiers : les salariés se comptent à part des équipes
+
+**Sa demande du 26 août 2026, éprouvée sur la planche 97
+(`appli/salaries-et-equipes.html`) avant d'être codée — il a répondu **A** :**
+
+> *« Il faut avoir un curseur + ou − qui définit le nombre de salariés que
+> possède l'entreprise et pouvoir affilier des noms. Ceux-là permettront
+> d'ajouter ces noms au chantier, et plus les équipes A ou B. Néanmoins les
+> équipes doivent toujours servir à définir le niveau de remplissage du
+> planning : 2 équipes = 2 chantiers par jour, comme avant, ça ne bouge pas. »*
+
+Puis, en tranchant :
+
+> *« Il ne faut pas changer la méthode d'affiliation des gars sur les
+> chantiers — juste, au lieu que ce soit les équipes, ce sera les noms qu'on
+> affilie. On garde la même façon de faire. »*
+
+### Ce que `nombre_equipes` faisait de trop
+
+Un seul chiffre portait deux responsabilités sans rapport :
+
+| | Ce qu'il décidait |
+|---|---|
+| **la capacité** | combien de chantiers tiennent dans une journée |
+| **les gens** | combien de noms se règlent, et se cochent sur une demi-journée |
+
+Régler l'un déréglait donc l'autre, en silence. Monter la capacité à trois
+faisait apparaître une « Équipe C » que personne n'employait ; et un paysagiste
+à quatre salariés qui ne mène qu'un chantier à la fois n'avait **aucun moyen de
+le dire** — il devait choisir entre nommer ses gars et dire la vérité sur son
+planning.
+
+`entreprises.nombre_salaries` (migration 0067) porte désormais le second métier.
+`nombre_equipes` garde le premier, et rien de plus.
+
+### Ce qui N'A PAS bougé, parce qu'il l'a interdit
+
+La façon d'affilier quelqu'un à un chantier est **exactement** celle d'avant :
+la pastille sur la demi-journée, la liste qui s'ouvre, les cases qu'on coche
+une à une, « Terminé ». Même action serveur, même table
+(`equipes_du_chantier`), même indépendance matin / après-midi (migration 0058).
+Seuls les libellés changent.
+
+**Aucune table n'a été créée.** Ouvrir une table `salaries` aurait fabriqué une
+seconde liste de gens à côté de celle qui existe — deux vérités sur qui
+travaille dans l'entreprise (`CLAUDE.md` §3). La table `equipes` porte déjà un
+rang, un nom facultatif, et c'est elle que `equipes_du_chantier` relie à une
+demi-journée : **ces lignes ont toujours été les gars**, puisqu'il y écrit des
+prénoms depuis le 10 août 2026.
+
+⚠ **La dette de nommage est assumée et écrite** : la table s'appelle encore
+`equipes` alors qu'elle porte les salariés. Le renommage touche vingt-trois
+fichiers de `src/`, les politiques RLS et les contraintes ; le mêler à un
+changement de comportement aurait mis en risque une application qu'il utilise
+tous les jours (sa consigne du 24 août : *« ne fais rien qui peut endommager
+l'appli »*). C'est une tâche à part, dans `TODO.md`.
+
+### « Équipe A » a disparu du vocabulaire, et le repli est le rang
+
+Sa demande est explicite — *« et plus les équipes A ou B »*. `libelleEquipe` est
+devenue `libelleSalarie` : le nom écrit, sinon **« Salarié 3 »**.
+
+**Le repli EXISTE, et ce n'est pas du confort.** Le supprimer — c'est-à-dire ne
+montrer que les gens nommés, comme la proposition C de la planche — ferait
+disparaître les cases à cocher de tous ceux qui n'ont pas encore tapé les
+prénoms de leurs gars : leurs chantiers deviendraient du jour au lendemain
+impossibles à attribuer, sans un mot pour le dire.
+
+`LETTRES_EQUIPES` et `lettreDeRepli` ont été **retirées** : garder de quoi
+écrire « Équipe A » invitait à le refaire.
+
+### LE POINT DÉLICAT : la charge d'une demi-journée
+
+C'est le seul endroit où les deux nombres se rencontrent, et c'est là que se
+joue le « ça ne bouge pas ».
+
+Avant la coupure, l'écran cochait des ÉQUIPES : leur nombre ÉTAIT la charge, et
+il ne pouvait pas dépasser la capacité — il n'existait pas plus de cases que
+d'équipes. Maintenant qu'on coche des GENS, les deux se décollent : trois gars
+dans une entreprise à deux chantiers par jour, c'est possible.
+
+`equipesMobilisees(salariesCoches, nombreEquipes)` plafonne donc le compte à la
+capacité, plancher à un. **Le plafond n'est pas un ajustement, c'est ce qui
+évite la régression :** sans lui, un chantier à trois gars fermerait à lui seul
+une journée qui en accepte deux, et l'écran d'envoi refuserait au client des
+jours réellement libres.
+
+**Et à effectif égal, le résultat est identique à celui d'avant** — ce qui est
+exactement le cas de son entreprise, dont le compteur de salariés a été repris
+du nombre d'équipes par la migration. Sa correction du 22 août 2026 tient donc
+toujours : Julien ET Antoine chez Mr Eric ferment bien la demi-journée.
+
+**La même fonction sert à l'écran et au serveur.** `compterOccupation` la
+traverse désormais, et **son paramètre `nombreEquipes` est OBLIGATOIRE à
+dessein** : avec une valeur par défaut, un appelant oublié aurait continué de
+compter sans plafond, en silence — le planning plafonnant la charge et l'écran
+d'envoi non, si bien qu'un jour annoncé libre au patron aurait été refusé au
+client trois secondes plus tard (`CLAUDE.md` §3). Le compilateur a désigné les
+quatre appelants, plutôt que la production.
+
+### Le plancher est ZÉRO, et c'est ce qui distingue les deux compteurs
+
+Un artisan seul n'a **aucun** salarié — ce n'est pas un défaut de saisie. Lui
+proposer une ligne « Salarié 1 » l'inviterait à se nommer lui-même, et ferait
+apparaître une case à cocher sur chacune de ses demi-journées.
+
+La migration en tient compte dans sa reprise : `nombre_equipes = 1` sans nom
+écrit devient **zéro salarié**, et non un. Sans cette ligne, tous les artisans
+seuls auraient vu apparaître du jour au lendemain une organisation qu'ils n'ont
+pas.
+
+### Ce que les contrôles défendent
+
+| Où | Ce qui rougirait |
+|---|---|
+| `scripts/test-equipes.ts` | le repli qui réécrirait « Équipe », le plancher remonté à un, le plafond retiré |
+| `scripts/test-creneaux.ts` | trois gars sur un chantier qui fermeraient une journée à deux places |
+| `scripts/test-equipes-repo.ts` | un nom perdu en redescendant le compteur |
+
+**Confrontés à l'état dégradé** (`CLAUDE.md` §5) : plafond retiré de
+`equipesMobilisees`, les deux premières suites rougissent — et sur la bonne
+ligne, pas sur un effet de bord trois écrans plus loin.
+
+---
+
+## 193. « Rien ne se passe » : `force-dynamic` ne fait pas partir la demande
+
+**Sa plainte du 26 août 2026 :** *« quand je change entre tous les mois et tous
+les trois mois, c'est pareil, rien ne se passe »*. Il avait raison, et le défaut
+était réel : sur l'écran de TVA, basculer le rythme laissait « Août 2026 » sous
+ses yeux au lieu d'afficher le trimestre.
+
+### Ce qui marchait, et ce qui ne marchait pas
+
+| | |
+|---|---|
+| la base | **écrite** — le réglage revenait au rechargement suivant |
+| le calcul | **juste** — `test-periode-tva.ts` était vert, et le reste |
+| l'écran | **figé** sur la période d'avant |
+
+### Le piège, et il est contre-intuitif
+
+`src/app/termines/tva/page.tsx` porte `export const dynamic = "force-dynamic"`.
+On lit cette ligne comme « cette page est toujours fraîche » — elle ne dit rien
+de tel. Elle commande au **serveur** de recalculer à chaque demande ; encore
+faut-il **qu'une demande parte**. Le routeur du navigateur garde sa propre copie
+de `/termines/tva`, et sans revalidation il la reservait sans appeler personne.
+
+`revalidatePath` n'est donc pas une précaution de fin de fonction ici : c'est la
+moitié du geste. Le voisin immédiat le faisait déjà — `reglerExigibiliteAction`,
+écrite le même mois pour le régime de TVA, appelle `revalidatePath` ; celle de la
+périodicité, plus ancienne, ne l'avait jamais fait.
+
+### Pourquoi AUCUN contrôle ne le voyait
+
+`test-periodicite-tva-e2e.ts` couvrait pourtant le rythme depuis le 12 août, et
+il était vert. Son `choisir()` passe par **Réglages**, puis rouvre le relevé par
+une navigation neuve — et **une page rouverte est toujours juste**.
+
+Lui bascule depuis l'écran de TVA, sans le quitter. C'est sa **séquence** qu'il
+fallait rejouer, pas son geste (`AGENTS.md`) — la même leçon que la page vieillie
+du 12 août, sur un autre mécanisme.
+
+Le cas ajouté ne recharge rien : il touche les deux mots soulignés du haut,
+attend que le titre change, et refait le chemin en sens inverse — une correction
+qui ne fonctionnerait que dans un sens laisserait la moitié du défaut. Vu rouge
+sur « l'écran dit toujours "Août 2026" » avant d'être vert.
+
+### Ce qui n'était PAS un défaut, et qu'il a signalé le même soir
+
+*« Et lorsque je change entre les deux régimes, rien ne se passe, c'est
+normal ? »* — **oui.** Quand toutes les factures d'un mois ont été payées dans
+le mois, encaissements et débits tombent sur le même chiffre : c'est le calcul,
+pas le cache. Ce qui manque là est une **phrase** qui le dise, et elle est en
+maquette (`appli/quand-je-reverse-la-tva.html`), pas un correctif.
+
+Les deux plaintes se ressemblaient mot pour mot ; une seule était un bogue. Les
+séparer a demandé de rejouer chacune plutôt que de traiter la seconde comme la
+première.
+
+---
+## 194. L'écran d'envoi du devis perd trois phrases, et n'apprend rien de moins
+
+**Ses trois demandes du 26 août 2026, capture à l'appui :** *« supprime la
+phrase par SMS au + repris de votre dictée + le client pourra aussi en proposer
+une »*.
+
+### Ce qui part, et ce que ça coûte
+
+| Phrase | Ce qu'elle disait | Ce qui la remplace |
+|---|---|---|
+| « Par SMS au 0679984514 » | le canal et le destinataire | **rien** — sa messagerie les lui montre juste après |
+| « Repris de votre dictée. Corrigez-le si besoin… » | que la molette se tourne | la molette |
+| « Le client pourra aussi en proposer une autre… » | ce que l'interrupteur d'à côté dit déjà | l'interrupteur, et son sous-titre |
+
+**Le seul vrai coût est le premier**, et c'est un arbitrage qu'il a déjà rendu :
+le 24 août, sur l'écran de la facture, il a fait retirer le destinataire pour la
+même raison (`TransmettreLaFacture`). Il ne voit plus à qui le devis part avant
+d'ouvrir sa messagerie — laquelle le lui montre, et où il peut encore reculer :
+**rien n'est envoyé par Atlas**.
+
+### Les phrases sœurs partent avec elles, et c'est délibéré
+
+Chacune de ces lignes avait des variantes qui ne se montraient que dans
+d'autres états — deux dates plutôt qu'une, interrupteur fermé, durée saisie à
+la main. Les laisser, c'était les lui faire découvrir demain et payer le même
+aller-retour. Une seule survit, parce qu'elle APPREND quelque chose :
+« 4 jours ouvrés d'affilée seront réservés à partir de la date retenue » — un
+chantier long bloque le planning, et rien d'autre ne le dit.
+
+### Trois contrôles visaient les libellés ; ils visent maintenant la règle
+
+C'est le vrai travail de ce lot (`CLAUDE.md` §5 bis) :
+
+| Ce qu'il lisait | Ce qu'il éprouve maintenant |
+|---|---|
+| « Par e-mail au dupuis@exemple.fr » | la messagerie qui s'ouvre est bien `mailto:` sur cette adresse |
+| « Le client choisira entre ces deux dates » | **deux** dates sont listées à l'envoi |
+| la phrase qui suivait l'interrupteur | le **sous-titre de l'interrupteur** suit l'interrupteur — et l'ancienne phrase ne revient pas |
+
+Le premier est le plus important : il éprouve désormais le défaut du 20 août
+2026 lui-même — *« j'ai choisi d'envoyer par e-mail, et c'est le SMS qui s'est
+ouvert »* — au lieu d'une phrase qui l'annonçait.
+
+---
+---
+
+## 195. « Composer ma fiche » quitte les Réglages pour Paysage
 
 **Sa proposition du 26 août 2026**, une fois compris que les deux écrans n'en
 font pas un : *« est-ce qu'on peut la déplacer dans la fiche de chantier, dans

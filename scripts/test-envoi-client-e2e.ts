@@ -140,11 +140,23 @@ async function main() {
     await page.click("text=Choisir la date");
     await page.waitForSelector('[data-atlas="invite-dates"]', { timeout: DELAI_ECRAN_MS });
 
+    // **L'écran ne l'annonce plus, et c'est voulu : « Par e-mail au … » a été
+    // retiré le 26 août 2026, à sa demande.** Ce contrôle lisait cette
+    // phrase ; il éprouve désormais ce qui compte vraiment — la messagerie qui
+    // s'ouvre. Un libellé se change ; la déduction du canal, elle, est la règle
+    // (`CLAUDE.md` §5 bis), et c'est aussi ce qui a mordu le 20 août quand le
+    // SMS s'ouvrait à la place de l'e-mail.
+    await page.locator("button[aria-pressed]").nth(1).click();
+    await page.getByRole("button", { name: "Envoyer le devis" }).click();
+    await page.waitForURL(/localhost:3000\/$/, { timeout: 15000 });
+
+    const porte = page.locator("a[data-transmission-directe]");
+    assert.equal(await porte.count(), 1, "l'appui n'a ouvert aucune messagerie");
+    const adresse = (await porte.getAttribute("href")) ?? "";
     assert.ok(
-      await page.locator("text=Par e-mail au dupuis@exemple.fr").isVisible(),
-      "le canal déduit n'est pas celui de la coordonnée saisie"
+      adresse.startsWith("mailto:") && decodeURIComponent(adresse).includes("dupuis@exemple.fr"),
+      `le canal déduit n'est pas celui de la coordonnée saisie : ${adresse.slice(0, 80)}`
     );
-    await page.getByRole("button", { name: "Annuler l’envoi" }).click();
   });
 
   await test("LE CANAL DE LA FICHE COMMANDE L'OUVERTURE — e-mail, pas SMS", async () => {
@@ -295,15 +307,7 @@ async function main() {
 
     // Deux dates : c'est le cas qui laisse le client choisir. Prise au
     // calendrier, la liste des six ayant disparu le 23 août 2026.
-    const plancherCycle = new Date();
-    plancherCycle.setDate(plancherCycle.getDate() + 3);
-    const depuisCycle = plancherCycle.toISOString().slice(0, 10);
-    const offerts = (
-      await page
-        .locator('[data-jour][data-etat="regardable"]')
-        .evaluateAll((els) => els.map((e) => e.getAttribute("data-jour")!).filter(Boolean))
-    ).filter((j) => j >= depuisCycle);
-    assert.ok(offerts.length >= 1, "aucun jour acceptable au calendrier");
+    const offerts = await joursRetenables(page, 1);
     await retenirAuCalendrier(page, offerts[0]);
     await page.getByRole("button", { name: "Envoyer le devis" }).click();
     await page.waitForURL(/localhost:3000\/$/, { timeout: 15000 }); // L'envoi ramène à L'ACCUEIL depuis le 21 août 2026 : c'est lui, le signal.
@@ -484,15 +488,24 @@ async function main() {
       "il doit être ouvert par défaut : c'est ce que l'application faisait jusqu'ici"
     );
 
-    // La phrase sous les dates suit l'interrupteur — sans quoi il enverrait
-    // sans savoir ce que son client va voir.
+    // **L'écran dit ce que le client pourra faire, et il le dit là où l'on
+    // appuie.** La phrase qui vivait SOUS les dates a été retirée le 26 août
+    // 2026 (elle le disait pour la troisième fois) ; le sous-titre de
+    // l'interrupteur, lui, change avec lui — et c'est ce qu'on défend : sans
+    // rien qui suive le geste, il enverrait sans savoir ce que son client voit.
     await bascule.click();
     assert.strictEqual(await bascule.getAttribute("aria-checked"), "false");
     const texte = await page.locator("body").innerText();
     assert.match(
       texte,
-      /ne pourra pas en proposer une autre|et rien d'autre/,
-      `la phrase ne suit pas l'interrupteur. L'écran dit : ${JSON.stringify(texte.slice(0, 220))}`
+      /choisira uniquement parmi vos dates/,
+      `le sous-titre ne suit pas l'interrupteur. L'écran dit : ${JSON.stringify(texte.slice(0, 220))}`
+    );
+    // Et l'ancienne phrase n'est pas revenue par une autre porte.
+    assert.doesNotMatch(
+      texte,
+      /pourra aussi en proposer une autre|choisira entre ces deux dates/,
+      "la phrase retirée le 26 août est revenue"
     );
     await page.getByRole("button", { name: "Annuler l’envoi" }).click();
   });

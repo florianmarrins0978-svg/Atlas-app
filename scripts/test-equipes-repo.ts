@@ -9,7 +9,7 @@ import assert from "node:assert/strict";
 import { randomUUID } from "node:crypto";
 import { Pool } from "pg";
 import { listerEquipes, nommerEquipe, equipeParRang } from "../src/server/repositories/equipes";
-import { libelleEquipe, equipesAffichees } from "../src/lib/equipes";
+import { libelleSalarie, salariesAffiches } from "../src/lib/equipes";
 
 let echecs = 0;
 async function essai(nom: string, fn: () => Promise<void>) {
@@ -80,11 +80,11 @@ async function main() {
 
   await essai("vider le champ remet NULL, jamais une chaîne vide", async () => {
     // Sinon la base porterait deux façons de dire « pas de nom », et
-    // `libelleEquipe` devrait connaître les deux.
+    // `libelleSalarie` devrait connaître les deux.
     await nommerEquipe(a, 2, "   ");
     const ligne = await equipeParRang(a, 2);
     assert.equal(ligne?.nom, null, `la base porte ${JSON.stringify(ligne?.nom)}`);
-    assert.equal(libelleEquipe(ligne, 2), "Équipe B");
+    assert.equal(libelleSalarie(ligne, 2), "Salarié 2");
   });
 
   await essai("l'isolation tient : B ne voit rien des équipes de A", async () => {
@@ -101,7 +101,7 @@ async function main() {
   });
 
   await essai("un nom survit à la descente du compteur, puis revient", async () => {
-    // `entreprises.nombre_equipes` fait autorité sur le NOMBRE ; la table ne
+    // `entreprises.nombre_salaries` fait autorité sur le NOMBRE ; la table ne
     // porte que des noms. Effacer serait une perte silencieuse sur une donnée
     // saisie à la main que rien ne reconstitue.
     await nommerEquipe(a, 3, "Sofia");
@@ -109,13 +109,13 @@ async function main() {
     assert.equal(enBase.length, 3);
 
     // Compteur à 2 : la troisième ne se montre plus…
-    const vues = equipesAffichees(enBase, 2);
+    const vues = salariesAffiches(enBase, 2);
     assert.equal(vues.length, 2);
     assert.ok(!vues.some((e) => e.nom === "Sofia"));
 
     // …mais elle est toujours là, et elle revient.
-    const revenues = equipesAffichees(await listerEquipes(a), 3);
-    assert.equal(libelleEquipe(revenues[2], 3), "Sofia");
+    const revenues = salariesAffiches(await listerEquipes(a), 3);
+    assert.equal(libelleSalarie(revenues[2], 3), "Sofia");
   });
 
   await essai("un rang hors bornes est ramené dans les clous plutôt que refusé", async () => {

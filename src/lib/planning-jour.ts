@@ -164,18 +164,24 @@ export function ditLeCompteDuJour(nombreChantiers: number, chargeMax: number): s
 }
 
 /**
- * Ce qu'affiche la pastille d'équipe d'un chantier.
+ * Ce qu'affiche la pastille « qui part » d'un chantier.
  *
- * **Un chantier peut porter PLUSIEURS équipes.** Sa demande du 21 août :
+ * **Un chantier peut porter PLUSIEURS personnes.** Sa demande du 21 août :
  * *« lorsque je choisis une équipe je dois pouvoir mettre toutes les équipes si
  * je le souhaite, le même jour ou même sur la même demi-journée — tout le monde
  * le matin, puis tout le monde l'aprem »*. Un gros chantier se fait à
  * plusieurs, et l'écran doit pouvoir le dire.
  *
+ * **Vide, elle dit « Qui ? » et non plus « Équipe ? »** — sa demande du 26 août
+ * 2026 : *« et plus les équipes A ou B »*. Ce qu'on coche là est devenu une
+ * personne ; garder le mot « équipe » sur la case aurait laissé à l'écran le
+ * vocabulaire qu'il vient de faire retirer. Elle y gagne aussi la largeur qui
+ * lui manquait sur un téléphone.
+ *
  * Au-delà de deux noms on compte, sinon la ligne déborde sur un téléphone.
  */
-export function ditLesEquipes(noms: readonly string[]): string {
-  if (noms.length === 0) return "Équipe ?";
+export function ditQuiPart(noms: readonly string[]): string {
+  if (noms.length === 0) return "Qui ?";
   if (noms.length <= 2) return noms.join(", ");
   return `${noms[0]} +${noms.length - 1}`;
 }
@@ -239,6 +245,29 @@ export function blocsDeLaJournee<C>(
  * une fois pour toutes, plutôt que dans chaque écran.
  */
 export type QuandChantier = "matin" | "apres" | "journee";
+
+/**
+ * Un jour écrit « 2026-08-31 », et rien d'autre.
+ *
+ * **Écrit ici, avec le reste de la règle du planning.** L'agent conversationnel
+ * peut proposer une date (sa demande du 26 août 2026) : sans ce contrôle, un
+ * « lundi prochain » mal traduit deviendrait une chaîne quelconque écrite en
+ * base, et le chantier disparaîtrait du calendrier sans qu'on sache pourquoi.
+ *
+ * **Il refuse aussi un jour qui n'existe pas** — le 31 février s'écrit
+ * parfaitement sur dix caractères. `Date` le décale au 3 mars ; on compare donc
+ * ce qu'elle rend à ce qu'on lui a donné.
+ */
+export function estUnJourValide(jour: string): boolean {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(jour)) return false;
+  const d = new Date(`${jour}T00:00:00Z`);
+  return !Number.isNaN(d.getTime()) && d.toISOString().slice(0, 10) === jour;
+}
+
+/** « matin », « apres » ou « journee » — les trois seuls moments de pose. */
+export function estUnMomentValide(quand: string): quand is QuandChantier {
+  return quand === "matin" || quand === "apres" || quand === "journee";
+}
 
 export const MOT_QUAND: Record<QuandChantier, string> = {
   matin: "Matin",

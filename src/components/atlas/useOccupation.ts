@@ -2,7 +2,7 @@
 
 import { useCallback, useMemo } from "react";
 import { fusionnerAbsences, type AbsenceEquipe } from "@/lib/absences-equipe";
-import { equipesAffichees, libelleEquipe } from "@/lib/equipes";
+import { equipesMobilisees, libelleSalarie, salariesAffiches } from "@/lib/equipes";
 import { occupationDemi, type Demi } from "@/lib/planning-jour";
 import {
   cleCreneau,
@@ -31,20 +31,30 @@ import type { ChantierPlanning } from "@/app/planning/PlanningClient";
  *   · les absences comptent comme des chantiers — une équipe partie retire de
  *     la place, et l'ignorer ferait proposer au client un jour où personne ne
  *     peut venir ;
- *   · les équipes COCHÉES sur la demi-journée comptent, et non le seul nombre
- *     de chantiers : sans cela, un mardi où ses deux équipes sont chez le même
+ *   · les GENS COCHÉS sur la demi-journée comptent, et non le seul nombre
+ *     de chantiers : sans cela, un mardi où ses deux gars sont chez le même
  *     client s'annonçait « incomplet » (22 août 2026).
+ *
+ * **Depuis le 26 août 2026, ce qu'on coche est un SALARIÉ et non une équipe**
+ * (planche 97, réponse A). La charge passe donc par `equipesMobilisees`, qui
+ * plafonne le compte à la capacité : trois gars sur un même chantier ne
+ * ferment pas une journée qui accepte deux chantiers. À effectif égal — le cas
+ * de son entreprise — le résultat est identique à celui d'avant.
  * ───────────────────────────────────────────────────────────────────────────
  */
 export function useOccupation({
   chantiers,
   nombreEquipes,
+  nombreSalaries,
   absences,
   equipesNommees,
 }: {
   /** Les chantiers DATÉS à faire compter — au planning, ceux qui restent visibles. */
   chantiers: readonly ChantierPlanning[];
+  /** La CAPACITÉ : combien de chantiers tiennent dans une journée. */
   nombreEquipes: number;
+  /** Combien de GENS : ce qui décide des noms cochables sur une demi-journée. */
+  nombreSalaries: number;
   absences: readonly AbsenceEquipe[];
   equipesNommees: readonly { rang: number; nom: string | null }[];
 }) {
@@ -84,29 +94,33 @@ export function useOccupation({
         parCreneau.get(cle) ?? [],
         nombreEquipes,
         absentesParCreneau.get(cle) ?? 0,
-        (c) => (demi === "matin" ? c.equipes.matin : c.equipes.apres_midi).length
+        (c) =>
+          equipesMobilisees(
+            (demi === "matin" ? c.equipes.matin : c.equipes.apres_midi).length,
+            nombreEquipes
+          )
       );
     },
     [parCreneau, absentesParCreneau, nombreEquipes]
   );
 
   const lignesEquipes = useMemo(
-    () => equipesAffichees(equipesNommees, nombreEquipes),
-    [equipesNommees, nombreEquipes]
+    () => salariesAffiches(equipesNommees, nombreSalaries),
+    [equipesNommees, nombreSalaries]
   );
 
   /**
-   * Le nom d'une équipe, ou sa lettre de repli.
+   * Le nom d'un salarié, ou son rang en repli.
    *
-   * `libelleEquipe` décide seule : elle sert aussi au serveur et aux documents,
-   * et deux implémentations divergeraient le jour où l'artisan nomme la
-   * troisième sans avoir touché la deuxième (`src/lib/equipes.ts`).
+   * `libelleSalarie` décide seule : elle sert aussi au serveur et aux documents,
+   * et deux implémentations divergeraient le jour où l'artisan nomme le
+   * troisième sans avoir touché le deuxième (`src/lib/equipes.ts`).
    */
   const nomEquipe = useCallback(
     (rang: number) =>
-      libelleEquipe(lignesEquipes.find((e) => e.rang === rang) ?? null, nombreEquipes) ??
-      `Équipe ${rang}`,
-    [lignesEquipes, nombreEquipes]
+      libelleSalarie(lignesEquipes.find((e) => e.rang === rang) ?? null, nombreSalaries) ??
+      `Salarié ${rang}`,
+    [lignesEquipes, nombreSalaries]
   );
 
   return { occupationDe, nomEquipe, lignesEquipes };

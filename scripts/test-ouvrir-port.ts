@@ -242,6 +242,55 @@ cas("l'espace de travail réclame `gh`, que son image n'embarque pas", () => {
   );
 });
 
+// ─── LE VEILLEUR REDEMANDE LE PORT UNE FOIS LE SERVEUR DEBOUT ───────────────
+//
+// **Sa panne du 26 août 2026**, capture de l'onglet PORTS à l'appui : *« problème
+// pas de port connecté »*. Sa fiche portait le mot exact — *« error updating
+// port 3000 to public: error getting tunnel port: […] 404 Not Found »*.
+//
+// **Le relais ne connaissait pas encore le port.** `demarrer.sh` en demande
+// l'ouverture aussitôt après avoir posé le veilleur, dont la construction dure
+// des minutes : au moment de la demande, RIEN n'écoute sur 3000. GitHub n'a donc
+// aucun port à rendre public, et répond 404. Le serveur démarre ensuite, le port
+// se déclare tout seul — **et reste PRIVÉ**, parce que plus rien ne redemandait.
+//
+// C'est le symptôme du 10 août sous une autre cause : GitHub sert sa page de
+// connexion à la place d'Atlas, et depuis son téléphone il n'y a rien à voir.
+//
+// **Une tentative unique au démarrage a lieu au seul moment où elle ne peut pas
+// aboutir.** Ce cas exige qu'il y en ait une seconde, là où le serveur répond.
+cas("le veilleur redemande l'ouverture du port quand le serveur répond", () => {
+  const veilleur = readFileSync(path.join(__dirname, "..", ".devcontainer", "veiller.sh"), "utf8")
+    .split("\n")
+    .filter((l) => !l.trimStart().startsWith("#"))
+    .join("\n");
+
+  assert.match(
+    veilleur,
+    /bash\s+"\$\(dirname "\$0"\)\/ouvrir-port\.sh"/,
+    "veiller.sh n'appelle PAS ouvrir-port.sh : la demande du démarrage a lieu avant que " +
+      "rien n'écoute, elle échoue en 404, et le port reste privé pour toute la session"
+  );
+
+  // **Une seule fois obtenue, jamais en boucle.** `gh` interroge le réseau : le
+  // rappeler toutes les quinze secondes userait un quota sans rien apprendre.
+  assert.match(
+    veilleur,
+    /PORT_OUVERT/,
+    "rien ne retient que le port est ouvert : `gh` serait rappelé à chaque tour de veille"
+  );
+
+  // **La fiche lit `/tmp/atlas-port.txt`** (`diagnostiquer-espace.mjs`). Sans
+  // cette mise à jour, elle continuerait d'annoncer le refus du démarrage alors
+  // que le port est ouvert — et sa règle enverrait le patron réparer ce qui
+  // marche, ce qui est le pire des messages (`CLAUDE.md` §1 bis).
+  assert.match(
+    veilleur,
+    /\/tmp\/atlas-port\.txt/,
+    "veiller.sh n'écrit pas le nouvel état du port : la fiche annoncerait encore le refus"
+  );
+});
+
 rmSync(dossier, { recursive: true, force: true });
 
 console.log(`\n${echecs === 0 ? "✅" : "❌"} Port du banc — ${echecs} échec(s).`);
