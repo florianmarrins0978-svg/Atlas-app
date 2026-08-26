@@ -75,6 +75,26 @@ Le curseur des **équipes** reste dans les trois, comme il l'a exigé.
 **Le contrôle ouvre un navigateur, et il a trouvé un vrai défaut** : les
 pastilles et les croix de la planche faisaient moins de 40 px. Corrigé à 44 —
 il touche cet écran debout, avec un gant.
+
+### Maquette : « Quand je reverse la TVA » — les deux phrases du relevé
+
+*« Quand le client le paye / quand je met la facture. C'est pas clair, on
+comprend rien. Qu'est-ce que ça signifie ? »* Puis : *« et lorsque je change
+entre les deux, rien ne se passe, c'est normal ? »*
+
+**La seconde question n'était PAS une panne, et le calcul est juste :** quand
+toutes les factures d'un mois ont été payées dans le mois, les deux régimes
+tombent sur le même chiffre. L'écart n'existe que sur une facture émise un mois
+et encaissée le suivant — ou jamais payée.
+
+Mais un écran qui ne bouge pas sans rien dire se lit comme une panne. La
+planche porte donc deux réécritures des libellés — le verbe manquant est
+« je reverse » — et **la ligne qui dit ce que le choix change sur le mois
+affiché, y compris quand il n'y change rien.**
+
+Rien n'est codé : `appli/quand-je-reverse-la-tva.html`, en attente de son choix
+entre A et B.
+
 ### « Sans date » disparaît quand rien n'attend de jour
 
 **Sa question :** *« est-ce que la catégorie sans date a un réel besoin
@@ -1783,10 +1803,18 @@ porte sur la TVA due et qu'Atlas ne connaît que la collectée. C'est cela qu'il
 mesure désormais, et non un libellé que le patron peut vouloir réécrire demain
 (`CLAUDE.md` §5 bis).
 
-**Ce que le retrait coûte, et c'est à lui d'en juger** : l'écran ne dit plus que
-le mois est le défaut légal. Les deux boutons — « Tous les mois », « Tous les
-trimestres » — se présentent maintenant comme un choix libre, alors que le
-trimestre est une option sous condition. Dit ici plutôt que corrigé sans lui.
+**Il a tranché dans la foulée** — *« tu peux faire une phrase courte »* — et
+elle tient sur une ligne : **« Le mois est le défaut ; le trimestre s'obtient
+sous condition. »** Sans elle, les deux boutons se lisaient comme un choix
+libre, et le mauvais coûte un rappel de l'administration.
+
+**Ce qu'elle ne dit pas, délibérément :** laquelle lui convient. Le seuil porte
+sur la TVA DUE, donc sur ses achats, qu'Atlas ne voit pas.
+
+Le contrôle défend désormais **le fait, pas la formule** : un motif large
+(« mois » près de « défaut »), pour qu'il puisse la réécrire demain sans faire
+rougir la batterie. **Vu rouge** en remplaçant la phrase par « Choisissez votre
+rythme » — il tombe, et montre le texte fautif.
 
 ### L'adresse écrite deux fois : sa question du 24 août
 
