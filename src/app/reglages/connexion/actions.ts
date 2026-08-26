@@ -83,7 +83,7 @@ export type DefiEnregistrement =
   | { ok: true; options: PublicKeyCredentialCreationOptionsJSON }
   | { ok: false; raison: string };
 
-export async function defiEnregistrementAction(): Promise<DefiEnregistrement> {
+export async function defiEnregistrementAction(origineNavigateur?: string): Promise<DefiEnregistrement> {
   const ctx = await getCurrentCtx();
   const limite = await verifierLimite(`cle-appareil:${ctx.utilisateurId}`, LIMITES.cleAppareil);
   if (!limite.autorise) return { ok: false, raison: limite.message };
@@ -95,11 +95,16 @@ export async function defiEnregistrementAction(): Promise<DefiEnregistrement> {
   const compte = await lireCompte(ctx);
   if (!compte) return { ok: false, raison: messageRefusCle("panne-activation") ?? "Impossible d’enregistrer cet appareil pour l’instant." };
 
-  const r = await optionsEnregistrement({
-    id: ctx.utilisateurId,
-    email: compte.email,
-    nom: compte.nom || null,
-  });
+  const r = await optionsEnregistrement(
+    {
+      id: ctx.utilisateurId,
+      email: compte.email,
+      nom: compte.nom || null,
+    },
+    // L'adresse de SA barre d'adresse : derrière le tunnel de son espace, c'est
+    // la seule qui dise où la page est vraiment servie (`ARCHITECTURE.md` §177).
+    origineNavigateur
+  );
   if (!r.ok) {
     // La raison nomme la configuration, pas l'artisan. On la journalise déjà
     // dans `contexteWebAuthn` ; ici on lui rend une phrase qu'il peut lire.

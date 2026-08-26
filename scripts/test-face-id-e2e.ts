@@ -114,6 +114,18 @@ async function main() {
 
   const contexte = await navigateur.newContext();
   const page = await contexte.newPage();
+
+  /**
+   * Ce que la page écrit dans sa console.
+   *
+   * **Sans ce relevé, la panne du 26 août 2026 restait invisible** : la porte
+   * prenait une réussite pour un échec, affichait un message rouge, et
+   * naviguait quand même. Tout ce qui s'observe depuis le serveur — l'adresse
+   * d'arrivée, la base — disait vrai. Il fallait écouter ce que la page dit.
+   */
+  const messagesDeConsole: string[] = [];
+  page.on("console", (m) => messagesDeConsole.push(m.text()));
+
   await poserUnAppareil(page);
 
   await cas("on entre AU MOT DE PASSE — c'est toujours par là qu'on commence", async () => {
@@ -132,6 +144,26 @@ async function main() {
     const texte = await page.locator("body").innerText();
     assert.match(texte, /ne quitte jamais votre téléphone/i);
     assert.match(texte, /mot de passe reste actif/i);
+  });
+
+  await cas("« Changer mon mot de passe » est AU-DESSUS d'« Ouvrir avec Face ID »", async () => {
+    // **Sa demande du 26 août 2026**, sur capture : le bouton vivait sur une
+    // barre fixe en bas d'écran, deux rubriques plus bas que ses propres champs.
+    //
+    // **Mesuré, jamais lu dans un libellé** (`CLAUDE.md` §5 bis) : on compare
+    // deux ordonnées. Le jour où l'un des deux textes change, ce contrôle
+    // défendra encore l'ordre — ce qui est la règle, le mot ne l'étant pas.
+    const bouton = await page.getByRole("button", { name: /^Changer mon mot de passe$/ }).boundingBox();
+    const faceId = await page.getByText(/Ouvrir avec Face ID/i).first().boundingBox();
+    assert.ok(bouton, "le bouton du mot de passe est introuvable");
+    assert.ok(faceId, "la rubrique Face ID est introuvable");
+    // Refuser de conclure sur une boîte de zéro pixel : la mise en page n'est
+    // alors pas appliquée, et « 0 < 0 » rendrait un vert qui ne prouve rien.
+    assert.ok(bouton.height > 10 && faceId.height > 2, "rien n'est mis en page : la mesure ne prouverait rien");
+    assert.ok(
+      bouton.y < faceId.y,
+      `le bouton est à ${Math.round(bouton.y)} px, Face ID à ${Math.round(faceId.y)} px : il est passé dessous`
+    );
   });
 
   await cas("l'appareil s'enregistre pour de bon, et la base porte une clé", async () => {
@@ -182,6 +214,13 @@ async function main() {
     await page.getByRole("button", { name: /Ouvrir avec Face ID/i }).click();
     await page.waitForURL(`${BASE}/`, { timeout: 20_000 });
     assert.equal(new URL(page.url()).pathname, "/");
+    // **Et RIEN de rouge ne s'est affiché en chemin.** Une action serveur qui
+    // redirige le fait en levant : cette levée tombait dans le `catch` de la
+    // porte, qui affichait « Face ID n'a pas pu aboutir » au moment même où
+    // l'on entrait. La navigation avait lieu quand même — donc aucun contrôle
+    // ne le voyait. Trouvé le 26 août 2026 en journalisant la cause.
+    const journal = messagesDeConsole.filter((m) => /face-id. ouverture refusée/i.test(m));
+    assert.equal(journal.length, 0, `la réussite a été prise pour une panne : ${journal.join(" · ")}`);
   });
 
   await cas("l'ouverture est datée — l'écran peut dire quel appareil sert encore", async () => {

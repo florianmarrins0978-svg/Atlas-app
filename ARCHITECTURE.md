@@ -16049,3 +16049,298 @@ une tâche de fond. Rien ne tourne la nuit : l'écran range au moment où on
 l'ouvre. Un chantier « passe » donc dans Terminés dès la première ouverture
 après minuit — il n'y a pas d'instant où quelque chose se déclenche, et c'est ce
 qui rend la règle sûre : aucune tâche à réveiller, rien à rattraper.
+
+## 183. L'assistant sait enfin partir d'un NOM — et il ne prétend plus qu'un ancien devis a disparu
+
+**Sa capture du 25 août 2026.** Il demande : *« Peux-tu me ressortir le premier
+devis de M. Bernard ? »* L'assistant répond qu'il n'a *« aucun chantier
+ouvert »*, lui explique comment aller ouvrir la fiche lui-même, et ajoute :
+*« Atlas conserve uniquement le dernier devis par chantier »*. Sa réponse :
+**« c'est justement ça que je veux qu'il soit capable de faire »**.
+
+Deux défauts, et le second est le plus grave.
+
+### 1. Aucun outil ne partait d'un nom
+
+Tous les outils de l'assistant lisent `ContexteOutil.chantierId` — le chantier
+d'où l'on a ouvert le panneau. Ouvert depuis la LISTE, il est nul, et chacun
+refuse à son tour. Le modèle n'inventait rien : il n'avait littéralement aucun
+chemin entre « M. Bernard » et un dossier.
+
+`RechercherChantier` est le seul outil qui fonctionne **sans** chantier courant,
+et il est en tête du registre pour cette raison. Il cherche dans le nom du
+client **et** dans celui du chantier — il dit « le chantier de la mairie » aussi
+souvent qu'il dit un nom de client, et l'outil doit suivre sa façon de parler,
+pas la colonne où c'est rangé.
+
+**La règle de comparaison est CELLE DE L'ÉCRAN** (`src/lib/recherche-client.ts`,
+`filtrerClientsParNom`) : casse et accents ignorés, n'importe où dans la ligne,
+mots dans le désordre. En écrire une seconde ici, c'est promettre à l'assistant
+de trouver ce que l'écran ne trouve pas — ou l'inverse (`CLAUDE.md` §3).
+
+### 2. Un outil muet fait inventer une explication
+
+**« Atlas conserve uniquement le dernier devis » est FAUX.** Un brouillon se
+réécrit en place, mais **un devis envoyé est conservé** et le suivant devient
+une version 2 (`getOuCreerDevisBrouillon`). Ses anciens devis étaient là.
+
+Ce qui a produit la phrase fausse n'est pas le modèle : c'est l'outil. Il rendait
+la dernière version, sans jamais dire qu'il en existait d'autres. **Le modèle ne
+dispose que de ce qu'on lui rend** — le reste, il le comble.
+
+D'où deux changements qui vont ensemble :
+
+| | |
+|---|---|
+| `LireDevis` prend une `version` | « le premier » = la version 1 |
+| il rend **toujours** `versionsDisponibles` | même quand on ne demande rien : c'est ce qui empêche de conclure qu'il n'y en a qu'une |
+
+`listerVersionsDevis` trie en **croissant**, contre l'usage du reste du dépôt :
+ici on lit une histoire, on ne cherche pas l'état courant, et « le premier » doit
+être le premier de la liste.
+
+### Ce qu'un refus doit dire
+
+Sans chantier, `LireDevis` ne répond plus « aucun chantier dans le contexte » —
+il nomme **la suite à donner** : employer `RechercherChantier`, puis rappeler
+avec l'identifiant obtenu. Une suite le vérifie, et vérifie aussi que le refus
+ne renvoie **plus** le patron ouvrir une fiche à la main : c'est précisément ce
+qu'il a reproché.
+
+La consigne système va dans le même sens, en toutes lettres : *ne demande jamais
+au patron d'aller ouvrir une fiche pour te donner accès — c'est ton travail de
+la trouver.*
+
+### Éprouvé contre la version qui lui a répondu
+
+`test-ia-09-chercher-par-nom.ts` monte le décor exact de sa capture : un client
+« Mr. Bernard », un premier devis **envoyé** — l'envoi seul fige la version 1 —,
+puis un second. Rejouée contre l'ancien outil, elle rougit sur trois cas : la
+version 1, les versions annoncées, et le refus d'une version absente.
+
+**Et un confrère au même nom.** Une seconde entreprise porte elle aussi un
+« Mr. Bernard » : c'est le seul décor où un défaut d'isolation se verrait, et il
+montrerait les devis de quelqu'un d'autre. Les deux sens sont vérifiés — sans
+quoi le cas serait vert avec une recherche qui ne rend jamais rien.
+
+
+---
+
+## 184. L'assistant OUVRE une fiche chantier — la seule écriture qu'on lui accorde
+
+**Sa demande du 25 août 2026**, capture à l'appui : *« Crée-moi une nouvelle
+fiche chantier du nom de Fernandez »*. Réponse de l'assistant : *« je ne suis
+pas en mesure de créer une fiche chantier »*, suivie de trois étapes à faire à
+la main. Sa réponse : **« Ça aussi il doit pouvoir le faire »**.
+
+### Pourquoi la mécanique existante ne pouvait pas servir
+
+Depuis le lot IA-03, l'assistant n'écrit jamais : il PROPOSE, et le patron
+confirme d'un doigt. C'est le bon patron, et il n'a pas bougé pour le reste.
+
+Mais une proposition est rangée **sous un chantier** — `propositions_ia.
+chantier_id` est non nul — et il s'agit précisément d'en créer un. La faire
+vivre sans chantier demandait une migration, une seconde action de
+confirmation, et un second chemin dans le panneau : beaucoup de machinerie pour
+un geste qui n'engage rien.
+
+### L'exception, et ce qui la rend tenable
+
+| Ce que `CreerChantier` fait | Ce qu'il ne fait pas |
+|---|---|
+| ouvre une fiche VIDE pour un client | écrire un prix, une prestation, une durée |
+| reprend un client existant | envoyer, valider, facturer |
+
+**Rien n'est inventé** — le nom vient de sa phrase. **Rien n'est engagé** — une
+fiche vide n'a ni montant ni destinataire, et elle se supprime. Les trois gestes
+que `CLAUDE.md` §4 réserve à son doigt restent hors d'atteinte, et toute autre
+écriture passe encore par une proposition.
+
+**C'est SA décision, pas un arbitrage technique.** L'invariant « l'assistant n'écrit
+jamais » a été posé par le dépôt, pas par lui ; il vient de le lever pour ce
+cas-là. Ne pas l'élargir sans lui.
+
+### Deux règles reprises, jamais réécrites
+
+**Un chantier ne se baptise pas.** Sa demande du 5 août 2026 — *« retire la case
+nom du chantier »* — parce qu'un élagueur ne baptise pas ses chantiers. Le nom
+se déduit du client, sinon de l'adresse, sinon du jour (`nom-chantier.ts`).
+« Une fiche du nom de Fernandez » veut donc dire « une fiche pour le client
+Fernandez », et l'étiquette sort de la même fonction que l'écran de création.
+
+**Le client se cherche avec la règle de l'écran** (`filtrerClientsParNom`) : il
+dit « bernard » là où sa fiche porte « Mr. Bernard ». Une comparaison stricte
+ouvrirait un second dossier au même nom, et son historique resterait dans le
+premier.
+
+### Le doublon se refuse AVANT d'être créé
+
+Un paysagiste repasse chez les mêmes gens. Si le client a déjà des chantiers,
+l'outil **ne crée rien** et les rend : c'est au patron de dire s'il en veut un de
+plus. `confirmerDoublon` est la seconde intention explicite qui débloque.
+
+Deux fiches pour un même jardin, c'est un désordre qu'on ne défait plus — et
+c'est exactement ce qu'un modèle serviable ferait sans cette garde.
+
+
+---
+
+## 185. « Peu importe où je l'ouvre » — les outils suivent enfin le panneau
+
+**Sa demande du 25 août 2026**, juste après avoir obtenu la recherche par nom et
+la création de fiche : *« Je veux pouvoir faire ça peu importe où je
+l'ouvre. »*
+
+### Le panneau était déjà partout — les outils, non
+
+`AssistantSidebar` est monté dans `src/app/layout.tsx` : le bouton existe sur
+tous les écrans, et c'était déjà le cas. Ce qui ne suivait pas, ce sont ses
+OUTILS. Cinq d'entre eux portaient la même ligne, recopiée :
+
+    if (!chantierId) return { erreur: "Aucun chantier dans le contexte courant." };
+
+Ouvert depuis la liste, le planning ou les réglages, ce chantier est nul et
+chacun refusait à son tour. **L'assistant n'était donc utile que là où il
+l'ouvrait le moins** — sur une fiche déjà ouverte, où il a l'information sous
+les yeux.
+
+### Une règle, un fichier, six outils
+
+`chantier-vise.ts` porte les deux moitiés : le champ que le modèle peut
+remplir, et le verdict. Chaque outil de lecture s'y branche —
+`LireInformationsChantier`, `LirePrestations`, `LireMateriels`, `LireNotes`,
+`LireTranscription`, `LireDevis`.
+
+| | |
+|---|---|
+| un `chantierId` est donné | c'est lui qui commande |
+| aucun, mais un chantier est ouvert | c'est l'ouvert — **l'usage d'avant ne bouge pas** |
+| ni l'un ni l'autre | le refus nomme `RechercherChantier` |
+
+**Cinq copies d'une même règle, c'est cinq endroits à corriger le jour où elle
+change** (`CLAUDE.md` §3) — et elle vient de changer.
+
+### Le refus ne renvoie plus le patron travailler à notre place
+
+« Aucun chantier dans le contexte courant » ne dit rien à un modèle : il en
+tirait ce qu'il pouvait, c'est-à-dire trois étapes à faire à la main. Il apprend
+maintenant qu'un chemin existe, et lequel. Une suite le vérifie dans les deux
+sens : la phrase cite `RechercherChantier`, et ne dit plus « contexte courant ».
+
+### Le contrôle qui empêche de casser l'usage courant
+
+Un cas éprouve que **le chantier ouvert reste le défaut**. Sans lui, tout le
+reste serait vert avec des outils qui EXIGERAIENT désormais un identifiant :
+l'assistant ouvert sur une fiche cesserait de répondre, et c'est le parcours le
+plus fréquent.
+
+### La description compte autant que le code
+
+Les libellés que le modèle lit disaient « pour le chantier courant ». Les
+laisser tels quels, c'était brancher une capacité que rien ne lui annonçait —
+il ne se serait jamais servi du champ. Ils disent désormais : *sans chantierId,
+celui qui est ouvert ; sinon, celui que RechercherChantier a rendu.*
+
+---
+---
+## 186. Face ID était muet chez lui : Atlas se nommait « localhost »
+
+**Sa capture du 26 août 2026 :** *« le Face ID ne fonctionne pas »* — l'écran
+Réglages › Connexion portait un bandeau rouge, et sa barre d'adresse
+`…-3000.app.github.dev`.
+
+### La cause, et c'est la MÊME que celle du §177
+
+Une clé WebAuthn est attachée à un domaine, et ne s'ouvre que là. Atlas doit
+donc dire au téléphone sous quel domaine il enregistre — le `rpId`. Il le
+déduisait de l'en-tête `Host`.
+
+Or derrière la redirection de port de son espace de travail, **le serveur ne
+reçoit que `localhost:3000`** : aucun en-tête ne porte l'adresse publique. Atlas
+demandait donc une clé pour « localhost » à une page servie depuis
+`…app.github.dev`, et le navigateur refusait — à juste titre.
+
+| Source | Ce qu'elle vaut chez lui |
+|---|---|
+| `ATLAS_RP_ID` | non posée — elle n'a de sens qu'en production |
+| `x-forwarded-host` / `host` | **`localhost`** |
+| `window.location.origin` | **l'adresse par laquelle il a ouvert Atlas** |
+
+C'est la troisième fois que ce tunnel coûte un défaut (§169, §177) ; c'est la
+première fois qu'il coûte une fonctionnalité entière.
+
+### Ce qui a été ajouté, et les deux bornes qui l'encadrent
+
+L'écran transmet `window.location.origin` **dans le geste** — jamais pendant le
+rendu, ce que §68 et §81 interdisent. La règle pure décide, et elle ne suit le
+navigateur que dans un seul cas :
+
+| | |
+|---|---|
+| en production | `ATLAS_RP_ID` commande ; rien de ce que le client envoie ne le déplace |
+| hors production, en-tête déjà public | l'en-tête garde la main — le navigateur n'est qu'un filet |
+| hors production, en-tête **local** | l'adresse du navigateur fait foi |
+
+Et elle est filtrée : une adresse en clair, locale, ou illisible est ignorée
+plutôt que suivie — le navigateur refuserait ensuite, sans un mot.
+
+**Pourquoi ce n'est pas un affaiblissement.** Là où l'adresse du navigateur est
+suivie, la seule autre source est l'en-tête `Host` — écrit lui aussi par le
+client. On ne remplace pas une source sûre par une source faible : on remplace
+une source faible et fausse par une source faible et juste. En production, où
+la question devient une question de sécurité, rien n'a bougé.
+
+### Le défi retient SON origine
+
+L'enregistrement se fait en deux requêtes : le défi, puis la vérification. La
+seconde recalculait l'origine — donc pouvait vérifier sous un domaine différent
+de celui qui a servi à fabriquer la clé. Le cookie du défi (`httpOnly`, non
+modifiable depuis la page) porte désormais l'origine avec lui, et c'est elle qui
+sert à vérifier.
+
+### Deux défauts trouvés en RENDANT LA PANNE BAVARDE
+
+`AGENTS.md` demande de faire parler un défaut muet avant de le corriger. Le
+journal posé sur les deux écrans a rendu deux choses qu'aucun test ne voyait :
+
+1. **Le message des Réglages était le mauvais.** Il disait *« Entrez votre mot
+   de passe »* — sur un écran où l'on est déjà entré, donc un geste impossible.
+   `messageRefusCle("panne-activation")` existait pour exactement ce cas, et
+   n'était pas employé.
+2. **La porte prenait une RÉUSSITE pour une panne.** Une action serveur qui
+   redirige le fait en levant ; cette levée tombait dans le `catch` de
+   `LigneFaceId`, qui affichait « Face ID n'a pas pu aboutir » **au moment même
+   où l'on entrait**. La navigation ayant lieu quand même, aucune suite ne
+   pouvait le voir : il a fallu écouter la console de la page, ce que la suite
+   fait maintenant.
+
+### Ce qui est éprouvé ici, et ce qui ne peut pas l'être
+
+| | |
+|---|---|
+| la règle du domaine, tous les cas y compris le tunnel | `scripts/test-origine-webauthn.ts` — vu rouge contre le défaut |
+| le parcours entier, enregistrer puis ouvrir | `scripts/test-face-id-e2e.ts` |
+| **que Face ID s'ouvre sur SON iPhone, derrière SON tunnel** | **impossible ici** — aucun visage, aucun tunnel |
+
+Le dernier point se vérifie chez lui, et nulle part ailleurs.
+
+---
+
+## 187. « Changer mon mot de passe » a rejoint ses propres champs
+
+**Sa demande du 26 août 2026, dans le même message :** *« le bouton changer mon
+mdp doit se trouver au-dessus de ouvrir avec Face ID »*.
+
+Il vivait sur une barre **fixe**, en bas de l'écran. Entre ses trois champs et
+lui s'intercalaient deux rubriques — Face ID, puis « Ailleurs » —, et il restait
+affiché pendant qu'on réglait Face ID : à cet endroit, il ne se lisait plus
+comme le bouton du mot de passe mais comme celui de l'écran entier.
+
+Sous ses champs, l'ambiguïté n'existe plus. Le talon de la page passe de `pb-40`
+à `pb-24` : il n'a plus que les onglets à loger.
+
+**Le contrôle mesure DEUX ORDONNÉES, il ne lit aucun libellé** (`CLAUDE.md`
+§5 bis) : le jour où l'un des deux textes change, il défendra encore l'ordre.
+Il refuse de conclure sur une boîte de zéro pixel — sans quoi une page non mise
+en page rendrait « 0 < 0 », c'est-à-dire un vert qui ne prouve rien
+(`CLAUDE.md` §5).
