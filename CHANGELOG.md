@@ -136,7 +136,7 @@ doigt et devançait le grand chiffre pendant l'aller-retour avec le serveur —
 deux montants qui se contredisaient une seconde. Elle nomme désormais les deux
 régimes. Et la capture a montré un espace mangé par la compilation
 (« 1 400,00 €dès l'envoi »), que rien n'aurait vu autrement.
-`ARCHITECTURE.md` §197.
+`ARCHITECTURE.md` §195.
 
 ### « Sans date » disparaît quand rien n'attend de jour
 
