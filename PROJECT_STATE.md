@@ -13,6 +13,26 @@ ligne « fait » qui ne l'est pas coûte plus cher qu'une ligne absente.
 
 ---
 
+## Ses salariés, et ce qui remplit le planning — **maquette seule** (26 août 2026)
+
+`appli/salaries-et-equipes.html` (planche 97). **Rien n'est codé dans `src/`** :
+il tranche d'abord.
+
+Sa demande : un curseur pour le nombre de salariés, des noms qu'on affilie, et
+ces noms sur le chantier à la place des « Équipes A / B » — **sans toucher** au
+rôle du curseur d'équipes, qui remplit le planning.
+
+Trois propositions essayables (**A** on coche les gens, **B** les gens rangés en
+équipes, **C** la A sans curseur pour les salariés). Contrôle :
+`scripts/verifier-maquette-salaries-et-equipes.mjs`, dans la chaîne
+`npm run verifier:maquette` — il ouvre un navigateur et rejoue les gestes, parce
+que ce que la planche démontre est un GESTE, pas une phrase.
+
+Ce qui reste : sa réponse. Le coût de chaque proposition est chiffré dans
+`TODO.md`.
+
+---
+
 ## Le numéro de ses documents se choisit (26 août 2026)
 
 *Sa demande : « dans la catégorie facture il faut rajouter le format de numéro,

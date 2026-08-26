@@ -9,6 +9,35 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
+## Séparer la capacité du planning et les gens qui partent — **attend sa réponse**
+
+Sa demande du 26 août 2026, et **la planche 97 lui pose la question** :
+`appli/salaries-et-equipes.html`. Trois propositions, rien n'est codé.
+
+**Ce qu'il a déjà tranché :** le curseur des équipes ne bouge pas — il continue
+de dire combien de chantiers tiennent dans une journée.
+
+**Ce qu'il doit trancher :** comment les gens arrivent sur un chantier. **A** on
+les coche un par un ; **B** ils sont rangés dans des équipes et le chantier
+prend l'équipe entière ; **C** comme A, mais sans curseur pour les salariés.
+
+**Ce que le lot coûtera, le jour où il choisit** — établi en lisant le code,
+pas supposé :
+
+- une table `salaries` (entreprise, nom), et `withEntreprise` comme partout ;
+- une table de liaison `salaries_du_chantier` en A et C ; en B, une colonne
+  d'équipe sur `salaries` suffit ;
+- `libelleEquipe()` (`src/lib/equipes.ts`) cesse de fabriquer « Équipe A » à
+  partir de `nombreEquipes` : les deux usages du nombre se séparent enfin ;
+- l'écran Équipe des Réglages (planche 96, dont il attend aussi la réponse) et
+  la feuille de chantier suivent.
+
+**Un piège à ne pas rater en B :** baisser le compteur d'équipes ne doit perdre
+personne. La planche montre ce qu'il faut faire — les gens restent visibles sous
+« Sans équipe » plutôt que de disparaître sans geste.
+
+---
+
 ## ✅ ~~Le format des numéros de devis et de factures~~ — fait le 26 août 2026
 
 ~~Sa demande du 26 août : « dans la catégorie facture il faut rajouter le format

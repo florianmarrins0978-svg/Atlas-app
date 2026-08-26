@@ -9,6 +9,29 @@ sert.
 
 ---
 
+## DEUX RÉPONSES ATTENDUES DE LUI — planches 96 et 97 (26 août 2026)
+
+Rien n'est codé dans `src/` pour ces deux-là, et il ne faut pas commencer sans
+sa réponse (`CLAUDE.md` §3 bis).
+
+- **Planche 96** — `appli/ecran-equipe.html`. Il a répondu **C** pour le titre
+  et la synthèse. Reste à savoir si la phrase sur les congés reste sur l'écran
+  Équipe ou retourne dans « Absences ».
+- **Planche 97** — `appli/salaries-et-equipes.html`. Séparer la capacité du
+  planning et les gens qui partent. **A**, **B** ou **C** : voir `TODO.md`, qui
+  porte le coût de chacune.
+
+**Ce qu'il a déjà tranché sur la 97, et qu'on ne rediscute pas :** le curseur
+des équipes continue de dire combien de chantiers tiennent dans une journée —
+*« 2 équipes = 2 chantiers par jour, comme avant, ça ne bouge pas »*.
+
+**Ce qu'il faut savoir avant d'y toucher :** `entreprise.nombreEquipes` fait
+aujourd'hui deux métiers — la capacité du planning **et** la fabrique des
+libellés « Équipe A / B » (`src/lib/equipes.ts`, `libelleEquipe`). Les trois
+propositions séparent les deux ; c'est le cœur du lot, pas un détail.
+
+---
+
 ## PIÈGE : UNE SUITE QUI LIT LE MOIS AFFICHÉ ROUGIT EN FIN DE MOIS (26 août 2026)
 
 `test-envoi-client-e2e` a rougi le 26 août — **et à l'identique sur `main`**. Elle
