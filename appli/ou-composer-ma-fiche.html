@@ -75,9 +75,13 @@
   .brouillon{float:right;font-size:8.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--or)}
 
   /* ── A : la carte pleine largeur ─────────────────────────────────────── */
-  .carte{margin-top:18px;background:var(--paper);border-radius:14px;
-         padding:15px 16px;display:flex;justify-content:space-between;
-         align-items:center;gap:12px;box-shadow:inset 0 0 0 1px var(--line)}
+  /* **RETENUE, ET MOINS LARGE** — ses mots du 26 août 2026 : « une carte mais
+     fais-la moins large ». Elle prend la largeur de son texte, plafonnée : un
+     pavé bord à bord pèserait autant que « Ouvrir une fiche », le geste de tous
+     les jours. Le plafond tient chez qui grossit les caractères. */
+  .carte{margin-top:18px;width:fit-content;max-width:270px;background:var(--paper);
+         border-radius:14px;padding:13px 16px;display:flex;
+         align-items:center;gap:14px;box-shadow:inset 0 0 0 1px var(--line)}
   /* Sans cette contrainte, le chevron tombait à la ligne sous le texte : une
      flèche de renvoi posée au milieu de la carte ne renvoie plus nulle part. */
   .carte .texte{flex:1 1 auto;min-width:0}
@@ -138,7 +142,7 @@
      change.</p>
 
   <div class="onglets">
-    <label class="oa" for="a">A — une carte</label>
+    <label class="oa" for="a">A — retenue</label>
     <label class="ob" for="b">B — deux carrés</label>
     <label class="oc" for="c">C — en haut</label>
   </div>
@@ -155,7 +159,7 @@
     <div class="carte siA">
       <span class="texte">
         <span class="nom">Composer ma fiche</span>
-        <span class="combien">20 prestations, 4 familles</span>
+        <span class="combien">20 prestations</span>
       </span>
       <span class="chev">›</span>
     </div>
@@ -194,11 +198,11 @@
     </div>
   </div>
 
-  <div class="note siA"><span class="t">A — une carte</span>
-    Un pavé sur fond papier : elle se voit du premier coup d'œil, et se touche
-    largement.
-    <span class="contre">Elle pèse autant que « Ouvrir une fiche », qui est
-    pourtant le geste de tous les jours.</span>
+  <div class="note siA"><span class="t">A — ce qui a été codé</span>
+    Une carte sur fond papier, <b>à la largeur de son texte</b> : elle se voit du
+    premier coup d'œil sans peser autant que « Ouvrir une fiche ».
+    <span class="contre">Pleine largeur, elle aurait fait jeu égal avec le geste
+    de tous les jours — d'où le « moins large ».</span>
   </div>
 
   <div class="note siB"><span class="t">B — deux carrés</span>

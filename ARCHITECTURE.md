@@ -16531,6 +16531,24 @@ motif d'origine (sa demande du 16 août) reste vrai dans l'historique et suffira
 - Une capture est prise au passage : quatre défauts réels de ce dépôt sont sortis
   d'une image et d'aucun test.
 
+### La forme a suivi, une heure plus tard
+
+*« C'est bien mais juste une phrase, on la trouve difficilement ; je pense qu'un
+onglet carré serait le mieux »*, puis *« une carte mais fais-la moins large »*.
+
+La première version était **une ligne de texte au milieu d'un écran de texte** :
+rien ne la distinguait d'un intertitre — ni fond, ni cadre, ni couleur d'action
+—, et un chevron de huit pixels pour seul aveu qu'on peut appuyer. C'est une
+carte depuis, **à la largeur de son texte** : pleine largeur, elle aurait fait
+jeu égal avec « Ouvrir une fiche », qui est le geste de tous les jours. Le
+plafond (`max-w-[270px]`) tient chez qui grossit les caractères de son
+téléphone.
+
+Trois formes lui ont été montrées avant de coder (`appli/ou-composer-ma-fiche.html`) :
+la carte, deux carrés côte à côte, un bouton d'en-tête. **La place, elle, ne se
+rouvrait pas** — il l'avait tranchée une heure plus tôt, et la planche le disait,
+sans quoi on lui redemandait ce qu'il venait de décider.
+
 ### Un piège de charte, trouvé à l'image
 
 Le titre demandé « doré » avait d'abord été écrit `colors.rust` — le nom promet

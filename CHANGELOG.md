@@ -183,6 +183,14 @@ périmètre affiché ne suivait pas le rôle coché, si bien qu'on lisait « le
 planning et rien d'autre » sous « Commercial ». Une maquette qui ment sur ce que
 fait un rôle est pire qu'une maquette absente.
 
+### La carte, moins large
+
+*« Une carte mais fais-la moins large. »* C'est fait : elle prend la largeur de
+son texte, plafonnée, sur fond papier, à la place qu'il a tranchée. Le plafond
+n'est pas décoratif — sans lui elle redeviendrait pleine largeur chez qui
+grossit les caractères de son téléphone, c'est-à-dire là où l'on croyait avoir
+réglé la question.
+
 ### « On la trouve difficilement » — trois formes proposées
 
 Une heure après la livraison : *« c'est bien mais juste une phrase, on la trouve
