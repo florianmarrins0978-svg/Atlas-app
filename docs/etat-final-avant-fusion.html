@@ -1,0 +1,326 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas — Atlas — État final avant fusion</title>
+<style>
+  :root{
+    --ground:#f5f3ee; --surface:#faf9f5; --raised:#ece9e1;
+    --ink:#1c1c1a; --ink-soft:#4a4a44; --muted:#8a8578;
+    --accent:#2f3b2f; --alert:#b5562a; --line:rgba(28,28,26,0.13);
+    --serif:Georgia,'Times New Roman',serif;
+    --sans:system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --ground:#161815; --surface:#1d201c; --raised:#252924;
+      --ink:#eae7df; --ink-soft:#c2bdb1; --muted:#948f83;
+      --accent:#9fbd82; --alert:#e0885a; --line:rgba(234,231,223,0.17);
+    }
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--sans);
+    line-height:1.65;}
+  main{max-width:44rem;margin:0 auto;padding:2.5rem 1.2rem 5rem;}
+  h1,h2,h3,h4{font-family:var(--serif);font-weight:600;line-height:1.2;
+    text-wrap:balance;margin:2rem 0 0.6rem;scroll-margin-top:1rem;}
+  h1{font-size:2rem;margin-top:0;}
+  h2{font-size:1.5rem;padding-top:1.2rem;border-top:1px solid var(--line);}
+  h3{font-size:1.12rem;}
+  h4{font-size:1rem;}
+  p{margin:0 0 0.9rem;}
+  a{color:var(--accent);text-underline-offset:3px;}
+  a:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:3px;}
+  ul,ol{margin:0 0 1rem;padding-left:1.3rem;}
+  li{margin-bottom:0.4rem;}
+  li::marker{color:var(--muted);}
+  /* Le sommaire : des cibles larges, confortables au doigt sur téléphone. */
+  ol li a{display:inline-block;padding:0.15rem 0;}
+  blockquote{margin:1rem 0;padding:0.85rem 1.05rem;background:var(--raised);
+    border-left:3px solid var(--accent);border-radius:0 10px 10px 0;color:var(--ink-soft);}
+  code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:0.87em;
+    background:var(--raised);padding:0.1rem 0.35rem;border-radius:5px;}
+  hr{border:0;border-top:1px solid var(--line);margin:2rem 0;}
+  .tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px;
+    background:var(--surface);margin:0 0 1.2rem;}
+  table{border-collapse:collapse;width:100%;font-size:0.92rem;min-width:22rem;}
+  th,td{text-align:left;padding:0.55rem 0.8rem;border-bottom:1px solid var(--line);
+    vertical-align:top;}
+  th{font-size:0.72rem;letter-spacing:0.08em;text-transform:uppercase;
+    color:var(--muted);white-space:nowrap;}
+  tr:last-child td{border-bottom:none;}
+  .retour{display:inline-block;font-size:0.76rem;color:var(--muted);
+    text-decoration:none;margin:-0.3rem 0 1rem;}
+  .retour:hover{color:var(--accent);text-decoration:underline;}
+</style>
+</head>
+<body>
+<main>
+<h1 id="atlas--état-final-avant-fusion">Atlas — État final avant fusion</h1>
+<p><em>26 août 2026 · branche <code>claude/atlas-securite-lot3</code> · <strong>RIEN N'EST FUSIONNÉ</strong></em></p>
+<hr>
+<h2 id="1-ce-qui-va-être-fusionné">1. Ce qui va être fusionné</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><strong>37 commits</strong>, qui portent six lots déjà validés un par un :</p>
+<div class="tablewrap"><table><thead><tr>
+<th>Lot</th>
+<th>Ce qu'il ferme</th>
+</tr></thead><tbody>
+<tr>
+<td><strong>M9</strong></td>
+<td>le condensat du mot de passe hors de portée du rôle applicatif</td>
+</tr>
+<tr>
+<td><strong>M10</strong></td>
+<td>les onze alertes de dépendances — Next monté à la main en 16.3.2</td>
+</tr>
+<tr>
+<td><strong>M11</strong></td>
+<td>se prouver à nouveau avant un geste sensible, <strong>plus</strong> un contournement de « me déconnecter partout » trouvé hors brief</td>
+</tr>
+<tr>
+<td><strong>M12</strong></td>
+<td>la mise à jour du banc réservée au propriétaire</td>
+</tr>
+<tr>
+<td><strong>F1–F13</strong></td>
+<td>sept constats fermés, quatre refusés, deux gardés sans toucher au code</td>
+</tr>
+<tr>
+<td><strong>Audio</strong></td>
+<td>le format d'un enregistrement se lit dans ses octets</td>
+</tr>
+</tbody></table></div>
+<p><strong>Rien d'autre.</strong> Vérifié fichier par fichier : chacun se rattache à l'un de ces six lots. <code>package.json</code> ne porte que la montée de Next et de son greffon de lint (M10) — aucune autre dépendance n'a bougé.</p>
+<p><strong>Aucun nettoyage, aucune refonte opportuniste</strong> n'a été glissée dans cette dernière étape.</p>
+<hr>
+<h2 id="2-les-lots-désormais-clos">2. Les lots désormais clos</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th>Verdict</th>
+</tr></thead><tbody>
+<tr>
+<td><strong>M9, M10, M11, M12</strong></td>
+<td><strong>CLOS</strong></td>
+</tr>
+<tr>
+<td><strong>F1–F13</strong></td>
+<td><strong>CLOS</strong> — F7 décision produit, F10 lot séparé</td>
+</tr>
+<tr>
+<td><strong>Audio</strong></td>
+<td><strong>CLOS</strong> — réserve iPhone levée par un essai réel</td>
+</tr>
+</tbody></table></div>
+<hr>
+<h2 id="3-les-fichiers-et-migrations">3. Les fichiers et migrations</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<h3 id="quatre-migrations-toutes-additives">Quatre migrations, toutes additives</h3>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th></th>
+</tr></thead><tbody>
+<tr>
+<td><code>0064_secret_authentification.sql</code></td>
+<td>M9 — trois fonctions <code>SECURITY DEFINER</code>, droits par colonne</td>
+</tr>
+<tr>
+<td><code>0065_preuve_recente.sql</code></td>
+<td>M11 — la table des preuves récentes</td>
+</tr>
+<tr>
+<td><code>0066_preuve_par_le_moteur.sql</code></td>
+<td>M11 — la preuve ne peut plus être forgée par <code>atlas_app</code></td>
+</tr>
+<tr>
+<td><code>0067_isolation_contexte_vide.sql</code></td>
+<td>F5 — <code>corrections_dictee</code> alignée sur la forme robuste</td>
+</tr>
+</tbody></table></div>
+<p><strong>Aucune ne touche de donnée existante.</strong> Aucune ne renomme quoi que ce soit — c'était le piège de F6, et le refuser était le bon geste.</p>
+<h3 id="les-fichiers-de-production-neufs">Les fichiers de production neufs</h3>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th>Lot</th>
+</tr></thead><tbody>
+<tr>
+<td><code>src/lib/signature-audio.ts</code></td>
+<td>Audio — la reconnaissance, sans bibliothèque</td>
+</tr>
+<tr>
+<td><code>src/server/audio-entrant.ts</code></td>
+<td>Audio — la porte unique</td>
+</tr>
+<tr>
+<td><code>src/lib/identite-session.ts</code>, <code>src/lib/preuve-recente.ts</code></td>
+<td>M11</td>
+</tr>
+<tr>
+<td><code>src/server/preuve-recente.ts</code>, <code>src/server/secret-authentification.ts</code></td>
+<td>M11, M9</td>
+</tr>
+<tr>
+<td><code>src/server/source-visiteur.ts</code></td>
+<td>F9 — sorti de <code>login/actions.ts</code>, une seule implémentation</td>
+</tr>
+<tr>
+<td><code>src/app/design/layout.tsx</code></td>
+<td>F12 — les maquettes gelées hors production</td>
+</tr>
+<tr>
+<td><code>src/app/robots.ts</code></td>
+<td>F13</td>
+</tr>
+<tr>
+<td><code>src/components/atlas/DemanderPreuve.tsx</code></td>
+<td>M11</td>
+</tr>
+</tbody></table></div>
+<p><strong>Quarante-sept fichiers de production</strong> modifiés ou ajoutés au total, plus les suites et la documentation.</p>
+<hr>
+<h2 id="4-létat-des-tests">4. L'état des tests</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p>Dernière batterie complète, jouée sur <code>145205d</code> :</p>
+<div class="tablewrap"><table><thead><tr>
+<th>Étape</th>
+<th>Résultat</th>
+</tr></thead><tbody>
+<tr>
+<td><code>npx tsc --noEmit</code></td>
+<td>✅</td>
+</tr>
+<tr>
+<td><code>npm run lint</code></td>
+<td>✅ 0 erreur, 12 avertissements préexistants</td>
+</tr>
+<tr>
+<td>Construction</td>
+<td>✅</td>
+</tr>
+<tr>
+<td><code>npm run verifier:memoire</code></td>
+<td>✅</td>
+</tr>
+<tr>
+<td>Suites base — RLS comprises</td>
+<td>✅ <strong>234 / 234</strong></td>
+</tr>
+<tr>
+<td>Suites navigateur</td>
+<td>✅ <strong>110 / 110</strong></td>
+</tr>
+<tr>
+<td><code>npm run verifier:connexion</code></td>
+<td>✅ connexion réelle derrière une origine étrangère</td>
+</tr>
+<tr>
+<td><code>npm audit</code></td>
+<td>4 modérées, <code>drizzle-kit → esbuild</code>, <strong>dépendance de développement</strong></td>
+</tr>
+</tbody></table></div>
+<p><strong>Aucune batterie n'a été rejouée depuis</strong>, et c'est délibéré : les deux commits qui suivent ne touchent <strong>aucun fichier de <code>src/</code>, <code>scripts/</code>, <code>drizzle/</code> ni <code>package.json</code></strong> — vérifié, pas supposé. Seul <code>verifier:memoire</code> a été rejoué, puisque seule la documentation a changé. En fabriquer une batterie complète aurait coûté vingt minutes pour ne rien apprendre.</p>
+<p><strong>Et l'essai qui compte le plus n'est pas dans ce tableau :</strong> une vraie dictée, depuis un vrai iPhone, sur son banc — réussie le 26 août 2026.</p>
+<hr>
+<h2 id="5-ce-qui-reste-ouvert">5. Ce qui reste ouvert</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th>Nature</th>
+</tr></thead><tbody>
+<tr>
+<td><strong>La QUALITÉ de ce que la dictée produit</strong></td>
+<td>lot séparé, ouvert le 26 août : prestations mal organisées, quantités et unités mal lues, prix historiques incohérents</td>
+</tr>
+<tr>
+<td><strong>Trois suites navigateur</strong> rougissent sous la batterie, jamais seules</td>
+<td>défaut de contrôle, remède écrit dans <code>TODO.md</code></td>
+</tr>
+<tr>
+<td><strong><code>ARCHITECTURE.md</code> porte deux fois §164 et §165</strong></td>
+<td>dette d'une fusion antérieure, déjà sur <code>main</code></td>
+</tr>
+<tr>
+<td><strong><code>extensionPour</code> et son repli <code>.audio</code></strong></td>
+<td>supprimés — plus rien à faire</td>
+</tr>
+</tbody></table></div>
+<hr>
+<h2 id="6-les-décisions-produit-encore-nécessaires">6. Les décisions produit encore nécessaires</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th>Ce qu'il faut trancher</th>
+</tr></thead><tbody>
+<tr>
+<td><strong>F7 — RGPD</strong></td>
+<td>qui peut exporter et effacer un client, avec quelle preuve, et ce que devient une facture déjà émise</td>
+</tr>
+<tr>
+<td><strong><code>/catalogue</code></strong></td>
+<td>un salarié doit-il voir le vocabulaire de dictée ? À trancher avec les rôles Salarié / Commercial</td>
+</tr>
+<tr>
+<td><strong>F10 — la CSP</strong></td>
+<td>quand ouvrir le lot <code>nonce</code></td>
+</tr>
+</tbody></table></div>
+<hr>
+<h2 id="7-ce-qui-dépend-du-futur-hébergement">7. Ce qui dépend du futur hébergement</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><strong><code>ATLAS_PROXY_SAUTS</code></strong>, et il faut les deux moitiés :</p>
+<ol>
+<li>poser la variable au nombre de mandataires de confiance devant Atlas — 1 pour un hébergeur ordinaire ;</li>
+<li>s'assurer que ce mandataire <strong>écrase</strong> <code>x-forwarded-for</code> au lieu d'y ajouter la valeur du client.</li>
+</ol>
+<p><strong>Sans les deux, poser la variable serait pire que ne rien faire</strong> : on ferait alors confiance à ce que l'attaquant écrit.</p>
+<p>Tant qu'elle n'est pas posée, tous les seuils comptés « par source » sont communs à tout le monde. Le seuil de F9 le sait et <strong>se désactive</strong> dans ce cas plutôt que de bloquer tous les clients de tous les artisans — c'est ce que la revue hostile a corrigé avant livraison.</p>
+<hr>
+<h2 id="8-les-défauts-de-sécurité-encore-connus">8. Les défauts de sécurité encore connus</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th>Gravité</th>
+<th>Pourquoi il reste</th>
+</tr></thead><tbody>
+<tr>
+<td><strong>Aucune sauvegarde</strong></td>
+<td><strong>le point le plus grave du dépôt</strong></td>
+<td>il ne se règle pas en codant</td>
+</tr>
+<tr>
+<td><strong>CSP <code>unsafe-inline</code></strong></td>
+<td>réelle</td>
+<td>le retirer sans <code>nonce</code> casse l'application (F10)</td>
+</tr>
+<tr>
+<td><strong><code>/catalogue</code> sans garde de rôle</strong></td>
+<td>faible — aucun prix, seulement le vocabulaire</td>
+<td>décision produit</td>
+</tr>
+<tr>
+<td><strong><code>cle-appareil</code> : seuil global</strong> sans <code>ATLAS_PROXY_SAUTS</code></td>
+<td>faible, délibéré et documenté</td>
+<td>120/minute, volontairement large</td>
+</tr>
+<tr>
+<td><strong>Un fichier reconnu peut être du remplissage</strong></td>
+<td>faible</td>
+<td>un vrai en-tête WebM suivi de zéros est un vrai WebM vide. La taille et la cadence restent les défenses</td>
+</tr>
+<tr>
+<td><strong>MP3 et AAC</strong> n'ont pas de signature</td>
+<td>faible</td>
+<td>trois trames enchaînées rendent un faux positif très improbable, pas impossible</td>
+</tr>
+</tbody></table></div>
+<p><strong>Aucun défaut d'exécution ni de fuite de données n'est connu à ce jour sur les chemins couverts par ces six lots.</strong></p>
+<hr>
+<h2 id="9-la-fusion">9. La fusion</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><strong>Rien n'est fusionné, et rien ne le sera sans votre mot.</strong></p>
+<p>Ce qu'elle demandera, le moment venu : refusionner <code>main</code> juste avant de pousser (il a bougé de plus de cent fichiers et porte une migration neuve), appliquer les migrations, et <strong>rejouer la batterie entière</strong> — cette fois-là, elle s'impose.</p>
+</main>
+</body>
+</html>
