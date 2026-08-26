@@ -3398,6 +3398,39 @@ obligatoires, disposition des colonnes, ordre des totaux. Un devis mal posé
 n'est pas un devis moins joli, c'est un devis qu'on peut lui contester.
 
 ### ~~0 trigies septies. Deux suites de calendrier tombent EN FIN DE MOIS~~ — **RÉPARÉES le 25 août 2026**
+### 0 trigies nonies. Le format des numéros est FIGÉ À 2026 — **et ce n'est pas qu'un réglage manquant**
+
+**Sa demande du 26 août 2026**, capture d'une autre application à l'appui :
+*« dans la catégorie facture il faut rajouter le format de numéro, c'est
+obligatoire il me semble »*.
+
+**CHERCHÉ AVANT DE RÉPONDRE** (`CLAUDE.md` §5 ter), et ce qu'on a trouvé est
+pire que ce qu'il demandait :
+
+| | |
+|---|---|
+| ce qu'il croyait obligatoire | **le format ne l'est pas.** Ce que la loi exige, c'est une suite chronologique **sans trou ni doublon** — Atlas la tient déjà, par un compteur atomique par entreprise |
+| ce que personne n'avait vu | **le millésime est écrit en dur** : `` `2026-${…}` `` dans `devis.ts`, `` `F2026-${…}` `` dans `factures.ts`. **En janvier 2027, ses factures diront encore 2026** |
+
+**Le défaut a une DATE, et elle approche.** Il ne se verra pas d'ici là : le
+code est juste tant qu'on est en 2026. C'est exactement le genre de chose qu'une
+suite ne voit pas non plus — elle tourne aujourd'hui.
+
+**La planche est en ligne** (`appli/format-de-numero.html`), avec cinq formats
+qu'il essaie du doigt et trois questions au bas. **Rien n'est codé** tant qu'il
+n'a pas répondu (`CLAUDE.md` §3 bis).
+
+**Ce qu'il faudra tenir en codant, et qui n'est pas évident :**
+
+- **changer de format en cours d'année casse la suite** — c'est la seule vraie
+  contrainte légale du réglage, et elle est dite à l'écran, pas seulement ici ;
+- **un numéro déjà envoyé ne se réécrit jamais** : il est sur la facture du
+  client et dans sa comptabilité. Le changement ne vaut que pour les suivants ;
+- **le compteur doit repartir à 1 au 1ᵉʳ janvier** si l'année figure dans le
+  format — sinon `2027-0149` succède à `2026-0148`, ce qui se lit mal ;
+- **la suite des devis et celle des factures restent distinctes** : les mêler
+  rendrait illisible la numérotation continue qu'attend un contrôle.
+
 ### 0 trigies octies. ~~Le brouillon confirmé ne se corrigeait plus~~ — **RÉPARÉ le 25 août 2026**
 
 Ses trois notes — déchets, contraintes d'accès, remarques — n'ont aucune autre
