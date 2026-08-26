@@ -128,14 +128,20 @@ async function main() {
   );
   console.log("  ✓ deux jours pris à même le calendrier restent marqués tous les deux");
 
-  // --- 2. Et l'écran annonce bien deux dates ------------------------------
-  const ecran = await page.locator("body").innerText();
-  assert.match(
-    ecran,
-    /Le client choisira entre ces deux dates/,
-    `L'écran n'annonce pas deux dates. Lu : « ${ecran.replace(/\s+/g, " ").slice(0, 300)} »`
+  // --- 2. Et l'écran LISTE bien deux dates --------------------------------
+  //
+  // **La phrase « Le client choisira entre ces deux dates » a été retirée le
+  // 26 août 2026**, à sa demande : elle redisait ce que la liste montre déjà.
+  // Ce contrôle visait le libellé ; il vise désormais la LISTE — ce qu'on
+  // défend, c'est que deux dates partent, pas la façon de l'annoncer
+  // (`CLAUDE.md` §5 bis).
+  const proposees = await page.locator("text=proposée").count();
+  assert.equal(
+    proposees,
+    2,
+    `L'écran ne liste pas deux dates à envoyer, mais ${proposees}.`
   );
-  console.log("  ✓ l'écran annonce deux dates au client");
+  console.log("  ✓ l'écran liste les deux dates qui partiront");
 
   // --- 3. Rappuyer RETIRE, au lieu de remettre -----------------------------
   //

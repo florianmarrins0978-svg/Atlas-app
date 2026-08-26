@@ -37,6 +37,19 @@ pour lui.
 
 Reste ouvert : le renommage `equipes` → `salaries` en base et dans le code, tenu
 à part parce qu'il touche vingt-trois fichiers (`TODO.md`).
+## Le rythme de la TVA fait bouger l'écran (26 août 2026)
+
+*Sa plainte : « quand je change entre tous les mois et tous les trois mois,
+c'est pareil, rien ne se passe ».* **Corrigé** — il manquait la revalidation,
+et `force-dynamic` ne la remplace pas (`ARCHITECTURE.md` §193).
+
+**Sa seconde plainte du même soir n'était PAS un défaut** : entre les deux
+régimes de TVA, rien ne change quand toutes les factures du mois ont été payées
+dans le mois. Ce qui manque est une phrase à l'écran — en maquette,
+`appli/quand-je-reverse-la-tva.html`, en attente de son choix entre A et B.
+
+---
+
 ## Un choix fait par erreur se défait (26 août 2026)
 
 *Sa demande : « si par erreur j'ai sélectionné un des 3 champs je ne peux plus
@@ -45,7 +58,7 @@ le désélectionner ! Je dois pouvoir désélectionner ».*
 Sur la page que reçoit son client, un second appui sur la date déjà cochée la
 **défait**, et rien ne se coche à la place. Vaut aussi pour « une autre date »,
 dont le calendrier se referme. Le détail — et pourquoi `onClick` plutôt
-qu'`onChange` — est dans `ARCHITECTURE.md` §193.
+qu'`onChange` — est dans `ARCHITECTURE.md` §195.
 
 **Le même piège dort sur le choix entre deux tarifs ambigus**
 (`PropositionPrixSection.tsx`) : il ne l'a pas signalé, c'est noté dans
@@ -164,7 +177,7 @@ uniquement en masquant des boutons ». La règle elle-même est tranchée dans
 suites navigateur, connexion réelle derrière une origine étrangère.
 
 Rapport transmissible : `docs/lot-audio-rapport.md`. Raisonnement :
-`ARCHITECTURE.md` §194.
+`ARCHITECTURE.md` §196.
 
 ---
 

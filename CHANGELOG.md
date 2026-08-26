@@ -9,6 +9,40 @@ Format : le plus récent en tête.
 
 ## 2026-08-26
 
+### L'envoi du devis : trois phrases de moins
+
+*« Supprime la phrase par SMS au + repris de votre dictée + le client pourra
+aussi en proposer une. »*
+
+Partent aussi leurs variantes, qui ne se montraient que dans d'autres états — il
+les aurait rencontrées demain. Une seule ligne reste sous la molette, la seule
+qui apprenne quelque chose : un chantier long réserve plusieurs jours d'affilée.
+
+Ce qu'on perd, et c'est le même arbitrage qu'il a rendu le 24 août sur la
+facture : il ne voit plus le canal ni le destinataire avant d'ouvrir sa
+messagerie — laquelle les lui montre, et où il peut encore reculer.
+
+Trois contrôles lisaient ces phrases. Ils éprouvent maintenant la règle : la
+messagerie qui s'ouvre pour de bon, les deux dates listées, le sous-titre de
+l'interrupteur qui suit l'interrupteur. Détail en `ARCHITECTURE.md` §194.
+### Changer le rythme de la TVA fait enfin bouger l'écran
+
+*« Quand je change entre tous les mois et tous les trois mois, c'est pareil,
+rien ne se passe. »* Reproduit : l'écran gardait « Août 2026 » après le passage
+au trimestre.
+
+La base était bien écrite — le réglage revenait au rechargement suivant. Ce qui
+manquait est la **revalidation** : le routeur reservait sa copie en cache de la
+page, sans appeler le serveur. `force-dynamic` ne protège pas de cela, et c'est
+le piège — il fait recalculer le serveur à chaque demande, encore faut-il qu'une
+demande parte.
+
+**Aucun contrôle ne pouvait le voir** : tous passaient par Réglages puis
+rouvraient le relevé par une navigation neuve, et une page rouverte est toujours
+juste. Le cas ajouté rejoue SA séquence — basculer sans quitter l'écran — et a
+été vu rouge avant d'être vert. `ARCHITECTURE.md` §193.
+
+
 ### Ses salariés se comptent à part de ses équipes — et ce sont leurs noms qu'on coche
 
 **Sa réponse à la planche 97 : A.** Puis, en tranchant : *« il ne faut pas
@@ -75,6 +109,29 @@ Le curseur des **équipes** reste dans les trois, comme il l'a exigé.
 **Le contrôle ouvre un navigateur, et il a trouvé un vrai défaut** : les
 pastilles et les croix de la planche faisaient moins de 40 px. Corrigé à 44 —
 il touche cet écran debout, avec un gant.
+
+### Maquette : « Quand je reverse la TVA » — les deux phrases du relevé
+
+*« Quand le client le paye / quand je met la facture. C'est pas clair, on
+comprend rien. Qu'est-ce que ça signifie ? »* Puis : *« et lorsque je change
+entre les deux, rien ne se passe, c'est normal ? »*
+
+**La seconde question n'était PAS une panne, et le calcul est juste :** quand
+toutes les factures d'un mois ont été payées dans le mois, les deux régimes
+tombent sur le même chiffre. L'écart n'existe que sur une facture émise un mois
+et encaissée le suivant — ou jamais payée.
+
+Mais un écran qui ne bouge pas sans rien dire se lit comme une panne. La
+planche porte donc deux réécritures des libellés — le verbe manquant est
+« je reverse » — et **la ligne qui dit ce que le choix change sur le mois
+affiché, y compris quand il n'y change rien.**
+
+**Il a tranché le soir même : B, sans le tableau d'exemple.** Les libellés
+réécrits, plus la ligne qui dit ce que le choix change — le tableau expliquait,
+et un écran n'explique pas son propre fonctionnement (`CLAUDE.md` §3). La
+planche porte la version retenue et ce qui a été écarté :
+`appli/quand-je-reverse-la-tva.html`. Reste à coder.
+
 ### « Sans date » disparaît quand rien n'attend de jour
 
 **Sa question :** *« est-ce que la catégorie sans date a un réel besoin
@@ -479,7 +536,7 @@ de la dictée — prestations mal organisées, quantités et unités mal lues, p
 historiques incohérents. Le lot Audio ne garantissait que l'entrée du fichier ;
 mêler les deux rendrait les deux illisibles.
 
-Détail : `ARCHITECTURE.md` §194 · rapport : `docs/lot-audio-rapport.md`.
+Détail : `ARCHITECTURE.md` §196 · rapport : `docs/lot-audio-rapport.md`.
 ---
 
 ## 2026-08-25
@@ -1166,7 +1223,7 @@ devenait une arme retournée. Il ne s'applique plus que si la source est établi
 nom**, avant d'être crus : celui de F8 passait sur une ligne d'import, puis sur
 un commentaire, puis parce que `const [etat, etatApple, params] = await
 Promise.all(` contient le mot `params`. Le détail est dans `ARCHITECTURE.md`
-§193 — c'est la quatrième fois que ce dépôt paie « un contrôle trop tolérant ne
+§195 — c'est la quatrième fois que ce dépôt paie « un contrôle trop tolérant ne
 prouve rien ».
 
 **Ce qui a été trouvé en le mesurant :** sans son exclusion du `matcher`,

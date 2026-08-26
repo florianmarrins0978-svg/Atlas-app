@@ -58,6 +58,26 @@ sa réponse (`CLAUDE.md` §3 bis).
   Équipe ou retourne dans « Absences ». **Non codée.**
 - **Planche 97** — `appli/salaries-et-equipes.html`. **Répondue (A) et codée le
   26 août** : voir le paragraphe ci-dessus.
+## PIÈGE : `force-dynamic` NE FAIT PAS PARTIR LA DEMANDE (26 août 2026)
+
+On lit `export const dynamic = "force-dynamic"` comme « cette page est toujours
+fraîche ». **Elle ne dit rien de tel** : elle commande au SERVEUR de recalculer
+à chaque demande — encore faut-il qu'une demande parte. Sans `revalidatePath`,
+le routeur du navigateur reserve sa copie et n'appelle personne.
+
+C'est ce qui a fait dire au patron *« rien ne se passe »* en basculant le rythme
+de sa TVA : base écrite, calcul juste, écran figé sur « Août 2026 ».
+
+**Toute action serveur qui change ce qu'un AUTRE écran affiche appelle
+`revalidatePath`**, même quand la page visée est `force-dynamic`.
+
+Et le contrôle qui l'attrape doit rejouer **sa séquence** : basculer sans
+quitter l'écran. Toutes les suites du rythme passaient par Réglages puis
+rouvraient le relevé — une page rouverte est toujours juste, et elles étaient
+vertes depuis le 12 août. `ARCHITECTURE.md` §193.
+
+---
+
 ## PIÈGE : UN BOUTON RADIO NE SE DÉCOCHE PAS (26 août 2026)
 
 Sa plainte du 26 août, sur la page de son client : *« je ne peux plus le

@@ -15,6 +15,7 @@ import { phraseDuRefus, refusDeLAbsence } from "@/lib/absences-equipe";
 import { versionExecutee } from "@/server/version-executee";
 import { issueApresMiseAJour } from "@/lib/issue-mise-a-jour";
 import { estBancDEssai } from "@/profil-banc";
+import { revalidatePath } from "next/cache";
 
 /**
  * Écrire — ou effacer — le nom d'une équipe, par son RANG.
@@ -200,10 +201,38 @@ export async function appliquerImportTarifsAction(choix: {
  * revenir sur son affichage optimiste plutôt que de montrer un réglage que la
  * base n'a pas pris.
  */
+/**
+ * Le rythme du relevé — au mois, ou au trimestre.
+ *
+ * **`revalidatePath` N'EST PAS UNE PRÉCAUTION ICI : c'est la moitié du geste.**
+ *
+ * Sa plainte du 26 août 2026 : *« quand je change entre tous les mois et tous
+ * les trois mois, c'est pareil, rien ne se passe »*. Il avait raison, et le
+ * défaut était là. La base était bien écrite — le réglage se retrouvait au
+ * rechargement suivant —, mais l'écran de TVA gardait « Août 2026 » sous les
+ * yeux : le navigateur reservait sa copie en cache de `/termines/tva`, et rien
+ * ne lui avait dit qu'elle était périmée.
+ *
+ * **`export const dynamic = "force-dynamic"` ne protège de rien de tout cela**,
+ * et c'est le piège : il commande au SERVEUR de recalculer à chaque demande —
+ * encore faut-il qu'une demande parte. Sans revalidation, le routeur répond de
+ * son cache et le serveur n'est jamais appelé.
+ *
+ * **Aucun contrôle ne pouvait le voir**, parce qu'ils passaient tous par
+ * Réglages puis rouvraient le relevé par une navigation neuve. Une page
+ * rouverte est toujours juste ; lui bascule sans quitter l'écran. C'est sa
+ * SÉQUENCE qu'il fallait rejouer, pas son geste (`AGENTS.md`).
+ *
+ * Les deux écrans qui portent ce réglage sont nommés : le relevé, où le rythme
+ * décide du découpage entier, et « Mon entreprise », où la case cochée doit
+ * survivre à un retour en arrière.
+ */
 export async function mettreAJourPeriodiciteTvaAction(periodiciteTva: "mensuelle" | "trimestrielle") {
   const ctx = await getCurrentCtx();
   await exigerProprietaire(ctx, "modifier la périodicité du relevé de TVA");
   const e = await mettreAJourEntreprise(ctx, { periodiciteTva });
+  revalidatePath("/termines/tva");
+  revalidatePath("/reglages/identite");
   return { periodiciteTva: e?.periodiciteTva ?? PERIODICITE_TVA_PAR_DEFAUT };
 }
 
