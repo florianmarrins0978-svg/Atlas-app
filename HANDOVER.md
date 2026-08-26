@@ -21,6 +21,30 @@ Nouvelle brique, sur l'écran Réglages → Documents. Avant d'y toucher :
 | **La photo passe par la porte unique** | `preparerPhotoEntrante`, comme le logo : métadonnées GPS retirées avant tout envoi |
 | **Vu à l'écran** | `npx tsx scripts/capture-documents-photo.mts <dossier>` (serveur bâti + connecté). Le `next dev` de ce conteneur ne découvre pas les routes — servir une version **bâtie** (`next build` + `next start`, `ATLAS_PROFIL=banc AUTH_TRUST_HOST=true`) |
 
+## RÔLES ET ACCÈS : ce qu'il faut savoir avant d'y toucher (25 août 2026)
+
+Le cloisonnement par rôle existe depuis ce jour-là. Trois choses à connaître
+avant d'écrire un écran ou une route :
+
+| | |
+|---|---|
+| **La règle est UNE fonction pure** | `src/lib/acces-roles.ts`. Elle dessine la barre du bas, filtre le sommaire des réglages, ET refuse les adresses. Ne pas en écrire une seconde |
+| **Un ÉCRAN neuf n'a rien à faire** | il traverse `layout.tsx`, donc `GardeAcces`. Fermé d'office au salarié (liste blanche), ouvert au commercial |
+| **Une ROUTE d'API neuve, SI** | elle ne traverse aucune mise en page. `const refus = await exigerOuverture(ctx); if (refus) return refus;` en tête du handler. `scripts/test-acces-routes-gardees.ts` rougit sinon |
+
+**Le piège à connaître, et il a coûté un rouge pendant ce lot :** écrire dans
+`membres_entreprise` par `db` en direct, hors `withEntreprise`. La RLS refuse
+**sans erreur** — zéro ligne touchée, aucun message —, et le contrôle rougit
+alors en accusant tout autre chose. C'est `CLAUDE.md` §3, rencontré dans un test.
+
+**Ce qu'un salarié ATTEINT, et rien d'autre :** `/planning`, ses quatre réglages
+personnels, `/documents-legaux`, et `/api/chantiers/<id>/feuille/pdf` — le devis
+sans un seul montant. Ouvrir un cinquième chemin se fait dans `OUVERT_AU_SALARIE`
+et se paie d'une ligne dans `scripts/test-acces-roles.ts`, à la main. C'est
+voulu : c'est le seul moment où quelqu'un regarde.
+
+---
+
 ## LOT 2B FERMÉ, ET SEPT CONTRÔLES RÉPARÉS AVEC LUI (25 août 2026)
 
 M3 et M6 sont clos. Ce qu'il faut savoir avant d'y toucher :

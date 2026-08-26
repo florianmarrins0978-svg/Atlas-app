@@ -1022,3 +1022,31 @@ function enNombre(v: string | null): number | null {
   const n = Number(v);
   return Number.isFinite(n) ? n : null;
 }
+
+
+/**
+ * LES CHANTIERS D'UNE FILE DU PLANNING — pour la portée resserrée d'un salarié.
+ *
+ * Sa règle du 13 août 2026 : *« Accès à tout, mais le patron choisira s'il a
+ * accès qu'à ses chantiers ou à tout. »*
+ *
+ * **Rend les identifiants, pas les chantiers.** Le planning charge déjà sa
+ * liste ; refaire ici une seconde requête complète en produirait deux versions,
+ * qui divergeraient au premier champ ajouté d'un seul côté (`CLAUDE.md` §3). Ce
+ * qu'on cherche est un TAMIS, pas une liste.
+ *
+ * **Une demi-journée suffit.** Un chantier tenu par l'équipe B le mardi matin et
+ * par l'équipe A l'après-midi est un chantier de l'équipe B : le salarié doit
+ * le voir, sans quoi il ne saurait pas où aller mardi matin.
+ */
+export async function chantiersDeLEquipe(ctx: Ctx, equipeId: string): Promise<Set<string>> {
+  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    const lignes = await tx
+      .selectDistinct({ chantierId: equipesDuChantier.chantierId })
+      .from(equipesDuChantier)
+      .where(
+        and(eq(equipesDuChantier.entrepriseId, ctx.entrepriseId), eq(equipesDuChantier.equipeId, equipeId))
+      );
+    return new Set(lignes.map((l) => l.chantierId));
+  });
+}

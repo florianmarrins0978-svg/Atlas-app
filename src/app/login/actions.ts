@@ -2,6 +2,7 @@
 
 import { headers } from "next/headers";
 import { signIn, signOut } from "@/auth";
+import { accueilPourCleAppareil, accueilPourEmail } from "@/server/accueil-apres-connexion";
 import { AuthError } from "next-auth";
 import { redirect } from "next/navigation";
 import { verifierLimite, LIMITES } from "@/server/rate-limit";
@@ -234,8 +235,9 @@ export async function connexionAction(
   // à un doigt de la temporisation pendant l'heure qui suit. Posé avant
   // `redirect()`, qui lève et ne rend jamais la main.
   await oublierEchecs(portee);
-  redirect("/");
+  redirect(await accueilPourEmail(email));
 }
+
 
 /**
  * « Ouvrir avec Face ID », premier temps : le défi qu'on envoie au téléphone.
@@ -301,7 +303,29 @@ export async function connexionParCleAction(reponse: string): Promise<{ erreur?:
     throw err;
   }
 
-  redirect("/");
+  // **Le rôle décide de l'écran d'arrivée, ici comme au mot de passe.** Sans
+  // cela, un salarié qui ouvre avec Face ID retomberait sur l'écran blanc que
+  // `accueil-apres-connexion.ts` raconte : `/` ne lui est pas ouvert, et le
+  // renvoi enchaîné rend une page 404.
+  redirect(await accueilPourCleAppareil(identifiantDeLaCle(reponse)));
+}
+
+/**
+ * L'identifiant de la clé, relu du texte que le téléphone a envoyé.
+ *
+ * **Relu, et non revérifié** : `signIn` vient de vérifier la signature, et la
+ * refaire ici l'écrirait deux fois (`CLAUDE.md` §3). Ce champ ne sert qu'à
+ * choisir un écran d'arrivée — un texte illisible rend une chaîne vide, et l'on
+ * retombe sur l'accueil ordinaire, que la garde de rôle traitera comme les
+ * autres.
+ */
+function identifiantDeLaCle(reponse: string): string {
+  try {
+    const lu = JSON.parse(reponse) as { id?: unknown };
+    return typeof lu.id === "string" ? lu.id : "";
+  } catch {
+    return "";
+  }
 }
 
 export async function deconnexionAction() {

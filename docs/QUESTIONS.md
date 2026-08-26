@@ -628,19 +628,43 @@ le planning, c'est là — et nulle part ailleurs — qu'il ouvre la feuille de 
 chantier. Le document sans montants n'est pas un confort : c'est **le seul**
 document qu'il verra jamais.
 
-### Ce qui reste vrai, et qui n'est pas encore fait
+### Fait le 25 août 2026 — ce paragraphe disait le contraire jusque-là
 
-**Rien de ce tableau n'est en place au 23 août 2026.** La base ne connaît
-toujours que deux rôles (propriétaire et membre), aucun écran ne permet de
-donner un accès, et **rien ne filtre encore l'application par rôle** : un membre
-atteint aujourd'hui tous les écrans sauf ceux qui ont reçu une garde explicite.
+**Ce qui suit remplace un paragraphe devenu faux**, et c'est pour cela qu'il est
+réécrit plutôt que complété : il disait *« rien de ce tableau n'est en place »*,
+et s'y fier aujourd'hui ferait redemander un travail déjà livré.
 
-Ce qui a changé le 23 août, et qui n'est qu'un début : les écrans réservés au
-patron refusent désormais **côté serveur**, et non plus seulement en se cachant
-du sommaire. Le reste — les quatre rôles en base, l'écran qui donne un accès, le
-cloisonnement du salarié sur le seul planning — reste à faire, et c'est un lot à
-lui seul. Le dessin existe (`maquettes/atlas-reglages-equipe.html`) ; le code,
-non.
+Le 25 août, vous avez redemandé la même chose dans vos mots — *« il faut qu'il
+leur crée un compte salarié […] chaque utilisateur possède son propre compte et
+sa propre session »*, et *« les restrictions doivent être appliquées côté
+serveur, et pas uniquement en masquant des boutons ou des pages »*. C'est
+exactement ce qui a été codé.
+
+**Où ça se passe :** Réglages → Équipe → « Qui a accès ». Vous y créez un
+compte — un nom, une adresse, un mot de passe que vous lui dites —, vous
+choisissez son rôle, et vous le retirez quand il part. Deux listes sur cet
+écran, jamais mélangées : *qui a accès* (des comptes) et *vos équipes* (des
+files du planning).
+
+| | Ce qu'il atteint |
+|---|---|
+| **Patron** | tout Atlas |
+| **Commercial** | toute l'application, sauf la mise en page des devis, l'identité de l'entreprise, les accès, l'abonnement et l'export |
+| **Salarié** | le planning, sa feuille de chantier sans un seul montant, et ses propres réglages |
+
+**Et « sans les prix » n'est plus un masquage.** Un salarié qui taperait
+l'adresse d'un devis, de son PDF ou d'une facture est refusé **par le serveur** :
+la page n'est pas rendue, le fichier n'est pas produit. C'est ce que ce
+paragraphe-ci exigeait depuis le 7 août, et c'est tenu.
+
+**Ce que le patron voit du planning d'un salarié :** tout, ou les seuls
+chantiers de son équipe — un réglage **par personne**, comme vous l'aviez
+demandé. Le défaut est « tout ».
+
+**Ce qui reste ouvert, et il faut le dire :** un commercial ne LIT pas encore
+vos tarifs, alors que votre règle du 13 août dit qu'il les lit sans les changer.
+Cet écran-là doit être dessiné avant d'être codé — un prix qu'on ne peut pas
+toucher, ça se montre. Il est noté dans `TODO.md`.
 
 ---
 

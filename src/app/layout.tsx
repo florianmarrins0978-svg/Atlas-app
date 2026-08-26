@@ -9,8 +9,10 @@ import VeilleReponseServeur from "@/components/atlas/VeilleReponseServeur";
 import AssistantSidebar from "@/components/atlas/AssistantSidebar";
 import { FournisseurAssistant } from "@/components/atlas/assistant-contexte";
 import GardeDocumentsLegaux from "@/components/atlas/GardeDocumentsLegaux";
+import GardeAcces from "@/components/atlas/GardeAcces";
 import BandeauBanc from "@/components/atlas/BandeauBanc";
 import { laVersionRapideSeConstruit } from "@/server/etat-banc";
+import { roleDeLaSession } from "@/server/autorisation";
 
 // **Plus aucune police n'est téléchargée depuis le 10 août 2026.** L'écran que
 // le patron a retenu était une maquette autonome : elle ne pouvait charger
@@ -197,6 +199,16 @@ export default async function RootLayout({
    */
   const charteChoisie = pageDuClient ? null : await charteDeLaPersonne();
 
+  /**
+   * **Le rôle décide des onglets, et il vient du SERVEUR.**
+   *
+   * La barre est un composant client : lui laisser lire le rôle voudrait dire
+   * l'envoyer au navigateur et le croire. Il est donc résolu ici, à chaque
+   * requête, à partir de la seule session — et il ne sert qu'à DESSINER : ce qui
+   * refuse une adresse, c'est `GardeAcces` juste au-dessus.
+   */
+  const role = sansNavigation ? null : await roleDeLaSession();
+
   return (
     // **Les variables sont posées sur `<html>`, pas sur `<body>`.**
     // `globals.css` les relit depuis `:root` — c'est-à-dire `<html>` — pour
@@ -209,6 +221,10 @@ export default async function RootLayout({
             pas été accepté. Rendu avant le contenu : la redirection intervient
             donc avant que quoi que ce soit d'utilisable soit affiché. */}
         <GardeDocumentsLegaux />
+        {/* **Le rôle referme ce que le sommaire ne montre plus.** Un bouton
+            retiré n'a jamais fermé une adresse : cette garde refuse au SERVEUR,
+            avant que la page ne soit peinte (`docs/QUESTIONS.md` §10). */}
+        <GardeAcces />
         {/* **DANS le flux, avant tout le reste.** Il pousse le contenu de
             quarante pixels au lieu de le couvrir : trois défauts réels de ce
             dépôt viennent d'éléments flottants qui cachaient un geste
@@ -226,7 +242,10 @@ export default async function RootLayout({
           // Il n'entoure QUE le cadre, sans en changer la hauteur : celle-ci
           // tient compte du bandeau du banc (`minHeight` ci-dessous), et un
           // fournisseur ne rend aucun élément.
-          <FournisseurAssistant>
+          // L'assistant reconstitue au serveur les chantiers, les clients et les
+          // prix : un salarié n'y a pas droit. Le refus est dans l'action
+          // (`poserQuestionAction`) ; ici, on ne lui montre pas le bouton.
+          <FournisseurAssistant disponible={role !== "salarie"}>
             <div
               className="mx-auto flex max-w-md flex-col bg-paper"
               style={{ minHeight: banc ? "calc(100dvh - 40px)" : "100dvh" }}
@@ -235,8 +254,8 @@ export default async function RootLayout({
                 d'accueil compris (voir globals.css) : sans navigation, cette
                 marge laisserait un vide en bas de page. */}
             <main className="atlas-contenu flex-1">{children}</main>
-            <AtlasBottomNav />
-            <AssistantSidebar />
+            <AtlasBottomNav role={role} />
+            {role !== "salarie" && <AssistantSidebar />}
           </div>
           </FournisseurAssistant>
         )}
