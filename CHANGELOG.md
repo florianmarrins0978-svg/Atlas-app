@@ -29,7 +29,7 @@ Le bouton du mot de passe quitte la barre fixe du bas et rejoint ses champs. Le
 contrôle compare deux ordonnées plutôt qu'un libellé.
 
 Ce que ça évite : un raccourci qu'il ne peut pas allumer, et un message rouge
-au moment exact où il entre. `ARCHITECTURE.md` §183 et §184.
+au moment exact où il entre. `ARCHITECTURE.md` §186 et §187.
 
 **Non vérifié ici, et il faut le dire :** que Face ID s'ouvre sur SON iPhone
 derrière SON tunnel. Cet environnement n'a ni visage ni tunnel — la règle du
@@ -326,9 +326,76 @@ Corrigé sur les quatre écrans qui envoient : la fiche de chantier, le devis
 parti, la facture et son message tout prêt. Le refus ne s'affiche plus non plus
 en double.
 
-`ARCHITECTURE.md` §177.
+`ARCHITECTURE.md` §185.
 
 ---
+
+### Le calendrier de fin de mois a fait rougir une TROISIÈME suite
+
+Même mal que les deux du matin : le calendrier ouvre sur le mois en cours, et
+passé le délai minimal il ne reste qu'un ou deux jours ouvrés en fin de mois.
+`test-envoi-client-e2e` s'est arrêté sur « pas assez de jours » — sur un
+calendrier parfaitement juste.
+
+Elle appuie maintenant sur « Mois suivant », comme le patron le ferait sans y
+penser, et seulement quand le mois courant est trop court : le reste du temps
+elle continue d'éprouver le cas ordinaire. Une seule fonction porte la règle
+pour les deux contrôles concernés.
+
+**Ce défaut revient chaque mois.** Trois suites l'ont eu le même jour ; le
+prochain qui verra « pas assez de jours » saura où regarder.
+
+
+### L'assistant répond enfin depuis n'importe quel écran
+
+*« Je veux pouvoir faire ça peu importe où je l'ouvre. »* Le panneau était déjà
+sur tous les écrans ; ce sont ses outils qui ne suivaient pas. Cinq d'entre eux
+refusaient dès qu'aucun chantier n'était ouvert — c'est-à-dire partout sauf sur
+une fiche, là où il a déjà l'information sous les yeux.
+
+Ils acceptent maintenant qu'on leur nomme un chantier, et le chantier ouvert
+reste le défaut : l'usage d'avant ne bouge pas. Quand il n'y en a vraiment
+aucun, le refus dit la suite à donner au lieu de renvoyer le patron ouvrir une
+fiche lui-même. Détail : `ARCHITECTURE.md` §185.
+
+
+### L'assistant ouvre une fiche chantier quand on le lui demande
+
+*« Crée-moi une nouvelle fiche chantier du nom de Fernandez »* — il répondait
+qu'il n'était pas en mesure de le faire et donnait trois étapes à suivre à la
+main. C'est désormais la **seule écriture** qu'on lui accorde, et elle est
+étroite : une fiche vide, pour un client, sans prix ni prestation ni envoi. Tout
+le reste passe encore par une proposition qu'il confirme d'un doigt.
+
+Le nom n'est pas inventé : dans Atlas un chantier ne se baptise pas, son
+étiquette se déduit du client (sa règle du 5 août). Et le client existant est
+repris plutôt que dupliqué — il dit « bernard » là où sa fiche porte
+« Mr. Bernard ».
+
+**Un doublon se refuse d'abord** : si ce client a déjà des chantiers, rien n'est
+créé et l'assistant demande. Deux fiches pour un même jardin, ça ne se défait
+plus. Détail : `ARCHITECTURE.md` §184.
+
+
+### L'assistant retrouve un devis à partir d'un NOM, sans qu'on ouvre la fiche
+
+*« Peux-tu me ressortir le premier devis de M. Bernard ? »* — il répondait qu'il
+n'avait *« aucun chantier ouvert »* et renvoyait le patron ouvrir la fiche
+lui-même. Tous ses outils partaient du chantier courant ; ouvert depuis la
+liste, il n'avait aucun chemin entre un nom et un dossier. Il en a désormais un,
+qui cherche dans le nom du client comme dans celui du chantier, avec la règle de
+l'écran — casse, accents et ordre des mots ignorés.
+
+**Et il affirmait une chose fausse :** *« Atlas conserve uniquement le dernier
+devis par chantier »*. Un brouillon se réécrit, mais un devis envoyé est
+conservé et le suivant devient une version 2. Ce n'est pas le modèle qui
+inventait : l'outil lui rendait la dernière version sans jamais dire qu'il en
+existait d'autres. Il annonce maintenant toutes les versions à chaque appel, et
+sait rendre celle qu'on demande — « le premier » étant la version 1.
+
+Éprouvé contre le décor exact de sa capture, un confrère au même nom compris ;
+rejoué contre l'ancien outil, il rougit sur trois cas. Détail :
+`ARCHITECTURE.md` §183.
 
 
 ### Le message : les phrases par défaut, modifiables — les mots en doré verrouillés
@@ -451,7 +518,7 @@ salarié : elle part sans un prix, et un acompte y serait un montant.
 *« Si je décoche le bouton OFF, ils sont censés disparaître ? »* Oui — éprouvé,
 et le contrôle a été vu rouge en débranchant le raccordement exprès. Trois
 captures rendent les trois états en image, parce que ce défaut-là s'est vu à
-l'œil et par aucun test. `ARCHITECTURE.md` §177.
+l'œil et par aucun test. `ARCHITECTURE.md` §185.
 
 ### Un jour à moitié pris le dit : « Reste 1 équipe sur 2 »
 
