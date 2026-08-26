@@ -63,6 +63,30 @@ ouvrir la lecture ne rouvrira rien.
 
 ---
 
+## `test-fiche-pendant-relance.ts` rougit sur `main`, et ce n'est pas ce lot
+
+**Constaté le 25 août 2026.** La batterie complète rend `232/233` : seule
+`scripts/test-fiche-pendant-relance.ts` tombe, sur son deuxième cas —
+*« le veilleur est bien bloqué à relancer — sans quoi la suite ne prouve rien »*,
+avec la phrase *« le veilleur n'a jamais tenté de relance : le montage ne
+reproduit pas le cas réel »*.
+
+**Elle tombe à l'identique sur `origin/main`**, éprouvé dans un arbre de travail
+séparé au commit `77e0073` — ce n'est donc pas une régression du lot des flèches,
+et c'est écrit ici plutôt que tenu sous silence : une batterie qu'on prend l'habitude de voir
+rouge cesse d'être lue.
+
+**Ce qu'elle défend, et pourquoi ça compte** (`CLAUDE.md` §1 bis) : la fiche
+d'état de son espace doit continuer d'être publiée PENDANT que le veilleur
+relance le serveur. Le premier cas passe ; c'est le **montage** de la suite qui
+ne parvient plus à mettre le veilleur en situation de relance. Une suite dont le
+montage ne reproduit plus le cas réel rend un vert qui ne prouve rien — c'est
+exactement ce que son deuxième cas refuse, et il a raison de refuser.
+
+À reprendre par qui touche au veilleur : la suite est juste, c'est son décor qui
+a vieilli.
+
+
 ## ~~Photographier son devis / sa facture pour en reprendre l'allure~~ — FAIT le 25 août 2026
 
 **FAIT.** L'écran Réglages → Documents porte désormais, en tête de « L'allure de
@@ -510,7 +534,7 @@ décoche le bouton OFF, ils sont censés disparaître ? »* Oui, et c'est éprou
 création, comme la validité. Elles s'impriment sous « NOTES / CONDITIONS »,
 **après** ce qu'il a écrit à la main — son champ libre n'est ni remplacé ni
 réécrit. Rien sur la feuille de chantier du salarié, qui part sans un prix. Le
-détail et le pourquoi sont dans `ARCHITECTURE.md` §175.
+détail et le pourquoi sont dans `ARCHITECTURE.md` §177.
 
 **Ce que cela ferme sans qu'il ait eu à trancher :** la planche 60 lui proposait
 A (les conditions seules), B (les siennes d'abord) ou C (deux blocs). B a été
@@ -1611,7 +1635,7 @@ faux.
    colonnes ne suffit pas : il faut décider ce qu'on fait de ces libellés-là.
 2. ~~**Un compte `membre` voit aujourd'hui ce que voit le propriétaire.**~~
    **RÉGLÉ le 25 août 2026** : trois rôles en base, et le refus est au serveur
-   (`ARCHITECTURE.md` §177). Un salarié n'ouvre plus ni le devis, ni son PDF, ni
+   (`ARCHITECTURE.md` §180). Un salarié n'ouvre plus ni le devis, ni son PDF, ni
    la fiche du chantier — seulement le planning et sa feuille sans montants.
 3. ~~**Par où le salarié entre.**~~ **TRANCHÉ le 25 août 2026 : compte
    nominatif**, créé par le patron dans Réglages → Équipe. Le lien par jeton a

@@ -123,7 +123,7 @@ export default function GrillesPrixClient({
         className="text-[14px] font-medium"
         style={{ color: colors.rust }}
       >
-        Régler mes mesures →
+        Régler mes mesures
       </Link>
 
       {erreur && (

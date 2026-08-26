@@ -9,7 +9,7 @@ import { jourLisible } from "@/lib/jour";
 import { composerMessageFacture, lienTransmission, type CanalClient } from "@/lib/message-client";
 import { useRetourDeMessagerie, marquerDepartMessagerie } from "@/lib/depart-messagerie";
 import { ouvrirAdresse } from "@/lib/ouvrir-messagerie";
-import { ouvrableParLeClient, phraseAdresseLocale } from "@/lib/adresse-du-client";
+import { adressePourLeClient, ouvrableParLeClient, phraseAdresseLocale } from "@/lib/adresse-du-client";
 import ChoixCanal from "@/components/atlas/ChoixCanal";
 import TransmettreLaFacture from "./TransmettreLaFacture";
 import {
@@ -221,7 +221,10 @@ export default function FactureClient({
       // on ne défait pas son émission — elle a engagé sa comptabilité — on
       // barre le seul message qui n'arriverait nulle part. L'écran d'après
       // porte `TransmettreLaFacture`, qui redit la même chose sous le bouton.
-      if (!ouvrableParLeClient(origine)) {
+      // L'adresse du navigateur d'abord : derrière le tunnel de son espace de
+      // travail, le serveur ne voit que `localhost` (`adressePourLeClient`).
+      const adresse = adressePourLeClient(origine);
+      if (!ouvrableParLeClient(adresse)) {
         setErreur(phraseAdresseLocale("votre facture"));
         router.refresh();
         return;
@@ -239,7 +242,7 @@ export default function FactureClient({
             modele: modeleMessage,
             numeroFacture: initialFacture.numeroCommercial,
             echeanceLisible: dateEcheance ? jourLisible(dateEcheance) : null,
-            lien: `${origine}/factures/${lien.jeton}`,
+            lien: `${adresse}/factures/${lien.jeton}`,
           }),
         }),
         canalEnvoi
@@ -274,7 +277,7 @@ export default function FactureClient({
           </p>
         )}
         <PrimaryButton disabled={enCours} onClick={terminer}>
-          {enCours ? "Préparation…" : "Créer la facture →"}
+          {enCours ? "Préparation…" : "Créer la facture"}
         </PrimaryButton>
       </div>
     );

@@ -55,7 +55,49 @@ pendant qu'un compte non propriétaire atteignait tous les écrans sauf quatre.
 **Ce qui reste ouvert :** un commercial ne lit pas encore les tarifs, alors que
 la règle du 13 août dit qu'il les lit sans les changer. Détail dans `TODO.md`.
 
-Détail et raisons : `ARCHITECTURE.md` §177 ; la règle, `docs/QUESTIONS.md` §10.
+Détail et raisons : `ARCHITECTURE.md` §180 ; la règle, `docs/QUESTIONS.md` §10.
+
+### Plus une seule flèche décorative dans les écrans
+
+**Complété le soir même, à sa demande :** *« fais-moi une photo de chaque flèche
+que tu as supprimée, parce qu'il y a des flèches qui servent à faire des retours
+ou ouvrir des pages »*. La planche `appli/fleches-retirees.html` montre chaque
+libellé en photo, pris sur l'application qui tourne, séparé en deux : ceux qui
+étaient sur un bouton, et ceux qui étaient au bout d'un lien qui ouvre une page
+— c'est lui qui tranche sur les seconds. Ce qui n'a pas été touché y est listé
+aussi. Sept libellés n'ont pas pu être photographiés (leur écran ne s'atteint
+pas depuis ce banc) : la planche le DIT, plutôt que de les taire.
+
+*« Retire la flèche ! Il m'avait semblé t'avoir demandé de supprimer toutes les
+flèches de l'application ! »* — capture à l'appui, devant « Créer la facture → ».
+
+La règle datait du matin même ; vingt-huit libellés en portaient encore une le
+soir. Elles sont parties partout : boutons, liens, chemins de navigation écrits
+dans une phrase, légende du plan d'arrosage.
+
+Restent celles qui FONT quelque chose — feuilletage des calendriers, période de
+TVA précédente et suivante, « ← Aujourd'hui », le rond d'envoi de la discussion,
+et le « 250 € → 350 € » d'une correction de devis, où la flèche porte le sens.
+
+Ce que ça évite : qu'elles reviennent une troisième fois.
+`scripts/test-aucune-fleche.ts` les refuse, chaque flèche gardée y étant
+déclarée avec sa raison. Détail en `ARCHITECTURE.md` §179.
+
+### Savoir ce que l'application a coûté en temps — `scripts/compter-heures.mjs`
+
+*« Combien d'heures avons-nous passé à créer cette application ? »* — puis, la
+réponse donnée : *« on a commencé avant le 10 août »*. Il avait raison.
+
+Le premier commit du dépôt est **un écrasement** (684 fichiers, 129 867 lignes
+d'un coup) : `git log` fait donc commencer le projet le 10 août, onze jours trop
+tard. Le nouveau script mesure ce qui est horodaté et **estime** le reste par
+trois règles de trois indépendantes, qu'il affiche toutes plutôt que d'en
+moyenner une quatrième, fausse et rassurante.
+
+Ce que ça évite : un chiffre recopié à la main dans un document, qui serait faux
+au commit suivant et dont personne ne saurait dire d'où il sort. Le piège de
+datation est écrit en `ARCHITECTURE.md` §178 ; la réponse en langage courant en
+`docs/QUESTIONS.md` §26.
 
 ### La phrase grise sous « Envoyer la facture » a été retirée
 
@@ -90,6 +132,29 @@ PDF » (qui l'ouvre), un bouton « Télécharger ma facture » la range. C'est l
 `Content-Disposition: attachment` du `?telecharger=1` qui décide — l'attribut
 `download` du lien ne suffit pas, iOS l'ignore —, le même mécanisme que l'écran du
 patron.
+### Le rapport repart chez le client : l'adresse venait du serveur, pas du navigateur
+
+*Sa capture : « je ne peux pas l'envoyer au client », devant le refus posé la
+veille — alors que sa barre d'adresse portait bien une adresse web.*
+
+Le garde-fou du 24 août barre un lien qui ne mène qu'à sa machine, et il a
+raison. Mais il jugeait l'adresse que le SERVEUR voit — et derrière le tunnel de
+son espace de travail, le serveur ne voit que `localhost`. Il était donc bloqué
+sur un lien parfaitement bon.
+
+Le lien prend désormais l'adresse de sa barre d'adresse, la seule qui ne mente
+jamais : c'est celle par laquelle il a ouvert Atlas, donc celle qui s'ouvrira
+chez son client. **Le refus reste entier** — ouvert par la redirection de port
+de son éditeur, le lien est barré comme avant, et un contrôle le tient.
+
+Corrigé sur les quatre écrans qui envoient : la fiche de chantier, le devis
+parti, la facture et son message tout prêt. Le refus ne s'affiche plus non plus
+en double.
+
+`ARCHITECTURE.md` §177.
+
+---
+
 
 ### Le message : les phrases par défaut, modifiables — les mots en doré verrouillés
 
@@ -211,7 +276,7 @@ salarié : elle part sans un prix, et un acompte y serait un montant.
 *« Si je décoche le bouton OFF, ils sont censés disparaître ? »* Oui — éprouvé,
 et le contrôle a été vu rouge en débranchant le raccordement exprès. Trois
 captures rendent les trois états en image, parce que ce défaut-là s'est vu à
-l'œil et par aucun test. `ARCHITECTURE.md` §175.
+l'œil et par aucun test. `ARCHITECTURE.md` §177.
 
 ### Un jour à moitié pris le dit : « Reste 1 équipe sur 2 »
 
@@ -621,6 +686,55 @@ qui n'a pas su écrire. Trois batteries ont été payées à cette confusion.
 **Attendre « le réseau » n'est pas attendre « le résultat ».** C'est la même
 faute que le délai fixe, dans une robe plus convaincante.
 
+
+### Le banc RÉPARE une dépendance manquante, au lieu de retenter la même construction
+
+**Sa plainte : « l'application est en mode lent, et elle crash ».** Sa fiche
+d'espace donnait la cause au mot près, sans qu'on ait à supposer quoi que ce
+soit (`CLAUDE.md` §1 bis) :
+
+```
+Error: Cannot find module
+'/workspaces/Atlas-app/node_modules/@swc/helpers/cjs/_interop_require_default.cjs'
+```
+
+**Une cause, ses deux symptômes.** Un paquet absent de ses `node_modules` fait
+tomber la construction : le banc reste en mode développement, où chaque écran se
+compile à l'ouverture — c'est la lenteur. Et le même paquet manquant fait tomber
+les écrans à l'exécution — c'est le crash. Il ne signalait pas deux pannes.
+
+**Le défaut réel n'était pas l'échec, c'était l'absence de réparation.** Le
+veilleur retentait la MÊME construction, trois fois à dix minutes puis toutes
+les demi-heures, indéfiniment. Contre un fichier absent, insister ne répare
+rien : l'espace pouvait rester lent une nuit entière sans que personne y touche.
+
+**C'était la DEUXIÈME fois.** Le 22 août, `Cannot find module './detect-typo'`
+dans `node_modules/next` avait éteint son espace toute une soirée, et il avait
+fallu lui faire taper `rm -rf node_modules && npm ci` depuis son téléphone. Un
+défaut qui revient et qu'on répare deux fois à la main n'est pas réparé.
+
+**Désormais** : quand la construction tombe sur un module absent **sous
+`node_modules`**, le banc réinstalle les dépendances et reconstruit — une fois.
+Si elle retombe, il s'arrête et le témoin d'échec garde les deux sorties.
+
+**`npm install`, jamais `npm ci`**, et c'est délibéré : `ci` efface
+`node_modules` avant de réinstaller, or le serveur de développement TOURNE
+pendant ce temps et sert le patron. Lui retirer le sol coûterait sa session pour
+réparer une lenteur. `install` complète en place, ce qui suffit à un paquet
+absent — le cas que sa fiche montre.
+
+**Le contrôle joue la reconnaissance EXTRAITE du banc**, jamais une copie : une
+seconde expression régulière finirait par éprouver une règle que le produit
+n'applique plus. Il la confronte aux **deux pannes réelles**, recopiées de ses
+fiches, et à quatre cas où réinstaller serait une perte de temps — une erreur de
+types, un import cassé du dépôt, un fichier du dépôt absent, une construction
+réussie.
+
+**Deux trous trouvés dans ce contrôle avant de le livrer**, en le confrontant aux
+états dégradés : renommer la constante du banc le faisait **mourir sur une pile
+d'appels** au lieu d'accuser, et retirer la clause `node_modules` ne faisait
+rougir personne — elle n'était donc défendue par rien. Les deux sont comblés, et
+les trois sabotages rougissent maintenant en nommant ce qui manque.
 
 ---
 
