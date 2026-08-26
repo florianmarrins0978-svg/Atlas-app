@@ -62,7 +62,7 @@ export default async function TerminesPage() {
     <div style={{ backgroundColor: colors.cream, color: colors.ink, fontFamily: font.body, minHeight: "100%" }}>
       <div className="pb-10" data-atlas="ecran-termines">
         {/* Ni surtitre ni cheveu : la planche retenue n'en porte pas. */}
-        <EnTeteEcran titre="Terminés" cheveu={false} />
+        <EnTeteEcran titre="Terminés" />
 
         {/* **LA CARTE DE TVA, EN TÊTE — sa demande du 23 août 2026.**
 

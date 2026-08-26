@@ -29,12 +29,27 @@ Le bouton du mot de passe quitte la barre fixe du bas et rejoint ses champs. Le
 contrôle compare deux ordonnées plutôt qu'un libellé.
 
 Ce que ça évite : un raccourci qu'il ne peut pas allumer, et un message rouge
-au moment exact où il entre. `ARCHITECTURE.md` §182 et §183.
+au moment exact où il entre. `ARCHITECTURE.md` §183 et §184.
 
 **Non vérifié ici, et il faut le dire :** que Face ID s'ouvre sur SON iPhone
 derrière SON tunnel. Cet environnement n'a ni visage ni tunnel — la règle du
 domaine et le parcours entier sont éprouvés, l'ouverture réelle se prouve chez
 lui.
+### L'en-tête inversé : le titre d'abord, le surtitre doré en dessous
+
+*« Sur plusieurs catégories le titre était en dessous du sous-titre en doré,
+inversez-les »* — puis, sans ambiguïté : *« partout »*.
+
+La grammaire du 10 août posait l'accroche dorée AU-DESSUS du titre. Il la veut
+SOUS le titre, là où on lit un sous-titre. Comme l'en-tête est une seule pièce
+partagée (`EnTeteEcran`), le changement se propage à tous les écrans d'un coup —
+c'est ce qu'il demande. Sur la fiche de chantier, le statut (porté par le
+surtitre) passe donc sous le nom du chantier ; la précision « avant » (le client,
+en serif gris) reste au-dessus, elle, comme sa maquette du 11 août.
+
+Regardé à l'image (Paysage et un chantier), et le garde-fou d'alignement du
+bouton d'assistant (`test-assistant-en-tete-e2e`) reste vert : la pastille tient
+toujours sur la ligne du titre.
 
 ### Donner un accès : une planche, avant de retoucher l'écran
 
@@ -63,6 +78,54 @@ fait un rôle est pire qu'une maquette absente.
 ---
 
 ## 2026-08-25
+
+### Ses journées se comptaient à Greenwich
+
+*« Ce soir à 00 h 00 il passe dans Terminés ? »* — non : à **2 h du matin**. Le
+jour d'Atlas était le jour UTC, et la France est à UTC+2 l'été. Entre minuit et
+deux heures, un chantier fini restait au planning, une facture faite en rentrant
+portait la date d'hier, et le calendrier marquait le mauvais jour comme
+« aujourd'hui ». Deux heures, mais précisément celles où un artisan range ses
+papiers.
+
+Une seule fonction change (`jourIso`, `src/lib/jour.ts`), et tout suit : onglets,
+dates d'émission et d'échéance, relevé de TVA, calendrier. Elle passe par `Intl`
+sur `Europe/Paris` — un `+2` figé se serait trompé la moitié de l'année.
+
+Le contrôle prend l'été et l'hiver, des deux côtés de minuit, et a été **joué
+rouge** contre l'ancienne version. `ARCHITECTURE.md` §182.
+
+**Trois suites qui dépendaient du jour où on les jouait.** Deux posaient leurs
+dates avec `CURRENT_DATE` — le jour de PostgreSQL, en UTC — et divergeaient donc
+de l'écran pendant ces deux heures ; une troisième lisait le calendrier du mois
+COURANT, si bien qu'en fin de mois il n'y restait plus assez de jours ouvrables
+et qu'elle accusait le produit. Elles lisent maintenant la même définition du
+jour que l'application, et tournent la page du mois quand il le faut. Aucune ne
+mesurait un vrai défaut : c'est le pire des rouges, celui qui accuse à tort.
+
+### Plus aucun trait sous les titres, et le texte des données raccourci
+
+*« Souvent sous les titres il y avait un trait comme celui-là, supprime tous les
+traits sous les titres »*, capture de « Sécurité & données » à l'appui.
+
+Il l'avait déjà fait retirer de l'accueil la veille. Le trait vivait en réalité
+dans l'**en-tête partagé**, allumé par défaut : il paraissait donc sur chaque
+écran qui l'emploie. Retiré une fois, il disparaît partout — et le réglage qui
+permettait de le rallumer écran par écran a disparu avec, sans quoi il serait
+revenu par la porte de service.
+
+*« Le texte sous télécharger est beaucoup beaucoup trop long, synthétise-le. »*
+Cinq lignes deviennent deux. **Gardé :** que le fichier s'ouvre sans Atlas — c'est
+ce qui en fait une copie de secours et non un objet captif —, et qu'il porte les
+coordonnées de ses clients, ce qui l'oblige à le ranger et ne se devine pas.
+**Parti :** l'inventaire de ce que le fichier contient, qu'il verra en l'ouvrant,
+et l'explication d'une sauvegarde automatique qui n'existe pas encore — un écran
+n'a pas à expliquer ce qu'il ne fait pas.
+
+Le contrôle des en-têtes couvre désormais la pièce partagée, et il a été vu rouge
+contre le trait remis en place.
+
+
 
 ### Trois rôles, trois sessions — et le refus est au serveur
 

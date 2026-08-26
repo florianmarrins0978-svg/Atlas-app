@@ -8,6 +8,7 @@ import { lancerNavigateur } from "./e2e-browser";
 import { avecCivilite } from "../src/lib/civilite";
 import { pool } from "../src/server/db/client";
 import { creerPuisFiche } from "./_creer-chantier-e2e";
+import { jourDuPatron } from "./_jour-e2e";
 
 // **Du planning à la facture, en partant d'où le patron se trouve.**
 //
@@ -110,8 +111,12 @@ async function chantierPlanifie(
   await page.waitForURL(/localhost:3000\/$/, { timeout: 15000 }); // L'envoi ramène à L'ACCUEIL depuis le 21 août 2026 : c'est lui, le signal.
 
   await inspecter(
-    `UPDATE chantiers SET date_planifiee = CURRENT_DATE - $2::int WHERE id = $1`,
-    [chantierId, joursAvant],
+    // **Pas `CURRENT_DATE`** : c'est le jour de PostgreSQL, en UTC, et
+    // l'application compte les siens à l'heure de l'atelier (§177). Entre
+    // minuit et 2 h du matin les deux diffèrent, et « aujourd'hui » posé ici
+    // tombait dans les terminés à l'écran.
+    `UPDATE chantiers SET date_planifiee = $2::date WHERE id = $1`,
+    [chantierId, jourDuPatron(joursAvant)],
     1
   );
   return { chantierId, nom, client, url };

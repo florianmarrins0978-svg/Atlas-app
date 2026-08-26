@@ -15976,7 +15976,66 @@ qu'il faut alors UN endroit où le dire.
 
 ---
 
-## 182. Face ID était muet chez lui : Atlas se nommait « localhost »
+## 182. Ses journées se comptaient à Greenwich
+
+**Sa question du 25 août 2026, au soir :** *« on est le 25 au soir, donc le
+chantier Eric est terminé — quand est-ce qu'il passe automatiquement dans la
+catégorie Terminés ? »*, puis : *« donc ce soir à 00 h 00 il passe dans
+Terminés ? »*.
+
+**Non : à 2 h du matin.** Et personne dans le dépôt ne le savait.
+
+### Le défaut
+
+`jourIso` — la seule définition du « jour » de tout le dépôt — rendait
+`instant.toISOString().slice(0, 10)`, c'est-à-dire le jour **UTC**. La France
+est à UTC+2 l'été, UTC+1 l'hiver : entre minuit et deux heures, Atlas croyait
+qu'on était encore la veille.
+
+Ce que cela produisait, dans cette fenêtre-là :
+
+| | |
+|---|---|
+| un chantier dont la journée est finie | reste au **planning** |
+| une facture faite en rentrant | porte la **date d'hier** |
+| le jour marqué « aujourd'hui » au calendrier | est le **mauvais** |
+
+Deux heures paraissent peu. C'est exactement l'heure à laquelle un artisan finit
+sa journée et range ses papiers — la seule fenêtre où l'erreur se voit, et il
+l'a vue.
+
+### La correction
+
+`jourIso` passe par `Intl.DateTimeFormat` sur `Europe/Paris`
+(`FUSEAU_DU_PATRON`, `src/lib/jour.ts`). **Un décalage figé — `+1`, `+2` — se
+serait trompé la moitié de l'année**, et l'erreur n'aurait sauté aux yeux qu'au
+changement d'heure : `Intl` est la seule source qui connaisse les vraies règles
+d'un fuseau. Le dépôt le savait déjà pour les agendas (`src/lib/fuseau.ts`,
+`FUSEAU_ARTISAN`) ; c'est le calcul du jour qui était resté en arrière.
+
+**Une seule fonction change, et tout suit** — le rangement des onglets, les
+dates d'émission et d'échéance, le relevé de TVA, le calendrier. C'est le
+bénéfice de la définition unique : la corriger à un endroit les corrige tous, là
+où douze `toISOString()` recopiés auraient laissé la moitié du produit en UTC.
+
+### Ce que le contrôle refuse
+
+`scripts/test-jour-du-patron.ts` prend l'été **et** l'hiver, des deux côtés de
+minuit, puis vérifie ce qu'il demandait vraiment : son chantier du 25 est encore
+au planning à 23 h 59, et dans Terminés à 00 h 30. **Éprouvé rouge contre
+l'ancienne version** : trois cas sur sept tombent.
+
+### Ce qui n'a PAS changé, et c'est voulu
+
+La bascule vers « Terminés » reste **calculée à l'affichage**
+(`src/lib/onglet-chantier.ts`), jamais écrite en base et jamais déclenchée par
+une tâche de fond. Rien ne tourne la nuit : l'écran range au moment où on
+l'ouvre. Un chantier « passe » donc dans Terminés dès la première ouverture
+après minuit — il n'y a pas d'instant où quelque chose se déclenche, et c'est ce
+qui rend la règle sûre : aucune tâche à réveiller, rien à rattraper.
+
+---
+## 183. Face ID était muet chez lui : Atlas se nommait « localhost »
 
 **Sa capture du 26 août 2026 :** *« le Face ID ne fonctionne pas »* — l'écran
 Réglages › Connexion portait un bandeau rouge, et sa barre d'adresse
@@ -16059,7 +16118,7 @@ Le dernier point se vérifie chez lui, et nulle part ailleurs.
 
 ---
 
-## 183. « Changer mon mot de passe » a rejoint ses propres champs
+## 184. « Changer mon mot de passe » a rejoint ses propres champs
 
 **Sa demande du 26 août 2026, dans le même message :** *« le bouton changer mon
 mdp doit se trouver au-dessus de ouvrir avec Face ID »*.
