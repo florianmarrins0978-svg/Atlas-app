@@ -110,8 +110,11 @@ planche porte donc deux réécritures des libellés — le verbe manquant est
 « je reverse » — et **la ligne qui dit ce que le choix change sur le mois
 affiché, y compris quand il n'y change rien.**
 
-Rien n'est codé : `appli/quand-je-reverse-la-tva.html`, en attente de son choix
-entre A et B.
+**Il a tranché le soir même : B, sans le tableau d'exemple.** Les libellés
+réécrits, plus la ligne qui dit ce que le choix change — le tableau expliquait,
+et un écran n'explique pas son propre fonctionnement (`CLAUDE.md` §3). La
+planche porte la version retenue et ce qui a été écarté :
+`appli/quand-je-reverse-la-tva.html`. Reste à coder.
 
 ### « Sans date » disparaît quand rien n'attend de jour
 
