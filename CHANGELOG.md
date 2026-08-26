@@ -54,8 +54,6 @@ encore le refus et l'enverrait réparer ce qui marche.
 
 Le contrôle a été vu rouge en retirant l'appel.
 
-## 2026-08-26
-
 ### Une règle de plus dans `CLAUDE.md` : ne rien jouer à la main pendant la batterie
 
 **Cinq suites navigateur rouges d'un coup, et l'étape « Connexion derrière un
