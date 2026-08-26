@@ -175,6 +175,82 @@ async function main() {
     );
   });
 
+  await cas("L'APERÇU RESTE À L'ÉCRAN QUAND ON DESCEND CHOISIR UNE POLICE", async () => {
+    // **Sa plainte du 24 août 2026 :** *« lorsque je modifie mon devis, je suis
+    // obligé de descendre pour voir les modifications ».* Trois rangements lui
+    // ont été dessinés (planche 96) ; il a répondu **« la B »** — l'aperçu
+    // collé en tête du bloc.
+    //
+    // **Ce cas mesure le GESTE, pas la feuille de style.** Vérifier
+    // `position: sticky` prouverait qu'une propriété est écrite, pas qu'elle
+    // agit : un parent en `overflow: hidden` la neutralise sans rien changer au
+    // CSS. On descend donc jusqu'à la dernière police, et l'on regarde où est
+    // la feuille — comme lui.
+    await page.reload({ waitUntil: "networkidle" });
+    await page.waitForSelector('[data-atlas="typo-playfair"]', { timeout: 30_000 });
+
+    const derniere = page.locator('[data-atlas="typo-playfair"]');
+    await derniere.scrollIntoViewIfNeeded();
+    await page.waitForTimeout(400);
+
+    const vu = await page.evaluate(() => {
+      const f = document.querySelector('[data-atlas="allure-feuille"]');
+      if (!f) return null;
+      const r = f.getBoundingClientRect();
+      return { haut: r.top, bas: r.bottom, hauteur: r.height, ecran: window.innerHeight };
+    });
+    assert.ok(vu, "L'aperçu n'existe plus sur l'écran des documents.");
+    assert.ok(
+      vu!.hauteur > 0,
+      "L'aperçu mesure zéro pixel : rien n'est mesurable ici, et un vert ne prouverait rien."
+    );
+    // **Visible pour de bon** : au moins la moitié de la feuille dans l'écran.
+    // Un liseré de deux pixels n'est pas un aperçu.
+    const dedans = Math.max(0, Math.min(vu!.bas, vu!.ecran) - Math.max(vu!.haut, 0));
+    assert.ok(
+      dedans >= vu!.hauteur / 2,
+      `Descendu jusqu'à la dernière police, il ne reste que ${Math.round(dedans)} px d'aperçu ` +
+        `sur ${Math.round(vu!.hauteur)} : c'est l'écran d'avant sa proposition B, celui dont il ` +
+        `disait « je suis obligé de descendre pour voir les modifications ».`
+    );
+
+    // **Et il SUIT le choix**, sans qu'on remonte. Une feuille collée qui ne se
+    // repeindrait pas serait pire que l'écran d'avant : il la croirait à jour.
+    //
+    // **On touche une police QUI N'EST PAS DÉJÀ CHOISIE**, et c'est ce cas-ci
+    // qui l'a appris : un cas plus haut dans cette suite avait posé Playfair,
+    // si bien qu'on comparait la même famille avant et après — le contrôle
+    // accusait un écran juste. Il lit donc l'état, puis vise ailleurs.
+    const avant = await page.locator('[data-atlas="allure-feuille"]').evaluate(
+      (n) => getComputedStyle(n).fontFamily
+    );
+    const cible = /playfair/i.test(avant) ? "typo-inter" : "typo-playfair";
+    const autre = page.locator(`[data-atlas="${cible}"]`);
+    await autre.scrollIntoViewIfNeeded();
+    await page.waitForTimeout(300);
+    await autre.click();
+    await page.waitForTimeout(900);
+    const apres = await page.locator('[data-atlas="allure-feuille"]').evaluate(
+      (n) => getComputedStyle(n).fontFamily
+    );
+    assert.notEqual(
+      apres,
+      avant,
+      `Toucher « ${cible} » n'a pas repeint l'aperçu resté en haut (lu « ${apres} » avant comme après).`
+    );
+
+    // **On repose ce qu'on a trouvé.** Le cas suivant vérifie que le choix
+    // survit au rechargement, et il attend Playfair : laisser Inter derrière
+    // soi le ferait rougir sur du code juste. Un cas qui réécrit le décor de
+    // ses voisins déplace le défaut au lieu de l'attraper.
+    if (cible !== "typo-playfair") {
+      const playfair = page.locator('[data-atlas="typo-playfair"]');
+      await playfair.scrollIntoViewIfNeeded();
+      await playfair.click();
+      await page.waitForTimeout(900);
+    }
+  });
+
   await cas("le choix survit au rechargement — il n'est pas seulement à l'écran", async () => {
     await page.reload({ waitUntil: "networkidle" });
     await page.waitForSelector('[data-atlas="typo-playfair"]', { timeout: 30_000 });

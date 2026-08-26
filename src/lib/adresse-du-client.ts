@@ -80,10 +80,61 @@ export function ouvrableParLeClient(origine: string | null | undefined): boolean
  *
  * **Elle dit le geste, pas le mécanisme** (`CLAUDE.md` §3 ter). Il n'a pas à
  * savoir ce qu'est une redirection de port : il a à savoir par quelle adresse
- * rouvrir Atlas. Le rapport, lui, est déjà enregistré — le dire évite qu'il
- * recommence toute la fiche en croyant l'avoir perdue.
+ * rouvrir Atlas.
+ *
+ * **Et elle dit que son travail est SAUF**, ce qui compte autant que le reste :
+ * le rapport est figé, le devis envoyé, la facture arrêtée. Sans cette moitié
+ * de phrase, il recommencerait — et sur une facture, il rappuierait sur un
+ * bouton qui a déjà engagé sa comptabilité.
+ *
+ * **`quoi` se termine par un verbe neutre — « vous attend ici ».** Écrire
+ * « est enregistré » obligerait à accorder : « votre facture est enregistré »
+ * est le genre de faute que le patron relève, et il a raison.
+ *
+ * @param quoi ce qui est en jeu, tel qu'on le lui nomme : « votre rapport »,
+ *             « votre devis », « votre facture ».
  */
-export const PHRASE_ADRESSE_LOCALE =
-  "Atlas est ouvert sur une adresse qui n'existe que sur votre machine : le lien " +
-  "s'ouvrirait sur le téléphone de votre client, pas sur son rapport. Rouvrez Atlas " +
-  "par son adresse web, puis renvoyez — le rapport est enregistré, rien n'est perdu.";
+export function phraseAdresseLocale(quoi: string): string {
+  return (
+    "Atlas est ouvert sur une adresse qui n'existe que sur votre machine : le lien " +
+    "s'ouvrirait sur le téléphone de votre client, pas sur son document. Rouvrez " +
+    `Atlas par son adresse web, puis renvoyez — ${quoi} vous attend ici, rien n'est ` +
+    "perdu."
+  );
+}
+
+/**
+ * L'ADRESSE À METTRE DANS LE MESSAGE — celle du navigateur d'abord.
+ *
+ * **Sa capture du 25 août 2026 :** *« je ne peux pas l'envoyer au client »*,
+ * devant le refus ci-dessus — alors que sa barre d'adresse portait bien
+ * `…-3000.app.github.dev`, une vraie adresse web. Le serveur, lui, ne voyait que
+ * `localhost:3000` : le tunnel de son espace de travail lui livre la requête
+ * sans en-tête qui porte l'adresse publique. Le refus était donc juste sur ce
+ * que le serveur savait, et faux sur la réalité.
+ *
+ * **La seule source qui ne se trompe jamais, c'est le navigateur lui-même** :
+ * `window.location.origin` EST l'adresse par laquelle il a ouvert Atlas, donc
+ * exactement celle qui s'ouvrira chez son client.
+ *
+ * **Pourquoi ce n'est PAS le retour du défaut d'hydratation** (`ARCHITECTURE.md`
+ * §68, §81) : cette fonction se lit dans un GESTE — au moment où il appuie —,
+ * jamais pendant le rendu. Composer une adresse pendant le rendu ferait diverger
+ * le serveur et le navigateur ; la lire à l'appui ne regarde rien de ce qui est
+ * déjà affiché.
+ *
+ * **Ce qui a été ÉCARTÉ, et il faut le savoir avant d'y revenir :** déduire
+ * l'adresse de `CODESPACE_NAME`. Le dépôt sait déjà que cette variable manque
+ * dans un espace créé avant qu'elle n'y soit écrite — *« deux correctifs de
+ * suite ont échoué chez le patron pour ce motif »* (`src/middleware.ts`). Un
+ * troisième aurait échoué pareil, et sans un mot.
+ *
+ * @param depuisLeServeur ce que la page a calculé au rendu — le repli.
+ */
+export function adressePourLeClient(depuisLeServeur: string): string {
+  if (typeof window !== "undefined") {
+    const duNavigateur = window.location.origin;
+    if (ouvrableParLeClient(duNavigateur)) return duNavigateur;
+  }
+  return depuisLeServeur;
+}

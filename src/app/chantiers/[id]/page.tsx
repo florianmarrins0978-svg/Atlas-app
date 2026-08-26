@@ -86,9 +86,11 @@ export default async function FicheChantierPage({ params }: { params: Promise<{ 
           la profondeur qui dit « on est passé au-dessus ». */}
       <div className="atlas-scene-fiche pb-[86px]">
         {/* Retour à gauche ; à droite, la sortie du chantier planifié. */}
-        {/* Ordre de lecture : statut → nom → client. Même grammaire que les
-            autres écrans depuis le 10 août 2026 — le surtitre porte l'état,
-            qui est ce qu'on vient lire en premier. */}
+        {/* Ordre de lecture : client → nom → statut. Même grammaire que les
+            autres écrans — le surtitre doré (ici l'état) est passé SOUS le titre
+            le 26 août 2026, à sa demande (« inversez-les, partout »). La
+            précision « avant » (le client, en serif gris) reste au-dessus, comme
+            sa maquette du 11 août. */}
         <EnTeteEcran
           retour={{ href: "/", libelle: "Retour à la liste des chantiers" }}
           surtitre={statutLabel[statut]}
@@ -98,7 +100,7 @@ export default async function FicheChantierPage({ params }: { params: Promise<{ 
           // ferme pas l'en-tête d'un trait. Demandé le 11 août 2026 : « je veux
           // que ça ressemble exactement à la maquette ».
           precisionPlacee="avant"
-          cheveu={false}
+
           // La pastille rejoint la ligne de la flèche, comme sur la maquette :
           // à côté du titre elle lui prenait la moitié de la largeur, et
           // « Intervention prévue vendredi 15 août. » se cassait en quatre
@@ -313,7 +315,7 @@ export default async function FicheChantierPage({ params }: { params: Promise<{ 
         // le corps de la fiche ne dit rien.
         resume={{
           gauche: "Le chantier",
-          droite: !note && nextAction ? `${nextAction.label} →` : statutLabel[statut],
+          droite: !note && nextAction ? nextAction.label : statutLabel[statut],
         }}
       />
     </div>

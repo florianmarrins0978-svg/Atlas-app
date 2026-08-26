@@ -14,16 +14,20 @@ import BoutonAssistant from "./BoutonAssistant";
  *
  *   - un surtitre en capitales espacées, en or — ce qu'on LIT ;
  *   - un titre en serif, 36 px, sur une seule ligne ;
- *   - un cheveu qui FERME l'en-tête, en retrait de 26 px des bords. Jamais de
- *     trait au-dessus du titre : le patron l'a refusé explicitement sur
- *     l'accueil, et un écran qui en porterait un jurerait avec les autres.
+ *   - **et AUCUN trait.** Le cheveu qui fermait l'en-tête a été retiré le
+ *     25 août 2026, à sa demande : *« souvent sous les titres il y avait un
+ *     trait comme celui-là, supprime tous les traits sous les titres »*.
+ *
+ * **Il avait déjà fait retirer celui de l'accueil la veille**, et il n'a pas
+ * eu à demander deux fois : la règle vaut pour tous les écrans, et elle vit
+ * ici pour n'être appliquée qu'une fois. Ne pas le remettre écran par écran —
+ * c'est exactement ce que cette pièce partagée existe pour empêcher.
  */
 export default function EnTeteEcran({
   surtitre,
   titre,
   precision,
   precisionPlacee = "sous",
-  cheveu = true,
   retour,
   action,
   actionPlacee = "titre",
@@ -48,8 +52,6 @@ export default function EnTeteEcran({
    * grammaire commune reste.
    */
   precisionPlacee?: "sous" | "avant";
-  /** Le cheveu qui ferme l'en-tête. La maquette de la fiche n'en a pas. */
-  cheveu?: boolean;
   /** Où revient la flèche. Absente sur les écrans de la barre du bas. */
   retour?: { href: string; libelle: string };
   /** Ce qui se pose à droite du titre — un bouton de dictée, par exemple. */
@@ -100,31 +102,38 @@ export default function EnTeteEcran({
 
       <div className={`flex items-start justify-between gap-4 px-[26px] ${retour ? "pt-5" : "pt-[34px]"}`}>
         <div className="min-w-0">
-          {surtitre && (
-            <p
-              className="text-[9.5px] font-medium uppercase"
-              style={{ color: colors.or, letterSpacing: "0.28em" }}
-            >
-              {surtitre}
-            </p>
-          )}
+          {/* **Le titre D'ABORD, le surtitre doré EN DESSOUS — sa demande du
+              26 août 2026 :** *« sur plusieurs catégories le titre était en
+              dessous du sous-titre en doré, inversez-les »*. La grammaire du
+              10 août posait l'accroche dorée au-dessus ; il la veut sous le
+              titre, là où on lit un sous-titre. La précision « avant » (serif
+              gris de la fiche chantier) n'est pas visée : elle reste au-dessus,
+              c'est sa maquette du 11 août. */}
           {precision && precisionPlacee === "avant" && (
             <p
-              className="mt-3 text-[19px] leading-[1.25]"
+              className="text-[19px] leading-[1.25]"
               style={{ color: colors.muted, fontFamily: font.display }}
             >
               {precision}
             </p>
           )}
           <h1
-            className="mt-3.5 text-[36px] leading-[1.02]"
+            className={`${precision && precisionPlacee === "avant" ? "mt-3 " : ""}text-[36px] leading-[1.02]`}
             style={{ fontFamily: font.display, letterSpacing: "-0.018em" }}
           >
             {titre}
           </h1>
+          {surtitre && (
+            <p
+              className="mt-3 text-[9.5px] font-medium uppercase"
+              style={{ color: colors.or, letterSpacing: "0.28em" }}
+            >
+              {surtitre}
+            </p>
+          )}
           {precision && precisionPlacee === "sous" && (
             <p
-              className="mt-3.5 text-[9.5px] font-medium uppercase"
+              className="mt-2.5 text-[9.5px] font-medium uppercase"
               style={{ color: colors.muted, letterSpacing: "0.28em" }}
             >
               {precision}
@@ -170,9 +179,6 @@ export default function EnTeteEcran({
         </div>
       </div>
 
-      {/* Le seul trait de l'en-tête : celui qui le ferme. La fiche chantier s'en
-          passe — sa maquette n'en montre aucun. */}
-      {cheveu && <div className="mx-[26px] mt-[26px] h-px" style={{ backgroundColor: colors.line }} />}
     </header>
   );
 }

@@ -132,9 +132,13 @@ export function phraseDuDocument(
     // si aucune ne vous convient » — et `test-message-client` a rougi : il
     // défend le « vous POUVEZ » qu'il a corrigé lui-même le 13 août 2026, le
     // futur repoussant le geste à plus tard. On réordonne, on ne réécrit pas.
+    //
+    // **Le tiret est parti le 25 août 2026, à sa demande** (« supprime le
+    // tiret »), vu sur sa capture du SMS. Les deux idées redeviennent deux
+    // phrases, séparées d'un point — pas d'un « — » qui « ne sert à rien ».
     return (
       "Voici votre devis. Vous pouvez le consulter et choisir votre date " +
-      "d'intervention — et si aucune des dates proposées ne vous convient, " +
+      "d'intervention. Et si aucune des dates proposées ne vous convient, " +
       "vous pouvez en proposer une autre. Tout se fait sur cette page :"
     );
   }

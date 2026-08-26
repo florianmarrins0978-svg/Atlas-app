@@ -1,7 +1,7 @@
 "use client";
 
-import { useRef, useState, useTransition } from "react";
-import { colors, font, libelleCaps, surPlein, texteSituation } from "@/lib/design-tokens";
+import { useMemo, useRef, useState, useTransition } from "react";
+import { colors, font, libelleCaps, surPlein, texteSituation, voile } from "@/lib/design-tokens";
 import {
   BORNES,
   lireConditions,
@@ -30,6 +30,7 @@ import {
   reprendreAllurePhotoAction,
   retirerLogoAction,
 } from "./actions";
+import EditeurMessage from "./EditeurMessage";
 
 /**
  * « Devis & factures » — ce qui s'imprime en plus, et ce qui ne se coupe pas.
@@ -41,25 +42,33 @@ import {
  * réglage coupé invite à le remplir pour rien — c'est le parti arrêté sur la
  * planche du plan, et il tient ici.
  *
- * **ATTENTION — CE COMMENTAIRE ÉTAIT FAUX, corrigé le 25 août 2026.** Il
- * affirmait que « l'aperçu du bas lit LA MÊME fonction que le PDF ». Vérifié :
- * `lignesConditionsDevis` n'est appelée **que par cet aperçu**. Ni l'écran du
- * devis, ni son PDF ne la connaissent.
+ * **L'APERÇU DU BAS DIT ENFIN LA VÉRITÉ — branché le 25 août 2026.**
  *
- * Autrement dit, sur les six réglages de ce bloc, **un seul atteint le document**
- * — la validité, figée sur le devis à sa création et imprimée par
- * `devis-pdf.ts`. L'acompte, le délai, les moyens de paiement, le rappel des
- * pénalités et le texte de pied s'enregistrent, s'affichent ici… et le client
- * n'en voit rien. C'est le patron qui l'a relevé : *« les autres qui sont en ON
- * doivent-ils être visibles sur le devis ? car je ne vois rien »*.
+ * Il ne l'a pas toujours dite, et c'est le patron qui l'a vu : *« les autres qui
+ * sont en ON doivent-ils être visibles sur le devis ? car je ne vois rien, est-ce
+ * normal ? »* Non. Pendant onze jours, `lignesConditionsDevis` n'était appelée
+ * **que par cet aperçu** : il réglait, l'aperçu montrait les phrases, et son
+ * client ne recevait qu'une chose — la validité. Cet écran promettait ce
+ * qu'aucun document ne tenait.
  *
- * **Branché à rien, cet aperçu ment donc à l'écran.** Le brancher change ce que
- * REÇOIVENT ses clients : c'est sa décision, pas la nôtre, et c'est écrit dans
- * `TODO.md`. Ce commentaire dit la vérité en attendant — une documentation
- * périmée est pire qu'absente (`CLAUDE.md` §1).
+ * **Depuis, les cinq autres se figent sur le devis à sa création** (migration
+ * 0064), comme la validité et pour la même raison : corriger un réglage ne doit
+ * pas réécrire un devis déjà parti. Le PDF les met en phrases avec CETTE
+ * fonction-ci — deux rédactions finiraient par diverger, et c'est le client qui
+ * lirait la mauvaise (`CLAUDE.md` §3).
+ *
+ * **Éteindre en fait disparaître**, et c'est sa question du même jour : *« si je
+ * décoche le bouton OFF, ils sont censés disparaître ? »* Oui.
+ * `scripts/test-conditions-sur-le-devis.ts` le tient, sur la trace du PDF.
+ *
+ * **Ce qui a laissé passer le défaut onze jours, et qu'il faut retenir :** les
+ * contrôles éprouvaient la RÈGLE — les bonnes phrases pour les bons réglages —,
+ * jamais le CHEMIN entre le réglage et le papier. Une pièce débranchée passe
+ * entre les deux, en restant verte.
  *
  * L'aperçu ne porte aucun montant : le total d'un devis à venir n'existe pas, et
- * un chiffre inventé là finirait imprimé.
+ * un chiffre inventé là finirait imprimé. Le PDF, lui, le connaît — c'est là que
+ * le montant de l'acompte s'écrit.
  */
 /**
  * L'aperçu, coloré : ce qu'Atlas remplit tout seul s'affiche en doré.
@@ -135,7 +144,19 @@ export default function DocumentsClient({
   const [enCours, demarrer] = useTransition();
   const [aEcrire, setAEcrire] = useState(false);
   const [message, setMessage] = useState(messageInitial ?? MESSAGE_PAR_DEFAUT);
-  const zone = useRef<HTMLTextAreaElement | null>(null);
+
+  // Ce que chaque pastille AFFICHE, en doré et verrouillé, dans le cadre. Le nom
+  // de l'entreprise est le sien, réel ; les autres sont ce qu'Atlas y posera
+  // (le prénom du client, la phrase qui s'adapte au document, le lien).
+  const libellesJetons = useMemo<Record<string, string>>(
+    () => ({
+      "[client]": "le prénom",
+      "[document]": "la phrase de votre devis / facture",
+      "[lien]": "le lien",
+      "[entreprise]": entrepriseNom || "votre entreprise",
+    }),
+    [entrepriseNom]
+  );
 
   // ── L'allure : elle s'enregistre SEULE, dès qu'il touche une couleur ──
   // Le bouton du bas engage les conditions, qui lient l'entreprise. Une couleur
@@ -360,33 +381,23 @@ export default function DocumentsClient({
           choisie après avoir vu ce que l'autre coûtait : une facture qui parle
           d'un devis, et l'échéance perdue. */}
       <Bloc titre="Mon message au client">
-        {/* **Un simple texte — sa demande du 25 août 2026.** Plus de pastilles à
-            poser à la main : le prénom, la phrase du document (qui s'adapte au
-            devis comme à la facture, sa « façon 1 ») et le lien se remplissent
-            seuls. Ce qui bouge est montré en DORÉ dans les deux aperçus. */}
+        {/* **Sa demande du 25 août 2026 :** le message par défaut est déjà
+            écrit, il modifie ce qu'il veut, et « seuls les mots en doré ne
+            peuvent être modifiés » — le prénom, la phrase du document (qui
+            s'adapte au devis comme à la facture, sa « façon 1 »), le lien et son
+            nom. C'est `EditeurMessage` qui les verrouille. */}
         <p className={`mb-3 ${texteSituation}`} style={{ color: colors.muted }}>
-          Le prénom, le mot du document et le lien se remplissent tout seuls.
+          Modifiez ce que vous voulez. Les mots en doré se remplissent tout seuls
+          et ne se modifient pas.
         </p>
 
-        <textarea
-          ref={zone}
-          value={message}
-          onChange={(e) => {
-            setMessage(e.target.value);
+        <EditeurMessage
+          valeur={message}
+          libelles={libellesJetons}
+          invalide={refusMessage !== null}
+          onChange={(m) => {
+            setMessage(m);
             setAEcrire(true);
-          }}
-          data-atlas="message-client"
-          aria-label="Votre message au client"
-          rows={9}
-          className="w-full rounded-[6px] px-[13px] py-[11px] leading-[1.5]"
-          style={{
-            // **16 px, jamais moins.** En dessous, iOS grossit la page à la
-            // première frappe et l'écran saute sous son doigt.
-            fontSize: 16,
-            backgroundColor: colors.card,
-            color: colors.ink,
-            border: `1px solid ${refusMessage ? colors.alert : colors.line}`,
-            resize: "vertical",
           }}
         />
 
@@ -568,6 +579,65 @@ export default function DocumentsClient({
           </p>
         )}
 
+        {/* ── L'APERÇU EN TÊTE, ET IL RESTE COLLÉ — sa proposition B, 24 août 2026
+            ────────────────────────────────────────────────────────────────────
+            *« Lorsque je modifie mon devis, je suis obligé de descendre pour
+            voir les modifications ; il faut mieux organiser la page pour
+            pouvoir voir ce qu'on modifie. »* Trois rangements lui ont été
+            dessinés (planche 96, `appli/allure-mieux-rangee.html`), et il a
+            répondu : **« la B »**.
+
+            **Le défaut était un défaut d'ORDRE, pas de contenu.** L'aperçu
+            fermait ce bloc, après dix pastilles de typographie sur cinq rangées
+            et deux nuanciers : il tombait à plus de 900 px du haut. Toucher une
+            police, c'était descendre, regarder, remonter — dix-huit trajets
+            pour essayer les neuf.
+
+            **Pourquoi COLLÉ et pas seulement remonté** (la proposition A, qu'il
+            n'a pas retenue) : posé en tête sans collage, l'aperçu se voit en
+            arrivant puis ressort de l'écran dès qu'on descend aux polices. La
+            moitié du problème seulement, et la planche le mesurait.
+
+            **`sticky` et non `fixed`** : la feuille suit tant que CE bloc est à
+            l'écran, et s'en va avec lui. Fixée, elle recouvrirait les réglages
+            du message et du numéro, où elle n'a rien à faire.
+
+            **Le fond est opaque, à dessein** : les pastilles défilent dessous,
+            et sans lui on lirait « Merriweather » à travers le devis.
+
+            **POURQUOI COLLÉ ET PAS SEULEMENT REMONTÉ EN TÊTE.** Trois rangements
+            lui ont été montrés (`appli/allure-mieux-rangee.html`), et il a
+            répondu **B** le 25 août 2026. La proposition A — l'aperçu simplement
+            placé avant les réglages — ne règle que la moitié du problème : dès
+            qu'on descend jusqu'aux polices, la feuille est de nouveau hors de
+            l'écran, c'est-à-dire exactement là où l'on a besoin de la voir. La
+            planche le disait, et il a tranché en connaissance de cause. */}
+        <div
+          data-atlas="allure-apercu-colle"
+          className="sticky top-0 z-10 -mx-[26px] mb-5 px-[26px] pb-3 pt-2"
+          // **Une ombre courte sous le bord**, et rien de plus : sans elle, les
+          // pastilles qui défilent semblent s'effacer au milieu de nulle part.
+          // Elle dit qu'il y a un dessus et un dessous.
+          style={{
+            backgroundColor: colors.cream,
+            // **Aucune couleur en clair dans un écran** (`CLAUDE.md` §3) : sept
+            // chartes cohabitent, dont deux sombres où une ombre noire posée en
+            // dur ne se voit plus. `voile` la fait suivre l'encre de la charte.
+            boxShadow: `0 8px 14px -12px ${voile(colors.ink, 0.5)}`,
+          }}
+        >
+          {/* **Un aperçu d'APPARENCE, et rien d'autre.** Il ne porte aucun
+              montant calculé, aucune condition : ce serait une seconde écriture
+              du devis, qui finirait par ne plus dire ce que le PDF dit
+              (`CLAUDE.md` §3). Ce qu'il montre — le fond, l'accent, la
+              typographie, la place du logo — est exactement ce que la fabrique
+              de PDF pose, et rien de plus. */}
+          <p className={`mb-2 ${libelleCaps}`} style={{ color: colors.muted }}>
+            L&apos;allure de la page
+          </p>
+          <Feuille allure={allure} logo={logo} nom={entrepriseNom} />
+        </div>
+
         <p className={`mb-2 ${libelleCaps}`} style={{ color: colors.muted }}>Mon logo</p>
         <div className="mb-1 flex items-center gap-3">
           <span
@@ -714,16 +784,6 @@ export default function DocumentsClient({
           ]}
           onChoisir={(v) => poserAllure({ accent: v })}
         />
-
-        {/* **Un aperçu d'APPARENCE, et rien d'autre.** Il ne porte aucun
-            montant calculé, aucune condition : ce serait une seconde écriture du
-            devis, qui finirait par ne plus dire ce que le PDF dit (`CLAUDE.md`
-            §3). Ce qu'il montre — le fond, l'accent, la typographie, la place du
-            logo — est exactement ce que la fabrique de PDF pose, et rien de plus. */}
-        <p className={`mb-2 mt-5 ${libelleCaps}`} style={{ color: colors.muted }}>
-          L&apos;allure de la page
-        </p>
-        <Feuille allure={allure} logo={logo} nom={entrepriseNom} />
 
         {!estLAllureParDefaut(allure) && (
           <button

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { eq } from "drizzle-orm";
 import { getCurrentCtx } from "@/server/session-ctx";
+import { exigerOuverture } from "@/server/garde-route";
 import { withEntreprise } from "@/server/db/with-entreprise";
 import { devis } from "@/server/db/schema";
 import { genererPdfPourApercu, getOuCreerDevisBrouillon } from "@/server/repositories/devis";
@@ -10,6 +11,10 @@ export async function GET(requete: Request, { params }: { params: Promise<{ id: 
   const { id } = await params;
   const ctx = await getCurrentCtx();
 
+  // Le rôle referme ce que la barre du bas ne montre plus : une adresse d'API
+  // se tape, et une page retirée du sommaire répondait quand même.
+  const refus = await exigerOuverture(ctx);
+  if (refus) return refus;
   // **« Aperçu » et « Télécharger » ne sont pas le même geste.**
   //
   // Le 7 août 2026, le patron : « quand je clique sur télécharger le PDF, ça me
