@@ -9,6 +9,37 @@ Format : le plus récent en tête.
 
 ## 2026-08-26
 
+### L'accueil se range par date : le plus récent en haut
+
+*« Je viens de recevoir un devis retourné, il devrait apparaître en premier.
+L'ordre doit être dernier arrivé en tête de liste. Le plus récent en haut. »*
+Sur sa capture, la nouvelle du jour était **deuxième**, sous un rappel vieux de
+treize jours.
+
+**Ce que ça évite :** chercher ce qui vient d'arriver au milieu d'une liste dont
+l'ordre ne s'explique pas. Rien ne pouvait le lui expliquer — l'ordre se
+décidait par SORTE de carte, jamais par date.
+
+**Ce que ça remplace, et c'est assumé :** son arrangement du 16 août — les
+rappels devant, une place garantie aux réponses de clients. Il répondait à une
+vraie crainte, trois chantiers sans devis masquant toutes les réponses. **La
+date répond à la même crainte et mieux :** une réponse qui vient d'arriver est
+la plus récente, donc la première, sans qu'aucune place ait à être réservée. Ce
+qu'un tressage obtenait par une exception, l'ordre chronologique l'obtient par
+la règle — et il s'explique en une phrase.
+
+**Ce que ça coûte, éprouvé plutôt que supposé :** une réponse ancienne et non
+acquittée peut désormais passer derrière des rappels plus frais.
+
+Chaque carte porte l'instant où elle est apparue — pour une réponse, le moment
+où le client a répondu ; pour un lien expiré, l'expiration et non l'envoi. Cette
+date range, elle ne s'affiche pas.
+
+Les deux contrôles qui exigeaient l'ancien ordre ont été **réécrits, pas
+contournés** : une suite qui réclame ce qu'il a fait retirer rend son écran
+impossible à changer. `ARCHITECTURE.md` §191.
+
+
 ### « Mon compte » : quarante mots de moins
 
 *« Supprime la phrase sous enregistrer »*, *« supprime ce compte sous compte

@@ -9215,6 +9215,14 @@ refus de client qui disparaîtrait sans que rien ne le signale.
 **Le tressage se fait APRÈS le retrait des cartes acquittées.** Dans l'autre
 sens, une place serait réservée à une réponse que le patron vient de marquer
 « J'ai vu » — une place vide, au profit de rien.
+
+#### ⚠ TOUT CE QUI PRÉCÈDE A ÉTÉ REMPLACÉ LE 26 AOÛT 2026 — voir §191
+
+Le tressage par SORTE — les rappels devant, la place garantie aux réponses — ne
+tient plus. Il a été remplacé par un ordre **chronologique** : le plus récent en
+haut, quelle que soit la sorte. Ce passage reste comme trace du chemin, parce
+qu'il dit ce que la nouvelle règle doit continuer d'obtenir.
+
 ---
 
 ---
@@ -16647,3 +16655,73 @@ toujours. Le contrôle qui réclamait la PHRASE, lui, aurait rougi sur du code
 juste pour une demande exaucée (`CLAUDE.md` §5 bis) : il refuse désormais
 qu'elle revienne, au lieu de l'exiger. Trois libellés retirés sont gardés de la
 même façon.
+
+---
+
+## 191. L'accueil se range par date : le plus récent en haut
+
+**Sa demande du 26 août 2026, capture à l'appui :** *« Je viens de recevoir un
+devis retourné, il devrait apparaître en premier. L'ordre doit être dernier
+arrivé en tête de liste. Le plus récent en haut. »*
+
+Sur son écran, la nouvelle du jour était **deuxième**, sous un rappel vieux de
+treize jours. Rien ne le lui expliquait — et rien ne pouvait le lui expliquer :
+l'ordre se décidait par **sorte** de carte, jamais par date.
+
+### Deux arrangements par sorte l'ont précédé, et chacun avait son défaut
+
+| | Ce qu'il produisait |
+|---|---|
+| **les réponses devant** (règle d'origine) | dès deux réponses en attente, son rappel passait derrière le repli. Un rappel qu'il faut déplier n'est plus un rappel |
+| **les rappels devant** (son choix B, 16 août) | trois chantiers sans devis suffisaient à masquer **toutes** les réponses de clients |
+| **la place garantie** (même jour) | le correctif du précédent : la dernière place visible revenait à une réponse |
+
+Chacun réparait le défaut de l'autre en ajoutant une exception. Aucun ne
+s'expliquait en une phrase — et **un ordre qu'on ne peut pas expliquer est un
+ordre qu'on croit cassé**, ce qui vient d'arriver.
+
+### La date répond aux deux, par la règle plutôt que par l'exception
+
+Une réponse qui vient d'arriver est, par construction, la plus récente : elle
+passe en tête **sans qu'aucune place ait besoin d'être réservée**. Ce que le
+tressage obtenait en réservant, la date l'obtient toute seule.
+
+**Ce que cela coûte, et il faut le dire :** une réponse **ancienne** et non
+acquittée peut désormais passer derrière des rappels plus frais. L'ancien
+tressage lui gardait une place ; celui-ci non. C'est un cas éprouvé plutôt que
+supposé (`scripts/test-ordre-notifications.ts`), et il est là pour que personne
+ne le « répare » en croyant à un défaut.
+
+### Quelle date porte chaque carte
+
+Chaque carte porte l'instant où elle est **apparue dans son monde**, et le choix
+n'est pas indifférent :
+
+| La carte | Sa date |
+|---|---|
+| une réponse de client | le moment où **le client a répondu** — pas l'envoi du devis |
+| un lien expiré | l'**expiration** — trier sur l'envoi mettrait en tête un devis parti hier dont le lien court encore |
+| un rappel | le début de la situation : ouverture du chantier, envoi du devis, fin de chantier, échéance |
+
+**Cette date range, elle ne s'affiche jamais.** Le délai reste mis en mots au
+serveur (`depuisTexte`) : deux calculs du même délai finiraient par se
+contredire à l'écran.
+
+**Une réponse sans date connue passe en TÊTE, jamais à la fin.** `responduAt`
+est posé en même temps que la réponse — il ne manque jamais en pratique. S'il
+manquait, la ranger comme très ancienne l'enverrait derrière « N autres devis à
+regarder », c'est-à-dire nulle part, et une réponse de client ne se perd pas
+pour une date absente.
+
+### Les deux contrôles qui exigeaient l'ancien ordre ont été réécrits
+
+`test-ordre-notifications.ts` et `test-devis-qui-tarde-e2e.ts` réclamaient le
+tressage. **Une suite qui exige ce que le patron a fait retirer rend son écran
+impossible à changer** (`CLAUDE.md` §5 bis) : elles fixent désormais la règle
+chronologique, et le contrôle pur a été vu rouge en retirant le tri.
+
+Le contrôle navigateur lit **le nombre de jours écrit sur chaque carte** — ce
+que le patron lit lui-même — plutôt qu'un détail de mise en page : une carte
+peut changer de forme sans qu'il cesse de mesurer l'ordre. Et il refuse de
+conclure sur moins de deux dates lisibles, une seule mesure ne disant rien d'un
+ordre.
