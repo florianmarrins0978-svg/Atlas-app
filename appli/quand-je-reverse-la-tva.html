@@ -1,0 +1,236 @@
+<title>Quand je reverse la TVA</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  /*
+    QUAND JE REVERSE LA TVA — deux phrases qui ne veulent rien dire.
+
+    LE PATRON, LE 26 AOÛT 2026, capture à l'appui :
+      « Quand le client le paye / quand je met la facture. C'est pas clair, on
+        comprend rien. Qu'est-ce que ça signifie ? »
+      « Et lorsque je change entre les deux, rien ne se passe, c'est normal ? »
+
+    ————————————————————————————————————————————————————————————————
+    CE QUE L'ÉCRAN DEMANDE VRAIMENT, et que les deux libellés ne disent pas.
+
+    Le réglage décide du MOIS où la TVA d'une facture part aux impôts. Ni du
+    prix, ni de la date de la facture : du mois de la déclaration.
+
+    Les libellés actuels — « Quand le client me paie », « Quand j'émets la
+    facture » — nomment un INSTANT sans dire ce qui s'y produit. Lus seuls, ils
+    ressemblent à un réglage d'affichage. Le verbe manquant est « je reverse ».
+
+    ————————————————————————————————————————————————————————————————
+    LA SECONDE QUESTION EST UN VRAI DÉFAUT D'ÉCRAN, pas une panne.
+
+    « Rien ne se passe » est exact, et le calcul est juste : quand toutes les
+    factures du mois ont été payées dans le mois, les deux régimes tombent sur
+    le même chiffre. L'écart n'existe que sur une facture émise un mois et
+    encaissée le suivant — ou jamais payée.
+
+    Un écran qui ne bouge pas sans rien dire se lit comme une panne. D'où la
+    ligne du bas, présente dans les deux propositions : elle dit CE QUE LE
+    CHOIX CHANGE sur le mois affiché, y compris quand il ne change rien.
+
+    ————————————————————————————————————————————————————————————————
+    RIEN N'EST CODÉ : le dossier src/ n'est pas touché (règle du §3 bis).
+    AUCUN SCRIPT : les bascules sont des <input type="radio"> et du CSS.
+    Les chiffres sont ceux de SA capture du 26 août (1 088,00 € collectés en
+    août 2026) ; ceux de la comparaison sont marqués comme un exemple.
+  */
+
+  :root{
+    --fond:#efece6; --encre:#1c1c1a; --gris:#8a8578; --or:#B98B47;
+    --trait:rgba(28,28,26,.13); --papier:#faf9f5; --pin:#2f3b2f;
+    --teinte:#ece9e1; --rouille:#B5502F;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E;
+      --trait:rgba(233,229,220,.16); --papier:#201e1a; --pin:#7d9179;
+      --teinte:#252320; --rouille:#D8825F;
+    }
+  }
+  :root[data-theme="dark"]{
+    --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E;
+    --trait:rgba(233,229,220,.16); --papier:#201e1a; --pin:#7d9179;
+    --teinte:#252320; --rouille:#D8825F;
+  }
+
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--fond);color:var(--encre);
+       font:16px/1.6 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+       padding:26px 18px 70px}
+  .dedans{max-width:940px;margin:0 auto}
+  h1{font-family:Georgia,"Times New Roman",serif;font-weight:400;
+     font-size:27px;line-height:1.2;margin:0 0 8px}
+  .intro{color:var(--gris);font-size:14px;line-height:1.65;margin:0 0 18px}
+  .intro b{color:var(--encre);font-weight:600}
+  .dit{margin:0 0 26px;padding:14px 16px;border-left:3px solid var(--or);
+       background:var(--papier);font-size:14px;line-height:1.7;color:var(--gris)}
+  .dit b{color:var(--encre);font-weight:600}
+
+  h2{font-family:Georgia,"Times New Roman",serif;font-weight:400;font-size:20px;
+     margin:34px 0 4px}
+  .pourquoi{color:var(--gris);font-size:13.5px;line-height:1.6;margin:0 0 14px}
+  .pourquoi b{color:var(--encre);font-weight:600}
+
+  /* Le téléphone : la largeur d'un iPhone, pour qu'il voie ce qu'il verra. */
+  .tel{max-width:390px;background:var(--papier);border:1px solid var(--trait);
+       border-radius:22px;padding:20px 18px;margin:0 0 6px}
+
+  .surtitre{font-size:11px;letter-spacing:.13em;text-transform:uppercase;
+            color:var(--or);margin:0 0 10px}
+
+  .etat{position:absolute;opacity:0;pointer-events:none}
+
+  .lignes{display:flex;flex-direction:column}
+  .choix{display:flex;align-items:flex-start;gap:11px;padding:13px 2px;
+         border-bottom:1px solid var(--trait);cursor:pointer}
+  .rond{margin-top:3px;width:18px;height:18px;flex:none;border-radius:50%;
+        border:1.5px solid var(--gris)}
+  .choix .titre{display:block;font-size:15px;font-weight:600}
+  .choix .sous{display:block;font-size:12.5px;color:var(--gris);margin-top:2px}
+
+  .etat:checked + .choix .rond{border-color:var(--rouille);
+        background:var(--rouille);box-shadow:inset 0 0 0 3.5px var(--papier)}
+
+  /* Ce que le choix change sur le mois affiché — la réponse à « rien ne se
+     passe ». Une seule des deux phrases s'affiche, selon la bascule. */
+  .change{margin-top:12px;padding:11px 13px;border-radius:10px;
+          background:var(--teinte);font-size:12.5px;line-height:1.55;
+          color:var(--gris)}
+  .change b{color:var(--encre);font-weight:600}
+
+  .ex{margin:12px 0 0;padding:0;border:0}
+  table{border-collapse:collapse;width:100%;font-size:12.5px;margin-top:8px}
+  th,td{text-align:left;padding:6px 8px;border-bottom:1px solid var(--trait)}
+  th{color:var(--or);font-weight:600;font-size:11px;letter-spacing:.08em;
+     text-transform:uppercase}
+  td b{font-weight:600}
+
+  .note{margin:34px 0 0;padding:15px 16px;background:var(--papier);
+        border:1px solid var(--trait);border-radius:12px;font-size:13px;
+        line-height:1.65;color:var(--gris)}
+  .note .t{display:block;font-size:11px;letter-spacing:.13em;
+           text-transform:uppercase;color:var(--or);margin-bottom:7px}
+  .note b{color:var(--encre);font-weight:600}
+</style>
+
+<div class="dedans">
+
+<h1>Quand je reverse la TVA</h1>
+<p class="intro">Deux façons d’écrire le même réglage. <b>Touchez les
+boutons</b> : la ligne du bas dit ce que le choix change.</p>
+
+<p class="dit">Le 26 août 2026 : <b>« Quand le client le paye / quand je met la
+facture. C’est pas clair, on comprend rien. »</b> Puis : <b>« et lorsque je
+change entre les deux, rien ne se passe, c’est normal ? »</b></p>
+
+<h2>A — Le verbe qui manquait</h2>
+<p class="pourquoi">Les libellés d’aujourd’hui nomment un moment sans dire ce
+qui s’y produit. Ici le titre porte le verbe — <b>je reverse</b> — et chaque
+ligne répond à « et alors ? » en une phrase.</p>
+
+<div class="tel">
+  <p class="surtitre">Je reverse ma TVA aux impôts</p>
+  <input class="etat" type="radio" name="a" id="a1" checked>
+  <label class="choix" for="a1">
+    <span class="rond"></span>
+    <span>
+      <span class="titre">Le mois où mon client me paie</span>
+      <span class="sous">Une facture pas encore payée n’est pas déclarée.</span>
+    </span>
+  </label>
+  <input class="etat" type="radio" name="a" id="a2">
+  <label class="choix" for="a2">
+    <span class="rond"></span>
+    <span>
+      <span class="titre">Le mois où j’envoie la facture</span>
+      <span class="sous">Même si le client n’a pas encore payé.</span>
+    </span>
+  </label>
+</div>
+
+<h2>B — Avec l’exemple, et ce que ça change ce mois-ci</h2>
+<p class="pourquoi">La même chose, plus les deux lignes qui répondent à sa
+seconde question : <b>un exemple daté</b>, et <b>ce que le choix fait au mois
+affiché</b> — y compris quand il n’y fait rien.</p>
+
+<div class="tel">
+  <p class="surtitre">Je reverse ma TVA aux impôts</p>
+  <input class="etat" type="radio" name="b" id="b1" checked>
+  <label class="choix" for="b1">
+    <span class="rond"></span>
+    <span>
+      <span class="titre">Le mois où mon client me paie</span>
+      <span class="sous">Une facture pas encore payée n’est pas déclarée.</span>
+    </span>
+  </label>
+  <input class="etat" type="radio" name="b" id="b2">
+  <label class="choix" for="b2">
+    <span class="rond"></span>
+    <span>
+      <span class="titre">Le mois où j’envoie la facture</span>
+      <span class="sous">Même si le client n’a pas encore payé.</span>
+    </span>
+  </label>
+
+  <table>
+    <tr><th>Exemple</th><th>Déclarée en</th></tr>
+    <tr>
+      <td>Facture envoyée le 28 août, payée le 12 septembre</td>
+      <td><b>septembre</b></td>
+    </tr>
+    <tr>
+      <td>La même, si vous choisissez la seconde ligne</td>
+      <td><b>août</b></td>
+    </tr>
+  </table>
+
+  <div class="change">
+    Sur <b>août 2026</b>, ce choix ne change rien : vos factures d’août ont été
+    payées en août. <b>1 088,00 €</b> dans les deux cas.
+  </div>
+</div>
+
+<p class="pourquoi" style="margin-top:16px">Et voici la même ligne
+<b>sur un mois où le choix change vraiment</b> — c’est elle qui manquait le
+26 août :</p>
+
+<div class="tel">
+  <p class="surtitre">Je reverse ma TVA aux impôts</p>
+  <input class="etat" type="radio" name="c" id="c1" checked>
+  <label class="choix" for="c1">
+    <span class="rond"></span>
+    <span>
+      <span class="titre">Le mois où mon client me paie</span>
+      <span class="sous">Une facture pas encore payée n’est pas déclarée.</span>
+    </span>
+  </label>
+  <input class="etat" type="radio" name="c" id="c2">
+  <label class="choix" for="c2">
+    <span class="rond"></span>
+    <span>
+      <span class="titre">Le mois où j’envoie la facture</span>
+      <span class="sous">Même si le client n’a pas encore payé.</span>
+    </span>
+  </label>
+  <div class="change">
+    Sur <b>septembre 2026</b>, ce choix change : <b>840,00 €</b> avec cette
+    ligne, <b>1 220,00 €</b> avec l’autre. <b>Une facture de 2 280 €</b> est
+    partie sans être payée.
+  </div>
+</div>
+
+<div class="note"><span class="t">Ce qui ne se négocie pas, quel que soit le choix</span>
+Le second régime — reverser dès l’envoi — <b>ne se prend pas dans Atlas</b> :
+il se demande aux impôts. La phrase qui le dit reste sous les boutons, elle
+n’est pas dans les propositions parce qu’elle ne change pas.
+<br><br>
+Et ces pages ne touchent <b>ni à vos données ni à l’application</b> : ce sont
+des maquettes. Les <b>1 088,00 €</b> viennent de votre capture ; le reste est
+un exemple.
+</div>
+
+</div>
