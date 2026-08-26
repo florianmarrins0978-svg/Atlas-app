@@ -203,6 +203,24 @@ périmètre affiché ne suivait pas le rôle coché, si bien qu'on lisait « le
 planning et rien d'autre » sous « Commercial ». Une maquette qui ment sur ce que
 fait un rôle est pire qu'une maquette absente.
 
+### La liste, dans Paysage — deux emplacements à choisir
+
+Sa proposition, une fois la planche des deux fiches comprise : *« est-ce qu'on
+peut la déplacer dans la fiche de chantier, dans la catégorie Paysage, sous une
+rubrique type "création des rubriques de ma fiche de chantier" ? Et comme ça on
+ne la voit plus dans la catégorie Réglages. »*
+
+Il a raison sur le fond : l'outil est mieux là où il sert, et l'écran de Paysage
+sait **déjà** que seul le patron peut y toucher (`estProprietaire`) — la réserve
+ne se perd donc pas au passage. Restent deux façons de le poser, et elles ne se
+valent pas : **sur l'écran** (tout se voit, mais les rapports envoyés passent
+au-dessus de vingt lignes qu'il touche deux fois par an) ou **derrière une
+porte** (l'écran reste court, un appui de plus). Chacune porte son défaut écrit
+sous elle.
+
+`appli/ma-fiche-rangee.html`. Rien n'est codé dans `src/` (§3 bis) : il tranche
+d'abord.
+
 ### Les deux fiches, côte à côte — une maquette pour trancher
 
 *« La fiche d'entretien c'est la fiche de chantier »*, puis *« ressors-moi les
