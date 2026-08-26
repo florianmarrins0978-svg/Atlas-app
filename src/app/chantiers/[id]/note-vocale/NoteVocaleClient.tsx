@@ -532,7 +532,7 @@ export default function NoteVocaleClient({
               className="mt-4 block text-center text-[14px] font-medium"
               style={{ color: colors.rust }}
             >
-              Ou rédiger le devis à la main →
+              Ou rédiger le devis à la main
             </a>
             {statutTranscription === "echouee" && (
               <div className="text-center">

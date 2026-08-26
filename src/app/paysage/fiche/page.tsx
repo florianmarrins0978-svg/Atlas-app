@@ -78,7 +78,7 @@ export default async function FichesPage() {
                   className="mt-[12px] inline-block text-[13px] font-semibold"
                   style={{ color: colors.rust }}
                 >
-                  Composer ma fiche →
+                  Composer ma fiche
                 </Link>
               ) : (
                 <p className="mt-[12px] text-[13px]" style={{ color: colors.muted }}>

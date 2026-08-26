@@ -151,7 +151,7 @@ export default function PrixClient({
           className={`mx-[26px] mt-7 self-start ${libelleCaps}`}
           style={{ color: colors.rust }}
         >
-          Voir la proposition de prix →
+          Voir la proposition de prix
         </button>
       )}
 
@@ -241,12 +241,12 @@ export default function PrixClient({
                 {verdict.marcheASuivre}
               </p>
               <a href="/reglages" className={`mt-3 inline-block ${libelleCaps}`} style={{ color: colors.rust }}>
-                Ouvrir mes tarifs →
+                Ouvrir mes tarifs
               </a>
             </div>
           )}
           <PrimaryButton onClick={valider} disabled={validationEnCours || !verdict.possible}>
-            {validationEnCours ? "Validation…" : "Préparer le devis →"}
+            {validationEnCours ? "Validation…" : "Préparer le devis"}
           </PrimaryButton>
           {erreurValidation && (
             <p role="alert" className={`mt-3 ${texteSituation}`} style={{ color: colors.alert }}>

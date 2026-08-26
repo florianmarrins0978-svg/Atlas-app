@@ -15610,3 +15610,366 @@ redirection de port de son éditeur, `window.location.origin` vaut
 Sa capture le montrait en double : `RapportParti` porte le sien une fois le
 rapport figé, et celui de la tentative précédente restait affiché. **Deux fois
 la même phrase se lit comme un écran cassé**, et c'est un défaut à part entière.
+
+---
+
+---
+
+## 178. `git log` ne date pas le début du projet — l'historique a été remis à plat
+
+**Sa question du 25 août 2026 :** *« combien d'heures avons-nous passé à créer
+cette application ? »* — puis, devant la première réponse : *« on a commencé
+avant le 10 août »*. Il avait raison, et le dépôt disait le contraire.
+
+### Ce qui s'est passé
+
+Le premier commit de l'historique, `b1ceb76` du 10 août 2026 à 22 h 12, n'est
+pas un début de projet : c'est **un écrasement**. 684 fichiers, 129 867 lignes
+d'un coup — l'application entière, déjà écrite, réenregistrée en un bloc. Les
+onze jours qui précèdent ont perdu leurs dates à cette occasion.
+
+`git log --reverse | head -1` répond donc **10 août** à la question « depuis
+quand ? », et cette réponse est fausse de onze jours. Le `CHANGELOG.md`, lui,
+remonte au **31 juillet**, et `docs/PRODUCTION_BACKUP_RESTORE.md` porte des
+exercices du **29 juillet**.
+
+### La règle qui en découle
+
+| Pour dater… | Ne pas se fier à | Lire |
+|---|---|---|
+| le début du projet | `git log --reverse` | `CHANGELOG.md`, sa plus ancienne en-tête |
+| l'âge d'un fichier | `git log --follow` | il ne remonte pas avant l'écrasement |
+| le rythme depuis le 10 août | — | `git log`, qui est exact **à partir de là** |
+
+Ce n'est pas un défaut à réparer — réécrire un historique effacé n'est pas
+possible, et le code, lui, n'a rien perdu. C'est un piège à connaître : toute
+question de chronologie posée à `git` avant le 10 août 2026 reçoit une réponse
+plausible et fausse.
+
+### Ce que le dépôt sait quand même en dire
+
+`scripts/compter-heures.mjs` mesure la période visible (regroupement des commits
+en séances, une pause de deux heures les sépare) et **estime** la période
+effacée par trois règles de trois indépendantes — volume de code déjà présent au
+moment de l'écrasement, lots notés au journal, jours travaillés. Elles ne
+tombent pas d'accord : le script les affiche toutes les trois plutôt que d'en
+moyenner une quatrième, fausse et rassurante.
+
+Au 25 août 2026 : **122 h mesurées**, 31 à 76 h estimées avant, soit un total de
+153 à 198 h. La réponse en langage courant est en `docs/QUESTIONS.md` §26.
+
+**Et ce compte ne remonte pas plus loin qu'Atlas.** Le produit est la reprise
+d'**Arborea** (`CHANGELOG.md`, 31 juillet 2026) : écrans, calculs et tests
+repris d'un dépôt précédent. Le temps passé là-bas n'est dans aucun fichier
+d'ici, et aucun calcul fait ici ne peut l'inventer.
+
+---
+
+## 179. Les flèches décoratives sont parties, et un contrôle les empêche de revenir
+
+**Sa correction du 25 août 2026, capture à l'appui :** *« Retire la flèche ! Il
+m'avait semblé t'avoir demandé de supprimer toutes les flèches de
+l'application ! »* — devant « Créer la facture → », sur l'écran de facture.
+
+Il avait déjà posé la règle **le matin même** (`CLAUDE.md` §3, *« arrête de
+mettre des flèches, c'est moche »*). Elle était écrite, et vingt-huit libellés
+en portaient encore une le soir : la règle avait été appliquée là où on
+regardait, pas là où elle valait.
+
+### Ce qui est parti
+
+Le « → » et le « › » ajoutés **au bout d'un bouton ou d'un lien** — « Créer la
+facture → », « Préparer le devis → », « Modifier mon devis › », « Enregistrer
+→ », « Composer ma fiche → »… La carte d'action `ActionPrincipale` portait la
+sienne dans un `<span>` séparé, héritée du modèle d'Arborea — ce composant
+n'est monté nulle part aujourd'hui, et sa flèche serait revenue à l'écran le
+jour où on le remonte.
+
+Sont partis aussi les chemins de navigation écrits **dans une phrase** —
+« dans Réglages → Mes prix », « Réglages › Appareil photo › Formats »,
+« Terminés › TVA › En attente de paiement » : la virgule dit la même chose sans
+ornement. Et la légende du plan d'arrosage, où la flèche voulait dire « donc »
+(« la ligne continue → té taraudé »), porte maintenant un point médian.
+
+### Ce qui reste, et pourquoi ce n'est pas une exception de confort
+
+| Où | Quoi | Sa fonction |
+|---|---|---|
+| calendriers, planning, terminés | `‹` `›` | feuilleter — le chevron EST le geste |
+| TVA, période précédente/suivante | `←` `→` | sa demande du 12 août : *« le calendrier se glisse ENTRE les deux flèches »* |
+| carte du mois | `← Aujourd'hui` | revenir au mois courant |
+| discussion du plan d'arrosage | `↑` seul, dans un rond | le bouton d'envoi : la flèche est TOUT le bouton, il n'y a pas de libellé à décorer |
+| retouches de devis | `250 € → 350 €` | avant/après — retirer la flèche retirerait le sens |
+
+La ligne de partage n'est pas « on y tient » mais : **la flèche fait-elle
+quelque chose, ou suit-elle un mot qui le dit déjà ?**
+
+### Le contrôle, et ce qu'il refuse de croire
+
+`scripts/test-aucune-fleche.ts` lit tout `src/`, **commentaires retirés** — sans
+quoi il rougirait sur les explications de ce dépôt, qui citent les libellés
+d'hier pour dire pourquoi ils sont partis, et un contrôle qui interdit
+d'expliquer se fait contourner.
+
+Trois choix qui comptent :
+
+- **La liste des flèches permises vise la LIGNE, pas le fichier.** Autoriser
+  `Calendrier.tsx` en entier laisserait passer un libellé fléché ajouté
+  dedans demain.
+- **Chaque flèche permise porte sa raison, en français, dans le fichier.** Une
+  liste d'exceptions sans motif s'allonge toute seule.
+- **Il refuse de conclure sur une lecture vide.** Moins de dix mille lignes lues
+  et il rougit : sans cela, un `src/` illisible rendrait « aucune flèche » en
+  vert — la faute du 15 août 2026 (`CLAUDE.md` §5, « un contrôle qui mesure ZÉRO
+  ne mesure rien »).
+
+Il a été vu rouge avant d'être cru : il a trouvé deux flèches que la recherche
+faite à la main avait manquées (le `← Aujourd'hui` de la carte du mois, le `↑`
+du bouton d'envoi), puis il a rougi de nouveau quand « Créer la facture → » a
+été remis pour l'éprouver.
+
+**Ce qu'il ne couvre pas :** les maquettes d'`appli/`, qui en portent encore.
+Elles ne sont pas l'application, et certaines sont des planches archivées dont
+le patron a déjà tranché le contenu — les réécrire changerait ce qu'il a validé.
+
+---
+
+---
+
+## 180. Trois rôles, trois sessions — et le refus est au serveur
+
+*Demandé le 25 août 2026 : « je voudrais que l'utilisateur principal puisse
+donner accès qu'au planning à ses salariés […] chaque utilisateur possède son
+propre compte et sa propre session. Les restrictions d'accès doivent être
+appliquées côté serveur, et pas uniquement en masquant des boutons. »*
+
+La règle elle-même n'est pas neuve : elle est tranchée dans `docs/QUESTIONS.md`
+§10 depuis le 13 août, précisée le 23. Ce qui manquait, c'était **tout le code**.
+
+### Ce qu'il y avait avant, et pourquoi c'était pire que rien
+
+La base connaissait deux rôles, `proprietaire` et `membre`, et `membre` ne
+restreignait **rien** : un compte non propriétaire atteignait tous les écrans
+sauf les quatre ou cinq qui avaient reçu une garde écrite à la main. Le sommaire
+des réglages, lui, cachait des rubriques — donc l'application *avait l'air*
+cloisonnée. C'est l'état que §10 nomme d'avance : *« pire que pas de restriction
+du tout, puisque vous vous croyiez protégé »*.
+
+### Où la règle vit, et pourquoi elle est seule
+
+`src/lib/acces-roles.ts`, fonction pure. La même fonction dessine la barre du
+bas, filtre le sommaire des réglages, et **refuse une adresse tapée à la main**.
+Deux rédactions de cette règle divergeraient au premier écran neuf, et la
+divergence porterait un nom : un onglet caché dont l'adresse répond quand même.
+
+### Deux sens opposés, et c'est délibéré
+
+| Rôle | Comment la liste se lit |
+|---|---|
+| commercial | **tout, SAUF** les cinq adresses nommées |
+| salarié | **rien, SAUF** ce qui lui est ouvert |
+
+Le salarié se garde par liste blanche pour qu'un écran ajouté demain, par une
+autre session, lui soit **fermé d'office**. Une liste noire l'aurait ouvert en
+silence, et personne ne l'aurait su avant qu'il y lise un prix.
+
+### Trois endroits refusent, et il en faut trois
+
+| Quoi | Qui refuse | Pourquoi pas les autres |
+|---|---|---|
+| un écran | `GardeAcces`, dans `layout.tsx` | tout écran le traverse — impossible à oublier |
+| une route d'API | `exigerOuverture()`, dans le handler | **une route ne traverse aucune mise en page** |
+| une action serveur | `exigerProprietaire(ctx, …)` | une action se poste à l'adresse de la PAGE qui l'a rendue — la garder par le chemin reviendrait à la garder par l'écran d'où l'on croit qu'elle vient |
+
+`scripts/test-acces-routes-gardees.ts` lit les routes du dossier `src/app/api` et
+rougit dès qu'une route neuve n'appelle pas la garde et n'est pas inscrite,
+raison écrite, dans sa liste d'exemptions. C'est le seul des trois qui puisse
+s'oublier ; c'est donc le seul qui a besoin d'un contrôle.
+
+### Ce que le commercial n'atteint pas, et les trois lignes qui ne sont pas dans sa phrase
+
+Ses mots du 23 août : la mise en page des devis, les informations de
+l'entreprise. S'y ajoutent, et il faut le dire plutôt que de le glisser :
+
+- **les accès** — un commercial qui donne les accès se nomme patron en deux
+  appuis, et le rôle entier cesse de vouloir dire quelque chose. Ce n'est pas
+  une restriction de plus, c'est ce qui rend les autres vraies ;
+- **l'abonnement** et **l'export des données** — le contrat Atlas, le moyen de
+  paiement, l'export intégral. Même famille que « les informations liées à
+  l'entreprise », et sa table du 13 août les excluait déjà mot pour mot.
+
+### « Ses chantiers autorisés » : la portée du planning
+
+Réglage **par personne**, pas par rôle (sa décision du 13 août : *« le patron
+choisira s'il a accès qu'à ses chantiers ou à tout »*). Le défaut est « tout » —
+restreindre est un geste. Le tamis est posé dans `contextePlanning`, c'est-à-dire
+**au chargement**, jamais à l'écran : filtrer au navigateur laisserait descendre
+les noms de clients, les adresses et les pense-bêtes de tous les chantiers.
+
+**Une portée resserrée sans équipe rattachée ne montre RIEN, jamais tout.**
+L'inverse rendrait le resserrement silencieusement inopérant — et il y a un
+chemin réel vers cet état : supprimer une file du planning met `equipe_id` à NULL
+en laissant la portée resserrée. Sans ce choix, supprimer une équipe rouvrirait
+le planning entier à un salarié restreint, sans un mot.
+
+### Un mot de passe provisoire, et pas une invitation par courriel
+
+Atlas n'envoie aucun courriel à un utilisateur d'Atlas — les envois existants
+vont au CLIENT de l'artisan, par un canal qu'il a choisi. Un parcours
+d'invitation demanderait une table de jetons, une expiration, une page publique
+de plus, et surtout **un envoi qui, s'il n'arrive pas, laisse le salarié dehors
+sans que personne le sache**. Le patron est à côté de son salarié : il tape un
+mot de passe et le lui dit. Le salarié le change ensuite dans « Mon compte », qui
+lui reste ouvert.
+
+Le mot de passe suit la règle commune (douze caractères) : un compte de salarié
+ouvre le planning de l'entreprise, il n'a aucune raison d'être moins tenu.
+
+### `membre` a disparu, et il est devenu `salarie`
+
+Migration 0065. **Le rôle le plus fermé, pas le plus ouvert** : une reprise qui
+aurait laissé un compte existant plus large qu'avant serait exactement la faute
+que ce lot répare. La contrainte `CHECK` qui tient les trois rôles est posée en
+base — elle n'existait pas, l'énumération vivant dans TypeScript seul.
+
+### Ce qui reste ouvert
+
+Le commercial **ne lit pas encore les tarifs**, alors que la règle du 13 août dit
+qu'il les lit sans les changer. `/reglages/tarifs` et `/reglages/prix` restent
+réservés au patron, comme avant ce lot : les rendre lisibles sans être modifiables
+est un travail d'écran, qui demande son œil. Voir `TODO.md`.
+
+## 181. L'assistant explique l'application — et il ne sert que le patron
+
+**Ses trois demandes du 25 août 2026**, dans un même message : *« j'aimerais que
+l'assistant qui se trouve dans l'application puisse expliquer chaque
+fonctionnalité de l'appli »* — avec son exemple, *« comment je fais pour
+supprimer un client en attente de rédaction de son devis sur la page chantier »*
+→ *« slide de droite à gauche puis appuie sur retire »* — ; *« qu'il soit en
+mesure d'aller chercher une ligne dans un devis de n'importe quel client et la
+poser sur un devis déjà ouvert »* ; et *« qu'il se comporte comme un vrai
+assistant au service de l'utilisateur principal seulement le principal »*.
+
+### Un mode d'emploi ÉCRIT, pas un modèle qui devine
+
+`src/lib/mode-emploi.ts` porte une soixantaine de fiches : l'écran, où il se
+trouve, ce qu'on cherche à faire, **le geste**, sa réserve, et les mots par
+lesquels il le demandera. L'outil `RechercherModeEmploi` y cherche ; le service
+impose de réciter le geste tel qu'il est écrit.
+
+**Pourquoi une liste, et pas le modèle seul.** Un modèle de langage qui n'a pas
+l'écran sous les yeux invente un geste *plausible* — « allez dans les réglages,
+puis Supprimer ». L'artisan le cherche cinq minutes, puis conclut que
+l'application est cassée. C'est la règle des prix, appliquée aux gestes : ce qui
+n'a pas de source ne se dit pas.
+
+**Et une fiche se PROUVE contre le code.** Chacune porte son fichier source et
+des `preuves` — des morceaux de texte qui doivent s'y trouver.
+`scripts/test-mode-emploi.ts` les confronte, et le contrôle sait échouer : il est
+retourné, dans la même suite, contre une fiche qui invente un bouton et contre
+une fiche dont le fichier a disparu. **Il a d'ailleurs rougi à son premier
+passage** — une fiche annonçait un bouton « Connecter » pour l'agenda, quand
+l'écran dit « Relier mon agenda Google ». Le geste était faux avant même d'avoir
+servi.
+
+**Le refus fait la moitié du travail.** `chercherFiches` rend un tableau **vide**
+plutôt qu'une fiche au hasard, et l'assistant dit alors qu'il ne connaît pas ce
+geste. Deux règles le tiennent : au moins un mot-clé plein, et **deux mots
+communs, pas un** — « quel temps fait-il ? » partageait « temps » avec la fiche
+de la durée d'un chantier, et sortait une réponse à une question qui n'en était
+pas une. Une réponse qui parle à tort s'apprend à être ignorée, et l'on perd le
+garde-fou entier.
+
+**Trois détails de la recherche, payés en essais :** les mots se comparent **par
+préfixe au-delà de quatre lettres** (il tape « facture », la fiche dit
+« facturer ») ; les trois sources de score **s'ajoutent** au lieu de s'exclure
+(sinon deux fiches à égalité se départageaient par ordre alphabétique — « comment
+on fait une facture » sortait la fiche des clients avant celle qui facture) ; et
+les mots vides sont écartés, sans quoi « pour », « un », « je » décident du
+classement.
+
+### UNE fiche à l'écran, et c'est la capture qui l'a dit
+
+La recherche rend jusqu'à trois fiches — pour que le modèle CHOISISSE, pas pour
+qu'il les énumère. La première version les enchaînait toutes : « comment je
+supprime un client ? » répondait le retrait, puis la création d'un chantier,
+puis la saisie du client. **Trois gestes pour une question, sur un téléphone**,
+alors que sa règle du 25 août dit l'inverse : *« mets le moins de mots possible
+sinon on se perd dans toutes ces lignes »*.
+
+**Aucune suite ne le voyait** — chacune vérifiait que le bon geste était là, et
+il l'était. C'est la capture (`scripts/capture-assistant-mode-emploi.mts`) qui
+l'a montré, la cinquième fois dans ce dépôt qu'un défaut sort d'une image et
+d'aucun test. Un contrôle garde la porte fermée depuis : il compte les titres de
+la réponse, et il rougit quand on lui remet les trois.
+
+### Le piège que cela a failli créer
+
+« Comment je fais pour supprimer un client ? » tombait dans la branche des
+suppressions du fournisseur : il allait lire les prestations du chantier et
+proposait d'en retirer une. **Il demandait un geste, on lui modifiait ses
+données.** La détection du mode d'emploi passe donc **en tête** de la chaîne du
+fournisseur, avant les suppressions et avant la préparation d'un devis ; un test
+garde la porte fermée.
+
+### Reprendre une ligne du devis d'un autre client
+
+`RechercherLignesDevis` cherche dans les devis de **toute l'entreprise**, par un
+mot du libellé et/ou par le nom du client — jamais sans l'un des deux : rendre
+trois cents lignes reviendrait à choisir au hasard.
+
+**Ce qui borne la recherche, c'est la RLS**, pas un `WHERE entreprise_id` écrit à
+la main : `withEntreprise` pose le contexte, et une société voisine ne remonte
+rien, silencieusement. Deux tests l'exigent, sous le rôle `atlas_app`, avec deux
+lignes homonymes à des prix différents dans deux entreprises.
+
+**Le montant ne voyage jamais.** La proposition `copier_ligne_devis` ne porte que
+`ligneOrigineId` ; le libellé et le prix sont relus en base au moment où il
+valide (`getLigneDevisPourCopie`). Un montant qui traverse le modèle puis le
+navigateur est un montant qu'on peut changer en chemin, sur un document qui part
+chez un client — c'est le même remède que pour un tarif, et pour la même raison.
+Un test vérifie que `donnees` ne contient **que** cette clé.
+
+### « Seulement le principal »
+
+Ce n'est pas une préférence d'usage, c'est un cloisonnement. L'assistant lit les
+tarifs, les marges, l'historique des prix — et il sait désormais chercher dans le
+devis de n'importe quel client. Ouvert à un salarié, il rendrait par la
+conversation exactement ce que les réglages lui refusent écran par écran (§ la
+liste des rubriques, sa règle du 13 août 2026).
+
+**Trois barrières, et la première ne compte pas.** Le bouton disparaît de
+l'en-tête (décidé au serveur, dans le gabarit racine : posé puis retiré au
+navigateur, on l'aurait vu apparaître une seconde). Mais un écran ne protège
+rien : `poserQuestionAction` **et** `appliquerPropositionsAction` relisent le
+rôle en base à chaque appel. Sans la seconde, il aurait suffi de rejouer l'action
+avec les identifiants de propositions préparées pour le patron.
+
+**Et la règle elle-même vit dans `acces-roles.ts` (§180), pas ici.** Deux
+sessions ont écrit ce cloisonnement le même jour, chacune de son côté — l'une
+pour les rôles en général, l'autre pour l'assistant. Ce qui a été gardé, c'est
+**leur** modèle : les trois rôles, une seule fonction pure, un seul endroit où la
+question se tranche. `peutUtiliserLAssistant` s'y est ajoutée à côté de
+`peutVoirLesMontants`, et elle est **plus stricte** — le commercial voit les
+montants, et n'a pourtant pas l'assistant.
+
+**Elle a été plus stricte pendant une soirée, et LUI l'a rouverte.** Livrée au
+patron seul le 25 août — ses mots : *« seulement le principal »* —, la règle a
+été portée au commercial le 26, sur sa réponse : *« oui tu peux l'ouvrir aux
+commerciaux »*.
+
+**Ce qui avait fait hésiter**, et qu'il faut garder écrit pour ne pas
+re-hésiter : §10 a été tranché le 13 août, quand l'assistant ne savait lire que
+le chantier courant. Depuis le 25, il cherche dans le devis de N'IMPORTE QUEL
+client — un commercial y lit ce que chacun a payé pour la même prestation. Le
+patron a jugé que cela ne changeait rien : il voit déjà ces prix écran par
+écran, c'est son métier de vendre.
+
+**Ce que ça a coûté d'y penser, et pourquoi ce n'était pas perdu :** la question
+lui a été posée en une ligne, et la réponse tenait en un mot. Le contraire —
+ouvrir d'office et le découvrir sur un chantier — se serait payé chez un client.
+
+`peutUtiliserLAssistant` **appelle** donc `peutVoirLesMontants` plutôt que de la
+recopier : tant que les deux règles disent la même chose, elles ne s'écrivent
+qu'une fois. Elle garde son nom parce qu'elles peuvent rediverger demain, et
+qu'il faut alors UN endroit où le dire.

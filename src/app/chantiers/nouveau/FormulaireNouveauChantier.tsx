@@ -467,9 +467,10 @@ export default function FormulaireNouveauChantier({
               deux chemins se valent. C'est la proposition 5 de la planche.
 
               **Pas de flèche.** Sa correction, littérale. Le reste de
-              l'application en porte — « Créer le chantier → », « Ouvrir le
-              devis → » — mais ces deux-là n'annoncent pas un pas de plus : ils
-              disent ce qu'il va faire, et le font.
+              l'application en portait encore, et il a fallu qu'il le redise le
+              25 août 2026 devant « Créer la facture → » : elles sont parties
+              partout ce jour-là, et `scripts/test-aucune-fleche.ts` les
+              refuse désormais.
 
               **« Créer le chantier » a disparu de l'écran, et c'est assumé.**
               C'était le seul endroit qui annonçait la création. Les deux
@@ -554,7 +555,7 @@ export default function FormulaireNouveauChantier({
             </div>
           )}
 
-          {/* **« Mon devis → » n'existe qu'une fois la dictée faite**, comme sur
+          {/* **« Mon devis » n'existe qu'une fois la dictée faite**, comme sur
               la fiche chantier : avant, il n'y a rien à préparer, et un geste
               offert d'avance est une promesse vide. */}
           {!reprise && dicteeFaite && chantierCree && (
@@ -570,7 +571,7 @@ export default function FormulaireNouveauChantier({
                 onClick={() => creerPuisAller("fiche")}
                 repere="action-creation"
               >
-                {enCours ? "Enregistrement…" : "Enregistrer →"}
+                {enCours ? "Enregistrement…" : "Enregistrer"}
               </PrimaryButton>
             ) : (
               /* **UN SEUL bouton — sa demande du 21 août 2026** : *« garde un
