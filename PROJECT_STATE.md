@@ -43,7 +43,7 @@ Reste ouvert : le renommage `equipes` → `salaries` en base et dans le code, te
 comprend rien. »* **Fait.** Le surtitre dit le geste — « je reverse ma TVA aux
 impôts » —, chaque ligne répond à « et alors ? », et une phrase annonce ce que
 le choix change sur le mois affiché, y compris quand il n'y change rien.
-`ARCHITECTURE.md` §194.
+`ARCHITECTURE.md` §195.
 
 ---
 
@@ -56,7 +56,7 @@ et `force-dynamic` ne la remplace pas (`ARCHITECTURE.md` §193).
 **Sa seconde plainte du même soir n'était PAS un défaut** : entre les deux
 régimes de TVA, rien ne change quand toutes les factures du mois ont été payées
 dans le mois. Ce qui manquait est une phrase à l'écran : **codée** le soir même
-(`ARCHITECTURE.md` §194).
+(`ARCHITECTURE.md` §195).
 
 ---
 

@@ -291,7 +291,12 @@ export const FICHES_MODE_EMPLOI: FicheModeEmploi[] = [
     geste: "Touchez les jours voulus dans le calendrier : les toucher suffit, il n'y a rien à valider.",
     reserve: "Le client ne verra que la date, jamais la demi-journée.",
     source: "src/app/chantiers/[id]/export/EnvoiAuClient.tsx",
-    preuves: ["Proposez une ou deux dates", "Votre client ne verra que la date, jamais la demi-journée."],
+    // **La preuve visait une phrase qu'il a fait retirer le 26 août 2026.**
+    // Elle vise maintenant le libellé de la molette, qui porte le geste — une
+    // preuve doit s'accrocher à ce que l'écran FAIT, pas à ce qu'il explique
+    // (`CLAUDE.md` §5 bis). La réserve ci-dessus, elle, reste vraie : c'est
+    // l'assistant qui la dit, pas l'écran.
+    preuves: ["Proposez une ou deux dates", "Ce chantier prend"],
   },
   {
     id: "devis-envoyer",
