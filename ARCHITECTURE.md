@@ -9216,7 +9216,7 @@ refus de client qui disparaîtrait sans que rien ne le signale.
 sens, une place serait réservée à une réponse que le patron vient de marquer
 « J'ai vu » — une place vide, au profit de rien.
 
-#### ⚠ TOUT CE QUI PRÉCÈDE A ÉTÉ REMPLACÉ LE 26 AOÛT 2026 — voir §195
+#### ⚠ TOUT CE QUI PRÉCÈDE A ÉTÉ REMPLACÉ LE 26 AOÛT 2026 — voir §196
 
 Le tressage par SORTE — les rappels devant, la place garantie aux réponses — ne
 tient plus. Il a été remplacé par un ordre **chronologique** : le plus récent en
@@ -16947,8 +16947,83 @@ Le premier est le plus important : il éprouve désormais le défaut du 20 août
 ouvert »* — au lieu d'une phrase qui l'annonçait.
 
 ---
+## 195. Le régime de TVA dit enfin ce qu'il commande, et ce qu'il change
 
-## 195. L'accueil se range par date : le plus récent en haut
+**Ses deux phrases du 26 août 2026**, capture à l'appui : *« quand le client le
+paye / quand je met la facture. C'est pas clair, on comprend rien. Qu'est-ce que
+ça signifie ? »* Puis : *« et lorsque je change entre les deux, rien ne se passe,
+c'est normal ? »*
+
+**Deux plaintes qui se ressemblaient mot pour mot, et une seule était un bogue.**
+Celle du rythme en était un (§193) ; celle-ci n'en était pas un. Les séparer a
+demandé de rejouer chacune plutôt que de traiter la seconde comme la première.
+
+### Le verbe manquait
+
+« Quand le client me paie » nomme un **instant** sans dire ce qui s'y produit :
+lu seul, cela ressemble à un réglage d'affichage. Le surtitre porte donc le
+verbe, et chaque ligne répond à « et alors ? ».
+
+| Avant | Après |
+|---|---|
+| *(aucun surtitre)* | **Je reverse ma TVA aux impôts** |
+| Quand le client me paie · *le régime par défaut d'une prestation de services* | Le mois où mon client me paie · *une facture pas encore payée n'est pas déclarée* |
+| Quand j'émets la facture · *le régime des débits — sur option auprès des impôts* | Le mois où j'envoie la facture · *même si le client n'a pas encore payé* |
+
+Les mentions savantes — « régime des débits », « prestation de services » — sont
+parties du sous-titre : elles nommaient la règle sans dire ce qu'elle fait. Ce
+qui est resté est la phrase du bas, qui dit ce qui l'engage vraiment : *« ce
+choix doit correspondre à ce que les impôts savent de vous »*.
+
+### Et la ligne qui répond à « rien ne se passe »
+
+Le calcul était juste : quand toutes les factures d'un mois ont été payées dans
+le mois, les deux régimes tombent sur le même chiffre. **Un écran qui ne bouge
+pas sans rien dire se lit comme une panne** — il a cru l'application cassée.
+
+L'écran annonce donc, sous les boutons, ce que le choix change **sur le mois
+affiché** : *« sur Août 2026 : 300,00 € en attendant le paiement, 1 400,00 € dès
+l'envoi »*, ou *« ce choix ne change rien — 1 088,00 € dans les deux cas »*.
+
+**Le second total sort du MÊME calcul**, avec le régime en paramètre
+(`relevesSousLesDeuxRegimes`, une seule lecture des factures pour deux
+assemblages). Une addition écrite dans l'écran aurait été une seconde
+implémentation de la même règle, et elle aurait divergé (`CLAUDE.md` §3).
+
+### Ce que la première version a coûté, et ce qui l'a attrapée
+
+Elle disait *« X avec cette ligne, Y avec l'autre »* et **suivait le doigt** :
+l'écran coche la ligne avant que le serveur réponde, mais le grand chiffre
+« Collectée », lui, attend la réponse. Pendant l'aller-retour, la phrase
+annonçait déjà le montant de l'autre régime tandis que le bloc portait encore
+l'ancien — **deux chiffres qui se contredisent dans le même écran**, et c'est
+toute la liste qu'on cesse alors de croire.
+
+C'est son propre contrôle qui l'a refusée, sur « après bascule, la phrase ne
+suit plus l'écran ». La phrase **nomme donc les deux régimes** au lieu de
+désigner une ligne cochée : elle ne dépend plus de la sélection, et reste vraie
+au milieu du geste.
+
+### Et l'espace qu'aucune mesure ne voyait
+
+L'écran a affiché **« 1 400,00 €dès l'envoi »**. Un montant et le mot suivant
+sont deux nœuds ; l'espace écrit entre `</strong>` et le texte disparaît à la
+compilation. Trouvé en lisant le HTML rendu — la sixième fois dans ce dépôt
+qu'un défaut sort d'un écran regardé et d'aucun test vert. Le contrôle refuse
+désormais tout caractère collé à un « € ».
+
+### Ce qui a été écarté, et qu'il ne faut pas reproposer
+
+Un **tableau d'exemple** (« facture envoyée le 28 août, payée le 12 septembre,
+déclarée en septembre »), porté sur planche puis retiré par le patron le même
+soir : *« le tableau, tu peux l'enlever »*. Il EXPLIQUE, et un écran n'explique
+pas son propre fonctionnement (`CLAUDE.md` §3) — deux lignes à relire chaque
+fois qu'il ouvre sa TVA, pour une règle qu'il connaît après l'avoir lue une
+fois. Planche : `appli/quand-je-reverse-la-tva.html`.
+
+---
+
+## 196. L'accueil se range par date : le plus récent en haut
 
 **Sa demande du 26 août 2026, capture à l'appui :** *« Je viens de recevoir un
 devis retourné, il devrait apparaître en premier. L'ordre doit être dernier

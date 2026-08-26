@@ -3,7 +3,7 @@ import EnTeteEcran from "@/components/atlas/EnTeteEcran";
 import NumeroDeDocument from "@/components/atlas/NumeroDeDocument";
 import { colors, font, smallCaps } from "@/lib/design-tokens";
 import { getCurrentCtx } from "@/server/session-ctx";
-import { releveTvaCollectee } from "@/server/repositories/factures";
+import { relevesSousLesDeuxRegimes } from "@/server/repositories/factures";
 import { getEntreprise } from "@/server/repositories/entreprises";
 import {
   libellePeriode,
@@ -64,12 +64,16 @@ export default async function ReleveTvaPage({
   // **L'attente n'est pas bornée à la période affichée**, et c'est délibéré :
   // une facture d'avril qu'on n'a jamais encaissée doit se voir en août, sinon
   // elle se perd — et une TVA jamais déclarée finit par se remarquer ailleurs.
-  const [releve, deductible, achats, enAttente] = await Promise.all([
-    releveTvaCollectee(ctx, periode.debut, periode.fin),
+  // **Les DEUX régimes, en une seule lecture des factures.** Le second total ne
+  // s'affiche pas : il sert à dire, sous les boutons, ce que le choix change —
+  // ou ne change pas (`ARCHITECTURE.md` §194).
+  const [releves, deductible, achats, enAttente] = await Promise.all([
+    relevesSousLesDeuxRegimes(ctx, periode.debut, periode.fin),
     totalTvaDeductible(ctx, periode.debut, periode.fin),
     listerAchatsTva(ctx, periode.debut, periode.fin),
     facturesEnAttente(ctx),
   ]);
+  const releve = releves.retenu;
   const collectee = Number(releve.totalTva);
   const reste = tvaDue(collectee, deductible);
 
@@ -100,7 +104,12 @@ export default async function ReleveTvaPage({
         {/* **Quand la TVA devient exigible**, à côté du rythme : ce sont les
             deux mêmes sortes de choses — des déclarations faites aux impôts,
             pas des préférences d'écran. Sa question du 14 août 2026. */}
-        <RegimeTva actuelle={releve.regime} />
+        <RegimeTva
+          actuelle={releve.regime}
+          periode={libellePeriode(periode)}
+          tvaRetenue={formatEuros.format(Number(releves.retenu.totalTva))}
+          tvaAutre={formatEuros.format(Number(releves.autre.totalTva))}
+        />
 
         <EnTeteEcran surtitre="Ma TVA" titre={libellePeriode(periode)} />
 

@@ -126,11 +126,17 @@ planche porte donc deux réécritures des libellés — le verbe manquant est
 « je reverse » — et **la ligne qui dit ce que le choix change sur le mois
 affiché, y compris quand il n'y change rien.**
 
-**Il a tranché le soir même : B, sans le tableau d'exemple.** Les libellés
-réécrits, plus la ligne qui dit ce que le choix change — le tableau expliquait,
-et un écran n'explique pas son propre fonctionnement (`CLAUDE.md` §3). La
-planche porte la version retenue et ce qui a été écarté :
-`appli/quand-je-reverse-la-tva.html`. Reste à coder.
+**Il a tranché le soir même : B, sans le tableau d'exemple** — et c'est
+**codé**. L'écran porte maintenant un surtitre qui dit le geste, deux lignes qui
+répondent à « et alors ? », et la phrase qui annonce ce que le choix change sur
+le mois affiché.
+
+**Sa première version a été refusée par son propre contrôle** : elle suivait le
+doigt et devançait le grand chiffre pendant l'aller-retour avec le serveur —
+deux montants qui se contredisaient une seconde. Elle nomme désormais les deux
+régimes. Et la capture a montré un espace mangé par la compilation
+(« 1 400,00 €dès l'envoi »), que rien n'aurait vu autrement.
+`ARCHITECTURE.md` §195.
 
 ### « Sans date » disparaît quand rien n'attend de jour
 
@@ -190,7 +196,7 @@ date range, elle ne s'affiche pas.
 
 Les deux contrôles qui exigeaient l'ancien ordre ont été **réécrits, pas
 contournés** : une suite qui réclame ce qu'il a fait retirer rend son écran
-impossible à changer. `ARCHITECTURE.md` §195.
+impossible à changer. `ARCHITECTURE.md` §196.
 
 
 ### « Mon compte » : quarante mots de moins
