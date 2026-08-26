@@ -61,7 +61,8 @@ export default function LigneFaceId() {
     setRefus(null);
     demarrer(async () => {
       try {
-        const defi = await defiConnexionAction();
+        // Lu dans le geste : l'adresse par laquelle il a ouvert Atlas.
+        const defi = await defiConnexionAction(window.location.origin);
         if (!defi.ok) {
           setRefus(messageRefusCle("panne"));
           return;
@@ -73,7 +74,24 @@ export default function LigneFaceId() {
         // encore là, c'est qu'elle a rendu quelque chose.
         if (r?.erreur) setRefus(r.erreur);
       } catch (erreur) {
+        /**
+         * **LA RÉUSSITE PASSE AUSSI PAR ICI, et c'est le piège.** Une action
+         * serveur qui redirige le fait en LEVANT — `connexionParCleAction`
+         * envoie vers l'accueil, et cette levée-là arrive dans ce `catch`.
+         * Traitée comme une panne, elle affichait « Face ID n'a pas pu
+         * aboutir » **au moment même où l'on entrait**, sur le seul écran qu'on
+         * voit avant d'être connecté.
+         *
+         * Elle se relance : c'est Next qui doit la recevoir, pas l'artisan.
+         * Trouvé le 26 août 2026 en rendant le défaut bavard (`AGENTS.md`) —
+         * aucun test ne le voyait, la navigation ayant lieu quand même.
+         */
+        if (typeof (erreur as { digest?: unknown })?.digest === "string" &&
+            (erreur as { digest: string }).digest.startsWith("NEXT_REDIRECT")) {
+          throw erreur;
+        }
         const nom = erreur instanceof Error ? erreur.name : null;
+        console.error("[face-id] ouverture refusée par le navigateur", nom, erreur);
         // **Rien à l'écran quand il a simplement fermé la fenêtre.**
         setRefus(estAbandon(nom) ? null : messageRefusCle("panne"));
       }

@@ -61,6 +61,7 @@ export default async function DocumentsPage() {
             : { ...ALLURE_PAR_DEFAUT }
         }
         logoInitial={entreprise?.logoStorageKey ?? null}
+        formatInitial={entreprise?.formatNumero ?? null}
       />
     </div>
   );

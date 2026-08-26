@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { exigerOuverture } from "@/server/garde-route";
 import { recevoirNoteVocale } from "@/server/services/note-vocale-entrante";
 import { LIMITE_TELEVERSEMENT_OCTETS, MESSAGE_FICHIER_TROP_VOLUMINEUX } from "@/server/upload-limits";
 import { CorpsTropGros, formDataBornee } from "@/server/corps-borne";
@@ -42,6 +43,12 @@ export async function POST(
   { params }: { params: Promise<{ chantierId: string }> }
 ) {
   const { chantierId } = await params;
+
+  // **Le rôle avant le corps**, et dans cet ordre : refuser après avoir lu
+  // plusieurs mégaoctets de dictée serait payer l'envoi d'un compte qui n'a
+  // aucun droit ici. Un salarié n'a que le planning et sa feuille sans montants.
+  const refus = await exigerOuverture();
+  if (refus) return refus;
 
   /**
    * **UNE BORNE QUI TIENT PENDANT LA LECTURE, pas seulement avant** — constat

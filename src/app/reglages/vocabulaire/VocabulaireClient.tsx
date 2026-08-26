@@ -183,7 +183,7 @@ function Section({
               </p>
               {t.consigne && (
                 <p className="mt-2 text-[13px] leading-snug" style={{ color: colors.rust }}>
-                  → {t.consigne}
+                  {t.consigne}
                 </p>
               )}
               <div className="mt-3 flex gap-4">

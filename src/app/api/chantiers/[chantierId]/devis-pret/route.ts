@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getCurrentCtx } from "@/server/session-ctx";
+import { exigerOuverture } from "@/server/garde-route";
 import { getChantierPourHub } from "@/server/repositories/chantiers";
 
 export const dynamic = "force-dynamic";
@@ -37,6 +38,10 @@ export async function GET(
   const { chantierId } = await params;
   try {
     const ctx = await getCurrentCtx();
+    // Le rôle referme ce que la barre du bas ne montre plus : une adresse d'API
+    // se tape, et une page retirée du sommaire répondait quand même.
+    const refus = await exigerOuverture(ctx);
+    if (refus) return refus;
     const chantier = await getChantierPourHub(ctx, chantierId);
     if (!chantier) return NextResponse.json({ pret: false, connu: false }, { status: 404 });
     return NextResponse.json({ pret: !!chantier.devisGenereAt, connu: true }, { status: 200 });

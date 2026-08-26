@@ -1,0 +1,297 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas — L'écran Équipe, dégraissé</title>
+</head>
+<body>
+<style>
+  /*
+    ————————————————————————————————————————————————————————————————
+    L'ÉCRAN ÉQUIPE, DÉGRAISSÉ — maquette ESSAYABLE
+    ————————————————————————————————————————————————————————————————
+
+    Sa demande du 25 août 2026, capture à l'appui :
+
+      « Cette page est pas très compréhensible. "Combien partent en même
+        temps" ça veut pas dire grand-chose. Et il y a beaucoup d'infos, il
+        faut arriver à synthétiser. Propose-moi. Ne code rien ! »
+
+    ─── CE QUE L'ÉCRAN DIT AUJOURD'HUI, ET POURQUOI C'EST TROP ───────────────
+
+    À UNE équipe, quatre blocs se succèdent :
+
+      1. « Un chantier à la fois : un jour pris n'est plus proposé. »
+      2. « Seul, rien à nommer : le planning n'écrira aucune équipe. »
+      3. « Seul, une absence fermerait l'entreprise… Pour vos congés, posez-les
+          dans votre agenda… »
+      4. « À une seule équipe, le planning n'écrit aucun nom : il n'y a personne
+          à distinguer. Les noms apparaissent à partir de deux. »
+
+    **Le 2 et le 4 disent la même chose**, à quinze lignes d'écart et dans des
+    mots différents — c'est ce qui donne l'impression d'un écran bavard. Le 3,
+    lui, parle d'ABSENCES : c'est un autre sujet, et il a sa propre section
+    juste en dessous.
+
+    ─── CE QUE CE RÉGLAGE FAIT VRAIMENT, vérifié dans le code ────────────────
+
+    Le nombre gouverne UNE chose : combien de chantiers peuvent tenir le même
+    jour. À 1, un jour pris n'est plus proposé au client ; à 2, il le reste tant
+    qu'une équipe est libre. Et à partir de 2, le planning écrit un nom sur
+    chaque chantier — d'où le bloc des noms.
+
+    Rien d'autre. Les propositions ci-dessous ne disent que cela.
+
+    ─── LES TROIS PROPOSITIONS ──────────────────────────────────────────────
+
+    A — L'ÉCRAN D'AUJOURD'HUI, recopié. Pour comparer.
+
+    B — « VOS ÉQUIPES », ET UNE SEULE PHRASE. Le titre nomme la chose ; la
+        phrase sous le compteur dit ce que le nombre change, et elle est la
+        SEULE. Les congés retournent dans « Absences », où ils sont chez eux.
+
+    C — LE TITRE POSE LA QUESTION. « Combien d'équipes partent en même temps ? »
+        Plus long, mais il n'y a plus rien à deviner : celui qui ouvre cet écran
+        pour la première fois sait ce qu'on lui demande.
+
+    ─── CE QU'IL FAUT ESSAYER ────────────────────────────────────────────────
+
+    Touchez « + » : c'est en passant de 1 à 2 que l'écran change le plus, et
+    qu'on voit ce que chaque proposition garde ou jette.
+
+    RIEN N'EST CODÉ.
+  */
+  :root{
+    --fond:#f5f3ee; --plage:#faf9f5; --encre:#1c1c1a; --encre-douce:#4a4a44;
+    --gris:#8a8578; --pin:#2f3b2f; --papier:#ece9e1;
+    --or:#B98B47; --trait:rgba(28,28,26,.12);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:#e6e3dc}
+  body{font:16px/1.5 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;color:var(--encre);
+       -webkit-text-size-adjust:100%;padding:0 0 44px}
+  [hidden]{display:none !important}
+
+  .bandeau{background:var(--encre);color:#f2efe8;padding:14px 18px;text-align:center;font-size:13px;line-height:1.55}
+  .bandeau b{color:#fff}
+
+  .barre{max-width:560px;margin:18px auto 0;padding:0 14px}
+  .choix{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+  .choix button{flex:1 1 auto;min-width:150px;border:1px solid var(--trait);background:var(--plage);
+    color:var(--encre-douce);border-radius:999px;padding:11px 14px;font:600 13px/1.2 inherit;cursor:pointer;
+    -webkit-tap-highlight-color:transparent}
+  .choix button[aria-pressed="true"]{background:var(--pin);border-color:var(--pin);color:#f2efe8}
+  .mesure{text-align:center;margin-top:11px;font-size:12.5px;color:var(--gris)}
+  .mesure b{color:var(--encre)}
+
+  .scene{max-width:430px;margin:18px auto 0;padding:0 14px}
+  .tel{background:var(--fond);border-radius:26px;overflow:hidden;box-shadow:0 18px 46px rgba(20,18,14,.18);padding-bottom:22px}
+
+  .retour{width:44px;height:44px;border-radius:999px;background:var(--papier);margin:16px 0 0 22px;
+    display:flex;align-items:center;justify-content:center;color:var(--encre-douce);font-size:19px}
+  .ligne-titre{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;margin:6px 26px 0}
+  h1{margin:0;font:400 33px/1.02 ui-serif,Georgia,serif;letter-spacing:-.02em}
+  .surtitre{margin:6px 26px 0;font:600 10.5px/1 ui-sans-serif,sans-serif;letter-spacing:.2em;
+    text-transform:uppercase;color:var(--or)}
+  .bulle{flex:none;width:52px;height:52px;border-radius:999px;background:var(--pin);color:#f2efe8;
+    display:flex;align-items:center;justify-content:center;font-size:21px}
+
+  .cle{margin:30px 26px 0;font:600 10.5px/1.35 ui-sans-serif,sans-serif;letter-spacing:.16em;
+    text-transform:uppercase;color:var(--gris)}
+  .acces{margin:8px 26px 0;padding-bottom:14px}
+  .acces .qui{font-size:19px}
+  .acces .mail{font-size:13.5px;color:var(--gris);margin-top:2px}
+  .acces .role{float:right;font:600 10.5px/1 ui-sans-serif,sans-serif;letter-spacing:.16em;
+    text-transform:uppercase;color:var(--gris)}
+  .donner{margin:14px 26px 0;font-size:17px;display:flex;align-items:center;gap:14px}
+  .donner i{font-style:normal;color:var(--gris);font-size:19px}
+
+  .compteur{display:flex;align-items:center;justify-content:center;gap:30px;margin-top:14px}
+  .pas{width:46px;height:46px;border-radius:999px;box-shadow:inset 0 0 0 1px var(--trait);background:none;
+    display:flex;align-items:center;justify-content:center;font:400 21px/1 ui-serif,Georgia,serif;
+    color:var(--encre);cursor:pointer;-webkit-tap-highlight-color:transparent}
+  .pas:disabled{color:var(--gris);opacity:.32;cursor:default}
+  .nb{min-width:2ch;text-align:center;font:400 52px/1 ui-serif,Georgia,serif;letter-spacing:-.03em;
+    font-variant-numeric:tabular-nums}
+
+  .dit{margin:9px 26px 0;text-align:center;font-size:12.5px;line-height:1.6;color:var(--gris)}
+  .bloc{margin:30px 26px 0;padding-top:18px;border-top:1px solid var(--trait);font-size:13px;line-height:1.7;color:var(--gris)}
+  .bloc b{color:var(--encre);font-weight:400}
+  .noms{margin:26px 26px 0}
+  .noms .l{display:flex;align-items:center;gap:14px;padding:12px 0;border-top:1px solid var(--trait)}
+  .noms .r{font:600 10.5px/1 ui-sans-serif,sans-serif;letter-spacing:.16em;color:var(--gris);min-width:22px}
+  .noms input{flex:1;min-width:0;border:0;background:none;font:17px/1.2 inherit;color:var(--encre);padding:0}
+  .noms input::placeholder{color:var(--gris)}
+
+  .nav{display:flex;justify-content:space-between;gap:4px;margin-top:26px;padding:14px 20px 4px;
+    border-top:1px solid var(--trait)}
+  .nav span{font:500 9.5px/1 ui-sans-serif,sans-serif;letter-spacing:.13em;text-transform:uppercase;color:var(--gris)}
+  .nav span.on{color:var(--encre);border-bottom:2px solid var(--or);padding-bottom:5px}
+
+  .note{max-width:560px;margin:18px auto 0;padding:0 16px;font-size:14px;line-height:1.62;color:var(--encre-douce)}
+  .note p{margin:0 0 10px}
+  .note b{color:var(--encre)}
+  .verdict{max-width:560px;margin:18px auto 0;padding:14px 16px;background:#fbf6ea;
+    border-left:3px solid var(--or);border-radius:0 12px 12px 0;font-size:14px;line-height:1.6}
+</style>
+
+<div class="bandeau">
+  <b>L'écran Équipe, dégraissé.</b> Touchez une proposition, puis <b>« + »</b> :
+  c'est en passant de 1 à 2 que l'écran change le plus. <b>Rien n'est codé.</b>
+</div>
+
+<div class="barre">
+  <div class="choix" role="group" aria-label="Propositions">
+    <button type="button" data-p="A" aria-pressed="true">A · aujourd'hui</button>
+    <button type="button" data-p="B" aria-pressed="false">B · une seule phrase</button>
+    <button type="button" data-p="C" aria-pressed="false">C · le titre pose la question</button>
+  </div>
+  <p class="mesure" id="mesure"></p>
+</div>
+
+<div class="scene"><div class="tel" id="tel"></div></div>
+
+<div class="verdict" id="verdict"></div>
+
+<div class="note">
+  <p><b>Ce que ce réglage fait, et rien d'autre</b> — vérifié dans le code avant d'écrire
+  une ligne. Le nombre gouverne combien de chantiers peuvent tenir le même jour : à 1, un
+  jour pris n'est plus proposé à vos clients ; à 2, il le reste tant qu'une équipe est
+  libre. Et à partir de 2, le planning écrit un nom sur chaque chantier — d'où le bloc des
+  noms.</p>
+
+  <p><b>Pourquoi votre écran paraît bavard.</b> À une équipe, quatre blocs se suivent, et
+  <b>deux disent la même chose</b> : « le planning n'écrira aucune équipe », puis, quinze
+  lignes plus bas, « le planning n'écrit aucun nom ». Le troisième parle d'<b>absences</b> —
+  un autre sujet, qui a sa propre section juste en dessous.</p>
+
+  <p><b>« Combien partent en même temps » ne dit pas grand-chose, vous avez raison.</b> Ce
+  titre évitait le mot « équipe » à dessein — mais l'écran nomme les équipes trois lignes
+  plus bas. Autant l'employer.</p>
+
+  <p><b>Ce que je n'ai pas tranché, et qui est pour vous :</b> la phrase sur les congés
+  (« posez-les dans votre agenda ») disparaît d'ici dans les propositions B et C. Elle est
+  utile, mais elle appartient à « Absences ». Dites-moi si vous préférez la garder ici.</p>
+</div>
+
+<script>
+(function () {
+  var $ = function (s) { return document.querySelector(s); };
+  var prop = "A", n = 1;
+
+  // Ce que chaque proposition écrit — titre, phrase sous le compteur, blocs.
+  function titre() {
+    if (prop === "A") return "Combien partent en même temps";
+    if (prop === "B") return "Vos équipes";
+    return "Combien d'équipes partent en même temps ?";
+  }
+
+  function phrase() {
+    if (prop === "A") {
+      return n <= 1
+        ? "Un chantier à la fois : un jour pris n'est plus proposé."
+        : "Un jour reste proposé tant qu'une équipe est libre.";
+    }
+    // **B et C : UNE phrase, qui absorbe ce que les autres blocs répétaient.**
+    // Elle dit les deux seules choses que le nombre change — ce qui se passe
+    // sur le planning du client, et ce qui s'écrit sur le sien.
+    return n <= 1
+      ? "Un chantier à la fois. Un jour pris n'est plus proposé, et le planning n'écrit aucun nom."
+      : n + " chantiers peuvent tenir le même jour. Nommez vos équipes pour les distinguer au planning.";
+  }
+
+  function blocs() {
+    if (prop !== "A") return "";
+    // Les trois blocs d'aujourd'hui, à une équipe.
+    if (n > 1) return "";
+    return '<p class="bloc">Seul, rien à nommer : <b>le planning n\'écrira aucune équipe</b>.</p>' +
+      '<p class="bloc">Seul, une absence fermerait l\'entreprise : plus aucune date ne serait proposable. ' +
+      '<b>Pour vos congés, posez-les dans votre agenda</b> — Atlas en tient compte et ne proposera rien sur ces jours-là.</p>' +
+      '<p class="bloc">À une seule équipe, le planning n\'écrit aucun nom : il n\'y a personne à distinguer. ' +
+      'Les noms apparaissent à partir de deux.</p>';
+  }
+
+  function noms() {
+    if (n <= 1) return "";
+    var h = '<p class="cle">Leurs noms</p><div class="noms">';
+    for (var i = 1; i <= n; i++) {
+      h += '<div class="l"><span class="r">' + String.fromCharCode(64 + i) + '</span>' +
+           '<input placeholder="Équipe ' + String.fromCharCode(64 + i) + '"></div>';
+    }
+    return h + "</div>";
+  }
+
+  function peindre() {
+    var h = '<div class="retour">&lsaquo;</div>' +
+      '<div class="ligne-titre"><span><h1>Équipe</h1>' +
+      '<p class="surtitre" style="margin-left:0">Réglages</p></span>' +
+      '<span class="bulle">&#128172;</span></div>';
+
+    h += '<p class="cle">Qui a accès</p>' +
+      '<div class="acces"><span class="role">Patron</span>' +
+      '<div class="qui">Vous</div><div class="mail">votre@adresse.fr</div></div>' +
+      '<div class="donner"><i>+</i> Donner un accès</div>';
+
+    h += '<p class="cle">' + titre() + '</p>';
+    h += '<div class="compteur">' +
+      '<button class="pas" type="button" id="moins" ' + (n <= 1 ? "disabled" : "") + ' aria-label="Une équipe de moins">&minus;</button>' +
+      '<span class="nb">' + n + '</span>' +
+      '<button class="pas" type="button" id="plus" ' + (n >= 20 ? "disabled" : "") + ' aria-label="Une équipe de plus">+</button>' +
+      '</div>';
+    h += '<p class="dit">' + phrase() + "</p>";
+    h += noms();
+    h += blocs();
+    h += '<div class="nav"><span>Chantiers</span><span>Planning</span><span>Terminés</span>' +
+      '<span>Paysage</span><span class="on">Réglages</span></div>';
+
+    $("#tel").innerHTML = h;
+    mesurer();
+  }
+
+  // **Compter les mots, parce que « trop d'infos » se mesure.** Une planche qui
+  // se contente d'affirmer « c'est plus court » ne se choisit pas : elle se
+  // croit.
+  function mesurer() {
+    var t = $("#tel").innerText || "";
+    var apres = t.indexOf(String(n));
+    var corps = apres >= 0 ? t.slice(apres) : t;
+    var mots = corps.trim().split(/\s+/).filter(Boolean).length;
+    $("#mesure").innerHTML = "Sous le compteur : <b>" + mots + " mots</b>";
+
+    var v = $("#verdict");
+    if (prop === "A" && n <= 1) {
+      v.innerHTML = "<b>Voilà ce que vous lisez aujourd'hui :</b> quatre blocs, dont deux qui " +
+        "disent la même chose — « le planning n'écrira aucune équipe », puis « le planning " +
+        "n'écrit aucun nom ». Touchez B.";
+    } else if (prop !== "A" && n <= 1) {
+      v.innerHTML = "<b>Une seule phrase</b>, qui dit les deux seules choses que le nombre " +
+        "change : ce que voit votre client, et ce qu'écrit votre planning. Les congés sont " +
+        "retournés dans « Absences », où ils sont chez eux.";
+    } else if (prop !== "A") {
+      v.innerHTML = "<b>À partir de deux, la phrase compte pour vous</b> — elle annonce le " +
+        "bloc des noms au lieu de le laisser surgir.";
+    } else {
+      v.innerHTML = "<b>À deux, l'écran d'aujourd'hui se tait</b> : les trois blocs " +
+        "disparaissent d'un coup, et rien n'annonce le bloc des noms qui vient d'apparaître.";
+    }
+  }
+
+  document.addEventListener("click", function (e) {
+    var b = e.target.closest ? e.target.closest("button") : null;
+    if (!b) return;
+    if (b.dataset.p) {
+      prop = b.dataset.p;
+      var tous = document.querySelectorAll(".choix button");
+      for (var i = 0; i < tous.length; i++) tous[i].setAttribute("aria-pressed", String(tous[i] === b));
+      peindre(); return;
+    }
+    if (b.id === "plus") { n = Math.min(20, n + 1); peindre(); return; }
+    if (b.id === "moins") { n = Math.max(1, n - 1); peindre(); return; }
+  });
+
+  peindre();
+})();
+</script>
+</body>
+</html>

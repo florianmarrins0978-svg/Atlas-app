@@ -47,6 +47,47 @@ export const fournisseurLLMDev: FournisseurLLM = {
     const estSuppression = /supprime|retire|enl[eè]ve/.test(texteMinuscule);
     const estModification = /modifie|change|remplace/.test(texteMinuscule);
 
+    // --- « Comment je fais pour… » : le mode d'emploi (25 août 2026) --------
+    //
+    // **En TÊTE de la chaîne, et c'est le tout.** « Comment je fais pour
+    // supprimer un client ? » tombait dans la branche des suppressions plus
+    // bas : le fournisseur allait lire les prestations du chantier et proposait
+    // d'en retirer une. Il demandait un geste, on lui modifiait ses données.
+    const estQuestionModeEmploi =
+      /\bcomment\b|\bo[uù] (est|se trouve|je (trouve|vois|clique))\b|[aà] quoi sert/i.test(texte) &&
+      outils.some((o) => o.nom === "RechercherModeEmploi");
+    if (estQuestionModeEmploi) {
+      if (dernier && dernier.role === "outil" && dernier.outil === "RechercherModeEmploi") {
+        return { succes: true, type: "texte", texte: expliquerModeEmploi(dernier.resultat) };
+      }
+      if (!dernier || dernier.role !== "outil") {
+        return { succes: true, type: "appel_outil", outil: "RechercherModeEmploi", parametres: { question: texte } };
+      }
+    }
+
+    // --- Reprendre une ligne du devis d'un autre client (25 août 2026) ------
+    //
+    // Avant la branche des suppressions/modifications, elle aussi : « reprends
+    // la ligne d'élagage du devis de Bernard » porte « ligne » et « devis », et
+    // se serait fait lire comme une demande de préparation de devis.
+    const estRepriseDeLigne =
+      /\b(reprends?|reprendre|recup[eè]re|r[ée]cup[eè]re|copie|copier|remets?|remettre|reporte)\b/i.test(texte) &&
+      /\b(ligne|prestation|poste)\b/i.test(texteMinuscule) &&
+      outils.some((o) => o.nom === "RechercherLignesDevis");
+    if (estRepriseDeLigne && proposeDisponible) {
+      if (dernier && dernier.role === "outil" && dernier.outil === "RechercherLignesDevis") {
+        return propositionCopieDeLigne(dernier.resultat);
+      }
+      if (!dernier || dernier.role !== "outil") {
+        return {
+          succes: true,
+          type: "appel_outil",
+          outil: "RechercherLignesDevis",
+          parametres: { motCle: motCleDeLaLigne(texte), client: clientDeLaLigne(texte) },
+        };
+      }
+    }
+
     // --- Orchestrateur (lot IA-08) : workflow complet, ou questions de suivi.
     // Aucune mémoire persistante : une question de suivi (autre échange)
     // retrouve la demande d'origine dans l'historique de conversation déjà
@@ -507,4 +548,88 @@ function expliquerSuiviWorkflow(resultat: unknown, texteMinuscule: string): stri
     return "Aucun prix n'a été proposé pour cette demande (aucun tarif trouvé, aucun calcul possible) — le prix reste à renseigner manuellement.";
   }
   return "Je n'ai pas d'information supplémentaire à ce sujet.";
+}
+
+// --- Mode d'emploi et reprise de ligne (25 août 2026) ---------------------
+
+/**
+ * Met en forme ce que `RechercherModeEmploi` a rendu.
+ *
+ * **Il récite, il ne reformule pas.** Le geste sort tel qu'il est écrit dans la
+ * fiche — c'est le seul texte du dépôt qui ait été confronté au code
+ * (`scripts/test-mode-emploi.ts`). Un fournisseur qui le récrirait de son côté
+ * serait une seconde version du mode d'emploi, et les deux divergeraient.
+ */
+function expliquerModeEmploi(resultat: unknown): string {
+  const r = resultat as {
+    trouve?: boolean;
+    fiches?: { ecran: string; ou: string; intitule: string; geste: string; reserve: string | null }[];
+  };
+  if (!r.trouve || !r.fiches || r.fiches.length === 0) {
+    return "Je ne connais pas ce geste — je préfère le dire plutôt que d'en inventer un.";
+  }
+  // **UNE fiche, pas trois.** Vu à l'image le 25 août 2026 : la réponse à
+  // « comment je supprime un client ? » enchaînait le retrait, la création d'un
+  // chantier et la saisie du client — trois gestes pour une question. Sa règle
+  // du 25 août : *« mets le moins de mots possible sinon on se perd dans toutes
+  // ces lignes »*. Les suivantes servent au modèle à choisir, pas à l'écran.
+  const f = r.fiches[0];
+  const lignes = [`**${f.intitule}** — ${f.ecran}`, f.geste];
+  if (f.reserve) lignes.push(f.reserve);
+  return lignes.join("\n");
+}
+
+/** Le mot du libellé cherché : « la ligne d'élagage » → « élagage ». */
+function motCleDeLaLigne(texte: string): string | null {
+  const apres = texte.match(/\b(?:ligne|prestation|poste)\s+(?:d[eu']\s*|des\s+|la\s+|le\s+)?([A-Za-zÀ-ÿ'-]{3,})/i);
+  return apres ? apres[1] : null;
+}
+
+/** Le client du devis d'origine : « du devis de Bernard » → « Bernard ». */
+function clientDeLaLigne(texte: string): string | null {
+  const apres = texte.match(/\bdevis\s+(?:de|d'|du|chez)\s*([A-Za-zÀ-ÿ'-]{2,})/i);
+  return apres ? apres[1] : null;
+}
+
+/**
+ * Propose la copie — et ne choisit JAMAIS entre deux lignes.
+ *
+ * Deux libellés voisins chez deux clients différents, c'est deux prix
+ * différents sur un document qui part. Quand la recherche en rend plusieurs, on
+ * les montre et on demande, exactement comme pour deux tarifs plausibles.
+ *
+ * **`donnees` ne porte que l'identifiant.** Ni libellé ni montant : ils sont
+ * relus en base à l'application (`getLigneDevisPourCopie`).
+ */
+function propositionCopieDeLigne(resultat: unknown): ResultatLLMAvecOutils {
+  const r = resultat as {
+    trouve?: boolean;
+    raison?: string;
+    lignes?: { ligneId: string; libelle: string; montant: string; client: string | null; numeroDevis: string }[];
+  };
+  if (!r.trouve || !r.lignes || r.lignes.length === 0) {
+    return { succes: true, type: "texte", texte: r.raison ?? "Aucune ligne de devis ne correspond." };
+  }
+  if (r.lignes.length > 1) {
+    const choix = r.lignes
+      .map((l) => `- ${l.libelle} — ${l.montant} € (${l.client ?? "client non renseigné"}, devis ${l.numeroDevis})`)
+      .join("\n");
+    return { succes: true, type: "texte", texte: `Plusieurs lignes correspondent. Laquelle ?\n${choix}` };
+  }
+  const ligne = r.lignes[0];
+  return {
+    succes: true,
+    type: "appel_outil",
+    outil: NOM_OUTIL_PROPOSITION,
+    parametres: {
+      texteIntroduction: "Voici la ligne à reprendre :",
+      propositions: [
+        {
+          type: "copier_ligne_devis",
+          description: `Reprendre « ${ligne.libelle} » du devis ${ligne.numeroDevis}${ligne.client ? ` (${ligne.client})` : ""}`,
+          donnees: { ligneOrigineId: ligne.ligneId },
+        },
+      ],
+    },
+  };
 }

@@ -1,7 +1,8 @@
 import { and, asc, eq, isNotNull, isNull, or, sql } from "drizzle-orm";
 import Decimal from "decimal.js";
 import { withEntreprise } from "../db/with-entreprise";
-import { allureDesDocuments } from "./entreprises";
+import { allureDesDocuments, formatNumeroDe } from "./entreprises";
+import { ecrireNumero, repartChaqueAnnee } from "@/lib/numero-documents";
 import type { DbOrTx } from "../db/client";
 import {
   chantiers,
@@ -42,15 +43,35 @@ const DELAI_PAIEMENT_JOURS = 30;
 // Numérotation atomique, calquée sur celle des devis : le verrou de ligne posé
 // par cet UPDATE sérialise les créations concurrentes d'une même entreprise.
 // `prochain_numero_facture` est le PROCHAIN numéro libre, pas le dernier pris.
+//
+// **LE MILLÉSIME N'EST PLUS ÉCRIT EN DUR — correctif du 26 août 2026**, et la
+// remise à 1 du 1ᵉʳ janvier se joue DANS l'UPDATE : voir le commentaire jumeau
+// de `attribuerNumeroDevis`, qui porte le pourquoi en entier.
+//
+// **Les deux suites restent distinctes**, et c'est la règle du dessus : mêler
+// devis et factures rendrait illisible la numérotation continue qu'attend un
+// contrôle. D'où deux colonnes de compteur ET deux colonnes d'année — un devis
+// peut partir en décembre et sa facture en janvier.
 export async function attribuerNumeroFacture(tx: DbOrTx, entrepriseId: string): Promise<string> {
+  const maintenant = new Date();
+  const annee = maintenant.getFullYear();
+  const mois = maintenant.getMonth() + 1;
+
+  const format = await formatNumeroDe(tx, entrepriseId);
+  const remise = repartChaqueAnnee(format);
+
   const result: unknown = await tx.execute(sql`
     UPDATE entreprise_compteurs
-    SET prochain_numero_facture = prochain_numero_facture + 1
+    SET prochain_numero_facture = CASE
+          WHEN ${remise} AND annee_facture IS DISTINCT FROM ${annee} THEN 2
+          ELSE prochain_numero_facture + 1
+        END,
+        annee_facture = ${annee}
     WHERE entreprise_id = ${entrepriseId}
     RETURNING prochain_numero_facture - 1 AS numero
   `);
   const numero = (result as { rows: { numero: number }[] }).rows[0].numero;
-  return `F2026-${String(numero).padStart(4, "0")}`;
+  return ecrireNumero(format, "facture", { annee, mois, numero });
 }
 
 export class FinChantierImpossibleError extends Error {

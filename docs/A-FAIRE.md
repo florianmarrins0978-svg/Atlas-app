@@ -794,13 +794,20 @@ connaissance de cause.
 
 ### Ce qui est lié, et qui n'est pas fait non plus
 
-**Les accès de ses salariés.** Un patron ne peut donner aucun accès aujourd'hui
-— l'écran n'existe pas —, et surtout **rien ne filtre ce que chacun reçoit** :
-un salarié verrait tous vos prix et toutes vos marges. La règle a été posée le
-7 août ([QUESTIONS.md](QUESTIONS.md) question 10) et complétée le 13 : quatre
-rôles, et une portée du planning réglée salarié par salarié. **Le dessin
-existe ; le code, non.** Tant que ce n'est pas fait, Atlas ne peut être confié
-qu'à un artisan qui travaille seul.
+~~**Les accès de ses salariés.** Un patron ne peut donner aucun accès
+aujourd'hui — l'écran n'existe pas —, et surtout **rien ne filtre ce que chacun
+reçoit** : un salarié verrait tous vos prix et toutes vos marges.~~
+— **RÉGLÉ le 25 août 2026.**
+
+Réglages → Équipe → « Qui a accès » : vous créez le compte de votre salarié ou
+de votre commercial, vous choisissez son rôle, et vous réglez ce qu'un salarié
+voit du planning — tout, ou ses seuls chantiers. Chacun ouvre sa propre session.
+Ce qu'un rôle n'a pas le droit de voir **ne sort pas du serveur** : ni la page,
+ni le PDF. Le détail est dans [QUESTIONS.md](QUESTIONS.md) question 10.
+
+**Atlas peut donc être confié à quelqu'un d'autre que vous.** Une seule réserve,
+notée dans `TODO.md` : un commercial ne lit pas encore vos tarifs, alors que la
+règle du 13 août dit qu'il les lit sans les changer.
 
 ### Ce que ça ne bloque pas
 
