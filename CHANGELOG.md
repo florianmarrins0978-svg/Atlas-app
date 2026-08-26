@@ -45,7 +45,7 @@ gars. Le renommage `equipes` → `salaries` est une tâche à part (`TODO.md`) :
 vingt-trois fichiers, les politiques RLS et les contraintes, à ne pas mêler à un
 changement de comportement.
 
-`ARCHITECTURE.md` §189.
+`ARCHITECTURE.md` §191.
 
 ### Planche 97 — ses salariés, et ce qui remplit le planning
 
@@ -75,6 +75,50 @@ Le curseur des **équipes** reste dans les trois, comme il l'a exigé.
 **Le contrôle ouvre un navigateur, et il a trouvé un vrai défaut** : les
 pastilles et les croix de la planche faisaient moins de 40 px. Corrigé à 44 —
 il touche cet écran debout, avec un gant.
+### « Mon compte » : quarante mots de moins
+
+*« Supprime la phrase sous enregistrer »*, *« supprime ce compte sous compte
+démo »*, et sur les deux lignes grises : *« elles sont beaucoup beaucoup trop
+longues pour rien »*.
+
+Trois sont parties — « Ce compte », la phrase sous le nom, et les quatre lignes
+qui expliquaient l'absence de champ téléphone (elles vivaient sous le bouton,
+donc à moitié cachées).
+
+**Une a été gardée, raccourcie de 40 mots à 7 :** celle de l'e-mail. Un champ
+qui ne s'ouvre pas quand on le touche se lit comme une panne — sans elle, il
+appuierait et chercherait ce qu'il a mal fait. Le pourquoi, lui, a quitté
+l'écran pour `ARCHITECTURE.md` §190.
+
+La décision du téléphone n'a pas bougé : aucun champ ici, et le contrôle le
+refuse toujours. Ce que ce lot change, c'est qu'il refuse désormais aussi le
+RETOUR des phrases retirées, au lieu de les exiger.
+
+### Le port du banc s'ouvre quand le serveur répond, plus avant lui
+
+*« Problème pas de port connecté »*, capture de son onglet PORTS à l'appui. Sa
+fiche portait le mot exact : *« error updating port 3000 to public: error getting
+tunnel port: […] 404 Not Found »*.
+
+**Le relais ne connaissait pas encore le port.** `demarrer.sh` en demandait
+l'ouverture juste après avoir posé le veilleur — dont la construction dure des
+minutes. Au moment de la demande, **rien n'écoutait sur 3000** : GitHub n'avait
+aucun port à rendre public, et répondait 404. Le serveur démarrait ensuite, le
+port se déclarait tout seul… **et restait privé**, parce que plus rien ne
+redemandait.
+
+**Ce que ça évite :** GitHub qui sert sa page de connexion à la place d'Atlas.
+Depuis son téléphone, non connecté, il n'y a alors rien à voir — c'est le
+symptôme du 10 août, sous une autre cause.
+
+**Une tentative unique au démarrage avait lieu au seul moment où elle ne pouvait
+pas aboutir.** Le veilleur redemande donc là où il sait que le serveur répond,
+donc que le port existe ; une fois obtenu, il n'y revient plus — `gh` interroge
+le réseau, et l'appeler tous les quarts de minute userait un quota sans rien
+apprendre. La fiche est mise à jour du même geste, sans quoi elle annoncerait
+encore le refus et l'enverrait réparer ce qui marche.
+
+Le contrôle a été vu rouge en retirant l'appel.
 
 ### Une règle de plus dans `CLAUDE.md` : ne rien jouer à la main pendant la batterie
 
@@ -202,6 +246,49 @@ au moment exact où il entre. `ARCHITECTURE.md` §186 et §187.
 derrière SON tunnel. Cet environnement n'a ni visage ni tunnel — la règle du
 domaine et le parcours entier sont éprouvés, l'ouverture réelle se prouve chez
 lui.
+
+### L'assistant devient un agent : dix gestes de plus, et un périmètre fermé
+
+*« Je veux que ce soit un vrai agent IA avec toutes les capacités possibles et
+imaginables sur l'appli »*, et *« seulement pour l'appli : si on lui demande
+est-ce que le CGR de Mantes est ouvert, il ne doit pas y répondre »*.
+
+**Il sait désormais préparer** : créer un chantier, corriger une fiche client,
+changer l'adresse d'un chantier, y laisser une note, le poser au planning, l'y
+déplacer, l'en retirer, créer et corriger un tarif, préparer une facture. Et il
+sait enfin CHERCHER une cible — chantier, client, planning —, là où il ne
+connaissait que le chantier ouvert.
+
+**Tout reste une proposition qu'il coche.** Sa réponse du 26 août à la seule
+question posée : *« il ne doit pas pouvoir le faire, très important que ça reste
+le doigt du patron »*. Rien en direct, pas même un numéro de téléphone. Et trois
+gestes ne sont jamais les siens : envoyer, valider, émettre.
+
+**Le hors-sujet est refusé AVANT le modèle**, pas seulement dans sa consigne :
+une consigne se contourne et ne se vérifie pas. Le filtre ne refuse que si la
+question porte une marque franche du dehors ET aucun mot d'Atlas — sans quoi il
+ferait taire l'assistant devant « j'ai un chantier au cinéma de Mantes ». Un
+garde-fou qui parle à tort s'apprend à être ignoré.
+
+**Et un défaut trouvé à l'image, pas par un test :** depuis l'accueil, « crée un
+chantier pour Madame Lucie » répondait « Aucun chantier dans le contexte
+courant » — alors que créer un chantier n'en demande aucun. Le bouton
+« Appliquer » restait inerte par la même occasion.
+
+**Deux sessions travaillaient sur l'agent le même jour.** À la fusion : leur
+recherche de chantier a été gardée (elle emploie la règle de l'écran), et leur
+outil qui CRÉAIT une fiche tout seul est devenu une proposition — les deux
+règles qu'il portait, reprises telles quelles.
+
+Détail : `ARCHITECTURE.md` §188.
+
+### Le filet d'intertitre était revenu sur l'écran des accès
+
+*« Ça aussi tu peux retirer »* (25 août) : le trait qui part du mot et file
+jusqu'au bord. Il est réapparu le lendemain sur « Son rôle », un écran neuf.
+`test-accueil-en-tete.ts` l'a repris tout seul — c'est exactement pourquoi ce
+contrôle existe. Les séparateurs de blocs, eux, restent : *« ceux qui séparent
+les blocs, laisse-les »*.
 
 ### L'en-tête inversé : le titre d'abord, le surtitre doré en dessous
 
@@ -826,11 +913,28 @@ Le contrôle a été vu rouge en le remettant en A. A et B ne diffèrent que pen
 le DÉFILEMENT — un contrôle qui n'aurait pas descendu serait resté vert sur la
 proposition qu'il a écartée.
 
-### La molette du temps passé se dédouble : heures d'un côté, minutes de l'autre
+### La molette du temps passé : sa demande décrivait ce qui existait déjà
 
 *« La molette, mais avec d'un côté les heures qu'on peut bouger et de l'autre les
-minutes qu'on peut bouger séparément. »* Dessiné le jour même, proposition D de
-`appli/choisir-l-heure.html` — **rien n'est codé**.
+minutes qu'on peut bouger séparément. »* Dessiné le jour même — puis, la planche
+livrée : *« la molette a déjà été codée, vérifie »*. **Il avait raison.**
+
+`MoletteDuree` (`src/app/paysage/fiche/[id]/FicheChantierClient.tsx`) pose depuis
+le 16 août **deux listes natives : les heures à gauche, les minutes à droite**,
+chacune au doigt, au pas de cinq minutes. Sa demande décrivait exactement cela.
+
+**La faute est du même genre que celle de la planche 56** — dessiner un écran qui
+existe déjà —, et l'inverse de celle du 20 août, où l'on avait déclaré impossible
+un travail à moitié fait. `CLAUDE.md` §5 ter le dit dans les deux sens :
+*chercher avant d'affirmer*. Trente secondes de `grep -rn molette src/`.
+
+**Et il a tranché dans la foulée : « je garde celle qui est présente. »** Les
+molettes natives restent, rien n'est à coder. La question ne portait plus que sur
+l'apparence — le geste était identique.
+
+La planche le dit maintenant en toutes lettres, et un contrôle l'exige : une
+planche qui annonce codé ce qui ne l'est pas, ou l'inverse, lui coûte un
+aller-retour, et c'est ce qui venait d'arriver.
 
 **Pourquoi il a raison.** D'un seul tenant, la molette compte cinquante-trois
 crans de 0 h 00 à 4 h 00 : aller de 0 h 05 à 3 h 30 demande quarante et un crans,

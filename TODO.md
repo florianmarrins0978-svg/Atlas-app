@@ -73,7 +73,7 @@ Sa demande du 26 août 2026, et **la planche 97 lui pose la question** :
 `appli/salaries-et-equipes.html`. Trois propositions, rien n'est codé.
 
 **Sa réponse : A**, et *« on garde la même façon de faire »* pour l'affiliation.
-Codé le jour même — `ARCHITECTURE.md` §189, migration 0067.
+Codé le jour même — `ARCHITECTURE.md` §191, migration 0067.
 
 **Ce qui reste ouvert, et qui n'est pas ce lot :** l'étiquette de repli
 « Salarié 3 » est plus large que le « Équipe ? » que dessine la planche 84, et
@@ -110,6 +110,24 @@ repart de 1 ; un artisan qui migre depuis un autre logiciel voudra continuer à
 0148. Il ne l'a pas demandé, et rien ne presse — mais le jour où il le
 demandera, c'est une colonne de départ sur `entreprise_compteurs`, pas un
 nouveau format.
+
+## L'agent : ce qu'il ne sait pas encore faire
+
+**FAIT le 26 août 2026** pour l'essentiel (`ARCHITECTURE.md` §188). Ce qui reste
+ouvert, et qu'il faudra sans doute lui demander :
+
+- **Des gestes non couverts** : composer la fiche d'entretien, régler les
+  documents (validité, acompte, mentions), gérer les absences d'équipe, lancer
+  un plan d'arrosage, créer un client SANS chantier, supprimer un chantier ou un
+  tarif. Chacun est une entrée de plus dans `TypeActionProposee` et un `case`
+  dans `appliquerPropositionsAction` — le patron est posé.
+- **Le filtre de périmètre attrape le cas franc, pas la totalité.** Une question
+  du dehors sans marque connue passe au modèle, qui a la consigne. S'il signale
+  une réponse hors-sujet, c'est une marque à ajouter dans `MARQUES_DU_DEHORS` —
+  **jamais** un mot ambigu, et jamais au prix d'un faux positif.
+- **La formulation d'un vrai modèle n'a pas été vue ici** (aucune clé) : la
+  chaîne entière est éprouvée par le fournisseur `dev`. À regarder sur son
+  espace, en lui demandant trois ou quatre gestes.
 
 ---
 
@@ -4019,9 +4037,28 @@ faire.
 | Sa réponse du 25 août | Ce que ça ferme |
 |---|---|
 | **« Planche une, la A »** | **une seule liste**, tenue dans les Réglages, pré-remplie à chaque envoi. Rien n'est rangé par client |
-| **« Planche 2, la molette, mais avec d'un côté les heures qu'on peut bouger et de l'autre les minutes qu'on peut bouger séparément »** | la molette Atlas **en deux colonnes** — proposition D, dessinée le jour même |
+| **« Planche 2, la molette, mais avec d'un côté les heures qu'on peut bouger et de l'autre les minutes qu'on peut bouger séparément »** | **rien à coder : c'était DÉJÀ le cas** — voir ci-dessous |
 
-**Ce que la D change, et pourquoi il a raison.** D'un seul tenant, la molette
+**SA DEMANDE DÉCRIVAIT CE QUI EXISTAIT DÉJÀ, et c'est lui qui l'a vu :** *« la
+molette a déjà été codée, vérifie »*. Vérifié — `MoletteDuree`
+(`src/app/paysage/fiche/[id]/FicheChantierClient.tsx`) pose **deux listes
+natives, les heures à gauche, les minutes à droite**, chacune au doigt, au pas de
+cinq minutes. C'est la proposition A, codée le 16 août.
+
+**La faute est de mon côté, et elle se répète :** une planche a été dessinée sans
+chercher d'abord ce que le dépôt faisait déjà. C'est la même que la planche 56
+— décrire un écran qui existe — et l'inverse du 20 août, où l'on avait déclaré
+impossible un travail à moitié fait (`CLAUDE.md` §5 ter : *chercher avant
+d'affirmer, dans les deux sens*). Trente secondes de `grep -rn molette src/`
+l'auraient évité.
+
+**TRANCHÉ le 25 août 2026 : « je garde celle qui est présente. »** Les molettes
+natives du téléphone restent, et **rien n'est à coder**. La question ne portait
+plus que sur l'apparence — le geste était identique dans les deux cas.
+
+Le sujet est clos : **ne pas le rouvrir** sans qu'il le redemande.
+
+**Ce que la D aurait changé — gardé pour mémoire, elle n'a pas été retenue.** D'un seul tenant, la molette
 compte cinquante-trois crans de 0 h 00 à 4 h 00 : aller de 0 h 05 à 3 h 30
 demande quarante et un crans, donc plusieurs élans du pouce. Séparées, la même
 valeur se pose en deux gestes courts. Et c'est le geste de la molette de son

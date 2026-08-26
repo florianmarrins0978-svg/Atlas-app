@@ -54,15 +54,13 @@ export default function ChoixRole({
 
   return (
     <>
-      {/* **AUCUN FILET À CÔTÉ DE L'INTERTITRE** — sa demande du 25 août 2026,
-          capture à l'appui : *« ça aussi tu peux retirer »*. Celui-ci était
-          revenu avec cet écran ; `scripts/test-accueil-en-tete.ts` l'a repris.
-          Les filets qui SÉPARENT deux blocs restent — *« ceux qui séparent les
-          blocs, laisse-les »* —, ceux qui n'ornent qu'un mot partent. */}
       {titre && (
-        <p className={`mb-2 ${libelleCaps}`} style={{ color: colors.muted }}>
-          Son rôle
-        </p>
+        // **Sans filet.** Sa demande du 25 août 2026, capture à l'appui : *« ça
+        // aussi tu peux retirer »* — le trait qui part du mot et file jusqu'au
+        // bord. Il était revenu ici le 26, sur un écran neuf ;
+        // `test-accueil-en-tete.ts` l'a repris. Les séparateurs de BLOCS, eux,
+        // restent : *« ceux qui séparent les blocs, laisse-les »*.
+        <p className={`mb-2 ${libelleCaps}`} style={{ color: colors.muted }}>Son rôle</p>
       )}
 
       <div className="flex gap-2">

@@ -1222,7 +1222,15 @@ export const propositionsIa = pgTable(
     entrepriseId: uuid("entreprise_id")
       .notNull()
       .references(() => entreprises.id, { onDelete: "cascade" }),
-    chantierId: uuid("chantier_id").notNull(),
+    /**
+     * Le chantier concerné — **`null` quand le geste n'en concerne aucun**
+     * (migration 0067) : créer un chantier, régler un tarif, corriger un
+     * client depuis n'importe quel écran.
+     *
+     * Ce n'est pas un relâchement du cloisonnement : c'est `entrepriseId` que
+     * la RLS regarde, et il reste obligatoire.
+     */
+    chantierId: uuid("chantier_id"),
     type: text("type").notNull(),
     description: text("description").notNull(),
     donnees: jsonb("donnees").notNull(),
