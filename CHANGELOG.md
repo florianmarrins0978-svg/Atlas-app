@@ -113,10 +113,6 @@ périmètre affiché ne suivait pas le rôle coché, si bien qu'on lisait « le
 planning et rien d'autre » sous « Commercial ». Une maquette qui ment sur ce que
 fait un rôle est pire qu'une maquette absente.
 
----
-
-## 2026-08-26
-
 ### Les deux fiches, côte à côte — une maquette pour trancher
 
 *« La fiche d'entretien c'est la fiche de chantier »*, puis *« ressors-moi les
