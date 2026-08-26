@@ -9,6 +9,28 @@ Format : le plus récent en tête.
 
 ## 2026-08-26
 
+### L'assistant redevient le seul outil du patron
+
+*« Les salariés et commerciaux ne doivent pas avoir accès à l'assistant IA. »*
+
+Ouvert aux commerciaux plus tôt dans la journée, sur sa réponse d'alors. Il a
+refermé le soir même, et **son dernier mot revient au premier** — celui du
+25 août : *« seulement le principal »*.
+
+**La règle a cessé d'en suivre une autre**, et c'est le vrai changement :
+`peutUtiliserLAssistant` appelait `peutVoirLesMontants`, ce qui était juste tant
+que les deux disaient la même chose. Elles disent maintenant deux choses
+différentes. Garder l'appel aurait été pire qu'une erreur — le jour où quelqu'un
+élargirait la règle des montants, l'assistant se serait rouvert **en silence**.
+
+**Et la différence n'est pas le prix, c'est la portée.** Un commercial voit les
+montants écran par écran, c'est son métier. L'assistant, lui, parcourt
+l'entreprise entière et répond en une phrase.
+
+Les trois états de la décision sont écrits dans `ARCHITECTURE.md` §181, avec
+leurs dates : une décision dont on ne garde que le dernier état se repose trois
+mois plus tard.
+
 ### L'en-tête inversé : le titre d'abord, le surtitre doré en dessous
 
 *« Sur plusieurs catégories le titre était en dessous du sous-titre en doré,
@@ -256,10 +278,11 @@ de tous les clients : ouvert à un salarié, il rendrait en une phrase ce que sa
 feuille de chantier tait. La règle vit à un seul endroit
 (`peutUtiliserLAssistant`, à côté des autres).
 
-**Livrée au patron seul, puis ouverte aux commerciaux le 26 sur sa réponse** —
-*« oui tu peux l'ouvrir aux commerciaux »*. La question lui a été posée parce
-que l'assistant sait désormais lire le devis de n'importe quel client ; il a
-jugé qu'un commercial voit déjà ces prix écran par écran.
+**Ouverte aux commerciaux le 26 dans la journée, REFERMÉE le soir même** —
+*« les salariés et commerciaux ne doivent pas avoir accès à l'assistant IA »*.
+Son dernier mot revient au premier, celui du 25 août. Les trois états sont
+écrits dans `ARCHITECTURE.md` §181 : une décision dont on ne garde que le
+dernier état se repose trois mois plus tard.
 
 Détail : `ARCHITECTURE.md` §181.
 

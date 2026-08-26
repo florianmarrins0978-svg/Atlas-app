@@ -234,29 +234,42 @@ export function peutVoirLesMontants(role: Role): boolean {
 }
 
 /**
- * L'assistant, est-ce pour cette personne ?
+ * L'assistant, est-ce pour cette personne ? **NON, sauf le patron.**
  *
- * **Sa demande du 25 août 2026 :** *« qu'il se comporte comme un vrai assistant
- * au service de l'utilisateur principal seulement le principal »*. Livré ce
- * jour-là au patron seul — puis **ouvert aux commerciaux le 26, sur sa réponse :
- * *« oui tu peux l'ouvrir aux commerciaux »*.**
+ * ───────────────────────────────────────────────────────────────────────────
+ * **CETTE RÈGLE A CHANGÉ TROIS FOIS EN DEUX JOURS, et il faut les écrire
+ * toutes les trois** — une décision dont on ne garde que le dernier état se
+ * repose trois mois plus tard, et l'on refait le même chemin.
  *
- * Il suit donc `peutVoirLesMontants`, et ce n'est pas une paraphrase : c'est un
- * appel. Les deux règles pourraient diverger demain — c'est même pour cela que
- * celle-ci porte son propre nom —, mais tant qu'elles disent la même chose,
- * elles ne s'écrivent qu'une fois (`CLAUDE.md` §3).
+ * | Quand | Ce qu'il a dit | Ce que ça donnait |
+ * |---|---|---|
+ * | 25 août 2026 | *« au service de l'utilisateur principal, seulement le principal »* | patron seul |
+ * | 26 août, dans la journée | *« oui tu peux l'ouvrir aux commerciaux »* | patron + commercial |
+ * | 26 août, le soir | *« les salariés et commerciaux ne doivent pas avoir accès à l'assistant IA »* | **patron seul, à nouveau** |
  *
- * **Ce qui avait fait hésiter, et qu'il a tranché.** Depuis le 25 août,
- * l'assistant cherche une ligne dans le devis de N'IMPORTE QUEL client
- * (`RechercherLignesDevis`) : un commercial y lit ce que chacun a payé pour la
- * même prestation. Il voit déjà ces prix écran par écran — c'est son métier de
- * vendre —, et le patron a jugé que la conversation ne changeait rien à cela.
+ * **Son dernier mot fait foi, et il revient au premier.** Ce n'est donc pas un
+ * revirement en l'air : c'est la règle du 25 août, qui n'aurait pas dû être
+ * élargie.
  *
- * **Le salarié, lui, reste dehors**, et pour la raison de toujours : la feuille
- * de chantier part sans prix, et l'assistant les rendrait en une phrase.
+ * ───────────────────────────────────────────────────────────────────────────
+ * **ELLE N'APPELLE PLUS `peutVoirLesMontants`, ET C'EST LE POINT.**
+ *
+ * Tant que les deux disaient la même chose, l'une appelait l'autre — c'était
+ * juste (`CLAUDE.md` §3). Elles disent maintenant deux choses différentes : un
+ * commercial VOIT les prix, écran par écran, parce que c'est son métier de
+ * vendre ; il n'a pas pour autant un assistant qui parcourt l'entreprise
+ * entière et répond en une phrase.
+ *
+ * **La différence n'est pas le prix, c'est la PORTÉE.** L'assistant cherche une
+ * ligne dans le devis de n'importe quel client, lit les tarifs, l'identité, ce
+ * que chacun a payé — sans qu'on ait à savoir où regarder. C'est un accès
+ * transversal, et aucun rôle ne l'a sauf celui qui a déjà tout.
+ *
+ * Garder l'appel aurait été pire qu'une erreur : le jour où quelqu'un
+ * élargirait `peutVoirLesMontants`, l'assistant s'ouvrirait avec, en silence.
  */
 export function peutUtiliserLAssistant(role: Role): boolean {
-  return peutVoirLesMontants(role);
+  return role === "proprietaire";
 }
 
 /**

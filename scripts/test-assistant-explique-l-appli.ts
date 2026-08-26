@@ -163,29 +163,38 @@ async function main() {
   await ajouterMembre(entreprise.id, commercial.id, "commercial");
 
   await test("La règle d'accès à l'assistant vit à UN seul endroit", async () => {
-    // **Ouvert au commercial le 26 août 2026, sur sa réponse.** Il voit déjà les
-    // prix écran par écran ; la conversation ne lui apprend rien de plus. Le
-    // salarié, lui, reste dehors : sa feuille de chantier part sans prix, et
-    // l'assistant les rendrait en une phrase.
+    // **LE PATRON SEUL, et c'est son dernier mot** — le 26 août 2026 au soir :
+    // *« les salariés et commerciaux ne doivent pas avoir accès à l'assistant
+    // IA »*. Ouvert aux commerciaux plus tôt dans la journée, refermé le soir :
+    // les trois états sont écrits dans `acces-roles.ts`, parce qu'une décision
+    // dont on ne garde que le dernier état se repose trois mois plus tard.
+    //
+    // **Ce que ce contrôle défend vraiment** : que la règle ne se remette pas à
+    // suivre `peutVoirLesMontants`. Un commercial VOIT les prix ; il n'a pas
+    // pour autant un assistant qui parcourt l'entreprise entière.
     assert.equal(peutUtiliserLAssistant("proprietaire"), true);
-    assert.equal(peutUtiliserLAssistant("commercial"), true);
+    assert.equal(peutUtiliserLAssistant("commercial"), false);
     assert.equal(peutUtiliserLAssistant("salarie"), false);
     assert.equal(await getRole({ entrepriseId: entreprise.id, utilisateurId: salarie.id }), "salarie");
     assert.equal(await getRole({ entrepriseId: entreprise.id, utilisateurId: commercial.id }), "commercial");
     assert.equal(await getRole(P), "proprietaire");
   });
 
-  await test("Le salarié ne peut pas poser de question — le commercial, si", async () => {
-    process.env.AUTH_TEST_UTILISATEUR_ID = salarie.id;
-    const refus = await poserQuestionAction(chantier.id, [], "Quels sont les tarifs de l'entreprise ?");
-    assert.equal(refus.succes, false, "un salarié ne doit pas obtenir de réponse");
-    if (!refus.succes) assert.match(refus.erreur, /pas disponible pour votre compte/i);
+  await test("NI le salarié NI le commercial ne peuvent poser de question", async () => {
+    // Le refus est dans l'ACTION, pas dans l'écran : masquer le bouton ne ferme
+    // rien, et une action serveur se poste depuis n'importe où.
+    for (const [qui, id] of [["salarié", salarie.id], ["commercial", commercial.id]] as const) {
+      process.env.AUTH_TEST_UTILISATEUR_ID = id;
+      const refus = await poserQuestionAction(chantier.id, [], "Quels sont les tarifs de l'entreprise ?");
+      assert.equal(refus.succes, false, `un ${qui} ne doit pas obtenir de réponse`);
+      if (!refus.succes) assert.match(refus.erreur, /pas disponible pour votre compte/i);
+    }
 
-    process.env.AUTH_TEST_UTILISATEUR_ID = commercial.id;
-    const passe = await poserQuestionAction(chantier.id, [], "comment je crée un chantier ?");
-    assert.equal(passe.succes, true, "un commercial doit passer depuis le 26 août");
-
+    // **Et le patron, lui, passe** — sans quoi ce contrôle serait vert sur un
+    // assistant cassé pour tout le monde, ce qui ne prouverait rien.
     process.env.AUTH_TEST_UTILISATEUR_ID = patron;
+    const passe = await poserQuestionAction(chantier.id, [], "comment je crée un chantier ?");
+    assert.equal(passe.succes, true, "le patron ne passe plus : l'assistant est cassé pour tous");
   });
 
   await test("Un salarié ne peut pas appliquer une proposition préparée pour le patron", async () => {
