@@ -49,6 +49,7 @@ relues à chaque session) :
 24. [Faut-il une licence pour se servir des données de l'INRAE ?](#24-faut-il-une-licence-pour-se-servir-des-données-de-linrae-)
 25. [Peut-on ouvrir Atlas avec Face ID, au lieu d'un mot de passe ?](#25-peut-on-ouvrir-atlas-avec-face-id-au-lieu-dun-mot-de-passe-)
 26. [Combien d'heures avons-nous passé à créer Atlas ?](#26-combien-dheures-avons-nous-passé-à-créer-atlas-)
+27. [Le format de mes numéros de facture, c'est obligatoire ?](#27-le-format-de-mes-numéros-de-facture-cest-obligatoire-)
 
 ---
 
@@ -1750,3 +1751,58 @@ donc il n'est pas dans ces chiffres.
 Et ces heures sont du **temps écoulé**, pas de l'effort cumulé : plusieurs
 sessions travaillent souvent en parallèle sur des parties différentes. Une
 soirée de trois heures avec quatre sessions reste trois heures dans ce compte.
+
+---
+
+## 27. Le format de mes numéros de facture, c'est obligatoire ?
+
+*Question posée le 26 août 2026, capture d'une autre application à l'appui :
+« dans la catégorie facture il faut rajouter le format de numéro, c'est
+obligatoire il me semble ».*
+
+### Réponse courte : à moitié
+
+**Le format ne l'est pas. La suite, oui.**
+
+| | Obligatoire ? |
+|---|---|
+| Que vos factures se suivent **sans trou ni doublon** | **oui**, c'est la loi |
+| Qu'elles portent l'année, un « F », six chiffres plutôt que quatre | **non**, vous choisissez |
+
+Ce que le fisc demande, c'est de pouvoir vérifier qu'aucune facture n'a été
+retirée : les numéros doivent se suivre, dans l'ordre où les factures sont
+émises. Un `F2026-000012` et un `147` sont aussi valables l'un que l'autre —
+pourvu que le suivant soit `F2026-000013` et `148`.
+
+### Ce qu'Atlas faisait déjà, et ce qui manquait
+
+La suite était tenue depuis le début : un compteur par entreprise, incrémenté
+au moment même où le document est créé. Deux factures émises à la même seconde
+ne peuvent pas prendre le même numéro.
+
+Ce qui manquait, c'était **le choix de l'habillage** — et, dessous, un défaut :
+l'année était écrite en dur dans le programme. **En janvier 2027, vos factures
+auraient encore dit 2026.** Personne ne l'aurait vu avant, puisque tant qu'on
+est en 2026 le chiffre tombe juste. Corrigé le même jour.
+
+### Ce que vous choisissez, dans Réglages › Devis & factures
+
+| Format | Un devis | Une facture |
+|---|---|---|
+| Année et 4 chiffres | 2026-0012 | F2026-0012 |
+| **Année et 6 chiffres** *(votre choix, par défaut)* | 2026-000012 | F2026-000012 |
+| Année courte | 26-0012 | F26-0012 |
+| Année, mois, numéro | 2026-08-012 | F2026-08-012 |
+| Une suite sans année | 0012 | F0012 |
+
+### Deux choses qui ne se règlent pas, et pourquoi
+
+**Le compteur repart à 1 le 1ᵉʳ janvier** — votre décision. Mais seulement si
+l'année figure dans le numéro. Sur « une suite sans année », repartir à 1
+donnerait deux factures numérotées `0001` à un an d'écart : un doublon, ce que
+la loi interdit précisément. L'application le fait donc toute seule là où c'est
+possible, et le dit là où ça ne l'est pas.
+
+**Changer de format ne renumérote rien.** Vos factures déjà émises gardent leur
+numéro. Les réécrire creuserait un trou dans la suite — exactement ce qu'on
+cherche à éviter.
