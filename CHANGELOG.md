@@ -25,6 +25,14 @@ sur `Europe/Paris` — un `+2` figé se serait trompé la moitié de l'année.
 Le contrôle prend l'été et l'hiver, des deux côtés de minuit, et a été **joué
 rouge** contre l'ancienne version. `ARCHITECTURE.md` §177.
 
+**Trois suites qui dépendaient du jour où on les jouait.** Deux posaient leurs
+dates avec `CURRENT_DATE` — le jour de PostgreSQL, en UTC — et divergeaient donc
+de l'écran pendant ces deux heures ; une troisième lisait le calendrier du mois
+COURANT, si bien qu'en fin de mois il n'y restait plus assez de jours ouvrables
+et qu'elle accusait le produit. Elles lisent maintenant la même définition du
+jour que l'application, et tournent la page du mois quand il le faut. Aucune ne
+mesurait un vrai défaut : c'est le pire des rouges, celui qui accuse à tort.
+
 
 ### L'émetteur n'était sur le devis qu'une fois de trop
 

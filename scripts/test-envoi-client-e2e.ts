@@ -94,6 +94,39 @@ async function creerChantierFacturable(
   return url;
 }
 
+/**
+ * Les jours qu'on peut RÉELLEMENT proposer, en tournant la page du mois s'il le
+ * faut.
+ *
+ * **Une suite ne doit pas dépendre du jour où on la joue.** Celle-ci lisait le
+ * mois affiché — le mois COURANT. Les derniers jours du mois, il n'y reste
+ * qu'un jour ouvrable passé le délai minimal, et deux contrôles rougissaient
+ * sur du code parfaitement juste : le pire des rouges (`AGENTS.md`), parce
+ * qu'il accuse le produit pour un défaut de montage et qu'il ne tombe qu'une
+ * semaine sur quatre.
+ *
+ * On tourne donc la page du mois — le geste que le patron ferait lui-même —
+ * jusqu'à trouver de quoi éprouver la règle.
+ */
+async function joursProposables(page: Page, combien: number): Promise<string[]> {
+  const plancher = new Date();
+  plancher.setDate(plancher.getDate() + 3);
+  const depuis = plancher.toISOString().slice(0, 10);
+  for (let pageDuMois = 0; pageDuMois < 3; pageDuMois++) {
+    const jours = (
+      await page
+        .locator('[data-jour][data-etat="regardable"]')
+        .evaluateAll((els) => els.map((e) => e.getAttribute("data-jour")!).filter(Boolean))
+    ).filter((j) => j >= depuis);
+    if (jours.length >= combien) return jours;
+    const suivant = page.locator('button[aria-label^="Mois suivant"]');
+    if ((await suivant.count()) === 0 || (await suivant.isDisabled())) break;
+    await suivant.click();
+    await page.waitForTimeout(400);
+  }
+  return [];
+}
+
 async function main() {
   const browser = await lancerNavigateur();
   const context = await browser.newContext();
@@ -224,10 +257,6 @@ async function main() {
     // qu'on a le mois complet »* —, donc `button[aria-pressed]` ne rend plus
     // que les dates DÉJÀ retenues. La règle éprouvée ici, elle, n'a pas
     // changé : jamais plus de deux.
-    const cases = page.locator('[data-jour][data-etat="regardable"]');
-    const total = await cases.count();
-    assert.ok(total >= 3, `pas assez de jours libres au calendrier (${total})`);
-
     // Une date est déjà retenue à l'ouverture : on en retient deux de plus, et
     // la troisième doit chasser la première — jamais trois.
     // **Assez loin pour que le serveur les accepte.** Le mois affiché commence
@@ -235,13 +264,8 @@ async function main() {
     // écarte deux de plus. Les prendre ferait rougir cette suite sur un refus
     // parfaitement juste — le pire des rouges (`AGENTS.md`), et c'est ce qui
     // vient d'arriver : « Proposer ce jour » restait désactivé.
-    const plancher = new Date();
-    plancher.setDate(plancher.getDate() + 3);
-    const depuis = plancher.toISOString().slice(0, 10);
-    const aRetenir = (
-      await cases.evaluateAll((els) => els.map((e) => e.getAttribute("data-jour")!).filter(Boolean))
-    ).filter((j) => j >= depuis);
-    assert.ok(aRetenir.length >= 2, `pas assez de jours acceptables (${aRetenir.length})`);
+    const aRetenir = await joursProposables(page, 2);
+    assert.ok(aRetenir.length >= 2, "aucun mois n'offre deux jours proposables : le montage n'éprouve rien");
     for (const jour of aRetenir.slice(0, 2)) await retenirAuCalendrier(page, jour);
 
     // **On compte des JOURS, pas des boutons pressés.** Depuis le 12 août 2026,
@@ -615,14 +639,8 @@ async function main() {
 
     // Deux dates, comme sur sa capture — un seul jour proposé change le libellé
     // du choix, et un contrôle qui n'éprouve qu'une forme laisse passer l'autre.
-    const cases = page.locator('[data-jour][data-etat="regardable"]');
-    const plancher = new Date();
-    plancher.setDate(plancher.getDate() + 3);
-    const depuis = plancher.toISOString().slice(0, 10);
-    const libres = (
-      await cases.evaluateAll((els) => els.map((e) => e.getAttribute("data-jour")!).filter(Boolean))
-    ).filter((j) => j >= depuis);
-    assert.ok(libres.length >= 2, `pas assez de jours libres au calendrier (${libres.length})`);
+    const libres = await joursProposables(page, 2);
+    assert.ok(libres.length >= 2, "aucun mois n'offre deux jours proposables : le montage n'éprouve rien");
     for (const jour of libres.slice(0, 2)) await retenirAuCalendrier(page, jour);
 
     await page.getByRole("button", { name: "Envoyer le devis" }).click();
