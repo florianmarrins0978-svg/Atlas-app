@@ -50,26 +50,50 @@ async function main() {
   await champPrestation.fill("Dépose carrelage");
   await champPrestation.blur();
 
-  // **L'ATTENTE FIXE MENTAIT SOUS CHARGE.** Elle passait seule et rougissait
-  // dans la batterie complète, où l'enregistrement de la prestation met plus
-  // de 800 ms : la page des prix s'ouvrait avant que le serveur ait de quoi
-  // proposer, et le contrôle accusait « les tarifs de démonstration » — le
-  // mauvais coupable. La page des prix se REDEMANDE donc une fois, après une
-  // pause, avant de conclure que rien n'était calculable.
-  await page.waitForTimeout(800);
-
+  // **ON ATTEND LE BOUTON, ON NE COMPTE PLUS LES MILLISECONDES.**
+  //
+  // Deux pauses fixes ont déjà été posées ici — 800 ms, puis 1 500 ms — parce
+  // que la suite passait seule et rougissait en batterie, où l'enregistrement
+  // de la prestation prend plus longtemps. **Elles n'ont pas suffi non plus :**
+  // les 26 et 27 août 2026, deux batteries de suite se sont arrêtées ici, et le
+  // message accusait « les tarifs de démonstration » — le mauvais coupable, sur
+  // un jeu de données parfaitement sain.
+  //
+  // **Une pause fixe est un pari sur la charge de la machine**, et ce pari se
+  // reperd à chaque suite ajoutée à la batterie. On attend donc que le bouton
+  // PARAISSE, en redemandant la page : le délai devient une borne haute, plus
+  // une supposition. Rapide quand la machine l'est, patient quand elle ne l'est
+  // pas.
   const bouton = page.getByRole("button", { name: /Ajouter au détail|Déjà au détail/ });
-  await page.goto(prixUrl, { waitUntil: "networkidle" });
-  if ((await bouton.count()) === 0) {
-    await page.waitForTimeout(1500);
+  const finAttente = Date.now() + 30_000;
+  do {
     await page.goto(prixUrl, { waitUntil: "networkidle" });
-  }
+    if ((await bouton.count()) > 0) break;
+    await page.waitForTimeout(1000);
+  } while (Date.now() < finAttente);
+
   if ((await bouton.count()) === 0) {
-    // Aucune proposition possible sur ce jeu de données : la suite n'a rien à
-    // éprouver, et le dire vaut mieux que de passer au vert sans avoir regardé.
+    // **Le message ne peut plus accuser les tarifs sans avoir regardé.** Après
+    // trente secondes d'attente, ce n'est plus une question de charge : soit la
+    // prestation ne s'est pas enregistrée, soit aucun tarif ne lui correspond.
+    // Les deux se distinguent à l'écran, et l'on dit lequel on a vu.
+    // **On lit les CHAMPS, pas le texte de la page.** Une prestation saisie vit
+    // dans la `value` d'un `<input>`, et `innerText` ne la voit pas : la
+    // première version de ce diagnostic annonçait « la prestation n'a pas été
+    // enregistrée » alors qu'elle l'était — c'est-à-dire qu'elle accusait à
+    // tort, le défaut même qu'elle vient réparer. Vu en retirant le tarif.
+    await page.goto(`${chantierUrl}/informations`, { waitUntil: "networkidle" });
+    const saisies = await page.locator("form input").evaluateAll((champs) =>
+      champs.map((c) => (c as HTMLInputElement).value)
+    );
+    const posee = saisies.some((v) => /Dépose carrelage/i.test(v));
     console.error(
-      "✗ Aucune proposition de prix n'a pu être calculée : ce contrôle n'a rien éprouvé. " +
-        "Vérifier les tarifs de démonstration."
+      "✗ Aucune proposition de prix après trente secondes : ce contrôle n'a rien éprouvé.\n" +
+        (posee
+          ? "  La prestation « Dépose carrelage » EST bien sur le chantier : c'est donc le tarif " +
+            "correspondant qui manque au jeu de démonstration."
+          : "  La prestation « Dépose carrelage » n'a PAS été enregistrée sur le chantier : " +
+            "le défaut est dans la saisie, pas dans les tarifs.")
     );
     process.exit(1);
   }

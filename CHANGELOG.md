@@ -126,11 +126,17 @@ planche porte donc deux réécritures des libellés — le verbe manquant est
 « je reverse » — et **la ligne qui dit ce que le choix change sur le mois
 affiché, y compris quand il n'y change rien.**
 
-**Il a tranché le soir même : B, sans le tableau d'exemple.** Les libellés
-réécrits, plus la ligne qui dit ce que le choix change — le tableau expliquait,
-et un écran n'explique pas son propre fonctionnement (`CLAUDE.md` §3). La
-planche porte la version retenue et ce qui a été écarté :
-`appli/quand-je-reverse-la-tva.html`. Reste à coder.
+**Il a tranché le soir même : B, sans le tableau d'exemple** — et c'est
+**codé**. L'écran porte maintenant un surtitre qui dit le geste, deux lignes qui
+répondent à « et alors ? », et la phrase qui annonce ce que le choix change sur
+le mois affiché.
+
+**Sa première version a été refusée par son propre contrôle** : elle suivait le
+doigt et devançait le grand chiffre pendant l'aller-retour avec le serveur —
+deux montants qui se contredisaient une seconde. Elle nomme désormais les deux
+régimes. Et la capture a montré un espace mangé par la compilation
+(« 1 400,00 €dès l'envoi »), que rien n'aurait vu autrement.
+`ARCHITECTURE.md` §197.
 
 ### « Sans date » disparaît quand rien n'attend de jour
 
@@ -161,6 +167,37 @@ juste, et pour une demande exaucée (`CLAUDE.md` §5 bis). Il compte
 que la suite installe déjà pour le bouton. **Vu rougir** contre l'ancienne
 disposition : « le titre "Sans date" reste sur un écran où rien n'attend de
 jour ».
+
+### L'accueil se range par date : le plus récent en haut
+
+*« Je viens de recevoir un devis retourné, il devrait apparaître en premier.
+L'ordre doit être dernier arrivé en tête de liste. Le plus récent en haut. »*
+Sur sa capture, la nouvelle du jour était **deuxième**, sous un rappel vieux de
+treize jours.
+
+**Ce que ça évite :** chercher ce qui vient d'arriver au milieu d'une liste dont
+l'ordre ne s'explique pas. Rien ne pouvait le lui expliquer — l'ordre se
+décidait par SORTE de carte, jamais par date.
+
+**Ce que ça remplace, et c'est assumé :** son arrangement du 16 août — les
+rappels devant, une place garantie aux réponses de clients. Il répondait à une
+vraie crainte, trois chantiers sans devis masquant toutes les réponses. **La
+date répond à la même crainte et mieux :** une réponse qui vient d'arriver est
+la plus récente, donc la première, sans qu'aucune place ait à être réservée. Ce
+qu'un tressage obtenait par une exception, l'ordre chronologique l'obtient par
+la règle — et il s'explique en une phrase.
+
+**Ce que ça coûte, éprouvé plutôt que supposé :** une réponse ancienne et non
+acquittée peut désormais passer derrière des rappels plus frais.
+
+Chaque carte porte l'instant où elle est apparue — pour une réponse, le moment
+où le client a répondu ; pour un lien expiré, l'expiration et non l'envoi. Cette
+date range, elle ne s'affiche pas.
+
+Les deux contrôles qui exigeaient l'ancien ordre ont été **réécrits, pas
+contournés** : une suite qui réclame ce qu'il a fait retirer rend son écran
+impossible à changer. `ARCHITECTURE.md` §196.
+
 
 ### « Mon compte » : quarante mots de moins
 
@@ -546,7 +583,7 @@ Le contrôle **mesure** la position de la rubrique au-dessus de « Jour du
 passage » — l'ordre du code ne prouve rien —, exige 44 px pour le pouce, et a
 été vu rouge. Et un piège de charte est sorti de l'image, d'aucun test : le titre
 « doré » écrit `colors.rust` sortait presque noir ; l'or, c'est `colors.or`.
-`ARCHITECTURE.md` §195.
+`ARCHITECTURE.md` §197.
 
 ### La liste, dans Paysage — deux emplacements à choisir
 

@@ -2366,7 +2366,7 @@ rejouer.** J'ai bien failli défaire un changement juste pour cette raison.
 Trois choses à ne pas défaire par mégarde : la rubrique ne revient pas dans les
 Réglages (un contrôle le tient), la porte ne redescend pas en bas (un
 commentaire du 24 août disait l'inverse — il a été récrit), et le titre doré est
-`colors.or`, jamais `colors.rust` qui vaut le vert pin. `ARCHITECTURE.md` §195.
+`colors.or`, jamais `colors.rust` qui vaut le vert pin. `ARCHITECTURE.md` §197.
 
 
 **LE JOUR SE COMPTE CHEZ LUI, PLUS À GREENWICH (25 août).** `jourIso` rendait le
