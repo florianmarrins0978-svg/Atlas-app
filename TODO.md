@@ -9,6 +9,29 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
+## Trois suites navigateur rougissent SOUS LA BATTERIE et passent seules
+
+**Constaté le 26 août 2026**, sur deux batteries complètes de suite :
+`test-fiche-chantier-e2e`, `test-lecons-prix-e2e` et `test-planning-vers-facture-e2e`
+tombent en batterie et rendent **toutes trois 100 % vert rejouées seules** —
+vérifié une par une. Ce n'est jamais la même qui tombe d'une batterie à l'autre.
+
+C'est la première des deux causes écrites en tête de `HANDOVER.md` : un délai
+plutôt qu'un signal. Sous les cent douze suites, cette machine met plus
+longtemps que le délai posé — quinze secondes pour un écran, trente puis
+soixante pour une action serveur.
+
+**Ce que ça coûte, et pourquoi ce n'est pas rien :** une batterie qu'on prend
+l'habitude de voir rouge cesse d'être lue, et le jour où elle attrape un vrai
+défaut, personne ne la croit.
+
+**Ce qu'il faudrait, pour qui reprend :** remplacer ces attentes par un signal
+(la réponse du serveur, la classe posée par le composant) plutôt que d'allonger
+les délais un à un — allonger ne fait que repousser le seuil, et la machine
+suivante sera plus lente encore.
+
+---
+
 ## `test-fiche-pendant-relance.ts` rougit sur `main`, et ce n'est pas ce lot
 
 **Constaté le 25 août 2026.** La batterie complète rend `232/233` : seule
