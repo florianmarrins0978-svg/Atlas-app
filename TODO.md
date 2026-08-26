@@ -9,33 +9,17 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
-## ⏳ Coder « Quand je reverse la TVA » — retenu le 26 août 2026
+## ✅ ~~Coder « Quand je reverse la TVA »~~ — fait le 26 août 2026
 
-Sa capture : *« quand le client le paye / quand je met la facture, c'est pas
-clair, on comprend rien »*. **Il a choisi**, planche
-`appli/quand-je-reverse-la-tva.html` : les libellés réécrits, **sans le tableau
-d'exemple**.
+~~Sa capture : « quand le client le paye / quand je met la facture, c'est pas
+clair, on comprend rien ». Il a choisi B sans le tableau d'exemple.~~
+`ARCHITECTURE.md` §194.
 
-Ce qu'il y a à faire, dans `src/app/termines/tva/RegimeTva.tsx` :
-
-| | |
-|---|---|
-| le surtitre | « Je reverse ma TVA aux impôts » — le verbe manquait |
-| ligne 1 | « Le mois où mon client me paie » · *Une facture pas encore payée n'est pas déclarée.* |
-| ligne 2 | « Le mois où j'envoie la facture » · *Même si le client n'a pas encore payé.* |
-
-**Et la ligne du bas, qui est le vrai sujet.** Elle dit ce que le choix change
-sur le mois affiché — *« sur août 2026, ce choix ne change rien : vos factures
-d'août ont été payées en août »*. C'est elle qui répond à sa seconde plainte du
-26 août, et sans elle il la reposera.
-
-**Ce qu'elle demande :** le total sous l'AUTRE régime. `releveTvaCollectee` ne
-sait calculer que celui qui est enregistré — il faut lui passer le régime en
-paramètre plutôt que d'écrire un second calcul (`CLAUDE.md` §3, jamais deux
-implémentations d'une même règle).
-
-**Ce qui ne bouge pas :** la phrase « ce choix doit correspondre à ce que les
-impôts savent de vous » reste sous les boutons.
+**Ce qui reste ouvert**, et qui n'est pas ce lot : la phrase compare les deux
+régimes sur la période AFFICHÉE. Elle ne dit rien des mois précédents, où
+l'écart peut être tout autre. Il ne l'a pas demandé, et l'ajouter chargerait un
+écran qu'il veut court — mais le jour où il posera la question, c'est cette
+ligne-là qu'il faudra étendre, pas une seconde.
 
 ---
 
