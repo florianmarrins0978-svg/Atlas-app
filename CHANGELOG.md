@@ -53,6 +53,27 @@ fait un rôle est pire qu'une maquette absente.
 
 ## 2026-08-25
 
+### Un septième contrôle, et la leçon qui vaut pour tous
+
+`test-lecons-prix-e2e` guettait la réponse HTTP de l'action serveur. Son délai
+avait déjà été relevé de 30 à 60 secondes le matin même, pour la même raison ;
+sous la batterie entière, soixante ne suffisaient pas non plus.
+
+**Quatre-vingt-dix n'auraient fait que repousser le mur.** Une attente calée sur
+la vitesse de la machine finit toujours par mesurer la machine — et le rouge
+qu'elle produit accuse un produit sain.
+
+Ce que la suite veut savoir n'est pas qu'une requête est passée : c'est que le
+prix est en base, car c'est cela seul qui apprend quelque chose à l'agent. Elle
+regarde donc la base, et l'échec dit ce qu'elle portait vraiment (« lu :
+1400.00 »). Confrontée à un prix qui n'arrive jamais, elle rougit.
+
+**Sept contrôles réparés en une journée, aucun défaut de produit derrière.**
+Deux cassaient à minuit, trois lisaient trop tôt, un exigeait un état fugace, un
+guettait le réseau au lieu du résultat. Le fil commun tient en une phrase :
+*ils mesuraient un instant, ou une vitesse, plutôt qu'un état.*
+
+
 ### Ses journées se comptaient à Greenwich
 
 *« Ce soir à 00 h 00 il passe dans Terminés ? »* — non : à **2 h du matin**. Le

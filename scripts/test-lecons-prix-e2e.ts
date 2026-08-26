@@ -18,7 +18,7 @@ const LIBELLE_PASSE = "Abattage d'un chêne mort — démontage avec rétention,
 // tranche de dix centimètres qu'on éprouve ici, pas une égalité de chaînes.
 const LIBELLE_DU_JOUR = "Abattage d'un chêne mort — démontage avec rétention, ⌀ 68 cm";
 
-type Terrain = { passe: string; duJour: string; lignePasse: string };
+type Terrain = { passe: string; duJour: string; lignePasse: string; entrepriseId: string };
 
 /** Deux chantiers à elle : un déjà chiffré, un à chiffrer. */
 async function preparerTerrain(): Promise<Terrain> {
@@ -54,7 +54,7 @@ async function preparerTerrain(): Promise<Terrain> {
        VALUES ($1,$2,$3,1,0,0)`,
       [entrepriseId, duJour, LIBELLE_DU_JOUR]
     );
-    return { passe, duJour, lignePasse: l[0].id as string };
+    return { passe, duJour, lignePasse: l[0].id as string , entrepriseId };
   } finally {
     await client.end();
   }
@@ -75,6 +75,44 @@ async function main() {
     await page.click('button[type="submit"]');
     await page.waitForURL(`${BASE}/`, { timeout: 30000 });
 
+
+  /**
+   * Attend que le prix soit ÉCRIT, plutôt que d'écouter passer une requête.
+   *
+   * **Septième contrôle du même mal en une journée, et le plus instructif.**
+   * Il guettait la réponse HTTP de l'action serveur — un délai relevé de 30 à
+   * 60 secondes le matin même, pour la même raison. Sous la batterie entière,
+   * soixante ne suffisent pas non plus, et quatre-vingt-dix ne feraient que
+   * repousser le mur : **une attente calée sur la vitesse de la machine finit
+   * toujours par mesurer la machine.**
+   *
+   * Ce que la suite veut savoir n'est pas qu'une requête est passée, c'est que
+   * le prix est en base — c'est cela seul qui apprend quelque chose à l'agent.
+   * On regarde donc la base, et l'échec dit ce qu'elle portait vraiment.
+   */
+  const attendrePrixEcrit = async (chantierId: string, attendu: number) => {
+    const lecteur = new Client({ connectionString: process.env.DATABASE_URL });
+    await lecteur.connect();
+    try {
+      // **Le contexte d'entreprise, sinon la RLS rend zéro ligne** — et le
+      // contrôle mesurerait zéro, ce qui est pire qu'absent (`CLAUDE.md` §5).
+      await lecteur.query(`SELECT set_config('app.entreprise_id', $1, false)`, [terrain.entrepriseId]);
+      let lu: unknown = null;
+      for (const essai of [0, 1, 2, 3, 4, 5, 6, 7]) {
+        if (essai > 0) await new Promise((r) => setTimeout(r, essai * 700));
+        const { rows } = await lecteur.query(
+          `SELECT prix_unitaire FROM lignes_prix WHERE chantier_id = $1 ORDER BY created_at LIMIT 1`,
+          [chantierId]
+        );
+        lu = rows[0]?.prix_unitaire ?? null;
+        if (lu !== null && Number(lu) === attendu) return;
+      }
+      assert.fail(`Le prix ${attendu} n'est jamais arrivé en base — lu : ${JSON.stringify(lu)}`);
+    } finally {
+      await lecteur.end();
+    }
+  };
+
     // --- 1. Il chiffre son chantier, à la main ------------------------------
     await page.goto(`${BASE}/chantiers/${terrain.passe}/devis-complet`, { waitUntil: "domcontentloaded" });
     await page.waitForSelector("text=Total TTC", { timeout: 60000 });
@@ -83,16 +121,8 @@ async function main() {
     // L'enregistrement part quand il quitte le champ — c'est là que l'agent
     // apprend. On attend la réponse du serveur, jamais un chrono : sur une
     // machine chargée, un délai en dur ferait rougir un produit correct.
-    const enregistre = page.waitForResponse(
-      (r) => r.request().method() === "POST" && r.url().includes("/devis-complet"),
-      // 60 s comme les attentes d'écran ci-dessus, et pas 30 : sous la batterie
-      // entière, la machine est chargée et l'action serveur met plus longtemps
-      // à répondre. Le 25 août 2026, cette suite a rougi en batterie et passait
-      // seule — le défaut était le délai, pas le produit (`HANDOVER.md`).
-      { timeout: 60000 }
-    );
     await prixUnitaire.blur();
-    await enregistre;
+    await attendrePrixEcrit(terrain.passe, 1400);
 
     // --- 2. Sur le chantier suivant, l'agent s'en souvient ------------------
     await page.goto(`${BASE}/chantiers/${terrain.duJour}/devis-complet`, { waitUntil: "domcontentloaded" });
@@ -114,16 +144,8 @@ async function main() {
     // --- 3. Il le reprend d'un geste, et ça tient ---------------------------
     const reprendre = page.locator("text=Reprendre ce prix").first();
     assert.equal(await reprendre.count(), 1, "Le rappel s'affiche mais ne se reprend pas d'un geste.");
-    const reprise = page.waitForResponse(
-      (r) => r.request().method() === "POST" && r.url().includes("/devis-complet"),
-      // 60 s comme les attentes d'écran ci-dessus, et pas 30 : sous la batterie
-      // entière, la machine est chargée et l'action serveur met plus longtemps
-      // à répondre. Le 25 août 2026, cette suite a rougi en batterie et passait
-      // seule — le défaut était le délai, pas le produit (`HANDOVER.md`).
-      { timeout: 60000 }
-    );
     await reprendre.click();
-    await reprise;
+    await attendrePrixEcrit(terrain.duJour, 1400);
 
     await page.reload({ waitUntil: "domcontentloaded" });
     await page.waitForSelector("text=Total TTC", { timeout: 60000 });
