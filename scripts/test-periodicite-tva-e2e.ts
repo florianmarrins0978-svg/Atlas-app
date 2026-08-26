@@ -159,6 +159,54 @@ async function main() {
     await choisir(page, "Tous les mois");
   });
 
+  // ─── SON GESTE À LUI, ET LA RAISON POUR LAQUELLE RIEN NE LE VOYAIT ───────
+  //
+  // **Sa plainte du 26 août 2026 :** *« quand je change entre tous les mois et
+  // tous les trois mois, c'est pareil, rien ne se passe »*.
+  //
+  // Tout ce qui précède passe par **Réglages**, puis rouvre `/termines/tva` par
+  // une navigation neuve — et c'est exactement ce qui rendait le défaut
+  // invisible : une page rouverte est toujours juste. Lui bascule **depuis
+  // l'écran de TVA**, sans le quitter, et c'est là que rien ne bougeait.
+  //
+  // Ce cas ne recharge donc RIEN. Il touche les deux mots soulignés du haut et
+  // regarde le titre.
+  await test("SON GESTE : basculer depuis l'écran de TVA change le titre, sans recharger", async () => {
+    await choisir(page, "Tous les mois");
+    await page.goto(`${BASE}/termines/tva`, { waitUntil: "domcontentloaded" });
+    await page.waitForSelector("text=Reste à payer", { timeout: 30_000 });
+    const avant = (await page.locator("h1").first().textContent())?.trim() ?? "";
+    assert.ok(!/trimestre/i.test(avant), `l'écran ne part pas d'un mois : « ${avant} »`);
+
+    await page.getByRole("button", { name: "Tous les trois mois", exact: true }).click();
+
+    // **On attend le TITRE, pas un délai.** Un `waitForTimeout` mesurerait la
+    // vitesse de la machine ; ce qu'on veut savoir est si l'écran finit par
+    // dire le trimestre.
+    try {
+      await page.waitForFunction(
+        () => /trimestre/i.test(document.querySelector("h1")?.textContent ?? ""),
+        null,
+        { timeout: 15_000 }
+      );
+    } catch {
+      const apres = (await page.locator("h1").first().textContent())?.trim() ?? "";
+      throw new Error(
+        `l'écran dit toujours « ${apres} » après être passé au trimestre : ` +
+          "c'est très exactement ce qu'il signale — rien ne se passe."
+      );
+    }
+
+    // Et le retour au mois doit marcher pareil : une correction qui ne
+    // fonctionnerait que dans un sens laisserait la moitié du défaut.
+    await page.getByRole("button", { name: "Tous les mois", exact: true }).click();
+    await page.waitForFunction(
+      () => !/trimestre/i.test(document.querySelector("h1")?.textContent ?? ""),
+      null,
+      { timeout: 15_000 }
+    );
+  });
+
   // **Ce que l'application refuse de faire, et qui doit le rester.** Le seuil
   // des 4 000 € porte sur la TVA due ; Atlas ne connaît que la collectée. Un
   // écran qui conseillerait « passez au trimestre » inventerait une donnée
@@ -184,6 +232,14 @@ async function main() {
     // mesure désormais, sur le texte, pas sur un libellé qu'il peut vouloir
     // réécrire demain.
     assert.ok(texte.trim().length > 0, "la rubrique « Votre TVA » est vide : rien n'est mesuré");
+    // **Le mois reste annoncé comme le DÉFAUT** — sa phrase courte du 24 août.
+    // Sans cela, les deux boutons se lisent comme un choix libre, et le mauvais
+    // coûte un rappel de l'administration. Le motif est volontairement large :
+    // ce qu'on défend est le FAIT, pas la formule, qu'il peut réécrire demain.
+    assert.ok(
+      /(mois[^.]{0,40}défaut|défaut[^.]{0,40}mois)/i.test(texte),
+      `l'écran ne dit plus que le mois est le défaut : ${texte.slice(0, 160)}`
+    );
     assert.ok(
       !/vous pouvez passer|nous vous conseillons|éligible|vous avez droit/i.test(texte),
       `l'écran conseille une périodicité qu'il ne peut pas connaître : ${texte.slice(0, 160)}`
