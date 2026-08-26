@@ -265,7 +265,7 @@ async function main() {
     await page.goto(`${BASE}/termines/tva`, { waitUntil: "networkidle" });
     const avant = await collectee(page);
 
-    await page.getByRole("radio", { name: /Quand j'émets la facture/ }).click();
+    await page.getByRole("radio", { name: /Le mois où j'envoie la facture/ }).click();
     await page.waitForFunction(
       (a) => {
         const m = document.body.innerText.match(/COLLECTÉE\s*\n?\s*([\d\s   ,.]+)\s*€/i);
@@ -291,7 +291,78 @@ async function main() {
     );
 
     // On repose le régime : les suites suivantes partent d'un état connu.
-    await page.getByRole("radio", { name: /Quand le client me paie/ }).click();
+    await page.getByRole("radio", { name: /Le mois où mon client me paie/ }).click();
+    await page.waitForTimeout(1500);
+  });
+
+  // ─── SA PLAINTE DU 26 AOÛT 2026 : « rien ne se passe » ───────────────────
+  //
+  // *« Et lorsque je change entre les deux, rien ne se passe, c'est normal ? »*
+  //
+  // **C'était normal, et c'est bien là le problème.** Quand toutes les factures
+  // d'un mois ont été payées dans le mois, les deux régimes tombent sur le même
+  // chiffre : le calcul est juste. Mais un écran qui ne bouge pas sans rien
+  // dire se lit comme une panne — il a cru l'application cassée.
+  //
+  // Ce que ce cas garde, c'est la PHRASE qui manquait, et surtout le fait
+  // qu'elle ne peut pas dériver : le premier montant qu'elle cite est celui du
+  // bloc au-dessus. Une phrase qui annoncerait un chiffre absent de l'écran
+  // serait pire que pas de phrase du tout.
+  await test("LA PHRASE DIT CE QUE LE CHOIX CHANGE — sa plainte du 26 août", async () => {
+    const { chantierId } = await chantierRealise(page, "ecart");
+    await emettre(page, chantierId); // émise, et jamais payée
+    await page.goto(`${BASE}/termines/tva`, { waitUntil: "networkidle" });
+
+    const phrase = page.locator('[data-atlas="ecart-des-regimes"]');
+    assert.equal(await phrase.count(), 1, "la phrase qui dit ce que le choix change a disparu");
+
+    const nombre = (x: string) => Number(x.replace(/[\s   ]/g, "").replace(",", "."));
+    const montants = async () => {
+      const dit = (await phrase.innerText()).trim();
+      const lus = [...dit.matchAll(/([\d \s   ]+,\d{2})\s*€/g)].map((m) => nombre(m[1]));
+      return { dit, lus };
+    };
+
+    // **Une facture jamais payée sépare forcément les deux régimes.** Si la
+    // phrase dit « ne change rien » ici, c'est qu'elle ne regarde pas le second
+    // régime — et elle mentirait exactement là où il a besoin d'elle.
+    const avant = await montants();
+    assert.ok(
+      /ce choix change/i.test(avant.dit),
+      `elle dit « ${avant.dit} » alors qu'une facture émise attend son paiement`
+    );
+    assert.equal(avant.lus.length, 2, `deux montants attendus, lu « ${avant.dit} »`);
+    assert.equal(
+      avant.lus[0],
+      await collectee(page),
+      "le montant cité n'est pas celui du bloc au-dessus : la phrase a dérivé"
+    );
+    assert.ok(avant.lus[1] > avant.lus[0], "aux débits, la facture impayée doit ajouter sa TVA");
+
+    // **Et elle suit le doigt.** L'écran coche la ligne avant que le serveur
+    // réponde ; les deux montants doivent s'échanger dans le même mouvement,
+    // sans quoi la phrase ment pendant l'aller-retour — c'est-à-dire à
+    // l'instant précis où il la lit.
+    await page.getByRole("radio", { name: /Le mois où j'envoie la facture/ }).click();
+    await page.waitForFunction(
+      (attendu) => {
+        const e = document.querySelector('[data-atlas="ecart-des-regimes"]');
+        return (e?.textContent ?? "").includes(attendu);
+      },
+      // Le montant des débits doit passer EN PREMIER : c'est la ligne cochée.
+      avant.dit.match(/([\d \s   ]+,\d{2})\s*€/g)?.[1] ?? "",
+      { timeout: 15_000 }
+    );
+    const apres = await montants();
+    assert.deepEqual(
+      apres.lus,
+      [avant.lus[1], avant.lus[0]],
+      `les deux montants ne se sont pas échangés : « ${apres.dit} »`
+    );
+    assert.equal(apres.lus[0], await collectee(page), "après bascule, la phrase ne suit plus l'écran");
+
+    // On repose le régime : les suites suivantes partent d'un état connu.
+    await page.getByRole("radio", { name: /Le mois où mon client me paie/ }).click();
     await page.waitForTimeout(1500);
   });
 
