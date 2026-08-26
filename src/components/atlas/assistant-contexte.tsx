@@ -30,40 +30,42 @@ type Assistant = {
 const Contexte = createContext<Assistant | null>(null);
 
 /**
- * **`disponible` : l'assistant est réservé au patron** (sa demande du 25 août
- * 2026, *« au service de l'utilisateur principal seulement le principal »*).
+ * **`disponible: false` éteint l'assistant pour de bon**, bouton compris.
  *
- * Le rôle est décidé AU SERVEUR, dans le gabarit racine, et voyage jusqu'ici en
- * simple booléen — le navigateur ne le calcule pas et ne peut pas le retourner.
+ * Un salarié n'y a pas droit : l'assistant reconstitue au serveur les chantiers,
+ * les clients, les prestations et les PRIX de l'entreprise (`assistant-service`).
+ * Le lui laisser rouvrirait par une conversation tout ce que les rôles viennent
+ * de fermer — et par la porte la plus difficile à surveiller, puisqu'il suffit
+ * de demander.
  *
- * **Ce n'est pas la barrière**, seulement ce qui évite d'offrir un bouton qui
- * refuserait : les deux actions serveur de l'assistant relisent le rôle en base
- * (`src/app/assistant/actions.ts`). Un écran ne protège rien.
+ * **Ce n'est pas ce qui protège.** `poserQuestionAction` refuse au SERVEUR ; ceci
+ * évite seulement de lui montrer un bouton qui ne répondrait pas.
+ *
+ * Rendre le fournisseur inerte plutôt que d'ajouter un test dans le bouton :
+ * `useAssistant()` rend déjà `null` hors fournisseur, et le bouton sait déjà se
+ * taire dans ce cas. Un seul chemin, celui qui existe.
  */
 export function FournisseurAssistant({
-  disponible = true,
   children,
+  disponible = true,
 }: {
-  disponible?: boolean;
   children: React.ReactNode;
+  disponible?: boolean;
 }) {
   const [ouvert, setOuvert] = useState(false);
-  const valeur = useMemo<Assistant | null>(
-    () =>
-      disponible
-        ? {
-            ouvert,
-            basculer: () => setOuvert((o) => !o),
-            fermer: () => setOuvert(false),
-          }
-        : null,
-    [ouvert, disponible],
+  const valeur = useMemo<Assistant>(
+    () => ({
+      ouvert,
+      basculer: () => setOuvert((o) => !o),
+      fermer: () => setOuvert(false),
+    }),
+    [ouvert],
   );
-  return <Contexte.Provider value={valeur}>{children}</Contexte.Provider>;
+  return <Contexte.Provider value={disponible ? valeur : null}>{children}</Contexte.Provider>;
 }
 
 /**
- * **Rend `null` hors du fournisseur — ET pour qui n'y a pas droit.**
+ * **Rend `null` hors du fournisseur, au lieu de lever.**
  *
  * Le bouton vit dans `EnTeteEcran`, une pièce que onze écrans emploient — et
  * qu'une page hors du gabarit (un écran public par jeton, une page d'erreur)
@@ -71,8 +73,7 @@ export function FournisseurAssistant({
  * pour un bouton d'agrément ; et une action serveur qui plante rend au patron un
  * identifiant opaque, jamais la cause (`HANDOVER.md`, piège 0 ter). Le bouton se
  * tait donc et disparaît, ce qui est le comportement juste : sans panneau pour
- * l'entendre, il n'aurait rien ouvert. C'est exactement ce qu'on veut aussi
- * pour un salarié : la pastille disparaît, sans rien griser ni expliquer.
+ * l'entendre, il n'aurait rien ouvert.
  */
 export function useAssistant(): Assistant | null {
   return useContext(Contexte);

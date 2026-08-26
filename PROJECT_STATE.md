@@ -1,7 +1,7 @@
 # État du projet
 
 **Dernière mise à jour :** 2026-08-25 · branche `main`
-· dernière migration `drizzle/0063_cles_appareil.sql`
+· dernière migration `drizzle/0065_roles_et_acces.sql`
 
 
 *(Le numéro du dernier commit ne figure plus ici : il était faux dès le commit
@@ -12,6 +12,30 @@ Ce fichier dit **où en est le produit**, pas ce qu'on aimerait qu'il soit. Une
 ligne « fait » qui ne l'est pas coûte plus cher qu'une ligne absente.
 
 ---
+
+## Trois rôles, trois sessions — qui atteint quoi (25 août 2026)
+
+*Sa demande du 25 août : « chaque utilisateur possède son propre compte et sa
+propre session […] les restrictions doivent être appliquées côté serveur, et pas
+uniquement en masquant des boutons ». La règle elle-même est tranchée dans
+`docs/QUESTIONS.md` §10 depuis le 13 août.*
+
+| | État |
+|---|---|
+| Trois rôles en base — `proprietaire`, `commercial`, `salarie` ; `membre` repris en `salarie` | **fait** — migration `0065`, contrainte `CHECK` en base |
+| La règle « qui atteint quoi », fonction pure et **unique source** | **fait** — `src/lib/acces-roles.ts` |
+| Les écrans refusent au serveur, sans qu'aucun ait à y penser | **fait** — `GardeAcces`, dans `src/app/layout.tsx` |
+| Les routes d'API refusent, et une route neuve ne peut pas l'oublier | **fait** — `exigerOuverture` ; `scripts/test-acces-routes-gardees.ts` rougit sur un oubli |
+| Les actions restent gardées par rôle | **inchangé** — `exigerProprietaire`, plus les quatre gestes des accès |
+| Écran Réglages → Équipe → « Qui a accès » : créer un compte, changer un rôle, retirer | **fait** — `src/app/reglages/equipe/QuiAAcces.tsx` |
+| Ce qu'un salarié voit du planning : tout, ou son équipe — **par personne** | **fait** — tamis dans `contextePlanning`, jamais à l'écran |
+| La barre du bas et le sommaire des réglages suivent le rôle | **fait** — même fonction que celle qui refuse |
+| Le dernier patron ne peut ni se rétrograder ni se retirer | **fait** — `donner-un-acces.ts` |
+| Isolation entre entreprises sur les accès eux-mêmes | **fait** — éprouvée sous `atlas_app` (`test-acces-roles-db.ts`) |
+| **Un commercial LIT les tarifs sans les changer** (règle du 13 août) | **PAS FAIT** — `/reglages/tarifs` et `/reglages/prix` restent au patron seul, comme avant ce lot. Voir `TODO.md` |
+| L'assistant est fermé au salarié — il reconstitue chantiers, clients et prix | **fait** — refus dans `poserQuestionAction`, bouton non rendu |
+| La connexion mène chacun chez lui, sans renvoi enchaîné | **fait** — `src/server/accueil-apres-connexion.ts` ; sans quoi le salarié voyait une page blanche |
+| Vu à l'écran | **fait pour le planning du salarié** (deux onglets, ni assistant ni lien d'agenda) et pour celui du patron (cinq onglets, inchangé). **L'écran « Qui a accès » n'a pas encore été capturé** |
 
 ## L'assistant explique l'appli, et sert le patron seul (25 août 2026)
 

@@ -4,10 +4,12 @@ import { getCurrentCtx } from "@/server/session-ctx";
 import { estProprietaire } from "@/server/autorisation";
 import { getEntreprise } from "@/server/repositories/entreprises";
 import { listerEquipes } from "@/server/repositories/equipes";
+import { equipesPourRattachement, listerAcces } from "@/server/repositories/membres-entreprise";
 import { listerAbsencesEquipe } from "@/server/repositories/absences-equipe";
 import { jourIso } from "@/lib/jour";
 import RubriqueReservee from "../RubriqueReservee";
 import VosEquipes from "../VosEquipes";
+import QuiAAcces from "./QuiAAcces";
 import AbsencesEquipe from "../AbsencesEquipe";
 
 export const dynamic = "force-dynamic";
@@ -30,8 +32,12 @@ export const dynamic = "force-dynamic";
  * deux vérités sur le nombre de chantiers qui partent le même jour, c'est-à-dire
  * sur ce que le planning propose (`CLAUDE.md` §3).
  *
- * **Ce qui n'est PAS ici et que le libellé promet :** les comptes, les rôles et
- * les permissions. L'écran le dit plutôt que de le laisser chercher.
+ * **LES COMPTES SONT ICI DEPUIS LE 25 AOÛT 2026.** Cet en-tête disait le
+ * contraire — « ce qui n'est PAS ici : les comptes, les rôles et les
+ * permissions » —, et c'était vrai jusqu'à ce lot. Les deux listes cohabitent
+ * désormais sur le même écran, dans cet ordre et sans se mélanger : « Qui a
+ * accès » porte des COMPTES, « Vos équipes » porte des FILES DU PLANNING
+ * (`docs/QUESTIONS.md` §10).
  */
 export default async function EquipePage() {
   const ctx = await getCurrentCtx();
@@ -47,10 +53,12 @@ export default async function EquipePage() {
   const aujourdHui = jourIso(new Date());
   // Seulement ce qui n'est pas fini : une liste qui accumulerait deux ans de
   // déplacements passés ne se relirait plus.
-  const [entreprise, equipes, absences] = await Promise.all([
+  const [entreprise, equipes, absences, acces, equipesRattachables] = await Promise.all([
     getEntreprise(ctx),
     listerEquipes(ctx),
     listerAbsencesEquipe(ctx, aujourdHui),
+    listerAcces(ctx),
+    equipesPourRattachement(ctx),
   ]);
 
   return (
@@ -60,6 +68,17 @@ export default async function EquipePage() {
           surtitre="Réglages"
           titre="Équipe"
           retour={{ href: "/reglages", libelle: "Retour aux réglages" }}
+        />
+
+        {/* **Les comptes d'abord, les files du planning ensuite.** Sur sa
+            planche du 13 août, « Qui a accès » ouvre l'écran : c'est la question
+            qu'on se pose en venant ici. Les équipes, elles, se règlent une fois
+            pour toutes. */}
+        <QuiAAcces
+          acces={acces}
+          moi={ctx.utilisateurId}
+          equipes={equipesRattachables}
+          nombreEquipes={entreprise?.nombreEquipes ?? 1}
         />
 
         <VosEquipes
@@ -96,10 +115,6 @@ export default async function EquipePage() {
           distinguer. Les noms apparaissent à partir de deux.
         </p>
 
-        <p className="mx-[26px] mt-[26px] text-[12px] leading-[1.7]" style={{ color: colors.muted }}>
-          Les comptes de vos salariés, leurs rôles et ce que chacun a le droit de voir
-          ne se règlent pas encore ici.
-        </p>
       </div>
     </div>
   );

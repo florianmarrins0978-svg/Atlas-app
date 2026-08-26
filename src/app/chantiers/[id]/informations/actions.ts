@@ -23,7 +23,8 @@ import { PropositionExtractionSchema, type PropositionExtraction } from "@/serve
 import type { ResultatApplicationProposition, ResultatConfirmation, CategorieConflit } from "@/server/ai/propositions";
 import { reclamerProposition } from "@/server/repositories/propositions-ia";
 import { AccesRefuseError } from "@/server/db/with-entreprise";
-import { estProprietaire } from "@/server/autorisation";
+import { getRole } from "@/server/autorisation";
+import { peutUtiliserLAssistant } from "@/lib/acces-roles";
 import { logger } from "@/server/logger";
 import { verifierLimite, LIMITES } from "@/server/rate-limit";
 
@@ -172,7 +173,8 @@ export async function appliquerPropositionsAction(chantierId: string, propositio
   // identifiants. Un refus en valeur de retour, jamais une exception : le
   // message d'une exception levée par une action serveur n'arrive jamais
   // jusqu'à l'écran (`AGENTS.md`).
-  if (!(await estProprietaire(ctx))) {
+  const roleDemandeur = await getRole(ctx);
+  if (!roleDemandeur || !peutUtiliserLAssistant(roleDemandeur)) {
     return {
       resultats: propositionIds.map((id) => ({
         propositionId: id,
@@ -180,7 +182,7 @@ export async function appliquerPropositionsAction(chantierId: string, propositio
         description: "",
         statut: "conflit" as const,
         categorie: "acces_refuse" as const,
-        message: "L'assistant est réservé au responsable de l'entreprise.",
+        message: "L'assistant n'est pas disponible pour votre compte.",
       })),
     };
   }

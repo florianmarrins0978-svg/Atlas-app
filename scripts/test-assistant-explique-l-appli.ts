@@ -8,7 +8,8 @@ import { poserQuestion } from "../src/server/ai/services/assistant-service";
 import { poserQuestionAction } from "../src/app/assistant/actions";
 import { appliquerPropositionsAction } from "../src/app/chantiers/[id]/informations/actions";
 import { enregistrerPropositions } from "../src/server/repositories/propositions-ia";
-import { estProprietaire } from "../src/server/autorisation";
+import { getRole } from "../src/server/autorisation";
+import { peutUtiliserLAssistant, type Role } from "../src/lib/acces-roles";
 import { fermerLimiteur } from "../src/server/rate-limit";
 import { nettoyerBase } from "./_test-db";
 
@@ -43,14 +44,18 @@ async function test(nom: string, fn: () => Promise<void>) {
 
 // `membres_entreprise` applique FORCE ROW LEVEL SECURITY : l'insertion directe
 // doit poser `app.entreprise_id`, comme le fait `withEntreprise`.
-async function ajouterMembre(entrepriseId: string, utilisateurId: string) {
+//
+// **« membre » n'existe plus** (migration 0065) : les trois rôles sont
+// `proprietaire`, `commercial` et `salarie`.
+async function ajouterMembre(entrepriseId: string, utilisateurId: string, role: Role) {
   const client = await pool.connect();
   try {
     await client.query("BEGIN");
     await client.query(`SELECT set_config('app.entreprise_id', $1, true)`, [entrepriseId]);
-    await client.query(`INSERT INTO membres_entreprise (entreprise_id, utilisateur_id, role) VALUES ($1, $2, 'membre')`, [
+    await client.query(`INSERT INTO membres_entreprise (entreprise_id, utilisateur_id, role) VALUES ($1, $2, $3)`, [
       entrepriseId,
       utilisateurId,
+      role,
     ]);
     await client.query("COMMIT");
   } finally {
@@ -153,18 +158,28 @@ async function main() {
   // --- Au service du patron, et de lui seul -------------------------------
 
   const [salarie] = await db.insert(users).values({ email: "salarie@test.local", nom: "Salarié" }).returning();
-  await ajouterMembre(entreprise.id, salarie.id);
+  await ajouterMembre(entreprise.id, salarie.id, "salarie");
+  const [commercial] = await db.insert(users).values({ email: "commercial@test.local", nom: "Commercial" }).returning();
+  await ajouterMembre(entreprise.id, commercial.id, "commercial");
 
-  await test("Le salarié est bien un membre, pas un propriétaire", async () => {
-    assert.equal(await estProprietaire({ entrepriseId: entreprise.id, utilisateurId: salarie.id }), false);
-    assert.equal(await estProprietaire(P), true);
+  await test("La règle d'accès à l'assistant vit à UN seul endroit", async () => {
+    // Pinée ici parce qu'elle est plus stricte que « voir les montants » : le
+    // commercial voit les prix, et n'a pourtant pas l'assistant — il y lirait,
+    // en une phrase, ce que chaque client a payé pour la même prestation.
+    assert.equal(peutUtiliserLAssistant("proprietaire"), true);
+    assert.equal(peutUtiliserLAssistant("commercial"), false);
+    assert.equal(peutUtiliserLAssistant("salarie"), false);
+    assert.equal(await getRole({ entrepriseId: entreprise.id, utilisateurId: salarie.id }), "salarie");
+    assert.equal(await getRole(P), "proprietaire");
   });
 
-  await test("Un salarié ne peut pas poser de question à l'assistant", async () => {
-    process.env.AUTH_TEST_UTILISATEUR_ID = salarie.id;
-    const reponse = await poserQuestionAction(chantier.id, [], "Quels sont les tarifs de l'entreprise ?");
-    assert.equal(reponse.succes, false);
-    if (!reponse.succes) assert.match(reponse.erreur, /réservé au responsable/i);
+  await test("Ni le salarié ni le commercial ne peuvent poser de question", async () => {
+    for (const compte of [salarie, commercial]) {
+      process.env.AUTH_TEST_UTILISATEUR_ID = compte.id;
+      const reponse = await poserQuestionAction(chantier.id, [], "Quels sont les tarifs de l'entreprise ?");
+      assert.equal(reponse.succes, false, `${compte.email} ne devrait pas obtenir de réponse`);
+      if (!reponse.succes) assert.match(reponse.erreur, /pas disponible pour votre compte/i);
+    }
     process.env.AUTH_TEST_UTILISATEUR_ID = patron;
   });
 
