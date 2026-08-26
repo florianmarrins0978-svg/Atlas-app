@@ -39,6 +39,18 @@ de capacité a-t-elle changé ? Le message dit le symptôme, pas la cause.
 client peut proposer une date — le refus vient d'un calendrier trop plein dans
 les DONNÉES d'essai, pas d'un écran cassé.
 
+**Et un TROISIÈME contrôle dépend de la charge**, trouvé le même jour :
+`test-reduction-devis-e2e.ts`, sur *« un appui rend le prix plein TOUT DE SUITE,
+avant toute écriture »* — rouge en batterie, **vert rejoué seul**. Il lit l'écran
+juste après un appui, avant que l'action serveur n'ait répondu : sous cent
+suites, la réponse arrive avant la lecture et le cas s'inverse.
+
+Avec `test-lecons-prix-e2e` (§ plus bas) et la suite du veilleur, cela fait
+**quatre** contrôles qui rougissent au hasard de la machine. C'est le vrai sujet,
+et il grossit : un rouge qui tombe au hasard apprend à ignorer le rouge, et l'on
+perd alors tout ce qu'il surveille. Ce qu'il faut : attendre un SIGNAL — la
+réponse du serveur, un attribut qui change — jamais un instant.
+
 ---
 
 ## Un commercial doit LIRE les tarifs sans pouvoir les changer
