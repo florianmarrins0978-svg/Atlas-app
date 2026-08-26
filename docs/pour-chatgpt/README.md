@@ -38,3 +38,4 @@ noir sur blanc, comme le demande `CLAUDE.md` §2 bis.
 | `02-cartographie-et-tests.md` | avant correction | les consommateurs, les dépendances cachées, neuf contrôles rouges, les migrations |
 | `03-lot-A-p0.md` | lot A | le garde-fou qui ferme la corruption de l'apprentissage, et pourquoi il laisse passer sa règle du 7 août |
 | `04-lot-B-modele-structure.md` | lot B | les colonnes de la prestation, la table de liaison, et la cardinalité inspectée plutôt que choisie |
+| `05-lot-C-consommateurs.md` | lot C | le contrat structure / libellé / contradiction, et les trois décisions métier que je refuse de prendre seul |

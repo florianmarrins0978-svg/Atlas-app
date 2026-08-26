@@ -11,7 +11,7 @@ import {
   celluleDessouchage,
   celluleFendage,
 } from "../../lib/grille-prix";
-import { longueurHaieLue, mesuresArbre, tonnageLu } from "../../lib/mesures-arbre";
+import { mesuresResolues } from "../../lib/mesures-prestation";
 import { prixAttribuable } from "../../lib/prix-attribuable";
 import { logger } from "../logger";
 
@@ -100,30 +100,38 @@ export async function apprendrePrixGrille(
     getBrouillon(ctx, chantierId),
   ]);
 
-  // Les mesures peuvent être partout : dans ses réponses à l'arrêt, dans le
-  // libellé de la ligne qu'il vient d'écrire, dans une prestation, ou dans la
-  // description de la dictée — la seule à porter « vingt mètres de haut », et
-  // la seule que la table `prestations` ne conserve pas. **Les mêmes sources
-  // que le chiffrage** : ranger un prix dans une case que le chiffrage ne sait
-  // pas retrouver reviendrait à ne rien ranger du tout.
-  const mesures = mesuresArbre(
-    [...precisions.map((p) => p.lisible), ligne.libelle],
+  // Les mesures peuvent être partout : ses réponses à l'arrêt, le libellé de la
+  // ligne, une prestation, ou la description de la dictée — la seule à porter
+  // « vingt mètres de haut », et la seule que la table ne conserve pas.
+  //
+  // **Le même contrat de priorité que le chiffrage** (`mesures-prestation.ts`) :
+  // la colonne structurée d'abord, le libellé ensuite, et **rien du tout** si
+  // les deux se contredisent. Ranger un prix dans une case désignée par une
+  // mesure douteuse serait pire que ne rien ranger : il reviendrait plus tard
+  // avec l'autorité de sa grille.
+  const mesures = mesuresResolues(
+    prestations.map((p) => p.caracteristiques),
     [
+      ...precisions.map((p) => p.lisible),
+      ligne.libelle,
       ...prestations.map((p) => p.libelle),
       ...(brouillon?.contenu?.prestations ?? []).map((l) =>
         [l.libelle, l.description ?? "", l.quantite ?? "", l.unite ?? ""].join(" ")
       ),
     ]
   );
+  const contradiction = Object.values(mesures).find((m) => m.origine === "contradiction");
+  if (contradiction) {
+    logger.info("Grille : mesures contradictoires, rien n'est appris", { chantierId });
+    return;
+  }
 
   // **La haie se range au MÈTRE, pas au montant de la ligne.** Écrire 350 € dans
   // sa case ferait facturer 350 € la prochaine haie, quelle que soit sa
   // longueur. C'est le prix unitaire qu'on retient — et seulement si la longueur
   // est connue, faute de quoi on ne retient rien.
   if (nature === "haie") {
-    const longueur = [...precisions.map((p) => p.lisible), ligne.libelle, ...prestations.map((p) => p.libelle)]
-      .map(longueurHaieLue)
-      .find((l) => l !== null);
+    const longueur = mesures.longueurMl.valeur;
     if (!longueur || longueur <= 0) return;
     await poserPrixGrille(ctx, "haie", CELLULE_HAIE, (montant / longueur).toFixed(2), "devis");
     return;
@@ -136,9 +144,7 @@ export async function apprendrePrixGrille(
   //
   // Sans tonnage connu, on ne retient rien plutôt qu'un prix faux.
   if (nature === "grumes") {
-    const tonnage = [...precisions.map((p) => p.lisible), ligne.libelle, ...prestations.map((p) => p.libelle)]
-      .map(tonnageLu)
-      .find((t) => t !== null);
+    const tonnage = mesures.tonnageT.valeur;
     if (!tonnage || tonnage <= 0) return;
     await poserPrixGrille(ctx, "grumes", CELLULE_GRUMES, (montant / tonnage).toFixed(2), "devis");
     return;
@@ -149,14 +155,14 @@ export async function apprendrePrixGrille(
   const { axes } = await lireGrilles(ctx);
   const cellule =
     nature === "dessouchage"
-      ? celluleDessouchage(mesures.diametreCm, axes)
+      ? celluleDessouchage(mesures.diametreCm.valeur, axes)
       : nature === "abattage"
         ? celluleAbattage(
             precisions.find((p) => p.sujet.startsWith("abattage.technique"))?.valeur ?? null,
-            mesures.diametreCm,
+            mesures.diametreCm.valeur,
             axes
           )
-        : celluleFendage(mesures.hauteurM, mesures.diametreCm, axes);
+        : celluleFendage(mesures.hauteurM.valeur, mesures.diametreCm.valeur, axes);
 
   // Sans les mesures qu'il faut, on ne sait pas dans quelle case ranger ce prix.
   // On ne le range nulle part — un prix dans la mauvaise case reviendrait plus

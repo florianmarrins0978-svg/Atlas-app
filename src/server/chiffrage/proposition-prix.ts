@@ -22,7 +22,7 @@ import {
   type Cellule,
   type NatureGrille,
 } from "../../lib/grille-prix";
-import { longueurHaieLue, mesuresArbre, tonnageLu } from "../../lib/mesures-arbre";
+import { mesuresResolues, reserveDeContradiction, type MesuresResolues } from "../../lib/mesures-prestation";
 import { prixConnusDe } from "../repositories/grille-prix";
 import { lireGrilles } from "../repositories/grilles-reglables";
 import { listerPrecisions } from "../repositories/precisions-chantier";
@@ -443,7 +443,7 @@ type Decoupe = {
 async function decouperEnLignes(
   ctx: Ctx,
   chantierId: string,
-  prestations: { libelle: string }[],
+  prestations: { libelle: string; caracteristiques?: unknown }[],
   /**
    * Les lignes de la dictée, descriptions comprises.
    *
@@ -476,7 +476,14 @@ async function decouperEnLignes(
 
   // Ce que ses grilles savent dire sur CE chantier, ligne par ligne.
   const textes = [...prestations.map((p) => p.libelle), ...textesDictee];
-  const chiffrees = await Promise.all(vendables.map((l) => prixDeLaLigne(ctx, chantierId, textes, l)));
+  // **Les mesures structurées des prestations partent avec les textes.**
+  // Depuis le lot B elles vivent en colonnes ; le contrat qui dit laquelle
+  // des deux sources vaut — et qui REFUSE quand elles se contredisent — vit
+  // dans `src/lib/mesures-prestation.ts`, pur et éprouvé à part.
+  const structurees = prestations.map((p) => p.caracteristiques);
+  const chiffrees = await Promise.all(
+    vendables.map((l) => prixDeLaLigne(ctx, chantierId, textes, l, structurees))
+  );
   for (const c of chiffrees) {
     calcul.push(...c.calcul);
     donneesManquantes.push(...c.donneesManquantes);
@@ -573,7 +580,9 @@ async function prixDeLaLigne(
   ctx: Ctx,
   chantierId: string,
   textes: string[],
-  ligne: LigneVendable
+  ligne: LigneVendable,
+  /** Les `caracteristiques` des prestations du chantier, telles qu'en base. */
+  structurees: readonly unknown[] = []
 ): Promise<{ prix: string | null; calcul: LigneExplication[]; donneesManquantes: string[] }> {
   // Ses réponses d'abord, la dictée ensuite : il a pu corriger à l'arrêt ce que
   // la transcription avait mal entendu.
@@ -586,29 +595,48 @@ async function prixDeLaLigne(
   // que sur le devis du client.
   const { axes } = await lireGrilles(ctx);
 
-  if (ligne.cle === "haie") return prixDeLaHaie(ctx, reponses, textes, ligne);
+  // Structure et texte confrontés, une fois pour toute la ligne. Une
+  // contradiction ne se tranche pas : elle se dit, et la mesure reste inconnue.
+  const mesures = mesuresResolues(structurees, [...reponses, ...textes]);
+  const reserves = [
+    reserveDeContradiction("le diamètre du tronc", mesures.diametreCm),
+    reserveDeContradiction("la hauteur de l'arbre", mesures.hauteurM),
+    reserveDeContradiction("la longueur de haie", mesures.longueurMl),
+    reserveDeContradiction("le tonnage des grumes", mesures.tonnageT),
+  ].filter((r): r is string => r !== null);
+  const avecReserves = (r: { prix: string | null; calcul: LigneExplication[]; donneesManquantes: string[] }) => ({
+    ...r,
+    donneesManquantes: [...r.donneesManquantes, ...reserves],
+  });
+
+  if (ligne.cle === "haie") return avecReserves(await prixDeLaHaie(ctx, mesures, ligne));
 
   // **Les grumes : un prix à la tonne**, multiplié par le tonnage — sa réponse
   // du 9 août 2026.
-  if (ligne.cle === "grumes") return prixDesGrumes(ctx, reponses, textes, ligne);
+  if (ligne.cle === "grumes") return avecReserves(await prixDesGrumes(ctx, mesures, reponses, ligne));
 
   // **Le dessouchage : le diamètre, et rien d'autre.** La hauteur de l'arbre ne
   // dit plus rien une fois qu'il est à terre.
+  const diametreCm = mesures.diametreCm.valeur;
+  const hauteurM = mesures.hauteurM.valeur;
+
   if (ligne.cle === "dessouchage") {
-    const { diametreCm } = mesuresArbre(reponses, textes);
-    return prixDepuisCase(ctx, "dessouchage", celluleDessouchage(diametreCm, axes), ligne, {
-      manquant: diametreCm === null ? ["le diamètre de la souche"] : [],
-    });
+    return avecReserves(
+      await prixDepuisCase(ctx, "dessouchage", celluleDessouchage(diametreCm, axes), ligne, {
+        manquant: diametreCm === null ? ["le diamètre de la souche"] : [],
+      })
+    );
   }
 
   if (ligne.cle === "fendage") {
-    const mesures = mesuresArbre(reponses, textes);
-    return prixDepuisCase(ctx, "fendage", celluleFendage(mesures.hauteurM, mesures.diametreCm, axes), ligne, {
-      manquant: [
-        mesures.hauteurM === null ? "la hauteur de l'arbre" : null,
-        mesures.diametreCm === null ? "le diamètre du tronc" : null,
-      ].filter((x): x is string => x !== null),
-    });
+    return avecReserves(
+      await prixDepuisCase(ctx, "fendage", celluleFendage(hauteurM, diametreCm, axes), ligne, {
+        manquant: [
+          hauteurM === null ? "la hauteur de l'arbre" : null,
+          diametreCm === null ? "le diamètre du tronc" : null,
+        ].filter((x): x is string => x !== null),
+      })
+    );
   }
 
   // La ligne principale : elle n'a de prix de grille que si elle porte un
@@ -617,16 +645,17 @@ async function prixDeLaLigne(
     return { prix: null, calcul: [], donneesManquantes: [] };
   }
   const technique = precisions.find((p) => p.sujet.startsWith("abattage.technique"))?.valeur ?? null;
-  const { diametreCm } = mesuresArbre(reponses, textes);
-  return prixDepuisCase(ctx, "abattage", celluleAbattage(technique, diametreCm, axes), ligne, {
-    manquant: [
-      technique === null ? "la technique d'abattage" : null,
-      diametreCm === null ? "le diamètre du tronc" : null,
-    ].filter((x): x is string => x !== null),
-    // Sans grille d'abattage remplie, le chiffrage au temps reprend la main :
-    // ce n'est pas un manque à signaler, c'est le fonctionnement d'hier.
-    silencieuxSiVide: true,
-  });
+  return avecReserves(
+    await prixDepuisCase(ctx, "abattage", celluleAbattage(technique, diametreCm, axes), ligne, {
+      manquant: [
+        technique === null ? "la technique d'abattage" : null,
+        diametreCm === null ? "le diamètre du tronc" : null,
+      ].filter((x): x is string => x !== null),
+      // Sans grille d'abattage remplie, le chiffrage au temps reprend la main :
+      // ce n'est pas un manque à signaler, c'est le fonctionnement d'hier.
+      silencieuxSiVide: true,
+    })
+  );
 }
 
 /**
@@ -639,12 +668,16 @@ async function prixDeLaLigne(
  */
 async function prixDesGrumes(
   ctx: Ctx,
+  mesures: MesuresResolues,
   reponses: string[],
-  textes: string[],
   ligne: LigneVendable
 ): Promise<{ prix: string | null; calcul: LigneExplication[]; donneesManquantes: string[] }> {
   const aLaTonne = (await prixConnusDe(ctx, "grumes")).get(CELLULE_GRUMES);
-  const tonnage = [...reponses, ligne.libelle, ...textes].map(tonnageLu).find((t) => t !== null) ?? null;
+  // Le tonnage vient du contrat de priorité — structure d'abord, libellé
+  // ensuite, refus si les deux se contredisent. Le libellé de la ligne y est
+  // ajouté : le patron peut avoir écrit « 6 tonnes » directement dessus.
+  const tonnage =
+    mesures.tonnageT.valeur ?? mesuresResolues([], [ligne.libelle, ...reponses]).tonnageT.valeur;
 
   if (!aLaTonne) {
     return {
@@ -680,12 +713,14 @@ async function prixDesGrumes(
 /** La haie : un prix au mètre linéaire, multiplié par la longueur. */
 async function prixDeLaHaie(
   ctx: Ctx,
-  reponses: string[],
-  textes: string[],
+  mesures: MesuresResolues,
   ligne: LigneVendable
 ): Promise<{ prix: string | null; calcul: LigneExplication[]; donneesManquantes: string[] }> {
   const auMetre = (await prixConnusDe(ctx, "haie")).get(CELLULE_HAIE);
-  const longueur = [...reponses, ...textes].map(longueurHaieLue).find((l) => l !== null) ?? null;
+  // Même contrat que partout : la colonne d'abord, le libellé ensuite, et
+  // aucun arbitrage quand les deux divergent — la mesure reste alors inconnue,
+  // et la réserve posée plus haut dit au patron laquelle corriger.
+  const longueur = mesures.longueurMl.valeur;
 
   if (!auMetre) {
     return {

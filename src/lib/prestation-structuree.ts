@@ -111,3 +111,57 @@ export function structureDepuisPrecisions(
     caracteristiques: Object.keys(mesures).length > 0 ? mesures : null,
   };
 }
+
+// =========================================================================
+// Les caractéristiques : un contrat central, pas des clés qui s'accumulent
+// =========================================================================
+//
+// **Pourquoi des clés typées plutôt que `{ valeur, unite }` par mesure.**
+// L'inspection du dépôt le tranche : chaque caractéristique n'a qu'UNE unité
+// canonique, partout, et les tranches de la grille sont écrites dans cette
+// unité-là — les diamètres en centimètres (« 40 à 50 cm »), les hauteurs en
+// mètres (« 15 à 20 m »), la haie au mètre linéaire, les grumes à la tonne.
+// Porter l'unité à côté de chaque valeur ajouterait un point de conversion là
+// où il n'y a rien à convertir, et une conversion silencieuse est exactement ce
+// qu'on ne veut pas.
+//
+// **Ce qui rend ce choix réversible :** l'unité est dans le NOM de la clé, et
+// une seule fonction lit ces objets. Le jour où une mesure aura deux unités,
+// c'est ici qu'on le verra, et nulle part ailleurs.
+
+/** Les mesures qui gouvernent un prix, chacune dans son unité canonique. */
+export type Caracteristiques = {
+  /** Diamètre du tronc, en centimètres — l'unité des tranches de la grille. */
+  diametreCm?: number;
+  /** Hauteur de l'arbre, en mètres. */
+  hauteurM?: number;
+  /** Longueur de haie, en mètres linéaires. */
+  longueurMl?: number;
+  /** Poids des grumes, en tonnes. */
+  tonnageT?: number;
+};
+
+const MESURES_CONNUES = ["diametreCm", "hauteurM", "longueurMl", "tonnageT"] as const;
+
+/**
+ * Relit un objet de caractéristiques venu de la base, et refuse ce qui n'en est
+ * pas une.
+ *
+ * **Une seule porte d'entrée, et c'est tout l'intérêt.** Un JSONB accepte
+ * n'importe quoi ; sans ce filtre, une clé inventée par un appelant pressé
+ * vivrait en base sans que rien ne s'en aperçoive, et une valeur négative
+ * traverserait jusqu'au calcul d'un prix. Ce qui n'est pas reconnu est ignoré,
+ * jamais converti ni deviné.
+ */
+export function lireCaracteristiques(brut: unknown): Caracteristiques {
+  if (!brut || typeof brut !== "object" || Array.isArray(brut)) return {};
+  const source = brut as Record<string, unknown>;
+  const propres: Caracteristiques = {};
+  for (const cle of MESURES_CONNUES) {
+    const valeur = Number(source[cle]);
+    // Zéro et les négatifs ne sont pas des mesures : un tronc de 0 cm n'existe
+    // pas, et le laisser passer désignerait une case de grille au hasard.
+    if (Number.isFinite(valeur) && valeur > 0) propres[cle] = valeur;
+  }
+  return propres;
+}

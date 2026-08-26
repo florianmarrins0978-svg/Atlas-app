@@ -21,6 +21,7 @@
 
 import assert from "node:assert/strict";
 import { pool } from "../src/server/db/client";
+import { jourIso } from "../src/lib/jour";
 import { nettoyerBase } from "./_test-db";
 import { creerEntreprise } from "../src/server/repositories/entreprises";
 import { creerChantier, supprimerChantier } from "../src/server/repositories/chantiers";
@@ -93,7 +94,14 @@ async function main() {
     // daté de la veille de l'émission : `noterPaiement` le refusait poliment,
     // le test l'ignorait, et le cas rougissait en accusant le calcul du reste
     // dû — un contrôle qui accuse à tort coûte plus cher que pas de contrôle.
-    const aujourdHui = new Date().toISOString().slice(0, 10);
+    // **Le même calendrier que la facture, sinon le contrôle ment deux heures
+    // par jour.** `emettreFacture` date l'émission avec `jourIso`, qui compte en
+    // heure de Paris ; `toISOString()`, lui, compte en UTC. Entre 22 h et minuit
+    // UTC les deux ne sont plus le même jour : la facture était émise « le 27 »
+    // et le règlement daté « le 26 » se faisait refuser — le cas rougissait en
+    // accusant le calcul du reste dû, sur du code juste. Vu le 26 août 2026 à
+    // 22 h 45 UTC, c'est-à-dire 00 h 45 à Paris.
+    const aujourdHui = jourIso(new Date());
     const regle = await noterPaiement(ctx, factureId, { date: aujourdHui, montant: "500.00" });
     assert.ok(regle.ok, `le règlement d'essai a été refusé : ${regle.ok ? "" : regle.raison}`);
 

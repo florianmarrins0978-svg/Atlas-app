@@ -9,6 +9,43 @@ Format : le plus récent en tête.
 
 ## 2026-08-26
 
+### Lot C — la colonne d'abord, le libellé ensuite, et le refus quand ils divergent
+
+Depuis le lot B, une prestation neuve porte ses mesures dans des colonnes ET
+dans son libellé. `src/lib/mesures-prestation.ts` dit désormais laquelle vaut :
+la structure d'abord, le libellé pour les anciennes prestations, et **rien du
+tout** quand les deux se contredisent. Le chiffrage et l'apprentissage de la
+grille l'appellent tous les deux.
+
+**Une tolérance d'un centième, et elle n'est pas cosmétique** : la colonne est un
+`numeric(10,2)` — 45 y devient 45.00 — quand le libellé porte « ⌀ 45 cm ». Sans
+elle, chaque prestation neuve se contredirait elle-même et le chiffrage
+s'arrêterait partout.
+
+**Ce que le refus change pour lui, et il faut le savoir :** un libellé retouché
+à la main ne recalcule plus le prix en silence. `modifierPrestation` réécrit le
+texte sans toucher aux colonnes ; corriger « (800 ml) » en « (80 ml) » met donc
+les deux sources en désaccord. Le prix n'est plus calculé, et la réserve nomme
+les deux valeurs. **La question métier — une retouche à la main doit-elle
+changer la mesure ? — est posée dans `docs/pour-chatgpt/05`, pas tranchée ici.**
+
+**Trois décisions refusées plutôt qu'inventées**, et elles bloquent trois
+consommateurs : le vocabulaire de `nature` (les sept natures du dépôt couvrent
+l'arboriculture, pas la tonte ni la plantation — élargir serait créer une
+taxonomie qu'il n'a jamais énoncée) ; l'espèce (sûre sur le principe, mais
+invérifiable ici faute de clé) ; et les quantités de comptage — « deux souches »
+—, dont personne ne sait ce que le modèle en fait sans une clé pour le lui
+demander. Le `CHECK quantite ⟺ unite` n'a surtout pas été relâché pour laisser
+passer un « 2 » sans unité.
+
+**Une régression trouvée qui n'est pas de ce lot**, vérifiée en remisant tout le
+travail : `test-liste-clients.ts` datait un règlement en UTC quand la facture
+date son émission à Paris. **Entre 22 h et minuit UTC, ce contrôle échouait** en
+accusant le calcul du reste dû, sur du code juste. Corrigé en une ligne : le même
+calendrier des deux côtés.
+
+Batterie : **251/253**. Les deux suites en échec sont celles des lots suivants.
+
 ### Lot B — la prestation a enfin des champs à elle
 
 Le modèle lisait bien « 800 » et « ml » ; la table `prestations` n'avait qu'une
