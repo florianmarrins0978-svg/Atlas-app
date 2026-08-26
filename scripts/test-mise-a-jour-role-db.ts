@@ -63,7 +63,11 @@ async function ajouterMembre(entrepriseId: string, utilisateurId: string) {
     await client.query("BEGIN");
     await client.query(`SELECT set_config('app.entreprise_id', $1, true)`, [entrepriseId]);
     await client.query(
-      `INSERT INTO membres_entreprise (entreprise_id, utilisateur_id, role) VALUES ($1, $2, 'membre')`,
+      // **« salarie » et non « membre » — la migration 0065 de main a renommé le
+      // rôle, et posé une contrainte CHECK qui refuse l'ancien mot.** La règle
+      // éprouvée ici n'a pas bougé d'un pouce : quelqu'un qui n'est pas le
+      // patron est refusé. Seul le nom du rôle a changé, et le contrôle suit.
+      `INSERT INTO membres_entreprise (entreprise_id, utilisateur_id, role) VALUES ($1, $2, 'salarie')`,
       [entrepriseId, utilisateurId]
     );
     await client.query("COMMIT");
