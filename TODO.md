@@ -9,6 +9,43 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
+## `test-envoi-client-e2e.ts` dépend de la place qui reste dans le mois (26 août 2026)
+
+**Rouge le 26 août, reproductible, et sur du code parfaitement juste.** Deux
+contrôles refusent de conclure :
+
+```
+❌ le patron ne propose jamais plus de deux dates
+   pas assez de jours acceptables (1)
+❌ SANS RIEN TOUCHER, la cliente peut proposer un jour
+   pas assez de jours libres au calendrier (1)
+```
+
+**La cause est le calendrier, pas le produit.** Le mois affiché s'ouvre au 1er ;
+le contrôle écarte les trois premiers jours à venir (délai minimal) et ne garde
+que les jours ouvrables. Le 26 août 2026, il ne reste que le lundi 31 — les 29
+et 30 sont un samedi et un dimanche. Un seul jour acceptable, et le contrôle
+s'arrête.
+
+**Ce n'est pas le lot 3 :** la même suite, jouée sur le dépôt ramené au commit
+`2f66b00` — c'est-à-dire AVANT F1 à F13 —, rend **exactement les deux mêmes
+messages**. Vérifié le 26 août plutôt que supposé.
+
+**C'est la troisième fois que cette famille de défaut coûte une soirée.** Le
+25 août, deux suites de calendrier étaient rouges pour la même raison, et `main`
+porte depuis un commit qui s'appelle « Ne plus dépendre de la place qu'il reste
+dans le mois courant » — il n'a pas couvert celle-ci.
+
+**Ce qu'il faut faire :** faire tourner la page du mois quand il n'y reste pas
+assez de jours, comme le fait déjà `troisJoursAuMoins()` dans
+`test-deux-dates-calendrier-e2e.ts`. **Ne pas relâcher le seuil** — il dit une
+vraie règle : jamais plus de deux dates proposées.
+
+**Et elle rougira à chaque fin de mois** tant que ce n'est pas fait, en accusant
+le produit.
+
+---
+
 ## `ATLAS_PROXY_SAUTS` n'est posé nulle part en production (25 août 2026)
 
 Tant qu'il ne l'est pas, `sourceDuVisiteur` rend délibérément une valeur commune
