@@ -74,31 +74,44 @@ export default async function FichesPage() {
             n'ouvre rien : un salarié ne voit pas cette rubrique, et la page
             qu'elle ouvre le refuserait de toute façon. */}
         {proprietaire && modele.length > 0 && (
-          // Un filet FERME la rubrique : sans lui, « Jour du passage » se lit
-          // comme la suite de la même ligne, et l'œil ne sait plus où finit
-          // l'une et où commence l'autre.
-          <section
-            className="mx-[26px] mt-[26px] border-b pb-[16px]"
-            style={{ borderColor: colors.line }}
-          >
-            {/* **L'OR, pas le vert.** Il l'a demandé « en titre doré » : c'est
-                `colors.or`, le second accent de la charte, celui du surtitre de
-                l'en-tête juste au-dessus. `colors.rust` s'appelle « rust » mais
-                vaut le vert pin depuis la reprise de la charte d'Arborea — le
-                nom ment, et l'écrire ici aurait rendu un titre presque noir. */}
-            <h2 className={smallCaps} style={{ color: colors.or }}>
-              Composer ma fiche
-            </h2>
-            <Link href="/paysage/fiche/composer" className="mt-[10px] flex min-h-[44px] items-center gap-[15px]">
+          <section className="mx-[26px] mt-[20px]">
+            {/* **UNE CARTE, ET PAS PLEINE LARGEUR** — ses deux mots du 26 août
+                2026, une heure après la première version : *« c'est bien mais
+                juste une phrase, on la trouve difficilement ; je pense qu'un
+                onglet carré serait le mieux »*, puis, devant les trois formes
+                proposées : *« une carte mais fais-la moins large »*.
+
+                **Ce que la phrase ne faisait pas.** Une ligne de texte au milieu
+                d'un écran de texte ne se distingue pas d'un intertitre : ni
+                fond, ni cadre, ni couleur d'action, et un chevron de huit
+                pixels pour seul aveu qu'on peut appuyer.
+
+                **Moins large qu'une carte pleine.** Elle prend la largeur de
+                son texte, plafonnée — un pavé bord à bord pèserait autant que
+                « Ouvrir une fiche », qui est le geste de tous les jours, et
+                c'est le défaut que la planche annonçait. Le plafond existe pour
+                les gros caractères du téléphone : sans lui la carte redeviendrait
+                pleine largeur chez qui grossit son texte, c'est-à-dire là où
+                l'on croyait avoir réglé la question. */}
+            <Link
+              href="/paysage/fiche/composer"
+              className="flex w-fit max-w-[270px] min-h-[44px] items-center gap-[14px] rounded-[14px] px-[16px] py-[13px]"
+              // `rustTint` est le PAPIER de la charte (`--paper`), pas une
+              // teinte de terre cuite : le nom vient d'avant la reprise
+              // d'Arborea. C'est le fond des éléments teintés, et il reste
+              // lisible sur les deux chartes sombres.
+              style={{ backgroundColor: colors.rustTint, border: `1px solid ${colors.line}` }}
+            >
               <span className="min-w-0 flex-1">
-                <span className="block text-[13.5px] leading-[1.5]" style={{ color: colors.inkSoft }}>
-                  {modele.length} prestation{modele.length > 1 ? "s" : ""} — ajoutez, retirez ou
-                  renommez vos catégories
+                <span className="block text-[16px] leading-[1.2]" style={{ fontFamily: font.display }}>
+                  Composer ma fiche
+                </span>
+                <span className="mt-[3px] block text-[11.5px] leading-[1.45]" style={{ color: colors.muted }}>
+                  {modele.length} prestation{modele.length > 1 ? "s" : ""}
                 </span>
               </span>
               {/* Le même chevron que les lignes du dessous et que le sommaire des
-                  réglages : une ligne qui mène quelque part se reconnaît à lui,
-                  et sans lui celle-ci se lit comme une phrase d'explication. */}
+                  réglages : ce qui mène quelque part se reconnaît à lui. */}
               <span
                 aria-hidden="true"
                 className="h-2 w-2 rotate-45"
