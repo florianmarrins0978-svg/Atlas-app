@@ -9216,7 +9216,7 @@ refus de client qui disparaîtrait sans que rien ne le signale.
 sens, une place serait réservée à une réponse que le patron vient de marquer
 « J'ai vu » — une place vide, au profit de rien.
 
-#### ⚠ TOUT CE QUI PRÉCÈDE A ÉTÉ REMPLACÉ LE 26 AOÛT 2026 — voir §191
+#### ⚠ TOUT CE QUI PRÉCÈDE A ÉTÉ REMPLACÉ LE 26 AOÛT 2026 — voir §193
 
 Le tressage par SORTE — les rappels devant, la place garantie aux réponses — ne
 tient plus. Il a été remplacé par un ordre **chronologique** : le plus récent en
@@ -16658,7 +16658,196 @@ même façon.
 
 ---
 
-## 191. L'accueil se range par date : le plus récent en haut
+## 191. Un choix fait par erreur doit pouvoir se défaire
+
+**Sa demande du 26 août 2026**, capture de la page que reçoit son client à
+l'appui : *« si par erreur j'ai sélectionné un des 3 champs je ne peux plus le
+désélectionner ! Faut corriger ça, je dois pouvoir désélectionner. »*
+
+**Ce n'était pas un défaut du produit, c'était le navigateur.** Un bouton radio
+ne se décoche pas : par construction, il ne connaît que « passer de l'un à
+l'autre ». Le client qui touchait la mauvaise ligne restait donc engagé sur une
+date qu'il n'avait pas choisie, sans aucun moyen de revenir en arrière — et
+cette date est celle où l'artisan se déplace.
+
+### Pourquoi `onClick`, et pas `onChange`
+
+| L'appui | `onChange` | `onClick` |
+|---|---|---|
+| sur une ligne neuve | part | part |
+| sur la ligne DÉJÀ cochée | **ne part jamais** | part |
+
+Le navigateur ne signale un changement que s'il y en a un ; c'est précisément le
+cas qu'on doit attraper. `onClick` est donc le seul geste qui existe ici.
+
+### Et la comparaison tient sans drapeau
+
+React ne repeint pas entre deux gestionnaires d'un même événement : à l'entrée
+de `onClick`, l'état porte encore la valeur **d'avant** l'appui.
+
+- ligne neuve : elle diffère de l'état → on ne défait rien, `onChange` choisit ;
+- ligne déjà cochée : elle est égale → on vide, et `onChange` ne partira pas.
+
+Les deux cas passent par la même ligne. Un drapeau « je viens de cocher » aurait
+survécu à un rendu et défait le choix suivant.
+
+Le clavier continue de passer par `onChange` : les flèches changent de ligne
+sans jamais rien défaire, ce qui est le comportement attendu d'un groupe radio.
+
+### Ce que le contrôle garde, et ce qu'il empêche
+
+`scripts/test-devis-client-e2e.ts`, cas « UN CHOIX FAIT PAR ERREUR SE DÉFAIT ».
+Vu rouge contre la version d'avant, sur l'assertion attendue.
+
+Il tient quatre choses, et la deuxième est la plus importante :
+
+1. le second appui défait, et **rien ne se coche à la place** ;
+2. **un appui sur une AUTRE ligne choisit toujours** — « défaire à chaque
+   appui » passerait le point 1 et rendrait le formulaire inutilisable ;
+3. la case de rétractation **s'en va avec la date qui l'a fait naître** : sans
+   cela, l'écran garderait une autorisation légale de démarrage anticipé
+   rattachée à une date effacée ;
+4. « une autre date » se défait pareil, et **referme son calendrier**.
+
+### Ce qui n'a pas bougé, et qui est déjà tenu
+
+Le serveur refusait déjà une acceptation sans date (`date_manquante`,
+`repondreAction`) : tout défaire puis appuyer sur « J'accepte ce devis » rend
+un message clair, pas un enregistrement muet. La règle n'existe qu'à un endroit.
+
+**Le même piège dort ailleurs**, sur le choix entre deux tarifs ambigus
+(`PropositionPrixSection.tsx`). Il ne l'a pas signalé et l'enjeu y est moindre —
+il peut toucher l'autre tarif —, mais c'est le même `type="radio"` et le même
+appui sans retour possible. Noté dans `TODO.md`.
+
+---
+
+## 192. Un seul nombre faisait deux métiers : les salariés se comptent à part des équipes
+
+**Sa demande du 26 août 2026, éprouvée sur la planche 97
+(`appli/salaries-et-equipes.html`) avant d'être codée — il a répondu **A** :**
+
+> *« Il faut avoir un curseur + ou − qui définit le nombre de salariés que
+> possède l'entreprise et pouvoir affilier des noms. Ceux-là permettront
+> d'ajouter ces noms au chantier, et plus les équipes A ou B. Néanmoins les
+> équipes doivent toujours servir à définir le niveau de remplissage du
+> planning : 2 équipes = 2 chantiers par jour, comme avant, ça ne bouge pas. »*
+
+Puis, en tranchant :
+
+> *« Il ne faut pas changer la méthode d'affiliation des gars sur les
+> chantiers — juste, au lieu que ce soit les équipes, ce sera les noms qu'on
+> affilie. On garde la même façon de faire. »*
+
+### Ce que `nombre_equipes` faisait de trop
+
+Un seul chiffre portait deux responsabilités sans rapport :
+
+| | Ce qu'il décidait |
+|---|---|
+| **la capacité** | combien de chantiers tiennent dans une journée |
+| **les gens** | combien de noms se règlent, et se cochent sur une demi-journée |
+
+Régler l'un déréglait donc l'autre, en silence. Monter la capacité à trois
+faisait apparaître une « Équipe C » que personne n'employait ; et un paysagiste
+à quatre salariés qui ne mène qu'un chantier à la fois n'avait **aucun moyen de
+le dire** — il devait choisir entre nommer ses gars et dire la vérité sur son
+planning.
+
+`entreprises.nombre_salaries` (migration 0067) porte désormais le second métier.
+`nombre_equipes` garde le premier, et rien de plus.
+
+### Ce qui N'A PAS bougé, parce qu'il l'a interdit
+
+La façon d'affilier quelqu'un à un chantier est **exactement** celle d'avant :
+la pastille sur la demi-journée, la liste qui s'ouvre, les cases qu'on coche
+une à une, « Terminé ». Même action serveur, même table
+(`equipes_du_chantier`), même indépendance matin / après-midi (migration 0058).
+Seuls les libellés changent.
+
+**Aucune table n'a été créée.** Ouvrir une table `salaries` aurait fabriqué une
+seconde liste de gens à côté de celle qui existe — deux vérités sur qui
+travaille dans l'entreprise (`CLAUDE.md` §3). La table `equipes` porte déjà un
+rang, un nom facultatif, et c'est elle que `equipes_du_chantier` relie à une
+demi-journée : **ces lignes ont toujours été les gars**, puisqu'il y écrit des
+prénoms depuis le 10 août 2026.
+
+⚠ **La dette de nommage est assumée et écrite** : la table s'appelle encore
+`equipes` alors qu'elle porte les salariés. Le renommage touche vingt-trois
+fichiers de `src/`, les politiques RLS et les contraintes ; le mêler à un
+changement de comportement aurait mis en risque une application qu'il utilise
+tous les jours (sa consigne du 24 août : *« ne fais rien qui peut endommager
+l'appli »*). C'est une tâche à part, dans `TODO.md`.
+
+### « Équipe A » a disparu du vocabulaire, et le repli est le rang
+
+Sa demande est explicite — *« et plus les équipes A ou B »*. `libelleEquipe` est
+devenue `libelleSalarie` : le nom écrit, sinon **« Salarié 3 »**.
+
+**Le repli EXISTE, et ce n'est pas du confort.** Le supprimer — c'est-à-dire ne
+montrer que les gens nommés, comme la proposition C de la planche — ferait
+disparaître les cases à cocher de tous ceux qui n'ont pas encore tapé les
+prénoms de leurs gars : leurs chantiers deviendraient du jour au lendemain
+impossibles à attribuer, sans un mot pour le dire.
+
+`LETTRES_EQUIPES` et `lettreDeRepli` ont été **retirées** : garder de quoi
+écrire « Équipe A » invitait à le refaire.
+
+### LE POINT DÉLICAT : la charge d'une demi-journée
+
+C'est le seul endroit où les deux nombres se rencontrent, et c'est là que se
+joue le « ça ne bouge pas ».
+
+Avant la coupure, l'écran cochait des ÉQUIPES : leur nombre ÉTAIT la charge, et
+il ne pouvait pas dépasser la capacité — il n'existait pas plus de cases que
+d'équipes. Maintenant qu'on coche des GENS, les deux se décollent : trois gars
+dans une entreprise à deux chantiers par jour, c'est possible.
+
+`equipesMobilisees(salariesCoches, nombreEquipes)` plafonne donc le compte à la
+capacité, plancher à un. **Le plafond n'est pas un ajustement, c'est ce qui
+évite la régression :** sans lui, un chantier à trois gars fermerait à lui seul
+une journée qui en accepte deux, et l'écran d'envoi refuserait au client des
+jours réellement libres.
+
+**Et à effectif égal, le résultat est identique à celui d'avant** — ce qui est
+exactement le cas de son entreprise, dont le compteur de salariés a été repris
+du nombre d'équipes par la migration. Sa correction du 22 août 2026 tient donc
+toujours : Julien ET Antoine chez Mr Eric ferment bien la demi-journée.
+
+**La même fonction sert à l'écran et au serveur.** `compterOccupation` la
+traverse désormais, et **son paramètre `nombreEquipes` est OBLIGATOIRE à
+dessein** : avec une valeur par défaut, un appelant oublié aurait continué de
+compter sans plafond, en silence — le planning plafonnant la charge et l'écran
+d'envoi non, si bien qu'un jour annoncé libre au patron aurait été refusé au
+client trois secondes plus tard (`CLAUDE.md` §3). Le compilateur a désigné les
+quatre appelants, plutôt que la production.
+
+### Le plancher est ZÉRO, et c'est ce qui distingue les deux compteurs
+
+Un artisan seul n'a **aucun** salarié — ce n'est pas un défaut de saisie. Lui
+proposer une ligne « Salarié 1 » l'inviterait à se nommer lui-même, et ferait
+apparaître une case à cocher sur chacune de ses demi-journées.
+
+La migration en tient compte dans sa reprise : `nombre_equipes = 1` sans nom
+écrit devient **zéro salarié**, et non un. Sans cette ligne, tous les artisans
+seuls auraient vu apparaître du jour au lendemain une organisation qu'ils n'ont
+pas.
+
+### Ce que les contrôles défendent
+
+| Où | Ce qui rougirait |
+|---|---|
+| `scripts/test-equipes.ts` | le repli qui réécrirait « Équipe », le plancher remonté à un, le plafond retiré |
+| `scripts/test-creneaux.ts` | trois gars sur un chantier qui fermeraient une journée à deux places |
+| `scripts/test-equipes-repo.ts` | un nom perdu en redescendant le compteur |
+
+**Confrontés à l'état dégradé** (`CLAUDE.md` §5) : plafond retiré de
+`equipesMobilisees`, les deux premières suites rougissent — et sur la bonne
+ligne, pas sur un effet de bord trois écrans plus loin.
+
+---
+
+## 193. L'accueil se range par date : le plus récent en haut
 
 **Sa demande du 26 août 2026, capture à l'appui :** *« Je viens de recevoir un
 devis retourné, il devrait apparaître en premier. L'ordre doit être dernier

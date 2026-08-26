@@ -91,16 +91,21 @@ async function main() {
     );
   }
   await pool.query(
-    `UPDATE entreprises SET nombre_equipes = 2
+    // **Les DEUX compteurs, depuis sa demande du 26 août 2026** : celui des
+    // équipes dit combien de chantiers tiennent dans une journée, celui des
+    // salariés décide des noms cochables sur une demi-journée. Ne poser que le
+    // premier laisserait l'écran sans une seule case à cocher — et la suite
+    // accuserait le produit d'avoir perdu les équipes.
+    `UPDATE entreprises SET nombre_equipes = 2, nombre_salaries = 2
       WHERE id = (SELECT entreprise_id FROM chantiers WHERE id = $1)`,
     [chantierId]
   );
   // **Deux équipes NOMMÉES, comme sur la planche et comme chez lui.**
   //
-  // Sans nom, l'écran écrit son étiquette de repli — « Équipe A » —, qui mesure
-  // 91 px là où « Équipe ? » en fait 75 : seize de plus que tout ce que la
-  // planche 84 dessine, et la ligne déborde alors de quatre pixels. Ce cas-là
-  // existe (une entreprise qui n'a pas nommé ses équipes) et il est noté dans
+  // Sans nom, l'écran écrit son étiquette de repli — « Salarié 1 » depuis le
+  // 26 août 2026, « Équipe A » avant lui —, plus large que le « Qui ? » que
+  // dessine la planche 84 : la ligne déborde alors de quelques pixels. Ce cas-là
+  // existe (une entreprise qui n'a pas nommé ses gars) et il est noté dans
   // `TODO.md` pour lui être montré — il ne se répare pas ici, parce que le
   // corriger, c'est retoucher un dessin qu'il a validé (`CLAUDE.md` §3 bis).
   //
@@ -440,7 +445,7 @@ async function main() {
     const carte = page.locator(`[data-atlas="carte-jour"][data-jour="${JOUR}"]`);
     const pastille = carte.locator('[data-bloc="apres_midi"] [data-atlas="equipe"]');
     assert.equal(await pastille.getAttribute("data-vide"), "1");
-    assert.equal((await pastille.innerText()).trim(), "Équipe ?");
+    assert.equal((await pastille.innerText()).trim(), "Qui ?");
   });
 
   // ─── DÉPLACER ───────────────────────────────────────────────────────────
@@ -448,7 +453,7 @@ async function main() {
   // **Sa ligne tient sur UN trait, et cela se mesure.**
   //
   // Trouvé le 21 août 2026 en REGARDANT une capture : sur un chantier dont
-  // l'équipe n'est pas choisie, « Équipe ? » est plus large qu'un prénom, et
+  // personne n'est choisi, « Qui ? » est plus étroit qu'un prénom, et
   // « Retirer » basculait à la ligne suivante. La planche 84 ne se replie pas :
   // elle resserre les petits boutons d'une ligne de demi-journée
   // (`.demi .petit{padding:7px 9px}`), et la transcription avait perdu la règle.
@@ -746,6 +751,32 @@ async function main() {
         0,
         `${boutons} bouton(s) « Ajouter un chantier » sur un écran où rien n'attend de jour : ` +
           "il promet un chantier de plus et ne rend qu'une phrase"
+      );
+
+      // ─── ET LA SECTION ELLE-MÊME S'EFFACE ─────────────────────────────
+      //
+      // **Sa question du 25 août 2026 :** *« est-ce que la catégorie sans date
+      // a un réel besoin d'exister ? »*. Elle en a un — c'est le seul endroit
+      // d'où un chantier reçoit sa date —, mais VIDE elle ne rendait qu'un
+      // titre et « Aucun chantier n'attend de jour », sur un écran déjà long.
+      //
+      // **Le contrôle vise l'ATTRIBUT, pas le mot.** Chercher le texte « Sans
+      // date » ferait rougir cette suite le jour où il fait renommer la
+      // section — sur du code juste, et pour une demande exaucée
+      // (`CLAUDE.md` §5 bis).
+      const titre = await page.locator('[data-atlas="titre-sans-date"]').count();
+      assert.equal(
+        titre,
+        0,
+        "le titre « Sans date » reste sur un écran où rien n'attend de jour : " +
+          "il annonce une liste vide, suivie d'un refus"
+      );
+      const phrase = await page.locator('[data-atlas="ou-poser"]').count();
+      assert.equal(
+        phrase,
+        0,
+        "la ligne « Touchez d'abord un jour » survit à la section qu'elle sert : " +
+          "elle demande un geste qui ne pose plus rien"
       );
     } finally {
       // Hors du `try` : une mesure ratée ne doit pas laisser les chantiers du

@@ -26,7 +26,7 @@ import {
   DEMIS,
   ditLeCompteDemi,
   ditLaDuree,
-  ditLesEquipes,
+  ditQuiPart,
   etatDemi,
   MOT_DEMI,
   MOT_QUAND,
@@ -36,7 +36,7 @@ import {
   type EtatDemi,
   type QuandChantier,
 } from "@/lib/planning-jour";
-import { equipesAffichees, libelleEquipe } from "@/lib/equipes";
+import { equipesMobilisees, libelleSalarie, salariesAffiches } from "@/lib/equipes";
 import LigneRetirable from "@/components/atlas/LigneRetirable";
 import TiroirDesRetires from "@/components/atlas/TiroirDesRetires";
 import { useRetraits } from "@/components/atlas/useRetraits";
@@ -156,13 +156,24 @@ function creneauxDe(c: ChantierPlanning) {
 export default function PlanningClient({
   initialChantiers,
   nombreEquipes = 1,
+  nombreSalaries = 0,
   equipesNommees = [],
   agenda = { configure: false, relie: false, actif: false, enPanne: false },
   absences = [],
   role = null,
 }: {
   initialChantiers: ChantierPlanning[];
+  /** La CAPACITÉ : combien de chantiers tiennent dans une journée. */
   nombreEquipes?: number;
+  /**
+   * Combien de GENS l'entreprise emploie — sa demande du 26 août 2026.
+   *
+   * C'est LUI qui décide des noms cochables sur une demi-journée, et plus le
+   * nombre d'équipes. Le défaut est zéro : un artisan seul n'a personne à
+   * cocher, et lui proposer une case lui inventerait une organisation qu'il
+   * n'a pas.
+   */
+  nombreSalaries?: number;
   equipesNommees?: { rang: number; nom: string | null }[];
   agenda?: EtatAgendaPlanning;
   /**
@@ -300,32 +311,40 @@ export default function PlanningClient({
         nombreEquipes,
         absentesParCreneau.get(cle) ?? 0,
         // **Ce que l'écran sait déjà, et qu'il ne disait pas à la charge.** Les
-        // équipes cochées sur la demi-journée sont sous les yeux du patron ;
-        // les ignorer faisait annoncer « incomplet » un mardi où ses deux
-        // équipes étaient chez Mr. Eric (22 août 2026).
-        (c) => (demi === "matin" ? c.equipes.matin : c.equipes.apres_midi).length
+        // gens cochés sur la demi-journée sont sous les yeux du patron ; les
+        // ignorer faisait annoncer « incomplet » un mardi où ses deux gars
+        // étaient chez Mr. Eric (22 août 2026).
+        //
+        // **Plafonné à la capacité depuis le 26 août** : on coche désormais des
+        // SALARIÉS, et trois gars sur un même chantier ne doivent pas fermer une
+        // journée qui accepte deux chantiers (`equipesMobilisees`).
+        (c) =>
+          equipesMobilisees(
+            (demi === "matin" ? c.equipes.matin : c.equipes.apres_midi).length,
+            nombreEquipes
+          )
       );
     },
     [parCreneau, absentesParCreneau, nombreEquipes]
   );
 
   const lignesEquipes = useMemo(
-    () => equipesAffichees(equipesNommees, nombreEquipes),
-    [equipesNommees, nombreEquipes]
+    () => salariesAffiches(equipesNommees, nombreSalaries),
+    [equipesNommees, nombreSalaries]
   );
 
   /**
-   * Le nom d'une équipe, ou sa lettre de repli — et `null` à une seule équipe.
+   * Le nom d'un salarié, ou son rang en repli — et `null` sans aucun salarié.
    *
-   * `libelleEquipe` décide seule : elle sert aussi au serveur et aux documents,
-   * et deux implémentations divergeraient le jour où l'artisan nomme la
-   * troisième sans avoir touché la deuxième (`src/lib/equipes.ts`).
+   * `libelleSalarie` décide seule : elle sert aussi au serveur et aux documents,
+   * et deux implémentations divergeraient le jour où l'artisan nomme le
+   * troisième sans avoir touché le deuxième (`src/lib/equipes.ts`).
    */
   const nomEquipe = useCallback(
     (rang: number) =>
-      libelleEquipe(lignesEquipes.find((e) => e.rang === rang) ?? null, nombreEquipes) ??
-      `Équipe ${rang}`,
-    [lignesEquipes, nombreEquipes]
+      libelleSalarie(lignesEquipes.find((e) => e.rang === rang) ?? null, nombreSalaries) ??
+      `Salarié ${rang}`,
+    [lignesEquipes, nombreSalaries]
   );
 
   // ─── Ce qui est ouvert : au plus une chose à la fois ────────────────────
@@ -534,7 +553,7 @@ export default function PlanningClient({
 
   /** Ce que porte une carte de journée — les mêmes gestes aux deux endroits. */
   const gestesCarte = {
-    nombreEquipes,
+    nombreSalaries,
     ouvert,
     setOuvert,
     feuille,
@@ -772,12 +791,12 @@ export default function PlanningClient({
                           chantier à la journée porte deux listes d'équipes —
                           matin et après-midi, indépendantes — et une pastille
                           unique ne saurait pas laquelle modifier. */}
-                      {nombreEquipes > 1 && (
+                      {nombreSalaries > 0 && (
                         <PastilleEquipe
                           vide={toutes.length === 0}
                           onClick={ouvrir}
                           avecPlus={false}
-                          libelle={ditLesEquipes(toutes.map(nomEquipe))}
+                          libelle={ditQuiPart(toutes.map(nomEquipe))}
                         />
                       )}
                       {/* **Le chevron MÈNE au chantier, il n'ouvre pas la
@@ -851,13 +870,19 @@ export default function PlanningClient({
         )}
 
         {/* ─── SANS DATE — et c'est d'ici qu'on POSE ──────────────────────── */}
-        <TitreSection>Sans date</TitreSection>
-        {sansDate.length === 0 ? (
-          <p className="mx-[18px] mt-2 text-center text-[12.5px]" style={{ color: colors.muted }}>
-            Aucun chantier n’attend de jour.
-          </p>
-        ) : (
+        {/* **RIEN N'ATTEND DE JOUR : LA SECTION N'EXISTE PAS.** Sa question du
+            25 août 2026 : *« est-ce que la catégorie sans date a un réel besoin
+            d'exister ? »*. Elle en a un — c'est le seul endroit d'où un
+            chantier reçoit sa date, et « Retirer » l'y renvoie — mais VIDE elle
+            ne rend qu'un titre et un refus, au milieu d'un écran déjà long.
+
+            C'est sa propre règle du 23 août, celle qui a fait disparaître
+            « Ajouter un chantier » : un geste qui ne peut mener nulle part se
+            retire au lieu de s'annoncer. La phrase du cul-de-sac vivait ici,
+            et c'est elle que ce bouton promettait. */}
+        {sansDate.length > 0 && (
           <>
+            <TitreSection data-atlas="titre-sans-date">Sans date</TitreSection>
             <p
               data-atlas="ou-poser"
               className="mx-[18px] mt-2 text-center text-[12.5px]"
@@ -992,9 +1017,13 @@ function Fleche({
   );
 }
 
-function TitreSection({ children }: { children: React.ReactNode }) {
+function TitreSection({
+  children,
+  ...reste
+}: { children: React.ReactNode } & React.HTMLAttributes<HTMLParagraphElement>) {
   return (
     <p
+      {...reste}
       className="mx-[18px] mt-[26px] text-center text-[13px] font-bold uppercase leading-none"
       style={{ letterSpacing: "0.16em", color: colors.ink }}
     >
@@ -1129,12 +1158,16 @@ function Choisir({ children }: { children: React.ReactNode }) {
 type GestesCarte = {
   /**
    * **À une seule équipe, aucune pastille.** Il n'y a personne à désigner :
-   * écrire « Équipe A » à un artisan qui travaille seul lui inventerait une
-   * organisation qu'il n'a pas — le patron l'a interdit le 10 août 2026
-   * (`src/lib/equipes.ts`). La planche 84 en montre deux ; elle ne dit rien du
-   * cas où il n'y en a qu'une, et c'est la règle d'avant qui tranche.
+   * écrire un nom d'organisation à un artisan qui travaille seul lui
+   * inventerait une organisation qu'il n'a pas — le patron l'a interdit le
+   * 10 août 2026 (`src/lib/equipes.ts`). La planche 84 en montre deux ; elle ne
+   * dit rien du cas où il n'y en a aucun, et c'est la règle d'avant qui tranche.
+   *
+   * **C'est le compteur des SALARIÉS depuis le 26 août 2026**, et non celui des
+   * équipes : les deux se sont séparés, et c'est le nombre de gens qui décide
+   * s'il y a quelqu'un à cocher.
    */
-  nombreEquipes: number;
+  nombreSalaries: number;
   ouvert:
     | { quoi: "equipe"; cle: string; chantierId: string; demi: Demi }
     | { quoi: "deplacer"; cle: string; chantierId: string; demi: Demi }
@@ -1293,7 +1326,7 @@ function CarteDuJour({
   cle,
   jour,
   seulement,
-  nombreEquipes,
+  nombreSalaries,
   ouvert,
   setOuvert,
   feuille,
@@ -1478,7 +1511,7 @@ function CarteDuJour({
                       {MOT_DEMI[demi]}
                     </span>
 
-                    {nombreEquipes <= 1 ? null : choixEquipe ? (
+                    {nombreSalaries <= 0 ? null : choixEquipe ? (
                       // **On COCHE, on ne choisit pas une seule fois.** La liste
                       // reste ouverte tant qu'il n'a pas fini, et le calendrier
                       // se repeint derrière à chaque coche — sinon il faudrait
@@ -1506,7 +1539,7 @@ function CarteDuJour({
                     ) : (
                       <PastilleEquipe
                         vide={rangs.length === 0}
-                        libelle={ditLesEquipes(rangs.map(nomEquipe))}
+                        libelle={ditQuiPart(rangs.map(nomEquipe))}
                         onClick={() =>
                           setOuvert({ quoi: "equipe", cle, chantierId: c.id, demi })
                         }

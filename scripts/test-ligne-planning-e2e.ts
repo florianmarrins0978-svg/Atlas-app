@@ -507,7 +507,10 @@ async function main() {
 
   await test("À plusieurs équipes, le nom de l'équipe n'est écrit QU'UNE fois", async () => {
     await pool.query(
-      `UPDATE entreprises SET nombre_equipes = 2
+      // **Les deux compteurs, depuis le 26 août 2026** : les équipes disent la
+      // capacité du planning, les salariés décident des noms cochables sur une
+      // demi-journée. Ne poser que le premier laisserait l'écran sans case.
+      `UPDATE entreprises SET nombre_equipes = 2, nombre_salaries = 2
         WHERE id = (SELECT entreprise_id FROM chantiers WHERE id = $1)`,
       [journee.id]
     );

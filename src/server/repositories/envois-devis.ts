@@ -191,7 +191,7 @@ async function contrainteDuPlanning(
   // sens, l'addition dépasserait un plafond que l'agenda venait de poser.
   return {
     occupation: fusionnerOccupationExterne(
-      fusionnerAbsences(compterOccupation(planifies), absences, nombreEquipes),
+      fusionnerAbsences(compterOccupation(planifies, nombreEquipes), absences, nombreEquipes),
       periodesExterieures,
       nombreEquipes
     ),

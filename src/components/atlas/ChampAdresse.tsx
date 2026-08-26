@@ -2,7 +2,7 @@
 
 import { useEffect, useId, useRef, useState } from "react";
 import { colors, font, libelleCaps, smallCaps } from "@/lib/design-tokens";
-import { meriteUneRecherche, type SuggestionAdresse } from "@/lib/suggestions-adresse";
+import { memeAdresse, meriteUneRecherche, type SuggestionAdresse } from "@/lib/suggestions-adresse";
 
 /**
  * Un champ d'adresse qui propose, comme sur les sites de commande.
@@ -96,7 +96,15 @@ export default function ChampAdresse({
   }
 
   // La liste ne s'affiche que si elle répond à ce qui est ÉCRIT en ce moment.
-  const suggestions = resultat.pour === value ? resultat.liste : [];
+  //
+  // **Et une proposition qui répète la saisie est ÉCARTÉE.** Sa question du
+  // 24 août 2026 devant son siège : « pourquoi l'adresse est marquée 2 fois de
+  // suite ? » — le champ portait son écriture, la proposition la même adresse
+  // en forme officielle. Une liste qui répète ce qui est déjà écrit ne propose
+  // rien : elle occupe la place et fait douter de la saisie.
+  const suggestions = (resultat.pour === value ? resultat.liste : []).filter(
+    (s) => !memeAdresse(s.libelle, value)
+  );
   const listeVisible = ouverte && suggestions.length > 0;
 
   const enLigne = apparence === "ligne";
