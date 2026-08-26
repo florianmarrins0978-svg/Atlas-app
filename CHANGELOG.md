@@ -24,7 +24,24 @@ messagerie — laquelle les lui montre, et où il peut encore reculer.
 
 Trois contrôles lisaient ces phrases. Ils éprouvent maintenant la règle : la
 messagerie qui s'ouvre pour de bon, les deux dates listées, le sous-titre de
-l'interrupteur qui suit l'interrupteur. Détail en `ARCHITECTURE.md` §193.
+l'interrupteur qui suit l'interrupteur. Détail en `ARCHITECTURE.md` §194.
+### Changer le rythme de la TVA fait enfin bouger l'écran
+
+*« Quand je change entre tous les mois et tous les trois mois, c'est pareil,
+rien ne se passe. »* Reproduit : l'écran gardait « Août 2026 » après le passage
+au trimestre.
+
+La base était bien écrite — le réglage revenait au rechargement suivant. Ce qui
+manquait est la **revalidation** : le routeur reservait sa copie en cache de la
+page, sans appeler le serveur. `force-dynamic` ne protège pas de cela, et c'est
+le piège — il fait recalculer le serveur à chaque demande, encore faut-il qu'une
+demande parte.
+
+**Aucun contrôle ne pouvait le voir** : tous passaient par Réglages puis
+rouvraient le relevé par une navigation neuve, et une page rouverte est toujours
+juste. Le cas ajouté rejoue SA séquence — basculer sans quitter l'écran — et a
+été vu rouge avant d'être vert. `ARCHITECTURE.md` §193.
+
 
 ### Ses salariés se comptent à part de ses équipes — et ce sont leurs noms qu'on coche
 
@@ -92,6 +109,29 @@ Le curseur des **équipes** reste dans les trois, comme il l'a exigé.
 **Le contrôle ouvre un navigateur, et il a trouvé un vrai défaut** : les
 pastilles et les croix de la planche faisaient moins de 40 px. Corrigé à 44 —
 il touche cet écran debout, avec un gant.
+
+### Maquette : « Quand je reverse la TVA » — les deux phrases du relevé
+
+*« Quand le client le paye / quand je met la facture. C'est pas clair, on
+comprend rien. Qu'est-ce que ça signifie ? »* Puis : *« et lorsque je change
+entre les deux, rien ne se passe, c'est normal ? »*
+
+**La seconde question n'était PAS une panne, et le calcul est juste :** quand
+toutes les factures d'un mois ont été payées dans le mois, les deux régimes
+tombent sur le même chiffre. L'écart n'existe que sur une facture émise un mois
+et encaissée le suivant — ou jamais payée.
+
+Mais un écran qui ne bouge pas sans rien dire se lit comme une panne. La
+planche porte donc deux réécritures des libellés — le verbe manquant est
+« je reverse » — et **la ligne qui dit ce que le choix change sur le mois
+affiché, y compris quand il n'y change rien.**
+
+**Il a tranché le soir même : B, sans le tableau d'exemple.** Les libellés
+réécrits, plus la ligne qui dit ce que le choix change — le tableau expliquait,
+et un écran n'explique pas son propre fonctionnement (`CLAUDE.md` §3). La
+planche porte la version retenue et ce qui a été écarté :
+`appli/quand-je-reverse-la-tva.html`. Reste à coder.
+
 ### « Sans date » disparaît quand rien n'attend de jour
 
 **Sa question :** *« est-ce que la catégorie sans date a un réel besoin

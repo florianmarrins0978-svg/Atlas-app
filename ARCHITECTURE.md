@@ -16838,7 +16838,64 @@ pas.
 ligne, pas sur un effet de bord trois écrans plus loin.
 
 ---
-## 193. L'écran d'envoi du devis perd trois phrases, et n'apprend rien de moins
+
+## 193. « Rien ne se passe » : `force-dynamic` ne fait pas partir la demande
+
+**Sa plainte du 26 août 2026 :** *« quand je change entre tous les mois et tous
+les trois mois, c'est pareil, rien ne se passe »*. Il avait raison, et le défaut
+était réel : sur l'écran de TVA, basculer le rythme laissait « Août 2026 » sous
+ses yeux au lieu d'afficher le trimestre.
+
+### Ce qui marchait, et ce qui ne marchait pas
+
+| | |
+|---|---|
+| la base | **écrite** — le réglage revenait au rechargement suivant |
+| le calcul | **juste** — `test-periode-tva.ts` était vert, et le reste |
+| l'écran | **figé** sur la période d'avant |
+
+### Le piège, et il est contre-intuitif
+
+`src/app/termines/tva/page.tsx` porte `export const dynamic = "force-dynamic"`.
+On lit cette ligne comme « cette page est toujours fraîche » — elle ne dit rien
+de tel. Elle commande au **serveur** de recalculer à chaque demande ; encore
+faut-il **qu'une demande parte**. Le routeur du navigateur garde sa propre copie
+de `/termines/tva`, et sans revalidation il la reservait sans appeler personne.
+
+`revalidatePath` n'est donc pas une précaution de fin de fonction ici : c'est la
+moitié du geste. Le voisin immédiat le faisait déjà — `reglerExigibiliteAction`,
+écrite le même mois pour le régime de TVA, appelle `revalidatePath` ; celle de la
+périodicité, plus ancienne, ne l'avait jamais fait.
+
+### Pourquoi AUCUN contrôle ne le voyait
+
+`test-periodicite-tva-e2e.ts` couvrait pourtant le rythme depuis le 12 août, et
+il était vert. Son `choisir()` passe par **Réglages**, puis rouvre le relevé par
+une navigation neuve — et **une page rouverte est toujours juste**.
+
+Lui bascule depuis l'écran de TVA, sans le quitter. C'est sa **séquence** qu'il
+fallait rejouer, pas son geste (`AGENTS.md`) — la même leçon que la page vieillie
+du 12 août, sur un autre mécanisme.
+
+Le cas ajouté ne recharge rien : il touche les deux mots soulignés du haut,
+attend que le titre change, et refait le chemin en sens inverse — une correction
+qui ne fonctionnerait que dans un sens laisserait la moitié du défaut. Vu rouge
+sur « l'écran dit toujours "Août 2026" » avant d'être vert.
+
+### Ce qui n'était PAS un défaut, et qu'il a signalé le même soir
+
+*« Et lorsque je change entre les deux régimes, rien ne se passe, c'est
+normal ? »* — **oui.** Quand toutes les factures d'un mois ont été payées dans
+le mois, encaissements et débits tombent sur le même chiffre : c'est le calcul,
+pas le cache. Ce qui manque là est une **phrase** qui le dise, et elle est en
+maquette (`appli/quand-je-reverse-la-tva.html`), pas un correctif.
+
+Les deux plaintes se ressemblaient mot pour mot ; une seule était un bogue. Les
+séparer a demandé de rejouer chacune plutôt que de traiter la seconde comme la
+première.
+
+---
+## 194. L'écran d'envoi du devis perd trois phrases, et n'apprend rien de moins
 
 **Ses trois demandes du 26 août 2026, capture à l'appui :** *« supprime la
 phrase par SMS au + repris de votre dictée + le client pourra aussi en proposer
