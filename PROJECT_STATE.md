@@ -30,7 +30,11 @@ ligne « fait » qui ne l'est pas coûte plus cher qu'une ligne absente.
 | `ATLAS_PROXY_SAUTS` en production | **à poser** — sans lui, tous les seuils par source restent communs |
 | Sauvegardes | **toujours aucune** — le point le plus grave du dépôt |
 
-Rapport transmissible : `docs/lot-3-fermeture-f1-f13.md`. Le raisonnement complet
+**Batterie complète au vert le 26 août 2026** : 232/232 suites base, **110/110**
+suites navigateur, connexion réelle derrière une origine étrangère.
+
+Rapports transmissibles : `docs/lot-3-fermeture-f1-f13.md` puis
+`docs/lot-3-cloture-et-lecture-audio.md` (clôture + lecture du lot Audio). Le raisonnement complet
 est dans `ARCHITECTURE.md` §170.
 
 ---

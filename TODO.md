@@ -29,6 +29,37 @@ qu'elles : trois mois consultés sans trouver, et elle nomme la navigation.
 **Éprouvé sur 730 jours** (2026 et 2027, changements d'année compris) : 114 jours
 rouges sans le remède, **730/730 verts avec**, et jamais plus d'un tour de page.
 
+## Trois suites navigateur rougissent sous la batterie, jamais seules (26 août 2026)
+
+**Constaté sur deux tours de batterie, avec des suites DIFFÉRENTES à chaque
+fois** — et le même code entre les deux :
+
+| Tour | Rouges | Rejeu seule |
+|---|---|---|
+| n° 4 | `fiche-chantier`, `note-hors-documents`, `planning` | les trois vertes |
+| n° 1 | `anneau-dictee`, `arrosage` | les deux vertes |
+
+**Ce n'est PAS de la charge machine** : mémoire libre, PostgreSQL debout, aucune
+erreur serveur dans le journal des tours rouges. Et **les mêmes 110 suites sont
+passées ensemble trois fois** — dont le tour n° 5, entièrement vert.
+
+**Le symptôme est parlant, et il faut le suivre :** deux des trois échouent sur
+`GET /api/chantiers/<id>/feuille/pdf` → **404**, la troisième sur « rallumer
+n'est pas arrivé en base ». Trois fois « l'état n'a pas atteint la base avant
+qu'on le relise ». C'est la famille décrite dans `HANDOVER.md` — un délai fixe
+là où il faudrait attendre un signal — et cette route rend 404 quand le devis
+n'a pas encore de ligne.
+
+**Ce qu'il faut faire :** dans ces trois suites, remplacer l'attente qui précède
+la relecture par un vrai signal (la ligne visible à l'écran, ou la valeur en
+base), comme l'ont déjà été les suites du lot 2B. **Ne pas allonger un délai** :
+cela déplacerait le seuil sans supprimer la course.
+
+**Et ne pas les exclure** : elles éprouvent des règles réelles — un salarié ne
+doit voir aucun prix sur la feuille de chantier.
+
+---
+
 ## `ATLAS_PROXY_SAUTS` n'est posé nulle part en production (25 août 2026)
 
 Tant qu'il ne l'est pas, `sourceDuVisiteur` rend délibérément une valeur commune

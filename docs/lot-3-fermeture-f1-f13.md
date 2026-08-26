@@ -124,7 +124,7 @@ Redis étaient tombés : remontés avant de lancer.
 | Construction | ✅ compilée, 21/21 pages statiques |
 | `npm run verifier:memoire` | ✅ 8 fichiers |
 | Suites base — RLS comprises | ✅ **232 / 232** |
-| Suites navigateur | ❌ **108 / 111** |
+| Suites navigateur | ❌ **108 / 111** — *voir `docs/lot-3-cloture-et-lecture-audio.md` : le tour final rend **110/110**, et le total a changé parce que deux pièces communes étaient comptées comme des suites* |
 | `npm run verifier:connexion` | ✅ connexion réelle derrière une origine étrangère |
 | `npm audit` | **4 modérées** |
 
