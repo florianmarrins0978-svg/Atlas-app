@@ -75,6 +75,36 @@ Le curseur des **équipes** reste dans les trois, comme il l'a exigé.
 **Le contrôle ouvre un navigateur, et il a trouvé un vrai défaut** : les
 pastilles et les croix de la planche faisaient moins de 40 px. Corrigé à 44 —
 il touche cet écran debout, avec un gant.
+### « Sans date » disparaît quand rien n'attend de jour
+
+**Sa question :** *« est-ce que la catégorie sans date a un réel besoin
+d'exister ? »*, devant un planning où elle ne portait qu'un titre et
+« Aucun chantier n'attend de jour ».
+
+**Elle en a un, et il est unique :** c'est le seul endroit d'où un chantier
+reçoit sa date — on touche un jour du calendrier, puis Matin, Après-midi ou
+Journée sur un chantier de cette liste. Et « Retirer » un chantier planifié l'y
+renvoie plutôt que de l'effacer. La supprimer coûterait le geste qui pose les
+dates.
+
+**Mais vide, elle n'est que du bruit** — un titre en capitales et un refus, au
+milieu d'un écran qui porte déjà le calendrier, les journées, les retirés et
+l'attente du client. C'est exactement sa règle du 23 août, celle qui a fait
+disparaître « Ajouter un chantier » : *« lorsqu'aucun chantier n'attend de jour,
+il ne faudrait pas que le bouton apparaisse, car il peut nous induire en
+erreur »*. La phrase du cul-de-sac que ce bouton promettait, c'était celle-ci.
+
+**Elle revient dès qu'un chantier attend un jour** — rien n'est retiré du
+produit, seul l'affichage vide s'en va.
+
+**Le contrôle vise l'ATTRIBUT, jamais le mot.** Chercher le texte « Sans date »
+ferait rougir la suite le jour où il fait renommer la section — sur du code
+juste, et pour une demande exaucée (`CLAUDE.md` §5 bis). Il compte
+`[data-atlas="titre-sans-date"]` et `[data-atlas="ou-poser"]` dans l'état zéro
+que la suite installe déjà pour le bouton. **Vu rougir** contre l'ancienne
+disposition : « le titre "Sans date" reste sur un écran où rien n'attend de
+jour ».
+
 ### « Mon compte » : quarante mots de moins
 
 *« Supprime la phrase sous enregistrer »*, *« supprime ce compte sous compte

@@ -295,15 +295,7 @@ async function main() {
 
     // Deux dates : c'est le cas qui laisse le client choisir. Prise au
     // calendrier, la liste des six ayant disparu le 23 août 2026.
-    const plancherCycle = new Date();
-    plancherCycle.setDate(plancherCycle.getDate() + 3);
-    const depuisCycle = plancherCycle.toISOString().slice(0, 10);
-    const offerts = (
-      await page
-        .locator('[data-jour][data-etat="regardable"]')
-        .evaluateAll((els) => els.map((e) => e.getAttribute("data-jour")!).filter(Boolean))
-    ).filter((j) => j >= depuisCycle);
-    assert.ok(offerts.length >= 1, "aucun jour acceptable au calendrier");
+    const offerts = await joursRetenables(page, 1);
     await retenirAuCalendrier(page, offerts[0]);
     await page.getByRole("button", { name: "Envoyer le devis" }).click();
     await page.waitForURL(/localhost:3000\/$/, { timeout: 15000 }); // L'envoi ramène à L'ACCUEIL depuis le 21 août 2026 : c'est lui, le signal.

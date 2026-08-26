@@ -9,21 +9,6 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
-## ⏳ `test-periodicite-tva-e2e.ts` dépend de la charge — 26 août 2026
-
-Dans la batterie complète : *« Tous les trimestres n'a pas été enregistré : la
-case n'est pas cochée après rechargement. »* **Rejouée seule dans la minute :
-7/7, verte.** Le décor n'était pas en cause, le code non plus.
-
-Elle rejoint la liste de celles qui lâchent sous charge (§ plus bas). Le point
-commun : elles rechargent une page et relisent un état écrit juste avant.
-
-**Ce qu'il ne faut PAS faire** : allonger les délais au jugé jusqu'à ce que ça
-passe. Ce qui prouverait quelque chose, c'est d'attendre l'écriture plutôt que
-de la supposer — la case cochée, pas un compte à rebours.
-
----
-
 ## ⏳ `test-fiche-pendant-relance.ts` — rouge sur `main`, et ce n'est PAS une régression
 
 **Mesuré le 26 août 2026, pas supposé :** rejouée sur `main` nu (`git stash`),
@@ -97,6 +82,43 @@ personne. La planche montre ce qu'il faut faire — les gens restent visibles so
 « Sans équipe » plutôt que de disparaître sans geste.
 
 ---
+## ⚠ Quatre suites navigateur rougissent SOUS LA BATTERIE, vertes jouées seules
+
+**Relevé le 26 août 2026, sur trois batteries d'affilée du même arbre.** À
+chaque tour, une ou deux suites tombent — et **jamais les mêmes** :
+
+| Tour | Ce qui est tombé |
+|---|---|
+| 1 | `test-reduction-devis-e2e` (8 cas), `test-tva-au-paiement-e2e` |
+| 2 | `test-lecons-prix-e2e` — « le prix 1400 n'est jamais arrivé en base : 0.00 » |
+| 3 | `test-periodicite-tva-e2e` — « Tous les trimestres n'a pas été enregistré : la case n'est pas cochée après rechargement » (relevé depuis un AUTRE lot, celui des salariés) |
+| 4 | `test-fiche-pendant-relance` — verte à la batterie suivante, sur une machine reposée |
+
+**Toutes sont VERTES rejouées seules**, immédiatement après. Aucune n'est
+touchée par les lots en cours — le planning d'un côté, les salariés de l'autre —
+et rien n'a été joué en parallèle de la batterie : la règle du 26 août a été
+respectée.
+
+**Le tour 3 vient d'une autre session et d'un autre arbre**, et c'est ce qui
+ferme la question : ce n'est pas un lot qui les fragilise, c'est la machine.
+
+**C'est le piège déjà écrit dans `HANDOVER.md` :** un délai fixe à la place d'un
+signal. Sous la batterie entière, la machine est chargée, l'action serveur met
+plus longtemps que le délai, et la suite lit l'écran d'avant. `test-lecons-prix`
+vient pourtant d'être porté de 30 à 60 secondes le même jour — **allonger ne
+suffit plus**, et c'est ce que ce constat ajoute.
+
+**Ce qu'il faudrait, pour qui reprend :** remplacer l'attente par un témoin — la
+valeur relue en base, la classe que le composant pose — plutôt que d'allonger
+les délais un à un. Le seuil suivant sera atteint par la machine suivante.
+
+## ~~« Sans date » vide sur le planning~~ — **CODÉ le 26 août 2026**
+
+Sa question : *« est-ce que la catégorie sans date a un réel besoin
+d'exister ? »*. Réponse : oui — c'est le seul endroit d'où un chantier reçoit sa
+date, et « Retirer » l'y renvoie —, mais **vide**, elle ne rendait qu'un titre
+et un refus. Elle disparaît quand rien n'attend de jour, et revient dès qu'un
+chantier attend. Le détail est dans `CHANGELOG.md`.
 
 ## ✅ ~~Le format des numéros de devis et de factures~~ — fait le 26 août 2026
 

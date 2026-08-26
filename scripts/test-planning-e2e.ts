@@ -752,6 +752,32 @@ async function main() {
         `${boutons} bouton(s) « Ajouter un chantier » sur un écran où rien n'attend de jour : ` +
           "il promet un chantier de plus et ne rend qu'une phrase"
       );
+
+      // ─── ET LA SECTION ELLE-MÊME S'EFFACE ─────────────────────────────
+      //
+      // **Sa question du 25 août 2026 :** *« est-ce que la catégorie sans date
+      // a un réel besoin d'exister ? »*. Elle en a un — c'est le seul endroit
+      // d'où un chantier reçoit sa date —, mais VIDE elle ne rendait qu'un
+      // titre et « Aucun chantier n'attend de jour », sur un écran déjà long.
+      //
+      // **Le contrôle vise l'ATTRIBUT, pas le mot.** Chercher le texte « Sans
+      // date » ferait rougir cette suite le jour où il fait renommer la
+      // section — sur du code juste, et pour une demande exaucée
+      // (`CLAUDE.md` §5 bis).
+      const titre = await page.locator('[data-atlas="titre-sans-date"]').count();
+      assert.equal(
+        titre,
+        0,
+        "le titre « Sans date » reste sur un écran où rien n'attend de jour : " +
+          "il annonce une liste vide, suivie d'un refus"
+      );
+      const phrase = await page.locator('[data-atlas="ou-poser"]').count();
+      assert.equal(
+        phrase,
+        0,
+        "la ligne « Touchez d'abord un jour » survit à la section qu'elle sert : " +
+          "elle demande un geste qui ne pose plus rien"
+      );
     } finally {
       // Hors du `try` : une mesure ratée ne doit pas laisser les chantiers du
       // compte de démonstration datés pour les suites suivantes.
