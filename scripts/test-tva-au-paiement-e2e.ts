@@ -339,27 +339,31 @@ async function main() {
     );
     assert.ok(avant.lus[1] > avant.lus[0], "aux débits, la facture impayée doit ajouter sa TVA");
 
-    // **Et elle suit le doigt.** L'écran coche la ligne avant que le serveur
-    // réponde ; les deux montants doivent s'échanger dans le même mouvement,
-    // sans quoi la phrase ment pendant l'aller-retour — c'est-à-dire à
-    // l'instant précis où il la lit.
+    // **ET ELLE NE DEVANCE PAS LE GRAND CHIFFRE.** Première version écartée
+    // ici même : la phrase suivait le doigt et annonçait déjà le montant de
+    // l'autre régime pendant que « Collectée » portait encore l'ancien. Deux
+    // chiffres qui se contredisent dans le même écran, et c'est toute la liste
+    // qu'on cesse de croire (`CLAUDE.md` §4 bis).
+    //
+    // Elle nomme donc les deux régimes, dans un ordre qui ne bouge pas — et
+    // c'est ce que ce contrôle fixe : après la bascule, ce sont les MÊMES deux
+    // montants, et c'est « Collectée » qui passe de l'un à l'autre.
     await page.getByRole("radio", { name: /Le mois où j'envoie la facture/ }).click();
     await page.waitForFunction(
-      (attendu) => {
-        const e = document.querySelector('[data-atlas="ecart-des-regimes"]');
-        return (e?.textContent ?? "").includes(attendu);
+      (a) => {
+        const m = document.body.innerText.match(/COLLECTÉE\s*\n?\s*([\d \s   ,.]+)\s*€/i);
+        return m ? Number(m[1].replace(/[\s   ]/g, "").replace(",", ".")) !== a : false;
       },
-      // Le montant des débits doit passer EN PREMIER : c'est la ligne cochée.
-      avant.dit.match(/([\d \s   ]+,\d{2})\s*€/g)?.[1] ?? "",
+      avant.lus[0],
       { timeout: 15_000 }
     );
     const apres = await montants();
-    assert.deepEqual(
-      apres.lus,
-      [avant.lus[1], avant.lus[0]],
-      `les deux montants ne se sont pas échangés : « ${apres.dit} »`
+    assert.deepEqual(apres.lus, avant.lus, `la phrase a changé d'ordre : « ${apres.dit} »`);
+    assert.equal(
+      await collectee(page),
+      avant.lus[1],
+      "aux débits, le grand chiffre ne rejoint pas le second montant de la phrase"
     );
-    assert.equal(apres.lus[0], await collectee(page), "après bascule, la phrase ne suit plus l'écran");
 
     // On repose le régime : les suites suivantes partent d'un état connu.
     await page.getByRole("radio", { name: /Le mois où mon client me paie/ }).click();

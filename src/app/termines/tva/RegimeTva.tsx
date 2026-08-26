@@ -44,6 +44,10 @@ import type { Exigibilite } from "@/lib/exigibilite-tva";
  * (`CLAUDE.md` §3). Deux lignes à relire chaque fois qu'il ouvre sa TVA, pour
  * une règle qu'il connaît après l'avoir lue une fois.
  * Planche : `appli/quand-je-reverse-la-tva.html`.
+ *
+ * **Et la phrase ne suit PAS le doigt** — voir le commentaire qui la précède :
+ * elle nomme les deux régimes plutôt que « cette ligne », sans quoi elle
+ * devance le grand chiffre du dessus pendant l'aller-retour avec le serveur.
  */
 export default function RegimeTva({
   actuelle,
@@ -90,14 +94,21 @@ export default function RegimeTva({
     },
   ];
 
-  // **Les deux montants suivent le DOIGT, pas la base.** L'écran coche la ligne
-  // avant que le serveur réponde — c'est voulu, le doigt doit voir tout de
-  // suite. Les chiffres, eux, décrivent le régime ENREGISTRÉ : sans cette
-  // bascule, la phrase mentirait pendant l'aller-retour, et c'est justement
-  // l'instant où il la lit.
-  const surLaLigne = choisie === actuelle ? tvaRetenue : tvaAutre;
-  const surLAutre = choisie === actuelle ? tvaAutre : tvaRetenue;
-  const memeChiffre = surLaLigne === surLAutre;
+  // **La phrase NOMME les deux régimes, elle ne dit jamais « cette ligne ».**
+  //
+  // Première version écartée, et par un contrôle : elle disait « X avec cette
+  // ligne, Y avec l'autre », et suivait le doigt. L'écran coche en effet la
+  // ligne avant que le serveur réponde — mais le grand chiffre du dessus, lui,
+  // attend la réponse. Pendant cet aller-retour, la phrase annonçait déjà le
+  // montant de l'autre régime tandis que « Collectée » portait encore l'ancien :
+  // deux chiffres qui se contredisent dans le même écran, ce que `CLAUDE.md`
+  // §4 bis interdit — et c'est toute la liste qu'on cesse alors de croire.
+  //
+  // En nommant les régimes, la phrase ne dépend plus de ce qui est coché : elle
+  // reste vraie à chaque instant, y compris au milieu du geste.
+  const memeChiffre = tvaRetenue === tvaAutre;
+  const siPaye = actuelle === "encaissements" ? tvaRetenue : tvaAutre;
+  const siEnvoye = actuelle === "encaissements" ? tvaAutre : tvaRetenue;
 
   return (
     <div className="mt-5 px-6">
@@ -151,13 +162,13 @@ export default function RegimeTva({
         {memeChiffre ? (
           <>
             Sur <strong style={{ color: colors.ink }}>{periode}</strong>, ce choix ne change rien —{" "}
-            <strong style={{ color: colors.ink }}>{surLaLigne}</strong> dans les deux cas.
+            <strong style={{ color: colors.ink }}>{siPaye}</strong> dans les deux cas.
           </>
         ) : (
           <>
-            Sur <strong style={{ color: colors.ink }}>{periode}</strong>, ce choix change :{" "}
-            <strong style={{ color: colors.ink }}>{surLaLigne}</strong> avec cette ligne,{" "}
-            <strong style={{ color: colors.ink }}>{surLAutre}</strong> avec l&apos;autre.
+            Sur <strong style={{ color: colors.ink }}>{periode}</strong> :{" "}
+            <strong style={{ color: colors.ink }}>{siPaye}</strong> en attendant le paiement,{" "}
+            <strong style={{ color: colors.ink }}>{siEnvoye}</strong> dès l&apos;envoi.
           </>
         )}
       </p>
