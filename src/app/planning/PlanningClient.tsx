@@ -882,7 +882,7 @@ export default function PlanningClient({
             et c'est elle que ce bouton promettait. */}
         {sansDate.length > 0 && (
           <>
-            <TitreSection data-atlas="titre-sans-date">Sans date</TitreSection>
+            <TitreSection encadre data-atlas="titre-sans-date">Sans date</TitreSection>
             <p
               data-atlas="ou-poser"
               className="mx-[18px] mt-2 text-center text-[12.5px]"
@@ -897,7 +897,7 @@ export default function PlanningClient({
                 : "Touchez d’abord un jour du calendrier"}
             </p>
             <div className="mx-[18px] mt-3">
-              {sansDate.map((c) => (
+              {sansDate.map((c, i) => (
                 <LigneRetirable
                   key={c.id}
                   libelle={`le chantier ${c.nom}`}
@@ -909,7 +909,16 @@ export default function PlanningClient({
                   <div
                     data-atlas="sans-date"
                     className="flex w-full items-center justify-between gap-2.5 py-[11px]"
-                    style={{ borderBottom: `1px solid ${colors.line}` }}
+                    // **Le filet SÉPARE deux lignes, il ne souligne pas la
+                    // dernière** — sa demande du 26 août : *« supprime le trait
+                    // sous Jean Louis »*. Avec un seul chantier en attente, le
+                    // trait ne séparait rien : il soulignait un nom. C'est la
+                    // règle qu'emploie déjà la liste « En attente du client »
+                    // deux blocs plus bas, reprise ici plutôt qu'inventée.
+                    style={{
+                      borderBottom:
+                        i === sansDate.length - 1 ? "none" : `1px solid ${colors.line}`,
+                    }}
                   >
                     <span
                       className="min-w-0 flex-1 truncate"
@@ -959,7 +968,7 @@ export default function PlanningClient({
         {/* ─── EN ATTENTE DU CLIENT ───────────────────────────────────────── */}
         {attenteClient.length > 0 && (
           <>
-            <TitreSection>En attente du client</TitreSection>
+            <TitreSection encadre>En attente du client</TitreSection>
             <div className="mx-[18px] mt-3">
               {attenteClient.map((c, i) => (
                 <div
@@ -1017,17 +1026,54 @@ function Fleche({
   );
 }
 
+/**
+ * Le titre d'une section du planning.
+ *
+ * **`encadre` lui donne la pastille d'un JOUR** — sa demande du 26 août 2026,
+ * capture à l'appui : *« le "sans date", mets-le comme le vendredi 28 août, avec
+ * le rectangle ovale qui l'entoure, même couleur, tout pareil. "En attente du
+ * client", fais pareil. »*
+ *
+ * **Pourquoi les deux, et pas « Planifiés ».** « Sans date » et « En attente du
+ * client » occupent la MÊME place dans la lecture qu'un jour : ce sont des
+ * chantiers qui n'ont pas encore le leur. « Planifiés », lui, coiffe le bloc
+ * DANS lequel les jours vivent — lui donner la même pastille emboîterait une
+ * pastille dans une pastille et écraserait la hiérarchie qu'on vient de rendre
+ * lisible.
+ *
+ * **Le fond et l'encre viennent des mêmes jetons que la pastille du jour**
+ * (`colors.rustTint`, `colors.ink`), et jamais d'une valeur recopiée : deux
+ * chartes sont sombres, et une couleur écrite en clair y serait illisible
+ * (`CLAUDE.md` §3).
+ */
 function TitreSection({
   children,
+  encadre = false,
   ...reste
-}: { children: React.ReactNode } & React.HTMLAttributes<HTMLParagraphElement>) {
+}: {
+  children: React.ReactNode;
+  encadre?: boolean;
+} & React.HTMLAttributes<HTMLParagraphElement>) {
+  if (!encadre) {
+    return (
+      <p
+        {...reste}
+        className="mx-[18px] mt-[26px] text-center text-[13px] font-bold uppercase leading-none"
+        style={{ letterSpacing: "0.16em", color: colors.ink }}
+      >
+        {children}
+      </p>
+    );
+  }
   return (
-    <p
-      {...reste}
-      className="mx-[18px] mt-[26px] text-center text-[13px] font-bold uppercase leading-none"
-      style={{ letterSpacing: "0.16em", color: colors.ink }}
-    >
-      {children}
+    <p {...reste} className="mx-[18px] mt-[26px] text-center leading-none">
+      <span
+        data-atlas="titre-encadre"
+        className="inline-block rounded-full px-[15px] py-[7px] text-[12px] font-bold uppercase"
+        style={{ letterSpacing: "0.14em", background: colors.rustTint, color: colors.ink }}
+      >
+        {children}
+      </span>
     </p>
   );
 }
