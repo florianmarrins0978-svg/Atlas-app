@@ -9,6 +9,40 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
+## ⚠ Trois suites navigateur rougissent SOUS LA BATTERIE, vertes jouées seules
+
+**Relevé le 26 août 2026, sur trois batteries d'affilée du même arbre.** À
+chaque tour, une ou deux suites tombent — et **jamais les mêmes** :
+
+| Tour | Ce qui est tombé |
+|---|---|
+| 1 | `test-reduction-devis-e2e` (8 cas), `test-tva-au-paiement-e2e` |
+| 2 | `test-lecons-prix-e2e` — « le prix 1400 n'est jamais arrivé en base : 0.00 » |
+
+**Les trois sont VERTES rejouées seules**, immédiatement après. Aucune n'est
+touchée par le lot en cours (le planning), et rien n'a été joué en parallèle de
+la batterie — la règle du 26 août a été respectée.
+
+**C'est le piège déjà écrit dans `HANDOVER.md` :** un délai fixe à la place d'un
+signal. Sous la batterie entière, la machine est chargée, l'action serveur met
+plus longtemps que le délai, et la suite lit l'écran d'avant. `test-lecons-prix`
+vient pourtant d'être porté de 30 à 60 secondes le même jour — **allonger ne
+suffit plus**, et c'est ce que ce constat ajoute.
+
+**Ce qu'il faudrait, pour qui reprend :** remplacer l'attente par un témoin — la
+valeur relue en base, la classe que le composant pose — plutôt que d'allonger
+les délais un à un. Le seuil suivant sera atteint par la machine suivante.
+
+## ~~« Sans date » vide sur le planning~~ — **CODÉ le 26 août 2026**
+
+Sa question : *« est-ce que la catégorie sans date a un réel besoin
+d'exister ? »*. Réponse : oui — c'est le seul endroit d'où un chantier reçoit sa
+date, et « Retirer » l'y renvoie —, mais **vide**, elle ne rendait qu'un titre
+et un refus. Elle disparaît quand rien n'attend de jour, et revient dès qu'un
+chantier attend. Le détail est dans `CHANGELOG.md`.
+
+---
+
 ## ⏳ Le même piège de bouton radio dort sur le choix des tarifs ambigus
 
 `src/app/chantiers/[id]/prix/PropositionPrixSection.tsx` — quand deux tarifs
@@ -95,6 +129,10 @@ les DONNÉES d'essai, pas d'un écran cassé.
 avant toute écriture »* — rouge en batterie, **vert rejoué seul**. Il lit l'écran
 juste après un appui, avant que l'action serveur n'ait répondu : sous cent
 suites, la réponse arrive avant la lecture et le cas s'inverse.
+
+*(Une autre session a relevé le même soir le même phénomène sur trois autres
+suites — voir « Trois suites navigateur rougissent SOUS LA BATTERIE » en tête de
+ce fichier. C'est un seul sujet, pas deux.)*
 
 **Et un CINQUIÈME, le 26 août 2026 au soir :**
 `test-planning-vers-facture-e2e.ts`, cas *« clôturé AVANT sa date : il quitte le
@@ -7178,6 +7216,16 @@ et c'est déjà arrivé.
   tôt sur la même version, et rouges sur une base neuve. Un contrôle qui dépend
   de l'âge de la base accuse au hasard — c'est la même leçon que l'instabilité
   notée juste au-dessus.
+- [ ] **Le calendrier manque de jours libres sur une base fraîche — la racine
+  n'est pas traitée.** Deux suites de dates ont été réparées le 24 août par une
+  autre session, mais le même symptôme est réapparu le soir même sur une
+  troisième : `test-envoi-client-e2e` tombe sur *« pas assez de jours
+  acceptables (1) »* et *« pas assez de jours libres au calendrier (1) »*.
+  **Ce sont les suites qui ont été rendues tolérantes, pas la cause qui a été
+  ôtée.** La cause probable : le jeu de démonstration remplit le mois courant,
+  et il ne reste presque rien à proposer quand on l'amorce à neuf en fin de
+  mois. Tant qu'elle tient, ces rouges reviendront sur une suite ou une autre —
+  et un rouge qui tourne s'apprend à être ignoré. *(24 août 2026)*
 - [ ] **La batterie rougit sur des suites DIFFÉRENTES à chaque exécution**, et
   chacune passe seule sur le même code. Relevé le 24 août 2026, trois
   exécutions d'affilée : d'abord `test-planning-vers-facture-e2e` (un texte

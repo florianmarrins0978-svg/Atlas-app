@@ -98,3 +98,46 @@ export function lireSuggestions(reponse: unknown): SuggestionAdresse[] {
 
   return suggestions;
 }
+
+/**
+ * Deux écritures désignent-elles la même adresse ?
+ *
+ * ─── POURQUOI, ET CE QU'IL A VU ────────────────────────────────────────────
+ *
+ * **Sa question du 24 août 2026, capture à l'appui :** *« pourquoi l'adresse
+ * est marquée 2 fois de suite ? »* Sur l'écran « Mon entreprise », son siège
+ * s'écrivait dans le champ — « 10 rue denfert rochereau 78200 Mantes la
+ * jolie » — et la proposition juste en dessous répétait la même adresse dans
+ * son écriture officielle : « 10 Rue Denfert Rochereau 78200
+ * Mantes-la-Jolie ». Deux lignes, une seule adresse.
+ *
+ * Ce n'était pas un défaut de recherche : les deux textes DIFFÈRENT pour une
+ * machine — majuscules, traits d'union — et se ressemblaient assez pour qu'un
+ * œil y voie un doublon. Une liste de suggestions qui répète ce qui est déjà
+ * écrit ne propose rien : elle occupe la place et fait douter de la saisie.
+ *
+ * **Ce qu'on NE fait pas, et c'est délibéré :** réécrire silencieusement sa
+ * saisie dans la forme officielle. Corriger sous ses doigts un champ qui
+ * finira en tête de ses devis, sans qu'il l'ait demandé, est exactement le
+ * genre de geste qu'on ne s'autorise pas (`CLAUDE.md` §4). On cache la
+ * répétition ; on ne touche pas à ce qu'il a écrit.
+ *
+ * La comparaison ignore ce qui ne change pas l'adresse : la casse, les
+ * accents, les traits d'union et apostrophes, les espaces en trop et la
+ * ponctuation. Elle garde les chiffres, qui distinguent le 10 du 100.
+ */
+export function memeAdresse(a: string, b: string): boolean {
+  const nu = (t: string) =>
+    t
+      .normalize("NFD")
+      // Les diacritiques : « Mantes-la-Jolie » et « Mantes-la-jolie ».
+      .replace(/[\u0300-\u036f]/g, "")
+      .toLowerCase()
+      // Traits d'union, apostrophes et ponctuation deviennent des espaces —
+      // « Mantes-la-Jolie » et « Mantes la jolie » sont la même ville.
+      .replace(/[^a-z0-9]+/g, " ")
+      .trim();
+  const na = nu(a);
+  // Deux chaînes vides ne sont pas « la même adresse » : elles ne sont rien.
+  return na !== "" && na === nu(b);
+}
