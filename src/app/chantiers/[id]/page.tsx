@@ -98,7 +98,7 @@ export default async function FicheChantierPage({ params }: { params: Promise<{ 
           // ferme pas l'en-tête d'un trait. Demandé le 11 août 2026 : « je veux
           // que ça ressemble exactement à la maquette ».
           precisionPlacee="avant"
-          cheveu={false}
+
           // La pastille rejoint la ligne de la flèche, comme sur la maquette :
           // à côté du titre elle lui prenait la moitié de la largeur, et
           // « Intervention prévue vendredi 15 août. » se cassait en quatre

@@ -9,6 +9,30 @@ Format : le plus récent en tête.
 
 ## 2026-08-25
 
+### Plus aucun trait sous les titres, et le texte des données raccourci
+
+*« Souvent sous les titres il y avait un trait comme celui-là, supprime tous les
+traits sous les titres »*, capture de « Sécurité & données » à l'appui.
+
+Il l'avait déjà fait retirer de l'accueil la veille. Le trait vivait en réalité
+dans l'**en-tête partagé**, allumé par défaut : il paraissait donc sur chaque
+écran qui l'emploie. Retiré une fois, il disparaît partout — et le réglage qui
+permettait de le rallumer écran par écran a disparu avec, sans quoi il serait
+revenu par la porte de service.
+
+*« Le texte sous télécharger est beaucoup beaucoup trop long, synthétise-le. »*
+Cinq lignes deviennent deux. **Gardé :** que le fichier s'ouvre sans Atlas — c'est
+ce qui en fait une copie de secours et non un objet captif —, et qu'il porte les
+coordonnées de ses clients, ce qui l'oblige à le ranger et ne se devine pas.
+**Parti :** l'inventaire de ce que le fichier contient, qu'il verra en l'ouvrant,
+et l'explication d'une sauvegarde automatique qui n'existe pas encore — un écran
+n'a pas à expliquer ce qu'il ne fait pas.
+
+Le contrôle des en-têtes couvre désormais la pièce partagée, et il a été vu rouge
+contre le trait remis en place.
+
+
+
 ### Trois rôles, trois sessions — et le refus est au serveur
 
 *« Je voudrais que l'utilisateur principal puisse donner accès qu'au planning à
