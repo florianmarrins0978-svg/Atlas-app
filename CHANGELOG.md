@@ -9,6 +9,32 @@ Format : le plus récent en tête.
 
 ## 2026-08-26
 
+### Face ID marche enfin derrière son tunnel — et le bouton du mot de passe remonte
+
+*« Le Face ID ne fonctionne pas »*, capture à l'appui — et *« le bouton changer
+mon mdp doit se trouver au-dessus de ouvrir avec Face ID »*.
+
+Atlas enregistrait les clés sous le domaine « localhost » : derrière la
+redirection de port de son espace, le serveur ne voit que ça, et une clé posée
+pour un domaine ne s'ouvre nulle part ailleurs. L'écran transmet désormais
+l'adresse de sa barre d'adresse, comme pour le lien du client (§177) — et
+seulement là où l'en-tête est local, jamais en production.
+
+En rendant la panne bavarde, deux défauts de plus sont sortis : le message des
+Réglages demandait d'entrer un mot de passe sur un écran où l'on est déjà entré,
+et la porte prenait une RÉUSSITE pour une panne — une action qui redirige le
+fait en levant, et cette levée tombait dans le filet à erreurs.
+
+Le bouton du mot de passe quitte la barre fixe du bas et rejoint ses champs. Le
+contrôle compare deux ordonnées plutôt qu'un libellé.
+
+Ce que ça évite : un raccourci qu'il ne peut pas allumer, et un message rouge
+au moment exact où il entre. `ARCHITECTURE.md` §186 et §187.
+
+**Non vérifié ici, et il faut le dire :** que Face ID s'ouvre sur SON iPhone
+derrière SON tunnel. Cet environnement n'a ni visage ni tunnel — la règle du
+domaine et le parcours entier sont éprouvés, l'ouverture réelle se prouve chez
+lui.
 ### L'en-tête inversé : le titre d'abord, le surtitre doré en dessous
 
 *« Sur plusieurs catégories le titre était en dessous du sous-titre en doré,
@@ -48,6 +74,30 @@ l'écran redevient celui qui crée le compte.
 périmètre affiché ne suivait pas le rôle coché, si bien qu'on lisait « le
 planning et rien d'autre » sous « Commercial ». Une maquette qui ment sur ce que
 fait un rôle est pire qu'une maquette absente.
+
+---
+
+## 2026-08-26
+
+### Les deux fiches, côte à côte — une maquette pour trancher
+
+*« La fiche d'entretien c'est la fiche de chantier »*, puis *« ressors-moi les
+deux pages côte à côte dans une maquette dynamique que je comprenne bien »*.
+
+Ce ne sont pas deux fois le même écran : à gauche **la liste** (Réglages), à
+droite **la fiche d'un jour** (Paysage), qui en naît. Supprimer la première
+laisserait la seconde sans rien à cocher — elle refuse d'ailleurs de s'ouvrir
+sur une liste vide. Un troisième objet porte le même nom, et il fallait le dire :
+le **PDF « Fiche de chantier »**, le devis sans les prix.
+
+`appli/deux-fiches.html`, trois onglets sans une ligne de JavaScript : les deux
+écrans, ce qui les relie, et ce qu'un renommage changerait. Les vingt
+prestations sont **celles du code** — `verifier-maquette-deux-fiches.mjs` refuse
+la moindre invention, et il a été joué rouge contre une prestation inventée puis
+contre un script glissé dans la page.
+
+**La question qui reste pour lui :** renommer celle des Réglages en « Les
+prestations de ma fiche ». Rien n'a été codé avant sa réponse.
 
 ---
 
