@@ -9,6 +9,29 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
+## Huit numéros de paragraphe en double dans `ARCHITECTURE.md`
+
+**§127, §128, §129, §134, §135, §136, §164, §165** portent chacun DEUX
+paragraphes sans rapport. Ils viennent tous de la même mécanique : deux sessions
+écrivent le fichier le même jour, prennent le même numéro, et **la fusion réussit
+sans rien dire** quand les deux titres ne tombent pas au même endroit.
+
+**Ce qui a été fait le 26 août 2026 :** `verifier:memoire` refuse désormais tout
+doublon NEUF, et nomme ces huit-là dans `DOUBLONS_CONNUS`. La liste doit rester
+exacte — un numéro démêlé qu'on y laisserait fait rougir le contrôle, si bien
+qu'on ne peut pas oublier de la raccourcir en nettoyant.
+
+**Ce qui reste, et pourquoi ça n'a pas été fait dans la foulée :** les démêler
+veut dire renuméroter huit paragraphes et **tous les renvois qui les citent**,
+dans un fichier que sept sessions écrivaient ce soir-là. Le remède aurait été
+pire que le mal.
+
+**Le jour où on le fera** : un lot à lui seul, sur une soirée calme, en suivant
+l'idiome déjà employé ailleurs (`§126 bis`, `§126 ter`) pour ne rien déplacer —
+et en corrigeant les renvois du même geste.
+
+---
+
 ## ⏳ `test-fiche-pendant-relance.ts` — rouge sur `main`, et ce n'est PAS une régression
 
 **Mesuré le 26 août 2026, pas supposé :** rejouée sur `main` nu (`git stash`),
