@@ -96,8 +96,23 @@ avant toute écriture »* — rouge en batterie, **vert rejoué seul**. Il lit l
 juste après un appui, avant que l'action serveur n'ait répondu : sous cent
 suites, la réponse arrive avant la lecture et le cas s'inverse.
 
+**Et un CINQUIÈME, le 26 août 2026 au soir :**
+`test-planning-vers-facture-e2e.ts`, cas *« clôturé AVANT sa date : il quitte le
+planning pour les terminés »* — rouge en batterie sur `Timeout 15000ms` en
+attendant « Rien n'a changé depuis le devis ? », **vert rejoué seul** (7/7).
+
+Ce fichier connaît déjà ce piège et s'en défend à moitié : son `ouvrir()` retente
+l'OUVERTURE d'un écran puis rend le contrôle « non concluant » plutôt que rouge.
+Ce qui a lâché ici est un cran plus loin — l'appui sur « Créer la facture » et la
+confirmation qui suit, qui n'ont, eux, aucune tolérance.
+
+**Ce qui n'est PAS établi**, et ne doit pas être supposé : pourquoi ce cas-là et
+pas les trois autres du même fichier, qui attendent la même phrase avec le même
+délai et passent. Un simple relèvement du délai serait un pansement sur une cause
+non trouvée — et c'est exactement ce que ce dépôt refuse.
+
 Avec `test-lecons-prix-e2e` (§ plus bas) et la suite du veilleur, cela fait
-**quatre** contrôles qui rougissent au hasard de la machine. C'est le vrai sujet,
+**cinq** contrôles qui rougissent au hasard de la machine. C'est le vrai sujet,
 et il grossit : un rouge qui tombe au hasard apprend à ignorer le rouge, et l'on
 perd alors tout ce qu'il surveille. Ce qu'il faut : attendre un SIGNAL — la
 réponse du serveur, un attribut qui change — jamais un instant.
