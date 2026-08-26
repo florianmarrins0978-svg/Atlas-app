@@ -67,6 +67,28 @@ sur un document déjà parti chez un client.
 `test-format-numero-e2e.ts` (le fil entier : il choisit, et le devis suivant
 porte le format choisi).
 
+### L'assistant redevient le seul outil du patron
+
+*« Les salariés et commerciaux ne doivent pas avoir accès à l'assistant IA. »*
+
+Ouvert aux commerciaux plus tôt dans la journée, sur sa réponse d'alors. Il a
+refermé le soir même, et **son dernier mot revient au premier** — celui du
+25 août : *« seulement le principal »*.
+
+**La règle a cessé d'en suivre une autre**, et c'est le vrai changement :
+`peutUtiliserLAssistant` appelait `peutVoirLesMontants`, ce qui était juste tant
+que les deux disaient la même chose. Elles disent maintenant deux choses
+différentes. Garder l'appel aurait été pire qu'une erreur — le jour où quelqu'un
+élargirait la règle des montants, l'assistant se serait rouvert **en silence**.
+
+**Et la différence n'est pas le prix, c'est la portée.** Un commercial voit les
+montants écran par écran, c'est son métier. L'assistant, lui, parcourt
+l'entreprise entière et répond en une phrase.
+
+Les trois états de la décision sont écrits dans `ARCHITECTURE.md` §181, avec
+leurs dates : une décision dont on ne garde que le dernier état se repose trois
+mois plus tard.
+
 ### Face ID marche enfin derrière son tunnel — et le bouton du mot de passe remonte
 
 *« Le Face ID ne fonctionne pas »*, capture à l'appui — et *« le bouton changer
@@ -93,6 +115,7 @@ au moment exact où il entre. `ARCHITECTURE.md` §186 et §187.
 derrière SON tunnel. Cet environnement n'a ni visage ni tunnel — la règle du
 domaine et le parcours entier sont éprouvés, l'ouverture réelle se prouve chez
 lui.
+
 ### L'en-tête inversé : le titre d'abord, le surtitre doré en dessous
 
 *« Sur plusieurs catégories le titre était en dessous du sous-titre en doré,
@@ -108,6 +131,33 @@ en serif gris) reste au-dessus, elle, comme sa maquette du 11 août.
 Regardé à l'image (Paysage et un chantier), et le garde-fou d'alignement du
 bouton d'assistant (`test-assistant-en-tete-e2e`) reste vert : la pastille tient
 toujours sur la ligne du titre.
+
+### « Donner un accès » prend un écran à lui seul — sa réponse « B »
+
+*« B, tu peux coder »*, le 26 août 2026, sur `appli/donner-un-acces.html`.
+
+| Sa remarque | Ce qui a changé |
+|---|---|
+| le mot de passe s'écrivait une fois, à l'aveugle | **deux saisies, un œil sur chacune** — et la seconde est vérifiée **au serveur**, pas seulement à l'écran |
+| *« la case est déjà noire comme la catégorie salarié »* | le rôle choisi est **teinté avec un coche** ; le seul aplat plein de l'écran est le bouton qui crée le compte |
+| *« la démarcation […] n'est pas bien séparée »* | le formulaire **quitte la liste** : `/reglages/equipe/nouveau`, un écran d'où sa propre ligne a disparu |
+
+**La règle du mot de passe n'a pas été réécrite** : `verifierNouveauMotDePasse`
+la porte depuis le 14 août pour « Mon compte », et les deux écrans la partagent.
+La redire ici en aurait fait la seconde — et le jour où la barre passerait de
+douze à quatorze caractères, un des deux l'aurait ignorée.
+
+**Les pastilles de rôle sont dessinées UNE fois** (`ChoixRole.tsx`) et servent
+aux deux endroits : l'écran de création, et la fiche d'une personne déjà là.
+Deux rédactions auraient ramené le défaut par la moitié de l'écran qu'on aurait
+oubliée — c'est d'ailleurs ce que le contrôle a vérifié.
+
+**`test-nouveau-compte-e2e.ts` MESURE sa remarque** plutôt que de lire un
+libellé : il compare le fond de la pastille cochée à celui du bouton et exige
+qu'ils diffèrent. **Vu rouge** en remettant l'aplat plein — et il rougit sur les
+deux écrans à la fois.
+
+---
 
 ### Donner un accès : une planche, avant de retoucher l'écran
 
@@ -372,10 +422,11 @@ de tous les clients : ouvert à un salarié, il rendrait en une phrase ce que sa
 feuille de chantier tait. La règle vit à un seul endroit
 (`peutUtiliserLAssistant`, à côté des autres).
 
-**Livrée au patron seul, puis ouverte aux commerciaux le 26 sur sa réponse** —
-*« oui tu peux l'ouvrir aux commerciaux »*. La question lui a été posée parce
-que l'assistant sait désormais lire le devis de n'importe quel client ; il a
-jugé qu'un commercial voit déjà ces prix écran par écran.
+**Ouverte aux commerciaux le 26 dans la journée, REFERMÉE le soir même** —
+*« les salariés et commerciaux ne doivent pas avoir accès à l'assistant IA »*.
+Son dernier mot revient au premier, celui du 25 août. Les trois états sont
+écrits dans `ARCHITECTURE.md` §181 : une décision dont on ne garde que le
+dernier état se repose trois mois plus tard.
 
 Détail : `ARCHITECTURE.md` §181.
 

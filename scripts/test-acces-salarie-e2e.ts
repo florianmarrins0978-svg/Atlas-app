@@ -73,6 +73,7 @@ async function main() {
     nom: "Malik Benali",
     email,
     motDePasse: MOT_DE_PASSE,
+    confirmation: MOT_DE_PASSE,
     role: "salarie",
   });
   assert.deepEqual(donne, { ok: true }, "le compte du salarié n'a pas pu être créé");

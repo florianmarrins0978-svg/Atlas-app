@@ -11,6 +11,7 @@
  * cette règle depuis le 14 août, et la redire ici en ferait la seconde.
  */
 import { ROLES, type PorteePlanning, type Role } from "./acces-roles";
+import { messageRefus, verifierNouveauMotDePasse } from "./mot-de-passe";
 
 export type RefusAcces =
   /** Aucun nom : la liste des accès deviendrait une liste d'adresses e-mail. */
@@ -23,6 +24,8 @@ export type RefusAcces =
   | "role-inconnu"
   /** Le mot de passe provisoire ne tient pas la règle du dépôt. */
   | "mot-de-passe-trop-court"
+  /** La seconde saisie ne redit pas la première. */
+  | "mot-de-passe-confirmation"
   /** Le dernier patron ne peut ni se rétrograder ni se retirer. */
   | "dernier-patron"
   /** On ne se retire pas soi-même : ce serait s'enfermer dehors. */
@@ -75,13 +78,30 @@ export function refusDeLAcces(saisie: {
   email: string;
   role: string;
   motDePasse: string;
-  longueurMinimale: number;
+  /** La seconde saisie. Sa demande du 26 août : *« il faut confirmer son mdp
+   *  donc l'écrire deux fois »*. */
+  confirmation: string;
   emailDejaPris: boolean;
 }): RefusAcces | null {
   if (saisie.nom.trim() === "") return "nom-vide";
   if (!adresseEnvoyable(saisie.email)) return "email-invalide";
   if (!(ROLES as readonly string[]).includes(saisie.role)) return "role-inconnu";
-  if (saisie.motDePasse.length < saisie.longueurMinimale) return "mot-de-passe-trop-court";
+
+  /**
+   * **La règle du mot de passe n'est PAS réécrite ici.**
+   *
+   * `verifierNouveauMotDePasse` la porte depuis le 14 août 2026, pour l'écran
+   * « Mon compte ». La redire ici en ferait la seconde — et le jour où la barre
+   * passerait de douze à quatorze caractères, un des deux écrans l'ignorerait
+   * sans que rien ne le dise (`CLAUDE.md` §3).
+   *
+   * `actuel` est laissé vide : il n'y a pas d'ancien mot de passe à comparer
+   * pour un compte qui n'existe pas encore.
+   */
+  const refusMdp = verifierNouveauMotDePasse(saisie.motDePasse, saisie.confirmation);
+  if (refusMdp === "trop-court") return "mot-de-passe-trop-court";
+  if (refusMdp === "confirmation-differente") return "mot-de-passe-confirmation";
+
   if (saisie.emailDejaPris) return "email-deja-pris";
   return null;
 }
@@ -138,8 +158,15 @@ export function refusDeLaPortee(etat: { portee: string; equipeId: string | null 
   return null;
 }
 
-/** Ce que le patron lit. Une phrase, pas un code. */
-export function messageRefusAcces(refus: RefusAcces, longueurMinimale: number): string {
+/**
+ * Ce que le patron lit. Une phrase, pas un code.
+ *
+ * **Ne prend plus la longueur en paramètre** : les deux phrases du mot de passe
+ * viennent de `messageRefus`, qui tient déjà la constante. La passer ici
+ * ouvrait la porte à un écran qui annoncerait une barre que le serveur
+ * n'applique pas.
+ */
+export function messageRefusAcces(refus: RefusAcces): string {
   switch (refus) {
     case "nom-vide":
       return "Il faut un nom.";
@@ -149,8 +176,13 @@ export function messageRefusAcces(refus: RefusAcces, longueurMinimale: number): 
       return "Un compte Atlas utilise déjà cette adresse.";
     case "role-inconnu":
       return "Ce rôle n'existe pas.";
+    // **Les deux phrases du mot de passe sont celles de « Mon compte »**, mot
+    // pour mot : deux refus rédigés différemment pour la même faute donnent
+    // l'impression de deux applications.
     case "mot-de-passe-trop-court":
-      return `Il faut au moins ${longueurMinimale} caractères.`;
+      return messageRefus("trop-court");
+    case "mot-de-passe-confirmation":
+      return messageRefus("confirmation-differente");
     case "dernier-patron":
       return "Il faut au moins un patron dans l'entreprise.";
     case "soi-meme":

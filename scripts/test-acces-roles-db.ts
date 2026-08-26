@@ -75,6 +75,7 @@ async function main() {
       nom: "Malik Benali",
       email: "  Malik@Essai.Local ",
       motDePasse: MOT_DE_PASSE,
+      confirmation: MOT_DE_PASSE,
       role: "salarie",
     });
     assert.deepEqual(r, { ok: true });
@@ -116,6 +117,7 @@ async function main() {
       nom: "Un autre Malik",
       email: "malik@essai.local",
       motDePasse: MOT_DE_PASSE,
+      confirmation: MOT_DE_PASSE,
       role: "commercial",
     });
     assert.deepEqual(r, { ok: false, refus: "email-deja-pris" });
@@ -126,6 +128,7 @@ async function main() {
       nom: "Camille",
       email: "camille@essai.local",
       motDePasse: "court",
+      confirmation: "court",
       role: "commercial",
     });
     assert.deepEqual(r, { ok: false, refus: "mot-de-passe-trop-court" });
@@ -135,11 +138,37 @@ async function main() {
     assert.equal(fantome, undefined);
   });
 
+  /**
+   * **LA SECONDE SAISIE EST VÉRIFIÉE AU SERVEUR, pas seulement à l'écran.**
+   *
+   * Sa demande du 26 août 2026 : *« il faut confirmer son mdp donc l'écrire
+   * deux fois »*. Un contrôle qui ne vivrait que dans le formulaire ne
+   * protégerait de rien — et surtout pas de ce qu'il protège vraiment : le
+   * patron tape un mot de passe qu'il devra DICTER à son salarié. Une faute de
+   * frappe non rattrapée le laisse dehors, et personne ne sait pourquoi.
+   */
+  await essai("une confirmation qui diffère est refusée, et rien n'est créé", async () => {
+    const r = await donnerUnAcces(ctxA, {
+      nom: "Camille",
+      email: "camille-confirmation@essai.local",
+      motDePasse: MOT_DE_PASSE,
+      confirmation: `${MOT_DE_PASSE}x`,
+      role: "commercial",
+    });
+    assert.deepEqual(r, { ok: false, refus: "mot-de-passe-confirmation" });
+    const [fantome] = await db
+      .select({ id: users.id })
+      .from(users)
+      .where(eq(users.email, "camille-confirmation@essai.local"));
+    assert.equal(fantome, undefined, "un compte est resté en base malgré le refus");
+  });
+
   await essai("une adresse qui n'en est pas une est refusée", async () => {
     const r = await donnerUnAcces(ctxA, {
       nom: "Camille",
       email: "camille",
       motDePasse: MOT_DE_PASSE,
+      confirmation: MOT_DE_PASSE,
       role: "commercial",
     });
     assert.deepEqual(r, { ok: false, refus: "email-invalide" });
@@ -194,6 +223,7 @@ async function main() {
         nom: "Second patron",
         email: "second@essai.local",
         motDePasse: MOT_DE_PASSE,
+        confirmation: MOT_DE_PASSE,
         role: "proprietaire",
       }),
       { ok: true }

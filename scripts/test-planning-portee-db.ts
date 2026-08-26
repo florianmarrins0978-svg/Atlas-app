@@ -73,6 +73,7 @@ async function main() {
     nom: "Malik Benali",
     email: "malik@essai.local",
     motDePasse: "trois-mots-courts",
+      confirmation: "trois-mots-courts",
     role: "salarie",
   });
   const malik = (await listerAcces(ctxPatron)).find((l) => l.email === "malik@essai.local")!;
