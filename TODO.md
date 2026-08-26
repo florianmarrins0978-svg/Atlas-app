@@ -9,6 +9,38 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
+## ⏳ `test-envoi-client-e2e.ts` — deux cas rouges, et ce n'est PAS une régression
+
+**Le 26 août 2026**, dans la batterie du lot « rôles et accès » :
+
+    ❌ le patron ne propose jamais plus de deux dates
+       pas assez de jours acceptables (1)
+    ❌ SANS RIEN TOUCHER, la cliente peut proposer un jour
+       pas assez de jours libres au calendrier (1)
+
+**Vérifié avant de conclure, et dans cet ordre** — c'est ce qui compte ici, le
+reste n'est qu'une hypothèse :
+
+1. **rejouée seule**, sur l'arbre du lot : rouge à l'identique (donc pas la
+   charge de la batterie, contrairement à `test-lecons-prix-e2e`) ;
+2. **rejouée seule après un jeu de démonstration NEUF** (base vidée, `seed.ts`
+   rejoué) : rouge à l'identique (donc pas une pollution laissée par les suites
+   précédentes) ;
+3. **rejouée seule sur `origin/main`**, sans une ligne du lot : **rouge à
+   l'identique**. C'est la seule des trois qui tranche.
+
+**Ce n'est donc pas ce lot**, et le dire noir sur blanc évite qu'une prochaine
+session le cherche là où il n'est pas. Ce qui reste à faire, c'est de comprendre
+pourquoi le jeu de démonstration ne laisse plus qu'**un** jour libre là où ces
+deux cas en demandent deux : le calendrier du seed s'est-il rempli, ou la règle
+de capacité a-t-elle changé ? Le message dit le symptôme, pas la cause.
+
+**Ce que ça ne bloque pas :** rien du produit. Ces deux cas éprouvent que le
+client peut proposer une date — le refus vient d'un calendrier trop plein dans
+les DONNÉES d'essai, pas d'un écran cassé.
+
+---
+
 ## Un commercial doit LIRE les tarifs sans pouvoir les changer
 
 *Né du lot « rôles et accès » du 25 août 2026, et laissé ouvert délibérément.*
