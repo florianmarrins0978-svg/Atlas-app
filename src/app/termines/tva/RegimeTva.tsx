@@ -162,13 +162,19 @@ export default function RegimeTva({
         {memeChiffre ? (
           <>
             Sur <strong style={{ color: colors.ink }}>{periode}</strong>, ce choix ne change rien —{" "}
-            <strong style={{ color: colors.ink }}>{siPaye}</strong> dans les deux cas.
+            <strong style={{ color: colors.ink }}>{siPaye}</strong>{" "}
+            dans les deux cas.
           </>
         ) : (
           <>
             Sur <strong style={{ color: colors.ink }}>{periode}</strong> :{" "}
-            <strong style={{ color: colors.ink }}>{siPaye}</strong> en attendant le paiement,{" "}
-            <strong style={{ color: colors.ink }}>{siEnvoye}</strong> dès l&apos;envoi.
+            <strong style={{ color: colors.ink }}>{siPaye}</strong>{" "}
+            en attendant le paiement,{" "}
+            {/* **L'espace est posé À LA MAIN.** Écrit `</strong> dès`, il
+                disparaît à la compilation : l'écran affichait « 1 400,00 €dès
+                l'envoi », vu dans le HTML rendu et pas autrement. */}
+            <strong style={{ color: colors.ink }}>{siEnvoye}</strong>{" "}
+            dès l&apos;envoi.
           </>
         )}
       </p>

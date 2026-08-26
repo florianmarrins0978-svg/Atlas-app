@@ -328,9 +328,14 @@ async function main() {
     // régime — et elle mentirait exactement là où il a besoin d'elle.
     const avant = await montants();
     assert.ok(
-      /ce choix change/i.test(avant.dit),
+      /en attendant le paiement/i.test(avant.dit) && /dès l'envoi/i.test(avant.dit),
       `elle dit « ${avant.dit} » alors qu'une facture émise attend son paiement`
     );
+    // **Un espace mangé par la compilation.** L'écran a affiché
+    // « 1 400,00 €dès l'envoi » — vu dans le HTML rendu, et par aucune mesure :
+    // le montant et le mot suivant sont deux nœuds, et JSX avale l'espace entre
+    // les deux si on ne le pose pas soi-même.
+    assert.doesNotMatch(avant.dit, /€\S/, `un espace manque après un montant : « ${avant.dit} »`);
     assert.equal(avant.lus.length, 2, `deux montants attendus, lu « ${avant.dit} »`);
     assert.equal(
       avant.lus[0],
