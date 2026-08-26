@@ -7,6 +7,64 @@ Format : le plus récent en tête.
 
 ---
 
+## 2026-08-26
+
+### « Sans date » disparaît quand rien n'attend de jour
+
+**Sa question :** *« est-ce que la catégorie sans date a un réel besoin
+d'exister ? »*, devant un planning où elle ne portait qu'un titre et
+« Aucun chantier n'attend de jour ».
+
+**Elle en a un, et il est unique :** c'est le seul endroit d'où un chantier
+reçoit sa date — on touche un jour du calendrier, puis Matin, Après-midi ou
+Journée sur un chantier de cette liste. Et « Retirer » un chantier planifié l'y
+renvoie plutôt que de l'effacer. La supprimer coûterait le geste qui pose les
+dates.
+
+**Mais vide, elle n'est que du bruit** — un titre en capitales et un refus, au
+milieu d'un écran qui porte déjà le calendrier, les journées, les retirés et
+l'attente du client. C'est exactement sa règle du 23 août, celle qui a fait
+disparaître « Ajouter un chantier » : *« lorsqu'aucun chantier n'attend de jour,
+il ne faudrait pas que le bouton apparaisse, car il peut nous induire en
+erreur »*. La phrase du cul-de-sac que ce bouton promettait, c'était celle-ci.
+
+**Elle revient dès qu'un chantier attend un jour** — rien n'est retiré du
+produit, seul l'affichage vide s'en va.
+
+**Le contrôle vise l'ATTRIBUT, jamais le mot.** Chercher le texte « Sans date »
+ferait rougir la suite le jour où il fait renommer la section — sur du code
+juste, et pour une demande exaucée (`CLAUDE.md` §5 bis). Il compte
+`[data-atlas="titre-sans-date"]` et `[data-atlas="ou-poser"]` dans l'état zéro
+que la suite installe déjà pour le bouton. **Vu rougir** contre l'ancienne
+disposition : « le titre "Sans date" reste sur un écran où rien n'attend de
+jour ».
+
+### La batterie tombait à cause de la DATE, pas du code — le calendrier tourne sa page
+
+**Trouvé en jouant la batterie de ce lot :** trois cas de
+`test-envoi-client-e2e.ts` rougissaient — *« pas assez de jours acceptables
+(1) »* — sur un écran parfaitement juste. Ils prenaient leurs jours dans le mois
+affiché à l'ouverture, celui d'aujourd'hui.
+
+**Un 26 août, il n'en reste que quatre**, dont deux de week-end ; le délai
+minimal de trois jours qu'impose le serveur n'en laissait qu'**un**. Le défaut
+ne tenait ni au produit ni au lot : il serait revenu **à la fin de chaque
+mois**, et chaque session aurait repayé le même diagnostic.
+
+**Vérifié avant de corriger** (`AGENTS.md`) : les trois cas tombent à
+l'identique sur l'arbre sans ce lot. Ce n'était pas une régression.
+
+**Le calendrier a deux flèches ; la suite s'en sert.** Un seul endroit lit
+désormais les jours proposables et tourne la page tant que le mois affiché n'en
+fournit pas assez — jusqu'à trois mois, pour qu'un planning réellement saturé
+rougisse encore au lieu de tourner sans fin. Il **attend le changement de
+titre** après chaque flèche : sans ce témoin, la mesure porterait sur le mois
+qu'on vient de quitter et conclurait « saturé » sur un calendrier vide
+(`CLAUDE.md` §5). **Vu rougir** contre un état de case inexistant : « 0 pour 2
+après avoir tourné trois mois de calendrier ».
+
+---
+
 ## 2026-08-25
 
 ### Plus une seule flèche décorative dans les écrans

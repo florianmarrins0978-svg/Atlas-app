@@ -9,6 +9,14 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
+## ~~« Sans date » vide sur le planning~~ — **CODÉ le 26 août 2026**
+
+Sa question : *« est-ce que la catégorie sans date a un réel besoin
+d'exister ? »*. Réponse : oui — c'est le seul endroit d'où un chantier reçoit sa
+date, et « Retirer » l'y renvoie —, mais **vide**, elle ne rendait qu'un titre
+et un refus. Elle disparaît quand rien n'attend de jour, et revient dès qu'un
+chantier attend. Le détail est dans `CHANGELOG.md`.
+
 ## `test-fiche-pendant-relance.ts` rougit sur `main`, et ce n'est pas ce lot
 
 **Constaté le 25 août 2026.** La batterie complète rend `232/233` : seule

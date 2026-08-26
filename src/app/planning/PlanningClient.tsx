@@ -822,13 +822,19 @@ export default function PlanningClient({
         )}
 
         {/* ─── SANS DATE — et c'est d'ici qu'on POSE ──────────────────────── */}
-        <TitreSection>Sans date</TitreSection>
-        {sansDate.length === 0 ? (
-          <p className="mx-[18px] mt-2 text-center text-[12.5px]" style={{ color: colors.muted }}>
-            Aucun chantier n’attend de jour.
-          </p>
-        ) : (
+        {/* **RIEN N'ATTEND DE JOUR : LA SECTION N'EXISTE PAS.** Sa question du
+            25 août 2026 : *« est-ce que la catégorie sans date a un réel besoin
+            d'exister ? »*. Elle en a un — c'est le seul endroit d'où un
+            chantier reçoit sa date, et « Retirer » l'y renvoie — mais VIDE elle
+            ne rend qu'un titre et un refus, au milieu d'un écran déjà long.
+
+            C'est sa propre règle du 23 août, celle qui a fait disparaître
+            « Ajouter un chantier » : un geste qui ne peut mener nulle part se
+            retire au lieu de s'annoncer. La phrase du cul-de-sac vivait ici,
+            et c'est elle que ce bouton promettait. */}
+        {sansDate.length > 0 && (
           <>
+            <TitreSection data-atlas="titre-sans-date">Sans date</TitreSection>
             <p
               data-atlas="ou-poser"
               className="mx-[18px] mt-2 text-center text-[12.5px]"
@@ -963,9 +969,13 @@ function Fleche({
   );
 }
 
-function TitreSection({ children }: { children: React.ReactNode }) {
+function TitreSection({
+  children,
+  ...reste
+}: { children: React.ReactNode } & React.HTMLAttributes<HTMLParagraphElement>) {
   return (
     <p
+      {...reste}
       className="mx-[18px] mt-[26px] text-center text-[13px] font-bold uppercase leading-none"
       style={{ letterSpacing: "0.16em", color: colors.ink }}
     >
