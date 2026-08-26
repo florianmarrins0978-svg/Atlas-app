@@ -272,6 +272,65 @@ async function main() {
     assert.match(r.erreur, /nom/i, "il ouvre une fiche sans savoir pour qui");
   });
 
+  // ═══ « PEU IMPORTE OÙ JE L'OUVRE » — sa demande du 25 août ════════════════
+  //
+  // Le panneau est monté dans la mise en page globale : il est déjà sur tous
+  // les écrans. Ce qui ne l'était pas, ce sont les OUTILS — cinq portaient la
+  // même ligne « Aucun chantier dans le contexte courant » et refusaient dès
+  // qu'il l'ouvrait ailleurs que sur une fiche.
+  await cas("TOUS LES OUTILS DE LECTURE acceptent un chantier nommé, sans chantier ouvert", async () => {
+    const aEprouver = [
+      "LireInformationsChantier",
+      "LirePrestations",
+      "LireMateriels",
+      "LireNotes",
+      "LireTranscription",
+      "LireDevis",
+    ];
+    for (const nom of aEprouver) {
+      const outil = getOutil(nom);
+      assert.ok(outil, `${nom} n'existe plus : la liste de ce contrôle a vieilli`);
+      const r = (await outil!.executer({ ctx: A, chantierId: null }, {
+        chantierId: chantier.id,
+      })) as { erreur?: string };
+      assert.ok(
+        !r.erreur,
+        `${nom} refuse alors qu'on lui nomme le chantier : « ${r.erreur} »`
+      );
+    }
+  });
+
+  await cas("… et sans chantier DU TOUT, chacun dit la suite à donner", async () => {
+    for (const nom of ["LirePrestations", "LireMateriels", "LireDevis"]) {
+      const r = (await getOutil(nom)!.executer({ ctx: A, chantierId: null }, {})) as {
+        erreur?: string;
+      };
+      assert.ok(r.erreur, `${nom} accepte de travailler sans savoir sur quoi`);
+      assert.match(
+        r.erreur!,
+        /RechercherChantier/,
+        `${nom} n'oriente pas vers l'outil qui débloque : « ${r.erreur} »`
+      );
+      assert.doesNotMatch(
+        r.erreur!,
+        /contexte courant/,
+        `${nom} parle encore comme un programme : « ${r.erreur} »`
+      );
+    }
+  });
+
+  await cas("le chantier OUVERT reste le défaut — on ne casse pas l'usage d'avant", async () => {
+    // Sans ce cas, tout ce qui précède serait vert avec des outils qui
+    // EXIGERAIENT désormais un identifiant : l'assistant ouvert sur une fiche
+    // cesserait de répondre, et c'est le parcours le plus courant.
+    const r = (await getOutil("LirePrestations")!.executer(
+      { ctx: A, chantierId: chantier.id },
+      {}
+    )) as { erreur?: string; prestations: unknown[] };
+    assert.ok(!r.erreur, `l'outil refuse sur un chantier pourtant ouvert : « ${r.erreur} »`);
+    assert.ok(Array.isArray(r.prestations));
+  });
+
   console.log(`\n${echecs === 0 ? "✅" : "❌"} Chercher, lire un ancien devis, et ouvrir une fiche — ${echecs} échec(s).`);
   await pool.end();
   process.exit(echecs === 0 ? 0 : 1);

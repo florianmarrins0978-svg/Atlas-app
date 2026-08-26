@@ -1,5 +1,6 @@
 import { z } from "zod";
 import type { Outil } from "./types";
+import { CHAMP_CHANTIER_VISE, chantierVise } from "./chantier-vise";
 import { getLignesDevis, listerVersionsDevis, lireVersionDevis } from "../../repositories/devis";
 
 /**
@@ -31,10 +32,7 @@ export const lireDevis: Outil = {
     "Sans chantierId, lit celui du chantier courant ; sans version, la plus récente. " +
     "Pour « le premier devis », demander la version 1.",
   schema: z.object({
-    chantierId: z
-      .string()
-      .optional()
-      .describe("Le chantier visé. À omettre pour le chantier courant ; sinon, celui que RechercherChantier a rendu."),
+    ...CHAMP_CHANTIER_VISE,
     version: z
       .number()
       .int()
@@ -42,22 +40,15 @@ export const lireDevis: Outil = {
       .optional()
       .describe("Le numéro de version : 1 pour le PREMIER devis. Omis, rend le plus récent."),
   }),
-  async executer({ ctx, chantierId }, parametres) {
-    const { chantierId: demande, version } = parametres as {
-      chantierId?: string;
-      version?: number;
-    };
-    const cible = demande ?? chantierId;
-    if (!cible) {
-      // La phrase dit la SUITE à donner, pas seulement le manque : sans elle,
-      // le modèle renvoie le patron ouvrir une fiche à la main — ce qu'il a
-      // précisément reproché le 25 août.
-      return {
-        erreur:
-          "Aucun chantier visé. Employez RechercherChantier avec le nom du client, puis rappelez " +
-          "LireDevis avec le chantierId qu'il rend.",
-      };
-    }
+  async executer(contexte, parametres) {
+    const { version } = parametres as { version?: number };
+    // La règle du chantier visé est partagée par tous les outils de lecture
+    // (`chantier-vise.ts`) : elle en portait une copie, et cinq autres la
+    // portaient aussi. Le refus y nomme la suite à donner.
+    const vise = chantierVise(contexte, parametres);
+    if (!vise.ok) return vise.reponse;
+    const { ctx } = contexte;
+    const cible = vise.chantierId;
 
     const versions = await listerVersionsDevis(ctx, cible);
     if (versions.length === 0) return { existe: false, versionsDisponibles: [] };

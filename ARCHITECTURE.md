@@ -15505,3 +15505,62 @@ plus. `confirmerDoublon` est la seconde intention explicite qui débloque.
 
 Deux fiches pour un même jardin, c'est un désordre qu'on ne défait plus — et
 c'est exactement ce qu'un modèle serviable ferait sans cette garde.
+
+
+---
+
+## 177. « Peu importe où je l'ouvre » — les outils suivent enfin le panneau
+
+**Sa demande du 25 août 2026**, juste après avoir obtenu la recherche par nom et
+la création de fiche : *« Je veux pouvoir faire ça peu importe où je
+l'ouvre. »*
+
+### Le panneau était déjà partout — les outils, non
+
+`AssistantSidebar` est monté dans `src/app/layout.tsx` : le bouton existe sur
+tous les écrans, et c'était déjà le cas. Ce qui ne suivait pas, ce sont ses
+OUTILS. Cinq d'entre eux portaient la même ligne, recopiée :
+
+    if (!chantierId) return { erreur: "Aucun chantier dans le contexte courant." };
+
+Ouvert depuis la liste, le planning ou les réglages, ce chantier est nul et
+chacun refusait à son tour. **L'assistant n'était donc utile que là où il
+l'ouvrait le moins** — sur une fiche déjà ouverte, où il a l'information sous
+les yeux.
+
+### Une règle, un fichier, six outils
+
+`chantier-vise.ts` porte les deux moitiés : le champ que le modèle peut
+remplir, et le verdict. Chaque outil de lecture s'y branche —
+`LireInformationsChantier`, `LirePrestations`, `LireMateriels`, `LireNotes`,
+`LireTranscription`, `LireDevis`.
+
+| | |
+|---|---|
+| un `chantierId` est donné | c'est lui qui commande |
+| aucun, mais un chantier est ouvert | c'est l'ouvert — **l'usage d'avant ne bouge pas** |
+| ni l'un ni l'autre | le refus nomme `RechercherChantier` |
+
+**Cinq copies d'une même règle, c'est cinq endroits à corriger le jour où elle
+change** (`CLAUDE.md` §3) — et elle vient de changer.
+
+### Le refus ne renvoie plus le patron travailler à notre place
+
+« Aucun chantier dans le contexte courant » ne dit rien à un modèle : il en
+tirait ce qu'il pouvait, c'est-à-dire trois étapes à faire à la main. Il apprend
+maintenant qu'un chemin existe, et lequel. Une suite le vérifie dans les deux
+sens : la phrase cite `RechercherChantier`, et ne dit plus « contexte courant ».
+
+### Le contrôle qui empêche de casser l'usage courant
+
+Un cas éprouve que **le chantier ouvert reste le défaut**. Sans lui, tout le
+reste serait vert avec des outils qui EXIGERAIENT désormais un identifiant :
+l'assistant ouvert sur une fiche cesserait de répondre, et c'est le parcours le
+plus fréquent.
+
+### La description compte autant que le code
+
+Les libellés que le modèle lit disaient « pour le chantier courant ». Les
+laisser tels quels, c'était brancher une capacité que rien ne lui annonçait —
+il ne se serait jamais servi du champ. Ils disent désormais : *sans chantierId,
+celui qui est ouvert ; sinon, celui que RechercherChantier a rendu.*

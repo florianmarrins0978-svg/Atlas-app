@@ -9,6 +9,19 @@ Format : le plus récent en tête.
 
 ## 2026-08-25
 
+### L'assistant répond enfin depuis n'importe quel écran
+
+*« Je veux pouvoir faire ça peu importe où je l'ouvre. »* Le panneau était déjà
+sur tous les écrans ; ce sont ses outils qui ne suivaient pas. Cinq d'entre eux
+refusaient dès qu'aucun chantier n'était ouvert — c'est-à-dire partout sauf sur
+une fiche, là où il a déjà l'information sous les yeux.
+
+Ils acceptent maintenant qu'on leur nomme un chantier, et le chantier ouvert
+reste le défaut : l'usage d'avant ne bouge pas. Quand il n'y en a vraiment
+aucun, le refus dit la suite à donner au lieu de renvoyer le patron ouvrir une
+fiche lui-même. Détail : `ARCHITECTURE.md` §177.
+
+
 ### L'assistant ouvre une fiche chantier quand on le lui demande
 
 *« Crée-moi une nouvelle fiche chantier du nom de Fernandez »* — il répondait
