@@ -9,6 +9,30 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
+## ⚠ Trois suites navigateur rougissent SOUS LA BATTERIE, vertes jouées seules
+
+**Relevé le 26 août 2026, sur trois batteries d'affilée du même arbre.** À
+chaque tour, une ou deux suites tombent — et **jamais les mêmes** :
+
+| Tour | Ce qui est tombé |
+|---|---|
+| 1 | `test-reduction-devis-e2e` (8 cas), `test-tva-au-paiement-e2e` |
+| 2 | `test-lecons-prix-e2e` — « le prix 1400 n'est jamais arrivé en base : 0.00 » |
+
+**Les trois sont VERTES rejouées seules**, immédiatement après. Aucune n'est
+touchée par le lot en cours (le planning), et rien n'a été joué en parallèle de
+la batterie — la règle du 26 août a été respectée.
+
+**C'est le piège déjà écrit dans `HANDOVER.md` :** un délai fixe à la place d'un
+signal. Sous la batterie entière, la machine est chargée, l'action serveur met
+plus longtemps que le délai, et la suite lit l'écran d'avant. `test-lecons-prix`
+vient pourtant d'être porté de 30 à 60 secondes le même jour — **allonger ne
+suffit plus**, et c'est ce que ce constat ajoute.
+
+**Ce qu'il faudrait, pour qui reprend :** remplacer l'attente par un témoin — la
+valeur relue en base, la classe que le composant pose — plutôt que d'allonger
+les délais un à un. Le seuil suivant sera atteint par la machine suivante.
+
 ## ~~« Sans date » vide sur le planning~~ — **CODÉ le 26 août 2026**
 
 Sa question : *« est-ce que la catégorie sans date a un réel besoin
