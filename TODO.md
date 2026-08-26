@@ -9,6 +9,84 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
+## Dictée → devis : ce que l'audit du 26 août a trouvé
+
+Lecture seule, **aucun code écrit** — le patron a demandé de ne rien corriger
+avant son feu vert. Le détail complet, fichiers et numéros de ligne, est dans
+`docs/audit-dictee-devis.md`. Ce qui suit est la liste de travail qui en sort,
+dans l'ordre où il faudra la prendre.
+
+**P0 — arrêter la pollution de la grille et de la mémoire de prix.**
+`apprendrePrixGrille` (`services/apprendre-grille.ts:51`) et `retenirLecon`
+classent une ligne au **premier mot de métier reconnu**. Or la ligne principale
+d'un devis dicté porte souvent DEUX prestations (« Tonte de la pelouse (1200 m²)
+\nÉrable — démontage en rétention ») : le motif `ABATTAGE` répond, et le prix du
+lot entier part dans la case abattage × rétention × ⌀ de sa grille. Il revient
+ensuite tout seul sur chaque démontage, avec l'autorité de l'expérience, et rien
+ne le dit à l'écran. **Ne rien enseigner depuis une ligne qui porte plus d'une
+nature.** Fonction pure, quelques lignes, aucune migration — et le contrôle doit
+savoir rougir contre la version d'aujourd'hui.
+
+**P1 — porter la quantité jusqu'au bout.** Le modèle rend correctement
+`quantite: "800"` / `unite: "ml"` ; `libelleAvecQuantite`
+(`ai/services/brouillon-service.ts:169`) les **recolle au libellé** parce que la
+table `prestations` (`schema.ts:627`) n'a qu'une colonne de texte. Puis
+`ajouterLignePrix` (`repositories/lignes-prix.ts:35`) écrit `quantite: "1"` en
+dur. Le « QTÉ = 1 » qu'il voit n'est pas une décision de forfait : c'est une
+colonne jamais renseignée sur ce chemin. Colonnes `quantite`/`unite` sur
+`prestations`, écriture jusqu'à `lignes_prix` — **migration additive**.
+
+**P2 — donner un sens à « comparable ».** `signatureLecon`
+(`lib/lecons-prix.ts:84`) construit une clé de trois jetons — nature | technique
+| tranche de diamètre — comparée par **égalité de chaîne exacte** en SQL. Ni
+espèce, ni quantité, ni unité, ni grandeur : 50 ml et 800 ml de haie ont la même
+clé, d'où les « 15 chantiers comparables ». Ajouter l'espèce et l'ordre de
+grandeur, refuser le rappel au-delà d'un facteur d'écart — sa règle déjà écrite
+dans le module : *mieux vaut aucun rappel qu'un rappel faux*.
+**Attention : les clés sont STOCKÉES dans `lecons_prix.signature`.** Changer leur
+format sans migration orpheline toute sa mémoire de prix.
+
+**P3 — casser le fourre-tout `principal`** (`lib/lignes-vendables.ts:170`). Cinq
+cases seulement : haie, fendage, dessouchage, grumes, et `principal` qui ramasse
+tout le reste — tonte, plantation, désherbage, clôture. Le découpage a été conçu
+pour *détacher* ce qu'un client peut refuser, pas pour *distinguer* deux travaux
+sans rapport. Une nature par prestation, une ligne par nature.
+
+**P4 — dire sur le devis pourquoi une ligne est à 0 €.** Quand `repartir` rend
+`null` (`proposition-prix.ts:533`), toutes les détachables sont forcées à `"0"`
+et l'explication reste sur l'écran Prix, dans `donneesManquantes` — jamais sur le
+devis qu'il regarde. Même raisonnement que `CLAUDE.md` §4 ter pour l'arrosage :
+une réserve tue vaut un mensonge. Signaler aussi un prix proposé très éloigné du
+seul comparable connu (550 € en mémoire, 840 € proposés, et rien ne le dit).
+
+**P5 — ne plus tronquer les longues dictées en silence.**
+`providers/llm/anthropic.ts:178` borne l'extraction à `max_tokens: 1024`, pour
+une sortie qui grandit avec le nombre de prestations. Coupée en plein JSON, elle
+bascule sur `lireLitteralement` **sans qu'aucune trace ne distingue ce cas d'une
+panne de clé**. Relever le plafond, et journaliser la troncature.
+
+**P6 — le vocabulaire au transcripteur, et la branche catalogue morte.**
+`whisper-1` est appelé sans le moindre terme de métier
+(`providers/transcription/openai.ts:22`), alors que `termes_metier` part déjà au
+modèle d'extraction. Et `chiffrerChantier` est appelé **sans `motCleCatalogue`**
+(`chiffrage/proposition-prix.ts:336`) : `rechercherCartes` et `historique_prix`
+ne sont donc jamais consultés depuis la dictée — les mots qu'il range dans
+*Réglages → Catalogue* n'ont aucun effet sur ses devis dictés. La brancher, ou la
+supprimer et le dire ; un chemin mort qui a l'air vivant coûte plus cher qu'un
+chemin absent.
+
+**Les contrôles à écrire AVANT de corriger** sont listés au §13 du document —
+tous rouges aujourd'hui, tous écrits sur une règle et jamais sur un libellé
+d'écran (`CLAUDE.md` §5 bis).
+
+**Ce qu'une correction peut casser**, et qui ne se devine pas : les clés de
+`lecons_prix` (stockées), les formats `⌀ 45 cm` et `12 m de haut` que
+`mesures-arbre.ts` **relit** pour trouver la case de la grille, les identifiants
+`<sujet>#<rang>` persistés dans `precisions_chantier`, le report des précisions
+qui retrouve une prestation par le début de son libellé, et l'ordre des natures
+qui doit rester le même dans `apprendre-grille.ts` et `lignes-vendables.ts`.
+Le §12 du document les détaille.
+
 ## ✅ ~~Le format des numéros de devis et de factures~~ — fait le 26 août 2026
 
 ~~Sa demande du 26 août : « dans la catégorie facture il faut rajouter le format

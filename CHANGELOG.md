@@ -9,6 +9,42 @@ Format : le plus récent en tête.
 
 ## 2026-08-26
 
+### Audit de la chaîne dictée → devis (lecture seule, aucun code)
+
+Le patron, devant son devis dicté depuis l'iPhone : « Haie (tout genre)
+(800 ml) », quantité 1, 0 € ; « Tonte de la pelouse (1200 m²) » et « Érable —
+démontage en rétention » sur la même ligne à 840 € ; et un rappel qui propose un
+ancien érable à 550 €. Sa demande : ne rien corriger, remonter la chaîne.
+
+`docs/audit-dictee-devis.md` porte le résultat. Trois racines, et elles se
+cumulent :
+
+- **le libellé sert de modèle de données.** Le modèle rend bien `quantite: "800"`
+  et `unite: "ml"` ; `libelleAvecQuantite` (`brouillon-service.ts:169`) les
+  recolle au nom, parce que la table `prestations` n'a qu'une colonne de texte.
+  `ajouterLignePrix` écrit ensuite `quantite: "1"` en dur — le « QTÉ = 1 » n'est
+  pas un forfait, c'est une colonne jamais renseignée sur ce chemin ;
+- **`principal` est un fourre-tout** (`lignes-vendables.ts:170`) : tout ce qui
+  n'est ni haie, ni fendage, ni dessouchage, ni grumes tombe sur la même ligne.
+  D'où la tonte fondue dans l'abattage, et le prix au temps du chantier ENTIER
+  affiché sur une ligne qui parle d'un érable ;
+- **« comparable » est une égalité de chaîne sur trois jetons**
+  (`lecons-prix.ts:84`) : nature, technique, tranche de diamètre. Ni espèce, ni
+  quantité, ni ordre de grandeur — d'où 50 ml et 800 ml déclarés comparables, et
+  « 15 chantiers comparables ».
+
+**Un mécanisme à signaler avant tout correctif :** `apprendrePrixGrille` et
+`retenirLecon` apprennent depuis une ligne qui porte DEUX prestations. Un prix
+posé sur « tonte + érable » s'écrit dans la case abattage de sa grille, tonte
+comprise, et revient ensuite avec l'autorité de l'expérience. Rien n'a été
+touché ; le correctif est en P0 du plan.
+
+**Vérifié plutôt que supposé :** les fonctions pures ont été rejouées hors du
+dépôt sur ses chaînes exactes. Elles reproduisent ses deux écrans au caractère
+près, phrase du rappel comprise. Son devis à lui, en revanche, n'est pas
+identifiable depuis ici — il vit dans la base de son espace, et c'est écrit
+comme tel.
+
 ### « Mon compte » : quarante mots de moins
 
 *« Supprime la phrase sous enregistrer »*, *« supprime ce compte sous compte
