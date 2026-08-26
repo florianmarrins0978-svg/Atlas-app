@@ -38,7 +38,7 @@ async function cas(nom: string, verifier: () => Promise<void>) {
 }
 
 async function main() {
-  console.log("=== Retrouver un chantier par son nom, et un ancien devis ===");
+  console.log("=== Chercher par nom, lire un ancien devis, ouvrir une fiche ===");
   await nettoyerBase();
 
   const { entreprise, utilisateurId } = await entreprisesRepo.creerEntreprise(
@@ -189,7 +189,90 @@ async function main() {
     assert.deepEqual(r.versionsDisponibles.map((v) => v.numeroVersion), [1, 2]);
   });
 
-  console.log(`\n${echecs === 0 ? "✅" : "❌"} Chercher par nom, et lire un ancien devis — ${echecs} échec(s).`);
+  // ═══ CRÉER UNE FICHE — sa demande du 25 août, sur une seconde capture ═════
+  //
+  // *« Crée-moi une nouvelle fiche chantier du nom de Fernandez »* — refusé :
+  // *« je ne suis pas en mesure de créer une fiche chantier »*, suivi de trois
+  // étapes à faire à la main. Sa réponse : **« Ça aussi il doit pouvoir le
+  // faire »**.
+  const creer = getOutil("CreerChantier")!;
+
+  await cas("SA DEMANDE : « une fiche du nom de Fernandez » ouvre bel et bien un chantier", async () => {
+    const r = (await creer.executer({ ctx: A, chantierId: null }, { client: "Fernandez" })) as {
+      cree: boolean;
+      chantierId: string;
+      chantierNom: string;
+      clientNom: string;
+    };
+    assert.equal(r.cree, true, "rien n'a été créé");
+    assert.equal(r.clientNom, "Fernandez");
+
+    // **L'ÉTIQUETTE VIENT DE LA RÈGLE DU DÉPÔT, pas d'une seconde façon de
+    // nommer.** Un chantier ne se baptise pas (sa demande du 5 août 2026) :
+    // son nom se déduit du client. « Chantier Fernandez » composé à la main
+    // ici divergerait de ce que son écran de création écrit.
+    assert.match(r.chantierNom, /Fernandez/, `le nom affiché ignore le client : « ${r.chantierNom} »`);
+
+    // Et la fiche existe pour de bon — pas seulement dans la réponse.
+    const enBase = await chantiersRepo.getChantier(A, r.chantierId);
+    assert.ok(enBase, "le chantier rendu n'existe pas en base");
+  });
+
+  await cas("LE DOUBLON EST REFUSÉ D'ABORD — un jardin ne se dédouble pas en silence", async () => {
+    // Il repasse chez les mêmes gens : créer d'office ferait deux fiches pour
+    // un même jardin, et ce désordre-là ne se défait plus.
+    const r = (await creer.executer({ ctx: A, chantierId: null }, { client: "Fernandez" })) as {
+      cree: boolean;
+      motif: string;
+      chantiers: unknown[];
+    };
+    assert.equal(r.cree, false, "une seconde fiche a été ouverte sans rien demander");
+    assert.equal(r.motif, "chantiers_existants");
+    assert.equal(r.chantiers.length, 1, "il ne dit pas quels chantiers existent déjà");
+  });
+
+  await cas("… et il cède quand le patron a confirmé", async () => {
+    const r = (await creer.executer({ ctx: A, chantierId: null }, {
+      client: "Fernandez",
+      confirmerDoublon: true,
+    })) as { cree: boolean };
+    assert.equal(r.cree, true, "confirmé, il refuse encore : le patron ne peut plus avancer");
+  });
+
+  await cas("le client existant est REPRIS, jamais dupliqué", async () => {
+    // Il dit « Bernard » là où sa fiche porte « Mr. Bernard » : une comparaison
+    // stricte ouvrirait un second dossier, et son historique resterait dans le
+    // premier.
+    const avantClients = (await clientsRepo.listerClients(A)).length;
+    const r = (await creer.executer({ ctx: A, chantierId: null }, {
+      client: "bernard",
+      confirmerDoublon: true,
+    })) as { cree: boolean; clientNom: string; clientReutilise: boolean };
+    assert.equal(r.cree, true);
+    assert.equal(r.clientNom, "Mr. Bernard", "un second client « bernard » a été ouvert");
+    assert.equal(r.clientReutilise, true);
+    assert.equal((await clientsRepo.listerClients(A)).length, avantClients, "la liste des clients a grossi");
+  });
+
+  await cas("ISOLATION : la fiche naît dans SON entreprise, et nulle part ailleurs", async () => {
+    const r = (await creer.executer({ ctx: B, chantierId: null }, {
+      client: "Fernandez",
+      confirmerDoublon: true,
+    })) as { chantierId: string };
+    assert.ok(await chantiersRepo.getChantier(B, r.chantierId), "le voisin ne voit pas sa propre fiche");
+    assert.equal(
+      await chantiersRepo.getChantier(A, r.chantierId),
+      null,
+      "l'entreprise A voit le chantier créé par B : les fiches se mélangent"
+    );
+  });
+
+  await cas("un nom vide n'ouvre rien", async () => {
+    const r = (await creer.executer({ ctx: A, chantierId: null }, { client: "   " })) as { erreur: string };
+    assert.match(r.erreur, /nom/i, "il ouvre une fiche sans savoir pour qui");
+  });
+
+  console.log(`\n${echecs === 0 ? "✅" : "❌"} Chercher, lire un ancien devis, et ouvrir une fiche — ${echecs} échec(s).`);
   await pool.end();
   process.exit(echecs === 0 ? 0 : 1);
 }

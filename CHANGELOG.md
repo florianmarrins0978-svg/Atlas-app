@@ -9,6 +9,24 @@ Format : le plus récent en tête.
 
 ## 2026-08-25
 
+### L'assistant ouvre une fiche chantier quand on le lui demande
+
+*« Crée-moi une nouvelle fiche chantier du nom de Fernandez »* — il répondait
+qu'il n'était pas en mesure de le faire et donnait trois étapes à suivre à la
+main. C'est désormais la **seule écriture** qu'on lui accorde, et elle est
+étroite : une fiche vide, pour un client, sans prix ni prestation ni envoi. Tout
+le reste passe encore par une proposition qu'il confirme d'un doigt.
+
+Le nom n'est pas inventé : dans Atlas un chantier ne se baptise pas, son
+étiquette se déduit du client (sa règle du 5 août). Et le client existant est
+repris plutôt que dupliqué — il dit « bernard » là où sa fiche porte
+« Mr. Bernard ».
+
+**Un doublon se refuse d'abord** : si ce client a déjà des chantiers, rien n'est
+créé et l'assistant demande. Deux fiches pour un même jardin, ça ne se défait
+plus. Détail : `ARCHITECTURE.md` §176.
+
+
 ### L'assistant retrouve un devis à partir d'un NOM, sans qu'on ouvre la fiche
 
 *« Peux-tu me ressortir le premier devis de M. Bernard ? »* — il répondait qu'il

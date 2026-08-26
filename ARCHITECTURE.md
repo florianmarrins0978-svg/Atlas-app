@@ -15446,3 +15446,62 @@ version 1, les versions annoncées, et le refus d'une version absente.
 « Mr. Bernard » : c'est le seul décor où un défaut d'isolation se verrait, et il
 montrerait les devis de quelqu'un d'autre. Les deux sens sont vérifiés — sans
 quoi le cas serait vert avec une recherche qui ne rend jamais rien.
+
+
+---
+
+## 176. L'assistant OUVRE une fiche chantier — la seule écriture qu'on lui accorde
+
+**Sa demande du 25 août 2026**, capture à l'appui : *« Crée-moi une nouvelle
+fiche chantier du nom de Fernandez »*. Réponse de l'assistant : *« je ne suis
+pas en mesure de créer une fiche chantier »*, suivie de trois étapes à faire à
+la main. Sa réponse : **« Ça aussi il doit pouvoir le faire »**.
+
+### Pourquoi la mécanique existante ne pouvait pas servir
+
+Depuis le lot IA-03, l'assistant n'écrit jamais : il PROPOSE, et le patron
+confirme d'un doigt. C'est le bon patron, et il n'a pas bougé pour le reste.
+
+Mais une proposition est rangée **sous un chantier** — `propositions_ia.
+chantier_id` est non nul — et il s'agit précisément d'en créer un. La faire
+vivre sans chantier demandait une migration, une seconde action de
+confirmation, et un second chemin dans le panneau : beaucoup de machinerie pour
+un geste qui n'engage rien.
+
+### L'exception, et ce qui la rend tenable
+
+| Ce que `CreerChantier` fait | Ce qu'il ne fait pas |
+|---|---|
+| ouvre une fiche VIDE pour un client | écrire un prix, une prestation, une durée |
+| reprend un client existant | envoyer, valider, facturer |
+
+**Rien n'est inventé** — le nom vient de sa phrase. **Rien n'est engagé** — une
+fiche vide n'a ni montant ni destinataire, et elle se supprime. Les trois gestes
+que `CLAUDE.md` §4 réserve à son doigt restent hors d'atteinte, et toute autre
+écriture passe encore par une proposition.
+
+**C'est SA décision, pas un arbitrage technique.** L'invariant « l'assistant n'écrit
+jamais » a été posé par le dépôt, pas par lui ; il vient de le lever pour ce
+cas-là. Ne pas l'élargir sans lui.
+
+### Deux règles reprises, jamais réécrites
+
+**Un chantier ne se baptise pas.** Sa demande du 5 août 2026 — *« retire la case
+nom du chantier »* — parce qu'un élagueur ne baptise pas ses chantiers. Le nom
+se déduit du client, sinon de l'adresse, sinon du jour (`nom-chantier.ts`).
+« Une fiche du nom de Fernandez » veut donc dire « une fiche pour le client
+Fernandez », et l'étiquette sort de la même fonction que l'écran de création.
+
+**Le client se cherche avec la règle de l'écran** (`filtrerClientsParNom`) : il
+dit « bernard » là où sa fiche porte « Mr. Bernard ». Une comparaison stricte
+ouvrirait un second dossier au même nom, et son historique resterait dans le
+premier.
+
+### Le doublon se refuse AVANT d'être créé
+
+Un paysagiste repasse chez les mêmes gens. Si le client a déjà des chantiers,
+l'outil **ne crée rien** et les rend : c'est au patron de dire s'il en veut un de
+plus. `confirmerDoublon` est la seconde intention explicite qui débloque.
+
+Deux fiches pour un même jardin, c'est un désordre qu'on ne défait plus — et
+c'est exactement ce qu'un modèle serviable ferait sans cette garde.
