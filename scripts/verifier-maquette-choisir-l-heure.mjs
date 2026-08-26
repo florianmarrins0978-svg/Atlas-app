@@ -99,8 +99,8 @@ await cas("les quatre gestes existent, et le RETENU s'ouvre le premier", async (
   // annonce codé ce qui ne l'est pas — ou l'inverse — lui fait perdre un
   // aller-retour, et c'est la quatrième fois dans ce dépôt (`CLAUDE.md` §3 bis).
   assert(
-    /EN PLACE dans l'appli/.test(source),
-    "la planche ne dit plus que la molette du téléphone est CELLE QUI EST CODÉE"
+    /RETENUE, et en place/.test(source),
+    "la planche ne dit plus que la molette du téléphone est celle qu'il a retenue, et qui est codée"
   );
 });
 

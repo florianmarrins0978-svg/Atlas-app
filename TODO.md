@@ -3945,12 +3945,13 @@ impossible un travail à moitié fait (`CLAUDE.md` §5 ter : *chercher avant
 d'affirmer, dans les deux sens*). Trente secondes de `grep -rn molette src/`
 l'auraient évité.
 
-**Ce qui reste réellement ouvert, et c'est une question d'APPARENCE :** les
-molettes de son téléphone (en place) ou celles dessinées par Atlas (D). Le geste
-est identique ; seul l'aspect change. La planche le dit maintenant en toutes
-lettres, et un contrôle l'exige.
+**TRANCHÉ le 25 août 2026 : « je garde celle qui est présente. »** Les molettes
+natives du téléphone restent, et **rien n'est à coder**. La question ne portait
+plus que sur l'apparence — le geste était identique dans les deux cas.
 
-**Ce que la D changerait, si elle était retenue.** D'un seul tenant, la molette
+Le sujet est clos : **ne pas le rouvrir** sans qu'il le redemande.
+
+**Ce que la D aurait changé — gardé pour mémoire, elle n'a pas été retenue.** D'un seul tenant, la molette
 compte cinquante-trois crans de 0 h 00 à 4 h 00 : aller de 0 h 05 à 3 h 30
 demande quarante et un crans, donc plusieurs élans du pouce. Séparées, la même
 valeur se pose en deux gestes courts. Et c'est le geste de la molette de son
