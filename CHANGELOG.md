@@ -9,6 +9,28 @@ Format : le plus récent en tête.
 
 ## 2026-08-26
 
+### Les filets à côté des intertitres partent, les séparateurs restent
+
+*« Ça aussi tu peux retirer »*, capture de l'écran Équipe à l'appui — le filet
+qui partait du mot et filait jusqu'au bord : « QUI A ACCÈS ————— ». Et dans le
+même souffle : *« ceux qui séparent les blocs, laisse-les »*.
+
+Les deux se ressemblent et ne disent pas la même chose. Un séparateur porte une
+information — deux choses sont distinctes. Le filet d'intertitre n'ornait qu'un
+mot. Le contrôle ne traque donc que la seconde forme, reconnue à ce qui la
+caractérise : un filet d'un pixel qui prend la place restante (`flex-1`). Vu
+rouge contre un filet remis, et vert avec les séparateurs en place.
+
+**Et une fausse alerte, corrigée avant de coder quoi que ce soit.** Je lui avais
+signalé que la barre du bas recouvrait un paragraphe de cet écran : c'était un
+artefact de ma capture. Une capture *pleine page* dessine les éléments fixés à
+leur place d'écran, donc au milieu d'une longue page. Mesuré pour de bon —
+déroulé jusqu'en bas, `bottom` du texte contre `top` de la barre — **rien n'est
+recouvert**. Le piège est écrit dans `HANDOVER.md` : c'est la deuxième fois
+aujourd'hui qu'il trompe.
+
+
+
 ### Face ID marche enfin derrière son tunnel — et le bouton du mot de passe remonte
 
 *« Le Face ID ne fonctionne pas »*, capture à l'appui — et *« le bouton changer
