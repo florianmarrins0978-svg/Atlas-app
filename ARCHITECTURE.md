@@ -16328,3 +16328,122 @@ Sous ses champs, l'ambiguïté n'existe plus. Le talon de la page passe de `pb-4
 Il refuse de conclure sur une boîte de zéro pixel — sans quoi une page non mise
 en page rendrait « 0 < 0 », c'est-à-dire un vert qui ne prouve rien
 (`CLAUDE.md` §5).
+
+---
+
+## 188. Le numéro de ses documents : un format choisi, et un millésime qui n'est plus écrit en dur
+
+**Sa demande du 26 août 2026**, capture d'une autre application à l'appui :
+*« dans la catégorie facture il faut rajouter le format de numéro, c'est
+obligatoire il me semble »*. Puis, devant la planche
+`appli/format-de-numero.html` : *« garde le F »*, *« 6 chiffres »*, *« oui
+remettre à 0 chaque début d'année »*, et enfin *« l'utilisateur peut choisir
+entre ces 5 façons ? Si oui code ça »*.
+
+### Ce qui est obligatoire, et ce qui ne l'est pas
+
+Il le disait avec un doute — *« il me semble »* — et il avait raison à moitié.
+Ce que la loi exige d'une facture, c'est un numéro pris dans une **suite
+chronologique, sans trou ni doublon**. **Aucun format particulier n'est
+imposé.** Atlas tenait déjà la suite : un compteur atomique par entreprise,
+posé en base, incrémenté dans la transaction qui crée le document. Ce qui
+manquait, c'était le choix de l'habillage — et, sous cet habillage, un défaut.
+
+### CE QUI ÉTAIT CASSÉ, et qu'aucune suite ne voyait
+
+Le millésime était **écrit en dur** :
+
+| Fichier | Ce qu'il écrivait |
+|---|---|
+| `src/server/repositories/devis.ts` | `` `2026-${…}` `` |
+| `src/server/repositories/factures.ts` | `` `F2026-${…}` `` |
+
+**En janvier 2027, ses factures auraient encore dit 2026.** Un défaut à
+retardement : aucune suite ne pouvait le voir, puisqu'elles tournent
+aujourd'hui et qu'aujourd'hui la constante tombe juste. Il ne serait apparu
+qu'au premier document de l'année suivante — c'est-à-dire chez son client, sur
+une facture qu'on ne réémet pas.
+
+C'est le même piège que la portée d'arroseur supposée (§4 ter de `CLAUDE.md`) :
+une valeur plausible, jamais confrontée, qui ne se démentira qu'une fois posée.
+
+### La remise à zéro est ATOMIQUE, et elle ne s'écrit pas en deux temps
+
+Sa décision — *« oui remettre à 0 chaque début d'année »* — se joue dans le même
+`UPDATE … RETURNING` que l'incrément, jamais dans un `if` au-dessus :
+
+```sql
+UPDATE entreprise_compteurs
+SET prochain_numero_facture = CASE
+      WHEN <remise> AND annee_facture IS DISTINCT FROM <annee> THEN 2
+      ELSE prochain_numero_facture + 1
+    END,
+    annee_facture = <annee>
+WHERE entreprise_id = …
+RETURNING prochain_numero_facture - 1 AS numero
+```
+
+**Lire l'année, décider, puis écrire** aurait ouvert exactement la fenêtre que
+le compteur atomique existait pour fermer : deux factures émises à la même
+seconde le 1ᵉʳ janvier auraient toutes deux lu « année différente », toutes deux
+remis le compteur à 1, et **porté le même numéro**. Un doublon dans la suite est
+précisément ce que la loi interdit. La colonne `annee_devis` / `annee_facture`
+est là pour ça, et pour rien d'autre.
+
+### La règle qui repart n'est PAS un réglage à part
+
+`repartChaqueAnnee(clef)` se **déduit** du format et ne s'expose jamais comme un
+second interrupteur. Sur « une suite sans année », cocher « repartir chaque
+année » ferait succéder `0148` à `0147` puis repartir à `0001` : deux documents
+du même numéro à un an d'écart. Un réglage qu'on peut poser dans un état
+interdit finit toujours par y être posé.
+
+L'écran **dit** la conséquence (`data-atlas="format-consequence"`) au lieu de la
+proposer.
+
+### Une seule fonction écrit le numéro, pour l'écran comme pour la base
+
+`ecrireNumero(clef, genre, {annee, mois, numero})` sert l'aperçu des réglages
+**et** le numéro réellement attribué. Deux écritures d'une même règle finissent
+par diverger (`CLAUDE.md` §3), et ici la divergence serait invisible : l'écran
+montrerait fièrement `2026-08-012` pendant que le client recevrait `2026-0148`.
+
+**Et l'exemple de l'écran prend son année à l'horloge**, jamais un millésime
+tapé à la main — refaire à l'écran la faute qu'on vient de corriger dans le
+dépôt aurait été le comble. `test-format-numero-e2e.ts` l'exige.
+
+### Ce qui a coûté deux faux verts, et qui n'est pas dans le produit
+
+Le compteur se vieillit pour éprouver le 1ᵉʳ janvier. Deux versions de ce
+vieillissement ont rendu un vert qui ne prouvait rien :
+
+| Version | Ce qui se passait |
+|---|---|
+| `pool.query` sous `atlas_app` | la RLS bloquait l'`UPDATE`, `rowCount` valait 0, **sans erreur** |
+| `pool.query` sous `atlas_owner` | bloqué aussi — `FORCE ROW LEVEL SECURITY` s'applique **au propriétaire** |
+
+Trois cas rougissaient en accusant le produit, qui était juste. Corrigé en
+jouant l'`UPDATE` dans `withEntreprise` **et en exigeant `rowCount === 1`** :
+un contrôle qui ne peut pas mesurer doit refuser de conclure, jamais rendre un
+vert (`CLAUDE.md` §5).
+
+### Un contrôle qui épinglait l'ancien format, et ce qu'il a appris
+
+`test-facture-au-client-e2e.ts` exigeait que le PDF téléchargé s'appelle
+`F\d{4}-\d{4}.pdf`. Le format choisi passé à six chiffres, il a rougi — sur du
+code juste, pour un réglage exaucé. C'est `CLAUDE.md` §5 bis mot pour mot : on
+adapte le contrôle, on ne remet pas ce que le patron a fait changer.
+
+**Et l'on vise plus profond que la forme.** Ce qui compte n'a jamais été le
+nombre de chiffres : c'est qu'il retrouve SA facture dans son dossier de
+téléchargements. Le contrôle compare donc le nom du fichier au
+`numero_commercial` **relu en base**. Il survivra au prochain format, et il
+attrape en plus ce que la regex laissait passer — un nom qui aurait la bonne
+forme et le mauvais numéro.
+
+### Ce que le format ne fait pas
+
+Il ne renumérote **rien**. Les documents déjà émis gardent leur numéro — les
+réécrire creuserait un trou dans la suite, ce que la loi interdit — et l'écran
+le dit en une phrase. La suite reprend là où elle en était, dans le nouvel
+habillage.

@@ -1,7 +1,7 @@
 # État du projet
 
-**Dernière mise à jour :** 2026-08-25 · branche `main`
-· dernière migration `drizzle/0065_roles_et_acces.sql`
+**Dernière mise à jour :** 2026-08-26 · branche `main`
+· dernière migration `drizzle/0066_format_numero.sql`
 
 
 *(Le numéro du dernier commit ne figure plus ici : il était faux dès le commit
@@ -12,6 +12,25 @@ Ce fichier dit **où en est le produit**, pas ce qu'on aimerait qu'il soit. Une
 ligne « fait » qui ne l'est pas coûte plus cher qu'une ligne absente.
 
 ---
+
+## Le numéro de ses documents se choisit (26 août 2026)
+
+*Sa demande : « dans la catégorie facture il faut rajouter le format de numéro,
+c'est obligatoire il me semble ». Puis « garde le F », « 6 chiffres », « oui
+remettre à 0 chaque début d'année ». Le détail est dans `ARCHITECTURE.md` §188.*
+
+**Fait.** Réglages → Devis & factures → « Le numéro de mes documents » : cinq
+formats, chacun montrant ce qu'il donne, enregistré au fur et à mesure. Le
+défaut est « Année et 6 chiffres », le « F » des factures reste, et le compteur
+repart à 1 le 1ᵉʳ janvier — sauf sur « une suite sans année », où repartir
+ferait deux documents du même numéro.
+
+**Et un défaut à retardement est parti avec.** Le millésime était écrit en dur
+dans le dépôt : en janvier 2027, ses factures auraient encore dit 2026. Aucune
+suite ne pouvait le voir, puisqu'elles tournent aujourd'hui.
+
+**Ce que ça ne fait pas :** renuméroter les documents déjà émis. Les réécrire
+creuserait un trou dans la suite, ce que la loi interdit.
 
 ## Trois rôles, trois sessions — qui atteint quoi (25 août 2026)
 
