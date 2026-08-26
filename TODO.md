@@ -9,9 +9,34 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
+## `test-fiche-pendant-relance.ts` rougit sur `main`, et ce n'est pas ce lot
+
+**Constaté le 25 août 2026.** La batterie complète rend `232/233` : seule
+`scripts/test-fiche-pendant-relance.ts` tombe, sur son deuxième cas —
+*« le veilleur est bien bloqué à relancer — sans quoi la suite ne prouve rien »*,
+avec la phrase *« le veilleur n'a jamais tenté de relance : le montage ne
+reproduit pas le cas réel »*.
+
+**Elle tombe à l'identique sur `origin/main`**, éprouvé dans un arbre de travail
+séparé au commit `77e0073` — ce n'est donc pas une régression du lot des flèches,
+et c'est écrit ici plutôt que tenu sous silence : une batterie qu'on prend l'habitude de voir
+rouge cesse d'être lue.
+
+**Ce qu'elle défend, et pourquoi ça compte** (`CLAUDE.md` §1 bis) : la fiche
+d'état de son espace doit continuer d'être publiée PENDANT que le veilleur
+relance le serveur. Le premier cas passe ; c'est le **montage** de la suite qui
+ne parvient plus à mettre le veilleur en situation de relance. Une suite dont le
+montage ne reproduit plus le cas réel rend un vert qui ne prouve rien — c'est
+exactement ce que son deuxième cas refuse, et il a raison de refuser.
+
+À reprendre par qui touche au veilleur : la suite est juste, c'est son décor qui
+a vieilli.
+
+---
+
 ## Le mode d'emploi de l'assistant : le tenir vivant
 
-**FAIT le 25 août 2026** pour l'essentiel (`ARCHITECTURE.md` §178). Ce qui reste,
+**FAIT le 25 août 2026** pour l'essentiel (`ARCHITECTURE.md` §180). Ce qui reste,
 et qui ne se règle pas en une fois :
 
 - **Les fiches couvrent les écrans principaux, pas encore chaque recoin.**

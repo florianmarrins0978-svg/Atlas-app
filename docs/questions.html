@@ -97,6 +97,7 @@
 <li><a href="#23-lapplication-est-elle-trop-compliquée-pour-un-artisan-pressé-">L'application est-elle trop compliquée pour un artisan pressé ?</a></li>
 <li><a href="#24-faut-il-une-licence-pour-se-servir-des-données-de-linrae-">Faut-il une licence pour se servir des données de l'INRAE ?</a></li>
 <li><a href="#25-peut-on-ouvrir-atlas-avec-face-id-au-lieu-dun-mot-de-passe-">Peut-on ouvrir Atlas avec Face ID, au lieu d'un mot de passe ?</a></li>
+<li><a href="#26-combien-dheures-avons-nous-passé-à-créer-atlas-">Combien d'heures avons-nous passé à créer Atlas ?</a></li>
 </ol>
 <hr>
 <h2 id="1-le-compte-développeur-apple--qui-paie-et-combien-de-temps-">1. Le compte développeur Apple : qui paie, et combien de temps ?</h2>
@@ -1240,6 +1241,55 @@
 <p>Ce qui ne se vérifie que chez vous : que Face ID s'ouvre bien sur <strong>votre</strong> iPhone, avec <strong>votre</strong> visage. Aucun banc d'essai ne peut le dire à votre place.</p>
 <h3 id="le-lien-avec-la-double-authentification">Le lien avec la double authentification</h3>
 <p>L'audit du 23 août réclamait une double authentification. La passkey y répond mieux qu'un code à six chiffres reçu par SMS : elle vaut <strong>à elle seule</strong> deux facteurs — le téléphone qu'on possède, et le visage qui l'ouvre. Sans code à recopier sur un chantier, les mains sales.</p>
+<hr>
+<h2 id="26-combien-dheures-avons-nous-passé-à-créer-atlas-">26. Combien d'heures avons-nous passé à créer Atlas ?</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><strong>Environ 150 à 200 heures</strong>, en un peu moins d'un mois — du 31 juillet au 25 août 2026.</p>
+<p>La fourchette est large, et c'est honnête : une partie du travail n'a pas laissé de trace datée. Le détail est plus bas.</p>
+<h3 id="ce-qui-est-mesuré-et-ce-qui-est-estimé">Ce qui est mesuré, et ce qui est estimé</h3>
+<div class="tablewrap"><table><thead><tr>
+<th>Période</th>
+<th>Ce qu'on en sait</th>
+<th>Temps</th>
+</tr></thead><tbody>
+<tr>
+<td>10 → 25 août</td>
+<td>652 enregistrements horodatés, à la minute près</td>
+<td><strong>122 h</strong></td>
+</tr>
+<tr>
+<td>31 juillet → 10 août</td>
+<td>aucune trace horodatée : l'historique a été remis à plat le 10 août</td>
+<td><strong>31 à 76 h</strong></td>
+</tr>
+</tbody></table></div>
+<p>Le 10 août, tout le travail existant a été réenregistré <strong>en un seul bloc</strong> — 684 fichiers d'un coup. Les dates des onze jours précédents ont disparu à cette occasion. Ce n'est pas une perte de code : l'application entière était là. C'est une perte de <strong>chronomètre</strong>.</p>
+<h3 id="comment-les-31-à-76-heures-sont-estimées">Comment les 31 à 76 heures sont estimées</h3>
+<p>Trois façons de compter, qui ne donnent pas la même réponse :</p>
+<div class="tablewrap"><table><thead><tr>
+<th>On compare</th>
+<th>Ce que ça donne</th>
+</tr></thead><tbody>
+<tr>
+<td>le <strong>code déjà écrit</strong> au 10 août (76 000 lignes) à celui écrit depuis</td>
+<td>74 h</td>
+</tr>
+<tr>
+<td>le nombre de <strong>jours travaillés</strong> avant et après</td>
+<td>76 h</td>
+</tr>
+<tr>
+<td>le nombre de <strong>lots de travail</strong> notés au journal, avant et après</td>
+<td>31 h</td>
+</tr>
+</tbody></table></div>
+<p>Les deux premières se rejoignent ; la troisième est plus basse, parce qu'au début le journal notait des lots plus gros. La vérité est probablement du côté haut — les onze premiers jours ont produit l'application entière.</p>
+<h3 id="le-chiffre-se-recalcule-tout-seul">Le chiffre se recalcule tout seul</h3>
+<p>Il vieillit à chaque enregistrement. Plutôt que de le recopier ici et de le laisser se périmer, une commande le refait :</p>
+<p>``<code> node scripts/compter-heures.mjs </code>``</p>
+<h3 id="ce-qui-nest-pas-compté">Ce qui n'est PAS compté</h3>
+<p><strong>Arborea.</strong> Atlas en est la reprise — écrans, calculs et tests repris le 31 juillet. Le temps passé sur Arborea n'existe dans aucun fichier de ce dépôt, donc il n'est pas dans ces chiffres.</p>
+<p>Et ces heures sont du <strong>temps écoulé</strong>, pas de l'effort cumulé : plusieurs sessions travaillent souvent en parallèle sur des parties différentes. Une soirée de trois heures avec quatre sessions reste trois heures dans ce compte.</p>
 </main>
 </body>
 </html>

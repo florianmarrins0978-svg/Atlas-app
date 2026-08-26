@@ -277,7 +277,7 @@ export default function TransmettreAuClient({
         // que le bouton plein. Elle se voit sans disputer la place.
         style={{ color: colors.or }}
       >
-        {LIBELLE[autre].bascule} →
+        {LIBELLE[autre].bascule}
       </button>
 
       {/* **« Télécharger le PDF · Partager » a été retiré le 21 août 2026, à sa

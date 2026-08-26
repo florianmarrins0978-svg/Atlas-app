@@ -282,7 +282,7 @@ export default function TransmettreLaFacture({
             Votre client ne l&apos;a pas encore reçue.
           </p>
           <PrimaryButton disabled={enCours} onClick={envoyer}>
-            {enCours ? "Préparation…" : "Envoyer la facture au client →"}
+            {enCours ? "Préparation…" : "Envoyer la facture au client"}
           </PrimaryButton>
         </>
       )}

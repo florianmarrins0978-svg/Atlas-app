@@ -438,7 +438,7 @@ export const FICHES_MODE_EMPLOI: FicheModeEmploi[] = [
     ou: "en haut de l'écran Planning",
     intitule: "Voir une autre semaine",
     motsCles: ["semaine", "suivante", "precedente", "avancer", "reculer", "changer", "planning"],
-    geste: "Appuyez sur les chevrons « ‹ » et « › » de part et d'autre de la semaine.",
+    geste: "Appuyez sur les chevrons de part et d'autre de la semaine.",
     source: "src/app/planning/PlanningClient.tsx",
     preuves: ["Semaine précédente", "Semaine suivante"],
   },
@@ -481,7 +481,7 @@ export const FICHES_MODE_EMPLOI: FicheModeEmploi[] = [
   {
     id: "catalogue-mots",
     ecran: "Catalogue",
-    ou: "Réglages → Tarifs & catalogue → Le catalogue",
+    ou: "Réglages, puis Tarifs & catalogue, puis Le catalogue",
     intitule: "Apprendre à Atlas un mot du métier",
     motsCles: ["mot", "mots", "vocabulaire", "catalogue", "comprendre", "apprendre", "dictee", "ecime", "jargon"],
     geste: "Dans « Mes mots », écrivez le mot tel que vous le dites, puis « Ajouter ».",
@@ -491,7 +491,7 @@ export const FICHES_MODE_EMPLOI: FicheModeEmploi[] = [
   {
     id: "vocabulaire-regles",
     ecran: "Le vocabulaire de mon métier",
-    ou: "Réglages → Atlas IA",
+    ou: "Réglages, puis Atlas IA",
     intitule: "Poser une règle que l'IA doit suivre",
     motsCles: ["regle", "regles", "ia", "consigne", "vocabulaire", "habitude", "toujours", "devis"],
     geste: "Dans « Mes règles », écrivez la règle en une phrase, puis « Ajouter ».",
@@ -503,7 +503,7 @@ export const FICHES_MODE_EMPLOI: FicheModeEmploi[] = [
   {
     id: "reglages-identite",
     ecran: "Mon entreprise",
-    ou: "Réglages → Mon entreprise",
+    ou: "Réglages, puis Mon entreprise",
     intitule: "Changer le nom, l'adresse, le SIRET, l'IBAN de l'entreprise",
     motsCles: ["entreprise", "identite", "nom", "adresse", "siret", "iban", "tva", "coordonnees", "siege"],
     geste: "Ouvrez « Mon entreprise », corrigez le champ, puis « Enregistrer ».",
@@ -514,7 +514,7 @@ export const FICHES_MODE_EMPLOI: FicheModeEmploi[] = [
   {
     id: "reglages-tarifs",
     ecran: "Mes tarifs",
-    ou: "Réglages → Tarifs & catalogue → Mes prix",
+    ou: "Réglages, puis Tarifs & catalogue, puis Mes prix",
     intitule: "Ajouter, corriger ou retirer un tarif",
     motsCles: ["tarif", "tarifs", "prix", "ajouter", "modifier", "supprimer", "retirer", "grille", "catalogue"],
     geste:
@@ -526,7 +526,7 @@ export const FICHES_MODE_EMPLOI: FicheModeEmploi[] = [
   {
     id: "reglages-grilles",
     ecran: "Mes prix",
-    ou: "Réglages → Tarifs & catalogue → Mes prix",
+    ou: "Réglages, puis Tarifs & catalogue, puis Mes prix",
     intitule: "Régler un prix qui dépend du diamètre ou de la façon de faire",
     motsCles: ["grille", "diametre", "abattage", "cable", "facon", "travail", "prix", "mesure", "bareme"],
     geste: "Appuyez sur « Ajouter un travail », nommez-le, et choisissez comment son prix se décide.",
@@ -536,7 +536,7 @@ export const FICHES_MODE_EMPLOI: FicheModeEmploi[] = [
   {
     id: "reglages-documents",
     ecran: "Devis & factures",
-    ou: "Réglages → Devis & factures",
+    ou: "Réglages, puis Devis & factures",
     intitule: "Régler la validité d'un devis, l'acompte, le délai de paiement, les mentions",
     motsCles: ["validite", "acompte", "delai", "paiement", "mention", "condition", "document", "devis", "facture"],
     geste: "Ouvrez « Devis & factures » et réglez chaque valeur.",
@@ -546,7 +546,7 @@ export const FICHES_MODE_EMPLOI: FicheModeEmploi[] = [
   {
     id: "reglages-allure-photo",
     ecran: "Devis & factures",
-    ou: "Réglages → Devis & factures",
+    ou: "Réglages, puis Devis & factures",
     intitule: "Reprendre l'allure de son ancien devis en le photographiant",
     motsCles: ["photo", "photographier", "allure", "couleur", "police", "logo", "devis", "reprendre", "modele"],
     geste: "Appuyez sur « Photographier mon devis » et choisissez l'appareil photo ou la photothèque.",
@@ -557,7 +557,7 @@ export const FICHES_MODE_EMPLOI: FicheModeEmploi[] = [
   {
     id: "reglages-equipe",
     ecran: "Équipe",
-    ou: "Réglages → Équipe",
+    ou: "Réglages, puis Équipe",
     intitule: "Régler combien d'équipes partent en même temps, et leurs absences",
     motsCles: ["equipe", "equipes", "absence", "conge", "vacances", "salarie", "combien", "partent"],
     geste: "Ouvrez « Équipe » : le nombre d'équipes et les absences s'y règlent.",
@@ -567,7 +567,7 @@ export const FICHES_MODE_EMPLOI: FicheModeEmploi[] = [
   {
     id: "reglages-fiche-entretien",
     ecran: "Fiche d'entretien",
-    ou: "Réglages → Fiche d'entretien",
+    ou: "Réglages, puis Fiche d'entretien",
     intitule: "Composer la fiche qu'on coche sur un chantier d'entretien",
     motsCles: ["fiche", "entretien", "modele", "composer", "famille", "prestation", "cocher", "tonte"],
     geste: "Ouvrez « Fiche d'entretien », partez du modèle Atlas ou composez la vôtre.",
@@ -578,7 +578,7 @@ export const FICHES_MODE_EMPLOI: FicheModeEmploi[] = [
   {
     id: "reglages-notifications",
     ecran: "Notifications",
-    ou: "Réglages → Notifications",
+    ou: "Réglages, puis Notifications",
     intitule: "Choisir ce qu'Atlas signale et quand",
     motsCles: ["notification", "notifications", "alerte", "rappel", "signaler", "relance", "impaye", "prevenir"],
     geste: "Ouvrez « Notifications » et réglez chaque rappel, ainsi que son délai.",
@@ -589,7 +589,7 @@ export const FICHES_MODE_EMPLOI: FicheModeEmploi[] = [
   {
     id: "reglages-agenda",
     ecran: "Intégrations",
-    ou: "Réglages → Intégrations",
+    ou: "Réglages, puis Intégrations",
     intitule: "Relier son agenda Google",
     motsCles: ["agenda", "calendrier", "google", "relier", "connecter", "brancher", "synchroniser", "doublon"],
     geste: "Ouvrez « Intégrations », puis « Relier mon agenda Google ».",
@@ -600,7 +600,7 @@ export const FICHES_MODE_EMPLOI: FicheModeEmploi[] = [
   {
     id: "reglages-agenda-apple",
     ecran: "Intégrations",
-    ou: "Réglages → Intégrations",
+    ou: "Réglages, puis Intégrations",
     intitule: "Relier son agenda Apple, iCloud",
     motsCles: ["agenda", "calendrier", "apple", "icloud", "iphone", "relier", "connecter", "synchroniser"],
     geste: "Ouvrez « Intégrations », puis « Relier mon agenda Apple ».",
@@ -610,7 +610,7 @@ export const FICHES_MODE_EMPLOI: FicheModeEmploi[] = [
   {
     id: "reglages-donnees",
     ecran: "Sécurité & données",
-    ou: "Réglages → Sécurité & données",
+    ou: "Réglages, puis Sécurité & données",
     intitule: "Télécharger toutes ses données",
     motsCles: ["donnee", "donnees", "export", "telecharger", "sauvegarde", "copie", "rgpd", "effacer"],
     geste: "Ouvrez « Sécurité & données », puis « Télécharger mes données ».",
@@ -620,7 +620,7 @@ export const FICHES_MODE_EMPLOI: FicheModeEmploi[] = [
   {
     id: "reglages-abonnement",
     ecran: "Abonnement",
-    ou: "Réglages → Abonnement",
+    ou: "Réglages, puis Abonnement",
     intitule: "Voir son offre, son paiement et ses factures Atlas",
     motsCles: ["abonnement", "offre", "payer", "paiement", "facture", "atlas", "prix", "resilier"],
     geste: "Ouvrez « Abonnement ».",
@@ -632,7 +632,7 @@ export const FICHES_MODE_EMPLOI: FicheModeEmploi[] = [
   {
     id: "reglages-compte",
     ecran: "Mon compte",
-    ou: "Réglages → Mon compte",
+    ou: "Réglages, puis Mon compte",
     intitule: "Changer son nom ou son e-mail",
     motsCles: ["compte", "nom", "email", "mail", "moi", "changer", "profil"],
     geste: "Ouvrez « Mon compte », corrigez, puis « Enregistrer ».",
@@ -642,7 +642,7 @@ export const FICHES_MODE_EMPLOI: FicheModeEmploi[] = [
   {
     id: "reglages-mot-de-passe",
     ecran: "Connexion",
-    ou: "Réglages → Connexion",
+    ou: "Réglages, puis Connexion",
     intitule: "Changer son mot de passe",
     motsCles: ["mot", "passe", "motdepasse", "changer", "securite", "connexion", "identifiant"],
     geste: "Ouvrez « Connexion », puis « Changer de mot de passe ».",
@@ -652,7 +652,7 @@ export const FICHES_MODE_EMPLOI: FicheModeEmploi[] = [
   {
     id: "reglages-face-id",
     ecran: "Connexion",
-    ou: "Réglages → Connexion",
+    ou: "Réglages, puis Connexion",
     intitule: "Ouvrir Atlas avec Face ID",
     motsCles: ["face", "id", "faceid", "empreinte", "biometrie", "ouvrir", "connexion", "rapide", "touch"],
     geste: "Ouvrez « Connexion », puis « Enregistrer cet appareil » sous « Ouvrir avec Face ID ».",
@@ -663,7 +663,7 @@ export const FICHES_MODE_EMPLOI: FicheModeEmploi[] = [
   {
     id: "reglages-deconnexion-partout",
     ecran: "Connexion",
-    ou: "Réglages → Connexion",
+    ou: "Réglages, puis Connexion",
     intitule: "Se déconnecter de tous ses appareils (téléphone perdu)",
     motsCles: ["deconnecter", "deconnexion", "partout", "perdu", "vole", "telephone", "appareil", "session"],
     geste: "Ouvrez « Connexion », puis « Me déconnecter partout ».",
@@ -674,7 +674,7 @@ export const FICHES_MODE_EMPLOI: FicheModeEmploi[] = [
   {
     id: "reglages-apparence",
     ecran: "Apparence",
-    ou: "Réglages → Apparence",
+    ou: "Réglages, puis Apparence",
     intitule: "Changer les couleurs de l'application, passer en sombre",
     motsCles: ["couleur", "couleurs", "charte", "apparence", "sombre", "nuit", "theme", "clair", "mode", "fond"],
     geste: "Ouvrez « Apparence » et touchez la charte voulue. « Nuit » et « Sylve » sont sombres.",
@@ -686,7 +686,7 @@ export const FICHES_MODE_EMPLOI: FicheModeEmploi[] = [
   {
     id: "paysage-arrosage",
     ecran: "Plan d'arrosage automatique",
-    ou: "Paysage → Plan d'arrosage automatique",
+    ou: "Paysage, puis Plan d'arrosage automatique",
     intitule: "Faire un plan d'arrosage",
     motsCles: ["arrosage", "plan", "reseau", "arroseur", "turbine", "tuyere", "croquis", "piquage", "nourrice"],
     geste:
@@ -700,7 +700,7 @@ export const FICHES_MODE_EMPLOI: FicheModeEmploi[] = [
   {
     id: "paysage-fiche",
     ecran: "Fiche de chantier",
-    ou: "Paysage → Fiche de chantier",
+    ou: "Paysage, puis Fiche de chantier",
     intitule: "Cocher ce qui a été fait et l'envoyer au client",
     motsCles: ["fiche", "chantier", "entretien", "cocher", "rapport", "compte", "rendu", "envoyer", "passage"],
     geste: "Cochez les prestations faites, ajoutez vos observations, puis « Enregistrer et envoyer ».",
@@ -711,7 +711,7 @@ export const FICHES_MODE_EMPLOI: FicheModeEmploi[] = [
   {
     id: "paysage-fiche-composer",
     ecran: "Fiche de chantier",
-    ou: "Paysage → Fiche de chantier",
+    ou: "Paysage, puis Fiche de chantier",
     intitule: "Composer sa fiche d'entretien depuis Paysage",
     motsCles: ["composer", "fiche", "modele", "entretien", "creer", "prestation"],
     geste: "En bas de l'écran, appuyez sur « Composer ma fiche ».",
@@ -722,7 +722,7 @@ export const FICHES_MODE_EMPLOI: FicheModeEmploi[] = [
   {
     id: "paysage-diagnostic",
     ecran: "Diagnostic végétal",
-    ou: "Paysage → Diagnostic végétal",
+    ou: "Paysage, puis Diagnostic végétal",
     intitule: "Savoir ce qu'a un arbre ou une plante",
     motsCles: ["diagnostic", "vegetal", "maladie", "arbre", "feuille", "champignon", "photo", "anomalie", "ecorce"],
     geste: "Appuyez sur « Prendre une photo » et photographiez la zone anormale.",
