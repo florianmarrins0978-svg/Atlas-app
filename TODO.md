@@ -6600,6 +6600,16 @@ et c'est déjà arrivé.
   tôt sur la même version, et rouges sur une base neuve. Un contrôle qui dépend
   de l'âge de la base accuse au hasard — c'est la même leçon que l'instabilité
   notée juste au-dessus.
+- [ ] **Le calendrier manque de jours libres sur une base fraîche — la racine
+  n'est pas traitée.** Deux suites de dates ont été réparées le 24 août par une
+  autre session, mais le même symptôme est réapparu le soir même sur une
+  troisième : `test-envoi-client-e2e` tombe sur *« pas assez de jours
+  acceptables (1) »* et *« pas assez de jours libres au calendrier (1) »*.
+  **Ce sont les suites qui ont été rendues tolérantes, pas la cause qui a été
+  ôtée.** La cause probable : le jeu de démonstration remplit le mois courant,
+  et il ne reste presque rien à proposer quand on l'amorce à neuf en fin de
+  mois. Tant qu'elle tient, ces rouges reviendront sur une suite ou une autre —
+  et un rouge qui tourne s'apprend à être ignoré. *(24 août 2026)*
 - [ ] **La batterie rougit sur des suites DIFFÉRENTES à chaque exécution**, et
   chacune passe seule sur le même code. Relevé le 24 août 2026, trois
   exécutions d'affilée : d'abord `test-planning-vers-facture-e2e` (un texte

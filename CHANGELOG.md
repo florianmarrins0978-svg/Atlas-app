@@ -454,6 +454,21 @@ l'entreprise ».
 deux autres sont restées. Un contrôle qui ne vérifierait que la disparition
 laisserait passer un retrait trop large.
 
+### Un contrôle réclamait la phrase qu'il venait de faire retirer
+
+Retirer *« le trimestre est une option… votre comptable dit lequel vous
+concerne »* a fait rougir `test-periodicite-tva-e2e`, qui exigeait ces mots. Le
+contrôle a été **re-visé, pas assoupli** : ce qu'il défendait vraiment survit —
+**l'écran ne conseille jamais une périodicité**, parce que le seuil des 4 000 €
+porte sur la TVA due et qu'Atlas ne connaît que la collectée. C'est cela qu'il
+mesure désormais, et non un libellé que le patron peut vouloir réécrire demain
+(`CLAUDE.md` §5 bis).
+
+**Ce que le retrait coûte, et c'est à lui d'en juger** : l'écran ne dit plus que
+le mois est le défaut légal. Les deux boutons — « Tous les mois », « Tous les
+trimestres » — se présentent maintenant comme un choix libre, alors que le
+trimestre est une option sous condition. Dit ici plutôt que corrigé sans lui.
+
 ### L'adresse écrite deux fois : sa question du 24 août
 
 *« Pourquoi l'adresse est marquée 2 fois de suite ? »* Son siège s'écrivait dans
