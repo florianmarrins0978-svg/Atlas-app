@@ -112,26 +112,117 @@ n'aurait servi à rien — un garde-fou qu'on croit en place.
 
 ---
 
-## 5. Batterie
+## 5. Batterie finale — le tour de clôture
 
-| | |
+Jouée sur l'état exact à fusionner (`a798770`, arbre propre). PostgreSQL et
+Redis étaient tombés : remontés avant de lancer.
+
+| Étape | Résultat |
 |---|---|
-| Types, lint, construction | ✅ |
-| Suites base | **232 / 232** |
-| Suites navigateur | **111 / 111** |
-| Connexion réelle derrière une origine étrangère | ✅ |
-| Mémoire du dépôt | ❌ sur un renvoi Markdown erroné, corrigé puis rejoué seul ✅ |
+| `npx tsc --noEmit` | ✅ |
+| `npm run lint` | ✅ 0 erreur, 12 avertissements préexistants |
+| Construction | ✅ compilée, 21/21 pages statiques |
+| `npm run verifier:memoire` | ✅ 8 fichiers |
+| Suites base — RLS comprises | ✅ **232 / 232** |
+| Suites navigateur | ❌ **108 / 111** |
+| `npm run verifier:connexion` | ✅ connexion réelle derrière une origine étrangère |
+| `npm audit` | **4 modérées** |
 
-La batterie entière au vert reste à produire : elle le sera à la fusion, que
-`main` impose de toute façon — 107 fichiers arrivés, dont une migration neuve.
+### Les trois rouges, rejouées seules
+
+| Suite | Rejeu isolé |
+|---|---|
+| `test-anneau-dictee-e2e` | ✅ verte |
+| `test-arrosage-e2e` | ✅ verte — un dépassement de 45 s sous la charge |
+| `test-envoi-client-e2e` | ❌ **rouge, reproductible** |
+
+### `npm audit` — pourquoi rien n'a été exécuté
+
+Les quatre alertes remontent toutes la même chaîne :
+`drizzle-kit → @esbuild-kit/esm-loader → esbuild ≤ 0.24.2`.
+
+`drizzle-kit` est une dépendance de **développement**, et l'avis ne vise que le
+serveur de développement d'esbuild : rien de cela n'est servi en production.
+`npm audit fix --force` rétrograderait `drizzle-kit` de 0.31 à **0.18** — une
+cassure majeure sur l'outil qui engendre les migrations. Non exécuté.
 
 ---
 
-## 6. Ce qui reste ouvert
+## 6. Revue hostile du diff F1–F13
+
+| | Ce qui a été vérifié | Résultat |
+|---|---|---|
+| **F8** | tout autre écran réservé au patron sans garde | ✅ 15 rubriques passées, plus un balayage hors réglages : aucun écran ne lit un prix ou un tarif sans garde |
+| **F2** | le refus cross-site n'efface aucun cookie | ✅ mesuré : **zéro effacement**. Les `Set-Cookie` présents sont ceux d'Auth.js, qui rafraîchit la session dans la couche au-dessus |
+| **F5** | politique encore fragile au contexte vide | ✅ **0** sur les 48 politiques, interrogé en base à l'instant |
+| **F1** | autre accès à l'état de mise à jour pour un membre | ✅ les 12 fonctions exportées de `reglages/actions.ts` posent leur garde |
+| **F9** | seuil global involontaire quand la source n'est pas fiable | ✅ aucun introduit par ce lot |
+| **F12** | page `/design` oubliée en production | ✅ 12 planches couvertes, aucune maquette hors du dossier |
+| **F13** | `/robots.txt` sans redirection de connexion | ✅ 200 sans session |
+
+### Deux observations, hors périmètre, non corrigées
+
+- **`/catalogue` n'a pas de garde de rôle.** Il ne s'atteint que depuis une
+  rubrique du patron, et il ne montre **aucun prix** — seulement le vocabulaire
+  de dictée. Décision produit : un salarié doit-il le voir ?
+- **`cle-appareil:${source}` est un seuil global** quand la source n'est pas
+  établie. Préexistant, délibéré et documenté depuis le lot Face ID — 120 par
+  minute, volontairement large.
+
+---
+
+## 7. Régressions
+
+**Aucune.**
+
+`test-envoi-client-e2e` rougit parce qu'on est le **26 août**. Le mois affiché
+s'ouvre au 1er ; le contrôle écarte les trois jours à venir (délai minimal) et
+ne garde que les jours ouvrables. Il ne reste que le lundi 31 — les 29 et 30
+sont un samedi et un dimanche. Un seul jour acceptable, et les deux contrôles
+refusent de conclure, sur du code parfaitement juste.
+
+**Prouvé, pas supposé.** `src/` et `scripts/` ont été ramenés au commit
+`2f66b00` — c'est-à-dire **avant** F1 à F13 — et la suite rejouée :
+
+```
+❌ le patron ne propose jamais plus de deux dates
+   pas assez de jours acceptables (1)
+❌ SANS RIEN TOUCHER, la cliente peut proposer un jour
+   pas assez de jours libres au calendrier (1)
+```
+
+Exactement les deux mêmes messages. Consigné dans `TODO.md` avec le remède :
+faire tourner la page du mois, comme le fait déjà `troisJoursAuMoins()` dans
+`test-deux-dates-calendrier-e2e.ts`. **Ne pas relâcher le seuil** — il dit une
+vraie règle : jamais plus de deux dates proposées.
+
+*Troisième fois que cette famille de défaut coûte une soirée. `main` porte
+depuis le 25 août un commit nommé « Ne plus dépendre de la place qu'il reste
+dans le mois courant » — il n'avait pas couvert cette suite-ci.*
+
+---
+
+## 8. Verdict
+
+# F1–F13 : **CLOS**
+
+- **F7** — classé **décision produit / RGPD**
+- **F10** — classé **lot séparé** (CSP avec `nonce`)
+
+**Une réserve, dite noir sur blanc :** la batterie n'a pas rendu un tour
+entièrement vert. Le 111/111 existe — au tour précédent, sur le même code. Le
+seul écart de ce tour-ci est la suite calendaire ci-dessus, dont l'indépendance
+au lot a été prouvée par exécution, non par raisonnement.
+
+---
+
+## 9. Ce qui reste ouvert
 
 | | Pour qui |
 |---|---|
 | **F7** — l'écran RGPD (export / effacement d'un client) | décision du patron |
 | **F10** — le lot CSP, avec `nonce` | développement, lot à soi |
+| **`/catalogue`** sans garde de rôle | décision du patron |
 | **`ATLAS_PROXY_SAUTS`** à poser en production | hébergement. Sans lui, tous les seuils par source restent communs — celui de F9 se désactive plutôt que de bloquer tout le monde |
-| **`ARCHITECTURE.md` porte deux fois §164 et §165** | dette d'une fusion antérieure, déjà sur `main`. Non corrigée ici : les renvois pointent vers les deux sens, et les démêler dépasse ce lot |
+| **`test-envoi-client-e2e`** rougira à chaque fin de mois | développement, remède écrit dans `TODO.md` |
+| **`ARCHITECTURE.md` porte deux fois §164 et §165** | dette d'une fusion antérieure, déjà sur `main` |

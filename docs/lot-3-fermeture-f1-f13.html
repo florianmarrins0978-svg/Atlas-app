@@ -213,36 +213,136 @@
 <a class="retour" href="#sommaire">↑ Sommaire</a>
 <p>Sans son exclusion du <code>matcher</code>, <strong><code>GET /robots.txt</code> rend 307</strong>. Le middleware renvoie à <code>/login</code> tout ce qui n'est pas explicitement écarté : un moteur aurait reçu une redirection au lieu de la consigne. Le fichier aurait existé, et n'aurait servi à rien — un garde-fou qu'on croit en place.</p>
 <hr>
-<h2 id="5-batterie">5. Batterie</h2>
+<h2 id="5-batterie-finale--le-tour-de-clôture">5. Batterie finale — le tour de clôture</h2>
 <a class="retour" href="#sommaire">↑ Sommaire</a>
+<p>Jouée sur l'état exact à fusionner (<code>a798770</code>, arbre propre). PostgreSQL et Redis étaient tombés : remontés avant de lancer.</p>
 <div class="tablewrap"><table><thead><tr>
-<th></th>
-<th></th>
+<th>Étape</th>
+<th>Résultat</th>
 </tr></thead><tbody>
 <tr>
-<td>Types, lint, construction</td>
+<td><code>npx tsc --noEmit</code></td>
 <td>✅</td>
 </tr>
 <tr>
-<td>Suites base</td>
-<td><strong>232 / 232</strong></td>
+<td><code>npm run lint</code></td>
+<td>✅ 0 erreur, 12 avertissements préexistants</td>
+</tr>
+<tr>
+<td>Construction</td>
+<td>✅ compilée, 21/21 pages statiques</td>
+</tr>
+<tr>
+<td><code>npm run verifier:memoire</code></td>
+<td>✅ 8 fichiers</td>
+</tr>
+<tr>
+<td>Suites base — RLS comprises</td>
+<td>✅ <strong>232 / 232</strong></td>
 </tr>
 <tr>
 <td>Suites navigateur</td>
-<td><strong>111 / 111</strong></td>
+<td>❌ <strong>108 / 111</strong></td>
 </tr>
 <tr>
-<td>Connexion réelle derrière une origine étrangère</td>
-<td>✅</td>
+<td><code>npm run verifier:connexion</code></td>
+<td>✅ connexion réelle derrière une origine étrangère</td>
 </tr>
 <tr>
-<td>Mémoire du dépôt</td>
-<td>❌ sur un renvoi Markdown erroné, corrigé puis rejoué seul ✅</td>
+<td><code>npm audit</code></td>
+<td><strong>4 modérées</strong></td>
 </tr>
 </tbody></table></div>
-<p>La batterie entière au vert reste à produire : elle le sera à la fusion, que <code>main</code> impose de toute façon — 107 fichiers arrivés, dont une migration neuve.</p>
+<h3 id="les-trois-rouges-rejouées-seules">Les trois rouges, rejouées seules</h3>
+<div class="tablewrap"><table><thead><tr>
+<th>Suite</th>
+<th>Rejeu isolé</th>
+</tr></thead><tbody>
+<tr>
+<td><code>test-anneau-dictee-e2e</code></td>
+<td>✅ verte</td>
+</tr>
+<tr>
+<td><code>test-arrosage-e2e</code></td>
+<td>✅ verte — un dépassement de 45 s sous la charge</td>
+</tr>
+<tr>
+<td><code>test-envoi-client-e2e</code></td>
+<td>❌ <strong>rouge, reproductible</strong></td>
+</tr>
+</tbody></table></div>
+<h3 id="npm-audit--pourquoi-rien-na-été-exécuté"><code>npm audit</code> — pourquoi rien n'a été exécuté</h3>
+<p>Les quatre alertes remontent toutes la même chaîne : <code>drizzle-kit → @esbuild-kit/esm-loader → esbuild ≤ 0.24.2</code>.</p>
+<p><code>drizzle-kit</code> est une dépendance de <strong>développement</strong>, et l'avis ne vise que le serveur de développement d'esbuild : rien de cela n'est servi en production. <code>npm audit fix --force</code> rétrograderait <code>drizzle-kit</code> de 0.31 à <strong>0.18</strong> — une cassure majeure sur l'outil qui engendre les migrations. Non exécuté.</p>
 <hr>
-<h2 id="6-ce-qui-reste-ouvert">6. Ce qui reste ouvert</h2>
+<h2 id="6-revue-hostile-du-diff-f1f13">6. Revue hostile du diff F1–F13</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th>Ce qui a été vérifié</th>
+<th>Résultat</th>
+</tr></thead><tbody>
+<tr>
+<td><strong>F8</strong></td>
+<td>tout autre écran réservé au patron sans garde</td>
+<td>✅ 15 rubriques passées, plus un balayage hors réglages : aucun écran ne lit un prix ou un tarif sans garde</td>
+</tr>
+<tr>
+<td><strong>F2</strong></td>
+<td>le refus cross-site n'efface aucun cookie</td>
+<td>✅ mesuré : <strong>zéro effacement</strong>. Les <code>Set-Cookie</code> présents sont ceux d'Auth.js, qui rafraîchit la session dans la couche au-dessus</td>
+</tr>
+<tr>
+<td><strong>F5</strong></td>
+<td>politique encore fragile au contexte vide</td>
+<td>✅ <strong>0</strong> sur les 48 politiques, interrogé en base à l'instant</td>
+</tr>
+<tr>
+<td><strong>F1</strong></td>
+<td>autre accès à l'état de mise à jour pour un membre</td>
+<td>✅ les 12 fonctions exportées de <code>reglages/actions.ts</code> posent leur garde</td>
+</tr>
+<tr>
+<td><strong>F9</strong></td>
+<td>seuil global involontaire quand la source n'est pas fiable</td>
+<td>✅ aucun introduit par ce lot</td>
+</tr>
+<tr>
+<td><strong>F12</strong></td>
+<td>page <code>/design</code> oubliée en production</td>
+<td>✅ 12 planches couvertes, aucune maquette hors du dossier</td>
+</tr>
+<tr>
+<td><strong>F13</strong></td>
+<td><code>/robots.txt</code> sans redirection de connexion</td>
+<td>✅ 200 sans session</td>
+</tr>
+</tbody></table></div>
+<h3 id="deux-observations-hors-périmètre-non-corrigées">Deux observations, hors périmètre, non corrigées</h3>
+<ul>
+<li><strong><code>/catalogue</code> n'a pas de garde de rôle.</strong> Il ne s'atteint que depuis une rubrique du patron, et il ne montre <strong>aucun prix</strong> — seulement le vocabulaire de dictée. Décision produit : un salarié doit-il le voir ?</li>
+<li><strong><code>cle-appareil:${source}</code> est un seuil global</strong> quand la source n'est pas établie. Préexistant, délibéré et documenté depuis le lot Face ID — 120 par minute, volontairement large.</li>
+</ul>
+<hr>
+<h2 id="7-régressions">7. Régressions</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><strong>Aucune.</strong></p>
+<p><code>test-envoi-client-e2e</code> rougit parce qu'on est le <strong>26 août</strong>. Le mois affiché s'ouvre au 1er ; le contrôle écarte les trois jours à venir (délai minimal) et ne garde que les jours ouvrables. Il ne reste que le lundi 31 — les 29 et 30 sont un samedi et un dimanche. Un seul jour acceptable, et les deux contrôles refusent de conclure, sur du code parfaitement juste.</p>
+<p><strong>Prouvé, pas supposé.</strong> <code>src/</code> et <code>scripts/</code> ont été ramenés au commit <code>2f66b00</code> — c'est-à-dire <strong>avant</strong> F1 à F13 — et la suite rejouée :</p>
+<p>``<code> ❌ le patron ne propose jamais plus de deux dates pas assez de jours acceptables (1) ❌ SANS RIEN TOUCHER, la cliente peut proposer un jour pas assez de jours libres au calendrier (1) </code>``</p>
+<p>Exactement les deux mêmes messages. Consigné dans <code>TODO.md</code> avec le remède : faire tourner la page du mois, comme le fait déjà <code>troisJoursAuMoins()</code> dans <code>test-deux-dates-calendrier-e2e.ts</code>. <strong>Ne pas relâcher le seuil</strong> — il dit une vraie règle : jamais plus de deux dates proposées.</p>
+<p><em>Troisième fois que cette famille de défaut coûte une soirée. <code>main</code> porte depuis le 25 août un commit nommé « Ne plus dépendre de la place qu'il reste dans le mois courant » — il n'avait pas couvert cette suite-ci.</em></p>
+<hr>
+<h2 id="8-verdict">8. Verdict</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<h1 id="f1f13--clos">F1–F13 : <strong>CLOS</strong></h1>
+<ul>
+<li><strong>F7</strong> — classé <strong>décision produit / RGPD</strong></li>
+<li><strong>F10</strong> — classé <strong>lot séparé</strong> (CSP avec <code>nonce</code>)</li>
+</ul>
+<p><strong>Une réserve, dite noir sur blanc :</strong> la batterie n'a pas rendu un tour entièrement vert. Le 111/111 existe — au tour précédent, sur le même code. Le seul écart de ce tour-ci est la suite calendaire ci-dessus, dont l'indépendance au lot a été prouvée par exécution, non par raisonnement.</p>
+<hr>
+<h2 id="9-ce-qui-reste-ouvert">9. Ce qui reste ouvert</h2>
 <a class="retour" href="#sommaire">↑ Sommaire</a>
 <div class="tablewrap"><table><thead><tr>
 <th></th>
@@ -257,12 +357,20 @@
 <td>développement, lot à soi</td>
 </tr>
 <tr>
+<td><strong><code>/catalogue</code></strong> sans garde de rôle</td>
+<td>décision du patron</td>
+</tr>
+<tr>
 <td><strong><code>ATLAS_PROXY_SAUTS</code></strong> à poser en production</td>
 <td>hébergement. Sans lui, tous les seuils par source restent communs — celui de F9 se désactive plutôt que de bloquer tout le monde</td>
 </tr>
 <tr>
+<td><strong><code>test-envoi-client-e2e</code></strong> rougira à chaque fin de mois</td>
+<td>développement, remède écrit dans <code>TODO.md</code></td>
+</tr>
+<tr>
 <td><strong><code>ARCHITECTURE.md</code> porte deux fois §164 et §165</strong></td>
-<td>dette d'une fusion antérieure, déjà sur <code>main</code>. Non corrigée ici : les renvois pointent vers les deux sens, et les démêler dépasse ce lot</td>
+<td>dette d'une fusion antérieure, déjà sur <code>main</code></td>
 </tr>
 </tbody></table></div>
 </main>
