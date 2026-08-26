@@ -183,6 +183,27 @@ périmètre affiché ne suivait pas le rôle coché, si bien qu'on lisait « le
 planning et rien d'autre » sous « Commercial ». Une maquette qui ment sur ce que
 fait un rôle est pire qu'une maquette absente.
 
+### « Composer ma fiche » a quitté les Réglages
+
+*« La B, mais il faut que la rubrique se trouve sous le titre en premier, et son
+titre doré doit être "composer ma fiche". »* C'est fait.
+
+L'écran passe de `/reglages/fiche-entretien` à `/paysage/fiche/composer`, sa
+porte remonte **en tête** de la fiche de chantier, sous le titre, et la rubrique
+disparaît des Réglages. Rien d'autre ne bouge : mêmes prestations, mêmes gestes,
+même réserve au patron — un salarié ne la voit toujours pas.
+
+**Deux consignes ont été récrites plutôt que contournées** : celle qui plaçait la
+porte « en bas et permanent » (24 août, notre raisonnement contre sa décision),
+et celle qui justifiait la rubrique dans les Réglages (16 août, sa demande d'alors).
+Laissées telles quelles, elles auraient fait revenir l'un et l'autre de bonne foi.
+
+Le contrôle **mesure** la position de la rubrique au-dessus de « Jour du
+passage » — l'ordre du code ne prouve rien —, exige 44 px pour le pouce, et a
+été vu rouge. Et un piège de charte est sorti de l'image, d'aucun test : le titre
+« doré » écrit `colors.rust` sortait presque noir ; l'or, c'est `colors.or`.
+`ARCHITECTURE.md` §190.
+
 ### La liste, dans Paysage — deux emplacements à choisir
 
 Sa proposition, une fois la planche des deux fiches comprise : *« est-ce qu'on
