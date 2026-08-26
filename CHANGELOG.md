@@ -7,6 +7,50 @@ Format : le plus récent en tête.
 
 ---
 
+## 2026-08-26
+
+### L'en-tête inversé : le titre d'abord, le surtitre doré en dessous
+
+*« Sur plusieurs catégories le titre était en dessous du sous-titre en doré,
+inversez-les »* — puis, sans ambiguïté : *« partout »*.
+
+La grammaire du 10 août posait l'accroche dorée AU-DESSUS du titre. Il la veut
+SOUS le titre, là où on lit un sous-titre. Comme l'en-tête est une seule pièce
+partagée (`EnTeteEcran`), le changement se propage à tous les écrans d'un coup —
+c'est ce qu'il demande. Sur la fiche de chantier, le statut (porté par le
+surtitre) passe donc sous le nom du chantier ; la précision « avant » (le client,
+en serif gris) reste au-dessus, elle, comme sa maquette du 11 août.
+
+Regardé à l'image (Paysage et un chantier), et le garde-fou d'alignement du
+bouton d'assistant (`test-assistant-en-tete-e2e`) reste vert : la pastille tient
+toujours sur la ligne du titre.
+
+### Donner un accès : une planche, avant de retoucher l'écran
+
+**Ses trois reproches, capture à l'appui, sur l'écran livré le matin même :**
+l'œil et la double saisie du mot de passe manquaient ; *« pour valider un compte
+c'est pas clair, la case est déjà noire comme la catégorie salarié »* ; *« la
+démarcation entre vous patron et le compte qu'on est en train d'attribuer n'est
+pas bien séparée »*.
+
+**Les trois ont la même racine**, et c'est ce qui rend la correction simple : le
+formulaire du compte NEUF avait été posé dans la liste des comptes EXISTANTS,
+sans rien pour dire où l'un finit et où l'autre commence.
+
+Deux séparations proposées, **et rien n'est codé** (`CLAUDE.md` §3 bis) :
+`appli/donner-un-acces.html` — **A** une carte posée sur la liste, **B** un écran
+à lui seul. L'œil et la double saisie sont recopiés de l'écran qu'il a arrêté le
+14 août, jamais réinventés. Le rôle choisi devient teinté avec un coche : la
+charte le disait déjà — le plein porte ce qu'on FAIT, et le seul bouton plein de
+l'écran redevient celui qui crée le compte.
+
+**Un défaut trouvé en regardant la planche**, avant de la lui donner : le
+périmètre affiché ne suivait pas le rôle coché, si bien qu'on lisait « le
+planning et rien d'autre » sous « Commercial ». Une maquette qui ment sur ce que
+fait un rôle est pire qu'une maquette absente.
+
+---
+
 ## 2026-08-25
 
 ### Plus aucun trait sous les titres, et le texte des données raccourci

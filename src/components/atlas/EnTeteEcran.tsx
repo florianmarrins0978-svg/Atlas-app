@@ -102,31 +102,38 @@ export default function EnTeteEcran({
 
       <div className={`flex items-start justify-between gap-4 px-[26px] ${retour ? "pt-5" : "pt-[34px]"}`}>
         <div className="min-w-0">
-          {surtitre && (
-            <p
-              className="text-[9.5px] font-medium uppercase"
-              style={{ color: colors.or, letterSpacing: "0.28em" }}
-            >
-              {surtitre}
-            </p>
-          )}
+          {/* **Le titre D'ABORD, le surtitre doré EN DESSOUS — sa demande du
+              26 août 2026 :** *« sur plusieurs catégories le titre était en
+              dessous du sous-titre en doré, inversez-les »*. La grammaire du
+              10 août posait l'accroche dorée au-dessus ; il la veut sous le
+              titre, là où on lit un sous-titre. La précision « avant » (serif
+              gris de la fiche chantier) n'est pas visée : elle reste au-dessus,
+              c'est sa maquette du 11 août. */}
           {precision && precisionPlacee === "avant" && (
             <p
-              className="mt-3 text-[19px] leading-[1.25]"
+              className="text-[19px] leading-[1.25]"
               style={{ color: colors.muted, fontFamily: font.display }}
             >
               {precision}
             </p>
           )}
           <h1
-            className="mt-3.5 text-[36px] leading-[1.02]"
+            className={`${precision && precisionPlacee === "avant" ? "mt-3 " : ""}text-[36px] leading-[1.02]`}
             style={{ fontFamily: font.display, letterSpacing: "-0.018em" }}
           >
             {titre}
           </h1>
+          {surtitre && (
+            <p
+              className="mt-3 text-[9.5px] font-medium uppercase"
+              style={{ color: colors.or, letterSpacing: "0.28em" }}
+            >
+              {surtitre}
+            </p>
+          )}
           {precision && precisionPlacee === "sous" && (
             <p
-              className="mt-3.5 text-[9.5px] font-medium uppercase"
+              className="mt-2.5 text-[9.5px] font-medium uppercase"
               style={{ color: colors.muted, letterSpacing: "0.28em" }}
             >
               {precision}
