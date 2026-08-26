@@ -837,6 +837,12 @@ touchait pas — il ne portait que l'en-tête de l'accueil. Ici encore, l'assert
 arrive avant que le serveur chargé n'ait rendu sa réponse : l'écran en est resté
 au message d'échec de la dictée précédente. **Quatre suites, un seul défaut.**
 
+**`test-lecons-prix-e2e.ts` a rejoint la liste**, et elle est la première à
+tomber DEUX FOIS — le 25 août, sur deux batteries séparées, chaque fois verte
+seule dans la foulée, et sur des lots qui ne touchaient rien de son sujet. Elle
+tombe sur une attente de réponse dépassée : même signature que les quatre
+autres. **Cinq suites, un seul défaut.**
+
 **MESURE DÉCISIVE DU 25 AOÛT, à garder :** l'étape navigateur a été jouée sur
 `main` NU — arbre séparé, aucun commit de session — et elle y rend **107/110**,
 trois suites tombées (`test-arrosage-e2e`, `test-facture-impayee-e2e`,
