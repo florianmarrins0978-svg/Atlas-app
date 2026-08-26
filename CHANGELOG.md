@@ -183,6 +183,27 @@ périmètre affiché ne suivait pas le rôle coché, si bien qu'on lisait « le
 planning et rien d'autre » sous « Commercial ». Une maquette qui ment sur ce que
 fait un rôle est pire qu'une maquette absente.
 
+### « On la trouve difficilement » — trois formes proposées
+
+Une heure après la livraison : *« c'est bien mais juste une phrase, on la trouve
+difficilement ; je pense qu'un onglet carré serait le mieux ? Propose. »*
+
+Il a raison, et c'était prévisible : la rubrique est **une ligne de texte au
+milieu d'un écran de texte**. Rien ne la distingue d'un intertitre — ni fond, ni
+cadre, ni couleur d'action ; seul un chevron de huit pixels dit qu'on peut
+appuyer.
+
+`appli/ou-composer-ma-fiche.html` : **une carte** pleine largeur, **deux carrés**
+côte à côte (composer / ouvrir), ou **un bouton dans l'en-tête** à la place où il
+a déjà « Créer la facture ». La place ne se rouvre pas — il l'a tranchée —, et
+chaque proposition porte son défaut : la carte pèse autant que le geste
+quotidien, les carrés déplacent le choix du jour après l'appui, le bouton de
+coin est petit.
+
+**Deux défauts trouvés à l'image, par aucun contrôle** : la règle d'affichage de
+la proposition B attrapait aussi sa note et en faisait une colonne illisible, et
+le chevron de la carte tombait à la ligne sous le texte.
+
 ### « Composer ma fiche » a quitté les Réglages
 
 *« La B, mais il faut que la rubrique se trouve sous le titre en premier, et son
