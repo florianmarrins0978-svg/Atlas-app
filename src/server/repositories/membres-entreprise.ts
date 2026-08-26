@@ -5,7 +5,6 @@ import { withEntreprise } from "../db/with-entreprise";
 import { equipes, membresEntreprise, users } from "../db/schema";
 import type { Ctx } from "./context";
 import type { PorteePlanning, Role } from "@/lib/acces-roles";
-import { LONGUEUR_MINIMALE } from "@/lib/mot-de-passe";
 import {
   adresseNormalisee,
   refusDeLAcces,
@@ -99,11 +98,16 @@ export async function listerAcces(ctx: Ctx): Promise<Acces[]> {
  *
  * **Le mot de passe suit la MÊME règle que partout ailleurs** (douze
  * caractères) : un compte de salarié ouvre le planning de l'entreprise, il n'a
- * aucune raison d'être moins tenu que celui du patron.
+ * aucune raison d'être moins tenu que celui du patron. Et il s'écrit DEUX FOIS
+ * — sa demande du 26 août 2026 : *« il faut confirmer son mdp donc l'écrire
+ * deux fois »*. La seconde saisie est vérifiée ICI, au serveur, et pas
+ * seulement à l'écran : le patron tape un mot de passe qu'il devra dicter à
+ * son salarié, et une faute de frappe le laisserait dehors sans que personne
+ * sache pourquoi.
  */
 export async function donnerUnAcces(
   ctx: Ctx,
-  saisie: { nom: string; email: string; motDePasse: string; role: Role }
+  saisie: { nom: string; email: string; motDePasse: string; confirmation: string; role: Role }
 ): Promise<ResultatAcces> {
   const email = adresseNormalisee(saisie.email);
 
@@ -114,7 +118,7 @@ export async function donnerUnAcces(
     email: saisie.email,
     role: saisie.role,
     motDePasse: saisie.motDePasse,
-    longueurMinimale: LONGUEUR_MINIMALE,
+    confirmation: saisie.confirmation,
     emailDejaPris: Boolean(existant),
   });
   if (refus) return { ok: false, refus };

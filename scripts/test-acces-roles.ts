@@ -141,13 +141,19 @@ essai("aucun devis, aucune facture, aucun chantier ne sort pour un salarié", ()
   }
 });
 
-essai("le commercial atteint l'application, sauf les cinq adresses nommées", () => {
+essai("le commercial atteint l'application, sauf les adresses nommées", () => {
   const fermees = ADRESSES.filter((a) => !cheminAutorise("commercial", a));
   assert.deepEqual(fermees.sort(), [
     "/reglages/abonnement",
     "/reglages/documents",
     "/reglages/donnees",
     "/reglages/equipe",
+    // **Ajoutée le 26 août 2026 par ce contrôle lui-même**, et c'est ce qu'on
+    // lui demande : l'écran « Nouveau compte » est né ce jour-là, et la liste
+    // attendue ne le portait pas. Une adresse neuve sous `/reglages/equipe`
+    // hérite de son refus — mais l'hériter en SILENCE serait le jour où l'on
+    // pose une page qui, elle, ne devait pas l'hériter.
+    "/reglages/equipe/nouveau",
     "/reglages/identite",
   ]);
 });

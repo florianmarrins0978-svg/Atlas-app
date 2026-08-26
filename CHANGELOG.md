@@ -25,6 +25,33 @@ Regardé à l'image (Paysage et un chantier), et le garde-fou d'alignement du
 bouton d'assistant (`test-assistant-en-tete-e2e`) reste vert : la pastille tient
 toujours sur la ligne du titre.
 
+### « Donner un accès » prend un écran à lui seul — sa réponse « B »
+
+*« B, tu peux coder »*, le 26 août 2026, sur `appli/donner-un-acces.html`.
+
+| Sa remarque | Ce qui a changé |
+|---|---|
+| le mot de passe s'écrivait une fois, à l'aveugle | **deux saisies, un œil sur chacune** — et la seconde est vérifiée **au serveur**, pas seulement à l'écran |
+| *« la case est déjà noire comme la catégorie salarié »* | le rôle choisi est **teinté avec un coche** ; le seul aplat plein de l'écran est le bouton qui crée le compte |
+| *« la démarcation […] n'est pas bien séparée »* | le formulaire **quitte la liste** : `/reglages/equipe/nouveau`, un écran d'où sa propre ligne a disparu |
+
+**La règle du mot de passe n'a pas été réécrite** : `verifierNouveauMotDePasse`
+la porte depuis le 14 août pour « Mon compte », et les deux écrans la partagent.
+La redire ici en aurait fait la seconde — et le jour où la barre passerait de
+douze à quatorze caractères, un des deux l'aurait ignorée.
+
+**Les pastilles de rôle sont dessinées UNE fois** (`ChoixRole.tsx`) et servent
+aux deux endroits : l'écran de création, et la fiche d'une personne déjà là.
+Deux rédactions auraient ramené le défaut par la moitié de l'écran qu'on aurait
+oubliée — c'est d'ailleurs ce que le contrôle a vérifié.
+
+**`test-nouveau-compte-e2e.ts` MESURE sa remarque** plutôt que de lire un
+libellé : il compare le fond de la pastille cochée à celui du bouton et exige
+qu'ils diffèrent. **Vu rouge** en remettant l'aplat plein — et il rougit sur les
+deux écrans à la fois.
+
+---
+
 ### Donner un accès : une planche, avant de retoucher l'écran
 
 **Ses trois reproches, capture à l'appui, sur l'écran livré le matin même :**

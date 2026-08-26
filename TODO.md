@@ -53,7 +53,12 @@ réponse du serveur, un attribut qui change — jamais un instant.
 
 ---
 
-## ⏳ « Donner un accès » : sa réponse attendue, A ou B
+## ~~« Donner un accès » : sa réponse attendue, A ou B~~ — **RÉPONDU ET CODÉ le 26 août 2026**
+
+**Sa réponse : « B, tu peux coder ».** L'écran vit à `/reglages/equipe/nouveau`,
+la liste ne porte plus de formulaire, le mot de passe s'écrit deux fois avec un
+œil sur chacune, et le rôle choisi est teinté au lieu d'être un aplat plein.
+Détail dans `CHANGELOG.md`. Ce qui suit est gardé pour le chemin.
 
 Planche : **https://florianmarrins0978-svg.github.io/Atlas-app/donner-un-acces.html**
 
