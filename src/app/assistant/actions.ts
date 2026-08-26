@@ -4,7 +4,7 @@ import { getCurrentCtx } from "@/server/session-ctx";
 import { poserQuestion, type MessageAssistant, type ReponseAssistant } from "@/server/ai/services/assistant-service";
 import { verifierLimite, LIMITES } from "@/server/rate-limit";
 import { getRole } from "@/server/autorisation";
-import { peutVoirLesMontants } from "@/lib/acces-roles";
+import { peutUtiliserLAssistant } from "@/lib/acces-roles";
 
 // Le client ne transmet que l'identifiant du chantier courant (déduit de
 // l'URL) — jamais les données elles-mêmes. Tout le contexte réel (chantier,
@@ -28,7 +28,7 @@ export async function poserQuestionAction(
    * serveur n'arrive jamais jusqu'à l'artisan (`HANDOVER.md`, piège 0 ter).
    */
   const role = await getRole(ctx);
-  if (!role || !peutVoirLesMontants(role)) {
+  if (!role || !peutUtiliserLAssistant(role)) {
     return { succes: false, erreur: "L'assistant n'est pas disponible pour votre compte." };
   }
 

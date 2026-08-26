@@ -144,7 +144,7 @@ export default function AssistantSidebar() {
             <div className="flex-1 overflow-y-auto px-4 py-3">
               {messages.length === 0 && (
                 <p className="text-[13px]" style={{ color: colors.muted }}>
-                  Posez une question sur ce chantier : prestations, matériel, transcription, devis, tarifs…
+                  Une question sur ce chantier, ou sur l&apos;application : « comment je supprime un chantier ? »
                 </p>
               )}
               <div className="flex flex-col gap-3">
@@ -284,6 +284,8 @@ function libelleSource(nomOutil: string): string {
     LireNotes: "Notes vocales",
     LireDevis: "Devis",
     LireTarifs: "Tarifs",
+    RechercherModeEmploi: "Mode d'emploi",
+    RechercherLignesDevis: "Devis des autres clients",
   };
   return libelles[nomOutil] ?? nomOutil;
 }

@@ -234,6 +234,32 @@ export function peutVoirLesMontants(role: Role): boolean {
 }
 
 /**
+ * L'assistant, est-ce pour cette personne ?
+ *
+ * **Sa demande du 25 août 2026 :** *« qu'il se comporte comme un vrai assistant
+ * au service de l'utilisateur principal seulement le principal »*. Livré ce
+ * jour-là au patron seul — puis **ouvert aux commerciaux le 26, sur sa réponse :
+ * *« oui tu peux l'ouvrir aux commerciaux »*.**
+ *
+ * Il suit donc `peutVoirLesMontants`, et ce n'est pas une paraphrase : c'est un
+ * appel. Les deux règles pourraient diverger demain — c'est même pour cela que
+ * celle-ci porte son propre nom —, mais tant qu'elles disent la même chose,
+ * elles ne s'écrivent qu'une fois (`CLAUDE.md` §3).
+ *
+ * **Ce qui avait fait hésiter, et qu'il a tranché.** Depuis le 25 août,
+ * l'assistant cherche une ligne dans le devis de N'IMPORTE QUEL client
+ * (`RechercherLignesDevis`) : un commercial y lit ce que chacun a payé pour la
+ * même prestation. Il voit déjà ces prix écran par écran — c'est son métier de
+ * vendre —, et le patron a jugé que la conversation ne changeait rien à cela.
+ *
+ * **Le salarié, lui, reste dehors**, et pour la raison de toujours : la feuille
+ * de chantier part sans prix, et l'assistant les rendrait en une phrase.
+ */
+export function peutUtiliserLAssistant(role: Role): boolean {
+  return peutVoirLesMontants(role);
+}
+
+/**
  * Ce que le rôle change, en français, pour l'écran qui donne un accès.
  *
  * **Le texte vit ici, avec la règle qu'il décrit.** Écrit dans l'écran, il

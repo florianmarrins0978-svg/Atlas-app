@@ -13,6 +13,7 @@ import GardeAcces from "@/components/atlas/GardeAcces";
 import BandeauBanc from "@/components/atlas/BandeauBanc";
 import { laVersionRapideSeConstruit } from "@/server/etat-banc";
 import { roleDeLaSession } from "@/server/autorisation";
+import { peutUtiliserLAssistant } from "@/lib/acces-roles";
 
 // **Plus aucune police n'est téléchargée depuis le 10 août 2026.** L'écran que
 // le patron a retenu était une maquette autonome : elle ne pouvait charger
@@ -242,10 +243,12 @@ export default async function RootLayout({
           // Il n'entoure QUE le cadre, sans en changer la hauteur : celle-ci
           // tient compte du bandeau du banc (`minHeight` ci-dessous), et un
           // fournisseur ne rend aucun élément.
-          // L'assistant reconstitue au serveur les chantiers, les clients et les
-          // prix : un salarié n'y a pas droit. Le refus est dans l'action
-          // (`poserQuestionAction`) ; ici, on ne lui montre pas le bouton.
-          <FournisseurAssistant disponible={role !== "salarie"}>
+          // L'assistant reconstitue au serveur les chantiers, les clients et
+          // les prix, et sait lire le devis de n'importe quel client : il est au
+          // patron seul (`peutUtiliserLAssistant`, sa demande du 25 août). Le
+          // refus est dans l'action (`poserQuestionAction`) ; ici, on ne lui
+          // montre pas un bouton qui ne répondrait pas.
+          <FournisseurAssistant disponible={!!role && peutUtiliserLAssistant(role)}>
             <div
               className="mx-auto flex max-w-md flex-col bg-paper"
               style={{ minHeight: banc ? "calc(100dvh - 40px)" : "100dvh" }}

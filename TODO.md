@@ -87,6 +87,27 @@ devient un champ de prix qu'on ne peut pas toucher, que devient le bouton
 actions de tarifs et de grille portent `exigerProprietaire` depuis le 23 août —
 ouvrir la lecture ne rouvrira rien.
 
+## Trois suites navigateur rougissent SOUS LA BATTERIE et passent seules
+
+**Constaté le 26 août 2026**, sur deux batteries complètes de suite :
+`test-fiche-chantier-e2e`, `test-lecons-prix-e2e` et `test-planning-vers-facture-e2e`
+tombent en batterie et rendent **toutes trois 100 % vert rejouées seules** —
+vérifié une par une. Ce n'est jamais la même qui tombe d'une batterie à l'autre.
+
+C'est la première des deux causes écrites en tête de `HANDOVER.md` : un délai
+plutôt qu'un signal. Sous les cent douze suites, cette machine met plus
+longtemps que le délai posé — quinze secondes pour un écran, trente puis
+soixante pour une action serveur.
+
+**Ce que ça coûte, et pourquoi ce n'est pas rien :** une batterie qu'on prend
+l'habitude de voir rouge cesse d'être lue, et le jour où elle attrape un vrai
+défaut, personne ne la croit.
+
+**Ce qu'il faudrait, pour qui reprend :** remplacer ces attentes par un signal
+(la réponse du serveur, la classe posée par le composant) plutôt que d'allonger
+les délais un à un — allonger ne fait que repousser le seuil, et la machine
+suivante sera plus lente encore.
+
 ---
 
 ## `test-fiche-pendant-relance.ts` rougit sur `main`, et ce n'est pas ce lot
@@ -112,6 +133,25 @@ exactement ce que son deuxième cas refuse, et il a raison de refuser.
 À reprendre par qui touche au veilleur : la suite est juste, c'est son décor qui
 a vieilli.
 
+---
+
+## Le mode d'emploi de l'assistant : le tenir vivant
+
+**FAIT le 25 août 2026** pour l'essentiel (`ARCHITECTURE.md` §180). Ce qui reste,
+et qui ne se règle pas en une fois :
+
+- **Les fiches couvrent les écrans principaux, pas encore chaque recoin.**
+  Manquent notamment : le détail de l'écran Réglages → Devis & factures (chaque
+  réglage un par un), les mesures de la grille de prix, l'écran d'abonnement, et
+  la fiche du diagnostic végétal une fois la photo prise. Chaque ajout se prouve
+  contre le code, comme les autres.
+- **La formulation d'un vrai modèle n'a pas été vue ici** (aucune clé) : la
+  chaîne entière est éprouvée par le fournisseur `dev`. À regarder sur son
+  espace, en lui posant trois ou quatre « comment je fais pour… ».
+- **Quand il signale un geste faux, c'est une fiche à corriger**, pas une
+  consigne à ajouter au modèle.
+
+---
 
 ## ~~Photographier son devis / sa facture pour en reprendre l'allure~~ — FAIT le 25 août 2026
 
@@ -3503,6 +3543,39 @@ obligatoires, disposition des colonnes, ordre des totaux. Un devis mal posé
 n'est pas un devis moins joli, c'est un devis qu'on peut lui contester.
 
 ### ~~0 trigies septies. Deux suites de calendrier tombent EN FIN DE MOIS~~ — **RÉPARÉES le 25 août 2026**
+### 0 trigies nonies. Le format des numéros est FIGÉ À 2026 — **et ce n'est pas qu'un réglage manquant**
+
+**Sa demande du 26 août 2026**, capture d'une autre application à l'appui :
+*« dans la catégorie facture il faut rajouter le format de numéro, c'est
+obligatoire il me semble »*.
+
+**CHERCHÉ AVANT DE RÉPONDRE** (`CLAUDE.md` §5 ter), et ce qu'on a trouvé est
+pire que ce qu'il demandait :
+
+| | |
+|---|---|
+| ce qu'il croyait obligatoire | **le format ne l'est pas.** Ce que la loi exige, c'est une suite chronologique **sans trou ni doublon** — Atlas la tient déjà, par un compteur atomique par entreprise |
+| ce que personne n'avait vu | **le millésime est écrit en dur** : `` `2026-${…}` `` dans `devis.ts`, `` `F2026-${…}` `` dans `factures.ts`. **En janvier 2027, ses factures diront encore 2026** |
+
+**Le défaut a une DATE, et elle approche.** Il ne se verra pas d'ici là : le
+code est juste tant qu'on est en 2026. C'est exactement le genre de chose qu'une
+suite ne voit pas non plus — elle tourne aujourd'hui.
+
+**La planche est en ligne** (`appli/format-de-numero.html`), avec cinq formats
+qu'il essaie du doigt et trois questions au bas. **Rien n'est codé** tant qu'il
+n'a pas répondu (`CLAUDE.md` §3 bis).
+
+**Ce qu'il faudra tenir en codant, et qui n'est pas évident :**
+
+- **changer de format en cours d'année casse la suite** — c'est la seule vraie
+  contrainte légale du réglage, et elle est dite à l'écran, pas seulement ici ;
+- **un numéro déjà envoyé ne se réécrit jamais** : il est sur la facture du
+  client et dans sa comptabilité. Le changement ne vaut que pour les suivants ;
+- **le compteur doit repartir à 1 au 1ᵉʳ janvier** si l'année figure dans le
+  format — sinon `2027-0149` succède à `2026-0148`, ce qui se lit mal ;
+- **la suite des devis et celle des factures restent distinctes** : les mêler
+  rendrait illisible la numérotation continue qu'attend un contrôle.
+
 ### 0 trigies octies. ~~Le brouillon confirmé ne se corrigeait plus~~ — **RÉPARÉ le 25 août 2026**
 
 Ses trois notes — déchets, contraintes d'accès, remarques — n'ont aucune autre

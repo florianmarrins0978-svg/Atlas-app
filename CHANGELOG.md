@@ -127,6 +127,63 @@ au commit suivant et dont personne ne saurait dire d'où il sort. Le piège de
 datation est écrit en `ARCHITECTURE.md` §178 ; la réponse en langage courant en
 `docs/QUESTIONS.md` §26.
 
+### L'assistant explique l'application, et reprend une ligne chez un autre client
+
+*« J'aimerais que l'assistant qui se trouve dans l'application puisse expliquer
+chaque fonctionnalité de l'appli »*, avec son exemple : *« comment je fais pour
+supprimer un client en attente de rédaction de son devis sur la page chantier »*
+→ *« slide de droite à gauche puis appuie sur retire »*.
+
+**Ce que ça évite.** Un modèle qui n'a pas l'écran sous les yeux invente un geste
+plausible ; l'artisan le cherche cinq minutes avant de conclure que
+l'application est cassée. Le mode d'emploi est donc **écrit**
+(`src/lib/mode-emploi.ts`, une soixantaine de fiches), l'assistant le récite
+sans le reformuler, et **il dit qu'il ne sait pas** quand il ne trouve rien.
+
+**Chaque fiche se prouve contre le code** : elle porte son fichier source et des
+morceaux de texte qui doivent s'y trouver. Le contrôle a rougi à son premier
+passage — une fiche annonçait un bouton « Connecter » pour l'agenda là où l'écran
+dit « Relier mon agenda Google ».
+
+**Et un défaut trouvé à l'image, pas par un test :** la réponse enchaînait les
+trois fiches trouvées — trois gestes pour une question. Une seule sort désormais,
+et un contrôle compte les titres.
+
+**Un piège fermé au passage :** « comment je supprime un client ? » tombait dans
+la branche des suppressions — l'assistant allait lire les prestations et
+proposait d'en retirer une. Il demandait un geste, on lui modifiait ses données.
+
+**Et il va chercher une ligne chez n'importe quel client** pour la poser sur le
+devis ouvert. Le montant ne voyage jamais : la proposition ne porte que
+l'identifiant de la ligne d'origine, et le prix est relu en base au moment de la
+validation. La recherche est bornée par la RLS, pas par un filtre écrit à la
+main.
+
+**L'assistant n'est pas pour un salarié** — *« au service de l'utilisateur
+principal seulement le principal »*. Il lit les tarifs, les marges et les devis
+de tous les clients : ouvert à un salarié, il rendrait en une phrase ce que sa
+feuille de chantier tait. La règle vit à un seul endroit
+(`peutUtiliserLAssistant`, à côté des autres).
+
+**Livrée au patron seul, puis ouverte aux commerciaux le 26 sur sa réponse** —
+*« oui tu peux l'ouvrir aux commerciaux »*. La question lui a été posée parce
+que l'assistant sait désormais lire le devis de n'importe quel client ; il a
+jugé qu'un commercial voit déjà ces prix écran par écran.
+
+Détail : `ARCHITECTURE.md` §181.
+
+### Deux contrôles réparés au passage, étrangers au lot
+
+**Une bombe à retardement de calendrier.** `test-envoi-client-e2e` lisait le
+seul mois AFFICHÉ, qui commence toujours au 1er : passé le 28, il ne reste plus
+assez de jours au-delà du délai minimal, et la suite rougissait sur un produit
+sain — chaque fin de mois. Vue rouge le 26 août, **à l'identique sur `main`**,
+puis désamorcée : la suite tourne la page du mois quand celui-ci est trop court.
+
+**Et un délai trop court** dans `test-lecons-prix-e2e` : trente secondes pour
+une action serveur, ce qui passe seule et tombe sous la batterie entière. Porté
+à soixante, comme les attentes d'écran de la même suite.
+
 ### La phrase grise sous « Envoyer la facture » a été retirée
 
 *« Supprime le message en gris : votre messagerie s'ouvre aussitôt. »*
