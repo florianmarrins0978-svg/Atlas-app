@@ -12,6 +12,8 @@ import {
   celluleFendage,
 } from "../../lib/grille-prix";
 import { longueurHaieLue, mesuresArbre, tonnageLu } from "../../lib/mesures-arbre";
+import { prixAttribuable } from "../../lib/prix-attribuable";
+import { logger } from "../logger";
 
 // Même vocabulaire que le découpage des lignes : ce qui fait une ligne à part
 // est ce qui a une grille, et inversement.
@@ -45,6 +47,32 @@ export async function apprendrePrixGrille(
   chantierId: string,
   ligne: { libelle: string; montant: string }
 ): Promise<void> {
+  // **Le montant doit appartenir à UN seul travail — sinon on n'apprend rien.**
+  //
+  // Le 26 août 2026, une ligne portait « Tonte de la pelouse (1200 m²) » ET
+  // « Érable — démontage en rétention ». Le classement ci-dessous se fait au
+  // premier motif qui répond : la case d'abattage du patron est passée de 800 €
+  // à 1 500 €, tonte comprise, et ce prix serait revenu seul sur chaque
+  // démontage suivant. Mesuré, pas supposé
+  // (`scripts/test-dictee-devis-identite-db.ts`).
+  //
+  // **Le garde-fou passe AVANT le classement, et il laisse passer sa règle du
+  // 7 août** — « l'abattage, le broyage et l'évacuation, c'est sur une ligne ».
+  // Refuser cette ligne-là aurait arrêté l'apprentissage sur son cas le plus
+  // courant : la règle vit dans `src/lib/prix-attribuable.ts`, pure et éprouvée
+  // dans les deux sens.
+  const attribution = prixAttribuable(ligne.libelle);
+  if (!attribution.attribuable) {
+    // **Bavard, parce qu'un refus muet ne se diagnostique pas** (`AGENTS.md`).
+    // Le patron ne voit rien — c'est voulu, l'apprentissage ne gêne jamais le
+    // travail —, mais le journal dit pourquoi sa grille n'a pas bougé.
+    logger.info("Grille : montant non attribuable, rien n'est appris", {
+      chantierId,
+      motif: attribution.motif,
+    });
+    return;
+  }
+
   // **L'ordre est celui du découpage des lignes, et ce n'est pas un hasard :**
   // ranger un prix dans une autre case que celle où le chiffrage ira le
   // chercher revient à ne rien ranger. Les deux listes se corrigent ensemble.

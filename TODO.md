@@ -65,7 +65,7 @@ avant son feu vert. Le détail complet, fichiers et numéros de ligne, est dans
 `docs/audit-dictee-devis.md`. Ce qui suit est la liste de travail qui en sort,
 dans l'ordre où il faudra la prendre.
 
-**P0 — arrêter la pollution de la grille et de la mémoire de prix.**
+**✅ ~~P0 — arrêter la pollution de la grille et de la mémoire de prix~~ — fait le 26 août 2026** (`src/lib/prix-attribuable.ts`, `docs/pour-chatgpt/03-lot-A-p0.md`). Batterie 248/250, aucune régression. Ce qui suit décrit le défaut tel qu'il était :
 `apprendrePrixGrille` (`services/apprendre-grille.ts:51`) et `retenirLecon`
 classent une ligne au **premier mot de métier reconnu**. Or la ligne principale
 d'un devis dicté porte souvent DEUX prestations (« Tonte de la pelouse (1200 m²)

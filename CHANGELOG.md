@@ -9,6 +9,42 @@ Format : le plus récent en tête.
 
 ## 2026-08-26
 
+### Lot A — un montant qui ne se laisse plus attribuer au premier mot venu
+
+La corruption mesurée la veille : un prix de 1 500 € posé sur la ligne qui porte
+« Tonte de la pelouse (1200 m²) » ET « Érable — démontage en rétention » écrasait
+la case `demontage_retention|d40` de sa grille, de 800 € à 1 500 €. Le classement
+se faisait au premier motif reconnu, et « démont » répondait.
+
+`src/lib/prix-attribuable.ts` répond désormais, avant tout classement, à une
+seule question : **ce montant appartient-il à un seul travail ?** `apprendre-grille.ts`
+et `retenirLecon` l'appellent tous les deux — une seule règle, jamais deux
+(`CLAUDE.md` §3).
+
+**Ce qui a demandé de réfléchir, et qui explique la forme de la règle.** Refuser
+toute ligne à plusieurs travaux aurait fermé la fuite ET cassé son cas le plus
+courant : son devis du 5 août porte « abattage, broyage, évacuation » sur une
+seule ligne à 600 €, et ces 600 € SONT son prix d'abattage — c'est sa règle du
+7 août. D'où la distinction entre ce qui **se vend seul** et ce qui
+**accompagne** (broyage, évacuation, billonnage), tirée de ses propres décisions
+et non inventée. Un accessoire seul redevient le chantier : broyer du bois déjà à
+terre est un vrai travail.
+
+Le vocabulaire est l'**union** des deux existants. La grille connaît les grumes,
+la mémoire ne les connaît pas : un garde-fou qui n'aurait lu qu'un des deux
+aurait refusé un apprentissage sain.
+
+**Un contrôle a changé de cible, et c'est une décision, pas un test plié au
+code.** Il exigeait que `signatureLecon` rende `null` sur un libellé à deux
+natures. Refusé : cette clé est **stockée** dans `lecons_prix.signature`, et la
+faire taire rendrait introuvables des leçons déjà écrites — on effacerait sa
+mémoire pour fermer une fuite (risque R3). Le garde-fou vit à l'usage ; la clé
+V1 reste intacte, et le cas G le prouve.
+
+Batterie : **248/250**, contre 247 avant le lot. Les deux suites en échec sont
+celles du lot, et seulement sur les cas des lots suivants. Aucune migration,
+aucune donnée historique touchée.
+
 ### Dictée → devis : la cartographie, et neuf contrôles rouges avant correction
 
 Son brief du 26 août (relayé de ChatGPT, lu et confronté au code) : cartographier

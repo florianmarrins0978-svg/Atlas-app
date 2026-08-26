@@ -3,6 +3,7 @@ import { readFileSync } from "node:fs";
 import path from "node:path";
 import { signatureLecon } from "../src/lib/lecons-prix";
 import { lignesVendables } from "../src/lib/lignes-vendables";
+import { prixAttribuable } from "../src/lib/prix-attribuable";
 import { extraire } from "../src/server/ai/services/extraction-service";
 import type { FournisseurLLM } from "../src/server/ai/providers/llm/interface";
 
@@ -116,14 +117,27 @@ cas("une espèce différente ne se rapproche pas quand elle change le prix", () 
 
 console.log("\n=== F — un lot de plusieurs natures n'est l'expérience d'aucune ===\n");
 
-cas("« tonte + démontage » ne produit pas la signature d'un abattage", () => {
+cas("« tonte + démontage » ne peut alimenter aucune mémoire de prix", () => {
   const fusionne = `${TONTE}\n${ERABLE}`;
-  const s = signatureLecon(fusionne);
+
+  // **Ce contrôle a changé de cible le 26 août, et la raison doit être écrite.**
+  //
+  // Sa première version exigeait que `signatureLecon` rende `null` sur un
+  // libellé à deux natures. C'était viser le mauvais endroit, et c'aurait été
+  // destructeur : les clés V1 sont **stockées** dans `lecons_prix.signature`, et
+  // des leçons ont pu y être écrites depuis des libellés fusionnés. Faire taire
+  // `signatureLecon` les rendrait introuvables à la lecture — on aurait effacé
+  // sa mémoire pour fermer une fuite. C'est le risque R3 de la cartographie.
+  //
+  // Le garde-fou vit donc à l'USAGE (`prixAttribuable`), pas dans la clé : rien
+  // n'est appris d'un tel libellé, et tout ce qui a déjà été appris reste
+  // lisible. `signatureLecon` n'est pas touchée — le cas G ci-dessous le prouve.
+  const attribution = prixAttribuable(fusionne);
   assert.equal(
-    s,
-    null,
-    `un libellé portant deux natures a produit « ${s?.cle} » : le prix du lot entier ` +
-      "sera retenu comme le prix d'un démontage en rétention"
+    attribution.attribuable,
+    false,
+    "le montant d'un lot à deux natures a été déclaré attribuable : il serait " +
+      "retenu comme le prix d'un démontage en rétention, tonte comprise"
   );
 });
 

@@ -2,6 +2,8 @@ import { and, desc, eq } from "drizzle-orm";
 import { withEntreprise } from "../db/with-entreprise";
 import { leconsPrix, lignesPrix } from "../db/schema";
 import { signatureLecon, type LeconObservee } from "../../lib/lecons-prix";
+import { prixAttribuable } from "../../lib/prix-attribuable";
+import { logger } from "../logger";
 import type { Ctx } from "./context";
 
 // La mémoire des corrections — écriture et lecture, rien d'autre.
@@ -36,6 +38,26 @@ export async function retenirLecon(ctx: Ctx, lignePrixId: string): Promise<boole
       .where(and(eq(lignesPrix.id, lignePrixId), eq(lignesPrix.entrepriseId, ctx.entrepriseId)))
       .limit(1);
     if (!ligne) return false;
+
+    // **Le montant doit appartenir à UN seul travail.**
+    //
+    // `signatureLecon` prend la PREMIÈRE nature reconnue dans le libellé. Sur
+    // une ligne qui porte « Tonte de la pelouse » et « Érable — démontage en
+    // rétention », c'est l'abattage qui gagne : le prix du lot entier serait
+    // retenu comme le prix d'un démontage, et rappelé plus tard avec l'autorité
+    // de l'expérience.
+    //
+    // La même règle que la grille (`src/lib/prix-attribuable.ts`), et c'est
+    // volontaire : deux garde-fous différents finiraient par diverger, et l'un
+    // des deux laisserait passer ce que l'autre refuse (`CLAUDE.md` §3).
+    const attribution = prixAttribuable(ligne.libelle);
+    if (!attribution.attribuable) {
+      logger.info("Leçon de prix : montant non attribuable, rien n'est retenu", {
+        chantierId: ligne.chantierId,
+        motif: attribution.motif,
+      });
+      return false;
+    }
 
     const signature = signatureLecon(ligne.libelle);
     if (!signature) return false;
