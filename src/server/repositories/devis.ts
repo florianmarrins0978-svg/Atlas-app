@@ -1,4 +1,5 @@
 import { and, asc, desc, eq, sql } from "drizzle-orm";
+import { jourIso } from "@/lib/jour";
 import { withEntreprise } from "../db/with-entreprise";
 import { allureDesDocuments, formatNumeroDe } from "./entreprises";
 import { conditionsDepuisEntreprise } from "@/lib/conditions-documents";
@@ -8,7 +9,6 @@ import { devis, lignesDevis, lignesPrix, chantiers, clients, entreprises } from 
 import type { Ctx } from "./context";
 import { genererPdfDevis } from "../pdf/devis-pdf";
 import { enregistrerObjet } from "../storage";
-import { jourIso } from "@/lib/jour";
 import { ecrireNumero, repartChaqueAnnee } from "@/lib/numero-documents";
 
 const TAUX_TVA_DEFAUT = "20.00";
@@ -270,10 +270,10 @@ export async function getOuCreerDevisBrouillon(ctx: Ctx, chantierId: string) {
         numeroVersion,
         statut: "brouillon",
         ...snapshotEnTete,
-        // **`jourIso`, jamais `toISOString`** (§182) : le second rend le jour de
-        // GREENWICH. Un devis composé à minuit et demi portait la VEILLE — sur
-        // un document qui part chez un client, et dont la validité se compte à
-        // partir de cette date.
+        // **Le jour de l'atelier, pas celui de Greenwich** (`jourIso`,
+        // `ARCHITECTURE.md` §182). Écrit ici en UTC, un devis rédigé après
+        // minuit portait la date de la veille — et la définition unique du
+        // jour ne servait à rien, puisque celui-ci passait à côté.
         dateEmission: jourIso(new Date()),
         tauxTva: TAUX_TVA_DEFAUT,
         ...totaux,

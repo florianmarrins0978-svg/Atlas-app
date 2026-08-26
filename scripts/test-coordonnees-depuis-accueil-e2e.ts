@@ -144,7 +144,12 @@ async function main() {
   await cas("elle ouvre l'écran de la création, avec SES champs", async () => {
     await ligne.click();
     await page.waitForURL(new RegExp(`/chantiers/${chantierId}/coordonnees$`), { timeout: 30_000 });
-    await page.waitForTimeout(400);
+    // **On attend l'ÉCRAN, pas un délai.** Ces 400 ms suffisaient seul et
+    // manquaient dans la batterie complète : la page en était encore à
+    // « CHARGEMENT… », et le contrôle accusait un écran qu'il n'avait pas
+    // encore vu — le pire des rouges (`AGENTS.md`), puisqu'il désigne le
+    // produit pour un défaut de son propre montage.
+    await page.getByText("Nom du client").first().waitFor({ timeout: 30_000 });
     const ecran = await page.locator("body").innerText();
     // Les mots de sa seconde photo, et pas d'autres.
     //

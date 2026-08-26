@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { jourIso } from "@/lib/jour";
 import { getCurrentCtx } from "@/server/session-ctx";
 import { preparerDevisDepuisDictee, enregistrerPrecisionsEtReprendre } from "@/server/services/devis-depuis-dictee";
 import {
@@ -26,7 +27,6 @@ import {
 import { getClient, mettreAJourClient, trouverOuCreerClient } from "@/server/repositories/clients";
 import { listerChantiersPourAffichage } from "@/server/repositories/chantiers";
 import { nomDuChantier } from "@/lib/nom-chantier";
-import { jourIso } from "@/lib/jour";
 import { filtrerClientsParNom } from "@/lib/recherche-client";
 import { creerTarif, modifierTarif } from "@/server/repositories/tarifs";
 import { terminerChantier } from "@/server/repositories/factures";
@@ -525,7 +525,8 @@ export async function appliquerPropositionsAction(
             nomClient: fiche.nom,
             civilite: fiche.civilite,
             adresseChantier: adresse ?? null,
-            // `jourIso` et non `toISOString` : le jour du patron, pas celui de Greenwich (§182).
+            // Le jour de l'atelier, pas celui de Greenwich (§182) : après
+            // minuit, le chantier prenait le nom de la veille.
             jour: jourIso(new Date()),
           });
           await creerChantier(ctx, { nom, clientId: fiche.id, ...(adresse ? { adresseChantier: adresse } : {}) });

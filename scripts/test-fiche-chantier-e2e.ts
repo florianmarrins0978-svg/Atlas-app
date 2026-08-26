@@ -118,12 +118,12 @@ async function main() {
   const context = await browser.newContext({ viewport: { width: 390, height: 844 } });
   const page = await seConnecter(context);
 
-  await test("Le modèle se pose une fois, depuis les réglages", async () => {
+  await test("Le modèle se pose une fois, depuis Paysage", async () => {
     // `networkidle` : le bouton est un composant client, et un appui posé avant
     // l'hydratation ne déclenche rien. Sous la charge d'une batterie complète,
     // l'écart se compte en secondes — la suite passait seule et rougissait dans
     // la batterie, ce qui est le pire des deux états.
-    await page.goto(`${BASE}/reglages/fiche-entretien`, { waitUntil: "networkidle" });
+    await page.goto(`${BASE}/paysage/fiche/composer`, { waitUntil: "networkidle" });
     const poser = page.getByRole("button", { name: "Partir du modèle Atlas" });
     if (await poser.isVisible().catch(() => false)) {
       await poser.click();
@@ -613,8 +613,13 @@ async function main() {
     //
     // **Le contrôle vise l'ADRESSE, pas le libellé** (`CLAUDE.md` §5 bis) : le
     // jour où il fait changer le mot, c'est le chemin qui doit rester tenu.
+    //
+    // **La porte a REMONTÉ le 26 août 2026** — sous le titre, en premier, à sa
+    // demande —, et elle a changé d'adresse en quittant les Réglages. Ce que ce
+    // contrôle défend n'a pas bougé pour autant : depuis la liste, on doit
+    // pouvoir aller composer sa fiche.
     await page.goto(`${BASE}/paysage/fiche`, { waitUntil: "networkidle" });
-    const porte = page.locator('a[href="/reglages/fiche-entretien"]');
+    const porte = page.locator('a[href="/paysage/fiche/composer"]');
     assert.ok(
       (await porte.count()) > 0,
       "la liste ne mène plus nulle part pour composer sa fiche — c'est le défaut du 24 août"
@@ -622,7 +627,7 @@ async function main() {
     await capturer(page, "12-liste-avec-la-porte-du-modele");
 
     await porte.first().click();
-    await page.waitForURL(`${BASE}/reglages/fiche-entretien`, { timeout: 30_000 });
+    await page.waitForURL(`${BASE}/paysage/fiche/composer`, { timeout: 30_000 });
   });
 
   await context.close();

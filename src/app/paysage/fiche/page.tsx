@@ -56,6 +56,80 @@ export default async function FichesPage() {
           retour={{ href: "/paysage", libelle: "Retour à Paysage" }}
         />
 
+        {/* ─── Composer ma fiche, EN PREMIER ─────────────────────────────────
+            **Sa décision du 26 août 2026**, après avoir choisi la proposition B
+            de `appli/ma-fiche-rangee.html` : *« la B, mais il faut que la
+            rubrique se trouve sous le titre en premier, et son titre doré doit
+            être "composer ma fiche" ou "ma fiche perso". »*
+
+            **Cette place CONTREDIT une consigne du 24 août**, qui vivait ici en
+            toutes lettres : le lien avait été mis « en bas et permanent », au
+            motif que neuf fois sur dix il vient ouvrir une fiche, pas la
+            recomposer. Ce raisonnement était le NÔTRE ; celui-ci est le sien, et
+            il l'emporte. La consigne est récrite plutôt que contournée — sans
+            quoi la prochaine session la redescendrait de bonne foi en citant un
+            texte devenu faux (la faute du trait gris, `ARCHITECTURE.md` §172).
+
+            **Elle reste réservée au patron.** Le déplacement depuis les Réglages
+            n'ouvre rien : un salarié ne voit pas cette rubrique, et la page
+            qu'elle ouvre le refuserait de toute façon. */}
+        {proprietaire && modele.length > 0 && (
+          <section className="mx-[26px] mt-[20px]">
+            {/* **UNE CARTE, ET PAS PLEINE LARGEUR** — ses deux mots du 26 août
+                2026, une heure après la première version : *« c'est bien mais
+                juste une phrase, on la trouve difficilement ; je pense qu'un
+                onglet carré serait le mieux »*, puis, devant les trois formes
+                proposées : *« une carte mais fais-la moins large »*.
+
+                **Ce que la phrase ne faisait pas.** Une ligne de texte au milieu
+                d'un écran de texte ne se distingue pas d'un intertitre : ni
+                fond, ni cadre, ni couleur d'action, et un chevron de huit
+                pixels pour seul aveu qu'on peut appuyer.
+
+                **Moins large qu'une carte pleine.** Elle prend la largeur de
+                son texte, plafonnée — un pavé bord à bord pèserait autant que
+                « Ouvrir une fiche », qui est le geste de tous les jours, et
+                c'est le défaut que la planche annonçait. Le plafond existe pour
+                les gros caractères du téléphone : sans lui la carte redeviendrait
+                pleine largeur chez qui grossit son texte, c'est-à-dire là où
+                l'on croyait avoir réglé la question. */}
+            <Link
+              href="/paysage/fiche/composer"
+              data-atlas="carte-composer-ma-fiche"
+              // **4 px, et non 14** : la charte veut ses plages presque droites
+              // — « au-delà de 6 px, une plage devient un galet et l'écran perd
+              // sa tenue ». La capsule est réservée à ce qu'on APPUIE ; ceci est
+              // une carte qu'on parcourt, comme « Ma TVA à déclarer ».
+              className="flex w-fit max-w-[270px] min-h-[44px] items-center gap-[14px] rounded-[4px] px-[16px] py-[13px]"
+              // `rustTint` est le PAPIER de la charte (`--paper`), pas une
+              // teinte de terre cuite : le nom vient d'avant la reprise
+              // d'Arborea. C'est le fond des éléments teintés, et il reste
+              // lisible sur les deux chartes sombres.
+              style={{ backgroundColor: colors.rustTint, border: `1px solid ${colors.line}` }}
+            >
+              <span className="min-w-0 flex-1">
+                <span className="block text-[16px] leading-[1.2]" style={{ fontFamily: font.display }}>
+                  Composer ma fiche
+                </span>
+                <span className="mt-[3px] block text-[11.5px] leading-[1.45]" style={{ color: colors.muted }}>
+                  {modele.length} prestation{modele.length > 1 ? "s" : ""}
+                </span>
+              </span>
+              {/* Le même chevron que les lignes du dessous et que le sommaire des
+                  réglages : ce qui mène quelque part se reconnaît à lui. */}
+              <span
+                aria-hidden="true"
+                className="h-2 w-2 rotate-45"
+                style={{
+                  flex: "none",
+                  borderRight: `1.5px solid ${colors.chevron}`,
+                  borderTop: `1.5px solid ${colors.chevron}`,
+                }}
+              />
+            </Link>
+          </section>
+        )}
+
         <section className="mx-[26px] mt-[22px]">
           {/* **Le modèle vide se dit ICI, avant le bouton.** Ouvrir une fiche
               sans une seule ligne à cocher donnerait un écran blanc : autant
@@ -66,15 +140,15 @@ export default async function FichesPage() {
               style={{ backgroundColor: colors.card, border: `1px solid ${colors.line}` }}
             >
               <p className="text-[13.5px] leading-[1.6]" style={{ color: colors.inkSoft }}>
-                Votre fiche n&apos;a encore aucune prestation. Composez-la une fois, dans les
-                réglages : elle servira à tous vos passages.
+                Votre fiche n&apos;a encore aucune prestation. Composez-la une fois :
+                elle servira à tous vos passages.
               </p>
               {/* **Un salarié n'y a pas droit, et l'écran ne le lui promet
                   pas** : la rubrique est réservée au propriétaire, et le lien
                   ne l'ouvrirait que sur « Rubrique réservée ». */}
               {proprietaire ? (
                 <Link
-                  href="/reglages/fiche-entretien"
+                  href="/paysage/fiche/composer"
                   className="mt-[12px] inline-block text-[13px] font-semibold"
                   style={{ color: colors.rust }}
                 >
@@ -82,7 +156,7 @@ export default async function FichesPage() {
                 </Link>
               ) : (
                 <p className="mt-[12px] text-[13px]" style={{ color: colors.muted }}>
-                  C&apos;est au patron de la composer, dans ses réglages.
+                  C&apos;est au patron de la composer.
                 </p>
               )}
             </div>
@@ -106,47 +180,6 @@ export default async function FichesPage() {
           </section>
         )}
 
-        {/* ─── Le chemin vers l'endroit où la fiche se compose ────────────────
-            **Sa remarque du 24 août 2026** : *« Avant, il y avait un endroit où
-            je pouvais créer ma fiche sur mesure. Ajouter des catégories, en
-            enlever, en créer. Aujourd'hui, cet endroit a disparu. »*
-
-            Il n'avait pas disparu — il n'apparaissait QUE sur une fiche vide.
-            Le lien « Composer ma fiche » vivait dans l'encart ci-dessus, celui
-            qui s'efface dès la première prestation posée : l'écran retirait sa
-            propre porte au moment exact où le patron commençait à s'en servir,
-            et il ne restait qu'un chemin par Réglages qu'il n'a pas retrouvé.
-
-            Il est donc **en bas et permanent**, jamais dans le bouton du haut :
-            ce qu'il vient faire ici neuf fois sur dix, c'est ouvrir une fiche,
-            pas la recomposer. */}
-        {proprietaire && modele.length > 0 && (
-          <section className="mx-[26px] mt-[30px] border-t pt-[18px]" style={{ borderColor: colors.line }}>
-            <Link href="/reglages/fiche-entretien" className="flex min-h-[44px] items-center gap-[15px]">
-              <span className="min-w-0 flex-1">
-                <span className="block text-[15px]" style={{ fontFamily: font.display }}>
-                  Composer ma fiche
-                </span>
-                <span className="mt-[3px] block text-[11.5px] leading-[1.5]" style={{ color: colors.muted }}>
-                  {modele.length} prestation{modele.length > 1 ? "s" : ""} — ajoutez, retirez ou
-                  renommez vos catégories
-                </span>
-              </span>
-              {/* Le même chevron que les lignes du dessus et que le sommaire des
-                  réglages : une ligne qui mène quelque part se reconnaît à lui,
-                  et sans lui celle-ci se lit comme une phrase d'explication. */}
-              <span
-                aria-hidden="true"
-                className="h-2 w-2 rotate-45"
-                style={{
-                  flex: "none",
-                  borderRight: `1.5px solid ${colors.chevron}`,
-                  borderTop: `1.5px solid ${colors.chevron}`,
-                }}
-              />
-            </Link>
-          </section>
-        )}
       </div>
     </div>
   );

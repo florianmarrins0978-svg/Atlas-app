@@ -45,10 +45,6 @@ essai("les rubriques de sa planche du 14 août sont toutes là", () => {
     "Équipe",
     "Tarifs & catalogue",
     "Devis & factures",
-    // « Planning » a été SUPPRIMÉE le 16 août 2026 : elle rendait le même bloc
-    // que « Équipe » et rien d'autre (`ARCHITECTURE.md` §129). Sa place est
-    // prise par la fiche d'entretien, arrivée le même jour.
-    "Fiche d'entretien",
     "Atlas IA",
     "Notifications",
     "Intégrations",
@@ -61,18 +57,38 @@ essai("les rubriques de sa planche du 14 août sont toutes là", () => {
 
 essai("ses quatre priorités ouvrent l'ensemble de l'entreprise", () => {
   const entreprise = rubriquesReglages("proprietaire")[0].rubriques.map((r) => r.nom);
-  // **Ses QUATRE priorités, et elles n'ont pas bougé.** La cinquième ligne
-  // était « Planning », supprimée le 16 août faute d'avoir quoi que ce soit à
-  // elle ; c'est la fiche d'entretien qui suit désormais. Le contrôle porte sur
+  // **Ses QUATRE priorités, et elles n'ont pas bougé.** Le contrôle porte sur
   // les quatre premières — celles qu'il a nommées — et sur ce qui vient juste
   // après, pour qu'une rubrique nouvelle ne s'insère pas au milieu d'elles.
+  //
+  // La cinquième ligne a changé deux fois : « Planning », supprimée le 16 août
+  // faute d'avoir quoi que ce soit à elle ; puis « Fiche d'entretien », partie
+  // dans Paysage le 26 août à sa demande.
   assert.deepEqual(entreprise.slice(0, 5), [
     "Mon entreprise",
     "Équipe",
     "Tarifs & catalogue",
     "Devis & factures",
-    "Fiche d'entretien",
+    "Atlas IA",
   ]);
+});
+
+// **ELLE NE DOIT PAS REVENIR**, et c'est le seul contrôle qui le tienne.
+//
+// Sa demande du 26 août 2026 : *« comme ça on ne la voit plus dans la catégorie
+// Réglages »*. Le motif d'origine — sa propre demande du 16 août, « dans les
+// réglages, un endroit où l'utilisateur pourra créer cette fiche » — reste vrai
+// dans l'historique : une session qui le relirait sans connaître la suite
+// remettrait la rubrique de bonne foi. C'est exactement la faute du trait gris
+// (`ARCHITECTURE.md` §172), et elle se prévient ici.
+essai("« Fiche d'entretien » a quitté les Réglages, et n'y revient pas", () => {
+  for (const role of ["proprietaire", "salarie"] as const) {
+    const noms = toutes(role).map((r) => r.nom);
+    assert.ok(
+      !noms.some((n) => /fiche d.entretien/i.test(n)),
+      `« Fiche d'entretien » est revenue dans les réglages (${role}) : elle vit dans Paysage depuis le 26 août 2026`
+    );
+  }
 });
 
 // LE CONTRÔLE QUI COMPTE. Il ne regarde pas si une rubrique est grisée : il
@@ -85,7 +101,6 @@ essai("un membre ne reçoit AUCUNE rubrique de l'entreprise", () => {
     "Équipe",
     "Tarifs & catalogue",
     "Devis & factures",
-    "Fiche d'entretien",
     "Atlas IA",
     "Intégrations",
     "Abonnement",
