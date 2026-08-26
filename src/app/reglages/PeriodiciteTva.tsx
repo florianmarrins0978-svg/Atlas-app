@@ -76,6 +76,21 @@ export default function PeriodiciteTvaReglage({ initiale }: { initiale: Periodic
         })}
       </div>
 
+      {/* **Une ligne, pas un paragraphe** — sa demande du 24 août 2026. La
+          version longue disait la même chose en quatre lignes ; il l'a fait
+          retirer, puis : « tu peux faire une phrase courte ».
+
+          **Ce qu'elle doit absolument porter :** le mois n'est pas une
+          préférence, c'est le défaut légal, et le trimestre ne s'obtient que
+          sous condition de TVA due. Sans elle, les deux boutons se lisent comme
+          un choix libre — et le mauvais coûte un rappel de l'administration.
+
+          **Ce qu'elle ne dit PAS, et c'est délibéré :** laquelle lui convient.
+          Le seuil porte sur la TVA DUE, donc sur ses achats, qu'Atlas ne voit
+          pas. Conseiller ici serait inventer une donnée (`CLAUDE.md` §4). */}
+      <p className="pt-3 text-[12.5px] leading-[1.65]" style={{ color: colors.muted }}>
+        Le mois est le défaut ; le trimestre s&apos;obtient sous condition.
+      </p>
     </section>
   );
 }

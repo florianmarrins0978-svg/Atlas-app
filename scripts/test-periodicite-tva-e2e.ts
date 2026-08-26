@@ -184,6 +184,14 @@ async function main() {
     // mesure désormais, sur le texte, pas sur un libellé qu'il peut vouloir
     // réécrire demain.
     assert.ok(texte.trim().length > 0, "la rubrique « Votre TVA » est vide : rien n'est mesuré");
+    // **Le mois reste annoncé comme le DÉFAUT** — sa phrase courte du 24 août.
+    // Sans cela, les deux boutons se lisent comme un choix libre, et le mauvais
+    // coûte un rappel de l'administration. Le motif est volontairement large :
+    // ce qu'on défend est le FAIT, pas la formule, qu'il peut réécrire demain.
+    assert.ok(
+      /(mois[^.]{0,40}défaut|défaut[^.]{0,40}mois)/i.test(texte),
+      `l'écran ne dit plus que le mois est le défaut : ${texte.slice(0, 160)}`
+    );
     assert.ok(
       !/vous pouvez passer|nous vous conseillons|éligible|vous avez droit/i.test(texte),
       `l'écran conseille une périodicité qu'il ne peut pas connaître : ${texte.slice(0, 160)}`

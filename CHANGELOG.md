@@ -1696,10 +1696,18 @@ porte sur la TVA due et qu'Atlas ne connaît que la collectée. C'est cela qu'il
 mesure désormais, et non un libellé que le patron peut vouloir réécrire demain
 (`CLAUDE.md` §5 bis).
 
-**Ce que le retrait coûte, et c'est à lui d'en juger** : l'écran ne dit plus que
-le mois est le défaut légal. Les deux boutons — « Tous les mois », « Tous les
-trimestres » — se présentent maintenant comme un choix libre, alors que le
-trimestre est une option sous condition. Dit ici plutôt que corrigé sans lui.
+**Il a tranché dans la foulée** — *« tu peux faire une phrase courte »* — et
+elle tient sur une ligne : **« Le mois est le défaut ; le trimestre s'obtient
+sous condition. »** Sans elle, les deux boutons se lisaient comme un choix
+libre, et le mauvais coûte un rappel de l'administration.
+
+**Ce qu'elle ne dit pas, délibérément :** laquelle lui convient. Le seuil porte
+sur la TVA DUE, donc sur ses achats, qu'Atlas ne voit pas.
+
+Le contrôle défend désormais **le fait, pas la formule** : un motif large
+(« mois » près de « défaut »), pour qu'il puisse la réécrire demain sans faire
+rougir la batterie. **Vu rouge** en remplaçant la phrase par « Choisissez votre
+rythme » — il tombe, et montre le texte fautif.
 
 ### L'adresse écrite deux fois : sa question du 24 août
 
