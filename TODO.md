@@ -11,6 +11,20 @@ langage, et rien n'y entre sans son accord.
 
 ## Dictée → devis : ce que l'audit du 26 août a trouvé
 
+### Un dossier pour ChatGPT à chaque étape
+
+**Sa consigne du 26 août 2026 :** *« Je vais tout montrer à ChatGPT, donc fais-moi
+des dossiers que je peux lui copier-coller à chaque fois. »*
+
+`docs/pour-chatgpt/` — un fichier numéroté par étape, autonome (ChatGPT n'a pas
+le dépôt), qui se termine par des questions dont au moins une lui demande de nous
+contredire. La convention tient dans `docs/pour-chatgpt/README.md`.
+
+**Ce ne sont pas des documents de mémoire** : ce sont des instantanés, ils ne se
+tiennent pas à jour et ne se corrigent pas après coup. Un verdict qui se révèle
+faux est repris **dans le dossier suivant**, noir sur blanc (`CLAUDE.md` §2 bis).
+Les tenir à jour recréerait la règle en double que `CLAUDE.md` §3 interdit.
+
 ### Le plan ajusté après cartographie (26 août 2026)
 
 `docs/audit-dictee-devis-cartographie.md`. Les suites A→H sont écrites et
