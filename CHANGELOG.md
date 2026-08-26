@@ -502,6 +502,89 @@ périmètre affiché ne suivait pas le rôle coché, si bien qu'on lisait « le
 planning et rien d'autre » sous « Commercial ». Une maquette qui ment sur ce que
 fait un rôle est pire qu'une maquette absente.
 
+### Trois endroits comptaient encore les jours à Greenwich
+
+La correction d'hier soir n'allait pas jusqu'au bout : la **date d'émission d'un
+devis**, le **jour qui nomme un chantier** et une suite qui datait un règlement
+écrivaient encore `toISOString()` — ils passaient à côté de `jourIso` et
+portaient donc la veille après minuit. C'est exactement le défaut qu'il avait
+signalé, resté vivant dans les endroits qu'on n'avait pas regardés.
+
+Un contrôle refuse maintenant qu'un écran recompte les jours pour son compte : la
+définition unique ne vaut que si tout la traverse. `ARCHITECTURE.md` §182.
+
+### La carte, moins large — et à 4 px, comme les autres plages
+
+*« Une carte mais fais-la moins large. »* C'est fait : elle prend la largeur de
+son texte, plafonnée, sur fond papier, à la place qu'il a tranchée. Le plafond
+n'est pas décoratif — sans lui elle redeviendrait pleine largeur chez qui
+grossit les caractères de son téléphone, c'est-à-dire là où l'on croyait avoir
+réglé la question.
+
+**Son rayon a été redressé par le contrôle des boutons** : 14 px en faisaient le
+« galet » que la charte refuse au-delà de 6. Elle porte donc les 4 px de « Ma
+TVA à déclarer », l'autre carte qu'on parcourt, et son exception est bornée à
+son repère — tout autre bouton carré de cet écran fait toujours rougir.
+
+**Une suite de plus attendait un délai plutôt qu'un signal** : elle lisait
+l'écran des coordonnées 400 ms après l'avoir ouvert — assez seule, pas sous la
+charge de la batterie, où la page en était encore à « CHARGEMENT… ». Elle
+accusait alors le produit pour un défaut de son propre montage.
+
+**Et un filet retiré le 25 août était revenu** avec l'écran « Donner un accès »
+d'une autre session : le trait qui prolonge « SON RÔLE » jusqu'au bord. Son
+contrôle l'a dénoncé, il est reparti — les séparateurs de blocs, eux, restent.
+
+### (première version, remplacée le jour même)
+
+*« Une carte mais fais-la moins large. »* C'est fait : elle prend la largeur de
+son texte, plafonnée, sur fond papier, à la place qu'il a tranchée. Le plafond
+n'est pas décoratif — sans lui elle redeviendrait pleine largeur chez qui
+grossit les caractères de son téléphone, c'est-à-dire là où l'on croyait avoir
+réglé la question.
+
+### « On la trouve difficilement » — trois formes proposées
+
+Une heure après la livraison : *« c'est bien mais juste une phrase, on la trouve
+difficilement ; je pense qu'un onglet carré serait le mieux ? Propose. »*
+
+Il a raison, et c'était prévisible : la rubrique est **une ligne de texte au
+milieu d'un écran de texte**. Rien ne la distingue d'un intertitre — ni fond, ni
+cadre, ni couleur d'action ; seul un chevron de huit pixels dit qu'on peut
+appuyer.
+
+`appli/ou-composer-ma-fiche.html` : **une carte** pleine largeur, **deux carrés**
+côte à côte (composer / ouvrir), ou **un bouton dans l'en-tête** à la place où il
+a déjà « Créer la facture ». La place ne se rouvre pas — il l'a tranchée —, et
+chaque proposition porte son défaut : la carte pèse autant que le geste
+quotidien, les carrés déplacent le choix du jour après l'appui, le bouton de
+coin est petit.
+
+**Deux défauts trouvés à l'image, par aucun contrôle** : la règle d'affichage de
+la proposition B attrapait aussi sa note et en faisait une colonne illisible, et
+le chevron de la carte tombait à la ligne sous le texte.
+
+### « Composer ma fiche » a quitté les Réglages
+
+*« La B, mais il faut que la rubrique se trouve sous le titre en premier, et son
+titre doré doit être "composer ma fiche". »* C'est fait.
+
+L'écran passe de `/reglages/fiche-entretien` à `/paysage/fiche/composer`, sa
+porte remonte **en tête** de la fiche de chantier, sous le titre, et la rubrique
+disparaît des Réglages. Rien d'autre ne bouge : mêmes prestations, mêmes gestes,
+même réserve au patron — un salarié ne la voit toujours pas.
+
+**Deux consignes ont été récrites plutôt que contournées** : celle qui plaçait la
+porte « en bas et permanent » (24 août, notre raisonnement contre sa décision),
+et celle qui justifiait la rubrique dans les Réglages (16 août, sa demande d'alors).
+Laissées telles quelles, elles auraient fait revenir l'un et l'autre de bonne foi.
+
+Le contrôle **mesure** la position de la rubrique au-dessus de « Jour du
+passage » — l'ordre du code ne prouve rien —, exige 44 px pour le pouce, et a
+été vu rouge. Et un piège de charte est sorti de l'image, d'aucun test : le titre
+« doré » écrit `colors.rust` sortait presque noir ; l'or, c'est `colors.or`.
+`ARCHITECTURE.md` §197.
+
 ### La liste, dans Paysage — deux emplacements à choisir
 
 Sa proposition, une fois la planche des deux fiches comprise : *« est-ce qu'on

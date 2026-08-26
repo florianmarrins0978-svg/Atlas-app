@@ -17098,3 +17098,96 @@ que le patron lit lui-même — plutôt qu'un détail de mise en page : une cart
 peut changer de forme sans qu'il cesse de mesurer l'ordre. Et il refuse de
 conclure sur moins de deux dates lisibles, une seule mesure ne disant rien d'un
 ordre.
+
+---
+---
+
+## 197. « Composer ma fiche » quitte les Réglages pour Paysage
+
+**Sa proposition du 26 août 2026**, une fois compris que les deux écrans n'en
+font pas un : *« est-ce qu'on peut la déplacer dans la fiche de chantier, dans
+la catégorie Paysage, sous une rubrique type "création des rubriques de ma fiche
+de chantier" ? Et comme ça on ne la voit plus dans la catégorie Réglages. »*
+Puis, devant les deux emplacements proposés : *« la B, mais il faut que la
+rubrique se trouve sous le titre en premier, et son titre doré doit être
+"composer ma fiche" ou "ma fiche perso". »*
+
+### Ce qui a bougé
+
+| | Avant | Après |
+|---|---|---|
+| l'écran | `/reglages/fiche-entretien` | `/paysage/fiche/composer` |
+| son titre | « Fiche d'entretien » | « Composer ma fiche » |
+| la porte | en bas de la liste des passages | **en tête**, sous le titre de l'écran |
+| les Réglages | une rubrique de plus | **plus rien** |
+
+Rien d'autre : la table `prestations_entretien`, le dépôt, les gestes, les
+refus, la réserve au propriétaire — tout est déplacé tel quel. Un déplacement
+qui en profite pour changer une règle est un déplacement qu'on ne peut plus
+relire.
+
+### Pourquoi il a fallu une planche AVANT
+
+Sa première formulation était *« la fiche d'entretien c'est la fiche de
+chantier »*, et il proposait de **supprimer** celle des Réglages. C'était faux
+d'un cheveu, et le cheveu comptait : l'une tient LA LISTE, l'autre la fiche d'un
+JOUR qui en naît. Supprimer la première aurait laissé la seconde sans rien à
+cocher — elle refuse d'ailleurs de s'ouvrir sur une liste vide
+(`passages-entretien.ts`, refus `modele_vide`).
+
+`appli/deux-fiches.html` a montré la différence en trois onglets ; il a alors
+reformulé lui-même la bonne solution — déplacer, pas supprimer. **Une planche
+vaut mieux qu'un « non ».**
+
+### La consigne qu'il a fallu RÉCRIRE, pas contourner
+
+La porte avait été mise « en bas et permanent » le 24 août, et le fichier
+portait le motif en toutes lettres : *neuf fois sur dix il vient ouvrir une
+fiche, pas la recomposer*. Ce raisonnement était le nôtre ; sa place est la
+sienne, et elle l'emporte. Le commentaire a donc été récrit **au moment du
+déplacement** — laissé tel quel, il aurait fait redescendre la rubrique par la
+prochaine session, de bonne foi, en citant un texte devenu faux. C'est
+exactement la faute du trait gris (§172).
+
+Même précaution dans `rubriques-reglages.ts` : à la place de l'entrée retirée,
+un commentaire dit **pourquoi elle est partie** et interdit de la remettre — son
+motif d'origine (sa demande du 16 août) reste vrai dans l'historique et suffirait
+à l'y ramener.
+
+### Ce que les contrôles tiennent maintenant
+
+- `test-rubriques-reglages.ts` : « Fiche d'entretien » **n'est plus** dans le
+  sommaire, ni pour le patron ni pour un salarié — un contrôle qui l'exigeait
+  aurait rendu son écran impossible à changer (`CLAUDE.md` §5 bis).
+- `test-fiche-entretien-e2e.ts` : le chemin part de la **fiche de chantier**, et
+  la rubrique est **mesurée au-dessus** de « Jour du passage » — l'ordre du HTML
+  ne prouve rien, une mise en page peut le renverser. Le contrôle refuse de
+  conclure sur une boîte de zéro pixel, exige 44 px de haut pour le pouce, et
+  **a été vu rouge** en décalant la rubrique de 900 px.
+- Une capture est prise au passage : quatre défauts réels de ce dépôt sont sortis
+  d'une image et d'aucun test.
+
+### La forme a suivi, une heure plus tard
+
+*« C'est bien mais juste une phrase, on la trouve difficilement ; je pense qu'un
+onglet carré serait le mieux »*, puis *« une carte mais fais-la moins large »*.
+
+La première version était **une ligne de texte au milieu d'un écran de texte** :
+rien ne la distinguait d'un intertitre — ni fond, ni cadre, ni couleur d'action
+—, et un chevron de huit pixels pour seul aveu qu'on peut appuyer. C'est une
+carte depuis, **à la largeur de son texte** : pleine largeur, elle aurait fait
+jeu égal avec « Ouvrir une fiche », qui est le geste de tous les jours. Le
+plafond (`max-w-[270px]`) tient chez qui grossit les caractères de son
+téléphone.
+
+Trois formes lui ont été montrées avant de coder (`appli/ou-composer-ma-fiche.html`) :
+la carte, deux carrés côte à côte, un bouton d'en-tête. **La place, elle, ne se
+rouvrait pas** — il l'avait tranchée une heure plus tôt, et la planche le disait,
+sans quoi on lui redemandait ce qu'il venait de décider.
+
+### Un piège de charte, trouvé à l'image
+
+Le titre demandé « doré » avait d'abord été écrit `colors.rust` — le nom promet
+une terre cuite, la valeur vaut le **vert pin** depuis la reprise de la charte
+d'Arborea. À l'écran, un titre presque noir. L'or de la charte est `colors.or`,
+celui du surtitre juste au-dessus. Aucun test ne l'aurait vu.
