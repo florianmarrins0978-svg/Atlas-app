@@ -17,7 +17,7 @@ ligne « fait » qui ne l'est pas coûte plus cher qu'une ligne absente.
 
 *Sa demande : « dans la catégorie facture il faut rajouter le format de numéro,
 c'est obligatoire il me semble ». Puis « garde le F », « 6 chiffres », « oui
-remettre à 0 chaque début d'année ». Le détail est dans `ARCHITECTURE.md` §188.*
+remettre à 0 chaque début d'année ». Le détail est dans `ARCHITECTURE.md` §189.*
 
 **Fait.** Réglages → Devis & factures → « Le numéro de mes documents » : cinq
 formats, chacun montrant ce qu'il donne, enregistré au fur et à mesure. Le
@@ -31,6 +31,20 @@ suite ne pouvait le voir, puisqu'elles tournent aujourd'hui.
 
 **Ce que ça ne fait pas :** renuméroter les documents déjà émis. Les réécrire
 creuserait un trou dans la suite, ce que la loi interdit.
+
+## L'assistant est devenu un agent (26 août 2026)
+
+| | État |
+|---|---|
+| Dix gestes de plus, tous **proposés** : chantier, client, adresse, note, planning (poser/déplacer/retirer), tarifs, facture | **fait** — `propositions.ts`, `appliquerPropositionsAction` |
+| Trois lectures pour viser : `RechercherChantier`, `LireClients`, `LirePlanning` | **fait** — 20 outils au total |
+| On vise par **identifiant**, jamais par nom | **fait** — et chaque geste relit sa cible en base à l'écriture |
+| Une proposition peut ne concerner **aucun** chantier | **fait** — migration `0067`, `IS NOT DISTINCT FROM` à la réclamation |
+| Rien en direct : *« que ça reste le doigt du patron »* | **fait** — aucun geste sans confirmation |
+| Envoyer, valider, émettre : **jamais** l'assistant | **fait** — `preparer_facture` s'arrête au brouillon |
+| Le hors-sujet refusé **avant** le modèle, avec ses deux conditions | **fait** — `perimetre-assistant.ts` |
+| Faux positifs éprouvés (12 questions qui doivent passer) | **fait** — `test-assistant-perimetre.ts` |
+| Ce qu'un vrai fournisseur en fait | **non vérifié ici** (aucune clé) — chaîne entière éprouvée par le fournisseur `dev` |
 
 ## Trois rôles, trois sessions — qui atteint quoi (25 août 2026)
 

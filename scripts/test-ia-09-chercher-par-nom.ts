@@ -6,6 +6,19 @@ import * as clientsRepo from "../src/server/repositories/clients";
 import { getOuCreerDevisBrouillon, envoyerDevis, listerVersionsDevis } from "../src/server/repositories/devis";
 import { ajouterLignePrix } from "../src/server/repositories/lignes-prix";
 import { getOutil } from "../src/server/ai/tools/registre";
+import { appliquerPropositionsAction } from "../src/app/chantiers/[id]/informations/actions";
+import { enregistrerPropositions } from "../src/server/repositories/propositions-ia";
+import type { ActionProposee } from "../src/server/ai/propositions";
+import type { Ctx } from "../src/server/repositories/context";
+
+/**
+ * Le parcours réel d'un geste : on l'enregistre, puis on le confirme par son
+ * identifiant — jamais par son contenu (`propositions-ia.ts`).
+ */
+async function confirmerGeste(ctx: Ctx, proposition: ActionProposee) {
+  const [enregistree] = await enregistrerPropositions(ctx, null, [proposition]);
+  return appliquerPropositionsAction(null, [enregistree.id]);
+}
 import { nettoyerBase } from "./_test-db";
 
 // **Retrouver le premier devis de M. Bernard, sans avoir ouvert son chantier.**
@@ -46,6 +59,8 @@ async function main() {
     { email: `chercher-${Date.now()}@atlas.test`, nom: "Patron" }
   );
   const A = { entrepriseId: entreprise.id, utilisateurId };
+  // L'action serveur résout sa session ici (dérogation réservée aux tests).
+  process.env.AUTH_TEST_UTILISATEUR_ID = A.utilisateurId;
 
   // Une AUTRE entreprise, avec un client au même nom : c'est le seul cas où un
   // défaut d'isolation se verrait, et il montrerait les devis d'un confrère.
@@ -189,54 +204,61 @@ async function main() {
     assert.deepEqual(r.versionsDisponibles.map((v) => v.numeroVersion), [1, 2]);
   });
 
-  // ═══ CRÉER UNE FICHE — sa demande du 25 août, sur une seconde capture ═════
+  // ═══ CRÉER UNE FICHE — sa demande du 25 août, PASSÉE SOUS SON DOIGT ══════
   //
   // *« Crée-moi une nouvelle fiche chantier du nom de Fernandez »* — refusé :
-  // *« je ne suis pas en mesure de créer une fiche chantier »*, suivi de trois
-  // étapes à faire à la main. Sa réponse : **« Ça aussi il doit pouvoir le
-  // faire »**.
-  const creer = getOutil("CreerChantier")!;
+  // *« je ne suis pas en mesure de créer une fiche chantier »*. Sa réponse :
+  // **« Ça aussi il doit pouvoir le faire »**. C'était d'abord un outil qui
+  // ÉCRIVAIT tout seul, la seule exception du dépôt.
+  //
+  // **Le 26 août, il a tranché la question de face** — *« y a-t-il des gestes
+  // sans risque qu'il fasse directement ? »* — : **« je pense qu'il ne doit
+  // pas pouvoir le faire, très important que ça reste le doigt du patron »**.
+  // L'exception est donc refermée : le geste existe toujours, comme
+  // PROPOSITION (`creer_chantier`). Il SAIT le faire, et c'est lui qui appuie.
+  //
+  // **Ce qui suit garde les deux règles que l'outil portait**, parce que
+  // changer de mécanique n'est pas une raison de les perdre.
 
   await cas("SA DEMANDE : « une fiche du nom de Fernandez » ouvre bel et bien un chantier", async () => {
-    const r = (await creer.executer({ ctx: A, chantierId: null }, { client: "Fernandez" })) as {
-      cree: boolean;
-      chantierId: string;
-      chantierNom: string;
-      clientNom: string;
-    };
-    assert.equal(r.cree, true, "rien n'a été créé");
-    assert.equal(r.clientNom, "Fernandez");
+    const { resultats } = await confirmerGeste(A, {
+      type: "creer_chantier",
+      description: "Créer la fiche : Fernandez",
+      donnees: { client: "Fernandez" },
+    });
+    assert.equal(resultats[0].statut, "appliquee", resultats[0].message);
 
     // **L'ÉTIQUETTE VIENT DE LA RÈGLE DU DÉPÔT, pas d'une seconde façon de
     // nommer.** Un chantier ne se baptise pas (sa demande du 5 août 2026) :
     // son nom se déduit du client. « Chantier Fernandez » composé à la main
-    // ici divergerait de ce que son écran de création écrit.
-    assert.match(r.chantierNom, /Fernandez/, `le nom affiché ignore le client : « ${r.chantierNom} »`);
-
-    // Et la fiche existe pour de bon — pas seulement dans la réponse.
-    const enBase = await chantiersRepo.getChantier(A, r.chantierId);
-    assert.ok(enBase, "le chantier rendu n'existe pas en base");
+    // divergerait de ce que son écran de création écrit.
+    const tous = await chantiersRepo.listerChantiersPourAffichage(A);
+    const ouvert = tous.find((c) => (c.clientNom ?? "").includes("Fernandez"));
+    assert.ok(ouvert, "aucune fiche ouverte pour Fernandez");
+    assert.match(ouvert!.nom, /Fernandez/, `le nom ignore le client : « ${ouvert!.nom} »`);
   });
 
   await cas("LE DOUBLON EST REFUSÉ D'ABORD — un jardin ne se dédouble pas en silence", async () => {
     // Il repasse chez les mêmes gens : créer d'office ferait deux fiches pour
     // un même jardin, et ce désordre-là ne se défait plus.
-    const r = (await creer.executer({ ctx: A, chantierId: null }, { client: "Fernandez" })) as {
-      cree: boolean;
-      motif: string;
-      chantiers: unknown[];
-    };
-    assert.equal(r.cree, false, "une seconde fiche a été ouverte sans rien demander");
-    assert.equal(r.motif, "chantiers_existants");
-    assert.equal(r.chantiers.length, 1, "il ne dit pas quels chantiers existent déjà");
+    const avant = (await chantiersRepo.listerChantiersPourAffichage(A)).length;
+    const { resultats } = await confirmerGeste(A, {
+      type: "creer_chantier",
+      description: "Créer une seconde fiche : Fernandez",
+      donnees: { client: "Fernandez" },
+    });
+    assert.equal(resultats[0].statut, "conflit", "une seconde fiche a été ouverte sans rien demander");
+    assert.match(resultats[0].message ?? "", /d[ée]j[àa] \d+ chantier/i, "il ne dit pas qu'il en existe déjà");
+    assert.equal((await chantiersRepo.listerChantiersPourAffichage(A)).length, avant, "rien ne devait être écrit");
   });
 
   await cas("… et il cède quand le patron a confirmé", async () => {
-    const r = (await creer.executer({ ctx: A, chantierId: null }, {
-      client: "Fernandez",
-      confirmerDoublon: true,
-    })) as { cree: boolean };
-    assert.equal(r.cree, true, "confirmé, il refuse encore : le patron ne peut plus avancer");
+    const { resultats } = await confirmerGeste(A, {
+      type: "creer_chantier",
+      description: "Créer quand même",
+      donnees: { client: "Fernandez", confirmerDoublon: true },
+    });
+    assert.equal(resultats[0].statut, "appliquee", "confirmé, il refuse encore : le patron ne peut plus avancer");
   });
 
   await cas("le client existant est REPRIS, jamais dupliqué", async () => {
@@ -244,32 +266,28 @@ async function main() {
     // stricte ouvrirait un second dossier, et son historique resterait dans le
     // premier.
     const avantClients = (await clientsRepo.listerClients(A)).length;
-    const r = (await creer.executer({ ctx: A, chantierId: null }, {
-      client: "bernard",
-      confirmerDoublon: true,
-    })) as { cree: boolean; clientNom: string; clientReutilise: boolean };
-    assert.equal(r.cree, true);
-    assert.equal(r.clientNom, "Mr. Bernard", "un second client « bernard » a été ouvert");
-    assert.equal(r.clientReutilise, true);
-    assert.equal((await clientsRepo.listerClients(A)).length, avantClients, "la liste des clients a grossi");
-  });
-
-  await cas("ISOLATION : la fiche naît dans SON entreprise, et nulle part ailleurs", async () => {
-    const r = (await creer.executer({ ctx: B, chantierId: null }, {
-      client: "Fernandez",
-      confirmerDoublon: true,
-    })) as { chantierId: string };
-    assert.ok(await chantiersRepo.getChantier(B, r.chantierId), "le voisin ne voit pas sa propre fiche");
+    const { resultats } = await confirmerGeste(A, {
+      type: "creer_chantier",
+      description: "Créer pour bernard",
+      donnees: { client: "bernard", confirmerDoublon: true },
+    });
+    assert.equal(resultats[0].statut, "appliquee", resultats[0].message);
     assert.equal(
-      await chantiersRepo.getChantier(A, r.chantierId),
-      null,
-      "l'entreprise A voit le chantier créé par B : les fiches se mélangent"
+      (await clientsRepo.listerClients(A)).length,
+      avantClients,
+      "un second client « bernard » a été ouvert : la liste a grossi"
     );
   });
 
   await cas("un nom vide n'ouvre rien", async () => {
-    const r = (await creer.executer({ ctx: A, chantierId: null }, { client: "   " })) as { erreur: string };
-    assert.match(r.erreur, /nom/i, "il ouvre une fiche sans savoir pour qui");
+    const avant = (await chantiersRepo.listerChantiersPourAffichage(A)).length;
+    const { resultats } = await confirmerGeste(A, {
+      type: "creer_chantier",
+      description: "Créer sans nom",
+      donnees: { client: "   " },
+    });
+    assert.equal(resultats[0].statut, "conflit", "il ouvre une fiche sans savoir pour qui");
+    assert.equal((await chantiersRepo.listerChantiersPourAffichage(A)).length, avant);
   });
 
   // ═══ « PEU IMPORTE OÙ JE L'OUVRE » — sa demande du 25 août ════════════════

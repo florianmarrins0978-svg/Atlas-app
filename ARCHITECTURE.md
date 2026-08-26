@@ -16128,6 +16128,21 @@ quoi le cas serait vert avec une recherche qui ne rend jamais rien.
 
 ## 184. L'assistant OUVRE une fiche chantier — la seule écriture qu'on lui accorde
 
+> **REFERMÉE LE 26 AOÛT 2026, LE LENDEMAIN.** À la question posée de face —
+> *« y a-t-il des gestes sans risque que tu veux qu'il fasse directement, sans
+> te demander ? »* —, le patron a répondu : **« Je pense qu'il ne doit pas
+> pouvoir le faire. Très important que ça reste le doigt du patron. »**
+>
+> L'outil `CreerChantier` a donc quitté le registre, et le geste est devenu la
+> proposition `creer_chantier` (§188). **Ses deux demandes tiennent ensemble** :
+> celle du 25 août était *« ça aussi il doit pouvoir le faire »* — il le peut
+> toujours —, celle du 26 dit seulement qui appuie.
+>
+> **Ce qui suit reste vrai et vaut d'être lu** : les deux règles que cet outil
+> portait — un chantier ne se baptise pas, un doublon ne se crée pas en silence
+> — ont été reprises telles quelles dans la proposition. Changer de mécanique
+> n'était pas une raison de les perdre.
+
 **Sa demande du 25 août 2026**, capture à l'appui : *« Crée-moi une nouvelle
 fiche chantier du nom de Fernandez »*. Réponse de l'assistant : *« je ne suis
 pas en mesure de créer une fiche chantier »*, suivie de trois étapes à faire à
@@ -16463,3 +16478,130 @@ Il ne renumérote **rien**. Les documents déjà émis gardent leur numéro — 
 réécrire creuserait un trou dans la suite, ce que la loi interdit — et l'écran
 le dit en une phrase. La suite reprend là où elle en était, dans le nouvel
 habillage.
+
+## 189. L'agent : dix gestes de plus, un périmètre fermé, et toujours son doigt
+
+**Ses deux demandes du 26 août 2026**, dans le même message : *« je veux que ce
+soit un vrai agent IA avec toutes les capacités possibles et imaginables sur
+l'appli »*, et — *« seulement pour l'appli : si on lui demande est-ce que le CGR
+de Mantes est ouvert, il ne doit pas y répondre »*.
+
+**Et sa réponse à la seule question que je lui ai posée** : rien en direct.
+*« Je pense qu'il ne doit pas pouvoir le faire. Très important que ça reste le
+doigt du patron. »* Tout ce qui suit est donc une PROPOSITION, cochée et
+confirmée — sans exception, y compris pour un numéro de téléphone.
+
+### Ce qu'il savait faire, et ce qui manquait
+
+Il lisait beaucoup et n'agissait qu'ici : prestations, matériel, durée, équipe,
+lignes de prix — **et toujours sur le chantier ouvert**, le seul qu'il connût.
+S'ajoutent dix gestes et trois lectures :
+
+| Lire | Faire (proposé) |
+|---|---|
+| `RechercherChantier` — par nom de client ou de chantier | créer un chantier, corriger son adresse, y laisser une note |
+| `LireClients` — avec l'identifiant | corriger une fiche client |
+| `LirePlanning` — le posé ET ce qui attend un jour | poser, déplacer, retirer du planning |
+| (`LireTarifs`, déjà là) | créer et corriger un tarif ; préparer une facture |
+
+**On vise par IDENTIFIANT, jamais par nom** — deux clients peuvent s'appeler
+Martin, et corriger le téléphone du mauvais, c'est un devis qui part chez
+quelqu'un d'autre. D'où les trois lectures : elles existent pour rendre l'id.
+
+**Chaque geste relit sa cible en base au moment d'ÉCRIRE**, pas au moment de
+proposer. Entre la proposition et son doigt, le chantier a pu disparaître ;
+l'écrire quand même serait une erreur silencieuse. Un client effacé, un tarif
+supprimé, un chantier d'une autre société : le même conflit, en français.
+
+### Une proposition peut ne concerner AUCUN chantier (migration 0067)
+
+`propositions_ia.chantier_id` était obligatoire — normal quand tout geste visait
+le chantier ouvert. Créer un chantier n'en a pas encore ; régler un tarif n'en
+concerne aucun. La colonne est donc nullable, et la réclamation compare avec
+**`IS NOT DISTINCT FROM`** : écrite avec `=`, elle n'aurait jamais retrouvé une
+proposition à `NULL` — `NULL = NULL` est faux — et le geste aurait été
+« introuvable » sans que rien ne dise pourquoi.
+
+**Ce que ça n'ouvre pas** : c'est `entreprise_id` que la RLS regarde, et il
+reste obligatoire.
+
+### Le périmètre : DEUX verrous, parce qu'une consigne ne se vérifie pas
+
+La consigne du service dit au modèle de s'en tenir à Atlas. Nécessaire, et
+insuffisant : une consigne se contourne, change avec le fournisseur, et surtout
+**ne s'éprouve pas**. `src/lib/perimetre-assistant.ts` décide donc du refus
+**avant** que le modèle soit appelé — gratuit, identique quel que soit le
+fournisseur, et éprouvable sans clé.
+
+**Il ne refuse que si les DEUX sont vraies** : la question porte une marque
+franche du dehors (cinéma, météo, recette, capitale…) **et** aucun mot d'Atlas.
+C'est là qu'est tout l'art : refuser sur le seul mot « cinéma » ferait taire
+l'assistant devant *« j'ai un chantier au cinéma de Mantes »* — une vraie
+question. Et un garde-fou qui parle à tort s'apprend à être ignoré : on perd
+alors le garde-fou entier.
+
+Les mots ambigus sont dehors de la liste, délibérément : « ouvert », « horaire »
+et surtout **« temps »**, qui dit aussi le temps PASSÉ sur un chantier. La météo
+s'attrape par des tournures entières — « quel temps fait-il » —, jamais par ce
+mot seul.
+
+**Le doute profite à la question** : elle part au modèle, qui a la consigne. Ce
+filtre attrape le cas franc — le sien —, pas la totalité, et c'est assumé.
+
+**La suite éprouve les DEUX moitiés**, et la seconde compte davantage : douze
+questions qui doivent passer, dont *« combien de temps a pris le chantier »*,
+*« la facture de l'hôtel des Voyageurs »*, *« j'ai un chantier au cinéma de
+Mantes »*. Une suite qui n'éprouverait que le refus laisserait passer un filtre
+qui refuse tout — et on ne s'en apercevrait qu'à l'usage.
+
+### Trois gestes ne sont jamais les siens
+
+**Envoyer** un devis ou une facture, **valider** un devis, **émettre** une
+facture. `preparer_facture` s'arrête au brouillon : la facture existe, elle n'est
+pas partie. C'est la règle de toujours (§4 de `CLAUDE.md`), et il l'a
+reconfirmée le 26 août. Un devis parti chez un client ne se rattrape pas.
+
+### L'assistant ouvert aux commerciaux le matin, refermé le midi
+
+**Deux paroles opposées, le même jour, à deux sessions différentes.** À moi,
+sur la question du périmètre : *« oui tu peux l'ouvrir aux commerciaux »*. À une
+autre, quelques heures plus tard, en majuscules : **« LES SALARIÉS ET
+COMMERCIAUX NE DOIVENT PAS AVOIR ACCÈS À L'ASSISTANT IA »**.
+
+**C'est la seconde qui vaut** — la dernière, la plus nette, et celle qui est sur
+`main`. Écrit ici pour que personne ne la rouvre en croyant retrouver un oubli.
+
+**Et la règle n'appelle plus `peutVoirLesMontants`**, ce qui est le vrai point :
+un commercial voit les prix écran par écran sans avoir l'assistant. Les faire
+suivre l'une l'autre rouvrirait l'assistant en silence le jour où l'on
+élargirait les montants — une porte qu'on ne verrait pas s'ouvrir.
+
+### Deux sessions, le même jour, sur le même agent
+
+**§183, §184 et §185 sont d'une autre session**, écrits le 25 août pendant que
+celui-ci se montait. Les deux se sont rencontrés à la fusion, et il fallait
+trancher plutôt que garder deux façons de faire (`CLAUDE.md` §3) :
+
+| | Ce qui a été gardé |
+|---|---|
+| `RechercherChantier` | **leur version** — elle emploie `recherche-client.ts`, la règle de l'ÉCRAN : accents, casse, mots dans le désordre. La mienne comparait à la main |
+| `chantier-vise.ts` | **leur version** — une règle partagée, là où j'avais mis la même logique dans chaque geste |
+| `CreerChantier` (outil qui ÉCRIT) | **refermé**, sur sa réponse du 26 août — devenu la proposition `creer_chantier` |
+| les deux règles de leur outil | **reprises telles quelles** : un chantier ne se baptise pas, un doublon ne se crée pas en silence |
+
+**Ce qui aurait été perdu sans y regarder :** en changeant de mécanique, le nom
+du chantier serait redevenu ce que le modèle écrit, et un second jardin se
+serait ouvert au même nom sans un mot. Leur suite les défendait ; elle a été
+adaptée au geste proposé, pas supprimée (`CLAUDE.md` §5 bis).
+
+### Ce que la capture a trouvé, et aucun test
+
+Depuis l'accueil, *« crée un chantier pour Madame Lucie »* répondait **« Aucun
+chantier dans le contexte courant »** — un message technique, et faux : créer un
+chantier ne demande justement aucun chantier ouvert. Le refus datait de l'époque
+où tout geste en visait un ; il survivait à la migration 0067.
+
+**Aucune suite ne le voyait**, parce que toutes posaient leurs questions depuis
+un chantier. C'est la sixième fois dans ce dépôt qu'un défaut sort d'une image et
+d'aucun test. Le même appui rendait d'ailleurs le bouton « Appliquer » inerte
+côté écran — un bouton qui s'enfonce sans rien faire se lit comme une panne.

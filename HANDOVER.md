@@ -21,6 +21,18 @@ jour.
 remède est écrit : `joursRetenables` tourne la page du mois quand celui-ci est
 trop court. Toute suite neuve qui compte des jours doit faire de même.
 
+## L'ASSISTANT EST UN AGENT : CE QU'IL FAUT SAVOIR AVANT D'Y TOUCHER (26 août 2026)
+
+| | |
+|---|---|
+| **Rien en direct, jamais** | tout geste est une proposition cochée. Sa règle : *« très important que ça reste le doigt du patron »*. Ne pas « simplifier » en exécutant un geste anodin |
+| **Envoyer, valider, émettre** | ne sont PAS des gestes de l'assistant, et ne le deviendront pas sans qu'il le redemande en face |
+| **On vise par identifiant** | jamais par nom. Un geste qui accepterait un nom corrigerait le mauvais Martin |
+| **La cible se relit à l'ÉCRITURE** | pas à la proposition. Entre les deux, il a pu la supprimer |
+| **Le périmètre a DEUX conditions** | marque du dehors **et** aucun mot d'Atlas. Retirer la seconde ferait taire l'assistant sur de vraies questions — c'est le piège, pas le refus |
+| **« temps » n'est pas un mot du dehors** | il dit aussi le temps passé sur un chantier. Les mots ambigus restent hors de la liste, délibérément |
+| **Une proposition peut n'avoir aucun chantier** | migration 0067. La réclamation compare avec `IS NOT DISTINCT FROM` : `= NULL` ne retrouverait rien |
+
 ## L'ASSISTANT RÉCITE UN MODE D'EMPLOI ÉCRIT (25 août 2026)
 
 Avant d'y toucher :

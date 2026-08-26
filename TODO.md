@@ -13,7 +13,7 @@ langage, et rien n'y entre sans son accord.
 
 ~~Sa demande du 26 août : « dans la catégorie facture il faut rajouter le format
 de numéro ». Cinq formats au choix, le compteur qui repart au 1ᵉʳ janvier, et
-surtout le millésime qui n'est plus écrit en dur.~~ `ARCHITECTURE.md` §188.
+surtout le millésime qui n'est plus écrit en dur.~~ `ARCHITECTURE.md` §189.
 
 **Ce qui reste ouvert, et qui n'est pas ce lot :** le numéro de la première
 facture d'une entreprise qui reprendrait une suite existante. Aujourd'hui elle
@@ -21,6 +21,24 @@ repart de 1 ; un artisan qui migre depuis un autre logiciel voudra continuer à
 0148. Il ne l'a pas demandé, et rien ne presse — mais le jour où il le
 demandera, c'est une colonne de départ sur `entreprise_compteurs`, pas un
 nouveau format.
+
+## L'agent : ce qu'il ne sait pas encore faire
+
+**FAIT le 26 août 2026** pour l'essentiel (`ARCHITECTURE.md` §188). Ce qui reste
+ouvert, et qu'il faudra sans doute lui demander :
+
+- **Des gestes non couverts** : composer la fiche d'entretien, régler les
+  documents (validité, acompte, mentions), gérer les absences d'équipe, lancer
+  un plan d'arrosage, créer un client SANS chantier, supprimer un chantier ou un
+  tarif. Chacun est une entrée de plus dans `TypeActionProposee` et un `case`
+  dans `appliquerPropositionsAction` — le patron est posé.
+- **Le filtre de périmètre attrape le cas franc, pas la totalité.** Une question
+  du dehors sans marque connue passe au modèle, qui a la consigne. S'il signale
+  une réponse hors-sujet, c'est une marque à ajouter dans `MARQUES_DU_DEHORS` —
+  **jamais** un mot ambigu, et jamais au prix d'un faux positif.
+- **La formulation d'un vrai modèle n'a pas été vue ici** (aucune clé) : la
+  chaîne entière est éprouvée par le fournisseur `dev`. À regarder sur son
+  espace, en lui demandant trois ou quatre gestes.
 
 ---
 
