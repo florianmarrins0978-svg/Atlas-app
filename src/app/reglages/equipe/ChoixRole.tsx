@@ -55,9 +55,12 @@ export default function ChoixRole({
   return (
     <>
       {titre && (
-        <p className={`mb-2 flex items-center gap-3 ${libelleCaps}`} style={{ color: colors.muted }}>
+        // **Aucun filet au bout d'un intertitre** — sa demande du 25 août 2026.
+        // Celui-ci avait survécu au retrait : le contrôle
+        // (`scripts/test-accueil-en-tete.ts`) le dénonçait sur `main`, et il
+        // avait raison. Seuls les séparateurs de blocs restent.
+        <p className={`mb-2 ${libelleCaps}`} style={{ color: colors.muted }}>
           Son rôle
-          <i className="h-px flex-1" style={{ backgroundColor: colors.line }} />
         </p>
       )}
 
