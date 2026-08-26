@@ -9,6 +9,24 @@ Format : le plus récent en tête.
 
 ## 2026-08-26
 
+### Changer le rythme de la TVA fait enfin bouger l'écran
+
+*« Quand je change entre tous les mois et tous les trois mois, c'est pareil,
+rien ne se passe. »* Reproduit : l'écran gardait « Août 2026 » après le passage
+au trimestre.
+
+La base était bien écrite — le réglage revenait au rechargement suivant. Ce qui
+manquait est la **revalidation** : le routeur reservait sa copie en cache de la
+page, sans appeler le serveur. `force-dynamic` ne protège pas de cela, et c'est
+le piège — il fait recalculer le serveur à chaque demande, encore faut-il qu'une
+demande parte.
+
+**Aucun contrôle ne pouvait le voir** : tous passaient par Réglages puis
+rouvraient le relevé par une navigation neuve, et une page rouverte est toujours
+juste. Le cas ajouté rejoue SA séquence — basculer sans quitter l'écran — et a
+été vu rouge avant d'être vert. `ARCHITECTURE.md` §193.
+
+
 ### Ses salariés se comptent à part de ses équipes — et ce sont leurs noms qu'on coche
 
 **Sa réponse à la planche 97 : A.** Puis, en tranchant : *« il ne faut pas
