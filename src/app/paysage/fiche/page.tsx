@@ -95,7 +95,12 @@ export default async function FichesPage() {
                 l'on croyait avoir réglé la question. */}
             <Link
               href="/paysage/fiche/composer"
-              className="flex w-fit max-w-[270px] min-h-[44px] items-center gap-[14px] rounded-[14px] px-[16px] py-[13px]"
+              data-atlas="carte-composer-ma-fiche"
+              // **4 px, et non 14** : la charte veut ses plages presque droites
+              // — « au-delà de 6 px, une plage devient un galet et l'écran perd
+              // sa tenue ». La capsule est réservée à ce qu'on APPUIE ; ceci est
+              // une carte qu'on parcourt, comme « Ma TVA à déclarer ».
+              className="flex w-fit max-w-[270px] min-h-[44px] items-center gap-[14px] rounded-[4px] px-[16px] py-[13px]"
               // `rustTint` est le PAPIER de la charte (`--paper`), pas une
               // teinte de terre cuite : le nom vient d'avant la reprise
               // d'Arborea. C'est le fond des éléments teintés, et il reste

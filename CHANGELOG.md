@@ -183,7 +183,24 @@ périmètre affiché ne suivait pas le rôle coché, si bien qu'on lisait « le
 planning et rien d'autre » sous « Commercial ». Une maquette qui ment sur ce que
 fait un rôle est pire qu'une maquette absente.
 
-### La carte, moins large
+### La carte, moins large — et à 4 px, comme les autres plages
+
+*« Une carte mais fais-la moins large. »* C'est fait : elle prend la largeur de
+son texte, plafonnée, sur fond papier, à la place qu'il a tranchée. Le plafond
+n'est pas décoratif — sans lui elle redeviendrait pleine largeur chez qui
+grossit les caractères de son téléphone, c'est-à-dire là où l'on croyait avoir
+réglé la question.
+
+**Son rayon a été redressé par le contrôle des boutons** : 14 px en faisaient le
+« galet » que la charte refuse au-delà de 6. Elle porte donc les 4 px de « Ma
+TVA à déclarer », l'autre carte qu'on parcourt, et son exception est bornée à
+son repère — tout autre bouton carré de cet écran fait toujours rougir.
+
+**Et un filet retiré le 25 août était revenu** avec l'écran « Donner un accès »
+d'une autre session : le trait qui prolonge « SON RÔLE » jusqu'au bord. Son
+contrôle l'a dénoncé, il est reparti — les séparateurs de blocs, eux, restent.
+
+### (première version, remplacée le jour même)
 
 *« Une carte mais fais-la moins large. »* C'est fait : elle prend la largeur de
 son texte, plafonnée, sur fond papier, à la place qu'il a tranchée. Le plafond

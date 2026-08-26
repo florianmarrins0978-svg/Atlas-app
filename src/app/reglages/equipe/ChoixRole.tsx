@@ -54,10 +54,14 @@ export default function ChoixRole({
 
   return (
     <>
+      {/* **Pas de filet à côté du mot** — il les a fait retirer le 25 août 2026,
+          capture de cet écran-là à l'appui : *« ça aussi tu peux retirer »*.
+          Celui-ci est revenu le 26 avec l'écran « Donner un accès », et
+          `test-accueil-en-tete.ts` l'a dénoncé. Les séparateurs de BLOCS, eux,
+          restent : *« ceux qui séparent les blocs, laisse-les »*. */}
       {titre && (
-        <p className={`mb-2 flex items-center gap-3 ${libelleCaps}`} style={{ color: colors.muted }}>
+        <p className={`mb-2 ${libelleCaps}`} style={{ color: colors.muted }}>
           Son rôle
-          <i className="h-px flex-1" style={{ backgroundColor: colors.line }} />
         </p>
       )}
 
