@@ -111,12 +111,17 @@ export default function VosSalaries({
               quelque chose à dire (`CLAUDE.md` §4 ter). */}
           {sansNom > 0 ? (
             <p className="mt-3 text-[12.5px] leading-[1.6]" style={{ color: colors.muted }}>
-              {sansNom === 1 ? "Un salarié n'a pas de nom" : `${sansNom} salariés n'ont pas de nom`} :
-              <span style={{ color: colors.ink }}>
-                {" "}
-                le chantier les montrera sous leur numéro
-              </span>
-              .
+              {sansNom === 1 ? (
+                <>
+                  Un salarié n&apos;a pas de nom :{" "}
+                  <span style={{ color: colors.ink }}>le chantier le montrera sous son numéro</span>.
+                </>
+              ) : (
+                <>
+                  {sansNom} salariés n&apos;ont pas de nom :{" "}
+                  <span style={{ color: colors.ink }}>le chantier les montrera sous leur numéro</span>.
+                </>
+              )}
             </p>
           ) : null}
         </div>

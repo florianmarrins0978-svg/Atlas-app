@@ -26,7 +26,7 @@ import {
   DEMIS,
   ditLeCompteDemi,
   ditLaDuree,
-  ditLesEquipes,
+  ditQuiPart,
   etatDemi,
   MOT_DEMI,
   MOT_QUAND,
@@ -796,7 +796,7 @@ export default function PlanningClient({
                           vide={toutes.length === 0}
                           onClick={ouvrir}
                           avecPlus={false}
-                          libelle={ditLesEquipes(toutes.map(nomEquipe))}
+                          libelle={ditQuiPart(toutes.map(nomEquipe))}
                         />
                       )}
                       {/* **Le chevron MÈNE au chantier, il n'ouvre pas la
@@ -1529,7 +1529,7 @@ function CarteDuJour({
                     ) : (
                       <PastilleEquipe
                         vide={rangs.length === 0}
-                        libelle={ditLesEquipes(rangs.map(nomEquipe))}
+                        libelle={ditQuiPart(rangs.map(nomEquipe))}
                         onClick={() =>
                           setOuvert({ quoi: "equipe", cle, chantierId: c.id, demi })
                         }

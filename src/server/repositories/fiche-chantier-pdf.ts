@@ -15,7 +15,7 @@ import {
 import type { Ctx } from "./context";
 import type { FicheChantierPdfData } from "../pdf/fiche-chantier-pdf";
 import { libelleSalarie } from "../../lib/equipes";
-import { ditLesEquipes } from "../../lib/planning-jour";
+import { ditQuiPart } from "../../lib/planning-jour";
 
 /**
  * Tout ce qu'il faut pour imprimer la fiche d'un chantier, en une lecture.
@@ -61,7 +61,7 @@ export async function chargerFicheChantierPourPdf(
     // la migration 0058, un chantier peut en porter plusieurs, et différentes
     // selon la demi-journée : la fiche, elle, couvre le chantier entier — y
     // écrire la seule équipe du matin ferait croire que l'après-midi n'a
-    // personne. `ditLesEquipes` compte au-delà de deux noms, comme le planning.
+    // personne. `ditQuiPart` compte au-delà de deux noms, comme le planning.
     const sesEquipes = await tx
       .selectDistinct({ rang: equipes.rang, nom: equipes.nom })
       .from(equipesDuChantier)
@@ -130,7 +130,7 @@ export async function chargerFicheChantierPourPdf(
         const nommees = sesEquipes
           .map((e) => libelleSalarie(e, entreprise?.nombreSalaries ?? 0))
           .filter((n): n is string => Boolean(n));
-        return nommees.length === 0 ? null : ditLesEquipes(nommees);
+        return nommees.length === 0 ? null : ditQuiPart(nommees);
       })(),
       numeroDevis: sonDevis[0]?.numero ?? null,
 

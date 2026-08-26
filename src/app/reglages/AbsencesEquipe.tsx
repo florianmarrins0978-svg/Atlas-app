@@ -176,7 +176,7 @@ export default function AbsencesEquipe({
       {absences.length === 0 ? (
         <p className="px-[26px] py-2 text-[13px] leading-[1.7]" style={{ color: colors.muted }}>
           Personne d’absent. Un déplacement, un congé, un arrêt : notez-le ici et
-          Atlas ne proposera plus cette équipe ces jours-là.
+          Atlas n’enverra plus personne à sa place ces jours-là.
         </p>
       ) : (
         <div className="px-[26px]">
@@ -232,8 +232,8 @@ export default function AbsencesEquipe({
       </button>
 
       <p className="mx-[26px] mt-3 text-[12px] leading-[1.7]" style={{ color: colors.muted }}>
-        Une équipe absente <span style={{ color: colors.ink }}>ne compte plus</span> ces
-        jours-là : Atlas ne proposera qu’une date à la fois, et tout revient normal
+        Un absent <span style={{ color: colors.ink }}>ne compte plus</span> ces
+        jours-là : Atlas propose une date de moins, et tout revient normal
         ensuite. Vos clients ne voient rien de tout ceci.
       </p>
 
@@ -246,7 +246,7 @@ export default function AbsencesEquipe({
         </p>
 
         <div className="flex flex-col gap-px overflow-hidden rounded-xl" style={{ backgroundColor: colors.lineSoft }}>
-          <Ligne libelle="Équipe">
+          <Ligne libelle="Qui">
             <select
               value={rang}
               onChange={(e) => setRang(Number(e.target.value))}
