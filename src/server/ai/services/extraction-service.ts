@@ -5,6 +5,7 @@ import { erreurIA } from "../errors";
 import { estJsonTronque, lireObjetJson } from "../../../lib/json-du-modele";
 import { lireLitteralement } from "../lecture-litterale";
 import { logger } from "../../logger";
+import { NATURES } from "../../../lib/natures-prestation";
 
 /**
  * **Exportée pour être éprouvée, jamais pour être appelée d'ailleurs.**
@@ -13,6 +14,11 @@ import { logger } from "../../logger";
  * des unités : elles ne le disaient pas, et l'une acceptait « arbre » quand
  * l'autre ne donnait aucun exemple. `scripts/test-invites-unites.ts` monte la
  * garde sur ce point précis.
+ *
+ * **La liste des natures est ENGENDRÉE depuis le référentiel**, jamais recopiée.
+ * Une nature ajoutée dans `natures-prestation.ts` et oubliée ici ne serait
+ * jamais proposée par le modèle : la case existerait, rien ne pourrait la
+ * désigner. C'est la règle dupliquée que `CLAUDE.md` §3 interdit.
  */
 export const SYSTEME = `Tu extrais des informations de chantier depuis un texte dicté par un artisan.
 Réponds UNIQUEMENT avec un objet JSON valide, sans aucun texte avant ou après, au format exact suivant :
@@ -43,8 +49,7 @@ Règles absolues :
   L'unité de comptage doit être l'objet explicitement prononcé. N'invente pas une unité pour un nombre
   dont on ne sait pas ce qu'il compte : les deux restent null.
 - "nature" se choisit dans CETTE LISTE, et nulle part ailleurs :
-    abattage, elagage, haie, tonte, dessouchage, fendage, grumes, broyage, evacuation,
-    billonnage, plantation, cloture
+    ${NATURES.map((n) => n.cle).join(", ")}
   Si le travail décrit n'en fait manifestement partie d'aucune, "nature" vaut null. N'invente
   JAMAIS un nom de nature : un travail sans nature reste un travail à part entière.
 - "espece" n'est renseignée que si l'espèce est PRONONCÉE — « un érable », « de la haie de

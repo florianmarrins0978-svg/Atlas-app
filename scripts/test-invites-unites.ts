@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { SYSTEME } from "../src/server/ai/services/extraction-service";
 import { systeme as systemeRetouches } from "../src/server/ai/services/retouches-devis-service";
 import { structureDeLaPrestation } from "../src/lib/prestation-structuree";
+import { NATURES } from "../src/lib/natures-prestation";
 
 // **Les deux micros doivent demander la MÊME chose des unités.**
 //
@@ -80,6 +81,30 @@ cas("l'extraction dit où vont « quatre journées » et « deux hommes »", () 
     /jamais dans la quantité d'une prestation/i,
     "rien n'interdit de faire de « deux hommes » une quantité de prestation"
   );
+});
+
+console.log("\n=== La liste des natures vient du référentiel, jamais d'une copie ===\n");
+
+cas("chaque nature du référentiel est proposée au modèle", () => {
+  // **Une nature ajoutée au référentiel et oubliée dans l'invite ne serait
+  // jamais proposée** : la case existerait, rien ne pourrait la désigner. C'est
+  // la règle dupliquée que `CLAUDE.md` §3 interdit, et elle a déjà coûté une
+  // rangée de grille vide pour toujours (14 août 2026).
+  for (const n of NATURES) {
+    assert.ok(
+      SYSTEME.includes(n.cle),
+      `« ${n.cle} » existe dans le référentiel et n'est pas proposée au modèle`
+    );
+  }
+});
+
+cas("l'invite exige que l'espèce soit PRONONCÉE", () => {
+  assert.match(SYSTEME, /PRONONCÉE/);
+  assert.match(SYSTEME, /Jamais déduite/i);
+});
+
+cas("et elle interdit d'inventer une nature", () => {
+  assert.match(SYSTEME, /N'invente\s+JAMAIS un nom de nature/i);
 });
 
 console.log("\n=== Ce que le code fait d'une unité de comptage ===\n");
