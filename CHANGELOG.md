@@ -35,6 +35,84 @@ mot de passe n'était demandé pour retirer un appareil — alors que la garde M
 est deux lignes plus bas. Un commentaire périmé est pire qu'absent.
 
 Détail : `docs/fusion-lot-3-verdict-final.md`.
+### Supprimer un client — sa proposition C, et la porte NOMMÉE qui la rend possible
+
+**Sa décision, devant la planche :** *« je pense la C ; lorsqu'un client a des
+documents il faut mettre la phrase de prévention, et une phrase disant avez-vous
+sauvegardé ses documents autre part — et s'il dit oui il peut supprimer quand
+même »*.
+
+**Ce qui l'empêchait, et qui n'était pas une préférence.** `effacerClient`
+existait, éprouvé, appelé par aucun écran — et il **levait** dès que le client
+avait reçu un devis : le déclencheur `trg_devis_immuable` (migration 0001)
+interdit de supprimer un devis `envoye`. La fonction ne marchait donc que pour un
+client qui n'a jamais rien reçu, c'est-à-dire presque jamais.
+
+**La migration 0068 ouvre une porte, et une seule.** Le déclencheur cède pour un
+`DELETE`, uniquement quand l'effacement a posé son réglage de session
+(`set_config(…, true)`, portée transaction, meurt avec elle). **L'exception ne
+vaut JAMAIS pour `UPDATE`** : un devis parti reste immuable, personne n'en change
+une ligne — c'est ce qui fait qu'il fait foi. Ce que l'effacement obtient, c'est
+de le faire disparaître avec le dossier, ce que le droit à l'effacement recouvre
+pour une pièce qui n'engage rien (`retention.ts` : « un devis non accepté
+n'engage rien et s'efface »).
+
+**Ce qu'aucune confirmation ne lève, et l'écran le DIT avec son numéro :**
+
+| | |
+|---|---|
+| **facture émise** | dix ans, Code de commerce L123-22 — et la clé étrangère est en RESTRICT : la base refuserait de toute façon |
+| **devis accepté** | cinq ans, il vaut engagement |
+
+Dans ces deux cas le client ne disparaît pas — son nom reste sur la pièce, sans
+lui elle ne vaut plus rien —, mais tout le reste part. Le rapport rend `disparu`
+pour que l'écran n'annonce pas une suppression qui n'a pas eu lieu.
+
+**Une seule règle, deux emplois** (`CLAUDE.md` §3) : `cequiDoitRester` sert
+l'avertissement AVANT et la suppression elle-même. Deux calculs auraient divergé,
+et c'est l'écran qui aurait menti — on lui promettrait que tout part, et la
+facture resterait.
+
+**La prévention ne parle que si elle a quelque chose à dire.** Un client tout
+neuf n'a rien à perdre : l'alarmer pour rien apprend à ignorer l'alarme
+(`CLAUDE.md` §4 ter). La question de la sauvegarde n'apparaît, et ne verrouille,
+que s'il y a des documents.
+
+**Trois trous comblés dans les suites, dont celui qui a caché le défaut :**
+`test-retention-effacement` couvrait le client sans devis et le devis accepté ;
+le milieu — parti, sans réponse — n'était éprouvé nulle part, et c'est l'état le
+plus fréquent. Trois cas s'ajoutent, dont **celui qui défend la porte** : hors
+effacement, un devis envoyé résiste toujours. **Vu rougir** contre un déclencheur
+ouvert à tous : « le sceau ne vaut plus rien ».
+
+**Et le verrou de l'écran se mesure sur le BOUTON, pas sur la case** : une case
+cochée qui ne commanderait rien passerait au vert en laissant la suppression
+ouverte. **Vu rougir** contre un verrou retiré.
+
+**Vu à l'écran**, et un défaut y a été trouvé : deux factures répétaient « une
+facture émise se conserve dix ans » deux fois de suite. La raison s'écrit une
+fois, les numéros autant qu'il en faut.
+### La fiche de chantier se touche du doigt, à une adresse
+
+*« Je veux un lien cliquable »*, après trois captures de l'écran réel. Elles
+répondaient à sa question — *« montre-moi à quoi elle ressemble »* — mais on ne
+coche pas une photo, et l'application demande un compte et un serveur qu'il n'a
+pas sous la main tant que son espace dort.
+
+`appli/fiche-de-chantier.html` reprend les **trois écrans tels qu'ils sont
+codés** — ce n'est pas une proposition. Les cases se cochent pour de vrai (de
+vraies cases, pas des dessins), le jour et les observations se saisissent, les
+molettes du temps tournent, et l'on passe d'un écran à l'autre en CSS : elle
+s'ouvre hors ligne.
+
+**Elle dit ce qu'elle n'est pas** : rien n'enregistré, rien envoyé, et les
+comptes ne bougent pas. Une copie d'écran qui se ferait passer pour
+l'application lui ferait croire qu'il vient d'envoyer un rapport à un client.
+
+Parcourue avant d'être livrée, pas relue : la carte ouvre bien la liste, une
+case passe de 3 à 4 cochées, rien ne déborde, aucune erreur au journal.
+
+---
 
 ## 2026-08-26
 
@@ -146,6 +224,30 @@ carte, et un « Voir le relevé » sous le montant.
 
 **Éprouvé** par trois cas neufs de `test-tva-en-tete-e2e.ts`, confrontés à
 l'écran d'avant : les trois rougissent.
+
+### Maquette : cinq peintures pour le bouton vert
+
+*« Tous les boutons en vert foncé, je les trouve très opaques. Est-ce que c'est
+possible de modifier ça ? »*
+
+Cinq propositions sur un vrai écran — plus clair, adouci, posé, cerné —, et
+**une seule chose change à la fois** : forme, taille, police et libellé sont
+identiques partout, sans quoi on ne compare plus rien.
+
+Les contrastes sont **mesurés**, pas jugés à l'œil, et écrits sous chaque
+proposition : de 4,9 à 11,15:1, toutes au-dessus du minimum. La mesure a
+attrapé deux défauts invisibles à l'écran — « Cerné » était 2 px plus grand que
+les quatre autres (le cerne s'ajoutait à la boîte), et l'ombre de « Posé »
+restait vert foncé en mode sombre, donc invisible.
+
+**Écarté le soir même : « j'aime pas, propose autre chose ».** Et le refus
+apprend quelque chose — les cinq propositions étaient toutes des **nuances du
+même vert pin**, c'est-à-dire cinq fois la même idée montrée comme cinq.
+« Opaque » ne demandait pas un vert un peu moins foncé.
+
+Le **second tour** change donc de famille à chaque fois : verre translucide, or,
+sauge, encre, bronze, filet. Rien n'est codé :
+`appli/le-bouton-moins-lourd.html`, en attente de son choix.
 
 ### L'envoi du devis : trois phrases de moins
 

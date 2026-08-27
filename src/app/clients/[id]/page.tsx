@@ -6,6 +6,8 @@ import { chargerFicheClient } from "@/server/repositories/fiche-client";
 import { retourFicheClient } from "@/lib/retour-fiche-client";
 import { jourCourt, type PieceDuClient } from "@/lib/documents-du-client";
 import PieceDuDossier from "./PieceDuDossier";
+import SupprimerCeClient from "./SupprimerCeClient";
+import { apercuSuppressionClient } from "@/server/repositories/donnees-client";
 
 // **La fiche d'un client : son nom, ce qu'on lui a fait la dernière fois, et
 // ses papiers.**
@@ -61,6 +63,12 @@ export default async function FicheClientPage({
   const ctx = await getCurrentCtx();
   const fiche = await chargerFicheClient(ctx, id);
   if (!fiche) notFound();
+
+  // **Ce que la suppression laisserait, lu AVANT de rien toucher.** La même
+  // fonction sert l'avertissement et la suppression elle-même : deux calculs de
+  // « ce qui reste » finiraient par diverger, et c'est l'écran qui mentirait —
+  // on lui promettrait que tout part, et la facture resterait (`CLAUDE.md` §3).
+  const apercu = await apercuSuppressionClient(ctx, id);
 
   // **L'ADRESSE, PUIS LE TÉLÉPHONE À LA LIGNE — sa demande du 26 août 2026 :**
   // *« supprime le point entre l'adresse et le numéro de tel ; le tel doit être
@@ -138,6 +146,13 @@ export default async function FicheClientPage({
         <Colonne titre="Facture" pieces={factures} rien="Aucune facture émise" />
         <Colonne titre="Fiche chantier" pieces={fiches} rien="Aucune fiche envoyée" />
       </div>
+
+      <SupprimerCeClient
+        clientId={id}
+        nom={fiche.client.nom}
+        documents={apercu?.documents ?? 0}
+        conserve={(apercu?.pieces ?? []).map((p) => ({ numero: p.numero, pourquoi: p.pourquoi }))}
+      />
 
       {/* **Plus de phrase quand il n'y a aucun document — 26 août 2026 :**
           *« supprime la phrase en gris lorsqu'il n'y a aucun document, on le

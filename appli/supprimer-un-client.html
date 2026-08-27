@@ -97,10 +97,14 @@
 <body>
 
 <div class="bandeau">
-  Votre remarque du 26 août : <b>« je ne peux pas supprimer de client, rajoute ça »</b>.
-  C'est exact — aucun écran ne le propose. Mais un client n'est pas une ligne seule :
-  il porte des devis, des factures, des photos. <b>Trois façons de le supprimer, à essayer du doigt</b> —
-  elles ne détruisent pas les mêmes choses.
+  <b>RETENUE ET CODÉE le 27 août 2026 : la C.</b> Votre réponse :
+  <i>« je pense la C ; lorsqu'un client a des documents il faut mettre la phrase de
+  prévention, et une phrase disant avez-vous sauvegardé ses documents autre part —
+  et s'il dit oui il peut supprimer quand même »</i>. C'est dans l'application.
+  <b>Une seule chose n'a pas pu vous être donnée</b>, et ce n'est pas Atlas qui refuse :
+  une <b>facture émise se conserve dix ans</b> (Code de commerce). L'écran la nomme
+  avec son numéro avant de vous demander de confirmer. La planche reste ici : elle
+  garde les trois propositions, et toute correction du geste passera d'abord par elle.
 </div>
 
 <div class="bloc">
@@ -121,7 +125,8 @@
   <p>
     Un devis parti est <b>scellé</b> — c'est voulu, il fait foi. L'effacement essayait de le
     détruire quand même. Il ne marchait donc que pour un client <b>qui n'a jamais reçu de devis</b>.
-    Cela se répare ; ce qui suit est ce que <b>vous</b> devez trancher avant.
+    <b>C'est réparé</b> : un devis parti que personne n'a accepté n'engage rien, et il s'efface
+    avec le reste. Ce qui est <b>accepté</b>, lui, ne bouge pas.
   </p>
 </div>
 
@@ -130,7 +135,7 @@
   <h1 class="titre">Trois façons</h1>
 
   <div class="choix" id="regles">
-    <button type="button" data-regle="A" aria-pressed="true">
+    <button type="button" data-regle="A" aria-pressed="false">
       <span class="quoi">A — Le retirer de ma liste
         <small>Rien n'est détruit. Il quitte vos clients ; ses devis et factures restent trouvables. Se défait.</small>
       </span>
@@ -140,7 +145,7 @@
         <small>Téléphone, adresse, e-mail, photos et notes partent. Devis partis et factures restent — la loi. Ne se défait pas.</small>
       </span>
     </button>
-    <button type="button" data-regle="C" aria-pressed="false">
+    <button type="button" data-regle="C" aria-pressed="true">
       <span class="quoi">C — Tout supprimer
         <small>Ne marche que si rien n'est parti chez le client. Sinon l'écran refuse, et dit pourquoi.</small>
       </span>
@@ -170,10 +175,11 @@
 </div>
 
 <div class="question">
-  <h3>Ce que j'attends de vous</h3>
-  <p><b>1.</b> A, B ou C — laquelle ?</p>
-  <p><b>2.</b> Le bouton sur sa fiche, ou en glissant la ligne dans la liste ?</p>
-  <p><b>3.</b> Si c'est A : un client retiré doit-il pouvoir <b>revenir</b>, et depuis où ?</p>
+  <h3>Ce qui reste ouvert</h3>
+  <p><b>Le bouton est en bas de sa fiche</b> — c'est la place 1. Vous n'avez pas
+  tranché entre les deux : le bas de la fiche a été retenu parce qu'on l'y trouve
+  en le cherchant, jamais du pouce en faisant défiler une liste. Dites-le si vous
+  préférez l'autre.</p>
 </div>
 
 <div class="voile" id="voile" hidden></div>
@@ -196,7 +202,7 @@ const DEPART = [
   { id: "facture", nom: "Monsieur Martins", quoi: "1 devis accepté · 1 facture émise", devisParti: true,  facture: true  },
 ];
 
-let regle = "A";
+let regle = "C"; // Ce qu'il a retenu le 27 août 2026 : la planche s'ouvre dessus.
 let etat = DEPART.map((c) => ({ ...c, parti: false, verdict: null }));
 let vise = null;
 
