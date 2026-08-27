@@ -2927,7 +2927,28 @@ Sans lui, elle aurait rendu du vert sans avoir rien éprouvé — le piège du
 
 ## Ce que je peux faire seul
 
-### 0 duotricies. ~~« Choisir la date »~~ — **CODÉE le 20 août 2026 (A, et la 2)**
+### 0 duodetricies. `test-fiche-pendant-relance` rougit — sur `main` NU
+
+**Constaté le 27 août 2026**, et vérifié dans un arbre séparé sur `origin/main`
+sans un seul de mes commits : la suite rougit à l'identique. Ce n'est donc pas
+une régression d'un lot, c'est **son propre montage** qui ne reproduit plus le
+cas.
+
+Son message le dit lui-même : *« le veilleur n'a jamais tenté de relance : le
+montage ne reproduit pas le cas réel »*. Le contrôle refuse de conclure plutôt
+que de rendre un vert qui ne prouverait rien — c'est la bonne attitude
+(`AGENTS.md`), et c'est pour cela qu'il ne faut pas le désactiver.
+
+**Ce qu'il défend, et qui compte** : la fiche du banc doit continuer d'être
+publiée PENDANT que le veilleur relance le serveur — la règle née de la nuit du
+12 au 16 août (`CLAUDE.md` §1 bis). Le premier cas de la suite, lui, passe.
+
+**Ce qu'il reste à faire** : remonter le montage pour qu'il bloque vraiment le
+veilleur sur une relance, ou dire pourquoi ce n'est plus possible ici.
+
+---
+
+## 0 duotricies. ~~« Choisir la date »~~ — **CODÉE le 20 août 2026 (A, et la 2)**
 
 **Sa demande, trois captures à l'appui :** *« Le bouton envoyer au client, tu vas
 me le modifier par Choisir la date […] sous forme de bouton vert comme tous les
