@@ -491,6 +491,25 @@ raison est écrite dans le code lui-même.
    passait par `modifierPrestation`, qui marque désormais « corrigé par
    l'artisan ». `renommerPrestation` a été créée pour le chemin automatique.
 
+6. **Une transaction imbriquée, de mon fait, et elle a tué le serveur.**
+   `retenirLecon` ouvrait un second `withEntreprise` au milieu du sien. Chacun
+   ouvre une transaction, donc prend une connexion du pool : l'imbriquer en
+   prend une deuxième pendant qu'on tient la première. Au premier passage
+   complet de la batterie, le serveur de développement est mort en plein
+   parcours navigateur. Corrigé — la lecture se fait dans la transaction
+   courante (`prestationsDeLaLigneDans`).
+
+7. **L'écran Prix aurait été plus permissif que le serveur.** Il calculait son
+   verdict sur des lignes qui ne portaient pas l'état « à chiffrer » : le bouton
+   aurait échoué sur une exception dont le message n'arrive jamais jusqu'au
+   patron (`AGENTS.md`). Il le porte désormais, et poser un montant éteint
+   l'état des deux côtés.
+
+8. **La liste des natures était recopiée dans l'invite du modèle.** Une nature
+   ajoutée au référentiel et oubliée là n'aurait jamais été proposée : la case
+   existerait, rien ne pourrait la désigner. Elle est engendrée depuis le
+   référentiel, et un contrôle monte la garde.
+
 ---
 
 ## 13. Résultats

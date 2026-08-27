@@ -142,11 +142,32 @@ async function main() {
   // d'ailleurs « AUTRE DATE PROPOSÉE » : c'est ce cas-là qu'il faut jouer.
   await page.locator('input[name="choixDate"][value="autre"]').check();
   await page.waitForTimeout(600);
-  const jourLibre = page
-    .locator("button:not([disabled])")
-    .filter({ hasText: /^\d{1,2}$/ })
-    .last();
-  await jourLibre.click();
+
+  // **Un jour qui n'est PAS l'un des jours proposés.** Sans cette vérification,
+  // le contrôle passait pour la mauvaise raison — ou rougissait sans que ce
+  // soit un défaut du produit : accepter SUR une date proposée ne fait
+  // volontairement aucune carte (`notificationsPatron`, et c'est écrit là-bas).
+  // Le dernier jour du calendrier tombait parfois pile sur l'un d'eux, et
+  // `date_contre_proposee` restait alors `false`. Mesuré le 27 août 2026 — la
+  // suite échouait déjà avant le lot de ce jour-là.
+  const proposees = await page.locator('input[name="choixDate"]').evaluateAll((els) =>
+    els.map((e) => (e as HTMLInputElement).value).filter((v) => v !== "autre")
+  );
+  const jours = page.locator("button:not([disabled])").filter({ hasText: /^\d{1,2}$/ });
+  const combien = await jours.count();
+  let choisie: string | null = null;
+  for (let i = combien - 1; i >= 0 && choisie === null; i--) {
+    await jours.nth(i).click();
+    await page.waitForTimeout(200);
+    const valeur = await page.locator('input[name="dateAutre"]').inputValue();
+    if (valeur && !proposees.includes(valeur)) choisie = valeur;
+  }
+  if (!choisie) {
+    throw new Error(
+      `aucun jour libre distinct des dates proposées (${proposees.join(", ")}) : ` +
+        "le calendrier n'en offre pas, et l'acceptation ne produirait aucune carte."
+    );
+  }
   await page.waitForTimeout(400);
   await page.click('button:has-text("J\'accepte ce devis")');
   await page.waitForSelector("text=Votre artisan est prévenu", { timeout: 20_000 });
