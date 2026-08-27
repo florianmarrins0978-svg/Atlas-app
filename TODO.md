@@ -9,28 +9,98 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
-## ⚠ EN ATTENTE DE SA RÉPONSE — supprimer un client (26 août 2026)
+## La batterie ne tient plus en un seul serveur — NON DIAGNOSTIQUÉ (27 août 2026)
 
-Sa remarque : *« je ne peux pas supprimer de client, rajoute ça »*. **Rien n'est
-codé** : ce que « supprimer » veut dire est une décision de produit.
+**Mesuré, pas supposé.** Relevé de la mémoire du serveur toutes les cinq
+secondes, en face de la suite en cours :
 
-**Planche :** `appli/supprimer-un-client.html`. Trois questions au bas.
+| | |
+|---|---|
+| les 13 premières suites | serveur **plat à 2,0–2,4 Go** |
+| `test-coupure-sessions-e2e` | 2,8 → **5,9 Go** en quelques secondes |
+| ensuite, **sans plus une seule requête** | montée continue jusqu'à **13,5 Go**, puis le tueur de mémoire abat le serveur |
 
-**ET UN DÉFAUT RÉEL À RÉPARER, quelle que soit sa réponse.** `effacerClient`
-(`src/server/repositories/donnees-client.ts`) **lève** dès que le client a reçu
-un devis : elle ne conserve que les devis liés à un envoi **accepté**, et tente
-de détruire les autres — or `0001_securite_integrite.sql` scelle tout devis
-**envoyé**. Éprouvé ce soir sur une vraie base :
+Les fils qui brûlent le processeur pendant cette montée sont les `tokio-rt` :
+c'est **Turbopack**, le compilateur de Next — le fil JavaScript d'Atlas est au
+repos, et le journal du serveur ne montre plus aucune requête. Ce n'est donc pas
+du code d'Atlas qui alloue.
 
-```
-client avec un devis parti → REFUSÉ
-  cause : Un devis envoyé ne peut pas être supprimé
-```
+**La suite PASSE.** Jouée seule : 1/1. Ce qui meurt, c'est la suite d'APRÈS,
+emportée avec le serveur — d'où un rouge qui accuse `test-cron-purge` alors
+qu'elle n'a jamais été lancée.
 
-`test-retention-effacement.ts` ne couvre que le client sans devis et le devis
-accepté : **le milieu manque**, et c'est l'état le plus fréquent. Le correctif
-et son cas se posent en même temps que l'écran — les coder avant sa réponse,
-c'est risquer de conserver ce qu'il veut voir partir.
+**Ce qui n'est PAS expliqué, et c'est pour ça que ce point reste ouvert :** la
+même batterie a tourné d'une traite sur 115 suites deux heures plus tôt, dans ce
+même conteneur. Ce qui a changé entre les deux n'est pas établi. Ne pas écrire
+ailleurs que c'est réglé.
+
+**INTERMITTENT — mesuré le même jour.** Le tour suivant, après la fusion de la
+migration 0068, a rejoué les mêmes 115 suites dans les mêmes tranches : **aucune
+mort de serveur**, `test-cron-purge` comprise. Le code n'avait pas changé pour ce
+qui touche `test-coupure-sessions-e2e`. Une cause qui va et vient n'est donc pas
+dans le produit — mais elle n'est pas comprise pour autant.
+
+**Ce qui a été fait en attendant**, pour mesurer quand même : les 115 suites ont
+été jouées par tranches, un serveur neuf par tranche
+(`scripts/` non modifié ; pilote jeté, dans le bac à sable de la session).
+Aucune assertion touchée, aucun délai ajouté, aucune suite écartée. Résultat
+**115/115**.
+
+**Qui peut le trancher :** nous, en cherchant ce que `test-coupure-sessions-e2e`
+fait faire à Turbopack — la piste la plus courte est de rejouer la suite sur le
+commit d'avant la fusion (826314e) et de comparer la courbe. Une piste écartée
+d'avance : plafonner le tas V8 (`--max-old-space-size`) ne bornerait rien, la
+mémoire est allouée par le Rust de Turbopack, hors du tas.
+
+---
+
+## Un refus de rôle sort en 500, là où un 403 conviendrait (27 août 2026)
+
+Relevé dans le journal du serveur pendant la batterie : quand un **salarié**
+demande `/api/mes-donnees`, l'accès est bien refusé — `exigerProprietaire` lève
+`AccesRoleRefuseError` — mais la route laisse l'exception remonter, et Next rend
+un **500 avec la pile**. La sécurité tient (rien ne sort), c'est la FORME du
+refus qui est fausse.
+
+Ce que ça coûte : un 500 est indiscernable d'une panne dans les journaux de
+production, et `test-acces-salarie-e2e` ne le voit pas — elle vérifie
+`status != 200`, ce qu'un 500 satisfait. Le contrôle est donc juste et aveugle
+à la fois.
+
+**Hors du lot 3 en cours** : corriger la route demanderait de rejouer la
+batterie entière, et le patron a demandé qu'on ne touche à rien tant qu'elle
+n'est pas verte. À reprendre au lot suivant — `src/app/api/mes-donnees/route.ts`,
+rendre un `403` en valeur de retour plutôt que de lever.
+
+---
+
+## ~~Supprimer un client~~ — **CODÉ le 27 août 2026 : sa proposition C**
+
+Sa réponse : *« je pense la C ; lorsqu'un client a des documents il faut mettre
+la phrase de prévention, et une phrase disant avez-vous sauvegardé ses documents
+autre part — et s'il dit oui il peut supprimer quand même »*. Le bouton est en
+bas de sa fiche, la feuille prévient, la question de la sauvegarde verrouille.
+Le détail est dans `CHANGELOG.md`.
+
+**Une question reste ouverte, et elle est mineure :** la planche proposait deux
+places pour le geste — le bas de la fiche, ou en glissant la ligne dans la liste.
+Il n'a pas tranché ; le bas de la fiche a été retenu parce qu'on l'y trouve en le
+cherchant, jamais du pouce en faisant défiler.
+
+## ⚠ `test-poignee-ferme-e2e` conduit une feuille qui a DÉMÉNAGÉ
+
+**Constaté le 27 août 2026.** Trois cas tombent sur *« waiting for
+getByLabel('Refermer') »* : la suite ouvre `/reglages/equipe`, y cherche
+« + Noter une absence », et attend la feuille.
+
+**« Noter une absence » n'est plus sur cet écran.** Elle vit dans
+`src/app/reglages/AbsencesEquipe.tsx`, déplacée le jour même par le lot des
+salariés (`e2c8b263`). La suite conduit donc un écran qui a changé sous elle —
+le produit a raison, c'est l'adresse du montage qui a vieilli.
+
+**Une ligne à corriger** : `ouvrirLaFeuille()` doit viser l'écran où la feuille
+vit désormais. Rien d'autre de la suite n'est en cause : ses deux derniers cas
+passent.
 
 ## ~~`test-carte-reponse-mene-au-geste-e2e` rougit en FIN DE MOIS~~ — **corrigé le 27 août 2026**
 
@@ -627,7 +697,177 @@ dans sa galerie. Et **« régler à la main » a été retiré** : il a demandé
 | pas vérifiable ici | la lecture d'image réelle demande une clé de vision, absente de cet environnement — à jouer sur son espace |
 
 </details>
+## ~~`test-envoi-client-e2e.ts` dépend de la place qui reste dans le mois~~ — réglé le 26 août 2026
 
+**Le défaut, mesuré :** le mois affiché s'ouvre au 1er, le délai minimal écarte
+trois jours de plus, et les week-ends ne se proposent pas. Rejoué sur les
+365 jours de 2026, le contrôle rougissait **57 jours** — toujours les derniers
+du mois, jusqu'à six d'affilée en août.
+
+**Le remède :** `scripts/_calendrier-e2e.ts`, qui tourne la page du mois quand
+celui-ci est trop entamé. Il porte désormais la seule implémentation de cette
+recherche : `test-deux-dates-calendrier-e2e.ts` avait la sienne
+(`troisJoursAuMoins`), `test-envoi-client-e2e.ts` n'en avait pas, et la recopier
+aurait fait une troisième version de la même règle.
+
+**Aucune assertion métier n'a bougé** — le diff ne retire que les préconditions
+« assez de jours », reprises par la pièce commune, qui échoue plus durement
+qu'elles : trois mois consultés sans trouver, et elle nomme la navigation.
+
+**Éprouvé sur 730 jours** (2026 et 2027, changements d'année compris) : 114 jours
+rouges sans le remède, **730/730 verts avec**, et jamais plus d'un tour de page.
+
+## ~~Essayer une vraie dictée d'iPhone~~ — FAIT, et RÉUSSI le 26 août 2026
+
+Le patron a dicté depuis son propre iPhone, dans Safari, sur son banc : le
+fichier a été accepté, la note traitée, et le parcours est allé jusqu'à la
+génération des informations du devis. **La reconnaissance de format ne casse pas
+la dictée réelle sur iPhone.**
+
+*Ce qui reste vrai :* cette machine n'a toujours ni iPhone ni Safari. C'est un
+essai HUMAIN qui a levé la réserve, pas un test automatique — un futur
+changement de `signature-audio.ts` demandera le même essai.
+
+---
+
+## LOT À VENIR — la QUALITÉ de ce qui sort de la dictée (26 août 2026)
+
+**Constaté par le patron pendant l'essai iPhone**, et **délibérément séparé du
+lot Audio** : le fichier entre bien, c'est ce qu'on en fait qui déçoit.
+
+| Ce qu'il a relevé |
+|---|
+| certaines prestations sont mal organisées |
+| certaines quantités ou unités sont mal interprétées |
+| certaines propositions de prix, ou reprises de prix historiques, sont incohérentes |
+
+**Le parcours à reprendre :** transcription → compréhension de la dictée →
+extraction des prestations → quantités et unités → rapprochement avec
+l'historique → proposition des prix → construction du devis → affichage.
+
+**Pourquoi c'est un lot à soi, et pourquoi il ne faut pas mélanger.** Le lot
+Audio garantissait l'ENTRÉE du fichier — enregistrement, réception,
+reconnaissance du format, validation, stockage ou transcription. Ce parcours-là
+fonctionne, éprouvé sur un vrai iPhone. Ce qui suit relève du jugement de l'IA
+et des règles de chiffrage : mêler les deux rendrait les deux illisibles, et
+ferait douter d'un lot qui, lui, tient.
+
+**Ce qu'il faudra avant de coder :** des exemples RÉELS de ses dictées et du
+devis produit — sans quoi on corrigerait une qualité imaginée. C'est lui qui les
+a.
+
+---
+
+## Les suites qui lisent l'heure doivent lire CELLE DU SERVEUR (26 août 2026)
+
+**Deux suites ont rougi le même jour pour la même famille de raison**, et
+c'était la nuit :
+
+| Suite | Ce qu'elle lisait | Ce que le serveur écrit |
+|---|---|---|
+| `test-envoi-client-e2e` | le mois affiché, sans le feuilleter | le mois en cours |
+| `test-liste-clients` | `toISOString()`, donc **UTC** | `jourIso()`, donc **heure du patron** |
+
+**La seconde ne mord que deux heures par nuit** — entre 22 h UTC et minuit, en
+été. La facture est alors émise « le 27 » quand la suite croit être « le 26 », et
+le règlement paraît antérieur à sa facture. **Le refus du produit a raison ; la
+suite avait tort.**
+
+**La règle qui en sort, et qui vaut pour toutes les suites à venir :** une suite
+ne calcule JAMAIS « aujourd'hui » avec `toISOString()`. Elle appelle `jourIso()`,
+comme le serveur. Deux façons de dire « aujourd'hui » finissent toujours par
+diverger, et celle-ci ne se voit qu'à deux heures du matin.
+
+**Une autre session a trouvé le même défaut le même soir**, et l'a corrigé de
+la même façon — `jourIso` — dans le même fichier. La fusion du 27 août 2026 a
+gardé SA version, déjà sur `main` : deux correctifs identiques n'en font qu'un.
+
+**Ce qui reste à faire :** balayer les autres suites à la recherche du même
+mélange. Deux l'ont eu ; rien ne dit qu'il n'y en a pas une troisième. Corriger
+à l'aveugle ce qui n'a pas été mesuré serait cependant une faute aussi.
+
+---
+
+## Trois suites navigateur rougissent sous la batterie, jamais seules (26 août 2026)
+
+**Constaté sur deux tours de batterie, avec des suites DIFFÉRENTES à chaque
+fois** — et le même code entre les deux :
+
+| Tour | Rouges | Rejeu seule |
+|---|---|---|
+| n° 4 | `fiche-chantier`, `note-hors-documents`, `planning` | les trois vertes |
+| n° 1 | `anneau-dictee`, `arrosage` | les deux vertes |
+
+**Ce n'est PAS de la charge machine** : mémoire libre, PostgreSQL debout, aucune
+erreur serveur dans le journal des tours rouges. Et **les mêmes 110 suites sont
+passées ensemble trois fois** — dont le tour n° 5, entièrement vert.
+
+**Le symptôme est parlant, et il faut le suivre :** deux des trois échouent sur
+`GET /api/chantiers/<id>/feuille/pdf` → **404**, la troisième sur « rallumer
+n'est pas arrivé en base ». Trois fois « l'état n'a pas atteint la base avant
+qu'on le relise ». C'est la famille décrite dans `HANDOVER.md` — un délai fixe
+là où il faudrait attendre un signal — et cette route rend 404 quand le devis
+n'a pas encore de ligne.
+
+**Ce qu'il faut faire :** dans ces trois suites, remplacer l'attente qui précède
+la relecture par un vrai signal (la ligne visible à l'écran, ou la valeur en
+base), comme l'ont déjà été les suites du lot 2B. **Ne pas allonger un délai** :
+cela déplacerait le seuil sans supprimer la course.
+
+**Et ne pas les exclure** : elles éprouvent des règles réelles — un salarié ne
+doit voir aucun prix sur la feuille de chantier.
+
+---
+
+## `ATLAS_PROXY_SAUTS` n'est posé nulle part en production (25 août 2026)
+
+Tant qu'il ne l'est pas, `sourceDuVisiteur` rend délibérément une valeur commune
+(`src/lib/source-visiteur.ts`) : **tous les visiteurs partagent le même seau**, et
+tous les seuils comptés « par source » sont en réalité globaux.
+
+Conséquences, à connaître avant de régler un seuil :
+
+| | |
+|---|---|
+| connexion, clé d'appareil, recherche d'adresse | ces seuils protègent encore, mais moins finement |
+| réponse à un devis (F9) | le seuil par source **se désactive** plutôt que de bloquer tout le monde — un seul seau en aurait fait une arme retournée. Le seuil par jeton, lui, tient toujours |
+
+**Qui peut le faire :** celui qui déploie. Poser `ATLAS_PROXY_SAUTS` au nombre de
+mandataires de confiance devant Atlas (1 pour un hébergeur ordinaire), **et**
+s'assurer que ce mandataire ÉCRASE `x-forwarded-for` au lieu d'y ajouter la
+valeur du client. Sans les deux, poser la variable serait pire que de ne rien
+faire : on ferait alors confiance à ce que l'attaquant écrit.
+
+---
+
+## `ARCHITECTURE.md` porte deux fois §164 et §165 (relevé le 25 août 2026)
+
+Dette d'une fusion antérieure, **déjà sur `main`** : quatre paragraphes pour deux
+numéros. Les références croisées de `PROJECT_STATE.md`, `TODO.md` et
+`CHANGELOG.md` pointent vers les deux sens à la fois, sans qu'on puisse dire
+lequel depuis le numéro seul.
+
+**Non corrigé pendant le lot 3, délibérément** : démêler les références dépasse
+ce lot, et une renumérotation faite à moitié laisserait des renvois faux — pires
+que des renvois ambigus, parce qu'ils ont l'air justes.
+
+**Ce qu'il faut faire :** renuméroter les deux paragraphes de FIN de fichier
+(« Les images d'utilisateur », « Le corps d'une requête ») aux deux prochains
+numéros libres, puis reprendre chaque renvoi un par un.
+
+**Mis à jour à la fusion du 27 août 2026 :** `main` est monté à §199 (« Il
+comprend rien »), et le lot 3 avait pris §199 et §200 — la règle dit de
+renuméroter CELUI QUI N'EST PAS ENCORE SUR MAIN, et c'était le nôtre : les deux
+sont devenus §200 et §201. **C'est la deuxième renumérotation du même lot en
+deux jours**, ce qui mesure le coût réel de la dette décrite ci-dessus.
+
+Trois renvois ont suivi le décalage (`PROJECT_STATE.md`, `CHANGELOG.md` ×2), et
+un quatrième s'est révélé **faux depuis le début** : `PROJECT_STATE.md` envoyait
+en §199 pour « je dois pouvoir désélectionner », qui est en §191 — un renvoi qui
+n'a jamais rien désigné, et que seule la relecture des renvois a fait tomber.
+C'est exactement l'argument de ce point : un renvoi faux a l'air juste.
+
+La dette de `main` ne bouge pas : §134, §135 et §136 sont toujours en double.
 ---
 
 ## Le devis et la facture n'ont pas encore le refus d'adresse locale (24 août 2026)

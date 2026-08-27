@@ -4,6 +4,7 @@ import { useEffect, useState, useTransition } from "react";
 import { colors, font, libelleCaps, texteSituation } from "@/lib/design-tokens";
 import { estAbandon, messageRefusCle, phraseAppareils, type CleAppareil } from "@/lib/cle-appareil";
 import { defiEnregistrementAction, enregistrerCleAction, retirerCleAction } from "./actions";
+import DemanderPreuve from "@/components/atlas/DemanderPreuve";
 
 /**
  * « Ouvrir avec Face ID » — l'endroit où on l'allume.
@@ -57,6 +58,17 @@ export default function SectionFaceId({ clesInitiales }: { clesInitiales: CleApp
     };
   }, []);
 
+  /**
+   * Le geste qu'on REPRENDRA une fois l'identité prouvée.
+   *
+   * Sans cela, l'artisan taperait son mot de passe puis devrait réappuyer sur
+   * « Activer » — et sur un chantier, un geste qu'on refait est un geste qu'on
+   * abandonne.
+   */
+  const [preuveDemandee, setPreuveDemandee] = useState<{ motif: string; reprendre: () => void } | null>(
+    null
+  );
+
   function activer() {
     setRefus(null);
     setFait(null);
@@ -74,6 +86,12 @@ export default function SectionFaceId({ clesInitiales }: { clesInitiales: CleApp
         const reponse = await startRegistration(defi.options);
         const r = await enregistrerCleAction(JSON.stringify(reponse));
         if (!r.ok) {
+          // Le serveur réclame une identité récente : on la demande, puis on
+          // reprend le geste tout seul.
+          if (r.preuveExigee) {
+            setPreuveDemandee({ motif: r.raison, reprendre: activer });
+            return;
+          }
           setRefus(r.raison);
           return;
         }
@@ -104,6 +122,10 @@ export default function SectionFaceId({ clesInitiales }: { clesInitiales: CleApp
     demarrer(async () => {
       const r = await retirerCleAction(id);
       if (!r.ok) {
+        if (r.preuveExigee) {
+          setPreuveDemandee({ motif: r.raison, reprendre: () => retirer(id) });
+          return;
+        }
         setRefus(r.raison);
         return;
       }
@@ -206,6 +228,21 @@ export default function SectionFaceId({ clesInitiales }: { clesInitiales: CleApp
         <b style={{ color: colors.ink }}>Votre mot de passe reste actif</b>{" "}
         et ne peut pas se retirer — c&apos;est lui qui vous fait entrer sur un téléphone neuf.
       </p>
+
+      {/* **La feuille n'autorise rien** : elle obtient une preuve côté serveur,
+          puis on REPREND le geste. Sans cette reprise, l'artisan taperait son
+          mot de passe et devrait réappuyer — un geste qu'on refait est un geste
+          qu'on abandonne. */}
+      <DemanderPreuve
+        ouvert={preuveDemandee !== null}
+        motif={preuveDemandee?.motif ?? ""}
+        onAbandon={() => setPreuveDemandee(null)}
+        onProuve={() => {
+          const reprendre = preuveDemandee?.reprendre;
+          setPreuveDemandee(null);
+          reprendre?.();
+        }}
+      />
     </section>
   );
 }

@@ -82,7 +82,7 @@ async function main() {
 
   // Une entreprise, son patron, et un salarié.
   const a = await creerEntreprise({ nom: "Chez A" }, { email: "patron@essai.local", nom: "Le patron" });
-  const [salarie] = await db.insert(users).values({ email: "salarie@essai.local", nom: "Le salarié" }).returning();
+  const [salarie] = await db.insert(users).values({ email: "salarie@essai.local", nom: "Le salarié" }).returning({ id: users.id });
 
   const ctxPatron: Ctx = { utilisateurId: a.utilisateurId, entrepriseId: a.entreprise.id };
   await withEntreprise(ctxPatron.utilisateurId, ctxPatron.entrepriseId, async (tx) => {

@@ -1,0 +1,492 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas — Atlas — Lot 3 : clôture F1–F13, puis lecture du lot Audio</title>
+<style>
+  :root{
+    --ground:#f5f3ee; --surface:#faf9f5; --raised:#ece9e1;
+    --ink:#1c1c1a; --ink-soft:#4a4a44; --muted:#8a8578;
+    --accent:#2f3b2f; --alert:#b5562a; --line:rgba(28,28,26,0.13);
+    --serif:Georgia,'Times New Roman',serif;
+    --sans:system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --ground:#161815; --surface:#1d201c; --raised:#252924;
+      --ink:#eae7df; --ink-soft:#c2bdb1; --muted:#948f83;
+      --accent:#9fbd82; --alert:#e0885a; --line:rgba(234,231,223,0.17);
+    }
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--sans);
+    line-height:1.65;}
+  main{max-width:44rem;margin:0 auto;padding:2.5rem 1.2rem 5rem;}
+  h1,h2,h3,h4{font-family:var(--serif);font-weight:600;line-height:1.2;
+    text-wrap:balance;margin:2rem 0 0.6rem;scroll-margin-top:1rem;}
+  h1{font-size:2rem;margin-top:0;}
+  h2{font-size:1.5rem;padding-top:1.2rem;border-top:1px solid var(--line);}
+  h3{font-size:1.12rem;}
+  h4{font-size:1rem;}
+  p{margin:0 0 0.9rem;}
+  a{color:var(--accent);text-underline-offset:3px;}
+  a:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:3px;}
+  ul,ol{margin:0 0 1rem;padding-left:1.3rem;}
+  li{margin-bottom:0.4rem;}
+  li::marker{color:var(--muted);}
+  /* Le sommaire : des cibles larges, confortables au doigt sur téléphone. */
+  ol li a{display:inline-block;padding:0.15rem 0;}
+  blockquote{margin:1rem 0;padding:0.85rem 1.05rem;background:var(--raised);
+    border-left:3px solid var(--accent);border-radius:0 10px 10px 0;color:var(--ink-soft);}
+  code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:0.87em;
+    background:var(--raised);padding:0.1rem 0.35rem;border-radius:5px;}
+  hr{border:0;border-top:1px solid var(--line);margin:2rem 0;}
+  .tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px;
+    background:var(--surface);margin:0 0 1.2rem;}
+  table{border-collapse:collapse;width:100%;font-size:0.92rem;min-width:22rem;}
+  th,td{text-align:left;padding:0.55rem 0.8rem;border-bottom:1px solid var(--line);
+    vertical-align:top;}
+  th{font-size:0.72rem;letter-spacing:0.08em;text-transform:uppercase;
+    color:var(--muted);white-space:nowrap;}
+  tr:last-child td{border-bottom:none;}
+  .retour{display:inline-block;font-size:0.76rem;color:var(--muted);
+    text-decoration:none;margin:-0.3rem 0 1rem;}
+  .retour:hover{color:var(--accent);text-decoration:underline;}
+</style>
+</head>
+<body>
+<main>
+<h1 id="atlas--lot-3--clôture-f1f13-puis-lecture-du-lot-audio">Atlas — Lot 3 : clôture F1–F13, puis lecture du lot Audio</h1>
+<p><em>26 août 2026 · branche <code>claude/atlas-securite-lot3</code> · <strong>pas fusionné sur <code>main</code></strong></em></p>
+<p><strong>Aucune ligne de code Audio n'a été écrite.</strong> Ce document est une lecture.</p>
+<hr>
+<h2 id="1-correction-du-test-calendaire">1. Correction du test calendaire</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<h3 id="ce-qui-était-démontré-avant-de-toucher-quoi-que-ce-soit">Ce qui était démontré avant de toucher quoi que ce soit</h3>
+<p>Le contrôle lisait les jours « regardables » du <strong>mois affiché</strong>, qui s'ouvre au 1er. Ses premiers jours sont derrière nous, le délai minimal en écarte trois de plus, et les week-ends ne se proposent pas.</p>
+<p>Rejoué hors navigateur sur <strong>les 365 jours de 2026</strong> :</p>
+<p>``<code> Jours où le contrôle rougit : 57 / 365 2026-01-27 → 1    2026-01-28 → 0    2026-01-29 → 0    2026-01-30 → 0 … 2026-08-26 → 1    2026-08-27 → 1    2026-08-28 → 1    2026-08-29 → 0 … </code>``</p>
+<p>Toujours les derniers jours du mois, jusqu'à <strong>six d'affilée</strong> en août. Le 26 août — jour de la batterie — en fait partie. Un contrôle qui rougit un jour sur six sans que rien ne soit cassé est pire qu'absent : on apprend à ignorer son rouge, et le vrai passe avec.</p>
+<h3 id="le-remède">Le remède</h3>
+<p><code>scripts/_calendrier-e2e.ts</code> — il <strong>tourne la page du mois</strong> quand celui-ci est trop entamé, jusqu'à trois mois, et nomme la navigation si elle est bornée.</p>
+<p><strong>Une seule implémentation, et c'est le sujet.</strong> <code>test-deux-dates-calendrier-e2e.ts</code> portait déjà ce tour de page sous le nom <code>troisJoursAuMoins()</code> ; <code>test-envoi-client-e2e.ts</code> ne l'avait pas, et c'est elle qui rougissait. Le recopier aurait fait une troisième version de la même règle (<code>CLAUDE.md</code> §3). Les deux suites appellent désormais la même pièce, et le plancher vient de <code>DELAI_MINIMAL_JOURS</code> au lieu d'un <code>3</code> écrit à la main dans chacune.</p>
+<h3 id="la-règle-métier-est-inchangée--vérifié-pas-affirmé">La règle métier est inchangée — vérifié, pas affirmé</h3>
+<p>Le diff ne retire que des <strong>préconditions</strong> (« assez de jours au calendrier ») ; il n'ajoute, ne retire ni n'affaiblit aucune assertion métier :</p>
+<p>```</p>
+<ul>
+<li>assert.ok(total &gt;= 3,          <code>pas assez de jours libres au calendrier</code>)</li>
+<li>assert.ok(aRetenir.length &gt;= 2, <code>pas assez de jours acceptables</code>)</li>
+<li>assert.ok(libres.length &gt;= 2,   <code>pas assez de jours libres au calendrier</code>)</li>
+</ul>
+<p>```</p>
+<p>Et la pièce commune échoue <strong>plus durement</strong> qu'elles : trois mois consultés sans trouver, et le message accuse la navigation plutôt que le calendrier. « Jamais plus de deux dates proposées » reste éprouvé à l'identique.</p>
+<h3 id="les-cas-demandés-éprouvés-sur-730-jours">Les cas demandés, éprouvés sur 730 jours</h3>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th></th>
+</tr></thead><tbody>
+<tr>
+<td>Jours éprouvés</td>
+<td><strong>730</strong> — 2026 et 2027, changements d'année compris</td>
+</tr>
+<tr>
+<td>Rouges sans le remède</td>
+<td>114</td>
+</tr>
+<tr>
+<td>Verts avec</td>
+<td><strong>730 / 730</strong></td>
+</tr>
+<tr>
+<td>Tours de page nécessaires</td>
+<td>jamais plus de <strong>1</strong></td>
+</tr>
+</tbody></table></div>
+<p>Le passage d'année, montré à part :</p>
+<p>``<code> 2026-12-29 → plancher 2027-01-01 · décembre offre 0, janvier 2027 offre 21 2026-12-31 → plancher 2027-01-03 · décembre offre 0, janvier 2027 offre 20 </code>``</p>
+<hr>
+<h2 id="2-batterie-complète">2. Batterie complète</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p>Jouée sur l'état exact destiné à la fusion.</p>
+<div class="tablewrap"><table><thead><tr>
+<th>Étape</th>
+<th>Résultat</th>
+</tr></thead><tbody>
+<tr>
+<td><code>npx tsc --noEmit</code></td>
+<td>✅</td>
+</tr>
+<tr>
+<td><code>npm run lint</code></td>
+<td>✅ 0 erreur, 12 avertissements préexistants</td>
+</tr>
+<tr>
+<td>Construction</td>
+<td>✅</td>
+</tr>
+<tr>
+<td><code>npm run verifier:memoire</code></td>
+<td>✅ 8 fichiers</td>
+</tr>
+<tr>
+<td>Suites base — RLS comprises</td>
+<td>✅ <strong>232 / 232</strong></td>
+</tr>
+<tr>
+<td>Suites navigateur</td>
+<td>✅ <strong>110 / 110</strong></td>
+</tr>
+<tr>
+<td><code>npm run verifier:connexion</code></td>
+<td>✅ connexion réelle derrière une origine étrangère</td>
+</tr>
+<tr>
+<td><code>npm audit</code></td>
+<td>4 modérées, <code>drizzle-kit → esbuild</code>, <strong>dépendance de développement</strong></td>
+</tr>
+</tbody></table></div>
+<h3 id="pourquoi-110-et-non-111">Pourquoi 110 et non 111</h3>
+<p><strong>Un faux vert trouvé dans la batterie elle-même</strong>, et corrigé plutôt que gardé. <code>_creer-chantier-e2e.ts</code> et <code>_calendrier-e2e.ts</code> n'exportent que des fonctions : joués seuls, ils n'affichent rien et sortent en succès. Le lanceur les comptait donc comme <strong>deux suites réussies</strong>. Il annonçait 112/112 là où 110 seulement mesurent quelque chose — et le premier des deux traînait là depuis longtemps.</p>
+<p>C'est le contrôle qui mesure zéro de <code>CLAUDE.md</code> §5 : il ne dit pas « rouge », il ne dit rien, et il gonfle le chiffre auquel on se fie. <strong>Le chiffre baisse, et c'est le bon.</strong></p>
+<p><em>À noter, parce que c'est le genre de chose qu'on se cache :</em> ma première correction n'a pas pris — les deux filtres avaient été insérés au même endroit. Vu parce que le chiffre n'avait pas bougé, non parce qu'un contrôle l'a dit.</p>
+<h3 id="trois-suites-rouges-à-un-tour-intermédiaire--classées-pas-masquées">Trois suites rouges à un tour intermédiaire — classées, pas masquées</h3>
+<div class="tablewrap"><table><thead><tr>
+<th>Tour</th>
+<th>Rouges</th>
+<th>Rejeu seule</th>
+</tr></thead><tbody>
+<tr>
+<td>n° 4</td>
+<td><code>fiche-chantier</code>, <code>note-hors-documents</code>, <code>planning</code></td>
+<td>les trois <strong>vertes</strong></td>
+</tr>
+<tr>
+<td>n° 1</td>
+<td><code>anneau-dictee</code>, <code>arrosage</code></td>
+<td>les deux <strong>vertes</strong></td>
+</tr>
+</tbody></table></div>
+<p><strong>Classification : faux rouge du contrôle</strong> (catégorie 3), et voici ce qui la fonde plutôt qu'un « c'est un flake » :</p>
+<ul>
+<li>suites <strong>différentes</strong> à chaque tour, sur un code identique ;</li>
+<li><strong>aucune erreur serveur</strong> dans le journal des tours rouges, mémoire libre, PostgreSQL debout ;</li>
+<li>les <strong>mêmes 110 suites sont passées ensemble trois fois</strong>, dont le tour final ;</li>
+<li>deux des trois échouent sur le même symptôme — <code>feuille/pdf</code> → <strong>404</strong>, ce que cette route rend quand le devis n'a pas encore de ligne — et la troisième sur « rallumer n'est pas arrivé en base ». Trois fois « l'état n'a pas atteint la base avant qu'on le relise ».</li>
+</ul>
+<p><strong>Rien n'a été masqué</strong> : aucun délai allongé, aucune assertion affaiblie, aucune exclusion. Le remède — remplacer l'attente par un signal — est écrit dans <code>TODO.md</code> avec sa raison.</p>
+<hr>
+<h2 id="3-verdict-f1f13">3. Verdict F1–F13</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p>Revue de dernière minute : depuis la clôture (<code>a798770</code>), <strong>aucun fichier du diff F1–F13 n'a été retouché</strong>, et <strong>aucun fichier de M9/M10/M11</strong> non plus. Les huit contrôles F sont verts.</p>
+<h1 id="f1f13--clos">F1–F13 : <strong>CLOS</strong></h1>
+<ul>
+<li><strong>F7</strong> — décision produit / RGPD</li>
+<li><strong>F10</strong> — lot CSP séparé</li>
+</ul>
+<hr>
+<h1 id="lot-audio--lecture">LOT AUDIO — LECTURE</h1>
+<h2 id="4-tous-les-chemins-par-lesquels-un-audio-entre">4. Tous les chemins par lesquels un audio entre</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th>Entrée</th>
+<th>Route / action</th>
+<th>Auth</th>
+<th>Taille</th>
+<th>Type déclaré</th>
+<th>Extension</th>
+<th>Contenu vérifié ?</th>
+<th>Stocké ?</th>
+<th>Envoyé à une IA ?</th>
+<th>Servi ensuite ?</th>
+</tr></thead><tbody>
+<tr>
+<td><strong>Note vocale</strong> (anneau, écran de dictée)</td>
+<td><code>POST /api/notes-vocales/[chantierId]</code> → <code>recevoirNoteVocale</code></td>
+<td><code>getCurrentCtx</code></td>
+<td>15 Mo fichier + flux borné à 16 Mo</td>
+<td><code>verifierTypeAudio</code> (liste blanche)</td>
+<td>posée par le <strong>serveur</strong></td>
+<td><strong>NON</strong></td>
+<td><strong>OUI</strong></td>
+<td><strong>OUI</strong> (relu du stockage)</td>
+<td><strong>OUI</strong> (<code>/api/fichiers/…</code>)</td>
+</tr>
+<tr>
+<td><strong>Note vocale</strong> (même service, autre porte)</td>
+<td>action <code>completerNoteVocaleAction</code></td>
+<td><code>getCurrentCtx</code></td>
+<td>15 Mo</td>
+<td><code>verifierTypeAudio</code></td>
+<td>posée par le serveur</td>
+<td><strong>NON</strong></td>
+<td><strong>OUI</strong></td>
+<td><strong>OUI</strong></td>
+<td><strong>OUI</strong></td>
+</tr>
+<tr>
+<td><strong>Coordonnées dictées</strong> (nouveau chantier)</td>
+<td>action <code>dicterCoordonneesAction</code></td>
+<td><code>getCurrentCtx</code></td>
+<td>15 Mo</td>
+<td><code>verifierTypeAudio</code></td>
+<td>—</td>
+<td><strong>NON</strong></td>
+<td><strong>NON</strong></td>
+<td><strong>OUI</strong></td>
+<td>non</td>
+</tr>
+<tr>
+<td><strong>Retouches dictées</strong> (devis complet)</td>
+<td>action <code>dicterRetouchesAction</code></td>
+<td><code>getCurrentCtx</code></td>
+<td>15 Mo</td>
+<td><code>verifierTypeAudio</code></td>
+<td>—</td>
+<td><strong>NON</strong></td>
+<td><strong>NON</strong></td>
+<td><strong>OUI</strong></td>
+<td>non</td>
+</tr>
+<tr>
+<td><strong>Export RGPD</strong></td>
+<td><code>GET /api/mes-donnees</code></td>
+<td><code>getCurrentCtx</code></td>
+<td>—</td>
+<td>—</td>
+<td>—</td>
+<td>—</td>
+<td>relit le stocké</td>
+<td>non</td>
+<td><strong>OUI</strong>, dans un zip</td>
+</tr>
+</tbody></table></div>
+<p><strong>Aucun chemin audio n'échappe au mécanisme commun.</strong> Les quatre entrées passent toutes par <code>verifierTailleFichier</code> puis <code>verifierTypeAudio</code>, et les quatre posent la cadence <code>LIMITES.televersementFichier</code>.</p>
+<p><strong>Route Handler contre Server Action — la seule différence est en amont</strong>, et elle est en faveur de la route : elle borne le flux <strong>pendant la lecture</strong> (<code>formDataBornee</code>, constat M6), là où les actions s'en remettent à <code>serverActions.bodySizeLimit</code>. La règle métier, elle, est identique : les deux appellent le même service.</p>
+<hr>
+<h2 id="5-la-propriété-de-sécurité-aujourdhui-garantie">5. La propriété de sécurité aujourd'hui GARANTIE</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<ol>
+<li><strong>Rien n'entre sans session</strong> — <code>getCurrentCtx</code> sur les quatre chemins.</li>
+<li><strong>Rien ne dépasse 15 Mo</strong>, et sur la route, la borne tient <em>pendant</em> la lecture — un <code>content-length</code> menteur ou un <code>Transfer-Encoding: chunked</code> ne la contourne pas.</li>
+<li><strong>Le type SERVI ne vient jamais du navigateur.</strong> <code>typeDepuisCle</code> le dérive de l'extension que <strong>le serveur</strong> a posée, et sa table ne peut rendre ni <code>text/html</code> ni <code>image/svg+xml</code> — au pire <code>application/octet-stream</code> (constat M1).</li>
+<li><strong><code>X-Content-Type-Options: nosniff</code></strong> est posé sur <code>/(.*)</code>, donc y compris sur <code>/api/fichiers/…</code>.</li>
+<li><strong>Le fichier n'est lisible que par son entreprise</strong> — la route de service vérifie l'appartenance avant de rendre un octet, et répond 404 sinon.</li>
+<li><strong>L'audio transcrit est purgé</strong> (<code>audios_a_purger</code>).</li>
+<li><strong>Un enregistrement vide est refusé</strong> plutôt que rangé.</li>
+</ol>
+<h2 id="6-la-propriété-qui-manque-réellement">6. La propriété qui MANQUE réellement</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><strong>Le contenu n'est jamais confronté au type annoncé.</strong> <code>verifierTypeAudio</code> ne lit que la chaîne envoyée par le navigateur ; aucun octet du fichier n'est regardé. Un fichier quelconque annoncé <code>audio/webm</code> est donc <strong>accepté, rangé, et envoyé au fournisseur de transcription</strong>.</p>
+<p><strong>Et il y a pire que le type : l'extension et le MIME rangé sortent tous deux de cette chaîne non vérifiée.</strong> <code>extensionPour(mimeType)</code> choisit <code>.webm</code>, <code>.m4a</code>… d'après elle, et c'est cette extension qui décidera plus tard du <code>Content-Type</code> servi. La chaîne du navigateur commande donc, indirectement, <strong>ce qu'Atlas annoncera plus tard au navigateur</strong> — sur une liste fermée, mais elle commande.</p>
+<h2 id="7-scénarios--exploitables-et-non-exploitables">7. Scénarios — exploitables et non exploitables</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<h3 id="non-exploitables-et-il-faut-le-dire">Non exploitables, et il faut le dire</h3>
+<div class="tablewrap"><table><thead><tr>
+<th>Scénario</th>
+<th>Pourquoi il ne mène nulle part</th>
+</tr></thead><tbody>
+<tr>
+<td><strong>Faux <code>audio/webm</code> contenant du HTML</strong></td>
+<td>servi en <code>audio/webm</code> (dérivé de l'extension serveur), avec <code>nosniff</code>. Le navigateur ne l'interprétera pas</td>
+</tr>
+<tr>
+<td><strong>Polyglotte HTML/audio</strong></td>
+<td>même raison : rien ne le sert en <code>text/html</code></td>
+</tr>
+<tr>
+<td><strong>SVG renommé</strong></td>
+<td><code>typeDepuisCle</code> ne rend jamais <code>image/svg+xml</code> pour une extension audio</td>
+</tr>
+<tr>
+<td><strong>Discordance MIME / extension</strong></td>
+<td>l'extension n'est pas celle du client : le serveur la compose</td>
+</tr>
+<tr>
+<td><strong>Fichier énorme</strong></td>
+<td>15 Mo, et la borne tient pendant la lecture (M6)</td>
+</tr>
+<tr>
+<td><strong>Chemin audio oublié</strong></td>
+<td>aucun : les quatre passent par le mécanisme commun</td>
+</tr>
+<tr>
+<td><strong>Exécution chez un autre utilisateur</strong></td>
+<td>la route de service refuse hors entreprise</td>
+</tr>
+</tbody></table></div>
+<p><strong>Je n'ai pas de chemin d'exécution ni de fuite à montrer.</strong> Le dire est un choix : qualifier ce défaut de « critique » sans démonstration ferait ignorer la prochaine alerte qui, elle, le sera.</p>
+<h3 id="réellement-exploitables-et-modestement">Réellement exploitables, et modestement</h3>
+<div class="tablewrap"><table><thead><tr>
+<th>Scénario</th>
+<th>Ce qu'il coûte</th>
+</tr></thead><tbody>
+<tr>
+<td><strong>Stockage détourné</strong></td>
+<td>15 Mo de n'importe quoi par envoi, rangés dans le stockage du patron sous une extension audio. Borné par la cadence, mais rien ne le refuse</td>
+</tr>
+<tr>
+<td><strong>Fichier tronqué ou non-audio envoyé au fournisseur d'IA</strong></td>
+<td>Atlas <strong>paie</strong> un appel de transcription pour un fichier qui n'en est pas un, et rend « transcription impossible ». C'est une facture, pas une fuite</td>
+</tr>
+<tr>
+<td><strong>Zip d'export pollué</strong></td>
+<td>le faux fichier ressort dans <code>/api/mes-donnees</code>, sous une extension qui ment sur son contenu</td>
+</tr>
+</tbody></table></div>
+<p><strong>Gravité honnête : FAIBLE.</strong> Ce n'est pas une porte d'exécution ; c'est une porte d'<strong>abus de ressource</strong>, et la seule qui reste ouverte sur les fichiers depuis que les images ont été fermées (M2/M3).</p>
+<h2 id="8-les-formats-réellement-nécessaires">8. Les formats réellement nécessaires</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p>Relevé dans le code, pas supposé. <code>src/app/chantiers/[id]/magnetophone.ts</code> fait <code>new MediaRecorder(stream)</code> <strong>sans imposer de type</strong>, puis rend <code>recorder.mimeType || "audio/webm"</code>. Ce que le navigateur choisit fait donc foi :</p>
+<div class="tablewrap"><table><thead><tr>
+<th>Appareil</th>
+<th>Ce que le magnétophone produit</th>
+</tr></thead><tbody>
+<tr>
+<td><strong>Safari / iPhone</strong></td>
+<td><code>audio/mp4</code> — conteneur ISO-BMFF</td>
+</tr>
+<tr>
+<td><strong>Chrome / Android, PC</strong></td>
+<td><code>audio/webm;codecs=opus</code> — conteneur Matroska</td>
+</tr>
+<tr>
+<td><strong>Firefox</strong></td>
+<td><code>audio/ogg;codecs=opus</code></td>
+</tr>
+</tbody></table></div>
+<p>Plus ce qu'un artisan <strong>importe</strong> depuis son téléphone, que <code>ACCEPT_AUDIO</code> offre déjà : <code>m4a</code>, <code>mp3</code>, <code>wav</code>, <code>aac</code>, <code>flac</code>.</p>
+<p><strong>Les cinq conteneurs à reconnaître, et leur signature :</strong></p>
+<div class="tablewrap"><table><thead><tr>
+<th>Format</th>
+<th>Octets</th>
+<th>Fiabilité</th>
+</tr></thead><tbody>
+<tr>
+<td><strong>WebM / Matroska</strong></td>
+<td><code>1A 45 DF A3</code> en tête</td>
+<td>sûre, 4 octets</td>
+</tr>
+<tr>
+<td><strong>MP4 / M4A</strong></td>
+<td><code>ftyp</code> aux octets 4-7</td>
+<td>sûre — la taille de boîte précède</td>
+</tr>
+<tr>
+<td><strong>OGG</strong></td>
+<td><code>OggS</code> en tête</td>
+<td>sûre</td>
+</tr>
+<tr>
+<td><strong>WAV</strong></td>
+<td><code>RIFF</code> + <code>WAVE</code> aux octets 8-11</td>
+<td>sûre</td>
+</tr>
+<tr>
+<td><strong>MP3</strong></td>
+<td><code>ID3</code>, <strong>ou</strong> <code>FF Ex/Fx</code></td>
+<td><strong>la seule fragile</strong> : une trame MP3 nue n'a pas d'en-tête stable, et un fichier peut commencer par des octets de bourrage</td>
+</tr>
+<tr>
+<td><strong>FLAC</strong></td>
+<td><code>fLaC</code></td>
+<td>sûre</td>
+</tr>
+<tr>
+<td><strong>AAC brut (ADTS)</strong></td>
+<td><code>FF F1</code> / <code>FF F9</code></td>
+<td>fragile, comme MP3</td>
+</tr>
+</tbody></table></div>
+<h2 id="9-la-solution-minimale-que-je-recommande">9. La solution minimale que je recommande</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><strong>Une fonction pure dans <code>src/lib/</code>, sans aucune bibliothèque</strong> — et le précédent est dans le dépôt : <code>src/lib/exif.ts</code> vérifie déjà des signatures d'images en TypeScript nu, et refuse un SVG annoncé <code>image/jpeg</code>. <em>Le prompt demandait de ne pas ajouter de bibliothèque native lourde : la question ne se pose pas, il ne faut aucune bibliothèque.</em></p>
+<p>``<code> signatureAudio(octets: Uint8Array): "webm" | "mp4" | "ogg" | "wav" | "flac" | "mp3" | "aac" | null </code>``</p>
+<p>Puis, aux quatre entrées : <strong>le type déclaré doit s'accorder à la signature.</strong> Et — c'est le point qui compte le plus — <strong>l'extension et le MIME rangés doivent sortir de la SIGNATURE, jamais de la chaîne du navigateur.</strong></p>
+<p><strong>Ce qu'il ne faut surtout pas faire, et pourquoi :</strong></p>
+<ul>
+<li><strong>aucun parseur de conteneur.</strong> Lire un Matroska, c'est écrire un analyseur de format binaire sur une entrée hostile — on remplacerait un abus de ressource par une vraie surface d'attaque. Le remède serait pire que le mal ;</li>
+<li><strong>ne pas refuser sur MP3/AAC quand la signature est muette.</strong> Ces deux-là n'ont pas d'en-tête fiable. La règle sûre est : <em>une signature CONNUE qui contredit le type annoncé refuse ; une signature illisible laisse passer avec le type déclaré</em>. Refuser dans le doute ferait perdre des dictées de chantier.</li>
+</ul>
+<h2 id="10-les-tests-à-écrire-avant-le-correctif">10. Les tests à écrire AVANT le correctif</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<ol>
+<li><strong>Chaque format réel est reconnu</strong> — un échantillon minimal de chaque conteneur, fabriqué dans le test, jamais téléchargé.</li>
+<li><strong>La moitié qui protège du remède, et elle compte autant :</strong> un vrai <code>audio/mp4</code> d'iPhone et un vrai <code>audio/webm</code> d'Android <strong>passent</strong>. Sans elle, un correctif trop strict serait vert et casserait le chantier.</li>
+<li><strong>Un faux <code>audio/webm</code> portant du HTML est refusé</strong>, et le message nomme le vrai format vu.</li>
+<li><strong>Un MP3 sans en-tête <code>ID3</code> passe</strong> — le cas fragile, explicitement toléré.</li>
+<li><strong>Un fichier tronqué à trois octets ne fait pas lever</strong> la fonction.</li>
+<li><strong>L'extension rangée suit la signature</strong>, pas le type déclaré : envoyer un OGG annoncé <code>audio/webm</code> doit ranger un <code>.ogg</code>.</li>
+<li><strong>Les quatre chemins appellent le contrôle</strong> — contrôle structurel, comme celui des images de M3, sinon le cinquième ne l'appellera pas.</li>
+<li><strong>Aucun octet n'est lu avant la borne de taille</strong> — l'ordre des gardes.</li>
+</ol>
+<h2 id="11-risques-de-régression--iphone--safari-dabord">11. Risques de régression — iPhone / Safari d'abord</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th>Risque</th>
+<th>Pourquoi il est réel</th>
+</tr></thead><tbody>
+<tr>
+<td><strong>iPhone refusé</strong></td>
+<td>Safari annonce <code>audio/mp4</code> et écrit un ISO-BMFF ; la signature <code>ftyp</code> est à l'octet <strong>4</strong>, pas 0. Une vérification écrite « en tête » refuserait <strong>toutes</strong> les dictées d'iPhone</td>
+</tr>
+<tr>
+<td><strong><code>audio/m4a</code> et <code>audio/x-m4a</code></strong></td>
+<td>deux types déclarés pour un même conteneur <code>mp4</code> : la correspondance doit accepter les trois</td>
+</tr>
+<tr>
+<td><strong>MP3 importé</strong></td>
+<td>sans <code>ID3</code>, la signature est muette : refuser casserait un import légitime</td>
+</tr>
+<tr>
+<td><strong>Enregistrement en cours coupé</strong></td>
+<td>un WebM tronqué garde sa signature — il doit continuer à passer, la transcription dira le reste</td>
+</tr>
+<tr>
+<td><strong>Ce qui ne peut PAS être éprouvé ici</strong></td>
+<td>il n'y a ni iPhone ni Safari sur ce poste. Les échantillons des tests seront fabriqués ; <strong>la vérification finale se fait sur son espace</strong>, avec une vraie dictée. À dire, pas à supposer</td>
+</tr>
+</tbody></table></div>
+<h2 id="12-défaut-trouvé-hors-périmètre">12. Défaut trouvé hors périmètre</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><strong><code>extensionPour()</code> rend <code>.audio</code> quand le type ne correspond à rien de connu.</strong> Ce cas est aujourd'hui inatteignable — <code>verifierTypeAudio</code> a déjà refusé —, mais la fonction ne le sait pas. <code>typeDepuisCle</code> ne connaît pas <code>.audio</code> : un tel fichier serait servi en <code>application/octet-stream</code>. <strong>Sans danger, et à supprimer</strong> quand la signature commandera l'extension : un repli qui ne peut plus être atteint est un piège pour la prochaine lecture.</p>
+<p><em>Aucun autre défaut de sécurité n'a été trouvé hors périmètre pendant cette lecture.</em></p>
+<hr>
+<h2 id="ce-qui-reste-ouvert-et-pour-qui">Ce qui reste ouvert, et pour qui</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th>Pour qui</th>
+</tr></thead><tbody>
+<tr>
+<td><strong>Fusionner sur <code>main</code></strong></td>
+<td>le patron — rien n'est fusionné, comme demandé</td>
+</tr>
+<tr>
+<td><strong>F7</strong> — l'écran RGPD</td>
+<td>décision du patron</td>
+</tr>
+<tr>
+<td><strong>F10</strong> — le lot CSP avec <code>nonce</code></td>
+<td>développement, lot à soi</td>
+</tr>
+<tr>
+<td><strong><code>/catalogue</code></strong> sans garde de rôle</td>
+<td>décision du patron, quand les droits Salarié / Commercial seront définis</td>
+</tr>
+<tr>
+<td><strong><code>ATLAS_PROXY_SAUTS</code></strong></td>
+<td>hébergement</td>
+</tr>
+<tr>
+<td><strong>Trois suites qui rougissent sous la batterie</strong></td>
+<td>développement — remède écrit dans <code>TODO.md</code></td>
+</tr>
+<tr>
+<td><strong>Le lot Audio lui-même</strong></td>
+<td>attend votre feu vert : <strong>aucune ligne n'a été écrite</strong></td>
+</tr>
+</tbody></table></div>
+</main>
+</body>
+</html>

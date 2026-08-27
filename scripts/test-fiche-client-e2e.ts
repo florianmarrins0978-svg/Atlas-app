@@ -202,6 +202,24 @@ async function main() {
     `le montage n'a produit que ${partis} devis envoyé(s) chez ce client : l'ordre ne se vérifierait pas`
   );
 
+  let ficheDuClientMonte = "";
+
+  /**
+   * Attend qu'une condition devienne vraie, ou rougit en la nommant.
+   *
+   * **Un délai fixe ne convient pas ici** : la suppression passe par une action
+   * serveur, et sous la batterie complète elle prend plus longtemps que seule.
+   * C'est le piège écrit dans `HANDOVER.md`, et il a déjà fait rougir trois
+   * suites justes cette semaine.
+   */
+  async function attendre(quoi: string, vrai: () => Promise<boolean>) {
+    for (let i = 0; i < 60; i++) {
+      if (await vrai()) return;
+      await page.waitForTimeout(500);
+    }
+    throw new Error(`toujours pas : ${quoi}`);
+  }
+
   await cas("depuis la fiche du chantier, une porte mène au client", async () => {
     await page.goto(chantierUrl, { waitUntil: "networkidle" });
     await page.waitForTimeout(700);
@@ -212,6 +230,9 @@ async function main() {
     );
     await porte.first().click();
     await page.waitForURL(/\/clients\/[0-9a-f-]{36}/, { timeout: 15_000 });
+    // Les cas de la fin y reviennent : la retenir évite de la rechercher, et
+    // surtout d'en ouvrir une autre sans s'en apercevoir.
+    ficheDuClientMonte = page.url();
     /**
      * **L'adresse change avant que la fiche soit là.** `waitForURL` rend la main
      * dès que l'URL correspond ; le corps de la page porte encore
@@ -703,6 +724,82 @@ async function main() {
       DECIDES,
       `la barre du bas porte ${onglets.join(", ")} au lieu de ${DECIDES.join(", ")}`
     );
+  });
+
+  // ─── SUPPRIMER UN CLIENT — sa proposition C, tranchée le 27 août 2026 ─────
+  //
+  // *« Je pense la C ; lorsqu'un client a des documents il faut mettre la phrase
+  // de prévention, et une phrase disant avez-vous sauvegardé ses documents autre
+  // part — et s'il dit oui il peut supprimer quand même. »*
+  //
+  // **Ces cas passent en DERNIER, et ce n'est pas un hasard** : le second
+  // supprime pour de bon. Placés plus haut, ils retireraient le décor que les
+  // suivants lisent — la faute que ce fichier a déjà payée deux fois cette
+  // semaine.
+  await cas("un client qui a des documents est PRÉVENU, et le geste est verrouillé", async () => {
+    await page.goto(ficheDuClientMonte, { waitUntil: "networkidle" });
+    await page.getByText("Chargement…").first().waitFor({ state: "hidden", timeout: 30_000 }).catch(() => undefined);
+
+    await page.locator('[data-atlas="supprimer-client"]').click();
+    const confirmer = page.locator('[data-atlas="confirmer-suppression"]');
+    await confirmer.waitFor({ state: "visible", timeout: 15_000 });
+
+    assert.ok(
+      await page.locator('[data-atlas="prevention"]').isVisible(),
+      "aucune phrase de prévention sur un client qui a des documents"
+    );
+    // **Le verrou se mesure sur le bouton, pas sur la case.** Une case cochée
+    // qui ne commanderait rien passerait au vert en laissant la suppression
+    // ouverte — c'est l'inverse de ce qu'il a demandé.
+    assert.strictEqual(
+      await confirmer.isDisabled(),
+      true,
+      "« Supprimer » est actif avant qu'il ait répondu sur la sauvegarde"
+    );
+
+    await page.locator('[data-atlas="sauvegarde-ailleurs"]').click();
+    await page.waitForTimeout(200);
+    assert.strictEqual(
+      await confirmer.isDisabled(),
+      false,
+      "« J'ai sauvegardé » ne déverrouille rien : le geste reste impossible"
+    );
+
+    // On referme : ce client sert encore aux cas qui suivent, s'il en naît.
+    await page.getByRole("button", { name: "Annuler" }).click();
+    await page.waitForTimeout(300);
+  });
+
+  await cas("et un client SANS document disparaît pour de bon", async () => {
+    const { rows } = await pool.query(
+      `INSERT INTO clients (entreprise_id, nom, telephone)
+       SELECT entreprise_id, $2, $3 FROM chantiers WHERE id = $1
+       RETURNING id`,
+      [chantierId, `M. À supprimer ${Date.now()}`, "06 00 00 00 06"]
+    );
+    assert.equal(rows.length, 1, "le client d'essai n'a pas été créé : il n'y a rien à mesurer");
+    const aSupprimer = rows[0].id as string;
+
+    await page.goto(`${BASE}/clients/${aSupprimer}`, { waitUntil: "networkidle" });
+    await page.getByText("Chargement…").first().waitFor({ state: "hidden", timeout: 30_000 }).catch(() => undefined);
+    await page.locator('[data-atlas="supprimer-client"]').click();
+    const confirmer = page.locator('[data-atlas="confirmer-suppression"]');
+    await confirmer.waitFor({ state: "visible", timeout: 15_000 });
+
+    // Rien à sauvegarder : le verrou n'a pas lieu d'être, et l'alarmer pour
+    // rien apprendrait à ignorer l'alarme (`CLAUDE.md` §4 ter).
+    assert.strictEqual(await page.locator('[data-atlas="prevention"]').count(), 0, "on l'alarme pour un client vide");
+    assert.strictEqual(await confirmer.isDisabled(), false, "le geste est verrouillé sans rien à sauvegarder");
+
+    await confirmer.click();
+    await page.waitForURL(new RegExp(`${BASE.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}/clients/?$`), { timeout: 30_000 });
+
+    // **On mesure la BASE, pas l'écran.** Une fiche disparue de la liste peut
+    // n'être que masquée ; ce qu'il a choisi, c'est qu'elle n'existe plus.
+    await attendre("la fiche a disparu de la base", async () => {
+      const { rows: reste } = await pool.query(`SELECT id FROM clients WHERE id = $1`, [aSupprimer]);
+      return reste.length === 0;
+    });
   });
 
   await contexte.close();

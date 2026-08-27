@@ -2,6 +2,7 @@ import { execFile } from "node:child_process";
 import { promisify } from "node:util";
 import { getEnv } from "./env";
 import { versionServie, type VersionServie } from "@/lib/version-servie";
+import { estBancDEssai } from "@/profil-banc";
 
 const executer = promisify(execFile);
 
@@ -70,7 +71,10 @@ export async function versionExecutee(): Promise<string | null> {
  * c\'est là qu\'il est éprouvé, y compris sur le cas qu\'il a vécu.
  */
 export async function versionEtRetard(): Promise<VersionServie> {
-  const surLeBanc = process.env.ATLAS_BANC_ESSAI === "1";
+  // **Les DEUX marques du banc**, jamais une seule : `.devcontainer/demarrer.sh`
+  // ne pose que `ATLAS_PROFIL`, et cet écran annonçait donc « version inconnue »
+  // sur un banc reconnu partout ailleurs (constat M12, 25 août 2026).
+  const surLeBanc = estBancDEssai();
   return versionServie({
     // Le dépôt n\'existe que sur son banc : une application déployée n\'en a pas.
     duDepot: surLeBanc ? await versionDuDepot(process.cwd()) : null,

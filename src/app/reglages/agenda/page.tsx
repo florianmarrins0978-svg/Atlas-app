@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { colors, font, smallCaps } from "@/lib/design-tokens";
 import { getCurrentCtx } from "@/server/session-ctx";
+import { estProprietaire } from "@/server/autorisation";
+import RubriqueReservee from "../RubriqueReservee";
 import { etatAgenda } from "@/server/repositories/agendas-externes";
 import { etatAgendaApple } from "@/server/repositories/agenda-apple";
 import AgendaClient from "./AgendaClient";
@@ -22,6 +24,33 @@ export default async function AgendaPage({
   searchParams: Promise<{ issue?: string }>;
 }) {
   const ctx = await getCurrentCtx();
+
+  /**
+   * **RÉSERVÉ AU PATRON — constat F8, 25 août 2026.**
+   *
+   * Cette page était la SEULE rubrique réservée au propriétaire à ne pas se
+   * garder : dix autres le faisaient, celle-ci l'avait oublié. Un salarié qui
+   * tapait l'adresse y lisait le compte d'agenda relié — l'identifiant iCloud ou
+   * Google du patron — et son état de connexion.
+   *
+   * **Le lien était bien caché** (`rubriquesReglages` ne le rend qu'au patron),
+   * et cela ne protégeait rien : une adresse se tape. Les ÉCRITURES, elles,
+   * étaient déjà gardées par `exigerProprietaire` dans `actions.ts` — c'est la
+   * lecture qui manquait.
+   *
+   * **Le refus est rendu AVANT toute lecture** : `etatAgenda` et
+   * `etatAgendaApple` ne sont plus appelés du tout pour un salarié. Une garde
+   * posée après aurait chargé la donnée avant de refuser de la montrer.
+   */
+  if (!(await estProprietaire(ctx))) {
+    return (
+      <RubriqueReservee
+        titre="Intégrations"
+        quoi="Le calendrier relié appartient au compte du patron."
+      />
+    );
+  }
+
   const [etat, etatApple, params] = await Promise.all([
     etatAgenda(ctx),
     etatAgendaApple(ctx),

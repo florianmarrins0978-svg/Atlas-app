@@ -114,5 +114,11 @@ export default auth((request) => {
 });
 
 export const config = {
-  matcher: ["/((?!_next/static|_next/image|favicon.ico|api/health).*)"],
+  // `robots.txt` y a rejoint `favicon.ico` le 25 août 2026 (constat F13) : un
+  // moteur n'a pas de session, et sans cette exclusion il recevrait une
+  // redirection vers `/login` au lieu de la consigne de ne rien indexer. Le
+  // fichier existerait, et ne servirait à rien — un garde-fou qu'on croit en
+  // place est pire qu'un garde-fou absent. Ce qu'il contient, et pourquoi il
+  // n'est PAS une frontière de sécurité, est écrit dans `src/app/robots.ts`.
+  matcher: ["/((?!_next/static|_next/image|favicon.ico|robots.txt|api/health).*)"],
 };

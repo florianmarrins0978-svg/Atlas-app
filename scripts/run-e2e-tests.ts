@@ -37,7 +37,19 @@ async function reinitialiserSeuilRedis() {
   if (!url) return;
   const redis = new Redis(url, { lazyConnect: true, maxRetriesPerRequest: 1 });
   try {
-    const cles = await redis.keys("ratelimit:connexion:*");
+    // **`reponse-devis:*` a rejoint la liste le 25 août 2026, avec F9.**
+    //
+    // Le compteur par SOURCE de cette action est commun à tout le monde tant
+    // que `ATLAS_PROXY_SAUTS` n'est pas posé — ce qui est le cas ici, où tout
+    // part de 127.0.0.1 sans mandataire. Les suites qui répondent à un devis
+    // s'additionnent donc dans un seul seau, d'une suite à l'autre : sans ce
+    // nettoyage, la batterie finirait par se bloquer elle-même, et le refus
+    // arriverait sur la trentième suite plutôt que sur celle qui l'a causé.
+    // C'est exactement le piège déjà payé sur `connexion:`.
+    const cles = [
+      ...(await redis.keys("ratelimit:connexion:*")),
+      ...(await redis.keys("ratelimit:reponse-devis:*")),
+    ];
     if (cles.length > 0) await redis.del(...cles);
   } catch (err) {
     console.warn(`⚠ Réinitialisation de la limite de connexion impossible : ${err instanceof Error ? err.message : err}`);
@@ -221,6 +233,16 @@ const motifDemande = (() => {
 
 if (process.argv.includes("--list")) {
   const fichiers = readdirSync(DOSSIER)
+    // **Un fichier préfixé `_` est une PIÈCE COMMUNE, pas une suite.**
+    //
+    // Trouvé le 26 août 2026, et c'était un faux vert : `_creer-chantier-e2e.ts`
+    // et `_calendrier-e2e.ts` n'exportent que des fonctions — joués seuls, ils
+    // n'affichent rien et sortent en 0. La batterie les comptait donc comme des
+    // suites RÉUSSIES, et annonçait 112/112 là où 110 seulement mesuraient
+    // quelque chose. C'est exactement le contrôle qui mesure zéro que
+    // `CLAUDE.md` §5 décrit : il ne dit pas « rouge », il ne dit rien — et il
+    // gonfle le chiffre auquel on se fie.
+    .filter((f) => !f.startsWith("_"))
     .filter((f) => f.endsWith("-e2e.ts") || SUITES_SERVEUR.includes(f))
     .filter((f) => (motifDemande === null ? true : f.includes(motifDemande)))
     .sort();
@@ -402,6 +424,7 @@ async function main() {
   }
 
   const fichiers = readdirSync(DOSSIER)
+    .filter((f) => !f.startsWith("_"))  // pièces communes, jamais des suites — voir plus haut
     .filter((f) => f.endsWith("-e2e.ts") || SUITES_SERVEUR.includes(f))
     .filter((f) => (motifDemande === null ? true : f.includes(motifDemande)))
     .sort();

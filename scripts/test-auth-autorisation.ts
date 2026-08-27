@@ -101,7 +101,7 @@ async function main() {
     const [utilisateurOrphelin] = await db
       .insert(users)
       .values({ email: `orphelin-${Date.now()}@test.local`, nom: "Orphelin" })
-      .returning();
+      .returning({ id: users.id });
     process.env.AUTH_TEST_UTILISATEUR_ID = utilisateurOrphelin.id;
     let leve = false;
     try {
@@ -142,7 +142,15 @@ async function main() {
     const [membreUser] = await db
       .insert(users)
       .values({ email: `membre-${Date.now()}@test.local`, nom: "Membre" })
-      .returning();
+      // **`returning({ id })` et NON `returning()` nu — c'est M9.** Depuis la
+      // migration 0064, `atlas_app` n'a plus le SELECT sur toutes les colonnes
+      // de `users` : un `RETURNING *` demande la lecture de `password_hash` et
+      // se fait refuser. Trois suites l'ont appris en rougissant.
+      //
+      // **Et le rôle est « salarie », pas « membre »** : la migration 0065 l'a
+      // renommé. Les deux moitiés viennent de deux lots différents, et la fusion
+      // du 26 août 2026 devait garder les deux — l'une seule aurait cassé.
+      .returning({ id: users.id });
     await ajouterMembre(entreprise.id, membreUser.id, "salarie");
 
     const ctxMembre = { entrepriseId: entreprise.id, utilisateurId: membreUser.id };
@@ -171,7 +179,15 @@ async function main() {
     const [membreUser] = await db
       .insert(users)
       .values({ email: `tarif-membre-${Date.now()}@test.local`, nom: "Membre" })
-      .returning();
+      // **`returning({ id })` et NON `returning()` nu — c'est M9.** Depuis la
+      // migration 0064, `atlas_app` n'a plus le SELECT sur toutes les colonnes
+      // de `users` : un `RETURNING *` demande la lecture de `password_hash` et
+      // se fait refuser. Trois suites l'ont appris en rougissant.
+      //
+      // **Et le rôle est « salarie », pas « membre »** : la migration 0065 l'a
+      // renommé. Les deux moitiés viennent de deux lots différents, et la fusion
+      // du 26 août 2026 devait garder les deux — l'une seule aurait cassé.
+      .returning({ id: users.id });
     await ajouterMembre(entreprise.id, membreUser.id, "salarie");
 
     process.env.AUTH_TEST_UTILISATEUR_ID = membreUser.id;

@@ -3,7 +3,7 @@ import { mkdirSync } from "node:fs";
 import type { Page, BrowserContext } from "playwright";
 import { lancerNavigateur } from "./e2e-browser";
 import { creerPuisFiche } from "./_creer-chantier-e2e";
-import { jourIso } from "../src/lib/jour";
+import { joursAProposer } from "./_calendrier-e2e";
 
 // L'envoi du devis au client, vu depuis l'écran du patron (docs/AGENT.md §2.2).
 //
@@ -238,35 +238,32 @@ async function main() {
    * Le calendrier sait tourner la page ; la suite doit savoir le faire aussi.
    * Une seule fois suffit : un mois entier porte toujours assez de jours.
    */
+  /**
+   * **DEUX SESSIONS ONT RÉSOLU LE MÊME DÉFAUT LE MÊME JOUR**, et la fusion du
+   * 26 août 2026 a dû choisir.
+   *
+   * Ce fichier portait `joursRetenables`, écrite ici ; la branche du lot 3
+   * portait `joursAProposer`, dans `scripts/_calendrier-e2e.ts`. Les deux
+   * tournent la page du mois quand celui-ci est trop entamé. **Les garder
+   * toutes les deux aurait été la duplication elle-même** — celle que
+   * `CLAUDE.md` §3 interdit, et qui finit toujours par diverger.
+   *
+   * Ce qui a été retenu, et pourquoi :
+   *
+   * | | ici | pièce commune |
+   * |---|---|---|
+   * | portée | une seule suite | **deux suites** |
+   * | plancher | `+3` écrit en dur | **`DELAI_MINIMAL_JOURS`**, qui suivra le jour où il changera |
+   * | mois consultés | un de plus | jusqu'à trois |
+   *
+   * **Le nom d'ici SURVIT en délégation** : trois appels le nomment dans ce
+   * fichier, et les renommer aurait mêlé une réécriture à une fusion. Ce qui
+   * disparaît, c'est la seconde implémentation — jamais un point d'appel.
+   */
   async function joursRetenables(page: Page, combien: number): Promise<string[]> {
-    const plancher = new Date();
-    plancher.setDate(plancher.getDate() + 3);
-    // **`jourIso`, jamais `toISOString`.** Entre minuit et 2 h du matin en
-    // France, Greenwich est encore la veille (`ARCHITECTURE.md` §182) : le
-    // plancher tombait d'un jour, et la suite retenait un jour que le serveur
-    // refuse — un rouge nocturne sur du code sain.
-    const depuis = jourIso(plancher);
-
-    const lire = async () =>
-      (
-        await page
-          .locator('[data-jour][data-etat="regardable"]')
-          .evaluateAll((els) => els.map((e) => e.getAttribute("data-jour")!).filter(Boolean))
-      ).filter((j) => j >= depuis);
-
-    let jours = await lire();
-    if (jours.length < combien) {
-      const suivant = page.locator('button[aria-label^="Mois suivant"]').first();
-      if ((await suivant.count()) > 0 && (await suivant.isEnabled())) {
-        await suivant.click();
-        // La grille se repeint : attendre une case du mois neuf, pas un délai.
-        await page.locator('[data-jour][data-etat="regardable"]').first().waitFor({ timeout: 20_000 });
-        jours = await lire();
-      }
-    }
-    assert.ok(jours.length >= combien, `pas assez de jours retenables, même au mois suivant (${jours.length})`);
-    return jours;
+    return joursAProposer(page, combien);
   }
+
 
   await test("le patron ne propose jamais plus de deux dates", async () => {
     const url = await creerChantierFacturable(page, "deuxmax");
@@ -282,9 +279,15 @@ async function main() {
     // changé : jamais plus de deux.
     // Une date est déjà retenue à l'ouverture : on en retient deux de plus, et
     // la troisième doit chasser la première — jamais trois.
-    // **Assez loin pour que le serveur les accepte** (le délai minimal), et au
-    // besoin au mois suivant — voir `joursRetenables`.
-    const aRetenir = await joursRetenables(page, 2);
+    //
+    // **La recherche des jours TOURNE LA PAGE DU MOIS si besoin**
+    // (`scripts/_calendrier-e2e.ts`). Elle ne relâche rien : la règle éprouvée
+    // plus bas — jamais plus de deux dates — est intacte. Ce qui a changé est en
+    // amont, et c'est de la matière à mesurer : le mois affiché s'ouvre au 1er,
+    // et en fin de mois il ne restait parfois qu'un seul jour ouvrable au-delà
+    // du délai minimal. La suite s'arrêtait là, sur un écran parfaitement juste
+    // — 57 jours de l'année, mesurés.
+    const aRetenir = await joursAProposer(page, 2);
     for (const jour of aRetenir.slice(0, 2)) await retenirAuCalendrier(page, jour);
 
     // **On compte des JOURS, pas des boutons pressés.** Depuis le 12 août 2026,
@@ -659,7 +662,11 @@ async function main() {
 
     // Deux dates, comme sur sa capture — un seul jour proposé change le libellé
     // du choix, et un contrôle qui n'éprouve qu'une forme laisse passer l'autre.
-    const libres = await joursRetenables(page, 2);
+    // Même remède qu'au-dessus, et pour la même raison : trouver deux jours,
+    // en tournant la page du mois si celui-ci est trop entamé. Ce qui est
+    // éprouvé ensuite — la cliente peut proposer un jour sans que le patron ait
+    // rien touché — n'a pas bougé d'un caractère.
+    const libres = await joursAProposer(page, 2);
     for (const jour of libres.slice(0, 2)) await retenirAuCalendrier(page, jour);
 
     await page.getByRole("button", { name: "Envoyer le devis" }).click();
