@@ -2450,3 +2450,28 @@ export const clesAppareil = pgTable(
   },
   (t) => [index("cles_appareil_utilisateur_idx").on(t.utilisateurId)]
 );
+
+/**
+ * LA PREUVE RÉCENTE — ce qui autorise un geste vraiment sensible (M11).
+ *
+ * **Attachée à la SESSION, jamais seulement à la personne.** Une date unique par
+ * utilisateur se partagerait entre ses appareils : le patron se ré-authentifie
+ * sur son iPhone, et une session volée ailleurs en profiterait dans la seconde.
+ *
+ * Ne porte aucun secret : ni mot de passe, ni condensat, ni assertion WebAuthn.
+ * Voir `drizzle/0065_preuve_recente.sql`.
+ */
+export const preuvesAuthentification = pgTable(
+  "preuves_authentification",
+  {
+    utilisateurId: uuid("utilisateur_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    /** L'identité de la session, telle que le jeton la porte. */
+    sessionId: text("session_id").notNull(),
+    prouveLe: timestamp("prouve_le", { withTimezone: true }).notNull().defaultNow(),
+    /** « mot-de-passe » ou « cle-appareil » — pour le journal, jamais la décision. */
+    methode: text("methode").notNull(),
+  },
+  (table) => [primaryKey({ columns: [table.utilisateurId, table.sessionId] })]
+);

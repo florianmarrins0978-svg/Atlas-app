@@ -9,6 +9,40 @@ sert.
 
 ---
 
+## LA BATTERIE NE TIENT PLUS EN UN SEUL SERVEUR — à lire avant de la lancer (27 août 2026)
+
+**Si `npm run verifier:avant-livraison` rend un rouge sur une suite navigateur,
+regarder D'ABORD si le serveur n'est pas mort de faim.** Le signe qui ne trompe
+pas, dans le journal de la batterie :
+
+    ❌ Le serveur ne répond plus avant test-<quelquechose>.ts — il s'est arrêté (code 0).
+
+Ce n'est pas la suite nommée qui est en cause : **elle n'a jamais été lancée.**
+Mesuré le 27 août — le serveur reste plat à 2 Go pendant treize suites, puis
+`test-coupure-sessions-e2e` le fait bondir à 5,9 Go, et il monte jusqu'à 13,5 Go
+**sans plus recevoir une seule requête**. Les fils `tokio-rt` — Turbopack —
+brûlent le processeur, le fil JavaScript est au repos. Le conteneur a 16 Go.
+
+Pour vérifier en dix secondes :
+
+    dmesg -T | grep -i "Killed process"
+    free -m
+
+**Comment mesurer quand même** : jouer les suites par tranches, un serveur neuf
+par tranche, avec le filtre qui existe déjà —
+
+    npm run test:e2e -- --seulement test-<lettre>
+
+…en reprenant l'environnement de l'étape « Suites navigateur » de
+`scripts/verifier-avant-livraison.ts` (sans `REDIS_URL`, le dépôt refuse de
+tourner, et il a raison). Puis **rejouer seules** les suites qu'aucune tranche
+n'a lancées : une suite jamais jouée n'est ni verte ni rouge.
+
+**Cause NON ÉTABLIE** (`TODO.md`) : la même batterie tenait d'une traite deux
+heures plus tôt, dans ce même conteneur. Ne pas écrire que c'est réglé.
+
+---
+
 ## L'ASSISTANT A UNE MÉMOIRE DEPUIS LE 27 AOÛT 2026
 
 Son fil vit en base (`messages_assistant`, migration 0069) et se relit à
@@ -206,7 +240,45 @@ personnels, `/documents-legaux`, et `/api/chantiers/<id>/feuille/pdf` — le dev
 sans un seul montant. Ouvrir un cinquième chemin se fait dans `OUVERT_AU_SALARIE`
 et se paie d'une ligne dans `scripts/test-acces-roles.ts`, à la main. C'est
 voulu : c'est le seul moment où quelqu'un regarde.
+## LOT AUDIO FERMÉ (26 août 2026)
 
+| | |
+|---|---|
+| **Le format se lit dans les octets** | `src/lib/signature-audio.ts`. `fichier.type` ne décide plus de rien côté serveur |
+| **Format inconnu → REFUS** | et **si un format légitime est refusé chez lui, on n'ouvre PAS de repli sur `fichier.type` : on élargit la reconnaissance.** C'est sa règle, pas une préférence |
+| **Une porte unique** | `src/server/audio-entrant.ts`, et 3 contrôles structurels empêchent le cinquième chemin de faire sa cuisine |
+| **Ni bibliothèque, ni parseur** | lire un conteneur entier sur une entrée hostile serait pire que le défaut |
+| **MP3 et AAC : une CHAÎNE de trames** | deux octets `FF Ex` apparaissent par hasard dans n'importe quel binaire |
+| **L'iPhone A ÉTÉ essayé, et ça passe** | 26 août 2026, sur son propre appareil, jusqu'à la génération des informations du devis. Ce poste n'a toujours pas Safari : c'est un essai HUMAIN qui l'a prouvé, et un futur changement de `signature-audio.ts` en redemandera un |
+| **Ne pas confondre avec le lot QUALITÉ** | ce qui SORT de la dictée — prestations, quantités, prix historiques — est un lot à part, ouvert le 26 août (`TODO.md`). Le lot Audio ne garantit que l'ENTRÉE du fichier |
+
+**Le piège de ce lot, et il reviendra : un contrôle en base qui mesure ZÉRO.**
+`notes_vocales` porte `FORCE ROW LEVEL SECURITY` — **le propriétaire y est
+soumis aussi**. Un compte lu sans poser `app.entreprise_id` rend 0 quoi qu'il
+arrive, et ment dans les deux sens : « rien n'a été rangé » sur un fichier
+hostile réellement rangé.
+
+---
+
+## LOT 3 FERMÉ — F1 À F13 (25 août 2026)
+
+Sept constats codés, quatre refusés, deux gardés sans toucher au code. Ce qu'il
+faut savoir avant d'y revenir :
+
+| | |
+|---|---|
+| **Le rapport d'audit n'est PAS dans le dépôt** | onze des treize points ne citaient aucun fichier. Ils ont été mesurés, pas crus — et quatre étaient faux |
+| **Aucun des sept n'était une fuite de données** | F5 est une panne d'écran, F12 de la surface, F13 une demande polie aux moteurs. Le dire est un choix : une alerte qui exagère s'apprend à être ignorée |
+| **NE JAMAIS renommer une migration** | `run-migrations.ts` les suit par nom de fichier. C'était F6, et « le corriger » l'aurait fait rejouer sur toutes les bases |
+| **Chaque rubrique de réglages pose SA garde** | `adressesAutorisees()` promettait une garde centrale qui n'a jamais existé. `scripts/test-reglages-gardes.ts` tient la règle à sa place |
+| **Le seuil par source ne s'applique que si la source est ÉTABLIE** | sans `ATLAS_PROXY_SAUTS`, tous les clients partagent un seau : le seuil deviendrait une arme retournée |
+
+**Le piège de ce lot, et il reviendra : un contrôle structurel est vert pour de
+mauvaises raisons.** Celui de F8 a passé trois fois sur le défaut qu'il porte
+dans son nom — une ligne d'import, puis un commentaire qui cite la garde, puis
+le mot `params` dans une destructuration. **Un contrôle qui lit du source
+blanchit ses commentaires, ne regarde que le corps de la fonction, et compare ce
+qui suit `await` — jamais la ligne entière.**
 ---
 
 ## LOT 2B FERMÉ, ET SEPT CONTRÔLES RÉPARÉS AVEC LUI (25 août 2026)

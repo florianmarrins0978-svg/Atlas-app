@@ -3,7 +3,7 @@
 import { getCurrentCtx } from "@/server/session-ctx";
 import { supprimerNoteVocale } from "@/server/repositories/notes-vocales";
 import { verifierLimite, LIMITES } from "@/server/rate-limit";
-import { verifierTailleFichier, verifierTypeAudio } from "@/server/upload-limits";
+import { preparerAudioEntrant } from "@/server/audio-entrant";
 import { logger } from "@/server/logger";
 import { messageDePanne, type EtapeNote } from "@/lib/panne-note-vocale";
 import { lancerTranscription } from "@/server/ai/services/transcription-service";
@@ -65,13 +65,6 @@ export async function completerNoteVocaleAction(chantierId: string, formData: Fo
   const fichier = formData.get("fichier");
   if (!(fichier instanceof File)) return refus("Aucun son n'est arrivé jusqu'au serveur.");
 
-  const taille = verifierTailleFichier(fichier);
-  if (!taille.ok) return refus(taille.message);
-  const type = verifierTypeAudio(fichier.type);
-  if (!type.ok) {
-    return refus(`${type.message} (le téléphone a envoyé « ${fichier.type || "aucun type"} »)`);
-  }
-
   // Ne lève pas davantage que l'enregistrement, et pour la même raison : une
   // exception n'arrive jamais lisible chez le patron, et sa phrase de secours
   // accuse le réseau alors que la panne est au serveur.
@@ -83,11 +76,13 @@ export async function completerNoteVocaleAction(chantierId: string, formData: Fo
     const limite = await verifierLimite(`televersement:${ctx.entrepriseId}`, LIMITES.televersementFichier);
     if (!limite.autorise) return refus(limite.message);
 
+    // **LA PORTE COMMUNE** — taille, lecture, vide, puis le FORMAT lu dans les
+    // octets (`src/server/audio-entrant.ts`). Elle vient après la cadence, qui
+    // seule empêche de la faire travailler en rafale.
     etape = "lecture";
-    const octets = Buffer.from(await fichier.arrayBuffer());
-    if (octets.byteLength === 0) {
-      return refus("L'enregistrement est vide — le micro n'a rien capté. Réessayez en parlant après l'appui.");
-    }
+    const audio = await preparerAudioEntrant(fichier);
+    if (!audio.ok) return refus(audio.message);
+    const octets = audio.octets;
 
     // **Le service rend DÉJÀ un résultat, pas une exception** —
     // `ResultatComplement`, avec ses propres raisons (« aucune_note »,
@@ -95,12 +90,17 @@ export async function completerNoteVocaleAction(chantierId: string, formData: Fo
     // l'envelopper dans un second `ok` ferait passer un `{ ok: false }` du
     // service pour une réussite.
     etape = "base";
-    return await completerNoteVocale(ctx, chantierId, octets, fichier.type || "audio/webm");
+    // Le type envoyé au fournisseur de transcription est celui du format
+    // RECONNU. Avant, c'était `fichier.type || "audio/webm"` — donc la chaîne
+    // du téléphone, avec un repli qui inventait un format.
+    return await completerNoteVocale(ctx, chantierId, octets, audio.mime);
   } catch (err) {
     logger.error("Note vocale : le complément a échoué", {
       chantierId,
       etape,
-      mimeType: fichier.type,
+      // Ce que le TÉLÉPHONE a annoncé : à cet endroit, la panne a pu survenir
+      // avant qu'un format soit reconnu.
+      typeAnnonce: fichier.type || "aucun",
       tailleOctets: fichier.size,
       motif: err instanceof Error ? err.message : String(err),
     });

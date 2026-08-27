@@ -35,7 +35,42 @@ const COOKIES_DE_SESSION = [
   "__Secure-authjs.callback-url",
 ];
 
-export async function GET() {
+export async function GET(requete: Request) {
+  /**
+   * **UN SITE TIERS NE DOIT PAS POUVOIR DÉCONNECTER LE PATRON — constat F2.**
+   *
+   * Cette route efface six cookies sur un simple `GET`. Une page étrangère qui
+   * pose `<img src="https://atlas…/api/session-perimee">` la déclenche donc en
+   * silence : le navigateur envoie les cookies, le serveur répond avec des
+   * `Set-Cookie` vides, et le patron se retrouve dehors sans avoir rien fait.
+   * Ce n'est pas un vol de données — c'est une nuisance, et elle est gratuite.
+   *
+   * ── POURQUOI `Sec-Fetch-Site` ET NON `Sec-Fetch-Dest` ────────────────────
+   *
+   * `Dest: document` aurait paru plus simple, et **cela aurait cassé un vrai
+   * parcours** : quatre des cinq appels légitimes viennent d'un `redirect()`
+   * côté serveur (`session-ctx.ts`, `GardeDocumentsLegaux`,
+   * `documents-legaux/actions.ts`). Suivi depuis une action serveur, le routeur
+   * de Next va le chercher en `fetch` — `Dest` vaut alors `empty`, et la session
+   * périmée ne s'effacerait plus. C'est le piège du cookie mort que rien
+   * n'efface, payé une soirée le 10 août 2026.
+   *
+   * `Sec-Fetch-Site`, lui, dit d'où vient la demande, quel que soit son moyen.
+   * Tous les appels d'Atlas sont de **même origine** ; seule une page étrangère
+   * vaut `cross-site`.
+   *
+   * ── L'ABSENCE DE L'EN-TÊTE LAISSE PASSER, ET C'EST RAISONNÉ ──────────────
+   *
+   * Un navigateur ne permet pas de la retirer : elle est posée par lui, jamais
+   * par la page. Ce qui n'en envoie pas est un client sans navigateur — donc
+   * sans cookie à effacer. Refuser dans ce cas priverait un vieux navigateur du
+   * remède sans gêner personne d'autre.
+   */
+  const provenance = requete.headers.get("sec-fetch-site");
+  if (provenance === "cross-site") {
+    return new NextResponse(null, { status: 403 });
+  }
+
   const boite = await cookies();
   for (const nom of COOKIES_DE_SESSION) {
     // **`__Secure-` et `__Host-` EXIGENT l'attribut `Secure` — sans lui, le

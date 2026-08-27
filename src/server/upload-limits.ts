@@ -37,16 +37,16 @@ export const TYPES_AUDIO_AUTORISES = [
 // jamais proposer côté navigateur un format que le serveur refusera.
 export const ACCEPT_AUDIO = TYPES_AUDIO_AUTORISES.join(",");
 
-export const MESSAGE_TYPE_AUDIO_INVALIDE =
-  "Ce fichier n'est pas un audio pris en charge. Formats acceptés : webm, ogg, m4a, mp3, wav, aac, flac.";
-
-// Le type déclaré par le navigateur peut porter des paramètres
-// (« audio/webm;codecs=opus ») : seule la partie type/sous-type est comparée.
-// Un type vide est refusé — on ne devine jamais le format d'un fichier.
-export function verifierTypeAudio(mimeType: string): { ok: true } | { ok: false; message: string } {
-  const base = mimeType.split(";")[0].trim().toLowerCase();
-  if (!TYPES_AUDIO_AUTORISES.includes(base)) {
-    return { ok: false, message: MESSAGE_TYPE_AUDIO_INVALIDE };
-  }
-  return { ok: true };
-}
+// **`verifierTypeAudio` et `MESSAGE_TYPE_AUDIO_INVALIDE` ont été RETIRÉS le
+// 26 août 2026, avec le lot Audio.** Ils décidaient sur la chaîne que le
+// navigateur envoie — laquelle ne prouve rien, et commandait indirectement
+// l'extension de rangement, donc le type qu'Atlas annonçait plus tard.
+//
+// Ce qui décide désormais vit dans `src/lib/signature-audio.ts` : le format se
+// lit dans les octets, et le serveur en déduit le type et l'extension. La porte
+// unique est `src/server/audio-entrant.ts`.
+//
+// **La liste ci-dessus reste**, mais pour ce qu'elle est vraiment : l'attribut
+// `accept` de l'écran, un confort d'interface qui ne protège rien — et le
+// garde-fou qui vérifie que tout format reconnu a bien un type qu'Atlas sait
+// traiter (`scripts/test-signature-audio.ts`).

@@ -203,6 +203,27 @@ export default function ConnexionClient({ cles }: { cles: CleAppareil[] }) {
             <p className={texteSituation} style={{ color: colors.ink }}>
               Vous devrez vous reconnecter sur tous vos appareils, celui-ci compris.
             </p>
+            {/* **CE QUE CE BOUTON NE FAIT PAS — et il faut le dire ICI.**
+
+                Constaté le 25 août 2026, en éprouvant la coupure : un appareil
+                déjà enregistré pour Face ID **rouvre aussitôt une session**.
+                `deconnecterPartout` ne touche pas `cles_appareil`, et
+                `ouvrirAvecCle` ne consulte jamais la coupure.
+
+                L'écran ne le disait pas. Quelqu'un qui vient de perdre son
+                téléphone appuyait ici en croyant l'avoir mis dehors — et se
+                trompait, au pire moment. Ce n'est pas une nuance, c'est la
+                différence entre « fermé » et « ouvert ».
+
+                Le comportement, lui, ne change pas dans ce lot : retirer les
+                appareils d'office obligerait à tous les réenregistrer après une
+                simple déconnexion. On dit la vérité, et on montre le geste. */}
+            {cles.length > 0 && (
+              <p className={`mt-2 ${texteSituation}`} style={{ color: colors.muted }}>
+                Vos appareils enregistrés pourront rouvrir Atlas avec Face ID. Si vous avez
+                perdu l&apos;un d&apos;eux, retirez-le d&apos;abord dans la liste ci-dessus.
+              </p>
+            )}
             <div className="mt-3 flex gap-2.5">
               <button
                 type="button"

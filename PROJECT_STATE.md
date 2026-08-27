@@ -184,7 +184,55 @@ uniquement en masquant des boutons ». La règle elle-même est tranchée dans
 | La photo est nettoyée de ses métadonnées comme le logo | **fait** — `preparerPhotoEntrante` |
 | Fonction pure de lecture éprouvée sans clé | **fait** — `scripts/test-lecture-allure-devis.ts`, 0 échec |
 | L'appel réel au fournisseur de vision | **NON vérifié ici** (aucune clé) — à jouer sur son espace, comme la dictée |
+## Sécurité : lot Audio fermé (26 août 2026)
 
+| | État |
+|---|---|
+| Le format d'un audio se lit dans ses OCTETS | **fait** — `src/lib/signature-audio.ts`, sans bibliothèque |
+| Le type et l'extension rangés viennent du format réel | **fait** — `extensionPour(mimeType)` est morte |
+| Les quatre chemins passent par une porte unique | **fait** — 3 contrôles structurels |
+| L'IA n'est jamais appelée avant la validation | **fait** — éprouvé en base |
+| Une vraie dictée d'iPhone | **ÉPROUVÉE ET RÉUSSIE le 26 août 2026** — sur son propre iPhone, jusqu'à la génération des informations du devis |
+| La QUALITÉ de ce que la dictée produit | **LOT SÉPARÉ** — prestations mal organisées, quantités et unités mal lues, prix historiques incohérents (`TODO.md`) |
+| Sauvegardes | **toujours aucune** — le point le plus grave du dépôt |
+
+**Batterie complète au vert le 27 août 2026**, sur l'état destiné à `main`
+(branche `56f0119`, `origin/main` `3d455ed` intégré) : **259/259** suites base,
+**115/115** suites navigateur, connexion réelle derrière une origine étrangère.
+
+Les suites navigateur ont dû être jouées **par tranches**, un serveur neuf par
+tranche : `next dev` (Turbopack) monte à 13,5 Go sur ce conteneur de 16 Go, et le
+tueur de mémoire abat le serveur. Aucune assertion touchée, aucun délai ajouté,
+aucune suite écartée. Cause non établie — voir `TODO.md`.
+
+Rapport transmissible : `docs/lot-audio-rapport.md`. Raisonnement :
+`ARCHITECTURE.md` §201.
+
+---
+
+## Sécurité : lot 3 — M9 à M12 et F1 à F13 fermés (25 août 2026)
+
+| | État |
+|---|---|
+| **M9** — `password_hash` hors de portée d'`atlas_app` | **fait** — trois fonctions `SECURITY DEFINER`, droits par colonne |
+| **M10** — les onze alertes de dépendances | **fait** — Next monté à la main en 16.3.2 |
+| **M11** — se prouver à nouveau avant un geste sensible | **fait**, plus un contournement de « me déconnecter partout » trouvé hors brief |
+| **M12** — la mise à jour du banc réservée au propriétaire | **fait** |
+| **F1, F2, F5, F8, F9, F12, F13** | **fait** — aucun n'était une fuite de données |
+| **F3** | **inchangé, et gardé** — 5 contrôles neufs contre une variable ajoutée demain |
+| **F4, F6** | **faux problèmes** — refusés. Renommer une migration (F6) l'aurait fait rejouer partout |
+| **F7** — l'écran RGPD (export / effacement client) | **décision du patron**, aucune interface construite |
+| **F10** — la CSP `unsafe-inline` | **réel, lot à soi** — le retirer sans `nonce` casse l'application |
+| **F11** | **déjà fermé par le lot 1** |
+| `ATLAS_PROXY_SAUTS` en production | **à poser** — sans lui, tous les seuils par source restent communs |
+| Sauvegardes | **toujours aucune** — le point le plus grave du dépôt |
+
+**Batterie complète au vert le 26 août 2026** : 232/232 suites base, **110/110**
+suites navigateur, connexion réelle derrière une origine étrangère.
+
+Rapports transmissibles : `docs/lot-3-fermeture-f1-f13.md` puis
+`docs/lot-3-cloture-et-lecture-audio.md` (clôture + lecture du lot Audio). Le raisonnement complet
+est dans `ARCHITECTURE.md` §191.
 ---
 
 ## Sécurité : lot 2B — M3 et M6 fermés (24 août 2026)

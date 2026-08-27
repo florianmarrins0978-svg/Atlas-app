@@ -9,7 +9,8 @@ import * as brouillonsRepo from "../src/server/repositories/brouillons-informati
 import { genererBrouillon } from "../src/server/ai/services/brouillon-service";
 import { PropositionExtractionSchema, brouillonVide } from "../src/server/ai/schemas/extraction";
 import { extraire } from "../src/server/ai/services/extraction-service";
-import { verifierTypeAudio } from "../src/server/upload-limits";
+import { decrireAudioEntrant } from "../src/lib/signature-audio";
+import { temoinWebm, temoinM4aIphone, temoinHtml } from "./_temoins-audio";
 import { getNextAction } from "../src/lib/chantier-etat";
 import { nettoyerBase } from "./_test-db";
 
@@ -306,15 +307,27 @@ async function main() {
     assert.equal(resultat.statut, "transcription_absente", "B n'a aucune note : rien ne doit être généré");
   });
 
-  // --- Types audio acceptés -------------------------------------------------
+  // --- Ce qui est accepté comme audio --------------------------------------
+  //
+  // **Ce contrôle interrogeait `verifierTypeAudio`, qui n'existe plus.** Elle
+  // lisait la chaîne envoyée par le navigateur, et le lot Audio du 26 août 2026
+  // l'a retirée : le format se lit désormais dans les octets. Le contrôle a
+  // suivi le déplacement de la règle plutôt que de réclamer une fonction
+  // supprimée — la règle éprouvée reste la même, seule sa source de vérité a
+  // changé.
 
-  await test("Types audio : la liste blanche accepte les formats réels et rejette le reste", async () => {
-    assert.equal(verifierTypeAudio("audio/webm").ok, true);
-    assert.equal(verifierTypeAudio("audio/webm;codecs=opus").ok, true, "Le paramètre codecs ne doit pas faire échouer");
-    assert.equal(verifierTypeAudio("audio/mpeg").ok, true);
-    assert.equal(verifierTypeAudio("application/pdf").ok, false);
-    assert.equal(verifierTypeAudio("video/mp4").ok, false);
-    assert.equal(verifierTypeAudio("").ok, false, "Un type absent ne doit jamais être deviné");
+  await test("Audio : ce sont les OCTETS qui décident, plus le type déclaré", async () => {
+    // Un vrai WebM passe, même annoncé n'importe comment.
+    const webm = decrireAudioEntrant(temoinWebm(), "application/pdf");
+    assert.equal(webm.ok, true, "un vrai WebM est refusé sur la foi d'un type menteur");
+
+    // Un vrai MP4 d'iPhone passe sans qu'aucun type ne soit annoncé.
+    const iphone = decrireAudioEntrant(temoinM4aIphone(), "");
+    assert.equal(iphone.ok, true, "un type absent suffit à refuser une dictée d'iPhone");
+
+    // Et du HTML annoncé `audio/webm` est refusé — c'est le défaut fermé.
+    const faux = decrireAudioEntrant(temoinHtml(), "audio/webm");
+    assert.equal(faux.ok, false, "du HTML annoncé audio/webm est accepté");
   });
 
   console.log(`\n${passed} test(s) réussi(s), ${failed} échoué(s).`);

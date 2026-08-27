@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { getCurrentCtx } from "@/server/session-ctx";
 import { exigerProprietaire } from "@/server/autorisation";
+import { exigerPreuveRecente } from "@/server/preuve-recente";
+import { GESTES_SENSIBLES } from "@/lib/preuve-recente";
 import { getEntreprise } from "@/server/repositories/entreprises";
 import { exporterEntreprise, type ExportEntreprise } from "@/server/repositories/export-entreprise";
 import { ecrireArchiveZip, type EntreeArchive } from "@/lib/archive-zip";
@@ -62,6 +64,15 @@ export async function GET() {
   // Toutes les données de la société, pas seulement celles d'un membre : la
   // même barrière que pour les tarifs et les paramètres.
   await exigerProprietaire(ctx, "télécharger les données de l'entreprise");
+  /**
+   * **Toute l'entreprise dans un fichier** — clients, prix, factures, adresses.
+   * C'est le geste qui emporte le plus en une fois, et une session volée ne doit
+   * pas suffire.
+   *
+   * La garde lève : c'est une route, et un 500 opaque vaut mieux qu'un fichier
+   * qui part. L'écran, lui, demande la preuve avant d'ouvrir l'adresse.
+   */
+  await exigerPreuveRecente(ctx, GESTES_SENSIBLES.exportComplet);
 
   const maintenant = new Date();
   const [donnees, entreprise] = await Promise.all([

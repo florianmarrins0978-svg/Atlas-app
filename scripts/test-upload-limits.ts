@@ -1,4 +1,5 @@
 import assert from "node:assert";
+import { temoinWebm } from "./_temoins-audio";
 import { jpegDeTaille } from "./_images-temoins";
 import { verifierTailleFichier, LIMITE_TELEVERSEMENT_OCTETS, MESSAGE_FICHIER_TROP_VOLUMINEUX } from "../src/server/upload-limits";
 import { pool } from "../src/server/db/client";
@@ -38,6 +39,28 @@ function fichierDeTaille(octets: number, type: string, nom: string): File {
  */
 function photoDeTaille(octets: number, nom: string): File {
   return new File([new Uint8Array(jpegDeTaille(octets))], nom, { type: "image/jpeg" });
+}
+
+/**
+ * **UNE VRAIE DICTÉE, pas un tampon de zéros** — exactement la même leçon que
+ * pour les photos, un lot plus tard.
+ *
+ * Depuis le lot Audio du 26 août 2026, le format se lit dans les octets
+ * (`src/lib/signature-audio.ts`) : deux cents kilo-octets de zéros annoncés
+ * `audio/webm` sont refusés, et c'est précisément ce qu'on vient de fermer. Les
+ * cas qui éprouvent la BORNE DE TAILLE doivent donc porter un enregistrement
+ * que le serveur sait reconnaître, sans quoi ils mesurent le refus de format et
+ * non celui de la taille.
+ *
+ * **Ce contrôle a rougi, et il avait tort.** Il exigeait qu'un faux WebM soit
+ * accepté — c'est-à-dire le défaut lui-même. On adapte le contrôle, on ne
+ * restaure pas l'ancien comportement (`CLAUDE.md` §5 bis).
+ */
+function dicteeDeTaille(octets: number, nom: string): File {
+  const entete = temoinWebm();
+  const total = new Uint8Array(Math.max(octets, entete.length));
+  total.set(entete, 0);
+  return new File([total], nom, { type: "audio/webm" });
 }
 
 async function main() {
@@ -96,7 +119,7 @@ async function main() {
 
   await test("Régression : un enregistrement vocal normal (sous la limite) est toujours accepté", async () => {
     const formData = new FormData();
-    formData.set("fichier", fichierDeTaille(200 * 1024, "audio/webm", "note.webm"));
+    formData.set("fichier", dicteeDeTaille(200 * 1024, "note.webm"));
     formData.set("dureeSecondes", "12");
     const note = await recevoirNoteVocale(chantier.id, formData);
     assert.equal(note.ok, true);
@@ -110,7 +133,9 @@ async function main() {
   // puisque c'est précisément ce qu'il doit pouvoir lire.
   await test("Upload note vocale : un fichier surdimensionné est refusé avec un message clair", async () => {
     const formData = new FormData();
-    formData.set("fichier", fichierDeTaille(LIMITE_TELEVERSEMENT_OCTETS + 1024, "audio/webm", "note-trop-grosse.webm"));
+    // Trop grosse ET reconnaissable : c'est la TAILLE qu'on éprouve ici, et la
+    // borne de taille passe avant la reconnaissance dans la porte commune.
+    formData.set("fichier", dicteeDeTaille(LIMITE_TELEVERSEMENT_OCTETS + 1024, "note-trop-grosse.webm"));
     const resultat = await recevoirNoteVocale(chantier.id, formData);
     assert.equal(resultat.ok, false, "Un fichier surdimensionné doit être refusé");
     assert.equal(resultat.ok === false && resultat.raison, MESSAGE_FICHIER_TROP_VOLUMINEUX);

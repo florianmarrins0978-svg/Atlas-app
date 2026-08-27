@@ -1,6 +1,8 @@
 "use server";
 
 import { getCurrentCtx } from "@/server/session-ctx";
+import { exigerPreuveRecente, PreuveRecenteExigeeError } from "@/server/preuve-recente";
+import { GESTES_SENSIBLES, type GesteSensible } from "@/lib/preuve-recente";
 import { changerMotDePasse, deconnecterPartout, lireCompte } from "@/server/repositories/compte";
 import { messageRefus } from "@/lib/mot-de-passe";
 import { messageRefusCle, type CleAppareil } from "@/lib/cle-appareil";
@@ -113,10 +115,55 @@ export async function defiEnregistrementAction(origineNavigateur?: string): Prom
   return { ok: true, options: r.options };
 }
 
-export type ResultatCle = { ok: true; cles: CleAppareil[] } | { ok: false; raison: string };
+/**
+ * **Un refus attendu se rend en VALEUR, jamais en exception.**
+ *
+ * Le message d'une exception levée par une action serveur n'arrive jamais
+ * jusqu'à l'artisan : Next.js le remplace en production par un identifiant
+ * opaque, et le banc sert une version bâtie (`AGENTS.md`, `HANDOVER.md` piège
+ * 0 ter). Une preuve manquante n'est pas une panne — c'est un refus prévu, dont
+ * l'écran doit pouvoir faire quelque chose.
+ */
+async function refusFautePreuve(
+  ctx: { utilisateurId: string; sessionId?: string },
+  geste: GesteSensible
+): Promise<{ ok: false; raison: string; preuveExigee: true } | null> {
+  try {
+    await exigerPreuveRecente(ctx, geste);
+    return null;
+  } catch (erreur) {
+    if (erreur instanceof PreuveRecenteExigeeError) {
+      return { ok: false, raison: erreur.message, preuveExigee: true };
+    }
+    throw erreur;
+  }
+}
+
+export type ResultatCle =
+  | { ok: true; cles: CleAppareil[] }
+  /**
+   * `preuveExigee` dit à l'écran d'OUVRIR la demande de mot de passe plutôt que
+   * d'afficher un refus sec. **Ce n'est pas une autorisation** : le serveur a
+   * refusé, et il refusera encore tant qu'aucune preuve ne sera posée en base.
+   */
+  | { ok: false; raison: string; preuveExigee?: boolean };
 
 export async function enregistrerCleAction(reponse: string): Promise<ResultatCle> {
   const ctx = await getCurrentCtx();
+  /**
+   * **LE GESTE LE PLUS GRAVE DE CET ÉCRAN, et il n'était dans aucun audit.**
+   *
+   * Une session volée qui enregistre SA PROPRE clé obtient une porte qui
+   * **survit au changement de mot de passe** : le patron reprend son compte, et
+   * l'intrus entre toujours, indéfiniment. C'est le seul geste d'Atlas qui rend
+   * un accès permanent.
+   *
+   * La preuve exigée est liée à CETTE session (`src/server/preuve-recente.ts`) :
+   * une ré-authentification faite sur le téléphone du patron ne sert pas à
+   * l'ordinateur du voleur.
+   */
+  const manquePreuve = await refusFautePreuve(ctx, GESTES_SENSIBLES.ajouterCleAppareil);
+  if (manquePreuve) return manquePreuve;
   let lue: RegistrationResponseJSON;
   try {
     lue = JSON.parse(reponse) as RegistrationResponseJSON;
@@ -137,14 +184,25 @@ export async function enregistrerCleAction(reponse: string): Promise<ResultatCle
 /**
  * Retirer un appareil.
  *
- * **Rien ne demande le mot de passe pour ce geste**, et c'est délibéré : on
- * retire une porte, on n'en ouvre pas une. Le cas qui compte est celui du
- * téléphone perdu — depuis un autre appareil, à chaud, sans obstacle. Exiger le
- * mot de passe ici, ce serait le demander précisément au moment où l'artisan est
- * pressé et où il vient peut-être de perdre son moyen de le taper.
+ * **Ce geste EXIGE le mot de passe, depuis M11 (25 août 2026).** Ce bloc a
+ * affirmé le contraire jusqu'au 27 août, alors que la garde était posée deux
+ * lignes plus bas : un commentaire périmé est pire qu'absent, on s'y fie encore.
+ *
+ * Ce qui a fait changer d'avis : retirer la clé de quelqu'un est aussi hostile
+ * que d'en ajouter une. Une session volée qui retire les clés du patron le
+ * chasse de son propre compte.
+ *
+ * L'argument d'en face — le téléphone perdu, à chaud, sans obstacle — n'est pas
+ * mort pour autant : il est servi par « Me déconnecter partout », qui lui ne
+ * demande aucune preuve (voir plus bas). On coupe l'accès d'urgence sans
+ * mot de passe ; on ne défait la liste des portes qu'en prouvant qui l'on est.
  */
 export async function retirerCleAction(id: string): Promise<ResultatCle> {
   const ctx = await getCurrentCtx();
+  // Retirer un appareil prive son propriétaire de sa porte : c'est un geste
+  // hostile autant qu'un ajout, et il mérite la même exigence.
+  const manquePreuveRetrait = await refusFautePreuve(ctx, GESTES_SENSIBLES.retirerCleAppareil);
+  if (manquePreuveRetrait) return manquePreuveRetrait;
   try {
     // `retirerCle` porte `utilisateur_id` dans son `WHERE` : un identifiant venu
     // d'ailleurs ne retire rien. Aucune RLS ne couvre cette table.
