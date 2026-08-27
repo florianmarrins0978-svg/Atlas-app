@@ -184,11 +184,18 @@ export async function enregistrerCleAction(reponse: string): Promise<ResultatCle
 /**
  * Retirer un appareil.
  *
- * **Rien ne demande le mot de passe pour ce geste**, et c'est délibéré : on
- * retire une porte, on n'en ouvre pas une. Le cas qui compte est celui du
- * téléphone perdu — depuis un autre appareil, à chaud, sans obstacle. Exiger le
- * mot de passe ici, ce serait le demander précisément au moment où l'artisan est
- * pressé et où il vient peut-être de perdre son moyen de le taper.
+ * **Ce geste EXIGE le mot de passe, depuis M11 (25 août 2026).** Ce bloc a
+ * affirmé le contraire jusqu'au 27 août, alors que la garde était posée deux
+ * lignes plus bas : un commentaire périmé est pire qu'absent, on s'y fie encore.
+ *
+ * Ce qui a fait changer d'avis : retirer la clé de quelqu'un est aussi hostile
+ * que d'en ajouter une. Une session volée qui retire les clés du patron le
+ * chasse de son propre compte.
+ *
+ * L'argument d'en face — le téléphone perdu, à chaud, sans obstacle — n'est pas
+ * mort pour autant : il est servi par « Me déconnecter partout », qui lui ne
+ * demande aucune preuve (voir plus bas). On coupe l'accès d'urgence sans
+ * mot de passe ; on ne défait la liste des portes qu'en prouvant qui l'on est.
  */
 export async function retirerCleAction(id: string): Promise<ResultatCle> {
   const ctx = await getCurrentCtx();
