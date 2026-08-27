@@ -69,6 +69,25 @@ dossier à retransmettre est `docs/pour-chatgpt/07-correction-complete.md`.
 | **P5** — ne plus tronquer en silence | ✅ `stop_reason` lu, forme vérifiée, plafond relevé |
 | **P6** — vocabulaire au transcripteur | ⛔ hors périmètre (sa décision) ; la branche catalogue reste ouverte |
 
+**UNE SUITE NAVIGATEUR ENCORE ROUGE, ET ELLE N'EST PAS DE CE LOT.**
+`test-reste-equipes-e2e.ts`, second cas : *« 1 date(s) retenues au lieu de deux :
+rien à comparer »*. **Prouvé antérieur** : la suite échoue à l'identique sur
+`ed8f074`, avant la première ligne du lot dictée → devis.
+
+Ce qui a été établi, pour ne pas repartir de zéro :
+
+* les deux jours d'essai sont bien dans le même mois (30 et 31 août) — ce n'est
+  donc pas le passage de mois de `caseDuJour` ;
+* **avant même le second clic, DEUX dates sont déjà retenues** : la case du
+  30 août, plus deux boutons « proposée » hors calendrier. Le troisième clic
+  bute donc sur le plafond de deux dates, et l'une saute ;
+* c'est la **quatrième** version de ce cas à rougir sur du code juste (les trois
+  premières sont racontées dans le fichier). Le produit n'est pas en cause.
+
+Une correction a été tentée puis **retirée** : faire choisir deux jours du même
+mois ne suffit pas, et livrer une modification de contrôle non éprouvée est pire
+que le rouge lui-même.
+
 **✅ ~~Une suite navigateur rouge, antérieure à ce lot~~ — réparée le 27 août 2026.**
 `test-carte-reponse-mene-au-geste-e2e.ts` prenait le dernier jour libre du
 calendrier pour jouer « le client accepte sur une AUTRE date ». Ce jour tombait

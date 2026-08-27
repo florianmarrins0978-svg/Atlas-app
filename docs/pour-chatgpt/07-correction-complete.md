@@ -519,10 +519,25 @@ raison est écrite dans le code lui-même.
 | `npx tsc --noEmit` | **0 erreur** |
 | `npx eslint src scripts` | **0 erreur**, 8 avertissements (tous préexistants) |
 | `npm test` (suites base) | **260/260** |
-| `npm run test:e2e` (navigateur) | **116/116** (une suite était rouge avant ce lot — réparée, voir ci-dessous) |
+| `npm run test:e2e` (navigateur) | **115/116** — la seule rouge est prouvée ANTÉRIEURE au lot (voir ci-dessous) |
 | `npm run verifier:connexion` | ✅ connexion réelle derrière une origine étrangère |
 
-**La suite qui était rouge, et pourquoi elle n'était pas de ce lot.**
+**Trois suites navigateur rouges, TOUTES antérieures au lot — deux réparées.**
+Chacune a été confrontée au commit d'avant la première ligne de ce travail
+(`ed8f074`) en y repassant le dépôt : les trois y échouent à l'identique. Elles
+tournent toutes autour du calendrier, à quatre jours de la fin du mois — le
+piège écrit en tête de `HANDOVER.md`.
+
+* `test-envoi-client-e2e.ts` recopiait sa lecture du calendrier au lieu
+  d'employer `joursRetenables`, écrite dix lignes plus haut, qui tourne la page
+  du mois quand celui-ci est trop court. **Réparée.**
+* `test-reste-equipes-e2e.ts` reste rouge. Le diagnostic est consigné dans
+  `TODO.md` : deux dates sont déjà retenues avant le geste que le contrôle
+  mesure, et le plafond de deux en fait sauter une. Une correction a été
+  **tentée puis retirée** — livrer une modification de contrôle non éprouvée est
+  pire que le rouge.
+
+**La troisième, et pourquoi elle n'était pas de ce lot.**
 `test-carte-reponse-mene-au-geste-e2e.ts` échouait **à l'identique sur le commit
 d'avant la première ligne de ce travail** (`ed8f074`), ce qui a été vérifié en y
 repassant le dépôt. Diagnostiquée et réparée : elle prenait le dernier jour
