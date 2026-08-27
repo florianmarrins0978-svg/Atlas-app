@@ -69,14 +69,14 @@ dossier à retransmettre est `docs/pour-chatgpt/07-correction-complete.md`.
 | **P5** — ne plus tronquer en silence | ✅ `stop_reason` lu, forme vérifiée, plafond relevé |
 | **P6** — vocabulaire au transcripteur | ⛔ hors périmètre (sa décision) ; la branche catalogue reste ouverte |
 
-**Une suite navigateur ROUGE, et elle ne vient pas de ce lot.**
-`test-carte-reponse-mene-au-geste-e2e.ts`, premier cas : *« accepté : la carte
-mène au devis VALIDÉ, pas à la fiche »* — aucune carte de réponse n'apparaît à
-l'accueil pour le chantier accepté. **Prouvé pré-existant** : la suite échoue à
-l'identique sur `ed8f074`, c'est-à-dire avant la première ligne de ce lot. Les
-trois autres cas du fichier passent. À diagnostiquer à part — la piste la plus
-probable est l'acceptation « sur une autre date », qui seule produit une carte,
-et dont le choix du jour dans le calendrier peut retomber sur une date proposée.
+**✅ ~~Une suite navigateur rouge, antérieure à ce lot~~ — réparée le 27 août 2026.**
+`test-carte-reponse-mene-au-geste-e2e.ts` prenait le dernier jour libre du
+calendrier pour jouer « le client accepte sur une AUTRE date ». Ce jour tombait
+parfois pile sur l'une des dates proposées : l'acceptation n'était alors plus une
+contre-proposition, et `notificationsPatron` ne produit volontairement aucune
+carte dans ce cas. **Le contrôle accusait le produit d'un défaut qui n'existait
+pas.** Il choisit désormais un jour distinct des dates proposées, et refuse de
+conclure s'il n'en trouve aucun.
 
 **Ce qui reste ouvert, et pourquoi :**
 

@@ -519,15 +519,18 @@ raison est écrite dans le code lui-même.
 | `npx tsc --noEmit` | **0 erreur** |
 | `npx eslint src scripts` | **0 erreur**, 8 avertissements (tous préexistants) |
 | `npm test` (suites base) | **260/260** |
-| `npm run test:e2e` (navigateur) | **1 suite rouge, prouvée PRÉ-EXISTANTE** (voir ci-dessous) |
+| `npm run test:e2e` (navigateur) | **116/116** (une suite était rouge avant ce lot — réparée, voir ci-dessous) |
 | `npm run verifier:connexion` | ✅ connexion réelle derrière une origine étrangère |
 
-**La suite rouge, et pourquoi elle n'est pas de ce lot.**
-`test-carte-reponse-mene-au-geste-e2e.ts`, premier cas sur quatre : aucune carte
-de réponse n'apparaît à l'accueil pour un devis accepté. Elle échoue **à
-l'identique sur le commit d'avant la première ligne de ce travail** (`ed8f074`),
-ce qui a été vérifié en repassant le dépôt à cet état. Elle est notée dans
-`TODO.md` pour être diagnostiquée à part.
+**La suite qui était rouge, et pourquoi elle n'était pas de ce lot.**
+`test-carte-reponse-mene-au-geste-e2e.ts` échouait **à l'identique sur le commit
+d'avant la première ligne de ce travail** (`ed8f074`), ce qui a été vérifié en y
+repassant le dépôt. Diagnostiquée et réparée : elle prenait le dernier jour
+libre du calendrier pour jouer « le client accepte sur une AUTRE date », et ce
+jour tombait parfois pile sur l'une des dates proposées. L'acceptation n'était
+alors plus une contre-proposition, et `notificationsPatron` ne produit
+volontairement aucune carte dans ce cas — c'est écrit dans le produit depuis le
+16 août. **Le contrôle accusait le produit d'un défaut qui n'existait pas.**
 
 **Un défaut de mon fait, trouvé et corrigé pendant la vérification.** Au premier
 passage complet de la batterie, le serveur de développement **est mort** en
