@@ -32,6 +32,26 @@ accepté : **le milieu manque**, et c'est l'état le plus fréquent. Le correcti
 et son cas se posent en même temps que l'écran — les coder avant sa réponse,
 c'est risquer de conserver ce qu'il veut voir partir.
 
+## ⚠ `test-carte-reponse-mene-au-geste-e2e` rougit en FIN DE MOIS
+
+**Constaté le 27 août 2026, vers 2 h.** Le cas *« accepté : la carte mène au
+devis VALIDÉ »* tombe : *« aucune carte de réponse pour le chantier … à
+l'accueil »*. Le reste de la suite passe.
+
+**Ce n'est pas la carte, c'est la DATE choisie.** Le montage fait accepter le
+client sur « une autre date », en touchant **le dernier jour non désactivé** du
+calendrier. Or la carte n'apparaît, délibérément, que si le client propose une
+date **différente** de celles du patron — la suite l'écrit elle-même. En fin de
+mois, il ne reste que quelques jours touchables, et ce « dernier jour » finit
+par être **l'une des dates déjà proposées** : l'acceptation réussit, et aucune
+carte n'est due.
+
+**C'est la troisième suite de la soirée à tomber sur la fin du mois**, après
+`test-envoi-client-e2e` (jours proposables) et `test-liste-clients` (UTC contre
+heure de Paris). Le montage doit choisir un jour en **excluant** les dates
+proposées, et tourner la page du calendrier si le mois n'en offre plus —
+`joursRetenables` dans `test-envoi-client-e2e.ts` fait déjà la seconde moitié.
+
 ## ⚠ `test-nouveau-compte-e2e` rougit sur l'arbre, et ce n'est pas ce lot
 
 **Constaté le 26 août 2026 au soir.** Sept cas tombent, à commencer par
