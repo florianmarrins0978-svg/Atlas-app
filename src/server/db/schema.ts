@@ -650,6 +650,15 @@ export const prestations = pgTable(
     /** Ce qui se mesure et gouverne le prix : `diametreCm`, `hauteurM`, `longueurMl`, `tonnageT`. */
     caracteristiques: jsonb("caracteristiques").$type<Record<string, number | string>>(),
     aConfirmer: boolean("a_confirmer"),
+    /**
+     * L'artisan a posé lui-même ces valeurs (migration 0070).
+     *
+     * **Le dépôt n'avait aucune provenance**, et il en fallait une : sans elle,
+     * une quantité corrigée à la main et une quantité lue par un modèle se
+     * ressemblent, et le produit refusait de chiffrer dès que le libellé disait
+     * autre chose que la colonne — même quand c'est LUI qui avait tranché.
+     */
+    corrigeParHumain: boolean("corrige_par_humain").notNull().default(false),
     ordre: integer("ordre").notNull().default(0),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
@@ -793,6 +802,15 @@ export const lignesPrix = pgTable(
     prixUnitaire: numeric("prix_unitaire", { precision: 10, scale: 2 }).notNull().default("0"),
     unite: text("unite"),
     montant: numeric("montant", { precision: 10, scale: 2 }).notNull().default("0"),
+    /**
+     * Le travail est identifié, son prix ne l'est pas (migration 0070).
+     *
+     * **Ni gratuit, ni oublié.** Une ligne qu'on ne savait pas chiffrer
+     * s'écrivait « 0 € » — un montant, donc une décision, là où il n'y a qu'une
+     * ignorance. Tant que ce drapeau est vrai, le devis ne peut pas être
+     * préparé ni envoyé (`peutPreparerDevis`).
+     */
+    aChiffrer: boolean("a_chiffrer").notNull().default(false),
     ordre: integer("ordre").notNull().default(0),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
@@ -875,8 +893,19 @@ export const leconsPrix = pgTable(
       .notNull()
       .references(() => entreprises.id, { onDelete: "cascade" }),
     lignePrixId: uuid("ligne_prix_id").notNull(),
-    /** Clé de rapprochement : `abattage|retention|d70`. */
+    /** Clé de rapprochement V1 : `abattage|retention|d70`. **Déjà stockée** — jamais réécrite. */
     signature: text("signature").notNull(),
+    /**
+     * Clé V2, construite depuis les colonnes structurées (migration 0070).
+     *
+     * NULL sur les leçons d'avant : leur libellé fait alors foi, relu par le
+     * mécanisme historique. Réécrire leur clé les rendrait introuvables.
+     */
+    signatureV2: text("signature_v2"),
+    /** Ce que la leçon portait vraiment — de quoi calibrer plus tard sur ses vrais devis. */
+    espece: text("espece"),
+    quantite: numeric("quantite", { precision: 10, scale: 2 }),
+    unite: text("unite"),
     libelle: text("libelle").notNull(),
     prix: numeric("prix", { precision: 10, scale: 2 }).notNull(),
     chantierId: uuid("chantier_id").notNull(),
@@ -885,6 +914,7 @@ export const leconsPrix = pgTable(
   (t) => [
     unique("lecons_prix_ligne_uk").on(t.lignePrixId),
     index("lecons_prix_recherche_idx").on(t.entrepriseId, t.signature, t.constateLe),
+    index("lecons_prix_signature_v2_idx").on(t.entrepriseId, t.signatureV2, t.constateLe),
     foreignKey({
       columns: [t.lignePrixId, t.entrepriseId],
       foreignColumns: [lignesPrix.id, lignesPrix.entrepriseId],
@@ -1014,6 +1044,15 @@ export const lignesDevis = pgTable(
     quantite: numeric("quantite", { precision: 10, scale: 2 }).notNull().default("1"),
     prixUnitaire: numeric("prix_unitaire", { precision: 10, scale: 2 }).notNull(),
     montant: numeric("montant", { precision: 10, scale: 2 }).notNull(),
+    /** « 800 × 17,50 € » ne dit pas 800 de quoi sans elle (migration 0070). */
+    unite: text("unite"),
+    /**
+     * Le document sait lui-même qu'il n'est pas complet (migration 0070).
+     *
+     * Sans cette copie, le contrôle avant envoi devrait relire les lignes de
+     * prix — qui ont pu bouger depuis que le devis a été préparé.
+     */
+    aChiffrer: boolean("a_chiffrer").notNull().default(false),
     ordre: integer("ordre").notNull().default(0),
   },
   (t) => [

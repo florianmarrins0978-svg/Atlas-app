@@ -153,7 +153,11 @@ async function main() {
   await test("Grille vide : la fente est là, sans prix, et la raison est dite", async () => {
     const chantier = await chantierDuChene(A, "Chêne grille vide", { diametreCm: "45" });
     const p = await preparerPropositionPrix(A, chantier.id);
-    assert.equal(p!.lignes[1].montant, "0", "un prix a été inventé pour la fente");
+    // **« À chiffrer », plus « 0 € » — décision du 27 août 2026 (§10 du brief).**
+    // Un zéro se lit « gratuit » sur un devis : c'est un montant, donc une
+    // décision, là où il n'y a qu'une case de grille vide. La règle métier n'a
+    // pas bougé — aucun prix n'est inventé —, seule sa REPRÉSENTATION change.
+    assert.equal(p!.lignes[1].montant, null, "un prix a été inventé pour la fente");
     assert.equal(p!.prixPropose, "1100", "1 jour × 2 hommes × 550 € — le total ne doit pas bouger");
     const manquantes = p!.explication.donneesManquantes.join(" | ");
     assert.match(
@@ -203,7 +207,8 @@ async function main() {
     ]);
 
     const p = await preparerPropositionPrix(A, chantier.id);
-    assert.equal(p!.lignes[1].montant, "0", "un prix a été deviné depuis une case voisine");
+    // `null` = à chiffrer, et non plus « 0 € » : voir plus haut.
+    assert.equal(p!.lignes[1].montant, null, "un prix a été deviné depuis une case voisine");
   });
 
   await test("Sans hauteur ni diamètre, on dit ce qui manque — on ne devine pas", async () => {
@@ -253,7 +258,7 @@ async function main() {
     // principale est déjà au détail, la fente pas encore.
     const chantier = await chantierDuChene(A, "Chêne mixte", { diametreCm: "45" });
     const p = await preparerPropositionPrix(A, chantier.id);
-    await lignesPrixRepo.ajouterLignePrix(A, chantier.id, p!.lignes[0].libelle, p!.lignes[0].montant);
+    await lignesPrixRepo.ajouterLignePrix(A, chantier.id, p!.lignes[0].libelle, p!.lignes[0].montant ?? "0");
 
     const r = await appliquerPropositionPrix(A, chantier.id);
     assert.ok(r.succes, "la fente n'a pas pu être rattrapée");
@@ -312,7 +317,8 @@ async function main() {
     // filtrée : elle change réellement le devis produit.
     const chantier = await chantierDuChene(B, "Chêne isolé", { diametreCm: "45" });
     const p = await preparerPropositionPrix(B, chantier.id);
-    assert.equal(p!.lignes[1].montant, "0", "le prix de fendage de A a servi à chiffrer un devis de B");
+    // `null` = à chiffrer, et non plus « 0 € » : voir plus haut.
+    assert.equal(p!.lignes[1].montant, null, "le prix de fendage de A a servi à chiffrer un devis de B");
   });
 
   await test("« 1 200 », « 250 € », « 250,50 » : un prix écrit comme on l'écrit", async () => {

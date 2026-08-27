@@ -11,7 +11,14 @@ import type { SourcePrix } from "../orchestrateur/proposition-builder";
 import type { LigneExplication } from "./types";
 import { arrondirALaDizaine } from "../../lib/arrondi-prix";
 import { chiffrerMainOeuvre } from "../../lib/tarif-main-oeuvre";
-import { lignesVendables, repartir, type LigneVendable } from "../../lib/lignes-vendables";
+import {
+  lignesVendables,
+  membresDuLibelle,
+  repartir,
+  type LigneVendable,
+  type PrestationAGrouper,
+} from "../../lib/lignes-vendables";
+import { quantiteCommerciale, prevenirQuantiteNonMultipliee } from "../../lib/quantite-commerciale";
 import {
   CELLULE_GRUMES,
   CELLULE_HAIE,
@@ -40,7 +47,29 @@ export type TarifCandidat = {
 };
 
 /** Une ligne telle qu'elle sera écrite au détail — et lue par le client. */
-export type LigneProposee = { libelle: string; montant: string };
+export type LigneProposee = {
+  libelle: string;
+  /**
+   * `null` = **à chiffrer**. Jamais « 0 » en guise de « je ne sais pas ».
+   *
+   * Sur un devis, un zéro se lit « gratuit » : c'est un montant, donc une
+   * décision, là où il n'y a qu'une ignorance. Le patron pouvait envoyer ce
+   * document (26 août 2026).
+   */
+  montant: string | null;
+  /** La quantité COMMERCIALE de la ligne — 800 ml, ou 1 forfait (`quantite-commerciale.ts`). */
+  quantite: string;
+  unite: string | null;
+  prixUnitaire: string;
+  /**
+   * Les prestations que cette ligne vend, par identifiant.
+   *
+   * **Un identifiant, plus un rapprochement par texte.** C'est ce qui permet à
+   * l'apprentissage de savoir ce qu'il apprend, au lieu de relire le libellé de
+   * la ligne à coups d'expressions régulières.
+   */
+  prestationIds: string[];
+};
 
 export type PropositionPrix = {
   origine: OriginePrix;
@@ -241,6 +270,10 @@ export async function preparerPropositionPrix(ctx: Ctx, chantierId: string): Pro
     // confirmée ET que le tarif porte une unité. Sans cela, le tarif est repris
     // tel quel : jamais de quantité supposée.
     let montant = new Decimal(tarif.prix);
+    // La décomposition écrite sur la ligne : « 800 ml × 17,50 € », ou un forfait.
+    let quantiteLigne = "1";
+    let uniteLigne: string | null = null;
+    const prixUnitaireLigne = tarif.prix;
     const correspondance = [...quantitesParLibelle.entries()].find(
       ([libelle]) => libelle.includes(tarif.intitule.trim().toLowerCase()) || tarif.intitule.trim().toLowerCase().includes(libelle)
     );
@@ -250,6 +283,10 @@ export async function preparerPropositionPrix(ctx: Ctx, chantierId: string): Pro
       const q = parseNombreFrancais(quantiteConfirmee.quantite);
       if (q !== null) {
         montant = new Decimal(tarif.prix).times(q);
+        // **Sans cette décomposition, le client lisait « 1 × 14 000 € ».** Le
+        // total était juste ; c'est sa décomposition qui mentait.
+        quantiteLigne = String(q);
+        uniteLigne = quantiteConfirmee.unite ?? tarif.unite;
         calcul.push({
           libelle: "Quantité",
           detail: `${q} × ${tarif.prix} € = ${montant.toFixed(2)} € (quantité confirmée depuis la dictée).`,
@@ -266,7 +303,18 @@ export async function preparerPropositionPrix(ctx: Ctx, chantierId: string): Pro
       prixPropose: montant.toFixed(2),
       libelle: tarif.intitule,
       // Un tarif nommé décrit UNE prestation : il n'y a rien à découper.
-      lignes: [{ libelle: tarif.intitule, montant: montant.toFixed(2) }],
+      lignes: [
+        {
+          libelle: tarif.intitule,
+          montant: montant.toFixed(2),
+          quantite: quantiteLigne,
+          unite: uniteLigne,
+          prixUnitaire: quantiteLigne === "1" ? montant.toFixed(2) : prixUnitaireLigne,
+          // Un tarif nommé ne dit pas quelles prestations il couvre : le lien
+          // se fait ailleurs, par le libellé, comme avant.
+          prestationIds: [],
+        },
+      ],
       tarifId: tarif.tarifId,
       tarifsCandidats: [],
       explication: {
@@ -418,10 +466,22 @@ export async function preparerPropositionPrix(ctx: Ctx, chantierId: string): Pro
 
 type Decoupe = {
   lignes: LigneProposee[];
-  /** Le total effectivement proposé — somme des lignes, arrondis compris. */
+  /** Le total effectivement proposé — somme des lignes CHIFFRÉES, arrondis compris. */
   total: string;
   /** Tous les libellés, empilés : ce que l'écran Prix annonce en un coup d'œil. */
   libelle: string;
+  calcul: LigneExplication[];
+  donneesManquantes: string[];
+};
+
+/** Le prix d'une ligne, et la façon dont son montant se décompose. */
+type PrixLigne = {
+  /** `null` quand aucun prix n'a pu être déterminé — jamais « 0 » en guise de « je ne sais pas ». */
+  prix: string | null;
+  /** Renseignés quand le prix vient d'un TAUX unitaire : 800 ml × 17,50 €. */
+  quantite?: string;
+  unite?: string | null;
+  prixUnitaire?: string;
   calcul: LigneExplication[];
   donneesManquantes: string[];
 };
@@ -432,32 +492,31 @@ type Decoupe = {
  * **Ce que le patron répète depuis trois jours :** *« l'abattage, le broyage et
  * l'évacuation, c'est sur une ligne, et la fente, ça doit être séparé. »* Le
  * découpage lui-même est une fonction pure (`lignes-vendables.ts`) ; ce qu'on
- * fait ici, c'est aller chercher en base de quoi chiffrer la ligne détachable.
+ * fait ici, c'est aller chercher en base de quoi chiffrer chaque ligne.
  *
- * **Le prix de la fente vient de SA grille, jamais d'un pourcentage.** Sa
- * demande du 8 août : *« on crée une liste de prix en fonction de la hauteur et
- * du diamètre, comme ça il n'invente rien. »* Une case vide n'est donc pas
- * comblée par une estimation — la ligne s'écrit à 0 €, visible comme un prix à
- * poser, et la raison est dite.
+ * **Le prix vient de SA grille, jamais d'un pourcentage.** Sa demande du
+ * 8 août : *« on crée une liste de prix en fonction de la hauteur et du
+ * diamètre, comme ça il n'invente rien. »* Une case vide n'est donc pas comblée
+ * — et depuis le 27 août 2026 elle n'est plus comblée par **zéro** non plus :
+ * la ligne sort « à chiffrer », visible, jamais gratuite.
  */
 async function decouperEnLignes(
   ctx: Ctx,
   chantierId: string,
-  prestations: { libelle: string; caracteristiques?: unknown }[],
+  prestations: readonly PrestationAGrouper[],
   /**
    * Les lignes de la dictée, descriptions comprises.
    *
    * **Sans elles, les grilles ne serviraient presque jamais.** La table
-   * `prestations` ne garde qu'un libellé : « vingt mètres de haut », dicté dans
-   * la description, y disparaît. Or c'est ce même texte qui décide de poser ou
-   * non la question de la hauteur (`questions-chiffrage.ts`). Lire moins ici que
-   * là-bas ferait taire la question ET manquer la case — la ligne resterait
-   * sans prix, sans qu'aucune erreur ne l'explique.
+   * `prestations` ne gardait qu'un libellé : « vingt mètres de haut », dicté
+   * dans la description, y disparaît. Or c'est ce même texte qui décide de
+   * poser ou non la question de la hauteur (`questions-chiffrage.ts`). Lire
+   * moins ici que là-bas ferait taire la question ET manquer la case.
    */
   textesDictee: string[],
   totalHt: string
 ): Promise<Decoupe> {
-  const { lignes: vendables, absorbes } = lignesVendables(prestations.map((p) => p.libelle));
+  const { lignes: vendables, absorbes } = lignesVendables(prestations);
   const donneesManquantes: string[] = [];
   const calcul: LigneExplication[] = [];
 
@@ -475,14 +534,9 @@ async function decouperEnLignes(
   }
 
   // Ce que ses grilles savent dire sur CE chantier, ligne par ligne.
-  const textes = [...prestations.map((p) => p.libelle), ...textesDictee];
-  // **Les mesures structurées des prestations partent avec les textes.**
-  // Depuis le lot B elles vivent en colonnes ; le contrat qui dit laquelle
-  // des deux sources vaut — et qui REFUSE quand elles se contredisent — vit
-  // dans `src/lib/mesures-prestation.ts`, pur et éprouvé à part.
-  const structurees = prestations.map((p) => p.caracteristiques);
+  const textesChantier = [...prestations.map((p) => p.libelle), ...textesDictee];
   const chiffrees = await Promise.all(
-    vendables.map((l) => prixDeLaLigne(ctx, chantierId, textes, l, structurees))
+    vendables.map((l) => prixDeLaLigne(ctx, chantierId, textesChantier, l))
   );
   for (const c of chiffrees) {
     calcul.push(...c.calcul);
@@ -490,7 +544,57 @@ async function decouperEnLignes(
   }
 
   const libelle = vendables.map((l) => l.libelle).join("\n");
-  const principaleIndex = vendables.findIndex((l) => !l.detachable);
+  const principaleIndex = vendables.findIndex((l) => l.principal);
+
+  /**
+   * Écrit une ligne à partir de son prix — ou de son absence.
+   *
+   * **Le seul endroit où « à chiffrer » se décide**, pour que les trois modèles
+   * de chiffrage ci-dessous ne puissent pas en donner trois versions.
+   */
+  const ecrire = (l: LigneVendable, c: PrixLigne, montantImpose?: string | null): LigneProposee => {
+    const montant = montantImpose === undefined ? c.prix : montantImpose;
+    const prestationIds = l.prestations.map((p) => p.id).filter((id): id is string => !!id);
+    if (montant === null) {
+      // **La quantité PHYSIQUE survit même sans prix.** Une haie de 800 ml qu'on
+      // ne sait pas chiffrer reste une haie de 800 ml : c'est ce qu'il devra
+      // regarder pour poser son prix.
+      //
+      // La mesure que le chiffrage a su lire passe d'abord — elle vaut pour les
+      // prestations d'avant le lot B, qui ne portent leur longueur que dans leur
+      // libellé. La quantité commerciale prend le relais ensuite.
+      const q = quantiteCommerciale(l.prestations);
+      const quantite = c.quantite ?? q.quantite;
+      const unite = c.quantite !== undefined ? (c.unite ?? null) : q.unite;
+      return { libelle: l.libelle, montant: null, quantite, unite, prixUnitaire: "0", prestationIds };
+    }
+    // Le taux unitaire quand il existe (800 ml × 17,50 €), le forfait sinon.
+    const auTaux = montantImpose === undefined && c.quantite !== undefined && c.prixUnitaire !== undefined;
+    return {
+      libelle: l.libelle,
+      montant,
+      quantite: auTaux ? c.quantite! : "1",
+      unite: auTaux ? (c.unite ?? null) : null,
+      prixUnitaire: auTaux ? c.prixUnitaire! : montant,
+      prestationIds,
+    };
+  };
+
+  const totalDe = (lignes: LigneProposee[]) =>
+    lignes.reduce((somme, l) => somme.plus(l.montant ?? "0"), new Decimal(0)).toFixed();
+
+  const direCeQuiResteAChiffrer = (lignes: LigneProposee[]) => {
+    const aChiffrer = lignes.filter((l) => l.montant === null);
+    if (aChiffrer.length === 0) return;
+    // **Ni gratuit, ni oublié.** Le devis ne partira pas tant que ces lignes-là
+    // n'ont pas de prix (`peutPreparerDevis`), et l'écran dit lesquelles.
+    calcul.push({
+      libelle: "À chiffrer",
+      detail:
+        `${aChiffrer.map((l) => `« ${membresDuLibelle(l.libelle)[0]} »`).join(", ")} — ` +
+        "aucun prix n'a pu être déterminé. Ces lignes ne valent pas 0 € : elles attendent le vôtre.",
+    });
+  };
 
   // --- Modèle « au poste » : chaque ligne porte son propre prix -------------
   //
@@ -499,14 +603,15 @@ async function decouperEnLignes(
   // grille — parce qu'il a posé ses prix d'abattage —, le tarif au temps ne sert
   // plus : le total est la somme des postes, et on le dit.
   if (principaleIndex >= 0 && chiffrees[principaleIndex].prix) {
-    const lignes = vendables.map((l, i) => ({ libelle: l.libelle, montant: chiffrees[i].prix ?? "0" }));
-    const total = lignes.reduce((somme, l) => somme.plus(l.montant), new Decimal(0)).toFixed();
+    const lignes = vendables.map((l, i) => ecrire(l, chiffrees[i]));
+    const total = totalDe(lignes);
     calcul.push({
       libelle: "Chiffré poste par poste",
       detail:
         `${total} € — la somme de vos prix de grille, et non le tarif à la journée. ` +
         "C'est votre grille qui décide dès qu'elle connaît le travail principal.",
     });
+    direCeQuiResteAChiffrer(lignes);
     return { lignes, total, libelle, calcul, donneesManquantes };
   }
 
@@ -517,15 +622,10 @@ async function decouperEnLignes(
   // qu'aucune ne se vende à perte (sa règle du 7 août : 850 + 250, pas
   // 1 000 + 100).
   if (principaleIndex < 0) {
-    // Que des lignes détachables — en pratique une seule, marquée non
-    // détachable par `lignesVendables`. On n'arrive ici que si la règle change.
-    return {
-      lignes: vendables.map((l, i) => ({ libelle: l.libelle, montant: chiffrees[i].prix ?? totalHt })),
-      total: totalHt,
-      libelle,
-      calcul,
-      donneesManquantes,
-    };
+    // Que des lignes détachables — en pratique une seule, marquée principale
+    // par `lignesVendables`. On n'arrive ici que si la règle change.
+    const lignes = vendables.map((l, i) => ecrire(l, chiffrees[i], chiffrees[i].prix ?? totalHt));
+    return { lignes, total: totalHt, libelle, calcul, donneesManquantes };
   }
 
   // La règle de répartition est PURE et éprouvée à part
@@ -538,11 +638,9 @@ async function decouperEnLignes(
   );
 
   if (!repartition) {
-    // **Sans répartition tenable, on sépare quand même les lignes.** C'est la
-    // moitié de ce qu'il demande, et elle ne dépend d'aucune grille : le client
-    // doit voir la fente à part pour pouvoir la refuser. Le montant reste sur
-    // la ligne principale — le déplacer sans savoir combien vaut la fente
-    // reviendrait à l'inventer.
+    // **Sans répartition tenable, on sépare quand même les lignes**, et l'on ne
+    // met surtout pas les détachables à zéro : un zéro se lit « gratuit » sur un
+    // devis, et c'est le défaut du 26 août 2026. Elles sortent « à chiffrer ».
     const trop = chiffrees.findIndex((c, i) => i !== principaleIndex && c.prix && Number(c.prix) >= Number(totalHt));
     if (trop >= 0) {
       donneesManquantes.push(
@@ -550,11 +648,9 @@ async function decouperEnLignes(
           "chantier entier : le prix n'a pas été réparti. Vérifiez la durée, ou ce prix."
       );
     }
-    const lignesBrutes = vendables.map((l, i) => ({
-      libelle: l.libelle,
-      montant: i === principaleIndex ? totalHt : "0",
-    }));
-    return { lignes: lignesBrutes, total: totalHt, libelle, calcul, donneesManquantes };
+    const lignes = vendables.map((l, i) => ecrire(l, chiffrees[i], i === principaleIndex ? totalHt : null));
+    direCeQuiResteAChiffrer(lignes);
+    return { lignes, total: totalHt, libelle, calcul, donneesManquantes };
   }
 
   const montants = repartition.montants;
@@ -562,9 +658,15 @@ async function decouperEnLignes(
     calcul.push({ libelle: "Répartition", detail: repartition.detail });
   }
 
-  const lignes = vendables.map((l, i) => ({ libelle: l.libelle, montant: montants[i] }));
-  const total = lignes.reduce((somme, l) => somme.plus(l.montant), new Decimal(0)).toFixed();
-  return { lignes, total, libelle, calcul, donneesManquantes };
+  // **Un « 0 » rendu par la répartition n'est pas un prix**, c'est une case de
+  // grille vide. `repartir` le documente ainsi depuis le 8 août — « la ligne
+  // s'écrit à 0 €, visible comme un prix à poser » —, et « à poser » veut dire
+  // « à chiffrer », pas « offert au client ».
+  const lignes = vendables.map((l, i) =>
+    ecrire(l, chiffrees[i], i !== principaleIndex && Number(montants[i]) === 0 ? null : montants[i])
+  );
+  direCeQuiResteAChiffrer(lignes);
+  return { lignes, total: totalDe(lignes), libelle, calcul, donneesManquantes };
 }
 
 /**
@@ -573,17 +675,19 @@ async function decouperEnLignes(
  *
  * Trois natures, trois façons de désigner une case (`src/lib/grille-prix.ts`) :
  * le fendage à la hauteur × diamètre, l'abattage à la technique × diamètre, la
- * haie au mètre linéaire. Une case vide n'est jamais comblée : la ligne s'écrit
- * à 0 €, visible comme un prix à poser, et l'écran nomme ce qui manque.
+ * haie au mètre linéaire. Une case vide n'est jamais comblée.
+ *
+ * **Les mesures viennent d'abord des prestations DE CETTE LIGNE.** Elles
+ * partaient de tout le chantier : sur un chantier à deux arbres, la haie
+ * pouvait hériter du diamètre de l'érable. Depuis que la ligne connaît les
+ * prestations qu'elle vend (migration 0069), elle lit d'abord les siennes.
  */
 async function prixDeLaLigne(
   ctx: Ctx,
   chantierId: string,
-  textes: string[],
-  ligne: LigneVendable,
-  /** Les `caracteristiques` des prestations du chantier, telles qu'en base. */
-  structurees: readonly unknown[] = []
-): Promise<{ prix: string | null; calcul: LigneExplication[]; donneesManquantes: string[] }> {
+  textesChantier: string[],
+  ligne: LigneVendable
+): Promise<PrixLigne> {
   // Ses réponses d'abord, la dictée ensuite : il a pu corriger à l'arrêt ce que
   // la transcription avait mal entendu.
   const precisions = await listerPrecisions(ctx, chantierId);
@@ -596,15 +700,18 @@ async function prixDeLaLigne(
   const { axes } = await lireGrilles(ctx);
 
   // Structure et texte confrontés, une fois pour toute la ligne. Une
-  // contradiction ne se tranche pas : elle se dit, et la mesure reste inconnue.
-  const mesures = mesuresResolues(structurees, [...reponses, ...textes]);
+  // contradiction ne se tranche pas : elle se dit, et la mesure reste inconnue
+  // — sauf si c'est l'artisan lui-même qui a posé la valeur.
+  const mesures = mesuresResolues(ligne.prestations, [...reponses, ...ligne.membres, ...textesChantier]);
   const reserves = [
     reserveDeContradiction("le diamètre du tronc", mesures.diametreCm),
     reserveDeContradiction("la hauteur de l'arbre", mesures.hauteurM),
     reserveDeContradiction("la longueur de haie", mesures.longueurMl),
     reserveDeContradiction("le tonnage des grumes", mesures.tonnageT),
+    // Ce qu'on ne décide pas à sa place — « deux souches » à un prix de grille.
+    prevenirQuantiteNonMultipliee(ligne.prestations),
   ].filter((r): r is string => r !== null);
-  const avecReserves = (r: { prix: string | null; calcul: LigneExplication[]; donneesManquantes: string[] }) => ({
+  const avecReserves = (r: PrixLigne): PrixLigne => ({
     ...r,
     donneesManquantes: [...r.donneesManquantes, ...reserves],
   });
@@ -639,11 +746,23 @@ async function prixDeLaLigne(
     );
   }
 
-  // La ligne principale : elle n'a de prix de grille que si elle porte un
-  // abattage, et seulement quand la technique ET le diamètre sont connus.
-  if (!/\b(abattage|abattre|abatt|d[ée]mont)/i.test(ligne.libelle)) {
-    return { prix: null, calcul: [], donneesManquantes: [] };
+  // **Une nature qu'aucune grille ne chiffre reste une ligne à part entière.**
+  // Une tonte, une plantation, un travail que le produit ne sait même pas
+  // nommer : identifié ne veut pas dire chiffrable, et l'inverse non plus. La
+  // ligne sort sans prix, et l'écran dit ce qu'il attend.
+  if (ligne.cle !== "abattage") {
+    return avecReserves({
+      prix: null,
+      calcul: [],
+      donneesManquantes: [
+        `« ${ligne.libelle} » est sur sa propre ligne, sans prix : Atlas ne sait pas encore ` +
+          "chiffrer ce travail tout seul. Posez son montant, il partira sur le devis.",
+      ],
+    });
   }
+
+  // La ligne d'abattage : un prix de grille quand la technique ET le diamètre
+  // sont connus.
   const technique = precisions.find((p) => p.sujet.startsWith("abattage.technique"))?.valeur ?? null;
   return avecReserves(
     await prixDepuisCase(ctx, "abattage", celluleAbattage(technique, diametreCm, axes), ligne, {
@@ -671,7 +790,7 @@ async function prixDesGrumes(
   mesures: MesuresResolues,
   reponses: string[],
   ligne: LigneVendable
-): Promise<{ prix: string | null; calcul: LigneExplication[]; donneesManquantes: string[] }> {
+): Promise<PrixLigne> {
   const aLaTonne = (await prixConnusDe(ctx, "grumes")).get(CELLULE_GRUMES);
   // Le tonnage vient du contrat de priorité — structure d'abord, libellé
   // ensuite, refus si les deux se contredisent. Le libellé de la ligne y est
@@ -700,6 +819,11 @@ async function prixDesGrumes(
   const montant = new Decimal(aLaTonne).times(tonnage);
   return {
     prix: montant.toFixed(2),
+    // **La décomposition part avec le prix.** Sans elle, le devis afficherait
+    // « 1 × 900 € » pour six tonnes, et le client ne saurait pas ce qu'il paie.
+    quantite: String(tonnage),
+    unite: "tonne",
+    prixUnitaire: aLaTonne,
     calcul: [
       {
         libelle: "Enlèvement des grumes",
@@ -715,7 +839,7 @@ async function prixDeLaHaie(
   ctx: Ctx,
   mesures: MesuresResolues,
   ligne: LigneVendable
-): Promise<{ prix: string | null; calcul: LigneExplication[]; donneesManquantes: string[] }> {
+): Promise<PrixLigne> {
   const auMetre = (await prixConnusDe(ctx, "haie")).get(CELLULE_HAIE);
   // Même contrat que partout : la colonne d'abord, le libellé ensuite, et
   // aucun arbitrage quand les deux divergent — la mesure reste alors inconnue,
@@ -743,6 +867,12 @@ async function prixDeLaHaie(
   const montant = new Decimal(auMetre).times(longueur);
   return {
     prix: montant.toFixed(2),
+    // **C'est le défaut du 26 août 2026, réparé ici.** Le devis portait
+    // « Qté 1 — 14 000 € » là où l'artisan avait dit « 800 mètres à 17,50 ».
+    // Le total était juste ; sa décomposition mentait.
+    quantite: String(longueur),
+    unite: "ml",
+    prixUnitaire: auMetre,
     calcul: [
       {
         libelle: "Taille de haie",
@@ -760,7 +890,7 @@ async function prixDepuisCase(
   cellule: Cellule | null,
   ligne: LigneVendable,
   options: { manquant?: string[]; silencieuxSiVide?: boolean } = {}
-): Promise<{ prix: string | null; calcul: LigneExplication[]; donneesManquantes: string[] }> {
+): Promise<PrixLigne> {
   if (!cellule) {
     if (options.silencieuxSiVide) return { prix: null, calcul: [], donneesManquantes: [] };
     const manque = options.manquant?.length

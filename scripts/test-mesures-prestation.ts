@@ -140,5 +140,67 @@ cas("ce qui n'est pas un objet rend un objet vide", () => {
   }
 });
 
+console.log("\n=== La quantité dictée EST une mesure ===\n");
+
+cas("800 ml de haie donnent la longueur qui fait le prix", () => {
+  // **Ce chemin n'existait pas.** La colonne `quantite` vivait en base depuis le
+  // lot B et n'atteignait aucun calcul : le chiffrage relisait « (800 ml) » dans
+  // le libellé. Corriger la colonne ne changeait donc rien au prix.
+  const m = mesuresResolues([{ nature: "haie", quantite: "800.00", unite: "ml" }], ["Haie (tout genre)"]);
+  assert.equal(m.longueurMl.valeur, 800);
+  assert.equal(m.longueurMl.origine, "structure");
+});
+
+cas("6 tonnes de grumes donnent le tonnage", () => {
+  const m = mesuresResolues([{ nature: "grumes", quantite: "6.00", unite: "tonne" }], []);
+  assert.equal(m.tonnageT.valeur, 6);
+});
+
+cas("une unité qui ne concorde pas ne devient AUCUNE mesure", () => {
+  // 1 200 m² de tonte est une donnée juste, et ce n'est ni une longueur, ni un
+  // diamètre, ni un tonnage. La convertir serait inventer un chiffrage.
+  const m = mesuresResolues([{ nature: "tonte", quantite: "1200.00", unite: "m²" }], []);
+  assert.equal(m.longueurMl.valeur, null);
+  assert.equal(m.tonnageT.valeur, null);
+});
+
+cas("ses réponses à l'arrêt passent AVANT la quantité dictée", () => {
+  // Il a corrigé à l'arrêt ce que la transcription avait mal entendu : c'est la
+  // priorité qui vaut partout ailleurs dans le produit.
+  const m = mesuresResolues(
+    [{ nature: "haie", quantite: "800.00", unite: "ml", caracteristiques: { longueurMl: 80 } }],
+    []
+  );
+  assert.equal(m.longueurMl.valeur, 80);
+});
+
+cas("un objet de caractéristiques brut continue de se lire comme avant", () => {
+  // Les appelants migrent un par un : les deux formes doivent coexister.
+  assert.equal(mesuresResolues([{ diametreCm: 45 }], []).diametreCm.valeur, 45);
+});
+
+console.log("\n=== Une correction de l'artisan tranche, au lieu de bloquer ===\n");
+
+cas("ce qu'il a corrigé lui-même l'emporte sur le libellé", () => {
+  // Sa demande : ne plus avoir à réécrire « (800 ml) » en « (80 ml) » dans le
+  // texte pour que le prix suive.
+  const m = mesuresResolues(
+    [{ caracteristiques: { longueurMl: 80 }, corrigeParHumain: true }],
+    ["Haie (tout genre) (800 ml)"]
+  );
+  assert.equal(m.longueurMl.valeur, 80, "sa correction a été ignorée");
+  assert.equal(m.longueurMl.origine, "structure");
+});
+
+cas("mais une valeur que PERSONNE n'a validée bloque toujours", () => {
+  // L'autre sens : sans correction humaine, deux sources qui divergent restent
+  // une contradiction. C'est le contrat du lot C, et il ne bouge pas.
+  const m = mesuresResolues(
+    [{ caracteristiques: { longueurMl: 80 }, corrigeParHumain: false }],
+    ["Haie (tout genre) (800 ml)"]
+  );
+  assert.equal(m.longueurMl.origine, "contradiction");
+});
+
 console.log(`\n${reussites} réussite(s), ${echecs} échec(s).`);
 if (echecs > 0) process.exitCode = 1;

@@ -25,10 +25,27 @@
 // trouvée, la ligne s'écrit sans prix, et l'écran nomme ce qui manque. C'est le
 // mécanisme qui existe déjà pour une mesure absente ; on ne fabrique rien de
 // neuf, on lui donne une raison de plus.
+//
+// ─── Deux ajouts du 27 août 2026 ────────────────────────────────────────────
+//
+// **1. La QUANTITÉ dictée est une mesure, et elle ne l'était pas.** 800 « ml »
+// sur une haie SONT la longueur qui fait son prix. La colonne existait depuis
+// le lot B et n'atteignait aucun calcul : le chiffrage relisait « (800 ml) »
+// dans le libellé, si bien que corriger la colonne ne changeait rien au prix.
+// La traduction se fait par `caracteristiqueDeLaQuantite`, qui refuse dès que
+// l'unité ne concorde pas — 800 m² de haie ne sont pas une longueur.
+//
+// **2. Une correction de l'artisan TRANCHE au lieu de bloquer.** Le refus
+// ci-dessus existe parce qu'on ne savait pas qui avait écrit quoi. Depuis que
+// `prestations.corrige_par_humain` le dit (migration 0070), une valeur qu'il a
+// posée lui-même l'emporte sur un libellé que personne n'a mis à jour. C'est sa
+// demande : ne plus avoir à réécrire « (800 ml) » en « (80 ml) » dans le texte
+// pour que le prix suive.
 
 import type { Caracteristiques } from "./prestation-structuree";
 import { diametreLu, hauteurLue, longueurHaieLue, tonnageLu } from "./mesures-arbre";
 import { lireCaracteristiques } from "./prestation-structuree";
+import { caracteristiqueDeLaQuantite } from "./natures-prestation";
 
 export type MesureResolue =
   /** Une valeur sûre, et d'où elle vient. */
@@ -53,15 +70,67 @@ function memeMesure(a: number, b: number): boolean {
   return Math.abs(a - b) < 0.01;
 }
 
-function resoudre(structure: number | undefined, texte: number | null): MesureResolue {
-  if (structure !== undefined && texte !== null) {
-    return memeMesure(structure, texte)
-      ? { valeur: structure, origine: "structure" }
-      : { valeur: null, origine: "contradiction", structure, libelle: texte };
+function resoudre(
+  structure: number | undefined,
+  texte: number | null,
+  /** La structure a-t-elle été posée par l'artisan lui-même ? */
+  faitFoi: boolean
+): MesureResolue {
+  if (structure !== undefined && texte !== null && !memeMesure(structure, texte)) {
+    // **Sauf quand c'est LUI qui a tranché.** Une valeur qu'il a corrigée à la
+    // main n'entre pas en concurrence avec un libellé que personne n'a mis à
+    // jour : refuser de chiffrer reviendrait à ignorer sa correction, ce qui
+    // est exactement ce dont il se plaignait — devoir réécrire « (800 ml) » en
+    // « (80 ml) » dans le texte pour que le prix suive.
+    if (!faitFoi) return { valeur: null, origine: "contradiction", structure, libelle: texte };
   }
   if (structure !== undefined) return { valeur: structure, origine: "structure" };
   if (texte !== null) return { valeur: texte, origine: "libelle" };
   return { valeur: null, origine: "aucune" };
+}
+
+/**
+ * Une prestation, réduite à ce qui porte une mesure.
+ *
+ * **Pourquoi ce n'est plus un simple objet de caractéristiques.** La quantité
+ * dictée vivait dans `prestations.quantite` depuis le lot B et n'atteignait
+ * AUCUN calcul : le chiffrage relisait « (800 ml) » dans le libellé. Corriger
+ * la colonne ne changeait donc rien au prix — elle était décorative.
+ */
+export type SourceMesures = {
+  caracteristiques?: unknown;
+  quantite?: string | null;
+  unite?: string | null;
+  nature?: string | null;
+  /** L'artisan a posé ces valeurs lui-même : elles tranchent (migration 0070). */
+  corrigeParHumain?: boolean | null;
+  libelle?: string;
+  id?: string;
+};
+
+const CLES_SOURCE = ["caracteristiques", "quantite", "unite", "nature", "corrigeParHumain", "libelle", "id"];
+
+/**
+ * Accepte les deux formes d'entrée, et les distingue sans ambiguïté.
+ *
+ * Un objet qui porte l'une des clés d'une prestation EST une prestation ; tout
+ * le reste est un objet de caractéristiques brut, comme avant. C'est ce qui
+ * permet aux appelants de migrer un par un plutôt que d'un coup.
+ */
+function lireSource(brut: unknown): { mesures: Caracteristiques; faitFoi: boolean } {
+  if (!brut || typeof brut !== "object" || Array.isArray(brut)) return { mesures: {}, faitFoi: false };
+  const objet = brut as Record<string, unknown>;
+  if (!CLES_SOURCE.some((c) => c in objet)) return { mesures: lireCaracteristiques(brut), faitFoi: false };
+
+  const s = brut as SourceMesures;
+  // **Ses réponses à l'arrêt d'abord, la quantité dictée ensuite.** C'est la
+  // priorité qui vaut partout ailleurs : il a pu corriger au moment qui coûte
+  // de l'argent ce que la transcription avait mal entendu.
+  const mesures: Caracteristiques = {
+    ...(caracteristiqueDeLaQuantite(s.nature, s.quantite, s.unite) ?? {}),
+    ...lireCaracteristiques(s.caracteristiques),
+  };
+  return { mesures, faitFoi: s.corrigeParHumain === true };
 }
 
 export type MesuresResolues = {
@@ -87,18 +156,25 @@ export function mesuresResolues(
   structurees: readonly unknown[],
   textes: readonly string[]
 ): MesuresResolues {
-  const propres: Caracteristiques[] = structurees.map(lireCaracteristiques);
-  const premiere = (cle: keyof Caracteristiques): number | undefined =>
-    propres.map((c) => c[cle]).find((v): v is number => v !== undefined);
+  const sources = structurees.map(lireSource);
+  const premiere = (cle: keyof Caracteristiques): { valeur?: number; faitFoi: boolean } => {
+    const trouvee = sources.find((s) => s.mesures[cle] !== undefined);
+    return { valeur: trouvee?.mesures[cle], faitFoi: trouvee?.faitFoi ?? false };
+  };
 
   const premierTexte = (lire: (t: string) => number | null): number | null =>
     textes.map(lire).find((v): v is number => v !== null) ?? null;
 
+  const pour = (cle: keyof Caracteristiques, lire: (t: string) => number | null): MesureResolue => {
+    const { valeur, faitFoi } = premiere(cle);
+    return resoudre(valeur, premierTexte(lire), faitFoi);
+  };
+
   return {
-    diametreCm: resoudre(premiere("diametreCm"), premierTexte(diametreLu)),
-    hauteurM: resoudre(premiere("hauteurM"), premierTexte(hauteurLue)),
-    longueurMl: resoudre(premiere("longueurMl"), premierTexte(longueurHaieLue)),
-    tonnageT: resoudre(premiere("tonnageT"), premierTexte(tonnageLu)),
+    diametreCm: pour("diametreCm", diametreLu),
+    hauteurM: pour("hauteurM", hauteurLue),
+    longueurMl: pour("longueurMl", longueurHaieLue),
+    tonnageT: pour("tonnageT", tonnageLu),
   };
 }
 

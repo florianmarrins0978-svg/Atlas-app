@@ -21,6 +21,7 @@ import { structureDepuisPrecisions } from "../../lib/prestation-structuree";
 import { libelleEnrichi, questionsAvantChiffrage, type QuestionChiffrage } from "../../lib/questions-chiffrage";
 import { lireGrilles } from "../repositories/grilles-reglables";
 import { lignesVendables } from "../../lib/lignes-vendables";
+import { quantiteCommerciale } from "../../lib/quantite-commerciale";
 import type { LectureDictee, PropositionExtraction } from "../ai/schemas/extraction";
 import { logger } from "../logger";
 
@@ -391,22 +392,38 @@ async function chiffrerEtPreparer(
   // porter ses quatre prestations, prix à compléter — il n'avait plus qu'à les
   // remplir. À la place, sa dictée avait disparu.
   //
-  // Les lignes sont écrites à 0 € et l'écran les montre comme des prix à saisir,
-  // jamais comme des prix décidés (`DevisCompletClient`, champ souligné tant
-  // qu'il est vide). Un zéro affiché comme un montant se lirait « gratuit ».
+  // **Les lignes sortent « à chiffrer », plus à 0 €** (migration 0070). Un zéro
+  // affiché comme un montant se lit « gratuit » : c'est une décision là où il
+  // n'y a qu'une ignorance, et le devis pouvait partir ainsi. Le travail reste
+  // visible, la quantité dictée aussi, et le devis attend son prix.
   if (prixImpossible && (await listerLignesPrix(ctx, chantierId)).length === 0) {
     // **Le même découpage que lorsqu'un prix existe.** Une ligne par prestation
     // dictée était le premier réflexe, et il était faux : le patron aurait vu
     // « abattage », « broyage », « évacuation » sur trois lignes séparées, puis
     // aurait dû les réunir à la main — l'inverse exact de sa règle.
     const prestations = await listerPrestations(ctx, chantierId);
-    const aEcrire = lignesVendables(prestations.map((p) => p.libelle)).lignes.map((l) => l.libelle);
-    for (const libelle of aEcrire) {
-      const ligne = await ajouterLignePrix(ctx, chantierId, libelle, "0", { quantite: "1", prixUnitaire: "0" });
+    const aEcrire = lignesVendables(prestations).lignes;
+    for (const vendable of aEcrire) {
+      // La quantité PHYSIQUE survit même sans prix : une haie de 800 ml qu'on
+      // ne sait pas chiffrer reste une haie de 800 ml, et c'est ce qu'il
+      // regardera pour poser son montant.
+      const q = quantiteCommerciale(vendable.prestations);
+      const ligne = await ajouterLignePrix(ctx, chantierId, vendable.libelle, "0", {
+        quantite: q.quantite,
+        unite: q.unite,
+        prixUnitaire: "0",
+        aChiffrer: true,
+      });
       // Le même lien que sur une ligne chiffrée : ces prestations-là sont bien
-      // vendues par cette ligne, même si son prix reste à poser.
+      // vendues par cette ligne, même si son prix reste à poser. Les
+      // identifiants viennent du découpage — plus du rapprochement par texte.
       try {
-        await lierPrestationsALaLigne(ctx, ligne.id, await prestationsDuLibelle(ctx, chantierId, libelle));
+        const ids = vendable.prestations.map((p) => p.id).filter((id): id is string => !!id);
+        await lierPrestationsALaLigne(
+          ctx,
+          ligne.id,
+          ids.length > 0 ? ids : await prestationsDuLibelle(ctx, chantierId, vendable.libelle)
+        );
       } catch {
         // Jamais bloquant — un devis vaut mieux qu'un lien.
       }

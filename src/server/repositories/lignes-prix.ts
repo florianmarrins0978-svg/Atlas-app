@@ -11,18 +11,27 @@ export async function listerLignesPrix(ctx: Ctx, chantierId: string) {
   );
 }
 
-// L'écran Prix validé n'édite qu'un seul champ de montant par ligne (pas de
-// saisie séparée quantité/prix unitaire dans l'interface actuelle). Le modèle,
-// lui, porte déjà quantite/prixUnitaire/unite (aligné sur lignes_devis) pour
-// permettre un futur écran plus détaillé sans nouvelle migration. Tant qu'aucune
-// interface ne les édite séparément, l'invariant maintenu est :
-// quantite = 1, prixUnitaire = montant.
+/**
+ * Écrit une ligne au détail du chantier.
+ *
+ * **`quantite: "1"` en dur était le défaut du 26 août 2026.** Le patron dictait
+ * « huit cents mètres de haie », le modèle rendait `800` / `ml`, et cette
+ * fonction écrivait `1` — le client lisait alors « 1 × 14 000 € » là où
+ * l'artisan avait dit « 800 mètres à 17,50 ». Ce n'était pas un forfait décidé,
+ * c'était une colonne que ce chemin ne renseignait jamais. La règle qui décide
+ * de la quantité commerciale vit désormais dans `src/lib/quantite-commerciale.ts`.
+ *
+ * **`aChiffrer` (migration 0070) :** le travail est identifié, son prix ne
+ * l'est pas. Le montant reste à `0` en base — la facturation n'accepte pas de
+ * NULL — mais le drapeau dit que ce zéro n'est pas un prix, et le devis ne peut
+ * pas partir tant qu'il est levé.
+ */
 export async function ajouterLignePrix(
   ctx: Ctx,
   chantierId: string,
   libelle: string,
   montant: string,
-  options?: { quantite?: string; prixUnitaire?: string; unite?: string }
+  options?: { quantite?: string; prixUnitaire?: string; unite?: string | null; aChiffrer?: boolean }
 ) {
   return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
     const existantes = await tx.select().from(lignesPrix).where(eq(lignesPrix.chantierId, chantierId));
@@ -35,7 +44,8 @@ export async function ajouterLignePrix(
         montant,
         quantite: options?.quantite ?? "1",
         prixUnitaire: options?.prixUnitaire ?? montant,
-        unite: options?.unite,
+        unite: options?.unite ?? undefined,
+        aChiffrer: options?.aChiffrer ?? false,
         ordre: existantes.length,
       })
       .returning();
@@ -46,7 +56,14 @@ export async function ajouterLignePrix(
 export async function modifierLignePrix(
   ctx: Ctx,
   id: string,
-  data: { libelle?: string; montant?: string; quantite?: string; prixUnitaire?: string; unite?: string }
+  data: {
+    libelle?: string;
+    montant?: string;
+    quantite?: string;
+    prixUnitaire?: string;
+    unite?: string;
+    aChiffrer?: boolean;
+  }
 ) {
   return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
     // **Les deux sens de l'invariant `montant = quantité × prix unitaire`.**
@@ -60,6 +77,12 @@ export async function modifierLignePrix(
     // zéro alors que l'écran affichait 750 €. Une ligne dont le total ne
     // correspond pas à son détail ne se rattrape que par un avoir.
     const patch: typeof data = { ...data };
+    // **Poser un prix, c'est répondre à « à chiffrer ».** Sans cela le devis
+    // resterait bloqué après qu'il a fait exactement ce qu'on lui demandait, et
+    // il n'aurait aucun moyen de comprendre pourquoi.
+    if (data.aChiffrer === undefined && data.montant !== undefined && Number(data.montant) > 0) {
+      patch.aChiffrer = false;
+    }
     if (data.montant !== undefined && data.prixUnitaire === undefined && data.quantite === undefined) {
       patch.prixUnitaire = data.montant;
       patch.quantite = "1";

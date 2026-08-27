@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import path from "node:path";
 import { signatureLecon } from "../src/lib/lecons-prix";
+import { signatureV2, sontComparables } from "../src/lib/comparabilite-prix";
 import { lignesVendables } from "../src/lib/lignes-vendables";
 import { prixAttribuable } from "../src/lib/prix-attribuable";
 import { extraire } from "../src/server/ai/services/extraction-service";
@@ -49,8 +50,6 @@ async function casAsync(nom: string, verifier: () => Promise<void>): Promise<voi
 // Les libellés exacts que le patron a lus sur son devis le 26 août 2026.
 const TONTE = "Tonte de la pelouse (1200 m²)";
 const ERABLE = "Érable — démontage en rétention";
-const HAIE_800 = "Haie (tout genre) (800 ml)";
-const HAIE_50 = "Haie de laurier (50 ml)";
 
 console.log("\n=== B — deux travaux dictés restent deux identités métier ===\n");
 
@@ -83,9 +82,28 @@ cas("la tonte n'hérite pas de la nature du démontage", () => {
 
 console.log("\n=== E — un faux comparable est pire qu'un comparable absent ===\n");
 
+// **Ces trois cas ont changé de cible le 27 août, et la raison doit être écrite.**
+//
+// Ils visaient `signatureLecon`, la clé V1. C'était viser le mauvais endroit,
+// pour la raison exacte qui avait déjà fait déplacer le cas F : **les clés V1
+// sont STOCKÉES** dans `lecons_prix.signature`. Les changer orphelinerait toute
+// la mémoire de prix du patron, sans un mot et sans erreur — et le cas G
+// ci-dessous, écrit le même jour, l'interdit noir sur blanc. Les deux exigences
+// ne pouvaient pas tenir ensemble sur la même fonction.
+//
+// **Et deux de ces cas se contredisaient entre eux.** « 50 et 55 ml restent
+// comparables » était écrit avec DEUX ESPÈCES différentes (laurier et thuyas),
+// pendant que le cas suivant exige que deux espèces différentes ne se
+// rapprochent pas. Le premier prétend éprouver la proximité de LONGUEUR : il le
+// fait maintenant à espèce égale, ce qu'il aurait toujours dû faire.
+//
+// La règle métier, elle, n'a pas bougé d'un pouce — c'est le §11 du brief du
+// 27 août : « corrige la signature historique sans casser les signatures V1
+// existantes ; construis une V2 versionnée ».
+
 cas("50 ml et 800 ml de haie ne sont pas le même chantier", () => {
-  const petite = signatureLecon(HAIE_50);
-  const grande = signatureLecon(HAIE_800);
+  const petite = signatureV2({ nature: "haie", quantite: "50", unite: "ml" });
+  const grande = signatureV2({ nature: "haie", quantite: "800", unite: "ml" });
   assert.ok(petite && grande, "l'une des deux haies n'a produit aucune signature");
   assert.notEqual(
     petite.cle,
@@ -100,19 +118,33 @@ cas("deux haies de longueur voisine restent, elles, comparables", () => {
   // toutes les haies incomparables passerait le test précédent et détruirait la
   // mémoire du patron. Sa règle : un rappel manquant est acceptable, un rappel
   // faux ne l'est pas — mais « aucun rappel jamais » n'est pas la réponse.
-  const a = signatureLecon("Haie de laurier (50 ml)");
-  const b = signatureLecon("Haie de thuyas (55 ml)");
-  assert.ok(a && b, "signature absente");
-  assert.equal(a.cle, b.cle, "deux haies de 50 et 55 ml ne se rapprochent plus : la mémoire ne sert plus à rien");
+  const a = { nature: "haie", espece: "laurier", quantite: "50", unite: "ml" };
+  const b = { nature: "haie", espece: "laurier", quantite: "55", unite: "ml" };
+  assert.ok(signatureV2(a) && signatureV2(b), "signature absente");
+  assert.ok(sontComparables(a, b), "deux haies de 50 et 55 ml ne se rapprochent plus : la mémoire ne sert plus à rien");
 });
 
 cas("une espèce différente ne se rapproche pas quand elle change le prix", () => {
   // Un buis de 5 ml et un laurier de 5 ml ne se taillent ni au même rythme ni
-  // avec le même matériel. Aujourd'hui les deux valent « haie », tout court.
-  const buis = signatureLecon("Taille de haie de buis (5 ml)");
-  const laurier = signatureLecon("Taille de haie de laurier (5 ml)");
-  assert.ok(buis && laurier, "signature absente");
-  assert.notEqual(buis.cle, laurier.cle, "l'espèce n'entre pas dans la clé : buis et laurier sont confondus");
+  // avec le même matériel. Avant la V2, les deux valaient « haie », tout court.
+  const buis = { nature: "haie", espece: "buis", quantite: "5", unite: "ml" };
+  const laurier = { nature: "haie", espece: "laurier", quantite: "5", unite: "ml" };
+  assert.equal(sontComparables(buis, laurier), false, "l'espèce n'élimine pas : buis et laurier sont confondus");
+});
+
+cas("une espèce INCONNUE n'élimine rien — c'est une absence, pas une différence", () => {
+  // L'autre bord, et il compte autant : toute la mémoire d'avant a l'espèce à
+  // NULL. La traiter comme « différente de laurier » effacerait d'un coup ce
+  // qu'il a construit depuis le 8 août.
+  const ancien = { nature: "haie", espece: null, quantite: "50", unite: "ml" };
+  const neuf = { nature: "haie", espece: "laurier", quantite: "55", unite: "ml" };
+  assert.equal(sontComparables(ancien, neuf), true, "la mémoire d'avant est devenue introuvable");
+});
+
+cas("800 ml et 800 m² ne sont pas le même travail", () => {
+  const enMetres = signatureV2({ nature: "haie", quantite: "800", unite: "ml" });
+  const enSurface = signatureV2({ nature: "haie", quantite: "800", unite: "m²" });
+  assert.notEqual(enMetres?.cle, enSurface?.cle);
 });
 
 console.log("\n=== F — un lot de plusieurs natures n'est l'expérience d'aucune ===\n");

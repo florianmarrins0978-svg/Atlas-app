@@ -2,7 +2,7 @@ import { getFournisseurLLM } from "../providers/llm/fabrique";
 import type { FournisseurLLM } from "../providers/llm/interface";
 import { PropositionExtractionSchema, type ResultatExtraction } from "../schemas/extraction";
 import { erreurIA } from "../errors";
-import { lireObjetJson } from "../../../lib/json-du-modele";
+import { estJsonTronque, lireObjetJson } from "../../../lib/json-du-modele";
 import { lireLitteralement } from "../lecture-litterale";
 import { logger } from "../../logger";
 
@@ -153,6 +153,25 @@ export async function extraire(
   const resultat = await fournisseur.genererTexte(consigne, texte);
   if (!resultat.succes) {
     return replier(resultat.erreur.message);
+  }
+
+  // **Une réponse TRONQUÉE n'est jamais une réponse valide** — et elle ne doit
+  // pas se confondre avec une panne ni avec un modèle qui répond à côté.
+  //
+  // Deux lectures, dans cet ordre. Le fournisseur d'abord : il SAIT, l'API le
+  // dit (`stop_reason: "max_tokens"`), et c'est la source qui fait foi. La
+  // forme ensuite : tous les fournisseurs ne le disent pas, et un JSON qui
+  // s'ouvre sans jamais se refermer est une coupure, quoi qu'en dise
+  // l'enveloppe.
+  //
+  // Le repli reste — un écran mort a coûté deux jours le 4 août 2026 — mais il
+  // devient IDENTIFIABLE : le motif nomme la troncature, il part au journal, et
+  // les écrans peuvent le dire au patron.
+  if (resultat.fin === "tronque" || estJsonTronque(resultat.texte)) {
+    return replier(
+      "Réponse du fournisseur tronquée : coupée avant la fin, elle ne peut pas être lue.",
+      resultat.texte
+    );
   }
 
   const brut = lireObjetJson(resultat.texte);
