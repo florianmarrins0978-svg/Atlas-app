@@ -196,8 +196,14 @@ uniquement en masquant des boutons ». La règle elle-même est tranchée dans
 | La QUALITÉ de ce que la dictée produit | **LOT SÉPARÉ** — prestations mal organisées, quantités et unités mal lues, prix historiques incohérents (`TODO.md`) |
 | Sauvegardes | **toujours aucune** — le point le plus grave du dépôt |
 
-**Batterie complète au vert le 26 août 2026** : 234/234 suites base, 110/110
-suites navigateur, connexion réelle derrière une origine étrangère.
+**Batterie complète au vert le 27 août 2026**, sur l'état destiné à `main`
+(branche `56f0119`, `origin/main` `3d455ed` intégré) : **259/259** suites base,
+**115/115** suites navigateur, connexion réelle derrière une origine étrangère.
+
+Les suites navigateur ont dû être jouées **par tranches**, un serveur neuf par
+tranche : `next dev` (Turbopack) monte à 13,5 Go sur ce conteneur de 16 Go, et le
+tueur de mémoire abat le serveur. Aucune assertion touchée, aucun délai ajouté,
+aucune suite écartée. Cause non établie — voir `TODO.md`.
 
 Rapport transmissible : `docs/lot-audio-rapport.md`. Raisonnement :
 `ARCHITECTURE.md` §201.

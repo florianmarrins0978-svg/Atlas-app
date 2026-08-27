@@ -1,0 +1,261 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas — Fusion du lot 3 sur `main` — verdict final</title>
+<style>
+  :root{
+    --ground:#f5f3ee; --surface:#faf9f5; --raised:#ece9e1;
+    --ink:#1c1c1a; --ink-soft:#4a4a44; --muted:#8a8578;
+    --accent:#2f3b2f; --alert:#b5562a; --line:rgba(28,28,26,0.13);
+    --serif:Georgia,'Times New Roman',serif;
+    --sans:system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --ground:#161815; --surface:#1d201c; --raised:#252924;
+      --ink:#eae7df; --ink-soft:#c2bdb1; --muted:#948f83;
+      --accent:#9fbd82; --alert:#e0885a; --line:rgba(234,231,223,0.17);
+    }
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--sans);
+    line-height:1.65;}
+  main{max-width:44rem;margin:0 auto;padding:2.5rem 1.2rem 5rem;}
+  h1,h2,h3,h4{font-family:var(--serif);font-weight:600;line-height:1.2;
+    text-wrap:balance;margin:2rem 0 0.6rem;scroll-margin-top:1rem;}
+  h1{font-size:2rem;margin-top:0;}
+  h2{font-size:1.5rem;padding-top:1.2rem;border-top:1px solid var(--line);}
+  h3{font-size:1.12rem;}
+  h4{font-size:1rem;}
+  p{margin:0 0 0.9rem;}
+  a{color:var(--accent);text-underline-offset:3px;}
+  a:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:3px;}
+  ul,ol{margin:0 0 1rem;padding-left:1.3rem;}
+  li{margin-bottom:0.4rem;}
+  li::marker{color:var(--muted);}
+  /* Le sommaire : des cibles larges, confortables au doigt sur téléphone. */
+  ol li a{display:inline-block;padding:0.15rem 0;}
+  blockquote{margin:1rem 0;padding:0.85rem 1.05rem;background:var(--raised);
+    border-left:3px solid var(--accent);border-radius:0 10px 10px 0;color:var(--ink-soft);}
+  code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:0.87em;
+    background:var(--raised);padding:0.1rem 0.35rem;border-radius:5px;}
+  hr{border:0;border-top:1px solid var(--line);margin:2rem 0;}
+  .tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px;
+    background:var(--surface);margin:0 0 1.2rem;}
+  table{border-collapse:collapse;width:100%;font-size:0.92rem;min-width:22rem;}
+  th,td{text-align:left;padding:0.55rem 0.8rem;border-bottom:1px solid var(--line);
+    vertical-align:top;}
+  th{font-size:0.72rem;letter-spacing:0.08em;text-transform:uppercase;
+    color:var(--muted);white-space:nowrap;}
+  tr:last-child td{border-bottom:none;}
+  .retour{display:inline-block;font-size:0.76rem;color:var(--muted);
+    text-decoration:none;margin:-0.3rem 0 1rem;}
+  .retour:hover{color:var(--accent);text-decoration:underline;}
+</style>
+</head>
+<body>
+<main>
+<h1 id="fusion-du-lot-3-sur-main--verdict-final">Fusion du lot 3 sur <code>main</code> — verdict final</h1>
+<p><em>27 août 2026. Ce document remplace <code>docs/fusion-lot-3-rapport.md</code>, qui rendait un verdict provisoire sur une batterie incomplète.</em></p>
+<hr>
+<h2 id="verdict">Verdict</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<blockquote>## FUSION VALIDÉE — PRÊTE À POUSSER SUR <code>main</code></blockquote>
+<p>Rien n'a été poussé sur <code>main</code>. L'autorisation se demande.</p>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th></th>
+</tr></thead><tbody>
+<tr>
+<td>Branche</td>
+<td><code>claude/atlas-securite-lot3</code></td>
+</tr>
+<tr>
+<td>Tête de la branche</td>
+<td><strong>56f0119</strong></td>
+</tr>
+<tr>
+<td><code>origin/main</code> intégré</td>
+<td><strong>3d455ed</strong></td>
+</tr>
+<tr>
+<td>Conflits depuis le tour précédent</td>
+<td><strong>2</strong> (<code>ARCHITECTURE.md</code>, <code>scripts/test-envoi-client-e2e.ts</code>)</td>
+</tr>
+<tr>
+<td>Migrations nouvelles</td>
+<td><strong>aucune</strong> — 77 appliquées, 0 nouvelle</td>
+</tr>
+<tr>
+<td>Batterie</td>
+<td><strong>259/259 base · 115/115 navigateur · connexion derrière proxy verte</strong></td>
+</tr>
+</tbody></table></div>
+<hr>
+<h2 id="1-la-correction-attendue-est-arrivée-et-elle-est-saine">1. La correction attendue est arrivée, et elle est saine</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><code>15ee55d — Désamorcer trois suites qui rougissaient en fin de mois et sous la charge</code>.</p>
+<p>C'est le <strong>montage</strong> de <code>test-carte-reponse-mene-au-geste-e2e</code> qui a été réparé. <strong>Aucune assertion n'a été abaissée</strong> : la nouvelle version refuse même de conclure quand la liste des dates proposées revient vide, plutôt que de rendre un vert qui ne mesure rien.</p>
+<p>Le diagnostic d'en face recoupe le nôtre au mot près : le calendrier de démonstration se vide en fin de mois, la suite prenait le dernier jour cliquable — devenu la date que l'artisan proposait déjà —, le client « acceptait » sans surprise, ce qui ne fait volontairement aucune carte, et le contrôle accusait un produit juste. <strong>Vert le 26, rouge le 27, code identique.</strong></p>
+<p>Vérifié après fusion : la suite est <strong>verte</strong>.</p>
+<hr>
+<h2 id="2-deux-collisions-chacune-où-les-deux-côtés-avaient-la-moitié-raison">2. Deux collisions, chacune où les deux côtés avaient la moitié raison</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<h3 id="la-lecture-du-calendrier">La lecture du calendrier</h3>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th></th>
+</tr></thead><tbody>
+<tr>
+<td>Notre lot</td>
+<td>avait extrait <code>joursAProposer</code> dans un module partagé — <strong>une seule implémentation</strong> — mais datait son plancher à Greenwich</td>
+</tr>
+<tr>
+<td><code>main</code></td>
+<td>avait écrit l'équivalent en place, avec la <strong>bonne</strong> correction de fuseau (<code>jourIso</code>)</td>
+</tr>
+</tbody></table></div>
+<p>Garder les deux aurait fait deux implémentations de la même règle, ce que <code>CLAUDE.md</code> §3 interdit — elles divergent toujours. Le module partagé reste, la correction de fuseau y entre.</p>
+<h3 id="architecturemd-199-pris-des-deux-côtés-le-même-jour"><code>ARCHITECTURE.md</code> §199, pris des deux côtés le même jour</h3>
+<p>La règle dit de renuméroter <strong>celui qui n'est pas encore sur <code>main</code></strong>. Les nôtres deviennent <strong>§200</strong> et <strong>§201</strong>.</p>
+<p>Trois renvois ont suivi le décalage. <strong>Un quatrième s'est révélé faux depuis toujours</strong> : <code>PROJECT_STATE.md</code> envoyait en §199 pour « je dois pouvoir désélectionner », qui est en §191. Il n'a été trouvé qu'en relisant chaque renvoi un par un — et c'est exactement l'argument de la dette notée dans <code>TODO.md</code> : <strong>un renvoi faux a l'air juste.</strong></p>
+<hr>
+<h2 id="3-trois-commentaires-qui-mentaient-redressés">3. Trois commentaires qui mentaient, redressés</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<ol>
+<li><strong><code>retirerCleAction</code></strong> promettait <em>« Rien ne demande le mot de passe pour ce geste, et c'est délibéré »</em> — alors que la garde M11 est posée <strong>deux lignes plus bas</strong> depuis le 25 août. Une prochaine session l'aurait lu et se serait crue autorisée à retirer la garde. Le vrai arbitrage est écrit à la place : c'est « Me déconnecter partout » qui sert le téléphone perdu, sans preuve ; la liste des portes ne se défait qu'en prouvant qui l'on est.</li>
+<li><strong><code>NoteVocaleClient.tsx</code></strong> citait <code>verifierTypeAudio</code>, morte avec le lot Audio.</li>
+<li>Le renvoi §199 ci-dessus.</li>
+</ol>
+<p>Aucun comportement ne change : ce sont des commentaires. Mais un commentaire périmé est pire qu'absent — on s'y fie encore.</p>
+<hr>
+<h2 id="4-les-contrôles-critiques-un-par-un-avec-ce-qui-les-prouve">4. Les contrôles critiques, un par un, avec ce qui les prouve</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th>Contrôle</th>
+<th>Ce qui le prouve</th>
+<th>Verdict</th>
+</tr></thead><tbody>
+<tr>
+<td><strong>M9</strong> — condensat hors de portée d'<code>atlas_app</code></td>
+<td><code>test-secret-authentification-db</code> — 18 contrôles</td>
+<td>vert</td>
+</tr>
+<tr>
+<td><strong>M11 geste 1</strong> — IBAN / coordonnées bancaires</td>
+<td><code>test-gestes-sensibles-db</code> — 8 cas, action serveur réelle sous <code>atlas_app</code></td>
+<td>vert</td>
+</tr>
+<tr>
+<td><strong>M11 geste 2</strong> — ajout d'une clé Face ID</td>
+<td><code>test-face-id-e2e</code> — « UNE SESSION SEULE NE SUFFIT PLUS », avec <code>count(*) = 0</code> en base</td>
+<td>vert</td>
+</tr>
+<tr>
+<td><strong>M11 geste 3</strong> — retrait d'une clé Face ID</td>
+<td><code>test-gestes-sensibles-db</code> — 3 cas, dont « la clé est toujours là »</td>
+<td>vert</td>
+</tr>
+<tr>
+<td><strong>M11 geste 4</strong> — export complet</td>
+<td><code>test-mes-donnees-e2e</code> — export de 684 496 octets obtenu APRÈS la feuille de preuve</td>
+<td>vert</td>
+</tr>
+<tr>
+<td><strong>Coupure globale des sessions</strong></td>
+<td><code>test-coupure-sessions-e2e</code> — « le contournement échoue : la coupure tient »</td>
+<td>vert</td>
+</tr>
+<tr>
+<td><strong>M12 / rôles</strong></td>
+<td><code>test-acces-roles-db</code>, <code>test-acces-salarie-e2e</code> (8 contrôles)</td>
+<td>vert</td>
+</tr>
+<tr>
+<td><strong>RLS / isolation</strong></td>
+<td>suites base : lecture, écriture, mise à jour, fail-closed, <code>NOBYPASSRLS</code></td>
+<td>vert</td>
+</tr>
+<tr>
+<td><strong>F2</strong> — <code>/api/session-perimee</code></td>
+<td><code>test-session-perimee-e2e</code> — 8 contrôles</td>
+<td>vert</td>
+</tr>
+<tr>
+<td><strong>F5</strong> — contexte vide</td>
+<td><code>test-isolation-contexte-vide-db</code></td>
+<td>vert</td>
+</tr>
+<tr>
+<td><strong>F8</strong> — gardes des réglages</td>
+<td><code>test-reglages-gardes</code></td>
+<td>vert</td>
+</tr>
+<tr>
+<td><strong>Porte audio</strong></td>
+<td><code>test-signature-audio</code> (31) + <code>test-audio-entrant-db</code> (9) ; les 4 chemins d'entrée passent par <code>preparerAudioEntrant</code>, aucun ne le contourne</td>
+<td>vert</td>
+</tr>
+</tbody></table></div>
+<p><strong>Correction d'un de mes propres rapports.</strong> J'ai résumé M11 par « les trois gestes » dans des rapports précédents. Il y en a <strong>quatre</strong> — mon « trois » comptait des FICHIERS de garde, pas des gestes. La correction du patron était juste, et les quatre sont désormais prouvés séparément ci-dessus.</p>
+<hr>
+<h2 id="5-ce-qui-a-empêché-la-batterie-de-tourner-dune-traite--et-qui-nest-pas-le-code">5. Ce qui a empêché la batterie de tourner d'une traite — et qui n'est PAS le code</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p>La batterie a été tuée deux fois par le <strong>manque de mémoire</strong> avant d'être comprise. Mesuré plutôt que supposé, en relevant la mémoire du serveur toutes les cinq secondes :</p>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th></th>
+</tr></thead><tbody>
+<tr>
+<td>les 13 premières suites</td>
+<td>serveur <strong>plat à 2,0–2,4 Go</strong> — aucune croissance</td>
+</tr>
+<tr>
+<td><code>test-coupure-sessions-e2e</code></td>
+<td>2,8 → <strong>5,9 Go</strong> en quelques secondes</td>
+</tr>
+<tr>
+<td>ensuite, <strong>sans plus une seule requête</strong></td>
+<td>montée continue jusqu'à <strong>13,5 Go</strong>, puis le serveur est abattu</td>
+</tr>
+</tbody></table></div>
+<p>Les fils qui brûlent le processeur pendant cette montée sont les <code>tokio-rt</code> : c'est <strong>Turbopack</strong>, le compilateur de Next. Le fil JavaScript d'Atlas est au repos, et le journal du serveur ne montre plus aucune requête — <strong>ce n'est pas du code d'Atlas qui alloue.</strong></p>
+<p><strong>La suite, elle, PASSE</strong> : jouée seule, 1/1. Ce qui meurt, c'est la suite d'après, emportée avec le serveur — d'où un rouge qui accusait <code>test-cron-purge</code> alors qu'elle n'avait jamais été lancée.</p>
+<p><strong>Comment la mesure a été obtenue malgré ça :</strong> les 115 suites ont été jouées par tranches, un serveur neuf par tranche, et les suites jamais lancées ont été rejouées seules. <strong>Aucune assertion touchée, aucun délai ajouté, aucune suite écartée.</strong> Une suite « jamais jouée » n'a jamais été comptée comme réussie : elle a été JOUÉE.</p>
+<p><strong>Ce qui reste ouvert, et n'est pas présenté comme réglé :</strong> la même batterie a tourné d'une traite sur 115 suites deux heures plus tôt, dans ce même conteneur. Ce qui a changé entre les deux n'est pas établi. C'est écrit dans <code>TODO.md</code> comme <strong>non diagnostiqué</strong>, avec la piste la plus courte pour le trancher.</p>
+<hr>
+<h2 id="6-deux-erreurs-de-ma-part-corrigées-noir-sur-blanc">6. Deux erreurs de ma part, corrigées noir sur blanc</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<ol>
+<li><strong>J'ai d'abord accusé le cache froid.</strong> Ayant supprimé <code>.next</code> avant la première batterie, j'ai annoncé que la recompilation à froid expliquait les 13,5 Go. <strong>C'était faux</strong> : la seconde batterie, cache chaud, a atteint le même chiffre. C'est la mesure suite par suite qui a donné la vraie cause.</li>
+<li><strong>Mon premier pilote de tranches n'a pas transmis les variables d'environnement.</strong> Le dépôt a <strong>refusé de tourner</strong> — <em>« REDIS_URL n'est pas posée, et sans elle cette batterie ne veut rien dire »</em> — plutôt que de rendre de faux verts. Le garde-fou a fonctionné exactement comme il devait.</li>
+</ol>
+<hr>
+<h2 id="7-ce-qui-reste-ouvert">7. Ce qui reste ouvert</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th>Point</th>
+<th>Qui peut le trancher</th>
+</tr></thead><tbody>
+<tr>
+<td>La batterie ne tient plus en un seul serveur — cause non établie</td>
+<td>nous, en rejouant la suite sur 826314e et en comparant la courbe</td>
+</tr>
+<tr>
+<td>Un refus de rôle sort en <strong>500</strong> au lieu d'un <strong>403</strong> sur <code>/api/mes-donnees</code></td>
+<td>nous, au lot suivant — la sécurité tient, c'est la forme du refus</td>
+</tr>
+<tr>
+<td><code>npm audit</code> : 4 alertes modérées, inchangées</td>
+<td>aucune action — <code>drizzle-kit → esbuild</code>, dépendance de développement, rien n'est exécuté</td>
+</tr>
+<tr>
+<td>Pousser sur <code>main</code></td>
+<td><strong>LUI</strong>, et lui seul</td>
+</tr>
+</tbody></table></div>
+</main>
+</body>
+</html>

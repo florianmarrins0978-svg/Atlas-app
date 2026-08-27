@@ -9,6 +9,65 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
+## La batterie ne tient plus en un seul serveur — NON DIAGNOSTIQUÉ (27 août 2026)
+
+**Mesuré, pas supposé.** Relevé de la mémoire du serveur toutes les cinq
+secondes, en face de la suite en cours :
+
+| | |
+|---|---|
+| les 13 premières suites | serveur **plat à 2,0–2,4 Go** |
+| `test-coupure-sessions-e2e` | 2,8 → **5,9 Go** en quelques secondes |
+| ensuite, **sans plus une seule requête** | montée continue jusqu'à **13,5 Go**, puis le tueur de mémoire abat le serveur |
+
+Les fils qui brûlent le processeur pendant cette montée sont les `tokio-rt` :
+c'est **Turbopack**, le compilateur de Next — le fil JavaScript d'Atlas est au
+repos, et le journal du serveur ne montre plus aucune requête. Ce n'est donc pas
+du code d'Atlas qui alloue.
+
+**La suite PASSE.** Jouée seule : 1/1. Ce qui meurt, c'est la suite d'APRÈS,
+emportée avec le serveur — d'où un rouge qui accuse `test-cron-purge` alors
+qu'elle n'a jamais été lancée.
+
+**Ce qui n'est PAS expliqué, et c'est pour ça que ce point reste ouvert :** la
+même batterie a tourné d'une traite sur 115 suites deux heures plus tôt, dans ce
+même conteneur. Ce qui a changé entre les deux n'est pas établi. Ne pas écrire
+ailleurs que c'est réglé.
+
+**Ce qui a été fait en attendant**, pour mesurer quand même : les 115 suites ont
+été jouées par tranches, un serveur neuf par tranche
+(`scripts/` non modifié ; pilote jeté, dans le bac à sable de la session).
+Aucune assertion touchée, aucun délai ajouté, aucune suite écartée. Résultat
+**115/115**.
+
+**Qui peut le trancher :** nous, en cherchant ce que `test-coupure-sessions-e2e`
+fait faire à Turbopack — la piste la plus courte est de rejouer la suite sur le
+commit d'avant la fusion (826314e) et de comparer la courbe. Une piste écartée
+d'avance : plafonner le tas V8 (`--max-old-space-size`) ne bornerait rien, la
+mémoire est allouée par le Rust de Turbopack, hors du tas.
+
+---
+
+## Un refus de rôle sort en 500, là où un 403 conviendrait (27 août 2026)
+
+Relevé dans le journal du serveur pendant la batterie : quand un **salarié**
+demande `/api/mes-donnees`, l'accès est bien refusé — `exigerProprietaire` lève
+`AccesRoleRefuseError` — mais la route laisse l'exception remonter, et Next rend
+un **500 avec la pile**. La sécurité tient (rien ne sort), c'est la FORME du
+refus qui est fausse.
+
+Ce que ça coûte : un 500 est indiscernable d'une panne dans les journaux de
+production, et `test-acces-salarie-e2e` ne le voit pas — elle vérifie
+`status != 200`, ce qu'un 500 satisfait. Le contrôle est donc juste et aveugle
+à la fois.
+
+**Hors du lot 3 en cours** : corriger la route demanderait de rejouer la
+batterie entière, et le patron a demandé qu'on ne touche à rien tant qu'elle
+n'est pas verte. À reprendre au lot suivant — `src/app/api/mes-donnees/route.ts`,
+rendre un `403` en valeur de retour plutôt que de lever.
+
+---
+
 ## ⚠ EN ATTENTE DE SA RÉPONSE — supprimer un client (26 août 2026)
 
 Sa remarque : *« je ne peux pas supprimer de client, rajoute ça »*. **Rien n'est

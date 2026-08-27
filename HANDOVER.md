@@ -9,6 +9,40 @@ sert.
 
 ---
 
+## LA BATTERIE NE TIENT PLUS EN UN SEUL SERVEUR — à lire avant de la lancer (27 août 2026)
+
+**Si `npm run verifier:avant-livraison` rend un rouge sur une suite navigateur,
+regarder D'ABORD si le serveur n'est pas mort de faim.** Le signe qui ne trompe
+pas, dans le journal de la batterie :
+
+    ❌ Le serveur ne répond plus avant test-<quelquechose>.ts — il s'est arrêté (code 0).
+
+Ce n'est pas la suite nommée qui est en cause : **elle n'a jamais été lancée.**
+Mesuré le 27 août — le serveur reste plat à 2 Go pendant treize suites, puis
+`test-coupure-sessions-e2e` le fait bondir à 5,9 Go, et il monte jusqu'à 13,5 Go
+**sans plus recevoir une seule requête**. Les fils `tokio-rt` — Turbopack —
+brûlent le processeur, le fil JavaScript est au repos. Le conteneur a 16 Go.
+
+Pour vérifier en dix secondes :
+
+    dmesg -T | grep -i "Killed process"
+    free -m
+
+**Comment mesurer quand même** : jouer les suites par tranches, un serveur neuf
+par tranche, avec le filtre qui existe déjà —
+
+    npm run test:e2e -- --seulement test-<lettre>
+
+…en reprenant l'environnement de l'étape « Suites navigateur » de
+`scripts/verifier-avant-livraison.ts` (sans `REDIS_URL`, le dépôt refuse de
+tourner, et il a raison). Puis **rejouer seules** les suites qu'aucune tranche
+n'a lancées : une suite jamais jouée n'est ni verte ni rouge.
+
+**Cause NON ÉTABLIE** (`TODO.md`) : la même batterie tenait d'une traite deux
+heures plus tôt, dans ce même conteneur. Ne pas écrire que c'est réglé.
+
+---
+
 ## LES SALARIÉS NE SONT PLUS LES ÉQUIPES — à savoir avant d'y toucher (26 août 2026)
 
 **La chose à comprendre en trente secondes**, parce que le nommage n'a pas suivi :

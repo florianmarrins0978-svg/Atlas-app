@@ -7,6 +7,35 @@ Format : le plus récent en tête.
 
 ---
 
+## 2026-08-27
+
+### Fusion du lot 3 : batterie entièrement verte, et une panne de machine comprise
+
+`main` a réparé le montage de `test-carte-reponse-mene-au-geste-e2e` sans
+abaisser aucune assertion. Fusionné. Deux collisions, chacune où les deux côtés
+avaient la moitié raison : la lecture du calendrier garde notre module partagé
+ET la correction de fuseau de `main` ; §199 pris des deux côtés, les nôtres
+deviennent §200 et §201.
+
+**La batterie a été tuée deux fois par le manque de mémoire avant d'être
+comprise, et la cause n'est pas dans Atlas.** Mesuré toutes les cinq secondes :
+le serveur reste plat à 2 Go pendant treize suites, puis
+`test-coupure-sessions-e2e` le fait bondir à 5,9 Go, et il monte jusqu'à 13,5 Go
+**sans plus recevoir une seule requête**. Les fils qui brûlent le processeur sont
+les `tokio-rt` — Turbopack —, le fil JavaScript étant au repos. La suite PASSE ;
+c'est celle d'APRÈS qui meurt avec le serveur. Les 115 suites ont donc été jouées
+par tranches, un serveur neuf par tranche, sans toucher une assertion ni ajouter
+un délai : **115/115**, plus 259/259 en base et la connexion derrière proxy.
+
+Ce qui reste **non expliqué** est écrit comme tel dans `TODO.md` : la même
+batterie tenait en un seul serveur deux heures plus tôt.
+
+Trois commentaires qui mentaient sont redressés, dont un qui promettait qu'aucun
+mot de passe n'était demandé pour retirer un appareil — alors que la garde M11
+est deux lignes plus bas. Un commentaire périmé est pire qu'absent.
+
+Détail : `docs/fusion-lot-3-verdict-final.md`.
+
 ## 2026-08-26
 
 ### La fiche d'un client : le téléphone à la ligne, et plus de phrase sur le vide
