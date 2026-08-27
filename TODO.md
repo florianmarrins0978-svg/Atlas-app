@@ -318,6 +318,17 @@ avant toute écriture »* — rouge en batterie, **vert rejoué seul**. Il lit l
 juste après un appui, avant que l'action serveur n'ait répondu : sous cent
 suites, la réponse arrive avant la lecture et le cas s'inverse.
 
+**Et le 27 août 2026, ce même contrôle a rougi sur ses HUIT cas d'un coup —
+toujours vert rejoué seul (11/11).** La forme du rouge a changé, et elle
+compte : la base portait `630.00` là où la suite attendait `870.00`, et l'écran
+affichait une remise de 5 % au lieu de celle qu'elle venait de poser. **Ce n'est
+plus de l'impatience, c'est une collision** : un autre passage a touché le même
+devis pendant qu'elle travaillait. Le remède connu — relire en boucle jusqu'à la
+valeur — ne peut rien contre ça ; il faudra que cette suite travaille sur un
+devis QU'ELLE CRÉE, comme `test-reste-equipes` a fini par le faire pour ses
+jours. **Rien du produit n'est en cause** : la suite est verte seule, et les
+onze cas passent.
+
 *(Une autre session a relevé le même soir le même phénomène sur trois autres
 suites — voir « Trois suites navigateur rougissent SOUS LA BATTERIE » en tête de
 ce fichier. C'est un seul sujet, pas deux.)*
