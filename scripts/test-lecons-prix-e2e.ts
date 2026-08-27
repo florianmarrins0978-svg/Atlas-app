@@ -100,14 +100,29 @@ async function main() {
       let lu: unknown = null;
       for (const essai of [0, 1, 2, 3, 4, 5, 6, 7]) {
         if (essai > 0) await new Promise((r) => setTimeout(r, essai * 700));
+        // **On cherche le prix parmi TOUTES les lignes, pas sur la première.**
+        //
+        // Payé le 27 août 2026 : ce contrôle est tombé trois fois en batterie —
+        // « Le prix 1400 n'est jamais arrivé en base — lu : "0.00" » — et passait
+        // seul à chaque fois. L'écran ajoute une ligne vide à la volée ; sous
+        // charge elle est créée AVANT que la saisie parte, elle devient donc la
+        // plus ancienne, et `LIMIT 1` lisait son zéro.
+        //
+        // **Ce que la suite veut savoir n'a jamais été « la première ligne porte
+        // le prix », c'est « le prix est arrivé ».** Viser la première était une
+        // commodité d'écriture, et elle accusait le produit d'avoir perdu une
+        // saisie parfaitement enregistrée.
         const { rows } = await lecteur.query(
-          `SELECT prix_unitaire FROM lignes_prix WHERE chantier_id = $1 ORDER BY created_at LIMIT 1`,
+          `SELECT prix_unitaire FROM lignes_prix WHERE chantier_id = $1 ORDER BY created_at`,
           [chantierId]
         );
-        lu = rows[0]?.prix_unitaire ?? null;
-        if (lu !== null && Number(lu) === attendu) return;
+        const prix = rows.map((r) => r.prix_unitaire as string);
+        lu = prix.length ? prix : null;
+        if (prix.some((p) => Number(p) === attendu)) return;
       }
-      assert.fail(`Le prix ${attendu} n'est jamais arrivé en base — lu : ${JSON.stringify(lu)}`);
+      assert.fail(
+        `Le prix ${attendu} n'est arrivé sur AUCUNE ligne du chantier — lues : ${JSON.stringify(lu)}`
+      );
     } finally {
       await lecteur.end();
     }

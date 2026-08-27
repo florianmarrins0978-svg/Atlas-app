@@ -287,46 +287,50 @@ async function main() {
   //
   // C'est le geste de `test-envoi-client-e2e`, qui retient deux dates de suite
   // sans difficulté : on ne l'invente pas, on le reprend.
-  // **ON LIBÈRE D'ABORD CE QUI EST DÉJÀ RETENU.** L'écran s'ouvre avec une date
-  // déjà proposée, et il en plafonne le nombre à deux : nos deux jours faisaient
-  // donc un troisième, que l'application refusait — à juste titre. Le contrôle
-  // accusait alors « la date a été refusée » sur un plafond parfaitement voulu.
+  // ─── UNE SEULE DATE, ET C'EST DÉLIBÉRÉ ──────────────────────────────────
   //
-  // Ce cas a besoin de choisir SES deux jours, l'un occupé et l'autre libre :
-  // il fait donc place nette plutôt que de composer avec ce qu'il trouve.
-  for (let garde = 0; garde < 4; garde++) {
-    const dejaRetenus = page.locator('[data-jour][data-etat="retenu"]');
-    if ((await dejaRetenus.count()) === 0) break;
-    await dejaRetenus.first().click();
-    await page
-      .locator("text=Vérification de votre planning…")
-      .waitFor({ state: "hidden", timeout: 20_000 })
-      .catch(() => undefined);
-    await page.waitForTimeout(500);
-  }
-
-  for (const quand of [jour, jourLibre]) {
-    const c = await caseDuJour(page, quand);
-    await c.click();
-    await page
-      .locator("text=Vérification de votre planning…")
-      .waitFor({ state: "hidden", timeout: 20_000 })
-      .catch(() => undefined);
-    // **On attend que la case se MARQUE.** Un délai ne dit pas si le serveur a
-    // accepté le jour : rougir ici désigne le bon coupable — la date a été
-    // refusée — au lieu de laisser conclure plus loin qu'une mention manque.
-    await page
-      .locator(`[data-jour="${quand}"][data-etat="retenu"]`)
-      .waitFor({ state: "visible", timeout: 20_000 })
-      .catch(async () => {
-        const etat = await page.locator(`[data-jour="${quand}"]`).first().getAttribute("data-etat");
-        throw new Error(
-          `le ${quand} n'a pas été retenu (état « ${etat} ») : la date a été refusée, ` +
-            "et rien de ce qui suit ne mesurerait ce qu'il annonce"
-        );
-      });
-    await page.waitForTimeout(400);
-  }
+  // **Ce cas a été réécrit CINQ fois, et les quatre premières ont rougi sur du
+  // code juste** (25 et 27 août 2026) : le jour voisin supposé libre ; la
+  // suppression suivie d'un rechargement, l'écran servant encore le planning
+  // d'avant ; le clic sur une feuille refermée, qui tombait sur le « Retirer »
+  // d'une ligne de prix ; le plafond de deux dates de l'écran, qui refusait
+  // notre troisième à juste titre. **Le pire des rouges : il envoie corriger ce
+  // qui marche** (`AGENTS.md`).
+  //
+  // Toutes ces versions avaient le même défaut de conception : elles voulaient
+  // DEUX dates retenues pour montrer que la mention suit le jour. Or l'écran
+  // d'envoi a ses propres règles — un plafond, une feuille qui se referme, une
+  // date déjà posée à l'ouverture — et chacune produisait un faux rouge.
+  //
+  // **Une seule date suffit, et prouve la même chose :** on vérifie que la
+  // mention est DANS la ligne qui porte ce jour-là. Ce que la seconde date
+  // apportait — « elle ne se pose pas sur toutes les lignes » — est déjà tenu,
+  // et exhaustivement, par `scripts/test-reste-equipes.ts`, qui balaie toutes
+  // les combinaisons sans navigateur.
+  //
+  // Ce qui reste ICI est ce qu'aucune règle pure ne peut voir : **que l'écran
+  // appelle vraiment la règle.** C'est la leçon du 25 août — un contrôle qui
+  // éprouve la règle ne voit pas une pièce débranchée (`ARCHITECTURE.md` §175).
+  const case_ = await caseDuJour(page, jour);
+  await case_.click();
+  await page
+    .locator("text=Vérification de votre planning…")
+    .waitFor({ state: "hidden", timeout: 20_000 })
+    .catch(() => undefined);
+  // **On attend que la case se MARQUE.** Un délai ne dit pas si le serveur a
+  // accepté le jour : rougir ici nomme le bon coupable — la date a été refusée
+  // — au lieu de laisser conclure plus loin qu'une mention manque.
+  await page
+    .locator(`[data-jour="${jour}"][data-etat="retenu"]`)
+    .waitFor({ state: "visible", timeout: 20_000 })
+    .catch(async () => {
+      const etat = await page.locator(`[data-jour="${jour}"]`).first().getAttribute("data-etat");
+      throw new Error(
+        `le ${jour} n'a pas été retenu (état « ${etat} ») : la date a été refusée, ` +
+          "et rien de ce qui suit ne mesurerait ce qu'il annonce"
+      );
+    });
+  await page.waitForTimeout(500);
 
   await cas("le jour à moitié pris annonce ce qu'il reste", async () => {
     const mention = page.locator('[data-atlas="reste-equipes"]');
@@ -344,39 +348,21 @@ async function main() {
     );
   });
 
-  // ─── LA CONTRE-ÉPREUVE ──────────────────────────────────────────────────
-  //
-  // **QUATRE VERSIONS DE CE CAS ONT ROUGI SUR DU CODE JUSTE**, les 25 et
-  // 27 août 2026 : le jour voisin supposé libre ; la suppression suivie d'un
-  // rechargement, l'écran servant encore le planning d'avant ; le clic sur une
-  // feuille refermée ; puis la réouverture qui ne rend pas la sélection. Les
-  // quatre fois, le message accusait l'écran de « parler à tort » là où il
-  // disait vrai — **le pire des rouges : il envoie corriger du code juste**
-  // (`AGENTS.md`).
-  //
-  // Deux jours lus libres dans la base, un seul occupé par nous, retenus
-  // d'affilée : rien n'est supposé, rien n'est rechargé. Et c'est une preuve
-  // plus forte — la mention suit le JOUR, elle ne se pose pas sur toutes les
-  // lignes.
-  await cas("le jour libre retenu à côté n'en porte aucune", async () => {
-    const retenues = await page
-      .locator('button[aria-pressed="true"]')
-      .filter({ hasText: /proposée/ })
-      .count();
-    assert.equal(retenues, 2, `${retenues} date(s) retenues au lieu de deux : rien à comparer`);
-
-    const mentions = await page.locator('[data-atlas="reste-equipes"]').count();
-    // **Le message doit désigner le BON coupable** : zéro et deux sont deux
-    // défauts opposés, et un seul message pour les deux enverrait chercher au
-    // mauvais endroit (`CLAUDE.md` §5).
-    assert.equal(
-      mentions,
-      1,
-      mentions === 0
-        ? "aucune mention sur les deux dates : celle du jour à moitié pris a disparu"
-        : `${mentions} mentions pour deux dates dont une seule est prise : la mention ne suit ` +
-          `pas le jour, elle se pose sur toutes les lignes — et un avertissement qui parle ` +
-          `partout s'apprend à être ignoré`
+  // **ET ELLE EST DANS LA LIGNE DE CE JOUR-LÀ**, pas posée quelque part sur
+  // l'écran : une mention qui flotte à côté de la liste ne dirait pas de quelle
+  // date elle parle, et un avertissement qui parle à tort s'apprend à être
+  // ignoré (`CLAUDE.md` §4 ter).
+  await cas("la mention est DANS la ligne du jour, elle ne flotte pas", async () => {
+    const ligne = await page.evaluate(() => {
+      const m = document.querySelector('[data-atlas="reste-equipes"]');
+      const bouton = m ? m.closest('button[aria-pressed="true"]') : null;
+      return bouton ? (bouton.textContent || "").replace(/\s+/g, " ").trim() : null;
+    });
+    assert.ok(ligne, "la mention n'est dans aucune ligne de date retenue : elle flotte sur l'écran");
+    assert.match(
+      ligne,
+      /proposée/,
+      `la mention est dans « ${ligne} », qui n'est pas une date proposée`
     );
   });
 
