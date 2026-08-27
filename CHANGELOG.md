@@ -133,7 +133,14 @@ attrapé deux défauts invisibles à l'écran — « Cerné » était 2 px plus 
 les quatre autres (le cerne s'ajoutait à la boîte), et l'ombre de « Posé »
 restait vert foncé en mode sombre, donc invisible.
 
-Rien n'est codé : `appli/le-bouton-moins-lourd.html`, en attente de son choix.
+**Écarté le soir même : « j'aime pas, propose autre chose ».** Et le refus
+apprend quelque chose — les cinq propositions étaient toutes des **nuances du
+même vert pin**, c'est-à-dire cinq fois la même idée montrée comme cinq.
+« Opaque » ne demandait pas un vert un peu moins foncé.
+
+Le **second tour** change donc de famille à chaque fois : verre translucide, or,
+sauge, encre, bronze, filet. Rien n'est codé :
+`appli/le-bouton-moins-lourd.html`, en attente de son choix.
 
 ### L'envoi du devis : trois phrases de moins
 
