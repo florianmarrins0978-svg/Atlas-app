@@ -1,0 +1,331 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Supprimer un client</title>
+<style>
+  :root{
+    --fond:#f5f3ee; --plage:#faf9f5; --encre:#1c1c1a; --encre-douce:#4a4a44;
+    --gris:#8a8578; --pin:#2f3b2f; --papier:#ece9e1;
+    --or:#B98B47; --trait:rgba(28,28,26,.12); --alerte:#8c2f22;
+  }
+  *{box-sizing:border-box}
+  [hidden]{display:none !important}
+  html,body{margin:0;background:#e6e3dc}
+  body{font:16px/1.5 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;color:var(--encre);
+       -webkit-text-size-adjust:100%;padding:0 0 44px}
+  .bandeau{background:#1c1c1a;color:#f5f3ee;padding:16px 20px;font-size:14px;line-height:1.55}
+  .bandeau b{color:#fff}
+  .bloc{max-width:430px;margin:24px auto 0;padding:0 20px}
+  .bloc h2{margin:0 0 8px;font:700 10px/1 ui-sans-serif,sans-serif;letter-spacing:.2em;
+           text-transform:uppercase;color:var(--or)}
+  .bloc p{margin:0 0 10px;font-size:14.5px;line-height:1.55;color:var(--encre-douce)}
+  .bloc p b{color:var(--encre)}
+
+  .preuve{max-width:430px;margin:12px auto 0;padding:12px 14px;background:#1c1c1a;color:#e8e5dd;
+          border-radius:10px;font:12.5px/1.5 ui-monospace,SFMono-Regular,Menlo,monospace;
+          white-space:pre-wrap;overflow-x:auto}
+  .preuve b{color:#e8a89c}
+
+  .ecran{max-width:430px;margin:10px auto 0;background:var(--fond);border-radius:14px;
+         padding:16px 16px 18px;box-shadow:0 10px 28px rgba(20,18,14,.13)}
+  .chapeau{font:700 10px/1 ui-sans-serif,sans-serif;letter-spacing:.2em;
+           text-transform:uppercase;color:var(--or);margin:0}
+  .titre{margin:8px 0 14px;font:400 26px/1.2 ui-serif,Georgia,serif}
+  .etiquette{font:700 10px/1 ui-sans-serif,sans-serif;letter-spacing:.2em;
+             text-transform:uppercase;color:var(--gris);margin:18px 0 8px}
+
+  .choix{display:flex;flex-direction:column;gap:8px}
+  .choix button{display:block;width:100%;min-height:56px;padding:12px 18px;border:0;border-radius:16px;
+                background:transparent;box-shadow:inset 0 0 0 1px var(--trait);
+                text-align:left;font:inherit;color:var(--encre);cursor:pointer}
+  .choix button[aria-pressed="true"]{background:var(--plage);box-shadow:inset 0 0 0 1px var(--or)}
+  .choix .quoi{font-size:15px;font-weight:600}
+  .choix .quoi small{display:block;margin-top:3px;font-size:12.5px;font-weight:400;color:var(--gris);line-height:1.45}
+
+  .clients{display:flex;flex-direction:column;gap:9px;margin-top:10px}
+  .client{background:var(--plage);border-radius:12px;padding:13px 15px}
+  .client .nom{font:400 19px/1.2 ui-serif,Georgia,serif}
+  .client .quoi{margin-top:4px;font-size:12.5px;color:var(--gris)}
+  .client .gestes{display:flex;gap:8px;margin-top:11px}
+  .client button{flex:1;min-height:42px;border:0;border-radius:999px;font:600 13px/1 ui-sans-serif,sans-serif;
+                 cursor:pointer;background:transparent;box-shadow:inset 0 0 0 1px var(--trait);color:var(--encre)}
+  .client button.rouge{color:var(--alerte);box-shadow:inset 0 0 0 1px rgba(140,47,34,.35)}
+  .client[data-parti="1"]{opacity:.45}
+
+  .verdict{margin-top:11px;padding:11px 13px;border-radius:10px;background:var(--papier);font-size:13.5px;line-height:1.5}
+  .verdict h4{margin:0 0 6px;font:700 10px/1 ui-sans-serif,sans-serif;letter-spacing:.16em;
+              text-transform:uppercase;color:var(--gris)}
+  .verdict ul{margin:0;padding-left:16px}
+  .verdict li{margin:2px 0}
+  .verdict .refus{color:var(--alerte);font-weight:600}
+
+  .feuille{position:fixed;left:0;right:0;bottom:0;z-index:20;background:var(--fond);
+           border-radius:18px 18px 0 0;padding:20px 20px 26px;box-shadow:0 -12px 34px rgba(20,18,14,.28);
+           max-width:430px;margin:0 auto}
+  .feuille h3{margin:0 0 8px;font:400 21px/1.25 ui-serif,Georgia,serif}
+  .feuille p{margin:0 0 14px;font-size:14px;line-height:1.5;color:var(--encre-douce)}
+  .feuille .gestes{display:flex;flex-direction:column;gap:8px}
+  .feuille button{min-height:48px;border:0;border-radius:999px;font:600 15px/1 ui-sans-serif,sans-serif;cursor:pointer}
+  .feuille .confirmer{background:var(--alerte);color:#fff}
+  .feuille .annuler{background:transparent;box-shadow:inset 0 0 0 1px var(--trait);color:var(--encre)}
+  .voile{position:fixed;inset:0;z-index:19;background:rgba(20,18,14,.42)}
+
+  .reserve{margin-top:16px;padding:2px 0 2px 14px;border-left:1px solid var(--or)}
+  .reserve p{margin:0;font-size:13.5px;line-height:1.5;color:var(--encre)}
+  .reserve p + p{margin-top:6px;color:var(--gris);font-size:12.5px}
+
+  .defaut{display:block;width:100%;min-height:48px;margin-top:14px;border:0;border-radius:999px;
+          background:transparent;box-shadow:inset 0 0 0 1px var(--trait);
+          font:700 11px/1 ui-sans-serif,sans-serif;letter-spacing:.16em;text-transform:uppercase;
+          color:var(--gris);cursor:pointer}
+
+  .place{display:flex;gap:9px;margin-top:10px}
+  .place > div{flex:1;background:var(--plage);border-radius:12px;padding:12px 13px;font-size:12.5px;color:var(--gris);line-height:1.45}
+  .place b{display:block;margin-bottom:5px;font-size:13.5px;color:var(--encre)}
+
+  .question{max-width:430px;margin:26px auto 0;padding:16px 20px;background:#1c1c1a;
+            color:#f5f3ee;border-radius:14px}
+  .question h3{margin:0 0 8px;font:700 10px/1 ui-sans-serif,sans-serif;letter-spacing:.2em;
+               text-transform:uppercase;color:#d8c48a}
+  .question p{margin:0 0 8px;font-size:14.5px;line-height:1.55}
+  .question p:last-child{margin:0}
+  .question b{color:#fff}
+</style>
+</head>
+<body>
+
+<div class="bandeau">
+  Votre remarque du 26 août : <b>« je ne peux pas supprimer de client, rajoute ça »</b>.
+  C'est exact — aucun écran ne le propose. Mais un client n'est pas une ligne seule :
+  il porte des devis, des factures, des photos. <b>Trois façons de le supprimer, à essayer du doigt</b> —
+  elles ne détruisent pas les mêmes choses.
+</div>
+
+<div class="bloc">
+  <h2>Ce qui existe déjà</h2>
+  <p>
+    L'effacement d'un client est <b>écrit dans Atlas depuis longtemps</b>, et il est éprouvé :
+    il retire les coordonnées, les photos, les notes vocales, et garde ce que la loi impose.
+    <b>Aucun bouton ne l'appelle</b> — il n'a jamais eu d'écran.
+  </p>
+  <p>
+    <b>Et il tombe sur le cas le plus courant.</b> Je l'ai joué ce soir sur un client qui avait
+    simplement reçu un devis :
+  </p>
+</div>
+<div class="preuve">client avec un devis parti → <b>REFUSÉ</b>
+  cause : Un devis envoyé ne peut pas être supprimé</div>
+<div class="bloc">
+  <p>
+    Un devis parti est <b>scellé</b> — c'est voulu, il fait foi. L'effacement essayait de le
+    détruire quand même. Il ne marchait donc que pour un client <b>qui n'a jamais reçu de devis</b>.
+    Cela se répare ; ce qui suit est ce que <b>vous</b> devez trancher avant.
+  </p>
+</div>
+
+<div class="ecran">
+  <p class="chapeau">Ce que « supprimer » veut dire</p>
+  <h1 class="titre">Trois façons</h1>
+
+  <div class="choix" id="regles">
+    <button type="button" data-regle="A" aria-pressed="true">
+      <span class="quoi">A — Le retirer de ma liste
+        <small>Rien n'est détruit. Il quitte vos clients ; ses devis et factures restent trouvables. Se défait.</small>
+      </span>
+    </button>
+    <button type="button" data-regle="B" aria-pressed="false">
+      <span class="quoi">B — Effacer ses coordonnées
+        <small>Téléphone, adresse, e-mail, photos et notes partent. Devis partis et factures restent — la loi. Ne se défait pas.</small>
+      </span>
+    </button>
+    <button type="button" data-regle="C" aria-pressed="false">
+      <span class="quoi">C — Tout supprimer
+        <small>Ne marche que si rien n'est parti chez le client. Sinon l'écran refuse, et dit pourquoi.</small>
+      </span>
+    </button>
+  </div>
+
+  <p class="etiquette">Trois de vos clients</p>
+  <div class="clients" id="clients"></div>
+
+  <button type="button" class="defaut" id="remettre">Tout remettre</button>
+
+  <div class="reserve">
+    <p>Une facture émise se conserve <b>dix ans</b>, un devis accepté <b>cinq</b>. Ce n'est pas un
+      choix d'Atlas : c'est le Code de commerce.</p>
+    <p>C'est pourquoi « tout supprimer » ne peut pas exister pour un client facturé — quelle que
+      soit la règle retenue.</p>
+  </div>
+</div>
+
+<div class="bloc">
+  <h2>Où se pose le geste</h2>
+  <p>Deux places possibles. Rien n'est codé.</p>
+  <div class="place">
+    <div><b>1 — Sur sa fiche</b>Tout en bas, sous les trois colonnes. On le trouve quand on le cherche, jamais par accident.</div>
+    <div><b>2 — Dans la liste</b>En glissant la ligne vers la gauche, comme « Retirer » au planning. Plus rapide, plus facile à toucher sans le vouloir.</div>
+  </div>
+</div>
+
+<div class="question">
+  <h3>Ce que j'attends de vous</h3>
+  <p><b>1.</b> A, B ou C — laquelle ?</p>
+  <p><b>2.</b> Le bouton sur sa fiche, ou en glissant la ligne dans la liste ?</p>
+  <p><b>3.</b> Si c'est A : un client retiré doit-il pouvoir <b>revenir</b>, et depuis où ?</p>
+</div>
+
+<div class="voile" id="voile" hidden></div>
+<div class="feuille" id="feuille" hidden>
+  <h3 id="feuille-titre"></h3>
+  <p id="feuille-quoi"></p>
+  <div class="gestes">
+    <button type="button" class="confirmer" id="confirmer"></button>
+    <button type="button" class="annuler" id="annuler">Annuler</button>
+  </div>
+</div>
+
+<script>
+// ─── Les trois clients, et ce qu'ils portent ────────────────────────────────
+// Les cas sont ceux qui existent vraiment, pas des exemples inventés : un
+// client tout neuf, un client à qui un devis est parti, un client facturé.
+const DEPART = [
+  { id: "neuf",    nom: "M. Moreau",     quoi: "Aucun document",                   devisParti: false, facture: false },
+  { id: "devis",   nom: "Mme Larousse",  quoi: "1 devis parti, sans réponse",      devisParti: true,  facture: false },
+  { id: "facture", nom: "Monsieur Martins", quoi: "1 devis accepté · 1 facture émise", devisParti: true,  facture: true  },
+];
+
+let regle = "A";
+let etat = DEPART.map((c) => ({ ...c, parti: false, verdict: null }));
+let vise = null;
+
+const $clients = document.getElementById("clients");
+const $feuille = document.getElementById("feuille");
+const $voile = document.getElementById("voile");
+
+/** Ce que la règle choisie ferait de ce client — la seule règle du fichier. */
+function verdictDe(c) {
+  if (regle === "A") {
+    return {
+      possible: true,
+      part: ["Il quitte votre liste de clients"],
+      reste: ["Ses devis", "Ses factures", "Ses photos et ses notes"],
+      note: "Rien n'est détruit. On peut le faire revenir.",
+    };
+  }
+  if (regle === "B") {
+    const reste = [];
+    if (c.devisParti) reste.push("Le devis parti, et son nom dessus");
+    if (c.facture) reste.push("La facture émise — dix ans");
+    return {
+      possible: true,
+      part: ["Téléphone, adresse, e-mail", "Les photos et les notes vocales", "Les chantiers sans papier"],
+      reste: reste.length ? reste : ["Rien"],
+      note: reste.length
+        ? "Ce qui reste est ce que la loi impose de garder."
+        : "Ce client ne portait rien : tout part.",
+    };
+  }
+  if (c.facture) {
+    return { possible: false, pourquoi: "Une facture émise se conserve dix ans. Ce client ne peut pas être supprimé." };
+  }
+  if (c.devisParti) {
+    return { possible: false, pourquoi: "Un devis parti est scellé : il fait foi tant qu'il n'a pas été refusé." };
+  }
+  return { possible: true, part: ["Tout"], reste: ["Rien"], note: "Ce client n'a rien reçu : il peut disparaître." };
+}
+
+function dessiner() {
+  $clients.innerHTML = "";
+  for (const c of etat) {
+    const v = verdictDe(c);
+    const carte = document.createElement("div");
+    carte.className = "client";
+    carte.dataset.parti = c.parti ? "1" : "0";
+
+    const nom = document.createElement("div");
+    nom.className = "nom";
+    nom.textContent = c.nom;
+    carte.appendChild(nom);
+
+    const quoi = document.createElement("div");
+    quoi.className = "quoi";
+    quoi.textContent = c.parti ? "Supprimé" : c.quoi;
+    carte.appendChild(quoi);
+
+    if (!c.parti) {
+      const gestes = document.createElement("div");
+      gestes.className = "gestes";
+      const b = document.createElement("button");
+      b.type = "button";
+      b.className = "rouge";
+      b.textContent = "Supprimer";
+      b.addEventListener("click", () => ouvrir(c));
+      gestes.appendChild(b);
+      carte.appendChild(gestes);
+    }
+
+    // **Le verdict se montre AVANT le geste, pas après.** C'est tout l'objet de
+    // cette planche : savoir ce qu'on détruit se décide avant d'appuyer.
+    const bloc = document.createElement("div");
+    bloc.className = "verdict";
+    if (!v.possible) {
+      bloc.innerHTML = '<h4>Refusé</h4><p class="refus"></p>';
+      bloc.querySelector("p").textContent = v.pourquoi;
+    } else {
+      bloc.innerHTML = "<h4>Ce qui part</h4><ul></ul><h4 style='margin-top:9px'>Ce qui reste</h4><ul></ul><p style='margin:7px 0 0;color:#8a8578;font-size:12.5px'></p>";
+      const [uPart, uReste] = bloc.querySelectorAll("ul");
+      for (const l of v.part) { const li = document.createElement("li"); li.textContent = l; uPart.appendChild(li); }
+      for (const l of v.reste) { const li = document.createElement("li"); li.textContent = l; uReste.appendChild(li); }
+      bloc.querySelector("p").textContent = v.note;
+    }
+    carte.appendChild(bloc);
+    $clients.appendChild(carte);
+  }
+}
+
+function ouvrir(c) {
+  const v = verdictDe(c);
+  vise = c;
+  document.getElementById("feuille-titre").textContent = v.possible ? c.nom : "Impossible";
+  document.getElementById("feuille-quoi").textContent = v.possible
+    ? (regle === "A" ? "Il quitte votre liste. Ses papiers restent." : v.part.join(" · ") + ". " + v.note)
+    : v.pourquoi;
+  const $ok = document.getElementById("confirmer");
+  $ok.hidden = !v.possible;
+  $ok.textContent = regle === "A" ? "Le retirer" : "Supprimer";
+  $feuille.hidden = false;
+  $voile.hidden = false;
+}
+
+function fermer() { $feuille.hidden = true; $voile.hidden = true; vise = null; }
+
+document.getElementById("annuler").addEventListener("click", fermer);
+$voile.addEventListener("click", fermer);
+document.getElementById("confirmer").addEventListener("click", () => {
+  if (vise) vise.parti = true;
+  fermer();
+  dessiner();
+});
+
+for (const b of document.querySelectorAll("#regles button")) {
+  b.addEventListener("click", () => {
+    regle = b.dataset.regle;
+    for (const autre of document.querySelectorAll("#regles button")) {
+      autre.setAttribute("aria-pressed", String(autre === b));
+    }
+    etat = etat.map((c) => ({ ...c, parti: false }));
+    dessiner();
+  });
+}
+
+document.getElementById("remettre").addEventListener("click", () => {
+  etat = DEPART.map((c) => ({ ...c, parti: false }));
+  dessiner();
+});
+
+dessiner();
+</script>
+</body>
+</html>
