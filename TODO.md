@@ -9,28 +9,33 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
-## ⚠ EN ATTENTE DE SA RÉPONSE — supprimer un client (26 août 2026)
+## ~~Supprimer un client~~ — **CODÉ le 27 août 2026 : sa proposition C**
 
-Sa remarque : *« je ne peux pas supprimer de client, rajoute ça »*. **Rien n'est
-codé** : ce que « supprimer » veut dire est une décision de produit.
+Sa réponse : *« je pense la C ; lorsqu'un client a des documents il faut mettre
+la phrase de prévention, et une phrase disant avez-vous sauvegardé ses documents
+autre part — et s'il dit oui il peut supprimer quand même »*. Le bouton est en
+bas de sa fiche, la feuille prévient, la question de la sauvegarde verrouille.
+Le détail est dans `CHANGELOG.md`.
 
-**Planche :** `appli/supprimer-un-client.html`. Trois questions au bas.
+**Une question reste ouverte, et elle est mineure :** la planche proposait deux
+places pour le geste — le bas de la fiche, ou en glissant la ligne dans la liste.
+Il n'a pas tranché ; le bas de la fiche a été retenu parce qu'on l'y trouve en le
+cherchant, jamais du pouce en faisant défiler.
 
-**ET UN DÉFAUT RÉEL À RÉPARER, quelle que soit sa réponse.** `effacerClient`
-(`src/server/repositories/donnees-client.ts`) **lève** dès que le client a reçu
-un devis : elle ne conserve que les devis liés à un envoi **accepté**, et tente
-de détruire les autres — or `0001_securite_integrite.sql` scelle tout devis
-**envoyé**. Éprouvé ce soir sur une vraie base :
+## ⚠ `test-poignee-ferme-e2e` conduit une feuille qui a DÉMÉNAGÉ
 
-```
-client avec un devis parti → REFUSÉ
-  cause : Un devis envoyé ne peut pas être supprimé
-```
+**Constaté le 27 août 2026.** Trois cas tombent sur *« waiting for
+getByLabel('Refermer') »* : la suite ouvre `/reglages/equipe`, y cherche
+« + Noter une absence », et attend la feuille.
 
-`test-retention-effacement.ts` ne couvre que le client sans devis et le devis
-accepté : **le milieu manque**, et c'est l'état le plus fréquent. Le correctif
-et son cas se posent en même temps que l'écran — les coder avant sa réponse,
-c'est risquer de conserver ce qu'il veut voir partir.
+**« Noter une absence » n'est plus sur cet écran.** Elle vit dans
+`src/app/reglages/AbsencesEquipe.tsx`, déplacée le jour même par le lot des
+salariés (`e2c8b263`). La suite conduit donc un écran qui a changé sous elle —
+le produit a raison, c'est l'adresse du montage qui a vieilli.
+
+**Une ligne à corriger** : `ouvrirLaFeuille()` doit viser l'écran où la feuille
+vit désormais. Rien d'autre de la suite n'est en cause : ses deux derniers cas
+passent.
 
 ## ~~`test-carte-reponse-mene-au-geste-e2e` rougit en FIN DE MOIS~~ — **corrigé le 27 août 2026**
 
@@ -103,7 +108,14 @@ dans l'ordre alphabétique.
 
 **Et il ne faut PAS les renuméroter** : la clé de suivi est le nom du fichier.
 Renommer l'une la ferait rejouer sur toute base qui l'a déjà appliquée. Le
-numéro suivant est **0068**, à prendre une seule fois.
+numéro suivant est **0070**, à prendre une seule fois.
+
+**La seule renumérotation permise, et elle a servi le 27 août 2026 :** celle
+d'une migration qui n'est **pas encore sur `main`**. Aucune base ne l'a
+appliquée que celle de la session qui l'écrit — il suffit d'y corriger la ligne
+de `_migrations`. C'est ainsi que `0068_fil_assistant.sql` est devenu
+`0069_…` en découvrant `0068_effacement_client_devis_envoye.sql` à la fusion.
+Une fois sur `main`, c'est trop tard : on prend le numéro suivant.
 
 ## ✅ ~~Coder « Quand je reverse la TVA »~~ — fait le 26 août 2026
 

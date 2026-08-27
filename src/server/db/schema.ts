@@ -1245,7 +1245,7 @@ export const propositionsIa = pgTable(
 );
 
 /**
- * Le fil de l'assistant, pour qu'il survive au rechargement (migration 0068).
+ * Le fil de l'assistant, pour qu'il survive au rechargement (migration 0069).
  *
  * **Un fil par UTILISATEUR.** La RLS isole les entreprises ; deux associés de la
  * même entreprise ne partagent pas leurs conversations, et c'est

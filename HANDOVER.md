@@ -11,7 +11,7 @@ sert.
 
 ## L'ASSISTANT A UNE MÉMOIRE DEPUIS LE 27 AOÛT 2026
 
-Son fil vit en base (`messages_assistant`, migration 0068) et se relit à
+Son fil vit en base (`messages_assistant`, migration 0069) et se relit à
 l'ouverture du panneau. Deux choses à savoir avant d'y toucher :
 
 1. **Le fil est isolé PAR PERSONNE dans le dépôt, pas par la RLS.** La politique

@@ -275,7 +275,7 @@ export async function exporterEntreprise(
       // sur SES données. Exporter l'une sans l'autre aurait été une divergence
       // sans raison.
       tx.select().from(photosDiagnosticAPurger).where(eq(photosDiagnosticAPurger.entrepriseId, e)),
-      // **Le fil de l'assistant part avec le reste (migration 0068).** Ce sont
+      // **Le fil de l'assistant part avec le reste (migration 0069).** Ce sont
       // ses questions et ce qu'Atlas lui a répondu : de la donnée personnelle,
       // et de la plus parlante. Une « sauvegarde complète » qui tairait ce qu'il
       // a demandé n'en serait pas une — et c'est le contrôle d'exhaustivité qui
