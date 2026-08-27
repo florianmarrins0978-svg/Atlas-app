@@ -13,6 +13,7 @@ import {
   photos,
   prestations,
   propositionsIa,
+  messagesAssistant,
 } from "../db/schema";
 import type { Ctx } from "./context";
 import { CONSERVATION_LEGALE, echeanceConservation, motifConservation } from "../retention";
@@ -198,6 +199,22 @@ export async function effacerClient(
         ["materiel", () => tx.delete(materiel).where(inArray(materiel.chantierId, chantierIds))],
         ["lignesPrix", () => tx.delete(lignesPrix).where(inArray(lignesPrix.chantierId, chantierIds))],
         ["propositionsIa", () => tx.delete(propositionsIa).where(inArray(propositionsIa.chantierId, chantierIds))],
+        /**
+         * **Ce qu'il a demandé à l'assistant DEPUIS les chantiers de ce
+         * client** (migration 0068). Une conversation dit ce qu'on cherchait
+         * chez quelqu'un ; l'effacement ne peut pas la laisser derrière.
+         *
+         * **Ce que cette ligne n'attrape PAS, et il faut le savoir** : un
+         * message posé depuis un autre écran ne porte aucun chantier, et peut
+         * pourtant nommer ce client. Le fil est plafonné à trente messages
+         * (`fil-assistant.ts`), donc il s'efface de lui-même en une poignée
+         * d'échanges — mais ce n'est pas une garantie, et c'est écrit dans
+         * `TODO.md`.
+         */
+        [
+          "messagesAssistant",
+          () => tx.delete(messagesAssistant).where(inArray(messagesAssistant.chantierId, chantierIds)),
+        ],
       ];
       for (const [nom, executer] of suppressions) {
         const r = (await executer()) as { rowCount?: number };

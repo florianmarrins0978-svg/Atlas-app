@@ -298,6 +298,23 @@ repart de 1 ; un artisan qui migre depuis un autre logiciel voudra continuer à
 demandera, c'est une colonne de départ sur `entreprise_compteurs`, pas un
 nouveau format.
 
+## ⚠ L'effacement d'un client ne balaie pas tout le fil de l'assistant
+
+**Depuis le 27 août 2026**, l'effacement des données d'un client retire les
+messages d'assistant **attachés aux chantiers de ce client**. Un message posé
+depuis un autre écran ne porte aucun chantier et peut pourtant le nommer — « le
+devis de Lucie », tapé depuis l'accueil, reste.
+
+**Ce qui limite déjà la portée** : le fil est plafonné à trente messages
+(`fil-assistant.ts`), donc il se vide de lui-même en une quinzaine d'échanges,
+et « Oublier » le vide d'un geste. Ce n'est pas une garantie, c'est une
+atténuation.
+
+**Ce qu'il faudrait pour bien faire** : que l'effacement cherche aussi dans le
+TEXTE des messages — le nom du client, celui de ses chantiers. C'est faisable
+et ce n'est pas anodin (un nom courant balaierait des échanges sans rapport) :
+à trancher avant de coder, pas en codant.
+
 ## ⚠ Une proposition ne revient pas après un rechargement
 
 **Depuis le 27 août 2026**, le fil de l'assistant survit au rechargement — mais
