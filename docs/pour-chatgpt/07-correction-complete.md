@@ -500,8 +500,25 @@ raison est écrite dans le code lui-même.
 | `npx tsc --noEmit` | **0 erreur** |
 | `npx eslint src scripts` | **0 erreur**, 8 avertissements (tous préexistants) |
 | `npm test` (suites base) | **260/260** |
-| `npm run test:e2e` (navigateur) | voir le récapitulatif joint |
-| `npm run verifier:connexion` | voir le récapitulatif joint |
+| `npm run test:e2e` (navigateur) | **1 suite rouge, prouvée PRÉ-EXISTANTE** (voir ci-dessous) |
+| `npm run verifier:connexion` | ✅ connexion réelle derrière une origine étrangère |
+
+**La suite rouge, et pourquoi elle n'est pas de ce lot.**
+`test-carte-reponse-mene-au-geste-e2e.ts`, premier cas sur quatre : aucune carte
+de réponse n'apparaît à l'accueil pour un devis accepté. Elle échoue **à
+l'identique sur le commit d'avant la première ligne de ce travail** (`ed8f074`),
+ce qui a été vérifié en repassant le dépôt à cet état. Elle est notée dans
+`TODO.md` pour être diagnostiquée à part.
+
+**Un défaut de mon fait, trouvé et corrigé pendant la vérification.** Au premier
+passage complet de la batterie, le serveur de développement **est mort** en
+plein parcours navigateur — six suites emportées. `retenirLecon` ouvrait un
+second `withEntreprise` au milieu du sien : chacun ouvre une transaction, donc
+prend une connexion du pool, et l'imbriquer en prend une seconde pendant qu'on
+tient la première. Sous quelques requêtes simultanées, le pool se vide et
+l'application attend une connexion que personne ne rendra. Corrigé
+(`prestationsDeLaLigneDans`, qui lit dans la transaction courante). Les deux
+suites emportées passent isolément.
 
 Suites ajoutées : `test-natures-prestation.ts`,
 `test-quantite-commerciale.ts`, `test-troncature-modele.ts`,
@@ -590,7 +607,27 @@ pelouse, prévoir deux hommes pendant une journée. »
 | devis | Devis | « 800 ml × … » sur la haie, « à chiffrer » sur la tonte |
 | envoi | Devis | **refusé** tant que la tonte n'a pas de prix |
 
-La procédure exacte est au §16 du récapitulatif joint à ce dossier.
+**Et une commande a été écrite pour ça** — elle joue la dictée de référence
+avec sa vraie clé, montre chaque étape, et **refuse de rendre un vert sans avoir
+appelé quoi que ce soit** :
+
+```bash
+npm run verifier:chaine-dictee
+```
+
+Elle affiche, dans l'ordre : ce qui est prononcé, le JSON du modèle, ce qui
+entre dans les colonnes, les lignes du devis, la clé de mémoire de prix, puis
+huit verdicts. **Elle n'écrit rien en base** et ne joue pas Whisper.
+
+Sa propre logique est éprouvée sans clé, dans les deux sens
+(`scripts/test-chaine-dictee-attendue.ts`) : une réponse juste passe, une
+réponse abîmée est refusée et le motif désigne le coupable. Sans cela, la
+commande n'aurait été vérifiée nulle part — et un mode d'emploi qui plante chez
+lui est un échec déjà payé trois fois dans ce dépôt.
+
+Ce que la commande **ne peut pas** voir, et qui se regarde dans l'application :
+les montants (ils viennent de ses prix de grille), la ligne « à chiffrer » sur
+la tonte, et le refus d'envoyer le devis.
 
 ---
 
