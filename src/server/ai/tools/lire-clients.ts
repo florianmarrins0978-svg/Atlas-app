@@ -19,11 +19,16 @@ export const lireClients: Outil = {
     "Liste les clients de l'entreprise avec leur identifiant, leur téléphone, leur e-mail, leur adresse et le " +
     "canal convenu (SMS ou e-mail). Filtre sur un bout du nom. À utiliser avant de proposer une correction " +
     "de fiche client.",
+  // `nom` est accepté comme `motCle` : les outils voisins emploient l'un ou
+  // l'autre, et un modèle qui se trompe de champ perdait toute la réponse
+  // (sa capture du 26 août 2026).
   schema: z.object({
     motCle: z.string().nullish().describe("Un bout du nom du client. Vide : tous."),
+    nom: z.string().nullish(),
   }),
   async executer({ ctx }, parametres) {
-    const { motCle } = parametres as { motCle?: string | null };
+    const p = parametres as { motCle?: string | null; nom?: string | null };
+    const motCle = p.motCle ?? p.nom;
     const tous = await listerClients(ctx);
     const cherche = (motCle ?? "").trim().toLowerCase();
     const retenus = cherche ? tous.filter((c) => c.nom.toLowerCase().includes(cherche)) : tous;

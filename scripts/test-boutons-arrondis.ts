@@ -144,6 +144,23 @@ const HORS_CHARTE: Array<{
     seulement: /data-atlas="carte-tva"/,
   },
   {
+    /**
+     * **La même chose, en tête de la fiche de chantier** — « Composer ma fiche »,
+     * depuis le 26 août 2026 (`ARCHITECTURE.md` §190).
+     *
+     * Elle était une phrase ; il l'a dit introuvable — *« c'est bien mais juste
+     * une phrase, on la trouve difficilement »* —, puis a choisi la carte, *« mais
+     * fais-la moins large »*. Elle mène quelque part, donc `<Link>` ; ce qu'on
+     * voit est une plage qu'on parcourt, et la charte lui donne 4 px.
+     *
+     * **Bornée à son repère** : tout autre bouton carré de cet écran fait
+     * toujours rougir.
+     */
+    motif: /^src[/\\]app[/\\]paysage[/\\]fiche[/\\]page\.tsx$/,
+    pourquoi: "carte qu'on parcourt, plage à 4 px et non geste en capsule",
+    seulement: /data-atlas="carte-composer-ma-fiche"/,
+  },
+  {
     // Le chevron de retour : 32 × 32, une icône dans un cadre, pas un bouton
     // d'action. La charte réserve la capsule à ce qu'on FAIT ; l'arrondir
     // entièrement en ferait une pastille ronde, ce qui n'a été demandé nulle

@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { jourIso } from "@/lib/jour";
 import { getCurrentCtx } from "@/server/session-ctx";
 import { preparerDevisDepuisDictee, enregistrerPrecisionsEtReprendre } from "@/server/services/devis-depuis-dictee";
 import {
@@ -524,7 +525,9 @@ export async function appliquerPropositionsAction(
             nomClient: fiche.nom,
             civilite: fiche.civilite,
             adresseChantier: adresse ?? null,
-            jour: new Date().toISOString().slice(0, 10),
+            // Le jour de l'atelier, pas celui de Greenwich (§182) : après
+            // minuit, le chantier prenait le nom de la veille.
+            jour: jourIso(new Date()),
           });
           await creerChantier(ctx, { nom, clientId: fiche.id, ...(adresse ? { adresseChantier: adresse } : {}) });
           resultats.push({ ...base, statut: "appliquee" });

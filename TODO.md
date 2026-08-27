@@ -9,6 +9,102 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
+## ⚠ EN ATTENTE DE SA RÉPONSE — supprimer un client (26 août 2026)
+
+Sa remarque : *« je ne peux pas supprimer de client, rajoute ça »*. **Rien n'est
+codé** : ce que « supprimer » veut dire est une décision de produit.
+
+**Planche :** `appli/supprimer-un-client.html`. Trois questions au bas.
+
+**ET UN DÉFAUT RÉEL À RÉPARER, quelle que soit sa réponse.** `effacerClient`
+(`src/server/repositories/donnees-client.ts`) **lève** dès que le client a reçu
+un devis : elle ne conserve que les devis liés à un envoi **accepté**, et tente
+de détruire les autres — or `0001_securite_integrite.sql` scelle tout devis
+**envoyé**. Éprouvé ce soir sur une vraie base :
+
+```
+client avec un devis parti → REFUSÉ
+  cause : Un devis envoyé ne peut pas être supprimé
+```
+
+`test-retention-effacement.ts` ne couvre que le client sans devis et le devis
+accepté : **le milieu manque**, et c'est l'état le plus fréquent. Le correctif
+et son cas se posent en même temps que l'écran — les coder avant sa réponse,
+c'est risquer de conserver ce qu'il veut voir partir.
+
+## ~~`test-carte-reponse-mene-au-geste-e2e` rougit en FIN DE MOIS~~ — **corrigé le 27 août 2026**
+
+**Deux sessions ont trouvé la même chose la même nuit, et le diagnostic ci-dessous
+était juste de bout en bout.** La correction est faite : le montage lit les dates
+proposées en base et les écarte, en tournant la page du mois s'il le faut
+(`unJourAutreQueLesProposees`). Il y avait un piège de plus, qui n'était pas
+visible d'ici : `dates_proposees` est un `date[]`, le pilote rend des objets
+`Date`, et la comparaison avec une chaîne « AAAA-MM-JJ » est **toujours fausse**
+— l'exclusion n'excluait donc rien, sans erreur ni avertissement. Détail plus
+bas, section « La fin de mois faisait rougir deux suites sur du code sain ».
+
+Le diagnostic d'origine, conservé parce qu'il est exact :
+
+
+**Constaté le 27 août 2026, vers 2 h.** Le cas *« accepté : la carte mène au
+devis VALIDÉ »* tombe : *« aucune carte de réponse pour le chantier … à
+l'accueil »*. Le reste de la suite passe.
+
+**Ce n'est pas la carte, c'est la DATE choisie.** Le montage fait accepter le
+client sur « une autre date », en touchant **le dernier jour non désactivé** du
+calendrier. Or la carte n'apparaît, délibérément, que si le client propose une
+date **différente** de celles du patron — la suite l'écrit elle-même. En fin de
+mois, il ne reste que quelques jours touchables, et ce « dernier jour » finit
+par être **l'une des dates déjà proposées** : l'acceptation réussit, et aucune
+carte n'est due.
+
+**C'est la troisième suite de la soirée à tomber sur la fin du mois**, après
+`test-envoi-client-e2e` (jours proposables) et `test-liste-clients` (UTC contre
+heure de Paris). Le montage doit choisir un jour en **excluant** les dates
+proposées, et tourner la page du calendrier si le mois n'en offre plus —
+`joursRetenables` dans `test-envoi-client-e2e.ts` fait déjà la seconde moitié.
+
+## ⚠ `test-nouveau-compte-e2e` rougit sur l'arbre, et ce n'est pas ce lot
+
+**Constaté le 26 août 2026 au soir.** Sept cas tombent, à commencer par
+*« l'écran de création s'ouvre à son ADRESSE »* : `waitForURL` n'atteint jamais
+`/reglages/equipe/nouveau`. **Identique sans le lot en cours**, éprouvé en
+remisant les modifications — ce n'est donc pas une régression. La route existe
+(`src/app/reglages/equipe/nouveau/`), posée le jour même par une autre session
+(`787ecebd`).
+
+## ⚠ Trois suites navigateur rougissent SOUS LA BATTERIE, vertes jouées seules
+
+**Relevé le 26 août 2026, sur trois batteries d'affilée du même arbre.** À
+chaque tour, une ou deux suites tombent — et **jamais les mêmes** :
+`test-reduction-devis-e2e` et `test-tva-au-paiement-e2e` au premier tour,
+`test-lecons-prix-e2e` au deuxième.
+
+**Les trois sont VERTES rejouées seules**, immédiatement après, et aucune n'est
+touchée par le lot en cours. Rien n'a été joué en parallèle de la batterie — la
+règle du 26 août a été respectée.
+
+**C'est le piège déjà écrit dans `HANDOVER.md` :** un délai fixe à la place d'un
+signal. Sous la batterie entière, la machine est chargée, l'action serveur met
+plus longtemps que le délai, et la suite lit l'écran d'avant. `test-lecons-prix`
+vient pourtant d'être porté de 30 à 60 secondes le même jour — **allonger ne
+suffit plus**, et c'est ce que ce constat ajoute.
+
+**Ce qu'il faudrait, pour qui reprend :** remplacer l'attente par un témoin — la
+valeur relue en base, la classe que le composant pose — plutôt que d'allonger
+les délais un à un. Le seuil suivant sera atteint par la machine suivante.
+
+## Deux migrations portent le numéro 0067
+
+`0067_propositions_sans_chantier.sql` et `0067_salaries_a_part.sql`, posées le
+même jour par deux sessions. **Rien ne casse** : `run-migrations.ts` trie les
+noms de fichiers et suit chacun par SON nom, si bien que les deux s'appliquent,
+dans l'ordre alphabétique.
+
+**Et il ne faut PAS les renuméroter** : la clé de suivi est le nom du fichier.
+Renommer l'une la ferait rejouer sur toute base qui l'a déjà appliquée. Le
+numéro suivant est **0068**, à prendre une seule fois.
+
 ## ✅ ~~Coder « Quand je reverse la TVA »~~ — fait le 26 août 2026
 
 ~~Sa capture : « quand le client le paye / quand je met la facture, c'est pas
@@ -177,6 +273,18 @@ par un autre.
 
 ---
 
+## ✅ ~~« Terminés » : les traits, et la carte de TVA~~ — fait le 26 août 2026
+
+~~Ses deux demandes du 26 août, planche `appli/termines-sans-traits.html`, sa
+réponse « le 3 ».~~ `ARCHITECTURE.md` §198.
+
+**Ce qui reste à surveiller, et qui n'est pas une tâche :** la démarcation sous
+la phrase de compte ne tient plus que sur 22 px, depuis que son trait est parti.
+`test-tva-en-tete-e2e.ts` les mesure — une rangée qui reviendrait à 19 px la
+ferait disparaître, et le contrôle est la seule chose qui le dira.
+
+---
+
 ## ✅ ~~Le format des numéros de devis et de factures~~ — fait le 26 août 2026
 
 ~~Sa demande du 26 août : « dans la catégorie facture il faut rajouter le format
@@ -207,6 +315,66 @@ ouvert, et qu'il faudra sans doute lui demander :
 - **La formulation d'un vrai modèle n'a pas été vue ici** (aucune clé) : la
   chaîne entière est éprouvée par le fournisseur `dev`. À regarder sur son
   espace, en lui demandant trois ou quatre gestes.
+- **Le registre nomme encore la même idée de plusieurs façons.** « Le nom qu'on
+  cherche » s'appelle `nom` dans un outil, `motCle` dans un autre, `question`
+  dans un troisième — et c'est ce qui a produit « Il comprend rien » le 26 août.
+  Les alias acceptés (27 août) sont un pansement : ils rattrapent le modèle,
+  ils ne suppriment pas le piège. **Le vrai remède est d'unifier les noms de
+  champs sur tous les outils** ; à faire d'un seul geste, en relisant chaque
+  `schema`, plutôt qu'outil par outil.
+
+---
+
+## ~~La fin de mois faisait rougir deux suites sur du code sain~~ — **désamorcé le 27 août 2026**
+
+Deux bombes de la même famille, à deux jours d'écart, et la seconde a coûté
+trois rejouages. **Le calendrier de démonstration se vide en fin de mois** : ce
+qui tenait le 20 ne tient plus le 27, et la suite accuse alors le produit.
+
+| Suite | Ce qu'elle prenait | Ce qu'elle prend depuis |
+|---|---|---|
+| `test-envoi-client-e2e` (26 août) | les jours libres du seul mois affiché | `joursRetenables()`, qui tourne la page du mois |
+| `test-carte-reponse-mene-au-geste` (27 août) | le DERNIER jour cliquable | `unJourAutreQueLesProposees()`, qui écarte les dates offertes |
+
+**Le second cas est le plus instructif, parce qu'il accusait un produit
+parfaitement juste.** Fin août il ne restait qu'un jour libre — et c'était celui
+que l'artisan proposait déjà. Le client « contre-proposait » donc la date
+offerte, ce qui ne fait **volontairement** aucune carte (`notificationsPatron` :
+une acceptation sans surprise ne se signale pas, sans quoi elle noierait les
+deux nouvelles qui appellent un geste). Vert le 26, rouge le 27, code identique.
+
+**Et un piège de pilote qui reviendra :** `dates_proposees` est un `date[]`. Le
+pilote PostgreSQL rend alors des objets `Date` — la comparaison avec une chaîne
+« AAAA-MM-JJ » est **toujours fausse**, sans erreur ni avertissement. Le
+contrôle écartait donc les dates proposées sans en écarter aucune, et rougissait
+exactement comme avant sa correction. On lit désormais `dates_proposees::text[]`,
+et le contrôle **refuse de conclure** sur une liste vide plutôt que de rendre un
+vert qui ne mesure rien.
+
+**Et une TROISIÈME suite, le même jour, pour une raison voisine mais distincte :**
+`test-reste-equipes-e2e.ts` lisait les chantiers et les absences en base pour se
+donner deux jours libres. La base disait le 31 août libre — aucun chantier,
+aucune absence —, **et l'écran a refusé de le retenir** : c'est
+`verifierJourProposeAction` qui tranche, pas cette requête, qui n'en est qu'une
+approximation. Le contrôle annonçait « 1 date retenue au lieu de deux », sans
+dire laquelle manquait ni pourquoi, et envoyait chercher un défaut dans un écran
+qui obéissait exactement à son serveur.
+
+**La règle du 25 août se prolonge donc d'un cran** : *un contrôle ne suppose pas
+l'état commun, il le lit* — et il ne suppose pas davantage **ce que le serveur
+acceptera**, il le lui demande. La suite essaie désormais huit candidats et garde
+celui que l'écran retient vraiment ; si aucun ne tient, elle rougit **en citant
+la raison affichée** (« Ce jour est trop proche… ») plutôt qu'un nombre. Vérifié
+en la confrontant à un jour que le serveur refuse.
+
+**Quatrième correction du même jour, de la même famille** : `joursRetenables()`
+calculait son plancher J+3 avec `toISOString()`. Entre minuit et 2 h du matin en
+France, c'est la veille (`ARCHITECTURE.md` §182) — la suite retenait alors un
+jour que le serveur refuse. Elle emploie `jourIso`, comme tout le reste du dépôt.
+
+**Ce qui reste ouvert** : comprendre pourquoi le jeu de démonstration ne laisse
+plus qu'**un** jour libre en fin de mois. Les suites ne s'y cassent plus les
+dents, mais la cause, elle, n'a pas bougé — voir la section ci-dessous.
 
 ---
 
@@ -246,9 +414,29 @@ avant toute écriture »* — rouge en batterie, **vert rejoué seul**. Il lit l
 juste après un appui, avant que l'action serveur n'ait répondu : sous cent
 suites, la réponse arrive avant la lecture et le cas s'inverse.
 
+**Et le 27 août 2026, ce même contrôle a rougi sur ses HUIT cas d'un coup —
+toujours vert rejoué seul (11/11).** La forme du rouge a changé, et elle
+compte : la base portait `630.00` là où la suite attendait `870.00`, et l'écran
+affichait une remise de 5 % au lieu de celle qu'elle venait de poser. **Ce n'est
+plus de l'impatience, c'est une collision** : un autre passage a touché le même
+devis pendant qu'elle travaillait. Le remède connu — relire en boucle jusqu'à la
+valeur — ne peut rien contre ça ; il faudra que cette suite travaille sur un
+devis QU'ELLE CRÉE, comme `test-reste-equipes` a fini par le faire pour ses
+jours. **Rien du produit n'est en cause** : la suite est verte seule, et les
+onze cas passent.
+
 *(Une autre session a relevé le même soir le même phénomène sur trois autres
 suites — voir « Trois suites navigateur rougissent SOUS LA BATTERIE » en tête de
 ce fichier. C'est un seul sujet, pas deux.)*
+
+**Et un SIXIÈME, le 27 août 2026 :** `test-informations-e2e.ts`, sur
+`'' == '2 hommes'` — l'équipe saisie relue vide après rechargement. **Vert
+rejoué seul.** C'était un `waitForTimeout(700)` avant le rechargement : sept
+cents millisecondes suffisent seule, pas sous cent seize suites. **Corrigé** —
+il relit jusqu'à trois fois en laissant à l'enregistrement le temps qu'il lui
+faut, exactement comme le cas de la prestation trente lignes plus bas, tombé
+dans le même trou le 13 août. Le contrôle reste entier : confronté à une valeur
+jamais enregistrée, il rougit toujours (vérifié).
 
 **Et un CINQUIÈME, le 26 août 2026 au soir :**
 `test-planning-vers-facture-e2e.ts`, cas *« clôturé AVANT sa date : il quitte le
@@ -6940,12 +7128,22 @@ L'état « à relancer » existe, s'affiche, et le lien reste proposé pour un r
 manuel. **Sans objet en l'état**, pour la même raison qu'au point 2 : la relance
 part de la messagerie du patron, comme l'envoi.
 
-### 4. L'assistant répond en JSON brut
+### 4. ~~L'assistant répond en JSON brut~~ — **réglé le 27 août 2026**
 
-Interrogé « Comment a été envoyé le devis ? », il a répondu :
+Interrogé « Comment a été envoyé le devis ? », il répondait :
 `D'après LireDevis, voici ce que j'ai trouvé : {"existe":true,"numeroCommercial":"2026-0003",…}`.
-Le patron n'a pas à lire du JSON. L'assistant doit répondre en français, ou dire
-qu'il ne sait pas — et jamais recracher la sortie d'un outil telle quelle.
+
+Une seule fonction (`direEnFrancais`, dans `src/server/ai/providers/llm/dev.ts`)
+met désormais tout retour d'outil en français avant de l'afficher : la phrase de
+l'outil si elle existe, son refus s'il refuse, sinon champ par champ. **Aucune
+accolade ne peut plus atteindre l'écran.**
+
+**Et un « non » se dit.** Le même trajet escamotait la réponse : `{existe:false}`
+— le chantier n'a pas encore de devis — sortait « Rien à signaler du côté de
+LireDevis », alors que c'est exactement ce qu'il demandait. Trois refus courants
+ont leur phrase.
+
+Trouvé à la capture, pas par un test. `ARCHITECTURE.md` §199.
 
 ### 5. ~~Les équipes nommées~~ — fait le 10 août 2026
 

@@ -20,12 +20,17 @@ export const rechercherLignesDevis: Outil = {
     "Cherche une ligne dans les devis de TOUS les clients de l'entreprise, pour pouvoir la reprendre sur " +
     "le devis en cours. Filtre par un mot du libellé et/ou par le nom du client. Rend l'identifiant de chaque " +
     "ligne — c'est cet identifiant qu'il faut donner à une proposition « copier_ligne_devis ».",
+  // `nom` accepté comme `motCle`, pour la même raison qu'ailleurs : trois noms
+  // pour une même idée dans le registre, c'est une invitation à se tromper.
   schema: z.object({
     motCle: z.string().nullish().describe("Un mot du libellé cherché : « élagage », « haie », « broyage »."),
     client: z.string().nullish().describe("Tout ou partie du nom du client sur le devis d'origine."),
+    nom: z.string().nullish(),
   }),
   async executer({ ctx }, parametres) {
-    const { motCle, client } = parametres as { motCle?: string | null; client?: string | null };
+    const p = parametres as { motCle?: string | null; client?: string | null; nom?: string | null };
+    const motCle = p.motCle ?? p.nom;
+    const client = p.client;
     if (!motCle?.trim() && !client?.trim()) {
       return {
         trouve: false,
