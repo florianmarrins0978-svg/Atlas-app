@@ -1,0 +1,325 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas — Lot 3 — clôture définitive : le lot est sur `main`</title>
+<style>
+  :root{
+    --ground:#f5f3ee; --surface:#faf9f5; --raised:#ece9e1;
+    --ink:#1c1c1a; --ink-soft:#4a4a44; --muted:#8a8578;
+    --accent:#2f3b2f; --alert:#b5562a; --line:rgba(28,28,26,0.13);
+    --serif:Georgia,'Times New Roman',serif;
+    --sans:system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --ground:#161815; --surface:#1d201c; --raised:#252924;
+      --ink:#eae7df; --ink-soft:#c2bdb1; --muted:#948f83;
+      --accent:#9fbd82; --alert:#e0885a; --line:rgba(234,231,223,0.17);
+    }
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--sans);
+    line-height:1.65;}
+  main{max-width:44rem;margin:0 auto;padding:2.5rem 1.2rem 5rem;}
+  h1,h2,h3,h4{font-family:var(--serif);font-weight:600;line-height:1.2;
+    text-wrap:balance;margin:2rem 0 0.6rem;scroll-margin-top:1rem;}
+  h1{font-size:2rem;margin-top:0;}
+  h2{font-size:1.5rem;padding-top:1.2rem;border-top:1px solid var(--line);}
+  h3{font-size:1.12rem;}
+  h4{font-size:1rem;}
+  p{margin:0 0 0.9rem;}
+  a{color:var(--accent);text-underline-offset:3px;}
+  a:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:3px;}
+  ul,ol{margin:0 0 1rem;padding-left:1.3rem;}
+  li{margin-bottom:0.4rem;}
+  li::marker{color:var(--muted);}
+  /* Le sommaire : des cibles larges, confortables au doigt sur téléphone. */
+  ol li a{display:inline-block;padding:0.15rem 0;}
+  blockquote{margin:1rem 0;padding:0.85rem 1.05rem;background:var(--raised);
+    border-left:3px solid var(--accent);border-radius:0 10px 10px 0;color:var(--ink-soft);}
+  code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:0.87em;
+    background:var(--raised);padding:0.1rem 0.35rem;border-radius:5px;}
+  hr{border:0;border-top:1px solid var(--line);margin:2rem 0;}
+  .tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px;
+    background:var(--surface);margin:0 0 1.2rem;}
+  table{border-collapse:collapse;width:100%;font-size:0.92rem;min-width:22rem;}
+  th,td{text-align:left;padding:0.55rem 0.8rem;border-bottom:1px solid var(--line);
+    vertical-align:top;}
+  th{font-size:0.72rem;letter-spacing:0.08em;text-transform:uppercase;
+    color:var(--muted);white-space:nowrap;}
+  tr:last-child td{border-bottom:none;}
+  .retour{display:inline-block;font-size:0.76rem;color:var(--muted);
+    text-decoration:none;margin:-0.3rem 0 1rem;}
+  .retour:hover{color:var(--accent);text-decoration:underline;}
+</style>
+</head>
+<body>
+<main>
+<h1 id="lot-3--clôture-définitive--le-lot-est-sur-main">Lot 3 — clôture définitive : le lot est sur <code>main</code></h1>
+<p><em>27 août 2026. Document de retour, à transmettre tel quel.</em></p>
+<hr>
+<h2 id="en-une-ligne">En une ligne</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><strong>Le lot 3 est sur <code>main</code>.</strong> <code>main</code> est passé de <code>96e1774</code> à <strong><code>2ae6f7c</code></strong> par une avance rapide : aucun commit arrivé entre-temps n'a été écrasé, aucun <em>force push</em>, aucune assertion abaissée, aucun test désactivé.</p>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th></th>
+</tr></thead><tbody>
+<tr>
+<td><strong>Nouveau HEAD de <code>main</code></strong></td>
+<td><strong><code>2ae6f7c</code></strong></td>
+</tr>
+<tr>
+<td><strong>Lot 3 poussé</strong></td>
+<td><strong>OUI</strong></td>
+</tr>
+<tr>
+<td><strong>Batterie finale</strong></td>
+<td><strong>259/259 base · 115/115 navigateur · connexion derrière un proxy verte</strong></td>
+</tr>
+<tr>
+<td><strong>Migrations appliquées</strong></td>
+<td><code>0067_isolation_contexte_vide</code> (lot 3) · <code>0068_effacement_client_devis_envoye</code> (venue de <code>main</code>)</td>
+</tr>
+<tr>
+<td><strong>Propriétés de sécurité critiques</strong></td>
+<td><strong>OK</strong> — relues sur <code>main</code> lui-même</td>
+</tr>
+</tbody></table></div>
+<hr>
+<h2 id="1-ce-que-le-lot-3-met-sur-main">1. Ce que le lot 3 met sur <code>main</code></h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<h3 id="les-constats-f1--f13--sept-fermés-quatre-refusés-deux-contrôlés">Les constats F1 → F13 : sept fermés, quatre refusés, deux contrôlés</h3>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th>Verdict</th>
+<th>Ce qui a été fait</th>
+</tr></thead><tbody>
+<tr>
+<td><strong>F1</strong></td>
+<td>fermé</td>
+<td><code>derniereIssueMiseAJour</code> réservée au propriétaire</td>
+</tr>
+<tr>
+<td><strong>F2</strong></td>
+<td>fermé</td>
+<td><code>/api/session-perimee</code> refuse une provenance <code>cross-site</code></td>
+</tr>
+<tr>
+<td><strong>F5</strong></td>
+<td>fermé</td>
+<td>migration <code>0067</code> : un contexte d'entreprise VIDE n'est plus traité comme une entreprise</td>
+</tr>
+<tr>
+<td><strong>F8</strong></td>
+<td>fermé</td>
+<td>l'écran <code>/reglages/agenda</code> était ouvert à un <strong>commercial</strong> — garde propriétaire posée</td>
+</tr>
+<tr>
+<td><strong>F9</strong></td>
+<td>fermé</td>
+<td>limite par source pour la réponse au devis, <strong>conditionnée</strong> à une source établie</td>
+</tr>
+<tr>
+<td><strong>F12</strong></td>
+<td>fermé</td>
+<td><code>/design</code> (les maquettes) renvoie <code>404</code> en production</td>
+</tr>
+<tr>
+<td><strong>F13</strong></td>
+<td>fermé</td>
+<td><code>robots.txt</code> servi, et sorti du filtre du middleware</td>
+</tr>
+<tr>
+<td>F3</td>
+<td>contrôlé</td>
+<td>déjà couvert ; un contrôle ajouté pour qu'il le reste</td>
+</tr>
+<tr>
+<td>F4, F6, F7, F10, F11</td>
+<td><strong>refusés</strong></td>
+<td>voir §3</td>
+</tr>
+</tbody></table></div>
+<h3 id="m9--le-condensat-du-mot-de-passe-hors-de-portée-du-rôle-applicatif">M9 — le condensat du mot de passe hors de portée du rôle applicatif</h3>
+<p><code>atlas_app</code> ne peut plus lire ni écrire <code>users.password_hash</code>, ni directement, ni par sous-requête, agrégat ou tri. La connexion passe par des fonctions <code>SECURITY DEFINER</code> verrouillées qui ne rendent <strong>jamais</strong> le condensat. <strong>18 contrôles</strong>, dont ceux qui prouvent que rien n'a été cassé au passage : Face ID marche toujours, la coupure des sessions aussi, le changement de mot de passe aussi.</p>
+<h3 id="m11--ré-authentification-récente-liée-à-la-session">M11 — ré-authentification récente, liée à LA session</h3>
+<p>Quatre gestes exigent une identité prouvée dans les dix minutes, <strong>depuis cette session-là</strong> :</p>
+<div class="tablewrap"><table><thead><tr>
+<th>Geste</th>
+<th>Ce qui le prouve</th>
+</tr></thead><tbody>
+<tr>
+<td><strong>1. Coordonnées bancaires / IBAN</strong></td>
+<td><code>test-gestes-sensibles-db</code> — 8 cas, action serveur réelle sous <code>atlas_app</code></td>
+</tr>
+<tr>
+<td><strong>2. Ajout d'une clé Face ID</strong></td>
+<td><code>test-face-id-e2e</code> — « UNE SESSION SEULE NE SUFFIT PLUS », avec <code>count(*) = 0</code> vérifié en base</td>
+</tr>
+<tr>
+<td><strong>3. Retrait d'une clé Face ID</strong></td>
+<td><code>test-gestes-sensibles-db</code> — dont « la clé est toujours là » après le refus</td>
+</tr>
+<tr>
+<td><strong>4. Export complet des données</strong></td>
+<td><code>test-mes-donnees-e2e</code> — export de 684 496 octets obtenu <strong>après</strong> la feuille de preuve</td>
+</tr>
+</tbody></table></div>
+<p><strong>Ce que M11 a trouvé au passage, et qui n'était dans aucun audit :</strong> la coupure globale des sessions <strong>se contournait</strong>. <code>@auth/core</code> remet <code>iat</code> à l'instant présent à chaque réémission du jeton, et <code>GET /api/auth/session</code> est publique et ne consulte jamais la coupure. Une session que le patron venait de fermer pouvait donc se redonner un jeton neuf et rentrer. Le jeton porte désormais <code>connexionLe</code>, posé une seule fois à la connexion et recopié aux réémissions — c'est lui que la coupure compare. La sonde qui le prouve a été <strong>vue rouge sur le code d'avant</strong>, sur ce parcours exact.</p>
+<h3 id="le-lot-audio--un-format-se-lit-dans-les-octets-jamais-dans-len-tête-du-navigateur">Le lot Audio — un format se lit dans les octets, jamais dans l'en-tête du navigateur</h3>
+<p><code>fichier.type</code> vient du téléphone : il s'annonce, il ne se prouve pas. Atlas lit désormais la <strong>signature réelle</strong> des octets (WebM, MP4/M4A, Ogg, WAV, FLAC, MP3, AAC), choisit lui-même le type MIME et l'extension, et <strong>refuse par défaut</strong> ce qu'il ne reconnaît pas. Les quatre chemins d'entrée passent tous par <code>preparerAudioEntrant</code> ; aucun ne le contourne. <code>verifierTypeAudio</code> et <code>extensionPour(mimeType)</code> sont mortes.</p>
+<p><strong>Éprouvé pour de vrai sur iPhone</strong> avant fusion, à sa demande : réussi.</p>
+<hr>
+<h2 id="2-ce-qui-a-été-corrigé-de-mes-propres-verdicts">2. Ce qui a été corrigé de MES propres verdicts</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p>C'est la partie qui rend le reste croyable.</p>
+<ol>
+<li><strong>« Les trois gestes de M11 »</strong> — écrit dans des rapports précédents. Il y en a <strong>quatre</strong>. Mon « trois » comptait des FICHIERS de garde, pas des gestes. Sa correction était juste ; les quatre sont désormais prouvés séparément.</li>
+<li><strong>F9 était une arme retournée.</strong> Mon propre correctif posait un seuil par source qui aurait bloqué <strong>tous les clients de tous les artisans à la fois</strong> dès que la source n'était pas établie. Revenu dessus avant livraison : le seuil ne s'applique plus que si la source est réellement connue.</li>
+<li><strong>Trois contrôles ont été VERTS sur le défaut qu'ils portaient dans leur nom.</strong> Celui de F8 passait sur une ligne d'<code>import</code>, puis sur un commentaire qui citait la garde, puis parce qu'une déstructuration contenait le mot <code>params</code>. Un contrôle trop tolérant ne prouve rien.</li>
+<li><strong>La batterie elle-même mentait</strong> : elle comptait deux modules communs comme des suites réussies — 112 annoncées, 110 réellement mesurées.</li>
+<li><strong>J'ai accusé le mauvais coupable pour la panne mémoire</strong> (voir §4) : le cache recompilé à froid. Faux — la batterie suivante, cache chaud, a atteint le même chiffre.</li>
+</ol>
+<hr>
+<h2 id="3-ce-qui-a-été-refusé-et-ce-que-ça-aurait-coûté">3. Ce qui a été REFUSÉ, et ce que ça aurait coûté</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th>Constat</th>
+<th>Pourquoi refusé</th>
+</tr></thead><tbody>
+<tr>
+<td><strong>F4</strong></td>
+<td>déjà couvert par la RLS ; le « correctif » proposé aurait ajouté une seconde règle à côté de la première — deux implémentations qui divergent (<code>CLAUDE.md</code> §3)</td>
+</tr>
+<tr>
+<td><strong>F6</strong></td>
+<td>renommer une migration existante. <strong><code>run-migrations.ts</code> identifie une migration par son NOM DE FICHIER</strong> : la renommer la ferait rejouer partout, y compris en production</td>
+</tr>
+<tr>
+<td><strong>F7</strong></td>
+<td>reposait sur un mot de passe de démonstration attendu par 136 fichiers — aurait cassé la batterie entière</td>
+</tr>
+<tr>
+<td><strong>F10</strong></td>
+<td>resserrer les types d'image sans toucher aux attributs <code>accept</code> aurait fait <strong>refuser les photos d'iPhone sur un chantier</strong></td>
+</tr>
+<tr>
+<td><strong>F11</strong></td>
+<td>diagnostic faux : le danger d'une bombe zip ne tenait pas au nombre d'entrées mais à une seule</td>
+</tr>
+</tbody></table></div>
+<p>Et <strong>deux vrais trous qui n'étaient dans aucun brief</strong> ont été trouvés et fermés : une traversée de répertoire dans le rangement local, et l'absence de plafond sur la route des dictées.</p>
+<hr>
+<h2 id="4-la-panne-qui-a-coûté-la-matinée--et-qui-nest-pas-dans-le-code">4. La panne qui a coûté la matinée — et qui n'est PAS dans le code</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p>La batterie s'est fait tuer <strong>deux fois</strong> par le manque de mémoire avant d'être comprise. Mesuré plutôt que supposé, en relevant la mémoire du serveur toutes les cinq secondes, en face de la suite en cours :</p>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th></th>
+</tr></thead><tbody>
+<tr>
+<td>les 13 premières suites</td>
+<td>serveur <strong>plat à 2,0–2,4 Go</strong>, aucune croissance</td>
+</tr>
+<tr>
+<td><code>test-coupure-sessions-e2e</code></td>
+<td>2,8 → <strong>5,9 Go</strong> en quelques secondes</td>
+</tr>
+<tr>
+<td>ensuite, <strong>sans plus une seule requête</strong></td>
+<td>montée continue jusqu'à <strong>13,5 Go</strong>, puis le tueur de mémoire abat le serveur</td>
+</tr>
+</tbody></table></div>
+<p>Les fils qui brûlent le processeur pendant cette montée sont les <code>tokio-rt</code> : c'est <strong>Turbopack</strong>, le compilateur de Next. Le fil JavaScript d'Atlas est au repos, et le journal du serveur ne montre plus aucune requête — <strong>ce n'est pas du code d'Atlas qui alloue.</strong></p>
+<p><strong>La suite, elle, PASSE</strong> : jouée seule, 1/1. Ce qui meurt, c'est la suite d'après, emportée avec le serveur — d'où un rouge qui accusait <code>test-cron-purge</code> alors qu'elle n'avait <strong>jamais été lancée</strong>.</p>
+<p><strong>Comment la mesure a été obtenue malgré ça :</strong> les 115 suites ont été jouées par tranches, un serveur neuf par tranche, et les suites jamais lancées rejouées seules. <strong>Aucune assertion touchée, aucun délai ajouté, aucune suite écartée.</strong> Une suite « jamais jouée » n'a jamais été comptée comme réussie : elle a été JOUÉE.</p>
+<p><strong>Et le phénomène est INTERMITTENT</strong> : le tour suivant, les mêmes 115 suites dans les mêmes tranches sont passées <strong>sans une seule mort de serveur</strong>. Une cause qui va et vient n'est pas une cause dans le produit — mais elle n'est pas comprise pour autant, et c'est écrit comme <strong>non diagnostiqué</strong>, pas comme réglé.</p>
+<hr>
+<h2 id="5-la-fusion--trois-tours-main-a-bougé-deux-fois">5. La fusion : trois tours, <code>main</code> a bougé deux fois</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th>Tour</th>
+<th><code>origin/main</code> intégré</th>
+<th>Conflits</th>
+<th>Migrations</th>
+</tr></thead><tbody>
+<tr>
+<td>1</td>
+<td><code>3d455ed</code></td>
+<td>2 — <code>ARCHITECTURE.md</code>, <code>test-envoi-client-e2e.ts</code></td>
+<td>aucune</td>
+</tr>
+<tr>
+<td>2</td>
+<td><code>19cd448</code></td>
+<td>2 — <code>CHANGELOG.md</code>, <code>TODO.md</code> (documentaires)</td>
+<td><strong><code>0068</code></strong>, appliquée avant toute mesure</td>
+</tr>
+<tr>
+<td>3</td>
+<td><code>96e1774</code></td>
+<td>aucun</td>
+<td>aucune</td>
+</tr>
+</tbody></table></div>
+<p><strong>Deux collisions où les deux côtés avaient la moitié raison :</strong></p>
+<ul>
+<li><strong>La lecture du calendrier.</strong> Notre lot avait extrait la fonction dans un module partagé — une seule implémentation — mais datait son plancher à Greenwich. <code>main</code> avait écrit l'équivalent en place, avec la <strong>bonne</strong> correction de fuseau. Le module partagé reste ; la correction y entre.</li>
+<li><strong><code>ARCHITECTURE.md</code> §199</strong>, pris des deux côtés le même jour. La règle dit de renuméroter celui qui n'est pas encore sur <code>main</code> : les nôtres deviennent §200 et §201. Trois renvois ont suivi — et <strong>un quatrième s'est révélé faux depuis toujours</strong>, trouvé seulement en les relisant un par un.</li>
+</ul>
+<p><strong>Le rouge que le patron attendait a été corrigé par <code>main</code>, et proprement :</strong> <code>test-carte-reponse-mene-au-geste-e2e</code> rougissait parce que le calendrier de démonstration se vide en fin de mois — la suite prenait la date que l'artisan proposait déjà. <strong>Vert le 26, rouge le 27, code identique.</strong> C'est le montage qui a été réparé, <strong>aucune assertion abaissée</strong> ; la nouvelle version refuse même de conclure sur une liste vide.</p>
+<p><strong>Trois commentaires qui mentaient</strong> ont été redressés, dont un qui promettait qu'aucun mot de passe n'était demandé pour retirer un appareil — alors que la garde M11 est posée deux lignes plus bas. Une prochaine session l'aurait lu et se serait crue autorisée à retirer la garde.</p>
+<hr>
+<h2 id="6-ce-qui-reste-ouvert">6. Ce qui reste ouvert</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th>Point</th>
+<th>Gravité</th>
+<th>Qui peut le trancher</th>
+</tr></thead><tbody>
+<tr>
+<td><strong>La tempête Turbopack</strong> qui tue le serveur de la batterie — non expliquée, intermittente</td>
+<td>outillage, pas produit</td>
+<td>nous, en rejouant la suite sur le commit d'avant fusion et en comparant la courbe</td>
+</tr>
+<tr>
+<td><strong>Un refus de rôle sort en <code>500</code> au lieu d'un <code>403</code></strong> sur <code>/api/mes-donnees</code> — la sécurité tient, rien ne sort ; c'est la FORME du refus qui est fausse, et le contrôle existant ne le voit pas puisqu'il vérifie seulement que ce n'est pas <code>200</code></td>
+<td>cosmétique + bruit dans les journaux</td>
+<td>nous, au lot suivant</td>
+</tr>
+<tr>
+<td><strong>Qualité de ce qui sort de la dictée</strong> — prestations mal organisées, quantités et unités mal lues, prix historiques incohérents</td>
+<td>produit</td>
+<td><strong>lot séparé</strong>, ouvert à sa demande ; le lot Audio ne garantissait que l'ENTRÉE du fichier</td>
+</tr>
+<tr>
+<td><strong>Dette de numérotation de <code>main</code></strong> — §134, §135, §136, §164, §165 en double ; huit en-têtes de date dupliqués dans <code>CHANGELOG.md</code></td>
+<td>documentaire</td>
+<td>présente avant cette fusion, inchangée par elle — non touchée délibérément, ce serait sortir du périmètre</td>
+</tr>
+<tr>
+<td><strong>Aucune sauvegarde de la base</strong></td>
+<td><strong>le point le plus grave du dépôt</strong></td>
+<td>LUI — c'est une décision d'hébergement, pas de code</td>
+</tr>
+<tr>
+<td><code>npm audit</code> : 4 alertes modérées</td>
+<td>aucune</td>
+<td><code>drizzle-kit → esbuild</code>, dépendance de développement, rien n'est exécuté</td>
+</tr>
+</tbody></table></div>
+<hr>
+<h2 id="7-ce-qui-a-été-respecté-et-qui-ne-se-négociait-pas">7. Ce qui a été respecté, et qui ne se négociait pas</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<ul>
+<li>*<em>Aucun </em>force push<em>.</em>* La poussée sur <code>main</code> était une avance rapide.</li>
+<li><strong>Aucun commit de <code>main</code> écrasé</strong> — vérifié avant de pousser.</li>
+<li><strong>Aucune assertion affaiblie</strong>, aucun test désactivé, aucune migration renommée, aucun problème masqué.</li>
+<li><strong>Aucun élargissement du périmètre</strong> : les défauts trouvés hors lot sont écrits, pas corrigés à la volée.</li>
+</ul>
+</main>
+</body>
+</html>

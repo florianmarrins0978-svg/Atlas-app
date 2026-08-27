@@ -6,6 +6,8 @@ import { chargerFicheClient } from "@/server/repositories/fiche-client";
 import { retourFicheClient } from "@/lib/retour-fiche-client";
 import { jourCourt, type PieceDuClient } from "@/lib/documents-du-client";
 import PieceDuDossier from "./PieceDuDossier";
+import SupprimerCeClient from "./SupprimerCeClient";
+import { apercuSuppressionClient } from "@/server/repositories/donnees-client";
 
 // **La fiche d'un client : son nom, ce qu'on lui a fait la dernière fois, et
 // ses papiers.**
@@ -62,9 +64,29 @@ export default async function FicheClientPage({
   const fiche = await chargerFicheClient(ctx, id);
   if (!fiche) notFound();
 
-  const coordonnees = [fiche.client.adresse, fiche.client.telephone].filter(Boolean).join(" · ");
+  // **Ce que la suppression laisserait, lu AVANT de rien toucher.** La même
+  // fonction sert l'avertissement et la suppression elle-même : deux calculs de
+  // « ce qui reste » finiraient par diverger, et c'est l'écran qui mentirait —
+  // on lui promettrait que tout part, et la facture resterait (`CLAUDE.md` §3).
+  const apercu = await apercuSuppressionClient(ctx, id);
+
+  // **L'ADRESSE, PUIS LE TÉLÉPHONE À LA LIGNE — sa demande du 26 août 2026 :**
+  // *« supprime le point entre l'adresse et le numéro de tel ; le tel doit être
+  // à la ligne sous l'adresse »*. Sur son téléphone, l'adresse tient déjà sur
+  // deux lignes : le numéro collé derrière un séparateur se lisait comme la fin
+  // de l'adresse.
+  const { adresse, telephone } = fiche.client;
+  const coordonnees =
+    adresse && telephone ? (
+      <>
+        {adresse}
+        <br />
+        {telephone}
+      </>
+    ) : (
+      adresse || telephone || undefined
+    );
   const { devis, fiches, factures } = fiche.pieces;
-  const aucunePiece = devis.length === 0 && fiches.length === 0 && factures.length === 0;
 
   return (
     <div className="pb-[86px]">
@@ -90,7 +112,11 @@ export default async function FicheClientPage({
               gras, avec la date. Le détail vit dans les puces en dessous. */}
           <p className={libelleCaps} style={{ color: colors.ink, fontWeight: 700 }}>
             Dernière prestation
-            {fiche.derniere.jour ? ` · ${jourCourt(fiche.derniere.jour)}` : ""}
+            {/* **Deux points, plus un point médian — 26 août 2026 :** *« pareil,
+                supprime le point après "dernière prestation", remplacé par
+                : »*. Le « · » sépare deux choses de même rang ; ici la date
+                COMPLÈTE le titre, elle ne s'ajoute pas à côté de lui. */}
+            {fiche.derniere.jour ? ` : ${jourCourt(fiche.derniere.jour)}` : ""}
           </p>
           {fiche.derniere.comprend.length > 0 && (
             <ul className="mt-[11px] list-none p-0">
@@ -121,13 +147,18 @@ export default async function FicheClientPage({
         <Colonne titre="Fiche chantier" pieces={fiches} rien="Aucune fiche envoyée" />
       </div>
 
-      {/* Trois colonnes vides sans un mot laisseraient croire à un écran cassé.
-          Un client tout neuf n'a simplement pas encore de papiers. */}
-      {aucunePiece && (
-        <p className="mt-4 px-[26px] text-[13px] leading-relaxed" style={{ color: colors.muted }}>
-          Aucun document pour ce client. C’est sa fiche : elle se remplira au premier devis parti.
-        </p>
-      )}
+      <SupprimerCeClient
+        clientId={id}
+        nom={fiche.client.nom}
+        documents={apercu?.documents ?? 0}
+        conserve={(apercu?.pieces ?? []).map((p) => ({ numero: p.numero, pourquoi: p.pourquoi }))}
+      />
+
+      {/* **Plus de phrase quand il n'y a aucun document — 26 août 2026 :**
+          *« supprime la phrase en gris lorsqu'il n'y a aucun document, on le
+          voit, pas besoin de l'écrire »*. Les trois colonnes disent déjà
+          « Aucun devis parti », « Aucune facture émise », « Aucune fiche
+          envoyée » : la phrase les répétait une quatrième fois. */}
     </div>
   );
 }

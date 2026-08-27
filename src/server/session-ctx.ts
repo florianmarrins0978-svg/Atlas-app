@@ -5,6 +5,7 @@ import { db } from "./db/client";
 import { membresEntreprise, users } from "./db/schema";
 import type { Ctx } from "./repositories/context";
 import { coupureDesJetons } from "./repositories/compte";
+import { instantDAuthentification, sessionCoupee } from "../lib/identite-session";
 import { enrichirContexteRequete } from "./request-context";
 
 export class NonAuthentifieError extends Error {
@@ -44,6 +45,19 @@ export async function getCurrentCtx(): Promise<Ctx> {
     return {
       utilisateurId: process.env.AUTH_TEST_UTILISATEUR_ID,
       entrepriseId: await resoudreEntrepriseId(process.env.AUTH_TEST_UTILISATEUR_ID),
+      /**
+       * **De quoi éprouver la ré-authentification récente, et rien de plus.**
+       *
+       * Sans identité de session, une suite ne pourrait jouer QUE le refus : la
+       * garde de M11 refuse toujours quand elle manque. Ce qu'on ne pourrait pas
+       * éprouver, c'est le cas d'après — celui où la preuve est là et le geste
+       * doit aboutir.
+       *
+       * **Elle n'affaiblit rien** : cette branche entière est déjà refusée en
+       * production, et elle exige que la suite pose elle-même la variable. Sans
+       * elle, `sessionId` reste absent — donc aucune preuve, donc refus.
+       */
+      sessionId: process.env.AUTH_TEST_SESSION_ID,
     };
   }
 
@@ -69,7 +83,25 @@ export async function getCurrentCtx(): Promise<Ctx> {
    * déconnecté tout le monde au déploiement — un geste que personne n'a demandé.
    */
   const coupure = await coupureDesJetons(utilisateurId);
-  if (coupure && typeof session.user.emisLe === "number" && session.user.emisLe * 1000 < coupure.getTime()) {
+  /**
+   * **ON COMPARE L'INSTANT DE LA CONNEXION, PLUS CELUI DE LA SIGNATURE.**
+   *
+   * `emisLe` (l'`iat` du JWT) est **remis à l'instant présent** à chaque
+   * réémission par `@auth/core`. Or `GET /api/auth/session` est une route
+   * publique qui réémet le jeton sans consulter cette coupure : un cookie
+   * pourtant coupé s'y redonnait un `iat` neuf et **rentrait**. Reproduit dans
+   * un navigateur le 25 août 2026 (`scripts/sonde-coupure-contournable.mts`).
+   *
+   * `authentifieLe` est posé une seule fois, à l'authentification, et
+   * recopié aux réémissions : le contournement ne l'avance pas.
+   *
+   * **Le repli sur `emisLe` est délibéré** : un jeton signé avant cette version
+   * ne porte pas `connexionLe`, et le refuser d'office déconnecterait tout le
+   * monde au déploiement — un geste que personne n'a demandé. Ce repli s'éteint
+   * de lui-même quand les anciens jetons expirent.
+   */
+  const instantSession = instantDAuthentification(session.user);
+  if (sessionCoupee(instantSession, coupure)) {
     // La même sortie que pour un compte disparu : la route efface les cookies
     // puis renvoie à la connexion. Lever ici afficherait un écran d'erreur, en
     // laissant le cookie mort dans le navigateur — c'est le piège du 10 août
@@ -77,7 +109,13 @@ export async function getCurrentCtx(): Promise<Ctx> {
     redirect("/api/session-perimee");
   }
 
-  return { entrepriseId: await resoudreEntrepriseId(utilisateurId), utilisateurId };
+  return {
+    entrepriseId: await resoudreEntrepriseId(utilisateurId),
+    utilisateurId,
+    // Recopié du jeton signé : c'est ce à quoi une preuve de ré-authentification
+    // s'accroche, pour qu'une autre session du même utilisateur n'en profite pas.
+    sessionId: session.user.sessionId,
+  };
 }
 
 async function resoudreEntrepriseId(utilisateurId: string): Promise<string> {

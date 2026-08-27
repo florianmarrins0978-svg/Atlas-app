@@ -6,6 +6,7 @@ import ChampAdresse from "@/components/atlas/ChampAdresse";
 import ChampTelephone from "./ChampTelephone";
 import ChampFormeJuridique from "./ChampFormeJuridique";
 import { majIdentiteAction } from "./actions";
+import DemanderPreuve from "@/components/atlas/DemanderPreuve";
 
 /**
  * L'identité de l'entreprise — d'après `maquettes/atlas-reglages-identite.html`.
@@ -64,9 +65,21 @@ export default function IdentiteClient({ initial }: { initial: Identite }) {
     setAEcrire((a) => ({ ...a, [champ]: valeur }));
   }
 
+  /** Le geste qu'on reprendra une fois l'identité prouvée. */
+  const [preuveDemandee, setPreuveDemandee] = useState<{ motif: string; reprendre: () => void } | null>(
+    null
+  );
+
   function enregistrer(partiel: Partial<Identite>) {
     demarrer(async () => {
       const r = await majIdentiteAction(partiel);
+      // Les coordonnées bancaires demandent une identité récente : on l'obtient,
+      // puis on réenregistre tout seul. Le refus vient du SERVEUR — cet écran ne
+      // décide de rien.
+      if (!r.ok && r.preuveExigee) {
+        setPreuveDemandee({ motif: r.raison, reprendre: () => enregistrer(partiel) });
+        return;
+      }
       setRefus(r.ok ? null : r.raison);
       // **On ne déclare écrit que ce que le serveur a accepté.** Vider la liste
       // sur un refus afficherait « Enregistré » sur une valeur perdue.
@@ -222,6 +235,19 @@ export default function IdentiteClient({ initial }: { initial: Identite }) {
         aEcrire={Object.keys(aEcrire).length}
         enCours={enCours}
         onEnregistrer={() => enregistrer(aEcrire)}
+      />
+
+      {/* Ne s'ouvre que si le SERVEUR a réclamé une identité récente — et il ne
+          le fait que lorsque les coordonnées bancaires changent vraiment. */}
+      <DemanderPreuve
+        ouvert={preuveDemandee !== null}
+        motif={preuveDemandee?.motif ?? ""}
+        onAbandon={() => setPreuveDemandee(null)}
+        onProuve={() => {
+          const reprendre = preuveDemandee?.reprendre;
+          setPreuveDemandee(null);
+          reprendre?.();
+        }}
       />
     </div>
   );

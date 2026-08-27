@@ -26,7 +26,15 @@ export async function creerEntreprise(
     let utilisateurId = utilisateur.id;
     if (!utilisateurId) {
       if (!utilisateur.email) throw new Error("email requis pour créer un nouvel utilisateur");
-      const [u] = await tx.insert(users).values({ email: utilisateur.email, nom: utilisateur.nom }).returning();
+      // **`returning()` NU RAMENAIT LA LIGNE ENTIÈRE**, condensat compris — et
+      // `RETURNING` exige le droit de lire les colonnes rendues. Depuis M9, le
+      // rôle applicatif ne l'a plus sur `password_hash` : sans cette liste
+      // explicite, créer une entreprise échouerait. On ne demande que ce qu'on
+      // utilise, ce qui est de toute façon la règle.
+      const [u] = await tx
+        .insert(users)
+        .values({ email: utilisateur.email, nom: utilisateur.nom })
+        .returning({ id: users.id });
       utilisateurId = u.id;
     }
 
@@ -72,6 +80,40 @@ export async function getEntreprise(ctx: Ctx) {
  * là qu'il remarque qu'elles manquent. Sans IBAN, son client reçoit un devis
  * qu'il ne peut pas payer — et jusqu'ici aucun écran ne les demandait.
  */
+/**
+ * Les coordonnées bancaires vont-elles VRAIMENT changer ?
+ *
+ * **Comparé à ce qui est en base, jamais à ce que l'écran renvoie.** Un écran
+ * qui réenvoie tous ses champs à chaque enregistrement — ce que fait celui de
+ * l'identité — ferait sinon réclamer un mot de passe pour une virgule dans
+ * l'adresse. La garde ne doit se déclencher que sur un vrai changement, sinon
+ * elle apprend à être ignorée (`CLAUDE.md` §4 ter).
+ *
+ * Même normalisation que l'écriture — `trim()` puis `|| null` — sans quoi une
+ * espace en fin de saisie passerait pour un changement.
+ */
+export async function coordonneesBancairesChangent(
+  ctx: Ctx,
+  data: { iban?: string; titulaireCompte?: string }
+): Promise<boolean> {
+  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    const [ligne] = await tx
+      .select({ iban: entreprises.iban, titulaireCompte: entreprises.titulaireCompte })
+      .from(entreprises)
+      .where(eq(entreprises.id, ctx.entrepriseId))
+      .limit(1);
+    const normaliser = (v: string | null | undefined) => v?.trim() || null;
+    if (data.iban !== undefined && normaliser(data.iban) !== normaliser(ligne?.iban)) return true;
+    if (
+      data.titulaireCompte !== undefined &&
+      normaliser(data.titulaireCompte) !== normaliser(ligne?.titulaireCompte)
+    ) {
+      return true;
+    }
+    return false;
+  });
+}
+
 export async function mettreAJourEntreprise(
   ctx: Ctx,
   data: {

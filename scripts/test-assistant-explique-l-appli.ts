@@ -157,9 +157,14 @@ async function main() {
 
   // --- Au service du patron, et de lui seul -------------------------------
 
-  const [salarie] = await db.insert(users).values({ email: "salarie@test.local", nom: "Salarié" }).returning();
+  // **`returning({ id })` et non `returning()` nu — c'est M9.** Depuis la
+  // migration 0064, `atlas_app` n'a plus le SELECT sur toutes les colonnes de
+  // `users` : un `RETURNING *` demande à lire `password_hash` et se fait
+  // refuser. Le rouge de la fusion du 26 août 2026 était la protection qui
+  // parle, pas une panne — et seul l'identifiant sert ici.
+  const [salarie] = await db.insert(users).values({ email: "salarie@test.local", nom: "Salarié" }).returning({ id: users.id });
   await ajouterMembre(entreprise.id, salarie.id, "salarie");
-  const [commercial] = await db.insert(users).values({ email: "commercial@test.local", nom: "Commercial" }).returning();
+  const [commercial] = await db.insert(users).values({ email: "commercial@test.local", nom: "Commercial" }).returning({ id: users.id });
   await ajouterMembre(entreprise.id, commercial.id, "commercial");
 
   await test("La règle d'accès à l'assistant vit à UN seul endroit", async () => {

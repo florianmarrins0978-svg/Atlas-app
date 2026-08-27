@@ -14,6 +14,7 @@ import { noterAbsenceEquipe, retirerAbsenceEquipe } from "@/server/repositories/
 import { phraseDuRefus, refusDeLAbsence } from "@/lib/absences-equipe";
 import { versionExecutee } from "@/server/version-executee";
 import { issueApresMiseAJour } from "@/lib/issue-mise-a-jour";
+import { estBancDEssai } from "@/profil-banc";
 import { revalidatePath } from "next/cache";
 
 /**
@@ -328,9 +329,27 @@ export async function retirerAbsenceAction(id: string): Promise<{ ok: boolean }>
  * à jour ? » La question était juste, et la réponse était oui — ce qui est une
  * mauvaise réponse. Elle n'a plus lieu d'être.
  *
- * **Banc d'essai uniquement.** Une application déployée ne se met pas à jour
- * elle-même en tirant du code : ce serait une porte d'entrée. La garde est
- * `ATLAS_BANC_ESSAI`, posée dans le seul `.devcontainer/docker-compose.yml`.
+ * **Banc d'essai uniquement, ET propriétaire uniquement.** Une application
+ * déployée ne se met pas à jour elle-même en tirant du code : ce serait une
+ * porte d'entrée. Deux gardes, dans cet ordre, et l'ordre compte.
+ *
+ * ── CE QUE LE 25 AOÛT 2026 A CORRIGÉ (constat M12) ──────────────────────────
+ *
+ * **1. N'IMPORTE QUEL COMPTE CONNECTÉ POUVAIT LA DÉCLENCHER.** La seule garde
+ * était `getCurrentCtx()` : un simple membre — un salarié à qui l'on a ouvert
+ * un accès — pouvait tirer du code et jouer des migrations sur le banc du
+ * patron. Ce geste change ce que l'application sert ; il appartient à celui à
+ * qui elle appartient.
+ *
+ * **2. `ATLAS_PROFIL=banc` ÉTAIT IGNORÉ.** La garde lisait `ATLAS_BANC_ESSAI`
+ * en direct, alors que `src/profil-banc.ts` est la seule fonction qui décide de
+ * ce qu'est un banc, et qu'elle reconnaît les deux marques.
+ * `.devcontainer/demarrer.sh` ne pose que `ATLAS_PROFIL` : le bouton refusait
+ * donc sur un banc reconnu partout ailleurs. Une reconnaissance recopiée finit
+ * toujours par diverger de l'originale (`CLAUDE.md` §3).
+ *
+ * **Le rôle est vérifié AVANT le banc**, et le banc avant le script. Ainsi une
+ * suite peut éprouver le refus de rôle sans qu'un `git pull` puisse partir.
  *
  * La prudence vit dans `mettre-a-jour.sh`, déjà éprouvé : jamais par-dessus du
  * travail non enregistré, jamais en forçant, jamais sur un dépôt injoignable.
@@ -338,9 +357,10 @@ export async function retirerAbsenceAction(id: string): Promise<{ ok: boolean }>
 export type ResultatMiseAJour = { succes: true; etat: string; message: string } | { succes: false; erreur: string };
 
 export async function mettreAJourApplicationAction(): Promise<ResultatMiseAJour> {
-  await getCurrentCtx(); // Réservé à quelqu'un de connecté, comme le reste de l'écran.
+  const ctx = await getCurrentCtx();
+  await exigerProprietaire(ctx, "mettre à jour l'application");
 
-  if (process.env.ATLAS_BANC_ESSAI !== "1") {
+  if (!estBancDEssai()) {
     return { succes: false, erreur: "La mise à jour depuis l'écran n'existe que sur le banc d'essai." };
   }
 
@@ -471,8 +491,32 @@ async function noterIssue(etat: string): Promise<void> {
   }
 }
 
-/** Ce que le dernier essai a donné, pour l'écran. `null` si aucun essai. */
+/**
+ * Ce que le dernier essai a donné, pour l'écran. `null` si aucun essai.
+ *
+ * **RÉSERVÉE AU PROPRIÉTAIRE, comme le geste qu'elle raconte — constat F1.**
+ *
+ * Un module `"use server"` transforme chaque fonction exportée en point
+ * d'entrée réseau : celle-ci se laissait donc appeler par n'importe qui, sans
+ * même une session, et rendait le contenu de `/tmp/atlas-mise-a-jour.txt`. Ce
+ * fichier ne porte pas que « faite » : sur un échec, il porte
+ * `impossible : ${message}` — les deux cents premiers caractères de ce que
+ * `execFile` a levé, c'est-à-dire un chemin sur le disque et ce que `git` a
+ * écrit sur sa sortie d'erreur.
+ *
+ * L'écran, lui, ne l'appelle que derrière `role === "proprietaire"` : la garde
+ * ne retire donc rien à personne. C'est exactement la leçon de M12 — cacher un
+ * bouton ne protège pas l'action qui est dessous, et la seule frontière qui
+ * tienne est celle que la fonction pose elle-même.
+ *
+ * **Elle LÈVE plutôt que de rendre `null`**, et c'est délibéré : `null` veut
+ * déjà dire « aucun essai encore ». Confondre « rien à dire » et « je vous le
+ * refuse » rendrait un appel hostile indiscernable d'un espace tout neuf.
+ */
 export async function derniereIssueMiseAJour(): Promise<string | null> {
+  const ctx = await getCurrentCtx();
+  await exigerProprietaire(ctx, "lire l'issue de la dernière mise à jour");
+
   try {
     const { readFile } = await import("node:fs/promises");
     return (await readFile(FICHIER_ISSUE, "utf8")).trim() || null;

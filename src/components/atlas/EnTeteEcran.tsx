@@ -37,7 +37,11 @@ export default function EnTeteEcran({
   surtitre?: string;
   titre: string;
   /** Une ligne de contexte sous le titre : un compte, une période. */
-  precision?: string;
+  // **Un nœud, pas une chaîne — 26 août 2026.** La fiche d'un client y met son
+  // adresse ET son téléphone, et il les veut sur DEUX lignes : *« le tel doit
+  // être à la ligne sous l'adresse »*. Un séparateur suffisait quand la
+  // précision tenait sur une ligne ; il ne peut pas produire un retour.
+  precision?: React.ReactNode;
   /**
    * Où se pose la précision, et de quelle voix.
    *

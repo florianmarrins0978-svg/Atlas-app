@@ -66,12 +66,20 @@ async function chantierAvecDevisEnvoye(page: Page, nom: string) {
   // pas parti » — d'un défaut qui n'était qu'une impatience. Quatre suites de ce
   // dépôt sont tombées sur exactement ce piège les 12 et 13 août 2026.
   let jeton: string | undefined;
+  let datesProposees: string[] = [];
   for (let i = 0; i < 60 && !jeton; i++) {
     const { rows } = await pool.query(
-      `SELECT e.jeton FROM envois_devis e JOIN devis d ON d.id = e.devis_id WHERE d.chantier_id = $1`,
+      // **`::text[]`, et ce n'est pas de la coquetterie.** `dates_proposees` est
+      // un `date[]` : le pilote rend alors des objets `Date`, et la comparaison
+      // « ce jour est-il proposé ? » — qui porte sur des chaînes « AAAA-MM-JJ »
+      // — est **toujours fausse**, sans erreur ni avertissement. Le contrôle
+      // écartait donc les dates proposées sans en écarter aucune, et rougissait
+      // exactement comme avant sa correction.
+      `SELECT e.jeton, e.dates_proposees::text[] AS dates_proposees FROM envois_devis e JOIN devis d ON d.id = e.devis_id WHERE d.chantier_id = $1`,
       [chantierId]
     );
     jeton = rows[0]?.jeton as string | undefined;
+    datesProposees = (rows[0]?.dates_proposees as string[] | null) ?? [];
     if (!jeton) await page.waitForTimeout(500);
   }
   if (!jeton) {
@@ -80,7 +88,66 @@ async function chantierAvecDevisEnvoye(page: Page, nom: string) {
         "c'est l'envoi lui-même qui a échoué."
     );
   }
-  return { chantierId, jeton };
+  // **Les dates proposées reviennent avec le jeton, et elles servent.** Voir
+  // `unJourAutreQueLesProposees` : sans elles, le client peut « contre-proposer »
+  // la date même que l'artisan lui offrait, et il n'y a alors aucune carte.
+  return { chantierId, jeton, datesProposees };
+}
+
+/**
+ * Un jour libre du calendrier public qui N'EST PAS l'une des dates proposées.
+ *
+ * **Bombe à retardement, désamorcée le 27 août 2026.** La suite prenait le
+ * DERNIER jour cliquable du mois affiché. Fin août, il ne restait plus qu'un
+ * seul jour libre — et c'était celui que l'artisan proposait déjà. Le client
+ * « acceptait » donc la date offerte, ce qui ne fait volontairement AUCUNE
+ * carte (`notificationsPatron` : une acceptation sans surprise ne se signale
+ * pas). Le contrôle accusait alors le produit d'un défaut qui n'existait pas —
+ * vert le 26 août, rouge le 27, sur du code identique.
+ *
+ * On lit donc les états du calendrier plutôt que la forme des boutons, on
+ * écarte les dates proposées, et on tourne la page du mois si le mois affiché
+ * n'a plus rien à offrir.
+ */
+async function unJourAutreQueLesProposees(page: Page, proposees: string[]): Promise<string> {
+  /**
+   * **Une liste vide n'écarte rien — et ce contrôle ne prouverait plus rien.**
+   * C'est le piège du `date[]` juste au-dessus : la lecture réussissait, la
+   * comparaison échouait en silence, et l'écart « aucune date écartée » avait
+   * exactement l'allure d'un succès. On refuse donc de conclure plutôt que de
+   * rendre un vert qui ne mesure rien.
+   */
+  if (proposees.length === 0) {
+    throw new Error(
+      "aucune date proposée relue en base : sans elles, ce contrôle ne peut pas écarter " +
+        "la date offerte, et son verdict ne vaudrait rien."
+    );
+  }
+
+  const lire = async () =>
+    (
+      await page
+        .locator('[data-jour][data-etat="choisissable"]')
+        .evaluateAll((els) => els.map((e) => e.getAttribute("data-jour")!).filter(Boolean))
+    ).filter((j) => !proposees.includes(j));
+
+  let libres = await lire();
+  if (libres.length === 0) {
+    const suivant = page.locator('button[aria-label^="Mois suivant"]').first();
+    if ((await suivant.count()) > 0 && (await suivant.isEnabled())) {
+      await suivant.click();
+      // La grille se repeint : attendre une case du mois neuf, jamais un délai.
+      await page.locator('[data-jour][data-etat="choisissable"]').first().waitFor({ timeout: 20_000 });
+      libres = await lire();
+    }
+  }
+  if (libres.length === 0) {
+    throw new Error(
+      `aucun jour libre hors des dates proposées (${proposees.join(", ") || "aucune"}), ` +
+        "même au mois suivant : c'est le calendrier qui est plein, pas la carte qui manque."
+    );
+  }
+  return libres[libres.length - 1];
 }
 
 /**
@@ -141,43 +208,11 @@ async function main() {
   // (`notificationsPatron`). La carte que le patron a photographiée porte
   // d'ailleurs « AUTRE DATE PROPOSÉE » : c'est ce cas-là qu'il faut jouer.
   await page.locator('input[name="choixDate"][value="autre"]').check();
-  await page.waitForTimeout(600);
-
-  // **ON ÉVITE LA DATE QUE L'ARTISAN A PROPOSÉE — sinon ce n'est pas une AUTRE
-  // date.** Payé le 27 août 2026 : ce cas prenait « le dernier jour cliquable
-  // du calendrier », et ce jour-là c'était le 31 août — précisément la date
-  // proposée. Le client acceptait donc la proposition, `dateContreProposee`
-  // valait `false` à juste titre, aucune carte n'était due, et la suite
-  // accusait l'écran d'avoir perdu une notification qui n'existait pas.
-  //
-  // **Le produit avait raison, et le contrôle rougissait selon la date du
-  // jour** — la faute exacte que ce dépôt a déjà payée sur une suite qui
-  // tombait le samedi. On lit donc ce qui a été proposé, et l'on choisit
-  // ailleurs.
-  const { rows: proposees } = await pool.query<{ jours: string[] }>(
-    `SELECT e.dates_proposees::text[] AS jours
-       FROM envois_devis e JOIN devis d ON d.id = e.devis_id
-      WHERE d.chantier_id = $1`,
-    [accepte.chantierId]
-  );
-  const aEviter = new Set((proposees[0]?.jours ?? []).map((j) => String(Number(j.slice(8, 10)))));
-  const jours = page.locator("button:not([disabled])").filter({ hasText: /^\d{1,2}$/ });
-  let jourLibre = null;
-  for (let i = (await jours.count()) - 1; i >= 0; i--) {
-    const numero = (await jours.nth(i).innerText()).trim();
-    if (!aEviter.has(numero)) {
-      jourLibre = jours.nth(i);
-      break;
-    }
-  }
-  if (!jourLibre) {
-    throw new Error(
-      `aucun jour du calendrier n'est différent des dates proposées (${[...aEviter].join(", ")}) : ` +
-        "ce cas ne peut pas jouer une CONTRE-proposition, et rien ne serait éprouvé"
-    );
-  }
-  await jourLibre.click();
-  await page.waitForTimeout(400);
+  await page.locator('[data-jour][data-etat="choisissable"]').first().waitFor({ timeout: 20_000 });
+  const jourLibre = await unJourAutreQueLesProposees(page, accepte.datesProposees);
+  await page.locator(`[data-jour="${jourLibre}"]`).click();
+  // La case se peint quand le choix est pris : l'attendre vaut mieux qu'un délai.
+  await page.locator(`[data-jour="${jourLibre}"][data-etat="retenu"]`).waitFor({ timeout: 20_000 });
   await page.click('button:has-text("J\'accepte ce devis")');
   await page.waitForSelector("text=Votre artisan est prévenu", { timeout: 20_000 });
 

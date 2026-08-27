@@ -15998,142 +15998,6 @@ recopier : tant que les deux règles disent la même chose, elles ne s'écrivent
 qu'une fois. Elle garde son nom parce qu'elles peuvent rediverger demain, et
 qu'il faut alors UN endroit où le dire.
 
----
-
-## 182. Ses journées se comptaient à Greenwich
-
-**Sa question du 25 août 2026, au soir :** *« on est le 25 au soir, donc le
-chantier Eric est terminé — quand est-ce qu'il passe automatiquement dans la
-catégorie Terminés ? »*, puis : *« donc ce soir à 00 h 00 il passe dans
-Terminés ? »*.
-
-**Non : à 2 h du matin.** Et personne dans le dépôt ne le savait.
-
-### Le défaut
-
-`jourIso` — la seule définition du « jour » de tout le dépôt — rendait
-`instant.toISOString().slice(0, 10)`, c'est-à-dire le jour **UTC**. La France
-est à UTC+2 l'été, UTC+1 l'hiver : entre minuit et deux heures, Atlas croyait
-qu'on était encore la veille.
-
-Ce que cela produisait, dans cette fenêtre-là :
-
-| | |
-|---|---|
-| un chantier dont la journée est finie | reste au **planning** |
-| une facture faite en rentrant | porte la **date d'hier** |
-| le jour marqué « aujourd'hui » au calendrier | est le **mauvais** |
-
-Deux heures paraissent peu. C'est exactement l'heure à laquelle un artisan finit
-sa journée et range ses papiers — la seule fenêtre où l'erreur se voit, et il
-l'a vue.
-
-### La correction
-
-`jourIso` passe par `Intl.DateTimeFormat` sur `Europe/Paris`
-(`FUSEAU_DU_PATRON`, `src/lib/jour.ts`). **Un décalage figé — `+1`, `+2` — se
-serait trompé la moitié de l'année**, et l'erreur n'aurait sauté aux yeux qu'au
-changement d'heure : `Intl` est la seule source qui connaisse les vraies règles
-d'un fuseau. Le dépôt le savait déjà pour les agendas (`src/lib/fuseau.ts`,
-`FUSEAU_ARTISAN`) ; c'est le calcul du jour qui était resté en arrière.
-
-**Une seule fonction change, et tout suit** — le rangement des onglets, les
-dates d'émission et d'échéance, le relevé de TVA, le calendrier. C'est le
-bénéfice de la définition unique : la corriger à un endroit les corrige tous, là
-où douze `toISOString()` recopiés auraient laissé la moitié du produit en UTC.
-
-### Ce que le contrôle refuse
-
-`scripts/test-jour-du-patron.ts` prend l'été **et** l'hiver, des deux côtés de
-minuit, puis vérifie ce qu'il demandait vraiment : son chantier du 25 est encore
-au planning à 23 h 59, et dans Terminés à 00 h 30. **Éprouvé rouge contre
-l'ancienne version** : trois cas sur sept tombent.
-
-### Ce qui n'a PAS changé, et c'est voulu
-
-La bascule vers « Terminés » reste **calculée à l'affichage**
-(`src/lib/onglet-chantier.ts`), jamais écrite en base et jamais déclenchée par
-une tâche de fond. Rien ne tourne la nuit : l'écran range au moment où on
-l'ouvre. Un chantier « passe » donc dans Terminés dès la première ouverture
-après minuit — il n'y a pas d'instant où quelque chose se déclenche, et c'est ce
-qui rend la règle sûre : aucune tâche à réveiller, rien à rattraper.
-
-## 183. L'assistant sait enfin partir d'un NOM — et il ne prétend plus qu'un ancien devis a disparu
-
-**Sa capture du 25 août 2026.** Il demande : *« Peux-tu me ressortir le premier
-devis de M. Bernard ? »* L'assistant répond qu'il n'a *« aucun chantier
-ouvert »*, lui explique comment aller ouvrir la fiche lui-même, et ajoute :
-*« Atlas conserve uniquement le dernier devis par chantier »*. Sa réponse :
-**« c'est justement ça que je veux qu'il soit capable de faire »**.
-
-Deux défauts, et le second est le plus grave.
-
-### 1. Aucun outil ne partait d'un nom
-
-Tous les outils de l'assistant lisent `ContexteOutil.chantierId` — le chantier
-d'où l'on a ouvert le panneau. Ouvert depuis la LISTE, il est nul, et chacun
-refuse à son tour. Le modèle n'inventait rien : il n'avait littéralement aucun
-chemin entre « M. Bernard » et un dossier.
-
-`RechercherChantier` est le seul outil qui fonctionne **sans** chantier courant,
-et il est en tête du registre pour cette raison. Il cherche dans le nom du
-client **et** dans celui du chantier — il dit « le chantier de la mairie » aussi
-souvent qu'il dit un nom de client, et l'outil doit suivre sa façon de parler,
-pas la colonne où c'est rangé.
-
-**La règle de comparaison est CELLE DE L'ÉCRAN** (`src/lib/recherche-client.ts`,
-`filtrerClientsParNom`) : casse et accents ignorés, n'importe où dans la ligne,
-mots dans le désordre. En écrire une seconde ici, c'est promettre à l'assistant
-de trouver ce que l'écran ne trouve pas — ou l'inverse (`CLAUDE.md` §3).
-
-### 2. Un outil muet fait inventer une explication
-
-**« Atlas conserve uniquement le dernier devis » est FAUX.** Un brouillon se
-réécrit en place, mais **un devis envoyé est conservé** et le suivant devient
-une version 2 (`getOuCreerDevisBrouillon`). Ses anciens devis étaient là.
-
-Ce qui a produit la phrase fausse n'est pas le modèle : c'est l'outil. Il rendait
-la dernière version, sans jamais dire qu'il en existait d'autres. **Le modèle ne
-dispose que de ce qu'on lui rend** — le reste, il le comble.
-
-D'où deux changements qui vont ensemble :
-
-| | |
-|---|---|
-| `LireDevis` prend une `version` | « le premier » = la version 1 |
-| il rend **toujours** `versionsDisponibles` | même quand on ne demande rien : c'est ce qui empêche de conclure qu'il n'y en a qu'une |
-
-`listerVersionsDevis` trie en **croissant**, contre l'usage du reste du dépôt :
-ici on lit une histoire, on ne cherche pas l'état courant, et « le premier » doit
-être le premier de la liste.
-
-### Ce qu'un refus doit dire
-
-Sans chantier, `LireDevis` ne répond plus « aucun chantier dans le contexte » —
-il nomme **la suite à donner** : employer `RechercherChantier`, puis rappeler
-avec l'identifiant obtenu. Une suite le vérifie, et vérifie aussi que le refus
-ne renvoie **plus** le patron ouvrir une fiche à la main : c'est précisément ce
-qu'il a reproché.
-
-La consigne système va dans le même sens, en toutes lettres : *ne demande jamais
-au patron d'aller ouvrir une fiche pour te donner accès — c'est ton travail de
-la trouver.*
-
-### Éprouvé contre la version qui lui a répondu
-
-`test-ia-09-chercher-par-nom.ts` monte le décor exact de sa capture : un client
-« Mr. Bernard », un premier devis **envoyé** — l'envoi seul fige la version 1 —,
-puis un second. Rejouée contre l'ancien outil, elle rougit sur trois cas : la
-version 1, les versions annoncées, et le refus d'une version absente.
-
-**Et un confrère au même nom.** Une seconde entreprise porte elle aussi un
-« Mr. Bernard » : c'est le seul décor où un défaut d'isolation se verrait, et il
-montrerait les devis de quelqu'un d'autre. Les deux sens sont vérifiés — sans
-quoi le cas serait vert avec une recherche qui ne rend jamais rien.
-
-
----
-
 ## 184. L'assistant OUVRE une fiche chantier — la seule écriture qu'on lui accorde
 
 > **REFERMÉE LE 26 AOÛT 2026, LE LENDEMAIN.** À la question posée de face —
@@ -17297,9 +17161,327 @@ un contrôle qui accuse le mauvais coupable :
 est un mot qu'il peut faire changer demain, et une suite qui le réclame rend
 l'écran impossible à modifier (`CLAUDE.md` §5 bis).
 
+## 199. « Il comprend rien » — un outil mal appelé ne doit pas tuer la réponse
+
+**Sa capture du 26 août 2026 au soir**, trois échanges de suite :
+
+| Ce qu'il tape | Ce qu'il lit |
+|---|---|
+| *« À quelle heure ouvre le cgr de Mantes-la-Jolie ? »* | « Je ne réponds qu'aux questions sur Atlas. » ✔ |
+| *« Peux-tu me sortir le devis de Lucie »* | **« L'assistant a mal formé sa demande à un outil interne. Reformulez votre question. »** |
+| *« Sors-moi le dernier devis de Bernard »* | la même |
+| *« Je veux le dernier devis de Bernard »* | la même |
+
+Sa réaction : **« il comprend rien »**.
+
+### Le pire des messages : celui qui accuse celui qui n'y est pour rien
+
+**Reformuler n'y pouvait rien.** Ses phrases étaient parfaites. Ce qui n'allait
+pas, c'était le nom d'un champ, côté modèle — et l'écran lui demandait de
+réparer une chose qu'il ne voyait pas. Il a reformulé trois fois, ce qui est
+exactement ce qu'on lui demandait, et trois fois il a reçu la même phrase.
+
+**Un message d'erreur qui désigne le mauvais coupable coûte plus cher que pas
+d'erreur du tout** (`AGENTS.md`). Celui-ci le faisait deux fois : il accusait sa
+formulation, et il masquait la vraie cause.
+
+### Trois défauts derrière, et le premier est structurel
+
+**1. La boucle s'ARRÊTAIT au premier écart.** Un outil mal appelé n'est pas une
+panne : c'est un aller-retour ordinaire d'une boucle d'outils. Le refus part
+désormais **au modèle**, avec les champs qui manquent, et il rappelle l'outil
+correctement — jusqu'à deux fois, puis on rend la main en demandant le nom du
+client. C'est ce qui fait la différence entre un agent et une chaîne qui casse.
+
+**2. Le registre nommait la même idée de trois façons** — `nom` pour
+`RechercherChantier`, `motCle` pour `LireClients` et `RechercherLignesDevis`,
+`question` pour `RechercherModeEmploi`. **La faute est du côté du dépôt**, pas
+du modèle : trois noms pour une chose, c'est une invitation à se tromper. Les
+quatre outils acceptent maintenant les alias, sans que la description en cite
+qu'un seul — celui à employer. Un appel VRAIMENT vide reste refusé.
+
+**3. Le fournisseur d'essai recopiait du JSON à l'écran.** Vu à la capture, deux
+fois, accolades comprises : `{"erreur":"Aucun chantier visé. Employez
+RechercherChantier…"}`. Cette phrase est adressée **au modèle**. Un vrai
+fournisseur, lui, obéit à l'instruction et va chercher le chantier ; celui
+d'essai la recopiait. Il chaîne désormais comme le ferait un vrai — et ce n'est
+pas un détail d'outillage : **les captures de ce dépôt racontaient une
+application qui n'existe pas.**
+
+### « Rien à signaler » là où la réponse était « pas encore de devis »
+
+Le même rendu escamotait les `false` : un chantier sans devis sortait « Rien à
+signaler du côté de LireDevis ». Ce n'est pas rien à signaler — c'est
+précisément la réponse à sa question. Un « non » se dit.
+
+### Ce qui l'a trouvé, et ce qui le garde fermé
+
+**La capture, encore** (`scripts/capture-assistant-mode-emploi.mts`, qui porte
+désormais ses trois questions mot pour mot). Aucune suite ne voyait rien : elles
+posaient toutes leurs questions depuis un chantier ouvert, et avec un
+fournisseur qui ne se trompe jamais.
+
+`scripts/test-assistant-se-corrige.ts` tient les quatre points, dont un qui
+demandait un fournisseur **qui se trompe exprès** — d'où le point d'injection de
+`fabrique.ts`, doublement fermé comme la dérogation de session : hors
+production, et seulement si une suite l'a posé.
+## 200. Audit de sécurité, lot 3 : les constats F1 → F13, et ce qu'ils valaient vraiment
+
+**Le rapport d'audit qui nomme F1 à F13 n'est PAS dans le dépôt, et n'y a jamais
+été.** Seuls deux des treize points citaient un fichier. Les onze autres ont donc
+été traités comme des *hypothèses à mesurer*, jamais comme des constats acquis —
+et c'est ce qui a permis d'écarter quatre faux problèmes sans rien casser.
+
+Sept points ont été codés (F1, F2, F5, F8, F9, F12, F13), deux ont reçu un
+contrôle sans que leur code bouge (F3, F8 structurel), quatre ont été refusés.
+
+### Ce qui a été refusé, et pourquoi c'est le plus important
+
+| | |
+|---|---|
+| **F4** | le nom du fichier de devis est **engendré par le serveur** (`devis-${numero}.pdf`), jamais par l'utilisateur : il n'y a rien à échapper |
+| **F6** | `run-migrations.ts` suit les migrations **par nom de fichier**. Renommer une migration pour « lever un doublon » créerait exactement le défaut qu'on prétend corriger : elle se rejouerait partout |
+| **F7** | l'export et l'effacement d'un client existent sans écran. C'est une décision **produit / RGPD**, pas une correction de sécurité |
+| **F10** | `unsafe-inline` dans la CSP : réel, mais c'est un lot à soi — le retirer sans nonce casse l'application |
+| **F11** | déjà fermé par le lot 1, et un contrôle le prouve depuis |
+
+### F2 — un site tiers ne doit pas pouvoir déconnecter le patron
+
+`/api/session-perimee` efface six cookies sur un simple `GET` : une page
+étrangère qui pose `<img src="…/api/session-perimee">` mettait le patron dehors
+en silence. Ce n'est pas un vol — c'est une nuisance gratuite.
+
+**`Sec-Fetch-Site`, et surtout PAS `Sec-Fetch-Dest`.** `Dest: document` paraissait
+plus simple et **aurait cassé un vrai parcours** : quatre des cinq appels
+légitimes viennent d'un `redirect()` côté serveur, que le routeur de Next va
+chercher en `fetch` — `Dest` vaut alors `empty`, et le cookie mort du 10 août
+2026 ne s'effacerait plus jamais.
+
+L'en-tête absente laisse passer, et c'est raisonné : un navigateur ne permet pas
+de la retirer ; ce qui n'en envoie pas est un client sans cookie à effacer.
+
+**Ce que le contrôle a appris en rougissant :** la réponse refusée porte quand
+même des `Set-Cookie` — ceux d'Auth.js, qui rafraîchit la session dans la couche
+au-dessus, valeurs pleines et expiration future. Rafraîchir n'est pas
+déconnecter. Le contrôle ne compte donc plus les `Set-Cookie`, il cherche les
+EFFACEMENTS.
+
+### F5 — le contexte vide levait au lieu de rendre zéro
+
+`corrections_dictee` portait encore `current_setting('app.entreprise_id',
+true)::uuid` sans `NULLIF`. **Ce n'est pas une fuite** : sans contexte, la valeur
+est NULL, la politique est fausse, la table est vide. Ce qui casse, c'est le
+contexte **vide** — PostgreSQL remet un réglage de session à `''` après certaines
+transactions sur une connexion mutualisée, et `''::uuid` LÈVE. L'écran tombe en
+erreur au lieu de se montrer vide, et le message accuse un type de données là où
+le coupable est un contexte perdu.
+
+La migration 0002 avait corrigé cela pour les douze tables de janvier ; 0025 a
+créé cette table quatre mois plus tard sans reprendre la leçon, parce qu'aucun
+contrôle ne regardait la FORME des politiques. **0067 la répare, et
+`test-isolation-contexte-vide-db.ts` empêche la prochaine** — il mesure les
+41 tables une par une sous `atlas_app`, contexte forcé à `''`.
+
+**Une migration déjà appliquée ne se réécrit pas**, et ne se renomme pas
+davantage : `_migrations` porte son nom, elle ne se rejouera jamais, et la
+corriger sur le disque ne changerait que les bases neuves — donc pas celles où
+le défaut existe.
+
+### F8 — la seule rubrique du patron sans garde, et la règle qui manquait
+
+« Intégrations » (`/reglages/agenda`) lisait l'état du calendrier relié du
+patron — son compte iCloud ou Google — avant de savoir à qui elle parlait. Le
+lien était caché à un salarié, ce qui ne protège rien : **une adresse se tape**.
+Les écritures, elles, étaient déjà gardées.
+
+Le défaut n'était pas « une garde oubliée » mais **« rien ne disait qu'il en
+fallait une »**. D'où `scripts/test-reglages-gardes.ts`, qui ne regarde aucune
+rubrique en particulier : toute rubrique non personnelle pose une garde de rôle,
+et elle la pose **avant** la première lecture. Trois rubriques sont
+explicitement personnelles — compte, connexion, apparence.
+
+**Ce contrôle a été vert deux fois sur le défaut qu'il porte dans son nom**, et
+il n'a été cru qu'après avoir rougi pour de bon :
+
+| Ce qu'il regardait | Pourquoi il passait |
+|---|---|
+| le nom de la garde n'importe où dans le fichier | la ligne `import { estProprietaire }` suffisait |
+| le fichier commentaires compris | le commentaire qui EXPLIQUE la garde cite son nom |
+| la ligne entière pour trouver une lecture | `const [etat, etatApple, params] = await Promise.all(` contient le mot `params`, qui était dans la liste des attentes anodines |
+
+Il blanchit désormais les commentaires, ne regarde que le corps de la fonction,
+et ne compare que **ce qui suit `await`**.
+
+**Et `adressesAutorisees()` mentait.** Son commentaire promettait que « la liste
+des rubriques est l'unique source » et qu'« une rubrique retirée ferme son
+adresse au même instant ». Aucune page ne l'a jamais appelée : ses seuls
+appelants sont des contrôles. C'est ce qui explique le trou — la prose laissait
+croire à une garde centrale. Elle **n'est pas branchée pour autant** : un
+`layout` déduit du sommaire fermerait `/reglages/prix/mesures` et
+`/reglages/vocabulaire`, qui n'y figurent pas. Le commentaire dit maintenant ce
+qu'elle est : ce que le sommaire ouvre, et pas une frontière.
+
+### F9 — la seule écriture ouverte sans session
+
+Répondre à un devis depuis le lien public n'avait aucune borne de cadence.
+Partout ailleurs, une cadence se compte par entreprise ou par utilisateur ; ici
+personne ne s'est nommé, et cette action ne rentrait dans aucun des deux moules.
+
+**Ce n'est pas un secret qu'on défend** : le jeton fait 256 bits tirés au sort,
+il ne se devine pas. C'est le COÛT qu'on borne.
+
+**Et la revue hostile a corrigé le correctif avant toute livraison.** Deux
+compteurs avaient été posés — par jeton, et par source. Or sans
+`ATLAS_PROXY_SAUTS`, `sourceDuVisiteur` rend délibérément une valeur commune :
+**tous les clients partagent alors un seul seau**. Soixante appels depuis
+n'importe où, et plus aucun client de plus aucun artisan ne signe son devis. Le
+seuil devenait une arme retournée — une dépense de calcul échangée contre un
+blocage commercial. Il ne s'applique donc que **si la source est établie** ; le
+seuil par jeton, lui, s'applique toujours.
+
+`sourceDuVisiteur` et `horsProductionReelle` ont quitté `src/app/login/actions.ts` pour
+`src/server/source-visiteur.ts` : les recopier aurait fabriqué une seconde façon
+de décider qui est « le même visiteur ».
+
+### F12 — les maquettes gelées ne sont pas servies aux artisans
+
+Douze pages `/design/*`, **gelées depuis le 1er août 2026**, affichent
+`mock-data.ts`. Aucune donnée réelle, et le middleware exige déjà une session :
+ce n'est pas une fuite, c'est de la **surface** — des pages que plus personne ne
+relit, et qui ne suivent plus les corrections des écrans réels.
+
+Une seule mise en page (`src/app/design/layout.tsx`) les couvre toutes,
+aujourd'hui comme demain : douze gardes recopiées, c'est douze occasions d'en
+oublier une. `notFound()` plutôt qu'un refus — un « accès refusé » confirme
+qu'il y a quelque chose à trouver.
+
+**Le banc du patron est traité comme la production**, contrairement à l'usage du
+reste du dépôt : il est ouvert sur l'internet, et les planches qu'il doit voir
+vivent dans `appli/`, publiées par `pages.yml`.
+
+### F13 — `robots.txt`, et ce qu'il n'est pas
+
+**Ce n'est pas une frontière de sécurité**, et le fichier le dit lui-même : une
+demande, pas une serrure. Rien n'en dépend — les écrans du patron sont fermés
+par le middleware, ceux du client par un jeton de 256 bits.
+
+Ce qu'il apporte est modeste et réel : les liens envoyés par SMS ou courriel
+(`/devis/<jeton>`, `/factures/<jeton>`, `/entretien/<jeton>`) voyagent par des
+canaux qui les font parfois suivre. Il suffit d'une fois pour qu'un devis
+nominatif entre dans un index public, et il n'en sortira plus.
+
+**Le piège, et il était réel :** le middleware renvoie à `/login` tout ce qui
+n'est pas explicitement laissé de côté. Mesuré — sans l'exclusion,
+`GET /robots.txt` rend **307**. Un moteur aurait reçu une redirection au lieu de
+la consigne, et l'on aurait cru le garde-fou en place. `robots.txt` a donc
+rejoint `favicon.ico` dans le `matcher`.
+
+Pas de `sitemap` : un plan de site est exactement ce qu'on ne veut pas publier.
+
 ---
 
-## 199. La charte ne suivait le doigt qu'à moitié, et l'or se perdait en route
+## 201. Le lot Audio : un format se lit dans les octets, jamais dans l'en-tête du navigateur
+
+**Le défaut, et sa portée réelle.** `verifierTypeAudio` ne lisait que la chaîne
+envoyée par le téléphone. Un fichier quelconque annoncé `audio/webm` était donc
+accepté, rangé, et envoyé au fournisseur de transcription.
+
+**Ce n'était PAS une porte d'exécution**, et l'écrire compte : depuis M1, le type
+servi vient de l'extension posée par le serveur (`typeDepuisCle`), `nosniff` est
+appliqué partout, et la table d'extensions ne peut rendre ni HTML ni SVG. Aucun
+chemin d'exploitation n'a pu être montré. Ce qui restait ouvert était un **abus
+de ressource** — 15 Mo de n'importe quoi rangés, et une facture d'IA pour un
+fichier qui n'est pas de l'audio.
+
+**Mais le vrai trou était ailleurs que dans le constat.** `extensionPour(mimeType)`
+déduisait l'extension de rangement de cette même chaîne — et c'est l'extension
+qui décide, plus tard, du `Content-Type` qu'Atlas annonce. **Le navigateur
+commandait donc, indirectement, ce qu'Atlas dirait de ses propres fichiers.**
+
+### La règle, telle que le patron l'a posée
+
+*« Un fichier audio n'est accepté, stocké ou envoyé à un fournisseur de
+transcription que si Atlas peut identifier son format avec un niveau de
+confiance suffisant. »* Et **format inconnu → refus**, contre ce qui avait été
+proposé : laisser passer une signature illisible aurait gardé une moitié du
+défaut.
+
+**La marche à suivre en cas d'échec est écrite et ne se négocie pas :** si un
+format légitime est refusé chez lui, **on n'ouvre pas de repli sur `fichier.type`,
+on élargit `signature-audio.ts`.**
+
+### Ce qui a été écrit, et ce qui a été refusé
+
+Ni bibliothèque, ni parseur de conteneur. Lire un Matroska ou un ISO-BMFF entier
+sur une entrée hostile remplacerait un abus de ressource par une vraie surface
+d'attaque. On lit des en-têtes à positions fixes, sur quelques kilo-octets.
+
+**Deux formats n'ont PAS de signature — MP3 et AAC.** `FF Ex` apparaît par hasard
+dans n'importe quel binaire. Ce qui prouve, c'est une **chaîne de trames** : trois
+d'affilée, chacune tombant là où la précédente l'annonçait, avec les mêmes
+caractéristiques. Le débit, lui, a le droit de varier — l'exiger constant
+refuserait la moitié des MP3. Et MPEG-2 en couche III compte 72 échantillons par
+trame et non 144 : l'oublier casse la chaîne sur un fichier valable.
+
+**Trois pièges de conteneur, relevés et fermés :**
+
+| | |
+|---|---|
+| `ftyp` est à l'octet **4** | les quatre premiers portent la taille. Une vérification « en tête » refuserait TOUTES les dictées d'iPhone |
+| la marque EBML seule ne suffit pas | elle couvre toute vidéo Matroska ; le `DocType` distingue |
+| « OggS » seul ne suffit pas | une vidéo Theora est un flux Ogg ; le codec du premier paquet distingue |
+
+### La porte unique, et pourquoi elle est structurelle
+
+Les quatre chemins audio passent par `preparerAudioEntrant` :
+taille → lecture → refus si vide → format → type et extension choisis par le
+serveur → stockage ou transcription.
+
+Trois contrôles structurels tiennent l'invariant — la leçon de M3 : chaque
+chemin emploie la porte, aucun ne lit les octets en dehors, et personne ne déduit
+plus une extension d'un type MIME. Sans eux, le cinquième chemin écrit dans six
+mois refera le défaut en silence.
+
+### Ce que les contrôles ont appris en rougissant
+
+- **Un contrôle en base mesurait ZÉRO, deux fois.** Il comptait les notes sous
+  `atlas_app` sans contexte, puis sous le PROPRIÉTAIRE — or `notes_vocales`
+  porte `FORCE ROW LEVEL SECURITY`, à laquelle le propriétaire est soumis aussi.
+  Il mentait dans les deux sens : « rien n'a été rangé » aurait été rendu sur un
+  fichier hostile réellement rangé.
+- **Une assertion était fausse, pas le code** : un chantier ne porte qu'UNE note
+  vocale, la suivante remplace la précédente et l'ancienne part en file de purge.
+- **`test-upload-limits.ts` exigeait le défaut lui-même** — qu'un tampon de zéros
+  annoncé `audio/webm` soit accepté. On adapte le contrôle, on ne restaure pas
+  l'ancien comportement (`CLAUDE.md` §5 bis).
+
+### L'essai réel, et ce qu'il prouve
+
+**Un iPhone A été essayé, le 26 août 2026, et il passe.** Le patron a dicté
+depuis son propre appareil, dans Safari, sur son banc : le fichier a été accepté,
+la note traitée, et le parcours est allé jusqu'à la génération des informations
+du devis.
+
+**Ce qui reste vrai, et qui compte pour la suite :** ce poste n'a toujours ni
+iPhone ni Safari, et le témoin MP4 des suites reste une reproduction de la
+spécification. C'est un essai HUMAIN qui a levé la réserve, pas un test
+automatique — **un futur changement de `signature-audio.ts` en redemandera un.**
+
+### Ce que cet essai a fait apparaître, et qui n'est PAS de ce lot
+
+La qualité de ce qui SORT de la dictée : prestations mal organisées, quantités et
+unités mal interprétées, reprises de prix historiques incohérentes. **Lot séparé**,
+décidé par le patron le jour même.
+
+La frontière est nette et il faut la tenir : ce lot-ci garantit l'ENTRÉE du
+fichier — enregistrement, réception, reconnaissance du format, validation,
+stockage ou transcription. Ce qui suit relève du jugement de l'IA et des règles
+de chiffrage. Mêler les deux rendrait les deux illisibles, et ferait douter d'un
+lot qui, lui, tient.
+
+---
+
+## 202. La charte ne suivait le doigt qu'à moitié, et l'or se perdait en route
 
 **Ses deux remarques du 27 août 2026, dans le même message :**
 

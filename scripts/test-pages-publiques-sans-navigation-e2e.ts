@@ -196,6 +196,35 @@ async function main() {
     }
   });
 
+  // ─── LES LIENS DU CLIENT NE S'INDEXENT PAS — constat F13 ──────────────────
+  //
+  // **Ce contrôle ne prouve pas une frontière de sécurité, et il ne prétend pas
+  // le faire.** `robots.txt` est une demande, pas une serrure : ce qui protège
+  // réellement les documents du client, c'est un jeton de 256 bits et une
+  // politique en base. Ce qu'on éprouve ici est plus étroit et bien réel : que
+  // la consigne soit SERVIE, et servie à quelqu'un qui n'a pas de session.
+  //
+  // Car c'était le piège : le middleware renvoie à `/login` tout ce qui n'est
+  // pas explicitement laissé de côté. Un `robots.txt` parfaitement écrit mais
+  // caché derrière une redirection n'aurait jamais été lu par un moteur — et
+  // l'on aurait cru le garde-fou en place.
+  await cas("robots.txt est servi SANS session, et interdit tout", async () => {
+    const r = await fetch(`${BASE}/robots.txt`, { redirect: "manual" });
+    if (r.status !== 200) {
+      throw new Error(
+        `robots.txt rend ${r.status} au lieu de 200 : un moteur reçoit une redirection, ` +
+          `donc jamais la consigne. Le middleware le laisse-t-il encore passer ?`
+      );
+    }
+    const texte = await r.text();
+    if (!/User-Agent:\s*\*/i.test(texte) || !/Disallow:\s*\/\s*$/im.test(texte)) {
+      throw new Error(`robots.txt n'interdit pas tout — reçu :\n${texte}`);
+    }
+    if (/Sitemap:/i.test(texte)) {
+      throw new Error("robots.txt publie un plan de site : c'est exactement ce qu'on ne veut pas offrir");
+    }
+  });
+
   await navigateur.close();
   await pool.end();
 

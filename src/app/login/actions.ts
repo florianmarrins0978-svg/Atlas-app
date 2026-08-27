@@ -1,15 +1,13 @@
 "use server";
 
-import { headers } from "next/headers";
 import { signIn, signOut } from "@/auth";
 import { accueilPourCleAppareil, accueilPourEmail } from "@/server/accueil-apres-connexion";
 import { AuthError } from "next-auth";
 import { redirect } from "next/navigation";
 import { verifierLimite, LIMITES } from "@/server/rate-limit";
 import { logger } from "@/server/logger";
-import { getEnv } from "@/server/env";
 import { messageAttente as messageTemporisation, porteeTemporisation } from "@/lib/tentatives-connexion";
-import { sourceDepuisEntetes } from "@/lib/source-visiteur";
+import { horsProductionReelle, sourceDuVisiteur } from "@/server/source-visiteur";
 import { attenteAvantEssai, noterEchec, oublierEchecs } from "@/server/repositories/tentatives-connexion";
 import { messageRefusCle } from "@/lib/cle-appareil";
 import { optionsConnexion } from "@/server/cle-appareil";
@@ -68,67 +66,13 @@ function messageAttente(secondes: number): string {
   return `Trop de tentatives depuis cet appareil. Réessayez dans ${minutes} minute${minutes > 1 ? "s" : ""}.`;
 }
 
-/**
- * De qui vient cette tentative — **et seulement quand on peut le savoir.**
- *
- * ───────────────────────────────────────────────────────────────────────────
- * **Le défaut réparé le 23 août 2026 (audit, constat C1).** La version
- * précédente lisait ceci :
- *
- *     const transmise = entetes.get("x-forwarded-for")?.split(",")[0]?.trim();
- *
- * `x-forwarded-for` est un en-tête **que celui qui frappe écrit lui-même**. En
- * prendre la première valeur, c'est offrir un compteur neuf à chaque essai : il
- * suffisait d'incrémenter un chiffre pour ne jamais atteindre aucun seuil. La
- * protection « cinq essais par quart d'heure » n'existait donc pas dès qu'on
- * pensait à la contourner.
- *
- * **Ce qu'on fait à la place, et pourquoi c'est la seule chose honnête.**
- * Une adresse transmise ne vaut que par le mandataire qui l'a écrite. Sans
- * savoir combien de mandataires de confiance nous précèdent, aucune position
- * dans la liste n'est fiable — et deviner reviendrait à faire confiance à
- * l'attaquant. On distingue donc trois cas :
- *
- *   1. `ATLAS_PROXY_SAUTS` est posé — on sait combien de mandataires ajoutent
- *      leur ligne, donc laquelle a été écrite par le nôtre. Elle fait foi ;
- *   2. l'en-tête existe mais rien ne dit qui l'a écrit — **on n'en tire aucune
- *      valeur** : toutes ces tentatives partagent un seul et même seau. C'est
- *      exactement le comportement d'avant lorsqu'aucun en-tête n'arrivait, donc
- *      jamais plus permissif qu'aujourd'hui ;
- *   3. aucun en-tête — connexion directe, un seul seau également.
- *
- * **Ce qui reste à configurer en production, et il faut le dire :** poser
- * `ATLAS_PROXY_SAUTS` au nombre de mandataires de confiance placés devant
- * Atlas (1 pour un hébergeur ordinaire), ET s'assurer que ce mandataire
- * **écrase** `x-forwarded-for` au lieu d'y ajouter la valeur du client. Sans
- * les deux, ce seuil-ci reste commun à tout le monde — ce qui protège encore,
- * mais moins finement. Le compteur par compte, lui, ne dépend de rien de tout
- * cela (voir plus bas).
- */
-async function sourceDuVisiteur(horsProduction: boolean): Promise<string> {
-  const entetes = await headers();
-  // La règle vit dans `src/lib/source-visiteur.ts` — fonction pure, éprouvée
-  // sans requête HTTP. Ici, on ne fait que lui donner ce que le serveur voit.
-  return sourceDepuisEntetes({
-    xff: entetes.get("x-forwarded-for"),
-    sauts: getEnv().proxySauts,
-    horsProduction,
-  });
-}
+// **D'où vient une requête** — la fonction, et le raisonnement qui la
+// justifie, vivent dans `src/server/source-visiteur.ts`. Elle en a été sortie
+// le 25 août 2026 : la réponse publique à un devis (constat F9) a besoin de la
+// même, et deux implémentations d'une même règle finissent toujours par
+// diverger (`CLAUDE.md` §3).
 
-/**
- * Sommes-nous ailleurs qu'en production réelle ?
- *
- * **Une seule notion, deux usages**, et il ne faut pas qu'ils divergent : elle
- * décide si l'on distingue encore les visiteurs par leur adresse, ET sur quoi
- * la temporisation se compte. Les deux répondent à la même question — « ce
- * serveur sert-il de vrais clients ? » — et un banc d'essai, qui sert une
- * version bâtie, répond non malgré son `NODE_ENV`.
- */
-function horsProductionReelle(): boolean {
-  const env = getEnv();
-  return env.nodeEnv !== "production" || env.bancDEssai;
-}
+// `horsProductionReelle` y a suivi, pour la même raison.
 
 export async function connexionAction(
   _etatPrecedent: { erreur?: string } | undefined,

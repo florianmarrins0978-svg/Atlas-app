@@ -25,6 +25,7 @@ import assert from "node:assert/strict";
 import { Pool } from "pg";
 import { lancerNavigateur } from "./e2e-browser";
 import { creerPuisFiche } from "./_creer-chantier-e2e";
+import { jourIso } from "../src/lib/jour";
 
 const BASE = "http://localhost:3000";
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
@@ -77,7 +78,7 @@ async function nettoyer() {
  * **Un contrôle ne suppose pas l'état commun, il le lit.** Les suites partagent
  * une base ; ce qui n'est pas posé par soi ne s'invente pas.
  */
-async function joursLibresDEssai(): Promise<[string, string]> {
+async function joursLibresDEssai(): Promise<string[]> {
   const { rows } = await pool.query<{ jour: string; duree: number | null }>(
     `SELECT date_planifiee::text AS jour, duree_demi_journees AS duree
        FROM chantiers WHERE date_planifiee IS NOT NULL AND deleted_at IS NULL`
@@ -128,11 +129,18 @@ async function joursLibresDEssai(): Promise<[string, string]> {
   // rendre ce contrôle muet. Un contrôle qui se tait selon la date du jour
   // s'apprend à être ignoré (`ARCHITECTURE.md`, la suite qui rougissait le
   // samedi).
+  //
+  // **ET L'ON EN REND PLUSIEURS, PAS DEUX.** Payé le 27 août 2026 : la base
+  // disait le 31 août libre, l'écran a refusé de le retenir, et le contrôle
+  // annonçait « 1 date au lieu de 2 » sans dire laquelle ni pourquoi. C'est
+  // `verifierJourProposeAction` qui tranche — pas cette requête, qui n'en est
+  // qu'une approximation. On propose donc une réserve de candidats, et c'est le
+  // SERVEUR qui choisit lequel tient (voir `retenirUnJourQueLeServeurACCEPTE`).
   const d = new Date();
   d.setDate(d.getDate() + 3);
   const libres: string[] = [];
-  for (let i = 0; i < 70 && libres.length < 2; i++) {
-    const jour = d.toISOString().slice(0, 10);
+  for (let i = 0; i < 70; i++) {
+    const jour = jourIso(d);
     if (!pris.has(jour)) libres.push(jour);
     d.setDate(d.getDate() + 1);
   }
@@ -143,7 +151,7 @@ async function joursLibresDEssai(): Promise<[string, string]> {
         "trop chargée."
     );
   }
-  return [libres[0], libres[1]];
+  return libres;
 }
 
 /**
@@ -171,7 +179,8 @@ async function main() {
   //
   // **Le nettoyage passe AVANT le choix** : sans cela, un reliquat d'une
   // exécution précédente ferait écarter un jour parfaitement libre.
-  const [jour, jourLibre] = await joursLibresDEssai();
+  const candidats = await joursLibresDEssai();
+  const jour = candidats[0];
   equipesAvant =
     (await pool.query(`SELECT nombre_equipes FROM entreprises LIMIT 1`)).rows[0]?.nombre_equipes ?? 1;
 
@@ -348,21 +357,93 @@ async function main() {
     );
   });
 
-  // **ET ELLE EST DANS LA LIGNE DE CE JOUR-LÀ**, pas posée quelque part sur
-  // l'écran : une mention qui flotte à côté de la liste ne dirait pas de quelle
-  // date elle parle, et un avertissement qui parle à tort s'apprend à être
-  // ignoré (`CLAUDE.md` §4 ter).
-  await cas("la mention est DANS la ligne du jour, elle ne flotte pas", async () => {
-    const ligne = await page.evaluate(() => {
-      const m = document.querySelector('[data-atlas="reste-equipes"]');
-      const bouton = m ? m.closest('button[aria-pressed="true"]') : null;
-      return bouton ? (bouton.textContent || "").replace(/\s+/g, " ").trim() : null;
-    });
-    assert.ok(ligne, "la mention n'est dans aucune ligne de date retenue : elle flotte sur l'écran");
-    assert.match(
-      ligne,
-      /proposée/,
-      `la mention est dans « ${ligne} », qui n'est pas une date proposée`
+  // ─── LA CONTRE-ÉPREUVE, DANS LA MÊME PAGE ───────────────────────────────
+  //
+  // **TROIS VERSIONS DE CE CAS ONT ROUGI SUR DU CODE JUSTE**, le 25 août 2026 :
+  //
+  //   1. elle supposait le jour voisin libre — une autre suite y avait posé un
+  //      chantier ; cette base est partagée ;
+  //   2. elle supprimait le chantier puis rechargeait la page — et l'écran
+  //      servait encore le planning d'avant, donc « Reste 1 équipe sur 2 » sur
+  //      un jour que la base disait libre.
+  //
+  // Les trois fois, le message accusait l'écran de « parler à tort » sur un jour
+  // où il disait vrai. **Le pire des rouges : il envoie corriger du code juste**
+  // (`AGENTS.md`).
+  //
+  // **D'où cette version : deux jours LUS LIBRES DANS LA BASE, un seul occupé
+  // par nous, et les deux retenus dans la MÊME page.** Rien n'est supposé, rien
+  // n'est rechargé — il n'y a plus ni état commun ni fraîcheur à espérer. Et
+  // c'est une preuve plus forte : la mention suit le JOUR, elle ne se pose pas
+  // sur toutes les lignes.
+  await cas("le jour libre retenu à côté n'en porte aucune", async () => {
+    /**
+     * **C'EST LE SERVEUR QUI DIT SI UN JOUR TIENT, PAS NOTRE REQUÊTE.**
+     *
+     * **Payé le 27 août 2026.** La base disait le 31 août libre — aucun
+     * chantier, aucune absence —, `verifierJourProposeAction` l'a refusé, et la
+     * case est restée éteinte. Le contrôle annonçait alors « 1 date retenue au
+     * lieu de deux » sans dire laquelle manquait ni pourquoi, et il envoyait
+     * chercher un défaut dans un écran qui obéissait exactement à son serveur.
+     *
+     * On essaie donc les candidats l'un après l'autre et **on garde celui que
+     * l'écran retient vraiment**. Le contrôle reste entier : si aucun ne tient,
+     * il rougit — en citant la raison que le serveur affiche, plutôt qu'un
+     * nombre.
+     */
+    let jourLibre = "";
+    let derniereRaison = "";
+    const aEssayer = candidats.slice(1, 9);
+    for (const candidat of aEssayer) {
+      const case_ = await caseDuJour(page, candidat);
+      await case_.click();
+      await page
+        .locator("text=Vérification de votre planning…")
+        .waitFor({ state: "hidden", timeout: 20_000 })
+        .catch(() => undefined);
+      await page.waitForTimeout(700);
+      if (await page.locator(`[data-jour="${candidat}"][data-etat="retenu"]`).count()) {
+        jourLibre = candidat;
+        break;
+      }
+      derniereRaison =
+        (await page.locator('[data-atlas="verdict-du-jour"]').first().innerText().catch(() => "")) ||
+        derniereRaison;
+    }
+    assert.ok(
+      jourLibre,
+      `aucun des ${aEssayer.length} jours libres n'a pu être retenu par l'écran.\n` +
+        `      essayés : ${aEssayer.join(", ")}\n` +
+        `      dernière raison affichée : ${derniereRaison.replace(/\s+/g, " ").trim() || "(aucune)"}`
+    );
+
+    const chips = page.locator('button[aria-pressed="true"]').filter({ hasText: /proposée/ });
+    const retenues = await chips.count();
+    // **Un message qui NOMME les dates, pas seulement leur nombre.** « 1 au lieu
+    // de 2 » ne dit pas laquelle manque, et il a fallu trois rejouages pour
+    // l'apprendre. Un contrôle qui échoue doit désigner le bon coupable
+    // (`AGENTS.md`).
+    const libelles = retenues > 0 ? (await chips.allInnerTexts()).map((t) => t.replace(/\s+/g, " ").trim()) : [];
+    assert.equal(
+      retenues,
+      2,
+      `${retenues} date(s) retenues au lieu de deux : rien à comparer.\n` +
+        `      demandées : ${jour} puis ${jourLibre}\n` +
+        `      retenues à l'écran : ${libelles.join(" | ") || "aucune"}`
+    );
+
+    const mentions = await page.locator('[data-atlas="reste-equipes"]').count();
+    // **Le message doit désigner le BON coupable** : zéro et deux sont deux
+    // défauts opposés, et un seul message pour les deux enverrait chercher au
+    // mauvais endroit (`CLAUDE.md` §5). Vu en débranchant la mention exprès.
+    assert.equal(
+      mentions,
+      1,
+      mentions === 0
+        ? "aucune mention sur les deux dates : celle du jour à moitié pris a disparu"
+        : `${mentions} mentions pour deux dates dont une seule est prise : la mention ne suit ` +
+          `pas le jour, elle se pose sur toutes les lignes — et un avertissement qui parle ` +
+          `partout s'apprend à être ignoré`
     );
   });
 
