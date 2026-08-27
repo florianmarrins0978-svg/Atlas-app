@@ -1,0 +1,227 @@
+<title>Le bouton vert, moins lourd</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  /*
+    LE BOUTON VERT, MOINS LOURD — cinq façons, sur un vrai écran.
+
+    LE PATRON, LE 26 AOÛT 2026 : « tous les boutons en vert foncé, je les trouve
+    très opaques. Est-ce que c'est possible de modifier ça ? »
+
+    ————————————————————————————————————————————————————————————————
+    CE QUI PÈSE, ET CE QUI NE PÈSE PAS.
+
+    Le 11 août, devant le bouton carré pleine largeur, il avait déjà dit « trop
+    gros, pas esthétique ». Ce qui l'avait allégé alors n'était PAS l'arrondi :
+    c'était de lâcher la pleine largeur — un bouton qui touche les deux marges
+    n'est contenu par rien (PrimaryButton.tsx). La forme est donc réglée ; ce
+    qui reste, c'est l'APLAT : un rectangle de vert plein à 11:1 de contraste,
+    posé sur un fond crème, se lit comme un trou noir dans la page.
+
+    Cinq façons de l'alléger, et une seule chose change à chaque fois — la
+    forme, la taille, la police et le libellé sont identiques partout. Sans
+    cela, on ne compare plus rien.
+
+    ————————————————————————————————————————————————————————————————
+    CE QUI NE SE NÉGOCIE PAS, quelle que soit la réponse.
+
+    · IL RESTE UNE SEULE FORME D'ACTION PRINCIPALE. Deux formes dans la même
+      application se lisent comme un travail inachevé (PrimaryButton.tsx).
+    · LE TEXTE RESTE LISIBLE AU SOLEIL, sur un chantier. Les rapports de
+      contraste sont MESURÉS, pas jugés à l'œil — ils sont écrits sous chaque
+      proposition. Le minimum tenu partout est 4,5:1.
+    · LES SEPT CHARTES SUIVENT. Deux d'entre elles sont sombres, et sur
+      celles-là l'accent est CLAIR sur fond sombre : ce qui « allège » sur
+      crème doit encore tenir là-bas. Basculez votre téléphone en mode sombre
+      pour le voir — cette page suit.
+
+    ————————————————————————————————————————————————————————————————
+    RIEN N'EST CODÉ : le dossier src/ n'est pas touché (règle du §3 bis).
+    AUCUN SCRIPT : le choix est un <input type="radio"> qui repose une
+    variable CSS sur l'écran d'en dessous.
+  */
+
+  :root{
+    --fond:#efece6; --encre:#1c1c1a; --gris:#8a8578; --or:#B98B47;
+    --trait:rgba(28,28,26,.13); --papier:#faf9f5; --creme:#f5f3ee;
+    --pin:#2f3b2f; --pinClair:#4f5f4c; --pinHaut:#3f5040; --sauge:#5d7355;
+    --surPlein:#faf9f5;
+    --ombrePosee:0 6px 16px rgba(47,59,47,.28);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E;
+      --trait:rgba(233,229,220,.16); --papier:#201e1a; --creme:#1b1a17;
+      /* **Les pôles s'inversent sur une charte sombre** (`CLAUDE.md` §3) :
+         l'accent devient CLAIR et ce qu'on pose dessus devient SOMBRE. */
+      --pin:#9fbd82; --pinClair:#7d9a6d; --pinHaut:#b3cd99; --sauge:#6f8a62;
+      --surPlein:#171613;
+      /* Sur fond noir, une ombre sombre n'existe pas : c'est un halo clair
+         qui détache la capsule. */
+      --ombrePosee:0 6px 18px rgba(159,189,130,.30);
+    }
+  }
+  :root[data-theme="dark"]{
+    --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E;
+    --trait:rgba(233,229,220,.16); --papier:#201e1a; --creme:#1b1a17;
+    --pin:#9fbd82; --pinClair:#7d9a6d; --pinHaut:#b3cd99; --sauge:#6f8a62;
+    --surPlein:#171613;
+    --ombrePosee:0 6px 18px rgba(159,189,130,.30);
+  }
+
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--fond);color:var(--encre);
+       font:16px/1.6 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+       padding:26px 18px 70px}
+  .dedans{max-width:940px;margin:0 auto}
+  h1{font-family:Georgia,"Times New Roman",serif;font-weight:400;
+     font-size:27px;line-height:1.2;margin:0 0 8px}
+  .intro{color:var(--gris);font-size:14px;line-height:1.65;margin:0 0 18px}
+  .intro b{color:var(--encre);font-weight:600}
+  .dit{margin:0 0 24px;padding:14px 16px;border-left:3px solid var(--or);
+       background:var(--papier);font-size:14px;line-height:1.7;color:var(--gris)}
+  .dit b{color:var(--encre);font-weight:600}
+
+  .quoi{display:block;font-size:11px;letter-spacing:.13em;
+        text-transform:uppercase;color:var(--or);margin:0 0 9px}
+
+  /* ─── Le choix : cinq pastilles, aucun script ─────────────────────────── */
+  .etat{position:absolute;opacity:0;pointer-events:none}
+  .choix{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 6px;padding:0}
+  .choix label{display:inline-block;padding:9px 15px;border-radius:999px;
+       border:1px solid var(--trait);background:var(--papier);
+       font-size:14px;cursor:pointer;color:var(--encre)}
+  #v1:checked~.choix label[for=v1],#v2:checked~.choix label[for=v2],
+  #v3:checked~.choix label[for=v3],#v4:checked~.choix label[for=v4],
+  #v5:checked~.choix label[for=v5]{
+       border-color:var(--or);box-shadow:inset 0 0 0 1px var(--or)}
+
+  /* ─── L'écran, tel qu'il est ──────────────────────────────────────────── */
+  .tel{max-width:390px;background:var(--creme);border:1px solid var(--trait);
+       border-radius:22px;padding:22px 20px 26px;margin:14px 0 0}
+  .surtitre{font-size:11px;letter-spacing:.13em;text-transform:uppercase;
+            color:var(--or);margin:0 0 4px}
+  .tel h2{font-family:Georgia,"Times New Roman",serif;font-weight:400;
+          font-size:26px;margin:0 0 16px;color:var(--encre)}
+  .carte{background:var(--papier);border-radius:12px;padding:14px 16px;
+         margin:0 0 18px}
+  .ligne{display:flex;justify-content:space-between;font-size:14px;
+         padding:5px 0;color:var(--gris)}
+  .ligne b{color:var(--encre);font-weight:600;font-variant-numeric:tabular-nums}
+  .total{border-top:1px solid var(--trait);margin-top:7px;padding-top:11px}
+  .total span{font-size:15px;color:var(--encre)}
+  .total b{font-family:Georgia,"Times New Roman",serif;font-size:22px}
+
+  /* La capsule : forme, taille, police et libellé IDENTIQUES partout. Seule
+     la peinture change — sans quoi on ne comparerait plus rien. */
+  .capsule{display:inline-flex;align-items:center;justify-content:center;
+           padding:13px 36px;font-size:17px;border-radius:9999px;border:0;
+           font-family:Georgia,"Times New Roman",serif;cursor:pointer;
+           background:var(--peinture,var(--pin));color:var(--dessus,var(--surPlein));
+           box-shadow:var(--ombre,none);
+           /* **Le cerne est TOUJOURS là, transparent.** Ajouté seulement sur
+              « Cerné », il rendait cette capsule 2 px plus haute et plus large
+              que les quatre autres — mesuré, pas vu — et l'on aurait comparé
+              deux tailles en croyant comparer deux peintures. */
+           border:1.5px solid var(--cerne,transparent)}
+  .centre{display:flex;justify-content:center}
+  .secondaire{display:block;text-align:center;margin-top:14px;font-size:14px;
+              color:var(--gris);text-decoration:underline;
+              text-underline-offset:4px}
+
+  #v2:checked~.tel{--peinture:var(--pinClair)}
+  #v3:checked~.tel{--peinture:linear-gradient(180deg,var(--pinHaut),var(--pin))}
+  #v4:checked~.tel{--ombre:var(--ombrePosee)}
+  #v5:checked~.tel{--peinture:transparent;--dessus:var(--pin);--cerne:var(--pin)}
+
+  .mesure{margin:12px 0 0;font-size:12.5px;line-height:1.6;color:var(--gris)}
+  .mesure b{color:var(--encre);font-weight:600}
+  .mesure .bloc{display:none}
+  #v1:checked~.mesure .m1,#v2:checked~.mesure .m2,#v3:checked~.mesure .m3,
+  #v4:checked~.mesure .m4,#v5:checked~.mesure .m5{display:block}
+
+  .note{margin:32px 0 0;padding:15px 16px;background:var(--papier);
+        border:1px solid var(--trait);border-radius:12px;font-size:13px;
+        line-height:1.65;color:var(--gris)}
+  .note .t{display:block;font-size:11px;letter-spacing:.13em;
+           text-transform:uppercase;color:var(--or);margin-bottom:7px}
+  .note b{color:var(--encre);font-weight:600}
+</style>
+
+<div class="dedans">
+
+<h1>Le bouton vert, moins lourd</h1>
+<p class="intro"><b>Touchez les cinq mots ci-dessous</b> : le bouton de l’écran
+change sous vos yeux. Forme, taille et police restent les mêmes — seule la
+peinture bouge.</p>
+
+<p class="dit">Le 26 août 2026 : <b>« tous les boutons en vert foncé, je les
+trouve très opaques. Est-ce que c’est possible de modifier ça ? »</b></p>
+
+<span class="quoi">La peinture du bouton</span>
+
+<input class="etat" type="radio" name="v" id="v1" checked>
+<input class="etat" type="radio" name="v" id="v2">
+<input class="etat" type="radio" name="v" id="v3">
+<input class="etat" type="radio" name="v" id="v4">
+<input class="etat" type="radio" name="v" id="v5">
+
+<div class="choix">
+  <label for="v1">Aujourd’hui</label>
+  <label for="v2">Plus clair</label>
+  <label for="v3">Adouci</label>
+  <label for="v4">Posé</label>
+  <label for="v5">Cerné</label>
+</div>
+
+<div class="tel">
+  <p class="surtitre">Mon devis</p>
+  <h2>Mme Renard</h2>
+  <div class="carte">
+    <div class="ligne"><span>Taille de haie, 24 m</span><b>360,00 €</b></div>
+    <div class="ligne"><span>Évacuation</span><b>90,00 €</b></div>
+    <div class="ligne total"><span>Total TTC</span><b>540,00 €</b></div>
+  </div>
+  <div class="centre"><button class="capsule" type="button">Créer la facture</button></div>
+  <a class="secondaire" href="#">Aperçu du PDF</a>
+</div>
+
+<div class="mesure">
+  <div class="bloc m1"><b>Aujourd’hui.</b> Vert pin plein, <b>11,15:1</b> de
+  contraste. Très lisible — et c’est justement ce qui le rend lourd : à ce
+  niveau-là, il ne se pose pas sur la page, il y fait un trou.</div>
+
+  <div class="bloc m2"><b>Plus clair.</b> Le vert de survol de la charte, déjà
+  dans le dépôt (<b>#4f5f4c</b>). <b>6,49:1</b> — bien au-dessus du minimum.
+  Rien de neuf à inventer : c’est la couleur qui existe déjà pour le second
+  niveau.</div>
+
+  <div class="bloc m3"><b>Adouci.</b> Le même vert, éclairci vers le haut. La
+  capsule cesse d’être un aplat sans profondeur. <b>8,19:1</b> au point le plus
+  clair. C’est le changement le plus discret des cinq.</div>
+
+  <div class="bloc m4"><b>Posé.</b> Vert d’aujourd’hui, avec une ombre douce
+  dessous : il se détache du fond au lieu de s’y imprimer. Le contraste ne
+  bouge pas (<b>11,15:1</b>) — ce qui change est la profondeur, pas la
+  couleur.</div>
+
+  <div class="bloc m5"><b>Cerné.</b> Plus d’aplat du tout : un contour et du
+  texte vert. <b>11,15:1</b> sur le texte. Le plus léger — mais <b>il se cherche
+  au lieu de se trouver</b> sur un écran qu’on parcourt vite, gants aux
+  mains.</div>
+</div>
+
+<div class="note"><span class="t">Deux choses à savoir avant de choisir</span>
+<b>Le mode sombre suit.</b> Deux de vos sept chartes sont sombres, et là-bas le
+vert devient clair sur fond sombre. Basculez votre téléphone en sombre : cette
+page change avec lui, comme le fera l’application.
+<br><br>
+<b>Ce sera partout d’un coup.</b> Il n’existe qu’une forme de bouton principal
+dans Atlas — dix-sept écrans. C’est voulu : deux formes dans la même
+application se lisent comme un travail inachevé.
+<br><br>
+Et cette page ne touche <b>ni à vos données ni à l’application</b> : c’est une
+maquette. Rien n’est codé tant que vous n’avez pas choisi.
+</div>
+
+</div>

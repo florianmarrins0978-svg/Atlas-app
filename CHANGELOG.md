@@ -9,6 +9,24 @@ Format : le plus récent en tête.
 
 ## 2026-08-26
 
+### Maquette : cinq peintures pour le bouton vert
+
+*« Tous les boutons en vert foncé, je les trouve très opaques. Est-ce que c'est
+possible de modifier ça ? »*
+
+Cinq propositions sur un vrai écran — plus clair, adouci, posé, cerné —, et
+**une seule chose change à la fois** : forme, taille, police et libellé sont
+identiques partout, sans quoi on ne compare plus rien.
+
+Les contrastes sont **mesurés**, pas jugés à l'œil, et écrits sous chaque
+proposition : de 4,9 à 11,15:1, toutes au-dessus du minimum. La mesure a
+attrapé deux défauts invisibles à l'écran — « Cerné » était 2 px plus grand que
+les quatre autres (le cerne s'ajoutait à la boîte), et l'ombre de « Posé »
+restait vert foncé en mode sombre, donc invisible.
+
+Rien n'est codé : `appli/le-bouton-moins-lourd.html`, en attente de son choix.
+
+
 ### L'envoi du devis : trois phrases de moins
 
 *« Supprime la phrase par SMS au + repris de votre dictée + le client pourra
