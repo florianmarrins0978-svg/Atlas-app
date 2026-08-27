@@ -25,6 +25,31 @@ tiennent pas à jour et ne se corrigent pas après coup. Un verdict qui se rév�
 faux est repris **dans le dossier suivant**, noir sur blanc (`CLAUDE.md` §2 bis).
 Les tenir à jour recréerait la règle en double que `CLAUDE.md` §3 interdit.
 
+### ⏰ À LUI RAPPELER : la liste complète des travaux qu'il vend
+
+**Sa réponse du 27 août 2026 :** *« Oui j'en vend mais attend on créera une
+liste complète ensuite si tu le veux faudra que tu me le rappelle. »*
+
+Il vend donc bien de la **plantation** et de la **clôture** — deux natures qui
+n'existent **nulle part** dans le dépôt : ni dans `src/lib/lignes-vendables.ts`, ni
+dans `src/lib/prix-attribuable.ts`, ni dans `src/lib/lecons-prix.ts`. Le vocabulaire
+réellement présent se limite à : abattage, élagage, haie, dessouchage, fendage,
+grumes, broyage, évacuation, billonnage.
+
+**Ce n'est pas une tâche pour lui : c'est une dette de notre côté.** Il a
+demandé qu'on le relance, pas qu'on lui laisse le soin d'y penser. Une session
+qui reprend ce chantier commence donc par le lui redemander — en lui montrant la
+liste ci-dessus, pour qu'il ait juste à dire ce qui manque.
+
+**Ce qui reste bloqué tant qu'elle n'existe pas.** Les trois consommateurs
+ci-dessus continuent de deviner la nature par expressions régulières sur le
+libellé, alors que la colonne `prestations.nature` existe depuis le lot B
+(2026-08-27). On ne peut pas la brancher sur une liste inventée : une nature
+absente de la liste ferait retomber le travail dans le fourre-tout `principal`
+(P3), c'est-à-dire sur la ligne d'abattage — exactement le défaut que l'audit a
+mesuré. **Ne pas inventer les natures manquantes** (`CLAUDE.md` §4 : « inventer
+une prestation » est interdit) ; les lui demander.
+
 ### Le plan ajusté après cartographie (26 août 2026)
 
 `docs/audit-dictee-devis-cartographie.md`. Les suites A→H sont écrites et
@@ -35,7 +60,7 @@ rouges ; la batterie complète est à 247/249, et les deux échecs sont elles.
 - **P6 « vocabulaire au transcripteur » est RETIRÉ** — le patron l'a mis hors
   périmètre : *« ne modifie ni Whisper ni les paramètres de transcription dans
   ce lot »*. La seconde moitié de P6 (la branche catalogue) reste ouverte, mais
-  **elle n'est pas morte** : `ai/tools/calculer-chiffrage.ts` la fait vivre pour
+  **elle n'est pas morte** : `src/server/ai/tools/calculer-chiffrage.ts` la fait vivre pour
   l'assistant. Seule la dictée ne l'appelle pas.
 - **P1 se dédouble.** La migration peut partir seule ; la quantité écrite sur la
   ligne ne peut PAS partir sans nettoyer le libellé le même jour, sinon la

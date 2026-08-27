@@ -9,6 +9,28 @@ sert.
 
 ---
 
+## ⏰ IL ATTEND QU'ON LE RELANCE : LA LISTE DES TRAVAUX QU'IL VEND (27 août 2026)
+
+**Sa réponse, en toutes lettres :** *« Oui j'en vend mais attend on créera une
+liste complète ensuite si tu le veux faudra que tu me le rappelle. »*
+
+Il vend de la **plantation** et de la **clôture**. Aucune des deux n'existe dans
+le dépôt — le vocabulaire des trois modules qui classent une prestation
+(`src/lib/lignes-vendables.ts`, `src/lib/prix-attribuable.ts`, `src/lib/lecons-prix.ts`) se
+limite à : abattage, élagage, haie, dessouchage, fendage, grumes, broyage,
+évacuation, billonnage.
+
+**C'est à NOUS de rouvrir le sujet**, il l'a demandé explicitement. Une session
+qui reprend la chaîne dictée → devis le relance en lui montrant cette liste :
+il n'a qu'à dire ce qui manque. Le détail de ce qui reste bloqué en attendant
+est dans `TODO.md`, section « Dictée → devis ».
+
+**Et l'on n'invente pas les natures à sa place** (`CLAUDE.md` §4) : une liste
+devinée ferait retomber ses travaux dans le fourre-tout `principal`, c'est-à-dire
+sur la ligne d'abattage — le défaut que l'audit du 26 août a mesuré.
+
+---
+
 ## PIÈGE : UNE SUITE QUI LIT LE MOIS AFFICHÉ ROUGIT EN FIN DE MOIS (26 août 2026)
 
 `test-envoi-client-e2e` a rougi le 26 août — **et à l'identique sur `main`**. Elle

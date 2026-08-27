@@ -7,6 +7,40 @@ Format : le plus récent en tête.
 
 ---
 
+## 2026-08-27
+
+### Un rappel armé : la liste complète des travaux qu'il vend
+
+**Sa réponse, en toutes lettres :** *« Oui j'en vend mais attend on créera une
+liste complète ensuite si tu le veux faudra que tu me le rappelle. »* Il vend de
+la **plantation** et de la **clôture** ; aucune des deux n'existe dans le
+vocabulaire des trois modules qui classent une prestation
+(`src/lib/lignes-vendables.ts`, `src/lib/prix-attribuable.ts`,
+`src/lib/lecons-prix.ts`), limité à abattage, élagage, haie, dessouchage,
+fendage, grumes, broyage, évacuation, billonnage.
+
+**Ce qu'un fichier de prose n'aurait pas tenu.** Un rappel écrit en paragraphe
+se supprime au premier remaniement, et celui à qui il devait servir est
+justement celui qui ne s'en souviendra pas. Il rejoint donc le mécanisme posé le
+9 août pour la commercialisation : `scripts/verifier-memoire.mjs` refuse
+désormais une batterie où la section de `HANDOVER.md` aurait disparu, ou aurait
+perdu le mot « plantation ». Éprouvé dans les deux sens — la section retirée, le
+contrôle rougit et nomme la section.
+
+**Ce qui reste bloqué en attendant, et pourquoi on n'invente pas la liste.** La
+colonne `prestations.nature` existe depuis le lot B, mais la brancher sur des
+natures devinées ferait retomber ses travaux dans le fourre-tout `principal`,
+c'est-à-dire sur la ligne d'abattage — le défaut exact que l'audit du 26 août a
+mesuré. Les trois modules restent donc sur leurs expressions régulières jusqu'à
+ce qu'il ait dit ce qu'il vend.
+
+**Au passage :** trois renvois vers l'outil de chiffrage de l'assistant, dans
+`TODO.md` et ici, étaient écrits sans leur préfixe `src/server/` et pointaient
+donc dans le vide. `verifier:memoire` en rougissait ; corrigés en
+`src/server/ai/tools/calculer-chiffrage.ts`.
+
+---
+
 ## 2026-08-26
 
 ### Rejouer la dictée ne duplique plus la prestation
@@ -202,7 +236,7 @@ sépare ce que le client peut refuser seul.
 
 **Correction de ce que le lot précédent affirmait :** la branche catalogue n'est
 pas morte — elle est morte du côté de la dictée, vivante du côté de l'assistant
-(`ai/tools/calculer-chiffrage.ts` passe le mot-clé). La supprimer casserait
+(`src/server/ai/tools/calculer-chiffrage.ts` passe le mot-clé). La supprimer casserait
 l'assistant.
 
 **Ces deux suites ne doivent pas atteindre `main`** avant l'étape 5 du plan : une
