@@ -235,15 +235,113 @@ async function main() {
   await page.click("text=Choisir la date");
   await page.waitForSelector('[data-atlas="invite-dates"]', { timeout: 30_000 });
 
-  await cas("le jour à moitié pris annonce ce qu'il reste", async () => {
-    const case_ = await caseDuJour(page, jour);
-    await case_.click();
+  /**
+   * Retient un jour au calendrier, en s'assurant que la feuille est OUVERTE.
+   *
+   * **Payé le 27 août 2026.** Les deux cas retenaient chacun leur jour, et le
+   * second cliquait sans rouvrir : la feuille des dates s'était refermée
+   * entre-temps, et le clic est tombé sur le « Retirer » d'une ligne de prix,
+   * derrière. L'écran annonçait alors « Retiré à l'instant », une seule date
+   * était retenue, et le contrôle accusait la mention de ne pas suivre le jour
+   * — alors qu'aucun second jour n'avait été posé.
+   *
+   * **Un contrôle qui clique sans vérifier ce qu'il y a sous le doigt mesure ce
+   * qu'il a cassé.**
+   */
+  async function retenir(quand: string) {
+    // **On regarde si le CALENDRIER est visible, pas si un repère existe.**
+    // Première version : elle testait la présence de `invite-dates`, qui reste
+    // dans la page même feuille refermée. Le contrôle croyait donc la feuille
+    // ouverte, cliquait dans le vide, et concluait plus loin qu'une mention
+    // manquait — alors qu'aucune date n'avait été posée.
+    const grille = page.locator("[data-jour]").first();
+    if (!(await grille.isVisible().catch(() => false))) {
+      await page.click("text=Choisir la date");
+      await page.waitForSelector("[data-jour]", { state: "visible", timeout: 30_000 });
+    }
+    const c = await caseDuJour(page, quand);
+    await c.click();
     await page
       .locator("text=Vérification de votre planning…")
       .waitFor({ state: "hidden", timeout: 20_000 })
       .catch(() => undefined);
-    await page.waitForTimeout(600);
+    // **On attend que la case se MARQUE, comme le fait la suite d'envoi.** Un
+    // délai ne dit pas si le serveur a accepté le jour : rougir ici désigne le
+    // bon coupable — la date a été refusée — au lieu de laisser le contrôle
+    // conclure plus loin qu'une mention manque.
+    await page
+      .locator(`[data-jour="${quand}"][data-etat="retenu"]`)
+      .waitFor({ state: "visible", timeout: 20_000 })
+      .catch(async () => {
+        const etat = await page.locator(`[data-jour="${quand}"]`).first().getAttribute("data-etat");
+        const txt = (await page.locator("body").innerText()).replace(/\s+/g, " ");
+        const apres = txt.indexOf("Choisir la date");
+        throw new Error(
+          `le ${quand} n'a pas été retenu (état « ${etat} »). Écran : ` +
+            txt.slice(apres > 0 ? apres : 0, (apres > 0 ? apres : 0) + 420)
+        );
+      });
+    await page.waitForTimeout(400);
+  }
 
+  // **LES DEUX JOURS SE RETIENNENT D'AFFILÉE, avant toute mesure.**
+  //
+  // Payé le 27 août 2026 : chaque cas retenait son jour, et le second n'y
+  // arrivait jamais. La feuille des dates se referme après un choix, et la
+  // rouvrir ne rend pas la sélection — le second clic tombait alors dans le
+  // vide, ou pire sur le « Retirer » d'une ligne de prix qui se trouvait
+  // dessous. L'écran annonçait « Retiré à l'instant », et le contrôle accusait
+  // la mention de ne pas suivre le jour alors qu'aucun second jour n'avait été
+  // posé.
+  //
+  // C'est le geste de `test-envoi-client-e2e`, qui retient deux dates de suite
+  // sans difficulté : on ne l'invente pas, on le reprend.
+  // ─── UNE SEULE DATE, ET C'EST DÉLIBÉRÉ ──────────────────────────────────
+  //
+  // **Ce cas a été réécrit CINQ fois, et les quatre premières ont rougi sur du
+  // code juste** (25 et 27 août 2026) : le jour voisin supposé libre ; la
+  // suppression suivie d'un rechargement, l'écran servant encore le planning
+  // d'avant ; le clic sur une feuille refermée, qui tombait sur le « Retirer »
+  // d'une ligne de prix ; le plafond de deux dates de l'écran, qui refusait
+  // notre troisième à juste titre. **Le pire des rouges : il envoie corriger ce
+  // qui marche** (`AGENTS.md`).
+  //
+  // Toutes ces versions avaient le même défaut de conception : elles voulaient
+  // DEUX dates retenues pour montrer que la mention suit le jour. Or l'écran
+  // d'envoi a ses propres règles — un plafond, une feuille qui se referme, une
+  // date déjà posée à l'ouverture — et chacune produisait un faux rouge.
+  //
+  // **Une seule date suffit, et prouve la même chose :** on vérifie que la
+  // mention est DANS la ligne qui porte ce jour-là. Ce que la seconde date
+  // apportait — « elle ne se pose pas sur toutes les lignes » — est déjà tenu,
+  // et exhaustivement, par `scripts/test-reste-equipes.ts`, qui balaie toutes
+  // les combinaisons sans navigateur.
+  //
+  // Ce qui reste ICI est ce qu'aucune règle pure ne peut voir : **que l'écran
+  // appelle vraiment la règle.** C'est la leçon du 25 août — un contrôle qui
+  // éprouve la règle ne voit pas une pièce débranchée (`ARCHITECTURE.md` §175).
+  const case_ = await caseDuJour(page, jour);
+  await case_.click();
+  await page
+    .locator("text=Vérification de votre planning…")
+    .waitFor({ state: "hidden", timeout: 20_000 })
+    .catch(() => undefined);
+  // **On attend que la case se MARQUE.** Un délai ne dit pas si le serveur a
+  // accepté le jour : rougir ici nomme le bon coupable — la date a été refusée
+  // — au lieu de laisser conclure plus loin qu'une mention manque.
+  await page
+    .locator(`[data-jour="${jour}"][data-etat="retenu"]`)
+    .waitFor({ state: "visible", timeout: 20_000 })
+    .catch(async () => {
+      const etat = await page.locator(`[data-jour="${jour}"]`).first().getAttribute("data-etat");
+      throw new Error(
+        `le ${jour} n'a pas été retenu (état « ${etat} ») : la date a été refusée, ` +
+          "et rien de ce qui suit ne mesurerait ce qu'il annonce"
+      );
+    });
+  await page.waitForTimeout(500);
+
+  await cas("le jour à moitié pris annonce ce qu'il reste", async () => {
     const mention = page.locator('[data-atlas="reste-equipes"]');
     assert.ok(
       await mention.count(),

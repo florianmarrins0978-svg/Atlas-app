@@ -17478,3 +17478,74 @@ fichier — enregistrement, réception, reconnaissance du format, validation,
 stockage ou transcription. Ce qui suit relève du jugement de l'IA et des règles
 de chiffrage. Mêler les deux rendrait les deux illisibles, et ferait douter d'un
 lot qui, lui, tient.
+
+---
+
+## 202. La charte ne suivait le doigt qu'à moitié, et l'or se perdait en route
+
+**Ses deux remarques du 27 août 2026, dans le même message :**
+
+> *« J'aimerais que lorsque je choisis l'apparence Brume, tout ce qui est en
+> doré sur Origine le reste aussi sur Brume. »*
+>
+> *« Quand je sélectionne Brume, le dessin des catégories en bas ne change pas
+> automatiquement, je dois recharger la page. »*
+
+**Ce sont deux défauts distincts sur le même élément** — le marqueur de l'onglet
+courant, dans la barre du bas.
+
+### 1. L'or perdu, et il n'y en avait qu'un
+
+Le marqueur de Brume est une pastille (sa demande du 24 août), et elle était
+teintée de **l'accent** de la charte. L'accent de Brume est un bleu marine : le
+trait doré d'Origine devenait donc bleu.
+
+**C'était le seul endroit de l'accueil où l'or se perdait**, et cela a été
+MESURÉ plutôt que cherché à l'œil : on relève la couleur du texte, du fond, des
+traits et des ombres de chaque élément sur les deux chartes, puis on compare.
+Trente-six endroits portent l'or sur Origine ; un seul le perdait.
+
+**Le libellé de l'onglet, lui, n'a jamais été doré** — il porte l'encre de
+l'écran. La variable qui le passait à l'accent a donc été retirée : sa consigne
+dit que l'or reste l'or, pas qu'une autre couleur s'invite.
+
+> **Le piège de la mesure, et il a failli faire crier au défaut sur une couleur
+> juste :** l'or s'écrit `rgb(185, 139, 71)` quand il est posé, et
+> `color(srgb 0.72549 0.545098 0.278431 / 0.11)` dès qu'un `color-mix` le
+> teinte. N'en reconnaître qu'une forme signale un or perdu là où il ne l'est
+> pas.
+
+### 2. Le changement en direct ne repeignait que les couleurs
+
+`repeindre` (`ApparenceClient.tsx`) reparcourait `c.jetons` de son côté —
+c'est-à-dire les **seules couleurs**. Tout ce qu'une charte pose d'autre — la
+police des titres, les cinq variables du marqueur — n'arrivait qu'au rendu
+suivant, celui du serveur. D'où : les couleurs suivaient le doigt, le reste
+attendait un rechargement.
+
+**C'est la TROISIÈME occurrence de la même faute**, et les deux premières sont
+écrites dans `chartes.ts` : deux façons de dire « ce que la charte écrit »
+divergent au premier ajout. Le §3 de `CLAUDE.md` vaut aussi pour un parcours
+d'objet.
+
+### Poser ne suffit pas : il faut EFFACER
+
+Les variables vivent sur `<html>`. Venant de Brume, ses cinq variables d'onglet
+y sont encore : une charte qui ne les pose pas doit les **retirer**, sans quoi
+sa pastille survit sur Origine.
+
+**C'est un état qu'aucun rechargement ne produit** — donc que personne ne voit
+en essayant à la main, et que seul un contrôle qui mesure les DEUX SENS attrape.
+D'où `toutesLesVariables()`, calculée depuis les chartes elles-mêmes : une liste
+tenue à la main s'oublierait à la première variable ajoutée.
+
+### Ce qui tient tout cela
+
+`scripts/test-charte-suit-le-doigt-e2e.ts` — les quatre cas d'origine ne
+pouvaient pas voir ce défaut : ils mesurent tous une couleur, et les couleurs
+suivaient. Deux cas s'y ajoutent, et chacun a été vu rouge pour SA raison : le
+marqueur qui ne suit pas, et l'or remplacé par l'accent.
+
+`scripts/test-chartes.ts` exigeait l'accent : il a été réécrit pour exiger l'or.
+Une suite qui réclame ce que le patron a fait retirer rend son écran impossible
+à changer.
