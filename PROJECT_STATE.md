@@ -13,11 +13,87 @@ ligne « fait » qui ne l'est pas coûte plus cher qu'une ligne absente.
 
 ---
 
+## Ses salariés se comptent à part de ses équipes (26 août 2026)
+
+**Sa réponse à la planche 97 : A**, arrêtée sur maquette puis codée le jour même
+(`appli/salaries-et-equipes.html`, migration 0067, `ARCHITECTURE.md` §192).
+
+Deux compteurs là où il n'y en avait qu'un : **les équipes** disent combien de
+chantiers tiennent dans une journée, **les salariés** disent qui part. Régler
+l'un ne dérègle plus l'autre — un paysagiste à quatre salariés peut enfin ne
+mener qu'un chantier à la fois.
+
+Sur le chantier, **la façon de faire n'a pas bougé d'un geste** (sa consigne) :
+la pastille sur la demi-journée, la liste qui s'ouvre, les cases cochées une à
+une, « Terminé ». Ce sont les libellés qui changent — « Équipe A » a disparu, le
+repli est « Salarié 3 ».
+
+La charge du planning est plafonnée à la capacité : trois gars sur un même
+chantier ne ferment pas une journée qui en accepte deux. **À effectif égal —
+son cas — le planning se remplit exactement comme avant.**
+
+Un artisan seul reste à **zéro** salarié : aucune case à cocher, rien n'a changé
+pour lui.
+
+Reste ouvert : le renommage `equipes` → `salaries` en base et dans le code, tenu
+à part parce qu'il touche vingt-trois fichiers (`TODO.md`).
+## Les phrases du régime de TVA, réécrites (26 août 2026)
+
+*« Quand le client le paye / quand je met la facture. C'est pas clair, on
+comprend rien. »* **Fait.** Le surtitre dit le geste — « je reverse ma TVA aux
+impôts » —, chaque ligne répond à « et alors ? », et une phrase annonce ce que
+le choix change sur le mois affiché, y compris quand il n'y change rien.
+`ARCHITECTURE.md` §195.
+
+---
+
+## Le rythme de la TVA fait bouger l'écran (26 août 2026)
+
+*Sa plainte : « quand je change entre tous les mois et tous les trois mois,
+c'est pareil, rien ne se passe ».* **Corrigé** — il manquait la revalidation,
+et `force-dynamic` ne la remplace pas (`ARCHITECTURE.md` §193).
+
+**Sa seconde plainte du même soir n'était PAS un défaut** : entre les deux
+régimes de TVA, rien ne change quand toutes les factures du mois ont été payées
+dans le mois. Ce qui manquait est une phrase à l'écran : **codée** le soir même
+(`ARCHITECTURE.md` §195).
+
+---
+
+## Un choix fait par erreur se défait (26 août 2026)
+
+*Sa demande : « si par erreur j'ai sélectionné un des 3 champs je ne peux plus
+le désélectionner ! Je dois pouvoir désélectionner ».*
+
+Sur la page que reçoit son client, un second appui sur la date déjà cochée la
+**défait**, et rien ne se coche à la place. Vaut aussi pour « une autre date »,
+dont le calendrier se referme. Le détail — et pourquoi `onClick` plutôt
+qu'`onChange` — est dans `ARCHITECTURE.md` §191.
+
+**Le même piège dort sur le choix entre deux tarifs ambigus**
+(`PropositionPrixSection.tsx`) : il ne l'a pas signalé, c'est noté dans
+`TODO.md`.
+
+---
+
+## « Terminés » : plus de traits, et la TVA se voit cliquable (26 août 2026)
+
+*Ses deux demandes, planche `appli/termines-sans-traits.html`, sa réponse :
+« le 3 ». Le détail est dans `ARCHITECTURE.md` §198.*
+
+**Fait.** Plus aucun trait entre les rangées. La carte « Ma TVA à déclarer »
+porte un contour doré — même forme, même titre, même montant.
+
+**Ce qui a demandé plus que le retrait.** Le trait tenait le second étage d'une
+rangée à distance du nom de la suivante : retiré sec, deux rangées se liraient
+comme une seule. La respiration passe de 19 à 24 px, et la première rangée garde
+22 px — tout ce qui reste de la démarcation qu'il avait demandée le 23 août.
+
 ## Le numéro de ses documents se choisit (26 août 2026)
 
 *Sa demande : « dans la catégorie facture il faut rajouter le format de numéro,
 c'est obligatoire il me semble ». Puis « garde le F », « 6 chiffres », « oui
-remettre à 0 chaque début d'année ». Le détail est dans `ARCHITECTURE.md` §189.*
+remettre à 0 chaque début d'année ». Le détail est dans `ARCHITECTURE.md` §188.*
 
 **Fait.** Réglages → Devis & factures → « Le numéro de mes documents » : cinq
 formats, chacun montrant ce qu'il donne, enregistré au fur et à mesure. Le

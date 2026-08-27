@@ -14,7 +14,7 @@ import { versJourIso, ajouterJours, fenetreProposition, compterOccupation } from
 // tient plus. Ces contrôles-ci raisonnent donc sur une journée entière, la
 // durée par défaut — c'est-à-dire exactement leur hypothèse d'origine.
 const UNE_JOURNEE = 2;
-const RIEN_DE_PLANIFIE = { occupation: compterOccupation([]), nombreEquipes: 1, dureeDemiJournees: UNE_JOURNEE };
+const RIEN_DE_PLANIFIE = { occupation: compterOccupation([], 1), nombreEquipes: 1, dureeDemiJournees: UNE_JOURNEE };
 import { nettoyerBase } from "./_test-db";
 
 let passed = 0;
@@ -69,7 +69,7 @@ async function main() {
     const apres = premiersJoursLibres(
       LUNDI,
       {
-        occupation: compterOccupation([{ jour: aOccuper, moment: "matin", dureeDemiJournees: UNE_JOURNEE }]),
+        occupation: compterOccupation([{ jour: aOccuper, moment: "matin", dureeDemiJournees: UNE_JOURNEE }], 1),
         nombreEquipes: 1,
         dureeDemiJournees: UNE_JOURNEE,
       },

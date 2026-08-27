@@ -1,0 +1,390 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas — « Terminés » sans traits, et la TVA qui se voit cliquable</title>
+</head>
+<body>
+<style>
+  /*
+    ————————————————————————————————————————————————————————————————
+    « TERMINÉS » — LES TRAITS PARTENT, ET LA CARTE DE TVA SE VOIT
+    ————————————————————————————————————————————————————————————————
+
+    Sa demande du 26 août 2026, capture de l'écran codé à l'appui :
+
+      « Fais-moi une maquette dynamique de cette page, pas de photo !
+        Je veux pouvoir essayer.
+        Avec tous les traits supprimés entre chaque ligne.
+        Et le "Ma TVA à déclarer", on ne comprend pas trop qu'on peut cliquer
+        dessus, corrige ça — mais garde ce style et cette forme, j'aime bien. »
+
+    DEUX DEMANDES, ET ELLES NE SE TRAITENT PAS PAREIL.
+
+      1. **Les traits** : c'est tranché, il n'y a rien à proposer. Ils partent.
+         Ce qui les remplace, en revanche, se regarde — voir plus bas.
+      2. **La carte de TVA** : « garde ce style et cette forme » ferme la
+         porte à tout ce qui la transformerait en autre chose. Quatre façons
+         de dire « on peut appuyer » SANS y toucher sont donc proposées, et
+         elles s'essaient au doigt.
+
+    CE QUI REMPLACE LES TRAITS, ET POURQUOI CE N'EST PAS RIEN.
+
+    Le trait sous « 3 chantiers à facturer » n'était pas décoratif : il vient
+    de SA demande du 23 août — « essaye de laisser un peu d'espace entre cette
+    phrase-là et le premier client, histoire qu'on fasse bien la démarcation ».
+    Il avait demandé de l'espace ; un trait avait été posé parce que l'espace
+    seul se mange au premier ajout de contenu.
+
+    Les traits partis, la démarcation est rendue par ce qu'il avait demandé au
+    départ : de l'espace, et davantage qu'avant. Les lignes, elles, respirent
+    de 24 px au lieu de 19 — sans trait, deux lignes trop serrées se lisent
+    comme une seule.
+
+    POURQUOI LA CARTE NE SE VOIT PAS CLIQUABLE, AUJOURD'HUI.
+
+    Elle est posée sur un fond presque identique au sien — #faf9f5 sur #f5f3ee.
+    Elle ne porte ni contour, ni ombre, ni rien qui ressemble aux boutons du
+    même écran. Elle a donc la forme d'un BANDEAU D'INFORMATION, et c'est comme
+    ça qu'elle se lit : un chiffre affiché, pas un objet qu'on touche.
+
+    Ce que l'écran a déjà comme vocabulaire du geste : la capsule. « FACTURER »
+    en est une, les onglets en sont, tous ses boutons le sont depuis le 12 août.
+    La proposition 2 s'en sert plutôt que d'inventer un signe de plus.
+
+    CE QUI EST ÉCARTÉ D'AVANCE, ET IL N'Y A PAS À Y REVENIR :
+
+      • **une flèche au bout** — « arrête de mettre des flèches, c'est moche »
+        (25 août, redit le soir même). Une flèche « › » de navigation serait
+        défendable en théorie ; elle a été refusée deux fois en pratique ;
+      • **un mot de plus** — « pense toujours à mettre le moins de mots
+        possible » (25 août). « Voir le relevé » sous la carte marcherait, et
+        ajouterait une ligne à lire sur un écran qui en porte déjà beaucoup ;
+      • **changer la forme** — il vient d'écrire qu'il l'aime.
+
+    CE QUI EST FAUX DANS CETTE PLANCHE, ET QUI EST DÉLIBÉRÉ. Les trois
+    chantiers, leurs montants et le total de TVA sont ceux de SA capture du
+    26 août — c'est ce qui permet de comparer à l'écran qu'il a sous les yeux.
+    Rien n'est recalculé ici : cette planche ne fait pas de comptes, elle
+    montre une mise en page.
+
+    RIEN N'EST CODÉ TANT QU'IL N'A PAS CHOISI (`CLAUDE.md` §3 bis).
+  */
+
+  :root{
+    --fond:#e6e3dc; --carte:#f5f3ee; --encre:#1c1c1a; --encre-douce:#4a4a44;
+    --gris:#8a8578; --or:#B98B47; --trait:rgba(28,28,26,.13);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --fond:#141310; --carte:#1e1c18; --encre:#e9e5dc; --encre-douce:#c9c4b8;
+      --gris:#8a867c; --or:#C9A15E; --trait:rgba(233,229,220,.16);
+    }
+  }
+  :root[data-theme="dark"]{
+    --fond:#141310; --carte:#1e1c18; --encre:#e9e5dc; --encre-douce:#c9c4b8;
+    --gris:#8a867c; --or:#C9A15E; --trait:rgba(233,229,220,.16);
+  }
+
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;background:var(--fond)}
+  body{color:var(--encre);font:16px/1.55 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+       padding:0 0 54px;-webkit-text-size-adjust:100%}
+
+  .entete{max-width:430px;margin:0 auto;padding:26px 20px 0;text-align:center}
+  .entete .sur{margin:0;font-size:9.5px;font-weight:500;letter-spacing:.3em;
+               text-transform:uppercase;color:var(--or)}
+  .entete h1{margin:11px 0 0;font:400 29px/1.12 ui-serif,Georgia,"Iowan Old Style",serif;
+             letter-spacing:-.015em}
+  .entete p{margin:12px 0 0;font-size:14px;color:var(--encre-douce);line-height:1.62}
+  .entete p b{color:var(--encre)}
+
+  /* ── Le sélecteur : quatre cartes, un seul téléphone ──────────────────
+     Sur un téléphone, quatre écrans côte à côte font quatre défilements
+     avant de comparer. On en montre UN, et on change. */
+  .choix{max-width:430px;margin:22px auto 0;padding:0 14px;display:grid;
+         grid-template-columns:repeat(2,1fr);gap:7px}
+  .choix button{appearance:none;border:0;cursor:pointer;font:inherit;
+                background:transparent;color:var(--gris);padding:11px 6px 10px;
+                border-radius:13px;font-size:11.5px;font-weight:600;
+                letter-spacing:.08em;text-transform:uppercase;line-height:1.3;
+                box-shadow:inset 0 0 0 1px var(--trait);min-height:50px}
+  .choix button[aria-pressed="true"]{background:var(--encre);color:var(--carte);
+                                     box-shadow:none}
+
+  .dit{max-width:430px;margin:14px auto 0;padding:0 20px;font-size:13.5px;
+       line-height:1.6;color:var(--encre-douce);text-align:center;min-height:62px}
+  .dit b{color:var(--encre)}
+  .dit .retenu{color:var(--or);font-weight:600}
+
+  /* ── Le téléphone ─────────────────────────────────────────────────────
+     Les couleurs de l'écran sont celles de l'application, FIGÉES : c'est ce
+     qu'il a sous les yeux, et une maquette qui change de teinte selon le
+     réglage du téléphone ne se compare plus à rien. */
+  .tel{
+    --e-fond:#f5f3ee; --e-plage:#faf9f5; --e-encre:#1c1c1a; --e-douce:#4a4a44;
+    --e-gris:#8a8578; --e-or:#B98B47; --e-pin:#2f3b2f; --e-trait:rgba(28,28,26,.12);
+    max-width:430px;margin:18px auto 0;background:var(--e-fond);color:var(--e-encre);
+    border-radius:26px;overflow:hidden;box-shadow:0 18px 46px rgba(20,18,14,.2);
+    min-height:660px;display:flex;flex-direction:column}
+  .corps{flex:1;padding:24px 0 10px}
+
+  .titre-ecran{margin:0 26px;display:flex;align-items:center;justify-content:space-between;gap:14px}
+  .titre-ecran h2{margin:0;font:400 40px/1 ui-serif,Georgia,"Iowan Old Style",serif;
+                  letter-spacing:-.02em}
+  .bulle{width:52px;height:52px;flex:none;border-radius:999px;background:var(--e-pin);
+         display:flex;align-items:center;justify-content:center}
+  .bulle svg{width:22px;height:22px;stroke:#faf9f5;fill:none;stroke-width:1.6}
+
+  /* ── LA CARTE DE TVA ─────────────────────────────────────────────────
+     Sa forme ne bouge dans AUCUNE des quatre : même rectangle, même rayon
+     de 4 px, même fond, même titre doré en capitales, même mois en serif,
+     même montant vert à droite. Ce qui change tient dans le contour et dans
+     la capsule — « garde ce style et cette forme, j'aime bien ». */
+  .tva{display:flex;align-items:center;justify-content:space-between;gap:12px;
+       margin:18px 26px 0;padding:17px 15px;border-radius:4px;
+       background:var(--e-plage);cursor:pointer;appearance:none;border:0;
+       width:calc(100% - 52px);text-align:left;font:inherit;color:inherit;
+       transition:transform .12s ease, box-shadow .12s ease, background .12s ease}
+  .tva .quoi{min-width:0}
+  .tva .nom{display:block;font-size:10.5px;font-weight:700;letter-spacing:.22em;
+            text-transform:uppercase;color:var(--e-or)}
+  .tva .mois{display:block;margin-top:3px;font:400 16.5px/1.3 ui-serif,Georgia,serif;
+             white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .tva .somme{flex:none;font:400 21px/1.2 ui-serif,Georgia,serif;color:var(--e-pin);
+              font-variant-numeric:tabular-nums;white-space:nowrap}
+
+  /* **L'appui se SENT, dans les quatre.** Une carte qui ne bouge pas sous le
+     pouce laisse croire qu'on a raté la cible, et l'on appuie deux fois. */
+  .tva:active{transform:scale(.985)}
+
+  /* 2 — LA CAPSULE. Le montant prend la forme des boutons de l'écran :
+     « FACTURER » juste en dessous en est une, les onglets aussi. On ne lui
+     apprend rien de neuf — on réemploie le seul signe du geste qu'il connaît
+     déjà par cœur sur cette page. */
+  .tel[data-carte="capsule"] .tva .somme,
+  .tel[data-carte="deux"] .tva .somme{
+    background:var(--e-pin);color:#faf9f5;border-radius:999px;
+    padding:9px 17px;font-size:18px;display:inline-block}
+
+  /* 3 — LE CONTOUR. La carte cesse d'être un aplat posé sur un fond presque
+     identique : elle devient un objet, avec un bord. Le bord est doré et non
+     gris — l'or est déjà la couleur de son titre, et la carte reste d'un seul
+     morceau. */
+  .tel[data-carte="contour"] .tva,
+  .tel[data-carte="deux"] .tva{
+    box-shadow:inset 0 0 0 1.5px rgba(185,139,71,.55)}
+  .tel[data-carte="contour"] .tva:active,
+  .tel[data-carte="deux"] .tva:active{
+    box-shadow:inset 0 0 0 1.5px rgba(185,139,71,.9);background:#f2efe6}
+
+  /* ── Les onglets ────────────────────────────────────────────────────── */
+  .onglets{display:flex;gap:8px;margin:22px 26px 0}
+  .onglets button{appearance:none;border:0;cursor:pointer;font:inherit;font-size:13px;
+                  min-height:40px;padding:0 16px;border-radius:999px;
+                  background:transparent;color:var(--e-gris);
+                  box-shadow:inset 0 0 0 1px var(--e-trait)}
+  .onglets button[aria-pressed="true"]{background:var(--e-encre);color:var(--e-plage);
+                                       box-shadow:none}
+
+  /* ── Le compte, puis les lignes ─────────────────────────────────────
+     AUCUN TRAIT — sa demande du 26 août. Ce qui tenait la démarcation, c'est
+     maintenant l'espace : 30 px sous la phrase, 24 px de respiration par
+     ligne. Sans cela, deux lignes voisines se lisent comme une seule. */
+  .liste{margin:30px 26px 0}
+  .compte{margin:0 0 8px;font-size:14px;font-weight:700;line-height:1.6}
+  .compte .or{color:var(--e-or)}
+
+  .ligne{display:flex;align-items:center;gap:14px;padding:24px 0;
+         border-radius:10px;cursor:pointer;transition:background .12s ease}
+  .ligne:first-of-type{padding-top:22px}
+  .ligne:active{background:rgba(28,28,26,.045)}
+  .ligne .qui{min-width:0;flex:1}
+  .ligne .nom{display:block;font:400 17px/1.2 ui-serif,Georgia,serif;
+              white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .ligne .etat{display:block;margin-top:5px;font-size:13px;line-height:1.5;color:var(--e-or)}
+  .ligne .etat.faite{color:var(--e-gris)}
+  .ligne .euros{flex:none;font:400 16px/1.2 ui-serif,Georgia,serif;
+                font-variant-numeric:tabular-nums;white-space:nowrap}
+  .facturer{flex:none;display:flex;align-items:center;min-height:44px;
+            padding:0 15px;border-radius:999px;background:var(--e-pin);color:#faf9f5;
+            font-size:12px;font-weight:600;letter-spacing:.09em;text-transform:uppercase}
+
+  /* ── Le relevé, quand on appuie sur la carte ─────────────────────────
+     Il ne sert qu'à prouver que l'appui MÈNE quelque part : c'est ce dont il
+     doute en regardant la carte. Rien d'autre n'y est fidèle. */
+  .releve{margin:18px 26px 0;padding:17px 15px;border-radius:4px;background:var(--e-plage)}
+  .releve h3{margin:0;font:400 21px/1.2 ui-serif,Georgia,serif}
+  .releve p{margin:8px 0 0;font-size:13px;line-height:1.6;color:var(--e-douce)}
+  .releve button{appearance:none;border:0;cursor:pointer;font:inherit;margin-top:14px;
+                 min-height:44px;padding:0 18px;border-radius:999px;font-size:13px;
+                 background:transparent;color:var(--e-encre);
+                 box-shadow:inset 0 0 0 1px var(--e-trait)}
+
+  /* ── La barre du bas ────────────────────────────────────────────────── */
+  .barre{display:flex;justify-content:space-between;gap:4px;padding:16px 15px 20px;
+         background:var(--e-plage);box-shadow:inset 0 1px 0 var(--e-trait)}
+  .barre span{font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--e-gris)}
+  .barre span.actif{color:var(--e-encre);padding-bottom:7px;
+                    border-bottom:2px solid var(--e-or)}
+
+  .note{max-width:430px;margin:22px auto 0;padding:0 20px;font-size:13px;
+        line-height:1.65;color:var(--encre-douce)}
+  .note h2{margin:0 0 8px;font:400 18px/1.25 ui-serif,Georgia,serif;color:var(--encre)}
+  .note ul{margin:8px 0 0;padding-left:18px}
+  .note li{margin:5px 0}
+  .note b{color:var(--encre)}
+</style>
+
+<header class="entete">
+  <p class="sur">Atlas · planche du 26 août 2026</p>
+  <h1>« Terminés » : les traits partent,<br>et la TVA se voit</h1>
+  <p>Les traits entre les lignes sont <b>déjà retirés</b> dans les quatre.
+     Ce qui change, c'est la carte de TVA — <b>essayez d'appuyer dessus</b>.</p>
+</header>
+
+<div class="choix" role="group" aria-label="La carte de TVA">
+  <button type="button" data-carte="rien" aria-pressed="false">1 · Comme aujourd'hui</button>
+  <button type="button" data-carte="capsule" aria-pressed="true">2 · La capsule</button>
+  <button type="button" data-carte="contour" aria-pressed="false">3 · Le contour</button>
+  <button type="button" data-carte="deux" aria-pressed="false">4 · Les deux</button>
+</div>
+
+<p class="dit" id="dit"></p>
+
+<section class="tel" id="tel" data-carte="capsule">
+  <div class="corps">
+    <div class="titre-ecran">
+      <h2>Terminés</h2>
+      <span class="bulle" aria-hidden="true">
+        <svg viewBox="0 0 24 24"><path d="M21 11.5a8.4 8.4 0 0 1-9 8.4 9 9 0 0 1-3.9-.9L3 21l1.9-4.6A8.4 8.4 0 0 1 12 3a8.4 8.4 0 0 1 9 8.5z"/></svg>
+      </span>
+    </div>
+
+    <button class="tva" id="tva" type="button">
+      <span class="quoi">
+        <span class="nom">Ma TVA à déclarer</span>
+        <span class="mois">Août 2026</span>
+      </span>
+      <span class="somme">1 046,33 €</span>
+    </button>
+
+    <div id="releve" hidden>
+      <div class="releve">
+        <h3>Mon relevé de TVA</h3>
+        <p>C'est ici que la carte mène. Cette planche ne montre pas le relevé —
+           elle sert à vérifier qu'on comprend qu'on peut y aller.</p>
+        <button type="button" id="fermer-releve">Revenir</button>
+      </div>
+    </div>
+
+    <div class="onglets" role="group" aria-label="Ce qu'on regarde">
+      <button type="button" data-onglet="tout" aria-pressed="false">Tout</button>
+      <button type="button" data-onglet="attente" aria-pressed="true">À facturer</button>
+    </div>
+
+    <div class="liste" id="liste"></div>
+  </div>
+
+  <nav class="barre">
+    <span>Chantiers</span><span>Planning</span><span class="actif">Terminés</span>
+    <span>Paysage</span><span>Réglages</span>
+  </nav>
+</section>
+
+<div class="note">
+  <h2>Ce qui a été écarté, et pourquoi</h2>
+  <ul>
+    <li><b>Une flèche au bout de la carte.</b> « Arrête de mettre des flèches,
+        c'est moche » — dit le 25 août, redit le soir même.</li>
+    <li><b>Un « Voir le relevé » sous le montant.</b> Ça marcherait, et ça
+        ajoute une ligne à lire sur un écran qui en porte déjà beaucoup.</li>
+    <li><b>Changer la forme de la carte.</b> Vous venez d'écrire que vous
+        l'aimez.</li>
+  </ul>
+  <h2 style="margin-top:18px">Ce qui remplace les traits</h2>
+  <p>Le trait sous « 3 chantiers à facturer » venait de votre demande du
+     23 août — <i>« laisser un peu d'espace entre cette phrase-là et le premier
+     client, histoire qu'on fasse bien la démarcation »</i>. Vous aviez demandé
+     de l'espace ; c'est l'espace qui le remplace, et les lignes respirent de
+     24 px au lieu de 19. Sans cela, deux lignes voisines se liraient comme une
+     seule.</p>
+</div>
+
+<script>
+  // ── Les données de SA capture du 26 août ────────────────────────────────
+  // Trois chantiers à facturer, leurs montants, et deux factures déjà parties
+  // pour que l'onglet « Tout » ne soit pas vide. Rien n'est recalculé ici :
+  // cette planche montre une mise en page, elle ne fait pas de comptes.
+  const CHANTIERS = [
+    { nom: "Mr. Eric",                      attente: true,  montant: "0,00 €" },
+    { nom: "Mr. Martins",                   attente: true,  montant: "360,00 €" },
+    { nom: "Chantier test — Muret Clisson", attente: true,  montant: null },
+    { nom: "Mme Bernard",                   attente: false, montant: "1 240,00 €", quand: "Facturé le 20 août" },
+    { nom: "Mr. Lemoine",                   attente: false, montant: "890,00 €",   quand: "Facturé le 14 août" },
+  ];
+
+  const DITS = {
+    rien:    "<b>Ce que vous avez aujourd'hui.</b> La carte est posée sur un fond presque identique au sien : elle a la forme d'un bandeau d'information, pas d'un objet qu'on touche.",
+    capsule: "<span class='retenu'>Le montant prend la forme des boutons de l'écran</span> — « FACTURER » juste en dessous en est un. Aucun signe nouveau à apprendre.",
+    contour: "<b>La carte prend un bord</b>, et cesse d'être un aplat sur un fond de la même couleur. L'or est déjà celui de son titre.",
+    deux:    "<b>Les deux à la fois.</b> Plus visible, et peut-être trop : une carte qui crie plus fort que la liste qu'elle surmonte.",
+  };
+
+  const tel = document.getElementById("tel");
+  const dit = document.getElementById("dit");
+  const liste = document.getElementById("liste");
+  const releve = document.getElementById("releve");
+
+  function poserCarte(clef) {
+    tel.dataset.carte = clef;
+    dit.innerHTML = DITS[clef];
+    for (const b of document.querySelectorAll(".choix button")) {
+      b.setAttribute("aria-pressed", String(b.dataset.carte === clef));
+    }
+  }
+  for (const b of document.querySelectorAll(".choix button")) {
+    b.addEventListener("click", () => poserCarte(b.dataset.carte));
+  }
+
+  function dessinerListe(onglet) {
+    const vues = onglet === "attente" ? CHANTIERS.filter((c) => c.attente) : CHANTIERS;
+    const combien = CHANTIERS.filter((c) => c.attente).length;
+    const compte = onglet === "attente"
+      ? `${combien} chantier${combien > 1 ? "s" : ""} à facturer, tous mois confondus.`
+      : `<span class="or">${combien} à facturer</span> · ${CHANTIERS.length - combien} facturés`;
+
+    liste.innerHTML =
+      `<p class="compte">${compte}</p>` +
+      vues.map((c) => `
+        <div class="ligne">
+          <span class="qui">
+            <span class="nom">${c.nom}</span>
+            <span class="etat${c.attente ? "" : " faite"}">${
+              c.attente
+                ? (c.montant === null ? "Pas encore facturé" : `Pas encore facturé · ${c.montant} prévus`)
+                : c.quand
+            }</span>
+          </span>
+          ${c.attente ? `<span class="facturer">Facturer</span>` : `<span class="euros">${c.montant}</span>`}
+        </div>`).join("");
+  }
+  for (const b of document.querySelectorAll(".onglets button")) {
+    b.addEventListener("click", () => {
+      for (const a of document.querySelectorAll(".onglets button")) {
+        a.setAttribute("aria-pressed", String(a === b));
+      }
+      dessinerListe(b.dataset.onglet);
+    });
+  }
+
+  // L'appui MÈNE quelque part : c'est précisément ce dont il doute.
+  document.getElementById("tva").addEventListener("click", () => { releve.hidden = false; });
+  document.getElementById("fermer-releve").addEventListener("click", () => { releve.hidden = true; });
+
+  poserCarte("capsule");
+  dessinerListe("attente");
+</script>
+</body>
+</html>

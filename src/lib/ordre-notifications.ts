@@ -1,65 +1,58 @@
 /**
- * L'ordre des cartes de l'accueil — et la place que chaque sorte est sûre d'avoir.
+ * L'ordre des cartes de l'accueil : **le plus récent en haut, et rien d'autre.**
  *
- * ─── CE QUE CETTE RÈGLE TIENT, ET POURQUOI ELLE EXISTE ──────────────────────
+ * ─── SA DEMANDE DU 26 AOÛT 2026, capture à l'appui ──────────────────────────
  *
- * L'accueil ne pose qu'un petit nombre de cartes ; le reste attend derrière
- * « N autres devis à regarder ». Deux sortes s'y disputent la place :
+ * *« Je viens de recevoir un devis retourné, il devrait apparaître en premier.
+ * L'ordre doit être dernier arrivé en tête de liste. Le plus récent en haut. »*
  *
- *   · les RAPPELS — un chantier sans devis, un devis sans réponse, un chantier
- *     fini pas facturé. Ils se fabriquent tout seuls, et ils s'accumulent tant
- *     que la situation dure ;
- *   · les RÉPONSES de clients — accepté, refusé, correction demandée, lien
- *     expiré. Ce sont des ÉVÉNEMENTS : quelqu'un a agi, et il attend.
+ * Sur sa capture, la nouvelle du jour était DEUXIÈME, sous un rappel vieux de
+ * treize jours. Rien ne le lui expliquait, et rien ne pouvait le lui expliquer :
+ * l'ordre se décidait par SORTE de carte, pas par date.
  *
- * **Le patron a tranché deux fois, le 16 août 2026, sur photographies.**
+ * ─── CE QUE CETTE RÈGLE REMPLACE, ET POURQUOI ON L'ASSUME ───────────────────
  *
- * D'abord *« fait la B »* : les rappels passent DEVANT — ce qu'il doit faire
- * avant ce qu'on lui a répondu. Puis, la conséquence lui ayant été montrée en
- * image — trois chantiers sans devis suffisaient à masquer TOUTES les réponses
- * —, *« fait le »* pour la place garantie.
+ * Elle remplace un arrangement qu'il avait lui-même choisi le 16 août : les
+ * rappels devant, avec une place garantie aux réponses de clients. Cet
+ * arrangement répondait à une vraie crainte — *trois chantiers sans devis
+ * suffisaient à masquer TOUTES les réponses*, photographié et corrigé le jour
+ * même.
  *
- * **La raison, et elle vaut plus que la règle :** une sorte qui grossit toute
- * seule ne doit pas pouvoir enterrer une sorte rare et périssable. Un client
- * qui demande une correction attend une réaction ; un rappel, lui, attendra
- * demain sans que rien ne soit perdu.
+ * **L'ordre chronologique répond à la même crainte, et mieux :** une réponse
+ * qui vient d'arriver est, par construction, la plus récente — elle passe donc
+ * en tête, sans qu'aucune place ait besoin d'être réservée. Ce qu'un tressage
+ * obtenait par une exception, la date l'obtient par la règle.
+ *
+ * **Ce que cela coûte, et il faut le dire :** une réponse VIEILLE et non
+ * acquittée peut désormais passer derrière des rappels plus frais. L'ancien
+ * tressage lui gardait une place ; celui-ci non. C'est le prix d'un ordre qui
+ * s'explique en une phrase — et un ordre qu'on ne peut pas expliquer est un
+ * ordre qu'on croit cassé, ce qui vient d'arriver.
  *
  * ─── CE QU'ELLE NE FAIT PAS ─────────────────────────────────────────────────
  *
- * Elle ne réserve rien quand il n'y a qu'une sorte à l'écran : sans réponse de
- * client, les rappels prennent toutes les places, et inversement. Réserver dans
- * le vide laisserait un trou là où il y a quelque chose à montrer.
+ * Elle ne regarde ni la sorte, ni l'urgence, ni le montant. Une seule question :
+ * **quand est-ce arrivé ?**
  *
  * Pure et sans base : c'est ce qui permet à `scripts/test-ordre-notifications.ts`
  * de l'éprouver sur les cas limites qu'un écran ne produit qu'un jour sur cent.
  */
 
+/** Le minimum qu'une carte doit porter pour être rangée. */
+export type CarteDatee = { quand: number };
+
 /**
- * Tresse les deux sortes pour que chacune se voie, sans changer qui vient en
- * premier.
+ * Range les cartes de la plus récente à la plus ancienne.
  *
- * @param rappels   les rappels, dans leur ordre (le plus ancien d'abord)
- * @param reponses  les réponses de clients, dans leur ordre
- * @param visibles  combien de cartes l'accueil montre sans qu'on déplie
+ * **Le tri ne modifie pas ce qu'on lui donne.** Les tableaux viennent de l'état
+ * d'un écran React : les trier sur place ferait muter une valeur que le rendu
+ * suivant relit, et l'ordre changerait sans qu'aucune donnée ait bougé.
+ *
+ * **À date égale, l'ordre d'arrivée décide** — et il est stable, `Array.sort`
+ * l'étant depuis longtemps. Deux cartes de la même seconde ne doivent pas
+ * changer de place d'un rendu à l'autre : un écran qui se réordonne tout seul
+ * sous le doigt fait rater le bouton qu'on visait.
  */
-export function ordonnerLesCartes<T>(rappels: T[], reponses: T[], visibles: number): T[] {
-  // Une seule sorte : rien à garantir, et rien à déplacer.
-  if (rappels.length === 0 || reponses.length === 0) return [...rappels, ...reponses];
-
-  // **Au moins une place à chacun, et le RESTE aux rappels.** À deux places
-  // visibles cela donne « un rappel, une réponse » ; à trois, « deux rappels,
-  // une réponse » — son choix B est respecté à chaque fois, c'est la DERNIÈRE
-  // place visible qui revient aux réponses.
-  //
-  // `Math.max(1, …)` couvre le cas d'un écran réglé à une seule carte : la
-  // place garantie ne peut pas retirer au rappel la seule qu'il ait.
-  const placesRappels = Math.max(1, Math.min(rappels.length, visibles - 1));
-  const placesReponses = Math.max(0, visibles - placesRappels);
-
-  return [
-    ...rappels.slice(0, placesRappels),
-    ...reponses.slice(0, placesReponses),
-    ...rappels.slice(placesRappels),
-    ...reponses.slice(placesReponses),
-  ];
+export function ordonnerLesCartes<T extends CarteDatee>(...sortes: T[][]): T[] {
+  return sortes.flat().sort((a, b) => b.quand - a.quand);
 }

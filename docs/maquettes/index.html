@@ -50,6 +50,11 @@
 
   <p class="famille">Tout d’un coup</p>
 
+  <a class="item" href="../../appli/salaries-et-equipes.html">
+    <span class="no">97</span><span class="titre">Vos salariés, et ce qui remplit le planning</span><span class="fleche">→</span>
+    <span class="quoi">Sa demande du 25 août 2026 : <b>« un curseur + ou − qui définit le nombre de salariés, et pouvoir affilier des noms ; ceux-là permettront d’ajouter ces noms au chantier, et plus les équipes A ou B. Néanmoins les équipes doivent toujours servir à définir le remplissage du planning »</b>. <b>Ce que le code dit</b> (<code>src/lib/equipes.ts</code>, <code>entreprise.nombreEquipes</code>) : un seul nombre porte DEUX responsabilités — la capacité du planning, et la fabrique des libellés « Équipe A / B ». Les séparer est juste. <b>Trois propositions essayables</b> : <b>A</b> curseur salariés + on coche les gens sur le chantier, <b>B</b> les gens rangés dans des équipes, le chantier prend l’équipe et le planning écrit les prénoms, <b>C</b> la A sans le curseur des salariés. <b>La planche rend le défaut touchable</b> plutôt que de l’affirmer : en A, monter le curseur à 5 sans taper de nom laisse l’écran annoncer 5 salariés quand le chantier n’en connaît que 3 — deux vérités sur la même question, ce que <code>CLAUDE.md</code> §3 interdit. <b>Une remarque lui est posée, pas imposée</b> : il demande ce curseur, c’est son appel. En B, baisser le compteur d’équipes montre ce que deviennent les gens de celle qui disparaît — ils restent visibles sous « Sans équipe » plutôt que d’être perdus sans geste. Le doublon (la même personne sur deux chantiers le même jour) est signalé sur les deux chantiers. Le curseur des <b>équipes</b> reste dans les trois : c’est une capacité, rien ne la compte à sa place.</span>
+  </a>
+
   <a class="item" href="../../appli/ecran-equipe.html">
     <span class="no">96</span><span class="titre">L’écran Équipe, dégraissé</span><span class="fleche">→</span>
     <span class="quoi">Sa demande du 25 août 2026 : <b>« combien partent en même temps, ça ne veut pas dire grand-chose ; il y a beaucoup d’infos, il faut synthétiser »</b>. À une équipe, l’écran aligne QUATRE blocs, dont deux qui disent la même chose à quinze lignes d’écart. La planche <b>compte les mots</b> — 83 aujourd’hui contre 24 — plutôt que d’affirmer que c’est plus court. Trois propositions <b>essayables</b>, et le compteur se touche : c’est en passant de 1 à 2 que chaque proposition montre ce qu’elle garde.</span>
@@ -72,6 +77,11 @@
 
   <p class="famille">L’entretien récurrent</p>
 
+  <a class="item retenu" href="../../appli/ou-composer-ma-fiche.html">
+    <span class="no">▶</span><span class="titre">La rendre visible — ESSAYABLE</span><span class="fleche">→</span>
+    <span class="quoi">Sa remarque du 26 août 2026 sur l’écran livré une heure plus tôt : <b>« c’est bien mais juste une phrase, on la trouve difficilement ; je pense qu’un onglet carré serait le mieux »</b>. Trois formes — une carte, deux carrés, un bouton d’en-tête —, <b>à la place qu’il a déjà tranchée</b>, chacune avec son défaut écrit.</span>
+  </a>
+
   <a class="item retenu" href="../../appli/ma-fiche-rangee.html">
     <span class="no">▶</span><span class="titre">La liste, dans Paysage — ESSAYABLE</span><span class="fleche">→</span>
     <span class="quoi">Sa proposition du 26 août 2026, après la planche des deux fiches : <b>sortir la liste des Réglages</b> et la ranger sous la fiche de chantier. Deux emplacements, <b>chacun avec son défaut écrit</b> — sur l’écran (long) ou derrière une porte (un appui de plus). La réserve au patron ne change pas.</span>
@@ -90,6 +100,11 @@
   <a class="item retenu" href="../../appli/choisir-l-heure.html">
     <span class="no">▶</span><span class="titre">Choisir l’heure au pouce — ESSAYABLE</span><span class="fleche">→</span>
     <span class="quoi">Le temps passé sans le taper : la molette du téléphone, les quarts d’heure, ou la molette Atlas — faite <b>sans une ligne de JavaScript</b> (accroche au défilement et repère collé), donc elle tourne au doigt sur son téléphone. <b>Déplacée dans <code>appli/</code> le 25 août 2026</b>, pour la même raison.</span>
+  </a>
+
+  <a class="item retenu" href="../../appli/quand-je-reverse-la-tva.html">
+    <span class="no">▶</span><span class="titre">Quand je reverse la TVA — ESSAYABLE</span><span class="fleche">→</span>
+    <span class="quoi">Sa capture du 26 août 2026 : <b>« Quand le client le paye / quand je met la facture. C’est pas clair, on comprend rien. »</b> Puis, dans la foulée : <b>« lorsque je change entre les deux, rien ne se passe, c’est normal ? »</b> — et c’était normal, ce qui manquait était une PHRASE. <b>Retenu le 26 août : les libellés réécrits, sans le tableau d'exemple</b> — il explique, et un écran n'explique pas. Reste la ligne qui dit ce que le choix change sur le mois affiché, y compris quand il n’y change rien.</span>
   </a>
 
   <p class="famille">La fiche client</p>
@@ -713,6 +728,9 @@
 
   <a class="item" href="../../appli/format-de-numero.html">
     Le numéro de mes devis et factures — cinq formats, et le défaut du « 2026 » figé
+  </a>
+  <a class="item" href="../../appli/termines-sans-traits.html">
+    « Terminés » sans traits, et la carte de TVA qui se voit cliquable — quatre façons, sa forme intacte
   </a>
 
   <a class="item" href="../../appli/allure-de-mes-devis.html">

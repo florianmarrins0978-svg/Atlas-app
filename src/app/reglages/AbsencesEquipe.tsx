@@ -4,12 +4,12 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { colors, font, libelleCaps, voile } from "@/lib/design-tokens";
 import BottomSheet from "@/components/atlas/BottomSheet";
-import { equipesAffichees, libelleEquipe } from "@/lib/equipes";
+import { salariesAffiches, libelleSalarie } from "@/lib/equipes";
 import { libelleAbsence, phraseDuRefus, refusDeLAbsence } from "@/lib/absences-equipe";
 import { noterAbsenceAction, retirerAbsenceAction } from "./actions";
 
 /**
- * « Absences » — les jours où une équipe n'est pas là.
+ * « Absences » — les jours où quelqu'un n'est pas là.
  *
  * *Le patron, le 14 août 2026 : « Comment on fait si jamais il y a une équipe
  * qui doit partir en déplacement pour cinq jours ? Est-ce qu'il y a un moyen de
@@ -19,18 +19,23 @@ import { noterAbsenceAction, retirerAbsenceAction } from "./actions";
  * ─────────────────────────────────────────────────────────────────────────────
  * **CE QUE ÇA FAIT, ET CE QUE ÇA NE FAIT PAS.**
  *
- * Une équipe absente **ne compte plus** dans les dates proposées au client, ces
- * jours-là. Avec deux équipes dont une en déplacement, Atlas se comporte
- * exactement comme s'il n'y en avait qu'une — puis tout revient normal, sans
+ * Un salarié absent **ne compte plus** dans les dates proposées au client, ces
+ * jours-là. Avec deux gars dont un en déplacement, Atlas se comporte
+ * exactement comme s'il n'y en avait qu'un — puis tout revient normal, sans
  * que le patron ait rien à défaire. C'est tout : ni solde de congés, ni
- * validation, ni salarié. Une équipe est une file du planning, pas une
- * personne (`ARCHITECTURE.md` §88).
+ * validation, ni paie.
  *
- * **Le client ne voit jamais rien de ceci** — ni les équipes, ni les absences.
+ * **CE BLOC PARLE DE GENS DEPUIS LE 26 AOÛT 2026**, et il parlait de files du
+ * planning avant. La coupure demandée ce jour-là (planche 97) a donné à la
+ * capacité son propre compteur : ce qu'on note absent ici, ce sont les
+ * personnes qu'il a nommées, et c'est ce qu'il cherchait en écrivant
+ * « déplacement pour cinq jours ».
+ *
+ * **Le client ne voit jamais rien de ceci** — ni les gens, ni les absences.
  * Il voit une date, comme avant.
  *
  * ─────────────────────────────────────────────────────────────────────────────
- * **CE BLOC N'EXISTE PAS À UNE SEULE ÉQUIPE, et ce n'est pas un oubli.** Seul,
+ * **CE BLOC N'EXISTE PAS SANS SALARIÉ, et ce n'est pas un oubli.** Seul,
  * noter son absence reviendrait à fermer l'entreprise : plus aucune date ne
  * serait proposable, et rien à l'écran ne l'expliquerait. Le geste juste dans
  * ce cas est l'agenda extérieur, qui bloque la période pour de bon — la phrase
@@ -50,12 +55,12 @@ export type AbsenceAffichee = {
 };
 
 export default function AbsencesEquipe({
-  nombreEquipes,
+  nombreSalaries,
   noms,
   initialAbsences,
   aujourdHui,
 }: {
-  nombreEquipes: number;
+  nombreSalaries: number;
   /** Ce que la base porte, par rang. Un rang absent est un cas ordinaire. */
   noms: { rang: number; nom: string | null }[];
   initialAbsences: AbsenceAffichee[];
@@ -79,7 +84,7 @@ export default function AbsencesEquipe({
   // une suppression qui n'a pas eu lieu (`ARCHITECTURE.md` §48).
   const [retirees, setRetirees] = useState<Set<string>>(new Set());
 
-  if (nombreEquipes <= 1) {
+  if (nombreSalaries <= 0) {
     return (
       <p
         className="mx-[26px] mt-[30px] border-t pt-[18px] text-[12px] leading-[1.7]"
@@ -95,10 +100,10 @@ export default function AbsencesEquipe({
     );
   }
 
-  const lignesEquipes = equipesAffichees(noms, nombreEquipes);
+  const lignesEquipes = salariesAffiches(noms, nombreSalaries);
   const nomDuRang = (r: number) =>
-    libelleEquipe(lignesEquipes.find((e) => e.rang === r) ?? { rang: r, nom: null }, nombreEquipes) ??
-    `Équipe ${r}`;
+    libelleSalarie(lignesEquipes.find((e) => e.rang === r) ?? { rang: r, nom: null }, nombreSalaries) ??
+    `Salarié ${r}`;
 
   const absences = initialAbsences.filter((a) => !retirees.has(a.id));
 
@@ -171,7 +176,7 @@ export default function AbsencesEquipe({
       {absences.length === 0 ? (
         <p className="px-[26px] py-2 text-[13px] leading-[1.7]" style={{ color: colors.muted }}>
           Personne d’absent. Un déplacement, un congé, un arrêt : notez-le ici et
-          Atlas ne proposera plus cette équipe ces jours-là.
+          Atlas n’enverra plus personne à sa place ces jours-là.
         </p>
       ) : (
         <div className="px-[26px]">
@@ -227,8 +232,8 @@ export default function AbsencesEquipe({
       </button>
 
       <p className="mx-[26px] mt-3 text-[12px] leading-[1.7]" style={{ color: colors.muted }}>
-        Une équipe absente <span style={{ color: colors.ink }}>ne compte plus</span> ces
-        jours-là : Atlas ne proposera qu’une date à la fois, et tout revient normal
+        Un absent <span style={{ color: colors.ink }}>ne compte plus</span> ces
+        jours-là : Atlas propose une date de moins, et tout revient normal
         ensuite. Vos clients ne voient rien de tout ceci.
       </p>
 
@@ -241,11 +246,11 @@ export default function AbsencesEquipe({
         </p>
 
         <div className="flex flex-col gap-px overflow-hidden rounded-xl" style={{ backgroundColor: colors.lineSoft }}>
-          <Ligne libelle="Équipe">
+          <Ligne libelle="Qui">
             <select
               value={rang}
               onChange={(e) => setRang(Number(e.target.value))}
-              aria-label="Équipe absente"
+              aria-label="Qui est absent"
               className="w-full bg-transparent text-right text-[15.5px] outline-none"
               style={{ color: colors.ink }}
             >

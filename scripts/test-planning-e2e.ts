@@ -91,16 +91,21 @@ async function main() {
     );
   }
   await pool.query(
-    `UPDATE entreprises SET nombre_equipes = 2
+    // **Les DEUX compteurs, depuis sa demande du 26 août 2026** : celui des
+    // équipes dit combien de chantiers tiennent dans une journée, celui des
+    // salariés décide des noms cochables sur une demi-journée. Ne poser que le
+    // premier laisserait l'écran sans une seule case à cocher — et la suite
+    // accuserait le produit d'avoir perdu les équipes.
+    `UPDATE entreprises SET nombre_equipes = 2, nombre_salaries = 2
       WHERE id = (SELECT entreprise_id FROM chantiers WHERE id = $1)`,
     [chantierId]
   );
   // **Deux équipes NOMMÉES, comme sur la planche et comme chez lui.**
   //
-  // Sans nom, l'écran écrit son étiquette de repli — « Équipe A » —, qui mesure
-  // 91 px là où « Équipe ? » en fait 75 : seize de plus que tout ce que la
-  // planche 84 dessine, et la ligne déborde alors de quatre pixels. Ce cas-là
-  // existe (une entreprise qui n'a pas nommé ses équipes) et il est noté dans
+  // Sans nom, l'écran écrit son étiquette de repli — « Salarié 1 » depuis le
+  // 26 août 2026, « Équipe A » avant lui —, plus large que le « Qui ? » que
+  // dessine la planche 84 : la ligne déborde alors de quelques pixels. Ce cas-là
+  // existe (une entreprise qui n'a pas nommé ses gars) et il est noté dans
   // `TODO.md` pour lui être montré — il ne se répare pas ici, parce que le
   // corriger, c'est retoucher un dessin qu'il a validé (`CLAUDE.md` §3 bis).
   //
@@ -440,7 +445,7 @@ async function main() {
     const carte = page.locator(`[data-atlas="carte-jour"][data-jour="${JOUR}"]`);
     const pastille = carte.locator('[data-bloc="apres_midi"] [data-atlas="equipe"]');
     assert.equal(await pastille.getAttribute("data-vide"), "1");
-    assert.equal((await pastille.innerText()).trim(), "Équipe ?");
+    assert.equal((await pastille.innerText()).trim(), "Qui ?");
   });
 
   // ─── DÉPLACER ───────────────────────────────────────────────────────────
@@ -448,7 +453,7 @@ async function main() {
   // **Sa ligne tient sur UN trait, et cela se mesure.**
   //
   // Trouvé le 21 août 2026 en REGARDANT une capture : sur un chantier dont
-  // l'équipe n'est pas choisie, « Équipe ? » est plus large qu'un prénom, et
+  // personne n'est choisi, « Qui ? » est plus étroit qu'un prénom, et
   // « Retirer » basculait à la ligne suivante. La planche 84 ne se replie pas :
   // elle resserre les petits boutons d'une ligne de demi-journée
   // (`.demi .petit{padding:7px 9px}`), et la transcription avait perdu la règle.
@@ -1090,6 +1095,106 @@ async function main() {
       2,
       "le samedi n'affiche pas ses deux demi-journées"
     );
+  });
+
+  // ─────────────────────────────────────────────────────────────────────
+  // « TOUT PAREIL » : les titres de section portent la pastille d'un jour
+  //
+  // Sa demande du 26 août 2026, capture à l'appui : *« le "sans date",
+  // mets-le comme le vendredi 28 août, avec le rectangle ovale qui l'entoure,
+  // même couleur, tout pareil. "En attente du client", fais pareil. »*
+  //
+  // **On compare les deux pastilles ENTRE ELLES, jamais à une couleur écrite.**
+  // Huit chartes cohabitent, dont deux sombres : figer « #ede4d8 » ici ferait
+  // rougir la suite le jour où il change de charte, sur du code juste
+  // (`CLAUDE.md` §3). Ce qu'il a demandé, c'est l'identité — c'est donc
+  // l'identité qu'on mesure.
+  // ─────────────────────────────────────────────────────────────────────
+  await essai("« Sans date » porte la même pastille qu'un jour", async () => {
+    // **Le décor est POSÉ, pas espéré.** Il faut les deux à l'écran en même
+    // temps : une pastille de jour (donc la liste amenée sur la semaine de
+    // `JOUR`) et un titre encadré (donc au moins un chantier sans date). Sans
+    // ce montage, le contrôle refuse de conclure — et il a raison, mais il ne
+    // prouve alors plus rien.
+    const { rows: libres } = await pool.query<{ id: string }>(
+      `UPDATE chantiers SET date_planifiee = NULL
+        WHERE id = (SELECT id FROM chantiers
+                     WHERE date_planifiee IS NOT NULL AND deleted_at IS NULL AND id <> $1
+                     ORDER BY created_at LIMIT 1)
+        RETURNING id, $2::text AS rendu`,
+      [chantierId, JOUR]
+    );
+    try {
+      await allerAuPlanning();
+      await toucherLeJour(JOUR);
+      await mesurerLesDeuxPastilles();
+    } finally {
+      // On redate EXACTEMENT ce qu'on a libéré : une suite qui abîme le décor
+      // des suivantes coûte plus cher que la mesure ne rapporte.
+      if (libres.length > 0) {
+        await pool.query(`UPDATE chantiers SET date_planifiee = $2 WHERE id = ANY($1::uuid[])`, [
+          libres.map((r) => r.id),
+          JOUR,
+        ]);
+      }
+    }
+  });
+
+  async function mesurerLesDeuxPastilles() {
+    const vu = await page.evaluate(() => {
+      const jour = document.querySelector('[data-atlas="date-planifiee"]') as HTMLElement | null;
+      const titres = [...document.querySelectorAll('[data-atlas="titre-encadre"]')] as HTMLElement[];
+      if (!jour || titres.length === 0) return null;
+      // **Aucune fonction NOMMÉE dans ce bloc**, et ce n'est pas du style :
+      // `tsx` compile avec `keepNames`, qui enrobe toute fonction posée dans une
+      // constante d'un appel à `__name`. Cette fonction-là n'existe pas dans le
+      // navigateur, et la mesure tombe sur « __name is not defined » — une
+      // erreur qui accuse le produit alors qu'elle vient de l'outillage.
+      const mesures = [jour, ...titres].map((e) => {
+        const st = getComputedStyle(e);
+        return {
+          fond: st.backgroundColor,
+          encre: st.color,
+          rayon: parseFloat(st.borderTopLeftRadius),
+          hauteur: Math.round(e.getBoundingClientRect().height),
+        };
+      });
+      return { jour: mesures[0], titres: mesures.slice(1), combien: titres.length };
+    });
+    assert.ok(
+      vu,
+      "aucune pastille de jour ou aucun titre encadré sur l'écran : il n'y a rien à comparer"
+    );
+    // Un aplat transparent n'est pas une pastille — et un contrôle qui mesure
+    // zéro ne mesure rien (`CLAUDE.md` §5).
+    assert.ok(
+      !/rgba\(0, 0, 0, 0\)|transparent/.test(vu!.jour.fond),
+      `la pastille du jour ne porte aucun fond : ${vu!.jour.fond}`
+    );
+    assert.ok(vu!.jour.hauteur > 0, "la pastille du jour mesure zéro pixel : la mise en page n'est pas appliquée");
+    for (const t of vu!.titres) {
+      assert.equal(t.fond, vu!.jour.fond, `un titre de section ne porte pas le fond du jour : ${t.fond}`);
+      assert.equal(t.encre, vu!.jour.encre, `un titre de section ne porte pas l'encre du jour : ${t.encre}`);
+      assert.equal(t.rayon, vu!.jour.rayon, `un titre de section n'est pas aussi arrondi : ${t.rayon}`);
+      assert.equal(t.hauteur, vu!.jour.hauteur, `un titre de section n'a pas la hauteur du jour : ${t.hauteur}`);
+    }
+  }
+
+  // Sa demande du même jour : *« supprime le trait sous Jean Louis »*. Avec un
+  // seul chantier en attente, le filet ne séparait rien — il soulignait un nom.
+  await essai("le dernier chantier sans date n'est pas souligné", async () => {
+    await allerAuPlanning();
+    const vu = await page.evaluate(() => {
+      const lignes = [...document.querySelectorAll('[data-atlas="sans-date"]')] as HTMLElement[];
+      if (lignes.length === 0) return null;
+      return lignes.map((l) => parseFloat(getComputedStyle(l).borderBottomWidth) || 0);
+    });
+    if (!vu) return; // rien en attente d'un jour : il n'y a rien à mesurer.
+    assert.equal(vu[vu.length - 1], 0, `le dernier « sans date » porte encore un filet de ${vu[vu.length - 1]} px`);
+    // Et le filet reste ENTRE deux lignes : il sépare, c'est sa raison d'être.
+    for (let i = 0; i < vu.length - 1; i++) {
+      assert.ok(vu[i] > 0, `la ligne ${i + 1} sur ${vu.length} a perdu le filet qui la sépare de la suivante`);
+    }
   });
 
   await contexte.close();

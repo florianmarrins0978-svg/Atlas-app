@@ -45,15 +45,163 @@ remisant les modifications — ce n'est donc pas une régression. La route exist
 
 **Relevé le 26 août 2026, sur trois batteries d'affilée du même arbre.** À
 chaque tour, une ou deux suites tombent — et **jamais les mêmes** :
+`test-reduction-devis-e2e` et `test-tva-au-paiement-e2e` au premier tour,
+`test-lecons-prix-e2e` au deuxième.
+
+**Les trois sont VERTES rejouées seules**, immédiatement après, et aucune n'est
+touchée par le lot en cours. Rien n'a été joué en parallèle de la batterie — la
+règle du 26 août a été respectée.
+
+**C'est le piège déjà écrit dans `HANDOVER.md` :** un délai fixe à la place d'un
+signal. Sous la batterie entière, la machine est chargée, l'action serveur met
+plus longtemps que le délai, et la suite lit l'écran d'avant. `test-lecons-prix`
+vient pourtant d'être porté de 30 à 60 secondes le même jour — **allonger ne
+suffit plus**, et c'est ce que ce constat ajoute.
+
+**Ce qu'il faudrait, pour qui reprend :** remplacer l'attente par un témoin — la
+valeur relue en base, la classe que le composant pose — plutôt que d'allonger
+les délais un à un. Le seuil suivant sera atteint par la machine suivante.
+
+## Deux migrations portent le numéro 0067
+
+`0067_propositions_sans_chantier.sql` et `0067_salaries_a_part.sql`, posées le
+même jour par deux sessions. **Rien ne casse** : `run-migrations.ts` trie les
+noms de fichiers et suit chacun par SON nom, si bien que les deux s'appliquent,
+dans l'ordre alphabétique.
+
+**Et il ne faut PAS les renuméroter** : la clé de suivi est le nom du fichier.
+Renommer l'une la ferait rejouer sur toute base qui l'a déjà appliquée. Le
+numéro suivant est **0068**, à prendre une seule fois.
+
+## ✅ ~~Coder « Quand je reverse la TVA »~~ — fait le 26 août 2026
+
+~~Sa capture : « quand le client le paye / quand je met la facture, c'est pas
+clair, on comprend rien ». Il a choisi B sans le tableau d'exemple.~~
+`ARCHITECTURE.md` §195.
+
+**Ce qui reste ouvert**, et qui n'est pas ce lot : la phrase compare les deux
+régimes sur la période AFFICHÉE. Elle ne dit rien des mois précédents, où
+l'écart peut être tout autre. Il ne l'a pas demandé, et l'ajouter chargerait un
+écran qu'il veut court — mais le jour où il posera la question, c'est cette
+ligne-là qu'il faudra étendre, pas une seconde.
+
+---
+
+## Huit numéros de paragraphe en double dans `ARCHITECTURE.md`
+
+**§127, §128, §129, §134, §135, §136, §164, §165** portent chacun DEUX
+paragraphes sans rapport. Ils viennent tous de la même mécanique : deux sessions
+écrivent le fichier le même jour, prennent le même numéro, et **la fusion réussit
+sans rien dire** quand les deux titres ne tombent pas au même endroit.
+
+**Ce qui a été fait le 26 août 2026 :** `verifier:memoire` refuse désormais tout
+doublon NEUF, et nomme ces huit-là dans `DOUBLONS_CONNUS`. La liste doit rester
+exacte — un numéro démêlé qu'on y laisserait fait rougir le contrôle, si bien
+qu'on ne peut pas oublier de la raccourcir en nettoyant.
+
+**Ce qui reste, et pourquoi ça n'a pas été fait dans la foulée :** les démêler
+veut dire renuméroter huit paragraphes et **tous les renvois qui les citent**,
+dans un fichier que sept sessions écrivaient ce soir-là. Le remède aurait été
+pire que le mal.
+
+**Le jour où on le fera** : un lot à lui seul, sur une soirée calme, en suivant
+l'idiome déjà employé ailleurs (`§126 bis`, `§126 ter`) pour ne rien déplacer —
+et en corrigeant les renvois du même geste.
+
+---
+
+## ⏳ `test-fiche-pendant-relance.ts` — rouge sur `main`, et ce n'est PAS une régression
+
+**Mesuré le 26 août 2026, pas supposé :** rejouée sur `main` nu (`git stash`),
+la suite rougit exactement pareil. **Et elle est repassée verte le soir même,
+dans une batterie complète jouée sur une machine reposée** — elle dépend donc
+aussi de la charge, comme celles listées plus bas. Son message est honnête — *« le veilleur n'a
+jamais tenté de relance : le montage ne reproduit pas le cas réel »* : c'est son
+auto-contrôle qui REFUSE de rendre un vert qui ne prouverait rien
+(`CLAUDE.md` §5). Le montage ne déclenche plus la relance dans cet
+environnement.
+
+**Pourquoi ça compte :** c'est la suite qui défend la correction du 16 août — la
+fiche d'état publiée pendant que le veilleur relance le serveur. Tant qu'elle est
+rouge, ce garde-fou ne prouve rien, et c'est lui qui lui évite d'aller rallumer
+un espace qui tourne (`CLAUDE.md` §1 bis).
+
+À reprendre dans un lot à part : le sujet est le veilleur, pas le produit.
+
+---
+
+## Renommer `equipes` en `salaries` — la dette du lot du 26 août
+
+**Ce n'est pas un caprice de vocabulaire, c'est un piège pour la prochaine
+session :** la table `equipes` porte les SALARIÉS depuis la migration 0067,
+pendant que `entreprises.nombre_equipes` porte, lui, la vraie capacité du
+planning. Qui lit le schéma sans lire son commentaire se trompera.
+
+Ce que ça touche, compté et non estimé : **vingt-trois fichiers** de `src/`,
+quarante-quatre scripts de contrôle, les politiques RLS, les index et les
+contraintes nommées (`equipes_du_chantier_uk`,
+`equipes_du_chantier_chantier_entreprise_fk`, `equipes_entreprise_rang_uk`), plus
+`absences_equipe.equipe_id` et `utilisateurs.equipe_id`.
+
+**Pourquoi ça n'a pas été fait dans le même lot** : sa consigne du 24 août —
+*« ne fais rien qui peut endommager l'appli »*. Un renommage de cette taille
+mêlé à un changement de comportement rend la relecture impossible et la panne
+indémêlable. Séparés, chacun se vérifie.
+
+**Le jour où on le fera** : un lot à lui seul, aucune autre modification dedans,
+et la batterie complète avant ET après.
+
+---
+
+## ~~Séparer la capacité du planning et les gens qui partent~~ — **fait le 26 août 2026**
+
+Sa demande du 26 août 2026, et **la planche 97 lui pose la question** :
+`appli/salaries-et-equipes.html`. Trois propositions, rien n'est codé.
+
+**Sa réponse : A**, et *« on garde la même façon de faire »* pour l'affiliation.
+Codé le jour même — `ARCHITECTURE.md` §192, migration 0067.
+
+**Ce qui reste ouvert, et qui n'est pas ce lot :** l'étiquette de repli
+« Salarié 3 » est plus large que le « Équipe ? » que dessine la planche 84, et
+la ligne du planning déborde alors de quelques pixels chez une entreprise qui
+n'a nommé personne. Le corriger, c'est retoucher un dessin qu'il a validé
+(`CLAUDE.md` §3 bis) : à lui montrer d'abord.
+
+**Ce que le lot coûtera, le jour où il choisit** — établi en lisant le code,
+pas supposé :
+
+- une table `salaries` (entreprise, nom), et `withEntreprise` comme partout ;
+- une table de liaison `salaries_du_chantier` en A et C ; en B, une colonne
+  d'équipe sur `salaries` suffit ;
+- `libelleEquipe()` (`src/lib/equipes.ts`) cesse de fabriquer « Équipe A » à
+  partir de `nombreEquipes` : les deux usages du nombre se séparent enfin ;
+- l'écran Équipe des Réglages (planche 96, dont il attend aussi la réponse) et
+  la feuille de chantier suivent.
+
+**Un piège à ne pas rater en B :** baisser le compteur d'équipes ne doit perdre
+personne. La planche montre ce qu'il faut faire — les gens restent visibles sous
+« Sans équipe » plutôt que de disparaître sans geste.
+
+---
+## ⚠ Quatre suites navigateur rougissent SOUS LA BATTERIE, vertes jouées seules
+
+**Relevé le 26 août 2026, sur trois batteries d'affilée du même arbre.** À
+chaque tour, une ou deux suites tombent — et **jamais les mêmes** :
 
 | Tour | Ce qui est tombé |
 |---|---|
 | 1 | `test-reduction-devis-e2e` (8 cas), `test-tva-au-paiement-e2e` |
 | 2 | `test-lecons-prix-e2e` — « le prix 1400 n'est jamais arrivé en base : 0.00 » |
+| 3 | `test-periodicite-tva-e2e` — « Tous les trimestres n'a pas été enregistré : la case n'est pas cochée après rechargement » (relevé depuis un AUTRE lot, celui des salariés) |
+| 4 | `test-fiche-pendant-relance` — verte à la batterie suivante, sur une machine reposée |
 
-**Les trois sont VERTES rejouées seules**, immédiatement après. Aucune n'est
-touchée par le lot en cours (le planning), et rien n'a été joué en parallèle de
-la batterie — la règle du 26 août a été respectée.
+**Toutes sont VERTES rejouées seules**, immédiatement après. Aucune n'est
+touchée par les lots en cours — le planning d'un côté, les salariés de l'autre —
+et rien n'a été joué en parallèle de la batterie : la règle du 26 août a été
+respectée.
+
+**Le tour 3 vient d'une autre session et d'un autre arbre**, et c'est ce qui
+ferme la question : ce n'est pas un lot qui les fragilise, c'est la machine.
 
 **C'est le piège déjà écrit dans `HANDOVER.md` :** un délai fixe à la place d'un
 signal. Sous la batterie entière, la machine est chargée, l'action serveur met
@@ -73,11 +221,43 @@ date, et « Retirer » l'y renvoie —, mais **vide**, elle ne rendait qu'un tit
 et un refus. Elle disparaît quand rien n'attend de jour, et revient dès qu'un
 chantier attend. Le détail est dans `CHANGELOG.md`.
 
+---
+
+## ⏳ Le même piège de bouton radio dort sur le choix des tarifs ambigus
+
+`src/app/chantiers/[id]/prix/PropositionPrixSection.tsx` — quand deux tarifs
+peuvent convenir, le patron en coche un et **ne peut plus le décocher**, comme
+son client ne pouvait plus décocher sa date (`ARCHITECTURE.md` §191).
+
+Il ne l'a pas signalé, et l'enjeu y est moindre : il peut toucher l'autre tarif,
+alors que son client n'avait aucune sortie. Mais c'est le même `type="radio"` et
+le même appui sans retour.
+
+**Ce que ça coûte à faire :** deux lignes, exactement celles du formulaire du
+client — un `onClick` qui vide l'état quand la valeur touchée est déjà celle
+retenue. **Ce qu'il faut vérifier avant :** que « aucun tarif retenu » soit un
+état tenable pour le bouton qui applique le prix, sinon on remplace un blocage
+par un autre.
+
+---
+
+## ✅ ~~« Terminés » : les traits, et la carte de TVA~~ — fait le 26 août 2026
+
+~~Ses deux demandes du 26 août, planche `appli/termines-sans-traits.html`, sa
+réponse « le 3 ».~~ `ARCHITECTURE.md` §198.
+
+**Ce qui reste à surveiller, et qui n'est pas une tâche :** la démarcation sous
+la phrase de compte ne tient plus que sur 22 px, depuis que son trait est parti.
+`test-tva-en-tete-e2e.ts` les mesure — une rangée qui reviendrait à 19 px la
+ferait disparaître, et le contrôle est la seule chose qui le dira.
+
+---
+
 ## ✅ ~~Le format des numéros de devis et de factures~~ — fait le 26 août 2026
 
 ~~Sa demande du 26 août : « dans la catégorie facture il faut rajouter le format
 de numéro ». Cinq formats au choix, le compteur qui repart au 1ᵉʳ janvier, et
-surtout le millésime qui n'est plus écrit en dur.~~ `ARCHITECTURE.md` §189.
+surtout le millésime qui n'est plus écrit en dur.~~ `ARCHITECTURE.md` §188.
 
 **Ce qui reste ouvert, et qui n'est pas ce lot :** le numéro de la première
 facture d'une entreprise qui reprendrait une suite existante. Aujourd'hui elle
@@ -142,8 +322,35 @@ avant toute écriture »* — rouge en batterie, **vert rejoué seul**. Il lit l
 juste après un appui, avant que l'action serveur n'ait répondu : sous cent
 suites, la réponse arrive avant la lecture et le cas s'inverse.
 
+*(Une autre session a relevé le même soir le même phénomène sur trois autres
+suites — voir « Trois suites navigateur rougissent SOUS LA BATTERIE » en tête de
+ce fichier. C'est un seul sujet, pas deux.)*
+
+**Et un CINQUIÈME, le 26 août 2026 au soir :**
+`test-planning-vers-facture-e2e.ts`, cas *« clôturé AVANT sa date : il quitte le
+planning pour les terminés »* — rouge en batterie sur `Timeout 15000ms` en
+attendant « Rien n'a changé depuis le devis ? », **vert rejoué seul** (7/7).
+
+Ce fichier connaît déjà ce piège et s'en défend à moitié : son `ouvrir()` retente
+l'OUVERTURE d'un écran puis rend le contrôle « non concluant » plutôt que rouge.
+Ce qui a lâché ici est un cran plus loin — l'appui sur « Créer la facture » et la
+confirmation qui suit, qui n'ont, eux, aucune tolérance.
+
+**Ce qui n'est PAS établi**, et ne doit pas être supposé : pourquoi ce cas-là et
+pas les trois autres du même fichier, qui attendent la même phrase avec le même
+délai et passent. Un simple relèvement du délai serait un pansement sur une cause
+non trouvée — et c'est exactement ce que ce dépôt refuse.
+
+**Et un SIXIÈME, le 26 août 2026 au soir :** `test-poser-une-date-e2e.ts`, cas
+*« depuis la fiche d'un jour, "Ajouter un chantier" le pose »* — rouge en
+batterie sur *« aucune date en base : la pose n'a rien enregistré »*, **vert
+rejoué seul** (5/5). Même forme que les autres : la base est lue avant que
+l'action serveur n'ait fini d'écrire. Le cas SUIVANT du même fichier — *« et il
+quitte Sans date »* — passait dans la même exécution, ce qui achève de dire que
+l'écriture arrivait, juste plus tard que la lecture.
+
 Avec `test-lecons-prix-e2e` (§ plus bas) et la suite du veilleur, cela fait
-**quatre** contrôles qui rougissent au hasard de la machine. C'est le vrai sujet,
+**six** contrôles qui rougissent au hasard de la machine. C'est le vrai sujet,
 et il grossit : un rouge qui tombe au hasard apprend à ignorer le rouge, et l'on
 perd alors tout ce qu'il surveille. Ce qu'il faut : attendre un SIGNAL — la
 réponse du serveur, un attribut qui change — jamais un instant.
@@ -7209,6 +7416,16 @@ et c'est déjà arrivé.
   tôt sur la même version, et rouges sur une base neuve. Un contrôle qui dépend
   de l'âge de la base accuse au hasard — c'est la même leçon que l'instabilité
   notée juste au-dessus.
+- [ ] **Le calendrier manque de jours libres sur une base fraîche — la racine
+  n'est pas traitée.** Deux suites de dates ont été réparées le 24 août par une
+  autre session, mais le même symptôme est réapparu le soir même sur une
+  troisième : `test-envoi-client-e2e` tombe sur *« pas assez de jours
+  acceptables (1) »* et *« pas assez de jours libres au calendrier (1) »*.
+  **Ce sont les suites qui ont été rendues tolérantes, pas la cause qui a été
+  ôtée.** La cause probable : le jeu de démonstration remplit le mois courant,
+  et il ne reste presque rien à proposer quand on l'amorce à neuf en fin de
+  mois. Tant qu'elle tient, ces rouges reviendront sur une suite ou une autre —
+  et un rouge qui tourne s'apprend à être ignoré. *(24 août 2026)*
 - [ ] **La batterie rougit sur des suites DIFFÉRENTES à chaque exécution**, et
   chacune passe seule sur le même code. Relevé le 24 août 2026, trois
   exécutions d'affilée : d'abord `test-planning-vers-facture-e2e` (un texte

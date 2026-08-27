@@ -94,12 +94,11 @@ async function main() {
     // daté de la veille de l'émission : `noterPaiement` le refusait poliment,
     // le test l'ignorait, et le cas rougissait en accusant le calcul du reste
     // dû — un contrôle qui accuse à tort coûte plus cher que pas de contrôle.
-    // **Le jour se compte CHEZ LUI, pas à Greenwich** — `jourIso`, la seule
-    // définition du dépôt (`CLAUDE.md` §3). Écrit à la main en UTC, ce contrôle
-    // rougissait chaque soir entre 22 h et minuit : la facture était émise le
-    // lendemain à l'heure de Paris, le règlement daté de la veille, et
-    // `noterPaiement` le refusait — à juste titre. Vu rouge le 26 août 2026 à
-    // 23 h 24 UTC.
+    // **Le jour se lit comme l'application le compte** (`jourIso`, à l'heure de
+    // l'atelier), et non en UTC : la facture est émise avec l'un, le règlement
+    // daté avec l'autre, et entre minuit et 2 h du matin les deux diffèrent
+    // d'un jour. Le refus était alors juste — « daté d'avant la facture » — et
+    // le rouge accusait le calcul du reste dû. Une nuit sur douze.
     const aujourdHui = jourIso(new Date());
     const regle = await noterPaiement(ctx, factureId, { date: aujourdHui, montant: "500.00" });
     assert.ok(regle.ok, `le règlement d'essai a été refusé : ${regle.ok ? "" : regle.raison}`);

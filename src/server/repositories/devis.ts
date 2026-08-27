@@ -1,4 +1,5 @@
 import { and, asc, desc, eq, sql } from "drizzle-orm";
+import { jourIso } from "@/lib/jour";
 import { withEntreprise } from "../db/with-entreprise";
 import { allureDesDocuments, formatNumeroDe } from "./entreprises";
 import { conditionsDepuisEntreprise } from "@/lib/conditions-documents";
@@ -269,7 +270,11 @@ export async function getOuCreerDevisBrouillon(ctx: Ctx, chantierId: string) {
         numeroVersion,
         statut: "brouillon",
         ...snapshotEnTete,
-        dateEmission: new Date().toISOString().slice(0, 10),
+        // **Le jour de l'atelier, pas celui de Greenwich** (`jourIso`,
+        // `ARCHITECTURE.md` §182). Écrit ici en UTC, un devis rédigé après
+        // minuit portait la date de la veille — et la définition unique du
+        // jour ne servait à rien, puisque celui-ci passait à côté.
+        dateEmission: jourIso(new Date()),
         tauxTva: TAUX_TVA_DEFAUT,
         ...totaux,
         createdBy: ctx.utilisateurId,
