@@ -142,10 +142,40 @@ async function main() {
   // d'ailleurs « AUTRE DATE PROPOSÉE » : c'est ce cas-là qu'il faut jouer.
   await page.locator('input[name="choixDate"][value="autre"]').check();
   await page.waitForTimeout(600);
-  const jourLibre = page
-    .locator("button:not([disabled])")
-    .filter({ hasText: /^\d{1,2}$/ })
-    .last();
+
+  // **ON ÉVITE LA DATE QUE L'ARTISAN A PROPOSÉE — sinon ce n'est pas une AUTRE
+  // date.** Payé le 27 août 2026 : ce cas prenait « le dernier jour cliquable
+  // du calendrier », et ce jour-là c'était le 31 août — précisément la date
+  // proposée. Le client acceptait donc la proposition, `dateContreProposee`
+  // valait `false` à juste titre, aucune carte n'était due, et la suite
+  // accusait l'écran d'avoir perdu une notification qui n'existait pas.
+  //
+  // **Le produit avait raison, et le contrôle rougissait selon la date du
+  // jour** — la faute exacte que ce dépôt a déjà payée sur une suite qui
+  // tombait le samedi. On lit donc ce qui a été proposé, et l'on choisit
+  // ailleurs.
+  const { rows: proposees } = await pool.query<{ jours: string[] }>(
+    `SELECT e.dates_proposees::text[] AS jours
+       FROM envois_devis e JOIN devis d ON d.id = e.devis_id
+      WHERE d.chantier_id = $1`,
+    [accepte.chantierId]
+  );
+  const aEviter = new Set((proposees[0]?.jours ?? []).map((j) => String(Number(j.slice(8, 10)))));
+  const jours = page.locator("button:not([disabled])").filter({ hasText: /^\d{1,2}$/ });
+  let jourLibre = null;
+  for (let i = (await jours.count()) - 1; i >= 0; i--) {
+    const numero = (await jours.nth(i).innerText()).trim();
+    if (!aEviter.has(numero)) {
+      jourLibre = jours.nth(i);
+      break;
+    }
+  }
+  if (!jourLibre) {
+    throw new Error(
+      `aucun jour du calendrier n'est différent des dates proposées (${[...aEviter].join(", ")}) : ` +
+        "ce cas ne peut pas jouer une CONTRE-proposition, et rien ne serait éprouvé"
+    );
+  }
   await jourLibre.click();
   await page.waitForTimeout(400);
   await page.click('button:has-text("J\'accepte ce devis")');
