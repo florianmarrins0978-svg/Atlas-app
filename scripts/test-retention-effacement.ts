@@ -10,7 +10,14 @@ import * as notesRepo from "../src/server/repositories/notes-vocales";
 import * as devisRepo from "../src/server/repositories/devis";
 import { enregistrerObjet } from "../src/server/storage";
 import { purgerAudiosTranscrits } from "../src/server/repositories/retention";
-import { exporterClient, effacerClient } from "../src/server/repositories/donnees-client";
+import {
+  exporterClient,
+  effacerClient,
+  apercuSuppressionClient,
+} from "../src/server/repositories/donnees-client";
+import * as facturesRepo from "../src/server/repositories/factures";
+import * as lignesPrixRepo from "../src/server/repositories/lignes-prix";
+import { devis as devisTable } from "../src/server/db/schema";
 import { creerEnvoi, enregistrerReponse } from "../src/server/repositories/envois-devis";
 import { audioAPurger, RETENTION, motifConservation, echeanceConservation } from "../src/server/retention";
 import { versJourIso, ajouterJours } from "../src/server/disponibilites";
@@ -211,16 +218,21 @@ async function main() {
 
     const rapport = await effacerClient(ctx, client.id, MAINTENANT);
     assert.ok(rapport);
-    assert.strictEqual(rapport.conservees, 0);
+    assert.deepStrictEqual(rapport.pieces, [], "rien n'engageait : rien ne devait être conservé");
     assert.strictEqual(rapport.motif, null, "rien conservé : aucun motif à annoncer");
     assert.ok(rapport.supprimes > 0);
 
-    const apres = await relireClient(ctx, client.id);
-    assert.ok(apres, "client introuvable après effacement");
-    assert.strictEqual(apres.nom, "Client effacé");
-    assert.strictEqual(apres.telephone, null);
-    assert.strictEqual(apres.email, null);
-    assert.ok(apres.effaceLe, "la date d'effacement n'est pas consignée");
+    // **IL DISPARAÎT POUR DE BON — sa proposition C, tranchée le 27 août 2026.**
+    // Ce cas exigeait auparavant une fiche renommée « Client effacé », qui
+    // restait en base. Il a choisi la suppression entière quand rien n'engage :
+    // on adapte le contrôle à sa décision, on ne réclame pas ce qu'il a fait
+    // retirer (`CLAUDE.md` §5 bis).
+    assert.strictEqual(rapport.disparu, true, "le rapport annonce une fiche survivante");
+    assert.strictEqual(
+      await relireClient(ctx, client.id),
+      null,
+      "la fiche du client existe encore : il la retrouverait en cherchant"
+    );
   });
 
   await test("un devis accepté est conservé, avec le nom qui le rend valable", async () => {
@@ -247,9 +259,14 @@ async function main() {
 
     const rapport = await effacerClient(ctx, client.id, MAINTENANT);
     assert.ok(rapport);
-    assert.strictEqual(rapport.conservees, 1, "le devis accepté devait être conservé");
+    assert.strictEqual(rapport.pieces.length, 1, "le devis accepté devait être conservé");
+    assert.strictEqual(rapport.pieces[0].quoi, "devis-accepte");
+    // **La pièce porte son NUMÉRO**, sans quoi l'écran dirait « un devis est
+    // conservé » — une phrase qu'on ne peut pas retrouver dans un classeur.
+    assert.ok(rapport.pieces[0].numero && rapport.pieces[0].numero !== "?", "la pièce conservée n'est pas nommée");
+    assert.ok(rapport.pieces[0].jusquAu, "l'échéance doit être annoncée");
+    assert.strictEqual(rapport.disparu, false, "une pièce le retient : il ne peut pas avoir disparu");
     assert.match(rapport.motif ?? "", /obligation comptable/);
-    assert.ok(rapport.echeanceConservation, "l'échéance doit être annoncée");
 
     const apres = await relireClient(ctx, client.id);
     assert.ok(apres, "client introuvable après effacement");
@@ -288,6 +305,102 @@ async function main() {
       null,
       "un lien survivant rouvrirait l'accès aux données effacées"
     );
+  });
+
+  // ─── LE CAS QUI MANQUAIT, ET QUI FAISAIT TOMBER LA FONCTION ───────────────
+  //
+  // **Trouvé le 26 août 2026 en cherchant avant de coder** (`CLAUDE.md` §5 ter) :
+  // `effacerClient` levait sur un client à qui un devis était simplement PARTI.
+  // Elle ne conservait que les devis liés à une acceptation et tentait de
+  // détruire les autres — or `trg_devis_immuable` scelle tout devis `envoye`.
+  //
+  // **Aucune suite ne le voyait** : elles couvraient le client sans devis, et le
+  // devis accepté. Le milieu — parti, sans réponse — est pourtant l'état le plus
+  // fréquent, et c'est celui dans lequel le patron a essayé.
+  await test("un devis PARTI sans réponse ne bloque plus la suppression", async () => {
+    const ctx = await contexte("devis-parti");
+    const client = await clientsRepo.creerClient(ctx, { nom: "M. Renard", telephone: "0611000011" });
+    const chantier = await chantiersRepo.creerChantier(ctx, { nom: "Haie", clientId: client.id });
+    const d = await devisRepo.getOuCreerDevisBrouillon(ctx, chantier.id);
+    await devisRepo.envoyerDevis(ctx, d.id);
+
+    const rapport = await effacerClient(ctx, client.id, MAINTENANT);
+    assert.ok(rapport, "la suppression n'a rien rendu");
+    assert.deepStrictEqual(
+      rapport.pieces,
+      [],
+      "un devis parti sans réponse n'engage rien : il ne doit rien retenir"
+    );
+    assert.strictEqual(rapport.disparu, true, "le client devait disparaître entièrement");
+    assert.strictEqual(await relireClient(ctx, client.id), null, "la fiche existe encore");
+
+    const restant = await withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) =>
+      tx.select({ id: devisTable.id }).from(devisTable).where(eq(devisTable.id, d.id))
+    );
+    assert.strictEqual(restant.length, 0, "le devis parti est resté en base");
+  });
+
+  // ─── ET LA PORTE NE S'OUVRE QUE LÀ ────────────────────────────────────────
+  //
+  // **C'est le contrôle qui défend la migration 0068.** Elle apprend au
+  // déclencheur à céder pour un `DELETE`, mais SEULEMENT quand l'effacement a
+  // posé son réglage de session. Sans ce cas, on aurait ouvert la porte à tout
+  // le monde sans que rien ne rougisse.
+  await test("hors effacement, un devis envoyé résiste toujours à la suppression", async () => {
+    const ctx = await contexte("porte-fermee");
+    const client = await clientsRepo.creerClient(ctx, { nom: "Mme Aubry" });
+    const chantier = await chantiersRepo.creerChantier(ctx, { nom: "Massif", clientId: client.id });
+    const d = await devisRepo.getOuCreerDevisBrouillon(ctx, chantier.id);
+    await devisRepo.envoyerDevis(ctx, d.id);
+
+    let refuse = false;
+    try {
+      await withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) =>
+        tx.delete(devisTable).where(eq(devisTable.id, d.id))
+      );
+    } catch (err) {
+      refuse = /ne peut pas être supprimé/.test(
+        (err as { cause?: Error }).cause?.message ?? (err as Error).message
+      );
+    }
+    assert.ok(refuse, "un devis envoyé se supprime hors effacement : le sceau ne vaut plus rien");
+  });
+
+  // ─── CE QUE LA LOI CLOUE, ET QU'AUCUNE CONFIRMATION NE LÈVE ───────────────
+  await test("une facture émise retient le client, et se DIT avec son numéro", async () => {
+    const ctx = await contexte("facture");
+    const client = await clientsRepo.creerClient(ctx, { nom: "M. Vasseur", telephone: "0622000022" });
+    const chantier = await chantiersRepo.creerChantier(ctx, { nom: "Terrasse", clientId: client.id });
+    await lignesPrixRepo.ajouterLignePrix(ctx, chantier.id, "Dallage", "900.00");
+    const d = await devisRepo.getOuCreerDevisBrouillon(ctx, chantier.id);
+    await devisRepo.envoyerDevis(ctx, d.id);
+    await facturesRepo.terminerChantier(ctx, chantier.id, MAINTENANT);
+    const f = await facturesRepo.getFacturePourChantier(ctx, chantier.id);
+    assert.ok(f, "le montage n'a pas produit de facture : il n'y a rien à mesurer");
+    await facturesRepo.emettreFacture(ctx, f.facture.id, MAINTENANT);
+
+    // **L'aperçu prévient AVANT, avec le numéro.** C'est sa règle du 27 août :
+    // la phrase de prévention doit dire ce qui restera, pas « des documents ».
+    const avant = await apercuSuppressionClient(ctx, client.id, MAINTENANT);
+    assert.ok(avant, "l'aperçu ne rend rien");
+    assert.strictEqual(avant.pieces.length, 1, "la facture émise n'est pas annoncée");
+    assert.strictEqual(avant.pieces[0].quoi, "facture");
+    assert.match(avant.pieces[0].numero, /^F/, `numéro inattendu : « ${avant.pieces[0].numero} »`);
+    assert.match(avant.pieces[0].pourquoi, /dix ans/);
+
+    // **Et l'aperçu ne touche à RIEN** : le client est encore là après.
+    assert.ok(await relireClient(ctx, client.id), "l'aperçu a supprimé quelque chose");
+
+    const rapport = await effacerClient(ctx, client.id, MAINTENANT);
+    assert.ok(rapport);
+    assert.strictEqual(rapport.disparu, false, "une facture émise ne peut pas laisser disparaître le client");
+    assert.strictEqual(rapport.pieces.length, 1);
+    assert.strictEqual(rapport.pieces[0].quoi, "facture");
+
+    const apres = await relireClient(ctx, client.id);
+    assert.ok(apres, "le client a disparu malgré sa facture : la pièce ne vaut plus rien sans son nom");
+    assert.strictEqual(apres.nom, "M. Vasseur", "le nom doit survivre avec la facture");
+    assert.strictEqual(apres.telephone, null, "les moyens de recontacter doivent partir");
   });
 
   await test("effacer le client d'une autre entreprise est impossible", async () => {

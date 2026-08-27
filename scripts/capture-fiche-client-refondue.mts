@@ -140,6 +140,22 @@ await page.screenshot({ path: `${dossier}/feuille-de-la-fiche.png` });
 await page.getByRole("button", { name: "Annuler" }).click();
 await page.waitForTimeout(400);
 
+// ─── LA FEUILLE DE SUPPRESSION, SUR UN CLIENT QUI A DES PAPIERS ─────────────
+//
+// **C'est là que vit sa règle du 27 août** : la phrase de prévention, la
+// question de la sauvegarde, et ce que la loi cloue — nommé avec son numéro.
+await page.locator('[data-atlas="supprimer-client"]').scrollIntoViewIfNeeded();
+await page.locator('[data-atlas="supprimer-client"]').click();
+await page.waitForSelector('[data-atlas="confirmer-suppression"]', { timeout: 15_000 });
+await page.waitForTimeout(400);
+await page.screenshot({ path: `${dossier}/suppression-avec-papiers.png` });
+// Et une fois la sauvegarde confirmée : le bouton se déverrouille.
+await page.locator('[data-atlas="sauvegarde-ailleurs"]').click();
+await page.waitForTimeout(300);
+await page.screenshot({ path: `${dossier}/suppression-deverrouillee.png` });
+await page.getByRole("button", { name: "Annuler" }).click();
+await page.waitForTimeout(300);
+
 // ─── ET LA FICHE D'UN CLIENT SANS AUCUN PAPIER ──────────────────────────────
 //
 // **C'est la seconde capture qu'il a envoyée le 26 août 2026**, et c'est là que
@@ -179,6 +195,13 @@ const coordonnees = await page.evaluate(
     (document.querySelector("header p:last-of-type") as HTMLElement | null)?.innerText ?? "(absent)"
 );
 console.log(`\ncoordonnées (client sans papier) : ${JSON.stringify(coordonnees)}`);
+
+// La feuille du client SANS papier : pas de prévention, pas de question.
+await page.locator('[data-atlas="supprimer-client"]').scrollIntoViewIfNeeded();
+await page.locator('[data-atlas="supprimer-client"]').click();
+await page.waitForSelector('[data-atlas="confirmer-suppression"]', { timeout: 15_000 });
+await page.waitForTimeout(400);
+await page.screenshot({ path: `${dossier}/suppression-sans-papier.png` });
 console.log(JSON.stringify(vu, null, 2));
 console.log(`\nimage écrite dans ${dossier}/fiche-client-reelle.png`);
 
