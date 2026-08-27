@@ -9,6 +9,90 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
+## ⚠ EN ATTENTE DE SA RÉPONSE — supprimer un client (26 août 2026)
+
+Sa remarque : *« je ne peux pas supprimer de client, rajoute ça »*. **Rien n'est
+codé** : ce que « supprimer » veut dire est une décision de produit.
+
+**Planche :** `appli/supprimer-un-client.html`. Trois questions au bas.
+
+**ET UN DÉFAUT RÉEL À RÉPARER, quelle que soit sa réponse.** `effacerClient`
+(`src/server/repositories/donnees-client.ts`) **lève** dès que le client a reçu
+un devis : elle ne conserve que les devis liés à un envoi **accepté**, et tente
+de détruire les autres — or `0001_securite_integrite.sql` scelle tout devis
+**envoyé**. Éprouvé ce soir sur une vraie base :
+
+```
+client avec un devis parti → REFUSÉ
+  cause : Un devis envoyé ne peut pas être supprimé
+```
+
+`test-retention-effacement.ts` ne couvre que le client sans devis et le devis
+accepté : **le milieu manque**, et c'est l'état le plus fréquent. Le correctif
+et son cas se posent en même temps que l'écran — les coder avant sa réponse,
+c'est risquer de conserver ce qu'il veut voir partir.
+
+## ⚠ `test-carte-reponse-mene-au-geste-e2e` rougit en FIN DE MOIS
+
+**Constaté le 27 août 2026, vers 2 h.** Le cas *« accepté : la carte mène au
+devis VALIDÉ »* tombe : *« aucune carte de réponse pour le chantier … à
+l'accueil »*. Le reste de la suite passe.
+
+**Ce n'est pas la carte, c'est la DATE choisie.** Le montage fait accepter le
+client sur « une autre date », en touchant **le dernier jour non désactivé** du
+calendrier. Or la carte n'apparaît, délibérément, que si le client propose une
+date **différente** de celles du patron — la suite l'écrit elle-même. En fin de
+mois, il ne reste que quelques jours touchables, et ce « dernier jour » finit
+par être **l'une des dates déjà proposées** : l'acceptation réussit, et aucune
+carte n'est due.
+
+**C'est la troisième suite de la soirée à tomber sur la fin du mois**, après
+`test-envoi-client-e2e` (jours proposables) et `test-liste-clients` (UTC contre
+heure de Paris). Le montage doit choisir un jour en **excluant** les dates
+proposées, et tourner la page du calendrier si le mois n'en offre plus —
+`joursRetenables` dans `test-envoi-client-e2e.ts` fait déjà la seconde moitié.
+
+## ⚠ `test-nouveau-compte-e2e` rougit sur l'arbre, et ce n'est pas ce lot
+
+**Constaté le 26 août 2026 au soir.** Sept cas tombent, à commencer par
+*« l'écran de création s'ouvre à son ADRESSE »* : `waitForURL` n'atteint jamais
+`/reglages/equipe/nouveau`. **Identique sans le lot en cours**, éprouvé en
+remisant les modifications — ce n'est donc pas une régression. La route existe
+(`src/app/reglages/equipe/nouveau/`), posée le jour même par une autre session
+(`787ecebd`).
+
+## ⚠ Trois suites navigateur rougissent SOUS LA BATTERIE, vertes jouées seules
+
+**Relevé le 26 août 2026, sur trois batteries d'affilée du même arbre.** À
+chaque tour, une ou deux suites tombent — et **jamais les mêmes** :
+`test-reduction-devis-e2e` et `test-tva-au-paiement-e2e` au premier tour,
+`test-lecons-prix-e2e` au deuxième.
+
+**Les trois sont VERTES rejouées seules**, immédiatement après, et aucune n'est
+touchée par le lot en cours. Rien n'a été joué en parallèle de la batterie — la
+règle du 26 août a été respectée.
+
+**C'est le piège déjà écrit dans `HANDOVER.md` :** un délai fixe à la place d'un
+signal. Sous la batterie entière, la machine est chargée, l'action serveur met
+plus longtemps que le délai, et la suite lit l'écran d'avant. `test-lecons-prix`
+vient pourtant d'être porté de 30 à 60 secondes le même jour — **allonger ne
+suffit plus**, et c'est ce que ce constat ajoute.
+
+**Ce qu'il faudrait, pour qui reprend :** remplacer l'attente par un témoin — la
+valeur relue en base, la classe que le composant pose — plutôt que d'allonger
+les délais un à un. Le seuil suivant sera atteint par la machine suivante.
+
+## Deux migrations portent le numéro 0067
+
+`0067_propositions_sans_chantier.sql` et `0067_salaries_a_part.sql`, posées le
+même jour par deux sessions. **Rien ne casse** : `run-migrations.ts` trie les
+noms de fichiers et suit chacun par SON nom, si bien que les deux s'appliquent,
+dans l'ordre alphabétique.
+
+**Et il ne faut PAS les renuméroter** : la clé de suivi est le nom du fichier.
+Renommer l'une la ferait rejouer sur toute base qui l'a déjà appliquée. Le
+numéro suivant est **0068**, à prendre une seule fois.
+
 ## ✅ ~~Coder « Quand je reverse la TVA »~~ — fait le 26 août 2026
 
 ~~Sa capture : « quand le client le paye / quand je met la facture, c'est pas
