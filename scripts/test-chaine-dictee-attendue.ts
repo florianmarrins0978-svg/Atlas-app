@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { ATTENDU, lireLaChaine } from "./verifier-chaine-dictee.mts";
+import { ATTENDU, lireLaChaine } from "./verifier-chaine-dictee.mjs";
 import { PropositionExtractionSchema, type PropositionExtraction } from "../src/server/ai/schemas/extraction";
 
 // **Le contrôle du contrôle.**
