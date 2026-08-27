@@ -9,6 +9,38 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
+## ⚠ EN ATTENTE DE SA RÉPONSE — supprimer un client (26 août 2026)
+
+Sa remarque : *« je ne peux pas supprimer de client, rajoute ça »*. **Rien n'est
+codé** : ce que « supprimer » veut dire est une décision de produit.
+
+**Planche :** `appli/supprimer-un-client.html`. Trois questions au bas.
+
+**ET UN DÉFAUT RÉEL À RÉPARER, quelle que soit sa réponse.** `effacerClient`
+(`src/server/repositories/donnees-client.ts`) **lève** dès que le client a reçu
+un devis : elle ne conserve que les devis liés à un envoi **accepté**, et tente
+de détruire les autres — or `0001_securite_integrite.sql` scelle tout devis
+**envoyé**. Éprouvé ce soir sur une vraie base :
+
+```
+client avec un devis parti → REFUSÉ
+  cause : Un devis envoyé ne peut pas être supprimé
+```
+
+`test-retention-effacement.ts` ne couvre que le client sans devis et le devis
+accepté : **le milieu manque**, et c'est l'état le plus fréquent. Le correctif
+et son cas se posent en même temps que l'écran — les coder avant sa réponse,
+c'est risquer de conserver ce qu'il veut voir partir.
+
+## ⚠ `test-nouveau-compte-e2e` rougit sur l'arbre, et ce n'est pas ce lot
+
+**Constaté le 26 août 2026 au soir.** Sept cas tombent, à commencer par
+*« l'écran de création s'ouvre à son ADRESSE »* : `waitForURL` n'atteint jamais
+`/reglages/equipe/nouveau`. **Identique sans le lot en cours**, éprouvé en
+remisant les modifications — ce n'est donc pas une régression. La route existe
+(`src/app/reglages/equipe/nouveau/`), posée le jour même par une autre session
+(`787ecebd`).
+
 ## ⚠ Trois suites navigateur rougissent SOUS LA BATTERIE, vertes jouées seules
 
 **Relevé le 26 août 2026, sur trois batteries d'affilée du même arbre.** À
