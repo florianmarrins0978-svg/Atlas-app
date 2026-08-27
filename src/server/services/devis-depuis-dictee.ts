@@ -16,7 +16,7 @@ import { preparerPropositionPrix, type OriginePrix } from "../chiffrage/proposit
 import { appliquerPropositionPrix } from "../chiffrage/appliquer-proposition";
 import { peutPreparerDevis } from "../../lib/preparation-devis";
 import { listerPrecisions, enregistrerPrecisions, type Precision } from "../repositories/precisions-chantier";
-import { listerPrestations, modifierPrestation, completerPrestation } from "../repositories/prestations";
+import { listerPrestations, renommerPrestation, completerPrestation } from "../repositories/prestations";
 import { structureDepuisPrecisions } from "../../lib/prestation-structuree";
 import { libelleEnrichi, questionsAvantChiffrage, type QuestionChiffrage } from "../../lib/questions-chiffrage";
 import { lireGrilles } from "../repositories/grilles-reglables";
@@ -283,7 +283,9 @@ async function ecrirePrecisionsSurLesPrestations(ctx: Ctx, chantierId: string): 
 
     const enrichi = libelleEnrichi(prestation.libelle, entree[1]);
     if (enrichi !== prestation.libelle) {
-      await modifierPrestation(ctx, prestation.id, enrichi);
+      // `renommerPrestation`, et non `modifierPrestation` : ce report est
+      // automatique, et ne doit pas marquer la ligne « corrigée par l'artisan ».
+      await renommerPrestation(ctx, prestation.id, enrichi);
     }
 
     // **Et la même précision entre AUSSI dans ses colonnes, pas seulement dans

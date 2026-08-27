@@ -150,6 +150,16 @@ export async function confirmerBrouillon(ctx: Ctx, chantierId: string): Promise<
   // identique, ou identique suivi du tiret d'enrichissement. **Rien
   // d'approximatif** — une fusion sur une ressemblance ferait disparaître un
   // travail qu'il facturerait.
+  // **Ce qui était DÉJÀ là, et rien d'autre.**
+  //
+  // Les prestations créées par cette confirmation-ci n'y entrent pas, et c'est
+  // une correction du 27 août 2026 : sans cela, une dictée qui mentionne deux
+  // fois le même travail — « je démonte un érable, puis je démonte un érable
+  // au fond du jardin » — voyait la seconde ligne absorbée par la première.
+  // Deux arbres, une prestation, et l'un des deux ne se facturait jamais.
+  //
+  // **Le dédoublonnage porte sur le REJEU, pas sur la dictée elle-même** : ce
+  // qu'il dicte deux fois, il le veut deux fois.
   const prestationsDejaLa = [...dejaPrestations];
 
   const prestationsCreees = [];
@@ -184,7 +194,6 @@ export async function confirmerBrouillon(ctx: Ctx, chantierId: string): Promise<
     // perdre à une haie son prix au mètre linéaire, sur un devis qui part chez
     // un client. Les deux cohabitent le temps que les lecteurs migrent.
     const creee = await ajouterPrestation(ctx, chantierId, libelle, structureDeLaPrestation(ligne));
-    prestationsDejaLa.push(creee);
     prestationsCreees.push(creee);
   }
   const materielCree = [];

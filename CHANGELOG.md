@@ -9,6 +9,68 @@ Format : le plus récent en tête.
 
 ## 2026-08-27
 
+### La chaîne dictée → devis, corrigée de bout en bout
+
+**Ce que le patron a lu le 26 août, et qui ne se reproduira plus.** Trois
+défauts sur un seul devis, et aucun n'était un défaut d'affichage : la quantité
+dictée n'existait plus comme donnée, une tonte et un démontage partageaient une
+identité, et une ligne qu'on ne savait pas chiffrer s'écrivait « 0 € ».
+
+**Le fourre-tout qui a créé le défaut est supprimé.** Six modules portaient
+chacun leur liste de travaux, et aucune ne connaissait la tonte : tout ce
+qu'aucune expression régulière ne reconnaissait tombait sur la ligne de
+l'abattage, et son montant partait dans la case d'abattage de sa grille.
+`src/lib/natures-prestation.ts` les remplace toutes. **Une nature inconnue garde
+désormais sa propre ligne** — être identifié et être chiffrable sont deux
+choses, et les confondre est ce qui a coûté le devis.
+
+**La quantité dictée atteint enfin le calcul.** Elle vivait en colonne depuis le
+lot B et le chiffrage relisait « (800 ml) » dans le libellé : corriger la
+colonne ne changeait rien au prix. Le devis porte « 800 ml × 17,50 € » là où il
+affichait « Qté 1 — 14 000 € » ; le total était juste, sa décomposition mentait.
+
+**Une ligne sans prix ne vaut plus 0 €.** Un zéro se lit « gratuit » sur un
+devis : c'est un montant, donc une décision, là où il n'y a qu'une ignorance —
+et le document pouvait partir ainsi. Elle sort « à chiffrer », garde sa quantité
+physique, et bloque la préparation comme l'envoi tant qu'elle attend son prix.
+
+**Sa correction change le prix.** Quand il transformait « Haie (800 ml) » en
+« Haie (80 ml) », rien ne bougeait : le chiffrage lisait la colonne restée à
+800, et le refus de trancher entre les deux annulait le calcul. Sa correction
+était invisible ET bloquante. Elle est désormais lue, posée en colonne, marquée
+comme sienne, et aucune relecture de dictée ne repasse dessus.
+
+**Le rappel de prix cesse de mentir.** 50 ml et 800 ml de haie avaient la même
+clé de rapprochement — d'où les « 15 chantiers comparables ». La comparabilité
+V2 s'écrit à côté de la V1 sans jamais la réécrire : ordre de grandeur, unité,
+et espèce quand les deux côtés la connaissent. **Aucun seuil ×2 ou ×5 n'a été
+inventé** ; espèce, quantité et unité sont enregistrées pour le calibrer plus
+tard sur de vrais devis.
+
+**Une réponse de modèle tronquée n'est plus une panne muette.** `stop_reason`
+arrivait au fournisseur et y était jeté : une coupure à mi-JSON devenait
+indiscernable d'un modèle hors sujet. Le repli reste — un écran mort a coûté
+deux jours le 4 août — mais il est identifiable.
+
+**Deux bugs annexes, trouvés en corrigeant :**
+- une dictée qui énonçait deux fois le même travail — « je démonte un érable,
+  puis un érable au fond du jardin » — n'en gardait qu'un ; le dédoublonnage
+  protège du rejeu, pas de ce que la dictée dit deux fois ;
+- « taille d'allégement sur marronnier » n'était reconnu comme un élagage par
+  aucun motif : l'apostrophe manquait dans l'expression. C'est la dictée du
+  7 août, celle dont le devis est sorti vide.
+
+Migration **0070**, additive de bout en bout. Détail complet : `ARCHITECTURE.md`
+§191. Dossier à retransmettre : `docs/pour-chatgpt/07-correction-complete.md`.
+
+### Une planche à choisir : corriger une mesure sans réécrire le nom
+
+`appli/corriger-une-mesure.html`. Le chemin serveur existe et il est éprouvé ;
+l'écran, lui, se dessine avant de toucher `src/` (`CLAUDE.md` §3 bis).
+
+---
+
+
 ### Un rappel armé : la liste complète des travaux qu'il vend
 
 **Sa réponse, en toutes lettres :** *« Oui j'en vend mais attend on créera une

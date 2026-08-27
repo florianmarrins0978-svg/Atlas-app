@@ -1,4 +1,4 @@
-import { and, desc, eq, isNull, or, sql } from "drizzle-orm";
+import { and, desc, eq, or } from "drizzle-orm";
 import { withEntreprise } from "../db/with-entreprise";
 import { leconsPrix, lignesPrix } from "../db/schema";
 import { signatureLecon, type LeconObservee } from "../../lib/lecons-prix";
@@ -9,7 +9,7 @@ import {
   type ProfilComparaison,
 } from "../../lib/comparabilite-prix";
 import { prixAttribuable, prixAttribuableDes } from "../../lib/prix-attribuable";
-import { prestationsDeLaLigne } from "./lignes-prix";
+import { prestationsDeLaLigne, prestationsDeLaLigneDans } from "./lignes-prix";
 import { logger } from "../logger";
 import type { Ctx } from "./context";
 
@@ -106,7 +106,12 @@ export async function retenirLecon(ctx: Ctx, lignePrixId: string): Promise<boole
     // des deux laisserait passer ce que l'autre refuse (`CLAUDE.md` §3).
     // Ce que la ligne vend réellement (migration 0069). Vide sur une ligne
     // d'avant : on retombe alors sur son libellé, comme avant.
-    const vendues = await prestationsDeLaLigne(ctx, ligne.id).catch(() => []);
+    //
+    // **Dans la transaction courante, jamais dans une nouvelle.** Ouvrir un
+    // second `withEntreprise` ici prendrait une deuxième connexion du pool
+    // pendant qu'on tient la première : sous quelques requêtes simultanées, le
+    // pool se vide et l'application attend une connexion que personne ne rendra.
+    const vendues = await prestationsDeLaLigneDans(tx, ligne.id).catch(() => []);
 
     const attribution =
       vendues.length > 0 ? prixAttribuableDes(vendues) : prixAttribuable(ligne.libelle);

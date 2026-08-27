@@ -50,7 +50,50 @@ absente de la liste ferait retomber le travail dans le fourre-tout `principal`
 mesuré. **Ne pas inventer les natures manquantes** (`CLAUDE.md` §4 : « inventer
 une prestation » est interdit) ; les lui demander.
 
+### ✅ La correction complète est faite — 27 août 2026
+
+**Sa consigne du 27 août :** *« Je ne veux plus découper cette correction en une
+succession de micro-lots nécessitant ma validation. Tu as l'autonomie technique
+pour terminer la correction complète. »*
+
+Fait, en une passe. Le détail complet est dans `ARCHITECTURE.md` §191 ; le
+dossier à retransmettre est `docs/pour-chatgpt/07-correction-complete.md`.
+
+| | État |
+|---|---|
+| **P0** — arrêter la pollution de la grille | ✅ 26 août, et porté sur les colonnes le 27 |
+| **P1** — porter la quantité jusqu'au bout | ✅ elle atteint enfin le CALCUL, pas seulement la base |
+| **P2** — donner un sens à « comparable » | ✅ signature V2, à côté de la V1 jamais réécrite |
+| **P3** — casser le fourre-tout `principal` | ✅ référentiel des natures ; une nature inconnue garde sa ligne |
+| **P4** — dire pourquoi une ligne est à 0 € | ✅ elle n'est plus à 0 € : elle est « à chiffrer » |
+| **P5** — ne plus tronquer en silence | ✅ `stop_reason` lu, forme vérifiée, plafond relevé |
+| **P6** — vocabulaire au transcripteur | ⛔ hors périmètre (sa décision) ; la branche catalogue reste ouverte |
+
+**Ce qui reste ouvert, et pourquoi :**
+
+- **La question métier des unités de comptage.** « Dessouchage de DEUX souches
+  de 60 cm » : le prix de grille est celui d'UNE souche. Multiplier serait
+  inventer un prix, ne pas multiplier facture une souche pour deux. Le
+  comportement d'aujourd'hui est conservé et **l'écran pose la question** ;
+  c'est à lui de trancher.
+- **L'écran de correction d'une mesure.** Le chemin serveur existe et il est
+  éprouvé (`corrigerMesurePrestation`) ; la planche attend sa réponse :
+  `https://florianmarrins0978-svg.github.io/Atlas-app/corriger-une-mesure.html`
+- **La branche catalogue morte** (`chiffrerChantier` appelé sans
+  `motCleCatalogue`) : les mots qu'il range dans *Réglages → Catalogue* n'ont
+  toujours aucun effet sur ses devis dictés. À brancher, ou à supprimer et le
+  dire.
+- **Ce qui n'a pas pu être éprouvé ici, faute de clé** : ce que le modèle rend
+  vraiment pour `nature` et `espece`, Whisper, et le `stop_reason` réel. Le §15
+  du dossier 07 les liste, et le §16 donne le seul test à jouer sur son espace.
+
+---
+
 ### Le plan ajusté après cartographie (26 août 2026)
+
+**Historique — ce qui suit décrit l'état d'AVANT la correction du 27 août.**
+Conservé parce que le chemin explique les décisions ; ce qui fait foi
+aujourd'hui, c'est le tableau ci-dessus.
 
 `docs/audit-dictee-devis-cartographie.md`. Les suites A→H sont écrites et
 rouges ; la batterie complète est à 247/249, et les deux échecs sont elles.

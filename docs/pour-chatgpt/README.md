@@ -40,3 +40,8 @@ noir sur blanc, comme le demande `CLAUDE.md` §2 bis.
 | `04-lot-B-modele-structure.md` | lot B | les colonnes de la prestation, la table de liaison, et la cardinalité inspectée plutôt que choisie |
 | `05-lot-C-consommateurs.md` | lot C | le contrat structure / libellé / contradiction, et les trois décisions métier que je refuse de prendre seul |
 | `06-lot-C-suite-r23-et-unites.md` | lot C (suite) | le doublon du rejeu, les unités de comptage, et l'inventaire des natures réellement présentes |
+| `07-correction-complete.md` | **l'état final** | ce que la chaîne fait désormais, ce qui a été refusé, et la seule question qui lui revient |
+
+**Le dossier 07 remplace les six premiers.** Ils restent comme le chemin
+parcouru — un instantané ne se corrige pas, `CLAUDE.md` §2 bis — mais ce qui
+décrit l'application d'aujourd'hui, c'est le 07 et le dépôt.

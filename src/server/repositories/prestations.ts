@@ -142,6 +142,27 @@ export async function corrigerMesurePrestation(
   });
 }
 
+/**
+ * Renomme une prestation **sans toucher à ses colonnes**.
+ *
+ * **La contrepartie de `modifierPrestation`, et il en fallait une.** Celle-là
+ * lit la mesure écrite dans le nouveau texte et la marque comme venant de
+ * l'artisan — c'est ce qu'on veut quand c'est LUI qui tape. Le report des
+ * réponses de l'arrêt, lui, réécrit le libellé tout seul : lui laisser marquer
+ * la ligne « corrigée par l'artisan » gèlerait ses colonnes sans que personne
+ * ne l'ait demandé.
+ */
+export async function renommerPrestation(ctx: Ctx, id: string, libelle: string) {
+  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    const [row] = await tx
+      .update(prestations)
+      .set({ libelle, updatedAt: new Date() })
+      .where(eq(prestations.id, id))
+      .returning();
+    return row;
+  });
+}
+
 export async function supprimerPrestation(ctx: Ctx, id: string) {
   return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
     await tx.delete(prestations).where(eq(prestations.id, id));

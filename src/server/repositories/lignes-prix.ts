@@ -1,6 +1,7 @@
 import { asc, eq } from "drizzle-orm";
 import Decimal from "decimal.js";
 import { withEntreprise } from "../db/with-entreprise";
+import type { DbOrTx } from "../db/client";
 import { and, asc as _asc } from "drizzle-orm";
 import { lignesPrix, lignesPrixPrestations, prestations } from "../db/schema";
 import type { Ctx } from "./context";
@@ -205,6 +206,22 @@ export async function prestationsDuLibelle(
  */
 export async function prestationsDeLaLigne(ctx: Ctx, lignePrixId: string) {
   return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, (tx) =>
+    prestationsDeLaLigneDans(tx, lignePrixId)
+  );
+}
+
+/**
+ * La même lecture, **dans une transaction déjà ouverte**.
+ *
+ * **Ce n'est pas une commodité, c'est une nécessité.** `withEntreprise` ouvre
+ * une transaction, donc prend une connexion du pool. L'appeler depuis
+ * l'intérieur d'une autre en prend une SECONDE pendant qu'on tient la première :
+ * sous quelques requêtes simultanées, le pool se vide et l'application attend
+ * une connexion que personne ne rendra. `retenirLecon` a besoin de cette
+ * lecture au milieu de sa propre transaction — elle passe donc par ici.
+ */
+export async function prestationsDeLaLigneDans(tx: DbOrTx, lignePrixId: string) {
+  return (
     tx
       .select({
         id: prestations.id,

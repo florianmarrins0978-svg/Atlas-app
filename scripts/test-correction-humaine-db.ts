@@ -229,6 +229,61 @@ async function main() {
     assert.equal(p.libelle, "Pose d'un bassin", "le travail a disparu");
   });
 
+  console.log("\n=== Deux fois le même travail dicté, deux prestations ===\n");
+
+  await test("« je démonte un érable, puis un autre érable » ne fond pas les deux", async () => {
+    // **§5 du brief du 27 août 2026** : deux travaux différents peuvent
+    // légitimement porter exactement le même texte. Le dédoublonnage protège du
+    // REJEU d'une dictée, pas de ce qu'elle énonce deux fois — sinon l'un des
+    // deux arbres ne se facture jamais.
+    const chantier = await chantiersRepo.creerChantier(A, { nom: "Deux érables" });
+    const ligne = {
+      libelle: "Démontage d'un érable",
+      description: null,
+      quantite: null,
+      unite: null,
+      nature: "abattage",
+      espece: "érable",
+      aConfirmer: false,
+    };
+    await brouillonsRepo.enregistrerGeneration(
+      A,
+      chantier.id,
+      { ...brouillonVide(), prestations: [ligne, { ...ligne }] },
+      "dictée"
+    );
+    await confirmerBrouillon(A, chantier.id);
+    assert.equal(
+      (await prestationsRepo.listerPrestations(A, chantier.id)).length,
+      2,
+      "un des deux érables a disparu : il ne sera jamais facturé"
+    );
+  });
+
+  await test("mais REJOUER la même dictée n'en crée toujours pas un troisième", async () => {
+    // L'autre bord, et c'est le défaut du 3 août : un second appui, un retour
+    // arrière, et le devis comptait le travail deux fois.
+    const chantier = await chantiersRepo.creerChantier(A, { nom: "Érable rejoué" });
+    const ligne = {
+      libelle: "Démontage d'un érable",
+      description: null,
+      quantite: null,
+      unite: null,
+      nature: "abattage",
+      espece: "érable",
+      aConfirmer: false,
+    };
+    await brouillonsRepo.enregistrerGeneration(A, chantier.id, { ...brouillonVide(), prestations: [ligne] }, "1");
+    await confirmerBrouillon(A, chantier.id);
+    await brouillonsRepo.enregistrerGeneration(A, chantier.id, { ...brouillonVide(), prestations: [ligne] }, "2");
+    await confirmerBrouillon(A, chantier.id);
+    assert.equal(
+      (await prestationsRepo.listerPrestations(A, chantier.id)).length,
+      1,
+      "le rejeu a doublé la prestation"
+    );
+  });
+
   console.log(`\n${reussites} réussite(s), ${echecs} échec(s).`);
   if (echecs > 0) process.exitCode = 1;
 }

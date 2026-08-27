@@ -1,7 +1,7 @@
 # État du projet
 
-**Dernière mise à jour :** 2026-08-26 · branche `main`
-· dernière migration `drizzle/0066_format_numero.sql`
+**Dernière mise à jour :** 2026-08-27 · branche `claude/audit-dictee-devis-ryqfy6`
+· dernière migration `drizzle/0070_prix_a_chiffrer_et_comparabilite.sql`
 
 
 *(Le numéro du dernier commit ne figure plus ici : il était faux dès le commit
@@ -10,6 +10,39 @@ suivant, et une ligne fausse coûte plus cher qu'une ligne absente. `git log
 
 Ce fichier dit **où en est le produit**, pas ce qu'on aimerait qu'il soit. Une
 ligne « fait » qui ne l'est pas coûte plus cher qu'une ligne absente.
+
+---
+
+## La chaîne dictée → devis a été refaite (27 août 2026)
+
+*Le devis du 26 août portait trois défauts : la quantité dictée n'existait plus
+comme donnée, une tonte et un démontage partageaient une identité, et une ligne
+qu'on ne savait pas chiffrer s'écrivait « 0 € ». Le détail est dans
+`ARCHITECTURE.md` §191 ; le dossier à retransmettre est
+`docs/pour-chatgpt/07-correction-complete.md`.*
+
+**Fait.**
+
+| | Où |
+|---|---|
+| **Un référentiel des natures**, à la place de six vocabulaires dispersés — dont aucun ne connaissait la tonte | `src/lib/natures-prestation.ts` |
+| **Une nature inconnue garde sa propre ligne** et sort « à chiffrer » : identité et capacité de chiffrage ne se confondent plus | `src/lib/lignes-vendables.ts` |
+| **La quantité dictée atteint le CALCUL** — elle vivait en colonne et personne ne la lisait | `caracteristiqueDeLaQuantite` + `src/lib/mesures-prestation.ts` |
+| **Quantité physique et quantité commerciale**, formalisées et jamais synchronisées | `src/lib/quantite-commerciale.ts` |
+| **« À chiffrer » remplace « 0 € »** ; le devis ne se prépare ni ne s'envoie tant qu'une ligne attend son prix | migration 0070 + `src/lib/preparation-devis.ts` + `src/server/repositories/devis.ts` |
+| **Comparabilité V2**, à côté de la V1 jamais réécrite : ordre de grandeur, unité, espèce | `src/lib/comparabilite-prix.ts` |
+| **Sa correction tranche** au lieu de bloquer, et aucune extraction ne repasse dessus | `prestations.corrige_par_humain` |
+| **`nature` et `espece` viennent de la dictée**, dans une liste fermée et vérifiée | `src/server/ai/schemas/extraction.ts` + `src/lib/prestation-structuree.ts` |
+| **Une réponse tronquée cesse d'être une panne muette** | `ResultatLLM.fin` + `estJsonTronque` |
+
+**Ce qui n'est PAS vérifié ici, faute de clé :** ce que le modèle rend vraiment
+pour `nature` et `espece`, Whisper, et le `stop_reason` réel. Le §16 du dossier
+07 donne le seul test à jouer sur son espace.
+
+**Deux choses lui reviennent :** la planche
+`https://florianmarrins0978-svg.github.io/Atlas-app/corriger-une-mesure.html`,
+et la question « dessouchage de DEUX souches : faut-il multiplier le prix de
+grille par deux ? ».
 
 ---
 
