@@ -241,7 +241,18 @@ async function main() {
       { type: "noter_chantier", description: "Noter dans le vide", donnees: { note: "coucou" } },
     ]);
     assert.equal(resultats[0].statut, "conflit");
-    assert.match(resultats[0].message ?? "", /ouvrez-le, ou nommez-le/i);
+    /**
+     * **On vise la RÈGLE, pas le libellé.** Ce cas exigeait « ouvrez-le, ou
+     * nommez-le » mot pour mot — et il a rougi le 27 août 2026 sur une demande
+     * exaucée : le patron reproche depuis le 25 août qu'on le renvoie ouvrir
+     * une fiche lui-même. Une suite qui réclame ce qu'il a fait retirer rend
+     * son écran impossible à changer (`CLAUDE.md` §5 bis).
+     *
+     * Ce qui compte : le geste le DIT au lieu de planter, il dit quelque chose,
+     * et il ne le renvoie pas ouvrir une fiche.
+     */
+    assert.ok((resultats[0].message ?? "").trim().length > 0, "un conflit muet n'apprend rien");
+    assert.doesNotMatch(resultats[0].message ?? "", /ouvrez-le|ouvrir/i);
   });
 
   await test("Un client disparu rend un conflit, jamais une écriture au hasard", async () => {
@@ -292,6 +303,58 @@ async function main() {
     if (!reponse.succes) return;
     assert.match(reponse.texte, /ne réponds qu'aux questions sur Atlas/i);
     assert.deepEqual(reponse.sources, [], "Aucun outil ne doit avoir été consulté");
+  });
+
+  /**
+   * PEU IMPORTE L'ÉCRAN — sa règle du 27 août 2026 : *« l'encart assistant, peu
+   * importe où je l'ouvre, il doit pouvoir répondre à mes envies »*.
+   *
+   * Ces trois cas jouent l'ACCUEIL : `chantierId` vaut `null`, comme lorsqu'il
+   * ouvre le panneau depuis la liste ou le planning. Le geste doit alors porter
+   * sur le chantier qu'il NOMME, et non se refuser.
+   */
+  await test("DEPUIS L'ACCUEIL, un geste porte sur le chantier qu'il nomme", async () => {
+    const { resultats } = await confirmer(A, null, [
+      {
+        type: "noter_chantier",
+        description: "Noter le chantier",
+        donnees: { chantierId: chantier.id, note: "Vu depuis l'accueil." },
+      },
+    ]);
+    assert.equal(resultats[0].statut, "appliquee", resultats[0].message);
+  });
+
+  await test("DEPUIS L'ACCUEIL, la clé peut s'appeler autrement — le geste porte quand même", async () => {
+    // Le modèle range la même idée sous des noms voisins ; la consigne nomme
+    // désormais la clé, et les alias rattrapent ce qui passe à côté. C'est la
+    // faute du 26 août d'un cran plus loin (`chantier-vise.ts`).
+    const { resultats } = await confirmer(A, null, [
+      {
+        type: "noter_chantier",
+        description: "Noter le chantier",
+        donnees: { chantier_id: chantier.id, note: "Rangé sous un autre nom." },
+      },
+    ]);
+    assert.equal(resultats[0].statut, "appliquee", resultats[0].message);
+  });
+
+  await test("« id » NE DÉSIGNE PAS le chantier — le geste ne vise pas à côté", async () => {
+    /**
+     * `donnees.id` porte l'élément touché sur la moitié des gestes. L'accepter
+     * comme chantier ferait viser une prestation, et le refus qui s'ensuit
+     * envoie chercher au mauvais endroit. Sans chantier ouvert ni clé connue,
+     * le geste doit se refuser — proprement, et sans renvoyer le patron ouvrir
+     * une fiche lui-même.
+     */
+    const { resultats } = await confirmer(A, null, [
+      { type: "noter_chantier", description: "Noter le chantier", donnees: { id: chantier.id, note: "À côté." } },
+    ]);
+    assert.equal(resultats[0].statut, "conflit");
+    assert.doesNotMatch(
+      resultats[0].message ?? "",
+      /ouvrez-le|ouvrir/i,
+      "le refus renvoie le patron ouvrir une fiche — c'est exactement ce qu'il a reproché"
+    );
   });
 
   console.log(`\n${passed} test(s) réussi(s), ${failed} échec(s)`);

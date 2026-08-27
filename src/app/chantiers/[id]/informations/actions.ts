@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { chantierDuGeste } from "@/server/ai/tools/chantier-vise";
 import { jourIso } from "@/lib/jour";
 import { getCurrentCtx } from "@/server/session-ctx";
 import { preparerDevisDepuisDictee, enregistrerPrecisionsEtReprendre } from "@/server/services/devis-depuis-dictee";
@@ -272,7 +273,7 @@ export async function appliquerPropositionsAction(
      * un chantier d'une entreprise voisine est indiscernable d'un chantier
      * disparu, et rend le même conflit.
      */
-    const chantierVise = String(donnees.chantierId ?? chantierId ?? "");
+    const chantierVise = chantierDuGeste(donnees, chantierId);
 
     // Les gestes qui n'ont de sens que SUR un chantier. Sans lui, on le DIT :
     // écrire dans le vide, ou planter, coûterait un aller-retour.
@@ -288,7 +289,12 @@ export async function appliquerPropositionsAction(
         ...base,
         statut: "conflit",
         categorie: "donnee_invalide",
-        message: "Ce geste vise un chantier : ouvrez-le, ou nommez-le.",
+        // **On ne le renvoie PAS ouvrir une fiche.** C'est ce qu'il a reproché
+        // deux fois le 25 août 2026, et `chantier-vise.ts` l'a corrigé côté
+        // outils. Le même reproche valait ici : quand le geste ne désigne
+        // aucun chantier, c'est à l'assistant de le chercher, pas au patron
+        // d'aller le chercher pour lui.
+        message: "Je n'ai pas su de quel chantier il s'agit. Dites-moi le nom du client.",
       });
       continue;
     }

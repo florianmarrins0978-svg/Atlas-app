@@ -122,6 +122,30 @@ proposition. Le texte revient, la proposition non — rien ne relie encore un
 message à ses propositions. Consigné dans `TODO.md` ; ce n'est pas une
 régression (avant ce lot, le fil entier disparaissait).
 
+### « Peu importe où je l'ouvre » — un geste porte sur le chantier qu'il nomme
+
+**Sa règle du 27 août 2026 :** *« l'encart assistant, peu importe où je l'ouvre,
+il doit pouvoir répondre à mes envies »*. Il l'avait déjà dite le 25 août pour
+les outils de lecture (`chantier-vise.ts`) ; elle valait aussi pour les GESTES,
+et là elle ne tenait pas.
+
+**La même faute que « Il comprend rien », d'un cran plus loin.** La consigne
+disait « mets son identifiant dans la proposition » **sans nommer la clé** —
+alors que le code ne lit que `chantierId`. Rangé sous un nom voisin, le geste
+retombait sur le chantier ouvert, ou se refusait alors qu'il venait de nommer
+son client. Ce n'est pas au modèle de deviner notre vocabulaire : la consigne
+nomme la clé, et les alias rattrapent le reste.
+
+**`id` est délibérément EXCLU des alias.** Sur la moitié des gestes il désigne
+l'élément touché — la prestation, le tarif, la ligne —, et les deux sont des
+UUID : aucune forme ne les distingue. L'accepter ferait viser à côté et rendrait
+un refus incompréhensible.
+
+**Et le refus ne le renvoie plus ouvrir une fiche.** « Ce geste vise un
+chantier : ouvrez-le » était exactement ce qu'il reproche depuis le 25 août.
+La suite qui exigeait ce libellé mot pour mot a rougi sur une demande exaucée :
+elle vise désormais la règle, pas la phrase (`CLAUDE.md` §5 bis).
+
 ### Une maquette : quand l'assistant parle le premier
 
 Sa deuxième piste retenue. Elle demande **où** il prend la parole, donc une

@@ -33,13 +33,52 @@ export const CHAMP_CHANTIER_VISE = {
     ),
 };
 
+/**
+ * Les noms sous lesquels un modèle range « le chantier visé ».
+ *
+ * **Payé deux fois, et c'est la même faute.** Le 26 août, l'assistant
+ * abandonnait parce que le dépôt nommait la même idée `nom`, `motCle` et
+ * `question` selon l'outil — il a répondu trois fois « reformulez » à des
+ * phrases parfaites. Le 27, même piège d'un cran plus loin : la consigne dit
+ * « mets son identifiant dans la proposition » sans nommer la clé, et
+ * `appliquerPropositionsAction` ne lit que `chantierId`. Rangé sous `id` ou
+ * `chantier`, le geste retombait sur le chantier ouvert — ou se refusait, alors
+ * que le patron venait de nommer son client.
+ *
+ * **Ce n'est pas au modèle de deviner notre vocabulaire.** La consigne nomme
+ * désormais la clé, et cette liste rattrape ce qui passe à côté. Elle reste un
+ * pansement : le vrai remède est d'unifier les noms de champs (`TODO.md`).
+ */
+const NOMS_DU_CHANTIER = ["chantierId", "chantier_id", "chantierid", "idChantier", "chantier"] as const;
+
+/**
+ * **`id` N'EST PAS DE LA LISTE, et c'est délibéré.** Sur la moitié des gestes,
+ * `donnees.id` désigne l'élément touché — la prestation à retirer, le tarif à
+ * corriger, la ligne à modifier —, jamais le chantier. Les deux sont des UUID :
+ * aucune forme ne les distingue. L'accepter ferait prendre l'identifiant d'une
+ * prestation pour celui d'un chantier, ce qui n'écrirait rien de faux (chaque
+ * geste relit sa cible avant d'écrire) mais rendrait un refus incompréhensible
+ * — le pire des messages, celui qui envoie chercher au mauvais endroit.
+ *
+ * Un nom ambigu ne se rattrape pas : il se nomme dans la consigne.
+ */
+export function chantierDuGeste(donnees: Record<string, unknown>, chantierOuvert: string | null): string {
+  for (const nom of NOMS_DU_CHANTIER) {
+    const valeur = donnees[nom];
+    if (typeof valeur === "string" && valeur.trim()) return valeur.trim();
+  }
+  return chantierOuvert ?? "";
+}
+
 export type VerdictChantier =
   | { ok: true; chantierId: string }
   | { ok: false; reponse: { erreur: string } };
 
 export function chantierVise(contexte: ContexteOutil, parametres: unknown): VerdictChantier {
-  const demande = (parametres as { chantierId?: string } | undefined)?.chantierId?.trim();
-  const cible = demande || contexte.chantierId;
+  // Les mêmes alias que pour un geste : un outil de lecture rate la cible pour
+  // exactement les mêmes raisons, et il n'y a aucune raison que les deux
+  // chemins tolèrent des choses différentes.
+  const cible = chantierDuGeste((parametres ?? {}) as Record<string, unknown>, contexte.chantierId);
   if (!cible) {
     return {
       ok: false,
