@@ -7,6 +7,38 @@ Format : le plus récent en tête.
 
 ---
 
+## 2026-08-27
+
+### L'or reste l'or sur Brume, et le marqueur d'onglet suit enfin le doigt
+
+*« J'aimerais que lorsque je choisis l'apparence Brume, tout ce qui est en doré
+sur Origine le reste aussi sur Brume »*, et *« quand je sélectionne Brume, le
+dessin des catégories en bas ne change pas automatiquement, je dois recharger la
+page »*. Deux défauts distincts sur le même élément.
+
+**L'or perdu.** La pastille de Brume était teintée de l'accent — un bleu marine :
+le trait doré d'Origine devenait bleu. **C'était le seul endroit de l'accueil où
+l'or se perdait**, mesuré plutôt que cherché à l'œil : la couleur du texte, du
+fond, des traits et des ombres de chaque élément relevée sur les deux chartes,
+puis comparée. Trente-six endroits portent l'or ; un seul le perdait.
+
+**Le changement en direct ne repeignait que les couleurs.** Il reparcourait les
+jetons de son côté ; la police des titres et les cinq variables du marqueur
+n'arrivaient qu'au rendu suivant, celui du serveur. C'est la troisième fois que
+deux façons de dire « ce que la charte écrit » divergent — les deux premières
+sont déjà consignées.
+
+**Et poser ne suffisait pas : il faut effacer.** Venant de Brume, ses variables
+d'onglet restent sur la page : une charte qui ne les pose pas doit les retirer,
+sinon sa pastille survit sur Origine. C'est un état qu'aucun rechargement ne
+produit, donc que personne ne voit en essayant à la main.
+
+Les quatre contrôles existants ne pouvaient rien voir : ils mesurent tous une
+couleur, et les couleurs suivaient. Deux s'y ajoutent, vus rouges chacun pour sa
+raison. Et la suite qui exigeait l'accent réclame maintenant l'or — une suite qui
+réclame ce qu'il a fait retirer rend son écran impossible à changer.
+`ARCHITECTURE.md` §199.
+
 ## 2026-08-26
 
 ### « Terminés » : les traits partent, et la carte de TVA se voit cliquable

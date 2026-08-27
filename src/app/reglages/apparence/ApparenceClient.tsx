@@ -2,7 +2,14 @@
 
 import { useState, useTransition } from "react";
 import { colors, font, libelleCaps, texteSituation } from "@/lib/design-tokens";
-import { CHARTES, charte, type Charte, type NomCharte } from "@/lib/chartes";
+import {
+  CHARTES,
+  charte,
+  toutesLesVariables,
+  variablesCharte,
+  type Charte,
+  type NomCharte,
+} from "@/lib/chartes";
 import { choisirCharteAction } from "./actions";
 
 /**
@@ -57,10 +64,32 @@ export default function ApparenceClient({ initiale }: { initiale: NomCharte }) {
    * couleurs d'origine avant de se repeindre — un clignotement à chaque page.
    */
   function repeindre(nom: NomCharte) {
-    const jetons = charte(nom).jetons;
+    // **`variablesCharte`, et NON `c.jetons` — corrigé le 27 août 2026.**
+    //
+    // Le patron : *« quand je sélectionne Brume, le dessin des catégories en bas
+    // ne change pas automatiquement, je dois recharger la page »*. Il avait
+    // raison, et la cause est une troisième occurrence de la même faute : cette
+    // fonction reparcourait `c.jetons` de son côté, c'est-à-dire les seules
+    // COULEURS. Tout ce qu'une charte pose d'autre — la police des titres, et
+    // les cinq variables du marqueur d'onglet — n'arrivait qu'au rendu suivant,
+    // celui du serveur. D'où : les couleurs suivaient le doigt, le reste
+    // attendait un rechargement.
+    //
+    // La règle du §3 vaut aussi pour un parcours d'objet : deux façons de dire
+    // « ce que la charte écrit » divergent au premier ajout, et c'est
+    // exactement ce qui s'est produit — deux fois avant celle-ci
+    // (`src/lib/chartes.ts`).
+    //
+    // **ON RETIRE AVANT DE POSER**, et c'est la moitié qui manque toujours. Les
+    // variables vivent sur `<html>` : venant de Brume, ses cinq variables
+    // d'onglet y sont encore. Une charte qui ne les pose pas doit les EFFACER,
+    // sans quoi sa pastille survivrait sur Origine — un état qu'aucun
+    // rechargement ne produit, donc que personne ne verrait en essayant.
+    const voulues = variablesCharte(charte(nom));
     const racine = document.documentElement;
-    for (const [cle, valeur] of Object.entries(jetons)) {
-      racine.style.setProperty(`--atlas-${cle}`, valeur);
+    for (const cle of toutesLesVariables()) {
+      if (cle in voulues) racine.style.setProperty(cle, voulues[cle]);
+      else racine.style.removeProperty(cle);
     }
   }
 

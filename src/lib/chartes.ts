@@ -510,12 +510,41 @@ export function variablesCharte(c: Charte): Record<string, string> {
     sortie["--atlas-onglet-haut"] = "10px";
     sortie["--atlas-onglet-hauteur"] = "100%";
     sortie["--atlas-onglet-rayon"] = "11px";
-    // L'accent à 11 % : assez pour se voir, trop peu pour concurrencer l'or —
-    // qui, lui, veut dire « à faire ».
-    sortie["--atlas-onglet-fond"] = `color-mix(in srgb, ${c.jetons.rust} 11%, transparent)`;
-    sortie["--atlas-onglet-encre"] = c.jetons.rust;
+    // **L'OR, ET NON L'ACCENT — sa consigne du 27 août 2026 :** *« lorsque je
+    // choisis l'apparence Brume, tout ce qui est en doré sur Origine le reste
+    // aussi sur Brume »*.
+    //
+    // La pastille était tenue par l'accent : sur Brume, le trait doré du
+    // marqueur d'onglet devenait donc bleu marine. **C'était le SEUL endroit de
+    // l'accueil où l'or se perdait** — mesuré en relevant la couleur de chaque
+    // élément sur les deux chartes, plutôt que cherché à l'œil.
+    //
+    // **Et le libellé de l'onglet ne change pas non plus** : sur Origine il est
+    // à l'encre de l'écran, et rien ne le teintait. La ligne qui le passait à
+    // l'accent a donc disparu — sa consigne dit que l'or reste l'or, pas qu'une
+    // autre couleur s'invite.
+    sortie["--atlas-onglet-fond"] = `color-mix(in srgb, ${c.jetons.or} 11%, transparent)`;
   }
   return sortie;
+}
+
+/**
+ * TOUTES les variables qu'UNE charte peut poser, quelle qu'elle soit.
+ *
+ * **Elle existe pour qu'un changement en direct sache RETIRER, pas seulement
+ * poser.** Les variables vivent sur `<html>` : passer de « Brume moderne » à
+ * une autre charte ne peut pas se contenter d'écrire les nouvelles — il faut
+ * effacer celles que la précédente avait posées et que la nouvelle ignore,
+ * sinon la pastille d'onglet de Brume survit sur Origine.
+ *
+ * **Calculée depuis les chartes elles-mêmes**, jamais recopiée : une liste
+ * tenue à la main s'oublierait à la première variable ajoutée, et l'oubli ne se
+ * verrait que chez lui, en changeant d'apparence.
+ */
+export function toutesLesVariables(): string[] {
+  const noms = new Set<string>();
+  for (const c of CHARTES) for (const cle of Object.keys(variablesCharte(c))) noms.add(cle);
+  return [...noms];
 }
 
 export function variablesCss(c: Charte): string {
