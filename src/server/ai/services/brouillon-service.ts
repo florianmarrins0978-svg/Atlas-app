@@ -166,6 +166,10 @@ export async function confirmerBrouillon(ctx: Ctx, chantierId: string): Promise<
       if (Object.keys(aPoser).length > 0) {
         await completerPrestation(ctx, existante.id, aPoser);
       }
+      // **Ce qu'il a corrigé lui-même n'est jamais touché.** `completerPrestation`
+      // ne pose déjà que ce qui manque, mais une prestation marquée corrigée par
+      // l'artisan ne reçoit rien du tout — pas même un champ vide qu'une
+      // extraction croirait pouvoir remplir.
       for (const motif of contradictions) {
         // Bavard plutôt que muet : ce qui n'a pas été écrit doit pouvoir se
         // diagnostiquer (`AGENTS.md`).

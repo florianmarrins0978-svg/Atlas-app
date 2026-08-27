@@ -357,6 +357,8 @@ export async function genererPdfPourApercu(ctx: Ctx, devisId: string): Promise<U
         quantite: l.quantite,
         prixUnitaire: l.prixUnitaire,
         montant: l.montant,
+        unite: l.unite,
+        aChiffrer: l.aChiffrer,
       })),
     }, habillage);
   });
@@ -420,6 +422,8 @@ export async function envoyerDevis(ctx: Ctx, devisId: string) {
         quantite: l.quantite,
         prixUnitaire: l.prixUnitaire,
         montant: l.montant,
+        unite: l.unite,
+        aChiffrer: l.aChiffrer,
       })),
     }, habillage);
 

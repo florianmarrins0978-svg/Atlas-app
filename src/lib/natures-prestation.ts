@@ -127,7 +127,10 @@ export const NATURES: readonly Nature[] = [
     // L'apostrophe compte : « taille d'allégement sur marronnier » est un
     // élagage, et sans elle il ne l'était pas — c'est sa dictée du 7 août,
     // celle dont le devis est sorti vide.
-    motif: /\b(élagage|elagage|élaguer|elaguer|taille\s+d(?:e|u|')\s*(?!haie))/i,
+    // L'apostrophe compte, ET l'espace aussi : `d(?:e|u|')\s*` laissait le
+    // regard tomber juste après « de », donc AVANT l'espace — et « taille de
+    // haie » redevenait un élagage. Le blanc fait partie du mot.
+    motif: /\b(élagage|elagage|élaguer|elaguer|taille\s+(?:de\s+|du\s+|d'))(?!haie)/i,
     detachable: true,
     accessoire: false,
     chiffrage: "aucune",

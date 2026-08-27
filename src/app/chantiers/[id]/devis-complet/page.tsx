@@ -83,7 +83,12 @@ export default async function DevisCompletPage({ params }: { params: Promise<{ i
   // donne l'impression d'un agent qui radote.
   const rappels: Record<string, { prix: string; phrase: string }> = {};
   for (const ligne of lignes) {
-    const rappel = rappelDePrix(await leconsComparables(ctx, ligne.libelle, { chantierExclu: id }));
+    // La ligne ENTIÈRE, et pas seulement son libellé : son identifiant donne
+    // accès aux prestations qu'elle vend, donc à l'espèce et à l'ordre de
+    // grandeur qui décident si un chantier est vraiment comparable.
+    const rappel = rappelDePrix(
+      await leconsComparables(ctx, { libelle: ligne.libelle, id: ligne.id }, { chantierExclu: id })
+    );
     if (rappel) rappels[ligne.id] = { prix: rappel.prix, phrase: rappel.phrase };
   }
 
@@ -149,6 +154,8 @@ export default async function DevisCompletPage({ params }: { params: Promise<{ i
           quantite: l.quantite,
           prixUnitaire: l.prixUnitaire,
           montant: l.montant,
+          unite: l.unite,
+          aChiffrer: l.aChiffrer,
         }))}
         tauxTva={devisRow.tauxTva}
         reductionPourcent={devisRow.reductionPourcent}

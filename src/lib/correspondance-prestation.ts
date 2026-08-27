@@ -28,8 +28,12 @@
 //
 // **On ne remplace jamais une valeur déjà posée.** Un champ vide se remplit ;
 // un champ rempli ne bouge pas, même si la nouvelle extraction dit autre chose.
-// C'est ce qui protège une correction humaine sans avoir à savoir qui l'a
-// écrite — et le dépôt ne le sait pas, faute de colonne de provenance.
+//
+// **Et ce que l'artisan a corrigé LUI-MÊME ne reçoit plus rien du tout**
+// (`corrige_par_humain`, migration 0070). La règle ci-dessus suffisait tant
+// qu'on ignorait qui avait écrit quoi ; elle laissait pourtant une extraction
+// remplir un champ qu'il avait délibérément vidé. Sa correction est un état
+// final, pas un point de départ.
 
 import { libelleEnrichi } from "./questions-chiffrage";
 
@@ -39,7 +43,11 @@ export type PrestationExistante = {
   libelle: string;
   quantite?: string | null;
   unite?: string | null;
+  nature?: string | null;
+  espece?: string | null;
   aConfirmer?: boolean | null;
+  /** L'artisan a posé ces valeurs lui-même (migration 0070). */
+  corrigeParHumain?: boolean | null;
 };
 
 /**
@@ -70,7 +78,7 @@ export function prestationCorrespondante(
 
 export type Enrichissement = {
   /** Les champs à poser — uniquement ceux qui étaient vides. */
-  aPoser: { quantite?: string; unite?: string; aConfirmer?: boolean };
+  aPoser: { quantite?: string; unite?: string; nature?: string; espece?: string; aConfirmer?: boolean };
   /** Ce que la nouvelle lecture dit et qui contredit ce qui est déjà là. */
   contradictions: string[];
 };
@@ -93,10 +101,35 @@ export type Enrichissement = {
  */
 export function enrichissementPossible(
   existante: PrestationExistante,
-  nouvelle: { quantite: string | null; unite: string | null; aConfirmer: boolean }
+  nouvelle: {
+    quantite: string | null;
+    unite: string | null;
+    nature?: string | null;
+    espece?: string | null;
+    aConfirmer: boolean;
+  }
 ): Enrichissement {
   const aPoser: Enrichissement["aPoser"] = {};
   const contradictions: string[] = [];
+
+  // **Ce que l'artisan a posé lui-même ne reçoit RIEN** (migration 0070).
+  //
+  // La règle « on ne remplace jamais ce qui est là » suffisait tant qu'on ne
+  // savait pas qui avait écrit quoi. Elle laissait pourtant une extraction
+  // remplir un champ qu'il avait délibérément vidé. Sa correction est un état
+  // final, pas un point de départ.
+  if (existante.corrigeParHumain) {
+    return {
+      aPoser: {},
+      contradictions:
+        nouvelle.quantite !== null && String(nouvelle.quantite) !== String(existante.quantite ?? "")
+          ? [
+              `« ${existante.libelle} » a été corrigé à la main (${existante.quantite ?? "—"} ${existante.unite ?? ""}`.trim() +
+                `) ; la dictée dit ${nouvelle.quantite} ${nouvelle.unite ?? ""}. Votre correction reste.`,
+            ]
+          : [],
+    };
+  }
 
   const quantiteVide = existante.quantite === null || existante.quantite === undefined;
   const uniteVide = existante.unite === null || existante.unite === undefined;
@@ -116,6 +149,19 @@ export function enrichissementPossible(
       }
     }
   }
+
+  // **La nature et l'espèce se posent quand elles manquent, jamais autrement.**
+  // Une nature déjà écrite gouverne le regroupement des lignes du devis : la
+  // remplacer au rejeu d'une dictée déplacerait un travail d'une ligne à une
+  // autre, sans un mot.
+  if (!existante.nature && nouvelle.nature) aPoser.nature = nouvelle.nature;
+  else if (existante.nature && nouvelle.nature && existante.nature !== nouvelle.nature) {
+    contradictions.push(
+      `« ${existante.libelle} » est enregistré comme ${existante.nature} et la dictée dit ${nouvelle.nature}. Rien n'a été modifié.`
+    );
+  }
+
+  if (!existante.espece && nouvelle.espece) aPoser.espece = nouvelle.espece;
 
   if (existante.aConfirmer === null || existante.aConfirmer === undefined) {
     aPoser.aConfirmer = nouvelle.aConfirmer;

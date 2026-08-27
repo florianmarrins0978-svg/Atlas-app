@@ -1,6 +1,7 @@
 import { asc, eq } from "drizzle-orm";
 import Decimal from "decimal.js";
 import { withEntreprise } from "../db/with-entreprise";
+import { and, asc as _asc } from "drizzle-orm";
 import { lignesPrix, lignesPrixPrestations, prestations } from "../db/schema";
 import type { Ctx } from "./context";
 import { membresDuLibelle } from "../../lib/lignes-vendables";
@@ -192,4 +193,39 @@ export async function prestationsDuLibelle(
   );
   const parLibelle = new Map(lignes.map((l) => [l.libelle.trim().toLowerCase(), l.id]));
   return membres.map((m) => parLibelle.get(m)).filter((id): id is string => id !== undefined);
+}
+
+/**
+ * Les prestations que cette ligne vend, telles qu'elles sont en base.
+ *
+ * **Le remplaçant de la lecture de libellé** (`prestationsDuLibelle`). Depuis la
+ * migration 0069 la ligne SAIT ce qu'elle vend ; l'apprentissage n'a plus à
+ * redéduire ses natures et ses mesures d'un texte. Une ligne d'avant n'a aucun
+ * lien : la liste est vide, et l'appelant retombe alors sur le libellé.
+ */
+export async function prestationsDeLaLigne(ctx: Ctx, lignePrixId: string) {
+  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, (tx) =>
+    tx
+      .select({
+        id: prestations.id,
+        libelle: prestations.libelle,
+        nature: prestations.nature,
+        espece: prestations.espece,
+        methode: prestations.methode,
+        quantite: prestations.quantite,
+        unite: prestations.unite,
+        caracteristiques: prestations.caracteristiques,
+        corrigeParHumain: prestations.corrigeParHumain,
+      })
+      .from(lignesPrixPrestations)
+      .innerJoin(
+        prestations,
+        and(
+          eq(lignesPrixPrestations.prestationId, prestations.id),
+          eq(lignesPrixPrestations.entrepriseId, prestations.entrepriseId)
+        )
+      )
+      .where(eq(lignesPrixPrestations.lignePrixId, lignePrixId))
+      .orderBy(_asc(lignesPrixPrestations.ordre))
+  );
 }

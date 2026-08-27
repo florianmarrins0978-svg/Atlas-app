@@ -17,7 +17,7 @@ import { logger } from "../../logger";
 export const SYSTEME = `Tu extrais des informations de chantier depuis un texte dicté par un artisan.
 Réponds UNIQUEMENT avec un objet JSON valide, sans aucun texte avant ou après, au format exact suivant :
 {
-  "prestations": { "libelle": string, "description": string | null, "quantite": string | null, "unite": string | null, "aConfirmer": boolean }[],
+  "prestations": { "libelle": string, "description": string | null, "quantite": string | null, "unite": string | null, "nature": string | null, "espece": string | null, "aConfirmer": boolean }[],
   "materiel": { "libelle": string, "description": string | null, "quantite": string | null, "unite": string | null, "aConfirmer": boolean }[],
   "dureePrevue": string | null,
   "tailleEquipe": string | null,
@@ -42,6 +42,14 @@ Règles absolues :
     « trois arbres »   -> "quantite": "3", "unite": "arbre"
   L'unité de comptage doit être l'objet explicitement prononcé. N'invente pas une unité pour un nombre
   dont on ne sait pas ce qu'il compte : les deux restent null.
+- "nature" se choisit dans CETTE LISTE, et nulle part ailleurs :
+    abattage, elagage, haie, tonte, dessouchage, fendage, grumes, broyage, evacuation,
+    billonnage, plantation, cloture
+  Si le travail décrit n'en fait manifestement partie d'aucune, "nature" vaut null. N'invente
+  JAMAIS un nom de nature : un travail sans nature reste un travail à part entière.
+- "espece" n'est renseignée que si l'espèce est PRONONCÉE — « un érable », « de la haie de
+  laurier ». Recopie le mot au singulier, sans article : "érable", "laurier". Jamais déduite
+  d'un contexte : sinon null.
 - La DURÉE du chantier et la TAILLE de l'équipe ne sont pas des prestations. « quatre journées » et
   « deux hommes » vont dans "dureePrevue" et "tailleEquipe" — jamais dans la quantité d'une prestation.
 - Toute information absente vaut null (ou un tableau vide) et doit être citée dans "informationsManquantes".

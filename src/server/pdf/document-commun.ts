@@ -358,6 +358,17 @@ export type LigneDocument = {
   quantite: string;
   prixUnitaire: string;
   montant: string;
+  /** L'unité de la quantité — « ml », « m² », « souche » (migration 0070). */
+  unite?: string | null;
+  /**
+   * Le travail est identifié, son prix ne l'est pas (migration 0070).
+   *
+   * **Un devis portant une telle ligne ne peut pas être envoyé** — le contrôle
+   * vit dans `envoyerDevis`. Elle n'apparaît donc que sur l'aperçu, celui qu'il
+   * relit avant de décider, et il faut qu'elle y dise « à chiffrer » plutôt que
+   * « 0,00 € » : un zéro se lit « gratuit ».
+   */
+  aChiffrer?: boolean | null;
 };
 
 export type DonneesDocument = {
@@ -767,12 +778,22 @@ export async function composerDocument(
     }
     lignesLibelle.forEach((l, i) => ecrire(ctx, l, MARGE, y - i * 11, { taille: 9 }));
     if (!options.sansChiffrage) {
-      ecrireADroite(ctx, ligne.quantite, xQte, y, { taille: 9 });
-      ecrireADroite(ctx, formatMontant(ligne.prixUnitaire, data.devise), xPrix, y, { taille: 9 });
-      ecrireADroite(ctx, formatMontant(ligne.montant, data.devise), xMontant, y, {
+      // **L'unité à côté de la quantité** : « 800 ml », plus « 800 » tout court.
+      // Le client lisait « 800 × 17,50 € » sans savoir 800 de quoi.
+      ecrireADroite(ctx, ligne.unite ? `${ligne.quantite} ${ligne.unite}` : ligne.quantite, xQte, y, {
         taille: 9,
-        police: ctx.sansGras,
       });
+      if (ligne.aChiffrer) {
+        // Ni prix unitaire, ni montant : il n'y en a pas. Écrire « 0,00 € »
+        // serait annoncer un travail gratuit (26 août 2026).
+        ecrireADroite(ctx, "à chiffrer", xMontant, y, { taille: 9, police: ctx.sansGras });
+      } else {
+        ecrireADroite(ctx, formatMontant(ligne.prixUnitaire, data.devise), xPrix, y, { taille: 9 });
+        ecrireADroite(ctx, formatMontant(ligne.montant, data.devise), xMontant, y, {
+          taille: 9,
+          police: ctx.sansGras,
+        });
+      }
     }
     y -= Math.max(lignesLibelle.length, 1) * 11 + 7;
     trait(ctx, y, 0.7, ctx.teintes.traitClair);

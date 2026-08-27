@@ -9,15 +9,29 @@
 // Ce module fait la traduction, et **rien d'autre** : du JSON du modèle vers
 // les colonnes de la table. Il ne devine aucune valeur absente, ne normalise
 // aucune unité, et ne déduit aucune nature d'un libellé — ce serait recopier
-// ici le défaut qu'on répare.
+// ici le défaut qu'on répare. Ce que le modèle propose comme nature est
+// **vérifié** contre le référentiel : une taxonomie inventée en base
+// contaminerait le regroupement des lignes de devis.
 
 import type { LigneExtraite } from "../server/ai/schemas/extraction";
+import { nature } from "./natures-prestation";
 
 export type PrestationStructuree = {
   /** En chiffres, prête pour une colonne numérique. `null` s'il n'a rien dit. */
   quantite: string | null;
   /** Son mot à lui, à la lettre. `null` s'il n'a rien dit. */
   unite: string | null;
+  /**
+   * La nature métier, **validée contre le référentiel**.
+   *
+   * Ce que le modèle rend est proposé, jamais cru sur parole : une nature qui
+   * n'existe pas dans `natures-prestation.ts` vaut `null`. Sans ce filtre, une
+   * taxonomie inventée s'installerait en base, et le regroupement des lignes de
+   * devis avec elle.
+   */
+  nature: string | null;
+  /** L'espèce, telle qu'elle a été prononcée. `null` si elle ne l'a pas été. */
+  espece: string | null;
   /** Le doute signalé par le modèle. Jamais `null` ici : le modèle a répondu. */
   aConfirmer: boolean;
 };
@@ -52,19 +66,29 @@ export function quantiteLue(brut: string | null): string | null {
  * lirait 800 mètres, 800 m² ou 800 heures selon qui regarde — c'est exactement
  * l'ambiguïté qui a produit le devis du 26 août.
  *
- * **Ce que cette fonction ne remplit PAS**, et il faut le savoir en la lisant :
- * ni `nature`, ni `espece`, ni `methode`, ni `caracteristiques`. Le contrat
- * d'extraction ne les demande pas au modèle — les déduire du libellé serait
- * inventer. La méthode et les mesures arrivent d'ailleurs, et sûrement : des
- * réponses du patron à l'arrêt d'avant-chiffrage (`precisions_chantier`).
+ * **La nature et l'espèce viennent du MODÈLE depuis le 27 août 2026**, parce
+ * que c'est lui qui a la dictée sous les yeux — pas d'un motif appliqué au
+ * libellé, qui serait une septième lecture de texte métier. La nature est
+ * ensuite vérifiée contre le référentiel ; l'espèce est recopiée telle quelle,
+ * et le contrat lui interdit de la déduire.
+ *
+ * **Ce que cette fonction ne remplit toujours PAS** : ni `methode`, ni
+ * `caracteristiques`. Elles arrivent d'ailleurs, et sûrement — des réponses du
+ * patron à l'arrêt d'avant-chiffrage (`precisions_chantier`).
  */
 export function structureDeLaPrestation(ligne: LigneExtraite): PrestationStructuree {
   const quantite = quantiteLue(ligne.quantite);
   const unite = ligne.unite?.trim() || null;
   const ensemble = quantite !== null && unite !== null;
+  // **Ce que le modèle propose comme nature est VÉRIFIÉ, jamais cru.** Le
+  // référentiel est une liste fermée ; ce qui n'y figure pas vaut « on ne sait
+  // pas », et le travail garde sa propre ligne (`lignes-vendables.ts`).
+  const naturePropose = ligne.nature?.trim().toLowerCase() || null;
   return {
     quantite: ensemble ? quantite : null,
     unite: ensemble ? unite : null,
+    nature: nature(naturePropose)?.cle ?? null,
+    espece: ligne.espece?.trim() || null,
     aConfirmer: ligne.aConfirmer,
   };
 }
@@ -164,4 +188,37 @@ export function lireCaracteristiques(brut: unknown): Caracteristiques {
     if (Number.isFinite(valeur) && valeur > 0) propres[cle] = valeur;
   }
   return propres;
+}
+
+// =========================================================================
+// Relire la quantité écrite DANS un libellé — son geste à lui
+// =========================================================================
+//
+// **Ce n'est pas une base de données, c'est une SAISIE.** Le libellé n'est plus
+// la source des données métier (§4 du brief du 27 août 2026) ; mais quand
+// l'artisan corrige « Haie (800 ml) » en « Haie (80 ml) » sur son écran, il
+// vient de dire quelque chose, et l'ignorer serait pire que tout : le prix ne
+// suivrait pas, et il ne comprendrait pas pourquoi.
+//
+// C'est exactement ce dont il se plaignait, à l'envers : avant, sa correction
+// du texte ne changeait rien parce que le prix venait de la colonne ; refuser
+// de la lire maintenant reproduirait le même mur.
+
+/** Le format qu'écrit `libelleAvecQuantite` : « Haie (tout genre) (800 ml) ». */
+const QUANTITE_ECRITE = /\((\d+(?:[.,]\d+)?)\s*([^)\d]{1,12})\)\s*$/;
+
+/**
+ * La quantité et l'unité qu'un libellé porte entre parenthèses, ou `null`.
+ *
+ * Ne devine rien : sans parenthèse finale au format attendu, il n'y a pas de
+ * quantité, et une prestation dont le nom contient un chiffre — « Taille 3 » —
+ * n'en produit pas.
+ */
+export function quantiteDuLibelle(libelle: string): { quantite: string; unite: string } | null {
+  const trouve = QUANTITE_ECRITE.exec(libelle.trim());
+  if (!trouve) return null;
+  const quantite = quantiteLue(trouve[1]);
+  const unite = trouve[2].trim();
+  if (!quantite || !unite) return null;
+  return { quantite, unite };
 }

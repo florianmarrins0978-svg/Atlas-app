@@ -77,6 +77,24 @@ cas("les grumes — connues de la grille, inconnues de la mémoire", () => {
 });
 
 cas("un fendage", () => attribueA("Fendage du bois", "fendage"));
+
+cas("une TONTE seule enseigne, elle aussi — décision du 27 août 2026", () => {
+  // **Ce cas exigeait un refus, et c'était le confondre avec autre chose.**
+  //
+  // Il disait « un travail inconnu du produit, seul » et prenait la tonte pour
+  // exemple, parce qu'aucun des six vocabulaires ne la connaissait. Le
+  // référentiel des natures la nomme désormais, et le brief du 27 août sépare
+  // explicitement les deux questions (§6) : **être identifié n'est pas être
+  // chiffrable, et l'inverse non plus.**
+  //
+  // Ce module répond à UNE question : ce montant appartient-il à un seul
+  // travail ? Pour une tonte seule, oui. Ce que chaque consommateur en fait lui
+  // appartient — la grille n'a pas de case « tonte » et ne range rien ; la
+  // mémoire de prix, elle, retient utilement « la dernière tonte de 1 200 m²
+  // était à 200 € ». La refuser ici priverait la seconde d'un apprentissage
+  // parfaitement sain.
+  attribueA("Tonte de la pelouse (1200 m²)", "tonte");
+});
 cas("un dessouchage", () => attribueA("Dessouchage de la souche", "dessouchage"));
 cas("un élagage", () => attribueA("Taille du tilleul", "elagage"));
 
@@ -97,10 +115,11 @@ cas("deux travaux vendables écrits sur une SEULE ligne de texte", () => {
   refuse("Abattage et dessouchage du chêne");
 });
 
-cas("un travail inconnu du produit, seul", () => {
+cas("un travail que le produit ne sait pas NOMMER, seul", () => {
   // Rien ne change par rapport à aujourd'hui : la grille et la mémoire
-  // l'ignoraient déjà. On le dit simplement au lieu de se taire.
-  refuse("Tonte de la pelouse (1200 m²)");
+  // l'ignorent. On le dit simplement au lieu de se taire.
+  refuse("Pose d'un bassin");
+  refuse("Désherbage des massifs");
 });
 
 cas("une plantation posée à côté d'un abattage", () => {

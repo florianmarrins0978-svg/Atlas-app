@@ -140,5 +140,72 @@ cas("rien de nouveau : rien n'est posé", () => {
   assert.deepEqual(e.aPoser, {});
 });
 
+console.log("\n=== La nature et l'espèce : posées si vides, jamais remplacées ===\n");
+
+cas("une nature absente se pose", () => {
+  const e = enrichissementPossible(p("1", "Tonte de la pelouse", { nature: null, espece: null }), {
+    quantite: null,
+    unite: null,
+    nature: "tonte",
+    espece: null,
+    aConfirmer: false,
+  });
+  assert.equal(e.aPoser.nature, "tonte");
+});
+
+cas("une nature déjà écrite n'est JAMAIS remplacée", () => {
+  // Elle gouverne le regroupement des lignes du devis : la changer au rejeu
+  // d'une dictée déplacerait un travail d'une ligne à une autre, sans un mot.
+  const e = enrichissementPossible(p("1", "Abattage d'un érable", { nature: "abattage" }), {
+    quantite: null,
+    unite: null,
+    nature: "elagage",
+    espece: null,
+    aConfirmer: false,
+  });
+  assert.equal(e.aPoser.nature, undefined, "la nature a été remplacée");
+  assert.equal(e.contradictions.length, 1, "le changement de nature n'a pas été signalé");
+});
+
+cas("une espèce absente se pose, une espèce présente reste", () => {
+  const vide = enrichissementPossible(p("1", "Abattage", { espece: null }), {
+    quantite: null,
+    unite: null,
+    espece: "érable",
+    aConfirmer: false,
+  });
+  assert.equal(vide.aPoser.espece, "érable");
+
+  const pleine = enrichissementPossible(p("1", "Abattage", { espece: "chêne" }), {
+    quantite: null,
+    unite: null,
+    espece: "érable",
+    aConfirmer: false,
+  });
+  assert.equal(pleine.aPoser.espece, undefined, "l'espèce a été remplacée");
+});
+
+console.log("\n=== Ce que l'artisan a corrigé lui-même est intouchable ===\n");
+
+cas("une prestation corrigée à la main ne reçoit RIEN", () => {
+  // Le cas que la règle « on ne remplace pas ce qui est là » laissait passer :
+  // un champ qu'il a délibérément VIDÉ se serait laissé remplir.
+  const e = enrichissementPossible(
+    p("1", "Haie", { quantite: null, unite: null, nature: null, espece: null, corrigeParHumain: true }),
+    { quantite: "800.00", unite: "ml", nature: "haie", espece: "laurier", aConfirmer: false }
+  );
+  assert.deepEqual(e.aPoser, {}, "une extraction a écrit par-dessus une correction humaine");
+});
+
+cas("et la divergence est DITE, pas tue", () => {
+  // Un refus muet ne se diagnostique pas (`AGENTS.md`).
+  const e = enrichissementPossible(
+    p("1", "Haie", { quantite: "80.00", unite: "ml", corrigeParHumain: true }),
+    { quantite: "800.00", unite: "ml", aConfirmer: false }
+  );
+  assert.equal(e.contradictions.length, 1);
+  assert.match(e.contradictions[0], /correction reste/i);
+});
+
 console.log(`\n${reussites} réussite(s), ${echecs} échec(s).`);
 if (echecs > 0) process.exitCode = 1;
