@@ -7,6 +7,48 @@ Format : le plus récent en tête.
 
 ---
 
+## 2026-08-27
+
+### L'assistant se souvient — le fil survit au rechargement
+
+Sa réponse du 27 août 2026, devant cinq pistes : **« 2 et 3 déjà »**. Le 3
+était *qu'il se souvienne*.
+
+Le fil vivait dans l'état d'un composant React et mourait au premier
+rechargement — or son onglet reste ouvert des heures et son banc redémarre
+plusieurs fois par soirée (`HANDOVER.md`, piège 0). « Et celui d'avant ? » ne
+trouvait plus rien.
+
+**Un fil par PERSONNE, pas par entreprise.** La RLS n'isole que les
+entreprises : deux associés d'une même entreprise verraient le fil l'un de
+l'autre sans le filtre posé dans le dépôt. Ce filtre-là ne se voit sur aucun
+écran, et c'est une suite base qui le tient.
+
+**Un fil unique, pas un par chantier** : il passe d'un chantier à l'autre en
+parlant, et une conversation qui repartirait de zéro à chaque écran serait
+exactement ce qu'il vient de faire retirer.
+
+**Un défaut trouvé par la suite, et il aurait été vu à l'écran :** `now()` rend
+l'instant de DÉBUT de transaction. La question et sa réponse, écrites ensemble,
+portaient la même date à la microseconde près ; le classement retombait sur
+l'identifiant — un UUID tiré au hasard — et **la réponse s'affichait avant la
+question une fois sur deux**. Le fil s'ordonne désormais par une séquence, qui
+ne dépend d'aucune horloge. Un cas qui échoue une fois sur deux apprend à
+ignorer le rouge : dix paires le rendent décisif.
+
+**« Oublier »** paraît à côté de la croix, et seulement s'il y a quelque chose à
+oublier.
+
+**Ce qui ne revient PAS après un rechargement :** les cases à cocher d'une
+proposition. Le texte revient, la proposition non — rien ne relie encore un
+message à ses propositions. Consigné dans `TODO.md` ; ce n'est pas une
+régression (avant ce lot, le fil entier disparaissait).
+
+### Une maquette : quand l'assistant parle le premier
+
+Sa deuxième piste retenue. Elle demande **où** il prend la parole, donc une
+planche avant tout code (§3 bis) : `appli/quand-il-parle-le-premier.html`.
+
 ## 2026-08-26
 
 ### La fiche d'un client : le téléphone à la ligne, et plus de phrase sur le vide

@@ -298,6 +298,28 @@ repart de 1 ; un artisan qui migre depuis un autre logiciel voudra continuer à
 demandera, c'est une colonne de départ sur `entreprise_compteurs`, pas un
 nouveau format.
 
+## ⚠ Une proposition ne revient pas après un rechargement
+
+**Depuis le 27 août 2026**, le fil de l'assistant survit au rechargement — mais
+**seul le texte revient**. Si sa dernière réponse portait des cases à cocher
+(« j'ajoute la prestation X ? »), elles ont disparu : il relit une phrase qui
+propose quelque chose, sans le moyen de l'accepter.
+
+**Ce n'est pas une régression** — avant ce lot, le fil entier disparaissait. Mais
+c'est un demi-geste, et il se verra.
+
+**Pourquoi ce n'est pas réglé du même coup.** Rien ne relie un message à ses
+propositions : `propositions_ia` porte l'entreprise et le chantier, pas le
+message — ni même l'utilisateur. Les rattacher « à la dernière réponse » serait
+juste dans le cas courant et faux dès que deux personnes de la même entreprise
+utilisent l'assistant. **Le remède est une colonne de liaison**, donc une
+migration : `propositions_ia.message_id`, et un `utilisateur_id` tant qu'on y
+est.
+
+**En attendant, rien n'est perdu ni appliqué à tort** : les propositions
+dorment en base au statut `proposee`, et la confirmation se fait par
+identifiant — aucune ne peut être appliquée par erreur.
+
 ## L'agent : ce qu'il ne sait pas encore faire
 
 **FAIT le 26 août 2026** pour l'essentiel (`ARCHITECTURE.md` §188). Ce qui reste

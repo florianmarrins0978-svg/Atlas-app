@@ -24,6 +24,7 @@ import {
   boolean,
   jsonb,
   bigint,
+  bigserial,
   type AnyPgColumn,
 } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
@@ -1241,6 +1242,44 @@ export const propositionsIa = pgTable(
     appliqueeAt: timestamp("appliquee_at", { withTimezone: true }),
   },
   (t) => [index("propositions_ia_entreprise_chantier_idx").on(t.entrepriseId, t.chantierId)]
+);
+
+/**
+ * Le fil de l'assistant, pour qu'il survive au rechargement (migration 0068).
+ *
+ * **Un fil par UTILISATEUR.** La RLS isole les entreprises ; deux associés de la
+ * même entreprise ne partagent pas leurs conversations, et c'est
+ * `utilisateurId` qui le tient — filtré dans le dépôt, faute d'un
+ * `app.utilisateur_id` posé par `withEntreprise`.
+ *
+ * **Un fil unique, pas un par chantier.** `chantierId` note l'écran d'où le
+ * message est parti, il ne coupe pas le fil : il passe d'un chantier à l'autre
+ * en parlant.
+ */
+export const messagesAssistant = pgTable(
+  "messages_assistant",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    entrepriseId: uuid("entreprise_id")
+      .notNull()
+      .references(() => entreprises.id, { onDelete: "cascade" }),
+    utilisateurId: uuid("utilisateur_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    chantierId: uuid("chantier_id"),
+    role: text("role", { enum: ["user", "assistant"] }).notNull(),
+    contenu: text("contenu").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    /**
+     * **C'est LUI qui ordonne le fil, pas la date.** `now()` rend l'instant de
+     * début de transaction : la question et sa réponse, écrites ensemble,
+     * portent la même date à la microseconde près, et le classement retombait
+     * sur un UUID tiré au hasard — la réponse passait devant la question une
+     * fois sur deux.
+     */
+    rang: bigserial("rang", { mode: "number" }).notNull(),
+  },
+  (t) => [index("messages_assistant_fil_idx").on(t.entrepriseId, t.utilisateurId, t.rang)]
 );
 
 // --- Documents légaux et preuve de leur acceptation (voir docs/RGPD.md §8) ---

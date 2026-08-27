@@ -5,7 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { colors, font, surPlein } from "@/lib/design-tokens";
 import { useAssistant } from "./assistant-contexte";
 import { rendreMarkdownSimple } from "./rendreMarkdownSimple";
-import { poserQuestionAction } from "@/app/assistant/actions";
+import { poserQuestionAction, lireFilAction, viderFilAction } from "@/app/assistant/actions";
 import { appliquerPropositionsAction } from "@/app/chantiers/[id]/informations/actions";
 import type { ResultatApplicationProposition, ResultatConfirmation } from "@/server/ai/propositions";
 import type { PropositionAvecId } from "@/server/ai/services/assistant-service";
@@ -41,11 +41,42 @@ export default function AssistantSidebar() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [saisie, setSaisie] = useState("");
   const [enCours, setEnCours] = useState(false);
+  // Un ref, pas un état : relire le fil ne doit pas provoquer un rendu de plus.
+  const filRelu = useRef(false);
   const finListeRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (ouvert) finListeRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, ouvert]);
+
+  /**
+   * **Le fil se relit à la PREMIÈRE ouverture, une seule fois.**
+   *
+   * Sa demande du 27 août 2026 : « qu'il se souvienne ». Le fil vivait ici, et
+   * mourait au rechargement — or son onglet reste ouvert des heures et son banc
+   * redémarre plusieurs fois par soirée (`HANDOVER.md`, piège 0).
+   *
+   * **À l'ouverture, pas au montage** : ce composant est dans le gabarit
+   * racine, donc sur CHAQUE écran. Relire au montage coûterait une requête à
+   * chaque navigation, pour un panneau qu'il n'ouvre pas.
+   *
+   * **Et jamais par-dessus ce qu'il vient d'écrire** : le drapeau ne retombe
+   * pas à la fermeture. Rouvrir le panneau au milieu d'un échange doit retrouver
+   * l'écran tel qu'il l'a laissé, pas la version enregistrée.
+   */
+  useEffect(() => {
+    if (!ouvert || filRelu.current) return;
+    filRelu.current = true;
+    void lireFilAction().then((fil) => {
+      if (fil.length === 0) return;
+      setMessages((cur) => (cur.length > 0 ? cur : fil.map((m) => ({ role: m.role, contenu: m.contenu }))));
+    });
+  }, [ouvert]);
+
+  async function oublier() {
+    setMessages([]);
+    await viderFilAction();
+  }
 
   async function envoyer() {
     const question = saisie.trim();
@@ -139,9 +170,24 @@ export default function AssistantSidebar() {
               <span className="text-[16px] font-semibold" style={{ fontFamily: font.display, color: colors.ink }}>
                 Assistant
               </span>
-              <button onClick={() => assistant?.fermer()} aria-label="Fermer" className="text-[20px]" style={{ color: colors.muted }}>
-                ×
-              </button>
+              <div className="flex items-center gap-3">
+                {/* **« Oublier » n'apparaît que s'il y a quelque chose à
+                    oublier.** Un panneau vide portant ce mot ferait croire à un
+                    réglage ; là, il ne dit rien de plus que ce qu'il fait. */}
+                {messages.length > 0 && (
+                  <button
+                    onClick={oublier}
+                    data-atlas="oublier-le-fil"
+                    className="text-[13px]"
+                    style={{ color: colors.muted }}
+                  >
+                    Oublier
+                  </button>
+                )}
+                <button onClick={() => assistant?.fermer()} aria-label="Fermer" className="text-[20px]" style={{ color: colors.muted }}>
+                  ×
+                </button>
+              </div>
             </div>
 
             <div className="flex-1 overflow-y-auto px-4 py-3">
