@@ -134,6 +134,15 @@ export default async function ChantiersPage() {
               chantierNom: r.chantierNom,
               depuisTexte: depuisCombien(maintenant, r.depuis),
               depuisJours: joursEcoules(maintenant, r.depuis),
+              // **Pour RANGER, jamais pour écrire.** L'accueil met le plus
+              // récent en haut depuis le 26 août 2026, et il doit pouvoir
+              // comparer un rappel à une réponse de client : sans cette date,
+              // les deux sortes n'ont rien de commun et l'ordre ne peut se
+              // décider que par sorte — ce qu'il a signalé.
+              //
+              // Le délai reste mis en mots ICI, juste au-dessus : l'écran n'en
+              // donne pas une seconde version.
+              quand: r.depuis.getTime(),
               // **Les montants sont mis en forme ICI, au serveur.** Deux mises
               // en forme du même nombre — une au serveur, une à l'écran —
               // finiraient par afficher deux sommes différentes sur la même

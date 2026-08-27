@@ -37,6 +37,16 @@ pour lui.
 
 Reste ouvert : le renommage `equipes` → `salaries` en base et dans le code, tenu
 à part parce qu'il touche vingt-trois fichiers (`TODO.md`).
+## Les phrases du régime de TVA, réécrites (26 août 2026)
+
+*« Quand le client le paye / quand je met la facture. C'est pas clair, on
+comprend rien. »* **Fait.** Le surtitre dit le geste — « je reverse ma TVA aux
+impôts » —, chaque ligne répond à « et alors ? », et une phrase annonce ce que
+le choix change sur le mois affiché, y compris quand il n'y change rien.
+`ARCHITECTURE.md` §195.
+
+---
+
 ## Le rythme de la TVA fait bouger l'écran (26 août 2026)
 
 *Sa plainte : « quand je change entre tous les mois et tous les trois mois,
@@ -45,8 +55,8 @@ et `force-dynamic` ne la remplace pas (`ARCHITECTURE.md` §193).
 
 **Sa seconde plainte du même soir n'était PAS un défaut** : entre les deux
 régimes de TVA, rien ne change quand toutes les factures du mois ont été payées
-dans le mois. Ce qui manque est une phrase à l'écran — en maquette,
-`appli/quand-je-reverse-la-tva.html`, en attente de son choix entre A et B.
+dans le mois. Ce qui manquait est une phrase à l'écran : **codée** le soir même
+(`ARCHITECTURE.md` §195).
 
 ---
 
@@ -58,13 +68,26 @@ le désélectionner ! Je dois pouvoir désélectionner ».*
 Sur la page que reçoit son client, un second appui sur la date déjà cochée la
 **défait**, et rien ne se coche à la place. Vaut aussi pour « une autre date »,
 dont le calendrier se referme. Le détail — et pourquoi `onClick` plutôt
-qu'`onChange` — est dans `ARCHITECTURE.md` §195.
+qu'`onChange` — est dans `ARCHITECTURE.md` §199.
 
 **Le même piège dort sur le choix entre deux tarifs ambigus**
 (`PropositionPrixSection.tsx`) : il ne l'a pas signalé, c'est noté dans
 `TODO.md`.
 
 ---
+
+## « Terminés » : plus de traits, et la TVA se voit cliquable (26 août 2026)
+
+*Ses deux demandes, planche `appli/termines-sans-traits.html`, sa réponse :
+« le 3 ». Le détail est dans `ARCHITECTURE.md` §198.*
+
+**Fait.** Plus aucun trait entre les rangées. La carte « Ma TVA à déclarer »
+porte un contour doré — même forme, même titre, même montant.
+
+**Ce qui a demandé plus que le retrait.** Le trait tenait le second étage d'une
+rangée à distance du nom de la suivante : retiré sec, deux rangées se liraient
+comme une seule. La respiration passe de 19 à 24 px, et la première rangée garde
+22 px — tout ce qui reste de la démarcation qu'il avait demandée le 23 août.
 
 ## Le numéro de ses documents se choisit (26 août 2026)
 
@@ -177,7 +200,7 @@ uniquement en masquant des boutons ». La règle elle-même est tranchée dans
 suites navigateur, connexion réelle derrière une origine étrangère.
 
 Rapport transmissible : `docs/lot-audio-rapport.md`. Raisonnement :
-`ARCHITECTURE.md` §196.
+`ARCHITECTURE.md` §200.
 
 ---
 

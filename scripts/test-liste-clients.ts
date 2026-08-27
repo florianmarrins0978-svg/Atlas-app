@@ -19,8 +19,8 @@
 //   3. le plus récent d'abord : c'est celui qu'il cherche ;
 //   4. un chantier supprimé ne pèse plus.
 
-import { jourIso } from "../src/lib/jour";
 import assert from "node:assert/strict";
+import { jourIso } from "../src/lib/jour";
 import { pool } from "../src/server/db/client";
 import { nettoyerBase } from "./_test-db";
 import { creerEntreprise } from "../src/server/repositories/entreprises";
@@ -94,22 +94,11 @@ async function main() {
     // daté de la veille de l'émission : `noterPaiement` le refusait poliment,
     // le test l'ignorait, et le cas rougissait en accusant le calcul du reste
     // dû — un contrôle qui accuse à tort coûte plus cher que pas de contrôle.
-    /**
-     * **`jourIso`, et NON `toISOString()` — la suite lisait un autre fuseau que
-     * le serveur.** Trouvé à la fusion du 26 août 2026, à 23 h 15 UTC.
-     *
-     * La facture prend sa date d'émission par `jourIso(maintenant)`, qui
-     * compte en heure du patron (`FUSEAU_DU_PATRON`). La suite, elle, prenait
-     * `toISOString()`, c'est-à-dire UTC. Entre 22 h UTC et minuit — deux heures
-     * chaque nuit d'été —, le serveur écrit déjà le lendemain quand la suite
-     * croit être la veille : le règlement paraît antérieur à la facture, et
-     * **le refus a raison**.
-     *
-     * Ce n'est donc ni une régression ni un défaut du produit : c'est la suite
-     * qui interrogeait une autre horloge. Elle emploie désormais la même
-     * fonction que le serveur — deux façons de dire « aujourd'hui » finissent
-     * toujours par diverger (`CLAUDE.md` §3).
-     */
+    // **Le jour se lit comme l'application le compte** (`jourIso`, à l'heure de
+    // l'atelier), et non en UTC : la facture est émise avec l'un, le règlement
+    // daté avec l'autre, et entre minuit et 2 h du matin les deux diffèrent
+    // d'un jour. Le refus était alors juste — « daté d'avant la facture » — et
+    // le rouge accusait le calcul du reste dû. Une nuit sur douze.
     const aujourdHui = jourIso(new Date());
     const regle = await noterPaiement(ctx, factureId, { date: aujourdHui, montant: "500.00" });
     assert.ok(regle.ok, `le règlement d'essai a été refusé : ${regle.ok ? "" : regle.raison}`);

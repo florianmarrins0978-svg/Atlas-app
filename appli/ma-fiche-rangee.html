@@ -76,6 +76,8 @@
 
   /* La rubrique du modèle — c'est elle qui change de place d'un onglet à l'autre. */
   .rubrique{margin-top:22px;padding-top:16px;border-top:1px solid var(--line)}
+  .rubrique.haut{margin-top:18px;padding-top:0;border-top:none;
+                 border-bottom:1px solid var(--line);padding-bottom:16px}
   .rubrique .titre{margin:0;font-size:9px;font-weight:600;letter-spacing:.2em;
                    text-transform:uppercase;color:var(--or)}
   .famille{margin:14px 0 2px;font-size:9px;font-weight:600;letter-spacing:.2em;
@@ -118,12 +120,22 @@
 
   <div class="onglets">
     <label class="oa" for="a">A — sur l'écran</label>
-    <label class="ob" for="b">B — un écran à part</label>
+    <label class="ob" for="b">B — retenue</label>
   </div>
 
   <div class="tel">
     <p class="ou">Paysage</p>
     <h2>Fiche de chantier</h2>
+
+    <!-- B, RETENUE le 26 août 2026 : « il faut que la rubrique se trouve sous
+         le titre en premier, et son titre doré doit être composer ma fiche ». -->
+    <div class="rubrique siB haut">
+      <p class="titre">Composer ma fiche</p>
+      <div class="porte">
+        <span class="quoi">20 prestations, 4 familles</span>
+        <span class="chev">›</span>
+      </div>
+    </div>
 
     <p class="etiq">Jour du passage</p>
     <div class="champ">26 août 2026</div>
@@ -181,15 +193,6 @@
       <span class="ajout">+ Ajouter une prestation</span>
     </div>
 
-    <!-- B : une porte, la liste s'ouvre sur son propre écran -->
-    <div class="rubrique siB">
-      <p class="titre">Mes rubriques</p>
-      <div class="porte">
-        <span class="quoi">Composer ma fiche
-          <span class="combien">20 prestations, 4 familles</span></span>
-        <span class="chev">›</span>
-      </div>
-    </div>
   </div>
 
   <div class="note siA"><span class="t">A — tout sur un écran</span>
@@ -198,8 +201,8 @@
     au-dessus de vingt lignes que vous ne touchez que deux fois par an.</span>
   </div>
 
-  <div class="note siB"><span class="t">B — une porte au bas de l'écran</span>
-    L'écran reste court, et la liste a sa page, comme aujourd'hui.
+  <div class="note siB"><span class="t">B — ce qui a été codé</span>
+    Une porte <b>sous le titre, en premier</b>, et la liste garde sa page.
     <span class="contre">Un appui de plus pour ajouter une prestation.</span>
   </div>
 

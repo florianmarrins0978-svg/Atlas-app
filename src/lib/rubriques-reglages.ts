@@ -134,26 +134,17 @@ const ENTREPRISE: Rubrique[] = [
     icone: "feuille",
     href: "/reglages/documents",
   },
-  {
-    // **L'entretien récurrent, décidé le 16 août 2026.** Rangé après « Devis &
-    // factures » — pas avant : les premières rubriques sont SES priorités, et un
-    // contrôle les tient. (Il était rangé « juste après le planning » ; cette
-    // rubrique-là a été supprimée le même jour, elle doublait « Équipe » —
-    // `ARCHITECTURE.md` §120.) Ici parce que c'est ce qu'il a demandé — « dans
-    // les réglages, un endroit où l'utilisateur pourra créer cette fiche » — et
-    // parce que la fiche EST un document qui part chez le client.
-    //
-    // Le libellé ne dit pas « modèle » : il n'a jamais employé ce mot, et « ma
-    // fiche » est ce qu'il cherche. Qu'elle serve de modèle à chaque passage est
-    // une conséquence, pas une étiquette d'écran.
-    nom: "Fiche d'entretien",
-    dit: "Les prestations que vous cochez sur un chantier d'entretien",
-    // Une icône À ELLE : le dépôt refuse qu'une rubrique en emprunte une autre
-    // (`test-rubriques-reglages.ts`). La feuille est celle des devis, et deux
-    // rubriques identiques à l'œil se visent au hasard sur un téléphone.
-    icone: "liste_cochee",
-    href: "/reglages/fiche-entretien",
-  },
+  // **« FICHE D'ENTRETIEN » A QUITTÉ LES RÉGLAGES le 26 août 2026**, à sa
+  // demande : *« est-ce qu'on peut la déplacer dans la fiche de chantier, dans
+  // la catégorie Paysage ? Et comme ça on ne la voit plus dans la catégorie
+  // Réglages. »* Elle vit désormais sous `/paysage/fiche/composer`, en tête de
+  // l'écran qui s'en sert.
+  //
+  // **Ne pas la remettre ici.** Elle y avait été rangée le 16 août parce qu'il
+  // avait dit « dans les réglages, un endroit où l'utilisateur pourra créer
+  // cette fiche » ; dix jours d'usage lui ont fait changer d'avis, et c'est
+  // cette décision-là qui vaut. Le motif d'origine, laissé tel quel, aurait
+  // suffi à l'y ramener de bonne foi.
   { nom: "Atlas IA", dit: "Automatisations et suggestions", icone: "etincelle", href: "/reglages/ia" },
   {
     nom: "Intégrations",

@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { colors } from "@/lib/design-tokens";
+import { colors, libelleCaps } from "@/lib/design-tokens";
 import { reglerExigibiliteAction } from "./actions";
 import type { Exigibilite } from "@/lib/exigibilite-tva";
 
@@ -18,8 +18,51 @@ import type { Exigibilite } from "@/lib/exigibilite-tva";
  * phrase qui accompagne le choix : ce que le patron coche ici doit correspondre
  * à ce que les impôts savent de lui. Le même parti que la périodicité
  * (`RythmeTva`), pour la même raison — Atlas ne devine pas un régime fiscal.
+ *
+ * ─── RÉÉCRIT LE 26 AOÛT 2026, SUR SES DEUX PHRASES ─────────────────────────
+ *
+ * *« Quand le client le paye / quand je met la facture. C'est pas clair, on
+ * comprend rien. Qu'est-ce que ça signifie ? »* Puis, dans la foulée :
+ * *« et lorsque je change entre les deux, rien ne se passe, c'est normal ? »*
+ *
+ * **Le verbe manquait.** « Quand le client me paie » nomme un instant sans dire
+ * ce qui s'y produit — lu seul, cela ressemble à un réglage d'affichage. Le
+ * surtitre porte donc le verbe, et chaque ligne répond à « et alors ? ».
+ *
+ * **Et la seconde plainte n'était PAS un défaut** — contrairement à celle du
+ * rythme, le même soir, qui en était un (`ARCHITECTURE.md` §193). Quand toutes
+ * les factures d'un mois ont été payées dans le mois, les deux régimes tombent
+ * sur le même chiffre : c'est le calcul, pas le cache. Ce qui manquait est la
+ * ligne du bas, qui dit ce que le choix change sur le mois affiché — **y
+ * compris quand il n'y change rien.** Sans elle, un écran qui ne bouge pas se
+ * lit comme une panne.
+ *
+ * **Ce qui a été ÉCARTÉ, et qu'il ne faut pas reproposer :** un tableau
+ * d'exemple (« facture envoyée le 28 août, payée le 12 septembre, déclarée en
+ * septembre »). Retenu sur planche puis retiré par le patron le 26 août : il
+ * EXPLIQUE, et un écran n'explique pas son propre fonctionnement
+ * (`CLAUDE.md` §3). Deux lignes à relire chaque fois qu'il ouvre sa TVA, pour
+ * une règle qu'il connaît après l'avoir lue une fois.
+ * Planche : `appli/quand-je-reverse-la-tva.html`.
+ *
+ * **Et la phrase ne suit PAS le doigt** — voir le commentaire qui la précède :
+ * elle nomme les deux régimes plutôt que « cette ligne », sans quoi elle
+ * devance le grand chiffre du dessus pendant l'aller-retour avec le serveur.
  */
-export default function RegimeTva({ actuelle }: { actuelle: Exigibilite }) {
+export default function RegimeTva({
+  actuelle,
+  periode,
+  tvaRetenue,
+  tvaAutre,
+}: {
+  actuelle: Exigibilite;
+  /** Le mois ou le trimestre affiché, tel qu'il est écrit dans le titre. */
+  periode: string;
+  /** La TVA collectée de cette période sous le régime ENREGISTRÉ. */
+  tvaRetenue: string;
+  /** La même, sous l'autre régime. */
+  tvaAutre: string;
+}) {
   const [choisie, setChoisie] = useState<Exigibilite>(actuelle);
   const [enCours, setEnCours] = useState(false);
   const router = useRouter();
@@ -41,19 +84,42 @@ export default function RegimeTva({ actuelle }: { actuelle: Exigibilite }) {
   const OPTIONS: { valeur: Exigibilite; titre: string; quoi: string }[] = [
     {
       valeur: "encaissements",
-      titre: "Quand le client me paie",
-      quoi: "Le régime par défaut d'une prestation de services.",
+      titre: "Le mois où mon client me paie",
+      quoi: "Une facture pas encore payée n'est pas déclarée.",
     },
     {
       valeur: "debits",
-      titre: "Quand j'émets la facture",
-      quoi: "Le régime des débits — sur option auprès des impôts.",
+      titre: "Le mois où j'envoie la facture",
+      quoi: "Même si le client n'a pas encore payé.",
     },
   ];
 
+  // **La phrase NOMME les deux régimes, elle ne dit jamais « cette ligne ».**
+  //
+  // Première version écartée, et par un contrôle : elle disait « X avec cette
+  // ligne, Y avec l'autre », et suivait le doigt. L'écran coche en effet la
+  // ligne avant que le serveur réponde — mais le grand chiffre du dessus, lui,
+  // attend la réponse. Pendant cet aller-retour, la phrase annonçait déjà le
+  // montant de l'autre régime tandis que « Collectée » portait encore l'ancien :
+  // deux chiffres qui se contredisent dans le même écran, ce que `CLAUDE.md`
+  // §4 bis interdit — et c'est toute la liste qu'on cesse alors de croire.
+  //
+  // En nommant les régimes, la phrase ne dépend plus de ce qui est coché : elle
+  // reste vraie à chaque instant, y compris au milieu du geste.
+  const memeChiffre = tvaRetenue === tvaAutre;
+  const siPaye = actuelle === "encaissements" ? tvaRetenue : tvaAutre;
+  const siEnvoye = actuelle === "encaissements" ? tvaAutre : tvaRetenue;
+
   return (
     <div className="mt-5 px-6">
-      <div role="radiogroup" aria-label="Quand ma TVA devient exigible" className="flex flex-col gap-2">
+      <p className={libelleCaps} style={{ color: colors.muted }}>
+        Je reverse ma TVA aux impôts
+      </p>
+      <div
+        role="radiogroup"
+        aria-label="Quand ma TVA devient exigible"
+        className="mt-2 flex flex-col gap-2"
+      >
         {OPTIONS.map((o) => (
           <button
             key={o.valeur}
@@ -85,6 +151,34 @@ export default function RegimeTva({ actuelle }: { actuelle: Exigibilite }) {
           </button>
         ))}
       </div>
+      {/* **La ligne qui répond à « rien ne se passe ».** Elle est là même quand
+          les deux régimes donnent le même chiffre — c'est ce cas-là, le plus
+          fréquent chez lui, qui l'a fait douter de l'application. */}
+      <p
+        data-atlas="ecart-des-regimes"
+        className="mt-3 rounded-[10px] px-3 py-2.5 text-[12.5px] leading-snug"
+        style={{ backgroundColor: colors.rustTint, color: colors.muted }}
+      >
+        {memeChiffre ? (
+          <>
+            Sur <strong style={{ color: colors.ink }}>{periode}</strong>, ce choix ne change rien —{" "}
+            <strong style={{ color: colors.ink }}>{siPaye}</strong>{" "}
+            dans les deux cas.
+          </>
+        ) : (
+          <>
+            Sur <strong style={{ color: colors.ink }}>{periode}</strong> :{" "}
+            <strong style={{ color: colors.ink }}>{siPaye}</strong>{" "}
+            en attendant le paiement,{" "}
+            {/* **L'espace est posé À LA MAIN.** Écrit `</strong> dès`, il
+                disparaît à la compilation : l'écran affichait « 1 400,00 €dès
+                l'envoi », vu dans le HTML rendu et pas autrement. */}
+            <strong style={{ color: colors.ink }}>{siEnvoye}</strong>{" "}
+            dès l&apos;envoi.
+          </>
+        )}
+      </p>
+
       <p className="mt-2 text-[12px] leading-snug" style={{ color: colors.muted }}>
         Ce choix doit correspondre à ce que les impôts savent de vous. Dans le doute, votre comptable
         le dit en une phrase.

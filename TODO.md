@@ -9,33 +9,17 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
-## ⏳ Coder « Quand je reverse la TVA » — retenu le 26 août 2026
+## ✅ ~~Coder « Quand je reverse la TVA »~~ — fait le 26 août 2026
 
-Sa capture : *« quand le client le paye / quand je met la facture, c'est pas
-clair, on comprend rien »*. **Il a choisi**, planche
-`appli/quand-je-reverse-la-tva.html` : les libellés réécrits, **sans le tableau
-d'exemple**.
+~~Sa capture : « quand le client le paye / quand je met la facture, c'est pas
+clair, on comprend rien ». Il a choisi B sans le tableau d'exemple.~~
+`ARCHITECTURE.md` §195.
 
-Ce qu'il y a à faire, dans `src/app/termines/tva/RegimeTva.tsx` :
-
-| | |
-|---|---|
-| le surtitre | « Je reverse ma TVA aux impôts » — le verbe manquait |
-| ligne 1 | « Le mois où mon client me paie » · *Une facture pas encore payée n'est pas déclarée.* |
-| ligne 2 | « Le mois où j'envoie la facture » · *Même si le client n'a pas encore payé.* |
-
-**Et la ligne du bas, qui est le vrai sujet.** Elle dit ce que le choix change
-sur le mois affiché — *« sur août 2026, ce choix ne change rien : vos factures
-d'août ont été payées en août »*. C'est elle qui répond à sa seconde plainte du
-26 août, et sans elle il la reposera.
-
-**Ce qu'elle demande :** le total sous l'AUTRE régime. `releveTvaCollectee` ne
-sait calculer que celui qui est enregistré — il faut lui passer le régime en
-paramètre plutôt que d'écrire un second calcul (`CLAUDE.md` §3, jamais deux
-implémentations d'une même règle).
-
-**Ce qui ne bouge pas :** la phrase « ce choix doit correspondre à ce que les
-impôts savent de vous » reste sous les boutons.
+**Ce qui reste ouvert**, et qui n'est pas ce lot : la phrase compare les deux
+régimes sur la période AFFICHÉE. Elle ne dit rien des mois précédents, où
+l'écart peut être tout autre. Il ne l'a pas demandé, et l'ajouter chargerait un
+écran qu'il veut court — mais le jour où il posera la question, c'est cette
+ligne-là qu'il faudra étendre, pas une seconde.
 
 ---
 
@@ -190,6 +174,18 @@ client — un `onClick` qui vide l'état quand la valeur touchée est déjà cel
 retenue. **Ce qu'il faut vérifier avant :** que « aucun tarif retenu » soit un
 état tenable pour le bouton qui applique le prix, sinon on remplace un blocage
 par un autre.
+
+---
+
+## ✅ ~~« Terminés » : les traits, et la carte de TVA~~ — fait le 26 août 2026
+
+~~Ses deux demandes du 26 août, planche `appli/termines-sans-traits.html`, sa
+réponse « le 3 ».~~ `ARCHITECTURE.md` §198.
+
+**Ce qui reste à surveiller, et qui n'est pas une tâche :** la démarcation sous
+la phrase de compte ne tient plus que sur 22 px, depuis que son trait est parti.
+`test-tva-en-tete-e2e.ts` les mesure — une rangée qui reviendrait à 19 px la
+ferait disparaître, et le contrôle est la seule chose qui le dira.
 
 ---
 
@@ -536,9 +532,13 @@ ne calcule JAMAIS « aujourd'hui » avec `toISOString()`. Elle appelle `jourIso(
 comme le serveur. Deux façons de dire « aujourd'hui » finissent toujours par
 diverger, et celle-ci ne se voit qu'à deux heures du matin.
 
+**Une autre session a trouvé le même défaut le même soir**, et l'a corrigé de
+la même façon — `jourIso` — dans le même fichier. La fusion du 27 août 2026 a
+gardé SA version, déjà sur `main` : deux correctifs identiques n'en font qu'un.
+
 **Ce qui reste à faire :** balayer les autres suites à la recherche du même
-mélange. Ce lot n'a corrigé que celle qui a rougi — corriger à l'aveugle ce qui
-n'a pas été mesuré serait aussi une faute.
+mélange. Deux l'ont eu ; rien ne dit qu'il n'y en a pas une troisième. Corriger
+à l'aveugle ce qui n'a pas été mesuré serait cependant une faute aussi.
 
 ---
 
@@ -609,8 +609,8 @@ que des renvois ambigus, parce qu'ils ont l'air justes.
 (« Les images d'utilisateur », « Le corps d'une requête ») aux deux prochains
 numéros libres, puis reprendre chaque renvoi un par un.
 
-**Mis à jour à la fusion du 26 août 2026 :** `main` est monté à §194, et le
-lot 3 a pris §195 et §196 — la règle dit de renuméroter CELUI QUI N'EST PAS
+**Mis à jour à la fusion du 26 août 2026 :** `main` est monté à §198, et le
+lot 3 a pris §199 et §200 — la règle dit de renuméroter CELUI QUI N'EST PAS
 ENCORE SUR MAIN, et c'était le nôtre. La dette de `main`, elle, s'est
 alourdie : §134, §135 et §136 sont eux aussi en double.
 ---

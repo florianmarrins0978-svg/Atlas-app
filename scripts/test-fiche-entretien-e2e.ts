@@ -1,9 +1,10 @@
 import assert from "node:assert/strict";
+import { mkdirSync } from "node:fs";
 import { lancerNavigateur } from "./e2e-browser";
 import { pool } from "../src/server/db/client";
 import { MODELE_FOURNI } from "../src/lib/prestations-entretien";
 
-// L'écran où la fiche d'entretien se compose — Réglages → Fiche d'entretien.
+// L'écran où la fiche se compose — Paysage → Fiche de chantier → Composer ma fiche.
 //
 // **Sa demande du 16 août 2026** : *« dans les réglages […] un endroit où
 // l'utilisateur pourra créer cette fiche […] retirer ou ajouter des cases s'il
@@ -25,6 +26,7 @@ import { MODELE_FOURNI } from "../src/lib/prestations-entretien";
 //      créer »*. Avant, « créer » rangeait dans « Divers » à charge pour lui de
 //      renommer, et « enlever » n'existait pas.
 
+const CAPTURES = process.env.CAPTURES_E2E ?? "/tmp/captures-atlas";
 const BASE = "http://localhost:3000";
 
 let echecs = 0;
@@ -54,12 +56,31 @@ async function main() {
   // Le décor : une fiche vide, quel que soit l'état laissé par une autre suite.
   await pool.query(`delete from prestations_entretien`);
 
-  await cas("la rubrique se trouve depuis les Réglages", async () => {
-    await page.goto(`${BASE}/reglages`, { waitUntil: "networkidle" });
-    const lien = page.getByRole("link", { name: /Fiche d'entretien/ });
-    assert.equal(await lien.count(), 1, "la rubrique n'est pas dans le sommaire des réglages");
+  // **ELLE A QUITTÉ LES RÉGLAGES le 26 août 2026**, à sa demande : *« est-ce
+  // qu'on peut la déplacer dans la fiche de chantier, dans la catégorie
+  // Paysage ? Et comme ça on ne la voit plus dans la catégorie Réglages. »*
+  //
+  // Le contrôle vise **l'adresse d'arrivée**, pas le libellé cliqué
+  // (`CLAUDE.md` §5 bis) : le mot changera peut-être encore, le chemin non.
+  await cas("la rubrique se trouve depuis la fiche de chantier", async () => {
+    await page.goto(`${BASE}/paysage/fiche`, { waitUntil: "networkidle" });
+    const lien = page.locator('a[href="/paysage/fiche/composer"]');
+    assert.ok(
+      (await lien.count()) > 0,
+      "aucun chemin depuis la fiche de chantier vers l'endroit où elle se compose"
+    );
     await lien.first().click();
-    await page.waitForURL(/\/reglages\/fiche-entretien/, { timeout: 20_000 });
+    await page.waitForURL(/\/paysage\/fiche\/composer/, { timeout: 20_000 });
+  });
+
+  await cas("elle n'est PLUS dans les réglages", async () => {
+    await page.goto(`${BASE}/reglages`, { waitUntil: "networkidle" });
+    const corps = await page.locator("body").innerText();
+    assert.ok(
+      !/fiche d.entretien/i.test(corps),
+      "« Fiche d'entretien » est revenue dans les réglages : elle vit dans Paysage depuis le 26 août 2026"
+    );
+    await page.goto(`${BASE}/paysage/fiche/composer`, { waitUntil: "networkidle" });
   });
 
   await cas("une fiche vide PROPOSE le modèle, elle ne le pose pas", async () => {
@@ -89,6 +110,48 @@ async function main() {
       n.map((e) => (e as HTMLInputElement).value)
     );
     assert.deepEqual(familles, ["Pelouse", "Tailles", "Massifs", "Propreté"]);
+  });
+
+  // **SA PLACE EST SOUS LE TITRE, EN PREMIER** — sa décision du 26 août 2026 :
+  // *« la B, mais il faut que la rubrique se trouve sous le titre en premier, et
+  // son titre doré doit être "composer ma fiche" »*.
+  //
+  // Le contrôle MESURE les positions plutôt que de lire l'ordre du code : c'est
+  // ce que son œil voit, et une mise en page peut réordonner ce que le HTML
+  // empile. Il refuse de conclure sur une boîte de zéro pixel (`CLAUDE.md` §5,
+  // le contrôle qui mesure zéro ne mesure rien).
+  await cas("la rubrique est SOUS LE TITRE, avant le jour du passage", async () => {
+    await page.goto(`${BASE}/paysage/fiche`, { waitUntil: "networkidle" });
+    const rubrique = page.locator('a[href="/paysage/fiche/composer"]').first();
+    await rubrique.waitFor({ timeout: 20_000 });
+
+    const boite = await rubrique.boundingBox();
+    const jour = await page.getByText("Jour du passage").first().boundingBox();
+    assert.ok(boite && boite.height > 0, "la rubrique ne se mesure pas : rien n'est prouvé");
+    assert.ok(jour && jour.height > 0, "« Jour du passage » ne se mesure pas : rien n'est prouvé");
+    assert.ok(
+      boite!.y < jour!.y,
+      `la rubrique est passée SOUS le jour du passage (${Math.round(boite!.y)} px contre ${Math.round(jour!.y)} px) — il l'a demandée en premier`
+    );
+
+    // Le titre doré, ses mots à lui.
+    const titre = page.getByText("Composer ma fiche", { exact: true }).first();
+    assert.ok((await titre.count()) > 0, "le titre « Composer ma fiche » a disparu");
+
+    // La cible se touche au pouce, sur un chantier, parfois avec des gants.
+    assert.ok(boite!.height >= 44, `la rubrique fait ${Math.round(boite!.height)} px de haut, sous les 44 px du pouce`);
+
+    // **Et on REGARDE.** Quatre défauts réels de ce dépôt sont sortis d'une
+    // image et d'aucun test (`CLAUDE.md` §5) : la capture fait partie du
+    // travail, pas de la finition.
+    mkdirSync(CAPTURES, { recursive: true });
+    await page.screenshot({ path: `${CAPTURES}/fiche-chantier-rubrique-en-tete.png` });
+
+    // On revient d'où l'on vient : les cas suivants composent la fiche, et
+    // laisser la suite sur un autre écran les ferait tous rougir à la file —
+    // sept faux coupables pour un seul oubli de navigation.
+    await page.goto(`${BASE}/paysage/fiche/composer`, { waitUntil: "networkidle" });
+    await page.waitForSelector("[data-prestation]", { timeout: 30_000 });
   });
 
   await cas("LE RETRAIT SE DÉFAIT — et rien n'est écrit tant qu'on peut annuler", async () => {
