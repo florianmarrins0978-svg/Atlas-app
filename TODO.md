@@ -9,6 +9,47 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
+## L'export d'une entreprise oublie son logo et ses tickets de caisse (27 août 2026)
+
+**Trouvé pendant le lot Sauvegarde, en cartographiant les fichiers d'Atlas.
+Laissé tel quel, délibérément** : c'est de la portabilité RGPD, pas de la
+sauvegarde, et le brief interdit d'élargir le périmètre.
+
+`src/server/repositories/export-entreprise.ts` attache quatre familles de
+fichiers à l'archive : photos, notes vocales, PDF de devis, PDF de factures.
+Il en manque deux :
+
+| Ce qui manque | Pourquoi ça compte |
+|---|---|
+| `entreprises.logo_storage_key` | l'artisan récupère son entreprise sans son logo |
+| `achats_tva.photo_cle` | **les lignes `achats_tva` PARTENT** (ligne 290) mais pas les photos des tickets — l'export dit qu'un achat a un justificatif, et le justificatif n'est pas dedans |
+
+La seconde est la plus gênante : l'archive se contredit elle-même.
+
+`src/lib/objets-stockes.ts` porte la liste complète des onze colonnes et
+explique, dans son en-tête, pourquoi les deux listes ne doivent PAS être
+fondues — elles répondent à deux questions différentes. **Ne pas « réparer » en
+les alignant** : corriger l'export, oui ; le brancher sur la liste du lot
+Sauvegarde, non.
+
+---
+
+## Une écriture refusée pendant un gel ne dit rien de compréhensible (27 août 2026)
+
+`scripts/geler-les-ecritures.sh` passe l'application en lecture seule le temps
+d'une restauration. Une écriture tentée pendant ce temps remonte alors
+`cannot execute INSERT in a read-only transaction` — un message de moteur, pas
+une phrase pour un artisan sur un chantier.
+
+**Acceptable pour ce à quoi ça sert** : une urgence rare, annoncée, qui dure une
+heure. Ça ne le serait pas pour un usage courant.
+
+Ce qu'il faudrait : reconnaître ce refus précis et rendre « Atlas est en
+maintenance, vos données sont là, l'enregistrement reprend dans un instant ».
+Petit travail, mais il touche tous les chemins d'écriture — donc un lot à lui.
+
+---
+
 ## La batterie ne tient plus en un seul serveur — NON DIAGNOSTIQUÉ (27 août 2026)
 
 **Mesuré, pas supposé.** Relevé de la mémoire du serveur toutes les cinq

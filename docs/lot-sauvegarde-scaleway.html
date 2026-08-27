@@ -1,0 +1,759 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas — Atlas — sauvegarde et restauration chez Scaleway</title>
+<style>
+  :root{
+    --ground:#f5f3ee; --surface:#faf9f5; --raised:#ece9e1;
+    --ink:#1c1c1a; --ink-soft:#4a4a44; --muted:#8a8578;
+    --accent:#2f3b2f; --alert:#b5562a; --line:rgba(28,28,26,0.13);
+    --serif:Georgia,'Times New Roman',serif;
+    --sans:system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --ground:#161815; --surface:#1d201c; --raised:#252924;
+      --ink:#eae7df; --ink-soft:#c2bdb1; --muted:#948f83;
+      --accent:#9fbd82; --alert:#e0885a; --line:rgba(234,231,223,0.17);
+    }
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--sans);
+    line-height:1.65;}
+  main{max-width:44rem;margin:0 auto;padding:2.5rem 1.2rem 5rem;}
+  h1,h2,h3,h4{font-family:var(--serif);font-weight:600;line-height:1.2;
+    text-wrap:balance;margin:2rem 0 0.6rem;scroll-margin-top:1rem;}
+  h1{font-size:2rem;margin-top:0;}
+  h2{font-size:1.5rem;padding-top:1.2rem;border-top:1px solid var(--line);}
+  h3{font-size:1.12rem;}
+  h4{font-size:1rem;}
+  p{margin:0 0 0.9rem;}
+  a{color:var(--accent);text-underline-offset:3px;}
+  a:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:3px;}
+  ul,ol{margin:0 0 1rem;padding-left:1.3rem;}
+  li{margin-bottom:0.4rem;}
+  li::marker{color:var(--muted);}
+  /* Le sommaire : des cibles larges, confortables au doigt sur téléphone. */
+  ol li a{display:inline-block;padding:0.15rem 0;}
+  blockquote{margin:1rem 0;padding:0.85rem 1.05rem;background:var(--raised);
+    border-left:3px solid var(--accent);border-radius:0 10px 10px 0;color:var(--ink-soft);}
+  code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:0.87em;
+    background:var(--raised);padding:0.1rem 0.35rem;border-radius:5px;}
+  hr{border:0;border-top:1px solid var(--line);margin:2rem 0;}
+  .tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px;
+    background:var(--surface);margin:0 0 1.2rem;}
+  table{border-collapse:collapse;width:100%;font-size:0.92rem;min-width:22rem;}
+  th,td{text-align:left;padding:0.55rem 0.8rem;border-bottom:1px solid var(--line);
+    vertical-align:top;}
+  th{font-size:0.72rem;letter-spacing:0.08em;text-transform:uppercase;
+    color:var(--muted);white-space:nowrap;}
+  tr:last-child td{border-bottom:none;}
+  .retour{display:inline-block;font-size:0.76rem;color:var(--muted);
+    text-decoration:none;margin:-0.3rem 0 1rem;}
+  .retour:hover{color:var(--accent);text-decoration:underline;}
+</style>
+</head>
+<body>
+<main>
+<h1 id="atlas--sauvegarde-et-restauration-chez-scaleway">Atlas — sauvegarde et restauration chez Scaleway</h1>
+<p><em>27 août 2026. L'hébergeur est tranché : <strong>Scaleway</strong>. Ce document remplace la partie « où héberger » de <code>docs/lot-sauvegarde-analyse.md</code> ; tout le reste de ce rapport-là reste valable et n'est pas répété ici.</em></p>
+<hr>
+<h2 id="lessentiel-en-cinq-lignes">L'essentiel, en cinq lignes</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<ol>
+<li><strong>Scaleway N'A PAS de restauration au point dans le temps</strong> pour PostgreSQL. L'objectif de perdre au plus 15 minutes <strong>n'est pas atteignable</strong> tel quel. Le RPO réel est de <strong>24 heures</strong> avec les sauvegardes seules — et de <strong>1 heure</strong> avec l'ajout décrit au §4, qui reste simple.</li>
+<li>Tout le reste de ce qu'il faut existe chez Scaleway, et bien : versionnage, immutabilité, chiffrement, restauration vers une base neuve.</li>
+<li><strong>Cinq outils ont été écrits, éprouvés, et joués pour de vrai</strong> — dont deux qui ont attrapé un défaut réel pendant leur propre mise au point.</li>
+<li>Un de ces outils, dans sa première version, <strong>a cassé une protection de sécurité</strong>. La batterie l'a vu. C'est écrit au §7.</li>
+<li><strong>Verdict : PRÊT À IMPLÉMENTER</strong>, avec deux décisions à prendre — et une seule qui change quelque chose au résultat.</li>
+</ol>
+<hr>
+<h1 id="1-ce-que-scaleway-sait-faire--vérifié-pas-supposé">1. Ce que Scaleway sait faire — vérifié, pas supposé</h1>
+<p>Le brief demandait de ne rien inventer. La documentation officielle de Scaleway n'est <strong>pas joignable</strong> depuis cet environnement (le mandataire réseau la refuse), mais son <strong>code source est public sur GitHub</strong> et il a été lu directement. Chaque ligne ci-dessous vient de là.</p>
+<h2 id="11-postgresql-géré">1.1 PostgreSQL géré</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th>Capacité</th>
+<th>Réponse</th>
+<th>Source</th>
+</tr></thead><tbody>
+<tr>
+<td>Sauvegardes automatiques</td>
+<td><strong>oui</strong>, activées par défaut à la création</td>
+<td><code>docs-content</code>, macro <code>autobackups</code></td>
+</tr>
+<tr>
+<td>Fréquence par défaut</td>
+<td><strong>1 par jour</strong></td>
+<td>idem</td>
+</tr>
+<tr>
+<td>Rétention par défaut</td>
+<td><strong>7 jours</strong>, modifiable après création</td>
+<td>idem</td>
+</tr>
+<tr>
+<td>Rétention maximale</td>
+<td><strong>à confirmer dans la console</strong> — la documentation ne donne aucune borne</td>
+<td>—</td>
+</tr>
+<tr>
+<td>Restauration vers une base NEUVE</td>
+<td><strong>oui</strong>, c'est une option de l'écran de restauration</td>
+<td><code>manage-backups.mdx</code></td>
+</tr>
+<tr>
+<td>Export téléchargeable</td>
+<td><strong>oui</strong>, « Prepare export » puis « Download »</td>
+<td>idem</td>
+</tr>
+<tr>
+<td><strong>PITR (point dans le temps)</strong></td>
+<td><strong>NON.</strong> Aucune mention dans la page des concepts, la FAQ ni celle des sauvegardes. Une demande de fonctionnalité publique existe depuis avril 2024</td>
+<td><code>feature-request.scaleway.com/posts/882</code></td>
+</tr>
+<tr>
+<td>Durée d'une restauration</td>
+<td><em>« peut prendre plusieurs heures »</em> pour une grosse base</td>
+<td><code>manage-backups.mdx</code></td>
+</tr>
+</tbody></table></div>
+<p><strong>Un piège de configuration à connaître avant de créer l'instance</strong> — et il n'est pas rattrapable ensuite sans tout refaire :</p>
+<div class="tablewrap"><table><thead><tr>
+<th>Type de volume</th>
+<th>Ce que fait la sauvegarde automatique</th>
+<th>Peut-on télécharger un fichier ?</th>
+</tr></thead><tbody>
+<tr>
+<td><strong>Local Storage</strong></td>
+<td>des <em>backups</em> (copie logique)</td>
+<td><strong>oui</strong></td>
+</tr>
+<tr>
+<td><strong>Block Storage</strong></td>
+<td>des <em>snapshots</em> (copie du volume)</td>
+<td><strong>non</strong> — le snapshot restaure vers une nouvelle instance, il ne se télécharge pas</td>
+</tr>
+</tbody></table></div>
+<p>C'est décisif pour nous : <strong>pouvoir télécharger une sauvegarde est le seul moyen d'en garder une copie hors de Scaleway.</strong> Sans elle, perdre le compte Scaleway, c'est tout perdre — sauvegardes comprises. Voir la décision 1 du §9.</p>
+<h2 id="12-stockage-objet">1.2 Stockage objet</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th>Capacité</th>
+<th>Réponse</th>
+</tr></thead><tbody>
+<tr>
+<td>Versionnage</td>
+<td><strong>oui</strong>, et c'est le préalable à tout le reste</td>
+</tr>
+<tr>
+<td><strong>Object Lock</strong> (immutabilité)</td>
+<td><strong>oui</strong>, modèle WORM</td>
+</tr>
+<tr>
+<td>Mode <strong>Compliance</strong></td>
+<td>personne ne peut supprimer avant l'échéance — <strong>pas même le propriétaire du compte</strong>. La durée ne peut pas être raccourcie</td>
+</tr>
+<tr>
+<td>Mode <strong>Governance</strong></td>
+<td>protège de tout le monde <strong>sauf</strong> de qui détient la permission de contournement (<code>x-amz-bypass-governance-retention</code>)</td>
+</tr>
+<tr>
+<td><em>Legal hold</em></td>
+<td>interrupteur indépendant, sans date de fin</td>
+</tr>
+<tr>
+<td>Chiffrement au repos</td>
+<td><strong>oui</strong></td>
+</tr>
+<tr>
+<td>Règles de cycle de vie</td>
+<td><strong>oui</strong> — purge automatique des vieilles versions</td>
+</tr>
+<tr>
+<td>Point d'attention</td>
+<td><strong>une fois Object Lock activé sur un compartiment, on ne peut plus le désactiver, ni suspendre le versionnage</strong></td>
+</tr>
+</tbody></table></div>
+<h2 id="13-redis-géré">1.3 Redis géré</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p>Des instantanés existent, mais la documentation de Scaleway prévient elle-même que <em>« le mécanisme de persistance ne garantit pas la récupération des données en cas d'incident »</em>.</p>
+<p><strong>Et ça n'a aucune importance pour Atlas.</strong> Redis n'y porte que des compteurs de limitation de débit — « cette adresse a tenté trois connexions dans le quart d'heure ». Rien qui appartienne à un artisan. <strong>Redis n'est pas à sauvegarder</strong>, et le dire évite d'y consacrer du temps et de l'argent.</p>
+<hr>
+<h1 id="2-ce-qui-change-dans-mon-rapport-précédent-et-pourquoi">2. Ce qui change dans mon rapport précédent, et pourquoi</h1>
+<p>Le brief demandait de ne pas revenir en arrière sans raison, et d'expliquer chaque changement. Il y en a <strong>deux</strong>.</p>
+<h2 id="21-le-rpo-de-15-minutes-tombe-je-ne-le-prétendrai-pas">2.1 Le RPO de 15 minutes tombe. <strong>Je ne le prétendrai pas.</strong></h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p>Mon rapport précédent recommandait un RPO ≤ 15 minutes, en écrivant que ce serait « gratuit avec un PostgreSQL géré qui fait du PITR ». <strong>La condition n'est pas remplie chez Scaleway.</strong> Sans restauration au point dans le temps, la seule granularité est celle des sauvegardes.</p>
+<div class="tablewrap"><table><thead><tr>
+<th>Ce qu'on met en place</th>
+<th>RPO réellement atteint</th>
+</tr></thead><tbody>
+<tr>
+<td>sauvegardes Scaleway seules, 1/jour</td>
+<td><strong>24 heures</strong></td>
+</tr>
+<tr>
+<td>sauvegardes Scaleway, fréquence portée au maximum</td>
+<td>à confirmer dans la console</td>
+</tr>
+<tr>
+<td><strong>+ une copie logique horaire vers un compartiment verrouillé</strong> (§4)</td>
+<td><strong>1 heure</strong></td>
+</tr>
+</tbody></table></div>
+<p><strong>Ce qu'il faudrait pour faire mieux</strong>, et je ne le recommande pas aujourd'hui : gérer PostgreSQL nous-mêmes sur une machine, avec l'archivage des journaux de transactions. On gagnerait la minute près, et on perdrait la tranquillité — c'est-à-dire exactement ce qu'on est venu chercher chez un hébergeur géré.</p>
+<p><strong>Mon avis, et c'est une recommandation, pas une contrainte :</strong> pour un artisan qui saisit ses chantiers dans la journée, <strong>une heure est le bon compromis</strong>. Perdre une heure de saisie se rattrape ; perdre une journée ne se rattrape pas.</p>
+<h2 id="22-la-seconde-copie-nest-plus-optionnelle-elle-devient-le-cœur-du-dispositif">2.2 La seconde copie n'est plus optionnelle. Elle devient le cœur du dispositif.</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p>Mon rapport précédent la recommandait « pour la base seulement ». Deux faits découverts depuis la renforcent :</p>
+<ul>
+<li>les sauvegardes de Scaleway vivent <strong>dans Scaleway</strong>, pas dans un compartiment qu'on choisit — une demande de fonctionnalité publique le réclame encore ;</li>
+<li>avec Block Storage, elles ne sont <strong>pas téléchargeables</strong>.</li>
+</ul>
+<p>Donc : sans copie indépendante, <strong>perdre le compte Scaleway (litige, erreur de facturation, compromission) fait tout perdre d'un coup, sauvegardes comprises.</strong> C'est le scénario 7 du premier rapport, et il est réel.</p>
+<hr>
+<h1 id="3-qui-fait-quoi">3. Qui fait quoi</h1>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th>Ce qui lui revient</th>
+</tr></thead><tbody>
+<tr>
+<td><strong>Scaleway PostgreSQL géré</strong></td>
+<td>sauvegardes quotidiennes automatiques, rétention, restauration vers une base neuve, chiffrement</td>
+</tr>
+<tr>
+<td><strong>Scaleway Object Storage</strong></td>
+<td>versionnage, Object Lock, chiffrement, cycle de vie, <strong>et</strong> l'accueil de notre copie logique</td>
+</tr>
+<tr>
+<td><strong>Scaleway Redis géré</strong></td>
+<td>rien à sauvegarder — assumé, écrit, et c'est une économie</td>
+</tr>
+<tr>
+<td><strong>L'hébergement de l'application</strong></td>
+<td>rien à sauvegarder : le serveur ne stocke aucune donnée. Il se redéploie</td>
+</tr>
+<tr>
+<td><strong>Scaleway Secret Manager</strong></td>
+<td>garder <code>AUTH_SECRET</code> <strong>et ses versions</strong> — voir §5</td>
+</tr>
+<tr>
+<td><strong>Atlas</strong></td>
+<td><strong>seulement ce que rien d'autre ne peut faire</strong> : cinq outils, §6</td>
+</tr>
+</tbody></table></div>
+<hr>
+<h1 id="4-la-copie-logique-horaire--le-seul-ajout-et-il-est-modeste">4. La copie logique horaire — le seul ajout, et il est modeste</h1>
+<p>Un <code>pg_dump</code> par heure, déposé dans un compartiment verrouillé.</p>
+<p><strong>Ce n'est pas « un système de sauvegarde maison ».</strong> C'est la commande standard de PostgreSQL, lancée par le planificateur de l'hébergeur — Scaleway documente lui-même ce montage avec ses <em>Serverless Jobs</em> et son interface en ligne de commande. Ce qu'on ne fait pas : écrire du code de sauvegarde dans Next.js.</p>
+<p>Ce qu'elle apporte, et qui ne se remplace pas :</p>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th></th>
+</tr></thead><tbody>
+<tr>
+<td><strong>RPO d'une heure</strong> au lieu de 24</td>
+<td>la seule façon d'y arriver sans PITR</td>
+</tr>
+<tr>
+<td>une copie <strong>hors de la mécanique Scaleway</strong>, dans un compartiment qu'on choisit</td>
+<td>protège du scénario 7</td>
+</tr>
+<tr>
+<td>un fichier <strong>téléchargeable</strong>, donc emportable ailleurs</td>
+<td>protège de la perte du compte</td>
+</tr>
+<tr>
+<td>verrouillée en mode <strong>Compliance</strong></td>
+<td>même un administrateur compromis ne l'efface pas</td>
+</tr>
+</tbody></table></div>
+<p><strong>Et elle doit se faire avec un rôle superutilisateur.</strong> C'est mesuré, pas supposé : <code>atlas_app</code> <strong>et</strong> <code>atlas_owner</code> font échouer <code>pg_dump</code>, parce que 34 tables sont en <code>FORCE ROW LEVEL SECURITY</code> — laquelle s'applique <strong>même au propriétaire des tables</strong>.</p>
+<hr>
+<h1 id="5-auth_secret-et-la-rotation">5. <code>AUTH_SECRET</code>, et la rotation</h1>
+<p>Rappel du premier rapport, qui ne bouge pas : les mots de passe iCloud et les secrets Google des artisans sont chiffrés avec une clé <strong>dérivée d'<code>AUTH_SECRET</code></strong>. Une base restaurée sans le même <code>AUTH_SECRET</code> rend ces champs <strong>définitivement illisibles, sans qu'aucune erreur ne le signale</strong>.</p>
+<p><strong>Scaleway Secret Manager convient</strong>, et pour une raison précise : <em>« chaque fois que vous mettez à jour un secret, nous en conservons une nouvelle version »</em>. C'est exactement ce dont on a besoin.</p>
+<p><strong>La règle de rotation, et elle ne se négocie pas :</strong></p>
+<blockquote>Une sauvegarde prise le jour J doit être restaurable avec l'<code>AUTH_SECRET</code> en vigueur le jour J. <strong>On ne supprime donc JAMAIS une version d'<code>AUTH_SECRET</code> tant qu'une sauvegarde de cette époque existe encore.</strong></blockquote>
+<p>Concrètement : rétention des sauvegardes 30 jours ⇒ on garde les versions du secret <strong>au moins 30 jours</strong> après leur remplacement. Et la version en vigueur porte sa date, pour qu'on sache laquelle essayer.</p>
+<p><strong>Le contrôle qui empêche l'oubli existe</strong> : <code>eprouver-restauration.ts</code> déchiffre un vrai secret d'agenda de la sauvegarde. Il a été <strong>vu vert avec la bonne clé et rouge avec une autre</strong> (§7). C'est le seul moyen de découvrir le problème avant d'en avoir besoin.</p>
+<hr>
+<h1 id="6-ce-qui-a-été-codé--et-pourquoi-rien-de-plus">6. Ce qui a été codé — et pourquoi rien de plus</h1>
+<p>Cinq outils. Aucun ne double ce que Scaleway sait faire.</p>
+<div class="tablewrap"><table><thead><tr>
+<th>Outil</th>
+<th>Ce qu'il fait</th>
+<th>Pourquoi Scaleway ne peut pas</th>
+</tr></thead><tbody>
+<tr>
+<td><code>src/lib/objets-stockes.ts</code></td>
+<td>déclare les <strong>11 colonnes</strong> qui portent la clé d'un fichier</td>
+<td>connaissance propre à Atlas</td>
+</tr>
+<tr>
+<td><code>scripts/test-objets-stockes.ts</code></td>
+<td>relit <code>schema.ts</code> et <strong>refuse toute colonne oubliée</strong></td>
+<td>une liste à la main meurt en silence</td>
+</tr>
+<tr>
+<td><code>scripts/verifier-coherence-fichiers.ts</code></td>
+<td>compare base ↔ stockage, dans les deux sens</td>
+<td>il faut connaître les 11 colonnes</td>
+</tr>
+<tr>
+<td><code>scripts/eprouver-restauration.ts</code></td>
+<td>restaure dans une base <strong>isolée</strong> et vérifie <strong>9 propriétés</strong></td>
+<td>Scaleway sait restaurer ; il ne sait pas si Atlas tient dessus</td>
+</tr>
+<tr>
+<td><code>scripts/geler-les-ecritures.sh</code></td>
+<td>passe l'application en lecture seule le temps d'une restauration</td>
+<td>—</td>
+</tr>
+<tr>
+<td><code>scripts/sauvegarder-banc.sh</code></td>
+<td><strong>durci</strong> : compte les lignes de données</td>
+<td>voir §7</td>
+</tr>
+</tbody></table></div>
+<h2 id="ce-que-eprouver-restaurationts-contrôle-un-par-un">Ce que <code>eprouver-restauration.ts</code> contrôle, un par un</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<ol>
+<li>la base restaurée <strong>n'est pas vide</strong> — refus de conclure sur zéro ;</li>
+<li>les <strong>volumes</strong> correspondent, table par table ;</li>
+<li><strong>toutes les migrations</strong> sont là ;</li>
+<li>la <strong>RLS est active ET forcée</strong> sur au moins 30 tables ;</li>
+<li><strong>deux entreprises ne se voient pas</strong> — éprouvé en fabriquant une voisine dans la base d'essai, pas déduit d'un réglage ;</li>
+<li><code>atlas_app</code> existe et <strong>ne traverse pas</strong> la RLS ;</li>
+<li><strong>M9 tient</strong> : l'application ne peut pas lire le condensat du mot de passe ;</li>
+<li>les fonctions <code>SECURITY DEFINER</code> sont là, <strong>avec le bon propriétaire</strong> ;</li>
+<li>les secrets chiffrés <strong>se déchiffrent encore</strong>.</li>
+</ol>
+<p><strong>Et il refuse de travailler sur une base dont le nom ne dit pas qu'elle est un essai.</strong> La production ne se restaure jamais par-dessus elle-même.</p>
+<hr>
+<h1 id="7-ce-qui-a-été-éprouvé--et-les-trois-défauts-trouvés-en-chemin">7. Ce qui a été éprouvé — et les trois défauts trouvés en chemin</h1>
+<p>Une sauvegarde non restaurée ne compte pas. Tout ce qui suit a été <strong>joué</strong>, sur la base du banc.</p>
+<h2 id="les-essais-qui-ont-réussi">Les essais qui ont réussi</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th>Essai</th>
+<th>Résultat</th>
+</tr></thead><tbody>
+<tr>
+<td>Sauvegarde réelle (227 Ko), restaurée dans une base isolée</td>
+<td><strong>9 contrôles verts</strong></td>
+</tr>
+<tr>
+<td>Un fichier réel supprimé du stockage</td>
+<td><strong>détecté</strong>, avec sa clé, code de sortie 1</td>
+</tr>
+<tr>
+<td>Sauvegarde tentée sous <code>atlas_owner</code></td>
+<td><strong>refusée</strong>, fichier partiel effacé</td>
+</tr>
+<tr>
+<td>Gel des écritures</td>
+<td>insertion refusée, <strong>lecture intacte</strong> (4 clients toujours lus)</td>
+</tr>
+<tr>
+<td>Le rôle de l'application essaie de se dégeler lui-même</td>
+<td><strong>refusé</strong></td>
+</tr>
+</tbody></table></div>
+<h2 id="les-essais-négatifs--un-contrôle-qui-na-jamais-rougi-ne-prouve-rien">Les essais NÉGATIFS — un contrôle qui n'a jamais rougi ne prouve rien</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th>Essai</th>
+<th>Le contrôle a-t-il rougi ?</th>
+</tr></thead><tbody>
+<tr>
+<td>Restauration avec un <strong>autre <code>AUTH_SECRET</code></strong></td>
+<td><strong>OUI</strong> — « un secret d'artisan ne se déchiffre plus »</td>
+</tr>
+<tr>
+<td>Sauvegarde amputée du <code>FORCE ROW LEVEL SECURITY</code></td>
+<td><strong>OUI</strong></td>
+</tr>
+<tr>
+<td>Sauvegarde tronquée aux 200 premières lignes</td>
+<td><strong>OUI</strong> — 6 contrôles en échec, 0 entreprise</td>
+</tr>
+<tr>
+<td>Contrôle de cohérence sous un rôle qui ne traverse pas la RLS</td>
+<td><strong>OUI</strong> — il refuse de conclure</td>
+</tr>
+<tr>
+<td>Base éteinte</td>
+<td><strong>OUI</strong>, et il accuse le serveur, pas les droits</td>
+</tr>
+</tbody></table></div>
+<h2 id="les-trois-défauts-trouvés-dont-deux-dans-mes-propres-outils">Les trois défauts trouvés, dont deux dans mes propres outils</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<h3 id="❶-le-plus-grave--mon-gel-des-écritures-cassait-m9">❶ Le plus grave : mon gel des écritures <strong>cassait M9</strong></h3>
+<p>La première version retirait les droits d'écriture (<code>REVOKE</code>) et les rendait au dégel (<code>GRANT INSERT, UPDATE, DELETE ON ALL TABLES</code>).</p>
+<p><strong>La batterie l'a attrapé</strong> : <em>« le rôle applicatif peut encore ÉCRIRE un condensat »</em>. Le mécanisme est contre-intuitif et mérite d'être écrit : M9 retire à <code>atlas_app</code> l'accès à la <strong>colonne</strong> <code>users.password_hash</code> ; un <code>GRANT</code> sur la <strong>table entière</strong> écrase cette restriction. Mon dégel rendait donc <strong>plus</strong> que ce que mon gel avait retiré, et rouvrait en silence la porte que M9 avait fermée.</p>
+<p><strong>Un outil de secours qui affaiblit la sécurité en revenant à la normale est pire que pas d'outil du tout.</strong> Refait : le gel pose désormais un réglage (<code>default_transaction_read_only</code>) et <strong>ne touche aucun droit</strong>. Vérifié après coup : M9 debout, <strong>260/260 suites base au vert</strong>.</p>
+<h3 id="❷-le-contrôle-de-cohérence-rendait-un-faux-vert">❷ Le contrôle de cohérence rendait un <strong>faux vert</strong></h3>
+<p>Sa première version refusait de conclure « si le total des clés vaut zéro ». Raisonnement qui paraît solide, et qui ne l'est pas : deux tables ne sont pas cloisonnées par entreprise et rendent des lignes à n'importe quel rôle. Sous <code>atlas_app</code>, il voyait 3 clés sur des dizaines, ne déclenchait pas son garde-fou, et annonçait « base et stockage cohérents » <strong>en ayant ignoré neuf colonnes sur onze</strong>.</p>
+<p>Corrigé : le droit de traverser la RLS est désormais <strong>demandé à PostgreSQL</strong>, pas déduit d'un compte.</p>
+<h3 id="❸-le-contrôle-de-taille-de-la-sauvegarde-du-banc-laissait-passer-le-vide">❸ Le contrôle de taille de la sauvegarde du banc laissait passer le vide</h3>
+<p>L'ancien seuil : « plus de 1 000 octets ». Or <code>pg_dump --schema-only</code> produit <strong>176 780 octets, code de sortie 0, et zéro donnée</strong>. Le fichier a l'air d'une sauvegarde et n'en est pas une.</p>
+<p>Corrigé : on <strong>compte les lignes de données</strong> et on compare le nombre de migrations à celui de la base vivante.</p>
+<hr>
+<h1 id="8-la-procédure-de-restauration-durgence">8. La procédure de restauration d'urgence</h1>
+<p>Six situations, une seule marche à suivre.</p>
+<div class="tablewrap"><table><thead><tr>
+<th>Situation</th>
+<th>Ce qu'on fait</th>
+</tr></thead><tbody>
+<tr>
+<td><strong>PostgreSQL perdu</strong></td>
+<td>restaurer la dernière sauvegarde vers une <strong>nouvelle</strong> instance, éprouver, basculer</td>
+</tr>
+<tr>
+<td><strong>Migration destructive</strong></td>
+<td>restaurer au point d'avant la migration ; les fichiers ne sont pas touchés</td>
+</tr>
+<tr>
+<td><strong>Suppression accidentelle</strong></td>
+<td>restaurer à côté, extraire ce qui manque, réinjecter — <strong>sans</strong> écraser le reste</td>
+</tr>
+<tr>
+<td><strong>Fichiers disparus</strong></td>
+<td>récupérer la version précédente par le versionnage du compartiment</td>
+</tr>
+<tr>
+<td><strong>Serveur applicatif perdu</strong></td>
+<td><strong>aucune donnée perdue</strong> : redéployer</td>
+</tr>
+<tr>
+<td><strong>Administrateur compromis</strong></td>
+<td>les sauvegardes verrouillées en mode Compliance <strong>ne peuvent pas</strong> être effacées ; changer les identifiants, restaurer depuis elles</td>
+</tr>
+</tbody></table></div>
+<p><strong>La marche à suivre, dans l'ordre — et l'ordre compte :</strong></p>
+<ol>
+<li><strong>Constater.</strong> Quoi, depuis quand, est-ce que ça s'aggrave ?</li>
+<li><strong>Geler les écritures</strong> — <code>bash scripts/geler-les-ecritures.sh</code>. Sans ce geste, tout ce qui s'écrit pendant la restauration est perdu, et personne ne saura quoi.</li>
+<li><strong>Choisir le point</strong> de restauration.</li>
+<li><strong>Restaurer à côté</strong>, jamais par-dessus.</li>
+<li><strong>Éprouver</strong> — <code>npx tsx scripts/eprouver-restauration.ts &lt;fichier&gt;</code>. Neuf contrôles. S'ils ne passent pas, <strong>on ne bascule pas.</strong></li>
+<li><strong>Vérifier les fichiers</strong> — <code>npx tsx scripts/verifier-coherence-fichiers.ts</code>.</li>
+<li><strong>Basculer</strong>, en <strong>gardant l'ancienne base</strong> : elle peut contenir ce qui manque.</li>
+<li><strong>Dégeler</strong> — <code>bash scripts/geler-les-ecritures.sh --degeler</code>.</li>
+</ol>
+<hr>
+<h1 id="9-les-décisions-à-prendre">9. Les décisions à prendre</h1>
+<h3 id="décision-1--local-storage-ou-block-storage-pour-la-base---à-prendre-avant-de-créer-linstance">Décision 1 — <strong>Local Storage ou Block Storage pour la base ?</strong> ⚠ à prendre AVANT de créer l'instance</h3>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th>Local Storage</th>
+<th>Block Storage</th>
+</tr></thead><tbody>
+<tr>
+<td>Sauvegarde automatique</td>
+<td><em>backups</em></td>
+<td><em>snapshots</em></td>
+</tr>
+<tr>
+<td><strong>Téléchargeable</strong></td>
+<td><strong>oui</strong></td>
+<td><strong>non</strong></td>
+</tr>
+<tr>
+<td>Souplesse de taille</td>
+<td>moindre</td>
+<td>meilleure</td>
+</tr>
+</tbody></table></div>
+<p><strong>Ma recommandation : Local Storage</strong>, pour garder la capacité de télécharger une sauvegarde. C'est ce qui permet d'en garder une copie ailleurs.</p>
+<p><strong>Si tu préfères Block Storage</strong> pour la souplesse, ce n'est pas bloquant : la copie logique horaire du §4 remplit alors ce rôle, et devient <strong>obligatoire</strong> au lieu de recommandée.</p>
+<h3 id="décision-2--la-seconde-copie-va-t-elle-hors-de-scaleway-">Décision 2 — La seconde copie va-t-elle <strong>hors de Scaleway</strong> ?</h3>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th></th>
+</tr></thead><tbody>
+<tr>
+<td><strong>Dans un autre compartiment Scaleway, autre projet</strong></td>
+<td>simple, protège de l'erreur humaine et de l'administrateur compromis</td>
+</tr>
+<tr>
+<td><strong>Chez un autre fournisseur</strong></td>
+<td>protège en plus de la perte du compte Scaleway et d'un litige de facturation</td>
+</tr>
+</tbody></table></div>
+<p><strong>Ma recommandation : commencer dans un autre projet Scaleway</strong>, avec des identifiants séparés. C'est 80 % du bénéfice pour 20 % de la complexité. La copie hors-Scaleway peut venir plus tard, quand il y aura de vrais clients.</p>
+<hr>
+<h1 id="10-la-liste-scaleway-à-dérouler-le-jour-de-linfrastructure">10. La liste Scaleway, à dérouler le jour de l'infrastructure</h1>
+<p>Chaque point : <strong>pourquoi</strong>, <strong>valeur</strong>, <strong>ce qui arrive si on l'oublie</strong>, et <strong>avant le premier client ou non</strong>.</p>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th>Quoi</th>
+<th>Valeur</th>
+<th>Pourquoi</th>
+<th>Si on l'oublie</th>
+<th>Obligatoire ?</th>
+</tr></thead><tbody>
+<tr>
+<td><strong>SCW-01</strong></td>
+<td>Créer l'instance PostgreSQL gérée</td>
+<td>version 16+, <strong>Local Storage</strong> (décision 1)</td>
+<td>c'est la base</td>
+<td>—</td>
+<td><strong>OUI</strong></td>
+</tr>
+<tr>
+<td><strong>SCW-02</strong></td>
+<td>Vérifier que l'autobackup est actif</td>
+<td>activé par défaut</td>
+<td>sans lui, rien n'est sauvegardé</td>
+<td><strong>tout est perdu au premier incident</strong></td>
+<td><strong>OUI</strong></td>
+</tr>
+<tr>
+<td><strong>SCW-03</strong></td>
+<td>Porter la rétention à <strong>30 jours</strong></td>
+<td>30 (défaut : 7)</td>
+<td>7 jours ne couvrent pas des vacances</td>
+<td>un dégât découvert au retour est irrécupérable</td>
+<td><strong>OUI</strong></td>
+</tr>
+<tr>
+<td><strong>SCW-04</strong></td>
+<td>Porter la fréquence au maximum offert</td>
+<td>à lire dans la console</td>
+<td>chaque palier réduit ce qu'on perd</td>
+<td>RPO à 24 h</td>
+<td>recommandé</td>
+</tr>
+<tr>
+<td><strong>SCW-05</strong></td>
+<td>Créer les rôles <code>atlas_owner</code> et <code>atlas_app</code></td>
+<td><code>atlas_app</code> : <strong>NOBYPASSRLS</strong>, non superutilisateur</td>
+<td>c'est l'isolation entre artisans</td>
+<td><strong>un artisan verrait les clients d'un autre</strong></td>
+<td><strong>OUI</strong></td>
+</tr>
+<tr>
+<td><strong>SCW-06</strong></td>
+<td>Créer un rôle <strong>dédié à la sauvegarde</strong>, superutilisateur</td>
+<td>identifiants séparés</td>
+<td><code>pg_dump</code> échoue sous tout autre rôle — mesuré</td>
+<td>sauvegardes impossibles</td>
+<td><strong>OUI</strong></td>
+</tr>
+<tr>
+<td><strong>SCW-07</strong></td>
+<td>Créer le compartiment des <strong>fichiers</strong></td>
+<td><code>atlas-fichiers</code></td>
+<td>photos, PDF, dictées</td>
+<td>—</td>
+<td><strong>OUI</strong></td>
+</tr>
+<tr>
+<td><strong>SCW-08</strong></td>
+<td>Activer le <strong>versionnage</strong> dessus</td>
+<td>activé</td>
+<td>un fichier écrasé reste récupérable</td>
+<td>une photo remplacée est perdue</td>
+<td><strong>OUI</strong></td>
+</tr>
+<tr>
+<td><strong>SCW-09</strong></td>
+<td>Object Lock <strong>Governance</strong>, 30 jours</td>
+<td>Governance — <strong>pas Compliance</strong></td>
+<td>protège de l'effacement accidentel <strong>tout en laissant</strong> honorer une demande d'effacement RGPD</td>
+<td>soit rien n'est protégé, soit on ne peut plus effacer légalement</td>
+<td><strong>OUI</strong></td>
+</tr>
+<tr>
+<td><strong>SCW-10</strong></td>
+<td>Cycle de vie : purger les versions &gt; 30 jours</td>
+<td>30 jours</td>
+<td>sinon on paie éternellement</td>
+<td>facture qui enfle</td>
+<td>recommandé</td>
+</tr>
+<tr>
+<td><strong>SCW-11</strong></td>
+<td>Créer le compartiment des <strong>sauvegardes</strong></td>
+<td><code>atlas-sauvegardes</code>, <strong>autre projet</strong></td>
+<td>il ne doit pas tomber avec le reste</td>
+<td>un administrateur compromis efface tout</td>
+<td><strong>OUI</strong></td>
+</tr>
+<tr>
+<td><strong>SCW-12</strong></td>
+<td>Object Lock <strong>Compliance</strong>, 30 jours</td>
+<td>Compliance — <strong>cette fois oui</strong></td>
+<td><strong>personne</strong>, pas même le propriétaire, ne peut effacer avant l'échéance</td>
+<td>le scénario 7 redevient possible</td>
+<td><strong>OUI</strong></td>
+</tr>
+<tr>
+<td><strong>SCW-13</strong></td>
+<td>Clé d'accès <strong>écriture seule</strong> pour la sauvegarde</td>
+<td>pas de droit de suppression</td>
+<td>une clé volée ne peut pas effacer l'historique</td>
+<td>—</td>
+<td><strong>OUI</strong></td>
+</tr>
+<tr>
+<td><strong>SCW-14</strong></td>
+<td>Clé d'accès <strong>lecture seule</strong> pour la restauration</td>
+<td>séparée de la précédente</td>
+<td>on ne restaure pas avec la clé qui écrit</td>
+<td>—</td>
+<td>recommandé</td>
+</tr>
+<tr>
+<td><strong>SCW-15</strong></td>
+<td>Planifier la <strong>copie logique horaire</strong> (§4)</td>
+<td>toutes les heures, rôle SCW-06</td>
+<td>fait passer le RPO de 24 h à 1 h</td>
+<td>on perd jusqu'à une journée</td>
+<td><strong>OUI</strong> si Block Storage, sinon fortement recommandé</td>
+</tr>
+<tr>
+<td><strong>SCW-16</strong></td>
+<td>Déposer <code>AUTH_SECRET</code> dans <strong>Secret Manager</strong></td>
+<td>avec sa date</td>
+<td>sans lui, les agendas des artisans deviennent illisibles <strong>en silence</strong></td>
+<td>données présentes et inutilisables</td>
+<td><strong>OUI</strong></td>
+</tr>
+<tr>
+<td><strong>SCW-17</strong></td>
+<td>Écrire la règle de rotation</td>
+<td>ne jamais supprimer une version &lt; 30 j</td>
+<td>une vieille sauvegarde ne doit pas devenir inutilisable</td>
+<td>restauration muette et incomplète</td>
+<td><strong>OUI</strong></td>
+</tr>
+<tr>
+<td><strong>SCW-18</strong></td>
+<td>Créer l'instance <strong>Redis gérée</strong></td>
+<td>la plus petite</td>
+<td>limitation de débit partagée entre instances</td>
+<td>Atlas refuse de démarrer en production</td>
+<td><strong>OUI</strong></td>
+</tr>
+<tr>
+<td><strong>SCW-19</strong></td>
+<td><strong>Ne PAS</strong> sauvegarder Redis</td>
+<td>—</td>
+<td>il ne porte aucune donnée d'artisan</td>
+<td>de l'argent et du temps dépensés pour rien</td>
+<td>—</td>
+</tr>
+<tr>
+<td><strong>SCW-20</strong></td>
+<td>Brancher l'<strong>alerte d'échec de sauvegarde</strong></td>
+<td>vers une adresse réellement lue</td>
+<td>une sauvegarde qui échoue en silence n'existe pas</td>
+<td>on le découvre le jour de l'incident</td>
+<td><strong>OUI</strong></td>
+</tr>
+<tr>
+<td><strong>SCW-21</strong></td>
+<td>Jouer une <strong>restauration d'essai complète</strong></td>
+<td>avant le premier client, puis tous les 3 mois</td>
+<td>une sauvegarde non restaurée ne compte pas</td>
+<td>on découvre le défaut au pire moment</td>
+<td><strong>OUI</strong></td>
+</tr>
+<tr>
+<td><strong>SCW-22</strong></td>
+<td>Poser <code>ATLAS_RP_ID</code> et <code>ATLAS_PROXY_SAUTS</code></td>
+<td>(dette existante, <code>PROJECT_STATE.md</code>)</td>
+<td>Face ID et les seuils par source</td>
+<td>Face ID refuse de s'enregistrer</td>
+<td><strong>OUI</strong></td>
+</tr>
+</tbody></table></div>
+<p><strong>Quatorze points sont obligatoires avant le premier client.</strong> Aucun ne demande de code : ce sont des cases à cocher.</p>
+<hr>
+<h1 id="11-sauvegarde-immutabilité-rgpd-conservation-légale--quatre-choses-différentes">11. Sauvegarde, immutabilité, RGPD, conservation légale — quatre choses différentes</h1>
+<p>Le brief demandait de ne pas rendre les fichiers indéfiniment ineffaçables. La distinction est faite, et c'est elle qui justifie <strong>Governance d'un côté, Compliance de l'autre</strong> :</p>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th>Ce que c'est</th>
+<th>Durée</th>
+<th>Peut-on effacer avant ?</th>
+</tr></thead><tbody>
+<tr>
+<td><strong>Sauvegarde</strong></td>
+<td>pouvoir revenir en arrière</td>
+<td>30 jours</td>
+<td>oui, à l'échéance</td>
+</tr>
+<tr>
+<td><strong>Immutabilité</strong></td>
+<td>empêcher un effacement malveillant</td>
+<td>30 jours</td>
+<td><strong>compartiment des sauvegardes : non</strong> (Compliance) · <strong>compartiment des fichiers : oui, avec la permission</strong> (Governance)</td>
+</tr>
+<tr>
+<td><strong>Effacement RGPD</strong></td>
+<td>un client demande que ses données partent</td>
+<td>à la demande</td>
+<td><strong>oui</strong> — d'où Governance sur les fichiers</td>
+</tr>
+<tr>
+<td><strong>Conservation légale</strong></td>
+<td>factures <strong>10 ans</strong>, devis acceptés <strong>5 ans</strong></td>
+<td>des années</td>
+<td><strong>non</strong>, et le code le refuse déjà (<code>src/server/retention.ts</code>)</td>
+</tr>
+</tbody></table></div>
+<p><strong>Le point à ne pas confondre</strong>, déjà écrit dans le premier rapport et toujours vrai : ce sont <strong>les 10 ans de la base vivante</strong> qui portent l'obligation légale, pas les 30 jours de sauvegarde. La sauvegarde protège la base ; elle ne la remplace pas.</p>
+<p>Et une conséquence pratique de Governance sur les fichiers : un effacement RGPD demande une <strong>permission de contournement</strong>, donc un geste délibéré et tracé. Ce n'est pas une gêne, c'est la preuve qu'on ne l'a pas fait par accident.</p>
+<hr>
+<h1 id="12-ce-qui-reste-ouvert">12. Ce qui reste ouvert</h1>
+<div class="tablewrap"><table><thead><tr>
+<th>Point</th>
+<th>Qui tranche</th>
+</tr></thead><tbody>
+<tr>
+<td><strong>Rétention maximale</strong> des sauvegardes chez Scaleway</td>
+<td>à lire dans la console le jour J — la documentation ne la donne pas</td>
+</tr>
+<tr>
+<td><strong>Fréquence maximale</strong> des sauvegardes automatiques</td>
+<td>idem</td>
+</tr>
+<tr>
+<td>Une écriture refusée pendant un gel remonte comme une <strong>erreur technique</strong>, pas comme une phrase compréhensible</td>
+<td>nous, hors de ce lot — acceptable pour une urgence rare et annoncée</td>
+</tr>
+<tr>
+<td>L'<strong>export d'une entreprise</strong> n'emporte ni son <strong>logo</strong> ni les <strong>photos de ses tickets de caisse</strong>, alors que les lignes <code>achats_tva</code> partent</td>
+<td>nous, hors de ce lot — c'est de la portabilité RGPD, pas de la sauvegarde. Écrit dans <code>TODO.md</code></td>
+</tr>
+<tr>
+<td>Un refus de rôle sort en <strong>500</strong> au lieu de <strong>403</strong> sur <code>/api/mes-donnees</code></td>
+<td>nous, lot suivant (déjà consigné)</td>
+</tr>
+<tr>
+<td><strong>La tempête Turbopack</strong> qui tue le serveur de la batterie</td>
+<td>non diagnostiquée, intermittente (déjà consignée)</td>
+</tr>
+</tbody></table></div>
+<hr>
+<h1 id="verdict">Verdict</h1>
+<h2 id="prêt-à-implémenter">PRÊT À IMPLÉMENTER</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p>Les outils sont écrits, éprouvés, et joués pour de vrai — y compris dans leurs cas d'échec. La liste Scaleway est prête à dérouler.</p>
+<p><strong>Deux décisions t'appartiennent</strong>, et une seule change le résultat :</p>
+<ol>
+<li><strong>Local Storage ou Block Storage</strong> — à prendre avant de créer l'instance, parce qu'elle décide si une sauvegarde est téléchargeable. <em>Recommandation : Local Storage.</em></li>
+<li><strong>Où va la seconde copie</strong> — autre projet Scaleway, ou autre fournisseur. <em>Recommandation : autre projet Scaleway pour commencer.</em></li>
+</ol>
+<p><strong>Ce qui ne dépend d'aucune décision, et qui est acquis :</strong> le RPO réel sera de <strong>1 heure</strong>, pas 15 minutes. Scaleway n'offre pas la restauration au point dans le temps, et je préfère te le dire que te laisser croire l'inverse.</p>
+<p><strong>Et le point d'urgence, inchangé :</strong> aucun artisan réel sur Atlas tant que les quatorze points obligatoires du §10 ne sont pas cochés.</p>
+</main>
+</body>
+</html>

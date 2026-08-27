@@ -54,12 +54,78 @@ if [ "$TAILLE" -lt 1000 ]; then
   exit 1
 fi
 
+# ─────────────────────────────────────────────────────────────────────────────
+# **ET LA TAILLE NE SUFFIT PAS. Mesuré le 27 août 2026.**
+#
+# Une sauvegarde prise sous un rôle qui ne traverse pas la RLS s'arrête sur
+# `ERROR: query would be affected by row-level security policy` — mais elle a
+# DÉJÀ écrit son en-tête : 867 octets, un `COPY public.clients (…) FROM stdin;`
+# parfaitement crédible, et pas une ligne de données. Le seuil de 1 000 octets
+# est passé de justesse ; le schéma seul d'Atlas, lui, le dépasse largement.
+#
+# Autrement dit : le contrôle de taille attrape le fichier vide, et laisse
+# passer le fichier PLAUSIBLE ET VIDE DE DONNÉES — celui qu'on découvre le jour
+# où on en a besoin.
+#
+# On compte donc les lignes de données. `COPY … FROM stdin;` est suivi des
+# lignes, puis d'un `\.` seul sur sa ligne : ce qui est entre les deux, ce sont
+# les données. Zéro partout, c'est une sauvegarde qui ne sauvegarde rien.
+LIGNES_DONNEES=$(awk '
+  /^COPY .* FROM stdin;$/ { dedans = 1; next }
+  /^\\\.$/             { dedans = 0; next }
+  dedans                  { n++ }
+  END                     { print n + 0 }
+' "$FICHIER")
+
+if [ "$LIGNES_DONNEES" -eq 0 ]; then
+  echo "❌ La sauvegarde ne contient AUCUNE ligne de données."
+  echo
+  echo "   Le fichier fait pourtant $TAILLE octets : c'est le SCHÉMA, sans les données."
+  echo
+  # **On n'accuse PAS le rôle ici, et c'est réfléchi.** Un rôle qui ne traverse
+  # pas la RLS fait ÉCHOUER pg_dump (code 1), ce qui est attrapé plus haut. Si
+  # l'on arrive jusqu'ici, c'est que pg_dump a réussi : le rôle était bon, et
+  # dire le contraire enverrait chercher au mauvais endroit. La première version
+  # de ce message faisait exactement cette faute (27 août 2026).
+  echo "   La copie a RÉUSSI : le rôle employé était donc le bon. Il reste"
+  echo "   deux causes, et une seule est grave :"
+  echo "     · la base est réellement vide — normal sur une installation neuve ;"
+  echo "     · la copie n'a pris que le schéma (option --schema-only quelque part)."
+  echo
+  echo "   Dans les deux cas, ce fichier ne protège de rien : il est effacé"
+  echo "   plutôt que d'être gardé sous un nom qui promet une sauvegarde."
+  rm -f "$FICHIER"
+  exit 1
+fi
+
+# **Et on confronte au vivant.** Un fichier peut porter des lignes et en avoir
+# perdu la moitié. On compare donc à ce que la base annonce, sur une table qui
+# ne ment pas : celle des migrations, présente sur toute base d'Atlas.
+MIGRATIONS_EN_BASE=$(psql "$URL" -tAc "SELECT count(*) FROM _migrations" 2>/dev/null | tr -d ' ')
+MIGRATIONS_DANS_LE_FICHIER=$(awk '
+  /^COPY public\._migrations .* FROM stdin;$/ { dedans = 1; next }
+  /^\\\.$/                                  { dedans = 0; next }
+  dedans                                       { n++ }
+  END                                          { print n + 0 }
+' "$FICHIER")
+if [ -n "$MIGRATIONS_EN_BASE" ] && [ "$MIGRATIONS_EN_BASE" != "$MIGRATIONS_DANS_LE_FICHIER" ]; then
+  echo "❌ La sauvegarde ne porte pas toutes les migrations."
+  echo "   En base : $MIGRATIONS_EN_BASE — dans le fichier : $MIGRATIONS_DANS_LE_FICHIER."
+  echo "   Restaurée telle quelle, elle rendrait une base que le code ne reconnaît pas."
+  rm -f "$FICHIER"
+  exit 1
+fi
+
 echo
 echo "  ─────────────────────────────────────────────────────────────"
 echo "   Sauvegarde faite : $(basename "$FICHIER")"
-echo "   $(du -h "$FICHIER" | cut -f1) — elle est à la racine, dans la liste de gauche."
+echo "   $(du -h "$FICHIER" | cut -f1), $LIGNES_DONNEES lignes de données, $MIGRATIONS_DANS_LE_FICHIER migrations."
+echo "   Elle est à la racine, dans la liste de gauche."
 echo
 echo "   Pour l'emporter : appui long sur le fichier → « Télécharger »."
 echo "   Tant qu'elle n'est pas sur votre appareil, elle disparaît"
 echo "   avec l'espace de travail — elle vit au même endroit."
+echo
+echo "   Pour PROUVER qu'elle vaut quelque chose, sans toucher à la base :"
+echo "     npx tsx scripts/eprouver-restauration.ts $(basename "$FICHIER")"
 echo "  ─────────────────────────────────────────────────────────────"
