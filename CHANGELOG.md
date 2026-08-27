@@ -9,6 +9,15 @@ Format : le plus récent en tête.
 
 ## 2026-08-27
 
+### La phrase grise sous « Composer ma fiche » est partie
+
+*« Supprime la phrase en gris sous composer ma fiche. »* Elle disait « n
+prestations, rangées par famille. C'est cette liste que vous cocherez sur un
+chantier » : un écran qui explique son propre fonctionnement, ce que sa consigne
+du 25 août interdit. Les familles sont sous les yeux, et le compte est déjà sur
+la carte qui mène ici. Retirée aussi des deux pages essayables, pour qu'elles ne
+montrent pas un écran qui n'existe plus.
+
 ### Fusion du lot 3 : batterie entièrement verte, et une panne de machine comprise
 
 `main` a réparé le montage de `test-carte-reponse-mene-au-geste-e2e` sans
