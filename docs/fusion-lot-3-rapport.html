@@ -291,7 +291,8 @@
 <hr>
 <h2 id="e--batterie">E — Batterie</h2>
 <a class="retour" href="#sommaire">↑ Sommaire</a>
-<h3 id="premier-tour-après-intégration">Premier tour après intégration</h3>
+<p>Quatre fusions successives ont été nécessaires : <strong><code>main</code> a bougé pendant tout le travail</strong> — 185 commits, puis 19, puis 12, puis 27. Chaque mouvement a été réintégré, et la batterie rejouée quand le code arrivé touchait le nôtre.</p>
+<h3 id="le-tour-final-sur-létat-exact-destiné-à-la-fusion">Le tour final, sur l'état exact destiné à la fusion</h3>
 <div class="tablewrap"><table><thead><tr>
 <th>Étape</th>
 <th>Résultat</th>
@@ -314,74 +315,124 @@
 </tr>
 <tr>
 <td>Suites base — RLS comprises</td>
-<td>❌ <strong>255 / 258</strong></td>
+<td>✅ <strong>258 / 258</strong></td>
 </tr>
 <tr>
 <td>Suites navigateur</td>
-<td>✅ <strong>115 / 115</strong></td>
+<td>❌ <strong>114 / 115</strong></td>
 </tr>
 <tr>
 <td><code>npm run verifier:connexion</code></td>
-<td>✅</td>
+<td>✅ connexion réelle derrière une origine étrangère</td>
+</tr>
+<tr>
+<td><code>npm audit</code></td>
+<td><strong>4 modérées, inchangées</strong> — <code>drizzle-kit → esbuild</code>, dépendance de développement. Rien n'a été lancé</td>
 </tr>
 </tbody></table></div>
-<p><strong>115 et non 110</strong> : <code>main</code> a légitimement ajouté cinq suites navigateur. Le total n'a pas été reproduit artificiellement.</p>
-<h3 id="second-tour--en-cours-au-moment-où-ce-document-est-écrit">Second tour — <strong>en cours au moment où ce document est écrit</strong></h3>
-<p>Les trois rouges du premier tour sont corrigés (voir §G) et la batterie rejoue en entier. <strong>Les chiffres définitifs seront ajoutés ici</strong> ; ce document sera renvoyé complété.</p>
+<p><strong>Les tours précédents avaient rendu 258/258 et 115/115.</strong> Le seul écart du tour final est décrit au §G, et il n'est pas de nous.</p>
+<h3 id="les-nombres-ont-changé-et-cest-légitime">Les nombres ont changé, et c'est légitime</h3>
+<p>De 234/110 sur notre branche seule à <strong>258/115</strong> après fusion : <code>main</code> a légitimement ajouté 24 suites base et 5 suites navigateur. Aucun total n'a été reproduit artificiellement.</p>
 <hr>
-<h2 id="f--revue-hostile">F — Revue hostile</h2>
+<h2 id="f--revue-hostile-après-fusion">F — Revue hostile après fusion</h2>
 <a class="retour" href="#sommaire">↑ Sommaire</a>
+<h3 id="les-privilèges-mesurés-en-base">Les privilèges, MESURÉS en base</h3>
 <div class="tablewrap"><table><thead><tr>
-<th>Ce qui a été tenté</th>
+<th></th>
 <th>Résultat</th>
 </tr></thead><tbody>
 <tr>
-<td>une migration entrante rend-elle des droits sur <code>users</code> ?</td>
-<td><strong>non</strong> — les quatre relues une par une</td>
+<td><code>users.password_hash</code> pour <code>atlas_app</code></td>
+<td><strong><code>INSERT</code> seul</strong> — ni SELECT, ni UPDATE</td>
 </tr>
 <tr>
-<td>une migration existante a-t-elle été modifiée ?</td>
-<td><strong>non</strong> — que des ajouts</td>
+<td><code>preuves_authentification</code> pour <code>atlas_app</code></td>
+<td><strong><code>SELECT, DELETE</code></strong> — ni INSERT, ni UPDATE</td>
 </tr>
 <tr>
-<td>deux migrations partagent-elles un nom de fichier ?</td>
-<td><strong>non</strong></td>
+<td><code>atlas_app</code></td>
+<td>ni superutilisateur, ni <code>BYPASSRLS</code></td>
+</tr>
+</tbody></table></div>
+<h3 id="quatre-contournements-tentés-pour-de-vrai">Quatre contournements tentés pour de vrai</h3>
+<div class="tablewrap"><table><thead><tr>
+<th>Tentative</th>
+<th>Réponse de PostgreSQL</th>
+</tr></thead><tbody>
+<tr>
+<td>lire le condensat</td>
+<td><code>permission denied for table users</code></td>
 </tr>
 <tr>
-<td>le rôle disparu <code>membre</code> survit-il dans du code exécuté ?</td>
-<td><strong>non</strong> — seulement dans des commentaires et un script de capture hors batterie</td>
+<td>le modifier</td>
+<td><code>permission denied for table users</code></td>
 </tr>
 <tr>
-<td>un chemin audio contourne-t-il la porte ?</td>
-<td><strong>non</strong> — les quatre l'emploient</td>
+<td><strong>forger</strong> une preuve</td>
+<td><code>permission denied for table preuves_authentification</code></td>
 </tr>
 <tr>
-<td><code>main</code> a-t-il posé une garde centrale qui rendrait F8 inutile ?</td>
-<td><strong>non</strong> — <code>/reglages/agenda</code> reste ouvert au commercial</td>
+<td><strong>rajeunir</strong> une preuve</td>
+<td><code>permission denied for table preuves_authentification</code></td>
+</tr>
+</tbody></table></div>
+<h3 id="le-reste">Le reste</h3>
+<div class="tablewrap"><table><thead><tr>
+<th>Ce qui a été cherché</th>
+<th>Résultat</th>
+</tr></thead><tbody>
+<tr>
+<td>une migration entrante qui rend des droits sur <code>users</code> ou les preuves</td>
+<td><strong>aucune</strong> — les cinq relues une par une</td>
 </tr>
 <tr>
-<td><code>estProprietaire</code> a-t-il changé de sens ?</td>
-<td><strong>non</strong> — <code>main</code> a réécrit <code>autorisation.ts</code> en gardant la fonction à l'identique</td>
+<td>une migration existante modifiée</td>
+<td><strong>aucune</strong> — que des ajouts</td>
+</tr>
+<tr>
+<td>deux migrations partageant un NOM DE FICHIER</td>
+<td><strong>aucune</strong></td>
+</tr>
+<tr>
+<td>un chemin audio qui contourne la porte</td>
+<td><strong>aucun</strong></td>
+</tr>
+<tr>
+<td><code>fichier.type</code> qui décide encore côté serveur</td>
+<td><strong>nulle part</strong> — il ne sert qu'au message de refus</td>
+</tr>
+<tr>
+<td>un écran du patron sans garde</td>
+<td><strong>aucun</strong> — contrôle structurel vert</td>
+</tr>
+<tr>
+<td>une table d'entreprise sans RLS ou sans <code>FORCE</code></td>
+<td><strong>deux files de purge</strong>, et c'est <strong>par conception</strong> — migrations 0017 et 0056, mécanisme décrit par <code>CLAUDE.md</code> §4</td>
 </tr>
 </tbody></table></div>
 <hr>
 <h2 id="g--régressions-classées-avec-preuve">G — Régressions, classées avec preuve</h2>
 <a class="retour" href="#sommaire">↑ Sommaire</a>
-<h3 id="1-test-acces-roles-dbts--défaut-du-contrôle-et-m9-avait-raison">1. <code>test-acces-roles-db.ts</code> — <strong>défaut du contrôle</strong>, et M9 avait raison</h3>
-<p>Il lisait <code>users.password_hash</code> en direct pour comparer lui-même. <strong>C'est la protection qui parle, pas une panne.</strong> Le contrôle passe désormais par la porte <code>SECURITY DEFINER</code> : même règle éprouvée, et il éprouve en plus le vrai chemin de connexion au lieu d'une comparaison refaite à côté.</p>
-<h3 id="2-test-assistant-explique-l-applits--défaut-du-contrôle-même-famille">2. <code>test-assistant-explique-l-appli.ts</code> — <strong>défaut du contrôle</strong>, même famille</h3>
-<p><code>returning()</code> nu sur <code>users</code> : <code>RETURNING *</code> demande à lire le condensat. Seul l'identifiant sert.</p>
-<h3 id="3-test-mode-emploits--vraie-régression-causée-par-m11">3. <code>test-mode-emploi.ts</code> — <strong>VRAIE RÉGRESSION</strong>, causée par M11</h3>
-<p>Et c'est la plus importante des trois : <strong>un contrôle de <code>main</code> a attrapé une régression de notre lot</strong>, que la batterie de notre branche seule ne pouvait pas voir.</p>
-<p>Le bouton « Télécharger mes données » a quitté <code>donnees/page.tsx</code> pour un composant client — c'est M11, qui devait demander qui parle avant d'ouvrir un export contenant tout ce que l'entreprise sait de ses clients. La fiche du mode d'emploi pointait encore l'ancien fichier : <strong>l'assistant aurait enseigné un geste dont la preuve n'existe plus là où elle est annoncée.</strong></p>
-<p>La fiche suit le bouton.</p>
-<p><strong>Aucune assertion affaiblie, aucun délai allongé, aucune suite désactivée, aucun <code>--force</code>.</strong></p>
+<h3 id="sur-la-première-fusion--trois-rouges-trois-causes">Sur la première fusion — trois rouges, trois causes</h3>
+<p><strong>1. <code>test-acces-roles-db.ts</code> — défaut du contrôle.</strong> Il lisait <code>users.password_hash</code> en direct. <strong>C'est M9 qui parle, pas une panne.</strong> Le contrôle passe désormais par la porte <code>SECURITY DEFINER</code> : même règle éprouvée, et il éprouve en plus le vrai chemin de connexion.</p>
+<p><strong>2. <code>test-assistant-explique-l-appli.ts</code> — défaut du contrôle</strong>, même famille : <code>returning()</code> nu sur <code>users</code>.</p>
+<p><strong>3. <code>test-mode-emploi.ts</code> — VRAIE RÉGRESSION, causée par M11.</strong> Et c'est la plus importante : <strong>un contrôle de <code>main</code> a attrapé une régression de notre lot</strong>, que la batterie de notre branche seule ne pouvait pas voir. Le bouton « Télécharger mes données » a quitté sa page pour un composant client — c'est M11, qui devait demander qui parle avant d'ouvrir un export. La fiche du mode d'emploi pointait encore l'ancien fichier : l'assistant aurait enseigné un geste dont la preuve n'existe plus là où elle est annoncée.</p>
+<h3 id="sur-la-troisième-fusion--un-rouge-une-horloge">Sur la troisième fusion — un rouge, une horloge</h3>
+<p><strong><code>test-liste-clients.ts</code> — défaut du contrôle, préexistant.</strong> À 23 h 15 UTC, la suite calculait « aujourd'hui » en UTC (<code>toISOString</code>) quand le serveur date une facture à l'heure de l'atelier (<code>jourIso</code>). Le règlement paraissait antérieur à sa facture, et <strong>le refus du produit avait raison</strong>. Deux heures par nuit.</p>
+<p><em>Une autre session a trouvé le même défaut le même soir, dans le même fichier, et l'a corrigé avec la même fonction. La fusion a gardé SA version, déjà sur <code>main</code>.</em></p>
+<h3 id="sur-la-quatrième-fusion--un-rouge-et-il-nest-pas-de-nous">Sur la quatrième fusion — un rouge, et il n'est PAS de nous</h3>
+<p><strong><code>test-carte-reponse-mene-au-geste-e2e.ts</code> — DÉFAUT PRÉEXISTANT SUR <code>main</code>.</strong></p>
+<p><em>« aucune carte de réponse pour le chantier … à l'accueil »</em>, sur un cas — les trois autres passent.</p>
+<p><strong>Preuve, et non supposition :</strong> <code>src/</code> et <code>scripts/</code> ont été ramenés au code de <code>origin/main</code> SEUL, et la suite rend <strong>exactement le même message</strong>. Notre lot n'a jamais touché ce fichier.</p>
+<p><strong>Non corrigé, délibérément</strong> : c'est hors du périmètre de cette fusion, et cela ne la rend pas dangereuse — le défaut est déjà sur <code>main</code> sans nous. Le corriger serait élargir le périmètre que vous avez fermé.</p>
+<h3 id="ce-qui-na-jamais-été-fait">Ce qui n'a JAMAIS été fait</h3>
+<p>Aucune assertion affaiblie. Aucun délai allongé. Aucune suite désactivée. Aucun <code>--force</code>. Aucune règle métier modifiée pour faciliter la fusion.</p>
 <hr>
 <h2 id="h--diff-final">H — Diff final</h2>
 <a class="retour" href="#sommaire">↑ Sommaire</a>
-<p>Aucune modification opportuniste. Les seuls changements hors résolution de conflit sont les trois corrections du §G, chacune imposée par un rouge, et la mise à jour du commentaire de <code>rubriques-reglages.ts</code> pour qu'il cesse de contredire la réalité fusionnée.</p>
+<p>Aucune modification opportuniste. Hors résolution de conflits, les seuls changements sont les quatre corrections du §G — chacune imposée par un rouge — et la mise à jour du commentaire de <code>rubriques-reglages.ts</code>, pour qu'il cesse de contredire la réalité fusionnée.</p>
 <p><strong>Rien n'a été traité de :</strong> F7 / RGPD, F10 / CSP, rôles Salarié et Commercial, <code>/catalogue</code>, qualité Dictée → Devis, sauvegardes, refonte, nettoyage.</p>
-<p><strong><code>ATLAS_PROXY_SAUTS</code> n'a pas été configuré</strong> : la valeur dépend de l'hébergement réel, et le comportement de repli actuel est conservé.</p>
+<p><strong><code>ATLAS_PROXY_SAUTS</code> n'a pas été configuré.</strong> La valeur dépend de l'hébergement réel ; le comportement de repli est conservé.</p>
 <hr>
 <h2 id="i--défauts-encore-ouverts">I — Défauts encore ouverts</h2>
 <a class="retour" href="#sommaire">↑ Sommaire</a>
@@ -402,25 +453,45 @@
 <td><strong><code>cle-appareil</code> : seuil global</strong> sans <code>ATLAS_PROXY_SAUTS</code></td>
 <td>faible, délibéré, documenté</td>
 </tr>
+<tr>
+<td><strong><code>/reglages/agenda</code> ouvert au COMMERCIAL sur <code>main</code></strong></td>
+<td><strong>fermé par cette fusion</strong> — c'était la découverte du §D</td>
+</tr>
 </tbody></table></div>
 <h3 id="produit">Produit</h3>
-<p>F7 / RGPD · <code>/catalogue</code> · qualité Dictée → Devis.</p>
+<p>F7 / RGPD · <code>/catalogue</code> et les rôles Salarié / Commercial · qualité Dictée → Devis.</p>
 <h3 id="hébergement">Hébergement</h3>
 <p><code>ATLAS_PROXY_SAUTS</code>, <strong>et il faut les deux moitiés</strong> : poser la variable, ET s'assurer que le mandataire écrase <code>x-forwarded-for</code>. Sans les deux, la poser serait pire que ne rien faire.</p>
 <h3 id="tests">Tests</h3>
-<p>Trois suites navigateur rougissent sous la batterie et jamais seules — consigné dans <code>TODO.md</code> avec le remède.</p>
-<h3 id="hors-périmètre-trouvé-pendant-la-fusion--non-corrigé">Hors périmètre, trouvé pendant la fusion — <strong>non corrigé</strong></h3>
 <div class="tablewrap"><table><thead><tr>
 <th></th>
 <th></th>
 </tr></thead><tbody>
 <tr>
-<td><code>scripts/capture-reglages.mts</code> emploie encore le rôle <code>membre</code></td>
-<td><strong>script de capture, hors batterie.</strong> Il échouerait s'il était joué : la contrainte de la migration 0065 refuse ce mot. Gravité nulle pour l'application</td>
+<td><code>test-carte-reponse-mene-au-geste-e2e</code></td>
+<td><strong>rouge sur <code>main</code> sans nous</strong> — prouvé</td>
+</tr>
+<tr>
+<td>Trois suites navigateur qui lâchent sous charge</td>
+<td>consignées dans <code>TODO.md</code></td>
+</tr>
+<tr>
+<td>Le mélange UTC / heure de l'atelier</td>
+<td>deux suites l'avaient ; rien ne dit qu'il n'y en a pas une troisième</td>
+</tr>
+</tbody></table></div>
+<h3 id="hors-périmètre-trouvé-pendant-la-fusion--non-corrigé">Hors périmètre, trouvé pendant la fusion — non corrigé</h3>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th></th>
+</tr></thead><tbody>
+<tr>
+<td><code>scripts/capture-reglages.mts</code> emploie le rôle disparu <code>membre</code></td>
+<td>script de capture, hors batterie</td>
 </tr>
 <tr>
 <td><code>ARCHITECTURE.md</code> porte en double §134, §135, §136, §164, §165</td>
-<td>dette de <code>main</code>, alourdie depuis le dernier relevé</td>
+<td>dette de <code>main</code></td>
 </tr>
 </tbody></table></div>
 <h3 id="sauvegardes">Sauvegardes</h3>
@@ -428,7 +499,31 @@
 <hr>
 <h2 id="j--verdict">J — Verdict</h2>
 <a class="retour" href="#sommaire">↑ Sommaire</a>
-<p><strong>En attente du second tour de batterie.</strong> Le verdict sera posé sur des chiffres, pas sur une impression.</p>
+<h1 id="fusion-effectuée-mais-non-validée">FUSION EFFECTUÉE MAIS NON VALIDÉE</h1>
+<p><strong>Ce qui est démontré</strong>, et qui justifie « effectuée » :</p>
+<ul>
+<li>aucune modification récente de <code>main</code> n'est détruite — quatre fusions successives, chaque conflit tranché en conservant les deux propriétés quand elles existaient ;</li>
+<li><strong>aucune propriété de sécurité des lots précédents n'est perdue</strong> — mesurée en base, et quatre contournements refusés par PostgreSQL ;</li>
+<li>aucune migration renommée, aucune rejouée, aucune modifiée ;</li>
+<li>258/258 en base, et la connexion réelle derrière une origine étrangère.</li>
+</ul>
+<p><strong>Ce qui manque pour « validée »</strong>, et je ne l'habillerai pas :</p>
+<p><strong>la batterie n'est pas entièrement verte.</strong> Une suite navigateur rougit — et elle rougit <strong>à l'identique sur <code>main</code> sans nous</strong>, ce qui est prouvé par exécution. Le lot n'en est pas la cause, mais la règle du dépôt est claire : on ne livre pas sur une batterie qui n'est pas au vert.</p>
+<p><strong>Le travail fusionné est poussé sur <code>claude/atlas-securite-lot3</code></strong> — il est en sécurité, plus seulement sur cette machine.</p>
+<p><strong>RIEN N'EST POUSSÉ SUR <code>main</code>.</strong> Deux chemins possibles, et c'est vous qui tranchez :</p>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th></th>
+</tr></thead><tbody>
+<tr>
+<td><strong>pousser quand même</strong></td>
+<td>le rouge est celui de <code>main</code> : le pousser ne l'aggrave pas, et la course avec les autres sessions s'arrête</td>
+</tr>
+<tr>
+<td><strong>attendre</strong></td>
+<td>que la session propriétaire de cette suite la répare, puis refusionner — au prix d'une course qui recommence</td>
+</tr>
+</tbody></table></div>
 </main>
 </body>
 </html>

@@ -180,7 +180,11 @@ pages portent leur propre garde `estProprietaire` […] et elles la gardent »*.
 
 ## E — Batterie
 
-### Premier tour après intégration
+Quatre fusions successives ont été nécessaires : **`main` a bougé pendant tout
+le travail** — 185 commits, puis 19, puis 12, puis 27. Chaque mouvement a été
+réintégré, et la batterie rejouée quand le code arrivé touchait le nôtre.
+
+### Le tour final, sur l'état exact destiné à la fusion
 
 | Étape | Résultat |
 |---|---|
@@ -188,80 +192,119 @@ pages portent leur propre garde `estProprietaire` […] et elles la gardent »*.
 | `npm run lint` | ✅ |
 | Construction | ✅ |
 | `npm run verifier:memoire` | ✅ |
-| Suites base — RLS comprises | ❌ **255 / 258** |
-| Suites navigateur | ✅ **115 / 115** |
-| `npm run verifier:connexion` | ✅ |
+| Suites base — RLS comprises | ✅ **258 / 258** |
+| Suites navigateur | ❌ **114 / 115** |
+| `npm run verifier:connexion` | ✅ connexion réelle derrière une origine étrangère |
+| `npm audit` | **4 modérées, inchangées** — `drizzle-kit → esbuild`, dépendance de développement. Rien n'a été lancé |
 
-**115 et non 110** : `main` a légitimement ajouté cinq suites navigateur. Le
-total n'a pas été reproduit artificiellement.
+**Les tours précédents avaient rendu 258/258 et 115/115.** Le seul écart du tour
+final est décrit au §G, et il n'est pas de nous.
 
-### Second tour — **en cours au moment où ce document est écrit**
+### Les nombres ont changé, et c'est légitime
 
-Les trois rouges du premier tour sont corrigés (voir §G) et la batterie rejoue
-en entier. **Les chiffres définitifs seront ajoutés ici** ; ce document sera
-renvoyé complété.
+De 234/110 sur notre branche seule à **258/115** après fusion : `main` a
+légitimement ajouté 24 suites base et 5 suites navigateur. Aucun total n'a été
+reproduit artificiellement.
 
 ---
 
-## F — Revue hostile
+## F — Revue hostile après fusion
 
-| Ce qui a été tenté | Résultat |
+### Les privilèges, MESURÉS en base
+
+| | Résultat |
 |---|---|
-| une migration entrante rend-elle des droits sur `users` ? | **non** — les quatre relues une par une |
-| une migration existante a-t-elle été modifiée ? | **non** — que des ajouts |
-| deux migrations partagent-elles un nom de fichier ? | **non** |
-| le rôle disparu `membre` survit-il dans du code exécuté ? | **non** — seulement dans des commentaires et un script de capture hors batterie |
-| un chemin audio contourne-t-il la porte ? | **non** — les quatre l'emploient |
-| `main` a-t-il posé une garde centrale qui rendrait F8 inutile ? | **non** — `/reglages/agenda` reste ouvert au commercial |
-| `estProprietaire` a-t-il changé de sens ? | **non** — `main` a réécrit `autorisation.ts` en gardant la fonction à l'identique |
+| `users.password_hash` pour `atlas_app` | **`INSERT` seul** — ni SELECT, ni UPDATE |
+| `preuves_authentification` pour `atlas_app` | **`SELECT, DELETE`** — ni INSERT, ni UPDATE |
+| `atlas_app` | ni superutilisateur, ni `BYPASSRLS` |
+
+### Quatre contournements tentés pour de vrai
+
+| Tentative | Réponse de PostgreSQL |
+|---|---|
+| lire le condensat | `permission denied for table users` |
+| le modifier | `permission denied for table users` |
+| **forger** une preuve | `permission denied for table preuves_authentification` |
+| **rajeunir** une preuve | `permission denied for table preuves_authentification` |
+
+### Le reste
+
+| Ce qui a été cherché | Résultat |
+|---|---|
+| une migration entrante qui rend des droits sur `users` ou les preuves | **aucune** — les cinq relues une par une |
+| une migration existante modifiée | **aucune** — que des ajouts |
+| deux migrations partageant un NOM DE FICHIER | **aucune** |
+| un chemin audio qui contourne la porte | **aucun** |
+| `fichier.type` qui décide encore côté serveur | **nulle part** — il ne sert qu'au message de refus |
+| un écran du patron sans garde | **aucun** — contrôle structurel vert |
+| une table d'entreprise sans RLS ou sans `FORCE` | **deux files de purge**, et c'est **par conception** — migrations 0017 et 0056, mécanisme décrit par `CLAUDE.md` §4 |
 
 ---
 
 ## G — Régressions, classées avec preuve
 
-### 1. `test-acces-roles-db.ts` — **défaut du contrôle**, et M9 avait raison
+### Sur la première fusion — trois rouges, trois causes
 
-Il lisait `users.password_hash` en direct pour comparer lui-même. **C'est la
-protection qui parle, pas une panne.** Le contrôle passe désormais par la porte
-`SECURITY DEFINER` : même règle éprouvée, et il éprouve en plus le vrai chemin
-de connexion au lieu d'une comparaison refaite à côté.
+**1. `test-acces-roles-db.ts` — défaut du contrôle.** Il lisait
+`users.password_hash` en direct. **C'est M9 qui parle, pas une panne.** Le
+contrôle passe désormais par la porte `SECURITY DEFINER` : même règle éprouvée,
+et il éprouve en plus le vrai chemin de connexion.
 
-### 2. `test-assistant-explique-l-appli.ts` — **défaut du contrôle**, même famille
+**2. `test-assistant-explique-l-appli.ts` — défaut du contrôle**, même famille :
+`returning()` nu sur `users`.
 
-`returning()` nu sur `users` : `RETURNING *` demande à lire le condensat. Seul
-l'identifiant sert.
+**3. `test-mode-emploi.ts` — VRAIE RÉGRESSION, causée par M11.** Et c'est la
+plus importante : **un contrôle de `main` a attrapé une régression de notre lot**,
+que la batterie de notre branche seule ne pouvait pas voir. Le bouton
+« Télécharger mes données » a quitté sa page pour un composant client — c'est
+M11, qui devait demander qui parle avant d'ouvrir un export. La fiche du mode
+d'emploi pointait encore l'ancien fichier : l'assistant aurait enseigné un geste
+dont la preuve n'existe plus là où elle est annoncée.
 
-### 3. `test-mode-emploi.ts` — **VRAIE RÉGRESSION**, causée par M11
+### Sur la troisième fusion — un rouge, une horloge
 
-Et c'est la plus importante des trois : **un contrôle de `main` a attrapé une
-régression de notre lot**, que la batterie de notre branche seule ne pouvait pas
-voir.
+**`test-liste-clients.ts` — défaut du contrôle, préexistant.** À 23 h 15 UTC, la
+suite calculait « aujourd'hui » en UTC (`toISOString`) quand le serveur date une
+facture à l'heure de l'atelier (`jourIso`). Le règlement paraissait antérieur à
+sa facture, et **le refus du produit avait raison**. Deux heures par nuit.
 
-Le bouton « Télécharger mes données » a quitté `donnees/page.tsx` pour un
-composant client — c'est M11, qui devait demander qui parle avant d'ouvrir un
-export contenant tout ce que l'entreprise sait de ses clients. La fiche du mode
-d'emploi pointait encore l'ancien fichier : **l'assistant aurait enseigné un
-geste dont la preuve n'existe plus là où elle est annoncée.**
+*Une autre session a trouvé le même défaut le même soir, dans le même fichier, et
+l'a corrigé avec la même fonction. La fusion a gardé SA version, déjà sur `main`.*
 
-La fiche suit le bouton.
+### Sur la quatrième fusion — un rouge, et il n'est PAS de nous
 
-**Aucune assertion affaiblie, aucun délai allongé, aucune suite désactivée,
-aucun `--force`.**
+**`test-carte-reponse-mene-au-geste-e2e.ts` — DÉFAUT PRÉEXISTANT SUR `main`.**
+
+*« aucune carte de réponse pour le chantier … à l'accueil »*, sur un cas — les
+trois autres passent.
+
+**Preuve, et non supposition :** `src/` et `scripts/` ont été ramenés au code de
+`origin/main` SEUL, et la suite rend **exactement le même message**. Notre lot
+n'a jamais touché ce fichier.
+
+**Non corrigé, délibérément** : c'est hors du périmètre de cette fusion, et cela
+ne la rend pas dangereuse — le défaut est déjà sur `main` sans nous. Le corriger
+serait élargir le périmètre que vous avez fermé.
+
+### Ce qui n'a JAMAIS été fait
+
+Aucune assertion affaiblie. Aucun délai allongé. Aucune suite désactivée. Aucun
+`--force`. Aucune règle métier modifiée pour faciliter la fusion.
 
 ---
 
 ## H — Diff final
 
-Aucune modification opportuniste. Les seuls changements hors résolution de
-conflit sont les trois corrections du §G, chacune imposée par un rouge, et la
-mise à jour du commentaire de `rubriques-reglages.ts` pour qu'il cesse de
+Aucune modification opportuniste. Hors résolution de conflits, les seuls
+changements sont les quatre corrections du §G — chacune imposée par un rouge —
+et la mise à jour du commentaire de `rubriques-reglages.ts`, pour qu'il cesse de
 contredire la réalité fusionnée.
 
 **Rien n'a été traité de :** F7 / RGPD, F10 / CSP, rôles Salarié et Commercial,
 `/catalogue`, qualité Dictée → Devis, sauvegardes, refonte, nettoyage.
 
-**`ATLAS_PROXY_SAUTS` n'a pas été configuré** : la valeur dépend de
-l'hébergement réel, et le comportement de repli actuel est conservé.
+**`ATLAS_PROXY_SAUTS` n'a pas été configuré.** La valeur dépend de l'hébergement
+réel ; le comportement de repli est conservé.
 
 ---
 
@@ -274,10 +317,11 @@ l'hébergement réel, et le comportement de repli actuel est conservé.
 | **CSP `unsafe-inline`** | réelle — le retirer sans `nonce` casse l'application (F10) |
 | **`/catalogue` sans garde de rôle** | faible — aucun prix, seulement le vocabulaire de dictée |
 | **`cle-appareil` : seuil global** sans `ATLAS_PROXY_SAUTS` | faible, délibéré, documenté |
+| **`/reglages/agenda` ouvert au COMMERCIAL sur `main`** | **fermé par cette fusion** — c'était la découverte du §D |
 
 ### Produit
 
-F7 / RGPD · `/catalogue` · qualité Dictée → Devis.
+F7 / RGPD · `/catalogue` et les rôles Salarié / Commercial · qualité Dictée → Devis.
 
 ### Hébergement
 
@@ -287,24 +331,54 @@ serait pire que ne rien faire.
 
 ### Tests
 
-Trois suites navigateur rougissent sous la batterie et jamais seules —
-consigné dans `TODO.md` avec le remède.
+| | |
+|---|---|
+| `test-carte-reponse-mene-au-geste-e2e` | **rouge sur `main` sans nous** — prouvé |
+| Trois suites navigateur qui lâchent sous charge | consignées dans `TODO.md` |
+| Le mélange UTC / heure de l'atelier | deux suites l'avaient ; rien ne dit qu'il n'y en a pas une troisième |
 
-### Hors périmètre, trouvé pendant la fusion — **non corrigé**
+### Hors périmètre, trouvé pendant la fusion — non corrigé
 
 | | |
 |---|---|
-| `scripts/capture-reglages.mts` emploie encore le rôle `membre` | **script de capture, hors batterie.** Il échouerait s'il était joué : la contrainte de la migration 0065 refuse ce mot. Gravité nulle pour l'application |
-| `ARCHITECTURE.md` porte en double §134, §135, §136, §164, §165 | dette de `main`, alourdie depuis le dernier relevé |
+| `scripts/capture-reglages.mts` emploie le rôle disparu `membre` | script de capture, hors batterie |
+| `ARCHITECTURE.md` porte en double §134, §135, §136, §164, §165 | dette de `main` |
 
 ### Sauvegardes
 
-**Toujours aucune. C'est le point le plus grave du dépôt**, et il ne se règle
-pas en codant.
+**Toujours aucune. C'est le point le plus grave du dépôt**, et il ne se règle pas
+en codant.
 
 ---
 
 ## J — Verdict
 
-**En attente du second tour de batterie.** Le verdict sera posé sur des chiffres,
-pas sur une impression.
+# FUSION EFFECTUÉE MAIS NON VALIDÉE
+
+**Ce qui est démontré**, et qui justifie « effectuée » :
+
+- aucune modification récente de `main` n'est détruite — quatre fusions
+  successives, chaque conflit tranché en conservant les deux propriétés quand
+  elles existaient ;
+- **aucune propriété de sécurité des lots précédents n'est perdue** — mesurée en
+  base, et quatre contournements refusés par PostgreSQL ;
+- aucune migration renommée, aucune rejouée, aucune modifiée ;
+- 258/258 en base, et la connexion réelle derrière une origine étrangère.
+
+**Ce qui manque pour « validée »**, et je ne l'habillerai pas :
+
+**la batterie n'est pas entièrement verte.** Une suite navigateur rougit — et
+elle rougit **à l'identique sur `main` sans nous**, ce qui est prouvé par
+exécution. Le lot n'en est pas la cause, mais la règle du dépôt est claire : on
+ne livre pas sur une batterie qui n'est pas au vert.
+
+**Le travail fusionné est poussé sur `claude/atlas-securite-lot3`** — il est en
+sécurité, plus seulement sur cette machine.
+
+**RIEN N'EST POUSSÉ SUR `main`.** Deux chemins possibles, et c'est vous qui
+tranchez :
+
+| | |
+|---|---|
+| **pousser quand même** | le rouge est celui de `main` : le pousser ne l'aggrave pas, et la course avec les autres sessions s'arrête |
+| **attendre** | que la session propriétaire de cette suite la répare, puis refusionner — au prix d'une course qui recommence |
