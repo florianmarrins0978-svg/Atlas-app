@@ -7,6 +7,30 @@ Format : le plus récent en tête.
 
 ---
 
+## 2026-08-27
+
+### La fiche de chantier se touche du doigt, à une adresse
+
+*« Je veux un lien cliquable »*, après trois captures de l'écran réel. Elles
+répondaient à sa question — *« montre-moi à quoi elle ressemble »* — mais on ne
+coche pas une photo, et l'application demande un compte et un serveur qu'il n'a
+pas sous la main tant que son espace dort.
+
+`appli/fiche-de-chantier.html` reprend les **trois écrans tels qu'ils sont
+codés** — ce n'est pas une proposition. Les cases se cochent pour de vrai (de
+vraies cases, pas des dessins), le jour et les observations se saisissent, les
+molettes du temps tournent, et l'on passe d'un écran à l'autre en CSS : elle
+s'ouvre hors ligne.
+
+**Elle dit ce qu'elle n'est pas** : rien n'enregistré, rien envoyé, et les
+comptes ne bougent pas. Une copie d'écran qui se ferait passer pour
+l'application lui ferait croire qu'il vient d'envoyer un rapport à un client.
+
+Parcourue avant d'être livrée, pas relue : la carte ouvre bien la liste, une
+case passe de 3 à 4 cochées, rien ne déborde, aucune erreur au journal.
+
+---
+
 ## 2026-08-26
 
 ### La fiche d'un client : le téléphone à la ligne, et plus de phrase sur le vide
