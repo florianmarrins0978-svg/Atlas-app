@@ -32,7 +32,19 @@ accepté : **le milieu manque**, et c'est l'état le plus fréquent. Le correcti
 et son cas se posent en même temps que l'écran — les coder avant sa réponse,
 c'est risquer de conserver ce qu'il veut voir partir.
 
-## ⚠ `test-carte-reponse-mene-au-geste-e2e` rougit en FIN DE MOIS
+## ~~`test-carte-reponse-mene-au-geste-e2e` rougit en FIN DE MOIS~~ — **corrigé le 27 août 2026**
+
+**Deux sessions ont trouvé la même chose la même nuit, et le diagnostic ci-dessous
+était juste de bout en bout.** La correction est faite : le montage lit les dates
+proposées en base et les écarte, en tournant la page du mois s'il le faut
+(`unJourAutreQueLesProposees`). Il y avait un piège de plus, qui n'était pas
+visible d'ici : `dates_proposees` est un `date[]`, le pilote rend des objets
+`Date`, et la comparaison avec une chaîne « AAAA-MM-JJ » est **toujours fausse**
+— l'exclusion n'excluait donc rien, sans erreur ni avertissement. Détail plus
+bas, section « La fin de mois faisait rougir deux suites sur du code sain ».
+
+Le diagnostic d'origine, conservé parce qu'il est exact :
+
 
 **Constaté le 27 août 2026, vers 2 h.** Le cas *« accepté : la carte mène au
 devis VALIDÉ »* tombe : *« aucune carte de réponse pour le chantier … à
