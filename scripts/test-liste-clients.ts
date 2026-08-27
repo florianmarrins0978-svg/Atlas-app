@@ -20,7 +20,6 @@
 //   4. un chantier supprimé ne pèse plus.
 
 import assert from "node:assert/strict";
-import { jourIso } from "../src/lib/jour";
 import { pool } from "../src/server/db/client";
 import { nettoyerBase } from "./_test-db";
 import { creerEntreprise } from "../src/server/repositories/entreprises";
@@ -30,6 +29,7 @@ import { ajouterLignePrix } from "../src/server/repositories/lignes-prix";
 import { getOuCreerDevisBrouillon, envoyerDevis } from "../src/server/repositories/devis";
 import { terminerChantier, emettreFacture, getFacturePourChantier } from "../src/server/repositories/factures";
 import { noterPaiement } from "../src/server/repositories/paiements-facture";
+import { jourIso } from "../src/lib/jour";
 import { listerFichesClients } from "../src/server/repositories/fiche-client";
 
 let echecs = 0;

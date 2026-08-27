@@ -9,6 +9,85 @@ Format : le plus récent en tête.
 
 ## 2026-08-26
 
+### La fiche d'un client : le téléphone à la ligne, et plus de phrase sur le vide
+
+**Ses trois corrections, capture à l'appui :** *« supprime le point entre
+l'adresse et le numéro de tel ; le tel doit être à la ligne sous l'adresse ; et
+supprime la phrase en gris lorsqu'il n'y a aucun document, on le voit, pas
+besoin de l'écrire »*.
+
+**Le séparateur trompait sur son téléphone.** L'adresse y tient déjà sur deux
+lignes — « 23 RUE D'ISSY 92100 BOULOGNE- / BILLANCOURT · 0679984514 » — et le
+numéro, accroché derrière un point médian, se lisait comme la fin de l'adresse.
+Il est maintenant seul sur sa ligne.
+
+**La précision de l'en-tête accepte un NŒUD, plus seulement une chaîne**
+(`EnTeteEcran`). Un séparateur suffit tant qu'une précision tient sur une ligne ;
+il ne peut pas produire un retour. Les autres écrans passent toujours une
+chaîne : rien n'a bougé pour eux.
+
+**Et la phrase grise disait une quatrième fois ce que les colonnes disaient
+déjà** — « Aucun devis parti », « Aucune facture émise », « Aucune fiche
+envoyée ». Le commentaire qui la défendait craignait qu'on prenne l'écran pour
+cassé ; sa capture montre le contraire, et c'est sa règle du 25 août : *« retire
+les phrases inutiles qui expliquent »*.
+
+**Les contrôles mesurent des LIGNES, pas une chaîne.** `textContent` recolle
+tout : il rendrait la même valeur avec ou sans le retour, et passerait au vert
+sur le défaut même qu'il doit interdire. `innerText` rend ce qui est PEINT.
+**Vus rougir** contre l'ancienne version : « les coordonnées tiennent sur une
+seule ligne : ["23 RUE D'ISSY … · 06 00 00 00 05"] » et « la phrase grise est
+revenue sous les trois colonnes vides ».
+
+**Un troisième défaut est sorti de ce sabotage, et il était dans MON contrôle :**
+le cas du client sans papier quittait la fiche montée par la suite sans y
+revenir — les trois cas suivants rougissaient alors sur du code juste. C'est la
+deuxième fois cette semaine qu'un contrôle oublie de reposer le décor.
+
+**Et « DERNIÈRE PRESTATION · 25 AOÛT » prend deux points** — *« pareil, supprime
+le point après dernière prestation, remplacé par : »*. Le point médian sépare
+deux choses de même rang ; ici la date COMPLÈTE le titre, elle ne s'ajoute pas à
+côté de lui.
+
+**Vu à l'écran** (`scripts/capture-fiche-client-refondue.mts`, qui photographie
+désormais AUSSI un client sans aucun papier — l'ancienne version ne montrait
+qu'une fiche fournie, où ni le séparateur mal placé ni la phrase grise
+n'apparaissaient).
+
+
+### Planche : supprimer un client — et un défaut trouvé en cherchant
+
+**Sa remarque :** *« je ne peux pas supprimer de client, rajoute ça »*. C'est
+exact — aucun écran ne le propose.
+
+**Ce que la recherche a donné avant d'écrire une ligne** (`CLAUDE.md` §5 ter) :
+`effacerClient` existe depuis longtemps dans `donnees-client.ts`, éprouvé par
+`test-retention-effacement.ts`, et **aucun bouton ne l'appelle**. Ce n'était pas
+un mur, c'était un écran à poser.
+
+**Et il TOMBE sur le cas le plus courant.** Joué ici sur un client qui avait
+simplement reçu un devis :
+
+```
+client avec un devis parti → REFUSÉ
+  cause : Un devis envoyé ne peut pas être supprimé
+```
+
+La fonction ne conserve que les devis liés à un envoi **accepté** et tente de
+détruire les autres — or un déclencheur de `0001_securite_integrite.sql` scelle
+tout devis **envoyé**, accepté ou non. Elle ne marchait donc que pour un client
+qui n'a jamais reçu de devis.
+
+**Pourquoi les suites ne le voyaient pas** : elles couvrent le client sans devis,
+et le devis accepté. Le milieu — parti, sans réponse ou refusé, c'est-à-dire
+l'état le plus fréquent — n'était éprouvé nulle part.
+
+**Rien n'est codé** (`CLAUDE.md` §3 bis) : ce que « supprimer » veut dire est une
+décision de produit, pas de forme. La planche `appli/supprimer-un-client.html`
+pose les trois façons — le retirer de la liste, effacer ses coordonnées, tout
+supprimer — sur trois clients réels (neuf, devis parti, facturé), et **chacun dit
+d'avance ce qui partirait et ce qui resterait**. Ce que la loi impose y est écrit
+là où il se lit : dix ans pour une facture, cinq pour un devis accepté.
 ### « Terminés » : les traits partent, et la carte de TVA se voit cliquable
 
 *« Tous les traits supprimés entre chaque ligne »*, et *« le "Ma TVA à
@@ -72,6 +151,42 @@ rouvraient le relevé par une navigation neuve, et une page rouverte est toujour
 juste. Le cas ajouté rejoue SA séquence — basculer sans quitter l'écran — et a
 été vu rouge avant d'être vert. `ARCHITECTURE.md` §193.
 
+### Deux journées comptées à Greenwich, dont une sur un devis parti chez un client
+
+Trouvé le 27 août 2026 à minuit passé, une suite rouge à l'appui : entre minuit
+et 2 h du matin en France, `new Date().toISOString()` rend **la veille**. C'est
+tout le §182, et deux endroits l'ignoraient encore.
+
+- **La date d'émission d'un devis** portait la veille — sur un document qui part
+  chez un client, et dont la validité se compte à partir de cette date.
+- Le nom de repli d'un chantier créé par l'assistant, même défaut.
+
+`jourIso` est la seule définition du jour de ce dépôt ; plus rien dans `src/` ne
+la contourne. La suite de la liste des clients, qui rougissait sur du code sain,
+l'emploie aussi.
+
+### « Il comprend rien » — l'assistant se reprend au lieu d'abandonner
+
+Sa capture du soir : *« Peux-tu me sortir le devis de Lucie »*, puis deux
+reformulations, et trois fois **« L'assistant a mal formé sa demande à un outil
+interne. Reformulez votre question. »**
+
+**Reformuler n'y pouvait rien** : ses phrases étaient parfaites, c'est le nom
+d'un champ qui n'allait pas côté modèle. Le message accusait celui qui n'y était
+pour rien.
+
+- **Un outil mal appelé ne tue plus la réponse** : le refus part au modèle avec
+  ce qui manque, et il rappelle correctement. Deux reprises, puis on rend la
+  main en demandant le nom du client — jamais en parlant de schéma.
+- **Le dépôt nommait la même idée de trois façons** (`nom`, `motCle`,
+  `question`). Les quatre outils acceptent les alias : la faute était de notre
+  côté, pas du modèle.
+- **Plus de JSON à l'écran**, et l'assistant va CHERCHER le chantier au lieu de
+  recopier l'instruction qui lui disait de le faire.
+- **Un « non » se dit** : un chantier sans devis répondait « Rien à signaler ».
+
+Trouvé à la capture, avec ses trois questions mot pour mot. Détail :
+`ARCHITECTURE.md` §199.
 
 ### Ses salariés se comptent à part de ses équipes — et ce sont leurs noms qu'on coche
 
@@ -686,7 +801,7 @@ de la dictée — prestations mal organisées, quantités et unités mal lues, p
 historiques incohérents. Le lot Audio ne garantissait que l'entrée du fichier ;
 mêler les deux rendrait les deux illisibles.
 
-Détail : `ARCHITECTURE.md` §200 · rapport : `docs/lot-audio-rapport.md`.
+Détail : `ARCHITECTURE.md` §201 · rapport : `docs/lot-audio-rapport.md`.
 ---
 
 ## 2026-08-25
@@ -1373,7 +1488,7 @@ devenait une arme retournée. Il ne s'applique plus que si la source est établi
 nom**, avant d'être crus : celui de F8 passait sur une ligne d'import, puis sur
 un commentaire, puis parce que `const [etat, etatApple, params] = await
 Promise.all(` contient le mot `params`. Le détail est dans `ARCHITECTURE.md`
-§199 — c'est la quatrième fois que ce dépôt paie « un contrôle trop tolérant ne
+§200 — c'est la quatrième fois que ce dépôt paie « un contrôle trop tolérant ne
 prouve rien ».
 
 **Ce qui a été trouvé en le mesurant :** sans son exclusion du `matcher`,

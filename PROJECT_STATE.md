@@ -68,7 +68,7 @@ le désélectionner ! Je dois pouvoir désélectionner ».*
 Sur la page que reçoit son client, un second appui sur la date déjà cochée la
 **défait**, et rien ne se coche à la place. Vaut aussi pour « une autre date »,
 dont le calendrier se referme. Le détail — et pourquoi `onClick` plutôt
-qu'`onChange` — est dans `ARCHITECTURE.md` §199.
+qu'`onChange` — est dans `ARCHITECTURE.md` §191.
 
 **Le même piège dort sur le choix entre deux tarifs ambigus**
 (`PropositionPrixSection.tsx`) : il ne l'a pas signalé, c'est noté dans
@@ -200,7 +200,7 @@ uniquement en masquant des boutons ». La règle elle-même est tranchée dans
 suites navigateur, connexion réelle derrière une origine étrangère.
 
 Rapport transmissible : `docs/lot-audio-rapport.md`. Raisonnement :
-`ARCHITECTURE.md` §200.
+`ARCHITECTURE.md` §201.
 
 ---
 

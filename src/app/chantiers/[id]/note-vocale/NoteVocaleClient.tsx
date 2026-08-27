@@ -250,8 +250,11 @@ export default function NoteVocaleClient({
     }
   }
 
-  // Import d'un fichier déjà présent sur le téléphone. Le format est filtré ici
-  // par confort, mais c'est le serveur qui décide (verifierTypeAudio).
+  // Import d'un fichier déjà présent sur le téléphone. L'attribut `accept` filtre
+  // ici par confort ; c'est `preparerAudioEntrant` qui décide, et il lit les
+  // octets — le `type` annoncé par ce navigateur n'entre plus dans la décision
+  // (`src/lib/signature-audio.ts`). `verifierTypeAudio`, que ce commentaire
+  // citait, est morte avec le lot Audio du 26 août 2026.
   async function importerFichier(fichier: File) {
     setErreur(null);
     setEnCours(true);

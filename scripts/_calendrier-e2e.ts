@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import type { Page } from "playwright";
 import { DELAI_MINIMAL_JOURS } from "../src/server/disponibilites";
+import { jourIso } from "../src/lib/jour";
 
 /**
  * Trouver, au calendrier du patron, assez de jours qu'on puisse lui proposer —
@@ -89,6 +90,17 @@ async function joursDuMoisAffiche(page: Page): Promise<string[]> {
 
   const plancher = new Date();
   plancher.setDate(plancher.getDate() + DELAI_MINIMAL_JOURS + 1);
-  const depuis = plancher.toISOString().slice(0, 10);
+  /**
+   * **`jourIso`, jamais `toISOString`** — corrigé le 27 août 2026, en reprenant
+   * la mesure d'une session voisine (`ARCHITECTURE.md` §182). Entre minuit et
+   * 2 h du matin en France, Greenwich est encore la veille : le plancher tombait
+   * d'un jour, la suite retenait un jour que le serveur refuse, et le rouge
+   * accusait un produit sain — un rouge qui n'apparaît que la nuit.
+   *
+   * Ce module portait le défaut ; la version que `main` a écrite en place
+   * portait la correction. Les deux sont ici : une seule implémentation, et
+   * elle est juste.
+   */
+  const depuis = jourIso(plancher);
   return tous.filter((j) => j >= depuis);
 }

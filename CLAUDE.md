@@ -1320,6 +1320,15 @@ historiques ne le plaçaient pas au même endroit.
 La seconde ligne est la seule qui arrête le doublon : tant qu'on garde sa propre
 place, chaque fusion le recrée.
 
+**ET ON NE REMPLACE PAS SES RENVOIS À L'AVEUGLE.** Payé trois fois le 26 août
+2026. Renuméroter son §188 en §189, puis passer un `sed` sur « §188 » dans les
+documents, **détourne les renvois de la session voisine** — les siens portaient
+le même numéro, et ils se mettent à pointer vers un paragraphe qui n'est pas le
+leur. Un renvoi faux ne se voit pas : il mène à un texte plausible.
+
+Après toute renumérotation, relire **chaque** renvoi touché et vérifier de quoi
+il parle. Trois lignes de lecture contre une demi-heure de doute.
+
 **C. UNE SEULE EN-TÊTE DE DATE DANS `CHANGELOG.md`.** Trois « `## 2026-08-23` »
 ont dû être réunis à la main ce soir-là. Une entrée neuve se glisse **sous
 l'en-tête du jour qui existe déjà** ; on n'en crée jamais un second.

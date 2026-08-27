@@ -24,11 +24,12 @@ mkdirSync(dossier, { recursive: true });
 
 /** Ses questions, dans ses mots — la première est celle de sa demande. */
 const QUESTIONS = [
-  "comment je fais pour supprimer un client en attente de rédaction de son devis sur la page chantier",
-  // Sa question du 26 août 2026, mot pour mot : elle doit se faire refuser.
-  "est-ce que le CGR de Mantes est ouvert ?",
-  // Un geste : il propose, il n'écrit pas.
-  "Crée un chantier pour Madame Lucie",
+  // Ses trois questions du 26 août 2026 au soir, mot pour mot — les deux
+  // dernières rendaient « L'assistant a mal formé sa demande à un outil
+  // interne », trois fois de suite. Sa réaction : « il comprend rien ».
+  "À quelle heure ouvre le cgr de mantes la jolie ?",
+  "Peux tu me sortir le devis de Lucie",
+  "Sort moi le dernier devis de Bernard",
 ];
 
 async function connecter(page: Page) {
