@@ -255,7 +255,23 @@ exactement comme avant sa correction. On lit désormais `dates_proposees::text[]
 et le contrôle **refuse de conclure** sur une liste vide plutôt que de rendre un
 vert qui ne mesure rien.
 
-**Troisième correction du même jour, de la même famille** : `joursRetenables()`
+**Et une TROISIÈME suite, le même jour, pour une raison voisine mais distincte :**
+`test-reste-equipes-e2e.ts` lisait les chantiers et les absences en base pour se
+donner deux jours libres. La base disait le 31 août libre — aucun chantier,
+aucune absence —, **et l'écran a refusé de le retenir** : c'est
+`verifierJourProposeAction` qui tranche, pas cette requête, qui n'en est qu'une
+approximation. Le contrôle annonçait « 1 date retenue au lieu de deux », sans
+dire laquelle manquait ni pourquoi, et envoyait chercher un défaut dans un écran
+qui obéissait exactement à son serveur.
+
+**La règle du 25 août se prolonge donc d'un cran** : *un contrôle ne suppose pas
+l'état commun, il le lit* — et il ne suppose pas davantage **ce que le serveur
+acceptera**, il le lui demande. La suite essaie désormais huit candidats et garde
+celui que l'écran retient vraiment ; si aucun ne tient, elle rougit **en citant
+la raison affichée** (« Ce jour est trop proche… ») plutôt qu'un nombre. Vérifié
+en la confrontant à un jour que le serveur refuse.
+
+**Quatrième correction du même jour, de la même famille** : `joursRetenables()`
 calculait son plancher J+3 avec `toISOString()`. Entre minuit et 2 h du matin en
 France, c'est la veille (`ARCHITECTURE.md` §182) — la suite retenait alors un
 jour que le serveur refuse. Elle emploie `jourIso`, comme tout le reste du dépôt.
