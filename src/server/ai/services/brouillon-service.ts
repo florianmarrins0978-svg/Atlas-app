@@ -6,7 +6,7 @@ import {
   marquerConfirme,
   type Brouillon,
 } from "../../repositories/brouillons-informations";
-import { ajouterPrestation, listerPrestations } from "../../repositories/prestations";
+import { ajouterPrestation, listerPrestations, completerPrestation } from "../../repositories/prestations";
 import { ajouterMateriel, listerMateriel } from "../../repositories/materiel";
 import { mettreAJourDureeEquipe } from "../../repositories/chantiers";
 import { extraire } from "./extraction-service";
@@ -15,6 +15,8 @@ import { construireConsigneMetier } from "../../../lib/consigne-metier";
 import { estTranscriptionSimulee } from "../providers/transcription/dev";
 import type { PropositionExtraction, LigneExtraite } from "../schemas/extraction";
 import { structureDeLaPrestation } from "../../../lib/prestation-structuree";
+import { prestationCorrespondante, enrichissementPossible } from "../../../lib/correspondance-prestation";
+import { logger } from "../../logger";
 
 export type ResultatGeneration =
   | { statut: "genere"; brouillon: Brouillon }
@@ -134,23 +136,52 @@ export async function confirmerBrouillon(ctx: Ctx, chantierId: string): Promise<
   ]);
   const connus = (lignes: { libelle: string }[]) =>
     new Set(lignes.map((l) => l.libelle.trim().toLowerCase()).filter(Boolean));
-  const prestationsConnues = connus(dejaPrestations);
   const materielConnu = connus(dejaMateriel);
+
+  // **Le rapprochement tolère l'enrichissement, sinon il crée des doublons.**
+  //
+  // Ses réponses à l'arrêt d'avant-chiffrage ALLONGENT le libellé : « Abattage
+  // d'un érable » devient « Abattage d'un érable — démontage avec rétention,
+  // ⌀ 45 cm ». Sur une égalité exacte, le rejeu suivant ne reconnaissait plus
+  // rien et écrivait une SECONDE prestation pour le même arbre. Mesuré en base
+  // le 27 août 2026 — c'est le défaut du 3 août sous un troisième visage.
+  //
+  // La règle vit dans `src/lib/correspondance-prestation.ts`, pure : le libellé
+  // identique, ou identique suivi du tiret d'enrichissement. **Rien
+  // d'approximatif** — une fusion sur une ressemblance ferait disparaître un
+  // travail qu'il facturerait.
+  const prestationsDejaLa = [...dejaPrestations];
 
   const prestationsCreees = [];
   for (const ligne of contenu.prestations) {
     const libelle = libelleAvecQuantite(ligne);
-    if (!libelle || prestationsConnues.has(libelle.toLowerCase())) continue;
-    prestationsConnues.add(libelle.toLowerCase());
+    if (!libelle) continue;
+
+    const existante = prestationCorrespondante(libelle, prestationsDejaLa);
+    if (existante) {
+      // **On complète ce qui est vide, on ne remplace jamais ce qui est posé.**
+      // C'est ce qui protège une correction humaine sans avoir à savoir qui
+      // l'a écrite : le dépôt n'a aucune colonne de provenance.
+      const { aPoser, contradictions } = enrichissementPossible(existante, structureDeLaPrestation(ligne));
+      if (Object.keys(aPoser).length > 0) {
+        await completerPrestation(ctx, existante.id, aPoser);
+      }
+      for (const motif of contradictions) {
+        // Bavard plutôt que muet : ce qui n'a pas été écrit doit pouvoir se
+        // diagnostiquer (`AGENTS.md`).
+        logger.info("Brouillon : la dictée contredit une prestation existante", { chantierId, motif });
+      }
+      continue;
+    }
     // **La structure part EN MÊME TEMPS que le libellé, pas à sa place.**
     //
     // Le libellé continue de porter « (800 ml) » — quatre moteurs le relisent
     // encore pour retrouver une mesure, et le leur retirer aujourd'hui ferait
     // perdre à une haie son prix au mètre linéaire, sur un devis qui part chez
     // un client. Les deux cohabitent le temps que les lecteurs migrent.
-    prestationsCreees.push(
-      await ajouterPrestation(ctx, chantierId, libelle, structureDeLaPrestation(ligne))
-    );
+    const creee = await ajouterPrestation(ctx, chantierId, libelle, structureDeLaPrestation(ligne));
+    prestationsDejaLa.push(creee);
+    prestationsCreees.push(creee);
   }
   const materielCree = [];
   for (const ligne of contenu.materiel) {

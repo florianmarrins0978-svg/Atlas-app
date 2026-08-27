@@ -6,7 +6,15 @@ import { lireObjetJson } from "../../../lib/json-du-modele";
 import { lireLitteralement } from "../lecture-litterale";
 import { logger } from "../../logger";
 
-const SYSTEME = `Tu extrais des informations de chantier depuis un texte dicté par un artisan.
+/**
+ * **Exportée pour être éprouvée, jamais pour être appelée d'ailleurs.**
+ *
+ * Cette consigne et celle de la dictée-dans-le-devis doivent dire la MÊME chose
+ * des unités : elles ne le disaient pas, et l'une acceptait « arbre » quand
+ * l'autre ne donnait aucun exemple. `scripts/test-invites-unites.ts` monte la
+ * garde sur ce point précis.
+ */
+export const SYSTEME = `Tu extrais des informations de chantier depuis un texte dicté par un artisan.
 Réponds UNIQUEMENT avec un objet JSON valide, sans aucun texte avant ou après, au format exact suivant :
 {
   "prestations": { "libelle": string, "description": string | null, "quantite": string | null, "unite": string | null, "aConfirmer": boolean }[],
@@ -26,6 +34,16 @@ Règles absolues :
   ou une contrainte qui ne soit pas explicitement présent dans le texte.
 - Ne déduis jamais une quantité d'un pluriel ou d'un contexte : sans nombre écrit, "quantite" et "unite"
   restent null.
+- "quantite" et "unite" vont TOUJOURS ensemble : jamais l'une sans l'autre. Un nombre sans unité ne veut
+  rien dire — « 800 » se lit 800 mètres, 800 m² ou 800 heures selon qui le lit.
+- "unite" est l'unité de ce nombre, dans SON mot à lui : "ml", "m²", "m³", "heure", "jour", "tonne",
+  "stère" — ou l'OBJET qu'il compte quand il compte des choses :
+    « deux souches »   -> "quantite": "2", "unite": "souche"
+    « trois arbres »   -> "quantite": "3", "unite": "arbre"
+  L'unité de comptage doit être l'objet explicitement prononcé. N'invente pas une unité pour un nombre
+  dont on ne sait pas ce qu'il compte : les deux restent null.
+- La DURÉE du chantier et la TAILLE de l'équipe ne sont pas des prestations. « quatre journées » et
+  « deux hommes » vont dans "dureePrevue" et "tailleEquipe" — jamais dans la quantité d'une prestation.
 - Toute information absente vaut null (ou un tableau vide) et doit être citée dans "informationsManquantes".
 - Une information présente mais incertaine garde "aConfirmer": true — ce drapeau ne sert jamais à combler
   un vide par une supposition.

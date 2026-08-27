@@ -241,6 +241,107 @@ async function main() {
     assert.deepEqual(await prestationsDuLibelle(A, c2.id, "Taille de haie"), [p2.id]);
   });
 
+  console.log("\n=== R23 — rejouer la dictée enrichit, ne duplique pas ===\n");
+
+  await test("le rejeu après ses réponses ne crée pas un second arbre", async () => {
+    // **Mesuré en base le 27 août 2026 : il en créait un.** Ses réponses à
+    // l'arrêt allongent le libellé (« — démontage avec rétention, ⌀ 45 cm ») ;
+    // l'égalité exacte ne reconnaissait plus rien, et le rejeu écrivait une
+    // seconde prestation pour le même arbre.
+    const c = await chantiersRepo.creerChantier(A, { nom: "Rejeu" });
+    const seule = {
+      ...brouillonVide(),
+      prestations: [
+        { libelle: "Abattage d'un érable", description: null, quantite: null, unite: null, aConfirmer: false },
+      ],
+    };
+    await brouillonsRepo.enregistrerGeneration(A, c.id, seule, "d");
+    await confirmerBrouillon(A, c.id);
+
+    const [avant] = await prestationsRepo.listerPrestations(A, c.id);
+    await prestationsRepo.modifierPrestation(A, avant.id, "Abattage d'un érable — démontage avec rétention, ⌀ 45 cm");
+
+    await brouillonsRepo.enregistrerGeneration(A, c.id, seule, "d");
+    await confirmerBrouillon(A, c.id);
+
+    const apres = await prestationsRepo.listerPrestations(A, c.id);
+    assert.equal(apres.length, 1, `${apres.length} prestations pour un seul arbre : ${apres.map((x) => x.libelle).join(" | ")}`);
+    assert.equal(apres[0].id, avant.id, "la prestation d'origine a été remplacée au lieu d'être reconnue");
+  });
+
+  await test("un champ resté vide se remplit au rejeu", async () => {
+    // Le cas utile : une prestation créée avant le lot B, ou avant qu'il ait
+    // dicté la mesure. Le rejeu la complète — sans rien remplacer.
+    const c = await chantiersRepo.creerChantier(A, { nom: "Enrichissement" });
+    await prestationsRepo.ajouterPrestation(A, c.id, "Haie (tout genre) (800 ml)");
+    await brouillonsRepo.enregistrerGeneration(
+      A,
+      c.id,
+      {
+        ...brouillonVide(),
+        prestations: [
+          { libelle: "Haie (tout genre)", description: null, quantite: "800", unite: "ml", aConfirmer: false },
+        ],
+      },
+      "d"
+    );
+    await confirmerBrouillon(A, c.id);
+
+    const liste = await prestationsRepo.listerPrestations(A, c.id);
+    assert.equal(liste.length, 1, "un doublon a été créé");
+    assert.equal(Number(liste[0].quantite), 800, "le champ vide n'a pas été complété");
+    assert.equal(liste[0].unite, "ml");
+  });
+
+  await test("une valeur déjà posée n'est jamais remplacée par une nouvelle dictée", async () => {
+    // Sa correction reste la sienne. Le dépôt n'a aucune colonne de provenance :
+    // c'est le refus de remplacer qui la protège, pas une distinction d'auteur.
+    const c = await chantiersRepo.creerChantier(A, { nom: "Correction préservée" });
+    await prestationsRepo.ajouterPrestation(A, c.id, "Haie (tout genre) (80 ml)", {
+      quantite: "80",
+      unite: "ml",
+    });
+    await brouillonsRepo.enregistrerGeneration(
+      A,
+      c.id,
+      {
+        ...brouillonVide(),
+        prestations: [
+          { libelle: "Haie (tout genre)", description: null, quantite: "800", unite: "ml", aConfirmer: false },
+        ],
+      },
+      "d"
+    );
+    await confirmerBrouillon(A, c.id);
+
+    const liste = await prestationsRepo.listerPrestations(A, c.id);
+    const posee = liste.find((x) => Number(x.quantite) === 80);
+    assert.ok(posee, `la valeur 80 a été écrasée : ${liste.map((x) => `${x.libelle}=${x.quantite}`).join(" | ")}`);
+  });
+
+  await test("aucune ancienne prestation n'est réinterprétée en masse", async () => {
+    // Le rejeu n'agit que sur les prestations que la dictée mentionne. Une
+    // prestation d'un autre chantier, ou d'un autre travail, ne bouge pas.
+    const c = await chantiersRepo.creerChantier(A, { nom: "Voisine intacte" });
+    const voisine = await prestationsRepo.ajouterPrestation(A, c.id, "Réfection d'un mur");
+    await brouillonsRepo.enregistrerGeneration(
+      A,
+      c.id,
+      {
+        ...brouillonVide(),
+        prestations: [
+          { libelle: "Taille de haie", description: null, quantite: "20", unite: "ml", aConfirmer: false },
+        ],
+      },
+      "d"
+    );
+    await confirmerBrouillon(A, c.id);
+
+    const relue = (await prestationsRepo.listerPrestations(A, c.id)).find((x) => x.id === voisine.id);
+    assert.equal(relue?.quantite, null, "une prestation que la dictée ne mentionne pas a été touchée");
+    assert.equal(relue?.libelle, "Réfection d'un mur");
+  });
+
   console.log("\n=== L'isolation entre entreprises tient ===\n");
 
   await test("une autre entreprise ne voit aucune liaison", async () => {

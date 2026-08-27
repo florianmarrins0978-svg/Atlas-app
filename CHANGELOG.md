@@ -9,6 +9,58 @@ Format : le plus récent en tête.
 
 ## 2026-08-26
 
+### Rejouer la dictée ne duplique plus la prestation
+
+**Un doublon réel, mesuré avant d'être corrigé.** Ses réponses à l'arrêt
+allongent le libellé — « Abattage d'un érable » devient « Abattage d'un érable —
+démontage avec rétention, ⌀ 45 cm ». Le dédoublonnage de `confirmerBrouillon`
+reconnaissait une prestation par l'égalité EXACTE de son libellé : au rejeu
+suivant il ne reconnaissait plus rien, et écrivait un second arbre. C'est le
+défaut du 3 août sous un troisième visage, dans la fonction qui existe pour
+l'empêcher.
+
+`src/lib/correspondance-prestation.ts` reconnaît désormais deux formes, et deux
+seulement : le libellé identique, ou identique suivi du tiret d'enrichissement.
+**Rien d'approximatif** — une fusion sur une ressemblance ferait disparaître un
+travail qu'il facturerait. Le tiret est demandé à la fonction qui l'écrit plutôt
+que recopié : deux écritures du même séparateur finiraient par diverger.
+
+**Et le rejeu ENRICHIT au lieu de dupliquer** : un champ vide se remplit, un
+champ déjà posé ne bouge jamais, une valeur différente est journalisée sans être
+appliquée. Le dépôt n'a aucune colonne de provenance ; c'est le refus de
+remplacer qui protège une correction humaine, sans avoir à savoir qui l'a
+écrite.
+
+### Les deux micros demandent enfin la même chose des unités
+
+L'invite d'extraction ne donnait aucun exemple d'unité ; celle de la
+dictée-dans-le-devis en donnait (« stère », « arbre »). Le même mot dicté
+devenait donc une quantité par un micro et rien du tout par l'autre. Les deux
+portent maintenant la même règle — l'unité peut être l'OBJET compté quand il
+compte des choses (« deux souches » → 2 / souche), à condition qu'il soit
+**explicitement prononcé**. Et la durée du chantier comme la taille de l'équipe
+sont dites non-prestations dans l'invite, pas seulement espérées.
+
+**Ce que ces contrôles ne prouvent pas, et la suite le dit à l'écran :** le
+comportement réel du modèle. Aucune clé ici — les six dictées d'essai restent à
+jouer sur son espace.
+
+### L'inventaire des natures, et pourquoi la taxonomie n'est pas figée
+
+L'inspection a trouvé un référentiel métier **déclaré** que personne n'avait
+rapproché de ce lot : `src/lib/prestations-entretien.ts`, 20 prestations en 4
+familles, posées par le patron. Il corrobore tonte, désherbage, massifs, haie —
+et il en porte plusieurs qu'aucune liste ne mentionnait (propreté, traitement de
+pelouse, taille d'arbuste, taille de rosiers). En revanche **plantation et
+clôture n'existent nulle part** dans le dépôt.
+
+La taxonomie n'a donc pas été figée : deux natures seraient inventées, plusieurs
+autres manqueraient, et son référentiel est éditable par lui — figer une liste
+par-dessus risquerait de contredire ce qu'il ajoutera demain. `nature` reste
+vide, et la question à lui poser est écrite dans `docs/pour-chatgpt/06`.
+
+Batterie : **253/255**.
+
 ### Lot C — la colonne d'abord, le libellé ensuite, et le refus quand ils divergent
 
 Depuis le lot B, une prestation neuve porte ses mesures dans des colonnes ET
