@@ -12,6 +12,8 @@ import type { ActionProposee } from "../src/server/ai/propositions";
 import type { Ctx } from "../src/server/repositories/context";
 import { fermerLimiteur } from "../src/server/rate-limit";
 import { nettoyerBase } from "./_test-db";
+import { ongletDuChantier } from "../src/lib/onglet-chantier";
+import { getStatutAffiche } from "../src/lib/chantier-etat";
 
 /**
  * L'agent : dix gestes de plus, et TOUS confirmés par son doigt.
@@ -37,6 +39,31 @@ async function test(nom: string, fn: () => Promise<void>) {
     console.error(`❌ ${nom}`);
     console.error(`   ${err instanceof Error ? err.message : err}`);
     failed++;
+  }
+}
+
+/**
+ * Clore un chantier en base, POUR DE VRAI.
+ *
+ * **Un `UPDATE` par le pool nu ne touche rien, et ne le dit pas.** `atlas_app`
+ * travaille sous `FORCE ROW LEVEL SECURITY` : sans `app.entreprise_id` posé
+ * dans la MÊME transaction, la politique ne voit aucune ligne et la requête
+ * réussit sur zéro ligne (`CLAUDE.md` §3). Le cas passait alors au vert sur un
+ * chantier resté ordinaire — et c'est le préalable du contrôle qui l'a dit.
+ */
+async function clore(ctx: Ctx, chantierId: string) {
+  const client = await pool.connect();
+  try {
+    await client.query("BEGIN");
+    await client.query(`SELECT set_config('app.entreprise_id', $1, true)`, [ctx.entrepriseId]);
+    const r = await client.query(`UPDATE chantiers SET termine_at = now() WHERE id = $1`, [chantierId]);
+    await client.query("COMMIT");
+    if (r.rowCount !== 1) throw new Error(`la clôture n'a touché aucune ligne (${r.rowCount})`);
+  } catch (e) {
+    await client.query("ROLLBACK");
+    throw e;
+  } finally {
+    client.release();
   }
 }
 
@@ -355,6 +382,63 @@ async function main() {
       /ouvrez-le|ouvrir/i,
       "le refus renvoie le patron ouvrir une fiche — c'est exactement ce qu'il a reproché"
     );
+  });
+
+  /**
+   * L'ONGLET NE DOIT RIEN CHANGER — sa règle du 27 août 2026 : *« que je sois
+   * dans la catégorie terminé ou chantier, je dois pouvoir lui demander
+   * n'importe quoi ; il ne doit pas être attaché à une catégorie »*.
+   *
+   * Un chantier rangé dans « Terminés » n'est pas un chantier différent : c'est
+   * le même, à un autre moment de sa vie. Ce qui suit le prouve plutôt que de
+   * l'affirmer — et il commence par VÉRIFIER que le chantier d'essai est bien
+   * dans cet onglet-là, sans quoi le contrôle ne mesurerait rien.
+   */
+  await test("UN CHANTIER TERMINÉ se cherche et se lit comme les autres, sans écran ouvert", async () => {
+    const fini = await chantiersRepo.creerChantier(A, { nom: "Mur fini Bernard", clientId: bernard.id });
+    await clore(A, fini.id);
+
+    // **On s'assure qu'il est VRAIMENT dans « Terminés ».** Sans ce préalable,
+    // le cas passerait au vert sur un chantier ordinaire — un contrôle qui ne
+    // mesure pas ce qu'il annonce (`CLAUDE.md` §5).
+    const tous = await chantiersRepo.listerChantiersPourAffichage(A);
+    const ligne = tous.find((c) => c.id === fini.id)!;
+    assert.equal(
+      ongletDuChantier({ statut: getStatutAffiche(ligne), datePlanifiee: ligne.datePlanifiee }),
+      "termines",
+      "le chantier d'essai n'est pas dans l'onglet Terminés : ce cas ne prouverait rien"
+    );
+
+    // Trouvé depuis AUCUN écran de chantier — comme lorsqu'il ouvre le panneau
+    // depuis l'onglet Terminés.
+    const outil = getOutil("RechercherChantier")!;
+    const r = (await outil.executer({ ctx: A, chantierId: null }, { nom: "Mur fini" })) as {
+      trouves: { chantierId: string }[];
+    };
+    assert.ok(
+      r.trouves.some((t) => t.chantierId === fini.id),
+      "un chantier terminé est introuvable : l'assistant serait attaché à une catégorie"
+    );
+
+    // Et lu, toujours sans écran ouvert.
+    const lecture = getOutil("LireInformationsChantier")!;
+    const infos = (await lecture.executer({ ctx: A, chantierId: null }, { chantierId: fini.id })) as {
+      erreur?: string;
+    };
+    assert.ok(!infos.erreur, `la lecture refuse un chantier terminé : ${infos.erreur}`);
+  });
+
+  await test("ET IL S'Y NOTE, depuis l'onglet Terminés", async () => {
+    const fini = await chantiersRepo.creerChantier(A, { nom: "Allée finie Bernard", clientId: bernard.id });
+    await clore(A, fini.id);
+    const { resultats } = await confirmer(A, null, [
+      {
+        type: "noter_chantier",
+        description: "Noter le chantier",
+        donnees: { chantierId: fini.id, note: "Le client rappellera au printemps." },
+      },
+    ]);
+    assert.equal(resultats[0].statut, "appliquee", resultats[0].message);
   });
 
   console.log(`\n${passed} test(s) réussi(s), ${failed} échec(s)`);
