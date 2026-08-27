@@ -261,11 +261,14 @@ export default function FicheEntretienClient({
   // ─── La fiche composée ─────────────────────────────────────────────────────
   return (
     <div className="px-6 pb-10">
-      <p className="text-[14px] leading-relaxed" style={{ color: colors.muted }}>
-        {visibles.length} prestation{visibles.length > 1 ? "s" : ""}, rangées par famille. C&apos;est
-        cette liste que vous cocherez sur un chantier.
-      </p>
+      {/* **PLUS DE PHRASE GRISE SOUS LE TITRE** — sa demande du 27 août 2026 :
+          *« supprime la phrase en gris sous composer ma fiche »*.
 
+          Elle disait « n prestations, rangées par famille. C'est cette liste que
+          vous cocherez sur un chantier. » — c'est-à-dire un écran qui explique
+          son propre fonctionnement, ce que sa consigne du 25 août interdit
+          (`CLAUDE.md` §3) : les familles sont sous les yeux, et le compte est
+          déjà sur la carte qui mène ici. */}
       {phrase && (
         <p
             className="mt-4 text-[14px]"
