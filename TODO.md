@@ -37,7 +37,19 @@ le produit a raison, c'est l'adresse du montage qui a vieilli.
 vit désormais. Rien d'autre de la suite n'est en cause : ses deux derniers cas
 passent.
 
-## ⚠ `test-carte-reponse-mene-au-geste-e2e` rougit en FIN DE MOIS
+## ~~`test-carte-reponse-mene-au-geste-e2e` rougit en FIN DE MOIS~~ — **corrigé le 27 août 2026**
+
+**Deux sessions ont trouvé la même chose la même nuit, et le diagnostic ci-dessous
+était juste de bout en bout.** La correction est faite : le montage lit les dates
+proposées en base et les écarte, en tournant la page du mois s'il le faut
+(`unJourAutreQueLesProposees`). Il y avait un piège de plus, qui n'était pas
+visible d'ici : `dates_proposees` est un `date[]`, le pilote rend des objets
+`Date`, et la comparaison avec une chaîne « AAAA-MM-JJ » est **toujours fausse**
+— l'exclusion n'excluait donc rien, sans erreur ni avertissement. Détail plus
+bas, section « La fin de mois faisait rougir deux suites sur du code sain ».
+
+Le diagnostic d'origine, conservé parce qu'il est exact :
+
 
 **Constaté le 27 août 2026, vers 2 h.** Le cas *« accepté : la carte mène au
 devis VALIDÉ »* tombe : *« aucune carte de réponse pour le chantier … à
@@ -308,6 +320,66 @@ ouvert, et qu'il faudra sans doute lui demander :
 - **La formulation d'un vrai modèle n'a pas été vue ici** (aucune clé) : la
   chaîne entière est éprouvée par le fournisseur `dev`. À regarder sur son
   espace, en lui demandant trois ou quatre gestes.
+- **Le registre nomme encore la même idée de plusieurs façons.** « Le nom qu'on
+  cherche » s'appelle `nom` dans un outil, `motCle` dans un autre, `question`
+  dans un troisième — et c'est ce qui a produit « Il comprend rien » le 26 août.
+  Les alias acceptés (27 août) sont un pansement : ils rattrapent le modèle,
+  ils ne suppriment pas le piège. **Le vrai remède est d'unifier les noms de
+  champs sur tous les outils** ; à faire d'un seul geste, en relisant chaque
+  `schema`, plutôt qu'outil par outil.
+
+---
+
+## ~~La fin de mois faisait rougir deux suites sur du code sain~~ — **désamorcé le 27 août 2026**
+
+Deux bombes de la même famille, à deux jours d'écart, et la seconde a coûté
+trois rejouages. **Le calendrier de démonstration se vide en fin de mois** : ce
+qui tenait le 20 ne tient plus le 27, et la suite accuse alors le produit.
+
+| Suite | Ce qu'elle prenait | Ce qu'elle prend depuis |
+|---|---|---|
+| `test-envoi-client-e2e` (26 août) | les jours libres du seul mois affiché | `joursRetenables()`, qui tourne la page du mois |
+| `test-carte-reponse-mene-au-geste` (27 août) | le DERNIER jour cliquable | `unJourAutreQueLesProposees()`, qui écarte les dates offertes |
+
+**Le second cas est le plus instructif, parce qu'il accusait un produit
+parfaitement juste.** Fin août il ne restait qu'un jour libre — et c'était celui
+que l'artisan proposait déjà. Le client « contre-proposait » donc la date
+offerte, ce qui ne fait **volontairement** aucune carte (`notificationsPatron` :
+une acceptation sans surprise ne se signale pas, sans quoi elle noierait les
+deux nouvelles qui appellent un geste). Vert le 26, rouge le 27, code identique.
+
+**Et un piège de pilote qui reviendra :** `dates_proposees` est un `date[]`. Le
+pilote PostgreSQL rend alors des objets `Date` — la comparaison avec une chaîne
+« AAAA-MM-JJ » est **toujours fausse**, sans erreur ni avertissement. Le
+contrôle écartait donc les dates proposées sans en écarter aucune, et rougissait
+exactement comme avant sa correction. On lit désormais `dates_proposees::text[]`,
+et le contrôle **refuse de conclure** sur une liste vide plutôt que de rendre un
+vert qui ne mesure rien.
+
+**Et une TROISIÈME suite, le même jour, pour une raison voisine mais distincte :**
+`test-reste-equipes-e2e.ts` lisait les chantiers et les absences en base pour se
+donner deux jours libres. La base disait le 31 août libre — aucun chantier,
+aucune absence —, **et l'écran a refusé de le retenir** : c'est
+`verifierJourProposeAction` qui tranche, pas cette requête, qui n'en est qu'une
+approximation. Le contrôle annonçait « 1 date retenue au lieu de deux », sans
+dire laquelle manquait ni pourquoi, et envoyait chercher un défaut dans un écran
+qui obéissait exactement à son serveur.
+
+**La règle du 25 août se prolonge donc d'un cran** : *un contrôle ne suppose pas
+l'état commun, il le lit* — et il ne suppose pas davantage **ce que le serveur
+acceptera**, il le lui demande. La suite essaie désormais huit candidats et garde
+celui que l'écran retient vraiment ; si aucun ne tient, elle rougit **en citant
+la raison affichée** (« Ce jour est trop proche… ») plutôt qu'un nombre. Vérifié
+en la confrontant à un jour que le serveur refuse.
+
+**Quatrième correction du même jour, de la même famille** : `joursRetenables()`
+calculait son plancher J+3 avec `toISOString()`. Entre minuit et 2 h du matin en
+France, c'est la veille (`ARCHITECTURE.md` §182) — la suite retenait alors un
+jour que le serveur refuse. Elle emploie `jourIso`, comme tout le reste du dépôt.
+
+**Ce qui reste ouvert** : comprendre pourquoi le jeu de démonstration ne laisse
+plus qu'**un** jour libre en fin de mois. Les suites ne s'y cassent plus les
+dents, mais la cause, elle, n'a pas bougé — voir la section ci-dessous.
 
 ---
 
@@ -347,9 +419,29 @@ avant toute écriture »* — rouge en batterie, **vert rejoué seul**. Il lit l
 juste après un appui, avant que l'action serveur n'ait répondu : sous cent
 suites, la réponse arrive avant la lecture et le cas s'inverse.
 
+**Et le 27 août 2026, ce même contrôle a rougi sur ses HUIT cas d'un coup —
+toujours vert rejoué seul (11/11).** La forme du rouge a changé, et elle
+compte : la base portait `630.00` là où la suite attendait `870.00`, et l'écran
+affichait une remise de 5 % au lieu de celle qu'elle venait de poser. **Ce n'est
+plus de l'impatience, c'est une collision** : un autre passage a touché le même
+devis pendant qu'elle travaillait. Le remède connu — relire en boucle jusqu'à la
+valeur — ne peut rien contre ça ; il faudra que cette suite travaille sur un
+devis QU'ELLE CRÉE, comme `test-reste-equipes` a fini par le faire pour ses
+jours. **Rien du produit n'est en cause** : la suite est verte seule, et les
+onze cas passent.
+
 *(Une autre session a relevé le même soir le même phénomène sur trois autres
 suites — voir « Trois suites navigateur rougissent SOUS LA BATTERIE » en tête de
 ce fichier. C'est un seul sujet, pas deux.)*
+
+**Et un SIXIÈME, le 27 août 2026 :** `test-informations-e2e.ts`, sur
+`'' == '2 hommes'` — l'équipe saisie relue vide après rechargement. **Vert
+rejoué seul.** C'était un `waitForTimeout(700)` avant le rechargement : sept
+cents millisecondes suffisent seule, pas sous cent seize suites. **Corrigé** —
+il relit jusqu'à trois fois en laissant à l'enregistrement le temps qu'il lui
+faut, exactement comme le cas de la prestation trente lignes plus bas, tombé
+dans le même trou le 13 août. Le contrôle reste entier : confronté à une valeur
+jamais enregistrée, il rougit toujours (vérifié).
 
 **Et un CINQUIÈME, le 26 août 2026 au soir :**
 `test-planning-vers-facture-e2e.ts`, cas *« clôturé AVANT sa date : il quitte le
@@ -7041,12 +7133,22 @@ L'état « à relancer » existe, s'affiche, et le lien reste proposé pour un r
 manuel. **Sans objet en l'état**, pour la même raison qu'au point 2 : la relance
 part de la messagerie du patron, comme l'envoi.
 
-### 4. L'assistant répond en JSON brut
+### 4. ~~L'assistant répond en JSON brut~~ — **réglé le 27 août 2026**
 
-Interrogé « Comment a été envoyé le devis ? », il a répondu :
+Interrogé « Comment a été envoyé le devis ? », il répondait :
 `D'après LireDevis, voici ce que j'ai trouvé : {"existe":true,"numeroCommercial":"2026-0003",…}`.
-Le patron n'a pas à lire du JSON. L'assistant doit répondre en français, ou dire
-qu'il ne sait pas — et jamais recracher la sortie d'un outil telle quelle.
+
+Une seule fonction (`direEnFrancais`, dans `src/server/ai/providers/llm/dev.ts`)
+met désormais tout retour d'outil en français avant de l'afficher : la phrase de
+l'outil si elle existe, son refus s'il refuse, sinon champ par champ. **Aucune
+accolade ne peut plus atteindre l'écran.**
+
+**Et un « non » se dit.** Le même trajet escamotait la réponse : `{existe:false}`
+— le chantier n'a pas encore de devis — sortait « Rien à signaler du côté de
+LireDevis », alors que c'est exactement ce qu'il demandait. Trois refus courants
+ont leur phrase.
+
+Trouvé à la capture, pas par un test. `ARCHITECTURE.md` §199.
 
 ### 5. ~~Les équipes nommées~~ — fait le 10 août 2026
 

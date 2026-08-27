@@ -66,6 +66,25 @@ ouverte. **Vu rougir** contre un verrou retiré.
 **Vu à l'écran**, et un défaut y a été trouvé : deux factures répétaient « une
 facture émise se conserve dix ans » deux fois de suite. La raison s'écrit une
 fois, les numéros autant qu'il en faut.
+### La fiche de chantier se touche du doigt, à une adresse
+
+*« Je veux un lien cliquable »*, après trois captures de l'écran réel. Elles
+répondaient à sa question — *« montre-moi à quoi elle ressemble »* — mais on ne
+coche pas une photo, et l'application demande un compte et un serveur qu'il n'a
+pas sous la main tant que son espace dort.
+
+`appli/fiche-de-chantier.html` reprend les **trois écrans tels qu'ils sont
+codés** — ce n'est pas une proposition. Les cases se cochent pour de vrai (de
+vraies cases, pas des dessins), le jour et les observations se saisissent, les
+molettes du temps tournent, et l'on passe d'un écran à l'autre en CSS : elle
+s'ouvre hors ligne.
+
+**Elle dit ce qu'elle n'est pas** : rien n'enregistré, rien envoyé, et les
+comptes ne bougent pas. Une copie d'écran qui se ferait passer pour
+l'application lui ferait croire qu'il vient d'envoyer un rapport à un client.
+
+Parcourue avant d'être livrée, pas relue : la carte ouvre bien la liste, une
+case passe de 3 à 4 cochées, rien ne déborde, aucune erreur au journal.
 
 ---
 
@@ -180,6 +199,30 @@ carte, et un « Voir le relevé » sous le montant.
 **Éprouvé** par trois cas neufs de `test-tva-en-tete-e2e.ts`, confrontés à
 l'écran d'avant : les trois rougissent.
 
+### Maquette : cinq peintures pour le bouton vert
+
+*« Tous les boutons en vert foncé, je les trouve très opaques. Est-ce que c'est
+possible de modifier ça ? »*
+
+Cinq propositions sur un vrai écran — plus clair, adouci, posé, cerné —, et
+**une seule chose change à la fois** : forme, taille, police et libellé sont
+identiques partout, sans quoi on ne compare plus rien.
+
+Les contrastes sont **mesurés**, pas jugés à l'œil, et écrits sous chaque
+proposition : de 4,9 à 11,15:1, toutes au-dessus du minimum. La mesure a
+attrapé deux défauts invisibles à l'écran — « Cerné » était 2 px plus grand que
+les quatre autres (le cerne s'ajoutait à la boîte), et l'ombre de « Posé »
+restait vert foncé en mode sombre, donc invisible.
+
+**Écarté le soir même : « j'aime pas, propose autre chose ».** Et le refus
+apprend quelque chose — les cinq propositions étaient toutes des **nuances du
+même vert pin**, c'est-à-dire cinq fois la même idée montrée comme cinq.
+« Opaque » ne demandait pas un vert un peu moins foncé.
+
+Le **second tour** change donc de famille à chaque fois : verre translucide, or,
+sauge, encre, bronze, filet. Rien n'est codé :
+`appli/le-bouton-moins-lourd.html`, en attente de son choix.
+
 ### L'envoi du devis : trois phrases de moins
 
 *« Supprime la phrase par SMS au + repris de votre dictée + le client pourra
@@ -213,6 +256,42 @@ rouvraient le relevé par une navigation neuve, et une page rouverte est toujour
 juste. Le cas ajouté rejoue SA séquence — basculer sans quitter l'écran — et a
 été vu rouge avant d'être vert. `ARCHITECTURE.md` §193.
 
+### Deux journées comptées à Greenwich, dont une sur un devis parti chez un client
+
+Trouvé le 27 août 2026 à minuit passé, une suite rouge à l'appui : entre minuit
+et 2 h du matin en France, `new Date().toISOString()` rend **la veille**. C'est
+tout le §182, et deux endroits l'ignoraient encore.
+
+- **La date d'émission d'un devis** portait la veille — sur un document qui part
+  chez un client, et dont la validité se compte à partir de cette date.
+- Le nom de repli d'un chantier créé par l'assistant, même défaut.
+
+`jourIso` est la seule définition du jour de ce dépôt ; plus rien dans `src/` ne
+la contourne. La suite de la liste des clients, qui rougissait sur du code sain,
+l'emploie aussi.
+
+### « Il comprend rien » — l'assistant se reprend au lieu d'abandonner
+
+Sa capture du soir : *« Peux-tu me sortir le devis de Lucie »*, puis deux
+reformulations, et trois fois **« L'assistant a mal formé sa demande à un outil
+interne. Reformulez votre question. »**
+
+**Reformuler n'y pouvait rien** : ses phrases étaient parfaites, c'est le nom
+d'un champ qui n'allait pas côté modèle. Le message accusait celui qui n'y était
+pour rien.
+
+- **Un outil mal appelé ne tue plus la réponse** : le refus part au modèle avec
+  ce qui manque, et il rappelle correctement. Deux reprises, puis on rend la
+  main en demandant le nom du client — jamais en parlant de schéma.
+- **Le dépôt nommait la même idée de trois façons** (`nom`, `motCle`,
+  `question`). Les quatre outils acceptent les alias : la faute était de notre
+  côté, pas du modèle.
+- **Plus de JSON à l'écran**, et l'assistant va CHERCHER le chantier au lieu de
+  recopier l'instruction qui lui disait de le faire.
+- **Un « non » se dit** : un chantier sans devis répondait « Rien à signaler ».
+
+Trouvé à la capture, avec ses trois questions mot pour mot. Détail :
+`ARCHITECTURE.md` §199.
 
 ### Ses salariés se comptent à part de ses équipes — et ce sont leurs noms qu'on coche
 

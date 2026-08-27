@@ -20,11 +20,15 @@ export const rechercherModeEmploi: Outil = {
     "À utiliser pour toute question du type « comment je fais pour… », « où est… », « à quoi sert… », " +
     "« comment supprimer/modifier/envoyer… ». Ne lit aucune donnée de chantier : c'est le mode d'emploi " +
     "de l'application, pas son contenu.",
-  schema: z.object({
-    question: z.string().min(1).describe("La question de l'utilisateur, dans ses mots, telle qu'il l'a posée."),
-  }),
+  schema: z
+    .object({
+      question: z.string().optional().describe("La question de l'utilisateur, dans ses mots, telle qu'il l'a posée."),
+      motCle: z.string().optional(),
+    })
+    .refine((v) => Boolean((v.question ?? v.motCle ?? "").trim()), { message: "Donne la question dans « question »." }),
   async executer(_contexte, parametres) {
-    const { question } = parametres as { question: string };
+    const p = parametres as { question?: string; motCle?: string };
+    const question = p.question ?? p.motCle ?? "";
     const fiches = chercherFiches(question);
     if (fiches.length === 0) {
       return {
