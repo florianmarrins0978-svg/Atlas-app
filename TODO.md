@@ -229,6 +229,43 @@ ouvert, et qu'il faudra sans doute lui demander :
 
 ---
 
+## ~~La fin de mois faisait rougir deux suites sur du code sain~~ — **désamorcé le 27 août 2026**
+
+Deux bombes de la même famille, à deux jours d'écart, et la seconde a coûté
+trois rejouages. **Le calendrier de démonstration se vide en fin de mois** : ce
+qui tenait le 20 ne tient plus le 27, et la suite accuse alors le produit.
+
+| Suite | Ce qu'elle prenait | Ce qu'elle prend depuis |
+|---|---|---|
+| `test-envoi-client-e2e` (26 août) | les jours libres du seul mois affiché | `joursRetenables()`, qui tourne la page du mois |
+| `test-carte-reponse-mene-au-geste` (27 août) | le DERNIER jour cliquable | `unJourAutreQueLesProposees()`, qui écarte les dates offertes |
+
+**Le second cas est le plus instructif, parce qu'il accusait un produit
+parfaitement juste.** Fin août il ne restait qu'un jour libre — et c'était celui
+que l'artisan proposait déjà. Le client « contre-proposait » donc la date
+offerte, ce qui ne fait **volontairement** aucune carte (`notificationsPatron` :
+une acceptation sans surprise ne se signale pas, sans quoi elle noierait les
+deux nouvelles qui appellent un geste). Vert le 26, rouge le 27, code identique.
+
+**Et un piège de pilote qui reviendra :** `dates_proposees` est un `date[]`. Le
+pilote PostgreSQL rend alors des objets `Date` — la comparaison avec une chaîne
+« AAAA-MM-JJ » est **toujours fausse**, sans erreur ni avertissement. Le
+contrôle écartait donc les dates proposées sans en écarter aucune, et rougissait
+exactement comme avant sa correction. On lit désormais `dates_proposees::text[]`,
+et le contrôle **refuse de conclure** sur une liste vide plutôt que de rendre un
+vert qui ne mesure rien.
+
+**Troisième correction du même jour, de la même famille** : `joursRetenables()`
+calculait son plancher J+3 avec `toISOString()`. Entre minuit et 2 h du matin en
+France, c'est la veille (`ARCHITECTURE.md` §182) — la suite retenait alors un
+jour que le serveur refuse. Elle emploie `jourIso`, comme tout le reste du dépôt.
+
+**Ce qui reste ouvert** : comprendre pourquoi le jeu de démonstration ne laisse
+plus qu'**un** jour libre en fin de mois. Les suites ne s'y cassent plus les
+dents, mais la cause, elle, n'a pas bougé — voir la section ci-dessous.
+
+---
+
 ## ⏳ `test-envoi-client-e2e.ts` — deux cas rouges, et ce n'est PAS une régression
 
 **Le 26 août 2026**, dans la batterie du lot « rôles et accès » :
@@ -268,6 +305,15 @@ suites, la réponse arrive avant la lecture et le cas s'inverse.
 *(Une autre session a relevé le même soir le même phénomène sur trois autres
 suites — voir « Trois suites navigateur rougissent SOUS LA BATTERIE » en tête de
 ce fichier. C'est un seul sujet, pas deux.)*
+
+**Et un SIXIÈME, le 27 août 2026 :** `test-informations-e2e.ts`, sur
+`'' == '2 hommes'` — l'équipe saisie relue vide après rechargement. **Vert
+rejoué seul.** C'était un `waitForTimeout(700)` avant le rechargement : sept
+cents millisecondes suffisent seule, pas sous cent seize suites. **Corrigé** —
+il relit jusqu'à trois fois en laissant à l'enregistrement le temps qu'il lui
+faut, exactement comme le cas de la prestation trente lignes plus bas, tombé
+dans le même trou le 13 août. Le contrôle reste entier : confronté à une valeur
+jamais enregistrée, il rougit toujours (vérifié).
 
 **Et un CINQUIÈME, le 26 août 2026 au soir :**
 `test-planning-vers-facture-e2e.ts`, cas *« clôturé AVANT sa date : il quitte le

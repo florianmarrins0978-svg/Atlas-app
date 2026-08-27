@@ -3,6 +3,7 @@ import { mkdirSync } from "node:fs";
 import type { Page, BrowserContext } from "playwright";
 import { lancerNavigateur } from "./e2e-browser";
 import { creerPuisFiche } from "./_creer-chantier-e2e";
+import { jourIso } from "../src/lib/jour";
 
 // L'envoi du devis au client, vu depuis l'écran du patron (docs/AGENT.md §2.2).
 //
@@ -240,7 +241,11 @@ async function main() {
   async function joursRetenables(page: Page, combien: number): Promise<string[]> {
     const plancher = new Date();
     plancher.setDate(plancher.getDate() + 3);
-    const depuis = plancher.toISOString().slice(0, 10);
+    // **`jourIso`, jamais `toISOString`.** Entre minuit et 2 h du matin en
+    // France, Greenwich est encore la veille (`ARCHITECTURE.md` §182) : le
+    // plancher tombait d'un jour, et la suite retenait un jour que le serveur
+    // refuse — un rouge nocturne sur du code sain.
+    const depuis = jourIso(plancher);
 
     const lire = async () =>
       (
