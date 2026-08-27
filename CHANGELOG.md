@@ -139,8 +139,18 @@ même vert pin**, c'est-à-dire cinq fois la même idée montrée comme cinq.
 « Opaque » ne demandait pas un vert un peu moins foncé.
 
 Le **second tour** change donc de famille à chaque fois : verre translucide, or,
-sauge, encre, bronze, filet. Rien n'est codé :
-`appli/le-bouton-moins-lourd.html`, en attente de son choix.
+sauge, encre, bronze, filet — `appli/le-bouton-moins-lourd.html`.
+
+**Sa réponse a désigné le bon chemin : « fais-moi un verre mais avec la couleur
+actuelle ».** Le « verre » du second tour posait le vert à 14 %, ce qui en
+faisait une pastille blanche à texte vert — un AUTRE bouton. Sa phrase demande
+l'inverse : garder la couleur, n'ôter que l'opacité. D'où une planche à part,
+`appli/le-bouton-en-verre.html` : trois épaisseurs (90 / 85 / 80 %), reflet et
+ombre portée.
+
+**Il n'y a pas de quatrième, et c'est une mesure et non un goût** : le contraste
+le plus faible est SOUS LE REFLET, où 80 % rend 4,66:1 et 72 % tombe à 3,87. Un
+bouton qu'on ne lit pas au soleil n'est pas plus léger, il est perdu.
 
 ### L'envoi du devis : trois phrases de moins
 
