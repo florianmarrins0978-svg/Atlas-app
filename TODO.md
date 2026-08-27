@@ -219,6 +219,13 @@ ouvert, et qu'il faudra sans doute lui demander :
 - **La formulation d'un vrai modèle n'a pas été vue ici** (aucune clé) : la
   chaîne entière est éprouvée par le fournisseur `dev`. À regarder sur son
   espace, en lui demandant trois ou quatre gestes.
+- **Le registre nomme encore la même idée de plusieurs façons.** « Le nom qu'on
+  cherche » s'appelle `nom` dans un outil, `motCle` dans un autre, `question`
+  dans un troisième — et c'est ce qui a produit « Il comprend rien » le 26 août.
+  Les alias acceptés (27 août) sont un pansement : ils rattrapent le modèle,
+  ils ne suppriment pas le piège. **Le vrai remède est d'unifier les noms de
+  champs sur tous les outils** ; à faire d'un seul geste, en relisant chaque
+  `schema`, plutôt qu'outil par outil.
 
 ---
 
@@ -6952,12 +6959,22 @@ L'état « à relancer » existe, s'affiche, et le lien reste proposé pour un r
 manuel. **Sans objet en l'état**, pour la même raison qu'au point 2 : la relance
 part de la messagerie du patron, comme l'envoi.
 
-### 4. L'assistant répond en JSON brut
+### 4. ~~L'assistant répond en JSON brut~~ — **réglé le 27 août 2026**
 
-Interrogé « Comment a été envoyé le devis ? », il a répondu :
+Interrogé « Comment a été envoyé le devis ? », il répondait :
 `D'après LireDevis, voici ce que j'ai trouvé : {"existe":true,"numeroCommercial":"2026-0003",…}`.
-Le patron n'a pas à lire du JSON. L'assistant doit répondre en français, ou dire
-qu'il ne sait pas — et jamais recracher la sortie d'un outil telle quelle.
+
+Une seule fonction (`direEnFrancais`, dans `src/server/ai/providers/llm/dev.ts`)
+met désormais tout retour d'outil en français avant de l'afficher : la phrase de
+l'outil si elle existe, son refus s'il refuse, sinon champ par champ. **Aucune
+accolade ne peut plus atteindre l'écran.**
+
+**Et un « non » se dit.** Le même trajet escamotait la réponse : `{existe:false}`
+— le chantier n'a pas encore de devis — sortait « Rien à signaler du côté de
+LireDevis », alors que c'est exactement ce qu'il demandait. Trois refus courants
+ont leur phrase.
+
+Trouvé à la capture, pas par un test. `ARCHITECTURE.md` §199.
 
 ### 5. ~~Les équipes nommées~~ — fait le 10 août 2026
 
