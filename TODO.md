@@ -34,6 +34,12 @@ même batterie a tourné d'une traite sur 115 suites deux heures plus tôt, dans
 même conteneur. Ce qui a changé entre les deux n'est pas établi. Ne pas écrire
 ailleurs que c'est réglé.
 
+**INTERMITTENT — mesuré le même jour.** Le tour suivant, après la fusion de la
+migration 0068, a rejoué les mêmes 115 suites dans les mêmes tranches : **aucune
+mort de serveur**, `test-cron-purge` comprise. Le code n'avait pas changé pour ce
+qui touche `test-coupure-sessions-e2e`. Une cause qui va et vient n'est donc pas
+dans le produit — mais elle n'est pas comprise pour autant.
+
 **Ce qui a été fait en attendant**, pour mesurer quand même : les 115 suites ont
 été jouées par tranches, un serveur neuf par tranche
 (`scripts/` non modifié ; pilote jeté, dans le bac à sable de la session).

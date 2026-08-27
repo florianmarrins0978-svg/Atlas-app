@@ -14,11 +14,17 @@ Rien n'a été poussé sur `main`. L'autorisation se demande.
 | | |
 |---|---|
 | Branche | `claude/atlas-securite-lot3` |
-| Tête de la branche | **56f0119** |
-| `origin/main` intégré | **3d455ed** |
-| Conflits depuis le tour précédent | **2** (`ARCHITECTURE.md`, `scripts/test-envoi-client-e2e.ts`) |
-| Migrations nouvelles | **aucune** — 77 appliquées, 0 nouvelle |
+| Tête de la branche | **5a8fcbc** |
+| `origin/main` intégré | **19cd448** |
+| Conflits, tour 1 | **2** — `ARCHITECTURE.md`, `scripts/test-envoi-client-e2e.ts` |
+| Conflits, tour 2 | **2** — `CHANGELOG.md`, `TODO.md`, tous deux documentaires |
+| Migrations nouvelles | **1** — `0068_effacement_client_devis_envoye.sql`, appliquée avant toute mesure |
 | Batterie | **259/259 base · 115/115 navigateur · connexion derrière proxy verte** |
+
+**Deux tours de fusion, deux batteries complètes.** `main` a bougé pendant la
+première : dix commits de plus, dont une migration. La règle du dépôt est nette —
+migration nouvelle = l'appliquer, puis batterie complète. C'est ce qui a été
+fait, et les chiffres ci-dessus sont ceux du **second** tour, sur `19cd448`.
 
 ---
 
@@ -138,6 +144,12 @@ a été JOUÉE.
 tourné d'une traite sur 115 suites deux heures plus tôt, dans ce même conteneur.
 Ce qui a changé entre les deux n'est pas établi. C'est écrit dans `TODO.md` comme
 **non diagnostiqué**, avec la piste la plus courte pour le trancher.
+
+**Et le phénomène est INTERMITTENT** — donnée du second tour : les mêmes 115
+suites, dans les mêmes tranches, sont passées **sans une seule mort de serveur**,
+`test-cron-purge` comprise. Une cause qui va et vient n'est pas une cause dans le
+code — celui-ci n'a pas changé, pour ce qui touche cette suite, entre les deux
+tours. Raison de plus pour ne pas écrire que c'est réglé.
 
 ---
 

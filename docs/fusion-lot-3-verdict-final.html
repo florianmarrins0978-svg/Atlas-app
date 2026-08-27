@@ -74,25 +74,30 @@
 </tr>
 <tr>
 <td>Tête de la branche</td>
-<td><strong>56f0119</strong></td>
+<td><strong>5a8fcbc</strong></td>
 </tr>
 <tr>
 <td><code>origin/main</code> intégré</td>
-<td><strong>3d455ed</strong></td>
+<td><strong>19cd448</strong></td>
 </tr>
 <tr>
-<td>Conflits depuis le tour précédent</td>
-<td><strong>2</strong> (<code>ARCHITECTURE.md</code>, <code>scripts/test-envoi-client-e2e.ts</code>)</td>
+<td>Conflits, tour 1</td>
+<td><strong>2</strong> — <code>ARCHITECTURE.md</code>, <code>scripts/test-envoi-client-e2e.ts</code></td>
+</tr>
+<tr>
+<td>Conflits, tour 2</td>
+<td><strong>2</strong> — <code>CHANGELOG.md</code>, <code>TODO.md</code>, tous deux documentaires</td>
 </tr>
 <tr>
 <td>Migrations nouvelles</td>
-<td><strong>aucune</strong> — 77 appliquées, 0 nouvelle</td>
+<td><strong>1</strong> — <code>0068_effacement_client_devis_envoye.sql</code>, appliquée avant toute mesure</td>
 </tr>
 <tr>
 <td>Batterie</td>
 <td><strong>259/259 base · 115/115 navigateur · connexion derrière proxy verte</strong></td>
 </tr>
 </tbody></table></div>
+<p><strong>Deux tours de fusion, deux batteries complètes.</strong> <code>main</code> a bougé pendant la première : dix commits de plus, dont une migration. La règle du dépôt est nette — migration nouvelle = l'appliquer, puis batterie complète. C'est ce qui a été fait, et les chiffres ci-dessus sont ceux du <strong>second</strong> tour, sur <code>19cd448</code>.</p>
 <hr>
 <h2 id="1-la-correction-attendue-est-arrivée-et-elle-est-saine">1. La correction attendue est arrivée, et elle est saine</h2>
 <a class="retour" href="#sommaire">↑ Sommaire</a>
@@ -225,6 +230,7 @@
 <p><strong>La suite, elle, PASSE</strong> : jouée seule, 1/1. Ce qui meurt, c'est la suite d'après, emportée avec le serveur — d'où un rouge qui accusait <code>test-cron-purge</code> alors qu'elle n'avait jamais été lancée.</p>
 <p><strong>Comment la mesure a été obtenue malgré ça :</strong> les 115 suites ont été jouées par tranches, un serveur neuf par tranche, et les suites jamais lancées ont été rejouées seules. <strong>Aucune assertion touchée, aucun délai ajouté, aucune suite écartée.</strong> Une suite « jamais jouée » n'a jamais été comptée comme réussie : elle a été JOUÉE.</p>
 <p><strong>Ce qui reste ouvert, et n'est pas présenté comme réglé :</strong> la même batterie a tourné d'une traite sur 115 suites deux heures plus tôt, dans ce même conteneur. Ce qui a changé entre les deux n'est pas établi. C'est écrit dans <code>TODO.md</code> comme <strong>non diagnostiqué</strong>, avec la piste la plus courte pour le trancher.</p>
+<p><strong>Et le phénomène est INTERMITTENT</strong> — donnée du second tour : les mêmes 115 suites, dans les mêmes tranches, sont passées <strong>sans une seule mort de serveur</strong>, <code>test-cron-purge</code> comprise. Une cause qui va et vient n'est pas une cause dans le code — celui-ci n'a pas changé, pour ce qui touche cette suite, entre les deux tours. Raison de plus pour ne pas écrire que c'est réglé.</p>
 <hr>
 <h2 id="6-deux-erreurs-de-ma-part-corrigées-noir-sur-blanc">6. Deux erreurs de ma part, corrigées noir sur blanc</h2>
 <a class="retour" href="#sommaire">↑ Sommaire</a>
