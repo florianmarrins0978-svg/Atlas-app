@@ -1,5 +1,6 @@
 "use server";
 
+import { exigerChantierDansSaPortee } from "@/server/garde-action";
 import { getCurrentCtx } from "@/server/session-ctx";
 import {
   planifierChantier,
@@ -68,6 +69,7 @@ export async function planifierChantierAction(
   choix?: { quand: QuandChantier }
 ): Promise<ResultatPose> {
   const ctx = await getCurrentCtx();
+  await exigerChantierDansSaPortee(ctx, chantierId, "poser ce chantier au planning");
   const row = await planifierChantier(ctx, chantierId, datePlanifiee, choix);
   // **APRÈS la transaction, jamais dedans.** Tenir une transaction PostgreSQL
   // ouverte le temps d'un appel à Apple immobiliserait une connexion du pool
@@ -103,6 +105,7 @@ export async function basculerEquipeAction(
   rangEquipe: number
 ): Promise<{ matin: number[]; apres_midi: number[] } | null> {
   const ctx = await getCurrentCtx();
+  await exigerChantierDansSaPortee(ctx, chantierId, "cocher une équipe sur ce chantier");
   const etat = await basculerEquipeDuChantier(ctx, chantierId, demi, rangEquipe);
   // L'agenda extérieur porte le nom de l'équipe dans l'intitulé : sans ce
   // report, son téléphone garderait l'ancienne.
@@ -121,6 +124,7 @@ export async function deplacerChantierAction(
   quand: QuandChantier
 ): Promise<ResultatPose> {
   const ctx = await getCurrentCtx();
+  await exigerChantierDansSaPortee(ctx, chantierId, "déplacer ce chantier");
   const row = await deplacerChantier(ctx, chantierId, quand);
   if (!row) return { succes: false, erreur: "Ce chantier n'est pas posé sur un jour." };
   await porterChantierDansAgenda(ctx, chantierId);
@@ -146,6 +150,7 @@ export async function ecrireNoteChantierAction(
   note: string
 ): Promise<{ succes: true; note: string | null } | { succes: false; erreur: string }> {
   const ctx = await getCurrentCtx();
+  await exigerChantierDansSaPortee(ctx, chantierId, "écrire le pense-bête de ce chantier");
   const row = await ecrireNoteChantier(ctx, chantierId, note);
   if (!row) return { succes: false, erreur: "Ce chantier n'existe plus." };
   return { succes: true, note: row.note };
@@ -153,6 +158,7 @@ export async function ecrireNoteChantierAction(
 
 export async function deplanifierChantierAction(chantierId: string) {
   const ctx = await getCurrentCtx();
+  await exigerChantierDansSaPortee(ctx, chantierId, "retirer ce chantier du planning");
   const resultat = await deplanifierChantier(ctx, chantierId);
   // Le pendant obligatoire de l'écriture : sans ce retrait, un chantier
   // déplanifié resterait dans son téléphone pour toujours — et il se fierait à
@@ -172,6 +178,7 @@ export type ResultatSuppression = { succes: true } | { succes: false; erreur: st
 
 export async function supprimerChantierAction(chantierId: string): Promise<ResultatSuppression> {
   const ctx = await getCurrentCtx();
+  await exigerChantierDansSaPortee(ctx, chantierId, "supprimer ce chantier");
   try {
     await supprimerChantier(ctx, chantierId);
     // Supprimé ici, donc supprimé là-bas. `porterChantierDansAgenda` ne trouve
@@ -206,5 +213,6 @@ export async function supprimerChantierAction(chantierId: string): Promise<Resul
  */
 export async function tachesDuChantierAction(chantierId: string): Promise<FeuilleDuChantier> {
   const ctx = await getCurrentCtx();
+  await exigerChantierDansSaPortee(ctx, chantierId, "ouvrir la feuille de ce chantier");
   return tachesDuChantier(ctx, chantierId);
 }

@@ -1,5 +1,6 @@
 "use server";
 
+import { exigerEcran } from "@/server/garde-action";
 import { getCurrentCtx } from "@/server/session-ctx";
 import { getChantier, reprendreChantier } from "@/server/repositories/chantiers";
 import { trouverOuCreerClient, mettreAJourClient, type CanalClient } from "@/server/repositories/clients";
@@ -49,6 +50,7 @@ export async function reprendreChantierAction(
   data: ReprendreChantierInput
 ): Promise<ResultatReprise> {
   const ctx = await getCurrentCtx();
+  await exigerEcran(ctx, "/chantiers", "corriger les coordonnées du client");
 
   try {
     const chantier = await getChantier(ctx, chantierId);

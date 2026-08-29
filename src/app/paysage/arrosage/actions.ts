@@ -1,5 +1,6 @@
 "use server";
 
+import { exigerEcran } from "@/server/garde-action";
 import { getCurrentCtx } from "@/server/session-ctx";
 import { lireCroquis } from "@/server/ai/services/lire-croquis";
 // Module JavaScript repris tel quel de `appli/` — voir l'en-tête du fichier.
@@ -119,6 +120,7 @@ export async function lireLeCroquis(_precedent: EtatPlan, formulaire: FormData):
   // c'est un coût. Personne d'anonyme ne le déclenche — et l'entreprise sert
   // désormais à compter la cadence, plus bas.
   const ctx = await getCurrentCtx();
+  await exigerEcran(ctx, "/paysage", "lire un croquis d'arrosage");
 
   const limite = await verifierLimite(`croquis:${ctx.entrepriseId}`, LIMITES.diagnosticVegetal);
   if (!limite.autorise) return { etat: "refus", raison: limite.message };
@@ -410,6 +412,7 @@ export async function discuterDuPlan(
   demande: string
 ): Promise<EtatDiscussion> {
   const ctx = await getCurrentCtx();
+  await exigerEcran(ctx, "/paysage", "discuter du plan d'arrosage");
 
   // **La cadence manquait ici, et elle est posée partout ailleurs** — audit
   // final, 29 août 2026. C'était la seule porte d'IA du produit sans compteur :

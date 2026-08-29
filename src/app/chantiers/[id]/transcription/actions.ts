@@ -1,5 +1,6 @@
 "use server";
 
+import { exigerEcran } from "@/server/garde-action";
 import { getCurrentCtx } from "@/server/session-ctx";
 import { getNoteVocale, enregistrerSuccesTranscription } from "@/server/repositories/notes-vocales";
 import { revalidatePath } from "next/cache";
@@ -33,6 +34,7 @@ export async function enregistrerTexteDicteAction(chantierId: string, texte: unk
   }
 
   const ctx = await getCurrentCtx();
+  await exigerEcran(ctx, "/chantiers", "enregistrer un texte dicté");
 
   // Le modèle rattache la transcription à une note vocale : sans note, il n'y a
   // rien à mettre à jour. Le dire plutôt que d'échouer silencieusement.

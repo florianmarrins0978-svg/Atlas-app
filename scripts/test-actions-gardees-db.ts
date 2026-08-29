@@ -36,7 +36,15 @@ import { join } from "node:path";
 import { nettoyerBase } from "./_test-db";
 import { creerEntreprise } from "../src/server/repositories/entreprises";
 import { donnerUnAcces, listerAcces } from "../src/server/repositories/membres-entreprise";
-import { exigerMontants, ActionRefuseeError } from "../src/server/garde-action";
+import {
+  exigerMontants,
+  exigerEcran,
+  exigerChantierDansSaPortee,
+  ActionRefuseeError,
+} from "../src/server/garde-action";
+import { changerLaPortee } from "../src/server/repositories/membres-entreprise";
+import { creerChantier } from "../src/server/repositories/chantiers";
+import { nommerEquipe } from "../src/server/repositories/equipes";
 import { pool } from "../src/server/db/client";
 import type { Ctx } from "../src/server/repositories/context";
 
@@ -77,8 +85,55 @@ const FICHIERS_A_MONTANTS = [
   "src/app/termines/tva/actions.ts",
 ];
 
-/** Les gardes qui comptent — n'importe laquelle suffit. */
-const GARDES = ["exigerMontants(", "exigerProprietaire(", "exigerPreuveRecente("];
+/**
+ * Les gardes qui comptent — n'importe laquelle suffit.
+ *
+ * **`peutUtiliserLAssistant` en fait partie, et ce n'est pas une complaisance.**
+ * Trouvé par ce contrôle lui-même, à sa première exécution élargie :
+ * `appliquerPropositionsAction` était dénoncée comme nue alors qu'elle porte une
+ * garde **plus stricte** que `exigerEcran` — l'assistant est fermé à tous sauf
+ * au patron. Lui ajouter une seconde garde aurait mis deux règles pour une
+ * porte, et c'est ce que `CLAUDE.md` §3 interdit.
+ *
+ * Elle est rendue en valeur de retour plutôt que levée, d'où le motif sur le nom
+ * de la fonction et non sur un `exiger…`.
+ */
+const GARDES = [
+  "exigerMontants(",
+  "exigerEcran(",
+  "exigerProprietaire(",
+  "exigerPreuveRecente(",
+  "peutUtiliserLAssistant(",
+];
+
+/**
+ * Les fichiers d'actions dont l'ÉCRAN est fermé au salarié.
+ *
+ * **Ils n'étaient gardés par rien** — lot de clôture, 29 août 2026. Un écran
+ * fermé ne ferme pas l'action : `GardeAcces` ne s'exécute qu'au rendu, et
+ * l'adresse de l'action reste postable avec une session valide.
+ *
+ * Ce qui s'y trouvait de plus grave : quatre suppressions **DURES** — une
+ * prestation, une ligne de matériel, une note vocale, un passage d'entretien.
+ * Un `DELETE` en base, pas un `deletedAt` : rien ne les défait, et aucun écran
+ * ne les restaure.
+ *
+ * **`/planning` n'est PAS dans cette liste, et c'est délibéré.** C'est l'écran
+ * du salarié, ses actions lui sont ouvertes, et la question « peut-il supprimer
+ * un chantier ? » revient au patron — elle n'a jamais été posée. La trancher
+ * ici serait décider à sa place.
+ */
+const ECRANS_FERMES_AU_SALARIE = [
+  "src/app/chantiers/[id]/informations/actions.ts",
+  "src/app/chantiers/[id]/note-vocale/actions.ts",
+  "src/app/chantiers/[id]/transcription/actions.ts",
+  "src/app/chantiers/[id]/coordonnees/actions.ts",
+  "src/app/chantiers/nouveau/actions.ts",
+  "src/app/actions.ts",
+  "src/app/paysage/fiche/actions.ts",
+  "src/app/paysage/diagnostic/actions.ts",
+  "src/app/paysage/arrosage/actions.ts",
+];
 
 /**
  * Les exports qui n'ont délibérément pas de garde, avec leur raison.
@@ -226,6 +281,96 @@ async function main() {
       );
       assert.ok(pourquoi.length > 40, `${cle} : l'exemption n'explique pas ce qu'elle coûte`);
     }
+  });
+
+  // ─── MOITIÉ 3 : LES ÉCRANS FERMÉS AU SALARIÉ ─────────────────────────────
+  await essai("la garde d'ÉCRAN refuse un salarié sur un écran qui lui est fermé", async () => {
+    const ctx: Ctx = { utilisateurId: salarie!.utilisateurId, entrepriseId: a.entreprise.id };
+    await assert.rejects(
+      () => exigerEcran(ctx, "/chantiers", "supprimer une prestation"),
+      (e: unknown) => e instanceof ActionRefuseeError,
+      "un salarié franchit la garde d'écran : il peut donc effacer une prestation pour de bon"
+    );
+  });
+
+  await essai("la même garde LAISSE PASSER le salarié sur SON écran", async () => {
+    // Sans cette moitié, on aurait fermé au salarié jusqu'à son propre planning.
+    const ctx: Ctx = { utilisateurId: salarie!.utilisateurId, entrepriseId: a.entreprise.id };
+    await exigerEcran(ctx, "/planning", "déplacer un chantier");
+  });
+
+  await essai("le commercial passe sur /chantiers, le patron aussi", async () => {
+    const c: Ctx = { utilisateurId: commercial!.utilisateurId, entrepriseId: a.entreprise.id };
+    await exigerEcran(c, "/chantiers", "supprimer une prestation");
+    await exigerEcran(ctxPatron, "/chantiers", "supprimer une prestation");
+  });
+
+  await essai("CHAQUE action d'un écran fermé au salarié porte une garde", () => {
+    const nues: string[] = [];
+    let comptees = 0;
+    for (const f of ECRANS_FERMES_AU_SALARIE) {
+      assert.ok(existsSync(join(process.cwd(), f)), `${f} n'existe plus : la liste est périmée`);
+      for (const { nom, corps } of actionsDe(join(process.cwd(), f))) {
+        comptees++;
+        if (`${f}#${nom}` in EXEMPTIONS) continue;
+        if (!GARDES.some((g) => corps.includes(g))) nues.push(`${f}#${nom}`);
+      }
+    }
+    assert.ok(comptees >= 30, `seulement ${comptees} action(s) relevée(s) : la lecture a échoué`);
+    assert.deepEqual(
+      nues,
+      [],
+      `Ces actions vivent sur un écran fermé au salarié, sans garde :\n      ${nues.join("\n      ")}\n` +
+        "    L'écran ne les protège pas : GardeAcces ne s'exécute qu'au RENDU, et l'adresse de\n" +
+        "    l'action reste postable. Ajouter en première ligne :\n" +
+        "      await exigerEcran(ctx, \"/chantiers\", \"ce que fait l'action\");"
+    );
+  });
+
+  // ─── MOITIÉ 4 : LA PORTÉE DU PLANNING S'APPLIQUE AUX ÉCRITURES ───────────
+  //
+  // Le patron a tranché le 13 août 2026 : « le patron choisira s'il a accès
+  // qu'à ses chantiers ou à tout ». Le tamis existait — au CHARGEMENT
+  // seulement. Un salarié resserré ne VOYAIT pas les autres chantiers, et
+  // pouvait pourtant les supprimer dès qu'il en connaissait l'identifiant.
+  const chantierDuPatron = await creerChantier(ctxPatron, { nom: "Chantier hors portée" });
+
+  await essai("portée « tout » : le salarié passe — c'est le cas par DÉFAUT", async () => {
+    // Sans cette moitié, on aurait pu tout fermer et croire l'application sûre :
+    // resserrer n'est pas l'état de départ, c'est un geste du patron.
+    const ctx: Ctx = { utilisateurId: salarie!.utilisateurId, entrepriseId: a.entreprise.id };
+    await exigerChantierDansSaPortee(ctx, chantierDuPatron.id, "déplacer ce chantier");
+  });
+
+  await essai("PORTÉE RESSERRÉE : un chantier hors de son équipe est REFUSÉ", async () => {
+    // **La valeur de retour se VÉRIFIE.** Premier jet : `changerLaPortee` était
+    // appelée à trois arguments au lieu de quatre, elle rendait un refus, et
+    // la suite l'ignorait — puis accusait la garde de ne pas refuser. C'est
+    // « une erreur interprétée comme un succès », le motif exact que ce lot
+    // traque ailleurs, commis ici dans le contrôle lui-même.
+    const equipe = await nommerEquipe(ctxPatron, 1, "Équipe A");
+    const r = await changerLaPortee(ctxPatron, salarie!.id, "ses_equipes", equipe.id);
+    assert.deepEqual(r, { ok: true }, "le resserrement de la portée a été refusé");
+    const ctx: Ctx = { utilisateurId: salarie!.utilisateurId, entrepriseId: a.entreprise.id };
+    await assert.rejects(
+      () => exigerChantierDansSaPortee(ctx, chantierDuPatron.id, "supprimer ce chantier"),
+      (e: unknown) => e instanceof ActionRefuseeError,
+      "un salarié resserré peut écrire sur un chantier qu'il ne voit même pas"
+    );
+  });
+
+  await essai("un chantier INCONNU est refusé, même resserré sur une équipe", async () => {
+    // L'inverse rendrait le resserrement silencieusement inopérant, et le
+    // patron croirait avoir restreint (migration 0065).
+    const ctx: Ctx = { utilisateurId: salarie!.utilisateurId, entrepriseId: a.entreprise.id };
+    await assert.rejects(
+      () => exigerChantierDansSaPortee(ctx, "00000000-0000-0000-0000-000000000000", "déplacer"),
+      (e: unknown) => e instanceof ActionRefuseeError
+    );
+  });
+
+  await essai("le PATRON n'est jamais borné par une portée", async () => {
+    await exigerChantierDansSaPortee(ctxPatron, chantierDuPatron.id, "supprimer ce chantier");
   });
 
   await pool.end();

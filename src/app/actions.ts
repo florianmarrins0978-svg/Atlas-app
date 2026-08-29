@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { exigerEcran } from "@/server/garde-action";
 import { getCurrentCtx } from "@/server/session-ctx";
 import { logger } from "@/server/logger";
 import { marquerReponseVue } from "@/server/repositories/envois-devis";
@@ -17,6 +18,7 @@ import { jourIso } from "@/lib/jour";
  */
 export async function marquerReponseVueAction(envoiId: string) {
   const ctx = await getCurrentCtx();
+  await exigerEcran(ctx, "/", "marquer une réponse comme vue");
   await marquerReponseVue(ctx, envoiId);
   revalidatePath("/");
 }
@@ -48,6 +50,7 @@ export async function corrigerDevisAction(
 ): Promise<{ ok: true } | { ok: false; message: string }> {
   try {
     const ctx = await getCurrentCtx();
+    await exigerEcran(ctx, "/", "rouvrir un devis en correction");
     await getOuCreerDevisBrouillon(ctx, chantierId);
     revalidatePath(`/chantiers/${chantierId}/devis-complet`);
     revalidatePath("/");
@@ -88,6 +91,7 @@ export async function repousserRappelFactureAction(
   factureId: string
 ): Promise<{ ok: true } | { ok: false; raison: string }> {
   const ctx = await getCurrentCtx();
+  await exigerEcran(ctx, "/", "repousser un rappel de facture");
   try {
     const fait = await repousserRappelFacture(ctx, factureId, jourIso(new Date()));
     return fait

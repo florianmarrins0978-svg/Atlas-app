@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { jourIso } from "@/lib/jour";
+import { exigerEcran } from "@/server/garde-action";
 import { getCurrentCtx } from "@/server/session-ctx";
 import { preparerDevisDepuisDictee, enregistrerPrecisionsEtReprendre } from "@/server/services/devis-depuis-dictee";
 import {
@@ -47,31 +48,37 @@ import { verifierLimite, LIMITES } from "@/server/rate-limit";
 
 export async function ajouterPrestationAction(chantierId: string, libelle: string) {
   const ctx = await getCurrentCtx();
+  await exigerEcran(ctx, "/chantiers", "ajouter une prestation");
   return ajouterPrestation(ctx, chantierId, libelle);
 }
 
 export async function modifierPrestationAction(id: string, libelle: string) {
   const ctx = await getCurrentCtx();
+  await exigerEcran(ctx, "/chantiers", "modifier une prestation");
   return modifierPrestation(ctx, id, libelle);
 }
 
 export async function supprimerPrestationAction(id: string) {
   const ctx = await getCurrentCtx();
+  await exigerEcran(ctx, "/chantiers", "supprimer une prestation");
   return supprimerPrestation(ctx, id);
 }
 
 export async function ajouterMaterielAction(chantierId: string, libelle: string) {
   const ctx = await getCurrentCtx();
+  await exigerEcran(ctx, "/chantiers", "ajouter du matériel");
   return ajouterMateriel(ctx, chantierId, libelle);
 }
 
 export async function modifierMaterielAction(id: string, libelle: string) {
   const ctx = await getCurrentCtx();
+  await exigerEcran(ctx, "/chantiers", "modifier du matériel");
   return modifierMateriel(ctx, id, libelle);
 }
 
 export async function supprimerMaterielAction(id: string) {
   const ctx = await getCurrentCtx();
+  await exigerEcran(ctx, "/chantiers", "supprimer du matériel");
   return supprimerMateriel(ctx, id);
 }
 
@@ -80,11 +87,13 @@ export async function mettreAJourDureeEquipeAction(
   data: { dureePrevue?: string; tailleEquipe?: string }
 ) {
   const ctx = await getCurrentCtx();
+  await exigerEcran(ctx, "/chantiers", "changer la durée ou l'équipe");
   return mettreAJourDureeEquipe(ctx, chantierId, data);
 }
 
 export async function validerInformationsAction(chantierId: string) {
   const ctx = await getCurrentCtx();
+  await exigerEcran(ctx, "/chantiers", "valider les informations");
   return marquerInformationsVerifiees(ctx, chantierId);
 }
 
@@ -94,7 +103,8 @@ export async function validerInformationsAction(chantierId: string) {
 export async function extraireInformationsAction(texte: string): Promise<
   { succes: true; proposition: PropositionExtraction } | { succes: false; erreur: string }
 > {
-  await getCurrentCtx(); // exige une session valide, même si l'extraction elle-même n'est pas scopée entreprise
+  const ctx = await getCurrentCtx();
+  await exigerEcran(ctx, "/chantiers", "analyser un texte");
   const resultat = await extraire(texte);
   if (!resultat.succes) return { succes: false, erreur: resultat.erreur.message };
   return { succes: true, proposition: resultat.proposition };
@@ -108,6 +118,7 @@ export async function appliquerExtractionAction(
   confirmee: { prestations: string[]; materiel: string[]; dureePrevue?: string; tailleEquipe?: string }
 ) {
   const ctx = await getCurrentCtx();
+  await exigerEcran(ctx, "/chantiers", "appliquer une extraction");
   const prestationsCreees = [];
   for (const libelle of confirmee.prestations) {
     if (libelle.trim()) prestationsCreees.push(await ajouterPrestation(ctx, chantierId, libelle.trim()));
@@ -131,6 +142,7 @@ export async function appliquerExtractionAction(
 
 export async function chargerBrouillonAction(chantierId: string) {
   const ctx = await getCurrentCtx();
+  await exigerEcran(ctx, "/chantiers", "ouvrir le brouillon de devis");
   return getBrouillon(ctx, chantierId);
 }
 
@@ -139,6 +151,7 @@ export async function chargerBrouillonAction(chantierId: string) {
 // d'écraser ses propres corrections, après avoir vu le conflit.
 export async function genererBrouillonAction(chantierId: string, remplacer = false) {
   const ctx = await getCurrentCtx();
+  await exigerEcran(ctx, "/chantiers", "engendrer le brouillon de devis");
   const resultat = await genererBrouillon(ctx, chantierId, { remplacer });
 
   // Le conflit ne traverse pas la frontière client tel quel : seul ce qui est
@@ -153,6 +166,7 @@ export async function genererBrouillonAction(chantierId: string, remplacer = fal
 // client ne peut pas déposer une structure arbitraire dans la base.
 export async function enregistrerBrouillonAction(chantierId: string, contenu: unknown) {
   const ctx = await getCurrentCtx();
+  await exigerEcran(ctx, "/chantiers", "enregistrer le brouillon de devis");
   const analyse = PropositionExtractionSchema.safeParse(contenu);
   if (!analyse.success) {
     return { succes: false as const, erreur: "Brouillon invalide." };
@@ -167,6 +181,7 @@ export async function enregistrerBrouillonAction(chantierId: string, contenu: un
 // Idempotent au sens utile : un brouillon déjà confirmé n'est pas réappliqué.
 export async function confirmerBrouillonAction(chantierId: string) {
   const ctx = await getCurrentCtx();
+  await exigerEcran(ctx, "/chantiers", "confirmer le brouillon de devis");
   const resultat = await confirmerBrouillon(ctx, chantierId);
   if (!resultat.succes) return { succes: false as const, erreur: resultat.erreur };
   return { succes: true as const, prestationsCreees: resultat.prestationsCreees, materielCree: resultat.materielCree };
@@ -741,6 +756,7 @@ export async function appliquerPropositionsAction(
  */
 export async function preparerDevisDepuisDicteeAction(chantierId: string, remplacer = false) {
   const ctx = await getCurrentCtx();
+  await exigerEcran(ctx, "/chantiers", "préparer un devis depuis la dictée");
   const resultat = await preparerDevisDepuisDictee(ctx, chantierId, { remplacer });
 
   if (resultat.statut === "prepare") {
@@ -774,6 +790,7 @@ export async function repondreQuestionsChiffrageAction(
   reponses: { sujet: string; libellePrestation: string; valeur: string; lisible: string }[]
 ) {
   const ctx = await getCurrentCtx();
+  await exigerEcran(ctx, "/chantiers", "répondre aux questions de chiffrage");
   const resultat = await enregistrerPrecisionsEtReprendre(ctx, chantierId, reponses);
 
   if (resultat.statut === "prepare") {

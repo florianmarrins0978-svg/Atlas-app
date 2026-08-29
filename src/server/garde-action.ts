@@ -1,5 +1,6 @@
-import { peutVoirLesMontants } from "@/lib/acces-roles";
-import { getRole } from "./autorisation";
+import { cheminAutorise, peutVoirLesMontants } from "@/lib/acces-roles";
+import { accesDeLaPersonne, getRole } from "./autorisation";
+import { chantiersDeLEquipe } from "./repositories/chantiers";
 import type { Ctx } from "./repositories/context";
 
 /**
@@ -87,4 +88,94 @@ export async function exigerMontants(ctx: Ctx, action: string): Promise<void> {
   if (!role || !peutVoirLesMontants(role)) {
     throw new ActionRefuseeError(action);
   }
+}
+
+/**
+ * **CETTE PERSONNE A-T-ELLE ACCÈS À L'ÉCRAN DONT CETTE ACTION RELÈVE ?**
+ *
+ * ═══════════════════════════════════════════════════════════════════════════
+ * **CE QU'ELLE FERME, ET CE QU'ELLE NE TRANCHE PAS** — lot de clôture,
+ * 29 août 2026.
+ *
+ * `exigerMontants` couvre la règle des MONTANTS. Restaient des actions qui ne
+ * font sortir aucun prix et qui **effacent pour de bon** : une prestation, une
+ * ligne de matériel, une note vocale, un passage d'entretien. Toutes vivent sur
+ * des écrans que `cheminAutorise` ferme au salarié — mais un écran fermé ne
+ * ferme pas l'action (voir l'en-tête de ce fichier).
+ *
+ * Ces suppressions sont **DURES** : un `DELETE` en base, pas un `deletedAt`.
+ * Rien ne les défait, et aucun écran ne les restaure.
+ *
+ * **Cette garde ne décide RIEN de neuf.** Elle applique la règle que le patron a
+ * déjà posée le 23 août 2026 — *« les salariés, eux, auront accès qu'à la
+ * catégorie planning »* — là où seule la mise en page l'appliquait. La question
+ * qu'il n'a PAS tranchée — un salarié peut-il supprimer un chantier depuis le
+ * planning, qui est son écran — reste ouverte et lui revient.
+ *
+ * ═══════════════════════════════════════════════════════════════════════════
+ * **LE CHEMIN EST ÉCRIT DANS L'APPEL, JAMAIS LU DE LA REQUÊTE.**
+ *
+ * C'est toute la différence avec `exigerOuverture`, qui garde les routes d'API
+ * par l'en-tête `x-atlas-pathname`. Pour une action, cet en-tête porte l'écran
+ * où se trouve le navigateur : un salarié posté sur `/planning` le franchirait
+ * en appelant une action de `/chantiers/…`.
+ *
+ * Ici le chemin est une constante du code, à côté de l'action qu'elle décrit.
+ * Le navigateur ne peut pas l'influencer.
+ *
+ * Et la règle n'est pas recopiée : `cheminAutorise` est la même fonction que
+ * celle des écrans et des routes. Un changement de périmètre se fait à un seul
+ * endroit (`CLAUDE.md` §3).
+ */
+export async function exigerEcran(ctx: Ctx, chemin: string, action: string): Promise<void> {
+  const role = await getRole(ctx);
+  if (!role || !cheminAutorise(role, chemin)) {
+    throw new ActionRefuseeError(action);
+  }
+}
+
+/**
+ * **CE CHANTIER EST-IL DANS LA PORTÉE DE CETTE PERSONNE ?**
+ *
+ * ═══════════════════════════════════════════════════════════════════════════
+ * **LE TAMIS ÉTAIT UN TAMIS DE LECTURE, PAS UN TAMIS DE DROIT** — lot de
+ * clôture, 29 août 2026.
+ *
+ * Le patron a tranché le 13 août 2026 : *« Accès à tout, mais le patron
+ * choisira s'il a accès qu'à ses chantiers ou à tout. »* Le réglage existe, il
+ * est par personne, et `contexte-planning.ts` l'applique — **au chargement**.
+ *
+ * Mais aucune des sept actions du planning ne vérifiait que le chantier reçu
+ * appartenait bien à l'équipe du salarié. Conséquence : un salarié resserré sur
+ * « ses équipes » **ne voyait pas** les autres chantiers, et pouvait pourtant
+ * les supprimer, les déplacer, les déplanifier ou les annoter dès qu'il en
+ * connaissait l'identifiant.
+ *
+ * Le patron croyait avoir restreint. Il n'avait restreint que ce qui s'affiche.
+ *
+ * **Cette garde ne décide rien de neuf** : elle applique jusqu'au bout une
+ * décision déjà prise. La question qu'il n'a PAS tranchée — un salarié
+ * peut-il supprimer un chantier **de sa propre équipe** — reste entière.
+ *
+ * ═══════════════════════════════════════════════════════════════════════════
+ * **UNE PORTÉE « TOUT » NE COÛTE RIEN** : la fonction sort immédiatement. Le
+ * patron et le commercial ne paient aucune requête de plus, et le salarié dont
+ * le patron n'a rien resserré non plus — c'est le cas par défaut.
+ *
+ * **Une portée resserrée SANS équipe rattachée refuse tout**, exactement comme
+ * la lecture n'en montre aucun. L'inverse rendrait le resserrement
+ * silencieusement inopérant (migration 0065).
+ */
+export async function exigerChantierDansSaPortee(
+  ctx: Ctx,
+  chantierId: string,
+  action: string
+): Promise<void> {
+  const acces = await accesDeLaPersonne(ctx);
+  if (!acces) throw new ActionRefuseeError(action);
+  if (acces.porteePlanning !== "ses_equipes") return;
+  if (!acces.equipeId) throw new ActionRefuseeError(action);
+
+  const siens = await chantiersDeLEquipe(ctx, acces.equipeId);
+  if (!siens.has(chantierId)) throw new ActionRefuseeError(action);
 }

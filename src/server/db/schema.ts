@@ -2436,3 +2436,28 @@ export const preuvesAuthentification = pgTable(
   },
   (table) => [primaryKey({ columns: [table.utilisateurId, table.sessionId] })]
 );
+
+/**
+ * LE JOURNAL DES PURGES — une ligne par exécution RÉUSSIE.
+ *
+ * **Pourquoi elle existe** (audit final, 29 août 2026) : une purge qui ne
+ * tourne plus ne se signale pas. Pas d'erreur, pas d'écran rouge, pas de
+ * ralentissement — les audios s'accumulent et tout a l'air normal. Sans cette
+ * trace, la question « depuis quand ? » n'a aucune réponse.
+ *
+ * **Rien n'est écrit quand la purge échoue.** Un horodatage posé malgré l'échec
+ * dirait « tout va bien » pendant que rien n'est purgé : c'est le faux vert le
+ * plus dangereux, celui qui rassure.
+ *
+ * Aucune donnée d'artisan ici — des dates et des compteurs. Pas de colonne
+ * `entreprise_id`, donc pas de cloisonnement à poser : la purge est une
+ * opération globale, comme les files qu'elle vide.
+ */
+export const executionsPurge = pgTable("executions_purge", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  termineeLe: timestamp("terminee_le", { withTimezone: true }).notNull().defaultNow(),
+  fichiersPurges: integer("fichiers_purges").notNull().default(0),
+  audiosPurges: integer("audios_purges").notNull().default(0),
+  photosPurgees: integer("photos_purgees").notNull().default(0),
+  preuvesPurgees: integer("preuves_purgees").notNull().default(0),
+});
