@@ -10,6 +10,27 @@ export const LigneExtraiteSchema = z.object({
   description: z.string().nullable().default(null),
   quantite: z.string().nullable().default(null),
   unite: z.string().nullable().default(null),
+  /**
+   * La nature du travail, prise dans une liste FERMÉE (`natures-prestation.ts`).
+   *
+   * **Une liste, pas un champ libre** : laisser un modèle nommer lui-même les
+   * natures fabriquerait une taxonomie qui dérive à chaque dictée, et le
+   * regroupement des lignes de devis avec elle. Ce qui n'est pas dans la liste
+   * revient `null` — et `null` veut dire « on ne sait pas », jamais « c'est un
+   * abattage ». Le travail garde alors sa propre ligne, à chiffrer.
+   *
+   * `.optional()` : les brouillons enregistrés avant le 27 août 2026 n'ont pas
+   * ce champ, et doivent continuer à se relire sans erreur. Un défaut à `null`
+   * l'aurait rendu obligatoire à l'écriture, ce qui n'apporte rien ici : les
+   * lecteurs écrivent tous `?? null`.
+   */
+  nature: z.string().nullable().optional(),
+  /**
+   * L'espèce, **uniquement si elle est prononcée** — « un érable », « du
+   * laurier ». Jamais déduite : un chêne et un peuplier ne s'abattent pas
+   * pareil, et se tromper d'espèce fait rappeler un prix qui n'a rien à voir.
+   */
+  espece: z.string().nullable().optional(),
   aConfirmer: z.boolean().default(false),
 });
 

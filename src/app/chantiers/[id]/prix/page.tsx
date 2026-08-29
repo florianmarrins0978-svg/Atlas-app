@@ -50,7 +50,16 @@ export default async function PrixPage({
 
         <PrixClient
           chantierId={id}
-          initialLignes={lignes.map((l) => ({ id: l.id, libelle: l.libelle, montant: l.montant }))}
+          initialLignes={lignes.map((l) => ({
+            id: l.id,
+            libelle: l.libelle,
+            montant: l.montant,
+            // **Sans lui, l'écran serait plus permissif que le serveur**, et le
+            // bouton échouerait sans raison lisible : le message d'une exception
+            // levée par une action serveur n'arrive jamais jusqu'au patron
+            // (`AGENTS.md`). Il doit voir POURQUOI avant d'appuyer.
+            aChiffrer: l.aChiffrer,
+          }))}
           propositionInitiale={proposition}
           saisieManuelle={saisieManuelle}
         />

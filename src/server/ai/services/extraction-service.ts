@@ -2,14 +2,28 @@ import { getFournisseurLLM } from "../providers/llm/fabrique";
 import type { FournisseurLLM } from "../providers/llm/interface";
 import { PropositionExtractionSchema, type ResultatExtraction } from "../schemas/extraction";
 import { erreurIA } from "../errors";
-import { lireObjetJson } from "../../../lib/json-du-modele";
+import { estJsonTronque, lireObjetJson } from "../../../lib/json-du-modele";
 import { lireLitteralement } from "../lecture-litterale";
 import { logger } from "../../logger";
+import { NATURES } from "../../../lib/natures-prestation";
 
-const SYSTEME = `Tu extrais des informations de chantier depuis un texte dicté par un artisan.
+/**
+ * **Exportée pour être éprouvée, jamais pour être appelée d'ailleurs.**
+ *
+ * Cette consigne et celle de la dictée-dans-le-devis doivent dire la MÊME chose
+ * des unités : elles ne le disaient pas, et l'une acceptait « arbre » quand
+ * l'autre ne donnait aucun exemple. `scripts/test-invites-unites.ts` monte la
+ * garde sur ce point précis.
+ *
+ * **La liste des natures est ENGENDRÉE depuis le référentiel**, jamais recopiée.
+ * Une nature ajoutée dans `natures-prestation.ts` et oubliée ici ne serait
+ * jamais proposée par le modèle : la case existerait, rien ne pourrait la
+ * désigner. C'est la règle dupliquée que `CLAUDE.md` §3 interdit.
+ */
+export const SYSTEME = `Tu extrais des informations de chantier depuis un texte dicté par un artisan.
 Réponds UNIQUEMENT avec un objet JSON valide, sans aucun texte avant ou après, au format exact suivant :
 {
-  "prestations": { "libelle": string, "description": string | null, "quantite": string | null, "unite": string | null, "aConfirmer": boolean }[],
+  "prestations": { "libelle": string, "description": string | null, "quantite": string | null, "unite": string | null, "nature": string | null, "espece": string | null, "aConfirmer": boolean }[],
   "materiel": { "libelle": string, "description": string | null, "quantite": string | null, "unite": string | null, "aConfirmer": boolean }[],
   "dureePrevue": string | null,
   "tailleEquipe": string | null,
@@ -26,6 +40,23 @@ Règles absolues :
   ou une contrainte qui ne soit pas explicitement présent dans le texte.
 - Ne déduis jamais une quantité d'un pluriel ou d'un contexte : sans nombre écrit, "quantite" et "unite"
   restent null.
+- "quantite" et "unite" vont TOUJOURS ensemble : jamais l'une sans l'autre. Un nombre sans unité ne veut
+  rien dire — « 800 » se lit 800 mètres, 800 m² ou 800 heures selon qui le lit.
+- "unite" est l'unité de ce nombre, dans SON mot à lui : "ml", "m²", "m³", "heure", "jour", "tonne",
+  "stère" — ou l'OBJET qu'il compte quand il compte des choses :
+    « deux souches »   -> "quantite": "2", "unite": "souche"
+    « trois arbres »   -> "quantite": "3", "unite": "arbre"
+  L'unité de comptage doit être l'objet explicitement prononcé. N'invente pas une unité pour un nombre
+  dont on ne sait pas ce qu'il compte : les deux restent null.
+- "nature" se choisit dans CETTE LISTE, et nulle part ailleurs :
+    ${NATURES.map((n) => n.cle).join(", ")}
+  Si le travail décrit n'en fait manifestement partie d'aucune, "nature" vaut null. N'invente
+  JAMAIS un nom de nature : un travail sans nature reste un travail à part entière.
+- "espece" n'est renseignée que si l'espèce est PRONONCÉE — « un érable », « de la haie de
+  laurier ». Recopie le mot au singulier, sans article : "érable", "laurier". Jamais déduite
+  d'un contexte : sinon null.
+- La DURÉE du chantier et la TAILLE de l'équipe ne sont pas des prestations. « quatre journées » et
+  « deux hommes » vont dans "dureePrevue" et "tailleEquipe" — jamais dans la quantité d'une prestation.
 - Toute information absente vaut null (ou un tableau vide) et doit être citée dans "informationsManquantes".
 - Une information présente mais incertaine garde "aConfirmer": true — ce drapeau ne sert jamais à combler
   un vide par une supposition.
@@ -135,6 +166,25 @@ export async function extraire(
   const resultat = await fournisseur.genererTexte(consigne, texte);
   if (!resultat.succes) {
     return replier(resultat.erreur.message);
+  }
+
+  // **Une réponse TRONQUÉE n'est jamais une réponse valide** — et elle ne doit
+  // pas se confondre avec une panne ni avec un modèle qui répond à côté.
+  //
+  // Deux lectures, dans cet ordre. Le fournisseur d'abord : il SAIT, l'API le
+  // dit (`stop_reason: "max_tokens"`), et c'est la source qui fait foi. La
+  // forme ensuite : tous les fournisseurs ne le disent pas, et un JSON qui
+  // s'ouvre sans jamais se refermer est une coupure, quoi qu'en dise
+  // l'enveloppe.
+  //
+  // Le repli reste — un écran mort a coûté deux jours le 4 août 2026 — mais il
+  // devient IDENTIFIABLE : le motif nomme la troncature, il part au journal, et
+  // les écrans peuvent le dire au patron.
+  if (resultat.fin === "tronque" || estJsonTronque(resultat.texte)) {
+    return replier(
+      "Réponse du fournisseur tronquée : coupée avant la fin, elle ne peut pas être lue.",
+      resultat.texte
+    );
   }
 
   const brut = lireObjetJson(resultat.texte);

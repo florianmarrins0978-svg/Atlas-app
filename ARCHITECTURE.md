@@ -17825,3 +17825,185 @@ silence plutôt que de rendre un vert qui ne prouve rien.
 16.3.3 devant un pin exact et un verrou concordant. La cause d'origine n'est
 donc pas établie, et ce correctif traite le symptôme : il le répare à chaque
 démarrage au lieu de le laisser condamner le banc. Noté dans `TODO.md`.
+
+## 205. La chaîne dictée → devis : une nature par travail, une quantité qui va jusqu'au bout, et « à chiffrer » au lieu de 0 €
+
+**Ce qui a été corrigé le 27 août 2026, et pourquoi chaque pièce existe.**
+
+Le devis du 26 août portait trois défauts, et aucun n'était un défaut
+d'affichage : la quantité dictée n'existait plus comme donnée, deux travaux sans
+rapport partageaient une identité, et une ligne qu'on ne savait pas chiffrer
+s'écrivait « 0 € ».
+
+### 205 a. Le fourre-tout `principal`, et ce qu'il coûtait
+
+`lignes-vendables.ts` rangeait dans une case `principal` **tout ce qu'aucune de
+ses cinq expressions régulières ne reconnaissait**. Aucune ne connaissait la
+tonte. « Tonte de la pelouse (1200 m²) » arrivait donc sur la ligne du
+démontage d'un érable, et le montant de cette ligne partait dans la case
+d'abattage de sa grille — 800 € devenaient 1 500 €, tonte comprise.
+
+Le fourre-tout n'était pas un défaut de rangement : c'était **la porte d'entrée
+de la corruption**.
+
+Six modules portaient chacun leur propre liste de travaux —
+`lignes-vendables.ts`, `lecons-prix.ts`, `apprendre-grille.ts`,
+`prix-attribuable.ts`, `grille-prix.ts`, `questions-chiffrage.ts` — et aucune
+n'était tout à fait la même. `src/lib/natures-prestation.ts` les remplace.
+
+**Deux règles y gouvernent, et elles ne se confondent jamais :**
+
+| | |
+|---|---|
+| **identité métier** | ce qu'est le travail — une tonte est une tonte |
+| **capacité de chiffrage** | ce qu'Atlas sait en faire — aucune grille ne chiffre une tonte |
+
+Les confondre, c'est ce qui a produit le fourre-tout : « je ne sais pas le
+chiffrer » se lisait « je ne sais pas ce que c'est », donc « ça va avec le
+reste ». **Une nature inconnue garde désormais sa propre ligne** et sort « à
+chiffrer » — elle ne rejoint rien, pas même une autre nature inconnue.
+
+`LigneVendable.cle` porte la nature ; le rôle de « ligne qui absorbe le solde »
+vit dans un champ à part (`principal: boolean`). C'était précisément ce que le
+mot `principal` mélangeait.
+
+### 205 b. La quantité : deux concepts, jamais synchronisés
+
+| | Où | Ce que ça dit |
+|---|---|---|
+| **physique** | `prestations.quantite` | ce qu'il y a à faire : 800 mètres de haie |
+| **commerciale** | `lignes_prix.quantite` | ce qui est vendu : 800 ml, ou 1 forfait |
+
+`src/lib/quantite-commerciale.ts` porte la règle : la quantité se dérive quand
+la ligne vend **exactement une** prestation mesurée ; tout le reste est un
+forfait. Additionner celles de plusieurs prestations serait le pire des cas —
+800 ml de haie plus 2 souches ne font pas 802 de quoi que ce soit.
+
+**Et la quantité physique atteint enfin le calcul.** Elle vivait en colonne
+depuis le lot B et le chiffrage relisait « (800 ml) » dans le libellé : corriger
+la colonne ne changeait donc **rien** au prix, elle était décorative.
+`caracteristiqueDeLaQuantite` traduit l'unité dictée en mesure de chiffrage —
+800 « ml » sur une haie SONT sa longueur — et refuse dès que l'unité ne
+concorde pas. 800 m² de haie ne sont pas une longueur.
+
+### 205 c. « À chiffrer » n'est pas « 0 € »
+
+Sur un devis, un zéro se lit « gratuit » : c'est un montant, donc une décision,
+là où il n'y a qu'une ignorance. Le patron pouvait envoyer ce document.
+
+`lignes_prix.a_chiffrer` et `lignes_devis.a_chiffrer` (migration 0070) portent
+l'état. **Un drapeau, et non un prix nullable** : rendre `montant` nullable
+remonterait jusqu'à `lignes_facture`, donc jusqu'à la facturation — et un devis
+facturé à NULL serait bien pire que le zéro qu'on répare.
+
+L'état descend jusqu'au document parce que le contrôle avant envoi porte sur SA
+photographie : les lignes de prix ont pu bouger depuis qu'il a été préparé.
+`peutPreparerDevis` refuse, `envoyerDevis` refuse, et poser un montant éteint
+l'état de lui-même.
+
+### 205 d. La comparabilité V2, à côté de la V1
+
+`lecons_prix.signature` porte des clés **déjà stockées**. Les réécrire
+orphelinerait toute la mémoire de prix du patron, sans un mot et sans erreur.
+La V2 prend donc une colonne à elle (`signature_v2`).
+
+Ce qu'elle sait et que la V1 ignorait : l'**ordre de grandeur** de la quantité,
+l'**unité**, l'**espèce**.
+
+**Aucun seuil ×2 ou ×5 n'a été inventé.** Rien dans le dépôt ne le justifie, et
+le choisir « pour terminer » fabriquerait exactement le genre de chiffre qui
+revient ensuite avec l'autorité de l'expérience. Le critère retenu est
+éliminatoire et certain : deux chantiers qui ne sont pas du même ordre de
+grandeur ne sont pas le même chantier. La frontière (95 et 105 m tombent de part
+et d'autre) fait **manquer** un rappel, jamais n'en fabrique un faux — c'est
+déjà le raisonnement de `trancheDiametre`.
+
+**L'espèce n'entre pas dans la clé, et c'est délibéré.** Une leçon d'avant n'en
+porte aucune ; la mettre dans la clé rendrait toute la mémoire introuvable dès
+que l'extraction commencerait à remplir le champ. Elle élimine dans
+`sontComparables`, **quand les deux côtés la connaissent** — une absence
+d'information n'est pas une différence.
+
+La lecture se fait en deux temps : la base présélectionne largement (clé V1 OU
+clé V2), le tri fin se fait en mémoire. Les leçons d'avant se relisent de leur
+propre libellé (`profilDepuisLibelle`), **sans qu'on leur prête une espèce
+qu'elles n'ont jamais portée**.
+
+`lecons_prix` enregistre désormais espèce, quantité et unité : c'est la matière
+qui permettra de calibrer honnêtement un seuil, plus tard, sur ses vrais devis.
+
+### 205 e. Une correction de l'artisan tranche, au lieu de bloquer
+
+Sa plainte : *« il ne doit plus être obligé de transformer "Haie (800 ml)" en
+"Haie (80 ml)" pour corriger sa quantité. »*
+
+Le défaut était pire que la plainte. Quand il le FAISAIT, **rien ne changeait** :
+le chiffrage lisait la colonne — restée à 800 — et le contrat du lot C, devant
+deux sources qui divergent, refusait de calculer quoi que ce soit. Sa correction
+était invisible **et** bloquante, et rien à l'écran ne le lui disait.
+
+`prestations.corrige_par_humain` (migration 0070) donne au dépôt la provenance
+qui lui manquait. Trois conséquences :
+
+1. le libellé qu'il édite est **lu** — c'est une saisie, pas une base de
+   données — et sa mesure entre en colonne (`modifierPrestation`) ;
+2. sa valeur **tranche** face à un libellé que personne n'a mis à jour
+   (`mesures-prestation.ts`), au lieu de produire une contradiction ;
+3. aucune extraction ne repasse dessus (`enrichissementPossible`).
+
+`renommerPrestation` existe pour la contrepartie : le report automatique des
+réponses de l'arrêt réécrit le libellé, et ne doit surtout pas marquer la ligne
+« corrigée par l'artisan ».
+
+**Le contrat du lot C ne bouge pas** : sans main humaine, deux sources qui
+divergent restent une contradiction et le prix ne se calcule pas.
+
+### 205 f. La nature et l'espèce viennent du modèle, dans une liste fermée
+
+Le contrat d'extraction demande désormais `nature` et `espece`. La nature se
+choisit **dans une liste** : laisser un modèle nommer lui-même les natures
+fabriquerait une taxonomie qui dérive à chaque dictée, et le regroupement des
+lignes avec elle. Ce qu'il propose est **vérifié** contre le référentiel ; ce
+qui n'y figure pas vaut `null`, et le travail garde sa propre ligne.
+
+L'espèce n'est renseignée que si elle est **prononcée**. Jamais déduite : un
+chêne et un peuplier ne s'abattent pas pareil.
+
+### 205 g. Une réponse tronquée n'est plus indiscernable d'une panne
+
+L'API Anthropic renvoie `stop_reason: "max_tokens"` quand elle a coupé. Le
+fournisseur ne lisait que `content` : l'information arrivait ici et **était
+jetée**. Une troncature et un modèle hors sujet tombaient dans le même repli,
+sans que rien ne dise lequel — le défaut muet d'`AGENTS.md`.
+
+`ResultatLLM` porte `fin: "complet" | "tronque"`. Deux lectures, dans cet
+ordre : le fournisseur d'abord (il sait), la **forme** ensuite
+(`estJsonTronque` — un objet qui s'ouvre et ne se referme jamais), parce que
+tous les fournisseurs ne le disent pas. Le plafond passe de 1 024 à 4 096
+jetons, mais **ce n'est pas la correction** : une dictée plus longue le
+dépassera aussi. La correction, c'est que la coupure se voie.
+
+Le repli littéral reste — un écran mort a coûté deux jours le 4 août 2026 —
+mais il est désormais **identifiable**.
+
+### 205 h. Ce qui reste un mécanisme historique, et pourquoi
+
+Le libellé n'est plus la source des données métier. Il reste lu à trois
+endroits, tous nommés comme tels :
+
+| Où | Pourquoi |
+|---|---|
+| `natureDuLibelle` | les prestations d'avant le lot B n'ont pas de colonne |
+| `profilDepuisLibelle` | une leçon de prix ne porte que son libellé |
+| `mesures-arbre.ts` | « ⌀ 45 cm » écrit dans le texte reste une source |
+
+Ce sont des **replis**, jamais la voie principale : chacun n'est consulté que
+lorsque la colonne est absente.
+
+### 205 i. Deux fois le même travail dicté ≠ un rejeu
+
+Le dédoublonnage de `confirmerBrouillon` protège du **rejeu** d'une dictée.
+Il ne doit pas protéger de ce qu'une dictée énonce deux fois : « je démonte un
+érable, puis un érable au fond du jardin » fait deux arbres, et fondre les deux
+en ferait disparaître un — que le patron ne facturerait jamais. Les prestations
+créées par la passe en cours ne servent donc plus au rapprochement.

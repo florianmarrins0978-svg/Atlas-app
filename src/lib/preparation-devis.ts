@@ -31,7 +31,17 @@ import Decimal from "decimal.js";
  */
 export class PrixNonPreparableError extends Error {}
 
-export type LignePrix = { libelle: string; montant: string };
+export type LignePrix = {
+  libelle: string;
+  montant: string;
+  /**
+   * Le travail est identifié, son prix ne l'est pas (migration 0070).
+   *
+   * **Absent, il vaut « non »** : les lignes d'avant le 27 août 2026 n'ont
+   * jamais porté cet état, et rien ne doit prétendre le contraire.
+   */
+  aChiffrer?: boolean | null;
+};
 
 export type VerdictPreparation =
   | { possible: true }
@@ -65,8 +75,35 @@ export function peutPreparerDevis(lignes: readonly LignePrix[]): VerdictPreparat
     };
   }
 
+  // **Une ligne « à chiffrer » arrête le devis, et c'est tout son intérêt.**
+  //
+  // Sa demande du 27 août 2026 : *« le devis ne doit pas pouvoir être considéré
+  // comme prêt à envoyer tant qu'une ligne nécessitant un prix n'est pas
+  // chiffrée. »* Avant, ces lignes-là valaient 0 € : le total paraissait
+  // correct, le devis partait, et le client lisait un travail à zéro euro.
+  //
+  // Le contrôle vient APRÈS celui du total : un devis entièrement à chiffrer
+  // doit dire « aucune ligne n'a de prix », pas nommer la première.
+  const aChiffrer = lignes.filter((l) => l.aChiffrer);
+  if (aChiffrer.length > 0) {
+    const noms = aChiffrer.map((l) => `« ${premiereLigne(l.libelle)} »`).join(", ");
+    return {
+      possible: false,
+      probleme:
+        aChiffrer.length === 1
+          ? `${noms} attend son prix : cette ligne n'est pas gratuite, elle n'est pas chiffrée.`
+          : `${aChiffrer.length} lignes attendent leur prix : ${noms}.`,
+      marcheASuivre: "Posez leur montant ci-dessus. Le devis sera prêt dès qu'aucune ligne n'attend plus rien.",
+    };
+  }
+
   // Une ligne sans libellé laisse au client une ligne muette en face d'un
   // montant. On ne bloque pas pour autant : c'est au patron de juger, et une
   // description peut se corriger sur l'écran du devis.
   return { possible: true };
+}
+
+/** Une ligne peut réunir plusieurs travaux empilés : on n'en nomme qu'un. */
+function premiereLigne(libelle: string): string {
+  return libelle.split("\n")[0]?.trim() || "sans libellé";
 }

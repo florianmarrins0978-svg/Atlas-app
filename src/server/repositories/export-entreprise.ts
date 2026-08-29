@@ -30,6 +30,7 @@ import {
   lignesDevis,
   lignesFacture,
   lignesPrix,
+  lignesPrixPrestations,
   materiel,
   membresEntreprise,
   achatsTva,
@@ -119,6 +120,7 @@ export async function exporterEntreprise(
       lesAchatsTva,
       lesTarifs,
       lesLignesPrix,
+      lesLiaisonsPrestations,
       lesDevis,
       lesLignesDevis,
       lHistorique,
@@ -170,6 +172,13 @@ export async function exporterEntreprise(
       tx.select().from(achatsTva).where(eq(achatsTva.entrepriseId, e)),
       tx.select().from(tarifs).where(eq(tarifs.entrepriseId, e)),
       tx.select().from(lignesPrix).where(eq(lignesPrix.entrepriseId, e)),
+      // **Quelles prestations chaque ligne de devis vend** (migration 0069).
+      // Sans ce lien, une sauvegarde rendrait les lignes et les prestations
+      // sans dire lesquelles vont ensemble : le devis se relirait, mais plus
+      // rien ne saurait à quel travail appartient un montant — et c'est de
+      // cette ignorance-là qu'est venue la case d'abattage fausse du 26 août.
+      // Le contrôle d'exhaustivité l'a réclamé avant qu'on y pense.
+      tx.select().from(lignesPrixPrestations).where(eq(lignesPrixPrestations.entrepriseId, e)),
       tx.select().from(devis).where(eq(devis.entrepriseId, e)),
       tx.select().from(lignesDevis).where(eq(lignesDevis.entrepriseId, e)),
       tx.select().from(historiquePrix).where(eq(historiquePrix.entrepriseId, e)),
@@ -298,6 +307,7 @@ export async function exporterEntreprise(
       achats_tva: lesAchatsTva,
       tarifs: lesTarifs,
       lignes_prix: lesLignesPrix,
+      lignes_prix_prestations: lesLiaisonsPrestations,
       devis: lesDevis,
       lignes_devis: lesLignesDevis,
       historique_prix: lHistorique,

@@ -8,6 +8,7 @@ import { preparerDevisDepuisDictee, enregistrerPrecisionsEtReprendre } from "@/s
 import {
   ajouterPrestation,
   modifierPrestation,
+  corrigerMesurePrestation,
   supprimerPrestation,
 } from "@/server/repositories/prestations";
 import { ajouterMateriel, modifierMateriel, supprimerMateriel } from "@/server/repositories/materiel";
@@ -62,6 +63,26 @@ export async function ajouterPrestationAction(chantierId: string, libelle: strin
 export async function modifierPrestationAction(id: string, libelle: string) {
   const ctx = await getCurrentCtx();
   return modifierPrestation(ctx, id, libelle);
+}
+
+/**
+ * Corriger la quantité d'une prestation, sans passer par son texte.
+ *
+ * **Le chemin explicite du §8 du brief du 27 août 2026.** Ce qu'il pose ici
+ * fait foi : aucune extraction future ne l'écrase, et sa valeur tranche quand
+ * le libellé dit autre chose.
+ *
+ * **Aucun écran ne l'appelle encore**, et c'est délibéré : une demande
+ * d'apparence se dessine avant de toucher `src/` (`CLAUDE.md` §3 bis). La
+ * planche est publiée, l'action l'attend, et le comportement est éprouvé
+ * (`scripts/test-correction-humaine-db.ts`).
+ */
+export async function corrigerMesurePrestationAction(
+  id: string,
+  mesure: { quantite: string | null; unite: string | null }
+) {
+  const ctx = await getCurrentCtx();
+  return corrigerMesurePrestation(ctx, id, mesure);
 }
 
 export async function supprimerPrestationAction(id: string) {

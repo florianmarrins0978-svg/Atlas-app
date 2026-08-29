@@ -1,7 +1,23 @@
 import type { ErreurIA } from "../../errors";
 import type { ZodTypeAny } from "zod";
 
-export type ResultatLLM = { succes: true; texte: string } | { succes: false; erreur: ErreurIA };
+/**
+ * Comment le modèle a ARRÊTÉ d'écrire.
+ *
+ * **L'information existait, arrivait jusqu'ici, et était jetée.** L'API
+ * Anthropic renvoie `stop_reason: "max_tokens"` quand elle a coupé la réponse
+ * en plein milieu ; le fournisseur ne lisait que `content`. Une réponse tronquée
+ * devenait donc indiscernable d'une réponse hors sujet, et les deux tombaient
+ * dans le même repli sans que rien ne dise laquelle.
+ *
+ * Absente, on ne sait pas : c'est le cas des fournisseurs qui ne le disent pas,
+ * et rien ne prétend le contraire.
+ */
+export type FinDeReponse = "complet" | "tronque";
+
+export type ResultatLLM =
+  | { succes: true; texte: string; fin?: FinDeReponse }
+  | { succes: false; erreur: ErreurIA };
 
 // --- Extension additive (Lot IA-02) : usage d'outils --------------------
 // N'affecte pas genererTexte() ni ses appelants existants (extraction).

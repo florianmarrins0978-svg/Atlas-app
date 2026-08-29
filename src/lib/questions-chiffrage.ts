@@ -128,7 +128,28 @@ export type LignePourQuestions = {
   description?: string | null;
   quantite?: string | null;
   unite?: string | null;
+  /**
+   * Sa nature métier, quand elle est connue (colonne ou dictée).
+   *
+   * **Elle passe AVANT le texte** depuis le 27 août 2026 : « Intervention chez
+   * Mme Martin » ne ressemble à rien et peut parfaitement être une taille de
+   * haie. Absente, les motifs ci-dessus reprennent la main — c'est le cas des
+   * prestations d'avant, et des dictées lues mot à mot.
+   */
+  nature?: string | null;
 };
+
+/**
+ * Cette ligne parle-t-elle de ce travail-là ?
+ *
+ * **Un seul endroit où l'on choisit entre la colonne et le texte.** Le laisser
+ * à chaque appel ferait diverger les trois questions au premier ajustement.
+ */
+function estDeNature(ligne: LignePourQuestions, cles: readonly string[], motif: RegExp): boolean {
+  const cle = ligne.nature?.trim();
+  if (cle) return cles.includes(cle);
+  return motif.test(ligne.libelle);
+}
 
 /**
  * Les questions à poser avant de chiffrer, dans l'ordre des prestations.
@@ -166,7 +187,10 @@ export function questionsAvantChiffrage(
   // abattage est dicté, c'est lui qui porte la question — la demander une
   // seconde fois pour la fente ferait répondre deux fois la même chose sur le
   // même tronc, et l'arrêt doit rester franchissable en quelques secondes.
-  const abattageDansLaDictee = prestations.some((l) => ABATTAGE.test(l.libelle));
+  // Le dessouchage compte comme un abattage POUR LA QUESTION : le diamètre est
+  // celui du même tronc, et le redemander ferait répondre deux fois la même
+  // chose. C'est pourquoi cette liste ne se confond pas avec le référentiel.
+  const abattageDansLaDictee = prestations.some((l) => estDeNature(l, ["abattage", "dessouchage"], ABATTAGE));
 
   // La hauteur aussi appartient à l'arbre, et la dictée la donne souvent sur la
   // ligne de l'abattage — *« un chêne mort de vingt mètres de haut »*. La
@@ -193,7 +217,7 @@ export function questionsAvantChiffrage(
     // Les deux mesures, et pas une : le volume d'un tronc va comme le carré du
     // diamètre multiplié par la hauteur. Un chêne de 60 cm fait quatre fois le
     // bois d'un chêne de 30 cm à hauteur égale — et c'est ce bois-là qu'on fend.
-    if (FENDAGE.test(libelle)) {
+    if (estDeNature(ligne, ["fendage"], FENDAGE)) {
       if (!hauteurDansLaDictee) {
         questions.push({
           id: `fendage.hauteur#${rang}`,
@@ -217,7 +241,7 @@ export function questionsAvantChiffrage(
       return;
     }
 
-    if (ABATTAGE.test(libelle)) {
+    if (estDeNature(ligne, ["abattage", "dessouchage"], ABATTAGE)) {
       // La technique : c'est elle qui fait 600 ou 1 400 €. Une dictée ne la
       // contient à peu près jamais ; quand elle la contient, le modèle l'a
       // rangée dans le libellé, et `techniqueDeja` l'y trouve.
@@ -249,7 +273,7 @@ export function questionsAvantChiffrage(
       return;
     }
 
-    if (HAIE.test(libelle) && !contient(ligne, LONGUEUR)) {
+    if (estDeNature(ligne, ["haie"], HAIE) && !contient(ligne, LONGUEUR)) {
       questions.push({
         id: `haie.longueur#${rang}`,
         libellePrestation: libelle,

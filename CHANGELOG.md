@@ -774,6 +774,336 @@ Les deux contrôles qui exigeaient l'ancien ordre ont été **réécrits, pas
 contournés** : une suite qui réclame ce qu'il a fait retirer rend son écran
 impossible à changer. `ARCHITECTURE.md` §196.
 
+### La chaîne dictée → devis, corrigée de bout en bout
+
+**Ce que le patron a lu le 26 août, et qui ne se reproduira plus.** Trois
+défauts sur un seul devis, et aucun n'était un défaut d'affichage : la quantité
+dictée n'existait plus comme donnée, une tonte et un démontage partageaient une
+identité, et une ligne qu'on ne savait pas chiffrer s'écrivait « 0 € ».
+
+**Le fourre-tout qui a créé le défaut est supprimé.** Six modules portaient
+chacun leur liste de travaux, et aucune ne connaissait la tonte : tout ce
+qu'aucune expression régulière ne reconnaissait tombait sur la ligne de
+l'abattage, et son montant partait dans la case d'abattage de sa grille.
+`src/lib/natures-prestation.ts` les remplace toutes. **Une nature inconnue garde
+désormais sa propre ligne** — être identifié et être chiffrable sont deux
+choses, et les confondre est ce qui a coûté le devis.
+
+**La quantité dictée atteint enfin le calcul.** Elle vivait en colonne depuis le
+lot B et le chiffrage relisait « (800 ml) » dans le libellé : corriger la
+colonne ne changeait rien au prix. Le devis porte « 800 ml × 17,50 € » là où il
+affichait « Qté 1 — 14 000 € » ; le total était juste, sa décomposition mentait.
+
+**Une ligne sans prix ne vaut plus 0 €.** Un zéro se lit « gratuit » sur un
+devis : c'est un montant, donc une décision, là où il n'y a qu'une ignorance —
+et le document pouvait partir ainsi. Elle sort « à chiffrer », garde sa quantité
+physique, et bloque la préparation comme l'envoi tant qu'elle attend son prix.
+
+**Sa correction change le prix.** Quand il transformait « Haie (800 ml) » en
+« Haie (80 ml) », rien ne bougeait : le chiffrage lisait la colonne restée à
+800, et le refus de trancher entre les deux annulait le calcul. Sa correction
+était invisible ET bloquante. Elle est désormais lue, posée en colonne, marquée
+comme sienne, et aucune relecture de dictée ne repasse dessus.
+
+**Le rappel de prix cesse de mentir.** 50 ml et 800 ml de haie avaient la même
+clé de rapprochement — d'où les « 15 chantiers comparables ». La comparabilité
+V2 s'écrit à côté de la V1 sans jamais la réécrire : ordre de grandeur, unité,
+et espèce quand les deux côtés la connaissent. **Aucun seuil ×2 ou ×5 n'a été
+inventé** ; espèce, quantité et unité sont enregistrées pour le calibrer plus
+tard sur de vrais devis.
+
+**Une réponse de modèle tronquée n'est plus une panne muette.** `stop_reason`
+arrivait au fournisseur et y était jeté : une coupure à mi-JSON devenait
+indiscernable d'un modèle hors sujet. Le repli reste — un écran mort a coûté
+deux jours le 4 août — mais il est identifiable.
+
+**Deux bugs annexes, trouvés en corrigeant :**
+- une dictée qui énonçait deux fois le même travail — « je démonte un érable,
+  puis un érable au fond du jardin » — n'en gardait qu'un ; le dédoublonnage
+  protège du rejeu, pas de ce que la dictée dit deux fois ;
+- « taille d'allégement sur marronnier » n'était reconnu comme un élagage par
+  aucun motif : l'apostrophe manquait dans l'expression. C'est la dictée du
+  7 août, celle dont le devis est sorti vide.
+
+Migration **0070**, additive de bout en bout. Détail complet : `ARCHITECTURE.md`
+§205. Dossier à retransmettre : `docs/pour-chatgpt/07-correction-complete.md`.
+
+### Une planche à choisir : corriger une mesure sans réécrire le nom
+
+`appli/corriger-une-mesure.html`. Le chemin serveur existe et il est éprouvé ;
+l'écran, lui, se dessine avant de toucher `src/` (`CLAUDE.md` §3 bis).
+
+---
+
+
+### Un rappel armé : la liste complète des travaux qu'il vend
+
+**Sa réponse, en toutes lettres :** *« Oui j'en vend mais attend on créera une
+liste complète ensuite si tu le veux faudra que tu me le rappelle. »* Il vend de
+la **plantation** et de la **clôture** ; aucune des deux n'existe dans le
+vocabulaire des trois modules qui classent une prestation
+(`src/lib/lignes-vendables.ts`, `src/lib/prix-attribuable.ts`,
+`src/lib/lecons-prix.ts`), limité à abattage, élagage, haie, dessouchage,
+fendage, grumes, broyage, évacuation, billonnage.
+
+**Ce qu'un fichier de prose n'aurait pas tenu.** Un rappel écrit en paragraphe
+se supprime au premier remaniement, et celui à qui il devait servir est
+justement celui qui ne s'en souviendra pas. Il rejoint donc le mécanisme posé le
+9 août pour la commercialisation : `scripts/verifier-memoire.mjs` refuse
+désormais une batterie où la section de `HANDOVER.md` aurait disparu, ou aurait
+perdu le mot « plantation ». Éprouvé dans les deux sens — la section retirée, le
+contrôle rougit et nomme la section.
+
+**Ce qui reste bloqué en attendant, et pourquoi on n'invente pas la liste.** La
+colonne `prestations.nature` existe depuis le lot B, mais la brancher sur des
+natures devinées ferait retomber ses travaux dans le fourre-tout `principal`,
+c'est-à-dire sur la ligne d'abattage — le défaut exact que l'audit du 26 août a
+mesuré. Les trois modules restent donc sur leurs expressions régulières jusqu'à
+ce qu'il ait dit ce qu'il vend.
+
+**Au passage :** trois renvois vers l'outil de chiffrage de l'assistant, dans
+`TODO.md` et ici, étaient écrits sans leur préfixe `src/server/` et pointaient
+donc dans le vide. `verifier:memoire` en rougissait ; corrigés en
+`src/server/ai/tools/calculer-chiffrage.ts`.
+
+---
+
+## 2026-08-26
+
+### Rejouer la dictée ne duplique plus la prestation
+
+**Un doublon réel, mesuré avant d'être corrigé.** Ses réponses à l'arrêt
+allongent le libellé — « Abattage d'un érable » devient « Abattage d'un érable —
+démontage avec rétention, ⌀ 45 cm ». Le dédoublonnage de `confirmerBrouillon`
+reconnaissait une prestation par l'égalité EXACTE de son libellé : au rejeu
+suivant il ne reconnaissait plus rien, et écrivait un second arbre. C'est le
+défaut du 3 août sous un troisième visage, dans la fonction qui existe pour
+l'empêcher.
+
+`src/lib/correspondance-prestation.ts` reconnaît désormais deux formes, et deux
+seulement : le libellé identique, ou identique suivi du tiret d'enrichissement.
+**Rien d'approximatif** — une fusion sur une ressemblance ferait disparaître un
+travail qu'il facturerait. Le tiret est demandé à la fonction qui l'écrit plutôt
+que recopié : deux écritures du même séparateur finiraient par diverger.
+
+**Et le rejeu ENRICHIT au lieu de dupliquer** : un champ vide se remplit, un
+champ déjà posé ne bouge jamais, une valeur différente est journalisée sans être
+appliquée. Le dépôt n'a aucune colonne de provenance ; c'est le refus de
+remplacer qui protège une correction humaine, sans avoir à savoir qui l'a
+écrite.
+
+### Les deux micros demandent enfin la même chose des unités
+
+L'invite d'extraction ne donnait aucun exemple d'unité ; celle de la
+dictée-dans-le-devis en donnait (« stère », « arbre »). Le même mot dicté
+devenait donc une quantité par un micro et rien du tout par l'autre. Les deux
+portent maintenant la même règle — l'unité peut être l'OBJET compté quand il
+compte des choses (« deux souches » → 2 / souche), à condition qu'il soit
+**explicitement prononcé**. Et la durée du chantier comme la taille de l'équipe
+sont dites non-prestations dans l'invite, pas seulement espérées.
+
+**Ce que ces contrôles ne prouvent pas, et la suite le dit à l'écran :** le
+comportement réel du modèle. Aucune clé ici — les six dictées d'essai restent à
+jouer sur son espace.
+
+### L'inventaire des natures, et pourquoi la taxonomie n'est pas figée
+
+L'inspection a trouvé un référentiel métier **déclaré** que personne n'avait
+rapproché de ce lot : `src/lib/prestations-entretien.ts`, 20 prestations en 4
+familles, posées par le patron. Il corrobore tonte, désherbage, massifs, haie —
+et il en porte plusieurs qu'aucune liste ne mentionnait (propreté, traitement de
+pelouse, taille d'arbuste, taille de rosiers). En revanche **plantation et
+clôture n'existent nulle part** dans le dépôt.
+
+La taxonomie n'a donc pas été figée : deux natures seraient inventées, plusieurs
+autres manqueraient, et son référentiel est éditable par lui — figer une liste
+par-dessus risquerait de contredire ce qu'il ajoutera demain. `nature` reste
+vide, et la question à lui poser est écrite dans `docs/pour-chatgpt/06`.
+
+Batterie : **253/255**.
+
+### Lot C — la colonne d'abord, le libellé ensuite, et le refus quand ils divergent
+
+Depuis le lot B, une prestation neuve porte ses mesures dans des colonnes ET
+dans son libellé. `src/lib/mesures-prestation.ts` dit désormais laquelle vaut :
+la structure d'abord, le libellé pour les anciennes prestations, et **rien du
+tout** quand les deux se contredisent. Le chiffrage et l'apprentissage de la
+grille l'appellent tous les deux.
+
+**Une tolérance d'un centième, et elle n'est pas cosmétique** : la colonne est un
+`numeric(10,2)` — 45 y devient 45.00 — quand le libellé porte « ⌀ 45 cm ». Sans
+elle, chaque prestation neuve se contredirait elle-même et le chiffrage
+s'arrêterait partout.
+
+**Ce que le refus change pour lui, et il faut le savoir :** un libellé retouché
+à la main ne recalcule plus le prix en silence. `modifierPrestation` réécrit le
+texte sans toucher aux colonnes ; corriger « (800 ml) » en « (80 ml) » met donc
+les deux sources en désaccord. Le prix n'est plus calculé, et la réserve nomme
+les deux valeurs. **La question métier — une retouche à la main doit-elle
+changer la mesure ? — est posée dans `docs/pour-chatgpt/05`, pas tranchée ici.**
+
+**Trois décisions refusées plutôt qu'inventées**, et elles bloquent trois
+consommateurs : le vocabulaire de `nature` (les sept natures du dépôt couvrent
+l'arboriculture, pas la tonte ni la plantation — élargir serait créer une
+taxonomie qu'il n'a jamais énoncée) ; l'espèce (sûre sur le principe, mais
+invérifiable ici faute de clé) ; et les quantités de comptage — « deux souches »
+—, dont personne ne sait ce que le modèle en fait sans une clé pour le lui
+demander. Le `CHECK quantite ⟺ unite` n'a surtout pas été relâché pour laisser
+passer un « 2 » sans unité.
+
+**Une régression trouvée qui n'est pas de ce lot**, vérifiée en remisant tout le
+travail : `test-liste-clients.ts` datait un règlement en UTC quand la facture
+date son émission à Paris. **Entre 22 h et minuit UTC, ce contrôle échouait** en
+accusant le calcul du reste dû, sur du code juste. Corrigé en une ligne : le même
+calendrier des deux côtés.
+
+Batterie : **251/253**. Les deux suites en échec sont celles des lots suivants.
+
+### Lot B — la prestation a enfin des champs à elle
+
+Le modèle lisait bien « 800 » et « ml » ; la table `prestations` n'avait qu'une
+colonne de contenu, `libelle`, et la mesure y était recollée faute d'endroit où
+la poser. Deux migrations **additives** ouvrent cet endroit : `quantite`,
+`unite`, `nature`, `espece`, `methode`, `caracteristiques`, `a_confirmer`
+(0068), et une table de liaison qui dit enfin quelles prestations une ligne de
+devis vend (0069).
+
+**Le libellé continue de porter « (800 ml) », et ce n'est pas un oubli.** Quatre
+moteurs y relisent les mesures (`mesures-arbre.ts`) ; le leur retirer avant
+qu'ils sachent lire les colonnes ferait perdre à une haie son prix au mètre
+linéaire, sur un devis qui part chez un client. Les deux cohabitent le temps que
+les lecteurs migrent.
+
+**La cardinalité a été inspectée, pas choisie par facilité.** Une colonne
+`lignes_prix.prestation_id` aurait été FAUSSE : une ligne porte 1 à N
+prestations (sa règle du 7 août — abattage, broyage, évacuation ensemble), et
+elle n'en aurait retenu qu'une. D'où la table de liaison, avec une unicité sur
+la prestation qui encode ce que le découpage fait déjà. Le CASCADE porte sur la
+liaison, jamais sur ce qu'elle relie : supprimer une prestation n'emporte pas la
+ligne de devis, et supprimer la ligne n'emporte pas le travail à faire.
+
+**Rien n'est deviné.** Toutes les colonnes sont nullables, `a_confirmer`
+compris : NULL dit « on ne sait pas », `false` dirait « on a regardé ». Et
+`nature`/`espece` restent vides même sur une dictée neuve — le contrat
+d'extraction ne les demande pas au modèle, et les déduire du libellé serait
+recopier le défaut qu'on répare. `methode` et `caracteristiques`, eux, viennent
+d'une source déjà certaine : ses réponses à l'arrêt d'avant-chiffrage.
+
+**Une régression attrapée par un contrôle qui existait déjà**, et qui mérite
+d'être connue : le garde-fou RGPD interroge la BASE et exige que toute table
+portant un `entreprise_id` figure dans l'export de l'entreprise. La table de
+liaison n'y était pas — sans lui, une sauvegarde aurait rendu les lignes et les
+prestations sans dire lesquelles vont ensemble.
+
+Batterie : **250/252**. Les deux suites en échec sont celles des lots suivants,
+laissées rouges exprès — aucune assertion n'a été affaiblie.
+
+### Lot A — un montant qui ne se laisse plus attribuer au premier mot venu
+
+La corruption mesurée la veille : un prix de 1 500 € posé sur la ligne qui porte
+« Tonte de la pelouse (1200 m²) » ET « Érable — démontage en rétention » écrasait
+la case `demontage_retention|d40` de sa grille, de 800 € à 1 500 €. Le classement
+se faisait au premier motif reconnu, et « démont » répondait.
+
+`src/lib/prix-attribuable.ts` répond désormais, avant tout classement, à une
+seule question : **ce montant appartient-il à un seul travail ?** `apprendre-grille.ts`
+et `retenirLecon` l'appellent tous les deux — une seule règle, jamais deux
+(`CLAUDE.md` §3).
+
+**Ce qui a demandé de réfléchir, et qui explique la forme de la règle.** Refuser
+toute ligne à plusieurs travaux aurait fermé la fuite ET cassé son cas le plus
+courant : son devis du 5 août porte « abattage, broyage, évacuation » sur une
+seule ligne à 600 €, et ces 600 € SONT son prix d'abattage — c'est sa règle du
+7 août. D'où la distinction entre ce qui **se vend seul** et ce qui
+**accompagne** (broyage, évacuation, billonnage), tirée de ses propres décisions
+et non inventée. Un accessoire seul redevient le chantier : broyer du bois déjà à
+terre est un vrai travail.
+
+Le vocabulaire est l'**union** des deux existants. La grille connaît les grumes,
+la mémoire ne les connaît pas : un garde-fou qui n'aurait lu qu'un des deux
+aurait refusé un apprentissage sain.
+
+**Un contrôle a changé de cible, et c'est une décision, pas un test plié au
+code.** Il exigeait que `signatureLecon` rende `null` sur un libellé à deux
+natures. Refusé : cette clé est **stockée** dans `lecons_prix.signature`, et la
+faire taire rendrait introuvables des leçons déjà écrites — on effacerait sa
+mémoire pour fermer une fuite (risque R3). Le garde-fou vit à l'usage ; la clé
+V1 reste intacte, et le cas G le prouve.
+
+Batterie : **248/250**, contre 247 avant le lot. Les deux suites en échec sont
+celles du lot, et seulement sur les cas des lots suivants. Aucune migration,
+aucune donnée historique touchée.
+
+### Dictée → devis : la cartographie, et neuf contrôles rouges avant correction
+
+Son brief du 26 août (relayé de ChatGPT, lu et confronté au code) : cartographier
+la chaîne, écrire les tests AVANT de corriger, ne rien refondre sans son accord.
+
+`docs/audit-dictee-devis-cartographie.md`. Deux suites neuves, rouges par
+construction — `test-dictee-devis-identite.ts` (sans base, sans clé) et
+`test-dictee-devis-identite-db.ts`. **247/249 suites réussies : les deux seules
+en échec sont les deux neuves.** La chaîne d'aujourd'hui est cohérente avec
+elle-même, autour d'un modèle de données faux.
+
+**La corruption est désormais chiffrée**, et c'est ce qui manquait hier : un prix
+de 1 500 € posé sur la ligne qui porte la tonte ET le démontage a **écrasé** la
+case `demontage_retention|d40` de la grille, de 800 € à 1 500 €.
+
+**Sept dépendances cachées, aucune n'était dans le brief.** Les deux qui
+comptent : `tachesDuChantier` écrit déjà la quantité sur la feuille de l'équipe
+(elle se tait tant qu'elle vaut 1 — poser 800 fera lire « Haie (800 ml) — 800 »),
+et `unite` n'existe **pas** sur `lignes_devis` ni `lignes_facture`, donc l'unité
+s'arrête avant le document du client.
+
+**Trois points du brief contredisent ses propres décisions**, et le document le
+dit noir sur blanc : le 0 € vient de sa demande du 7 août (« le devis ne comporte
+aucune ligne, gros bug ») ; la répartition 850 + 250 est sa règle, ce n'est que
+le repli qui est arbitraire ; et le découpage n'a jamais séparé les actions, il
+sépare ce que le client peut refuser seul.
+
+**Correction de ce que le lot précédent affirmait :** la branche catalogue n'est
+pas morte — elle est morte du côté de la dictée, vivante du côté de l'assistant
+(`src/server/ai/tools/calculer-chiffrage.ts` passe le mot-clé). La supprimer casserait
+l'assistant.
+
+**Ces deux suites ne doivent pas atteindre `main`** avant l'étape 5 du plan : une
+batterie rouge cesse d'être lue par les autres sessions.
+
+### Audit de la chaîne dictée → devis (lecture seule, aucun code)
+
+Le patron, devant son devis dicté depuis l'iPhone : « Haie (tout genre)
+(800 ml) », quantité 1, 0 € ; « Tonte de la pelouse (1200 m²) » et « Érable —
+démontage en rétention » sur la même ligne à 840 € ; et un rappel qui propose un
+ancien érable à 550 €. Sa demande : ne rien corriger, remonter la chaîne.
+
+`docs/audit-dictee-devis.md` porte le résultat. Trois racines, et elles se
+cumulent :
+
+- **le libellé sert de modèle de données.** Le modèle rend bien `quantite: "800"`
+  et `unite: "ml"` ; `libelleAvecQuantite` (`brouillon-service.ts:169`) les
+  recolle au nom, parce que la table `prestations` n'a qu'une colonne de texte.
+  `ajouterLignePrix` écrit ensuite `quantite: "1"` en dur — le « QTÉ = 1 » n'est
+  pas un forfait, c'est une colonne jamais renseignée sur ce chemin ;
+- **`principal` est un fourre-tout** (`lignes-vendables.ts:170`) : tout ce qui
+  n'est ni haie, ni fendage, ni dessouchage, ni grumes tombe sur la même ligne.
+  D'où la tonte fondue dans l'abattage, et le prix au temps du chantier ENTIER
+  affiché sur une ligne qui parle d'un érable ;
+- **« comparable » est une égalité de chaîne sur trois jetons**
+  (`lecons-prix.ts:84`) : nature, technique, tranche de diamètre. Ni espèce, ni
+  quantité, ni ordre de grandeur — d'où 50 ml et 800 ml déclarés comparables, et
+  « 15 chantiers comparables ».
+
+**Un mécanisme à signaler avant tout correctif :** `apprendrePrixGrille` et
+`retenirLecon` apprennent depuis une ligne qui porte DEUX prestations. Un prix
+posé sur « tonte + érable » s'écrit dans la case abattage de sa grille, tonte
+comprise, et revient ensuite avec l'autorité de l'expérience. Rien n'a été
+touché ; le correctif est en P0 du plan.
+
+**Vérifié plutôt que supposé :** les fonctions pures ont été rejouées hors du
+dépôt sur ses chaînes exactes. Elles reproduisent ses deux écrans au caractère
+près, phrase du rappel comprise. Son devis à lui, en revanche, n'est pas
+identifiable depuis ici — il vit dans la base de son espace, et c'est écrit
+comme tel.
 
 ### « Mon compte » : quarante mots de moins
 

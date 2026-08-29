@@ -241,6 +241,72 @@ Ce qu'il faut savoir avant d'y retoucher, et qui ne se devine pas :
 `src/app/devis/[jeton]/formulaire.tsx`, `ARCHITECTURE.md` §191. Le même piège
 dort sur `PropositionPrixSection.tsx` (`TODO.md`).
 
+## LA CHAÎNE DICTÉE → DEVIS A ÉTÉ REFAITE LE 27 AOÛT 2026 — à lire avant d'y toucher
+
+**Sept choses ont changé, et chacune ferme un défaut mesuré.** Le détail est
+dans `ARCHITECTURE.md` §205 ; voici ce qu'il faut savoir pour ne pas les
+défaire.
+
+1. **Le vocabulaire métier vit dans UN endroit** : `src/lib/natures-prestation.ts`.
+   Six modules portaient chacun le sien, et aucun ne connaissait la tonte. Ne
+   pas en recréer un septième : ajouter une nature se fait là, et nulle part
+   ailleurs.
+
+2. **Une nature inconnue garde sa propre ligne.** Elle ne rejoint rien — pas
+   même une autre nature inconnue. Le fourre-tout `principal` est mort, et le
+   ressusciter sous un autre nom rouvrirait la corruption du 26 août.
+
+3. **`LigneVendable.cle` porte la nature ; `principal` est un RÔLE à part.**
+   Les confondre était le défaut.
+
+4. **Une ligne sans prix vaut `null`, jamais `"0"`.** Sur un devis, un zéro se
+   lit « gratuit ». `peutPreparerDevis` et `envoyerDevis` refusent tant qu'une
+   ligne est `a_chiffrer`.
+
+5. **La quantité dictée entre dans le CALCUL** (`caracteristiqueDeLaQuantite`).
+   Avant, la colonne existait et personne ne la lisait : la corriger ne changeait
+   rien au prix.
+
+6. **`prestations.corrige_par_humain` change le comportement du chiffrage.**
+   Une valeur qu'il a posée TRANCHE face au libellé, au lieu de produire une
+   contradiction. Attention : `modifierPrestation` marque ce drapeau (c'est le
+   geste de l'artisan), `renommerPrestation` ne le marque pas (c'est le report
+   automatique des réponses de l'arrêt). **Ne pas les confondre** — l'un gèlerait
+   ses colonnes sans que personne ne l'ait demandé.
+
+7. **Les clés `lecons_prix.signature` (V1) ne se réécrivent JAMAIS.** La V2 vit
+   dans `signature_v2`. Toucher à la V1 orphelinerait toute sa mémoire de prix,
+   sans un mot et sans erreur.
+
+**Un écran attend sa réponse** avant d'entrer dans `src/` (`CLAUDE.md` §3 bis) :
+`https://florianmarrins0978-svg.github.io/Atlas-app/corriger-une-mesure.html`
+
+**Et une question métier lui revient** : « dessouchage de DEUX souches » —
+faut-il multiplier le prix de grille par deux ? Le comportement d'aujourd'hui
+est conservé, et l'écran pose la question.
+
+---
+
+## ⏰ IL ATTEND QU'ON LE RELANCE : LA LISTE DES TRAVAUX QU'IL VEND (27 août 2026)
+
+**Sa réponse, en toutes lettres :** *« Oui j'en vend mais attend on créera une
+liste complète ensuite si tu le veux faudra que tu me le rappelle. »*
+
+Il vend de la **plantation** et de la **clôture**. Aucune des deux n'existe dans
+le dépôt — le vocabulaire des trois modules qui classent une prestation
+(`src/lib/lignes-vendables.ts`, `src/lib/prix-attribuable.ts`, `src/lib/lecons-prix.ts`) se
+limite à : abattage, élagage, haie, dessouchage, fendage, grumes, broyage,
+évacuation, billonnage.
+
+**C'est à NOUS de rouvrir le sujet**, il l'a demandé explicitement. Une session
+qui reprend la chaîne dictée → devis le relance en lui montrant cette liste :
+il n'a qu'à dire ce qui manque. Le détail de ce qui reste bloqué en attendant
+est dans `TODO.md`, section « Dictée → devis ».
+
+**Et l'on n'invente pas les natures à sa place** (`CLAUDE.md` §4) : une liste
+devinée ferait retomber ses travaux dans le fourre-tout `principal`, c'est-à-dire
+sur la ligne d'abattage — le défaut que l'audit du 26 août a mesuré.
+
 ---
 
 ## PIÈGE : UNE SUITE QUI LIT LE MOIS AFFICHÉ ROUGIT EN FIN DE MOIS (26 août 2026)
