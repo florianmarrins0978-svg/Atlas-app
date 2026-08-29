@@ -116,6 +116,14 @@ prix, changer la durée ou l'équipe. Vise TOUJOURS par identifiant, jamais par 
 cible (RechercherChantier, LireClients, LireTarifs, LirePlanning), puis mets son identifiant dans la
 proposition. Deux clients peuvent s'appeler Martin.
 
+PEU IMPORTE L'ÉCRAN OÙ IL T'OUVRE — sa règle du 27 août 2026 : « l'encart assistant, peu importe où je
+l'ouvre, il doit pouvoir répondre à mes envies ». Depuis l'accueil, le planning ou les réglages, aucun
+chantier n'est ouvert : ce n'est PAS une raison de refuser. Cherche le chantier avec RechercherChantier,
+puis mets son identifiant dans "donnees" sous la clé exacte "chantierId" — c'est ce nom-là, et pas un
+autre, qui dit sur quel chantier le geste porte. Ne le range jamais sous "id" : cette clé-là désigne
+l'élément touché (la prestation, le tarif, la ligne), et le geste viserait à côté. Ne renvoie JAMAIS le
+patron ouvrir une fiche lui-même.
+
 TU NE FAIS RIEN TOI-MÊME. Chaque geste est une PROPOSITION qu'il coche et confirme — sa règle du
 26 août 2026 : « très important que ça reste le doigt du patron ». Ne dis jamais « c'est fait », « j'ai
 créé », « j'ai planifié » : rien n'est écrit tant qu'il n'a pas appuyé.
@@ -134,7 +142,17 @@ montre-les et demande laquelle — ne choisis jamais à sa place.
 Réponds en français, de façon concise et claire, en Markdown simple. Le moins de mots possible : il lit
 sur un téléphone, souvent entre deux chantiers.`;
 
-const MAX_APPELS_OUTILS = 6;
+const MAX_APPELS_OUTILS = 8;
+
+/**
+ * Combien de fois on laisse le modèle se reprendre sur un outil mal appelé.
+ *
+ * **Deux, et pas davantage.** Une fois suffit presque toujours — il lui manque
+ * le nom d'un champ, on le lui dit, il rappelle. Au-delà, il tourne : mieux
+ * vaut rendre la main en demandant le nom du client que d'épuiser le budget
+ * d'appels en silence.
+ */
+const MAX_CORRECTIONS = 2;
 
 // Point d'entrée unique de l'assistant. Construit le contexte serveur (jamais
 // composé par le client), oriente la boucle LLM <-> outils, ne déclenche
@@ -188,6 +206,7 @@ export async function poserQuestion(
   ];
 
   const sources: string[] = [];
+  let corrections = 0;
 
   for (let etape = 0; etape < MAX_APPELS_OUTILS; etape++) {
     const resultat = await fournisseur.genererAvecOutils(SYSTEME, historique, definitions);
@@ -235,16 +254,50 @@ export async function poserQuestion(
 
     const parseParams = outil.schema.safeParse(resultat.parametres ?? {});
     if (!parseParams.success) {
-      // Remédiation : ne jamais exécuter un outil avec des paramètres qui ne
-      // respectent pas son propre schéma — la substitution silencieuse par
-      // {} rendait une entrée invalide indiscernable d'un résultat métier
-      // authentiquement vide. Le nom de l'outil et le détail de validation
-      // restent en log serveur (diagnostic), jamais exposés à l'utilisateur.
-      logger.error("Paramètres invalides pour un outil de l'assistant", { tool: outil.nom, issues: parseParams.error.issues });
-      return {
-        succes: false,
-        erreur: "L'assistant a mal formé sa demande à un outil interne. Reformulez votre question.",
-      };
+      /**
+       * **On le laisse se CORRIGER, on n'abandonne pas la réponse.**
+       *
+       * **Sa capture du 26 août 2026 au soir**, trois fois de suite : *« Peux-tu
+       * me sortir le devis de Lucie »* → « L'assistant a mal formé sa demande à
+       * un outil interne. Reformulez votre question. » Il reformule, même
+       * message. **Reformuler n'y pouvait rien** : ce n'était pas sa phrase qui
+       * était mauvaise, c'était le nom d'un paramètre côté modèle — et on lui
+       * demandait de réparer une chose qu'il ne voyait pas.
+       *
+       * Un outil mal appelé n'est pas une panne : c'est un aller-retour normal
+       * d'une boucle d'outils. Le refus part donc AU MODÈLE, avec ce qui
+       * manque, et il rappelle l'outil correctement. C'est ainsi qu'un agent
+       * travaille ; s'arrêter au premier écart, c'est n'en être un qu'à moitié.
+       *
+       * **Le détail reste hors de l'écran** : ce qui remonte au patron, c'est
+       * une réponse, pas une explication de schéma.
+       */
+      logger.warn("Paramètres invalides pour un outil de l'assistant — on redemande", {
+        tool: outil.nom,
+        issues: parseParams.error.issues,
+      });
+      corrections++;
+      if (corrections > MAX_CORRECTIONS) {
+        return {
+          succes: false,
+          erreur: "Je n'arrive pas à aller chercher cette information. Dites-moi le nom du client ou du chantier.",
+        };
+      }
+      historique = [
+        ...historique,
+        {
+          role: "outil",
+          outil: outil.nom,
+          resultat: {
+            erreur: `Paramètres refusés par ${outil.nom}.`,
+            // Les champs attendus, dits au modèle dans SA langue de travail :
+            // c'est la seule chose qui lui permet de rappeler juste.
+            detail: parseParams.error.issues.map((i) => `${i.path.join(".") || "(racine)"} : ${i.message}`),
+            aFaire: `Rappelle ${outil.nom} avec les champs attendus.`,
+          },
+        },
+      ];
+      continue;
     }
     const parametres = parseParams.data;
 

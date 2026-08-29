@@ -46,7 +46,7 @@ function cas(nom: string, verifier: () => void) {
 console.log("=== Le cas du patron : la demi-journée du 6 août ===");
 
 cas("un chantier du matin laisse l'après-midi libre", () => {
-  const occupation = compterOccupation([{ jour: JEU_6, moment: "matin", dureeDemiJournees: 1 }]);
+  const occupation = compterOccupation([{ jour: JEU_6, moment: "matin", dureeDemiJournees: 1 }], 1);
   assert.equal(
     departPossible(JEU_6, 1, occupation, 1),
     "apres_midi",
@@ -58,7 +58,7 @@ cas("une journée entière démarre alors l'après-midi et déborde sur le lende
   // Ce n'est pas un défaut : deux demi-journées de travail peuvent se répartir
   // sur le 6 après-midi et le 7 matin, et c'est ainsi qu'un élagueur travaille.
   // Le client, lui, ne verra que la date de début — le 6.
-  const occupation = compterOccupation([{ jour: JEU_6, moment: "matin", dureeDemiJournees: 1 }]);
+  const occupation = compterOccupation([{ jour: JEU_6, moment: "matin", dureeDemiJournees: 1 }], 1);
   assert.equal(departPossible(JEU_6, 2, occupation, 1), "apres_midi");
   assert.deepEqual(creneauxDuChantier({ jour: JEU_6, moment: "apres_midi" }, 2).map(cleCreneau), [
     `${JEU_6}:apres_midi`,
@@ -70,7 +70,7 @@ cas("mais un jour dont le lendemain est plein ne prend plus de journée entière
   const occupation = compterOccupation([
     { jour: JEU_6, moment: "matin", dureeDemiJournees: 1 },
     { jour: VEN_7, moment: "matin", dureeDemiJournees: 2 },
-  ]);
+  ], 1);
   assert.equal(
     departPossible(JEU_6, 2, occupation, 1),
     null,
@@ -79,19 +79,19 @@ cas("mais un jour dont le lendemain est plein ne prend plus de journée entière
 });
 
 cas("une journée entière déjà posée ferme le jour", () => {
-  const occupation = compterOccupation([{ jour: JEU_6, moment: "matin", dureeDemiJournees: 2 }]);
+  const occupation = compterOccupation([{ jour: JEU_6, moment: "matin", dureeDemiJournees: 2 }], 1);
   assert.equal(departPossible(JEU_6, 1, occupation, 1), null);
 });
 
 cas("un chantier de l'après-midi laisse le matin libre", () => {
-  const occupation = compterOccupation([{ jour: JEU_6, moment: "apres_midi", dureeDemiJournees: 1 }]);
+  const occupation = compterOccupation([{ jour: JEU_6, moment: "apres_midi", dureeDemiJournees: 1 }], 1);
   assert.equal(departPossible(JEU_6, 1, occupation, 1), "matin");
 });
 
 console.log("=== Les équipes ===");
 
 cas("deux équipes tiennent deux chantiers le même jour", () => {
-  const occupation = compterOccupation([{ jour: JEU_6, moment: "matin", dureeDemiJournees: 2 }]);
+  const occupation = compterOccupation([{ jour: JEU_6, moment: "matin", dureeDemiJournees: 2 }], 1);
   assert.equal(departPossible(JEU_6, 2, occupation, 2), "matin", "La seconde équipe n'a pas pu être employée.");
 });
 
@@ -99,12 +99,12 @@ cas("mais pas trois", () => {
   const occupation = compterOccupation([
     { jour: JEU_6, moment: "matin", dureeDemiJournees: 2 },
     { jour: JEU_6, moment: "matin", dureeDemiJournees: 2 },
-  ]);
+  ], 1);
   assert.equal(departPossible(JEU_6, 2, occupation, 2), null, "Un troisième chantier est passé avec deux équipes.");
 });
 
 cas("une seule équipe reste le comportement d'avant", () => {
-  const occupation = compterOccupation([{ jour: JEU_6, moment: "matin", dureeDemiJournees: 2 }]);
+  const occupation = compterOccupation([{ jour: JEU_6, moment: "matin", dureeDemiJournees: 2 }], 1);
   assert.equal(departPossible(JEU_6, 2, occupation, 1), null);
 });
 
@@ -112,7 +112,7 @@ console.log("=== La durée, qui n'était nulle part ===");
 
 cas("un chantier de deux jours occupe bien deux jours", () => {
   // Le défaut latent : le 7 restait proposable au client suivant.
-  const occupation = compterOccupation([{ jour: JEU_6, moment: "matin", dureeDemiJournees: 4 }]);
+  const occupation = compterOccupation([{ jour: JEU_6, moment: "matin", dureeDemiJournees: 4 }], 1);
   assert.equal(departPossible(VEN_7, 1, occupation, 1), null, "Le lendemain d'un chantier de 2 jours reste libre.");
 });
 
@@ -135,7 +135,7 @@ console.log("=== Les chantiers d'avant, qui n'ont ni moment ni durée ===");
 
 cas("un chantier hérité occupe toujours la journée entière", () => {
   // S'il ne le faisait plus, la migration libérerait des après-midis déjà pris.
-  const occupation = compterOccupation([{ jour: JEU_6, moment: null, dureeDemiJournees: null }]);
+  const occupation = compterOccupation([{ jour: JEU_6, moment: null, dureeDemiJournees: null }], 1);
   assert.equal(departPossible(JEU_6, 1, occupation, 1), null, "Un chantier hérité a libéré une demi-journée.");
 });
 
@@ -218,6 +218,55 @@ cas("les durées se disent en français", () => {
   // demi », deux fautes dans trois mots.
   assert.equal(libelleDuree(3), "une journée et demie");
   assert.equal(libelleDuree(5), "2 jours et demi");
+});
+
+console.log("\n=== Ce qu'on coche est un SALARIÉ, et la capacité reste celle des équipes ===");
+
+// **Sa consigne du 26 août 2026, celle qui borde tout ce lot :** *« les équipes
+// doivent toujours servir à définir le niveau de remplissage du planning :
+// 2 équipes = 2 chantiers par jour, comme avant, ça ne bouge pas. »*
+//
+// Depuis ce jour-là, ce qu'il coche sur une demi-journée est une PERSONNE. Les
+// deux nombres se sont donc décollés — trois gars dans une entreprise qui mène
+// deux chantiers à la fois, c'est possible — et c'est ici que se joue le
+// non-changement qu'il a exigé.
+const CHEZ_UN_SEUL_CLIENT = (gars: number) => [
+  {
+    jour: JEU_6,
+    moment: "matin" as const,
+    dureeDemiJournees: 1,
+    equipesParDemi: { matin: gars, apres_midi: 0 },
+  },
+];
+
+cas("tout le monde chez le même client ferme bien la demi-journée", () => {
+  // Sa question du 22 août 2026 : ses deux gars étaient chez Mr. Eric et le
+  // planning annonçait « incomplet ». C'est ce comportement-là qui ne doit pas
+  // se perdre dans la coupure.
+  const occupation = compterOccupation(CHEZ_UN_SEUL_CLIENT(2), 2);
+  assert.equal(occupation.get(cleCreneau({ jour: JEU_6, moment: "matin" })), 2);
+  assert.equal(departPossible(JEU_6, 1, occupation, 2), "apres_midi");
+});
+
+cas("PLUS de gars que d'équipes ne ferme pas une journée qui reste ouverte", () => {
+  // Sans plafond, trois gars sur un seul chantier compteraient 3 sur une
+  // capacité de 2 : le matin passerait « au-delà », et l'écran d'envoi
+  // refuserait au client un jour où il reste pourtant une place.
+  const occupation = compterOccupation(CHEZ_UN_SEUL_CLIENT(3), 2);
+  assert.equal(occupation.get(cleCreneau({ jour: JEU_6, moment: "matin" })), 2);
+});
+
+cas("un seul gars laisse la place au second chantier du jour", () => {
+  const occupation = compterOccupation(CHEZ_UN_SEUL_CLIENT(1), 2);
+  assert.equal(occupation.get(cleCreneau({ jour: JEU_6, moment: "matin" })), 1);
+  assert.equal(departPossible(JEU_6, 1, occupation, 2), "matin");
+});
+
+cas("un chantier sans personne cochée occupe quand même sa place", () => {
+  // Le compter zéro afficherait libre une demi-journée déjà prise — et il pose
+  // ses chantiers bien avant de savoir qui y va.
+  const occupation = compterOccupation(CHEZ_UN_SEUL_CLIENT(0), 2);
+  assert.equal(occupation.get(cleCreneau({ jour: JEU_6, moment: "matin" })), 1);
 });
 
 if (echecs > 0) {

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { purgerFichiersEnAttente } from "@/server/repositories/fichiers";
+import { purgerPreuvesPerimees } from "@/server/preuve-recente";
 import { purgerAudiosTranscrits, purgerPhotosDiagnostic } from "@/server/repositories/retention";
 import { getEnv } from "@/server/env";
 import { logger } from "@/server/logger";
@@ -46,8 +47,20 @@ export async function POST(request: Request) {
       // attendent une exécution de plus.
       const { photosPurgees } = await purgerPhotosDiagnostic();
       const nombrePurges = await purgerFichiersEnAttente();
+      /**
+       * **Les preuves de ré-authentification périmées, ici et nulle part
+       * ailleurs.** Elles ne valent plus rien après dix minutes — l'expiration
+       * est vérifiée à la LECTURE, et rien de la sécurité ne dépend de cette
+       * ligne. Elle empêche seulement une table de grossir d'une ligne par
+       * session et par personne, sans que rien ne les retire.
+       *
+       * **Aucun rouage neuf n'a été bâti pour cela** : cette purge existait, elle
+       * tourne déjà, et une ligne suffit. Sans elle, la fonction était du code
+       * mort qu'on aurait présenté comme un nettoyage effectif.
+       */
+      const preuvesPurgees = await purgerPreuvesPerimees();
       logger.info("Purge planifiée exécutée", { nombrePurges, audiosPurges, photosPurgees });
-      return NextResponse.json({ statut: "ok", nombrePurges, audiosPurges, photosPurgees });
+      return NextResponse.json({ statut: "ok", nombrePurges, audiosPurges, photosPurgees, preuvesPurgees });
     } catch (err) {
       logger.error("Échec de la purge planifiée des fichiers", { erreur: err });
       return NextResponse.json({ erreur: "Échec de la purge." }, { status: 500 });

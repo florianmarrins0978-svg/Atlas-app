@@ -581,7 +581,8 @@ export async function planifierChantier(
             moment: a.moment === "matin" || a.moment === "apres_midi" ? a.moment : null,
             dureeDemiJournees: a.duree,
             equipesParDemi: equipesPosees.get(a.id) ?? null,
-          }))
+          })),
+        nombreEquipes
       ),
       absences,
       nombreEquipes

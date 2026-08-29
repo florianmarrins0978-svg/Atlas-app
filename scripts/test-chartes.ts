@@ -96,9 +96,25 @@ essai("le marqueur d'onglet ne bouge QUE pour Brume", () => {
     const marqueur = Object.keys(v).filter((k) => k.startsWith("--atlas-onglet"));
     if (c.nom === "brume") {
       assert.ok(marqueur.length > 0, "Brume ne pose pas la pastille : sa barre du bas garde le trait");
+      // **DORÉE, ET NON À L'ACCENT — sa consigne du 27 août 2026 :** *« tout ce
+      // qui est en doré sur Origine le reste aussi sur Brume »*.
+      //
+      // Ce cas exigeait l'accent, et l'accent de Brume est un bleu marine :
+      // c'était le SEUL endroit de l'accueil où l'or se perdait en changeant
+      // d'apparence. Une suite qui réclame ce qu'il a fait retirer rend son
+      // écran impossible à changer (`CLAUDE.md` §5 bis) — elle réclame donc
+      // maintenant ce qu'il a demandé.
       assert.ok(
-        v["--atlas-onglet-fond"]?.includes(charte("brume").jetons.rust),
-        "la pastille n'est pas teintée de l'accent de la charte"
+        v["--atlas-onglet-fond"]?.includes(charte("brume").jetons.or),
+        `la pastille est teintée de « ${v["--atlas-onglet-fond"]} » : l'or s'est perdu`
+      );
+      // **Et rien ne teinte le LIBELLÉ.** Sur Origine il est à l'encre de
+      // l'écran ; sa consigne dit que l'or reste l'or, pas qu'une autre couleur
+      // s'invite. La variable qui le passait à l'accent a donc disparu.
+      assert.equal(
+        v["--atlas-onglet-encre"],
+        undefined,
+        "le libellé de l'onglet est teinté : sur Origine il porte l'encre de l'écran, et rien d'autre"
       );
     } else {
       assert.deepEqual(

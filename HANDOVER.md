@@ -4,15 +4,160 @@
 vous ne savez rien de ce qui précède — c'est exactement le cas de figure qu'il
 sert.
 
-**Point de reprise :** 2026-08-25 · `main`
+**Point de reprise :** 2026-08-27 · `main`
 (l'historique fait foi : `git log --oneline -20`)
 
 ---
 
+## LA BATTERIE NE TIENT PLUS EN UN SEUL SERVEUR — à lire avant de la lancer (27 août 2026)
+
+**Si `npm run verifier:avant-livraison` rend un rouge sur une suite navigateur,
+regarder D'ABORD si le serveur n'est pas mort de faim.** Le signe qui ne trompe
+pas, dans le journal de la batterie :
+
+    ❌ Le serveur ne répond plus avant test-<quelquechose>.ts — il s'est arrêté (code 0).
+
+Ce n'est pas la suite nommée qui est en cause : **elle n'a jamais été lancée.**
+Mesuré le 27 août — le serveur reste plat à 2 Go pendant treize suites, puis
+`test-coupure-sessions-e2e` le fait bondir à 5,9 Go, et il monte jusqu'à 13,5 Go
+**sans plus recevoir une seule requête**. Les fils `tokio-rt` — Turbopack —
+brûlent le processeur, le fil JavaScript est au repos. Le conteneur a 16 Go.
+
+Pour vérifier en dix secondes :
+
+    dmesg -T | grep -i "Killed process"
+    free -m
+
+**Comment mesurer quand même** : jouer les suites par tranches, un serveur neuf
+par tranche, avec le filtre qui existe déjà —
+
+    npm run test:e2e -- --seulement test-<lettre>
+
+…en reprenant l'environnement de l'étape « Suites navigateur » de
+`scripts/verifier-avant-livraison.ts` (sans `REDIS_URL`, le dépôt refuse de
+tourner, et il a raison). Puis **rejouer seules** les suites qu'aucune tranche
+n'a lancées : une suite jamais jouée n'est ni verte ni rouge.
+
+**Cause NON ÉTABLIE** (`TODO.md`) : la même batterie tenait d'une traite deux
+heures plus tôt, dans ce même conteneur. Ne pas écrire que c'est réglé.
+
+---
+
+## L'ASSISTANT A UNE MÉMOIRE DEPUIS LE 27 AOÛT 2026
+
+Son fil vit en base (`messages_assistant`, migration 0069) et se relit à
+l'ouverture du panneau. Deux choses à savoir avant d'y toucher :
+
+1. **Le fil est isolé PAR PERSONNE dans le dépôt, pas par la RLS.** La politique
+   de la table n'isole que les entreprises ; c'est
+   `eq(messagesAssistant.utilisateurId, ctx.utilisateurId)` qui sépare deux
+   associés. Retirer cette ligne ne fait rougir aucun écran —
+   `scripts/test-fil-assistant.ts` est le seul garde-fou.
+2. **L'ordre du fil tient à `rang`, une séquence, jamais à `created_at`.**
+   `now()` rend l'instant de début de transaction : la question et sa réponse,
+   écrites ensemble, portent la même date, et le classement retombait sur un
+   UUID. La réponse passait devant la question une fois sur deux.
+
+Ce qui ne revient pas encore : les cases à cocher d'une proposition
+(`TODO.md`, « Une proposition ne revient pas après un rechargement »).
+
+---
+
+## LES SALARIÉS NE SONT PLUS LES ÉQUIPES — à savoir avant d'y toucher (26 août 2026)
+
+**La chose à comprendre en trente secondes**, parce que le nommage n'a pas suivi :
+
+| Ce qu'on lit dans le code | Ce que ça veut dire depuis le 26 août |
+|---|---|
+| `entreprises.nombre_equipes` | la CAPACITÉ — combien de chantiers par jour |
+| `entreprises.nombre_salaries` | combien de GENS — donc de noms cochables |
+| table `equipes` | **les salariés** (rang + nom facultatif) |
+| table `equipes_du_chantier` | **qui part**, demi-journée par demi-journée |
+
+⚠ **La table `equipes` porte les gars, pas des files de planning.** Le renommage
+est une tâche à part (`TODO.md`) : vingt-trois fichiers, les politiques RLS, les
+contraintes. Ne pas le mêler à autre chose.
+
+**Ce qu'il a interdit de changer, mot pour mot :** *« il ne faut pas changer la
+méthode d'affiliation des gars sur les chantiers […] on garde la même façon de
+faire »*, et *« 2 équipes = 2 chantiers par jour, comme avant, ça ne bouge
+pas »*.
+
+**LE PIÈGE, si l'on touche à la charge du planning.** On coche désormais des
+GENS : trois gars peuvent tenir sur une entreprise à deux chantiers par jour.
+`equipesMobilisees` plafonne donc la charge à la capacité. Retirer ce plafond
+ferait fermer par un seul chantier une journée qui en accepte deux — et l'écran
+d'envoi refuserait au client des jours réellement libres, pendant que le
+planning les annonce.
+
+`compterOccupation` exige `nombreEquipes` **sans valeur par défaut**, et c'est
+délibéré : un appelant oublié compterait sans plafond en silence. Ne pas ajouter
+de défaut « pour simplifier ».
+
+**Et le plancher des salariés est ZÉRO**, pas un : un artisan seul n'a personne.
+Le remonter ferait apparaître une case « Salarié 1 » à cocher sur chacune de ses
+demi-journées.
+
+Le détail : `ARCHITECTURE.md` §192, migration `drizzle/0067_salaries_a_part.sql`.
+
+---
+
+## UNE RÉPONSE ENCORE ATTENDUE DE LUI — planche 96 (26 août 2026)
+
+Rien n'est codé dans `src/` pour ces deux-là, et il ne faut pas commencer sans
+sa réponse (`CLAUDE.md` §3 bis).
+
+- **Planche 96** — `appli/ecran-equipe.html`. Il a répondu **C** pour le titre
+  et la synthèse. Reste à savoir si la phrase sur les congés reste sur l'écran
+  Équipe ou retourne dans « Absences ». **Non codée.**
+- **Planche 97** — `appli/salaries-et-equipes.html`. **Répondue (A) et codée le
+  26 août** : voir le paragraphe ci-dessus.
+## PIÈGE : `force-dynamic` NE FAIT PAS PARTIR LA DEMANDE (26 août 2026)
+
+On lit `export const dynamic = "force-dynamic"` comme « cette page est toujours
+fraîche ». **Elle ne dit rien de tel** : elle commande au SERVEUR de recalculer
+à chaque demande — encore faut-il qu'une demande parte. Sans `revalidatePath`,
+le routeur du navigateur reserve sa copie et n'appelle personne.
+
+C'est ce qui a fait dire au patron *« rien ne se passe »* en basculant le rythme
+de sa TVA : base écrite, calcul juste, écran figé sur « Août 2026 ».
+
+**Toute action serveur qui change ce qu'un AUTRE écran affiche appelle
+`revalidatePath`**, même quand la page visée est `force-dynamic`.
+
+Et le contrôle qui l'attrape doit rejouer **sa séquence** : basculer sans
+quitter l'écran. Toutes les suites du rythme passaient par Réglages puis
+rouvraient le relevé — une page rouverte est toujours juste, et elles étaient
+vertes depuis le 12 août. `ARCHITECTURE.md` §193.
+
+---
+
+## PIÈGE : UN BOUTON RADIO NE SE DÉCOCHE PAS (26 août 2026)
+
+Sa plainte du 26 août, sur la page de son client : *« je ne peux plus le
+désélectionner »*. Ce n'était pas le produit — **le navigateur ne sait pas
+décocher un radio**, il ne connaît que « passer de l'un à l'autre ».
+
+Ce qu'il faut savoir avant d'y retoucher, et qui ne se devine pas :
+
+- **`onChange` ne part JAMAIS** sur une case déjà cochée : le navigateur ne
+  signale un changement que s'il y en a un. C'est `onClick` qui attrape ce
+  geste-là, et lui seul ;
+- **React ne repeint pas entre deux gestionnaires d'un même événement** : à
+  l'entrée de `onClick`, l'état porte encore la valeur d'avant l'appui. La
+  comparaison « c'est déjà celle-ci ? » suffit donc, sans drapeau — un drapeau
+  survivrait à un rendu et défairait le choix suivant ;
+- **le contrôle qui compte n'est pas « ça se défait »**, c'est *« un appui sur
+  une AUTRE ligne choisit toujours »* : défaire à chaque appui passe le premier
+  et rend le formulaire inutilisable.
+
+`src/app/devis/[jeton]/formulaire.tsx`, `ARCHITECTURE.md` §191. Le même piège
+dort sur `PropositionPrixSection.tsx` (`TODO.md`).
+
 ## LA CHAÎNE DICTÉE → DEVIS A ÉTÉ REFAITE LE 27 AOÛT 2026 — à lire avant d'y toucher
 
 **Sept choses ont changé, et chacune ferme un défaut mesuré.** Le détail est
-dans `ARCHITECTURE.md` §191 ; voici ce qu'il faut savoir pour ne pas les
+dans `ARCHITECTURE.md` §203 ; voici ce qu'il faut savoir pour ne pas les
 défaire.
 
 1. **Le vocabulaire métier vit dans UN endroit** : `src/lib/natures-prestation.ts`.
@@ -89,6 +234,19 @@ jour.
 remède est écrit : `joursRetenables` tourne la page du mois quand celui-ci est
 trop court. Toute suite neuve qui compte des jours doit faire de même.
 
+## PIÈGE : UN MESSAGE QUI ACCUSE LE PATRON (26 août 2026)
+
+**« L'assistant a mal formé sa demande à un outil interne. Reformulez votre
+question. »** — il a reformulé trois fois, et c'est exactement ce qu'on lui
+demandait de faire. La faute était le nom d'un champ, côté modèle.
+
+| | |
+|---|---|
+| **Un outil mal appelé n'est pas une panne** | le refus part AU MODÈLE, avec les champs qui manquent, et il rappelle. Ne pas remettre un `return` d'erreur à cet endroit |
+| **Les alias sont volontaires** | `nom`, `motCle` et `question` désignent la même idée selon l'outil : les quatre acceptent les trois. Ne pas « nettoyer » ça |
+| **Jamais de JSON à l'écran** | une erreur d'outil est adressée au MODÈLE. `direEnFrancais` s'en charge côté fournisseur d'essai |
+| **Le point d'injection de `fabrique.ts`** | sert à éprouver un modèle qui SE TROMPE. Sans lui, ce défaut ne se retient pas |
+
 ## L'ASSISTANT EST UN AGENT : CE QU'IL FAUT SAVOIR AVANT D'Y TOUCHER (26 août 2026)
 
 | | |
@@ -148,7 +306,45 @@ personnels, `/documents-legaux`, et `/api/chantiers/<id>/feuille/pdf` — le dev
 sans un seul montant. Ouvrir un cinquième chemin se fait dans `OUVERT_AU_SALARIE`
 et se paie d'une ligne dans `scripts/test-acces-roles.ts`, à la main. C'est
 voulu : c'est le seul moment où quelqu'un regarde.
+## LOT AUDIO FERMÉ (26 août 2026)
 
+| | |
+|---|---|
+| **Le format se lit dans les octets** | `src/lib/signature-audio.ts`. `fichier.type` ne décide plus de rien côté serveur |
+| **Format inconnu → REFUS** | et **si un format légitime est refusé chez lui, on n'ouvre PAS de repli sur `fichier.type` : on élargit la reconnaissance.** C'est sa règle, pas une préférence |
+| **Une porte unique** | `src/server/audio-entrant.ts`, et 3 contrôles structurels empêchent le cinquième chemin de faire sa cuisine |
+| **Ni bibliothèque, ni parseur** | lire un conteneur entier sur une entrée hostile serait pire que le défaut |
+| **MP3 et AAC : une CHAÎNE de trames** | deux octets `FF Ex` apparaissent par hasard dans n'importe quel binaire |
+| **L'iPhone A ÉTÉ essayé, et ça passe** | 26 août 2026, sur son propre appareil, jusqu'à la génération des informations du devis. Ce poste n'a toujours pas Safari : c'est un essai HUMAIN qui l'a prouvé, et un futur changement de `signature-audio.ts` en redemandera un |
+| **Ne pas confondre avec le lot QUALITÉ** | ce qui SORT de la dictée — prestations, quantités, prix historiques — est un lot à part, ouvert le 26 août (`TODO.md`). Le lot Audio ne garantit que l'ENTRÉE du fichier |
+
+**Le piège de ce lot, et il reviendra : un contrôle en base qui mesure ZÉRO.**
+`notes_vocales` porte `FORCE ROW LEVEL SECURITY` — **le propriétaire y est
+soumis aussi**. Un compte lu sans poser `app.entreprise_id` rend 0 quoi qu'il
+arrive, et ment dans les deux sens : « rien n'a été rangé » sur un fichier
+hostile réellement rangé.
+
+---
+
+## LOT 3 FERMÉ — F1 À F13 (25 août 2026)
+
+Sept constats codés, quatre refusés, deux gardés sans toucher au code. Ce qu'il
+faut savoir avant d'y revenir :
+
+| | |
+|---|---|
+| **Le rapport d'audit n'est PAS dans le dépôt** | onze des treize points ne citaient aucun fichier. Ils ont été mesurés, pas crus — et quatre étaient faux |
+| **Aucun des sept n'était une fuite de données** | F5 est une panne d'écran, F12 de la surface, F13 une demande polie aux moteurs. Le dire est un choix : une alerte qui exagère s'apprend à être ignorée |
+| **NE JAMAIS renommer une migration** | `run-migrations.ts` les suit par nom de fichier. C'était F6, et « le corriger » l'aurait fait rejouer sur toutes les bases |
+| **Chaque rubrique de réglages pose SA garde** | `adressesAutorisees()` promettait une garde centrale qui n'a jamais existé. `scripts/test-reglages-gardes.ts` tient la règle à sa place |
+| **Le seuil par source ne s'applique que si la source est ÉTABLIE** | sans `ATLAS_PROXY_SAUTS`, tous les clients partagent un seau : le seuil deviendrait une arme retournée |
+
+**Le piège de ce lot, et il reviendra : un contrôle structurel est vert pour de
+mauvaises raisons.** Celui de F8 a passé trois fois sur le défaut qu'il porte
+dans son nom — une ligne d'import, puis un commentaire qui cite la garde, puis
+le mot `params` dans une destructuration. **Un contrôle qui lit du source
+blanchit ses commentaires, ne regarde que le corps de la fonction, et compare ce
+qui suit `await` — jamais la ligne entière.**
 ---
 
 ## LOT 2B FERMÉ, ET SEPT CONTRÔLES RÉPARÉS AVEC LUI (25 août 2026)
@@ -2335,6 +2531,14 @@ suite, rejouée sur le serveur chaud, passe. **Avant d'accuser son propre lot :
 rejouer.** J'ai bien failli défaire un changement juste pour cette raison.
 
 ## Ce qui vient d'être terminé
+
+**« COMPOSER MA FICHE » A QUITTÉ LES RÉGLAGES (26 août).** Elle vit sous
+`/paysage/fiche/composer`, et sa porte est **en tête** de la fiche de chantier.
+Trois choses à ne pas défaire par mégarde : la rubrique ne revient pas dans les
+Réglages (un contrôle le tient), la porte ne redescend pas en bas (un
+commentaire du 24 août disait l'inverse — il a été récrit), et le titre doré est
+`colors.or`, jamais `colors.rust` qui vaut le vert pin. `ARCHITECTURE.md` §197.
+
 
 **LE JOUR SE COMPTE CHEZ LUI, PLUS À GREENWICH (25 août).** `jourIso` rendait le
 jour UTC : entre minuit et 2 h du matin, l'été, Atlas croyait qu'on était encore

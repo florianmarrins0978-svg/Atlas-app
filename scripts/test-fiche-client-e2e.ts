@@ -202,6 +202,24 @@ async function main() {
     `le montage n'a produit que ${partis} devis envoyé(s) chez ce client : l'ordre ne se vérifierait pas`
   );
 
+  let ficheDuClientMonte = "";
+
+  /**
+   * Attend qu'une condition devienne vraie, ou rougit en la nommant.
+   *
+   * **Un délai fixe ne convient pas ici** : la suppression passe par une action
+   * serveur, et sous la batterie complète elle prend plus longtemps que seule.
+   * C'est le piège écrit dans `HANDOVER.md`, et il a déjà fait rougir trois
+   * suites justes cette semaine.
+   */
+  async function attendre(quoi: string, vrai: () => Promise<boolean>) {
+    for (let i = 0; i < 60; i++) {
+      if (await vrai()) return;
+      await page.waitForTimeout(500);
+    }
+    throw new Error(`toujours pas : ${quoi}`);
+  }
+
   await cas("depuis la fiche du chantier, une porte mène au client", async () => {
     await page.goto(chantierUrl, { waitUntil: "networkidle" });
     await page.waitForTimeout(700);
@@ -212,6 +230,9 @@ async function main() {
     );
     await porte.first().click();
     await page.waitForURL(/\/clients\/[0-9a-f-]{36}/, { timeout: 15_000 });
+    // Les cas de la fin y reviennent : la retenir évite de la rechercher, et
+    // surtout d'en ouvrir une autre sans s'en apercevoir.
+    ficheDuClientMonte = page.url();
     /**
      * **L'adresse change avant que la fiche soit là.** `waitForURL` rend la main
      * dès que l'URL correspond ; le corps de la page porte encore
@@ -235,6 +256,92 @@ async function main() {
   await cas("elle porte son nom, et les informations sous le nom", async () => {
     const texte = await page.locator("body").innerText();
     assert.ok(texte.includes(nomClient), `le nom du client manque :\n${texte.slice(0, 300)}`);
+  });
+
+  // ── SES COORDONNÉES : L'ADRESSE, PUIS LE TÉLÉPHONE À LA LIGNE ─────────────
+  //
+  // **Sa demande du 26 août 2026, capture à l'appui :** *« supprime le point
+  // entre l'adresse et le numéro de tel ; le tel doit être à la ligne sous
+  // l'adresse »*. Sur son téléphone, l'adresse tient déjà sur deux lignes : le
+  // numéro collé derrière un séparateur se lisait comme la fin de l'adresse.
+  //
+  // **On mesure des LIGNES, pas une chaîne.** `textContent` recolle tout : il
+  // rendrait la même valeur avec ou sans le retour, et le contrôle passerait au
+  // vert sur le défaut même qu'il doit interdire. `innerText` rend ce qui est
+  // PEINT — c'est la seule mesure qui distingue les deux (`CLAUDE.md` §5).
+  const ADRESSE = "23 rue d'Issy 92100 Boulogne-Billancourt";
+  const TELEPHONE = "06 00 00 00 05";
+  await cas("l'adresse et le téléphone tiennent sur DEUX lignes, sans séparateur", async () => {
+    const misesAJour = await pool.query(
+      `UPDATE clients SET adresse = $2, telephone = $3
+        WHERE id = (SELECT client_id FROM chantiers WHERE id = $1)`,
+      [chantierId, ADRESSE, TELEPHONE]
+    );
+    assert.equal(
+      misesAJour.rowCount,
+      1,
+      "le montage n'a pas pu poser les coordonnées : il n'y a rien à mesurer"
+    );
+    await page.reload({ waitUntil: "networkidle" });
+    await page.getByText("Chargement…").first().waitFor({ state: "hidden", timeout: 30_000 }).catch(() => undefined);
+
+    const lignes = (await page.locator("header p").last().innerText())
+      .split("\n")
+      .map((l) => l.trim())
+      .filter(Boolean);
+    assert.ok(lignes.length >= 2, `les coordonnées tiennent sur une seule ligne : ${JSON.stringify(lignes)}`);
+    // Les capitales sont PEINTES (`uppercase`) : on compare sans la casse.
+    assert.equal(
+      lignes[lignes.length - 1].toLowerCase(),
+      TELEPHONE.toLowerCase(),
+      `le téléphone n'est pas seul sur sa ligne : ${JSON.stringify(lignes)}`
+    );
+    assert.ok(
+      !lignes.join(" ").includes("·"),
+      `le séparateur est revenu entre l'adresse et le téléphone : ${JSON.stringify(lignes)}`
+    );
+  });
+
+  // ── ET UNE FICHE SANS AUCUN PAPIER NE COMMENTE PLUS SON VIDE ──────────────
+  //
+  // *« Supprime la phrase en gris lorsqu'il n'y a aucun document, on le voit,
+  // pas besoin de l'écrire. »* Les trois colonnes disent déjà « Aucun devis
+  // parti », « Aucune facture émise », « Aucune fiche envoyée » : la phrase les
+  // répétait une quatrième fois.
+  //
+  // **Ici, viser les MOTS est juste** — contrairement à la règle habituelle
+  // (`CLAUDE.md` §5 bis). Ce qu'il a demandé, c'est le retrait de cette
+  // phrase-là : un contrôle qui viserait une structure laisserait la remettre
+  // sous une autre forme.
+  await cas("un client sans aucun document ne porte plus de phrase grise", async () => {
+    // **On note d'où l'on part, et l'on y REVIENT.** Ce cas quitte la fiche du
+    // client monté par la suite ; les cas suivants la lisent sans la rouvrir, et
+    // rougissaient donc tous les trois — sur du code juste, pour un contrôle
+    // qui avait oublié de reposer le décor.
+    const ficheDuClient = page.url();
+    const { rows } = await pool.query(
+      `INSERT INTO clients (entreprise_id, nom, adresse, telephone)
+       SELECT entreprise_id, $2, $3, $4 FROM chantiers WHERE id = $1
+       RETURNING id`,
+      [chantierId, `M. Sans-papier ${Date.now()}`, ADRESSE, TELEPHONE]
+    );
+    assert.equal(rows.length, 1, "le client d'essai n'a pas été créé : il n'y a rien à mesurer");
+
+    await page.goto(`${BASE}/clients/${rows[0].id}`, { waitUntil: "networkidle" });
+    await page.getByText("Chargement…").first().waitFor({ state: "hidden", timeout: 30_000 }).catch(() => undefined);
+    const vu = await page.locator("body").innerText();
+
+    // **Le témoin d'abord.** Sans lui, un écran qui n'aurait rien rendu du tout
+    // passerait au vert : un contrôle qui mesure zéro ne mesure rien.
+    assert.match(vu, /Aucun devis parti/i, `on n'est pas sur une fiche vide :\n${vu.slice(0, 300)}`);
+    assert.doesNotMatch(
+      vu,
+      /Aucun document pour ce client|se remplira au premier devis/i,
+      "la phrase grise est revenue sous les trois colonnes vides : elle répète ce qu'elles disent déjà"
+    );
+
+    await page.goto(ficheDuClient, { waitUntil: "networkidle" });
+    await page.getByText("Chargement…").first().waitFor({ state: "hidden", timeout: 30_000 }).catch(() => undefined);
   });
 
   // ── Sa demande, mot pour mot : « en titre noir gras » ──────────────────────
@@ -617,6 +724,82 @@ async function main() {
       DECIDES,
       `la barre du bas porte ${onglets.join(", ")} au lieu de ${DECIDES.join(", ")}`
     );
+  });
+
+  // ─── SUPPRIMER UN CLIENT — sa proposition C, tranchée le 27 août 2026 ─────
+  //
+  // *« Je pense la C ; lorsqu'un client a des documents il faut mettre la phrase
+  // de prévention, et une phrase disant avez-vous sauvegardé ses documents autre
+  // part — et s'il dit oui il peut supprimer quand même. »*
+  //
+  // **Ces cas passent en DERNIER, et ce n'est pas un hasard** : le second
+  // supprime pour de bon. Placés plus haut, ils retireraient le décor que les
+  // suivants lisent — la faute que ce fichier a déjà payée deux fois cette
+  // semaine.
+  await cas("un client qui a des documents est PRÉVENU, et le geste est verrouillé", async () => {
+    await page.goto(ficheDuClientMonte, { waitUntil: "networkidle" });
+    await page.getByText("Chargement…").first().waitFor({ state: "hidden", timeout: 30_000 }).catch(() => undefined);
+
+    await page.locator('[data-atlas="supprimer-client"]').click();
+    const confirmer = page.locator('[data-atlas="confirmer-suppression"]');
+    await confirmer.waitFor({ state: "visible", timeout: 15_000 });
+
+    assert.ok(
+      await page.locator('[data-atlas="prevention"]').isVisible(),
+      "aucune phrase de prévention sur un client qui a des documents"
+    );
+    // **Le verrou se mesure sur le bouton, pas sur la case.** Une case cochée
+    // qui ne commanderait rien passerait au vert en laissant la suppression
+    // ouverte — c'est l'inverse de ce qu'il a demandé.
+    assert.strictEqual(
+      await confirmer.isDisabled(),
+      true,
+      "« Supprimer » est actif avant qu'il ait répondu sur la sauvegarde"
+    );
+
+    await page.locator('[data-atlas="sauvegarde-ailleurs"]').click();
+    await page.waitForTimeout(200);
+    assert.strictEqual(
+      await confirmer.isDisabled(),
+      false,
+      "« J'ai sauvegardé » ne déverrouille rien : le geste reste impossible"
+    );
+
+    // On referme : ce client sert encore aux cas qui suivent, s'il en naît.
+    await page.getByRole("button", { name: "Annuler" }).click();
+    await page.waitForTimeout(300);
+  });
+
+  await cas("et un client SANS document disparaît pour de bon", async () => {
+    const { rows } = await pool.query(
+      `INSERT INTO clients (entreprise_id, nom, telephone)
+       SELECT entreprise_id, $2, $3 FROM chantiers WHERE id = $1
+       RETURNING id`,
+      [chantierId, `M. À supprimer ${Date.now()}`, "06 00 00 00 06"]
+    );
+    assert.equal(rows.length, 1, "le client d'essai n'a pas été créé : il n'y a rien à mesurer");
+    const aSupprimer = rows[0].id as string;
+
+    await page.goto(`${BASE}/clients/${aSupprimer}`, { waitUntil: "networkidle" });
+    await page.getByText("Chargement…").first().waitFor({ state: "hidden", timeout: 30_000 }).catch(() => undefined);
+    await page.locator('[data-atlas="supprimer-client"]').click();
+    const confirmer = page.locator('[data-atlas="confirmer-suppression"]');
+    await confirmer.waitFor({ state: "visible", timeout: 15_000 });
+
+    // Rien à sauvegarder : le verrou n'a pas lieu d'être, et l'alarmer pour
+    // rien apprendrait à ignorer l'alarme (`CLAUDE.md` §4 ter).
+    assert.strictEqual(await page.locator('[data-atlas="prevention"]').count(), 0, "on l'alarme pour un client vide");
+    assert.strictEqual(await confirmer.isDisabled(), false, "le geste est verrouillé sans rien à sauvegarder");
+
+    await confirmer.click();
+    await page.waitForURL(new RegExp(`${BASE.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}/clients/?$`), { timeout: 30_000 });
+
+    // **On mesure la BASE, pas l'écran.** Une fiche disparue de la liste peut
+    // n'être que masquée ; ce qu'il a choisi, c'est qu'elle n'existe plus.
+    await attendre("la fiche a disparu de la base", async () => {
+      const { rows: reste } = await pool.query(`SELECT id FROM clients WHERE id = $1`, [aSupprimer]);
+      return reste.length === 0;
+    });
   });
 
   await contexte.close();

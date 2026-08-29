@@ -171,9 +171,13 @@ function Contenu({
   // le relire dans la boucle n'aurait pas la même valeur si la préparation
   // changeait entre deux lignes.
   const nombreEquipes = preparation?.planning.nombreEquipes ?? 1;
+  // **Les deux compteurs, depuis le 26 août 2026** : celui des équipes plafonne
+  // la charge, celui des salariés décide des noms écrits sur une journée.
+  const nombreSalaries = preparation?.planning.nombreSalaries ?? 0;
   const { occupationDe, nomEquipe } = useOccupation({
     chantiers: preparation?.planning.chantiers ?? [],
     nombreEquipes,
+    nombreSalaries,
     absences: preparation?.planning.absences ?? [],
     equipesNommees: preparation?.planning.equipesNommees ?? [],
   });
@@ -427,10 +431,14 @@ function Contenu({
 
       {preparation && !blocage && (
         <>
-          <p className="mb-4 text-center text-[13px]" style={{ color: colors.muted }}>
-            Par {preparation.canal === "sms" ? "SMS" : "e-mail"}
-            {preparation.destinataire ? ` au ${preparation.destinataire}` : ""}
-          </p>
+          {/* **« Par SMS au 06… » est parti — sa demande du 26 août 2026.**
+
+              Ce qu'on perd, et qu'il faut savoir avant de le rétablir : il ne
+              voit plus par quel canal ni à quel numéro le devis part, avant
+              d'ouvrir sa messagerie. Elle le lui montre juste après, et il peut
+              encore reculer — rien n'est envoyé par Atlas. C'est le MÊME
+              arbitrage qu'il a rendu le 24 août sur l'écran de la facture
+              (`TransmettreLaFacture`), et pour la même raison. */}
 
           {/* La durée n'est pas une seconde question — c'est le réglage qui
               décide quels jours sont proposables. Une demi-journée tient là où
@@ -444,16 +452,20 @@ function Contenu({
               label="Ce chantier prend"
               valeur={preparation.dureeDemiJournees}
               onChange={setDureeChoisie}
+              /* **Les deux phrases d'explication sont parties le 26 août 2026**,
+                 à sa demande : « Repris de votre dictée. Corrigez-le si
+                 besoin… » et sa sœur « Votre client ne verra que la date… ».
+                 Une molette qu'on peut tourner n'a pas besoin qu'on écrive
+                 dessous qu'elle se tourne.
+
+                 **Ce qui RESTE est le seul cas où l'écran apprend quelque
+                 chose** : un chantier long réserve beaucoup de jours d'affilée.
+                 C'est juste, et invisible — sans cette phrase, il s'étonnerait
+                 de ne plus rien pouvoir proposer pendant un mois. */
               aide={
-                (preparation.dureeDeduiteDeLaDictee
-                  ? "Repris de votre dictée. Corrigez-le si besoin — cela change les jours proposables."
-                  : "Votre client ne verra que la date, jamais la demi-journée.") +
-                /* Un chantier long réserve beaucoup de jours d'affilée. C'est
-                   juste, mais invisible : sans cette phrase, le patron
-                   s'étonnerait de ne plus rien pouvoir proposer pendant un mois. */
-                (preparation.dureeDemiJournees > 6
-                  ? ` ${preparation.dureeDemiJournees / 2} jours ouvrés d'affilée seront réservés à partir de la date retenue.`
-                  : "")
+                preparation.dureeDemiJournees > 6
+                  ? `${preparation.dureeDemiJournees / 2} jours ouvrés d'affilée seront réservés à partir de la date retenue.`
+                  : ""
               }
             />
           </div>
@@ -724,15 +736,16 @@ function Contenu({
             </button>
           </div>
 
-          <p className="mb-4 text-center text-[12px]" style={{ color: colors.muted }}>
-            {selection.length === 2
-              ? autreDateAutorisee
-                ? "Le client choisira entre ces deux dates, ou en proposera une autre."
-                : "Le client choisira entre ces deux dates, et rien d'autre."
-              : autreDateAutorisee
-                ? "Le client pourra aussi en proposer une autre, parmi vos jours libres."
-                : "Le client ne pourra pas en proposer une autre."}
-          </p>
+          {/* **La phrase qui vivait ici est partie — sa demande du 26 août
+              2026.** Elle disait pour la TROISIÈME fois ce que l'écran montre
+              déjà : les dates retenues sont listées juste au-dessus, et
+              l'interrupteur porte son propre sous-titre, qui change avec lui.
+              Une phrase qui décrit le bouton d'à côté est du bruit
+              (`CLAUDE.md` §3).
+
+              **Les trois autres formulations partent avec elle**, et c'est
+              délibéré : elles ne se montraient que dans d'autres états — il les
+              aurait rencontrées demain, et redemandé la même chose. */}
         </>
       )}
 

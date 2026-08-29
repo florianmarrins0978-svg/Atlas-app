@@ -1,0 +1,436 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas — Atlas — Lot 3 : rapport d'étape</title>
+<style>
+  :root{
+    --ground:#f5f3ee; --surface:#faf9f5; --raised:#ece9e1;
+    --ink:#1c1c1a; --ink-soft:#4a4a44; --muted:#8a8578;
+    --accent:#2f3b2f; --alert:#b5562a; --line:rgba(28,28,26,0.13);
+    --serif:Georgia,'Times New Roman',serif;
+    --sans:system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --ground:#161815; --surface:#1d201c; --raised:#252924;
+      --ink:#eae7df; --ink-soft:#c2bdb1; --muted:#948f83;
+      --accent:#9fbd82; --alert:#e0885a; --line:rgba(234,231,223,0.17);
+    }
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--sans);
+    line-height:1.65;}
+  main{max-width:44rem;margin:0 auto;padding:2.5rem 1.2rem 5rem;}
+  h1,h2,h3,h4{font-family:var(--serif);font-weight:600;line-height:1.2;
+    text-wrap:balance;margin:2rem 0 0.6rem;scroll-margin-top:1rem;}
+  h1{font-size:2rem;margin-top:0;}
+  h2{font-size:1.5rem;padding-top:1.2rem;border-top:1px solid var(--line);}
+  h3{font-size:1.12rem;}
+  h4{font-size:1rem;}
+  p{margin:0 0 0.9rem;}
+  a{color:var(--accent);text-underline-offset:3px;}
+  a:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:3px;}
+  ul,ol{margin:0 0 1rem;padding-left:1.3rem;}
+  li{margin-bottom:0.4rem;}
+  li::marker{color:var(--muted);}
+  /* Le sommaire : des cibles larges, confortables au doigt sur téléphone. */
+  ol li a{display:inline-block;padding:0.15rem 0;}
+  blockquote{margin:1rem 0;padding:0.85rem 1.05rem;background:var(--raised);
+    border-left:3px solid var(--accent);border-radius:0 10px 10px 0;color:var(--ink-soft);}
+  code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:0.87em;
+    background:var(--raised);padding:0.1rem 0.35rem;border-radius:5px;}
+  hr{border:0;border-top:1px solid var(--line);margin:2rem 0;}
+  .tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px;
+    background:var(--surface);margin:0 0 1.2rem;}
+  table{border-collapse:collapse;width:100%;font-size:0.92rem;min-width:22rem;}
+  th,td{text-align:left;padding:0.55rem 0.8rem;border-bottom:1px solid var(--line);
+    vertical-align:top;}
+  th{font-size:0.72rem;letter-spacing:0.08em;text-transform:uppercase;
+    color:var(--muted);white-space:nowrap;}
+  tr:last-child td{border-bottom:none;}
+  .retour{display:inline-block;font-size:0.76rem;color:var(--muted);
+    text-decoration:none;margin:-0.3rem 0 1rem;}
+  .retour:hover{color:var(--accent);text-decoration:underline;}
+</style>
+</head>
+<body>
+<main>
+<h1 id="atlas--lot-3--rapport-détape">Atlas — Lot 3 : rapport d'étape</h1>
+<p><strong>Document destiné à ChatGPT.</strong> 25 août 2026.</p>
+<blockquote><strong>CE N'EST PAS LE RAPPORT FINAL.</strong> Le brief demande un rapport complet A→K avec un verdict. <strong>Un seul point sur sept est terminé</strong> — M12. Le déclarer validé maintenant reviendrait à transformer un « à faire » en « fait », ce que le brief interdit lui-même au point 7.</blockquote>
+<h2 id="où-en-est-le-lot">Où en est le lot</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th>État</th>
+<th>Preuve</th>
+</tr></thead><tbody>
+<tr>
+<td><strong>M12</strong> — mise à jour du banc</td>
+<td><strong>FAIT ET ÉPROUVÉ</strong></td>
+<td>suite rouge sur l'ancien code, verte sur le neuf</td>
+</tr>
+<tr>
+<td><strong>M10</strong> — dépendances</td>
+<td>pas commencé</td>
+<td><code>npm audit</code> relevé, non corrigé</td>
+</tr>
+<tr>
+<td><strong>M9</strong> — <code>password_hash</code></td>
+<td><strong>cartographié</strong>, pas codé</td>
+<td>11 accès recensés, terrain vérifié</td>
+</tr>
+<tr>
+<td><strong>M11</strong> — ré-authentification</td>
+<td>analyse de menace à faire d'abord</td>
+<td>—</td>
+</tr>
+<tr>
+<td><strong>F1 → F13</strong></td>
+<td>pas commencé</td>
+<td>quatre points déjà instruits (voir plus bas)</td>
+</tr>
+<tr>
+<td><strong>Audio</strong></td>
+<td>pas commencé</td>
+<td>état constaté</td>
+</tr>
+<tr>
+<td><strong>Sauvegardes</strong></td>
+<td>rien à coder</td>
+<td><strong>BLOQUANT PRODUCTION</strong></td>
+</tr>
+</tbody></table></div>
+<hr>
+<h2 id="a--m12--la-mise-à-jour-du-banc">A — M12 : la mise à jour du banc</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<h3 id="état-constaté-avant">État constaté (avant)</h3>
+<p>``<code>ts export async function mettreAJourApplicationAction(): Promise&lt;ResultatMiseAJour&gt; { await getCurrentCtx();                            // ← une session, rien de plus if (process.env.ATLAS_BANC_ESSAI !== "1") { … }   // ← et le profil ignoré </code>``</p>
+<p><strong>L'audit disait vrai, et le défaut était double.</strong></p>
+<ol>
+<li><strong>N'importe quel compte connecté</strong> — un membre, c'est-à-dire un salarié à qui le patron a ouvert un accès — pouvait déclencher un <code>git pull</code> et des migrations sur le banc. Ce geste change ce que l'application sert.</li>
+<li><strong><code>ATLAS_PROFIL=banc</code> était ignoré.</strong> Or <code>src/profil-banc.ts</code> est la seule fonction qui décide de ce qu'est un banc, et <code>.devcontainer/demarrer.sh</code> ne pose <strong>que</strong> cette variable-là.</li>
+</ol>
+<h3 id="ce-que-la-recherche-a-trouvé-en-plus-du-brief">Ce que la recherche a trouvé en plus du brief</h3>
+<p>Le second défaut ne touchait pas un endroit mais <strong>trois</strong> :</p>
+<div class="tablewrap"><table><thead><tr>
+<th>Fichier</th>
+<th>Ce que ça donnait sur un banc démarré par <code>demarrer.sh</code></th>
+</tr></thead><tbody>
+<tr>
+<td><code>src/app/reglages/actions.ts</code></td>
+<td>le bouton refusait sans raison</td>
+</tr>
+<tr>
+<td><code>src/app/reglages/page.tsx</code></td>
+<td>la phrase sur la branche suivie ne s'affichait pas</td>
+</tr>
+<tr>
+<td><code>src/server/version-executee.ts</code></td>
+<td>« version inconnue »</td>
+</tr>
+</tbody></table></div>
+<p>Le troisième est le plus coûteux : c'est l'écran que le patron photographie pour répondre à <em>« est-ce que mes correctifs sont arrivés ? »</em>.</p>
+<h3 id="correction">Correction</h3>
+<p>```ts export async function mettreAJourApplicationAction(): Promise&lt;ResultatMiseAJour&gt; { const ctx = await getCurrentCtx(); await exigerProprietaire(ctx, "mettre à jour l'application");</p>
+<p>if (!estBancDEssai()) { … } ```</p>
+<p><strong>L'ordre des deux gardes est délibéré</strong> : le rôle avant le banc, le banc avant le script. C'est ce qui permet à une suite d'éprouver le refus de rôle <strong>sans qu'un <code>git pull</code> puisse partir pendant la batterie</strong>.</p>
+<p>Le bouton est aussi masqué pour un membre (<code>page.tsx</code>). <strong>Ce masquage ne protège rien</strong> — la garde qui compte est dans l'action, et elle refuse même appelée directement. Il évite seulement de proposer un geste qu'on refusera.</p>
+<h3 id="tests--et-la-question-du-brief---rouge-sur-lancien-code--">Tests — et la question du brief : « rouge sur l'ancien code ? »</h3>
+<p><code>scripts/test-mise-a-jour-role-db.ts</code>, cinq vérifications.</p>
+<p><strong>Oui, démontré.</strong> Sur la source d'avant, restaurée pour l'occasion :</p>
+<p>``<code> ✗ UN MEMBRE EST REFUSÉ — et c'est bien le RÔLE qui le refuse ✗ LES DEUX MARQUES DU BANC sont reconnues — plus une seule ✗ PLUS AUCUN ÉCRAN ne lit la marque du banc en direct Ces fichiers décident seuls de ce qu'est un banc, et ignorent donc ATLAS_PROFIL : src/app/reglages/actions.ts, src/app/reglages/page.tsx, src/server/version-executee.ts Mise à jour du banc — 3 échec(s). </code>``</p>
+<p>Sur le code corrigé : <strong>5/5</strong>.</p>
+<p><strong>Le piège que ce contrôle devait éviter, et qui mérite d'être dit.</strong> Le banc est laissé <em>éteint</em> dans le cas du membre. L'ancien code refusait alors lui aussi — mais pour le mauvais motif (« n'existe que sur le banc d'essai »). Un contrôle qui se serait contenté de constater <em>un</em> refus aurait été <strong>vert sur le code défectueux</strong>. Ce qui est exigé est le refus <strong>de rôle</strong>, qui n'existait pas.</p>
+<p><strong>Un garde-fou en plus :</strong> un contrôle structurel interdit désormais à tout fichier de <code>src/</code> de lire <code>process.env.ATLAS_BANC_ESSAI</code> en direct, sauf <code>profil-banc.ts</code> (qui décide) et <code>env.ts</code> (qui refuse une configuration contradictoire, et doit donc voir les deux variables séparément). Sans lui, le prochain écran recopierait la même faute.</p>
+<h3 id="risque-résiduel">Risque résiduel</h3>
+<p><code>exigerProprietaire</code> <strong>lève</strong> au lieu de rendre une valeur de retour. C'est la convention du dépôt (<code>creerTarifAction</code> fait de même), mais le message d'une exception levée par une action serveur n'atteint jamais l'écran en production (<code>AGENTS.md</code>). Un membre qui appellerait l'action directement verrait donc une erreur opaque. <strong>C'est acceptable ici</strong> : l'écran ne lui propose pas le bouton, et la propriété de sécurité — l'action ne s'exécute pas — est tenue.</p>
+<hr>
+<h2 id="b--m10--dépendances-relevé-pas-corrigé">B — M10 : dépendances (RELEVÉ, PAS CORRIGÉ)</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<h3 id="npm-audit--avant-résultat-exact"><code>npm audit</code> — AVANT, résultat exact</h3>
+<p>``<code> 11 vulnerabilities (4 moderate, 7 high) </code>``</p>
+<div class="tablewrap"><table><thead><tr>
+<th>Paquet</th>
+<th>Nature</th>
+<th>Direct ?</th>
+<th>Correctif annoncé</th>
+</tr></thead><tbody>
+<tr>
+<td><code>postcss</code></td>
+<td>lecture de fichier arbitraire via <code>sourceMappingURL</code> (3 avis)</td>
+<td><strong>non</strong> — <code>node_modules/next/node_modules/postcss</code></td>
+<td><code>next@16.3.2</code></td>
+</tr>
+<tr>
+<td><code>sharp</code> / libvips</td>
+<td>CVE-2026-33327, 33328, 35590, 35591</td>
+<td><strong>non</strong> — tiré par Next</td>
+<td><code>next@16.3.2</code></td>
+</tr>
+</tbody></table></div>
+<p><strong>Ni <code>sharp</code> ni <code>postcss</code> ne sont déclarés dans <code>package.json</code>.</strong> Les onze alertes viennent toutes de <code>next: "16.2.12"</code>.</p>
+<h3 id="ce-qui-sera-fait-et-ce-qui-ne-le-sera-pas">Ce qui sera fait, et ce qui ne le sera pas</h3>
+<ul>
+<li>montée <strong>manuelle</strong> de Next vers 16.3.2 — une <strong>mineure</strong>, pas une majeure. L'avertissement <em>« outside the stated dependency range »</em> ne dit que ceci : la version est épinglée au patch dans <code>package.json</code> ;</li>
+<li><strong>aucun <code>npm audit fix --force</code></strong> ;</li>
+<li><strong>aucune migration de <code>next-auth</code></strong> : la 5.0.0-beta est celle qu'Atlas éprouve depuis le début, Face ID compris. Le brief autorise à documenter plutôt qu'à refondre.</li>
+</ul>
+<h3 id="après">APRÈS</h3>
+<p><em>Non disponible : la montée n'est pas faite.</em></p>
+<hr>
+<h2 id="c--m11--le-modèle-de-session-réel-constaté-rien-codé">C — M11 : le modèle de session RÉEL (constaté, rien codé)</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p>``<code>ts // src/auth.ts:35 session: { strategy: "jwt" }, </code>``</p>
+<p><strong>Aucun <code>maxAge</code> n'est posé</strong> → la valeur par défaut d'Auth.js s'applique : <strong>trente jours, glissants</strong>. Le constat de l'audit tient.</p>
+<h3 id="face-id-nest-pas-une-2fa--larchitecture-pas-laffirmation">Face ID n'est PAS une 2FA — l'architecture, pas l'affirmation</h3>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th>Ce qu'Atlas fait réellement</th>
+</tr></thead><tbody>
+<tr>
+<td><strong>Ce que c'est</strong></td>
+<td>un <strong>second fournisseur <code>Credentials</code></strong> dans <code>src/auth.ts</code>, à côté du mot de passe</td>
+</tr>
+<tr>
+<td><strong>Donc</strong></td>
+<td>un <strong>premier facteur alternatif</strong> : on entre <em>soit</em> par mot de passe, <em>soit</em> par la clé de l'appareil</td>
+</tr>
+<tr>
+<td><strong>Ce que ce n'est pas</strong></td>
+<td>un second facteur — rien n'exige jamais les deux</td>
+</tr>
+<tr>
+<td><strong>Ce qui est vérifié</strong></td>
+<td>une signature WebAuthn, contre un défi posé dans un cookie <code>httpOnly</code>/<code>sameSite=strict</code>, consommé à la lecture</td>
+</tr>
+<tr>
+<td><strong>Ce qui n'entre jamais dans Atlas</strong></td>
+<td>Face ID au sens d'Apple : il déverrouille la clé sur l'appareil ; c'est la <strong>clé</strong> qui signe</td>
+</tr>
+</tbody></table></div>
+<h3 id="le-point-que-le-brief-soulève-et-qui-est-juste">Le point que le brief soulève, et qui est juste</h3>
+<p>Une date globale <code>derniere_preuve_at</code> par utilisateur <strong>profiterait à une session volée</strong> : le patron se ré-authentifie sur son iPhone, et l'ordinateur volé en bénéficie dans la seconde. <strong>Rien ne sera codé avant d'avoir résolu ce point</strong> — la preuve devra être liée à la session qui l'a obtenue, pas à l'utilisateur.</p>
+<p><code>session.maxAge</code> <strong>ne sera pas modifié</strong> dans ce lot : un artisan déconnecté sur un chantier coûte plus cher que le risque traité.</p>
+<hr>
+<h2 id="d--m9--cartographie-rien-codé">D — M9 : cartographie (rien codé)</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p>Le brief demandait de tout recenser avant de toucher. Fait — et le terrain est plus favorable que l'audit ne le laissait croire.</p>
+<h3 id="les-onze-accès-à-users">Les onze accès à <code>users</code></h3>
+<div class="tablewrap"><table><thead><tr>
+<th>Où</th>
+<th>Colonnes</th>
+<th>Après un retrait du droit sur <code>password_hash</code></th>
+</tr></thead><tbody>
+<tr>
+<td><code>src/auth.ts:47</code></td>
+<td><strong><code>select()</code> nu</strong></td>
+<td><strong>à router</strong> — la connexion</td>
+</tr>
+<tr>
+<td><code>src/server/repositories/compte.ts:80</code></td>
+<td><code>{passwordHash}</code></td>
+<td><strong>à router</strong> — vérifier l'ancien mot de passe</td>
+</tr>
+<tr>
+<td><code>src/server/repositories/compte.ts:101</code></td>
+<td><code>UPDATE set passwordHash</code></td>
+<td><strong>à router</strong> — écrire le nouveau</td>
+</tr>
+<tr>
+<td><code>src/server/repositories/entreprises.ts:27</code></td>
+<td><code>INSERT … returning()</code> <strong>nu</strong></td>
+<td><strong>à borner</strong> — <code>RETURNING</code> exige le droit de lecture</td>
+</tr>
+<tr>
+<td><code>compte.ts:32</code></td>
+<td><code>{nom, email}</code></td>
+<td>intact</td>
+</tr>
+<tr>
+<td><code>compte.ts:136</code></td>
+<td><code>{jetonsValidesDepuis}</code></td>
+<td>intact — <strong>coupure des sessions</strong></td>
+</tr>
+<tr>
+<td><code>charte-personne.ts:27</code></td>
+<td><code>{charte}</code></td>
+<td>intact</td>
+</tr>
+<tr>
+<td><code>editeur.ts:37</code></td>
+<td><code>{email}</code></td>
+<td>intact</td>
+</tr>
+<tr>
+<td><code>documents-legaux.ts:169</code></td>
+<td><code>{id}</code></td>
+<td>intact</td>
+</tr>
+<tr>
+<td><code>session-ctx.ts:114</code></td>
+<td><code>{id}</code></td>
+<td>intact</td>
+</tr>
+<tr>
+<td><code>cles-appareil.ts:106</code></td>
+<td><code>{id}</code></td>
+<td>intact</td>
+</tr>
+</tbody></table></div>
+<p>*<em>Un seul <code>SELECT </em></code> dans tout le dépôt**, et c'est la connexion.</p>
+<p><strong>Face ID ne lit jamais <code>password_hash</code></strong> — <code>cles-appareil.ts</code> ne touche que la table des clés. C'est important : le durcissement ne peut pas le casser par ce biais.</p>
+<h3 id="le-terrain-vérifié-en-base">Le terrain, vérifié en base</h3>
+<div class="tablewrap"><table><thead><tr>
+<th>Question</th>
+<th>Réponse constatée</th>
+</tr></thead><tbody>
+<tr>
+<td><code>pgcrypto</code> disponible ?</td>
+<td><strong>oui</strong>, 1.3, pas encore installée</td>
+</tr>
+<tr>
+<td><code>atlas_app</code> peut-il créer dans <code>public</code> ?</td>
+<td><strong>non</strong> (<code>has_schema_privilege</code> = <code>f</code>)</td>
+</tr>
+</tbody></table></div>
+<p>La seconde réponse répond directement à l'exigence du brief — <em>« l'impossibilité pour <code>atlas_app</code> de modifier/remplacer les objets auxquels la fonction fait confiance »</em> : il n'a aucun droit de DDL, cette propriété est <strong>déjà</strong> tenue.</p>
+<h3 id="la-forme-envisagée-à-éprouver-rien-nest-décidé">La forme envisagée (à éprouver, rien n'est décidé)</h3>
+<ul>
+<li><code>REVOKE SELECT (password_hash), UPDATE (password_hash) ON users FROM atlas_app</code> ;</li>
+<li>une fonction <code>SECURITY DEFINER</code> appartenant à <code>atlas_owner</code>, <code>search_path</code> épinglé, références qualifiées, <code>REVOKE ALL … FROM PUBLIC</code> puis <code>GRANT EXECUTE</code> au seul <code>atlas_app</code>, qui <strong>rend un identifiant, jamais un condensat</strong> ;</li>
+<li>le retrait du droit d'<strong>écriture</strong> compte autant que celui de lecture : sans lui, une injection pourrait poser un condensat connu et entrer.</li>
+</ul>
+<p><strong><code>PUBLIC</code> reçoit <code>EXECUTE</code> par défaut sur toute fonction</strong> — le brief a raison de le pointer, et le <code>REVOKE</code> sera explicite.</p>
+<hr>
+<h2 id="e--f1--f13--quatre-points-déjà-instruits">E — F1 → F13 : quatre points déjà instruits</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th>État constaté</th>
+<th>Décision</th>
+</tr></thead><tbody>
+<tr>
+<td><strong>F3</strong> <code>/api/health/diagnostic</code></td>
+<td>la route <strong>borne déjà</strong> son calcul d'origines en production (<code>NODE_ENV === "production"</code> → <code>[]</code>). Reste à constater ce que le <strong>corps</strong> de la réponse rend</td>
+<td>à vérifier par un contrôle, pas à supposer</td>
+</tr>
+<tr>
+<td><strong>F6</strong> migrations en double</td>
+<td><strong>FAUX PROBLÈME.</strong> <code>scripts/run-migrations.ts</code> suit les migrations par <strong>nom de fichier</strong> dans <code>_migrations</code>. Deux noms distincts sont deux migrations distinctes</td>
+<td><strong>ne rien faire</strong> — renommer serait la seule façon de casser quelque chose</td>
+</tr>
+<tr>
+<td><strong>F10</strong> CSP <code>unsafe-inline</code></td>
+<td>présent (<code>next.config.ts:21-22</code>)</td>
+<td><strong>hors de ce lot</strong> : une CSP à nonce se joue dans le <code>middleware</code>, et mal posée elle rend l'application blanche</td>
+</tr>
+<tr>
+<td><strong>F13</strong> <code>robots.txt</code></td>
+<td><strong>absent</strong>, vérifié</td>
+<td>à ajouter — trivial et sans risque</td>
+</tr>
+</tbody></table></div>
+<p>Les neuf autres n'ont pas encore été instruits.</p>
+<hr>
+<h2 id="f--audio--état-constaté-rien-changé">F — Audio : état constaté, rien changé</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p>``<code>ts // src/server/upload-limits.ts:46 export function verifierTypeAudio(mimeType: string) { const base = mimeType.split(";")[0].trim().toLowerCase(); if (!TYPES_AUDIO_AUTORISES.includes(base)) … </code>``</p>
+<p><strong>Le type déclaré par le navigateur, et rien d'autre.</strong> Nous l'avions déjà écrit au Lot 2B — ce n'est pas une découverte du brief.</p>
+<p><strong>Ce qui borne le risque, et que le brief ne dit pas :</strong> depuis M1, le type <strong>servi</strong> n'est plus le type déclaré — il est dérivé de l'extension de la clé, choisie par le serveur. Ce qui reste possible est de <strong>ranger</strong> un fichier inerte sous une extension audio, pas de le faire exécuter.</p>
+<p>Le piège d'une vérification par signature est identifié : un iPhone envoie du MP4/AAC, un navigateur Android du WebM/Opus. Une liste trop étroite ferait refuser des dictées réelles sur un chantier.</p>
+<hr>
+<h2 id="g--sauvegardes">G — Sauvegardes</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><strong>BLOQUANT PRODUCTION — SAUVEGARDE/RESTAURATION NON ÉPROUVÉE.</strong></p>
+<p>Aucun fournisseur d'hébergement PostgreSQL ni de stockage objet n'est déclaré dans le dépôt. Rien ne sera écrit qui ressemble à une sauvegarde de production.</p>
+<hr>
+<h2 id="h--tests-réellement-exécutés">H — Tests réellement exécutés</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th>Commande</th>
+<th>Résultat exact</th>
+</tr></thead><tbody>
+<tr>
+<td><code>npx tsc --noEmit</code></td>
+<td>0 erreur</td>
+</tr>
+<tr>
+<td><code>npm run lint</code></td>
+<td>0 erreur</td>
+</tr>
+<tr>
+<td><code>npm run verifier:memoire</code></td>
+<td>cohérente (8 fichiers)</td>
+</tr>
+<tr>
+<td><code>npx tsx scripts/test-mise-a-jour-role-db.ts</code></td>
+<td><strong>5/5</strong> — et <strong>3 échecs</strong> sur la source d'avant</td>
+</tr>
+<tr>
+<td>suites base (<code>npm test</code>)</td>
+<td><strong>224/224</strong></td>
+</tr>
+<tr>
+<td>suites navigateur</td>
+<td><em>batterie en cours au moment d'écrire</em></td>
+</tr>
+<tr>
+<td><code>npm audit</code></td>
+<td>11 alertes (relevé, non corrigé)</td>
+</tr>
+</tbody></table></div>
+<hr>
+<h2 id="i--régressions-rencontrées-pendant-ce-lot">I — Régressions rencontrées pendant ce lot</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><strong>Aucune du fait de M12.</strong> Pour mémoire, celles rencontrées en fermant le Lot 2B juste avant, toutes dans les SUITES et jamais dans le produit : sept contrôles qui attendaient un délai plutôt qu'un signal, ou une formulation plutôt qu'une règle. Détail dans <code>CHANGELOG.md</code> du 25 août.</p>
+<hr>
+<h2 id="j--fichiers-et-migrations">J — Fichiers et migrations</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th>Fichier</th>
+<th>Nature</th>
+</tr></thead><tbody>
+<tr>
+<td><code>scripts/test-mise-a-jour-role-db.ts</code></td>
+<td><strong>créé</strong> — 5 vérifications</td>
+</tr>
+<tr>
+<td><code>src/app/reglages/actions.ts</code></td>
+<td>rôle propriétaire + <code>estBancDEssai()</code></td>
+</tr>
+<tr>
+<td><code>src/app/reglages/page.tsx</code></td>
+<td>bouton masqué pour un membre, <code>estBancDEssai()</code></td>
+</tr>
+<tr>
+<td><code>src/server/version-executee.ts</code></td>
+<td><code>estBancDEssai()</code></td>
+</tr>
+<tr>
+<td><code>CHANGELOG.md</code>, <code>docs/lot-3-securite-lecture.md</code></td>
+<td>mémoire du dépôt</td>
+</tr>
+</tbody></table></div>
+<p><strong>Aucune migration.</strong></p>
+<hr>
+<h2 id="k--reste-à-faire">K — Reste à faire</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<ol>
+<li><strong>M10</strong> — monter Next manuellement, batterie complète, <code>npm audit</code> après ;</li>
+<li><strong>M9</strong> — le vrai sujet : <code>REVOKE</code> de colonne + fonction verrouillée, avec les neuf tests négatifs demandés, <strong>joués sous <code>atlas_app</code></strong> ;</li>
+<li><strong>M11</strong> — résoudre d'abord la liaison preuve ↔ session, puis la liste exacte des opérations sensibles, puis coder ;</li>
+<li><strong>F1, F2, F4, F5, F7, F8, F9, F11, F12</strong> — à instruire ; <strong>F13</strong> à ajouter ;</li>
+<li><strong>Audio</strong> — étudier la signature, ou laisser ouvert et le dire ;</li>
+<li><strong>Sauvegardes</strong> — rien à coder.</li>
+</ol>
+<hr>
+<h2 id="verdict">Verdict</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><strong>LOT 3 NON VALIDÉ — parce qu'il n'est pas terminé.</strong></p>
+<p>Ce n'est pas un échec : c'est l'état réel après le premier des sept points. M12 est fait, prouvé rouge sur l'ancien code, et vert sur le neuf. Le reste n'est pas commencé, et l'annoncer autrement serait exactement ce que le brief interdit.</p>
+</main>
+</body>
+</html>

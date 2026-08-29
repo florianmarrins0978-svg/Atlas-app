@@ -74,12 +74,31 @@ async function main() {
   const equipeInput = page.locator("label", { hasText: "Équipe" }).locator("input");
   await equipeInput.fill("2 hommes");
   await equipeInput.blur();
-  await page.waitForTimeout(700);
-  await page.reload({ waitUntil: "networkidle" });
-  // 6 demi-journées = 3 jours : la bande relit le texte enregistré, elle ne
-  // garde aucun état à elle.
-  assert.equal(await page.getByLabel("Durée du chantier").inputValue(), "6");
-  assert.equal(await page.locator("label", { hasText: "Équipe" }).locator("input").inputValue(), "2 hommes");
+
+  /**
+   * **Le même piège que la prestation plus bas, et il a fini par mordre ici
+   * aussi.** Le 27 août 2026, en pleine batterie : `'' == '2 hommes'`, et vert
+   * seul l'instant d'après. Sept cents millisecondes tiennent quand la suite
+   * est jouée seule ; sous cent seize suites, l'action serveur n'a pas fini
+   * d'écrire quand la page se recharge — et le champ relu est vide.
+   *
+   * On laisse donc à l'enregistrement le temps qu'il lui faut. **Le contrôle
+   * reste entier** : si l'équipe n'est jamais enregistrée, il rougit toujours,
+   * simplement pour la bonne raison.
+   */
+  let equipeRelue = "";
+  let dureeRelue = "";
+  for (const essai of [1, 2, 3]) {
+    await page.waitForTimeout(essai * 500);
+    await page.reload({ waitUntil: "networkidle" });
+    // 6 demi-journées = 3 jours : la bande relit le texte enregistré, elle ne
+    // garde aucun état à elle.
+    dureeRelue = await page.getByLabel("Durée du chantier").inputValue();
+    equipeRelue = await page.locator("label", { hasText: "Équipe" }).locator("input").inputValue();
+    if (dureeRelue === "6" && equipeRelue === "2 hommes") break;
+  }
+  assert.equal(dureeRelue, "6");
+  assert.equal(equipeRelue, "2 hommes");
 
   // --- Modification d'une prestation ---
   const prestationAModifier = section(page, "Prestations").locator("input").first();

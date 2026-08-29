@@ -34,14 +34,32 @@ export const rechercherChantier: Outil = {
     "Trouve un ou plusieurs chantiers par le nom du client ou le nom du chantier, dans toute " +
     "l'entreprise. À employer dès qu'une question nomme quelqu'un ou quelque chose sans qu'un " +
     "chantier soit ouvert — les autres outils ont alors besoin de l'identifiant qu'il rend.",
-  schema: z.object({
-    nom: z
-      .string()
-      .min(1)
-      .describe("Le nom cherché, tel que le patron l'a écrit : « Bernard », « mairie »…"),
-  }),
+  /**
+   * **Trois noms pour un seul mot cherché, et c'est délibéré.**
+   *
+   * Sa capture du 26 août 2026 : *« Peux-tu me sortir le devis de Lucie »* →
+   * « L'assistant a mal formé sa demande à un outil interne », trois fois. Le
+   * modèle appelait bien le bon outil ; il l'appelait avec `motCle`, parce que
+   * c'est ainsi que s'appelle le même champ chez les outils voisins
+   * (`LireClients`, `RechercherLignesDevis`). Le schéma refusait, et l'écran
+   * lui demandait de reformuler une phrase qui n'y était pour rien.
+   *
+   * **La faute est du côté du dépôt, pas du modèle** : trois noms pour une même
+   * idée, c'est une invitation à se tromper. On les accepte donc tous les
+   * trois, et l'on n'en garde qu'un dans la description — celui à employer.
+   */
+  schema: z
+    .object({
+      nom: z.string().optional().describe("Le nom cherché, tel que le patron l'a écrit : « Bernard », « mairie »…"),
+      motCle: z.string().optional(),
+      client: z.string().optional(),
+    })
+    .refine((v) => Boolean((v.nom ?? v.motCle ?? v.client ?? "").trim()), {
+      message: "Donne le nom cherché dans « nom » : « Bernard », « mairie »…",
+    }),
   async executer({ ctx }, parametres) {
-    const { nom } = parametres as { nom: string };
+    const p = parametres as { nom?: string; motCle?: string; client?: string };
+    const nom = (p.nom ?? p.motCle ?? p.client ?? "").trim();
     const tous = await listerChantiersPourAffichage(ctx);
 
     // Deux passes plutôt qu'une condition à rallonge : le nom du CLIENT

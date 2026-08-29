@@ -591,7 +591,45 @@ export async function releveTvaCollectee(ctx: Ctx, debut: string, fin: string): 
   // n'entre au relevé qu'à hauteur de ce qui a été reçu, à la date où il l'a
   // été. Aux débits, elle y entre entière le jour de son émission.
   const [regime, avecPaiements] = await Promise.all([exigibiliteDe(ctx), facturesAvecPaiements(ctx)]);
+  return assemblerReleve(avecPaiements, debut, fin, regime);
+}
 
+/**
+ * Le relevé sous les DEUX régimes, en une seule lecture des factures.
+ *
+ * **Sa question du 26 août 2026 :** *« lorsque je change entre les deux, rien
+ * ne se passe, c'est normal ? »* — et c'était normal : quand toutes les
+ * factures d'un mois ont été payées dans le mois, les deux régimes tombent sur
+ * le même chiffre. Ce qui manquait n'était pas un calcul, c'était une phrase
+ * qui le DISE : un écran qui ne bouge pas sans rien dire se lit comme une
+ * panne.
+ *
+ * **Une seule lecture, deux assemblages.** Appeler `releveTvaCollectee` deux
+ * fois relirait toutes les factures et tous les règlements pour rien. Et
+ * recalculer le second total à la main dans l'écran serait une seconde
+ * implémentation de la même règle — ce que `CLAUDE.md` §3 interdit, parce que
+ * les deux finissent toujours par diverger.
+ */
+export async function relevesSousLesDeuxRegimes(
+  ctx: Ctx,
+  debut: string,
+  fin: string
+): Promise<{ retenu: ReleveTva; autre: ReleveTva }> {
+  const [regime, avecPaiements] = await Promise.all([exigibiliteDe(ctx), facturesAvecPaiements(ctx)]);
+  const oppose: Exigibilite = regime === "encaissements" ? "debits" : "encaissements";
+  return {
+    retenu: assemblerReleve(avecPaiements, debut, fin, regime),
+    autre: assemblerReleve(avecPaiements, debut, fin, oppose),
+  };
+}
+
+/** Ce que les factures déjà lues donnent, sous un régime donné. */
+function assemblerReleve(
+  avecPaiements: Awaited<ReturnType<typeof facturesAvecPaiements>>,
+  debut: string,
+  fin: string,
+  regime: Exigibilite
+): ReleveTva {
   const lignes: LigneReleveTva[] = [];
   for (const f of avecPaiements) {
     const entrees = entreesDuReleve(f, f.paiements, regime);

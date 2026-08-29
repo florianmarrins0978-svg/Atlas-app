@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { colors, font, libelleCaps, texteSituation } from "@/lib/design-tokens";
+import { colors, font, libelleCaps } from "@/lib/design-tokens";
 import {
   PAYS_TELEPHONE,
   afficherTelephone,
@@ -140,9 +140,6 @@ export default function ChampTelephone({
         </div>
       )}
 
-      <span className={`mt-1.5 block ${texteSituation}`} style={{ color: colors.muted }}>
-        Les espaces se posent tout seuls pendant la frappe.
-      </span>
     </div>
   );
 }

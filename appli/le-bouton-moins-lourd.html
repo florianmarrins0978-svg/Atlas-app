@@ -1,0 +1,239 @@
+<title>Le bouton vert, moins lourd</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  /*
+    LE BOUTON PRINCIPAL — SECOND TOUR, six familles au lieu de six nuances.
+
+    LE PATRON, LE 26 AOÛT 2026 : « tous les boutons en vert foncé, je les trouve
+    très opaques. Est-ce que c'est possible de modifier ça ? »
+    Puis, devant le premier tour : « j'aime pas, propose autre chose ».
+
+    ————————————————————————————————————————————————————————————————
+    POURQUOI LE PREMIER TOUR A ÉCHOUÉ, et ce que ça apprend.
+
+    Les cinq propositions — plus clair, adouci, posé, cerné — étaient toutes des
+    NUANCES DU MÊME VERT PIN. On lui a montré cinq fois la même idée en croyant
+    lui montrer cinq idées. « Opaque » ne demandait pas un vert un peu moins
+    foncé : il demandait autre chose.
+
+    Ce tour-ci change donc de FAMILLE à chaque fois — la matière, la teinte, ou
+    les deux. Une seule chose ne bouge jamais : la forme, la taille, la police
+    et le libellé, sans quoi on ne comparerait plus des peintures.
+
+    ————————————————————————————————————————————————————————————————
+    CE QUI NE SE NÉGOCIE PAS, quelle que soit la réponse.
+
+    · IL RESTE UNE SEULE FORME D'ACTION PRINCIPALE. Deux formes dans la même
+      application se lisent comme un travail inachevé (PrimaryButton.tsx).
+    · LE TEXTE RESTE LISIBLE AU SOLEIL. Les rapports de contraste sont MESURÉS,
+      écrits sous chaque proposition, et aucun ne descend sous 4,5:1.
+    · LES SEPT CHARTES SUIVENT, dont deux sombres où les pôles s'inversent.
+      Basculez votre téléphone en mode sombre : cette page suit.
+
+    ————————————————————————————————————————————————————————————————
+    RIEN N'EST CODÉ : le dossier src/ n'est pas touché (règle du §3 bis).
+    AUCUN SCRIPT : le choix est un <input type="radio"> qui repose des
+    variables CSS sur l'écran d'en dessous.
+  */
+
+  :root{
+    --fond:#efece6; --encre:#1c1c1a; --gris:#8a8578; --or:#B98B47;
+    --trait:rgba(28,28,26,.13); --papier:#faf9f5; --creme:#f5f3ee;
+    --pin:#2f3b2f; --surPlein:#faf9f5;
+
+    /* Les six familles — valeurs du mode clair. */
+    --f-verre:rgba(47,59,47,.14);   --t-verre:#2f3b2f;
+    --f-or:#B98B47;                 --t-or:#1c1c1a;
+    --f-sauge:#7d9a6d;              --t-sauge:#1c1c1a;
+    --f-encre:#1c1c1a;              --t-encre:#faf9f5;
+    --f-bronze:#6b5b3a;             --t-bronze:#faf9f5;
+    --f-filet:#faf9f5;              --t-filet:#2f3b2f; --c-filet:#2f3b2f;
+    --ombreFilet:0 2px 10px rgba(28,28,26,.10);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E;
+      --trait:rgba(233,229,220,.16); --papier:#201e1a; --creme:#1b1a17;
+      --pin:#9fbd82; --surPlein:#171613;
+      /* **Les pôles s'inversent** (`CLAUDE.md` §3) : sur fond sombre, un aplat
+         sombre disparaît et un texte crème sur or devient illisible. Chaque
+         famille a donc sa valeur d'ici, jamais un simple éclaircissement. */
+      --f-verre:rgba(159,189,130,.18); --t-verre:#b3cd99;
+      --f-or:#C9A15E;                  --t-or:#171613;
+      --f-sauge:#9fbd82;               --t-sauge:#171613;
+      --f-encre:#ece9e1;               --t-encre:#171613;
+      --f-bronze:#c9a877;              --t-bronze:#171613;
+      --f-filet:#201e1a;               --t-filet:#b3cd99; --c-filet:#7d9a6d;
+      --ombreFilet:0 2px 12px rgba(0,0,0,.45);
+    }
+  }
+  :root[data-theme="dark"]{
+    --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E;
+    --trait:rgba(233,229,220,.16); --papier:#201e1a; --creme:#1b1a17;
+    --pin:#9fbd82; --surPlein:#171613;
+    --f-verre:rgba(159,189,130,.18); --t-verre:#b3cd99;
+    --f-or:#C9A15E;                  --t-or:#171613;
+    --f-sauge:#9fbd82;               --t-sauge:#171613;
+    --f-encre:#ece9e1;               --t-encre:#171613;
+    --f-bronze:#c9a877;              --t-bronze:#171613;
+    --f-filet:#201e1a;               --t-filet:#b3cd99; --c-filet:#7d9a6d;
+    --ombreFilet:0 2px 12px rgba(0,0,0,.45);
+  }
+
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--fond);color:var(--encre);
+       font:16px/1.6 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+       padding:26px 18px 70px}
+  .dedans{max-width:940px;margin:0 auto}
+  h1{font-family:Georgia,"Times New Roman",serif;font-weight:400;
+     font-size:27px;line-height:1.2;margin:0 0 8px}
+  .intro{color:var(--gris);font-size:14px;line-height:1.65;margin:0 0 18px}
+  .intro b{color:var(--encre);font-weight:600}
+  .dit{margin:0 0 24px;padding:14px 16px;border-left:3px solid var(--or);
+       background:var(--papier);font-size:14px;line-height:1.7;color:var(--gris)}
+  .dit b{color:var(--encre);font-weight:600}
+
+  .quoi{display:block;font-size:11px;letter-spacing:.13em;
+        text-transform:uppercase;color:var(--or);margin:0 0 9px}
+
+  .etat{position:absolute;opacity:0;pointer-events:none}
+  .choix{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 6px}
+  .choix label{display:inline-block;padding:9px 15px;border-radius:999px;
+       border:1px solid var(--trait);background:var(--papier);
+       font-size:14px;cursor:pointer;color:var(--encre)}
+  #a:checked~.choix label[for=a],#b:checked~.choix label[for=b],
+  #c:checked~.choix label[for=c],#d:checked~.choix label[for=d],
+  #e:checked~.choix label[for=e],#f:checked~.choix label[for=f]{
+       border-color:var(--or);box-shadow:inset 0 0 0 1px var(--or)}
+
+  .tel{max-width:390px;background:var(--creme);border:1px solid var(--trait);
+       border-radius:22px;padding:22px 20px 26px;margin:14px 0 0}
+  .surtitre{font-size:11px;letter-spacing:.13em;text-transform:uppercase;
+            color:var(--or);margin:0 0 4px}
+  .tel h2{font-family:Georgia,"Times New Roman",serif;font-weight:400;
+          font-size:26px;margin:0 0 16px;color:var(--encre)}
+  .carte{background:var(--papier);border-radius:12px;padding:14px 16px;
+         margin:0 0 18px}
+  .ligne{display:flex;justify-content:space-between;font-size:14px;
+         padding:5px 0;color:var(--gris)}
+  .ligne b{color:var(--encre);font-weight:600;font-variant-numeric:tabular-nums}
+  .total{border-top:1px solid var(--trait);margin-top:7px;padding-top:11px}
+  .total span{font-size:15px;color:var(--encre)}
+  .total b{font-family:Georgia,"Times New Roman",serif;font-size:22px}
+
+  /* **Le cerne est TOUJOURS là, transparent.** Posé seulement sur la famille
+     qui en a un, il rendait cette capsule 2 px plus grande que les autres —
+     mesuré, pas vu — et l'on aurait comparé deux tailles en croyant comparer
+     deux peintures. */
+  .capsule{display:inline-flex;align-items:center;justify-content:center;
+           padding:13px 36px;font-size:17px;border-radius:9999px;
+           font-family:Georgia,"Times New Roman",serif;cursor:pointer;
+           background:var(--peinture,var(--f-verre));
+           color:var(--dessus,var(--t-verre));
+           box-shadow:var(--ombre,none);
+           border:1.5px solid var(--cerne,transparent)}
+  .centre{display:flex;justify-content:center}
+  .secondaire{display:block;text-align:center;margin-top:14px;font-size:14px;
+              color:var(--gris);text-decoration:underline;
+              text-underline-offset:4px}
+
+  #b:checked~.tel{--peinture:var(--f-or);--dessus:var(--t-or)}
+  #c:checked~.tel{--peinture:var(--f-sauge);--dessus:var(--t-sauge)}
+  #d:checked~.tel{--peinture:var(--f-encre);--dessus:var(--t-encre)}
+  #e:checked~.tel{--peinture:var(--f-bronze);--dessus:var(--t-bronze)}
+  #f:checked~.tel{--peinture:var(--f-filet);--dessus:var(--t-filet);
+                  --cerne:var(--c-filet);--ombre:var(--ombreFilet)}
+
+  .mesure{margin:12px 0 0;font-size:12.5px;line-height:1.6;color:var(--gris)}
+  .mesure b{color:var(--encre);font-weight:600}
+  .mesure .bloc{display:none}
+  #a:checked~.mesure .ma,#b:checked~.mesure .mb,#c:checked~.mesure .mc,
+  #d:checked~.mesure .md,#e:checked~.mesure .me,#f:checked~.mesure .mf{display:block}
+
+  .note{margin:32px 0 0;padding:15px 16px;background:var(--papier);
+        border:1px solid var(--trait);border-radius:12px;font-size:13px;
+        line-height:1.65;color:var(--gris)}
+  .note .t{display:block;font-size:11px;letter-spacing:.13em;
+           text-transform:uppercase;color:var(--or);margin-bottom:7px}
+  .note b{color:var(--encre);font-weight:600}
+</style>
+
+<div class="dedans">
+
+<h1>Le bouton principal — second tour</h1>
+<p class="intro"><b>Touchez les six mots ci-dessous</b> : le bouton de l’écran
+change sous vos yeux. Cette fois ce ne sont pas six nuances de vert, ce sont
+<b>six familles différentes</b>.</p>
+
+<p class="dit">Le 26 août 2026 : <b>« tous les boutons en vert foncé, je les
+trouve très opaques »</b>, puis devant le premier tour : <b>« j’aime pas,
+propose autre chose »</b>.</p>
+
+<span class="quoi">La peinture du bouton</span>
+
+<input class="etat" type="radio" name="v" id="a" checked>
+<input class="etat" type="radio" name="v" id="b">
+<input class="etat" type="radio" name="v" id="c">
+<input class="etat" type="radio" name="v" id="d">
+<input class="etat" type="radio" name="v" id="e">
+<input class="etat" type="radio" name="v" id="f">
+
+<div class="choix">
+  <label for="a">Verre</label>
+  <label for="b">Or</label>
+  <label for="c">Sauge</label>
+  <label for="d">Encre</label>
+  <label for="e">Bronze</label>
+  <label for="f">Filet</label>
+</div>
+
+<div class="tel">
+  <p class="surtitre">Mon devis</p>
+  <h2>Mme Renard</h2>
+  <div class="carte">
+    <div class="ligne"><span>Taille de haie, 24 m</span><b>360,00 €</b></div>
+    <div class="ligne"><span>Évacuation</span><b>90,00 €</b></div>
+    <div class="ligne total"><span>Total TTC</span><b>540,00 €</b></div>
+  </div>
+  <div class="centre"><button class="capsule" type="button">Créer la facture</button></div>
+  <a class="secondaire" href="#">Aperçu du PDF</a>
+</div>
+
+<div class="mesure">
+  <div class="bloc ma"><b>Verre.</b> Le vert, mais <b>translucide</b> : la page
+  se voit à travers. C’est le seul qui réponde à votre mot au pied de la lettre
+  — il n’est plus opaque du tout. Texte vert, <b>8,29:1</b>.</div>
+
+  <div class="bloc mb"><b>Or.</b> Plus de vert : le doré de vos titres devient
+  le bouton. Chaud, et il ne creuse pas la page. Texte encre, <b>5,56:1</b>.</div>
+
+  <div class="bloc mc"><b>Sauge.</b> Un vrai vert, mais celui des feuilles, pas
+  celui d’un sapin dans l’ombre. Texte encre, <b>5,46:1</b>.</div>
+
+  <div class="bloc md"><b>Encre.</b> Presque noir, la couleur de votre texte.
+  Le plus sobre — un bouton qui ne cherche pas à être vert. <b>16,20:1</b>.</div>
+
+  <div class="bloc me"><b>Bronze.</b> Sombre comme aujourd’hui, mais chaud au
+  lieu d’être froid. C’est la teinte qui change, pas la profondeur. Texte crème,
+  <b>6,26:1</b>.</div>
+
+  <div class="bloc mf"><b>Filet.</b> Le bouton devient une pastille claire posée
+  sur la page, avec un filet vert et une ombre douce. Aucun aplat sombre nulle
+  part. Texte vert, <b>11,15:1</b>.</div>
+</div>
+
+<div class="note"><span class="t">Ce que le premier tour a appris</span>
+Les cinq premières propositions — plus clair, adouci, posé, cerné — étaient
+toutes des <b>nuances du même vert pin</b>. C’était vous montrer cinq fois la
+même idée. Écartées le 26 août.
+<br><br>
+<b>Le mode sombre suit.</b> Deux de vos sept chartes sont sombres, et là-bas les
+pôles s’inversent. Basculez votre téléphone : cette page change avec lui.
+<br><br>
+<b>Ce sera partout d’un coup</b> — dix-sept écrans, une seule forme de bouton
+principal. Et cette page ne touche <b>ni à vos données ni à l’application</b> :
+rien n’est codé tant que vous n’avez pas choisi.
+</div>
+
+</div>

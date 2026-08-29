@@ -168,41 +168,61 @@ async function main() {
     }
   });
 
-  await cas("le rappel est PREMIER, et une réponse garde la seconde place", async () => {
-    // **Ses deux décisions du 16 août 2026 :** *« fait la B »* — le rappel
-    // devant —, puis *« fait le »* — la place garantie, après qu'une photo lui
-    // a montré trois chantiers sans devis masquant toutes les réponses.
+  await cas("les cartes sont rangées de la plus récente à la plus ancienne", async () => {
+    // **Sa demande du 26 août 2026**, capture à l'appui : *« je viens de
+    // recevoir un devis retourné, il devrait apparaître en premier. L'ordre
+    // doit être dernier arrivé en tête de liste. Le plus récent en haut. »*
     //
-    // La règle vit dans `src/lib/ordre-notifications.ts` et y est éprouvée sur
-    // les cas limites. Ce contrôle-ci tient le RACCORD : que l'écran l'emploie
-    // vraiment. Elle serait verte même si personne ne l'appelait.
+    // **Elle remplace ses deux décisions du 16 août** — le rappel devant, puis
+    // la place garantie aux réponses. Ce contrôle réclamait cet ancien ordre :
+    // une suite qui exige ce que le patron a fait retirer rend son écran
+    // impossible à changer (`CLAUDE.md` §5 bis).
+    //
+    // **La règle vit dans `src/lib/ordre-notifications.ts`** et y est éprouvée
+    // sur les cas limites. Ce contrôle-ci tient le RACCORD : que l'écran
+    // l'emploie vraiment. Elle serait verte même si personne ne l'appelait.
     await page.goto(`${BASE}/`, { waitUntil: "networkidle" });
     await page.waitForTimeout(600);
-    const vus = await page.$$eval('[data-atlas="carte-reponse"]', (cartes) =>
-      cartes.map((c) => (/DEVIS EN ATTENTE|Devis sans réponse|À facturer/i.test(c.textContent ?? "")
-        ? "rappel"
-        : "reponse"))
-    );
-    if (vus.length === 0) throw new Error("aucune carte à l'écran");
-    if (vus[0] !== "rappel") {
-      throw new Error(`la première carte est une ${vus[0]} : son choix B n'est pas appliqué`);
-    }
-    // La garantie ne vaut que si les deux sortes existent : on regarde d'abord
-    // ce que l'écran porte en tout, replié compris.
+
+    // On déplie d'abord : l'ordre se juge sur TOUTES les cartes, pas sur les
+    // deux que le repli laisse voir.
     const deplier = page.getByRole("button", { name: /autres? devis à regarder/ });
     if ((await deplier.count()) > 0) {
       await deplier.first().click();
       await page.waitForTimeout(300);
     }
-    const toutes = await page.$$eval('[data-atlas="carte-reponse"]', (cartes) =>
-      cartes.map((c) => (/DEVIS EN ATTENTE|Devis sans réponse|À facturer/i.test(c.textContent ?? "")
-        ? "rappel"
-        : "reponse"))
+
+    // **On lit le nombre de jours écrit sur chaque carte** — « depuis 13 jours »,
+    // « depuis 2 jours ». C'est ce que le patron lit lui-même, et cela ne
+    // dépend d'aucun détail de mise en page : une carte peut changer de forme
+    // sans que ce contrôle cesse de mesurer l'ordre.
+    const jours = await page.$$eval('[data-atlas="carte-reponse"]', (cartes) =>
+      cartes.map((c) => {
+        const t = c.textContent ?? "";
+        const m = t.match(/(\d+)\s*jours?/);
+        return m ? Number(m[1]) : null;
+      })
     );
-    if (toutes.includes("reponse") && vus.length > 1 && !vus.includes("reponse")) {
+    if (jours.length === 0) throw new Error("aucune carte à l'écran : rien à mesurer, pas un succès");
+
+    // **Refuser de conclure sur une seule mesure.** Une carte sans délai écrit
+    // — une réponse arrivée à l'instant — ne se compare pas : on ne garde que
+    // celles qui portent un nombre, et il en faut au moins deux.
+    const dates = jours.filter((j): j is number => j !== null);
+    if (dates.length < 2) {
       throw new Error(
-        "une réponse de client attend derrière le repli alors qu'une place lui est garantie : " +
-          `visible = ${vus.join(", ")} — en tout = ${toutes.join(", ")}`
+        `${dates.length} carte(s) portent un délai lisible : impossible de juger un ORDRE. ` +
+          "Le jeu de démonstration doit en poser au moins deux."
+      );
+    }
+
+    for (let i = 1; i < dates.length; i++) {
+      if (dates[i - 1] < dates[i]) continue; // du plus récent au plus ancien : bien
+      if (dates[i - 1] === dates[i]) continue; // même jour : l'ordre d'arrivée décide
+      throw new Error(
+        `une carte de ${dates[i]} jours passe DERRIÈRE une de ${dates[i - 1]} jours — ` +
+          `lu à l'écran : ${dates.join(", ")}. C'est exactement ce qu'il a photographié ` +
+          "le 26 août : le plus récent n'est pas en haut."
       );
     }
   });

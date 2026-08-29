@@ -50,6 +50,11 @@
 
   <p class="famille">Tout d’un coup</p>
 
+  <a class="item" href="../../appli/salaries-et-equipes.html">
+    <span class="no">97</span><span class="titre">Vos salariés, et ce qui remplit le planning</span><span class="fleche">→</span>
+    <span class="quoi">Sa demande du 25 août 2026 : <b>« un curseur + ou − qui définit le nombre de salariés, et pouvoir affilier des noms ; ceux-là permettront d’ajouter ces noms au chantier, et plus les équipes A ou B. Néanmoins les équipes doivent toujours servir à définir le remplissage du planning »</b>. <b>Ce que le code dit</b> (<code>src/lib/equipes.ts</code>, <code>entreprise.nombreEquipes</code>) : un seul nombre porte DEUX responsabilités — la capacité du planning, et la fabrique des libellés « Équipe A / B ». Les séparer est juste. <b>Trois propositions essayables</b> : <b>A</b> curseur salariés + on coche les gens sur le chantier, <b>B</b> les gens rangés dans des équipes, le chantier prend l’équipe et le planning écrit les prénoms, <b>C</b> la A sans le curseur des salariés. <b>La planche rend le défaut touchable</b> plutôt que de l’affirmer : en A, monter le curseur à 5 sans taper de nom laisse l’écran annoncer 5 salariés quand le chantier n’en connaît que 3 — deux vérités sur la même question, ce que <code>CLAUDE.md</code> §3 interdit. <b>Une remarque lui est posée, pas imposée</b> : il demande ce curseur, c’est son appel. En B, baisser le compteur d’équipes montre ce que deviennent les gens de celle qui disparaît — ils restent visibles sous « Sans équipe » plutôt que d’être perdus sans geste. Le doublon (la même personne sur deux chantiers le même jour) est signalé sur les deux chantiers. Le curseur des <b>équipes</b> reste dans les trois : c’est une capacité, rien ne la compte à sa place.</span>
+  </a>
+
   <a class="item" href="../../appli/ecran-equipe.html">
     <span class="no">96</span><span class="titre">L’écran Équipe, dégraissé</span><span class="fleche">→</span>
     <span class="quoi">Sa demande du 25 août 2026 : <b>« combien partent en même temps, ça ne veut pas dire grand-chose ; il y a beaucoup d’infos, il faut synthétiser »</b>. À une équipe, l’écran aligne QUATRE blocs, dont deux qui disent la même chose à quinze lignes d’écart. La planche <b>compte les mots</b> — 83 aujourd’hui contre 24 — plutôt que d’affirmer que c’est plus court. Trois propositions <b>essayables</b>, et le compteur se touche : c’est en passant de 1 à 2 que chaque proposition montre ce qu’elle garde.</span>
@@ -72,6 +77,16 @@
 
   <p class="famille">L’entretien récurrent</p>
 
+  <a class="item retenu" href="../../appli/fiche-de-chantier.html">
+    <span class="no">▶</span><span class="titre">La fiche de chantier — ESSAYABLE</span><span class="fleche">→</span>
+    <span class="quoi">Sa demande du 27 août 2026 : <b>« je veux un lien cliquable »</b>, après trois captures. Ce n’est pas une proposition : ce sont les <b>trois écrans tels qu’ils sont codés</b>, à toucher. Les cases se cochent, les molettes tournent — et la page dit ce qu’elle ne fait pas, pour qu’il ne croie pas avoir envoyé un rapport.</span>
+  </a>
+
+  <a class="item retenu" href="../../appli/ou-composer-ma-fiche.html">
+    <span class="no">▶</span><span class="titre">La rendre visible — ESSAYABLE</span><span class="fleche">→</span>
+    <span class="quoi">Sa remarque du 26 août 2026 sur l’écran livré une heure plus tôt : <b>« c’est bien mais juste une phrase, on la trouve difficilement ; je pense qu’un onglet carré serait le mieux »</b>. Trois formes — une carte, deux carrés, un bouton d’en-tête —, <b>à la place qu’il a déjà tranchée</b>, chacune avec son défaut écrit.</span>
+  </a>
+
   <a class="item retenu" href="../../appli/ma-fiche-rangee.html">
     <span class="no">▶</span><span class="titre">La liste, dans Paysage — ESSAYABLE</span><span class="fleche">→</span>
     <span class="quoi">Sa proposition du 26 août 2026, après la planche des deux fiches : <b>sortir la liste des Réglages</b> et la ranger sous la fiche de chantier. Deux emplacements, <b>chacun avec son défaut écrit</b> — sur l’écran (long) ou derrière une porte (un appui de plus). La réserve au patron ne change pas.</span>
@@ -90,6 +105,26 @@
   <a class="item retenu" href="../../appli/choisir-l-heure.html">
     <span class="no">▶</span><span class="titre">Choisir l’heure au pouce — ESSAYABLE</span><span class="fleche">→</span>
     <span class="quoi">Le temps passé sans le taper : la molette du téléphone, les quarts d’heure, ou la molette Atlas — faite <b>sans une ligne de JavaScript</b> (accroche au défilement et repère collé), donc elle tourne au doigt sur son téléphone. <b>Déplacée dans <code>appli/</code> le 25 août 2026</b>, pour la même raison.</span>
+  </a>
+
+  <a class="item retenu" href="../../appli/quand-je-reverse-la-tva.html">
+    <span class="no">▶</span><span class="titre">Quand je reverse la TVA — ESSAYABLE</span><span class="fleche">→</span>
+    <span class="quoi">Sa capture du 26 août 2026 : <b>« Quand le client le paye / quand je met la facture. C’est pas clair, on comprend rien. »</b> Puis, dans la foulée : <b>« lorsque je change entre les deux, rien ne se passe, c’est normal ? »</b> — et c’était normal, ce qui manquait était une PHRASE. <b>Retenu le 26 août : les libellés réécrits, sans le tableau d'exemple</b> — il explique, et un écran n'explique pas. Reste la ligne qui dit ce que le choix change sur le mois affiché, y compris quand il n’y change rien.</span>
+  </a>
+
+  <a class="item retenu" href="../../appli/le-bouton-en-verre.html">
+    <span class="no">▶</span><span class="titre">Le bouton en verre — ESSAYABLE</span><span class="fleche">→</span>
+    <span class="quoi">Sa demande du 26 août 2026, après deux tours écartés : <b>« fais-moi un verre mais avec la couleur actuelle »</b>. Le « verre » du second tour posait le vert à 14 % — la capsule devenait blanche avec du texte vert, c'est-à-dire un AUTRE bouton ; sa phrase demande l'inverse, garder la couleur et n'ôter que l'opacité. Trois épaisseurs, 90 / 85 / 80 %, avec reflet et ombre portée. <b>Il n'y a pas de quatrième, et c'est une mesure, pas un goût</b> : sous le reflet, 80 % rend 4,66:1 et 72 % tombe à 3,87 — un bouton qu'on ne lit pas au soleil n'est pas plus léger, il est perdu.</span>
+  </a>
+
+  <a class="item retenu" href="../../appli/le-bouton-moins-lourd.html">
+    <span class="no">▶</span><span class="titre">Le bouton principal, second tour — ESSAYABLE</span><span class="fleche">→</span>
+    <span class="quoi">Sa remarque du 26 août 2026 : <b>« tous les boutons en vert foncé, je les trouve très opaques »</b>. <b>Le premier tour a été écarté — « j'aime pas, propose autre chose »</b> —, et il apprend quelque chose : ses cinq propositions étaient toutes des NUANCES DU MÊME VERT PIN, c'est-à-dire cinq fois la même idée présentée comme cinq. Le second tour change de FAMILLE à chaque fois : verre translucide, or, sauge, encre, bronze, filet. Les contrastes sont <b>mesurés</b> (4,5:1 minimum tenu partout), et la mesure avait attrapé au premier tour deux défauts que l'œil ne voyait pas — une capsule 2 px plus grande que les autres, et une ombre vert foncé invisible en mode sombre.</span>
+  </a>
+
+  <a class="item" href="../../appli/quand-il-parle-le-premier.html">
+    <span class="no">▶</span><span class="titre">Quand il parle le premier — ESSAYABLE</span><span class="fleche">→</span>
+    <span class="quoi">Sa réponse du 27 août 2026 — <b>« 2 et 3 déjà »</b> — sur cinq pistes proposées pour l’assistant. Le 2 était : <b>qu’il ouvre la bouche le premier</b>. Trois places à départager (dans le panneau, une pastille sur le bouton, une carte d’accueil) et quatre signaux à retenir. <b>L’accueil pose DÉJÀ les réponses des clients, les liens expirés et les rappels</b> : la planche ne porte que ce qu’il ne dit pas, sans quoi l’assistant répéterait et s’apprendrait à être ignoré. Trois onglets en CSS, sans une ligne de JavaScript.</span>
   </a>
 
   <p class="famille">La fiche client</p>
@@ -707,8 +742,15 @@
     <span class="quoi">Sa demande du 24 août 2026, capture à l’appui : <b>« lorsque je modifie mon devis, je suis obligé de descendre pour voir les modifications ; il faut mieux organiser la page pour pouvoir voir ce qu’on modifie — propose, ne code rien »</b>. <b>Un défaut d’ORDRE, pas de contenu</b> : l’écran range logo → dix typographies (cinq rangées) → fond → accent → <b>puis</b> l’aperçu, qui tombe à plus de 900 px du haut. Neuf polices à essayer font dix-huit trajets. <b>Trois rangements, tous manipulables</b> — <b>A</b> l’aperçu en tête, qui ne règle que la moitié et le dit ; <b>B</b> l’aperçu collé en haut, qui suit chaque choix au prix du tiers haut de l’écran ; <b>C</b> la feuille pleine page et les réglages en tiroir, la plus grande feuille contre un geste de plus à apprendre. <b>La planche se mesure elle-même</b> : elle annonce si la feuille est dans l’écran, et de combien de pixels il faudrait remonter sinon. Les dix polices, les quatre fonds et les quatre accents sont <b>recopiés du code</b>, jamais inventés — et le contrôle les compare à <code>src/lib/allure-documents.ts</code> à chaque exécution. Il a été <b>vu rougir</b> quatre fois : sans le collage de B, sur une police inventée, sur une feuille de C qui ne grandit pas, et sur un tiroir qui recouvre la feuille — ce dernier a fait ramener le tiroir de 74 % à 62 % de l’écran. <b>En attente de sa réponse ; rien n’est codé.</b></span>
   </a>
 
+  <a class="item" href="../../appli/supprimer-un-client.html">
+    Supprimer un client — trois façons, et le défaut trouvé en cherchant
+  </a>
+
   <a class="item" href="../../appli/format-de-numero.html">
     Le numéro de mes devis et factures — cinq formats, et le défaut du « 2026 » figé
+  </a>
+  <a class="item" href="../../appli/termines-sans-traits.html">
+    « Terminés » sans traits, et la carte de TVA qui se voit cliquable — quatre façons, sa forme intacte
   </a>
 
   <a class="item" href="../../appli/allure-de-mes-devis.html">

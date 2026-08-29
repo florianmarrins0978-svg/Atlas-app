@@ -13,12 +13,88 @@ ligne « fait » qui ne l'est pas coûte plus cher qu'une ligne absente.
 
 ---
 
+## Ses salariés se comptent à part de ses équipes (26 août 2026)
+
+**Sa réponse à la planche 97 : A**, arrêtée sur maquette puis codée le jour même
+(`appli/salaries-et-equipes.html`, migration 0067, `ARCHITECTURE.md` §192).
+
+Deux compteurs là où il n'y en avait qu'un : **les équipes** disent combien de
+chantiers tiennent dans une journée, **les salariés** disent qui part. Régler
+l'un ne dérègle plus l'autre — un paysagiste à quatre salariés peut enfin ne
+mener qu'un chantier à la fois.
+
+Sur le chantier, **la façon de faire n'a pas bougé d'un geste** (sa consigne) :
+la pastille sur la demi-journée, la liste qui s'ouvre, les cases cochées une à
+une, « Terminé ». Ce sont les libellés qui changent — « Équipe A » a disparu, le
+repli est « Salarié 3 ».
+
+La charge du planning est plafonnée à la capacité : trois gars sur un même
+chantier ne ferment pas une journée qui en accepte deux. **À effectif égal —
+son cas — le planning se remplit exactement comme avant.**
+
+Un artisan seul reste à **zéro** salarié : aucune case à cocher, rien n'a changé
+pour lui.
+
+Reste ouvert : le renommage `equipes` → `salaries` en base et dans le code, tenu
+à part parce qu'il touche vingt-trois fichiers (`TODO.md`).
+## Les phrases du régime de TVA, réécrites (26 août 2026)
+
+*« Quand le client le paye / quand je met la facture. C'est pas clair, on
+comprend rien. »* **Fait.** Le surtitre dit le geste — « je reverse ma TVA aux
+impôts » —, chaque ligne répond à « et alors ? », et une phrase annonce ce que
+le choix change sur le mois affiché, y compris quand il n'y change rien.
+`ARCHITECTURE.md` §195.
+
+---
+
+## Le rythme de la TVA fait bouger l'écran (26 août 2026)
+
+*Sa plainte : « quand je change entre tous les mois et tous les trois mois,
+c'est pareil, rien ne se passe ».* **Corrigé** — il manquait la revalidation,
+et `force-dynamic` ne la remplace pas (`ARCHITECTURE.md` §193).
+
+**Sa seconde plainte du même soir n'était PAS un défaut** : entre les deux
+régimes de TVA, rien ne change quand toutes les factures du mois ont été payées
+dans le mois. Ce qui manquait est une phrase à l'écran : **codée** le soir même
+(`ARCHITECTURE.md` §195).
+
+---
+
+## Un choix fait par erreur se défait (26 août 2026)
+
+*Sa demande : « si par erreur j'ai sélectionné un des 3 champs je ne peux plus
+le désélectionner ! Je dois pouvoir désélectionner ».*
+
+Sur la page que reçoit son client, un second appui sur la date déjà cochée la
+**défait**, et rien ne se coche à la place. Vaut aussi pour « une autre date »,
+dont le calendrier se referme. Le détail — et pourquoi `onClick` plutôt
+qu'`onChange` — est dans `ARCHITECTURE.md` §191.
+
+**Le même piège dort sur le choix entre deux tarifs ambigus**
+(`PropositionPrixSection.tsx`) : il ne l'a pas signalé, c'est noté dans
+`TODO.md`.
+
+---
+
+## « Terminés » : plus de traits, et la TVA se voit cliquable (26 août 2026)
+
+*Ses deux demandes, planche `appli/termines-sans-traits.html`, sa réponse :
+« le 3 ». Le détail est dans `ARCHITECTURE.md` §198.*
+
+**Fait.** Plus aucun trait entre les rangées. La carte « Ma TVA à déclarer »
+porte un contour doré — même forme, même titre, même montant.
+
+**Ce qui a demandé plus que le retrait.** Le trait tenait le second étage d'une
+rangée à distance du nom de la suivante : retiré sec, deux rangées se liraient
+comme une seule. La respiration passe de 19 à 24 px, et la première rangée garde
+22 px — tout ce qui reste de la démarcation qu'il avait demandée le 23 août.
+
 ## La chaîne dictée → devis a été refaite (27 août 2026)
 
 *Le devis du 26 août portait trois défauts : la quantité dictée n'existait plus
 comme donnée, une tonte et un démontage partageaient une identité, et une ligne
 qu'on ne savait pas chiffrer s'écrivait « 0 € ». Le détail est dans
-`ARCHITECTURE.md` §191 ; le dossier à retransmettre est
+`ARCHITECTURE.md` §203 ; le dossier à retransmettre est
 `docs/pour-chatgpt/07-correction-complete.md`.*
 
 **Fait.**
@@ -45,12 +121,11 @@ et la question « dessouchage de DEUX souches : faut-il multiplier le prix de
 grille par deux ? ».
 
 ---
-
 ## Le numéro de ses documents se choisit (26 août 2026)
 
 *Sa demande : « dans la catégorie facture il faut rajouter le format de numéro,
 c'est obligatoire il me semble ». Puis « garde le F », « 6 chiffres », « oui
-remettre à 0 chaque début d'année ». Le détail est dans `ARCHITECTURE.md` §189.*
+remettre à 0 chaque début d'année ». Le détail est dans `ARCHITECTURE.md` §188.*
 
 **Fait.** Réglages → Devis & factures → « Le numéro de mes documents » : cinq
 formats, chacun montrant ce qu'il donne, enregistré au fur et à mesure. Le
@@ -141,7 +216,55 @@ uniquement en masquant des boutons ». La règle elle-même est tranchée dans
 | La photo est nettoyée de ses métadonnées comme le logo | **fait** — `preparerPhotoEntrante` |
 | Fonction pure de lecture éprouvée sans clé | **fait** — `scripts/test-lecture-allure-devis.ts`, 0 échec |
 | L'appel réel au fournisseur de vision | **NON vérifié ici** (aucune clé) — à jouer sur son espace, comme la dictée |
+## Sécurité : lot Audio fermé (26 août 2026)
 
+| | État |
+|---|---|
+| Le format d'un audio se lit dans ses OCTETS | **fait** — `src/lib/signature-audio.ts`, sans bibliothèque |
+| Le type et l'extension rangés viennent du format réel | **fait** — `extensionPour(mimeType)` est morte |
+| Les quatre chemins passent par une porte unique | **fait** — 3 contrôles structurels |
+| L'IA n'est jamais appelée avant la validation | **fait** — éprouvé en base |
+| Une vraie dictée d'iPhone | **ÉPROUVÉE ET RÉUSSIE le 26 août 2026** — sur son propre iPhone, jusqu'à la génération des informations du devis |
+| La QUALITÉ de ce que la dictée produit | **LOT SÉPARÉ** — prestations mal organisées, quantités et unités mal lues, prix historiques incohérents (`TODO.md`) |
+| Sauvegardes | **toujours aucune** — le point le plus grave du dépôt |
+
+**Batterie complète au vert le 27 août 2026**, sur l'état destiné à `main`
+(branche `56f0119`, `origin/main` `3d455ed` intégré) : **259/259** suites base,
+**115/115** suites navigateur, connexion réelle derrière une origine étrangère.
+
+Les suites navigateur ont dû être jouées **par tranches**, un serveur neuf par
+tranche : `next dev` (Turbopack) monte à 13,5 Go sur ce conteneur de 16 Go, et le
+tueur de mémoire abat le serveur. Aucune assertion touchée, aucun délai ajouté,
+aucune suite écartée. Cause non établie — voir `TODO.md`.
+
+Rapport transmissible : `docs/lot-audio-rapport.md`. Raisonnement :
+`ARCHITECTURE.md` §201.
+
+---
+
+## Sécurité : lot 3 — M9 à M12 et F1 à F13 fermés (25 août 2026)
+
+| | État |
+|---|---|
+| **M9** — `password_hash` hors de portée d'`atlas_app` | **fait** — trois fonctions `SECURITY DEFINER`, droits par colonne |
+| **M10** — les onze alertes de dépendances | **fait** — Next monté à la main en 16.3.2 |
+| **M11** — se prouver à nouveau avant un geste sensible | **fait**, plus un contournement de « me déconnecter partout » trouvé hors brief |
+| **M12** — la mise à jour du banc réservée au propriétaire | **fait** |
+| **F1, F2, F5, F8, F9, F12, F13** | **fait** — aucun n'était une fuite de données |
+| **F3** | **inchangé, et gardé** — 5 contrôles neufs contre une variable ajoutée demain |
+| **F4, F6** | **faux problèmes** — refusés. Renommer une migration (F6) l'aurait fait rejouer partout |
+| **F7** — l'écran RGPD (export / effacement client) | **décision du patron**, aucune interface construite |
+| **F10** — la CSP `unsafe-inline` | **réel, lot à soi** — le retirer sans `nonce` casse l'application |
+| **F11** | **déjà fermé par le lot 1** |
+| `ATLAS_PROXY_SAUTS` en production | **à poser** — sans lui, tous les seuils par source restent communs |
+| Sauvegardes | **toujours aucune** — le point le plus grave du dépôt |
+
+**Batterie complète au vert le 26 août 2026** : 232/232 suites base, **110/110**
+suites navigateur, connexion réelle derrière une origine étrangère.
+
+Rapports transmissibles : `docs/lot-3-fermeture-f1-f13.md` puis
+`docs/lot-3-cloture-et-lecture-audio.md` (clôture + lecture du lot Audio). Le raisonnement complet
+est dans `ARCHITECTURE.md` §191.
 ---
 
 ## Sécurité : lot 2B — M3 et M6 fermés (24 août 2026)

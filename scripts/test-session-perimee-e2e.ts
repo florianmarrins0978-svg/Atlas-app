@@ -251,7 +251,71 @@ async function main() {
   }
   console.log("✓ un vrai navigateur, JavaScript coupé, part du fantôme et arrive à la connexion");
 
-  console.log("\nSession périmée : 7 contrôles au vert.");
+  // 6. **UN SITE TIERS NE DOIT PAS POUVOIR DÉCONNECTER LE PATRON — constat F2.**
+  //
+  //    Cette route efface six cookies sur un simple `GET`. Une page étrangère
+  //    qui pose `<img src="…/api/session-perimee">` la déclencherait donc en
+  //    silence : le navigateur envoie les cookies, le serveur répond avec des
+  //    `Set-Cookie` vides, et le patron se retrouve dehors sans avoir rien
+  //    fait. Ce n'est pas un vol de données — c'est une nuisance, et elle est
+  //    gratuite.
+  //
+  //    **Ce que ce contrôle éprouve VRAIMENT, et pourquoi les deux moitiés
+  //    comptent autant l'une que l'autre :** la moitié hostile est facile à
+  //    obtenir — il suffirait de tout refuser. C'est la moitié légitime qui la
+  //    rend honnête : `same-origin`, `same-site` et l'en-tête ABSENTE doivent
+  //    continuer d'effacer. Sans elle, un correctif trop large passerait au
+  //    vert en rendant le remède du 10 août 2026 inatteignable.
+  {
+    const hostile = await fetch(BASE + "/api/session-perimee", {
+      redirect: "manual",
+      headers: { cookie: fantome.entete, "sec-fetch-site": "cross-site" },
+    });
+    assert.equal(
+      hostile.status,
+      403,
+      `une demande venue d'un site tiers devrait être refusée — reçu ${hostile.status}`
+    );
+    // **Ce qu'on regarde, c'est l'EFFACEMENT — pas la présence de `Set-Cookie`.**
+    //
+    // Première version de ce contrôle : « la réponse ne doit poser aucun
+    // cookie ». Elle a rougi sur du code juste. La réponse en porte bien
+    // trois — mais ce sont ceux d'Auth.js, qui rafraîchit la session dans la
+    // couche au-dessus, AVANT que cette route ne soit atteinte : valeurs
+    // pleines, expiration dans le futur. Rafraîchir n'est pas déconnecter.
+    //
+    // Le tort de F2 est nommément que le patron se retrouve DEHORS. Ce qui le
+    // met dehors, c'est une valeur vide avec `Max-Age=0` — c'est donc cela, et
+    // cela seul, qu'une demande refusée ne doit jamais produire.
+    const effacements = hostile.headers
+      .getSetCookie()
+      .filter((c) => /^[^=]*authjs[^=]*=;/.test(c) && /Max-Age=0/.test(c));
+    assert.deepEqual(
+      effacements,
+      [],
+      `une demande refusée ne doit EFFACER aucun cookie — elle en a effacé : ${effacements.join(" | ")}`
+    );
+
+    // Et la moitié qui protège du remède : tout ce qui vient d'Atlas passe.
+    for (const provenance of ["same-origin", "same-site", null] as const) {
+      const entetes: Record<string, string> = { cookie: fantome.entete };
+      if (provenance) entetes["sec-fetch-site"] = provenance;
+      const r = await fetch(BASE + "/api/session-perimee", {
+        redirect: "manual",
+        headers: entetes,
+      });
+      const quoi = provenance ?? "sans l'en-tête (client hors navigateur)";
+      assert.equal(r.status, 303, `${quoi} : le remède doit rester atteignable — reçu ${r.status}`);
+      assert.ok(
+        r.headers.getSetCookie().some((c) => c.startsWith(`${NOM_COOKIE}=;`)),
+        `${quoi} : la session devrait toujours être effacée`
+      );
+    }
+  }
+  console.log("✓ une page étrangère n'efface rien ; tout ce qui vient d'Atlas efface toujours");
+
+
+  console.log("\nSession périmée : 8 contrôles au vert.");
 }
 
 main().catch((e) => {

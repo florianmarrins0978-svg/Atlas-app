@@ -9,6 +9,7 @@ import { panneauVersionLente } from "@/lib/version-lente";
 import BoutonMiseAJour from "./BoutonMiseAJour";
 import Sommaire from "./Sommaire";
 import { derniereIssueMiseAJour } from "./actions";
+import { estBancDEssai } from "@/profil-banc";
 
 export const dynamic = "force-dynamic";
 
@@ -119,7 +120,7 @@ export default async function ReglagesPage() {
               chaîne de livraison et ne porte aucune branche
               (`src/server/version-executee.ts`). Cette phrase y serait donc du
               jargon, et un jargon FAUX — le pire des deux. */}
-          {process.env.ATLAS_BANC_ESSAI === "1" && (
+          {estBancDEssai() && (
             <p className="mt-1 text-[12px]" style={{ color: colors.muted, opacity: 0.85 }}>
               Le dernier mot est la branche suivie. Un correctif livré sur une autre
               branche n&apos;arrivera pas ici, même en cherchant les corrections.
@@ -141,16 +142,29 @@ export default async function ReglagesPage() {
               qui construit. Le panneau lui demandait d'attendre quelque chose
               qui n'arriverait pas. Ce qu'il a le droit de promettre vit
               désormais dans `src/lib/version-lente.ts`. */}
-          {process.env.ATLAS_BANC_ESSAI === "1" && process.env.NODE_ENV !== "production" && (
+          {estBancDEssai() && process.env.NODE_ENV !== "production" && (
             <p className="mt-3 text-[12px] leading-snug" style={{ color: colors.alert }}>
               Vous êtes sur la <b>version lente</b>, celle qui se construit encore.{" "}
               {panneauVersionLente(etatVersionLente()).phrase}
             </p>
           )}
 
-          {/* Sur le banc d'essai seulement : une application déployée ne va pas
-              chercher son propre code, ce serait une porte d'entrée. */}
-          {process.env.ATLAS_BANC_ESSAI === "1" && <BoutonMiseAJour derniereIssue={await derniereIssueMiseAJour()} />}
+          {/* Sur le banc d'essai seulement, et pour le PROPRIÉTAIRE seulement :
+              une application déployée ne va pas chercher son propre code, ce
+              serait une porte d'entrée, et tirer du code n'est pas un geste de
+              salarié.
+
+              **Ceci ne protège rien à soi seul, et c'est voulu :** la garde qui
+              compte est dans `mettreAJourApplicationAction`, qui refuse un
+              membre même appelée directement. Cacher le bouton évite seulement
+              de proposer à quelqu'un un geste qu'on lui refusera.
+
+              `estBancDEssai()` plutôt que la variable en direct : c'est la
+              seule fonction qui décide de ce qu'est un banc, et l'action
+              emploie la même (`src/profil-banc.ts`). */}
+          {estBancDEssai() && role === "proprietaire" && (
+            <BoutonMiseAJour derniereIssue={await derniereIssueMiseAJour()} />
+          )}
         </div>
       </div>
     </div>

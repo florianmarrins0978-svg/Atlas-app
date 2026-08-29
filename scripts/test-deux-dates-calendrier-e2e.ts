@@ -1,9 +1,9 @@
 import assert from "node:assert/strict";
 import { lancerNavigateur } from "./e2e-browser";
 import { Pool } from "pg";
-import {
-  DELAI_MINIMAL_JOURS, versJourIso } from "../src/server/disponibilites";
+import { versJourIso } from "../src/server/disponibilites";
 import { creerPuisFiche } from "./_creer-chantier-e2e";
+import { joursAProposer } from "./_calendrier-e2e";
 
 // **« Je ne peux choisir qu'un seul jour à même le planning. »**
 //
@@ -83,56 +83,12 @@ async function main() {
   );
 
   /**
-   * Les journées qu'on peut aller REGARDER.
-   *
-   * **Depuis le 22 août 2026, aucune case n'est éteinte** — sa demande, planche
-   * 91 : *« un jour complet reste touchable, c'est justement celui sur lequel
-   * vous voulez regarder avant de décider »*. « choisissable » n'existe donc
-   * plus ; ce qui reste, c'est ce que la case EST, et le serveur tranche
-   * ensuite.
+   * **La recherche des jours vit dans `scripts/_calendrier-e2e.ts`** depuis le
+   * 26 août 2026. Elle en est sortie d'un bloc : `test-envoi-client-e2e.ts`
+   * rougissait faute de l'avoir, et la recopier aurait fait une troisième
+   * version de la même règle (`CLAUDE.md` §3). Le plancher n'est plus écrit à
+   * la main : il vient de `DELAI_MINIMAL_JOURS`.
    */
-  async function joursOffertsAuChoix(): Promise<string[]> {
-    // **ON AVANCE D'UN MOIS QUAND CELUI-CI N'A PLUS ASSEZ DE JOURS — corrigé le
-    // 25 août 2026, à minuit pile.**
-    //
-    // Le calendrier ouvre sur le mois EN COURS. En fin de mois, ce qui reste au
-    // delà du délai minimal se compte sur les doigts : le 25 août, il restait
-    // le 28 et le 31 — deux jours, et la suite s'arrêtait sur « trop peu pour
-    // éprouver ». Verte tout le mois, rouge les cinq derniers jours : *une
-    // règle éprouvée un seul jour n'est pas éprouvée* (`CLAUDE.md` §5).
-    //
-    // Le patron, lui, appuie sur « Mois suivant » sans y penser. La suite fait
-    // désormais le même geste — et elle ne le fait QUE si le mois courant est
-    // trop court, pour continuer d'éprouver le cas ordinaire le reste du temps.
-    for (let mois = 0; mois < 2; mois++) {
-      if ((await recolter()).length >= 3) break;
-      const suivant = page.getByRole("button", { name: /^Mois suivant/ });
-      if ((await suivant.count()) === 0 || !(await suivant.isEnabled())) break;
-      await suivant.click();
-      await page.waitForTimeout(250);
-    }
-    return recolter();
-  }
-
-  /** Ce que le mois affiché offre, une fois le délai minimal retiré. */
-  async function recolter(): Promise<string[]> {
-    const tous = await page
-      .locator('[data-jour][data-etat="regardable"]')
-      .evaluateAll((els) => els.map((e) => e.getAttribute("data-jour")!).filter(Boolean));
-    // **Assez loin pour que le serveur les accepte.** Le mois affiché commence
-    // au 1er : ses premiers jours ouvrés sont derrière nous, et le délai minimal
-    // en écarte deux de plus. Les prendre ferait rougir cette suite sur un refus
-    // parfaitement juste — le pire des rouges (`AGENTS.md`).
-    //
-    // Le mois qui n'en offre pas trois se feuillette, et c'est `troisJoursAuMoins`
-    // qui s'en charge, plus bas : deux feuilletages superposés seraient la même
-    // règle écrite deux fois.
-    const plancher = new Date();
-    plancher.setDate(plancher.getDate() + DELAI_MINIMAL_JOURS + 1);
-    const depuis = plancher.toISOString().slice(0, 10);
-    return tous.filter((j) => j >= depuis);
-  }
-
   /**
    * Touche un jour : il se propose, ou se rend s'il l'était déjà.
    *
@@ -155,35 +111,7 @@ async function main() {
     await page.waitForTimeout(250);
   }
 
-  /**
-   * **Le mois affiché n'offre pas toujours trois jours, et c'est une affaire de
-   * calendrier, pas de code.** Cette suite a besoin de trois journées au-delà du
-   * délai minimal. En fin de mois il n'en reste pas trois : le 25 août 2026 il
-   * n'en restait que deux, et la suite rougissait sur un écran juste — le pire
-   * des rouges, celui qu'on apprend à ignorer (`AGENTS.md`).
-   *
-   * Le geste imité est celui du patron : quand son mois est plein, il passe au
-   * suivant. Trois mois consultés suffisent largement ; au-delà, c'est la
-   * navigation qui est bornée trop tôt, et le message le dit.
-   */
-  async function troisJoursAuMoins(): Promise<string[]> {
-    let dernierCompte = 0;
-    for (let mois = 0; mois < 3; mois++) {
-      const trouves = await joursOffertsAuChoix();
-      if (trouves.length >= 3) return trouves;
-      dernierCompte = trouves.length;
-      const suivant = page.getByRole("button", { name: /^Mois suivant/ });
-      assert.ok(
-        await suivant.isEnabled(),
-        `Le calendrier n'offre que ${dernierCompte} jour(s) et ne va pas plus loin.`
-      );
-      await suivant.click();
-      await page.waitForTimeout(250);
-    }
-    assert.fail(`Trois mois consultés sans trouver trois jours à proposer (dernier mois : ${dernierCompte}).`);
-  }
-
-  const offerts = await troisJoursAuMoins();
+  const offerts = await joursAProposer(page, 3);
   const [premier, second, troisieme] = offerts;
 
   // --- 1. Deux jours pris au calendrier se marquent TOUS LES DEUX ----------
@@ -200,14 +128,20 @@ async function main() {
   );
   console.log("  ✓ deux jours pris à même le calendrier restent marqués tous les deux");
 
-  // --- 2. Et l'écran annonce bien deux dates ------------------------------
-  const ecran = await page.locator("body").innerText();
-  assert.match(
-    ecran,
-    /Le client choisira entre ces deux dates/,
-    `L'écran n'annonce pas deux dates. Lu : « ${ecran.replace(/\s+/g, " ").slice(0, 300)} »`
+  // --- 2. Et l'écran LISTE bien deux dates --------------------------------
+  //
+  // **La phrase « Le client choisira entre ces deux dates » a été retirée le
+  // 26 août 2026**, à sa demande : elle redisait ce que la liste montre déjà.
+  // Ce contrôle visait le libellé ; il vise désormais la LISTE — ce qu'on
+  // défend, c'est que deux dates partent, pas la façon de l'annoncer
+  // (`CLAUDE.md` §5 bis).
+  const proposees = await page.locator("text=proposée").count();
+  assert.equal(
+    proposees,
+    2,
+    `L'écran ne liste pas deux dates à envoyer, mais ${proposees}.`
   );
-  console.log("  ✓ l'écran annonce deux dates au client");
+  console.log("  ✓ l'écran liste les deux dates qui partiront");
 
   // --- 3. Rappuyer RETIRE, au lieu de remettre -----------------------------
   //

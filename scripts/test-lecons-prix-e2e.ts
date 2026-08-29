@@ -1,6 +1,7 @@
 import assert from "node:assert";
 import { Client } from "pg";
 import { lancerNavigateur } from "./e2e-browser";
+import type { Page } from "playwright";
 
 // La mémoire des corrections, parcourue comme le patron la parcourt.
 //
@@ -90,6 +91,45 @@ async function main() {
    * le prix est en base — c'est cela seul qui apprend quelque chose à l'agent.
    * On regarde donc la base, et l'échec dit ce qu'elle portait vraiment.
    */
+  /**
+   * Écrit le prix, et VÉRIFIE qu'il est resté dans le champ avant de partir.
+   *
+   * ─────────────────────────────────────────────────────────────────────────
+   * **Ce contrôle est tombé dans QUATRE batteries** — les 26 et 27 août 2026 —
+   * en annonçant « le prix 1400 n'est jamais arrivé en base », et il passait
+   * seul à chaque fois. Le produit n'y était pour rien.
+   *
+   * **L'écran de devis se redessine tout seul** : il ajoute une ligne vide,
+   * recalcule ses totaux, remplace ses champs. Sur une machine chargée, ce
+   * redessin tombe entre la saisie et la sortie du champ — la valeur tapée
+   * disparaît avec l'ancien champ, et le `blur` n'enregistre alors rien du
+   * tout. La suite attendait ensuite vingt secondes une écriture qui ne
+   * pouvait plus venir, puis accusait l'application.
+   *
+   * **Un délai plus long n'y aurait rien changé** : ce n'est pas une lenteur,
+   * c'est une saisie perdue. On relit donc le champ après l'avoir quitté, et
+   * l'on recommence tant qu'il ne porte pas la valeur — comme le patron le
+   * ferait en voyant son chiffre s'effacer.
+   * ─────────────────────────────────────────────────────────────────────────
+   */
+  const saisirLePrix = async (page: Page, valeur: number) => {
+    for (let essai = 1; essai <= 5; essai++) {
+      const champ = page.getByLabel("Prix unitaire 1");
+      await champ.waitFor({ state: "visible", timeout: 30_000 });
+      await champ.fill(String(valeur));
+      // L'enregistrement part quand il quitte le champ — c'est là que l'agent
+      // apprend.
+      await champ.blur();
+      await page.waitForTimeout(500 * essai);
+      const relu = await page.getByLabel("Prix unitaire 1").inputValue().catch(() => "");
+      if (Number(relu) === valeur) return;
+    }
+    throw new Error(
+      `le champ du prix n'a pas gardé « ${valeur} » après cinq tentatives : l'écran le vide ` +
+        "plus vite qu'on ne le saisit, et ce n'est pas un défaut d'enregistrement"
+    );
+  };
+
   const attendrePrixEcrit = async (chantierId: string, attendu: number) => {
     const lecteur = new Client({ connectionString: process.env.DATABASE_URL });
     await lecteur.connect();
@@ -100,14 +140,29 @@ async function main() {
       let lu: unknown = null;
       for (const essai of [0, 1, 2, 3, 4, 5, 6, 7]) {
         if (essai > 0) await new Promise((r) => setTimeout(r, essai * 700));
+        // **On cherche le prix parmi TOUTES les lignes, pas sur la première.**
+        //
+        // Payé le 27 août 2026 : ce contrôle est tombé trois fois en batterie —
+        // « Le prix 1400 n'est jamais arrivé en base — lu : "0.00" » — et passait
+        // seul à chaque fois. L'écran ajoute une ligne vide à la volée ; sous
+        // charge elle est créée AVANT que la saisie parte, elle devient donc la
+        // plus ancienne, et `LIMIT 1` lisait son zéro.
+        //
+        // **Ce que la suite veut savoir n'a jamais été « la première ligne porte
+        // le prix », c'est « le prix est arrivé ».** Viser la première était une
+        // commodité d'écriture, et elle accusait le produit d'avoir perdu une
+        // saisie parfaitement enregistrée.
         const { rows } = await lecteur.query(
-          `SELECT prix_unitaire FROM lignes_prix WHERE chantier_id = $1 ORDER BY created_at LIMIT 1`,
+          `SELECT prix_unitaire FROM lignes_prix WHERE chantier_id = $1 ORDER BY created_at`,
           [chantierId]
         );
-        lu = rows[0]?.prix_unitaire ?? null;
-        if (lu !== null && Number(lu) === attendu) return;
+        const prix = rows.map((r) => r.prix_unitaire as string);
+        lu = prix.length ? prix : null;
+        if (prix.some((p) => Number(p) === attendu)) return;
       }
-      assert.fail(`Le prix ${attendu} n'est jamais arrivé en base — lu : ${JSON.stringify(lu)}`);
+      assert.fail(
+        `Le prix ${attendu} n'est arrivé sur AUCUNE ligne du chantier — lues : ${JSON.stringify(lu)}`
+      );
     } finally {
       await lecteur.end();
     }
@@ -116,12 +171,7 @@ async function main() {
     // --- 1. Il chiffre son chantier, à la main ------------------------------
     await page.goto(`${BASE}/chantiers/${terrain.passe}/devis-complet`, { waitUntil: "domcontentloaded" });
     await page.waitForSelector("text=Total TTC", { timeout: 60000 });
-    const prixUnitaire = page.getByLabel("Prix unitaire 1");
-    await prixUnitaire.fill("1400");
-    // L'enregistrement part quand il quitte le champ — c'est là que l'agent
-    // apprend. On attend la réponse du serveur, jamais un chrono : sur une
-    // machine chargée, un délai en dur ferait rougir un produit correct.
-    await prixUnitaire.blur();
+    await saisirLePrix(page, 1400);
     await attendrePrixEcrit(terrain.passe, 1400);
 
     // --- 2. Sur le chantier suivant, l'agent s'en souvient ------------------

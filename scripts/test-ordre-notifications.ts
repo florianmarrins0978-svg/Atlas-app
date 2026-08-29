@@ -1,15 +1,20 @@
-// La place garantie sur l'accueil : la règle, sans écran ni base.
+// L'ordre des cartes de l'accueil : le plus récent en haut, sans écran ni base.
 //
-// **Ses deux décisions du 16 août 2026, prises sur photographies :** *« fait la
-// B »* — les rappels devant —, puis *« fait le »* — la place garantie, après
-// qu'une image lui a montré trois chantiers sans devis masquant TOUTES les
-// réponses de clients.
+// **Sa demande du 26 août 2026, capture à l'appui :** *« je viens de recevoir un
+// devis retourné, il devrait apparaître en premier. L'ordre doit être dernier
+// arrivé en tête de liste. Le plus récent en haut. »*
+//
+// **CE QU'ELLE REMPLACE, ET POURQUOI CETTE SUITE A ÉTÉ RÉÉCRITE.** Elle tenait
+// jusqu'ici un tressage par SORTE — les rappels devant, une place garantie aux
+// réponses de clients (ses décisions du 16 août). C'est cet arrangement qu'il
+// vient d'écarter, et **une suite qui réclamerait ce qu'il a fait retirer
+// rendrait son écran impossible à changer** (`CLAUDE.md` §5 bis).
 //
 // **Ce que cette suite protège, et qu'un contrôle de navigateur ne peut pas
 // voir.** L'écran ne produit que les situations qu'on sait fabriquer ; ici on
-// éprouve les cas limites — zéro d'une sorte, une seule place visible, plus de
-// réponses que de places — qui n'arrivent qu'un jour sur cent chez le patron,
-// et qui arriveront.
+// éprouve les cas limites — une sorte absente, des dates égales, une réponse
+// sans date — qui n'arrivent qu'un jour sur cent chez le patron, et qui
+// arriveront.
 
 import assert from "node:assert/strict";
 import { ordonnerLesCartes } from "../src/lib/ordre-notifications";
@@ -26,92 +31,100 @@ function essai(nom: string, fn: () => void) {
   }
 }
 
-/** Des étiquettes lisibles : « r » pour un rappel, « c » pour une réponse. */
-const r = (n: number) => `r${n}`;
-const c = (n: number) => `c${n}`;
+/** Une carte réduite à ce qui range : son nom, et quand elle est arrivée. */
+type C = { nom: string; quand: number };
+const carte = (nom: string, jours: number): C => ({ nom, quand: JOUR0 - jours * 86_400_000 });
+/** Un instant fixe : une suite qui dépend de l'heure rougit un jour sur deux. */
+const JOUR0 = Date.UTC(2026, 7, 26, 21, 17);
+const noms = (cartes: C[]) => cartes.map((c) => c.nom).join(" ");
 
-console.log("=== La place garantie sur l'accueil ===\n");
+console.log("=== L'ordre des cartes de l'accueil ===\n");
 
-// ── Le cas qu'il a vu en photo ────────────────────────────────────────────
-essai("trois rappels et deux réponses : on voit un de chaque", () => {
-  const ordre = ordonnerLesCartes([r(1), r(2), r(3)], [c(1), c(2)], 2);
-  assert.deepEqual(ordre.slice(0, 2), ["r1", "c1"], "les deux places visibles");
-  // Rien n'est perdu : ce qui ne tient pas est derrière le repli, pas effacé.
-  assert.equal(ordre.length, 5);
-  assert.deepEqual(ordre, ["r1", "c1", "r2", "r3", "c2"]);
+// ─── LE CAS DE SA CAPTURE, celui qui a motivé la règle ──────────────────────
+//
+// Un rappel « devis sans réponse » vieux de treize jours, et un devis retourné
+// reçu à l'instant. Sur son écran, le retourné était DEUXIÈME.
+essai("le devis retourné à l'instant passe devant un rappel de treize jours", () => {
+  const rappels = [carte("rappel-13-jours", 13)];
+  const reponses = [carte("devis-retourne", 0)];
+  assert.equal(
+    noms(ordonnerLesCartes(rappels, reponses)),
+    "devis-retourne rappel-13-jours",
+    "c'est exactement l'écran qu'il a photographié le 26 août : la nouvelle du jour en second"
+  );
 });
 
-// **LE CONTRÔLE INVERSE, et il vaut le premier.** Sans lui, une règle qui
-// mettrait TOUJOURS une réponse en seconde place passerait au vert — y compris
-// quand il n'y a aucune réponse, où elle laisserait un trou.
-essai("son choix B tient : le rappel garde la PREMIÈRE place", () => {
-  assert.equal(ordonnerLesCartes([r(1)], [c(1), c(2), c(3)], 2)[0], "r1");
-  assert.equal(ordonnerLesCartes([r(1), r(2)], [c(1)], 2)[0], "r1");
+// **L'ORDRE NE REGARDE PAS LA SORTE.** C'est tout le changement : ni les
+// rappels ni les réponses n'ont de préséance, seule la date décide.
+essai("aucune sorte ne passe devant l'autre — la date seule décide", () => {
+  const rappels = [carte("rappel-frais", 1), carte("rappel-vieux", 30)];
+  const reponses = [carte("reponse-tres-fraiche", 0), carte("reponse-ancienne", 10)];
+  assert.equal(
+    noms(ordonnerLesCartes(rappels, reponses)),
+    "reponse-tres-fraiche rappel-frais reponse-ancienne rappel-vieux",
+    "les deux sortes s'entremêlent par date, sans qu'aucune ne soit privilégiée"
+  );
 });
 
-// ── Une seule sorte : rien à garantir ─────────────────────────────────────
-essai("sans réponse de client, les rappels prennent toutes les places", () => {
-  assert.deepEqual(ordonnerLesCartes([r(1), r(2), r(3)], [], 2), ["r1", "r2", "r3"]);
+// **CE QUE SA NOUVELLE RÈGLE COÛTE, éprouvé plutôt que supposé.** L'ancien
+// tressage gardait une place à une réponse ancienne ; celui-ci non. Ce cas
+// existe pour que personne ne « répare » ce comportement en croyant à un
+// défaut : il est voulu, et il est le prix d'un ordre qui s'explique.
+// **ET IL A ACCEPTÉ CE COÛT, le 26 août 2026**, la question lui ayant été posée :
+// *« ça me gêne pas »*. Ce cas ne défend donc pas un choix d'ingénierie mais une
+// décision du patron — le rétablir en « place garantie » serait défaire ce qu'il
+// a tranché.
+essai("une réponse ancienne passe DERRIÈRE des rappels frais — voulu, et accepté", () => {
+  const rappels = [carte("r1", 0), carte("r2", 1), carte("r3", 2)];
+  const reponses = [carte("reponse-vieille", 9)];
+  assert.equal(
+    noms(ordonnerLesCartes(rappels, reponses)),
+    "r1 r2 r3 reponse-vieille",
+    "l'ancien tressage lui réservait une place ; la règle du 26 août ne réserve rien"
+  );
 });
 
-essai("sans rappel, les réponses prennent toutes les places", () => {
-  assert.deepEqual(ordonnerLesCartes([], [c(1), c(2)], 2), ["c1", "c2"]);
+essai("une seule sorte : elle occupe tout, rangée par date", () => {
+  assert.equal(noms(ordonnerLesCartes([carte("a", 5), carte("b", 1)], [])), "b a");
+  assert.equal(noms(ordonnerLesCartes([], [carte("x", 8), carte("y", 2)])), "y x");
 });
 
-essai("rien du tout ne rend rien du tout", () => {
-  assert.deepEqual(ordonnerLesCartes([], [], 2), []);
+essai("rien à ranger ne casse rien", () => {
+  assert.deepEqual(ordonnerLesCartes([], []), []);
 });
 
-// ── Les cas limites, ceux qui n'arrivent qu'un jour sur cent ──────────────
-essai("un seul rappel et une seule réponse : les deux se voient", () => {
-  assert.deepEqual(ordonnerLesCartes([r(1)], [c(1)], 2), ["r1", "c1"]);
+// **À DATE ÉGALE, L'ORDRE D'ARRIVÉE TIENT.** Un écran qui se réordonne tout
+// seul entre deux rendus fait rater le bouton qu'on visait : deux cartes de la
+// même seconde ne doivent jamais échanger leur place.
+essai("à date égale, l'ordre ne bouge pas d'un rendu à l'autre", () => {
+  const memeInstant = [carte("a", 3), carte("b", 3), carte("c", 3)];
+  const premier = noms(ordonnerLesCartes(memeInstant, []));
+  assert.equal(premier, "a b c");
+  assert.equal(noms(ordonnerLesCartes(memeInstant, [])), premier, "l'ordre a changé sans raison");
 });
 
-// **La place garantie ne peut pas retirer au rappel sa seule place.** À une
-// carte visible, réserver aux réponses ferait disparaître le rappel de l'écran
-// — exactement ce que sa décision B voulait empêcher.
-essai("à UNE seule place visible, elle revient au rappel", () => {
-  assert.equal(ordonnerLesCartes([r(1), r(2)], [c(1)], 1)[0], "r1");
+// **LE TRI NE MODIFIE PAS CE QU'ON LUI DONNE.** Les tableaux viennent de l'état
+// d'un écran React : les trier sur place ferait muter une valeur que le rendu
+// suivant relit, et l'ordre changerait sans qu'aucune donnée ait bougé.
+essai("les listes données ne sont pas retournées à l'envers au passage", () => {
+  const rappels = [carte("vieux", 9), carte("frais", 0)];
+  const avant = noms(rappels);
+  ordonnerLesCartes(rappels, []);
+  assert.equal(noms(rappels), avant, "la liste d'origine a été triée SUR PLACE");
 });
 
-essai("à TROIS places, deux rappels et une réponse", () => {
-  const ordre = ordonnerLesCartes([r(1), r(2), r(3)], [c(1), c(2)], 3);
-  assert.deepEqual(ordre.slice(0, 3), ["r1", "r2", "c1"]);
-});
-
-// **Aucune carte perdue, jamais.** Une règle d'ordre qui en égarerait une
-// ferait disparaître un refus de client sans que rien ne le signale — le pire
-// défaut possible sur cet écran.
-essai("aucune carte n'est perdue ni dupliquée, quels que soient les nombres", () => {
-  for (let nr = 0; nr <= 5; nr++) {
-    for (let nc = 0; nc <= 5; nc++) {
-      for (const v of [1, 2, 3]) {
-        const rappels = Array.from({ length: nr }, (_, i) => r(i + 1));
-        const reponses = Array.from({ length: nc }, (_, i) => c(i + 1));
-        const ordre = ordonnerLesCartes(rappels, reponses, v);
-        assert.equal(ordre.length, nr + nc, `${nr} rappels + ${nc} réponses, ${v} places`);
-        assert.equal(
-          new Set(ordre).size,
-          nr + nc,
-          `doublon avec ${nr} rappels + ${nc} réponses, ${v} places`
-        );
-      }
-    }
-  }
-});
-
-// **La garantie, énoncée telle qu'il l'a demandée**, et vérifiée partout :
-// « je vois toujours au moins un de chaque, quand il y a les deux ».
-essai("dès qu'il y a les deux sortes, chacune se voit — sur tous les cas", () => {
-  for (let nr = 1; nr <= 5; nr++) {
-    for (let nc = 1; nc <= 5; nc++) {
-      const rappels = Array.from({ length: nr }, (_, i) => r(i + 1));
-      const reponses = Array.from({ length: nc }, (_, i) => c(i + 1));
-      const vus = ordonnerLesCartes(rappels, reponses, 2).slice(0, 2);
-      assert.ok(vus.some((x) => x.startsWith("r")), `aucun rappel visible (${nr}/${nc})`);
-      assert.ok(vus.some((x) => x.startsWith("c")), `aucune réponse visible (${nr}/${nc})`);
-    }
-  }
+// **UNE RÉPONSE SANS DATE PASSE EN TÊTE, jamais à la fin.** `responduAt` est
+// posé en même temps que la réponse : il ne manque jamais en pratique. S'il
+// manquait, la ranger comme très ancienne l'enverrait derrière « N autres devis
+// à regarder », c'est-à-dire nulle part — et une réponse de client ne se perd
+// pas pour une date absente (`src/app/Notifications.tsx`).
+essai("une carte sans date connue reste VISIBLE, en tête", () => {
+  const sansDate = { nom: "reponse-sans-date", quand: Number.MAX_SAFE_INTEGER };
+  assert.equal(
+    noms(ordonnerLesCartes([carte("r", 0)], [sansDate])),
+    "reponse-sans-date r",
+    "elle est partie au fond : le patron ne la verra jamais"
+  );
 });
 
 console.log("");
@@ -119,4 +132,4 @@ if (echecs) {
   console.log(`${echecs} ÉCHEC(S).`);
   process.exit(1);
 }
-console.log("L'ordre des notifications — 0 échec(s).");
+console.log("Ordre des cartes — 0 échec(s).");

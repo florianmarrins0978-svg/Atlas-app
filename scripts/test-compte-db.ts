@@ -17,11 +17,13 @@
 // Éprouvée SOUS `atlas_app`, comme la production.
 
 import assert from "node:assert/strict";
-import { compare, hash } from "bcryptjs";
+import { hash } from "bcryptjs";
 import { eq } from "drizzle-orm";
 import { db, pool } from "../src/server/db/client";
 import { users } from "../src/server/db/schema";
 import { nettoyerBase } from "./_test-db";
+import { Pool } from "pg";
+import { motDePasseEstCeluiDe } from "../src/server/secret-authentification";
 import { creerEntreprise } from "../src/server/repositories/entreprises";
 import {
   lireCompte,
@@ -45,6 +47,12 @@ async function essai(nom: string, fn: () => Promise<void>) {
 
 const MDP = "bruyere-42-nord";
 
+/** Le rôle qui a le droit d'écrire un condensat — pour le MONTAGE seulement. */
+const proprietaire = new Pool({
+  connectionString:
+    process.env.DATABASE_ADMIN_URL ?? "postgresql://atlas_owner:atlas_owner_ci_pw@localhost:5432/atlas_test",
+});
+
 /** Deux entreprises, deux personnes — la seconde est le voisin qu'on ne doit pas toucher. */
 async function monter() {
   await nettoyerBase();
@@ -53,8 +61,15 @@ async function monter() {
   // `creerEntreprise` ne pose pas de mot de passe : le parcours d'inscription
   // n'existe pas encore (`TODO.md`). On le pose ici comme le fait le jeu de
   // démonstration, avec le même coût — sinon la comparaison n'éprouverait rien.
+  // **Sous le rôle PROPRIÉTAIRE, depuis M9** (25 août 2026) : le rôle applicatif
+  // n'a plus le droit d'écrire un condensat, et c'est exactement ce qu'on veut.
+  // Un montage d'essai peut emprunter le rôle qui en a le droit ; la production,
+  // elle, passe par la fonction — c'est ce que les contrôles ci-dessous vérifient.
   for (const id of [a.utilisateurId, b.utilisateurId]) {
-    await db.update(users).set({ passwordHash: await hash(MDP, 10) }).where(eq(users.id, id));
+    await proprietaire.query(`UPDATE users SET password_hash = $1 WHERE id = $2`, [
+      await hash(MDP, 10),
+      id,
+    ]);
   }
   return {
     ctxA: { utilisateurId: a.utilisateurId, entrepriseId: a.entreprise.id },
@@ -62,8 +77,17 @@ async function monter() {
   };
 }
 
-const condensat = async (id: string) =>
-  (await db.select({ h: users.passwordHash }).from(users).where(eq(users.id, id)).limit(1))[0]?.h ?? null;
+/**
+ * **Ce qu'on observe désormais, c'est la RÈGLE, pas le stockage.**
+ *
+ * Cette suite lisait le condensat pour dire « il n'a pas bougé ». Depuis M9, le
+ * rôle applicatif n'y a plus accès — et c'est une bonne nouvelle : la question
+ * qui compte n'a jamais été « quelle chaîne est en base », mais « ce mot de
+ * passe ouvre-t-il encore ? ». C'est ce que la production éprouve, et un
+ * contrôle qui vise plus profond survit au prochain remaniement
+ * (`CLAUDE.md` §5 bis).
+ */
+const ouvreAvec = (id: string, motDePasse: string) => motDePasseEstCeluiDe(id, motDePasse);
 
 async function main() {
   console.log("=== Le compte : nom, mot de passe, déconnexion générale ===\n");
@@ -98,9 +122,8 @@ async function main() {
     const { ctxA } = await monter();
     const r = await changerMotDePasse(ctxA, MDP, "chene-tordu-7", "chene-tordu-7");
     assert.deepEqual(r, { ok: true });
-    const h = await condensat(ctxA.utilisateurId);
-    assert.ok(h && (await compare("chene-tordu-7", h)), "le nouveau ne correspond pas");
-    assert.ok(h && !(await compare(MDP, h)), "l'ancien ouvre encore");
+    assert.ok(await ouvreAvec(ctxA.utilisateurId, "chene-tordu-7"), "le nouveau n'ouvre pas");
+    assert.ok(!(await ouvreAvec(ctxA.utilisateurId, MDP)), "l'ancien ouvre encore");
   });
 
   // **LE CONTRÔLE QUI COMPTE.** Une session ouverte sur un téléphone laissé sur
@@ -108,26 +131,24 @@ async function main() {
   // compte se retrouverait dehors sans avoir rien fait.
   await essai("sans le mot de passe actuel, rien ne change", async () => {
     const { ctxA } = await monter();
-    const avant = await condensat(ctxA.utilisateurId);
     const r = await changerMotDePasse(ctxA, "pas-le-bon", "chene-tordu-7", "chene-tordu-7");
     assert.deepEqual(r, { ok: false, refus: "actuel-faux" });
-    assert.equal(await condensat(ctxA.utilisateurId), avant, "le condensat a bougé malgré le refus");
+    assert.ok(await ouvreAvec(ctxA.utilisateurId, MDP), "le mot de passe a bougé malgré le refus");
+    assert.ok(!(await ouvreAvec(ctxA.utilisateurId, "chene-tordu-7")), "le nouveau a quand même été posé");
   });
 
   await essai("une confirmation différente ne change rien non plus", async () => {
     const { ctxA } = await monter();
-    const avant = await condensat(ctxA.utilisateurId);
     const r = await changerMotDePasse(ctxA, MDP, "chene-tordu-7", "chene-tordu-8");
     assert.deepEqual(r, { ok: false, refus: "confirmation-differente" });
-    assert.equal(await condensat(ctxA.utilisateurId), avant);
+    assert.ok(await ouvreAvec(ctxA.utilisateurId, MDP), "le mot de passe a bougé malgré le refus");
   });
 
   await essai("et un mot de passe trop court non plus", async () => {
     const { ctxA } = await monter();
-    const avant = await condensat(ctxA.utilisateurId);
     const r = await changerMotDePasse(ctxA, MDP, "court", "court");
     assert.deepEqual(r, { ok: false, refus: "trop-court" });
-    assert.equal(await condensat(ctxA.utilisateurId), avant);
+    assert.ok(await ouvreAvec(ctxA.utilisateurId, MDP), "le mot de passe a bougé malgré le refus");
   });
 
   // Le voisin partage le MÊME mot de passe de départ dans ce montage : si le
@@ -135,11 +156,12 @@ async function main() {
   // autre contrôle ne s'en aperçoive.
   await essai("changer son mot de passe ne touche pas celui du voisin", async () => {
     const { ctxA, ctxB } = await monter();
-    const avantB = await condensat(ctxB.utilisateurId);
     await changerMotDePasse(ctxA, MDP, "chene-tordu-7", "chene-tordu-7");
-    assert.equal(await condensat(ctxB.utilisateurId), avantB, "le condensat du voisin a bougé");
-    const hB = await condensat(ctxB.utilisateurId);
-    assert.ok(hB && (await compare(MDP, hB)), "le voisin ne peut plus entrer");
+    assert.ok(await ouvreAvec(ctxB.utilisateurId, MDP), "le voisin ne peut plus entrer");
+    assert.ok(
+      !(await ouvreAvec(ctxB.utilisateurId, "chene-tordu-7")),
+      "le voisin a hérité du nouveau mot de passe d'Anne"
+    );
   });
 
   console.log("");

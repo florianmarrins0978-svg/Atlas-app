@@ -134,26 +134,17 @@ const ENTREPRISE: Rubrique[] = [
     icone: "feuille",
     href: "/reglages/documents",
   },
-  {
-    // **L'entretien récurrent, décidé le 16 août 2026.** Rangé après « Devis &
-    // factures » — pas avant : les premières rubriques sont SES priorités, et un
-    // contrôle les tient. (Il était rangé « juste après le planning » ; cette
-    // rubrique-là a été supprimée le même jour, elle doublait « Équipe » —
-    // `ARCHITECTURE.md` §120.) Ici parce que c'est ce qu'il a demandé — « dans
-    // les réglages, un endroit où l'utilisateur pourra créer cette fiche » — et
-    // parce que la fiche EST un document qui part chez le client.
-    //
-    // Le libellé ne dit pas « modèle » : il n'a jamais employé ce mot, et « ma
-    // fiche » est ce qu'il cherche. Qu'elle serve de modèle à chaque passage est
-    // une conséquence, pas une étiquette d'écran.
-    nom: "Fiche d'entretien",
-    dit: "Les prestations que vous cochez sur un chantier d'entretien",
-    // Une icône À ELLE : le dépôt refuse qu'une rubrique en emprunte une autre
-    // (`test-rubriques-reglages.ts`). La feuille est celle des devis, et deux
-    // rubriques identiques à l'œil se visent au hasard sur un téléphone.
-    icone: "liste_cochee",
-    href: "/reglages/fiche-entretien",
-  },
+  // **« FICHE D'ENTRETIEN » A QUITTÉ LES RÉGLAGES le 26 août 2026**, à sa
+  // demande : *« est-ce qu'on peut la déplacer dans la fiche de chantier, dans
+  // la catégorie Paysage ? Et comme ça on ne la voit plus dans la catégorie
+  // Réglages. »* Elle vit désormais sous `/paysage/fiche/composer`, en tête de
+  // l'écran qui s'en sert.
+  //
+  // **Ne pas la remettre ici.** Elle y avait été rangée le 16 août parce qu'il
+  // avait dit « dans les réglages, un endroit où l'utilisateur pourra créer
+  // cette fiche » ; dix jours d'usage lui ont fait changer d'avis, et c'est
+  // cette décision-là qui vaut. Le motif d'origine, laissé tel quel, aurait
+  // suffi à l'y ramener de bonne foi.
   { nom: "Atlas IA", dit: "Automatisations et suggestions", icone: "etincelle", href: "/reglages/ia" },
   {
     nom: "Intégrations",
@@ -248,11 +239,53 @@ export function reservéAuPatron(role: RoleReglages | null): boolean {
 }
 
 /**
- * Les adresses qu'un rôle a le droit d'ouvrir dans les réglages.
+ * Les adresses qu'un rôle voit dans le SOMMAIRE des réglages.
  *
- * Sert à ce qu'une page ne se garde pas elle-même « à peu près » : la liste des
- * rubriques est l'unique source, et une rubrique retirée ferme son adresse au
- * même instant.
+ * ─────────────────────────────────────────────────────────────────────────────
+ * **CE COMMENTAIRE A ÉTÉ FAUX, ET C'EST F8 QUI L'A RÉVÉLÉ (25 août 2026).**
+ *
+ * Il disait : *« sert à ce qu'une page ne se garde pas elle-même à peu près :
+ * la liste des rubriques est l'unique source, et une rubrique retirée ferme son
+ * adresse au même instant »*. **Rien de tout cela n'existait.** Aucune page,
+ * aucun `layout`, aucun middleware n'a jamais appelé cette fonction : ses seuls
+ * appelants sont les contrôles de `scripts/test-rubriques-reglages.ts`.
+ *
+ * Une prose qui promet une protection inexistante est pire qu'un silence — on
+ * s'y fie encore. C'est exactement ce qui explique le trou de F8 :
+ * « Intégrations » n'avait pas de garde, et la liste laissait croire qu'il n'en
+ * fallait pas.
+ *
+ * ─────────────────────────────────────────────────────────────────────────────
+ * **POURQUOI ON NE LA BRANCHE PAS, MAINTENANT QU'ON SAIT.**
+ *
+ * C'était la tentation : un `layout` de réglages qui refuserait tout ce qui
+ * n'est pas dans cette liste. Il **casserait deux écrans réels** —
+ * `/reglages/prix/mesures` et `/reglages/vocabulaire` n'y figurent pas : le
+ * premier est une sous-page, le second est réservé à l'éditeur et s'atteint
+ * depuis « Atlas IA ». Une garde centrale déduite d'un sommaire ferme ce que le
+ * sommaire ne nomme pas, et un sommaire n'a jamais eu vocation à tout nommer.
+ *
+ * Ce qui tient à la place : **chaque page pose sa propre garde**, et
+ * `scripts/test-reglages-gardes.ts` refuse qu'une rubrique non personnelle en
+ * soit dépourvue — ou qu'elle la pose après avoir déjà lu.
+ *
+ * Cette fonction reste donc ce qu'elle a toujours été : ce que le SOMMAIRE
+ * ouvre, employé pour vérifier qu'il ne propose à un salarié aucune adresse de
+ * l'entreprise. C'est utile, et ce n'est pas une frontière.
+ *
+ * ─────────────────────────────────────────────────────────────────────────────
+ * **MISE À JOUR À LA FUSION DU 26 AOÛT 2026 — la frontière, elle, existe
+ * désormais, et elle est AILLEURS.**
+ *
+ * Le lot des rôles a posé `cheminAutorise` (`src/lib/acces-roles.ts`), appelée
+ * par `GardeAcces` dans la mise en page racine : c'est elle qui refuse une
+ * adresse tapée à la main, et elle sait lire les SOUS-CHEMINS — ce que cette
+ * liste-ci, comparée à l'identique, ne saura jamais faire.
+ *
+ * Rien ne change pour autant ici : `adressesAutorisees` n'a toujours aucun
+ * appelant hors des contrôles, et la brancher reste une mauvaise idée pour la
+ * raison ci-dessus. Le paragraphe est conservé parce qu'il explique POURQUOI la
+ * règle vit dans `acces-roles.ts` et non dans un sommaire.
  */
 export function adressesAutorisees(role: RoleReglages | null): string[] {
   return rubriquesReglages(role)

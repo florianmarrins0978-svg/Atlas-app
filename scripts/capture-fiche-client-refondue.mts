@@ -140,6 +140,37 @@ await page.screenshot({ path: `${dossier}/feuille-de-la-fiche.png` });
 await page.getByRole("button", { name: "Annuler" }).click();
 await page.waitForTimeout(400);
 
+// ─── LA FEUILLE DE SUPPRESSION, SUR UN CLIENT QUI A DES PAPIERS ─────────────
+//
+// **C'est là que vit sa règle du 27 août** : la phrase de prévention, la
+// question de la sauvegarde, et ce que la loi cloue — nommé avec son numéro.
+await page.locator('[data-atlas="supprimer-client"]').scrollIntoViewIfNeeded();
+await page.locator('[data-atlas="supprimer-client"]').click();
+await page.waitForSelector('[data-atlas="confirmer-suppression"]', { timeout: 15_000 });
+await page.waitForTimeout(400);
+await page.screenshot({ path: `${dossier}/suppression-avec-papiers.png` });
+// Et une fois la sauvegarde confirmée : le bouton se déverrouille.
+await page.locator('[data-atlas="sauvegarde-ailleurs"]').click();
+await page.waitForTimeout(300);
+await page.screenshot({ path: `${dossier}/suppression-deverrouillee.png` });
+await page.getByRole("button", { name: "Annuler" }).click();
+await page.waitForTimeout(300);
+
+// ─── ET LA FICHE D'UN CLIENT SANS AUCUN PAPIER ──────────────────────────────
+//
+// **C'est la seconde capture qu'il a envoyée le 26 août 2026**, et c'est là que
+// vivaient deux des trois défauts : le point entre l'adresse et le téléphone, et
+// la phrase grise sous les trois colonnes vides. Une image prise sur un client
+// FOURNI ne les montre pas — la phrase ne s'écrivait que sur un client vide.
+const toutNeuf = await creerClient(ctx, {
+  nom: "M. Moreau (test)",
+  adresse: "23 rue d'Issy 92100 Boulogne-Billancourt",
+  telephone: "06 00 00 00 05",
+});
+await page.goto(`${BASE}/clients/${toutNeuf.id}`, { waitUntil: "networkidle" });
+await page.waitForTimeout(600);
+await page.screenshot({ path: `${dossier}/fiche-client-sans-papier.png`, fullPage: true });
+
 // Ce que l'écran porte vraiment, en clair — l'image se regarde, le texte se cite.
 const vu = await page.evaluate(() => ({
   colonnes: [...document.querySelectorAll("h3")].map((h3) => ({
@@ -156,6 +187,21 @@ const vu = await page.evaluate(() => ({
   comprend: [...document.querySelectorAll("h2 ~ ul li")].map((l) => (l.textContent ?? "").trim()),
   debordement: document.documentElement.scrollWidth - window.innerWidth,
 }));
+// **Les coordonnées, relevées ligne par ligne.** L'image montre la mise en
+// page ; ce relevé dit ce qui est écrit, et c'est lui qui attrape un séparateur
+// revenu ou un numéro recollé à l'adresse.
+const coordonnees = await page.evaluate(
+  () =>
+    (document.querySelector("header p:last-of-type") as HTMLElement | null)?.innerText ?? "(absent)"
+);
+console.log(`\ncoordonnées (client sans papier) : ${JSON.stringify(coordonnees)}`);
+
+// La feuille du client SANS papier : pas de prévention, pas de question.
+await page.locator('[data-atlas="supprimer-client"]').scrollIntoViewIfNeeded();
+await page.locator('[data-atlas="supprimer-client"]').click();
+await page.waitForSelector('[data-atlas="confirmer-suppression"]', { timeout: 15_000 });
+await page.waitForTimeout(400);
+await page.screenshot({ path: `${dossier}/suppression-sans-papier.png` });
 console.log(JSON.stringify(vu, null, 2));
 console.log(`\nimage écrite dans ${dossier}/fiche-client-reelle.png`);
 

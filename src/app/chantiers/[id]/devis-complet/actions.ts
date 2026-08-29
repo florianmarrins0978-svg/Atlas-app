@@ -11,7 +11,7 @@ import { apprendrePrixGrille } from "@/server/services/apprendre-grille";
 import { mettreAJourAdresseChantier } from "@/server/repositories/chantiers";
 import { mettreAJourEnTeteDevis, getDevisPourChantier } from "@/server/repositories/devis";
 import { verifierLimite, LIMITES } from "@/server/rate-limit";
-import { verifierTailleFichier, verifierTypeAudio } from "@/server/upload-limits";
+import { preparerAudioEntrant } from "@/server/audio-entrant";
 import { lireRetouchesDictees } from "@/server/ai/services/retouches-devis-service";
 import type { Changement } from "@/lib/retouches-devis";
 import type { Civilite } from "@/lib/civilite";
@@ -141,10 +141,6 @@ export async function dicterRetouchesDevisAction(chantierId: string, formData: F
   const fichier = formData.get("fichier");
   if (!(fichier instanceof File)) throw new Error("Aucun enregistrement reçu.");
 
-  const taille = verifierTailleFichier(fichier);
-  if (!taille.ok) throw new Error(taille.message);
-  const type = verifierTypeAudio(fichier.type);
-  if (!type.ok) throw new Error(type.message);
 
   const ctx = await getCurrentCtx();
   const limite = await verifierLimite(`televersement:${ctx.entrepriseId}`, LIMITES.televersementFichier);
@@ -158,10 +154,14 @@ export async function dicterRetouchesDevisAction(chantierId: string, formData: F
   // ENVOYÉ. Or c'est le brouillon qu'on corrige. Défaut trouvé par
   // `test-reduction-parcours-db.ts`, jamais par le typage.
   const devisEnCours = await getDevisPourChantier(ctx, chantierId);
-  const octets = Buffer.from(await fichier.arrayBuffer());
+  // **LA PORTE COMMUNE** — voir `src/server/audio-entrant.ts`. Comme la dictée
+  // des coordonnées, ce chemin ne stocke rien : il transcrit. Le refus arrive
+  // donc AVANT le fournisseur d'IA, jamais après.
+  const audio = await preparerAudioEntrant(fichier);
+  if (!audio.ok) throw new Error(audio.message);
   return lireRetouchesDictees(
-    octets,
-    fichier.type || "audio/webm",
+    audio.octets,
+    audio.mime,
     lignes.map((l) => ({ id: l.id, libelle: l.libelle, quantite: l.quantite, prixUnitaire: l.prixUnitaire })),
     devisEnCours?.reductionPourcent ?? null
   );

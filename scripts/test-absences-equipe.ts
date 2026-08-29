@@ -114,7 +114,7 @@ cas("une absence S'AJOUTE à un chantier déjà posé, elle ne l'écrase pas", (
   // d'additionner rendrait ce jour libre, et un client y retiendrait une date.
   const chantiers = compterOccupation([
     { jour: "2026-09-09", moment: "matin", dureeDemiJournees: 2 },
-  ]);
+  ], 1);
   const occupation = fusionnerAbsences(chantiers, [A("2026-09-08", "2026-09-12")], 2);
   assert.equal(occupation.get(cleCreneau({ jour: "2026-09-09", moment: "matin" })), 2);
   assert.equal(departPossible("2026-09-09", 2, occupation, 2), null);
@@ -135,14 +135,14 @@ cas("le total ne dépasse jamais le nombre d'équipes", () => {
 cas("la carte reçue n'est jamais modifiée", () => {
   // Elle sert ailleurs, et une carte mutée à distance est un défaut qu'on ne
   // retrouve qu'au troisième écran.
-  const origine = compterOccupation([{ jour: "2026-09-09", moment: "matin", dureeDemiJournees: 2 }]);
+  const origine = compterOccupation([{ jour: "2026-09-09", moment: "matin", dureeDemiJournees: 2 }], 1);
   const avant = new Map(origine);
   fusionnerAbsences(origine, [A("2026-09-08", "2026-09-12")], 2);
   assert.deepEqual([...origine.entries()].sort(), [...avant.entries()].sort());
 });
 
 cas("aucune absence : la carte est exactement celle d'avant", () => {
-  const origine = compterOccupation([{ jour: "2026-09-09", moment: "matin", dureeDemiJournees: 2 }]);
+  const origine = compterOccupation([{ jour: "2026-09-09", moment: "matin", dureeDemiJournees: 2 }], 1);
   assert.deepEqual([...fusionnerAbsences(origine, [], 2).entries()].sort(), [...origine.entries()].sort());
 });
 

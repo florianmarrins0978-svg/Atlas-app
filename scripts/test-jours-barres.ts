@@ -31,7 +31,7 @@ console.log("=== Ce qu'un jour barré veut dire ===");
 const OCCUPATION = compterOccupation([
   { jour: "2026-08-19" as JourIso, moment: "matin", dureeDemiJournees: 2 },
   { jour: "2026-08-19" as JourIso, moment: "matin", dureeDemiJournees: 2 },
-]);
+], 2);
 const FENETRE = { debut: "2026-08-18" as JourIso, fin: "2026-09-30" as JourIso };
 const barre = (jour: string, duree: number) =>
   !jourRetenable(jour as JourIso, duree, OCCUPATION, 2, FENETRE);

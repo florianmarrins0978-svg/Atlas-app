@@ -3,6 +3,7 @@ import { mkdirSync } from "node:fs";
 import type { Page, BrowserContext } from "playwright";
 import { lancerNavigateur } from "./e2e-browser";
 import { creerPuisFiche } from "./_creer-chantier-e2e";
+import { joursAProposer } from "./_calendrier-e2e";
 
 // L'envoi du devis au client, vu depuis l'écran du patron (docs/AGENT.md §2.2).
 //
@@ -140,11 +141,23 @@ async function main() {
     await page.click("text=Choisir la date");
     await page.waitForSelector('[data-atlas="invite-dates"]', { timeout: DELAI_ECRAN_MS });
 
+    // **L'écran ne l'annonce plus, et c'est voulu : « Par e-mail au … » a été
+    // retiré le 26 août 2026, à sa demande.** Ce contrôle lisait cette
+    // phrase ; il éprouve désormais ce qui compte vraiment — la messagerie qui
+    // s'ouvre. Un libellé se change ; la déduction du canal, elle, est la règle
+    // (`CLAUDE.md` §5 bis), et c'est aussi ce qui a mordu le 20 août quand le
+    // SMS s'ouvrait à la place de l'e-mail.
+    await page.locator("button[aria-pressed]").nth(1).click();
+    await page.getByRole("button", { name: "Envoyer le devis" }).click();
+    await page.waitForURL(/localhost:3000\/$/, { timeout: 15000 });
+
+    const porte = page.locator("a[data-transmission-directe]");
+    assert.equal(await porte.count(), 1, "l'appui n'a ouvert aucune messagerie");
+    const adresse = (await porte.getAttribute("href")) ?? "";
     assert.ok(
-      await page.locator("text=Par e-mail au dupuis@exemple.fr").isVisible(),
-      "le canal déduit n'est pas celui de la coordonnée saisie"
+      adresse.startsWith("mailto:") && decodeURIComponent(adresse).includes("dupuis@exemple.fr"),
+      `le canal déduit n'est pas celui de la coordonnée saisie : ${adresse.slice(0, 80)}`
     );
-    await page.getByRole("button", { name: "Annuler l’envoi" }).click();
   });
 
   await test("LE CANAL DE LA FICHE COMMANDE L'OUVERTURE — e-mail, pas SMS", async () => {
@@ -225,31 +238,32 @@ async function main() {
    * Le calendrier sait tourner la page ; la suite doit savoir le faire aussi.
    * Une seule fois suffit : un mois entier porte toujours assez de jours.
    */
+  /**
+   * **DEUX SESSIONS ONT RÉSOLU LE MÊME DÉFAUT LE MÊME JOUR**, et la fusion du
+   * 26 août 2026 a dû choisir.
+   *
+   * Ce fichier portait `joursRetenables`, écrite ici ; la branche du lot 3
+   * portait `joursAProposer`, dans `scripts/_calendrier-e2e.ts`. Les deux
+   * tournent la page du mois quand celui-ci est trop entamé. **Les garder
+   * toutes les deux aurait été la duplication elle-même** — celle que
+   * `CLAUDE.md` §3 interdit, et qui finit toujours par diverger.
+   *
+   * Ce qui a été retenu, et pourquoi :
+   *
+   * | | ici | pièce commune |
+   * |---|---|---|
+   * | portée | une seule suite | **deux suites** |
+   * | plancher | `+3` écrit en dur | **`DELAI_MINIMAL_JOURS`**, qui suivra le jour où il changera |
+   * | mois consultés | un de plus | jusqu'à trois |
+   *
+   * **Le nom d'ici SURVIT en délégation** : trois appels le nomment dans ce
+   * fichier, et les renommer aurait mêlé une réécriture à une fusion. Ce qui
+   * disparaît, c'est la seconde implémentation — jamais un point d'appel.
+   */
   async function joursRetenables(page: Page, combien: number): Promise<string[]> {
-    const plancher = new Date();
-    plancher.setDate(plancher.getDate() + 3);
-    const depuis = plancher.toISOString().slice(0, 10);
-
-    const lire = async () =>
-      (
-        await page
-          .locator('[data-jour][data-etat="regardable"]')
-          .evaluateAll((els) => els.map((e) => e.getAttribute("data-jour")!).filter(Boolean))
-      ).filter((j) => j >= depuis);
-
-    let jours = await lire();
-    if (jours.length < combien) {
-      const suivant = page.locator('button[aria-label^="Mois suivant"]').first();
-      if ((await suivant.count()) > 0 && (await suivant.isEnabled())) {
-        await suivant.click();
-        // La grille se repeint : attendre une case du mois neuf, pas un délai.
-        await page.locator('[data-jour][data-etat="regardable"]').first().waitFor({ timeout: 20_000 });
-        jours = await lire();
-      }
-    }
-    assert.ok(jours.length >= combien, `pas assez de jours retenables, même au mois suivant (${jours.length})`);
-    return jours;
+    return joursAProposer(page, combien);
   }
+
 
   await test("le patron ne propose jamais plus de deux dates", async () => {
     const url = await creerChantierFacturable(page, "deuxmax");
@@ -265,9 +279,15 @@ async function main() {
     // changé : jamais plus de deux.
     // Une date est déjà retenue à l'ouverture : on en retient deux de plus, et
     // la troisième doit chasser la première — jamais trois.
-    // **Assez loin pour que le serveur les accepte** (le délai minimal), et au
-    // besoin au mois suivant — voir `joursRetenables`.
-    const aRetenir = await joursRetenables(page, 2);
+    //
+    // **La recherche des jours TOURNE LA PAGE DU MOIS si besoin**
+    // (`scripts/_calendrier-e2e.ts`). Elle ne relâche rien : la règle éprouvée
+    // plus bas — jamais plus de deux dates — est intacte. Ce qui a changé est en
+    // amont, et c'est de la matière à mesurer : le mois affiché s'ouvre au 1er,
+    // et en fin de mois il ne restait parfois qu'un seul jour ouvrable au-delà
+    // du délai minimal. La suite s'arrêtait là, sur un écran parfaitement juste
+    // — 57 jours de l'année, mesurés.
+    const aRetenir = await joursAProposer(page, 2);
     for (const jour of aRetenir.slice(0, 2)) await retenirAuCalendrier(page, jour);
 
     // **On compte des JOURS, pas des boutons pressés.** Depuis le 12 août 2026,
@@ -293,16 +313,8 @@ async function main() {
     await page.click("text=Choisir la date");
     await page.waitForSelector('[data-atlas="invite-dates"]', { timeout: DELAI_ECRAN_MS });
 
-    // Une date, prise au calendrier — la liste des six ayant disparu le
-    // 23 août 2026.
-    //
-    // **Par `joursRetenables`, et non à la main.** Cette lecture-ci était
-    // recopiée ici, sans le tour de page : à quatre jours de la fin du mois,
-    // le mois AFFICHÉ n'offrait plus rien au-delà du délai minimal, et la suite
-    // rougissait sur un produit sain. C'est le piège écrit en tête de
-    // `HANDOVER.md` — « devant une suite de calendrier rouge, regarder d'abord
-    // le quantième » —, et il s'était reproduit faute d'employer le remède déjà
-    // écrit dix lignes plus haut (mesuré le 27 août 2026).
+    // Deux dates : c'est le cas qui laisse le client choisir. Prise au
+    // calendrier, la liste des six ayant disparu le 23 août 2026.
     const offerts = await joursRetenables(page, 1);
     await retenirAuCalendrier(page, offerts[0]);
     await page.getByRole("button", { name: "Envoyer le devis" }).click();
@@ -484,15 +496,24 @@ async function main() {
       "il doit être ouvert par défaut : c'est ce que l'application faisait jusqu'ici"
     );
 
-    // La phrase sous les dates suit l'interrupteur — sans quoi il enverrait
-    // sans savoir ce que son client va voir.
+    // **L'écran dit ce que le client pourra faire, et il le dit là où l'on
+    // appuie.** La phrase qui vivait SOUS les dates a été retirée le 26 août
+    // 2026 (elle le disait pour la troisième fois) ; le sous-titre de
+    // l'interrupteur, lui, change avec lui — et c'est ce qu'on défend : sans
+    // rien qui suive le geste, il enverrait sans savoir ce que son client voit.
     await bascule.click();
     assert.strictEqual(await bascule.getAttribute("aria-checked"), "false");
     const texte = await page.locator("body").innerText();
     assert.match(
       texte,
-      /ne pourra pas en proposer une autre|et rien d'autre/,
-      `la phrase ne suit pas l'interrupteur. L'écran dit : ${JSON.stringify(texte.slice(0, 220))}`
+      /choisira uniquement parmi vos dates/,
+      `le sous-titre ne suit pas l'interrupteur. L'écran dit : ${JSON.stringify(texte.slice(0, 220))}`
+    );
+    // Et l'ancienne phrase n'est pas revenue par une autre porte.
+    assert.doesNotMatch(
+      texte,
+      /pourra aussi en proposer une autre|choisira entre ces deux dates/,
+      "la phrase retirée le 26 août est revenue"
     );
     await page.getByRole("button", { name: "Annuler l’envoi" }).click();
   });
@@ -641,7 +662,11 @@ async function main() {
 
     // Deux dates, comme sur sa capture — un seul jour proposé change le libellé
     // du choix, et un contrôle qui n'éprouve qu'une forme laisse passer l'autre.
-    const libres = await joursRetenables(page, 2);
+    // Même remède qu'au-dessus, et pour la même raison : trouver deux jours,
+    // en tournant la page du mois si celui-ci est trop entamé. Ce qui est
+    // éprouvé ensuite — la cliente peut proposer un jour sans que le patron ait
+    // rien touché — n'a pas bougé d'un caractère.
+    const libres = await joursAProposer(page, 2);
     for (const jour of libres.slice(0, 2)) await retenirAuCalendrier(page, jour);
 
     await page.getByRole("button", { name: "Envoyer le devis" }).click();

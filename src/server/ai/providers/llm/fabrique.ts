@@ -5,7 +5,29 @@ import { fournisseurLLMOpenAI } from "./openai";
 import { fournisseurLLMGemini } from "./gemini";
 import { getConfigIA } from "../../config";
 
+/**
+ * Un fournisseur posé par une SUITE, et par rien d'autre.
+ *
+ * **Pourquoi ce trou existe.** Le 26 août 2026, l'assistant a rendu trois fois
+ * *« L'assistant a mal formé sa demande à un outil interne »* chez le patron :
+ * le modèle appelait un outil avec le mauvais nom de champ, et la boucle
+ * s'arrêtait là. Le correctif — le laisser se reprendre — ne peut s'éprouver
+ * qu'avec un fournisseur qui se trompe EXPRÈS. Le fournisseur `dev` ne se
+ * trompe jamais, et un vrai demande une clé qu'aucune suite n'a.
+ *
+ * **Doublement fermé, comme la dérogation de session** (`session-ctx.ts`) :
+ * hors production, et seulement si une suite l'a explicitement posé. En
+ * production, cette valeur reste `null` quoi qu'il arrive.
+ */
+let fournisseurDeSuite: FournisseurLLM | null = null;
+
+export function _reinitialiserFabriqueLLM(fournisseur: FournisseurLLM | null): void {
+  if (process.env.NODE_ENV === "production") return;
+  fournisseurDeSuite = fournisseur;
+}
+
 export function getFournisseurLLM(): FournisseurLLM {
+  if (fournisseurDeSuite && process.env.NODE_ENV !== "production") return fournisseurDeSuite;
   switch (getConfigIA().llmProvider) {
     case "anthropic":
       return fournisseurLLMAnthropic;

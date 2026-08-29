@@ -2,7 +2,7 @@ import { getCurrentCtx } from "@/server/session-ctx";
 import { enregistrerNoteVocale } from "@/server/repositories/notes-vocales";
 import { enregistrerObjet } from "@/server/storage";
 import { verifierLimite, LIMITES } from "@/server/rate-limit";
-import { verifierTailleFichier, verifierTypeAudio } from "@/server/upload-limits";
+import { preparerAudioEntrant } from "@/server/audio-entrant";
 import { logger } from "@/server/logger";
 import { messageDePanne, type EtapeNote } from "@/lib/panne-note-vocale";
 
@@ -53,16 +53,10 @@ export type ResultatNoteVocale =
   | { ok: true; storageKey: string | null; dureeSecondes: number | null }
   | { ok: false; raison: string };
 
-function extensionPour(mimeType: string): string {
-  if (mimeType.includes("webm")) return ".webm";
-  if (mimeType.includes("ogg")) return ".ogg";
-  if (mimeType.includes("mp4") || mimeType.includes("m4a")) return ".m4a";
-  if (mimeType.includes("mpeg") || mimeType.includes("mp3")) return ".mp3";
-  if (mimeType.includes("wav")) return ".wav";
-  if (mimeType.includes("aac")) return ".aac";
-  if (mimeType.includes("flac")) return ".flac";
-  return ".audio";
-}
+// `extensionPour(mimeType)` vivait ici. Elle est morte le 26 août 2026 avec le
+// lot Audio : elle déduisait l'extension de la chaîne envoyée par le téléphone,
+// et c'est précisément ce que ce lot ferme. Son repli `.audio` — inatteignable,
+// et inconnu de `typeDepuisCle` — est parti avec elle.
 
 /**
  * Ne lève jamais : toute panne devient une raison lisible qui **nomme le
@@ -77,23 +71,7 @@ export async function recevoirNoteVocale(
   if (!(fichier instanceof File)) {
     return { ok: false, raison: "Aucun son n'est arrivé jusqu'au serveur." };
   }
-  const validationTaille = verifierTailleFichier(fichier);
-  if (!validationTaille.ok) {
-    return { ok: false, raison: validationTaille.message };
-  }
-  // Contrôle serveur du format : l'écran filtre déjà via `accept`, mais cet
-  // attribut n'est qu'un confort d'interface et ne protège rien.
-  const validationType = verifierTypeAudio(fichier.type);
-  if (!validationType.ok) {
-    // **Le type refusé est NOMMÉ.** Sans lui, un format que le téléphone du
-    // patron produit et que la liste blanche ignore reste introuvable.
-    return {
-      ok: false,
-      raison: `${validationType.message} (le téléphone a envoyé « ${fichier.type || "aucun type"} »)`,
-    };
-  }
   const dureeSecondes = Number(formData.get("dureeSecondes") ?? 0) || undefined;
-  const mimeType = fichier.type || "audio/webm";
 
   let etape: EtapeNote = "session";
   try {
@@ -105,25 +83,23 @@ export async function recevoirNoteVocale(
       return { ok: false, raison: limite.message };
     }
 
-    // **Un enregistrement vide n'est pas un enregistrement.** Sur certains
-    // téléphones, le micro rend zéro octet sans se plaindre ; l'accepter, c'est
-    // poser une note muette qu'aucune transcription ne pourra lire.
+    // **LA PORTE COMMUNE — taille, lecture, vide, puis le FORMAT lu dans les
+    // octets** (`src/server/audio-entrant.ts`). Elle vient APRÈS la cadence :
+    // c'est elle qui empêche de la faire travailler en rafale.
     etape = "lecture";
-    const octets = Buffer.from(await fichier.arrayBuffer());
-    if (octets.byteLength === 0) {
-      return {
-        ok: false,
-        raison: "L'enregistrement est vide — le micro n'a rien capté. Réessayez en parlant après l'appui.",
-      };
-    }
+    const audio = await preparerAudioEntrant(fichier);
+    if (!audio.ok) return { ok: false, raison: audio.message };
 
     etape = "stockage";
-    const objet = await enregistrerObjet(`chantiers/${chantierId}/notes`, octets, extensionPour(mimeType));
+    // L'extension vient du format RÉEL, jamais de ce que le téléphone annonce.
+    const objet = await enregistrerObjet(`chantiers/${chantierId}/notes`, audio.octets, audio.extension);
 
     etape = "base";
     const note = await enregistrerNoteVocale(ctx, chantierId, {
       storageKey: objet.storageKey,
-      mimeType,
+      // Le type retenu est celui du format reconnu : c'est lui qui repartira
+      // chez le fournisseur de transcription, et lui qui décrit le fichier.
+      mimeType: audio.mime,
       tailleOctets: objet.tailleOctets,
       nomOriginal: fichier.name || undefined,
       checksum: objet.checksum,
@@ -138,7 +114,10 @@ export async function recevoirNoteVocale(
     logger.error("Note vocale : l'enregistrement a échoué", {
       chantierId,
       etape,
-      mimeType,
+      // Ce que le TÉLÉPHONE a annoncé, et non le format retenu : à cet endroit,
+      // la panne peut être survenue avant qu'un format soit reconnu. Journaliser
+      // une valeur qu'on n'a peut-être pas enverrait chercher au mauvais endroit.
+      typeAnnonce: fichier.type || "aucun",
       tailleOctets: fichier.size,
       motif: err instanceof Error ? err.message : String(err),
     });

@@ -24,6 +24,7 @@ import {
   boolean,
   jsonb,
   bigint,
+  bigserial,
   type AnyPgColumn,
 } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
@@ -189,7 +190,20 @@ export const entreprises = pgTable("entreprises", {
   rappelFactureRythmeJours: integer("rappel_facture_rythme_jours").notNull().default(7),
   // Combien de chantiers menés de front. 1 par défaut — le comportement d'avant
   // la migration 0019, où une seule équipe était supposée sans le dire.
+  //
+  // **CE NOMBRE NE FAIT PLUS QU'UN SEUL MÉTIER, depuis la migration 0067.** Il
+  // dit la CAPACITÉ du planning — « 2 équipes = 2 chantiers par jour » — et
+  // rien d'autre. Combien de gens l'entreprise emploie se lit désormais sur
+  // `nombreSalaries` : sa demande du 26 août 2026, et les deux n'ont aucune
+  // raison de coïncider (quatre salariés peuvent ne mener qu'un chantier).
   nombreEquipes: integer("nombre_equipes").notNull().default(1),
+  // Combien de gens travaillent dans l'entreprise, et donc combien de noms se
+  // règlent et s'affilient à une demi-journée de chantier.
+  //
+  // **Zéro est la valeur normale d'un artisan seul**, et non un défaut de
+  // saisie : il n'a personne à affilier, et lui proposer une case à cocher lui
+  // inventerait une organisation qu'il n'a pas.
+  nombreSalaries: integer("nombre_salaries").notNull().default(0),
   // Comment le relevé de TVA découpe l'année. **Le mois est le défaut LÉGAL**
   // (déclaration CA3 mensuelle ; le trimestre est une option sous condition de
   // TVA due), pas une préférence d'écran — voir `drizzle/0035_periodicite_tva.sql`.
@@ -219,14 +233,30 @@ export const entreprises = pgTable("entreprises", {
 });
 
 /**
- * Les équipes, et leurs noms — quand il y en a à écrire.
+ * ⚠ **CETTE TABLE PORTE LES SALARIÉS, malgré son nom** (migration 0067).
+ *
+ * Elle s'est appelée `equipes` tant qu'un seul nombre disait à la fois la
+ * capacité du planning et combien de gens l'entreprise emploie. Sa demande du
+ * 26 août 2026 a séparé les deux : `entreprises.nombre_equipes` garde la
+ * capacité, `entreprises.nombre_salaries` compte les gens — et ce sont les
+ * lignes d'ici qu'on affilie à une demi-journée de chantier.
+ *
+ * **Rien n'a changé de leur nature**, et c'est ce qu'il a demandé : *« il ne
+ * faut pas changer la méthode d'affiliation des gars sur les chantiers — juste,
+ * au lieu que ce soit les équipes, ce sera les noms qu'on affilie »*. Il y écrit
+ * des prénoms depuis le 10 août 2026 ; ces lignes ont toujours été les gars.
+ *
+ * Le renommage (`equipes` → `salaries`) est une tâche à part, inscrite dans
+ * `TODO.md` : il touche vingt-trois fichiers, les politiques RLS et les
+ * contraintes, et le mêler à un changement de comportement mettrait en risque
+ * une application qu'il utilise tous les jours.
  *
  * **`nom` est nullable, et c'est le cœur de la règle** (`ARCHITECTURE.md` §51) :
  * un nom absent est un état normal, pas une donnée manquante. Le repli
- * « Équipe A » est un AFFICHAGE, décidé par `libelleEquipe` dans
+ * « Salarié 3 » est un AFFICHAGE, décidé par `libelleSalarie` dans
  * `src/lib/equipes.ts` — jamais une valeur écrite ici.
  *
- * **`entreprises.nombre_equipes` fait autorité sur le nombre.** Cette table ne
+ * **`entreprises.nombre_salaries` fait autorité sur le nombre.** Cette table ne
  * porte que des noms : une ligne peut donc survivre au-delà du compteur, et
  * c'est voulu — redescendre puis remonter ne doit pas effacer un nom saisi à
  * la main.
@@ -1324,6 +1354,44 @@ export const propositionsIa = pgTable(
     appliqueeAt: timestamp("appliquee_at", { withTimezone: true }),
   },
   (t) => [index("propositions_ia_entreprise_chantier_idx").on(t.entrepriseId, t.chantierId)]
+);
+
+/**
+ * Le fil de l'assistant, pour qu'il survive au rechargement (migration 0069).
+ *
+ * **Un fil par UTILISATEUR.** La RLS isole les entreprises ; deux associés de la
+ * même entreprise ne partagent pas leurs conversations, et c'est
+ * `utilisateurId` qui le tient — filtré dans le dépôt, faute d'un
+ * `app.utilisateur_id` posé par `withEntreprise`.
+ *
+ * **Un fil unique, pas un par chantier.** `chantierId` note l'écran d'où le
+ * message est parti, il ne coupe pas le fil : il passe d'un chantier à l'autre
+ * en parlant.
+ */
+export const messagesAssistant = pgTable(
+  "messages_assistant",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    entrepriseId: uuid("entreprise_id")
+      .notNull()
+      .references(() => entreprises.id, { onDelete: "cascade" }),
+    utilisateurId: uuid("utilisateur_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    chantierId: uuid("chantier_id"),
+    role: text("role", { enum: ["user", "assistant"] }).notNull(),
+    contenu: text("contenu").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    /**
+     * **C'est LUI qui ordonne le fil, pas la date.** `now()` rend l'instant de
+     * début de transaction : la question et sa réponse, écrites ensemble,
+     * portent la même date à la microseconde près, et le classement retombait
+     * sur un UUID tiré au hasard — la réponse passait devant la question une
+     * fois sur deux.
+     */
+    rang: bigserial("rang", { mode: "number" }).notNull(),
+  },
+  (t) => [index("messages_assistant_fil_idx").on(t.entrepriseId, t.utilisateurId, t.rang)]
 );
 
 // --- Documents légaux et preuve de leur acceptation (voir docs/RGPD.md §8) ---
@@ -2493,4 +2561,29 @@ export const clesAppareil = pgTable(
     dernierUsageLe: timestamp("dernier_usage_le", { withTimezone: true }),
   },
   (t) => [index("cles_appareil_utilisateur_idx").on(t.utilisateurId)]
+);
+
+/**
+ * LA PREUVE RÉCENTE — ce qui autorise un geste vraiment sensible (M11).
+ *
+ * **Attachée à la SESSION, jamais seulement à la personne.** Une date unique par
+ * utilisateur se partagerait entre ses appareils : le patron se ré-authentifie
+ * sur son iPhone, et une session volée ailleurs en profiterait dans la seconde.
+ *
+ * Ne porte aucun secret : ni mot de passe, ni condensat, ni assertion WebAuthn.
+ * Voir `drizzle/0065_preuve_recente.sql`.
+ */
+export const preuvesAuthentification = pgTable(
+  "preuves_authentification",
+  {
+    utilisateurId: uuid("utilisateur_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    /** L'identité de la session, telle que le jeton la porte. */
+    sessionId: text("session_id").notNull(),
+    prouveLe: timestamp("prouve_le", { withTimezone: true }).notNull().defaultNow(),
+    /** « mot-de-passe » ou « cle-appareil » — pour le journal, jamais la décision. */
+    methode: text("methode").notNull(),
+  },
+  (table) => [primaryKey({ columns: [table.utilisateurId, table.sessionId] })]
 );

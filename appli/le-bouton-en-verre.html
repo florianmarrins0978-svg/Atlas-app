@@ -1,0 +1,244 @@
+<title>Le bouton en verre</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  /*
+    LE BOUTON EN VERRE — le vert d'aujourd'hui, mais qui laisse passer la page.
+
+    LE PATRON, LE 26 AOÛT 2026 : « tous les boutons en vert foncé, je les trouve
+    très opaques. » Puis, après deux tours écartés : « fais-moi un verre mais
+    avec la couleur actuelle ».
+
+    ————————————————————————————————————————————————————————————————
+    CE QUE LE « VERRE » DU SECOND TOUR AVAIT DE FAUX.
+
+    Il posait le vert à 14 % : la capsule devenait une pastille presque blanche
+    avec du texte vert. Ce n'était plus le bouton vert d'Atlas, c'était un autre
+    bouton. Sa demande dit exactement l'inverse — **garder la couleur**, et
+    n'enlever que l'opacité.
+
+    Ici la capsule reste donc VERTE et le texte reste crème ; c'est la matière
+    qui change. Trois ingrédients, et aucun n'est un effet gratuit :
+
+    · LA TRANSPARENCE — le fond de la page transparaît, donc la capsule cesse
+      d'être un trou noir découpé dans l'écran ;
+    · LE REFLET — un éclat blanc très faible en haut, qui donne l'épaisseur du
+      verre. Sans lui, une couleur transparente ne fait que « délavée » ;
+    · L'OMBRE PORTÉE — le verre est posé SUR la page, pas imprimé dedans.
+
+    ————————————————————————————————————————————————————————————————
+    POURQUOI IL N'Y A PAS DE VERRE PLUS LÉGER QUE 80 %.
+
+    Ce n'est pas un choix de goût, c'est une mesure. Le texte crème doit rester
+    lisible au soleil, sur un chantier — 4,5:1 au minimum, et c'est SOUS LE
+    REFLET que le contraste est le plus faible, pas sur le fond :
+
+        90 %  6,23:1        80 %  4,66:1   ← le plancher
+        85 %  5,39:1        72 %  3,87:1   ← refusé
+
+    Un bouton qu'on ne lit pas au soleil n'est pas un bouton plus léger, c'est
+    un bouton perdu.
+
+    ————————————————————————————————————————————————————————————————
+    RIEN N'EST CODÉ : le dossier src/ n'est pas touché (règle du §3 bis).
+    AUCUN SCRIPT : les bascules sont des <input type="radio"> et du CSS.
+    Le fond animé sous le bouton existe pour une seule raison — un verre ne se
+    juge pas sur un aplat uni : il faut voir ce qui passe à travers.
+  */
+
+  :root{
+    --fond:#efece6; --encre:#1c1c1a; --gris:#8a8578; --or:#B98B47;
+    --trait:rgba(28,28,26,.13); --papier:#faf9f5; --creme:#f5f3ee;
+    --pin:47,59,47;              /* le vert d'aujourd'hui, en composantes */
+    --surPlein:#faf9f5;
+    --reflet:rgba(255,255,255,.16);
+    --lisere:rgba(255,255,255,.20);
+    --porte:rgba(47,59,47,.22);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E;
+      --trait:rgba(233,229,220,.16); --papier:#201e1a; --creme:#1b1a17;
+      /* **Les pôles s'inversent** (`CLAUDE.md` §3) : l'accent devient clair, et
+         ce qu'on pose dessus devient sombre. Un verre vert foncé sur une page
+         noire ne serait pas transparent, il serait absent. */
+      --pin:159,189,130; --surPlein:#171613;
+      --reflet:rgba(255,255,255,.14);
+      --lisere:rgba(255,255,255,.22);
+      --porte:rgba(0,0,0,.45);
+    }
+  }
+  :root[data-theme="dark"]{
+    --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E;
+    --trait:rgba(233,229,220,.16); --papier:#201e1a; --creme:#1b1a17;
+    --pin:159,189,130; --surPlein:#171613;
+    --reflet:rgba(255,255,255,.14);
+    --lisere:rgba(255,255,255,.22);
+    --porte:rgba(0,0,0,.45);
+  }
+
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--fond);color:var(--encre);
+       font:16px/1.6 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+       padding:26px 18px 70px}
+  .dedans{max-width:940px;margin:0 auto}
+  h1{font-family:Georgia,"Times New Roman",serif;font-weight:400;
+     font-size:27px;line-height:1.2;margin:0 0 8px}
+  .intro{color:var(--gris);font-size:14px;line-height:1.65;margin:0 0 18px}
+  .intro b{color:var(--encre);font-weight:600}
+  .dit{margin:0 0 24px;padding:14px 16px;border-left:3px solid var(--or);
+       background:var(--papier);font-size:14px;line-height:1.7;color:var(--gris)}
+  .dit b{color:var(--encre);font-weight:600}
+
+  .quoi{display:block;font-size:11px;letter-spacing:.13em;
+        text-transform:uppercase;color:var(--or);margin:0 0 9px}
+
+  .etat{position:absolute;opacity:0;pointer-events:none}
+  .choix{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 6px}
+  .choix label{display:inline-block;padding:9px 15px;border-radius:999px;
+       border:1px solid var(--trait);background:var(--papier);
+       font-size:14px;cursor:pointer;color:var(--encre)}
+  #p:checked~.choix label[for=p],#n:checked~.choix label[for=n],
+  #q:checked~.choix label[for=q],#h:checked~.choix label[for=h]{
+       border-color:var(--or);box-shadow:inset 0 0 0 1px var(--or)}
+
+  .tel{max-width:390px;background:var(--creme);border:1px solid var(--trait);
+       border-radius:22px;padding:22px 20px 26px;margin:14px 0 0;
+       position:relative;overflow:hidden}
+  .surtitre{font-size:11px;letter-spacing:.13em;text-transform:uppercase;
+            color:var(--or);margin:0 0 4px}
+  .tel h2{font-family:Georgia,"Times New Roman",serif;font-weight:400;
+          font-size:26px;margin:0 0 16px;color:var(--encre)}
+  .carte{background:var(--papier);border-radius:12px;padding:14px 16px;
+         margin:0 0 18px}
+  .ligne{display:flex;justify-content:space-between;font-size:14px;
+         padding:5px 0;color:var(--gris)}
+  .ligne b{color:var(--encre);font-weight:600;font-variant-numeric:tabular-nums}
+  .total{border-top:1px solid var(--trait);margin-top:7px;padding-top:11px}
+  .total span{font-size:15px;color:var(--encre)}
+  .total b{font-family:Georgia,"Times New Roman",serif;font-size:22px}
+
+  /* **Une bande derrière le bouton, pour qu'il y ait quelque chose À TRAVERS.**
+     Sur un aplat uni, un verre à 85 % et un plein se ressemblent — on ne
+     jugerait rien. La bande est du décor de maquette ; elle ne va pas dans
+     l'application. */
+  /* **Flouté, et resserré derrière le bouton.** Première version écartée :
+     des bandes nettes qui traversaient tout, jusqu'à couper « Aperçu du PDF ».
+     On regardait les barres au lieu du verre — et sur un écran de maquette,
+     ce qui distrait vaut un défaut. */
+  .derriere{position:absolute;left:-12%;right:-12%;height:62px;
+            margin-top:-6px;pointer-events:none;
+            background:linear-gradient(105deg,
+              rgba(var(--pin),.05) 0%, var(--or) 26%,
+              rgba(var(--pin),.06) 46%, rgba(var(--pin),.42) 68%,
+              rgba(var(--pin),.05) 92%);
+            opacity:.34;filter:blur(13px)}
+
+  .capsule{position:relative;display:inline-flex;align-items:center;
+           justify-content:center;padding:13px 36px;font-size:17px;
+           border-radius:9999px;font-family:Georgia,"Times New Roman",serif;
+           cursor:pointer;color:var(--surPlein);
+           border:1.5px solid var(--bord,transparent);
+           background:
+             linear-gradient(180deg,var(--eclat,transparent) 0%,transparent 58%),
+             rgba(var(--pin),var(--alpha,1));
+           box-shadow:var(--ombre,none);
+           -webkit-backdrop-filter:var(--flou,none);
+           backdrop-filter:var(--flou,none)}
+  .centre{display:flex;justify-content:center;position:relative}
+  .secondaire{display:block;text-align:center;margin-top:14px;font-size:14px;
+              color:var(--gris);text-decoration:underline;
+              text-underline-offset:4px;position:relative}
+
+  /* Les trois verres : même vert, même texte, seule l'opacité descend. */
+  #n:checked~.tel,#q:checked~.tel,#h:checked~.tel{
+    --eclat:var(--reflet); --bord:var(--lisere);
+    --ombre:0 8px 20px var(--porte), inset 0 1px 0 rgba(255,255,255,.22);
+    --flou:blur(6px) saturate(1.08)}
+  #n:checked~.tel{--alpha:.90}
+  #q:checked~.tel{--alpha:.85}
+  #h:checked~.tel{--alpha:.80}
+
+  .mesure{margin:12px 0 0;font-size:12.5px;line-height:1.6;color:var(--gris)}
+  .mesure b{color:var(--encre);font-weight:600}
+  .mesure .bloc{display:none}
+  #p:checked~.mesure .mp,#n:checked~.mesure .mn,#q:checked~.mesure .mq,
+  #h:checked~.mesure .mh{display:block}
+
+  .note{margin:32px 0 0;padding:15px 16px;background:var(--papier);
+        border:1px solid var(--trait);border-radius:12px;font-size:13px;
+        line-height:1.65;color:var(--gris)}
+  .note .t{display:block;font-size:11px;letter-spacing:.13em;
+           text-transform:uppercase;color:var(--or);margin-bottom:7px}
+  .note b{color:var(--encre);font-weight:600}
+</style>
+
+<div class="dedans">
+
+<h1>Le bouton en verre</h1>
+<p class="intro">Le <b>vert d’aujourd’hui</b>, inchangé — c’est l’opacité qu’on
+enlève. <b>Touchez les quatre mots</b> : la bande derrière le bouton est là
+exprès, pour que vous voyiez ce qui passe à travers.</p>
+
+<p class="dit">Le 26 août 2026 : <b>« fais-moi un verre mais avec la couleur
+actuelle »</b>.</p>
+
+<span class="quoi">L’épaisseur du verre</span>
+
+<input class="etat" type="radio" name="v" id="p">
+<input class="etat" type="radio" name="v" id="n" checked>
+<input class="etat" type="radio" name="v" id="q">
+<input class="etat" type="radio" name="v" id="h">
+
+<div class="choix">
+  <label for="p">Plein, aujourd’hui</label>
+  <label for="n">Verre 90 %</label>
+  <label for="q">Verre 85 %</label>
+  <label for="h">Verre 80 %</label>
+</div>
+
+<div class="tel">
+  <p class="surtitre">Mon devis</p>
+  <h2>Mme Renard</h2>
+  <div class="carte">
+    <div class="ligne"><span>Taille de haie, 24 m</span><b>360,00 €</b></div>
+    <div class="ligne"><span>Évacuation</span><b>90,00 €</b></div>
+    <div class="ligne total"><span>Total TTC</span><b>540,00 €</b></div>
+  </div>
+  <div class="derriere" aria-hidden="true"></div>
+  <div class="centre"><button class="capsule" type="button">Créer la facture</button></div>
+  <a class="secondaire" href="#">Aperçu du PDF</a>
+</div>
+
+<div class="mesure">
+  <div class="bloc mp"><b>Plein, aujourd’hui.</b> Aucune transparence, aucun
+  reflet, aucune ombre. C’est ce que vous avez sous les yeux — <b>11,15:1</b>,
+  et c’est ce que vous trouvez trop opaque.</div>
+
+  <div class="bloc mn"><b>Verre 90 %.</b> À peine transparent : on devine ce
+  qui passe dessous. Le reflet et l’ombre font le plus gros du travail.
+  <b>6,23:1</b> au point le plus clair.</div>
+
+  <div class="bloc mq"><b>Verre 85 %.</b> Le milieu. Le fond se lit franchement
+  à travers, le vert reste le vert. <b>5,39:1</b>.</div>
+
+  <div class="bloc mh"><b>Verre 80 %.</b> Le plus léger qui reste lisible au
+  soleil — <b>4,66:1</b>, tout juste au-dessus du minimum. En dessous, le texte
+  crème commence à se perdre : c’est pour ça qu’il n’y a pas de cinquième.</div>
+</div>
+
+<div class="note"><span class="t">Trois choses à savoir</span>
+<b>La couleur ne change pas.</b> C’est exactement le vert d’aujourd’hui, posé
+avec de la transparence. Rien d’autre n’a bougé : même forme, même taille, même
+police.
+<br><br>
+<b>Le mode sombre suit.</b> Là-bas le vert devient clair et le texte sombre —
+un verre vert foncé sur une page noire ne serait pas transparent, il serait
+absent. Basculez votre téléphone pour voir.
+<br><br>
+<b>La bande derrière est du décor de maquette</b>, pour juger la transparence.
+Elle n’ira pas dans l’application. Et cette page ne touche <b>ni à vos données
+ni à l’application</b> : rien n’est codé tant que vous n’avez pas choisi.
+</div>
+
+</div>
