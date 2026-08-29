@@ -181,6 +181,42 @@ chantier : ouvrez-le » était exactement ce qu'il reproche depuis le 25 août.
 La suite qui exigeait ce libellé mot pour mot a rougi sur une demande exaucée :
 elle vise désormais la règle, pas la phrase (`CLAUDE.md` §5 bis).
 
+### Lui parler, et lui montrer une photo
+
+**Sa demande du 27 août 2026 : « fais la 1 et la 4 »**, sur les cinq pistes
+proposées pour l'assistant.
+
+**Le micro remplit le champ, il n'envoie rien.** C'est la règle de la dictée
+depuis le 7 août : il relit avant que ça parte. Une question mal entendue qui
+partirait seule pourrait viser le mauvais client. La dictée **s'ajoute** à ce
+qui est déjà tapé plutôt que de l'écraser, et elle ne passe **pas** par le
+modèle — ce qu'il a dit, tel quel : faire « améliorer » sa phrase, c'est risquer
+de changer un nom.
+
+**La photo est LUE, puis la lecture entre dans la conversation.**
+`genererAvecOutils` ne sait pas porter d'image, et le dépôt fait déjà ainsi
+depuis le 13 août pour le ticket de caisse. La consigne demande de **recopier
+mot pour mot** chiffres et références : un résumé perd exactement ce qui sert.
+
+**Trois choses qui ne se négocient pas :**
+
+- la photo passe par **la porte commune** (`photo-entrante.ts`) : ses
+  métadonnées — dont les coordonnées GPS du jardin d'un client — sont retirées
+  avant tout envoi chez un tiers, et un fichier qu'on ne sait pas nettoyer est
+  refusé. Rien n'est stocké : la photo est lue, puis oubliée ;
+- ce qu'elle donne à lire entre comme une **donnée**, jamais comme une consigne,
+  et **avant** sa question — une étiquette photographiée peut ressembler à un
+  ordre, et sa question doit rester la dernière chose lue ;
+- **le périmètre lit SA question**, pas la photo : une affiche de cinéma ne fait
+  pas répondre l'assistant sur les horaires d'un cinéma.
+
+**Ce qui n'a PAS pu être éprouvé ici, et il faut le dire :** la lecture d'une
+vraie photo par un vrai fournisseur. Ce poste n'a aucune clé (`CLAUDE.md`
+§1 ter) ; les contrôles posent un fournisseur d'essai par la couture prévue et
+tiennent ce qui nous appartient — le refus propre quand la vision manque, la
+place de la lecture, le périmètre. **La dictée, elle, est éprouvée ici de bout
+en bout.** La chaîne complète avec une photo se vérifie **sur son espace**.
+
 ### Une maquette : quand l'assistant parle le premier
 
 Sa deuxième piste retenue. Elle demande **où** il prend la parole, donc une

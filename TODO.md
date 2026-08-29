@@ -392,6 +392,25 @@ TEXTE des messages — le nom du client, celui de ses chantiers. C'est faisable
 et ce n'est pas anodin (un nom courant balaierait des échanges sans rapport) :
 à trancher avant de coder, pas en codant.
 
+## ⚠ La lecture d'une photo par l'assistant n'a pas été vue sur un VRAI fournisseur
+
+**Livré le 27 août 2026**, et éprouvé ici par un fournisseur d'essai posé par la
+couture (`_reinitialiserFabriqueLLM`) — ce poste n'a aucune clé (`CLAUDE.md`
+§1 ter). Ce qui est tenu ici : le refus propre quand la vision manque, la
+lecture vide qui n'est pas un succès, la panne du fournisseur qui remonte SA
+raison, la place de la lecture dans la conversation, le périmètre.
+
+**Ce qui reste à voir sur son espace**, et c'est le cœur : qu'une vraie photo —
+un devis de fournisseur, une plaque, un relevé — soit lue avec ses CHIFFRES.
+C'est là que tout se joue : un résumé qui perd « 12 ml à 18 €/ml » ne sert à
+rien. **Lui demander une capture** du résultat plutôt qu'une commande.
+
+**Et ce que le fil ne garde pas** : la lecture d'une photo part avec la question
+mais n'est pas rangée dans le fil. Après un rechargement, la conversation garde
+sa question, pas ce que la photo montrait. C'est délibéré — le fil est plafonné
+à trente messages et une lecture de photo est longue —, mais il faudra le
+revoir s'il s'en plaint.
+
 ## ⚠ Une proposition ne revient pas après un rechargement
 
 **Depuis le 27 août 2026**, le fil de l'assistant survit au rechargement — mais

@@ -89,6 +89,36 @@ async function main() {
     if (reste > 0) throw new Error("la question effacée est revenue du serveur");
   });
 
+  await cas("LE MICRO ET L'APPAREIL PHOTO sont là, et le champ garde sa place", async () => {
+    /**
+     * Sa demande du 27 août 2026 : *« fais la 1 et la 4 »* — lui parler, et lui
+     * montrer une photo.
+     *
+     * **Ce que ce cas défend, et qu'aucun test de logique ne peut défendre :**
+     * que les deux boutons tiennent SANS écraser le champ. Trois boutons dans
+     * une barre de 390 px, c'est exactement la situation où un champ se réduit
+     * à rien — et le patron ne pourrait plus écrire sa question.
+     */
+    // **Le panneau est déjà ouvert par le cas précédent.** Cliquer « Ouvrir »
+    // attendait alors quarante-cinq secondes un bouton qui dit « Fermer » —
+    // un rouge qui accusait la barre de saisie d'un défaut qu'elle n'avait pas.
+    const ouvrir = page.locator('button[aria-label="Ouvrir l\'assistant"]');
+    if ((await ouvrir.count()) > 0) await ouvrir.first().click();
+    const micro = page.locator('[data-atlas="micro-assistant"]');
+    const photo = page.locator('[data-atlas="photo-assistant"]');
+    await micro.waitFor({ state: "visible", timeout: 20_000 });
+    if (!(await photo.isVisible())) throw new Error("l'appareil photo n'est pas là");
+
+    const champ = await page.locator('input[placeholder="Votre question…"]').boundingBox();
+    // **Refuser de conclure sur une boîte de zéro pixel** (`CLAUDE.md` §5) :
+    // une mise en page pas encore appliquée rendrait 0, et « 0 ≥ 0 » passerait
+    // au vert sur un champ écrasé.
+    if (!champ || champ.width === 0) throw new Error("le champ n'a pas de largeur mesurable");
+    if (champ.width < 140) {
+      throw new Error(`le champ de la question est écrasé à ${Math.round(champ.width)} px par les deux boutons`);
+    }
+  });
+
   await navigateur.close();
   await pool.end();
   console.log(`\n${echecs === 0 ? "✅" : "❌"} Le fil survit au rechargement — ${echecs} échec(s).`);

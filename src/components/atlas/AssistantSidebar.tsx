@@ -5,7 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { colors, font, surPlein } from "@/lib/design-tokens";
 import { useAssistant } from "./assistant-contexte";
 import { rendreMarkdownSimple } from "./rendreMarkdownSimple";
-import { poserQuestionAction, lireFilAction, viderFilAction } from "@/app/assistant/actions";
+import { poserQuestionAction, lireFilAction, viderFilAction, dicterQuestionAction, regarderPhotoAction } from "@/app/assistant/actions";
 import { appliquerPropositionsAction } from "@/app/chantiers/[id]/informations/actions";
 import type { ResultatApplicationProposition, ResultatConfirmation } from "@/server/ai/propositions";
 import type { PropositionAvecId } from "@/server/ai/services/assistant-service";
@@ -43,6 +43,13 @@ export default function AssistantSidebar() {
   const [enCours, setEnCours] = useState(false);
   // Un ref, pas un état : relire le fil ne doit pas provoquer un rendu de plus.
   const filRelu = useRef(false);
+  /** Ce qu'une photo montrée a donné à lire — parti avec la prochaine question. */
+  const [observation, setObservation] = useState<string | null>(null);
+  const [dictee, setDictee] = useState<"repos" | "enregistre" | "traite">("repos");
+  const [photoEnCours, setPhotoEnCours] = useState(false);
+  const [souci, setSouci] = useState<string | null>(null);
+  const recorder = useRef<MediaRecorder | null>(null);
+  const morceaux = useRef<Blob[]>([]);
   const finListeRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -73,20 +80,106 @@ export default function AssistantSidebar() {
     });
   }, [ouvert]);
 
+  /**
+   * DICTER — le micro remplit le champ, il n'envoie rien.
+   *
+   * **Sa demande du 27 août 2026 : « fais la 1 ».** Le geste est celui de
+   * `DicterCoordonnees` (7 août), et la règle avec : *elle remplit, elle ne
+   * valide pas*. Une question mal entendue qui partirait toute seule pourrait
+   * déclencher une proposition sur le mauvais client.
+   *
+   * **La piste se relâche à l'arrêt**, sinon le voyant du micro reste allumé
+   * sur le téléphone et l'on se croit encore écouté.
+   */
+  async function dicter() {
+    if (dictee === "enregistre") {
+      recorder.current?.stop();
+      recorder.current = null;
+      setDictee("traite");
+      return;
+    }
+    setSouci(null);
+    try {
+      const flux = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const mr = new MediaRecorder(flux);
+      morceaux.current = [];
+      mr.ondataavailable = (e) => {
+        if (e.data.size > 0) morceaux.current.push(e.data);
+      };
+      mr.onstop = async () => {
+        flux.getTracks().forEach((t) => t.stop());
+        const blob = new Blob(morceaux.current, { type: mr.mimeType || "audio/webm" });
+        try {
+          const fd = new FormData();
+          fd.set("fichier", new File([blob], "question.webm", { type: blob.type || "audio/webm" }));
+          const r = await dicterQuestionAction(fd);
+          if (r.ok) {
+            // **On AJOUTE à ce qui est déjà écrit.** Écraser une phrase
+            // commencée au clavier serait la pire façon d'aider.
+            setSaisie((cur) => (cur.trim() ? `${cur.trim()} ${r.texte}` : r.texte));
+          } else {
+            setSouci(r.raison);
+          }
+        } catch {
+          setSouci("La dictée n'a pas abouti. Vous pouvez écrire votre question.");
+        } finally {
+          setDictee("repos");
+        }
+      };
+      mr.start();
+      recorder.current = mr;
+      setDictee("enregistre");
+    } catch {
+      setSouci("Le micro n'est pas accessible. Vérifiez l'autorisation dans votre navigateur.");
+      setDictee("repos");
+    }
+  }
+
+  /**
+   * MONTRER UNE PHOTO — elle est lue tout de suite, et la lecture attend la
+   * question.
+   *
+   * **Lue au moment où il la choisit, pas à l'envoi** : il voit immédiatement
+   * si elle a été comprise, et peut la reprendre avant d'écrire sa question.
+   * Attendre l'envoi, c'est lui faire taper une phrase pour rien.
+   */
+  async function montrerPhoto(fichier: File) {
+    setSouci(null);
+    setPhotoEnCours(true);
+    try {
+      const fd = new FormData();
+      fd.set("photo", fichier);
+      const r = await regarderPhotoAction(fd);
+      if (r.ok) setObservation(r.lecture);
+      else setSouci(r.raison);
+    } catch {
+      setSouci("La photo n'a pas pu être regardée.");
+    } finally {
+      setPhotoEnCours(false);
+    }
+  }
+
   async function oublier() {
     setMessages([]);
     await viderFilAction();
   }
 
   async function envoyer() {
-    const question = saisie.trim();
+    // **Une photo seule vaut une question.** Il la montre et attend qu'on lui
+    // dise ce qu'on y voit ; exiger une phrase serait lui faire taper « c'est
+    // quoi ? » à chaque fois.
+    const question = saisie.trim() || (observation ? "Que vois-tu sur cette photo ?" : "");
     if (!question || enCours) return;
     setSaisie("");
     const historiquePourAction = messages.map((m) => ({ role: m.role, contenu: m.contenu }));
     setMessages((cur) => [...cur, { role: "user", contenu: question }]);
     setEnCours(true);
     try {
-      const reponse = await poserQuestionAction(chantierId, historiquePourAction, question);
+      // **L'observation part AVEC la question, et une seule fois.** La garder
+      // ferait relire la photo à chaque phrase suivante, et le modèle
+      // répondrait à un cliché qu'il ne regarde plus.
+      const reponse = await poserQuestionAction(chantierId, historiquePourAction, question, observation ?? undefined);
+      setObservation(null);
       if (reponse.succes) {
         setMessages((cur) => [
           ...cur,
@@ -298,7 +391,71 @@ export default function AssistantSidebar() {
               </div>
             </div>
 
+            {/* **Ce qui s'est passé se DIT, à l'endroit où ça se passe.** Un
+                micro qui ne prend pas, une photo refusée : sans un mot, l'écran
+                a l'air en panne (`AGENTS.md`, le défaut muet). */}
+            {(observation || souci || photoEnCours || dictee !== "repos") && (
+              <div className="border-t px-3 pt-2 text-[12.5px]" style={{ borderColor: colors.line, color: colors.muted }}>
+                {dictee === "enregistre" && <span data-atlas="dictee-en-cours">Je vous écoute — appuyez à nouveau pour arrêter.</span>}
+                {dictee === "traite" && <span>Transcription…</span>}
+                {photoEnCours && <span data-atlas="photo-en-cours">Je regarde la photo…</span>}
+                {observation && !photoEnCours && (
+                  <span data-atlas="photo-lue" className="flex items-center gap-2">
+                    <span className="flex-1">Photo lue — elle part avec votre question.</span>
+                    <button onClick={() => setObservation(null)} className="underline" style={{ color: colors.muted }}>
+                      Retirer
+                    </button>
+                  </span>
+                )}
+                {souci && <span data-atlas="souci-assistant" style={{ color: colors.alert }}>{souci}</span>}
+              </div>
+            )}
+
             <div className="flex items-center gap-2 border-t px-3 py-3" style={{ borderColor: colors.line }}>
+              {/* **Le micro et l'appareil photo, à gauche du champ.** Discrets,
+                  sans libellé : ce sont des raccourcis pour qui a les mains
+                  prises, pas l'action principale de l'écran. */}
+              <button
+                onClick={dicter}
+                disabled={enCours || dictee === "traite"}
+                aria-label={dictee === "enregistre" ? "Arrêter la dictée" : "Dicter la question"}
+                data-atlas="micro-assistant"
+                className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full disabled:opacity-40"
+                style={{ backgroundColor: dictee === "enregistre" ? colors.rust : colors.card }}
+              >
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" strokeWidth="1.8"
+                     style={{ stroke: dictee === "enregistre" ? surPlein : colors.ink }}>
+                  <path d="M12 15a3 3 0 0 0 3-3V6a3 3 0 0 0-6 0v6a3 3 0 0 0 3 3z" />
+                  <path d="M19 11a7 7 0 0 1-14 0M12 18v3" />
+                </svg>
+              </button>
+
+              <label
+                aria-label="Montrer une photo"
+                data-atlas="photo-assistant"
+                className="flex h-10 w-10 flex-shrink-0 cursor-pointer items-center justify-center rounded-full"
+                style={{ backgroundColor: colors.card }}
+              >
+                {/* `capture` : sur un téléphone, l'appareil s'ouvre directement.
+                    `accept` reste large — un iPhone rend du HEIC, et la porte
+                    d'entrée sait le refuser avec un message qui se comprend. */}
+                <input
+                  type="file"
+                  accept="image/*"
+                  capture="environment"
+                  className="hidden"
+                  onChange={(e) => {
+                    const f = e.target.files?.[0];
+                    e.target.value = "";
+                    if (f) void montrerPhoto(f);
+                  }}
+                />
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" strokeWidth="1.8" style={{ stroke: colors.ink }}>
+                  <path d="M3 8h3l2-2h8l2 2h3v11H3z" />
+                  <circle cx="12" cy="13" r="3.2" />
+                </svg>
+              </label>
+
               <input
                 value={saisie}
                 onChange={(e) => setSaisie(e.target.value)}
@@ -311,7 +468,7 @@ export default function AssistantSidebar() {
               />
               <button
                 onClick={envoyer}
-                disabled={enCours || !saisie.trim()}
+                disabled={enCours || (!saisie.trim() && !observation)}
                 aria-label="Envoyer"
                 className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full disabled:opacity-40"
                 style={{ backgroundColor: colors.rust }}

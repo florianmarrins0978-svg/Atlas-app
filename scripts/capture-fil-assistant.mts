@@ -34,5 +34,11 @@ await page.waitForSelector('input[placeholder="Votre question…"]', { timeout: 
 await page.waitForTimeout(900);
 await page.screenshot({ path: `${DOSSIER}/fil-apres-rechargement.png` });
 
+// **Le micro et l'appareil photo — sa demande du 27 août 2026.** Capturés dans
+// la barre de saisie, là où ils vivent : c'est la seule façon de voir s'ils
+// tiennent sans pousser le champ hors de l'écran.
+const barre = page.locator('[data-atlas="micro-assistant"]').locator("xpath=..");
+await barre.screenshot({ path: `${DOSSIER}/barre-micro-et-photo.png` });
+
 await navigateur.close();
 console.log(`Capture dans ${DOSSIER}/fil-apres-rechargement.png`);

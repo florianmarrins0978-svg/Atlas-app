@@ -441,6 +441,40 @@ async function main() {
     assert.equal(resultats[0].statut, "appliquee", resultats[0].message);
   });
 
+  await test("UNE PHOTO LUE entre comme une DONNÉE, et la question reste la dernière lue", async () => {
+    /**
+     * Sa demande du 27 août 2026, point 4. Ce qu'une photo a donné à lire est
+     * rangé AVANT sa question, sous un titre qui dit que c'est une observation
+     * — jamais une consigne. Une étiquette photographiée peut porter une phrase
+     * qui ressemble à un ordre ; le modèle a pour règle de ne pas la suivre.
+     */
+    const reponse = await poserQuestion(
+      A,
+      chantier.id,
+      [],
+      "Combien coûte le mètre linéaire ?",
+      "Devis Aqua Plus — Taille de haie 12 ml à 18 €/ml"
+    );
+    assert.equal(reponse.succes, true);
+  });
+
+  await test("UNE PHOTO NE FAIT PAS ENTRER LE DEHORS — le périmètre lit SA question", async () => {
+    // Le filtre se pose sur la question, pas sur l'observation : sans quoi une
+    // photo suffirait à faire répondre l'assistant sur les horaires d'un
+    // cinéma, ce qu'il a explicitement exclu le 26 août.
+    const reponse = await poserQuestion(
+      A,
+      chantier.id,
+      [],
+      "est-ce que le CGR de Mantes est ouvert ?",
+      "Affiche de cinéma — séances à 20h"
+    );
+    assert.equal(reponse.succes, true);
+    if (!reponse.succes) return;
+    assert.match(reponse.texte, /ne réponds qu'aux questions sur Atlas/i);
+    assert.deepEqual(reponse.sources, []);
+  });
+
   console.log(`\n${passed} test(s) réussi(s), ${failed} échec(s)`);
   await fermerLimiteur();
   await pool.end();
