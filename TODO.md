@@ -9,6 +9,53 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
+## ⚠ Les deux suites du veilleur rougissent quand un `next build` traîne — DIAGNOSTIQUÉ, non corrigé (29 août 2026)
+
+**Symptôme.** `test-relance-construction.ts` et `test-fiche-pendant-relance.ts`
+rougissent en disant *« le veilleur n'a rien retenté — il a appelé : rien du
+tout »* et *« le montage ne reproduit pas le cas réel »*. Jouées seules elles
+passent. C'est le motif exact d'une suite qu'on classe « aléatoire » à tort.
+
+**La cause, mesurée et non supposée.** `veiller.sh` ligne 258 :
+
+```bash
+if ! pgrep -f '[n]ext build' >/dev/null 2>&1; then
+```
+
+`pgrep` balaie **toute la machine**, pas les processus de la suite. N'importe
+quel processus dont la ligne de commande contient « next build » fait donc
+sauter la relance, et les trois cas qui l'attendent mesurent zéro — pendant que
+les deux cas qui attendent l'ABSENCE de relance passent. Ce partage-là est la
+signature : cas 1, 3 et 4 rouges, cas 2 et 5 verts.
+
+**Comment ça a été établi.** Le veilleur lui-même a été chronométré hors suite :
+première relance en **39 ms**, trois fois sur trois — le budget de 3 500 ms de
+la suite est donc très large, et le temps n'y est pour rien. Puis un processus
+nommé `next build` a été posé à côté délibérément : les trois mêmes cas
+rougissent. Retiré, les suites passent 3/3.
+
+**Pourquoi il est apparu maintenant.** Deux batteries jouées le même soir :
+
+| | Étape Construction | Les deux suites |
+|---|---|---|
+| avant nettoyage des sorties de build | ❌ (validateur périmé) — aucun `next build` n'a tourné | **vertes**, 274/274 |
+| après nettoyage | ✅ — un vrai `next build` a tourné | **rouges**, 273/275 |
+
+Réparer la construction a donc rendu ces deux suites rouges. C'est
+contre-intuitif, et c'est exactement pourquoi ça mérite d'être écrit.
+
+**Ce qui reste à décider, et n'a PAS été fait** — hors du lot dictée → devis,
+et le patron a demandé le 29 août de ne pas corriger au passage ce qui n'a pas
+de rapport. Deux pistes : donner au veilleur un motif détournable pour les
+épreuves (comme `ATLAS_TEMOIN_ECHEC` l'est déjà), ou restreindre la recherche
+aux processus du même groupe. La première est plus simple et suit une habitude
+déjà prise dans ce fichier.
+
+**Sans rapport avec la chaîne dictée → devis** : ces suites éprouvent le
+veilleur du banc, rien d'autre.
+
+---
+
 ## La batterie ne tient plus en un seul serveur — NON DIAGNOSTIQUÉ (27 août 2026)
 
 **Mesuré, pas supposé.** Relevé de la mémoire du serveur toutes les cinq
