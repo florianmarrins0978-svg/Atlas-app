@@ -158,6 +158,35 @@ async function main() {
   const essai = new Pool({ connectionString: urlEssai.toString() });
   const prod = new Pool({ connectionString: source });
 
+  /**
+   * L'adresse de la base d'essai **sous le rôle applicatif**.
+   *
+   * **Le mot de passe ne s'invente pas ici.** La première version le codait en
+   * dur — celui de la CI. Sur le banc, ça marche. Ailleurs, le mot de passe est
+   * autre, et les trois contrôles qui dépendent du rôle applicatif — isolation,
+   * droits, M9 — auraient échoué sur une connexion refusée, en accusant la
+   * restauration d'un défaut qui n'existe pas. Un outil qui ne tourne que sur
+   * la machine où on l'a écrit ne protège de rien.
+   *
+   * On prend donc les identifiants dans `DATABASE_URL` — celle de
+   * l'application, qui porte déjà son rôle et son mot de passe — et l'on n'en
+   * garde QUE ça : le serveur et la base restent ceux de l'essai.
+   */
+  const adresseApplicative = (() => {
+    const depuis = process.env.DATABASE_URL;
+    if (!depuis) return null;
+    try {
+      const u = new URL(depuis);
+      if (!u.username) return null;
+      const cible = new URL(urlEssai.toString());
+      cible.username = u.username;
+      cible.password = u.password;
+      return cible.toString();
+    } catch {
+      return null;
+    }
+  })();
+
   // `getEnv()` la réclame, et on l'a : c'est celle qu'on vient d'employer.
   process.env.DATABASE_URL ??= source;
   let secret: ModuleSecret | null = null;
@@ -259,9 +288,12 @@ async function main() {
       [idVoisine]
     );
 
-    const p = new Pool({
-      connectionString: urlEssai.toString().replace(/\/\/[^@]+@/, "//atlas_app:atlas_app_ci_pw@"),
-    });
+    assert.ok(
+      adresseApplicative,
+      "DATABASE_URL n'est pas posée : impossible de se connecter sous le rôle " +
+        "applicatif. Ce n'est pas un vert, c'est une mesure impossible."
+    );
+    const p = new Pool({ connectionString: adresseApplicative });
     try {
       const c = await p.connect();
       try {
@@ -304,9 +336,12 @@ async function main() {
 
   // ─── G. M9 : le condensat du mot de passe ──────────────────────────────────
   await controle("M9 TIENT — atlas_app ne peut PAS lire le condensat du mot de passe", async () => {
-    const p = new Pool({
-      connectionString: urlEssai.toString().replace(/\/\/[^@]+@/, "//atlas_app:atlas_app_ci_pw@"),
-    });
+    assert.ok(
+      adresseApplicative,
+      "DATABASE_URL n'est pas posée : impossible de se connecter sous le rôle " +
+        "applicatif. Ce n'est pas un vert, c'est une mesure impossible."
+    );
+    const p = new Pool({ connectionString: adresseApplicative });
     try {
       let refuse = false;
       try {

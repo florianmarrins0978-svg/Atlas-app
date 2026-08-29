@@ -37,8 +37,34 @@ if [ "${ATLAS_SANS_PGDUMP:-}" = "1" ] || ! command -v pg_dump > /dev/null 2>&1; 
   cd "$CD" && exec node scripts/sauvegarder-banc.mjs
 fi
 
+# ─────────────────────────────────────────────────────────────────────────────
+# **LE CHEMIN SANS SUPERUTILISATEUR — celui de Scaleway.**
+#
+# Un PostgreSQL géré ne donne PAS de superutilisateur. Or `pg_dump` désactive la
+# RLS par défaut et refuse la copie dès qu'une politique s'applique : sur
+# Scaleway, la sauvegarde d'Atlas serait donc tout simplement IMPOSSIBLE.
+#
+# La parade, mesurée le 27 août 2026 et qui ne demande aucun privilège spécial :
+#   1. un rôle dédié `atlas_sauvegarde`, sans superutilisateur ni BYPASSRLS ;
+#   2. une politique de LECTURE posée par le propriétaire des tables :
+#        CREATE POLICY sauvegarde_lit_tout ON <table>
+#          FOR SELECT TO atlas_sauvegarde USING (true);
+#   3. `--enable-row-security`, pour que pg_dump accepte de copier.
+#
+# **ET LA VÉRIFICATION DES COMPTES DEVIENT VITALE.** Dans ce mode, pg_dump
+# n'échoue plus : il copie ce que le rôle voit. Sans la politique de l'étape 2,
+# il rendrait un fichier plausible amputé de 28 % — code 0, bonne taille, pas un
+# mot. C'est `_compter-lignes-sauvegarde.sh` qui l'attrape, et lui seul.
+if [ "${ATLAS_SAUVEGARDE_RLS:-}" = "1" ]; then
+  OPTIONS_DUMP=(--enable-row-security)
+  echo "→ Mode sans superutilisateur (--enable-row-security)."
+  echo "   Les comptes seront confrontés à la base : c'est ce mode qui l'exige."
+else
+  OPTIONS_DUMP=()
+fi
+
 echo "→ Copie de la base en cours…"
-if ! pg_dump "$URL" > "$FICHIER" 2> /tmp/sauvegarde-banc.err; then
+if ! pg_dump "${OPTIONS_DUMP[@]}" "$URL" > "$FICHIER" 2> /tmp/sauvegarde-banc.err; then
   echo "❌ La copie a échoué. Ce que PostgreSQL a répondu :"
   sed 's/^/   /' /tmp/sauvegarde-banc.err | head -5
   rm -f "$FICHIER"
@@ -98,20 +124,19 @@ if [ "$LIGNES_DONNEES" -eq 0 ]; then
   exit 1
 fi
 
-# **Et on confronte au vivant.** Un fichier peut porter des lignes et en avoir
-# perdu la moitié. On compare donc à ce que la base annonce, sur une table qui
-# ne ment pas : celle des migrations, présente sur toute base d'Atlas.
-MIGRATIONS_EN_BASE=$(psql "$URL" -tAc "SELECT count(*) FROM _migrations" 2>/dev/null | tr -d ' ')
-MIGRATIONS_DANS_LE_FICHIER=$(awk '
-  /^COPY public\._migrations .* FROM stdin;$/ { dedans = 1; next }
-  /^\\\.$/                                  { dedans = 0; next }
-  dedans                                       { n++ }
-  END                                          { print n + 0 }
-' "$FICHIER")
-if [ -n "$MIGRATIONS_EN_BASE" ] && [ "$MIGRATIONS_EN_BASE" != "$MIGRATIONS_DANS_LE_FICHIER" ]; then
-  echo "❌ La sauvegarde ne porte pas toutes les migrations."
-  echo "   En base : $MIGRATIONS_EN_BASE — dans le fichier : $MIGRATIONS_DANS_LE_FICHIER."
-  echo "   Restaurée telle quelle, elle rendrait une base que le code ne reconnaît pas."
+# **ET ON CONFRONTE AU VIVANT, TABLE PAR TABLE.**
+#
+# Le compte global ci-dessus attrape le fichier VIDE. Il n'attrape pas le
+# fichier AMPUTÉ, et c'est le cas dangereux — mesuré le 27 août 2026 :
+# `pg_dump --enable-row-security` sous un rôle qui ne voit qu'une partie des
+# lignes rend un fichier de 223 Ko, code de sortie 0, **136 lignes sur 189**.
+# Bonne taille, bon code, 28 % des données en moins, et pas un mot.
+#
+# Le seul contrôle qui le voit compare chaque table à la base vivante.
+if ! bash "$CD/scripts/_compter-lignes-sauvegarde.sh" "$FICHIER" "$URL"; then
+  echo
+  echo "   Le fichier est effacé plutôt que gardé sous un nom qui promet"
+  echo "   une sauvegarde."
   rm -f "$FICHIER"
   exit 1
 fi
@@ -119,7 +144,7 @@ fi
 echo
 echo "  ─────────────────────────────────────────────────────────────"
 echo "   Sauvegarde faite : $(basename "$FICHIER")"
-echo "   $(du -h "$FICHIER" | cut -f1), $LIGNES_DONNEES lignes de données, $MIGRATIONS_DANS_LE_FICHIER migrations."
+echo "   $(du -h "$FICHIER" | cut -f1), $LIGNES_DONNEES lignes de données, confrontées à la base."
 echo "   Elle est à la racine, dans la liste de gauche."
 echo
 echo "   Pour l'emporter : appui long sur le fichier → « Télécharger »."
