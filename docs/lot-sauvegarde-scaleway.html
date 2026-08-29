@@ -59,6 +59,7 @@
 <main>
 <h1 id="atlas--sauvegarde-et-restauration-chez-scaleway">Atlas — sauvegarde et restauration chez Scaleway</h1>
 <p><em>27 août 2026. L'hébergeur est tranché : <strong>Scaleway</strong>. Ce document remplace la partie « où héberger » de <code>docs/lot-sauvegarde-analyse.md</code> ; tout le reste de ce rapport-là reste valable et n'est pas répété ici.</em></p>
+<blockquote>## ⚠ Document dépassé sur deux points — lire <code>docs/lot-sauvegarde-cloture.md</code>  L'audit du 29 août 2026 a corrigé deux choses <strong>fausses</strong> ci-dessous. La numérotation <code>SCW-…</code> de ce document n'est plus la bonne non plus : celle qui fait foi est dans le document de clôture.  | Ce qui est écrit ici | Ce qui est vrai | |---|---| | <strong>§4 et SCW-06</strong> : la copie logique « doit se faire avec un rôle <strong>superutilisateur</strong> » | <strong>Faux, et inapplicable chez Scaleway</strong>, qui n'en donne aucun. Il faut un rôle dédié <code>atlas_sauvegarde</code> sans privilèges, des politiques de lecture, et <code>--enable-row-security</code> | | <strong>SCW-15</strong> : la copie logique horaire est « obligatoire <strong>si</strong> Block Storage » | Elle est <strong>obligatoire dans tous les cas</strong> — c'est elle qui porte le RPO d'une heure, quel que soit le volume |  Le reste — capacités de Scaleway, absence de PITR, Object Lock, <code>AUTH_SECRET</code> — reste exact.</blockquote>
 <hr>
 <h2 id="lessentiel-en-cinq-lignes">L'essentiel, en cinq lignes</h2>
 <a class="retour" href="#sommaire">↑ Sommaire</a>
@@ -447,7 +448,8 @@
 </ol>
 <hr>
 <h1 id="9-les-décisions-à-prendre">9. Les décisions à prendre</h1>
-<h3 id="décision-1--local-storage-ou-block-storage-pour-la-base---à-prendre-avant-de-créer-linstance">Décision 1 — <strong>Local Storage ou Block Storage pour la base ?</strong> ⚠ à prendre AVANT de créer l'instance</h3>
+<h3 id="décision-1--local-storage-ou-block-storage-pour-le-volume-de-linstance---à-prendre-avant-de-créer-linstance">Décision 1 — <strong>Local Storage ou Block Storage pour le VOLUME DE L'INSTANCE ?</strong> ⚠ à prendre AVANT de créer l'instance</h3>
+<p><strong>Cette décision ne porte que sur l'instance PostgreSQL elle-même.</strong> Elle ne dit rien de l'endroit où sont rangés les fichiers <code>.sql.gz</code> de la copie logique : ces fichiers-là vont dans un <strong>compartiment de stockage objet</strong> (SCW-11 ci-dessous), et ni <em>Local Storage</em> ni <em>Block Storage</em> n'est un endroit où l'on range un fichier.</p>
 <div class="tablewrap"><table><thead><tr>
 <th></th>
 <th>Local Storage</th>
@@ -470,7 +472,7 @@
 </tr>
 </tbody></table></div>
 <p><strong>Ma recommandation : Local Storage</strong>, pour garder la capacité de télécharger une sauvegarde. C'est ce qui permet d'en garder une copie ailleurs.</p>
-<p><strong>Si tu préfères Block Storage</strong> pour la souplesse, ce n'est pas bloquant : la copie logique horaire du §4 remplit alors ce rôle, et devient <strong>obligatoire</strong> au lieu de recommandée.</p>
+<p><strong>Si tu préfères Block Storage</strong> pour la souplesse, ce n'est pas bloquant : la copie logique horaire du §4 remplit ce rôle. <em>(Elle est de toute façon obligatoire — voir l'avertissement en tête de document.)</em></p>
 <h3 id="décision-2--la-seconde-copie-va-t-elle-hors-de-scaleway-">Décision 2 — La seconde copie va-t-elle <strong>hors de Scaleway</strong> ?</h3>
 <div class="tablewrap"><table><thead><tr>
 <th></th>

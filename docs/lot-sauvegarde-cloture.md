@@ -16,7 +16,9 @@
 5. Un audit du lot a trouvé **trois défauts, dont un qui rendait tout le
    dispositif inapplicable chez Scaleway**. Corrigés et mesurés.
 
-**Verdict : PRÊT À IMPLÉMENTER.** Deux décisions restent au patron.
+**Verdict : PRÊT À IMPLÉMENTER.** Deux décisions restent au patron — **le volume
+de l'instance PostgreSQL** et **où va la seconde copie** (§13). Une troisième a
+été tranchée : les copies `.sql.gz` vont dans le **stockage objet**.
 
 ---
 
@@ -54,7 +56,24 @@ secret de restauration**, à conserver séparément et à **versionner**.
 La documentation de Scaleway n'est pas joignable depuis l'environnement de
 travail, mais **son code source est public sur GitHub** et a été lu directement.
 
-## PostgreSQL géré
+## ⚠ Trois choses différentes portent le mot « sauvegarde »
+
+Elles ont été confondues, et la confusion a produit une phrase fausse — corrigée
+au §13. Les nommer une fois évite de la refaire :
+
+| | Ce que c'est | Où ça vit | Qui le fait |
+|---|---|---|---|
+| **① l'instance** | la base PostgreSQL elle-même, et **le type de volume qui la porte** — *Local Storage* ou *Block Storage* | chez Scaleway, dans l'instance | Scaleway, choisi **à la création** |
+| **② les sauvegardes natives** | ce que Scaleway prend tout seul de ① — *backups* ou *snapshots* selon le volume de ① | dans la mécanique Scaleway, **pas dans un compartiment qu'on choisit** | Scaleway |
+| **③ les copies logiques Atlas** | des fichiers **`.sql.gz`** produits par `pg_dump`, une par heure | dans un **compartiment de stockage objet** verrouillé | nous (SCW-16) |
+
+**Ce que cela règle tout de suite :** *Local Storage* et *Block Storage* ne
+qualifient que ①. Ce ne sont **pas** des endroits où l'on range des fichiers, et
+la question « où mettre les `.sql.gz` » ne se pose donc jamais entre les deux :
+un `.sql.gz` est un objet, il va dans le **stockage objet** (③), et nulle part
+ailleurs.
+
+## PostgreSQL géré — ① et ②
 
 | | |
 |---|---|
@@ -65,17 +84,18 @@ travail, mais **son code source est public sur GitHub** et a été lu directemen
 | Export téléchargeable | oui |
 | **Restauration au point dans le temps (PITR)** | **NON** — absente de la documentation ; une demande publique existe depuis avril 2024 |
 
-**Un piège de configuration, non rattrapable après création :**
+**Un piège de configuration, non rattrapable après création.** Le type de volume
+de ① commande la forme de ② :
 
-| Volume | Sauvegarde | Téléchargeable |
+| Volume de **①** | Forme de **②** | ② est-elle téléchargeable ? |
 |---|---|---|
-| **Local Storage** | *backups* | **oui** |
-| Block Storage | *snapshots* | **non** |
+| **Local Storage** | des *backups* (copie logique) | **oui** |
+| **Block Storage** | des *snapshots* (copie du volume) | **non** — un snapshot restaure vers une nouvelle instance, il ne se télécharge pas |
 
-Pouvoir télécharger une sauvegarde est le seul moyen d'en garder une copie hors
-de Scaleway.
+Cela ne dit **rien** de ③, qui est téléchargeable dans les deux cas : `pg_dump`
+parle à la base par le réseau et ne sait pas sur quel volume elle est posée.
 
-## Stockage objet
+## Stockage objet — c'est là, et seulement là, que vivent les `.sql.gz` de ③
 
 Versionnage, **Object Lock** (modèle WORM), chiffrement au repos, règles de
 cycle de vie. Deux modes d'immutabilité :
@@ -319,22 +339,23 @@ protège la base ; elle ne la remplace pas.
 
 | | Quoi | Valeur | Si on l'oublie | Avant le 1er client ? |
 |---|---|---|---|---|
-| **SCW-01** | instance PostgreSQL gérée | PG 16+, **Local Storage** | — | **OUI** |
-| **SCW-02** | autobackup actif | par défaut | **tout perdu au 1er incident** | **OUI** |
+| **SCW-01** | instance PostgreSQL gérée **①** | PG 16+ ; volume **Local Storage** *(recommandé — décision 1 bis)* | non rattrapable après création | **OUI** |
+| **SCW-02** | autobackup **②** actif | par défaut | **tout perdu au 1er incident** | **OUI** |
 | **SCW-03** | rétention à **30 jours** | 30 (défaut 7) | un dégât vu au retour de vacances est irrécupérable | **OUI** |
 | **SCW-04** | fréquence au maximum offert | à lire en console | RPO à 24 h | recommandé |
 | **SCW-05** | rôles `atlas_owner` et `atlas_app` | `atlas_app` **NOBYPASSRLS** | **un artisan verrait les clients d'un autre** | **OUI** |
 | **SCW-06** | rôle `atlas_sauvegarde`, **sans** superutilisateur | identifiants séparés | on croit pouvoir sauvegarder, et on ne peut pas | **OUI** |
 | **SCW-07** | politique `sauvegarde_lit_tout` sur **chaque** table sous RLS | — | sauvegarde amputée, code 0, sans un mot | **OUI** |
-| **SCW-08** | compartiment des **fichiers** | `atlas-fichiers` | — | **OUI** |
+| **SCW-08** | compartiment objet des **fichiers** (photos, PDF) | `atlas-fichiers` | — | **OUI** |
 | **SCW-09** | versionnage dessus | activé | une photo remplacée est perdue | **OUI** |
 | **SCW-10** | Object Lock **Governance**, 30 j | Governance | soit rien n'est protégé, soit on ne peut plus effacer légalement | **OUI** |
 | **SCW-11** | cycle de vie : purger > 30 j | 30 j | facture qui enfle | recommandé |
-| **SCW-12** | compartiment des **sauvegardes**, autre projet | `atlas-sauvegardes` | un administrateur compromis efface tout | **OUI** |
-| **SCW-13** | Object Lock **Compliance**, 30 j | Compliance | la sauvegarde reste effaçable | **OUI** |
+| **SCW-12** | compartiment objet des **`.sql.gz` ③**, dans un **autre projet** | `atlas-sauvegardes` | un administrateur compromis efface tout | **OUI** |
+| **SCW-13** | Object Lock **Compliance**, 30 j, dessus | Compliance | la sauvegarde reste effaçable | **OUI** |
 | **SCW-14** | clé d'accès **écriture seule** | sans suppression | une clé volée efface l'historique | **OUI** |
-| **SCW-15** | clé d'accès **lecture seule** pour restaurer | séparée | — | recommandé |
-| **SCW-16** | **copie logique horaire**, avec `ATLAS_SAUVEGARDE_RLS=1` | toutes les heures | RPO à 24 h au lieu de 1 h | **OUI** |
+| **SCW-15** | clé d'accès **lecture seule** pour restaurer | séparée | rien ne peut relire une sauvegarde le jour de l'incident | **OUI** |
+| **SCW-16** | **copie logique horaire ③**, avec `ATLAS_SAUVEGARDE_RLS=1` | toutes les heures, vers SCW-12 | RPO à 24 h au lieu de 1 h | **OUI** |
+| **SCW-16 bis** | **un nom de clé distinct et daté** par dépôt, + cycle de vie ≥ **31 j** sur SCW-12 | `atlas-YYYYMMDD-HHmm.sql.gz` | 720 versions verrouillées par mois d'un seul objet, facture sans fin | **OUI** |
 | **SCW-17** | `AUTH_SECRET` dans Secret Manager | avec sa date | agendas illisibles **en silence** | **OUI** |
 | **SCW-18** | règle de rotation : ne jamais supprimer une version < 30 j | — | une vieille sauvegarde devient inutilisable | **OUI** |
 | **SCW-19** | instance Redis gérée | la plus petite | Atlas refuse de démarrer | **OUI** |
@@ -343,8 +364,28 @@ protège la base ; elle ne la remplace pas.
 | **SCW-22** | restauration d'essai complète | avant le 1er client, puis tous les 3 mois | on découvre le défaut au pire moment | **OUI** |
 | **SCW-23** | poser `ATLAS_RP_ID` et `ATLAS_PROXY_SAUTS` | dette existante | Face ID refuse de s'enregistrer | **OUI** |
 
-**Dix-huit points sont obligatoires avant le premier client.** Aucun ne demande
-de code : ce sont des cases à cocher.
+**Vingt points sont obligatoires avant le premier client** (dix-huit, plus
+SCW-15 relevé de « recommandé » et SCW-16 bis ajouté — voir ci-dessous). Aucun ne
+demande de code : ce sont des cases à cocher.
+
+## Ce que la relecture de cohérence a corrigé dans cette liste
+
+| | Ce qui n'allait pas | Pourquoi c'est grave |
+|---|---|---|
+| **SCW-15** passe de *recommandé* à **obligatoire** | la clé d'écriture (SCW-14) ne sait pas relire ; sans clé de lecture, **rien ne peut ouvrir une sauvegarde** | on découvrirait le manque le jour de la restauration, c'est-à-dire au pire moment |
+| **SCW-16 bis** ajouté | rien ne bornait le compartiment ③, ni ne fixait le nom des dépôts | 720 dépôts par mois, **verrouillés 30 j et donc ineffaçables** ; et sous un nom de clé unique, ce sont 720 *versions* d'un même objet, qu'une règle de cycle de vie ordinaire ne purge pas |
+| **cycle de vie ≥ 31 j** | une purge à 30 j sur un verrou de 30 j échoue en silence | on croit purger, la facture monte, et personne ne regarde |
+
+## Les six pièces s'accordent-elles ?
+
+| Ce qui a été confronté | Verdict |
+|---|---|
+| **copie horaire ③** ↔ volume de ① | **indépendantes** — `pg_dump` passe par le réseau ; Local ou Block ne change rien. C'est ce qui rend la décision 1 bis non bloquante |
+| **copie horaire ③** ↔ rôle sans superutilisateur | cohérent : SCW-06 + SCW-07 + `ATLAS_SAUVEGARDE_RLS=1`. **C'est le défaut du §3**, et il est fermé |
+| **restauration isolée** ↔ clés d'accès | **c'était le trou** : elle a besoin de lire, SCW-15 n'était pas obligatoire. Corrigé |
+| **seconde copie (autre projet)** ↔ Compliance | cohérent, et cumulatif : le projet séparé protège de l'erreur humaine, le verrou protège de l'administrateur compromis |
+| **clé d'écriture seule** ↔ Compliance | cohérent, et **c'est la ceinture et les bretelles** : même une clé volée qui aurait le droit de supprimer se heurterait au verrou |
+| **`AUTH_SECRET`** ↔ rétention de 30 j | cohérent **par SCW-18** : une sauvegarde de J−29 réclame le secret de J−29. Si une version du secret était supprimée avant 30 jours, cette sauvegarde deviendrait illisible **sans qu'aucune erreur ne le dise** |
 
 ---
 
@@ -354,6 +395,8 @@ de code : ce sont des cases à cocher.
 |---|---|
 | Rétention et fréquence **maximales** chez Scaleway | à lire en console — non documentées publiquement |
 | Le mode sans superutilisateur n'a pas été joué **contre Scaleway** | éprouvé contre un PG 16 aux mêmes contraintes ; premier essai réel au déploiement |
+| **Le volume de l'instance ① — Local ou Block** | vous, **avant de créer l'instance** (décision 1 bis) — non rattrapable ensuite |
+| Où va la **seconde copie** de sauvegarde | vous — autre projet Scaleway ou autre fournisseur |
 | Une écriture refusée pendant un gel reste un **message de moteur** | nous, hors de ce lot |
 | L'export d'une entreprise oublie **logo et tickets de caisse** | nous, hors de ce lot — c'est de la portabilité RGPD |
 | Un refus de rôle sort en **500** au lieu de **403** sur `/api/mes-donnees` | nous, lot suivant |
@@ -363,16 +406,47 @@ de code : ce sont des cases à cocher.
 
 # 13. Les décisions du patron
 
-### Décision 1 — **Local Storage ou Block Storage ?** ⚠ avant de créer l'instance
+### Décision 1 — **où vont les `.sql.gz` ?** ✓ TRANCHÉ, et la question était mal posée
 
-Elle décide si une sauvegarde est **téléchargeable**, donc si on peut en garder
-une copie hors de Scaleway.
-**Recommandation : Local Storage.**
+**Les copies logiques `.sql.gz` (③) vont dans le stockage objet**, compartiment
+`atlas-sauvegardes` (SCW-12), verrouillé en Compliance 30 jours. **Block Storage
+n'est pas retenu** — et ne l'a jamais été, car ce n'était pas un candidat.
 
-Si Block Storage est préféré pour la souplesse, la copie logique horaire
-(SCW-16) devient **obligatoire** au lieu de recommandée.
+**Ce qui a été dit de faux, et qui se corrige ici noir sur blanc.** Un échange a
+présenté ce choix comme « Local Storage ou Block Storage pour les `.sql.gz` », en
+décrivant *Local Storage* comme le stockage objet de Scaleway, facturé au Go.
+**C'est faux sur les deux points.** Le stockage objet de Scaleway s'appelle
+*Object Storage* ; *Local Storage* et *Block Storage* ne désignent que le volume
+de l'instance (①). Ranger un fichier « sur du Block Storage » supposerait de
+monter un volume sur une machine — un détour qu'aucune partie de ce lot ne fait.
 
-### Décision 2 — **Où va la seconde copie ?**
+**Ce qui reste vrai de l'intention :** un `.sql.gz` est un fichier de sauvegarde,
+il va dans un compartiment objet verrouillé. C'était déjà le montage du lot
+(SCW-12 à SCW-16) ; rien n'est à changer.
+
+### Décision 1 bis — **le volume de l'instance (①)** ⚠ à prendre avant de créer l'instance
+
+C'est la vraie question que masquait la précédente, et **elle reste ouverte**.
+
+| | Local Storage | Block Storage |
+|---|---|---|
+| ② téléchargeable | **oui** | non |
+| volume redimensionnable ensuite | non — il faut migrer | **oui** |
+
+**Recommandation : Local Storage**, pour garder **deux** chemins indépendants de
+sortie des données (② et ③) plutôt qu'un seul.
+
+**Mais ce n'est plus bloquant, et c'est un changement par rapport au premier
+rapport :** la copie logique horaire (SCW-16) étant devenue obligatoire, un
+fichier téléchargeable existe **toutes les heures** quel que soit le volume. Si
+Block Storage est préféré pour la souplesse de redimensionnement, le dispositif
+tient — à la condition stricte que SCW-16 soit en place **avant** le premier
+client, ce qu'il est déjà dans cette liste.
+
+### Décision 2 — **Où va la seconde copie ?** ⚠ avant SCW-12, donc avant le premier client
+
+*(Contrairement à la décision 1 bis, celle-ci n'est pas liée à la création de
+l'instance, et elle se rattrape : un compartiment se recrée ailleurs.)*
 
 | | |
 |---|---|
@@ -397,4 +471,4 @@ géré ne donne, et son garde-fou le plus important laissait passer précisémen
 sauvegarde qu'il fallait refuser.
 
 **Le point d'urgence, indépendant de tout le reste :** aucun artisan réel sur
-Atlas tant que les dix-huit points obligatoires du §11 ne sont pas cochés.
+Atlas tant que les **vingt** points obligatoires du §11 ne sont pas cochés.

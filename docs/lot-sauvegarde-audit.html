@@ -364,7 +364,8 @@
 <a class="retour" href="#sommaire">↑ Sommaire</a>
 <p>La chaîne complète a été parcourue : <strong>sauvegarde → restauration isolée → contrôles Atlas → détection des cas dégradés</strong>, avec neuf essais négatifs qui rougissent tous.</p>
 <p><strong>Ce que l'audit a rattrapé, et qu'il fallait rattraper :</strong> le lot du 27 août était éprouvé, vert, et <strong>inapplicable là où il devait servir</strong>. Il reposait sur un superutilisateur qu'aucun hébergeur géré ne donne, et son garde-fou le plus important laissait passer précisément la sauvegarde qu'il fallait refuser.</p>
-<p>Les décisions ouvertes n'ont pas changé : <strong>Local Storage ou Block Storage</strong>, et <strong>où va la seconde copie</strong>.</p>
+<p>Deux décisions restent ouvertes : <strong>le volume de l'instance PostgreSQL — Local Storage ou Block Storage</strong>, et <strong>où va la seconde copie</strong>.</p>
+<p><strong>Une troisième a été tranchée le 29 août, et la question était mal posée.</strong> Les copies logiques <code>.sql.gz</code> vont dans le <strong>stockage objet</strong>, compartiment <code>atlas-sauvegardes</code> verrouillé en Compliance. <em>Local Storage</em> et <em>Block Storage</em> ne qualifient que le volume de l'instance : ce ne sont pas des endroits où l'on range un fichier, et un échange les a présentés comme tels — corrigé au §13 du document de clôture, avec la phrase fausse citée.</p>
 </main>
 </body>
 </html>

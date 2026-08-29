@@ -4,6 +4,20 @@
 partie « où héberger » de `docs/lot-sauvegarde-analyse.md` ; tout le reste de ce
 rapport-là reste valable et n'est pas répété ici.*
 
+> ## ⚠ Document dépassé sur deux points — lire `docs/lot-sauvegarde-cloture.md`
+>
+> L'audit du 29 août 2026 a corrigé deux choses **fausses** ci-dessous. La
+> numérotation `SCW-…` de ce document n'est plus la bonne non plus : celle qui
+> fait foi est dans le document de clôture.
+>
+> | Ce qui est écrit ici | Ce qui est vrai |
+> |---|---|
+> | **§4 et SCW-06** : la copie logique « doit se faire avec un rôle **superutilisateur** » | **Faux, et inapplicable chez Scaleway**, qui n'en donne aucun. Il faut un rôle dédié `atlas_sauvegarde` sans privilèges, des politiques de lecture, et `--enable-row-security` |
+> | **SCW-15** : la copie logique horaire est « obligatoire **si** Block Storage » | Elle est **obligatoire dans tous les cas** — c'est elle qui porte le RPO d'une heure, quel que soit le volume |
+>
+> Le reste — capacités de Scaleway, absence de PITR, Object Lock, `AUTH_SECRET` —
+> reste exact.
+
 ---
 
 ## L'essentiel, en cinq lignes
@@ -317,7 +331,13 @@ Six situations, une seule marche à suivre.
 
 # 9. Les décisions à prendre
 
-### Décision 1 — **Local Storage ou Block Storage pour la base ?** ⚠ à prendre AVANT de créer l'instance
+### Décision 1 — **Local Storage ou Block Storage pour le VOLUME DE L'INSTANCE ?** ⚠ à prendre AVANT de créer l'instance
+
+**Cette décision ne porte que sur l'instance PostgreSQL elle-même.** Elle ne dit
+rien de l'endroit où sont rangés les fichiers `.sql.gz` de la copie logique : ces
+fichiers-là vont dans un **compartiment de stockage objet** (SCW-11 ci-dessous),
+et ni *Local Storage* ni *Block Storage* n'est un endroit où l'on range un
+fichier.
 
 | | Local Storage | Block Storage |
 |---|---|---|
@@ -329,8 +349,8 @@ Six situations, une seule marche à suivre.
 sauvegarde. C'est ce qui permet d'en garder une copie ailleurs.
 
 **Si tu préfères Block Storage** pour la souplesse, ce n'est pas bloquant : la
-copie logique horaire du §4 remplit alors ce rôle, et devient **obligatoire** au
-lieu de recommandée.
+copie logique horaire du §4 remplit ce rôle. *(Elle est de toute façon
+obligatoire — voir l'avertissement en tête de document.)*
 
 ### Décision 2 — La seconde copie va-t-elle **hors de Scaleway** ?
 

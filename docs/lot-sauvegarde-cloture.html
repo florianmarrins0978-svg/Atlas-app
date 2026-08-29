@@ -69,7 +69,7 @@
 <li><strong>Six outils</strong> ont été écrits et éprouvés ; la chaîne complète <em>sauvegarde → restauration isolée → contrôles → détection des cas dégradés</em> a été parcourue.</li>
 <li>Un audit du lot a trouvé <strong>trois défauts, dont un qui rendait tout le dispositif inapplicable chez Scaleway</strong>. Corrigés et mesurés.</li>
 </ol>
-<p><strong>Verdict : PRÊT À IMPLÉMENTER.</strong> Deux décisions restent au patron.</p>
+<p><strong>Verdict : PRÊT À IMPLÉMENTER.</strong> Deux décisions restent au patron — <strong>le volume de l'instance PostgreSQL</strong> et <strong>où va la seconde copie</strong> (§13). Une troisième a été tranchée : les copies <code>.sql.gz</code> vont dans le <strong>stockage objet</strong>.</p>
 <hr>
 <h1 id="1-ce-quatlas-garde-et-où">1. Ce qu'Atlas garde, et où</h1>
 <p><strong>64 tables</strong> dans PostgreSQL, et <strong>onze colonnes</strong> qui portent la clé d'un fichier rangé dans le stockage objet.</p>
@@ -103,7 +103,36 @@
 <hr>
 <h1 id="2-ce-que-scaleway-sait-faire--vérifié-dans-la-source-officielle">2. Ce que Scaleway sait faire — vérifié dans la source officielle</h1>
 <p>La documentation de Scaleway n'est pas joignable depuis l'environnement de travail, mais <strong>son code source est public sur GitHub</strong> et a été lu directement.</p>
-<h2 id="postgresql-géré">PostgreSQL géré</h2>
+<h2 id="-trois-choses-différentes-portent-le-mot--sauvegarde-">⚠ Trois choses différentes portent le mot « sauvegarde »</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p>Elles ont été confondues, et la confusion a produit une phrase fausse — corrigée au §13. Les nommer une fois évite de la refaire :</p>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th>Ce que c'est</th>
+<th>Où ça vit</th>
+<th>Qui le fait</th>
+</tr></thead><tbody>
+<tr>
+<td><strong>① l'instance</strong></td>
+<td>la base PostgreSQL elle-même, et <strong>le type de volume qui la porte</strong> — <em>Local Storage</em> ou <em>Block Storage</em></td>
+<td>chez Scaleway, dans l'instance</td>
+<td>Scaleway, choisi <strong>à la création</strong></td>
+</tr>
+<tr>
+<td><strong>② les sauvegardes natives</strong></td>
+<td>ce que Scaleway prend tout seul de ① — <em>backups</em> ou <em>snapshots</em> selon le volume de ①</td>
+<td>dans la mécanique Scaleway, <strong>pas dans un compartiment qu'on choisit</strong></td>
+<td>Scaleway</td>
+</tr>
+<tr>
+<td><strong>③ les copies logiques Atlas</strong></td>
+<td>des fichiers <strong><code>.sql.gz</code></strong> produits par <code>pg_dump</code>, une par heure</td>
+<td>dans un <strong>compartiment de stockage objet</strong> verrouillé</td>
+<td>nous (SCW-16)</td>
+</tr>
+</tbody></table></div>
+<p><strong>Ce que cela règle tout de suite :</strong> <em>Local Storage</em> et <em>Block Storage</em> ne qualifient que ①. Ce ne sont <strong>pas</strong> des endroits où l'on range des fichiers, et la question « où mettre les <code>.sql.gz</code> » ne se pose donc jamais entre les deux : un <code>.sql.gz</code> est un objet, il va dans le <strong>stockage objet</strong> (③), et nulle part ailleurs.</p>
+<h2 id="postgresql-géré--①-et-②">PostgreSQL géré — ① et ②</h2>
 <a class="retour" href="#sommaire">↑ Sommaire</a>
 <div class="tablewrap"><table><thead><tr>
 <th></th>
@@ -134,25 +163,25 @@
 <td><strong>NON</strong> — absente de la documentation ; une demande publique existe depuis avril 2024</td>
 </tr>
 </tbody></table></div>
-<p><strong>Un piège de configuration, non rattrapable après création :</strong></p>
+<p><strong>Un piège de configuration, non rattrapable après création.</strong> Le type de volume de ① commande la forme de ② :</p>
 <div class="tablewrap"><table><thead><tr>
-<th>Volume</th>
-<th>Sauvegarde</th>
-<th>Téléchargeable</th>
+<th>Volume de <strong>①</strong></th>
+<th>Forme de <strong>②</strong></th>
+<th>② est-elle téléchargeable ?</th>
 </tr></thead><tbody>
 <tr>
 <td><strong>Local Storage</strong></td>
-<td><em>backups</em></td>
+<td>des <em>backups</em> (copie logique)</td>
 <td><strong>oui</strong></td>
 </tr>
 <tr>
-<td>Block Storage</td>
-<td><em>snapshots</em></td>
-<td><strong>non</strong></td>
+<td><strong>Block Storage</strong></td>
+<td>des <em>snapshots</em> (copie du volume)</td>
+<td><strong>non</strong> — un snapshot restaure vers une nouvelle instance, il ne se télécharge pas</td>
 </tr>
 </tbody></table></div>
-<p>Pouvoir télécharger une sauvegarde est le seul moyen d'en garder une copie hors de Scaleway.</p>
-<h2 id="stockage-objet">Stockage objet</h2>
+<p>Cela ne dit <strong>rien</strong> de ③, qui est téléchargeable dans les deux cas : <code>pg_dump</code> parle à la base par le réseau et ne sait pas sur quel volume elle est posée.</p>
+<h2 id="stockage-objet--cest-là-et-seulement-là-que-vivent-les-sqlgz-de-③">Stockage objet — c'est là, et seulement là, que vivent les <code>.sql.gz</code> de ③</h2>
 <a class="retour" href="#sommaire">↑ Sommaire</a>
 <p>Versionnage, <strong>Object Lock</strong> (modèle WORM), chiffrement au repos, règles de cycle de vie. Deux modes d'immutabilité :</p>
 <ul>
@@ -505,14 +534,14 @@
 </tr></thead><tbody>
 <tr>
 <td><strong>SCW-01</strong></td>
-<td>instance PostgreSQL gérée</td>
-<td>PG 16+, <strong>Local Storage</strong></td>
-<td>—</td>
+<td>instance PostgreSQL gérée <strong>①</strong></td>
+<td>PG 16+ ; volume <strong>Local Storage</strong> <em>(recommandé — décision 1 bis)</em></td>
+<td>non rattrapable après création</td>
 <td><strong>OUI</strong></td>
 </tr>
 <tr>
 <td><strong>SCW-02</strong></td>
-<td>autobackup actif</td>
+<td>autobackup <strong>②</strong> actif</td>
 <td>par défaut</td>
 <td><strong>tout perdu au 1er incident</strong></td>
 <td><strong>OUI</strong></td>
@@ -554,7 +583,7 @@
 </tr>
 <tr>
 <td><strong>SCW-08</strong></td>
-<td>compartiment des <strong>fichiers</strong></td>
+<td>compartiment objet des <strong>fichiers</strong> (photos, PDF)</td>
 <td><code>atlas-fichiers</code></td>
 <td>—</td>
 <td><strong>OUI</strong></td>
@@ -582,14 +611,14 @@
 </tr>
 <tr>
 <td><strong>SCW-12</strong></td>
-<td>compartiment des <strong>sauvegardes</strong>, autre projet</td>
+<td>compartiment objet des <strong><code>.sql.gz</code> ③</strong>, dans un <strong>autre projet</strong></td>
 <td><code>atlas-sauvegardes</code></td>
 <td>un administrateur compromis efface tout</td>
 <td><strong>OUI</strong></td>
 </tr>
 <tr>
 <td><strong>SCW-13</strong></td>
-<td>Object Lock <strong>Compliance</strong>, 30 j</td>
+<td>Object Lock <strong>Compliance</strong>, 30 j, dessus</td>
 <td>Compliance</td>
 <td>la sauvegarde reste effaçable</td>
 <td><strong>OUI</strong></td>
@@ -605,14 +634,21 @@
 <td><strong>SCW-15</strong></td>
 <td>clé d'accès <strong>lecture seule</strong> pour restaurer</td>
 <td>séparée</td>
-<td>—</td>
-<td>recommandé</td>
+<td>rien ne peut relire une sauvegarde le jour de l'incident</td>
+<td><strong>OUI</strong></td>
 </tr>
 <tr>
 <td><strong>SCW-16</strong></td>
-<td><strong>copie logique horaire</strong>, avec <code>ATLAS_SAUVEGARDE_RLS=1</code></td>
-<td>toutes les heures</td>
+<td><strong>copie logique horaire ③</strong>, avec <code>ATLAS_SAUVEGARDE_RLS=1</code></td>
+<td>toutes les heures, vers SCW-12</td>
 <td>RPO à 24 h au lieu de 1 h</td>
+<td><strong>OUI</strong></td>
+</tr>
+<tr>
+<td><strong>SCW-16 bis</strong></td>
+<td><strong>un nom de clé distinct et daté</strong> par dépôt, + cycle de vie ≥ <strong>31 j</strong> sur SCW-12</td>
+<td><code>atlas-YYYYMMDD-HHmm.sql.gz</code></td>
+<td>720 versions verrouillées par mois d'un seul objet, facture sans fin</td>
 <td><strong>OUI</strong></td>
 </tr>
 <tr>
@@ -665,7 +701,61 @@
 <td><strong>OUI</strong></td>
 </tr>
 </tbody></table></div>
-<p><strong>Dix-huit points sont obligatoires avant le premier client.</strong> Aucun ne demande de code : ce sont des cases à cocher.</p>
+<p><strong>Vingt points sont obligatoires avant le premier client</strong> (dix-huit, plus SCW-15 relevé de « recommandé » et SCW-16 bis ajouté — voir ci-dessous). Aucun ne demande de code : ce sont des cases à cocher.</p>
+<h2 id="ce-que-la-relecture-de-cohérence-a-corrigé-dans-cette-liste">Ce que la relecture de cohérence a corrigé dans cette liste</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th>Ce qui n'allait pas</th>
+<th>Pourquoi c'est grave</th>
+</tr></thead><tbody>
+<tr>
+<td><strong>SCW-15</strong> passe de <em>recommandé</em> à <strong>obligatoire</strong></td>
+<td>la clé d'écriture (SCW-14) ne sait pas relire ; sans clé de lecture, <strong>rien ne peut ouvrir une sauvegarde</strong></td>
+<td>on découvrirait le manque le jour de la restauration, c'est-à-dire au pire moment</td>
+</tr>
+<tr>
+<td><strong>SCW-16 bis</strong> ajouté</td>
+<td>rien ne bornait le compartiment ③, ni ne fixait le nom des dépôts</td>
+<td>720 dépôts par mois, <strong>verrouillés 30 j et donc ineffaçables</strong> ; et sous un nom de clé unique, ce sont 720 <em>versions</em> d'un même objet, qu'une règle de cycle de vie ordinaire ne purge pas</td>
+</tr>
+<tr>
+<td><strong>cycle de vie ≥ 31 j</strong></td>
+<td>une purge à 30 j sur un verrou de 30 j échoue en silence</td>
+<td>on croit purger, la facture monte, et personne ne regarde</td>
+</tr>
+</tbody></table></div>
+<h2 id="les-six-pièces-saccordent-elles-">Les six pièces s'accordent-elles ?</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th>Ce qui a été confronté</th>
+<th>Verdict</th>
+</tr></thead><tbody>
+<tr>
+<td><strong>copie horaire ③</strong> ↔ volume de ①</td>
+<td><strong>indépendantes</strong> — <code>pg_dump</code> passe par le réseau ; Local ou Block ne change rien. C'est ce qui rend la décision 1 bis non bloquante</td>
+</tr>
+<tr>
+<td><strong>copie horaire ③</strong> ↔ rôle sans superutilisateur</td>
+<td>cohérent : SCW-06 + SCW-07 + <code>ATLAS_SAUVEGARDE_RLS=1</code>. <strong>C'est le défaut du §3</strong>, et il est fermé</td>
+</tr>
+<tr>
+<td><strong>restauration isolée</strong> ↔ clés d'accès</td>
+<td><strong>c'était le trou</strong> : elle a besoin de lire, SCW-15 n'était pas obligatoire. Corrigé</td>
+</tr>
+<tr>
+<td><strong>seconde copie (autre projet)</strong> ↔ Compliance</td>
+<td>cohérent, et cumulatif : le projet séparé protège de l'erreur humaine, le verrou protège de l'administrateur compromis</td>
+</tr>
+<tr>
+<td><strong>clé d'écriture seule</strong> ↔ Compliance</td>
+<td>cohérent, et <strong>c'est la ceinture et les bretelles</strong> : même une clé volée qui aurait le droit de supprimer se heurterait au verrou</td>
+</tr>
+<tr>
+<td><strong><code>AUTH_SECRET</code></strong> ↔ rétention de 30 j</td>
+<td>cohérent <strong>par SCW-18</strong> : une sauvegarde de J−29 réclame le secret de J−29. Si une version du secret était supprimée avant 30 jours, cette sauvegarde deviendrait illisible <strong>sans qu'aucune erreur ne le dise</strong></td>
+</tr>
+</tbody></table></div>
 <hr>
 <h1 id="12-ce-qui-reste-ouvert">12. Ce qui reste ouvert</h1>
 <div class="tablewrap"><table><thead><tr>
@@ -679,6 +769,14 @@
 <tr>
 <td>Le mode sans superutilisateur n'a pas été joué <strong>contre Scaleway</strong></td>
 <td>éprouvé contre un PG 16 aux mêmes contraintes ; premier essai réel au déploiement</td>
+</tr>
+<tr>
+<td><strong>Le volume de l'instance ① — Local ou Block</strong></td>
+<td>vous, <strong>avant de créer l'instance</strong> (décision 1 bis) — non rattrapable ensuite</td>
+</tr>
+<tr>
+<td>Où va la <strong>seconde copie</strong> de sauvegarde</td>
+<td>vous — autre projet Scaleway ou autre fournisseur</td>
 </tr>
 <tr>
 <td>Une écriture refusée pendant un gel reste un <strong>message de moteur</strong></td>
@@ -699,10 +797,32 @@
 </tbody></table></div>
 <hr>
 <h1 id="13-les-décisions-du-patron">13. Les décisions du patron</h1>
-<h3 id="décision-1--local-storage-ou-block-storage---avant-de-créer-linstance">Décision 1 — <strong>Local Storage ou Block Storage ?</strong> ⚠ avant de créer l'instance</h3>
-<p>Elle décide si une sauvegarde est <strong>téléchargeable</strong>, donc si on peut en garder une copie hors de Scaleway. <strong>Recommandation : Local Storage.</strong></p>
-<p>Si Block Storage est préféré pour la souplesse, la copie logique horaire (SCW-16) devient <strong>obligatoire</strong> au lieu de recommandée.</p>
-<h3 id="décision-2--où-va-la-seconde-copie-">Décision 2 — <strong>Où va la seconde copie ?</strong></h3>
+<h3 id="décision-1--où-vont-les-sqlgz---tranché-et-la-question-était-mal-posée">Décision 1 — <strong>où vont les <code>.sql.gz</code> ?</strong> ✓ TRANCHÉ, et la question était mal posée</h3>
+<p><strong>Les copies logiques <code>.sql.gz</code> (③) vont dans le stockage objet</strong>, compartiment <code>atlas-sauvegardes</code> (SCW-12), verrouillé en Compliance 30 jours. <strong>Block Storage n'est pas retenu</strong> — et ne l'a jamais été, car ce n'était pas un candidat.</p>
+<p><strong>Ce qui a été dit de faux, et qui se corrige ici noir sur blanc.</strong> Un échange a présenté ce choix comme « Local Storage ou Block Storage pour les <code>.sql.gz</code> », en décrivant <em>Local Storage</em> comme le stockage objet de Scaleway, facturé au Go. <strong>C'est faux sur les deux points.</strong> Le stockage objet de Scaleway s'appelle <em>Object Storage</em> ; <em>Local Storage</em> et <em>Block Storage</em> ne désignent que le volume de l'instance (①). Ranger un fichier « sur du Block Storage » supposerait de monter un volume sur une machine — un détour qu'aucune partie de ce lot ne fait.</p>
+<p><strong>Ce qui reste vrai de l'intention :</strong> un <code>.sql.gz</code> est un fichier de sauvegarde, il va dans un compartiment objet verrouillé. C'était déjà le montage du lot (SCW-12 à SCW-16) ; rien n'est à changer.</p>
+<h3 id="décision-1-bis--le-volume-de-linstance-①--à-prendre-avant-de-créer-linstance">Décision 1 bis — <strong>le volume de l'instance (①)</strong> ⚠ à prendre avant de créer l'instance</h3>
+<p>C'est la vraie question que masquait la précédente, et <strong>elle reste ouverte</strong>.</p>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th>Local Storage</th>
+<th>Block Storage</th>
+</tr></thead><tbody>
+<tr>
+<td>② téléchargeable</td>
+<td><strong>oui</strong></td>
+<td>non</td>
+</tr>
+<tr>
+<td>volume redimensionnable ensuite</td>
+<td>non — il faut migrer</td>
+<td><strong>oui</strong></td>
+</tr>
+</tbody></table></div>
+<p><strong>Recommandation : Local Storage</strong>, pour garder <strong>deux</strong> chemins indépendants de sortie des données (② et ③) plutôt qu'un seul.</p>
+<p><strong>Mais ce n'est plus bloquant, et c'est un changement par rapport au premier rapport :</strong> la copie logique horaire (SCW-16) étant devenue obligatoire, un fichier téléchargeable existe <strong>toutes les heures</strong> quel que soit le volume. Si Block Storage est préféré pour la souplesse de redimensionnement, le dispositif tient — à la condition stricte que SCW-16 soit en place <strong>avant</strong> le premier client, ce qu'il est déjà dans cette liste.</p>
+<h3 id="décision-2--où-va-la-seconde-copie---avant-scw-12-donc-avant-le-premier-client">Décision 2 — <strong>Où va la seconde copie ?</strong> ⚠ avant SCW-12, donc avant le premier client</h3>
+<p><em>(Contrairement à la décision 1 bis, celle-ci n'est pas liée à la création de l'instance, et elle se rattrape : un compartiment se recrée ailleurs.)</em></p>
 <div class="tablewrap"><table><thead><tr>
 <th></th>
 <th></th>
@@ -723,7 +843,7 @@
 <a class="retour" href="#sommaire">↑ Sommaire</a>
 <p>La chaîne complète a été parcourue — <strong>sauvegarde → restauration isolée → contrôles Atlas → détection des cas dégradés</strong> — avec neuf essais négatifs qui rougissent tous, et une batterie entièrement verte.</p>
 <p><strong>Ce que l'audit a rattrapé :</strong> le lot était éprouvé, vert, et <strong>inapplicable là où il devait servir</strong>. Il reposait sur un superutilisateur qu'aucun hébergeur géré ne donne, et son garde-fou le plus important laissait passer précisément la sauvegarde qu'il fallait refuser.</p>
-<p><strong>Le point d'urgence, indépendant de tout le reste :</strong> aucun artisan réel sur Atlas tant que les dix-huit points obligatoires du §11 ne sont pas cochés.</p>
+<p><strong>Le point d'urgence, indépendant de tout le reste :</strong> aucun artisan réel sur Atlas tant que les <strong>vingt</strong> points obligatoires du §11 ne sont pas cochés.</p>
 </main>
 </body>
 </html>

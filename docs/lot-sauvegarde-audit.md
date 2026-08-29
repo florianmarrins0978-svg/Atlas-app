@@ -213,5 +213,12 @@ rougissent tous.
 un superutilisateur qu'aucun hébergeur géré ne donne, et son garde-fou le plus
 important laissait passer précisément la sauvegarde qu'il fallait refuser.
 
-Les décisions ouvertes n'ont pas changé : **Local Storage ou Block Storage**, et
-**où va la seconde copie**.
+Deux décisions restent ouvertes : **le volume de l'instance PostgreSQL — Local
+Storage ou Block Storage**, et **où va la seconde copie**.
+
+**Une troisième a été tranchée le 29 août, et la question était mal posée.** Les
+copies logiques `.sql.gz` vont dans le **stockage objet**, compartiment
+`atlas-sauvegardes` verrouillé en Compliance. *Local Storage* et *Block Storage*
+ne qualifient que le volume de l'instance : ce ne sont pas des endroits où l'on
+range un fichier, et un échange les a présentés comme tels — corrigé au §13 du
+document de clôture, avec la phrase fausse citée.
