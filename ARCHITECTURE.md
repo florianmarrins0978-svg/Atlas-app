@@ -17732,3 +17732,96 @@ Vérifié le 29 août sur **son commit exact** (`575aad7`), avec **les variables
 son `docker-compose`** : `EXIT=0`, compilée en 30,6 s. Le code n'est pas en
 cause, et une session qui chercherait un défaut de construction perdrait sa
 soirée. C'est sa machine qui manque de mémoire, et rien d'autre.
+
+---
+
+## 204. Des dépendances désaccordées tuent la construction sans un mot
+
+**Sa panne du 29 août 2026 au soir, et il a fallu trois hypothèses fausses pour
+y arriver.** Sa fiche publiait enfin le relevé de l'échec (§203), et il tient en
+cinq lignes :
+
+```
+code: 1
+memoire: Mem: 7.8Gi  used 2.1Gi  available 5.7Gi
+dit:
+▲ Next.js 16.3.3 (Turbopack)
+- Environments: .env.local
+```
+
+Deux choses s'y lisent, et la seconde avait échappé à tout le monde :
+
+1. **la mémoire n'y était pour rien** — 5,7 Go disponibles. Le §203 avait
+   soupçonné un abattage par le noyau ; le relevé le dément ;
+2. **il exécutait Next 16.3.3**, alors que `package.json` **et**
+   `package-lock.json` épinglent **16.3.2**, tous deux à la version exacte.
+
+Next embarque des binaires natifs — Turbopack, compilé en Rust, livré dans des
+paquets `@next/swc-*` versionnés à l'identique. Un JavaScript de 16.3.3 devant
+des binaires de 16.3.2 meurt à l'instant où il charge le compilateur : **après
+l'en-tête, avant la moindre ligne de diagnostic.** C'est mot pour mot ce que sa
+sortie montre.
+
+### Pourquoi son banc ne pouvait pas s'en sortir seul
+
+`banc.mjs` savait déjà réinstaller, mais à une seule condition :
+
+```js
+/Cannot find module|MODULE_NOT_FOUND/i.test(sortie)
+```
+
+Un paquet **absent** la déclenche. Un paquet **présent mais désaccordé**, non —
+il ne produit aucun message. La seule réparation possible était donc exactement
+celle que rien ne pouvait déclencher, et le veilleur retentait la même
+construction condamnée : trois fois à dix minutes, puis toutes les demi-heures,
+indéfiniment.
+
+**C'est la troisième construction que ce dépôt perd faute d'un message** (22
+août : `./detect-typo` ; 25 août : `@swc/helpers`). Les deux premières laissaient
+au moins une trace. Celle-ci n'en laisse aucune — elle se détecte donc **avant**
+de bâtir, en comparant deux nombres.
+
+### Ce que le code tient
+
+- **Seules les versions ÉPINGLÉES sont comparées.** `^16.3.2` autorise
+  délibérément 16.3.3 : s'en plaindre ferait réinstaller à chaque démarrage un
+  espace parfaitement sain, et un garde-fou qui parle à tort s'apprend à être
+  ignoré.
+- **Une version illisible n'est pas une incohérence, c'est une ignorance.**
+  Paquet absent, `package.json` inattendu : on ne conclut pas.
+- **Un second filet, pour ce que les versions ne voient pas** — binaire corrompu,
+  paquet à demi installé : une construction qui meurt en produisant **moins de
+  cinq lignes, dont aucune ne parle d'erreur**, déclenche aussi la
+  réinstallation. Le seuil vient de sa sortie réelle : deux lignes. Une vraie
+  erreur de compilation en écrit des dizaines — une seule trace d'appel suffit à
+  dépasser le seuil.
+- **`npm install`, jamais `npm ci`.** `ci` efface `node_modules` avant de
+  réinstaller, or le serveur de développement tourne pendant ce temps et sert le
+  patron.
+- **Jamais bloquant.** Si la réinstallation échoue, on bâtit quand même : au pire
+  on retombe sur l'échec qu'on avait déjà, et le témoin le dira.
+
+### Éprouvé contre sa panne, pas seulement en théorie
+
+`node_modules/next/package.json` a été forcé à 16.3.3 — son état exact —, et la
+règle l'a vu :
+
+```
+DÉTECTÉ ✅
+  Les dépendances installées ne correspondent plus à celles du projet
+  (next 16.3.3 au lieu de 16.3.2). La construction échouerait sans rien dire.
+  Réinstallation avant de bâtir.
+```
+
+`scripts/test-coherence-dependances.ts` tient le reste, et rougit quand la garde
+est retirée du banc. Un cas y veille sur le contrôle lui-même : **si Next cessait
+d'être épinglé, la comparaison ne verrait plus rien** — la suite refuse ce
+silence plutôt que de rendre un vert qui ne prouve rien.
+
+### Ce qui reste ouvert
+
+**On ne sait pas COMMENT ses `node_modules` ont dérivé.** `demarrer.sh` joue
+`npm ci` puis, en repli, `npm install` — ni l'un ni l'autre ne devrait installer
+16.3.3 devant un pin exact et un verrou concordant. La cause d'origine n'est
+donc pas établie, et ce correctif traite le symptôme : il le répare à chaque
+démarrage au lieu de le laisser condamner le banc. Noté dans `TODO.md`.

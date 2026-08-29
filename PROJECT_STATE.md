@@ -13,6 +13,19 @@ ligne « fait » qui ne l'est pas coûte plus cher qu'une ligne absente.
 
 ---
 
+## Le banc répare ses dépendances désaccordées (29 août 2026)
+
+Son espace exécutait Next 16.3.3 alors que le projet épingle 16.3.2 : les
+binaires natifs de Next étant versionnés à l'identique, la construction mourait
+après son en-tête, sans un mot — et la réinstallation automatique, qui exigeait
+un message, ne se déclenchait jamais.
+
+Le banc compare les versions avant de bâtir et réinstalle si elles ont dérivé.
+Un second filet rattrape une construction morte sans rien dire. Éprouvé contre
+son état exact. `ARCHITECTURE.md` §204.
+
+---
+
 ## Le banc ne préchauffe plus quand la mémoire manque (29 août 2026)
 
 Son espace restait en mode lent des jours durant : le préchauffage des 32 écrans

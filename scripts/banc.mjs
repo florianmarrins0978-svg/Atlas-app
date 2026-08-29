@@ -34,6 +34,11 @@ import { annoncePrete } from "./annonce-adresse.mjs";
 import { prendreVerrouBanc, libererVerrouBanc } from "./verrou-banc.mjs";
 import { peutPrechauffer, memoireDisponibleMo } from "./memoire-prechauffage.mjs";
 import {
+  versionEpinglee,
+  dependancesIncoherentes,
+  constructionMuette,
+} from "./coherence-dependances.mjs";
+import {
   delogerConstructionsOrphelines,
   attendreLaConstructionEnCours,
   detenteursDuVerrou,
@@ -105,6 +110,65 @@ function marquerBascule(etape) {
 }
 
 const attendre = (ms) => new Promise((r) => setTimeout(r, ms));
+
+/**
+ * Les paquets dont un désaccord tue la construction sans rien dire.
+ *
+ * **Volontairement court, et pas au hasard :** ce sont ceux qui embarquent du
+ * code natif, ou qui en dépendent. Un désaccord sur une bibliothèque en pur
+ * JavaScript se signale par une erreur lisible ; un binaire natif désaccordé,
+ * lui, meurt en silence — c'est précisément le cas qu'on ne sait pas voir
+ * autrement.
+ */
+const PAQUETS_SENSIBLES = ["next", "eslint-config-next"];
+
+/** La version installée d'un paquet, ou `null` s'il est illisible. */
+function versionInstallee(nom) {
+  try {
+    return JSON.parse(readFileSync(`node_modules/${nom}/package.json`, "utf8")).version ?? null;
+  } catch {
+    // Absent ou illisible : ce n'est pas une incohérence, c'est une ignorance.
+    // La réinstallation d'après, elle, sait traiter un paquet manquant.
+    return null;
+  }
+}
+
+/**
+ * Réinstalle si `node_modules` a dérivé du projet — avant de bâtir.
+ *
+ * **`npm install` et non `npm ci`, pour la raison déjà écrite plus bas :** `ci`
+ * efface `node_modules` avant de réinstaller, or le serveur de développement
+ * TOURNE pendant ce temps et sert le patron. Lui retirer le sol coûterait sa
+ * session pour réparer une lenteur.
+ *
+ * Jamais bloquant : si la réinstallation échoue, on bâtit quand même. Au pire
+ * on retombe sur l'échec qu'on avait déjà, et le témoin le dira.
+ */
+async function reinstallerSiDesaccordees() {
+  let paquet;
+  try {
+    paquet = JSON.parse(readFileSync("package.json", "utf8"));
+  } catch {
+    return; // Hors du dépôt : rien à comparer.
+  }
+
+  const { incoherent, motif } = dependancesIncoherentes(
+    PAQUETS_SENSIBLES.map((nom) => ({
+      nom,
+      exigee: versionEpinglee(paquet, nom),
+      installee: versionInstallee(nom),
+    }))
+  );
+  if (!incoherent) return;
+
+  console.log(`\n  ${motif}\n`);
+  const { code } = await jouerEnRetenant("npm", ["install", "--no-audit", "--no-fund"]);
+  console.log(
+    code === 0
+      ? "\n  Dépendances remises d'aplomb.\n"
+      : "\n  La réinstallation a échoué : on tente la construction telle quelle.\n"
+  );
+}
 
 async function repond() {
   try {
@@ -711,6 +775,22 @@ if (raison) {
   // destinataire. Le raisonnement complet est dans `verrou-construction.mjs`.
   await delogerConstructionsOrphelines({ dossierDist: DIST, dire: (m) => console.log(m) });
 
+  // **DES DÉPENDANCES DÉSACCORDÉES SE VOIENT AVANT DE BÂTIR — 29 août 2026.**
+  //
+  // Sa fiche, ce soir-là : `code: 1`, 5,7 Go de mémoire libre, et pour toute
+  // sortie « ▲ Next.js 16.3.3 (Turbopack) ». Or le projet épingle **16.3.2**,
+  // dans `package.json` comme dans le verrou. Ses `node_modules` avaient
+  // dérivé, et Next embarque des binaires natifs versionnés à l'identique : le
+  // compilateur meurt à leur chargement, après l'en-tête, **sans un mot**.
+  //
+  // Et rien ne pouvait le rattraper : la réinstallation automatique, plus bas,
+  // exige `Cannot find module` dans la sortie. Un paquet ABSENT la déclenche ;
+  // un paquet PRÉSENT MAIS DÉSACCORDÉ, non — il ne dit rien. Le veilleur
+  // retentait donc la même construction condamnée, indéfiniment.
+  //
+  // Deux nombres suffisent à le voir, et sans rien lancer.
+  await reinstallerSiDesaccordees();
+
   // La construction écrit dans SON dossier : le serveur de développement garde
   // le sien, et les deux ne se marchent jamais dessus.
   // Rempli seulement si le verrou parle : c'est la seule information qui
@@ -786,9 +866,19 @@ if (raison) {
     /Cannot find module|MODULE_NOT_FOUND/i.test(sortie) &&
     /node_modules/.test(sortie);
 
-  if (dependanceManquante) {
+  // **Le second filet — 29 août 2026.** La condition ci-dessus exige un
+  // message ; sa construction n'en produisait aucun. Une mort juste après
+  // l'en-tête, sans une ligne d'explication, est la signature d'un
+  // `node_modules` cassé — un binaire natif corrompu, un paquet à demi
+  // installé — que la comparaison de versions ne peut pas voir.
+  const morteSansRienDire = constructionMuette({ code, sortie });
+
+  if (dependanceManquante || morteSansRienDire) {
     console.log(
-      "\n  Un paquet manque dans node_modules — la construction ne peut pas aboutir.\n" +
+      (morteSansRienDire && !dependanceManquante
+        ? "\n  La construction s'est arrêtée sans rien dire — c'est la marque de\n" +
+          "  dépendances abîmées.\n"
+        : "\n  Un paquet manque dans node_modules — la construction ne peut pas aboutir.\n") +
         "  Réinstallation des dépendances, puis nouvelle tentative.\n"
     );
     const { code: codeInstall } = await jouerEnRetenant("npm", [

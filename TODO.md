@@ -9,6 +9,33 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
+## D'où vient la dérive de ses `node_modules` ? (29 août 2026)
+
+**Le symptôme est réparé, la cause ne l'est pas.** Son espace exécutait
+`Next 16.3.3` alors que `package.json` ET `package-lock.json` épinglent
+`16.3.2`, tous deux à la version exacte. Sa construction mourait donc sans un
+mot (`ARCHITECTURE.md` §204), et le banc réinstalle désormais avant de bâtir.
+
+**Ce qu'on ne s'explique pas :** `demarrer.sh` joue `npm ci`, et en repli
+`npm install`. Aucun des deux ne devrait installer 16.3.3 devant un pin exact
+et un verrou concordant.
+
+Pistes, aucune vérifiée :
+
+| | |
+|---|---|
+| un `npm install <paquet>` joué à la main dans son espace | remonterait Next au passage |
+| un `npm ci` interrompu, repris par le repli `npm install` | laisserait un état mixte |
+| un cache npm servant une archive d'une autre version | expliquerait le pin ignoré |
+| son `.env.local` ou un outil tiers touchant à `node_modules` | non exploré |
+
+**Comment le savoir la prochaine fois :** son témoin d'échec porte maintenant la
+sortie de la construction, et sa fiche la publie. Si la dérive revient, le banc
+la nommera avant de bâtir (« next 16.3.3 au lieu de 16.3.2 ») — c'est cette
+ligne-là qu'il faudra rapprocher de ce qu'il venait de faire.
+
+---
+
 ## `test-acces-salarie-e2e` tombe sur main, seule et reproductible (29 août 2026)
 
 **Établi, pas supposé** : la suite échoue à l'identique sur `main` (`a23bf24`),

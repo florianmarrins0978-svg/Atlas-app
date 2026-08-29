@@ -161,8 +161,27 @@ cas("une construction RÉUSSIE ne réinstalle jamais", () => {
 });
 
 // ─── LA RÉPARATION EXISTE, ET ELLE NE BOUCLE PAS ────────────────────────────
+/**
+ * Où commence le bloc de réinstallation, quelles que soient ses conditions.
+ *
+ * **Ce repère cherchait `if (dependanceManquante) {` au caractère près**, et il
+ * a rougi le 29 août 2026 quand une seconde condition s'y est ajoutée
+ * (`|| morteSansRienDire`, pour la construction qui meurt sans un mot —
+ * `ARCHITECTURE.md` §204). Le code était juste ; c'est le contrôle qui figeait
+ * une FORME au lieu de défendre une RÈGLE (`CLAUDE.md` §5 bis).
+ *
+ * Ce qui compte, et que les deux cas ci-dessous vérifient toujours : une fois
+ * le défaut reconnu, on réinstalle, puis on rebâtit. Le nombre de raisons qui
+ * mènent là ne les regarde pas.
+ */
+function debutDuBlocDeReinstallation(): number {
+  const trouve = BANC.search(/if \(dependanceManquante[^)]*\) \{/);
+  assert.notEqual(trouve, -1, "le bloc de réinstallation a disparu de banc.mjs");
+  return trouve;
+}
+
 cas("la réinstallation est bien lancée, et le banc reconstruit après", () => {
-  const apres = BANC.slice(BANC.indexOf("if (dependanceManquante) {"));
+  const apres = BANC.slice(debutDuBlocDeReinstallation());
   assert.ok(
     /jouerEnRetenant\("npm", \[\s*"install"/.test(apres.replace(/\s+/g, " ")),
     "rien ne réinstalle : le banc reconnaît le défaut et n'en fait rien."
@@ -174,10 +193,8 @@ cas("la réinstallation est bien lancée, et le banc reconstruit après", () => 
 });
 
 cas("`npm install`, jamais `npm ci` — le serveur de développement sert pendant ce temps", () => {
-  const apres = BANC.slice(
-    BANC.indexOf("if (dependanceManquante) {"),
-    BANC.indexOf("if (code === 0) {", BANC.indexOf("if (dependanceManquante) {"))
-  );
+  const debut = debutDuBlocDeReinstallation();
+  const apres = BANC.slice(debut, BANC.indexOf("if (code === 0) {", debut));
   assert.ok(
     !/"ci"/.test(apres),
     "`npm ci` efface node_modules : il couperait le serveur qui sert le patron pendant la réparation."

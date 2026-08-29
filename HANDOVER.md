@@ -9,6 +9,33 @@ sert.
 
 ---
 
+## SA CONSTRUCTION MOURAIT SUR DES DÉPENDANCES DÉSACCORDÉES — 29 août 2026
+
+**Devant « l'appli est lente » ou « ça ne marche toujours pas », lire sa fiche
+et regarder la ligne `dit:` du relevé d'échec.** Deux lignes seulement, dont
+l'en-tête de Next, = dépendances abîmées, PAS un manque de mémoire.
+
+Ce soir-là son relevé disait : `code: 1`, **5,7 Go libres**, et
+« ▲ Next.js 16.3.3 » alors que le projet épingle **16.3.2**. Les binaires natifs
+de Next sont versionnés à l'identique : désaccordés, le compilateur meurt après
+l'en-tête, sans un mot. Son banc ne pouvait pas s'en sortir — sa réinstallation
+automatique exigeait `Cannot find module`, et il n'y avait aucun message.
+
+Le banc compare maintenant les versions avant de bâtir et réinstalle
+(`scripts/coherence-dependances.mjs`). **Reste inexpliqué : comment ses
+`node_modules` ont dérivé.** Voir `TODO.md`.
+
+**L'ordre dans lequel chercher, quand son banc est lent** — les trois causes
+vues en une seule soirée, dans l'ordre où elles se distinguent :
+
+| Ce que dit sa fiche | Cause | Geste |
+|---|---|---|
+| `dit:` = 2 lignes, en-tête Next seul | dépendances désaccordées | réparé tout seul au prochain démarrage |
+| `signal: SIGKILL`, mémoire basse | abattue faute de mémoire | rallumer l'espace |
+| fiche non réécrite depuis 20 min | espace **arrêté** | rallumer l'espace |
+
+---
+
 ## SON BANC ÉTAIT LENT PARCE QU'IL PRÉCHAUFFAIT — réparé le 29 août 2026
 
 **Si le patron redit « l'appli est lente » ou « les fichiers ne chargent pas »,

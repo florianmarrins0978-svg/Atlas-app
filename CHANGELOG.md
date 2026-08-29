@@ -9,6 +9,32 @@ Format : le plus récent en tête.
 
 ## 2026-08-29
 
+### Le banc répare ses dépendances désaccordées, au lieu de bâtir en boucle pour rien
+
+**Sa vraie panne du 29 août, trouvée grâce à la fiche du correctif précédent.**
+Le relevé publié disait : `code: 1`, **5,7 Go de mémoire libre**, et pour toute
+sortie « ▲ Next.js 16.3.3 (Turbopack) ». Ce n'était donc PAS un manque de
+mémoire — le soupçon de l'entrée ci-dessus est démenti par ses propres chiffres.
+
+Il exécutait **Next 16.3.3** alors que le projet épingle **16.3.2**, dans
+`package.json` comme dans le verrou. Next embarque des binaires natifs
+versionnés à l'identique : le compilateur meurt à leur chargement, après
+l'en-tête, sans un mot. Et son banc ne pouvait pas s'en sortir — sa
+réinstallation automatique exige `Cannot find module` dans la sortie, or il n'y
+avait aucune sortie. Le veilleur retentait la même construction condamnée,
+indéfiniment.
+
+Le banc compare désormais les versions installées à celles du projet **avant**
+de bâtir, et réinstalle si elles ont dérivé. Un second filet rattrape ce que les
+versions ne voient pas : une construction qui meurt sans rien dire déclenche
+aussi la réinstallation. Éprouvé contre son état exact — `node_modules` forcé à
+16.3.3 — et pas seulement en théorie.
+
+Reste ouvert, et noté dans `TODO.md` : **comment** ses `node_modules` ont dérivé.
+Ni `npm ci` ni `npm install` ne devraient installer 16.3.3 devant un pin exact.
+Ce correctif traite le symptôme à chaque démarrage ; il ne dit pas la cause.
+Détail : `ARCHITECTURE.md` §204.
+
 ### Le banc ne préchauffe plus quand la mémoire manque — sa version rapide peut enfin se construire
 
 *« L'appli est en mode lent, les fichiers n'arrivent pas à charger, elle bug
