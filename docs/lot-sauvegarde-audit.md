@@ -167,7 +167,8 @@ mesure qui n'avait pas eu lieu. Le garde-fou qui l'attrape est né de là.
 |---|---|
 | types, lint, mémoire du dépôt | vert, 0 erreur |
 | suites base | **260/260** |
-| suites navigateur | en cours au moment d'écrire — chiffre donné en fin de rapport |
+| suites navigateur | **115/115**, aucune non jouée |
+| connexion derrière un proxy | vert |
 
 ---
 
