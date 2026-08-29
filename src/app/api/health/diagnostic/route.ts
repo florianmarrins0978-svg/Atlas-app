@@ -15,15 +15,16 @@ import { NextResponse } from "next/server";
 // Elle n'expose aucune donnée d'entreprise : uniquement des en-têtes de la
 // requête en cours et trois variables d'environnement non secrètes.
 
+import { originesAutoriseesPourLesActions } from "@/profil-banc";
+
 export const dynamic = "force-dynamic";
 
-/** Reproduit exactement le calcul de next.config.ts, pour le rendre visible. */
-function originesAutorisees(): string[] {
-  if (process.env.NODE_ENV === "production") return [];
-  const nom = process.env.CODESPACE_NAME;
-  const domaine = process.env.GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN ?? "app.github.dev";
-  return ["*.app.github.dev", "*.github.dev", ...(nom ? [`${nom}-3000.${domaine}`] : [])];
-}
+// **Plus de copie du calcul, et c'est le correctif** : celle qui vivait ici
+// avait perdu le `&& !estBancDEssai()` de `next.config.ts`, si bien que sur le
+// banc cette page annonçait « connexion impossible » pendant que la connexion
+// marchait. Un outil de diagnostic qui accuse à tort coûte plus cher que pas
+// d'outil du tout (`AGENTS.md`).
+const originesAutorisees = originesAutoriseesPourLesActions;
 
 /** Même algorithme que Next.js : le joker ne couvre que des sous-domaines. */
 function jokerCorrespond(domaine: string, motif: string): boolean {
