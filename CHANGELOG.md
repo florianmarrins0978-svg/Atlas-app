@@ -7,6 +7,56 @@ Format : le plus récent en tête.
 
 ---
 
+## 2026-08-29
+
+### Audit final de sécurité : quatre protections qui n'en étaient pas
+
+Sept défauts trouvés avant le premier artisan réel, tous **mesurés** et non
+déduits. Le détail est dans `docs/audit-securite-final.md` ; ce qui suit est ce
+qu'ils **évitent**.
+
+**Une fuite entre entreprises.** `/api/fichiers` servait le logo d'une autre
+société : la table `entreprises` n'a aucune politique RLS — aucune des 78
+migrations n'en pose — et c'était la seule des quatorze requêtes du dépôt sur
+cette table à ne pas écrire son propre filtre. Reproduit en base avant
+correction.
+
+**Une porte ouverte au bourrage de mots de passe.** `POST
+/api/auth/callback/credentials` appelait `authorize()` sans passer par aucune
+des trois défenses, qui vivent toutes dans l'action de l'écran de connexion. Les
+deux suites censées couvrir le sujet ne pouvaient pas le voir : l'une pilote le
+formulaire, l'autre appelle le compteur en direct. La route est murée — `signIn()`
+côté serveur appelle Auth.js en processus, rien ne s'en servait.
+
+**Trente-quatre actions serveur sans garde de rôle.** `GardeAcces` ne s'exécute
+qu'au rendu ; une action s'exécute avant, et le middleware ne regarde que la
+session. Un salarié pouvait ouvrir un devis complet, calculer une marge, envoyer
+un devis chez un client, émettre une facture, supprimer un client.
+
+**Un déni de service à 258 octets.** Une référence de cellule `r="ZZZZZ1"` dans
+un classeur faisait allouer 12 356 630 chaînes : 1,7 s et 196 Mo mesurés. Ni la
+borne de 5 Mo, ni le plafond de décompression, ni la cadence ne bornaient
+l'allocation qui suit la lecture. Même famille sur le plan d'arrosage, dont les
+cotes venaient du navigateur sans être regardées.
+
+**Trois replis permissifs de configuration** : les adresses des fournisseurs
+d'IA étaient surchargeables en production — clé et dictées comprises —,
+`NODE_ENV` acceptait n'importe quelle chaîne via un `as`, et `REDIS_URL` était
+lue en brut, si bien qu'une valeur blanche franchissait son propre garde-fou.
+
+**La leçon commune, et elle vaut plus que les sept défauts.** Dans les quatre
+cas les plus graves, **un commentaire affirmait la protection qui n'existait
+pas**. C'est ce qui les avait rendus invisibles : on ne vérifie pas ce qu'une
+phrase déclare acquis. Les quatre phrases ont été corrigées avec le code.
+
+Cinq contrôles neufs, **tous vus rouges avant d'être verts** — dont
+`test-toute-table-est-cloisonnee.ts`, qui garde la prochaine migration : les
+privilèges par défaut donnent l'écriture à `atlas_app` sur toute table future,
+quand la RLS, elle, est éteinte par défaut. Les deux réglages vont en sens
+contraire, et rien ne surveillait l'écart.
+
+---
+
 ## 2026-08-27
 
 ### Fusion du lot 3 : batterie entièrement verte, et une panne de machine comprise

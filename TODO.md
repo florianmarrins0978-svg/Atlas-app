@@ -9,6 +9,93 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
+## Ce que l'audit du 29 août 2026 laisse ouvert
+
+Le détail complet est dans `docs/audit-securite-final.md`. Ce qui suit est ce
+qui reste à FAIRE, par ordre de gravité.
+
+### 1. BLOQUANT — la purge n'est appelée par personne
+
+`/api/cron/purge-fichiers` existe et fonctionne. **Rien ne l'appelle** : ni
+`vercel.json`, ni aucun `schedule:` de `.github/workflows/`. Tant que c'est le
+cas, aucun audio de dictée n'est jamais effacé, aucune photo de diagnostic
+échue, aucun fichier en attente — et toutes les durées annoncées dans
+`docs/RGPD.md` sont des promesses vides.
+
+**Personne ne s'en apercevrait**, et c'est le pire : la purge « marche » quand
+on l'appelle. Il faut donc les deux :
+
+1. un `schedule:` qui appelle la route avec son secret — le dépôt sait déjà le
+   faire (`adresses.yml`, `itineraire.yml`) ;
+2. **une sonde qui rougit** : la date de la dernière purge réussie, et une
+   anomalie au-delà de 48 h. Sans elle, le planificateur se débranchera un jour
+   sans bruit — c'est exactement la fiche figée de `CLAUDE.md` §1 bis.
+
+### 2. Ce que l'effacement d'un client oublie
+
+Quatre trous, tous de la même famille : la ligne part, la donnée reste.
+
+- **le compte rendu d'entretien survit** — avec le nom figé du client, les
+  observations, et un jeton **qui n'expire jamais** (le devis expire à 45 jours,
+  la facture à 60). Le SMS reçu six mois plus tôt ouvre encore la page ;
+- **les PDF de devis restent dans le stockage** : la ligne est supprimée sans
+  que la clé passe en file de purge. Le PDF porte nom, adresse, téléphone et
+  détail des travaux — la donnée survit précisément à l'opération censée
+  l'effacer, et plus rien ne la nomme pour la retrouver ;
+- **les jetons de facture ne sont pas retirés** : la facture est retenue par la
+  loi, soit — mais conserver une pièce comptable et laisser ouverte l'adresse
+  publique qui la sert ne sont pas la même décision ;
+- **la photo d'un ticket supprimé** n'est jamais mise en file.
+
+Le code sait pourtant que c'est le sujet : la règle est écrite pour les envois
+de devis. Elle n'a été appliquée qu'à eux. **Ne pas la réappliquer table par
+table à la main** — un contrôle qui balaie les colonnes `jeton` et les colonnes
+de clé de stockage après un effacement vaut mieux qu'une énumération qui
+s'oubliera à la prochaine table.
+
+### 3. L'export d'un client se dit exhaustif et ne l'est pas
+
+Le commentaire promet l'exhaustivité — c'est lui qui rend le trou invisible.
+Manquent : passages d'entretien, factures et paiements, précisions de chantier,
+diagnostics et leurs photos, envois. Remplacer la promesse par un contrôle qui
+la tient : le même patron que pour l'export d'entreprise, qui avait déjà réclamé
+`achats_tva` avant qu'on y pense.
+
+### 4. IA — trois constats réels, non corrigés faute de pouvoir les éprouver ici
+
+Cet environnement n'a **aucune clé d'IA** (`CLAUDE.md` §1 ter). Livrer un
+remaniement d'invite non éprouvé serait exactement ce que le dépôt interdit.
+
+- **du contenu appris entre dans la consigne système** — corrections passées et
+  libellés de lignes de devis, recopiés dans la position de plus haute autorité.
+  Un libellé rédigé comme une instruction en devient une. À sortir vers un
+  message utilisateur encadré, et à tronquer ;
+- **le patron approuve un texte, et c'est une autre donnée qui s'écrit** :
+  l'écran affiche la `description` du modèle, l'application lit `donnees`, et
+  rien ne confronte les deux. La description doit se **recomposer** côté
+  serveur — mais cela change ce qu'il voit, donc **maquette d'abord**
+  (`CLAUDE.md` §3 bis) ;
+- **un prix venu du modèle est écrit sans borne de vraisemblance.** La base
+  refuse les négatifs, pas 99 999 999,99 €. La lecture d'un ticket de caisse
+  valide déjà ses montants ; le chemin qui écrit vraiment un prix sur un devis
+  en fait moins. Le seuil est un arbitrage métier.
+
+### 5. Défense en profondeur, quand il y aura le temps
+
+- **cloisonner `entreprises`** — le filtre explicite de `/api/fichiers` ferme la
+  fuite au point d'usage, mais la table reste sans RLS. Migration à faire avec
+  précaution : les chemins publics par jeton lisent cette table, et l'un d'eux
+  ne pose pas de contexte ;
+- **la CSP porte `unsafe-inline`** sur les scripts, y compris sur les pages
+  publiques par jeton. Ce n'est pas une faille — c'est l'absence du dernier
+  filet. La voie du *nonce* est documentée ;
+- **`middleware.ts` est déprécié** en Next 16, renommé `proxy.js`. Il fonctionne
+  aujourd'hui ; le jour de sa suppression, le fichier sera **ignoré sans
+  erreur** et toute la garde de session disparaîtrait en silence. Les pages
+  appellent heureusement leur garde elles-mêmes.
+
+---
+
 ## L'export d'une entreprise oublie son logo et ses tickets de caisse (27 août 2026)
 
 **Trouvé pendant le lot Sauvegarde, en cartographiant les fichiers d'Atlas.

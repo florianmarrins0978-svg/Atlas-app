@@ -17478,3 +17478,73 @@ fichier — enregistrement, réception, reconnaissance du format, validation,
 stockage ou transcription. Ce qui suit relève du jugement de l'IA et des règles
 de chiffrage. Mêler les deux rendrait les deux illisibles, et ferait douter d'un
 lot qui, lui, tient.
+
+---
+
+## §202. Ce qui garde une Server Action, et pourquoi ce n'est pas ce qui garde une page
+
+**Décision prise à l'audit final du 29 août 2026**, après avoir trouvé
+trente-quatre actions serveur sans aucun contrôle de rôle.
+
+### Le raisonnement qui manquait
+
+Atlas avait deux gardes, et chacune était juste :
+
+| | Ce qu'elle garde | Comment |
+|---|---|---|
+| `GardeAcces` (`layout.tsx`) | les **écrans** | le rôle contre le chemin, au rendu |
+| `exigerOuverture` (`garde-route.ts`) | les **routes d'API** | le rôle contre `x-atlas-pathname` |
+
+Il en manquait une troisième, et son absence ne se voyait pas — parce que le
+commentaire de `GardeAcces` affirmait qu'elle existait.
+
+**Une action serveur n'est ni l'un ni l'autre.** Elle ne traverse pas de mise en
+page, donc `GardeAcces` ne la voit pas. Et elle s'exécute **avant** tout rendu :
+même quand la garde de l'écran redirige, l'action a déjà eu lieu, et ses effets
+ne se défont pas. Le middleware, lui, ne vérifie que la session.
+
+### Pourquoi la garde des actions ne peut PAS se faire par le chemin
+
+C'est le point qui a décidé de la forme de `garde-action.ts`, et il est
+contre-intuitif : la mécanique d'`exigerOuverture` **ne se recopie pas ici**.
+
+`x-atlas-pathname` porte l'adresse **où se trouve le navigateur**, pas la page
+qui possède l'action. Un salarié posté sur `/planning` — un chemin qui lui est
+ouvert — franchirait donc une garde par chemin tout en appelant une action de
+`/chantiers/…`. La garde serait verte et parfaitement inutile.
+
+**On garde donc sur ce que l'action FAIT**, jamais sur d'où elle semble venir :
+
+    await exigerMontants(ctx, "émettre la facture");
+
+C'est une propriété du code, que le navigateur ne peut pas influencer.
+
+### Ce qui n'est pas recopié
+
+`exigerMontants` appelle `peutVoirLesMontants` — la même fonction que les écrans
+et les PDF. Le commercial passe donc ici comme ailleurs, sans qu'on ait eu à le
+redire. Deux implémentations de la même règle finissent toujours par diverger
+(§3 de `CLAUDE.md`), et c'est précisément ce qui aurait été tentant : recopier
+les seuils dans chaque action.
+
+### Ce qui reste hors de cette garde, et pourquoi
+
+Elle couvre les six fichiers d'actions qui touchent aux **montants** —
+`docs/QUESTIONS.md` §10 : *« Les montants ne doivent pas sortir du serveur pour
+qui n'a pas le droit de les voir. »* Les autres fichiers d'actions (planning,
+photos, notes vocales, paysage, informations) n'ont pas non plus de garde de
+rôle ; ils ne font pas sortir de montant, donc ils ne relèvent pas de cette
+règle-là. Le sujet reste ouvert et il est écrit dans `TODO.md` — prétendre les
+couvrir aurait rendu le contrôle vert sur une promesse qu'il ne tient pas.
+
+### Le contrôle compte autant que la garde
+
+`test-actions-gardees-db.ts` tient les deux moitiés, et il faut les deux :
+
+1. la garde **refuse un vrai salarié en base**, et laisse passer le patron et le
+   commercial. Sans cette seconde partie, on passerait au vert en ayant fermé la
+   porte à tout le monde ;
+2. **aucune action de ces fichiers ne l'oublie**, relevé dans les fichiers
+   eux-mêmes. C'est la moitié qui vaut dans six mois.
+
+Vu rouge en retirant la garde d'émission de facture : il la nomme.
