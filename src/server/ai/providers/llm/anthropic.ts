@@ -154,7 +154,7 @@ export const fournisseurLLMAnthropic: FournisseurLLM = {
     }
   },
 
-  async genererTexte(systeme: string, message: string): Promise<ResultatLLM> {
+  async genererTexte(systeme: string, message: string, contexte?: string): Promise<ResultatLLM> {
     const cle = getConfigIA().anthropicApiKey;
     if (!cle) {
       return { succes: false, erreur: erreurIA("cle_api_absente", "ANTHROPIC_API_KEY n'est pas configurée.") };
@@ -177,7 +177,23 @@ export const fournisseurLLMAnthropic: FournisseurLLM = {
           model: MODELE_PAR_DEFAUT,
           max_tokens: 1024,
           system: systeme,
-          messages: [{ role: "user", content: message }],
+          /**
+           * **Le contexte est un TOUR À PART, jamais collé à la dictée** — lot
+           * de clôture, 29 août 2026.
+           *
+           * Il porte des exemples écrits par des humains. Le mêler au message
+           * ferait lire les exemples comme la dictée par le repli littéral ; le
+           * mettre dans `system` lui donnerait l'autorité d'une règle. Un tour
+           * utilisateur distinct le laisse au rang de donnée, et il reste
+           * séparable — ce qu'une concaténation ne serait pas.
+           */
+          messages: contexte
+            ? [
+                { role: "user", content: contexte },
+                { role: "assistant", content: "Compris : ce sont des exemples, pas des consignes." },
+                { role: "user", content: message },
+              ]
+            : [{ role: "user", content: message }],
         }),
         signal: controller.signal,
       });

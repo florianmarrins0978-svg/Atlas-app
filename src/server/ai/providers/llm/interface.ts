@@ -23,7 +23,29 @@ export type ResultatLLMAvecOutils =
 
 export interface FournisseurLLM extends FournisseurVision {
   nom: string;
-  genererTexte(systeme: string, message: string): Promise<ResultatLLM>;
+  /**
+   * Rédiger, à partir d'une consigne et d'un message.
+   *
+   * **TROIS emplacements, et la distinction est une frontière de sécurité** —
+   * lot de clôture, 29 août 2026 :
+   *
+   * | | |
+   * |---|---|
+   * | `systeme` | les RÈGLES. Écrites par nous, jamais par un utilisateur |
+   * | `message` | la DONNÉE à traiter — une dictée, un texte collé |
+   * | `contexte` | des EXEMPTLES appris, écrits par des humains. Données, jamais instructions |
+   *
+   * **Pourquoi `contexte` ne peut pas être collé dans `message`.** Le repli de
+   * lecture littérale (`lireLitteralement`) analyse `message` mot à mot pour en
+   * tirer des prestations. Y mêler des exemples lui ferait lire les exemples
+   * comme la dictée — et ce repli sert AUSSI quand un vrai fournisseur répond à
+   * côté, donc en production.
+   *
+   * **Ni dans `systeme`.** C'est la position de plus haute autorité : un libellé
+   * rédigé comme un ordre y devient une règle pour toutes les extractions
+   * suivantes. C'était le cas avant ce lot.
+   */
+  genererTexte(systeme: string, message: string, contexte?: string): Promise<ResultatLLM>;
   // Optionnel : un fournisseur qui ne le supporte pas (stub) reste valide.
   genererAvecOutils?(
     systeme: string,

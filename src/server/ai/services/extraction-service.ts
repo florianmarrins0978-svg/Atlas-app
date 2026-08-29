@@ -165,10 +165,17 @@ export async function extraire(
    * qu'on lui demande.
    */
   const bloc = consigneMetier?.trim();
-  const messageUtilisateur = bloc
-    ? `<exemples_passes>\n${bloc}\n</exemples_passes>\n\n${texte}`
-    : texte;
-  const resultat = await fournisseur.genererTexte(SYSTEME, messageUtilisateur);
+  const resultat = await fournisseur.genererTexte(
+    SYSTEME,
+    // **La dictée reste SEULE dans son emplacement.** Premier jet du lot de
+    // clôture : le bloc appris y était préfixé — et trois suites navigateur
+    // l'ont attrapé. `lireLitteralement` analyse ce message mot à mot pour en
+    // tirer des prestations, et il lisait alors les exemples à la place de ce
+    // que l'artisan avait dicté. Ce repli sert AUSSI quand un vrai fournisseur
+    // répond à côté : le défaut aurait atteint la production.
+    texte,
+    bloc ? `<exemples_passes>\n${bloc}\n</exemples_passes>` : undefined
+  );
   if (!resultat.succes) {
     return replier(resultat.erreur.message);
   }
