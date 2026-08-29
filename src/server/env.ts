@@ -383,6 +383,45 @@ function construireEnv(): Env {
   const stockageProvider: FournisseurStockage = stockageProviderBrut === "s3" ? "s3" : "local";
 
   /**
+   * **L'ADRESSE PUBLIQUE SE DÉCLARE, ELLE NE SE DEVINE PAS** — lot de clôture,
+   * 29 août 2026.
+   *
+   * Sans `ATLAS_URL_PUBLIQUE`, l'adresse du site se déduit de `x-forwarded-host`
+   * — un en-tête que le CLIENT écrit quand le mandataire de tête ne le réécrit
+   * pas, ce qui est le cas par défaut de plusieurs hébergeurs.
+   *
+   * Or cette adresse compose **le lien que le patron recopie et envoie à son
+   * client** : `https://…/devis/<jeton>`. Une valeur forgée lui fait donc
+   * transmettre, de sa propre main, un lien qui mène ailleurs — jeton compris.
+   * Elle compose aussi la redirection de retour de Google.
+   *
+   * Le défaut sûr existe déjà côté code (l'adresse déclarée passe avant
+   * l'en-tête, `adresse-publique.ts`), mais il ne sert à rien tant que personne
+   * ne déclare l'adresse. **On l'exige donc au démarrage** plutôt que de laisser
+   * un déploiement muet composer ses liens à partir de ce qu'on lui souffle.
+   *
+   * **Le banc en est dispensé** (`exigencesDeDeploiement`), et c'est nécessaire :
+   * son adresse change à chaque espace de travail, personne ne peut la poser
+   * d'avance, et c'est précisément le cas que `adressePublique` traite en
+   * retombant sur l'en-tête.
+   */
+  const urlPublique = optionnel("ATLAS_URL_PUBLIQUE");
+  if (exigencesDeDeploiement && !urlPublique) {
+    throw new ErreurConfiguration(
+      "ATLAS_URL_PUBLIQUE manquante en production.\n" +
+        "Sans elle, l'adresse du site se déduit d'un en-tête que le client peut écrire — et c'est\n" +
+        "cette adresse qui compose les liens de devis et de facture que le patron envoie à ses\n" +
+        "clients. Poser l'adresse publique complète, par exemple https://atlas.exemple.fr"
+    );
+  }
+  if (urlPublique && !/^https?:\/\/[^\s/]+/.test(urlPublique)) {
+    throw new ErreurConfiguration(
+      `ATLAS_URL_PUBLIQUE vaut « ${urlPublique} », qui n'est pas une adresse complète.\n` +
+        "Il faut le protocole et l'hôte, par exemple https://atlas.exemple.fr"
+    );
+  }
+
+  /**
    * **UN DÉPLOIEMENT RÉEL NE PEUT PAS SE DÉCLARER BANC D'ESSAI** (audit du
    * 23 août 2026, constat M8).
    *

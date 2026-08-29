@@ -84,7 +84,7 @@ export type ExportEntreprise = {
 export type FichierAJoindre = {
   storageKey: string;
   /** D'où vient ce fichier, pour le retrouver dans les données. */
-  origine: "photo" | "note-vocale" | "devis-pdf" | "facture-pdf";
+  origine: "photo" | "note-vocale" | "devis-pdf" | "facture-pdf" | "logo" | "ticket-tva";
 };
 
 /**
@@ -365,6 +365,27 @@ export async function exporterEntreprise(
     // l'archive sur un objet qui n'existe plus (c'est le cas normal après
     // 90 jours, pas une anomalie).
     for (const p of sesPhotosDiagnostic) ajouter(p.storageKey as string | null, "photo");
+
+    /**
+     * **LE LOGO ET LES TICKETS DE CAISSE PARTENT AUSSI** — lot de clôture,
+     * 29 août 2026.
+     *
+     * Ils manquaient, et c'était connu depuis le lot Sauvegarde : les LIGNES
+     * `achats_tva` partaient bien, mais **pas la photo du ticket qu'elles
+     * nomment**. Une archive « toutes mes données » qui rend la ligne « Total
+     * Access, 62,40 € » sans le justificatif est incomplète au sens qui compte
+     * — c'est le papier qui vaut preuve devant l'administration.
+     *
+     * Idem pour le logo : il appartient à l'entreprise, il a été téléversé par
+     * elle, et rien ne justifiait qu'il reste derrière.
+     *
+     * **La correction est de deux lignes parce que les données étaient déjà
+     * lues** : `lesAchatsTva` et `entreprise` sont chargés plus haut pour les
+     * tables. Il ne manquait que de les parcourir. C'est ce qui a fait juger la
+     * correction sûre plutôt que disproportionnée.
+     */
+    for (const a of lesAchatsTva) ajouter(a.photoCle as string | null, "ticket-tva");
+    for (const ent of entreprise) ajouter(ent.logoStorageKey as string | null, "logo");
 
     return {
       versionFormat: VERSION_FORMAT_EXPORT,

@@ -78,7 +78,12 @@ export const COLONNES_OBJET: readonly ColonneObjet[] = [
     quoi: "l'audio d'une note vocale",
     absenceNormale: true,
     raisonAbsence:
-      "purgé sept jours après transcription réussie (RETENTION.audioApresTranscriptionJours)",
+      // **Tant que le planificateur n'est pas branché, cette absence ne peut PAS
+      // venir de la purge** — elle ne tourne pas (voir docs/DEPLOIEMENT-PURGE.md).
+      // Le dire, parce que ce contrôle de cohérence s'appuyait sur une raison qui
+      // n'existait pas encore, et tolérait donc une absence pour un motif faux.
+      "purgé sept jours après transcription réussie (RETENTION.audioApresTranscriptionJours) — " +
+      "tant que le planificateur de purge n'est pas branché, une absence vient d'autre chose",
   },
   {
     table: "photos",

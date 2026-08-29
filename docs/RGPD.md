@@ -208,22 +208,60 @@ mêmes deux réponses pour Anthropic. Aucune n'a été lue à la source par l'ag
 Le principe : **ce qui n'est pas conservé ne peut pas fuir.** C'est la mesure de
 sécurité la moins coûteuse et la plus efficace.
 
-| Donnée | Durée actuelle | Durée à retenir |
-|---|---|---|
-| Fichiers orphelins | **24 h** — implémenté (`purgerFichiersEnAttente`) | Inchangé |
-| Audio des notes vocales | **illimitée** | À supprimer une fois la transcription validée — l'audio n'a plus d'utilité |
-| Transcriptions | **illimitée** | À supprimer avec les informations structurées validées |
-| Chantiers, devis, clients | **illimitée** | Durée de la relation + prescription commerciale |
-| Historique des prix | **illimitée** | Peut être **anonymisé** : l'intérêt est le prix, pas le client |
-| Photos de chantier | **illimitée** | Durée de la relation |
-| **Photos de diagnostic végétal** | **90 jours** si le diagnostic n'est rattaché à aucun chantier — implémenté et **configurable** (`PHOTOS_DIAGNOSTIC_RETENTION_JOURS`) | Inchangé. Rattachée à un chantier, la photo suit le dossier et n'a aucune échéance par défaut — le rattachement **recalcule** l'échéance |
-| Journaux techniques | non défini | 6 à 12 mois |
-| Compte supprimé | non défini | Effacement complet sous 30 jours |
+> ### ⚠ CE TABLEAU A MENTI, ET IL FAUT DIRE COMMENT
+>
+> Jusqu'au 29 août 2026, trois lignes portaient le mot « implémenté ». Le
+> mécanisme existait bien — mais **rien ne l'appelait**. Ni `vercel.json`, ni
+> aucun planificateur : `/api/cron/purge-fichiers` n'était déclenchée par
+> personne, et **aucun fichier n'a donc jamais été purgé**.
+>
+> « Implémenté » voulait dire « le code est écrit ». Un lecteur comprenait « la
+> donnée est effacée ». C'est le pire écart possible dans un document de
+> conformité : il rassure exactement là où il faudrait alerter.
+>
+> Le tableau distingue désormais **trois états**, et jamais deux :
+>
+> | | |
+> |---|---|
+> | ✅ **appliquée** | le mécanisme existe ET quelque chose le déclenche |
+> | ⏳ **en attente du planificateur** | le mécanisme existe, il tourne dès qu'on le branche (`docs/DEPLOIEMENT-PURGE.md`) |
+> | ❌ **rien** | aucun code, seulement une intention |
 
-> **Écart à combler.** Seuls les fichiers orphelins sont purgés. Il n'existe
-> aujourd'hui **aucune politique de conservation** pour les données métier.
-> C'est le principal manquement technique, et le plus simple à corriger : la
-> mécanique de purge planifiée existe déjà, il suffit de l'étendre.
+| Donnée | Durée | État réel | Ce qu'il faut retenir |
+|---|---|---|---|
+| Fichiers orphelins | 24 h | ⏳ **en attente** | `purgerFichiersEnAttente`, lit `RETENTION.fichiersOrphelinsHeures` |
+| Audio des notes vocales | **7 jours** après transcription réussie | ⏳ **en attente** | La mise en file, elle, **tourne déjà** : chaque transcription inscrit son audio dans `audios_a_purger`. Il ne manque que le vidage |
+| **Photos de diagnostic végétal** | 90 jours sans chantier rattaché | ⏳ **en attente** | Mise en file effective ; vidage en attente. Configurable par `PHOTOS_DIAGNOSTIC_RETENTION_JOURS` |
+| Photo de diagnostic **rattachée à un chantier** | **aucune échéance** | ✅ **appliquée** | Et c'est **délibéré** : elle suit le dossier, c'est la suppression du chantier qui l'emporte. Le « on ne purge pas » est réellement effectif |
+| Preuves de ré-authentification | 10 min | ✅ **appliquée** | L'expiration est vérifiée **à la lecture** : rien de la sécurité ne dépend du ménage. Celui-ci n'empêche que la table de grossir |
+| Tentatives de connexion | 1 h | ✅ **appliquée** | Nettoyée **à chaque écriture**, sans planificateur. Le seul ménage qui tourne vraiment aujourd'hui |
+| Lien public d'un devis | 45 jours | ✅ **appliquée** | Vérifié à la lecture. *Absent de ce tableau jusqu'au 29 août alors qu'il était appliqué* |
+| Lien public d'une facture | 60 jours | ✅ **appliquée** | Idem |
+| Lien d'un compte rendu d'entretien | **aucune** | ❌ **rien** | Les deux autres expirent, celui-ci non. Écart connu, inscrit dans `TODO.md` |
+| Transcriptions | illimitée | ❌ **rien** | Aucune constante, aucun code. Intention seule |
+| Chantiers, devis, clients | illimitée | ❌ **rien** | Durée de la relation + prescription commerciale — à définir |
+| Historique des prix | illimitée | ❌ **rien** | Peut être **anonymisé** : l'intérêt est le prix, pas le client |
+| Photos de chantier | illimitée | ❌ **rien** | Durée de la relation |
+| Journaux techniques | 180 j *visés* | ❌ **rien dans Atlas**, et c'est normal | Les journaux partent sur la sortie standard : c'est **l'hébergeur** qui les garde et les expire. À poser chez Scaleway |
+| Compte fermé | 30 j *visés* | ❌ **le mécanisme n'existe pas** | Il n'y a **aucun chemin de fermeture de compte** dans le produit : ni écran, ni fonction. La durée décrit une opération qui n'est pas codée |
+
+### Conservation IMPOSÉE — à ne jamais purger
+
+Ces durées-là ne sont pas des échéances de suppression : ce sont des refus
+d'effacer. Elles gouvernent ce que le droit à l'effacement **ne peut pas**
+emporter, et aucune purge automatique ne doit jamais les atteindre.
+
+| Donnée | Durée | Fondement | État |
+|---|---|---|---|
+| Factures et pièces comptables | **10 ans** | Code de commerce, L123-22 | ✅ appliquée — l'effacement d'un client les conserve et le dit |
+| Devis **accepté** | **5 ans** | Engagement contractuel | ✅ appliquée — un devis non accepté, lui, s'efface |
+
+> **L'écart qui reste, et il est d'infrastructure, pas de code.** Tout ce qui est
+> marqué ⏳ tourne dès qu'un planificateur appelle la route — c'est un
+> déclencheur *cron* à créer chez l'hébergeur, décrit pas à pas dans
+> `docs/DEPLOIEMENT-PURGE.md`. Depuis le 29 août 2026, `/api/health/purge`
+> répond **503** tant que ce n'est pas fait : l'absence de purge est enfin
+> **détectable** au lieu d'être silencieuse.
 
 Deux gestes réduisent l'exposition sans rien coûter en fonctionnalité :
 supprimer l'audio après validation de la transcription, et anonymiser

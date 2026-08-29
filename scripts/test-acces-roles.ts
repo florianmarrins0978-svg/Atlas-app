@@ -96,6 +96,10 @@ const OUVERT_AU_SALARIE = [
   "/api/health/banc",
   "/api/health/banc/etat",
   "/api/health/diagnostic",
+  // Ajoutée au lot de clôture du 29 août 2026 : elle dit si le ménage se fait
+  // encore. Ouverte comme les autres sondes — un outil de surveillance n'a pas
+  // de session, et elle ne rend qu'une date et un statut.
+  "/api/health/purge",
 ];
 
 console.log("=== Qui atteint quoi ===\n");
