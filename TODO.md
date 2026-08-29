@@ -9,6 +9,42 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
+## `test-acces-salarie-e2e` tombe sur main, seule et reproductible (29 août 2026)
+
+**Établi, pas supposé** : la suite échoue à l'identique sur `main` (`a23bf24`),
+jouée SEULE, sans aucun commit par-dessus. Ce n'est donc ni une collision entre
+suites, ni le manque de mémoire du ticket ci-dessous.
+
+L'étape qui tombe, toujours la même :
+
+    ✗ mais SA feuille de chantier, elle, sort — sans un seul montant
+
+Le symptôme change d'un essai à l'autre, et c'est ce qui rend le diagnostic
+trompeur :
+
+| Contexte | Ce que Playwright dit |
+|---|---|
+| dans la batterie complète | `page.goto: Timeout 45000ms exceeded` |
+| jouée seule | `page.goto: net::ERR_CONNECTION_RESET` |
+
+Les deux portent sur `http://localhost:3000/login`, et les deux disent la même
+chose : **le serveur ne répond plus à cet instant précis.** Le journal du
+serveur montre juste avant une route PDF lourde qui se compile
+(`/api/chantiers/[chantierId]/feuille/pdf`, rendue en 404 après 6,5 s) et un
+`GET /login` à **86 secondes**.
+
+**Piste, non vérifiée :** la compilation de la route PDF de la feuille de
+chantier étrangle le serveur au point qu'il ne répond plus, voire se fait
+abattre. À confronter au ticket ci-dessous, qui décrit le même coupable
+(Turbopack) dans un autre contexte.
+
+**Ce que ça ne doit PAS faire croire :** la fonctionnalité n'est pas forcément
+cassée. Les sept autres vérifications de cette suite passent, y compris celles
+qui gardent l'isolation du salarié. Ce qui échoue est l'ACCÈS au serveur, pas la
+règle métier.
+
+---
+
 ## La fiche ne sait pas dire « construction TUÉE » (29 août 2026)
 
 **Trouvé en diagnostiquant sa lenteur du 29 août** (`ARCHITECTURE.md` §202), et
