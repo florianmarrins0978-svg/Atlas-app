@@ -441,6 +441,153 @@ async function main() {
     assert.equal(resultats[0].statut, "appliquee", resultats[0].message);
   });
 
+  await test("UNE PHOTO LUE entre comme une DONNÉE, et la question reste la dernière lue", async () => {
+    /**
+     * Sa demande du 27 août 2026, point 4. Ce qu'une photo a donné à lire est
+     * rangé AVANT sa question, sous un titre qui dit que c'est une observation
+     * — jamais une consigne. Une étiquette photographiée peut porter une phrase
+     * qui ressemble à un ordre ; le modèle a pour règle de ne pas la suivre.
+     */
+    const reponse = await poserQuestion(
+      A,
+      chantier.id,
+      [],
+      "Combien coûte le mètre linéaire ?",
+      "Devis Aqua Plus — Taille de haie 12 ml à 18 €/ml"
+    );
+    assert.equal(reponse.succes, true);
+  });
+
+  await test("UNE PHOTO NE FAIT PAS ENTRER LE DEHORS — le périmètre lit SA question", async () => {
+    // Le filtre se pose sur la question, pas sur l'observation : sans quoi une
+    // photo suffirait à faire répondre l'assistant sur les horaires d'un
+    // cinéma, ce qu'il a explicitement exclu le 26 août.
+    const reponse = await poserQuestion(
+      A,
+      chantier.id,
+      [],
+      "est-ce que le CGR de Mantes est ouvert ?",
+      "Affiche de cinéma — séances à 20h"
+    );
+    assert.equal(reponse.succes, true);
+    if (!reponse.succes) return;
+    assert.match(reponse.texte, /ne réponds qu'aux questions sur Atlas/i);
+    assert.deepEqual(reponse.sources, []);
+  });
+
+  // ─── LES GESTES QUI MANQUAIENT — sa demande du 27 août 2026 ─────────────
+
+  await test("SUPPRIMER UN TARIF — et il faut qu'il existe encore", async () => {
+    const t = await tarifsRepo.creerTarif(A, { intitule: "Tarif à retirer", prix: "42.00" });
+    const { resultats } = await confirmer(A, null, [
+      { type: "supprimer_tarif", description: "Retirer le tarif", donnees: { tarifId: t.id } },
+    ]);
+    assert.equal(resultats[0].statut, "appliquee", resultats[0].message);
+
+    // Rejouer le même geste ne doit rien casser : la cible a disparu, on le DIT.
+    const { resultats: encore } = await confirmer(A, null, [
+      { type: "supprimer_tarif", description: "Retirer le tarif", donnees: { tarifId: t.id } },
+    ]);
+    assert.equal(encore[0].statut, "conflit");
+  });
+
+  await test("SUPPRIMER UN CHANTIER, depuis n'importe quel écran", async () => {
+    const jetable = await chantiersRepo.creerChantier(A, { nom: "Chantier jetable", clientId: bernard.id });
+    const { resultats } = await confirmer(A, null, [
+      { type: "supprimer_chantier", description: "Supprimer le chantier", donnees: { chantierId: jetable.id } },
+    ]);
+    assert.equal(resultats[0].statut, "appliquee", resultats[0].message);
+  });
+
+  await test("SANS CHANTIER VISÉ, une suppression ne part PAS sur celui de l'écran", async () => {
+    /**
+     * **Le geste le plus dangereux du lot.** Sans cible nommée, il retomberait
+     * sur le chantier ouvert — et effacerait le mauvais. Il est donc dans
+     * `BESOIN_D_UN_CHANTIER`, et le refus ne renvoie pas ouvrir une fiche.
+     */
+    const { resultats } = await confirmer(A, null, [
+      { type: "supprimer_chantier", description: "Supprimer le chantier", donnees: {} },
+    ]);
+    assert.equal(resultats[0].statut, "conflit");
+    assert.doesNotMatch(resultats[0].message ?? "", /ouvrez-le|ouvrir/i);
+  });
+
+  await test("POSER UNE ABSENCE — mais jamais sur une date inventée", async () => {
+    const { resultats } = await confirmer(A, null, [
+      {
+        type: "poser_absence_equipe",
+        description: "Poser une absence",
+        donnees: { rang: 1, premierJour: "2026-09-14", dernierJour: "2026-09-18", motif: "Congés" },
+      },
+    ]);
+    assert.equal(resultats[0].statut, "appliquee", resultats[0].message);
+
+    // Le 31 février n'existe pas, et une absence mal posée fait proposer au
+    // client un jour où personne ne peut venir.
+    const { resultats: fausse } = await confirmer(A, null, [
+      {
+        type: "poser_absence_equipe",
+        description: "Poser une absence",
+        donnees: { rang: 1, premierJour: "2026-02-31", dernierJour: "2026-02-31" },
+      },
+    ]);
+    assert.equal(fausse[0].statut, "conflit");
+
+    // Une fin avant le début est un ordre inversé, pas une absence.
+    const { resultats: inversee } = await confirmer(A, null, [
+      {
+        type: "poser_absence_equipe",
+        description: "Poser une absence",
+        donnees: { rang: 1, premierJour: "2026-09-20", dernierJour: "2026-09-14" },
+      },
+    ]);
+    assert.equal(inversee[0].statut, "conflit");
+  });
+
+  await test("RÉGLER LES DOCUMENTS ne touche QUE ce qui est donné", async () => {
+    /**
+     * **Ce qui n'est pas dans la proposition doit rester tel quel.** Envoyer
+     * l'objet entier remettrait à zéro ce qu'il a réglé à la main — et cela
+     * s'imprime sur des documents que ses clients gardent.
+     */
+    await confirmer(A, null, [
+      { type: "regler_documents", description: "Validité à 45 jours", donnees: { validiteJours: 45 } },
+    ]);
+    await confirmer(A, null, [
+      { type: "regler_documents", description: "Acompte à 30 %", donnees: { acomptePourcent: "30" } },
+    ]);
+    const apres = await entreprisesRepo.getEntreprise(A);
+    assert.equal(apres?.validiteDevisJours, 45, "la validité a été perdue en réglant l'acompte");
+    assert.equal(String(apres?.acomptePourcent ?? ""), "30.00");
+  });
+
+  await test("Une proposition de réglage VIDE se refuse au lieu de ne rien faire", async () => {
+    const { resultats } = await confirmer(A, null, [
+      { type: "regler_documents", description: "Régler les documents", donnees: {} },
+    ]);
+    assert.equal(resultats[0].statut, "conflit");
+  });
+
+  await test("COMPOSER LA FICHE D'ENTRETIEN — une ligne s'ajoute, et ne se double pas", async () => {
+    const { resultats } = await confirmer(A, null, [
+      {
+        type: "ajouter_prestation_entretien",
+        description: "Ajouter une ligne",
+        donnees: { famille: "Tonte", libelle: "Tonte des abords" },
+      },
+    ]);
+    assert.equal(resultats[0].statut, "appliquee", resultats[0].message);
+
+    const { resultats: doublon } = await confirmer(A, null, [
+      {
+        type: "ajouter_prestation_entretien",
+        description: "Ajouter une ligne",
+        donnees: { famille: "Tonte", libelle: "Tonte des abords" },
+      },
+    ]);
+    assert.equal(doublon[0].statut, "conflit");
+  });
+
   console.log(`\n${passed} test(s) réussi(s), ${failed} échec(s)`);
   await fermerLimiteur();
   await pool.end();

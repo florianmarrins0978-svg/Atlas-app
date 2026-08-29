@@ -615,6 +615,25 @@ TEXTE des messages — le nom du client, celui de ses chantiers. C'est faisable
 et ce n'est pas anodin (un nom courant balaierait des échanges sans rapport) :
 à trancher avant de coder, pas en codant.
 
+## ⚠ La lecture d'une photo par l'assistant n'a pas été vue sur un VRAI fournisseur
+
+**Livré le 27 août 2026**, et éprouvé ici par un fournisseur d'essai posé par la
+couture (`_reinitialiserFabriqueLLM`) — ce poste n'a aucune clé (`CLAUDE.md`
+§1 ter). Ce qui est tenu ici : le refus propre quand la vision manque, la
+lecture vide qui n'est pas un succès, la panne du fournisseur qui remonte SA
+raison, la place de la lecture dans la conversation, le périmètre.
+
+**Ce qui reste à voir sur son espace**, et c'est le cœur : qu'une vraie photo —
+un devis de fournisseur, une plaque, un relevé — soit lue avec ses CHIFFRES.
+C'est là que tout se joue : un résumé qui perd « 12 ml à 18 €/ml » ne sert à
+rien. **Lui demander une capture** du résultat plutôt qu'une commande.
+
+**Et ce que le fil ne garde pas** : la lecture d'une photo part avec la question
+mais n'est pas rangée dans le fil. Après un rechargement, la conversation garde
+sa question, pas ce que la photo montrait. C'est délibéré — le fil est plafonné
+à trente messages et une lecture de photo est longue —, mais il faudra le
+revoir s'il s'en plaint.
+
 ## ⚠ Une proposition ne revient pas après un rechargement
 
 **Depuis le 27 août 2026**, le fil de l'assistant survit au rechargement — mais
@@ -642,11 +661,12 @@ identifiant — aucune ne peut être appliquée par erreur.
 **FAIT le 26 août 2026** pour l'essentiel (`ARCHITECTURE.md` §188). Ce qui reste
 ouvert, et qu'il faudra sans doute lui demander :
 
-- **Des gestes non couverts** : composer la fiche d'entretien, régler les
-  documents (validité, acompte, mentions), gérer les absences d'équipe, lancer
-  un plan d'arrosage, créer un client SANS chantier, supprimer un chantier ou un
-  tarif. Chacun est une entrée de plus dans `TypeActionProposee` et un `case`
-  dans `appliquerPropositionsAction` — le patron est posé.
+- ~~**Des gestes non couverts**~~ — **six d'entre eux faits le 27 août 2026**
+  (« fais la dernière ») : supprimer un chantier, supprimer un tarif, poser une
+  absence d'équipe, régler les documents, ajouter et retirer une ligne de la
+  fiche d'entretien. **Restent ouverts** : lancer un plan d'arrosage, et créer
+  un client SANS chantier. Chacun est une entrée de plus dans
+  `TypeActionProposee` et un `case` dans `appliquerPropositionsAction`.
 - **Le filtre de périmètre attrape le cas franc, pas la totalité.** Une question
   du dehors sans marque connue passe au modèle, qui a la consigne. S'il signale
   une réponse hors-sujet, c'est une marque à ajouter dans `MARQUES_DU_DEHORS` —

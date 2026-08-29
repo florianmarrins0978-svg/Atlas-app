@@ -43,6 +43,25 @@ heures plus tôt, dans ce même conteneur. Ne pas écrire que c'est réglé.
 
 ---
 
+## L'ASSISTANT ENTEND ET VOIT DEPUIS LE 27 AOÛT 2026
+
+Le micro **remplit le champ**, il n'envoie rien (`dicterQuestionAction`). La
+photo est **lue** (`regarder-photo.ts`), et c'est la lecture qui entre dans la
+conversation — jamais l'image : `genererAvecOutils` ne sait pas la porter.
+
+Trois choses à ne pas défaire :
+
+1. la photo passe par `preparerPhotoEntrante` — métadonnées retirées avant tout
+   envoi chez un tiers, refus quand le nettoyage échoue ;
+2. la lecture est rangée **avant** la question, sous un titre qui dit que c'est
+   une observation. Une étiquette photographiée peut ressembler à un ordre ;
+3. le filtre de périmètre lit **la question**, pas la photo.
+
+La vision n'est **pas** éprouvable ici (aucune clé) : les contrôles posent un
+fournisseur d'essai. La dictée, elle, l'est de bout en bout.
+
+---
+
 ## L'ASSISTANT A UNE MÉMOIRE DEPUIS LE 27 AOÛT 2026
 
 Son fil vit en base (`messages_assistant`, migration 0069) et se relit à

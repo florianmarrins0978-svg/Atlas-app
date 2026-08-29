@@ -181,6 +181,72 @@ chantier : ouvrez-le » était exactement ce qu'il reproche depuis le 25 août.
 La suite qui exigeait ce libellé mot pour mot a rougi sur une demande exaucée :
 elle vise désormais la règle, pas la phrase (`CLAUDE.md` §5 bis).
 
+### Les six gestes qui manquaient — dont deux qui effacent
+
+**Sa demande du 27 août 2026 : « fais la dernière »**, sur les cinq pistes
+proposées. Supprimer un chantier, supprimer un tarif, poser une absence
+d'équipe, régler les documents, ajouter et retirer une ligne de la fiche
+d'entretien. Deux outils de lecture arrivent avec eux —
+`LireReglagesDocuments` et `LirePrestationsEntretien` — parce qu'on vise par
+identifiant, jamais par libellé.
+
+**Tous restent des PROPOSITIONS**, y compris les deux qui effacent : *« très
+important que ça reste le doigt du patron »*.
+
+**Ce que la suite a attrapé, et qui aurait fini chez ses clients.** Régler
+l'acompte **effaçait la validité** : `mettreAJourEntreprise` REMPLACE le bloc
+des conditions — ce qui est juste pour l'écran des réglages, qui renvoie le
+formulaire entier, et faux pour une proposition qui n'en porte qu'un. Les
+réglages absents étaient donc remis à zéro, et cela s'imprime sur des documents
+que ses clients gardent : il ne l'aurait vu qu'au devis suivant. On relit et on
+fusionne.
+
+**Trois refus qui ne se négocient pas :**
+
+- un chantier **facturé ne se supprime pas** — le refus reste au serveur, la
+  correction passe par un avoir ;
+- une suppression **sans chantier visé** ne part pas sur celui de l'écran : elle
+  effacerait le mauvais ;
+- une absence sur une date qui n'existe pas — le 31 février —, ou dont la fin
+  précède le début, se refuse. Une absence mal posée fait proposer au client un
+  jour où personne ne peut venir.
+
+### Lui parler, et lui montrer une photo
+
+**Sa demande du 27 août 2026 : « fais la 1 et la 4 »**, sur les cinq pistes
+proposées pour l'assistant.
+
+**Le micro remplit le champ, il n'envoie rien.** C'est la règle de la dictée
+depuis le 7 août : il relit avant que ça parte. Une question mal entendue qui
+partirait seule pourrait viser le mauvais client. La dictée **s'ajoute** à ce
+qui est déjà tapé plutôt que de l'écraser, et elle ne passe **pas** par le
+modèle — ce qu'il a dit, tel quel : faire « améliorer » sa phrase, c'est risquer
+de changer un nom.
+
+**La photo est LUE, puis la lecture entre dans la conversation.**
+`genererAvecOutils` ne sait pas porter d'image, et le dépôt fait déjà ainsi
+depuis le 13 août pour le ticket de caisse. La consigne demande de **recopier
+mot pour mot** chiffres et références : un résumé perd exactement ce qui sert.
+
+**Trois choses qui ne se négocient pas :**
+
+- la photo passe par **la porte commune** (`photo-entrante.ts`) : ses
+  métadonnées — dont les coordonnées GPS du jardin d'un client — sont retirées
+  avant tout envoi chez un tiers, et un fichier qu'on ne sait pas nettoyer est
+  refusé. Rien n'est stocké : la photo est lue, puis oubliée ;
+- ce qu'elle donne à lire entre comme une **donnée**, jamais comme une consigne,
+  et **avant** sa question — une étiquette photographiée peut ressembler à un
+  ordre, et sa question doit rester la dernière chose lue ;
+- **le périmètre lit SA question**, pas la photo : une affiche de cinéma ne fait
+  pas répondre l'assistant sur les horaires d'un cinéma.
+
+**Ce qui n'a PAS pu être éprouvé ici, et il faut le dire :** la lecture d'une
+vraie photo par un vrai fournisseur. Ce poste n'a aucune clé (`CLAUDE.md`
+§1 ter) ; les contrôles posent un fournisseur d'essai par la couture prévue et
+tiennent ce qui nous appartient — le refus propre quand la vision manque, la
+place de la lecture, le périmètre. **La dictée, elle, est éprouvée ici de bout
+en bout.** La chaîne complète avec une photo se vérifie **sur son espace**.
+
 ### Une maquette : quand l'assistant parle le premier
 
 Sa deuxième piste retenue. Elle demande **où** il prend la parole, donc une
