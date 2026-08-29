@@ -392,6 +392,26 @@ TEXTE des messages — le nom du client, celui de ses chantiers. C'est faisable
 et ce n'est pas anodin (un nom courant balaierait des échanges sans rapport) :
 à trancher avant de coder, pas en codant.
 
+## ⚠ « Ça ne marche pas la dictée » — NON REPRODUIT ici
+
+**Sa capture du 27 août 2026 au soir**, sur son espace : *« La dictée n'a pas
+abouti. Vous pouvez écrire votre question. »* — la phrase du `catch` de l'écran,
+celle qu'on affiche quand on ne sait rien. **Rien n'a été reproduit sur ce
+poste** : la dictée y passe de bout en bout par le fournisseur `dev`.
+
+**Ce qui a été livré, et qui n'est pas un correctif :** l'action ne lève plus.
+Chaque refus rend sa phrase — audio refusé, transcription refusée avec le motif
+du fournisseur, rien entendu — et l'imprévu se journalise
+(`dictee_assistant_panne`). **Le prochain essai dira où regarder** ; celui-ci ne
+le pouvait pas.
+
+**Deux pistes corrigées au passage, sans preuve qu'elles soient la cause :** le
+fichier portait « .webm » quel que soit le format réel (un iPhone rend du mp4),
+et rien ne journalisait ni la taille ni le type reçus.
+
+**Ce qu'il faut LUI demander au prochain essai** : la phrase exacte affichée.
+Elle nomme désormais le coupable — porte d'entrée, fournisseur, ou panne.
+
 ## ⚠ La lecture d'une photo par l'assistant n'a pas été vue sur un VRAI fournisseur
 
 **Livré le 27 août 2026**, et éprouvé ici par un fournisseur d'essai posé par la
