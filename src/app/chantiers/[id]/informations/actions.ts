@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { chantierDuGeste } from "@/server/ai/tools/chantier-vise";
 import { jourIso } from "@/lib/jour";
 import { getCurrentCtx } from "@/server/session-ctx";
 import { preparerDevisDepuisDictee, enregistrerPrecisionsEtReprendre } from "@/server/services/devis-depuis-dictee";
@@ -28,7 +29,15 @@ import { getClient, mettreAJourClient, trouverOuCreerClient } from "@/server/rep
 import { listerChantiersPourAffichage } from "@/server/repositories/chantiers";
 import { nomDuChantier } from "@/lib/nom-chantier";
 import { filtrerClientsParNom } from "@/lib/recherche-client";
-import { creerTarif, modifierTarif } from "@/server/repositories/tarifs";
+import { creerTarif, modifierTarif, supprimerTarif } from "@/server/repositories/tarifs";
+import { supprimerChantier, SuppressionChantierRefusee } from "@/server/repositories/chantiers";
+import { noterAbsenceEquipe } from "@/server/repositories/absences-equipe";
+import { mettreAJourEntreprise, getEntreprise } from "@/server/repositories/entreprises";
+import { conditionsDepuisEntreprise } from "@/lib/conditions-documents";
+import {
+  ajouterPrestation as ajouterPrestationEntretien,
+  retirerPrestation as retirerPrestationEntretien,
+} from "@/server/repositories/prestations-entretien";
 import { terminerChantier } from "@/server/repositories/factures";
 import { estUnJourValide, estUnMomentValide, type QuandChantier } from "@/lib/planning-jour";
 import { ajouterLignePrixDirectAction } from "@/app/chantiers/[id]/prix/actions";
@@ -272,7 +281,7 @@ export async function appliquerPropositionsAction(
      * un chantier d'une entreprise voisine est indiscernable d'un chantier
      * disparu, et rend le même conflit.
      */
-    const chantierVise = String(donnees.chantierId ?? chantierId ?? "");
+    const chantierVise = chantierDuGeste(donnees, chantierId);
 
     // Les gestes qui n'ont de sens que SUR un chantier. Sans lui, on le DIT :
     // écrire dans le vide, ou planter, coûterait un aller-retour.
@@ -282,13 +291,21 @@ export async function appliquerPropositionsAction(
       "modifier_duree", "modifier_equipe", "ajouter_ligne_prix", "copier_ligne_devis",
       "modifier_adresse_chantier", "noter_chantier", "planifier_chantier",
       "deplacer_chantier", "retirer_du_planning", "preparer_facture",
+      // Supprimer sans savoir QUOI serait le pire des gestes : sans chantier
+      // visé, il partirait sur celui de l'écran — ou sur rien.
+      "supprimer_chantier",
     ]);
     if (!chantierVise && BESOIN_D_UN_CHANTIER.has(proposition.type)) {
       resultats.push({
         ...base,
         statut: "conflit",
         categorie: "donnee_invalide",
-        message: "Ce geste vise un chantier : ouvrez-le, ou nommez-le.",
+        // **On ne le renvoie PAS ouvrir une fiche.** C'est ce qu'il a reproché
+        // deux fois le 25 août 2026, et `chantier-vise.ts` l'a corrigé côté
+        // outils. Le même reproche valait ici : quand le geste ne désigne
+        // aucun chantier, c'est à l'assistant de le chercher, pas au patron
+        // d'aller le chercher pour lui.
+        message: "Je n'ai pas su de quel chantier il s'agit. Dites-moi le nom du client.",
       });
       continue;
     }
@@ -669,6 +686,173 @@ export async function appliquerPropositionsAction(
             break;
           }
           await modifierTarif(ctx, tarifId, maj);
+          resultats.push({ ...base, statut: "appliquee" });
+          break;
+        }
+        /**
+         * SUPPRIMER UN CHANTIER — et le refus métier reste au SERVEUR.
+         *
+         * Sa demande du 27 août 2026. Un geste qui efface est celui qu'on
+         * hésite le plus à confier ; rien ne s'exécute sans qu'il coche, et
+         * `supprimerChantier` refuse de lui-même un chantier dont la facture
+         * est émise — une pièce comptable numérotée ne disparaît pas d'un
+         * glissement du doigt, la correction passe par un avoir.
+         *
+         * **On ne redouble PAS ce refus ici.** Écrit deux fois, il finirait par
+         * diverger, et c'est le serveur qui a raison (`CLAUDE.md` §3).
+         */
+        case "supprimer_chantier": {
+          try {
+            await supprimerChantier(ctx, chantierVise);
+            resultats.push({ ...base, statut: "appliquee" });
+          } catch (e) {
+            if (e instanceof SuppressionChantierRefusee) {
+              resultats.push({
+                ...base,
+                statut: "conflit",
+                categorie: "conflit_metier",
+                message:
+                  e.motif === "facture_emise"
+                    ? "Ce chantier est facturé : il ne se supprime pas. Il faut passer par un avoir."
+                    : "Ce chantier n'existe plus.",
+              });
+              break;
+            }
+            throw e;
+          }
+          break;
+        }
+        case "supprimer_tarif": {
+          const tarifId = String(donnees.tarifId ?? "");
+          // **On relit la cible AVANT d'écrire.** Entre la proposition et son
+          // appui, le tarif a pu disparaître — c'est la règle de tout ce
+          // fichier, et elle vaut d'autant plus pour un effacement.
+          if (!tarifId || !(await getTarif(ctx, tarifId))) {
+            resultats.push({ ...base, statut: "conflit", categorie: "conflit_metier", message: "Ce tarif n'existe plus." });
+            break;
+          }
+          await supprimerTarif(ctx, tarifId);
+          resultats.push({ ...base, statut: "appliquee" });
+          break;
+        }
+        /**
+         * POSER UNE ABSENCE D'ÉQUIPE.
+         *
+         * **Une absence retire de la place au planning exactement comme un
+         * chantier** (`useOccupation`) : mal posée, elle fait proposer au client
+         * un jour où personne ne peut venir. D'où les trois refus ci-dessous,
+         * et aucune date devinée.
+         */
+        case "poser_absence_equipe": {
+          const rang = Number(donnees.rang);
+          const premier = String(donnees.premierJour ?? "").trim();
+          const dernier = String(donnees.dernierJour ?? "").trim() || premier;
+          if (!Number.isInteger(rang) || rang < 1) {
+            resultats.push({ ...base, statut: "conflit", categorie: "donnee_invalide", message: "Quelle équipe ? Donnez son numéro." });
+            break;
+          }
+          if (!estUnJourValide(premier) || !estUnJourValide(dernier)) {
+            resultats.push({ ...base, statut: "conflit", categorie: "donnee_invalide", message: "Ces dates ne sont pas valides." });
+            break;
+          }
+          if (dernier < premier) {
+            resultats.push({ ...base, statut: "conflit", categorie: "donnee_invalide", message: "La fin est avant le début." });
+            break;
+          }
+          const motif = String(donnees.motif ?? "").trim() || null;
+          const posee = await noterAbsenceEquipe(ctx, { rang, premierJour: premier, dernierJour: dernier, motif });
+          if (!posee) {
+            resultats.push({ ...base, statut: "conflit", categorie: "conflit_metier", message: "Cette absence n'a pas pu être posée." });
+            break;
+          }
+          resultats.push({ ...base, statut: "appliquee" });
+          break;
+        }
+        /**
+         * RÉGLER LES DOCUMENTS — validité, acompte, délai, moyens, pénalités.
+         *
+         * **Ce qui n'est pas donné n'est pas touché.** Un réglage absent de la
+         * proposition doit rester tel quel : envoyer l'objet entier remettrait
+         * à zéro ce qu'il a réglé à la main, et cela s'imprimerait sur des
+         * documents que ses clients gardent.
+         *
+         * **Les bornes restent au serveur** (`normaliserConditions`) : un
+         * acompte de 400 % ne s'imprime pas parce qu'un modèle l'a proposé.
+         */
+        case "regler_documents": {
+          const conditions: Record<string, unknown> = {};
+          if (donnees.validiteJours !== undefined) conditions.validiteJours = Number(donnees.validiteJours);
+          if (donnees.acomptePourcent !== undefined) conditions.acomptePourcent = String(donnees.acomptePourcent);
+          if (donnees.delaiPaiementJours !== undefined) conditions.delaiPaiementJours = Number(donnees.delaiPaiementJours);
+          if (typeof donnees.moyensPaiement === "string") conditions.moyensPaiement = donnees.moyensPaiement;
+          if (typeof donnees.rappelerPenalites === "boolean") conditions.rappelerPenalites = donnees.rappelerPenalites;
+          if (typeof donnees.textePied === "string") conditions.textePied = donnees.textePied;
+          if (Object.keys(conditions).length === 0) {
+            resultats.push({ ...base, statut: "conflit", categorie: "donnee_invalide", message: "Rien à régler." });
+            break;
+          }
+          /**
+           * **ON RELIT CE QUI EST DÉJÀ RÉGLÉ, ET ON FUSIONNE.**
+           *
+           * `mettreAJourEntreprise` REMPLACE le bloc des conditions : c'est
+           * juste pour l'écran des réglages, qui renvoie le formulaire entier.
+           * Ici, la proposition ne porte qu'un réglage — et écrire ce seul
+           * réglage effaçait tous les autres. Vu rouge par
+           * `test-agent-gestes.ts` : régler l'acompte perdait la validité.
+           *
+           * Ce n'est pas une régression de plus : **cela s'imprime sur des
+           * documents que ses clients gardent**, et il ne le verrait qu'au
+           * devis suivant.
+           */
+          const entrepriseActuelle = await getEntreprise(ctx);
+          const dejaLa = conditionsDepuisEntreprise(entrepriseActuelle);
+          await mettreAJourEntreprise(ctx, {
+            conditions: {
+              validiteJours: dejaLa.validiteJours,
+              acomptePourcent: dejaLa.acomptePourcent,
+              delaiPaiementJours: dejaLa.delaiPaiementJours,
+              moyensPaiement: dejaLa.moyensPaiement,
+              rappelerPenalites: dejaLa.rappelerPenalites,
+              textePied: dejaLa.textePied,
+              ...conditions,
+            },
+          });
+          resultats.push({ ...base, statut: "appliquee" });
+          break;
+        }
+        case "ajouter_prestation_entretien": {
+          const famille = String(donnees.famille ?? "").trim();
+          const libelle = String(donnees.libelle ?? "").trim();
+          if (!famille || !libelle) {
+            resultats.push({ ...base, statut: "conflit", categorie: "donnee_invalide", message: "Il manque la famille ou le libellé." });
+            break;
+          }
+          const ajout = await ajouterPrestationEntretien(ctx, { famille, libelle });
+          if (!ajout.ok) {
+            resultats.push({
+              ...base,
+              statut: "conflit",
+              categorie: "conflit_metier",
+              // Le refus du dépôt est repris tel quel : « doublon » et « famille
+              // vide » ne se réparent pas de la même façon.
+              message: ajout.refus === "doublon" ? "Cette ligne existe déjà dans la fiche." : "Cette ligne n'a pas pu être ajoutée.",
+            });
+            break;
+          }
+          resultats.push({ ...base, statut: "appliquee" });
+          break;
+        }
+        case "retirer_prestation_entretien": {
+          const id = String(donnees.prestationId ?? "");
+          if (!id) {
+            resultats.push({ ...base, statut: "conflit", categorie: "donnee_invalide", message: "Quelle ligne ?" });
+            break;
+          }
+          const retrait = await retirerPrestationEntretien(ctx, id);
+          if (!retrait.ok) {
+            resultats.push({ ...base, statut: "conflit", categorie: "conflit_metier", message: "Cette ligne n'est plus dans la fiche." });
+            break;
+          }
           resultats.push({ ...base, statut: "appliquee" });
           break;
         }

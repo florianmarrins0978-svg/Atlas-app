@@ -23,6 +23,7 @@
 import { execFileSync } from "node:child_process";
 import { existsSync, readFileSync } from "node:fs";
 import { verdictPort, regarderDuDehors } from "./_verdict-port.mjs";
+import { lireEchecConstruction, phraseEchec } from "./lire-echec-construction.mjs";
 
 const DIST = ".next-batie";
 // **Détournable pour l'éprouver, comme le témoin d'échec plus bas — et ce
@@ -123,14 +124,20 @@ const echecBati = existsSync(TEMOIN_ECHEC) ? readFileSync(TEMOIN_ECHEC, "utf8").
 function ligneCodeServi() {
   if (bati) return court(bati);
   if (echecBati) {
-    const quand = (echecBati.match(/^quand: (.+)$/m) ?? [])[1] ?? "?";
     // **« et le restera » était vrai, et ne l'est plus — 20 août 2026.** Le
     // veilleur s'arrêtait après trois tentatives ; il continue désormais au
     // ralenti, une par demi-heure. Laisser la phrase d'avant ferait conclure
     // qu'il n'y a rien à attendre, et enverrait rallumer un espace qui est en
     // train de se réparer tout seul — une consigne qui accuse à tort coûte
     // plus cher que pas de consigne du tout (`CLAUDE.md` §5).
-    return `AUCUNE — la construction a ÉCHOUÉ (${quand}). Le banc compile chaque écran à l'ouverture : il est LENT en attendant, et le veilleur retente.`;
+    //
+    // **Et depuis le 29 août 2026, elle dit POURQUOI quand elle le sait.**
+    // Cette ligne n'extrayait que la date, et jetait le code de sortie comme le
+    // relevé mémoire — les deux seuls chiffres qui nomment le coupable. Son
+    // écran affichait donc « la construction a échoué » sans jamais dire qu'il
+    // s'agissait d'un manque de mémoire, alors que le renseignement était écrit
+    // deux lignes plus bas dans le même fichier. Deux heures y sont passées.
+    return phraseEchec(lireEchecConstruction(echecBati));
   }
   return "aucune version bâtie — construction en cours, ou pas encore lancée (le banc est lent en attendant)";
 }

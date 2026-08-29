@@ -32,16 +32,21 @@ sous le seuil (`scripts/memoire-prechauffage.mjs`).
 moins de workers (2 471 Mo contre 2 452), sans typecheck (2 734, *pire*),
 plafond de tas Node (2 500). **Turbopack est écrit en Rust** : sa mémoire est
 hors du tas de V8, aucune option de Node n'y touche. Détail complet et pièges
-dans `ARCHITECTURE.md` §202.
+dans `ARCHITECTURE.md` §203.
 
 **Et le piège de mesure, parce qu'il coûterait la même soirée :** le serveur de
 Next s'appelle `next-server`, pas `node`. Un compteur qui somme les processus
 nommés `node` rate le principal consommateur et rend un chiffre qui BAISSE
 quand on ajoute du travail.
 
-**Ce qui n'est pas réparé :** sa fiche ne distingue toujours pas « en cours » de
-« tuée » — un processus abattu ne rend aucun code de sortie, donc aucun témoin
-d'échec. Voir `TODO.md`.
+**Ce qui n'est pas réparé :** sa fiche dit « la dernière construction a échoué »
+mais jamais **pourquoi**. Le témoin porte pourtant le code de sortie et le relevé
+mémoire de l'instant ; `diagnostiquer-espace.mjs` n'en lit que la date. Voir
+`TODO.md`.
+
+*(Une première version de ce bloc affirmait qu'un processus tué ne rend aucun
+code et qu'aucun témoin n'est écrit : c'est faux — un `SIGKILL` rend 137, et le
+témoin est bien écrit. Corrigé le 29 août, sa capture de 22 h 37 à l'appui.)*
 
 ---
 
@@ -76,6 +81,45 @@ n'a lancées : une suite jamais jouée n'est ni verte ni rouge.
 
 **Cause NON ÉTABLIE** (`TODO.md`) : la même batterie tenait d'une traite deux
 heures plus tôt, dans ce même conteneur. Ne pas écrire que c'est réglé.
+
+---
+
+## L'ASSISTANT ENTEND ET VOIT DEPUIS LE 27 AOÛT 2026
+
+Le micro **remplit le champ**, il n'envoie rien (`dicterQuestionAction`). La
+photo est **lue** (`regarder-photo.ts`), et c'est la lecture qui entre dans la
+conversation — jamais l'image : `genererAvecOutils` ne sait pas la porter.
+
+Trois choses à ne pas défaire :
+
+1. la photo passe par `preparerPhotoEntrante` — métadonnées retirées avant tout
+   envoi chez un tiers, refus quand le nettoyage échoue ;
+2. la lecture est rangée **avant** la question, sous un titre qui dit que c'est
+   une observation. Une étiquette photographiée peut ressembler à un ordre ;
+3. le filtre de périmètre lit **la question**, pas la photo.
+
+La vision n'est **pas** éprouvable ici (aucune clé) : les contrôles posent un
+fournisseur d'essai. La dictée, elle, l'est de bout en bout.
+
+---
+
+## L'ASSISTANT A UNE MÉMOIRE DEPUIS LE 27 AOÛT 2026
+
+Son fil vit en base (`messages_assistant`, migration 0069) et se relit à
+l'ouverture du panneau. Deux choses à savoir avant d'y toucher :
+
+1. **Le fil est isolé PAR PERSONNE dans le dépôt, pas par la RLS.** La politique
+   de la table n'isole que les entreprises ; c'est
+   `eq(messagesAssistant.utilisateurId, ctx.utilisateurId)` qui sépare deux
+   associés. Retirer cette ligne ne fait rougir aucun écran —
+   `scripts/test-fil-assistant.ts` est le seul garde-fou.
+2. **L'ordre du fil tient à `rang`, une séquence, jamais à `created_at`.**
+   `now()` rend l'instant de début de transaction : la question et sa réponse,
+   écrites ensemble, portent la même date, et le classement retombait sur un
+   UUID. La réponse passait devant la question une fois sur deux.
+
+Ce qui ne revient pas encore : les cases à cocher d'une proposition
+(`TODO.md`, « Une proposition ne revient pas après un rechargement »).
 
 ---
 

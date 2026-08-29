@@ -25,7 +25,7 @@ les premiers écrans sont lents *le temps de la construction, pas au-delà*. Les
 machines qui ont la place préchauffent comme avant.
 
 Éprouvé par `scripts/test-memoire-prechauffage.ts`, vu rougir contre trois
-régressions. Mesures et pistes écartées : `ARCHITECTURE.md` §202.
+régressions. Mesures et pistes écartées : `ARCHITECTURE.md` §203.
 
 ---
 

@@ -35,15 +35,39 @@ et le dernier dit pourquoi : **Turbopack est écrit en Rust**, sa mémoire vit
 hors du tas de V8 où aucune option de Node n'a de prise. Le détail des mesures,
 les deux pièges rencontrés (`memoryBasedWorkersCount` impose un *plancher* de
 quatre workers ; le défaut de `cpus` est déjà `nproc − 1`) et la mesure fausse
-qui a failli clore l'enquête sont dans `ARCHITECTURE.md` §202.
+qui a failli clore l'enquête sont dans `ARCHITECTURE.md` §203.
 
-Non réparé, et noté dans `TODO.md` : sa fiche ne distingue toujours pas « en
-cours » de « tuée par le noyau » — un processus tué ne rend aucun code de
-sortie, donc aucun témoin d'échec n'est écrit.
+### Sa fiche dit enfin POURQUOI la construction a échoué
+
+Écrit le même soir, après sa capture de 22 h 37 — et **elle a corrigé notre
+diagnostic** : son écran affichait « La dernière construction a échoué », donc
+le témoin était bien écrit. L'entrée précédente affirmait le contraire ; c'était
+faux, et c'est corrigé noir sur blanc dans `ARCHITECTURE.md` §203.
+
+Le vrai défaut était plus grave : `banc.mjs` jetait le SIGNAL de sortie
+(`code ?? 1`). Une construction **abattue par le noyau faute de mémoire**
+s'écrivait donc `code: 1`, exactement comme une erreur de compilation — les deux
+causes les plus opposées, indiscernables. Le signal est désormais retenu,
+consigné, et relu : la fiche nomme le manque de mémoire, montre le relevé de
+l'instant, et dit le geste qui répare.
+
+Vérifié aussi, contre notre propre soupçon : **sa construction n'a rien de
+cassé.** Sur son commit exact (`575aad7`) avec les variables de son
+`docker-compose`, elle compile en 30,6 s, `EXIT=0`. C'est sa machine qui manque
+de mémoire, et rien d'autre.
 
 ---
 
 ## 2026-08-27
+
+### La phrase grise sous « Composer ma fiche » est partie
+
+*« Supprime la phrase en gris sous composer ma fiche. »* Elle disait « n
+prestations, rangées par famille. C'est cette liste que vous cocherez sur un
+chantier » : un écran qui explique son propre fonctionnement, ce que sa consigne
+du 25 août interdit. Les familles sont sous les yeux, et le compte est déjà sur
+la carte qui mène ici. Retirée aussi des deux pages essayables, pour qu'elles ne
+montrent pas un écran qui n'existe plus.
 
 ### Fusion du lot 3 : batterie entièrement verte, et une panne de machine comprise
 
@@ -149,6 +173,167 @@ Parcourue avant d'être livrée, pas relue : la carte ouvre bien la liste, une
 case passe de 3 à 4 cochées, rien ne déborde, aucune erreur au journal.
 
 ---
+### L'assistant se souvient — le fil survit au rechargement
+
+Sa réponse du 27 août 2026, devant cinq pistes : **« 2 et 3 déjà »**. Le 3
+était *qu'il se souvienne*.
+
+Le fil vivait dans l'état d'un composant React et mourait au premier
+rechargement — or son onglet reste ouvert des heures et son banc redémarre
+plusieurs fois par soirée (`HANDOVER.md`, piège 0). « Et celui d'avant ? » ne
+trouvait plus rien.
+
+**Un fil par PERSONNE, pas par entreprise.** La RLS n'isole que les
+entreprises : deux associés d'une même entreprise verraient le fil l'un de
+l'autre sans le filtre posé dans le dépôt. Ce filtre-là ne se voit sur aucun
+écran, et c'est une suite base qui le tient.
+
+**Un fil unique, pas un par chantier** : il passe d'un chantier à l'autre en
+parlant, et une conversation qui repartirait de zéro à chaque écran serait
+exactement ce qu'il vient de faire retirer.
+
+**Un défaut trouvé par la suite, et il aurait été vu à l'écran :** `now()` rend
+l'instant de DÉBUT de transaction. La question et sa réponse, écrites ensemble,
+portaient la même date à la microseconde près ; le classement retombait sur
+l'identifiant — un UUID tiré au hasard — et **la réponse s'affichait avant la
+question une fois sur deux**. Le fil s'ordonne désormais par une séquence, qui
+ne dépend d'aucune horloge. Un cas qui échoue une fois sur deux apprend à
+ignorer le rouge : dix paires le rendent décisif.
+
+**« Oublier »** paraît à côté de la croix, et seulement s'il y a quelque chose à
+oublier.
+
+**Ce qui ne revient PAS après un rechargement :** les cases à cocher d'une
+proposition. Le texte revient, la proposition non — rien ne relie encore un
+message à ses propositions. Consigné dans `TODO.md` ; ce n'est pas une
+régression (avant ce lot, le fil entier disparaissait).
+
+### « Peu importe où je l'ouvre » — un geste porte sur le chantier qu'il nomme
+
+**Sa règle du 27 août 2026 :** *« l'encart assistant, peu importe où je l'ouvre,
+il doit pouvoir répondre à mes envies »*. Il l'avait déjà dite le 25 août pour
+les outils de lecture (`chantier-vise.ts`) ; elle valait aussi pour les GESTES,
+et là elle ne tenait pas.
+
+**La même faute que « Il comprend rien », d'un cran plus loin.** La consigne
+disait « mets son identifiant dans la proposition » **sans nommer la clé** —
+alors que le code ne lit que `chantierId`. Rangé sous un nom voisin, le geste
+retombait sur le chantier ouvert, ou se refusait alors qu'il venait de nommer
+son client. Ce n'est pas au modèle de deviner notre vocabulaire : la consigne
+nomme la clé, et les alias rattrapent le reste.
+
+**`id` est délibérément EXCLU des alias.** Sur la moitié des gestes il désigne
+l'élément touché — la prestation, le tarif, la ligne —, et les deux sont des
+UUID : aucune forme ne les distingue. L'accepter ferait viser à côté et rendrait
+un refus incompréhensible.
+
+**Et le refus ne le renvoie plus ouvrir une fiche.** « Ce geste vise un
+chantier : ouvrez-le » était exactement ce qu'il reproche depuis le 25 août.
+La suite qui exigeait ce libellé mot pour mot a rougi sur une demande exaucée :
+elle vise désormais la règle, pas la phrase (`CLAUDE.md` §5 bis).
+
+### Les six gestes qui manquaient — dont deux qui effacent
+
+**Sa demande du 27 août 2026 : « fais la dernière »**, sur les cinq pistes
+proposées. Supprimer un chantier, supprimer un tarif, poser une absence
+d'équipe, régler les documents, ajouter et retirer une ligne de la fiche
+d'entretien. Deux outils de lecture arrivent avec eux —
+`LireReglagesDocuments` et `LirePrestationsEntretien` — parce qu'on vise par
+identifiant, jamais par libellé.
+
+**Tous restent des PROPOSITIONS**, y compris les deux qui effacent : *« très
+important que ça reste le doigt du patron »*.
+
+**Ce que la suite a attrapé, et qui aurait fini chez ses clients.** Régler
+l'acompte **effaçait la validité** : `mettreAJourEntreprise` REMPLACE le bloc
+des conditions — ce qui est juste pour l'écran des réglages, qui renvoie le
+formulaire entier, et faux pour une proposition qui n'en porte qu'un. Les
+réglages absents étaient donc remis à zéro, et cela s'imprime sur des documents
+que ses clients gardent : il ne l'aurait vu qu'au devis suivant. On relit et on
+fusionne.
+
+**Trois refus qui ne se négocient pas :**
+
+- un chantier **facturé ne se supprime pas** — le refus reste au serveur, la
+  correction passe par un avoir ;
+- une suppression **sans chantier visé** ne part pas sur celui de l'écran : elle
+  effacerait le mauvais ;
+- une absence sur une date qui n'existe pas — le 31 février —, ou dont la fin
+  précède le début, se refuse. Une absence mal posée fait proposer au client un
+  jour où personne ne peut venir.
+
+### Lui parler, et lui montrer une photo
+
+**Sa demande du 27 août 2026 : « fais la 1 et la 4 »**, sur les cinq pistes
+proposées pour l'assistant.
+
+**Le micro remplit le champ, il n'envoie rien.** C'est la règle de la dictée
+depuis le 7 août : il relit avant que ça parte. Une question mal entendue qui
+partirait seule pourrait viser le mauvais client. La dictée **s'ajoute** à ce
+qui est déjà tapé plutôt que de l'écraser, et elle ne passe **pas** par le
+modèle — ce qu'il a dit, tel quel : faire « améliorer » sa phrase, c'est risquer
+de changer un nom.
+
+**La photo est LUE, puis la lecture entre dans la conversation.**
+`genererAvecOutils` ne sait pas porter d'image, et le dépôt fait déjà ainsi
+depuis le 13 août pour le ticket de caisse. La consigne demande de **recopier
+mot pour mot** chiffres et références : un résumé perd exactement ce qui sert.
+
+**Trois choses qui ne se négocient pas :**
+
+- la photo passe par **la porte commune** (`photo-entrante.ts`) : ses
+  métadonnées — dont les coordonnées GPS du jardin d'un client — sont retirées
+  avant tout envoi chez un tiers, et un fichier qu'on ne sait pas nettoyer est
+  refusé. Rien n'est stocké : la photo est lue, puis oubliée ;
+- ce qu'elle donne à lire entre comme une **donnée**, jamais comme une consigne,
+  et **avant** sa question — une étiquette photographiée peut ressembler à un
+  ordre, et sa question doit rester la dernière chose lue ;
+- **le périmètre lit SA question**, pas la photo : une affiche de cinéma ne fait
+  pas répondre l'assistant sur les horaires d'un cinéma.
+
+**Ce qui n'a PAS pu être éprouvé ici, et il faut le dire :** la lecture d'une
+vraie photo par un vrai fournisseur. Ce poste n'a aucune clé (`CLAUDE.md`
+§1 ter) ; les contrôles posent un fournisseur d'essai par la couture prévue et
+tiennent ce qui nous appartient — le refus propre quand la vision manque, la
+place de la lecture, le périmètre. **La dictée, elle, est éprouvée ici de bout
+en bout.** La chaîne complète avec une photo se vérifie **sur son espace**.
+
+### Une maquette : quand l'assistant parle le premier
+
+Sa deuxième piste retenue. Elle demande **où** il prend la parole, donc une
+planche avant tout code (§3 bis) : `appli/quand-il-parle-le-premier.html`.
+
+---
+
+### L'or reste l'or sur Brume, et le marqueur d'onglet suit enfin le doigt
+
+*« J'aimerais que lorsque je choisis l'apparence Brume, tout ce qui est en doré
+sur Origine le reste aussi sur Brume »*, et *« quand je sélectionne Brume, le
+dessin des catégories en bas ne change pas automatiquement, je dois recharger la
+page »*. Deux défauts distincts sur le même élément.
+
+**L'or perdu.** La pastille de Brume était teintée de l'accent — un bleu marine :
+le trait doré d'Origine devenait bleu. **C'était le seul endroit de l'accueil où
+l'or se perdait**, mesuré plutôt que cherché à l'œil : la couleur du texte, du
+fond, des traits et des ombres de chaque élément relevée sur les deux chartes,
+puis comparée. Trente-six endroits portent l'or ; un seul le perdait.
+
+**Le changement en direct ne repeignait que les couleurs.** Il reparcourait les
+jetons de son côté ; la police des titres et les cinq variables du marqueur
+n'arrivaient qu'au rendu suivant, celui du serveur. C'est la troisième fois que
+deux façons de dire « ce que la charte écrit » divergent — les deux premières
+sont déjà consignées.
+
+**Et poser ne suffisait pas : il faut effacer.** Venant de Brume, ses variables
+d'onglet restent sur la page : une charte qui ne les pose pas doit les retirer,
+sinon sa pastille survit sur Origine. C'est un état qu'aucun rechargement ne
+produit, donc que personne ne voit en essayant à la main.
+
+Les quatre contrôles existants ne pouvaient rien voir : ils mesurent tous une
+couleur, et les couleurs suivaient. Deux s'y ajoutent, vus rouges chacun pour sa
+raison. Et la suite qui exigeait l'accent réclame maintenant l'or — une suite qui
+réclame ce qu'il a fait retirer rend son écran impossible à changer.
+`ARCHITECTURE.md` §202.
 
 ## 2026-08-26
 

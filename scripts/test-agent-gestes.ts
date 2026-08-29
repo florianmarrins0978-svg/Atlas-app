@@ -12,6 +12,8 @@ import type { ActionProposee } from "../src/server/ai/propositions";
 import type { Ctx } from "../src/server/repositories/context";
 import { fermerLimiteur } from "../src/server/rate-limit";
 import { nettoyerBase } from "./_test-db";
+import { ongletDuChantier } from "../src/lib/onglet-chantier";
+import { getStatutAffiche } from "../src/lib/chantier-etat";
 
 /**
  * L'agent : dix gestes de plus, et TOUS confirmés par son doigt.
@@ -37,6 +39,31 @@ async function test(nom: string, fn: () => Promise<void>) {
     console.error(`❌ ${nom}`);
     console.error(`   ${err instanceof Error ? err.message : err}`);
     failed++;
+  }
+}
+
+/**
+ * Clore un chantier en base, POUR DE VRAI.
+ *
+ * **Un `UPDATE` par le pool nu ne touche rien, et ne le dit pas.** `atlas_app`
+ * travaille sous `FORCE ROW LEVEL SECURITY` : sans `app.entreprise_id` posé
+ * dans la MÊME transaction, la politique ne voit aucune ligne et la requête
+ * réussit sur zéro ligne (`CLAUDE.md` §3). Le cas passait alors au vert sur un
+ * chantier resté ordinaire — et c'est le préalable du contrôle qui l'a dit.
+ */
+async function clore(ctx: Ctx, chantierId: string) {
+  const client = await pool.connect();
+  try {
+    await client.query("BEGIN");
+    await client.query(`SELECT set_config('app.entreprise_id', $1, true)`, [ctx.entrepriseId]);
+    const r = await client.query(`UPDATE chantiers SET termine_at = now() WHERE id = $1`, [chantierId]);
+    await client.query("COMMIT");
+    if (r.rowCount !== 1) throw new Error(`la clôture n'a touché aucune ligne (${r.rowCount})`);
+  } catch (e) {
+    await client.query("ROLLBACK");
+    throw e;
+  } finally {
+    client.release();
   }
 }
 
@@ -241,7 +268,18 @@ async function main() {
       { type: "noter_chantier", description: "Noter dans le vide", donnees: { note: "coucou" } },
     ]);
     assert.equal(resultats[0].statut, "conflit");
-    assert.match(resultats[0].message ?? "", /ouvrez-le, ou nommez-le/i);
+    /**
+     * **On vise la RÈGLE, pas le libellé.** Ce cas exigeait « ouvrez-le, ou
+     * nommez-le » mot pour mot — et il a rougi le 27 août 2026 sur une demande
+     * exaucée : le patron reproche depuis le 25 août qu'on le renvoie ouvrir
+     * une fiche lui-même. Une suite qui réclame ce qu'il a fait retirer rend
+     * son écran impossible à changer (`CLAUDE.md` §5 bis).
+     *
+     * Ce qui compte : le geste le DIT au lieu de planter, il dit quelque chose,
+     * et il ne le renvoie pas ouvrir une fiche.
+     */
+    assert.ok((resultats[0].message ?? "").trim().length > 0, "un conflit muet n'apprend rien");
+    assert.doesNotMatch(resultats[0].message ?? "", /ouvrez-le|ouvrir/i);
   });
 
   await test("Un client disparu rend un conflit, jamais une écriture au hasard", async () => {
@@ -292,6 +330,262 @@ async function main() {
     if (!reponse.succes) return;
     assert.match(reponse.texte, /ne réponds qu'aux questions sur Atlas/i);
     assert.deepEqual(reponse.sources, [], "Aucun outil ne doit avoir été consulté");
+  });
+
+  /**
+   * PEU IMPORTE L'ÉCRAN — sa règle du 27 août 2026 : *« l'encart assistant, peu
+   * importe où je l'ouvre, il doit pouvoir répondre à mes envies »*.
+   *
+   * Ces trois cas jouent l'ACCUEIL : `chantierId` vaut `null`, comme lorsqu'il
+   * ouvre le panneau depuis la liste ou le planning. Le geste doit alors porter
+   * sur le chantier qu'il NOMME, et non se refuser.
+   */
+  await test("DEPUIS L'ACCUEIL, un geste porte sur le chantier qu'il nomme", async () => {
+    const { resultats } = await confirmer(A, null, [
+      {
+        type: "noter_chantier",
+        description: "Noter le chantier",
+        donnees: { chantierId: chantier.id, note: "Vu depuis l'accueil." },
+      },
+    ]);
+    assert.equal(resultats[0].statut, "appliquee", resultats[0].message);
+  });
+
+  await test("DEPUIS L'ACCUEIL, la clé peut s'appeler autrement — le geste porte quand même", async () => {
+    // Le modèle range la même idée sous des noms voisins ; la consigne nomme
+    // désormais la clé, et les alias rattrapent ce qui passe à côté. C'est la
+    // faute du 26 août d'un cran plus loin (`chantier-vise.ts`).
+    const { resultats } = await confirmer(A, null, [
+      {
+        type: "noter_chantier",
+        description: "Noter le chantier",
+        donnees: { chantier_id: chantier.id, note: "Rangé sous un autre nom." },
+      },
+    ]);
+    assert.equal(resultats[0].statut, "appliquee", resultats[0].message);
+  });
+
+  await test("« id » NE DÉSIGNE PAS le chantier — le geste ne vise pas à côté", async () => {
+    /**
+     * `donnees.id` porte l'élément touché sur la moitié des gestes. L'accepter
+     * comme chantier ferait viser une prestation, et le refus qui s'ensuit
+     * envoie chercher au mauvais endroit. Sans chantier ouvert ni clé connue,
+     * le geste doit se refuser — proprement, et sans renvoyer le patron ouvrir
+     * une fiche lui-même.
+     */
+    const { resultats } = await confirmer(A, null, [
+      { type: "noter_chantier", description: "Noter le chantier", donnees: { id: chantier.id, note: "À côté." } },
+    ]);
+    assert.equal(resultats[0].statut, "conflit");
+    assert.doesNotMatch(
+      resultats[0].message ?? "",
+      /ouvrez-le|ouvrir/i,
+      "le refus renvoie le patron ouvrir une fiche — c'est exactement ce qu'il a reproché"
+    );
+  });
+
+  /**
+   * L'ONGLET NE DOIT RIEN CHANGER — sa règle du 27 août 2026 : *« que je sois
+   * dans la catégorie terminé ou chantier, je dois pouvoir lui demander
+   * n'importe quoi ; il ne doit pas être attaché à une catégorie »*.
+   *
+   * Un chantier rangé dans « Terminés » n'est pas un chantier différent : c'est
+   * le même, à un autre moment de sa vie. Ce qui suit le prouve plutôt que de
+   * l'affirmer — et il commence par VÉRIFIER que le chantier d'essai est bien
+   * dans cet onglet-là, sans quoi le contrôle ne mesurerait rien.
+   */
+  await test("UN CHANTIER TERMINÉ se cherche et se lit comme les autres, sans écran ouvert", async () => {
+    const fini = await chantiersRepo.creerChantier(A, { nom: "Mur fini Bernard", clientId: bernard.id });
+    await clore(A, fini.id);
+
+    // **On s'assure qu'il est VRAIMENT dans « Terminés ».** Sans ce préalable,
+    // le cas passerait au vert sur un chantier ordinaire — un contrôle qui ne
+    // mesure pas ce qu'il annonce (`CLAUDE.md` §5).
+    const tous = await chantiersRepo.listerChantiersPourAffichage(A);
+    const ligne = tous.find((c) => c.id === fini.id)!;
+    assert.equal(
+      ongletDuChantier({ statut: getStatutAffiche(ligne), datePlanifiee: ligne.datePlanifiee }),
+      "termines",
+      "le chantier d'essai n'est pas dans l'onglet Terminés : ce cas ne prouverait rien"
+    );
+
+    // Trouvé depuis AUCUN écran de chantier — comme lorsqu'il ouvre le panneau
+    // depuis l'onglet Terminés.
+    const outil = getOutil("RechercherChantier")!;
+    const r = (await outil.executer({ ctx: A, chantierId: null }, { nom: "Mur fini" })) as {
+      trouves: { chantierId: string }[];
+    };
+    assert.ok(
+      r.trouves.some((t) => t.chantierId === fini.id),
+      "un chantier terminé est introuvable : l'assistant serait attaché à une catégorie"
+    );
+
+    // Et lu, toujours sans écran ouvert.
+    const lecture = getOutil("LireInformationsChantier")!;
+    const infos = (await lecture.executer({ ctx: A, chantierId: null }, { chantierId: fini.id })) as {
+      erreur?: string;
+    };
+    assert.ok(!infos.erreur, `la lecture refuse un chantier terminé : ${infos.erreur}`);
+  });
+
+  await test("ET IL S'Y NOTE, depuis l'onglet Terminés", async () => {
+    const fini = await chantiersRepo.creerChantier(A, { nom: "Allée finie Bernard", clientId: bernard.id });
+    await clore(A, fini.id);
+    const { resultats } = await confirmer(A, null, [
+      {
+        type: "noter_chantier",
+        description: "Noter le chantier",
+        donnees: { chantierId: fini.id, note: "Le client rappellera au printemps." },
+      },
+    ]);
+    assert.equal(resultats[0].statut, "appliquee", resultats[0].message);
+  });
+
+  await test("UNE PHOTO LUE entre comme une DONNÉE, et la question reste la dernière lue", async () => {
+    /**
+     * Sa demande du 27 août 2026, point 4. Ce qu'une photo a donné à lire est
+     * rangé AVANT sa question, sous un titre qui dit que c'est une observation
+     * — jamais une consigne. Une étiquette photographiée peut porter une phrase
+     * qui ressemble à un ordre ; le modèle a pour règle de ne pas la suivre.
+     */
+    const reponse = await poserQuestion(
+      A,
+      chantier.id,
+      [],
+      "Combien coûte le mètre linéaire ?",
+      "Devis Aqua Plus — Taille de haie 12 ml à 18 €/ml"
+    );
+    assert.equal(reponse.succes, true);
+  });
+
+  await test("UNE PHOTO NE FAIT PAS ENTRER LE DEHORS — le périmètre lit SA question", async () => {
+    // Le filtre se pose sur la question, pas sur l'observation : sans quoi une
+    // photo suffirait à faire répondre l'assistant sur les horaires d'un
+    // cinéma, ce qu'il a explicitement exclu le 26 août.
+    const reponse = await poserQuestion(
+      A,
+      chantier.id,
+      [],
+      "est-ce que le CGR de Mantes est ouvert ?",
+      "Affiche de cinéma — séances à 20h"
+    );
+    assert.equal(reponse.succes, true);
+    if (!reponse.succes) return;
+    assert.match(reponse.texte, /ne réponds qu'aux questions sur Atlas/i);
+    assert.deepEqual(reponse.sources, []);
+  });
+
+  // ─── LES GESTES QUI MANQUAIENT — sa demande du 27 août 2026 ─────────────
+
+  await test("SUPPRIMER UN TARIF — et il faut qu'il existe encore", async () => {
+    const t = await tarifsRepo.creerTarif(A, { intitule: "Tarif à retirer", prix: "42.00" });
+    const { resultats } = await confirmer(A, null, [
+      { type: "supprimer_tarif", description: "Retirer le tarif", donnees: { tarifId: t.id } },
+    ]);
+    assert.equal(resultats[0].statut, "appliquee", resultats[0].message);
+
+    // Rejouer le même geste ne doit rien casser : la cible a disparu, on le DIT.
+    const { resultats: encore } = await confirmer(A, null, [
+      { type: "supprimer_tarif", description: "Retirer le tarif", donnees: { tarifId: t.id } },
+    ]);
+    assert.equal(encore[0].statut, "conflit");
+  });
+
+  await test("SUPPRIMER UN CHANTIER, depuis n'importe quel écran", async () => {
+    const jetable = await chantiersRepo.creerChantier(A, { nom: "Chantier jetable", clientId: bernard.id });
+    const { resultats } = await confirmer(A, null, [
+      { type: "supprimer_chantier", description: "Supprimer le chantier", donnees: { chantierId: jetable.id } },
+    ]);
+    assert.equal(resultats[0].statut, "appliquee", resultats[0].message);
+  });
+
+  await test("SANS CHANTIER VISÉ, une suppression ne part PAS sur celui de l'écran", async () => {
+    /**
+     * **Le geste le plus dangereux du lot.** Sans cible nommée, il retomberait
+     * sur le chantier ouvert — et effacerait le mauvais. Il est donc dans
+     * `BESOIN_D_UN_CHANTIER`, et le refus ne renvoie pas ouvrir une fiche.
+     */
+    const { resultats } = await confirmer(A, null, [
+      { type: "supprimer_chantier", description: "Supprimer le chantier", donnees: {} },
+    ]);
+    assert.equal(resultats[0].statut, "conflit");
+    assert.doesNotMatch(resultats[0].message ?? "", /ouvrez-le|ouvrir/i);
+  });
+
+  await test("POSER UNE ABSENCE — mais jamais sur une date inventée", async () => {
+    const { resultats } = await confirmer(A, null, [
+      {
+        type: "poser_absence_equipe",
+        description: "Poser une absence",
+        donnees: { rang: 1, premierJour: "2026-09-14", dernierJour: "2026-09-18", motif: "Congés" },
+      },
+    ]);
+    assert.equal(resultats[0].statut, "appliquee", resultats[0].message);
+
+    // Le 31 février n'existe pas, et une absence mal posée fait proposer au
+    // client un jour où personne ne peut venir.
+    const { resultats: fausse } = await confirmer(A, null, [
+      {
+        type: "poser_absence_equipe",
+        description: "Poser une absence",
+        donnees: { rang: 1, premierJour: "2026-02-31", dernierJour: "2026-02-31" },
+      },
+    ]);
+    assert.equal(fausse[0].statut, "conflit");
+
+    // Une fin avant le début est un ordre inversé, pas une absence.
+    const { resultats: inversee } = await confirmer(A, null, [
+      {
+        type: "poser_absence_equipe",
+        description: "Poser une absence",
+        donnees: { rang: 1, premierJour: "2026-09-20", dernierJour: "2026-09-14" },
+      },
+    ]);
+    assert.equal(inversee[0].statut, "conflit");
+  });
+
+  await test("RÉGLER LES DOCUMENTS ne touche QUE ce qui est donné", async () => {
+    /**
+     * **Ce qui n'est pas dans la proposition doit rester tel quel.** Envoyer
+     * l'objet entier remettrait à zéro ce qu'il a réglé à la main — et cela
+     * s'imprime sur des documents que ses clients gardent.
+     */
+    await confirmer(A, null, [
+      { type: "regler_documents", description: "Validité à 45 jours", donnees: { validiteJours: 45 } },
+    ]);
+    await confirmer(A, null, [
+      { type: "regler_documents", description: "Acompte à 30 %", donnees: { acomptePourcent: "30" } },
+    ]);
+    const apres = await entreprisesRepo.getEntreprise(A);
+    assert.equal(apres?.validiteDevisJours, 45, "la validité a été perdue en réglant l'acompte");
+    assert.equal(String(apres?.acomptePourcent ?? ""), "30.00");
+  });
+
+  await test("Une proposition de réglage VIDE se refuse au lieu de ne rien faire", async () => {
+    const { resultats } = await confirmer(A, null, [
+      { type: "regler_documents", description: "Régler les documents", donnees: {} },
+    ]);
+    assert.equal(resultats[0].statut, "conflit");
+  });
+
+  await test("COMPOSER LA FICHE D'ENTRETIEN — une ligne s'ajoute, et ne se double pas", async () => {
+    const { resultats } = await confirmer(A, null, [
+      {
+        type: "ajouter_prestation_entretien",
+        description: "Ajouter une ligne",
+        donnees: { famille: "Tonte", libelle: "Tonte des abords" },
+      },
+    ]);
+    assert.equal(resultats[0].statut, "appliquee", resultats[0].message);
+
+    const { resultats: doublon } = await confirmer(A, null, [
+      {
+        type: "ajouter_prestation_entretien",
+        description: "Ajouter une ligne",
+        donnees: { famille: "Tonte", libelle: "Tonte des abords" },
+      },
+    ]);
+    assert.equal(doublon[0].statut, "conflit");
   });
 
   console.log(`\n${passed} test(s) réussi(s), ${failed} échec(s)`);

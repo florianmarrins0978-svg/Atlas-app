@@ -17481,7 +17481,77 @@ lot qui, lui, tient.
 
 ---
 
-## 202. Préchauffer ou bâtir : sur une petite machine, il faut choisir
+## 202. La charte ne suivait le doigt qu'à moitié, et l'or se perdait en route
+
+**Ses deux remarques du 27 août 2026, dans le même message :**
+
+> *« J'aimerais que lorsque je choisis l'apparence Brume, tout ce qui est en
+> doré sur Origine le reste aussi sur Brume. »*
+>
+> *« Quand je sélectionne Brume, le dessin des catégories en bas ne change pas
+> automatiquement, je dois recharger la page. »*
+
+**Ce sont deux défauts distincts sur le même élément** — le marqueur de l'onglet
+courant, dans la barre du bas.
+
+### 1. L'or perdu, et il n'y en avait qu'un
+
+Le marqueur de Brume est une pastille (sa demande du 24 août), et elle était
+teintée de **l'accent** de la charte. L'accent de Brume est un bleu marine : le
+trait doré d'Origine devenait donc bleu.
+
+**C'était le seul endroit de l'accueil où l'or se perdait**, et cela a été
+MESURÉ plutôt que cherché à l'œil : on relève la couleur du texte, du fond, des
+traits et des ombres de chaque élément sur les deux chartes, puis on compare.
+Trente-six endroits portent l'or sur Origine ; un seul le perdait.
+
+**Le libellé de l'onglet, lui, n'a jamais été doré** — il porte l'encre de
+l'écran. La variable qui le passait à l'accent a donc été retirée : sa consigne
+dit que l'or reste l'or, pas qu'une autre couleur s'invite.
+
+> **Le piège de la mesure, et il a failli faire crier au défaut sur une couleur
+> juste :** l'or s'écrit `rgb(185, 139, 71)` quand il est posé, et
+> `color(srgb 0.72549 0.545098 0.278431 / 0.11)` dès qu'un `color-mix` le
+> teinte. N'en reconnaître qu'une forme signale un or perdu là où il ne l'est
+> pas.
+
+### 2. Le changement en direct ne repeignait que les couleurs
+
+`repeindre` (`ApparenceClient.tsx`) reparcourait `c.jetons` de son côté —
+c'est-à-dire les **seules couleurs**. Tout ce qu'une charte pose d'autre — la
+police des titres, les cinq variables du marqueur — n'arrivait qu'au rendu
+suivant, celui du serveur. D'où : les couleurs suivaient le doigt, le reste
+attendait un rechargement.
+
+**C'est la TROISIÈME occurrence de la même faute**, et les deux premières sont
+écrites dans `chartes.ts` : deux façons de dire « ce que la charte écrit »
+divergent au premier ajout. Le §3 de `CLAUDE.md` vaut aussi pour un parcours
+d'objet.
+
+### Poser ne suffit pas : il faut EFFACER
+
+Les variables vivent sur `<html>`. Venant de Brume, ses cinq variables d'onglet
+y sont encore : une charte qui ne les pose pas doit les **retirer**, sans quoi
+sa pastille survit sur Origine.
+
+**C'est un état qu'aucun rechargement ne produit** — donc que personne ne voit
+en essayant à la main, et que seul un contrôle qui mesure les DEUX SENS attrape.
+D'où `toutesLesVariables()`, calculée depuis les chartes elles-mêmes : une liste
+tenue à la main s'oublierait à la première variable ajoutée.
+
+### Ce qui tient tout cela
+
+`scripts/test-charte-suit-le-doigt-e2e.ts` — les quatre cas d'origine ne
+pouvaient pas voir ce défaut : ils mesurent tous une couleur, et les couleurs
+suivaient. Deux cas s'y ajoutent, et chacun a été vu rouge pour SA raison : le
+marqueur qui ne suit pas, et l'or remplacé par l'accent.
+
+`scripts/test-chartes.ts` exigeait l'accent : il a été réécrit pour exiger l'or.
+Une suite qui réclame ce que le patron a fait retirer rend son écran impossible
+à changer.
+
+---
+## 203. Préchauffer ou bâtir : sur une petite machine, il faut choisir
 
 **Sa plainte du 29 août 2026 :** *« L'appli est en mode lent, les fichiers
 n'arrivent pas à charger, elle bug souvent. »* Sa capture montrait le bandeau
@@ -17606,10 +17676,59 @@ sans chiffre pendant cinq jours. D'où les trois vérifications structurelles qu
 lisent `banc.mjs` : elles ne remplacent pas un banc démarré, mais elles attrapent
 une garde retirée ou déplacée après ce qu'elle doit empêcher.
 
-### Ce qui n'est PAS réparé, et qu'il faut savoir
+### CORRECTION — ce paragraphe a d'abord affirmé le contraire
 
-Sa fiche ne distingue toujours pas « construction en cours » de « construction
-tuée par le noyau ». Le témoin d'échec n'est écrit que lorsque `next build` rend
-un code de sortie ; **un processus tué n'en rend aucun**, et la fiche annonce
-donc « en cours » indéfiniment. C'est ce qui a rendu ce défaut si long à voir —
-de son côté comme du nôtre. Noté dans `TODO.md`.
+**Écrit ici parce que c'était faux, et qu'un document faux coûte plus cher qu'un
+document absent.** La première version de ce §203 concluait : *« un processus
+tué ne rend aucun code de sortie, donc aucun témoin d'échec n'est écrit, et la
+fiche annonce en cours indéfiniment »*.
+
+**C'est inexact.** Un enfant abattu par le noyau rend bien un code à son père —
+137 pour un `SIGKILL` —, et `banc.mjs` écrit alors son témoin normalement, avec
+`code:`, `disque:` et `memoire:` relevés **à l'instant de l'échec**. Sa capture
+du 29 août à 22 h 37 le prouve : son écran affichait « La dernière construction
+a échoué », pas « en cours ».
+
+Ce qui manquait n'était donc pas le témoin : c'était **sa lecture** — et un
+second défaut, plus grave, dans son écriture.
+
+### Le témoin confondait les deux causes les plus opposées
+
+`banc.mjs` écrivait `code: ${code}` en repliant `null` sur `1`. Or Node passe
+`code = null` quand un enfant est **abattu par un signal**, le nom du signal
+arrivant en second argument — que le code jetait. Une construction tuée par le
+noyau faute de mémoire s'écrivait donc `code: 1`, **exactement comme une erreur
+de compilation**.
+
+Aucune lecture, si fine soit-elle, ne pouvait les distinguer : le renseignement
+était détruit à l'écriture. Le signal est désormais retenu et consigné
+(`signal: SIGKILL` ou `signal: aucun`), et `scripts/lire-echec-construction.mjs`
+le relit.
+
+Ce qu'il lit maintenant sur sa fiche, à la place d'un « échoué » muet :
+
+```
+Code SERVI : AUCUNE — la construction a ÉCHOUÉ (…), faute de mémoire : le système l'a abattue.
+   RALLUMEZ L'ESPACE DE TRAVAIL : il repart d'une mémoire libre, et c'est ce qui répare.
+   Sans cela le banc reste lent, et chaque tentative retombera pareil.
+   Mémoire à l'instant de l'échec : total used free | Mem: 8.3G 7.9G 96M
+```
+
+**Deux défauts de rédaction trouvés en REGARDANT cet écran**, et par aucun
+test : la phrase portait `**Rallumer…**` en gras Markdown — or elle est publiée
+dans un bloc de code sur la fiche, où il aurait lu les astérisques ; et elle
+disait deux fois la même chose (« abattue faute de mémoire : votre espace n'a
+pas assez de mémoire »). C'est la cinquième fois dans ce dépôt qu'un défaut sort
+d'une image et d'aucune suite.
+
+**On ne devine jamais la cause.** Sans signal reconnu, `cause` vaut `null` et la
+phrase reste celle d'avant — qui est vraie. Accuser la mémoire à tort enverrait
+rallumer un espace qui se répare tout seul, et une consigne qui accuse à tort
+coûte plus cher que pas de consigne du tout.
+
+### Et la construction, elle, n'a rien de cassé
+
+Vérifié le 29 août sur **son commit exact** (`575aad7`), avec **les variables de
+son `docker-compose`** : `EXIT=0`, compilée en 30,6 s. Le code n'est pas en
+cause, et une session qui chercherait un défaut de construction perdrait sa
+soirée. C'est sa machine qui manque de mémoire, et rien d'autre.

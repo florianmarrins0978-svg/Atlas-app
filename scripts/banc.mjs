@@ -211,8 +211,22 @@ function jouerEnRetenant(commande, args, env = process.env, lignes = 30) {
       process.stderr.write(m);
       retenir(m);
     });
-    p.on("exit", (code) => resoudre({ code: code ?? 1, sortie: gardees.join("\n") }));
-    p.on("error", (e) => resoudre({ code: 1, sortie: String(e?.message ?? e) }));
+    // **LE SIGNAL SE GARDE, et c'est un correctif — 29 août 2026.**
+    //
+    // Node passe `code = null` quand un enfant est ABATTU par un signal, et le
+    // nom du signal arrive en second argument. L'ancienne version ne prenait que
+    // le premier et le repliait sur `1` : une construction tuée par le noyau
+    // faute de mémoire était donc consignée `code: 1` — **exactement comme une
+    // erreur de compilation.** Les deux cas les plus opposés portaient le même
+    // chiffre, et la fiche de son espace ne pouvait pas les distinguer.
+    //
+    // C'est ce qui a coûté la soirée du 29 août : son écran disait « la dernière
+    // construction a échoué » sans pouvoir dire pourquoi, alors que la cause
+    // était un manque de mémoire et que le relevé était déjà écrit à côté.
+    p.on("exit", (code, signal) =>
+      resoudre({ code: code ?? 1, signal: signal ?? null, sortie: gardees.join("\n") })
+    );
+    p.on("error", (e) => resoudre({ code: 1, signal: null, sortie: String(e?.message ?? e) }));
   });
 }
 
@@ -702,7 +716,7 @@ if (raison) {
   // Rempli seulement si le verrou parle : c'est la seule information qui
   // manquait pour comprendre pourquoi deux constructions se rencontrent.
   let quiTenaitLeVerrou = "";
-  let { code, sortie } = await jouerEnRetenant("npx", ["next", "build"], { ...process.env, ATLAS_DIST_DIR: DIST });
+  let { code, signal, sortie } = await jouerEnRetenant("npx", ["next", "build"], { ...process.env, ATLAS_DIST_DIR: DIST });
 
   // **Une seconde tentative, et une seule, quand c'est LE verrou qui a parlé.**
   //
@@ -730,7 +744,7 @@ if (raison) {
     await attendreLaConstructionEnCours({ dossierDist: DIST, dire: (m) => console.log(m) });
     // Ce qui reste après l'attente est bien une orpheline, ou rien du tout.
     await delogerConstructionsOrphelines({ dossierDist: DIST, dire: (m) => console.log(m) });
-    ({ code, sortie } = await jouerEnRetenant("npx", ["next", "build"], { ...process.env, ATLAS_DIST_DIR: DIST }));
+    ({ code, signal, sortie } = await jouerEnRetenant("npx", ["next", "build"], { ...process.env, ATLAS_DIST_DIR: DIST }));
   }
 
   // ─── UNE DÉPENDANCE MANQUANTE SE RÉPARE, ELLE NE S'ATTEND PAS ─────────────
@@ -784,7 +798,7 @@ if (raison) {
     ]);
     if (codeInstall === 0) {
       await delogerConstructionsOrphelines({ dossierDist: DIST, dire: (m) => console.log(m) });
-      ({ code, sortie } = await jouerEnRetenant("npx", ["next", "build"], {
+      ({ code, signal, sortie } = await jouerEnRetenant("npx", ["next", "build"], {
         ...process.env,
         ATLAS_DIST_DIR: DIST,
       }));
@@ -900,6 +914,11 @@ if (raison) {
         [
           `quand: ${new Date().toISOString()}`,
           `code: ${code}`,
+          // **Le signal, quand il y en a un.** C'est LUI qui distingue une
+          // erreur de compilation d'un abattage par le noyau : sans cette
+          // ligne, les deux s'écrivent `code: 1` et la fiche ne peut plus
+          // nommer le coupable (29 août 2026).
+          `signal: ${signal ?? "aucun"}`,
           // Les deux suspects d'une construction qui tombe sur une machine
           // modeste, relevés À L'INSTANT de l'échec : plus tard, la mémoire est
           // rendue et le coupable a disparu.

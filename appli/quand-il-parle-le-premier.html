@@ -1,0 +1,245 @@
+<title>Quand il parle le premier</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  /*
+    QUAND L'ASSISTANT PARLE LE PREMIER — trois places, une à choisir.
+
+    LE PATRON, LE 27 AOÛT 2026 : « 2 et 3 déjà », en réponse à cinq pistes.
+    Le 2 était : *qu'il ouvre la bouche le premier* — devis sans réponse,
+    chantiers finis à facturer, jours vides au planning. Aujourd'hui il faut
+    penser à demander.
+
+    ————————————————————————————————————————————————————————————————
+    CE QUE L'ACCUEIL DIT DÉJÀ, ET QU'IL NE FAUT PAS REDIRE.
+
+    `src/app/page.tsx` pose déjà trois choses : les réponses des clients
+    (notificationsPatron), les liens de devis expirés (envoisCaducs), et les
+    rappels en cours. Un assistant qui les répéterait ne servirait à rien —
+    pire, il apprendrait à être ignoré.
+
+    Ce qui suit ne porte donc QUE ce que l'accueil ne dit pas.
+
+    ————————————————————————————————————————————————————————————————
+    RIEN N'EST CODÉ : le dossier src/ n'est pas touché (règle du §3 bis).
+    AUCUN SCRIPT : les trois places sont des <input type="radio"> et du CSS.
+    Les chiffres sont un exemple, et c'est écrit sur la page.
+  */
+
+  :root{
+    --fond:#efece6; --encre:#1c1c1a; --gris:#8a8578; --or:#B98B47;
+    --trait:rgba(28,28,26,.13); --papier:#faf9f5; --pin:#2f3b2f;
+    --teinte:#ece9e1; --rouille:#B5502F; --surPlein:#faf9f5;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E;
+      --trait:rgba(233,229,220,.16); --papier:#201e1a; --pin:#7d9179;
+      --teinte:#252320; --rouille:#D8825F; --surPlein:#171613;
+    }
+  }
+  :root[data-theme="dark"]{
+    --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E;
+    --trait:rgba(233,229,220,.16); --papier:#201e1a; --pin:#7d9179;
+    --teinte:#252320; --rouille:#D8825F; --surPlein:#171613;
+  }
+
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--fond);color:var(--encre);
+       font:16px/1.6 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+       padding:26px 18px 70px}
+  .dedans{max-width:940px;margin:0 auto}
+  h1{font-family:Georgia,"Times New Roman",serif;font-weight:400;
+     font-size:27px;line-height:1.2;margin:0 0 8px}
+  .intro{color:var(--gris);font-size:14px;line-height:1.65;margin:0 0 18px}
+  .intro b{color:var(--encre);font-weight:600}
+  .dit{margin:0 0 26px;padding:14px 16px;border-left:3px solid var(--or);
+       background:var(--papier);font-size:14px;line-height:1.7;color:var(--gris)}
+  .dit b{color:var(--encre);font-weight:600}
+
+  h2{font-family:Georgia,"Times New Roman",serif;font-weight:400;font-size:20px;
+     margin:34px 0 4px}
+  .pourquoi{color:var(--gris);font-size:13.5px;line-height:1.6;margin:0 0 14px}
+  .pourquoi b{color:var(--encre);font-weight:600}
+
+  .tel{max-width:390px;background:var(--papier);border:1px solid var(--trait);
+       border-radius:22px;padding:18px 16px 22px;margin:0 0 6px}
+
+  /* L'en-tête d'un écran d'Atlas : titre à gauche, bouton assistant à droite. */
+  .entete{display:flex;align-items:center;justify-content:space-between;gap:12px;
+          margin:0 0 16px}
+  .titre-ecran{font-family:Georgia,"Times New Roman",serif;font-size:22px}
+  .rond{position:relative;width:44px;height:44px;border-radius:50%;
+        background:var(--rouille);display:flex;align-items:center;
+        justify-content:center;flex:0 0 auto}
+  .rond svg{stroke:var(--surPlein);fill:none;stroke-width:1.8}
+  /* **Sur le BORD, pas dedans.** Posée à l'intérieur du rond, la pastille se
+     lisait comme un éclat de peinture : la courbure du bouton la rogne, et
+     l'or sur la rouille manque de contraste. Vue en regardant la page. */
+  .pastille{position:absolute;top:-2px;right:-2px;width:14px;height:14px;
+            border-radius:50%;background:var(--or);
+            border:2.5px solid var(--papier)}
+
+  .ligne{display:flex;justify-content:space-between;gap:12px;
+         padding:14px 0;font-size:15px}
+  .ligne .lieu{color:var(--gris);font-size:13px}
+  .compte{color:var(--gris);font-size:13px;margin:2px 0 6px}
+
+  /* Le panneau de l'assistant, tel qu'il s'ouvre. */
+  .panneau{background:var(--teinte);border-radius:16px;padding:14px 14px 16px}
+  .panneau .qui{font-size:12px;color:var(--gris);margin:0 0 8px}
+  .bulle{background:var(--papier);border:1px solid var(--trait);
+         border-radius:14px;padding:12px 13px;font-size:14.5px;line-height:1.55}
+  .bulle ul{margin:8px 0 0;padding:0 0 0 16px}
+  .bulle li{margin:5px 0}
+  .champ{margin-top:12px;border:1px solid var(--trait);border-radius:20px;
+         padding:10px 14px;color:var(--gris);font-size:14px;background:var(--papier)}
+
+  /* La carte d'accueil, forme des cartes de réponse client. */
+  .carte{border:1px solid var(--or);border-radius:14px;padding:13px 14px;
+         background:var(--papier);margin:0 0 14px}
+  .carte .chapeau{font-size:11.5px;letter-spacing:.06em;color:var(--or);
+                  text-transform:uppercase;margin:0 0 5px}
+  .carte .quoi{font-size:14.5px;line-height:1.5}
+  .carte .geste{margin-top:10px;display:inline-block;border-radius:20px;
+                background:var(--pin);color:var(--surPlein);
+                padding:8px 16px;font-size:14px}
+
+  /* Les trois propositions, en onglets sans JavaScript. */
+  .choix{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 16px}
+  .choix label{border:1px solid var(--trait);border-radius:20px;
+               padding:8px 15px;font-size:14px;cursor:pointer;
+               background:var(--papier)}
+  input[name="place"]{position:absolute;opacity:0;pointer-events:none}
+  /* **`~ .dedans`, pas `~ .dedans-choix`.** Les trois boutons vivent AVANT
+     `.dedans` ; `.dedans-choix` est son petit-fils, donc hors de portée du
+     combinateur frère. Écrit ainsi la première fois, aucun onglet ne
+     répondait — trouvé en REGARDANT la page, pas en la relisant. */
+  #p1:checked ~ .dedans label[for="p1"],
+  #p2:checked ~ .dedans label[for="p2"],
+  #p3:checked ~ .dedans label[for="p3"]{
+    background:var(--pin);color:var(--surPlein);border-color:var(--pin)}
+  .volet{display:none}
+  #p1:checked ~ .dedans .v1,
+  #p2:checked ~ .dedans .v2,
+  #p3:checked ~ .dedans .v3{display:block}
+
+  .cout{margin:10px 0 0;font-size:13.5px;color:var(--gris);line-height:1.6}
+  .cout b{color:var(--encre);font-weight:600}
+
+  table{width:100%;border-collapse:collapse;margin:10px 0 0;font-size:14px}
+  td{padding:9px 0;border-top:1px solid var(--trait);vertical-align:top}
+  td:first-child{padding-right:14px}
+  .note{margin:34px 0 0;padding:14px 16px;background:var(--papier);
+        border:1px solid var(--trait);border-radius:12px;
+        font-size:13.5px;line-height:1.7;color:var(--gris)}
+  .note .t{display:block;color:var(--encre);font-weight:600;margin-bottom:5px}
+</style>
+
+<input type="radio" name="place" id="p1" checked>
+<input type="radio" name="place" id="p2">
+<input type="radio" name="place" id="p3">
+
+<div class="dedans">
+  <h1>Quand il parle le premier</h1>
+  <p class="intro">Trois places. <b>Dites-en une.</b> Rien n’est codé.</p>
+
+  <p class="dit">
+    <b>« Qu’il ouvre la bouche le premier »</b> — aujourd’hui, il faut penser à
+    lui demander. Un devis dormant, un chantier fini pas facturé, un jeudi vide :
+    l’application le sait, et se tait.
+  </p>
+
+  <div class="dedans-choix">
+    <div class="choix">
+      <label for="p1">1 · Dans le panneau</label>
+      <label for="p2">2 · Une pastille, puis le panneau</label>
+      <label for="p3">3 · Sur l’accueil</label>
+    </div>
+
+    <!-- ─────────────── 1 ─────────────── -->
+    <div class="volet v1">
+      <h2>1 · Il vous attend dans le panneau</h2>
+      <p class="pourquoi">Rien ne change à l’écran. Vous ouvrez l’assistant, il a
+        déjà quelque chose à dire.</p>
+      <div class="tel">
+        <div class="entete">
+          <span class="titre-ecran">Vos chantiers</span>
+          <span class="rond"><svg width="19" height="19" viewBox="0 0 24 24"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg></span>
+        </div>
+        <div class="panneau">
+          <p class="qui">Assistant</p>
+          <div class="bulle">
+            Trois choses, ce matin :
+            <ul>
+              <li>2 chantiers finis, pas facturés — 3 140 €</li>
+              <li>jeudi et vendredi sont vides au planning</li>
+              <li>le devis Lemoine dort depuis 12 jours</li>
+            </ul>
+          </div>
+          <div class="champ">Écrivez ici</div>
+        </div>
+      </div>
+      <p class="cout"><b>Ce que ça coûte :</b> rien à l’écran. <b>Ce que ça
+        risque :</b> vous ne l’ouvrez pas, vous ne le lisez pas.</p>
+    </div>
+
+    <!-- ─────────────── 2 ─────────────── -->
+    <div class="volet v2">
+      <h2>2 · Un point d’or sur le bouton</h2>
+      <p class="pourquoi">Vous voyez qu’il a quelque chose sans l’ouvrir. Le point
+        s’éteint quand vous avez lu.</p>
+      <div class="tel">
+        <div class="entete">
+          <span class="titre-ecran">Vos chantiers</span>
+          <span class="rond"><span class="pastille"></span><svg width="19" height="19" viewBox="0 0 24 24"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg></span>
+        </div>
+        <p class="compte">4 en cours</p>
+        <div class="ligne"><span>Reprise de toiture<br><span class="lieu">Mantes-la-Jolie</span></span><span class="lieu">devis envoyé</span></div>
+        <div class="ligne"><span>Haie de charmilles<br><span class="lieu">Rosny</span></span><span class="lieu">à chiffrer</span></div>
+      </div>
+      <p class="cout"><b>Ce que ça coûte :</b> un point de 14 px.
+        <b>Ce que ça apporte :</b> vous savez qu’il y a quelque chose sans
+        rien ouvrir.</p>
+    </div>
+
+    <!-- ─────────────── 3 ─────────────── -->
+    <div class="volet v3">
+      <h2>3 · Une carte sur l’accueil</h2>
+      <p class="pourquoi">Rien à ouvrir. Même forme que les cartes de réponse
+        client, que vous connaissez déjà.</p>
+      <div class="tel">
+        <div class="entete">
+          <span class="titre-ecran">Vos chantiers</span>
+          <span class="rond"><svg width="19" height="19" viewBox="0 0 24 24"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg></span>
+        </div>
+        <div class="carte">
+          <p class="chapeau">À facturer</p>
+          <p class="quoi">2 chantiers finis, pas facturés — 3 140 €</p>
+          <span class="geste">Voir lesquels</span>
+        </div>
+        <p class="compte">4 en cours</p>
+        <div class="ligne"><span>Reprise de toiture<br><span class="lieu">Mantes-la-Jolie</span></span><span class="lieu">devis envoyé</span></div>
+      </div>
+      <p class="cout"><b>Ce que ça coûte :</b> de la place sur l’accueil, qui en a
+        déjà. <b>Ce que ça risque :</b> une carte de plus qu’on apprend à sauter.</p>
+    </div>
+  </div>
+
+  <h2>Et ce qu’il vous dit</h2>
+  <p class="pourquoi">Votre accueil pose <b>déjà</b> les réponses de vos clients,
+    les liens de devis expirés et vos rappels. Il ne les redira pas. Restent
+    ceux-ci — <b>dites-moi lesquels vous voulez</b>.</p>
+  <table>
+    <tr><td>Chantiers finis, pas facturés</td><td class="lieu">de l’argent qui attend</td></tr>
+    <tr><td>Jours vides au planning cette semaine</td><td class="lieu">du temps à vendre</td></tr>
+    <tr><td>Un prix qui s’écarte de votre habitude</td><td class="lieu">avant d’envoyer</td></tr>
+    <tr><td>Un devis parti sans réponse depuis longtemps</td><td class="lieu">au-delà du lien expiré</td></tr>
+  </table>
+
+  <div class="note"><span class="t">Ce que cette page ne fait pas</span>
+    Elle ne touche <b>ni à vos données ni à l’application</b>. Les chiffres sont
+    inventés pour l’exemple. Les trois places sont des onglets en CSS : rien ne
+    part nulle part.
+  </div>
+</div>

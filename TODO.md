@@ -45,9 +45,9 @@ règle métier.
 
 ---
 
-## La fiche ne sait pas dire « construction TUÉE » (29 août 2026)
+## ~~La fiche ne sait pas dire « construction TUÉE »~~ — RÉGLÉ le 29 août 2026
 
-**Trouvé en diagnostiquant sa lenteur du 29 août** (`ARCHITECTURE.md` §202), et
+**Trouvé en diagnostiquant sa lenteur du 29 août** (`ARCHITECTURE.md` §203), et
 c'est ce qui a rendu ce défaut si long à voir — de son côté comme du nôtre.
 
 `diagnostiquer-espace.mjs` distingue trois états : version bâtie, construction
@@ -60,12 +60,14 @@ le processus disparaît, personne n'écrit le témoin, et la fiche annonce
 **Ce que ça coûte :** le patron lit « en cours » et attend ; nous lisons « en
 cours » et concluons que ça avance. Les deux sont faux, et rien ne le dit.
 
-**Piste, pas encore éprouvée :** le banc pose un jeton au DÉBUT de la
-construction et le retire à la fin, quelle que soit l'issue. Un jeton qui
-survit sans processus vivant = construction tuée. Reste à vérifier qu'un banc
-tué au mauvais moment ne laisse pas un jeton éternel — le piège déjà rencontré
-sur le drapeau de bascule (`.devcontainer/bascule-en-cours.sh`), qui a été
-résolu par une expiration.
+**RÉGLÉ, et la piste ci-dessus n'a pas servi : le diagnostic de départ était
+faux.** Un processus abattu rend bien un code à son père — la capture du patron
+de 22 h 37 montrait « La dernière construction a échoué », donc le témoin ÉTAIT
+écrit. Le vrai défaut était ailleurs, et plus grave : `banc.mjs` jetait le
+SIGNAL (`code ?? 1`), si bien qu'un abattage mémoire s'écrivait `code: 1`,
+exactement comme une erreur de compilation. Le signal est désormais consigné et
+relu (`scripts/lire-echec-construction.mjs`), et la fiche nomme le manque de
+mémoire avec le relevé de l'instant. Voir `ARCHITECTURE.md` §203.
 
 ---
 
@@ -233,7 +235,14 @@ dans l'ordre alphabétique.
 
 **Et il ne faut PAS les renuméroter** : la clé de suivi est le nom du fichier.
 Renommer l'une la ferait rejouer sur toute base qui l'a déjà appliquée. Le
-numéro suivant est **0068**, à prendre une seule fois.
+numéro suivant est **0070**, à prendre une seule fois.
+
+**La seule renumérotation permise, et elle a servi le 27 août 2026 :** celle
+d'une migration qui n'est **pas encore sur `main`**. Aucune base ne l'a
+appliquée que celle de la session qui l'écrit — il suffit d'y corriger la ligne
+de `_migrations`. C'est ainsi que `0068_fil_assistant.sql` est devenu
+`0069_…` en découvrant `0068_effacement_client_devis_envoye.sql` à la fusion.
+Une fois sur `main`, c'est trop tard : on prend le numéro suivant.
 
 ## ✅ ~~Coder « Quand je reverse la TVA »~~ — fait le 26 août 2026
 
@@ -428,16 +437,75 @@ repart de 1 ; un artisan qui migre depuis un autre logiciel voudra continuer à
 demandera, c'est une colonne de départ sur `entreprise_compteurs`, pas un
 nouveau format.
 
+## ⚠ L'effacement d'un client ne balaie pas tout le fil de l'assistant
+
+**Depuis le 27 août 2026**, l'effacement des données d'un client retire les
+messages d'assistant **attachés aux chantiers de ce client**. Un message posé
+depuis un autre écran ne porte aucun chantier et peut pourtant le nommer — « le
+devis de Lucie », tapé depuis l'accueil, reste.
+
+**Ce qui limite déjà la portée** : le fil est plafonné à trente messages
+(`fil-assistant.ts`), donc il se vide de lui-même en une quinzaine d'échanges,
+et « Oublier » le vide d'un geste. Ce n'est pas une garantie, c'est une
+atténuation.
+
+**Ce qu'il faudrait pour bien faire** : que l'effacement cherche aussi dans le
+TEXTE des messages — le nom du client, celui de ses chantiers. C'est faisable
+et ce n'est pas anodin (un nom courant balaierait des échanges sans rapport) :
+à trancher avant de coder, pas en codant.
+
+## ⚠ La lecture d'une photo par l'assistant n'a pas été vue sur un VRAI fournisseur
+
+**Livré le 27 août 2026**, et éprouvé ici par un fournisseur d'essai posé par la
+couture (`_reinitialiserFabriqueLLM`) — ce poste n'a aucune clé (`CLAUDE.md`
+§1 ter). Ce qui est tenu ici : le refus propre quand la vision manque, la
+lecture vide qui n'est pas un succès, la panne du fournisseur qui remonte SA
+raison, la place de la lecture dans la conversation, le périmètre.
+
+**Ce qui reste à voir sur son espace**, et c'est le cœur : qu'une vraie photo —
+un devis de fournisseur, une plaque, un relevé — soit lue avec ses CHIFFRES.
+C'est là que tout se joue : un résumé qui perd « 12 ml à 18 €/ml » ne sert à
+rien. **Lui demander une capture** du résultat plutôt qu'une commande.
+
+**Et ce que le fil ne garde pas** : la lecture d'une photo part avec la question
+mais n'est pas rangée dans le fil. Après un rechargement, la conversation garde
+sa question, pas ce que la photo montrait. C'est délibéré — le fil est plafonné
+à trente messages et une lecture de photo est longue —, mais il faudra le
+revoir s'il s'en plaint.
+
+## ⚠ Une proposition ne revient pas après un rechargement
+
+**Depuis le 27 août 2026**, le fil de l'assistant survit au rechargement — mais
+**seul le texte revient**. Si sa dernière réponse portait des cases à cocher
+(« j'ajoute la prestation X ? »), elles ont disparu : il relit une phrase qui
+propose quelque chose, sans le moyen de l'accepter.
+
+**Ce n'est pas une régression** — avant ce lot, le fil entier disparaissait. Mais
+c'est un demi-geste, et il se verra.
+
+**Pourquoi ce n'est pas réglé du même coup.** Rien ne relie un message à ses
+propositions : `propositions_ia` porte l'entreprise et le chantier, pas le
+message — ni même l'utilisateur. Les rattacher « à la dernière réponse » serait
+juste dans le cas courant et faux dès que deux personnes de la même entreprise
+utilisent l'assistant. **Le remède est une colonne de liaison**, donc une
+migration : `propositions_ia.message_id`, et un `utilisateur_id` tant qu'on y
+est.
+
+**En attendant, rien n'est perdu ni appliqué à tort** : les propositions
+dorment en base au statut `proposee`, et la confirmation se fait par
+identifiant — aucune ne peut être appliquée par erreur.
+
 ## L'agent : ce qu'il ne sait pas encore faire
 
 **FAIT le 26 août 2026** pour l'essentiel (`ARCHITECTURE.md` §188). Ce qui reste
 ouvert, et qu'il faudra sans doute lui demander :
 
-- **Des gestes non couverts** : composer la fiche d'entretien, régler les
-  documents (validité, acompte, mentions), gérer les absences d'équipe, lancer
-  un plan d'arrosage, créer un client SANS chantier, supprimer un chantier ou un
-  tarif. Chacun est une entrée de plus dans `TypeActionProposee` et un `case`
-  dans `appliquerPropositionsAction` — le patron est posé.
+- ~~**Des gestes non couverts**~~ — **six d'entre eux faits le 27 août 2026**
+  (« fais la dernière ») : supprimer un chantier, supprimer un tarif, poser une
+  absence d'équipe, régler les documents, ajouter et retirer une ligne de la
+  fiche d'entretien. **Restent ouverts** : lancer un plan d'arrosage, et créer
+  un client SANS chantier. Chacun est une entrée de plus dans
+  `TypeActionProposee` et un `case` dans `appliquerPropositionsAction`.
 - **Le filtre de périmètre attrape le cas franc, pas la totalité.** Une question
   du dehors sans marque connue passe au modèle, qui a la consigne. S'il signale
   une réponse hors-sujet, c'est une marque à ajouter dans `MARQUES_DU_DEHORS` —
@@ -2941,7 +3009,28 @@ Sans lui, elle aurait rendu du vert sans avoir rien éprouvé — le piège du
 
 ## Ce que je peux faire seul
 
-### 0 duotricies. ~~« Choisir la date »~~ — **CODÉE le 20 août 2026 (A, et la 2)**
+### 0 duodetricies. `test-fiche-pendant-relance` rougit — sur `main` NU
+
+**Constaté le 27 août 2026**, et vérifié dans un arbre séparé sur `origin/main`
+sans un seul de mes commits : la suite rougit à l'identique. Ce n'est donc pas
+une régression d'un lot, c'est **son propre montage** qui ne reproduit plus le
+cas.
+
+Son message le dit lui-même : *« le veilleur n'a jamais tenté de relance : le
+montage ne reproduit pas le cas réel »*. Le contrôle refuse de conclure plutôt
+que de rendre un vert qui ne prouverait rien — c'est la bonne attitude
+(`AGENTS.md`), et c'est pour cela qu'il ne faut pas le désactiver.
+
+**Ce qu'il défend, et qui compte** : la fiche du banc doit continuer d'être
+publiée PENDANT que le veilleur relance le serveur — la règle née de la nuit du
+12 au 16 août (`CLAUDE.md` §1 bis). Le premier cas de la suite, lui, passe.
+
+**Ce qu'il reste à faire** : remonter le montage pour qu'il bloque vraiment le
+veilleur sur une relance, ou dire pourquoi ce n'est plus possible ici.
+
+---
+
+## 0 duotricies. ~~« Choisir la date »~~ — **CODÉE le 20 août 2026 (A, et la 2)**
 
 **Sa demande, trois captures à l'appui :** *« Le bouton envoyer au client, tu vas
 me le modifier par Choisir la date […] sous forme de bouton vert comme tous les

@@ -43,6 +43,7 @@ import {
   precisionsChantier,
   prestations,
   propositionsIa,
+  messagesAssistant,
   tarifs,
   motsCatalogue,
 } from "../db/schema";
@@ -150,6 +151,7 @@ export async function exporterEntreprise(
       sesPhotosDiagnostic,
       sesHypotheses,
       sesPhotosAPurger,
+      sesEchangesAssistant,
     ] = await Promise.all([
       tx.select().from(entreprises).where(eq(entreprises.id, e)),
       tx.select().from(entrepriseCompteurs).where(eq(entrepriseCompteurs.entrepriseId, e)),
@@ -273,6 +275,12 @@ export async function exporterEntreprise(
       // sur SES données. Exporter l'une sans l'autre aurait été une divergence
       // sans raison.
       tx.select().from(photosDiagnosticAPurger).where(eq(photosDiagnosticAPurger.entrepriseId, e)),
+      // **Le fil de l'assistant part avec le reste (migration 0069).** Ce sont
+      // ses questions et ce qu'Atlas lui a répondu : de la donnée personnelle,
+      // et de la plus parlante. Une « sauvegarde complète » qui tairait ce qu'il
+      // a demandé n'en serait pas une — et c'est le contrôle d'exhaustivité qui
+      // l'a réclamée, le jour même où la table est née.
+      tx.select().from(messagesAssistant).where(eq(messagesAssistant.entrepriseId, e)),
     ]);
 
     // Ordre volontaire : parents avant enfants. Une reprise qui rejouerait ce
@@ -341,6 +349,9 @@ export async function exporterEntreprise(
       // et c'est exactement ce qu'on veut relire le jour où il est contesté.
       hypotheses_diagnostic: sesHypotheses,
       photos_diagnostic_a_purger: sesPhotosAPurger,
+      // Ses échanges avec l'assistant : ce qu'il a demandé, et ce qu'on lui a
+      // répondu.
+      messages_assistant: sesEchangesAssistant,
     };
 
     const compte: Record<string, number> = {};
