@@ -1,7 +1,7 @@
 # État du projet
 
-**Dernière mise à jour :** 2026-08-26 · branche `main`
-· dernière migration `drizzle/0066_format_numero.sql`
+**Dernière mise à jour :** 2026-08-29 · branche `main`
+· dernière migration `drizzle/0068_effacement_client_devis_envoye.sql`
 
 
 *(Le numéro du dernier commit ne figure plus ici : il était faux dès le commit
@@ -10,6 +10,22 @@ suivant, et une ligne fausse coûte plus cher qu'une ligne absente. `git log
 
 Ce fichier dit **où en est le produit**, pas ce qu'on aimerait qu'il soit. Une
 ligne « fait » qui ne l'est pas coûte plus cher qu'une ligne absente.
+
+---
+
+## Le banc ne préchauffe plus quand la mémoire manque (29 août 2026)
+
+Son espace restait en mode lent des jours durant : le préchauffage des 32 écrans
+prend 887 Mo au serveur de développement, la construction de la version rapide
+en veut 2 500, et son espace n'en a que 2 900 de disponibles. Le noyau tuait la
+construction, le veilleur en relançait une, et rien ne se dénouait.
+
+Le préchauffage s'abstient désormais sous le seuil, et le dit avec sa borne :
+les premiers écrans sont lents *le temps de la construction, pas au-delà*. Les
+machines qui ont la place préchauffent comme avant.
+
+Éprouvé par `scripts/test-memoire-prechauffage.ts`, vu rougir contre trois
+régressions. Mesures et pistes écartées : `ARCHITECTURE.md` §203.
 
 ---
 

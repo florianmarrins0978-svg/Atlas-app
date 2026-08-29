@@ -32,6 +32,7 @@ import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node
 import { execFileSync } from "node:child_process";
 import { annoncePrete } from "./annonce-adresse.mjs";
 import { prendreVerrouBanc, libererVerrouBanc } from "./verrou-banc.mjs";
+import { peutPrechauffer, memoireDisponibleMo } from "./memoire-prechauffage.mjs";
 import {
   delogerConstructionsOrphelines,
   attendreLaConstructionEnCours,
@@ -210,8 +211,22 @@ function jouerEnRetenant(commande, args, env = process.env, lignes = 30) {
       process.stderr.write(m);
       retenir(m);
     });
-    p.on("exit", (code) => resoudre({ code: code ?? 1, sortie: gardees.join("\n") }));
-    p.on("error", (e) => resoudre({ code: 1, sortie: String(e?.message ?? e) }));
+    // **LE SIGNAL SE GARDE, et c'est un correctif — 29 août 2026.**
+    //
+    // Node passe `code = null` quand un enfant est ABATTU par un signal, et le
+    // nom du signal arrive en second argument. L'ancienne version ne prenait que
+    // le premier et le repliait sur `1` : une construction tuée par le noyau
+    // faute de mémoire était donc consignée `code: 1` — **exactement comme une
+    // erreur de compilation.** Les deux cas les plus opposés portaient le même
+    // chiffre, et la fiche de son espace ne pouvait pas les distinguer.
+    //
+    // C'est ce qui a coûté la soirée du 29 août : son écran disait « la dernière
+    // construction a échoué » sans pouvoir dire pourquoi, alors que la cause
+    // était un manque de mémoire et que le relevé était déjà écrit à côté.
+    p.on("exit", (code, signal) =>
+      resoudre({ code: code ?? 1, signal: signal ?? null, sortie: gardees.join("\n") })
+    );
+    p.on("error", (e) => resoudre({ code: 1, signal: null, sortie: String(e?.message ?? e) }));
   });
 }
 
@@ -441,6 +456,43 @@ async function prechaufferEcransPublics() {
       expliquerObstacle,
       prechauffer,
     } = await import("./prechauffer.mjs");
+
+    // **PRÉCHAUFFER PEUT CONDAMNER LA CONSTRUCTION — sa panne du 29 août 2026.**
+    //
+    // *« L'appli est en mode lent, les fichiers n'arrivent pas à charger, elle
+    // bug souvent. »* Sa capture montrait « 2 écrans sur 32 », sa fiche disait
+    // « construction en cours » — depuis des jours, et jamais « échouée ».
+    //
+    // Ce n'était pas une lenteur, c'était un blocage, et le compte est sans
+    // appel (mesures dans `memoire-prechauffage.mjs`) :
+    //
+    //   préchauffer les 32 écrans coûte 887 Mo au serveur de développement,
+    //   `next build` en veut 2 500, son espace en a 2 900 de disponibles.
+    //
+    // Il manquait 500 Mo. Le noyau tuait la construction, le veilleur en
+    // relançait une, et le banc restait lent **pour toujours**. Sans le
+    // préchauffage, la construction a ses 2 900 Mo : elle passe.
+    //
+    // **L'arbitrage n'est pas symétrique**, et c'est ce qui le tranche : avec
+    // préchauffage il paie une lenteur qui ne finit jamais ; sans lui, quelques
+    // écrans neufs sont lents le temps d'une construction, puis plus rien. On
+    // préfère une gêne qui s'arrête.
+    //
+    // **Rien ne change sur les machines qui ont la place** : la décision se
+    // prend sur la mémoire réellement disponible, jamais sur une supposition.
+    const place = peutPrechauffer(memoireDisponibleMo(readFileSync));
+    if (!place.possible) {
+      console.log(`\n  ${place.motif}\n`);
+      // On n'écrit AUCUN état : le bandeau retombe alors sur « la version
+      // rapide se construit », sans compte — ce qui est exactement vrai.
+      // Y déposer un `termine: true` ferait disparaître le bandeau, et il
+      // croirait l'application simplement cassée.
+      return;
+    }
+    // Mémoire illisible : on préchauffe quand même, mais la trace existe — un
+    // banc bloqué sans explication est la faute qu'on vient de payer.
+    if (place.motif) console.log(`  ⚠ ${place.motif}\n`);
+
     let motif = null;
     const cookie = await cookieDeSession({
       databaseUrl: process.env.DATABASE_URL,
@@ -664,7 +716,7 @@ if (raison) {
   // Rempli seulement si le verrou parle : c'est la seule information qui
   // manquait pour comprendre pourquoi deux constructions se rencontrent.
   let quiTenaitLeVerrou = "";
-  let { code, sortie } = await jouerEnRetenant("npx", ["next", "build"], { ...process.env, ATLAS_DIST_DIR: DIST });
+  let { code, signal, sortie } = await jouerEnRetenant("npx", ["next", "build"], { ...process.env, ATLAS_DIST_DIR: DIST });
 
   // **Une seconde tentative, et une seule, quand c'est LE verrou qui a parlé.**
   //
@@ -692,7 +744,7 @@ if (raison) {
     await attendreLaConstructionEnCours({ dossierDist: DIST, dire: (m) => console.log(m) });
     // Ce qui reste après l'attente est bien une orpheline, ou rien du tout.
     await delogerConstructionsOrphelines({ dossierDist: DIST, dire: (m) => console.log(m) });
-    ({ code, sortie } = await jouerEnRetenant("npx", ["next", "build"], { ...process.env, ATLAS_DIST_DIR: DIST }));
+    ({ code, signal, sortie } = await jouerEnRetenant("npx", ["next", "build"], { ...process.env, ATLAS_DIST_DIR: DIST }));
   }
 
   // ─── UNE DÉPENDANCE MANQUANTE SE RÉPARE, ELLE NE S'ATTEND PAS ─────────────
@@ -746,7 +798,7 @@ if (raison) {
     ]);
     if (codeInstall === 0) {
       await delogerConstructionsOrphelines({ dossierDist: DIST, dire: (m) => console.log(m) });
-      ({ code, sortie } = await jouerEnRetenant("npx", ["next", "build"], {
+      ({ code, signal, sortie } = await jouerEnRetenant("npx", ["next", "build"], {
         ...process.env,
         ATLAS_DIST_DIR: DIST,
       }));
@@ -862,6 +914,11 @@ if (raison) {
         [
           `quand: ${new Date().toISOString()}`,
           `code: ${code}`,
+          // **Le signal, quand il y en a un.** C'est LUI qui distingue une
+          // erreur de compilation d'un abattage par le noyau : sans cette
+          // ligne, les deux s'écrivent `code: 1` et la fiche ne peut plus
+          // nommer le coupable (29 août 2026).
+          `signal: ${signal ?? "aucun"}`,
           // Les deux suspects d'une construction qui tombe sur une machine
           // modeste, relevés À L'INSTANT de l'échec : plus tard, la mémoire est
           // rendue et le coupable a disparu.

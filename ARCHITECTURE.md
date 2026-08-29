@@ -17549,3 +17549,186 @@ marqueur qui ne suit pas, et l'or remplacé par l'accent.
 `scripts/test-chartes.ts` exigeait l'accent : il a été réécrit pour exiger l'or.
 Une suite qui réclame ce que le patron a fait retirer rend son écran impossible
 à changer.
+
+---
+## 203. Préchauffer ou bâtir : sur une petite machine, il faut choisir
+
+**Sa plainte du 29 août 2026 :** *« L'appli est en mode lent, les fichiers
+n'arrivent pas à charger, elle bug souvent. »* Sa capture montrait le bandeau
+« Version rapide en construction — 2 écrans sur 32 déjà prêts », et sa fiche
+disait « construction en cours » — jamais « échouée ». Depuis des jours.
+
+**Ce n'était pas une lenteur, c'était un blocage**, et il ne pouvait pas se
+dénouer tout seul.
+
+### Quatre pistes mesurées, et quatre fausses
+
+Elles sont écrites ici pour que personne ne les repaie. Pic mémoire de
+`next build`, mesuré en échantillonnant le RSS de tout l'arbre de processus
+toutes les deux secondes :
+
+| Ce qui a été essayé | Pic mémoire |
+|---|---|
+| tel quel (3 workers) | 2 452 Mo |
+| `experimental.cpus: 1` — son cas, 2 cœurs | 2 471 Mo |
+| sans typecheck ni source maps de prérendu | **2 734 Mo — pire** |
+| `NODE_OPTIONS=--max-old-space-size=1024` | 2 500 Mo |
+
+**Le dernier explique les trois autres : ce projet bâtit avec Turbopack, écrit
+en Rust.** Sa mémoire est allouée hors du tas de V8, où aucune option de Node
+n'a de prise. Chercher de ce côté est perdu d'avance, et `--max-old-space-size`
+en particulier ne fait rien — il borne un tas qui n'est pas celui qui grossit.
+
+Deux pièges rencontrés en chemin, qui valent d'être notés :
+
+- **`experimental.memoryBasedWorkersCount` ne réduit JAMAIS les workers.** Son
+  code est `Math.max(Math.min(cpus, freemem/1e9), 4)` — un **plancher** à
+  quatre. Sur une machine à court de mémoire il aggrave. Son nom promet
+  l'inverse de ce qu'il fait.
+- **Le défaut de `experimental.cpus` est `nproc − 1`.** Sur les deux cœurs du
+  patron, il n'y a donc **déjà** qu'un seul worker : réduire ce nombre ne lui
+  apporte rien, et c'est pourquoi la première mesure ne bouge pas.
+
+### La vraie cause, et elle n'est pas dans la construction
+
+Mesures sur le serveur de développement, avant et après le préchauffage :
+
+| Serveur de développement | total | dont `next-server` |
+|---|---|---|
+| avant préchauffage | 658 Mo | 504 Mo |
+| après les 32 écrans | 1 545 Mo | 1 391 Mo |
+
+**Le préchauffage coûte 887 Mo, et il les garde** : un écran compilé en mode
+développement reste en mémoire dans le serveur. Sur son espace — 8,3 Go dont
+5,5 déjà pris, soit **2 900 Mo disponibles** — le compte est sans appel :
+
+```
+2 900 − 887 (préchauffage) = 2 013 Mo   pour une construction qui en veut 2 500
+```
+
+Il manquait 500 Mo. Le noyau tuait la construction, le veilleur en relançait
+une, elle mourait pareil — **et le banc restait lent pour toujours**. Sans le
+préchauffage, la construction dispose de ses 2 900 Mo : elle passe.
+
+**Une mesure fausse a failli clore l'enquête**, et elle mérite d'être dite : le
+premier compteur ne sommait que les processus dont le nom est `node`. Or le
+serveur de Next s'appelle `next-server` — le principal consommateur était donc
+invisible, et la mesure rendait « 187 Mo après préchauffage », soit MOINS
+qu'avant. Un chiffre qui baisse quand on ajoute du travail n'est pas un
+résultat, c'est un instrument cassé.
+
+### L'arbitrage, et pourquoi il n'est pas symétrique
+
+Le préchauffage existe pour une vraie raison — le 504 du 9 août 2026 : en mode
+développement un écran neuf se compile à l'ouverture, et le mandataire de GitHub
+abandonne avant. Le sacrifier coûte quelques écrans lents.
+
+| | Ce qu'on paie | Pendant |
+|---|---|---|
+| **avec** préchauffage | la construction ne finit jamais | toujours |
+| **sans** préchauffage | des écrans neufs lents | le temps d'une construction |
+
+Le second se termine ; le premier, non. **On préfère une gêne qui s'arrête à une
+gêne définitive** — et c'est bien la seconde qu'il vivait.
+
+**Rien ne change sur les machines qui ont la place.** La décision se prend sur la
+mémoire réellement disponible (`scripts/memoire-prechauffage.mjs`), jamais sur
+une supposition : un espace confortable préchauffe comme avant.
+
+### Ce que le code tient
+
+- **`MemAvailable`, jamais `MemFree`.** Sur son espace le second vaut 143 Mo
+  quand 2 900 sont réellement allouables — il ignore le cache que le noyau rend
+  sans broncher. Les confondre refuserait de préchauffer partout, y compris là
+  où tout va bien.
+- **Une mesure impossible n'est pas un feu vert silencieux.** Sans chiffre
+  (`/proc` absent, ligne manquante), on préchauffe — refuser sur une machine
+  inconnue ramènerait le 504 sans raison — mais on l'écrit au journal, pour
+  qu'un banc bloqué ne reste pas inexpliqué.
+- **Aucun état de préchauffage n'est déposé quand on s'abstient.** Le bandeau
+  retombe alors sur « la version rapide se construit », sans compte, ce qui est
+  exactement vrai. Y déposer `termine: true` ferait **disparaître** le bandeau,
+  et il croirait l'application simplement cassée.
+- **Le refus se dit dans ses mots** : ce qui se passe, et **quand cela
+  s'arrête**. Une réserve sans borne se lit comme une panne définitive — le
+  contrôle refuse un message qui n'en porte pas, et refuse aussi tout jargon
+  (`Turbopack`, `next build`, `worker`) sous ses yeux.
+
+### Le contrôle, et ce qu'il a été vu attraper
+
+`scripts/test-memoire-prechauffage.ts`, ramassé automatiquement par `npm test`.
+Confronté à trois régressions, il rougit à chaque fois :
+
+| Régression simulée | Ce qui tombe |
+|---|---|
+| `PRECHAUFFAGE_MO = 0` (le préchauffage ne coûterait rien) | 6 vérifications |
+| la garde retirée du banc | « le banc importe la garde » |
+| le `return` retiré (on prévient, puis on préchauffe quand même) | « un refus ARRÊTE le préchauffage » |
+
+La dernière est la plus utile : sans elle, on afficherait le refus **et** la
+construction se ferait tuer exactement comme avant — le remède qui rassure sans
+rien réparer.
+
+**Une règle juste que personne n'appelle ne répare rien**, et ce dépôt l'a déjà
+payé : le rappel `avancer` de `prechauffer.mjs` était documenté et éprouvé
+depuis le 9 août, et personne ne le lui passait — le bandeau du patron est resté
+sans chiffre pendant cinq jours. D'où les trois vérifications structurelles qui
+lisent `banc.mjs` : elles ne remplacent pas un banc démarré, mais elles attrapent
+une garde retirée ou déplacée après ce qu'elle doit empêcher.
+
+### CORRECTION — ce paragraphe a d'abord affirmé le contraire
+
+**Écrit ici parce que c'était faux, et qu'un document faux coûte plus cher qu'un
+document absent.** La première version de ce §203 concluait : *« un processus
+tué ne rend aucun code de sortie, donc aucun témoin d'échec n'est écrit, et la
+fiche annonce en cours indéfiniment »*.
+
+**C'est inexact.** Un enfant abattu par le noyau rend bien un code à son père —
+137 pour un `SIGKILL` —, et `banc.mjs` écrit alors son témoin normalement, avec
+`code:`, `disque:` et `memoire:` relevés **à l'instant de l'échec**. Sa capture
+du 29 août à 22 h 37 le prouve : son écran affichait « La dernière construction
+a échoué », pas « en cours ».
+
+Ce qui manquait n'était donc pas le témoin : c'était **sa lecture** — et un
+second défaut, plus grave, dans son écriture.
+
+### Le témoin confondait les deux causes les plus opposées
+
+`banc.mjs` écrivait `code: ${code}` en repliant `null` sur `1`. Or Node passe
+`code = null` quand un enfant est **abattu par un signal**, le nom du signal
+arrivant en second argument — que le code jetait. Une construction tuée par le
+noyau faute de mémoire s'écrivait donc `code: 1`, **exactement comme une erreur
+de compilation**.
+
+Aucune lecture, si fine soit-elle, ne pouvait les distinguer : le renseignement
+était détruit à l'écriture. Le signal est désormais retenu et consigné
+(`signal: SIGKILL` ou `signal: aucun`), et `scripts/lire-echec-construction.mjs`
+le relit.
+
+Ce qu'il lit maintenant sur sa fiche, à la place d'un « échoué » muet :
+
+```
+Code SERVI : AUCUNE — la construction a ÉCHOUÉ (…), faute de mémoire : le système l'a abattue.
+   RALLUMEZ L'ESPACE DE TRAVAIL : il repart d'une mémoire libre, et c'est ce qui répare.
+   Sans cela le banc reste lent, et chaque tentative retombera pareil.
+   Mémoire à l'instant de l'échec : total used free | Mem: 8.3G 7.9G 96M
+```
+
+**Deux défauts de rédaction trouvés en REGARDANT cet écran**, et par aucun
+test : la phrase portait `**Rallumer…**` en gras Markdown — or elle est publiée
+dans un bloc de code sur la fiche, où il aurait lu les astérisques ; et elle
+disait deux fois la même chose (« abattue faute de mémoire : votre espace n'a
+pas assez de mémoire »). C'est la cinquième fois dans ce dépôt qu'un défaut sort
+d'une image et d'aucune suite.
+
+**On ne devine jamais la cause.** Sans signal reconnu, `cause` vaut `null` et la
+phrase reste celle d'avant — qui est vraie. Accuser la mémoire à tort enverrait
+rallumer un espace qui se répare tout seul, et une consigne qui accuse à tort
+coûte plus cher que pas de consigne du tout.
+
+### Et la construction, elle, n'a rien de cassé
+
+Vérifié le 29 août sur **son commit exact** (`575aad7`), avec **les variables de
+son `docker-compose`** : `EXIT=0`, compilée en 30,6 s. Le code n'est pas en
+cause, et une session qui chercherait un défaut de construction perdrait sa
+soirée. C'est sa machine qui manque de mémoire, et rien d'autre.

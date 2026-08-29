@@ -9,6 +9,68 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
+## `test-acces-salarie-e2e` tombe sur main, seule et reproductible (29 août 2026)
+
+**Établi, pas supposé** : la suite échoue à l'identique sur `main` (`a23bf24`),
+jouée SEULE, sans aucun commit par-dessus. Ce n'est donc ni une collision entre
+suites, ni le manque de mémoire du ticket ci-dessous.
+
+L'étape qui tombe, toujours la même :
+
+    ✗ mais SA feuille de chantier, elle, sort — sans un seul montant
+
+Le symptôme change d'un essai à l'autre, et c'est ce qui rend le diagnostic
+trompeur :
+
+| Contexte | Ce que Playwright dit |
+|---|---|
+| dans la batterie complète | `page.goto: Timeout 45000ms exceeded` |
+| jouée seule | `page.goto: net::ERR_CONNECTION_RESET` |
+
+Les deux portent sur `http://localhost:3000/login`, et les deux disent la même
+chose : **le serveur ne répond plus à cet instant précis.** Le journal du
+serveur montre juste avant une route PDF lourde qui se compile
+(`/api/chantiers/[chantierId]/feuille/pdf`, rendue en 404 après 6,5 s) et un
+`GET /login` à **86 secondes**.
+
+**Piste, non vérifiée :** la compilation de la route PDF de la feuille de
+chantier étrangle le serveur au point qu'il ne répond plus, voire se fait
+abattre. À confronter au ticket ci-dessous, qui décrit le même coupable
+(Turbopack) dans un autre contexte.
+
+**Ce que ça ne doit PAS faire croire :** la fonctionnalité n'est pas forcément
+cassée. Les sept autres vérifications de cette suite passent, y compris celles
+qui gardent l'isolation du salarié. Ce qui échoue est l'ACCÈS au serveur, pas la
+règle métier.
+
+---
+
+## ~~La fiche ne sait pas dire « construction TUÉE »~~ — RÉGLÉ le 29 août 2026
+
+**Trouvé en diagnostiquant sa lenteur du 29 août** (`ARCHITECTURE.md` §203), et
+c'est ce qui a rendu ce défaut si long à voir — de son côté comme du nôtre.
+
+`diagnostiquer-espace.mjs` distingue trois états : version bâtie, construction
+**échouée** (témoin d'échec présent), construction **en cours**. Mais le témoin
+d'échec n'est écrit par `banc.mjs` que lorsque `next build` **rend un code de
+sortie**. Or une construction abattue par le tueur de mémoire n'en rend aucun :
+le processus disparaît, personne n'écrit le témoin, et la fiche annonce
+« construction en cours » — indéfiniment, et à tort.
+
+**Ce que ça coûte :** le patron lit « en cours » et attend ; nous lisons « en
+cours » et concluons que ça avance. Les deux sont faux, et rien ne le dit.
+
+**RÉGLÉ, et la piste ci-dessus n'a pas servi : le diagnostic de départ était
+faux.** Un processus abattu rend bien un code à son père — la capture du patron
+de 22 h 37 montrait « La dernière construction a échoué », donc le témoin ÉTAIT
+écrit. Le vrai défaut était ailleurs, et plus grave : `banc.mjs` jetait le
+SIGNAL (`code ?? 1`), si bien qu'un abattage mémoire s'écrivait `code: 1`,
+exactement comme une erreur de compilation. Le signal est désormais consigné et
+relu (`scripts/lire-echec-construction.mjs`), et la fiche nomme le manque de
+mémoire avec le relevé de l'instant. Voir `ARCHITECTURE.md` §203.
+
+---
+
 ## La batterie ne tient plus en un seul serveur — NON DIAGNOSTIQUÉ (27 août 2026)
 
 **Mesuré, pas supposé.** Relevé de la mémoire du serveur toutes les cinq
