@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { jourIso } from "@/lib/jour";
+import { montantEcrivable } from "@/lib/montant-ecrivable";
 import { exigerEcran } from "@/server/garde-action";
 import { getCurrentCtx } from "@/server/session-ctx";
 import { preparerDevisDepuisDictee, enregistrerPrecisionsEtReprendre } from "@/server/services/devis-depuis-dictee";
@@ -444,6 +445,37 @@ export async function appliquerPropositionsAction(
             resultats.push({ ...base, statut: "conflit", categorie: "donnee_invalide", message: "Libellé ou montant manquant." });
             break;
           }
+
+          /**
+           * **UN MONTANT VENU DU MODÈLE SE VÉRIFIE AVANT D'ÊTRE ÉCRIT** — lot
+           * de clôture, 29 août 2026.
+           *
+           * Le commentaire ci-dessus affirmait que « le montant côté
+           * proposition n'est utilisé QUE pour les lignes calculées ». C'est
+           * vrai du chiffrage ; **c'était faux de ce chemin-ci** : sans
+           * `tarifId`, `donnees.montant` est ce que le modèle a composé, et il
+           * partait tel quel en base.
+           *
+           * La base refusait le négatif et rien d'autre : ni `NaN`, ni une
+           * chaîne ambiguë, ni 99 999 999,99 €. Et quand elle refusait, elle
+           * rendait « cette modification n'a pas pu être appliquée » — un
+           * message qui envoie chercher une panne là où il s'agit d'un chiffre.
+           *
+           * La borne n'invente aucun plafond métier : elle refuse ce qui n'est
+           * pas un montant, et ce que la colonne ne peut pas contenir.
+           */
+          const verifie = montantEcrivable(montant);
+          if (!verifie.ok) {
+            resultats.push({
+              ...base,
+              statut: "conflit",
+              categorie: "donnee_invalide",
+              message: verifie.raison,
+            });
+            break;
+          }
+          montant = verifie.montant;
+
           // Remédiation (transaction) : un seul appel, une seule transaction —
           // jamais de ligne vide intermédiaire.
           await ajouterLignePrixDirectAction(chantierVise, libelle, montant);
