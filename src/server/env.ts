@@ -164,7 +164,39 @@ function requis(nom: string): string {
 // Construit et valide la configuration une seule fois. Ne journalise JAMAIS
 // une valeur — seulement le nom de la variable en cause en cas d'erreur.
 function construireEnv(): Env {
-  const nodeEnv = (process.env.NODE_ENV as Env["nodeEnv"]) ?? "development";
+  /**
+   * **UNE VALEUR INATTENDUE SE REFUSE, ELLE NE SE RABAT PAS SUR
+   * « development ».** Constat de l'audit final, 29 août 2026.
+   *
+   * La forme précédente — `(process.env.NODE_ENV as Env["nodeEnv"]) ?? "development"`
+   * — acceptait n'importe quelle chaîne : le `as` est une affirmation du
+   * développeur, jamais une vérification. `NODE_ENV=Production`, avec sa
+   * majuscule, valait donc `development`.
+   *
+   * **Ce qu'une majuscule éteignait, d'un coup :** l'exigence d'`AUTH_SECRET`
+   * (repli sur un secret écrit en dur), celle de `CRON_SECRET`, celle de Redis,
+   * celle du stockage S3, le refus de l'IA simulée — et surtout la porte
+   * `AUTH_TEST_UTILISATEUR_ID` (`session-ctx.ts`), qui redevient alors une
+   * entrée sans mot de passe vers le compte de son choix.
+   *
+   * Un seul caractère de travers, et l'application démarre **sans une erreur**
+   * dans une posture de développement en croyant servir la production. C'est le
+   * défaut le plus silencieux qui soit : tout marche, et rien ne protège.
+   *
+   * `garde-seed.ts` tient déjà ce raisonnement pour l'effacement de la base —
+   * « `NODE_ENV` ne suffit PAS, et c'est le cœur du dessin ». Il n'avait jamais
+   * été appliqué à `NODE_ENV` lui-même.
+   */
+  const nodeEnvBrut = process.env.NODE_ENV;
+  if (nodeEnvBrut !== undefined && !["development", "test", "production"].includes(nodeEnvBrut)) {
+    throw new ErreurConfiguration(
+      `NODE_ENV vaut « ${nodeEnvBrut} », qui n'est pas une valeur connue.\n` +
+        "Les seules acceptées sont development, test et production — en minuscules.\n" +
+        "Une valeur inattendue faisait basculer Atlas en posture de développement sans le dire :\n" +
+        "secret de session en dur, stockage local, IA simulée, et la porte de test rouverte."
+    );
+  }
+  const nodeEnv = (nodeEnvBrut as Env["nodeEnv"]) ?? "development";
   // **`next start` impose `NODE_ENV=production`, même sur un banc d'essai.**
   // Sans cette distinction, la seule façon de servir une version BÂTIE serait
   // de détenir une clé d'IA facturée et un compartiment S3 — ce qu'aucun banc
@@ -429,8 +461,49 @@ function construireEnv(): Env {
   // instances : REDIS_URL est donc obligatoire en production, comme pour le
   // stockage — échec explicite au démarrage plutôt qu'un rate limit
   // silencieusement inefficace une fois déployé.
-  if (exigencesDeProduction && !process.env.REDIS_URL) {
+  if (exigencesDeProduction && !optionnel("REDIS_URL")) {
     throw new ErreurConfiguration("REDIS_URL manquant en production (la limitation de débit en mémoire n'est jamais autorisée).");
+  }
+
+  /**
+   * **LES ADRESSES DE FOURNISSEURS NE SE DÉTOURNENT PAS EN PRODUCTION.**
+   *
+   * ═════════════════════════════════════════════════════════════════════════
+   * Constat de l'audit final, 29 août 2026 — et c'était le seul repli
+   * permissif qui restait dans ce fichier.
+   *
+   * `ANTHROPIC_BASE_URL` et `OPENAI_BASE_URL` sont là pour les essais : elles
+   * font parler la fabrique à un serveur local plutôt qu'au vrai fournisseur.
+   * L'en-tête de ce fichier l'écrit — « surchargeables pour les essais
+   * uniquement » — mais **rien ne l'imposait**. Une variable posée sur le
+   * déploiement suffisait à détourner chaque appel.
+   *
+   * **Ce que ça coûtait, exactement.** La clé d'API part dans l'en-tête de la
+   * requête, et avec elle : les dictées de chantier, les photos de tickets de
+   * caisse, les croquis, les noms et les adresses des clients de l'artisan.
+   * Une ligne dans un fichier d'environnement, et tout le carnet d'un
+   * paysagiste s'en va chez qui l'a écrite — sans une erreur, sans une trace à
+   * l'écran, et sans que rien ne ralentisse.
+   *
+   * C'est la faute que ce fichier existe pour empêcher : une valeur par défaut
+   * sûre qu'une variable oubliée, recopiée ou hostile rend permissive.
+   */
+  const ADRESSES_OFFICIELLES: Record<string, string> = {
+    ANTHROPIC_BASE_URL: "https://api.anthropic.com",
+    OPENAI_BASE_URL: "https://api.openai.com",
+  };
+  if (exigencesDeProduction) {
+    for (const [nom, officielle] of Object.entries(ADRESSES_OFFICIELLES)) {
+      const pose = optionnel(nom);
+      if (pose && pose.replace(/\/+$/, "") !== officielle) {
+        throw new ErreurConfiguration(
+          `${nom} détourne les appels vers « ${pose} » en production.\n` +
+            "Cette variable n'existe que pour les essais : en production, la clé d'API et tout ce\n" +
+            "qui est envoyé au modèle — dictées, photos, noms et adresses des clients — partiraient\n" +
+            `à cette adresse. La retirer, ou la remettre à ${officielle}.`
+        );
+      }
+    }
   }
 
   return {
@@ -458,7 +531,12 @@ function construireEnv(): Env {
     // plutôt que d'ouvrir une confiance que personne n'a accordée.
     proxySauts: Math.max(0, Math.trunc(Number(optionnel("ATLAS_PROXY_SAUTS")) || 0)),
     rpId: optionnel("ATLAS_RP_ID")?.trim().toLowerCase() || undefined,
-    redisUrl: process.env.REDIS_URL,
+    // **`optionnel()`, pas `process.env` en brut** — audit final, 29 août 2026.
+    // Lue directement, une valeur blanche (`REDIS_URL=" "`) est *truthy* : elle
+    // franchissait le refus ci-dessus, puis le magasin échouait à chaque appel
+    // et la limitation retombait sur un compteur en mémoire, par instance —
+    // exactement l'état que ce refus déclare « jamais autorisé en production ».
+    redisUrl: optionnel("REDIS_URL"),
     cronSecret,
     sentryDsn: process.env.SENTRY_DSN,
     sentryEnvironment: process.env.SENTRY_ENVIRONMENT ?? nodeEnv,

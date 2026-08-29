@@ -20,7 +20,31 @@ const CLES_SENSIBLES = [
   "apikey",
   "api_key",
   "dsn",
+  // **`jeton`, parce que ce dépôt est en français** — constat de l'audit final,
+  // 29 août 2026. La liste ne portait que `token` : dans un code où tout le
+  // reste s'écrit en français, le premier `logger.info("…", { jeton })` serait
+  // parti en clair dans le journal, et de là chez Sentry. Or un jeton d'envoi
+  // ouvre à lui seul la page publique d'un devis ou d'une facture — nom,
+  // adresse et montants du client compris.
+  //
+  // Aucun appel ne le fait aujourd'hui : c'est un piège qu'on ferme avant qu'il
+  // serve, pas une fuite constatée.
+  "jeton",
 ];
+
+// **`email` n'est DÉLIBÉRÉMENT pas dans cette liste**, et il faut l'écrire pour
+// qu'on ne l'y ajoute pas au prochain audit.
+//
+// L'adresse est journalisée à chaque échec de connexion (`login/actions.ts`),
+// et c'est ce qui permet de répondre à « je n'arrive pas à entrer » — la panne
+// du 6 août 2026, où les parents du patron lisaient « mot de passe incorrect »
+// avec les bons identifiants. La masquer rendrait ces lignes muettes exactement
+// quand on en a besoin.
+//
+// Ce qui reste à trancher, et qui n'est pas de notre ressort : ce journal porte
+// une donnée personnelle, et la rétention déclarée
+// (`RETENTION.journauxJours = 180`) n'est appliquée par aucun code. C'est la
+// durée qu'il faut régler, pas la ligne qu'il faut supprimer.
 
 function estCleSensible(cle: string): boolean {
   const c = cle.toLowerCase().replace(/[_-]/g, "");

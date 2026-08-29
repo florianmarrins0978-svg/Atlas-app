@@ -56,6 +56,38 @@ export async function ajouterAchatAction(formData: FormData): Promise<ResultatAc
   }
 
   const ctx = await getCurrentCtx();
+
+  /**
+   * **UNE CLÉ DE STOCKAGE NE SE CROIT PAS SUR PAROLE** — constat de l'audit
+   * final, 29 août 2026.
+   *
+   * Le parcours est en deux temps : `rangerTicketAction` range la photo et rend
+   * sa clé au navigateur, qui la reposte ici avec le formulaire. Rien ne
+   * vérifiait que cette clé venait bien de cette session, ni même de cette
+   * entreprise — c'était **la seule clé de stockage d'origine client** de tout
+   * le dépôt.
+   *
+   * **Ce que ça coûtait, et ce que ça allait coûter.** Aujourd'hui, aucune route
+   * ne sert la colonne `achats_tva.photo_cle` : poster la clé d'un autre ne
+   * donne donc rien à lire, seulement une ligne qui ment. Mais `TODO.md` prescrit
+   * noir sur blanc d'ajouter les photos de tickets à l'export « Mes données ».
+   * Le jour où cette ligne sera écrite, `/api/mes-donnees` lira la clé et la
+   * servira **sans aucun contrôle d'appartenance** : un artisan téléchargerait
+   * « ses » données et recevrait la photo d'un autre. La fuite est armée
+   * maintenant, et se déclencherait avec un correctif que le dépôt s'est
+   * lui-même prescrit.
+   *
+   * La règle existe déjà, écrite dans `/api/phyto/image/[id]` : « on sert par
+   * IDENTIFIANT, jamais par clé de stockage ». Elle n'avait pas été appliquée
+   * ici. Le refaire entièrement demanderait de rendre un identifiant plutôt
+   * qu'une clé ; en attendant, on vérifie que la clé a bien la forme que le
+   * serveur produit — et le préfixe porte l'entreprise, donc il tranche.
+   */
+  const prefixeAttendu = `entreprises/${ctx.entrepriseId}/tickets/`;
+  if (photoCle && !photoCle.startsWith(prefixeAttendu)) {
+    return { ok: false, raison: "Cette photo de ticket n'est pas reconnue." };
+  }
+
   const ligne = await creerAchatTva(ctx, {
     dateAchat,
     fournisseur,
