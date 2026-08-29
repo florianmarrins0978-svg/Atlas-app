@@ -1,5 +1,6 @@
 "use server";
 
+import { exigerMontants } from "@/server/garde-action";
 import { getCurrentCtx } from "@/server/session-ctx";
 import { creerAchatTva, supprimerAchatTva } from "@/server/repositories/achats-tva";
 import { enregistrerObjet } from "@/server/storage";
@@ -56,6 +57,7 @@ export async function ajouterAchatAction(formData: FormData): Promise<ResultatAc
   }
 
   const ctx = await getCurrentCtx();
+  await exigerMontants(ctx, "enregistrer un achat");
 
   /**
    * **UNE CLÉ DE STOCKAGE NE SE CROIT PAS SUR PAROLE** — constat de l'audit
@@ -103,6 +105,7 @@ export async function ajouterAchatAction(formData: FormData): Promise<ResultatAc
 
 export async function supprimerAchatAction(id: string): Promise<{ ok: boolean }> {
   const ctx = await getCurrentCtx();
+  await exigerMontants(ctx, "supprimer un achat");
   const ligne = await supprimerAchatTva(ctx, id);
   // `undefined` = la RLS a filtré, ou la ligne était déjà retirée. Dans les
   // deux cas l'écran doit remettre la ligne plutôt que la faire disparaître à
@@ -128,6 +131,7 @@ export type ResultatTicket =
  */
 export async function rangerTicketAction(formData: FormData): Promise<ResultatTicket> {
   const ctx = await getCurrentCtx();
+  await exigerMontants(ctx, "ranger un ticket de caisse");
   const limite = await verifierLimite(`televersement:${ctx.entrepriseId}`, LIMITES.televersementFichier);
   if (!limite.autorise) return { ok: false, raison: limite.message };
 
@@ -192,6 +196,7 @@ export async function rangerTicketAction(formData: FormData): Promise<ResultatTi
 
 export async function soldeFactureAction(factureId: string, aujourdHui: string): Promise<ResultatPaiement> {
   const ctx = await getCurrentCtx();
+  await exigerMontants(ctx, "solder une facture");
   const r = await soldera(ctx, factureId, aujourdHui);
   revalidatePath("/termines/tva");
   return r;
@@ -203,6 +208,7 @@ export async function noterPaiementAction(
   montant: string
 ): Promise<ResultatPaiement> {
   const ctx = await getCurrentCtx();
+  await exigerMontants(ctx, "noter un paiement");
   const r = await noterPaiement(ctx, factureId, { date, montant });
   revalidatePath("/termines/tva");
   return r;
@@ -210,6 +216,7 @@ export async function noterPaiementAction(
 
 export async function retirerPaiementAction(paiementId: string): Promise<void> {
   const ctx = await getCurrentCtx();
+  await exigerMontants(ctx, "retirer un paiement");
   await retirerPaiement(ctx, paiementId);
   revalidatePath("/termines/tva");
 }

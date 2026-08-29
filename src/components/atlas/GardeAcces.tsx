@@ -36,10 +36,25 @@ import { getCurrentCtx } from "@/server/session-ctx";
  * verrait jamais cette garde. Les routes qui servent une donnée d'entreprise
  * appellent donc `exigerOuverture()` elles-mêmes (`src/server/garde-route.ts`),
  * et un contrôle refuse qu'une route neuve l'oublie
- * (`scripts/test-acces-routes-gardees.ts`). Les Server Actions, de même, gardent
- * leur `exigerProprietaire` : une action se poste à l'adresse de la page qui l'a
- * rendue, et se garder par le chemin seul reviendrait à la garder par l'écran
- * d'où l'on croit qu'elle vient.
+ * (`scripts/test-acces-routes-gardees.ts`).
+ *
+ * **LES SERVER ACTIONS SE GARDENT AUSSI — et ce paragraphe a longtemps affirmé
+ * le contraire de la vérité.** Il disait : *« Les Server Actions, de même,
+ * gardent leur `exigerProprietaire` »*. C'était vrai des réglages, et faux de
+ * trente-quatre actions qui ouvrent un devis, calculent une marge, envoient un
+ * devis chez un client, émettent une facture ou suppriment un client.
+ *
+ * L'audit final du 29 août 2026 l'a trouvé, et **c'est cette phrase qui avait
+ * empêché de le voir** : elle rassurait quiconque venait vérifier. Une garde de
+ * mise en page ne s'exécute qu'au RENDU ; une action serveur s'exécute AVANT, et
+ * ses effets ne se défont pas d'une redirection. Le middleware, lui, ne regarde
+ * que la session.
+ *
+ * Elles portent désormais `exigerMontants` (`src/server/garde-action.ts`), qui
+ * garde sur **ce que l'action fait** et non sur le chemin d'où elle semble
+ * venir — un salarié posté sur `/planning`, chemin qui lui est ouvert, peut
+ * appeler une action de `/chantiers/…`. Un contrôle refuse qu'une action neuve
+ * l'oublie (`scripts/test-actions-gardees-db.ts`).
  *
  * ───────────────────────────────────────────────────────────────────────────
  * **POURQUOI UNE REDIRECTION, ET PAS UN ÉCRAN « INTERDIT ».**
