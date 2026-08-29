@@ -181,6 +181,36 @@ chantier : ouvrez-le » était exactement ce qu'il reproche depuis le 25 août.
 La suite qui exigeait ce libellé mot pour mot a rougi sur une demande exaucée :
 elle vise désormais la règle, pas la phrase (`CLAUDE.md` §5 bis).
 
+### Les six gestes qui manquaient — dont deux qui effacent
+
+**Sa demande du 27 août 2026 : « fais la dernière »**, sur les cinq pistes
+proposées. Supprimer un chantier, supprimer un tarif, poser une absence
+d'équipe, régler les documents, ajouter et retirer une ligne de la fiche
+d'entretien. Deux outils de lecture arrivent avec eux —
+`LireReglagesDocuments` et `LirePrestationsEntretien` — parce qu'on vise par
+identifiant, jamais par libellé.
+
+**Tous restent des PROPOSITIONS**, y compris les deux qui effacent : *« très
+important que ça reste le doigt du patron »*.
+
+**Ce que la suite a attrapé, et qui aurait fini chez ses clients.** Régler
+l'acompte **effaçait la validité** : `mettreAJourEntreprise` REMPLACE le bloc
+des conditions — ce qui est juste pour l'écran des réglages, qui renvoie le
+formulaire entier, et faux pour une proposition qui n'en porte qu'un. Les
+réglages absents étaient donc remis à zéro, et cela s'imprime sur des documents
+que ses clients gardent : il ne l'aurait vu qu'au devis suivant. On relit et on
+fusionne.
+
+**Trois refus qui ne se négocient pas :**
+
+- un chantier **facturé ne se supprime pas** — le refus reste au serveur, la
+  correction passe par un avoir ;
+- une suppression **sans chantier visé** ne part pas sur celui de l'écran : elle
+  effacerait le mauvais ;
+- une absence sur une date qui n'existe pas — le 31 février —, ou dont la fin
+  précède le début, se refuse. Une absence mal posée fait proposer au client un
+  jour où personne ne peut venir.
+
 ### Lui parler, et lui montrer une photo
 
 **Sa demande du 27 août 2026 : « fais la 1 et la 4 »**, sur les cinq pistes

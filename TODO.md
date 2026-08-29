@@ -438,11 +438,12 @@ identifiant — aucune ne peut être appliquée par erreur.
 **FAIT le 26 août 2026** pour l'essentiel (`ARCHITECTURE.md` §188). Ce qui reste
 ouvert, et qu'il faudra sans doute lui demander :
 
-- **Des gestes non couverts** : composer la fiche d'entretien, régler les
-  documents (validité, acompte, mentions), gérer les absences d'équipe, lancer
-  un plan d'arrosage, créer un client SANS chantier, supprimer un chantier ou un
-  tarif. Chacun est une entrée de plus dans `TypeActionProposee` et un `case`
-  dans `appliquerPropositionsAction` — le patron est posé.
+- ~~**Des gestes non couverts**~~ — **six d'entre eux faits le 27 août 2026**
+  (« fais la dernière ») : supprimer un chantier, supprimer un tarif, poser une
+  absence d'équipe, régler les documents, ajouter et retirer une ligne de la
+  fiche d'entretien. **Restent ouverts** : lancer un plan d'arrosage, et créer
+  un client SANS chantier. Chacun est une entrée de plus dans
+  `TypeActionProposee` et un `case` dans `appliquerPropositionsAction`.
 - **Le filtre de périmètre attrape le cas franc, pas la totalité.** Une question
   du dehors sans marque connue passe au modèle, qui a la consigne. S'il signale
   une réponse hors-sujet, c'est une marque à ajouter dans `MARQUES_DU_DEHORS` —

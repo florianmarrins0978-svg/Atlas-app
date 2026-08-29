@@ -35,7 +35,21 @@ export type TypeActionProposee =
   | "retirer_du_planning"
   | "creer_tarif"
   | "modifier_tarif"
-  | "preparer_facture";
+  | "preparer_facture"
+  // --- Sa demande du 27 août 2026 : « fais la dernière » — les gestes qui
+  // manquaient encore. Tous restent des PROPOSITIONS : *« très important que ça
+  // reste le doigt du patron »* (26 août).
+  //
+  // **Les deux suppressions sont ici, et c'est délibéré.** Un geste qui efface
+  // est celui qu'on hésite le plus à confier ; mais rien ne s'exécute sans
+  // qu'il coche, et le refus métier reste au serveur — un chantier dont la
+  // facture est émise ne part pas, quoi qu'on lui demande.
+  | "supprimer_chantier"
+  | "supprimer_tarif"
+  | "poser_absence_equipe"
+  | "regler_documents"
+  | "ajouter_prestation_entretien"
+  | "retirer_prestation_entretien";
 
 export type ActionProposee = {
   type: TypeActionProposee;
