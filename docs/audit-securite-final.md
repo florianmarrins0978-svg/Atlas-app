@@ -6,16 +6,19 @@
 
 ## En six lignes
 
-1. **Sept défauts réels trouvés**, dont **une fuite entre entreprises** et **une
+1. **Neuf défauts réels trouvés**, dont **une fuite entre entreprises** et **une
    porte ouverte au bourrage de mots de passe**. Tous corrigés.
 2. Chacun a été **mesuré**, jamais déduit : la fuite a été reproduite en base,
    le déni de service chronométré, la porte dérobée lue dans le code d'Auth.js.
-3. **Cinq contrôles neufs**, tous **vus rouges** avant d'être verts.
+3. **Trois suites neuves et trois élargies**, toutes **vues rouges** avant
+   d'être vertes.
 4. Ce qui tient déjà tient bien : isolation par la base, jetons, nettoyage des
    photos, traversée de répertoire, injection SQL — rien à reprendre.
-5. **Trois défauts n'ont pas été corrigés**, et c'est délibéré : ils demandent
+5. **Trois constats n'ont pas été corrigés**, et c'est délibéré : ils demandent
    soit une décision du patron, soit une clé d'IA que cet environnement n'a pas.
-6. **Verdict : PRÊT SOUS CONDITIONS.** Les conditions sont d'infrastructure, pas
+6. **La batterie est entièrement verte** : 262 suites base, 116 suites
+   navigateur, 0 erreur de types.
+7. **Verdict : PRÊT SOUS CONDITIONS.** Les conditions sont d'infrastructure, pas
    de code.
 
 ---
@@ -150,6 +153,25 @@ cette ligne sera écrite, la clé sera lue et servie **sans contrôle
 d'appartenance**. La fuite était armée, et se serait déclenchée avec un
 correctif que le dépôt s'est lui-même prescrit.
 
+
+## 3.10 — Un en-tête forgé battait l'adresse déclarée
+
+| | |
+|---|---|
+| **Où** | `src/server/agenda/adresse-publique.ts` |
+| **Le problème** | Deux fonctions répondent à la même question — quelle est l'adresse publique du site — et elles y répondaient **dans l'ordre inverse** : l'une croyait l'en-tête d'abord, l'autre l'adresse déclarée d'abord. |
+| **Pourquoi c'était dangereux** | `x-forwarded-host` est écrit par le **client** quand le mandataire de tête ne le réécrit pas — le cas par défaut de plusieurs hébergeurs. Or cette adresse compose la **redirection de retour de Google** : une valeur forgée renvoyait le navigateur, au retour d'une autorisation, vers l'hôte de qui l'avait écrite. |
+| **La correction** | L'adresse déclarée passe d'abord. **Et le banc continue de marcher**, ce qui était toute la raison de l'ordre d'origine : la variable n'y est pas posée, l'en-tête reprend donc la main. Une suite tient ce cas explicitement, pour que le défaut du 9 août ne revienne pas par la porte du correctif. |
+
+## 3.11 — Un outil de diagnostic qui mentait
+
+| | |
+|---|---|
+| **Où** | `src/app/api/health/diagnostic/route.ts` |
+| **Le problème** | La page recopiait le calcul de `next.config.ts`, et son commentaire l'affirmait — *« reproduit exactement le calcul de next.config.ts »*. Les deux avaient divergé : la copie avait perdu une condition. |
+| **Pourquoi c'était grave** | Sur le banc, la page annonçait « aucune origine autorisée » et « connexion impossible » **pendant que la connexion marchait**. L'outil écrit précisément pour ne pas accuser le mauvais coupable accusait le mauvais coupable — et il avait été écrit après une journée perdue sur « Invalid Server Actions request. ». |
+| **La correction** | Une seule fonction, appelée des deux côtés. |
+
 ---
 
 # 4. Points ouverts
@@ -212,7 +234,7 @@ pire que de les laisser.
 | **Types** | **0 erreur** |
 | **Lint** | 0 erreur, 13 avertissements (préexistants, aucun de sécurité) |
 | **Suites base** | **262 / 262** — dont les deux neuves |
-| **Suites navigateur** | *en cours à la rédaction — le chiffre exact est à confirmer* |
+| **Suites navigateur** | **116 / 116**, aucune non jouée |
 | **Essais négatifs** | **11**, détaillés ci-dessous |
 
 ## Les essais négatifs, un par un

@@ -63,11 +63,12 @@
 <h2 id="en-six-lignes">En six lignes</h2>
 <a class="retour" href="#sommaire">↑ Sommaire</a>
 <ol>
-<li><strong>Sept défauts réels trouvés</strong>, dont <strong>une fuite entre entreprises</strong> et <strong>une porte ouverte au bourrage de mots de passe</strong>. Tous corrigés.</li>
+<li><strong>Neuf défauts réels trouvés</strong>, dont <strong>une fuite entre entreprises</strong> et <strong>une porte ouverte au bourrage de mots de passe</strong>. Tous corrigés.</li>
 <li>Chacun a été <strong>mesuré</strong>, jamais déduit : la fuite a été reproduite en base, le déni de service chronométré, la porte dérobée lue dans le code d'Auth.js.</li>
-<li><strong>Cinq contrôles neufs</strong>, tous <strong>vus rouges</strong> avant d'être verts.</li>
+<li><strong>Trois suites neuves et trois élargies</strong>, toutes <strong>vues rouges</strong> avant d'être vertes.</li>
 <li>Ce qui tient déjà tient bien : isolation par la base, jetons, nettoyage des photos, traversée de répertoire, injection SQL — rien à reprendre.</li>
-<li><strong>Trois défauts n'ont pas été corrigés</strong>, et c'est délibéré : ils demandent soit une décision du patron, soit une clé d'IA que cet environnement n'a pas.</li>
+<li><strong>Trois constats n'ont pas été corrigés</strong>, et c'est délibéré : ils demandent soit une décision du patron, soit une clé d'IA que cet environnement n'a pas.</li>
+<li><strong>La batterie est entièrement verte</strong> : 262 suites base, 116 suites navigateur, 0 erreur de types.</li>
 <li><strong>Verdict : PRÊT SOUS CONDITIONS.</strong> Les conditions sont d'infrastructure, pas de code.</li>
 </ol>
 <hr>
@@ -303,6 +304,52 @@
 <h2 id="39--une-clé-de-stockage-crue-sur-parole">3.9 — Une clé de stockage crue sur parole</h2>
 <a class="retour" href="#sommaire">↑ Sommaire</a>
 <p><code>ajouterAchatAction</code> reprenait <code>photoCle</code> du formulaire sans rien vérifier : <strong>la seule clé de stockage d'origine client de tout le dépôt</strong>. Aucune route ne sert cette colonne aujourd'hui, donc rien ne fuit — mais <code>TODO.md</code> prescrit noir sur blanc d'ajouter les photos de tickets à l'export « Mes données ». Le jour où cette ligne sera écrite, la clé sera lue et servie <strong>sans contrôle d'appartenance</strong>. La fuite était armée, et se serait déclenchée avec un correctif que le dépôt s'est lui-même prescrit.</p>
+<h2 id="310--un-en-tête-forgé-battait-ladresse-déclarée">3.10 — Un en-tête forgé battait l'adresse déclarée</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th></th>
+</tr></thead><tbody>
+<tr>
+<td><strong>Où</strong></td>
+<td><code>src/server/agenda/adresse-publique.ts</code></td>
+</tr>
+<tr>
+<td><strong>Le problème</strong></td>
+<td>Deux fonctions répondent à la même question — quelle est l'adresse publique du site — et elles y répondaient <strong>dans l'ordre inverse</strong> : l'une croyait l'en-tête d'abord, l'autre l'adresse déclarée d'abord.</td>
+</tr>
+<tr>
+<td><strong>Pourquoi c'était dangereux</strong></td>
+<td><code>x-forwarded-host</code> est écrit par le <strong>client</strong> quand le mandataire de tête ne le réécrit pas — le cas par défaut de plusieurs hébergeurs. Or cette adresse compose la <strong>redirection de retour de Google</strong> : une valeur forgée renvoyait le navigateur, au retour d'une autorisation, vers l'hôte de qui l'avait écrite.</td>
+</tr>
+<tr>
+<td><strong>La correction</strong></td>
+<td>L'adresse déclarée passe d'abord. <strong>Et le banc continue de marcher</strong>, ce qui était toute la raison de l'ordre d'origine : la variable n'y est pas posée, l'en-tête reprend donc la main. Une suite tient ce cas explicitement, pour que le défaut du 9 août ne revienne pas par la porte du correctif.</td>
+</tr>
+</tbody></table></div>
+<h2 id="311--un-outil-de-diagnostic-qui-mentait">3.11 — Un outil de diagnostic qui mentait</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th></th>
+</tr></thead><tbody>
+<tr>
+<td><strong>Où</strong></td>
+<td><code>src/app/api/health/diagnostic/route.ts</code></td>
+</tr>
+<tr>
+<td><strong>Le problème</strong></td>
+<td>La page recopiait le calcul de <code>next.config.ts</code>, et son commentaire l'affirmait — <em>« reproduit exactement le calcul de next.config.ts »</em>. Les deux avaient divergé : la copie avait perdu une condition.</td>
+</tr>
+<tr>
+<td><strong>Pourquoi c'était grave</strong></td>
+<td>Sur le banc, la page annonçait « aucune origine autorisée » et « connexion impossible » <strong>pendant que la connexion marchait</strong>. L'outil écrit précisément pour ne pas accuser le mauvais coupable accusait le mauvais coupable — et il avait été écrit après une journée perdue sur « Invalid Server Actions request. ».</td>
+</tr>
+<tr>
+<td><strong>La correction</strong></td>
+<td>Une seule fonction, appelée des deux côtés.</td>
+</tr>
+</tbody></table></div>
 <hr>
 <h1 id="4-points-ouverts">4. Points ouverts</h1>
 <h2 id="41--ce-qui-demande-une-décision-du-patron">4.1 — Ce qui demande une décision du patron</h2>
@@ -443,7 +490,7 @@
 </tr>
 <tr>
 <td><strong>Suites navigateur</strong></td>
-<td><em>en cours à la rédaction — le chiffre exact est à confirmer</em></td>
+<td><strong>116 / 116</strong>, aucune non jouée</td>
 </tr>
 <tr>
 <td><strong>Essais négatifs</strong></td>
