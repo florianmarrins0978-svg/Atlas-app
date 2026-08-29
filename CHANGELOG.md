@@ -258,6 +258,49 @@ chantier : ouvrez-le » était exactement ce qu'il reproche depuis le 25 août.
 La suite qui exigeait ce libellé mot pour mot a rougi sur une demande exaucée :
 elle vise désormais la règle, pas la phrase (`CLAUDE.md` §5 bis).
 
+### La dictée façon WhatsApp, la photothèque, et une panne qui parle enfin
+
+**Sa capture du 27 août 2026 au soir : « Ça ne marche pas la dictée. »** À
+l'écran : *« La dictée n'a pas abouti. Vous pouvez écrire votre question. »* —
+la phrase du `catch`, celle qu'on affiche quand on ne sait RIEN.
+
+**Le premier livrable n'est donc pas un correctif, c'est de rendre le défaut
+bavard** (`AGENTS.md`). Le message d'une exception levée par une action serveur
+ne lui parvient jamais (`HANDOVER.md`, piège 0 ter) : deviner la cause, c'est
+réparer une panne imaginée. Chaque refus rend désormais SA phrase — audio
+refusé, transcription refusée avec le motif du fournisseur, rien entendu — et
+ce qui n'était pas prévu se journalise avant de rendre la main. **Non
+reproduite ici**, et écrite comme telle.
+
+**Deux choses qui pouvaient y contribuer, corrigées au passage** : le fichier
+portait le nom « .webm » quel que soit le format réel — or un iPhone rend du
+mp4 —, et le nom suit maintenant les octets. Cela n'empêchait rien (la porte
+d'entrée lit les octets) mais rendait le journal illisible le jour où l'on
+cherche.
+
+**LA BARRE DEVIENT CELLE DE WHATSAPP QUAND IL PARLE.** Sa demande, capture à
+l'appui : *« lorsque l'on parle, il y a le petit zigzag qui se met en route »*,
+et *« le bouton envoyer, à partir du moment où j'appuie, ça envoie la dictée
+automatiquement »*. Corbeille à gauche, onde au milieu, envoi à droite ; le
+champ disparaît — il n'y a rien à taper tant qu'on parle.
+
+**L'onde montre le SON, pas le temps.** Une animation qui tourne toute seule
+rassurerait à tort : elle bougerait autant micro coupé. Les barres suivent le
+niveau réellement capté — silence, ligne plate, et c'est une information. Sur
+un `canvas`, pas soixante `div` : repeindre soixante éléments cinquante fois
+par seconde coûterait plus que le reste de l'écran.
+
+**Cela revient sur la règle du 7 août** — *« elle remplit, elle ne valide
+pas »* — et c'est LUI qui l'a demandé. La relecture reste possible : arrêter
+par le micro repose le texte dans le champ ; seul le bouton d'envoi part sans
+relire. **Et la corbeille coupe `onstop` avant d'arrêter** : une dictée jetée
+ne doit pas partir quand même chez le transcripteur, et se payer.
+
+**LA PHOTOTHÈQUE S'OUVRE.** *« Je peux prendre en photo mais pas avoir accès à
+la photothèque. »* `capture="environment"` forçait l'appareil sur iPhone et
+fermait la pellicule — or ce qu'il veut montrer est souvent DÉJÀ pris : un devis
+reçu, une plaque photographiée la veille. L'attribut est retiré.
+
 ### Les six gestes qui manquaient — dont deux qui effacent
 
 **Sa demande du 27 août 2026 : « fais la dernière »**, sur les cinq pistes
