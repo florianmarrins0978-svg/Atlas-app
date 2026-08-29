@@ -4,8 +4,44 @@
 vous ne savez rien de ce qui précède — c'est exactement le cas de figure qu'il
 sert.
 
-**Point de reprise :** 2026-08-25 · `main`
+**Point de reprise :** 2026-08-29 · `main`
 (l'historique fait foi : `git log --oneline -20`)
+
+---
+
+## SON BANC ÉTAIT LENT PARCE QU'IL PRÉCHAUFFAIT — réparé le 29 août 2026
+
+**Si le patron redit « l'appli est lente » ou « les fichiers ne chargent pas »,
+ceci est la panne à écarter en premier**, et elle a un chiffre.
+
+Le banc bâtit la version rapide pendant qu'il sert en mode développement, et il
+préchauffe 32 écrans à côté pour qu'ils s'ouvrent du premier coup. Sur son
+espace, les deux ne tiennent pas ensemble :
+
+| | |
+|---|---|
+| préchauffer les 32 écrans | **+887 Mo** au serveur (658 → 1 545 Mo) |
+| `next build` | **2 500 Mo** |
+| ce dont son espace dispose | **2 900 Mo** |
+
+Il manquait 500 Mo : le noyau tuait la construction, le veilleur en relançait
+une, et le banc restait lent indéfiniment. Le préchauffage s'abstient désormais
+sous le seuil (`scripts/memoire-prechauffage.mjs`).
+
+**Ce qu'il ne faut PAS refaire** — quatre réglages mesurés, quatre inutiles :
+moins de workers (2 471 Mo contre 2 452), sans typecheck (2 734, *pire*),
+plafond de tas Node (2 500). **Turbopack est écrit en Rust** : sa mémoire est
+hors du tas de V8, aucune option de Node n'y touche. Détail complet et pièges
+dans `ARCHITECTURE.md` §202.
+
+**Et le piège de mesure, parce qu'il coûterait la même soirée :** le serveur de
+Next s'appelle `next-server`, pas `node`. Un compteur qui somme les processus
+nommés `node` rate le principal consommateur et rend un chiffre qui BAISSE
+quand on ajoute du travail.
+
+**Ce qui n'est pas réparé :** sa fiche ne distingue toujours pas « en cours » de
+« tuée » — un processus abattu ne rend aucun code de sortie, donc aucun témoin
+d'échec. Voir `TODO.md`.
 
 ---
 

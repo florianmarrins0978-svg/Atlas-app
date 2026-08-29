@@ -7,6 +7,42 @@ Format : le plus récent en tête.
 
 ---
 
+## 2026-08-29
+
+### Le banc ne préchauffe plus quand la mémoire manque — sa version rapide peut enfin se construire
+
+*« L'appli est en mode lent, les fichiers n'arrivent pas à charger, elle bug
+souvent. »* Sa capture montrait « Version rapide en construction — 2 écrans sur
+32 », sa fiche disait « construction en cours ». Depuis des jours, et jamais
+« échouée ».
+
+**Ce n'était pas une lenteur, c'était un blocage.** Le préchauffage des 32
+écrans coûte **887 Mo** au serveur de développement (mesuré : 658 Mo avant,
+1 545 Mo après), `next build` en veut **2 500**, et son espace n'a que **2 900 Mo**
+disponibles. Il manquait 500 Mo : le noyau tuait la construction, le veilleur en
+relançait une, elle mourait pareil. Le banc restait lent **pour toujours**.
+
+Le préchauffage s'abstient désormais quand la mémoire disponible ne permet pas
+de bâtir ensuite, et le dit dans les mots du patron — avec sa borne : les
+premiers écrans seront lents *le temps de la construction, pas au-delà*. Les
+machines qui ont la place ne perdent rien : la décision se prend sur
+`MemAvailable`, jamais sur une supposition.
+
+**Quatre réglages ont été mesurés et écartés avant celui-ci** — moins de
+workers (2 471 Mo contre 2 452), sans typecheck ni source maps (2 734 Mo,
+*pire*), plafond de tas Node (2 500 Mo). Aucun ne fait maigrir la construction,
+et le dernier dit pourquoi : **Turbopack est écrit en Rust**, sa mémoire vit
+hors du tas de V8 où aucune option de Node n'a de prise. Le détail des mesures,
+les deux pièges rencontrés (`memoryBasedWorkersCount` impose un *plancher* de
+quatre workers ; le défaut de `cpus` est déjà `nproc − 1`) et la mesure fausse
+qui a failli clore l'enquête sont dans `ARCHITECTURE.md` §202.
+
+Non réparé, et noté dans `TODO.md` : sa fiche ne distingue toujours pas « en
+cours » de « tuée par le noyau » — un processus tué ne rend aucun code de
+sortie, donc aucun témoin d'échec n'est écrit.
+
+---
+
 ## 2026-08-27
 
 ### Fusion du lot 3 : batterie entièrement verte, et une panne de machine comprise

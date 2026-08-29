@@ -9,6 +9,30 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
+## La fiche ne sait pas dire « construction TUÉE » (29 août 2026)
+
+**Trouvé en diagnostiquant sa lenteur du 29 août** (`ARCHITECTURE.md` §202), et
+c'est ce qui a rendu ce défaut si long à voir — de son côté comme du nôtre.
+
+`diagnostiquer-espace.mjs` distingue trois états : version bâtie, construction
+**échouée** (témoin d'échec présent), construction **en cours**. Mais le témoin
+d'échec n'est écrit par `banc.mjs` que lorsque `next build` **rend un code de
+sortie**. Or une construction abattue par le tueur de mémoire n'en rend aucun :
+le processus disparaît, personne n'écrit le témoin, et la fiche annonce
+« construction en cours » — indéfiniment, et à tort.
+
+**Ce que ça coûte :** le patron lit « en cours » et attend ; nous lisons « en
+cours » et concluons que ça avance. Les deux sont faux, et rien ne le dit.
+
+**Piste, pas encore éprouvée :** le banc pose un jeton au DÉBUT de la
+construction et le retire à la fin, quelle que soit l'issue. Un jeton qui
+survit sans processus vivant = construction tuée. Reste à vérifier qu'un banc
+tué au mauvais moment ne laisse pas un jeton éternel — le piège déjà rencontré
+sur le drapeau de bascule (`.devcontainer/bascule-en-cours.sh`), qui a été
+résolu par une expiration.
+
+---
+
 ## La batterie ne tient plus en un seul serveur — NON DIAGNOSTIQUÉ (27 août 2026)
 
 **Mesuré, pas supposé.** Relevé de la mémoire du serveur toutes les cinq

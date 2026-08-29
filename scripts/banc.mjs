@@ -32,6 +32,7 @@ import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node
 import { execFileSync } from "node:child_process";
 import { annoncePrete } from "./annonce-adresse.mjs";
 import { prendreVerrouBanc, libererVerrouBanc } from "./verrou-banc.mjs";
+import { peutPrechauffer, memoireDisponibleMo } from "./memoire-prechauffage.mjs";
 import {
   delogerConstructionsOrphelines,
   attendreLaConstructionEnCours,
@@ -441,6 +442,43 @@ async function prechaufferEcransPublics() {
       expliquerObstacle,
       prechauffer,
     } = await import("./prechauffer.mjs");
+
+    // **PRÉCHAUFFER PEUT CONDAMNER LA CONSTRUCTION — sa panne du 29 août 2026.**
+    //
+    // *« L'appli est en mode lent, les fichiers n'arrivent pas à charger, elle
+    // bug souvent. »* Sa capture montrait « 2 écrans sur 32 », sa fiche disait
+    // « construction en cours » — depuis des jours, et jamais « échouée ».
+    //
+    // Ce n'était pas une lenteur, c'était un blocage, et le compte est sans
+    // appel (mesures dans `memoire-prechauffage.mjs`) :
+    //
+    //   préchauffer les 32 écrans coûte 887 Mo au serveur de développement,
+    //   `next build` en veut 2 500, son espace en a 2 900 de disponibles.
+    //
+    // Il manquait 500 Mo. Le noyau tuait la construction, le veilleur en
+    // relançait une, et le banc restait lent **pour toujours**. Sans le
+    // préchauffage, la construction a ses 2 900 Mo : elle passe.
+    //
+    // **L'arbitrage n'est pas symétrique**, et c'est ce qui le tranche : avec
+    // préchauffage il paie une lenteur qui ne finit jamais ; sans lui, quelques
+    // écrans neufs sont lents le temps d'une construction, puis plus rien. On
+    // préfère une gêne qui s'arrête.
+    //
+    // **Rien ne change sur les machines qui ont la place** : la décision se
+    // prend sur la mémoire réellement disponible, jamais sur une supposition.
+    const place = peutPrechauffer(memoireDisponibleMo(readFileSync));
+    if (!place.possible) {
+      console.log(`\n  ${place.motif}\n`);
+      // On n'écrit AUCUN état : le bandeau retombe alors sur « la version
+      // rapide se construit », sans compte — ce qui est exactement vrai.
+      // Y déposer un `termine: true` ferait disparaître le bandeau, et il
+      // croirait l'application simplement cassée.
+      return;
+    }
+    // Mémoire illisible : on préchauffe quand même, mais la trace existe — un
+    // banc bloqué sans explication est la faute qu'on vient de payer.
+    if (place.motif) console.log(`  ⚠ ${place.motif}\n`);
+
     let motif = null;
     const cookie = await cookieDeSession({
       databaseUrl: process.env.DATABASE_URL,
