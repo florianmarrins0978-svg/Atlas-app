@@ -4,8 +4,76 @@
 vous ne savez rien de ce qui précède — c'est exactement le cas de figure qu'il
 sert.
 
-**Point de reprise :** 2026-08-27 · `main`
+**Point de reprise :** 2026-08-29 · `main`
 (l'historique fait foi : `git log --oneline -20`)
+
+---
+
+## SA CONSTRUCTION MOURAIT SUR DES DÉPENDANCES DÉSACCORDÉES — 29 août 2026
+
+**Devant « l'appli est lente » ou « ça ne marche toujours pas », lire sa fiche
+et regarder la ligne `dit:` du relevé d'échec.** Deux lignes seulement, dont
+l'en-tête de Next, = dépendances abîmées, PAS un manque de mémoire.
+
+Ce soir-là son relevé disait : `code: 1`, **5,7 Go libres**, et
+« ▲ Next.js 16.3.3 » alors que le projet épingle **16.3.2**. Les binaires natifs
+de Next sont versionnés à l'identique : désaccordés, le compilateur meurt après
+l'en-tête, sans un mot. Son banc ne pouvait pas s'en sortir — sa réinstallation
+automatique exigeait `Cannot find module`, et il n'y avait aucun message.
+
+Le banc compare maintenant les versions avant de bâtir et réinstalle
+(`scripts/coherence-dependances.mjs`). **Reste inexpliqué : comment ses
+`node_modules` ont dérivé.** Voir `TODO.md`.
+
+**L'ordre dans lequel chercher, quand son banc est lent** — les trois causes
+vues en une seule soirée, dans l'ordre où elles se distinguent :
+
+| Ce que dit sa fiche | Cause | Geste |
+|---|---|---|
+| `dit:` = 2 lignes, en-tête Next seul | dépendances désaccordées | réparé tout seul au prochain démarrage |
+| `signal: SIGKILL`, mémoire basse | abattue faute de mémoire | rallumer l'espace |
+| fiche non réécrite depuis 20 min | espace **arrêté** | rallumer l'espace |
+
+---
+
+## SON BANC ÉTAIT LENT PARCE QU'IL PRÉCHAUFFAIT — réparé le 29 août 2026
+
+**Si le patron redit « l'appli est lente » ou « les fichiers ne chargent pas »,
+ceci est la panne à écarter en premier**, et elle a un chiffre.
+
+Le banc bâtit la version rapide pendant qu'il sert en mode développement, et il
+préchauffe 32 écrans à côté pour qu'ils s'ouvrent du premier coup. Sur son
+espace, les deux ne tiennent pas ensemble :
+
+| | |
+|---|---|
+| préchauffer les 32 écrans | **+887 Mo** au serveur (658 → 1 545 Mo) |
+| `next build` | **2 500 Mo** |
+| ce dont son espace dispose | **2 900 Mo** |
+
+Il manquait 500 Mo : le noyau tuait la construction, le veilleur en relançait
+une, et le banc restait lent indéfiniment. Le préchauffage s'abstient désormais
+sous le seuil (`scripts/memoire-prechauffage.mjs`).
+
+**Ce qu'il ne faut PAS refaire** — quatre réglages mesurés, quatre inutiles :
+moins de workers (2 471 Mo contre 2 452), sans typecheck (2 734, *pire*),
+plafond de tas Node (2 500). **Turbopack est écrit en Rust** : sa mémoire est
+hors du tas de V8, aucune option de Node n'y touche. Détail complet et pièges
+dans `ARCHITECTURE.md` §203.
+
+**Et le piège de mesure, parce qu'il coûterait la même soirée :** le serveur de
+Next s'appelle `next-server`, pas `node`. Un compteur qui somme les processus
+nommés `node` rate le principal consommateur et rend un chiffre qui BAISSE
+quand on ajoute du travail.
+
+**Ce qui n'est pas réparé :** sa fiche dit « la dernière construction a échoué »
+mais jamais **pourquoi**. Le témoin porte pourtant le code de sortie et le relevé
+mémoire de l'instant ; `diagnostiquer-espace.mjs` n'en lit que la date. Voir
+`TODO.md`.
+
+*(Une première version de ce bloc affirmait qu'un processus tué ne rend aucun
+code et qu'aucun témoin n'est écrit : c'est faux — un `SIGKILL` rend 137, et le
+témoin est bien écrit. Corrigé le 29 août, sa capture de 22 h 37 à l'appui.)*
 
 ---
 
@@ -176,7 +244,7 @@ dort sur `PropositionPrixSection.tsx` (`TODO.md`).
 ## LA CHAÎNE DICTÉE → DEVIS A ÉTÉ REFAITE LE 27 AOÛT 2026 — à lire avant d'y toucher
 
 **Sept choses ont changé, et chacune ferme un défaut mesuré.** Le détail est
-dans `ARCHITECTURE.md` §203 ; voici ce qu'il faut savoir pour ne pas les
+dans `ARCHITECTURE.md` §205 ; voici ce qu'il faut savoir pour ne pas les
 défaire.
 
 1. **Le vocabulaire métier vit dans UN endroit** : `src/lib/natures-prestation.ts`.

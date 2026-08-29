@@ -72,17 +72,53 @@ export async function dicterQuestionAction(formData: FormData): Promise<{ ok: tr
   // rien — il transcrit —, mais c'est un appel facturé chez le fournisseur.
   const fichier = formData.get("fichier");
   if (!(fichier instanceof File)) return { ok: false, raison: "Aucun enregistrement reçu." };
-  const audio = await preparerAudioEntrant(fichier);
-  if (!audio.ok) return { ok: false, raison: audio.message };
 
-  const transcrit = await getFournisseurTranscription().transcrire(audio.octets, audio.mime);
-  if (!transcrit.succes) return { ok: false, raison: "La dictée n'a pas pu être transcrite." };
+  /**
+   * **RIEN NE LÈVE ICI, ET C'EST LE SUJET.**
+   *
+   * **Sa capture du 27 août 2026 au soir :** « La dictée n'a pas abouti. Vous
+   * pouvez écrire votre question. » — la phrase du `catch` de l'écran, celle
+   * qu'on affiche quand on ne sait RIEN. Le message d'une exception levée par
+   * une action serveur ne lui parvient jamais (`HANDOVER.md`, piège 0 ter) :
+   * une panne qui lève est donc une panne muette, et deviner sa cause, c'est
+   * réparer une panne imaginée (`AGENTS.md`).
+   *
+   * Chaque refus rend donc SA phrase, et ce qui n'était pas prévu se
+   * journalise avant de rendre la main. Le prochain rouge dira où regarder.
+   */
+  try {
+    const audio = await preparerAudioEntrant(fichier);
+    if (!audio.ok) {
+      logger.warn("dictee_assistant_audio_refuse", { message: audio.message, taille: fichier.size, type: fichier.type });
+      return { ok: false, raison: audio.message };
+    }
 
-  const texte = transcrit.texte.trim();
-  if (!texte) {
-    return { ok: false, raison: "Rien n'a été entendu. Réessayez en parlant plus près du téléphone." };
+    const transcripteur = getFournisseurTranscription();
+    const transcrit = await transcripteur.transcrire(audio.octets, audio.mime);
+    if (!transcrit.succes) {
+      logger.warn("dictee_assistant_transcription_refusee", {
+        fournisseur: transcripteur.nom,
+        type: transcrit.erreur.type,
+      });
+      // Le message du fournisseur est repris tel quel : « clé refusée » et
+      // « quota dépassé » ne se réparent pas de la même façon.
+      return { ok: false, raison: transcrit.erreur.message };
+    }
+
+    const texte = transcrit.texte.trim();
+    if (!texte) {
+      return { ok: false, raison: "Rien n'a été entendu. Réessayez en parlant plus près du téléphone." };
+    }
+    return { ok: true, texte };
+  } catch (erreur) {
+    logger.error("dictee_assistant_panne", {
+      erreur,
+      taille: fichier.size,
+      type: fichier.type,
+      nom: fichier.name,
+    });
+    return { ok: false, raison: "La dictée s'est arrêtée en chemin. Le journal du serveur en garde la trace." };
   }
-  return { ok: true, texte };
 }
 
 /**
@@ -111,17 +147,25 @@ export async function regarderPhotoAction(formData: FormData): Promise<{ ok: tru
   const limite = await verifierLimite(`assistant:${ctx.entrepriseId}`, LIMITES.assistant);
   if (!limite.autorise) return { ok: false, raison: limite.message };
 
-  const prete = await preparerPhotoEntrante(formData.get("photo"), "photo montrée à l'assistant", {
-    // La même borne que le croquis d'arrosage : elle ne protège pas la mémoire
-    // du serveur, elle borne une facture de vision et évite un appel qui tombe.
-    octets: 8 * 1024 * 1024,
-    message: "Cette photo dépasse 8 Mo. Reprenez-la en plus petit.",
-  });
-  if (!prete.ok) return { ok: false, raison: prete.raison };
+  // Comme la dictée : rien ne lève, tout rend sa phrase, et l'imprévu se
+  // journalise. Une panne muette se devine, et une panne devinée se répare de
+  // travers (`AGENTS.md`).
+  try {
+    const prete = await preparerPhotoEntrante(formData.get("photo"), "photo montrée à l'assistant", {
+      // La même borne que le croquis d'arrosage : elle ne protège pas la mémoire
+      // du serveur, elle borne une facture de vision et évite un appel qui tombe.
+      octets: 8 * 1024 * 1024,
+      message: "Cette photo dépasse 8 Mo. Reprenez-la en plus petit.",
+    });
+    if (!prete.ok) return { ok: false, raison: prete.raison };
 
-  const lu = await regarderPhoto(prete.photo.octets.toString("base64"), prete.photo.mimeType);
-  if (!lu.ok) return { ok: false, raison: lu.raison };
-  return { ok: true, lecture: lu.lecture };
+    const lu = await regarderPhoto(prete.photo.octets.toString("base64"), prete.photo.mimeType);
+    if (!lu.ok) return { ok: false, raison: lu.raison };
+    return { ok: true, lecture: lu.lecture };
+  } catch (erreur) {
+    logger.error("photo_assistant_panne", { erreur });
+    return { ok: false, raison: "La photo n'a pas pu être regardée. Le journal du serveur en garde la trace." };
+  }
 }
 
 // Le client ne transmet que l'identifiant du chantier courant (déduit de

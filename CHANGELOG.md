@@ -7,6 +7,83 @@ Format : le plus récent en tête.
 
 ---
 
+## 2026-08-29
+
+### Le banc répare ses dépendances désaccordées, au lieu de bâtir en boucle pour rien
+
+**Sa vraie panne du 29 août, trouvée grâce à la fiche du correctif précédent.**
+Le relevé publié disait : `code: 1`, **5,7 Go de mémoire libre**, et pour toute
+sortie « ▲ Next.js 16.3.3 (Turbopack) ». Ce n'était donc PAS un manque de
+mémoire — le soupçon de l'entrée ci-dessus est démenti par ses propres chiffres.
+
+Il exécutait **Next 16.3.3** alors que le projet épingle **16.3.2**, dans
+`package.json` comme dans le verrou. Next embarque des binaires natifs
+versionnés à l'identique : le compilateur meurt à leur chargement, après
+l'en-tête, sans un mot. Et son banc ne pouvait pas s'en sortir — sa
+réinstallation automatique exige `Cannot find module` dans la sortie, or il n'y
+avait aucune sortie. Le veilleur retentait la même construction condamnée,
+indéfiniment.
+
+Le banc compare désormais les versions installées à celles du projet **avant**
+de bâtir, et réinstalle si elles ont dérivé. Un second filet rattrape ce que les
+versions ne voient pas : une construction qui meurt sans rien dire déclenche
+aussi la réinstallation. Éprouvé contre son état exact — `node_modules` forcé à
+16.3.3 — et pas seulement en théorie.
+
+Reste ouvert, et noté dans `TODO.md` : **comment** ses `node_modules` ont dérivé.
+Ni `npm ci` ni `npm install` ne devraient installer 16.3.3 devant un pin exact.
+Ce correctif traite le symptôme à chaque démarrage ; il ne dit pas la cause.
+Détail : `ARCHITECTURE.md` §204.
+
+### Le banc ne préchauffe plus quand la mémoire manque — sa version rapide peut enfin se construire
+
+*« L'appli est en mode lent, les fichiers n'arrivent pas à charger, elle bug
+souvent. »* Sa capture montrait « Version rapide en construction — 2 écrans sur
+32 », sa fiche disait « construction en cours ». Depuis des jours, et jamais
+« échouée ».
+
+**Ce n'était pas une lenteur, c'était un blocage.** Le préchauffage des 32
+écrans coûte **887 Mo** au serveur de développement (mesuré : 658 Mo avant,
+1 545 Mo après), `next build` en veut **2 500**, et son espace n'a que **2 900 Mo**
+disponibles. Il manquait 500 Mo : le noyau tuait la construction, le veilleur en
+relançait une, elle mourait pareil. Le banc restait lent **pour toujours**.
+
+Le préchauffage s'abstient désormais quand la mémoire disponible ne permet pas
+de bâtir ensuite, et le dit dans les mots du patron — avec sa borne : les
+premiers écrans seront lents *le temps de la construction, pas au-delà*. Les
+machines qui ont la place ne perdent rien : la décision se prend sur
+`MemAvailable`, jamais sur une supposition.
+
+**Quatre réglages ont été mesurés et écartés avant celui-ci** — moins de
+workers (2 471 Mo contre 2 452), sans typecheck ni source maps (2 734 Mo,
+*pire*), plafond de tas Node (2 500 Mo). Aucun ne fait maigrir la construction,
+et le dernier dit pourquoi : **Turbopack est écrit en Rust**, sa mémoire vit
+hors du tas de V8 où aucune option de Node n'a de prise. Le détail des mesures,
+les deux pièges rencontrés (`memoryBasedWorkersCount` impose un *plancher* de
+quatre workers ; le défaut de `cpus` est déjà `nproc − 1`) et la mesure fausse
+qui a failli clore l'enquête sont dans `ARCHITECTURE.md` §203.
+
+### Sa fiche dit enfin POURQUOI la construction a échoué
+
+Écrit le même soir, après sa capture de 22 h 37 — et **elle a corrigé notre
+diagnostic** : son écran affichait « La dernière construction a échoué », donc
+le témoin était bien écrit. L'entrée précédente affirmait le contraire ; c'était
+faux, et c'est corrigé noir sur blanc dans `ARCHITECTURE.md` §203.
+
+Le vrai défaut était plus grave : `banc.mjs` jetait le SIGNAL de sortie
+(`code ?? 1`). Une construction **abattue par le noyau faute de mémoire**
+s'écrivait donc `code: 1`, exactement comme une erreur de compilation — les deux
+causes les plus opposées, indiscernables. Le signal est désormais retenu,
+consigné, et relu : la fiche nomme le manque de mémoire, montre le relevé de
+l'instant, et dit le geste qui répare.
+
+Vérifié aussi, contre notre propre soupçon : **sa construction n'a rien de
+cassé.** Sur son commit exact (`575aad7`) avec les variables de son
+`docker-compose`, elle compile en 30,6 s, `EXIT=0`. C'est sa machine qui manque
+de mémoire, et rien d'autre.
+
+---
+
 ## 2026-08-27
 
 ### La phrase grise sous « Composer ma fiche » est partie
@@ -180,6 +257,49 @@ un refus incompréhensible.
 chantier : ouvrez-le » était exactement ce qu'il reproche depuis le 25 août.
 La suite qui exigeait ce libellé mot pour mot a rougi sur une demande exaucée :
 elle vise désormais la règle, pas la phrase (`CLAUDE.md` §5 bis).
+
+### La dictée façon WhatsApp, la photothèque, et une panne qui parle enfin
+
+**Sa capture du 27 août 2026 au soir : « Ça ne marche pas la dictée. »** À
+l'écran : *« La dictée n'a pas abouti. Vous pouvez écrire votre question. »* —
+la phrase du `catch`, celle qu'on affiche quand on ne sait RIEN.
+
+**Le premier livrable n'est donc pas un correctif, c'est de rendre le défaut
+bavard** (`AGENTS.md`). Le message d'une exception levée par une action serveur
+ne lui parvient jamais (`HANDOVER.md`, piège 0 ter) : deviner la cause, c'est
+réparer une panne imaginée. Chaque refus rend désormais SA phrase — audio
+refusé, transcription refusée avec le motif du fournisseur, rien entendu — et
+ce qui n'était pas prévu se journalise avant de rendre la main. **Non
+reproduite ici**, et écrite comme telle.
+
+**Deux choses qui pouvaient y contribuer, corrigées au passage** : le fichier
+portait le nom « .webm » quel que soit le format réel — or un iPhone rend du
+mp4 —, et le nom suit maintenant les octets. Cela n'empêchait rien (la porte
+d'entrée lit les octets) mais rendait le journal illisible le jour où l'on
+cherche.
+
+**LA BARRE DEVIENT CELLE DE WHATSAPP QUAND IL PARLE.** Sa demande, capture à
+l'appui : *« lorsque l'on parle, il y a le petit zigzag qui se met en route »*,
+et *« le bouton envoyer, à partir du moment où j'appuie, ça envoie la dictée
+automatiquement »*. Corbeille à gauche, onde au milieu, envoi à droite ; le
+champ disparaît — il n'y a rien à taper tant qu'on parle.
+
+**L'onde montre le SON, pas le temps.** Une animation qui tourne toute seule
+rassurerait à tort : elle bougerait autant micro coupé. Les barres suivent le
+niveau réellement capté — silence, ligne plate, et c'est une information. Sur
+un `canvas`, pas soixante `div` : repeindre soixante éléments cinquante fois
+par seconde coûterait plus que le reste de l'écran.
+
+**Cela revient sur la règle du 7 août** — *« elle remplit, elle ne valide
+pas »* — et c'est LUI qui l'a demandé. La relecture reste possible : arrêter
+par le micro repose le texte dans le champ ; seul le bouton d'envoi part sans
+relire. **Et la corbeille coupe `onstop` avant d'arrêter** : une dictée jetée
+ne doit pas partir quand même chez le transcripteur, et se payer.
+
+**LA PHOTOTHÈQUE S'OUVRE.** *« Je peux prendre en photo mais pas avoir accès à
+la photothèque. »* `capture="environment"` forçait l'appareil sur iPhone et
+fermait la pellicule — or ce qu'il veut montrer est souvent DÉJÀ pris : un devis
+reçu, une plaque photographiée la veille. L'attribut est retiré.
 
 ### Les six gestes qui manquaient — dont deux qui effacent
 
@@ -706,7 +826,7 @@ deux jours le 4 août — mais il est identifiable.
   7 août, celle dont le devis est sorti vide.
 
 Migration **0070**, additive de bout en bout. Détail complet : `ARCHITECTURE.md`
-§203. Dossier à retransmettre : `docs/pour-chatgpt/07-correction-complete.md`.
+§205. Dossier à retransmettre : `docs/pour-chatgpt/07-correction-complete.md`.
 
 ### Une planche à choisir : corriger une mesure sans réécrire le nom
 

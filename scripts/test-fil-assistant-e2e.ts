@@ -40,8 +40,13 @@ async function cas(nom: string, verifier: () => Promise<void>) {
 async function main() {
   console.log("=== Le fil de l'assistant survit au rechargement ===\n");
 
-  const navigateur = await lancerNavigateur();
-  const page = await (await navigateur.newContext()).newPage();
+  // **Un micro FACTICE, et l'autorisation accordée.** Sans les deux,
+  // `getUserMedia` reste bloqué sur une demande qu'aucune suite ne peut cocher,
+  // et l'état « en train de parler » ne s'éprouve jamais.
+  const navigateur = await lancerNavigateur({
+    args: ["--use-fake-ui-for-media-stream", "--use-fake-device-for-media-stream"],
+  });
+  const page = await (await navigateur.newContext({ permissions: ["microphone"] })).newPage();
 
   await page.goto(`${BASE}/login`, { waitUntil: "domcontentloaded" });
   await page.fill('input[name="email"]', "demo@atlas.local");
@@ -117,6 +122,39 @@ async function main() {
     if (champ.width < 140) {
       throw new Error(`le champ de la question est écrasé à ${Math.round(champ.width)} px par les deux boutons`);
     }
+  });
+
+  await cas("QUAND IL PARLE, la barre devient celle de WhatsApp — et la corbeille jette", async () => {
+    /**
+     * **Sa demande du 27 août 2026, capture de WhatsApp à l'appui :** *« lorsque
+     * l'on parle, il y a le petit zigzag qui se met en route, et le bouton
+     * envoyer, à partir du moment où j'appuie, ça envoie la dictée
+     * automatiquement »*.
+     *
+     * Ce que ce cas tient : la barre CHANGE quand il parle (corbeille, onde,
+     * envoi), et la corbeille rend la barre d'avant sans rien envoyer. Ce qui
+     * ne peut pas se tenir ici : ce que la transcription rend — le fournisseur
+     * `dev` répond une phrase d'essai, et aucune clé n'existe sur ce poste.
+     */
+    // Le badge de développement de Next.js recouvre le coin bas-gauche, donc le
+    // micro : il n'existe pas sur une version bâtie.
+    await page.evaluate(() => document.querySelector("nextjs-portal")?.remove());
+    await page.locator('[data-atlas="micro-assistant"]').click();
+    await page.locator('[data-atlas="barre-dictee"]').waitFor({ state: "visible", timeout: 20_000 });
+
+    const onde = await page.locator('[data-atlas="onde-de-voix"]').boundingBox();
+    // **Refuser de conclure sur une boîte de zéro pixel** (`CLAUDE.md` §5).
+    if (!onde || onde.width === 0 || onde.height === 0) {
+      throw new Error("l'onde n'a aucune dimension : rien ne se voit pendant qu'il parle");
+    }
+    if (!(await page.locator('[data-atlas="envoyer-dictee"]').isVisible())) {
+      throw new Error("le bouton qui envoie la dictée n'est pas là");
+    }
+
+    await page.locator('[data-atlas="jeter-dictee"]').click();
+    await page.locator('[data-atlas="barre-dictee"]').waitFor({ state: "hidden", timeout: 10_000 });
+    // La barre d'avant est revenue, et rien n'est parti.
+    await page.locator('input[placeholder="Votre question…"]').waitFor({ state: "visible", timeout: 10_000 });
   });
 
   await navigateur.close();

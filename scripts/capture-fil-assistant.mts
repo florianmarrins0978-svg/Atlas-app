@@ -10,8 +10,20 @@ const BASE = "http://localhost:3000";
 const DOSSIER = process.argv[2] ?? "captures";
 mkdirSync(DOSSIER, { recursive: true });
 
-const navigateur = await lancerNavigateur();
-const page = await (await navigateur.newContext({ viewport: { width: 390, height: 844 } })).newPage();
+// **Un micro FACTICE, sinon rien à capturer.** Chromium sans ces deux drapeaux
+// ouvre une demande d'autorisation qu'aucun test ne peut cocher, et
+// `getUserMedia` reste bloqué.
+const navigateur = await lancerNavigateur({
+  args: ["--use-fake-ui-for-media-stream", "--use-fake-device-for-media-stream"],
+});
+// **Le micro est ACCORDÉ, et une piste factice est jouée dedans.** Sans les
+// deux, `getUserMedia` refuse et l'état « en train de parler » ne se capture
+// jamais — or c'est précisément l'écran qu'il a demandé le 27 août 2026.
+const contexte = await navigateur.newContext({
+  viewport: { width: 390, height: 844 },
+  permissions: ["microphone"],
+});
+const page = await contexte.newPage();
 
 await page.goto(`${BASE}/login`, { waitUntil: "domcontentloaded" });
 await page.fill('input[name="email"]', "demo@atlas.local");
@@ -40,5 +52,20 @@ await page.screenshot({ path: `${DOSSIER}/fil-apres-rechargement.png` });
 const barre = page.locator('[data-atlas="micro-assistant"]').locator("xpath=..");
 await barre.screenshot({ path: `${DOSSIER}/barre-micro-et-photo.png` });
 
+// **L'ÉTAT « EN TRAIN DE PARLER » — sa demande du 27 août 2026.** Corbeille,
+// zigzag, envoi : c'est la barre de WhatsApp, et elle ne se juge qu'à l'œil.
+// **Le badge de développement de Next.js recouvre le coin bas-gauche**, donc le
+// micro : Playwright refuse de cliquer un élément couvert, et le rouge accusait
+// la barre d'un défaut qu'elle n'a pas. Il n'existe pas sur une version bâtie.
+await page.evaluate(() => document.querySelector("nextjs-portal")?.remove());
+await page.locator('[data-atlas="micro-assistant"]').click();
+await page.locator('[data-atlas="barre-dictee"]').waitFor({ state: "visible", timeout: 20_000 });
+// Deux secondes de son pour que l'onde ait de quoi dessiner : capturée dans la
+// milliseconde, elle serait plate et ne prouverait rien.
+await page.waitForTimeout(2000);
+await page.evaluate(() => document.querySelector("nextjs-portal")?.remove());
+await page.locator('[data-atlas="barre-dictee"]').screenshot({ path: `${DOSSIER}/barre-en-train-de-parler.png` });
+await page.locator('[data-atlas="jeter-dictee"]').click();
+
 await navigateur.close();
-console.log(`Capture dans ${DOSSIER}/fil-apres-rechargement.png`);
+console.log(`Captures dans ${DOSSIER}/`);

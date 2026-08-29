@@ -17550,7 +17550,283 @@ marqueur qui ne suit pas, et l'or remplacé par l'accent.
 Une suite qui réclame ce que le patron a fait retirer rend son écran impossible
 à changer.
 
-## 203. La chaîne dictée → devis : une nature par travail, une quantité qui va jusqu'au bout, et « à chiffrer » au lieu de 0 €
+---
+## 203. Préchauffer ou bâtir : sur une petite machine, il faut choisir
+
+**Sa plainte du 29 août 2026 :** *« L'appli est en mode lent, les fichiers
+n'arrivent pas à charger, elle bug souvent. »* Sa capture montrait le bandeau
+« Version rapide en construction — 2 écrans sur 32 déjà prêts », et sa fiche
+disait « construction en cours » — jamais « échouée ». Depuis des jours.
+
+**Ce n'était pas une lenteur, c'était un blocage**, et il ne pouvait pas se
+dénouer tout seul.
+
+### Quatre pistes mesurées, et quatre fausses
+
+Elles sont écrites ici pour que personne ne les repaie. Pic mémoire de
+`next build`, mesuré en échantillonnant le RSS de tout l'arbre de processus
+toutes les deux secondes :
+
+| Ce qui a été essayé | Pic mémoire |
+|---|---|
+| tel quel (3 workers) | 2 452 Mo |
+| `experimental.cpus: 1` — son cas, 2 cœurs | 2 471 Mo |
+| sans typecheck ni source maps de prérendu | **2 734 Mo — pire** |
+| `NODE_OPTIONS=--max-old-space-size=1024` | 2 500 Mo |
+
+**Le dernier explique les trois autres : ce projet bâtit avec Turbopack, écrit
+en Rust.** Sa mémoire est allouée hors du tas de V8, où aucune option de Node
+n'a de prise. Chercher de ce côté est perdu d'avance, et `--max-old-space-size`
+en particulier ne fait rien — il borne un tas qui n'est pas celui qui grossit.
+
+Deux pièges rencontrés en chemin, qui valent d'être notés :
+
+- **`experimental.memoryBasedWorkersCount` ne réduit JAMAIS les workers.** Son
+  code est `Math.max(Math.min(cpus, freemem/1e9), 4)` — un **plancher** à
+  quatre. Sur une machine à court de mémoire il aggrave. Son nom promet
+  l'inverse de ce qu'il fait.
+- **Le défaut de `experimental.cpus` est `nproc − 1`.** Sur les deux cœurs du
+  patron, il n'y a donc **déjà** qu'un seul worker : réduire ce nombre ne lui
+  apporte rien, et c'est pourquoi la première mesure ne bouge pas.
+
+### La vraie cause, et elle n'est pas dans la construction
+
+Mesures sur le serveur de développement, avant et après le préchauffage :
+
+| Serveur de développement | total | dont `next-server` |
+|---|---|---|
+| avant préchauffage | 658 Mo | 504 Mo |
+| après les 32 écrans | 1 545 Mo | 1 391 Mo |
+
+**Le préchauffage coûte 887 Mo, et il les garde** : un écran compilé en mode
+développement reste en mémoire dans le serveur. Sur son espace — 8,3 Go dont
+5,5 déjà pris, soit **2 900 Mo disponibles** — le compte est sans appel :
+
+```
+2 900 − 887 (préchauffage) = 2 013 Mo   pour une construction qui en veut 2 500
+```
+
+Il manquait 500 Mo. Le noyau tuait la construction, le veilleur en relançait
+une, elle mourait pareil — **et le banc restait lent pour toujours**. Sans le
+préchauffage, la construction dispose de ses 2 900 Mo : elle passe.
+
+**Une mesure fausse a failli clore l'enquête**, et elle mérite d'être dite : le
+premier compteur ne sommait que les processus dont le nom est `node`. Or le
+serveur de Next s'appelle `next-server` — le principal consommateur était donc
+invisible, et la mesure rendait « 187 Mo après préchauffage », soit MOINS
+qu'avant. Un chiffre qui baisse quand on ajoute du travail n'est pas un
+résultat, c'est un instrument cassé.
+
+### L'arbitrage, et pourquoi il n'est pas symétrique
+
+Le préchauffage existe pour une vraie raison — le 504 du 9 août 2026 : en mode
+développement un écran neuf se compile à l'ouverture, et le mandataire de GitHub
+abandonne avant. Le sacrifier coûte quelques écrans lents.
+
+| | Ce qu'on paie | Pendant |
+|---|---|---|
+| **avec** préchauffage | la construction ne finit jamais | toujours |
+| **sans** préchauffage | des écrans neufs lents | le temps d'une construction |
+
+Le second se termine ; le premier, non. **On préfère une gêne qui s'arrête à une
+gêne définitive** — et c'est bien la seconde qu'il vivait.
+
+**Rien ne change sur les machines qui ont la place.** La décision se prend sur la
+mémoire réellement disponible (`scripts/memoire-prechauffage.mjs`), jamais sur
+une supposition : un espace confortable préchauffe comme avant.
+
+### Ce que le code tient
+
+- **`MemAvailable`, jamais `MemFree`.** Sur son espace le second vaut 143 Mo
+  quand 2 900 sont réellement allouables — il ignore le cache que le noyau rend
+  sans broncher. Les confondre refuserait de préchauffer partout, y compris là
+  où tout va bien.
+- **Une mesure impossible n'est pas un feu vert silencieux.** Sans chiffre
+  (`/proc` absent, ligne manquante), on préchauffe — refuser sur une machine
+  inconnue ramènerait le 504 sans raison — mais on l'écrit au journal, pour
+  qu'un banc bloqué ne reste pas inexpliqué.
+- **Aucun état de préchauffage n'est déposé quand on s'abstient.** Le bandeau
+  retombe alors sur « la version rapide se construit », sans compte, ce qui est
+  exactement vrai. Y déposer `termine: true` ferait **disparaître** le bandeau,
+  et il croirait l'application simplement cassée.
+- **Le refus se dit dans ses mots** : ce qui se passe, et **quand cela
+  s'arrête**. Une réserve sans borne se lit comme une panne définitive — le
+  contrôle refuse un message qui n'en porte pas, et refuse aussi tout jargon
+  (`Turbopack`, `next build`, `worker`) sous ses yeux.
+
+### Le contrôle, et ce qu'il a été vu attraper
+
+`scripts/test-memoire-prechauffage.ts`, ramassé automatiquement par `npm test`.
+Confronté à trois régressions, il rougit à chaque fois :
+
+| Régression simulée | Ce qui tombe |
+|---|---|
+| `PRECHAUFFAGE_MO = 0` (le préchauffage ne coûterait rien) | 6 vérifications |
+| la garde retirée du banc | « le banc importe la garde » |
+| le `return` retiré (on prévient, puis on préchauffe quand même) | « un refus ARRÊTE le préchauffage » |
+
+La dernière est la plus utile : sans elle, on afficherait le refus **et** la
+construction se ferait tuer exactement comme avant — le remède qui rassure sans
+rien réparer.
+
+**Une règle juste que personne n'appelle ne répare rien**, et ce dépôt l'a déjà
+payé : le rappel `avancer` de `prechauffer.mjs` était documenté et éprouvé
+depuis le 9 août, et personne ne le lui passait — le bandeau du patron est resté
+sans chiffre pendant cinq jours. D'où les trois vérifications structurelles qui
+lisent `banc.mjs` : elles ne remplacent pas un banc démarré, mais elles attrapent
+une garde retirée ou déplacée après ce qu'elle doit empêcher.
+
+### CORRECTION — ce paragraphe a d'abord affirmé le contraire
+
+**Écrit ici parce que c'était faux, et qu'un document faux coûte plus cher qu'un
+document absent.** La première version de ce §203 concluait : *« un processus
+tué ne rend aucun code de sortie, donc aucun témoin d'échec n'est écrit, et la
+fiche annonce en cours indéfiniment »*.
+
+**C'est inexact.** Un enfant abattu par le noyau rend bien un code à son père —
+137 pour un `SIGKILL` —, et `banc.mjs` écrit alors son témoin normalement, avec
+`code:`, `disque:` et `memoire:` relevés **à l'instant de l'échec**. Sa capture
+du 29 août à 22 h 37 le prouve : son écran affichait « La dernière construction
+a échoué », pas « en cours ».
+
+Ce qui manquait n'était donc pas le témoin : c'était **sa lecture** — et un
+second défaut, plus grave, dans son écriture.
+
+### Le témoin confondait les deux causes les plus opposées
+
+`banc.mjs` écrivait `code: ${code}` en repliant `null` sur `1`. Or Node passe
+`code = null` quand un enfant est **abattu par un signal**, le nom du signal
+arrivant en second argument — que le code jetait. Une construction tuée par le
+noyau faute de mémoire s'écrivait donc `code: 1`, **exactement comme une erreur
+de compilation**.
+
+Aucune lecture, si fine soit-elle, ne pouvait les distinguer : le renseignement
+était détruit à l'écriture. Le signal est désormais retenu et consigné
+(`signal: SIGKILL` ou `signal: aucun`), et `scripts/lire-echec-construction.mjs`
+le relit.
+
+Ce qu'il lit maintenant sur sa fiche, à la place d'un « échoué » muet :
+
+```
+Code SERVI : AUCUNE — la construction a ÉCHOUÉ (…), faute de mémoire : le système l'a abattue.
+   RALLUMEZ L'ESPACE DE TRAVAIL : il repart d'une mémoire libre, et c'est ce qui répare.
+   Sans cela le banc reste lent, et chaque tentative retombera pareil.
+   Mémoire à l'instant de l'échec : total used free | Mem: 8.3G 7.9G 96M
+```
+
+**Deux défauts de rédaction trouvés en REGARDANT cet écran**, et par aucun
+test : la phrase portait `**Rallumer…**` en gras Markdown — or elle est publiée
+dans un bloc de code sur la fiche, où il aurait lu les astérisques ; et elle
+disait deux fois la même chose (« abattue faute de mémoire : votre espace n'a
+pas assez de mémoire »). C'est la cinquième fois dans ce dépôt qu'un défaut sort
+d'une image et d'aucune suite.
+
+**On ne devine jamais la cause.** Sans signal reconnu, `cause` vaut `null` et la
+phrase reste celle d'avant — qui est vraie. Accuser la mémoire à tort enverrait
+rallumer un espace qui se répare tout seul, et une consigne qui accuse à tort
+coûte plus cher que pas de consigne du tout.
+
+### Et la construction, elle, n'a rien de cassé
+
+Vérifié le 29 août sur **son commit exact** (`575aad7`), avec **les variables de
+son `docker-compose`** : `EXIT=0`, compilée en 30,6 s. Le code n'est pas en
+cause, et une session qui chercherait un défaut de construction perdrait sa
+soirée. C'est sa machine qui manque de mémoire, et rien d'autre.
+
+---
+
+## 204. Des dépendances désaccordées tuent la construction sans un mot
+
+**Sa panne du 29 août 2026 au soir, et il a fallu trois hypothèses fausses pour
+y arriver.** Sa fiche publiait enfin le relevé de l'échec (§203), et il tient en
+cinq lignes :
+
+```
+code: 1
+memoire: Mem: 7.8Gi  used 2.1Gi  available 5.7Gi
+dit:
+▲ Next.js 16.3.3 (Turbopack)
+- Environments: .env.local
+```
+
+Deux choses s'y lisent, et la seconde avait échappé à tout le monde :
+
+1. **la mémoire n'y était pour rien** — 5,7 Go disponibles. Le §203 avait
+   soupçonné un abattage par le noyau ; le relevé le dément ;
+2. **il exécutait Next 16.3.3**, alors que `package.json` **et**
+   `package-lock.json` épinglent **16.3.2**, tous deux à la version exacte.
+
+Next embarque des binaires natifs — Turbopack, compilé en Rust, livré dans des
+paquets `@next/swc-*` versionnés à l'identique. Un JavaScript de 16.3.3 devant
+des binaires de 16.3.2 meurt à l'instant où il charge le compilateur : **après
+l'en-tête, avant la moindre ligne de diagnostic.** C'est mot pour mot ce que sa
+sortie montre.
+
+### Pourquoi son banc ne pouvait pas s'en sortir seul
+
+`banc.mjs` savait déjà réinstaller, mais à une seule condition :
+
+```js
+/Cannot find module|MODULE_NOT_FOUND/i.test(sortie)
+```
+
+Un paquet **absent** la déclenche. Un paquet **présent mais désaccordé**, non —
+il ne produit aucun message. La seule réparation possible était donc exactement
+celle que rien ne pouvait déclencher, et le veilleur retentait la même
+construction condamnée : trois fois à dix minutes, puis toutes les demi-heures,
+indéfiniment.
+
+**C'est la troisième construction que ce dépôt perd faute d'un message** (22
+août : `./detect-typo` ; 25 août : `@swc/helpers`). Les deux premières laissaient
+au moins une trace. Celle-ci n'en laisse aucune — elle se détecte donc **avant**
+de bâtir, en comparant deux nombres.
+
+### Ce que le code tient
+
+- **Seules les versions ÉPINGLÉES sont comparées.** `^16.3.2` autorise
+  délibérément 16.3.3 : s'en plaindre ferait réinstaller à chaque démarrage un
+  espace parfaitement sain, et un garde-fou qui parle à tort s'apprend à être
+  ignoré.
+- **Une version illisible n'est pas une incohérence, c'est une ignorance.**
+  Paquet absent, `package.json` inattendu : on ne conclut pas.
+- **Un second filet, pour ce que les versions ne voient pas** — binaire corrompu,
+  paquet à demi installé : une construction qui meurt en produisant **moins de
+  cinq lignes, dont aucune ne parle d'erreur**, déclenche aussi la
+  réinstallation. Le seuil vient de sa sortie réelle : deux lignes. Une vraie
+  erreur de compilation en écrit des dizaines — une seule trace d'appel suffit à
+  dépasser le seuil.
+- **`npm install`, jamais `npm ci`.** `ci` efface `node_modules` avant de
+  réinstaller, or le serveur de développement tourne pendant ce temps et sert le
+  patron.
+- **Jamais bloquant.** Si la réinstallation échoue, on bâtit quand même : au pire
+  on retombe sur l'échec qu'on avait déjà, et le témoin le dira.
+
+### Éprouvé contre sa panne, pas seulement en théorie
+
+`node_modules/next/package.json` a été forcé à 16.3.3 — son état exact —, et la
+règle l'a vu :
+
+```
+DÉTECTÉ ✅
+  Les dépendances installées ne correspondent plus à celles du projet
+  (next 16.3.3 au lieu de 16.3.2). La construction échouerait sans rien dire.
+  Réinstallation avant de bâtir.
+```
+
+`scripts/test-coherence-dependances.ts` tient le reste, et rougit quand la garde
+est retirée du banc. Un cas y veille sur le contrôle lui-même : **si Next cessait
+d'être épinglé, la comparaison ne verrait plus rien** — la suite refuse ce
+silence plutôt que de rendre un vert qui ne prouve rien.
+
+### Ce qui reste ouvert
+
+**On ne sait pas COMMENT ses `node_modules` ont dérivé.** `demarrer.sh` joue
+`npm ci` puis, en repli, `npm install` — ni l'un ni l'autre ne devrait installer
+16.3.3 devant un pin exact et un verrou concordant. La cause d'origine n'est
+donc pas établie, et ce correctif traite le symptôme : il le répare à chaque
+démarrage au lieu de le laisser condamner le banc. Noté dans `TODO.md`.
+
+## 205. La chaîne dictée → devis : une nature par travail, une quantité qui va jusqu'au bout, et « à chiffrer » au lieu de 0 €
 
 **Ce qui a été corrigé le 27 août 2026, et pourquoi chaque pièce existe.**
 
@@ -17559,7 +17835,7 @@ d'affichage : la quantité dictée n'existait plus comme donnée, deux travaux s
 rapport partageaient une identité, et une ligne qu'on ne savait pas chiffrer
 s'écrivait « 0 € ».
 
-### 203 a. Le fourre-tout `principal`, et ce qu'il coûtait
+### 205 a. Le fourre-tout `principal`, et ce qu'il coûtait
 
 `lignes-vendables.ts` rangeait dans une case `principal` **tout ce qu'aucune de
 ses cinq expressions régulières ne reconnaissait**. Aucune ne connaissait la
@@ -17591,7 +17867,7 @@ chiffrer » — elle ne rejoint rien, pas même une autre nature inconnue.
 vit dans un champ à part (`principal: boolean`). C'était précisément ce que le
 mot `principal` mélangeait.
 
-### 203 b. La quantité : deux concepts, jamais synchronisés
+### 205 b. La quantité : deux concepts, jamais synchronisés
 
 | | Où | Ce que ça dit |
 |---|---|---|
@@ -17610,7 +17886,7 @@ la colonne ne changeait donc **rien** au prix, elle était décorative.
 800 « ml » sur une haie SONT sa longueur — et refuse dès que l'unité ne
 concorde pas. 800 m² de haie ne sont pas une longueur.
 
-### 203 c. « À chiffrer » n'est pas « 0 € »
+### 205 c. « À chiffrer » n'est pas « 0 € »
 
 Sur un devis, un zéro se lit « gratuit » : c'est un montant, donc une décision,
 là où il n'y a qu'une ignorance. Le patron pouvait envoyer ce document.
@@ -17625,7 +17901,7 @@ photographie : les lignes de prix ont pu bouger depuis qu'il a été préparé.
 `peutPreparerDevis` refuse, `envoyerDevis` refuse, et poser un montant éteint
 l'état de lui-même.
 
-### 203 d. La comparabilité V2, à côté de la V1
+### 205 d. La comparabilité V2, à côté de la V1
 
 `lecons_prix.signature` porte des clés **déjà stockées**. Les réécrire
 orphelinerait toute la mémoire de prix du patron, sans un mot et sans erreur.
@@ -17656,7 +17932,7 @@ qu'elles n'ont jamais portée**.
 `lecons_prix` enregistre désormais espèce, quantité et unité : c'est la matière
 qui permettra de calibrer honnêtement un seuil, plus tard, sur ses vrais devis.
 
-### 203 e. Une correction de l'artisan tranche, au lieu de bloquer
+### 205 e. Une correction de l'artisan tranche, au lieu de bloquer
 
 Sa plainte : *« il ne doit plus être obligé de transformer "Haie (800 ml)" en
 "Haie (80 ml)" pour corriger sa quantité. »*
@@ -17682,7 +17958,7 @@ réponses de l'arrêt réécrit le libellé, et ne doit surtout pas marquer la l
 **Le contrat du lot C ne bouge pas** : sans main humaine, deux sources qui
 divergent restent une contradiction et le prix ne se calcule pas.
 
-### 203 f. La nature et l'espèce viennent du modèle, dans une liste fermée
+### 205 f. La nature et l'espèce viennent du modèle, dans une liste fermée
 
 Le contrat d'extraction demande désormais `nature` et `espece`. La nature se
 choisit **dans une liste** : laisser un modèle nommer lui-même les natures
@@ -17693,7 +17969,7 @@ qui n'y figure pas vaut `null`, et le travail garde sa propre ligne.
 L'espèce n'est renseignée que si elle est **prononcée**. Jamais déduite : un
 chêne et un peuplier ne s'abattent pas pareil.
 
-### 203 g. Une réponse tronquée n'est plus indiscernable d'une panne
+### 205 g. Une réponse tronquée n'est plus indiscernable d'une panne
 
 L'API Anthropic renvoie `stop_reason: "max_tokens"` quand elle a coupé. Le
 fournisseur ne lisait que `content` : l'information arrivait ici et **était
@@ -17710,7 +17986,7 @@ dépassera aussi. La correction, c'est que la coupure se voie.
 Le repli littéral reste — un écran mort a coûté deux jours le 4 août 2026 —
 mais il est désormais **identifiable**.
 
-### 203 h. Ce qui reste un mécanisme historique, et pourquoi
+### 205 h. Ce qui reste un mécanisme historique, et pourquoi
 
 Le libellé n'est plus la source des données métier. Il reste lu à trois
 endroits, tous nommés comme tels :
@@ -17724,7 +18000,7 @@ endroits, tous nommés comme tels :
 Ce sont des **replis**, jamais la voie principale : chacun n'est consulté que
 lorsque la colonne est absente.
 
-### 203 i. Deux fois le même travail dicté ≠ un rejeu
+### 205 i. Deux fois le même travail dicté ≠ un rejeu
 
 Le dédoublonnage de `confirmerBrouillon` protège du **rejeu** d'une dictée.
 Il ne doit pas protéger de ce qu'une dictée énonce deux fois : « je démonte un

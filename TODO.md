@@ -9,6 +9,93 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
+## D'où vient la dérive de ses `node_modules` ? (29 août 2026)
+
+**Le symptôme est réparé, la cause ne l'est pas.** Son espace exécutait
+`Next 16.3.3` alors que `package.json` ET `package-lock.json` épinglent
+`16.3.2`, tous deux à la version exacte. Sa construction mourait donc sans un
+mot (`ARCHITECTURE.md` §204), et le banc réinstalle désormais avant de bâtir.
+
+**Ce qu'on ne s'explique pas :** `demarrer.sh` joue `npm ci`, et en repli
+`npm install`. Aucun des deux ne devrait installer 16.3.3 devant un pin exact
+et un verrou concordant.
+
+Pistes, aucune vérifiée :
+
+| | |
+|---|---|
+| un `npm install <paquet>` joué à la main dans son espace | remonterait Next au passage |
+| un `npm ci` interrompu, repris par le repli `npm install` | laisserait un état mixte |
+| un cache npm servant une archive d'une autre version | expliquerait le pin ignoré |
+| son `.env.local` ou un outil tiers touchant à `node_modules` | non exploré |
+
+**Comment le savoir la prochaine fois :** son témoin d'échec porte maintenant la
+sortie de la construction, et sa fiche la publie. Si la dérive revient, le banc
+la nommera avant de bâtir (« next 16.3.3 au lieu de 16.3.2 ») — c'est cette
+ligne-là qu'il faudra rapprocher de ce qu'il venait de faire.
+
+---
+
+## `test-acces-salarie-e2e` tombe sur main, seule et reproductible (29 août 2026)
+
+**Établi, pas supposé** : la suite échoue à l'identique sur `main` (`a23bf24`),
+jouée SEULE, sans aucun commit par-dessus. Ce n'est donc ni une collision entre
+suites, ni le manque de mémoire du ticket ci-dessous.
+
+L'étape qui tombe, toujours la même :
+
+    ✗ mais SA feuille de chantier, elle, sort — sans un seul montant
+
+Le symptôme change d'un essai à l'autre, et c'est ce qui rend le diagnostic
+trompeur :
+
+| Contexte | Ce que Playwright dit |
+|---|---|
+| dans la batterie complète | `page.goto: Timeout 45000ms exceeded` |
+| jouée seule | `page.goto: net::ERR_CONNECTION_RESET` |
+
+Les deux portent sur `http://localhost:3000/login`, et les deux disent la même
+chose : **le serveur ne répond plus à cet instant précis.** Le journal du
+serveur montre juste avant une route PDF lourde qui se compile
+(`/api/chantiers/[chantierId]/feuille/pdf`, rendue en 404 après 6,5 s) et un
+`GET /login` à **86 secondes**.
+
+**Piste, non vérifiée :** la compilation de la route PDF de la feuille de
+chantier étrangle le serveur au point qu'il ne répond plus, voire se fait
+abattre. À confronter au ticket ci-dessous, qui décrit le même coupable
+(Turbopack) dans un autre contexte.
+
+**Ce que ça ne doit PAS faire croire :** la fonctionnalité n'est pas forcément
+cassée. Les sept autres vérifications de cette suite passent, y compris celles
+qui gardent l'isolation du salarié. Ce qui échoue est l'ACCÈS au serveur, pas la
+règle métier.
+
+---
+
+## ~~La fiche ne sait pas dire « construction TUÉE »~~ — RÉGLÉ le 29 août 2026
+
+**Trouvé en diagnostiquant sa lenteur du 29 août** (`ARCHITECTURE.md` §203), et
+c'est ce qui a rendu ce défaut si long à voir — de son côté comme du nôtre.
+
+`diagnostiquer-espace.mjs` distingue trois états : version bâtie, construction
+**échouée** (témoin d'échec présent), construction **en cours**. Mais le témoin
+d'échec n'est écrit par `banc.mjs` que lorsque `next build` **rend un code de
+sortie**. Or une construction abattue par le tueur de mémoire n'en rend aucun :
+le processus disparaît, personne n'écrit le témoin, et la fiche annonce
+« construction en cours » — indéfiniment, et à tort.
+
+**Ce que ça coûte :** le patron lit « en cours » et attend ; nous lisons « en
+cours » et concluons que ça avance. Les deux sont faux, et rien ne le dit.
+
+**RÉGLÉ, et la piste ci-dessus n'a pas servi : le diagnostic de départ était
+faux.** Un processus abattu rend bien un code à son père — la capture du patron
+de 22 h 37 montrait « La dernière construction a échoué », donc le témoin ÉTAIT
+écrit. Le vrai défaut était ailleurs, et plus grave : `banc.mjs` jetait le
+SIGNAL (`code ?? 1`), si bien qu'un abattage mémoire s'écrivait `code: 1`,
+exactement comme une erreur de compilation. Le signal est désormais consigné et
+relu (`scripts/lire-echec-construction.mjs`), et la fiche nomme le manque de
+mémoire avec le relevé de l'instant. Voir `ARCHITECTURE.md` §203.
+
 ## ⚠ Les deux suites du veilleur rougissent quand un `next build` traîne — DIAGNOSTIQUÉ, non corrigé (29 août 2026)
 
 **Symptôme.** `test-relance-construction.ts` et `test-fiche-pendant-relance.ts`
@@ -471,7 +558,7 @@ une prestation » est interdit) ; les lui demander.
 succession de micro-lots nécessitant ma validation. Tu as l'autonomie technique
 pour terminer la correction complète. »*
 
-Fait, en une passe. Le détail complet est dans `ARCHITECTURE.md` §203 ; le
+Fait, en une passe. Le détail complet est dans `ARCHITECTURE.md` §205 ; le
 dossier à retransmettre est `docs/pour-chatgpt/07-correction-complete.md`.
 
 | | État |
@@ -676,6 +763,26 @@ atténuation.
 TEXTE des messages — le nom du client, celui de ses chantiers. C'est faisable
 et ce n'est pas anodin (un nom courant balaierait des échanges sans rapport) :
 à trancher avant de coder, pas en codant.
+
+## ⚠ « Ça ne marche pas la dictée » — NON REPRODUIT ici
+
+**Sa capture du 27 août 2026 au soir**, sur son espace : *« La dictée n'a pas
+abouti. Vous pouvez écrire votre question. »* — la phrase du `catch` de l'écran,
+celle qu'on affiche quand on ne sait rien. **Rien n'a été reproduit sur ce
+poste** : la dictée y passe de bout en bout par le fournisseur `dev`.
+
+**Ce qui a été livré, et qui n'est pas un correctif :** l'action ne lève plus.
+Chaque refus rend sa phrase — audio refusé, transcription refusée avec le motif
+du fournisseur, rien entendu — et l'imprévu se journalise
+(`dictee_assistant_panne`). **Le prochain essai dira où regarder** ; celui-ci ne
+le pouvait pas.
+
+**Deux pistes corrigées au passage, sans preuve qu'elles soient la cause :** le
+fichier portait « .webm » quel que soit le format réel (un iPhone rend du mp4),
+et rien ne journalisait ni la taille ni le type reçus.
+
+**Ce qu'il faut LUI demander au prochain essai** : la phrase exacte affichée.
+Elle nomme désormais le coupable — porte d'entrée, fournisseur, ou panne.
 
 ## ⚠ La lecture d'une photo par l'assistant n'a pas été vue sur un VRAI fournisseur
 
