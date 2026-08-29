@@ -350,6 +350,21 @@ chaque tour, une ou deux suites tombent — et **jamais les mêmes** :
 | 2 | `test-lecons-prix-e2e` — « le prix 1400 n'est jamais arrivé en base : 0.00 » |
 | 3 | `test-periodicite-tva-e2e` — « Tous les trimestres n'a pas été enregistré : la case n'est pas cochée après rechargement » (relevé depuis un AUTRE lot, celui des salariés) |
 | 4 | `test-fiche-pendant-relance` — verte à la batterie suivante, sur une machine reposée |
+| 5 | `test-devis-doublon-e2e` — « Aucune proposition de prix après trente secondes », **verte 1/1 rejouée seule** dans la minute (29 août) |
+
+**⚠ Le tour 4 n'appartient PAS à cette liste, et son vrai motif a été trouvé le
+29 août 2026.** `test-fiche-pendant-relance` ne dépend pas de la charge :
+`veiller.sh` demande à `pgrep -f 'next build'` si une construction tourne déjà,
+et pgrep balaie **toute la machine**. Tout processus portant ce texte fait
+sauter la relance que la suite attend. Le veilleur retente en **39 ms** quand on
+le chronomètre seul, là où la suite lui laisse 3 500 ms : le temps n'y était
+pour rien. Le diagnostic complet, et l'expérience qui le prouve, sont à l'entrée
+« Les deux suites du veilleur » en tête de ce fichier.
+
+**Pourquoi ça compte au-delà de cette ligne :** une suite classée « aléatoire »
+cesse d'être crue, et celle-ci avait une cause nette. Avant d'ajouter une
+sixième occurrence ici, vérifier qu'il s'agit bien d'un délai fixe — sinon on
+range un vrai défaut dans le tiroir des faux.
 
 **Toutes sont VERTES rejouées seules**, immédiatement après. Aucune n'est
 touchée par les lots en cours — le planning d'un côté, les salariés de l'autre —
