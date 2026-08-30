@@ -202,6 +202,10 @@ async function main() {
     // Le patron l'a demandé mot pour mot : ne pas toucher au commercial sauf
     // nécessité. Sans ce contrôle, on aurait pu fermer large et croire l'appli
     // sûre en ayant cassé le métier de quelqu'un.
+    //
+    // **Et ce n'est plus un non-changement : il l'a CONFIRMÉ le 30 août 2026**,
+    // à la question posée telle quelle. Ce contrôle défend donc une décision,
+    // pas un reste — le resserrer demande une seconde décision de sa part.
     for (const [, geste] of ECRITURES) await exigerEcritureSurLePlanning(ctxCommercial, geste);
   });
 

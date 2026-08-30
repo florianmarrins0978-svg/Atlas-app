@@ -30,6 +30,10 @@ elle ouvre les six actions d'écriture du planning — avant la portée.~~
 montre, et il garde sa feuille de chantier sans montants.
 Rapport : `docs/salarie-planning-lecture-seule.md`.~~
 
+~~**Et la question laissée ouverte a été tranchée le même jour** : *« le
+commercial garde-t-il le droit d'écrire sur le planning ? »* — **oui**. Le droit
+est confirmé, plus seulement laissé en place (`ARCHITECTURE.md` §208).~~
+
 ### 2. L'infrastructure, et elle seule
 
 Tout est écrit pas à pas dans `docs/DEPLOIEMENT-PURGE.md`.
