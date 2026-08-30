@@ -140,13 +140,52 @@ cas("deux arbres dans une même dictée sont questionnés séparément", () => {
   assert.equal(q.length, 4, "attendu technique + diamètre pour chacun des deux arbres");
 });
 
-cas("chaque question dit ce qu'elle change", () => {
-  // Un arrêt sans motif est un arrêt qu'on subit. Il doit lire pourquoi on
-  // l'interrompt, sinon la question suivante sera expédiée au hasard.
+cas("chaque question est une question, et rien de plus", () => {
+  // **Le motif ne s'écrit plus.** Chaque question portait un `pourquoi` affiché
+  // sous elle. Le patron, le 30 août 2026 : *« trop de phrases inutiles, il
+  // faut aller droit au but, l'utilisateur n'aime pas lire »*. Ce qui reste
+  // doit donc se suffire : une question posée en trois mots, qui se répond au
+  // pouce. Ce contrôle-ci défend ce qui subsiste, il ne réclame pas ce qu'il a
+  // fait retirer (`CLAUDE.md` §5 bis).
   for (const q of questionsAvantChiffrage(DICTEE_DU_PATRON)) {
-    assert.ok(q.pourquoi.trim().length > 20, `« ${q.question} » n'explique pas ce qu'elle change`);
     assert.ok(q.question.trim().endsWith("?"), `« ${q.question} » n'est pas formulée en question`);
+    assert.ok(q.question.trim().length <= 40, `« ${q.question} » est trop longue pour un écran de chantier`);
   }
+});
+
+cas("une souche n'a plus d'arbre : on ne demande pas comment on l'abat", () => {
+  // **Sa remarque du 30 août 2026**, devant l'écran : *« lorsque l'on parle de
+  // souche, ça sous-entend que l'arbre a déjà été abattu et qu'il ne reste que
+  // les racines à enlever — donc s'il n'y a pas d'arbre, pourquoi il y a la
+  // question de comment on l'abat ? »*
+  //
+  // Aucun contrôle ne pouvait le voir : la question était posée, lisible, et
+  // son identifiant stable. Elle n'avait simplement aucun sens.
+  const parLeTexte = questionsAvantChiffrage([{ libelle: "Dessouchage de deux souches" }]);
+  const parLaNature = questionsAvantChiffrage([
+    { libelle: "Intervention chez Mme Martin", nature: "dessouchage" },
+  ]);
+  for (const q of [...parLeTexte, ...parLaNature]) {
+    assert.ok(
+      !q.id.startsWith("abattage.technique"),
+      `« ${q.question} » demandée sur une souche : l'arbre est déjà par terre`
+    );
+  }
+  // Le diamètre, lui, reste : c'est le même tronc, au ras du sol, et c'est lui
+  // qui fait le prix. Il se demande sous le mot juste.
+  assert.ok(
+    parLeTexte.some((q) => q.id.startsWith("dessouchage.diametre") && /souche/.test(q.question)),
+    "le diamètre de la souche n'est plus demandé, ou il parle encore du tronc"
+  );
+});
+
+cas("le diamètre d'une souche se relit avec son ⌀, comme celui d'un tronc", () => {
+  // La forme « ⌀ 60 cm » n'est pas décorative : `mesures-arbre.ts` y retrouve le
+  // nombre pour désigner la case de la grille. Un sujet neuf qui sortirait « 60
+  // cm » tout court casserait le chiffrage sans une seule erreur.
+  const q = questionsAvantChiffrage([{ libelle: "Dessouchage de deux souches" }]);
+  const diametre = q.find((x) => x.id.startsWith("dessouchage.diametre"))!;
+  assert.equal(precisionLisible(diametre, "60"), "⌀ 60 cm");
 });
 
 cas("aucune question n'annonce un prix", () => {

@@ -18079,3 +18079,81 @@ qui défilent balayées. Un contrôle qui n'a jamais échoué ne prouve rien
 Les cinq écrans restés verts en mode dégradé ne sont pas une faiblesse du
 balayage : leur contenu tient dans les 720 px du cadre d'essai, donc la page ne
 défile pas et il n'y a effectivement aucune barre à voir.
+
+---
+
+## 207. Une souche n'a plus d'arbre : l'arrêt d'avant-chiffrage cesse d'expliquer, et de demander l'impossible
+
+**Sa remarque du 30 août 2026, capture à l'appui**, sur l'écran qui l'arrête
+avant de chiffrer :
+
+> *« Trop de phrases inutiles pour ça. Il faut aller droit au but, l'utilisateur
+> n'aime pas lire. »*
+>
+> *« Autre incohérence : lorsque l'on parle de souche, ça sous-entend que
+> l'arbre a déjà été abattu et qu'il ne reste que les racines à enlever — c'est
+> ça une souche. Donc s'il n'y a pas d'arbre, pourquoi il y a la question de
+> comment on l'abat ? »*
+
+### La souche : un raccourci qui a débordé de son usage
+
+`questions-chiffrage.ts` rangeait le dessouchage **avec** l'abattage, et pour
+une raison juste : le diamètre est celui du même tronc, et le redemander ferait
+répondre deux fois la même chose (`abattageDansLaDictee`). Mais la même liste
+servait à deux décisions différentes, et la seconde n'a jamais été relue :
+
+| Ce que le regroupement décide | Verdict |
+|---|---|
+| **le diamètre** — même tronc, au ras du sol | juste, et il reste |
+| **la technique d'abattage** | faux : l'arbre est déjà par terre |
+
+**Aucun contrôle ne pouvait le dire.** La question était posée, son libellé
+lisible, son identifiant stable, sa réponse persistée — tout ce qu'une suite
+sait vérifier était vert. Ce qui manquait n'était mesurable nulle part : le
+**sens**. C'est le troisième défaut de ce dépôt trouvé en regardant l'écran
+plutôt qu'un rapport, et le premier trouvé par le métier plutôt que par l'œil.
+
+La leçon générale, et elle dépasse l'arrosage comme le chiffrage : **une liste
+qui sert deux décisions se relit pour chacune des deux.** Le regroupement avait
+été écrit pour une question, et il en a silencieusement commandé une autre.
+
+Ce qui change, à l'usage : une souche reçoit son diamètre seul, **sous le mot
+juste** — « Quel diamètre fait la souche ? », jamais « le tronc ». Son sujet
+devient `dessouchage.diametre`, que `prestation-structuree.ts` lit déjà par son
+suffixe. `precisionLisibleParId`, lui, cherchait un **préfixe** (`abattage.` ou
+`fendage.`) : le sujet neuf serait sorti « 60 cm » au lieu de « ⌀ 60 cm », et
+`mesures-arbre.ts` n'y aurait plus retrouvé le nombre — le chiffrage se serait
+tu, sans une seule erreur. Les deux lisent désormais le suffixe, comme
+`CLAUDE.md` §3 l'exige d'une règle qui vit à deux endroits.
+
+### Les phrases qui expliquent : parties, et le champ avec elles
+
+L'écran portait, sous le titre, deux lignes disant que la dictée était
+incomplète ; et sous **chaque** question, une ligne disant ce qu'elle changeait
+(`QuestionChiffrage.pourquoi`). Elles décrivaient ce que l'écran montrait déjà —
+exactement ce que `CLAUDE.md` §3 refuse : *« un écran n'explique pas son propre
+fonctionnement, il le montre »*.
+
+| Avant | Après |
+|---|---|
+| « Une précision avant de chiffrer » / « 2 précisions avant de chiffrer » | « Avant de chiffrer » |
+| « Votre dictée ne les dit pas, et elles changent le prix. Sans elles, le devis serait faux. » | — |
+| une ligne d'explication sous chaque question | — |
+| la prestation réécrite au-dessus de chaque question | écrite **une fois** par prestation |
+
+**`pourquoi` est retiré du modèle, pas seulement de l'écran.** Un champ que plus
+rien n'affiche revient au premier remaniement : quelqu'un le trouve rempli et
+le rebranche, de bonne foi. Ce qui subsiste doit se suffire — d'où le contrôle
+qui a remplacé l'ancien : chaque question tient en 40 caractères et se termine
+par un point d'interrogation.
+
+### Ce que le comptage des questions ne lit plus
+
+`test-questions-chiffrage-e2e.ts` comptait les questions **dans le titre** (« 2
+précisions… »), pour tenir la promesse de `docs/AGENT.md` §2 — l'arrêt reste
+franchissable. Le titre parti, ce contrôle se serait mis à réclamer le libellé
+que le patron venait de faire retirer (`CLAUDE.md` §5 bis). Il compte désormais
+les blocs `[data-atlas="question-chiffrage"]` : le même garde-fou, sur une prise
+qui survivra au prochain remaniement de texte. Deux autres suites
+(`test-anneau-vers-devis-e2e`, `test-madame-lucie-e2e`) visaient le même libellé
+et ont suivi.

@@ -18,6 +18,32 @@ ligne « fait » qui ne l'est pas coûte plus cher qu'une ligne absente.
 
 ---
 
+## L'arrêt d'avant-chiffrage : moins de mots, et plus de question absurde (30 août 2026)
+
+Deux remarques de lui, le même jour, sur le même écran.
+
+**L'incohérence.** *« Lorsque l'on parle de souche, ça sous-entend que l'arbre a
+déjà été abattu — donc s'il n'y a pas d'arbre, pourquoi il y a la question de
+comment on l'abat ? »* Le dessouchage était rangé avec l'abattage pour ne pas
+redemander le diamètre du même tronc ; le raccourci commandait aussi la question
+de la technique. Une souche reçoit maintenant son diamètre seul, sous le mot
+juste.
+
+**Les mots.** *« Trop de phrases inutiles, il faut aller droit au but,
+l'utilisateur n'aime pas lire. »* Retirées : les deux lignes sous le titre, la
+ligne d'explication sous chaque question — et le champ `pourquoi` avec elles —,
+et la prestation réécrite à chaque question. Titre : « Avant de chiffrer ».
+
+| | |
+|---|---|
+| `src/lib/questions-chiffrage.ts` | `estDessouchage`, sujet `dessouchage.diametre`, `pourquoi` supprimé |
+| `src/app/chantiers/[id]/DevisDepuisDictee.tsx` | l'écran ne porte plus que prestation, question, réponses |
+| trois suites navigateur | comptent les blocs `[data-atlas="question-chiffrage"]`, plus un libellé |
+
+Détail : `ARCHITECTURE.md` §207.
+
+---
+
 ## Plus aucune barre de défilement grise, la page comprise (30 août 2026)
 
 Sa plainte du jour, depuis son PC : *« sur PC les bandes déroulantes grises
