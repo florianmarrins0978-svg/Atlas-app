@@ -1,5 +1,6 @@
 import Decimal from "decimal.js";
 import { arrondirALaDizaine } from "./arrondi-prix";
+import { libelleClient } from "./libelle-client";
 import { nature, natureDuLibelle } from "./natures-prestation";
 
 // **Comment une dictée devient des LIGNES de devis — au pluriel.**
@@ -224,7 +225,12 @@ export function lignesVendables(entrees: readonly (string | PrestationAGrouper)[
 
   const lignes: LigneVendable[] = ordonnes.map((g) => ({
     cle: g.cle,
-    libelle: g.membres.map((m) => m.libelle).join("\n"),
+    // **Le client lit le libellé nettoyé ; les moteurs relisent le brut.**
+    // La distinction est écrite dans le type depuis le début et n'était pas
+    // exploitée : `libelle` dit « ce que le client lit », `membres` « les
+    // libellés réunis ». Nettoyer les DEUX casserait le chiffrage — le repli
+    // par le texte de `mesuresResolues` y cherche encore les mesures.
+    libelle: g.membres.map((m) => libelleClient(m)).join("\n"),
     membres: g.membres.map((m) => m.libelle),
     prestations: g.membres,
     // La ligne qui absorbe le solde ne peut pas être refusée : ce serait

@@ -113,7 +113,15 @@ const SUITE_DE_NOMBRES = new RegExp(
   "gi"
 );
 
-function enChiffres(texte: string): string {
+/**
+ * Les nombres écrits en toutes lettres, remplacés par leurs chiffres.
+ *
+ * **Exportée pour `libelle-client.ts`**, qui doit reconnaître « deux souches »
+ * comme la quantité 2 déjà rangée en colonne. Recopier là-bas le vocabulaire
+ * des mots-nombres en ferait une seconde source, que le §3 de `CLAUDE.md`
+ * interdit : deux listes finissent toujours par diverger.
+ */
+export function enChiffres(texte: string): string {
   return texte.replace(SUITE_DE_NOMBRES, (groupe) => {
     const valeur = valeurDesMots(groupe.toLowerCase().split(/[\s-]+/));
     return valeur === null ? groupe : String(valeur);
