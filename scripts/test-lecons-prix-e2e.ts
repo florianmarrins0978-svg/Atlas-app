@@ -69,6 +69,45 @@ async function main() {
   const context = await browser.newContext();
   const page = await context.newPage();
 
+  /**
+   * ═══════════════════════════════════════════════════════════════════════
+   * **CE QUE LE NAVIGATEUR A RÉELLEMENT ENVOYÉ — et pourquoi il fallait le
+   * relever.**
+   *
+   * Ce contrôle est tombé six fois depuis le 26 août 2026, toujours sur la
+   * même phrase : *« le prix 1400 n'est arrivé sur aucune ligne »*. Et six
+   * fois, l'enquête a dû repartir de zéro, faute de savoir la seule chose qui
+   * tranche : **la requête est-elle partie ?**
+   *
+   * | Si elle n'est pas partie | l'écran n'a pas enregistré — c'est le CLIENT |
+   * | Si elle est partie et a répondu 200 | le serveur a écrit autre chose |
+   * | Si elle a répondu autrement | c'est une garde, ou une panne |
+   *
+   * Le 30 août, un lot de rôles a passé une soirée à départager ces trois cas
+   * en rejouant des batteries entières, parce que l'échec ne disait rien.
+   * `AGENTS.md` le nomme : **devant un défaut muet, la première livraison
+   * n'est pas un correctif, c'est de rendre le défaut bavard.**
+   *
+   * On n'attend rien de ces requêtes et on n'assouplit rien : elles ne servent
+   * qu'à écrire le message d'échec.
+   */
+  const envois: string[] = [];
+  page.on("request", (r) => {
+    if (r.method() !== "POST") return;
+    if (!r.headers()["next-action"]) return;
+    const corps = (r.postData() ?? "").slice(0, 160).replace(/\s+/g, " ");
+    envois.push(`→ ${new URL(r.url()).pathname} ${corps}`);
+  });
+  page.on("response", async (r) => {
+    if (r.request().method() !== "POST") return;
+    if (!r.request().headers()["next-action"]) return;
+    envois.push(`← ${r.status()} sur ${new URL(r.url()).pathname}`);
+  });
+  const journalDesEnvois = () =>
+    envois.length === 0
+      ? "AUCUNE action serveur n'est partie du navigateur : l'écran n'a rien envoyé."
+      : `ce que le navigateur a envoyé :\n      ${envois.join("\n      ")}`;
+
   try {
     await page.goto(`${BASE}/login`, { waitUntil: "networkidle" });
     await page.fill('input[name="email"]', "demo@atlas.local");
@@ -161,7 +200,8 @@ async function main() {
         if (prix.some((p) => Number(p) === attendu)) return;
       }
       assert.fail(
-        `Le prix ${attendu} n'est arrivé sur AUCUNE ligne du chantier — lues : ${JSON.stringify(lu)}`
+        `Le prix ${attendu} n'est arrivé sur AUCUNE ligne du chantier — lues : ${JSON.stringify(lu)}\n` +
+          `    ${journalDesEnvois()}`
       );
     } finally {
       await lecteur.end();

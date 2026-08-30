@@ -607,6 +607,40 @@ suffit plus**, et c'est ce que ce constat ajoute.
 valeur relue en base, la classe que le composant pose — plutôt que d'allonger
 les délais un à un. Le seuil suivant sera atteint par la machine suivante.
 
+### Sixième occurrence, 30 août 2026 — et ce qu'elle a coûté faute d'un message
+
+`test-lecons-prix-e2e` est retombé deux fois, sur la même phrase. Ce qui a été
+mesuré ce jour-là, arbre par arbre, sous les 119 suites :
+
+| Arbre | Résultat |
+|---|---|
+| `main` seul | vert (118/118) |
+| le lot des rôles, avant la fusion de `main` | vert, deux fois |
+| le lot fusionné | **rouge, puis rouge** |
+| le lot fusionné, tour suivant | vert (119/119) |
+| la suite seule, sur le même arbre | verte |
+
+**Rien n'a été attribué, et c'est le résultat honnête.** Trois verts et deux
+rouges sur le même arbre ne désignent pas un coupable. Aucun défaut produit n'a
+été trouvé : l'action écrit, la suite passe seule, et une piste sérieuse — un
+prix lu sur un rendu en retard — a été **écrite puis retirée**, la sonde qui la
+« prouvait » étant fausse (elle envoyait `blur`, que React n'écoute pas ; il
+écoute `focusout`).
+
+**Ce qui a été livré à la place : le contrôle DIT désormais ce que le navigateur
+a envoyé.** Il relève chaque action serveur postée, son corps et son code de
+réponse, et les écrit dans le message d'échec. Les trois cas se séparent alors
+en une ligne :
+
+| Ce que dit le message | Où chercher |
+|---|---|
+| aucune action n'est partie | l'écran n'a pas enregistré — côté client |
+| partie, réponse 200 | le serveur a écrit autre chose |
+| partie, autre réponse | une garde, ou une panne |
+
+Vu rouge exprès avant d'être livré. **Six enquêtes ont recommencé de zéro faute
+de cette ligne ; la septième commencera avec.**
+
 ## Deux migrations portent le numéro 0067
 
 `0067_propositions_sans_chantier.sql` et `0067_salaries_a_part.sql`, posées le
