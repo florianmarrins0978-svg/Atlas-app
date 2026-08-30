@@ -338,17 +338,21 @@ export function questionsAvantChiffrage(
       // elle que la dictée donne (« de vingt mètres de haut »). Ne pas la
       // confondre : demander « la taille » laisserait croire que la hauteur
       // suffit.
-      // **La donnée de CETTE prestation, et d'aucune autre.** Sa règle du
-      // 31 août 2026 : *« ne récupère pas l'information depuis une autre
-      // prestation. »* `diametreDansLaDictee` faisait exactement cela — bornée
-      // au cas d'un seul arbre dans la dictée, ce qui la rendait sûre, mais
-      // c'est un emprunt tout de même, et il l'a explicitement écarté.
+      // **Sa règle du 31 août — « ne récupère pas l'information depuis une
+      // autre prestation » — ne vise PAS `diametreDansLaDictee`, et j'ai
+      // d'abord cru le contraire.**
       //
-      // Le coût du retrait est une question de plus quand deux prestations
-      // parlent du même tronc ; le coût de l'emprunt serait un diamètre pris
-      // au voisin, donc un prix rangé dans la case d'à côté. Il a tranché, et
-      // le sens de sa décision est le plus sûr des deux.
-      if (!contientDiametre(ligne)) {
+      // Le retrait avait été fait à la fusion, puis annulé après lecture du
+      // paragraphe ci-dessus : ce n'est pas un emprunt au voisin, c'est le
+      // même fait dicté, coupé en deux par une virgule. « Un dessouchage, deux
+      // souches de soixante » donne DEUX prestations — la première pose la
+      // question, la seconde porte la réponse. Redemander là, c'est lui faire
+      // répéter ce qu'il vient de dire.
+      //
+      // Et la garde du seul arbre tient sa règle au mot près : à deux arbres,
+      // on demande ligne par ligne, parce qu'un diamètre dit quelque part
+      // n'appartient plus forcément à celui qu'on questionne.
+      if (!contientDiametre(ligne) && !diametreDansLaDictee) {
         questions.push({
           id: `${souche ? "dessouchage" : "abattage"}.diametre#${rang}`,
           libellePrestation: libelle,

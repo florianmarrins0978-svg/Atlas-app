@@ -550,13 +550,27 @@ cas("« deux souches » SANS mesure : la question se pose, et elle dit « la sou
     { libelle: "Dessouchage de deux souches", nature: "dessouchage" },
   ]);
   assert.equal(q.length, 1, `posées : ${q.map((x) => x.question).join(" / ")}`);
-  assert.equal(q[0].question, "Quel diamètre fait la souche ?");
+  // **« Quel diamètre ? », pas « Quel diamètre fait la souche ? ».** Il a
+  // demandé le 31 août qu'on ne dise plus « le tronc » sur un dessouchage —
+  // et le 30, qu'on n'accorde pas au singulier quand la dictée en dit deux.
+  // La formulation de `main` tient les deux, et la prestation est écrite juste
+  // au-dessus de la question : elle dit déjà de quoi l'on parle.
+  assert.equal(q[0].question, "Quel diamètre ?");
+  assert.ok(!/tronc/i.test(q[0].question), "plus jamais « tronc » sur une souche");
+  assert.ok(q[0].id.startsWith("dessouchage."), "la souche a son propre identifiant");
 });
 
-cas("un ABATTAGE sans mesure garde le mot « tronc »", () => {
-  const q = questionsAvantChiffrage([{ libelle: "Abattage d'un chêne", nature: "abattage" }]);
-  const diametre = q.find((x) => x.id.startsWith("abattage.diametre"));
-  assert.equal(diametre?.question, "Quel diamètre fait le tronc ?");
+cas("la question du diamètre est la MÊME pour un arbre et pour une souche", () => {
+  // Deux sessions ont travaillé ce libellé le même jour. Celle de `main`
+  // l'unifie — « Quel diamètre ? » — et c'est elle qui est gardée : elle ne
+  // dit jamais « tronc » au-dessus d'une souche, et ne met pas au singulier ce
+  // qu'il a dicté au pluriel.
+  const arbre = questionsAvantChiffrage([{ libelle: "Abattage d'un chêne", nature: "abattage" }])
+    .find((x) => x.id.includes("diametre"));
+  const souche = questionsAvantChiffrage([{ libelle: "Dessouchage", nature: "dessouchage" }])
+    .find((x) => x.id.includes("diametre"));
+  assert.equal(arbre?.question, "Quel diamètre ?");
+  assert.equal(souche?.question, "Quel diamètre ?");
 });
 
 console.log("\n=== La borne : tout ce qui est en cm n'est pas un diamètre ===\n");
@@ -570,7 +584,7 @@ cas("« 60 cm de circonférence » n'est JAMAIS un diamètre", () => {
   ]) {
     const q = questionsAvantChiffrage([{ libelle: dit, nature: dit.startsWith("Dess") ? "dessouchage" : "abattage" }]);
     assert.ok(
-      q.some((x) => x.id.startsWith("abattage.diametre")),
+      q.some((x) => x.id.includes("diametre")),
       `« ${dit} » a été pris pour un diamètre`
     );
   }
@@ -658,7 +672,8 @@ cas("« deux souches » ne devient PAS un diamètre de 2", () => {
     { libelle: "Dessouchage de deux souches", nature: "dessouchage" },
   ]);
   assert.equal(q.length, 1, "la question doit encore se poser");
-  assert.equal(q[0].question, "Quel diamètre fait la souche ?");
+  assert.equal(q[0].question, "Quel diamètre ?");
+  assert.ok(!/tronc/i.test(q[0].question), "plus jamais « tronc » sur une souche");
 });
 
 cas("une AUTRE unité n'est pas prise pour des centimètres", () => {
