@@ -289,6 +289,25 @@ Le détail : `ARCHITECTURE.md` §192, migration `drizzle/0067_salaries_a_part.sq
 Rien n'est codé dans `src/` pour ces trois-là, et il ne faut pas commencer sans
 sa réponse (`CLAUDE.md` §3 bis).
 
+- **SES TROIS CHOIX SONT FAITS, et une planche les réunit** —
+  `appli/note-vocale-choix.html` : largeur **66 %**, l'objet **reste au centre**
+  entre la poubelle et l'avion, repos au **micro plein** avec deux ondes de
+  **1,5 cm au plus** (écrites en centimètres dans le CSS, `--aile:1.5cm` — sa
+  mesure doit rester relisible). Plus le bouton qui s'efface, tranché plus tôt.
+
+  **Une seule question reste ouverte, et il ne faut pas coder sans elle :**
+  pendant la dictée, le disque plein reste et son micro devient un carré
+  d'arrêt. Sa proposition 2 disait « l'anneau », mais elle le gardait parce que
+  le repos ÉTAIT l'anneau — ce qui n'est plus le cas. L'autre lecture (le disque
+  cède la place à l'anneau creux) se refait en deux minutes.
+
+  **Deux pièges de dessin, payés ici et qui se reproduiront ailleurs :** un
+  `<span>` resté en ligne ne prend ni `width` ni `height` — le carré d'arrêt
+  rendait une boîte de zéro pixel et le disque s'affichait vide, sans qu'aucun
+  test le voie ; et deux ornements de 1,5 cm de part et d'autre d'un objet de
+  76 px **ne laissent pas la place** à deux boutons de 46 px sur un écran de
+  390 — ils s'effacent donc pendant la dictée.
+
 - **Le dessin de la note vocale AU REPOS** —
   `appli/note-vocale-au-repos.html`, sa demande du 30 août : *« plusieurs
   visuels pour changer la note vocale avant qu'on appuie dessus »*. **Cinq
