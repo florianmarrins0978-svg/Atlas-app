@@ -354,8 +354,13 @@ export default function DevisDepuisDictee({
  *
  * D'où trois partis pris :
  *
- * - **Chaque question dit ce qu'elle change.** Un arrêt sans motif est un arrêt
- *   qu'on subit, et qu'on expédie au hasard.
+ * - **Aucune phrase qui explique.** Sa consigne du 30 août 2026 devant cet
+ *   écran-ci : *« trop de phrases inutiles, il faut aller droit au but,
+ *   l'utilisateur n'aime pas lire »*. Il portait, sous le titre, deux lignes
+ *   disant que la dictée était incomplète — et sous CHAQUE question, une ligne
+ *   disant ce qu'elle changeait. Elles sont parties, `pourquoi` avec elles :
+ *   un champ que plus rien n'affiche revient à l'écran au premier remaniement.
+ *   La prestation, la question, les réponses — rien d'autre (`CLAUDE.md` §3).
  * - **Les choix connus sont des boutons**, jamais une liste déroulante : un
  *   appui contre trois, sur un téléphone, une main dans le gant.
  * - **On peut passer outre.** Il connaît son métier mieux que ces règles ; le
@@ -406,25 +411,21 @@ function QuestionsChiffrage({
   return (
     <div className="rounded-[4px] px-4 py-4" style={{ backgroundColor: colors.rustTint }}>
       <p className="text-[13px] font-medium" style={{ color: colors.rust }}>
-        {questions.length === 1
-          ? "Une précision avant de chiffrer"
-          : `${questions.length} précisions avant de chiffrer`}
-      </p>
-      <p className="text-[12px] leading-snug" style={{ color: colors.inkSoft, marginTop: 2 }}>
-        Votre dictée ne les dit pas, et elles changent le prix. Sans elles, le devis serait faux.
+        Avant de chiffrer
       </p>
 
       <div className="mt-4 flex flex-col gap-5">
-        {questions.map((q) => (
-          <div key={q.id}>
-            <p className="text-[12px]" style={{ color: colors.muted }}>
-              {q.libellePrestation}
-            </p>
+        {questions.map((q, i) => (
+          <div key={q.id} data-atlas="question-chiffrage">
+            {/* La prestation ne se répète pas d'une question à l'autre : deux
+                questions sur le même arbre l'écrivaient deux fois de suite. */}
+            {q.libellePrestation !== questions[i - 1]?.libellePrestation && (
+              <p className="text-[12px]" style={{ color: colors.muted }}>
+                {q.libellePrestation}
+              </p>
+            )}
             <p className="text-[15px] font-medium" style={{ color: colors.ink, marginTop: 2 }}>
               {q.question}
-            </p>
-            <p className="text-[12px] leading-snug" style={{ color: colors.inkSoft, marginTop: 2 }}>
-              {q.pourquoi}
             </p>
 
             {q.options ? (
