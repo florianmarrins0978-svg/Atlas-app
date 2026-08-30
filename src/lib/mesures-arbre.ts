@@ -52,6 +52,21 @@ const DIAMETRE = [
   // respecte ce qui est dit. »*
   /souches?\s+(?:de\s+)?(\d{1,3})\s*(?:cm|centim[èe]tres?)(?!\s*de\s*(?:circonf|haut|long|large))/i,
   /(\d{1,3})\s*(?:cm|centim[èe]tres?)\s+au\s+pied/i,
+
+  // **L'UNITÉ EST FACULTATIVE dans ces deux contextes** — sa précision du
+  // 31 août au soir : *« quand je dis "une souche de 60", cela signifie une
+  // souche de 60 cm de diamètre. »* Il ne prononce pas « centimètres », et
+  // exiger le mot revenait à jeter la mesure qu'il venait de donner.
+  //
+  // **Trois refus rendent la lecture sûre, et ils sont tous dans le motif :**
+  //
+  //   1. une AUTRE unité — « une souche de 2 m » n'est pas 2 cm de diamètre ;
+  //   2. une autre MESURE nommée — circonférence, hauteur, longueur, largeur ;
+  //   3. la QUANTITÉ — « deux souches » s'écrit « 2 souches », et le nombre est
+  //      AVANT le mot. Le motif l'exige APRÈS : « deux souches » ne donne donc
+  //      aucun diamètre, ce qui est exactement ce qu'il demande.
+  /souches?\s+de\s+(\d{1,3})\b(?!\s*(?:m|m[èe]tres?|mm|km|ml|t|tonnes?)\b)(?!\s*(?:cm|centim[èe]tres?)?\s*de\s*(?:circonf|haut|long|large|p[ée]rim))/i,
+  /\b(\d{1,3})\b(?!\s*(?:m|m[èe]tres?|mm|km|ml|t|tonnes?)\b)(?!\s*(?:cm|centim[èe]tres?)?\s*de\s*(?:circonf|haut|long|large|p[ée]rim))\s*(?:cm|centim[èe]tres?)?\s+au\s+pied/i,
 ];
 
 /**
