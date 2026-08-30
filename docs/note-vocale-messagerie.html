@@ -1,0 +1,286 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas — La note vocale « à la manière de WhatsApp » — ce qui a été fait</title>
+<style>
+  :root{
+    --ground:#f5f3ee; --surface:#faf9f5; --raised:#ece9e1;
+    --ink:#1c1c1a; --ink-soft:#4a4a44; --muted:#8a8578;
+    --accent:#2f3b2f; --alert:#b5562a; --line:rgba(28,28,26,0.13);
+    --serif:Georgia,'Times New Roman',serif;
+    --sans:system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --ground:#161815; --surface:#1d201c; --raised:#252924;
+      --ink:#eae7df; --ink-soft:#c2bdb1; --muted:#948f83;
+      --accent:#9fbd82; --alert:#e0885a; --line:rgba(234,231,223,0.17);
+    }
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--sans);
+    line-height:1.65;}
+  main{max-width:44rem;margin:0 auto;padding:2.5rem 1.2rem 5rem;}
+  h1,h2,h3,h4{font-family:var(--serif);font-weight:600;line-height:1.2;
+    text-wrap:balance;margin:2rem 0 0.6rem;scroll-margin-top:1rem;}
+  h1{font-size:2rem;margin-top:0;}
+  h2{font-size:1.5rem;padding-top:1.2rem;border-top:1px solid var(--line);}
+  h3{font-size:1.12rem;}
+  h4{font-size:1rem;}
+  p{margin:0 0 0.9rem;}
+  a{color:var(--accent);text-underline-offset:3px;}
+  a:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:3px;}
+  ul,ol{margin:0 0 1rem;padding-left:1.3rem;}
+  li{margin-bottom:0.4rem;}
+  li::marker{color:var(--muted);}
+  /* Le sommaire : des cibles larges, confortables au doigt sur téléphone. */
+  ol li a{display:inline-block;padding:0.15rem 0;}
+  blockquote{margin:1rem 0;padding:0.85rem 1.05rem;background:var(--raised);
+    border-left:3px solid var(--accent);border-radius:0 10px 10px 0;color:var(--ink-soft);}
+  code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:0.87em;
+    background:var(--raised);padding:0.1rem 0.35rem;border-radius:5px;}
+  hr{border:0;border-top:1px solid var(--line);margin:2rem 0;}
+  .tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px;
+    background:var(--surface);margin:0 0 1.2rem;}
+  table{border-collapse:collapse;width:100%;font-size:0.92rem;min-width:22rem;}
+  th,td{text-align:left;padding:0.55rem 0.8rem;border-bottom:1px solid var(--line);
+    vertical-align:top;}
+  th{font-size:0.72rem;letter-spacing:0.08em;text-transform:uppercase;
+    color:var(--muted);white-space:nowrap;}
+  tr:last-child td{border-bottom:none;}
+  .retour{display:inline-block;font-size:0.76rem;color:var(--muted);
+    text-decoration:none;margin:-0.3rem 0 1rem;}
+  .retour:hover{color:var(--accent);text-decoration:underline;}
+</style>
+</head>
+<body>
+<main>
+<h1 id="la-note-vocale--à-la-manière-de-whatsapp---ce-qui-a-été-fait">La note vocale « à la manière de WhatsApp » — ce qui a été fait</h1>
+<p><em>30 août 2026 · branche <code>claude/voice-note-ui-simplify-8mwebk</code></em></p>
+<hr>
+<h2 id="ce-qui-a-été-demandé-et-ce-que-ça-donne">Ce qui a été demandé, et ce que ça donne</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th>Sa demande</th>
+<th>État</th>
+<th>Le fichier qui la porte</th>
+</tr></thead><tbody>
+<tr>
+<td>La note vocale comme celle de WhatsApp : poubelle ou avion</td>
+<td>fait</td>
+<td><code>src/app/chantiers/[id]/AnneauNoteVocale.tsx</code></td>
+</tr>
+<tr>
+<td>L'avion mène directement au devis</td>
+<td>fait</td>
+<td><code>DevisDepuisDictee.tsx</code> (<code>auto</code>, <code>surLeDevis={false}</code>)</td>
+</tr>
+<tr>
+<td>Le bouton « Je rédige mon devis » moins large — sa largeur 4 (66 %)</td>
+<td>fait</td>
+<td><code>PrimaryButton.tsx</code> (<code>part</code>), <code>FormulaireNouveauChantier.tsx</code></td>
+</tr>
+<tr>
+<td>Le bouton DISPARAÎT dès qu'on appuie sur la note</td>
+<td>fait</td>
+<td><code>FormulaireNouveauChantier.tsx</code> (<code>dicteeEnCours</code>)</td>
+</tr>
+<tr>
+<td>Il devient secondaire et s'appelle « Je rédige à la main »</td>
+<td>fait</td>
+<td><code>PrimaryButton.tsx</code> (<code>secondaire</code>)</td>
+</tr>
+<tr>
+<td>Le geste 2 : l'objet au centre, poubelle à gauche, avion à droite</td>
+<td>fait</td>
+<td><code>globals.css</code>, bloc « LA NOTE VOCALE À LA MESSAGERIE »</td>
+</tr>
+<tr>
+<td>Le repos B : micro plein, petites ondes de 1,5 cm de chaque côté</td>
+<td>fait</td>
+<td><code>.atlas-frange { width: 1.5cm }</code></td>
+</tr>
+<tr>
+<td>Tout tient sur une page, sans faire défiler</td>
+<td>fait</td>
+<td>mesuré : 604 px de feuille, 601 de contenu</td>
+</tr>
+<tr>
+<td>Pas de vide en bas</td>
+<td>fait</td>
+<td>3 px au repos</td>
+</tr>
+<tr>
+<td>L'écran ne se balade plus de droite à gauche</td>
+<td>fait</td>
+<td>deux causes trouvées, les deux corrigées</td>
+</tr>
+</tbody></table></div>
+<hr>
+<h2 id="les-trois-exigences-de-la-fin-mesurées">Les trois exigences de la fin, mesurées</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p>Rien de tout cela ne se voit dans une suite fonctionnelle : c'est de la géométrie. Un script les mesure sur <strong>son</strong> écran — 390 × 664, un iPhone 13 barre d'adresse déduite — en entrant <strong>par son parcours</strong> (accueil → « Nouveau chantier », qui ouvre la fiche en feuille, pas en page) :</p>
+<p>``<code> npx tsx scripts/capture-dictee-fiche-client.mts /tmp/captures </code>``</p>
+<p>Ce qu'il rend aujourd'hui :</p>
+<p>``<code> au repos  : la feuille montre 604 px et en contient 604 · à faire défiler rien ✓ · vide en bas 3 px ✓ ✓ la page ne glisse pas latéralement ✓ rien ne dépasse à droite ni à gauche en dictée : la feuille montre 604 px et en contient 604 · à faire défiler rien ✓ · vide en bas 40 px ✓ le bouton « Je rédige à la main » est PARTI ✓ après la poubelle, il est REVENU ✓ </code>``</p>
+<p><strong>Au départ, la feuille débordait de 492 px</strong> — l'anneau et le bouton étaient sous le pli, et il fallait faire défiler pour les atteindre.</p>
+<p><strong>Les 40 px de vide pendant la dictée sont l'empreinte du bouton parti</strong>, et c'est voulu : il a demandé qu'il disparaisse. Faire grandir la zone de dictée pour les combler ferait descendre le micro d'une vingtaine de pixels <strong>sous le doigt qui vient de l'appuyer</strong> — le seul moment où l'écran doit être immobile.</p>
+<hr>
+<h2 id="le-défilement-latéral--deux-causes-pas-une">Le défilement latéral : deux causes, pas une</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<ol>
+<li><strong>Le champ du nom.</strong> Il était <code>flex-shrink-0</code> sans <code>flex-1</code> : il gardait la largeur naturelle d'un <code>&lt;input&gt;</code>, 273 px, et poussait le téléphone à 421 — soit 31 px hors d'un écran qui en fait 390. Toute la page suivait.</li>
+<li><strong>La pellicule de photos.</strong> <code>-mx-[26px]</code> sur un écran qui a 24 px de retrait : deux pixels de débordement de chaque côté. Invisibles, et suffisants.</li>
+</ol>
+<hr>
+<h2 id="ce-qui-a-été-fait-autrement-que-prévu-et-pourquoi">Ce qui a été fait AUTREMENT que prévu, et pourquoi</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><strong>Les valeurs de resserrement viennent de SA planche, pas de mon jugement.</strong> Premier réflexe : rogner au petit bonheur — 46 px de case, 66 px de carré photo, 10 px de pastille. Puis relecture de <code>appli/note-vocale-choix.html</code>, celle qu'il a validée et à laquelle il a demandé de se référer : <strong>elle porte déjà toutes ces mesures, et elles sont plus serrées que les miennes.</strong></p>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th>Planche du 22 août</th>
+<th><strong>Sa planche du 30 août</strong></th>
+<th>Ce qui est codé</th>
+</tr></thead><tbody>
+<tr>
+<td>hauteur d'une case</td>
+<td>50 px</td>
+<td><strong>44 px</strong></td>
+<td>44 px</td>
+</tr>
+<tr>
+<td>retrait d'une case</td>
+<td>15/16</td>
+<td><strong>11/14</strong></td>
+<td>11/14</td>
+</tr>
+<tr>
+<td>rayon d'une case</td>
+<td>14</td>
+<td><strong>12</strong></td>
+<td>12</td>
+</tr>
+<tr>
+<td>carré photo</td>
+<td>74 px</td>
+<td><strong>58 px</strong></td>
+<td>58 px</td>
+</tr>
+<tr>
+<td>pastille Mr/Mme</td>
+<td>13/30</td>
+<td><strong>7/28</strong></td>
+<td>7/28</td>
+</tr>
+<tr>
+<td>interligne du formulaire</td>
+<td>16 px</td>
+<td><strong>7 px</strong></td>
+<td>7 px</td>
+</tr>
+<tr>
+<td>titre</td>
+<td>32 px</td>
+<td><strong>27 px</strong></td>
+<td>27 px</td>
+</tr>
+</tbody></table></div>
+<p>Il avait déjà resserré cet écran lui-même en choisissant sa planche. Le travail était de le lire, pas de le refaire.</p>
+<p><strong>Les intitulés en petites capitales sont partis — sauf deux.</strong> « E-mail », « Adresse du chantier », « Comment lui envoyer son devis ? » et « Photos du chantier » redisaient ce que la case montre déjà : 108 px pour rien. « Nom du client » et « Téléphone » restent, <strong>parce que sa planche les garde</strong> : une case vide de 152 px alignée à droite ne dit pas d'elle-même qu'elle attend un numéro.</p>
+<p>Les quatre noms retirés ne sont pas perdus : ils passent en <code>aria-label</code>. Les retirer vraiment fermerait l'écran à qui l'écoute.</p>
+<p><strong>La place réservée sous le bouton a été rendue.</strong> Dix-neuf pixels étaient gardés en permanence pour qu'un message d'erreur ne fasse pas sauter la mise en page. Cette ligne est la <strong>dernière</strong> de l'écran : rien ne la suit, donc rien ne bouge quand elle paraît. C'était une protection qui ne protégeait rien.</p>
+<hr>
+<h2 id="ce-qui-a-été-corrigé-en-cours-de-route-et-qui-était-faux">Ce qui a été corrigé en cours de route, et qui était faux</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><strong>Le script de mesure rendait un vert qui ne prouvait rien.</strong> Il cherchait « ce qui est dessiné » dans la feuille entière — or le cadre qui défile l'occupe entièrement, donc le bas du contenu tombait toujours pile sur le bas de l'écran et « vide en bas : aucun » sortait en vert <strong>quoi qu'il arrive</strong>. Corrigé : on mesure à l'intérieur du cadre, jamais la feuille.</p>
+<p><strong>Et il mesurait le mauvais écran, deux fois.</strong> D'abord <code>/chantiers/nouveau</code> en page, qu'il ne voit jamais — 200 px de contrainte qui n'existent pas. Puis le document entier, alors que c'est la feuille qui défile en elle-même : la hauteur du document ne bouge pas d'un pixel pendant que la moitié basse est sous le pli.</p>
+<p><strong>Le contrôle sait rougir</strong>, et cela a été éprouvé : <code>HAUTEUR=560</code> rend un écran trop court, et il annonce alors les 101 px qui passent sous le pli.</p>
+<p><strong>Deux classes CSS ont été baptisées avec des noms DÉJÀ PRIS</strong>, et c'est le défaut le plus sérieux de ce lot :</p>
+<div class="tablewrap"><table><thead><tr>
+<th>Le nom repris</th>
+<th>Ce qu'il servait déjà</th>
+<th>Ce que ça cassait</th>
+</tr></thead><tbody>
+<tr>
+<td><code>atlas-souffle</code></td>
+<td>les trois points de l'attente</td>
+<td>des barreaux de 2 px invisibles</td>
+</tr>
+<tr>
+<td><code>atlas-aile</code></td>
+<td>les barreaux du lecteur de note</td>
+<td>des ailes larges de 1,5 cm, en absolu</td>
+</tr>
+</tbody></table></div>
+<p><strong>Aucun test ne l'aurait dit.</strong> Une feuille de style n'a pas de portée : la règle écrite le plus bas gagne, sur tous les écrans. L'écran qu'on code est juste ; c'est l'autre qui casse, ailleurs, sans témoin. La classe s'appelle maintenant <code>atlas-frange</code>, et <code>scripts/test-classes-atlas-uniques.ts</code> refuse désormais tout nom repris — éprouvé en lui rendant l'ancien.</p>
+<p><strong>Et le renommage a fait un second dégât, plus grave encore</strong> : en changeant le nom, j'ai aussi renommé les ailes du <strong>lecteur</strong> de note vocale, qui portaient le même libellé. Elles ont pris les mesures de la dictée — 1,5 cm en absolu — et sont parties <strong>66 px hors de l'écran</strong>. Chrome élargit alors le viewport de mise en page de 390 à 456 px : tout rapetisse, et <strong>la poignée du tiroir de la fiche chantier passe sous le pli</strong>, injoignable au doigt.</p>
+<p>C'est très exactement la panne qu'il a fait corriger le même jour — <em>« l'écran ne doit plus pouvoir se balader de droite à gauche »</em> —, réintroduite ailleurs par ma propre correction. Trouvée par une suite (<code>test-retrait-differe</code>), puis établie en rejouant la même suite sur le code d'avant : verte là, rouge ici. Le lecteur a retrouvé son nom, et la zone de dictée refuse désormais d'élargir la page quoi qu'il arrive (<code>overflow-x: clip</code>).</p>
+<p><strong>Une suite a rougi pour rien pendant la première batterie</strong> (<code>test-fiche-pendant-relance.ts</code>). Cause : un serveur de développement tournait à côté et tenait le port 3000. C'est exactement ce que <code>CLAUDE.md</code> §5 interdit — la batterie est une machine à un seul occupant. Rejouée seule : verte. Rejouée dans une batterie propre : verte.</p>
+<hr>
+<h2 id="ce-qui-na-pas-été-touché-et-pourquoi">Ce qui n'a PAS été touché, et pourquoi</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<ul>
+<li><strong>La réserve de 104 px sous la note vocale.</strong> Elle empêche l'écran de sauter au moment de l'appui. La rogner aurait rendu 12 px et coûté la stabilité du seul geste qui compte sur cet écran.</li>
+<li><strong>Le liseré doré en tirets du carré photo.</strong> C'est ce qu'il montrait du doigt le 22 août ; seule la taille a suivi sa nouvelle planche.</li>
+<li><strong>Le débit, la portée, l'arrosage.</strong> Rien de ce lot n'y touche.</li>
+</ul>
+<hr>
+<h2 id="les-suites-qui-rougissaient-et-pourquoi-on-les-a-adaptées">Les suites qui rougissaient, et pourquoi on les a ADAPTÉES</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p>Cinq suites visaient l'ancien dessin plutôt que la règle. Aucune n'a été écartée, aucune assertion supprimée :</p>
+<div class="tablewrap"><table><thead><tr>
+<th>La suite</th>
+<th>Ce qu'elle visait</th>
+<th>Ce qu'elle vise maintenant</th>
+</tr></thead><tbody>
+<tr>
+<td><code>test-anneau-dictee-e2e</code></td>
+<td>l'anneau creux, et « arrêter » écrit sous lui</td>
+<td>le disque, et les trois signes qui naissent : poubelle, avion, compteur</td>
+</tr>
+<tr>
+<td><code>test-anneau-vers-devis-e2e</code></td>
+<td>le second appui pour envoyer</td>
+<td>l'avion, qui envoie</td>
+</tr>
+<tr>
+<td><code>test-madame-lucie-e2e</code></td>
+<td>le bouton « Mon devis »</td>
+<td>le chantier CRÉÉ, lu en base</td>
+</tr>
+<tr>
+<td><code>test-nouveau-chantier-e2e</code></td>
+<td>le texte « Comment lui envoyer son devis ? »</td>
+<td>la place des capsules sous l'adresse</td>
+</tr>
+<tr>
+<td><code>test-coordonnees-depuis-accueil-e2e</code></td>
+<td>quatre intitulés écrits à l'écran</td>
+<td>les quatre CASES, par leur nom accessible</td>
+</tr>
+</tbody></table></div>
+<p>C'est la règle du dépôt, et elle était déjà écrite dans deux de ces fichiers : <em>« quand une suite rougit après un retrait qu'il a demandé, on adapte le contrôle, on ne remet pas le libellé »</em>. Une assertion posée sur un mot rend l'écran impossible à changer.</p>
+<h2 id="ce-qui-nest-pas-vérifiable-ici-et-quil-faudra-regarder-sur-votre-espace">Ce qui n'est PAS vérifiable ici, et qu'il faudra regarder sur votre espace</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><strong>L'avion mène au devis</strong> — le chemin est codé (<code>DevisDepuisDictee</code>, <code>auto</code> et <code>surLeDevis={false}</code> : la chaîne part seule, puis va sur la page du devis). Mais il ne se parcourt pas jusqu'au bout sur cette machine : <strong>elle n'a aucune clé d'IA</strong>, le mandataire refuse les fournisseurs, et la transcription s'arrête donc sur « la note n'a pas été transcrite ». Ce qui est éprouvé ici, c'est que la note part, que le chantier se crée, et que la chaîne démarre toute seule ; ce qui reste à voir chez vous, c'est la dernière marche.</p>
+<p>Le geste à faire, une fois le lot arrivé : ouvrir une fiche client, appuyer, dire deux phrases, appuyer sur l'avion — et dire si le devis s'ouvre.</p>
+<h2 id="ce-qui-reste-ouvert">Ce qui reste ouvert</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th>Point</th>
+<th>Qui peut le trancher</th>
+</tr></thead><tbody>
+<tr>
+<td>Sur un écran plus court qu'un iPhone 13 (un SE, 667 − barre = 560), la feuille déborde encore de 101 px</td>
+<td>lui — dire si ce téléphone-là compte</td>
+</tr>
+<tr>
+<td>Les 40 px libérés par le bouton pendant la dictée restent vides</td>
+<td>lui — c'est un choix d'apparence, pas un défaut</td>
+</tr>
+</tbody></table></div>
+</main>
+</body>
+</html>

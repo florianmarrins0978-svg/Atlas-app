@@ -85,7 +85,7 @@ export default function ChoixCivilite({
           Civilité (facultatif)
         </legend>
       )}
-      <div className={sansLegende ? "flex gap-2 pb-1.5" : "flex gap-2"}>
+      <div className="flex gap-2">
         {(Object.keys(CIVILITES) as Civilite[]).map((cle) => {
           const actif = valeur === cle;
           return (
@@ -100,7 +100,12 @@ export default function ChoixCivilite({
               // Les mesures de sa maquette, au pixel (`.civilite button` dans
               // `appli/fiche-client-vocale.html`) : 16 px de texte, 13/30 de
               // retrait, un liseré gris au repos.
-              className="rounded-full px-[30px] py-[13px] text-[16px] disabled:opacity-50"
+              // **7/28, et ce sont SES chiffres** : `.civilite button` dans
+              // `appli/note-vocale-choix.html`, la planche qu'il a validée le
+              // 30 août 2026. Ils remplacent 13/30, hérités de la planche du
+              // 22 août — le même écran, resserré par lui pour tenir dans une
+              // page.
+              className="rounded-full px-[28px] py-[7px] text-[16px] disabled:opacity-50"
               style={{
                 backgroundColor: actif ? colors.rustTint : colors.card,
                 color: colors.ink,

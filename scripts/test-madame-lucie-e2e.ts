@@ -84,26 +84,57 @@ async function main() {
   //
   // L'anneau vit sur la fiche client depuis le 21 août : c'est ce geste-là qui
   // crée le chantier, puisqu'il n'a rien touché d'autre.
-  const anneau = page.locator('[data-atlas="anneau-note-vocale"] .atlas-anneaux');
-  await anneau.click();
+  // **Le micro plein, puis l'AVION** — 30 août 2026. Arrêter n'envoie plus :
+  // la note part par l'avion, ou se jette à la poubelle. Le geste du patron n'a
+  // pas changé de nature (il appuie, il parle, il envoie), seul le second appui
+  // s'est déplacé sur un bouton à lui.
+  const micro = page.locator('[data-atlas="anneau-note-vocale"] .atlas-micro');
+  await micro.click();
   await page.waitForTimeout(2500);
-  await anneau.click();
-  await page.locator('[data-atlas="mon-devis"]').waitFor({ state: "visible", timeout: 60_000 });
+  await page.locator('[data-atlas="dictee-envoyer"]').click();
 
-  const { rows: crees } = await pool.query(
-    `select c.id from chantiers c
-       left join clients cl on cl.id = c.client_id
-      where cl.nom = $1 order by c.created_at desc limit 1`,
-    [nomCliente]
-  );
-  assert.ok(crees[0], "le chantier n'a pas été créé par l'arrêt de la dictée");
+  // **On attend le CHANTIER, pas un bouton.** Depuis que l'avion enchaîne tout
+  // seul jusqu'au devis, « Mon devis » n'est plus offert à toucher : ce que
+  // cette étape prouve, c'est que le geste a CRÉÉ le chantier — la règle, pas
+  // le dessin qui la montrait (`CLAUDE.md` §5 bis).
+  let crees: { id: string }[] = [];
+  for (let essai = 0; essai < 60 && crees.length === 0; essai++) {
+    const r = await pool.query(
+      `select c.id from chantiers c
+         left join clients cl on cl.id = c.client_id
+        where cl.nom = $1 order by c.created_at desc limit 1`,
+      [nomCliente]
+    );
+    crees = r.rows;
+    if (crees.length === 0) await page.waitForTimeout(1000);
+  }
+  assert.ok(crees[0], "le chantier n'a pas été créé par l'envoi de la dictée");
   const chantierId: string = crees[0].id;
 
+  // **On attend la NOTE, pas seulement le chantier.** Le chantier naît au
+  // premier geste — une photo, ou l'ouverture de la dictée — et la note arrive
+  // après, quand le fichier est monté. Écrire la transcription trop tôt ne
+  // touche aucune ligne, en silence : le devis reste vide, et trois
+  // vérifications plus bas accusent l'application d'une panne qui n'existe pas.
+  // (Payé le 30 août 2026, en remplaçant l'attente d'un bouton par celle du
+  // chantier : l'attente s'était raccourcie sans qu'on le voie.)
+  let noteId: string | null = null;
+  for (let essai = 0; essai < 60 && noteId === null; essai++) {
+    const r = await pool.query("select id from notes_vocales where chantier_id = $1 limit 1", [chantierId]);
+    noteId = r.rows[0]?.id ?? null;
+    if (noteId === null) await page.waitForTimeout(1000);
+  }
+  assert.ok(noteId, "la note vocale n'est jamais arrivée en base : l'avion n'a rien envoyé");
+
   // La transcription qu'un vrai service aurait rendue — voir DICTEE ci-dessus.
-  await pool.query("update notes_vocales set transcription = $1 where chantier_id = $2", [
-    DICTEE,
-    chantierId,
-  ]);
+  const ecrite = await pool.query(
+    "update notes_vocales set transcription = $1 where chantier_id = $2",
+    [DICTEE, chantierId]
+  );
+  // **Une écriture qui ne touche rien n'est pas un succès** (`CLAUDE.md` §5) :
+  // sans ce contrôle, la suite continuerait sur un devis qui n'avait aucune
+  // chance d'être rempli.
+  assert.equal(ecrite.rowCount, 1, "la transcription n'a été posée sur aucune note");
 
   // ─── 3. « J'ai quitté l'application » ────────────────────────────────────
   //

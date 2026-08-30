@@ -120,8 +120,15 @@ export default function Pellicule({
   return (
     <>
       {/* La pellicule. Les marges négatives la font courir d'un bord à l'autre
-          pendant que son contenu reste aligné sur les 26 px. */}
-      <div className="atlas-pellicule -mx-[26px] mt-0.5 px-[26px] pb-4 pt-0.5">
+          pendant que son contenu reste aligné sur le retrait de l'écran.
+
+          **-mx-6, et non plus -mx-[26px].** Les écrans qui la portent ont 24 px de
+          retrait (`px-6`) : à 26, la pellicule dépassait le corps de deux pixels
+          de chaque côté — mesuré le 30 août 2026. Deux pixels ne se voient pas,
+          mais ils suffisent à faire glisser l'écran de droite à gauche partout
+          où rien ne les recoupe, et c'est exactement ce qu'il a demandé de faire
+          cesser. */}
+      <div className="atlas-pellicule -mx-6 px-6 pb-1">
         <input
           ref={champ}
           // **Une marque STABLE pour les contrôles**, comme

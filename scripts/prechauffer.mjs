@@ -140,6 +140,31 @@ export const ECRANS_A_PRECHAUFFER = [
 export const ECRANS_DE_CHANTIER = ["", "/informations", "/note-vocale", "/prix", "/devis-complet"];
 
 /**
+ * Les routes d'API d'un chantier qu'il faut compiler D'AVANCE.
+ *
+ * **Pourquoi celle-là, et pourquoi elle seule.** La feuille de chantier en PDF
+ * est la route la plus lourde de l'application : sa première compilation prend
+ * **quarante-cinq à cinquante secondes**, pendant lesquelles le serveur de
+ * développement ne répond plus à rien. Dans la batterie, cela se voyait ainsi
+ * (le 29 puis le 30 août 2026) :
+ *
+ *   ✗ mais SA feuille de chantier, elle, sort — sans un seul montant
+ *     apiRequestContext.get: Timeout 45000ms exceeded
+ *   ❌ Le serveur ne répond plus avant test-achat-hors-periode-e2e.ts
+ *
+ * — et **les 117 suites suivantes n'étaient pas jouées du tout**, parce que le
+ * veilleur de la batterie déclarait le serveur mort. Le ticket du 29 août
+ * (`TODO.md`) l'avait établi reproductible sur `main`, sans savoir quoi en
+ * faire ; la cause tenait dans le préchauffage, qui ne connaissait que des
+ * écrans et jamais une route d'API.
+ *
+ * **Ce n'est pas un contournement de suite** : la vérification qui rougissait
+ * reste jouée, à l'identique. On absorbe seulement la compilation là où elle ne
+ * coûte rien — avant que quiconque chronomètre.
+ */
+export const API_DE_CHANTIER = ["/feuille/pdf"];
+
+/**
  * Fabrique le cookie de session du compte de démonstration.
  *
  * Rend `null` — jamais une exception — quand quoi que ce soit manque : le
@@ -241,7 +266,10 @@ export async function ecransDeChantier({ base, cookie, fetchImpl = fetch }) {
     const html = await reponse.text();
     const trouve = html.match(/\/chantiers\/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/);
     if (!trouve) return [];
-    return ECRANS_DE_CHANTIER.map((suffixe) => `/chantiers/${trouve[1]}${suffixe}`);
+    return [
+      ...ECRANS_DE_CHANTIER.map((suffixe) => `/chantiers/${trouve[1]}${suffixe}`),
+      ...API_DE_CHANTIER.map((suffixe) => `/api/chantiers/${trouve[1]}${suffixe}`),
+    ];
   } catch {
     return [];
   }
