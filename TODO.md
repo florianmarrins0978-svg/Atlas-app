@@ -6428,16 +6428,29 @@ dessin** (`ARCHITECTURE.md` §81) :
 - ~~le régime de TVA est deviné~~ — **fait le 13 août 2026** (migration 0039,
   `ARCHITECTURE.md` §94) : il se déclare, il est figé dans la facture, et le
   repli sur le taux demeure pour les factures antérieures ;
-- **le numéro de TVA intracommunautaire** existe en base et se saisit depuis le
-  13 août — **mais rien ne l'imprime encore**. *Réserve : les mentions
-  obligatoires n'ont pas pu être vérifiées à leur source d'ici. À faire
-  confirmer avant de le poser sur le document ;*
-- **le téléphone et l'e-mail ne s'impriment nulle part** : le bloc ÉMETTEUR de
-  `document-commun.ts` porte le nom, l'adresse et le SIRET, rien d'autre. Le
-  client n'a aucun moyen d'appeler l'artisan depuis son devis.
+- ~~le numéro de TVA intracommunautaire existe en base et se saisit depuis le
+  13 août — mais rien ne l'imprime encore~~ — **fait le 30 août 2026**
+  (migration 0071, `ARCHITECTURE.md` §209) : figé dans le devis et la facture
+  comme le reste de l'identité, imprimé quand il est renseigné. Confirmé
+  obligatoire (CGI, art. 242 nonies A) en comparant une facture réelle
+  d'artisan ;
+- ~~le téléphone et l'e-mail ne s'impriment nulle part~~ — **fait depuis**,
+  constaté le 30 août 2026 en relisant `document-commun.ts` : le bloc ÉMETTEUR
+  porte désormais une ligne par information (nom, adresse, téléphone, e-mail,
+  SIRET), suivant la règle posée le 25 août.
 
-Manquent aussi en base, et la maquette les montre : **forme juridique** et
-**titulaire du compte**.
+Manquait aussi en base, et la maquette le montrait : ~~forme juridique~~ —
+**fait le 30 août 2026**, même migration : imprimée sous l'en-tête quand elle
+est renseignée (Code de commerce, art. R123-237). **Titulaire du compte** est,
+lui, déjà en base et déjà imprimé — voir `entrepriseIban`/`titulaireCompte`
+dans `document-commun.ts`.
+
+**Reste ouvert, distinct de ce qui précède : le capital social.** Une autre
+session (`claude/devis-optional-company-fields-p27qy8`, 30 août 2026) a posé
+une maquette pour l'ajouter et l'imprimer sous le nom ou avec le SIRET — deux
+questions au patron, réponse attendue là-bas avant de coder. **Le RCS + ville
+d'immatriculation, lui, n'est couvert nulle part** (ni cette maquette ni le
+lot du 30 août sur la TVA/forme juridique) — voir plus haut dans ce fichier.
 
 **LE DEUXIÈME CERVEAU : CE QUI NE RETIENT RIEN.** Direction posée le 13 août
 2026 (`ARCHITECTURE.md` §90, `docs/QUESTIONS.md` §17). Ce qui apprend déjà est
