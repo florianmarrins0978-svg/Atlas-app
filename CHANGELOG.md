@@ -37,6 +37,28 @@ commentaires s'ancrent donc sur l'événement — *le test téléphone* — plut
 sur un jour. Les anciens ne sont pas réécrits : ils sortent du cadre qu'il a
 fixé, et `git log` fait foi.
 
+### Un prix tapé sur le devis pouvait partir à ZÉRO — et l'écran l'affichait quand même
+
+Sur la feuille du devis, le prix s'enregistre quand on quitte le champ. Le
+gestionnaire lisait la ligne du **dernier rendu** — or React ne rend pas au
+moment de la frappe, il le programme. Machine chargée, téléphone lent : le rendu
+n'arrivait pas avant la sortie du champ, et **le serveur recevait l'ancienne
+valeur, un zéro**, pendant que l'écran continuait d'afficher le prix.
+
+Rien ne le disait. On le découvrait au rechargement — ou sur le devis parti chez
+le client.
+
+**Six enquêtes l'avaient manqué depuis le 26 août**, en concluant à la lenteur de
+la machine : le contrôle qui tombait ne disait pas ce que le navigateur avait
+envoyé. Rendu bavard le 30 août, il l'a nommé à l'occurrence suivante, en une
+ligne : `{"prixUnitaire":"0"}` posté, réponse 200.
+
+La valeur vient désormais du **champ**, plus d'un rendu — le DOM porte déjà ce
+qui a été tapé, c'est la seule source qui ne puisse pas être en retard. Une suite
+reproduit la condition **à coup sûr et sans charge**, là où l'ancienne ne la
+voyait qu'une fois sur deux sous cent-dix-neuf suites.
+
+
 ### La note vocale codée : poubelle ou avion, et la fiche tient dans un écran
 
 **Son feu vert :** *« Très bien code exactement ça ! Réfère-toi à cette page une
