@@ -45,6 +45,7 @@ import {
   prestations,
   propositionsIa,
   messagesAssistant,
+  rappelsVus,
   tarifs,
   motsCatalogue,
 } from "../db/schema";
@@ -154,6 +155,7 @@ export async function exporterEntreprise(
       sesHypotheses,
       sesPhotosAPurger,
       sesEchangesAssistant,
+      sesRappelsRanges,
     ] = await Promise.all([
       tx.select().from(entreprises).where(eq(entreprises.id, e)),
       tx.select().from(entrepriseCompteurs).where(eq(entrepriseCompteurs.entrepriseId, e)),
@@ -290,6 +292,10 @@ export async function exporterEntreprise(
       // a demandé n'en serait pas une — et c'est le contrôle d'exhaustivité qui
       // l'a réclamée, le jour même où la table est née.
       tx.select().from(messagesAssistant).where(eq(messagesAssistant.entrepriseId, e)),
+      // **Les rappels qu'il a rangés d'un « J'ai vu » (migration 0071).** Ce
+      // sont ses gestes, et ils disent quand il a vu quoi : les taire ferait
+      // revenir, sur une base restaurée, des rappels qu'il avait acquittés.
+      tx.select().from(rappelsVus).where(eq(rappelsVus.entrepriseId, e)),
     ]);
 
     // Ordre volontaire : parents avant enfants. Une reprise qui rejouerait ce
@@ -362,6 +368,7 @@ export async function exporterEntreprise(
       // Ses échanges avec l'assistant : ce qu'il a demandé, et ce qu'on lui a
       // répondu.
       messages_assistant: sesEchangesAssistant,
+      rappels_vus: sesRappelsRanges,
     };
 
     const compte: Record<string, number> = {};

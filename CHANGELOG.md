@@ -9,6 +9,191 @@ Format : le plus récent en tête.
 
 ## 2026-08-30
 
+### Cinq dessins pour la note vocale AU REPOS, et le bouton qui s'efface
+
+**Sa demande, deux choses en une :** *« je veux que lorsque l'utilisateur clique
+sur le bouton de la note vocale, le bouton "Je rédige à la main" disparaisse
+pour ne plus avoir de confusion possible. […] Fais-moi plusieurs visuels pour
+changer la note vocale AVANT qu'on appuie dessus. Ne touche plus à la maquette
+que tu viens de me faire. Pas besoin de visuel pour le bouton qui disparaît,
+seulement des propositions pour le visuel de la note vocale. »*
+
+**Une seule des deux est une question**, et il le dit lui-même. Le bouton qui
+s'efface est tranché : il est donc appliqué **à l'identique dans les cinq**, et
+non proposé. Ce qui se choisit, c'est l'objet au repos.
+
+`appli/note-vocale-au-repos.html` — **une planche à part**, parce qu'il a
+demandé de ne plus toucher à la précédente : il est en train de choisir dessus,
+et une planche qui bouge sous les doigts de celui qui la juge ne se juge plus.
+Celle-ci ne pose qu'une question et emprunte tout le reste sans le rediscuter —
+même fiche, même barre d'enregistrement, même devis. Sinon il choisirait un
+écran au lieu d'un dessin.
+
+**Les cinq :** l'anneau d'aujourd'hui (là pour comparer — sans lui on choisit
+dans le vide), un micro plein (le dessin de toutes les messageries), une barre
+d'invitation qui porte le mot et le micro, l'anneau d'Atlas avec un micro au
+centre, et une onde à plat traversant l'écran avec un disque au milieu.
+
+**Le bouton DISPARAÎT, il ne se grise pas** — et le contrôle mesure la
+différence (`offsetParent`, pas l'opacité). Un bouton éteint reste un bouton :
+on l'appuie, il ne répond pas, et l'on croit l'écran cassé. **Et il revient si
+l'on jette la note** : c'est l'autre moitié de la même règle, sans laquelle
+jeter laisserait l'écran amputé de sa seule autre issue.
+
+`scripts/verifier-maquette-note-vocale-au-repos.mjs` tient les cinq : un seul
+dessin à l'écran à la fois, chacun touchable à 44 px, le bouton là avant, parti
+pendant, revenu après, la même barre d'enregistrement partout, le devis au nom
+saisi, rien sous le pli à 700 et 667 points, et la teinte qui bascule dans les
+deux sens. Éprouvé contre cinq états dégradés — bouton resté, bouton grisé,
+bouton non rendu après un rejet, deux repos visibles ensemble, un repos rapetissé
+sous 44 px : chacun le fait rougir.
+
+### « J'ai vu » sur les quatre rappels — sa demande, capture à l'appui
+
+*« Pour chaque notification je dois pouvoir cliquer sur vu pour les faire
+disparaître ; pourquoi certaines n'ont pas cette fonction ? Mets la fonction
+pour toutes. »* Trois rappels sur quatre n'avaient aucun geste : la carte
+restait jusqu'à ce que la situation cesse, et deux cartes suffisent à repousser
+ses chantiers hors de l'écran.
+
+**Ce que ça évite, et ce que ça ne casse pas.** Le geste fait **taire** le
+rappel le temps de son délai réglé — sept jours pour un devis sans réponse —,
+il ne l'efface pas : un rappel classé pour toujours ferait précisément ce que
+ces rappels existent pour éviter, perdre un chantier de vue. Pour ne plus
+jamais le voir, l'interrupteur reste dans « Réglages › Notifications ».
+
+L'acquittement vit en base (`rappels_vus`, migration 0071) : il survit au
+rechargement, ce que le masquage d'écran ne faisait pas. La facture impayée
+garde son moteur d'origine et ne prend que le mot — deux mécaniques de silence
+sur une même carte finiraient par se contredire. Détail et raisons :
+`ARCHITECTURE.md` §210.
+
+**« Plus tard » disparaît du vocabulaire** : le même geste ne s'appelle plus
+autrement d'une carte à l'autre.
+
+### La note vocale à la manière d'une messagerie — la planche, pas le code
+
+**Sa demande, deux captures à l'appui :** *« il faut modifier la note vocale
+pour qu'elle soit plus simple à utiliser, à la manière de celle de WhatsApp :
+on appuie dessus et, comme sur la deuxième photo, il faut la même chose —
+possibilité de supprimer, ou appuyer sur la flèche pour envoyer de suite la
+transcription et arriver sur la page du devis comme c'est déjà le cas. […] Et
+réduis un peu la largeur du bouton "Je rédige mon devis". Code rien, fais une
+maquette, pas de photo. »*
+
+**Ce qu'il y a derrière, et qui n'est pas qu'un dessin.** L'anneau
+d'aujourd'hui ne connaît que deux gestes : appuyer pour dicter, rappuyer pour
+arrêter — et **arrêter, c'est envoyer**. Celui qui s'est trompé, ou qui a laissé
+courir le micro dans la voiture, envoie quand même : la transcription part avec,
+et c'est sur le devis qu'il découvre le dégât. La poubelle est le garde-fou qui
+manquait ; l'envoi cesse d'être un effet de bord de l'arrêt.
+
+`appli/note-vocale-simple.html`, avec **deux propositions aux mêmes gestes** —
+la barre à deux rangées de sa capture, et la capsule sans pause — plus un onglet
+pour les **quatre largeurs** du bouton, qui s'appliquent réellement à l'écran de
+la fiche. **Rien n'est codé dans `src/` :** la maquette d'abord
+(`CLAUDE.md` §3 bis).
+
+**TOUT TIENT SUR UN ÉCRAN — sa troisième correction du jour, et c'est elle qui
+a commandé toutes les mesures :** *« tout doit tenir sur une seule page, ne doit
+pas décoller vers le bas pour accéder aux autres informations »*. L'écran faisait
+**960 px** ; la bande utile entre la barre d'adresse de Safari et la barre
+d'outils, mesurée sur sa capture, vaut **environ 700 points**. Il est descendu à
+**631**, ce qui le fait tenir aussi sur un iPhone SE (667).
+
+Ce qui a été resserré : les espaces entre blocs (17 → 7 px), la hauteur des
+cases (50 → 44), le carré photo (74 → 58), le talon de 44 px sous le bouton qui
+ne portait rien. **Et quatre intitulés sont partis** — « E-mail », « Adresse du
+chantier », « Comment lui envoyer son devis ? », « Photos du chantier » : les
+cases et les capsules les disent déjà, et c'est aussi sa règle du 25 août sur le
+nombre de mots. **« Nom du client » et « Téléphone » restent**, parce qu'il les
+a demandés nommément le 21 août — les retirer aurait fait tenir l'écran en
+défaisant une demande antérieure, sans le lui dire. Ce qui n'est plus écrit
+reste lisible par un lecteur d'écran (`.sr`) : un intitulé retiré de l'œil ne se
+retire pas de la voix.
+
+**La zone de la dictée a une hauteur FIXE**, et la ligne d'indice disparaît
+pendant l'enregistrement : sans ces deux points, la barre — plus haute que
+l'anneau — poussait tout ce qui suit vers le bas à l'instant où l'on appuie, et
+le bouton passait sous le pli au pire moment.
+
+**Une proposition retirée, puis remise — et c'est lui qui a tranché les deux
+fois.** *« Lorsque je clique sur le bouton note vocale, il doit ensuite
+DISPARAÎTRE pour laisser place à la modification »* : la proposition qui gardait
+l'anneau au centre entre la poubelle et l'avion contredisait cette règle, elle
+est partie le jour même. Il l'a redemandée dans la foulée — *« je veux pouvoir
+essayer tous ceux que tu m'as proposés »* — et elle est revenue **telle quelle,
+sans être maquillée pour se conformer** : c'est en la manipulant qu'il verra si
+sa règle tient, et un choix qu'on lui retire n'est pas un choix.
+
+**Et la teinte se bascule à la demande.** Sa demande : *« tout à l'heure tu m'as
+fait cinq visuels en blanc et en fond noir, je veux essayer les cinq »* — il
+avait vu les captures de relecture prises en clair ET en sombre, alors que la
+planche, elle, suivait le réglage de son téléphone : il ne pouvait voir qu'une
+teinte sur les deux. Un bouton ☾ / ☀ dans la barre d'onglets.
+
+**Le piège n'est pas la bascule, c'est le retour.** Un `@media
+(prefers-color-scheme: dark)` écrit seul reprend la main : sur un téléphone
+réglé en sombre, on ne peut jamais revenir au clair. La palette se déclare donc
+trois fois — sur `:root`, sous le `@media` mais **seulement si l'on n'a pas
+demandé le clair**, et sous `:root[data-theme="dark"]` qui gagne dans les deux
+sens. Le contrôle joue les deux sens **depuis les deux réglages système**, et
+lit la couleur réellement peinte plutôt qu'une classe supposée appliquée.
+
+**Un défaut vu à la capture, invisible aux tests :** les quatre onglets
+débordent d'un écran de téléphone, la barre défilait, et le bouton de teinte
+partait avec — coupé au bord droit. Playwright le trouvait et le cliquait quand
+même ; le doigt, lui, ne l'aurait jamais vu. Les onglets défilent désormais dans
+leur propre piste, la bascule reste posée à droite, et le contrôle mesure qu'elle
+est **entière** dans la fenêtre.
+
+**Et l'écran du devis dit désormais qu'il est un exemple.** Sa question :
+*« la page que tu m'as mise en visuel, c'est juste pour le test ? »* Elle
+méritait d'être posée, et l'écran devait y répondre seul — sans quoi on peut
+croire qu'Atlas fabrique un devis de démonstration. La note dit maintenant que
+l'avion ouvre **son vrai devis**, déjà rempli.
+
+Et *« le bouton change par "je rédige à la main", mais ça doit être un
+bouton secondaire, car l'idée c'est qu'il utilise en priorité la note vocale »* :
+le bouton passe au vocabulaire secondaire d'Atlas (fond transparent, liseré d'or,
+même hauteur et même serif — celui de `ChoixCanal.tsx`), et **le seul aplat plein
+de l'écran devient le rond d'envoi de la dictée**. Tant que le bouton était
+plein, l'œil y allait d'abord et l'anneau devenait un accessoire : l'inverse de
+ce que fait ce produit.
+
+**Deux défauts trouvés par le contrôle et par la capture, pas à l'œil :**
+`.capsule{display:flex}` l'emportait sur le `[hidden]` du navigateur — la
+troisième proposition et l'attente de transcription s'affichaient avant qu'on
+ait touché quoi que ce soit ; et en **mode sombre**, le bouton principal et le
+rond d'envoi, posés en vert pin sur un fond noir, se noyaient dedans. Ce second
+défaut est celui de sa capture du 22 août (« le mode nuit est illisible ») :
+la planche porte désormais un `--plein` / `--sur-plein` qui s'inverse comme le
+font les jetons de `src/lib/chartes.ts`.
+
+`scripts/verifier-maquette-note-vocale-simple.mjs` la parcourt : **l'anneau
+disparaît** à l'appui, les deux gestes existent dans les deux propositions,
+**jeter ne mène nulle part** et remet le compteur à zéro, la pause arrête vraiment le chrono (mesuré sur deux secondes),
+l'avion mène au devis **avec le nom saisi**, aucun prix n'est inventé, et les
+quatre largeurs donnent quatre largeurs différentes, et **rien ne passe sous le
+pli** — mesuré sur la page entière à 700 et à 667 points, au repos ET pendant
+l'enregistrement, dans les deux propositions. C'est le point le plus fragile de
+la planche : une case de plus, deux pixels de marge, et l'écran repasse sous le
+pli sans que personne le voie. Il mesure aussi le
+**contraste** des aplats plutôt que leur simple présence : sa première version
+accusait le micro du coin et les pastilles Mr/Mme — des surfaces à 1,03 de
+contraste du fond de page, que personne ne lit comme un appel à l'action. Un
+contrôle qui désigne le mauvais coupable coûte plus cher que pas de contrôle.
+Éprouvé contre dix états dégradés — poubelle inerte, poubelle qui mène au devis,
+pause neutralisée, bouton à pleine largeur, bouton repeint en aplat, anneau resté
+visible, report du nom coupé, un champ de plus, les espaces relâchés, la réserve
+de la dictée sautée : chacun le fait rougir.
+
+**Un pixel, trouvé par le contrôle et non à l'œil.** La poubelle rendait
+43,99997 px — l'alignement du flex la rabotait d'un cheveu, juste sous le seuil
+du doigt. Le message, lui, affichait « mesuré : 44×44 » en refusant : un contrôle
+qui se contredit envoie chercher partout sauf au bon endroit. Les deux sont
+corrigés.
+
 ### Un commercial ne facture plus — sa règle du 13 août, enfin appliquée
 
 Quatre rôles désormais : patron, **facturation** (nouveau), commercial, salarié.
@@ -134,6 +319,58 @@ trois suites navigateur ordinaires.
 tableau distingue désormais trois états, jamais deux.
 
 Batterie : 265/265 base, 116/116 navigateur, 0 erreur de types.
+
+### Une souche ne se fait plus demander comment on l'abat, et l'écran cesse d'expliquer
+
+**Sa remarque du jour, capture à l'appui :** *« lorsque l'on parle de souche, ça
+sous-entend que l'arbre a déjà été abattu et qu'il ne reste que les racines à
+enlever — donc s'il n'y a pas d'arbre, pourquoi il y a la question de comment on
+l'abat ? »*
+
+Le dessouchage était rangé avec l'abattage pour ne pas redemander deux fois le
+diamètre du même tronc. Le raccourci était juste pour le diamètre ; il commandait
+aussi la question de la technique, et là il était faux. Une souche reçoit
+désormais son diamètre seul, sous le mot juste — « Quel diamètre fait la
+souche ? ».
+
+Aucun contrôle ne pouvait le voir : la question était posée, lisible, son
+identifiant stable. Il lui manquait seulement un sens.
+
+**Et l'écran a perdu ses phrases** — *« trop de phrases inutiles, il faut aller
+droit au but, l'utilisateur n'aime pas lire »*. Sont parties : les deux lignes
+sous le titre, la ligne d'explication sous chaque question (le champ `pourquoi`
+avec elles — un champ que plus rien n'affiche revient à l'écran au premier
+remaniement), et la prestation réécrite au-dessus de chaque question. Le titre
+passe de « 2 précisions avant de chiffrer » à « Avant de chiffrer ».
+
+Trois suites comptaient les questions dans ce titre ; elles comptent maintenant
+les blocs `[data-atlas="question-chiffrage"]` — on n'écrit pas un contrôle qui
+réclame ce qu'il a fait retirer.
+
+Détail et raisons : `ARCHITECTURE.md` §209.
+
+### Une mesure déjà dictée ne se redemande plus, et trois textes raccourcissent
+
+*« Tu dis deux souches de diamètre 60. Question : quel diamètre font les
+souches ? »* La lecture découpe une phrase à la virgule : « Il y a un
+dessouchage » d'un côté, « deux souches de soixante centimètres de diamètre » de
+l'autre. La question ne regardait que sa propre ligne — la hauteur, elle, était
+cherchée dans toute la dictée depuis le premier jour. Le diamètre l'est
+désormais aussi, tant qu'un seul arbre est en jeu (à deux, un diamètre dit
+quelque part n'appartient pas forcément à celui qu'on questionne).
+
+Les questions ne nomment plus leur objet — « Quel diamètre ? » au lieu de
+« Quel diamètre fait la souche ? » : la prestation est écrite juste au-dessus,
+au pluriel comme au singulier.
+
+Deux textes qui décrivaient ce que l'écran montrait déjà sont partis : la ligne
+grise de l'écran Transcription, et trois des quatre phrases du refus de chiffrer
+— *« beaucoup beaucoup trop long, aucun utilisateur va lire tout ça »*. Il ne
+reste que le motif ; les deux marches à suivre étaient déjà en boutons dessous.
+La phrase supprimée portait aussi « vos 1 prestation ».
+
+Détail : `ARCHITECTURE.md` §209.
+
 
 ### Plus aucune barre de défilement grise, y compris sur la page elle-même
 

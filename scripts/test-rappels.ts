@@ -22,6 +22,10 @@ import {
   rythmeConnu,
   echeanceFacture,
   rappelFactureDu,
+  rappelEncoreTu,
+  silenceApresVuJours,
+  estGenreAcquittable,
+  GENRES_ACQUITTABLES,
 } from "../src/lib/rappels";
 
 let echecs = 0;
@@ -256,6 +260,76 @@ essai("un rythme inconnu retombe sur « chaque semaine », il n'éteint rien", (
 essai("le quatrième rappel s'éteint comme les autres, par son délai", () => {
   assert.equal(lireRappels({}).factureImpayeeJours, 1);
   assert.equal(lireRappels({ factureImpayeeJours: null }).factureImpayeeJours, null);
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// « J'AI VU » — sa demande du 30 août 2026, et ce qu'elle ne doit pas casser.
+//
+// *« Pour chaque notification je dois pouvoir cliquer sur vu pour les faire
+// disparaître. »* Le geste fait taire ; il n'efface pas. Un rappel effacé pour
+// toujours ferait exactement ce que ces rappels existent pour éviter — perdre
+// un chantier de vue —, et ce contrôle est ce qui tient les deux bouts.
+// ─────────────────────────────────────────────────────────────────────────────
+
+essai("jamais acquitté : le rappel parle", () => {
+  assert.equal(
+    rappelEncoreTu({ maintenant: new Date("2026-08-30T12:00:00Z"), vuLe: null, silenceJours: 7 }),
+    false,
+    "l'absence d'acquittement se lit comme un acquittement"
+  );
+});
+
+essai("acquitté : il se tait, puis il revient au bout de son délai", () => {
+  const vuLe = new Date("2026-08-30T12:00:00Z");
+  const veille = (j: number) => new Date(vuLe.getTime() + j * 24 * 3600 * 1000);
+  assert.equal(rappelEncoreTu({ maintenant: veille(1), vuLe, silenceJours: 7 }), true, "il parle le lendemain");
+  assert.equal(rappelEncoreTu({ maintenant: veille(6.9), vuLe, silenceJours: 7 }), true, "il parle avant l'heure");
+  assert.equal(rappelEncoreTu({ maintenant: veille(7), vuLe, silenceJours: 7 }), false, "il ne revient jamais");
+  assert.equal(rappelEncoreTu({ maintenant: veille(30), vuLe, silenceJours: 7 }), false);
+});
+
+// **Le silence est le délai QU'IL A RÉGLÉ**, pas un second nombre caché : un
+// rappel qu'il a mis à quatorze jours se tait quatorze jours. Inventer ici une
+// durée à nous, ce serait un réglage qu'il ne pourrait pas changer.
+essai("le silence dure le délai réglé pour CE rappel", () => {
+  const regles = lireRappels({ devisSansReponseJours: 14, chantierSansDevisJours: 2 });
+  assert.equal(silenceApresVuJours("devis-sans-reponse", regles), 14);
+  assert.equal(silenceApresVuJours("chantier-sans-devis", regles), 2);
+  assert.equal(silenceApresVuJours("chantier-non-facture", regles), RAPPELS_PAR_DEFAUT.chantierNonFactureJours);
+});
+
+// Un rappel éteint est filtré bien avant d'arriver ici : la question ne se pose
+// pas. On rend quand même un nombre plutôt qu'un cas à traiter — mais JAMAIS
+// zéro, qui ferait revenir le rappel dans la seconde.
+essai("éteint, le silence retombe sur le délai d'origine — jamais zéro", () => {
+  const eteint = lireRappels({ devisSansReponseJours: null });
+  assert.equal(silenceApresVuJours("devis-sans-reponse", eteint), RAPPELS_PAR_DEFAUT.devisSansReponseJours);
+});
+
+// **La facture impayée n'entre pas dans cette liste**, et c'est ce qui empêche
+// deux mécaniques de silence de se contredire sur la même carte : la sienne
+// vit depuis le 16 août sur `chantiers.rappel_facture_repousse_le`.
+essai("l'impayé n'est pas acquittable : il garde son propre moteur", () => {
+  assert.equal(estGenreAcquittable("facture-impayee"), false);
+  assert.equal(estGenreAcquittable("devis-sans-reponse"), true);
+  assert.equal(estGenreAcquittable("chantier-sans-devis"), true);
+  assert.equal(estGenreAcquittable("chantier-non-facture"), true);
+  assert.deepEqual([...GENRES_ACQUITTABLES], [
+    "chantier-sans-devis",
+    "devis-sans-reponse",
+    "chantier-non-facture",
+  ]);
+});
+
+// Une adresse d'action se tape : un genre inventé ferait une ligne
+// d'acquittement qui ne correspond à aucun rappel, et que personne ne saurait
+// rallumer.
+essai("un genre inventé est refusé", () => {
+  assert.equal(estGenreAcquittable("tout"), false);
+  assert.equal(estGenreAcquittable(""), false);
+  assert.equal(estGenreAcquittable(null), false);
+  assert.equal(estGenreAcquittable(undefined), false);
+  assert.equal(estGenreAcquittable(7), false);
 });
 
 if (echecs) {

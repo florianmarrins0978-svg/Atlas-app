@@ -8702,11 +8702,13 @@ la planche : *« on le touche, rien ne bouge, et on croit à une panne »*.
 
 **Trois choix qui paraissent des détails :**
 
-1. **Un rappel n'a pas de « J'ai vu ».** Une réponse de client s'acquitte — elle
-   a été lue. Un rappel décrit une situation qui DURE, et il s'en va quand elle
-   cesse : le client répond, la facture part. Lui donner un bouton d'acquit
-   ferait croire qu'on peut le classer sans rien faire, et le chantier
-   retomberait dans l'oubli qu'on cherchait à éviter.
+1. **Un rappel n'a pas de « J'ai vu »** — ~~et c'est délibéré~~. **RÉVISÉ LE
+   30 AOÛT 2026, par le patron** : *« pour chaque notification je dois pouvoir
+   cliquer sur vu pour les faire disparaître ; pourquoi certaines n'ont pas
+   cette fonction ? »*. La crainte écrite ici — qu'un acquit fasse oublier le
+   chantier — était juste, et elle est tenue autrement : « J'ai vu » fait
+   **taire** le rappel le temps de son délai réglé, il ne l'efface pas. Voir
+   **§210**.
 2. **Un devis EXPIRÉ n'est pas rappelé** : il a déjà sa carte de devis caduc.
    Deux cartes pour un même devis feraient chercher la différence.
 3. **Jamais « urgent ».** Le fond teinté est réservé à ce qui appelle une
@@ -9816,16 +9818,21 @@ en pastilles. Une case de saisie aurait été plus souple et **aurait rouvert ce
 qu'il a exclu** : rien n'y aurait empêché « tous les jours », ni « tous les
 3 jours ». La contrainte est le sujet de sa demande, pas un effet de bord.
 
-### « Plus tard » est le seul moteur du rythme — et ce n'est pas « J'ai vu »
+### Le geste est le seul moteur du rythme — il porte « J'ai vu » depuis le 30 août
 
 Le rythme ne s'applique **qu'après un geste**. Tant qu'il n'a rien touché, la
 carte reste, tous les jours. C'est délibéré : une carte qui s'endormirait toute
 seule pourrait passer un jour où il n'ouvre pas l'application, et il ne saurait
 jamais qu'elle est passée.
 
-« Plus tard » **ne classe rien** : la facture reste dans « Terminés › TVA › En
-attente de paiement », le rappel revient au bout du rythme. C'est ce qui le
-distingue d'un acquittement — et pourquoi la carte ne porte pas « J'ai vu ».
+Le geste **ne classe rien** : la facture reste dans « Terminés › TVA › En
+attente de paiement », le rappel revient au bout du rythme.
+
+**Son libellé était « Plus tard » jusqu'au 30 août 2026**, précisément pour le
+distinguer d'un acquittement. Le patron a tranché l'inverse ce jour-là : les
+quatre cartes portent le même mot, « J'ai vu », parce que le doigt fait le même
+geste — la carte s'en va. La mécanique dessous n'a pas bougé d'une ligne
+(`chantiers.rappel_facture_repousse_le`). Voir **§210**.
 
 ### La date de report vit sur le CHANTIER, et ce n'est pas un rangement
 
@@ -18254,7 +18261,203 @@ le pire des silences — il ressemble à un contrôle. Le sens est donc inversé
 relève tous les fichiers « use server », et ce qui n'a pas de garde s'explique
 par écrit, dans une table d'exemptions dont chaque entrée porte sa raison.
 
-## 209. Quatre rôles, des capacités, et pourquoi aucune ne s'écrit par la négative
+---
+
+## 209. Une souche n'a plus d'arbre : l'arrêt d'avant-chiffrage cesse d'expliquer, et de demander l'impossible
+
+**Sa remarque du 30 août 2026, capture à l'appui**, sur l'écran qui l'arrête
+avant de chiffrer :
+
+> *« Trop de phrases inutiles pour ça. Il faut aller droit au but, l'utilisateur
+> n'aime pas lire. »*
+>
+> *« Autre incohérence : lorsque l'on parle de souche, ça sous-entend que
+> l'arbre a déjà été abattu et qu'il ne reste que les racines à enlever — c'est
+> ça une souche. Donc s'il n'y a pas d'arbre, pourquoi il y a la question de
+> comment on l'abat ? »*
+
+### La souche : un raccourci qui a débordé de son usage
+
+`questions-chiffrage.ts` rangeait le dessouchage **avec** l'abattage, et pour
+une raison juste : le diamètre est celui du même tronc, et le redemander ferait
+répondre deux fois la même chose (`abattageDansLaDictee`). Mais la même liste
+servait à deux décisions différentes, et la seconde n'a jamais été relue :
+
+| Ce que le regroupement décide | Verdict |
+|---|---|
+| **le diamètre** — même tronc, au ras du sol | juste, et il reste |
+| **la technique d'abattage** | faux : l'arbre est déjà par terre |
+
+**Aucun contrôle ne pouvait le dire.** La question était posée, son libellé
+lisible, son identifiant stable, sa réponse persistée — tout ce qu'une suite
+sait vérifier était vert. Ce qui manquait n'était mesurable nulle part : le
+**sens**. C'est le troisième défaut de ce dépôt trouvé en regardant l'écran
+plutôt qu'un rapport, et le premier trouvé par le métier plutôt que par l'œil.
+
+La leçon générale, et elle dépasse l'arrosage comme le chiffrage : **une liste
+qui sert deux décisions se relit pour chacune des deux.** Le regroupement avait
+été écrit pour une question, et il en a silencieusement commandé une autre.
+
+Ce qui change, à l'usage : une souche reçoit son diamètre seul, **sous le mot
+juste** — « Quel diamètre fait la souche ? », jamais « le tronc ». Son sujet
+devient `dessouchage.diametre`, que `prestation-structuree.ts` lit déjà par son
+suffixe. `precisionLisibleParId`, lui, cherchait un **préfixe** (`abattage.` ou
+`fendage.`) : le sujet neuf serait sorti « 60 cm » au lieu de « ⌀ 60 cm », et
+`mesures-arbre.ts` n'y aurait plus retrouvé le nombre — le chiffrage se serait
+tu, sans une seule erreur. Les deux lisent désormais le suffixe, comme
+`CLAUDE.md` §3 l'exige d'une règle qui vit à deux endroits.
+
+### Les phrases qui expliquent : parties, et le champ avec elles
+
+L'écran portait, sous le titre, deux lignes disant que la dictée était
+incomplète ; et sous **chaque** question, une ligne disant ce qu'elle changeait
+(`QuestionChiffrage.pourquoi`). Elles décrivaient ce que l'écran montrait déjà —
+exactement ce que `CLAUDE.md` §3 refuse : *« un écran n'explique pas son propre
+fonctionnement, il le montre »*.
+
+| Avant | Après |
+|---|---|
+| « Une précision avant de chiffrer » / « 2 précisions avant de chiffrer » | « Avant de chiffrer » |
+| « Votre dictée ne les dit pas, et elles changent le prix. Sans elles, le devis serait faux. » | — |
+| une ligne d'explication sous chaque question | — |
+| la prestation réécrite au-dessus de chaque question | écrite **une fois** par prestation |
+
+**`pourquoi` est retiré du modèle, pas seulement de l'écran.** Un champ que plus
+rien n'affiche revient au premier remaniement : quelqu'un le trouve rempli et
+le rebranche, de bonne foi. Ce qui subsiste doit se suffire — d'où le contrôle
+qui a remplacé l'ancien : chaque question tient en 40 caractères et se termine
+par un point d'interrogation.
+
+### Ce que le comptage des questions ne lit plus
+
+`test-questions-chiffrage-e2e.ts` comptait les questions **dans le titre** (« 2
+précisions… »), pour tenir la promesse de `docs/AGENT.md` §2 — l'arrêt reste
+franchissable. Le titre parti, ce contrôle se serait mis à réclamer le libellé
+que le patron venait de faire retirer (`CLAUDE.md` §5 bis). Il compte désormais
+les blocs `[data-atlas="question-chiffrage"]` : le même garde-fou, sur une prise
+qui survivra au prochain remaniement de texte. Deux autres suites
+(`test-anneau-vers-devis-e2e`, `test-madame-lucie-e2e`) visaient le même libellé
+et ont suivi.
+
+### Le même jour, trois autres retraits — et un défaut que seul le métier voyait
+
+**« Tu dis deux souches de diamètre 60. Question : quel diamètre font les
+souches ? »** Sa dictée portait la réponse, en toutes lettres, une ligne plus
+haut. Ce qui se passait :
+
+```
+« Il y a un dessouchage, deux souches de soixante centimètres de diamètre. »
+        ↓ la lecture découpe à la virgule
+1. « Il y a un dessouchage »                             → pose la question
+2. « deux souches de soixante centimètres de diamètre »  → porte la réponse
+```
+
+La question ne regardait que **sa** ligne. La hauteur, elle, était cherchée dans
+toute la dictée depuis le premier jour (`hauteurDansLaDictee`) — le diamètre n'a
+jamais reçu le même traitement. Deux règles voisines, une seule relue : la même
+faute que le regroupement du dessouchage, à quelques lignes de distance.
+
+**La garde du seul arbre n'est pas une précaution de style.** À deux arbres dans
+une dictée, un diamètre dit quelque part n'appartient pas forcément à celui
+qu'on questionne, et se tromper de diamètre range le prix dans la case d'à côté.
+`diametreDansLaDictee` ne vaut donc que lorsqu'une seule ligne parle d'un arbre
+ou d'une souche ; à deux, on demande ligne par ligne.
+
+**Et taire une question n'est tenable que si le chiffrage lit les mêmes textes.**
+C'est écrit dans l'en-tête du module, et c'est le piège qu'il se tend à
+lui-même : s'il en lisait moins, la case de la grille resterait introuvable —
+sans question posée, sans erreur, et sans prix. `prixDeLaLigne` met déjà en
+commun tous les libellés du chantier (`textesChantier`), donc il retrouve le
+même 60. Une suite le vérifie désormais côte à côte, plutôt que de s'y fier.
+
+**Les questions ne nomment plus leur objet.** « Quel diamètre fait la souche ? »
+sur une dictée qui dit « deux souches » — il l'a relevé dans la même phrase.
+Accorder au nombre supposerait de le compter : un travail de plus pour un mot de
+moins. La prestation est écrite juste au-dessus, elle dit déjà de quoi il
+s'agit, au pluriel comme au singulier. D'où « Quel diamètre ? », « Quelle
+hauteur ? », « Quelle longueur ? ».
+
+**Deux textes qui décrivaient ce que l'écran montrait déjà :**
+
+| Où | Avant | Après |
+|---|---|---|
+| écran Transcription | « Texte brut de votre dictée, tel qu'il a été transcrit — jamais retouché » | — (le titre dit « Transcription », le cadre montre le texte) |
+| refus de chiffrer | quatre phrases : le motif, deux marches à suivre, et « En attendant, vos 1 prestation est inscrite sur le devis » | « Aucun tarif ne correspond, et la dictée ne dit ni la durée ni l'équipe. » |
+
+Le refus de chiffrer garde **le pourquoi, et rien d'autre** : les deux marches à
+suivre étaient déjà sous lui, en boutons — « Ouvrir le devis et poser les prix »
+et « Compléter la durée et l'équipe ». La phrase supprimée portait aussi « vos
+**1** prestation », une faute d'accord que plus personne ne lisait.
+
+---
+
+## 210. « J'ai vu » sur les quatre rappels : faire taire n'est pas effacer
+
+*Sa demande du 30 août 2026, capture à l'appui — la carte « Devis sans réponse »
+ne portait que « Ouvrir le chantier » :* ***« Pour chaque notification je dois
+pouvoir cliquer sur vu pour les faire disparaître ; pourquoi certaines n'ont pas
+cette fonction ? Mets la fonction pour toutes. »***
+
+### Ce qui était en place, et pourquoi cela ne tenait plus
+
+| La carte | Son geste, avant | Après |
+|---|---|---|
+| Réponse d'un client, devis caduc | « J'ai vu » (acquitté en base) | inchangé |
+| Chantier sans devis · Devis sans réponse · À facturer | **aucun** | **« J'ai vu »** |
+| Facture impayée | « Plus tard » | **« J'ai vu »**, même mécanique |
+
+Le §108 tenait qu'un rappel n'avait rien à acquitter : il décrit une situation
+qui dure, et il s'en va quand elle cesse. La crainte était juste — un rappel
+classé d'un doigt, c'est un chantier qu'on ne revoit plus. Mais elle avait un
+coût que le patron a vu avant nous : **sa pile de rappels ne se range pas**. Un
+chantier qui dort trois semaines occupe l'accueil trois semaines, et deux cartes
+suffisent à repousser ses chantiers hors de l'écran.
+
+### La règle, en une phrase : le rappel se TAIT le temps de son délai réglé
+
+`rappelEncoreTu` (`src/lib/rappels.ts`) : acquitté à l'instant T, un rappel se
+tait jusqu'à `T + le délai réglé pour son genre` — sept jours pour un devis sans
+réponse, quatre pour un chantier sans devis, trois pour un chantier fini non
+facturé. Passé ce délai, **si la situation n'a pas bougé, il revient**.
+
+**Le silence est le délai qu'il a lui-même réglé**, jamais un second nombre à
+nous : il a déjà dit dans « Réglages › Notifications » à quel rythme il veut
+être repris, et un nombre caché ici serait un réglage qu'il ne pourrait pas
+changer. Pour ne plus jamais voir un rappel, l'interrupteur est là-bas.
+
+### Où l'acquittement s'écrit — et le seul piège qu'il fallait éviter
+
+`rappels_vus` (migration 0071) : une ligne par `(entreprise, genre, chantier)`,
+l'unicité posée en base, `ON CONFLICT DO UPDATE` pour que **le dernier geste
+écrase le précédent** — deux lignes donneraient deux réveils, et le plus ancien
+ferait revenir un rappel qui vient d'être rangé.
+
+**La facture impayée n'entre PAS dans cette table**, et c'est le seul vrai choix
+d'architecture de ce lot. Elle a son moteur de silence depuis le 16 août
+(`chantiers.rappel_facture_repousse_le`, §118) : lui en donner un second, c'est
+deux endroits pour une idée, donc deux vérités qui divergent le jour où l'une
+est corrigée seule. Son bouton prend le mot des autres ; sa mécanique reste la
+sienne.
+
+### Une garde écrite puis retirée, faute de pouvoir la voir rougir
+
+La première version portait « une situation née APRÈS l'acquittement est une
+situation neuve » : un devis renvoyé ne devait pas être enterré par le « J'ai
+vu » de l'ancien. **Elle ne pouvait jamais devenir vraie.** Un envoi parti après
+l'acquittement met le délai du rappel à devenir rappelable ; il arrive donc
+toujours après le réveil, qui court depuis le même instant. Un contrôle qu'on ne
+peut pas voir échouer ne prouve rien (`CLAUDE.md` §5) : la garde est partie, et
+`test-rappels-db.ts` montre à sa place que le devis renvoyé se rappelle bien à
+son tour, à son propre compte de jours.
+
+### Un seul mot sur les quatre cartes
+
+« Plus tard » et « J'ai vu » nommaient le même geste — la carte s'en va — sur
+deux cartes voisines du même écran. La différence était vraie dans le code et
+invisible au doigt : elle ne faisait que demander laquelle des deux range
+vraiment. Un seul libellé, et ce qui se passe dessous reste l'affaire du dépôt.
+
+## 211. Quatre rôles, des capacités, et pourquoi aucune ne s'écrit par la négative
 
 **Lot du 30 août 2026**, joué avant le déploiement — donc avant le premier
 artisan réel, ce qui était toute la raison de le faire maintenant : *« ce lot
