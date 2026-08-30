@@ -309,6 +309,10 @@
 <td>renvoyée ; ses propres réglages restent à elle</td>
 </tr>
 <tr>
+<td>La facturation ouvre le relevé de TVA</td>
+<td>ouvert — <strong>mais sans les deux réglages du patron</strong> (voir ci-dessous)</td>
+</tr>
+<tr>
 <td>Envoyer un rôle inventé depuis le formulaire (<code>admin</code>, <code>PROPRIETAIRE</code>, <code>patron</code>, vide, <code>proprietaire </code> avec espace)</td>
 <td>refusé — <code>role-inconnu</code>, et le rôle en base n'a pas bougé</td>
 </tr>
@@ -364,6 +368,11 @@
 </tr>
 </tbody></table></div>
 <p>Le code sain a été rétabli à chaque fois, et <strong>vérifié à l'octet près</strong>.</p>
+<h3 id="un-défaut-trouvé-sur-une-capture-et-par-aucun-test">Un défaut trouvé sur une CAPTURE, et par aucun test</h3>
+<p>L'écran du relevé de TVA porte deux réglages qui sont des <strong>déclarations faites aux impôts</strong> : le rythme du relevé, et le moment où la TVA devient exigible. Les deux s'écrivent par <code>exigerProprietaire</code>, et cela n'a pas bougé.</p>
+<p>Mais l'écran, lui, venait de s'ouvrir au rôle « Facturation ». Elle y voyait donc deux réglages qu'un appui aurait laissés <strong>muets</strong> — le serveur refuse, et un refus sans explication se lit comme une panne. Ce n'était pas une faille : c'était une promesse fausse, exactement du même genre que celle de l'écran des accès.</p>
+<p>Ils se <strong>retirent</strong> pour elle plutôt que de se griser — un réglage grisé se touche quand même. Le relevé et ses chiffres restent entiers : c'est ce qu'elle vient lire. Une assertion de la suite navigateur le tient désormais.</p>
+<p><strong>Trouvé en regardant l'image, et par aucun test vert.</strong> C'est la cinquième fois dans ce dépôt (<code>CLAUDE.md</code> §5).</p>
 <h3 id="deux-choses-qui-cachaient-le-défaut-et-qui-sont-corrigées">Deux choses qui cachaient le défaut, et qui sont corrigées</h3>
 <ol>
 <li><strong>L'écran des accès PROMETTAIT le contraire de la règle.</strong> Il annonçait au patron que le commercial pouvait faire « Les factures et le relevé de TVA ». Le contrôle qui surveille ces promesses ne regardait pas les mots : il vérifiait que les listes n'étaient pas vides. Il compare désormais chaque promesse à la capacité, <strong>des deux côtés</strong> — promettre ce qu'on refuse, et taire une restriction réelle.</li>

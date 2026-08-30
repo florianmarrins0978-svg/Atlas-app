@@ -228,6 +228,17 @@ du doigt. Le message, lui, affichait « mesuré : 44×44 » en refusant : un con
 qui se contredit envoie chercher partout sauf au bon endroit. Les deux sont
 corrigés.
 
+### Le relevé de TVA ne montre plus au service facturation deux réglages du patron
+
+Le rythme du relevé et le moment où la TVA devient exigible sont des
+déclarations faites aux impôts : ils s'écrivent par `exigerProprietaire`, et
+cela n'a pas bougé. Mais l'écran venait de s'ouvrir au rôle « Facturation », qui
+y voyait donc deux réglages qu'un appui aurait laissés muets.
+
+Retirés pour elle plutôt que grisés — un réglage grisé se touche quand même. Le
+relevé et ses chiffres restent entiers. **Trouvé sur une capture, par aucun test
+vert** : la cinquième fois dans ce dépôt.
+
 ### Un commercial ne facture plus — sa règle du 13 août, enfin appliquée
 
 Quatre rôles désormais : patron, **facturation** (nouveau), commercial, salarié.

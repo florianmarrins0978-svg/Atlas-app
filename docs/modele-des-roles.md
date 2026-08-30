@@ -186,6 +186,7 @@ naîtrait. Il a rougi, et c'est ce qui a fait rouvrir `peutModifierLePlanning`.
 | Le commercial ouvre `/api/factures/<id>/pdf` | refusé par `cheminAutorise` |
 | Le commercial ouvre `/planning`, `/clients`, ses devis | **ouverts** — on ne l'a pas amputé |
 | La facturation tape `/paysage`, `/reglages/identite`, `/reglages/tarifs`, `/reglages/equipe` | renvoyée ; ses propres réglages restent à elle |
+| La facturation ouvre le relevé de TVA | ouvert — **mais sans les deux réglages du patron** (voir ci-dessous) |
 | Envoyer un rôle inventé depuis le formulaire (`admin`, `PROPRIETAIRE`, `patron`, vide, `proprietaire ` avec espace) | refusé — `role-inconnu`, et le rôle en base n'a pas bougé |
 | Un patron de A change le rôle d'un accès de **l'entreprise B** dont il connaît l'identifiant | refusé ; rien n'a bougé chez B |
 | Un patron de A retire un accès de B | refusé |
@@ -205,6 +206,24 @@ naîtrait. Il a rougi, et c'est ce qui a fait rouvrir `peutModifierLePlanning`.
 | l'ancienne promesse « Les factures et le relevé de TVA » remise à l'écran du commercial | « l'écran ne promet pas ce que la règle refuse » |
 
 Le code sain a été rétabli à chaque fois, et **vérifié à l'octet près**.
+
+### Un défaut trouvé sur une CAPTURE, et par aucun test
+
+L'écran du relevé de TVA porte deux réglages qui sont des **déclarations faites
+aux impôts** : le rythme du relevé, et le moment où la TVA devient exigible. Les
+deux s'écrivent par `exigerProprietaire`, et cela n'a pas bougé.
+
+Mais l'écran, lui, venait de s'ouvrir au rôle « Facturation ». Elle y voyait donc
+deux réglages qu'un appui aurait laissés **muets** — le serveur refuse, et un
+refus sans explication se lit comme une panne. Ce n'était pas une faille : c'était
+une promesse fausse, exactement du même genre que celle de l'écran des accès.
+
+Ils se **retirent** pour elle plutôt que de se griser — un réglage grisé se touche
+quand même. Le relevé et ses chiffres restent entiers : c'est ce qu'elle vient
+lire. Une assertion de la suite navigateur le tient désormais.
+
+**Trouvé en regardant l'image, et par aucun test vert.** C'est la cinquième fois
+dans ce dépôt (`CLAUDE.md` §5).
 
 ### Deux choses qui cachaient le défaut, et qui sont corrigées
 

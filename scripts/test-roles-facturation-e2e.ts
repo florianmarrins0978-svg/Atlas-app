@@ -217,6 +217,27 @@ async function main() {
       pageF.url().includes("/termines/tva"),
       `la facturation est renvoyée de son propre écran de TVA (${pageF.url()})`
     );
+
+    /**
+     * **ET ELLE N'Y VOIT PAS LES DEUX RÉGLAGES DU PATRON.**
+     *
+     * Le rythme du relevé et le moment où la TVA devient exigible sont deux
+     * déclarations faites aux impôts : `exigerProprietaire` les refuse, et cela
+     * n'a pas bougé. Trouvé sur la CAPTURE, pas par un test — elle les voyait, et
+     * un appui serait resté muet.
+     *
+     * On lit le TEXTE, pas un marqueur : ce sont les deux phrases que le patron
+     * a écrites lui-même, et elles disent ce que le geste fait.
+     */
+    const texte = (await pageF.locator("body").innerText()).toLowerCase();
+    for (const reglage of ["votre rythme", "je reverse ma tva aux impôts"]) {
+      assert.ok(
+        !texte.includes(reglage),
+        `la facturation voit « ${reglage} », un réglage que le serveur lui refusera`
+      );
+    }
+    // Un contrôle qui mesure zéro ne mesure rien : la page doit bien être là.
+    assert.ok(texte.includes("ma tva"), "l'écran de TVA ne s'est pas affiché du tout");
   });
 
   // ─── L'ÉCRAN DU COMMERCIAL ───────────────────────────────────────────────
