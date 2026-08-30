@@ -92,7 +92,26 @@ try {
   process.exit(1);
 }
 
-const NPM = process.platform === "win32" ? "npm.cmd" : "npm";
+/**
+ * **On lance `tsx` directement, jamais `npm run` — payé sur Windows le
+ * 30 août 2026.**
+ *
+ * La première version appelait `spawnSync("npm.cmd", ["run", "db:migrate"])`.
+ * Depuis Node 18.20 / 20.12 (durcissement après CVE-2024-27980), `spawnSync`
+ * **refuse** de lancer un `.cmd` ou un `.bat` sans `shell: true`. Il ne lève
+ * pas : il rend un `error` et un `status` à `null`. Le script concluait donc à
+ * l'échec des migrations **sans afficher une seule ligne** — et le message
+ * accusait « un schéma en retard sur le code », c'est-à-dire exactement le
+ * mauvais coupable (`AGENTS.md`).
+ *
+ * `shell: true` aurait suffi, mais fait passer la commande par l'interpréteur —
+ * une couche de plus, avec ses règles de citation. On emprunte plutôt le chemin
+ * que `scripts/run-e2e-tests.ts` suit déjà : l'exécutable Node courant, et le
+ * CLI de tsx par son chemin de fichier. Aucun `.cmd`, aucun interpréteur,
+ * identique sur les trois systèmes.
+ */
+const NODE = process.execPath;
+const TSX = path.join(RACINE, "node_modules", "tsx", "dist", "cli.mjs");
 
 /**
  * Les deux étapes tournent sous le PROPRIÉTAIRE.
@@ -103,19 +122,47 @@ const NPM = process.platform === "win32" ? "npm.cmd" : "npm";
  * `atlas_owner`, et la RLS continue de s'appliquer aux requêtes du produit.
  */
 const etapes = [
-  { nom: "Migrations", args: ["run", "db:migrate"], attrape: "un schéma en retard sur le code" },
-  { nom: "Jeu de données fictif", args: ["run", "db:seed"], attrape: "une base vide, où rien ne se teste" },
+  { nom: "Migrations", script: "scripts/run-migrations.ts", attrape: "un schéma en retard sur le code" },
+  { nom: "Jeu de données fictif", script: "src/server/db/seed.ts", attrape: "une base vide, où rien ne se teste" },
 ];
+
+if (!existsSync(TSX)) {
+  console.error(
+    "\n❌ tsx est introuvable dans node_modules.\n\n" +
+      "   Les dépendances ne sont pas installées dans ce dossier. Un worktree ne\n" +
+      "   partage pas le node_modules du dépôt principal :\n\n" +
+      "     npm install\n",
+  );
+  process.exit(1);
+}
 
 for (const etape of etapes) {
   console.log(`\n→ ${etape.nom}`);
-  const r = spawnSync(NPM, etape.args, {
+  const r = spawnSync(NODE, [TSX, etape.script], {
     cwd: RACINE,
     stdio: "inherit",
     // `...env` d'abord : les variables du .env s'appliquent, puis DATABASE_URL
     // est ÉCRASÉE par l'adresse du propriétaire. L'ordre compte.
     env: { ...process.env, ...env, DATABASE_URL: proprietaire },
   });
+
+  // **`r.error` AVANT `r.status`, et c'est la leçon du 30 août 2026.**
+  //
+  // Quand le lancement lui-même échoue, `status` vaut `null` — donc
+  // `null !== 0` est vrai, et l'on annonçait « les migrations ont échoué »
+  // pour une commande qui n'avait jamais démarré. Le patron lisait « un schéma
+  // en retard sur le code » devant une base parfaitement saine, et rien
+  // n'expliquait rien. Une erreur qui accuse à tort coûte plus cher que pas
+  // d'erreur du tout (`AGENTS.md`).
+  if (r.error) {
+    console.error(
+      `\n❌ ${etape.nom} n'a même pas pu DÉMARRER — ce n'est pas la base qui est en cause.\n\n` +
+        `   ${r.error.message}\n\n` +
+        `   Node : ${process.version} · Système : ${process.platform}\n`,
+    );
+    process.exit(1);
+  }
+
   if (r.status !== 0) {
     console.error(`\n❌ ${etape.nom} a échoué — ce qu'elle attrape : ${etape.attrape}\n`);
     process.exit(1);
