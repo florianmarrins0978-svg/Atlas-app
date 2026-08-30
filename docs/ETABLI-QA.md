@@ -331,6 +331,35 @@ n'exceptait que `.env.example`. Le gabarit dont tout l'intérêt est de survivre
 un `down -v` aurait disparu en silence, et l'on aurait recomposé de mémoire un
 fichier fait pour ne pas dépendre de la mémoire.
 
+**3. `qa:setup` ne pouvait pas démarrer sous Windows — et il accusait la base.**
+Trouvé sur SA machine, et **introuvable ici** : depuis Node 18.20 / 20.12
+(durcissement après CVE-2024-27980), `spawnSync` **refuse** de lancer un `.cmd`
+ou un `.bat` sans `shell: true`. Il ne lève pas d'exception : il rend un `error`
+et un `status` à `null`.
+
+Le script ne testait que `status !== 0`. Résultat : `null !== 0` est vrai, et il
+annonçait
+
+    ❌ Migrations a échoué — ce qu'elle attrape : un schéma en retard sur le code
+
+**sans afficher une seule ligne**, devant une base parfaitement saine et des
+conteneurs qui venaient de démarrer. C'est exactement la faute que ce dépôt
+nomme : *une erreur qui accuse à tort coûte plus cher que pas d'erreur du tout*.
+
+Deux corrections, et la seconde vaut la première :
+
+- le lancement passe par l'exécutable Node courant et le CLI de `tsx` par son
+  chemin de fichier — le chemin que `scripts/run-e2e-tests.ts` suivait déjà.
+  Ni `.cmd`, ni interpréteur et ses règles de citation, identique sur les trois
+  systèmes. (`shell: true` aurait suffi ; il ajoute une couche pour rien.) ;
+- **`r.error` se lit AVANT `r.status`**, et son message porte la version de Node
+  et le système — puisque c'est de là que venait la panne.
+
+**La leçon, et elle vaut pour toute la campagne à venir :** ce dépôt tourne sur
+Linux ; le patron travaille sur Windows. Un script d'outillage éprouvé ici n'est
+pas éprouvé chez lui. `AGENTS.md` le dit déjà pour le réseau et pour Docker —
+c'est vrai aussi du **système d'exploitation**.
+
 ---
 
 ## Ce qui n'a PAS pu être éprouvé ici, et où le faire
@@ -350,3 +379,35 @@ et ce qui ne l'a pas été :
 C'est donc `npm run qa:up` qui reste à confirmer sur ta machine — et
 `npm run qa:preuve` le dira sans ambiguïté : sans conteneur debout, il rougit
 sur « Base joignable ».
+
+---
+
+## Parcouru en entier sur SA machine — 30 août 2026
+
+La séquence a été jouée du premier geste au dernier sur son PC (Windows 10,
+PowerShell, VS Code), et pas seulement décrite. Ce que ça a donné :
+
+| Étape | Résultat |
+|---|---|
+| worktree `Atlas-qa` sur `qa/campagne` | ✅ |
+| `npm install` | ✅ |
+| Docker Desktop | **absent au départ** — installé en 4.88.1, backend WSL-2 |
+| `npm run qa:up` | ✅ `up 4/4` — volume, réseau, `atlas-qa-redis`, `atlas-qa-postgres` |
+| `cp .env.qa.example .env` | ✅ |
+| `npm run qa:setup` | ❌ puis ✅ après correction (défaut 3 ci-dessus) — 84 migrations, `Base d'essai reconnue : atlas_qa` |
+| `npm run qa:preuve` | ✅ **QA : 15/15 — VERT** |
+| `npm run dev` | ✅ écran de connexion servi sur `localhost:3000` |
+
+**Le worktree est confirmé par le contrôle lui-même**, et pas par le nom du
+dossier : `Atlas-qa` d'un côté, `atlas-app` de l'autre, deux `.git` distincts.
+
+**Trois obstacles à connaître pour la prochaine machine**, tous rencontrés :
+
+1. **Docker Desktop peut être installé dans le dossier utilisateur**
+   (`%LOCALAPPDATA%\Programs\DockerDesktop`) et non dans `Program Files`. Un
+   test sur ce dernier chemin rend un faux « pas installé » ;
+2. **`winget` n'existe pas sur toutes les installations de Windows 10.** Le
+   téléchargement direct de l'installateur est le chemin sûr ;
+3. **les commandes se collent une par une.** Deux lignes collées ensemble se
+   sont concaténées en `git pull npm run qa:setup`, et git a cherché un dépôt
+   distant nommé « npm ».

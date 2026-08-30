@@ -348,6 +348,16 @@
 <p><strong>1. <code>qa:setup</code> mourait sur « permission denied for schema public ».</strong> La première version enchaînait <code>db:migrate:local &amp;&amp; db:seed:local</code>, qui lisent tous deux <code>DATABASE_URL</code> — c'est-à-dire le rôle <strong>applicatif</strong>, celui qui n'a aucun droit de DDL, ici comme en production. Les migrations exigent le rôle propriétaire. <code>scripts/qa-setup.mjs</code> le pose, et explique pourquoi l'inverse — migrer sous un superutilisateur — est <em>pire</em>, parce qu'il réussit et ne se paie qu'à la suite suivante, ailleurs.</p>
 <p><strong>Le même défaut dort dans <code>dev:setup</code></strong>, pour l'environnement de tous les jours : sur un volume Docker neuf, il échoue à l'identique. Noté dans <code>TODO.md</code>, pas corrigé ici.</p>
 <p><strong>2. <code>.env.qa.example</code> était écarté par <code>.gitignore</code>.</strong> La règle <code>.env*</code> n'exceptait que <code>.env.example</code>. Le gabarit dont tout l'intérêt est de survivre à un <code>down -v</code> aurait disparu en silence, et l'on aurait recomposé de mémoire un fichier fait pour ne pas dépendre de la mémoire.</p>
+<p><strong>3. <code>qa:setup</code> ne pouvait pas démarrer sous Windows — et il accusait la base.</strong> Trouvé sur SA machine, et <strong>introuvable ici</strong> : depuis Node 18.20 / 20.12 (durcissement après CVE-2024-27980), <code>spawnSync</code> <strong>refuse</strong> de lancer un <code>.cmd</code> ou un <code>.bat</code> sans <code>shell: true</code>. Il ne lève pas d'exception : il rend un <code>error</code> et un <code>status</code> à <code>null</code>.</p>
+<p>Le script ne testait que <code>status !== 0</code>. Résultat : <code>null !== 0</code> est vrai, et il annonçait</p>
+<p>❌ Migrations a échoué — ce qu'elle attrape : un schéma en retard sur le code</p>
+<p><strong>sans afficher une seule ligne</strong>, devant une base parfaitement saine et des conteneurs qui venaient de démarrer. C'est exactement la faute que ce dépôt nomme : <em>une erreur qui accuse à tort coûte plus cher que pas d'erreur du tout</em>.</p>
+<p>Deux corrections, et la seconde vaut la première :</p>
+<ul>
+<li>le lancement passe par l'exécutable Node courant et le CLI de <code>tsx</code> par son chemin de fichier — le chemin que <code>scripts/run-e2e-tests.ts</code> suivait déjà. Ni <code>.cmd</code>, ni interpréteur et ses règles de citation, identique sur les trois systèmes. (<code>shell: true</code> aurait suffi ; il ajoute une couche pour rien.) ;</li>
+<li><strong><code>r.error</code> se lit AVANT <code>r.status</code></strong>, et son message porte la version de Node et le système — puisque c'est de là que venait la panne.</li>
+</ul>
+<p><strong>La leçon, et elle vaut pour toute la campagne à venir :</strong> ce dépôt tourne sur Linux ; le patron travaille sur Windows. Un script d'outillage éprouvé ici n'est pas éprouvé chez lui. <code>AGENTS.md</code> le dit déjà pour le réseau et pour Docker — c'est vrai aussi du <strong>système d'exploitation</strong>.</p>
 <hr>
 <h2 id="ce-qui-na-pas-pu-être-éprouvé-ici-et-où-le-faire">Ce qui n'a PAS pu être éprouvé ici, et où le faire</h2>
 <a class="retour" href="#sommaire">↑ Sommaire</a>
@@ -382,6 +392,54 @@
 </tr>
 </tbody></table></div>
 <p>C'est donc <code>npm run qa:up</code> qui reste à confirmer sur ta machine — et <code>npm run qa:preuve</code> le dira sans ambiguïté : sans conteneur debout, il rougit sur « Base joignable ».</p>
+<hr>
+<h2 id="parcouru-en-entier-sur-sa-machine--30-août-2026">Parcouru en entier sur SA machine — 30 août 2026</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p>La séquence a été jouée du premier geste au dernier sur son PC (Windows 10, PowerShell, VS Code), et pas seulement décrite. Ce que ça a donné :</p>
+<div class="tablewrap"><table><thead><tr>
+<th>Étape</th>
+<th>Résultat</th>
+</tr></thead><tbody>
+<tr>
+<td>worktree <code>Atlas-qa</code> sur <code>qa/campagne</code></td>
+<td>✅</td>
+</tr>
+<tr>
+<td><code>npm install</code></td>
+<td>✅</td>
+</tr>
+<tr>
+<td>Docker Desktop</td>
+<td><strong>absent au départ</strong> — installé en 4.88.1, backend WSL-2</td>
+</tr>
+<tr>
+<td><code>npm run qa:up</code></td>
+<td>✅ <code>up 4/4</code> — volume, réseau, <code>atlas-qa-redis</code>, <code>atlas-qa-postgres</code></td>
+</tr>
+<tr>
+<td><code>cp .env.qa.example .env</code></td>
+<td>✅</td>
+</tr>
+<tr>
+<td><code>npm run qa:setup</code></td>
+<td>❌ puis ✅ après correction (défaut 3 ci-dessus) — 84 migrations, <code>Base d'essai reconnue : atlas_qa</code></td>
+</tr>
+<tr>
+<td><code>npm run qa:preuve</code></td>
+<td>✅ <strong>QA : 15/15 — VERT</strong></td>
+</tr>
+<tr>
+<td><code>npm run dev</code></td>
+<td>✅ écran de connexion servi sur <code>localhost:3000</code></td>
+</tr>
+</tbody></table></div>
+<p><strong>Le worktree est confirmé par le contrôle lui-même</strong>, et pas par le nom du dossier : <code>Atlas-qa</code> d'un côté, <code>atlas-app</code> de l'autre, deux <code>.git</code> distincts.</p>
+<p><strong>Trois obstacles à connaître pour la prochaine machine</strong>, tous rencontrés :</p>
+<ol>
+<li><strong>Docker Desktop peut être installé dans le dossier utilisateur</strong> (<code>%LOCALAPPDATA%\Programs\DockerDesktop</code>) et non dans <code>Program Files</code>. Un test sur ce dernier chemin rend un faux « pas installé » ;</li>
+<li><strong><code>winget</code> n'existe pas sur toutes les installations de Windows 10.</strong> Le téléchargement direct de l'installateur est le chemin sûr ;</li>
+<li><strong>les commandes se collent une par une.</strong> Deux lignes collées ensemble se sont concaténées en <code>git pull npm run qa:setup</code>, et git a cherché un dépôt distant nommé « npm ».</li>
+</ol>
 </main>
 </body>
 </html>
