@@ -47,6 +47,7 @@ noir sur blanc, comme le demande `CLAUDE.md` §2 bis.
 | `11-libelles-du-devis.md` | affichage | pourquoi le client relisait deux fois ses mesures, et pourquoi nettoyer le libellé stocké aurait cassé le prix |
 | `12-rediger-plutot-qu-assembler.md` | rédaction | ce qui décide de l'ordre des mots quand un tiret réunit un sujet et un geste |
 | `13-nature-declaree-et-accord.md` | robustesse | la tournure qui vient d'une donnée déclarée, et l'article qui ne se devine plus |
+| `14-questions-deja-repondues.md` | test téléphone | pourquoi Atlas redemandait ce qu'il savait, et un second défaut qui n'en était pas un |
 
 **Le dossier 07 remplace les six premiers.** Ils restent comme le chemin
 parcouru — un instantané ne se corrige pas, `CLAUDE.md` §2 bis — mais ce qui
