@@ -250,13 +250,17 @@ sa réponse (`CLAUDE.md` §3 bis).
   chiffre à donner**, plus un second chiffre pour la largeur du bouton « Je
   rédige mon devis ». **Non codée.**
 
-  **Trois points sont DÉJÀ tranchés par lui, le 30 août :** l'anneau
-  **disparaît** dès qu'on appuie (*« il doit ensuite disparaître pour laisser
-  place à la modification »* — une proposition qui le gardait au centre a été
-  retirée), le bouton du bas devient **secondaire**, libellé « Je rédige à la
+  **Deux points sont DÉJÀ tranchés par lui, le 30 août :** le bouton du bas
+  devient **secondaire**, libellé « Je rédige à la
   main » (*« l'idée c'est qu'il utilise en priorité la note vocale »* — le seul
   aplat plein de l'écran est le rond d'envoi), et **tout tient sur un écran**
   (*« ne doit pas décoller vers le bas pour accéder aux autres informations »*).
+
+  **Sa règle « l'anneau doit disparaître » N'A PAS retiré la proposition qui le
+  garde au centre — pas définitivement.** Elle l'a fait sortir le 30 août, puis
+  il a demandé à pouvoir *« essayer tous ceux »* qu'on lui avait montrés, et
+  elle est revenue telle quelle. Ne pas la retirer de nouveau au nom de cette
+  règle : c'est son choix final qui tranchera.
 
   **Ce dernier point commande la mise en page du code à venir**, et il est
   fragile : l'écran est passé de 960 à 631 px. Quatre intitulés ont dû partir —

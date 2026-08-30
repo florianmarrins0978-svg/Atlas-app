@@ -14,13 +14,15 @@
   ───────────────────────────────────────────────────────────────────────────
   CE QUE CE CONTRÔLE TIENT, ET POURQUOI CHAQUE POINT EST LÀ.
 
-  1. **Au repos, l'anneau et rien d'autre** — et à l'appui, **l'anneau
-     DISPARAÎT**. Sa règle du 30 août : *« lorsque je clique sur le bouton note
-     vocale, il doit ensuite disparaître pour laisser place à la modification »*.
-     C'est ce qui a fait retirer une troisième proposition, où l'anneau restait
-     au centre. Le contrôle le tient pour que personne ne la remette.
+  1. **Au repos, l'anneau et rien d'autre.** Trois boutons visibles avant qu'on
+     ait parlé, ce serait trois questions posées à quelqu'un qui n'a rien dit.
 
-  2. **Les DEUX gestes qu'il a nommés existent dans les deux propositions** :
+     **L'anneau du REPOS s'efface dans les trois propositions** — y compris la
+     2, où un anneau reprend sa place mais devient le carré d'arrêt. Ce n'est
+     donc pas ce contrôle qui arbitre sa règle du 30 août (*« il doit ensuite
+     disparaître »*) : c'est lui, en manipulant les trois.
+
+  2. **Les DEUX gestes qu'il a nommés existent dans les trois propositions** :
      jeter, et envoyer. C'est le cœur de sa demande, et une proposition qui
      n'en porterait qu'un ne serait pas une proposition.
 
@@ -149,10 +151,10 @@ dire(
 
 // ── 2. Les deux propositions portent les MÊMES gestes ──────────────────────
 dire(
-  (await page.locator(".onglets button[data-variante]").count()) === 2,
-  "deux propositions, pas trois — celle où l'anneau restait au centre contredit sa règle"
+  (await page.locator(".onglets button[data-variante]").count()) === 3,
+  "les trois propositions sont essayables — il a demandé à toutes les manipuler"
 );
-for (const variante of ["1", "2"]) {
+for (const variante of ["1", "2", "3"]) {
   console.log(`\n  ── Proposition ${variante} ──`);
   await ouvrirLa(variante);
 
@@ -201,8 +203,8 @@ for (const variante of ["1", "2"]) {
 
   // ── La pause : présente en 1 et 2, absente en 3 (il ne l'a pas demandée) ──
   const pause = page.locator(`${vue} [data-pause]`);
-  if (variante === "2") {
-    dire((await pause.count()) === 0, "2 · pas de pause — un bouton de moins sous le pouce");
+  if (variante === "3") {
+    dire((await pause.count()) === 0, "3 · pas de pause — un bouton de moins sous le pouce");
   } else {
     dire(await pause.isVisible(), `${variante} · la pause est là, comme sur sa capture`);
     await pause.click();
@@ -401,7 +403,7 @@ for (const hauteur of [700, 667]) {
   const vue = await navigateur.newContext({ viewport: { width: 390, height: hauteur } });
   const petit = await vue.newPage();
   await petit.goto(`file://${CIBLE}`, { waitUntil: "networkidle" });
-  for (const variante of ["1", "2"]) {
+  for (const variante of ["1", "2", "3"]) {
     await petit.click(`.onglets button[data-variante="${variante}"]`);
     await petit.waitForTimeout(80);
     const auRepos = await petit.evaluate(() => document.documentElement.scrollHeight);
@@ -439,4 +441,4 @@ if (plaintes.length) {
   plaintes.forEach((p) => console.error(`   · ${p}`));
   process.exit(1);
 }
-console.log("✓ La planche tient : tout entre dans un écran sans défiler, l'anneau disparaît, jeter ne mène nulle part, l'avion mène au devis, et le seul plein de l'écran est le rond d'envoi.");
+console.log("✓ La planche tient : les trois propositions s'essaient, tout entre dans un écran sans défiler, jeter ne mène nulle part, l'avion mène au devis, et le seul plein de l'écran est le rond d'envoi.");

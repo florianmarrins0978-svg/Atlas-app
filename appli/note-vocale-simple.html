@@ -32,21 +32,24 @@
   choix. C'est exactement ce qu'il demande, et c'est un garde-fou, pas un décor.
 
   ───────────────────────────────────────────────────────────────────────────
-  DEUX FAÇONS DE LE POSER — il en choisit une, rien n'est codé.
-
-  **L'ANNEAU DISPARAÎT DANS LES DEUX, et c'est sa règle**, posée le 30 août :
-  *« lorsque je clique sur le bouton note vocale, il doit ensuite disparaître
-  pour laisser place à la modification de la note vocale »*. Une troisième
-  proposition existait — l'anneau restait au centre entre la poubelle et
-  l'avion — et cette phrase la condamne : elle a été retirée, plutôt que
-  laissée dans la planche où elle lui aurait coûté un aller-retour.
+  TROIS FAÇONS DE LE POSER — il en choisit une, rien n'est codé.
 
     1 · LA BARRE      — une barre prend la place de l'anneau. Deux rangées,
                         comme sa capture : chrono et onde en haut,
                         poubelle · pause · envoi en dessous.
-    2 · AU PLUS COURT — une seule capsule : poubelle, chrono, onde, envoi.
+    2 · L'ANNEAU      — l'anneau reste au centre et devient le carré d'arrêt ;
+                        la poubelle vient à sa gauche, l'avion à sa droite.
+    3 · AU PLUS COURT — une seule capsule : poubelle, chrono, onde, envoi.
                         Pas de pause — il ne l'a pas demandée, et c'est un
                         bouton de moins sous le pouce.
+
+  **LA 2 A ÉTÉ RETIRÉE, PUIS REMISE — et il faut savoir pourquoi.** Sa règle du
+  30 août — *« lorsque je clique sur le bouton note vocale, il doit ensuite
+  disparaître pour laisser place à la modification »* — la condamnait, et elle
+  est donc partie le jour même. Il l'a redemandée dans la foulée : *« je veux
+  pouvoir essayer tous ceux que tu m'as proposés »*. Elle revient telle quelle,
+  sans être maquillée pour se conformer : c'est en la manipulant qu'il verra si
+  sa règle tient, et un choix qu'on lui retire n'est pas un choix.
 
   ───────────────────────────────────────────────────────────────────────────
   ET LE BOUTON DU BAS PASSE EN SECONDAIRE.
@@ -324,15 +327,22 @@ form{padding:6px 24px 0;display:flex;flex-direction:column;gap:7px}
 .barre .haut{display:flex;align-items:center;gap:12px;min-height:24px}
 .barre .bas{display:flex;align-items:center;justify-content:space-between;margin-top:6px}
 
-/* **UNE PROPOSITION A ÉTÉ RETIRÉE, ET C'EST LUI QUI L'A TRANCHÉE.**
-   Il y en avait une troisième : l'anneau RESTAIT au centre et devenait le
-   carré d'arrêt, la poubelle à sa gauche, l'avion à sa droite. Sa phrase du
-   30 août la condamne — *« lorsque je clique sur le bouton note vocale, il
-   doit ensuite DISPARAÎTRE pour laisser place à la modification »*. Une
-   planche qui laisserait le choix entre deux dessins dont un contredit sa
-   consigne lui ferait perdre le temps de le découvrir. */
+/* 2 · L'ANNEAU RESTE — poubelle, anneau, avion sur une ligne. */
+.trio{display:flex;align-items:center;justify-content:center;gap:24px;width:100%}
+.trio .atlas-lecteur{width:auto}
+.sous-trio{display:flex;align-items:center;gap:12px;width:100%;margin-top:6px;padding:0 4px}
+.carre-stop{width:17px;height:17px;border-radius:3px;background:var(--or)}
+/* **Les ailes de l'anneau sont retirées ICI, et c'est mesuré, pas choisi au
+   goût.** Elles font 104 px de large et partent à 40 px du centre ; les deux
+   boutons commencent à 62 px. Les barreaux passaient donc SOUS la poubelle et
+   sous l'avion — ils ne prennent pas le doigt, mais on lisait une bouillie.
+   Le mouvement n'est pas perdu : l'onde qui se déroule est juste en dessous,
+   et le carré d'arrêt respire. */
+#v2 .atlas-aile{display:none}
+#v2 [data-lit="oui"] .carre-stop{animation:respirer 1.7s ease-in-out infinite}
+@keyframes respirer{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(.86);opacity:.72}}
 
-/* 2 · AU PLUS COURT — une capsule, quatre choses dedans. */
+/* 3 · AU PLUS COURT — une capsule, quatre choses dedans. */
 .capsule{display:flex;align-items:center;gap:12px;width:100%;background:var(--cream);
          border-radius:99px;padding:8px 8px 8px 10px;box-shadow:inset 0 0 0 1px var(--line-soft)}
 .capsule .envoyer{width:44px;height:44px}
@@ -396,7 +406,8 @@ form{padding:6px 24px 0;display:flex;flex-direction:column;gap:7px}
 
   <nav class="onglets" aria-label="Les écrans de la maquette">
     <button type="button" data-variante="1" aria-pressed="true">1 · La barre</button>
-    <button type="button" data-variante="2" aria-pressed="false">2 · Au plus court</button>
+    <button type="button" data-variante="2" aria-pressed="false">2 · L’anneau</button>
+    <button type="button" data-variante="3" aria-pressed="false">3 · Au plus court</button>
     <button type="button" data-va="largeur" aria-pressed="false">Largeur</button>
   </nav>
 
@@ -489,8 +500,29 @@ form{padding:6px 24px 0;display:flex;flex-direction:column;gap:7px}
           </div>
         </div>
 
-        <!-- 2 · AU PLUS COURT -->
-        <div class="capsule" id="v2" hidden>
+        <!-- 2 · L'ANNEAU RESTE AU CENTRE -->
+        <div style="width:100%" id="v2" hidden>
+          <div class="trio">
+            <button class="geste jeter" type="button" data-jeter aria-label="Supprimer la note"></button>
+            <div class="atlas-lecteur" data-lit="oui" data-anneau-vif>
+              <span class="atlas-aile atlas-aile-g" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span>
+              <span class="atlas-aile atlas-aile-d" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span>
+              <button class="atlas-anneaux" type="button" data-pause data-anneau-pause aria-label="Mettre en pause">
+                <span data-cercle style="width:74px;height:74px;border:1.5px solid var(--pine)"></span>
+                <span data-cercle style="width:56px;height:56px;border:1px solid var(--or)"></span>
+                <span class="carre-stop" aria-hidden="true"></span>
+              </button>
+            </div>
+            <button class="geste envoyer" type="button" data-envoyer aria-label="Envoyer la note"></button>
+          </div>
+          <div class="sous-trio">
+            <span class="chrono"><span class="pastille"></span><span data-chrono>0:00</span></span>
+            <span class="onde" data-onde aria-hidden="true"></span>
+          </div>
+        </div>
+
+        <!-- 3 · AU PLUS COURT -->
+        <div class="capsule" id="v3" hidden>
           <button class="geste jeter" type="button" data-jeter aria-label="Supprimer la note"></button>
           <span class="chrono"><span class="pastille"></span><span data-chrono>0:00</span></span>
           <span class="onde" data-onde aria-hidden="true"></span>
@@ -540,10 +572,15 @@ form{padding:6px 24px 0;display:flex;flex-direction:column;gap:7px}
       </div>
     </div>
 
+    <!-- **Sa question du 30 août, et elle méritait d'être posée :** *« la page
+         que tu m'as mise en visuel, c'est juste pour le test ? »* Oui — et
+         l'écran devait le dire lui-même, sans quoi il se demanderait si Atlas
+         va lui fabriquer un devis de démonstration. -->
     <div class="note">
-      <span class="titre">Ce que l’envoi a fait</span>
-      L’appui sur l’avion a <b>tout enregistré</b> et vous a posé ici. Vous n’avez annoncé
-      aucun montant : les prix vous attendent, Atlas n’en invente pas.
+      <span class="titre">Ceci est un exemple</span>
+      Dans l’application, l’avion ouvre <b>votre vrai devis</b>, déjà rempli avec ce que vous
+      venez de dicter. Vous n’avez annoncé aucun montant : les prix vous attendent,
+      Atlas n’en invente pas.
     </div>
   </section>
 
@@ -603,7 +640,9 @@ const ICONES = {
   envoyer: '<svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M20.5 3.5 10.6 13.4"/><path d="M20.5 3.5 14.2 21a.6.6 0 0 1-1.1.05l-3-6.6-6.6-3a.6.6 0 0 1 .05-1.1z"/></svg>',
 };
 $$("[data-jeter]").forEach((b) => (b.innerHTML = ICONES.jeter));
-$$("[data-pause]").forEach((b) => (b.innerHTML = ICONES.pause));
+// L'anneau de la proposition 2 est déjà dessiné — il garde son visage, on ne
+// lui pose pas l'icône de pause par-dessus.
+$$("[data-pause]:not([data-anneau-pause])").forEach((b) => (b.innerHTML = ICONES.pause));
 $$("[data-envoyer]").forEach((b) => (b.innerHTML = ICONES.envoyer));
 
 /* ─── Les onglets ─────────────────────────────────────────────────────── */
@@ -685,11 +724,12 @@ function reposer() {
   $("#anneau").hidden = false;
   $("#anneau").dataset.lit = "non";
   $("#dicter").setAttribute("aria-pressed", "false");
-  ["#v1", "#v2"].forEach((s) => { $(s).hidden = true; $(s).classList.remove("apparait"); });
+  ["#v1", "#v2", "#v3"].forEach((s) => { $(s).hidden = true; $(s).classList.remove("apparait"); });
   $("#attente").hidden = true;
   $$("[data-onde]").forEach((o) => (o.innerHTML = ""));
   $$("[data-chrono]").forEach((c) => (c.textContent = "0:00"));
-  $$("[data-pause]").forEach((b) => (b.innerHTML = ICONES.pause));
+  $$("[data-pause]:not([data-anneau-pause])").forEach((b) => (b.innerHTML = ICONES.pause));
+  $$("[data-anneau-vif]").forEach((a) => (a.dataset.lit = "oui"));
   $("#indice").textContent = "Appuyez et décrivez le chantier";
 }
 
@@ -764,7 +804,10 @@ function basculerPause() {
     }, 1000);
     dessiner();
   }
-  $$("[data-pause]").forEach((b) => (b.innerHTML = enPause ? ICONES.reprendre : ICONES.pause));
+  $$("[data-pause]:not([data-anneau-pause])").forEach((b) => (b.innerHTML = enPause ? ICONES.reprendre : ICONES.pause));
+  // Dans la proposition 2, c'est l'anneau lui-même qui dit la pause : son onde
+  // s'arrête et le carré cesse de respirer.
+  $$("[data-anneau-vif]").forEach((a) => (a.dataset.lit = enPause ? "non" : "oui"));
 }
 
 /**
@@ -777,7 +820,7 @@ function basculerPause() {
  */
 function envoyer() {
   clearInterval(horloge); clearInterval(dessin); horloge = dessin = null;
-  ["#v1", "#v2"].forEach((s) => ($(s).hidden = true));
+  ["#v1", "#v2", "#v3"].forEach((s) => ($(s).hidden = true));
   $("#attente").hidden = false;
   $("#indice").textContent = "";
   zone.dataset.etat = "envoi";
