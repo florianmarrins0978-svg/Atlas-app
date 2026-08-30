@@ -21,11 +21,18 @@ const BASE = "http://localhost:3000";
 //
 // Ce que cette suite tient :
 //
-//   1. l'anneau est là **dès l'arrivée**, sur un chantier vide, sans qu'on ait
-//      touché quoi que ce soit ;
-//   2. un appui dicte, un second enregistre — et la note existe vraiment ;
-//   3. l'anneau redevient alors le lecteur, au même endroit ;
-//   4. **la bulle de l'assistant ne recouvre rien.** Remonter l'anneau au centre
+//   1. le geste de dictée est là **dès l'arrivée**, sur un chantier vide, sans
+//      qu'on ait touché quoi que ce soit ;
+//   2. un appui dicte, l'avion envoie — et la note existe vraiment ;
+//   3. l'objet redevient alors le lecteur, au même endroit ;
+//   4. **la bulle de l'assistant ne recouvre rien.**
+//
+// **Le DESSIN a changé le 30 août 2026, la règle non.** Le repos est le disque
+// plein qu'il a choisi (repos B) et non plus l'anneau creux ; l'arrêt n'envoie
+// plus — l'avion le fait, la poubelle jette. Ce contrôle vise donc les marques
+// stables (`data-atlas`) partout où il le peut : une assertion écrite sur une
+// classe de dessin réclame demain ce qu'il aura fait retirer (`CLAUDE.md`
+// §5 bis). Remonter l'anneau au centre
 //      a poussé « ou rédiger le devis à la main » sous la bulle : le lien
 //      existait, il était touchable, et il était illisible. Vu en capture, et
 //      seulement là — c'est le troisième défaut de cette sorte sur ce dépôt.
@@ -79,7 +86,7 @@ async function main() {
   await page.goto(fiche, { waitUntil: "networkidle" });
 
   const anneau = page.locator('[data-atlas="anneau-note-vocale"]');
-  const bouton = anneau.locator(".atlas-anneaux");
+  const bouton = anneau.locator(".atlas-micro");
   const consigne = page.locator(".atlas-indice").first();
 
   await cas("l'anneau est là dès l'arrivée, sur un chantier vide", async () => {
@@ -129,18 +136,29 @@ async function main() {
     }
   });
 
-  await cas("un appui dicte, un second enregistre — et la note existe", async () => {
+  await cas("un appui dicte, l'avion envoie — et la note existe", async () => {
     await bouton.click();
     await page.waitForTimeout(700);
-    assert.match(
-      (await consigne.textContent())?.trim() ?? "",
-      /arrêter/i,
-      "l'anneau ne dit pas qu'il enregistre : rien ne distingue une dictée en cours d'un bouton inerte"
-    );
-    assert.ok(await page.locator(".atlas-chrono").isVisible(), "le compteur ne tourne pas pendant la dictée");
+    // **Ce qui distingue une dictée en cours d'un bouton inerte a changé de
+    // forme, pas de fonction.** L'indice ne dit plus « arrêter » — il
+    // disparaît, et ce sont la poubelle, l'avion et le compteur qui naissent.
+    // Trois signes valent mieux qu'une phrase, et il n'a plus à la lire.
+    for (const [quoi, sel] of [
+      ["la poubelle", '[data-atlas="dictee-jeter"]'],
+      ["l'avion", '[data-atlas="dictee-envoyer"]'],
+      ["le compteur", ".atlas-compteur"],
+    ] as const) {
+      assert.ok(
+        await page.locator(sel).isVisible(),
+        `${quoi} ne paraît pas pendant la dictée : rien ne la distingue d'un bouton inerte`
+      );
+    }
 
     await page.waitForTimeout(2200);
-    await bouton.click();
+    // **L'avion, et non plus le second appui sur l'objet** : celui-ci met en
+    // pause désormais. C'est sa demande du 30 août — arrêter ne doit plus
+    // envoyer.
+    await page.locator('[data-atlas="dictee-envoyer"]').click();
 
     // La fiche se rafraîchit sur place : l'anneau devient le lecteur.
     await page.waitForFunction(

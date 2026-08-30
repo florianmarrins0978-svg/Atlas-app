@@ -18457,7 +18457,153 @@ deux cartes voisines du même écran. La différence était vraie dans le code e
 invisible au doigt : elle ne faisait que demander laquelle des deux range
 vraiment. Un seul libellé, et ce qui se passe dessous reste l'affaire du dépôt.
 
-## 211. Quatre rôles, des capacités, et pourquoi aucune ne s'écrit par la négative
+---
+
+## 211. La note vocale à la messagerie, et la fiche qui tient dans un écran
+
+*30 août 2026 — `appli/note-vocale-choix.html`, `AnneauNoteVocale.tsx`,
+`magnetophone.ts`, `FormulaireNouveauChantier.tsx`.*
+
+### Un objet qui ne change jamais de forme, seulement de signe
+
+Le repos est un disque plein, son micro, et deux ondes de 1,5 cm. Dès qu'on
+parle, la poubelle naît à sa gauche, l'avion à sa droite, et le micro devient un
+carré d'arrêt — **le disque, lui, ne bouge pas**. C'est sa règle : *« il ne doit
+pas changer de visage »*. Deux formes pour un même geste se liraient comme deux
+boutons, et il faudrait regarder avant de viser.
+
+**Les ondes de repos s'effacent dès qu'on appuie, et c'est de la géométrie, pas
+un goût.** Chaque aile occupe 1,5 cm plus 9 px d'écart, soit 66 px de part et
+d'autre du disque ; la poubelle et l'avion, eux, ne peuvent se poser qu'à une
+vingtaine de pixels — la largeur d'un téléphone ne laisse pas le choix. Les
+barreaux passaient donc par-dessus les deux gestes, à l'endroit exact où il faut
+viser. Le mouvement n'est pas perdu : l'onde qui se déroule sous le trio le
+porte, avec le chrono.
+
+### Suspendre n'est pas arrêter, et jeter n'est pas cacher
+
+`MediaRecorder.pause()` garde les morceaux déjà captés et la session ouverte :
+la reprise poursuit **le même fichier**. Arrêter puis redémarrer produirait deux
+enregistrements dont le second écraserait le premier — la moitié de ce qu'il a
+dit, perdue sans qu'il le sache.
+
+Jeter relâche le micro **et oublie les morceaux**. Masquer l'écran sans vider le
+tampon laisserait une note rejetée partable par mégarde au geste suivant.
+
+Le compteur s'arrête aussi en pause : sinon il compterait un silence que la note
+ne contient pas, et l'on croirait avoir dicté trois minutes là où il y en a une.
+
+### Le niveau se MESURE, il ne s'anime pas
+
+L'onde lit le micro pour de bon (`AnalyserNode`, écart quadratique moyen autour
+du zéro — le volume perçu, pas le pic, qui ferait sauter l'onde sur un
+claquement). **Rien n'est rebranché vers la sortie**, contrairement à la
+lecture : renvoyer le micro vers les haut-parleurs ferait un larsen sur un
+chantier. On écoute pour mesurer, pas pour entendre.
+
+### Le bouton disparaît, il ne se grise pas
+
+*« Le bouton "Je rédige à la main" disparaît pour ne plus avoir de confusion
+possible. »* Un bouton éteint reste un bouton : on l'appuie, il ne répond pas,
+et l'on croit l'écran cassé. Sa place n'est pas réservée non plus — il est le
+dernier de l'écran, donc rien au-dessus ne bouge, et la page se raccourcit sans
+que rien ne saute sous le doigt.
+
+### Ce qui fait glisser un écran de droite à gauche, et qui n'est jamais évident
+
+Deux causes sur cette fiche, aucune visible à l'œil :
+
+| | |
+|---|---|
+| un `<input>` en `flex-shrink-0` sans `flex-1` | il garde sa largeur naturelle — 273 px — et pousse son voisin hors de l'écran |
+| une pleine largeur en `-mx-[26px]` sur un écran à `px-6` | deux pixels de débordement de chaque côté |
+
+Dans les deux cas, le viewport de mise en page s'élargit lui-même pour contenir
+ce qui dépasse : **comparer `scrollWidth` à `innerWidth` rend alors « aucun
+défilement » sur un écran qui se balade bel et bien.** On compare au bord du
+cadre, et l'on éprouve le glissement en poussant la page de 60 px — c'est ce que
+fait son pouce.
+
+### Mesurer une feuille, ce n'est pas mesurer une page
+
+La fiche client s'ouvre **en feuille** : un bloc `fixed` qui occupe l'écran et
+défile en lui-même. Trois erreurs de mesure en découlent, toutes payées le
+30 août 2026 :
+
+1. **ouvrir `/chantiers/nouveau` en page** — un écran qu'il ne voit jamais, et
+   200 px de talon qui n'existent pas dans son parcours ;
+2. **mesurer `document.documentElement`** — sa hauteur ne bouge pas d'un pixel
+   pendant que la moitié basse de la feuille est sous le pli ;
+3. **chercher « le bas de ce qui est dessiné » dans la feuille entière** — le
+   cadre qui défile l'occupe entièrement, donc ce bas tombe toujours pile sur le
+   bas de l'écran et « vide en bas : aucun » sort en vert **quoi qu'il arrive**.
+
+La troisième est la plus dangereuse : c'est un contrôle qui ne peut pas rougir.
+`scripts/capture-dictee-fiche-client.mts` mesure désormais **le cadre**, entre
+par le parcours du patron, et accepte `HAUTEUR=` pour qu'on puisse le voir
+échouer.
+
+### Un écran se resserre avec les mesures de SA planche, pas avec les nôtres
+
+La fiche débordait de 492 px. Le premier réflexe — rogner au jugé — a produit
+des valeurs inventées (46 px de case, 66 px de carré photo, 10 px de pastille).
+La planche qu'il a validée, `appli/note-vocale-choix.html`, **portait déjà ces
+mesures, et plus serrées** : 44 px, 58 px, 7 px. Il avait resserré l'écran
+lui-même en le choisissant.
+
+**La règle qui en sort :** quand un écran doit maigrir et qu'une planche validée
+existe, on la relit avant de décider. Inventer des valeurs à côté des siennes,
+c'est fabriquer une seconde vérité de la même page — celle que `CLAUDE.md` §3
+interdit entre l'affichage et la vérification, ici entre la maquette et le code.
+
+### Un intitulé qui redit l'invite du champ coûte vingt-sept pixels
+
+Six intitulés en petites capitales sur cette fiche ; quatre sont partis
+(« E-mail », « Adresse du chantier », « Comment lui envoyer son devis ? »,
+« Photos du chantier »), parce que « bernard@exemple.fr » et « 12 rue des Lilas,
+Nantes » disent déjà tout. **Deux restent** — « Nom du client » et
+« Téléphone » —, parce que sa planche les garde : une case vide de 152 px
+alignée à droite ne dit pas d'elle-même qu'elle attend un numéro.
+
+Ce qui est retiré de l'écran **reste en `aria-label`** : le retirer vraiment
+fermerait la fiche à qui l'écoute.
+
+### Une place réservée qui ne protège rien
+
+Dix-neuf pixels étaient gardés en permanence sous le bouton pour qu'un message
+d'erreur ne fasse pas sauter la mise en page. Cette ligne est la **dernière** de
+l'écran : rien ne la suit, donc rien ne bouge quand elle paraît. Une réserve ne
+se justifie que par ce qu'elle empêche de bouger ; sans rien en dessous, elle
+n'est que du vide permanent.
+
+### Une classe CSS reprise ne casse pas l'écran qu'on regarde — elle casse l'autre
+
+Deux noms ont été pris coup sur coup à des dessins qui existaient déjà :
+
+| Le nom repris | Ce qu'il servait | Ce que l'écrasement produisait |
+|---|---|---|
+| `atlas-souffle` | les trois points de l'attente (sa proposition C du 13 août) | des barreaux de 2 px invisibles |
+| `atlas-aile` | les barreaux du lecteur de note vocale | des ailes en absolu, larges de 1,5 cm |
+
+**Ni l'un ni l'autre n'aurait rougi.** Une feuille de style n'a pas de portée :
+la règle écrite le plus bas gagne, sur TOUS les écrans. Or ces dessins vivent
+sur des écrans que rien ne rapproche — celui qu'on code est juste, et c'est
+l'autre qui casse, ailleurs, sans témoin. Les deux ont été trouvés à la
+relecture du diff.
+
+`scripts/test-classes-atlas-uniques.ts` les refuse désormais : il compare les
+règles de BASE (`.atlas-x {` en début de ligne), laisse passer les sélecteurs
+composés, et **nomme les trois découpes délibérées** plutôt que de rougir pour
+elles — un contrôle qui parle à tort s'apprend à être ignoré.
+
+La classe s'appelle maintenant `atlas-frange`, et la question à se poser avant
+d'en baptiser une autre tient en une ligne :
+
+```bash
+git show HEAD:src/app/globals.css | grep -o "\.atlas-[a-z0-9-]*" | sort -u
+```
+
+## 212. Quatre rôles, des capacités, et pourquoi aucune ne s'écrit par la négative
 
 **Lot du 30 août 2026**, joué avant le déploiement — donc avant le premier
 artisan réel, ce qui était toute la raison de le faire maintenant : *« ce lot
