@@ -131,10 +131,16 @@ async function main() {
     // texte cliquait la explication, aucune option n'était retenue, et le
     // contrôle passait quand même — vert sur une réponse jamais donnée.
     await page.locator("button", { hasText: /^Démontage avec rétention$/ }).click();
-    // Ciblé par son libellé : en recopie littérale, l'écran porte aussi le
-    // champ « longueur de haie », et un sélecteur sur le type remplirait le
-    // mauvais — le contrôle passerait alors au vert sur un diamètre absent.
-    await page.fill('input[aria-label="Quel diamètre ?"]', "70");
+    // Ciblé par le DÉBUT de son libellé, jamais en entier. L'écran porte aussi
+    // le champ « longueur de haie » : un sélecteur sur le type remplirait le
+    // mauvais, et le contrôle passerait au vert sur un diamètre absent. Mais un
+    // libellé recopié en entier fige un mot que le patron peut faire changer —
+    // et il l'a fait : « Quel diamètre ? » est devenu « Quel diamètre fait le
+    // tronc ? » le soir du test téléphone, parce que la question ne disait pas
+    // DE QUOI. La suite a rougi sur du code juste (`CLAUDE.md` §5 bis : on
+    // adapte le contrôle, on ne remet pas le libellé). Le préfixe suffit à
+    // désigner le bon champ et survivra au prochain remaniement.
+    await page.fill('input[aria-label^="Quel diamètre"]', "70");
     // Le libellé du bouton dit la vérité sur ce qui va se passer : « Continuer
     // vers le devis » quand tout est renseigné, « Continuer sans répondre à
     // tout » sinon. Les deux mènent au devis — on vise donc le geste, pas le mot.
