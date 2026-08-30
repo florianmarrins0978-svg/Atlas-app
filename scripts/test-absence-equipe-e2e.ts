@@ -31,7 +31,16 @@ import { pool } from "../src/server/db/client";
 
 const BASE = "http://localhost:3000";
 /** Reconnaissable, et retiré à la fin : aucune autre suite ne doit le lire. */
-const MOTIF = "Déplacement E2E";
+/**
+ * **Un motif NEUF à chaque exécution.** Il était fixe, et c'est une source de
+ * faux rouges : la dernière étape retire la PREMIÈRE absence trouvée puis exige
+ * qu'il n'en reste aucune portant ce motif. Qu'une exécution précédente ait été
+ * interrompue avant son propre retrait — un pilote arrêté, une batterie tuée —
+ * et il en reste deux : on en enlève une, l'autre demeure, et la suite accuse
+ * le code d'un défaut qui n'existe pas. Trouvé le 30 août 2026, exactement
+ * ainsi.
+ */
+const MOTIF = `Déplacement E2E ${Date.now()}`;
 
 let passed = 0;
 let failed = 0;
@@ -227,7 +236,14 @@ async function main() {
     await page.locator(`text=${MOTIF}`).first().waitFor({ state: "visible", timeout: 30_000 });
     await page.getByRole("button", { name: /^Retirer l'absence/ }).first().click();
 
-    for (const essai of [1, 2, 3, 4]) {
+    // **Dix essais, pas quatre.** L'attente montait à 4 s en tout : assez
+    // quand l'écran est déjà compilé, trop court quand l'action serveur se
+    // compile au moment du clic — et la suite accusait alors le retrait de ne
+    // pas s'écrire. On attend le MÊME fait, plus longtemps ; rien n'est
+    // relâché. (30 août 2026, en jouant les suites par groupes : le
+    // préchauffage y est réduit, et les premières visites paient leur
+    // compilation.)
+    for (const essai of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]) {
       await page.waitForTimeout(essai * 400);
       const { rows } = await pool.query(
         `SELECT count(*)::int AS n FROM absences_equipe WHERE motif = $1 AND deleted_at IS NULL`,

@@ -30,11 +30,23 @@ export default function ChampAdresse({
   value,
   onChange,
   apparence = "carte",
+  sansLibelle = false,
 }: {
   label: string;
   placeholder: string;
   value: string;
   onChange: (v: string) => void;
+  /**
+   * L'étiquette ne se DESSINE plus, elle se dit au lecteur d'écran.
+   *
+   * **Sa règle du 25 août 2026** — *« mets le moins de mots possible, retire
+   * les phrases inutiles qui expliquent »* — appliquée le 30 août pour faire
+   * tenir la fiche client dans un écran : « Adresse du chantier » écrit
+   * au-dessus d'une case qui propose déjà « 12 rue des Lilas, Nantes » coûte
+   * vingt-sept pixels et n'apprend rien. Le nom reste, en `aria-label` : le
+   * retirer vraiment fermerait l'écran à qui l'écoute.
+   */
+  sansLibelle?: boolean;
   /**
    * Deux habillages, UNE seule logique de suggestion.
    *
@@ -111,16 +123,27 @@ export default function ChampAdresse({
 
   return (
     <div
-      className={enLigne ? "relative border-b py-[13px]" : "relative flex flex-col gap-1.5"}
+      className={
+        enLigne
+          ? "relative border-b py-[13px]"
+          : sansLibelle
+            ? "relative"
+            : "relative flex flex-col gap-1.5"
+      }
       style={enLigne ? { borderColor: colors.line } : undefined}
     >
-      <label className={enLigne ? "block" : "flex flex-col gap-1.5"} htmlFor={identifiant}>
-        <span
-          className={enLigne ? `mb-[5px] block ${libelleCaps}` : smallCaps}
-          style={{ color: colors.muted }}
-        >
-          {label}
-        </span>
+      <label
+        className={enLigne ? "block" : sansLibelle ? "block" : "flex flex-col gap-1.5"}
+        htmlFor={identifiant}
+      >
+        {!sansLibelle && (
+          <span
+            className={enLigne ? `mb-[5px] block ${libelleCaps}` : smallCaps}
+            style={{ color: colors.muted }}
+          >
+            {label}
+          </span>
+        )}
         <input
           id={identifiant}
           type="text"
@@ -139,6 +162,7 @@ export default function ChampAdresse({
           autoCapitalize="off"
           spellCheck={false}
           role="combobox"
+          aria-label={sansLibelle ? label : undefined}
           aria-expanded={listeVisible}
           aria-autocomplete="list"
           aria-controls={`${identifiant}-liste`}

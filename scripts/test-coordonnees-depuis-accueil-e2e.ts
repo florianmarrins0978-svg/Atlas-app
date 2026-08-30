@@ -159,19 +159,22 @@ async function main() {
     // qu'il venait de faire enlever — on adapte le contrôle, on ne remet pas le
     // mot (`CLAUDE.md` §5 bis). Ce qu'il défend ne change pas : cet écran est
     // bien celui de sa photo, avec SES champs.
-    for (const attendu of [
-      "Nom du client",
-      "Téléphone",
-      "E-mail",
-      "Adresse du chantier",
-      "Ajouter une adresse client différente",
-    ]) {
-      if (!ecran.toUpperCase().includes(attendu.toUpperCase())) {
+    // **On cherche les CASES, plus leurs intitulés** — 30 août 2026. Quatre
+    // intitulés sont partis de cet écran pour qu'il tienne dans une page ; ils
+    // vivent en `aria-label`, donc `getByLabel` les trouve encore. Chercher le
+    // texte dessiné, c'était réclamer ce qu'il a fait retirer, exactement comme
+    // pour « (facultatif) » ci-dessus (`CLAUDE.md` §5 bis). Ce que ce contrôle
+    // défend ne bouge pas : cet écran est celui de sa photo, avec SES champs.
+    for (const attendu of ["Nom du client", "Téléphone", "E-mail", "Adresse du chantier"]) {
+      if ((await page.getByLabel(attendu, { exact: true }).count()) === 0) {
         throw new Error(
-          `« ${attendu} » manque de l'écran d'arrivée — ce n'est pas celui de sa photo.\n      ` +
+          `la case « ${attendu} » manque de l'écran d'arrivée — ce n'est pas celui de sa photo.\n      ` +
             ecran.split("\n").filter((l) => l.trim()).slice(0, 18).join("\n      ")
         );
       }
+    }
+    if (!ecran.includes("Ajouter une adresse client différente")) {
+      throw new Error("le lien vers l'adresse client différente manque de l'écran d'arrivée.");
     }
   });
 

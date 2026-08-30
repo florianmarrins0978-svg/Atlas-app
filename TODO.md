@@ -9,82 +9,44 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
-## ✅ SES TROIS CHOIX SONT FAITS — et une planche les réunit (30 août 2026)
+## ✅ LA NOTE VOCALE EST CODÉE — ses trois choix, dans l'application (30 août 2026)
 
-*« Pour la largeur le 4. Ensuite le 2, l'anneau. Et le B, le micro, mais avec
-des petites ondes de chaque côté, 1,5 cm max de chaque côté. »*
+*« Très bien, code exactement ça ! Réfère-toi à cette page une fois que tu auras
+fini pour être sûr que tu n'as rien oublié. »*
 
-`appli/note-vocale-choix.html`, éprouvée par
-`scripts/verifier-maquette-note-vocale-choix.mjs`.
+`appli/note-vocale-choix.html` portée dans `src/`, et la fiche client resserrée
+pour tenir dans un écran. Le compte-rendu qui lui est destiné :
+`docs/note-vocale-messagerie.md`.
 
-| | |
+| Son choix | Ce qui est codé |
 |---|---|
-| largeur du bouton | **66 %** |
-| geste pendant la dictée | l'objet **reste au centre**, poubelle à gauche, avion à droite |
-| repos | le **micro plein**, deux ondes de **1,5 cm au plus** de chaque côté |
-| et, tranché plus tôt | « Je rédige à la main » **disparaît** dès l'appui, revient si l'on jette |
+| largeur du bouton : **4** | `part="66%"` sur `PrimaryButton`, secondaire |
+| geste : **2** | l'objet reste au centre, poubelle à gauche, avion à droite |
+| repos : **B** + ondes | disque plein, deux ailes de **1,5 cm** qui s'effacent dès qu'on parle |
+| le bouton disparaît à l'appui | `dicteeEnCours` — retiré, jamais grisé |
+| tout sur une page | 604 px de feuille pour 601 de contenu |
+| pas de vide en bas | 3 px au repos |
+| plus de glissement latéral | deux causes trouvées, les deux corrigées |
 
-**Une seule chose reste à lui demander**, et elle est écrite dans la planche :
-pendant la dictée, le disque plein reste et son micro devient un carré d'arrêt.
+**Le point qui restait ouvert s'est tranché tout seul, et il faut le savoir :**
+pendant la dictée, le disque plein RESTE et son micro devient un carré d'arrêt.
 Sa proposition 2 parlait de « l'anneau », mais elle le gardait parce que le
-repos ÉTAIT l'anneau — ce qui n'est plus le cas. **Ne pas coder avant sa
-confirmation sur ce point.**
+repos ÉTAIT l'anneau — ce qui n'est plus le cas depuis qu'il a choisi B. C'est
+la lecture retenue dans la planche qu'il a validée, et c'est elle qui est codée.
+**S'il voulait l'autre — le disque cède la place à un anneau creux —, cela se
+refait en deux minutes** (`.atlas-micro` et `.atlas-carre-stop` dans
+`globals.css`).
 
----
-
-## ⏳ SA RÉPONSE ATTENDUE — le dessin de la note vocale au repos (30 août 2026)
-
-`appli/note-vocale-au-repos.html`, éprouvée par
-`scripts/verifier-maquette-note-vocale-au-repos.mjs`. **Un chiffre attendu :**
-A (l'anneau d'aujourd'hui), B (micro plein), C (barre d'invitation),
-D (anneau au micro) ou E (onde à plat).
-
-**Ce qui n'est PAS une question, et qui est déjà fait dans les cinq :** dès
-qu'on appuie, **« Je rédige à la main » disparaît** — *« pour ne plus avoir de
-confusion possible »* —, et il revient si l'on jette la note. Il l'a tranché
-sans vouloir de proposition. **Au codage : le retirer, pas le griser.** Un
-bouton éteint reste un bouton, on l'appuie, il ne répond pas.
-
-**Cette planche ne remplace pas la précédente** : celle-là porte les GESTES
-(jeter, pause, envoyer), celle-ci le DESSIN au repos. Les deux réponses se
-recomposent.
-
----
-
-## ⏳ SA RÉPONSE ATTENDUE — la note vocale « à la WhatsApp » (30 août 2026)
-
-`appli/note-vocale-simple.html` est en ligne et éprouvée
-(`scripts/verifier-maquette-note-vocale-simple.mjs`). **Rien n'est codé dans
-`src/`**, et rien ne doit l'être avant qu'il donne deux chiffres :
+**Ce qui reste mesuré comme non résolu, et qui n'est pas un oubli :**
 
 | | |
 |---|---|
-| la proposition | **1** la barre à deux rangées · **2** l'anneau au centre · **3** la capsule sans pause |
-| la largeur du bouton | **1** aujourd'hui · **2** 88 % · **3** 78 % · **4** 66 % |
+| sur un écran plus court (iPhone SE : 560 px utiles) la feuille déborde encore de 101 px | à lui demander si ce téléphone compte |
+| pendant la dictée, les 40 px libérés par le bouton restent vides | c'est l'empreinte du bouton qu'il a demandé de faire disparaître ; les combler ferait descendre le micro sous le doigt |
 
-**Deux choses sont déjà tranchées par lui, et ne se rouvrent pas :** le bouton
-du bas est **secondaire**, libellé
-« Je rédige à la main » — le seul aplat plein de l'écran est le rond d'envoi —,
-et **tout tient sur un écran sans défiler**.
-
-**Ce qui n'est PAS tranché, contre les apparences :** sa règle *« l'anneau doit
-disparaître »* condamne la proposition 2, qui le garde au centre — et il l'a
-pourtant redemandée à l'essai. C'est donc son choix final qui dira ce qu'elle
-vaut, pas cette règle-là.
-
-**Ce dernier point est le plus fragile du lot**, et il vaut aussi pour le code à
-venir : l'écran est descendu de 960 à 631 px, et la marge sur un iPhone SE se
-compte en dizaines de pixels. Une case de plus, deux pixels de marge, et il
-repasse sous le pli. Quatre intitulés ont été retirés pour y arriver — e-mail,
-adresse, canal, photos ; **« Nom du client » et « Téléphone » restent**, il les a
-demandés nommément le 21 août. Ce qui n'est plus écrit reste lisible par un
-lecteur d'écran.
-
-**Le point délicat du codage, à ne pas découvrir en route :**
-`AnneauNoteVocale.basculerDictee()` envoie au second appui — l'arrêt et l'envoi
-sont le même geste. Il faudra les séparer, et veiller à ce que **jeter une note
-ne supprime pas le chantier** : une photo prise avant a pu le créer
-(`assurerChantier`).
+**Les trois planches restent en ligne** — `note-vocale-simple.html`,
+`-au-repos.html`, `-choix.html` — et leurs contrôles avec elles : elles racontent
+le chemin, et la troisième est la référence du code.
 
 ---
 
@@ -304,7 +266,22 @@ ligne-là qu'il faudra rapprocher de ce qu'il venait de faire.
 
 ---
 
-## `test-acces-salarie-e2e` tombe sur main, seule et reproductible (29 août 2026)
+## `test-acces-salarie-e2e` tombe sur main — la MOITIÉ est réglée (30 août 2026)
+
+**Ce qui est réglé : le rouge de la suite.** La feuille de chantier en PDF
+mettait **quarante-cinq à cinquante secondes** à se compiler la première fois,
+et le serveur ne répondait plus à rien pendant ce temps — la suite tombait sur
+son propre délai de 45 s. Le préchauffage ne connaissait que des ÉCRANS, jamais
+une route d'API : `API_DE_CHANTIER` (`scripts/prechauffer.mjs`) l'y ajoute, et
+la route répond désormais en **476 ms**. Aucune assertion touchée.
+
+**Ce qui NE l'est PAS : la mort du serveur juste après.** Elle est
+indépendante — c'est le plafond mémoire du conteneur, mesuré au paragraphe
+« la batterie ne tient plus » ci-dessous. Ne pas écrire ailleurs que ce point
+est clos.
+
+Le texte d'origine, gardé parce qu'il dit comment le symptôme trompait :
+
 
 **Établi, pas supposé** : la suite échoue à l'identique sur `main` (`a23bf24`),
 jouée SEULE, sans aucun commit par-dessus. Ce n'est donc ni une collision entre
@@ -472,9 +449,44 @@ Ce que ce tour ajoute au diagnostic :
     `ps aux | grep test:e2e` avant d'en relancer un**, plutôt que de croire le
     code de sortie.
 
-**Qui peut le trancher :** nous, en cherchant ce que `test-coupure-sessions-e2e`
-fait faire à Turbopack — la piste la plus courte est de rejouer la suite sur le
-commit d'avant la fusion (826314e) et de comparer la courbe. Une piste écartée
+**MESURÉ LE 30 AOÛT 2026 — la courbe, enfin, et elle déplace le coupable.**
+`next-server` échantillonné toutes les vingt secondes pendant une batterie
+réduite à UNE suite :
+
+| Moment | `anon-rss` |
+|---|---|
+| serveur démarré | **0,6 Go** |
+| les 33 écrans préchauffés | **8,9 Go** |
+| une suite plus tard | **12,7 Go**, puis abattu |
+
+**Ce n'est donc aucune suite en particulier**, et ce n'était déjà pas
+`test-coupure-sessions-e2e` : c'est **l'application entière compilée par
+Turbopack** qui ne tient pas dans le plafond du conteneur. Le préchauffage n'en
+crée pas la mémoire, il l'avance — mais devant un plafond, avancer c'est mourir
+plus tôt, et il consomme les deux tiers du budget avant la première suite.
+
+**Ce qui a été fait :**
+
+  · `API_DE_CHANTIER` (`scripts/prechauffer.mjs`) : la feuille de chantier en
+    PDF compilait en 45–50 s et étranglait le serveur — elle répond maintenant
+    en 476 ms. C'était la cause du rouge de `test-acces-salarie`, pas de la
+    mort du serveur ;
+  · **en TRANCHE (`--seulement`), le préchauffage se réduit à trois routes** —
+    connexion, accueil, et la seule route dont la première compilation dépasse
+    le délai des suites. Une tranche démarre alors à 1 Go au lieu de 9, et ne
+    compile que ce que ses suites touchent. La batterie ENTIÈRE, elle,
+    préchauffe tout : c'est elle qui autorise une livraison.
+
+**Une piste essayée et ÉCARTÉE, pour que personne ne la repaie :**
+`next dev --webpack` tient le serveur à 5,7 Go au lieu de 13 — mais il **ne sert
+pas la même application** : dès la première suite, la feuille « Absences » ne
+s'ouvrait plus, deux vérifications rouges sur du code juste. Un empaqueteur qui
+fabrique des faux rouges fait pire que ne rien mesurer.
+
+**Ce qui reste ouvert :** la batterie d'une traite ne tient toujours pas dans ce
+conteneur. Deux pistes non éprouvées — jouer les suites contre une version
+BÂTIE (`next build && next start`, ce que sert d'ailleurs son banc), ou
+redémarrer le serveur toutes les N suites depuis le pilote. Une piste écartée
 d'avance : plafonner le tas V8 (`--max-old-space-size`) ne bornerait rien, la
 mémoire est allouée par le Rust de Turbopack, hors du tas.
 
@@ -6503,7 +6515,7 @@ dessin** (`ARCHITECTURE.md` §81) :
   client n'a aucun moyen d'appeler l'artisan depuis son devis.
 
 Manquent aussi en base, et la maquette les montre : ~~**forme juridique**~~ —
-**fait le 30 août 2026** (migration 0072, `ARCHITECTURE.md` §211) : elle
+**fait le 30 août 2026** (migration 0072, `ARCHITECTURE.md` §212) : elle
 s'imprime désormais, avec le capital social et le RCS, si l'artisan choisit
 de les montrer — et **titulaire du compte**.
 

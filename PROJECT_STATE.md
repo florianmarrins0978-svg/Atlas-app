@@ -18,6 +18,38 @@ ligne « fait » qui ne l'est pas coûte plus cher qu'une ligne absente.
 
 ---
 
+## La note vocale à la messagerie, et la fiche qui tient dans un écran (30 août 2026)
+
+**Sa demande, en huit messages :** *« Il faut modifier la note vocale pour
+qu'elle soit plus simple à utiliser, à la manière de celle de WhatsApp : on
+appuie dessus, possibilité de supprimer ou d'appuyer sur la flèche pour envoyer
+de suite la transcription, et arriver sur la page du devis. »* Puis, après trois
+planches et ses trois choix : *« Très bien, code exactement ça ! »*
+
+Ce que l'écran fait maintenant :
+
+| | |
+|---|---|
+| au repos | un **disque plein**, son micro, deux ondes de **1,5 cm** de chaque côté |
+| on appuie | la **poubelle** naît à gauche, l'**avion** à droite ; le micro devient un carré d'arrêt, le disque ne bouge pas |
+| la poubelle | jette la note, relâche le micro, rend l'écran à ce qu'il était |
+| l'avion | envoie, transcrit, **mène au devis** — rien d'autre à toucher |
+| « Je rédige à la main » | **secondaire**, large de **66 %**, et il **disparaît** pendant qu'on parle |
+
+**La fiche client tient dans un écran, sans défiler et sans vide en bas.** Elle
+débordait de 492 px : l'anneau et le bouton étaient sous le pli. Mesuré sur son
+écran (390 × 664) et par son parcours : 604 px de feuille pour 601 de contenu.
+
+**Et elle ne se balade plus de droite à gauche.** Deux causes, aucune visible à
+l'œil : le champ du nom gardait sa largeur naturelle et poussait le téléphone
+31 px hors de l'écran ; la pellicule de photos dépassait de deux pixels de
+chaque côté.
+
+Le compte-rendu qui lui est destiné : `docs/note-vocale-messagerie.md`. Les
+raisons et les pièges : `ARCHITECTURE.md` §211.
+
+---
+
 ## Chaque notification se range d'un « J'ai vu » (30 août 2026)
 
 **Sa demande, capture à l'appui :** *« pour chaque notification je dois pouvoir
@@ -1986,7 +2018,7 @@ la liste déroulante, une fermeture React périmée dans `ChampFormeJuridique`
 existant depuis le 14 août ; et `enEuros` faisait planter tout PDF portant un
 montant à quatre chiffres (l'espace fine de `Intl.NumberFormat`, que
 l'encodage des polices PDF ne connaît pas). Les trois sont corrigés. Détail
-dans `CHANGELOG.md` du jour et `ARCHITECTURE.md` §211.
+dans `CHANGELOG.md` du jour et `ARCHITECTURE.md` §212.
 
 ## Vérifications au dernier point
 
