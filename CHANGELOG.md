@@ -55,12 +55,22 @@ pendant l'enregistrement : sans ces deux points, la barre — plus haute que
 l'anneau — poussait tout ce qui suit vers le bas à l'instant où l'on appuie, et
 le bouton passait sous le pli au pire moment.
 
-**Deux de ses corrections, le même jour, et la première a retiré une
-proposition.** *« Lorsque je clique sur le bouton note vocale, il doit ensuite
-DISPARAÎTRE pour laisser place à la modification »* : une troisième proposition
-gardait l'anneau au centre entre la poubelle et l'avion — elle contredisait sa
-règle, elle est partie plutôt que de lui coûter un aller-retour pour l'écarter
-lui-même. Et *« le bouton change par "je rédige à la main", mais ça doit être un
+**Une proposition retirée, puis remise — et c'est lui qui a tranché les deux
+fois.** *« Lorsque je clique sur le bouton note vocale, il doit ensuite
+DISPARAÎTRE pour laisser place à la modification »* : la proposition qui gardait
+l'anneau au centre entre la poubelle et l'avion contredisait cette règle, elle
+est partie le jour même. Il l'a redemandée dans la foulée — *« je veux pouvoir
+essayer tous ceux que tu m'as proposés »* — et elle est revenue **telle quelle,
+sans être maquillée pour se conformer** : c'est en la manipulant qu'il verra si
+sa règle tient, et un choix qu'on lui retire n'est pas un choix.
+
+**Et l'écran du devis dit désormais qu'il est un exemple.** Sa question :
+*« la page que tu m'as mise en visuel, c'est juste pour le test ? »* Elle
+méritait d'être posée, et l'écran devait y répondre seul — sans quoi on peut
+croire qu'Atlas fabrique un devis de démonstration. La note dit maintenant que
+l'avion ouvre **son vrai devis**, déjà rempli.
+
+Et *« le bouton change par "je rédige à la main", mais ça doit être un
 bouton secondaire, car l'idée c'est qu'il utilise en priorité la note vocale »* :
 le bouton passe au vocabulaire secondaire d'Atlas (fond transparent, liseré d'or,
 même hauteur et même serif — celui de `ChoixCanal.tsx`), et **le seul aplat plein

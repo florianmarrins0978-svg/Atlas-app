@@ -17,14 +17,18 @@ langage, et rien n'y entre sans son accord.
 
 | | |
 |---|---|
-| la proposition | **1** la barre à deux rangées · **2** la capsule sans pause |
+| la proposition | **1** la barre à deux rangées · **2** l'anneau au centre · **3** la capsule sans pause |
 | la largeur du bouton | **1** aujourd'hui · **2** 88 % · **3** 78 % · **4** 66 % |
 
-**Trois choses sont déjà tranchées par lui, et ne se rouvrent pas :** l'anneau
-**disparaît** dès qu'on appuie (une troisième proposition où il restait au
-centre a été retirée pour cela), le bouton du bas est **secondaire**, libellé
+**Deux choses sont déjà tranchées par lui, et ne se rouvrent pas :** le bouton
+du bas est **secondaire**, libellé
 « Je rédige à la main » — le seul aplat plein de l'écran est le rond d'envoi —,
 et **tout tient sur un écran sans défiler**.
+
+**Ce qui n'est PAS tranché, contre les apparences :** sa règle *« l'anneau doit
+disparaître »* condamne la proposition 2, qui le garde au centre — et il l'a
+pourtant redemandée à l'essai. C'est donc son choix final qui dira ce qu'elle
+vaut, pas cette règle-là.
 
 **Ce dernier point est le plus fragile du lot**, et il vaut aussi pour le code à
 venir : l'écran est descendu de 960 à 631 px, et la marge sur un iPhone SE se
