@@ -97,6 +97,23 @@ export const entreprises = pgTable("entreprises", {
   /** « SASU », « EI », « EURL »… Figure sur les documents (migration 0039). */
   formeJuridique: text("forme_juridique"),
   /**
+   * Le capital social et le RCS (migration 0071) — n'ont de sens que pour une
+   * société, jamais une EI ou une micro-entreprise (`formeADuCapital`).
+   * Le RCS n'a pas de second numéro : c'est le SIREN, déjà dans le SIRET.
+   */
+  capitalSocial: numeric("capital_social", { precision: 12, scale: 2 }),
+  villeRcs: text("ville_rcs"),
+  /**
+   * Où — ou si — la forme juridique, le capital et le RCS s'impriment
+   * (migration 0071). Par défaut « aucune » : ces champs existaient déjà
+   * (`formeJuridique`, migration 0039) sans jamais s'imprimer nulle part —
+   * les faire apparaître d'un coup surprendrait qui les avait déjà saisis
+   * sans le savoir.
+   */
+  mentionsLegalesPosition: text("mentions_legales_position", { enum: ["sous_nom", "bas", "aucune"] })
+    .notNull()
+    .default("aucune"),
+  /**
    * Le régime de TVA, **déclaré et jamais déduit** (migration 0039).
    *
    * `facture-pdf.ts` devinait jusqu'ici la franchise en regardant si le taux
@@ -977,6 +994,17 @@ export const devis = pgTable(
     entrepriseEmail: text("entreprise_email"),
     entrepriseTelephone: text("entreprise_telephone"),
     entrepriseIban: text("entreprise_iban"),
+    /**
+     * Les trois mentions légales, et leur emplacement (migration 0071) —
+     * recopiées comme le reste de l'identité. Nulles pour les devis
+     * antérieurs à la migration : rien de plus ne s'imprime.
+     */
+    entrepriseFormeJuridique: text("entreprise_forme_juridique"),
+    entrepriseCapitalSocial: numeric("entreprise_capital_social", { precision: 12, scale: 2 }),
+    entrepriseVilleRcs: text("entreprise_ville_rcs"),
+    entrepriseMentionsLegalesPosition: text("entreprise_mentions_legales_position", {
+      enum: ["sous_nom", "bas", "aucune"],
+    }),
 
     clientNom: text("client_nom"),
     // Recopiée comme le nom : un document dit comment on s'adressait à son
@@ -1587,6 +1615,17 @@ export const factures = pgTable(
     entrepriseEmail: text("entreprise_email"),
     entrepriseTelephone: text("entreprise_telephone"),
     entrepriseIban: text("entreprise_iban"),
+    /**
+     * Les trois mentions légales, et leur emplacement (migration 0071) —
+     * recopiées du devis, comme le reste de l'identité. Nulles pour les
+     * factures antérieures à la migration.
+     */
+    entrepriseFormeJuridique: text("entreprise_forme_juridique"),
+    entrepriseCapitalSocial: numeric("entreprise_capital_social", { precision: 12, scale: 2 }),
+    entrepriseVilleRcs: text("entreprise_ville_rcs"),
+    entrepriseMentionsLegalesPosition: text("entreprise_mentions_legales_position", {
+      enum: ["sous_nom", "bas", "aucune"],
+    }),
 
     clientNom: text("client_nom"),
     // Recopiée comme le nom : un document dit comment on s'adressait à son

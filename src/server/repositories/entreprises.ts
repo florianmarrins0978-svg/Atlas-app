@@ -131,6 +131,15 @@ export async function mettreAJourEntreprise(
     numeroTva?: string | null;
     titulaireCompte?: string | null;
     /**
+     * Le capital social et le RCS (migration 0071) — n'ont de sens que pour
+     * une société (`formeADuCapital`), jamais pour une EI ou une
+     * micro-entreprise. Voir `src/lib/mentions-legales.ts`.
+     */
+    capitalSocial?: string | null;
+    villeRcs?: string | null;
+    /** Où — ou si — les trois mentions s'impriment. Par défaut « aucune ». */
+    mentionsLegalesPosition?: "sous_nom" | "bas" | "aucune";
+    /**
      * Les conditions imprimées sur le devis (migration 0040).
      *
      * **Toutes passent par `normaliserConditions`**, jamais crues sur parole :
@@ -178,11 +187,25 @@ export async function mettreAJourEntreprise(
     if (data.nom !== undefined) valeurs.nom = data.nom;
     for (const champ of [
       "adresse", "siret", "telephone", "email", "iban",
-      "formeJuridique", "numeroTva", "titulaireCompte",
+      "formeJuridique", "numeroTva", "titulaireCompte", "villeRcs",
     ] as const) {
       // Une chaîne vide vaut « effacé », pas « inchangé » : le patron doit
       // pouvoir retirer un SIRET saisi de travers.
       if (data[champ] !== undefined) valeurs[champ] = data[champ]?.trim() || null;
+    }
+    // **Le capital n'est pas un texte : un « 1 500 € » saisi de travers ne
+    // s'écrit pas en base**, sans quoi il romprait le calcul des mentions
+    // légales (`enEuros` sur du texte). Une saisie qu'on ne comprend pas
+    // laisse le capital tel qu'il était plutôt que d'écrire n'importe quoi —
+    // même règle que la périodicité de TVA plus bas.
+    if (data.capitalSocial !== undefined) {
+      const brut = data.capitalSocial?.trim() ?? "";
+      if (brut === "") {
+        valeurs.capitalSocial = null;
+      } else {
+        const nombre = Number(brut.replace(",", "."));
+        if (Number.isFinite(nombre) && nombre >= 0) valeurs.capitalSocial = nombre.toFixed(2);
+      }
     }
     if (data.conditions !== undefined) {
       const c = normaliserConditions(data.conditions);
@@ -246,6 +269,9 @@ export async function mettreAJourEntreprise(
     // entreprise est assujettie ou en franchise, jamais ni l'un ni l'autre — et
     // la base le refuserait (contrainte `entreprises_regime_tva_ck`).
     if (data.regimeTva !== undefined) valeurs.regimeTva = data.regimeTva;
+    if (data.mentionsLegalesPosition !== undefined) {
+      valeurs.mentionsLegalesPosition = data.mentionsLegalesPosition;
+    }
     if (data.nombreEquipes !== undefined) {
       valeurs.nombreEquipes = Math.min(MAX_EQUIPES, Math.max(1, Math.trunc(data.nombreEquipes)));
     }

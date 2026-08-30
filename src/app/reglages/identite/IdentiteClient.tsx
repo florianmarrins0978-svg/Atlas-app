@@ -7,6 +7,9 @@ import ChampTelephone from "./ChampTelephone";
 import ChampFormeJuridique from "./ChampFormeJuridique";
 import { majIdentiteAction } from "./actions";
 import DemanderPreuve from "@/components/atlas/DemanderPreuve";
+import { sirenDepuisSiret } from "@/lib/siren";
+import { formeADuCapital } from "@/lib/formes-juridiques";
+import type { PositionMentionsLegales } from "@/lib/mentions-legales";
 
 /**
  * L'identité de l'entreprise — d'après `maquettes/atlas-reglages-identite.html`.
@@ -34,14 +37,11 @@ type Identite = {
   titulaireCompte: string;
   numeroTva: string;
   regimeTva: "assujettie" | "franchise";
+  /** Migration 0071 — n'a de sens que pour une société (`formeADuCapital`). */
+  capitalSocial: string;
+  villeRcs: string;
+  mentionsLegalesPosition: PositionMentionsLegales;
 };
-
-/** Les neuf premiers chiffres du SIRET — jamais une seconde saisie. */
-export function sirenDepuisSiret(siret: string): string | null {
-  const chiffres = siret.replace(/\D/g, "");
-  if (chiffres.length < 9) return null;
-  return chiffres.slice(0, 9).replace(/(\d{3})(\d{3})(\d{3})/, "$1 $2 $3");
-}
 
 export default function IdentiteClient({ initial }: { initial: Identite }) {
   const [valeurs, setValeurs] = useState<Identite>(initial);
@@ -124,8 +124,30 @@ export default function IdentiteClient({ initial }: { initial: Identite }) {
         <ChampFormeJuridique
           valeur={valeurs.formeJuridique}
           onChange={(v) => ecrire("formeJuridique", v)}
-          onFini={() => enregistrer({ formeJuridique: valeurs.formeJuridique })}
+          onFini={(v) => enregistrer({ formeJuridique: v })}
         />
+        {/* **Silence, pas grisé** (migration 0071) : les deux champs
+            disparaissent entièrement pour une entreprise individuelle ou une
+            micro-entreprise, qui n'ont ni capital ni RCS — grisés, ils se
+            rempliraient quand même « au cas où ». */}
+        {formeADuCapital(valeurs.formeJuridique) && (
+          <>
+            <Champ
+              etiquette="Capital social"
+              valeur={valeurs.capitalSocial}
+              placeholder="1 000"
+              onChange={(v) => ecrire("capitalSocial", v)}
+              onFini={() => enregistrer({ capitalSocial: valeurs.capitalSocial })}
+            />
+            <Champ
+              etiquette="Ville du RCS"
+              valeur={valeurs.villeRcs}
+              placeholder="Versailles"
+              onChange={(v) => ecrire("villeRcs", v)}
+              onFini={() => enregistrer({ villeRcs: valeurs.villeRcs })}
+            />
+          </>
+        )}
       </Bloc>
 
       <Bloc>
@@ -164,6 +186,36 @@ export default function IdentiteClient({ initial }: { initial: Identite }) {
           empeche="Vos factures ne sont pas conformes sans lui."
           /* Le SIREN se MONTRE, il ne se demande pas. */
           sous={siren ? `SIREN ${siren} — les neuf premiers chiffres. Il ne se saisit pas séparément.` : null}
+        />
+      </Bloc>
+
+      <Bloc titre="Mentions légales">
+        <Choix
+          nom="Sous le nom"
+          detail="Forme juridique, capital et RCS s'impriment juste sous votre nom."
+          pris={valeurs.mentionsLegalesPosition === "sous_nom"}
+          onChoix={() => {
+            ecrire("mentionsLegalesPosition", "sous_nom");
+            enregistrer({ mentionsLegalesPosition: "sous_nom" });
+          }}
+        />
+        <Choix
+          nom="En bas, avec le SIRET"
+          detail="Elles s'impriment avec vos autres coordonnées."
+          pris={valeurs.mentionsLegalesPosition === "bas"}
+          onChoix={() => {
+            ecrire("mentionsLegalesPosition", "bas");
+            enregistrer({ mentionsLegalesPosition: "bas" });
+          }}
+        />
+        <Choix
+          nom="Ne pas les imprimer"
+          detail="Rien ne s'imprime. La forme, le capital et le RCS restent enregistrés."
+          pris={valeurs.mentionsLegalesPosition === "aucune"}
+          onChoix={() => {
+            ecrire("mentionsLegalesPosition", "aucune");
+            enregistrer({ mentionsLegalesPosition: "aucune" });
+          }}
         />
       </Bloc>
 

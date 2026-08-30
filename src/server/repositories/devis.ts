@@ -211,6 +211,12 @@ export async function getOuCreerDevisBrouillon(ctx: Ctx, chantierId: string) {
       entrepriseEmail: entreprise.email,
       entrepriseTelephone: entreprise.telephone,
       entrepriseIban: entreprise.iban,
+      // Les trois mentions légales, et leur emplacement (migration 0071) —
+      // recopiées comme le reste de l'identité.
+      entrepriseFormeJuridique: entreprise.formeJuridique,
+      entrepriseCapitalSocial: entreprise.capitalSocial,
+      entrepriseVilleRcs: entreprise.villeRcs,
+      entrepriseMentionsLegalesPosition: entreprise.mentionsLegalesPosition,
       clientNom: client?.nom,
       // Recopiée comme le nom : le document dit comment on s'adressait à son
       // destinataire CE JOUR-LÀ (migration 0038).
@@ -333,6 +339,10 @@ export async function genererPdfPourApercu(ctx: Ctx, devisId: string): Promise<U
       // Le modèle d'Arborea imprime les modalités de virement : sans l'IBAN,
       // le client reçoit un devis qu'il ne peut pas payer.
       entrepriseIban: d.entrepriseIban,
+      entrepriseFormeJuridique: d.entrepriseFormeJuridique,
+      entrepriseCapitalSocial: d.entrepriseCapitalSocial,
+      entrepriseVilleRcs: d.entrepriseVilleRcs,
+      entrepriseMentionsLegalesPosition: d.entrepriseMentionsLegalesPosition,
       clientNom: d.clientNom,
       clientCivilite: d.clientCivilite,
       clientAdresse: d.clientAdresse,
@@ -409,6 +419,10 @@ export async function envoyerDevis(ctx: Ctx, devisId: string) {
       entrepriseTelephone: avant.entrepriseTelephone,
       entrepriseEmail: avant.entrepriseEmail,
       entrepriseIban: avant.entrepriseIban,
+      entrepriseFormeJuridique: avant.entrepriseFormeJuridique,
+      entrepriseCapitalSocial: avant.entrepriseCapitalSocial,
+      entrepriseVilleRcs: avant.entrepriseVilleRcs,
+      entrepriseMentionsLegalesPosition: avant.entrepriseMentionsLegalesPosition,
       clientNom: avant.clientNom,
       clientCivilite: avant.clientCivilite,
       clientAdresse: avant.clientAdresse,

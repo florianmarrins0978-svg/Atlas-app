@@ -16,6 +16,7 @@ import path from "node:path";
 import { logger } from "@/server/logger";
 import { avecCivilite } from "@/lib/civilite";
 import { libelleReduction } from "@/lib/reduction-devis";
+import { lignesMentionsLegales, type PositionMentionsLegales } from "@/lib/mentions-legales";
 
 // Le moteur commun des pièces que le client reçoit : devis et facture.
 //
@@ -378,6 +379,14 @@ export type DonneesDocument = {
   entrepriseTelephone?: string | null;
   entrepriseEmail?: string | null;
   entrepriseIban?: string | null;
+  /**
+   * Les trois mentions légales, et leur emplacement (migration 0071). Absentes
+   * sur un document d'avant la migration : rien de plus ne s'imprime.
+   */
+  entrepriseFormeJuridique?: string | null;
+  entrepriseCapitalSocial?: string | null;
+  entrepriseVilleRcs?: string | null;
+  entrepriseMentionsLegalesPosition?: PositionMentionsLegales | null;
   clientNom?: string | null;
   /** Recopiée sur le document au moment où il est établi (migration 0038). */
   clientCivilite?: "mr" | "mme" | null;
@@ -641,14 +650,37 @@ export async function composerDocument(
   // ça, il faut sauter une ligne, une ligne par information »*. Le téléphone et
   // l'e-mail tenaient sur la même ligne, séparés d'un tiret cadratin — c'est
   // lisible sur un écran large, c'est un pâté sur un devis imprimé.
+  //
+  // **La forme juridique, le capital et le RCS s'y glissent selon SON choix**
+  // (migration 0071) : sous le nom, avec le reste des coordonnées, ou nulle
+  // part. `lignesMentionsLegales` rend déjà zéro ligne quand rien n'a été
+  // réglé — les documents d'avant la migration ressortent identiques à eux-
+  // mêmes, sans qu'il ait fallu un `if` de plus ici.
+  const positionMentions = data.entrepriseMentionsLegalesPosition ?? "aucune";
+  const mentionsLegales = lignesMentionsLegales({
+    formeJuridique: data.entrepriseFormeJuridique,
+    capitalSocial: data.entrepriseCapitalSocial,
+    villeRcs: data.entrepriseVilleRcs,
+    siret: data.entrepriseSiret,
+    position: positionMentions,
+  });
+
+  let yCoord = y - 15;
+  if (positionMentions === "sous_nom") {
+    for (const ligne of mentionsLegales) {
+      ecrire(ctx, ligne, MARGE, yCoord, { taille: 8.5, couleur: ctx.teintes.coordonnees });
+      yCoord -= 11;
+    }
+  }
+
   const coordonnees = [
+    ...(positionMentions === "bas" ? mentionsLegales : []),
     data.entrepriseAdresse,
     data.entrepriseTelephone,
     data.entrepriseEmail,
     data.entrepriseSiret ? `SIRET ${data.entrepriseSiret}` : null,
   ].filter((l): l is string => !!l);
 
-  let yCoord = y - 15;
   for (const ligne of coordonnees) {
     ecrire(ctx, ligne, MARGE, yCoord, { taille: 8.5, couleur: ctx.teintes.coordonnees });
     yCoord -= 11;
