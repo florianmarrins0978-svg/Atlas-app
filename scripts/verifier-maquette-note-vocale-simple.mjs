@@ -57,6 +57,22 @@
   9. **Les zones touchées font au moins 44 px**, poubelle comprise : c'est un
      écran qu'on manipule sur un chantier, parfois avec des gants.
 
+ 10. **TOUT TIENT SUR UN ÉCRAN, SANS DÉFILER** — sa règle du 30 août : *« tout
+     doit tenir sur une seule page, ne doit pas décoller vers le bas pour
+     accéder aux autres informations »*.
+
+     C'est le point le plus fragile de cette planche, et le seul qu'un ajout
+     futur défera sans qu'on s'en aperçoive : une case de plus, deux pixels de
+     marge, et l'écran repasse sous le pli. Le contrôle le mesure donc à DEUX
+     hauteurs — 700 points (la bande utile mesurée sur sa capture, entre la
+     barre d'adresse de Safari et la barre d'outils) et 667 (un iPhone SE) —,
+     **au repos ET pendant l'enregistrement**, dans les deux propositions.
+
+     La seconde moitié compte autant : la barre d'enregistrement est plus haute
+     que l'anneau, et sans réserve fixe tout ce qui suit descend à l'instant où
+     l'on appuie. Un écran qui tient au repos et déborde en dictant ne tient
+     pas.
+
   **Il sait échouer.** Éprouvé en rendant la poubelle inerte (elle laissait
   alors le chrono courir), en la faisant mener au devis, en neutralisant la
   pause, en posant le bouton à 100 %, en le repeignant en aplat plein, en
@@ -159,7 +175,11 @@ for (const variante of ["1", "2"]) {
     const boite = await bouton.boundingBox();
     dire(
       boite !== null && boite.width >= 44 && boite.height >= 44,
-      `${variante} · ${quoi} fait au moins 44 px (mesuré : ${boite ? `${Math.round(boite.width)}×${Math.round(boite.height)}` : "rien à mesurer"})`
+      // **Sans arrondi.** La première version affichait « mesuré : 44×44 » en
+      // REFUSANT — la valeur réelle était 43,99997, rabotée d'un cheveu par
+      // l'alignement du flex. Un message qui se contredit lui-même envoie
+      // chercher partout sauf au bon endroit.
+      `${variante} · ${quoi} fait au moins 44 px (mesuré : ${boite ? `${boite.width}×${boite.height}` : "rien à mesurer"})`
     );
   }
 
@@ -370,7 +390,37 @@ dire(
   "et elles vont bien de la plus large à la plus étroite"
 );
 
-// ── 5. Ce que la maquette reprend de l'application, sans le redessiner ─────
+// ── 5. Tout tient sur un écran, sans défiler ───────────────────────────────
+//
+// **Mesuré sur la page entière, pas sur un bloc.** Comparer la hauteur de la
+// fiche à un nombre écrit à la main dirait vrai le jour où on l'écrit et faux
+// le lendemain ; ce qui compte est ce que le doigt éprouve : la page défile,
+// ou elle ne défile pas.
+console.log("\n  ── Tout sur un écran ──");
+for (const hauteur of [700, 667]) {
+  const vue = await navigateur.newContext({ viewport: { width: 390, height: hauteur } });
+  const petit = await vue.newPage();
+  await petit.goto(`file://${CIBLE}`, { waitUntil: "networkidle" });
+  for (const variante of ["1", "2"]) {
+    await petit.click(`.onglets button[data-variante="${variante}"]`);
+    await petit.waitForTimeout(80);
+    const auRepos = await petit.evaluate(() => document.documentElement.scrollHeight);
+    await petit.click("#dicter");
+    await petit.waitForTimeout(220);
+    const enDictee = await petit.evaluate(() => document.documentElement.scrollHeight);
+    const pire = Math.max(auRepos, enDictee);
+    dire(
+      pire <= hauteur,
+      `${hauteur} px · proposition ${variante} : rien ne passe sous le pli` +
+        (pire > hauteur ? ` — il déborde de ${pire - hauteur} px` : ` (${pire} px de contenu)`)
+    );
+    await petit.locator(`#v${variante} [data-jeter]`).click();
+    await petit.waitForTimeout(80);
+  }
+  await vue.close();
+}
+
+// ── 6. Ce que la maquette reprend de l'application, sans le redessiner ─────
 console.log("\n  ── Repris de l'application ──");
 const fichier = page.locator('input[type="file"]');
 dire((await fichier.count()) === 1, "un seul champ de fichier, comme dans `Pellicule.tsx`");
@@ -389,4 +439,4 @@ if (plaintes.length) {
   plaintes.forEach((p) => console.error(`   · ${p}`));
   process.exit(1);
 }
-console.log("✓ La planche tient : l'anneau disparaît, les deux propositions ont les mêmes gestes, jeter ne mène nulle part, l'avion mène au devis, et le seul plein de l'écran est le rond d'envoi.");
+console.log("✓ La planche tient : tout entre dans un écran sans défiler, l'anneau disparaît, jeter ne mène nulle part, l'avion mène au devis, et le seul plein de l'écran est le rond d'envoi.");

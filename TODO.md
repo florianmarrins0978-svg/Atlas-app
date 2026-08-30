@@ -20,10 +20,19 @@ langage, et rien n'y entre sans son accord.
 | la proposition | **1** la barre à deux rangées · **2** la capsule sans pause |
 | la largeur du bouton | **1** aujourd'hui · **2** 88 % · **3** 78 % · **4** 66 % |
 
-**Deux choses sont déjà tranchées par lui, et ne se rouvrent pas :** l'anneau
+**Trois choses sont déjà tranchées par lui, et ne se rouvrent pas :** l'anneau
 **disparaît** dès qu'on appuie (une troisième proposition où il restait au
-centre a été retirée pour cela), et le bouton du bas est **secondaire**, libellé
-« Je rédige à la main » — le seul aplat plein de l'écran est le rond d'envoi.
+centre a été retirée pour cela), le bouton du bas est **secondaire**, libellé
+« Je rédige à la main » — le seul aplat plein de l'écran est le rond d'envoi —,
+et **tout tient sur un écran sans défiler**.
+
+**Ce dernier point est le plus fragile du lot**, et il vaut aussi pour le code à
+venir : l'écran est descendu de 960 à 631 px, et la marge sur un iPhone SE se
+compte en dizaines de pixels. Une case de plus, deux pixels de marge, et il
+repasse sous le pli. Quatre intitulés ont été retirés pour y arriver — e-mail,
+adresse, canal, photos ; **« Nom du client » et « Téléphone » restent**, il les a
+demandés nommément le 21 août. Ce qui n'est plus écrit reste lisible par un
+lecteur d'écran.
 
 **Le point délicat du codage, à ne pas découvrir en route :**
 `AnneauNoteVocale.basculerDictee()` envoie au second appui — l'arrêt et l'envoi

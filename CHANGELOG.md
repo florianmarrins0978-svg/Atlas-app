@@ -32,6 +32,29 @@ pour les **quatre largeurs** du bouton, qui s'appliquent réellement à l'écran
 la fiche. **Rien n'est codé dans `src/` :** la maquette d'abord
 (`CLAUDE.md` §3 bis).
 
+**TOUT TIENT SUR UN ÉCRAN — sa troisième correction du jour, et c'est elle qui
+a commandé toutes les mesures :** *« tout doit tenir sur une seule page, ne doit
+pas décoller vers le bas pour accéder aux autres informations »*. L'écran faisait
+**960 px** ; la bande utile entre la barre d'adresse de Safari et la barre
+d'outils, mesurée sur sa capture, vaut **environ 700 points**. Il est descendu à
+**631**, ce qui le fait tenir aussi sur un iPhone SE (667).
+
+Ce qui a été resserré : les espaces entre blocs (17 → 7 px), la hauteur des
+cases (50 → 44), le carré photo (74 → 58), le talon de 44 px sous le bouton qui
+ne portait rien. **Et quatre intitulés sont partis** — « E-mail », « Adresse du
+chantier », « Comment lui envoyer son devis ? », « Photos du chantier » : les
+cases et les capsules les disent déjà, et c'est aussi sa règle du 25 août sur le
+nombre de mots. **« Nom du client » et « Téléphone » restent**, parce qu'il les
+a demandés nommément le 21 août — les retirer aurait fait tenir l'écran en
+défaisant une demande antérieure, sans le lui dire. Ce qui n'est plus écrit
+reste lisible par un lecteur d'écran (`.sr`) : un intitulé retiré de l'œil ne se
+retire pas de la voix.
+
+**La zone de la dictée a une hauteur FIXE**, et la ligne d'indice disparaît
+pendant l'enregistrement : sans ces deux points, la barre — plus haute que
+l'anneau — poussait tout ce qui suit vers le bas à l'instant où l'on appuie, et
+le bouton passait sous le pli au pire moment.
+
 **Deux de ses corrections, le même jour, et la première a retiré une
 proposition.** *« Lorsque je clique sur le bouton note vocale, il doit ensuite
 DISPARAÎTRE pour laisser place à la modification »* : une troisième proposition
@@ -58,14 +81,25 @@ font les jetons de `src/lib/chartes.ts`.
 disparaît** à l'appui, les deux gestes existent dans les deux propositions,
 **jeter ne mène nulle part** et remet le compteur à zéro, la pause arrête vraiment le chrono (mesuré sur deux secondes),
 l'avion mène au devis **avec le nom saisi**, aucun prix n'est inventé, et les
-quatre largeurs donnent quatre largeurs différentes. Il mesure aussi le
+quatre largeurs donnent quatre largeurs différentes, et **rien ne passe sous le
+pli** — mesuré sur la page entière à 700 et à 667 points, au repos ET pendant
+l'enregistrement, dans les deux propositions. C'est le point le plus fragile de
+la planche : une case de plus, deux pixels de marge, et l'écran repasse sous le
+pli sans que personne le voie. Il mesure aussi le
 **contraste** des aplats plutôt que leur simple présence : sa première version
 accusait le micro du coin et les pastilles Mr/Mme — des surfaces à 1,03 de
 contraste du fond de page, que personne ne lit comme un appel à l'action. Un
 contrôle qui désigne le mauvais coupable coûte plus cher que pas de contrôle.
-Éprouvé contre sept états dégradés — poubelle inerte, poubelle qui mène au
-devis, pause neutralisée, bouton à pleine largeur, bouton repeint en aplat,
-anneau resté visible, report du nom coupé : chacun le fait rougir.
+Éprouvé contre dix états dégradés — poubelle inerte, poubelle qui mène au devis,
+pause neutralisée, bouton à pleine largeur, bouton repeint en aplat, anneau resté
+visible, report du nom coupé, un champ de plus, les espaces relâchés, la réserve
+de la dictée sautée : chacun le fait rougir.
+
+**Un pixel, trouvé par le contrôle et non à l'œil.** La poubelle rendait
+43,99997 px — l'alignement du flex la rabotait d'un cheveu, juste sous le seuil
+du doigt. Le message, lui, affichait « mesuré : 44×44 » en refusant : un contrôle
+qui se contredit envoie chercher partout sauf au bon endroit. Les deux sont
+corrigés.
 
 ### Le commercial écrit sur le planning : confirmé, plus seulement toléré
 

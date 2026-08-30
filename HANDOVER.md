@@ -250,12 +250,23 @@ sa réponse (`CLAUDE.md` §3 bis).
   chiffre à donner**, plus un second chiffre pour la largeur du bouton « Je
   rédige mon devis ». **Non codée.**
 
-  **Deux points sont DÉJÀ tranchés par lui, le 30 août :** l'anneau
+  **Trois points sont DÉJÀ tranchés par lui, le 30 août :** l'anneau
   **disparaît** dès qu'on appuie (*« il doit ensuite disparaître pour laisser
   place à la modification »* — une proposition qui le gardait au centre a été
-  retirée), et le bouton du bas devient **secondaire**, libellé « Je rédige à la
-  main » : *« l'idée c'est qu'il utilise en priorité la note vocale »*. Le seul
-  aplat plein de l'écran est désormais le rond d'envoi de la dictée.
+  retirée), le bouton du bas devient **secondaire**, libellé « Je rédige à la
+  main » (*« l'idée c'est qu'il utilise en priorité la note vocale »* — le seul
+  aplat plein de l'écran est le rond d'envoi), et **tout tient sur un écran**
+  (*« ne doit pas décoller vers le bas pour accéder aux autres informations »*).
+
+  **Ce dernier point commande la mise en page du code à venir**, et il est
+  fragile : l'écran est passé de 960 à 631 px. Quatre intitulés ont dû partir —
+  e-mail, adresse, canal, photos —, « Nom du client » et « Téléphone » restent
+  (demandés nommément le 21 août), et ce qui n'est plus écrit reste lisible par
+  un lecteur d'écran. La zone de la dictée a une **hauteur fixe** : sans elle, la
+  barre, plus haute que l'anneau, pousse le bouton sous le pli à l'instant où
+  l'on appuie. `scripts/verifier-maquette-note-vocale-simple.mjs` mesure la page
+  entière à 700 et 667 points, au repos et en dictant — c'est ce contrôle qui
+  attrapera la case de trop.
 
   **Ce que le codage devra reprendre, quand il aura répondu.** Aujourd'hui
   `AnneauNoteVocale.basculerDictee()` envoie AU SECOND APPUI : `arreter()` puis
