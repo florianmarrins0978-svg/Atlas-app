@@ -218,6 +218,39 @@ heures plus tôt, dans ce même conteneur. Ne pas écrire que c'est réglé.
 
 ---
 
+## LES CAPACITÉS S'ÉCRIVENT EN LISTE BLANCHE — ne jamais revenir en arrière (30 août 2026)
+
+`src/lib/acces-roles.ts` porte cinq capacités. **Chacune nomme qui l'a :**
+
+    return role === "proprietaire" || role === "facturation";   // ✅
+    return role !== "salarie";                                   // ❌ jamais
+
+Ce n'est pas un goût de style. Sous l'ancienne forme, le rôle « facturation »
+né le 30 août serait arrivé **avec le droit d'émettre des factures et de
+supprimer des chantiers**, sans qu'une seule ligne change et sans qu'un test
+rougisse. Un contrôle lit désormais la source et refuse toute règle écrite par
+la négative (`test-roles-capacites-db.ts`).
+
+Un rôle ajouté demain naît donc **sans aucun droit**, et il faut l'inscrire
+capacité par capacité. C'est voulu : plus long à écrire une fois, et c'est la
+seule version qui se relit.
+
+**Et le rôle n'est nulle part ailleurs qu'en base.** Il n'est pas dans le jeton
+Auth.js ; `autorisation.ts` le relit à chaque requête sous `withEntreprise`. Un
+rôle changé par le patron s'applique à la requête suivante — ne pas « améliorer »
+cela avec un cache qui survivrait à la requête.
+
+## UN COMMERCIAL NE FACTURE PLUS — et il ne clôture plus un chantier (30 août 2026)
+
+Le geste « Créer la facture » ne change pas un état : `terminerChantier` **crée
+la facture**. Il relève donc de `exigerFacturation`, comme l'émission, les
+paiements, les achats et les tickets de TVA.
+
+Conséquence à connaître avant de croire à un défaut : **un commercial qui dit
+« je ne peux plus finir mes chantiers » n'a pas de bogue.** C'est la règle du
+patron du 13 août, appliquée depuis le 30. Si un jour il veut séparer « marquer
+fait » de « facturer », c'est deux gestes à écrire — un travail de produit.
+
 ## UN SALARIÉ NE MODIFIE PLUS RIEN AU PLANNING (30 août 2026)
 
 **Sa décision, et elle est sans nuance :** *« Un salarié peut uniquement

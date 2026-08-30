@@ -26,6 +26,8 @@ import {
   estRole,
   libelleRole,
   ongletsDuRole,
+  peutFacturer,
+  peutModifierLePlanning,
   peutVoirLesMontants,
 } from "../src/lib/acces-roles";
 import { rubriquesReglages, adressesAutorisees } from "../src/lib/rubriques-reglages";
@@ -148,6 +150,13 @@ essai("aucun devis, aucune facture, aucun chantier ne sort pour un salarié", ()
 essai("le commercial atteint l'application, sauf les adresses nommées", () => {
   const fermees = ADRESSES.filter((a) => !cheminAutorise("commercial", a));
   assert.deepEqual(fermees.sort(), [
+    // **« Terminés » et la TVA sont entrés le 30 août 2026, et ce n'est pas un
+    // resserrement d'humeur : c'est SA règle du 13 août**, restée lettre morte
+    // trois semaines (`docs/QUESTIONS.md` §10) — *« ni les factures, ni la
+    // TVA »*. Les lignes ci-dessous manquaient, et leur absence défendait le
+    // défaut.
+    "/api/factures/xxxx/pdf",
+    "/chantiers/xxxx/facture",
     "/reglages/abonnement",
     "/reglages/documents",
     "/reglages/donnees",
@@ -159,15 +168,36 @@ essai("le commercial atteint l'application, sauf les adresses nommées", () => {
     // pose une page qui, elle, ne devait pas l'hériter.
     "/reglages/equipe/nouveau",
     "/reglages/identite",
+    "/termines",
+    "/termines/tva",
   ]);
 });
 
-essai("le commercial voit les chantiers, les devis, les prix et les factures", () => {
+essai("le commercial voit les chantiers, les devis et les prix — mais PAS les factures", () => {
   // Sa précision du 23 août 2026 : « les commerciaux auront accès à l'entièreté
   // de l'application, sauf… ». Ce contrôle est là pour que personne ne resserre
   // ce rôle en croyant bien faire.
-  for (const a of ["/", "/chantiers/xxxx", "/chantiers/xxxx/prix", "/api/devis/xxxx/pdf", "/termines/tva"]) {
+  for (const a of ["/", "/chantiers/xxxx", "/chantiers/xxxx/prix", "/chantiers/xxxx/export", "/api/devis/xxxx/pdf", "/planning", "/clients"]) {
     assert.ok(cheminAutorise("commercial", a), `le commercial est refusé sur ${a}`);
+  }
+  // ═══════════════════════════════════════════════════════════════════════
+  // **CE CONTRÔLE DISAIT L'INVERSE JUSQU'AU 30 AOÛT 2026, et il défendait un
+  // défaut.** Il exigeait que `/termines/tva` soit OUVERT au commercial, au
+  // nom de « l'entièreté de l'application » — alors que la table du patron,
+  // dans le même document et dix jours plus tôt, écrivait *« ni les factures,
+  // ni la TVA »*. Une suite qui réclame ce que la règle interdit est pire
+  // qu'une absence de suite : elle rassure celui qui vient vérifier.
+  for (const a of ["/termines", "/termines/tva", "/chantiers/xxxx/facture", "/api/factures/xxxx/pdf"]) {
+    assert.ok(!cheminAutorise("commercial", a), `le commercial atteint encore ${a}`);
+  }
+});
+
+essai("la facturation tient son cycle, et rien de plus", () => {
+  for (const a of ["/", "/chantiers/xxxx", "/chantiers/xxxx/facture", "/clients", "/termines/tva", "/planning", "/api/factures/xxxx/pdf"]) {
+    assert.ok(cheminAutorise("facturation", a), `la facturation est refusée sur ${a}`);
+  }
+  for (const a of ["/paysage", "/catalogue", "/reglages/identite", "/reglages/tarifs", "/reglages/equipe"]) {
+    assert.ok(!cheminAutorise("facturation", a), `la facturation atteint ${a}`);
   }
 });
 
@@ -234,7 +264,11 @@ const ONGLETS = [
 
 essai("la barre du bas suit le rôle", () => {
   assert.equal(ongletsDuRole("proprietaire", ONGLETS).length, 5);
-  assert.equal(ongletsDuRole("commercial", ONGLETS).length, 5);
+  // Le commercial perd « Terminés » — l'onglet de la facturation. Il garde les
+  // quatre autres : chantiers, planning, paysage, réglages.
+  assert.deepEqual(ongletsDuRole("commercial", ONGLETS).map((o) => o.href), ["/", "/planning", "/paysage", "/reglages"]);
+  // La facturation perd « Paysage » — les outils du terrain ne facturent rien.
+  assert.deepEqual(ongletsDuRole("facturation", ONGLETS).map((o) => o.href), ["/", "/planning", "/termines", "/reglages"]);
   assert.deepEqual(ongletsDuRole("salarie", ONGLETS).map((o) => o.href), ["/planning", "/reglages"]);
 });
 
@@ -248,12 +282,14 @@ essai("le repli d'un refus est toujours une adresse que le rôle atteint", () =>
 
 essai("les montants ne sont pas pour le salarié", () => {
   assert.equal(peutVoirLesMontants("proprietaire"), true);
+  assert.equal(peutVoirLesMontants("facturation"), true);
   assert.equal(peutVoirLesMontants("commercial"), true);
   assert.equal(peutVoirLesMontants("salarie"), false);
 });
 
 essai("les libellés sont ceux de sa planche", () => {
   assert.equal(libelleRole("proprietaire"), "Patron");
+  assert.equal(libelleRole("facturation"), "Facturation");
   assert.equal(libelleRole("commercial"), "Commercial");
   assert.equal(libelleRole("salarie"), "Salarié");
 });
@@ -273,6 +309,50 @@ essai("ce que l'écran promet correspond à ce que la règle fait", () => {
   assert.ok(ceQueLeRoleChange("salarie").nonPlus.length > 0);
   for (const role of ROLES) {
     assert.ok(ceQueLeRoleChange(role).peut.length > 0, `${role} n'annonce rien qu'il puisse faire`);
+  }
+});
+
+/**
+ * **CE CONTRÔLE EST NÉ D'UN MENSONGE QUE LE PRÉCÉDENT LAISSAIT PASSER.**
+ *
+ * Jusqu'au 30 août 2026, l'écran des accès annonçait au patron que le
+ * commercial pouvait faire « Les factures et le relevé de TVA » — alors que sa
+ * propre règle du 13 août disait *« ni les factures, ni la TVA »*. Le contrôle
+ * d'au-dessus ne pouvait pas le voir : il vérifiait que les listes ne sont pas
+ * vides, jamais **ce qu'elles disent**.
+ *
+ * Celui-ci attache donc les mots à la capacité. Deux mots seulement — ceux du
+ * patron —, et de chaque côté : promettre ce qu'on refuse est le défaut du
+ * 13 août ; taire une restriction réelle en est le jumeau, et c'est le suivant
+ * qu'on paierait.
+ */
+essai("L'ÉCRAN NE PROMET PAS CE QUE LA RÈGLE REFUSE — le mensonge du 13 août", () => {
+  const dit = (liste: readonly string[], mot: string) =>
+    liste.some((l) => l.toLowerCase().includes(mot));
+
+  for (const role of ROLES) {
+    const { peut, nonPlus } = ceQueLeRoleChange(role);
+
+    // **Un rôle SANS aucune restriction est dispensé de la moitié positive.**
+    // Le patron annonce « Tout Atlas » : énumérer sous cette phrase ce qu'il
+    // peut faire serait une seconde liste, qui vieillirait à la première
+    // fonction ajoutée. Sa `nonPlus` vide est déjà vérifiée juste au-dessus, et
+    // c'est elle qui rend la promesse vraie.
+    if (peutFacturer(role)) {
+      if (nonPlus.length > 0) {
+        assert.ok(dit(peut, "facture"), `${role} facture, et l'écran ne le dit pas`);
+      }
+      assert.ok(!dit(nonPlus, "facture"), `${role} facture, et l'écran annonce le contraire`);
+    } else {
+      assert.ok(!dit(peut, "facture"), `${role} ne facture pas, et l'écran le lui promet`);
+      // Le patron doit LIRE la restriction avant de donner l'accès : une
+      // restriction tue se découvre le jour où la personne se plaint.
+      assert.ok(dit(nonPlus, "facture"), `${role} ne facture pas, et l'écran se tait`);
+    }
+
+    if (!peutModifierLePlanning(role) && role !== "proprietaire") {
+      assert.ok(dit(nonPlus, "planning"), `${role} n'écrit pas au planning, et l'écran se tait`);
+    }
   }
 });
 

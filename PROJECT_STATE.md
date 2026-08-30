@@ -64,6 +64,30 @@ disparaît.
 
 Détail : `docs/j-ai-vu-sur-tous-les-rappels.md`, `ARCHITECTURE.md` §210.
 
+## QUATRE RÔLES, ET LE COMMERCIAL NE FACTURE PLUS (30 août 2026)
+
+Le modèle des utilisateurs est **figé** avant le déploiement.
+
+| | |
+|---|---|
+| **Patron** | tout Atlas — l'administrateur de son entreprise |
+| **Facturation** *(neuf)* | clients, devis, factures, TVA. Planning en lecture. Aucune administration |
+| **Commercial** | clients, devis, planning en écriture (suppression comprise). **Aucune facturation** |
+| **Salarié** | planning en lecture seule, sa feuille sans un montant |
+
+Plusieurs personnes portent le même rôle — c'était déjà vrai en base (clé unique
+sur entreprise + personne), il n'y a **pas** de compte partagé « Facturation ».
+
+**Le défaut fermé dormait depuis le 13 août** : les dix actions du cycle
+comptable se gardaient par « tout sauf le salarié », donc un commercial
+facturait pour de bon — alors que `docs/QUESTIONS.md` §10 disait *« ni les
+factures, ni la TVA »*. L'écran des accès lui **promettait** même le contraire.
+
+**Ce que ça coûte :** un commercial ne clôture plus un chantier — « Créer la
+facture » crée la facture.
+
+Détail : `docs/modele-des-roles.md`, `ARCHITECTURE.md` §212. Migration 0071.
+
 ## Le planning du salarié est en LECTURE SEULE (30 août 2026)
 
 **Sa décision :** *« Un salarié peut uniquement CONSULTER son planning. Il ne

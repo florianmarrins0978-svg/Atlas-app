@@ -127,7 +127,18 @@ async function main() {
     assert.equal(peutModifierLePlanning("commercial"), true, "le commercial a perdu son droit");
     // Refuser de conclure sur rien : le jour où un quatrième rôle naît, cette
     // règle doit avoir été relue plutôt que d'ouvrir en silence.
-    assert.equal(ROLES.length, 3, "un rôle est apparu : la règle d'écriture n'a pas été relue");
+    // **Ce compte est un fil à la patte, et il a fait son travail le 30 août
+    // 2026** : l'arrivée du rôle « Facturation » l'a fait rougir, ce qui a
+    // obligé à rouvrir `peutModifierLePlanning` — écrite alors `!== "salarie"`,
+    // elle aurait donné au rôle neuf le droit de déplacer et de supprimer des
+    // chantiers, sans qu'aucune ligne ne change. Elle est depuis une liste
+    // blanche. Le compte reste : le prochain rôle doit provoquer la même halte.
+    assert.equal(ROLES.length, 4, "un rôle est apparu : la règle d'écriture n'a pas été relue");
+    assert.equal(
+      peutModifierLePlanning("facturation"),
+      false,
+      "la facturation écrit sur le planning : sa consigne du 30 août dit le contraire"
+    );
   });
 
   // ─── LE DÉCOR : une entreprise, ses trois rôles, un chantier ─────────────
