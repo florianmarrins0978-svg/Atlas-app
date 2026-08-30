@@ -49,11 +49,12 @@ export default async function TranscriptionPage({ params }: { params: Promise<{ 
           titre="Transcription"
         />
 
-        <p className="px-6 pt-4 text-[13px]" style={{ color: colors.muted }}>
-          Texte brut de votre dictée, tel qu&apos;il a été transcrit — jamais retouché.
-        </p>
-
-        <div className="mx-6 mt-3 rounded-[4px] px-5 py-5" style={{ backgroundColor: colors.card }}>
+        {/* La phrase qui décrivait le cadre d'en dessous — « Texte brut de votre
+            dictée, tel qu'il a été transcrit — jamais retouché » — est partie le
+            30 août 2026 : *« phrase en gris, texte brut de votre dictée,
+            supprime »*. L'écran s'appelle « Transcription » et montre le texte :
+            il n'a pas à le redire (`CLAUDE.md` §3). */}
+        <div className="mx-6 mt-6 rounded-[4px] px-5 py-5" style={{ backgroundColor: colors.card }}>
           <p
             className="whitespace-pre-wrap text-[15px] leading-relaxed"
             style={{ color: disponible ? colors.ink : colors.muted }}

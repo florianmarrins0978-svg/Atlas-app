@@ -18,6 +18,27 @@ ligne « fait » qui ne l'est pas coûte plus cher qu'une ligne absente.
 
 ---
 
+## Ce qui a déjà été dicté ne se redemande plus (30 août 2026)
+
+*« Tu dis deux souches de diamètre 60. Question : quel diamètre font les
+souches ? »* La lecture découpe à la virgule ; la question ne regardait que sa
+propre ligne, quand la hauteur était cherchée dans toute la dictée depuis le
+premier jour. Corrigé — avec une garde : à deux arbres, on redemande ligne par
+ligne, un diamètre dit quelque part n'appartenant pas forcément à celui qu'on
+questionne.
+
+Les questions ne nomment plus leur objet : « Quel diamètre ? », « Quelle
+hauteur ? », « Quelle longueur ? ».
+
+Deux textes qui décrivaient ce que l'écran montrait déjà sont partis :
+
+| Où | Ce qui reste |
+|---|---|
+| écran Transcription | rien — le titre et le cadre suffisent |
+| refus de chiffrer | « Aucun tarif ne correspond, et la dictée ne dit ni la durée ni l'équipe. » |
+
+---
+
 ## L'arrêt d'avant-chiffrage : moins de mots, et plus de question absurde (30 août 2026)
 
 Deux remarques de lui, le même jour, sur le même écran.

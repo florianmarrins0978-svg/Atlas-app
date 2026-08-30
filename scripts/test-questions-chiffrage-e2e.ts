@@ -134,7 +134,7 @@ async function main() {
     // Ciblé par son libellé : en recopie littérale, l'écran porte aussi le
     // champ « longueur de haie », et un sélecteur sur le type remplirait le
     // mauvais — le contrôle passerait alors au vert sur un diamètre absent.
-    await page.fill('input[aria-label="Quel diamètre fait le tronc ?"]', "70");
+    await page.fill('input[aria-label="Quel diamètre ?"]', "70");
     // Le libellé du bouton dit la vérité sur ce qui va se passer : « Continuer
     // vers le devis » quand tout est renseigné, « Continuer sans répondre à
     // tout » sinon. Les deux mènent au devis — on vise donc le geste, pas le mot.

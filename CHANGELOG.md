@@ -38,6 +38,28 @@ réclame ce qu'il a fait retirer.
 
 Détail et raisons : `ARCHITECTURE.md` §207.
 
+### Une mesure déjà dictée ne se redemande plus, et trois textes raccourcissent
+
+*« Tu dis deux souches de diamètre 60. Question : quel diamètre font les
+souches ? »* La lecture découpe une phrase à la virgule : « Il y a un
+dessouchage » d'un côté, « deux souches de soixante centimètres de diamètre » de
+l'autre. La question ne regardait que sa propre ligne — la hauteur, elle, était
+cherchée dans toute la dictée depuis le premier jour. Le diamètre l'est
+désormais aussi, tant qu'un seul arbre est en jeu (à deux, un diamètre dit
+quelque part n'appartient pas forcément à celui qu'on questionne).
+
+Les questions ne nomment plus leur objet — « Quel diamètre ? » au lieu de
+« Quel diamètre fait la souche ? » : la prestation est écrite juste au-dessus,
+au pluriel comme au singulier.
+
+Deux textes qui décrivaient ce que l'écran montrait déjà sont partis : la ligne
+grise de l'écran Transcription, et trois des quatre phrases du refus de chiffrer
+— *« beaucoup beaucoup trop long, aucun utilisateur va lire tout ça »*. Il ne
+reste que le motif ; les deux marches à suivre étaient déjà en boutons dessous.
+La phrase supprimée portait aussi « vos 1 prestation ».
+
+Détail : `ARCHITECTURE.md` §207.
+
 
 ### Plus aucune barre de défilement grise, y compris sur la page elle-même
 

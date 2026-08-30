@@ -228,6 +228,29 @@ export function questionsAvantChiffrage(
   // fente n'aurait jamais de prix, sans qu'aucune erreur ne le signale.
   const hauteurDansLaDictee = prestations.some((l) => contientHauteur(l));
 
+  // **Le diamètre aussi, et il a fallu qu'il le voie pour qu'on le corrige.**
+  //
+  // Le patron, le 30 août 2026, devant l'écran : *« tu dis deux souches de
+  // diamètre 60. Question : quel diamètre font les souches ? »* Sa dictée
+  // portait la réponse, en toutes lettres, deux lignes plus haut.
+  //
+  // CE QUI SE PASSAIT. La lecture découpe une phrase à la virgule. « Il y a un
+  // dessouchage, deux souches de soixante centimètres de diamètre » donne DEUX
+  // prestations : la première déclenche la question, la seconde porte la
+  // réponse. Or la question ne regardait que SA ligne — quand la hauteur, elle,
+  // était déjà cherchée dans toute la dictée depuis le premier jour. La même
+  // asymétrie que celle qui vient d'être corrigée plus haut : deux règles
+  // voisines, une seule relue.
+  //
+  // **La garde du seul arbre n'est pas une précaution de style.** À deux arbres
+  // dans une dictée, un diamètre dit quelque part n'appartient pas forcément à
+  // celui qu'on questionne — et se tromper de diamètre, c'est ranger un prix
+  // dans la case d'à côté. Un seul arbre, aucune ambiguïté : le chiffrage lit
+  // déjà tous les textes du chantier sans distinction (`prixDeLaLigne`), donc
+  // il trouvera le même nombre. Deux arbres : on demande, ligne par ligne.
+  const lignesArbre = prestations.filter((l) => estDeNature(l, ["abattage", "dessouchage"], ABATTAGE));
+  const diametreDansLaDictee = lignesArbre.length === 1 && prestations.some((l) => contientDiametre(l));
+
   prestations.forEach((ligne, rang) => {
     const libelle = ligne.libelle.trim();
     if (!libelle) return;
@@ -246,7 +269,7 @@ export function questionsAvantChiffrage(
         questions.push({
           id: `fendage.hauteur#${rang}`,
           libellePrestation: libelle,
-          question: "Quelle hauteur fait l'arbre ?",
+          question: "Quelle hauteur ?",
           options: null,
           unite: "m",
         });
@@ -255,7 +278,7 @@ export function questionsAvantChiffrage(
         questions.push({
           id: `fendage.diametre#${rang}`,
           libellePrestation: libelle,
-          question: "Quel diamètre fait le tronc ?",
+          question: "Quel diamètre ?",
           options: null,
           unite: "cm",
         });
@@ -286,11 +309,17 @@ export function questionsAvantChiffrage(
       // elle que la dictée donne (« de vingt mètres de haut »). Ne pas la
       // confondre : demander « la taille » laisserait croire que la hauteur
       // suffit.
-      if (!contientDiametre(ligne)) {
+      if (!contientDiametre(ligne) && !diametreDansLaDictee) {
         questions.push({
           id: `${souche ? "dessouchage" : "abattage"}.diametre#${rang}`,
           libellePrestation: libelle,
-          question: souche ? "Quel diamètre fait la souche ?" : "Quel diamètre fait le tronc ?",
+          // **« Quel diamètre ? », et pas « quel diamètre fait la souche ? ».**
+          // Même remarque du 30 août : la dictée disait « deux souches », la
+          // question en disait une. Accorder au nombre supposerait de le
+          // compter — un travail de plus pour un mot de moins. La prestation
+          // est écrite juste au-dessus : elle dit déjà de quoi l'on parle, au
+          // pluriel comme au singulier.
+          question: "Quel diamètre ?",
           options: null,
           unite: "cm",
         });
@@ -302,7 +331,7 @@ export function questionsAvantChiffrage(
       questions.push({
         id: `haie.longueur#${rang}`,
         libellePrestation: libelle,
-        question: "Quelle longueur de haie ?",
+        question: "Quelle longueur ?",
         options: null,
         unite: "ml",
       });

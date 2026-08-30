@@ -18157,3 +18157,53 @@ les blocs `[data-atlas="question-chiffrage"]` : le même garde-fou, sur une pris
 qui survivra au prochain remaniement de texte. Deux autres suites
 (`test-anneau-vers-devis-e2e`, `test-madame-lucie-e2e`) visaient le même libellé
 et ont suivi.
+
+### Le même jour, trois autres retraits — et un défaut que seul le métier voyait
+
+**« Tu dis deux souches de diamètre 60. Question : quel diamètre font les
+souches ? »** Sa dictée portait la réponse, en toutes lettres, une ligne plus
+haut. Ce qui se passait :
+
+```
+« Il y a un dessouchage, deux souches de soixante centimètres de diamètre. »
+        ↓ la lecture découpe à la virgule
+1. « Il y a un dessouchage »                             → pose la question
+2. « deux souches de soixante centimètres de diamètre »  → porte la réponse
+```
+
+La question ne regardait que **sa** ligne. La hauteur, elle, était cherchée dans
+toute la dictée depuis le premier jour (`hauteurDansLaDictee`) — le diamètre n'a
+jamais reçu le même traitement. Deux règles voisines, une seule relue : la même
+faute que le regroupement du dessouchage, à quelques lignes de distance.
+
+**La garde du seul arbre n'est pas une précaution de style.** À deux arbres dans
+une dictée, un diamètre dit quelque part n'appartient pas forcément à celui
+qu'on questionne, et se tromper de diamètre range le prix dans la case d'à côté.
+`diametreDansLaDictee` ne vaut donc que lorsqu'une seule ligne parle d'un arbre
+ou d'une souche ; à deux, on demande ligne par ligne.
+
+**Et taire une question n'est tenable que si le chiffrage lit les mêmes textes.**
+C'est écrit dans l'en-tête du module, et c'est le piège qu'il se tend à
+lui-même : s'il en lisait moins, la case de la grille resterait introuvable —
+sans question posée, sans erreur, et sans prix. `prixDeLaLigne` met déjà en
+commun tous les libellés du chantier (`textesChantier`), donc il retrouve le
+même 60. Une suite le vérifie désormais côte à côte, plutôt que de s'y fier.
+
+**Les questions ne nomment plus leur objet.** « Quel diamètre fait la souche ? »
+sur une dictée qui dit « deux souches » — il l'a relevé dans la même phrase.
+Accorder au nombre supposerait de le compter : un travail de plus pour un mot de
+moins. La prestation est écrite juste au-dessus, elle dit déjà de quoi il
+s'agit, au pluriel comme au singulier. D'où « Quel diamètre ? », « Quelle
+hauteur ? », « Quelle longueur ? ».
+
+**Deux textes qui décrivaient ce que l'écran montrait déjà :**
+
+| Où | Avant | Après |
+|---|---|---|
+| écran Transcription | « Texte brut de votre dictée, tel qu'il a été transcrit — jamais retouché » | — (le titre dit « Transcription », le cadre montre le texte) |
+| refus de chiffrer | quatre phrases : le motif, deux marches à suivre, et « En attendant, vos 1 prestation est inscrite sur le devis » | « Aucun tarif ne correspond, et la dictée ne dit ni la durée ni l'équipe. » |
+
+Le refus de chiffrer garde **le pourquoi, et rien d'autre** : les deux marches à
+suivre étaient déjà sous lui, en boutons — « Ouvrir le devis et poser les prix »
+et « Compléter la durée et l'équipe ». La phrase supprimée portait aussi « vos
+**1** prestation », une faute d'accord que plus personne ne lisait.

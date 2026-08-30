@@ -349,18 +349,13 @@ async function chiffrerEtPreparer(
   let prixImpossible: string | null = null;
 
   if (!proposition) {
-    prixImpossible = "Le chantier est introuvable : aucun prix n'a pu être calculé.";
+    prixImpossible = "Chantier introuvable.";
   } else if (proposition.origine === "tarifs_ambigus") {
     // Choisir à sa place serait choisir son prix. On s'arrête, on le dit.
     const noms = proposition.tarifsCandidats.map((t) => `« ${t.intitule} » (${t.prix} €)`).join(", ");
-    prixImpossible =
-      `Plusieurs de vos tarifs correspondent à ce chantier : ${noms}. ` +
-      "Le choix vous revient — ouvrez l'écran Prix pour désigner celui à appliquer.";
+    prixImpossible = `Plusieurs de vos tarifs correspondent : ${noms}.`;
   } else if (proposition.prixPropose === null || !proposition.libelle) {
-    prixImpossible =
-      "Aucun de vos tarifs ne correspond, et la dictée ne dit ni la durée ni le nombre d'hommes : " +
-      "le prix ne peut pas être calculé sans l'inventer. Complétez la durée et l'équipe sur l'écran " +
-      "Informations, ou enregistrez un tarif pour ce type de prestation.";
+    prixImpossible = "Aucun tarif ne correspond, et la dictée ne dit ni la durée ni l'équipe.";
   } else {
     const application = await appliquerPropositionPrix(ctx, chantierId);
     if (application.succes) {
@@ -430,11 +425,12 @@ async function chiffrerEtPreparer(
         // Jamais bloquant — un devis vaut mieux qu'un lien.
       }
     }
-    if (aEcrire.length > 0) {
-      prixImpossible =
-        `${prixImpossible} En attendant, vos ${aEcrire.length} prestation${aEcrire.length > 1 ? "s sont inscrites" : " est inscrite"} ` +
-        "sur le devis : il ne reste qu'à poser les prix.";
-    }
+    // **Ce qui vient d'être écrit ne s'annonce plus en une phrase.** Elle disait
+    // « En attendant, vos 2 prestations sont inscrites sur le devis : il ne
+    // reste qu'à poser les prix » — et sous elle, un bouton disait déjà
+    // « Ouvrir le devis et poser les prix ». Le patron, le 30 août 2026 :
+    // *« beaucoup beaucoup trop long, aucun utilisateur va lire tout ça »*.
+    // Elle écrivait aussi « vos 1 prestation », faute qu'on ne voyait plus.
   }
 
   // --- 4. Le devis ---------------------------------------------------------
