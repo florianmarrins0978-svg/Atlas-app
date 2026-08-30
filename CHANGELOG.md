@@ -7,6 +7,60 @@ Format : le plus récent en tête.
 
 ---
 
+## 2026-08-30
+
+### Lot de clôture : ce qui restait ouvert avant le premier artisan
+
+Détail complet dans `docs/cloture-avant-premier-artisan.md`. Ce qui suit est ce
+que ces corrections **évitent**.
+
+**La purge n'était pas seulement débranchée : elle était invisible.** Le grave
+n'est pas l'oubli du planificateur — cela se branche en une ligne. Le grave est
+qu'une purge qui ne tourne pas ne se signale pas : aucune erreur, aucun écran
+rouge. On ne l'aurait découvert qu'en cherchant autre chose, des mois plus tard,
+avec toutes les durées de conservation annoncées fausses depuis le début.
+Un journal des exécutions **réussies**, une sonde qui rend 503 au-delà de 48 h,
+et `docs/DEPLOIEMENT-PURGE.md` pour le reste. Atlas ne planifie toujours rien :
+un minuteur interne mourrait avec le processus sans que personne ne le sache.
+
+**Un écran fermé ne fermait pas l'action.** 37 actions sans garde sur des écrans
+pourtant fermés au salarié, dont quatre suppressions **dures** — prestation,
+matériel, note vocale, passage d'entretien : un `DELETE`, que rien ne défait.
+Et la portée du planning ne filtrait que l'**affichage** : un salarié resserré
+ne voyait pas les autres chantiers et pouvait les supprimer dès qu'il en
+connaissait l'identifiant. Le patron croyait avoir restreint.
+
+**Ce que le patron approuve est désormais ce qui s'écrit.** L'écran affichait
+une description composée par le modèle, l'application écrivait `donnees`, et
+rien ne les confrontait : « Tonte — 120 € » pouvait faire écrire 1 200 €. La
+description se **recalcule** depuis les données écrites — l'écart n'est plus
+détecté, il est impossible.
+
+**Un montant du modèle partait sans être regardé.** La base refusait le négatif
+et rien d'autre. Bornes **factuelles** seulement — ce qui n'est pas un nombre,
+ce que la colonne ne peut pas contenir. Aucun plafond métier inventé : refuser
+au-dessus de dix mille euros refuserait du terrassement réel.
+
+**Le contenu appris avait l'autorité d'une consigne système.** Trois
+emplacements déclarés au lieu de deux : les règles, la donnée à traiter, les
+exemples appris.
+
+**Ma première correction d'invite était fausse, et c'est la leçon du lot.**
+J'avais sorti le bloc de la consigne système — juste — mais préfixé à la
+**dictée**. Or `lireLitteralement` analyse ce message mot à mot, et sert de
+FILET quand un vrai fournisseur répond à côté : le défaut aurait atteint la
+production. Ce ne sont pas des contrôles de sécurité qui l'ont trouvé, mais
+trois suites navigateur ordinaires.
+
+**Trois affirmations fausses corrigées** dans `docs/RGPD.md`, qui portait
+« implémenté » sur des durées que rien n'exécutait. « Implémenté » voulait dire
+« le code est écrit » ; un lecteur comprenait « la donnée est effacée ». Le
+tableau distingue désormais trois états, jamais deux.
+
+Batterie : 265/265 base, 116/116 navigateur, 0 erreur de types.
+
+---
+
 ## 2026-08-29
 
 ### Audit final de sécurité : quatre protections qui n'en étaient pas

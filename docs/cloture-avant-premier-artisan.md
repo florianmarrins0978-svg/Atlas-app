@@ -226,9 +226,30 @@ travail. `npm run verifier:ia` et une dictée réelle le diront.
 | **Types** | **0 erreur** |
 | **Lint** | 0 erreur, 13 avertissements (préexistants, aucun de sécurité) |
 | **Suites base** | **265 / 265** |
-| **Suites navigateur** | *en cours à la rédaction* |
+| **Suites navigateur** | **116 / 116** |
 | **Suites neuves de ce lot** | 5 — journal de purge, actions gardées (élargie), montant écrivable, description recalculée, emplacements de l'invite |
 | **Essais négatifs** | **7 neufs**, tous vus rouges avant d'être verts |
+
+### Ce qu'il a fallu trois batteries pour établir, et il faut le dire
+
+Les deux premières batteries navigateur ont rendu **115/116** — et **sur une
+suite différente à chaque fois** : `test-reduction-devis-e2e.ts`, puis
+`test-fiche-chantier-e2e.ts`. La troisième est **entièrement verte**.
+
+Je n'ai pas appelé cela un caprice avant de l'avoir établi. Quatre constats, et
+c'est leur convergence qui tranche :
+
+| | |
+|---|---|
+| **Zéro refus de garde** dans le journal du serveur | les 44 gardes posées par ce lot ne refusent rien au patron. Si elles étaient en cause, elles auraient laissé une trace |
+| **Une suite différente à chaque exécution** | une régression est déterministe ; celle-ci se déplaçait |
+| **Chacune passe dans l'autre contexte** | `reduction-devis` passe jouée seule, `fiche-chantier` passe en batterie. L'inverse de ce qu'un défaut de code produit |
+| **Le fond passe même quand la forme rougit** | sur « Envoyer fige le rapport », l'assertion **suivante** — *le client reçoit ce qui a été fait* — passait : le rapport était bien parti, seule la détection de l'ouverture de la messagerie avait manqué |
+
+**Ce conteneur a par ailleurs tué trois serveurs de développement de lui-même**
+pendant ce lot, et une fois pour une raison qui m'appartient : j'éditais des
+fichiers pendant que la batterie tournait, ce que `CLAUDE.md` §5 interdit en
+toutes lettres.
 
 ### Les essais négatifs de ce lot
 

@@ -9,6 +9,69 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
+## Ce que le lot de clôture du 30 août 2026 laisse ouvert
+
+Le rapport complet est dans `docs/cloture-avant-premier-artisan.md`. Il ne reste
+que ceci.
+
+### 1. LA DÉCISION DU PATRON — une seule, et elle bloque une ligne de code
+
+> **Un salarié peut-il supprimer un chantier ? OUI / NON**
+
+**Le dépôt ne tranche pas**, et c'est vérifié : toutes ses phrases relevées
+portent sur ce qu'un salarié **voit** — « juste le planning et les devis, mais
+sans les prix », « accès qu'à la catégorie planning ». Aucune ne dit ce qu'il a
+le droit d'**écrire**. La seule qui s'en approche — *« il ne doit évidemment pas
+pouvoir modifier les tarifs ou les coordonnées bancaires »* — ne nomme que les
+tarifs et l'IBAN.
+
+Ce qui est vrai aujourd'hui : par son écran, il peut supprimer un chantier — le
+bouton est dessiné pour lui. Suppression douce, refusée si une facture est
+émise, mais **aucun écran ne la restaure**. Depuis ce lot, il ne peut le faire
+que sur les chantiers de **son équipe**, si le patron l'a resserré.
+
+**Si la réponse est NON**, la correction est d'une ligne : `/planning` rejoint
+`ECRANS_FERMES_AU_SALARIE`. Il faudra alors décider aussi pour *déplacer* et
+*déplanifier* — mêmes actions, même écran.
+
+### 2. L'infrastructure, et elle seule
+
+Tout est écrit pas à pas dans `docs/DEPLOIEMENT-PURGE.md`.
+
+- **Bloquant** : brancher le planificateur de purge (un *Serverless Job*
+  Scaleway avec déclencheur *cron*, `curl --fail`), et poser la sonde sur
+  `/api/health/purge` ;
+- **Bloquant** : `ATLAS_URL_PUBLIQUE` — l'application refuse désormais de
+  démarrer sans elle en production ;
+- **Recommandé** : `ATLAS_PROXY_SAUTS`, `ATLAS_RP_ID`, `AUTH_URL`, et la
+  rétention des journaux à poser chez Scaleway.
+
+### 3. Deux durées qui décrivent ce qui n'existe pas
+
+- `RETENTION.compteFermeJours` — **il n'y a aucun chemin de fermeture de compte**
+  dans le produit : ni écran, ni fonction. Soit on écrit le chemin, soit on
+  retire la durée. Elle est marquée comme telle dans le code en attendant ;
+- le **lien d'un compte rendu d'entretien n'expire jamais**, alors que celui d'un
+  devis expire à 45 jours et celui d'une facture à 60.
+
+### 4. Ce que l'effacement d'un client oublie encore
+
+Inchangé depuis l'audit : le compte rendu d'entretien survit avec le nom figé du
+client, les PDF de devis restent dans le stockage, les jetons de facture ne sont
+pas retirés, et la photo d'un ticket supprimé n'est jamais mise en file. Un
+contrôle qui balaie les colonnes `jeton` et les clés de stockage après un
+effacement vaudrait mieux qu'une énumération table par table.
+
+### 5. IA — ce qui n'a pas pu être éprouvé ici
+
+Les corrections d'invite sont **structurelles et déterministes**, et testées
+comme telles. Mais cet environnement n'a **aucune clé** (`CLAUDE.md` §1 ter) :
+ce qu'un vrai modèle fait du bloc `<exemples_passes>`, et la qualité des
+extractions qui en résulte, se vérifient sur l'espace du patron —
+`npm run verifier:ia` et une dictée réelle.
+
+---
+
 ## Ce que l'audit du 29 août 2026 laisse ouvert
 
 Le détail complet est dans `docs/audit-securite-final.md`. Ce qui suit est ce
