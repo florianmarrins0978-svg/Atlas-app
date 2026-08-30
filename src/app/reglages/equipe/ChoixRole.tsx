@@ -63,7 +63,13 @@ export default function ChoixRole({
         <p className={`mb-2 ${libelleCaps}`} style={{ color: colors.muted }}>Son rôle</p>
       )}
 
-      <div className="flex gap-2">
+      {/* **DEUX PAR LIGNE DEPUIS LE 30 AOÛT 2026, et c'est le rôle
+          « Facturation » qui l'impose.** À trois, la rangée tenait ; à quatre,
+          le plus long des libellés se casse en deux et les pastilles cessent
+          d'avoir la même hauteur. Un quadrillage 2×2 garde des pastilles de
+          largeur égale, quel que soit le mot — et il en tiendra six sans qu'on
+          y revienne. */}
+      <div className="grid grid-cols-2 gap-2">
         {ROLES.map((r) => {
           const choisi = r === valeur;
           return (
@@ -73,7 +79,7 @@ export default function ChoixRole({
               disabled={inerte}
               onClick={() => !choisi && onChoisir(r)}
               aria-pressed={choisi}
-              className="flex flex-1 items-center justify-center gap-1.5 rounded-full py-2.5 text-[12.5px]"
+              className="flex items-center justify-center gap-1.5 rounded-full py-2.5 text-[12.5px]"
               style={
                 choisi
                   ? {

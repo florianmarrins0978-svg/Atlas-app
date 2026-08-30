@@ -55,6 +55,23 @@ le chemin, et la troisième est la référence du code.
 Le rapport complet est dans `docs/cloture-avant-premier-artisan.md`. Il ne reste
 que ceci.
 
+### 0. Le modèle des rôles est FIGÉ — ce qui en découle
+
+**Lot du 30 août 2026**, `docs/modele-des-roles.md`. Quatre rôles : patron,
+facturation, commercial, salarié. Rien ne reste à coder ; deux points sont
+seulement à savoir avant le déploiement.
+
+- **Un commercial ne clôture plus un chantier.** « Créer la facture » crée la
+  facture, donc c'est un geste de facturation. Si le patron veut qu'un
+  commercial puisse marquer un chantier comme fait SANS que la facture naisse,
+  c'est un geste à séparer en deux — un travail de produit, pas de sécurité, et
+  il n'est pas demandé.
+- **Les tarifs restent fermés au commercial en LECTURE.** Sa règle du 13 août
+  dit *« il lit les tarifs, il ne les change pas »* ; les deux écrans portent
+  `estProprietaire`, lecture comprise, faute d'un écran en lecture seule. C'est
+  la note qui existait déjà plus bas dans ce fichier, et ce lot ne l'a pas
+  élargie — la facturation n'y a pas accès non plus.
+
 ### ~~1. LA DÉCISION DU PATRON — un salarié peut-il supprimer un chantier ?~~
 
 **~~TRANCHÉE LE 30 AOÛT 2026, et plus largement que la question :~~**
@@ -601,6 +618,40 @@ suffit plus**, et c'est ce que ce constat ajoute.
 **Ce qu'il faudrait, pour qui reprend :** remplacer l'attente par un témoin — la
 valeur relue en base, la classe que le composant pose — plutôt que d'allonger
 les délais un à un. Le seuil suivant sera atteint par la machine suivante.
+
+### Sixième occurrence, 30 août 2026 — et ce qu'elle a coûté faute d'un message
+
+`test-lecons-prix-e2e` est retombé deux fois, sur la même phrase. Ce qui a été
+mesuré ce jour-là, arbre par arbre, sous les 119 suites :
+
+| Arbre | Résultat |
+|---|---|
+| `main` seul | vert (118/118) |
+| le lot des rôles, avant la fusion de `main` | vert, deux fois |
+| le lot fusionné | **rouge, puis rouge** |
+| le lot fusionné, tour suivant | vert (119/119) |
+| la suite seule, sur le même arbre | verte |
+
+**Rien n'a été attribué, et c'est le résultat honnête.** Trois verts et deux
+rouges sur le même arbre ne désignent pas un coupable. Aucun défaut produit n'a
+été trouvé : l'action écrit, la suite passe seule, et une piste sérieuse — un
+prix lu sur un rendu en retard — a été **écrite puis retirée**, la sonde qui la
+« prouvait » étant fausse (elle envoyait `blur`, que React n'écoute pas ; il
+écoute `focusout`).
+
+**Ce qui a été livré à la place : le contrôle DIT désormais ce que le navigateur
+a envoyé.** Il relève chaque action serveur postée, son corps et son code de
+réponse, et les écrit dans le message d'échec. Les trois cas se séparent alors
+en une ligne :
+
+| Ce que dit le message | Où chercher |
+|---|---|
+| aucune action n'est partie | l'écran n'a pas enregistré — côté client |
+| partie, réponse 200 | le serveur a écrit autre chose |
+| partie, autre réponse | une garde, ou une panne |
+
+Vu rouge exprès avant d'être livré. **Six enquêtes ont recommencé de zéro faute
+de cette ligne ; la septième commencera avec.**
 
 ## Deux migrations portent le numéro 0067
 
@@ -6515,7 +6566,7 @@ dessin** (`ARCHITECTURE.md` §81) :
   client n'a aucun moyen d'appeler l'artisan depuis son devis.
 
 Manquent aussi en base, et la maquette les montre : ~~**forme juridique**~~ —
-**fait le 30 août 2026** (migration 0072, `ARCHITECTURE.md` §212) : elle
+**fait le 30 août 2026** (migration 0072, `ARCHITECTURE.md` §213) : elle
 s'imprime désormais, avec le capital social et le RCS, si l'artisan choisit
 de les montrer — et **titulaire du compte**.
 

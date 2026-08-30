@@ -18603,9 +18603,119 @@ d'en baptiser une autre tient en une ligne :
 git show HEAD:src/app/globals.css | grep -o "\.atlas-[a-z0-9-]*" | sort -u
 ```
 
+## 212. Quatre rôles, des capacités, et pourquoi aucune ne s'écrit par la négative
+
+**Lot du 30 août 2026**, joué avant le déploiement — donc avant le premier
+artisan réel, ce qui était toute la raison de le faire maintenant : *« ce lot
+doit FIGER le modèle de rôles avant Scaleway »*.
+
+| | |
+|---|---|
+| **Patron** | tout Atlas — il est l'administrateur de son entreprise |
+| **Facturation** | clients, devis, factures, TVA. Le planning en lecture. Aucune administration |
+| **Commercial** | clients, devis, planning en écriture (suppression comprise). **Aucune facturation** |
+| **Salarié** | le planning en lecture seule, sa feuille sans un montant |
+
+### Le défaut qu'il ferme dormait depuis le 13 août, et il était écrit
+
+`docs/QUESTIONS.md` §10, sa table, ses mots :
+
+> *« Le commercial : les chantiers, le planning, les devis et les prix — il en a
+> besoin pour vendre. **Ni les factures, ni la TVA**, ni l'IBAN, ni les accès,
+> ni l'abonnement. »*
+
+Le code ne l'appliquait pas. Les dix actions du cycle comptable — terminer un
+chantier et préparer sa facture, l'émettre, changer son échéance, préparer le
+lien envoyé au client, noter un paiement, en retirer un, solder, ranger un
+ticket, enregistrer un achat, en supprimer un — se gardaient toutes par
+`exigerMontants`, c'est-à-dire « tout sauf le salarié ». **Un commercial
+facturait pour de bon**, et sans même ouvrir l'écran : l'identifiant d'une
+Server Action se lit dans les fragments servis sous `_next/static`.
+
+**Trois choses le cachaient, et les trois ont été corrigées :**
+
+1. **l'écran des accès PROMETTAIT le défaut.** `ceQueLeRoleChange("commercial")`
+   annonçait « Les factures et le relevé de TVA » dans la colonne de ce qu'il
+   *peut* faire. Le patron lisait donc l'inverse de sa propre décision au moment
+   même où il donnait l'accès ;
+2. **une suite le DÉFENDAIT.** `test-acces-roles.ts` exigeait que
+   `/termines/tva` soit ouvert au commercial, au nom de « l'entièreté de
+   l'application » (23 août) — sans voir que la table du 13 août, dans le même
+   document, disait le contraire. Une suite qui réclame ce que la règle interdit
+   est pire qu'une absence de suite : elle rassure celui qui vient vérifier ;
+3. **le contrôle des promesses ne regardait pas les mots.** Il vérifiait que les
+   listes ne sont pas vides. Il vérifie désormais que ce qui est promis
+   correspond à la capacité, des deux côtés — promettre ce qu'on refuse, et
+   taire une restriction réelle.
+
+### La forme des capacités : liste blanche, toujours
+
+Elles s'écrivaient `role !== "salarie"`. C'était juste tant qu'il n'existait que
+trois rôles dont un seul était fermé, et **c'est devenu un piège à l'instant où
+un quatrième est né** : la formule l'aurait accueilli partout, en silence, sans
+qu'une ligne change.
+
+    // avant — un rôle neuf naît avec le droit
+    return role !== "salarie";
+
+    // après — un rôle neuf naît sans aucun droit
+    return role === "proprietaire" || role === "facturation";
+
+Cinq capacités vivent dans `src/lib/acces-roles.ts`, et chacune **nomme qui
+l'a** : `peutVoirLesMontants`, `peutGererDevis`, `peutFacturer`,
+`peutModifierLePlanning`, `peutUtiliserLAssistant`. Un contrôle lit la SOURCE et
+refuse toute comparaison par la négative — c'est lui qui a fait remonter, le
+jour même, que `peutModifierLePlanning` aurait donné le planning en écriture au
+rôle « facturation ».
+
+**Elles ne s'appellent pas entre elles quand elles coïncident.** `peutGererDevis`
+rend aujourd'hui le même verdict que `peutVoirLesMontants` : ce sont deux
+questions, et les lier ferait qu'élargir la lecture d'un total ouvrirait du même
+geste la réécriture d'un devis envoyé. Le dépôt avait déjà pris cette décision
+deux fois (§208, `peutUtiliserLAssistant`).
+
+### Le rôle n'est nulle part ailleurs qu'en base — et cela n'a pas eu à changer
+
+Le brief demandait de vérifier comment le rôle est transporté. Réponse :
+**il ne l'est pas.** `src/auth.ts` ne le met pas dans le jeton, `session-ctx.ts`
+ne le lit pas du navigateur, et `autorisation.ts` le relit à **chaque requête**
+depuis `membres_entreprise`, sous `withEntreprise`. Le `cache()` de React ne vit
+que le temps d'une requête. Un rôle changé par le patron s'applique donc à la
+requête suivante, sans qu'aucune session ait à être coupée — et la coupure
+globale de M11 n'a pas été touchée.
+
+**Plusieurs personnes portent le même rôle sans que rien n'ait eu à changer** :
+la clé unique de la table porte sur (entreprise, personne), jamais sur
+(entreprise, rôle). Il n'existe donc pas de « session Facturation » à créer, et
+il ne faut pas en créer : chaque identité reste distincte, ce qui est la
+condition d'une traçabilité le jour où elle existera.
+
+### Ce que le lot n'a PAS fait, et pourquoi
+
+- **Aucun système de permissions personnalisées.** Quatre rôles et cinq
+  capacités suffisent ; un RBAC général se paierait en écrans de configuration
+  qu'aucun artisan n'ouvrira.
+- **Aucun mécanisme d'invitation neuf.** Les quatre gestes du patron existaient
+  déjà (`/reglages/equipe`, tous sous `exigerProprietaire`), et le rôle neuf
+  apparaît de lui-même dans le choix : l'écran parcourt `ROLES`.
+- **Aucune règle neuve sur le dernier patron.** Elle existait
+  (`refusDuChangementDeRole`, `refusDuRetrait`), en fonctions pures. Le lot
+  l'ÉPROUVE — y compris vers « facturation », qui est un administrateur en
+  apparence et n'en est pas un.
+- **Aucune ligne sur les « prospects ».** Le brief en parlait ; ils n'existent
+  nulle part dans Atlas. On n'invente pas un objet métier pour remplir une case.
+
+### Ce que le commercial perd, et il faut le dire en toutes lettres
+
+**Il ne clôture plus un chantier.** « Créer la facture » n'est pas un changement
+d'état : `terminerChantier` **crée la facture**, et refuse même de le faire tant
+que le devis n'est pas parti. C'est l'entrée du cycle comptable. La fermer au
+commercial est la conséquence honnête de la règle du 13 août, et elle se paie —
+c'est le seul point du lot qui retire quelque chose à quelqu'un qui l'avait.
+
 ---
 
-## 212. Le capital social et le RCS s'impriment, s'il le veut — et trois défauts trouvés en construisant
+## 213. Le capital social et le RCS s'impriment, s'il le veut — et trois défauts trouvés en construisant
 
 *Demande du patron, 30 août 2026, par étapes : d'abord la forme juridique et le
 capital, maquettés dans `appli/capital-et-forme-juridique.html` ; puis, une

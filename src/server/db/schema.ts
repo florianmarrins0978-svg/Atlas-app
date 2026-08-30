@@ -507,15 +507,21 @@ export const membresEntreprise = pgTable(
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),
     /**
-     * **Trois rôles depuis la migration 0065**, et `membre` n'existe plus :
-     * il a été repris en `salarie`, le plus fermé des trois. La contrainte qui
-     * les tient vit en BASE, pas seulement ici — cette énumération-ci ne produit
-     * aucun garde-fou côté PostgreSQL.
+     * **Quatre rôles depuis la migration 0071**, et `membre` n'existe plus : il
+     * a été repris en `salarie` (migration 0065), le plus fermé de tous. La
+     * contrainte qui les tient vit en BASE, pas seulement ici — cette
+     * énumération-ci ne produit aucun garde-fou côté PostgreSQL.
+     *
+     * **Le défaut reste `salarie`, et il ne bougera pas.** Une ligne insérée
+     * sans rôle explicite doit naître avec le moins de droits possible : c'est
+     * le seul défaut qui ne puisse jamais élargir un accès par distraction.
      *
      * Ce que chaque rôle atteint est décidé une seule fois, dans
      * `src/lib/acces-roles.ts` : ni cet écran-ci ni cette table ne le savent.
      */
-    role: text("role", { enum: ["proprietaire", "commercial", "salarie"] }).notNull().default("salarie"),
+    role: text("role", { enum: ["proprietaire", "facturation", "commercial", "salarie"] })
+      .notNull()
+      .default("salarie"),
     /**
      * Ce que la personne voit du planning — un réglage PAR PERSONNE, jamais par
      * rôle (sa décision du 13 août 2026). Le défaut est « tout » : restreindre
