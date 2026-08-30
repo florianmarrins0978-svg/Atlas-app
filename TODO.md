@@ -14,6 +14,23 @@ langage, et rien n'y entre sans son accord.
 Le rapport complet est dans `docs/cloture-avant-premier-artisan.md`. Il ne reste
 que ceci.
 
+### 0. Le modèle des rôles est FIGÉ — ce qui en découle
+
+**Lot du 30 août 2026**, `docs/modele-des-roles.md`. Quatre rôles : patron,
+facturation, commercial, salarié. Rien ne reste à coder ; deux points sont
+seulement à savoir avant le déploiement.
+
+- **Un commercial ne clôture plus un chantier.** « Créer la facture » crée la
+  facture, donc c'est un geste de facturation. Si le patron veut qu'un
+  commercial puisse marquer un chantier comme fait SANS que la facture naisse,
+  c'est un geste à séparer en deux — un travail de produit, pas de sécurité, et
+  il n'est pas demandé.
+- **Les tarifs restent fermés au commercial en LECTURE.** Sa règle du 13 août
+  dit *« il lit les tarifs, il ne les change pas »* ; les deux écrans portent
+  `estProprietaire`, lecture comprise, faute d'un écran en lecture seule. C'est
+  la note qui existait déjà plus bas dans ce fichier, et ce lot ne l'a pas
+  élargie — la facturation n'y a pas accès non plus.
+
 ### ~~1. LA DÉCISION DU PATRON — un salarié peut-il supprimer un chantier ?~~
 
 **~~TRANCHÉE LE 30 AOÛT 2026, et plus largement que la question :~~**

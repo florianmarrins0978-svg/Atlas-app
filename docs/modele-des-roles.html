@@ -1,0 +1,387 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas — Le modèle des utilisateurs et des rôles d'Atlas</title>
+<style>
+  :root{
+    --ground:#f5f3ee; --surface:#faf9f5; --raised:#ece9e1;
+    --ink:#1c1c1a; --ink-soft:#4a4a44; --muted:#8a8578;
+    --accent:#2f3b2f; --alert:#b5562a; --line:rgba(28,28,26,0.13);
+    --serif:Georgia,'Times New Roman',serif;
+    --sans:system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --ground:#161815; --surface:#1d201c; --raised:#252924;
+      --ink:#eae7df; --ink-soft:#c2bdb1; --muted:#948f83;
+      --accent:#9fbd82; --alert:#e0885a; --line:rgba(234,231,223,0.17);
+    }
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--sans);
+    line-height:1.65;}
+  main{max-width:44rem;margin:0 auto;padding:2.5rem 1.2rem 5rem;}
+  h1,h2,h3,h4{font-family:var(--serif);font-weight:600;line-height:1.2;
+    text-wrap:balance;margin:2rem 0 0.6rem;scroll-margin-top:1rem;}
+  h1{font-size:2rem;margin-top:0;}
+  h2{font-size:1.5rem;padding-top:1.2rem;border-top:1px solid var(--line);}
+  h3{font-size:1.12rem;}
+  h4{font-size:1rem;}
+  p{margin:0 0 0.9rem;}
+  a{color:var(--accent);text-underline-offset:3px;}
+  a:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:3px;}
+  ul,ol{margin:0 0 1rem;padding-left:1.3rem;}
+  li{margin-bottom:0.4rem;}
+  li::marker{color:var(--muted);}
+  /* Le sommaire : des cibles larges, confortables au doigt sur téléphone. */
+  ol li a{display:inline-block;padding:0.15rem 0;}
+  blockquote{margin:1rem 0;padding:0.85rem 1.05rem;background:var(--raised);
+    border-left:3px solid var(--accent);border-radius:0 10px 10px 0;color:var(--ink-soft);}
+  code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:0.87em;
+    background:var(--raised);padding:0.1rem 0.35rem;border-radius:5px;}
+  hr{border:0;border-top:1px solid var(--line);margin:2rem 0;}
+  .tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px;
+    background:var(--surface);margin:0 0 1.2rem;}
+  table{border-collapse:collapse;width:100%;font-size:0.92rem;min-width:22rem;}
+  th,td{text-align:left;padding:0.55rem 0.8rem;border-bottom:1px solid var(--line);
+    vertical-align:top;}
+  th{font-size:0.72rem;letter-spacing:0.08em;text-transform:uppercase;
+    color:var(--muted);white-space:nowrap;}
+  tr:last-child td{border-bottom:none;}
+  .retour{display:inline-block;font-size:0.76rem;color:var(--muted);
+    text-decoration:none;margin:-0.3rem 0 1rem;}
+  .retour:hover{color:var(--accent);text-decoration:underline;}
+</style>
+</head>
+<body>
+<main>
+<h1 id="le-modèle-des-utilisateurs-et-des-rôles-datlas">Le modèle des utilisateurs et des rôles d'Atlas</h1>
+<p><em>30 août 2026. Lot joué avant le déploiement, donc avant le premier artisan réel.</em></p>
+<hr>
+<h2 id="a-le-modèle-obtenu">A. Le modèle obtenu</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p>Quatre rôles. <strong>Chaque personne a son compte, son mot de passe, sa session et son rôle</strong> ; plusieurs personnes peuvent porter le même rôle. Il n'existe aucun compte partagé « Facturation », et il ne faut pas en créer.</p>
+<div class="tablewrap"><table><thead><tr>
+<th>Fonction</th>
+<th>Patron</th>
+<th>Facturation</th>
+<th>Commercial</th>
+<th>Salarié</th>
+</tr></thead><tbody>
+<tr>
+<td>Clients</td>
+<td>oui</td>
+<td>oui</td>
+<td>oui</td>
+<td>non</td>
+</tr>
+<tr>
+<td>Chantiers</td>
+<td>oui</td>
+<td>oui</td>
+<td>oui</td>
+<td>non — sa carte au planning</td>
+</tr>
+<tr>
+<td>Devis : rédiger, chiffrer</td>
+<td>oui</td>
+<td>oui</td>
+<td>oui</td>
+<td>non</td>
+</tr>
+<tr>
+<td>Devis : envoyer au client</td>
+<td>oui</td>
+<td>oui</td>
+<td>oui</td>
+<td>non</td>
+</tr>
+<tr>
+<td>Voir un montant</td>
+<td>oui</td>
+<td>oui</td>
+<td>oui</td>
+<td><strong>non</strong></td>
+</tr>
+<tr>
+<td>Factures : créer, émettre, envoyer</td>
+<td>oui</td>
+<td>oui</td>
+<td><strong>NON</strong></td>
+<td>non</td>
+</tr>
+<tr>
+<td>Relevé de TVA, paiements, achats</td>
+<td>oui</td>
+<td>oui</td>
+<td><strong>NON</strong></td>
+<td>non</td>
+</tr>
+<tr>
+<td>Terminer un chantier</td>
+<td>oui</td>
+<td>oui</td>
+<td><strong>NON</strong> <em>(voir C)</em></td>
+<td>non</td>
+</tr>
+<tr>
+<td>Planning : consulter</td>
+<td>oui</td>
+<td>oui</td>
+<td>oui</td>
+<td>oui</td>
+</tr>
+<tr>
+<td>Planning : écrire, supprimer</td>
+<td>oui</td>
+<td><strong>non</strong></td>
+<td>oui</td>
+<td><strong>NON</strong></td>
+</tr>
+<tr>
+<td>Feuille de chantier sans prix</td>
+<td>oui</td>
+<td>oui</td>
+<td>oui</td>
+<td>oui</td>
+</tr>
+<tr>
+<td>Tarifs et grilles de prix</td>
+<td>oui</td>
+<td>non</td>
+<td>non</td>
+<td>non</td>
+</tr>
+<tr>
+<td>Outils Paysage</td>
+<td>oui</td>
+<td>non</td>
+<td>oui</td>
+<td>non</td>
+</tr>
+<tr>
+<td>Assistant IA</td>
+<td>oui</td>
+<td>non</td>
+<td>non</td>
+<td>non</td>
+</tr>
+<tr>
+<td>Identité, IBAN, abonnement</td>
+<td>oui</td>
+<td>non</td>
+<td>non</td>
+<td>non</td>
+</tr>
+<tr>
+<td>Gestion des accès et des rôles</td>
+<td>oui</td>
+<td>non</td>
+<td>non</td>
+<td>non</td>
+</tr>
+<tr>
+<td>Ses propres réglages (mot de passe, notifications)</td>
+<td>oui</td>
+<td>oui</td>
+<td>oui</td>
+<td>oui</td>
+</tr>
+</tbody></table></div>
+<p><strong>Il n'y a pas de ligne « Prospects ».</strong> Le brief en demandait une : cet objet n'existe nulle part dans Atlas — ni table, ni écran, ni action. On ne l'a pas inventé pour remplir une case.</p>
+<hr>
+<h2 id="b-larchitecture">B. L'architecture</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><strong>Où le rôle est stocké.</strong> Dans <code>membres_entreprise</code>, une ligne par (personne, entreprise). Sa clé unique porte sur <strong>(entreprise, personne)</strong> — jamais sur (entreprise, rôle) : plusieurs personnes portent donc le même rôle sans que rien n'ait eu à changer. Une contrainte <code>CHECK</code> en base tient les quatre valeurs (migration 0071) ; le défaut d'une ligne sans rôle explicite reste <code>salarie</code>, le plus fermé.</p>
+<p><strong>Où le rôle N'EST PAS.</strong> Il n'est pas dans le jeton Auth.js, pas dans le cookie, pas dans une donnée transmise par le navigateur. <code>autorisation.ts</code> le relit <strong>à chaque requête</strong> depuis la base, sous <code>withEntreprise</code> — et le <code>cache()</code> de React qui évite d'y aller trois fois par écran meurt avec la requête.</p>
+<p><strong>Ce qui se passe quand le patron change un rôle pendant qu'on est connecté :</strong> la requête suivante applique le nouveau rôle. Rien à invalider, aucune session à couper, et la coupure globale de M11 n'a pas été touchée.</p>
+<p><strong>Comment les capacités sont calculées.</strong> Cinq fonctions pures dans <code>src/lib/acces-roles.ts</code> : <code>peutVoirLesMontants</code>, <code>peutGererDevis</code>, <code>peutFacturer</code>, <code>peutModifierLePlanning</code>, <code>peutUtiliserLAssistant</code>. Plus <code>cheminAutorise</code>, qui dit quelles adresses un rôle ouvre. <strong>Une règle, un endroit</strong> — les écrans et les gardes appellent les mêmes fonctions.</p>
+<p><strong>Comment les gardes les appliquent.</strong> Une Server Action s'exécute <strong>avant</strong> tout rendu : la garde de mise en page ne la voit pas. Chaque action ouvre donc sur une garde de <code>src/server/garde-action.ts</code>, qui garde sur <strong>ce que l'action fait</strong>, jamais sur l'écran d'où elle semble venir :</p>
+<div class="tablewrap"><table><thead><tr>
+<th>La garde</th>
+<th>Ce qu'elle demande</th>
+</tr></thead><tbody>
+<tr>
+<td><code>exigerMontants</code></td>
+<td>avez-vous le droit de VOIR un prix ?</td>
+</tr>
+<tr>
+<td><code>exigerGestionDevis</code></td>
+<td>…d'en poser un sur un devis, et de l'envoyer ?</td>
+</tr>
+<tr>
+<td><code>exigerFacturation</code></td>
+<td>…de facturer ?</td>
+</tr>
+<tr>
+<td><code>exigerEcritureSurLePlanning</code></td>
+<td>…d'écrire au planning ?</td>
+</tr>
+<tr>
+<td><code>exigerEcran</code></td>
+<td>…d'ouvrir l'écran dont cette action relève ?</td>
+</tr>
+<tr>
+<td><code>exigerProprietaire</code></td>
+<td>…d'administrer l'entreprise ?</td>
+</tr>
+</tbody></table></div>
+<p>Un contrôle relève <strong>tout fichier « use server » du dépôt</strong> et refuse qu'une action neuve n'en porte aucune (<code>test-actions-gardees-db.ts</code>).</p>
+<h3 id="la-décision-de-forme-qui-compte-le-plus">La décision de forme qui compte le plus</h3>
+<p>Les capacités s'écrivaient <code>role !== "salarie"</code>. Elles nomment désormais qui les a :</p>
+<p>// avant — un rôle neuf naît AVEC le droit return role !== "salarie";</p>
+<p>// après — un rôle neuf naît SANS aucun droit return role === "proprietaire" || role === "facturation";</p>
+<p>Ce n'est pas du style. <strong>Sous l'ancienne forme, le rôle « facturation » créé ce jour-là serait né avec le droit d'émettre des factures et de supprimer des chantiers</strong>, sans qu'une ligne change et sans qu'un test rougisse. Un contrôle lit maintenant la source et refuse toute règle écrite par la négative — c'est lui qui a fait remonter le cas du planning, le jour même.</p>
+<hr>
+<h2 id="c-le-rôle-facturation">C. Le rôle Facturation</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><strong>Il peut :</strong> consulter et créer les clients, les corriger ; rédiger, chiffrer, modifier, finaliser et envoyer un devis ; créer, modifier, émettre et envoyer une facture ; tenir le relevé de TVA, les paiements, les achats et les tickets ; terminer un chantier ; <strong>consulter</strong> le planning ; changer son propre mot de passe et ses notifications.</p>
+<p><strong>Il ne peut pas :</strong> gérer les utilisateurs ni les rôles ; toucher l'identité de l'entreprise, son IBAN, son abonnement ou l'export de ses données ; administrer les tarifs et les grilles de prix ; ouvrir la mise en page des devis ; ouvrir les outils Paysage ni l'assistant IA ; <strong>écrire au planning</strong>.</p>
+<p><strong>Sur l'IBAN, le point où le brief demandait qu'on s'arrête :</strong> rien dans le produit n'exige que la facturation modifie les coordonnées bancaires. L'IBAN vit dans <code>/reglages/identite</code>, il est protégé par une preuve d'authentification récente (M11), et il n'entre dans aucune action de facturation — la facture le lit, elle ne l'écrit pas. <strong>Aucun droit ne lui a donc été ouvert dessus</strong>, et aucune décision n'est nécessaire.</p>
+<p><strong>Sur les prix, la distinction demandée</strong> — et elle existait déjà dans le dépôt :</p>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th>Qui</th>
+</tr></thead><tbody>
+<tr>
+<td><strong>utiliser</strong> un prix (le lire sur un devis, un total)</td>
+<td>patron, facturation, commercial</td>
+</tr>
+<tr>
+<td><strong>poser</strong> un prix sur un devis</td>
+<td>patron, facturation, commercial</td>
+</tr>
+<tr>
+<td><strong>administrer la grille tarifaire</strong> de l'entreprise</td>
+<td>patron seul</td>
+</tr>
+<tr>
+<td>consulter une marge interne</td>
+<td>patron seul (l'assistant, <code>/reglages/prix</code>)</td>
+</tr>
+</tbody></table></div>
+<p>La facturation n'a donc <strong>pas</strong> été ouverte aux écrans de réglage des prix parce qu'un devis contient des montants. C'était le piège que le brief signalait.</p>
+<p><strong>Le planning en lecture, et pourquoi c'est le minimum :</strong> elle a besoin de la date d'un chantier avant de facturer. L'écran s'ouvre, l'écriture est refusée — c'est le même partage que celui posé pour le salarié la veille, et il n'est écrit qu'une fois.</p>
+<hr>
+<h2 id="d-le-commercial">D. Le commercial</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<blockquote><strong>Le commercial peut gérer les clients nécessaires à son travail, rédiger, modifier et envoyer les devis, et modifier le planning — y compris supprimer un chantier selon les règles existantes d'Atlas. Il ne peut pas gérer la facturation.</strong></blockquote>
+<p>Son droit d'écrire au planning a été <strong>confirmé</strong> par le patron le 30 août au matin, et non simplement laissé en place ; la nuance est écrite dans le code pour qu'un prochain lot de sécurité ne le resserre pas « par prudence ».</p>
+<p><strong>Ce qu'il perd, et c'est le seul retrait du lot.</strong> Il ne clôture plus un chantier. « Créer la facture » n'est pas un changement d'état : <code>terminerChantier</code> <strong>crée la facture</strong>, et refuse même de le faire tant que le devis n'est pas parti. C'est l'entrée du cycle comptable. La conséquence est honnête, elle se paie, et elle est écrite ici plutôt que découverte par un utilisateur.</p>
+<p>Si vous voulez qu'un commercial puisse marquer un chantier comme fait <strong>sans</strong> que la facture naisse, il faut séparer le geste en deux. C'est un travail de produit, il n'était pas demandé, et il est noté dans <code>TODO.md</code>.</p>
+<hr>
+<h2 id="e-le-salarié">E. Le salarié</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<blockquote><strong>Le salarié conserve son planning en lecture seule. Aucun droit d'écriture ne lui a été rouvert.</strong></blockquote>
+<p>Rien n'a été réimplémenté. La garde du 30 août au matin (<code>exigerEcritureSurLePlanning</code>) est intacte, sa suite aussi, et sa portée — tout le planning, ou les seuls chantiers de son équipe — n'a pas bougé. Il garde sa feuille de chantier sans un seul montant.</p>
+<p>Un compte à rebours a même joué en notre faveur : sa suite portait un contrôle <code>ROLES.length === 3</code>, posé exprès pour forcer une relecture le jour où un rôle naîtrait. Il a rougi, et c'est ce qui a fait rouvrir <code>peutModifierLePlanning</code>.</p>
+<hr>
+<h2 id="f-la-sécurité--les-contournements-réellement-essayés">F. La sécurité : les contournements réellement essayés</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th>Ce qui a été tenté</th>
+<th>Résultat</th>
+</tr></thead><tbody>
+<tr>
+<td><strong>Rejouer une requête de facturation avec le cookie d'un commercial</strong> — en-tête <code>Next-Action</code> et corps interceptés au vol sur la vraie requête du patron</td>
+<td><strong>refusé</strong> ; rien n'entre en base</td>
+</tr>
+<tr>
+<td>La même requête rejouée par la <strong>facturation</strong></td>
+<td>acceptée — on n'a pas cassé le rôle</td>
+</tr>
+<tr>
+<td>Le commercial tape <code>/termines/tva</code> à la main</td>
+<td>renvoyé ; l'onglet a aussi disparu de sa barre</td>
+</tr>
+<tr>
+<td>Le commercial ouvre <code>/api/factures/&lt;id&gt;/pdf</code></td>
+<td>refusé par <code>cheminAutorise</code></td>
+</tr>
+<tr>
+<td>Le commercial ouvre <code>/planning</code>, <code>/clients</code>, ses devis</td>
+<td><strong>ouverts</strong> — on ne l'a pas amputé</td>
+</tr>
+<tr>
+<td>La facturation tape <code>/paysage</code>, <code>/reglages/identite</code>, <code>/reglages/tarifs</code>, <code>/reglages/equipe</code></td>
+<td>renvoyée ; ses propres réglages restent à elle</td>
+</tr>
+<tr>
+<td>Envoyer un rôle inventé depuis le formulaire (<code>admin</code>, <code>PROPRIETAIRE</code>, <code>patron</code>, vide, <code>proprietaire </code> avec espace)</td>
+<td>refusé — <code>role-inconnu</code>, et le rôle en base n'a pas bougé</td>
+</tr>
+<tr>
+<td>Un patron de A change le rôle d'un accès de <strong>l'entreprise B</strong> dont il connaît l'identifiant</td>
+<td>refusé ; rien n'a bougé chez B</td>
+</tr>
+<tr>
+<td>Un patron de A retire un accès de B</td>
+<td>refusé</td>
+</tr>
+<tr>
+<td>Le <strong>dernier patron</strong> se rétrograde en facturation, commercial ou salarié</td>
+<td>refusé — <code>dernier-patron</code></td>
+</tr>
+<tr>
+<td>Le dernier patron se retire lui-même</td>
+<td>refusé</td>
+</tr>
+<tr>
+<td>À <strong>deux</strong> patrons, rétrograder l'un des deux</td>
+<td>accepté — l'entreprise garde un administrateur</td>
+</tr>
+</tbody></table></div>
+<h3 id="les-faux-verts--ce-qui-a-été-cassé-exprès-pour-voir-rouge">Les faux verts : ce qui a été cassé exprès pour voir rouge</h3>
+<div class="tablewrap"><table><thead><tr>
+<th>La protection retirée</th>
+<th>Ce qui a rougi</th>
+</tr></thead><tbody>
+<tr>
+<td><code>facturation</code> retirée de <code>peutFacturer</code></td>
+<td>3 contrôles — dont « le patron et la facturation passent »</td>
+</tr>
+<tr>
+<td>la facturation <strong>donnée</strong> au commercial</td>
+<td>3 contrôles — dont « le commercial est refusé »</td>
+</tr>
+<tr>
+<td>l'écriture du planning <strong>donnée</strong> au salarié</td>
+<td>3 contrôles — dont « aucune capacité en liste noire »</td>
+</tr>
+<tr>
+<td><code>exigerProprietaire</code> retirée du changement de rôle</td>
+<td>« chaque action serveur porte une garde »</td>
+</tr>
+<tr>
+<td>le changement de rôle ouvert aux accès d'une autre entreprise</td>
+<td>« un identifiant d'une autre entreprise ne se touche pas »</td>
+</tr>
+<tr>
+<td>l'ancienne promesse « Les factures et le relevé de TVA » remise à l'écran du commercial</td>
+<td>« l'écran ne promet pas ce que la règle refuse »</td>
+</tr>
+</tbody></table></div>
+<p>Le code sain a été rétabli à chaque fois, et <strong>vérifié à l'octet près</strong>.</p>
+<h3 id="deux-choses-qui-cachaient-le-défaut-et-qui-sont-corrigées">Deux choses qui cachaient le défaut, et qui sont corrigées</h3>
+<ol>
+<li><strong>L'écran des accès PROMETTAIT le contraire de la règle.</strong> Il annonçait au patron que le commercial pouvait faire « Les factures et le relevé de TVA ». Le contrôle qui surveille ces promesses ne regardait pas les mots : il vérifiait que les listes n'étaient pas vides. Il compare désormais chaque promesse à la capacité, <strong>des deux côtés</strong> — promettre ce qu'on refuse, et taire une restriction réelle.</li>
+<li><strong>Une suite DÉFENDAIT le défaut.</strong> <code>test-acces-roles.ts</code> exigeait que la TVA soit ouverte au commercial, au nom de « l'entièreté de l'application » (23 août), sans voir que la table du 13 août disait le contraire dans le même document. Une suite qui réclame ce que la règle interdit est pire qu'une absence de suite : elle rassure celui qui vient vérifier.</li>
+</ol>
+<hr>
+<h2 id="g-la-batterie">G. La batterie</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><em>(chiffres exacts en fin de lot)</em></p>
+<hr>
+<h2 id="h-les-décisions-restantes">H. Les décisions restantes</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><strong>Aucune décision de rôle restante.</strong></p>
+<p>Deux choses sont seulement à savoir, et aucune n'appelle un arbitrage :</p>
+<ul>
+<li><strong>un commercial ne clôture plus un chantier</strong> (voir D). Le séparer en deux gestes est un travail de produit, pas de sécurité ;</li>
+<li><strong>les tarifs restent fermés au commercial en LECTURE</strong>, faute d'un écran en lecture seule — la note existait déjà dans <code>TODO.md</code>, et ce lot ne l'a pas élargie. La facturation n'y a pas accès non plus.</li>
+</ul>
+</main>
+</body>
+</html>

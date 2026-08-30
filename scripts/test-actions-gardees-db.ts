@@ -124,6 +124,12 @@ const GARDES = [
   "exigerMontants(",
   "exigerEcran(",
   "exigerEcritureSurLePlanning(",
+  // Les deux capacités nées le 30 août 2026 avec le rôle « Facturation ».
+  // **Sans elles ici, ce contrôle aurait rougi sur les actions que ce lot
+  // vient précisément de mieux garder** — un contrôle qui punit le durcissement
+  // pousse à revenir en arrière.
+  "exigerGestionDevis(",
+  "exigerFacturation(",
   "exigerProprietaire(",
   "exigerPreuveRecente(",
   "peutUtiliserLAssistant(",

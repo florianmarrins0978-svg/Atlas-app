@@ -9,6 +9,31 @@ Format : le plus récent en tête.
 
 ## 2026-08-30
 
+### Un commercial ne facture plus — sa règle du 13 août, enfin appliquée
+
+Quatre rôles désormais : patron, **facturation** (nouveau), commercial, salarié.
+Plusieurs personnes peuvent porter le même rôle — c'était déjà vrai en base, et
+il n'y a pas de compte partagé « Facturation ».
+
+**Ce que ça ferme.** Les dix actions du cycle comptable — terminer un chantier,
+émettre une facture, son échéance, son lien, les paiements, les achats, les
+tickets — se gardaient toutes par « tout sauf le salarié ». Un commercial
+facturait donc pour de bon, sans même ouvrir l'écran. Sa table du 13 août
+(`docs/QUESTIONS.md` §10) disait pourtant *« ni les factures, ni la TVA »*.
+
+**Trois choses le cachaient :** l'écran des accès lui PROMETTAIT « Les factures
+et le relevé de TVA » ; une suite EXIGEAIT que la TVA lui soit ouverte ; et le
+contrôle des promesses ne lisait pas les mots. Les trois sont corrigées.
+
+**Ce que ça coûte :** un commercial ne clôture plus un chantier — « Créer la
+facture » crée la facture. C'est la conséquence honnête de la règle.
+
+**La forme des capacités a changé, et c'est le vrai garde-fou.** Elles
+s'écrivaient « tout sauf le salarié » ; elles nomment maintenant qui les a. Sous
+l'ancienne forme, le rôle neuf serait né avec le droit de facturer et de
+supprimer des chantiers, sans qu'une ligne change. Un contrôle lit la source et
+refuse toute règle écrite par la négative.
+
 ### Le commercial écrit sur le planning : confirmé, plus seulement toléré
 
 Le lot « salarié en lecture seule » n'avait pas touché aux droits du commercial,
