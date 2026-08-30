@@ -57,6 +57,43 @@
   là que l'œil doit aller.
 
   ───────────────────────────────────────────────────────────────────────────
+  TOUT TIENT SUR UN ÉCRAN — sa règle du 30 août, et c'est elle qui a commandé
+  toutes les mesures de cette planche.
+
+  *« Tout doit tenir sur une seule page, ne doit pas décoller vers le bas pour
+  accéder aux autres informations. »*
+
+  **Mesuré, pas estimé.** L'écran faisait 960 px de haut ; sur sa capture, la
+  bande utile entre la barre d'adresse de Safari et la barre d'outils vaut
+  **environ 700 points**. Il fallait donc en retirer plus du quart.
+
+  Ce qui a été resserré, dans cet ordre — le moins douloureux d'abord :
+
+    · les espaces entre les blocs : 17 px → 9
+    · la hauteur des cases : 50 px → 44, et leurs marges intérieures avec
+    · le carré photo : 74 px → 58
+    · la marque, l'en-tête, le bouton : quelques pixels chacun
+    · la ligne vide sous le bouton, qui ne portait rien
+
+  **ET QUATRE INTITULÉS SONT PARTIS, ce qui mérite d'être dit.** « E-mail »,
+  « Adresse du chantier », « Comment lui envoyer son devis ? » et « Photos du
+  chantier » : les cases les disent déjà (`bernard@exemple.fr`, `12 rue des
+  Lilas`), les deux capsules disent le canal, et un carré pointillé avec un
+  « + » n'a jamais eu besoin qu'on le nomme. C'est aussi sa règle du 25 août —
+  *« le moins de mots possible »*.
+
+  **« Nom du client » et « Téléphone » RESTENT**, et c'est délibéré : il les a
+  demandés explicitement le 21 août — *« au-dessus du numéro de téléphone,
+  marqué téléphone »* —, parce que sur une fiche qu'on remplit devant le client,
+  on ne devine pas. Les retirer aurait fait tenir l'écran en défaisant une
+  demande antérieure, sans le lui dire.
+
+  **La zone de la dictée a une hauteur FIXE.** Sans elle, la barre
+  d'enregistrement étant plus haute que l'anneau, tout ce qui est en dessous
+  sautait au moment où l'on appuie — et le bouton passait sous le pli au pire
+  moment.
+
+  ───────────────────────────────────────────────────────────────────────────
   CE QUI EST REPRIS DE L'APPLICATION, ET NON REDESSINÉ.
 
   · L'ANNEAU au repos, ses deux cercles (74 px vert pin, 56 px or), ses trois
@@ -111,17 +148,24 @@
    l'œil — c'est exactement le genre de défaut qu'une capture ne montre que si
    l'on regarde la bonne. */
 [hidden]{display:none!important}
+/* Retiré de l'œil, pas de la voix : ce qui n'est plus écrit reste lisible par
+   un lecteur d'écran. Un intitulé supprimé pour gagner de la place ne doit pas
+   supprimer l'information pour qui n'a pas l'usage de ses yeux. */
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 body{margin:0;background:var(--bone);color:var(--charcoal);
      font:16px/1.5 -apple-system,"Segoe UI",Roboto,sans-serif;-webkit-text-size-adjust:100%}
 .tel{max-width:430px;margin:0 auto;min-height:100vh;display:flex;flex-direction:column}
 
 /* ─── Le cadre de la maquette ───────────────────────────────────────────── */
-.onglets{position:sticky;top:0;z-index:9;display:flex;gap:6px;padding:8px 12px;
+.onglets{position:sticky;top:0;z-index:9;display:flex;gap:6px;padding:5px 12px;
          background:var(--bone);border-bottom:1px solid var(--line);overflow-x:auto}
 .onglets button{flex:0 0 auto;border:1px solid var(--line);background:transparent;border-radius:99px;
-                padding:8px 13px;font-size:12px;color:var(--muted);cursor:pointer;font-family:inherit}
+                padding:7px 12px;font-size:11.5px;color:var(--muted);cursor:pointer;font-family:inherit}
 .onglets button[aria-pressed="true"]{background:var(--paper);border-color:var(--or);color:var(--charcoal)}
-.ecran{display:none;padding-bottom:44px}
+/* 20 px, et pas 44 : ce talon était du vide pur sous le bouton, et il comptait
+   dans ce qui passe sous le pli. Les deux autres écrans défilent, eux, et n'en
+   souffrent pas. */
+.ecran{display:none;padding-bottom:20px}
 .ecran.actif{display:block}
 .note{margin:20px 26px 0;padding:15px 17px;border-radius:6px;background:var(--paper);
       font-size:13px;line-height:1.6;color:var(--charcoal-soft)}
@@ -130,20 +174,23 @@ body{margin:0;background:var(--bone);color:var(--charcoal);
              text-transform:uppercase;color:var(--or)}
 
 /* ─── En-tête ───────────────────────────────────────────────────────────── */
-.marque{padding:16px 0 6px;text-align:center;font-size:10px;letter-spacing:.34em;color:var(--muted)}
-.entete{display:flex;align-items:center;gap:12px;padding:4px 26px 0}
-.entete h1{margin:0;flex:1;font-family:Georgia,serif;font-weight:400;font-size:31px;line-height:1.1}
+.marque{padding:5px 0 1px;text-align:center;font-size:9px;letter-spacing:.34em;color:var(--muted)}
+.entete{display:flex;align-items:center;gap:12px;padding:0 24px}
+.entete h1{margin:0;flex:1;font-family:Georgia,serif;font-weight:400;font-size:27px;line-height:1.05}
 .retour{border:0;background:none;font-size:22px;color:var(--charcoal);padding:0 6px 0 0;cursor:pointer}
-.micro-coin{width:44px;height:44px;border-radius:99px;border:0;background:var(--cream);
+.micro-coin{width:40px;height:40px;border-radius:99px;border:0;background:var(--cream);
             display:flex;align-items:center;justify-content:center;color:var(--lien);cursor:pointer;
             box-shadow:inset 0 0 0 1px var(--line-soft)}
 
 /* ─── Formulaire ────────────────────────────────────────────────────────── */
-form{padding:22px 26px 0;display:flex;flex-direction:column;gap:17px}
+form{padding:6px 24px 0;display:flex;flex-direction:column;gap:7px}
 .caps{font-size:9.5px;font-weight:500;letter-spacing:.28em;text-transform:uppercase;color:var(--muted)}
-.champ{display:flex;flex-direction:column;gap:6px}
-.champ input{width:100%;min-height:50px;border:0;border-radius:14px;background:var(--paper);
-             padding:15px 16px;font-size:16px;color:var(--charcoal);font-family:inherit}
+.champ{display:flex;flex-direction:column;gap:4px}
+/* 16 px de corps reste obligatoire : en dessous, Safari zoome tout seul au
+   moment où l'on touche la case, et l'écran qu'on vient d'ajuster part de
+   travers. C'est la hauteur qui maigrit, jamais le texte. */
+.champ input{width:100%;min-height:44px;border:0;border-radius:12px;background:var(--paper);
+             padding:11px 14px;font-size:16px;color:var(--charcoal);font-family:inherit}
 .champ input::placeholder{color:var(--muted)}
 .champ input:focus{outline:0;box-shadow:inset 0 0 0 1.5px var(--or)}
 .duo{display:flex;gap:9px}
@@ -155,28 +202,28 @@ form{padding:22px 26px 0;display:flex;flex-direction:column;gap:17px}
 .duo-titres .num{text-align:right;line-height:1.35}
 .canal{display:flex;gap:8px}
 .canal button{flex:1;border-radius:99px;border:1px solid var(--line);background:transparent;
-              padding:11px 8px;font-size:14px;color:var(--charcoal-soft);cursor:pointer;font-family:inherit}
+              padding:9px 8px;font-size:14px;color:var(--charcoal-soft);cursor:pointer;font-family:inherit}
 .canal button[aria-pressed="true"]{background:var(--paper);border-color:var(--or);color:var(--charcoal)}
 .canal button:disabled{opacity:.4}
 .civilite{display:flex;gap:10px}
 .civilite button{border-radius:99px;border:1px solid var(--line);background:var(--cream);
-                 padding:13px 30px;font-size:16px;color:var(--charcoal);cursor:pointer;font-family:inherit}
+                 padding:7px 28px;font-size:16px;color:var(--charcoal);cursor:pointer;font-family:inherit}
 .civilite button[aria-pressed="true"]{border-color:var(--or);background:var(--paper)}
 .lien-or{align-self:flex-start;border:0;background:none;padding:0;font-size:14px;
          font-weight:500;color:var(--lien);cursor:pointer;font-family:inherit}
 
 /* ─── La pellicule ──────────────────────────────────────────────────────── */
 .pellicule{display:flex;gap:9px;flex-wrap:wrap}
-.ajout-photo{width:74px;height:74px;border-radius:6px;border:1px dashed var(--or);
-             background:transparent;color:var(--or);font-size:27px;line-height:1;
+.ajout-photo{width:58px;height:58px;border-radius:6px;border:1px dashed var(--or);
+             background:transparent;color:var(--or);font-size:24px;line-height:1;
              display:flex;align-items:center;justify-content:center;cursor:pointer}
-.vignette{width:74px;height:74px;border-radius:6px;object-fit:cover;
+.vignette{width:58px;height:58px;border-radius:6px;object-fit:cover;
           box-shadow:inset 0 0 0 1px var(--line)}
 .pellicule input[type=file]{display:none}
 
 /* ─── L'ANNEAU AU REPOS — recopié de `globals.css` ─────────────────────── */
 .atlas-lecteur{align-self:center;position:relative;display:flex;flex-direction:column;
-               align-items:center;width:100%;--atlas-ampleur:1;margin-top:6px}
+               align-items:center;width:100%;--atlas-ampleur:1}
 .atlas-aile{position:absolute;top:0;height:76px;width:104px;display:flex;align-items:center;
             overflow:hidden;pointer-events:none;transform:scaleY(var(--atlas-ampleur));
             transition:transform 90ms linear,opacity .22s}
@@ -216,13 +263,20 @@ form{padding:22px 26px 0;display:flex;flex-direction:column;gap:17px}
 .atlas-traits i:nth-child(3){height:12px;animation-delay:-.8s}
 @keyframes atlas-battre{0%,100%{transform:scaleY(.42)}50%{transform:scaleY(1)}}
 [data-lit="oui"] .atlas-traits i{animation-play-state:running}
-.atlas-indice{margin:8px 0 0;font-size:11px;color:var(--muted);text-align:center;min-height:14px}
+.atlas-indice{margin:5px 0 0;font-size:11px;color:var(--muted);text-align:center;min-height:13px}
+[data-etat="dicte"] .atlas-indice,[data-etat="pause"] .atlas-indice,
+[data-etat="envoi"] .atlas-indice{display:none}
 
 /* ═══ CE QUI EST NEUF : L'ENREGISTREMENT ════════════════════════════════
    Trois habillages, un seul jeu de gestes. Tout ce qui suit s'affiche à la
    place de l'anneau (variantes 1 et 3) ou autour de lui (variante 2). */
 
-.zone-dictee{align-self:center;width:100%;display:flex;flex-direction:column;align-items:center}
+/* **HAUTEUR FIXE, et ce n'est pas de la coquetterie.** La barre
+   d'enregistrement est plus haute que l'anneau : sans cette réserve, tout ce
+   qui est en dessous — le bouton compris — sautait vers le bas à l'instant où
+   l'on appuie, c'est-à-dire au moment où l'écran doit être le plus stable. */
+.zone-dictee{align-self:center;width:100%;display:flex;flex-direction:column;
+             align-items:center;justify-content:center;min-height:94px}
 .apparait{animation:monter .28s cubic-bezier(.22,.61,.36,1) both}
 @keyframes monter{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
 
@@ -239,7 +293,7 @@ form{padding:22px 26px 0;display:flex;flex-direction:column;gap:17px}
 /* L'onde qui se déroule : les barreaux naissent à droite et glissent vers la
    gauche, où ils s'effacent. Dans l'application ils suivront le volume réel,
    comme le fait déjà l'anneau (`AnneauNoteVocale.tsx`) ; ici ils respirent. */
-.onde{flex:1;min-width:0;height:30px;display:flex;align-items:center;justify-content:flex-end;
+.onde{flex:1;min-width:0;height:26px;display:flex;align-items:center;justify-content:flex-end;
       gap:2px;overflow:hidden;
       -webkit-mask-image:linear-gradient(90deg,transparent,#000 22%,#000);
       mask-image:linear-gradient(90deg,transparent,#000 22%,#000)}
@@ -251,20 +305,24 @@ form{padding:22px 26px 0;display:flex;flex-direction:column;gap:17px}
    une messagerie c'est ce qu'on cherche du pouce sans regarder. */
 .geste{border:0;background:none;padding:0;cursor:pointer;display:flex;align-items:center;
        justify-content:center;font-family:inherit;flex:0 0 auto}
-.jeter{width:44px;height:44px;border-radius:99px;color:var(--muted);
+/* 46 et non 44 : mesurée, la poubelle rendait 43,99997 px — l'alignement du
+   flex la rabotait d'un cheveu, juste sous le seuil du doigt. Un pixel qu'on
+   ne voit pas, mais un contrôle qui rougit et une cible qu'on rate. Elle prend
+   donc la taille de l'avion, ce qui équilibre la rangée par-dessus le marché. */
+.jeter{width:46px;height:46px;border-radius:99px;color:var(--muted);
        transition:color .18s,background .18s}
 .jeter:active{color:var(--alert);background:var(--paper)}
-.pause{width:46px;height:46px;border-radius:99px;color:var(--alert);
+.pause{width:40px;height:40px;border-radius:99px;color:var(--alert);
        box-shadow:inset 0 0 0 1.5px var(--alert)}
-.envoyer{width:52px;height:52px;border-radius:99px;background:var(--plein);color:var(--sur-plein);
+.envoyer{width:46px;height:46px;border-radius:99px;background:var(--plein);color:var(--sur-plein);
          box-shadow:0 6px 16px rgba(0,0,0,.18);transition:transform .18s}
 .envoyer:active{transform:scale(.93)}
 
 /* 1 · LA BARRE — deux rangées, comme sa capture. */
-.barre{width:100%;background:var(--cream);border-radius:22px;padding:13px 16px 14px;
+.barre{width:100%;background:var(--cream);border-radius:20px;padding:7px 14px 8px;
        box-shadow:inset 0 0 0 1px var(--line-soft)}
-.barre .haut{display:flex;align-items:center;gap:12px;min-height:30px}
-.barre .bas{display:flex;align-items:center;justify-content:space-between;margin-top:10px}
+.barre .haut{display:flex;align-items:center;gap:12px;min-height:24px}
+.barre .bas{display:flex;align-items:center;justify-content:space-between;margin-top:6px}
 
 /* **UNE PROPOSITION A ÉTÉ RETIRÉE, ET C'EST LUI QUI L'A TRANCHÉE.**
    Il y en avait une troisième : l'anneau RESTAIT au centre et devenait le
@@ -281,7 +339,7 @@ form{padding:22px 26px 0;display:flex;flex-direction:column;gap:17px}
 
 /* L'attente de la transcription. Elle dure vraiment quelques secondes : la
    masquer ferait croire à un écran figé, et il rappuierait. */
-.attente{display:flex;align-items:center;justify-content:center;gap:9px;min-height:76px;
+.attente{display:flex;align-items:center;justify-content:center;gap:9px;min-height:70px;
          font-size:13px;color:var(--muted)}
 .attente .points i{display:inline-block;width:4px;height:4px;margin-left:3px;border-radius:99px;
                    background:var(--or);animation:pointiller 1.1s ease-in-out infinite}
@@ -306,7 +364,7 @@ form{padding:22px 26px 0;display:flex;flex-direction:column;gap:17px}
    c'est un bouton moins fort. */
 .secondaire{display:block;width:var(--large-principal);margin:0 auto;border:0;border-radius:99px;
            background:transparent;color:var(--charcoal);box-shadow:inset 0 0 0 1.5px var(--or);
-           padding:17px 20px;font-family:Georgia,serif;
+           padding:14px 20px;font-family:Georgia,serif;
            font-size:17px;cursor:pointer;transition:width .22s ease}
 
 /* ─── L'écran du devis ──────────────────────────────────────────────────── */
@@ -374,20 +432,23 @@ form{padding:22px 26px 0;display:flex;flex-direction:column;gap:17px}
         </div>
       </div>
 
+      <!-- Sans intitulé : la case le dit déjà, et l'écran doit tenir d'un
+           seul tenant. « Nom du client » et « Téléphone » restent, eux — il
+           les a demandés nommément le 21 août. -->
       <div class="champ">
-        <span class="caps">E-mail</span>
-        <input id="email" type="email" placeholder="bernard@exemple.fr" autocomplete="off">
+        <input id="email" type="email" placeholder="bernard@exemple.fr" autocomplete="off" aria-label="E-mail">
       </div>
 
       <div class="champ">
-        <span class="caps">Adresse du chantier</span>
-        <input id="adresse" type="text" placeholder="12 rue des Lilas, Nantes" value="12 rue des Lilas, Nantes" autocomplete="off">
+        <input id="adresse" type="text" placeholder="12 rue des Lilas, Nantes" value="12 rue des Lilas, Nantes" autocomplete="off" aria-label="Adresse du chantier">
       </div>
 
       <button class="lien-or" type="button">+ Ajouter une adresse client différente</button>
 
+      <!-- Les deux capsules disent le canal : la question au-dessus le
+           répétait. -->
       <fieldset class="champ" style="border:0;margin:0;padding:0">
-        <legend class="caps" style="padding:0">Comment lui envoyer son devis ?</legend>
+        <legend class="sr" style="padding:0">Comment lui envoyer son devis ?</legend>
         <div class="canal">
           <button type="button" id="par-sms" aria-pressed="true">Par SMS</button>
           <button type="button" id="par-mail" aria-pressed="false" disabled>Par e-mail</button>
@@ -395,8 +456,7 @@ form{padding:22px 26px 0;display:flex;flex-direction:column;gap:17px}
       </fieldset>
 
       <div class="champ">
-        <span class="caps">Photos du chantier</span>
-        <div class="pellicule" id="pellicule">
+        <div class="pellicule" id="pellicule" aria-label="Photos du chantier">
           <input id="fichiers" type="file" accept="image/*" multiple>
           <button class="ajout-photo" type="button" id="ajouter-photo" aria-label="Ajouter des photos">+</button>
         </div>
@@ -445,10 +505,9 @@ form{padding:22px 26px 0;display:flex;flex-direction:column;gap:17px}
         <p class="atlas-indice" id="indice">Appuyez et décrivez le chantier</p>
       </div>
 
-      <div style="padding-top:4px">
+      <div style="padding:0 0 4px">
         <button class="secondaire" type="button" id="ecrire">Je rédige à la main</button>
       </div>
-      <p style="margin:2px 0 30px;text-align:center;font-size:12.5px;color:var(--muted)">&nbsp;</p>
     </form>
   </section>
 
