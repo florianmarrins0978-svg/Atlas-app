@@ -50,6 +50,56 @@ le chemin, et la troisième est la référence du code.
 
 ---
 
+## RÉFÉRENCE DE DÉPART DE LA CAMPAGNE QA — 286/287 (30 août 2026)
+
+**Mesurée avant d'écrire la moindre suite neuve, et c'est tout son intérêt :**
+sans ce point de départ, le premier rouge rencontré pendant la qualification
+passerait pour une découverte alors qu'il précède la campagne.
+
+| | |
+|---|---|
+| suites base | **286 / 287** |
+| la seule qui tombe | `scripts/test-fiche-pendant-relance.ts` |
+| reproductible | **oui** — deux fois de suite, jamais verte ici |
+
+### Ce qui tombe exactement
+
+    ❌ le veilleur est bien bloqué à relancer — sans quoi la suite ne prouve rien
+       le veilleur n'a jamais tenté de relance : le montage ne reproduit pas le cas réel
+
+**C'est le contrôle qui refuse de rendre un vert qu'il n'a pas mesuré**, et il a
+raison de le faire : la suite vérifie d'abord que son propre montage reproduit
+bien la panne du 16 août 2026 (le veilleur qui cesse de publier la fiche dès
+qu'il entre dans `npm run banc`, `CLAUDE.md` §1 bis). Le montage n'y arrive pas
+dans cet environnement — donc elle refuse de conclure, au lieu d'annoncer que
+tout va bien. *Un contrôle qui mesure zéro ne mesure rien.*
+
+### Ce que ce rouge n'est PAS
+
+- **il ne vient pas du lot de l'établi QA** : la suite pilote
+  `.devcontainer/veiller.sh` et `scripts/rapporter-espace.mjs`, deux fichiers
+  qu'aucun commit de ce lot ne touche ;
+- **il ne concerne pas l'application qualifiée** : ni client, ni chantier, ni
+  devis, ni facture, ni rôle, ni isolation. C'est l'outillage du banc d'essai —
+  la fiche d'état que son espace publie sur GitHub ;
+- **il n'a donc aucune incidence sur la campagne**, et la campagne ne doit pas
+  le compter comme une trouvaille.
+
+### Ce qui reste à établir, et qui n'est pas fait
+
+**Si le montage échoue ICI, échoue-t-il aussi sur son espace ?** Les deux cas
+n'ont pas la même gravité :
+
+| Si | Alors |
+|---|---|
+| le montage ne tient que dans cet environnement d'agent | la suite est à rendre portable — désagréable, sans conséquence |
+| le veilleur ne relance vraiment plus | **la correction du 16 août est morte**, et sa fiche peut mentir à nouveau — c'est-à-dire le garde-fou de `CLAUDE.md` §1 bis |
+
+Le second cas est le plus grave du dépôt aujourd'hui après les sauvegardes. Non
+tranché, faute d'avoir pu le jouer sur son espace.
+
+---
+
 ## `dev:setup` échoue sur un volume Docker neuf (30 août 2026)
 
 **Trouvé en montant l'établi de qualification** (`docs/ETABLI-QA.md`), en jouant
