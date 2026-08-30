@@ -55,11 +55,12 @@
   .champ-capital{animation:apparait .15s ease-out}
   @keyframes apparait{from{opacity:0}to{opacity:1}}
 
-  .position{max-width:430px;margin:22px auto 0;padding:0 20px;display:flex;gap:8px}
-  .position button{flex:1;min-height:44px;border:1px solid var(--trait);border-radius:10px;
+  .position{max-width:430px;margin:22px auto 0;padding:0 20px;display:flex;gap:8px;flex-wrap:wrap}
+  .position button{flex:1;min-width:100px;min-height:44px;border:1px solid var(--trait);border-radius:10px;
                    background:var(--papier);color:var(--encre);font-size:13.5px;cursor:pointer;
                    -webkit-tap-highlight-color:transparent;padding:6px 8px;line-height:1.3}
   .position button[aria-pressed="true"]{border-color:var(--or);background:rgba(185,139,71,.14)}
+  .position button[data-p="aucune"][aria-pressed="true"]{border-color:var(--gris);background:var(--carte)}
 
   /* ── La feuille : le devis, dans son allure d'aujourd'hui ────────────── */
   .feuille{max-width:430px;margin:16px auto 0;background:var(--papier);border-radius:4px;
@@ -129,29 +130,31 @@
 </div>
 
 <div class="bloc" style="margin-top:26px">
-  <h2>Où la mention s'imprime</h2>
-  <p>Deux endroits possibles sur le devis. <b>Choisissez, la feuille change.</b></p>
+  <h2>Si la mention s'imprime, et où</h2>
+  <p>Même en ayant rempli forme et capital, <b>rien n'oblige à les montrer au
+     client</b>. Trois choix, la feuille change avec.</p>
 </div>
 <div class="position" id="position">
-  <button type="button" data-p="sous-nom" aria-pressed="true">Sous le nom de l'entreprise</button>
+  <button type="button" data-p="sous-nom" aria-pressed="true">Sous le nom</button>
   <button type="button" data-p="bas" aria-pressed="false">En bas, avec le SIRET</button>
+  <button type="button" data-p="aucune" aria-pressed="false">Ne pas l'imprimer</button>
 </div>
 
 <div class="feuille" id="feuille"></div>
 
 <div class="verdict">
-  <b>Ce qui ne change pas.</b> Un champ resté vide n'imprime rien — comme
-  aujourd'hui pour l'IBAN ou la TVA intracommunautaire. Personne n'est
-  obligé de remplir le capital. <b>Et ça vaut pour la facture aussi</b> : les
-  deux documents lisent la même identité d'entreprise, donc le même geste
-  couvre les deux, sans rien régler deux fois.
+  <b>« Ne pas l'imprimer » n'efface rien.</b> La forme et le capital restent
+  enregistrés dans Identité — seul le devis cesse de les montrer. Rallumer
+  l'affichage plus tard n'oblige pas à ressaisir le capital.
+  <b>Et ça vaut pour la facture aussi</b> : les deux documents lisent la même
+  identité d'entreprise et le même réglage d'affichage, donc un seul geste
+  couvre les deux.
 </div>
 
 <div class="question">
-  <b>Deux choses à trancher :</b> laquelle des deux positions préférez-vous —
-  sous le nom, ou en bas avec le SIRET ? Et pour « Autre » (société civile,
-  GAEC…), je laisse le champ Capital apparaître, faute de savoir s'il en a
-  un — dites-moi si je dois plutôt le masquer. <b>Rien n'est codé.</b>
+  <b>Une chose à trancher :</b> pour « Autre » (société civile, GAEC…), je
+  laisse le champ Capital apparaître, faute de savoir s'il en a un — dites-moi
+  si je dois plutôt le masquer. <b>Rien n'est codé.</b>
 </div>
 
 <script>
