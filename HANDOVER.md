@@ -50,6 +50,28 @@ base (`rappels_vus`, migration 0071) et le rappel revient si la situation dure.
 En faire un effacement définitif rouvrirait exactement ce que ces rappels
 existent pour éviter. Raisons et pièges : `ARCHITECTURE.md` §210.
 
+---
+
+## PIÈGE : `npm test` VIDE LA BASE — RESEMER APRÈS, JAMAIS AVANT, UNE VÉRIFICATION AU NAVIGATEUR (30 août 2026)
+
+Vu en essayant l'écran Identité après une batterie complète : le compte de
+démonstration avait disparu, alors que `npm run db:seed` l'avait créé une
+heure plus tôt. `nettoyerBase()` (`TRUNCATE … CASCADE`) tourne à l'intérieur
+de plusieurs suites — c'est déjà écrit dans `CLAUDE.md` §5 à propos des
+suites jouées EN PARALLÈLE, et ça vaut tout autant en séquence : la batterie
+complète efface le jeu de démonstration au passage. **L'ordre qui marche :**
+`npm test` (ou la batterie complète), PUIS `npm run db:seed`, PUIS la
+vérification au navigateur — jamais l'inverse.
+
+**Second piège, dans la foulée : un verrou de connexion survit au reseed.**
+Plusieurs tentatives de connexion (ratées avant le reseed, le mot de passe
+n'existant plus) posent une clé `ratelimit:connexion:*` dans **Redis**, pas
+dans la base — la reseeder ne le lève pas. Devant « Trop de tentatives
+depuis cet appareil », `redis-cli -u "$REDIS_URL" flushall` avant de
+réessayer.
+
+---
+
 ## PIÈGE : CE QUI EST INVISIBLE SUR TÉLÉPHONE PEUT ÊTRE PERMANENT SUR PC (30 août 2026)
 
 Il travaille aussi **depuis un PC**, et une partie de ce qu'il y voit ne se

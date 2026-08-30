@@ -438,6 +438,50 @@ l'ancienne forme, le rôle neuf serait né avec le droit de facturer et de
 supprimer des chantiers, sans qu'une ligne change. Un contrôle lit la source et
 refuse toute règle écrite par la négative.
 
+### Le capital social et le RCS s'impriment sur le devis, si l'artisan le veut
+
+Trois maquettes (`appli/capital-et-forme-juridique.html`) puis le code, dans
+l'ordre demandé. La forme juridique existait depuis la migration 0039 mais
+n'était copiée dans **aucun** devis ni facture — jamais dessinée sur un PDF,
+juste enregistrée sans effet. Deux champs neufs, `capital_social` et
+`ville_rcs` (migration 0072), s'y ajoutent, et `mentions_legales_position`
+(« sous_nom » | « bas » | « aucune », défaut **aucune**) dit où — ou si — les
+trois s'impriment. Le RCS ne redemande pas de numéro : c'est le SIREN, déjà
+les neuf premiers chiffres du SIRET (`src/lib/siren.ts`, extrait de
+`IdentiteClient.tsx`). Les deux champs disparaissent pour une EI ou une
+micro-entreprise (`formeADuCapital`), qui n'en ont pas légalement ; pour une
+forme libre (« Autre »), on ne tranche pas à sa place et ils restent
+proposés.
+
+**Trois défauts réels trouvés en construisant, pas en le supposant :**
+
+- **`formeConnue` ne reconnaissait jamais « Micro-entreprise ».** Le tiret
+  n'était retiré que du côté du sigle de référence, pas de la saisie : la
+  comparaison échouait toujours, et la forme retombait sur « Autre » sans
+  qu'aucun écran ne le montre. Invisible tant que rien ne dépendait de la
+  distinction EI/société — `formeADuCapital` en dépend.
+- **La forme juridique ne s'enregistrait JAMAIS depuis la liste déroulante.**
+  `ChampFormeJuridique` appelait `onChange` puis `onFini` dans le même
+  battement ; `onFini`, chez l'appelant, relisait l'état React d'AVANT le
+  clic — une fermeture périmée. La case s'affichait juste, le serveur
+  recevait la valeur précédente. Un bug qui existait depuis le 14 août 2026,
+  invisible parce que rien n'imprimait cette valeur nulle part avant
+  aujourd'hui. `onFini` reçoit maintenant la valeur en argument, elle ne la
+  relit plus.
+- **`enEuros` faisait planter tout PDF portant un montant à quatre chiffres.**
+  `Intl.NumberFormat` sépare les milliers par une espace fine insécable
+  (U+202F), que l'encodage WinAnsi des polices standard de `pdf-lib` ne
+  connaît pas — `document-commun.ts` l'avait déjà découvert pour les totaux
+  (`formatMontant`) mais `enEuros`, le formateur d'écran, ne le savait pas.
+  Le premier capital social imprimé (1 000 €) l'a fait apparaître. Corrigé
+  à la source : `enEuros` échange l'espace fine contre l'espace insécable
+  ordinaire (U+00A0), sûre partout.
+
+Vérifié de bout en bout, pas seulement en suites : connexion réelle,
+sélection d'une forme, remplissage du capital et de la ville, régénération
+d'un devis, et lecture du PDF produit — qui porte bien « SASU au capital de
+1 000,00 € » puis « RCS Versailles 123 456 789 » sous le nom de l'entreprise.
+
 ### Le commercial écrit sur le planning : confirmé, plus seulement toléré
 
 Le lot « salarié en lecture seule » n'avait pas touché aux droits du commercial,
@@ -640,7 +684,7 @@ La règle n'est pas « retirer ce qui ressemble à une mesure » mais « retirer
 fragment dont TOUT ce qu'il dit est déjà en colonne » : « Érable — démontage en
 rétention » garde sa méthode, qu'aucune colonne ne porte. Rien n'est retiré de
 la base, et aucun devis existant n'est réinterprété — sans colonnes, le libellé
-est rendu tel quel. Détail : `ARCHITECTURE.md` §213.
+est rendu tel quel. Détail : `ARCHITECTURE.md` §214.
 
 ## 2026-08-29
 

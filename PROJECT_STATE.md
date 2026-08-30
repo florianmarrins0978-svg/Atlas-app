@@ -177,7 +177,7 @@ Le défilement n'a pas changé — molette, doigt, clavier, focus. Détail :
 
 *Son premier vrai devis sorti de la chaîne corrigée portait « Haie de laurier
 (800 ml) (800 ml) » et « Érable (40 cm de diamètre, 12 m de haut) ». Détail et
-pourquoi : `ARCHITECTURE.md` §213.*
+pourquoi : `ARCHITECTURE.md` §214.*
 
 **Fait.**
 
@@ -2041,6 +2041,27 @@ ne change tant qu'il n'y touche pas — et cela se vérifie, pas seulement se di
 `test-allure-pdf.ts` compare deux devis octet pour octet.
 
 `ARCHITECTURE.md` §161 et §164.
+
+## Le capital social et le RCS s'impriment, s'il le veut — 30 août 2026
+
+Trois mentions légales de société, réglées dans **Réglages › Identité** :
+forme juridique (existait, jamais imprimée nulle part avant ce lot), capital
+social et ville d'immatriculation au RCS (les deux neufs). Un seul réglage,
+**« sous le nom » / « en bas, avec le SIRET » / « ne pas les imprimer »**,
+gouverne les trois ensemble — défaut « ne pas les imprimer », pour ne
+surprendre personne qui avait déjà saisi une forme juridique sans savoir
+qu'elle ne s'imprimait pas. Le RCS ne redemande pas de numéro : c'est le
+SIREN, déjà affiché sous le SIRET. Les deux champs neufs disparaissent pour
+une EI ou une micro-entreprise (`formeADuCapital`, `src/lib/formes-juridiques.ts`).
+
+**Trois défauts réels du dépôt, trouvés en construisant** : `formeConnue` ne
+reconnaissait jamais « Micro-entreprise » (le tiret n'était retiré que d'un
+côté de la comparaison) ; la forme juridique ne s'enregistrait JAMAIS depuis
+la liste déroulante, une fermeture React périmée dans `ChampFormeJuridique`
+existant depuis le 14 août ; et `enEuros` faisait planter tout PDF portant un
+montant à quatre chiffres (l'espace fine de `Intl.NumberFormat`, que
+l'encodage des polices PDF ne connaît pas). Les trois sont corrigés. Détail
+dans `CHANGELOG.md` du jour et `ARCHITECTURE.md` §213.
 
 ## Vérifications au dernier point
 
