@@ -1,7 +1,7 @@
 # État du projet
 
 **Dernière mise à jour :** 2026-08-30 · branche `main`
-· dernière migration `drizzle/0070_prix_a_chiffrer_et_comparabilite.sql`
+· dernière migration `drizzle/0071_rappel_vu.sql`
 
 *(Deux en-têtes de mise à jour cohabitaient ici depuis une fusion du 29 août,
 avec deux dates et deux migrations différentes — dont une périmée. Réunis : une
@@ -17,6 +17,20 @@ Ce fichier dit **où en est le produit**, pas ce qu'on aimerait qu'il soit. Une
 ligne « fait » qui ne l'est pas coûte plus cher qu'une ligne absente.
 
 ---
+
+## Chaque notification se range d'un « J'ai vu » (30 août 2026)
+
+**Sa demande, capture à l'appui :** *« pour chaque notification je dois pouvoir
+cliquer sur vu pour les faire disparaître ; pourquoi certaines n'ont pas cette
+fonction ? »*. Trois rappels sur quatre n'avaient aucun geste.
+
+Les quatre cartes de rappel portent désormais le même mot que les réponses de
+clients. **Le geste fait taire, il n'efface pas** : le rappel revient au bout de
+son délai réglé si rien n'a bougé (`rappels_vus`, migration 0071). La facture
+impayée garde sa mécanique du 16 août et ne prend que le libellé — « Plus tard »
+disparaît.
+
+Détail : `docs/j-ai-vu-sur-tous-les-rappels.md`, `ARCHITECTURE.md` §209.
 
 ## Le planning du salarié est en LECTURE SEULE (30 août 2026)
 

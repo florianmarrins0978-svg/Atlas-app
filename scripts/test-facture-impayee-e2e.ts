@@ -3,7 +3,7 @@ import { lancerNavigateur } from "./e2e-browser";
 import { pool } from "../src/server/db/client";
 import { creerPuisFiche } from "./_creer-chantier-e2e";
 
-// **« Facture impayée » : la carte, son montant, et « Plus tard ».**
+// **« Facture impayée » : la carte, son montant, et son « J'ai vu ».**
 //
 // ─────────────────────────────────────────────────────────────────────────────
 // Le patron, le 16 août 2026, devant la maquette
@@ -24,7 +24,7 @@ import { creerPuisFiche } from "./_creer-chantier-e2e";
 //
 //   1. la carte paraît, et **elle porte le montant** — ce qu'il cherche ;
 //   2. son geste mène à l'endroit où l'on solde, pas à la facture figée ;
-//   3. **« Plus tard » fait taire le rappel** — la carte s'en va, la date part
+//   3. **« J'ai vu » fait taire le rappel** — la carte s'en va, la date part
 //      en base, et elle ne revient pas au rechargement ;
 //   4. le réglage existe, avec **trois rythmes et trois seulement** — une case
 //      de saisie rouvrirait le « tous les jours » qu'il a exclu ;
@@ -171,11 +171,16 @@ async function main() {
     await page.waitForURL(/\/termines\/tva/, { timeout: 30_000 });
   });
 
-  await cas("« Plus tard » fait taire le rappel, et la date part en base", async () => {
+  // **Le mot est « J'ai vu » depuis le 30 août 2026** — le même sur les quatre
+  // cartes, à sa demande. La mécanique dessous n'a pas bougé : le rappel se
+  // tait le temps du rythme réglé, et la facture reste dans l'endroit en
+  // attente. Nommer ce geste « Plus tard » ici et « J'ai vu » deux cartes plus
+  // bas faisait chercher une différence qui n'existe pas.
+  await cas("« J'ai vu » fait taire le rappel, et la date part en base", async () => {
     await page.goto(`${BASE}/`, { waitUntil: "networkidle" });
     await deplier(page);
-    const plusTard = carte.getByRole("button", { name: "Plus tard" });
-    if ((await plusTard.count()) === 0) throw new Error("« Plus tard » manque sur la carte");
+    const plusTard = carte.getByRole("button", { name: "J'ai vu" });
+    if ((await plusTard.count()) === 0) throw new Error("« J'ai vu » manque sur la carte");
     await plusTard.click();
     // La carte part de l'écran sans attendre le serveur : le geste est fait.
     await carte.waitFor({ state: "detached", timeout: 15_000 });
@@ -193,7 +198,7 @@ async function main() {
     await page.goto(`${BASE}/`, { waitUntil: "networkidle" });
     await deplier(page);
     if ((await carte.count()) !== 0) {
-      throw new Error("la carte revient au rechargement : « Plus tard » n'a fait taire que l'écran");
+      throw new Error("la carte revient au rechargement : « J'ai vu » n'a fait taire que l'écran");
     }
   });
 

@@ -30,6 +30,7 @@ import {
   ecrireReglagesRappels,
   rappelsEnCours,
   repousserRappelFacture,
+  marquerRappelVu,
 } from "../src/server/repositories/rappels";
 import { RAPPELS_PAR_DEFAUT } from "../src/lib/rappels";
 import { terminerChantier, emettreFacture } from "../src/server/repositories/factures";
@@ -433,6 +434,149 @@ async function main() {
     assert.deepEqual(
       (await rappelsEnCours(ctxA, MAINTENANT)).filter((r) => r.genre === "facture-impayee"),
       []
+    );
+  });
+
+  // ───────────────────────────────────────────────────────────────────────
+  // « J'AI VU » SUR UN RAPPEL — sa demande du 30 août 2026.
+  //
+  // *« Pour chaque notification je dois pouvoir cliquer sur vu pour les faire
+  // disparaître. »* Ce que ces essais tiennent, et qu'aucune règle pure ne
+  // peut dire : l'acquittement SURVIT au rechargement (il est en base), il ne
+  // déborde pas d'une entreprise sur l'autre, et il ne tue pas le rappel.
+  // ───────────────────────────────────────────────────────────────────────
+
+  await essai("« J'ai vu » fait taire le rappel, et cela survit au rechargement", async () => {
+    const { ctxA } = await monter();
+    const chantier = await devisPartiIlYA(ctxA, "Mme Félicie", 10);
+    const avant = (await rappelsEnCours(ctxA, MAINTENANT)).filter((r) => r.genre === "devis-sans-reponse");
+    assert.equal(avant.length, 1, "le rappel qu'on veut acquitter n'est pas là : l'essai n'éprouve rien");
+
+    assert.equal(await marquerRappelVu(ctxA, "devis-sans-reponse", chantier.id, MAINTENANT), true);
+    assert.deepEqual(
+      (await rappelsEnCours(ctxA, MAINTENANT)).filter((r) => r.genre === "devis-sans-reponse"),
+      [],
+      "le rappel parle encore : le geste n'a rien fait taire"
+    );
+  });
+
+  // **Il se tait, il ne meurt pas.** Un rappel effacé pour toujours ferait
+  // précisément ce que ces rappels existent pour éviter : perdre le chantier
+  // de vue. Il revient au bout du délai réglé — sept jours par défaut.
+  await essai("acquitté, il revient au bout du délai réglé si rien n'a bougé", async () => {
+    const { ctxA } = await monter();
+    const chantier = await devisPartiIlYA(ctxA, "Mme Félicie", 10);
+    await marquerRappelVu(ctxA, "devis-sans-reponse", chantier.id, MAINTENANT);
+
+    const sixJours = new Date(MAINTENANT.getTime() + 6 * 24 * 3600 * 1000);
+    assert.equal(
+      (await rappelsEnCours(ctxA, sixJours)).filter((r) => r.genre === "devis-sans-reponse").length,
+      0,
+      "il revient avant l'heure"
+    );
+    const septJours = new Date(MAINTENANT.getTime() + 7 * 24 * 3600 * 1000);
+    assert.equal(
+      (await rappelsEnCours(ctxA, septJours)).filter((r) => r.genre === "devis-sans-reponse").length,
+      1,
+      "il n'est jamais revenu : le devis dort et plus personne ne le dit"
+    );
+  });
+
+  // **Le dernier geste écrase le précédent.** Deux lignes pour un même rappel
+  // donneraient deux dates de réveil, et la plus ancienne le ferait revenir
+  // alors qu'il vient d'être acquitté.
+  await essai("acquitter deux fois ne laisse qu'une trace, la plus récente", async () => {
+    const { ctxA } = await monter();
+    const chantier = await devisPartiIlYA(ctxA, "Mme Félicie", 10);
+    await marquerRappelVu(ctxA, "devis-sans-reponse", chantier.id, MAINTENANT);
+    const cinqJours = new Date(MAINTENANT.getTime() + 5 * 24 * 3600 * 1000);
+    await marquerRappelVu(ctxA, "devis-sans-reponse", chantier.id, cinqJours);
+
+    const septJours = new Date(MAINTENANT.getTime() + 7 * 24 * 3600 * 1000);
+    assert.equal(
+      (await rappelsEnCours(ctxA, septJours)).filter((r) => r.genre === "devis-sans-reponse").length,
+      0,
+      "le second « J'ai vu » n'a pas repoussé le réveil"
+    );
+    const douzeJours = new Date(MAINTENANT.getTime() + 12 * 24 * 3600 * 1000);
+    assert.equal(
+      (await rappelsEnCours(ctxA, douzeJours)).filter((r) => r.genre === "devis-sans-reponse").length,
+      1
+    );
+  });
+
+  // **Chaque genre s'acquitte à part.** Un chantier peut dormir sur son devis
+  // un mois, puis sur sa facture le mois suivant : ranger l'un ne doit pas
+  // faire taire l'autre.
+  await essai("acquitter un genre n'en fait pas taire un autre sur le même chantier", async () => {
+    const { ctxA } = await monter();
+    // Un devis parti sans réponse SUR un chantier terminé et non facturé :
+    // les deux seuls rappels qui peuvent viser le même chantier le même jour.
+    const chantier = await devisPartiIlYA(ctxA, "Le Clos", 10);
+    await poserJalon(ctxA, chantier.id, { termineAt: ilYA(9) });
+    const genres = (rappels: { genre: string }[]) => rappels.map((r) => r.genre).sort();
+    assert.deepEqual(
+      genres(await rappelsEnCours(ctxA, MAINTENANT)),
+      ["chantier-non-facture", "devis-sans-reponse"],
+      "le montage ne produit pas les deux rappels attendus"
+    );
+
+    await marquerRappelVu(ctxA, "devis-sans-reponse", chantier.id, MAINTENANT);
+    assert.deepEqual(genres(await rappelsEnCours(ctxA, MAINTENANT)), ["chantier-non-facture"]);
+  });
+
+  // **UN DEVIS RENVOYÉ N'EST PAS ENTERRÉ PAR L'ACQUITTEMENT DE L'ANCIEN**, et
+  // c'est le silence lui-même qui le garantit : un envoi parti APRÈS le
+  // « J'ai vu » met le délai du rappel à devenir rappelable, donc il arrive
+  // toujours après le réveil. Cet essai le montre plutôt que de le supposer.
+  await essai("un devis renvoyé après le « J'ai vu » se rappelle à son tour", async () => {
+    const { ctxA } = await monter();
+    const chantier = await devisPartiIlYA(ctxA, "Mme Félicie", 10);
+    await marquerRappelVu(ctxA, "devis-sans-reponse", chantier.id, MAINTENANT);
+
+    // Un second envoi, parti le lendemain de l'acquittement.
+    const devis = await getOuCreerDevisBrouillon(ctxA, chantier.id);
+    const renvoiLe = new Date(MAINTENANT.getTime() + 1 * 24 * 3600 * 1000);
+    await creerEnvoi(
+      ctxA,
+      {
+        chantierId: chantier.id,
+        devisId: devis.id,
+        canal: "email",
+        datesProposees: [new Date(renvoiLe.getTime() + 90 * 24 * 3600 * 1000).toISOString().slice(0, 10)],
+        contenuDevis: "devis renvoyé",
+      },
+      renvoiLe
+    );
+
+    const cinqJours = new Date(MAINTENANT.getTime() + 5 * 24 * 3600 * 1000);
+    assert.equal(
+      (await rappelsEnCours(ctxA, cinqJours)).filter((r) => r.genre === "devis-sans-reponse").length,
+      0,
+      "le renvoi crie avant ses sept jours"
+    );
+    const neufJours = new Date(MAINTENANT.getTime() + 9 * 24 * 3600 * 1000);
+    const revenus = (await rappelsEnCours(ctxA, neufJours)).filter((r) => r.genre === "devis-sans-reponse");
+    assert.equal(revenus.length, 1, "le devis renvoyé reste muet : il dort sans que personne le dise");
+    assert.equal(
+      revenus[0].depuis.getTime(),
+      renvoiLe.getTime(),
+      "le rappel compte depuis l'ancien envoi, pas depuis le renvoi"
+    );
+  });
+
+  await essai("on n'acquitte pas le rappel du voisin", async () => {
+    const { ctxA, ctxB } = await monter();
+    const chezB = await devisPartiIlYA(ctxB, "Chez le voisin", 10);
+    assert.equal(
+      await marquerRappelVu(ctxA, "devis-sans-reponse", chezB.id, MAINTENANT),
+      false,
+      "une entreprise a rangé le rappel d'une autre"
+    );
+    assert.equal(
+      (await rappelsEnCours(ctxB, MAINTENANT)).filter((r) => r.genre === "devis-sans-reponse").length,
+      1,
+      "le rappel du voisin s'est tu"
     );
   });
 

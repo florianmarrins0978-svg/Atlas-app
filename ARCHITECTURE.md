@@ -8702,11 +8702,13 @@ la planche : *« on le touche, rien ne bouge, et on croit à une panne »*.
 
 **Trois choix qui paraissent des détails :**
 
-1. **Un rappel n'a pas de « J'ai vu ».** Une réponse de client s'acquitte — elle
-   a été lue. Un rappel décrit une situation qui DURE, et il s'en va quand elle
-   cesse : le client répond, la facture part. Lui donner un bouton d'acquit
-   ferait croire qu'on peut le classer sans rien faire, et le chantier
-   retomberait dans l'oubli qu'on cherchait à éviter.
+1. **Un rappel n'a pas de « J'ai vu »** — ~~et c'est délibéré~~. **RÉVISÉ LE
+   30 AOÛT 2026, par le patron** : *« pour chaque notification je dois pouvoir
+   cliquer sur vu pour les faire disparaître ; pourquoi certaines n'ont pas
+   cette fonction ? »*. La crainte écrite ici — qu'un acquit fasse oublier le
+   chantier — était juste, et elle est tenue autrement : « J'ai vu » fait
+   **taire** le rappel le temps de son délai réglé, il ne l'efface pas. Voir
+   **§209**.
 2. **Un devis EXPIRÉ n'est pas rappelé** : il a déjà sa carte de devis caduc.
    Deux cartes pour un même devis feraient chercher la différence.
 3. **Jamais « urgent ».** Le fond teinté est réservé à ce qui appelle une
@@ -9816,16 +9818,21 @@ en pastilles. Une case de saisie aurait été plus souple et **aurait rouvert ce
 qu'il a exclu** : rien n'y aurait empêché « tous les jours », ni « tous les
 3 jours ». La contrainte est le sujet de sa demande, pas un effet de bord.
 
-### « Plus tard » est le seul moteur du rythme — et ce n'est pas « J'ai vu »
+### Le geste est le seul moteur du rythme — il porte « J'ai vu » depuis le 30 août
 
 Le rythme ne s'applique **qu'après un geste**. Tant qu'il n'a rien touché, la
 carte reste, tous les jours. C'est délibéré : une carte qui s'endormirait toute
 seule pourrait passer un jour où il n'ouvre pas l'application, et il ne saurait
 jamais qu'elle est passée.
 
-« Plus tard » **ne classe rien** : la facture reste dans « Terminés › TVA › En
-attente de paiement », le rappel revient au bout du rythme. C'est ce qui le
-distingue d'un acquittement — et pourquoi la carte ne porte pas « J'ai vu ».
+Le geste **ne classe rien** : la facture reste dans « Terminés › TVA › En
+attente de paiement », le rappel revient au bout du rythme.
+
+**Son libellé était « Plus tard » jusqu'au 30 août 2026**, précisément pour le
+distinguer d'un acquittement. Le patron a tranché l'inverse ce jour-là : les
+quatre cartes portent le même mot, « J'ai vu », parce que le doigt fait le même
+geste — la carte s'en va. La mécanique dessous n'a pas bougé d'une ligne
+(`chantiers.rappel_facture_repousse_le`). Voir **§209**.
 
 ### La date de report vit sur le CHANTIER, et ce n'est pas un rangement
 
@@ -18253,3 +18260,69 @@ fichiers écrites à la main, et toutes deux ne nommaient que des `actions.ts`.
 le pire des silences — il ressemble à un contrôle. Le sens est donc inversé : on
 relève tous les fichiers « use server », et ce qui n'a pas de garde s'explique
 par écrit, dans une table d'exemptions dont chaque entrée porte sa raison.
+
+## 209. « J'ai vu » sur les quatre rappels : faire taire n'est pas effacer
+
+*Sa demande du 30 août 2026, capture à l'appui — la carte « Devis sans réponse »
+ne portait que « Ouvrir le chantier » :* ***« Pour chaque notification je dois
+pouvoir cliquer sur vu pour les faire disparaître ; pourquoi certaines n'ont pas
+cette fonction ? Mets la fonction pour toutes. »***
+
+### Ce qui était en place, et pourquoi cela ne tenait plus
+
+| La carte | Son geste, avant | Après |
+|---|---|---|
+| Réponse d'un client, devis caduc | « J'ai vu » (acquitté en base) | inchangé |
+| Chantier sans devis · Devis sans réponse · À facturer | **aucun** | **« J'ai vu »** |
+| Facture impayée | « Plus tard » | **« J'ai vu »**, même mécanique |
+
+Le §108 tenait qu'un rappel n'avait rien à acquitter : il décrit une situation
+qui dure, et il s'en va quand elle cesse. La crainte était juste — un rappel
+classé d'un doigt, c'est un chantier qu'on ne revoit plus. Mais elle avait un
+coût que le patron a vu avant nous : **sa pile de rappels ne se range pas**. Un
+chantier qui dort trois semaines occupe l'accueil trois semaines, et deux cartes
+suffisent à repousser ses chantiers hors de l'écran.
+
+### La règle, en une phrase : le rappel se TAIT le temps de son délai réglé
+
+`rappelEncoreTu` (`src/lib/rappels.ts`) : acquitté à l'instant T, un rappel se
+tait jusqu'à `T + le délai réglé pour son genre` — sept jours pour un devis sans
+réponse, quatre pour un chantier sans devis, trois pour un chantier fini non
+facturé. Passé ce délai, **si la situation n'a pas bougé, il revient**.
+
+**Le silence est le délai qu'il a lui-même réglé**, jamais un second nombre à
+nous : il a déjà dit dans « Réglages › Notifications » à quel rythme il veut
+être repris, et un nombre caché ici serait un réglage qu'il ne pourrait pas
+changer. Pour ne plus jamais voir un rappel, l'interrupteur est là-bas.
+
+### Où l'acquittement s'écrit — et le seul piège qu'il fallait éviter
+
+`rappels_vus` (migration 0071) : une ligne par `(entreprise, genre, chantier)`,
+l'unicité posée en base, `ON CONFLICT DO UPDATE` pour que **le dernier geste
+écrase le précédent** — deux lignes donneraient deux réveils, et le plus ancien
+ferait revenir un rappel qui vient d'être rangé.
+
+**La facture impayée n'entre PAS dans cette table**, et c'est le seul vrai choix
+d'architecture de ce lot. Elle a son moteur de silence depuis le 16 août
+(`chantiers.rappel_facture_repousse_le`, §118) : lui en donner un second, c'est
+deux endroits pour une idée, donc deux vérités qui divergent le jour où l'une
+est corrigée seule. Son bouton prend le mot des autres ; sa mécanique reste la
+sienne.
+
+### Une garde écrite puis retirée, faute de pouvoir la voir rougir
+
+La première version portait « une situation née APRÈS l'acquittement est une
+situation neuve » : un devis renvoyé ne devait pas être enterré par le « J'ai
+vu » de l'ancien. **Elle ne pouvait jamais devenir vraie.** Un envoi parti après
+l'acquittement met le délai du rappel à devenir rappelable ; il arrive donc
+toujours après le réveil, qui court depuis le même instant. Un contrôle qu'on ne
+peut pas voir échouer ne prouve rien (`CLAUDE.md` §5) : la garde est partie, et
+`test-rappels-db.ts` montre à sa place que le devis renvoyé se rappelle bien à
+son tour, à son propre compte de jours.
+
+### Un seul mot sur les quatre cartes
+
+« Plus tard » et « J'ai vu » nommaient le même geste — la carte s'en va — sur
+deux cartes voisines du même écran. La différence était vraie dans le code et
+invisible au doigt : elle ne faisait que demander laquelle des deux range
+vraiment. Un seul libellé, et ce qui se passe dessous reste l'affaire du dépôt.
