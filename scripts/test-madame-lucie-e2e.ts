@@ -176,7 +176,7 @@ async function main() {
   await cas("sa dictée arrive sur le devis, en lignes", async () => {
     // L'arrêt d'avant-chiffrage peut s'ouvrir : sa dictée ne dit pas tout ce
     // qui fait un prix. C'est voulu, et il le franchit d'un appui.
-    const questions = page2.locator("text=/précisions? avant de chiffrer/i").first();
+    const questions = page2.locator('[data-atlas="question-chiffrage"]').first();
     const voile = page2.locator('[data-atlas="preparation-dictee"]');
     await Promise.race([
       questions.waitFor({ state: "visible", timeout: 180_000 }),

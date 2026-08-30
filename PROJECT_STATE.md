@@ -36,6 +36,53 @@ aucune garde — un salarié pouvait en supprimer n'importe laquelle, pour de bo
 
 Détail : `docs/salarie-planning-lecture-seule.md`, `ARCHITECTURE.md` §208.
 
+## Ce qui a déjà été dicté ne se redemande plus (30 août 2026)
+
+*« Tu dis deux souches de diamètre 60. Question : quel diamètre font les
+souches ? »* La lecture découpe à la virgule ; la question ne regardait que sa
+propre ligne, quand la hauteur était cherchée dans toute la dictée depuis le
+premier jour. Corrigé — avec une garde : à deux arbres, on redemande ligne par
+ligne, un diamètre dit quelque part n'appartenant pas forcément à celui qu'on
+questionne.
+
+Les questions ne nomment plus leur objet : « Quel diamètre ? », « Quelle
+hauteur ? », « Quelle longueur ? ».
+
+Deux textes qui décrivaient ce que l'écran montrait déjà sont partis :
+
+| Où | Ce qui reste |
+|---|---|
+| écran Transcription | rien — le titre et le cadre suffisent |
+| refus de chiffrer | « Aucun tarif ne correspond, et la dictée ne dit ni la durée ni l'équipe. » |
+
+---
+
+## L'arrêt d'avant-chiffrage : moins de mots, et plus de question absurde (30 août 2026)
+
+Deux remarques de lui, le même jour, sur le même écran.
+
+**L'incohérence.** *« Lorsque l'on parle de souche, ça sous-entend que l'arbre a
+déjà été abattu — donc s'il n'y a pas d'arbre, pourquoi il y a la question de
+comment on l'abat ? »* Le dessouchage était rangé avec l'abattage pour ne pas
+redemander le diamètre du même tronc ; le raccourci commandait aussi la question
+de la technique. Une souche reçoit maintenant son diamètre seul, sous le mot
+juste.
+
+**Les mots.** *« Trop de phrases inutiles, il faut aller droit au but,
+l'utilisateur n'aime pas lire. »* Retirées : les deux lignes sous le titre, la
+ligne d'explication sous chaque question — et le champ `pourquoi` avec elles —,
+et la prestation réécrite à chaque question. Titre : « Avant de chiffrer ».
+
+| | |
+|---|---|
+| `src/lib/questions-chiffrage.ts` | `estDessouchage`, sujet `dessouchage.diametre`, `pourquoi` supprimé |
+| `src/app/chantiers/[id]/DevisDepuisDictee.tsx` | l'écran ne porte plus que prestation, question, réponses |
+| trois suites navigateur | comptent les blocs `[data-atlas="question-chiffrage"]`, plus un libellé |
+
+Détail : `ARCHITECTURE.md` §209.
+
+---
+
 ## Plus aucune barre de défilement grise, la page comprise (30 août 2026)
 
 Sa plainte du jour, depuis son PC : *« sur PC les bandes déroulantes grises

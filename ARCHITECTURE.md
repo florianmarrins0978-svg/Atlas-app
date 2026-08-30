@@ -18253,3 +18253,131 @@ fichiers écrites à la main, et toutes deux ne nommaient que des `actions.ts`.
 le pire des silences — il ressemble à un contrôle. Le sens est donc inversé : on
 relève tous les fichiers « use server », et ce qui n'a pas de garde s'explique
 par écrit, dans une table d'exemptions dont chaque entrée porte sa raison.
+
+---
+
+## 209. Une souche n'a plus d'arbre : l'arrêt d'avant-chiffrage cesse d'expliquer, et de demander l'impossible
+
+**Sa remarque du 30 août 2026, capture à l'appui**, sur l'écran qui l'arrête
+avant de chiffrer :
+
+> *« Trop de phrases inutiles pour ça. Il faut aller droit au but, l'utilisateur
+> n'aime pas lire. »*
+>
+> *« Autre incohérence : lorsque l'on parle de souche, ça sous-entend que
+> l'arbre a déjà été abattu et qu'il ne reste que les racines à enlever — c'est
+> ça une souche. Donc s'il n'y a pas d'arbre, pourquoi il y a la question de
+> comment on l'abat ? »*
+
+### La souche : un raccourci qui a débordé de son usage
+
+`questions-chiffrage.ts` rangeait le dessouchage **avec** l'abattage, et pour
+une raison juste : le diamètre est celui du même tronc, et le redemander ferait
+répondre deux fois la même chose (`abattageDansLaDictee`). Mais la même liste
+servait à deux décisions différentes, et la seconde n'a jamais été relue :
+
+| Ce que le regroupement décide | Verdict |
+|---|---|
+| **le diamètre** — même tronc, au ras du sol | juste, et il reste |
+| **la technique d'abattage** | faux : l'arbre est déjà par terre |
+
+**Aucun contrôle ne pouvait le dire.** La question était posée, son libellé
+lisible, son identifiant stable, sa réponse persistée — tout ce qu'une suite
+sait vérifier était vert. Ce qui manquait n'était mesurable nulle part : le
+**sens**. C'est le troisième défaut de ce dépôt trouvé en regardant l'écran
+plutôt qu'un rapport, et le premier trouvé par le métier plutôt que par l'œil.
+
+La leçon générale, et elle dépasse l'arrosage comme le chiffrage : **une liste
+qui sert deux décisions se relit pour chacune des deux.** Le regroupement avait
+été écrit pour une question, et il en a silencieusement commandé une autre.
+
+Ce qui change, à l'usage : une souche reçoit son diamètre seul, **sous le mot
+juste** — « Quel diamètre fait la souche ? », jamais « le tronc ». Son sujet
+devient `dessouchage.diametre`, que `prestation-structuree.ts` lit déjà par son
+suffixe. `precisionLisibleParId`, lui, cherchait un **préfixe** (`abattage.` ou
+`fendage.`) : le sujet neuf serait sorti « 60 cm » au lieu de « ⌀ 60 cm », et
+`mesures-arbre.ts` n'y aurait plus retrouvé le nombre — le chiffrage se serait
+tu, sans une seule erreur. Les deux lisent désormais le suffixe, comme
+`CLAUDE.md` §3 l'exige d'une règle qui vit à deux endroits.
+
+### Les phrases qui expliquent : parties, et le champ avec elles
+
+L'écran portait, sous le titre, deux lignes disant que la dictée était
+incomplète ; et sous **chaque** question, une ligne disant ce qu'elle changeait
+(`QuestionChiffrage.pourquoi`). Elles décrivaient ce que l'écran montrait déjà —
+exactement ce que `CLAUDE.md` §3 refuse : *« un écran n'explique pas son propre
+fonctionnement, il le montre »*.
+
+| Avant | Après |
+|---|---|
+| « Une précision avant de chiffrer » / « 2 précisions avant de chiffrer » | « Avant de chiffrer » |
+| « Votre dictée ne les dit pas, et elles changent le prix. Sans elles, le devis serait faux. » | — |
+| une ligne d'explication sous chaque question | — |
+| la prestation réécrite au-dessus de chaque question | écrite **une fois** par prestation |
+
+**`pourquoi` est retiré du modèle, pas seulement de l'écran.** Un champ que plus
+rien n'affiche revient au premier remaniement : quelqu'un le trouve rempli et
+le rebranche, de bonne foi. Ce qui subsiste doit se suffire — d'où le contrôle
+qui a remplacé l'ancien : chaque question tient en 40 caractères et se termine
+par un point d'interrogation.
+
+### Ce que le comptage des questions ne lit plus
+
+`test-questions-chiffrage-e2e.ts` comptait les questions **dans le titre** (« 2
+précisions… »), pour tenir la promesse de `docs/AGENT.md` §2 — l'arrêt reste
+franchissable. Le titre parti, ce contrôle se serait mis à réclamer le libellé
+que le patron venait de faire retirer (`CLAUDE.md` §5 bis). Il compte désormais
+les blocs `[data-atlas="question-chiffrage"]` : le même garde-fou, sur une prise
+qui survivra au prochain remaniement de texte. Deux autres suites
+(`test-anneau-vers-devis-e2e`, `test-madame-lucie-e2e`) visaient le même libellé
+et ont suivi.
+
+### Le même jour, trois autres retraits — et un défaut que seul le métier voyait
+
+**« Tu dis deux souches de diamètre 60. Question : quel diamètre font les
+souches ? »** Sa dictée portait la réponse, en toutes lettres, une ligne plus
+haut. Ce qui se passait :
+
+```
+« Il y a un dessouchage, deux souches de soixante centimètres de diamètre. »
+        ↓ la lecture découpe à la virgule
+1. « Il y a un dessouchage »                             → pose la question
+2. « deux souches de soixante centimètres de diamètre »  → porte la réponse
+```
+
+La question ne regardait que **sa** ligne. La hauteur, elle, était cherchée dans
+toute la dictée depuis le premier jour (`hauteurDansLaDictee`) — le diamètre n'a
+jamais reçu le même traitement. Deux règles voisines, une seule relue : la même
+faute que le regroupement du dessouchage, à quelques lignes de distance.
+
+**La garde du seul arbre n'est pas une précaution de style.** À deux arbres dans
+une dictée, un diamètre dit quelque part n'appartient pas forcément à celui
+qu'on questionne, et se tromper de diamètre range le prix dans la case d'à côté.
+`diametreDansLaDictee` ne vaut donc que lorsqu'une seule ligne parle d'un arbre
+ou d'une souche ; à deux, on demande ligne par ligne.
+
+**Et taire une question n'est tenable que si le chiffrage lit les mêmes textes.**
+C'est écrit dans l'en-tête du module, et c'est le piège qu'il se tend à
+lui-même : s'il en lisait moins, la case de la grille resterait introuvable —
+sans question posée, sans erreur, et sans prix. `prixDeLaLigne` met déjà en
+commun tous les libellés du chantier (`textesChantier`), donc il retrouve le
+même 60. Une suite le vérifie désormais côte à côte, plutôt que de s'y fier.
+
+**Les questions ne nomment plus leur objet.** « Quel diamètre fait la souche ? »
+sur une dictée qui dit « deux souches » — il l'a relevé dans la même phrase.
+Accorder au nombre supposerait de le compter : un travail de plus pour un mot de
+moins. La prestation est écrite juste au-dessus, elle dit déjà de quoi il
+s'agit, au pluriel comme au singulier. D'où « Quel diamètre ? », « Quelle
+hauteur ? », « Quelle longueur ? ».
+
+**Deux textes qui décrivaient ce que l'écran montrait déjà :**
+
+| Où | Avant | Après |
+|---|---|---|
+| écran Transcription | « Texte brut de votre dictée, tel qu'il a été transcrit — jamais retouché » | — (le titre dit « Transcription », le cadre montre le texte) |
+| refus de chiffrer | quatre phrases : le motif, deux marches à suivre, et « En attendant, vos 1 prestation est inscrite sur le devis » | « Aucun tarif ne correspond, et la dictée ne dit ni la durée ni l'équipe. » |
+
+Le refus de chiffrer garde **le pourquoi, et rien d'autre** : les deux marches à
+suivre étaient déjà sous lui, en boutons — « Ouvrir le devis et poser les prix »
+et « Compléter la durée et l'équipe ». La phrase supprimée portait aussi « vos
+**1** prestation », une faute d'accord que plus personne ne lisait.

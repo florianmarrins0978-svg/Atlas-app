@@ -110,6 +110,58 @@ tableau distingue désormais trois états, jamais deux.
 
 Batterie : 265/265 base, 116/116 navigateur, 0 erreur de types.
 
+### Une souche ne se fait plus demander comment on l'abat, et l'écran cesse d'expliquer
+
+**Sa remarque du jour, capture à l'appui :** *« lorsque l'on parle de souche, ça
+sous-entend que l'arbre a déjà été abattu et qu'il ne reste que les racines à
+enlever — donc s'il n'y a pas d'arbre, pourquoi il y a la question de comment on
+l'abat ? »*
+
+Le dessouchage était rangé avec l'abattage pour ne pas redemander deux fois le
+diamètre du même tronc. Le raccourci était juste pour le diamètre ; il commandait
+aussi la question de la technique, et là il était faux. Une souche reçoit
+désormais son diamètre seul, sous le mot juste — « Quel diamètre fait la
+souche ? ».
+
+Aucun contrôle ne pouvait le voir : la question était posée, lisible, son
+identifiant stable. Il lui manquait seulement un sens.
+
+**Et l'écran a perdu ses phrases** — *« trop de phrases inutiles, il faut aller
+droit au but, l'utilisateur n'aime pas lire »*. Sont parties : les deux lignes
+sous le titre, la ligne d'explication sous chaque question (le champ `pourquoi`
+avec elles — un champ que plus rien n'affiche revient à l'écran au premier
+remaniement), et la prestation réécrite au-dessus de chaque question. Le titre
+passe de « 2 précisions avant de chiffrer » à « Avant de chiffrer ».
+
+Trois suites comptaient les questions dans ce titre ; elles comptent maintenant
+les blocs `[data-atlas="question-chiffrage"]` — on n'écrit pas un contrôle qui
+réclame ce qu'il a fait retirer.
+
+Détail et raisons : `ARCHITECTURE.md` §209.
+
+### Une mesure déjà dictée ne se redemande plus, et trois textes raccourcissent
+
+*« Tu dis deux souches de diamètre 60. Question : quel diamètre font les
+souches ? »* La lecture découpe une phrase à la virgule : « Il y a un
+dessouchage » d'un côté, « deux souches de soixante centimètres de diamètre » de
+l'autre. La question ne regardait que sa propre ligne — la hauteur, elle, était
+cherchée dans toute la dictée depuis le premier jour. Le diamètre l'est
+désormais aussi, tant qu'un seul arbre est en jeu (à deux, un diamètre dit
+quelque part n'appartient pas forcément à celui qu'on questionne).
+
+Les questions ne nomment plus leur objet — « Quel diamètre ? » au lieu de
+« Quel diamètre fait la souche ? » : la prestation est écrite juste au-dessus,
+au pluriel comme au singulier.
+
+Deux textes qui décrivaient ce que l'écran montrait déjà sont partis : la ligne
+grise de l'écran Transcription, et trois des quatre phrases du refus de chiffrer
+— *« beaucoup beaucoup trop long, aucun utilisateur va lire tout ça »*. Il ne
+reste que le motif ; les deux marches à suivre étaient déjà en boutons dessous.
+La phrase supprimée portait aussi « vos 1 prestation ».
+
+Détail : `ARCHITECTURE.md` §209.
+
+
 ### Plus aucune barre de défilement grise, y compris sur la page elle-même
 
 **Sa plainte du jour, sur son PC :** *« sur PC les bandes déroulantes grises
