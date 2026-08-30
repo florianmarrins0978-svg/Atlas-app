@@ -2,22 +2,25 @@ import assert from "node:assert/strict";
 import { libelleClient } from "../src/lib/libelle-client";
 import { lignesVendables } from "../src/lib/lignes-vendables";
 
-// **LES QUATRE LIGNES QU'IL A LUES SUR SON VRAI DEVIS, le 30 août 2026.**
+// **CE QUE LE CLIENT DOIT LIRE — sa demande du 30 août 2026, deux fois.**
 //
-// Elles sont recopiées ici à la lettre — espace insécable compris, parce que
-// c'est lui qui trahit la double écriture :
+// D'abord : *« les caractéristiques techniques ne doivent PAS être répétées
+// dans la description visible du devis client. »* Ensuite, le même jour, en
+// regardant le résultat : *« les tirets ne doivent pas servir à assembler
+// artificiellement plusieurs morceaux d'un libellé client. Construis une vraie
+// formulation française naturelle. »*
 //
-//   Haie de laurier (800 ml) (800 ml)                Qté 800
-//   Érable (40 cm de diamètre, 12 m de haut)         Qté 1
-//   Dessouchage — deux souches de 60 cm (2 souche)   Qté 2
-//   Tonte de la pelouse (1 200 m²) (1200 m²)         Qté 1200
+// Les quatre lignes attendues, telles qu'il les a écrites :
 //
-// Ce que cette suite défend, et qu'aucune autre ne défendait : les mesures
-// vivent dans les colonnes, et le client ne les relit pas dans le texte.
+//   Démontage en rétention d'un érable     Qté 1
+//   Évacuation des déchets verts
+//   Taille de haie de laurier              Qté 800   ml
+//   Dessouchage de souches de 60 cm        Qté 2     souche
+//   Tonte de la pelouse                    Qté 1200  m²
 //
-// **Le contrôle qui compte le plus n'est pas le nettoyage, c'est le REFUS de
-// nettoyer** : « Érable — démontage en rétention » doit garder sa méthode, et
-// une prestation d'avant, sans colonnes, doit garder son texte entier.
+// **Le contrôle qui compte le plus n'est pas la rédaction, c'est le REFUS de
+// rédiger** : ce que le produit ne sait pas nommer garde son texte, parce
+// qu'inventer une tournure produirait du français faux sur un devis.
 
 let reussites = 0;
 let echecs = 0;
@@ -32,50 +35,82 @@ function cas(nom: string, verifier: () => void): void {
   }
 }
 
-console.log("\n=== Ses quatre lignes du 30 août 2026 ===\n");
+console.log("\n=== Ses quatre lignes, rédigées en français ===\n");
 
-cas("la haie : « Haie de laurier (800 ml) (800 ml) » → « Haie de laurier »", () => {
+cas("l'érable : la technique vient de la colonne, l'espèce suit", () => {
+  // Son vrai libellé du 30 août : la méthode n'est PAS dans le texte, elle est
+  // en colonne. C'est elle qui nomme le travail.
+  assert.equal(
+    libelleClient({
+      libelle: "Érable (40 cm de diamètre, 12 m de haut)",
+      nature: "abattage",
+      espece: "érable",
+      methode: "demontage_retention",
+      caracteristiques: { diametreCm: 40, hauteurM: 12 },
+    }),
+    "Démontage avec rétention d'un érable"
+  );
+});
+
+cas("l'érable, quand SA dictée porte déjà la technique : ce sont SES mots", () => {
+  // « en rétention » est ce qu'il a dit ; le catalogue de la grille écrit
+  // « avec rétention ». Quand le texte le dit, le texte gagne — on ne réécrit
+  // pas ses mots avec les nôtres.
+  assert.equal(
+    libelleClient({
+      libelle: "Érable — démontage en rétention",
+      nature: "abattage",
+      espece: "érable",
+      methode: "demontage_retention",
+      caracteristiques: { diametreCm: 40, hauteurM: 12 },
+    }),
+    "Démontage en rétention d'un érable"
+  );
+});
+
+cas("l'évacuation ne bouge pas", () => {
+  assert.equal(
+    libelleClient({ libelle: "Évacuation des déchets verts", nature: "evacuation" }),
+    "Évacuation des déchets verts"
+  );
+});
+
+cas("la haie : le travail se nomme, la mesure part", () => {
   assert.equal(
     libelleClient({
       libelle: "Haie de laurier (800 ml) (800 ml)",
+      nature: "haie",
+      espece: "laurier",
       quantite: "800.00",
       unite: "ml",
       caracteristiques: { longueurMl: 800 },
     }),
-    "Haie de laurier"
+    "Taille de haie de laurier"
   );
 });
 
-cas("l'érable : « Érable (40 cm de diamètre, 12 m de haut) » → « Érable »", () => {
-  assert.equal(
-    libelleClient({
-      libelle: "Érable (40 cm de diamètre, 12 m de haut)",
-      quantite: null,
-      unite: null,
-      caracteristiques: { diametreCm: 40, hauteurM: 12 },
-    }),
-    "Érable"
-  );
-});
-
-cas("le dessouchage : « Dessouchage — deux souches de 60 cm (2 souche) » → « Dessouchage »", () => {
+cas("le dessouchage : la quantité part, le diamètre RESTE", () => {
+  // Sa demande est explicite sur cette ligne : « Dessouchage de souches de
+  // 60 cm ». Le 60 cm dit QUELLES souches ; le « deux » a sa colonne.
   assert.equal(
     libelleClient({
       libelle: "Dessouchage — deux souches de 60 cm (2 souche)",
+      nature: "dessouchage",
       quantite: "2.00",
       unite: "souche",
       caracteristiques: { diametreCm: 60 },
     }),
-    "Dessouchage"
+    "Dessouchage de souches de 60 cm"
   );
 });
 
-cas("la tonte : « Tonte de la pelouse (1 200 m²) (1200 m²) » → « Tonte de la pelouse »", () => {
+cas("la tonte : les deux écritures de la mesure partent", () => {
   // L'espace insécable du premier groupe est celui du modèle ; le second sort
   // d'une colonne. Les deux doivent partir.
   assert.equal(
     libelleClient({
       libelle: "Tonte de la pelouse (1 200 m²) (1200 m²)",
+      nature: "tonte",
       quantite: "1200.00",
       unite: "m²",
       caracteristiques: {},
@@ -84,35 +119,76 @@ cas("la tonte : « Tonte de la pelouse (1 200 m²) (1200 m²) » → « Tonte de
   );
 });
 
-console.log("\n=== Ce qu'on REFUSE de retirer — le contrôle qui compte ===\n");
+console.log("\n=== AUCUN tiret d'assemblage ne survit ===\n");
 
-cas("une méthode n'est pas une mesure : « démontage en rétention » reste", () => {
-  assert.equal(
+cas("les quatre libellés produits ne portent aucun tiret", () => {
+  const produits = [
     libelleClient({
-      libelle: "Érable — démontage en rétention",
-      quantite: null,
-      unite: null,
+      libelle: "Érable (40 cm de diamètre, 12 m de haut)",
+      nature: "abattage", espece: "érable", methode: "demontage_retention",
       caracteristiques: { diametreCm: 40, hauteurM: 12 },
     }),
-    "Érable — démontage en rétention"
-  );
+    libelleClient({
+      libelle: "Haie de laurier (800 ml) (800 ml)",
+      nature: "haie", espece: "laurier", quantite: "800.00", unite: "ml",
+      caracteristiques: { longueurMl: 800 },
+    }),
+    libelleClient({
+      libelle: "Dessouchage — deux souches de 60 cm (2 souche)",
+      nature: "dessouchage", quantite: "2.00", unite: "souche",
+      caracteristiques: { diametreCm: 60 },
+    }),
+    libelleClient({
+      libelle: "Tonte de la pelouse (1 200 m²) (1200 m²)",
+      nature: "tonte", quantite: "1200.00", unite: "m²",
+    }),
+  ];
+  for (const l of produits) {
+    assert.ok(!/[—–]/.test(l), `« ${l} » porte encore un tiret d'assemblage`);
+  }
 });
 
-cas("la méthode survit même quand la parenthèse de mesure part", () => {
+cas("aucune quantité ne se répète dans la description", () => {
+  // Elles ont leur colonne : les réécrire dans le texte, c'est le défaut qu'il
+  // a signalé en premier.
+  const haie = libelleClient({
+    libelle: "Haie de laurier (800 ml)", nature: "haie", espece: "laurier",
+    quantite: "800.00", unite: "ml", caracteristiques: { longueurMl: 800 },
+  });
+  assert.ok(!/800/.test(haie), `« ${haie} » répète la quantité`);
+  const tonte = libelleClient({
+    libelle: "Tonte de la pelouse (1200 m²)", nature: "tonte",
+    quantite: "1200.00", unite: "m²",
+  });
+  assert.ok(!/1\s?200/.test(tonte), `« ${tonte} » répète la quantité`);
+});
+
+cas("le diamètre et la hauteur de l'érable ne sont PAS sur le devis", () => {
+  const l = libelleClient({
+    libelle: "Érable (40 cm de diamètre, 12 m de haut)",
+    nature: "abattage", espece: "érable", methode: "demontage_retention",
+    caracteristiques: { diametreCm: 40, hauteurM: 12 },
+  });
+  assert.ok(!/40|12\s*m/.test(l), `« ${l} » montre une mesure technique`);
+});
+
+console.log("\n=== Ce qu'on REFUSE de rédiger ou de retirer ===\n");
+
+cas("ni la tête ni le complément ne sont un geste connu : le texte reste", () => {
+  // Inventer « Bassin de pose » ou « Pose d'un bassin » sur un travail que le
+  // produit ne sait pas nommer, c'est écrire du français au hasard sur un
+  // devis. Le tiret est laid, mais il se voit — donc il se corrige.
   assert.equal(
     libelleClient({
-      libelle: "Érable — démontage en rétention (40 cm de diamètre)",
-      quantite: null,
-      unite: null,
-      caracteristiques: { diametreCm: 40 },
+      libelle: "Bassin — pose et raccordement",
+      quantite: "1.00",
+      unite: "u",
     }),
-    "Érable — démontage en rétention"
+    "Bassin — pose et raccordement"
   );
 });
 
 cas("une mesure que les colonnes NE portent PAS reste écrite", () => {
-  // 800 n'est nulle part en colonne : l'effacer perdrait la seule trace de la
-  // longueur, et le client lirait « Haie de laurier » sans savoir combien.
   assert.equal(
     libelleClient({ libelle: "Haie de laurier (800 ml)", quantite: null, unite: null }),
     "Haie de laurier (800 ml)"
@@ -120,19 +196,17 @@ cas("une mesure que les colonnes NE portent PAS reste écrite", () => {
 });
 
 cas("une valeur DIFFÉRENTE de la colonne n'est pas retirée", () => {
-  // La colonne dit 80, le texte dit 800 : les deux se contredisent, et ce
-  // n'est pas à l'affichage de trancher — `mesures-prestation.ts` le fait, et
-  // il refuse. Effacer le texte ferait disparaître la contradiction sans la
-  // résoudre.
-  assert.equal(
-    libelleClient({
-      libelle: "Haie de laurier (800 ml)",
-      quantite: "80.00",
-      unite: "ml",
-      caracteristiques: { longueurMl: 80 },
-    }),
-    "Haie de laurier (800 ml)"
-  );
+  // La colonne dit 80, le texte dit 800 : `mesures-prestation.ts` refuse de
+  // trancher, et ce n'est pas à l'affichage de le faire. Effacer le texte
+  // ferait disparaître la contradiction sans la résoudre.
+  const l = libelleClient({
+    libelle: "Haie de laurier (800 ml)",
+    nature: "haie",
+    quantite: "80.00",
+    unite: "ml",
+    caracteristiques: { longueurMl: 80 },
+  });
+  assert.ok(l.includes("800 ml"), `« ${l} » a effacé une contradiction`);
 });
 
 console.log("\n=== La compatibilité : rien d'ancien n'est réinterprété ===\n");
@@ -152,8 +226,6 @@ cas("une prestation d'avant, sans aucune colonne, garde son texte entier", () =>
 });
 
 cas("un libellé qui ne dirait QUE sa mesure n'est jamais vidé", () => {
-  // Le client doit lire quelque chose : mieux vaut « (800 ml) » qu'une ligne
-  // sans nom sur un devis.
   assert.equal(
     libelleClient({ libelle: "(800 ml)", quantite: "800.00", unite: "ml" }),
     "(800 ml)"
@@ -164,9 +236,22 @@ cas("un libellé vide reste vide, sans planter", () => {
   assert.equal(libelleClient({ libelle: "   ", quantite: "800.00", unite: "ml" }), "");
 });
 
+cas("« Abattage » ne remplace pas « Démontage » — le libellé s'ouvre déjà sur un geste", () => {
+  // La substitution ne vise QUE les libellés qui s'ouvrent sur leur objet
+  // (« Haie de laurier »). Un texte qui nomme déjà un geste garde ses mots.
+  assert.equal(
+    libelleClient({
+      libelle: "Démontage du grand chêne",
+      nature: "abattage",
+      caracteristiques: { diametreCm: 45 },
+    }),
+    "Démontage du grand chêne"
+  );
+});
+
 console.log("\n=== Sur la ligne de devis : le client lit propre, le moteur lit brut ===\n");
 
-cas("la ligne vendable nettoie son libellé et GARDE ses membres bruts", () => {
+cas("la ligne vendable rédige son libellé et GARDE ses membres bruts", () => {
   // **C'est l'invariant qui protège le prix.** `mesuresResolues` relit
   // `membres` quand les colonnes ne suffisent pas ; les nettoyer ferait perdre
   // à la haie sa longueur, donc son prix au mètre linéaire.
@@ -175,13 +260,14 @@ cas("la ligne vendable nettoie son libellé et GARDE ses membres bruts", () => {
       id: "p1",
       libelle: "Haie de laurier (800 ml) (800 ml)",
       nature: "haie",
+      espece: "laurier",
       quantite: "800.00",
       unite: "ml",
       caracteristiques: { longueurMl: 800 },
     },
   ]);
   assert.equal(lignes.length, 1);
-  assert.equal(lignes[0].libelle, "Haie de laurier", "ce que le client lit");
+  assert.equal(lignes[0].libelle, "Taille de haie de laurier", "ce que le client lit");
   assert.equal(
     lignes[0].membres[0],
     "Haie de laurier (800 ml) (800 ml)",
@@ -189,31 +275,39 @@ cas("la ligne vendable nettoie son libellé et GARDE ses membres bruts", () => {
   );
 });
 
-cas("deux prestations réunies : une par ligne, chacune nettoyée", () => {
+cas("l'abattage et son évacuation : une ligne, deux descriptions rédigées", () => {
   const { lignes } = lignesVendables([
     {
       id: "p1",
       libelle: "Érable (40 cm de diamètre, 12 m de haut)",
       nature: "abattage",
+      espece: "érable",
+      methode: "demontage_retention",
       caracteristiques: { diametreCm: 40, hauteurM: 12 },
     },
     { id: "p2", libelle: "Évacuation des déchets verts", nature: "evacuation" },
   ]);
   const principale = lignes.find((l) => l.cle === "abattage");
   assert.ok(principale, "la ligne d'abattage doit exister");
-  assert.equal(principale.libelle, "Érable\nÉvacuation des déchets verts");
+  assert.equal(
+    principale.libelle,
+    "Démontage avec rétention d'un érable\nÉvacuation des déchets verts"
+  );
 });
 
-cas("le regroupement ne change pas — le nettoyage ne touche QUE le texte", () => {
-  // La nature vient des colonnes ; nettoyer le libellé ne doit pas déplacer une
-  // prestation d'une ligne à l'autre.
+cas("le regroupement ne change pas — la rédaction ne touche QUE le texte", () => {
   const { lignes } = lignesVendables([
-    { id: "p1", libelle: "Érable (40 cm de diamètre)", nature: "abattage", caracteristiques: { diametreCm: 40 } },
-    { id: "p2", libelle: "Tonte de la pelouse (1200 m²)", nature: "tonte", quantite: "1200.00", unite: "m²" },
+    {
+      id: "p1", libelle: "Érable (40 cm de diamètre)", nature: "abattage",
+      espece: "érable", methode: "demontage_retention", caracteristiques: { diametreCm: 40 },
+    },
+    {
+      id: "p2", libelle: "Tonte de la pelouse (1200 m²)", nature: "tonte",
+      quantite: "1200.00", unite: "m²",
+    },
   ]);
   assert.equal(lignes.length, 2, "la tonte ne rejoint pas l'abattage");
-  const tonte = lignes.find((l) => l.cle === "tonte");
-  assert.equal(tonte?.libelle, "Tonte de la pelouse");
+  assert.equal(lignes.find((l) => l.cle === "tonte")?.libelle, "Tonte de la pelouse");
 });
 
 console.log(`\n${reussites} réussite(s), ${echecs} échec(s).`);

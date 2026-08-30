@@ -59,6 +59,17 @@ export type PrestationAGrouper = {
   nature?: string | null;
   quantite?: string | null;
   unite?: string | null;
+  /**
+   * L'espèce et la technique, telles qu'elles sont en colonne.
+   *
+   * **Elles ne servent qu'à RÉDIGER le libellé du client** (`libelle-client.ts`),
+   * jamais à regrouper : le regroupement se fait sur la nature, et lui ajouter
+   * un critère changerait ce que le client peut refuser séparément. Elles
+   * arrivaient déjà de `listerPrestations`, sans être déclarées — le type ne
+   * disait pas ce que l'objet portait vraiment.
+   */
+  espece?: string | null;
+  methode?: string | null;
   caracteristiques?: unknown;
   corrigeParHumain?: boolean | null;
 };
