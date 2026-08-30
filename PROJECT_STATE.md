@@ -1925,7 +1925,7 @@ la liste déroulante, une fermeture React périmée dans `ChampFormeJuridique`
 existant depuis le 14 août ; et `enEuros` faisait planter tout PDF portant un
 montant à quatre chiffres (l'espace fine de `Intl.NumberFormat`, que
 l'encodage des polices PDF ne connaît pas). Les trois sont corrigés. Détail
-dans `CHANGELOG.md` du jour et `ARCHITECTURE.md` §209.
+dans `CHANGELOG.md` du jour et `ARCHITECTURE.md` §211.
 
 ## Vérifications au dernier point
 

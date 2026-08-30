@@ -15,7 +15,7 @@ Trois maquettes (`appli/capital-et-forme-juridique.html`) puis le code, dans
 l'ordre demandé. La forme juridique existait depuis la migration 0039 mais
 n'était copiée dans **aucun** devis ni facture — jamais dessinée sur un PDF,
 juste enregistrée sans effet. Deux champs neufs, `capital_social` et
-`ville_rcs` (migration 0071), s'y ajoutent, et `mentions_legales_position`
+`ville_rcs` (migration 0072), s'y ajoutent, et `mentions_legales_position`
 (« sous_nom » | « bas » | « aucune », défaut **aucune**) dit où — ou si — les
 trois s'impriment. Le RCS ne redemande pas de numéro : c'est le SIREN, déjà
 les neuf premiers chiffres du SIRET (`src/lib/siren.ts`, extrait de

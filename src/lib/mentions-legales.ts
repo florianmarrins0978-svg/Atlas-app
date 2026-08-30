@@ -4,7 +4,7 @@ import { enEuros } from "./euros";
 
 /**
  * Où — ou si — la forme juridique, le capital et le RCS s'impriment sur le
- * devis et la facture (migration 0071).
+ * devis et la facture (migration 0072).
  *
  * **Le défaut est « aucune ».** Ces mentions existaient déjà en base sans
  * jamais s'imprimer (`formeJuridique`, depuis la migration 0039) : les faire

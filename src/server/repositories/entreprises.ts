@@ -131,7 +131,7 @@ export async function mettreAJourEntreprise(
     numeroTva?: string | null;
     titulaireCompte?: string | null;
     /**
-     * Le capital social et le RCS (migration 0071) — n'ont de sens que pour
+     * Le capital social et le RCS (migration 0072) — n'ont de sens que pour
      * une société (`formeADuCapital`), jamais pour une EI ou une
      * micro-entreprise. Voir `src/lib/mentions-legales.ts`.
      */

@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { composerDevisPdf, type DevisPdfData, type TraceDevis } from "../src/server/pdf/devis-pdf";
 
 // Le capital social, la forme juridique et le RCS, dessinés pour de vrai sur
-// le PDF (migration 0071) — `test-mentions-legales.ts` couvre déjà le calcul
+// le PDF (migration 0072) — `test-mentions-legales.ts` couvre déjà le calcul
 // pur des lignes ; cette suite-ci vérifie que `document-commun.ts` les
 // dessine bien à l'endroit choisi, et nulle part ailleurs.
 
@@ -41,7 +41,7 @@ async function cas(nom: string, verifier: () => void | Promise<void>) {
 async function main() {
   console.log("=== Le capital, la forme juridique et le RCS sur le devis ===");
 
-  await cas("aucun réglage : rien ne s'imprime, comme avant la migration 0071", async () => {
+  await cas("aucun réglage : rien ne s'imprime, comme avant la migration 0072", async () => {
     const { trace } = await composerDevisPdf(BASE);
     const textes = contenus(trace);
     assert.ok(!textes.some((t) => t.includes("SASU")));

@@ -126,7 +126,7 @@ export default function IdentiteClient({ initial }: { initial: Identite }) {
           onChange={(v) => ecrire("formeJuridique", v)}
           onFini={(v) => enregistrer({ formeJuridique: v })}
         />
-        {/* **Silence, pas grisé** (migration 0071) : les deux champs
+        {/* **Silence, pas grisé** (migration 0072) : les deux champs
             disparaissent entièrement pour une entreprise individuelle ou une
             micro-entreprise, qui n'ont ni capital ni RCS — grisés, ils se
             rempliraient quand même « au cas où ». */}

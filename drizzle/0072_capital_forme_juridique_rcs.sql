@@ -60,7 +60,7 @@ ALTER TABLE devis
          OR entreprise_mentions_legales_position IN ('sous_nom', 'bas', 'aucune'));
 
 COMMENT ON COLUMN devis.entreprise_mentions_legales_position IS
-  'Recopiée à la création. Nulle pour les devis antérieurs à la migration 0071 : rien de plus ne s''imprime.';
+  'Recopiée à la création. Nulle pour les devis antérieurs à la migration 0072 : rien de plus ne s''imprime.';
 
 -- ─── Puis dans la facture, recopiées du devis ──────────────────────────────
 
@@ -78,4 +78,4 @@ ALTER TABLE factures
          OR entreprise_mentions_legales_position IN ('sous_nom', 'bas', 'aucune'));
 
 COMMENT ON COLUMN factures.entreprise_mentions_legales_position IS
-  'Recopiée du devis à la création de la facture. Nulle pour les factures antérieures à la migration 0071.';
+  'Recopiée du devis à la création de la facture. Nulle pour les factures antérieures à la migration 0072.';

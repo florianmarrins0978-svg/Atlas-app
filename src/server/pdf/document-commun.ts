@@ -380,7 +380,7 @@ export type DonneesDocument = {
   entrepriseEmail?: string | null;
   entrepriseIban?: string | null;
   /**
-   * Les trois mentions légales, et leur emplacement (migration 0071). Absentes
+   * Les trois mentions légales, et leur emplacement (migration 0072). Absentes
    * sur un document d'avant la migration : rien de plus ne s'imprime.
    */
   entrepriseFormeJuridique?: string | null;
@@ -652,7 +652,7 @@ export async function composerDocument(
   // lisible sur un écran large, c'est un pâté sur un devis imprimé.
   //
   // **La forme juridique, le capital et le RCS s'y glissent selon SON choix**
-  // (migration 0071) : sous le nom, avec le reste des coordonnées, ou nulle
+  // (migration 0072) : sous le nom, avec le reste des coordonnées, ou nulle
   // part. `lignesMentionsLegales` rend déjà zéro ligne quand rien n'a été
   // réglé — les documents d'avant la migration ressortent identiques à eux-
   // mêmes, sans qu'il ait fallu un `if` de plus ici.

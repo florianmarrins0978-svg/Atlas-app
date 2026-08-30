@@ -27,7 +27,7 @@ import { FORMES_JURIDIQUES, FORME_AUTRE, formeConnue } from "@/lib/formes-juridi
  * `onFini` lisait donc, chez l'appelant, la forme d'AVANT le clic (souvent
  * vide) : la case s'affichait juste, mais c'est cette valeur périmée qui
  * partait en base. Trouvé le 30 août 2026 en construisant le capital et le
- * RCS (migration 0071) — la première fois que la forme juridique servait à
+ * RCS (migration 0072) — la première fois que la forme juridique servait à
  * autre chose qu'à s'afficher, donc la première fois que son enregistrement
  * manqué se voyait.
  */

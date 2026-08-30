@@ -211,7 +211,7 @@ export async function getOuCreerDevisBrouillon(ctx: Ctx, chantierId: string) {
       entrepriseEmail: entreprise.email,
       entrepriseTelephone: entreprise.telephone,
       entrepriseIban: entreprise.iban,
-      // Les trois mentions légales, et leur emplacement (migration 0071) —
+      // Les trois mentions légales, et leur emplacement (migration 0072) —
       // recopiées comme le reste de l'identité.
       entrepriseFormeJuridique: entreprise.formeJuridique,
       entrepriseCapitalSocial: entreprise.capitalSocial,

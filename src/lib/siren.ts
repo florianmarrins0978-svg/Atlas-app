@@ -3,7 +3,7 @@
  *
  * Deux saisies seraient deux façons de se contredire — et c'est celui qui
  * saisit qui paierait l'écart (voir `IdentiteClient.tsx`, où ce calcul sert
- * déjà à l'afficher sous le champ SIRET). Le RCS (migration 0071) le
+ * déjà à l'afficher sous le champ SIRET). Le RCS (migration 0072) le
  * réutilise pour la même raison : son numéro EST le SIREN, jamais un second.
  */
 export function sirenDepuisSiret(siret: string | null | undefined): string | null {

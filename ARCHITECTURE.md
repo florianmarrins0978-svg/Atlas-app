@@ -18254,7 +18254,7 @@ le pire des silences — il ressemble à un contrôle. Le sens est donc inversé
 relève tous les fichiers « use server », et ce qui n'a pas de garde s'explique
 par écrit, dans une table d'exemptions dont chaque entrée porte sa raison.
 
-## 209. Le capital social et le RCS s'impriment, s'il le veut — et trois défauts trouvés en construisant
+## 211. Le capital social et le RCS s'impriment, s'il le veut — et trois défauts trouvés en construisant
 
 *Demande du patron, 30 août 2026, par étapes : d'abord la forme juridique et le
 capital, maquettés dans `appli/capital-et-forme-juridique.html` ; puis, une
@@ -18269,7 +18269,7 @@ choisit dans Identité, elle s'enregistre — et elle n'était copiée dans
 saisie, mais imprimée nulle part. Personne ne s'en était aperçu parce que
 rien ne dépendait de sa valeur.
 
-### Ce qui est neuf (migration 0071)
+### Ce qui est neuf (migration 0072)
 
 Trois colonnes sur `entreprises` : `capital_social` (numeric 12,2),
 `ville_rcs` (text), et `mentions_legales_position` (enum

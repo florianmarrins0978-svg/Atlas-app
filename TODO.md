@@ -6424,7 +6424,7 @@ dessin** (`ARCHITECTURE.md` §81) :
   client n'a aucun moyen d'appeler l'artisan depuis son devis.
 
 Manquent aussi en base, et la maquette les montre : ~~**forme juridique**~~ —
-**fait le 30 août 2026** (migration 0071, `ARCHITECTURE.md` §209) : elle
+**fait le 30 août 2026** (migration 0072, `ARCHITECTURE.md` §211) : elle
 s'imprime désormais, avec le capital social et le RCS, si l'artisan choisit
 de les montrer — et **titulaire du compte**.
 

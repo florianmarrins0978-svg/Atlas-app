@@ -6,7 +6,7 @@ import { enEuros } from "../src/lib/euros";
 
 // Sa demande du 30 août 2026 : pouvoir ajouter, s'il le veut, le capital et la
 // forme juridique de sa société sur le devis — puis, le même jour, la ville
-// d'immatriculation au RCS (migration 0071). La forme juridique existait déjà
+// d'immatriculation au RCS (migration 0072). La forme juridique existait déjà
 // depuis la migration 0039 (`formeJuridique`) et ne s'imprimait NULLE PART :
 // cette suite protège que la nouvelle impression, elle, respecte ce qu'il a
 // tranché sur les maquettes `appli/capital-et-forme-juridique.html`.

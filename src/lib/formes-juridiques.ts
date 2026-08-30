@@ -23,7 +23,7 @@ export type FormeJuridique = {
   /** Ce que le sigle veut dire, pour choisir sans chercher ailleurs. */
   nom: string;
   /**
-   * A-t-elle un capital social, et un RCS (migration 0071) ? Une entreprise
+   * A-t-elle un capital social, et un RCS (migration 0072) ? Une entreprise
    * individuelle ou une micro-entreprise n'en ont pas légalement — les deux
    * seules dont on soit certain. Ni l'un ni l'autre ne se devinent pour une
    * forme tapée à la main (voir `formeADuCapital`).
@@ -65,7 +65,7 @@ export const FORME_AUTRE = "Autre";
 export function formeConnue(valeur: string | null | undefined): FormeJuridique | null {
   // Le tiret doit tomber DES DEUX CÔTÉS : sans lui ici, « Micro-entreprise »
   // tapé exactement comme le propose la liste ne se retrouvait plus jamais —
-  // trouvé en écrivant `formeADuCapital` (migration 0071), qui la traitait
+  // trouvé en écrivant `formeADuCapital` (migration 0072), qui la traitait
   // alors comme une forme libre.
   const net = (valeur ?? "").trim().replace(/[.\s-]/g, "").toLowerCase();
   if (net === "") return null;
