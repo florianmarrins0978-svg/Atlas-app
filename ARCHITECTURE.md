@@ -18007,3 +18007,101 @@ Il ne doit pas protéger de ce qu'une dictée énonce deux fois : « je démonte
 érable, puis un érable au fond du jardin » fait deux arbres, et fondre les deux
 en ferait disparaître un — que le patron ne facturerait jamais. Les prestations
 créées par la passe en cours ne servent donc plus au rapprochement.
+
+## 206. Le client n'a pas à relire les mesures qu'Atlas range en colonnes
+
+**Ce qu'il a lu sur son vrai devis, le 30 août 2026** — le premier sorti de la
+chaîne corrigée, et le premier à mériter d'être regardé de près :
+
+| Description | Qté |
+|---|---|
+| `Haie de laurier (800 ml) (800 ml)` | 800 |
+| `Érable (40 cm de diamètre, 12 m de haut)` | 1 |
+| `Dessouchage — deux souches de 60 cm (2 souche)` | 2 |
+| `Tonte de la pelouse (1 200 m²) (1200 m²)` | 1200 |
+
+Sa règle : *« les caractéristiques techniques servent au moteur d'Atlas et au
+calcul du prix ; elles ne doivent PAS être répétées dans la description visible
+du devis client. »* La quantité et l'unité ont leurs colonnes depuis le lot B —
+elles n'ont plus rien à faire dans le texte.
+
+### 206 a. Le double parenthésage disait qu'il y avait DEUX mains
+
+C'est le détail qui a évité une correction à moitié faite. La mesure apparaît
+deux fois parce que deux chemins l'écrivent :
+
+| | |
+|---|---|
+| le **modèle** | il rend « Haie de laurier (800 ml) » — c'est ce que la dictée dit |
+| `libelleAvecQuantite` | il recolle « (800 ml) » depuis les colonnes |
+
+**La preuve tient dans un espace insécable.** « (1 200 m²) » est écrit comme un
+humain l'écrit ; « (1200 m²) » sort d'une colonne numérique. Corriger la seule
+recollure aurait laissé la première parenthèse partout — et n'aurait rien changé
+à l'érable, dont la mesure vient entièrement du modèle.
+
+Et l'on ne touche pas à l'invite du modèle : sa consigne du 30 août.
+
+### 206 b. Nettoyer le libellé STOCKÉ aurait cassé le prix
+
+C'était la correction évidente, et `mesures-prestation.ts` prévient contre elle
+noir sur blanc : *« quatre moteurs relisent encore le texte, et le leur retirer
+avant qu'ils sachent lire les colonnes ferait perdre à une haie son prix au
+mètre linéaire. »*
+
+La sortie existait déjà dans le type `LigneVendable`, écrite dès le premier jour
+et **jamais exploitée** :
+
+| champ | ce que son commentaire disait déjà |
+|---|---|
+| `libelle` | « Ce que le client lit » — **nettoyé** |
+| `membres` | « Les libellés réunis » — **intact**, c'est ce que `mesuresResolues` relit |
+
+Un commentaire qui décrit une distinction que le code ne fait pas est une dette
+silencieuse : il a fallu un vrai devis chez le patron pour la découvrir.
+
+### 206 c. La règle : un fragment ne part que s'il ne dit RIEN de neuf
+
+`libelle-client.ts` ne retire pas « ce qui ressemble à une mesure ». Il retire un
+fragment **dont tout ce qu'il dit est déjà en colonne**, et s'arrête au premier
+qui apprend autre chose :
+
+| fragment | colonnes | verdict |
+|---|---|---|
+| `(40 cm de diamètre, 12 m de haut)` | ⌀ 40, h 12 | retiré |
+| `— deux souches de 60 cm` | 2 souche, ⌀ 60 | retiré |
+| `— démontage en rétention` | la MÉTHODE, nulle part ailleurs | **gardé** |
+
+Sans ce refus, « Érable — démontage en rétention » deviendrait « Érable », et le
+client ne saurait plus ce qu'on lui facture. **C'est le contrôle qui compte le
+plus dans la suite**, pas les quatre nettoyages.
+
+Trois garde-fous s'y ajoutent, chacun pour une raison mesurée :
+
+1. **Sans colonne, rien ne bouge.** Une prestation d'avant le 27 août n'a ni
+   quantité, ni unité, ni caractéristiques : son texte est alors la seule chose
+   qui dise ce qu'on facture. C'est la garantie de compatibilité, et elle est
+   structurelle plutôt que datée.
+2. **Une valeur qui CONTREDIT la colonne reste écrite.** Colonne 80, texte 800 :
+   ce n'est pas à l'affichage de trancher — `mesures-prestation.ts` le fait, et
+   il refuse. Effacer le texte ferait disparaître la contradiction sans la
+   résoudre.
+3. **Jamais un libellé vide.** Si tout tenait dans la mesure, le texte d'origine
+   est rendu : une ligne sans nom sur un devis est pire qu'une mesure répétée.
+
+Le vocabulaire des nombres écrits en lettres — « deux souches » — n'est pas
+recopié : `enChiffres` est exporté de `mesures-arbre.ts`. Deux listes de
+mots-nombres finiraient par diverger (`CLAUDE.md` §3).
+
+### 206 d. Un défaut que la suite ne POUVAIT pas voir
+
+Les deux motifs portaient d'abord le drapeau `s` (dotAll). Node l'accepte
+depuis longtemps ; le projet, lui, vise **ES2017**, où il n'existe pas. Les
+quatorze cas passaient donc au vert pendant que `tsc --noEmit` **et** la
+construction Next échouaient tous deux — et l'étape « Connexion derrière un
+proxy » avec eux, faute d'un serveur à bâtir. Quatre rouges pour une cause.
+
+**Ce qu'il faut en retenir :** une suite qui joue le code ne dit rien de la
+cible qu'on compile. `[\s\S]` fait la même chose partout, et traverse en prime
+un libellé sur plusieurs lignes — ce qu'une ligne de devis devient dès qu'elle
+réunit deux prestations.

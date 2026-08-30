@@ -7,6 +7,34 @@ Format : le plus récent en tête.
 
 ---
 
+## 2026-08-30
+
+### Le client ne relit plus les mesures qu'Atlas range en colonnes
+
+**Son premier vrai devis sorti de la chaîne corrigée** portait « Haie de laurier
+(800 ml) (800 ml) », « Érable (40 cm de diamètre, 12 m de haut) » et « Tonte de
+la pelouse (1 200 m²) (1200 m²) ». Les caractéristiques servent au moteur et au
+prix ; elles n'ont rien à faire dans la description que lit son client.
+
+**Le double parenthésage disait qu'il y avait deux mains, pas une.** Le modèle
+écrit la mesure dans le libellé — c'est ce que la dictée dit — et
+`libelleAvecQuantite` en recollait une seconde depuis les colonnes. L'espace
+insécable de « (1 200 m²) » face à « (1200 m²) » le prouve : le premier est
+écrit comme un humain l'écrit, le second sort d'une colonne numérique. Corriger
+la seule recollure aurait laissé l'érable inchangé.
+
+**Ce qui a failli être fait, et qui aurait cassé le prix :** nettoyer le libellé
+stocké. Quatre moteurs y relisent encore les mesures, et une haie y aurait perdu
+son prix au mètre linéaire. La séparation existait déjà dans le type
+`LigneVendable`, écrite et jamais exploitée — `libelle` est ce que le client
+lit, `membres` ce que les moteurs relisent. Seul le premier est nettoyé.
+
+La règle n'est pas « retirer ce qui ressemble à une mesure » mais « retirer un
+fragment dont TOUT ce qu'il dit est déjà en colonne » : « Érable — démontage en
+rétention » garde sa méthode, qu'aucune colonne ne porte. Rien n'est retiré de
+la base, et aucun devis existant n'est réinterprété — sans colonnes, le libellé
+est rendu tel quel. Détail : `ARCHITECTURE.md` §206.
+
 ## 2026-08-29
 
 ### Le banc répare ses dépendances désaccordées, au lieu de bâtir en boucle pour rien

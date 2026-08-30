@@ -9,6 +9,29 @@ sert.
 
 ---
 
+## LE LIBELLÉ DU DEVIS A DEUX LECTEURS — ne jamais les confondre
+
+**Posé le 30 août 2026**, après qu'un vrai devis a montré « Haie de laurier
+(800 ml) (800 ml) ». Ce qu'il faut savoir avant de toucher à un libellé :
+
+| | Qui le lit | Ce qu'on a le droit d'en faire |
+|---|---|---|
+| `prestations.libelle` | les **moteurs de prix** — quatre relisent encore le texte | **rien** : le nettoyer fait perdre à une haie son prix au mètre linéaire |
+| `LigneVendable.libelle` | le **client**, sur son devis | nettoyé par `libelleClient()` |
+| `LigneVendable.membres` | `mesuresResolues`, en repli des colonnes | **rien** : c'est le texte brut |
+
+**Le piège, et il est tentant :** corriger l'affichage en nettoyant le libellé
+stocké. `mesures-prestation.ts` prévient contre lui en tête de fichier ; la
+tentation revient à chaque fois qu'on regarde un devis.
+
+**Et si une mesure disparaît d'un devis sans qu'on l'ait demandé**, la cause est
+dans `libelle-client.ts` : il ne retire un fragment que si TOUT ce qu'il dit est
+déjà en colonne. Un fragment retiré à tort veut dire qu'une information a été
+prise pour une mesure — le cas à protéger est « Érable — démontage en
+rétention », dont la méthode n'est nulle part ailleurs.
+
+---
+
 ## SA CONSTRUCTION MOURAIT SUR DES DÉPENDANCES DÉSACCORDÉES — 29 août 2026
 
 **Devant « l'appli est lente » ou « ça ne marche toujours pas », lire sa fiche
