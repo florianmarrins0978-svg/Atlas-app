@@ -356,21 +356,35 @@ export function questionsAvantChiffrage(
         questions.push({
           id: `${souche ? "dessouchage" : "abattage"}.diametre#${rang}`,
           libellePrestation: libelle,
-          // **« Quel diamètre ? » — et c'est la formulation de `main` qui est
-          // gardée, bien qu'il ait écrit « Quel diamètre fait la souche ? » le
-          // 31 août.**
+          // **LA QUESTION NOMME SA MESURE — et c'est LUI qui a tranché entre
+          // ses deux décisions, le soir du test téléphone.**
           //
-          // Elle tient ses deux exigences à la fois. Celle du 31 août : plus
-          // jamais le mot « tronc » au-dessus d'un dessouchage — c'est ce mot
-          // qui lui a fait croire que la question portait sur son érable. Et
-          // la sienne du 30 août, qu'une autre session avait déjà codée : la
-          // dictée disait « deux souches » et la question en disait une.
-          // Accorder au nombre supposerait de le compter — un travail de plus
-          // pour un mot de moins.
+          // *« Je préfère cette formulation parce qu'elle indique immédiatement
+          // de quelle mesure on parle, et évite la confusion constatée pendant
+          // le test téléphone. »*
           //
-          // La prestation est écrite juste au-dessus de la question : elle dit
-          // déjà de quoi l'on parle, au pluriel comme au singulier.
-          question: "Quel diamètre ?",
+          // ─── L'ARBITRAGE, à ne pas renverser sans lui ────────────────────
+          //
+          // Deux de ses propres consignes s'opposaient ici, et une session qui
+          // n'en connaîtrait qu'une remettrait l'autre :
+          //
+          // | ce qu'il a demandé | pourquoi | quand |
+          // |---|---|---|
+          // | « Quel diamètre ? », sans nommer | la dictée disait « deux souches », la question en disait une | d'abord |
+          // | « Quel diamètre fait la souche ? » | sur son téléphone, « Quel diamètre ? » sous un titre ne disait pas DE QUOI | **ensuite, et c'est elle qui tient** |
+          //
+          // **Il a choisi la seconde, en connaissance de la première.** Le coût
+          // qu'il accepte est un singulier là où il a pu dicter deux souches ;
+          // ce qu'il gagne est une question qu'on comprend sans lever les yeux
+          // vers le titre — et c'est précisément le geste qui lui a fait croire,
+          // pendant le test, qu'on l'interrogeait sur son érable.
+          //
+          // Accorder au nombre reste écarté : il faudrait compter, pour un mot.
+          //
+          // *(Les commentaires voisins datent ce lot du « 31 août » ; les
+          // commits, eux, portent le 30. On n'ancre donc plus l'arbitrage sur
+          // un jour, mais sur l'événement qui l'a produit — le test téléphone.)*
+          question: souche ? "Quel diamètre fait la souche ?" : "Quel diamètre fait le tronc ?",
           options: null,
           unite: "cm",
         });

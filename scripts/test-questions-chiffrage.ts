@@ -228,11 +228,31 @@ cas("ce qu'on cesse de demander, le chiffrage sait le lire", () => {
   );
 });
 
-cas("une question ne parle ni au singulier ni au pluriel", () => {
-  // Même remarque, sa moitié moqueuse : la dictée disait « deux souches », la
-  // question en disait une. Accorder au nombre supposerait de le compter — un
-  // travail de plus pour un mot de moins. La prestation est écrite au-dessus.
+cas("la question du DIAMÈTRE nomme sa mesure ; les autres ne nomment rien", () => {
+  // **CE CONTRÔLE A ÉTÉ RENVERSÉ PAR LUI, le soir du test téléphone**, et sa
+  // version d'avant est gardée ici en toutes lettres pour qu'on sache ce qu'on
+  // remplace :
+  //
+  //   « une question ne parle ni au singulier ni au pluriel » — parce que la
+  //   dictée disait « deux souches » et que la question en disait une.
+  //
+  // Il a tranché dans l'autre sens après le test téléphone : *« je préfère
+  // cette formulation parce qu'elle indique immédiatement de quelle mesure on
+  // parle, et évite la confusion constatée. »* Sur son écran, « Quel
+  // diamètre ? » sous un titre ne disait pas DE QUOI — et il a cru qu'on
+  // l'interrogeait sur l'érable d'à côté.
+  //
+  // Le coût qu'il accepte est ce singulier ; le reste de la règle tient
+  // toujours : aucune AUTRE question ne nomme son objet.
   for (const q of questionsAvantChiffrage(DICTEE_DU_PATRON)) {
+    if (q.id.includes("diametre")) {
+      assert.match(
+        q.question,
+        /^Quel diamètre fait (la souche|le tronc) \?$/,
+        `« ${q.question} » : la question du diamètre doit nommer sa mesure`
+      );
+      continue;
+    }
     assert.doesNotMatch(
       q.question,
       /\b(la souche|le tronc|l'arbre|de haie)\b/i,
@@ -555,22 +575,46 @@ cas("« deux souches » SANS mesure : la question se pose, et elle dit « la sou
   // et le 30, qu'on n'accorde pas au singulier quand la dictée en dit deux.
   // La formulation de `main` tient les deux, et la prestation est écrite juste
   // au-dessus de la question : elle dit déjà de quoi l'on parle.
-  assert.equal(q[0].question, "Quel diamètre ?");
-  assert.ok(!/tronc/i.test(q[0].question), "plus jamais « tronc » sur une souche");
+  assert.equal(q[0].question, "Quel diamètre fait la souche ?");
   assert.ok(q[0].id.startsWith("dessouchage."), "la souche a son propre identifiant");
 });
 
-cas("la question du diamètre est la MÊME pour un arbre et pour une souche", () => {
-  // Deux sessions ont travaillé ce libellé le même jour. Celle de `main`
-  // l'unifie — « Quel diamètre ? » — et c'est elle qui est gardée : elle ne
-  // dit jamais « tronc » au-dessus d'une souche, et ne met pas au singulier ce
-  // qu'il a dicté au pluriel.
+cas("LA QUESTION NOMME SA MESURE : « la souche » ou « le tronc », jamais l'autre", () => {
+  // **Son arbitrage du soir du test téléphone**, entre deux de ses propres
+  // consignes : *« je préfère cette formulation parce qu'elle indique
+  // immédiatement de quelle mesure on parle, et évite la confusion constatée
+  // pendant le test téléphone. »*
+  //
+  // Une session qui ne connaîtrait que sa PREMIÈRE consigne — « Quel
+  // diamètre ? », sans nommer — remettrait celle-ci. Ce contrôle l'en empêche.
   const arbre = questionsAvantChiffrage([{ libelle: "Abattage d'un chêne", nature: "abattage" }])
     .find((x) => x.id.includes("diametre"));
   const souche = questionsAvantChiffrage([{ libelle: "Dessouchage", nature: "dessouchage" }])
     .find((x) => x.id.includes("diametre"));
-  assert.equal(arbre?.question, "Quel diamètre ?");
-  assert.equal(souche?.question, "Quel diamètre ?");
+  assert.equal(arbre?.question, "Quel diamètre fait le tronc ?");
+  assert.equal(souche?.question, "Quel diamètre fait la souche ?");
+});
+
+cas("le mot « tronc » n'apparaît JAMAIS au-dessus d'un dessouchage", () => {
+  // C'est ce mot qui lui a fait croire, pendant le test téléphone, que la
+  // question portait sur l'érable d'à côté.
+  for (const libelle of ["Dessouchage", "Dessouchage de deux souches", "Rognage de souche"]) {
+    for (const q of questionsAvantChiffrage([{ libelle, nature: "dessouchage" }])) {
+      assert.ok(!/tronc/i.test(q.question), `« ${libelle} » → « ${q.question} »`);
+    }
+  }
+});
+
+cas("le pluriel dicté ne change pas la question — il a accepté ce coût", () => {
+  // Sa première consigne écartait « la souche » pour cette raison : la dictée
+  // dit « deux souches ». Il a tranché dans l'autre sens en connaissance de
+  // cause — accorder au nombre supposerait de le compter, pour un mot.
+  const une = questionsAvantChiffrage([{ libelle: "Dessouchage d'une souche", nature: "dessouchage" }])
+    .find((x) => x.id.includes("diametre"));
+  const deux = questionsAvantChiffrage([{ libelle: "Dessouchage de deux souches", nature: "dessouchage" }])
+    .find((x) => x.id.includes("diametre"));
+  assert.equal(une?.question, "Quel diamètre fait la souche ?");
+  assert.equal(deux?.question, "Quel diamètre fait la souche ?");
 });
 
 console.log("\n=== La borne : tout ce qui est en cm n'est pas un diamètre ===\n");
@@ -672,8 +716,7 @@ cas("« deux souches » ne devient PAS un diamètre de 2", () => {
     { libelle: "Dessouchage de deux souches", nature: "dessouchage" },
   ]);
   assert.equal(q.length, 1, "la question doit encore se poser");
-  assert.equal(q[0].question, "Quel diamètre ?");
-  assert.ok(!/tronc/i.test(q[0].question), "plus jamais « tronc » sur une souche");
+  assert.equal(q[0].question, "Quel diamètre fait la souche ?");
 });
 
 cas("une AUTRE unité n'est pas prise pour des centimètres", () => {
