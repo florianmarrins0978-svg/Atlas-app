@@ -227,6 +227,57 @@ async function main() {
     }
   });
 
+  // **« J'AI VU » SUR UN RAPPEL — sa demande du 30 août 2026**, capture à
+  // l'appui : la carte « Devis sans réponse » ne portait que « Ouvrir le
+  // chantier ». *« Pour chaque notification je dois pouvoir cliquer sur vu pour
+  // les faire disparaître ; pourquoi certaines n'ont pas cette fonction ? »*
+  //
+  // **Ce que ce contrôle tient, et que la suite base ne peut pas voir** : que le
+  // bouton EXISTE sur un rappel, et que le geste part vraiment au serveur. Une
+  // carte retirée côté écran seulement reviendrait à la première visite, et il
+  // croirait le geste sans effet.
+  //
+  // Placé en dernier des cas d'accueil : il retire une carte, et les contrôles
+  // d'ordre ci-dessus ont besoin de les compter toutes.
+  await cas("« J'ai vu » retire le rappel, et il ne revient pas au rechargement", async () => {
+    await page.goto(`${BASE}/`, { waitUntil: "networkidle" });
+    await page.waitForTimeout(600);
+    const deplierIci = page.getByRole("button", { name: /autres? devis à regarder/ });
+    if ((await deplierIci.count()) > 0) {
+      await deplierIci.first().click();
+      await page.waitForTimeout(300);
+    }
+    const carte = page.locator(`[data-atlas="carte-reponse"][data-chantier="${chantierId}"]`);
+    // **Zéro carte ne prouve rien** (`CLAUDE.md` §5) : sans ce garde-fou,
+    // l'assertion finale serait vraie d'avance.
+    if ((await carte.count()) !== 1) throw new Error("le rappel de ce chantier n'est pas à l'écran : rien à acquitter");
+
+    const vu = carte.getByRole("button", { name: "J'ai vu" });
+    if ((await vu.count()) === 0) {
+      throw new Error("« J'ai vu » manque sur le rappel — c'est le défaut du 30 août");
+    }
+    await vu.click();
+    await carte.waitFor({ state: "detached", timeout: 15_000 });
+    await page.waitForTimeout(800);
+
+    const { rows } = await pool.query(
+      "SELECT vu_le FROM rappels_vus WHERE chantier_id = $1 AND genre = 'chantier-sans-devis'",
+      [chantierId]
+    );
+    if (rows.length !== 1) throw new Error("rien n'est écrit en base : le geste n'a fait taire que l'écran");
+
+    await page.goto(`${BASE}/`, { waitUntil: "networkidle" });
+    await page.waitForTimeout(600);
+    const deplierEncore = page.getByRole("button", { name: /autres? devis à regarder/ });
+    if ((await deplierEncore.count()) > 0) {
+      await deplierEncore.first().click();
+      await page.waitForTimeout(300);
+    }
+    if ((await carte.count()) !== 0) {
+      throw new Error("le rappel revient au rechargement : « J'ai vu » n'a fait taire que l'écran");
+    }
+  });
+
   // ── La ligne dans les réglages ──────────────────────────────────────────
   await page.goto(`${BASE}/reglages/notifications`, { waitUntil: "networkidle" });
   await page.waitForSelector("text=Ce que vous réglez", { timeout: 30_000 });

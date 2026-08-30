@@ -217,6 +217,72 @@ export function rappelFactureDu(params: {
   return params.maintenant.getTime() >= reveil;
 }
 
+/** Les quatre rappels, nommés une seule fois — écran, dépôt et base s'accordent. */
+export type GenreRappel =
+  | "chantier-sans-devis"
+  | "devis-sans-reponse"
+  | "chantier-non-facture"
+  | "facture-impayee";
+
+/** Les trois qui s'acquittent par « J'ai vu ». L'impayé a son propre moteur. */
+export const GENRES_ACQUITTABLES = [
+  "chantier-sans-devis",
+  "devis-sans-reponse",
+  "chantier-non-facture",
+] as const;
+
+export type GenreAcquittable = (typeof GENRES_ACQUITTABLES)[number];
+
+export function estGenreAcquittable(valeur: unknown): valeur is GenreAcquittable {
+  return GENRES_ACQUITTABLES.includes(valeur as GenreAcquittable);
+}
+
+/**
+ * Combien de temps un rappel se tait après un « J'ai vu ».
+ *
+ * **Le délai réglé pour ce rappel, et rien d'autre.** Un rappel qui paraît au
+ * bout de sept jours se tait sept jours : le patron a déjà dit, dans
+ * « Réglages › Notifications », à quel rythme il veut être repris — inventer ici
+ * un second nombre serait un réglage caché qu'il ne pourrait pas changer.
+ *
+ * **Éteint (`null`) : la question ne se pose pas** — le rappel ne sort plus du
+ * tout. On rend quand même un nombre, pour que l'appelant n'ait pas à traiter
+ * un cas qui n'arrive jamais : un rappel éteint est filtré bien avant.
+ */
+export function silenceApresVuJours(genre: GenreAcquittable, reglages: ReglagesRappels): number {
+  const champ = CHAMP_DU_GENRE[genre];
+  return reglages[champ] ?? RAPPELS_PAR_DEFAUT[champ]!;
+}
+
+/** Quel réglage commande quel rappel — écrit une seule fois. */
+const CHAMP_DU_GENRE: Record<GenreAcquittable, "chantierSansDevisJours" | "devisSansReponseJours" | "chantierNonFactureJours"> = {
+  "chantier-sans-devis": "chantierSansDevisJours",
+  "devis-sans-reponse": "devisSansReponseJours",
+  "chantier-non-facture": "chantierNonFactureJours",
+};
+
+/**
+ * Ce rappel se tait-il encore ?
+ *
+ * **« Vu » fait taire, il n'efface pas** — sa demande du 30 août 2026 tenue
+ * sans perdre ce que les rappels servent à éviter. Passé le silence, si la
+ * situation n'a toujours pas bougé, le rappel revient : le devis dort encore,
+ * le chantier n'est toujours pas facturé.
+ *
+ * **Jamais acquitté (`vuLe` nul) : il parle.** C'est le cas de tous les rappels
+ * d'avant cette fonction, et l'absence d'acquittement ne doit jamais se lire
+ * comme un acquittement.
+ */
+export function rappelEncoreTu(params: {
+  maintenant: Date;
+  vuLe: Date | null;
+  silenceJours: number;
+}): boolean {
+  if (params.vuLe === null) return false;
+  const reveil = params.vuLe.getTime() + params.silenceJours * 24 * 60 * 60 * 1000;
+  return params.maintenant.getTime() < reveil;
+}
+
 /**
  * L'instant avant lequel un envoi compte comme « sans réponse ».
  *
