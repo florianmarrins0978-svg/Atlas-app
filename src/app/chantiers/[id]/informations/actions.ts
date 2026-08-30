@@ -86,6 +86,10 @@ export async function corrigerMesurePrestationAction(
   mesure: { quantite: string | null; unite: string | null }
 ) {
   const ctx = await getCurrentCtx();
+  // Ses dix-sept voisines de ce fichier la portent ; celle-ci est née sans, et
+  // c'est `test-actions-gardees-db.ts` qui l'a relevée à la fusion du 30 août
+  // — la première prise du contrôle élargi, sur du code écrit ailleurs.
+  await exigerEcran(ctx, "/chantiers", "corriger la mesure d'une prestation");
   return corrigerMesurePrestation(ctx, id, mesure);
 }
 

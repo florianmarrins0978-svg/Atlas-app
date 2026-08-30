@@ -9,6 +9,17 @@ Format : le plus récent en tête.
 
 ## 2026-08-30
 
+### Le contrôle élargi a pris sa première action, écrite ailleurs
+
+**À la fusion du 30 août**, `test-actions-gardees-db.ts` a fait rougir
+`corrigerMesurePrestationAction` — arrivée de `main` le jour même, dans un
+fichier dont les **dix-sept autres actions** portent toutes
+`exigerEcran(ctx, "/chantiers", …)`. Celle-là était née sans.
+
+C'est exactement ce que l'élargissement devait attraper, et il l'a fait sur du
+code qui n'est pas le nôtre, quelques heures après avoir été écrit. La garde
+manquante a été posée, identique à celle de ses voisines.
+
 ### Le planning du salarié passe en lecture seule
 
 *Décision du patron, et elle tranche la seule question que le lot de clôture lui
