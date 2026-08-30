@@ -256,6 +256,23 @@ Le détail : `ARCHITECTURE.md` §192, migration `drizzle/0067_salaries_a_part.sq
 Rien n'est codé dans `src/` pour ces trois-là, et il ne faut pas commencer sans
 sa réponse (`CLAUDE.md` §3 bis).
 
+- **Le dessin de la note vocale AU REPOS** —
+  `appli/note-vocale-au-repos.html`, sa demande du 30 août : *« plusieurs
+  visuels pour changer la note vocale avant qu'on appuie dessus »*. **Cinq
+  dessins, une lettre à donner** (A à E). **Non codée.**
+
+  **Et une chose qui n'attend PAS sa réponse, parce qu'il l'a tranchée :**
+  *« lorsque l'utilisateur clique sur le bouton de la note vocale, le bouton
+  "Je rédige à la main" disparaît pour ne plus avoir de confusion possible »*.
+  C'est déjà dans les cinq. **Au codage, le RETIRER et non le griser** — un
+  bouton éteint reste un bouton, on l'appuie, il ne répond pas — et **le rendre
+  quand la note est jetée**.
+
+  **Deux planches vivent en parallèle, et c'est voulu** : `note-vocale-simple`
+  porte les GESTES (jeter, pause, envoyer, la largeur du bouton), celle-ci le
+  DESSIN au repos. Il a demandé de ne plus toucher à la première pendant qu'il
+  choisit dessus. Les deux réponses se recomposeront au codage.
+
 - **La note vocale simplifiée** — `appli/note-vocale-simple.html`, sa demande du
   30 août : *« on appuie dessus […] possibilité de supprimer, ou appuyer sur la
   flèche pour envoyer de suite la transcription »*. **Trois propositions, un

@@ -9,6 +9,25 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
+## ⏳ SA RÉPONSE ATTENDUE — le dessin de la note vocale au repos (30 août 2026)
+
+`appli/note-vocale-au-repos.html`, éprouvée par
+`scripts/verifier-maquette-note-vocale-au-repos.mjs`. **Un chiffre attendu :**
+A (l'anneau d'aujourd'hui), B (micro plein), C (barre d'invitation),
+D (anneau au micro) ou E (onde à plat).
+
+**Ce qui n'est PAS une question, et qui est déjà fait dans les cinq :** dès
+qu'on appuie, **« Je rédige à la main » disparaît** — *« pour ne plus avoir de
+confusion possible »* —, et il revient si l'on jette la note. Il l'a tranché
+sans vouloir de proposition. **Au codage : le retirer, pas le griser.** Un
+bouton éteint reste un bouton, on l'appuie, il ne répond pas.
+
+**Cette planche ne remplace pas la précédente** : celle-là porte les GESTES
+(jeter, pause, envoyer), celle-ci le DESSIN au repos. Les deux réponses se
+recomposent.
+
+---
+
 ## ⏳ SA RÉPONSE ATTENDUE — la note vocale « à la WhatsApp » (30 août 2026)
 
 `appli/note-vocale-simple.html` est en ligne et éprouvée

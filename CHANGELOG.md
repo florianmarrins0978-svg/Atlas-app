@@ -9,6 +9,45 @@ Format : le plus récent en tête.
 
 ## 2026-08-30
 
+### Cinq dessins pour la note vocale AU REPOS, et le bouton qui s'efface
+
+**Sa demande, deux choses en une :** *« je veux que lorsque l'utilisateur clique
+sur le bouton de la note vocale, le bouton "Je rédige à la main" disparaisse
+pour ne plus avoir de confusion possible. […] Fais-moi plusieurs visuels pour
+changer la note vocale AVANT qu'on appuie dessus. Ne touche plus à la maquette
+que tu viens de me faire. Pas besoin de visuel pour le bouton qui disparaît,
+seulement des propositions pour le visuel de la note vocale. »*
+
+**Une seule des deux est une question**, et il le dit lui-même. Le bouton qui
+s'efface est tranché : il est donc appliqué **à l'identique dans les cinq**, et
+non proposé. Ce qui se choisit, c'est l'objet au repos.
+
+`appli/note-vocale-au-repos.html` — **une planche à part**, parce qu'il a
+demandé de ne plus toucher à la précédente : il est en train de choisir dessus,
+et une planche qui bouge sous les doigts de celui qui la juge ne se juge plus.
+Celle-ci ne pose qu'une question et emprunte tout le reste sans le rediscuter —
+même fiche, même barre d'enregistrement, même devis. Sinon il choisirait un
+écran au lieu d'un dessin.
+
+**Les cinq :** l'anneau d'aujourd'hui (là pour comparer — sans lui on choisit
+dans le vide), un micro plein (le dessin de toutes les messageries), une barre
+d'invitation qui porte le mot et le micro, l'anneau d'Atlas avec un micro au
+centre, et une onde à plat traversant l'écran avec un disque au milieu.
+
+**Le bouton DISPARAÎT, il ne se grise pas** — et le contrôle mesure la
+différence (`offsetParent`, pas l'opacité). Un bouton éteint reste un bouton :
+on l'appuie, il ne répond pas, et l'on croit l'écran cassé. **Et il revient si
+l'on jette la note** : c'est l'autre moitié de la même règle, sans laquelle
+jeter laisserait l'écran amputé de sa seule autre issue.
+
+`scripts/verifier-maquette-note-vocale-au-repos.mjs` tient les cinq : un seul
+dessin à l'écran à la fois, chacun touchable à 44 px, le bouton là avant, parti
+pendant, revenu après, la même barre d'enregistrement partout, le devis au nom
+saisi, rien sous le pli à 700 et 667 points, et la teinte qui bascule dans les
+deux sens. Éprouvé contre cinq états dégradés — bouton resté, bouton grisé,
+bouton non rendu après un rejet, deux repos visibles ensemble, un repos rapetissé
+sous 44 px : chacun le fait rougir.
+
 ### « J'ai vu » sur les quatre rappels — sa demande, capture à l'appui
 
 *« Pour chaque notification je dois pouvoir cliquer sur vu pour les faire
