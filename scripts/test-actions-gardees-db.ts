@@ -31,14 +31,15 @@
 //      seconde empêche la prochaine action de naître sans lui.
 
 import assert from "node:assert/strict";
-import { readFileSync, existsSync } from "node:fs";
-import { join } from "node:path";
+import { readFileSync, readdirSync } from "node:fs";
+import { join, relative } from "node:path";
 import { nettoyerBase } from "./_test-db";
 import { creerEntreprise } from "../src/server/repositories/entreprises";
 import { donnerUnAcces, listerAcces } from "../src/server/repositories/membres-entreprise";
 import {
   exigerMontants,
   exigerEcran,
+  exigerEcritureSurLePlanning,
   exigerChantierDansSaPortee,
   ActionRefuseeError,
 } from "../src/server/garde-action";
@@ -61,29 +62,49 @@ async function essai(nom: string, fn: () => Promise<void> | void) {
 }
 
 /**
- * Les fichiers d'actions qui touchent aux MONTANTS.
+ * **TOUT FICHIER « use server » DU DÉPÔT — plus aucune liste tenue à la main.**
  *
- * **Le critère n'est pas « ce qui est sensible » mais `docs/QUESTIONS.md` §10**,
- * cité en tête d'`acces-roles.ts` : *« Les montants ne doivent pas sortir du
- * serveur pour qui n'a pas le droit de les voir — ni dans la page, ni dans le
- * PDF, ni dans une réponse d'API. »* Ces six fichiers-là lisent, écrivent ou
- * font sortir un prix, un total, une facture ou un paiement.
+ * ═══════════════════════════════════════════════════════════════════════════
+ * **CE QUE LES DEUX LISTES MANUELLES ONT LAISSÉ PASSER** — 30 août 2026.
  *
- * **Ce que cette liste ne couvre PAS, et il faut le dire** : les autres
- * fichiers d'actions du dépôt — planning, photos, notes vocales, paysage,
- * informations — n'ont pas non plus de garde de rôle. Ils ne font pas sortir de
- * montant, donc ils ne relèvent pas de la règle ci-dessus ; mais plusieurs
- * écrivent, et le sujet reste ouvert (voir le rapport d'audit). Prétendre les
- * couvrir ici rendrait cette suite verte sur une promesse qu'elle ne tient pas.
+ * Cette suite énumérait `FICHIERS_A_MONTANTS` et `ECRANS_FERMES_AU_SALARIE`,
+ * deux listes écrites à la main. Toutes deux ne nommaient que des fichiers
+ * `actions.ts` — et `src/app/chantiers/[id]/photos-actions.ts` ne s'appelle pas
+ * comme ça. Ses deux actions n'avaient AUCUNE garde : un salarié pouvait
+ * ajouter une photo à n'importe quel chantier, et en **supprimer** n'importe
+ * laquelle (un `DELETE`, pas un `deletedAt`).
+ *
+ * La suite était verte. Elle ne mentait pas : elle ne regardait pas.
+ *
+ * **Une liste tenue à la main se tait sur ce qu'on a oublié d'y écrire**, et
+ * c'est le pire des silences — il ressemble à un contrôle. Le sens est donc
+ * inversé : on relève TOUS les fichiers « use server », et ce qui n'a pas de
+ * garde doit s'expliquer **ici**, par écrit.
+ *
+ * C'est le même choix qu'`acces-roles.ts` fait pour le salarié : liste blanche,
+ * pour qu'un fichier neuf soit fermé d'office plutôt qu'ouvert en silence.
  */
-const FICHIERS_A_MONTANTS = [
-  "src/app/chantiers/[id]/prix/actions.ts",
-  "src/app/chantiers/[id]/devis-complet/actions.ts",
-  "src/app/chantiers/[id]/facture/actions.ts",
-  "src/app/chantiers/[id]/export/actions.ts",
-  "src/app/clients/[id]/actions.ts",
-  "src/app/termines/tva/actions.ts",
-];
+function fichiersUseServer(): string[] {
+  const trouves: string[] = [];
+  const pile = [join(process.cwd(), "src")];
+  while (pile.length > 0) {
+    const dossier = pile.pop()!;
+    for (const e of readdirSync(dossier, { withFileTypes: true })) {
+      const chemin = join(dossier, e.name);
+      if (e.isDirectory()) {
+        pile.push(chemin);
+      } else if (e.name.endsWith(".ts") || e.name.endsWith(".tsx")) {
+        // La directive est en TÊTE de fichier : la chercher partout ferait
+        // entrer les fichiers qui ne font qu'en PARLER — celui-ci, par exemple.
+        const debut = readFileSync(chemin, "utf8").slice(0, 200);
+        if (/^\s*(\/\/[^\n]*\n)*\s*["']use server["']/.test(debut)) {
+          trouves.push(relative(process.cwd(), chemin));
+        }
+      }
+    }
+  }
+  return trouves.sort();
+}
 
 /**
  * Les gardes qui comptent — n'importe laquelle suffit.
@@ -95,54 +116,120 @@ const FICHIERS_A_MONTANTS = [
  * au patron. Lui ajouter une seconde garde aurait mis deux règles pour une
  * porte, et c'est ce que `CLAUDE.md` §3 interdit.
  *
- * Elle est rendue en valeur de retour plutôt que levée, d'où le motif sur le nom
- * de la fonction et non sur un `exiger…`.
+ * **`estProprietaire` de même**, relevé le 30 août : les six actions de
+ * `paysage/fiche/composer` passent par un `contexteAutorise()` qui rend `null`
+ * pour qui n'est pas patron. Plus strict que ce qu'on leur demanderait.
  */
 const GARDES = [
   "exigerMontants(",
   "exigerEcran(",
+  "exigerEcritureSurLePlanning(",
   "exigerProprietaire(",
   "exigerPreuveRecente(",
   "peutUtiliserLAssistant(",
+  "estProprietaire(",
+  // L'éditeur d'Atlas, qui n'est pas un rôle d'entreprise : plus étroit que
+  // « patron », puisqu'aucun artisan ne l'est.
+  "exigerEditeur(",
 ];
 
 /**
- * Les fichiers d'actions dont l'ÉCRAN est fermé au salarié.
+ * **UNE GARDE PEUT VIVRE DANS UN AIDE LOCAL — et ce n'en est pas moins une.**
  *
- * **Ils n'étaient gardés par rien** — lot de clôture, 29 août 2026. Un écran
- * fermé ne ferme pas l'action : `GardeAcces` ne s'exécute qu'au rendu, et
- * l'adresse de l'action reste postable avec une session valide.
+ * Relevé le 30 août 2026 par ce contrôle lui-même : les six actions de
+ * `paysage/fiche/composer` étaient dénoncées comme nues alors qu'elles ouvrent
+ * toutes sur `contexteAutorise()`, quatre lignes plus haut dans le même
+ * fichier, qui rend `null` à qui n'est pas patron.
  *
- * Ce qui s'y trouvait de plus grave : quatre suppressions **DURES** — une
- * prestation, une ligne de matériel, une note vocale, un passage d'entretien.
- * Un `DELETE` en base, pas un `deletedAt` : rien ne les défait, et aucun écran
- * ne les restaure.
+ * **Exiger la garde en toutes lettres dans chaque action aurait été le mauvais
+ * correctif** : il aurait fallu écrire deux fois la même règle, et
+ * `CLAUDE.md` §3 l'interdit — c'est exactement la duplication qui finit par
+ * diverger. Le contrôle suit donc UN niveau d'indirection : un aide du même
+ * fichier dont le corps porte une garde en est une.
  *
- * **`/planning` n'est PAS dans cette liste, et c'est délibéré.** C'est l'écran
- * du salarié, ses actions lui sont ouvertes, et la question « peut-il supprimer
- * un chantier ? » revient au patron — elle n'a jamais été posée. La trancher
- * ici serait décider à sa place.
+ * **Un seul niveau, délibérément.** Descendre plus loin obligerait à suivre les
+ * imports, et un contrôle qui suit les imports finit par tout accepter.
  */
-const ECRANS_FERMES_AU_SALARIE = [
-  "src/app/chantiers/[id]/informations/actions.ts",
-  "src/app/chantiers/[id]/note-vocale/actions.ts",
-  "src/app/chantiers/[id]/transcription/actions.ts",
-  "src/app/chantiers/[id]/coordonnees/actions.ts",
-  "src/app/chantiers/nouveau/actions.ts",
-  "src/app/actions.ts",
-  "src/app/paysage/fiche/actions.ts",
-  "src/app/paysage/diagnostic/actions.ts",
-  "src/app/paysage/arrosage/actions.ts",
-];
+function porteUneGarde(corps: string, aides: Map<string, string>): boolean {
+  if (GARDES.some((g) => corps.includes(g))) return true;
+  for (const [nom, corpsAide] of aides) {
+    if (corps.includes(`${nom}(`) && GARDES.some((g) => corpsAide.includes(g))) return true;
+  }
+  return false;
+}
+
+/** Les fonctions NON exportées d'un fichier — celles qui peuvent porter la garde. */
+function aidesDe(chemin: string): Map<string, string> {
+  const source = readFileSync(chemin, "utf8");
+  const aides = new Map<string, string>();
+  const motif = /^(?:async )?function (\w+)/gm;
+  let m: RegExpExecArray | null;
+  while ((m = motif.exec(source)) !== null) {
+    const suite = source.slice(m.index);
+    const fin = suite.indexOf("\n}");
+    aides.set(m[1], fin === -1 ? suite : suite.slice(0, fin));
+  }
+  return aides;
+}
 
 /**
- * Les exports qui n'ont délibérément pas de garde, avec leur raison.
+ * Les actions qui n'ont délibérément pas de garde de rôle, et **pourquoi**.
  *
- * Vide aujourd'hui, et l'entrée reste là exprès : le jour où une action de ces
- * fichiers devra s'ouvrir plus largement, sa raison s'écrit ICI plutôt que de
- * disparaître dans un `// eslint-disable` que personne ne relit.
+ * Trois familles, et aucune quatrième n'est acceptable :
+ *
+ * | | |
+ * |---|---|
+ * | **avant la connexion** | il n'y a pas encore de rôle à vérifier |
+ * | **public par jeton** | le client d'un artisan n'a pas de compte |
+ * | **ses propres réglages** | ils n'écrivent que sur la personne elle-même |
+ *
+ * S'y ajoute une lecture, nommément.
+ *
+ * **La raison n'est pas une formalité** : c'est elle qu'on relira le jour où
+ * quelqu'un se demandera pourquoi cette action-là est ouverte. Une exemption
+ * sans raison est un `// eslint-disable` déguisé.
  */
-const EXEMPTIONS: Record<string, string> = {};
+const EXEMPTIONS: Record<string, string> = {
+  // ─── Avant la connexion : aucun rôle n'existe encore ────────────────────
+  "src/app/login/actions.ts#connexionAction":
+    "C'est l'action qui CRÉE la session. Exiger un rôle avant elle enfermerait tout le monde dehors.",
+  "src/app/login/actions.ts#defiConnexionAction":
+    "Le défi Face ID se demande avant d'être connecté — c'est ce qui permet de se connecter sans mot de passe.",
+  "src/app/login/actions.ts#connexionParCleAction":
+    "Même famille : elle ouvre la session par la clé d'appareil, donc elle s'appelle sans session.",
+  "src/app/login/actions.ts#deconnexionAction":
+    "Se déconnecter est ouvert à qui est connecté, quel que soit son rôle — et refuser reviendrait à retenir les gens dedans.",
+
+  // ─── Public par jeton : le client de l'artisan n'a pas de compte ────────
+  "src/app/devis/[jeton]/actions.ts#repondreAction":
+    "L'écran du devis s'ouvre par un jeton, sans compte : le client de l'artisan n'a pas de rôle. Le jeton EST la garde (chemins-publics.ts).",
+  "src/app/documents-legaux/actions.ts#accepterDocumentsAction":
+    "Accepter les documents légaux est la porte d'entrée : la fermer par rôle enfermerait dehors le salarié qui n'a pas encore accepté.",
+
+  // ─── Ses propres réglages : elles n'écrivent que sur la personne ────────
+  "src/app/reglages/compte/actions.ts#renommerCompteAction":
+    "Écrit le nom de la personne connectée, sur elle seule. « Un salarié peut changer ses notifications ou son mot de passe » (13 août 2026).",
+  "src/app/reglages/apparence/actions.ts#choisirCharteAction":
+    "La charte de couleurs de la personne connectée. Aucune donnée d'entreprise, aucun autre compte touché.",
+  "src/app/reglages/connexion/actions.ts#changerMotDePasseAction":
+    "Son propre mot de passe, et il exige l'ancien. Le fermer par rôle interdirait à un salarié de changer le sien.",
+  "src/app/reglages/connexion/actions.ts#deconnecterPartoutAction":
+    "Ferme SES propres sessions. C'est un geste de sécurité : le refuser à un rôle le laisserait sans recours après un vol de téléphone.",
+  "src/app/reglages/connexion/actions.ts#defiEnregistrementAction":
+    "Le défi Face ID pour SON appareil, sur sa propre session. Aucune écriture sur l'entreprise.",
+  "src/app/reglages/connexion/actions.ts#enregistrerCleAction":
+    "Enregistre une clé d'appareil sur son propre compte — et exige déjà une preuve récente pour le geste sensible.",
+  "src/app/reglages/connexion/actions.ts#retirerCleAction":
+    "Retire une de SES clés. Même raison que « se déconnecter partout » : c'est un geste défensif qui doit rester ouvert.",
+  "src/app/reglages/connexion/preuve-actions.ts#prouverParMotDePasseAction":
+    "Elle sert à PROUVER qui l'on est ; la garder par rôle mettrait la preuve derrière ce qu'elle doit établir.",
+  "src/app/reglages/connexion/preuve-actions.ts#preuveDejaRecenteAction":
+    "Une lecture : elle répond oui ou non sur SA propre session, et ne touche rien.",
+
+  // ─── Une lecture, nommément ─────────────────────────────────────────────
+  "src/app/planning/actions.ts#tachesDuChantierAction":
+    "Elle LIT la feuille de chantier sans un seul montant — le document du salarié, décidé le 21 août 2026. La fermer lui retirerait le seul papier qu'il ait.",
+};
 
 /** Les fonctions exportées d'un fichier d'actions, et le corps de chacune. */
 function actionsDe(chemin: string): Array<{ nom: string; corps: string }> {
@@ -240,34 +327,47 @@ async function main() {
   });
 
   // ─── MOITIÉ 2 : AUCUNE ACTION NE L'OUBLIE ─────────────────────────────────
-  await essai("les fichiers d'actions à montants existent tous", () => {
-    // Un chemin périmé rendrait tous les contrôles suivants verts sur rien —
-    // le garde-fou de `CLAUDE.md` §5.
-    for (const f of FICHIERS_A_MONTANTS) {
-      assert.ok(existsSync(join(process.cwd(), f)), `${f} n'existe plus : la liste est périmée`);
-    }
+  //
+  // **Plus de liste tenue à la main.** Celle d'avant ne nommait que des
+  // `actions.ts`, et `photos-actions.ts` lui a échappé pendant tout un lot.
+  const FICHIERS = fichiersUseServer();
+
+  await essai("l'ÉNUMÉRATION trouve les fichiers « use server » — sinon rien n'est mesuré", () => {
+    // Refuser de conclure sur zéro (`CLAUDE.md` §5) : si la marche du dossier
+    // casse un jour, tous les contrôles ci-dessous passeraient sur une liste
+    // vide, en vert, sans avoir rien regardé.
+    assert.ok(
+      FICHIERS.length >= 30,
+      `seulement ${FICHIERS.length} fichier(s) « use server » relevé(s) : la marche a échoué`
+    );
+    // Le fichier qui a échappé aux listes manuelles : s'il ressort de
+    // l'énumération, c'est que le motif ne se limite plus aux `actions.ts`.
+    assert.ok(
+      FICHIERS.includes("src/app/chantiers/[id]/photos-actions.ts"),
+      "photos-actions.ts n'est pas relevé : l'énumération retrouve le trou de la version d'avant"
+    );
+    assert.ok(FICHIERS.includes("src/app/planning/actions.ts"));
   });
 
-  await essai("CHAQUE action à montants porte une garde de rôle", () => {
+  await essai("CHAQUE action serveur du dépôt porte une garde, ou une raison écrite", () => {
     const nues: string[] = [];
     let comptees = 0;
-    for (const f of FICHIERS_A_MONTANTS) {
+    for (const f of FICHIERS) {
+      const aides = aidesDe(join(process.cwd(), f));
       for (const { nom, corps } of actionsDe(join(process.cwd(), f))) {
         comptees++;
         if (`${f}#${nom}` in EXEMPTIONS) continue;
-        if (!GARDES.some((g) => corps.includes(g))) nues.push(`${f}#${nom}`);
+        if (!porteUneGarde(corps, aides)) nues.push(`${f}#${nom}`);
       }
     }
-    // Refuser de conclure sur rien : si la lecture des fichiers casse un jour,
-    // `comptees` vaudrait 0 et ce contrôle passerait sans avoir rien regardé.
-    assert.ok(comptees >= 30, `seulement ${comptees} action(s) relevée(s) : la lecture a échoué`);
+    assert.ok(comptees >= 100, `seulement ${comptees} action(s) relevée(s) : la lecture a échoué`);
     assert.deepEqual(
       nues,
       [],
-      `Ces actions font sortir ou modifient un montant sans garde de rôle :\n      ${nues.join("\n      ")}\n` +
-        "    Un salarié peut les poster avec sa session : GardeAcces ne s'exécute qu'au RENDU,\n" +
-        "    et le middleware ne regarde que la session. Ajouter en première ligne :\n" +
-        "      await exigerMontants(ctx, \"ce que fait l'action\");\n" +
+      `Ces actions serveur n'ont aucune garde de rôle :\n      ${nues.join("\n      ")}\n` +
+        "    L'écran ne les protège pas : GardeAcces ne s'exécute qu'au RENDU, et l'adresse de\n" +
+        "    l'action reste postable avec une session valide. Ajouter en première ligne la garde\n" +
+        "    qui convient — exigerMontants, exigerEcran, exigerEcritureSurLePlanning…\n" +
         "    Si l'ouverture est délibérée, l'écrire dans EXEMPTIONS avec sa raison."
     );
   });
@@ -295,36 +395,17 @@ async function main() {
 
   await essai("la même garde LAISSE PASSER le salarié sur SON écran", async () => {
     // Sans cette moitié, on aurait fermé au salarié jusqu'à son propre planning.
+    // **Et ce n'est PAS en contradiction avec la lecture seule** : `/planning`
+    // lui reste ouvert en LECTURE. Ce qui refuse l'écriture est une autre
+    // garde, éprouvée dans `test-salarie-planning-lecture-seule-db.ts`.
     const ctx: Ctx = { utilisateurId: salarie!.utilisateurId, entrepriseId: a.entreprise.id };
-    await exigerEcran(ctx, "/planning", "déplacer un chantier");
+    await exigerEcran(ctx, "/planning", "ouvrir la feuille d'un chantier");
   });
 
   await essai("le commercial passe sur /chantiers, le patron aussi", async () => {
     const c: Ctx = { utilisateurId: commercial!.utilisateurId, entrepriseId: a.entreprise.id };
     await exigerEcran(c, "/chantiers", "supprimer une prestation");
     await exigerEcran(ctxPatron, "/chantiers", "supprimer une prestation");
-  });
-
-  await essai("CHAQUE action d'un écran fermé au salarié porte une garde", () => {
-    const nues: string[] = [];
-    let comptees = 0;
-    for (const f of ECRANS_FERMES_AU_SALARIE) {
-      assert.ok(existsSync(join(process.cwd(), f)), `${f} n'existe plus : la liste est périmée`);
-      for (const { nom, corps } of actionsDe(join(process.cwd(), f))) {
-        comptees++;
-        if (`${f}#${nom}` in EXEMPTIONS) continue;
-        if (!GARDES.some((g) => corps.includes(g))) nues.push(`${f}#${nom}`);
-      }
-    }
-    assert.ok(comptees >= 30, `seulement ${comptees} action(s) relevée(s) : la lecture a échoué`);
-    assert.deepEqual(
-      nues,
-      [],
-      `Ces actions vivent sur un écran fermé au salarié, sans garde :\n      ${nues.join("\n      ")}\n` +
-        "    L'écran ne les protège pas : GardeAcces ne s'exécute qu'au RENDU, et l'adresse de\n" +
-        "    l'action reste postable. Ajouter en première ligne :\n" +
-        "      await exigerEcran(ctx, \"/chantiers\", \"ce que fait l'action\");"
-    );
   });
 
   // ─── MOITIÉ 4 : LA PORTÉE DU PLANNING S'APPLIQUE AUX ÉCRITURES ───────────

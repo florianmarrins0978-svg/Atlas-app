@@ -234,6 +234,47 @@ export function peutVoirLesMontants(role: Role): boolean {
 }
 
 /**
+ * **CETTE PERSONNE PEUT-ELLE MODIFIER LE PLANNING ? NON POUR LE SALARIÉ.**
+ *
+ * ───────────────────────────────────────────────────────────────────────────
+ * **La règle vient du patron, le 30 août 2026, et elle est sans nuance :**
+ *
+ * > *« Un salarié peut uniquement CONSULTER son planning. Il ne doit pouvoir
+ * > effectuer AUCUNE modification depuis le planning. »*
+ *
+ * Aucune suppression, aucun déplacement, aucune replanification, aucune note,
+ * aucun changement d'équipe. **Il regarde, il ne touche pas.**
+ *
+ * ───────────────────────────────────────────────────────────────────────────
+ * **CE QUE CETTE FONCTION NE TOUCHE PAS : LA PORTÉE.**
+ *
+ * `porteePlanning` dit QUELS chantiers une personne voit — tous, ou ceux de son
+ * équipe. C'est un périmètre de LECTURE, réglé par personne, et le patron l'a
+ * expressément conservé. La règle ci-dessus est d'un autre ordre : elle dit ce
+ * qu'on a le droit d'ÉCRIRE, et elle se lit par rôle.
+ *
+ * Les deux se cumulent, et l'ordre importe peu — un salarié est refusé par
+ * celle-ci avant même qu'on regarde son équipe.
+ *
+ * ───────────────────────────────────────────────────────────────────────────
+ * **POURQUOI ELLE N'EST PAS ÉCRITE COMME UN CHEMIN FERMÉ.**
+ *
+ * La tentation était d'ajouter `/planning` à ce qui est fermé au salarié :
+ * `cheminAutorise` aurait alors refusé ses actions d'un seul trait. Elle lui
+ * aurait aussi fermé **l'écran**, c'est-à-dire la seule chose qu'il ait dans
+ * Atlas. La lecture et l'écriture ne se gardent pas avec la même règle, donc
+ * elles ne s'écrivent pas dans la même liste.
+ *
+ * **Et elle n'appelle pas `peutVoirLesMontants`**, qui rendrait pourtant le
+ * même verdict aujourd'hui. Ce sont deux règles différentes qui coïncident :
+ * les lier ouvrirait le planning en écriture au salarié le jour où quelqu'un
+ * élargirait les montants — en silence, et pour une raison sans rapport.
+ */
+export function peutModifierLePlanning(role: Role): boolean {
+  return role !== "salarie";
+}
+
+/**
  * L'assistant, est-ce pour cette personne ? **NON, sauf le patron.**
  *
  * ───────────────────────────────────────────────────────────────────────────
@@ -293,8 +334,13 @@ export function ceQueLeRoleChange(role: Role): { peut: string[]; nonPlus: string
       };
     case "salarie":
       return {
-        peut: ["Le planning", "La feuille de chantier, sans un seul montant"],
-        nonPlus: ["Les prix, les devis, les factures", "Les chantiers et les clients", "Les réglages de l'entreprise"],
+        peut: ["Le planning, en lecture", "La feuille de chantier, sans un seul montant"],
+        nonPlus: [
+          "Modifier le planning",
+          "Les prix, les devis, les factures",
+          "Les chantiers et les clients",
+          "Les réglages de l'entreprise",
+        ],
       };
   }
 }

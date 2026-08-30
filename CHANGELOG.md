@@ -9,6 +9,34 @@ Format : le plus récent en tête.
 
 ## 2026-08-30
 
+### Le planning du salarié passe en lecture seule
+
+*Décision du patron, et elle tranche la seule question que le lot de clôture lui
+avait renvoyée : « un salarié peut uniquement CONSULTER son planning ».*
+
+**Ce que ça évite.** Un salarié pouvait supprimer un chantier — suppression
+douce, mais qu'aucun écran ne restaure —, le déplacer, le retirer du planning,
+réécrire son pense-bête et changer l'équipe qui part. Le bouton était dessiné
+pour lui, et le serveur ne vérifiait que **quel** chantier, jamais **s'il** avait
+le droit d'écrire.
+
+**Et ce n'était pas qu'une question de boutons :** la requête d'écriture,
+fabriquée à la main avec l'identifiant de l'action et celui du chantier, passait.
+C'est éprouvé pour de bon — la suite intercepte l'appel du patron et le rejoue
+sous le salarié ; garde retirée, il écrit, réponse 200.
+
+**Une seconde porte, trouvée en cherchant celle-ci.** Les actions photos d'un
+chantier n'avaient aucune garde : un salarié pouvait ajouter une photo à
+n'importe quel chantier et en **supprimer** n'importe laquelle, cette fois pour
+de bon. Le contrôle du lot précédent ne le voyait pas — il lisait deux listes de
+fichiers écrites à la main, et le fichier ne s'appelait pas `actions.ts`. Il
+relève désormais **tout** fichier « use server » du dépôt, et ce qui n'a pas de
+garde doit s'expliquer par écrit.
+
+**Ce qui n'a pas bougé, et c'est éprouvé aussi :** la portée de lecture, les
+droits du patron, ceux du commercial, et la feuille de chantier sans montants —
+le seul document du salarié.
+
 ### Lot de clôture : ce qui restait ouvert avant le premier artisan
 
 Détail complet dans `docs/cloture-avant-premier-artisan.md`. Ce qui suit est ce

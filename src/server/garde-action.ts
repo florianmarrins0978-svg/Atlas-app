@@ -1,4 +1,4 @@
-import { cheminAutorise, peutVoirLesMontants } from "@/lib/acces-roles";
+import { cheminAutorise, peutModifierLePlanning, peutVoirLesMontants } from "@/lib/acces-roles";
 import { accesDeLaPersonne, getRole } from "./autorisation";
 import { chantiersDeLEquipe } from "./repositories/chantiers";
 import type { Ctx } from "./repositories/context";
@@ -108,9 +108,11 @@ export async function exigerMontants(ctx: Ctx, action: string): Promise<void> {
  *
  * **Cette garde ne décide RIEN de neuf.** Elle applique la règle que le patron a
  * déjà posée le 23 août 2026 — *« les salariés, eux, auront accès qu'à la
- * catégorie planning »* — là où seule la mise en page l'appliquait. La question
- * qu'il n'a PAS tranchée — un salarié peut-il supprimer un chantier depuis le
- * planning, qui est son écran — reste ouverte et lui revient.
+ * catégorie planning »* — là où seule la mise en page l'appliquait.
+ *
+ * **Elle ne couvre pas le planning, et c'est normal :** l'écran EST ouvert au
+ * salarié. Ce qui lui est fermé, c'est d'y écrire — et cela relève de
+ * `exigerEcritureSurLePlanning`, plus bas.
  *
  * ═══════════════════════════════════════════════════════════════════════════
  * **LE CHEMIN EST ÉCRIT DANS L'APPEL, JAMAIS LU DE LA REQUÊTE.**
@@ -154,8 +156,13 @@ export async function exigerEcran(ctx: Ctx, chemin: string, action: string): Pro
  * Le patron croyait avoir restreint. Il n'avait restreint que ce qui s'affiche.
  *
  * **Cette garde ne décide rien de neuf** : elle applique jusqu'au bout une
- * décision déjà prise. La question qu'il n'a PAS tranchée — un salarié
- * peut-il supprimer un chantier **de sa propre équipe** — reste entière.
+ * décision déjà prise.
+ *
+ * **La question qui restait — un salarié peut-il supprimer un chantier de sa
+ * propre équipe ? — a été tranchée le 30 août 2026 : NON**, ni celui-là ni
+ * aucun autre, et pas davantage le déplacer ou l'annoter. C'est
+ * `exigerEcritureSurLePlanning` qui le refuse ; celle-ci continue de borner
+ * qui écrit sur QUEL chantier, pour les rôles qui écrivent encore.
  *
  * ═══════════════════════════════════════════════════════════════════════════
  * **UNE PORTÉE « TOUT » NE COÛTE RIEN** : la fonction sort immédiatement. Le
@@ -178,4 +185,47 @@ export async function exigerChantierDansSaPortee(
 
   const siens = await chantiersDeLEquipe(ctx, acces.equipeId);
   if (!siens.has(chantierId)) throw new ActionRefuseeError(action);
+}
+
+/**
+ * **CETTE PERSONNE PEUT-ELLE ÉCRIRE DEPUIS LE PLANNING ?**
+ *
+ * ═══════════════════════════════════════════════════════════════════════════
+ * **LA DÉCISION DU PATRON, 30 AOÛT 2026 :** *« Un salarié peut uniquement
+ * CONSULTER son planning. Il ne doit pouvoir effectuer AUCUNE modification
+ * depuis le planning. »*
+ *
+ * Elle clôt la seule question que les deux lots précédents avaient laissée
+ * ouverte, et ils la lui renvoyaient explicitement. Les sept actions du
+ * planning vérifiaient jusqu'ici **quel** chantier — jamais **si** la personne
+ * avait le droit d'écrire.
+ *
+ * ═══════════════════════════════════════════════════════════════════════════
+ * **À APPELER EN PREMIÈRE LIGNE, AVANT LA PORTÉE.**
+ *
+ * L'ordre n'est pas indifférent : `exigerChantierDansSaPortee` interroge la
+ * base — l'équipe de la personne, puis les chantiers de cette équipe. Un
+ * salarié doit être refusé sans qu'on paie ces deux requêtes, et surtout sans
+ * qu'un chantier hors portée réponde plus lentement qu'un chantier de son
+ * équipe : ce délai-là se mesure, et il dirait à qui cherche lesquels sont les
+ * siens.
+ *
+ * ═══════════════════════════════════════════════════════════════════════════
+ * **CE QU'ELLE NE FAIT PAS, ET C'EST DÉLIBÉRÉ.**
+ *
+ * Elle ne garde **pas** les lectures du planning. `tachesDuChantierAction` rend
+ * la feuille de chantier sans un montant — c'est précisément ce que le patron a
+ * voulu lui donner le 21 août. La fermer ici retirerait au salarié le seul
+ * document qu'il ait, au nom d'une décision qui parle d'écriture.
+ *
+ * La règle elle-même n'est pas recopiée : `peutModifierLePlanning` est la même
+ * fonction que celle dont l'écran se sert pour ne pas dessiner de boutons
+ * (`CLAUDE.md` §3). Un bouton caché dont l'action répondrait quand même serait
+ * exactement le défaut que ce lot ferme.
+ */
+export async function exigerEcritureSurLePlanning(ctx: Ctx, action: string): Promise<void> {
+  const role = await getRole(ctx);
+  if (!role || !peutModifierLePlanning(role)) {
+    throw new ActionRefuseeError(action);
+  }
 }

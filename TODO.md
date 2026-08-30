@@ -14,25 +14,21 @@ langage, et rien n'y entre sans son accord.
 Le rapport complet est dans `docs/cloture-avant-premier-artisan.md`. Il ne reste
 que ceci.
 
-### 1. LA DÉCISION DU PATRON — une seule, et elle bloque une ligne de code
+### ~~1. LA DÉCISION DU PATRON — un salarié peut-il supprimer un chantier ?~~
 
-> **Un salarié peut-il supprimer un chantier ? OUI / NON**
+**~~TRANCHÉE LE 30 AOÛT 2026, et plus largement que la question :~~**
 
-**Le dépôt ne tranche pas**, et c'est vérifié : toutes ses phrases relevées
-portent sur ce qu'un salarié **voit** — « juste le planning et les devis, mais
-sans les prix », « accès qu'à la catégorie planning ». Aucune ne dit ce qu'il a
-le droit d'**écrire**. La seule qui s'en approche — *« il ne doit évidemment pas
-pouvoir modifier les tarifs ou les coordonnées bancaires »* — ne nomme que les
-tarifs et l'IBAN.
+> ~~*« Un salarié peut uniquement CONSULTER son planning. Il ne doit pouvoir
+> effectuer AUCUNE modification depuis le planning. »*~~
 
-Ce qui est vrai aujourd'hui : par son écran, il peut supprimer un chantier — le
-bouton est dessiné pour lui. Suppression douce, refusée si une facture est
-émise, mais **aucun écran ne la restaure**. Depuis ce lot, il ne peut le faire
-que sur les chantiers de **son équipe**, si le patron l'a resserré.
+~~Ni supprimer, ni poser, ni déplacer, ni déplanifier, ni annoter, ni changer
+d'équipe. La règle vit dans `peutModifierLePlanning` (`src/lib/acces-roles.ts`),
+la garde dans `exigerEcritureSurLePlanning` (`src/server/garde-action.ts`), et
+elle ouvre les six actions d'écriture du planning — avant la portée.~~
 
-**Si la réponse est NON**, la correction est d'une ligne : `/planning` rejoint
-`ECRANS_FERMES_AU_SALARIE`. Il faudra alors décider aussi pour *déplacer* et
-*déplanifier* — mêmes actions, même écran.
+~~Le périmètre de LECTURE n'a pas bougé : il voit toujours ce que sa portée lui
+montre, et il garde sa feuille de chantier sans montants.
+Rapport : `docs/salarie-planning-lecture-seule.md`.~~
 
 ### 2. L'infrastructure, et elle seule
 
