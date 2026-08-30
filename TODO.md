@@ -9,6 +9,30 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
+## ⏳ SA RÉPONSE ATTENDUE — la note vocale « à la WhatsApp » (30 août 2026)
+
+`appli/note-vocale-simple.html` est en ligne et éprouvée
+(`scripts/verifier-maquette-note-vocale-simple.mjs`). **Rien n'est codé dans
+`src/`**, et rien ne doit l'être avant qu'il donne deux chiffres :
+
+| | |
+|---|---|
+| la proposition | **1** la barre à deux rangées · **2** la capsule sans pause |
+| la largeur du bouton | **1** aujourd'hui · **2** 88 % · **3** 78 % · **4** 66 % |
+
+**Deux choses sont déjà tranchées par lui, et ne se rouvrent pas :** l'anneau
+**disparaît** dès qu'on appuie (une troisième proposition où il restait au
+centre a été retirée pour cela), et le bouton du bas est **secondaire**, libellé
+« Je rédige à la main » — le seul aplat plein de l'écran est le rond d'envoi.
+
+**Le point délicat du codage, à ne pas découvrir en route :**
+`AnneauNoteVocale.basculerDictee()` envoie au second appui — l'arrêt et l'envoi
+sont le même geste. Il faudra les séparer, et veiller à ce que **jeter une note
+ne supprime pas le chantier** : une photo prise avant a pu le créer
+(`assurerChantier`).
+
+---
+
 ## Ce que le lot de clôture du 30 août 2026 laisse ouvert
 
 Le rapport complet est dans `docs/cloture-avant-premier-artisan.md`. Il ne reste

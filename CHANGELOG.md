@@ -9,6 +9,64 @@ Format : le plus récent en tête.
 
 ## 2026-08-30
 
+### La note vocale à la manière d'une messagerie — la planche, pas le code
+
+**Sa demande, deux captures à l'appui :** *« il faut modifier la note vocale
+pour qu'elle soit plus simple à utiliser, à la manière de celle de WhatsApp :
+on appuie dessus et, comme sur la deuxième photo, il faut la même chose —
+possibilité de supprimer, ou appuyer sur la flèche pour envoyer de suite la
+transcription et arriver sur la page du devis comme c'est déjà le cas. […] Et
+réduis un peu la largeur du bouton "Je rédige mon devis". Code rien, fais une
+maquette, pas de photo. »*
+
+**Ce qu'il y a derrière, et qui n'est pas qu'un dessin.** L'anneau
+d'aujourd'hui ne connaît que deux gestes : appuyer pour dicter, rappuyer pour
+arrêter — et **arrêter, c'est envoyer**. Celui qui s'est trompé, ou qui a laissé
+courir le micro dans la voiture, envoie quand même : la transcription part avec,
+et c'est sur le devis qu'il découvre le dégât. La poubelle est le garde-fou qui
+manquait ; l'envoi cesse d'être un effet de bord de l'arrêt.
+
+`appli/note-vocale-simple.html`, avec **deux propositions aux mêmes gestes** —
+la barre à deux rangées de sa capture, et la capsule sans pause — plus un onglet
+pour les **quatre largeurs** du bouton, qui s'appliquent réellement à l'écran de
+la fiche. **Rien n'est codé dans `src/` :** la maquette d'abord
+(`CLAUDE.md` §3 bis).
+
+**Deux de ses corrections, le même jour, et la première a retiré une
+proposition.** *« Lorsque je clique sur le bouton note vocale, il doit ensuite
+DISPARAÎTRE pour laisser place à la modification »* : une troisième proposition
+gardait l'anneau au centre entre la poubelle et l'avion — elle contredisait sa
+règle, elle est partie plutôt que de lui coûter un aller-retour pour l'écarter
+lui-même. Et *« le bouton change par "je rédige à la main", mais ça doit être un
+bouton secondaire, car l'idée c'est qu'il utilise en priorité la note vocale »* :
+le bouton passe au vocabulaire secondaire d'Atlas (fond transparent, liseré d'or,
+même hauteur et même serif — celui de `ChoixCanal.tsx`), et **le seul aplat plein
+de l'écran devient le rond d'envoi de la dictée**. Tant que le bouton était
+plein, l'œil y allait d'abord et l'anneau devenait un accessoire : l'inverse de
+ce que fait ce produit.
+
+**Deux défauts trouvés par le contrôle et par la capture, pas à l'œil :**
+`.capsule{display:flex}` l'emportait sur le `[hidden]` du navigateur — la
+troisième proposition et l'attente de transcription s'affichaient avant qu'on
+ait touché quoi que ce soit ; et en **mode sombre**, le bouton principal et le
+rond d'envoi, posés en vert pin sur un fond noir, se noyaient dedans. Ce second
+défaut est celui de sa capture du 22 août (« le mode nuit est illisible ») :
+la planche porte désormais un `--plein` / `--sur-plein` qui s'inverse comme le
+font les jetons de `src/lib/chartes.ts`.
+
+`scripts/verifier-maquette-note-vocale-simple.mjs` la parcourt : **l'anneau
+disparaît** à l'appui, les deux gestes existent dans les deux propositions,
+**jeter ne mène nulle part** et remet le compteur à zéro, la pause arrête vraiment le chrono (mesuré sur deux secondes),
+l'avion mène au devis **avec le nom saisi**, aucun prix n'est inventé, et les
+quatre largeurs donnent quatre largeurs différentes. Il mesure aussi le
+**contraste** des aplats plutôt que leur simple présence : sa première version
+accusait le micro du coin et les pastilles Mr/Mme — des surfaces à 1,03 de
+contraste du fond de page, que personne ne lit comme un appel à l'action. Un
+contrôle qui désigne le mauvais coupable coûte plus cher que pas de contrôle.
+Éprouvé contre sept états dégradés — poubelle inerte, poubelle qui mène au
+devis, pause neutralisée, bouton à pleine largeur, bouton repeint en aplat,
+anneau resté visible, report du nom coupé : chacun le fait rougir.
+
 ### Le commercial écrit sur le planning : confirmé, plus seulement toléré
 
 Le lot « salarié en lecture seule » n'avait pas touché aux droits du commercial,
