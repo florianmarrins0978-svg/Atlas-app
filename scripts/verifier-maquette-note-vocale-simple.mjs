@@ -14,10 +14,13 @@
   ───────────────────────────────────────────────────────────────────────────
   CE QUE CE CONTRÔLE TIENT, ET POURQUOI CHAQUE POINT EST LÀ.
 
-  1. **Au repos, l'anneau et rien d'autre.** Trois boutons visibles avant qu'on
-     ait parlé, ce serait trois questions posées à quelqu'un qui n'a rien dit.
+  1. **Au repos, l'anneau et rien d'autre** — et à l'appui, **l'anneau
+     DISPARAÎT**. Sa règle du 30 août : *« lorsque je clique sur le bouton note
+     vocale, il doit ensuite disparaître pour laisser place à la modification »*.
+     C'est ce qui a fait retirer une troisième proposition, où l'anneau restait
+     au centre. Le contrôle le tient pour que personne ne la remette.
 
-  2. **Les DEUX gestes qu'il a nommés existent dans les trois propositions** :
+  2. **Les DEUX gestes qu'il a nommés existent dans les deux propositions** :
      jeter, et envoyer. C'est le cœur de sa demande, et une proposition qui
      n'en porterait qu'un ne serait pas une proposition.
 
@@ -35,10 +38,17 @@
   6. **Aucun prix n'est inventé.** Il n'a annoncé aucun montant en dictant
      (`CLAUDE.md` §4).
 
-  7. **Le bouton principal est plus étroit qu'avant, mais reste un bouton.**
-     « Réduis UN PEU » : entre 60 % et 95 % de la largeur des cases du
-     formulaire, et jamais moins de 44 px de haut. Et les quatre largeurs de
-     l'onglet « Largeur » s'appliquent RÉELLEMENT à l'écran de la fiche —
+  7. **Le bouton du bas est SECONDAIRE, et il le dit « Je rédige à la main ».**
+     Sa demande du 30 août : *« ça doit être un bouton secondaire, car l'idée
+     c'est qu'il utilise en priorité la note vocale »*. Le contrôle mesure la
+     couleur : le bouton n'a **aucun aplat** (fond transparent), et pendant
+     l'enregistrement **le seul plein de l'écran est le rond d'envoi**. Sans
+     cette seconde moitié, on pourrait pâlir le bouton et laisser deux aplats
+     en concurrence — ce serait la demande manquée.
+
+     Il reste plus étroit qu'avant (« réduis UN PEU » : entre 60 % et 95 % de la
+     largeur des cases), jamais moins de 44 px de haut, et les quatre largeurs
+     de l'onglet « Largeur » s'appliquent RÉELLEMENT à l'écran de la fiche —
      sinon il choisirait un chiffre qui ne change rien.
 
   8. **Rien ne se mesure sur une boîte de zéro pixel** (`CLAUDE.md` §5 : le
@@ -49,8 +59,9 @@
 
   **Il sait échouer.** Éprouvé en rendant la poubelle inerte (elle laissait
   alors le chrono courir), en la faisant mener au devis, en neutralisant la
-  pause, en posant le bouton principal à 100 %, et en coupant le report du nom
-  vers le devis : chacun rougit, en nommant le point exact.
+  pause, en posant le bouton à 100 %, en le repeignant en aplat plein, en
+  laissant l'anneau visible pendant l'enregistrement, et en coupant le report
+  du nom vers le devis : chacun rougit, en nommant le point exact.
 
   Usage : node scripts/verifier-maquette-note-vocale-simple.mjs [chemin.html]
 */
@@ -120,8 +131,12 @@ dire(
   "huit barreaux par aile, comme dans `globals.css`"
 );
 
-// ── 2. Les trois propositions portent les MÊMES gestes ─────────────────────
-for (const variante of ["1", "2", "3"]) {
+// ── 2. Les deux propositions portent les MÊMES gestes ──────────────────────
+dire(
+  (await page.locator(".onglets button[data-variante]").count()) === 2,
+  "deux propositions, pas trois — celle où l'anneau restait au centre contredit sa règle"
+);
+for (const variante of ["1", "2"]) {
   console.log(`\n  ── Proposition ${variante} ──`);
   await ouvrirLa(variante);
 
@@ -166,8 +181,8 @@ for (const variante of ["1", "2", "3"]) {
 
   // ── La pause : présente en 1 et 2, absente en 3 (il ne l'a pas demandée) ──
   const pause = page.locator(`${vue} [data-pause]`);
-  if (variante === "3") {
-    dire((await pause.count()) === 0, "3 · pas de pause — un bouton de moins sous le pouce");
+  if (variante === "2") {
+    dire((await pause.count()) === 0, "2 · pas de pause — un bouton de moins sous le pouce");
   } else {
     dire(await pause.isVisible(), `${variante} · la pause est là, comme sur sa capture`);
     await pause.click();
@@ -237,13 +252,71 @@ dire(
 );
 
 // ── 4. La largeur du bouton « Je rédige mon devis » ────────────────────────
-console.log("\n  ── La largeur du bouton ──");
+console.log("\n  ── Le bouton du bas : secondaire ──");
 await ouvrirLa("1");
 const bouton = page.locator("#ecrire");
 dire(
-  (await bouton.innerText()).trim() === "Je rédige mon devis",
-  "le libellé est le sien, à la lettre"
+  (await bouton.innerText()).trim() === "Je rédige à la main",
+  `le libellé est le sien, à la lettre (lu : « ${(await bouton.innerText()).trim()} »)`
 );
+
+/** Une couleur est-elle un aplat, ou du vide ? `transparent` rend alpha 0. */
+async function fond(cible) {
+  return cible.evaluate((el) => getComputedStyle(el).backgroundColor);
+}
+const estVide = (c) => /rgba\(.*,\s*0\)$/.test(c) || c === "transparent";
+
+const fondBouton = await fond(bouton);
+dire(estVide(fondBouton), `le bouton n'a AUCUN aplat (mesuré : ${fondBouton})`);
+dire(
+  await bouton.evaluate((el) => getComputedStyle(el).boxShadow !== "none"),
+  "il porte un liseré — secondaire, pas effacé"
+);
+
+// **La seconde moitié, celle qui compte.** Un bouton pâle ne suffit pas : ce
+// qui doit attirer l'œil, c'est la dictée. On vérifie donc qu'à l'écran, PENDANT
+// l'enregistrement, il n'y a qu'un seul aplat plein — le rond d'envoi.
+await page.click("#dicter");
+await page.waitForTimeout(150);
+//
+// **« Plein » se mesure en CONTRASTE, pas en « a-t-il un fond ».** Première
+// version : tout bouton dont le fond n'était pas transparent. Elle accusait le
+// micro du coin, les deux pastilles Mr/Mme et la capsule « Par SMS » — des
+// SURFACES, à un cheveu du fond de page (1,03 de contraste), que personne ne
+// lit comme un appel à l'action. Le contrôle désignait donc le mauvais
+// coupable, ce qui coûte plus cher que pas de contrôle du tout.
+const pleins = await page.evaluate(() => {
+  const lum = (c) => {
+    const [r, g, b] = c.match(/[\d.]+/g).map(Number);
+    const v = [r, g, b].map((x) => {
+      const s = x / 255;
+      return s <= 0.03928 ? s / 12.92 : Math.pow((s + 0.055) / 1.055, 2.4);
+    });
+    return 0.2126 * v[0] + 0.7152 * v[1] + 0.0722 * v[2];
+  };
+  const contraste = (a, b) => {
+    const [x, y] = [lum(a), lum(b)].sort((p, q) => q - p);
+    return (x + 0.05) / (y + 0.05);
+  };
+  const page = getComputedStyle(document.body).backgroundColor;
+  return Array.from(document.querySelectorAll("#fiche button"))
+    .filter((b) => b.offsetParent !== null)
+    .filter((b) => {
+      const c = getComputedStyle(b).backgroundColor;
+      if (/rgba\(.*,\s*0\)$/.test(c) || c === "transparent") return false;
+      // 3:1 — le seuil qui sépare un aplat d'action d'une simple surface.
+      return contraste(c, page) >= 3;
+    })
+    .map((b) => b.className || b.getAttribute("aria-label") || "?");
+});
+dire(
+  pleins.length === 1 && pleins[0].includes("envoyer"),
+  `le seul aplat plein de l'écran est le rond d'envoi (trouvé : ${pleins.join(" · ") || "aucun"})`
+);
+await page.locator("#v1 [data-jeter]").click();
+await page.waitForTimeout(120);
+
+console.log("\n  ── La largeur du bouton ──");
 const caseAdresse = page.locator('input[placeholder="12 rue des Lilas, Nantes"]');
 const bBouton = await bouton.boundingBox();
 const bCase = await caseAdresse.boundingBox();
@@ -283,6 +356,15 @@ dire(
   new Set(largeurs).size === largeurs.length,
   "les quatre donnent quatre largeurs différentes sur l'écran de la fiche"
 );
+// Les quatre propositions montrent le bouton TEL QU'IL SERA : un faux-bouton
+// resté plein ferait choisir une largeur sur un dessin qui n'existe plus.
+await page.click(".onglets button[data-va='largeur']");
+const fauxPleins = await page.evaluate(() => {
+  const vide = (c) => /rgba\(.*,\s*0\)$/.test(c) || c === "transparent";
+  return Array.from(document.querySelectorAll(".essai-largeur .faux-bouton"))
+    .filter((b) => !vide(getComputedStyle(b).backgroundColor)).length;
+});
+dire(fauxPleins === 0, `les quatre exemples sont secondaires eux aussi (${fauxPleins} en aplat)`);
 dire(
   largeurs[0] > largeurs[1] && largeurs[1] > largeurs[2] && largeurs[2] > largeurs[3],
   "et elles vont bien de la plus large à la plus étroite"
@@ -307,4 +389,4 @@ if (plaintes.length) {
   plaintes.forEach((p) => console.error(`   · ${p}`));
   process.exit(1);
 }
-console.log("✓ La planche tient : les trois propositions ont les mêmes gestes, jeter ne mène nulle part, l'avion mène au devis, et le bouton a maigri.");
+console.log("✓ La planche tient : l'anneau disparaît, les deux propositions ont les mêmes gestes, jeter ne mène nulle part, l'avion mène au devis, et le seul plein de l'écran est le rond d'envoi.");

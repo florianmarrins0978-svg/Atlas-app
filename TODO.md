@@ -17,8 +17,13 @@ langage, et rien n'y entre sans son accord.
 
 | | |
 |---|---|
-| la proposition | **1** la barre à deux rangées · **2** l'anneau au centre · **3** la capsule sans pause |
+| la proposition | **1** la barre à deux rangées · **2** la capsule sans pause |
 | la largeur du bouton | **1** aujourd'hui · **2** 88 % · **3** 78 % · **4** 66 % |
+
+**Deux choses sont déjà tranchées par lui, et ne se rouvrent pas :** l'anneau
+**disparaît** dès qu'on appuie (une troisième proposition où il restait au
+centre a été retirée pour cela), et le bouton du bas est **secondaire**, libellé
+« Je rédige à la main » — le seul aplat plein de l'écran est le rond d'envoi.
 
 **Le point délicat du codage, à ne pas découvrir en route :**
 `AnneauNoteVocale.basculerDictee()` envoie au second appui — l'arrêt et l'envoi

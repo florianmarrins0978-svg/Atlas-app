@@ -250,13 +250,23 @@ sa réponse (`CLAUDE.md` §3 bis).
   chiffre à donner**, plus un second chiffre pour la largeur du bouton « Je
   rédige mon devis ». **Non codée.**
 
+  **Deux points sont DÉJÀ tranchés par lui, le 30 août :** l'anneau
+  **disparaît** dès qu'on appuie (*« il doit ensuite disparaître pour laisser
+  place à la modification »* — une proposition qui le gardait au centre a été
+  retirée), et le bouton du bas devient **secondaire**, libellé « Je rédige à la
+  main » : *« l'idée c'est qu'il utilise en priorité la note vocale »*. Le seul
+  aplat plein de l'écran est désormais le rond d'envoi de la dictée.
+
   **Ce que le codage devra reprendre, quand il aura répondu.** Aujourd'hui
   `AnneauNoteVocale.basculerDictee()` envoie AU SECOND APPUI : `arreter()` puis
   `envoyerNoteVocale()` dans la foulée. Il faudra couper les deux — l'arrêt
   garde le `Blob` capté, et seul l'avion appelle `envoyerNoteVocale`. La
   poubelle jette le `Blob` sans jamais rien envoyer, donc **sans toucher au
   chantier** : attention, `assurerChantier()` peut l'avoir déjà créé par une
-  photo, et jeter une note ne doit pas le supprimer.
+  photo, et jeter une note ne doit pas le supprimer. Côté bouton, `PrimaryButton`
+  n'a **aucune variante secondaire** : il faudra en ajouter une (fond
+  transparent, liseré d'or, même capsule) plutôt que d'écrire le style dans
+  l'écran — deux dessins du même bouton divergeraient au premier ajustement.
 
 - **Planche 96** — `appli/ecran-equipe.html`. Il a répondu **C** pour le titre
   et la synthèse. Reste à savoir si la phrase sur les congés reste sur l'écran

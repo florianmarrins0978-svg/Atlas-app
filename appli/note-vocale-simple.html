@@ -32,19 +32,29 @@
   choix. C'est exactement ce qu'il demande, et c'est un garde-fou, pas un décor.
 
   ───────────────────────────────────────────────────────────────────────────
-  TROIS FAÇONS DE LE POSER — il en choisit une, rien n'est codé.
+  DEUX FAÇONS DE LE POSER — il en choisit une, rien n'est codé.
 
-  Les trois ont les mêmes gestes et le même aboutissement. Ce qui les sépare,
-  c'est ce que devient l'anneau pendant qu'on parle :
+  **L'ANNEAU DISPARAÎT DANS LES DEUX, et c'est sa règle**, posée le 30 août :
+  *« lorsque je clique sur le bouton note vocale, il doit ensuite disparaître
+  pour laisser place à la modification de la note vocale »*. Une troisième
+  proposition existait — l'anneau restait au centre entre la poubelle et
+  l'avion — et cette phrase la condamne : elle a été retirée, plutôt que
+  laissée dans la planche où elle lui aurait coûté un aller-retour.
 
-    1 · LA BARRE      — l'anneau s'efface, une barre prend sa place. Deux
-                        rangées, comme sa capture : chrono et onde en haut,
+    1 · LA BARRE      — une barre prend la place de l'anneau. Deux rangées,
+                        comme sa capture : chrono et onde en haut,
                         poubelle · pause · envoi en dessous.
-    2 · L'ANNEAU      — l'anneau RESTE au centre et devient le carré d'arrêt ;
-                        la poubelle vient à sa gauche, l'envoi à sa droite.
-    3 · AU PLUS COURT — une seule capsule : poubelle, chrono, onde, envoi.
+    2 · AU PLUS COURT — une seule capsule : poubelle, chrono, onde, envoi.
                         Pas de pause — il ne l'a pas demandée, et c'est un
                         bouton de moins sous le pouce.
+
+  ───────────────────────────────────────────────────────────────────────────
+  ET LE BOUTON DU BAS PASSE EN SECONDAIRE.
+
+  *« Le bouton change par "je rédige à la main", mais ça doit être un bouton
+  secondaire, car l'idée c'est qu'il utilise en priorité la note vocale. »*
+  Le seul aplat plein de l'écran devient le rond d'envoi de la dictée : c'est
+  là que l'œil doit aller.
 
   ───────────────────────────────────────────────────────────────────────────
   CE QUI EST REPRIS DE L'APPLICATION, ET NON REDESSINÉ.
@@ -206,7 +216,6 @@ form{padding:22px 26px 0;display:flex;flex-direction:column;gap:17px}
 .atlas-traits i:nth-child(3){height:12px;animation-delay:-.8s}
 @keyframes atlas-battre{0%,100%{transform:scaleY(.42)}50%{transform:scaleY(1)}}
 [data-lit="oui"] .atlas-traits i{animation-play-state:running}
-.carre-stop{width:17px;height:17px;border-radius:3px;background:var(--or)}
 .atlas-indice{margin:8px 0 0;font-size:11px;color:var(--muted);text-align:center;min-height:14px}
 
 /* ═══ CE QUI EST NEUF : L'ENREGISTREMENT ════════════════════════════════
@@ -257,25 +266,15 @@ form{padding:22px 26px 0;display:flex;flex-direction:column;gap:17px}
 .barre .haut{display:flex;align-items:center;gap:12px;min-height:30px}
 .barre .bas{display:flex;align-items:center;justify-content:space-between;margin-top:10px}
 
-/* 2 · L'ANNEAU RESTE — poubelle, anneau, envoi sur une ligne. */
-.trio{display:flex;align-items:center;justify-content:center;gap:26px;width:100%}
-.trio .atlas-lecteur{width:auto;margin-top:0}
-.sous-trio{display:flex;align-items:center;gap:12px;width:100%;margin-top:12px;padding:0 4px}
-/* **Les ailes de l'anneau sont retirées ICI, et c'est mesuré, pas choisi au
-   goût.** Elles font 104 px de large et partent à 40 px du centre ; les deux
-   boutons commencent à 64 px. Les barreaux passaient donc SOUS la poubelle et
-   sous l'avion — ils ne prennent pas le doigt, mais on lisait une bouillie.
-   Le mouvement n'est pas perdu pour autant : l'onde qui se déroule est juste
-   en dessous, et le carré d'arrêt respire. */
-#v2 .atlas-aile{display:none}
-/* La poubelle prend la taille de l'avion, ICI seulement : à 44 contre 52, le
-   trio n'était pas centré sur l'anneau — décalage mesuré sur la capture, pas
-   supposé. Ailleurs les deux ne se font pas face, la question ne se pose pas. */
-#v2 .jeter{width:52px;height:52px}
-#v2 [data-lit="oui"] .carre-stop{animation:respirer 1.7s ease-in-out infinite}
-@keyframes respirer{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(.86);opacity:.72}}
+/* **UNE PROPOSITION A ÉTÉ RETIRÉE, ET C'EST LUI QUI L'A TRANCHÉE.**
+   Il y en avait une troisième : l'anneau RESTAIT au centre et devenait le
+   carré d'arrêt, la poubelle à sa gauche, l'avion à sa droite. Sa phrase du
+   30 août la condamne — *« lorsque je clique sur le bouton note vocale, il
+   doit ensuite DISPARAÎTRE pour laisser place à la modification »*. Une
+   planche qui laisserait le choix entre deux dessins dont un contredit sa
+   consigne lui ferait perdre le temps de le découvrir. */
 
-/* 3 · AU PLUS COURT — une capsule, quatre choses dedans. */
+/* 2 · AU PLUS COURT — une capsule, quatre choses dedans. */
 .capsule{display:flex;align-items:center;gap:12px;width:100%;background:var(--cream);
          border-radius:99px;padding:8px 8px 8px 10px;box-shadow:inset 0 0 0 1px var(--line-soft)}
 .capsule .envoyer{width:44px;height:44px}
@@ -290,9 +289,24 @@ form{padding:22px 26px 0;display:flex;flex-direction:column;gap:17px}
 .attente .points i:nth-child(3){animation-delay:.36s}
 @keyframes pointiller{0%,100%{opacity:.2}50%{opacity:1}}
 
-/* ─── Le bouton principal ───────────────────────────────────────────────── */
-.principal{display:block;width:var(--large-principal);margin:0 auto;border:0;border-radius:99px;
-           background:var(--plein);color:var(--sur-plein);padding:17px 20px;font-family:Georgia,serif;
+/* ─── LE BOUTON EST SECONDAIRE, ET C'EST TOUT LE PROPOS ─────────────────
+   Sa demande du 30 août : *« le bouton change par "je rédige à la main", mais
+   ça doit être un bouton secondaire, car l'idée c'est qu'il utilise en
+   priorité la note vocale »*.
+
+   **Un écran n'a qu'un seul aplat plein, et il désigne ce qu'on veut qu'on
+   fasse.** Tant que « Je rédige mon devis » était plein, l'œil y allait
+   d'abord et l'anneau devenait un accessoire — l'inverse de ce que fait ce
+   produit. Le seul plein de l'écran est désormais **le rond d'envoi de la
+   dictée**.
+
+   Le dessin n'est pas inventé : c'est le vocabulaire secondaire d'Atlas, celui
+   des capsules de canal (`ChoixCanal.tsx` — fond transparent, liseré, encre).
+   Hauteur, serif et rayon ne bougent pas : ce n'est pas un bouton plus petit,
+   c'est un bouton moins fort. */
+.secondaire{display:block;width:var(--large-principal);margin:0 auto;border:0;border-radius:99px;
+           background:transparent;color:var(--charcoal);box-shadow:inset 0 0 0 1.5px var(--or);
+           padding:17px 20px;font-family:Georgia,serif;
            font-size:17px;cursor:pointer;transition:width .22s ease}
 
 /* ─── L'écran du devis ──────────────────────────────────────────────────── */
@@ -311,8 +325,9 @@ form{padding:22px 26px 0;display:flex;flex-direction:column;gap:17px}
                box-shadow:inset 0 0 0 1px var(--line-soft);cursor:pointer;border:0;width:calc(100% - 52px);
                font-family:inherit;display:block;text-align:center}
 .essai-largeur[aria-pressed="true"]{box-shadow:inset 0 0 0 1.5px var(--or)}
-.essai-largeur .faux-bouton{display:block;margin:0 auto;border-radius:99px;background:var(--plein);
-                            color:var(--sur-plein);padding:17px 20px;font-family:Georgia,serif;font-size:17px}
+.essai-largeur .faux-bouton{display:block;margin:0 auto;border-radius:99px;background:transparent;
+                            color:var(--charcoal);box-shadow:inset 0 0 0 1.5px var(--or);
+                            padding:17px 20px;font-family:Georgia,serif;font-size:17px}
 .essai-largeur .rang{display:block;margin-top:11px;padding-bottom:12px;font-size:9.5px;font-weight:500;
                      letter-spacing:.26em;text-transform:uppercase;color:var(--muted)}
 .essai-largeur[aria-pressed="true"] .rang{color:var(--or)}
@@ -323,8 +338,7 @@ form{padding:22px 26px 0;display:flex;flex-direction:column;gap:17px}
 
   <nav class="onglets" aria-label="Les écrans de la maquette">
     <button type="button" data-variante="1" aria-pressed="true">1 · La barre</button>
-    <button type="button" data-variante="2" aria-pressed="false">2 · L’anneau</button>
-    <button type="button" data-variante="3" aria-pressed="false">3 · Au plus court</button>
+    <button type="button" data-variante="2" aria-pressed="false">2 · Au plus court</button>
     <button type="button" data-va="largeur" aria-pressed="false">Largeur</button>
   </nav>
 
@@ -415,29 +429,8 @@ form{padding:22px 26px 0;display:flex;flex-direction:column;gap:17px}
           </div>
         </div>
 
-        <!-- 2 · L'ANNEAU RESTE AU CENTRE -->
-        <div style="width:100%" id="v2" hidden>
-          <div class="trio">
-            <button class="geste jeter" type="button" data-jeter aria-label="Supprimer la note"></button>
-            <div class="atlas-lecteur" data-lit="oui" data-anneau-vif>
-              <span class="atlas-aile atlas-aile-g" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span>
-              <span class="atlas-aile atlas-aile-d" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span>
-              <button class="atlas-anneaux" type="button" data-pause aria-label="Mettre en pause">
-                <span data-cercle style="width:74px;height:74px;border:1.5px solid var(--pine)"></span>
-                <span data-cercle style="width:56px;height:56px;border:1px solid var(--or)"></span>
-                <span class="carre-stop" aria-hidden="true"></span>
-              </button>
-            </div>
-            <button class="geste envoyer" type="button" data-envoyer aria-label="Envoyer la note"></button>
-          </div>
-          <div class="sous-trio">
-            <span class="chrono"><span class="pastille"></span><span data-chrono>0:00</span></span>
-            <span class="onde" data-onde aria-hidden="true"></span>
-          </div>
-        </div>
-
-        <!-- 3 · AU PLUS COURT -->
-        <div class="capsule" id="v3" hidden>
+        <!-- 2 · AU PLUS COURT -->
+        <div class="capsule" id="v2" hidden>
           <button class="geste jeter" type="button" data-jeter aria-label="Supprimer la note"></button>
           <span class="chrono"><span class="pastille"></span><span data-chrono>0:00</span></span>
           <span class="onde" data-onde aria-hidden="true"></span>
@@ -453,7 +446,7 @@ form{padding:22px 26px 0;display:flex;flex-direction:column;gap:17px}
       </div>
 
       <div style="padding-top:4px">
-        <button class="principal" type="button" id="ecrire">Je rédige mon devis</button>
+        <button class="secondaire" type="button" id="ecrire">Je rédige à la main</button>
       </div>
       <p style="margin:2px 0 30px;text-align:center;font-size:12.5px;color:var(--muted)">&nbsp;</p>
     </form>
@@ -507,19 +500,19 @@ form{padding:22px 26px 0;display:flex;flex-direction:column;gap:17px}
 
     <div style="margin-top:18px">
       <button class="essai-largeur" type="button" data-largeur="100%" aria-pressed="false">
-        <span class="faux-bouton" style="width:100%">Je rédige mon devis</span>
+        <span class="faux-bouton" style="width:100%">Je rédige à la main</span>
         <span class="rang">1 · aujourd’hui</span>
       </button>
       <button class="essai-largeur" type="button" data-largeur="88%" aria-pressed="false">
-        <span class="faux-bouton" style="width:88%">Je rédige mon devis</span>
+        <span class="faux-bouton" style="width:88%">Je rédige à la main</span>
         <span class="rang">2</span>
       </button>
       <button class="essai-largeur" type="button" data-largeur="78%" aria-pressed="true">
-        <span class="faux-bouton" style="width:78%">Je rédige mon devis</span>
+        <span class="faux-bouton" style="width:78%">Je rédige à la main</span>
         <span class="rang">3</span>
       </button>
       <button class="essai-largeur" type="button" data-largeur="66%" aria-pressed="false">
-        <span class="faux-bouton" style="width:66%">Je rédige mon devis</span>
+        <span class="faux-bouton" style="width:66%">Je rédige à la main</span>
         <span class="rang">4</span>
       </button>
     </div>
@@ -551,7 +544,7 @@ const ICONES = {
   envoyer: '<svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M20.5 3.5 10.6 13.4"/><path d="M20.5 3.5 14.2 21a.6.6 0 0 1-1.1.05l-3-6.6-6.6-3a.6.6 0 0 1 .05-1.1z"/></svg>',
 };
 $$("[data-jeter]").forEach((b) => (b.innerHTML = ICONES.jeter));
-$$("[data-pause]").forEach((b) => { if (!b.querySelector("svg") && !b.querySelector(".carre-stop")) b.innerHTML = ICONES.pause; });
+$$("[data-pause]").forEach((b) => (b.innerHTML = ICONES.pause));
 $$("[data-envoyer]").forEach((b) => (b.innerHTML = ICONES.envoyer));
 
 /* ─── Les onglets ─────────────────────────────────────────────────────── */
@@ -633,11 +626,11 @@ function reposer() {
   $("#anneau").hidden = false;
   $("#anneau").dataset.lit = "non";
   $("#dicter").setAttribute("aria-pressed", "false");
-  ["#v1", "#v2", "#v3"].forEach((s) => { $(s).hidden = true; $(s).classList.remove("apparait"); });
+  ["#v1", "#v2"].forEach((s) => { $(s).hidden = true; $(s).classList.remove("apparait"); });
   $("#attente").hidden = true;
   $$("[data-onde]").forEach((o) => (o.innerHTML = ""));
   $$("[data-chrono]").forEach((c) => (c.textContent = "0:00"));
-  $$("#v1 [data-pause], #v3 [data-pause]").forEach((b) => (b.innerHTML = ICONES.pause));
+  $$("[data-pause]").forEach((b) => (b.innerHTML = ICONES.pause));
   $("#indice").textContent = "Appuyez et décrivez le chantier";
 }
 
@@ -712,10 +705,7 @@ function basculerPause() {
     }, 1000);
     dessiner();
   }
-  // Dans la proposition 2, le carré d'arrêt tient déjà ce rôle : il ne se
-  // remplace pas par une icône, il garde son visage.
-  $$("#v1 [data-pause], #v3 [data-pause]").forEach((b) => (b.innerHTML = enPause ? ICONES.reprendre : ICONES.pause));
-  $$("[data-anneau-vif]").forEach((a) => (a.dataset.lit = enPause ? "non" : "oui"));
+  $$("[data-pause]").forEach((b) => (b.innerHTML = enPause ? ICONES.reprendre : ICONES.pause));
 }
 
 /**
@@ -728,7 +718,7 @@ function basculerPause() {
  */
 function envoyer() {
   clearInterval(horloge); clearInterval(dessin); horloge = dessin = null;
-  ["#v1", "#v2", "#v3"].forEach((s) => ($(s).hidden = true));
+  ["#v1", "#v2"].forEach((s) => ($(s).hidden = true));
   $("#attente").hidden = false;
   $("#indice").textContent = "";
   zone.dataset.etat = "envoi";
