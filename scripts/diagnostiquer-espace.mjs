@@ -170,7 +170,13 @@ const etatPort = existsSync(FICHIER_PORT) ? readFileSync(FICHIER_PORT, "utf8").t
 // publique, celle de son téléphone, et rapporte ce qui revient
 // (`scripts/_verdict-port.mjs`).
 const dehors = await regarderDuDehors();
-const port = verdictPort({ etatPort, dehors });
+// **Et la mesure locale entre dans le verdict — 31 août 2026.** Sans elle, un
+// refus du relais était toujours mis sur le dos du port, y compris quand la
+// ligne « Serveur » juste au-dessus disait que personne n'écoutait. La fiche se
+// contredisait alors sur deux lignes voisines, et envoyait faire des clics qui
+// ne pouvaient rien : un relais qui ne trouve personne derrière un port répond
+// 502, qu'il soit public ou non.
+const port = verdictPort({ etatPort, dehors, serveurLocal: vivant });
 console.log(`  Port 3000        : ${port.ligne}`);
 // **Les deux suspects d'une construction qui tombe sur une machine modeste.**
 // Publiés à chaque fois, et pas seulement en cas d'échec : quand la fiche est

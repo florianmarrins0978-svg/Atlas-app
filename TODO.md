@@ -9,6 +9,28 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
+## POURQUOI LE RELAIS PERD SON PORT 3000 — inexpliqué (31 août 2026)
+
+Sa nuit du 30 au 31 : espace debout, Atlas répondant sur 3000, version rapide
+bâtie sur le dernier commit — et l'adresse publique rendant un 404 du relais.
+
+**Ce qui est réparé :** le veilleur ne retient plus « ouvert » pour toute la
+session ; il remesure depuis l'adresse publique toutes les cinq minutes et
+redemande le port quand il ne s'atteint plus (`ARCHITECTURE.md` §215).
+
+**Ce qui reste ouvert :** on ne sait pas POURQUOI le relais perd ce port. Trois
+suspects plausibles, aucun mesuré — la bascule du serveur de développement vers
+la version bâtie (`pkill` puis `next start`), une reprise après mise en veille,
+un enregistrement de tunnel qui expire. Tant que la cause n'est pas connue, le
+correctif rattrape le symptôme toutes les cinq minutes ; il ne l'empêche pas.
+
+**Comment le trancher quand cela se reproduira :** le journal du veilleur
+(`/tmp/essai.log`) porte désormais l'heure de chaque perte constatée. La
+rapprocher de l'heure de la bascule, qui y figure déjà, répond à la question
+sans rien demander au patron.
+
+---
+
 ## ✅ LA NOTE VOCALE EST CODÉE — ses trois choix, dans l'application (30 août 2026)
 
 *« Très bien, code exactement ça ! Réfère-toi à cette page une fois que tu auras

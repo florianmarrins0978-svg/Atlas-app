@@ -9,6 +9,48 @@ Format : le plus récent en tête.
 
 ## 2026-08-30
 
+### La fiche n'accuse plus le port quand c'est le serveur qui manque
+
+**Sa capture de la nuit, 1 h 07 : « l'appli ne se lance plus ».** Safari lui
+proposait d'enregistrer un fichier au lieu d'ouvrir Atlas.
+
+Sa fiche se contredisait sur deux lignes voisines : « Serveur : NE RÉPOND PAS »
+juste au-dessus de « Port 3000 : … c'est le port ou le relais, pas le code ».
+Le geste proposé — rendre le port public — ne pouvait rien : un relais qui ne
+trouve personne derrière un port répond 502, public ou non.
+
+`verdictPort` reçoit maintenant l'état du serveur local, que le diagnostic
+mesurait déjà sans le lui donner. Non mesuré, le verdict reste celui d'avant :
+une ignorance n'est pas une mesure. Et le TÉLÉCHARGEMENT qu'il voit est nommé —
+c'est ce que fait un navigateur devant une réponse sans type.
+
+### Le veilleur REMESURE le port : « ouvert » n'est plus un acquis
+
+Une heure plus tard, sa fiche repartait et disait tout autre chose : espace
+debout, Atlas répondant sur 3000, version rapide bâtie sur le dernier commit —
+et l'adresse publique rendant un 404 du relais. Le premier diagnostic (« espace
+arrêté ») était vrai de l'instant mesuré, et incomplet.
+
+Le veilleur retenait `PORT_OUVERT=oui` dès que `gh` avait répondu « ouvert », et
+n'y revenait plus de la session. Ce mot ne dit pas qu'un port est joignable : il
+dit qu'une commande a réussi, à un instant. Le relais peut le perdre ensuite —
+et rien ne le remarquait.
+
+Il mesure désormais depuis l'adresse publique toutes les cinq minutes, et
+seulement quand le serveur local répond. Trois réponses, dont « pas mesurable »,
+qui ne conclut rien. `sans-gh` et `hors-codespace` ne sont jamais retentés : la
+tentative essaie d'installer `gh`, jusqu'à quatre-vingt-dix secondes.
+
+Éprouvé en le faisant tourner, pas en le relisant (`test-port-remesure.ts`) :
+un vrai veilleur, un vrai serveur, une sonde qui refuse. Vu rouge contre la
+version d'avant.
+
+Vérifié dans l'autre sens : le code de `main` se construit ici sans une erreur
+(`npm ci` puis `npm run build`).
+
+Détail et ce qui reste non réparé : `ARCHITECTURE.md` §215.
+
+
 ### La question du diamètre nomme sa mesure : « la souche » ou « le tronc »
 
 **Son arbitrage entre deux de ses propres consignes**, après le test téléphone :

@@ -18914,3 +18914,110 @@ proxy » avec eux, faute d'un serveur à bâtir. Quatre rouges pour une cause.
 cible qu'on compile. `[\s\S]` fait la même chose partout, et traverse en prime
 un libellé sur plusieurs lignes — ce qu'une ligne de devis devient dès qu'elle
 réunit deux prestations.
+
+---
+
+## 215. « L'appli ne se lance plus » : un port perdu que rien ne remesurait, et une fiche qui accusait à côté
+
+**Sa nuit du 30 au 31 août 2026, 1 h 07.** Une capture, six mots : *« l'appli ne
+se lance plus, corrige ça, je vais dormir. »* Sur l'image, Safari sur
+`about:blank` et une feuille qui propose d'**enregistrer un fichier** nommé
+comme son espace. Ni page, ni message d'erreur.
+
+### Ce que sa fiche disait, et pourquoi elle se contredisait
+
+| Ligne de la fiche | Ce qu'elle affirmait |
+|---|---|
+| `Serveur` | **NE RÉPOND PAS** sur le port 3000 |
+| `Port 3000` | INJOIGNABLE — réponse 502 … « c'est le port ou le relais, **pas le code** » |
+
+Les deux étaient vraies séparément et fausses ensemble. Le geste qui suivait —
+onglet PORTS → « Visibilité du port » → « Public » — ne pouvait **rien** : un
+relais qui ne trouve personne derrière un port répond 502, qu'il soit public ou
+non. On l'envoyait donc, à 1 h du matin, viser un panneau minuscule sur un écran
+de six pouces pour réparer quelque chose qui n'était pas cassé.
+
+C'est exactement la faute que `_verdict-port.mjs` existe pour ne plus commettre
+— *« une erreur qui accuse à tort coûte plus cher que pas d'erreur du tout »*
+(`AGENTS.md`) — et c'est la **troisième** fois qu'elle se paie sur ce fichier
+(22 août : un port déclaré privé sans mesure ; 23 août : un refus nu mis sur le
+dos d'Atlas).
+
+### Le correctif
+
+`verdictPort` reçoit désormais `serveurLocal` — le résultat de l'appel à
+`127.0.0.1:3000` que le diagnostic faisait déjà, deux lignes plus haut, sans
+jamais le lui transmettre. Quand le dehors est refusé **et** que le serveur
+local se tait, le verdict nomme la seule cause mesurée : *rien ne sert sur le
+port 3000*, et il renvoie vers la ligne « Serveur », qui porte le geste.
+
+**`null` — non mesuré — laisse le verdict d'avant.** Une ignorance n'est pas une
+mesure : conclure « aucun serveur n'écoute » sans avoir regardé enverrait
+attendre un veilleur devant un port réellement fermé. Le cas inverse — serveur
+**debout** et dehors muet — garde mot pour mot le geste de l'onglet PORTS : sans
+lui, on aurait seulement déplacé l'aveuglement.
+
+### Le téléchargement qu'il voit est nommé
+
+Sa capture ne montre ni « 502 » ni « erreur » : un navigateur devant une réponse
+**sans type** ne sait pas l'afficher, donc il l'enregistre. La fiche le dit
+maintenant en toutes lettres — sans cette phrase, rien ne relie un chiffre à ce
+qu'il a sous les yeux, et il faut un aller-retour pour l'apprendre.
+
+### La vraie cause : « ouvert » était retenu pour toujours
+
+**Le premier diagnostic de cette nuit-là était incomplet, et il faut l'écrire.**
+Sa fiche de 21 h 46 montrait un espace sans serveur et figée depuis 82 minutes :
+on en a conclu un espace arrêté, ce qui était vrai *de cet instant-là*. Une
+heure plus tard, la fiche repartait — et elle disait tout autre chose :
+
+    Code récupéré : 3c7cd77      Code SERVI : 3c7cd77
+    Serveur       : répond sur le port 3000
+    Port 3000     : INJOIGNABLE — réponse 404 de quelque chose AVANT Atlas
+
+**Son espace tournait, Atlas répondait, la version rapide était bâtie sur le
+dernier commit — et son téléphone n'atteignait rien.** Le coupable n'était donc
+ni le code, ni la construction, ni la mémoire : le relais de GitHub ne servait
+plus le port 3000.
+
+**Et rien ne pouvait le rattraper.** `veiller.sh` posait `PORT_OUVERT=oui` dès
+que `ouvrir-port.sh` répondait « ouvert », puis n'y revenait **plus de la
+session** — un choix pris le 26 août pour ne pas appeler `gh` toutes les quinze
+secondes, et qui était juste sur ce point. Mais « ouvert » ne dit pas que le
+port est joignable : il dit qu'une commande a réussi, **à un instant**. Le relais
+peut perdre le port ensuite — un serveur de développement remplacé par la
+version bâtie, une reprise après veille — et le verrou tenait quand même.
+
+C'est le défaut du 22 août d'un cran plus loin : **on retenait encore un RÉGLAGE
+là où il fallait une MESURE.**
+
+| | |
+|---|---|
+| `scripts/port-joignable.mjs` | la sonde, pour un veilleur qui ne lit pas de JSON : 0 joignable · 1 mesuré et refusé · **2 pas mesurable** |
+| `veiller.sh` | remesure du dehors toutes les cinq minutes, **et seulement quand le serveur local répond** |
+| `sans-gh`, `hors-codespace` | jamais retentés : sans `gh`, chaque tentative essaie de l'installer, jusqu'à quatre-vingt-dix secondes |
+| `ATLAS_VERROU_VEILLEUR`, `ATLAS_FICHIER_PORT` | deux portes ouvertes POUR L'ÉPREUVE : la suite fait tourner un vrai veilleur, et sans elles il écraserait le verrou et l'état de port du banc réel — sa fiche annoncerait un veilleur absent |
+
+**Le 2 n'est pas un détail** : une ignorance prise pour un refus rappellerait
+`gh` toutes les cinq minutes sur une machine qui n'a aucun port à ouvrir.
+
+**Et la mesure ne vaut que serveur debout.** Une adresse publique muette pendant
+que rien n'écoute n'apprend rien sur le port — c'est tout le §215 ci-dessus.
+
+### Ce qui a été vérifié plutôt que supposé
+
+- **le code n'y est pour rien** : `npm ci` puis `npm run build` sur le commit de
+  `main` (3c7cd77) passent ici, sans une erreur — et sa propre fiche a fini par
+  servir ce commit ;
+- **sa construction interrompue n'était pas cassée** : `signal: SIGTERM` avec
+  6,1 Gio libres et 21 Go de disque. Ni mémoire, ni disque : un arrêt ;
+- **le correctif du veilleur est joué, pas relu** : `test-port-remesure.ts`
+  lance un vrai veilleur devant un vrai serveur et une sonde qui refuse, et
+  vérifie qu'il redemande le port. Vu rouge contre la version d'avant.
+
+**Ce qui n'est PAS réparé, et il faut le dire :** un Codespace se met en veille
+tout seul après un temps d'inactivité. L'application ne peut donc pas rester
+debout pendant qu'il dort — ce banc n'est pas un hébergement. Et si le relais a
+perdu le port pour de bon, la remesure le constate mais ne le réenregistre pas :
+`gh` ne sait pas le faire. La fiche donne alors le geste — onglet PORTS, retirer
+puis remettre 3000 — au lieu d'une bascule de visibilité qui ne peut rien.

@@ -52,6 +52,47 @@ existent pour éviter. Raisons et pièges : `ARCHITECTURE.md` §210.
 
 ---
 
+## PIÈGE : UN TÉLÉCHARGEMENT AU LIEU DE LA PAGE = PERSONNE NE SERT (31 août 2026)
+
+**Sa capture de 1 h 07 :** Safari sur `about:blank`, une feuille qui propose
+d'**enregistrer un fichier** portant le nom de son espace. Pas de page, pas
+d'erreur — et rien qui ressemble à une panne d'application.
+
+**C'est la signature d'un refus NU du relais de GitHub** : une réponse sans
+type ne s'affiche pas, elle se télécharge. Le relais répond ainsi quand il ne
+trouve personne derrière le port 3000 — donc quand aucun serveur ne tourne, ou
+quand l'espace est arrêté.
+
+**Ce qu'il ne faut PAS faire devant cette image :** l'envoyer dans l'onglet
+PORTS. Le port n'y est pour rien tant que rien n'écoute derrière.
+
+**L'ordre qui tranche, et il tient en deux lectures :**
+
+| | |
+|---|---|
+| la fiche (#47) n'a **plus bougé depuis 20 min** | l'espace est **ARRÊTÉ** — il faut le rallumer, rien d'autre ne peut le faire |
+| elle est fraîche, `Serveur : NE RÉPOND PAS` | le veilleur relance ; la fiche dit désormais que le port n'est pas en cause |
+| elle est fraîche, `Serveur : répond` | **là seulement**, le port est le suspect — et c'était SON cas du 31 août |
+
+La fiche ne se contredit plus sur ce point (`ARCHITECTURE.md` §215) : jusqu'au
+31 août, elle accusait le port juste sous la ligne qui disait qu'aucun serveur
+n'écoutait.
+
+**Et le troisième cas est celui qui l'a réellement privé d'application cette
+nuit-là.** Son espace tournait, Atlas répondait, la version rapide était bâtie
+sur le dernier commit — mais le relais avait perdu le port, et `veiller.sh`
+retenait `PORT_OUVERT=oui` pour toute la session : plus rien ne redemandait. Il
+remesure maintenant depuis l'adresse publique toutes les cinq minutes. Si le
+port reste perdu malgré tout, le geste est dans la fiche : onglet PORTS,
+**retirer puis remettre 3000** — la bascule de visibilité ne peut rien sur un
+port que le relais ne connaît plus.
+
+**Et ce qui ne se répare pas :** un Codespace se met en veille seul après un
+temps d'inactivité. L'application ne peut pas rester debout pendant qu'il dort ;
+au réveil, il faut rallumer l'espace.
+
+---
+
 ## PIÈGE : `npm test` VIDE LA BASE — RESEMER APRÈS, JAMAIS AVANT, UNE VÉRIFICATION AU NAVIGATEUR (30 août 2026)
 
 Vu en essayant l'écran Identité après une batterie complète : le compte de
