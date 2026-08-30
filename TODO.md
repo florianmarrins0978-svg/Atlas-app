@@ -9,6 +9,29 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
+## ✅ SES TROIS CHOIX SONT FAITS — et une planche les réunit (30 août 2026)
+
+*« Pour la largeur le 4. Ensuite le 2, l'anneau. Et le B, le micro, mais avec
+des petites ondes de chaque côté, 1,5 cm max de chaque côté. »*
+
+`appli/note-vocale-choix.html`, éprouvée par
+`scripts/verifier-maquette-note-vocale-choix.mjs`.
+
+| | |
+|---|---|
+| largeur du bouton | **66 %** |
+| geste pendant la dictée | l'objet **reste au centre**, poubelle à gauche, avion à droite |
+| repos | le **micro plein**, deux ondes de **1,5 cm au plus** de chaque côté |
+| et, tranché plus tôt | « Je rédige à la main » **disparaît** dès l'appui, revient si l'on jette |
+
+**Une seule chose reste à lui demander**, et elle est écrite dans la planche :
+pendant la dictée, le disque plein reste et son micro devient un carré d'arrêt.
+Sa proposition 2 parlait de « l'anneau », mais elle le gardait parce que le
+repos ÉTAIT l'anneau — ce qui n'est plus le cas. **Ne pas coder avant sa
+confirmation sur ce point.**
+
+---
+
 ## ⏳ SA RÉPONSE ATTENDUE — le dessin de la note vocale au repos (30 août 2026)
 
 `appli/note-vocale-au-repos.html`, éprouvée par

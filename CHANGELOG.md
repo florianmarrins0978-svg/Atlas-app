@@ -9,6 +9,40 @@ Format : le plus récent en tête.
 
 ## 2026-08-30
 
+### Ses trois choix réunis : largeur 4, geste 2, micro à deux ondes de 1,5 cm
+
+**Ses réponses, le soir même :** *« pour la largeur le 4. Ensuite le 2,
+l'anneau. Et le B, le micro, mais avec des petites ondes de chaque côté, 1,5 cm
+max de chaque côté. Fais un visuel avec ces nouveaux choix. »*
+
+`appli/note-vocale-choix.html` — **une planche qui ne pose plus de question**.
+Le risque a donc changé de nature : il n'est plus qu'un dessin déplaise, mais
+qu'**un de ses choix se perde en route** à la réécriture suivante. Chacun est
+mesuré nommément par le contrôle — 66 % à un point près, 1,5 cm par côté
+converti comme le navigateur (96/2,54), la poubelle à gauche et l'avion à
+droite.
+
+**Sa mesure est écrite en CENTIMÈTRES dans le CSS** (`--aile:1.5cm`), pas
+traduite en pixels : c'est sa consigne, elle doit se relire dans le code — sans
+quoi, dans six mois, « 57 px » ne dira plus d'où il sort.
+
+**Un point qu'il devra trancher, et qui est écrit dans la planche plutôt que
+décidé en silence.** Sa proposition 2 gardait *l'anneau* au centre pendant
+l'enregistrement — mais elle le gardait parce que le repos ÉTAIT l'anneau. Son
+repos est désormais un disque plein. La planche garde donc **le disque**, dont
+le micro devient un carré d'arrêt : un seul objet qui ne change pas de forme,
+seulement de signe (sa règle : *« il ne doit pas changer de visage »*). L'autre
+lecture — le disque cède la place à l'anneau creux — se refait en deux minutes.
+
+**Deux défauts trouvés À LA CAPTURE, invisibles aux tests, et c'est la
+cinquième fois dans ce dépôt.** Le carré d'arrêt était posé dans un `<span>`
+resté en ligne : `width` et `height` sans effet, boîte de zéro pixel, disque
+entièrement vide — le contrôle comptait l'élément et le trouvait. Et les deux
+ondes de repos, 1,5 cm plus 9 px de part et d'autre, **recouvraient la poubelle
+et l'avion** à l'endroit exact où il faut viser : elles s'effacent désormais dès
+qu'on appuie, le mouvement passant à l'onde du bas. Le contrôle mesure
+maintenant les deux — la boîte du carré, et le chevauchement des rectangles.
+
 ### Cinq dessins pour la note vocale AU REPOS, et le bouton qui s'efface
 
 **Sa demande, deux choses en une :** *« je veux que lorsque l'utilisateur clique
