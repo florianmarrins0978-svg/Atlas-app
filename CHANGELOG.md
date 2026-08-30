@@ -87,6 +87,29 @@ tableau distingue désormais trois états, jamais deux.
 
 Batterie : 265/265 base, 116/116 navigateur, 0 erreur de types.
 
+### Plus aucune barre de défilement grise, y compris sur la page elle-même
+
+**Sa plainte du jour, sur son PC :** *« sur PC les bandes déroulantes grises
+apparaissent, supprime-moi ça »*. Deuxième fois qu'il le demande — le 11 août,
+le correctif n'avait couvert que les cadres qui défilent, pas **la page**.
+
+Le gabarit donne à la page `100dvh` de hauteur minimale : tout écran un peu long
+fait donc défiler la fenêtre. Sur un téléphone cette barre-là est en
+surimpression et s'efface seule ; sur un ordinateur elle s'installe à droite et
+n'en repart pas. Le défaut ne pouvait apparaître que chez lui.
+
+`globals.css` porte désormais une règle universelle (`* { scrollbar-width: none }`
+et `*::-webkit-scrollbar { display: none }`) au lieu d'une déclaration recopiée
+par zone — la sixième avait été oubliée, la septième l'aurait été aussi. Le
+défilement ne change pas : seule la peinture disparaît.
+
+`scripts/test-aucune-barre-de-defilement-e2e.ts` écartait explicitement `<html>`
+et `<body>` en les déclarant « pas de notre ressort ». Ils le sont : il les
+mesure. Éprouvé rouge avant d'être éprouvé vert — règle retirée, huit écrans sur
+treize rougissent sur `html (scrollbar-width: auto)`.
+
+Détail et raisons : `ARCHITECTURE.md` §206.
+
 ---
 
 ## 2026-08-29
@@ -137,9 +160,91 @@ privilèges par défaut donnent l'écriture à `atlas_app` sur toute table futur
 quand la RLS, elle, est éteinte par défaut. Les deux réglages vont en sens
 contraire, et rien ne surveillait l'écart.
 
+### Le banc répare ses dépendances désaccordées, au lieu de bâtir en boucle pour rien
+
+**Sa vraie panne du 29 août, trouvée grâce à la fiche du correctif précédent.**
+Le relevé publié disait : `code: 1`, **5,7 Go de mémoire libre**, et pour toute
+sortie « ▲ Next.js 16.3.3 (Turbopack) ». Ce n'était donc PAS un manque de
+mémoire — le soupçon de l'entrée ci-dessus est démenti par ses propres chiffres.
+
+Il exécutait **Next 16.3.3** alors que le projet épingle **16.3.2**, dans
+`package.json` comme dans le verrou. Next embarque des binaires natifs
+versionnés à l'identique : le compilateur meurt à leur chargement, après
+l'en-tête, sans un mot. Et son banc ne pouvait pas s'en sortir — sa
+réinstallation automatique exige `Cannot find module` dans la sortie, or il n'y
+avait aucune sortie. Le veilleur retentait la même construction condamnée,
+indéfiniment.
+
+Le banc compare désormais les versions installées à celles du projet **avant**
+de bâtir, et réinstalle si elles ont dérivé. Un second filet rattrape ce que les
+versions ne voient pas : une construction qui meurt sans rien dire déclenche
+aussi la réinstallation. Éprouvé contre son état exact — `node_modules` forcé à
+16.3.3 — et pas seulement en théorie.
+
+Reste ouvert, et noté dans `TODO.md` : **comment** ses `node_modules` ont dérivé.
+Ni `npm ci` ni `npm install` ne devraient installer 16.3.3 devant un pin exact.
+Ce correctif traite le symptôme à chaque démarrage ; il ne dit pas la cause.
+Détail : `ARCHITECTURE.md` §204.
+
+### Le banc ne préchauffe plus quand la mémoire manque — sa version rapide peut enfin se construire
+
+*« L'appli est en mode lent, les fichiers n'arrivent pas à charger, elle bug
+souvent. »* Sa capture montrait « Version rapide en construction — 2 écrans sur
+32 », sa fiche disait « construction en cours ». Depuis des jours, et jamais
+« échouée ».
+
+**Ce n'était pas une lenteur, c'était un blocage.** Le préchauffage des 32
+écrans coûte **887 Mo** au serveur de développement (mesuré : 658 Mo avant,
+1 545 Mo après), `next build` en veut **2 500**, et son espace n'a que **2 900 Mo**
+disponibles. Il manquait 500 Mo : le noyau tuait la construction, le veilleur en
+relançait une, elle mourait pareil. Le banc restait lent **pour toujours**.
+
+Le préchauffage s'abstient désormais quand la mémoire disponible ne permet pas
+de bâtir ensuite, et le dit dans les mots du patron — avec sa borne : les
+premiers écrans seront lents *le temps de la construction, pas au-delà*. Les
+machines qui ont la place ne perdent rien : la décision se prend sur
+`MemAvailable`, jamais sur une supposition.
+
+**Quatre réglages ont été mesurés et écartés avant celui-ci** — moins de
+workers (2 471 Mo contre 2 452), sans typecheck ni source maps (2 734 Mo,
+*pire*), plafond de tas Node (2 500 Mo). Aucun ne fait maigrir la construction,
+et le dernier dit pourquoi : **Turbopack est écrit en Rust**, sa mémoire vit
+hors du tas de V8 où aucune option de Node n'a de prise. Le détail des mesures,
+les deux pièges rencontrés (`memoryBasedWorkersCount` impose un *plancher* de
+quatre workers ; le défaut de `cpus` est déjà `nproc − 1`) et la mesure fausse
+qui a failli clore l'enquête sont dans `ARCHITECTURE.md` §203.
+
+### Sa fiche dit enfin POURQUOI la construction a échoué
+
+Écrit le même soir, après sa capture de 22 h 37 — et **elle a corrigé notre
+diagnostic** : son écran affichait « La dernière construction a échoué », donc
+le témoin était bien écrit. L'entrée précédente affirmait le contraire ; c'était
+faux, et c'est corrigé noir sur blanc dans `ARCHITECTURE.md` §203.
+
+Le vrai défaut était plus grave : `banc.mjs` jetait le SIGNAL de sortie
+(`code ?? 1`). Une construction **abattue par le noyau faute de mémoire**
+s'écrivait donc `code: 1`, exactement comme une erreur de compilation — les deux
+causes les plus opposées, indiscernables. Le signal est désormais retenu,
+consigné, et relu : la fiche nomme le manque de mémoire, montre le relevé de
+l'instant, et dit le geste qui répare.
+
+Vérifié aussi, contre notre propre soupçon : **sa construction n'a rien de
+cassé.** Sur son commit exact (`575aad7`) avec les variables de son
+`docker-compose`, elle compile en 30,6 s, `EXIT=0`. C'est sa machine qui manque
+de mémoire, et rien d'autre.
+
 ---
 
 ## 2026-08-27
+
+### La phrase grise sous « Composer ma fiche » est partie
+
+*« Supprime la phrase en gris sous composer ma fiche. »* Elle disait « n
+prestations, rangées par famille. C'est cette liste que vous cocherez sur un
+chantier » : un écran qui explique son propre fonctionnement, ce que sa consigne
+du 25 août interdit. Les familles sont sous les yeux, et le compte est déjà sur
+la carte qui mène ici. Retirée aussi des deux pages essayables, pour qu'elles ne
+montrent pas un écran qui n'existe plus.
 
 ### Fusion du lot 3 : batterie entièrement verte, et une panne de machine comprise
 
@@ -245,6 +350,210 @@ Parcourue avant d'être livrée, pas relue : la carte ouvre bien la liste, une
 case passe de 3 à 4 cochées, rien ne déborde, aucune erreur au journal.
 
 ---
+### L'assistant se souvient — le fil survit au rechargement
+
+Sa réponse du 27 août 2026, devant cinq pistes : **« 2 et 3 déjà »**. Le 3
+était *qu'il se souvienne*.
+
+Le fil vivait dans l'état d'un composant React et mourait au premier
+rechargement — or son onglet reste ouvert des heures et son banc redémarre
+plusieurs fois par soirée (`HANDOVER.md`, piège 0). « Et celui d'avant ? » ne
+trouvait plus rien.
+
+**Un fil par PERSONNE, pas par entreprise.** La RLS n'isole que les
+entreprises : deux associés d'une même entreprise verraient le fil l'un de
+l'autre sans le filtre posé dans le dépôt. Ce filtre-là ne se voit sur aucun
+écran, et c'est une suite base qui le tient.
+
+**Un fil unique, pas un par chantier** : il passe d'un chantier à l'autre en
+parlant, et une conversation qui repartirait de zéro à chaque écran serait
+exactement ce qu'il vient de faire retirer.
+
+**Un défaut trouvé par la suite, et il aurait été vu à l'écran :** `now()` rend
+l'instant de DÉBUT de transaction. La question et sa réponse, écrites ensemble,
+portaient la même date à la microseconde près ; le classement retombait sur
+l'identifiant — un UUID tiré au hasard — et **la réponse s'affichait avant la
+question une fois sur deux**. Le fil s'ordonne désormais par une séquence, qui
+ne dépend d'aucune horloge. Un cas qui échoue une fois sur deux apprend à
+ignorer le rouge : dix paires le rendent décisif.
+
+**« Oublier »** paraît à côté de la croix, et seulement s'il y a quelque chose à
+oublier.
+
+**Ce qui ne revient PAS après un rechargement :** les cases à cocher d'une
+proposition. Le texte revient, la proposition non — rien ne relie encore un
+message à ses propositions. Consigné dans `TODO.md` ; ce n'est pas une
+régression (avant ce lot, le fil entier disparaissait).
+
+### « Peu importe où je l'ouvre » — un geste porte sur le chantier qu'il nomme
+
+**Sa règle du 27 août 2026 :** *« l'encart assistant, peu importe où je l'ouvre,
+il doit pouvoir répondre à mes envies »*. Il l'avait déjà dite le 25 août pour
+les outils de lecture (`chantier-vise.ts`) ; elle valait aussi pour les GESTES,
+et là elle ne tenait pas.
+
+**La même faute que « Il comprend rien », d'un cran plus loin.** La consigne
+disait « mets son identifiant dans la proposition » **sans nommer la clé** —
+alors que le code ne lit que `chantierId`. Rangé sous un nom voisin, le geste
+retombait sur le chantier ouvert, ou se refusait alors qu'il venait de nommer
+son client. Ce n'est pas au modèle de deviner notre vocabulaire : la consigne
+nomme la clé, et les alias rattrapent le reste.
+
+**`id` est délibérément EXCLU des alias.** Sur la moitié des gestes il désigne
+l'élément touché — la prestation, le tarif, la ligne —, et les deux sont des
+UUID : aucune forme ne les distingue. L'accepter ferait viser à côté et rendrait
+un refus incompréhensible.
+
+**Et le refus ne le renvoie plus ouvrir une fiche.** « Ce geste vise un
+chantier : ouvrez-le » était exactement ce qu'il reproche depuis le 25 août.
+La suite qui exigeait ce libellé mot pour mot a rougi sur une demande exaucée :
+elle vise désormais la règle, pas la phrase (`CLAUDE.md` §5 bis).
+
+### La dictée façon WhatsApp, la photothèque, et une panne qui parle enfin
+
+**Sa capture du 27 août 2026 au soir : « Ça ne marche pas la dictée. »** À
+l'écran : *« La dictée n'a pas abouti. Vous pouvez écrire votre question. »* —
+la phrase du `catch`, celle qu'on affiche quand on ne sait RIEN.
+
+**Le premier livrable n'est donc pas un correctif, c'est de rendre le défaut
+bavard** (`AGENTS.md`). Le message d'une exception levée par une action serveur
+ne lui parvient jamais (`HANDOVER.md`, piège 0 ter) : deviner la cause, c'est
+réparer une panne imaginée. Chaque refus rend désormais SA phrase — audio
+refusé, transcription refusée avec le motif du fournisseur, rien entendu — et
+ce qui n'était pas prévu se journalise avant de rendre la main. **Non
+reproduite ici**, et écrite comme telle.
+
+**Deux choses qui pouvaient y contribuer, corrigées au passage** : le fichier
+portait le nom « .webm » quel que soit le format réel — or un iPhone rend du
+mp4 —, et le nom suit maintenant les octets. Cela n'empêchait rien (la porte
+d'entrée lit les octets) mais rendait le journal illisible le jour où l'on
+cherche.
+
+**LA BARRE DEVIENT CELLE DE WHATSAPP QUAND IL PARLE.** Sa demande, capture à
+l'appui : *« lorsque l'on parle, il y a le petit zigzag qui se met en route »*,
+et *« le bouton envoyer, à partir du moment où j'appuie, ça envoie la dictée
+automatiquement »*. Corbeille à gauche, onde au milieu, envoi à droite ; le
+champ disparaît — il n'y a rien à taper tant qu'on parle.
+
+**L'onde montre le SON, pas le temps.** Une animation qui tourne toute seule
+rassurerait à tort : elle bougerait autant micro coupé. Les barres suivent le
+niveau réellement capté — silence, ligne plate, et c'est une information. Sur
+un `canvas`, pas soixante `div` : repeindre soixante éléments cinquante fois
+par seconde coûterait plus que le reste de l'écran.
+
+**Cela revient sur la règle du 7 août** — *« elle remplit, elle ne valide
+pas »* — et c'est LUI qui l'a demandé. La relecture reste possible : arrêter
+par le micro repose le texte dans le champ ; seul le bouton d'envoi part sans
+relire. **Et la corbeille coupe `onstop` avant d'arrêter** : une dictée jetée
+ne doit pas partir quand même chez le transcripteur, et se payer.
+
+**LA PHOTOTHÈQUE S'OUVRE.** *« Je peux prendre en photo mais pas avoir accès à
+la photothèque. »* `capture="environment"` forçait l'appareil sur iPhone et
+fermait la pellicule — or ce qu'il veut montrer est souvent DÉJÀ pris : un devis
+reçu, une plaque photographiée la veille. L'attribut est retiré.
+
+### Les six gestes qui manquaient — dont deux qui effacent
+
+**Sa demande du 27 août 2026 : « fais la dernière »**, sur les cinq pistes
+proposées. Supprimer un chantier, supprimer un tarif, poser une absence
+d'équipe, régler les documents, ajouter et retirer une ligne de la fiche
+d'entretien. Deux outils de lecture arrivent avec eux —
+`LireReglagesDocuments` et `LirePrestationsEntretien` — parce qu'on vise par
+identifiant, jamais par libellé.
+
+**Tous restent des PROPOSITIONS**, y compris les deux qui effacent : *« très
+important que ça reste le doigt du patron »*.
+
+**Ce que la suite a attrapé, et qui aurait fini chez ses clients.** Régler
+l'acompte **effaçait la validité** : `mettreAJourEntreprise` REMPLACE le bloc
+des conditions — ce qui est juste pour l'écran des réglages, qui renvoie le
+formulaire entier, et faux pour une proposition qui n'en porte qu'un. Les
+réglages absents étaient donc remis à zéro, et cela s'imprime sur des documents
+que ses clients gardent : il ne l'aurait vu qu'au devis suivant. On relit et on
+fusionne.
+
+**Trois refus qui ne se négocient pas :**
+
+- un chantier **facturé ne se supprime pas** — le refus reste au serveur, la
+  correction passe par un avoir ;
+- une suppression **sans chantier visé** ne part pas sur celui de l'écran : elle
+  effacerait le mauvais ;
+- une absence sur une date qui n'existe pas — le 31 février —, ou dont la fin
+  précède le début, se refuse. Une absence mal posée fait proposer au client un
+  jour où personne ne peut venir.
+
+### Lui parler, et lui montrer une photo
+
+**Sa demande du 27 août 2026 : « fais la 1 et la 4 »**, sur les cinq pistes
+proposées pour l'assistant.
+
+**Le micro remplit le champ, il n'envoie rien.** C'est la règle de la dictée
+depuis le 7 août : il relit avant que ça parte. Une question mal entendue qui
+partirait seule pourrait viser le mauvais client. La dictée **s'ajoute** à ce
+qui est déjà tapé plutôt que de l'écraser, et elle ne passe **pas** par le
+modèle — ce qu'il a dit, tel quel : faire « améliorer » sa phrase, c'est risquer
+de changer un nom.
+
+**La photo est LUE, puis la lecture entre dans la conversation.**
+`genererAvecOutils` ne sait pas porter d'image, et le dépôt fait déjà ainsi
+depuis le 13 août pour le ticket de caisse. La consigne demande de **recopier
+mot pour mot** chiffres et références : un résumé perd exactement ce qui sert.
+
+**Trois choses qui ne se négocient pas :**
+
+- la photo passe par **la porte commune** (`photo-entrante.ts`) : ses
+  métadonnées — dont les coordonnées GPS du jardin d'un client — sont retirées
+  avant tout envoi chez un tiers, et un fichier qu'on ne sait pas nettoyer est
+  refusé. Rien n'est stocké : la photo est lue, puis oubliée ;
+- ce qu'elle donne à lire entre comme une **donnée**, jamais comme une consigne,
+  et **avant** sa question — une étiquette photographiée peut ressembler à un
+  ordre, et sa question doit rester la dernière chose lue ;
+- **le périmètre lit SA question**, pas la photo : une affiche de cinéma ne fait
+  pas répondre l'assistant sur les horaires d'un cinéma.
+
+**Ce qui n'a PAS pu être éprouvé ici, et il faut le dire :** la lecture d'une
+vraie photo par un vrai fournisseur. Ce poste n'a aucune clé (`CLAUDE.md`
+§1 ter) ; les contrôles posent un fournisseur d'essai par la couture prévue et
+tiennent ce qui nous appartient — le refus propre quand la vision manque, la
+place de la lecture, le périmètre. **La dictée, elle, est éprouvée ici de bout
+en bout.** La chaîne complète avec une photo se vérifie **sur son espace**.
+
+### Une maquette : quand l'assistant parle le premier
+
+Sa deuxième piste retenue. Elle demande **où** il prend la parole, donc une
+planche avant tout code (§3 bis) : `appli/quand-il-parle-le-premier.html`.
+
+---
+
+### L'or reste l'or sur Brume, et le marqueur d'onglet suit enfin le doigt
+
+*« J'aimerais que lorsque je choisis l'apparence Brume, tout ce qui est en doré
+sur Origine le reste aussi sur Brume »*, et *« quand je sélectionne Brume, le
+dessin des catégories en bas ne change pas automatiquement, je dois recharger la
+page »*. Deux défauts distincts sur le même élément.
+
+**L'or perdu.** La pastille de Brume était teintée de l'accent — un bleu marine :
+le trait doré d'Origine devenait bleu. **C'était le seul endroit de l'accueil où
+l'or se perdait**, mesuré plutôt que cherché à l'œil : la couleur du texte, du
+fond, des traits et des ombres de chaque élément relevée sur les deux chartes,
+puis comparée. Trente-six endroits portent l'or ; un seul le perdait.
+
+**Le changement en direct ne repeignait que les couleurs.** Il reparcourait les
+jetons de son côté ; la police des titres et les cinq variables du marqueur
+n'arrivaient qu'au rendu suivant, celui du serveur. C'est la troisième fois que
+deux façons de dire « ce que la charte écrit » divergent — les deux premières
+sont déjà consignées.
+
+**Et poser ne suffisait pas : il faut effacer.** Venant de Brume, ses variables
+d'onglet restent sur la page : une charte qui ne les pose pas doit les retirer,
+sinon sa pastille survit sur Origine. C'est un état qu'aucun rechargement ne
+produit, donc que personne ne voit en essayant à la main.
+
+Les quatre contrôles existants ne pouvaient rien voir : ils mesurent tous une
+couleur, et les couleurs suivaient. Deux s'y ajoutent, vus rouges chacun pour sa
+raison. Et la suite qui exigeait l'accent réclame maintenant l'or — une suite qui
+réclame ce qu'il a fait retirer rend son écran impossible à changer.
+`ARCHITECTURE.md` §202.
 
 ## 2026-08-26
 
@@ -616,6 +925,336 @@ Les deux contrôles qui exigeaient l'ancien ordre ont été **réécrits, pas
 contournés** : une suite qui réclame ce qu'il a fait retirer rend son écran
 impossible à changer. `ARCHITECTURE.md` §196.
 
+### La chaîne dictée → devis, corrigée de bout en bout
+
+**Ce que le patron a lu le 26 août, et qui ne se reproduira plus.** Trois
+défauts sur un seul devis, et aucun n'était un défaut d'affichage : la quantité
+dictée n'existait plus comme donnée, une tonte et un démontage partageaient une
+identité, et une ligne qu'on ne savait pas chiffrer s'écrivait « 0 € ».
+
+**Le fourre-tout qui a créé le défaut est supprimé.** Six modules portaient
+chacun leur liste de travaux, et aucune ne connaissait la tonte : tout ce
+qu'aucune expression régulière ne reconnaissait tombait sur la ligne de
+l'abattage, et son montant partait dans la case d'abattage de sa grille.
+`src/lib/natures-prestation.ts` les remplace toutes. **Une nature inconnue garde
+désormais sa propre ligne** — être identifié et être chiffrable sont deux
+choses, et les confondre est ce qui a coûté le devis.
+
+**La quantité dictée atteint enfin le calcul.** Elle vivait en colonne depuis le
+lot B et le chiffrage relisait « (800 ml) » dans le libellé : corriger la
+colonne ne changeait rien au prix. Le devis porte « 800 ml × 17,50 € » là où il
+affichait « Qté 1 — 14 000 € » ; le total était juste, sa décomposition mentait.
+
+**Une ligne sans prix ne vaut plus 0 €.** Un zéro se lit « gratuit » sur un
+devis : c'est un montant, donc une décision, là où il n'y a qu'une ignorance —
+et le document pouvait partir ainsi. Elle sort « à chiffrer », garde sa quantité
+physique, et bloque la préparation comme l'envoi tant qu'elle attend son prix.
+
+**Sa correction change le prix.** Quand il transformait « Haie (800 ml) » en
+« Haie (80 ml) », rien ne bougeait : le chiffrage lisait la colonne restée à
+800, et le refus de trancher entre les deux annulait le calcul. Sa correction
+était invisible ET bloquante. Elle est désormais lue, posée en colonne, marquée
+comme sienne, et aucune relecture de dictée ne repasse dessus.
+
+**Le rappel de prix cesse de mentir.** 50 ml et 800 ml de haie avaient la même
+clé de rapprochement — d'où les « 15 chantiers comparables ». La comparabilité
+V2 s'écrit à côté de la V1 sans jamais la réécrire : ordre de grandeur, unité,
+et espèce quand les deux côtés la connaissent. **Aucun seuil ×2 ou ×5 n'a été
+inventé** ; espèce, quantité et unité sont enregistrées pour le calibrer plus
+tard sur de vrais devis.
+
+**Une réponse de modèle tronquée n'est plus une panne muette.** `stop_reason`
+arrivait au fournisseur et y était jeté : une coupure à mi-JSON devenait
+indiscernable d'un modèle hors sujet. Le repli reste — un écran mort a coûté
+deux jours le 4 août — mais il est identifiable.
+
+**Deux bugs annexes, trouvés en corrigeant :**
+- une dictée qui énonçait deux fois le même travail — « je démonte un érable,
+  puis un érable au fond du jardin » — n'en gardait qu'un ; le dédoublonnage
+  protège du rejeu, pas de ce que la dictée dit deux fois ;
+- « taille d'allégement sur marronnier » n'était reconnu comme un élagage par
+  aucun motif : l'apostrophe manquait dans l'expression. C'est la dictée du
+  7 août, celle dont le devis est sorti vide.
+
+Migration **0070**, additive de bout en bout. Détail complet : `ARCHITECTURE.md`
+§205. Dossier à retransmettre : `docs/pour-chatgpt/07-correction-complete.md`.
+
+### Une planche à choisir : corriger une mesure sans réécrire le nom
+
+`appli/corriger-une-mesure.html`. Le chemin serveur existe et il est éprouvé ;
+l'écran, lui, se dessine avant de toucher `src/` (`CLAUDE.md` §3 bis).
+
+---
+
+
+### Un rappel armé : la liste complète des travaux qu'il vend
+
+**Sa réponse, en toutes lettres :** *« Oui j'en vend mais attend on créera une
+liste complète ensuite si tu le veux faudra que tu me le rappelle. »* Il vend de
+la **plantation** et de la **clôture** ; aucune des deux n'existe dans le
+vocabulaire des trois modules qui classent une prestation
+(`src/lib/lignes-vendables.ts`, `src/lib/prix-attribuable.ts`,
+`src/lib/lecons-prix.ts`), limité à abattage, élagage, haie, dessouchage,
+fendage, grumes, broyage, évacuation, billonnage.
+
+**Ce qu'un fichier de prose n'aurait pas tenu.** Un rappel écrit en paragraphe
+se supprime au premier remaniement, et celui à qui il devait servir est
+justement celui qui ne s'en souviendra pas. Il rejoint donc le mécanisme posé le
+9 août pour la commercialisation : `scripts/verifier-memoire.mjs` refuse
+désormais une batterie où la section de `HANDOVER.md` aurait disparu, ou aurait
+perdu le mot « plantation ». Éprouvé dans les deux sens — la section retirée, le
+contrôle rougit et nomme la section.
+
+**Ce qui reste bloqué en attendant, et pourquoi on n'invente pas la liste.** La
+colonne `prestations.nature` existe depuis le lot B, mais la brancher sur des
+natures devinées ferait retomber ses travaux dans le fourre-tout `principal`,
+c'est-à-dire sur la ligne d'abattage — le défaut exact que l'audit du 26 août a
+mesuré. Les trois modules restent donc sur leurs expressions régulières jusqu'à
+ce qu'il ait dit ce qu'il vend.
+
+**Au passage :** trois renvois vers l'outil de chiffrage de l'assistant, dans
+`TODO.md` et ici, étaient écrits sans leur préfixe `src/server/` et pointaient
+donc dans le vide. `verifier:memoire` en rougissait ; corrigés en
+`src/server/ai/tools/calculer-chiffrage.ts`.
+
+---
+
+## 2026-08-26
+
+### Rejouer la dictée ne duplique plus la prestation
+
+**Un doublon réel, mesuré avant d'être corrigé.** Ses réponses à l'arrêt
+allongent le libellé — « Abattage d'un érable » devient « Abattage d'un érable —
+démontage avec rétention, ⌀ 45 cm ». Le dédoublonnage de `confirmerBrouillon`
+reconnaissait une prestation par l'égalité EXACTE de son libellé : au rejeu
+suivant il ne reconnaissait plus rien, et écrivait un second arbre. C'est le
+défaut du 3 août sous un troisième visage, dans la fonction qui existe pour
+l'empêcher.
+
+`src/lib/correspondance-prestation.ts` reconnaît désormais deux formes, et deux
+seulement : le libellé identique, ou identique suivi du tiret d'enrichissement.
+**Rien d'approximatif** — une fusion sur une ressemblance ferait disparaître un
+travail qu'il facturerait. Le tiret est demandé à la fonction qui l'écrit plutôt
+que recopié : deux écritures du même séparateur finiraient par diverger.
+
+**Et le rejeu ENRICHIT au lieu de dupliquer** : un champ vide se remplit, un
+champ déjà posé ne bouge jamais, une valeur différente est journalisée sans être
+appliquée. Le dépôt n'a aucune colonne de provenance ; c'est le refus de
+remplacer qui protège une correction humaine, sans avoir à savoir qui l'a
+écrite.
+
+### Les deux micros demandent enfin la même chose des unités
+
+L'invite d'extraction ne donnait aucun exemple d'unité ; celle de la
+dictée-dans-le-devis en donnait (« stère », « arbre »). Le même mot dicté
+devenait donc une quantité par un micro et rien du tout par l'autre. Les deux
+portent maintenant la même règle — l'unité peut être l'OBJET compté quand il
+compte des choses (« deux souches » → 2 / souche), à condition qu'il soit
+**explicitement prononcé**. Et la durée du chantier comme la taille de l'équipe
+sont dites non-prestations dans l'invite, pas seulement espérées.
+
+**Ce que ces contrôles ne prouvent pas, et la suite le dit à l'écran :** le
+comportement réel du modèle. Aucune clé ici — les six dictées d'essai restent à
+jouer sur son espace.
+
+### L'inventaire des natures, et pourquoi la taxonomie n'est pas figée
+
+L'inspection a trouvé un référentiel métier **déclaré** que personne n'avait
+rapproché de ce lot : `src/lib/prestations-entretien.ts`, 20 prestations en 4
+familles, posées par le patron. Il corrobore tonte, désherbage, massifs, haie —
+et il en porte plusieurs qu'aucune liste ne mentionnait (propreté, traitement de
+pelouse, taille d'arbuste, taille de rosiers). En revanche **plantation et
+clôture n'existent nulle part** dans le dépôt.
+
+La taxonomie n'a donc pas été figée : deux natures seraient inventées, plusieurs
+autres manqueraient, et son référentiel est éditable par lui — figer une liste
+par-dessus risquerait de contredire ce qu'il ajoutera demain. `nature` reste
+vide, et la question à lui poser est écrite dans `docs/pour-chatgpt/06`.
+
+Batterie : **253/255**.
+
+### Lot C — la colonne d'abord, le libellé ensuite, et le refus quand ils divergent
+
+Depuis le lot B, une prestation neuve porte ses mesures dans des colonnes ET
+dans son libellé. `src/lib/mesures-prestation.ts` dit désormais laquelle vaut :
+la structure d'abord, le libellé pour les anciennes prestations, et **rien du
+tout** quand les deux se contredisent. Le chiffrage et l'apprentissage de la
+grille l'appellent tous les deux.
+
+**Une tolérance d'un centième, et elle n'est pas cosmétique** : la colonne est un
+`numeric(10,2)` — 45 y devient 45.00 — quand le libellé porte « ⌀ 45 cm ». Sans
+elle, chaque prestation neuve se contredirait elle-même et le chiffrage
+s'arrêterait partout.
+
+**Ce que le refus change pour lui, et il faut le savoir :** un libellé retouché
+à la main ne recalcule plus le prix en silence. `modifierPrestation` réécrit le
+texte sans toucher aux colonnes ; corriger « (800 ml) » en « (80 ml) » met donc
+les deux sources en désaccord. Le prix n'est plus calculé, et la réserve nomme
+les deux valeurs. **La question métier — une retouche à la main doit-elle
+changer la mesure ? — est posée dans `docs/pour-chatgpt/05`, pas tranchée ici.**
+
+**Trois décisions refusées plutôt qu'inventées**, et elles bloquent trois
+consommateurs : le vocabulaire de `nature` (les sept natures du dépôt couvrent
+l'arboriculture, pas la tonte ni la plantation — élargir serait créer une
+taxonomie qu'il n'a jamais énoncée) ; l'espèce (sûre sur le principe, mais
+invérifiable ici faute de clé) ; et les quantités de comptage — « deux souches »
+—, dont personne ne sait ce que le modèle en fait sans une clé pour le lui
+demander. Le `CHECK quantite ⟺ unite` n'a surtout pas été relâché pour laisser
+passer un « 2 » sans unité.
+
+**Une régression trouvée qui n'est pas de ce lot**, vérifiée en remisant tout le
+travail : `test-liste-clients.ts` datait un règlement en UTC quand la facture
+date son émission à Paris. **Entre 22 h et minuit UTC, ce contrôle échouait** en
+accusant le calcul du reste dû, sur du code juste. Corrigé en une ligne : le même
+calendrier des deux côtés.
+
+Batterie : **251/253**. Les deux suites en échec sont celles des lots suivants.
+
+### Lot B — la prestation a enfin des champs à elle
+
+Le modèle lisait bien « 800 » et « ml » ; la table `prestations` n'avait qu'une
+colonne de contenu, `libelle`, et la mesure y était recollée faute d'endroit où
+la poser. Deux migrations **additives** ouvrent cet endroit : `quantite`,
+`unite`, `nature`, `espece`, `methode`, `caracteristiques`, `a_confirmer`
+(0068), et une table de liaison qui dit enfin quelles prestations une ligne de
+devis vend (0069).
+
+**Le libellé continue de porter « (800 ml) », et ce n'est pas un oubli.** Quatre
+moteurs y relisent les mesures (`mesures-arbre.ts`) ; le leur retirer avant
+qu'ils sachent lire les colonnes ferait perdre à une haie son prix au mètre
+linéaire, sur un devis qui part chez un client. Les deux cohabitent le temps que
+les lecteurs migrent.
+
+**La cardinalité a été inspectée, pas choisie par facilité.** Une colonne
+`lignes_prix.prestation_id` aurait été FAUSSE : une ligne porte 1 à N
+prestations (sa règle du 7 août — abattage, broyage, évacuation ensemble), et
+elle n'en aurait retenu qu'une. D'où la table de liaison, avec une unicité sur
+la prestation qui encode ce que le découpage fait déjà. Le CASCADE porte sur la
+liaison, jamais sur ce qu'elle relie : supprimer une prestation n'emporte pas la
+ligne de devis, et supprimer la ligne n'emporte pas le travail à faire.
+
+**Rien n'est deviné.** Toutes les colonnes sont nullables, `a_confirmer`
+compris : NULL dit « on ne sait pas », `false` dirait « on a regardé ». Et
+`nature`/`espece` restent vides même sur une dictée neuve — le contrat
+d'extraction ne les demande pas au modèle, et les déduire du libellé serait
+recopier le défaut qu'on répare. `methode` et `caracteristiques`, eux, viennent
+d'une source déjà certaine : ses réponses à l'arrêt d'avant-chiffrage.
+
+**Une régression attrapée par un contrôle qui existait déjà**, et qui mérite
+d'être connue : le garde-fou RGPD interroge la BASE et exige que toute table
+portant un `entreprise_id` figure dans l'export de l'entreprise. La table de
+liaison n'y était pas — sans lui, une sauvegarde aurait rendu les lignes et les
+prestations sans dire lesquelles vont ensemble.
+
+Batterie : **250/252**. Les deux suites en échec sont celles des lots suivants,
+laissées rouges exprès — aucune assertion n'a été affaiblie.
+
+### Lot A — un montant qui ne se laisse plus attribuer au premier mot venu
+
+La corruption mesurée la veille : un prix de 1 500 € posé sur la ligne qui porte
+« Tonte de la pelouse (1200 m²) » ET « Érable — démontage en rétention » écrasait
+la case `demontage_retention|d40` de sa grille, de 800 € à 1 500 €. Le classement
+se faisait au premier motif reconnu, et « démont » répondait.
+
+`src/lib/prix-attribuable.ts` répond désormais, avant tout classement, à une
+seule question : **ce montant appartient-il à un seul travail ?** `apprendre-grille.ts`
+et `retenirLecon` l'appellent tous les deux — une seule règle, jamais deux
+(`CLAUDE.md` §3).
+
+**Ce qui a demandé de réfléchir, et qui explique la forme de la règle.** Refuser
+toute ligne à plusieurs travaux aurait fermé la fuite ET cassé son cas le plus
+courant : son devis du 5 août porte « abattage, broyage, évacuation » sur une
+seule ligne à 600 €, et ces 600 € SONT son prix d'abattage — c'est sa règle du
+7 août. D'où la distinction entre ce qui **se vend seul** et ce qui
+**accompagne** (broyage, évacuation, billonnage), tirée de ses propres décisions
+et non inventée. Un accessoire seul redevient le chantier : broyer du bois déjà à
+terre est un vrai travail.
+
+Le vocabulaire est l'**union** des deux existants. La grille connaît les grumes,
+la mémoire ne les connaît pas : un garde-fou qui n'aurait lu qu'un des deux
+aurait refusé un apprentissage sain.
+
+**Un contrôle a changé de cible, et c'est une décision, pas un test plié au
+code.** Il exigeait que `signatureLecon` rende `null` sur un libellé à deux
+natures. Refusé : cette clé est **stockée** dans `lecons_prix.signature`, et la
+faire taire rendrait introuvables des leçons déjà écrites — on effacerait sa
+mémoire pour fermer une fuite (risque R3). Le garde-fou vit à l'usage ; la clé
+V1 reste intacte, et le cas G le prouve.
+
+Batterie : **248/250**, contre 247 avant le lot. Les deux suites en échec sont
+celles du lot, et seulement sur les cas des lots suivants. Aucune migration,
+aucune donnée historique touchée.
+
+### Dictée → devis : la cartographie, et neuf contrôles rouges avant correction
+
+Son brief du 26 août (relayé de ChatGPT, lu et confronté au code) : cartographier
+la chaîne, écrire les tests AVANT de corriger, ne rien refondre sans son accord.
+
+`docs/audit-dictee-devis-cartographie.md`. Deux suites neuves, rouges par
+construction — `test-dictee-devis-identite.ts` (sans base, sans clé) et
+`test-dictee-devis-identite-db.ts`. **247/249 suites réussies : les deux seules
+en échec sont les deux neuves.** La chaîne d'aujourd'hui est cohérente avec
+elle-même, autour d'un modèle de données faux.
+
+**La corruption est désormais chiffrée**, et c'est ce qui manquait hier : un prix
+de 1 500 € posé sur la ligne qui porte la tonte ET le démontage a **écrasé** la
+case `demontage_retention|d40` de la grille, de 800 € à 1 500 €.
+
+**Sept dépendances cachées, aucune n'était dans le brief.** Les deux qui
+comptent : `tachesDuChantier` écrit déjà la quantité sur la feuille de l'équipe
+(elle se tait tant qu'elle vaut 1 — poser 800 fera lire « Haie (800 ml) — 800 »),
+et `unite` n'existe **pas** sur `lignes_devis` ni `lignes_facture`, donc l'unité
+s'arrête avant le document du client.
+
+**Trois points du brief contredisent ses propres décisions**, et le document le
+dit noir sur blanc : le 0 € vient de sa demande du 7 août (« le devis ne comporte
+aucune ligne, gros bug ») ; la répartition 850 + 250 est sa règle, ce n'est que
+le repli qui est arbitraire ; et le découpage n'a jamais séparé les actions, il
+sépare ce que le client peut refuser seul.
+
+**Correction de ce que le lot précédent affirmait :** la branche catalogue n'est
+pas morte — elle est morte du côté de la dictée, vivante du côté de l'assistant
+(`src/server/ai/tools/calculer-chiffrage.ts` passe le mot-clé). La supprimer casserait
+l'assistant.
+
+**Ces deux suites ne doivent pas atteindre `main`** avant l'étape 5 du plan : une
+batterie rouge cesse d'être lue par les autres sessions.
+
+### Audit de la chaîne dictée → devis (lecture seule, aucun code)
+
+Le patron, devant son devis dicté depuis l'iPhone : « Haie (tout genre)
+(800 ml) », quantité 1, 0 € ; « Tonte de la pelouse (1200 m²) » et « Érable —
+démontage en rétention » sur la même ligne à 840 € ; et un rappel qui propose un
+ancien érable à 550 €. Sa demande : ne rien corriger, remonter la chaîne.
+
+`docs/audit-dictee-devis.md` porte le résultat. Trois racines, et elles se
+cumulent :
+
+- **le libellé sert de modèle de données.** Le modèle rend bien `quantite: "800"`
+  et `unite: "ml"` ; `libelleAvecQuantite` (`brouillon-service.ts:169`) les
+  recolle au nom, parce que la table `prestations` n'a qu'une colonne de texte.
+  `ajouterLignePrix` écrit ensuite `quantite: "1"` en dur — le « QTÉ = 1 » n'est
+  pas un forfait, c'est une colonne jamais renseignée sur ce chemin ;
+- **`principal` est un fourre-tout** (`lignes-vendables.ts:170`) : tout ce qui
+  n'est ni haie, ni fendage, ni dessouchage, ni grumes tombe sur la même ligne.
+  D'où la tonte fondue dans l'abattage, et le prix au temps du chantier ENTIER
+  affiché sur une ligne qui parle d'un érable ;
+- **« comparable » est une égalité de chaîne sur trois jetons**
+  (`lecons-prix.ts:84`) : nature, technique, tranche de diamètre. Ni espèce, ni
+  quantité, ni ordre de grandeur — d'où 50 ml et 800 ml déclarés comparables, et
+  « 15 chantiers comparables ».
+
+**Un mécanisme à signaler avant tout correctif :** `apprendrePrixGrille` et
+`retenirLecon` apprennent depuis une ligne qui porte DEUX prestations. Un prix
+posé sur « tonte + érable » s'écrit dans la case abattage de sa grille, tonte
+comprise, et revient ensuite avec l'autorité de l'expérience. Rien n'a été
+touché ; le correctif est en P0 du plan.
+
+**Vérifié plutôt que supposé :** les fonctions pures ont été rejouées hors du
+dépôt sur ses chaînes exactes. Elles reproduisent ses deux écrans au caractère
+près, phrase du rappel comprise. Son devis à lui, en revanche, n'est pas
+identifiable depuis ici — il vit dans la base de son espace, et c'est écrit
+comme tel.
 
 ### « Mon compte » : quarante mots de moins
 

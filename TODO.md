@@ -194,6 +194,138 @@ Ce qu'il faudrait : reconnaître ce refus précis et rendre « Atlas est en
 maintenance, vos données sont là, l'enregistrement reprend dans un instant ».
 Petit travail, mais il touche tous les chemins d'écriture — donc un lot à lui.
 
+## D'où vient la dérive de ses `node_modules` ? (29 août 2026)
+
+**Le symptôme est réparé, la cause ne l'est pas.** Son espace exécutait
+`Next 16.3.3` alors que `package.json` ET `package-lock.json` épinglent
+`16.3.2`, tous deux à la version exacte. Sa construction mourait donc sans un
+mot (`ARCHITECTURE.md` §204), et le banc réinstalle désormais avant de bâtir.
+
+**Ce qu'on ne s'explique pas :** `demarrer.sh` joue `npm ci`, et en repli
+`npm install`. Aucun des deux ne devrait installer 16.3.3 devant un pin exact
+et un verrou concordant.
+
+Pistes, aucune vérifiée :
+
+| | |
+|---|---|
+| un `npm install <paquet>` joué à la main dans son espace | remonterait Next au passage |
+| un `npm ci` interrompu, repris par le repli `npm install` | laisserait un état mixte |
+| un cache npm servant une archive d'une autre version | expliquerait le pin ignoré |
+| son `.env.local` ou un outil tiers touchant à `node_modules` | non exploré |
+
+**Comment le savoir la prochaine fois :** son témoin d'échec porte maintenant la
+sortie de la construction, et sa fiche la publie. Si la dérive revient, le banc
+la nommera avant de bâtir (« next 16.3.3 au lieu de 16.3.2 ») — c'est cette
+ligne-là qu'il faudra rapprocher de ce qu'il venait de faire.
+
+---
+
+## `test-acces-salarie-e2e` tombe sur main, seule et reproductible (29 août 2026)
+
+**Établi, pas supposé** : la suite échoue à l'identique sur `main` (`a23bf24`),
+jouée SEULE, sans aucun commit par-dessus. Ce n'est donc ni une collision entre
+suites, ni le manque de mémoire du ticket ci-dessous.
+
+L'étape qui tombe, toujours la même :
+
+    ✗ mais SA feuille de chantier, elle, sort — sans un seul montant
+
+Le symptôme change d'un essai à l'autre, et c'est ce qui rend le diagnostic
+trompeur :
+
+| Contexte | Ce que Playwright dit |
+|---|---|
+| dans la batterie complète | `page.goto: Timeout 45000ms exceeded` |
+| jouée seule | `page.goto: net::ERR_CONNECTION_RESET` |
+
+Les deux portent sur `http://localhost:3000/login`, et les deux disent la même
+chose : **le serveur ne répond plus à cet instant précis.** Le journal du
+serveur montre juste avant une route PDF lourde qui se compile
+(`/api/chantiers/[chantierId]/feuille/pdf`, rendue en 404 après 6,5 s) et un
+`GET /login` à **86 secondes**.
+
+**Piste, non vérifiée :** la compilation de la route PDF de la feuille de
+chantier étrangle le serveur au point qu'il ne répond plus, voire se fait
+abattre. À confronter au ticket ci-dessous, qui décrit le même coupable
+(Turbopack) dans un autre contexte.
+
+**Ce que ça ne doit PAS faire croire :** la fonctionnalité n'est pas forcément
+cassée. Les sept autres vérifications de cette suite passent, y compris celles
+qui gardent l'isolation du salarié. Ce qui échoue est l'ACCÈS au serveur, pas la
+règle métier.
+
+---
+
+## ~~La fiche ne sait pas dire « construction TUÉE »~~ — RÉGLÉ le 29 août 2026
+
+**Trouvé en diagnostiquant sa lenteur du 29 août** (`ARCHITECTURE.md` §203), et
+c'est ce qui a rendu ce défaut si long à voir — de son côté comme du nôtre.
+
+`diagnostiquer-espace.mjs` distingue trois états : version bâtie, construction
+**échouée** (témoin d'échec présent), construction **en cours**. Mais le témoin
+d'échec n'est écrit par `banc.mjs` que lorsque `next build` **rend un code de
+sortie**. Or une construction abattue par le tueur de mémoire n'en rend aucun :
+le processus disparaît, personne n'écrit le témoin, et la fiche annonce
+« construction en cours » — indéfiniment, et à tort.
+
+**Ce que ça coûte :** le patron lit « en cours » et attend ; nous lisons « en
+cours » et concluons que ça avance. Les deux sont faux, et rien ne le dit.
+
+**RÉGLÉ, et la piste ci-dessus n'a pas servi : le diagnostic de départ était
+faux.** Un processus abattu rend bien un code à son père — la capture du patron
+de 22 h 37 montrait « La dernière construction a échoué », donc le témoin ÉTAIT
+écrit. Le vrai défaut était ailleurs, et plus grave : `banc.mjs` jetait le
+SIGNAL (`code ?? 1`), si bien qu'un abattage mémoire s'écrivait `code: 1`,
+exactement comme une erreur de compilation. Le signal est désormais consigné et
+relu (`scripts/lire-echec-construction.mjs`), et la fiche nomme le manque de
+mémoire avec le relevé de l'instant. Voir `ARCHITECTURE.md` §203.
+
+## ⚠ Les deux suites du veilleur rougissent quand un `next build` traîne — DIAGNOSTIQUÉ, non corrigé (29 août 2026)
+
+**Symptôme.** `test-relance-construction.ts` et `test-fiche-pendant-relance.ts`
+rougissent en disant *« le veilleur n'a rien retenté — il a appelé : rien du
+tout »* et *« le montage ne reproduit pas le cas réel »*. Jouées seules elles
+passent. C'est le motif exact d'une suite qu'on classe « aléatoire » à tort.
+
+**La cause, mesurée et non supposée.** `veiller.sh` ligne 258 :
+
+```bash
+if ! pgrep -f '[n]ext build' >/dev/null 2>&1; then
+```
+
+`pgrep` balaie **toute la machine**, pas les processus de la suite. N'importe
+quel processus dont la ligne de commande contient « next build » fait donc
+sauter la relance, et les trois cas qui l'attendent mesurent zéro — pendant que
+les deux cas qui attendent l'ABSENCE de relance passent. Ce partage-là est la
+signature : cas 1, 3 et 4 rouges, cas 2 et 5 verts.
+
+**Comment ça a été établi.** Le veilleur lui-même a été chronométré hors suite :
+première relance en **39 ms**, trois fois sur trois — le budget de 3 500 ms de
+la suite est donc très large, et le temps n'y est pour rien. Puis un processus
+nommé `next build` a été posé à côté délibérément : les trois mêmes cas
+rougissent. Retiré, les suites passent 3/3.
+
+**Pourquoi il est apparu maintenant.** Deux batteries jouées le même soir :
+
+| | Étape Construction | Les deux suites |
+|---|---|---|
+| avant nettoyage des sorties de build | ❌ (validateur périmé) — aucun `next build` n'a tourné | **vertes**, 274/274 |
+| après nettoyage | ✅ — un vrai `next build` a tourné | **rouges**, 273/275 |
+
+Réparer la construction a donc rendu ces deux suites rouges. C'est
+contre-intuitif, et c'est exactement pourquoi ça mérite d'être écrit.
+
+**Ce qui reste à décider, et n'a PAS été fait** — hors du lot dictée → devis,
+et le patron a demandé le 29 août de ne pas corriger au passage ce qui n'a pas
+de rapport. Deux pistes : donner au veilleur un motif détournable pour les
+épreuves (comme `ATLAS_TEMOIN_ECHEC` l'est déjà), ou restreindre la recherche
+aux processus du même groupe. La première est plus simple et suit une habitude
+déjà prise dans ce fichier.
+
+**Sans rapport avec la chaîne dictée → devis** : ces suites éprouvent le
+veilleur du banc, rien d'autre.
+
 ---
 
 ## La batterie ne tient plus en un seul serveur — NON DIAGNOSTIQUÉ (27 août 2026)
@@ -232,6 +364,30 @@ dans le produit — mais elle n'est pas comprise pour autant.
 (`scripts/` non modifié ; pilote jeté, dans le bac à sable de la session).
 Aucune assertion touchée, aucun délai ajouté, aucune suite écartée. Résultat
 **115/115**.
+
+**REVU LE 30 AOÛT 2026 — et cette fois la mort arrive PLUS TÔT.** Batterie
+complète : le serveur est abattu après la **deuxième** suite navigateur
+(`test-acces-salarie-e2e`), pas après la treizième. `dmesg` :
+`Memory cgroup out of memory: Killed process … next-server … anon-rss:13287232kB`
+— 13,2 Go, le même plafond qu'au 27 août. Résultat de la batterie d'une traite :
+**1/116**.
+
+Rejouées par tranches, un serveur neuf par tranche, puis **seules** pour les
+quinze suites qu'aucune tranche n'avait pu jouer : **116/116**. Aucune assertion
+touchée, aucun délai ajouté.
+
+Ce que ce tour ajoute au diagnostic :
+
+  · le point de bascule n'est **pas** `test-coupure-sessions-e2e` — ce jour-là
+    la mort est arrivée onze suites plus tôt, sur une suite qui passe seule ;
+  · le plafond, lui, ne bouge pas : 13,2–13,5 Go dans les deux relevés ;
+  · **piège de méthode, payé ce jour-là :** un pilote de tranches signalé
+    « échoué » par l'outillage tournait encore. Un second pilote lancé dessus a
+    partagé le port 3000, et a rendu **quatorze faux rouges** d'affilée. C'est
+    `CLAUDE.md` §5 à la lettre — la batterie est une machine à un seul occupant
+    —, et cela vaut aussi pour les pilotes qui la découpent. **Vérifier
+    `ps aux | grep test:e2e` avant d'en relancer un**, plutôt que de croire le
+    code de sortie.
 
 **Qui peut le trancher :** nous, en cherchant ce que `test-coupure-sessions-e2e`
 fait faire à Turbopack — la piste la plus courte est de rejouer la suite sur le
@@ -360,7 +516,14 @@ dans l'ordre alphabétique.
 
 **Et il ne faut PAS les renuméroter** : la clé de suivi est le nom du fichier.
 Renommer l'une la ferait rejouer sur toute base qui l'a déjà appliquée. Le
-numéro suivant est **0068**, à prendre une seule fois.
+numéro suivant est **0070**, à prendre une seule fois.
+
+**La seule renumérotation permise, et elle a servi le 27 août 2026 :** celle
+d'une migration qui n'est **pas encore sur `main`**. Aucune base ne l'a
+appliquée que celle de la session qui l'écrit — il suffit d'y corriger la ligne
+de `_migrations`. C'est ainsi que `0068_fil_assistant.sql` est devenu
+`0069_…` en découvrant `0068_effacement_client_devis_envoye.sql` à la fusion.
+Une fois sur `main`, c'est trop tard : on prend le numéro suivant.
 
 ## ✅ ~~Coder « Quand je reverse la TVA »~~ — fait le 26 août 2026
 
@@ -483,6 +646,21 @@ chaque tour, une ou deux suites tombent — et **jamais les mêmes** :
 | 2 | `test-lecons-prix-e2e` — « le prix 1400 n'est jamais arrivé en base : 0.00 » |
 | 3 | `test-periodicite-tva-e2e` — « Tous les trimestres n'a pas été enregistré : la case n'est pas cochée après rechargement » (relevé depuis un AUTRE lot, celui des salariés) |
 | 4 | `test-fiche-pendant-relance` — verte à la batterie suivante, sur une machine reposée |
+| 5 | `test-devis-doublon-e2e` — « Aucune proposition de prix après trente secondes », **verte 1/1 rejouée seule** dans la minute (29 août) |
+
+**⚠ Le tour 4 n'appartient PAS à cette liste, et son vrai motif a été trouvé le
+29 août 2026.** `test-fiche-pendant-relance` ne dépend pas de la charge :
+`veiller.sh` demande à `pgrep -f 'next build'` si une construction tourne déjà,
+et pgrep balaie **toute la machine**. Tout processus portant ce texte fait
+sauter la relance que la suite attend. Le veilleur retente en **39 ms** quand on
+le chronomètre seul, là où la suite lui laisse 3 500 ms : le temps n'y était
+pour rien. Le diagnostic complet, et l'expérience qui le prouve, sont à l'entrée
+« Les deux suites du veilleur » en tête de ce fichier.
+
+**Pourquoi ça compte au-delà de cette ligne :** une suite classée « aléatoire »
+cesse d'être crue, et celle-ci avait une cause nette. Avant d'ajouter une
+sixième occurrence ici, vérifier qu'il s'agit bien d'un délai fixe — sinon on
+range un vrai défaut dans le tiroir des faux.
 
 **Toutes sont VERTES rejouées seules**, immédiatement après. Aucune n'est
 touchée par les lots en cours — le planning d'un côté, les salariés de l'autre —
@@ -542,6 +720,229 @@ ferait disparaître, et le contrôle est la seule chose qui le dira.
 
 ---
 
+## Dictée → devis : ce que l'audit du 26 août a trouvé
+
+### Un dossier pour ChatGPT à chaque étape
+
+**Sa consigne du 26 août 2026 :** *« Je vais tout montrer à ChatGPT, donc fais-moi
+des dossiers que je peux lui copier-coller à chaque fois. »*
+
+`docs/pour-chatgpt/` — un fichier numéroté par étape, autonome (ChatGPT n'a pas
+le dépôt), qui se termine par des questions dont au moins une lui demande de nous
+contredire. La convention tient dans `docs/pour-chatgpt/README.md`.
+
+**Ce ne sont pas des documents de mémoire** : ce sont des instantanés, ils ne se
+tiennent pas à jour et ne se corrigent pas après coup. Un verdict qui se révèle
+faux est repris **dans le dossier suivant**, noir sur blanc (`CLAUDE.md` §2 bis).
+Les tenir à jour recréerait la règle en double que `CLAUDE.md` §3 interdit.
+
+### ⏰ À LUI RAPPELER : la liste complète des travaux qu'il vend
+
+**Sa réponse du 27 août 2026 :** *« Oui j'en vend mais attend on créera une
+liste complète ensuite si tu le veux faudra que tu me le rappelle. »*
+
+Il vend donc bien de la **plantation** et de la **clôture** — deux natures qui
+n'existent **nulle part** dans le dépôt : ni dans `src/lib/lignes-vendables.ts`, ni
+dans `src/lib/prix-attribuable.ts`, ni dans `src/lib/lecons-prix.ts`. Le vocabulaire
+réellement présent se limite à : abattage, élagage, haie, dessouchage, fendage,
+grumes, broyage, évacuation, billonnage.
+
+**Ce n'est pas une tâche pour lui : c'est une dette de notre côté.** Il a
+demandé qu'on le relance, pas qu'on lui laisse le soin d'y penser. Une session
+qui reprend ce chantier commence donc par le lui redemander — en lui montrant la
+liste ci-dessus, pour qu'il ait juste à dire ce qui manque.
+
+**Ce qui reste bloqué tant qu'elle n'existe pas.** Les trois consommateurs
+ci-dessus continuent de deviner la nature par expressions régulières sur le
+libellé, alors que la colonne `prestations.nature` existe depuis le lot B
+(2026-08-27). On ne peut pas la brancher sur une liste inventée : une nature
+absente de la liste ferait retomber le travail dans le fourre-tout `principal`
+(P3), c'est-à-dire sur la ligne d'abattage — exactement le défaut que l'audit a
+mesuré. **Ne pas inventer les natures manquantes** (`CLAUDE.md` §4 : « inventer
+une prestation » est interdit) ; les lui demander.
+
+### ✅ La correction complète est faite — 27 août 2026
+
+**Sa consigne du 27 août :** *« Je ne veux plus découper cette correction en une
+succession de micro-lots nécessitant ma validation. Tu as l'autonomie technique
+pour terminer la correction complète. »*
+
+Fait, en une passe. Le détail complet est dans `ARCHITECTURE.md` §205 ; le
+dossier à retransmettre est `docs/pour-chatgpt/07-correction-complete.md`.
+
+| | État |
+|---|---|
+| **P0** — arrêter la pollution de la grille | ✅ 26 août, et porté sur les colonnes le 27 |
+| **P1** — porter la quantité jusqu'au bout | ✅ elle atteint enfin le CALCUL, pas seulement la base |
+| **P2** — donner un sens à « comparable » | ✅ signature V2, à côté de la V1 jamais réécrite |
+| **P3** — casser le fourre-tout `principal` | ✅ référentiel des natures ; une nature inconnue garde sa ligne |
+| **P4** — dire pourquoi une ligne est à 0 € | ✅ elle n'est plus à 0 € : elle est « à chiffrer » |
+| **P5** — ne plus tronquer en silence | ✅ `stop_reason` lu, forme vérifiée, plafond relevé |
+| **P6** — vocabulaire au transcripteur | ⛔ hors périmètre (sa décision) ; la branche catalogue reste ouverte |
+
+**UNE SUITE NAVIGATEUR ENCORE ROUGE, ET ELLE N'EST PAS DE CE LOT.**
+`test-reste-equipes-e2e.ts`, second cas : *« 1 date(s) retenues au lieu de deux :
+rien à comparer »*. **Prouvé antérieur** : la suite échoue à l'identique sur
+`ed8f074`, avant la première ligne du lot dictée → devis.
+
+Ce qui a été établi, pour ne pas repartir de zéro :
+
+* les deux jours d'essai sont bien dans le même mois (30 et 31 août) — ce n'est
+  donc pas le passage de mois de `caseDuJour` ;
+* **avant même le second clic, DEUX dates sont déjà retenues** : la case du
+  30 août, plus deux boutons « proposée » hors calendrier. Le troisième clic
+  bute donc sur le plafond de deux dates, et l'une saute ;
+* c'est la **quatrième** version de ce cas à rougir sur du code juste (les trois
+  premières sont racontées dans le fichier). Le produit n'est pas en cause.
+
+Une correction a été tentée puis **retirée** : faire choisir deux jours du même
+mois ne suffit pas, et livrer une modification de contrôle non éprouvée est pire
+que le rouge lui-même.
+
+**✅ ~~Une suite navigateur rouge, antérieure à ce lot~~ — réparée le 27 août 2026.**
+`test-carte-reponse-mene-au-geste-e2e.ts` prenait le dernier jour libre du
+calendrier pour jouer « le client accepte sur une AUTRE date ». Ce jour tombait
+parfois pile sur l'une des dates proposées : l'acceptation n'était alors plus une
+contre-proposition, et `notificationsPatron` ne produit volontairement aucune
+carte dans ce cas. **Le contrôle accusait le produit d'un défaut qui n'existait
+pas.** Il choisit désormais un jour distinct des dates proposées, et refuse de
+conclure s'il n'en trouve aucun.
+
+**Ce qui reste ouvert, et pourquoi :**
+
+- **La question métier des unités de comptage.** « Dessouchage de DEUX souches
+  de 60 cm » : le prix de grille est celui d'UNE souche. Multiplier serait
+  inventer un prix, ne pas multiplier facture une souche pour deux. Le
+  comportement d'aujourd'hui est conservé et **l'écran pose la question** ;
+  c'est à lui de trancher.
+- **L'écran de correction d'une mesure.** Le chemin serveur existe et il est
+  éprouvé (`corrigerMesurePrestation`) ; la planche attend sa réponse :
+  `https://florianmarrins0978-svg.github.io/Atlas-app/corriger-une-mesure.html`
+- **La branche catalogue morte** (`chiffrerChantier` appelé sans
+  `motCleCatalogue`) : les mots qu'il range dans *Réglages → Catalogue* n'ont
+  toujours aucun effet sur ses devis dictés. À brancher, ou à supprimer et le
+  dire.
+- **Ce qui n'a pas pu être éprouvé ici, faute de clé** : ce que le modèle rend
+  vraiment pour `nature` et `espece`, Whisper, et le `stop_reason` réel. Le §15
+  du dossier 07 les liste, et le §16 donne le seul test à jouer sur son espace.
+
+---
+
+### Le plan ajusté après cartographie (26 août 2026)
+
+**Historique — ce qui suit décrit l'état d'AVANT la correction du 27 août.**
+Conservé parce que le chemin explique les décisions ; ce qui fait foi
+aujourd'hui, c'est le tableau ci-dessus.
+
+`docs/audit-dictee-devis-cartographie.md`. Les suites A→H sont écrites et
+rouges ; la batterie complète est à 247/249, et les deux échecs sont elles.
+
+**Ce qui a changé par rapport au plan d'hier :**
+
+- **P6 « vocabulaire au transcripteur » est RETIRÉ** — le patron l'a mis hors
+  périmètre : *« ne modifie ni Whisper ni les paramètres de transcription dans
+  ce lot »*. La seconde moitié de P6 (la branche catalogue) reste ouverte, mais
+  **elle n'est pas morte** : `src/server/ai/tools/calculer-chiffrage.ts` la fait vivre pour
+  l'assistant. Seule la dictée ne l'appelle pas.
+- **P1 se dédouble.** La migration peut partir seule ; la quantité écrite sur la
+  ligne ne peut PAS partir sans nettoyer le libellé le même jour, sinon la
+  feuille de chantier affiche « Haie (tout genre) (800 ml) — 800 »
+  (`tachesDuChantier`, `devis.ts` l. 584).
+- **H commence par l'interface, pas par le plafond.** `stop_reason` est jeté par
+  le fournisseur Anthropic ; `ResultatLLM` ne porte que `{ succes, texte }`.
+  Relever `max_tokens` sans porter la marque de coupure ne ferait que déplacer
+  le silence.
+
+**Six migrations additives**, aucune destructive : M1/M2 (modèle métier sur
+`prestations`), M3 (`prestation_id` sur `lignes_prix` — le lien manquant),
+M4 (état « non chiffré »), M5 (`unite` sur `lignes_devis`), M6 (`signature_v2`
+**à côté** de la V1, jamais à la place).
+
+**Une question ouverte pour le patron** (§6 du document) : rendre le prix
+nullable toucherait `lignes_facture`, donc la facturation, qu'il a mise hors
+périmètre. Un drapeau sur `lignes_prix` seule y reste. À trancher avant M4.
+
+**Le seuil de comparabilité ne sera pas inventé.** Rien dans le dépôt ne
+justifie un ×2 ou un ×5 ; ce que les données permettent, ce sont des critères
+éliminatoires. Le facteur d'écart sur la quantité demande de regarder ses vrais
+devis — à signaler plutôt qu'à fixer au jugé.
+
+Lecture seule, **aucun code écrit** — le patron a demandé de ne rien corriger
+avant son feu vert. Le détail complet, fichiers et numéros de ligne, est dans
+`docs/audit-dictee-devis.md`. Ce qui suit est la liste de travail qui en sort,
+dans l'ordre où il faudra la prendre.
+
+**✅ ~~P0 — arrêter la pollution de la grille et de la mémoire de prix~~ — fait le 26 août 2026** (`src/lib/prix-attribuable.ts`, `docs/pour-chatgpt/03-lot-A-p0.md`). Batterie 248/250, aucune régression. Ce qui suit décrit le défaut tel qu'il était :
+`apprendrePrixGrille` (`services/apprendre-grille.ts:51`) et `retenirLecon`
+classent une ligne au **premier mot de métier reconnu**. Or la ligne principale
+d'un devis dicté porte souvent DEUX prestations (« Tonte de la pelouse (1200 m²)
+\nÉrable — démontage en rétention ») : le motif `ABATTAGE` répond, et le prix du
+lot entier part dans la case abattage × rétention × ⌀ de sa grille. Il revient
+ensuite tout seul sur chaque démontage, avec l'autorité de l'expérience, et rien
+ne le dit à l'écran. **Ne rien enseigner depuis une ligne qui porte plus d'une
+nature.** Fonction pure, quelques lignes, aucune migration — et le contrôle doit
+savoir rougir contre la version d'aujourd'hui.
+
+**P1 — porter la quantité jusqu'au bout.** Le modèle rend correctement
+`quantite: "800"` / `unite: "ml"` ; `libelleAvecQuantite`
+(`ai/services/brouillon-service.ts:169`) les **recolle au libellé** parce que la
+table `prestations` (`schema.ts:627`) n'a qu'une colonne de texte. Puis
+`ajouterLignePrix` (`repositories/lignes-prix.ts:35`) écrit `quantite: "1"` en
+dur. Le « QTÉ = 1 » qu'il voit n'est pas une décision de forfait : c'est une
+colonne jamais renseignée sur ce chemin. Colonnes `quantite`/`unite` sur
+`prestations`, écriture jusqu'à `lignes_prix` — **migration additive**.
+
+**P2 — donner un sens à « comparable ».** `signatureLecon`
+(`lib/lecons-prix.ts:84`) construit une clé de trois jetons — nature | technique
+| tranche de diamètre — comparée par **égalité de chaîne exacte** en SQL. Ni
+espèce, ni quantité, ni unité, ni grandeur : 50 ml et 800 ml de haie ont la même
+clé, d'où les « 15 chantiers comparables ». Ajouter l'espèce et l'ordre de
+grandeur, refuser le rappel au-delà d'un facteur d'écart — sa règle déjà écrite
+dans le module : *mieux vaut aucun rappel qu'un rappel faux*.
+**Attention : les clés sont STOCKÉES dans `lecons_prix.signature`.** Changer leur
+format sans migration orpheline toute sa mémoire de prix.
+
+**P3 — casser le fourre-tout `principal`** (`lib/lignes-vendables.ts:170`). Cinq
+cases seulement : haie, fendage, dessouchage, grumes, et `principal` qui ramasse
+tout le reste — tonte, plantation, désherbage, clôture. Le découpage a été conçu
+pour *détacher* ce qu'un client peut refuser, pas pour *distinguer* deux travaux
+sans rapport. Une nature par prestation, une ligne par nature.
+
+**P4 — dire sur le devis pourquoi une ligne est à 0 €.** Quand `repartir` rend
+`null` (`proposition-prix.ts:533`), toutes les détachables sont forcées à `"0"`
+et l'explication reste sur l'écran Prix, dans `donneesManquantes` — jamais sur le
+devis qu'il regarde. Même raisonnement que `CLAUDE.md` §4 ter pour l'arrosage :
+une réserve tue vaut un mensonge. Signaler aussi un prix proposé très éloigné du
+seul comparable connu (550 € en mémoire, 840 € proposés, et rien ne le dit).
+
+**P5 — ne plus tronquer les longues dictées en silence.**
+`providers/llm/anthropic.ts:178` borne l'extraction à `max_tokens: 1024`, pour
+une sortie qui grandit avec le nombre de prestations. Coupée en plein JSON, elle
+bascule sur `lireLitteralement` **sans qu'aucune trace ne distingue ce cas d'une
+panne de clé**. Relever le plafond, et journaliser la troncature.
+
+**P6 — le vocabulaire au transcripteur, et la branche catalogue morte.**
+`whisper-1` est appelé sans le moindre terme de métier
+(`providers/transcription/openai.ts:22`), alors que `termes_metier` part déjà au
+modèle d'extraction. Et `chiffrerChantier` est appelé **sans `motCleCatalogue`**
+(`chiffrage/proposition-prix.ts:336`) : `rechercherCartes` et `historique_prix`
+ne sont donc jamais consultés depuis la dictée — les mots qu'il range dans
+*Réglages → Catalogue* n'ont aucun effet sur ses devis dictés. La brancher, ou la
+supprimer et le dire ; un chemin mort qui a l'air vivant coûte plus cher qu'un
+chemin absent.
+
+**Les contrôles à écrire AVANT de corriger** sont listés au §13 du document —
+tous rouges aujourd'hui, tous écrits sur une règle et jamais sur un libellé
+d'écran (`CLAUDE.md` §5 bis).
+
+**Ce qu'une correction peut casser**, et qui ne se devine pas : les clés de
+`lecons_prix` (stockées), les formats `⌀ 45 cm` et `12 m de haut` que
+`mesures-arbre.ts` **relit** pour trouver la case de la grille, les identifiants
+`<sujet>#<rang>` persistés dans `precisions_chantier`, le report des précisions
+qui retrouve une prestation par le début de son libellé, et l'ordre des natures
+qui doit rester le même dans `apprendre-grille.ts` et `lignes-vendables.ts`.
+Le §12 du document les détaille.
+
 ## ✅ ~~Le format des numéros de devis et de factures~~ — fait le 26 août 2026
 
 ~~Sa demande du 26 août : « dans la catégorie facture il faut rajouter le format
@@ -555,16 +956,95 @@ repart de 1 ; un artisan qui migre depuis un autre logiciel voudra continuer à
 demandera, c'est une colonne de départ sur `entreprise_compteurs`, pas un
 nouveau format.
 
+## ⚠ L'effacement d'un client ne balaie pas tout le fil de l'assistant
+
+**Depuis le 27 août 2026**, l'effacement des données d'un client retire les
+messages d'assistant **attachés aux chantiers de ce client**. Un message posé
+depuis un autre écran ne porte aucun chantier et peut pourtant le nommer — « le
+devis de Lucie », tapé depuis l'accueil, reste.
+
+**Ce qui limite déjà la portée** : le fil est plafonné à trente messages
+(`fil-assistant.ts`), donc il se vide de lui-même en une quinzaine d'échanges,
+et « Oublier » le vide d'un geste. Ce n'est pas une garantie, c'est une
+atténuation.
+
+**Ce qu'il faudrait pour bien faire** : que l'effacement cherche aussi dans le
+TEXTE des messages — le nom du client, celui de ses chantiers. C'est faisable
+et ce n'est pas anodin (un nom courant balaierait des échanges sans rapport) :
+à trancher avant de coder, pas en codant.
+
+## ⚠ « Ça ne marche pas la dictée » — NON REPRODUIT ici
+
+**Sa capture du 27 août 2026 au soir**, sur son espace : *« La dictée n'a pas
+abouti. Vous pouvez écrire votre question. »* — la phrase du `catch` de l'écran,
+celle qu'on affiche quand on ne sait rien. **Rien n'a été reproduit sur ce
+poste** : la dictée y passe de bout en bout par le fournisseur `dev`.
+
+**Ce qui a été livré, et qui n'est pas un correctif :** l'action ne lève plus.
+Chaque refus rend sa phrase — audio refusé, transcription refusée avec le motif
+du fournisseur, rien entendu — et l'imprévu se journalise
+(`dictee_assistant_panne`). **Le prochain essai dira où regarder** ; celui-ci ne
+le pouvait pas.
+
+**Deux pistes corrigées au passage, sans preuve qu'elles soient la cause :** le
+fichier portait « .webm » quel que soit le format réel (un iPhone rend du mp4),
+et rien ne journalisait ni la taille ni le type reçus.
+
+**Ce qu'il faut LUI demander au prochain essai** : la phrase exacte affichée.
+Elle nomme désormais le coupable — porte d'entrée, fournisseur, ou panne.
+
+## ⚠ La lecture d'une photo par l'assistant n'a pas été vue sur un VRAI fournisseur
+
+**Livré le 27 août 2026**, et éprouvé ici par un fournisseur d'essai posé par la
+couture (`_reinitialiserFabriqueLLM`) — ce poste n'a aucune clé (`CLAUDE.md`
+§1 ter). Ce qui est tenu ici : le refus propre quand la vision manque, la
+lecture vide qui n'est pas un succès, la panne du fournisseur qui remonte SA
+raison, la place de la lecture dans la conversation, le périmètre.
+
+**Ce qui reste à voir sur son espace**, et c'est le cœur : qu'une vraie photo —
+un devis de fournisseur, une plaque, un relevé — soit lue avec ses CHIFFRES.
+C'est là que tout se joue : un résumé qui perd « 12 ml à 18 €/ml » ne sert à
+rien. **Lui demander une capture** du résultat plutôt qu'une commande.
+
+**Et ce que le fil ne garde pas** : la lecture d'une photo part avec la question
+mais n'est pas rangée dans le fil. Après un rechargement, la conversation garde
+sa question, pas ce que la photo montrait. C'est délibéré — le fil est plafonné
+à trente messages et une lecture de photo est longue —, mais il faudra le
+revoir s'il s'en plaint.
+
+## ⚠ Une proposition ne revient pas après un rechargement
+
+**Depuis le 27 août 2026**, le fil de l'assistant survit au rechargement — mais
+**seul le texte revient**. Si sa dernière réponse portait des cases à cocher
+(« j'ajoute la prestation X ? »), elles ont disparu : il relit une phrase qui
+propose quelque chose, sans le moyen de l'accepter.
+
+**Ce n'est pas une régression** — avant ce lot, le fil entier disparaissait. Mais
+c'est un demi-geste, et il se verra.
+
+**Pourquoi ce n'est pas réglé du même coup.** Rien ne relie un message à ses
+propositions : `propositions_ia` porte l'entreprise et le chantier, pas le
+message — ni même l'utilisateur. Les rattacher « à la dernière réponse » serait
+juste dans le cas courant et faux dès que deux personnes de la même entreprise
+utilisent l'assistant. **Le remède est une colonne de liaison**, donc une
+migration : `propositions_ia.message_id`, et un `utilisateur_id` tant qu'on y
+est.
+
+**En attendant, rien n'est perdu ni appliqué à tort** : les propositions
+dorment en base au statut `proposee`, et la confirmation se fait par
+identifiant — aucune ne peut être appliquée par erreur.
+
 ## L'agent : ce qu'il ne sait pas encore faire
 
 **FAIT le 26 août 2026** pour l'essentiel (`ARCHITECTURE.md` §188). Ce qui reste
 ouvert, et qu'il faudra sans doute lui demander :
 
-- **Des gestes non couverts** : composer la fiche d'entretien, régler les
-  documents (validité, acompte, mentions), gérer les absences d'équipe, lancer
-  un plan d'arrosage, créer un client SANS chantier, supprimer un chantier ou un
-  tarif. Chacun est une entrée de plus dans `TypeActionProposee` et un `case`
-  dans `appliquerPropositionsAction` — le patron est posé.
+- ~~**Des gestes non couverts**~~ — **six d'entre eux faits le 27 août 2026**
+  (« fais la dernière ») : supprimer un chantier, supprimer un tarif, poser une
+  absence d'équipe, régler les documents, ajouter et retirer une ligne de la
+  fiche d'entretien. **Restent ouverts** : lancer un plan d'arrosage, et créer
+  un client SANS chantier. Chacun est une entrée de plus dans
+  `TypeActionProposee` et un `case` dans `appliquerPropositionsAction`.
 - **Le filtre de périmètre attrape le cas franc, pas la totalité.** Une question
   du dehors sans marque connue passe au modèle, qui a la consigne. S'il signale
   une réponse hors-sujet, c'est une marque à ajouter dans `MARQUES_DU_DEHORS` —
@@ -3068,7 +3548,28 @@ Sans lui, elle aurait rendu du vert sans avoir rien éprouvé — le piège du
 
 ## Ce que je peux faire seul
 
-### 0 duotricies. ~~« Choisir la date »~~ — **CODÉE le 20 août 2026 (A, et la 2)**
+### 0 duodetricies. `test-fiche-pendant-relance` rougit — sur `main` NU
+
+**Constaté le 27 août 2026**, et vérifié dans un arbre séparé sur `origin/main`
+sans un seul de mes commits : la suite rougit à l'identique. Ce n'est donc pas
+une régression d'un lot, c'est **son propre montage** qui ne reproduit plus le
+cas.
+
+Son message le dit lui-même : *« le veilleur n'a jamais tenté de relance : le
+montage ne reproduit pas le cas réel »*. Le contrôle refuse de conclure plutôt
+que de rendre un vert qui ne prouverait rien — c'est la bonne attitude
+(`AGENTS.md`), et c'est pour cela qu'il ne faut pas le désactiver.
+
+**Ce qu'il défend, et qui compte** : la fiche du banc doit continuer d'être
+publiée PENDANT que le veilleur relance le serveur — la règle née de la nuit du
+12 au 16 août (`CLAUDE.md` §1 bis). Le premier cas de la suite, lui, passe.
+
+**Ce qu'il reste à faire** : remonter le montage pour qu'il bloque vraiment le
+veilleur sur une relance, ou dire pourquoi ce n'est plus possible ici.
+
+---
+
+## 0 duotricies. ~~« Choisir la date »~~ — **CODÉE le 20 août 2026 (A, et la 2)**
 
 **Sa demande, trois captures à l'appui :** *« Le bouton envoyer au client, tu vas
 me le modifier par Choisir la date […] sous forme de bouton vert comme tous les

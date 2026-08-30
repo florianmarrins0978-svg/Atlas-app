@@ -16,6 +16,8 @@ import { calculerChiffrage } from "./calculer-chiffrage";
 import { rechercherDocuments } from "./rechercher-documents";
 import { executerWorkflow } from "./executer-workflow";
 import { rechercherModeEmploi } from "./rechercher-mode-emploi";
+import { lireReglagesDocuments } from "./lire-reglages-documents";
+import { lirePrestationsEntretien } from "./lire-prestations-entretien";
 import { rechercherLignesDevis } from "./rechercher-lignes-devis";
 import { lireClients } from "./lire-clients";
 import { lirePlanning } from "./lire-planning";
@@ -49,6 +51,8 @@ export const outilsDisponibles: Outil[] = [
   rechercherDocuments,
   executerWorkflow,
   rechercherModeEmploi,
+  lireReglagesDocuments,
+  lirePrestationsEntretien,
   rechercherLignesDevis,
   lireClients,
   lirePlanning,

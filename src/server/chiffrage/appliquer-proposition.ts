@@ -1,5 +1,10 @@
 import type { Ctx } from "../repositories/context";
-import { ajouterLignePrix, listerLignesPrix } from "../repositories/lignes-prix";
+import {
+  ajouterLignePrix,
+  listerLignesPrix,
+  lierPrestationsALaLigne,
+  prestationsDuLibelle,
+} from "../repositories/lignes-prix";
 import { getTarif } from "../repositories/tarifs";
 import { preparerPropositionPrix } from "./proposition-prix";
 import { ligneDejaAuDetail } from "../../lib/proposition-au-detail";
@@ -96,7 +101,36 @@ export async function appliquerPropositionPrix(
       refusees.push(doublon.erreur);
       continue;
     }
-    const ligne = await ajouterLignePrix(ctx, chantierId, proposee.libelle, proposee.montant);
+    // **« À chiffrer » n'est pas « 0 € ».** Le montant reste à zéro en base —
+    // la facturation n'accepte pas de NULL —, mais le drapeau dit que ce zéro
+    // n'est pas un prix, et le devis ne partira pas tant qu'il est levé.
+    const ligne = await ajouterLignePrix(ctx, chantierId, proposee.libelle, proposee.montant ?? "0", {
+      quantite: proposee.quantite,
+      unite: proposee.unite,
+      prixUnitaire: proposee.prixUnitaire,
+      aChiffrer: proposee.montant === null,
+    });
+
+    // **On note quelles prestations cette ligne vend.** Sans ce lien, une ligne
+    // et ses travaux ne se connaissent que par leur texte — et c'est de là que
+    // vient la case d'abattage passée de 800 € à 1 500 € le 26 août 2026.
+    //
+    // **Les identifiants viennent du découpage lui-même** depuis le 27 août :
+    // la ligne SAIT ce qu'elle vend, au lieu qu'on le redéduise de son libellé.
+    // Le rapprochement par texte ne sert plus que de filet pour les chemins qui
+    // ne passent pas par le découpage (un tarif nommé, par exemple).
+    //
+    // Jamais bloquant : un lien qu'on ne sait pas écrire ne doit pas empêcher
+    // un devis d'exister. C'est la règle de l'apprentissage, et elle vaut ici.
+    try {
+      const ids =
+        proposee.prestationIds.length > 0
+          ? proposee.prestationIds
+          : await prestationsDuLibelle(ctx, chantierId, ligne.libelle);
+      await lierPrestationsALaLigne(ctx, ligne.id, ids);
+    } catch {
+      // Volontairement silencieux : voir ci-dessus.
+    }
     // Le détail relu en début de fonction ne connaît pas les lignes qu'on vient
     // d'écrire : sans cet ajout, deux lignes au même libellé passeraient toutes
     // les deux dans la même boucle.

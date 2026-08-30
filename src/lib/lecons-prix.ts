@@ -49,6 +49,18 @@ const TECHNIQUES: { cle: string; libelle: string; motif: RegExp }[] = [
 ];
 
 /**
+ * La technique lue dans un libellé — **mécanisme historique**.
+ *
+ * Exportée le 27 août 2026 pour que la comparabilité V2 sache relire les leçons
+ * déjà enregistrées, dont le libellé est tout ce qu'elles portent. Une seule
+ * lecture de ces mots, ici : deux auraient fini par diverger, et la V2 aurait
+ * cessé de retrouver ce que la V1 avait rangé (`CLAUDE.md` §3).
+ */
+export function techniqueDuLibelle(libelle: string): string | null {
+  return TECHNIQUES.find((t) => t.motif.test(libelle))?.cle ?? null;
+}
+
+/**
  * Regroupe les diamètres par tranche de 10 cm, **au plus proche**.
  *
  * **Sans tranche, la mémoire ne servirait jamais.** Un chêne de 68 cm et un de

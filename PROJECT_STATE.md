@@ -1,7 +1,12 @@
 # État du projet
 
 **Dernière mise à jour :** 2026-08-30 · branche `main`
-· dernière migration `drizzle/0069_journal_des_purges.sql`
+· dernière migration `drizzle/0070_prix_a_chiffrer_et_comparabilite.sql`
+
+*(Deux en-têtes de mise à jour cohabitaient ici depuis une fusion du 29 août,
+avec deux dates et deux migrations différentes — dont une périmée. Réunis : une
+ligne fausse coûte plus cher qu'une ligne absente, et celle-ci l'était à
+moitié.)*
 
 
 *(Le numéro du dernier commit ne figure plus ici : il était faux dès le commit
@@ -29,7 +34,58 @@ montants, les droits du patron et ceux du commercial.
 Trouvé en chemin et corrigé : les actions **photos** d'un chantier n'avaient
 aucune garde — un salarié pouvait en supprimer n'importe laquelle, pour de bon.
 
-Détail : `docs/salarie-planning-lecture-seule.md`, `ARCHITECTURE.md` §203.
+Détail : `docs/salarie-planning-lecture-seule.md`, `ARCHITECTURE.md` §208.
+
+## Plus aucune barre de défilement grise, la page comprise (30 août 2026)
+
+Sa plainte du jour, depuis son PC : *« sur PC les bandes déroulantes grises
+apparaissent, supprime-moi ça »*. Deuxième fois — le 11 août, seuls les cadres
+qui défilent avaient été couverts, pas **la page elle-même**, qui défile aussi
+(le gabarit lui donne `100dvh` de hauteur *minimale*).
+
+Sur téléphone cette barre est en surimpression et s'efface seule ; sur
+ordinateur elle s'installe à droite pour de bon. Le défaut ne pouvait apparaître
+que chez lui, et le contrôle qui aurait dû l'attraper écartait explicitement
+`<html>` et `<body>`.
+
+| | |
+|---|---|
+| `src/app/globals.css` | une règle universelle `* { scrollbar-width: none }` remplace la déclaration recopiée zone par zone |
+| `scripts/test-aucune-barre-de-defilement-e2e.ts` | mesure désormais la page ; éprouvé rouge (8 écrans sur 13) avant d'être éprouvé vert |
+
+Le défilement n'a pas changé — molette, doigt, clavier, focus. Détail :
+`ARCHITECTURE.md` §206.
+
+---
+
+## Le banc répare ses dépendances désaccordées (29 août 2026)
+
+Son espace exécutait Next 16.3.3 alors que le projet épingle 16.3.2 : les
+binaires natifs de Next étant versionnés à l'identique, la construction mourait
+après son en-tête, sans un mot — et la réinstallation automatique, qui exigeait
+un message, ne se déclenchait jamais.
+
+Le banc compare les versions avant de bâtir et réinstalle si elles ont dérivé.
+Un second filet rattrape une construction morte sans rien dire. Éprouvé contre
+son état exact. `ARCHITECTURE.md` §204.
+
+---
+
+## Le banc ne préchauffe plus quand la mémoire manque (29 août 2026)
+
+Son espace restait en mode lent des jours durant : le préchauffage des 32 écrans
+prend 887 Mo au serveur de développement, la construction de la version rapide
+en veut 2 500, et son espace n'en a que 2 900 de disponibles. Le noyau tuait la
+construction, le veilleur en relançait une, et rien ne se dénouait.
+
+Le préchauffage s'abstient désormais sous le seuil, et le dit avec sa borne :
+les premiers écrans sont lents *le temps de la construction, pas au-delà*. Les
+machines qui ont la place préchauffent comme avant.
+
+Éprouvé par `scripts/test-memoire-prechauffage.ts`, vu rougir contre trois
+régressions. Mesures et pistes écartées : `ARCHITECTURE.md` §203.
+
+---
 
 ## Ses salariés se comptent à part de ses équipes (26 août 2026)
 
@@ -107,6 +163,38 @@ rangée à distance du nom de la suivante : retiré sec, deux rangées se liraie
 comme une seule. La respiration passe de 19 à 24 px, et la première rangée garde
 22 px — tout ce qui reste de la démarcation qu'il avait demandée le 23 août.
 
+## La chaîne dictée → devis a été refaite (27 août 2026)
+
+*Le devis du 26 août portait trois défauts : la quantité dictée n'existait plus
+comme donnée, une tonte et un démontage partageaient une identité, et une ligne
+qu'on ne savait pas chiffrer s'écrivait « 0 € ». Le détail est dans
+`ARCHITECTURE.md` §205 ; le dossier à retransmettre est
+`docs/pour-chatgpt/07-correction-complete.md`.*
+
+**Fait.**
+
+| | Où |
+|---|---|
+| **Un référentiel des natures**, à la place de six vocabulaires dispersés — dont aucun ne connaissait la tonte | `src/lib/natures-prestation.ts` |
+| **Une nature inconnue garde sa propre ligne** et sort « à chiffrer » : identité et capacité de chiffrage ne se confondent plus | `src/lib/lignes-vendables.ts` |
+| **La quantité dictée atteint le CALCUL** — elle vivait en colonne et personne ne la lisait | `caracteristiqueDeLaQuantite` + `src/lib/mesures-prestation.ts` |
+| **Quantité physique et quantité commerciale**, formalisées et jamais synchronisées | `src/lib/quantite-commerciale.ts` |
+| **« À chiffrer » remplace « 0 € »** ; le devis ne se prépare ni ne s'envoie tant qu'une ligne attend son prix | migration 0070 + `src/lib/preparation-devis.ts` + `src/server/repositories/devis.ts` |
+| **Comparabilité V2**, à côté de la V1 jamais réécrite : ordre de grandeur, unité, espèce | `src/lib/comparabilite-prix.ts` |
+| **Sa correction tranche** au lieu de bloquer, et aucune extraction ne repasse dessus | `prestations.corrige_par_humain` |
+| **`nature` et `espece` viennent de la dictée**, dans une liste fermée et vérifiée | `src/server/ai/schemas/extraction.ts` + `src/lib/prestation-structuree.ts` |
+| **Une réponse tronquée cesse d'être une panne muette** | `ResultatLLM.fin` + `estJsonTronque` |
+
+**Ce qui n'est PAS vérifié ici, faute de clé :** ce que le modèle rend vraiment
+pour `nature` et `espece`, Whisper, et le `stop_reason` réel. Le §16 du dossier
+07 donne le seul test à jouer sur son espace.
+
+**Deux choses lui reviennent :** la planche
+`https://florianmarrins0978-svg.github.io/Atlas-app/corriger-une-mesure.html`,
+et la question « dessouchage de DEUX souches : faut-il multiplier le prix de
+grille par deux ? ».
+
+---
 ## Le numéro de ses documents se choisit (26 août 2026)
 
 *Sa demande : « dans la catégorie facture il faut rajouter le format de numéro,

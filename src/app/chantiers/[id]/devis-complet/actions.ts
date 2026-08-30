@@ -100,6 +100,10 @@ export async function majLigneAction(
     // à l'avance ne serait jamais remplie ; celle-ci se remplit en travaillant.
     try {
       await apprendrePrixGrille(ctx, ligne.chantierId, {
+        // Son identifiant : c'est ce qui permet de savoir quelles prestations
+        // cette ligne vend, donc de lire leurs natures et leurs mesures en
+        // colonnes plutôt que de relire son texte (migration 0069).
+        id: ligne.id,
         libelle: ligne.libelle,
         montant: ligne.montant,
       });

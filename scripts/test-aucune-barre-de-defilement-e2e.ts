@@ -18,6 +18,17 @@ import { Pool } from "pg";
 // jour-là ; ce contrôle répare la classe entière, y compris la zone qui n'existe
 // pas encore.
 //
+// **ET LA PAGE ELLE-MÊME EN FAIT PARTIE — corrigé le 30 août 2026.** Ce
+// contrôle écartait `<html>` et `<body>` en les déclarant « pas de notre
+// ressort ». Ils l'étaient : le gabarit donne à la page `100dvh` de hauteur
+// minimale, donc tout écran un peu long fait défiler la fenêtre. Sur un
+// téléphone cette barre-là est en surimpression et s'efface toute seule ; sur un
+// ORDINATEUR elle prend sa place à droite et ne s'en va jamais. Le patron l'a
+// signalé de son PC — *« sur PC les bandes déroulantes grises apparaissent,
+// supprime-moi ça »* —, et le contrôle qui devait l'attraper regardait
+// délibérément ailleurs. C'est le pire des angles morts : une exclusion écrite
+// noir sur blanc, qu'on relit sans méfiance.
+//
 // **Ce qu'il regarde, et ce qu'il ne regarde pas.** Il lit `scrollbar-width` sur
 // chaque zone qui défile pour de bon — pas les pixels. Ce n'est pas un choix de
 // facilité : dans ce navigateur sans tête, la barre est en surimpression, elle
@@ -45,24 +56,28 @@ async function cas(nom: string, verifier: () => Promise<void>) {
 /**
  * Les zones qui défilent VRAIMENT, et ce qu'elles déclarent.
  *
- * Deux précautions, chacune contre un faux positif :
+ * Une précaution, contre un faux positif : **on ne retient que ce qui
+ * déborde.** Un `overflow: auto` dont le contenu tient tout entier ne montre
+ * aucune barre ; exiger la règle sur lui serait accuser un écran sain.
  *
- *   - **on ne retient que ce qui déborde.** Un `overflow: auto` dont le contenu
- *     tient tout entier ne montre aucune barre ; exiger la règle sur lui serait
- *     accuser un écran sain.
- *   - **on écarte `<html>` et `<body>`.** La page entière ne défile pas dans
- *     cette application — chaque écran tient dans un cadre fixe — mais un
- *     débordement d'un pixel suffirait à les faire entrer dans la liste, et la
- *     barre de la fenêtre n'est pas de notre ressort.
+ * **`<html>` est dedans depuis le 30 août 2026.** La page entière défile bel et
+ * bien — `100dvh` est une hauteur MINIMALE, pas un plafond — et c'est cette
+ * barre-là que le patron voit sur son PC. On la mesure sur `<html>` seul : c'est
+ * lui qui porte le défilement de la fenêtre, et `<body>` la signalerait une
+ * seconde fois pour une seule barre à l'écran.
  */
 const SONDE = `(() => {
   const fautives = [];
   for (const el of document.querySelectorAll("*")) {
-    if (el === document.documentElement || el === document.body) continue;
+    if (el === document.body) continue;
     const s = getComputedStyle(el);
+    // La page défile par la fenêtre : son débordement ne se mesure pas comme
+    // celui d'un cadre (« visible » n'y veut pas dire « rien ne dépasse »).
     const deborde =
-      (/(auto|scroll)/.test(s.overflowY) && el.scrollHeight > el.clientHeight + 1) ||
-      (/(auto|scroll)/.test(s.overflowX) && el.scrollWidth > el.clientWidth + 1);
+      el === document.documentElement
+        ? el.scrollHeight > window.innerHeight + 1
+        : (/(auto|scroll)/.test(s.overflowY) && el.scrollHeight > el.clientHeight + 1) ||
+          (/(auto|scroll)/.test(s.overflowX) && el.scrollWidth > el.clientWidth + 1);
     if (!deborde) continue;
     if (s.scrollbarWidth === "none") continue;
     const nom =
@@ -141,7 +156,11 @@ async function main() {
       const compte = (await page.evaluate(`(() => {
         let n = 0;
         for (const el of document.querySelectorAll("*")) {
-          if (el === document.documentElement || el === document.body) continue;
+          if (el === document.body) continue;
+          if (el === document.documentElement) {
+            if (el.scrollHeight > window.innerHeight + 1) n++;
+            continue;
+          }
           const s = getComputedStyle(el);
           if ((/(auto|scroll)/.test(s.overflowY) && el.scrollHeight > el.clientHeight + 1) ||
               (/(auto|scroll)/.test(s.overflowX) && el.scrollWidth > el.clientWidth + 1)) n++;
@@ -154,8 +173,9 @@ async function main() {
         throw new Error(
           `${fautives.length} zone(s) qui défilent laissent voir leur barre :\n      ` +
             fautives.join("\n      ") +
-            `\n      Ajouter « scrollbar-width: none » et la règle ::-webkit-scrollbar,` +
-            ` comme .atlas-glisse le fait déjà.`
+            `\n      La règle universelle de globals.css (« * { scrollbar-width: none } »` +
+            ` et « *::-webkit-scrollbar { display: none } ») doit les couvrir : si` +
+            ` l'une remonte ici, c'est qu'un style plus précis la rétablit.`
         );
       }
     });

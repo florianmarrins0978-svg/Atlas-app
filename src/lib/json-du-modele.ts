@@ -72,3 +72,34 @@ function premierObjetEquilibre(texte: string): string | null {
   }
   return null;
 }
+
+/**
+ * Ce texte est-il un JSON **coupé en plein milieu** ?
+ *
+ * ─── Pourquoi cette question mérite sa fonction ─────────────────────────────
+ *
+ * Une réponse tronquée à `max_tokens` et une réponse hors sujet tombent toutes
+ * les deux dans le même repli — la lecture mot à mot. Vues du dehors, elles
+ * sont indiscernables : le patron reçoit un brouillon pauvre, et **rien nulle
+ * part ne dit laquelle des deux s'est produite**. C'est le défaut muet
+ * d'`AGENTS.md` : on ne peut ni le mesurer, ni le corriger, ni le lui dire.
+ *
+ * Le fournisseur SAIT (`stop_reason: "max_tokens"`), et c'est la source qui
+ * fait foi. Mais tous les fournisseurs ne le disent pas, et un texte peut être
+ * relayé sans son enveloppe : cette lecture de FORME sert de second filet.
+ *
+ * **Elle ne conclut que sur du certain :** un objet qui commence et ne se
+ * referme jamais. Un texte qui ne ressemble à aucun JSON n'est pas tronqué —
+ * c'est un modèle qui a répondu à côté, et les deux ne se réparent pas pareil.
+ */
+export function estJsonTronque(texte: string | null | undefined): boolean {
+  if (!texte) return false;
+  const sansBloc = texte.replace(/```(?:json|JSON)?/g, "");
+  const debut = sansBloc.indexOf("{");
+  if (debut === -1) return false;
+  // Un objet complet se trouve : rien n'a été coupé, quoi qu'il y ait autour.
+  if (premierObjetEquilibre(sansBloc) !== null) return false;
+  // Une accolade ouverte, jamais refermée, et le texte s'arrête : c'est une
+  // coupure. Ce serait un JSON malformé si la réponse se poursuivait après.
+  return true;
+}

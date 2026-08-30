@@ -9,6 +9,96 @@ sert.
 
 ---
 
+## PIÈGE : CE QUI EST INVISIBLE SUR TÉLÉPHONE PEUT ÊTRE PERMANENT SUR PC (30 août 2026)
+
+Il travaille aussi **depuis un PC**, et une partie de ce qu'il y voit ne se
+reproduit ni ici ni sur son iPhone. Les barres de défilement en sont l'exemple
+type : sur téléphone elles sont en **surimpression** — elles s'effacent seules,
+n'apparaissent sur aucune capture et ne prennent aucune largeur ; sur ordinateur
+elles s'**installent** et ne repartent pas.
+
+D'où la règle : **devant une plainte qui mentionne « sur PC », ne pas chercher à
+la reproduire sur l'écran du patron** (`ECRAN_DU_PATRON`, un iPhone 13). Les
+suites navigateur qui n'imposent pas de `viewport` ouvrent déjà 1280 × 720,
+c'est-à-dire un PC — c'est là qu'il faut mesurer.
+
+Corrigé ce jour-là : `globals.css` masque désormais TOUTE barre
+(`* { scrollbar-width: none }`), la page comprise. Voir `ARCHITECTURE.md` §206 —
+et surtout la leçon générale : `test-aucune-barre-de-defilement-e2e.ts` écartait
+`<html>` et `<body>` avec un commentaire qui justifiait l'exclusion. **Une
+exclusion écrite noir sur blanc se relit sans méfiance ; c'est précisément là
+qu'un défaut se cache.**
+
+---
+
+## SA CONSTRUCTION MOURAIT SUR DES DÉPENDANCES DÉSACCORDÉES — 29 août 2026
+
+**Devant « l'appli est lente » ou « ça ne marche toujours pas », lire sa fiche
+et regarder la ligne `dit:` du relevé d'échec.** Deux lignes seulement, dont
+l'en-tête de Next, = dépendances abîmées, PAS un manque de mémoire.
+
+Ce soir-là son relevé disait : `code: 1`, **5,7 Go libres**, et
+« ▲ Next.js 16.3.3 » alors que le projet épingle **16.3.2**. Les binaires natifs
+de Next sont versionnés à l'identique : désaccordés, le compilateur meurt après
+l'en-tête, sans un mot. Son banc ne pouvait pas s'en sortir — sa réinstallation
+automatique exigeait `Cannot find module`, et il n'y avait aucun message.
+
+Le banc compare maintenant les versions avant de bâtir et réinstalle
+(`scripts/coherence-dependances.mjs`). **Reste inexpliqué : comment ses
+`node_modules` ont dérivé.** Voir `TODO.md`.
+
+**L'ordre dans lequel chercher, quand son banc est lent** — les trois causes
+vues en une seule soirée, dans l'ordre où elles se distinguent :
+
+| Ce que dit sa fiche | Cause | Geste |
+|---|---|---|
+| `dit:` = 2 lignes, en-tête Next seul | dépendances désaccordées | réparé tout seul au prochain démarrage |
+| `signal: SIGKILL`, mémoire basse | abattue faute de mémoire | rallumer l'espace |
+| fiche non réécrite depuis 20 min | espace **arrêté** | rallumer l'espace |
+
+---
+
+## SON BANC ÉTAIT LENT PARCE QU'IL PRÉCHAUFFAIT — réparé le 29 août 2026
+
+**Si le patron redit « l'appli est lente » ou « les fichiers ne chargent pas »,
+ceci est la panne à écarter en premier**, et elle a un chiffre.
+
+Le banc bâtit la version rapide pendant qu'il sert en mode développement, et il
+préchauffe 32 écrans à côté pour qu'ils s'ouvrent du premier coup. Sur son
+espace, les deux ne tiennent pas ensemble :
+
+| | |
+|---|---|
+| préchauffer les 32 écrans | **+887 Mo** au serveur (658 → 1 545 Mo) |
+| `next build` | **2 500 Mo** |
+| ce dont son espace dispose | **2 900 Mo** |
+
+Il manquait 500 Mo : le noyau tuait la construction, le veilleur en relançait
+une, et le banc restait lent indéfiniment. Le préchauffage s'abstient désormais
+sous le seuil (`scripts/memoire-prechauffage.mjs`).
+
+**Ce qu'il ne faut PAS refaire** — quatre réglages mesurés, quatre inutiles :
+moins de workers (2 471 Mo contre 2 452), sans typecheck (2 734, *pire*),
+plafond de tas Node (2 500). **Turbopack est écrit en Rust** : sa mémoire est
+hors du tas de V8, aucune option de Node n'y touche. Détail complet et pièges
+dans `ARCHITECTURE.md` §203.
+
+**Et le piège de mesure, parce qu'il coûterait la même soirée :** le serveur de
+Next s'appelle `next-server`, pas `node`. Un compteur qui somme les processus
+nommés `node` rate le principal consommateur et rend un chiffre qui BAISSE
+quand on ajoute du travail.
+
+**Ce qui n'est pas réparé :** sa fiche dit « la dernière construction a échoué »
+mais jamais **pourquoi**. Le témoin porte pourtant le code de sortie et le relevé
+mémoire de l'instant ; `diagnostiquer-espace.mjs` n'en lit que la date. Voir
+`TODO.md`.
+
+*(Une première version de ce bloc affirmait qu'un processus tué ne rend aucun
+code et qu'aucun témoin n'est écrit : c'est faux — un `SIGKILL` rend 137, et le
+témoin est bien écrit. Corrigé le 29 août, sa capture de 22 h 37 à l'appui.)*
+
+---
+
 ## LA BATTERIE NE TIENT PLUS EN UN SEUL SERVEUR — à lire avant de la lancer (27 août 2026)
 
 **Si `npm run verifier:avant-livraison` rend un rouge sur une suite navigateur,
@@ -66,7 +156,46 @@ pas.
 « use server » du dépôt et rougit sur celui qui n'en a pas. Une ouverture voulue
 s'écrit dans sa table d'exemptions, avec sa raison.
 
-Détail : `ARCHITECTURE.md` §203, `docs/salarie-planning-lecture-seule.md`.
+Détail : `ARCHITECTURE.md` §208, `docs/salarie-planning-lecture-seule.md`.
+
+---
+
+## L'ASSISTANT ENTEND ET VOIT DEPUIS LE 27 AOÛT 2026
+
+Le micro **remplit le champ**, il n'envoie rien (`dicterQuestionAction`). La
+photo est **lue** (`regarder-photo.ts`), et c'est la lecture qui entre dans la
+conversation — jamais l'image : `genererAvecOutils` ne sait pas la porter.
+
+Trois choses à ne pas défaire :
+
+1. la photo passe par `preparerPhotoEntrante` — métadonnées retirées avant tout
+   envoi chez un tiers, refus quand le nettoyage échoue ;
+2. la lecture est rangée **avant** la question, sous un titre qui dit que c'est
+   une observation. Une étiquette photographiée peut ressembler à un ordre ;
+3. le filtre de périmètre lit **la question**, pas la photo.
+
+La vision n'est **pas** éprouvable ici (aucune clé) : les contrôles posent un
+fournisseur d'essai. La dictée, elle, l'est de bout en bout.
+
+---
+
+## L'ASSISTANT A UNE MÉMOIRE DEPUIS LE 27 AOÛT 2026
+
+Son fil vit en base (`messages_assistant`, migration 0069) et se relit à
+l'ouverture du panneau. Deux choses à savoir avant d'y toucher :
+
+1. **Le fil est isolé PAR PERSONNE dans le dépôt, pas par la RLS.** La politique
+   de la table n'isole que les entreprises ; c'est
+   `eq(messagesAssistant.utilisateurId, ctx.utilisateurId)` qui sépare deux
+   associés. Retirer cette ligne ne fait rougir aucun écran —
+   `scripts/test-fil-assistant.ts` est le seul garde-fou.
+2. **L'ordre du fil tient à `rang`, une séquence, jamais à `created_at`.**
+   `now()` rend l'instant de début de transaction : la question et sa réponse,
+   écrites ensemble, portent la même date, et le classement retombait sur un
+   UUID. La réponse passait devant la question une fois sur deux.
+
+Ce qui ne revient pas encore : les cases à cocher d'une proposition
+(`TODO.md`, « Une proposition ne revient pas après un rechargement »).
 
 ---
 
@@ -160,6 +289,72 @@ Ce qu'il faut savoir avant d'y retoucher, et qui ne se devine pas :
 
 `src/app/devis/[jeton]/formulaire.tsx`, `ARCHITECTURE.md` §191. Le même piège
 dort sur `PropositionPrixSection.tsx` (`TODO.md`).
+
+## LA CHAÎNE DICTÉE → DEVIS A ÉTÉ REFAITE LE 27 AOÛT 2026 — à lire avant d'y toucher
+
+**Sept choses ont changé, et chacune ferme un défaut mesuré.** Le détail est
+dans `ARCHITECTURE.md` §205 ; voici ce qu'il faut savoir pour ne pas les
+défaire.
+
+1. **Le vocabulaire métier vit dans UN endroit** : `src/lib/natures-prestation.ts`.
+   Six modules portaient chacun le sien, et aucun ne connaissait la tonte. Ne
+   pas en recréer un septième : ajouter une nature se fait là, et nulle part
+   ailleurs.
+
+2. **Une nature inconnue garde sa propre ligne.** Elle ne rejoint rien — pas
+   même une autre nature inconnue. Le fourre-tout `principal` est mort, et le
+   ressusciter sous un autre nom rouvrirait la corruption du 26 août.
+
+3. **`LigneVendable.cle` porte la nature ; `principal` est un RÔLE à part.**
+   Les confondre était le défaut.
+
+4. **Une ligne sans prix vaut `null`, jamais `"0"`.** Sur un devis, un zéro se
+   lit « gratuit ». `peutPreparerDevis` et `envoyerDevis` refusent tant qu'une
+   ligne est `a_chiffrer`.
+
+5. **La quantité dictée entre dans le CALCUL** (`caracteristiqueDeLaQuantite`).
+   Avant, la colonne existait et personne ne la lisait : la corriger ne changeait
+   rien au prix.
+
+6. **`prestations.corrige_par_humain` change le comportement du chiffrage.**
+   Une valeur qu'il a posée TRANCHE face au libellé, au lieu de produire une
+   contradiction. Attention : `modifierPrestation` marque ce drapeau (c'est le
+   geste de l'artisan), `renommerPrestation` ne le marque pas (c'est le report
+   automatique des réponses de l'arrêt). **Ne pas les confondre** — l'un gèlerait
+   ses colonnes sans que personne ne l'ait demandé.
+
+7. **Les clés `lecons_prix.signature` (V1) ne se réécrivent JAMAIS.** La V2 vit
+   dans `signature_v2`. Toucher à la V1 orphelinerait toute sa mémoire de prix,
+   sans un mot et sans erreur.
+
+**Un écran attend sa réponse** avant d'entrer dans `src/` (`CLAUDE.md` §3 bis) :
+`https://florianmarrins0978-svg.github.io/Atlas-app/corriger-une-mesure.html`
+
+**Et une question métier lui revient** : « dessouchage de DEUX souches » —
+faut-il multiplier le prix de grille par deux ? Le comportement d'aujourd'hui
+est conservé, et l'écran pose la question.
+
+---
+
+## ⏰ IL ATTEND QU'ON LE RELANCE : LA LISTE DES TRAVAUX QU'IL VEND (27 août 2026)
+
+**Sa réponse, en toutes lettres :** *« Oui j'en vend mais attend on créera une
+liste complète ensuite si tu le veux faudra que tu me le rappelle. »*
+
+Il vend de la **plantation** et de la **clôture**. Aucune des deux n'existe dans
+le dépôt — le vocabulaire des trois modules qui classent une prestation
+(`src/lib/lignes-vendables.ts`, `src/lib/prix-attribuable.ts`, `src/lib/lecons-prix.ts`) se
+limite à : abattage, élagage, haie, dessouchage, fendage, grumes, broyage,
+évacuation, billonnage.
+
+**C'est à NOUS de rouvrir le sujet**, il l'a demandé explicitement. Une session
+qui reprend la chaîne dictée → devis le relance en lui montrant cette liste :
+il n'a qu'à dire ce qui manque. Le détail de ce qui reste bloqué en attendant
+est dans `TODO.md`, section « Dictée → devis ».
+
+**Et l'on n'invente pas les natures à sa place** (`CLAUDE.md` §4) : une liste
+devinée ferait retomber ses travaux dans le fourre-tout `principal`, c'est-à-dire
+sur la ligne d'abattage — le défaut que l'audit du 26 août a mesuré.
 
 ---
 

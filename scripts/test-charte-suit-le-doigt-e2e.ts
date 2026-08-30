@@ -124,7 +124,70 @@ async function main() {
       assert.equal(await fond(), fondNuit, `l'onglet Planning a rendu l'écran à ${await fond()}`);
     });
 
+    // ─── CE QUI N'EST PAS UNE COULEUR SUIT AUSSI — le défaut du 27 août 2026 ──
+    //
+    // **Le patron :** *« quand je sélectionne Brume, le dessin des catégories en
+    // bas ne change pas automatiquement, je dois recharger la page. »*
+    //
+    // Les quatre cas ci-dessus ne pouvaient pas le voir : ils mesurent tous une
+    // COULEUR, et les couleurs suivaient bien le doigt. Ce qu'une charte pose
+    // d'AUTRE — la police des titres, les cinq variables du marqueur d'onglet —
+    // n'arrivait qu'au rendu suivant, celui du serveur, parce que le repeignage
+    // reparcourait `c.jetons` au lieu de `variablesCharte`.
+    //
+    // **Et il faut mesurer les DEUX SENS.** Poser Brume est la moitié facile :
+    // revenir sur une charte qui ne pose pas ces variables doit les EFFACER,
+    // sans quoi la pastille de Brume survit sur Origine — un état qu'aucun
+    // rechargement ne produit, donc que personne ne verrait en essayant.
+    await test("Le marqueur d'onglet suit le doigt, dans les DEUX sens", async () => {
+      const rayon = () =>
+        page.evaluate(() =>
+          getComputedStyle(document.documentElement).getPropertyValue("--atlas-onglet-rayon").trim()
+        );
+
+      await remettreOrigine();
+      assert.equal(await rayon(), "", `Origine pose un rayon d'onglet (« ${await rayon()} ») : rien à mesurer`);
+
+      await page.locator(`button[data-charte="brume"]`).click();
+      await page.waitForTimeout(700);
+      assert.notEqual(
+        await rayon(),
+        "",
+        "le marqueur d'onglet n'a pas suivi : c'est exactement « le dessin des catégories " +
+          "en bas ne change pas, je dois recharger la page »"
+      );
+
+      await page.locator(`button[data-charte="${ORIGINE}"]`).click();
+      await page.waitForTimeout(700);
+      assert.equal(
+        await rayon(),
+        "",
+        `revenu sur Origine, le marqueur garde le rayon « ${await rayon()} » de Brume : ` +
+          "on pose sans effacer, et la pastille survit là où elle n'a rien à faire"
+      );
+    });
+
+    // **L'OR RESTE L'OR, quelle que soit la charte** — sa consigne du 27 août :
+    // *« tout ce qui est en doré sur Origine le reste aussi sur Brume »*. Le
+    // marqueur d'onglet en était le seul manquement, et il était teinté de
+    // l'accent — bleu marine sur Brume.
+    await test("Sur Brume, le marqueur d'onglet reste DORÉ", async () => {
+      await page.locator(`button[data-charte="brume"]`).click();
+      await page.waitForTimeout(700);
+      const fondOnglet = await page.evaluate(() =>
+        getComputedStyle(document.documentElement).getPropertyValue("--atlas-onglet-fond").trim()
+      );
+      // L'or s'écrit `#B98B47` ; `color-mix` le rend en `srgb` une fois teinté.
+      assert.ok(
+        /b98b47/i.test(fondOnglet) || /0\.72549\d*\s+0\.545\d*\s+0\.278\d*/.test(fondOnglet),
+        `le marqueur est teinté de « ${fondOnglet} » : l'or s'est perdu en changeant d'apparence`
+      );
+      await remettreOrigine();
+    });
+
     await test("Elle survit à un rechargement : le choix est bien ENREGISTRÉ", async () => {
+      await page.locator(`button[data-charte="${NUIT}"]`).click();
+      await page.waitForTimeout(700);
       await page.reload({ waitUntil: "networkidle" });
       assert.equal(
         await fond(),

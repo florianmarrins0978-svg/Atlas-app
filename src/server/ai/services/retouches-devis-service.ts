@@ -122,8 +122,10 @@ Rédiger les libellés — c'est ce qui sépare un devis d'une transcription :
 Les mesures :
 - "quantite" est le nombre qu'il annonce pour ce travail, en chiffres : "vingt mètres linéaires" → "20".
 - "unite" est l'unité de ce nombre, dans son mot à lui : "mètres linéaires", "m²", "heures",
-  "jour/homme", "forfait", "tonne", ou une unité de son métier ("stère", "arbre"). Sans nombre dit,
-  "quantite" et "unite" valent tous les deux null.
+  "jour/homme", "forfait", "tonne", "stère" — ou l'OBJET qu'il compte quand il compte des choses :
+  « deux souches » -> "2" / "souche", « trois arbres » -> "3" / "arbre". L'unité de comptage doit être
+  l'objet explicitement prononcé ; n'invente pas une unité pour un nombre dont on ne sait pas ce qu'il
+  compte. Sans nombre dit, "quantite" et "unite" valent tous les deux null — jamais l'une sans l'autre.
 - Une mesure annoncée avec hésitation SE GARDE quand même (« je crois que ça fait vingt mètres » →
   "20") : c'est un chiffre qu'il ira vérifier sur place, et le lui redemander ne lui apprend rien.
   Un PRIX, lui, ne se retient que s'il l'annonce fermement — un prix approximatif part chez le client.`;

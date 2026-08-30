@@ -169,6 +169,17 @@ const RAPPELS_ATTENDUS = [
       "le rappel sur la validation Google (docs/A-FAIRE.md §8) doit ressortir " +
       "de lui-même le jour où la commercialisation revient sur la table",
   },
+  {
+    fichier: "HANDOVER.md",
+    titre: "## ⏰ IL ATTEND QU'ON LE RELANCE : LA LISTE DES TRAVAUX QU'IL VEND",
+    // Le mot du travail manquant, pas la consigne : c'est lui qui disparaît le
+    // jour où quelqu'un abrège la section sans savoir ce qu'elle tenait.
+    declencheur: "plantation",
+    pourquoi:
+      "il a demandé le 27 août 2026 qu'on le relance sur la liste complète des " +
+      "travaux qu'il vend — trois modules classent encore les prestations sur un " +
+      "vocabulaire qui ignore la plantation et la clôture",
+  },
 ];
 
 for (const rappel of RAPPELS_ATTENDUS) {

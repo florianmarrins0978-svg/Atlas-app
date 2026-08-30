@@ -51,7 +51,16 @@ import {
 // l'entreprise, la fiche du client, le chantier, les lignes de prix — pour que
 // la facture de fin de chantier et le relevé de TVA continuent d'en découler.
 
-type Ligne = { id: string; libelle: string; quantite: string; prixUnitaire: string; montant: string };
+type Ligne = {
+  id: string;
+  libelle: string;
+  quantite: string;
+  prixUnitaire: string;
+  montant: string;
+  unite?: string | null;
+  /** Le travail est identifié, son prix ne l'est pas (migration 0070). */
+  aChiffrer?: boolean | null;
+};
 
 /**
  * La clé du prix accordé dans le tiroir des retirés.
@@ -263,6 +272,9 @@ export default function DevisCompletClient(props: Props) {
    */
   async function reprendreRappel(l: Ligne, prix: string) {
     majLigneLocale(l.id, "prixUnitaire", prix);
+    // Le serveur l'éteint aussi (`modifierLignePrix`) ; l'écran ne doit pas
+    // continuer d'annoncer « à chiffrer » sur une ligne qu'il vient de chiffrer.
+    if (Number(prix) > 0) setLignes((cur) => cur.map((x) => (x.id === l.id ? { ...x, aChiffrer: false } : x)));
     await majLigneAction(l.id, {
       libelle: l.libelle,
       quantite: normaliser(l.quantite, "1"),
@@ -272,7 +284,10 @@ export default function DevisCompletClient(props: Props) {
 
   async function ajouter() {
     const creee = await ajouterLigneAction(props.chantierId);
-    setLignes((cur) => [...cur, { id: creee.id, libelle: "", quantite: "1", prixUnitaire: "", montant: "0.00" }]);
+    setLignes((cur) => [
+      ...cur,
+      { id: creee.id, libelle: "", quantite: "1", prixUnitaire: "", montant: "0.00", aChiffrer: false },
+    ]);
   }
 
 
@@ -583,7 +598,16 @@ export default function DevisCompletClient(props: Props) {
             </Cellule>
 
             <Cellule libelle="Total HT">
-              <span className="text-[16px]">{enEuros(montantDeLaLigne(l))}</span>
+              {/* **« À chiffrer » n'est pas « 0,00 € ».** Un zéro se lit
+                  « gratuit », et le devis pouvait partir ainsi (26 août 2026).
+                  Dès qu'il pose un montant, l'état tombe de lui-même. */}
+              {l.aChiffrer && montantDeLaLigne(l) <= 0 ? (
+                <span className="text-[16px]" style={{ color: colors.or }}>
+                  à chiffrer
+                </span>
+              ) : (
+                <span className="text-[16px]">{enEuros(montantDeLaLigne(l))}</span>
+              )}
             </Cellule>
 
             {/* Ce que l'agent a retenu la dernière fois, sur un travail

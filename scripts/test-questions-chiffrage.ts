@@ -269,5 +269,36 @@ cas("les réponses s'écrivent sous la forme que le chiffrage sait relire", () =
   assert.equal(diametreLu(precisionLisible(diametre, "45")), 45);
 });
 
+console.log("\n=== La nature en colonne passe avant le texte (27 août 2026) ===\n");
+
+cas("un libellé qui ne ressemble à rien pose quand même la bonne question", () => {
+  // « Intervention chez Mme Martin » n'évoque aucun métier. Sa nature, elle, le
+  // dit — et c'est elle qui décide, plus le texte.
+  const q = questionsAvantChiffrage([{ libelle: "Intervention chez Mme Martin", nature: "haie" }]);
+  assert.ok(
+    q.some((x) => x.id.startsWith("haie.longueur")),
+    `aucune question de longueur : ${q.map((x) => x.id).join(", ") || "aucune"}`
+  );
+});
+
+cas("une nature en colonne empêche un faux positif du texte", () => {
+  // « Nettoyage autour de la haie du voisin » parle de haie sans en être une.
+  const q = questionsAvantChiffrage([
+    { libelle: "Nettoyage autour de la haie du voisin", nature: "tonte", quantite: "300", unite: "m²" },
+  ]);
+  assert.equal(
+    q.filter((x) => x.id.startsWith("haie.longueur")).length,
+    0,
+    "on lui demande la longueur d'une haie qu'il ne taille pas"
+  );
+});
+
+cas("sans colonne, le texte reprend la main — comme avant", () => {
+  // Les prestations d'avant le lot B n'ont pas de nature, et les dictées lues
+  // mot à mot non plus. Rien ne doit changer pour elles.
+  const q = questionsAvantChiffrage([{ libelle: "Taille de haie de laurier" }]);
+  assert.ok(q.some((x) => x.id.startsWith("haie.longueur")));
+});
+
 console.log(`\n${echecs === 0 ? "✅ Toutes les vérifications passent." : `❌ ${echecs} échec(s).`}`);
 process.exit(echecs === 0 ? 0 : 1);

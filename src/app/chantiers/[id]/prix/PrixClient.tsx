@@ -19,7 +19,13 @@ import type { PropositionPrix } from "@/server/chiffrage/proposition-prix";
 import { peutPreparerDevis } from "@/lib/preparation-devis";
 import { enEuros } from "@/lib/euros";
 
-type Ligne = { id: string; libelle: string; montant: string };
+type Ligne = {
+  id: string;
+  libelle: string;
+  montant: string;
+  /** Le travail est identifié, son prix ne l'est pas (migration 0070). */
+  aChiffrer?: boolean | null;
+};
 
 
 export default function PrixClient({
@@ -68,7 +74,10 @@ export default function PrixClient({
 
   async function ajouter() {
     const nouvelle = await ajouterLignePrixAction(chantierId);
-    setLignes((cur) => [...cur, { id: nouvelle.id, libelle: nouvelle.libelle, montant: nouvelle.montant }]);
+    setLignes((cur) => [
+      ...cur,
+      { id: nouvelle.id, libelle: nouvelle.libelle, montant: nouvelle.montant, aChiffrer: nouvelle.aChiffrer },
+    ]);
   }
 
   function modifierLibelle(id: string, libelle: string) {
@@ -87,7 +96,13 @@ export default function PrixClient({
     // Normalise en chaîne décimale à 2 décimales avant persistance — jamais de
     // float natif transmis ou stocké.
     const decimal = new Decimal(montantSaisi || "0").toFixed(2);
-    setLignes((cur) => cur.map((l) => (l.id === id ? { ...l, montant: decimal } : l)));
+    // **Poser un prix éteint « à chiffrer ».** Le serveur le fait aussi
+    // (`modifierLignePrix`) ; l'écran ne doit pas continuer à refuser le devis
+    // après qu'il a fait exactement ce qu'on lui demandait.
+    const chiffree = Number(decimal) > 0;
+    setLignes((cur) =>
+      cur.map((l) => (l.id === id ? { ...l, montant: decimal, aChiffrer: chiffree ? false : l.aChiffrer } : l))
+    );
     await modifierLignePrixAction(id, { montant: decimal });
   }
 

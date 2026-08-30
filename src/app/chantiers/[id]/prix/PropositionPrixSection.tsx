@@ -151,11 +151,11 @@ export default function PropositionPrixSection({
               <span
                 className="shrink-0"
                 style={{
-                  color: Number(l.montant) > 0 ? colors.ink : colors.or,
+                  color: l.montant !== null && Number(l.montant) > 0 ? colors.ink : colors.or,
                   fontVariantNumeric: "tabular-nums",
                 }}
               >
-                {Number(l.montant) > 0 ? enEuros(l.montant) : "prix à poser"}
+                {l.montant !== null && Number(l.montant) > 0 ? enEuros(l.montant) : "à chiffrer"}
               </span>
             </li>
           ))}

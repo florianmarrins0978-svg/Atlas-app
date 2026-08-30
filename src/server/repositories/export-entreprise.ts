@@ -30,6 +30,7 @@ import {
   lignesDevis,
   lignesFacture,
   lignesPrix,
+  lignesPrixPrestations,
   materiel,
   membresEntreprise,
   achatsTva,
@@ -43,6 +44,7 @@ import {
   precisionsChantier,
   prestations,
   propositionsIa,
+  messagesAssistant,
   tarifs,
   motsCatalogue,
 } from "../db/schema";
@@ -118,6 +120,7 @@ export async function exporterEntreprise(
       lesAchatsTva,
       lesTarifs,
       lesLignesPrix,
+      lesLiaisonsPrestations,
       lesDevis,
       lesLignesDevis,
       lHistorique,
@@ -150,6 +153,7 @@ export async function exporterEntreprise(
       sesPhotosDiagnostic,
       sesHypotheses,
       sesPhotosAPurger,
+      sesEchangesAssistant,
     ] = await Promise.all([
       tx.select().from(entreprises).where(eq(entreprises.id, e)),
       tx.select().from(entrepriseCompteurs).where(eq(entrepriseCompteurs.entrepriseId, e)),
@@ -168,6 +172,13 @@ export async function exporterEntreprise(
       tx.select().from(achatsTva).where(eq(achatsTva.entrepriseId, e)),
       tx.select().from(tarifs).where(eq(tarifs.entrepriseId, e)),
       tx.select().from(lignesPrix).where(eq(lignesPrix.entrepriseId, e)),
+      // **Quelles prestations chaque ligne de devis vend** (migration 0069).
+      // Sans ce lien, une sauvegarde rendrait les lignes et les prestations
+      // sans dire lesquelles vont ensemble : le devis se relirait, mais plus
+      // rien ne saurait à quel travail appartient un montant — et c'est de
+      // cette ignorance-là qu'est venue la case d'abattage fausse du 26 août.
+      // Le contrôle d'exhaustivité l'a réclamé avant qu'on y pense.
+      tx.select().from(lignesPrixPrestations).where(eq(lignesPrixPrestations.entrepriseId, e)),
       tx.select().from(devis).where(eq(devis.entrepriseId, e)),
       tx.select().from(lignesDevis).where(eq(lignesDevis.entrepriseId, e)),
       tx.select().from(historiquePrix).where(eq(historiquePrix.entrepriseId, e)),
@@ -273,6 +284,12 @@ export async function exporterEntreprise(
       // sur SES données. Exporter l'une sans l'autre aurait été une divergence
       // sans raison.
       tx.select().from(photosDiagnosticAPurger).where(eq(photosDiagnosticAPurger.entrepriseId, e)),
+      // **Le fil de l'assistant part avec le reste (migration 0069).** Ce sont
+      // ses questions et ce qu'Atlas lui a répondu : de la donnée personnelle,
+      // et de la plus parlante. Une « sauvegarde complète » qui tairait ce qu'il
+      // a demandé n'en serait pas une — et c'est le contrôle d'exhaustivité qui
+      // l'a réclamée, le jour même où la table est née.
+      tx.select().from(messagesAssistant).where(eq(messagesAssistant.entrepriseId, e)),
     ]);
 
     // Ordre volontaire : parents avant enfants. Une reprise qui rejouerait ce
@@ -290,6 +307,7 @@ export async function exporterEntreprise(
       achats_tva: lesAchatsTva,
       tarifs: lesTarifs,
       lignes_prix: lesLignesPrix,
+      lignes_prix_prestations: lesLiaisonsPrestations,
       devis: lesDevis,
       lignes_devis: lesLignesDevis,
       historique_prix: lHistorique,
@@ -341,6 +359,9 @@ export async function exporterEntreprise(
       // et c'est exactement ce qu'on veut relire le jour où il est contesté.
       hypotheses_diagnostic: sesHypotheses,
       photos_diagnostic_a_purger: sesPhotosAPurger,
+      // Ses échanges avec l'assistant : ce qu'il a demandé, et ce qu'on lui a
+      // répondu.
+      messages_assistant: sesEchangesAssistant,
     };
 
     const compte: Record<string, number> = {};
