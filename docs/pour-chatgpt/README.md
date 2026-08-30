@@ -50,6 +50,7 @@ noir sur blanc, comme le demande `CLAUDE.md` §2 bis.
 | `14-questions-deja-repondues.md` | test téléphone | pourquoi Atlas redemandait ce qu'il savait, et un second défaut qui n'en était pas un |
 | `15-centimetres-dun-tronc.md` | convention métier | quand « soixante centimètres » veut dire un diamètre, et les sept cas où il ne le veut pas |
 | `16-sans-prononcer-l-unite.md` | convention métier | lire « une souche de 60 » sans exiger l'unité, et les trois portes que ça ouvrait |
+| `17-la-fusion-et-son-verrou.md` | fusion | les quatre arbitrages qu'elle a demandés, et le défaut de `main` qui empêche toute batterie verte |
 
 **Le dossier 07 remplace les six premiers.** Ils restent comme le chemin
 parcouru — un instantané ne se corrige pas, `CLAUDE.md` §2 bis — mais ce qui
