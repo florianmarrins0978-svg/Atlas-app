@@ -9,6 +9,29 @@ Format : le plus récent en tête.
 
 ## 2026-08-30
 
+### « J'ai vu » sur les quatre rappels — sa demande, capture à l'appui
+
+*« Pour chaque notification je dois pouvoir cliquer sur vu pour les faire
+disparaître ; pourquoi certaines n'ont pas cette fonction ? Mets la fonction
+pour toutes. »* Trois rappels sur quatre n'avaient aucun geste : la carte
+restait jusqu'à ce que la situation cesse, et deux cartes suffisent à repousser
+ses chantiers hors de l'écran.
+
+**Ce que ça évite, et ce que ça ne casse pas.** Le geste fait **taire** le
+rappel le temps de son délai réglé — sept jours pour un devis sans réponse —,
+il ne l'efface pas : un rappel classé pour toujours ferait précisément ce que
+ces rappels existent pour éviter, perdre un chantier de vue. Pour ne plus
+jamais le voir, l'interrupteur reste dans « Réglages › Notifications ».
+
+L'acquittement vit en base (`rappels_vus`, migration 0071) : il survit au
+rechargement, ce que le masquage d'écran ne faisait pas. La facture impayée
+garde son moteur d'origine et ne prend que le mot — deux mécaniques de silence
+sur une même carte finiraient par se contredire. Détail et raisons :
+`ARCHITECTURE.md` §210.
+
+**« Plus tard » disparaît du vocabulaire** : le même geste ne s'appelle plus
+autrement d'une carte à l'autre.
+
 ### La note vocale à la manière d'une messagerie — la planche, pas le code
 
 **Sa demande, deux captures à l'appui :** *« il faut modifier la note vocale
