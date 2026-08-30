@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Capital social et forme juridique sur le devis</title>
+<title>Capital, forme juridique et RCS sur le devis</title>
 <style>
   :root{
     --fond:#f5f3ee; --papier:#faf9f5; --encre:#1c1c1a; --encre-douce:#4a4a44;
@@ -99,6 +99,8 @@
   déjà dans vos réglages mais ne s'imprime nulle part — je la répare — et
   j'ajoute le capital, qui ne s'affiche que pour une vraie société, jamais
   pour une entreprise individuelle. <b>Touchez, le devis dessous change.</b>
+  <b>Ajout du même jour :</b> une troisième mention légale, la ville
+  d'immatriculation au RCS — le numéro, lui, existe déjà, c'est votre SIREN.
 </div>
 
 <div class="bloc">
@@ -176,7 +178,7 @@ const FORMES = [
   { sigle: "Autre", nom: "À écrire vous-même", capital: null },
 ];
 
-const etat = { formeIndex: 4, capital: "1 000", position: "sous-nom", formeOuverte: false };
+const etat = { formeIndex: 4, capital: "1 000", villeRcs: "Versailles", position: "sous-nom", formeOuverte: false };
 
 const formeBouton = document.getElementById("formeBouton");
 const formeAffichee = document.getElementById("formeAffichee");
@@ -206,8 +208,9 @@ function peindreForme() {
 }
 
 function peindreCapital() {
-  // **Silence, pas grisé.** Le champ disparaît entièrement pour une forme
-  // sans capital — un champ grisé se remplirait quand même « au cas où ».
+  // **Silence, pas grisé.** Les deux champs disparaissent entièrement pour
+  // une forme sans capital ni RCS — grisés, ils se rempliraient quand même
+  // « au cas où ».
   if (formeCourante().capital === false) {
     hoteCapital.innerHTML = "";
     return;
@@ -217,9 +220,18 @@ function peindreCapital() {
     + '<span class="etiquette">Capital social</span>'
     + '<input type="text" id="capitalChamp" inputmode="numeric" placeholder="1 000" value="'
     + etat.capital.replace(/"/g, "&quot;") + '">'
+    + '</div>'
+    + '<div class="champ champ-capital">'
+    + '<span class="etiquette">Ville du RCS</span>'
+    + '<input type="text" id="villeRcsChamp" placeholder="Versailles" value="'
+    + etat.villeRcs.replace(/"/g, "&quot;") + '">'
     + '</div>';
   document.getElementById("capitalChamp").addEventListener("input", (e) => {
     etat.capital = e.target.value;
+    peindreFeuille();
+  });
+  document.getElementById("villeRcsChamp").addEventListener("input", (e) => {
+    etat.villeRcs = e.target.value;
     peindreFeuille();
   });
 }
@@ -243,6 +255,16 @@ for (const bouton of position.querySelectorAll("button")) {
 }
 
 /* ── La mention telle qu'elle s'imprimerait ───────────────────────────── */
+const SIREN_DEMO = "123 456 789";
+
+function ligneRcs() {
+  const f = formeCourante();
+  if (f.capital === false) return null;
+  const ville = etat.villeRcs.trim();
+  if (ville === "") return null;
+  return "RCS " + ville + " " + SIREN_DEMO;
+}
+
 function mentionCapital() {
   const f = formeCourante();
   if (f.capital === false) return null; // EI, Micro-entreprise : jamais de mention
@@ -252,10 +274,10 @@ function mentionCapital() {
 }
 
 function peindreFeuille() {
-  const mention = mentionCapital();
-  const mentionSousNom = etat.position === "sous-nom" && mention
-    ? '<p class="mention">' + mention + '</p>' : "";
-  const mentionEnBas = etat.position === "bas" && mention ? mention + "<br>" : "";
+  const lignes = etat.position === "aucune" ? [] : [mentionCapital(), ligneRcs()].filter(Boolean);
+  const mentionSousNom = etat.position === "sous-nom" && lignes.length
+    ? '<p class="mention">' + lignes.join("<br>") + '</p>' : "";
+  const mentionEnBas = etat.position === "bas" && lignes.length ? lignes.join("<br>") + "<br>" : "";
 
   feuille.innerHTML =
     '<div class="refs"><b>Devis n° 2026-000005</b>30/08/2026<br>Validité 30 jours</div>'
