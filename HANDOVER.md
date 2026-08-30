@@ -9,6 +9,18 @@ sert.
 
 ---
 
+## Dernier lot : « J'ai vu » sur les quatre rappels (30 août 2026)
+
+Sa demande du jour : chaque notification doit pouvoir se ranger d'un appui. Les
+trois rappels qui n'avaient aucun geste en ont un, et la facture impayée prend
+le même mot (son « Plus tard » est parti — la mécanique, elle, n'a pas bougé).
+
+**Ce qu'il faut savoir avant d'y toucher :** « J'ai vu » fait **taire** un
+rappel le temps de son délai réglé, il ne l'efface pas — l'acquittement est en
+base (`rappels_vus`, migration 0071) et le rappel revient si la situation dure.
+En faire un effacement définitif rouvrirait exactement ce que ces rappels
+existent pour éviter. Raisons et pièges : `ARCHITECTURE.md` §210.
+
 ## PIÈGE : CE QUI EST INVISIBLE SUR TÉLÉPHONE PEUT ÊTRE PERMANENT SUR PC (30 août 2026)
 
 Il travaille aussi **depuis un PC**, et une partie de ce qu'il y voit ne se

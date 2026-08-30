@@ -1,12 +1,16 @@
 import { and, desc, eq, isNull, isNotNull, lt, gt, sql } from "drizzle-orm";
 import { withEntreprise } from "../db/with-entreprise";
-import { chantiers, entreprises, envoisDevis, factures } from "../db/schema";
+import { chantiers, entreprises, envoisDevis, factures, rappelsVus } from "../db/schema";
 import {
   lireRappels,
   normaliserRappels,
   seuilAncienneté,
   echeanceFacture,
   rappelFactureDu,
+  rappelEncoreTu,
+  silenceApresVuJours,
+  type GenreRappel,
+  type GenreAcquittable,
   type ReglagesRappels,
 } from "../../lib/rappels";
 import type { Ctx } from "./context";
@@ -54,7 +58,7 @@ export async function ecrireReglagesRappels(ctx: Ctx, saisie: Partial<ReglagesRa
 }
 
 export type Rappel = {
-  genre: "chantier-sans-devis" | "devis-sans-reponse" | "chantier-non-facture" | "facture-impayee";
+  genre: GenreRappel;
   chantierId: string;
   chantierNom: string;
   /** Depuis quand la situation dure — jamais un nombre de jours pré-calculé,
@@ -275,12 +279,86 @@ export async function rappelsEnCours(ctx: Ctx, maintenant: Date): Promise<Rappel
       }
     }
 
+    // ── Ce qu'il a déjà acquitté d'un « J'ai vu » ────────────────────────
+    //
+    // **Lu APRÈS coup, en une requête, et non genre par genre.** Trois requêtes
+    // rendraient la même table trois fois ; et filtrer dans chaque bloc
+    // dupliquerait la règle en trois exemplaires qui finiraient par diverger.
+    //
+    // L'impayé n'est pas concerné : son silence à lui vit sur le chantier
+    // (`rappelFactureRepousseLe`) et il est déjà appliqué plus haut.
+    // **Aucun rappel acquittable en vue : pas de requête.** Une requête jouée
+    // puis jetée finit par être lue comme la preuve que l'acquit fonctionne.
+    const acquittables = sortie.some((r) => r.genre !== "facture-impayee");
+    const acquittements = acquittables
+      ? await tx
+          .select({ genre: rappelsVus.genre, chantierId: rappelsVus.chantierId, vuLe: rappelsVus.vuLe })
+          .from(rappelsVus)
+          .where(eq(rappelsVus.entrepriseId, ctx.entrepriseId))
+      : [];
+    const vus = new Map(acquittements.map((a) => [`${a.genre}:${a.chantierId}`, a.vuLe]));
+
+    const parlants = sortie.filter((r) => {
+      if (r.genre === "facture-impayee") return true;
+      const vuLe = vus.get(`${r.genre}:${r.chantierId}`) ?? null;
+      // **Un devis RENVOYÉ après le « J'ai vu » n'est pas caché pour autant**, et
+      // aucune ligne n'est nécessaire pour ça : le silence dure le délai du
+      // rappel, et un envoi parti APRÈS l'acquittement met ce même délai à
+      // devenir rappelable. Il arrive donc toujours après le réveil. Une garde
+      // « situation née après l'acquittement » a été écrite ici puis retirée :
+      // elle ne pouvait jamais devenir vraie, et un contrôle qu'on ne peut pas
+      // voir rougir ne prouve rien (`CLAUDE.md` §5).
+      return !rappelEncoreTu({
+        maintenant,
+        vuLe,
+        silenceJours: silenceApresVuJours(r.genre as GenreAcquittable, reglages),
+      });
+    });
+
     // Le plus ancien EN PREMIER : c'est celui qui a le plus attendu, et celui
     // qu'on risque le plus d'oublier tout à fait.
-    return sortie.sort((a, b) => a.depuis.getTime() - b.depuis.getTime());
+    return parlants.sort((a, b) => a.depuis.getTime() - b.depuis.getTime());
   });
 }
 
+
+/**
+ * « J'ai vu » sur un rappel — sa demande du 30 août 2026.
+ *
+ * *« Pour chaque notification je dois pouvoir cliquer sur vu pour les faire
+ * disparaître ; pourquoi certaines n'ont pas cette fonction ? »*
+ *
+ * **Le dernier geste écrase le précédent** (`ON CONFLICT DO UPDATE`) : deux
+ * lignes pour un même rappel donneraient deux dates de réveil, et la plus
+ * ancienne le ferait revenir alors qu'il vient d'être acquitté.
+ *
+ * **`false` quand le chantier n'est pas à cette entreprise** — la RLS le rendrait
+ * de toute façon invisible, mais l'écran doit pouvoir le DIRE plutôt que de
+ * laisser la carte partir puis revenir sans explication.
+ */
+export async function marquerRappelVu(
+  ctx: Ctx,
+  genre: GenreAcquittable,
+  chantierId: string,
+  maintenant: Date = new Date()
+): Promise<boolean> {
+  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    const [c] = await tx
+      .select({ id: chantiers.id })
+      .from(chantiers)
+      .where(and(eq(chantiers.id, chantierId), eq(chantiers.entrepriseId, ctx.entrepriseId)))
+      .limit(1);
+    if (!c) return false;
+    await tx
+      .insert(rappelsVus)
+      .values({ entrepriseId: ctx.entrepriseId, chantierId, genre, vuLe: maintenant })
+      .onConflictDoUpdate({
+        target: [rappelsVus.entrepriseId, rappelsVus.genre, rappelsVus.chantierId],
+        set: { vuLe: maintenant },
+      });
+    return true;
+  });
+}
 
 /**
  * « Plus tard » — repousser le rappel d'UNE facture.
