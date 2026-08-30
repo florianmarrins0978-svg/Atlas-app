@@ -91,6 +91,38 @@ html, body {
   overscroll-behavior-y: none;
 }
 
+/* ─── AUCUNE BARRE DE DÉFILEMENT, NULLE PART — Y COMPRIS LA PAGE ────────────
+ *
+ * **Sa plainte du 30 août 2026, capture à l'appui :** *« sur PC les bandes
+ * déroulantes grises apparaissent, supprime-moi ça »*. C'est la deuxième fois
+ * qu'il le demande — la première, le 11 août, ne visait qu'une zone
+ * (`.atlas-fil-defile`, plus bas).
+ *
+ * CE QUI MANQUAIT, ET POURQUOI PERSONNE NE POUVAIT LE VOIR ICI. Chaque zone qui
+ * défile portait sa règle chez elle, et la **page elle-même** n'en portait
+ * aucune : le gabarit lui donne `100dvh` de hauteur minimale, donc tout écran un
+ * peu long fait défiler la fenêtre. Sur un téléphone cette barre-là est en
+ * surimpression — elle s'efface toute seule, et elle est invisible sur une
+ * capture. Sur un ordinateur, elle prend sa place à droite et ne s'en va jamais.
+ * **Le défaut ne pouvait donc apparaître que chez lui, sur son PC**, et
+ * `test-aucune-barre-de-defilement-e2e.ts` écartait délibérément `<html>` et
+ * `<body>` en les déclarant « pas de notre ressort ». Ils le sont.
+ *
+ * POURQUOI `*` ET PAS UNE LISTE. Le commentaire de `.atlas-colonne-defile` le
+ * dit déjà : « la cinquième zone recopiée aurait fini par oublier la règle à son
+ * tour ». Cinq zones portaient la règle, une sixième — la page — ne l'avait
+ * jamais eue. Une règle universelle met fin au comptage : la zone qui n'existe
+ * pas encore est déjà couverte.
+ *
+ * Le défilement, lui, ne bouge pas d'un pixel : molette, doigt, clavier et
+ * navigation au focus fonctionnent à l'identique. Seule la peinture disparaît. */
+* {
+  scrollbar-width: none;
+}
+*::-webkit-scrollbar {
+  display: none;
+}
+
 /* --- Bords de l'écran, une fois installée sur un téléphone ---------------
  *
  * Ajoutée à l'écran d'accueil, l'application s'ouvre en plein écran : plus de

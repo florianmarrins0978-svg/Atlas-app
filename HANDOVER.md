@@ -4,8 +4,30 @@
 vous ne savez rien de ce qui précède — c'est exactement le cas de figure qu'il
 sert.
 
-**Point de reprise :** 2026-08-29 · `main`
+**Point de reprise :** 2026-08-30 · `claude/grey-scrollbar-pc-uueje5`
 (l'historique fait foi : `git log --oneline -20`)
+
+---
+
+## PIÈGE : CE QUI EST INVISIBLE SUR TÉLÉPHONE PEUT ÊTRE PERMANENT SUR PC (30 août 2026)
+
+Il travaille aussi **depuis un PC**, et une partie de ce qu'il y voit ne se
+reproduit ni ici ni sur son iPhone. Les barres de défilement en sont l'exemple
+type : sur téléphone elles sont en **surimpression** — elles s'effacent seules,
+n'apparaissent sur aucune capture et ne prennent aucune largeur ; sur ordinateur
+elles s'**installent** et ne repartent pas.
+
+D'où la règle : **devant une plainte qui mentionne « sur PC », ne pas chercher à
+la reproduire sur l'écran du patron** (`ECRAN_DU_PATRON`, un iPhone 13). Les
+suites navigateur qui n'imposent pas de `viewport` ouvrent déjà 1280 × 720,
+c'est-à-dire un PC — c'est là qu'il faut mesurer.
+
+Corrigé ce jour-là : `globals.css` masque désormais TOUTE barre
+(`* { scrollbar-width: none }`), la page comprise. Voir `ARCHITECTURE.md` §206 —
+et surtout la leçon générale : `test-aucune-barre-de-defilement-e2e.ts` écartait
+`<html>` et `<body>` avec un commentaire qui justifiait l'exclusion. **Une
+exclusion écrite noir sur blanc se relit sans méfiance ; c'est précisément là
+qu'un défaut se cache.**
 
 ---
 

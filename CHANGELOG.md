@@ -7,6 +7,33 @@ Format : le plus récent en tête.
 
 ---
 
+## 2026-08-30
+
+### Plus aucune barre de défilement grise, y compris sur la page elle-même
+
+**Sa plainte du jour, sur son PC :** *« sur PC les bandes déroulantes grises
+apparaissent, supprime-moi ça »*. Deuxième fois qu'il le demande — le 11 août,
+le correctif n'avait couvert que les cadres qui défilent, pas **la page**.
+
+Le gabarit donne à la page `100dvh` de hauteur minimale : tout écran un peu long
+fait donc défiler la fenêtre. Sur un téléphone cette barre-là est en
+surimpression et s'efface seule ; sur un ordinateur elle s'installe à droite et
+n'en repart pas. Le défaut ne pouvait apparaître que chez lui.
+
+`globals.css` porte désormais une règle universelle (`* { scrollbar-width: none }`
+et `*::-webkit-scrollbar { display: none }`) au lieu d'une déclaration recopiée
+par zone — la sixième avait été oubliée, la septième l'aurait été aussi. Le
+défilement ne change pas : seule la peinture disparaît.
+
+`scripts/test-aucune-barre-de-defilement-e2e.ts` écartait explicitement `<html>`
+et `<body>` en les déclarant « pas de notre ressort ». Ils le sont : il les
+mesure. Éprouvé rouge avant d'être éprouvé vert — règle retirée, huit écrans sur
+treize rougissent sur `html (scrollbar-width: auto)`.
+
+Détail et raisons : `ARCHITECTURE.md` §206.
+
+---
+
 ## 2026-08-29
 
 ### Le banc répare ses dépendances désaccordées, au lieu de bâtir en boucle pour rien

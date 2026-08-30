@@ -18007,3 +18007,75 @@ Il ne doit pas protéger de ce qu'une dictée énonce deux fois : « je démonte
 érable, puis un érable au fond du jardin » fait deux arbres, et fondre les deux
 en ferait disparaître un — que le patron ne facturerait jamais. Les prestations
 créées par la passe en cours ne servent donc plus au rapprochement.
+
+---
+
+## 206. Les barres de défilement grises : la page était la seule zone que personne n'avait couverte
+
+**Sa plainte du 30 août 2026, capture d'écran à l'appui :** *« sur PC les bandes
+déroulantes grises apparaissent, supprime-moi ça »*. C'est la deuxième fois : le
+11 août, il avait déjà écrit *« je ne veux pas voir ça du tout, je veux juste
+que ça slide »* — et le correctif d'alors (§ la règle de `.atlas-fil-defile`
+dans `globals.css`) était juste, mais partiel.
+
+### Ce qui restait, et pourquoi personne ne pouvait le voir d'ici
+
+Cinq zones de l'application défilent dans un cadre, et **chacune portait sa
+règle chez elle** : `.atlas-fil-defile`, `.atlas-colonne-defile`,
+`.atlas-glisse`, `.atlas-glisseur`, `.atlas-pellicule`. Une sixième zone défile
+pourtant, la plus banale de toutes : **la page**. Le gabarit
+(`src/app/layout.tsx`) lui donne `100dvh` de hauteur *minimale* — donc tout
+écran un peu long fait défiler la fenêtre, et rien ne masquait cette barre-là.
+
+| Où | Ce que fait le navigateur |
+|---|---|
+| téléphone | barre en **surimpression** : elle s'efface seule, et n'apparaît sur aucune capture |
+| ordinateur | barre **installée à droite**, qui prend sa place et ne s'en va jamais |
+
+D'où un défaut strictement invisible ici et sur son iPhone, et permanent sur son
+PC. Le patron a d'ailleurs deux barres à l'écran sur sa capture : celle de la
+page, et celle de la fenêtre du navigateur d'à côté.
+
+### Le contrôle regardait délibérément ailleurs
+
+`scripts/test-aucune-barre-de-defilement-e2e.ts` existe depuis le 11 août
+précisément pour compter les zones à notre place. Il écartait `<html>` et
+`<body>`, avec ce commentaire : *« la page entière ne défile pas dans cette
+application — chaque écran tient dans un cadre fixe […] la barre de la fenêtre
+n'est pas de notre ressort »*. Les deux moitiés de la phrase étaient fausses :
+la page défile, et cette barre est bien la nôtre.
+
+**C'est le pire des angles morts** — une exclusion écrite noir sur blanc, qu'on
+relit sans méfiance parce qu'elle se justifie elle-même. Elle est levée : le
+balayage mesure désormais `<html>` (`scrollHeight > innerHeight`), et `<body>`
+reste écarté pour ne pas signaler deux fois une seule barre.
+
+### Une règle universelle, plutôt qu'une sixième copie
+
+```css
+* { scrollbar-width: none; }
+*::-webkit-scrollbar { display: none; }
+```
+
+Le commentaire de `.atlas-colonne-defile` disait déjà le risque : *« la cinquième
+zone recopiée aurait fini par oublier la règle à son tour »*. Ajouter une
+sixième déclaration au même endroit aurait réparé ce jour-là et laissé la
+septième dehors. La règle universelle met fin au comptage : **la zone qui
+n'existe pas encore est déjà couverte**, et les cinq déclarations locales
+deviennent redondantes sans être fausses — elles restent, avec leurs
+commentaires, parce qu'elles portent le pourquoi de chaque geste.
+
+Le défilement lui-même ne change pas d'un pixel : molette, doigt, clavier et
+navigation au focus fonctionnent à l'identique. Seule la peinture disparaît.
+
+### Ce qui a été éprouvé
+
+Le contrôle a été confronté à l'état dégradé qu'il prétend détecter — règle
+retirée, batterie rejouée : **huit écrans sur treize rougissent**, tous sur
+`html (scrollbar-width: auto)`. Règle remise : treize verts, vingt-deux zones
+qui défilent balayées. Un contrôle qui n'a jamais échoué ne prouve rien
+(`AGENTS.md`).
+
+Les cinq écrans restés verts en mode dégradé ne sont pas une faiblesse du
+balayage : leur contenu tient dans les 720 px du cadre d'essai, donc la page ne
+défile pas et il n'y a effectivement aucune barre à voir.
