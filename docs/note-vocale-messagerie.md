@@ -15,7 +15,7 @@
 | Il devient secondaire et s'appelle « Je rédige à la main » | fait | `PrimaryButton.tsx` (`secondaire`) |
 | Le geste 2 : l'objet au centre, poubelle à gauche, avion à droite | fait | `globals.css`, bloc « LA NOTE VOCALE À LA MESSAGERIE » |
 | Le repos B : micro plein, petites ondes de 1,5 cm de chaque côté | fait | `.atlas-frange { width: 1.5cm }` |
-| Tout tient sur une page, sans faire défiler | fait | mesuré : 604 px de feuille, 601 de contenu |
+| Tout tient sur une page, sans faire défiler | fait | mesuré : la feuille montre 604 px et en contient 604 |
 | Pas de vide en bas | fait | 3 px au repos |
 | L'écran ne se balade plus de droite à gauche | fait | deux causes trouvées, les deux corrigées |
 
@@ -38,7 +38,9 @@ Ce qu'il rend aujourd'hui :
 au repos  : la feuille montre 604 px et en contient 604 · à faire défiler rien ✓ · vide en bas 3 px ✓
      ✓ la page ne glisse pas latéralement
      ✓ rien ne dépasse à droite ni à gauche
-en dictée : la feuille montre 604 px et en contient 604 · à faire défiler rien ✓ · vide en bas 40 px ✓
+en dictée : la feuille montre 604 px et en contient 604 · à faire défiler rien ✓ · vide en bas 48 px ✓
+     ✓ la page ne glisse pas latéralement
+     ✓ rien ne dépasse à droite ni à gauche
 le bouton « Je rédige à la main » est PARTI ✓
 après la poubelle, il est REVENU ✓
 ```
@@ -46,7 +48,7 @@ après la poubelle, il est REVENU ✓
 **Au départ, la feuille débordait de 492 px** — l'anneau et le bouton étaient
 sous le pli, et il fallait faire défiler pour les atteindre.
 
-**Les 40 px de vide pendant la dictée sont l'empreinte du bouton parti**, et
+**Les 48 px de vide pendant la dictée sont l'empreinte du bouton parti**, et
 c'est voulu : il a demandé qu'il disparaisse. Faire grandir la zone de dictée
 pour les combler ferait descendre le micro d'une vingtaine de pixels **sous le
 doigt qui vient de l'appuyer** — le seul moment où l'écran doit être immobile.
@@ -199,4 +201,4 @@ dire deux phrases, appuyer sur l'avion — et dire si le devis s'ouvre.
 | Point | Qui peut le trancher |
 |---|---|
 | Sur un écran plus court qu'un iPhone 13 (un SE, 667 − barre = 560), la feuille déborde encore de 101 px | lui — dire si ce téléphone-là compte |
-| Les 40 px libérés par le bouton pendant la dictée restent vides | lui — c'est un choix d'apparence, pas un défaut |
+| Les 48 px libérés par le bouton pendant la dictée restent vides | lui — c'est un choix d'apparence, pas un défaut |
