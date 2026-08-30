@@ -216,7 +216,20 @@ async function questionsRestantes(
   // Ses façons d'abattre à lui : une question qui proposerait les trois
   // d'origine laisserait sa quatrième rangée vide pour toujours.
   const { axes } = await lireGrilles(ctx);
-  return questionsAvantChiffrage(prestations, new Set(deja.map((p) => p.sujet)), axes.techniques);
+
+  // **On interroge les PRESTATIONS EN BASE quand elles existent, pas le
+  // brouillon.** Sa règle du 31 août 2026 : *« une question n'est posée que si
+  // l'information est réellement absente des données structurées de LA
+  // prestation concernée. »*
+  //
+  // Le brouillon ne porte que ce que le modèle a rendu : ni `methode`, ni
+  // `caracteristiques`. Décider sur lui, c'est décider sans regarder les
+  // colonnes — et redemander une technique et un diamètre déjà connus. Le
+  // brouillon reste le repli, pour l'instant qui précède la confirmation.
+  const enBase = await listerPrestations(ctx, chantierId);
+  const surQuoi = enBase.length > 0 ? enBase : prestations;
+
+  return questionsAvantChiffrage(surQuoi, new Set(deja.map((p) => p.sujet)), axes.techniques);
 }
 
 /**

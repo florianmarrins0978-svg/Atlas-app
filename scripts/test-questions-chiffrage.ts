@@ -300,5 +300,97 @@ cas("sans colonne, le texte reprend la main — comme avant", () => {
   assert.ok(q.some((x) => x.id.startsWith("haie.longueur")));
 });
 
+
+
+// =========================================================================
+// LE TEST TÉLÉPHONE DU 31 AOÛT 2026 : ne jamais redemander ce qu'on sait
+// =========================================================================
+//
+// Il a dicté « démontage d'un érable de 40 cm de diamètre et 12 mètres de haut
+// avec rétention », et l'écran lui a quand même demandé « Comment s'abat-il ? »
+// puis « Quel diamètre fait le tronc ? » — sous le titre « Dessouchage ».
+//
+// **Deux défauts distincts, et le titre disait lequel.** Les questions
+// portaient bien sur la SOUCHE, pas sur l'érable : une souche recevait la
+// question de l'abattage, qui n'a pas de sens pour elle, et son diamètre était
+// cherché dans un texte au lieu de sa colonne.
+//
+// Sa règle : « une question n'est posée que si l'information nécessaire au prix
+// est réellement absente des données structurées de LA prestation concernée.
+// Ne récupère pas l'information depuis une autre prestation. »
+
+console.log("\n=== Ce que la dictée a déjà dit ne se redemande pas ===\n");
+
+const erableRenseigne = {
+  libelle: "Démontage en rétention d'un érable",
+  nature: "abattage",
+  methode: "demontage_retention",
+  caracteristiques: { diametreCm: 40, hauteurM: 12 },
+};
+const soucheRenseignee = {
+  libelle: "Dessouchage de souches de 60 cm",
+  nature: "dessouchage",
+  caracteristiques: { diametreCm: 60 },
+};
+
+cas("la technique en COLONNE éteint « Comment s'abat-il ? »", () => {
+  const q = questionsAvantChiffrage([erableRenseigne]);
+  assert.ok(
+    q.every((x) => !x.id.startsWith("abattage.technique")),
+    `posée quand même : ${q.map((x) => x.question).join(" / ")}`
+  );
+});
+
+cas("le diamètre en COLONNE éteint « Quel diamètre fait le tronc ? »", () => {
+  const q = questionsAvantChiffrage([erableRenseigne]);
+  assert.ok(
+    q.every((x) => !x.id.startsWith("abattage.diametre")),
+    `posée quand même : ${q.map((x) => x.question).join(" / ")}`
+  );
+});
+
+cas("un érable entièrement renseigné ne pose AUCUNE question", () => {
+  const q = questionsAvantChiffrage([erableRenseigne]);
+  assert.equal(q.length, 0, `restantes : ${q.map((x) => x.question).join(" / ")}`);
+});
+
+cas("une SOUCHE ne se fait jamais demander comment elle s'abat", () => {
+  // C'est la question qu'il a lue sous le titre « Dessouchage ». Une souche se
+  // rogne ou s'arrache ; elle ne s'abat pas.
+  const q = questionsAvantChiffrage([{ libelle: "Dessouchage", nature: "dessouchage" }]);
+  assert.ok(
+    q.every((x) => !x.id.startsWith("abattage.technique")),
+    `posée quand même : ${q.map((x) => x.question).join(" / ")}`
+  );
+});
+
+cas("le diamètre d'une souche vient de SA colonne, pas de l'arbre d'à côté", () => {
+  const q = questionsAvantChiffrage([erableRenseigne, soucheRenseignee]);
+  assert.equal(
+    q.length,
+    0,
+    `restantes : ${q.map((x) => `${x.libellePrestation} → ${x.question}`).join(" / ")}`
+  );
+});
+
+cas("sans colonne NI texte, la technique et le diamètre se demandent encore", () => {
+  // **Le garde-fou dans l'autre sens.** Une prestation d'avant le lot B n'a que
+  // son texte ; taire la question ferait chiffrer sans savoir, ce qui coûte du
+  // simple au double sur un abattage.
+  const q = questionsAvantChiffrage([{ libelle: "Abattage d'un chêne", nature: "abattage" }]);
+  assert.equal(q.length, 2, `posées : ${q.map((x) => x.question).join(" / ")}`);
+});
+
+cas("chaque question porte le libellé de SA prestation", () => {
+  // Ce titre « Dessouchage » au-dessus d'une question d'abattage est ce qui l'a
+  // induit en erreur.
+  const q = questionsAvantChiffrage([{ libelle: "Abattage d'un chêne", nature: "abattage" }]);
+  assert.ok(
+    q.every((x) => x.libellePrestation === "Abattage d'un chêne"),
+    JSON.stringify(q.map((x) => x.libellePrestation))
+  );
+});
+
+
 console.log(`\n${echecs === 0 ? "✅ Toutes les vérifications passent." : `❌ ${echecs} échec(s).`}`);
 process.exit(echecs === 0 ? 0 : 1);

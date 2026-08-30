@@ -26,6 +26,7 @@
 
 import { diametreLu, hauteurLue } from "./mesures-arbre";
 import { TECHNIQUES_PAR_DEFAUT, type Technique } from "./grille-prix";
+import { lireCaracteristiques } from "./prestation-structuree";
 
 /** Une réponse proposée, quand la question se referme sur un choix connu. */
 export type OptionReponse = {
@@ -77,6 +78,9 @@ const ABATTAGE = /\b(abattage|abattre|abatt|démont|demont|dessouch)/i;
  * La technique, c'est ce qui suit : au pied, démontage, avec rétention.
  */
 function techniqueDeja(ligne: LignePourQuestions): boolean {
+  // La colonne fait foi quand elle existe : c'est une valeur posée, pas une
+  // ressemblance de mots. Le texte reste le repli des prestations d'avant.
+  if (ligne.methode?.trim()) return true;
   return /\b(au\s+pied|démont|demont|rétention|retention)/i.test(
     [ligne.libelle, ligne.description ?? ""].join(" ")
   );
@@ -116,10 +120,12 @@ function toutLeTexte(ligne: LignePourQuestions): string {
  * poser une question déjà répondue, ou l'inverse.
  */
 function contientDiametre(ligne: LignePourQuestions): boolean {
+  if (lireCaracteristiques(ligne.caracteristiques).diametreCm !== undefined) return true;
   return diametreLu(toutLeTexte(ligne)) !== null;
 }
 
 function contientHauteur(ligne: LignePourQuestions): boolean {
+  if (lireCaracteristiques(ligne.caracteristiques).hauteurM !== undefined) return true;
   return hauteurLue(toutLeTexte(ligne)) !== null;
 }
 
@@ -137,6 +143,23 @@ export type LignePourQuestions = {
    * prestations d'avant, et des dictées lues mot à mot.
    */
   nature?: string | null;
+  /**
+   * La technique et les mesures, telles qu'elles sont EN COLONNE.
+   *
+   * **Sa règle du 31 août 2026, après un test téléphone :** *« une question
+   * n'est posée que si l'information nécessaire au prix est réellement absente
+   * des données structurées de LA prestation concernée. Si méthode =
+   * demontage_retention, ne demande pas comment l'arbre est abattu. Si
+   * diametreCm = 40, ne demande pas son diamètre. Ne récupère pas
+   * l'information depuis une autre prestation. »*
+   *
+   * Avant, ces deux faits ne se lisaient que dans le TEXTE. Une prestation qui
+   * les portait en colonne mais pas dans son libellé se faisait redemander ce
+   * qu'elle savait déjà — et le nettoyage des libellés du 30 août a rendu le
+   * cas ordinaire au lieu d'exceptionnel.
+   */
+  methode?: string | null;
+  caracteristiques?: unknown;
 };
 
 /**
@@ -243,9 +266,16 @@ export function questionsAvantChiffrage(
 
     if (estDeNature(ligne, ["abattage", "dessouchage"], ABATTAGE)) {
       // La technique : c'est elle qui fait 600 ou 1 400 €. Une dictée ne la
-      // contient à peu près jamais ; quand elle la contient, le modèle l'a
-      // rangée dans le libellé, et `techniqueDeja` l'y trouve.
-      if (!techniqueDeja(ligne)) {
+      // contient à peu près jamais ; quand elle la contient, elle est en
+      // colonne ou dans le libellé, et `techniqueDeja` l'y trouve.
+      //
+      // **Elle n'appartient QU'À L'ABATTAGE.** Une souche ne s'abat pas : elle
+      // se rogne, ou elle s'arrache. Le 31 août 2026, le patron a lu
+      // « Comment s'abat-il ? » sous le titre « Dessouchage » et a cru que la
+      // question portait sur son érable — elle portait bien sur la souche, et
+      // c'est la question qui n'avait pas lieu d'être. Le dessouchage reste
+      // dans la branche pour le DIAMÈTRE, qu'une souche possède bel et bien.
+      if (estDeNature(ligne, ["abattage"], ABATTAGE) && !techniqueDeja(ligne)) {
         questions.push({
           id: `abattage.technique#${rang}`,
           libellePrestation: libelle,
