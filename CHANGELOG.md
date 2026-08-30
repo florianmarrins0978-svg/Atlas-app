@@ -37,6 +37,151 @@ commentaires s'ancrent donc sur l'événement — *le test téléphone* — plut
 sur un jour. Les anciens ne sont pas réécrits : ils sortent du cadre qu'il a
 fixé, et `git log` fait foi.
 
+### La note vocale codée : poubelle ou avion, et la fiche tient dans un écran
+
+**Son feu vert :** *« Très bien code exactement ça ! Réfère-toi à cette page une
+fois que tu auras fini pour être sûr que tu n'as rien oublié. Je veux que tout
+tienne sur une seule page, qu'on n'ait pas à scroller pour voir les infos en bas
+de la page ; et utilise tout l'espace de la page, il ne doit pas rester du vide
+en bas ; et l'écran ne doit plus pouvoir se balader de droite à gauche. »*
+
+`appli/note-vocale-choix.html` codée dans l'application : le disque plein et ses
+deux ondes de 1,5 cm au repos ; la poubelle à gauche, l'avion à droite dès qu'on
+parle ; le micro devient un carré d'arrêt sans changer de forme ; l'avion envoie
+et mène au devis sans qu'on ait rien d'autre à toucher. « Je rédige à la main »
+est secondaire, large de 66 %, et **disparaît** pendant la dictée.
+
+**Le magnétophone sait désormais SUSPENDRE et JETER.** La suspension passe par
+`MediaRecorder.pause()`, jamais par un arrêt suivi d'un redémarrage : celui-ci
+produirait deux fichiers, et le second écraserait le premier — la moitié de ce
+qu'il a dit, perdue sans qu'il le sache. Jeter relâche le micro **et oublie les
+morceaux** : sans cela, une note rejetée resterait partable par mégarde.
+
+### L'écran se baladait de droite à gauche — deux causes, aucune n'était l'évidente
+
+**La première tenait au champ du nom**, `flex-shrink-0` sans `flex-1` : il
+gardait la largeur naturelle d'un `<input>`, 273 px, et poussait le téléphone
+à 421 — 31 px hors d'un écran qui en fait 390. Le viewport de mise en page
+s'élargissait pour l'accueillir, et toute la page suivait. Sa maquette
+l'écrivait juste depuis le début (`.duo .nom{flex:1;min-width:0}`).
+
+**La seconde tenait à la pellicule de photos** : `-mx-[26px]` sur un écran qui a
+24 px de retrait, soit deux pixels de débordement de chaque côté. Deux pixels ne
+se voient pas, et suffisent.
+
+### La fiche client débordait de 492 px — et c'est SA planche qui l'a resserrée
+
+Premier réflexe : rogner au jugé. Puis relecture de la planche qu'il a validée,
+comme il l'avait demandé — **elle porte déjà toutes ces mesures, et plus serrées
+que celles qu'on inventait** : case de 44 px (au lieu de 50), retrait 11/14 (au
+lieu de 15/16), rayon 12 (au lieu de 14), carré photo 58 (au lieu de 74),
+pastille Mr/Mme 7/28 (au lieu de 13/30), interligne 7 px (au lieu de 16), titre
+27 px (au lieu de 32). Il avait resserré l'écran lui-même en choisissant sa
+planche ; le travail était de le lire.
+
+**Quatre intitulés en petites capitales sont partis** — « E-mail », « Adresse du
+chantier », « Comment lui envoyer son devis ? », « Photos du chantier » : 108 px
+pour redire ce que la case montre déjà (sa règle du 25 août). Ils passent en
+`aria-label`. **« Nom du client » et « Téléphone » restent**, parce que sa
+planche les garde : une case vide de 152 px alignée à droite ne dit pas
+d'elle-même qu'elle attend un numéro.
+
+**La place réservée sous le bouton a été rendue.** Dix-neuf pixels étaient
+gardés en permanence pour qu'une erreur ne fasse pas sauter la mise en page —
+mais cette ligne est la DERNIÈRE de l'écran : rien ne la suit, donc rien ne
+bouge quand elle paraît. Une protection qui ne protégeait rien.
+
+Mesuré, sur son écran et par son parcours : 604 px de feuille pour 601 de
+contenu, rien à faire défiler, 3 px de vide.
+
+### La batterie ne pouvait plus tourner : la courbe mémoire, enfin mesurée
+
+Le ticket du 27 août disait « le serveur meurt, on ne sait pas pourquoi ». En
+échantillonnant `next-server` toutes les vingt secondes : **0,6 Go au
+démarrage, 8,9 Go une fois les 33 écrans préchauffés, 12,7 Go une suite plus
+tard** — puis le conteneur l'abat. Ce n'est donc aucune suite en particulier :
+c'est **l'application entière compilée par Turbopack** qui ne tient pas dans le
+plafond, et le préchauffage en consomme les deux tiers avant la première suite.
+
+Trois changements d'outillage en découlent, aucun ne touche une assertion :
+
+  · **la feuille de chantier en PDF est préchauffée** (`API_DE_CHANTIER`). Sa
+    première compilation prenait 45 à 50 s et le serveur ne répondait plus à
+    rien pendant ce temps ; elle répond maintenant en 476 ms. C'était le rouge
+    de `test-acces-salarie` depuis deux jours ;
+  · **en tranche (`--seulement`), le préchauffage se réduit à trois routes** :
+    la connexion, l'accueil, et la seule route dont la compilation dépasse le
+    délai des suites. Une tranche démarre à 1 Go au lieu de 9. La batterie
+    entière, elle, préchauffe tout — c'est elle qui autorise une livraison ;
+  · **`--seulement` accepte plusieurs motifs séparés par des virgules**, pour
+    faire des groupes de la taille qu'on veut plutôt que des préfixes qui
+    tombent n'importe où (« test-d » en compte dix-sept, « test-h » une seule).
+
+**Une piste essayée et ÉCARTÉE, écrite pour que personne ne la repaie :**
+`next dev --webpack` tient le serveur à 5,7 Go au lieu de 13 — mais il ne sert
+pas la même application : dès la première suite, la feuille « Absences » ne
+s'ouvrait plus, deux rouges sur du code juste. Un empaqueteur qui fabrique de
+faux rouges fait pire que ne rien mesurer.
+
+### Deux classes CSS baptisées avec des noms déjà pris
+
+`atlas-souffle` sert les trois points de l'attente ; `atlas-aile`, les barreaux
+du lecteur de note vocale. Les deux ont été repris pour les ondes du micro au
+repos, et **écrasés** : une feuille de style n'a pas de portée, la règle écrite
+le plus bas gagne sur tous les écrans. Les points devenaient des barreaux de
+2 px invisibles ; les ailes du lecteur, des blocs absolus de 1,5 cm.
+
+**Aucun test ne pouvait le dire** — l'écran qu'on code est juste, c'est l'autre
+qui casse, ailleurs, sans témoin. Trouvé à la relecture du diff. La classe
+s'appelle `atlas-frange`, et `scripts/test-classes-atlas-uniques.ts` refuse
+désormais tout nom repris, en laissant passer les trois découpes délibérées :
+un contrôle qui parle à tort s'apprend à être ignoré.
+
+**Et le renommage a fait un second dégât, celui-là visible au doigt.** Il a
+emporté les ailes du LECTEUR, qui portaient le même libellé : elles ont pris les
+mesures de la dictée — 1,5 cm en absolu — et sont sorties de 66 px hors de
+l'écran. Chrome élargit alors le viewport de mise en page de 390 à 456 px, tout
+rapetisse, et **la poignée du tiroir de la fiche chantier passe sous le pli**.
+C'est la panne même qu'on venait de corriger, réintroduite ailleurs. Établie en
+rejouant `test-retrait-differe` sur le code d'avant — verte là, rouge ici — puis
+mesurée au pixel. La zone de dictée refuse désormais d'élargir la page quoi
+qu'il arrive (`overflow-x: clip`) : un ornement qui déplace un bouton n'est plus
+un ornement.
+
+### Deux contrôles rougissaient pour des raisons qui n'étaient pas le produit
+
+**Le préchauffage.** `test-prechauffage` fixe la LISTE des écrans compilés
+d'avance ; la route PDF s'y ajoute, la liste attendue aussi. C'est délibéré :
+une entrée qui s'ajouterait par mégarde ferait payer une compilation à chaque
+démarrage du banc, et le contrôle est là pour le voir.
+
+**La planche « choisir la date ».** Elle pose ses exemples aux 3e et 6e jours
+OUVRÉS à partir d'aujourd'hui : le 30 août, ils tombent en septembre, et le mois
+affiché — qui commence toujours au 1er — n'en montre aucun. Le contrôle accusait
+la planche d'un défaut qui n'existe pas. C'est le piège écrit dans `HANDOVER.md`
+depuis le 26 août (« une suite qui lit le mois affiché rougit en fin de mois »),
+et son remède : **il feuillette maintenant, au lieu de conclure**. Ni la planche
+ni le produit n'ont bougé.
+
+### Un contrôle de géométrie qui rendait un vert impossible à rougir
+
+`scripts/capture-dictee-fiche-client.mts` mesure ce qu'aucune suite
+fonctionnelle n'attrape. Il s'est trompé **trois fois**, et les trois erreurs
+valent d'être écrites :
+
+1. il ouvrait `/chantiers/nouveau` **en page**, un écran que le patron ne voit
+   jamais — il y entre par l'accueil, et la fiche s'ouvre alors en FEUILLE : 200
+   px de contrainte qui n'existent pas ;
+2. il mesurait le **document**, alors que c'est la feuille qui défile en
+   elle-même : la hauteur du document ne bouge pas d'un pixel pendant que la
+   moitié basse est sous le pli ;
+3. il cherchait « le bas de ce qui est dessiné » dans la feuille entière — or le
+   cadre qui défile l'occupe entièrement, donc ce bas tombait toujours pile sur
+   le bas de l'écran et « vide en bas : aucun » sortait en vert **quoi qu'il
+   arrive**.
+
+Il sait rougir, et cela s'éprouve : `HAUTEUR=560` rend un écran trop court, et
+il annonce les 101 px qui passent sous le pli.
 
 ### Ses trois choix réunis : largeur 4, geste 2, micro à deux ondes de 1,5 cm
 
@@ -257,6 +402,42 @@ du doigt. Le message, lui, affichait « mesuré : 44×44 » en refusant : un con
 qui se contredit envoie chercher partout sauf au bon endroit. Les deux sont
 corrigés.
 
+### Le relevé de TVA ne montre plus au service facturation deux réglages du patron
+
+Le rythme du relevé et le moment où la TVA devient exigible sont des
+déclarations faites aux impôts : ils s'écrivent par `exigerProprietaire`, et
+cela n'a pas bougé. Mais l'écran venait de s'ouvrir au rôle « Facturation », qui
+y voyait donc deux réglages qu'un appui aurait laissés muets.
+
+Retirés pour elle plutôt que grisés — un réglage grisé se touche quand même. Le
+relevé et ses chiffres restent entiers. **Trouvé sur une capture, par aucun test
+vert** : la cinquième fois dans ce dépôt.
+
+### Un commercial ne facture plus — sa règle du 13 août, enfin appliquée
+
+Quatre rôles désormais : patron, **facturation** (nouveau), commercial, salarié.
+Plusieurs personnes peuvent porter le même rôle — c'était déjà vrai en base, et
+il n'y a pas de compte partagé « Facturation ».
+
+**Ce que ça ferme.** Les dix actions du cycle comptable — terminer un chantier,
+émettre une facture, son échéance, son lien, les paiements, les achats, les
+tickets — se gardaient toutes par « tout sauf le salarié ». Un commercial
+facturait donc pour de bon, sans même ouvrir l'écran. Sa table du 13 août
+(`docs/QUESTIONS.md` §10) disait pourtant *« ni les factures, ni la TVA »*.
+
+**Trois choses le cachaient :** l'écran des accès lui PROMETTAIT « Les factures
+et le relevé de TVA » ; une suite EXIGEAIT que la TVA lui soit ouverte ; et le
+contrôle des promesses ne lisait pas les mots. Les trois sont corrigées.
+
+**Ce que ça coûte :** un commercial ne clôture plus un chantier — « Créer la
+facture » crée la facture. C'est la conséquence honnête de la règle.
+
+**La forme des capacités a changé, et c'est le vrai garde-fou.** Elles
+s'écrivaient « tout sauf le salarié » ; elles nomment maintenant qui les a. Sous
+l'ancienne forme, le rôle neuf serait né avec le droit de facturer et de
+supprimer des chantiers, sans qu'une ligne change. Un contrôle lit la source et
+refuse toute règle écrite par la négative.
+
 ### Le commercial écrit sur le planning : confirmé, plus seulement toléré
 
 Le lot « salarié en lecture seule » n'avait pas touché aux droits du commercial,
@@ -459,7 +640,7 @@ La règle n'est pas « retirer ce qui ressemble à une mesure » mais « retirer
 fragment dont TOUT ce qu'il dit est déjà en colonne » : « Érable — démontage en
 rétention » garde sa méthode, qu'aucune colonne ne porte. Rien n'est retiré de
 la base, et aucun devis existant n'est réinterprété — sans colonnes, le libellé
-est rendu tel quel. Détail : `ARCHITECTURE.md` §211.
+est rendu tel quel. Détail : `ARCHITECTURE.md` §213.
 
 ## 2026-08-29
 

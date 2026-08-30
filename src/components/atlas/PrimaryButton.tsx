@@ -81,6 +81,8 @@ export default function PrimaryButton({
   disabled = false,
   repere,
   pleineLargeur = false,
+  secondaire = false,
+  part,
 }: {
   children: React.ReactNode;
   onClick?: () => void;
@@ -102,13 +104,44 @@ export default function PrimaryButton({
    * n'en veut pas n'a rien à faire.
    */
   pleineLargeur?: boolean;
+  /**
+   * La capsule cède la vedette : fond transparent, liseré d'or, encre.
+   *
+   * **Sa demande du 30 août 2026 :** *« le bouton change par "je rédige à la
+   * main", mais ça doit être un bouton secondaire, car l'idée c'est qu'il
+   * utilise en priorité la note vocale »*.
+   *
+   * **Ce n'est pas « une seconde forme d'action », c'est une HIÉRARCHIE.** Le
+   * dessin ne bouge pas — même capsule, même serif, même hauteur ; seul
+   * l'aplat s'en va. Un écran n'a qu'un seul plein, et il désigne ce qu'on
+   * veut qu'on fasse : tant que ce bouton-là était plein, l'œil y allait
+   * d'abord et la dictée devenait un accessoire — l'inverse de ce produit.
+   *
+   * Le vocabulaire est celui des capsules de canal (`ChoixCanal.tsx`), pas une
+   * invention : transparent, liseré, encre.
+   */
+  secondaire?: boolean;
+  /**
+   * La part de la largeur du bloc que prend la capsule — « 66 % », sa
+   * proposition 4 du 30 août, choisie sur planche parmi quatre.
+   *
+   * Sans effet si `pleineLargeur` n'est pas demandé : c'est un réglage de
+   * ce mode-là, pas une largeur libre.
+   */
+  part?: string;
 }) {
   // La capsule ne prend que la place de son texte : c'est tout son intérêt.
   // 13 px de retrait vertical sur un corps de 17 la posent à 50 px de haut —
   // au-dessus des 44 px qu'Apple demande au doigt, et huit de moins qu'avant.
   const className =
     `${pleineLargeur ? "flex w-full" : "inline-flex"} items-center justify-center gap-2 px-9 py-[13px] text-[17px] transition-transform active:scale-[0.985]`;
-  const dessin = { borderRadius: 9999, fontFamily: font.display };
+  const dessin: React.CSSProperties = {
+    borderRadius: 9999,
+    fontFamily: font.display,
+    // La part ne s'applique qu'en pleine largeur : ailleurs la capsule tient à
+    // son texte, et lui imposer une fraction la couperait.
+    ...(pleineLargeur && part ? { width: part, alignSelf: "center" } : null),
+  };
 
   // **Le bouton se centre lui-même.** À largeur libre, laissé au fil du texte,
   // il se collerait à gauche ; l'appelant l'oublierait une fois sur deux, et le
@@ -123,14 +156,32 @@ export default function PrimaryButton({
         disabled
         aria-disabled="true"
         className={`${className} cursor-not-allowed`}
-        style={{ ...dessin, backgroundColor: colors.line, color: colors.muted }}
+        // **Une capsule secondaire éteinte reste CREUSE.** Sinon, appuyer sur
+        // « Je rédige à la main » la remplirait d'un aplat gris le temps de la
+        // création : le bouton changerait de nature sous le doigt, et l'on
+        // croirait avoir touché autre chose.
+        style={
+          secondaire
+            ? { ...dessin, backgroundColor: "transparent", color: colors.muted, boxShadow: `inset 0 0 0 1.5px ${colors.line}` }
+            : { ...dessin, backgroundColor: colors.line, color: colors.muted }
+        }
       >
         {children}
       </button>
     );
   }
 
-  const style = { ...dessin, backgroundColor: colors.rust, color: colors.card };
+  const style: React.CSSProperties = secondaire
+    ? {
+        ...dessin,
+        backgroundColor: "transparent",
+        color: colors.ink,
+        // Un liseré posé en `box-shadow` plutôt qu'en `border` : la bordure
+        // ajouterait trois pixels de haut, et la capsule secondaire cesserait
+        // d'avoir exactement la taille de la pleine.
+        boxShadow: `inset 0 0 0 1.5px ${colors.or}`,
+      }
+    : { ...dessin, backgroundColor: colors.rust, color: colors.card };
 
   if (href) {
     return centrer(

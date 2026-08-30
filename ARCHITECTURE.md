@@ -18457,7 +18457,263 @@ deux cartes voisines du même écran. La différence était vraie dans le code e
 invisible au doigt : elle ne faisait que demander laquelle des deux range
 vraiment. Un seul libellé, et ce qui se passe dessous reste l'affaire du dépôt.
 
-## 211. Le client n'a pas à relire les mesures qu'Atlas range en colonnes
+---
+
+## 211. La note vocale à la messagerie, et la fiche qui tient dans un écran
+
+*30 août 2026 — `appli/note-vocale-choix.html`, `AnneauNoteVocale.tsx`,
+`magnetophone.ts`, `FormulaireNouveauChantier.tsx`.*
+
+### Un objet qui ne change jamais de forme, seulement de signe
+
+Le repos est un disque plein, son micro, et deux ondes de 1,5 cm. Dès qu'on
+parle, la poubelle naît à sa gauche, l'avion à sa droite, et le micro devient un
+carré d'arrêt — **le disque, lui, ne bouge pas**. C'est sa règle : *« il ne doit
+pas changer de visage »*. Deux formes pour un même geste se liraient comme deux
+boutons, et il faudrait regarder avant de viser.
+
+**Les ondes de repos s'effacent dès qu'on appuie, et c'est de la géométrie, pas
+un goût.** Chaque aile occupe 1,5 cm plus 9 px d'écart, soit 66 px de part et
+d'autre du disque ; la poubelle et l'avion, eux, ne peuvent se poser qu'à une
+vingtaine de pixels — la largeur d'un téléphone ne laisse pas le choix. Les
+barreaux passaient donc par-dessus les deux gestes, à l'endroit exact où il faut
+viser. Le mouvement n'est pas perdu : l'onde qui se déroule sous le trio le
+porte, avec le chrono.
+
+### Suspendre n'est pas arrêter, et jeter n'est pas cacher
+
+`MediaRecorder.pause()` garde les morceaux déjà captés et la session ouverte :
+la reprise poursuit **le même fichier**. Arrêter puis redémarrer produirait deux
+enregistrements dont le second écraserait le premier — la moitié de ce qu'il a
+dit, perdue sans qu'il le sache.
+
+Jeter relâche le micro **et oublie les morceaux**. Masquer l'écran sans vider le
+tampon laisserait une note rejetée partable par mégarde au geste suivant.
+
+Le compteur s'arrête aussi en pause : sinon il compterait un silence que la note
+ne contient pas, et l'on croirait avoir dicté trois minutes là où il y en a une.
+
+### Le niveau se MESURE, il ne s'anime pas
+
+L'onde lit le micro pour de bon (`AnalyserNode`, écart quadratique moyen autour
+du zéro — le volume perçu, pas le pic, qui ferait sauter l'onde sur un
+claquement). **Rien n'est rebranché vers la sortie**, contrairement à la
+lecture : renvoyer le micro vers les haut-parleurs ferait un larsen sur un
+chantier. On écoute pour mesurer, pas pour entendre.
+
+### Le bouton disparaît, il ne se grise pas
+
+*« Le bouton "Je rédige à la main" disparaît pour ne plus avoir de confusion
+possible. »* Un bouton éteint reste un bouton : on l'appuie, il ne répond pas,
+et l'on croit l'écran cassé. Sa place n'est pas réservée non plus — il est le
+dernier de l'écran, donc rien au-dessus ne bouge, et la page se raccourcit sans
+que rien ne saute sous le doigt.
+
+### Ce qui fait glisser un écran de droite à gauche, et qui n'est jamais évident
+
+Deux causes sur cette fiche, aucune visible à l'œil :
+
+| | |
+|---|---|
+| un `<input>` en `flex-shrink-0` sans `flex-1` | il garde sa largeur naturelle — 273 px — et pousse son voisin hors de l'écran |
+| une pleine largeur en `-mx-[26px]` sur un écran à `px-6` | deux pixels de débordement de chaque côté |
+
+Dans les deux cas, le viewport de mise en page s'élargit lui-même pour contenir
+ce qui dépasse : **comparer `scrollWidth` à `innerWidth` rend alors « aucun
+défilement » sur un écran qui se balade bel et bien.** On compare au bord du
+cadre, et l'on éprouve le glissement en poussant la page de 60 px — c'est ce que
+fait son pouce.
+
+### Mesurer une feuille, ce n'est pas mesurer une page
+
+La fiche client s'ouvre **en feuille** : un bloc `fixed` qui occupe l'écran et
+défile en lui-même. Trois erreurs de mesure en découlent, toutes payées le
+30 août 2026 :
+
+1. **ouvrir `/chantiers/nouveau` en page** — un écran qu'il ne voit jamais, et
+   200 px de talon qui n'existent pas dans son parcours ;
+2. **mesurer `document.documentElement`** — sa hauteur ne bouge pas d'un pixel
+   pendant que la moitié basse de la feuille est sous le pli ;
+3. **chercher « le bas de ce qui est dessiné » dans la feuille entière** — le
+   cadre qui défile l'occupe entièrement, donc ce bas tombe toujours pile sur le
+   bas de l'écran et « vide en bas : aucun » sort en vert **quoi qu'il arrive**.
+
+La troisième est la plus dangereuse : c'est un contrôle qui ne peut pas rougir.
+`scripts/capture-dictee-fiche-client.mts` mesure désormais **le cadre**, entre
+par le parcours du patron, et accepte `HAUTEUR=` pour qu'on puisse le voir
+échouer.
+
+### Un écran se resserre avec les mesures de SA planche, pas avec les nôtres
+
+La fiche débordait de 492 px. Le premier réflexe — rogner au jugé — a produit
+des valeurs inventées (46 px de case, 66 px de carré photo, 10 px de pastille).
+La planche qu'il a validée, `appli/note-vocale-choix.html`, **portait déjà ces
+mesures, et plus serrées** : 44 px, 58 px, 7 px. Il avait resserré l'écran
+lui-même en le choisissant.
+
+**La règle qui en sort :** quand un écran doit maigrir et qu'une planche validée
+existe, on la relit avant de décider. Inventer des valeurs à côté des siennes,
+c'est fabriquer une seconde vérité de la même page — celle que `CLAUDE.md` §3
+interdit entre l'affichage et la vérification, ici entre la maquette et le code.
+
+### Un intitulé qui redit l'invite du champ coûte vingt-sept pixels
+
+Six intitulés en petites capitales sur cette fiche ; quatre sont partis
+(« E-mail », « Adresse du chantier », « Comment lui envoyer son devis ? »,
+« Photos du chantier »), parce que « bernard@exemple.fr » et « 12 rue des Lilas,
+Nantes » disent déjà tout. **Deux restent** — « Nom du client » et
+« Téléphone » —, parce que sa planche les garde : une case vide de 152 px
+alignée à droite ne dit pas d'elle-même qu'elle attend un numéro.
+
+Ce qui est retiré de l'écran **reste en `aria-label`** : le retirer vraiment
+fermerait la fiche à qui l'écoute.
+
+### Une place réservée qui ne protège rien
+
+Dix-neuf pixels étaient gardés en permanence sous le bouton pour qu'un message
+d'erreur ne fasse pas sauter la mise en page. Cette ligne est la **dernière** de
+l'écran : rien ne la suit, donc rien ne bouge quand elle paraît. Une réserve ne
+se justifie que par ce qu'elle empêche de bouger ; sans rien en dessous, elle
+n'est que du vide permanent.
+
+### Une classe CSS reprise ne casse pas l'écran qu'on regarde — elle casse l'autre
+
+Deux noms ont été pris coup sur coup à des dessins qui existaient déjà :
+
+| Le nom repris | Ce qu'il servait | Ce que l'écrasement produisait |
+|---|---|---|
+| `atlas-souffle` | les trois points de l'attente (sa proposition C du 13 août) | des barreaux de 2 px invisibles |
+| `atlas-aile` | les barreaux du lecteur de note vocale | des ailes en absolu, larges de 1,5 cm |
+
+**Ni l'un ni l'autre n'aurait rougi.** Une feuille de style n'a pas de portée :
+la règle écrite le plus bas gagne, sur TOUS les écrans. Or ces dessins vivent
+sur des écrans que rien ne rapproche — celui qu'on code est juste, et c'est
+l'autre qui casse, ailleurs, sans témoin. Les deux ont été trouvés à la
+relecture du diff.
+
+`scripts/test-classes-atlas-uniques.ts` les refuse désormais : il compare les
+règles de BASE (`.atlas-x {` en début de ligne), laisse passer les sélecteurs
+composés, et **nomme les trois découpes délibérées** plutôt que de rougir pour
+elles — un contrôle qui parle à tort s'apprend à être ignoré.
+
+La classe s'appelle maintenant `atlas-frange`, et la question à se poser avant
+d'en baptiser une autre tient en une ligne :
+
+```bash
+git show HEAD:src/app/globals.css | grep -o "\.atlas-[a-z0-9-]*" | sort -u
+```
+
+## 212. Quatre rôles, des capacités, et pourquoi aucune ne s'écrit par la négative
+
+**Lot du 30 août 2026**, joué avant le déploiement — donc avant le premier
+artisan réel, ce qui était toute la raison de le faire maintenant : *« ce lot
+doit FIGER le modèle de rôles avant Scaleway »*.
+
+| | |
+|---|---|
+| **Patron** | tout Atlas — il est l'administrateur de son entreprise |
+| **Facturation** | clients, devis, factures, TVA. Le planning en lecture. Aucune administration |
+| **Commercial** | clients, devis, planning en écriture (suppression comprise). **Aucune facturation** |
+| **Salarié** | le planning en lecture seule, sa feuille sans un montant |
+
+### Le défaut qu'il ferme dormait depuis le 13 août, et il était écrit
+
+`docs/QUESTIONS.md` §10, sa table, ses mots :
+
+> *« Le commercial : les chantiers, le planning, les devis et les prix — il en a
+> besoin pour vendre. **Ni les factures, ni la TVA**, ni l'IBAN, ni les accès,
+> ni l'abonnement. »*
+
+Le code ne l'appliquait pas. Les dix actions du cycle comptable — terminer un
+chantier et préparer sa facture, l'émettre, changer son échéance, préparer le
+lien envoyé au client, noter un paiement, en retirer un, solder, ranger un
+ticket, enregistrer un achat, en supprimer un — se gardaient toutes par
+`exigerMontants`, c'est-à-dire « tout sauf le salarié ». **Un commercial
+facturait pour de bon**, et sans même ouvrir l'écran : l'identifiant d'une
+Server Action se lit dans les fragments servis sous `_next/static`.
+
+**Trois choses le cachaient, et les trois ont été corrigées :**
+
+1. **l'écran des accès PROMETTAIT le défaut.** `ceQueLeRoleChange("commercial")`
+   annonçait « Les factures et le relevé de TVA » dans la colonne de ce qu'il
+   *peut* faire. Le patron lisait donc l'inverse de sa propre décision au moment
+   même où il donnait l'accès ;
+2. **une suite le DÉFENDAIT.** `test-acces-roles.ts` exigeait que
+   `/termines/tva` soit ouvert au commercial, au nom de « l'entièreté de
+   l'application » (23 août) — sans voir que la table du 13 août, dans le même
+   document, disait le contraire. Une suite qui réclame ce que la règle interdit
+   est pire qu'une absence de suite : elle rassure celui qui vient vérifier ;
+3. **le contrôle des promesses ne regardait pas les mots.** Il vérifiait que les
+   listes ne sont pas vides. Il vérifie désormais que ce qui est promis
+   correspond à la capacité, des deux côtés — promettre ce qu'on refuse, et
+   taire une restriction réelle.
+
+### La forme des capacités : liste blanche, toujours
+
+Elles s'écrivaient `role !== "salarie"`. C'était juste tant qu'il n'existait que
+trois rôles dont un seul était fermé, et **c'est devenu un piège à l'instant où
+un quatrième est né** : la formule l'aurait accueilli partout, en silence, sans
+qu'une ligne change.
+
+    // avant — un rôle neuf naît avec le droit
+    return role !== "salarie";
+
+    // après — un rôle neuf naît sans aucun droit
+    return role === "proprietaire" || role === "facturation";
+
+Cinq capacités vivent dans `src/lib/acces-roles.ts`, et chacune **nomme qui
+l'a** : `peutVoirLesMontants`, `peutGererDevis`, `peutFacturer`,
+`peutModifierLePlanning`, `peutUtiliserLAssistant`. Un contrôle lit la SOURCE et
+refuse toute comparaison par la négative — c'est lui qui a fait remonter, le
+jour même, que `peutModifierLePlanning` aurait donné le planning en écriture au
+rôle « facturation ».
+
+**Elles ne s'appellent pas entre elles quand elles coïncident.** `peutGererDevis`
+rend aujourd'hui le même verdict que `peutVoirLesMontants` : ce sont deux
+questions, et les lier ferait qu'élargir la lecture d'un total ouvrirait du même
+geste la réécriture d'un devis envoyé. Le dépôt avait déjà pris cette décision
+deux fois (§208, `peutUtiliserLAssistant`).
+
+### Le rôle n'est nulle part ailleurs qu'en base — et cela n'a pas eu à changer
+
+Le brief demandait de vérifier comment le rôle est transporté. Réponse :
+**il ne l'est pas.** `src/auth.ts` ne le met pas dans le jeton, `session-ctx.ts`
+ne le lit pas du navigateur, et `autorisation.ts` le relit à **chaque requête**
+depuis `membres_entreprise`, sous `withEntreprise`. Le `cache()` de React ne vit
+que le temps d'une requête. Un rôle changé par le patron s'applique donc à la
+requête suivante, sans qu'aucune session ait à être coupée — et la coupure
+globale de M11 n'a pas été touchée.
+
+**Plusieurs personnes portent le même rôle sans que rien n'ait eu à changer** :
+la clé unique de la table porte sur (entreprise, personne), jamais sur
+(entreprise, rôle). Il n'existe donc pas de « session Facturation » à créer, et
+il ne faut pas en créer : chaque identité reste distincte, ce qui est la
+condition d'une traçabilité le jour où elle existera.
+
+### Ce que le lot n'a PAS fait, et pourquoi
+
+- **Aucun système de permissions personnalisées.** Quatre rôles et cinq
+  capacités suffisent ; un RBAC général se paierait en écrans de configuration
+  qu'aucun artisan n'ouvrira.
+- **Aucun mécanisme d'invitation neuf.** Les quatre gestes du patron existaient
+  déjà (`/reglages/equipe`, tous sous `exigerProprietaire`), et le rôle neuf
+  apparaît de lui-même dans le choix : l'écran parcourt `ROLES`.
+- **Aucune règle neuve sur le dernier patron.** Elle existait
+  (`refusDuChangementDeRole`, `refusDuRetrait`), en fonctions pures. Le lot
+  l'ÉPROUVE — y compris vers « facturation », qui est un administrateur en
+  apparence et n'en est pas un.
+- **Aucune ligne sur les « prospects ».** Le brief en parlait ; ils n'existent
+  nulle part dans Atlas. On n'invente pas un objet métier pour remplir une case.
+
+### Ce que le commercial perd, et il faut le dire en toutes lettres
+
+**Il ne clôture plus un chantier.** « Créer la facture » n'est pas un changement
+d'état : `terminerChantier` **crée la facture**, et refuse même de le faire tant
+que le devis n'est pas parti. C'est l'entrée du cycle comptable. La fermer au
+commercial est la conséquence honnête de la règle du 13 août, et elle se paie —
+c'est le seul point du lot qui retire quelque chose à quelqu'un qui l'avait.
+
+## 213. Le client n'a pas à relire les mesures qu'Atlas range en colonnes
 
 **Ce qu'il a lu sur son vrai devis, le 30 août 2026** — le premier sorti de la
 chaîne corrigée, et le premier à mériter d'être regardé de près :

@@ -1,6 +1,6 @@
 "use server";
 
-import { exigerMontants } from "@/server/garde-action";
+import { exigerFacturation } from "@/server/garde-action";
 import { getCurrentCtx } from "@/server/session-ctx";
 import {
   emettreFacture,
@@ -33,7 +33,7 @@ export type ResultatFinChantier =
 
 export async function terminerChantierAction(chantierId: string): Promise<ResultatFinChantier> {
   const ctx = await getCurrentCtx();
-  await exigerMontants(ctx, "terminer le chantier et préparer la facture");
+  await exigerFacturation(ctx, "terminer le chantier et préparer la facture");
   try {
     const facture = await terminerChantier(ctx, chantierId);
     return { succes: true, factureId: facture.id };
@@ -56,7 +56,7 @@ export type ResultatEmission = { succes: true; numero: string } | { succes: fals
  */
 export async function emettreFactureAction(factureId: string): Promise<ResultatEmission> {
   const ctx = await getCurrentCtx();
-  await exigerMontants(ctx, "émettre la facture");
+  await exigerFacturation(ctx, "émettre la facture");
   try {
     const facture = await emettreFacture(ctx, factureId);
     return { succes: true, numero: facture.numeroCommercial };
@@ -84,7 +84,7 @@ export async function majEcheanceFactureAction(
   dateEcheance: string
 ): Promise<ResultatEcheanceFacture> {
   const ctx = await getCurrentCtx();
-  await exigerMontants(ctx, "changer l'échéance de la facture");
+  await exigerFacturation(ctx, "changer l'échéance de la facture");
   try {
     const r = await majEcheanceFacture(ctx, factureId, dateEcheance);
     return r.ok ? { succes: true, dateEcheance: r.dateEcheance } : { succes: false, erreur: r.raison };
@@ -112,7 +112,7 @@ export async function preparerLienFactureAction(
   canal: "sms" | "email"
 ): Promise<ResultatLienFacture> {
   const ctx = await getCurrentCtx();
-  await exigerMontants(ctx, "préparer le lien de la facture");
+  await exigerFacturation(ctx, "préparer le lien de la facture");
   try {
     const existant = await dernierEnvoiFacture(ctx, factureId);
     // Un second appui ne fabrique pas un second lien : le client aurait alors

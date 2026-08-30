@@ -3,7 +3,7 @@
 import { useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { colors, font, smallCaps } from "@/lib/design-tokens";
+import { colors, font, libelleCaps, smallCaps } from "@/lib/design-tokens";
 import ChoixCanal from "@/components/atlas/ChoixCanal";
 import PrimaryButton from "@/components/atlas/PrimaryButton";
 import ChampAdresse from "@/components/atlas/ChampAdresse";
@@ -153,6 +153,16 @@ export default function FormulaireNouveauChantier({
    */
   const [chantierCree, setChantierCree] = useState<string | null>(null);
   const [dicteeFaite, setDicteeFaite] = useState(false);
+  /**
+   * Une dictée est-elle en cours ?
+   *
+   * **Sa demande du 30 août 2026 :** *« lorsque l'utilisateur clique sur le
+   * bouton de la note vocale, le bouton "Je rédige à la main" disparaît pour ne
+   * plus avoir de confusion possible. L'utilisateur ne pourra donc plus se
+   * tromper. »* Deux issues offertes en même temps, c'est une occasion de se
+   * tromper ; il n'en reste qu'une pendant qu'on parle.
+   */
+  const [dicteeEnCours, setDicteeEnCours] = useState(false);
   const creationEnCours = useRef<Promise<string> | null>(null);
 
   /**
@@ -274,7 +284,7 @@ export default function FormulaireNouveauChantier({
           recouvre déjà la bulle et le bandeau du bas (`EcranChantiers.tsx`).
           Y poser la même réserve ajoutait quatre-vingts pixels de vide sous le
           formulaire, pour se protéger de quelque chose qui n'y arrive pas. */}
-      <div className={enFeuille ? "pb-10" : "pb-40"}>
+      <div className={enFeuille ? "" : "pb-40"}>
         {/* Retour discret — même style que la fiche chantier. En feuille il
             referme sans quitter l'accueil ; en page il y revient. Le dessin est
             le même : c'est le même geste pour le patron. */}
@@ -283,7 +293,7 @@ export default function FormulaireNouveauChantier({
             bloc de gauche n'a plus qu'une ligne : le micro aligné par le haut
             se posait au-dessus du titre au lieu d'en face. Mesuré à l'écran —
             les deux centres tombent maintenant sur le même pixel. */}
-        <div className="flex items-center justify-between gap-3 px-6 pt-8">
+        <div className="flex items-center justify-between gap-3 px-6">
           {/* **Le retour est SUR la ligne du titre, et c'est un chevron nu** —
               22 août 2026, sa maquette codée trait pour trait (`.entete` dans
               `appli/fiche-client-vocale.html`). Il occupait auparavant une
@@ -294,7 +304,7 @@ export default function FormulaireNouveauChantier({
               type="button"
               onClick={onFermer}
               aria-label="Retour à la liste des chantiers"
-              className="-ml-1 flex h-10 w-6 flex-shrink-0 items-center justify-center"
+              className="-ml-1 flex h-8 w-6 flex-shrink-0 items-center justify-center"
             >
               <FlecheRetour />
             </button>
@@ -302,7 +312,7 @@ export default function FormulaireNouveauChantier({
             <Link
               href="/"
               aria-label="Retour à la liste des chantiers"
-              className="-ml-1 flex h-10 w-6 flex-shrink-0 items-center justify-center"
+              className="-ml-1 flex h-8 w-6 flex-shrink-0 items-center justify-center"
             >
               <FlecheRetour />
             </Link>
@@ -329,7 +339,7 @@ export default function FormulaireNouveauChantier({
                 « Fiche client » est une étiquette, pas du texte : elle garde sa
                 largeur, et c'est la phrase qui se replie. */}
             <h1
-              className="whitespace-nowrap text-[32px] leading-tight"
+              className="whitespace-nowrap text-[27px] leading-[1.05]"
               style={{ fontFamily: font.display }}
             >
               Fiche client
@@ -346,7 +356,7 @@ export default function FormulaireNouveauChantier({
           // capture) : la barre d'onglets est FIXÉE au bas de l'écran, et sans
           // lui elle coupait l'anneau en deux — le geste principal de l'écran,
           // à moitié sous une barre. Ni les types ni les suites ne voient cela.
-          className="mt-7 flex flex-col gap-4 px-6 pb-28"
+          className={`flex flex-col gap-[7px] px-6 pt-1.5 ${enFeuille ? "pb-2" : "pb-28"}`}
           onSubmit={(e) => {
             e.preventDefault();
             // « Entrée » fait ce que fait le bouton, et il n'y en a plus qu'un.
@@ -384,8 +394,35 @@ export default function FormulaireNouveauChantier({
 
               **Le champ « Téléphone » seul a disparu** dans le même geste : le
               numéro est ici. */}
-          <div className="flex gap-2.5">
-            <div className="flex-shrink-0">
+          {/* **Ces deux-là gardent leur intitulé, et ce n'est pas une exception
+              arbitraire : sa planche l'écrit** (`.duo-titres` dans
+              `appli/note-vocale-choix.html`). Une case vide de 152 px alignée à
+              droite ne dit pas d'elle-même qu'elle attend un numéro, et « Nom du
+              client » est la donnée qui crée la fiche. Les quatre autres
+              intitulés, eux, sont partis : sa planche les met en `aria-label`. */}
+          <div
+            aria-hidden="true"
+            className={`flex items-end gap-[9px] ${libelleCaps}`}
+            style={{ color: colors.muted }}
+          >
+            <span className="min-w-0 flex-1 leading-[1.35]">Nom du client</span>
+            <span className="w-[152px] flex-shrink-0 text-right leading-[1.35]">Téléphone</span>
+          </div>
+          <div className="-mt-[3px] flex gap-[9px]">
+            {/* **`flex-1 min-w-0`, et c'est ce qui empêchait l'écran de se
+                balader de droite à gauche.** Le nom était `flex-shrink-0` sans
+                `flex-1` : il gardait la largeur NATURELLE d'un `<input>` — 273 px
+                — et poussait le téléphone de 148 px à 421, soit 31 px hors d'un
+                écran qui en fait 390. Le viewport de mise en page s'élargissait
+                pour l'accueillir, la barre du bas suivait, et toute la page
+                glissait latéralement. Mesuré le 30 août 2026
+                (`scripts/capture-dictee-fiche-client.mts`) ; sa maquette, elle,
+                l'écrivait juste depuis le début : `.duo .nom{flex:1;min-width:0}`.
+
+                `min-w-0` n'est pas décoratif : sans lui, un élément de flex
+                refuse de descendre sous la largeur de son contenu, et le
+                `flex-1` ne sert à rien. */}
+            <div className="min-w-0 flex-1">
               {/* **Plus de `big`** : sa maquette écrit toutes les cases au même
                   corps (`input{font-size:16px}`), et la case du nom y a donc la
                   même hauteur que celle du téléphone. Le serif de 20 px la
@@ -396,9 +433,10 @@ export default function FormulaireNouveauChantier({
                 placeholder="Bernard"
                 value={nomClient}
                 onChange={setNomClient}
+                sansLibelle
               />
             </div>
-            <div className="w-[148px] flex-shrink-0">
+            <div className="w-[152px] flex-shrink-0">
               <Field
                 label="Téléphone"
                 placeholder="06 12 34 56 78"
@@ -407,6 +445,7 @@ export default function FormulaireNouveauChantier({
                 onChange={(v) => setTelephone(v)}
                 aLaFrappe={espacerNumero}
                 aDroite
+                sansLibelle
               />
             </div>
           </div>
@@ -417,6 +456,7 @@ export default function FormulaireNouveauChantier({
             type="email"
             value={email}
             onChange={setEmail}
+            sansLibelle
           />
 
           {/* 6 — Adresse du chantier : facultative, et proposée pendant la
@@ -428,6 +468,7 @@ export default function FormulaireNouveauChantier({
             placeholder="12 rue des Lilas, Nantes"
             value={adresseChantier}
             onChange={setAdresseChantier}
+            sansLibelle
           />
 
           {/* 7 — Adresse client, masquée par défaut */}
@@ -446,6 +487,7 @@ export default function FormulaireNouveauChantier({
               placeholder="Si différente de l'adresse du chantier"
               value={adresseClient}
               onChange={setAdresseClient}
+              sansLibelle
             />
           )}
 
@@ -496,10 +538,7 @@ export default function FormulaireNouveauChantier({
               numéro. Les deux capsules restent inertes tant qu'il n'y a rien
               pour envoyer : proposer un canal sans coordonnée est sans objet,
               le masquer laisse chercher pourquoi le choix a disparu. */}
-          <fieldset className="flex flex-col gap-1.5">
-              <legend className={smallCaps} style={{ color: colors.muted }}>
-                Comment lui envoyer son devis ?
-              </legend>
+          <fieldset aria-label="Comment lui envoyer son devis ?">
               <div className="flex gap-2">
                 <ChoixCanal
                   libelle="Par SMS"
@@ -535,36 +574,46 @@ export default function FormulaireNouveauChantier({
               maquette (`appli/fiche-client-vocale.html`), qu'il a demandé de
               coder trait pour trait : photos, puis anneau, puis le devis. */}
           {!reprise && (
-            <div className="flex flex-col gap-1.5">
-              <span className={smallCaps} style={{ color: colors.muted }}>
-                Photos du chantier
-              </span>
+            <div aria-label="Photos du chantier" role="group">
               <Pellicule chantierId={chantierCree} assurerChantier={assurerChantier} initiales={[]} />
             </div>
           )}
 
           {!reprise && (
-            <div className="mt-1">
+            <div>
               <AnneauNoteVocale
                 chantierId={chantierCree}
                 assurerChantier={assurerChantier}
                 onDicte={() => setDicteeFaite(true)}
+                onDictee={setDicteeEnCours}
                 storageKey={null}
                 dureeSecondes={null}
               />
             </div>
           )}
 
-          {/* **« Mon devis » n'existe qu'une fois la dictée faite**, comme sur
-              la fiche chantier : avant, il n'y a rien à préparer, et un geste
-              offert d'avance est une promesse vide. */}
+          {/* **L'AVION FAIT TOUT : envoyer, préparer, arriver sur le devis.**
+              Sa demande du 30 août 2026 : *« appuyer sur la flèche pour envoyer
+              de suite la transcription et arriver sur la page du devis comme
+              c'est déjà le cas »*.
+
+              Il n'y a donc plus de « Mon devis » à toucher après coup : dès que
+              la note est partie, la chaîne démarre seule (`auto`) et le chemin
+              se fait (`surLeDevis={false}`). Ce composant ne rend plus alors que
+              ce qui se PASSE — le travail en cours, l'arrêt d'avant-chiffrage,
+              ou ce qui a échoué. */}
           {!reprise && dicteeFaite && chantierCree && (
-            <div className="mt-1">
-              <DevisDepuisDictee chantierId={chantierCree} transcriptionDisponible variante="anneau" />
+            <div>
+              <DevisDepuisDictee
+                chantierId={chantierCree}
+                transcriptionDisponible
+                auto
+                surLeDevis={false}
+              />
             </div>
           )}
 
-          <div className="flex flex-col gap-3 pt-4">
+          <div className="flex flex-col gap-3">
             {reprise ? (
               <PrimaryButton
                 disabled={!peutCreer}
@@ -582,14 +631,33 @@ export default function FormulaireNouveauChantier({
                  côte à côte se liraient comme deux fonctions différentes, et il
                  faudrait choisir laquelle toucher avant de savoir ce qu'on va
                  dire. */
-              <PrimaryButton
-                disabled={!peutCreer}
-                onClick={() => creerPuisAller("devis")}
-                repere="action-ecrire"
-                pleineLargeur
-              >
-                {enCoursVers === "devis" ? "Création…" : "Je rédige mon devis"}
-              </PrimaryButton>
+              /* **SECONDAIRE, ET IL S'EFFACE PENDANT QU'ON DICTE.** Ses deux
+                 demandes du 30 août 2026 : *« ça doit être un bouton
+                 secondaire, car l'idée c'est qu'il utilise en priorité la note
+                 vocale »*, et *« lorsque l'utilisateur clique sur le bouton de
+                 la note vocale, le bouton "Je rédige à la main" disparaît pour
+                 ne plus avoir de confusion possible »*.
+
+                 **Il DISPARAÎT, il ne se grise pas** : un bouton éteint reste
+                 un bouton — on l'appuie, il ne répond pas, et l'on croit
+                 l'écran cassé. Sa place n'est pas réservée non plus : il est le
+                 dernier de la page, donc rien au-dessus ne bouge, et l'écran
+                 se raccourcit sans que rien ne saute sous le doigt.
+
+                 **66 % de large** — sa proposition 4, choisie sur planche parmi
+                 quatre (`appli/note-vocale-choix.html`). */
+              !dicteeEnCours && (
+                <PrimaryButton
+                  disabled={!peutCreer}
+                  onClick={() => creerPuisAller("devis")}
+                  repere="action-ecrire"
+                  pleineLargeur
+                  secondaire
+                  part="66%"
+                >
+                  {enCoursVers === "devis" ? "Création…" : "Je rédige à la main"}
+                </PrimaryButton>
+              )
             )}
           </div>
           {/* **Cette ligne ne parle plus que quand il y a quelque chose à dire.**
@@ -605,11 +673,16 @@ export default function FormulaireNouveauChantier({
               du devis qu'il faudrait le dire — pas en remettant une phrase
               permanente ici.
 
-              La place, elle, est RÉSERVÉE en toutes circonstances : sans cela,
-              l'apparition d'une erreur ferait sauter la mise en page d'une
-              ligne sous le doigt qui vient d'appuyer. */}
+              **Sa place n'est plus réservée, depuis le 30 août 2026.** Elle
+              l'était pour qu'une erreur ne fasse pas sauter la mise en page
+              sous le doigt qui vient d'appuyer — mais cette ligne est la
+              DERNIÈRE de l'écran : rien ne la suit, donc rien ne bouge quand
+              elle paraît. Dix-neuf pixels de vide permanents au bas d'un écran
+              qui doit tenir dans la feuille (`CLAUDE.md` §5, sa demande du
+              30 août) sont un prix payé pour une protection qui ne protège
+              rien. */}
           <p
-            className="min-h-[19px] text-center text-[13px]"
+            className="text-center text-[13px] empty:hidden"
             style={{ color: colors.alert }}
             role="alert"
             aria-live="polite"
@@ -651,6 +724,7 @@ function Field({
   required = false,
   aLaFrappe,
   aDroite = false,
+  sansLibelle = false,
 }: {
   label: string;
   placeholder: string;
@@ -671,6 +745,23 @@ function Field({
   aLaFrappe?: (brut: string, curseur: number) => { valeur: string; curseur: number };
   /** Le numéro se lit aligné à droite, contre le nom qui le précède. */
   aDroite?: boolean;
+  /**
+   * L'étiquette ne se DESSINE plus — elle reste en `aria-label`.
+   *
+   * **Sa demande du 30 août 2026 :** *« je veux que tout tienne sur une seule
+   * page, qu'on n'ait pas à scroller pour voir les infos en bas »*. Chaque
+   * intitulé en petites capitales coûte vingt-sept pixels avec son interligne,
+   * et la fiche en portait six : cent soixante-deux pixels pour redire ce que
+   * la case montre déjà — exactement les « phrases inutiles qui expliquent »
+   * du 25 août (`CLAUDE.md` §3).
+   *
+   * **Le nom ne disparaît pas pour autant** : il passe en `aria-label`. Le
+   * retirer vraiment fermerait l'écran à qui l'écoute — et sur cette fiche,
+   * deux champs gardent en plus leur titre DESSINÉ, parce que sa planche les y
+   * met (`.duo-titres`) : une case vide alignée à droite ne dit pas d'elle-même
+   * qu'elle attend un numéro.
+   */
+  sansLibelle?: boolean;
 }) {
   const champ = useRef<HTMLInputElement>(null);
 
@@ -689,16 +780,19 @@ function Field({
   }
 
   return (
-    <label className="flex flex-col gap-1.5">
-      <span className={smallCaps} style={{ color: colors.muted }}>
-        {label}
-      </span>
+    <label className={sansLibelle ? "block" : "flex flex-col gap-1.5"}>
+      {!sansLibelle && (
+        <span className={smallCaps} style={{ color: colors.muted }}>
+          {label}
+        </span>
+      )}
       <input
         ref={champ}
         type={type}
         placeholder={placeholder}
         value={value}
         onChange={onChange ? saisie : undefined}
+        aria-label={sansLibelle ? label : undefined}
         aria-required={required || undefined}
         // La case vient de `.atlas-case` (`globals.css`) — « la carte douce »,
         // son choix du 21 août 2026. Ne reste ici que ce qui distingue CE

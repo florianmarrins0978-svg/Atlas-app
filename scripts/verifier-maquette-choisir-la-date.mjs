@@ -108,15 +108,35 @@ dire(await page.locator(".jour-ouvert .equipe").count() > 0, "la fiche ne dit pa
 dire(await page.locator(".verdict").count() === 1, "aucun verdict : l'écran ne dit pas s'il peut y ajouter ce client");
 
 // 4 — un jour complet reste touchable
-const casComplet = await page.evaluate(() => {
-  const cases = [...document.querySelectorAll(".case:not(.we)")];
-  const plein = cases.find((c) => {
-    const jour = c.dataset.jour;
-    return POSES.filter((p) => p.jour === jour && p.demi === "matin").length >= EQUIPES;
+//
+// **On TOURNE LA PAGE si le mois affiché ne le porte pas.** La planche pose ses
+// exemples aux 3e et 6e jours OUVRÉS à partir d'aujourd'hui : à deux jours de la
+// fin du mois, ils tombent le mois suivant, et le mois affiché — qui commence
+// toujours au 1er — n'en montre aucun. Le contrôle accusait alors la planche
+// d'un défaut qui n'existe pas. C'est le piège déjà écrit dans `HANDOVER.md`
+// (« une suite qui lit le mois affiché rougit en fin de mois », 26 août 2026),
+// et son remède : feuilleter plutôt que conclure. Trouvé le 30 août 2026.
+const chercherJourComplet = () =>
+  page.evaluate(() => {
+    const cases = [...document.querySelectorAll(".case:not(.we)")];
+    const plein = cases.find((c) => {
+      const jour = c.dataset.jour;
+      return POSES.filter((p) => p.jour === jour && p.demi === "matin").length >= EQUIPES;
+    });
+    return plein ? { jour: plein.dataset.jour, eteint: plein.disabled } : null;
   });
-  return plein ? { jour: plein.dataset.jour, eteint: plein.disabled } : null;
-});
-dire(casComplet !== null, "aucun jour complet dans le mois : la planche ne montre pas le cas qui l'intéresse");
+let casComplet = await chercherJourComplet();
+let moisTournes = 0;
+while (casComplet === null && moisTournes < 1) {
+  await page.locator('[data-mois="1"]').click();
+  await page.waitForTimeout(150);
+  moisTournes++;
+  casComplet = await chercherJourComplet();
+}
+dire(
+  casComplet !== null,
+  "aucun jour complet, ni ce mois-ci ni le suivant : la planche ne montre pas le cas qui l'intéresse"
+);
 if (casComplet) dire(!casComplet.eteint, "un jour complet est éteint : c'est justement celui qu'il veut regarder");
 
 // 5 — le mois se feuillette

@@ -18,6 +18,38 @@ ligne « fait » qui ne l'est pas coûte plus cher qu'une ligne absente.
 
 ---
 
+## La note vocale à la messagerie, et la fiche qui tient dans un écran (30 août 2026)
+
+**Sa demande, en huit messages :** *« Il faut modifier la note vocale pour
+qu'elle soit plus simple à utiliser, à la manière de celle de WhatsApp : on
+appuie dessus, possibilité de supprimer ou d'appuyer sur la flèche pour envoyer
+de suite la transcription, et arriver sur la page du devis. »* Puis, après trois
+planches et ses trois choix : *« Très bien, code exactement ça ! »*
+
+Ce que l'écran fait maintenant :
+
+| | |
+|---|---|
+| au repos | un **disque plein**, son micro, deux ondes de **1,5 cm** de chaque côté |
+| on appuie | la **poubelle** naît à gauche, l'**avion** à droite ; le micro devient un carré d'arrêt, le disque ne bouge pas |
+| la poubelle | jette la note, relâche le micro, rend l'écran à ce qu'il était |
+| l'avion | envoie, transcrit, **mène au devis** — rien d'autre à toucher |
+| « Je rédige à la main » | **secondaire**, large de **66 %**, et il **disparaît** pendant qu'on parle |
+
+**La fiche client tient dans un écran, sans défiler et sans vide en bas.** Elle
+débordait de 492 px : l'anneau et le bouton étaient sous le pli. Mesuré sur son
+écran (390 × 664) et par son parcours : 604 px de feuille pour 601 de contenu.
+
+**Et elle ne se balade plus de droite à gauche.** Deux causes, aucune visible à
+l'œil : le champ du nom gardait sa largeur naturelle et poussait le téléphone
+31 px hors de l'écran ; la pellicule de photos dépassait de deux pixels de
+chaque côté.
+
+Le compte-rendu qui lui est destiné : `docs/note-vocale-messagerie.md`. Les
+raisons et les pièges : `ARCHITECTURE.md` §211.
+
+---
+
 ## Chaque notification se range d'un « J'ai vu » (30 août 2026)
 
 **Sa demande, capture à l'appui :** *« pour chaque notification je dois pouvoir
@@ -31,6 +63,30 @@ impayée garde sa mécanique du 16 août et ne prend que le libellé — « Plus
 disparaît.
 
 Détail : `docs/j-ai-vu-sur-tous-les-rappels.md`, `ARCHITECTURE.md` §210.
+
+## QUATRE RÔLES, ET LE COMMERCIAL NE FACTURE PLUS (30 août 2026)
+
+Le modèle des utilisateurs est **figé** avant le déploiement.
+
+| | |
+|---|---|
+| **Patron** | tout Atlas — l'administrateur de son entreprise |
+| **Facturation** *(neuf)* | clients, devis, factures, TVA. Planning en lecture. Aucune administration |
+| **Commercial** | clients, devis, planning en écriture (suppression comprise). **Aucune facturation** |
+| **Salarié** | planning en lecture seule, sa feuille sans un montant |
+
+Plusieurs personnes portent le même rôle — c'était déjà vrai en base (clé unique
+sur entreprise + personne), il n'y a **pas** de compte partagé « Facturation ».
+
+**Le défaut fermé dormait depuis le 13 août** : les dix actions du cycle
+comptable se gardaient par « tout sauf le salarié », donc un commercial
+facturait pour de bon — alors que `docs/QUESTIONS.md` §10 disait *« ni les
+factures, ni la TVA »*. L'écran des accès lui **promettait** même le contraire.
+
+**Ce que ça coûte :** un commercial ne clôture plus un chantier — « Créer la
+facture » crée la facture.
+
+Détail : `docs/modele-des-roles.md`, `ARCHITECTURE.md` §212. Migration 0071.
 
 ## Le planning du salarié est en LECTURE SEULE (30 août 2026)
 
@@ -121,7 +177,7 @@ Le défilement n'a pas changé — molette, doigt, clavier, focus. Détail :
 
 *Son premier vrai devis sorti de la chaîne corrigée portait « Haie de laurier
 (800 ml) (800 ml) » et « Érable (40 cm de diamètre, 12 m de haut) ». Détail et
-pourquoi : `ARCHITECTURE.md` §211.*
+pourquoi : `ARCHITECTURE.md` §213.*
 
 **Fait.**
 

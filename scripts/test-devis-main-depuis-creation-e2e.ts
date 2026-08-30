@@ -91,8 +91,14 @@ async function main() {
   // **Ce qu'il DIT, et sans flèche.** Sa correction du 18 août était littérale
   // — « la 5, mais sans les flèches » —, et une flèche revenue par mégarde ne
   // se verrait dans aucun autre contrôle.
+  //
+  // **« Je rédige À LA MAIN » depuis le 30 août 2026**, et c'est lui qui l'a
+  // écrit : *« le bouton change par "je rédige à la main", mais ça doit être un
+  // bouton secondaire, car l'idée c'est qu'il utilise en priorité la note
+  // vocale »*. Le mot change parce que la hiérarchie a changé : ce n'est plus
+  // la façon normale de faire un devis, c'est l'autre.
   await cas("le libellé est le sien, et sans flèche", async () => {
-    assert.equal((await leBouton.innerText()).trim(), "Je rédige mon devis");
+    assert.equal((await leBouton.innerText()).trim(), "Je rédige à la main");
   });
 
   // **La dictée n'a pas disparu : elle a DÉMÉNAGÉ ici.** C'est la contrepartie
@@ -171,7 +177,7 @@ async function main() {
   // **Le seul bouton mène AU DEVIS**, et c'est ce qu'il dit. Un libellé qui
   // annonce le devis et ouvre autre chose est le défaut le plus coûteux d'un
   // écran à un seul geste : rien à l'écran ne le trahirait.
-  await cas("« Je rédige mon devis » ouvre bien le devis", async () => {
+  await cas("« Je rédige à la main » ouvre bien le devis", async () => {
     await page.goto(`${BASE}/chantiers/nouveau`, { waitUntil: "networkidle" });
     await page.fill('input[placeholder="Bernard"]', `M. Ordinaire ${Date.now()}`);
     await page.click('[data-atlas="action-ecrire"]');

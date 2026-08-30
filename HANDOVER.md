@@ -9,7 +9,36 @@ sert.
 
 ---
 
-## Dernier lot : « J'ai vu » sur les quatre rappels (30 août 2026)
+## Dernier lot : la note vocale à la messagerie, et la fiche qui tient dans un écran (30 août 2026)
+
+Ses trois choix codés (`appli/note-vocale-choix.html`) : au repos un **disque
+plein** avec deux ondes de **1,5 cm** ; dès qu'on parle, la **poubelle à gauche**
+et l'**avion à droite**, le micro devenant un carré d'arrêt sans que le disque
+bouge ; l'avion envoie et **mène au devis** sans rien d'autre à toucher. « Je
+rédige à la main » est **secondaire, large de 66 %, et disparaît** pendant la
+dictée. Compte-rendu qui lui est destiné : `docs/note-vocale-messagerie.md`.
+
+**Ce qu'il faut savoir avant d'y toucher :**
+
+- **Suspendre passe par `MediaRecorder.pause()`, jamais par un arrêt suivi d'un
+  redémarrage** — celui-ci produit deux fichiers, et le second écrase le
+  premier : la moitié de ce qu'il a dit, perdue sans qu'il le sache.
+- **Jeter relâche le micro ET oublie les morceaux.** Masquer sans vider laisse
+  une note rejetée partable par mégarde. Jeter ne supprime pas le chantier :
+  une photo a pu le créer avant.
+- **Les ondes de repos s'effacent dès qu'on appuie**, et c'est de la géométrie :
+  1,5 cm plus 9 px font 66 px de part et d'autre du disque, quand la poubelle et
+  l'avion ne peuvent se poser qu'à une vingtaine.
+- **La fiche client a été resserrée avec les mesures de SA planche**, pas avec
+  des valeurs inventées : case 44 px, retrait 11/14, rayon 12, carré photo 58,
+  pastille 7/28, interligne 7. Elle débordait de 492 px ; elle tient.
+- **Mesurer une feuille n'est pas mesurer une page** —
+  `scripts/capture-dictee-fiche-client.mts`, et `ARCHITECTURE.md` §211 pour les
+  trois erreurs de mesure payées ce jour-là.
+
+Raisons et pièges : `ARCHITECTURE.md` §211.
+
+## Lot précédent : « J'ai vu » sur les quatre rappels (30 août 2026)
 
 Sa demande du jour : chaque notification doit pouvoir se ranger d'un appui. Les
 trois rappels qui n'avaient aucun geste en ont un, et la facture impayée prend
@@ -132,6 +161,50 @@ témoin est bien écrit. Corrigé le 29 août, sa capture de 22 h 37 à l'appui.
 
 ---
 
+## LA COURBE MÉMOIRE DE LA BATTERIE, MESURÉE (30 août 2026)
+
+Le point ci-dessous datait du 27 août et disait « le serveur meurt, on ne sait
+pas pourquoi ». Il est maintenant mesuré, en échantillonnant `next-server`
+toutes les vingt secondes :
+
+| Moment | `anon-rss` |
+|---|---|
+| serveur démarré | **0,6 Go** |
+| les 33 écrans préchauffés | **8,9 Go** |
+| une suite plus tard | **12,7 Go**, puis abattu par le conteneur |
+
+**Ce n'est aucune suite en particulier** : c'est l'application entière compilée
+par Turbopack qui ne tient pas dans le plafond. Le préchauffage n'en crée pas
+la mémoire — il l'avance —, mais devant un plafond, avancer c'est mourir plus
+tôt.
+
+**Ce qui a changé, et comment jouer la batterie aujourd'hui :**
+
+- la feuille de chantier en PDF est préchauffée (`API_DE_CHANTIER` dans
+  `scripts/prechauffer.mjs`) : 45–50 s de compilation devenus 476 ms ;
+- **en tranche (`--seulement`), le préchauffage se réduit à trois routes** —
+  une tranche démarre à 1 Go au lieu de 9 ;
+- `--seulement` accepte **plusieurs motifs séparés par des virgules**, donc des
+  groupes de la taille qu'on veut :
+  `npm run test:e2e -- --seulement test-x-e2e.ts,test-y-e2e.ts` ;
+- **la batterie d'une traite ne tient toujours pas dans ce conteneur.** Les
+  suites navigateur se jouent par groupes de six, un serveur neuf par groupe :
+
+  ```bash
+  node scripts/jouer-suites-par-groupes.mjs /tmp/atlas-groupes.log 6
+  ```
+
+  **Ce script est commité, et c'est délibéré** : trois sessions l'avaient
+  réécrit puis jeté (27, 29, 30 août), chacune en redécouvrant les deux mêmes
+  pièges — **seul le premier groupe amorce la base** (`--sans-seed` pour les
+  suivants : les suites ne sont pas indépendantes, `test-aucun-texte-coupe`
+  cherche un devis qu'une suite d'avant a créé), et **un seul pilote à la
+  fois** (deux se partageant le port 3000 ont rendu quatorze faux rouges).
+
+**Piste ÉCARTÉE, à ne pas repayer :** `next dev --webpack` tient à 5,7 Go, mais
+ne sert pas la même application — la feuille « Absences » ne s'ouvrait plus, et
+deux vérifications rougissaient sur du code juste.
+
 ## LA BATTERIE NE TIENT PLUS EN UN SEUL SERVEUR — à lire avant de la lancer (27 août 2026)
 
 **Si `npm run verifier:avant-livraison` rend un rouge sur une suite navigateur,
@@ -165,6 +238,39 @@ n'a lancées : une suite jamais jouée n'est ni verte ni rouge.
 heures plus tôt, dans ce même conteneur. Ne pas écrire que c'est réglé.
 
 ---
+
+## LES CAPACITÉS S'ÉCRIVENT EN LISTE BLANCHE — ne jamais revenir en arrière (30 août 2026)
+
+`src/lib/acces-roles.ts` porte cinq capacités. **Chacune nomme qui l'a :**
+
+    return role === "proprietaire" || role === "facturation";   // ✅
+    return role !== "salarie";                                   // ❌ jamais
+
+Ce n'est pas un goût de style. Sous l'ancienne forme, le rôle « facturation »
+né le 30 août serait arrivé **avec le droit d'émettre des factures et de
+supprimer des chantiers**, sans qu'une seule ligne change et sans qu'un test
+rougisse. Un contrôle lit désormais la source et refuse toute règle écrite par
+la négative (`test-roles-capacites-db.ts`).
+
+Un rôle ajouté demain naît donc **sans aucun droit**, et il faut l'inscrire
+capacité par capacité. C'est voulu : plus long à écrire une fois, et c'est la
+seule version qui se relit.
+
+**Et le rôle n'est nulle part ailleurs qu'en base.** Il n'est pas dans le jeton
+Auth.js ; `autorisation.ts` le relit à chaque requête sous `withEntreprise`. Un
+rôle changé par le patron s'applique à la requête suivante — ne pas « améliorer »
+cela avec un cache qui survivrait à la requête.
+
+## UN COMMERCIAL NE FACTURE PLUS — et il ne clôture plus un chantier (30 août 2026)
+
+Le geste « Créer la facture » ne change pas un état : `terminerChantier` **crée
+la facture**. Il relève donc de `exigerFacturation`, comme l'émission, les
+paiements, les achats et les tickets de TVA.
+
+Conséquence à connaître avant de croire à un défaut : **un commercial qui dit
+« je ne peux plus finir mes chantiers » n'a pas de bogue.** C'est la règle du
+patron du 13 août, appliquée depuis le 30. Si un jour il veut séparer « marquer
+fait » de « facturer », c'est deux gestes à écrire — un travail de produit.
 
 ## UN SALARIÉ NE MODIFIE PLUS RIEN AU PLANNING (30 août 2026)
 
@@ -272,91 +378,42 @@ Le détail : `ARCHITECTURE.md` §192, migration `drizzle/0067_salaries_a_part.sq
 ---
 
 ## UNE RÉPONSE ENCORE ATTENDUE DE LUI — planche 96 (26 août 2026)
-## ET LA NOTE VOCALE « À LA WHATSAPP » (30 août 2026)
-
-Rien n'est codé dans `src/` pour ces trois-là, et il ne faut pas commencer sans
-sa réponse (`CLAUDE.md` §3 bis).
-
-- **SES TROIS CHOIX SONT FAITS, et une planche les réunit** —
-  `appli/note-vocale-choix.html` : largeur **66 %**, l'objet **reste au centre**
-  entre la poubelle et l'avion, repos au **micro plein** avec deux ondes de
-  **1,5 cm au plus** (écrites en centimètres dans le CSS, `--aile:1.5cm` — sa
-  mesure doit rester relisible). Plus le bouton qui s'efface, tranché plus tôt.
-
-  **Une seule question reste ouverte, et il ne faut pas coder sans elle :**
-  pendant la dictée, le disque plein reste et son micro devient un carré
-  d'arrêt. Sa proposition 2 disait « l'anneau », mais elle le gardait parce que
-  le repos ÉTAIT l'anneau — ce qui n'est plus le cas. L'autre lecture (le disque
-  cède la place à l'anneau creux) se refait en deux minutes.
-
-  **Deux pièges de dessin, payés ici et qui se reproduiront ailleurs :** un
-  `<span>` resté en ligne ne prend ni `width` ni `height` — le carré d'arrêt
-  rendait une boîte de zéro pixel et le disque s'affichait vide, sans qu'aucun
-  test le voie ; et deux ornements de 1,5 cm de part et d'autre d'un objet de
-  76 px **ne laissent pas la place** à deux boutons de 46 px sur un écran de
-  390 — ils s'effacent donc pendant la dictée.
-
-- **Le dessin de la note vocale AU REPOS** —
-  `appli/note-vocale-au-repos.html`, sa demande du 30 août : *« plusieurs
-  visuels pour changer la note vocale avant qu'on appuie dessus »*. **Cinq
-  dessins, une lettre à donner** (A à E). **Non codée.**
-
-  **Et une chose qui n'attend PAS sa réponse, parce qu'il l'a tranchée :**
-  *« lorsque l'utilisateur clique sur le bouton de la note vocale, le bouton
-  "Je rédige à la main" disparaît pour ne plus avoir de confusion possible »*.
-  C'est déjà dans les cinq. **Au codage, le RETIRER et non le griser** — un
-  bouton éteint reste un bouton, on l'appuie, il ne répond pas — et **le rendre
-  quand la note est jetée**.
-
-  **Deux planches vivent en parallèle, et c'est voulu** : `note-vocale-simple`
-  porte les GESTES (jeter, pause, envoyer, la largeur du bouton), celle-ci le
-  DESSIN au repos. Il a demandé de ne plus toucher à la première pendant qu'il
-  choisit dessus. Les deux réponses se recomposeront au codage.
-
-- **La note vocale simplifiée** — `appli/note-vocale-simple.html`, sa demande du
-  30 août : *« on appuie dessus […] possibilité de supprimer, ou appuyer sur la
-  flèche pour envoyer de suite la transcription »*. **Trois propositions, un
-  chiffre à donner**, plus un second chiffre pour la largeur du bouton « Je
-  rédige mon devis ». **Non codée.**
-
-  **Deux points sont DÉJÀ tranchés par lui, le 30 août :** le bouton du bas
-  devient **secondaire**, libellé « Je rédige à la
-  main » (*« l'idée c'est qu'il utilise en priorité la note vocale »* — le seul
-  aplat plein de l'écran est le rond d'envoi), et **tout tient sur un écran**
-  (*« ne doit pas décoller vers le bas pour accéder aux autres informations »*).
-
-  **Sa règle « l'anneau doit disparaître » N'A PAS retiré la proposition qui le
-  garde au centre — pas définitivement.** Elle l'a fait sortir le 30 août, puis
-  il a demandé à pouvoir *« essayer tous ceux »* qu'on lui avait montrés, et
-  elle est revenue telle quelle. Ne pas la retirer de nouveau au nom de cette
-  règle : c'est son choix final qui tranchera.
-
-  **Ce dernier point commande la mise en page du code à venir**, et il est
-  fragile : l'écran est passé de 960 à 631 px. Quatre intitulés ont dû partir —
-  e-mail, adresse, canal, photos —, « Nom du client » et « Téléphone » restent
-  (demandés nommément le 21 août), et ce qui n'est plus écrit reste lisible par
-  un lecteur d'écran. La zone de la dictée a une **hauteur fixe** : sans elle, la
-  barre, plus haute que l'anneau, pousse le bouton sous le pli à l'instant où
-  l'on appuie. `scripts/verifier-maquette-note-vocale-simple.mjs` mesure la page
-  entière à 700 et 667 points, au repos et en dictant — c'est ce contrôle qui
-  attrapera la case de trop.
-
-  **Ce que le codage devra reprendre, quand il aura répondu.** Aujourd'hui
-  `AnneauNoteVocale.basculerDictee()` envoie AU SECOND APPUI : `arreter()` puis
-  `envoyerNoteVocale()` dans la foulée. Il faudra couper les deux — l'arrêt
-  garde le `Blob` capté, et seul l'avion appelle `envoyerNoteVocale`. La
-  poubelle jette le `Blob` sans jamais rien envoyer, donc **sans toucher au
-  chantier** : attention, `assurerChantier()` peut l'avoir déjà créé par une
-  photo, et jeter une note ne doit pas le supprimer. Côté bouton, `PrimaryButton`
-  n'a **aucune variante secondaire** : il faudra en ajouter une (fond
-  transparent, liseré d'or, même capsule) plutôt que d'écrire le style dans
-  l'écran — deux dessins du même bouton divergeraient au premier ajustement.
 
 - **Planche 96** — `appli/ecran-equipe.html`. Il a répondu **C** pour le titre
   et la synthèse. Reste à savoir si la phrase sur les congés reste sur l'écran
   Équipe ou retourne dans « Absences ». **Non codée.**
 - **Planche 97** — `appli/salaries-et-equipes.html`. **Répondue (A) et codée le
-  26 août** : voir le paragraphe ci-dessus.
+  26 août** : voir le paragraphe plus haut.
+
+## LA NOTE VOCALE « À LA WHATSAPP » EST CODÉE (30 août 2026)
+
+**Les trois planches restent en ligne, et c'est voulu** : `note-vocale-simple`
+porte les GESTES, `-au-repos` le DESSIN au repos, `-choix` **ses choix réunis**.
+La troisième est la **référence du code** — il a demandé de s'y référer une
+dernière fois avant de conclure, et c'est ce qui a corrigé les valeurs de
+resserrement inventées à côté des siennes.
+
+**Ce qui a été tranché en son absence, et qu'il peut défaire.** Pendant la
+dictée, le disque plein RESTE et son micro devient un carré d'arrêt. Sa
+proposition 2 disait « l'anneau », mais elle le gardait parce que le repos ÉTAIT
+l'anneau — ce qui n'est plus le cas depuis qu'il a choisi le repos B. C'est la
+lecture que porte la planche qu'il a validée. L'autre — le disque cède la place
+à un anneau creux — se refait en deux minutes (`.atlas-micro`,
+`.atlas-carre-stop` dans `globals.css`).
+
+**Deux pièges de dessin, payés ici et qui se reproduiront ailleurs :** un
+`<span>` resté en ligne ne prend ni `width` ni `height` — le carré d'arrêt
+rendait une boîte de zéro pixel et le disque s'affichait vide, sans qu'aucun
+test le voie ; et deux ornements de 1,5 cm de part et d'autre d'un objet de
+76 px **ne laissent pas la place** à deux boutons de 46 px sur un écran de
+390 — ils s'effacent donc pendant la dictée.
+
+**Ce qui reste mesuré comme non résolu**, et qui n'est pas un oubli : sur un
+écran plus court que le sien (un iPhone SE, 560 px utiles) la feuille déborde
+encore de 101 px ; et pendant la dictée, les 40 px libérés par le bouton restent
+vides — les combler ferait descendre le micro sous le doigt qui vient de
+l'appuyer.
+
 ## PIÈGE : `force-dynamic` NE FAIT PAS PARTIR LA DEMANDE (26 août 2026)
 
 On lit `export const dynamic = "force-dynamic"` comme « cette page est toujours

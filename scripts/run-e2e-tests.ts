@@ -185,7 +185,35 @@ async function prechaufferLesEcrans(): Promise<void> {
       return;
     }
     const base = "http://localhost:3000";
-    const ecrans = [...ECRANS_A_PRECHAUFFER, ...(await ecransDeChantier({ base, cookie }))];
+    /**
+     * **En TRANCHE, on ne préchauffe que l'indispensable — et c'est une
+     * question de mémoire, pas de temps.**
+     *
+     * Mesuré le 30 août 2026, en échantillonnant `next-server` pendant une
+     * batterie : **0,6 Go au démarrage, 8,9 Go une fois les 33 écrans
+     * préchauffés, 13,2 Go deux suites plus tard** — et là le conteneur l'abat
+     * (`Memory cgroup out of memory`). Turbopack alloue dans son Rust : rien ne
+     * borne cette croissance, et la batterie s'arrêtait à la deuxième suite en
+     * laissant les cent seize autres non jouées.
+     *
+     * Le préchauffage ne CRÉE pas cette mémoire — il l'avance. Mais devant un
+     * plafond, avancer c'est mourir plus tôt : une tranche de quatorze suites
+     * n'a besoin que d'une poignée d'écrans, et payait pourtant les trente-trois.
+     *
+     * **Ce qui reste préchauffé, et pourquoi ces trois-là :** la connexion, que
+     * toute suite ouvre en premier ; l'accueil, qui la suit ; et la feuille de
+     * chantier en PDF, la seule route dont la première compilation dépasse le
+     * délai des suites (45 à 50 s — elle a fait rougir `test-acces-salarie`
+     * pendant deux jours). Les autres se compilent en deux à dix secondes,
+     * largement sous le délai.
+     *
+     * **La batterie entière, elle, préchauffe tout** : c'est elle qui autorise
+     * une livraison, et elle doit ressembler à ce que le patron exécute.
+     */
+    const ecransDeCeChantier = await ecransDeChantier({ base, cookie });
+    const ecrans = motifDemande
+      ? ["/login", "/", ...ecransDeCeChantier.filter((c) => c.startsWith("/api/"))]
+      : [...ECRANS_A_PRECHAUFFER, ...ecransDeCeChantier];
     console.log(`Préchauffage de ${ecrans.length} écrans (compilation à la demande)...`);
     const bilan = await prechauffer({ base, cookie, ecrans });
     console.log(
@@ -231,6 +259,24 @@ const motifDemande = (() => {
   return i >= 0 && process.argv[i + 1] ? process.argv[i + 1] : null;
 })();
 
+/**
+ * **Plusieurs motifs, séparés par des virgules.**
+ *
+ * Ajouté le 30 août 2026 pour une raison précise : le conteneur ne laisse pas
+ * la batterie tourner d'une traite (voir le préchauffage réduit, plus bas), et
+ * la seule façon de tout jouer est de la découper en groupes qu'un serveur
+ * neuf reprend chaque fois. Un motif unique ne sait découper que par préfixe —
+ * or les préfixes ne tombent pas là où il faut : « test-d » en compte
+ * dix-sept, « test-h » une seule. Une liste explicite fait des groupes de la
+ * taille qu'on veut.
+ *
+ * Un seul motif reste un seul motif : rien ne change pour qui diagnostique une
+ * suite.
+ */
+const motifsDemandes = motifDemande === null ? null : motifDemande.split(",").filter(Boolean);
+const retenue = (fichier: string) =>
+  motifsDemandes === null || motifsDemandes.some((m) => fichier.includes(m));
+
 if (process.argv.includes("--list")) {
   const fichiers = readdirSync(DOSSIER)
     // **Un fichier préfixé `_` est une PIÈCE COMMUNE, pas une suite.**
@@ -244,7 +290,7 @@ if (process.argv.includes("--list")) {
     // gonfle le chiffre auquel on se fie.
     .filter((f) => !f.startsWith("_"))
     .filter((f) => f.endsWith("-e2e.ts") || SUITES_SERVEUR.includes(f))
-    .filter((f) => (motifDemande === null ? true : f.includes(motifDemande)))
+    .filter(retenue)
     .sort();
   console.log("Suites e2e découvertes :");
   for (const fichier of fichiers) {
@@ -324,11 +370,42 @@ async function main() {
     process.exit(1);
   }
 
-  console.log("Seed de la base de développement...");
-  const seedResult = spawnSync(NODE, [TSX, "src/server/db/seed.ts"], {
-    stdio: "inherit",
-    env: process.env,
-  });
+  /**
+   * **`--sans-seed` : reprendre la base là où le groupe précédent l'a laissée.**
+   *
+   * Ajouté le 30 août 2026, et il ne sert qu'à une chose : jouer la batterie
+   * par groupes sans en changer le SENS.
+   *
+   * **Ce qu'il répare.** Les suites ne sont pas indépendantes, et ne l'ont
+   * jamais été : d'une traite, la base est amorcée UNE fois, puis chaque suite
+   * travaille sur ce que les précédentes ont laissé. `test-aucun-texte-coupe`
+   * en est l'exemple — elle cherche un devis encore modifiable, qu'aucun
+   * amorçage ne pose et qu'une suite d'avant a créé. Ré-amorcer entre deux
+   * groupes le lui retirait : **un rouge fabriqué par la découpe, sur du code
+   * juste.**
+   *
+   * Le premier groupe amorce ; les suivants héritent — exactement comme une
+   * batterie d'une traite.
+   *
+   * **Il n'excuse rien.** La batterie entière (sans `--seulement`) amorce
+   * toujours, et c'est elle qui autorise une livraison.
+   */
+  const sansSeed = process.argv.includes("--sans-seed");
+  if (sansSeed && motifDemande === null) {
+    console.error(
+      "❌ `--sans-seed` sans `--seulement` : la batterie entière amorce toujours sa base.\n" +
+        "   Ce drapeau ne sert qu'à enchaîner des groupes, dont le premier amorce."
+    );
+    process.exit(1);
+  }
+  if (sansSeed) console.log("Base reprise telle quelle (--sans-seed).");
+  const seedResult = sansSeed
+    ? { error: undefined, signal: null, status: 0 }
+    : (console.log("Seed de la base de développement..."),
+      spawnSync(NODE, [TSX, "src/server/db/seed.ts"], {
+        stdio: "inherit",
+        env: process.env,
+      }));
   if (seedResult.error) {
     console.error(`❌ Impossible de lancer le seed de la base de développement (spawn error: ${seedResult.error.message}).`);
     process.exit(1);
@@ -389,6 +466,19 @@ async function main() {
    * une seule adresse. C'est `test-adresse-du-client.ts` qui l'éprouve, dans
    * les deux sens, sans navigateur.
    */
+  // **`--webpack` a été essayé le 30 août 2026, et il est ÉCARTÉ.** À noter,
+  // pour que personne ne repaye les deux heures.
+  //
+  // Le problème est réel : Turbopack alloue dans son Rust, hors du tas de V8 —
+  // rien ne la borne, et le conteneur finit par abattre le serveur
+  // (`Memory cgroup out of memory: Killed process … next-server …
+  // anon-rss:13,2 Go`). Sous `--webpack`, le même serveur tenait à 5,7 Go.
+  //
+  // **Mais il ne sert pas la même application.** Dès la première suite, la
+  // feuille « Absences » ne s'ouvrait plus : deux vérifications rouges sur du
+  // code juste. Un empaqueteur qui fabrique des faux rouges ne mesure rien —
+  // il fait pire que ne rien mesurer, puisqu'on cherche la panne dans le
+  // produit (`CLAUDE.md` §5). La mémoire reste donc à traiter ailleurs.
   const serveur = spawn(NPM, ["run", "dev", "--", "-p", "3000"], {
     env: { ...process.env, ATLAS_URL_PUBLIQUE: "https://atlas-suites.test" },
     stdio: ["ignore", journalFd, journalFd],
@@ -426,7 +516,7 @@ async function main() {
   const fichiers = readdirSync(DOSSIER)
     .filter((f) => !f.startsWith("_"))  // pièces communes, jamais des suites — voir plus haut
     .filter((f) => f.endsWith("-e2e.ts") || SUITES_SERVEUR.includes(f))
-    .filter((f) => (motifDemande === null ? true : f.includes(motifDemande)))
+    .filter(retenue)
     .sort();
 
   if (process.argv.includes("--list")) {
@@ -468,6 +558,16 @@ async function main() {
           (serveurTermine ? ` — il s'est arrêté (${serveurTermine}).` : " — il est resté sourd une minute.")
       );
       console.error("   Les suites restantes ne sont pas jouées : elles échoueraient toutes sur ce même point.");
+      // **Dire quoi faire, pas seulement ce qui s'est passé.** Neuf fois sur
+      // dix c'est le plafond mémoire du conteneur : Turbopack alloue hors du
+      // tas de V8, l'application entière compilée pèse plus que ce que la
+      // machine accorde, et le serveur est abattu (`HANDOVER.md`, la courbe
+      // mesurée le 30 août 2026). Trois sessions ont réécrit le même pilote
+      // faute de le savoir.
+      console.error(
+        "   Si c'est la mémoire (dmesg dit « Memory cgroup out of memory »), rejouer par groupes :\n" +
+          "     node scripts/jouer-suites-par-groupes.mjs /tmp/atlas-groupes.log 6"
+      );
       montrerJournalServeur();
       echecs += fichiers.length - fichiers.indexOf(fichier);
       break;

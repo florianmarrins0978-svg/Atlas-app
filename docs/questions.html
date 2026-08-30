@@ -501,6 +501,42 @@
 <td>Le planning et ses chantiers, les devis <strong>sans aucun montant</strong>. Le patron choisit s'il voit tout le planning ou ses seuls chantiers</td>
 </tr>
 </tbody></table></div>
+<h3 id="le-30-août-2026--un-cinquième-niveau-et-une-règle-enfin-appliquée">Le 30 août 2026 : un cinquième niveau, et une règle enfin appliquée</h3>
+<p><strong>Ce qui est AJOUTÉ : le rôle « Facturation ».</strong> Une entreprise a souvent plusieurs personnes au service administratif, chacune avec son compte. Elles tiennent les clients, les devis et les factures — le relevé de TVA, les paiements, les achats — et rien d'autre : ni les tarifs, ni l'IBAN, ni les accès. Elles voient le planning, en lecture, pour savoir quand un chantier a eu lieu avant de le facturer.</p>
+<p><strong>Ce qui est CORRIGÉ, et c'est plus important.</strong> La ligne « ni les factures, ni la TVA » du tableau ci-dessus n'avait <strong>jamais été appliquée</strong> : jusqu'à cette date, un commercial pouvait émettre une facture, la porter au relevé de TVA et noter un paiement. Pire, l'écran qui donne les accès lui promettait « Les factures et le relevé de TVA » — le patron lisait donc l'inverse de sa propre décision au moment de la prendre.</p>
+<p><strong>Ce que cela coûte, en une phrase :</strong> un commercial ne peut plus clôturer un chantier, parce que le bouton « Créer la facture » crée pour de bon la facture.</p>
+<div class="tablewrap"><table><thead><tr>
+<th>Qui</th>
+<th>Les factures</th>
+<th>Le planning</th>
+<th>Les devis</th>
+</tr></thead><tbody>
+<tr>
+<td><strong>Le patron</strong></td>
+<td>oui</td>
+<td>écriture</td>
+<td>oui</td>
+</tr>
+<tr>
+<td><strong>La facturation</strong></td>
+<td>oui</td>
+<td><strong>lecture seule</strong></td>
+<td>oui</td>
+</tr>
+<tr>
+<td><strong>Le commercial</strong></td>
+<td><strong>non</strong></td>
+<td>écriture, suppression comprise</td>
+<td>oui</td>
+</tr>
+<tr>
+<td><strong>Le salarié</strong></td>
+<td>non</td>
+<td><strong>lecture seule</strong></td>
+<td>sa feuille, sans un prix</td>
+</tr>
+</tbody></table></div>
+<p>Le détail est dans <code>docs/modele-des-roles.md</code>.</p>
 <p><strong>Attention à un mot qui trompe :</strong> dans Atlas, une « équipe » n'est pas un groupe de personnes, c'est une <strong>file du planning</strong> — combien de chantiers partent en même temps. « Équipe B » peut désigner deux ouvriers qui n'ouvriront jamais l'application ; un commercial a un compte et ne conduit aucun chantier. Les réglages tiennent donc <strong>deux listes séparées</strong> : <em>qui a accès</em>, et <em>vos équipes</em>.</p>
 <h3 id="précisé-le-23-août-2026--le-commercial-sélargit-le-salarié-se-resserre">Précisé le 23 août 2026 : le commercial s'élargit, le salarié se resserre</h3>
 <p>Question posée en corrigeant la sécurité des prix. Votre réponse :</p>

@@ -795,7 +795,7 @@ body {
   scroll-snap-type: x proximity;
   /* Sans lui, l'accroche vise le bord du cadre et le glisseur se décale seul de
    * 26 px au chargement : la première photo arrive déjà coupée. */
-  scroll-padding-left: 26px;
+  scroll-padding-left: 24px;
   scrollbar-width: none;
   mask-image: linear-gradient(90deg, #000 0 calc(100% - 32px), transparent 100%);
   -webkit-mask-image: linear-gradient(90deg, #000 0 calc(100% - 32px), transparent 100%);
@@ -809,8 +809,13 @@ body {
    * trait continu gris de 68 × 62 se lisait comme une case vide plutôt que
    * comme un endroit où poser une photo — et c'est ce qu'il montrait du doigt
    * en comparant les deux écrans. */
-  flex: 0 0 74px;
-  height: 74px;
+  /* **58 et non plus 74, et c'est SA valeur** : `.ajout-photo` dans
+   * `appli/note-vocale-choix.html`, la planche qu'il a validée le 30 août 2026
+   * et à laquelle il a demandé de se référer. Le carré de 74 venait de la
+   * planche du 22 août ; ce qu'il montrait alors du doigt, c'était le liseré EN
+   * TIRETS doré — celui-là ne bouge pas. */
+  flex: 0 0 58px;
+  height: 58px;
   border-radius: 6px;
   scroll-snap-align: start;
   -webkit-tap-highlight-color: transparent;
@@ -1151,10 +1156,16 @@ body {
  */
 .atlas-case {
   width: 100%;
-  min-height: 50px;
-  padding: 15px 16px;
+  /* **44 · 11/14 · rayon 12, et ces trois chiffres viennent de SA planche** —
+   * `.champ input` dans `appli/note-vocale-choix.html`, celle dont il a dit le
+   * 30 août 2026 : *« réfère-toi à cette page une fois que tu auras fini pour
+   * être sûr que tu n'as rien oublié »*. Ils remplacent 50 · 15/16 · 14, hérités
+   * de la planche du 22 août : c'est le même écran, resserré par lui pour tenir
+   * dans une page. 44 px reste très exactement la cible tactile minimale. */
+  min-height: 44px;
+  padding: 11px 14px;
   border: 0;
-  border-radius: 14px;
+  border-radius: 12px;
   background-color: var(--atlas-rustTint, #ece9e1);
   color: var(--atlas-ink, #1c1c1a);
   font-size: 16px;
@@ -1168,4 +1179,241 @@ body {
 }
 .atlas-case:focus {
   box-shadow: inset 0 0 0 1.5px var(--atlas-or, #B98B47);
+}
+
+/* ═══ LA NOTE VOCALE « À LA MESSAGERIE » ══════════════════════════════════
+ *
+ * Ses choix du 30 août 2026, faits sur trois planches successives
+ * (`appli/note-vocale-simple.html`, `-au-repos.html`, `-choix.html`) :
+ *
+ *   « Il faut modifier la note vocale pour qu'elle soit plus simple à utiliser,
+ *     à la manière de celle de WhatsApp : possibilité de supprimer, ou appuyer
+ *     sur la flèche pour envoyer de suite. […] Pour la largeur le 4. Ensuite le
+ *     2, l'anneau. Et le B, le micro, mais avec des petites ondes de chaque
+ *     côté, 1,5 cm max de chaque côté. »
+ *
+ * **CE QUE CELA CHANGE, ET QUI N'EST PAS UN DESSIN.** Jusqu'ici, arrêter valait
+ * envoyer : celui qui s'était trompé de mot, ou qui avait laissé courir le micro
+ * dans sa voiture, envoyait quand même — et le découvrait sur le devis. La
+ * poubelle est le garde-fou qui manquait ; l'envoi cesse d'être un effet de bord
+ * de l'arrêt.
+ *
+ * **L'ANCIEN ANNEAU RESTE, et ce n'est pas un oubli** : il sert de LECTEUR sur
+ * la fiche d'un chantier qui porte déjà une note (`.atlas-lecteur` plus haut).
+ * Ce bloc-ci ne concerne que le moment où l'on DICTE.
+ */
+
+.atlas-dictee {
+  align-self: center;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  /* La réserve ne bouge pas d'un état à l'autre : sans elle, la barre étant plus
+   * haute que le micro seul, tout ce qui suit — le bouton compris — sauterait
+   * vers le bas à l'instant où l'on appuie, c'est-à-dire au moment où l'écran
+   * doit être le plus stable. */
+  min-height: 104px;
+  /* **Les ondes ne doivent JAMAIS élargir la page.** Elles sont posées en
+   * absolu de part et d'autre du disque — 1,5 cm plus 9 px, soit 66 px de
+   * chaque côté — et un élément absolu compte quand même dans le débordement
+   * d'une page. Là où la zone est étroite, elles sortaient de l'écran : Chrome
+   * élargissait alors le viewport de mise en page de 390 à 456 px, TOUT
+   * rapetissait, et la poignée du tiroir de la fiche chantier passait sous le
+   * pli — injoignable au doigt comme à la suite qui l'éprouve
+   * (`test-retrait-differe-e2e`, qui rougissait sur « main intercepte le
+   * clic »).
+   *
+   * Mesuré le 30 août 2026, et c'est exactement la panne qu'il a fait corriger
+   * le même jour : *« l'écran ne doit plus pouvoir se balader de droite à
+   * gauche »*. Un ornement qui déplace un bouton n'est plus un ornement.
+   *
+   * `clip` plutôt que `hidden` : il ne fabrique pas de zone qui défile, donc
+   * rien ne se met à glisser à l'intérieur de la dictée. */
+  overflow-x: clip;
+}
+
+/* L'objet au centre, les deux gestes de part et d'autre. Au repos ils n'existent
+ * pas : il n'y a rien à jeter ni à envoyer. */
+.atlas-trio {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 22px;
+  width: 100%;
+}
+.atlas-cote {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  width: 46px;
+  height: 46px;
+  border-radius: 99px;
+  -webkit-tap-highlight-color: transparent;
+  animation: atlas-venir 0.26s cubic-bezier(0.22, 0.61, 0.36, 1) both;
+  transition: color 0.18s, background 0.18s;
+}
+/* **La poubelle ne rougit QUE sous le doigt** — `.jeter:active` de sa planche.
+ * Rouge au repos, elle mettrait en garde avant qu'on ait rien fait ; ici elle
+ * confirme le geste au moment où on le fait. */
+.atlas-jeter:active { color: var(--atlas-alerte, #9C3B2E); }
+@keyframes atlas-venir {
+  from { opacity: 0; transform: scale(0.7); }
+  to { opacity: 1; transform: none; }
+}
+.atlas-envoyer {
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.18);
+  transition: transform 0.18s;
+}
+.atlas-envoyer:active { transform: scale(0.93); }
+
+/* L'OBJET — un disque plein, son micro, ses deux souffles. Il ne change jamais
+ * de forme, seulement de signe : le micro devient un carré d'arrêt. C'est sa
+ * règle la plus ancienne sur cet objet — « il ne doit pas changer de visage ». */
+.atlas-objet {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+}
+.atlas-micro {
+  position: relative;
+  z-index: 2;
+  width: 76px;
+  height: 76px;
+  border-radius: 99px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  -webkit-tap-highlight-color: transparent;
+  /* Les deux ombres viennent de sa planche (`.micro-plein`, `.envoyer`) : elles
+   * décollent le disque du fond, et c'est ce qui le désigne comme LE geste de
+   * l'écran. Sans elles, il se lit comme une pastille posée à plat. */
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.16);
+  transition: transform 0.2s;
+}
+.atlas-micro:active { transform: scale(0.95); }
+/* `display:block` n'est pas cosmétique : un `<span>` resté en ligne ne prend ni
+ * `width` ni `height`, sa boîte vaut zéro pixel, et le disque s'affiche vide.
+ * Trouvé sur capture le 30 août 2026 — aucun contrôle ne le voyait, l'élément
+ * existant bel et bien. */
+.atlas-carre-stop {
+  display: block;
+  width: 19px;
+  height: 19px;
+  border-radius: 3px;
+}
+
+/* LES DEUX SOUFFLES — « 1,5 cm max de chaque côté », sa mesure exacte, écrite
+ * en centimètres plutôt que traduite en pixels : dans six mois, « 57 px » ne
+ * dirait plus d'où il sort. Ils s'éteignent vers l'extérieur — une onde qui
+ * s'arrête net donne un bord, et c'est un souffle qu'on veut. */
+/* **`atlas-frange`, et NI `atlas-souffle` NI `atlas-aile` — les deux étaient
+ * déjà pris, et les deux ont été essayés avant celui-ci.**
+ *
+ * `atlas-souffle`, ce sont les trois points de l'attente (sa proposition C du
+ * 12 août) ; `atlas-aile`, les barreaux du lecteur de note vocale. Écrites plus
+ * bas dans le fichier, mes règles les écrasaient l'une puis l'autre : points
+ * devenus des barreaux de 2 px invisibles, ailes du lecteur mises en absolu sur
+ * 1,5 cm. **Aucun test ne l'aurait dit** — ces dessins vivent sur des écrans que
+ * rien ne rapproche, et une feuille de style n'a pas de portée. Trouvé en
+ * relisant mon propre diff, et confirmé en comparant la liste des `.atlas-*`
+ * d'avant et d'après :
+ *
+ *     git show HEAD:src/app/globals.css | grep -o "\.atlas-[a-z0-9-]*" | sort -u
+ *
+ * **La règle qui en sort :** avant de baptiser une classe dans ce fichier,
+ * vérifier qu'elle est libre. Un nom repris ne casse pas l'écran qu'on regarde,
+ * il casse l'autre. */
+.atlas-frange {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 1.5cm;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 2px;
+  pointer-events: none;
+  overflow: hidden;
+  transition: opacity 0.2s;
+}
+.atlas-frange-g {
+  right: calc(100% + 9px);
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000);
+  mask-image: linear-gradient(90deg, transparent, #000);
+}
+.atlas-frange-d {
+  left: calc(100% + 9px);
+  -webkit-mask-image: linear-gradient(270deg, transparent, #000);
+  mask-image: linear-gradient(270deg, transparent, #000);
+}
+.atlas-frange i {
+  display: block;
+  flex: 0 0 2px;
+  border-radius: 2px;
+  opacity: 0.7;
+}
+/* **Ils s'effacent dès qu'on appuie, et c'est de la géométrie.** Chaque souffle
+ * occupe 1,5 cm plus 9 px de part et d'autre du disque, soit 66 px ; la poubelle
+ * et l'avion ne peuvent se poser qu'à une vingtaine de pixels — la largeur d'un
+ * téléphone ne laisse pas le choix. Les barreaux passaient donc PAR-DESSUS les
+ * deux gestes, à l'endroit exact où il faut viser. Vu sur capture, jamais
+ * autrement. Le mouvement n'est pas perdu : l'onde du dessous le porte. */
+.atlas-dictee[data-etat="dicte"] .atlas-frange,
+.atlas-dictee[data-etat="pause"] .atlas-frange,
+.atlas-dictee[data-etat="envoi"] .atlas-frange {
+  opacity: 0;
+}
+
+/* Le chrono et l'onde qui se déroule, sous le trio. */
+.atlas-sous-trio {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  margin-top: 8px;
+  padding: 0 4px;
+}
+.atlas-compteur {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+  flex: 0 0 auto;
+}
+.atlas-pastille {
+  width: 8px;
+  height: 8px;
+  border-radius: 99px;
+  animation: atlas-battre-pastille 1.3s ease-in-out infinite;
+}
+@keyframes atlas-battre-pastille {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.25; }
+}
+.atlas-dictee[data-etat="pause"] .atlas-pastille { animation: none; opacity: 0.3; }
+
+/* L'onde part PLEINE, à plat : sinon les deux premières secondes montrent un
+ * trait qui pousse dans le vide, et la barre paraît mal cadrée. */
+.atlas-onde {
+  flex: 1;
+  min-width: 0;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 2px;
+  overflow: hidden;
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 22%, #000);
+  mask-image: linear-gradient(90deg, transparent, #000 22%, #000);
+}
+.atlas-onde i {
+  flex: 0 0 2px;
+  border-radius: 2px;
+  opacity: 0.85;
 }
