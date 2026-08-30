@@ -180,6 +180,30 @@ dans le produit — mais elle n'est pas comprise pour autant.
 Aucune assertion touchée, aucun délai ajouté, aucune suite écartée. Résultat
 **115/115**.
 
+**REVU LE 30 AOÛT 2026 — et cette fois la mort arrive PLUS TÔT.** Batterie
+complète : le serveur est abattu après la **deuxième** suite navigateur
+(`test-acces-salarie-e2e`), pas après la treizième. `dmesg` :
+`Memory cgroup out of memory: Killed process … next-server … anon-rss:13287232kB`
+— 13,2 Go, le même plafond qu'au 27 août. Résultat de la batterie d'une traite :
+**1/116**.
+
+Rejouées par tranches, un serveur neuf par tranche, puis **seules** pour les
+quinze suites qu'aucune tranche n'avait pu jouer : **116/116**. Aucune assertion
+touchée, aucun délai ajouté.
+
+Ce que ce tour ajoute au diagnostic :
+
+  · le point de bascule n'est **pas** `test-coupure-sessions-e2e` — ce jour-là
+    la mort est arrivée onze suites plus tôt, sur une suite qui passe seule ;
+  · le plafond, lui, ne bouge pas : 13,2–13,5 Go dans les deux relevés ;
+  · **piège de méthode, payé ce jour-là :** un pilote de tranches signalé
+    « échoué » par l'outillage tournait encore. Un second pilote lancé dessus a
+    partagé le port 3000, et a rendu **quatorze faux rouges** d'affilée. C'est
+    `CLAUDE.md` §5 à la lettre — la batterie est une machine à un seul occupant
+    —, et cela vaut aussi pour les pilotes qui la découpent. **Vérifier
+    `ps aux | grep test:e2e` avant d'en relancer un**, plutôt que de croire le
+    code de sortie.
+
 **Qui peut le trancher :** nous, en cherchant ce que `test-coupure-sessions-e2e`
 fait faire à Turbopack — la piste la plus courte est de rejouer la suite sur le
 commit d'avant la fusion (826314e) et de comparer la courbe. Une piste écartée
