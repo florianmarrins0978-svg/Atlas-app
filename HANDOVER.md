@@ -240,6 +240,25 @@ heures plus tôt, dans ce même conteneur. Ne pas écrire que c'est réglé.
 
 ---
 
+## PIÈGE : UNE VALEUR LUE SUR UN RENDU EST UNE VALEUR EN RETARD (30 août 2026)
+
+`onBlur` se déclenche quand on quitte un champ. Si le gestionnaire lit l'état
+React — la ligne du dernier rendu —, il peut lire **ce qui précédait la frappe** :
+React ne rend pas au moment où l'on tape, il le programme.
+
+Sur le devis, cela envoyait un **zéro** au serveur pendant que l'écran affichait
+le prix. Six enquêtes l'ont manqué en accusant la lenteur de la machine.
+
+**La règle qui en sort :** un gestionnaire de sortie de champ prend la valeur
+**du champ** (`e.currentTarget.value`), jamais celle d'un rendu. Le DOM porte
+déjà ce qui a été tapé ; c'est la seule source qui ne puisse pas être en retard.
+
+**Et pour l'éprouver :** poser la valeur dans le DOM **sans** événement `input`
+— React ignore alors le changement, exactement comme un rendu en retard —, puis
+envoyer `focusout`. **Jamais `blur`** : il ne bulle pas, React ne l'écoute pas,
+et une sonde qui l'emploie ne déclenche rien du tout. C'est ce qui a fait
+retirer, à tort, une hypothèse juste (`scripts/test-prix-du-devis-survit-e2e.ts`).
+
 ## LES CAPACITÉS S'ÉCRIVENT EN LISTE BLANCHE — ne jamais revenir en arrière (30 août 2026)
 
 `src/lib/acces-roles.ts` porte cinq capacités. **Chacune nomme qui l'a :**

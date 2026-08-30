@@ -255,11 +255,53 @@ export default function DevisCompletClient(props: Props) {
     setLignes((cur) => cur.map((l) => (l.id === id ? { ...l, [champ]: valeur } : l)));
   }
 
-  async function persisterLigne(l: Ligne) {
-    await majLigneAction(l.id, {
-      libelle: l.libelle,
-      quantite: normaliser(l.quantite, "1"),
-      prixUnitaire: normaliser(l.prixUnitaire, "0"),
+  /**
+   * ═══════════════════════════════════════════════════════════════════════
+   * **UN PRIX TAPÉ PUIS QUITTÉ PARTAIT À ZÉRO — 30 août 2026.**
+   *
+   * `onFini` se déclenche à la perte du focus, et il lisait `l` — la ligne du
+   * DERNIER RENDU. Or React ne rend pas au moment de la frappe : il le
+   * programme. Entre la dernière touche et la sortie du champ, rien ne
+   * garantit que `l` porte ce qui vient d'être tapé.
+   *
+   * Sur une machine reposée, le rendu arrive à temps. Sous charge, non — et le
+   * serveur reçoit alors l'ANCIENNE valeur, un zéro sur une ligne neuve,
+   * **pendant que l'écran continue d'afficher le prix tapé**. Rien ne dit
+   * qu'il est perdu : on le découvre au rechargement, ou sur le devis parti
+   * chez le client.
+   *
+   * ═══════════════════════════════════════════════════════════════════════
+   * **CE DÉFAUT A COÛTÉ SIX ENQUÊTES, ET IL A ÉTÉ MANQUÉ UNE FOIS DE PLUS.**
+   *
+   * `test-lecons-prix-e2e` tombait depuis le 26 août sur « le prix 1400 n'est
+   * arrivé sur aucune ligne », et six fois de suite on a conclu à la lenteur de
+   * la machine — le contrôle ne disait pas ce que le navigateur avait envoyé.
+   * Le 30 août, une hypothèse juste a même été écrite **puis retirée**, faute
+   * d'une sonde capable de la reproduire.
+   *
+   * C'est le contrôle rendu bavard qui l'a nommé en une ligne, à l'occurrence
+   * suivante : `{"prixUnitaire":"0"}` posté, réponse 200. La requête partait
+   * bien — avec la mauvaise valeur.
+   *
+   * ═══════════════════════════════════════════════════════════════════════
+   * **LA VALEUR VIENT DU CHAMP, PLUS D'UN RENDU.** Le DOM porte déjà ce qui a
+   * été tapé au moment où l'on quitte le champ : c'est la seule source qui ne
+   * puisse pas être en retard. Le reste de la ligne continue de venir de
+   * l'état — seul le champ qu'on quitte a pu changer sans être encore rendu.
+   *
+   * **Ce n'est pas une attente qu'on allonge, c'est une course qu'on retire.**
+   * Allonger aurait déplacé le seuil sans le supprimer : le piège que
+   * `TODO.md` décrit depuis le 26 août, et qui accusait la machine.
+   */
+  async function persisterLigne(
+    l: Ligne,
+    frais?: Partial<Pick<Ligne, "libelle" | "quantite" | "prixUnitaire">>
+  ) {
+    const ligne = { ...l, ...frais };
+    await majLigneAction(ligne.id, {
+      libelle: ligne.libelle,
+      quantite: normaliser(ligne.quantite, "1"),
+      prixUnitaire: normaliser(ligne.prixUnitaire, "0"),
     });
   }
 
@@ -582,7 +624,9 @@ export default function DevisCompletClient(props: Props) {
               aria={`Description ${i + 1}`}
               placeholder="Ex : Élagage d'un tilleul — taille architecturée"
               onChange={(v) => majLigneLocale(l.id, "libelle", v)}
-              onFini={() => persisterLigne(l)}
+              onFini={(fraiche) => {
+                void persisterLigne(l, { libelle: fraiche });
+              }}
               className="block w-full resize-none overflow-hidden border-0 bg-transparent p-0 outline-none focus:bg-[rgba(0,0,0,0.03)]"
               style={{ color: colors.ink, fontSize: "16px", lineHeight: 1.45 }}
             />
@@ -594,7 +638,9 @@ export default function DevisCompletClient(props: Props) {
                 aria={`Quantité ${i + 1}`}
                 placeholder="1"
                 onChange={(v) => majLigneLocale(l.id, "quantite", v)}
-                onFini={() => persisterLigne(l)}
+                onFini={(fraiche) => {
+                  void persisterLigne(l, { quantite: fraiche });
+                }}
               />
             </Cellule>
 
@@ -605,7 +651,9 @@ export default function DevisCompletClient(props: Props) {
                 aria={`Prix unitaire ${i + 1}`}
                 placeholder="0,00"
                 onChange={(v) => majLigneLocale(l.id, "prixUnitaire", v)}
-                onFini={() => persisterLigne(l)}
+                onFini={(fraiche) => {
+                  void persisterLigne(l, { prixUnitaire: fraiche });
+                }}
               />
             </Cellule>
 
@@ -991,7 +1039,8 @@ function ZoneQuiGrandit({
 }: {
   valeur: string;
   onChange: (v: string) => void;
-  onFini: () => void;
+  /** Reçoit ce que le CHAMP porte — voir `persisterLigne`, jamais un rendu. */
+  onFini: (valeurDuChamp: string) => void;
   placeholder: string;
   aria: string;
   fige: boolean;
@@ -1021,7 +1070,7 @@ function ZoneQuiGrandit({
       aria-label={aria}
       rows={1}
       onChange={(e) => onChange(e.target.value)}
-      onBlur={onFini}
+      onBlur={(e) => onFini(e.currentTarget.value)}
       className={className}
       style={style}
     />
@@ -1168,7 +1217,8 @@ function ChiffreSaisi({
 }: {
   valeur: string;
   onChange: (v: string) => void;
-  onFini: () => void;
+  /** Reçoit ce que le CHAMP porte — voir `persisterLigne`, jamais un rendu. */
+  onFini: (valeurDuChamp: string) => void;
   placeholder: string;
   aria: string;
   fige: boolean;
@@ -1182,7 +1232,7 @@ function ChiffreSaisi({
       placeholder={placeholder}
       aria-label={aria}
       onChange={(e) => onChange(e.target.value)}
-      onBlur={onFini}
+      onBlur={(e) => onFini(e.currentTarget.value)}
       className="w-24 border-0 bg-transparent px-1 text-right outline-none focus:bg-[rgba(0,0,0,0.03)] sm:w-full"
       style={{
         color: colors.ink,
