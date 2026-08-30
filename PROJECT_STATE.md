@@ -173,6 +173,25 @@ que chez lui, et le contrôle qui aurait dû l'attraper écartait explicitement
 Le défilement n'a pas changé — molette, doigt, clavier, focus. Détail :
 `ARCHITECTURE.md` §206.
 
+## Le devis client ne répète plus les mesures (30 août 2026)
+
+*Son premier vrai devis sorti de la chaîne corrigée portait « Haie de laurier
+(800 ml) (800 ml) » et « Érable (40 cm de diamètre, 12 m de haut) ». Détail et
+pourquoi : `ARCHITECTURE.md` §214.*
+
+**Fait.**
+
+| | Où |
+|---|---|
+| Le libellé que le client lit est nettoyé des mesures **déjà en colonne** | `src/lib/libelle-client.ts` |
+| Ce que les moteurs de prix relisent — `membres` — reste **intact** | `src/lib/lignes-vendables.ts` |
+| La recollure de la quantité ne double plus ce que le modèle a déjà écrit | `brouillon-service.ts` |
+| Ses quatre lignes du 30 août, plus le refus de retirer une méthode | `scripts/test-libelle-client.ts` |
+
+**Ce qui n'a PAS changé, et c'est délibéré :** aucune donnée structurée n'est
+retirée de la base, aucun devis existant n'est réinterprété, l'invite du modèle
+n'est pas touchée, et le regroupement des prestations est inchangé.
+
 ---
 
 ## Le banc répare ses dépendances désaccordées (29 août 2026)
