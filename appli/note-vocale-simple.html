@@ -137,12 +137,29 @@
      100 % aujourd'hui ; la maquette s'ouvre sur 78 %, la proposition 3. */
   --large-principal:78%;
 }
+/* **LE SOMBRE SE FORCE, IL NE SE SUBIT PLUS.** Sa demande du 30 août : *« tout
+   à l'heure tu m'as fait cinq visuels en blanc et en fond noir, je veux essayer
+   les cinq »*. La planche suivait le réglage de son téléphone : il ne pouvait
+   voir qu'une teinte sur les deux, et devait aller changer un réglage système
+   pour voir l'autre. Le bouton ☾ / ☀ de la barre d'onglets tranche.
+
+   Les trois blocs se répètent à dessein, et l'ordre compte : le réglage du
+   téléphone d'abord, mais SEULEMENT si l'on n'a pas demandé le clair
+   (`:not([data-theme="light"])`) ; puis le choix explicite, qui gagne dans les
+   deux sens. Sans le second, un téléphone réglé en sombre ne pourrait jamais
+   revenir au clair. */
 @media (prefers-color-scheme: dark){
-  :root{ --bone:#171613; --cream:#1e1c18; --paper:#262420; --charcoal:#e9e5dc;
+  :root:not([data-theme="light"]){
+         --bone:#171613; --cream:#1e1c18; --paper:#262420; --charcoal:#e9e5dc;
          --charcoal-soft:#c9c4b8; --muted:#8a867c; --or:#C9A15E;
          --line:rgba(233,229,220,.16); --line-soft:rgba(233,229,220,.09);
          --alert:#C9584A; --plein:#e9e8de; --sur-plein:#1a1d19; --lien:#C9A15E; }
 }
+:root[data-theme="dark"]{
+         --bone:#171613; --cream:#1e1c18; --paper:#262420; --charcoal:#e9e5dc;
+         --charcoal-soft:#c9c4b8; --muted:#8a867c; --or:#C9A15E;
+         --line:rgba(233,229,220,.16); --line-soft:rgba(233,229,220,.09);
+         --alert:#C9584A; --plein:#e9e8de; --sur-plein:#1a1d19; --lien:#C9A15E; }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 /* **`hidden` doit gagner contre nos propres classes, et ce n'est pas gratuit.**
    `.capsule{display:flex}` l'emporte sur le `[hidden]{display:none}` du
@@ -160,11 +177,23 @@ body{margin:0;background:var(--bone);color:var(--charcoal);
 .tel{max-width:430px;margin:0 auto;min-height:100vh;display:flex;flex-direction:column}
 
 /* ─── Le cadre de la maquette ───────────────────────────────────────────── */
-.onglets{position:sticky;top:0;z-index:9;display:flex;gap:6px;padding:5px 12px;
-         background:var(--bone);border-bottom:1px solid var(--line);overflow-x:auto}
+/* **LA BASCULE NE DÉFILE PAS AVEC LES ONGLETS.** Vue à la capture, pas
+   déduite : les quatre onglets débordent d'un écran de téléphone, la barre
+   défile — et le ☀ partait avec, coupé au bord droit. Un bouton qu'on ne voit
+   pas n'existe pas. Les onglets défilent dans leur propre piste ; la teinte
+   reste posée à droite. */
+.onglets{position:sticky;top:0;z-index:9;display:flex;align-items:center;gap:6px;
+         padding:5px 12px;background:var(--bone);border-bottom:1px solid var(--line)}
+.onglets-piste{flex:1;min-width:0;display:flex;gap:6px;overflow-x:auto;
+               scrollbar-width:none}
+.onglets-piste::-webkit-scrollbar{display:none}
 .onglets button{flex:0 0 auto;border:1px solid var(--line);background:transparent;border-radius:99px;
                 padding:7px 12px;font-size:11.5px;color:var(--muted);cursor:pointer;font-family:inherit}
 .onglets button[aria-pressed="true"]{background:var(--paper);border-color:var(--or);color:var(--charcoal)}
+/* La bascule de teinte se pose au bout, séparée des propositions : elle ne
+   choisit pas un écran, elle change l'éclairage de tous. */
+.onglets .teinte{flex:0 0 auto;font-size:15px;line-height:1;padding:7px 10px;
+                 color:var(--or);border-color:var(--line)}
 /* 20 px, et pas 44 : ce talon était du vide pur sous le bouton, et il comptait
    dans ce qui passe sous le pli. Les deux autres écrans défilent, eux, et n'en
    souffrent pas. */
@@ -345,7 +374,9 @@ form{padding:6px 24px 0;display:flex;flex-direction:column;gap:7px}
 /* 3 · AU PLUS COURT — une capsule, quatre choses dedans. */
 .capsule{display:flex;align-items:center;gap:12px;width:100%;background:var(--cream);
          border-radius:99px;padding:8px 8px 8px 10px;box-shadow:inset 0 0 0 1px var(--line-soft)}
-.capsule .envoyer{width:44px;height:44px}
+/* 46, comme la poubelle : à 44 pile, l'alignement du flex rendait 43,99997 —
+   sous le seuil du doigt, et le contrôle le refusait à juste titre. */
+.capsule .envoyer{width:46px;height:46px}
 
 /* L'attente de la transcription. Elle dure vraiment quelques secondes : la
    masquer ferait croire à un écran figé, et il rappuierait. */
@@ -405,10 +436,13 @@ form{padding:6px 24px 0;display:flex;flex-direction:column;gap:7px}
 <div class="tel">
 
   <nav class="onglets" aria-label="Les écrans de la maquette">
-    <button type="button" data-variante="1" aria-pressed="true">1 · La barre</button>
-    <button type="button" data-variante="2" aria-pressed="false">2 · L’anneau</button>
-    <button type="button" data-variante="3" aria-pressed="false">3 · Au plus court</button>
-    <button type="button" data-va="largeur" aria-pressed="false">Largeur</button>
+    <div class="onglets-piste">
+      <button type="button" data-variante="1" aria-pressed="true">1 · La barre</button>
+      <button type="button" data-variante="2" aria-pressed="false">2 · L’anneau</button>
+      <button type="button" data-variante="3" aria-pressed="false">3 · Au plus court</button>
+      <button type="button" data-va="largeur" aria-pressed="false">Largeur</button>
+    </div>
+    <button type="button" class="teinte" id="teinte" aria-label="Passer en fond noir">☾</button>
   </nav>
 
   <!-- ══════════════════ LA FICHE CLIENT ══════════════════ -->
@@ -645,8 +679,30 @@ $$("[data-jeter]").forEach((b) => (b.innerHTML = ICONES.jeter));
 $$("[data-pause]:not([data-anneau-pause])").forEach((b) => (b.innerHTML = ICONES.pause));
 $$("[data-envoyer]").forEach((b) => (b.innerHTML = ICONES.envoyer));
 
+/* ─── La teinte : clair ou fond noir, à la demande ────────────────────── */
+//
+// **Le premier appui doit inverser CE QU'IL VOIT, pas un état supposé.** Un
+// compteur parti de « clair » aurait laissé un téléphone déjà en sombre passer
+// de sombre à sombre : le premier appui n'aurait rien fait, et il aurait cru le
+// bouton cassé. On lit donc la teinte réellement appliquée.
+$("#teinte").addEventListener("click", () => {
+  const sombreMaintenant =
+    document.documentElement.dataset.theme === "dark" ||
+    (!document.documentElement.dataset.theme &&
+      window.matchMedia("(prefers-color-scheme: dark)").matches);
+  document.documentElement.dataset.theme = sombreMaintenant ? "light" : "dark";
+  $("#teinte").textContent = sombreMaintenant ? "☾" : "☀";
+  $("#teinte").setAttribute("aria-label", sombreMaintenant ? "Passer en fond noir" : "Revenir au fond clair");
+});
+// Le symbole dit où l'on VA, pas où l'on est : sur un téléphone déjà en sombre,
+// une lune inviterait à un voyage qu'on a déjà fait.
+if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
+  $("#teinte").textContent = "☀";
+  $("#teinte").setAttribute("aria-label", "Revenir au fond clair");
+}
+
 /* ─── Les onglets ─────────────────────────────────────────────────────── */
-$$(".onglets button").forEach((b) => {
+$$(".onglets button[data-variante], .onglets button[data-va]").forEach((b) => {
   b.addEventListener("click", () => {
     if (b.dataset.va) { aller(b.dataset.va); marquerOnglet(b); return; }
     // Changer de proposition ramène l'anneau au repos : on compare trois
@@ -658,7 +714,10 @@ $$(".onglets button").forEach((b) => {
   });
 });
 function marquerOnglet(actif) {
-  $$(".onglets button").forEach((x) => x.setAttribute("aria-pressed", String(x === actif)));
+  // La bascule de teinte n'est pas un écran : elle ne se coche jamais.
+  $$(".onglets button[data-variante], .onglets button[data-va]").forEach((x) =>
+    x.setAttribute("aria-pressed", String(x === actif))
+  );
 }
 function aller(id) {
   $$(".ecran").forEach((e) => e.classList.toggle("actif", e.id === id));
