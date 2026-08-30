@@ -1,7 +1,7 @@
 # État du projet
 
-**Dernière mise à jour :** 2026-08-30 · branche `main`
-· dernière migration `drizzle/0070_prix_a_chiffrer_et_comparabilite.sql`
+**Dernière mise à jour :** 2026-08-30 · branche `claude/legal-quote-terms-25aceo`
+· dernière migration `drizzle/0071_forme_juridique_et_tva_sur_documents.sql`
 
 *(Deux en-têtes de mise à jour cohabitaient ici depuis une fusion du 29 août,
 avec deux dates et deux migrations différentes — dont une périmée. Réunis : une
@@ -17,6 +17,25 @@ Ce fichier dit **où en est le produit**, pas ce qu'on aimerait qu'il soit. Une
 ligne « fait » qui ne l'est pas coûte plus cher qu'une ligne absente.
 
 ---
+
+## Forme juridique et numéro de TVA : enfin imprimés (30 août 2026)
+
+Demandé par le patron : comparer une facture réelle d'artisan à ce qu'Atlas
+produit, et corriger les mentions manquantes. Deux champs se saisissaient déjà
+dans Réglages > Identité depuis le 14 août — l'écran promettait même que le
+numéro de TVA « figure sur la facture » — mais aucun des deux n'atteignait le
+devis ni la facture : les deux tables figent leur propre instantané de
+l'identité, et ne portaient pas ces colonnes.
+
+Corrigé (migration 0071, additive) : ils sont désormais figés à la création
+comme le reste de l'identité, et imprimés sous l'en-tête quand ils sont
+renseignés. Testé dans les deux sens (`test-facture-pdf.ts`,
+`test-devis-pdf.ts`), batterie complète rejouée au vert (286/286).
+
+**Reste ouvert :** capital social et RCS/ville, obligatoires pour les seules
+sociétés, n'ont aucun champ dans Atlas — décision du patron demandée avant de
+dessiner un champ neuf. Détail : `docs/mentions-legales-devis-factures.md`,
+`ARCHITECTURE.md` §209, `TODO.md`.
 
 ## Le planning du salarié est en LECTURE SEULE (30 août 2026)
 

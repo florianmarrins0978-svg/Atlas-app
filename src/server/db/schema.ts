@@ -974,6 +974,20 @@ export const devis = pgTable(
     entrepriseNom: text("entreprise_nom").notNull(),
     entrepriseAdresse: text("entreprise_adresse"),
     entrepriseSiret: text("entreprise_siret"),
+    /**
+     * « SASU », « EI »… (migration 0071). Mention obligatoire des documents
+     * commerciaux d'une société (Code de commerce, art. R123-237) — captée
+     * dans Réglages > Identité depuis le 14 août, mais jamais imprimée
+     * jusqu'ici : `document-commun.ts` ne la recevait pas.
+     */
+    entrepriseFormeJuridique: text("entreprise_forme_juridique"),
+    /**
+     * Numéro de TVA intracommunautaire (migration 0071). Obligatoire sur la
+     * facture d'un assujetti (CGI, art. 242 nonies A, ann. II) — l'écran
+     * d'identité promet déjà « figure alors sur la facture », promesse jusqu'ici
+     * non tenue faute de colonne.
+     */
+    entrepriseNumeroTva: text("entreprise_numero_tva"),
     entrepriseEmail: text("entreprise_email"),
     entrepriseTelephone: text("entreprise_telephone"),
     entrepriseIban: text("entreprise_iban"),
@@ -1572,6 +1586,10 @@ export const factures = pgTable(
     entrepriseNom: text("entreprise_nom").notNull(),
     entrepriseAdresse: text("entreprise_adresse"),
     entrepriseSiret: text("entreprise_siret"),
+    /** Même principe que sur `devis` (migration 0071). */
+    entrepriseFormeJuridique: text("entreprise_forme_juridique"),
+    /** Même principe que sur `devis` (migration 0071). */
+    entrepriseNumeroTva: text("entreprise_numero_tva"),
     /**
      * Le régime de TVA **au jour de l'émission** (migration 0039).
      *

@@ -208,6 +208,10 @@ export async function getOuCreerDevisBrouillon(ctx: Ctx, chantierId: string) {
       entrepriseNom: entreprise.nom,
       entrepriseAdresse: entreprise.adresse,
       entrepriseSiret: entreprise.siret,
+      // Figées comme le reste de l'identité (migration 0071) : mentions
+      // légales du devis, jamais imprimées jusqu'ici faute de colonne.
+      entrepriseFormeJuridique: entreprise.formeJuridique,
+      entrepriseNumeroTva: entreprise.numeroTva,
       entrepriseEmail: entreprise.email,
       entrepriseTelephone: entreprise.telephone,
       entrepriseIban: entreprise.iban,
@@ -328,6 +332,8 @@ export async function genererPdfPourApercu(ctx: Ctx, devisId: string): Promise<U
       entrepriseNom: d.entrepriseNom,
       entrepriseAdresse: d.entrepriseAdresse,
       entrepriseSiret: d.entrepriseSiret,
+      entrepriseFormeJuridique: d.entrepriseFormeJuridique,
+      entrepriseNumeroTva: d.entrepriseNumeroTva,
       entrepriseTelephone: d.entrepriseTelephone,
       entrepriseEmail: d.entrepriseEmail,
       // Le modèle d'Arborea imprime les modalités de virement : sans l'IBAN,
@@ -406,6 +412,8 @@ export async function envoyerDevis(ctx: Ctx, devisId: string) {
       entrepriseNom: avant.entrepriseNom,
       entrepriseAdresse: avant.entrepriseAdresse,
       entrepriseSiret: avant.entrepriseSiret,
+      entrepriseFormeJuridique: avant.entrepriseFormeJuridique,
+      entrepriseNumeroTva: avant.entrepriseNumeroTva,
       entrepriseTelephone: avant.entrepriseTelephone,
       entrepriseEmail: avant.entrepriseEmail,
       entrepriseIban: avant.entrepriseIban,
@@ -555,6 +563,8 @@ export async function genererDevisSansPrix(
         entrepriseNom: d.entrepriseNom,
         entrepriseAdresse: d.entrepriseAdresse,
         entrepriseSiret: d.entrepriseSiret,
+        entrepriseFormeJuridique: d.entrepriseFormeJuridique,
+        entrepriseNumeroTva: d.entrepriseNumeroTva,
         entrepriseTelephone: d.entrepriseTelephone,
         entrepriseEmail: d.entrepriseEmail,
         // `sansChiffrage` ignore l'IBAN : il n'a rien à faire sur une feuille

@@ -9,6 +9,19 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
+## Capital social et RCS/ville — décision attendue avant de dessiner le champ
+
+Trouvé le 30 août 2026 en comparant une facture réelle d'artisan à Atlas
+(`docs/mentions-legales-devis-factures.md`, `ARCHITECTURE.md` §209). Deux
+mentions obligatoires pour les sociétés (Code de commerce, art. R123-237) —
+capital social, numéro et ville du RCS — n'ont aucun champ nulle part dans
+Atlas, ni en base ni à l'écran. Ne concerne pas une entreprise individuelle
+ni une micro-entreprise.
+
+Nécessite une maquette (nouveau champ = nouvelle maquette, `CLAUDE.md` §3bis)
+avant tout code. **Question posée au patron dans le retour transmis** :
+veut-il que ces deux champs soient ajoutés ?
+
 ## Ce que le lot de clôture du 30 août 2026 laisse ouvert
 
 Le rapport complet est dans `docs/cloture-avant-premier-artisan.md`. Il ne reste

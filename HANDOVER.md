@@ -5750,6 +5750,7 @@ DATABASE_URL=postgresql://postgres:postgres_ci_pw@localhost:5432/atlas_test \
 | Le message qui part chez son client | `src/lib/message-client.ts` |
 | L'allure de ses devis (typo, fond, accent, logo) | `src/lib/allure-documents.ts` |
 | Les polices embarquées dans les PDF | `src/server/pdf/polices/LISEZ-MOI.md` — **réduites, et embarquées entières** |
+| Mentions légales imprimées sur devis/facture | `src/server/pdf/document-commun.ts` (en-tête), `ARCHITECTURE.md` §209 |
 
 ## Le compte de démonstration
 

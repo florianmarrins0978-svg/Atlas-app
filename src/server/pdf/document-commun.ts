@@ -375,6 +375,20 @@ export type DonneesDocument = {
   entrepriseNom: string;
   entrepriseAdresse?: string | null;
   entrepriseSiret?: string | null;
+  /**
+   * « SASU », « EI »… Mention obligatoire des documents commerciaux d'une
+   * société (Code de commerce, art. R123-237). Absente : rien de plus ne
+   * s'imprime — c'est le cas de tous les documents émis avant la migration
+   * 0071, et d'un artisan qui ne l'a pas renseignée.
+   */
+  entrepriseFormeJuridique?: string | null;
+  /**
+   * Numéro de TVA intracommunautaire. Obligatoire sur la facture d'un
+   * assujetti (CGI, art. 242 nonies A, ann. II) — l'écran d'identité le
+   * demande déjà et promet qu'il s'imprime ; jusqu'à la migration 0071, rien
+   * ne le portait jusqu'ici.
+   */
+  entrepriseNumeroTva?: string | null;
   entrepriseTelephone?: string | null;
   entrepriseEmail?: string | null;
   entrepriseIban?: string | null;
@@ -641,11 +655,17 @@ export async function composerDocument(
   // ça, il faut sauter une ligne, une ligne par information »*. Le téléphone et
   // l'e-mail tenaient sur la même ligne, séparés d'un tiret cadratin — c'est
   // lisible sur un écran large, c'est un pâté sur un devis imprimé.
+  // **La forme juridique et le numéro de TVA rejoignent la liste (migration
+  // 0071), au lieu de rester captés sans jamais s'imprimer.** Même règle que
+  // pour le reste : une ligne par information, rien n'apparaît si la valeur
+  // est absente.
   const coordonnees = [
+    data.entrepriseFormeJuridique,
     data.entrepriseAdresse,
     data.entrepriseTelephone,
     data.entrepriseEmail,
     data.entrepriseSiret ? `SIRET ${data.entrepriseSiret}` : null,
+    data.entrepriseNumeroTva ? `TVA intracommunautaire ${data.entrepriseNumeroTva}` : null,
   ].filter((l): l is string => !!l);
 
   let yCoord = y - 15;

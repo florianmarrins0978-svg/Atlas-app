@@ -9,6 +9,25 @@ Format : le plus récent en tête.
 
 ## 2026-08-30
 
+### La forme juridique et le numéro de TVA atteignent enfin le devis et la facture
+
+Captés depuis le 14 août dans Réglages > Identité — l'écran promet même que le
+numéro de TVA « figure sur la facture » — ces deux champs s'arrêtaient en base :
+`devis` et `factures` figent leur propre instantané de l'identité (nom,
+adresse, SIRET) mais ne portaient pas ces deux colonnes. Trouvé en comparant
+une facture réelle d'artisan à ce qu'Atlas produit. Mentions obligatoires
+(Code de commerce art. R123-237 pour la forme, CGI art. 242 nonies A pour le
+numéro de TVA) : toute société envoyait ses devis sans forme juridique, tout
+artisan assujetti ses factures sans numéro de TVA.
+
+Migration 0071, additive : les documents déjà émis ressortent identiques à
+eux-mêmes. `document-commun.ts` imprime les deux, une ligne chacune, jamais
+quand elles sont absentes. `ARCHITECTURE.md` §209,
+`docs/mentions-legales-devis-factures.md`.
+
+Reste ouvert, et hors de ce lot : capital social et RCS/ville, qu'Atlas ne
+sait saisir nulle part — décision demandée avant de dessiner le champ.
+
 ### Le commercial écrit sur le planning : confirmé, plus seulement toléré
 
 Le lot « salarié en lecture seule » n'avait pas touché aux droits du commercial,

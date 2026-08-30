@@ -1,0 +1,240 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas — Mentions légales : la facture réelle d'un artisan comparée aux nôtres</title>
+<style>
+  :root{
+    --ground:#f5f3ee; --surface:#faf9f5; --raised:#ece9e1;
+    --ink:#1c1c1a; --ink-soft:#4a4a44; --muted:#8a8578;
+    --accent:#2f3b2f; --alert:#b5562a; --line:rgba(28,28,26,0.13);
+    --serif:Georgia,'Times New Roman',serif;
+    --sans:system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --ground:#161815; --surface:#1d201c; --raised:#252924;
+      --ink:#eae7df; --ink-soft:#c2bdb1; --muted:#948f83;
+      --accent:#9fbd82; --alert:#e0885a; --line:rgba(234,231,223,0.17);
+    }
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--sans);
+    line-height:1.65;}
+  main{max-width:44rem;margin:0 auto;padding:2.5rem 1.2rem 5rem;}
+  h1,h2,h3,h4{font-family:var(--serif);font-weight:600;line-height:1.2;
+    text-wrap:balance;margin:2rem 0 0.6rem;scroll-margin-top:1rem;}
+  h1{font-size:2rem;margin-top:0;}
+  h2{font-size:1.5rem;padding-top:1.2rem;border-top:1px solid var(--line);}
+  h3{font-size:1.12rem;}
+  h4{font-size:1rem;}
+  p{margin:0 0 0.9rem;}
+  a{color:var(--accent);text-underline-offset:3px;}
+  a:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:3px;}
+  ul,ol{margin:0 0 1rem;padding-left:1.3rem;}
+  li{margin-bottom:0.4rem;}
+  li::marker{color:var(--muted);}
+  /* Le sommaire : des cibles larges, confortables au doigt sur téléphone. */
+  ol li a{display:inline-block;padding:0.15rem 0;}
+  blockquote{margin:1rem 0;padding:0.85rem 1.05rem;background:var(--raised);
+    border-left:3px solid var(--accent);border-radius:0 10px 10px 0;color:var(--ink-soft);}
+  code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:0.87em;
+    background:var(--raised);padding:0.1rem 0.35rem;border-radius:5px;}
+  hr{border:0;border-top:1px solid var(--line);margin:2rem 0;}
+  .tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px;
+    background:var(--surface);margin:0 0 1.2rem;}
+  table{border-collapse:collapse;width:100%;font-size:0.92rem;min-width:22rem;}
+  th,td{text-align:left;padding:0.55rem 0.8rem;border-bottom:1px solid var(--line);
+    vertical-align:top;}
+  th{font-size:0.72rem;letter-spacing:0.08em;text-transform:uppercase;
+    color:var(--muted);white-space:nowrap;}
+  tr:last-child td{border-bottom:none;}
+  .retour{display:inline-block;font-size:0.76rem;color:var(--muted);
+    text-decoration:none;margin:-0.3rem 0 1rem;}
+  .retour:hover{color:var(--accent);text-decoration:underline;}
+</style>
+</head>
+<body>
+<main>
+<h1 id="mentions-légales--la-facture-réelle-dun-artisan-comparée-aux-nôtres">Mentions légales : la facture réelle d'un artisan comparée aux nôtres</h1>
+<p><strong>28-30 août 2026.</strong> Comparaison demandée entre une facture réelle (L'R de l'Arbre, EURL) et ce qu'Atlas imprime, pour vérifier ce que la loi impose et combler ce qui manque.</p>
+<p><strong>Ce qui a été trouvé et corrigé tout de suite :</strong> deux mentions obligatoires étaient déjà saisies dans Réglages &gt; Identité, l'écran promettait même qu'elles s'impriment sur la facture — et elles n'apparaissaient nulle part. C'est un vrai défaut, pas une nuance ; il est corrigé et testé (voir plus bas).</p>
+<p><strong>Ce qui reste ouvert :</strong> deux mentions qu'Atlas ne sait pas encore saisir du tout — capital social, numéro et ville du RCS. Elles ne concernent que les sociétés (SARL, EURL, SASU…), pas un artisan en entreprise individuelle. Sa décision est demandée avant de les ajouter (nouveau champ = nouvelle maquette).</p>
+<hr>
+<h2 id="ce-que-la-facture-reçue-porte-comparé-à-atlas">Ce que la facture reçue porte, comparé à Atlas</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th>Mention</th>
+<th>La facture reçue</th>
+<th>Atlas, avant ce lot</th>
+<th>Atlas, maintenant</th>
+</tr></thead><tbody>
+<tr>
+<td>Nom, adresse, téléphone, e-mail de l'émetteur</td>
+<td>✓</td>
+<td>✓</td>
+<td>✓</td>
+</tr>
+<tr>
+<td>SIRET</td>
+<td>✓</td>
+<td>✓</td>
+<td>✓</td>
+</tr>
+<tr>
+<td><strong>Forme juridique</strong> (EURL)</td>
+<td>✓</td>
+<td><strong>saisie, jamais imprimée</strong></td>
+<td>✓ imprimée</td>
+</tr>
+<tr>
+<td><strong>Capital social</strong> (1000 €)</td>
+<td>✓</td>
+<td>absente — aucun champ</td>
+<td>toujours absente, voir plus bas</td>
+</tr>
+<tr>
+<td><strong>RCS + ville d'immatriculation</strong></td>
+<td>absente sur cette facture (SIRET seul)</td>
+<td>absente</td>
+<td>toujours absente, voir plus bas</td>
+</tr>
+<tr>
+<td><strong>Numéro de TVA intracommunautaire</strong></td>
+<td>absent (client hors UE, prestation à un particulier)</td>
+<td><strong>saisi, promis « sur la facture », jamais imprimé</strong></td>
+<td>✓ imprimé</td>
+</tr>
+<tr>
+<td>Nom et adresse du client</td>
+<td>✓</td>
+<td>✓</td>
+<td>✓</td>
+</tr>
+<tr>
+<td>Numéro de facture</td>
+<td>✓</td>
+<td>✓</td>
+<td>✓</td>
+</tr>
+<tr>
+<td>Date d'émission</td>
+<td>✓</td>
+<td>✓</td>
+<td>✓</td>
+</tr>
+<tr>
+<td>Date de la prestation</td>
+<td>✓ (« Intervention du 6/05/2025 »)</td>
+<td>via le libellé de la ligne</td>
+<td>inchangé</td>
+</tr>
+<tr>
+<td>Désignation, quantité, prix unitaire HT</td>
+<td>✓</td>
+<td>✓</td>
+<td>✓</td>
+</tr>
+<tr>
+<td>Réduction de prix, si accordée</td>
+<td>—</td>
+<td>✓</td>
+<td>✓</td>
+</tr>
+<tr>
+<td>Totaux HT / TVA / TTC</td>
+<td>✓</td>
+<td>✓</td>
+<td>✓</td>
+</tr>
+<tr>
+<td><strong>Date d'échéance</strong></td>
+<td>✓ (06-06-2025)</td>
+<td>✓</td>
+<td>✓</td>
+</tr>
+<tr>
+<td><strong>Taux des pénalités de retard</strong></td>
+<td>✓ (3× le taux légal, loi n°2008-776)</td>
+<td>✓</td>
+<td>✓</td>
+</tr>
+<tr>
+<td><strong>Indemnité forfaitaire de recouvrement</strong></td>
+<td>✓ (40 €, art. D.441-5)</td>
+<td>✓</td>
+<td>✓</td>
+</tr>
+<tr>
+<td><strong>Conditions d'escompte</strong> (même une absence)</td>
+<td>— <em>(silence : c'est un manque sur CETTE facture)</em></td>
+<td>✓ (« Pas d'escompte »)</td>
+<td>✓</td>
+</tr>
+<tr>
+<td>Mention de franchise en base (art. 293 B), si applicable</td>
+<td>n/a (assujettie)</td>
+<td>✓, jamais devinée</td>
+<td>✓</td>
+</tr>
+<tr>
+<td>Mode de paiement</td>
+<td>✓ (« Autres »)</td>
+<td>IBAN + « virement »</td>
+<td>inchangé</td>
+</tr>
+</tbody></table></div>
+<p><strong>Verdict sur la facture reçue elle-même :</strong> elle est bien tenue, mais il lui manque la mention d'escompte (silence sur ce point, qui doit légalement être dit même pour dire qu'il n'y en a pas) — un défaut qu'Atlas, lui, ne commet pas puisqu'il l'écrit dans tous les cas.</p>
+<hr>
+<h2 id="ce-qui-était-cassé-et-qui-est-corrigé">Ce qui était cassé, et qui est corrigé</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><strong>Le défaut.</strong> Réglages &gt; Identité fait saisir la forme juridique et le numéro de TVA intracommunautaire depuis le 14 août. L'écran dit même, mot pour mot : <em>« Votre numéro intracommunautaire figure alors sur la facture. »</em> Aucun des deux n'atteignait pourtant <code>devis-pdf.ts</code> ni <code>facture-pdf.ts</code> — la colonne existait sur <code>entreprises</code>, mais pas sur <code>devis</code> ni <code>factures</code>, qui figent leur propre instantané de l'identité au jour de l'émission (comme le nom, l'adresse, le SIRET). La donnée s'arrêtait donc en base, sans jamais atteindre le papier.</p>
+<p><strong>Portée :</strong> tout artisan assujetti à la TVA sur Atlas envoyait, depuis le 14 août, des factures sans son numéro de TVA intracommunautaire — une mention obligatoire (CGI, art. 242 nonies A). Et toute société (SARL, EURL, SASU…) envoyait devis et factures sans sa forme juridique (Code de commerce, art. R123-237).</p>
+<p><strong>Correction :</strong></p>
+<ul>
+<li>Migration <code>0071_forme_juridique_et_tva_sur_documents.sql</code> — deux colonnes nullables sur <code>devis</code> et <code>factures</code>, additives : les documents déjà émis n'en portent aucune trace et ressortent identiques à eux-mêmes.</li>
+<li>Ces deux champs sont désormais figés à la création du devis, puis recopiés du devis vers la facture — même principe que le nom, l'adresse et le SIRET.</li>
+<li><code>document-commun.ts</code> les imprime sous l'en-tête, une ligne chacun, seulement quand ils sont renseignés : la forme juridique (« EURL ») et « TVA intracommunautaire FR40123456789 ».</li>
+<li>Testé : <code>scripts/test-facture-pdf.ts</code> et <code>scripts/test-devis-pdf.ts</code> vérifient que la mention s'imprime quand le champ est rempli, et qu'aucune ligne ne s'ouvre quand il ne l'est pas.</li>
+</ul>
+<p><strong>Preuve que le contrôle sait échouer :</strong> les deux tests ont d'abord été lancés contre le code d'avant (sans la correction) — ils rougissaient. C'est en corrigeant <code>document-commun.ts</code> et les dépôts qu'ils sont passés au vert.</p>
+<p>Batterie complète rejouée : 286/286 suites base, lint sans erreur, mémoire du dépôt cohérente, <code>tsc --noEmit</code> propre.</p>
+<hr>
+<h2 id="ce-qui-reste-ouvert--capital-social-et-rcs">Ce qui reste ouvert : capital social et RCS</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p>Deux mentions obligatoires <strong>pour les sociétés seulement</strong> (pas pour une entreprise individuelle ni une micro-entreprise) n'ont <strong>aucun champ nulle part</strong> dans Atlas :</p>
+<div class="tablewrap"><table><thead><tr>
+<th>Mention</th>
+<th>Obligation</th>
+<th>Concerne</th>
+</tr></thead><tbody>
+<tr>
+<td>Capital social</td>
+<td>Code de commerce, art. R123-237</td>
+<td>SARL, EURL, SASU, SAS, SA, SNC, SCOP, SCI</td>
+</tr>
+<tr>
+<td>RCS + ville d'immatriculation</td>
+<td>même article</td>
+<td>idem</td>
+</tr>
+</tbody></table></div>
+<p><strong>Pourquoi ce n'est pas fait dans ce lot.</strong> Ce sont des champs qui n'existent pas du tout — ni en base, ni à l'écran Réglages &gt; Identité — contrairement à la forme juridique et au numéro de TVA qui existaient déjà et qu'il fallait seulement relier au document. Ajouter un champ à un écran est une maquette avant d'être du code (règle du dépôt) : je ne l'ai pas dessinée sans vous l'avoir montrée.</p>
+<p><strong>Ce que ça coûterait, si vous le voulez :</strong></p>
+<ul>
+<li>un champ « Capital social » (texte ou nombre), affiché seulement pour les formes juridiques qui en ont un — pas pour EI ni Micro-entreprise ;</li>
+<li><strong>aucun second champ pour le numéro RCS</strong> : il n'existe pas comme donnée séparée, c'est le SIREN (les neuf premiers chiffres du SIRET, déjà connus) précédé de « RCS » et suivi de la ville d'immatriculation. Il suffit donc d'un champ « Ville d'immatriculation au RCS » ;</li>
+<li>impression conditionnelle : « EURL au capital de 1 000 € — RCS Versailles 812 345 678 », uniquement quand les deux sont renseignés.</li>
+</ul>
+<p>Voulez-vous que je les ajoute (maquette d'abord, comme toujours) ?</p>
+<hr>
+<h2 id="ce-qui-na-pas-été-touché-et-pourquoi">Ce qui n'a pas été touché, et pourquoi</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<ul>
+<li><strong>Mode de paiement affiché en toutes lettres</strong> (« Autres », « Virement »…) : ni la loi ni la facture reçue n'imposent ce libellé — l'IBAN et la mention « Paiement par virement bancaire » qu'Atlas imprime suffisent à dire comment payer. Rien à corriger.</li>
+<li><strong>Date de la prestation, distincte de la date d'émission</strong> : la facture reçue l'écrit en tête de tableau (« Intervention du 6/05/2025 »). Sur Atlas, cette date vit dans le libellé de la ligne ou l'adresse du chantier, jamais dans un champ dédié séparé. Ce n'est pas un défaut légal — la date figure quelque part sur le document — mais un point de forme que je n'ai pas changé pour ne pas déborder du périmètre demandé. À signaler si vous voulez qu'elle devienne un champ à part.</li>
+</ul>
+</main>
+</body>
+</html>

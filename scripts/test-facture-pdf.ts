@@ -135,6 +135,25 @@ async function main() {
     );
   });
 
+  await cas("elle porte la forme juridique et le numéro de TVA, quand ils sont connus", async () => {
+    const { trace: sansRien } = await composerFacturePdf(FACTURE);
+    assert.ok(
+      !contenus(sansRien).some((t) => t.includes("TVA intracommunautaire")),
+      "Un numéro de TVA absent ne doit pas ouvrir sa ligne."
+    );
+    const { trace } = await composerFacturePdf({
+      ...FACTURE,
+      entrepriseFormeJuridique: "EURL",
+      entrepriseNumeroTva: "FR40123456789",
+    });
+    const textes = contenus(trace);
+    assert.ok(textes.includes("EURL"), "La forme juridique n'est pas imprimée (Code de commerce, art. R123-237).");
+    assert.ok(
+      textes.includes("TVA intracommunautaire FR40123456789"),
+      "Le numéro de TVA n'est pas imprimé (CGI, art. 242 nonies A) — pourtant promis par l'écran d'identité."
+    );
+  });
+
   await cas("elle ne porte aucun cadre de signature", async () => {
     const { trace } = await composerFacturePdf(FACTURE);
     assert.deepEqual(trace.cadres, [], "Une facture ne se signe pas, elle se règle.");

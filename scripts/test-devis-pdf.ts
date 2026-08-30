@@ -265,6 +265,20 @@ async function main() {
     assert.ok(textes.includes("Bon pour accord — signature du client"), "Le cadre de signature a disparu.");
   });
 
+  await cas("il porte la forme juridique et le numéro de TVA, quand ils sont connus", async () => {
+    const { trace } = await composerDevisPdf({
+      ...DEVIS,
+      entrepriseFormeJuridique: "EURL",
+      entrepriseNumeroTva: "FR40123456789",
+    });
+    const textes = contenus(trace);
+    assert.ok(textes.includes("EURL"), "La forme juridique n'est pas imprimée (Code de commerce, art. R123-237).");
+    assert.ok(
+      textes.includes("TVA intracommunautaire FR40123456789"),
+      "Le numéro de TVA n'est pas imprimé (CGI, art. 242 nonies A)."
+    );
+  });
+
   await cas("un devis sans ligne le dit plutôt que de paraître tronqué", async () => {
     const { trace } = await composerDevisPdf({ ...DEVIS, lignes: [], totalHt: "0.00", totalTva: "0.00", totalTtc: "0.00" });
     assert.ok(contenus(trace).includes("Aucune ligne pour l'instant."), "Le tableau vide ne dit rien.");

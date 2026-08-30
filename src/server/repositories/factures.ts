@@ -159,6 +159,11 @@ export async function terminerChantier(ctx: Ctx, chantierId: string, maintenant:
         entrepriseNom: devisSource.entrepriseNom,
         entrepriseAdresse: devisSource.entrepriseAdresse,
         entrepriseSiret: devisSource.entrepriseSiret,
+        // Figées comme le reste de l'identité, depuis le devis (migration
+        // 0071) : mentions légales de la facture, jamais imprimées jusqu'ici
+        // faute de colonne.
+        entrepriseFormeJuridique: devisSource.entrepriseFormeJuridique,
+        entrepriseNumeroTva: devisSource.entrepriseNumeroTva,
         // Le régime au jour de l'émission, figé comme le reste de l'identité
         // (migration 0039). Lu sur l'entreprise et non sur le devis : un devis
         // n'imprime pas la mention de l'article 293 B, il n'avait donc aucune
@@ -309,6 +314,8 @@ function donneesFacture(
     regimeTva: f.entrepriseRegimeTva,
     entrepriseAdresse: f.entrepriseAdresse,
     entrepriseSiret: f.entrepriseSiret,
+    entrepriseFormeJuridique: f.entrepriseFormeJuridique,
+    entrepriseNumeroTva: f.entrepriseNumeroTva,
     entrepriseTelephone: f.entrepriseTelephone,
     entrepriseEmail: f.entrepriseEmail,
     entrepriseIban: f.entrepriseIban,

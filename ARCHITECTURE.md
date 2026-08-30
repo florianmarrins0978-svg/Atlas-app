@@ -18253,3 +18253,45 @@ fichiers écrites à la main, et toutes deux ne nommaient que des `actions.ts`.
 le pire des silences — il ressemble à un contrôle. Le sens est donc inversé : on
 relève tous les fichiers « use server », et ce qui n'a pas de garde s'explique
 par écrit, dans une table d'exemptions dont chaque entrée porte sa raison.
+
+## 209. La forme juridique et le numéro de TVA, saisis depuis le 14 août et jamais imprimés
+
+**Trouvé le 30 août 2026**, en comparant une facture réelle d'artisan (client)
+à ce qu'Atlas produit. Réglages > Identité fait saisir la forme juridique et le
+numéro de TVA intracommunautaire depuis la migration 0039, et l'écran promet
+même : *« Votre numéro intracommunautaire figure alors sur la facture. »*
+
+**C'était faux.** `entreprises.forme_juridique` et `entreprises.numero_tva`
+n'atteignaient ni `devis` ni `factures` : ces deux tables figent leur propre
+instantané de l'identité au jour de l'émission (nom, adresse, SIRET — migration
+0038), mais ne portaient pas ces deux colonnes. La donnée s'arrêtait donc en
+base, sans jamais atteindre `document-commun.ts`.
+
+**Ce que ça coûtait.** La forme juridique est une mention obligatoire des
+documents commerciaux d'une société (Code de commerce, art. R123-237) ; le
+numéro de TVA intracommunautaire l'est sur la facture d'un assujetti (CGI,
+art. 242 nonies A, ann. II). Toute société sur Atlas envoyait donc, depuis le
+14 août, des devis sans forme juridique ; tout artisan assujetti envoyait des
+factures sans son numéro de TVA — alors même que l'écran affirmait le
+contraire.
+
+**Correction (migration 0071, additive) :**
+
+- deux colonnes nullables sur `devis` et `factures`, figées à la création
+  comme le reste de l'identité — un document déjà émis n'en porte aucune
+  trace et ressort identique à lui-même ;
+- `document-commun.ts` les imprime sous l'en-tête, une ligne chacune, jamais
+  quand elles sont absentes : la forme juridique en clair (« EURL »), le
+  numéro de TVA préfixé (« TVA intracommunautaire FR40123456789 ») ;
+- `scripts/test-facture-pdf.ts` et `scripts/test-devis-pdf.ts` vérifient les
+  deux sens : la mention s'imprime quand le champ est renseigné, aucune ligne
+  ne s'ouvre quand il ne l'est pas. Les deux ont d'abord rougi contre le code
+  d'avant.
+
+**Ce qui reste ouvert, et qui n'est pas dans ce lot :** le capital social et le
+numéro/ville du RCS — deux mentions obligatoires pour les seules sociétés
+(pas pour une entreprise individuelle), pour lesquelles Atlas ne porte
+**aucun champ**, ni en base ni à l'écran. Ajouter un champ à Réglages >
+Identité est une maquette avant d'être du code (§3bis de `CLAUDE.md`) : la
+décision est demandée au patron avant de la dessiner. Voir
+`docs/mentions-legales-devis-factures.md`.
