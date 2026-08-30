@@ -200,6 +200,13 @@
 <p>postgresql://…@localhost:5432/atlas_test</p>
 <p>Lancée depuis l'établi QA, cette commande travaille donc sur le port <strong>5432</strong> — celui de l'environnement de tous les jours — et non sur 55432. <strong>Ne pas la jouer depuis l'établi.</strong> La batterie de livraison reste ce qu'elle est : le contrôle du dossier habituel, avant de pousser du code.</p>
 <p><code>npm test</code> et <code>npm run test:e2e</code>, eux, lisent bien <code>DATABASE_URL</code> et travaillent sur la base QA.</p>
+<h3 id="redis-nest-pas-optionnel-pour-la-campagne--et-docker-non-plus">Redis n'est pas optionnel pour la campagne — et Docker non plus</h3>
+<p><strong>Établi le 30 août 2026, sur un PC Windows sans Docker Desktop.</strong> La tentation est grande d'installer PostgreSQL nativement et de se passer de Redis, puisque l'application démarre sans lui (un magasin en mémoire prend le relais hors production). <strong>Elle mène dans un mur, et le dépôt le dit déjà lui-même</strong> — <code>scripts/run-e2e-tests.ts</code>, verbatim :</p>
+<blockquote><em>« Suppose <code>REDIS_URL</code> : avec l'adaptateur mémoire, le compteur vit dans le processus serveur et reste hors d'atteinte. »</em></blockquote>
+<p>Le mécanisme : la connexion est limitée à 5 tentatives par compte et par fenêtre de 15 minutes. Chaque suite navigateur ouvre sa propre session avec le compte de démonstration. Le lanceur remet donc le compteur à zéro entre deux suites — mais il ne sait le faire <strong>qu'à travers Redis</strong> :</p>
+<p>``<code>ts async function reinitialiserSeuilRedis() { const url = process.env.REDIS_URL; if (!url) return;          // ← rien n'est remis à zéro </code>``</p>
+<p><strong>Sans Redis, la sixième suite et toutes les suivantes échouent</strong> — et l'échec ne dit pas « trop de tentatives » : il se présente comme un banal dépassement de délai sur la redirection d'après connexion. Cent-dix suites rouges qui accusent le produit.</p>
+<p>Et il n'existe <strong>aucun Redis officiel pour Windows</strong>. D'où : Docker Desktop, qui apporte les deux services, dans les versions de la CI.</p>
 <h3 id="les-suites-navigateur-exigent-le-port-3000">Les suites navigateur exigent le port 3000</h3>
 <p>Les 115 suites codent en dur <code>http://localhost:3000</code>. L'application QA doit donc occuper ce port au moment où on les joue — <strong>l'Atlas habituel éteint</strong>, ou démarré sur un autre port. Deux serveurs sur 3000, c'est l'un des deux qui répond, et rien ne dit lequel.</p>
 <hr>

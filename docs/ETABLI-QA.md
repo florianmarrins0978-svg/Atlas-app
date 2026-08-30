@@ -168,6 +168,36 @@ contrôle du dossier habituel, avant de pousser du code.
 `npm test` et `npm run test:e2e`, eux, lisent bien `DATABASE_URL` et travaillent
 sur la base QA.
 
+### Redis n'est pas optionnel pour la campagne — et Docker non plus
+
+**Établi le 30 août 2026, sur un PC Windows sans Docker Desktop.** La tentation
+est grande d'installer PostgreSQL nativement et de se passer de Redis, puisque
+l'application démarre sans lui (un magasin en mémoire prend le relais hors
+production). **Elle mène dans un mur, et le dépôt le dit déjà lui-même** —
+`scripts/run-e2e-tests.ts`, verbatim :
+
+> *« Suppose `REDIS_URL` : avec l'adaptateur mémoire, le compteur vit dans le
+> processus serveur et reste hors d'atteinte. »*
+
+Le mécanisme : la connexion est limitée à 5 tentatives par compte et par fenêtre
+de 15 minutes. Chaque suite navigateur ouvre sa propre session avec le compte de
+démonstration. Le lanceur remet donc le compteur à zéro entre deux suites — mais
+il ne sait le faire **qu'à travers Redis** :
+
+```ts
+async function reinitialiserSeuilRedis() {
+  const url = process.env.REDIS_URL;
+  if (!url) return;          // ← rien n'est remis à zéro
+```
+
+**Sans Redis, la sixième suite et toutes les suivantes échouent** — et l'échec ne
+dit pas « trop de tentatives » : il se présente comme un banal dépassement de
+délai sur la redirection d'après connexion. Cent-dix suites rouges qui accusent
+le produit.
+
+Et il n'existe **aucun Redis officiel pour Windows**. D'où : Docker Desktop, qui
+apporte les deux services, dans les versions de la CI.
+
 ### Les suites navigateur exigent le port 3000
 
 Les 115 suites codent en dur `http://localhost:3000`. L'application QA doit donc
