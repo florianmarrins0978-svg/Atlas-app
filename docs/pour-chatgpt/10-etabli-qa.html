@@ -1,0 +1,381 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas — Atlas — L'établi de qualification, avant la campagne de tests</title>
+<style>
+  :root{
+    --ground:#f5f3ee; --surface:#faf9f5; --raised:#ece9e1;
+    --ink:#1c1c1a; --ink-soft:#4a4a44; --muted:#8a8578;
+    --accent:#2f3b2f; --alert:#b5562a; --line:rgba(28,28,26,0.13);
+    --serif:Georgia,'Times New Roman',serif;
+    --sans:system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --ground:#161815; --surface:#1d201c; --raised:#252924;
+      --ink:#eae7df; --ink-soft:#c2bdb1; --muted:#948f83;
+      --accent:#9fbd82; --alert:#e0885a; --line:rgba(234,231,223,0.17);
+    }
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--sans);
+    line-height:1.65;}
+  main{max-width:44rem;margin:0 auto;padding:2.5rem 1.2rem 5rem;}
+  h1,h2,h3,h4{font-family:var(--serif);font-weight:600;line-height:1.2;
+    text-wrap:balance;margin:2rem 0 0.6rem;scroll-margin-top:1rem;}
+  h1{font-size:2rem;margin-top:0;}
+  h2{font-size:1.5rem;padding-top:1.2rem;border-top:1px solid var(--line);}
+  h3{font-size:1.12rem;}
+  h4{font-size:1rem;}
+  p{margin:0 0 0.9rem;}
+  a{color:var(--accent);text-underline-offset:3px;}
+  a:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:3px;}
+  ul,ol{margin:0 0 1rem;padding-left:1.3rem;}
+  li{margin-bottom:0.4rem;}
+  li::marker{color:var(--muted);}
+  /* Le sommaire : des cibles larges, confortables au doigt sur téléphone. */
+  ol li a{display:inline-block;padding:0.15rem 0;}
+  blockquote{margin:1rem 0;padding:0.85rem 1.05rem;background:var(--raised);
+    border-left:3px solid var(--accent);border-radius:0 10px 10px 0;color:var(--ink-soft);}
+  code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:0.87em;
+    background:var(--raised);padding:0.1rem 0.35rem;border-radius:5px;}
+  hr{border:0;border-top:1px solid var(--line);margin:2rem 0;}
+  .tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px;
+    background:var(--surface);margin:0 0 1.2rem;}
+  table{border-collapse:collapse;width:100%;font-size:0.92rem;min-width:22rem;}
+  th,td{text-align:left;padding:0.55rem 0.8rem;border-bottom:1px solid var(--line);
+    vertical-align:top;}
+  th{font-size:0.72rem;letter-spacing:0.08em;text-transform:uppercase;
+    color:var(--muted);white-space:nowrap;}
+  tr:last-child td{border-bottom:none;}
+  .retour{display:inline-block;font-size:0.76rem;color:var(--muted);
+    text-decoration:none;margin:-0.3rem 0 1rem;}
+  .retour:hover{color:var(--accent);text-decoration:underline;}
+</style>
+</head>
+<body>
+<main>
+<h1 id="atlas--létabli-de-qualification-avant-la-campagne-de-tests">Atlas — L'établi de qualification, avant la campagne de tests</h1>
+<p><strong>30 août 2026.</strong> Ce dossier décrit l'environnement de qualification monté pour une campagne de tests approfondie : parcours complets, réglages, rôles, devis/factures/PDF, multi-entreprises, volumétrie, Playwright, puis tests de charge pouvant aller jusqu'à 1 000 utilisateurs virtuels.</p>
+<p><strong>La campagne n'a PAS commencé.</strong> Ce document ne porte que l'établi : le dossier, la branche, la base, les services neutralisés, et les preuves.</p>
+<p>Il est autonome — ChatGPT n'a pas le code sous les yeux. Les extraits sont verbatim, les mesures ont été faites, et ce qui n'a <strong>pas</strong> pu être éprouvé est dit comme tel.</p>
+<hr>
+<h2 id="1-la-consigne-de-départ">1. La consigne de départ</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<blockquote><em>« Je veux notamment : ne jamais travailler directement sur main ; conserver mon environnement Atlas actuel intact ; idéalement créer un worktree ou un dossier QA séparé ; une branche exclusivement dédiée à la qualification ; une base PostgreSQL locale exclusivement dédiée aux tests, par exemple atlas_qa ; uniquement des données fictives ; aucune vraie clé dans .env ; neutraliser les services externes susceptibles d'envoyer des mails, d'appeler des services payants ou de modifier des données réelles ; préparer Playwright et plus tard k6 ; pouvoir supprimer/réinitialiser l'environnement QA sans affecter Atlas normal. »</em></blockquote>
+<p>Avec une instruction préalable explicite : <strong>inspecter d'abord ce qui existe, et ne pas créer une deuxième solution si le projet a déjà une infrastructure propre.</strong></p>
+<hr>
+<h2 id="2-ce-que-linspection-a-trouvé--le-dépôt-avait-déjà-presque-tout">2. Ce que l'inspection a trouvé — le dépôt avait déjà presque tout</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th>Brique</th>
+<th>État</th>
+<th>Fichier</th>
+</tr></thead><tbody>
+<tr>
+<td>PostgreSQL 16 + Redis 7 en conteneurs</td>
+<td>existe</td>
+<td><code>docker-compose.yml</code></td>
+</tr>
+<tr>
+<td>Rôles <code>atlas_owner</code> / <code>atlas_app</code>, <strong>sans DDL pour l'applicatif</strong></td>
+<td>existe</td>
+<td><code>docker/init/01-bootstrap-atlas.sql</code></td>
+</tr>
+<tr>
+<td>Migrations (84), jeu de données fictif complet</td>
+<td>existe</td>
+<td><code>db:migrate</code>, <code>db:seed</code></td>
+</tr>
+<tr>
+<td>Garde refusant d'effacer une vraie base</td>
+<td>existe</td>
+<td><code>src/lib/garde-seed.ts</code></td>
+</tr>
+<tr>
+<td>Playwright + <strong>115 suites navigateur</strong></td>
+<td>existe</td>
+<td><code>scripts/test-*-e2e.ts</code></td>
+</tr>
+<tr>
+<td><strong>401 suites au total</strong></td>
+<td>existe</td>
+<td><code>scripts/test-*.ts</code></td>
+</tr>
+<tr>
+<td>Fournisseurs d'IA déterministes, sans réseau</td>
+<td>existe</td>
+<td><code>LLM_PROVIDER=dev</code></td>
+</tr>
+<tr>
+<td>k6</td>
+<td><strong>absent</strong></td>
+<td>—</td>
+</tr>
+<tr>
+<td><code>playwright.config.ts</code></td>
+<td><strong>absent</strong></td>
+<td>les suites sont des scripts <code>tsx</code> autonomes</td>
+</tr>
+</tbody></table></div>
+<p><strong>Conclusion retenue : ne rien réécrire, tout dédoubler.</strong> Une seconde infrastructure aurait divergé de la première, et l'on aurait qualifié un produit qui n'est pas celui qui part en production.</p>
+<hr>
+<h2 id="3-les-trois-pièges-trouvés-à-linspection">3. Les trois pièges trouvés à l'inspection</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p>Ce sont eux qui ont commandé le dessin. Sans eux, un « environnement QA » aurait été une illusion.</p>
+<h3 id="31-docker-composeyml-fixe-le-nom-du-conteneur-et-le-port">3.1 <code>docker-compose.yml</code> fixe le nom du conteneur ET le port</h3>
+<p>``<code>yaml services: postgres: image: postgres:16 container_name: atlas-postgres      # ← ressource UNIQUE sur la machine ports: - "5432:5432"                     # ← ressource UNIQUE sur la machine volumes: - atlas-pgdata:/var/lib/postgresql/data </code>``</p>
+<p>Un simple nom de projet Docker (<code>docker compose -p qa up</code>) <strong>ne dédouble pas</strong> <code>container_name</code> ni le port publié. Docker refuse le second conteneur — ou, pire, la seconde base se sert du port de la première : <strong>on croit travailler en QA en écrivant dans l'environnement de tous les jours.</strong></p>
+<p>D'où la règle retenue : <strong>trois renommages, et il faut les trois</strong> — conteneur, port, volume.</p>
+<h3 id="32-verifieravant-livraison-code-la-base-en-dur">3.2 <code>verifier:avant-livraison</code> code la base en dur</h3>
+<p><code>scripts/verifier-avant-livraison.ts</code>, lignes 55-57, verbatim :</p>
+<p>``<code>ts const APP   = "postgresql://atlas_app:atlas_app_ci_pw@localhost:5432/atlas_test"; const OWNER = "postgresql://atlas_owner:atlas_owner_ci_pw@localhost:5432/atlas_test"; const SUPER = "postgresql://postgres:postgres_ci_pw@localhost:5432/atlas_test"; </code>``</p>
+<p>Cette commande <strong>ignore le <code>.env</code></strong>. Lancée depuis l'établi QA, elle travaille sur le port <strong>5432</strong>, c'est-à-dire l'environnement de tous les jours. C'est le seul chemin par lequel l'établi peut encore atteindre le dossier habituel — il est signalé à chaque passage du contrôle d'isolation (§6).</p>
+<p><code>npm test</code> et <code>npm run test:e2e</code>, eux, lisent bien <code>DATABASE_URL</code>.</p>
+<h3 id="33-les-115-suites-navigateur-codent-le-port-3000-en-dur">3.3 Les 115 suites navigateur codent le port 3000 en dur</h3>
+<p>Extrait de <code>scripts/test-nouveau-compte-e2e.ts</code> :</p>
+<p>``<code>ts const BASE = "http://localhost:3000"; </code>``</p>
+<p>Conséquence pour la campagne : l'application QA doit occuper le port 3000 au moment où l'on joue les suites — donc l'Atlas habituel éteint, ou démarré ailleurs.</p>
+<hr>
+<h2 id="4-le-dessin-retenu">4. Le dessin retenu</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><strong>L'isolation ne vient pas du nom de la base, elle vient des ports.</strong> Un nom se recopie d'un terminal à l'autre ; un port, non.</p>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th>Atlas habituel</th>
+<th>Établi QA</th>
+</tr></thead><tbody>
+<tr>
+<td>dossier</td>
+<td><code>Atlas-app/</code></td>
+<td><code>Atlas-qa/</code> — <strong>git worktree</strong></td>
+</tr>
+<tr>
+<td>branche</td>
+<td>la sienne</td>
+<td><code>qa/campagne</code></td>
+</tr>
+<tr>
+<td>conteneurs</td>
+<td><code>atlas-postgres</code> · <code>atlas-redis</code></td>
+<td><code>atlas-qa-postgres</code> · <code>atlas-qa-redis</code></td>
+</tr>
+<tr>
+<td><strong>ports</strong></td>
+<td><strong>5432 · 6379</strong></td>
+<td><strong>55432 · 56379</strong></td>
+</tr>
+<tr>
+<td>base</td>
+<td><code>atlas_dev</code></td>
+<td><code>atlas_qa</code></td>
+</tr>
+<tr>
+<td>volume</td>
+<td><code>atlas-pgdata</code></td>
+<td><code>atlas-qa-pgdata</code></td>
+</tr>
+<tr>
+<td>fichiers déposés</td>
+<td><code>.storage/</code> du dossier</td>
+<td><code>.storage/</code> du worktree</td>
+</tr>
+</tbody></table></div>
+<p>Le stockage s'isole <strong>gratuitement</strong> : l'adaptateur local range dans le dossier courant.</p>
+<p>``<code>ts // src/server/storage/local-storage.ts export const RACINE_STOCKAGE = path.join(process.cwd(), ".storage"); </code>``</p>
+<p>Un worktree étant un autre dossier, il a son propre stockage sans qu'on ait rien à régler.</p>
+<hr>
+<h2 id="5-un-arbitrage-à-connaître--atlas_qa-a-été-ajouté-à-une-liste-blanche">5. Un arbitrage à connaître : <code>atlas_qa</code> a été ajouté à une liste blanche</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p>Le jeu de données commence par un <code>TRUNCATE</code> de toutes les tables. Une garde l'encadre :</p>
+<p>``<code>ts // src/lib/garde-seed.ts — AVANT export const BASES_AUTORISEES = ["atlas_test", "atlas_dev"] as const; </code>``</p>
+<p><code>atlas_qa</code> était donc <strong>refusé</strong>. Trois issues étaient possibles :</p>
+<div class="tablewrap"><table><thead><tr>
+<th>Option</th>
+<th>Verdict</th>
+</tr></thead><tbody>
+<tr>
+<td>ajouter <code>atlas_qa</code> à la liste blanche</td>
+<td><strong>retenue</strong></td>
+</tr>
+<tr>
+<td>forcer par <code>ATLAS_SEED_FORCER=oui-j-efface-tout</code></td>
+<td>refusée</td>
+</tr>
+<tr>
+<td>nommer la base QA <code>atlas_test</code></td>
+<td>refusée</td>
+</tr>
+</tbody></table></div>
+<p><strong>Pourquoi le forçage a été refusé, et c'est le raisonnement qui compte :</strong> une campagne refait son jeu de données des dizaines de fois par jour. Une phrase de forçage tapée vingt fois par jour cesse d'être une décision et devient un réflexe — <strong>le garde-fou serait mort de son propre usage</strong>, et il aurait été disponible, en réflexe, le jour où quelqu'un a une vraie adresse dans son environnement.</p>
+<p><strong>Ce que l'ajout ne relâche pas</strong> — les autres refus sont intacts :</p>
+<ul>
+<li>l'hôte doit être cette machine (<code>localhost</code>, <code>127.0.0.1</code>, <code>::1</code>, <code>postgres</code>, <code>db</code>) — <em>« une base d'essai qui porte le bon nom ailleurs reste la base de quelqu'un »</em> ;</li>
+<li><code>NODE_ENV=production</code> refuse toujours, sans discussion.</li>
+</ul>
+<p>Les 11 contrôles de <code>scripts/test-garde-seed.ts</code> passent sans modification : ils itèrent sur <code>BASES_AUTORISEES</code> au lieu d'énumérer les noms.</p>
+<hr>
+<h2 id="6-la-neutralisation-des-services-extérieurs">6. La neutralisation des services extérieurs</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<h3 id="61-ce-qui-aurait-pu-sortir">6.1 Ce qui aurait pu sortir</h3>
+<p>Sept fichiers appellent <code>fetch</code> côté serveur :</p>
+<div class="tablewrap"><table><thead><tr>
+<th>Fichier</th>
+<th>Neutralisé par</th>
+</tr></thead><tbody>
+<tr>
+<td><code>ai/providers/llm/anthropic.ts</code></td>
+<td><code>LLM_PROVIDER=dev</code></td>
+</tr>
+<tr>
+<td><code>ai/providers/llm/openai.ts</code></td>
+<td>idem</td>
+</tr>
+<tr>
+<td><code>ai/providers/transcription/openai.ts</code></td>
+<td><code>TRANSCRIPTION_PROVIDER=dev</code></td>
+</tr>
+<tr>
+<td><code>adresses/base-adresse-nationale.ts</code></td>
+<td><code>ADRESSE_BASE_URL=http://127.0.0.1:9</code></td>
+</tr>
+<tr>
+<td><code>itineraire/geoplateforme.ts</code></td>
+<td><code>ITINERAIRE_BASE_URL=http://127.0.0.1:9</code></td>
+</tr>
+<tr>
+<td><code>agenda/google.ts</code></td>
+<td>aucun agenda relié en base — rien à appeler</td>
+</tr>
+<tr>
+<td><code>agenda/apple.ts</code></td>
+<td>idem</td>
+</tr>
+</tbody></table></div>
+<h3 id="62-le-point-qui-coûte-le-plus-cher-si-on-loublie">6.2 Le point qui coûte le plus cher si on l'oublie</h3>
+<p><strong>Ne pas poser de clé d'IA ne suffit pas à couper l'IA.</strong> Next.js charge de lui-même <code>.env.local</code> — le fichier où les clés Anthropic et OpenAI du patron sont justement invitées à vivre. Le dépôt le savait déjà, et le dit dans sa propre batterie :</p>
+<p>``<code>ts // scripts/verifier-avant-livraison.ts, verbatim // Retirer les clés de l'environnement ne suffit PAS : Next.js charge de // lui-même </code>.env.local<code>, où le patron est justement invité à coller les // siennes. Une variable réelle l'emporte sur ce fichier — d'où ce réglage // explicite, qui garantit le mode déterministe quoi qu'il y ait sur le disque. const IA_COUPEE = { LLM_PROVIDER: "dev", TRANSCRIPTION_PROVIDER: "dev" }; </code>``</p>
+<p>Sans ces deux lignes, <strong>une campagne de 1 000 utilisateurs virtuels enverrait 1 000 dictées chez les fournisseurs, et les ferait payer.</strong> L'établi les pose.</p>
+<h3 id="63-aucun-envoi-réel-nest-possible-par-construction">6.3 Aucun envoi réel n'est possible, par construction</h3>
+<p>Vérifié : le dépôt ne contient <strong>aucun</strong> expéditeur de courriel ni de SMS côté serveur — ni <code>nodemailer</code>, ni <code>twilio</code>, ni <code>sendgrid</code>, ni <code>mailgun</code>, ni <code>brevo</code>, ni <code>postmark</code>. Atlas ouvre la messagerie du patron par un lien <code>sms:</code> ou <code>mailto:</code> : un geste humain, que rien d'automatique ne déclenche.</p>
+<p><code>ATLAS_URL_PUBLIQUE</code> est laissée <strong>absente</strong> délibérément : Atlas refuse alors de composer un message vers un client (<code>ouvrableParLeClient</code> rejette une adresse locale).</p>
+<h3 id="64-le-choix-du-port-9-pour-les-services-publics-détournés">6.4 Le choix du port 9 pour les services publics détournés</h3>
+<p>Ni la Base Adresse Nationale ni la Géoplateforme IGN ne sont payantes et aucune ne modifie de donnée. Elles sont tout de même coupées, pour deux raisons :</p>
+<ol>
+<li>une campagne de charge leur enverrait des milliers de requêtes depuis une seule adresse IP — c'est un abus de service public ;</li>
+<li>elles répondraient <strong>429 au milieu d'une mesure</strong>, qu'on croirait alors fausse.</li>
+</ol>
+<p>Le port 9 (« discard ») refuse la connexion immédiatement, au lieu d'attendre le délai de 4 s. Et le chemin dégradé est <strong>déjà éprouvé</strong> par les suites — ce n'est pas un état inconnu :</p>
+<p>``<code>ts // src/server/adresses/base-adresse-nationale.ts, verbatim } catch { // Réseau coupé, délai dépassé, réponse illisible : dans tous les cas le // champ redevient un champ ordinaire. L'aide s'efface, la saisie continue. return { ok: false, raison: "injoignable" }; } </code>``</p>
+<hr>
+<h2 id="7-le-contrôle-qui-prouve-lisolation">7. Le contrôle qui PROUVE l'isolation</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><code>npm run qa:preuve</code> (<code>scripts/prouver-etabli-qa.ts</code>) répond en une commande aux neuf questions à trancher avant toute campagne.</p>
+<p><strong>Pourquoi un script plutôt qu'une liste de commandes à taper :</strong> une liste se déroule à la main le premier jour, puis on la saute. Or le seul moment où elle compte est le vingtième — quand on a rouvert trois terminaux, changé de branche deux fois, et qu'on ne sait plus lequel regarde quoi.</p>
+<p>Il ne corrige rien et ne démarre rien : <em>un outil qui répare ce qu'il mesure finit par cacher ce qu'il devait montrer.</em></p>
+<h3 id="71-sortie-réelle-chemin-vert">7.1 Sortie réelle, chemin vert</h3>
+<p>``<code> ✓ Branche qa/campagne  (ce n'est ni main ni master) ✓ Base PostgreSQL atlas_qa · localhost:55432  — locale, et hors du port habituel (5432) ✓ Base joignable atlas_qa · 69 tables · connecté en « atlas_app » jetable : docker compose -f docker-compose.qa.yml down -v  efface le volume ✓ Redis localhost:56379  — local, hors du port habituel (6379) ✓ IA coupée LLM_PROVIDER=dev · TRANSCRIPTION_PROVIDER=dev · aucune clé posée ✓ Adresses (BAN) détourné vers http://127.0.0.1:9 — le service public n'est jamais appelé ✓ Itinéraires (IGN) détourné vers http://127.0.0.1:9 — le service public n'est jamais appelé ✓ Sentry            sans DSN — muet, aucune requête ✓ Stockage          local — propre à ce worktree ✓ Atlas habituel hors de portée aucune variable ne nomme les ports 5432 / 6379 ⚠ SAUF si tu lances </code>npm run verifier:avant-livraison` : cette commande code en dur localhost:5432/atlas_test et ignore ce .env.</p>
+<p>═══ L'établi est isolé. La campagne peut commencer. ═══ ```</p>
+<h3 id="72-il-a-été-vu-rouge-avant-dêtre-vu-vert">7.2 Il a été vu ROUGE avant d'être vu vert</h3>
+<p>Confronté à une configuration de développement, il rougit sur <strong>6 points</strong>, chacun avec son remède. Extrait réel :</p>
+<p>``` ✗ Base PostgreSQL « atlas_test » — ce n'est pas la base de qualification ✗ Redis port 6379 — c'est le Redis de ton Atlas habituel ✗ IA coupée LLM_PROVIDER=« (vide) » · TRANSCRIPTION_PROVIDER=« (vide) » → Une variable VIDE ne coupe rien : une clé trouvée dans .env.local suffirait à brancher un vrai fournisseur — et à faire payer la campagne. ✗ Atlas habituel hors de portée une variable de ce .env nomme le port 5432 ou 6379</p>
+<p>═══ 6 point(s) à régler AVANT de lancer quoi que ce soit. ═══ ```</p>
+<p><strong>Un contrôle jamais vu rouge ne prouve rien.</strong> Deux cas méritent d'être signalés, parce qu'ils viennent d'une règle du dépôt (<em>« un contrôle qui mesure zéro ne mesure rien »</em>) :</p>
+<ul>
+<li>une base qui répond avec <strong>zéro table</strong> est déclarée <strong>rouge</strong>, pas « propre » : zéro table n'est pas un état sain, c'est « pas encore migrée » ;</li>
+<li>une base joignable dont <code>current_database()</code> ne correspond pas à l'adresse est rouge : cela signalerait un conteneur d'un autre environnement sur ce port.</li>
+</ul>
+<hr>
+<h2 id="8-deux-défauts-trouvés-en-jouant-la-séquence-pas-en-lécrivant">8. Deux défauts trouvés en JOUANT la séquence, pas en l'écrivant</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<h3 id="81-qasetup-mourait-sur--permission-denied-for-schema-public-">8.1 <code>qa:setup</code> mourait sur « permission denied for schema public »</h3>
+<p>La première version enchaînait simplement les scripts existants :</p>
+<p>``<code>json "qa:setup": "npm run db:migrate:local &amp;&amp; npm run db:seed:local" </code>``</p>
+<p>Et elle est morte :</p>
+<p>``<code> error: permission denied for schema public code: '42501' </code>``</p>
+<p><strong>Cause.</strong> <code>db:migrate:local</code> lit <code>DATABASE_URL</code>, c'est-à-dire le rôle <strong>applicatif</strong> — celui qui n'a aucun droit de DDL, ici comme en production. C'est délibéré dans ce dépôt : c'est ce qui fait que l'isolation entre entreprises est réellement éprouvée pendant les essais, au lieu d'être contournée par un superutilisateur qui traverse la RLS sans le dire.</p>
+<p>Les migrations doivent tourner sous le rôle <strong>propriétaire</strong>. <code>scripts/qa-setup.mjs</code> le pose.</p>
+<p><strong>Et l'inverse est PIRE, parce qu'il réussit.</strong> Migrer sous <code>postgres</code> crée des tables qui appartiennent au superutilisateur ; le défaut n'apparaît qu'à la suite suivante, ailleurs, en « permission denied for table … » sur une table qu'on n'a pas touchée. Le dépôt a déjà payé cela : <em>cinquante suites rouges d'un coup.</em></p>
+<p><strong>Le même défaut dort dans <code>dev:setup</code></strong>, pour l'environnement de développement ordinaire : sur un volume Docker neuf, il échoue à l'identique. Il n'a jamais été vu parce qu'un poste où <code>db:up</code> a déjà tourné porte des tables déjà créées. <strong>Noté dans <code>TODO.md</code>, délibérément pas corrigé</strong> — l'établi QA ne doit pas devenir le prétexte à remanier le chemin de développement d'un lot qui ne le demandait pas.</p>
+<h3 id="82-envqaexample-était-écarté-par-gitignore">8.2 <code>.env.qa.example</code> était écarté par <code>.gitignore</code></h3>
+<p>``<code> .env* !.env.example </code>``</p>
+<p>Le gabarit — dont tout l'intérêt est de permettre de remonter l'établi à l'identique après un <code>down -v</code> — aurait disparu <strong>en silence</strong>. On aurait recomposé de mémoire un fichier fait précisément pour ne pas dépendre de la mémoire. Une exception explicite a été ajoutée.</p>
+<hr>
+<h2 id="9-ce-qui-a-été-éprouvé-et-ce-qui-ne-la-pas-été">9. Ce qui a été éprouvé, et ce qui ne l'a pas été</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p>Cet environnement d'agent <strong>n'a pas de démon Docker</strong>.</p>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th></th>
+</tr></thead><tbody>
+<tr>
+<td><code>docker/init-qa/01-bootstrap-atlas-qa.sql</code></td>
+<td><strong>joué</strong> — cluster PostgreSQL 16 réel monté sur 55432, rôles et propriétaire vérifiés</td>
+</tr>
+<tr>
+<td>les 84 migrations sur <code>atlas_qa</code></td>
+<td><strong>jouées</strong> — 0 échec</td>
+</tr>
+<tr>
+<td>le jeu de données fictif</td>
+<td><strong>joué</strong> — sortie : « Base d'essai reconnue : atlas_qa »</td>
+</tr>
+<tr>
+<td><code>qa:preuve</code>, chemin vert</td>
+<td><strong>joué</strong> — 13 contrôles au vert</td>
+</tr>
+<tr>
+<td><code>qa:preuve</code>, chemin rouge</td>
+<td><strong>joué</strong> — 6 rouges contre une configuration de développement</td>
+</tr>
+<tr>
+<td><code>scripts/test-garde-seed.ts</code></td>
+<td><strong>joué</strong> — 11/11</td>
+</tr>
+<tr>
+<td><code>tsc --noEmit</code></td>
+<td><strong>joué</strong> — 0 erreur</td>
+</tr>
+<tr>
+<td><code>npm run lint</code></td>
+<td><strong>joué</strong> — 0 erreur (16 avertissements, tous préexistants)</td>
+</tr>
+<tr>
+<td><code>npm run verifier:memoire</code></td>
+<td><strong>joué</strong> — cohérente</td>
+</tr>
+<tr>
+<td><strong><code>docker-compose.qa.yml</code> lui-même</strong></td>
+<td><strong>NON joué</strong> — aucun démon Docker</td>
+</tr>
+</tbody></table></div>
+<p>Le fichier non éprouvé a la topologie du <code>docker-compose.yml</code> habituel, à trois renommages près, et le SQL qu'il monte est éprouvé. <code>qa:preuve</code> le dira sans ambiguïté : sans conteneur debout, il rougit sur « Base joignable ».</p>
+<hr>
+<h2 id="10-ce-sur-quoi-un-avis-extérieur-serait-utile">10. Ce sur quoi un avis extérieur serait utile</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p>L'établi est monté. La campagne, elle, n'est pas encore dessinée. Quatre points restent ouverts, et ils ne se tranchent pas seuls :</p>
+<ol>
+<li><strong>L'outil de charge.</strong> k6 est le candidat pressenti, rien n'est écrit. Le produit est un Next.js avec actions serveur et sessions Auth.js : une charge qui n'ouvre pas de vraie session ne mesure que des redirections. Quel est le bon patron pour 1 000 utilisateurs virtuels authentifiés ?</li>
+</ol>
+<ol>
+<li><strong>Ce qu'on mesure.</strong> Le produit a des chemins très inégaux : un PDF de devis met plusieurs dizaines de secondes à se compiler la première fois (mesuré : 45-50 s, ramené à 476 ms après préchauffage), là où un écran de liste répond en quelques millisecondes. Une moyenne sur l'ensemble ne dirait rien.</li>
+</ol>
+<ol>
+<li><strong>La volumétrie et la RLS.</strong> L'isolation entre entreprises est tenue par PostgreSQL Row Level Security, forcée sur 42 tables. La question ouverte n'est pas « est-ce sûr » (c'est éprouvé par des suites qui attaquent) mais « à quel prix » : le comportement du planificateur avec des dizaines de milliers de lignes sous RLS n'a jamais été observé sur ce dépôt.</li>
+</ol>
+<ol>
+<li><strong>La contrainte du port 3000.</strong> Les 115 suites navigateur le codent en dur. Faut-il les rendre paramétrables avant la campagne — 115 fichiers touchés, avec le risque que cela introduit — ou vivre avec, et n'allumer qu'un serveur à la fois ?</li>
+</ol>
+<p><strong>Réserve sur ce dernier point :</strong> toucher 115 suites pour un confort d'établi serait exactement le genre d'élargissement de périmètre que ce dépôt s'interdit. La recommandation actuelle est de vivre avec.</p>
+<hr>
+<h2 id="11-les-commandes-de-létabli">11. Les commandes de l'établi</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p>```bash git worktree add ../Atlas-qa -b qa/campagne origin/&lt;branche&gt; cd ../Atlas-qa &amp;&amp; npm install</p>
+<p>npm run qa:up        # conteneurs QA : postgres 55432, redis 56379 cp .env.qa.example .env npm run qa:setup     # migrations (rôle propriétaire) + jeu fictif npm run qa:preuve    # les neuf preuves d'isolation npm run dev          # http://localhost:3000 — demo@atlas.local / demo1234 ```</p>
+<p>Tout défaire, sans toucher à l'environnement habituel :</p>
+<p>``<code>bash docker compose -f docker-compose.qa.yml down -v git worktree remove ../Atlas-qa </code>``</p>
+</main>
+</body>
+</html>
