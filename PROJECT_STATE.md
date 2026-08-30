@@ -1,10 +1,12 @@
 # État du projet
 
-**Dernière mise à jour :** 2026-08-29 · branche `main`
-· dernière migration `drizzle/0068_effacement_client_devis_envoye.sql`
-
-**Dernière mise à jour :** 2026-08-27 · branche `claude/audit-dictee-devis-ryqfy6`
+**Dernière mise à jour :** 2026-08-30 · branche `claude/grey-scrollbar-pc-uueje5`
 · dernière migration `drizzle/0070_prix_a_chiffrer_et_comparabilite.sql`
+
+*(Deux en-têtes de mise à jour cohabitaient ici depuis une fusion du 29 août,
+avec deux dates et deux migrations différentes — dont une périmée. Réunis : une
+ligne fausse coûte plus cher qu'une ligne absente, et celle-ci l'était à
+moitié.)*
 
 
 *(Le numéro du dernier commit ne figure plus ici : il était faux dès le commit
@@ -13,6 +15,28 @@ suivant, et une ligne fausse coûte plus cher qu'une ligne absente. `git log
 
 Ce fichier dit **où en est le produit**, pas ce qu'on aimerait qu'il soit. Une
 ligne « fait » qui ne l'est pas coûte plus cher qu'une ligne absente.
+
+---
+
+## Plus aucune barre de défilement grise, la page comprise (30 août 2026)
+
+Sa plainte du jour, depuis son PC : *« sur PC les bandes déroulantes grises
+apparaissent, supprime-moi ça »*. Deuxième fois — le 11 août, seuls les cadres
+qui défilent avaient été couverts, pas **la page elle-même**, qui défile aussi
+(le gabarit lui donne `100dvh` de hauteur *minimale*).
+
+Sur téléphone cette barre est en surimpression et s'efface seule ; sur
+ordinateur elle s'installe à droite pour de bon. Le défaut ne pouvait apparaître
+que chez lui, et le contrôle qui aurait dû l'attraper écartait explicitement
+`<html>` et `<body>`.
+
+| | |
+|---|---|
+| `src/app/globals.css` | une règle universelle `* { scrollbar-width: none }` remplace la déclaration recopiée zone par zone |
+| `scripts/test-aucune-barre-de-defilement-e2e.ts` | mesure désormais la page ; éprouvé rouge (8 écrans sur 13) avant d'être éprouvé vert |
+
+Le défilement n'a pas changé — molette, doigt, clavier, focus. Détail :
+`ARCHITECTURE.md` §206.
 
 ---
 
