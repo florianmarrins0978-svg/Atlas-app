@@ -1,5 +1,6 @@
 "use server";
 
+import { exigerMontants } from "@/server/garde-action";
 import { getCurrentCtx } from "@/server/session-ctx";
 import { ajouterLignePrix, listerLignesPrix, modifierLignePrix, supprimerLignePrix } from "@/server/repositories/lignes-prix";
 import { marquerPrixValide } from "@/server/repositories/chantiers";
@@ -9,6 +10,7 @@ import { peutPreparerDevis, PrixNonPreparableError } from "@/lib/preparation-dev
 
 export async function ajouterLignePrixAction(chantierId: string) {
   const ctx = await getCurrentCtx();
+  await exigerMontants(ctx, "ajouter une ligne de prix");
   return ajouterLignePrix(ctx, chantierId, "", "0.00");
 }
 
@@ -19,16 +21,19 @@ export async function ajouterLignePrixAction(chantierId: string) {
 // ci-dessus (ligne vide puis édition inline), UX inchangée.
 export async function ajouterLignePrixDirectAction(chantierId: string, libelle: string, montant: string) {
   const ctx = await getCurrentCtx();
+  await exigerMontants(ctx, "ajouter une ligne de prix");
   return ajouterLignePrix(ctx, chantierId, libelle, montant);
 }
 
 export async function modifierLignePrixAction(id: string, data: { libelle?: string; montant?: string }) {
   const ctx = await getCurrentCtx();
+  await exigerMontants(ctx, "modifier une ligne de prix");
   return modifierLignePrix(ctx, id, data);
 }
 
 export async function supprimerLignePrixAction(id: string) {
   const ctx = await getCurrentCtx();
+  await exigerMontants(ctx, "supprimer une ligne de prix");
   return supprimerLignePrix(ctx, id);
 }
 
@@ -37,6 +42,7 @@ export async function supprimerLignePrixAction(id: string) {
 // champ du chantier.
 export async function validerPrixAction(chantierId: string) {
   const ctx = await getCurrentCtx();
+  await exigerMontants(ctx, "valider les prix");
 
   // L'écran grise déjà le bouton, mais un écran ne protège rien : une page
   // restée ouverte pendant qu'on supprime la dernière ligne ailleurs, ou un
@@ -58,6 +64,7 @@ export async function validerPrixAction(chantierId: string) {
 // un prix n'est pas le retenir.
 export async function calculerPropositionPrixAction(chantierId: string) {
   const ctx = await getCurrentCtx();
+  await exigerMontants(ctx, "calculer une proposition de prix");
   return preparerPropositionPrix(ctx, chantierId);
 }
 
@@ -71,5 +78,6 @@ export async function appliquerPropositionPrixAction(
   tarifIdChoisi?: string
 ): Promise<ResultatApplicationPrix> {
   const ctx = await getCurrentCtx();
+  await exigerMontants(ctx, "appliquer une proposition de prix");
   return appliquerPropositionPrix(ctx, chantierId, tarifIdChoisi);
 }

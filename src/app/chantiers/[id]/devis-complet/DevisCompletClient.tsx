@@ -15,6 +15,7 @@ import { CIVILITES, type Civilite } from "@/lib/civilite";
 import type { Changement } from "@/lib/retouches-devis";
 import { LIBELLE_REDUCTION, pourcentValide, totauxAvecReduction } from "@/lib/reduction-devis";
 import DicterDansLeDevis from "./DicterDansLeDevis";
+import BoutonAssistant from "@/components/atlas/BoutonAssistant";
 import PrimaryButton from "@/components/atlas/PrimaryButton";
 import EnvoiAuClient from "../export/EnvoiAuClient";
 import { ouvrirLaMessagerie } from "@/lib/ouvrir-messagerie";
@@ -317,13 +318,21 @@ export default function DevisCompletClient(props: Props) {
 
   return (
     <>
-      {/* **Le retour à gauche, le micro à droite** — la seule rangée de cet
-          écran qui n'appartienne pas au devis, et elle reste minuscule : sans
-          le retour, la page n'a pas de sortie sur un téléphone.
+      {/* **Le retour à gauche, l'assistant et le micro à droite** — la seule
+          rangée de cet écran qui n'appartienne pas au devis, et elle reste
+          minuscule : sans le retour, la page n'a pas de sortie sur un
+          téléphone.
+
+          **L'assistant, depuis le 30 août 2026** : sa demande, depuis cette
+          page même. Même bouton (`BoutonAssistant`) que dans l'en-tête des
+          autres écrans — il se tait tout seul hors du fournisseur ou pour un
+          rôle qui n'y a pas droit (`assistant-contexte.tsx`), donc rien à
+          re-vérifier ici.
 
           Le micro disparaît sur un devis parti : cet écran ne se modifie plus,
           et un micro qui écouterait pour ne rien pouvoir changer serait une
-          promesse fausse. */}
+          promesse fausse. L'assistant, lui, reste utile même figé — relire un
+          prix passé ne modifie rien. */}
       <div className="mx-auto mb-3 flex w-full max-w-[820px] items-start justify-between sm:mb-4">
         <a
           href={`/chantiers/${props.chantierId}`}
@@ -335,7 +344,10 @@ export default function DevisCompletClient(props: Props) {
             <path d="M15 5l-7 7 7 7" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
         </a>
-        {!fige && <DicterDansLeDevis chantierId={props.chantierId} onApplique={appliquerRetouches} />}
+        <div className="flex items-start gap-2">
+          <BoutonAssistant />
+          {!fige && <DicterDansLeDevis chantierId={props.chantierId} onApplique={appliquerRetouches} />}
+        </div>
       </div>
 
       <article

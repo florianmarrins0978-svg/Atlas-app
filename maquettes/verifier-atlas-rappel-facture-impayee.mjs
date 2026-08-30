@@ -75,16 +75,18 @@ try {
   verifie("sur un acompte reçu, c'est le RESTE DÛ qui s'affiche",
     /480,00 €/.test(partielle) && /restant sur 1 200,00 €/.test(partielle), partielle.slice(0, 140));
 
-  // Un rappel décrit une situation qui dure : il s'en va quand elle cesse.
+  // **UN SEUL MOT POUR RANGER UNE CARTE — sa demande du 30 août 2026.**
+  // *« Pour chaque notification je dois pouvoir cliquer sur vu pour les faire
+  // disparaître. »* Cette planche disait l'inverse jusque-là — « sans J'ai
+  // vu » —, et c'est le patron qui l'a tranché depuis.
   //
-  // **On regarde DANS LES CARTES, pas l'écran entier.** Le premier jet lisait
-  // tout le corps — y compris la phrase qui explique justement qu'il n'y a pas
-  // de « J'ai vu » — et rougissait sur sa propre note. Une alerte qui accuse le
-  // texte censé la rassurer coûte plus cher que pas d'alerte (`AGENTS.md`).
+  // **On regarde DANS LES CARTES, pas l'écran entier** : la note d'à côté parle
+  // du geste, et une alerte qui rougit sur le texte censé l'expliquer coûte
+  // plus cher que pas d'alerte (`AGENTS.md`).
   const dansLesCartes = await page.$$eval('[data-s="accueil"] .carte', (l) =>
     l.map((e) => e.innerText).join(" "));
-  verifie("aucune carte ne propose « J'ai vu »", !/J'ai vu/i.test(dansLesCartes),
-    dansLesCartes.slice(0, 100));
+  verifie("la carte d'impayé se range d'un « J'ai vu », comme les autres",
+    /J'ai vu/i.test(dansLesCartes), dansLesCartes.slice(0, 100));
 
   // Le second geste doit mener LÀ OÙ L'ON SOLDE, pas au relevé de TVA.
   verifie("le geste mène là où l'on solde",
@@ -197,8 +199,8 @@ try {
     /Rien\. Six jours de silence/i.test(await texte('[data-s="j-3"]')));
 
   // Le geste EXISTE sur la carte : sans lui, le rythme n'a rien pour démarrer.
-  verifie("la carte porte le geste « Plus tard » qui met le rythme en marche",
-    (await texte('[data-s="plus-tard"]')) === "Plus tard");
+  verifie("la carte porte le geste « J'ai vu » qui met le rythme en marche",
+    (await texte('[data-s="j-ai-vu"]')) === "J'ai vu");
 
   // Une carte qui s'endormirait seule pourrait passer un jour sans être vue.
   verifie("l'écran dit pourquoi la carte ne s'endort pas toute seule",

@@ -1,5 +1,6 @@
 "use server";
 
+import { exigerChantierDansSaPortee, exigerEcritureSurLePlanning } from "@/server/garde-action";
 import { getCurrentCtx } from "@/server/session-ctx";
 import {
   planifierChantier,
@@ -14,6 +15,26 @@ import type { Moment } from "@/server/disponibilites";
 import type { QuandChantier } from "@/lib/planning-jour";
 import { porterChantierDansAgenda } from "@/server/repositories/agenda-apple";
 import { tachesDuChantier, type FeuilleDuChantier } from "@/server/repositories/devis";
+
+/**
+ * LES ACTIONS DU PLANNING.
+ *
+ * ═══════════════════════════════════════════════════════════════════════════
+ * **UN SALARIÉ CONSULTE, IL N'ÉCRIT PAS** — décision du patron, 30 août 2026 :
+ * *« Un salarié peut uniquement CONSULTER son planning. Il ne doit pouvoir
+ * effectuer AUCUNE modification depuis le planning. »*
+ *
+ * Chaque action qui écrit ouvre donc sur `exigerEcritureSurLePlanning`, et
+ * **avant** la portée : le refus doit tomber sans qu'aucune requête n'aille
+ * chercher l'équipe de la personne (`src/server/garde-action.ts`).
+ *
+ * `tachesDuChantierAction` en est la seule dispensée : elle LIT la feuille sans
+ * montants, qui est le document du salarié.
+ *
+ * **La garde ne remplace pas la portée, elle s'y ajoute.** Le périmètre de
+ * lecture — tous les chantiers, ou ceux de son équipe — n'a pas bougé, et le
+ * patron a demandé qu'il ne bouge pas.
+ */
 
 // **AUCUN `export type { … }` ICI, ni nulle part dans un fichier « use server ».**
 // Le chargeur d'actions de Next réécrit ce module en une liste d'exports de
@@ -68,6 +89,8 @@ export async function planifierChantierAction(
   choix?: { quand: QuandChantier }
 ): Promise<ResultatPose> {
   const ctx = await getCurrentCtx();
+  await exigerEcritureSurLePlanning(ctx, "poser ce chantier au planning");
+  await exigerChantierDansSaPortee(ctx, chantierId, "poser ce chantier au planning");
   const row = await planifierChantier(ctx, chantierId, datePlanifiee, choix);
   // **APRÈS la transaction, jamais dedans.** Tenir une transaction PostgreSQL
   // ouverte le temps d'un appel à Apple immobiliserait une connexion du pool
@@ -103,6 +126,8 @@ export async function basculerEquipeAction(
   rangEquipe: number
 ): Promise<{ matin: number[]; apres_midi: number[] } | null> {
   const ctx = await getCurrentCtx();
+  await exigerEcritureSurLePlanning(ctx, "cocher une équipe sur ce chantier");
+  await exigerChantierDansSaPortee(ctx, chantierId, "cocher une équipe sur ce chantier");
   const etat = await basculerEquipeDuChantier(ctx, chantierId, demi, rangEquipe);
   // L'agenda extérieur porte le nom de l'équipe dans l'intitulé : sans ce
   // report, son téléphone garderait l'ancienne.
@@ -121,6 +146,8 @@ export async function deplacerChantierAction(
   quand: QuandChantier
 ): Promise<ResultatPose> {
   const ctx = await getCurrentCtx();
+  await exigerEcritureSurLePlanning(ctx, "déplacer ce chantier");
+  await exigerChantierDansSaPortee(ctx, chantierId, "déplacer ce chantier");
   const row = await deplacerChantier(ctx, chantierId, quand);
   if (!row) return { succes: false, erreur: "Ce chantier n'est pas posé sur un jour." };
   await porterChantierDansAgenda(ctx, chantierId);
@@ -146,6 +173,8 @@ export async function ecrireNoteChantierAction(
   note: string
 ): Promise<{ succes: true; note: string | null } | { succes: false; erreur: string }> {
   const ctx = await getCurrentCtx();
+  await exigerEcritureSurLePlanning(ctx, "écrire le pense-bête de ce chantier");
+  await exigerChantierDansSaPortee(ctx, chantierId, "écrire le pense-bête de ce chantier");
   const row = await ecrireNoteChantier(ctx, chantierId, note);
   if (!row) return { succes: false, erreur: "Ce chantier n'existe plus." };
   return { succes: true, note: row.note };
@@ -153,6 +182,8 @@ export async function ecrireNoteChantierAction(
 
 export async function deplanifierChantierAction(chantierId: string) {
   const ctx = await getCurrentCtx();
+  await exigerEcritureSurLePlanning(ctx, "retirer ce chantier du planning");
+  await exigerChantierDansSaPortee(ctx, chantierId, "retirer ce chantier du planning");
   const resultat = await deplanifierChantier(ctx, chantierId);
   // Le pendant obligatoire de l'écriture : sans ce retrait, un chantier
   // déplanifié resterait dans son téléphone pour toujours — et il se fierait à
@@ -172,6 +203,8 @@ export type ResultatSuppression = { succes: true } | { succes: false; erreur: st
 
 export async function supprimerChantierAction(chantierId: string): Promise<ResultatSuppression> {
   const ctx = await getCurrentCtx();
+  await exigerEcritureSurLePlanning(ctx, "supprimer ce chantier");
+  await exigerChantierDansSaPortee(ctx, chantierId, "supprimer ce chantier");
   try {
     await supprimerChantier(ctx, chantierId);
     // Supprimé ici, donc supprimé là-bas. `porterChantierDansAgenda` ne trouve
@@ -206,5 +239,6 @@ export async function supprimerChantierAction(chantierId: string): Promise<Resul
  */
 export async function tachesDuChantierAction(chantierId: string): Promise<FeuilleDuChantier> {
   const ctx = await getCurrentCtx();
+  await exigerChantierDansSaPortee(ctx, chantierId, "ouvrir la feuille de ce chantier");
   return tachesDuChantier(ctx, chantierId);
 }

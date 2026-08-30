@@ -1,5 +1,6 @@
 "use server";
 
+import { exigerEcran } from "@/server/garde-action";
 import { getCurrentCtx } from "@/server/session-ctx";
 import { lireCroquis } from "@/server/ai/services/lire-croquis";
 // Module JavaScript repris tel quel de `appli/` — voir l'en-tête du fichier.
@@ -7,7 +8,7 @@ import { calculerPlan } from "@/lib/arrosage/calcul.js";
 import { trajetLePlusLong, poserSurLeTerrain } from "@/lib/arrosage/geometrie-croquis";
 import { debitRetenu, SEAU_LITRES } from "@/lib/arrosage/mesure-debit";
 import { dessinerPlan, type Dessin, type ZoneDessinee } from "@/lib/arrosage/plan-dessine";
-import { appliquer, type ParametresPlan } from "@/lib/arrosage/consignes";
+import { appliquer, cotesDuPlanTiennentDebout, type ParametresPlan } from "@/lib/arrosage/consignes";
 import { discuterLePlan, etatDuPlanEnClair, type Tour } from "@/server/ai/services/discuter-plan";
 import { preparerPhotoEntrante } from "@/server/photo-entrante";
 import { verifierLimite, LIMITES } from "@/server/rate-limit";
@@ -119,6 +120,7 @@ export async function lireLeCroquis(_precedent: EtatPlan, formulaire: FormData):
   // c'est un coût. Personne d'anonyme ne le déclenche — et l'entreprise sert
   // désormais à compter la cadence, plus bas.
   const ctx = await getCurrentCtx();
+  await exigerEcran(ctx, "/paysage", "lire un croquis d'arrosage");
 
   const limite = await verifierLimite(`croquis:${ctx.entrepriseId}`, LIMITES.diagnosticVegetal);
   if (!limite.autorise) return { etat: "refus", raison: limite.message };
@@ -409,12 +411,30 @@ export async function discuterDuPlan(
   historique: Tour[],
   demande: string
 ): Promise<EtatDiscussion> {
-  await getCurrentCtx();
+  const ctx = await getCurrentCtx();
+  await exigerEcran(ctx, "/paysage", "discuter du plan d'arrosage");
+
+  // **La cadence manquait ici, et elle est posée partout ailleurs** — audit
+  // final, 29 août 2026. C'était la seule porte d'IA du produit sans compteur :
+  // `lireLeCroquis`, juste au-dessus, en a une depuis le premier jour. Les clés
+  // sont celles du patron, donc c'est sa facture.
+  const limite = await verifierLimite(`plan:${ctx.entrepriseId}`, LIMITES.diagnosticVegetal);
+  if (!limite.autorise) return { etat: "refus", raison: limite.message };
+
   const propos = demande.trim();
   if (propos === "") return { etat: "refus", raison: "Écrivez ce que vous voulez changer." };
   if (propos.length > 2000) {
     return { etat: "refus", raison: "Votre message est trop long — dites-le en quelques phrases." };
   }
+
+  // **Les cotes viennent du NAVIGATEUR, et elles passaient au calcul sans être
+  // regardées** — avec un `as never` qui retirait jusqu'au typage. Une zone de
+  // cent mille mètres de côté faisait empiler des centaines de millions de
+  // points sur le fil de l'événement, et le processus emportait les requêtes de
+  // toutes les entreprises. La borne vit dans une fonction pure, aux mêmes
+  // valeurs que la lecture de croquis (`consignes.ts`).
+  const cotes = cotesDuPlanTiennentDebout(parametres);
+  if (!cotes.ok) return { etat: "refus", raison: cotes.raison };
 
   // **On recalcule le plan AVANT de lui parler.** Le modèle a besoin des vrais
   // chiffres — débit disponible, plafond d'une voie, débit de chaque réseau —

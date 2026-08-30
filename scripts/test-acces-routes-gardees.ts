@@ -46,6 +46,10 @@ const EXEMPTEES: Record<string, string> = {
   "cron/purge-fichiers": "Appelée par la planification, avec son propre secret — jamais par un compte.",
   "health/live": "Sonde de santé, aucune donnée d'entreprise.",
   "health/ready": "Sonde de santé, aucune donnée d'entreprise.",
+  "health/purge":
+    "Sonde de santé : dit si le ménage se fait encore. Une date et un statut, " +
+    "aucune donnée d'entreprise — et elle doit rester lisible par un outil de " +
+    "surveillance, qui n'a pas de session (docs/DEPLOIEMENT-PURGE.md).",
   "health/banc": "État du banc d'essai. Ouvert aux trois rôles de toute façon.",
   "health/banc/etat": "État du banc d'essai. Ouvert aux trois rôles de toute façon.",
   "health/diagnostic": "État du banc d'essai. Ouvert aux trois rôles de toute façon.",

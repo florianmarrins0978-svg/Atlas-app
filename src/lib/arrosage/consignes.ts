@@ -200,3 +200,71 @@ export function appliquer(parametres: ParametresPlan, consigne: Consigne): Param
   }
   return suivant;
 }
+
+/**
+ * LES COTES D'UN PLAN TIENNENT-ELLES DEBOUT ?
+ *
+ * ═══════════════════════════════════════════════════════════════════════════
+ * **LE DÉNI DE SERVICE QUE CETTE FONCTION FERME** — audit final, 29 août 2026.
+ *
+ * `discuterDuPlan` reçoit ses paramètres **du navigateur**, et les passait au
+ * calcul sans les regarder — avec un `as never` qui retirait jusqu'au typage.
+ * Or `poser()` calcule `nx = ceil(L / ecartMax) + 1`, puis empile `nx × ny`
+ * points, puis `couvreTout` échantillonne sur toute la surface.
+ *
+ * Avec `L = l = 100000` et une portée de cinq mètres, cela fait de l'ordre de
+ * **deux cent quarante millions** d'objets poussés dans un tableau, sur le fil
+ * de l'événement. Le processus bloque ou tombe — et il emporte les requêtes de
+ * toutes les entreprises servies par cette instance, pas seulement celle qui a
+ * posté.
+ *
+ * **La lecture de croquis, elle, plafonnait déjà** (`lire-croquis.ts` : 100 m
+ * de côté, 200 ml de linéaire). Ce chemin-ci contournait ce plafond, parce que
+ * ses paramètres ne passent pas par la photo. Les mêmes valeurs sont donc
+ * reprises ici — **pas réinventées** : deux plafonds différents pour la même
+ * grandeur finiraient par diverger, et l'on ne saurait plus lequel fait foi
+ * (`CLAUDE.md` §3).
+ *
+ * **Ce n'est pas une règle métier**, et il ne faut pas la lire comme telle : un
+ * jardin de plus de cent mètres de côté existe. C'est une borne de survie, et
+ * le refus le dit — on ne prétend pas que la mesure est fausse, on dit qu'on ne
+ * la calcule pas ici.
+ */
+export function cotesDuPlanTiennentDebout(
+  parametres: ParametresPlan
+): { ok: true } | { ok: false; raison: string } {
+  /** Les mêmes plafonds que `lire-croquis.ts`, et pour la même raison. */
+  const COTE_MAX_M = 100;
+  const LINEAIRE_MAX_ML = 200;
+  /** Au-delà, ce n'est plus un jardin : c'est une saisie qui a dérapé. */
+  const ZONES_MAX = 40;
+
+  if (!Array.isArray(parametres?.zones)) {
+    return { ok: false, raison: "Ce plan n'est pas lisible." };
+  }
+  if (parametres.zones.length > ZONES_MAX) {
+    return { ok: false, raison: `Ce plan porte plus de ${ZONES_MAX} zones : il ne peut pas être recalculé.` };
+  }
+
+  for (const z of parametres.zones) {
+    const nom = z?.nom || z?.type || "une zone";
+    // **`Number.isFinite` avant la comparaison.** `NaN > 100` est faux : sans
+    // cette ligne, une cote non numérique franchissait la borne en silence et
+    // repartait vers le calcul — le contrôle aurait été vert sur le cas qu'il
+    // existe pour attraper.
+    for (const [valeur, plafond, quoi] of [
+      [z?.L, COTE_MAX_M, "longueur"],
+      [z?.l, COTE_MAX_M, "largeur"],
+      [z?.ml, LINEAIRE_MAX_ML, "métrage"],
+    ] as const) {
+      if (valeur === undefined || valeur === null) continue;
+      if (!Number.isFinite(valeur) || valeur < 0 || valeur > plafond) {
+        return {
+          ok: false,
+          raison: `La ${quoi} de « ${nom} » sort de ce que cet outil sait calculer (${plafond} maximum).`,
+        };
+      }
+    }
+  }
+  return { ok: true };
+}

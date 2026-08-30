@@ -46,8 +46,6 @@ export type QuestionChiffrage = {
   /** De quelle ligne on parle, mot pour mot depuis la dictée. */
   libellePrestation: string;
   question: string;
-  /** Ce que ça change, chiffré si possible — pour qu'il sache pourquoi on l'arrête. */
-  pourquoi: string;
   /** Choix fermé, ou `null` quand la réponse est un nombre à saisir. */
   options: OptionReponse[] | null;
   /** Unité attendue quand la réponse est un nombre (`null` pour un choix). */
@@ -85,6 +83,32 @@ function techniqueDeja(ligne: LignePourQuestions): boolean {
     [ligne.libelle, ligne.description ?? ""].join(" ")
   );
 }
+/**
+ * Mots qui désignent une SOUCHE, c'est-à-dire un arbre DÉJÀ abattu.
+ *
+ * **Sa remarque du 30 août 2026, et elle corrige une incohérence que nous
+ * n'avions pas vue :** *« lorsque l'on parle de souche, ça sous-entend que
+ * l'arbre a déjà été abattu et qu'il ne reste que les racines à enlever — donc
+ * s'il n'y a pas d'arbre, pourquoi il y a la question de comment on l'abat ? »*
+ *
+ * L'écran demandait « Comment s'abat-il ? » sur une ligne « Dessouchage — deux
+ * souches de 60 cm ». La faute vient d'un raccourci : le dessouchage avait été
+ * rangé avec l'abattage **pour ne pas redemander le diamètre du même tronc**
+ * (voir `abattageDansLaDictee` plus bas), et la question de la technique a
+ * suivi le raccourci sans que personne y regarde. Le regroupement reste juste
+ * pour le diamètre ; il est faux pour la technique.
+ *
+ * Aucun test ne pouvait le dire : la question était **posée**, elle était
+ * lisible, et son identifiant était stable. Elle n'avait simplement aucun sens.
+ */
+const DESSOUCHAGE = /\b(dessouch|souche)/i;
+
+function estDessouchage(ligne: LignePourQuestions): boolean {
+  const cle = ligne.nature?.trim();
+  if (cle) return cle === "dessouchage";
+  return DESSOUCHAGE.test(ligne.libelle);
+}
+
 /** Mots qui désignent une haie qu'on taille. */
 const HAIE = /\bhaie/i;
 
@@ -227,6 +251,29 @@ export function questionsAvantChiffrage(
   // fente n'aurait jamais de prix, sans qu'aucune erreur ne le signale.
   const hauteurDansLaDictee = prestations.some((l) => contientHauteur(l));
 
+  // **Le diamètre aussi, et il a fallu qu'il le voie pour qu'on le corrige.**
+  //
+  // Le patron, le 30 août 2026, devant l'écran : *« tu dis deux souches de
+  // diamètre 60. Question : quel diamètre font les souches ? »* Sa dictée
+  // portait la réponse, en toutes lettres, deux lignes plus haut.
+  //
+  // CE QUI SE PASSAIT. La lecture découpe une phrase à la virgule. « Il y a un
+  // dessouchage, deux souches de soixante centimètres de diamètre » donne DEUX
+  // prestations : la première déclenche la question, la seconde porte la
+  // réponse. Or la question ne regardait que SA ligne — quand la hauteur, elle,
+  // était déjà cherchée dans toute la dictée depuis le premier jour. La même
+  // asymétrie que celle qui vient d'être corrigée plus haut : deux règles
+  // voisines, une seule relue.
+  //
+  // **La garde du seul arbre n'est pas une précaution de style.** À deux arbres
+  // dans une dictée, un diamètre dit quelque part n'appartient pas forcément à
+  // celui qu'on questionne — et se tromper de diamètre, c'est ranger un prix
+  // dans la case d'à côté. Un seul arbre, aucune ambiguïté : le chiffrage lit
+  // déjà tous les textes du chantier sans distinction (`prixDeLaLigne`), donc
+  // il trouvera le même nombre. Deux arbres : on demande, ligne par ligne.
+  const lignesArbre = prestations.filter((l) => estDeNature(l, ["abattage", "dessouchage"], ABATTAGE));
+  const diametreDansLaDictee = lignesArbre.length === 1 && prestations.some((l) => contientDiametre(l));
+
   prestations.forEach((ligne, rang) => {
     const libelle = ligne.libelle.trim();
     if (!libelle) return;
@@ -245,8 +292,7 @@ export function questionsAvantChiffrage(
         questions.push({
           id: `fendage.hauteur#${rang}`,
           libellePrestation: libelle,
-          question: "Quelle hauteur fait l'arbre ?",
-          pourquoi: "La hauteur et le diamètre désignent ensemble une case de votre grille de fendage — sans elles, aucun prix n'en sort.",
+          question: "Quelle hauteur ?",
           options: null,
           unite: "m",
         });
@@ -255,8 +301,7 @@ export function questionsAvantChiffrage(
         questions.push({
           id: `fendage.diametre#${rang}`,
           libellePrestation: libelle,
-          question: "Quel diamètre fait le tronc ?",
-          pourquoi: "C'est lui qui pèse le plus dans le volume de bois à fendre : un tronc deux fois plus gros en donne quatre fois plus.",
+          question: "Quel diamètre ?",
           options: null,
           unite: "cm",
         });
@@ -265,45 +310,63 @@ export function questionsAvantChiffrage(
     }
 
     if (estDeNature(ligne, ["abattage", "dessouchage"], ABATTAGE)) {
+      // **Une souche n'a plus d'arbre : on ne demande pas comment on l'abat.**
+      // Sa remarque du 30 août 2026 — voir `DESSOUCHAGE` plus haut.
+      const souche = estDessouchage(ligne);
+
       // La technique : c'est elle qui fait 600 ou 1 400 €. Une dictée ne la
       // contient à peu près jamais ; quand elle la contient, elle est en
-      // colonne ou dans le libellé, et `techniqueDeja` l'y trouve.
+      // COLONNE ou dans le libellé, et `techniqueDeja` l'y trouve — la colonne
+      // d'abord depuis le 31 août 2026 : une prestation qui portait la
+      // technique en base se la faisait redemander.
       //
-      // **Elle n'appartient QU'À L'ABATTAGE.** Une souche ne s'abat pas : elle
-      // se rogne, ou elle s'arrache. Le 31 août 2026, le patron a lu
-      // « Comment s'abat-il ? » sous le titre « Dessouchage » et a cru que la
-      // question portait sur son érable — elle portait bien sur la souche, et
-      // c'est la question qui n'avait pas lieu d'être. Le dessouchage reste
-      // dans la branche pour le DIAMÈTRE, qu'une souche possède bel et bien.
-      if (estDeNature(ligne, ["abattage"], ABATTAGE) && !techniqueDeja(ligne)) {
+      // **Elle n'appartient qu'à l'abattage.** Une souche ne s'abat pas : elle
+      // se rogne, ou elle s'arrache. Deux sessions l'ont corrigé le même jour,
+      // et c'est la formulation de `main` qui est gardée.
+      if (!souche && !techniqueDeja(ligne)) {
         questions.push({
           id: `abattage.technique#${rang}`,
           libellePrestation: libelle,
           question: "Comment s'abat-il ?",
-          pourquoi: "C'est ce qui pèse le plus : un démontage avec rétention vaut plus du double d'un abattage au pied.",
           options: optionsTechnique,
           unite: null,
         });
       }
 
-      // Le diamètre. La hauteur, elle, ne décide de rien — et c'est pourtant
+      // Le diamètre, lui, se demande dans les deux cas : c'est le même tronc,
+      // au ras du sol. La hauteur, elle, ne décide de rien — et c'est pourtant
       // elle que la dictée donne (« de vingt mètres de haut »). Ne pas la
       // confondre : demander « la taille » laisserait croire que la hauteur
       // suffit.
+      // **La donnée de CETTE prestation, et d'aucune autre.** Sa règle du
+      // 31 août 2026 : *« ne récupère pas l'information depuis une autre
+      // prestation. »* `diametreDansLaDictee` faisait exactement cela — bornée
+      // au cas d'un seul arbre dans la dictée, ce qui la rendait sûre, mais
+      // c'est un emprunt tout de même, et il l'a explicitement écarté.
+      //
+      // Le coût du retrait est une question de plus quand deux prestations
+      // parlent du même tronc ; le coût de l'emprunt serait un diamètre pris
+      // au voisin, donc un prix rangé dans la case d'à côté. Il a tranché, et
+      // le sens de sa décision est le plus sûr des deux.
       if (!contientDiametre(ligne)) {
-        // **Une souche n'a pas de tronc.** Sa correction du 31 août 2026 :
-        // *« et jamais "Quel diamètre fait le tronc ?" »* sur un dessouchage.
-        // Le mot compte : lire « tronc » au-dessus d'une souche fait croire
-        // que la question porte sur l'arbre d'à côté — c'est exactement ce qui
-        // l'a induit en erreur ce matin-là.
-        const uneSouche = estDeNature(ligne, ["dessouchage"], /\bsouche/i);
         questions.push({
-          id: `abattage.diametre#${rang}`,
+          id: `${souche ? "dessouchage" : "abattage"}.diametre#${rang}`,
           libellePrestation: libelle,
-          question: uneSouche ? "Quel diamètre fait la souche ?" : "Quel diamètre fait le tronc ?",
-          pourquoi: uneSouche
-            ? "Le prix d'un dessouchage se compte au diamètre de la souche."
-            : "Le prix se compte au diamètre, pas à la hauteur — la hauteur dictée ne suffit pas.",
+          // **« Quel diamètre ? » — et c'est la formulation de `main` qui est
+          // gardée, bien qu'il ait écrit « Quel diamètre fait la souche ? » le
+          // 31 août.**
+          //
+          // Elle tient ses deux exigences à la fois. Celle du 31 août : plus
+          // jamais le mot « tronc » au-dessus d'un dessouchage — c'est ce mot
+          // qui lui a fait croire que la question portait sur son érable. Et
+          // la sienne du 30 août, qu'une autre session avait déjà codée : la
+          // dictée disait « deux souches » et la question en disait une.
+          // Accorder au nombre supposerait de le compter — un travail de plus
+          // pour un mot de moins.
+          //
+          // La prestation est écrite juste au-dessus de la question : elle dit
+          // déjà de quoi l'on parle, au pluriel comme au singulier.
+          question: "Quel diamètre ?",
           options: null,
           unite: "cm",
         });
@@ -315,8 +378,7 @@ export function questionsAvantChiffrage(
       questions.push({
         id: `haie.longueur#${rang}`,
         libellePrestation: libelle,
-        question: "Quelle longueur de haie ?",
-        pourquoi: "Une haie se chiffre au mètre linéaire.",
+        question: "Quelle longueur ?",
         options: null,
         unite: "ml",
       });
@@ -353,10 +415,16 @@ function precisionLisibleParId(
   // qu'il sait lire. Les changer sans le prévenir casserait le chiffrage du
   // fendage en silence — sans erreur, avec seulement une case qui ne se trouve
   // plus.
-  if (id.startsWith("abattage.diametre") || id.startsWith("fendage.diametre")) {
+  //
+  // **Le suffixe, jamais le préfixe.** `prestation-structuree.ts` lit déjà ces
+  // sujets par leur fin (`.diametre`, `.hauteur`) ; une liste de préfixes tenue
+  // ici en parallèle laissait `dessouchage.diametre` sortir sans son ⌀ le jour
+  // où il est né — et `mesures-arbre.ts` n'y aurait plus retrouvé le nombre.
+  const sujet = id.split("#")[0];
+  if (sujet.endsWith(".diametre")) {
     return `⌀ ${valeur} ${unite ?? ""}`.trim();
   }
-  if (id.startsWith("fendage.hauteur")) return `${valeur} ${unite ?? "m"} de haut`.trim();
+  if (sujet.endsWith(".hauteur")) return `${valeur} ${unite ?? "m"} de haut`.trim();
   return `${valeur} ${unite ?? ""}`.trim();
 }
 

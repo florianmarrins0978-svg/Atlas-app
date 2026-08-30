@@ -1,10 +1,12 @@
 # État du projet
 
-**Dernière mise à jour :** 2026-08-29 · branche `main`
-· dernière migration `drizzle/0068_effacement_client_devis_envoye.sql`
+**Dernière mise à jour :** 2026-08-30 · branche `main`
+· dernière migration `drizzle/0071_rappel_vu.sql`
 
-**Dernière mise à jour :** 2026-08-27 · branche `claude/audit-dictee-devis-ryqfy6`
-· dernière migration `drizzle/0070_prix_a_chiffrer_et_comparabilite.sql`
+*(Deux en-têtes de mise à jour cohabitaient ici depuis une fusion du 29 août,
+avec deux dates et deux migrations différentes — dont une périmée. Réunis : une
+ligne fausse coûte plus cher qu'une ligne absente, et celle-ci l'était à
+moitié.)*
 
 
 *(Le numéro du dernier commit ne figure plus ici : il était faux dès le commit
@@ -16,11 +18,110 @@ ligne « fait » qui ne l'est pas coûte plus cher qu'une ligne absente.
 
 ---
 
+## Chaque notification se range d'un « J'ai vu » (30 août 2026)
+
+**Sa demande, capture à l'appui :** *« pour chaque notification je dois pouvoir
+cliquer sur vu pour les faire disparaître ; pourquoi certaines n'ont pas cette
+fonction ? »*. Trois rappels sur quatre n'avaient aucun geste.
+
+Les quatre cartes de rappel portent désormais le même mot que les réponses de
+clients. **Le geste fait taire, il n'efface pas** : le rappel revient au bout de
+son délai réglé si rien n'a bougé (`rappels_vus`, migration 0071). La facture
+impayée garde sa mécanique du 16 août et ne prend que le libellé — « Plus tard »
+disparaît.
+
+Détail : `docs/j-ai-vu-sur-tous-les-rappels.md`, `ARCHITECTURE.md` §210.
+
+## Le planning du salarié est en LECTURE SEULE (30 août 2026)
+
+**Sa décision :** *« Un salarié peut uniquement CONSULTER son planning. Il ne
+doit pouvoir effectuer AUCUNE modification depuis le planning. »*
+
+Ni supprimer un chantier, ni le poser, ni le déplacer, ni le retirer du
+planning, ni écrire son pense-bête, ni cocher une équipe. **Refusé au serveur**
+— une requête fabriquée avec l'identifiant de l'action et celui du chantier est
+refusée comme un appui sur un bouton.
+
+**Ce qui n'a pas bougé** : sa portée de lecture, sa feuille de chantier sans
+montants, les droits du patron et ceux du commercial.
+
+Trouvé en chemin et corrigé : les actions **photos** d'un chantier n'avaient
+aucune garde — un salarié pouvait en supprimer n'importe laquelle, pour de bon.
+
+Détail : `docs/salarie-planning-lecture-seule.md`, `ARCHITECTURE.md` §208.
+
+## Ce qui a déjà été dicté ne se redemande plus (30 août 2026)
+
+*« Tu dis deux souches de diamètre 60. Question : quel diamètre font les
+souches ? »* La lecture découpe à la virgule ; la question ne regardait que sa
+propre ligne, quand la hauteur était cherchée dans toute la dictée depuis le
+premier jour. Corrigé — avec une garde : à deux arbres, on redemande ligne par
+ligne, un diamètre dit quelque part n'appartenant pas forcément à celui qu'on
+questionne.
+
+Les questions ne nomment plus leur objet : « Quel diamètre ? », « Quelle
+hauteur ? », « Quelle longueur ? ».
+
+Deux textes qui décrivaient ce que l'écran montrait déjà sont partis :
+
+| Où | Ce qui reste |
+|---|---|
+| écran Transcription | rien — le titre et le cadre suffisent |
+| refus de chiffrer | « Aucun tarif ne correspond, et la dictée ne dit ni la durée ni l'équipe. » |
+
+---
+
+## L'arrêt d'avant-chiffrage : moins de mots, et plus de question absurde (30 août 2026)
+
+Deux remarques de lui, le même jour, sur le même écran.
+
+**L'incohérence.** *« Lorsque l'on parle de souche, ça sous-entend que l'arbre a
+déjà été abattu — donc s'il n'y a pas d'arbre, pourquoi il y a la question de
+comment on l'abat ? »* Le dessouchage était rangé avec l'abattage pour ne pas
+redemander le diamètre du même tronc ; le raccourci commandait aussi la question
+de la technique. Une souche reçoit maintenant son diamètre seul, sous le mot
+juste.
+
+**Les mots.** *« Trop de phrases inutiles, il faut aller droit au but,
+l'utilisateur n'aime pas lire. »* Retirées : les deux lignes sous le titre, la
+ligne d'explication sous chaque question — et le champ `pourquoi` avec elles —,
+et la prestation réécrite à chaque question. Titre : « Avant de chiffrer ».
+
+| | |
+|---|---|
+| `src/lib/questions-chiffrage.ts` | `estDessouchage`, sujet `dessouchage.diametre`, `pourquoi` supprimé |
+| `src/app/chantiers/[id]/DevisDepuisDictee.tsx` | l'écran ne porte plus que prestation, question, réponses |
+| trois suites navigateur | comptent les blocs `[data-atlas="question-chiffrage"]`, plus un libellé |
+
+Détail : `ARCHITECTURE.md` §209.
+
+---
+
+## Plus aucune barre de défilement grise, la page comprise (30 août 2026)
+
+Sa plainte du jour, depuis son PC : *« sur PC les bandes déroulantes grises
+apparaissent, supprime-moi ça »*. Deuxième fois — le 11 août, seuls les cadres
+qui défilent avaient été couverts, pas **la page elle-même**, qui défile aussi
+(le gabarit lui donne `100dvh` de hauteur *minimale*).
+
+Sur téléphone cette barre est en surimpression et s'efface seule ; sur
+ordinateur elle s'installe à droite pour de bon. Le défaut ne pouvait apparaître
+que chez lui, et le contrôle qui aurait dû l'attraper écartait explicitement
+`<html>` et `<body>`.
+
+| | |
+|---|---|
+| `src/app/globals.css` | une règle universelle `* { scrollbar-width: none }` remplace la déclaration recopiée zone par zone |
+| `scripts/test-aucune-barre-de-defilement-e2e.ts` | mesure désormais la page ; éprouvé rouge (8 écrans sur 13) avant d'être éprouvé vert |
+
+Le défilement n'a pas changé — molette, doigt, clavier, focus. Détail :
+`ARCHITECTURE.md` §206.
+
 ## Le devis client ne répète plus les mesures (30 août 2026)
 
 *Son premier vrai devis sorti de la chaîne corrigée portait « Haie de laurier
 (800 ml) (800 ml) » et « Érable (40 cm de diamètre, 12 m de haut) ». Détail et
-pourquoi : `ARCHITECTURE.md` §206.*
+pourquoi : `ARCHITECTURE.md` §211.*
 
 **Fait.**
 

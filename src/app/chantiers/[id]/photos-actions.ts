@@ -1,13 +1,29 @@
 "use server";
 
 import { getCurrentCtx } from "@/server/session-ctx";
+import { exigerEcran } from "@/server/garde-action";
 import { ajouterPhoto, supprimerPhoto } from "@/server/repositories/photos";
 import { enregistrerObjet } from "@/server/storage";
 import { verifierLimite, LIMITES } from "@/server/rate-limit";
 import { preparerPhotoEntrante } from "@/server/photo-entrante";
 
+/**
+ * **LA SECONDE PORTE D'ÉCRITURE, TROUVÉE LE 30 AOÛT 2026.**
+ *
+ * Ce fichier n'a jamais porté de garde de rôle, et le contrôle du lot précédent
+ * ne le voyait pas : il énumérait deux listes de fichiers écrites **à la main**,
+ * et toutes deux ne nommaient que des `actions.ts`. Celui-ci s'appelle
+ * `photos-actions.ts`. Un salarié pouvait donc ajouter une photo à n'importe
+ * quel chantier de l'entreprise, et **supprimer** n'importe laquelle — un
+ * `DELETE` en base que rien ne défait.
+ *
+ * La leçon vaut plus que le correctif : une liste tenue à la main se tait sur ce
+ * qu'on a oublié d'y écrire. `scripts/test-actions-gardees-db.ts` énumère
+ * désormais **tout** fichier « use server » du dépôt.
+ */
 export async function ajouterPhotoAction(chantierId: string, formData: FormData) {
   const ctx = await getCurrentCtx();
+  await exigerEcran(ctx, "/chantiers", "ajouter une photo de chantier");
 
   const limite = await verifierLimite(`televersement:${ctx.entrepriseId}`, LIMITES.televersementFichier);
   if (!limite.autorise) {
@@ -49,5 +65,7 @@ export async function ajouterPhotoAction(chantierId: string, formData: FormData)
 
 export async function supprimerPhotoAction(photoId: string) {
   const ctx = await getCurrentCtx();
+  // Une suppression DURE : `supprimerPhoto` efface la ligne, pas un `deletedAt`.
+  await exigerEcran(ctx, "/chantiers", "supprimer une photo de chantier");
   await supprimerPhoto(ctx, photoId);
 }

@@ -96,6 +96,44 @@ cas("aucun en-tête : on se rabat sur NEXTAUTH_URL", () => {
   );
 });
 
+cas("L'ADRESSE DÉCLARÉE l'emporte sur un en-tête FORGÉ", () => {
+  // ═══════════════════════════════════════════════════════════════════════
+  // **Audit final, 29 août 2026.** Cette fonction et `originePublique`
+  // répondaient à la même question dans l'ORDRE INVERSE : celle-ci croyait
+  // l'en-tête d'abord, l'autre l'adresse déclarée d'abord. Deux
+  // implémentations d'une même règle finissent toujours par diverger.
+  //
+  // `x-forwarded-host` est écrit par le CLIENT quand le mandataire de tête ne
+  // le réécrit pas — le cas par défaut de plusieurs hébergeurs. Or cette
+  // adresse compose la redirection de retour de Google : une valeur forgée
+  // renvoyait le navigateur, au retour d'une autorisation, chez qui l'avait
+  // écrite.
+  // ═══════════════════════════════════════════════════════════════════════
+  assert.equal(
+    adressePublique(entetes({ "x-forwarded-host": "mechant.example" }), {
+      ATLAS_URL_PUBLIQUE: "https://atlas.exemple.fr",
+    }),
+    "https://atlas.exemple.fr"
+  );
+  // La barre de fin ne doit pas doubler celle du chemin qu'on colle derrière.
+  assert.equal(
+    adressePublique(entetes({}), { ATLAS_URL_PUBLIQUE: "https://atlas.exemple.fr/" }),
+    "https://atlas.exemple.fr"
+  );
+});
+
+cas("SANS adresse déclarée, l'en-tête reprend la main — le banc doit marcher", () => {
+  // **C'était toute la raison de l'ordre d'origine, et elle tient toujours.**
+  // Sur le banc d'essai, aucune variable n'est posée : si l'en-tête ne
+  // reprenait pas la main, le navigateur serait renvoyé vers localhost:3000 —
+  // c'est-à-dire vers le téléphone lui-même. C'est le défaut du 9 août 2026,
+  // et ce contrôle existe pour qu'il ne revienne pas par la porte du correctif.
+  assert.equal(
+    adressePublique(entetes({ "x-forwarded-host": "atlas-3000.app.github.dev" }), {}),
+    "https://atlas-3000.app.github.dev"
+  );
+});
+
 cas("un hôte annoncé l'emporte sur la variable, jamais l'inverse", () => {
   // Sinon un déploiement mal configuré renverrait tout le monde ailleurs, en
   // silence — et le défaut réapparaîtrait sous une autre forme.

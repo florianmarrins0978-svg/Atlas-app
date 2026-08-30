@@ -164,7 +164,7 @@ async function main() {
     // simple au double. Ce que le patron a exigé, ce n'est pas l'absence
     // d'arrêt, c'est l'absence d'ÉCRAN de plus — et c'est ce qu'on éprouve
     // ici : les questions s'ouvrent sur la fiche, on répond, la chaîne repart.
-    const questions = page.locator("text=/précisions? avant de chiffrer/i").first();
+    const questions = page.locator('[data-atlas="question-chiffrage"]').first();
     await Promise.race([
       questions.waitFor({ state: "visible", timeout: 120_000 }),
       page.waitForURL(/\/devis-complet$/, { timeout: 120_000 }),

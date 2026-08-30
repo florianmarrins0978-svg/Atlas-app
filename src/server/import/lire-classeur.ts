@@ -128,12 +128,51 @@ function lireTextesPartages(xml: string | null): string[] {
   return textes;
 }
 
-/** La colonne d'une référence de cellule : « BC12 » → 54 (index zéro). */
+/**
+ * Le nombre de colonnes d'une feuille de calcul, chez Excel comme chez
+ * LibreOffice : la dernière est `XFD`. Une référence au-delà ne vient donc
+ * d'aucun tableur — elle vient de quelqu'un qui a écrit le XML à la main.
+ */
+const COLONNES_MAX = 16_384;
+
+/**
+ * La colonne d'une référence de cellule : « BC12 » → 54 (index zéro).
+ *
+ * ═══════════════════════════════════════════════════════════════════════════
+ * **LE DÉNI DE SERVICE À 258 OCTETS** — constat de l'audit final, 29 août 2026,
+ * et il a été MESURÉ, pas supposé.
+ *
+ * Cette fonction n'avait aucune borne, et son appelant faisait :
+ *
+ *     while (cellules.length < colonne) cellules.push("");
+ *
+ * Or la référence vient du fichier déposé. `r="ZZZZZ1"` rend **12 356 630**, et
+ * la boucle empile autant de chaînes vides — sur le fil de l'événement, et hors
+ * de tout `try`. Mesure sur un classeur forgé de **258 octets** : 1,7 seconde et
+ * **196 Mo** de tas. Une lettre de plus, et l'on est à cinq gigaoctets.
+ *
+ * **Les protections existantes ne couvraient pas ce cas, et c'est le point.**
+ * Le plafond de décompression (32 Mo) borne ce qui SORT de l'archive ; la borne
+ * de 5 Mo à l'écran borne ce qui ENTRE ; la cadence borne le rythme. Aucune ne
+ * borne l'allocation qui suit la lecture — et le fichier hostile est minuscule,
+ * un seul appel suffit.
+ *
+ * Ce qui tombe alors, c'est **le processus**, donc les requêtes de toutes les
+ * entreprises servies par cette instance, pas seulement celles de qui a déposé
+ * le fichier.
+ *
+ * On rend donc `-1` pour une référence hors du monde réel : l'appelant ignore
+ * la cellule, la ligne reste, et le reste du classeur se lit normalement. Un
+ * refus ne vaudrait pas mieux qu'une lecture partielle — cette fonction promet
+ * de ne jamais lever, et un tableur légitime n'atteint jamais cette borne.
+ */
 function colonneDe(reference: string): number {
   const lettres = /^([A-Z]+)/.exec(reference)?.[1] ?? "A";
+  // Au-delà de trois lettres, on a déjà dépassé XFD : inutile de multiplier.
+  if (lettres.length > 3) return -1;
   let n = 0;
   for (const lettre of lettres) n = n * 26 + (lettre.charCodeAt(0) - 64);
-  return n - 1;
+  return n - 1 >= COLONNES_MAX ? -1 : n - 1;
 }
 
 /**
@@ -192,6 +231,9 @@ export function lireClasseur(octets: Uint8Array): string[][] {
       }
 
       const colonne = reference ? colonneDe(reference) : cellules.length;
+      // `-1` : la référence sort du monde des tableurs (voir `colonneDe`). La
+      // cellule est ignorée plutôt que d'allouer des millions d'entrées vides.
+      if (colonne < 0) continue;
       while (cellules.length < colonne) cellules.push("");
       cellules[colonne] = valeur;
     }

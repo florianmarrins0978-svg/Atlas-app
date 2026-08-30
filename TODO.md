@@ -9,6 +9,274 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
+## ✅ SES TROIS CHOIX SONT FAITS — et une planche les réunit (30 août 2026)
+
+*« Pour la largeur le 4. Ensuite le 2, l'anneau. Et le B, le micro, mais avec
+des petites ondes de chaque côté, 1,5 cm max de chaque côté. »*
+
+`appli/note-vocale-choix.html`, éprouvée par
+`scripts/verifier-maquette-note-vocale-choix.mjs`.
+
+| | |
+|---|---|
+| largeur du bouton | **66 %** |
+| geste pendant la dictée | l'objet **reste au centre**, poubelle à gauche, avion à droite |
+| repos | le **micro plein**, deux ondes de **1,5 cm au plus** de chaque côté |
+| et, tranché plus tôt | « Je rédige à la main » **disparaît** dès l'appui, revient si l'on jette |
+
+**Une seule chose reste à lui demander**, et elle est écrite dans la planche :
+pendant la dictée, le disque plein reste et son micro devient un carré d'arrêt.
+Sa proposition 2 parlait de « l'anneau », mais elle le gardait parce que le
+repos ÉTAIT l'anneau — ce qui n'est plus le cas. **Ne pas coder avant sa
+confirmation sur ce point.**
+
+---
+
+## ⏳ SA RÉPONSE ATTENDUE — le dessin de la note vocale au repos (30 août 2026)
+
+`appli/note-vocale-au-repos.html`, éprouvée par
+`scripts/verifier-maquette-note-vocale-au-repos.mjs`. **Un chiffre attendu :**
+A (l'anneau d'aujourd'hui), B (micro plein), C (barre d'invitation),
+D (anneau au micro) ou E (onde à plat).
+
+**Ce qui n'est PAS une question, et qui est déjà fait dans les cinq :** dès
+qu'on appuie, **« Je rédige à la main » disparaît** — *« pour ne plus avoir de
+confusion possible »* —, et il revient si l'on jette la note. Il l'a tranché
+sans vouloir de proposition. **Au codage : le retirer, pas le griser.** Un
+bouton éteint reste un bouton, on l'appuie, il ne répond pas.
+
+**Cette planche ne remplace pas la précédente** : celle-là porte les GESTES
+(jeter, pause, envoyer), celle-ci le DESSIN au repos. Les deux réponses se
+recomposent.
+
+---
+
+## ⏳ SA RÉPONSE ATTENDUE — la note vocale « à la WhatsApp » (30 août 2026)
+
+`appli/note-vocale-simple.html` est en ligne et éprouvée
+(`scripts/verifier-maquette-note-vocale-simple.mjs`). **Rien n'est codé dans
+`src/`**, et rien ne doit l'être avant qu'il donne deux chiffres :
+
+| | |
+|---|---|
+| la proposition | **1** la barre à deux rangées · **2** l'anneau au centre · **3** la capsule sans pause |
+| la largeur du bouton | **1** aujourd'hui · **2** 88 % · **3** 78 % · **4** 66 % |
+
+**Deux choses sont déjà tranchées par lui, et ne se rouvrent pas :** le bouton
+du bas est **secondaire**, libellé
+« Je rédige à la main » — le seul aplat plein de l'écran est le rond d'envoi —,
+et **tout tient sur un écran sans défiler**.
+
+**Ce qui n'est PAS tranché, contre les apparences :** sa règle *« l'anneau doit
+disparaître »* condamne la proposition 2, qui le garde au centre — et il l'a
+pourtant redemandée à l'essai. C'est donc son choix final qui dira ce qu'elle
+vaut, pas cette règle-là.
+
+**Ce dernier point est le plus fragile du lot**, et il vaut aussi pour le code à
+venir : l'écran est descendu de 960 à 631 px, et la marge sur un iPhone SE se
+compte en dizaines de pixels. Une case de plus, deux pixels de marge, et il
+repasse sous le pli. Quatre intitulés ont été retirés pour y arriver — e-mail,
+adresse, canal, photos ; **« Nom du client » et « Téléphone » restent**, il les a
+demandés nommément le 21 août. Ce qui n'est plus écrit reste lisible par un
+lecteur d'écran.
+
+**Le point délicat du codage, à ne pas découvrir en route :**
+`AnneauNoteVocale.basculerDictee()` envoie au second appui — l'arrêt et l'envoi
+sont le même geste. Il faudra les séparer, et veiller à ce que **jeter une note
+ne supprime pas le chantier** : une photo prise avant a pu le créer
+(`assurerChantier`).
+
+---
+
+## Ce que le lot de clôture du 30 août 2026 laisse ouvert
+
+Le rapport complet est dans `docs/cloture-avant-premier-artisan.md`. Il ne reste
+que ceci.
+
+### ~~1. LA DÉCISION DU PATRON — un salarié peut-il supprimer un chantier ?~~
+
+**~~TRANCHÉE LE 30 AOÛT 2026, et plus largement que la question :~~**
+
+> ~~*« Un salarié peut uniquement CONSULTER son planning. Il ne doit pouvoir
+> effectuer AUCUNE modification depuis le planning. »*~~
+
+~~Ni supprimer, ni poser, ni déplacer, ni déplanifier, ni annoter, ni changer
+d'équipe. La règle vit dans `peutModifierLePlanning` (`src/lib/acces-roles.ts`),
+la garde dans `exigerEcritureSurLePlanning` (`src/server/garde-action.ts`), et
+elle ouvre les six actions d'écriture du planning — avant la portée.~~
+
+~~Le périmètre de LECTURE n'a pas bougé : il voit toujours ce que sa portée lui
+montre, et il garde sa feuille de chantier sans montants.
+Rapport : `docs/salarie-planning-lecture-seule.md`.~~
+
+~~**Et la question laissée ouverte a été tranchée le même jour** : *« le
+commercial garde-t-il le droit d'écrire sur le planning ? »* — **oui**. Le droit
+est confirmé, plus seulement laissé en place (`ARCHITECTURE.md` §208).~~
+
+### 2. L'infrastructure, et elle seule
+
+Tout est écrit pas à pas dans `docs/DEPLOIEMENT-PURGE.md`.
+
+- **Bloquant** : brancher le planificateur de purge (un *Serverless Job*
+  Scaleway avec déclencheur *cron*, `curl --fail`), et poser la sonde sur
+  `/api/health/purge` ;
+- **Bloquant** : `ATLAS_URL_PUBLIQUE` — l'application refuse désormais de
+  démarrer sans elle en production ;
+- **Recommandé** : `ATLAS_PROXY_SAUTS`, `ATLAS_RP_ID`, `AUTH_URL`, et la
+  rétention des journaux à poser chez Scaleway.
+
+### 3. Deux durées qui décrivent ce qui n'existe pas
+
+- `RETENTION.compteFermeJours` — **il n'y a aucun chemin de fermeture de compte**
+  dans le produit : ni écran, ni fonction. Soit on écrit le chemin, soit on
+  retire la durée. Elle est marquée comme telle dans le code en attendant ;
+- le **lien d'un compte rendu d'entretien n'expire jamais**, alors que celui d'un
+  devis expire à 45 jours et celui d'une facture à 60.
+
+### 4. Ce que l'effacement d'un client oublie encore
+
+Inchangé depuis l'audit : le compte rendu d'entretien survit avec le nom figé du
+client, les PDF de devis restent dans le stockage, les jetons de facture ne sont
+pas retirés, et la photo d'un ticket supprimé n'est jamais mise en file. Un
+contrôle qui balaie les colonnes `jeton` et les clés de stockage après un
+effacement vaudrait mieux qu'une énumération table par table.
+
+### 5. IA — ce qui n'a pas pu être éprouvé ici
+
+Les corrections d'invite sont **structurelles et déterministes**, et testées
+comme telles. Mais cet environnement n'a **aucune clé** (`CLAUDE.md` §1 ter) :
+ce qu'un vrai modèle fait du bloc `<exemples_passes>`, et la qualité des
+extractions qui en résulte, se vérifient sur l'espace du patron —
+`npm run verifier:ia` et une dictée réelle.
+
+---
+
+## Ce que l'audit du 29 août 2026 laisse ouvert
+
+Le détail complet est dans `docs/audit-securite-final.md`. Ce qui suit est ce
+qui reste à FAIRE, par ordre de gravité.
+
+### 1. BLOQUANT — la purge n'est appelée par personne
+
+`/api/cron/purge-fichiers` existe et fonctionne. **Rien ne l'appelle** : ni
+`vercel.json`, ni aucun `schedule:` de `.github/workflows/`. Tant que c'est le
+cas, aucun audio de dictée n'est jamais effacé, aucune photo de diagnostic
+échue, aucun fichier en attente — et toutes les durées annoncées dans
+`docs/RGPD.md` sont des promesses vides.
+
+**Personne ne s'en apercevrait**, et c'est le pire : la purge « marche » quand
+on l'appelle. Il faut donc les deux :
+
+1. un `schedule:` qui appelle la route avec son secret — le dépôt sait déjà le
+   faire (`adresses.yml`, `itineraire.yml`) ;
+2. **une sonde qui rougit** : la date de la dernière purge réussie, et une
+   anomalie au-delà de 48 h. Sans elle, le planificateur se débranchera un jour
+   sans bruit — c'est exactement la fiche figée de `CLAUDE.md` §1 bis.
+
+### 2. Ce que l'effacement d'un client oublie
+
+Quatre trous, tous de la même famille : la ligne part, la donnée reste.
+
+- **le compte rendu d'entretien survit** — avec le nom figé du client, les
+  observations, et un jeton **qui n'expire jamais** (le devis expire à 45 jours,
+  la facture à 60). Le SMS reçu six mois plus tôt ouvre encore la page ;
+- **les PDF de devis restent dans le stockage** : la ligne est supprimée sans
+  que la clé passe en file de purge. Le PDF porte nom, adresse, téléphone et
+  détail des travaux — la donnée survit précisément à l'opération censée
+  l'effacer, et plus rien ne la nomme pour la retrouver ;
+- **les jetons de facture ne sont pas retirés** : la facture est retenue par la
+  loi, soit — mais conserver une pièce comptable et laisser ouverte l'adresse
+  publique qui la sert ne sont pas la même décision ;
+- **la photo d'un ticket supprimé** n'est jamais mise en file.
+
+Le code sait pourtant que c'est le sujet : la règle est écrite pour les envois
+de devis. Elle n'a été appliquée qu'à eux. **Ne pas la réappliquer table par
+table à la main** — un contrôle qui balaie les colonnes `jeton` et les colonnes
+de clé de stockage après un effacement vaut mieux qu'une énumération qui
+s'oubliera à la prochaine table.
+
+### 3. L'export d'un client se dit exhaustif et ne l'est pas
+
+Le commentaire promet l'exhaustivité — c'est lui qui rend le trou invisible.
+Manquent : passages d'entretien, factures et paiements, précisions de chantier,
+diagnostics et leurs photos, envois. Remplacer la promesse par un contrôle qui
+la tient : le même patron que pour l'export d'entreprise, qui avait déjà réclamé
+`achats_tva` avant qu'on y pense.
+
+### 4. IA — trois constats réels, non corrigés faute de pouvoir les éprouver ici
+
+Cet environnement n'a **aucune clé d'IA** (`CLAUDE.md` §1 ter). Livrer un
+remaniement d'invite non éprouvé serait exactement ce que le dépôt interdit.
+
+- **du contenu appris entre dans la consigne système** — corrections passées et
+  libellés de lignes de devis, recopiés dans la position de plus haute autorité.
+  Un libellé rédigé comme une instruction en devient une. À sortir vers un
+  message utilisateur encadré, et à tronquer ;
+- **le patron approuve un texte, et c'est une autre donnée qui s'écrit** :
+  l'écran affiche la `description` du modèle, l'application lit `donnees`, et
+  rien ne confronte les deux. La description doit se **recomposer** côté
+  serveur — mais cela change ce qu'il voit, donc **maquette d'abord**
+  (`CLAUDE.md` §3 bis) ;
+- **un prix venu du modèle est écrit sans borne de vraisemblance.** La base
+  refuse les négatifs, pas 99 999 999,99 €. La lecture d'un ticket de caisse
+  valide déjà ses montants ; le chemin qui écrit vraiment un prix sur un devis
+  en fait moins. Le seuil est un arbitrage métier.
+
+### 5. Défense en profondeur, quand il y aura le temps
+
+- **cloisonner `entreprises`** — le filtre explicite de `/api/fichiers` ferme la
+  fuite au point d'usage, mais la table reste sans RLS. Migration à faire avec
+  précaution : les chemins publics par jeton lisent cette table, et l'un d'eux
+  ne pose pas de contexte ;
+- **la CSP porte `unsafe-inline`** sur les scripts, y compris sur les pages
+  publiques par jeton. Ce n'est pas une faille — c'est l'absence du dernier
+  filet. La voie du *nonce* est documentée ;
+- **`middleware.ts` est déprécié** en Next 16, renommé `proxy.js`. Il fonctionne
+  aujourd'hui ; le jour de sa suppression, le fichier sera **ignoré sans
+  erreur** et toute la garde de session disparaîtrait en silence. Les pages
+  appellent heureusement leur garde elles-mêmes.
+
+---
+
+## L'export d'une entreprise oublie son logo et ses tickets de caisse (27 août 2026)
+
+**Trouvé pendant le lot Sauvegarde, en cartographiant les fichiers d'Atlas.
+Laissé tel quel, délibérément** : c'est de la portabilité RGPD, pas de la
+sauvegarde, et le brief interdit d'élargir le périmètre.
+
+`src/server/repositories/export-entreprise.ts` attache quatre familles de
+fichiers à l'archive : photos, notes vocales, PDF de devis, PDF de factures.
+Il en manque deux :
+
+| Ce qui manque | Pourquoi ça compte |
+|---|---|
+| `entreprises.logo_storage_key` | l'artisan récupère son entreprise sans son logo |
+| `achats_tva.photo_cle` | **les lignes `achats_tva` PARTENT** (ligne 290) mais pas les photos des tickets — l'export dit qu'un achat a un justificatif, et le justificatif n'est pas dedans |
+
+La seconde est la plus gênante : l'archive se contredit elle-même.
+
+`src/lib/objets-stockes.ts` porte la liste complète des onze colonnes et
+explique, dans son en-tête, pourquoi les deux listes ne doivent PAS être
+fondues — elles répondent à deux questions différentes. **Ne pas « réparer » en
+les alignant** : corriger l'export, oui ; le brancher sur la liste du lot
+Sauvegarde, non.
+
+---
+
+## Une écriture refusée pendant un gel ne dit rien de compréhensible (27 août 2026)
+
+`scripts/geler-les-ecritures.sh` passe l'application en lecture seule le temps
+d'une restauration. Une écriture tentée pendant ce temps remonte alors
+`cannot execute INSERT in a read-only transaction` — un message de moteur, pas
+une phrase pour un artisan sur un chantier.
+
+**Acceptable pour ce à quoi ça sert** : une urgence rare, annoncée, qui dure une
+heure. Ça ne le serait pas pour un usage courant.
+
+Ce qu'il faudrait : reconnaître ce refus précis et rendre « Atlas est en
+maintenance, vos données sont là, l'enregistrement reprend dans un instant ».
+Petit travail, mais il touche tous les chemins d'écriture — donc un lot à lui.
+
 ## D'où vient la dérive de ses `node_modules` ? (29 août 2026)
 
 **Le symptôme est réparé, la cause ne l'est pas.** Son espace exécutait
@@ -179,6 +447,30 @@ dans le produit — mais elle n'est pas comprise pour autant.
 (`scripts/` non modifié ; pilote jeté, dans le bac à sable de la session).
 Aucune assertion touchée, aucun délai ajouté, aucune suite écartée. Résultat
 **115/115**.
+
+**REVU LE 30 AOÛT 2026 — et cette fois la mort arrive PLUS TÔT.** Batterie
+complète : le serveur est abattu après la **deuxième** suite navigateur
+(`test-acces-salarie-e2e`), pas après la treizième. `dmesg` :
+`Memory cgroup out of memory: Killed process … next-server … anon-rss:13287232kB`
+— 13,2 Go, le même plafond qu'au 27 août. Résultat de la batterie d'une traite :
+**1/116**.
+
+Rejouées par tranches, un serveur neuf par tranche, puis **seules** pour les
+quinze suites qu'aucune tranche n'avait pu jouer : **116/116**. Aucune assertion
+touchée, aucun délai ajouté.
+
+Ce que ce tour ajoute au diagnostic :
+
+  · le point de bascule n'est **pas** `test-coupure-sessions-e2e` — ce jour-là
+    la mort est arrivée onze suites plus tôt, sur une suite qui passe seule ;
+  · le plafond, lui, ne bouge pas : 13,2–13,5 Go dans les deux relevés ;
+  · **piège de méthode, payé ce jour-là :** un pilote de tranches signalé
+    « échoué » par l'outillage tournait encore. Un second pilote lancé dessus a
+    partagé le port 3000, et a rendu **quatorze faux rouges** d'affilée. C'est
+    `CLAUDE.md` §5 à la lettre — la batterie est une machine à un seul occupant
+    —, et cela vaut aussi pour les pilotes qui la découpent. **Vérifier
+    `ps aux | grep test:e2e` avant d'en relancer un**, plutôt que de croire le
+    code de sortie.
 
 **Qui peut le trancher :** nous, en cherchant ce que `test-coupure-sessions-e2e`
 fait faire à Turbopack — la piste la plus courte est de rejouer la suite sur le

@@ -61,18 +61,42 @@ ${Object.entries(donnees.compte)
 
 export async function GET() {
   const ctx = await getCurrentCtx();
-  // Toutes les données de la société, pas seulement celles d'un membre : la
-  // même barrière que pour les tarifs et les paramètres.
-  await exigerProprietaire(ctx, "télécharger les données de l'entreprise");
+
   /**
-   * **Toute l'entreprise dans un fichier** — clients, prix, factures, adresses.
-   * C'est le geste qui emporte le plus en une fois, et une session volée ne doit
-   * pas suffire.
+   * **UN REFUS SE REND, IL NE SE LÈVE PLUS** — lot de clôture, 29 août 2026.
    *
-   * La garde lève : c'est une route, et un 500 opaque vaut mieux qu'un fichier
-   * qui part. L'écran, lui, demande la preuve avant d'ouvrir l'adresse.
+   * Les deux gardes ci-dessous LÈVENT, et le commentaire qui tenait cette place
+   * s'en accommodait : *« un 500 opaque vaut mieux qu'un fichier qui part »*.
+   * C'est vrai du résultat — rien ne fuyait —, et faux de tout le reste :
+   *
+   * | | |
+   * |---|---|
+   * | un **500** | dit « Atlas est en panne ». On cherche une panne qui n'existe pas |
+   * | un **404** | dit « il n'y a rien ici ». C'est la vérité, et c'est la règle des routes de ce dépôt |
+   *
+   * Un code qui accuse à tort coûte plus cher que pas de code du tout
+   * (`AGENTS.md`) : le jour où un commercial appuiera sur ce bouton, le patron
+   * lira « erreur serveur » et appellera pour une panne.
+   *
+   * **404 et non 403**, comme partout ailleurs ici : distinguer « vous n'avez
+   * pas le droit » de « cela n'existe pas » apprend à qui cherche qu'il a visé
+   * juste.
+   *
+   * Le refus reste aussi ferme : la levée est simplement transformée en réponse
+   * avant de sortir. Rien n'est lu, rien n'est assemblé, rien ne part.
    */
-  await exigerPreuveRecente(ctx, GESTES_SENSIBLES.exportComplet);
+  try {
+    // Toutes les données de la société, pas seulement celles d'un membre : la
+    // même barrière que pour les tarifs et les paramètres.
+    await exigerProprietaire(ctx, "télécharger les données de l'entreprise");
+    // **Toute l'entreprise dans un fichier** — clients, prix, factures,
+    // adresses. C'est le geste qui emporte le plus en une fois, et une session
+    // volée ne doit pas suffire. L'écran, lui, demande la preuve avant d'ouvrir
+    // l'adresse.
+    await exigerPreuveRecente(ctx, GESTES_SENSIBLES.exportComplet);
+  } catch {
+    return NextResponse.json({ error: "Introuvable" }, { status: 404 });
+  }
 
   const maintenant = new Date();
   const [donnees, entreprise] = await Promise.all([

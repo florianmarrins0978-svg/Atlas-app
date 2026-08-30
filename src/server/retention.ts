@@ -26,21 +26,59 @@ export const RETENTION = {
   audioApresTranscriptionJours: 7,
 
   /**
-   * Fichiers orphelins (remplacés, supprimés) — déjà en place avant ce lot.
-   * Court volontairement : ces objets ne sont plus référencés par rien.
+   * Fichiers orphelins (remplacés, supprimés). Court volontairement : ces
+   * objets ne sont plus référencés par rien.
+   *
+   * **Elle est de nouveau LA source, et elle ne l'était plus** — lot de
+   * clôture, 29 août 2026. `purgerFichiersEnAttente` recopiait le 24 en dur et
+   * n'importait même pas ce fichier : régler cette constante ne changeait
+   * rien, et personne ne l'aurait vu. Deux sources pour un seul chiffre, c'est
+   * la faute que `CLAUDE.md` §3 nomme.
    */
   fichiersOrphelinsHeures: 24,
 
   /**
    * Journaux techniques : identifiants de session, adresses IP, contextes
    * d'erreur. Assez pour instruire un incident, pas au-delà.
+   *
+   * ═══════════════════════════════════════════════════════════════════════
+   * **AUCUN CODE D'ATLAS N'APPLIQUE CETTE DURÉE, ET C'EST NORMAL.**
+   *
+   * Les journaux ne vivent pas dans la base : ils partent sur la sortie
+   * standard (`logger.ts`), et c'est l'hébergeur qui les garde et les expire.
+   * Chercher à les purger depuis le produit reviendrait à effacer ce qu'on ne
+   * détient pas.
+   *
+   * **Ce chiffre est donc une CIBLE à poser chez l'hébergeur**, pas une règle
+   * qu'Atlas fait respecter. Il est repris tel quel dans
+   * `docs/DEPLOIEMENT-PURGE.md`, avec le geste correspondant.
+   *
+   * Le dire compte : avant le lot de clôture, ce commentaire laissait croire à
+   * un mécanisme, et l'adresse e-mail journalisée à chaque échec de connexion
+   * n'avait en réalité **aucune** échéance.
+   * ═══════════════════════════════════════════════════════════════════════
    */
   journauxJours: 180,
 
   /**
-   * Délai après fermeture d'un compte, avant effacement complet. Laisse le
-   * temps de revenir sur une suppression regrettée, sans conserver
-   * indéfiniment.
+   * Délai après fermeture d'un compte, avant effacement complet.
+   *
+   * ═══════════════════════════════════════════════════════════════════════
+   * **⚠ CE MÉCANISME N'EXISTE PAS. Cette durée décrit une opération qui n'est
+   * pas codée** — lot de clôture, 29 août 2026.
+   *
+   * Vérifié : il n'y a dans tout le dépôt aucun chemin de fermeture de compte.
+   * Ni `fermerCompte`, ni écran « supprimer mon compte », ni suppression
+   * d'entreprise ou d'utilisateur hors des suites de test.
+   *
+   * Elle est **gardée plutôt que retirée**, et volontairement : elle porte une
+   * décision déjà prise — trente jours de grâce plutôt qu'un effacement
+   * immédiat — que le jour où le chemin s'écrira, personne n'aura à reprendre.
+   * Mais l'écrire sans cet avertissement était une **promesse fausse** : on
+   * lisait « 30 jours » et l'on croyait à un délai appliqué.
+   *
+   * Inscrit dans `TODO.md` : soit le chemin s'écrit, soit cette durée part.
+   * ═══════════════════════════════════════════════════════════════════════
    */
   compteFermeJours: 30,
 } as const;

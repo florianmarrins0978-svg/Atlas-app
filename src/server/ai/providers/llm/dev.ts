@@ -22,7 +22,12 @@ import type { ResultatWorkflow } from "../../../orchestrateur/types";
 
 export const fournisseurLLMDev: FournisseurLLM = {
   nom: "dev",
-  async genererTexte(_systeme: string, message: string): Promise<ResultatLLM> {
+  // **Le contexte est délibérément IGNORÉ ici**, et c'est le cœur du dessin :
+  // ce fournisseur expose la lecture littérale de la DICTÉE. Lui donner les
+  // exemples appris lui ferait rendre les exemples à la place de ce que
+  // l'artisan a dit — et comme cette lecture sert aussi de filet quand un vrai
+  // fournisseur répond à côté, le défaut atteindrait la production.
+  async genererTexte(_systeme: string, message: string, _contexte?: string): Promise<ResultatLLM> {
     if (!message || message.trim().length === 0) {
       return { succes: false, erreur: erreurIA("reponse_invalide", "Message vide — rien à traiter.") };
     }

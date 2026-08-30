@@ -9,6 +9,403 @@ Format : le plus récent en tête.
 
 ## 2026-08-30
 
+### Ses trois choix réunis : largeur 4, geste 2, micro à deux ondes de 1,5 cm
+
+**Ses réponses, le soir même :** *« pour la largeur le 4. Ensuite le 2,
+l'anneau. Et le B, le micro, mais avec des petites ondes de chaque côté, 1,5 cm
+max de chaque côté. Fais un visuel avec ces nouveaux choix. »*
+
+`appli/note-vocale-choix.html` — **une planche qui ne pose plus de question**.
+Le risque a donc changé de nature : il n'est plus qu'un dessin déplaise, mais
+qu'**un de ses choix se perde en route** à la réécriture suivante. Chacun est
+mesuré nommément par le contrôle — 66 % à un point près, 1,5 cm par côté
+converti comme le navigateur (96/2,54), la poubelle à gauche et l'avion à
+droite.
+
+**Sa mesure est écrite en CENTIMÈTRES dans le CSS** (`--aile:1.5cm`), pas
+traduite en pixels : c'est sa consigne, elle doit se relire dans le code — sans
+quoi, dans six mois, « 57 px » ne dira plus d'où il sort.
+
+**Un point qu'il devra trancher, et qui est écrit dans la planche plutôt que
+décidé en silence.** Sa proposition 2 gardait *l'anneau* au centre pendant
+l'enregistrement — mais elle le gardait parce que le repos ÉTAIT l'anneau. Son
+repos est désormais un disque plein. La planche garde donc **le disque**, dont
+le micro devient un carré d'arrêt : un seul objet qui ne change pas de forme,
+seulement de signe (sa règle : *« il ne doit pas changer de visage »*). L'autre
+lecture — le disque cède la place à l'anneau creux — se refait en deux minutes.
+
+**Deux défauts trouvés À LA CAPTURE, invisibles aux tests, et c'est la
+cinquième fois dans ce dépôt.** Le carré d'arrêt était posé dans un `<span>`
+resté en ligne : `width` et `height` sans effet, boîte de zéro pixel, disque
+entièrement vide — le contrôle comptait l'élément et le trouvait. Et les deux
+ondes de repos, 1,5 cm plus 9 px de part et d'autre, **recouvraient la poubelle
+et l'avion** à l'endroit exact où il faut viser : elles s'effacent désormais dès
+qu'on appuie, le mouvement passant à l'onde du bas. Le contrôle mesure
+maintenant les deux — la boîte du carré, et le chevauchement des rectangles.
+
+### Cinq dessins pour la note vocale AU REPOS, et le bouton qui s'efface
+
+**Sa demande, deux choses en une :** *« je veux que lorsque l'utilisateur clique
+sur le bouton de la note vocale, le bouton "Je rédige à la main" disparaisse
+pour ne plus avoir de confusion possible. […] Fais-moi plusieurs visuels pour
+changer la note vocale AVANT qu'on appuie dessus. Ne touche plus à la maquette
+que tu viens de me faire. Pas besoin de visuel pour le bouton qui disparaît,
+seulement des propositions pour le visuel de la note vocale. »*
+
+**Une seule des deux est une question**, et il le dit lui-même. Le bouton qui
+s'efface est tranché : il est donc appliqué **à l'identique dans les cinq**, et
+non proposé. Ce qui se choisit, c'est l'objet au repos.
+
+`appli/note-vocale-au-repos.html` — **une planche à part**, parce qu'il a
+demandé de ne plus toucher à la précédente : il est en train de choisir dessus,
+et une planche qui bouge sous les doigts de celui qui la juge ne se juge plus.
+Celle-ci ne pose qu'une question et emprunte tout le reste sans le rediscuter —
+même fiche, même barre d'enregistrement, même devis. Sinon il choisirait un
+écran au lieu d'un dessin.
+
+**Les cinq :** l'anneau d'aujourd'hui (là pour comparer — sans lui on choisit
+dans le vide), un micro plein (le dessin de toutes les messageries), une barre
+d'invitation qui porte le mot et le micro, l'anneau d'Atlas avec un micro au
+centre, et une onde à plat traversant l'écran avec un disque au milieu.
+
+**Le bouton DISPARAÎT, il ne se grise pas** — et le contrôle mesure la
+différence (`offsetParent`, pas l'opacité). Un bouton éteint reste un bouton :
+on l'appuie, il ne répond pas, et l'on croit l'écran cassé. **Et il revient si
+l'on jette la note** : c'est l'autre moitié de la même règle, sans laquelle
+jeter laisserait l'écran amputé de sa seule autre issue.
+
+`scripts/verifier-maquette-note-vocale-au-repos.mjs` tient les cinq : un seul
+dessin à l'écran à la fois, chacun touchable à 44 px, le bouton là avant, parti
+pendant, revenu après, la même barre d'enregistrement partout, le devis au nom
+saisi, rien sous le pli à 700 et 667 points, et la teinte qui bascule dans les
+deux sens. Éprouvé contre cinq états dégradés — bouton resté, bouton grisé,
+bouton non rendu après un rejet, deux repos visibles ensemble, un repos rapetissé
+sous 44 px : chacun le fait rougir.
+
+### « J'ai vu » sur les quatre rappels — sa demande, capture à l'appui
+
+*« Pour chaque notification je dois pouvoir cliquer sur vu pour les faire
+disparaître ; pourquoi certaines n'ont pas cette fonction ? Mets la fonction
+pour toutes. »* Trois rappels sur quatre n'avaient aucun geste : la carte
+restait jusqu'à ce que la situation cesse, et deux cartes suffisent à repousser
+ses chantiers hors de l'écran.
+
+**Ce que ça évite, et ce que ça ne casse pas.** Le geste fait **taire** le
+rappel le temps de son délai réglé — sept jours pour un devis sans réponse —,
+il ne l'efface pas : un rappel classé pour toujours ferait précisément ce que
+ces rappels existent pour éviter, perdre un chantier de vue. Pour ne plus
+jamais le voir, l'interrupteur reste dans « Réglages › Notifications ».
+
+L'acquittement vit en base (`rappels_vus`, migration 0071) : il survit au
+rechargement, ce que le masquage d'écran ne faisait pas. La facture impayée
+garde son moteur d'origine et ne prend que le mot — deux mécaniques de silence
+sur une même carte finiraient par se contredire. Détail et raisons :
+`ARCHITECTURE.md` §210.
+
+**« Plus tard » disparaît du vocabulaire** : le même geste ne s'appelle plus
+autrement d'une carte à l'autre.
+
+### La note vocale à la manière d'une messagerie — la planche, pas le code
+
+**Sa demande, deux captures à l'appui :** *« il faut modifier la note vocale
+pour qu'elle soit plus simple à utiliser, à la manière de celle de WhatsApp :
+on appuie dessus et, comme sur la deuxième photo, il faut la même chose —
+possibilité de supprimer, ou appuyer sur la flèche pour envoyer de suite la
+transcription et arriver sur la page du devis comme c'est déjà le cas. […] Et
+réduis un peu la largeur du bouton "Je rédige mon devis". Code rien, fais une
+maquette, pas de photo. »*
+
+**Ce qu'il y a derrière, et qui n'est pas qu'un dessin.** L'anneau
+d'aujourd'hui ne connaît que deux gestes : appuyer pour dicter, rappuyer pour
+arrêter — et **arrêter, c'est envoyer**. Celui qui s'est trompé, ou qui a laissé
+courir le micro dans la voiture, envoie quand même : la transcription part avec,
+et c'est sur le devis qu'il découvre le dégât. La poubelle est le garde-fou qui
+manquait ; l'envoi cesse d'être un effet de bord de l'arrêt.
+
+`appli/note-vocale-simple.html`, avec **deux propositions aux mêmes gestes** —
+la barre à deux rangées de sa capture, et la capsule sans pause — plus un onglet
+pour les **quatre largeurs** du bouton, qui s'appliquent réellement à l'écran de
+la fiche. **Rien n'est codé dans `src/` :** la maquette d'abord
+(`CLAUDE.md` §3 bis).
+
+**TOUT TIENT SUR UN ÉCRAN — sa troisième correction du jour, et c'est elle qui
+a commandé toutes les mesures :** *« tout doit tenir sur une seule page, ne doit
+pas décoller vers le bas pour accéder aux autres informations »*. L'écran faisait
+**960 px** ; la bande utile entre la barre d'adresse de Safari et la barre
+d'outils, mesurée sur sa capture, vaut **environ 700 points**. Il est descendu à
+**631**, ce qui le fait tenir aussi sur un iPhone SE (667).
+
+Ce qui a été resserré : les espaces entre blocs (17 → 7 px), la hauteur des
+cases (50 → 44), le carré photo (74 → 58), le talon de 44 px sous le bouton qui
+ne portait rien. **Et quatre intitulés sont partis** — « E-mail », « Adresse du
+chantier », « Comment lui envoyer son devis ? », « Photos du chantier » : les
+cases et les capsules les disent déjà, et c'est aussi sa règle du 25 août sur le
+nombre de mots. **« Nom du client » et « Téléphone » restent**, parce qu'il les
+a demandés nommément le 21 août — les retirer aurait fait tenir l'écran en
+défaisant une demande antérieure, sans le lui dire. Ce qui n'est plus écrit
+reste lisible par un lecteur d'écran (`.sr`) : un intitulé retiré de l'œil ne se
+retire pas de la voix.
+
+**La zone de la dictée a une hauteur FIXE**, et la ligne d'indice disparaît
+pendant l'enregistrement : sans ces deux points, la barre — plus haute que
+l'anneau — poussait tout ce qui suit vers le bas à l'instant où l'on appuie, et
+le bouton passait sous le pli au pire moment.
+
+**Une proposition retirée, puis remise — et c'est lui qui a tranché les deux
+fois.** *« Lorsque je clique sur le bouton note vocale, il doit ensuite
+DISPARAÎTRE pour laisser place à la modification »* : la proposition qui gardait
+l'anneau au centre entre la poubelle et l'avion contredisait cette règle, elle
+est partie le jour même. Il l'a redemandée dans la foulée — *« je veux pouvoir
+essayer tous ceux que tu m'as proposés »* — et elle est revenue **telle quelle,
+sans être maquillée pour se conformer** : c'est en la manipulant qu'il verra si
+sa règle tient, et un choix qu'on lui retire n'est pas un choix.
+
+**Et la teinte se bascule à la demande.** Sa demande : *« tout à l'heure tu m'as
+fait cinq visuels en blanc et en fond noir, je veux essayer les cinq »* — il
+avait vu les captures de relecture prises en clair ET en sombre, alors que la
+planche, elle, suivait le réglage de son téléphone : il ne pouvait voir qu'une
+teinte sur les deux. Un bouton ☾ / ☀ dans la barre d'onglets.
+
+**Le piège n'est pas la bascule, c'est le retour.** Un `@media
+(prefers-color-scheme: dark)` écrit seul reprend la main : sur un téléphone
+réglé en sombre, on ne peut jamais revenir au clair. La palette se déclare donc
+trois fois — sur `:root`, sous le `@media` mais **seulement si l'on n'a pas
+demandé le clair**, et sous `:root[data-theme="dark"]` qui gagne dans les deux
+sens. Le contrôle joue les deux sens **depuis les deux réglages système**, et
+lit la couleur réellement peinte plutôt qu'une classe supposée appliquée.
+
+**Un défaut vu à la capture, invisible aux tests :** les quatre onglets
+débordent d'un écran de téléphone, la barre défilait, et le bouton de teinte
+partait avec — coupé au bord droit. Playwright le trouvait et le cliquait quand
+même ; le doigt, lui, ne l'aurait jamais vu. Les onglets défilent désormais dans
+leur propre piste, la bascule reste posée à droite, et le contrôle mesure qu'elle
+est **entière** dans la fenêtre.
+
+**Et l'écran du devis dit désormais qu'il est un exemple.** Sa question :
+*« la page que tu m'as mise en visuel, c'est juste pour le test ? »* Elle
+méritait d'être posée, et l'écran devait y répondre seul — sans quoi on peut
+croire qu'Atlas fabrique un devis de démonstration. La note dit maintenant que
+l'avion ouvre **son vrai devis**, déjà rempli.
+
+Et *« le bouton change par "je rédige à la main", mais ça doit être un
+bouton secondaire, car l'idée c'est qu'il utilise en priorité la note vocale »* :
+le bouton passe au vocabulaire secondaire d'Atlas (fond transparent, liseré d'or,
+même hauteur et même serif — celui de `ChoixCanal.tsx`), et **le seul aplat plein
+de l'écran devient le rond d'envoi de la dictée**. Tant que le bouton était
+plein, l'œil y allait d'abord et l'anneau devenait un accessoire : l'inverse de
+ce que fait ce produit.
+
+**Deux défauts trouvés par le contrôle et par la capture, pas à l'œil :**
+`.capsule{display:flex}` l'emportait sur le `[hidden]` du navigateur — la
+troisième proposition et l'attente de transcription s'affichaient avant qu'on
+ait touché quoi que ce soit ; et en **mode sombre**, le bouton principal et le
+rond d'envoi, posés en vert pin sur un fond noir, se noyaient dedans. Ce second
+défaut est celui de sa capture du 22 août (« le mode nuit est illisible ») :
+la planche porte désormais un `--plein` / `--sur-plein` qui s'inverse comme le
+font les jetons de `src/lib/chartes.ts`.
+
+`scripts/verifier-maquette-note-vocale-simple.mjs` la parcourt : **l'anneau
+disparaît** à l'appui, les deux gestes existent dans les deux propositions,
+**jeter ne mène nulle part** et remet le compteur à zéro, la pause arrête vraiment le chrono (mesuré sur deux secondes),
+l'avion mène au devis **avec le nom saisi**, aucun prix n'est inventé, et les
+quatre largeurs donnent quatre largeurs différentes, et **rien ne passe sous le
+pli** — mesuré sur la page entière à 700 et à 667 points, au repos ET pendant
+l'enregistrement, dans les deux propositions. C'est le point le plus fragile de
+la planche : une case de plus, deux pixels de marge, et l'écran repasse sous le
+pli sans que personne le voie. Il mesure aussi le
+**contraste** des aplats plutôt que leur simple présence : sa première version
+accusait le micro du coin et les pastilles Mr/Mme — des surfaces à 1,03 de
+contraste du fond de page, que personne ne lit comme un appel à l'action. Un
+contrôle qui désigne le mauvais coupable coûte plus cher que pas de contrôle.
+Éprouvé contre dix états dégradés — poubelle inerte, poubelle qui mène au devis,
+pause neutralisée, bouton à pleine largeur, bouton repeint en aplat, anneau resté
+visible, report du nom coupé, un champ de plus, les espaces relâchés, la réserve
+de la dictée sautée : chacun le fait rougir.
+
+**Un pixel, trouvé par le contrôle et non à l'œil.** La poubelle rendait
+43,99997 px — l'alignement du flex la rabotait d'un cheveu, juste sous le seuil
+du doigt. Le message, lui, affichait « mesuré : 44×44 » en refusant : un contrôle
+qui se contredit envoie chercher partout sauf au bon endroit. Les deux sont
+corrigés.
+
+### Le commercial écrit sur le planning : confirmé, plus seulement toléré
+
+Le lot « salarié en lecture seule » n'avait pas touché aux droits du commercial,
+le patron ayant demandé de n'y pas toucher. La question lui a donc été posée
+séparément une fois le lot livré, et il a répondu **oui**.
+
+**Ce qui change n'est pas le code — c'est son statut.** Un droit qui subsiste
+faute d'avoir été examiné se resserre un jour « par prudence », au premier lot de
+sécurité venu, et personne ne sait plus s'il avait été voulu. Écrit dans
+`peutModifierLePlanning` et dans `ARCHITECTURE.md` §208 : le resserrer demande
+une seconde décision de sa part.
+
+### Le contrôle élargi a pris sa première action, écrite ailleurs
+
+**À la fusion du 30 août**, `test-actions-gardees-db.ts` a fait rougir
+`corrigerMesurePrestationAction` — arrivée de `main` le jour même, dans un
+fichier dont les **dix-sept autres actions** portent toutes
+`exigerEcran(ctx, "/chantiers", …)`. Celle-là était née sans.
+
+C'est exactement ce que l'élargissement devait attraper, et il l'a fait sur du
+code qui n'est pas le nôtre, quelques heures après avoir été écrit. La garde
+manquante a été posée, identique à celle de ses voisines.
+
+### Le planning du salarié passe en lecture seule
+
+*Décision du patron, et elle tranche la seule question que le lot de clôture lui
+avait renvoyée : « un salarié peut uniquement CONSULTER son planning ».*
+
+**Ce que ça évite.** Un salarié pouvait supprimer un chantier — suppression
+douce, mais qu'aucun écran ne restaure —, le déplacer, le retirer du planning,
+réécrire son pense-bête et changer l'équipe qui part. Le bouton était dessiné
+pour lui, et le serveur ne vérifiait que **quel** chantier, jamais **s'il** avait
+le droit d'écrire.
+
+**Et ce n'était pas qu'une question de boutons :** la requête d'écriture,
+fabriquée à la main avec l'identifiant de l'action et celui du chantier, passait.
+C'est éprouvé pour de bon — la suite intercepte l'appel du patron et le rejoue
+sous le salarié ; garde retirée, il écrit, réponse 200.
+
+**Une seconde porte, trouvée en cherchant celle-ci.** Les actions photos d'un
+chantier n'avaient aucune garde : un salarié pouvait ajouter une photo à
+n'importe quel chantier et en **supprimer** n'importe laquelle, cette fois pour
+de bon. Le contrôle du lot précédent ne le voyait pas — il lisait deux listes de
+fichiers écrites à la main, et le fichier ne s'appelait pas `actions.ts`. Il
+relève désormais **tout** fichier « use server » du dépôt, et ce qui n'a pas de
+garde doit s'expliquer par écrit.
+
+**Ce qui n'a pas bougé, et c'est éprouvé aussi :** la portée de lecture, les
+droits du patron, ceux du commercial, et la feuille de chantier sans montants —
+le seul document du salarié.
+
+### Lot de clôture : ce qui restait ouvert avant le premier artisan
+
+Détail complet dans `docs/cloture-avant-premier-artisan.md`. Ce qui suit est ce
+que ces corrections **évitent**.
+
+**La purge n'était pas seulement débranchée : elle était invisible.** Le grave
+n'est pas l'oubli du planificateur — cela se branche en une ligne. Le grave est
+qu'une purge qui ne tourne pas ne se signale pas : aucune erreur, aucun écran
+rouge. On ne l'aurait découvert qu'en cherchant autre chose, des mois plus tard,
+avec toutes les durées de conservation annoncées fausses depuis le début.
+Un journal des exécutions **réussies**, une sonde qui rend 503 au-delà de 48 h,
+et `docs/DEPLOIEMENT-PURGE.md` pour le reste. Atlas ne planifie toujours rien :
+un minuteur interne mourrait avec le processus sans que personne ne le sache.
+
+**Un écran fermé ne fermait pas l'action.** 37 actions sans garde sur des écrans
+pourtant fermés au salarié, dont quatre suppressions **dures** — prestation,
+matériel, note vocale, passage d'entretien : un `DELETE`, que rien ne défait.
+Et la portée du planning ne filtrait que l'**affichage** : un salarié resserré
+ne voyait pas les autres chantiers et pouvait les supprimer dès qu'il en
+connaissait l'identifiant. Le patron croyait avoir restreint.
+
+**Ce que le patron approuve est désormais ce qui s'écrit.** L'écran affichait
+une description composée par le modèle, l'application écrivait `donnees`, et
+rien ne les confrontait : « Tonte — 120 € » pouvait faire écrire 1 200 €. La
+description se **recalcule** depuis les données écrites — l'écart n'est plus
+détecté, il est impossible.
+
+**Un montant du modèle partait sans être regardé.** La base refusait le négatif
+et rien d'autre. Bornes **factuelles** seulement — ce qui n'est pas un nombre,
+ce que la colonne ne peut pas contenir. Aucun plafond métier inventé : refuser
+au-dessus de dix mille euros refuserait du terrassement réel.
+
+**Le contenu appris avait l'autorité d'une consigne système.** Trois
+emplacements déclarés au lieu de deux : les règles, la donnée à traiter, les
+exemples appris.
+
+**Ma première correction d'invite était fausse, et c'est la leçon du lot.**
+J'avais sorti le bloc de la consigne système — juste — mais préfixé à la
+**dictée**. Or `lireLitteralement` analyse ce message mot à mot, et sert de
+FILET quand un vrai fournisseur répond à côté : le défaut aurait atteint la
+production. Ce ne sont pas des contrôles de sécurité qui l'ont trouvé, mais
+trois suites navigateur ordinaires.
+
+**Trois affirmations fausses corrigées** dans `docs/RGPD.md`, qui portait
+« implémenté » sur des durées que rien n'exécutait. « Implémenté » voulait dire
+« le code est écrit » ; un lecteur comprenait « la donnée est effacée ». Le
+tableau distingue désormais trois états, jamais deux.
+
+Batterie : 265/265 base, 116/116 navigateur, 0 erreur de types.
+
+### Une souche ne se fait plus demander comment on l'abat, et l'écran cesse d'expliquer
+
+**Sa remarque du jour, capture à l'appui :** *« lorsque l'on parle de souche, ça
+sous-entend que l'arbre a déjà été abattu et qu'il ne reste que les racines à
+enlever — donc s'il n'y a pas d'arbre, pourquoi il y a la question de comment on
+l'abat ? »*
+
+Le dessouchage était rangé avec l'abattage pour ne pas redemander deux fois le
+diamètre du même tronc. Le raccourci était juste pour le diamètre ; il commandait
+aussi la question de la technique, et là il était faux. Une souche reçoit
+désormais son diamètre seul, sous le mot juste — « Quel diamètre fait la
+souche ? ».
+
+Aucun contrôle ne pouvait le voir : la question était posée, lisible, son
+identifiant stable. Il lui manquait seulement un sens.
+
+**Et l'écran a perdu ses phrases** — *« trop de phrases inutiles, il faut aller
+droit au but, l'utilisateur n'aime pas lire »*. Sont parties : les deux lignes
+sous le titre, la ligne d'explication sous chaque question (le champ `pourquoi`
+avec elles — un champ que plus rien n'affiche revient à l'écran au premier
+remaniement), et la prestation réécrite au-dessus de chaque question. Le titre
+passe de « 2 précisions avant de chiffrer » à « Avant de chiffrer ».
+
+Trois suites comptaient les questions dans ce titre ; elles comptent maintenant
+les blocs `[data-atlas="question-chiffrage"]` — on n'écrit pas un contrôle qui
+réclame ce qu'il a fait retirer.
+
+Détail et raisons : `ARCHITECTURE.md` §209.
+
+### Une mesure déjà dictée ne se redemande plus, et trois textes raccourcissent
+
+*« Tu dis deux souches de diamètre 60. Question : quel diamètre font les
+souches ? »* La lecture découpe une phrase à la virgule : « Il y a un
+dessouchage » d'un côté, « deux souches de soixante centimètres de diamètre » de
+l'autre. La question ne regardait que sa propre ligne — la hauteur, elle, était
+cherchée dans toute la dictée depuis le premier jour. Le diamètre l'est
+désormais aussi, tant qu'un seul arbre est en jeu (à deux, un diamètre dit
+quelque part n'appartient pas forcément à celui qu'on questionne).
+
+Les questions ne nomment plus leur objet — « Quel diamètre ? » au lieu de
+« Quel diamètre fait la souche ? » : la prestation est écrite juste au-dessus,
+au pluriel comme au singulier.
+
+Deux textes qui décrivaient ce que l'écran montrait déjà sont partis : la ligne
+grise de l'écran Transcription, et trois des quatre phrases du refus de chiffrer
+— *« beaucoup beaucoup trop long, aucun utilisateur va lire tout ça »*. Il ne
+reste que le motif ; les deux marches à suivre étaient déjà en boutons dessous.
+La phrase supprimée portait aussi « vos 1 prestation ».
+
+Détail : `ARCHITECTURE.md` §209.
+
+
+### Plus aucune barre de défilement grise, y compris sur la page elle-même
+
+**Sa plainte du jour, sur son PC :** *« sur PC les bandes déroulantes grises
+apparaissent, supprime-moi ça »*. Deuxième fois qu'il le demande — le 11 août,
+le correctif n'avait couvert que les cadres qui défilent, pas **la page**.
+
+Le gabarit donne à la page `100dvh` de hauteur minimale : tout écran un peu long
+fait donc défiler la fenêtre. Sur un téléphone cette barre-là est en
+surimpression et s'efface seule ; sur un ordinateur elle s'installe à droite et
+n'en repart pas. Le défaut ne pouvait apparaître que chez lui.
+
+`globals.css` porte désormais une règle universelle (`* { scrollbar-width: none }`
+et `*::-webkit-scrollbar { display: none }`) au lieu d'une déclaration recopiée
+par zone — la sixième avait été oubliée, la septième l'aurait été aussi. Le
+défilement ne change pas : seule la peinture disparaît.
+
+`scripts/test-aucune-barre-de-defilement-e2e.ts` écartait explicitement `<html>`
+et `<body>` en les déclarant « pas de notre ressort ». Ils le sont : il les
+mesure. Éprouvé rouge avant d'être éprouvé vert — règle retirée, huit écrans sur
+treize rougissent sur `html (scrollbar-width: auto)`.
+
+Détail et raisons : `ARCHITECTURE.md` §206.
+
+---
+
 ### Le client ne relit plus les mesures qu'Atlas range en colonnes
 
 **Son premier vrai devis sorti de la chaîne corrigée** portait « Haie de laurier
@@ -33,9 +430,55 @@ La règle n'est pas « retirer ce qui ressemble à une mesure » mais « retirer
 fragment dont TOUT ce qu'il dit est déjà en colonne » : « Érable — démontage en
 rétention » garde sa méthode, qu'aucune colonne ne porte. Rien n'est retiré de
 la base, et aucun devis existant n'est réinterprété — sans colonnes, le libellé
-est rendu tel quel. Détail : `ARCHITECTURE.md` §206.
+est rendu tel quel. Détail : `ARCHITECTURE.md` §211.
 
 ## 2026-08-29
+
+### Audit final de sécurité : quatre protections qui n'en étaient pas
+
+Sept défauts trouvés avant le premier artisan réel, tous **mesurés** et non
+déduits. Le détail est dans `docs/audit-securite-final.md` ; ce qui suit est ce
+qu'ils **évitent**.
+
+**Une fuite entre entreprises.** `/api/fichiers` servait le logo d'une autre
+société : la table `entreprises` n'a aucune politique RLS — aucune des 78
+migrations n'en pose — et c'était la seule des quatorze requêtes du dépôt sur
+cette table à ne pas écrire son propre filtre. Reproduit en base avant
+correction.
+
+**Une porte ouverte au bourrage de mots de passe.** `POST
+/api/auth/callback/credentials` appelait `authorize()` sans passer par aucune
+des trois défenses, qui vivent toutes dans l'action de l'écran de connexion. Les
+deux suites censées couvrir le sujet ne pouvaient pas le voir : l'une pilote le
+formulaire, l'autre appelle le compteur en direct. La route est murée — `signIn()`
+côté serveur appelle Auth.js en processus, rien ne s'en servait.
+
+**Trente-quatre actions serveur sans garde de rôle.** `GardeAcces` ne s'exécute
+qu'au rendu ; une action s'exécute avant, et le middleware ne regarde que la
+session. Un salarié pouvait ouvrir un devis complet, calculer une marge, envoyer
+un devis chez un client, émettre une facture, supprimer un client.
+
+**Un déni de service à 258 octets.** Une référence de cellule `r="ZZZZZ1"` dans
+un classeur faisait allouer 12 356 630 chaînes : 1,7 s et 196 Mo mesurés. Ni la
+borne de 5 Mo, ni le plafond de décompression, ni la cadence ne bornaient
+l'allocation qui suit la lecture. Même famille sur le plan d'arrosage, dont les
+cotes venaient du navigateur sans être regardées.
+
+**Trois replis permissifs de configuration** : les adresses des fournisseurs
+d'IA étaient surchargeables en production — clé et dictées comprises —,
+`NODE_ENV` acceptait n'importe quelle chaîne via un `as`, et `REDIS_URL` était
+lue en brut, si bien qu'une valeur blanche franchissait son propre garde-fou.
+
+**La leçon commune, et elle vaut plus que les sept défauts.** Dans les quatre
+cas les plus graves, **un commentaire affirmait la protection qui n'existait
+pas**. C'est ce qui les avait rendus invisibles : on ne vérifie pas ce qu'une
+phrase déclare acquis. Les quatre phrases ont été corrigées avec le code.
+
+Cinq contrôles neufs, **tous vus rouges avant d'être verts** — dont
+`test-toute-table-est-cloisonnee.ts`, qui garde la prochaine migration : les
+privilèges par défaut donnent l'écriture à `atlas_app` sur toute table future,
+quand la RLS, elle, est éteinte par défaut. Les deux réglages vont en sens
+contraire, et rien ne surveillait l'écart.
 
 ### Le banc répare ses dépendances désaccordées, au lieu de bâtir en boucle pour rien
 
