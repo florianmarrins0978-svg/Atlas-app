@@ -1,4 +1,6 @@
 import { spawnSync } from "node:child_process";
+import { existsSync, readFileSync } from "node:fs";
+import path from "node:path";
 
 // La batterie complète, à jouer AVANT de demander au patron d'essayer quoi que
 // ce soit.
@@ -55,6 +57,83 @@ const IA_COUPEE = { LLM_PROVIDER: "dev", TRANSCRIPTION_PROVIDER: "dev" };
 const APP = "postgresql://atlas_app:atlas_app_ci_pw@localhost:5432/atlas_test";
 const OWNER = "postgresql://atlas_owner:atlas_owner_ci_pw@localhost:5432/atlas_test";
 const SUPER = "postgresql://postgres:postgres_ci_pw@localhost:5432/atlas_test";
+
+/**
+ * **CETTE BATTERIE IGNORE LE `.env` DU DOSSIER — d'où ce refus.**
+ *
+ * Les trois adresses ci-dessus sont écrites en dur, sur le port **5432**. C'est
+ * juste dans le dossier de développement, où c'est précisément ce qu'on veut
+ * éprouver. Mais jouée depuis l'établi de qualification (`docs/ETABLI-QA.md`),
+ * dont la base vit sur **55432**, cette batterie sort de l'établi sans le dire :
+ * elle migre, vide et remplit `atlas_test` sur le port de tous les jours,
+ * pendant qu'on croit travailler dans un environnement jetable.
+ *
+ * **Le trou n'était pas théorique** : il a été relevé le 30 août 2026 en
+ * montant l'établi, et c'est le SEUL chemin par lequel la qualification pouvait
+ * encore atteindre le dossier habituel. Tout le reste — suites base, suites
+ * navigateur, migrations, jeu de données — lit `DATABASE_URL`.
+ *
+ * On refuse donc, plutôt que de « faire au mieux ». Un `.env` qui nomme une
+ * base de qualification est une déclaration d'intention sans ambiguïté : celui
+ * qui l'a posé ne veut pas qu'on écrive ailleurs.
+ *
+ * **Pourquoi ne pas simplement faire lire `DATABASE_URL` à la batterie ?**
+ * Parce qu'elle a besoin des TROIS rôles — applicatif, propriétaire,
+ * superutilisateur — et qu'un `.env` n'en porte que deux. Lui en faire déduire
+ * le troisième serait deviner un mot de passe. Le refus est honnête ; la
+ * déduction ne le serait pas.
+ */
+function refuserHorsDeSonDossier() {
+  const chemin = path.join(process.cwd(), ".env");
+  if (!existsSync(chemin)) return;
+
+  let contenu: string;
+  try {
+    contenu = readFileSync(chemin, "utf8");
+  } catch {
+    return;
+  }
+
+  const ligne = contenu
+    .split("\n")
+    .map((l) => l.trim())
+    .find((l) => !l.startsWith("#") && l.startsWith("DATABASE_URL="));
+  if (!ligne) return;
+
+  const adresse = ligne.slice("DATABASE_URL=".length).trim();
+  let base = "";
+  let port = "";
+  try {
+    const url = new URL(adresse);
+    base = decodeURIComponent(url.pathname.replace(/^\//, ""));
+    port = url.port || "5432";
+  } catch {
+    return;
+  }
+
+  // Deux signes, et l'un des deux suffit : un nom de base qui n'est pas celui
+  // que la batterie va employer, ou un port qui n'est pas le sien.
+  const memeCible = base === "atlas_test" && port === "5432";
+  if (memeCible) return;
+
+  console.error(
+    `\n❌ Cette batterie REFUSE de tourner dans ce dossier.\n\n` +
+      `   Le .env d'ici désigne « ${base} » sur le port ${port}.\n` +
+      `   La batterie, elle, écrit en dur sur « atlas_test » port 5432 —\n` +
+      `   c'est-à-dire AILLEURS que là où tu travailles.\n\n` +
+      `   Ce qu'elle ferait sans ce refus : migrer, VIDER et remplir la base\n` +
+      `   d'un autre environnement, sans que rien ne le dise.\n\n` +
+      `   Dans un établi de qualification, la batterie de livraison n'a rien à\n` +
+      `   faire : ce qui s'y joue est « npm test » et « npm run test:e2e », qui\n` +
+      `   lisent tous deux DATABASE_URL.\n\n` +
+      `   Pour l'employer quand même — sur une machine où atlas_test:5432 EST\n` +
+      `   la bonne cible :\n\n` +
+      `     ATLAS_BATTERIE_HORS_ETABLI=oui npm run verifier:avant-livraison\n`,
+  );
+  process.exit(1);
+}
+
+if (process.env.ATLAS_BATTERIE_HORS_ETABLI?.trim() !== "oui") refuserHorsDeSonDossier();
 
 const ETAPES: Etape[] = [
   {

@@ -317,7 +317,28 @@ async function main() {
     vert("Application", `pas encore démarrée sur le port ${port_app} — normal tant que \`npm run dev\` n'a pas été lancé`);
   }
 
-  // ── 9. L'Atlas habituel est-il hors de portée ? ───────────────────────────
+  // ── 9. Rien ne se croit en production ─────────────────────────────────────
+  //
+  // Trois variables suffisent à faire basculer Atlas dans un régime où il
+  // exige de vraies clés, un vrai compartiment S3 et un vrai secret de purge —
+  // et où le jeu de démonstration refuse net de tourner. Une campagne lancée
+  // là-dessus ne mesurerait rien : elle échouerait au démarrage.
+  const marqueursProduction: [string, string | undefined][] = [
+    ["NODE_ENV", env.NODE_ENV ?? process.env.NODE_ENV],
+    ["ATLAS_DEPLOIEMENT", env.ATLAS_DEPLOIEMENT],
+  ];
+  const enProduction = marqueursProduction.filter(([, v]) => (v ?? "").trim() === "production");
+  if (enProduction.length > 0) {
+    rouge(
+      "Aucun régime de production",
+      `${enProduction.map(([n]) => n).join(", ")} vaut « production »`,
+      "Retirer ces valeurs : le jeu de démonstration refuse, et Atlas exigerait de vraies clés.",
+    );
+  } else {
+    vert("Aucun régime de production", "NODE_ENV et ATLAS_DEPLOIEMENT ne valent pas « production »");
+  }
+
+  // ── 10. L'Atlas habituel est-il hors de portée ? ──────────────────────────
   //
   // La preuve par l'absence : rien de ce .env ne nomme le port 5432 ni le port
   // 6379. C'est ce qui permet d'affirmer que RIEN de ce qu'on lancera d'ici ne
@@ -330,13 +351,33 @@ async function main() {
       "Aucune adresse de cet établi ne doit désigner les ports de tous les jours.",
     );
   } else {
-    vert(
-      "Atlas habituel hors de portée",
-      `aucune variable ne nomme les ports ${PORT_HABITUEL} / ${REDIS_HABITUEL}` +
-        `\n     ⚠ SAUF si tu lances \`npm run verifier:avant-livraison\` : cette commande code` +
-        `\n       en dur localhost:5432/atlas_test (scripts/verifier-avant-livraison.ts, l. 55-57)` +
-        `\n       et ignore ce .env. À ne PAS jouer depuis l'établi QA.`,
-    );
+    vert("Atlas habituel hors de portée", `aucune variable ne nomme les ports ${PORT_HABITUEL} / ${REDIS_HABITUEL}`);
+  }
+
+  // ── 11. Le seul chemin qui pouvait encore en sortir ───────────────────────
+  //
+  // `verifier-avant-livraison.ts` code ses trois adresses en dur sur le port
+  // 5432 et ignore ce `.env`. C'était le SEUL chemin par lequel la
+  // qualification pouvait encore écrire dans le dossier de tous les jours.
+  // Depuis le 30 août 2026 il refuse de tourner ici — on le VÉRIFIE plutôt que
+  // de le croire : un garde retiré par mégarde ne se voit pas autrement.
+  try {
+    const source = readFileSync(path.join(RACINE, "scripts", "verifier-avant-livraison.ts"), "utf8");
+    if (source.includes("refuserHorsDeSonDossier")) {
+      vert(
+        "Batterie de livraison neutralisée ici",
+        "`verifier:avant-livraison` refuse de tourner dans un dossier dont le .env\n" +
+          "     désigne une autre base — c'était le dernier chemin vers le port 5432",
+      );
+    } else {
+      rouge(
+        "Batterie de livraison neutralisée ici",
+        "le garde a disparu de scripts/verifier-avant-livraison.ts",
+        "Sans lui, `npm run verifier:avant-livraison` VIDE atlas_test sur le port 5432 depuis cet établi.",
+      );
+    }
+  } catch {
+    rouge("Batterie de livraison neutralisée ici", "scripts/verifier-avant-livraison.ts est illisible", "Vérifier le dépôt.");
   }
 
   rendre();
@@ -351,10 +392,14 @@ function rendre() {
     console.log("");
   }
   const echecs = verdicts.filter((v) => !v.ok).length;
+  const total = verdicts.length;
+  // Une ligne de synthèse, lisible d'un coup d'œil depuis un téléphone. Le
+  // détail est au-dessus ; ce qu'on cherche en rouvrant l'établi, c'est ce
+  // rapport-là.
   if (echecs === 0) {
-    console.log("═══ L'établi est isolé. La campagne peut commencer. ═══\n");
+    console.log(`═══ QA : ${total}/${total} — VERT. L'établi est isolé. ═══\n`);
   } else {
-    console.log(`═══ ${echecs} point(s) à régler AVANT de lancer quoi que ce soit. ═══\n`);
+    console.log(`═══ QA : ${total - echecs}/${total} — ROUGE. ${echecs} point(s) à régler avant de lancer quoi que ce soit. ═══\n`);
     process.exit(1);
   }
 }

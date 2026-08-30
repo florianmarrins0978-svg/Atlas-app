@@ -1,0 +1,305 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas — Stratégie des modèles pour la campagne de qualification</title>
+<style>
+  :root{
+    --ground:#f5f3ee; --surface:#faf9f5; --raised:#ece9e1;
+    --ink:#1c1c1a; --ink-soft:#4a4a44; --muted:#8a8578;
+    --accent:#2f3b2f; --alert:#b5562a; --line:rgba(28,28,26,0.13);
+    --serif:Georgia,'Times New Roman',serif;
+    --sans:system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --ground:#161815; --surface:#1d201c; --raised:#252924;
+      --ink:#eae7df; --ink-soft:#c2bdb1; --muted:#948f83;
+      --accent:#9fbd82; --alert:#e0885a; --line:rgba(234,231,223,0.17);
+    }
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--sans);
+    line-height:1.65;}
+  main{max-width:44rem;margin:0 auto;padding:2.5rem 1.2rem 5rem;}
+  h1,h2,h3,h4{font-family:var(--serif);font-weight:600;line-height:1.2;
+    text-wrap:balance;margin:2rem 0 0.6rem;scroll-margin-top:1rem;}
+  h1{font-size:2rem;margin-top:0;}
+  h2{font-size:1.5rem;padding-top:1.2rem;border-top:1px solid var(--line);}
+  h3{font-size:1.12rem;}
+  h4{font-size:1rem;}
+  p{margin:0 0 0.9rem;}
+  a{color:var(--accent);text-underline-offset:3px;}
+  a:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:3px;}
+  ul,ol{margin:0 0 1rem;padding-left:1.3rem;}
+  li{margin-bottom:0.4rem;}
+  li::marker{color:var(--muted);}
+  /* Le sommaire : des cibles larges, confortables au doigt sur téléphone. */
+  ol li a{display:inline-block;padding:0.15rem 0;}
+  blockquote{margin:1rem 0;padding:0.85rem 1.05rem;background:var(--raised);
+    border-left:3px solid var(--accent);border-radius:0 10px 10px 0;color:var(--ink-soft);}
+  code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:0.87em;
+    background:var(--raised);padding:0.1rem 0.35rem;border-radius:5px;}
+  hr{border:0;border-top:1px solid var(--line);margin:2rem 0;}
+  .tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px;
+    background:var(--surface);margin:0 0 1.2rem;}
+  table{border-collapse:collapse;width:100%;font-size:0.92rem;min-width:22rem;}
+  th,td{text-align:left;padding:0.55rem 0.8rem;border-bottom:1px solid var(--line);
+    vertical-align:top;}
+  th{font-size:0.72rem;letter-spacing:0.08em;text-transform:uppercase;
+    color:var(--muted);white-space:nowrap;}
+  tr:last-child td{border-bottom:none;}
+  .retour{display:inline-block;font-size:0.76rem;color:var(--muted);
+    text-decoration:none;margin:-0.3rem 0 1rem;}
+  .retour:hover{color:var(--accent);text-decoration:underline;}
+</style>
+</head>
+<body>
+<main>
+<h1 id="stratégie-des-modèles-pour-la-campagne-de-qualification">Stratégie des modèles pour la campagne de qualification</h1>
+<p><strong>Qui fait quoi, et pourquoi.</strong> Ce document existe pour qu'on n'emploie pas le même modèle du début à la fin par habitude — ni le plus puissant pour compter des lignes, ni le plus rapide pour juger d'une fuite entre entreprises.</p>
+<hr>
+<h2 id="1-les-modèles-réellement-disponibles">1. Les modèles réellement disponibles</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><strong>Relevés, pas supposés.</strong> Cette liste vient de ce que l'environnement déclare lui-même (<code>get_session</code>) et de ce que la documentation de l'outil de sous-agents accepte. Aucun nom n'a été complété de mémoire.</p>
+<div class="tablewrap"><table><thead><tr>
+<th>Identifiant</th>
+<th>Alias sous-agent</th>
+<th>Statut constaté</th>
+</tr></thead><tbody>
+<tr>
+<td><code>claude-opus-5</code></td>
+<td><code>opus</code></td>
+<td><strong>sert cette session</strong> (<code>last_served_model</code>)</td>
+</tr>
+<tr>
+<td><code>claude-sonnet-5</code></td>
+<td><code>sonnet</code></td>
+<td>modèle configuré à la création de la session</td>
+</tr>
+<tr>
+<td><code>claude-haiku-4-5-20251001</code></td>
+<td><code>haiku</code></td>
+<td>déclaré disponible</td>
+</tr>
+<tr>
+<td><code>claude-fable-5</code></td>
+<td><code>fable</code></td>
+<td>déclaré disponible</td>
+</tr>
+</tbody></table></div>
+<p><strong>Une réserve honnête sur <code>claude-fable-5</code> :</strong> l'environnement le nomme, mais rien de ce qui est vérifiable ici ne dit à quelle place il se range — plus rapide, plus capable, spécialisé. <strong>Il n'est donc affecté à aucune mission dans ce document.</strong> Lui confier une tâche sur une supposition de positionnement serait exactement la faute que ce dépôt s'interdit. À essayer sur une tâche sans conséquence avant de lui en confier une qui compte.</p>
+<p><strong>Comment le revérifier</strong> — les modèles changent, ce document vieillira :</p>
+<p>``<code> get_session  (sans session_id) </code>``</p>
+<p><code>session_context.model</code> dit ce que la session est réglée pour employer, <code>external_metadata.last_served_model</code> ce qui a réellement servi le dernier tour. <strong>Ce ne sont pas les mêmes</strong>, et ce malentendu-là coûte des heures.</p>
+<hr>
+<h2 id="2-le-principe-qui-commande-tout-le-reste">2. Le principe qui commande tout le reste</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><strong>Un modèle ne décide jamais qu'un test est vert.</strong></p>
+<div class="tablewrap"><table><thead><tr>
+<th>Faux</th>
+<th>Juste</th>
+</tr></thead><tbody>
+<tr>
+<td>« Claude a lu le code, l'isolation a l'air bonne »</td>
+<td>« Le scénario a été conçu ; un test A → B et B → A a été <strong>exécuté</strong> ; les accès ont été refusés »</td>
+</tr>
+<tr>
+<td>« Le calcul de TVA semble correct »</td>
+<td>« L'écran affiche 1 240 € ; l'API rend 1 240 ; la base porte 1 240 ; le PDF imprime 1 240 »</td>
+</tr>
+</tbody></table></div>
+<p>Les arbitres sont <strong>déterministes</strong> : Playwright, les suites base, les assertions SQL, k6, les contrôles d'intégrité. Le modèle <strong>conçoit, analyse, enquête, recoupe, explique</strong> — il ne constate pas à leur place.</p>
+<p><strong>Ce dépôt a déjà payé la faute inverse</strong>, et c'est écrit dans ses règles : une suite navigateur a rendu du vert sur un écran où trois noms étaient coupés, parce qu'elle comparait deux largeurs valant toutes deux zéro. <em>Un contrôle qui mesure zéro ne mesure rien.</em> Un modèle qui relit du code mesure zéro.</p>
+<hr>
+<h2 id="3-laffectation-par-catégorie-de-tâche">3. L'affectation par catégorie de tâche</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<h3 id="31-aucun-modèle--cest-purement-déterministe">3.1 Aucun modèle — c'est purement déterministe</h3>
+<p><strong>À ne jamais confier à un modèle</strong>, parce qu'un outil le fait mieux, plus vite, et sans se tromper poliment :</p>
+<div class="tablewrap"><table><thead><tr>
+<th>Tâche</th>
+<th>L'outil qui l'arbitre</th>
+</tr></thead><tbody>
+<tr>
+<td>exécuter les 115 suites navigateur</td>
+<td><code>npm run test:e2e</code></td>
+</tr>
+<tr>
+<td>exécuter les suites base</td>
+<td><code>npm test</code></td>
+</tr>
+<tr>
+<td>vérifier les types, le lint</td>
+<td><code>tsc</code>, <code>eslint</code></td>
+</tr>
+<tr>
+<td>mesurer p50 / p95 / p99, taux d'erreur</td>
+<td>k6</td>
+</tr>
+<tr>
+<td>compter des lignes, vérifier une somme SQL</td>
+<td><code>psql</code></td>
+</tr>
+<tr>
+<td>confronter l'écran à l'API à la base</td>
+<td>une suite écrite une fois</td>
+</tr>
+</tbody></table></div>
+<p><strong>Corollaire, et c'est une règle de coût :</strong> une fois qu'un test déterministe existe, on ne demande à <strong>aucun</strong> modèle de refaire mentalement ce qu'il mesure. k6 joue 1 000 utilisateurs virtuels ; le modèle n'en simule pas un seul — il lit les chiffres qui en sortent.</p>
+<h3 id="32-modèle-rapide--haiku">3.2 Modèle rapide — <code>haiku</code></h3>
+<p>Tâches nombreuses, mécaniques, à faible conséquence si elles se trompent — parce qu'une erreur s'y voit tout de suite.</p>
+<ul>
+<li>inventaires et recensements (« quelles routes existent », « quels écrans portent un formulaire ») ;</li>
+<li>génération de <strong>données fictives</strong> en masse : clients, chantiers, lignes de devis ;</li>
+<li>déclinaison d'un scénario de test déjà conçu sur vingt variantes ;</li>
+<li>classement de journaux évidents (<code>200</code> / <code>404</code> / <code>500</code>) ;</li>
+<li>résumé d'une sortie déterministe déjà produite.</li>
+</ul>
+<p><strong>La limite, et elle est nette :</strong> dès que la tâche demande de <em>juger</em> si un résultat est correct, on monte d'un cran. Recenser les formes juridiques est du ressort de <code>haiku</code> ; décider si le régime de TVA appliqué à l'une d'elles est juste ne l'est pas.</p>
+<h3 id="33-modèle-généraliste--sonnet">3.3 Modèle généraliste — <code>sonnet</code></h3>
+<p>Le régime ordinaire de la campagne : compétent, et il y aura beaucoup à faire.</p>
+<ul>
+<li>écriture des suites Playwright standards, sur le socle existant ;</li>
+<li>suites d'API et de base de données ordinaires ;</li>
+<li>adaptation d'un scénario à un rôle ou à un écran voisin ;</li>
+<li>analyse d'un échec dont la cause est lisible dans le message ;</li>
+<li>maintenance de la suite QA, mise à jour des sélecteurs.</li>
+</ul>
+<h3 id="34-modèle-le-plus-capable--opus">3.4 Modèle le plus capable — <code>opus</code></h3>
+<p><strong>Tout ce dont une erreur ne se verrait pas.</strong> C'est le critère, pas la difficulté apparente.</p>
+<div class="tablewrap"><table><thead><tr>
+<th>Domaine</th>
+<th>Pourquoi il ne se délègue pas plus bas</th>
+</tr></thead><tbody>
+<tr>
+<td><strong>architecture de la campagne</strong></td>
+<td>un trou dans le plan ne se voit dans aucun rapport</td>
+</tr>
+<tr>
+<td><strong>devis, factures, calculs financiers</strong></td>
+<td>un total faux a l'air d'un total</td>
+</tr>
+<tr>
+<td><strong>historisation des documents</strong></td>
+<td>un rapport parti ne doit plus jamais changer ; le vérifier demande de comprendre pourquoi</td>
+</tr>
+<tr>
+<td><strong>formes juridiques, régimes de TVA</strong></td>
+<td>la règle est légale, pas logique — elle ne se déduit pas du code</td>
+</tr>
+<tr>
+<td><strong>rôles et permissions</strong></td>
+<td>trois rôles, six actions de planning, des gardes serveur ; une permission trop large ne fait rien d'anormal</td>
+</tr>
+<tr>
+<td><strong>isolation multi-entreprise (RLS)</strong></td>
+<td>une requête hors contexte ne rend rien <strong>en silence</strong> — l'absence de résultat ressemble à un succès</td>
+</tr>
+<tr>
+<td><strong>concurrence, situations de course</strong></td>
+<td>par nature intermittent : le rejouer ne prouve rien, il faut raisonner</td>
+</tr>
+<tr>
+<td><strong>corruption de données</strong></td>
+<td>se découvre des semaines plus tard</td>
+</tr>
+<tr>
+<td><strong>analyse de cause racine difficile</strong></td>
+<td>le symptôme désigne rarement le coupable dans ce dépôt</td>
+</tr>
+<tr>
+<td><strong>classement P0 / P1</strong></td>
+<td>se tromper de gravité, c'est livrer avec la faille</td>
+</tr>
+<tr>
+<td><strong>lecture des résultats de charge</strong></td>
+<td>p99 qui décroche, saturation, requête lente : la cause est rarement où elle se voit</td>
+</tr>
+<tr>
+<td><strong>décision GO / GO SOUS CONDITIONS / NO-GO</strong></td>
+<td>elle engage la mise en production</td>
+</tr>
+</tbody></table></div>
+<p><strong>Et la règle qui prime sur l'économie :</strong> le modèle le moins cher ne se choisit <strong>jamais</strong> pour économiser quand une mauvaise analyse pourrait masquer une faille critique. Une heure de modèle puissant coûte moins qu'une fuite de données entre deux entreprises.</p>
+<hr>
+<h2 id="4-quand-monter-dun-cran-en-cours-de-route">4. Quand monter d'un cran, en cours de route</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p>Quatre signaux, et l'un suffit :</p>
+<ol>
+<li><strong>le symptôme change d'un essai à l'autre</strong> — c'est de la concurrence, ou de l'état partagé ; ni l'un ni l'autre ne se diagnostique en relisant ;</li>
+<li><strong>deux mesures se contredisent</strong> — l'écran dit une chose, la base une autre ;</li>
+<li><strong>le premier correctif ne tient pas</strong> — le second échec sur le même sujet signale une cause mal comprise, pas une malchance ;</li>
+<li><strong>la conclusion aurait un effet sur de vraies données</strong> — effacement, RLS, montants, historisation.</li>
+</ol>
+<h3 id="et-la-consigne-qui-interdit-le-faux-semblant">Et la consigne qui interdit le faux-semblant</h3>
+<p>Si un modèle plus capable est nécessaire mais indisponible, <strong>on ne fait pas comme si l'analyse valait la même chose.</strong> Le rapport porte alors, en toutes lettres :</p>
+<p>ANALYSE À REJOUER AVEC MODÈLE PLUS CAPABLE</p>
+<p>Ce n'est pas une formalité : un « probablement bon » écrit sans réserve devient un « bon » à la relecture, et personne ne saura plus qu'il fallait y revenir.</p>
+<hr>
+<h2 id="5-larchitecture-des-sous-agents">5. L'architecture des sous-agents</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><strong>État constaté :</strong> <code>.claude/agents/</code> n'existe pas dans le dépôt — aucun sous-agent n'est défini aujourd'hui. Les agents génériques disponibles sont <code>Explore</code> (recherche en lecture seule), <code>Plan</code>, <code>general-purpose</code> et <code>claude</code>.</p>
+<p>Six sous-agents sont proposés pour la campagne, chacun avec le modèle que sa mission justifie :</p>
+<div class="tablewrap"><table><thead><tr>
+<th>Agent</th>
+<th>Mission</th>
+<th>Modèle</th>
+<th>Pourquoi ce modèle</th>
+</tr></thead><tbody>
+<tr>
+<td><code>qa-cartography</code></td>
+<td>recenser écrans, routes, actions, réglages</td>
+<td><code>haiku</code></td>
+<td>inventaire ; une omission se voit au recoupement</td>
+</tr>
+<tr>
+<td><code>qa-e2e</code></td>
+<td>écrire et maintenir les suites Playwright</td>
+<td><code>sonnet</code></td>
+<td>volume important, difficulté ordinaire</td>
+</tr>
+<tr>
+<td><code>qa-documents</code></td>
+<td>devis, factures, PDF, historisation, TVA</td>
+<td><strong><code>opus</code></strong></td>
+<td>un montant faux a l'air d'un montant</td>
+</tr>
+<tr>
+<td><code>qa-security</code></td>
+<td>rôles, permissions, multi-entreprise, RLS</td>
+<td><strong><code>opus</code></strong></td>
+<td>une fuite ne produit aucun symptôme</td>
+</tr>
+<tr>
+<td><code>qa-database</code></td>
+<td>intégrité, concurrence, situations de course</td>
+<td><strong><code>opus</code></strong></td>
+<td>intermittent par nature</td>
+</tr>
+<tr>
+<td><code>qa-performance</code></td>
+<td>scénarios k6, lecture des mesures</td>
+<td><code>sonnet</code> puis <strong><code>opus</code></strong></td>
+<td>écrire le scénario est ordinaire ; expliquer un p99 qui décroche ne l'est pas</td>
+</tr>
+</tbody></table></div>
+<p><strong>Le fractionnement ne sert pas qu'à choisir un modèle :</strong> chaque agent revient avec une conclusion, pas avec le contenu des fichiers qu'il a lus. C'est ce qui permet de mener six axes sans que le contexte de l'un noie celui des autres.</p>
+<p><strong>Ce qu'aucun sous-agent n'a le droit de faire</strong>, quel que soit son modèle :</p>
+<ul>
+<li>conclure qu'un test est vert sans qu'un outil déterministe l'ait mesuré ;</li>
+<li>écrire dans une base qui n'est pas celle de l'établi ;</li>
+<li>lancer <code>verifier:avant-livraison</code> (elle refuse désormais, mais la règle précède le garde) ;</li>
+<li>décider seul du GO / NO-GO — c'est une synthèse, et elle revient au patron.</li>
+</ul>
+<hr>
+<h2 id="6-ce-que-ce-document-ne-tranche-pas">6. Ce que ce document ne tranche pas</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<ul>
+<li><strong>la place de <code>claude-fable-5</code></strong> — non établie, donc aucune mission (§1) ;</li>
+<li><strong>le budget total de la campagne</strong> — il dépendra du nombre d'allers-retours, qu'on ne saura qu'en avançant ;</li>
+<li><strong>le seuil exact où <code>sonnet</code> passe la main à <code>opus</code></strong> sur l'analyse des mesures de charge : les quatre signaux du §4 le disent qualitativement, et c'est volontairement un jugement plutôt qu'un chiffre.</li>
+</ul>
+</main>
+</body>
+</html>

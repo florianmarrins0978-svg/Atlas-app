@@ -207,6 +207,91 @@ répond, et rien ne dit lequel.
 
 ---
 
+## Les services extérieurs, un par un
+
+Inventaire complet, établi en cherchant tous les appels réseau sortants du code
+serveur — pas en se fiant à ce qu'on croit savoir du produit.
+
+| Service | Statut en QA | Comment |
+|---|---|---|
+| **Anthropic** (rédaction) | **désactivé** | `LLM_PROVIDER=dev` — fournisseur déterministe, aucun appel |
+| **OpenAI** (rédaction + transcription) | **désactivé** | `LLM_PROVIDER=dev`, `TRANSCRIPTION_PROVIDER=dev` |
+| **Gemini · Deepgram · Google (IA)** | **désactivé** | jamais atteints ; ce sont d'ailleurs des coquilles non implémentées |
+| **Vision** (diagnostic, croquis, ticket) | **désactivé** | `VISION_PROVIDER=dev` |
+| **Base Adresse Nationale** | **détourné** | `ADRESSE_BASE_URL=http://127.0.0.1:9` |
+| **Géoplateforme IGN** (itinéraires) | **détourné** | `ITINERAIRE_BASE_URL=http://127.0.0.1:9` |
+| **Sentry** | **désactivé** | aucun `SENTRY_DSN` — la bibliothèque ne fait rien sans lui |
+| **Stockage S3** | **désactivé** | `STORAGE_PROVIDER=local` — tout va dans `.storage/` du worktree |
+| **Agenda Google** | **inatteignable** | aucun agenda relié dans la base QA : il n'y a rien à synchroniser |
+| **Agenda Apple / iCloud** | **inatteignable** | idem |
+| **Courriel** | **inexistant** | aucun expéditeur côté serveur dans tout le dépôt |
+| **SMS** | **inexistant** | idem — Atlas ouvre la messagerie du patron par un lien `sms:` |
+| **Facturation électronique** (Chorus, Factur-X, Peppol) | **inexistant** | aucune trace dans le dépôt |
+
+**Ce que « inexistant » veut dire, et c'est plus fort que « désactivé » :**
+recherche faite sur `nodemailer`, `twilio`, `sendgrid`, `mailgun`, `brevo`,
+`postmark`, `chorus`, `factur-x`, `peppol` — **aucun résultat**. Il n'y a rien à
+neutraliser, parce qu'il n'y a rien. Un envoi ne peut partir que d'un geste
+humain dans l'application de messagerie du téléphone.
+
+**Aucune vraie clé n'entre dans l'établi.** `.env.qa.example` laisse les cinq
+variables de clés vides, et les deux `LLM_PROVIDER=dev` /
+`TRANSCRIPTION_PROVIDER=dev` l'emportent même si une clé traînait dans un
+`.env.local`. `qa:preuve` le signale si une clé apparaît malgré tout.
+
+---
+
+## Playwright et k6 — état réel
+
+### Playwright : installé, et déjà employé massivement
+
+| | |
+|---|---|
+| paquet | `playwright@^1.62.0`, en dépendance de développement |
+| `playwright.config.ts` | **absent, et c'est délibéré** |
+| suites navigateur existantes | **115** (`scripts/test-*-e2e.ts`) |
+| suites au total | **401** (`scripts/test-*.ts`) |
+| lanceur | `npm run test:e2e` — démarre son propre serveur |
+| socle partagé | `scripts/e2e-browser.ts` |
+
+**Il n'y a pas de `playwright.config.ts` parce que les suites ne sont pas des
+tests Playwright au sens du *runner* :** ce sont des scripts `tsx` qui pilotent
+Playwright directement. Le socle commun leur donne déjà, sans qu'aucune ait à y
+penser :
+
+- un **délai par défaut de 45 s** — trois faux échecs le 7 août 2026 venaient
+  d'un serveur qui compilait une route pour la première fois ;
+- **l'écran du patron** — `devices["iPhone 13"]`, 390 × 664, la hauteur
+  réellement disponible barre d'adresse comprise ;
+- **le blocage des sauts `sms:` / `mailto:`**, que Chromium laisse en suspens et
+  qui ferait échouer les vingt et une suites suivantes en accusant le mauvais
+  coupable.
+
+**Conséquence pour la campagne : ne pas monter d'infrastructure Playwright
+parallèle.** Une nouvelle suite s'écrit sur ce socle, ou elle réinvente trois
+pièges déjà payés.
+
+### k6 : absent
+
+Rien dans le dépôt, aucune dépendance, aucun script. À installer le jour venu —
+et le point ouvert n'est pas l'installation mais **le patron
+d'authentification** : Atlas repose sur des sessions Auth.js et des actions
+serveur. Une charge qui n'ouvre pas de vraie session ne mesure que des
+redirections vers l'écran de connexion.
+
+Trois contraintes déjà connues, qui commanderont le scénario de charge :
+
+1. **la connexion est limitée** à 5 tentatives par compte et par quart d'heure —
+   1 000 utilisateurs virtuels ne peuvent pas se connecter avec le même compte ;
+2. **le premier appel d'une route est lent** en mode développement : la feuille
+   de chantier en PDF a été mesurée à **45-50 s** à froid, ramenée à **476 ms**
+   après préchauffage. Une charge lancée sur un serveur non préchauffé mesure la
+   compilation, pas le produit ;
+3. **`DATABASE_POOL_MAX` vaut 10 par instance** — c'est probablement le premier
+   plafond qu'une montée en charge rencontrera.
+
+---
+
 ## Tout défaire
 
 ```bash

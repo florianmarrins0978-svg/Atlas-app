@@ -210,6 +210,131 @@
 <h3 id="les-suites-navigateur-exigent-le-port-3000">Les suites navigateur exigent le port 3000</h3>
 <p>Les 115 suites codent en dur <code>http://localhost:3000</code>. L'application QA doit donc occuper ce port au moment où on les joue — <strong>l'Atlas habituel éteint</strong>, ou démarré sur un autre port. Deux serveurs sur 3000, c'est l'un des deux qui répond, et rien ne dit lequel.</p>
 <hr>
+<h2 id="les-services-extérieurs-un-par-un">Les services extérieurs, un par un</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p>Inventaire complet, établi en cherchant tous les appels réseau sortants du code serveur — pas en se fiant à ce qu'on croit savoir du produit.</p>
+<div class="tablewrap"><table><thead><tr>
+<th>Service</th>
+<th>Statut en QA</th>
+<th>Comment</th>
+</tr></thead><tbody>
+<tr>
+<td><strong>Anthropic</strong> (rédaction)</td>
+<td><strong>désactivé</strong></td>
+<td><code>LLM_PROVIDER=dev</code> — fournisseur déterministe, aucun appel</td>
+</tr>
+<tr>
+<td><strong>OpenAI</strong> (rédaction + transcription)</td>
+<td><strong>désactivé</strong></td>
+<td><code>LLM_PROVIDER=dev</code>, <code>TRANSCRIPTION_PROVIDER=dev</code></td>
+</tr>
+<tr>
+<td><strong>Gemini · Deepgram · Google (IA)</strong></td>
+<td><strong>désactivé</strong></td>
+<td>jamais atteints ; ce sont d'ailleurs des coquilles non implémentées</td>
+</tr>
+<tr>
+<td><strong>Vision</strong> (diagnostic, croquis, ticket)</td>
+<td><strong>désactivé</strong></td>
+<td><code>VISION_PROVIDER=dev</code></td>
+</tr>
+<tr>
+<td><strong>Base Adresse Nationale</strong></td>
+<td><strong>détourné</strong></td>
+<td><code>ADRESSE_BASE_URL=http://127.0.0.1:9</code></td>
+</tr>
+<tr>
+<td><strong>Géoplateforme IGN</strong> (itinéraires)</td>
+<td><strong>détourné</strong></td>
+<td><code>ITINERAIRE_BASE_URL=http://127.0.0.1:9</code></td>
+</tr>
+<tr>
+<td><strong>Sentry</strong></td>
+<td><strong>désactivé</strong></td>
+<td>aucun <code>SENTRY_DSN</code> — la bibliothèque ne fait rien sans lui</td>
+</tr>
+<tr>
+<td><strong>Stockage S3</strong></td>
+<td><strong>désactivé</strong></td>
+<td><code>STORAGE_PROVIDER=local</code> — tout va dans <code>.storage/</code> du worktree</td>
+</tr>
+<tr>
+<td><strong>Agenda Google</strong></td>
+<td><strong>inatteignable</strong></td>
+<td>aucun agenda relié dans la base QA : il n'y a rien à synchroniser</td>
+</tr>
+<tr>
+<td><strong>Agenda Apple / iCloud</strong></td>
+<td><strong>inatteignable</strong></td>
+<td>idem</td>
+</tr>
+<tr>
+<td><strong>Courriel</strong></td>
+<td><strong>inexistant</strong></td>
+<td>aucun expéditeur côté serveur dans tout le dépôt</td>
+</tr>
+<tr>
+<td><strong>SMS</strong></td>
+<td><strong>inexistant</strong></td>
+<td>idem — Atlas ouvre la messagerie du patron par un lien <code>sms:</code></td>
+</tr>
+<tr>
+<td><strong>Facturation électronique</strong> (Chorus, Factur-X, Peppol)</td>
+<td><strong>inexistant</strong></td>
+<td>aucune trace dans le dépôt</td>
+</tr>
+</tbody></table></div>
+<p><strong>Ce que « inexistant » veut dire, et c'est plus fort que « désactivé » :</strong> recherche faite sur <code>nodemailer</code>, <code>twilio</code>, <code>sendgrid</code>, <code>mailgun</code>, <code>brevo</code>, <code>postmark</code>, <code>chorus</code>, <code>factur-x</code>, <code>peppol</code> — <strong>aucun résultat</strong>. Il n'y a rien à neutraliser, parce qu'il n'y a rien. Un envoi ne peut partir que d'un geste humain dans l'application de messagerie du téléphone.</p>
+<p><strong>Aucune vraie clé n'entre dans l'établi.</strong> <code>.env.qa.example</code> laisse les cinq variables de clés vides, et les deux <code>LLM_PROVIDER=dev</code> / <code>TRANSCRIPTION_PROVIDER=dev</code> l'emportent même si une clé traînait dans un <code>.env.local</code>. <code>qa:preuve</code> le signale si une clé apparaît malgré tout.</p>
+<hr>
+<h2 id="playwright-et-k6--état-réel">Playwright et k6 — état réel</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<h3 id="playwright--installé-et-déjà-employé-massivement">Playwright : installé, et déjà employé massivement</h3>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th></th>
+</tr></thead><tbody>
+<tr>
+<td>paquet</td>
+<td><code>playwright@^1.62.0</code>, en dépendance de développement</td>
+</tr>
+<tr>
+<td><code>playwright.config.ts</code></td>
+<td><strong>absent, et c'est délibéré</strong></td>
+</tr>
+<tr>
+<td>suites navigateur existantes</td>
+<td><strong>115</strong> (<code>scripts/test-*-e2e.ts</code>)</td>
+</tr>
+<tr>
+<td>suites au total</td>
+<td><strong>401</strong> (<code>scripts/test-*.ts</code>)</td>
+</tr>
+<tr>
+<td>lanceur</td>
+<td><code>npm run test:e2e</code> — démarre son propre serveur</td>
+</tr>
+<tr>
+<td>socle partagé</td>
+<td><code>scripts/e2e-browser.ts</code></td>
+</tr>
+</tbody></table></div>
+<p>*<em>Il n'y a pas de <code>playwright.config.ts</code> parce que les suites ne sont pas des tests Playwright au sens du </em>runner<em> :</em>* ce sont des scripts <code>tsx</code> qui pilotent Playwright directement. Le socle commun leur donne déjà, sans qu'aucune ait à y penser :</p>
+<ul>
+<li>un <strong>délai par défaut de 45 s</strong> — trois faux échecs le 7 août 2026 venaient d'un serveur qui compilait une route pour la première fois ;</li>
+<li><strong>l'écran du patron</strong> — <code>devices["iPhone 13"]</code>, 390 × 664, la hauteur réellement disponible barre d'adresse comprise ;</li>
+<li><strong>le blocage des sauts <code>sms:</code> / <code>mailto:</code></strong>, que Chromium laisse en suspens et qui ferait échouer les vingt et une suites suivantes en accusant le mauvais coupable.</li>
+</ul>
+<p><strong>Conséquence pour la campagne : ne pas monter d'infrastructure Playwright parallèle.</strong> Une nouvelle suite s'écrit sur ce socle, ou elle réinvente trois pièges déjà payés.</p>
+<h3 id="k6--absent">k6 : absent</h3>
+<p>Rien dans le dépôt, aucune dépendance, aucun script. À installer le jour venu — et le point ouvert n'est pas l'installation mais <strong>le patron d'authentification</strong> : Atlas repose sur des sessions Auth.js et des actions serveur. Une charge qui n'ouvre pas de vraie session ne mesure que des redirections vers l'écran de connexion.</p>
+<p>Trois contraintes déjà connues, qui commanderont le scénario de charge :</p>
+<ol>
+<li><strong>la connexion est limitée</strong> à 5 tentatives par compte et par quart d'heure — 1 000 utilisateurs virtuels ne peuvent pas se connecter avec le même compte ;</li>
+<li><strong>le premier appel d'une route est lent</strong> en mode développement : la feuille de chantier en PDF a été mesurée à <strong>45-50 s</strong> à froid, ramenée à <strong>476 ms</strong> après préchauffage. Une charge lancée sur un serveur non préchauffé mesure la compilation, pas le produit ;</li>
+<li><strong><code>DATABASE_POOL_MAX</code> vaut 10 par instance</strong> — c'est probablement le premier plafond qu'une montée en charge rencontrera.</li>
+</ol>
+<hr>
 <h2 id="tout-défaire">Tout défaire</h2>
 <a class="retour" href="#sommaire">↑ Sommaire</a>
 <p>``<code>bash npm run qa:down                 # arrête, garde les données docker compose -f docker-compose.qa.yml down -v   # efface la base pour de bon </code>``</p>
