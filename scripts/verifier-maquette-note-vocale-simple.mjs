@@ -59,7 +59,18 @@
   9. **Les zones touchées font au moins 44 px**, poubelle comprise : c'est un
      écran qu'on manipule sur un chantier, parfois avec des gants.
 
- 10. **TOUT TIENT SUR UN ÉCRAN, SANS DÉFILER** — sa règle du 30 août : *« tout
+ 10. **LA TEINTE SE BASCULE, DANS LES DEUX SENS.** Sa demande du 30 août :
+     *« tu m'as fait cinq visuels en blanc et en fond noir, je veux essayer les
+     cinq »*. La planche suivait le réglage de son téléphone ; il ne pouvait
+     donc voir qu'une teinte sur les deux.
+
+     **Le contrôle l'éprouve depuis les DEUX réglages système**, et c'est là
+     qu'est le piège : sur un téléphone déjà en sombre, une bascule écrite à la
+     va-vite ne sait pas revenir au clair — le `@media` reprend la main. Chaque
+     sens est donc joué, et la couleur du fond est LUE, pas déduite d'une
+     classe.
+
+ 11. **TOUT TIENT SUR UN ÉCRAN, SANS DÉFILER** — sa règle du 30 août : *« tout
      doit tenir sur une seule page, ne doit pas décoller vers le bas pour
      accéder aux autres informations »*.
 
@@ -422,7 +433,80 @@ for (const hauteur of [700, 667]) {
   await vue.close();
 }
 
-// ── 6. Ce que la maquette reprend de l'application, sans le redessiner ─────
+// ── 6. La teinte se bascule, depuis l'un ET l'autre réglage système ───────
+console.log("\n  ── Clair et fond noir ──");
+for (const reglage of ["light", "dark"]) {
+  const vue = await navigateur.newContext({
+    viewport: { width: 390, height: 700 },
+    colorScheme: reglage,
+  });
+  const teinte = await vue.newPage();
+  await teinte.goto(`file://${CIBLE}`, { waitUntil: "networkidle" });
+
+  /** La couleur RÉELLEMENT peinte, pas une classe qu'on suppose appliquée. */
+  const fondPage = () => teinte.evaluate(() => getComputedStyle(document.body).backgroundColor);
+  const sombre = (c) => {
+    const [r, v, b] = c.match(/\d+/g).map(Number);
+    return (r + v + b) / 3 < 100;
+  };
+
+  // **Le bouton doit être ENTIÈREMENT visible, pas seulement présent.** Trouvé
+  // à la capture : les quatre onglets débordent d'un écran de téléphone, la
+  // barre défilait, et le ☀ partait avec — coupé au bord droit. Playwright le
+  // « voyait » et le cliquait quand même ; le doigt, lui, ne l'aurait jamais
+  // trouvé.
+  const cadre = await teinte.locator("#teinte").boundingBox();
+  const large = await teinte.evaluate(() => window.innerWidth);
+  dire(
+    cadre !== null && cadre.x >= 0 && cadre.x + cadre.width <= large,
+    `réglage « ${reglage} » : la bascule est entière à l'écran` +
+      (cadre ? ` (de ${Math.round(cadre.x)} à ${Math.round(cadre.x + cadre.width)} sur ${large})` : "")
+  );
+
+  const depart = await fondPage();
+  dire(
+    sombre(depart) === (reglage === "dark"),
+    `réglage « ${reglage} » : la planche arrive dans la bonne teinte (${depart})`
+  );
+
+  await teinte.click("#teinte");
+  const apres = await fondPage();
+  dire(
+    sombre(apres) !== sombre(depart),
+    `réglage « ${reglage} » : un appui bascule (${depart} → ${apres})`
+  );
+
+  await teinte.click("#teinte");
+  const retour = await fondPage();
+  dire(
+    sombre(retour) === sombre(depart),
+    `réglage « ${reglage} » : un second appui revient (${apres} → ${retour})`
+  );
+
+  // Un fond qui bascule ne prouve rien si le texte devient illisible : on
+  // mesure aussi le contraste du bouton du bas, celui qui portait la faute du
+  // 22 août (« le mode nuit est illisible »).
+  await teinte.click("#teinte");
+  const lisible = await teinte.evaluate(() => {
+    const lum = (c) => {
+      const [r, g, b] = c.match(/[\d.]+/g).map(Number);
+      const v = [r, g, b].map((x) => {
+        const s = x / 255;
+        return s <= 0.03928 ? s / 12.92 : Math.pow((s + 0.055) / 1.055, 2.4);
+      });
+      return 0.2126 * v[0] + 0.7152 * v[1] + 0.0722 * v[2];
+    };
+    const b = document.querySelector("#ecrire");
+    const [x, y] = [lum(getComputedStyle(b).color), lum(getComputedStyle(document.body).backgroundColor)]
+      .sort((p, q) => q - p);
+    return (x + 0.05) / (y + 0.05);
+  });
+  dire(lisible >= 4.5, `réglage « ${reglage} » : le bouton reste lisible dans l'autre teinte (${lisible.toFixed(1)}:1)`);
+
+  await vue.close();
+}
+
+// ── 7. Ce que la maquette reprend de l'application, sans le redessiner ─────
 console.log("\n  ── Repris de l'application ──");
 const fichier = page.locator('input[type="file"]');
 dire((await fichier.count()) === 1, "un seul champ de fichier, comme dans `Pellicule.tsx`");

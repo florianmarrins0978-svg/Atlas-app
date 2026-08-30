@@ -64,6 +64,27 @@ essayer tous ceux que tu m'as proposés »* — et elle est revenue **telle quel
 sans être maquillée pour se conformer** : c'est en la manipulant qu'il verra si
 sa règle tient, et un choix qu'on lui retire n'est pas un choix.
 
+**Et la teinte se bascule à la demande.** Sa demande : *« tout à l'heure tu m'as
+fait cinq visuels en blanc et en fond noir, je veux essayer les cinq »* — il
+avait vu les captures de relecture prises en clair ET en sombre, alors que la
+planche, elle, suivait le réglage de son téléphone : il ne pouvait voir qu'une
+teinte sur les deux. Un bouton ☾ / ☀ dans la barre d'onglets.
+
+**Le piège n'est pas la bascule, c'est le retour.** Un `@media
+(prefers-color-scheme: dark)` écrit seul reprend la main : sur un téléphone
+réglé en sombre, on ne peut jamais revenir au clair. La palette se déclare donc
+trois fois — sur `:root`, sous le `@media` mais **seulement si l'on n'a pas
+demandé le clair**, et sous `:root[data-theme="dark"]` qui gagne dans les deux
+sens. Le contrôle joue les deux sens **depuis les deux réglages système**, et
+lit la couleur réellement peinte plutôt qu'une classe supposée appliquée.
+
+**Un défaut vu à la capture, invisible aux tests :** les quatre onglets
+débordent d'un écran de téléphone, la barre défilait, et le bouton de teinte
+partait avec — coupé au bord droit. Playwright le trouvait et le cliquait quand
+même ; le doigt, lui, ne l'aurait jamais vu. Les onglets défilent désormais dans
+leur propre piste, la bascule reste posée à droite, et le contrôle mesure qu'elle
+est **entière** dans la fenêtre.
+
 **Et l'écran du devis dit désormais qu'il est un exemple.** Sa question :
 *« la page que tu m'as mise en visuel, c'est juste pour le test ? »* Elle
 méritait d'être posée, et l'écran devait y répondre seul — sans quoi on peut
