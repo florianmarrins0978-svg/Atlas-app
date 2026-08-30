@@ -40,6 +40,11 @@ console.log("\n=== Ses quatre lignes, rédigées en français ===\n");
 cas("l'érable : la technique vient de la colonne, l'espèce suit", () => {
   // Son vrai libellé du 30 août : la méthode n'est PAS dans le texte, elle est
   // en colonne. C'est elle qui nomme le travail.
+  //
+  // **« en rétention », pas « avec »** : sa demande du 30 août d'harmoniser la
+  // formulation visible. Le catalogue de sa grille garde « avec rétention »
+  // pour ses écrans de réglage — les deux écritures vivent côte à côte dans
+  // `libelle-client.ts`, pour qu'elles ne puissent pas dériver.
   assert.equal(
     libelleClient({
       libelle: "Érable (40 cm de diamètre, 12 m de haut)",
@@ -48,14 +53,13 @@ cas("l'érable : la technique vient de la colonne, l'espèce suit", () => {
       methode: "demontage_retention",
       caracteristiques: { diametreCm: 40, hauteurM: 12 },
     }),
-    "Démontage avec rétention d'un érable"
+    "Démontage en rétention d'un érable"
   );
 });
 
 cas("l'érable, quand SA dictée porte déjà la technique : ce sont SES mots", () => {
-  // « en rétention » est ce qu'il a dit ; le catalogue de la grille écrit
-  // « avec rétention ». Quand le texte le dit, le texte gagne — on ne réécrit
-  // pas ses mots avec les nôtres.
+  // Le texte gagne quand il parle — on ne réécrit pas ses mots avec les nôtres,
+  // et l'on n'ajoute pas une seconde fois une technique déjà dite.
   assert.equal(
     libelleClient({
       libelle: "Érable — démontage en rétention",
@@ -249,6 +253,91 @@ cas("« Abattage » ne remplace pas « Démontage » — le libellé s'ouvre dé
   );
 });
 
+console.log("\n=== ROBUSTESSE : la nature structurée, et l'article qui ne se devine pas ===\n");
+
+cas("« Taille de haie » vient de la COLONNE nature, pas d'une ressemblance", () => {
+  // Sa consigne du 30 août : la substitution doit venir de la nature
+  // structurée. Même texte, nature absente : rien ne se substitue.
+  assert.equal(
+    libelleClient({
+      libelle: "Haie de laurier (800 ml)",
+      nature: "haie",
+      quantite: "800.00", unite: "ml", caracteristiques: { longueurMl: 800 },
+    }),
+    "Taille de haie de laurier"
+  );
+  assert.equal(
+    libelleClient({
+      libelle: "Haie de laurier (800 ml)",
+      nature: null,
+      quantite: "800.00", unite: "ml", caracteristiques: { longueurMl: 800 },
+    }),
+    "Haie de laurier",
+    "sans nature en colonne, on ne nomme pas le travail à la place du texte"
+  );
+});
+
+cas("une nature dont l'objet n'est pas déclaré ne substitue rien", () => {
+  // `tonte` n'a pas d'`objet` : « Tonte de la pelouse » ne devient pas autre
+  // chose, et une nature ajoutée demain sans objet ne produira pas de phrase
+  // fausse par accident.
+  assert.equal(
+    libelleClient({
+      libelle: "Pelouse du fond", nature: "tonte",
+      quantite: "300.00", unite: "m²",
+    }),
+    "Pelouse du fond"
+  );
+});
+
+cas("les grumes : l'objet déclaré vaut aussi pour elles", () => {
+  assert.equal(
+    libelleClient({
+      libelle: "Grumes de chêne", nature: "grumes",
+      quantite: "6.00", unite: "tonne", caracteristiques: { tonnageT: 6 },
+    }),
+    "Enlèvement des grumes de chêne"
+  );
+});
+
+cas("une espèce ABSENTE de la liste des genres n'est jamais mal accordée", () => {
+  // **Le point qu'il a relevé.** « d'un » par défaut aurait écrit « d'un
+  // aubépine ». La tournure sans article est correcte dans les deux genres —
+  // c'est celle de « Taille de haie DE LAURIER », qu'il a validée.
+  const inconnues: [string, string][] = [
+    ["Sophora", "Démontage en rétention de sophora"],
+    ["Ostrya", "Démontage en rétention d'ostrya"],
+    ["Zelkova", "Démontage en rétention de zelkova"],
+  ];
+  for (const [espece, attendu] of inconnues) {
+    assert.equal(
+      libelleClient({ libelle: espece, nature: "abattage", methode: "demontage_retention",
+        caracteristiques: { diametreCm: 40 } }),
+      attendu,
+      `« ${espece} » ne doit pas recevoir d'article deviné`
+    );
+  }
+});
+
+cas("un mot féminin connu reçoit « d'une », un masculin « d'un »", () => {
+  assert.equal(
+    libelleClient({ libelle: "Aubépine", nature: "abattage", methode: "demontage_retention",
+      caracteristiques: { diametreCm: 20 } }),
+    "Démontage en rétention d'une aubépine"
+  );
+  assert.equal(
+    libelleClient({ libelle: "Chêne", nature: "abattage", methode: "demontage_retention",
+      caracteristiques: { diametreCm: 70 } }),
+    "Démontage en rétention d'un chêne"
+  );
+});
+
+cas("aucun libellé produit ne porte « d'un » devant un mot féminin connu", () => {
+  const l = libelleClient({ libelle: "Haie — abattage", nature: "haie",
+    quantite: "50.00", unite: "ml", caracteristiques: { longueurMl: 50 } });
+  assert.ok(!/d'un haie/i.test(l), `« ${l} » accorde mal`);
+});
+
 console.log("\n=== Sur la ligne de devis : le client lit propre, le moteur lit brut ===\n");
 
 cas("la ligne vendable rédige son libellé et GARDE ses membres bruts", () => {
@@ -291,7 +380,7 @@ cas("l'abattage et son évacuation : une ligne, deux descriptions rédigées", (
   assert.ok(principale, "la ligne d'abattage doit exister");
   assert.equal(
     principale.libelle,
-    "Démontage avec rétention d'un érable\nÉvacuation des déchets verts"
+    "Démontage en rétention d'un érable\nÉvacuation des déchets verts"
   );
 });
 

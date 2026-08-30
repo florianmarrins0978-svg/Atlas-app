@@ -60,7 +60,7 @@
 
 import { TECHNIQUES_PAR_DEFAUT } from "./grille-prix";
 import { enChiffres } from "./mesures-arbre";
-import { NATURES, natureDuLibelle } from "./natures-prestation";
+import { nature, natureDuLibelle } from "./natures-prestation";
 import { lireCaracteristiques } from "./prestation-structuree";
 
 export type PrestationLisible = {
@@ -197,21 +197,68 @@ function valeursConnues(p: PrestationLisible): { valeurs: Set<string>; unites: S
 // produirait du français faux sur un devis ; garder le tiret est laid, mais
 // honnête, et cela se voit — donc cela se corrige.
 
-/** Le genre des mots où « un » se tromperait. La règle par défaut est le masculin. */
-const FEMININS = [
-  "haie", "souche", "pelouse", "cloture", "clôture", "palissade", "terrasse",
-  "aubepine", "aubépine", "charmille", "glycine", "vigne", "bordure", "allee", "allée",
-];
 
-/** « d'un érable », « d'une haie » — l'élision comprise. */
-function article(mot: string): string {
-  const nu = mot
+// ─── L'ARTICLE NE SE DEVINE PAS ─────────────────────────────────────────────
+//
+// **Sa consigne du 30 août 2026 :** *« évite une règle grammaticale basée sur
+// "d'un par défaut" avec une petite liste de mots féminins. Atlas ne doit pas
+// produire une formulation grammaticalement fausse parce qu'une espèce manque
+// dans une liste. »*
+//
+// Il a raison, et la première version avait le défaut exact qu'il décrit : elle
+// écrivait « d'un » partout sauf sur une douzaine de mots. « d'un aubépine »
+// n'attendait qu'une espèce oubliée.
+//
+// **Ce qui remplace la liste par défaut, c'est le RETRAIT de l'article.** Le
+// français en offre une tournure qui ne demande aucun genre :
+//
+//   genre connu    →  « Démontage en rétention d'un érable »
+//   genre inconnu  →  « Démontage en rétention d'aubépine »
+//
+// La seconde est correcte quel que soit le genre — c'est exactement la
+// construction que porte déjà « Taille de haie **de laurier** », qu'il a
+// validée. Une espèce absente de la liste perd son article, jamais sa
+// justesse ; et elle reste écrite, ce qui vaut mieux que de la taire.
+//
+// La liste ci-dessous ne sert donc qu'à ENRICHIR, jamais à décider par défaut.
+// L'oubli d'un mot coûte un article, pas une faute.
+
+/** Le genre des mots que ce métier écrit tous les jours. Incomplète PAR NATURE. */
+const GENRE_CONNU: Readonly<Record<string, "m" | "f">> = {
+  erable: "m", chene: "m", tilleul: "m", marronnier: "m", frene: "m", hetre: "m",
+  platane: "m", peuplier: "m", saule: "m", bouleau: "m", pin: "m", sapin: "m",
+  cedre: "m", cypres: "m", if: "m", charme: "m", noyer: "m", chataignier: "m",
+  merisier: "m", pommier: "m", prunier: "m", cerisier: "m", laurier: "m",
+  thuya: "m", robinier: "m", acacia: "m", orme: "m", arbre: "m", conifere: "m",
+  haie: "f", souche: "f", pelouse: "f", cloture: "f", palissade: "f",
+  aubepine: "f", charmille: "f", glycine: "f", vigne: "f", bordure: "f",
+};
+
+/** Le mot nu, sans accent ni déterminant — la forme sous laquelle on l'interroge. */
+function motNu(texte: string): string {
+  return texte
     .normalize("NFD")
     .replace(/[̀-ͯ]/g, "")
     .toLowerCase()
-    .replace(/^(le|la|les|l|un|une|des|du|de)\s+/, "")
+    .replace(/^(le|la|les|l|un|une|des|du|de|d)[\s']+/, "")
     .split(/[\s',]/)[0];
-  return FEMININS.includes(nu) ? "d'une" : "d'un";
+}
+
+/**
+ * « d'un érable », « d'une haie », « d'aubépine » — et jamais une faute.
+ *
+ * Rend le groupe complet, article compris quand le genre est connu, et la
+ * simple préposition sinon. C'est l'appelant qui recolle : il n'a pas à savoir
+ * lequel des deux cas s'est produit.
+ */
+function complementDe(mot: string): string {
+  const nu = motNu(mot);
+  const genre = GENRE_CONNU[nu];
+  const minuscule = mot.trim().toLocaleLowerCase("fr");
+  if (genre === "m") return `d'un ${minuscule}`;
+  if (genre === "f") return `d'une ${minuscule}`;
+  // Genre inconnu : la tournure sans article, correcte dans les deux genres.
+  return /^[aeiouyâàäéèêëîïôöûü]/i.test(minuscule) ? `d'${minuscule}` : `de ${minuscule}`;
 }
 
 /** Le mot désigne-t-il un travail que le référentiel sait nommer ? */
@@ -237,34 +284,47 @@ function sansLaQuantite(fragment: string, valeurs: ReadonlySet<string>): string 
 /**
  * Le nom du travail, quand le libellé s'ouvre sur son OBJET plutôt que sur lui.
  *
- * « Haie de laurier » nomme ce qu'on taille, pas ce qu'on fait. Le référentiel
- * porte déjà le nom du travail — « Taille de haie » —, et il se termine par ce
- * même objet : c'est ce qui permet la substitution sans rien inventer.
+ * **La nature vient de la COLONNE, pas d'une ressemblance de chaînes.** Sa
+ * consigne du 30 août : *« la formulation "Taille de haie" doit venir
+ * explicitement de la nature structurée de la prestation, pas d'une simple
+ * ressemblance entre deux chaînes de texte. »*
  *
- * **Et c'est pour cela que « Démontage en rétention » n'est pas remplacé par
- * « Abattage »** : le libellé ne s'ouvre pas sur l'objet de la nature, il
- * s'ouvre déjà sur un geste.
+ * La version d'avant comparait le dernier mot du libellé de la nature au
+ * premier mot du texte. Cela marchait sur les douze natures d'aujourd'hui, et
+ * rien n'empêchait la treizième de produire une phrase fausse. Chaque nature
+ * déclare maintenant son `objet` ; sans nature en colonne, on ne substitue rien.
  */
-function nommerLeTravail(texte: string): string {
+function nommerLeTravail(texte: string, cleNature: string | null | undefined): string {
+  const n = nature(cleNature);
+  if (!n?.objet) return texte;
   const premier = texte.trim().split(/\s+/)[0];
   if (!premier) return texte;
-  const sansAccent = (s: string) =>
-    s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
-
-  for (const n of NATURES) {
-    const motsDuLibelle = n.libelle.trim().split(/\s+/);
-    const dernier = motsDuLibelle[motsDuLibelle.length - 1];
-    // Un seul mot dans le libellé de la nature : il n'y a rien à préfixer.
-    if (motsDuLibelle.length < 2) continue;
-    if (sansAccent(dernier) !== sansAccent(premier)) continue;
-    return `${n.libelle}${texte.trim().slice(premier.length)}`;
-  }
-  return texte;
+  if (motNu(premier) !== motNu(n.objet)) return texte;
+  return `${n.libelle}${texte.trim().slice(premier.length)}`;
 }
 
-/** La technique en colonne, écrite comme le catalogue de la grille l'écrit. */
+/**
+ * La technique, écrite comme le CLIENT doit la lire.
+ *
+ * **Deux écritures, dans un seul fichier.** Sa demande du 30 août :
+ * *« pour la rétention, harmonise la formulation visible en "Démontage en
+ * rétention d'un érable" »*. Le catalogue de sa grille dit « démontage avec
+ * rétention » — c'est le libellé de ses écrans de réglage, et il ne bouge pas.
+ * La formulation du devis vit à côté, dans le même tableau, pour que les deux
+ * ne puissent pas dériver l'une de l'autre (`CLAUDE.md` §3).
+ */
+const TECHNIQUE_POUR_LE_CLIENT: Readonly<Record<string, string>> = {
+  au_pied: "abattage au pied",
+  demontage: "démontage",
+  demontage_retention: "démontage en rétention",
+};
+
 function techniqueEcrite(cle: string | null | undefined): string | null {
   if (!cle) return null;
+  const pourLeClient = TECHNIQUE_POUR_LE_CLIENT[cle];
+  if (pourLeClient) return pourLeClient;
+  // Une technique que le devis ne sait pas encore dire : on retombe sur le mot
+  // du catalogue plutôt que de la taire.
   return TECHNIQUES_PAR_DEFAUT.find((t) => t.cle === cle)?.libelle ?? null;
 }
 
@@ -316,23 +376,22 @@ export function libelleClient(p: PrestationLisible): string {
       reste = `${tete} de ${complement.toLocaleLowerCase("fr")}`;
     } else if (estUnGeste(complement)) {
       // « démontage en rétention » + « Érable »
-      reste = `${capitale(complement)} ${article(tete)} ${tete.toLocaleLowerCase("fr")}`;
+      reste = `${capitale(complement)} ${complementDe(tete)}`;
     }
     // Sinon : ni l'un ni l'autre n'est un geste connu — on ne rédige pas à
     // l'aveugle, et le texte reste ce qu'il était.
   }
 
   // ── 3. Le libellé s'ouvre-t-il sur son objet plutôt que sur le travail ? ─
-  reste = nommerLeTravail(reste);
+  reste = nommerLeTravail(reste, p.nature);
 
   // ── 4. La technique, quand la colonne la porte et que le texte se tait ──
   //
-  // Sa dictée dit « avec rétention » ; si le libellé ne l'a pas gardée, la
-  // colonne la retrouve. On n'écrit jamais deux fois la même chose : un texte
-  // qui parle déjà de démontage ou de rétention n'est pas complété.
+  // On n'écrit jamais deux fois la même chose : un texte qui parle déjà de
+  // démontage, de rétention ou d'abattage au pied n'est pas complété.
   const technique = techniqueEcrite(p.methode);
   if (technique && !estUnGeste(reste) && !/d[ée]mont|r[ée]tention|au\s+pied/i.test(reste)) {
-    reste = `${capitale(technique)} ${article(reste)} ${reste.toLocaleLowerCase("fr")}`;
+    reste = `${capitale(technique)} ${complementDe(reste)}`;
   }
 
   // **Jamais un libellé vide.** Si tout ce que la prestation dit tenait dans
