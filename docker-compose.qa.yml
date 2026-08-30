@@ -1,0 +1,63 @@
+# L'ÉTABLI DE QUALIFICATION — PostgreSQL et Redis, à côté de l'Atlas habituel.
+#
+#   docker compose -f docker-compose.qa.yml up -d      démarre
+#   docker compose -f docker-compose.qa.yml down        arrête, garde les données
+#   docker compose -f docker-compose.qa.yml down -v     efface tout, repart de zéro
+#
+# ═══════════════════════════════════════════════════════════════════════════
+# **POURQUOI UN FICHIER À PART, ET NON UN `override` DU FICHIER HABITUEL.**
+#
+# `docker-compose.yml` fixe `container_name: atlas-postgres` et le port 5432.
+# Ce sont deux ressources UNIQUES sur la machine : un simple `-p qa` (nom de
+# projet) ne les dédouble pas — Docker refuse le second conteneur, ou pire,
+# la seconde base se sert du port de la première et l'on croit travailler en
+# QA pendant qu'on écrit dans l'environnement de tous les jours.
+#
+# Trois choses sont donc renommées ici, et il faut les trois : le NOM du
+# conteneur, le PORT publié, et le VOLUME. En oublier une remet les deux
+# environnements en contact.
+#
+# ═══════════════════════════════════════════════════════════════════════════
+# **LES VERSIONS SONT CELLES DE LA CI ET DU DÉVELOPPEMENT** (postgres:16,
+# redis:7) — délibérément. Une campagne de qualification jouée sur un autre
+# moteur ne qualifie pas ce qui part en production.
+
+services:
+  postgres:
+    image: postgres:16
+    container_name: atlas-qa-postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres_qa_pw
+      POSTGRES_DB: atlas_qa
+    ports:
+      # 55432 plutôt que 5432 : c'est CE chiffre qui garantit qu'une commande
+      # tapée dans le mauvais terminal ne peut pas atteindre l'autre base.
+      - "55432:5432"
+    volumes:
+      - atlas-qa-pgdata:/var/lib/postgresql/data
+      # Joué une seule fois, à la création du volume. Crée atlas_owner et
+      # atlas_app avec les MÊMES restrictions qu'en production : une QA qui
+      # tournerait sous superutilisateur traverserait la RLS sans le dire, et
+      # l'isolation entre entreprises — ce qu'on vient justement éprouver —
+      # ne serait jamais réellement mise à l'épreuve.
+      - ./docker/init-qa:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d atlas_qa"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7
+    container_name: atlas-qa-redis
+    ports:
+      - "56379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  atlas-qa-pgdata:

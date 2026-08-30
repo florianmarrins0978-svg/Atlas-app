@@ -34,6 +34,12 @@ yarn-error.log*
 # env files (can opt-in for committing if needed)
 .env*
 !.env.example
+# Le gabarit de l'établi de qualification. Versionné DÉLIBÉRÉMENT : il ne porte
+# aucune clé ni aucune donnée réelle, et c'est lui qui permet de remonter
+# l'établi à l'identique après un `down -v`. Sans cette ligne, `.env*` l'aurait
+# écarté en silence — et l'on aurait recomposé de mémoire un fichier dont tout
+# l'intérêt est de ne PAS dépendre de la mémoire.
+!.env.qa.example
 
 # vercel
 .vercel

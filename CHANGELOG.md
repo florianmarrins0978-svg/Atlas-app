@@ -9,6 +9,58 @@ Format : le plus récent en tête.
 
 ## 2026-08-30
 
+### Un établi de qualification, isolé de l'Atlas de tous les jours
+
+**Sa demande, avant une campagne de tests qui ira jusqu'à mille utilisateurs
+virtuels :** *« ne jamais travailler directement sur main ; conserver mon
+environnement Atlas actuel intact ; une base exclusivement dédiée aux tests ;
+neutraliser les services externes ; pouvoir tout supprimer sans affecter Atlas
+normal. »*
+
+Le dépôt avait déjà tout — conteneurs, rôles, migrations, jeu fictif, 115 suites
+navigateur, fournisseurs d'IA déterministes. L'établi **dédouble** cela plutôt
+que d'en écrire une seconde version, qui aurait divergé et qualifié un produit
+qui n'est pas celui qui part.
+
+**L'isolation ne vient pas du nom de la base, mais des ports.** Un nom se
+recopie d'un terminal à l'autre ; un port, non. `docker-compose.qa.yml` renomme
+les trois ressources uniques — conteneur, port publié, volume — car
+`docker-compose.yml` fixe `container_name` et le port 5432 : un simple nom de
+projet Docker ne les dédouble pas, et la seconde base se servirait du port de la
+première. On croirait travailler en QA en écrivant dans l'environnement de tous
+les jours.
+
+`atlas_qa` rejoint les bases que le jeu de démonstration a le droit de vider.
+**Sans cela, le seul chemin restant était la phrase de forçage** — tapée vingt
+fois par jour pendant une campagne, elle cesse d'être une décision et devient un
+réflexe : le garde-fou serait mort de son propre usage. Ce que l'ajout ne
+relâche pas : l'hôte doit toujours être cette machine, et `NODE_ENV=production`
+refuse toujours.
+
+**`npm run qa:preuve` prouve l'isolation au lieu de l'affirmer** — neuf
+vérifications en une commande, parce qu'une liste de contrôles à taper se
+déroule le premier jour et se saute le vingtième, quand elle compte. Éprouvé
+rouge (6 points, contre une configuration de développement) avant d'être éprouvé
+vert.
+
+**Deux défauts trouvés en parcourant la séquence au lieu de l'écrire :**
+
+- `qa:setup` mourait sur « permission denied for schema public » : les
+  migrations lisaient `DATABASE_URL`, c'est-à-dire le rôle applicatif, qui n'a
+  aucun droit de DDL — ici comme en production. `scripts/qa-setup.mjs` pose le
+  rôle propriétaire. **Le même défaut dort dans `dev:setup`** sur un volume
+  Docker neuf (`TODO.md`) ;
+- `.env.qa.example` était écarté par `.gitignore` : la règle `.env*` n'exceptait
+  que `.env.example`. Le gabarit fait pour survivre à un `down -v` aurait
+  disparu en silence.
+
+**Non éprouvé ici, et dit comme tel :** `docker-compose.qa.yml` lui-même —
+aucun démon Docker dans cet environnement (`AGENTS.md`). Le SQL d'init qu'il
+monte, lui, a été joué sur un vrai cluster PostgreSQL 16 sur le port 55432, avec
+les 84 migrations et le jeu fictif.
+
+Mode d'emploi : `docs/ETABLI-QA.md`.
+
 ### La note vocale codée : poubelle ou avion, et la fiche tient dans un écran
 
 **Son feu vert :** *« Très bien code exactement ça ! Réfère-toi à cette page une

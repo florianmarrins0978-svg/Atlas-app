@@ -37,8 +37,21 @@
  * (`scripts/test-garde-seed.ts`).
  */
 
-/** Les bases sur lesquelles effacer est sans conséquence. */
-export const BASES_AUTORISEES = ["atlas_test", "atlas_dev"] as const;
+/**
+ * Les bases sur lesquelles effacer est sans conséquence.
+ *
+ * **`atlas_qa` a rejoint la liste le 30 août 2026**, avec l'établi de
+ * qualification (`docker-compose.qa.yml`, `docs/ETABLI-QA.md`). Une campagne de
+ * tests refait son jeu de données des dizaines de fois : sans ce nom ici, le
+ * seul chemin restant était la phrase de forçage ci-dessous — tapée vingt fois
+ * par jour, elle cesse d'être une décision et devient un réflexe, et le
+ * garde-fou meurt de son propre usage.
+ *
+ * Ce que l'ajout ne relâche PAS : l'hôte doit toujours être cette machine, et
+ * `NODE_ENV=production` refuse toujours. Une base nommée `atlas_qa` chez un
+ * hébergeur reste la base de quelqu'un.
+ */
+export const BASES_AUTORISEES = ["atlas_test", "atlas_dev", "atlas_qa"] as const;
 
 /**
  * Les hôtes tenus pour locaux. `postgres` et `db` sont les noms de service des

@@ -50,6 +50,40 @@ le chemin, et la troisième est la référence du code.
 
 ---
 
+## `dev:setup` échoue sur un volume Docker neuf (30 août 2026)
+
+**Trouvé en montant l'établi de qualification** (`docs/ETABLI-QA.md`), en jouant
+la séquence au lieu de l'écrire.
+
+```
+"dev:setup": "npm run db:migrate:local && npm run db:seed:local"
+```
+
+Les deux étapes lisent `DATABASE_URL` — c'est-à-dire le rôle **applicatif**, qui
+n'a aucun droit de DDL, ici comme en production (`docker/init/`). Sur un volume
+neuf, la première meurt donc sur :
+
+    error: permission denied for schema public
+
+Le message accuse le schéma ; le coupable est le rôle. `monter-base-locale.sh`
+et `scripts/qa-setup.mjs` posent tous deux `DATABASE_ADMIN_URL` pour les
+migrations — c'est ce qui manque ici.
+
+**Pourquoi personne ne l'avait vu :** le défaut n'apparaît que sur un volume
+*neuf*. Un poste où `db:up` a déjà tourné une fois porte des tables déjà créées,
+et les migrations suivantes n'ont plus rien à créer.
+
+**Et ne pas « réparer » en migrant sous `postgres`** : cela réussit, crée des
+tables qui appartiennent au superutilisateur, et le défaut ne se paie qu'à la
+suite suivante, ailleurs, en dizaines de rouges qui accusent une table qu'on n'a
+pas touchée (`CLAUDE.md` §5).
+
+Corriger : `db:migrate:local` doit tourner sous `DATABASE_ADMIN_URL`. Non fait
+ici délibérément — l'établi QA ne doit pas devenir le prétexte à remanier le
+chemin de développement d'un lot qui ne le demandait pas.
+
+---
+
 ## Ce que le lot de clôture du 30 août 2026 laisse ouvert
 
 Le rapport complet est dans `docs/cloture-avant-premier-artisan.md`. Il ne reste
