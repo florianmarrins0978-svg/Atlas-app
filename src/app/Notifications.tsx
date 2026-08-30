@@ -7,12 +7,18 @@ import { useRouter } from "next/navigation";
 import { colors, font, smallCaps } from "@/lib/design-tokens";
 import { jourLisible } from "@/lib/jour";
 import { suiteDeLaReponse, type SuiteDeLaReponse } from "@/lib/suite-de-la-reponse";
-import { marquerReponseVueAction, corrigerDevisAction, repousserRappelFactureAction } from "./actions";
+import {
+  marquerReponseVueAction,
+  corrigerDevisAction,
+  repousserRappelFactureAction,
+  marquerRappelVuAction,
+} from "./actions";
+import type { GenreRappel, GenreAcquittable } from "@/lib/rappels";
 import type { NotificationPatron, EnvoiCaduc } from "@/server/repositories/envois-devis";
 
 /** Un rappel, déjà mis en mots par le serveur — voir `src/lib/rappels.ts`. */
 export type RappelAffiche = {
-  genre: "chantier-sans-devis" | "devis-sans-reponse" | "chantier-non-facture" | "facture-impayee";
+  genre: GenreRappel;
   chantierId: string;
   chantierNom: string;
   /** « depuis 8 jours » — formulé au serveur, pour que l'écran n'ait pas à
@@ -62,15 +68,27 @@ type Carte = {
   /** L'identifiant de la facture à repousser, sur ce même rappel. */
   repousser?: string;
   /**
-   * Un RAPPEL, pas une nouvelle — et cela change deux choses.
+   * Un RAPPEL, pas une nouvelle.
    *
-   * Une réponse de client s'acquitte : le patron l'a lue, elle disparaît. Un
-   * rappel, lui, n'a rien à acquitter — il décrit une situation qui dure, et il
-   * s'en va quand elle cesse : le client répond, la facture part. Lui donner
-   * « J'ai vu » ferait croire qu'on peut le classer sans rien faire, et le
-   * chantier retomberait dans l'oubli qu'on cherchait justement à éviter.
+   * Une réponse de client s'acquitte pour de bon : elle est lue, elle ne revient
+   * jamais. Un rappel décrit une situation qui dure — « J'ai vu » le fait taire
+   * le temps de son délai réglé, puis il revient si rien n'a bougé (`vu`
+   * ci-dessous).
    */
   rappel?: boolean;
+  /**
+   * De quoi acquitter un rappel — sa demande du 30 août 2026.
+   *
+   * *« Pour chaque notification je dois pouvoir cliquer sur vu pour les faire
+   * disparaître ; pourquoi certaines n'ont pas cette fonction ? »* Trois des
+   * quatre rappels n'avaient aucun geste : la carte restait sous les yeux
+   * jusqu'à ce que la situation cesse, et la pile grossissait sans qu'il puisse
+   * la ranger.
+   *
+   * Absent sur la facture impayée : celle-là se tait par `repousser`, son
+   * moteur d'origine — deux mécaniques pour une idée se contrediraient.
+   */
+  vu?: { genre: GenreAcquittable; chantierId: string };
   chantierId: string;
   chantierNom: string;
   /**
@@ -202,9 +220,11 @@ function rappelVersCarte(r: RappelAffiche): Carte {
       montant: r.facture.partielle
         ? { du: r.facture.resteDu, sur: r.facture.total }
         : { du: r.facture.resteDu, sur: null },
-      // **« Plus tard » n'est PAS « J'ai vu ».** Il ne classe rien : il espace
-      // le rappel du rythme réglé, et la facture reste dans l'endroit en
-      // attente. C'est ce qui distingue ce geste d'un acquittement.
+      // **« J'ai vu » ne classe rien ici non plus** : il espace le rappel du
+      // rythme réglé, et la facture reste dans l'endroit en attente. Le mot est
+      // celui des autres cartes depuis le 30 août 2026 — un même geste ne
+      // s'appelle pas « Plus tard » ici et « J'ai vu » trois lignes plus bas —,
+      // mais la mécanique reste la sienne (migration 0051).
       repousser: r.facture.id,
       suite: {
         href: `/termines/tva`,
@@ -222,6 +242,10 @@ function rappelVersCarte(r: RappelAffiche): Carte {
     chantierId: r.chantierId,
     chantierNom: r.chantierNom,
     quand: r.quand,
+    // Acquittable : ces trois-là visent un chantier, et c'est lui qu'on retient
+    // (`rappels_vus`). Le genre voyage avec, car un même chantier peut dormir
+    // sur son devis un mois, puis sur sa facture le mois suivant.
+    vu: { genre: r.genre as GenreAcquittable, chantierId: r.chantierId },
     // **Les deux rappels d'origine ne crient pas.** Le fond teinté était
     // réservé à ce qui appelle une décision : un refus, un lien mort. Un rappel
     // de confort qui crierait aussi fort ferait baisser le volume des autres.
@@ -357,6 +381,28 @@ export default function Notifications({
     });
   }
 
+  /**
+   * « J'ai vu » sur un rappel — sa demande du 30 août 2026.
+   *
+   * La carte part de l'écran tout de suite : le doigt a fait son geste. Sur
+   * refus, elle revient AVEC le message — jamais un `catch {}` muet, sans quoi
+   * il croirait le geste passé alors que rien n'est écrit (`AGENTS.md`).
+   */
+  function marquerRappel(carte: Carte) {
+    if (!carte.vu || enCours) return;
+    setEnCours(carte.envoiId);
+    setRefus(null);
+    setMasquees((v) => [...v, carte.envoiId]);
+    demarrer(async () => {
+      const r = await marquerRappelVuAction(carte.vu!.genre, carte.vu!.chantierId);
+      setEnCours(null);
+      if (!r.ok) {
+        setMasquees((v) => v.filter((id) => id !== carte.envoiId));
+        setRefus({ chantierId: carte.chantierId, message: r.raison });
+      }
+    });
+  }
+
   function corriger(carte: Carte) {
     if (enCours) return;
     setEnCours(carte.chantierId);
@@ -461,29 +507,27 @@ export default function Notifications({
                   moteur du rythme — sans geste, la carte RESTE, parce qu'une
                   carte qui s'endort seule peut passer un jour où il n'ouvre pas
                   l'application. */}
-              {n.repousser && (
-                <button
-                  type="button"
-                  onClick={() => repousser(n)}
-                  disabled={enCours !== null}
-                  className="text-[14px] font-medium disabled:opacity-60"
-                  style={{ color: colors.muted }}
-                >
-                  {enCours === n.repousser ? "…" : "Plus tard"}
-                </button>
-              )}
-              {/* Rien à acquitter sur un rappel : il s'en va quand la
-                  situation cesse, pas quand on la regarde. */}
-              {!n.rappel && (
-                <button
-                  type="button"
-                  onClick={() => marquerVue(n.envoiId)}
-                  className="text-[14px] font-medium"
-                  style={{ color: colors.muted }}
-                >
-                  J&apos;ai vu
-                </button>
-              )}
+              {/* **« J'AI VU » SUR CHAQUE CARTE — sa demande du 30 août 2026**,
+                  capture à l'appui : « pourquoi certaines n'ont pas cette
+                  fonction ? Mets la fonction pour toutes ».
+
+                  **Un seul mot, parce que c'est un seul geste** : la carte
+                  s'en va. Ce qui se passe derrière diffère, et cela ne regarde
+                  pas son doigt — une réponse de client est acquittée pour de
+                  bon ; un rappel se tait le temps de son délai réglé, puis
+                  revient si la situation n'a pas bougé. Nommer le même geste
+                  « Plus tard » ici et « J'ai vu » deux cartes plus bas ferait
+                  chercher la différence là où il n'y en a pas. */}
+              <button
+                type="button"
+                data-atlas="j-ai-vu"
+                onClick={() => (n.repousser ? repousser(n) : n.vu ? marquerRappel(n) : marquerVue(n.envoiId))}
+                disabled={enCours !== null}
+                className="text-[14px] font-medium disabled:opacity-60"
+                style={{ color: colors.muted }}
+              >
+                J&apos;ai vu
+              </button>
             </div>
 
             {/* Le refus se lit ici, sous le geste qui l'a provoqué — et il dit

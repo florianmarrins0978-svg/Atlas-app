@@ -1,0 +1,927 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas — la note vocale, à la manière d'une messagerie</title>
+<style>
+/*
+  LA NOTE VOCALE À LA MANIÈRE D'UNE MESSAGERIE — sa demande du 30 août 2026,
+  deux captures à l'appui (son écran « Fiche client », et un enregistrement en
+  cours dans WhatsApp) :
+
+    « Il faut modifier la note vocale pour qu'elle soit plus simple à utiliser,
+      à la manière de celle de WhatsApp : on appuie dessus et, comme sur la
+      deuxième photo, il faut la même chose — possibilité de supprimer, ou
+      appuyer sur la flèche pour envoyer de suite la transcription et arriver
+      sur la page du devis comme c'est déjà le cas (je veux que ça, ça soit
+      joli). Et réduis un peu la largeur du bouton "Je rédige mon devis".
+      Code rien, fais une maquette, pas de photo. »
+
+  ───────────────────────────────────────────────────────────────────────────
+  CE QUI CHANGE, ET POURQUOI CE N'EST PAS QU'UN DESSIN.
+
+  Aujourd'hui l'anneau porte DEUX gestes et rien d'autre : appuyer pour dicter,
+  rappuyer pour arrêter. Arrêter, c'est envoyer — il n'y a pas de retour en
+  arrière. Celui qui s'est trompé de mot, ou qui a laissé courir le micro dans
+  la voiture, envoie quand même : la note part, la transcription part avec, et
+  c'est sur le devis qu'il découvre le dégât.
+
+  Une messagerie règle cela depuis dix ans avec trois boutons : la poubelle, la
+  pause, l'envoi. Le geste d'arrêt cesse d'être un envoi ; l'envoi devient un
+  choix. C'est exactement ce qu'il demande, et c'est un garde-fou, pas un décor.
+
+  ───────────────────────────────────────────────────────────────────────────
+  TROIS FAÇONS DE LE POSER — il en choisit une, rien n'est codé.
+
+    1 · LA BARRE      — une barre prend la place de l'anneau. Deux rangées,
+                        comme sa capture : chrono et onde en haut,
+                        poubelle · pause · envoi en dessous.
+    2 · L'ANNEAU      — l'anneau reste au centre et devient le carré d'arrêt ;
+                        la poubelle vient à sa gauche, l'avion à sa droite.
+    3 · AU PLUS COURT — une seule capsule : poubelle, chrono, onde, envoi.
+                        Pas de pause — il ne l'a pas demandée, et c'est un
+                        bouton de moins sous le pouce.
+
+  **LA 2 A ÉTÉ RETIRÉE, PUIS REMISE — et il faut savoir pourquoi.** Sa règle du
+  30 août — *« lorsque je clique sur le bouton note vocale, il doit ensuite
+  disparaître pour laisser place à la modification »* — la condamnait, et elle
+  est donc partie le jour même. Il l'a redemandée dans la foulée : *« je veux
+  pouvoir essayer tous ceux que tu m'as proposés »*. Elle revient telle quelle,
+  sans être maquillée pour se conformer : c'est en la manipulant qu'il verra si
+  sa règle tient, et un choix qu'on lui retire n'est pas un choix.
+
+  ───────────────────────────────────────────────────────────────────────────
+  ET LE BOUTON DU BAS PASSE EN SECONDAIRE.
+
+  *« Le bouton change par "je rédige à la main", mais ça doit être un bouton
+  secondaire, car l'idée c'est qu'il utilise en priorité la note vocale. »*
+  Le seul aplat plein de l'écran devient le rond d'envoi de la dictée : c'est
+  là que l'œil doit aller.
+
+  ───────────────────────────────────────────────────────────────────────────
+  TOUT TIENT SUR UN ÉCRAN — sa règle du 30 août, et c'est elle qui a commandé
+  toutes les mesures de cette planche.
+
+  *« Tout doit tenir sur une seule page, ne doit pas décoller vers le bas pour
+  accéder aux autres informations. »*
+
+  **Mesuré, pas estimé.** L'écran faisait 960 px de haut ; sur sa capture, la
+  bande utile entre la barre d'adresse de Safari et la barre d'outils vaut
+  **environ 700 points**. Il fallait donc en retirer plus du quart.
+
+  Ce qui a été resserré, dans cet ordre — le moins douloureux d'abord :
+
+    · les espaces entre les blocs : 17 px → 9
+    · la hauteur des cases : 50 px → 44, et leurs marges intérieures avec
+    · le carré photo : 74 px → 58
+    · la marque, l'en-tête, le bouton : quelques pixels chacun
+    · la ligne vide sous le bouton, qui ne portait rien
+
+  **ET QUATRE INTITULÉS SONT PARTIS, ce qui mérite d'être dit.** « E-mail »,
+  « Adresse du chantier », « Comment lui envoyer son devis ? » et « Photos du
+  chantier » : les cases les disent déjà (`bernard@exemple.fr`, `12 rue des
+  Lilas`), les deux capsules disent le canal, et un carré pointillé avec un
+  « + » n'a jamais eu besoin qu'on le nomme. C'est aussi sa règle du 25 août —
+  *« le moins de mots possible »*.
+
+  **« Nom du client » et « Téléphone » RESTENT**, et c'est délibéré : il les a
+  demandés explicitement le 21 août — *« au-dessus du numéro de téléphone,
+  marqué téléphone »* —, parce que sur une fiche qu'on remplit devant le client,
+  on ne devine pas. Les retirer aurait fait tenir l'écran en défaisant une
+  demande antérieure, sans le lui dire.
+
+  **La zone de la dictée a une hauteur FIXE.** Sans elle, la barre
+  d'enregistrement étant plus haute que l'anneau, tout ce qui est en dessous
+  sautait au moment où l'on appuie — et le bouton passait sous le pli au pire
+  moment.
+
+  ───────────────────────────────────────────────────────────────────────────
+  CE QUI EST REPRIS DE L'APPLICATION, ET NON REDESSINÉ.
+
+  · L'ANNEAU au repos, ses deux cercles (74 px vert pin, 56 px or), ses trois
+    traits et ses huit barreaux de chaque côté : le CSS vient de
+    `src/app/globals.css` (bloc `.atlas-lecteur`), comme dans
+    `appli/fiche-client-vocale.html`. Deux ondes différentes dans la même
+    application se liraient comme deux objets différents.
+  · LA PELLICULE : un champ de fichier unique, `accept="image/*" multiple`,
+    SANS `capture` — c'est ce qui ouvre le menu à trois entrées d'un iPhone.
+  · LE RESTE DE LA FICHE (civilité, nom + téléphone sur une ligne, e-mail,
+    adresse, canal d'envoi) : l'écran qu'il a photographié, à l'identique.
+
+  AUCUN PRIX N'EST INVENTÉ : il n'a annoncé aucun montant en dictant, les
+  lignes du devis arrivent donc « à chiffrer » (`CLAUDE.md` §4).
+
+  L'AVION EN PAPIER N'EST PAS UNE FLÈCHE DÉCORATIVE : il EST le bouton, il ne
+  suit aucun libellé. Même cas que le rond d'envoi de la discussion d'arrosage,
+  déjà admis dans `scripts/test-aucune-fleche.ts`.
+*/
+:root{
+  --bone:#f5f3ee; --cream:#faf9f5; --paper:#ece9e1;
+  --charcoal:#1c1c1a; --charcoal-soft:#4a4a44; --muted:#8a8578;
+  --pine:#2f3b2f; --or:#B98B47; --or-clair:#C9A15E;
+  --line:rgba(28,28,26,.12); --line-soft:rgba(28,28,26,.07);
+  --alert:#9C3B2E;
+  /* **CE QUI EST PLEIN S'INVERSE EN NUIT, et ce n'est pas un goût.** Sa capture
+     du 22 août 2026 : « le mode nuit est illisible ». Sur les chartes claires
+     l'aplat est le vert pin et l'on écrit du crème dessus ; sur Nuit, l'aplat
+     EST le crème et l'on écrit sombre dedans — c'est exactement ce que porte
+     `src/lib/chartes.ts` (`plein: "#e9e8de"`). Un `#fff` posé sur `--pine`
+     serait juste ici et illisible là-bas, et c'est ce qu'a montré la capture de
+     cette planche en sombre : bouton et avion se noyaient dans le fond. */
+  --plein:var(--pine); --sur-plein:#faf9f5;
+  /* Ce qui doit rester repérable sans être un aplat : le lien d'adresse, le
+     micro du coin. Le vert pin sur un fond noir ne se voit pas. */
+  --lien:var(--pine);
+  /* La largeur du bouton principal — c'est la question de l'écran « Largeur ».
+     100 % aujourd'hui ; la maquette s'ouvre sur 78 %, la proposition 3. */
+  --large-principal:78%;
+}
+/* **LE SOMBRE SE FORCE, IL NE SE SUBIT PLUS.** Sa demande du 30 août : *« tout
+   à l'heure tu m'as fait cinq visuels en blanc et en fond noir, je veux essayer
+   les cinq »*. La planche suivait le réglage de son téléphone : il ne pouvait
+   voir qu'une teinte sur les deux, et devait aller changer un réglage système
+   pour voir l'autre. Le bouton ☾ / ☀ de la barre d'onglets tranche.
+
+   Les trois blocs se répètent à dessein, et l'ordre compte : le réglage du
+   téléphone d'abord, mais SEULEMENT si l'on n'a pas demandé le clair
+   (`:not([data-theme="light"])`) ; puis le choix explicite, qui gagne dans les
+   deux sens. Sans le second, un téléphone réglé en sombre ne pourrait jamais
+   revenir au clair. */
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+         --bone:#171613; --cream:#1e1c18; --paper:#262420; --charcoal:#e9e5dc;
+         --charcoal-soft:#c9c4b8; --muted:#8a867c; --or:#C9A15E;
+         --line:rgba(233,229,220,.16); --line-soft:rgba(233,229,220,.09);
+         --alert:#C9584A; --plein:#e9e8de; --sur-plein:#1a1d19; --lien:#C9A15E; }
+}
+:root[data-theme="dark"]{
+         --bone:#171613; --cream:#1e1c18; --paper:#262420; --charcoal:#e9e5dc;
+         --charcoal-soft:#c9c4b8; --muted:#8a867c; --or:#C9A15E;
+         --line:rgba(233,229,220,.16); --line-soft:rgba(233,229,220,.09);
+         --alert:#C9584A; --plein:#e9e8de; --sur-plein:#1a1d19; --lien:#C9A15E; }
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+/* **`hidden` doit gagner contre nos propres classes, et ce n'est pas gratuit.**
+   `.capsule{display:flex}` l'emporte sur le `[hidden]{display:none}` du
+   navigateur : la proposition 3 et l'attente de transcription s'affichaient
+   donc AVANT qu'on ait touché quoi que ce soit. Trouvé par le contrôle, pas à
+   l'œil — c'est exactement le genre de défaut qu'une capture ne montre que si
+   l'on regarde la bonne. */
+[hidden]{display:none!important}
+/* Retiré de l'œil, pas de la voix : ce qui n'est plus écrit reste lisible par
+   un lecteur d'écran. Un intitulé supprimé pour gagner de la place ne doit pas
+   supprimer l'information pour qui n'a pas l'usage de ses yeux. */
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+body{margin:0;background:var(--bone);color:var(--charcoal);
+     font:16px/1.5 -apple-system,"Segoe UI",Roboto,sans-serif;-webkit-text-size-adjust:100%}
+.tel{max-width:430px;margin:0 auto;min-height:100vh;display:flex;flex-direction:column}
+
+/* ─── Le cadre de la maquette ───────────────────────────────────────────── */
+/* **LA BASCULE NE DÉFILE PAS AVEC LES ONGLETS.** Vue à la capture, pas
+   déduite : les quatre onglets débordent d'un écran de téléphone, la barre
+   défile — et le ☀ partait avec, coupé au bord droit. Un bouton qu'on ne voit
+   pas n'existe pas. Les onglets défilent dans leur propre piste ; la teinte
+   reste posée à droite. */
+.onglets{position:sticky;top:0;z-index:9;display:flex;align-items:center;gap:6px;
+         padding:5px 12px;background:var(--bone);border-bottom:1px solid var(--line)}
+.onglets-piste{flex:1;min-width:0;display:flex;gap:6px;overflow-x:auto;
+               scrollbar-width:none}
+.onglets-piste::-webkit-scrollbar{display:none}
+.onglets button{flex:0 0 auto;border:1px solid var(--line);background:transparent;border-radius:99px;
+                padding:7px 12px;font-size:11.5px;color:var(--muted);cursor:pointer;font-family:inherit}
+.onglets button[aria-pressed="true"]{background:var(--paper);border-color:var(--or);color:var(--charcoal)}
+/* La bascule de teinte se pose au bout, séparée des propositions : elle ne
+   choisit pas un écran, elle change l'éclairage de tous. */
+.onglets .teinte{flex:0 0 auto;font-size:15px;line-height:1;padding:7px 10px;
+                 color:var(--or);border-color:var(--line)}
+/* 20 px, et pas 44 : ce talon était du vide pur sous le bouton, et il comptait
+   dans ce qui passe sous le pli. Les deux autres écrans défilent, eux, et n'en
+   souffrent pas. */
+.ecran{display:none;padding-bottom:20px}
+.ecran.actif{display:block}
+.note{margin:20px 26px 0;padding:15px 17px;border-radius:6px;background:var(--paper);
+      font-size:13px;line-height:1.6;color:var(--charcoal-soft)}
+.note b{color:var(--charcoal)}
+.note .titre{display:block;margin-bottom:7px;font-size:9.5px;font-weight:500;letter-spacing:.26em;
+             text-transform:uppercase;color:var(--or)}
+
+/* ─── En-tête ───────────────────────────────────────────────────────────── */
+.marque{padding:5px 0 1px;text-align:center;font-size:9px;letter-spacing:.34em;color:var(--muted)}
+.entete{display:flex;align-items:center;gap:12px;padding:0 24px}
+.entete h1{margin:0;flex:1;font-family:Georgia,serif;font-weight:400;font-size:27px;line-height:1.05}
+.retour{border:0;background:none;font-size:22px;color:var(--charcoal);padding:0 6px 0 0;cursor:pointer}
+.micro-coin{width:40px;height:40px;border-radius:99px;border:0;background:var(--cream);
+            display:flex;align-items:center;justify-content:center;color:var(--lien);cursor:pointer;
+            box-shadow:inset 0 0 0 1px var(--line-soft)}
+
+/* ─── Formulaire ────────────────────────────────────────────────────────── */
+form{padding:6px 24px 0;display:flex;flex-direction:column;gap:7px}
+.caps{font-size:9.5px;font-weight:500;letter-spacing:.28em;text-transform:uppercase;color:var(--muted)}
+.champ{display:flex;flex-direction:column;gap:4px}
+/* 16 px de corps reste obligatoire : en dessous, Safari zoome tout seul au
+   moment où l'on touche la case, et l'écran qu'on vient d'ajuster part de
+   travers. C'est la hauteur qui maigrit, jamais le texte. */
+.champ input{width:100%;min-height:44px;border:0;border-radius:12px;background:var(--paper);
+             padding:11px 14px;font-size:16px;color:var(--charcoal);font-family:inherit}
+.champ input::placeholder{color:var(--muted)}
+.champ input:focus{outline:0;box-shadow:inset 0 0 0 1.5px var(--or)}
+.duo{display:flex;gap:9px}
+.duo .nom{flex:1;min-width:0}
+.duo .num{flex:0 0 152px}
+.duo .num input{text-align:right;padding-left:10px;padding-right:12px;
+                font-variant-numeric:tabular-nums;letter-spacing:0}
+.duo-titres{align-items:flex-end;margin-bottom:-1px}
+.duo-titres .num{text-align:right;line-height:1.35}
+.canal{display:flex;gap:8px}
+.canal button{flex:1;border-radius:99px;border:1px solid var(--line);background:transparent;
+              padding:9px 8px;font-size:14px;color:var(--charcoal-soft);cursor:pointer;font-family:inherit}
+.canal button[aria-pressed="true"]{background:var(--paper);border-color:var(--or);color:var(--charcoal)}
+.canal button:disabled{opacity:.4}
+.civilite{display:flex;gap:10px}
+.civilite button{border-radius:99px;border:1px solid var(--line);background:var(--cream);
+                 padding:7px 28px;font-size:16px;color:var(--charcoal);cursor:pointer;font-family:inherit}
+.civilite button[aria-pressed="true"]{border-color:var(--or);background:var(--paper)}
+.lien-or{align-self:flex-start;border:0;background:none;padding:0;font-size:14px;
+         font-weight:500;color:var(--lien);cursor:pointer;font-family:inherit}
+
+/* ─── La pellicule ──────────────────────────────────────────────────────── */
+.pellicule{display:flex;gap:9px;flex-wrap:wrap}
+.ajout-photo{width:58px;height:58px;border-radius:6px;border:1px dashed var(--or);
+             background:transparent;color:var(--or);font-size:24px;line-height:1;
+             display:flex;align-items:center;justify-content:center;cursor:pointer}
+.vignette{width:58px;height:58px;border-radius:6px;object-fit:cover;
+          box-shadow:inset 0 0 0 1px var(--line)}
+.pellicule input[type=file]{display:none}
+
+/* ─── L'ANNEAU AU REPOS — recopié de `globals.css` ─────────────────────── */
+.atlas-lecteur{align-self:center;position:relative;display:flex;flex-direction:column;
+               align-items:center;width:100%;--atlas-ampleur:1}
+.atlas-aile{position:absolute;top:0;height:76px;width:104px;display:flex;align-items:center;
+            overflow:hidden;pointer-events:none;transform:scaleY(var(--atlas-ampleur));
+            transition:transform 90ms linear,opacity .22s}
+.atlas-aile-g{right:calc(50% + 40px);justify-content:flex-end}
+.atlas-aile-d{left:calc(50% + 40px);justify-content:flex-start}
+.atlas-aile i{position:absolute;display:block;width:2px;border-radius:2px;opacity:0;background:var(--or)}
+.atlas-aile-g i{right:0;animation:atlas-partir-g 1.9s linear infinite;animation-play-state:paused}
+.atlas-aile-d i{left:0;animation:atlas-partir-d 1.9s linear infinite;animation-play-state:paused}
+[data-lit="oui"] .atlas-aile i{animation-play-state:running}
+@keyframes atlas-partir-g{
+  0%{transform:translateX(0) scaleY(.15);opacity:0}
+  16%{opacity:.95} 72%{opacity:.7}
+  100%{transform:translateX(-98px) scaleY(1);opacity:0}}
+@keyframes atlas-partir-d{
+  0%{transform:translateX(0) scaleY(.15);opacity:0}
+  16%{opacity:.95} 72%{opacity:.7}
+  100%{transform:translateX(98px) scaleY(1);opacity:0}}
+.atlas-aile i:nth-child(1){height:9px;animation-delay:0s}
+.atlas-aile i:nth-child(2){height:20px;animation-delay:-.24s}
+.atlas-aile i:nth-child(3){height:13px;animation-delay:-.48s}
+.atlas-aile i:nth-child(4){height:27px;animation-delay:-.72s}
+.atlas-aile i:nth-child(5){height:11px;animation-delay:-.96s}
+.atlas-aile i:nth-child(6){height:22px;animation-delay:-1.2s}
+.atlas-aile i:nth-child(7){height:8px;animation-delay:-1.44s}
+.atlas-aile i:nth-child(8){height:17px;animation-delay:-1.68s}
+.atlas-anneaux{position:relative;display:flex;align-items:center;justify-content:center;
+               min-width:76px;min-height:76px;border:0;background:none;cursor:pointer;
+               transition:transform .22s cubic-bezier(.22,.61,.36,1),opacity .3s}
+.atlas-anneaux:active{transform:scale(.95)}
+.atlas-anneaux span[data-cercle]{position:absolute;border-radius:99px;pointer-events:none}
+.atlas-traits{position:relative;display:flex;align-items:center;gap:4px;z-index:2}
+.atlas-traits i{display:block;width:2px;border-radius:2px;background:var(--or);
+                transform-origin:center;animation:atlas-battre 1.15s ease-in-out infinite;
+                animation-play-state:paused}
+.atlas-traits i:nth-child(1){height:12px;animation-delay:-.1s}
+.atlas-traits i:nth-child(2){height:24px;animation-delay:-.45s}
+.atlas-traits i:nth-child(3){height:12px;animation-delay:-.8s}
+@keyframes atlas-battre{0%,100%{transform:scaleY(.42)}50%{transform:scaleY(1)}}
+[data-lit="oui"] .atlas-traits i{animation-play-state:running}
+.atlas-indice{margin:5px 0 0;font-size:11px;color:var(--muted);text-align:center;min-height:13px}
+[data-etat="dicte"] .atlas-indice,[data-etat="pause"] .atlas-indice,
+[data-etat="envoi"] .atlas-indice{display:none}
+
+/* ═══ CE QUI EST NEUF : L'ENREGISTREMENT ════════════════════════════════
+   Trois habillages, un seul jeu de gestes. Tout ce qui suit s'affiche à la
+   place de l'anneau (variantes 1 et 3) ou autour de lui (variante 2). */
+
+/* **HAUTEUR FIXE, et ce n'est pas de la coquetterie.** La barre
+   d'enregistrement est plus haute que l'anneau : sans cette réserve, tout ce
+   qui est en dessous — le bouton compris — sautait vers le bas à l'instant où
+   l'on appuie, c'est-à-dire au moment où l'écran doit être le plus stable. */
+.zone-dictee{align-self:center;width:100%;display:flex;flex-direction:column;
+             align-items:center;justify-content:center;min-height:94px}
+.apparait{animation:monter .28s cubic-bezier(.22,.61,.36,1) both}
+@keyframes monter{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+/* Le chrono, avec sa pastille qui bat — le seul signe qui dit « ça tourne »
+   quand on ne parle pas. Un enregistreur muet se lit comme un enregistreur en
+   panne, et c'est le reproche qu'il a déjà fait à l'anneau immobile. */
+.chrono{display:flex;align-items:center;gap:7px;font-size:14px;color:var(--or);
+        font-variant-numeric:tabular-nums;flex:0 0 auto}
+.chrono .pastille{width:8px;height:8px;border-radius:99px;background:var(--alert);
+                  animation:battre-pastille 1.3s ease-in-out infinite}
+@keyframes battre-pastille{0%,100%{opacity:1}50%{opacity:.25}}
+[data-etat="pause"] .chrono .pastille{animation:none;opacity:.3}
+
+/* L'onde qui se déroule : les barreaux naissent à droite et glissent vers la
+   gauche, où ils s'effacent. Dans l'application ils suivront le volume réel,
+   comme le fait déjà l'anneau (`AnneauNoteVocale.tsx`) ; ici ils respirent. */
+.onde{flex:1;min-width:0;height:26px;display:flex;align-items:center;justify-content:flex-end;
+      gap:2px;overflow:hidden;
+      -webkit-mask-image:linear-gradient(90deg,transparent,#000 22%,#000);
+      mask-image:linear-gradient(90deg,transparent,#000 22%,#000)}
+.onde i{flex:0 0 2px;border-radius:2px;background:var(--or);opacity:.85;
+        animation:naitre .22s ease-out both}
+@keyframes naitre{from{transform:scaleY(.1);opacity:0}to{transform:scaleY(1);opacity:.85}}
+
+/* Les trois boutons. Le rond d'envoi est le seul objet PLEIN de l'écran : sur
+   une messagerie c'est ce qu'on cherche du pouce sans regarder. */
+.geste{border:0;background:none;padding:0;cursor:pointer;display:flex;align-items:center;
+       justify-content:center;font-family:inherit;flex:0 0 auto}
+/* 46 et non 44 : mesurée, la poubelle rendait 43,99997 px — l'alignement du
+   flex la rabotait d'un cheveu, juste sous le seuil du doigt. Un pixel qu'on
+   ne voit pas, mais un contrôle qui rougit et une cible qu'on rate. Elle prend
+   donc la taille de l'avion, ce qui équilibre la rangée par-dessus le marché. */
+.jeter{width:46px;height:46px;border-radius:99px;color:var(--muted);
+       transition:color .18s,background .18s}
+.jeter:active{color:var(--alert);background:var(--paper)}
+.pause{width:40px;height:40px;border-radius:99px;color:var(--alert);
+       box-shadow:inset 0 0 0 1.5px var(--alert)}
+.envoyer{width:46px;height:46px;border-radius:99px;background:var(--plein);color:var(--sur-plein);
+         box-shadow:0 6px 16px rgba(0,0,0,.18);transition:transform .18s}
+.envoyer:active{transform:scale(.93)}
+
+/* 1 · LA BARRE — deux rangées, comme sa capture. */
+.barre{width:100%;background:var(--cream);border-radius:20px;padding:7px 14px 8px;
+       box-shadow:inset 0 0 0 1px var(--line-soft)}
+.barre .haut{display:flex;align-items:center;gap:12px;min-height:24px}
+.barre .bas{display:flex;align-items:center;justify-content:space-between;margin-top:6px}
+
+/* 2 · L'ANNEAU RESTE — poubelle, anneau, avion sur une ligne. */
+.trio{display:flex;align-items:center;justify-content:center;gap:24px;width:100%}
+.trio .atlas-lecteur{width:auto}
+.sous-trio{display:flex;align-items:center;gap:12px;width:100%;margin-top:6px;padding:0 4px}
+.carre-stop{width:17px;height:17px;border-radius:3px;background:var(--or)}
+/* **Les ailes de l'anneau sont retirées ICI, et c'est mesuré, pas choisi au
+   goût.** Elles font 104 px de large et partent à 40 px du centre ; les deux
+   boutons commencent à 62 px. Les barreaux passaient donc SOUS la poubelle et
+   sous l'avion — ils ne prennent pas le doigt, mais on lisait une bouillie.
+   Le mouvement n'est pas perdu : l'onde qui se déroule est juste en dessous,
+   et le carré d'arrêt respire. */
+#v2 .atlas-aile{display:none}
+#v2 [data-lit="oui"] .carre-stop{animation:respirer 1.7s ease-in-out infinite}
+@keyframes respirer{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(.86);opacity:.72}}
+
+/* 3 · AU PLUS COURT — une capsule, quatre choses dedans. */
+.capsule{display:flex;align-items:center;gap:12px;width:100%;background:var(--cream);
+         border-radius:99px;padding:8px 8px 8px 10px;box-shadow:inset 0 0 0 1px var(--line-soft)}
+/* 46, comme la poubelle : à 44 pile, l'alignement du flex rendait 43,99997 —
+   sous le seuil du doigt, et le contrôle le refusait à juste titre. */
+.capsule .envoyer{width:46px;height:46px}
+
+/* L'attente de la transcription. Elle dure vraiment quelques secondes : la
+   masquer ferait croire à un écran figé, et il rappuierait. */
+.attente{display:flex;align-items:center;justify-content:center;gap:9px;min-height:70px;
+         font-size:13px;color:var(--muted)}
+.attente .points i{display:inline-block;width:4px;height:4px;margin-left:3px;border-radius:99px;
+                   background:var(--or);animation:pointiller 1.1s ease-in-out infinite}
+.attente .points i:nth-child(2){animation-delay:.18s}
+.attente .points i:nth-child(3){animation-delay:.36s}
+@keyframes pointiller{0%,100%{opacity:.2}50%{opacity:1}}
+
+/* ─── LE BOUTON EST SECONDAIRE, ET C'EST TOUT LE PROPOS ─────────────────
+   Sa demande du 30 août : *« le bouton change par "je rédige à la main", mais
+   ça doit être un bouton secondaire, car l'idée c'est qu'il utilise en
+   priorité la note vocale »*.
+
+   **Un écran n'a qu'un seul aplat plein, et il désigne ce qu'on veut qu'on
+   fasse.** Tant que « Je rédige mon devis » était plein, l'œil y allait
+   d'abord et l'anneau devenait un accessoire — l'inverse de ce que fait ce
+   produit. Le seul plein de l'écran est désormais **le rond d'envoi de la
+   dictée**.
+
+   Le dessin n'est pas inventé : c'est le vocabulaire secondaire d'Atlas, celui
+   des capsules de canal (`ChoixCanal.tsx` — fond transparent, liseré, encre).
+   Hauteur, serif et rayon ne bougent pas : ce n'est pas un bouton plus petit,
+   c'est un bouton moins fort. */
+.secondaire{display:block;width:var(--large-principal);margin:0 auto;border:0;border-radius:99px;
+           background:transparent;color:var(--charcoal);box-shadow:inset 0 0 0 1.5px var(--or);
+           padding:14px 20px;font-family:Georgia,serif;
+           font-size:17px;cursor:pointer;transition:width .22s ease}
+
+/* ─── L'écran du devis ──────────────────────────────────────────────────── */
+.dictee{margin:14px 26px 0;font-size:12.5px;font-style:italic;color:var(--muted);line-height:1.55}
+.doc{margin:14px 26px 0;background:var(--cream);border-radius:6px;padding:22px 20px;
+     box-shadow:inset 0 0 0 1px var(--line-soft)}
+.doc h2{margin:0 0 3px;font-family:Georgia,serif;font-weight:400;font-size:26px}
+.ligne-devis{display:flex;justify-content:space-between;gap:12px;padding:13px 0;
+             border-bottom:1px solid var(--line)}
+.ligne-devis .libelle{font-family:Georgia,serif;font-size:16.5px;line-height:1.25}
+.ligne-devis .mesure{display:block;margin-top:4px;font-size:12px;color:var(--muted)}
+.ligne-devis .prix{flex:0 0 auto;font-size:12px;color:var(--alert);text-align:right;padding-top:3px}
+
+/* ─── L'écran « Largeur » ───────────────────────────────────────────────── */
+.essai-largeur{margin:0 26px 14px;padding:16px 0 4px;border-radius:14px;background:var(--cream);
+               box-shadow:inset 0 0 0 1px var(--line-soft);cursor:pointer;border:0;width:calc(100% - 52px);
+               font-family:inherit;display:block;text-align:center}
+.essai-largeur[aria-pressed="true"]{box-shadow:inset 0 0 0 1.5px var(--or)}
+.essai-largeur .faux-bouton{display:block;margin:0 auto;border-radius:99px;background:transparent;
+                            color:var(--charcoal);box-shadow:inset 0 0 0 1.5px var(--or);
+                            padding:17px 20px;font-family:Georgia,serif;font-size:17px}
+.essai-largeur .rang{display:block;margin-top:11px;padding-bottom:12px;font-size:9.5px;font-weight:500;
+                     letter-spacing:.26em;text-transform:uppercase;color:var(--muted)}
+.essai-largeur[aria-pressed="true"] .rang{color:var(--or)}
+</style>
+</head>
+<body data-variante="1">
+<div class="tel">
+
+  <nav class="onglets" aria-label="Les écrans de la maquette">
+    <div class="onglets-piste">
+      <button type="button" data-variante="1" aria-pressed="true">1 · La barre</button>
+      <button type="button" data-variante="2" aria-pressed="false">2 · L’anneau</button>
+      <button type="button" data-variante="3" aria-pressed="false">3 · Au plus court</button>
+      <button type="button" data-va="largeur" aria-pressed="false">Largeur</button>
+    </div>
+    <button type="button" class="teinte" id="teinte" aria-label="Passer en fond noir">☾</button>
+  </nav>
+
+  <!-- ══════════════════ LA FICHE CLIENT ══════════════════ -->
+  <section class="ecran actif" id="fiche">
+    <p class="marque">ATLAS</p>
+    <div class="entete">
+      <button class="retour" type="button" aria-label="Retour">‹</button>
+      <h1>Fiche client</h1>
+      <button class="micro-coin" type="button" aria-label="Dicter les coordonnées">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9">
+          <rect x="9" y="3" width="6" height="11" rx="3"/>
+          <path d="M5 11a7 7 0 0 0 14 0" stroke-linecap="round"/>
+          <path d="M12 18v3" stroke-linecap="round"/>
+        </svg>
+      </button>
+    </div>
+
+    <form onsubmit="return false">
+      <div class="civilite">
+        <button type="button" aria-pressed="true">Mr</button>
+        <button type="button" aria-pressed="false">Mme</button>
+      </div>
+
+      <div class="champ">
+        <div class="duo duo-titres">
+          <span class="nom caps">Nom du client</span>
+          <span class="num caps">Téléphone</span>
+        </div>
+        <div class="duo">
+          <span class="nom"><input id="nom" type="text" placeholder="Bernard" value="M. Bernard" autocomplete="off"></span>
+          <span class="num"><input id="tel" type="tel" placeholder="06 12 34 56 78" value="06 79 98 45 14" autocomplete="off"></span>
+        </div>
+      </div>
+
+      <!-- Sans intitulé : la case le dit déjà, et l'écran doit tenir d'un
+           seul tenant. « Nom du client » et « Téléphone » restent, eux — il
+           les a demandés nommément le 21 août. -->
+      <div class="champ">
+        <input id="email" type="email" placeholder="bernard@exemple.fr" autocomplete="off" aria-label="E-mail">
+      </div>
+
+      <div class="champ">
+        <input id="adresse" type="text" placeholder="12 rue des Lilas, Nantes" value="12 rue des Lilas, Nantes" autocomplete="off" aria-label="Adresse du chantier">
+      </div>
+
+      <button class="lien-or" type="button">+ Ajouter une adresse client différente</button>
+
+      <!-- Les deux capsules disent le canal : la question au-dessus le
+           répétait. -->
+      <fieldset class="champ" style="border:0;margin:0;padding:0">
+        <legend class="sr" style="padding:0">Comment lui envoyer son devis ?</legend>
+        <div class="canal">
+          <button type="button" id="par-sms" aria-pressed="true">Par SMS</button>
+          <button type="button" id="par-mail" aria-pressed="false" disabled>Par e-mail</button>
+        </div>
+      </fieldset>
+
+      <div class="champ">
+        <div class="pellicule" id="pellicule" aria-label="Photos du chantier">
+          <input id="fichiers" type="file" accept="image/*" multiple>
+          <button class="ajout-photo" type="button" id="ajouter-photo" aria-label="Ajouter des photos">+</button>
+        </div>
+      </div>
+
+      <!-- ─────────── LA NOTE VOCALE ─────────── -->
+      <div class="zone-dictee" id="zone" data-etat="repos">
+
+        <!-- AU REPOS : l'anneau d'aujourd'hui, inchangé. -->
+        <div class="atlas-lecteur" id="anneau" data-lit="non">
+          <span class="atlas-aile atlas-aile-g" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span>
+          <span class="atlas-aile atlas-aile-d" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span>
+          <button class="atlas-anneaux" type="button" id="dicter" aria-pressed="false" aria-label="Dicter les tâches à faire">
+            <span data-cercle style="width:74px;height:74px;border:1.5px solid var(--pine)"></span>
+            <span data-cercle style="width:56px;height:56px;border:1px solid var(--or)"></span>
+            <span class="atlas-traits" id="traits" aria-hidden="true"><i></i><i></i><i></i></span>
+          </button>
+        </div>
+
+        <!-- 1 · LA BARRE -->
+        <div class="barre" id="v1" hidden>
+          <div class="haut">
+            <span class="chrono"><span class="pastille"></span><span data-chrono>0:00</span></span>
+            <span class="onde" data-onde aria-hidden="true"></span>
+          </div>
+          <div class="bas">
+            <button class="geste jeter" type="button" data-jeter aria-label="Supprimer la note"></button>
+            <button class="geste pause" type="button" data-pause aria-label="Mettre en pause"></button>
+            <button class="geste envoyer" type="button" data-envoyer aria-label="Envoyer la note"></button>
+          </div>
+        </div>
+
+        <!-- 2 · L'ANNEAU RESTE AU CENTRE -->
+        <div style="width:100%" id="v2" hidden>
+          <div class="trio">
+            <button class="geste jeter" type="button" data-jeter aria-label="Supprimer la note"></button>
+            <div class="atlas-lecteur" data-lit="oui" data-anneau-vif>
+              <span class="atlas-aile atlas-aile-g" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span>
+              <span class="atlas-aile atlas-aile-d" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span>
+              <button class="atlas-anneaux" type="button" data-pause data-anneau-pause aria-label="Mettre en pause">
+                <span data-cercle style="width:74px;height:74px;border:1.5px solid var(--pine)"></span>
+                <span data-cercle style="width:56px;height:56px;border:1px solid var(--or)"></span>
+                <span class="carre-stop" aria-hidden="true"></span>
+              </button>
+            </div>
+            <button class="geste envoyer" type="button" data-envoyer aria-label="Envoyer la note"></button>
+          </div>
+          <div class="sous-trio">
+            <span class="chrono"><span class="pastille"></span><span data-chrono>0:00</span></span>
+            <span class="onde" data-onde aria-hidden="true"></span>
+          </div>
+        </div>
+
+        <!-- 3 · AU PLUS COURT -->
+        <div class="capsule" id="v3" hidden>
+          <button class="geste jeter" type="button" data-jeter aria-label="Supprimer la note"></button>
+          <span class="chrono"><span class="pastille"></span><span data-chrono>0:00</span></span>
+          <span class="onde" data-onde aria-hidden="true"></span>
+          <button class="geste envoyer" type="button" data-envoyer aria-label="Envoyer la note"></button>
+        </div>
+
+        <!-- L'ATTENTE, après l'envoi -->
+        <div class="attente" id="attente" hidden>
+          <span>Transcription</span><span class="points"><i></i><i></i><i></i></span>
+        </div>
+
+        <p class="atlas-indice" id="indice">Appuyez et décrivez le chantier</p>
+      </div>
+
+      <div style="padding:0 0 4px">
+        <button class="secondaire" type="button" id="ecrire">Je rédige à la main</button>
+      </div>
+    </form>
+  </section>
+
+  <!-- ══════════════════ LE DEVIS ══════════════════ -->
+  <section class="ecran" id="devis">
+    <p class="marque">ATLAS</p>
+    <div class="entete">
+      <button class="retour" type="button" id="retour-fiche" aria-label="Retour à la fiche client">‹</button>
+      <h1>Devis</h1>
+    </div>
+
+    <p class="dictee">« Alors, on a la haie à tailler, elle fait dans les vingt mètres linéaires…
+      euh, il faut aussi couper les inflorescences des hortensias, et puis tondre la pelouse. »</p>
+
+    <div class="doc">
+      <h2 id="devis-nom">M. Bernard</h2>
+      <p id="devis-coord" style="margin:0 0 16px;font-size:13.5px;color:var(--muted)">12 rue des Lilas, Nantes · 06 79 98 45 14</p>
+
+      <div class="ligne-devis">
+        <span><span class="libelle">Taille de haie</span><span class="mesure">20 ml</span></span>
+        <span class="prix">à chiffrer</span>
+      </div>
+      <div class="ligne-devis">
+        <span><span class="libelle">Taille des inflorescences d’hortensias</span></span>
+        <span class="prix">à chiffrer</span>
+      </div>
+      <div class="ligne-devis" style="border-bottom:0">
+        <span><span class="libelle">Tonte de la pelouse</span></span>
+        <span class="prix">à chiffrer</span>
+      </div>
+    </div>
+
+    <!-- **Sa question du 30 août, et elle méritait d'être posée :** *« la page
+         que tu m'as mise en visuel, c'est juste pour le test ? »* Oui — et
+         l'écran devait le dire lui-même, sans quoi il se demanderait si Atlas
+         va lui fabriquer un devis de démonstration. -->
+    <div class="note">
+      <span class="titre">Ceci est un exemple</span>
+      Dans l’application, l’avion ouvre <b>votre vrai devis</b>, déjà rempli avec ce que vous
+      venez de dicter. Vous n’avez annoncé aucun montant : les prix vous attendent,
+      Atlas n’en invente pas.
+    </div>
+  </section>
+
+  <!-- ══════════════════ LA LARGEUR DU BOUTON ══════════════════ -->
+  <section class="ecran" id="largeur">
+    <p class="marque">ATLAS</p>
+    <div class="entete"><h1>Largeur du<br>bouton</h1></div>
+
+    <div class="note">
+      <span class="titre">Touchez-en une</span>
+      Elle s’applique aussitôt à l’écran <b>Fiche client</b>. Dites-moi le numéro.
+    </div>
+
+    <div style="margin-top:18px">
+      <button class="essai-largeur" type="button" data-largeur="100%" aria-pressed="false">
+        <span class="faux-bouton" style="width:100%">Je rédige à la main</span>
+        <span class="rang">1 · aujourd’hui</span>
+      </button>
+      <button class="essai-largeur" type="button" data-largeur="88%" aria-pressed="false">
+        <span class="faux-bouton" style="width:88%">Je rédige à la main</span>
+        <span class="rang">2</span>
+      </button>
+      <button class="essai-largeur" type="button" data-largeur="78%" aria-pressed="true">
+        <span class="faux-bouton" style="width:78%">Je rédige à la main</span>
+        <span class="rang">3</span>
+      </button>
+      <button class="essai-largeur" type="button" data-largeur="66%" aria-pressed="false">
+        <span class="faux-bouton" style="width:66%">Je rédige à la main</span>
+        <span class="rang">4</span>
+      </button>
+    </div>
+  </section>
+
+</div>
+
+<script>
+/*
+  LA MAQUETTE SE MANIPULE — rien ici n'appelle un serveur.
+
+  La dictée est simulée ; les GESTES sont les vrais. Un appui sur l'anneau ouvre
+  l'enregistrement, la poubelle jette et ramène l'anneau, la pause suspend le
+  chrono et l'onde, l'avion envoie et mène au devis.
+
+  Le choix des photos, lui, n'est PAS simulé : c'est un vrai champ de fichier,
+  donc sur son téléphone c'est le menu du système qui s'ouvre.
+*/
+const $ = (s) => document.querySelector(s);
+const $$ = (s) => Array.from(document.querySelectorAll(s));
+
+/* ─── Les icônes, dessinées une fois et posées partout ─────────────────── */
+const ICONES = {
+  jeter: '<svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16"/><path d="M10 4h4a1 1 0 0 1 1 1v2H9V5a1 1 0 0 1 1-1z"/><path d="M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12"/><path d="M10 11v6M14 11v6"/></svg>',
+  pause: '<svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16" rx="1.4"/><rect x="14" y="4" width="4" height="16" rx="1.4"/></svg>',
+  reprendre: '<svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5.2v13.6a1 1 0 0 0 1.53.85l10.2-6.8a1 1 0 0 0 0-1.7L9.53 4.35A1 1 0 0 0 8 5.2z"/></svg>',
+  // L'avion en papier : le geste de sa capture. Il EST le bouton — il ne suit
+  // aucun libellé, ce n'est donc pas une flèche décorative (`CLAUDE.md` §3).
+  envoyer: '<svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M20.5 3.5 10.6 13.4"/><path d="M20.5 3.5 14.2 21a.6.6 0 0 1-1.1.05l-3-6.6-6.6-3a.6.6 0 0 1 .05-1.1z"/></svg>',
+};
+$$("[data-jeter]").forEach((b) => (b.innerHTML = ICONES.jeter));
+// L'anneau de la proposition 2 est déjà dessiné — il garde son visage, on ne
+// lui pose pas l'icône de pause par-dessus.
+$$("[data-pause]:not([data-anneau-pause])").forEach((b) => (b.innerHTML = ICONES.pause));
+$$("[data-envoyer]").forEach((b) => (b.innerHTML = ICONES.envoyer));
+
+/* ─── La teinte : clair ou fond noir, à la demande ────────────────────── */
+//
+// **Le premier appui doit inverser CE QU'IL VOIT, pas un état supposé.** Un
+// compteur parti de « clair » aurait laissé un téléphone déjà en sombre passer
+// de sombre à sombre : le premier appui n'aurait rien fait, et il aurait cru le
+// bouton cassé. On lit donc la teinte réellement appliquée.
+$("#teinte").addEventListener("click", () => {
+  const sombreMaintenant =
+    document.documentElement.dataset.theme === "dark" ||
+    (!document.documentElement.dataset.theme &&
+      window.matchMedia("(prefers-color-scheme: dark)").matches);
+  document.documentElement.dataset.theme = sombreMaintenant ? "light" : "dark";
+  $("#teinte").textContent = sombreMaintenant ? "☾" : "☀";
+  $("#teinte").setAttribute("aria-label", sombreMaintenant ? "Passer en fond noir" : "Revenir au fond clair");
+});
+// Le symbole dit où l'on VA, pas où l'on est : sur un téléphone déjà en sombre,
+// une lune inviterait à un voyage qu'on a déjà fait.
+if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
+  $("#teinte").textContent = "☀";
+  $("#teinte").setAttribute("aria-label", "Revenir au fond clair");
+}
+
+/* ─── Les onglets ─────────────────────────────────────────────────────── */
+$$(".onglets button[data-variante], .onglets button[data-va]").forEach((b) => {
+  b.addEventListener("click", () => {
+    if (b.dataset.va) { aller(b.dataset.va); marquerOnglet(b); return; }
+    // Changer de proposition ramène l'anneau au repos : on compare trois
+    // départs, pas trois milieux d'enregistrement.
+    document.body.dataset.variante = b.dataset.variante;
+    reposer();
+    aller("fiche");
+    marquerOnglet(b);
+  });
+});
+function marquerOnglet(actif) {
+  // La bascule de teinte n'est pas un écran : elle ne se coche jamais.
+  $$(".onglets button[data-variante], .onglets button[data-va]").forEach((x) =>
+    x.setAttribute("aria-pressed", String(x === actif))
+  );
+}
+function aller(id) {
+  $$(".ecran").forEach((e) => e.classList.toggle("actif", e.id === id));
+  window.scrollTo(0, 0);
+}
+
+/* ─── Le numéro s'espace tout seul, par paires ────────────────────────── */
+$("#tel").addEventListener("input", (e) => {
+  const champ = e.target;
+  if (champ.value.trim().startsWith("+")) return;
+  const avant = champ.value.slice(0, champ.selectionStart ?? champ.value.length);
+  const aGauche = (avant.match(/\d/g) ?? []).length;
+  const chiffres = (champ.value.match(/\d/g) ?? []).join("").slice(0, 10);
+  champ.value = chiffres.replace(/(\d{2})(?=\d)/g, "$1 ");
+  let rang = 0, vus = 0;
+  while (rang < champ.value.length && vus < aGauche) {
+    if (/\d/.test(champ.value[rang])) vus++;
+    rang++;
+  }
+  champ.setSelectionRange(rang, rang);
+});
+
+/* ─── Civilité, canal, photos ─────────────────────────────────────────── */
+$$(".civilite button").forEach((b) => b.addEventListener("click", () => {
+  $$(".civilite button").forEach((x) => x.setAttribute("aria-pressed", "false"));
+  b.setAttribute("aria-pressed", "true");
+}));
+$("#email").addEventListener("input", (e) => {
+  const a = e.target.value.trim().length > 3;
+  $("#par-mail").disabled = !a;
+  if (!a) { $("#par-mail").setAttribute("aria-pressed", "false"); $("#par-sms").setAttribute("aria-pressed", "true"); }
+});
+$("#par-sms").addEventListener("click", () => { $("#par-sms").setAttribute("aria-pressed","true"); $("#par-mail").setAttribute("aria-pressed","false"); });
+$("#par-mail").addEventListener("click", () => { if ($("#par-mail").disabled) return; $("#par-mail").setAttribute("aria-pressed","true"); $("#par-sms").setAttribute("aria-pressed","false"); });
+$("#ajouter-photo").addEventListener("click", () => $("#fichiers").click());
+$("#fichiers").addEventListener("change", (e) => {
+  for (const f of e.target.files) {
+    const img = document.createElement("img");
+    img.className = "vignette";
+    img.alt = "Photo du chantier";
+    img.src = URL.createObjectURL(f);
+    $("#pellicule").insertBefore(img, $("#ajouter-photo"));
+  }
+  e.target.value = "";
+});
+
+/* ═══ L'ENREGISTREMENT ═══════════════════════════════════════════════════
+   Un seul état pour les trois propositions : elles n'en sont que trois
+   habillages. Écrire trois machines aurait fait diverger la deuxième au
+   premier ajustement — c'est la règle qui vaut aussi dans l'application. */
+const zone = $("#zone");
+let secondes = 0, horloge = null, dessin = null, enPause = false;
+const mmss = (s) => Math.floor(s / 60) + ":" + String(Math.floor(s % 60)).padStart(2, "0");
+
+function habillage() { return $("#v" + document.body.dataset.variante); }
+function ondeVive() { return habillage().querySelector("[data-onde]"); }
+
+/** Remet tout à zéro : l'anneau seul, comme à l'arrivée sur l'écran. */
+function reposer() {
+  clearInterval(horloge); clearInterval(dessin);
+  horloge = dessin = null; secondes = 0; enPause = false;
+  zone.dataset.etat = "repos";
+  $("#anneau").hidden = false;
+  $("#anneau").dataset.lit = "non";
+  $("#dicter").setAttribute("aria-pressed", "false");
+  ["#v1", "#v2", "#v3"].forEach((s) => { $(s).hidden = true; $(s).classList.remove("apparait"); });
+  $("#attente").hidden = true;
+  $$("[data-onde]").forEach((o) => (o.innerHTML = ""));
+  $$("[data-chrono]").forEach((c) => (c.textContent = "0:00"));
+  $$("[data-pause]:not([data-anneau-pause])").forEach((b) => (b.innerHTML = ICONES.pause));
+  $$("[data-anneau-vif]").forEach((a) => (a.dataset.lit = "oui"));
+  $("#indice").textContent = "Appuyez et décrivez le chantier";
+}
+
+function commencer() {
+  secondes = 0; enPause = false;
+  zone.dataset.etat = "dicte";
+  $("#anneau").hidden = true;
+  const vue = habillage();
+  vue.hidden = false;
+  vue.classList.add("apparait");
+  vue.querySelector("[data-chrono]").textContent = "0:00";
+  amorcer(vue.querySelector("[data-onde]"));
+  // **Aucun mot pendant l'enregistrement, et c'est délibéré.** « Jetez, ou
+  // envoyez » décrirait les deux boutons posés juste dessous : un écran
+  // n'explique pas son propre fonctionnement (`CLAUDE.md` §3). La place reste
+  // réservée pour que rien ne saute sous le doigt.
+  $("#indice").textContent = "";
+  horloge = setInterval(() => {
+    secondes++;
+    vue.querySelector("[data-chrono]").textContent = mmss(secondes);
+  }, 1000);
+  dessiner();
+}
+
+/**
+ * L'onde part PLEINE, à plat.
+ *
+ * **Mesuré sur capture, pas supposé.** Sans cela, l'onde naissait à droite dans
+ * une bande vide : les deux premières secondes montraient un trait qui poussait
+ * dans le vide, et la barre paraissait mal cadrée. Une messagerie fait la même
+ * chose — la ligne de repos est là avant qu'on ait parlé.
+ */
+const PAS = 4; // 2 px de barreau, 2 px d'écart
+function combien(onde) {
+  return Math.max(8, Math.ceil((onde.clientWidth || 120) / PAS));
+}
+function amorcer(onde) {
+  if (!onde) return;
+  onde.innerHTML = "";
+  for (let i = 0; i < combien(onde); i++) {
+    const plat = document.createElement("i");
+    plat.style.height = "2px";
+    plat.style.opacity = ".3";
+    onde.appendChild(plat);
+  }
+}
+
+/** L'onde se déroule : un barreau naît à droite, les plus vieux tombent. */
+function dessiner() {
+  clearInterval(dessin);
+  dessin = setInterval(() => {
+    const onde = ondeVive();
+    if (!onde) return;
+    const barre = document.createElement("i");
+    barre.style.height = (4 + Math.random() * 22).toFixed(0) + "px";
+    onde.appendChild(barre);
+    // Une onde qui pousse indéfiniment finirait par peser sur la page : au-delà
+    // de ce que la fenêtre peut montrer, les plus anciens barreaux partent.
+    while (onde.children.length > combien(onde)) onde.removeChild(onde.firstChild);
+  }, 95);
+}
+
+function basculerPause() {
+  enPause = !enPause;
+  zone.dataset.etat = enPause ? "pause" : "dicte";
+  if (enPause) {
+    clearInterval(horloge); clearInterval(dessin); horloge = dessin = null;
+  } else {
+    horloge = setInterval(() => {
+      secondes++;
+      habillage().querySelector("[data-chrono]").textContent = mmss(secondes);
+    }, 1000);
+    dessiner();
+  }
+  $$("[data-pause]:not([data-anneau-pause])").forEach((b) => (b.innerHTML = enPause ? ICONES.reprendre : ICONES.pause));
+  // Dans la proposition 2, c'est l'anneau lui-même qui dit la pause : son onde
+  // s'arrête et le carré cesse de respirer.
+  $$("[data-anneau-vif]").forEach((a) => (a.dataset.lit = enPause ? "non" : "oui"));
+}
+
+/**
+ * L'envoi. **C'est ici que tout part**, et plus à l'arrêt : celui qui s'est
+ * trompé a eu la poubelle sous le pouce.
+ *
+ * L'attente n'est pas un décor : la transcription prend quelques secondes pour
+ * de vrai. Un écran qui sauterait au devis sans rien montrer laisserait croire
+ * à un blocage, et il rappuierait.
+ */
+function envoyer() {
+  clearInterval(horloge); clearInterval(dessin); horloge = dessin = null;
+  ["#v1", "#v2", "#v3"].forEach((s) => ($(s).hidden = true));
+  $("#attente").hidden = false;
+  $("#indice").textContent = "";
+  zone.dataset.etat = "envoi";
+  setTimeout(() => {
+    reporter();
+    aller("devis");
+    marquerOnglet(null);
+    reposer();
+  }, 1400);
+}
+
+$("#dicter").addEventListener("click", commencer);
+$$("[data-jeter]").forEach((b) => b.addEventListener("click", reposer));
+$$("[data-pause]").forEach((b) => b.addEventListener("click", basculerPause));
+$$("[data-envoyer]").forEach((b) => b.addEventListener("click", envoyer));
+
+/**
+ * Ce qu'il a saisi part avec la dictée, jusqu'au devis.
+ *
+ * Une case vide ne se remplace pas par un exemple : elle se dit. « Client sans
+ * nom » est une information ; un nom inventé serait un mensonge de plus dans un
+ * document qui part chez quelqu'un.
+ */
+function reporter() {
+  const nom = $("#nom").value.trim() || "Client sans nom";
+  const tel = $("#tel").value.trim();
+  const adresse = $("#adresse").value.trim() || "Adresse à préciser";
+  $("#devis-nom").textContent = nom;
+  $("#devis-coord").textContent = [adresse, tel].filter(Boolean).join(" · ");
+}
+
+$("#retour-fiche").addEventListener("click", () => {
+  aller("fiche");
+  marquerOnglet($(`.onglets button[data-variante="${document.body.dataset.variante}"]`));
+});
+$("#ecrire").addEventListener("click", () => { reporter(); aller("devis"); marquerOnglet(null); });
+
+/* ─── La largeur du bouton ────────────────────────────────────────────── */
+$$(".essai-largeur").forEach((b) => b.addEventListener("click", () => {
+  $$(".essai-largeur").forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
+  document.documentElement.style.setProperty("--large-principal", b.dataset.largeur);
+}));
+</script>
+</body>
+</html>

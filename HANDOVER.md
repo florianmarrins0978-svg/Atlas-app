@@ -9,6 +9,20 @@ sert.
 
 ---
 
+## Dernier lot : « J'ai vu » sur les quatre rappels (30 août 2026)
+
+Sa demande du jour : chaque notification doit pouvoir se ranger d'un appui. Les
+trois rappels qui n'avaient aucun geste en ont un, et la facture impayée prend
+le même mot (son « Plus tard » est parti — la mécanique, elle, n'a pas bougé).
+
+**Ce qu'il faut savoir avant d'y toucher :** « J'ai vu » fait **taire** un
+rappel le temps de son délai réglé, il ne l'efface pas — l'acquittement est en
+base (`rappels_vus`, migration 0071) et le rappel revient si la situation dure.
+En faire un effacement définitif rouvrirait exactement ce que ces rappels
+existent pour éviter. Raisons et pièges : `ARCHITECTURE.md` §210.
+
+---
+
 ## PIÈGE : `npm test` VIDE LA BASE — RESEMER APRÈS, JAMAIS AVANT, UNE VÉRIFICATION AU NAVIGATEUR (30 août 2026)
 
 Vu en essayant l'écran Identité après une batterie complète : le compte de
@@ -259,9 +273,85 @@ Le détail : `ARCHITECTURE.md` §192, migration `drizzle/0067_salaries_a_part.sq
 ---
 
 ## UNE RÉPONSE ENCORE ATTENDUE DE LUI — planche 96 (26 août 2026)
+## ET LA NOTE VOCALE « À LA WHATSAPP » (30 août 2026)
 
-Rien n'est codé dans `src/` pour ces deux-là, et il ne faut pas commencer sans
+Rien n'est codé dans `src/` pour ces trois-là, et il ne faut pas commencer sans
 sa réponse (`CLAUDE.md` §3 bis).
+
+- **SES TROIS CHOIX SONT FAITS, et une planche les réunit** —
+  `appli/note-vocale-choix.html` : largeur **66 %**, l'objet **reste au centre**
+  entre la poubelle et l'avion, repos au **micro plein** avec deux ondes de
+  **1,5 cm au plus** (écrites en centimètres dans le CSS, `--aile:1.5cm` — sa
+  mesure doit rester relisible). Plus le bouton qui s'efface, tranché plus tôt.
+
+  **Une seule question reste ouverte, et il ne faut pas coder sans elle :**
+  pendant la dictée, le disque plein reste et son micro devient un carré
+  d'arrêt. Sa proposition 2 disait « l'anneau », mais elle le gardait parce que
+  le repos ÉTAIT l'anneau — ce qui n'est plus le cas. L'autre lecture (le disque
+  cède la place à l'anneau creux) se refait en deux minutes.
+
+  **Deux pièges de dessin, payés ici et qui se reproduiront ailleurs :** un
+  `<span>` resté en ligne ne prend ni `width` ni `height` — le carré d'arrêt
+  rendait une boîte de zéro pixel et le disque s'affichait vide, sans qu'aucun
+  test le voie ; et deux ornements de 1,5 cm de part et d'autre d'un objet de
+  76 px **ne laissent pas la place** à deux boutons de 46 px sur un écran de
+  390 — ils s'effacent donc pendant la dictée.
+
+- **Le dessin de la note vocale AU REPOS** —
+  `appli/note-vocale-au-repos.html`, sa demande du 30 août : *« plusieurs
+  visuels pour changer la note vocale avant qu'on appuie dessus »*. **Cinq
+  dessins, une lettre à donner** (A à E). **Non codée.**
+
+  **Et une chose qui n'attend PAS sa réponse, parce qu'il l'a tranchée :**
+  *« lorsque l'utilisateur clique sur le bouton de la note vocale, le bouton
+  "Je rédige à la main" disparaît pour ne plus avoir de confusion possible »*.
+  C'est déjà dans les cinq. **Au codage, le RETIRER et non le griser** — un
+  bouton éteint reste un bouton, on l'appuie, il ne répond pas — et **le rendre
+  quand la note est jetée**.
+
+  **Deux planches vivent en parallèle, et c'est voulu** : `note-vocale-simple`
+  porte les GESTES (jeter, pause, envoyer, la largeur du bouton), celle-ci le
+  DESSIN au repos. Il a demandé de ne plus toucher à la première pendant qu'il
+  choisit dessus. Les deux réponses se recomposeront au codage.
+
+- **La note vocale simplifiée** — `appli/note-vocale-simple.html`, sa demande du
+  30 août : *« on appuie dessus […] possibilité de supprimer, ou appuyer sur la
+  flèche pour envoyer de suite la transcription »*. **Trois propositions, un
+  chiffre à donner**, plus un second chiffre pour la largeur du bouton « Je
+  rédige mon devis ». **Non codée.**
+
+  **Deux points sont DÉJÀ tranchés par lui, le 30 août :** le bouton du bas
+  devient **secondaire**, libellé « Je rédige à la
+  main » (*« l'idée c'est qu'il utilise en priorité la note vocale »* — le seul
+  aplat plein de l'écran est le rond d'envoi), et **tout tient sur un écran**
+  (*« ne doit pas décoller vers le bas pour accéder aux autres informations »*).
+
+  **Sa règle « l'anneau doit disparaître » N'A PAS retiré la proposition qui le
+  garde au centre — pas définitivement.** Elle l'a fait sortir le 30 août, puis
+  il a demandé à pouvoir *« essayer tous ceux »* qu'on lui avait montrés, et
+  elle est revenue telle quelle. Ne pas la retirer de nouveau au nom de cette
+  règle : c'est son choix final qui tranchera.
+
+  **Ce dernier point commande la mise en page du code à venir**, et il est
+  fragile : l'écran est passé de 960 à 631 px. Quatre intitulés ont dû partir —
+  e-mail, adresse, canal, photos —, « Nom du client » et « Téléphone » restent
+  (demandés nommément le 21 août), et ce qui n'est plus écrit reste lisible par
+  un lecteur d'écran. La zone de la dictée a une **hauteur fixe** : sans elle, la
+  barre, plus haute que l'anneau, pousse le bouton sous le pli à l'instant où
+  l'on appuie. `scripts/verifier-maquette-note-vocale-simple.mjs` mesure la page
+  entière à 700 et 667 points, au repos et en dictant — c'est ce contrôle qui
+  attrapera la case de trop.
+
+  **Ce que le codage devra reprendre, quand il aura répondu.** Aujourd'hui
+  `AnneauNoteVocale.basculerDictee()` envoie AU SECOND APPUI : `arreter()` puis
+  `envoyerNoteVocale()` dans la foulée. Il faudra couper les deux — l'arrêt
+  garde le `Blob` capté, et seul l'avion appelle `envoyerNoteVocale`. La
+  poubelle jette le `Blob` sans jamais rien envoyer, donc **sans toucher au
+  chantier** : attention, `assurerChantier()` peut l'avoir déjà créé par une
+  photo, et jeter une note ne doit pas le supprimer. Côté bouton, `PrimaryButton`
+  n'a **aucune variante secondaire** : il faudra en ajouter une (fond
+  transparent, liseré d'or, même capsule) plutôt que d'écrire le style dans
+  l'écran — deux dessins du même bouton divergeraient au premier ajustement.
 
 - **Planche 96** — `appli/ecran-equipe.html`. Il a répondu **C** pour le titre
   et la synthèse. Reste à savoir si la phrase sur les congés reste sur l'écran

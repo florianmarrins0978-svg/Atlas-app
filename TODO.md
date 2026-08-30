@@ -9,6 +9,85 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
+## ✅ SES TROIS CHOIX SONT FAITS — et une planche les réunit (30 août 2026)
+
+*« Pour la largeur le 4. Ensuite le 2, l'anneau. Et le B, le micro, mais avec
+des petites ondes de chaque côté, 1,5 cm max de chaque côté. »*
+
+`appli/note-vocale-choix.html`, éprouvée par
+`scripts/verifier-maquette-note-vocale-choix.mjs`.
+
+| | |
+|---|---|
+| largeur du bouton | **66 %** |
+| geste pendant la dictée | l'objet **reste au centre**, poubelle à gauche, avion à droite |
+| repos | le **micro plein**, deux ondes de **1,5 cm au plus** de chaque côté |
+| et, tranché plus tôt | « Je rédige à la main » **disparaît** dès l'appui, revient si l'on jette |
+
+**Une seule chose reste à lui demander**, et elle est écrite dans la planche :
+pendant la dictée, le disque plein reste et son micro devient un carré d'arrêt.
+Sa proposition 2 parlait de « l'anneau », mais elle le gardait parce que le
+repos ÉTAIT l'anneau — ce qui n'est plus le cas. **Ne pas coder avant sa
+confirmation sur ce point.**
+
+---
+
+## ⏳ SA RÉPONSE ATTENDUE — le dessin de la note vocale au repos (30 août 2026)
+
+`appli/note-vocale-au-repos.html`, éprouvée par
+`scripts/verifier-maquette-note-vocale-au-repos.mjs`. **Un chiffre attendu :**
+A (l'anneau d'aujourd'hui), B (micro plein), C (barre d'invitation),
+D (anneau au micro) ou E (onde à plat).
+
+**Ce qui n'est PAS une question, et qui est déjà fait dans les cinq :** dès
+qu'on appuie, **« Je rédige à la main » disparaît** — *« pour ne plus avoir de
+confusion possible »* —, et il revient si l'on jette la note. Il l'a tranché
+sans vouloir de proposition. **Au codage : le retirer, pas le griser.** Un
+bouton éteint reste un bouton, on l'appuie, il ne répond pas.
+
+**Cette planche ne remplace pas la précédente** : celle-là porte les GESTES
+(jeter, pause, envoyer), celle-ci le DESSIN au repos. Les deux réponses se
+recomposent.
+
+---
+
+## ⏳ SA RÉPONSE ATTENDUE — la note vocale « à la WhatsApp » (30 août 2026)
+
+`appli/note-vocale-simple.html` est en ligne et éprouvée
+(`scripts/verifier-maquette-note-vocale-simple.mjs`). **Rien n'est codé dans
+`src/`**, et rien ne doit l'être avant qu'il donne deux chiffres :
+
+| | |
+|---|---|
+| la proposition | **1** la barre à deux rangées · **2** l'anneau au centre · **3** la capsule sans pause |
+| la largeur du bouton | **1** aujourd'hui · **2** 88 % · **3** 78 % · **4** 66 % |
+
+**Deux choses sont déjà tranchées par lui, et ne se rouvrent pas :** le bouton
+du bas est **secondaire**, libellé
+« Je rédige à la main » — le seul aplat plein de l'écran est le rond d'envoi —,
+et **tout tient sur un écran sans défiler**.
+
+**Ce qui n'est PAS tranché, contre les apparences :** sa règle *« l'anneau doit
+disparaître »* condamne la proposition 2, qui le garde au centre — et il l'a
+pourtant redemandée à l'essai. C'est donc son choix final qui dira ce qu'elle
+vaut, pas cette règle-là.
+
+**Ce dernier point est le plus fragile du lot**, et il vaut aussi pour le code à
+venir : l'écran est descendu de 960 à 631 px, et la marge sur un iPhone SE se
+compte en dizaines de pixels. Une case de plus, deux pixels de marge, et il
+repasse sous le pli. Quatre intitulés ont été retirés pour y arriver — e-mail,
+adresse, canal, photos ; **« Nom du client » et « Téléphone » restent**, il les a
+demandés nommément le 21 août. Ce qui n'est plus écrit reste lisible par un
+lecteur d'écran.
+
+**Le point délicat du codage, à ne pas découvrir en route :**
+`AnneauNoteVocale.basculerDictee()` envoie au second appui — l'arrêt et l'envoi
+sont le même geste. Il faudra les séparer, et veiller à ce que **jeter une note
+ne supprime pas le chantier** : une photo prise avant a pu le créer
+(`assurerChantier`).
+
+---
+
 ## Ce que le lot de clôture du 30 août 2026 laisse ouvert
 
 Le rapport complet est dans `docs/cloture-avant-premier-artisan.md`. Il ne reste

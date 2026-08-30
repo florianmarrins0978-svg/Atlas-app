@@ -6,7 +6,8 @@ import { getCurrentCtx } from "@/server/session-ctx";
 import { logger } from "@/server/logger";
 import { marquerReponseVue } from "@/server/repositories/envois-devis";
 import { getOuCreerDevisBrouillon } from "@/server/repositories/devis";
-import { repousserRappelFacture } from "@/server/repositories/rappels";
+import { repousserRappelFacture, marquerRappelVu } from "@/server/repositories/rappels";
+import { estGenreAcquittable } from "@/lib/rappels";
 import { jourIso } from "@/lib/jour";
 
 /**
@@ -100,5 +101,44 @@ export async function repousserRappelFactureAction(
   } catch (erreur) {
     console.error("[accueil] rappel de facture non repoussé", erreur);
     return { ok: false, raison: "Impossible de repousser ce rappel pour l'instant. Réessayez." };
+  }
+}
+
+/**
+ * « J'ai vu » sur un rappel — sa demande du 30 août 2026, capture à l'appui.
+ *
+ * *« Pour chaque notification je dois pouvoir cliquer sur vu pour les faire
+ * disparaître ; pourquoi certaines n'ont pas cette fonction ? Mets la fonction
+ * pour toutes. »*
+ *
+ * **Le genre est vérifié ICI, contre une liste fermée.** Une adresse d'action
+ * se tape : un genre inventé ferait une ligne d'acquittement qui ne
+ * correspondrait à aucun rappel, et personne ne saurait la rallumer.
+ *
+ * **Le refus est une valeur, jamais une exception** (`HANDOVER.md`, piège 0 ter).
+ */
+export async function marquerRappelVuAction(
+  genre: string,
+  chantierId: string
+): Promise<{ ok: true } | { ok: false; raison: string }> {
+  const ctx = await getCurrentCtx();
+  await exigerEcran(ctx, "/", "marquer un rappel comme vu");
+  if (!estGenreAcquittable(genre)) {
+    return { ok: false, raison: "Ce rappel ne peut pas être acquitté. Rechargez l'écran." };
+  }
+  try {
+    const fait = await marquerRappelVu(ctx, genre, chantierId);
+    // **Comme pour une réponse acquittée** : sans cela, un retour en arrière
+    // pourrait réafficher la carte depuis le cache du routeur, et il croirait
+    // son geste perdu.
+    if (fait) revalidatePath("/");
+    return fait
+      ? { ok: true }
+      : { ok: false, raison: "Ce chantier n'existe plus. Rechargez l'écran." };
+  } catch (erreur) {
+    // Journalisé avant de rendre la main : un défaut muet se devine, et deviner
+    // à sa place, c'est réparer une panne imaginée (`AGENTS.md`).
+    console.error("[accueil] rappel non marqué vu", erreur);
+    return { ok: false, raison: "Impossible de ranger ce rappel pour l'instant. Réessayez." };
   }
 }

@@ -1422,6 +1422,46 @@ export const messagesAssistant = pgTable(
   (t) => [index("messages_assistant_fil_idx").on(t.entrepriseId, t.utilisateurId, t.rang)]
 );
 
+/**
+ * Les rappels acquittés d'un « J'ai vu » (migration 0071).
+ *
+ * **Sa demande du 30 août 2026 :** *« pour chaque notification je dois pouvoir
+ * cliquer sur vu pour les faire disparaître »*. Un rappel n'était calculé qu'à
+ * la lecture : il n'avait aucun endroit où poser un acquittement, et le masquer
+ * à l'écran ne survivait pas au rechargement.
+ *
+ * **« Vu » fait taire, il n'efface pas.** Le rappel revient au bout du délai
+ * réglé pour son genre si la situation n'a pas bougé. Un rappel effacé pour
+ * toujours ferait précisément ce que ces rappels existent pour éviter : perdre
+ * un chantier de vue. Pour ne plus jamais le voir, l'interrupteur est dans
+ * « Réglages › Notifications ».
+ *
+ * **La facture impayée n'est pas ici :** elle garde son propre moteur de
+ * silence (`chantiers.rappelFactureRepousseLe`, migration 0051). Deux endroits
+ * pour une même idée finissent par se contredire.
+ */
+export const rappelsVus = pgTable(
+  "rappels_vus",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    entrepriseId: uuid("entreprise_id")
+      .notNull()
+      .references(() => entreprises.id, { onDelete: "cascade" }),
+    // La cible de ces trois genres est toujours un chantier : la clé étrangère
+    // fait le ménage quand il disparaît pour de bon.
+    chantierId: uuid("chantier_id")
+      .notNull()
+      .references(() => chantiers.id, { onDelete: "cascade" }),
+    genre: text("genre", {
+      enum: ["chantier-sans-devis", "devis-sans-reponse", "chantier-non-facture"],
+    }).notNull(),
+    vuLe: timestamp("vu_le", { withTimezone: true }).notNull().defaultNow(),
+  },
+  // Un seul acquittement par rappel : deux lignes donneraient deux dates de
+  // réveil, et la plus ancienne le ferait revenir alors qu'il vient d'être vu.
+  (t) => [unique("rappels_vus_cible_idx").on(t.entrepriseId, t.genre, t.chantierId)]
+);
+
 // --- Documents légaux et preuve de leur acceptation (voir docs/RGPD.md §8) ---
 
 // Une version publiée est immuable : corriger un texte, c'est publier une

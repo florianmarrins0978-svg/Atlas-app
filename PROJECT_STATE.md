@@ -1,7 +1,7 @@
 # État du projet
 
 **Dernière mise à jour :** 2026-08-30 · branche `main`
-· dernière migration `drizzle/0070_prix_a_chiffrer_et_comparabilite.sql`
+· dernière migration `drizzle/0071_rappel_vu.sql`
 
 *(Deux en-têtes de mise à jour cohabitaient ici depuis une fusion du 29 août,
 avec deux dates et deux migrations différentes — dont une périmée. Réunis : une
@@ -17,6 +17,20 @@ Ce fichier dit **où en est le produit**, pas ce qu'on aimerait qu'il soit. Une
 ligne « fait » qui ne l'est pas coûte plus cher qu'une ligne absente.
 
 ---
+
+## Chaque notification se range d'un « J'ai vu » (30 août 2026)
+
+**Sa demande, capture à l'appui :** *« pour chaque notification je dois pouvoir
+cliquer sur vu pour les faire disparaître ; pourquoi certaines n'ont pas cette
+fonction ? »*. Trois rappels sur quatre n'avaient aucun geste.
+
+Les quatre cartes de rappel portent désormais le même mot que les réponses de
+clients. **Le geste fait taire, il n'efface pas** : le rappel revient au bout de
+son délai réglé si rien n'a bougé (`rappels_vus`, migration 0071). La facture
+impayée garde sa mécanique du 16 août et ne prend que le libellé — « Plus tard »
+disparaît.
+
+Détail : `docs/j-ai-vu-sur-tous-les-rappels.md`, `ARCHITECTURE.md` §210.
 
 ## Le planning du salarié est en LECTURE SEULE (30 août 2026)
 
@@ -35,6 +49,53 @@ Trouvé en chemin et corrigé : les actions **photos** d'un chantier n'avaient
 aucune garde — un salarié pouvait en supprimer n'importe laquelle, pour de bon.
 
 Détail : `docs/salarie-planning-lecture-seule.md`, `ARCHITECTURE.md` §208.
+
+## Ce qui a déjà été dicté ne se redemande plus (30 août 2026)
+
+*« Tu dis deux souches de diamètre 60. Question : quel diamètre font les
+souches ? »* La lecture découpe à la virgule ; la question ne regardait que sa
+propre ligne, quand la hauteur était cherchée dans toute la dictée depuis le
+premier jour. Corrigé — avec une garde : à deux arbres, on redemande ligne par
+ligne, un diamètre dit quelque part n'appartenant pas forcément à celui qu'on
+questionne.
+
+Les questions ne nomment plus leur objet : « Quel diamètre ? », « Quelle
+hauteur ? », « Quelle longueur ? ».
+
+Deux textes qui décrivaient ce que l'écran montrait déjà sont partis :
+
+| Où | Ce qui reste |
+|---|---|
+| écran Transcription | rien — le titre et le cadre suffisent |
+| refus de chiffrer | « Aucun tarif ne correspond, et la dictée ne dit ni la durée ni l'équipe. » |
+
+---
+
+## L'arrêt d'avant-chiffrage : moins de mots, et plus de question absurde (30 août 2026)
+
+Deux remarques de lui, le même jour, sur le même écran.
+
+**L'incohérence.** *« Lorsque l'on parle de souche, ça sous-entend que l'arbre a
+déjà été abattu — donc s'il n'y a pas d'arbre, pourquoi il y a la question de
+comment on l'abat ? »* Le dessouchage était rangé avec l'abattage pour ne pas
+redemander le diamètre du même tronc ; le raccourci commandait aussi la question
+de la technique. Une souche reçoit maintenant son diamètre seul, sous le mot
+juste.
+
+**Les mots.** *« Trop de phrases inutiles, il faut aller droit au but,
+l'utilisateur n'aime pas lire. »* Retirées : les deux lignes sous le titre, la
+ligne d'explication sous chaque question — et le champ `pourquoi` avec elles —,
+et la prestation réécrite à chaque question. Titre : « Avant de chiffrer ».
+
+| | |
+|---|---|
+| `src/lib/questions-chiffrage.ts` | `estDessouchage`, sujet `dessouchage.diametre`, `pourquoi` supprimé |
+| `src/app/chantiers/[id]/DevisDepuisDictee.tsx` | l'écran ne porte plus que prestation, question, réponses |
+| trois suites navigateur | comptent les blocs `[data-atlas="question-chiffrage"]`, plus un libellé |
+
+Détail : `ARCHITECTURE.md` §209.
+
+---
 
 ## Plus aucune barre de défilement grise, la page comprise (30 août 2026)
 
