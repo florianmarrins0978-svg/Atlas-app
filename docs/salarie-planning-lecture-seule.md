@@ -172,12 +172,13 @@ Deux choses, qui ne dépendent pas de ce lot :
 
 - **l'infrastructure** — brancher le planificateur de purge et poser la sonde,
   tout est écrit pas à pas dans `docs/DEPLOIEMENT-PURGE.md` ;
-- **une question pour lui, si elle l'intéresse** : le **commercial** garde le
-  droit d'écrire sur le planning. C'est ce que dit sa règle du 23 août — *« les
-  commerciaux auront accès à l'entièreté de l'application, sauf aux réglages »* —
-  et rien n'a été resserré sur lui, conformément à sa consigne. S'il veut que le
-  commercial pose des chantiers mais n'en supprime pas, c'est une seconde
-  décision, et elle n'a pas été prise à sa place.
+- ~~**une question pour lui** : le **commercial** garde-t-il le droit d'écrire
+  sur le planning ?~~ **TRANCHÉE le 30 août 2026, après la livraison du lot :
+  oui.** Le droit est donc confirmé, et non plus seulement laissé en place faute
+  d'avoir été examiné — la nuance est écrite dans `peutModifierLePlanning` et
+  dans `ARCHITECTURE.md` §208, pour qu'un prochain lot de sécurité ne le
+  resserre pas « par prudence ». Le resserrer — poser sans supprimer, par
+  exemple — demanderait une seconde décision de sa part.
 
 ---
 

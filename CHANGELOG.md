@@ -9,6 +9,18 @@ Format : le plus récent en tête.
 
 ## 2026-08-30
 
+### Le commercial écrit sur le planning : confirmé, plus seulement toléré
+
+Le lot « salarié en lecture seule » n'avait pas touché aux droits du commercial,
+le patron ayant demandé de n'y pas toucher. La question lui a donc été posée
+séparément une fois le lot livré, et il a répondu **oui**.
+
+**Ce qui change n'est pas le code — c'est son statut.** Un droit qui subsiste
+faute d'avoir été examiné se resserre un jour « par prudence », au premier lot de
+sécurité venu, et personne ne sait plus s'il avait été voulu. Écrit dans
+`peutModifierLePlanning` et dans `ARCHITECTURE.md` §208 : le resserrer demande
+une seconde décision de sa part.
+
 ### Le contrôle élargi a pris sa première action, écrite ailleurs
 
 **À la fusion du 30 août**, `test-actions-gardees-db.ts` a fait rougir

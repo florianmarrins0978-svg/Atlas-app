@@ -18190,6 +18190,20 @@ Les lier ouvrirait le planning en écriture le jour où quelqu'un élargirait le
 montants — en silence, et pour une raison sans rapport. C'est le même
 raisonnement que pour `peutUtiliserLAssistant` (§ *acces-roles.ts*).
 
+### Le commercial écrit, et c'est une décision, pas un oubli
+
+`peutModifierLePlanning` s'écrit `role !== "salarie"` : le commercial passe. Au
+moment du lot, ce n'était qu'un non-changement — le patron avait demandé de ne
+pas toucher à ses droits. La question lui a donc été posée séparément, une fois
+le lot livré, et il a répondu **oui** le 30 août 2026 : le commercial garde le
+droit d'écrire sur le planning.
+
+**Ce paragraphe existe pour que la nuance survive.** Un droit qui subsiste faute
+d'avoir été examiné finit resserré « par prudence » au lot de sécurité suivant,
+et personne ne sait plus s'il avait été voulu. Celui-ci a été examiné. Le
+resserrer — poser sans supprimer, par exemple — demande une seconde décision de
+sa part, pas une déduction de la nôtre.
+
 ### L'ordre des gardes n'est pas indifférent
 
 `exigerEcritureSurLePlanning` passe **avant** `exigerChantierDansSaPortee`. La

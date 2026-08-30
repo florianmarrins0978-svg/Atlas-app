@@ -269,6 +269,20 @@ export function peutVoirLesMontants(role: Role): boolean {
  * même verdict aujourd'hui. Ce sont deux règles différentes qui coïncident :
  * les lier ouvrirait le planning en écriture au salarié le jour où quelqu'un
  * élargirait les montants — en silence, et pour une raison sans rapport.
+ *
+ * ───────────────────────────────────────────────────────────────────────────
+ * **LE COMMERCIAL ÉCRIT, ET C'EST CONFIRMÉ — pas un reste par défaut.**
+ *
+ * Le `!== "salarie"` laisse passer le commercial. Ce n'était au soir du 30 août
+ * 2026 qu'un non-changement : le patron avait demandé de ne pas toucher à ses
+ * droits, donc on n'y avait pas touché. La question lui a été posée telle
+ * quelle — *« le commercial garde-t-il le droit d'écrire sur le planning ? »* —
+ * et il a répondu **oui**, le même jour.
+ *
+ * La différence n'est pas d'écriture mais de statut, et elle compte : un droit
+ * qui subsiste faute d'avoir été examiné se resserre un jour « par prudence »,
+ * au premier lot de sécurité venu. Celui-ci a été examiné, et il tient. Le
+ * resserrer demande une nouvelle décision de sa part.
  */
 export function peutModifierLePlanning(role: Role): boolean {
   return role !== "salarie";
