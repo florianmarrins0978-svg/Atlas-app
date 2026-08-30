@@ -180,12 +180,15 @@ export function libelleClient(p: PrestationLisible): string {
   // sa parenthèse et garde sa méthode.
   let reste = base;
   for (;;) {
-    const parenthese = reste.match(/^(.*?)\s*\(([^()]*)\)\s*$/s);
+    // `[\s\S]` plutôt que le drapeau `s` : le projet vise ES2017, où ce drapeau
+    // n'existe pas. Un libellé sur plusieurs lignes — une ligne de devis en
+    // réunit — resterait sinon intouché sans que rien ne le dise.
+    const parenthese = reste.match(/^([\s\S]*?)\s*\(([^()]*)\)\s*$/);
     if (parenthese && seulementDesMesuresConnues(parenthese[2], valeurs, unites)) {
       reste = parenthese[1].trimEnd();
       continue;
     }
-    const tiret = reste.match(/^(.*\S)\s*[—–-]\s*([^—–]*)$/s);
+    const tiret = reste.match(/^([\s\S]*\S)\s*[—–-]\s*([^—–]*)$/);
     if (tiret && seulementDesMesuresConnues(tiret[2], valeurs, unites)) {
       reste = tiret[1].trimEnd();
       continue;
