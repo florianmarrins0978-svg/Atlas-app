@@ -9,7 +9,7 @@ export const fournisseurLLMGemini: FournisseurLLM = {
   // non utilisés dans ce stub non implémenté, ne peuvent pas être supprimés
   // sans rompre la conformité de type de l'objet exporté.
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  async genererTexte(_systeme: string, _message: string): Promise<ResultatLLM> {
+  async genererTexte(_systeme: string, _message: string, _contexte?: string): Promise<ResultatLLM> {
     return { succes: false, erreur: erreurIA("fournisseur_indisponible", "Fournisseur LLM Gemini non implémenté.") };
   },
 };

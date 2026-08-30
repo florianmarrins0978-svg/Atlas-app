@@ -1,5 +1,5 @@
 import type { NextConfig } from "next";
-import { estBancDEssai } from "./src/profil-banc";
+import { originesAutoriseesPourLesActions } from "./src/profil-banc";
 
 // En-têtes de sécurité — appliqués à toutes les routes. Next.js exige encore
 // 'unsafe-inline' pour script-src (scripts d'hydratation générés par le
@@ -99,18 +99,7 @@ const nextConfig: NextConfig = {
       // Le banc d'essai sert désormais une version BÂTIE, donc `NODE_ENV` y
       // vaut `production` : sans `estBancDEssai()`, la liste redeviendrait vide
       // et toute action serveur serait refusée derrière le mandataire.
-      allowedOrigins:
-        process.env.NODE_ENV === "production" && !estBancDEssai()
-          ? []
-          : [
-              "*.app.github.dev",
-              "*.github.dev",
-              ...(process.env.CODESPACE_NAME
-                ? [
-                    `${process.env.CODESPACE_NAME}-3000.${process.env.GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN ?? "app.github.dev"}`,
-                  ]
-                : []),
-            ],
+      allowedOrigins: originesAutoriseesPourLesActions(),
     },
   },
 };

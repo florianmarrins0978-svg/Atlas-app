@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { exigerMontants } from "@/server/garde-action";
 import { getCurrentCtx } from "@/server/session-ctx";
 import { effacerClient } from "@/server/repositories/donnees-client";
 
@@ -30,6 +31,7 @@ export async function supprimerClientAction(
   | { ok: false; message: string }
 > {
   const ctx = await getCurrentCtx();
+  await exigerMontants(ctx, "supprimer un client");
 
   let rapport;
   try {

@@ -7,7 +7,7 @@ import { getPlanificationEtat, trierParDatePlanifiee } from "@/lib/chantier-etat
 import { estAuPlanning } from "@/lib/onglet-chantier";
 import { jourIso } from "@/lib/jour";
 import EnTeteEcran from "@/components/atlas/EnTeteEcran";
-import { cheminAutorise, type Role } from "@/lib/acces-roles";
+import { cheminAutorise, peutModifierLePlanning, type Role } from "@/lib/acces-roles";
 import { colors, font, libelleCaps, surPlein } from "@/lib/design-tokens";
 import MoisCharge, { fondDeLEtat } from "@/components/atlas/MoisCharge";
 import {
@@ -205,6 +205,21 @@ export default function PlanningClient({
   const ouvertes = {
     fiche: role === null || cheminAutorise(role, "/chantiers"),
     agenda: role === null || cheminAutorise(role, "/reglages/agenda"),
+    /**
+     * **ÉCRIRE SUR LE PLANNING** — décision du patron, 30 août 2026 : *« un
+     * salarié peut uniquement CONSULTER son planning »*.
+     *
+     * Ce qui suit ne PROTÈGE rien, et il ne faut pas s'y tromper : ce qui
+     * refuse est `exigerEcritureSurLePlanning`, au serveur, dans chacune des
+     * six actions. Ceci évite de proposer un geste qui sera refusé — un bouton
+     * qui répond « action indisponible » se lit comme une panne, et le salarié
+     * appellerait le patron un lundi matin.
+     *
+     * **La MÊME fonction que celle qui refuse** (`CLAUDE.md` §3) : un bouton
+     * caché dont l'action répondrait quand même serait un mensonge, et
+     * l'inverse une panne.
+     */
+    ecriture: role === null || peutModifierLePlanning(role),
   };
 
   const [chantiers, setChantiers] = useState<ChantierPlanning[]>(initialChantiers);
@@ -553,6 +568,7 @@ export default function PlanningClient({
 
   /** Ce que porte une carte de journée — les mêmes gestes aux deux endroits. */
   const gestesCarte = {
+    ecriture: ouvertes.ecriture,
     nombreSalaries,
     ouvert,
     setOuvert,
@@ -791,11 +807,17 @@ export default function PlanningClient({
                           chantier à la journée porte deux listes d'équipes —
                           matin et après-midi, indépendantes — et une pastille
                           unique ne saurait pas laquelle modifier. */}
+                      {/* **Elle MÈNE au jour, elle ne coche rien** — mais elle
+                          a l'apparence de celle qui coche, et c'est ce qui
+                          compte pour qui la regarde. Un salarié la lit donc en
+                          texte (30 août 2026) ; le nom du chantier, à côté,
+                          ouvre déjà la journée, donc il ne perd aucun geste. */}
                       {nombreSalaries > 0 && (
                         <PastilleEquipe
                           vide={toutes.length === 0}
                           onClick={ouvrir}
                           avecPlus={false}
+                          ecriture={ouvertes.ecriture}
                           libelle={ditQuiPart(toutes.map(nomEquipe))}
                         />
                       )}
@@ -856,7 +878,9 @@ export default function PlanningClient({
               })}
               {/* **Le geste d'ajout suit la JOURNÉE, pas le dernier volet.**
                   C'est ce que montre la planche 86 : un seul « + » sous les
-                  chantiers du jour, quel que soit le nombre de volets ouverts. */}
+                  chantiers du jour, quel que soit le nombre de volets ouverts.
+                  Et il n'existe pas pour un salarié (30 août 2026). */}
+              {ouvertes.ecriture && (
               <AjoutAuJour
                 cle={`ajout:${jour}`}
                 jour={jour}
@@ -865,6 +889,7 @@ export default function PlanningClient({
                 sansDate={sansDate}
                 poser={poser}
               />
+              )}
             </div>
           ))
         )}
@@ -880,7 +905,13 @@ export default function PlanningClient({
             « Ajouter un chantier » : un geste qui ne peut mener nulle part se
             retire au lieu de s'annoncer. La phrase du cul-de-sac vivait ici,
             et c'est elle que ce bouton promettait. */}
-        {sansDate.length > 0 && (
+        {/* **PAS DE « SANS DATE » POUR UN SALARIÉ** — 30 août 2026. Cette
+            section n'existe que pour deux gestes : poser un chantier sur le
+            jour touché, et le supprimer. Les deux lui sont refusés au serveur.
+            La laisser afficherait une liste de chantiers sans date accompagnée
+            de boutons morts — sa propre règle du 23 août : un geste qui ne peut
+            mener nulle part se retire au lieu de s'annoncer. */}
+        {ouvertes.ecriture && sansDate.length > 0 && (
           <>
             <TitreSection encadre data-atlas="titre-sans-date">Sans date</TitreSection>
             <p
@@ -958,12 +989,14 @@ export default function PlanningClient({
 
         {/* Le tiroir, en fin de contenu et non par-dessus : il pousse la
             dernière ligne vers le haut au lieu de la masquer. */}
-        <TiroirDesRetires
-          dernier={retraits.dernier}
-          nombre={retraits.nombre}
-          onAnnuler={retraits.annuler}
-          className="mt-6"
-        />
+        {ouvertes.ecriture && (
+          <TiroirDesRetires
+            dernier={retraits.dernier}
+            nombre={retraits.nombre}
+            onAnnuler={retraits.annuler}
+            className="mt-6"
+          />
+        )}
 
         {/* ─── EN ATTENTE DU CLIENT ───────────────────────────────────────── */}
         {attenteClient.length > 0 && (
@@ -1157,13 +1190,38 @@ function PastilleEquipe({
   vide,
   onClick,
   avecPlus = true,
+  ecriture = true,
 }: {
   libelle: string;
   vide: boolean;
   /** L'événement est transmis : l'appelant y trouve la ligne à garder immobile. */
   onClick: (e: React.MouseEvent<HTMLButtonElement>) => void;
   avecPlus?: boolean;
+  /**
+   * Faux pour un salarié (30 août 2026) : il LIT qui part, il ne le change pas.
+   *
+   * **Le nom reste**, c'est ce qui lui dit avec qui il travaille — mais rendu
+   * en texte plutôt qu'en bouton. Un bouton d'apparence identique invite à un
+   * geste que le serveur refuse, et le refus se lit alors comme une panne.
+   *
+   * **Et rien du tout quand personne n'est coché** : la pastille « vide » est
+   * une invitation à cocher, et lui ne peut pas.
+   */
+  ecriture?: boolean;
 }) {
+  if (!ecriture) {
+    if (vide) return null;
+    return (
+      <span
+        data-atlas="equipe-lecture"
+        className="flex-shrink-0 whitespace-nowrap rounded-full px-3 py-1.5 text-[12.5px]"
+        style={{ background: colors.rust, color: surPlein }}
+      >
+        {libelle}
+      </span>
+    );
+  }
+
   return (
     <button
       type="button"
@@ -1202,6 +1260,14 @@ function Choisir({ children }: { children: React.ReactNode }) {
 }
 
 type GestesCarte = {
+  /**
+   * Cette personne a-t-elle le droit de MODIFIER le planning ?
+   *
+   * Faux pour un salarié : la carte du jour ne montre alors ni pastille
+   * d'équipe, ni « Déplacer », ni « Retirer », ni « Ajouter un chantier ».
+   * Elle continue de montrer le jour, les chantiers, qui part et la feuille.
+   */
+  ecriture: boolean;
   /**
    * **À une seule équipe, aucune pastille.** Il n'y a personne à désigner :
    * écrire un nom d'organisation à un artisan qui travaille seul lui
@@ -1372,6 +1438,7 @@ function CarteDuJour({
   cle,
   jour,
   seulement,
+  ecriture,
   nombreSalaries,
   ouvert,
   setOuvert,
@@ -1557,7 +1624,16 @@ function CarteDuJour({
                       {MOT_DEMI[demi]}
                     </span>
 
-                    {nombreSalaries <= 0 ? null : choixEquipe ? (
+                    {nombreSalaries <= 0 ? null : !ecriture ? (
+                      // Un salarié LIT qui part. La règle vit dans la pastille
+                      // elle-même, pas recopiée ici (`CLAUDE.md` §3).
+                      <PastilleEquipe
+                        ecriture={false}
+                        vide={rangs.length === 0}
+                        onClick={() => undefined}
+                        libelle={ditQuiPart(rangs.map(nomEquipe))}
+                      />
+                    ) : choixEquipe ? (
                       // **On COCHE, on ne choisit pas une seule fois.** La liste
                       // reste ouverte tant qu'il n'a pas fini, et le calendrier
                       // se repeint derrière à chaque coche — sinon il faudrait
@@ -1592,7 +1668,7 @@ function CarteDuJour({
                       />
                     )}
 
-                    {choixDeplacer ? (
+                    {!ecriture ? null : choixDeplacer ? (
                       // **Déplacer se CHOISIT aussi** : une liste, jamais une
                       // rotation qui déciderait à sa place. C'est la règle qu'il
                       // a posée pour l'équipe, et elle vaut partout.
@@ -1643,7 +1719,7 @@ function CarteDuJour({
           );
         })}
 
-        {!seulement && (
+        {!seulement && ecriture && (
           <AjoutAuJour
             cle={cle}
             jour={jour}
@@ -1660,6 +1736,7 @@ function CarteDuJour({
           key={feuilleIci}
           chantier={duJour.find((c) => c.id === feuilleIci) ?? null}
           feuille={taches[feuilleIci]}
+          ecriture={ecriture}
         />
       )}
     </>
@@ -1685,7 +1762,25 @@ function CarteDuJour({
  * voulait le devis sans les prix »*. Le PDF est le devis expurgé de ses prix ;
  * la note, elle, vit ici — et ses équipes la lisent en ouvrant la feuille.
  */
-function NoteDuChantier({ chantier }: { chantier: ChantierPlanning }) {
+function NoteDuChantier({
+  chantier,
+  ecriture,
+}: {
+  chantier: ChantierPlanning;
+  /**
+   * **Un salarié LIT la note, il ne l'écrit pas** — 30 août 2026.
+   *
+   * Et il faut qu'il la lise : c'est la raison même pour laquelle elle existe.
+   * Sa décision du 23 août : *« elle peut rester là, car les salariés auront
+   * accès au planning »*. Le broyeur à prendre, le client dispo à 9 h — c'est
+   * l'équipe sur place qui en a besoin.
+   *
+   * **Un cadre de saisie grisé aurait été le mauvais choix** : il se touche, il
+   * ne répond pas, et l'on croit à une panne. Sans note, rien ne s'affiche —
+   * un titre « Ma note » au-dessus du vide n'apprend rien (`CLAUDE.md` §3).
+   */
+  ecriture: boolean;
+}) {
   // Semée depuis la liste, jamais relue au montage : la note descend déjà avec
   // le planning, et un second aller-retour l'afficherait vide une seconde.
   const [texte, setTexte] = useState(chantier.note ?? "");
@@ -1705,6 +1800,28 @@ function NoteDuChantier({ chantier }: { chantier: ChantierPlanning }) {
       chantier.note = r.note;
       setEtat("enregistre");
     });
+  }
+
+  if (!ecriture) {
+    const ecrite = (chantier.note ?? "").trim();
+    if (ecrite === "") return null;
+    return (
+      <div className="mt-3.5 pt-3" style={{ borderTop: `1px solid ${colors.line}` }}>
+        <p
+          className="m-0 mb-2 text-[10px] font-semibold uppercase leading-none"
+          style={{ letterSpacing: "0.16em", color: colors.muted }}
+        >
+          La note
+        </p>
+        <p
+          data-atlas="note-lecture"
+          className="m-0 whitespace-pre-wrap text-[14.5px] leading-[1.45]"
+          style={{ color: colors.ink }}
+        >
+          {ecrite}
+        </p>
+      </div>
+    );
   }
 
   return (
@@ -1780,9 +1897,12 @@ function NoteDuChantier({ chantier }: { chantier: ChantierPlanning }) {
 function FeuilleChantier({
   chantier,
   feuille,
+  ecriture = true,
 }: {
   chantier: ChantierPlanning | null;
   feuille?: FeuilleDuChantier;
+  /** Faux pour un salarié : la note se LIT, elle ne s'écrit pas (30 août 2026). */
+  ecriture?: boolean;
 }) {
   // **`key={chantier.id}` là où elle est rendue** : changer de chantier remonte
   // le composant, et « Adresse copiée » repart à zéro sans qu'un effet ait à le
@@ -1845,7 +1965,7 @@ function FeuilleChantier({
         <Geste href={tel}>Appeler le client</Geste>
       </div>
 
-      <NoteDuChantier chantier={chantier} />
+      <NoteDuChantier chantier={chantier} ecriture={ecriture} />
 
       <div className="mt-3.5 pt-3" style={{ borderTop: `1px solid ${colors.line}` }}>
         {(feuille?.taches ?? []).length === 0 ? (

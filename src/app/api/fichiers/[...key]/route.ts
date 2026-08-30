@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { eq } from "drizzle-orm";
+import { and, eq, isNull } from "drizzle-orm";
 import { getCurrentCtx } from "@/server/session-ctx";
 import { exigerOuverture } from "@/server/garde-route";
 import { withEntreprise } from "@/server/db/with-entreprise";
@@ -39,25 +39,57 @@ export async function GET(_req: Request, { params }: { params: Promise<{ key: st
 
   if (refus) return refus;
   const autorise = await withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    // **`isNull(deletedAt)` — une photo supprimée ne se sert plus.** La
+    // suppression est DOUCE : la ligne survit à l'écran qui annonce « retirée »,
+    // et sa clé continuait donc d'autoriser la lecture jusqu'à la purge. Or
+    // rien, dans ce dépôt, n'appelle la purge aujourd'hui (voir `TODO.md`) :
+    // « jusqu'à la purge » voulait dire « pour toujours ».
     const [photo] = await tx
       .select({ id: photos.id })
       .from(photos)
-      .where(eq(photos.storageKey, storageKey))
+      .where(and(eq(photos.storageKey, storageKey), isNull(photos.deletedAt)))
       .limit(1);
     if (photo) return true;
+    // **Pas de filtre équivalent ici, et ce n'est pas un oubli :**
+    // `notes_vocales` ne porte aucune suppression douce — son audio part par la
+    // file `audios_a_purger`, et la ligne, elle, garde sa transcription. Le
+    // typage l'a dit avant qu'on l'écrive.
     const [note] = await tx
       .select({ id: notesVocales.id })
       .from(notesVocales)
       .where(eq(notesVocales.storageKey, storageKey))
       .limit(1);
     if (note) return true;
-    // **Le logo de l'entreprise passe par le même guichet.** La ligne
-    // `entreprises` est déjà bornée par l'isolation : une clef d'une autre
-    // entreprise ne trouve rien ici, exactement comme une photo.
+    // ═══════════════════════════════════════════════════════════════════════
+    // **LE LOGO — ET LA FUITE ENTRE ENTREPRISES QUI VIVAIT ICI.**
+    //
+    // Constat de l'audit final, 29 août 2026, **mesuré en base et non déduit**.
+    //
+    // Le commentaire qui tenait cette place affirmait : « la ligne `entreprises`
+    // est déjà bornée par l'isolation : une clef d'une autre entreprise ne
+    // trouve rien ici, exactement comme une photo ». **C'était faux**, et c'est
+    // cette phrase qui a empêché de voir le trou pendant des mois.
+    //
+    // `entreprises` **n'a aucune politique RLS** — ni `ENABLE`, ni `FORCE`, ni
+    // la moindre politique ; aucune des 78 migrations n'en pose. Contrairement à
+    // `photos` et `notes_vocales`, rien ne bornait donc cette lecture, et c'est
+    // la seule des quatorze requêtes du dépôt sur cette table qui n'écrivait pas
+    // son propre `where id = …`.
+    //
+    // Mesure, sous `atlas_app`, contexte posé sur l'entreprise A :
+    //     SELECT nom FROM entreprises WHERE logo_storage_key = '<clé de B>'
+    //     → « Entreprise B »
+    // La route rendait alors `true` et servait les octets.
+    //
+    // **Le filtre explicite est donc la protection, pas un doublon de la RLS.**
+    // Cloisonner `entreprises` reste souhaitable en défense en profondeur, mais
+    // c'est une migration à part : les chemins publics par jeton lisent cette
+    // table, et l'un d'eux (`lireRapportParJeton`) ne pose pas de contexte.
+    // ═══════════════════════════════════════════════════════════════════════
     const [e] = await tx
       .select({ id: entreprises.id })
       .from(entreprises)
-      .where(eq(entreprises.logoStorageKey, storageKey))
+      .where(and(eq(entreprises.id, ctx.entrepriseId), eq(entreprises.logoStorageKey, storageKey)))
       .limit(1);
     return Boolean(e);
   });

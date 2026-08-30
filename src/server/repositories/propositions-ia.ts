@@ -1,3 +1,4 @@
+import { decrireProposition } from "@/lib/decrire-proposition";
 import { and, eq, sql } from "drizzle-orm";
 import { withEntreprise } from "../db/with-entreprise";
 import { propositionsIa } from "../db/schema";
@@ -22,8 +23,27 @@ export async function enregistrerPropositions(
         propositions.map((p) => ({
           entrepriseId: ctx.entrepriseId,
           chantierId,
+          /**
+           * **LA DESCRIPTION SE RECALCULE ICI, ELLE N'EST PLUS CELLE DU
+           * MODÈLE** — lot de clôture, 29 août 2026.
+           *
+           * Avant : `description` et `donnees` venaient toutes deux du modèle,
+           * et rien ne les confrontait. L'écran affichait la première,
+           * l'application écrivait la seconde. Un modèle maladroit — ou dérivé
+           * par une injection dans un libellé de devis — pouvait annoncer
+           * « Tonte — 120 € » et faire écrire 1 200 €. Le patron cochait ce
+           * qu'il lisait ; ce qui s'écrivait était autre chose.
+           *
+           * Son geste perdait alors tout son sens : approuver une phrase qui ne
+           * décrit pas l'écriture ne protège de rien.
+           *
+           * Désormais `donnees` fait seul foi, et la phrase en est dérivée.
+           * L'écart n'est plus possible — il ne se détecte plus, il n'existe
+           * plus. C'est la règle du dépôt sur les récapitulatifs
+           * (`CLAUDE.md` §4 bis), appliquée là où elle manquait.
+           */
           type: p.type,
-          description: p.description,
+          description: decrireProposition(p.type, p.donnees),
           donnees: p.donnees,
         }))
       )

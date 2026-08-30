@@ -1,5 +1,10 @@
 import assert from "node:assert/strict";
-import { lireConsigne, appliquer, type ParametresPlan } from "../src/lib/arrosage/consignes";
+import {
+  lireConsigne,
+  appliquer,
+  cotesDuPlanTiennentDebout,
+  type ParametresPlan,
+} from "../src/lib/arrosage/consignes";
 import { calculerPlan } from "../src/lib/arrosage/calcul.js";
 
 /**
@@ -130,6 +135,62 @@ console.log("\n=== Ce que la discussion peut changer ===\n");
   });
   dire(avec.zones[0].buse === undefined, "changer de marque relâche les buses imposées de l'ancienne");
   dire(avec.corps === undefined, "et le corps, qui appartenait lui aussi à l'ancienne marque");
+}
+
+
+// ─── LES COTES QUI ARRIVENT DU NAVIGATEUR ───────────────────────────────────
+//
+// **Un déni de service, trouvé à l'audit final du 29 août 2026.**
+// `discuterDuPlan` recevait `parametres` du navigateur et les passait au calcul
+// sans les regarder — avec un `as never` qui retirait jusqu'au typage. Or
+// `poser()` empile `nx × ny` points : avec 100 000 m de côté et une portée de
+// cinq mètres, cela fait de l'ordre de deux cent quarante millions d'objets sur
+// le fil de l'événement. Le processus tombe, et il emporte les requêtes de
+// toutes les entreprises servies par cette instance.
+//
+// La lecture de croquis plafonnait déjà à 100 m ; ce chemin-ci contournait le
+// plafond parce que ses cotes ne passent pas par la photo.
+
+{
+  const socle = { seau: 10, temps: 30, pression: 3, compteur: "25", regardVersZone: 0, nourrice: null };
+  const plan = (zones: unknown) => ({ ...socle, zones }) as unknown as ParametresPlan;
+
+  // **La moitié qui empêche de passer au vert en refusant tout.**
+  dire(
+    cotesDuPlanTiennentDebout(plan([{ id: 1, type: "gazon", L: 16, l: 13 }])).ok,
+    "un jardin ordinaire passe — la borne ne casse pas l'outil"
+  );
+  dire(
+    cotesDuPlanTiennentDebout(plan([{ id: 1, type: "haie", ml: 40 }])).ok,
+    "une haie ordinaire passe aussi"
+  );
+
+  dire(
+    !cotesDuPlanTiennentDebout(plan([{ id: 1, type: "gazon", L: 100000, l: 100000 }])).ok,
+    "CENT MILLE MÈTRES DE CÔTÉ EST REFUSÉ — c'est la bombe"
+  );
+  // **`NaN` et `Infinity` séparément, et ce n'est pas du zèle :** `NaN > 100`
+  // est FAUX. Sans le `Number.isFinite` de la fonction, une cote non numérique
+  // franchissait la borne en silence et repartait vers le calcul — le contrôle
+  // aurait été vert sur le cas même qu'il existe pour attraper.
+  dire(
+    !cotesDuPlanTiennentDebout(plan([{ id: 1, type: "gazon", L: NaN, l: 10 }])).ok,
+    "une cote NaN est refusée — NaN > 100 est faux, la comparaison seule ne suffit pas"
+  );
+  dire(
+    !cotesDuPlanTiennentDebout(plan([{ id: 1, type: "gazon", L: Infinity, l: 10 }])).ok,
+    "une cote infinie est refusée"
+  );
+  dire(
+    !cotesDuPlanTiennentDebout(
+      plan(Array.from({ length: 800 }, (_, i) => ({ id: i, type: "gazon", L: 5, l: 5 })))
+    ).ok,
+    "huit cents zones sont refusées"
+  );
+  dire(
+    !cotesDuPlanTiennentDebout({ ...socle } as unknown as ParametresPlan).ok,
+    "un plan sans zones est refusé, pas parcouru"
+  );
 }
 
 console.log(`\n${echecs === 0 ? "✅" : "❌"} Les consignes de la discussion — ${echecs} échec(s).`);
