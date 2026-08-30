@@ -58,6 +58,11 @@ export default async function IdentitePage() {
           titulaireCompte: e?.titulaireCompte ?? "",
           numeroTva: e?.numeroTva ?? "",
           regimeTva: e?.regimeTva ?? "assujettie",
+          // Le champ se retape en entier : « 1000.00 » y serait relu tel quel
+          // et réécrit sans qu'on l'ait touché — « 1000 » se retrouve.
+          capitalSocial: e?.capitalSocial ? String(Number(e.capitalSocial)) : "",
+          villeRcs: e?.villeRcs ?? "",
+          mentionsLegalesPosition: e?.mentionsLegalesPosition ?? "aucune",
         }}
       />
 

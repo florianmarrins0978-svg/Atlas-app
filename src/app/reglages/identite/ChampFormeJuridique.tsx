@@ -20,6 +20,16 @@ import { FORMES_JURIDIQUES, FORME_AUTRE, formeConnue } from "@/lib/formes-juridi
  * **Ce qui est déjà en base n'est jamais écrasé.** « Sas » retrouve son entrée
  * « SAS » (comparaison sans casse ni points) ; ce que la liste ignore reste
  * affiché tel quel, sous « Autre ».
+ *
+ * **`onFini` reçoit la valeur, elle ne la relit jamais dans `valeur`.** En
+ * cliquant une ligne de la liste, `choisir()` appelait `onChange(sigle)` puis
+ * `onFini()` dans le MÊME battement — avant que React n'ait reposé l'état.
+ * `onFini` lisait donc, chez l'appelant, la forme d'AVANT le clic (souvent
+ * vide) : la case s'affichait juste, mais c'est cette valeur périmée qui
+ * partait en base. Trouvé le 30 août 2026 en construisant le capital et le
+ * RCS (migration 0072) — la première fois que la forme juridique servait à
+ * autre chose qu'à s'afficher, donc la première fois que son enregistrement
+ * manqué se voyait.
  */
 export default function ChampFormeJuridique({
   valeur,
@@ -28,7 +38,7 @@ export default function ChampFormeJuridique({
 }: {
   valeur: string;
   onChange: (v: string) => void;
-  onFini: () => void;
+  onFini: (v: string) => void;
 }) {
   const [ouvert, setOuvert] = useState(false);
   const connue = formeConnue(valeur);
@@ -45,7 +55,7 @@ export default function ChampFormeJuridique({
     setLibre(false);
     setOuvert(false);
     onChange(sigle);
-    onFini();
+    onFini(sigle);
   }
 
   return (
@@ -119,7 +129,7 @@ export default function ChampFormeJuridique({
           placeholder="Société civile, association…"
           value={connue ? "" : valeur}
           onChange={(e) => onChange(e.target.value)}
-          onBlur={onFini}
+          onBlur={() => onFini(valeur)}
           className="mt-2 block w-full rounded-[4px] border-0 px-3.5 py-3 outline-none"
           style={{
             backgroundColor: colors.card,

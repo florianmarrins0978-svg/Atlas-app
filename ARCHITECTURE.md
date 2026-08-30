@@ -18712,3 +18712,107 @@ d'état : `terminerChantier` **crée la facture**, et refuse même de le faire t
 que le devis n'est pas parti. C'est l'entrée du cycle comptable. La fermer au
 commercial est la conséquence honnête de la règle du 13 août, et elle se paie —
 c'est le seul point du lot qui retire quelque chose à quelqu'un qui l'avait.
+
+---
+
+## 213. Le capital social et le RCS s'impriment, s'il le veut — et trois défauts trouvés en construisant
+
+*Demande du patron, 30 août 2026, par étapes : d'abord la forme juridique et le
+capital, maquettés dans `appli/capital-et-forme-juridique.html` ; puis, une
+fois choisis, la ville d'immatriculation au RCS — mention légale obligatoire
+d'une société (Code de commerce, art. R123-237), à côté des deux premières.*
+
+### Ce qui existait déjà, et ne servait à rien
+
+`formeJuridique` existe depuis la migration 0039 (§87). Un artisan la
+choisit dans Identité, elle s'enregistre — et elle n'était copiée dans
+**aucun** devis, **aucune** facture, jamais lue par `document-commun.ts` :
+saisie, mais imprimée nulle part. Personne ne s'en était aperçu parce que
+rien ne dépendait de sa valeur.
+
+### Ce qui est neuf (migration 0072)
+
+Trois colonnes sur `entreprises` : `capital_social` (numeric 12,2),
+`ville_rcs` (text), et `mentions_legales_position` (enum
+`sous_nom | bas | aucune`, **défaut `aucune`**). Les mêmes quatre colonnes
+(plus `entreprise_forme_juridique`, absente jusqu'ici) sont **recopiées dans
+`devis` et `factures`** au moment de l'émission, comme le reste de
+l'identité (nom, adresse, SIRET) — un document garde ce qu'il portait le
+jour de son émission, pas ce que l'artisan a réglé depuis.
+
+**Le RCS ne redemande pas de numéro.** Sa demande explicite : *« le numéro du
+RCS n'est rien d'autre que le SIREN — les neuf premiers chiffres du SIRET. »*
+`sirenDepuisSiret` (déplacée d'`IdentiteClient.tsx` vers `src/lib/siren.ts`
+pour être appelable côté serveur) le calcule ; la seule donnée neuve est la
+ville. `src/lib/mentions-legales.ts` compose les lignes à imprimer — zéro,
+une ou deux — à partir de la forme, du capital, de la ville et du SIRET.
+
+**Le défaut est `aucune`, et ce n'est pas anodin** — même raisonnement que
+`regime_tva` en migration 0039 (§87) : des entreprises ont déjà rempli
+`forme_juridique` sans savoir qu'elle ne s'imprimait pas. La faire apparaître
+d'un coup sur leur prochain devis serait une surprise sur une pièce que le
+client garde. L'artisan choisit d'abord où — ou s'il — l'affiche.
+
+**Une entreprise individuelle ou une micro-entreprise n'ont ni capital ni
+RCS légalement** : `formeADuCapital` (`src/lib/formes-juridiques.ts`)
+masque les deux champs pour ces deux formes, connues avec certitude. Pour
+une forme libre (« Autre », société civile, GAEC…), on ne tranche pas à sa
+place : les champs restent proposés, et l'artisan qui n'en a pas laisse le
+capital vide — un champ vide n'imprime rien, ligne par ligne, comme
+partout ailleurs dans l'identité (IBAN, numéro de TVA).
+
+### Trois défauts réels, trouvés en construisant — pas en le supposant
+
+1. **`formeConnue` ne reconnaissait jamais « Micro-entreprise ».** La
+   comparaison retirait points et espaces des deux côtés, mais le TIRET
+   seulement du côté du sigle de référence : `"micro-entreprise"` (saisie)
+   ne devenait jamais `"microentreprise"` (sigle nettoyé), et la comparaison
+   échouait toujours. `formeADuCapital` retombait alors sur le cas « forme
+   libre » (capital affiché) pour la seule forme où il ne devait jamais
+   l'être. Invisible depuis la migration 0039 : rien ne dépendait de la
+   distinction EI/société avant ce lot. Corrigé en retirant le tiret des
+   deux côtés de la comparaison.
+
+2. **La forme juridique ne s'enregistrait JAMAIS depuis la liste
+   déroulante — trouvé en régénérant un devis et en lisant `null` là où
+   « SASU » était attendu.** `ChampFormeJuridique.choisir()` appelle
+   `onChange(sigle)` puis `onFini()` dans le MÊME battement, avant que React
+   ne repose l'état. Côté `IdentiteClient`, `onFini` était
+   `() => enregistrer({ formeJuridique: valeurs.formeJuridique })` — une
+   fermeture qui capture `valeurs` au moment du RENDU précédent, donc la
+   forme d'AVANT le clic, presque toujours vide. L'écran affichait la bonne
+   valeur (elle vient de l'état React, mis à jour normalement) ; c'est ce
+   qui est ENVOYÉ AU SERVEUR qui restait périmé — l'écart classique entre
+   « ça a l'air de marcher » et « ça marche ». Ce bug existe depuis la
+   création du composant, le 14 août 2026 : invisible tant que rien
+   n'utilisait la valeur enregistrée. Corrigé en donnant la valeur à
+   `onFini` en argument (`onFini(sigle)`), jamais en la relisant dans une
+   fermeture. La saisie libre (« Autre »), qui appelle `onFini` sur
+   `onBlur` — un évènement séparé, après un rendu — n'avait pas ce défaut.
+
+3. **`enEuros` faisait planter tout PDF portant un montant à quatre
+   chiffres.** `Intl.NumberFormat("fr-FR", {style:"currency", …})` sépare
+   les milliers par une espace fine insécable, U+202F — invisible à l'œil,
+   mais absente de l'encodage WinAnsi que `pdf-lib` utilise pour ses
+   polices standard. `document-commun.ts` l'avait déjà découvert pour les
+   totaux de devis (`formatMontant`, qui échange l'espace fine contre
+   l'espace insécable ORDINAIRE, U+00A0, que WinAnsi connaît) ; `enEuros`,
+   le formateur d'écran dans `src/lib/euros.ts`, ne le savait pas — parce
+   qu'aucun montant qu'il avait servi jusqu'ici n'avait atteint le millier
+   sur un PDF. Le premier capital social imprimé (1 000 €) l'a fait
+   planter. Trouvé par la suite `test-devis-pdf-mentions-legales.ts`, qui
+   compose un vrai PDF plutôt que de ne tester que le texte attendu.
+   Corrigé à la source, dans `enEuros` : tout appelant, présent et futur,
+   en profite.
+
+### Vérifié de bout en bout, pas seulement en suites
+
+Connexion réelle à l'application (identifiants de démonstration), sélection
+d'une forme juridique dans l'écran, remplissage du capital et de la ville,
+régénération d'un devis via `getOuCreerDevisBrouillon`, lecture du PDF
+produit : il porte « SASU au capital de 1 000,00 € » puis
+« RCS Versailles 123 456 789 », sous le nom de l'entreprise — exactement la
+maquette approuvée. C'est cette vérification, pas la seule batterie de
+suites, qui a fait apparaître les défauts 2 et 3 : les suites unitaires
+avaient été écrites avec les mêmes hypothèses que le code qu'elles
+couvraient.

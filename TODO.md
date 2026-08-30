@@ -6565,8 +6565,10 @@ dessin** (`ARCHITECTURE.md` §81) :
   `document-commun.ts` porte le nom, l'adresse et le SIRET, rien d'autre. Le
   client n'a aucun moyen d'appeler l'artisan depuis son devis.
 
-Manquent aussi en base, et la maquette les montre : **forme juridique** et
-**titulaire du compte**.
+Manquent aussi en base, et la maquette les montre : ~~**forme juridique**~~ —
+**fait le 30 août 2026** (migration 0072, `ARCHITECTURE.md` §213) : elle
+s'imprime désormais, avec le capital social et le RCS, si l'artisan choisit
+de les montrer — et **titulaire du compte**.
 
 **LE DEUXIÈME CERVEAU : CE QUI NE RETIENT RIEN.** Direction posée le 13 août
 2026 (`ARCHITECTURE.md` §90, `docs/QUESTIONS.md` §17). Ce qui apprend déjà est

@@ -47,6 +47,10 @@ export async function majIdentiteAction(data: {
   titulaireCompte?: string;
   numeroTva?: string;
   regimeTva?: "assujettie" | "franchise";
+  /** Migration 0071 — voir `src/lib/mentions-legales.ts`. */
+  capitalSocial?: string;
+  villeRcs?: string;
+  mentionsLegalesPosition?: "sous_nom" | "bas" | "aucune";
 }): Promise<ResultatIdentite> {
   const ctx = await getCurrentCtx();
   try {
