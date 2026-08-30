@@ -1,5 +1,6 @@
 "use server";
 
+import { exigerEcran } from "@/server/garde-action";
 import { getCurrentCtx } from "@/server/session-ctx";
 import { supprimerNoteVocale } from "@/server/repositories/notes-vocales";
 import { verifierLimite, LIMITES } from "@/server/rate-limit";
@@ -30,6 +31,7 @@ import { completerNoteVocale } from "@/server/ai/services/complement-note-servic
 
 export async function supprimerNoteVocaleAction(chantierId: string) {
   const ctx = await getCurrentCtx();
+  await exigerEcran(ctx, "/chantiers", "supprimer une note vocale");
   await supprimerNoteVocale(ctx, chantierId);
 }
 
@@ -39,6 +41,7 @@ export async function supprimerNoteVocaleAction(chantierId: string) {
 // conversationnel, sans aucune modification de cette logique.
 export async function lancerTranscriptionAction(chantierId: string) {
   const ctx = await getCurrentCtx();
+  await exigerEcran(ctx, "/chantiers", "lancer une transcription");
   return lancerTranscription(ctx, chantierId);
 }
 
@@ -71,6 +74,7 @@ export async function completerNoteVocaleAction(chantierId: string, formData: Fo
   let etape: EtapeNote = "session";
   try {
     const ctx = await getCurrentCtx();
+    await exigerEcran(ctx, "/chantiers", "compléter une note vocale");
 
     etape = "cadence";
     const limite = await verifierLimite(`televersement:${ctx.entrepriseId}`, LIMITES.televersementFichier);

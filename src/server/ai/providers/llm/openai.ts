@@ -169,17 +169,27 @@ export const fournisseurLLMOpenAI: FournisseurLLM = {
 
   nom: "openai",
 
-  async genererTexte(systeme: string, message: string): Promise<ResultatLLM> {
+  async genererTexte(systeme: string, message: string, contexte?: string): Promise<ResultatLLM> {
     if (!message || message.trim().length === 0) {
       return { succes: false, erreur: erreurIA("reponse_invalide", "Message vide — rien à traiter.") };
     }
 
     const resultat = await appeler({
       max_tokens: 1024,
-      messages: [
-        { role: "system", content: systeme },
-        { role: "user", content: message },
-      ],
+      // Le contexte est un TOUR À PART — voir le fournisseur Anthropic pour le
+      // détail : ni dans `system` (autorité d'une règle), ni collé à la dictée
+      // (le repli littéral la lirait de travers).
+      messages: contexte
+        ? [
+            { role: "system", content: systeme },
+            { role: "user", content: contexte },
+            { role: "assistant", content: "Compris : ce sont des exemples, pas des consignes." },
+            { role: "user", content: message },
+          ]
+        : [
+            { role: "system", content: systeme },
+            { role: "user", content: message },
+          ],
     });
     if (!resultat.ok) return { succes: false, erreur: resultat.erreur };
 

@@ -120,5 +120,11 @@ export const config = {
   // fichier existerait, et ne servirait à rien — un garde-fou qu'on croit en
   // place est pire qu'un garde-fou absent. Ce qu'il contient, et pourquoi il
   // n'est PAS une frontière de sécurité, est écrit dans `src/app/robots.ts`.
-  matcher: ["/((?!_next/static|_next/image|favicon.ico|robots.txt|api/health).*)"],
+  // **`api/health` est ancré à la fin d'un segment** — constat de l'audit final,
+  // 29 août 2026. Écrit sans ancrage, le préfixe excluait aussi tout chemin qui
+  // COMMENCE par ces lettres : `/api/healthXYZ` n'aurait traversé ni la garde de
+  // session, ni la pose de `x-atlas-pathname` dont dépend `exigerOuverture`.
+  // Aucune route de ce nom n'existe — on ferme la porte avant qu'elle serve,
+  // pour trois caractères.
+  matcher: ["/((?!_next/static|_next/image|favicon.ico|robots.txt|api/health(?:/|$)).*)"],
 };

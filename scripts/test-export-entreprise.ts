@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import { pool } from "../src/server/db/client";
 import { AccesRefuseError } from "../src/server/db/with-entreprise";
 import { exporterEntreprise } from "../src/server/repositories/export-entreprise";
@@ -137,6 +138,30 @@ async function main() {
     assert.equal(e.versionFormat, 1);
   });
 
+  // ─── L'ARCHIVE EMPORTE LE LOGO ET LES TICKETS ────────────────────────────
+  //
+  // **Ils manquaient, et c'était connu depuis le lot Sauvegarde.** Les lignes
+  // `achats_tva` partaient bien, mais pas la photo du ticket qu'elles nomment —
+  // or c'est le papier qui vaut preuve devant l'administration. Une archive
+  // « toutes mes données » qui rend « Total Access, 62,40 € » sans le
+  // justificatif est incomplète au sens qui compte. Corrigé le 29 août 2026.
+  await test("l'archive DÉCLARE le logo et les tickets de caisse", async () => {
+    const source = readFileSync("src/server/repositories/export-entreprise.ts", "utf8");
+    // On vise la COLLECTE, pas un compte de fichiers : une entreprise d'essai
+    // peut n'avoir ni logo ni ticket, et un contrôle qui ne mesure rien passe
+    // au vert sans rien prouver (`CLAUDE.md` §5).
+    assert.match(
+      source,
+      /ajouter\(a\.photoCle[^)]*"ticket-tva"\)/,
+      "les photos de tickets de caisse ne sont pas jointes à l'archive"
+    );
+    assert.match(
+      source,
+      /ajouter\(ent\.logoStorageKey[^)]*"logo"\)/,
+      "le logo de l'entreprise n'est pas joint à l'archive"
+    );
+  });
+
   await test("aucune donnée d'une autre entreprise n'y figure", async () => {
     const e = await exporterEntreprise(A);
     // Le contrôle porte sur le fichier ENTIER, pas sur une table choisie :
@@ -213,7 +238,8 @@ async function main() {
     assert.equal(e.fichiers.length, 0);
   });
 
-  console.log(`\n${passed} réussis, ${failed} échoués.`);
+  
+console.log(`\n${passed} réussis, ${failed} échoués.`);
   await pool.end();
   process.exit(failed > 0 ? 1 : 0);
 }

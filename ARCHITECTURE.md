@@ -18079,3 +18079,163 @@ qui défilent balayées. Un contrôle qui n'a jamais échoué ne prouve rien
 Les cinq écrans restés verts en mode dégradé ne sont pas une faiblesse du
 balayage : leur contenu tient dans les 720 px du cadre d'essai, donc la page ne
 défile pas et il n'y a effectivement aucune barre à voir.
+
+## 207. Ce qui garde une Server Action, et pourquoi ce n'est pas ce qui garde une page
+
+**Décision prise à l'audit final du 29 août 2026**, après avoir trouvé
+trente-quatre actions serveur sans aucun contrôle de rôle.
+
+### Le raisonnement qui manquait
+
+Atlas avait deux gardes, et chacune était juste :
+
+| | Ce qu'elle garde | Comment |
+|---|---|---|
+| `GardeAcces` (`layout.tsx`) | les **écrans** | le rôle contre le chemin, au rendu |
+| `exigerOuverture` (`garde-route.ts`) | les **routes d'API** | le rôle contre `x-atlas-pathname` |
+
+Il en manquait une troisième, et son absence ne se voyait pas — parce que le
+commentaire de `GardeAcces` affirmait qu'elle existait.
+
+**Une action serveur n'est ni l'un ni l'autre.** Elle ne traverse pas de mise en
+page, donc `GardeAcces` ne la voit pas. Et elle s'exécute **avant** tout rendu :
+même quand la garde de l'écran redirige, l'action a déjà eu lieu, et ses effets
+ne se défont pas. Le middleware, lui, ne vérifie que la session.
+
+### Pourquoi la garde des actions ne peut PAS se faire par le chemin
+
+C'est le point qui a décidé de la forme de `garde-action.ts`, et il est
+contre-intuitif : la mécanique d'`exigerOuverture` **ne se recopie pas ici**.
+
+`x-atlas-pathname` porte l'adresse **où se trouve le navigateur**, pas la page
+qui possède l'action. Un salarié posté sur `/planning` — un chemin qui lui est
+ouvert — franchirait donc une garde par chemin tout en appelant une action de
+`/chantiers/…`. La garde serait verte et parfaitement inutile.
+
+**On garde donc sur ce que l'action FAIT**, jamais sur d'où elle semble venir :
+
+    await exigerMontants(ctx, "émettre la facture");
+
+C'est une propriété du code, que le navigateur ne peut pas influencer.
+
+### Ce qui n'est pas recopié
+
+`exigerMontants` appelle `peutVoirLesMontants` — la même fonction que les écrans
+et les PDF. Le commercial passe donc ici comme ailleurs, sans qu'on ait eu à le
+redire. Deux implémentations de la même règle finissent toujours par diverger
+(§3 de `CLAUDE.md`), et c'est précisément ce qui aurait été tentant : recopier
+les seuils dans chaque action.
+
+### Ce qui reste hors de cette garde, et pourquoi
+
+Elle couvre les six fichiers d'actions qui touchent aux **montants** —
+`docs/QUESTIONS.md` §10 : *« Les montants ne doivent pas sortir du serveur pour
+qui n'a pas le droit de les voir. »*
+
+**Ce paragraphe disait ensuite que les autres fichiers d'actions restaient
+ouverts, et que le sujet attendait dans `TODO.md`. Ce n'est plus vrai depuis le
+30 août 2026** : le contrôle relève désormais **tout** fichier « use server » du
+dépôt, et le planning a sa règle propre (§208).
+
+### Le contrôle compte autant que la garde
+
+`test-actions-gardees-db.ts` tient les deux moitiés, et il faut les deux :
+
+1. la garde **refuse un vrai salarié en base**, et laisse passer le patron et le
+   commercial. Sans cette seconde partie, on passerait au vert en ayant fermé la
+   porte à tout le monde ;
+2. **aucune action de ces fichiers ne l'oublie**, relevé dans les fichiers
+   eux-mêmes. C'est la moitié qui vaut dans six mois.
+
+Vu rouge en retirant la garde d'émission de facture : il la nomme.
+
+
+## 208. Un salarié consulte son planning ; il n'y écrit rien
+
+*Décision du patron, 30 août 2026. Elle clôt la seule question que le lot de
+clôture lui avait renvoyée, et elle la tranche plus largement qu'elle n'était
+posée.*
+
+> *« Un salarié peut uniquement CONSULTER son planning. Il ne doit pouvoir
+> effectuer AUCUNE modification depuis le planning. »*
+
+Ni supprimer un chantier, ni le poser, ni le déplacer, ni le retirer du
+planning, ni écrire son pense-bête, ni cocher une équipe.
+
+### Deux règles distinctes, qui se cumulent — et il ne faut pas les confondre
+
+|  | Ce qu'elle dit | Où elle se règle |
+|---|---|---|
+| **la portée** (`porteePlanning`) | QUELS chantiers cette personne voit | par personne, par le patron |
+| **le droit d'écriture** (`peutModifierLePlanning`) | si elle peut y toucher | par rôle |
+
+Le patron a demandé expressément que la première ne bouge pas : *« Cette
+décision concerne les DROITS D'ÉCRITURE, pas le périmètre de lecture. »* Un
+salarié resserré sur son équipe voit toujours ses chantiers — et il ne peut pas
+davantage y toucher qu'aux autres. **Aucune des deux ne dispense de l'autre.**
+
+### Pourquoi la règle n'est PAS écrite comme un chemin fermé
+
+La correction annoncée dans `TODO.md` tenait en une ligne : ajouter `/planning`
+à ce qui est fermé au salarié, et `cheminAutorise` aurait refusé ses actions
+d'un seul trait.
+
+**Elle lui aurait aussi fermé l'écran** — c'est-à-dire la seule chose qu'il ait
+dans Atlas. La lecture et l'écriture ne se gardent pas avec la même règle, donc
+elles ne s'écrivent pas dans la même liste.
+
+Et `peutModifierLePlanning` n'appelle pas `peutVoirLesMontants`, qui rendrait
+pourtant le même verdict aujourd'hui : deux règles différentes qui coïncident.
+Les lier ouvrirait le planning en écriture le jour où quelqu'un élargirait les
+montants — en silence, et pour une raison sans rapport. C'est le même
+raisonnement que pour `peutUtiliserLAssistant` (§ *acces-roles.ts*).
+
+### L'ordre des gardes n'est pas indifférent
+
+`exigerEcritureSurLePlanning` passe **avant** `exigerChantierDansSaPortee`. La
+seconde interroge la base — l'équipe de la personne, puis les chantiers de cette
+équipe. Un salarié doit être refusé sans qu'on paie ces deux requêtes, et
+surtout sans qu'un chantier hors portée réponde plus lentement qu'un chantier de
+son équipe : ce délai-là se mesure, et il dirait à qui cherche lesquels sont les
+siens.
+
+### Ce qui reste ouvert au salarié, et pourquoi c'est un contrôle à part entière
+
+`tachesDuChantierAction` — la feuille de chantier **sans un seul montant**,
+décidée le 21 août 2026. Une suite vérifie qu'elle ne porte PAS la garde
+d'écriture : sans ce contrôle, « sécuriser » en fermant tout serait passé pour
+une réussite, et on lui aurait retiré le seul document qu'il ait.
+
+L'écran suit : ni pastille d'équipe cochable, ni « Déplacer », ni « Retirer »,
+ni « Ajouter un chantier », ni section « Sans date », ni cadre de saisie pour la
+note. La note, elle, **se lit** — c'est la raison même pour laquelle le patron
+l'a voulue (*« les salariés auront accès au planning »*, 23 août).
+
+**L'écran ne protège rien**, et le patron l'a dit avant nous : *« Ne te contente
+surtout pas de retirer ou masquer les boutons. »* Il évite seulement de proposer
+un geste qui sera refusé — un bouton qui répond « action indisponible » se lit
+comme une panne.
+
+### La preuve qui compte : une requête fabriquée
+
+`test-salarie-planning-lecture-seule-e2e.ts` ne clique pas sur un bouton absent.
+Il **intercepte** l'appel d'écriture du patron — son identifiant `Next-Action`,
+son corps —, le rejoue avec le cookie du salarié sur un chantier dont il connaît
+l'identifiant, puis relit la base.
+
+Vu rouge en retirant la garde du pense-bête : le salarié écrit, réponse 200. Ce
+rouge-là dit ce qu'aucune assertion ne dirait — **avant ce lot, il le pouvait
+pour de bon.**
+
+### Une seconde porte, trouvée en cherchant celle-ci
+
+`src/app/chantiers/[id]/photos-actions.ts` n'avait **aucune** garde : un salarié
+pouvait ajouter une photo à n'importe quel chantier de l'entreprise et en
+supprimer n'importe laquelle — un `DELETE`, pas un `deletedAt`.
+
+Le contrôle du lot précédent ne le voyait pas : il énumérait deux listes de
+fichiers écrites à la main, et toutes deux ne nommaient que des `actions.ts`.
+**Une liste tenue à la main se tait sur ce qu'on a oublié d'y écrire**, et c'est
+le pire des silences — il ressemble à un contrôle. Le sens est donc inversé : on
+relève tous les fichiers « use server », et ce qui n'a pas de garde s'explique
+par écrit, dans une table d'exemptions dont chaque entrée porte sa raison.

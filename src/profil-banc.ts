@@ -54,3 +54,35 @@ export function estBancDEssai(
 ): boolean {
   return env.ATLAS_PROFIL?.trim().toLowerCase() === "banc" || env.ATLAS_BANC_ESSAI?.trim() === "1";
 }
+
+/**
+ * LES ORIGINES QUE LES ACTIONS SERVEUR ACCEPTENT — une seule source.
+ *
+ * ═══════════════════════════════════════════════════════════════════════════
+ * **POURQUOI CETTE FONCTION EXISTE** — audit final, 29 août 2026.
+ *
+ * Ce calcul vivait à DEUX endroits : dans `next.config.ts`, qui décide pour de
+ * bon, et recopié dans `/api/health/diagnostic`, dont le commentaire affirmait
+ * « reproduit exactement le calcul de next.config.ts ». **Les deux avaient
+ * divergé** : la copie avait perdu le `&& !estBancDEssai()`.
+ *
+ * Conséquence, et elle est du plus mauvais genre : **sur le banc, la fiche de
+ * diagnostic annonçait « aucune origine autorisée » et « connexion impossible »
+ * pendant que la connexion marchait.** L'outil qui existe précisément pour ne
+ * pas accuser le mauvais coupable accusait le mauvais coupable — c'est ce que
+ * `AGENTS.md` interdit, et cette page-là avait été écrite après une journée
+ * perdue sur « Invalid Server Actions request. ».
+ *
+ * Les deux appellent désormais cette fonction. Vit ici parce que
+ * `next.config.ts` importe déjà ce fichier : un module du serveur ne serait pas
+ * chargeable depuis la configuration.
+ */
+export function originesAutoriseesPourLesActions(): string[] {
+  // Le banc sert une version BÂTIE, donc `NODE_ENV` y vaut `production` : sans
+  // `estBancDEssai()`, la liste serait vide et toute action serveur refusée
+  // derrière le mandataire.
+  if (process.env.NODE_ENV === "production" && !estBancDEssai()) return [];
+  const nom = process.env.CODESPACE_NAME;
+  const domaine = process.env.GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN ?? "app.github.dev";
+  return ["*.app.github.dev", "*.github.dev", ...(nom ? [`${nom}-3000.${domaine}`] : [])];
+}

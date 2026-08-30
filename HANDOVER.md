@@ -4,7 +4,7 @@
 vous ne savez rien de ce qui précède — c'est exactement le cas de figure qu'il
 sert.
 
-**Point de reprise :** 2026-08-30 · `claude/grey-scrollbar-pc-uueje5`
+**Point de reprise :** 2026-08-30 · `main`
 (l'historique fait foi : `git log --oneline -20`)
 
 ---
@@ -130,6 +130,33 @@ n'a lancées : une suite jamais jouée n'est ni verte ni rouge.
 
 **Cause NON ÉTABLIE** (`TODO.md`) : la même batterie tenait d'une traite deux
 heures plus tôt, dans ce même conteneur. Ne pas écrire que c'est réglé.
+
+---
+
+## UN SALARIÉ NE MODIFIE PLUS RIEN AU PLANNING (30 août 2026)
+
+**Sa décision, et elle est sans nuance :** *« Un salarié peut uniquement
+CONSULTER son planning. »*
+
+Avant d'ajouter quoi que ce soit au planning, savoir ceci :
+
+| | |
+|---|---|
+| **la règle** | `peutModifierLePlanning` (`src/lib/acces-roles.ts`) |
+| **la garde** | `exigerEcritureSurLePlanning` (`src/server/garde-action.ts`) |
+| **où l'appeler** | en PREMIÈRE ligne de toute action du planning qui écrit, **avant** la portée |
+
+**Ne pas confondre avec la portée.** `porteePlanning` dit QUELS chantiers on
+voit ; celle-ci dit si l'on peut y toucher. Les deux se cumulent, aucune ne
+dispense de l'autre — et le patron a demandé expressément que la portée ne bouge
+pas.
+
+**Toute action serveur neuve doit porter une garde**, où qu'elle vive :
+`scripts/test-actions-gardees-db.ts` relève désormais **tout** fichier
+« use server » du dépôt et rougit sur celui qui n'en a pas. Une ouverture voulue
+s'écrit dans sa table d'exemptions, avec sa raison.
+
+Détail : `ARCHITECTURE.md` §208, `docs/salarie-planning-lecture-seule.md`.
 
 ---
 

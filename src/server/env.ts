@@ -164,7 +164,39 @@ function requis(nom: string): string {
 // Construit et valide la configuration une seule fois. Ne journalise JAMAIS
 // une valeur — seulement le nom de la variable en cause en cas d'erreur.
 function construireEnv(): Env {
-  const nodeEnv = (process.env.NODE_ENV as Env["nodeEnv"]) ?? "development";
+  /**
+   * **UNE VALEUR INATTENDUE SE REFUSE, ELLE NE SE RABAT PAS SUR
+   * « development ».** Constat de l'audit final, 29 août 2026.
+   *
+   * La forme précédente — `(process.env.NODE_ENV as Env["nodeEnv"]) ?? "development"`
+   * — acceptait n'importe quelle chaîne : le `as` est une affirmation du
+   * développeur, jamais une vérification. `NODE_ENV=Production`, avec sa
+   * majuscule, valait donc `development`.
+   *
+   * **Ce qu'une majuscule éteignait, d'un coup :** l'exigence d'`AUTH_SECRET`
+   * (repli sur un secret écrit en dur), celle de `CRON_SECRET`, celle de Redis,
+   * celle du stockage S3, le refus de l'IA simulée — et surtout la porte
+   * `AUTH_TEST_UTILISATEUR_ID` (`session-ctx.ts`), qui redevient alors une
+   * entrée sans mot de passe vers le compte de son choix.
+   *
+   * Un seul caractère de travers, et l'application démarre **sans une erreur**
+   * dans une posture de développement en croyant servir la production. C'est le
+   * défaut le plus silencieux qui soit : tout marche, et rien ne protège.
+   *
+   * `garde-seed.ts` tient déjà ce raisonnement pour l'effacement de la base —
+   * « `NODE_ENV` ne suffit PAS, et c'est le cœur du dessin ». Il n'avait jamais
+   * été appliqué à `NODE_ENV` lui-même.
+   */
+  const nodeEnvBrut = process.env.NODE_ENV;
+  if (nodeEnvBrut !== undefined && !["development", "test", "production"].includes(nodeEnvBrut)) {
+    throw new ErreurConfiguration(
+      `NODE_ENV vaut « ${nodeEnvBrut} », qui n'est pas une valeur connue.\n` +
+        "Les seules acceptées sont development, test et production — en minuscules.\n" +
+        "Une valeur inattendue faisait basculer Atlas en posture de développement sans le dire :\n" +
+        "secret de session en dur, stockage local, IA simulée, et la porte de test rouverte."
+    );
+  }
+  const nodeEnv = (nodeEnvBrut as Env["nodeEnv"]) ?? "development";
   // **`next start` impose `NODE_ENV=production`, même sur un banc d'essai.**
   // Sans cette distinction, la seule façon de servir une version BÂTIE serait
   // de détenir une clé d'IA facturée et un compartiment S3 — ce qu'aucun banc
@@ -351,6 +383,45 @@ function construireEnv(): Env {
   const stockageProvider: FournisseurStockage = stockageProviderBrut === "s3" ? "s3" : "local";
 
   /**
+   * **L'ADRESSE PUBLIQUE SE DÉCLARE, ELLE NE SE DEVINE PAS** — lot de clôture,
+   * 29 août 2026.
+   *
+   * Sans `ATLAS_URL_PUBLIQUE`, l'adresse du site se déduit de `x-forwarded-host`
+   * — un en-tête que le CLIENT écrit quand le mandataire de tête ne le réécrit
+   * pas, ce qui est le cas par défaut de plusieurs hébergeurs.
+   *
+   * Or cette adresse compose **le lien que le patron recopie et envoie à son
+   * client** : `https://…/devis/<jeton>`. Une valeur forgée lui fait donc
+   * transmettre, de sa propre main, un lien qui mène ailleurs — jeton compris.
+   * Elle compose aussi la redirection de retour de Google.
+   *
+   * Le défaut sûr existe déjà côté code (l'adresse déclarée passe avant
+   * l'en-tête, `adresse-publique.ts`), mais il ne sert à rien tant que personne
+   * ne déclare l'adresse. **On l'exige donc au démarrage** plutôt que de laisser
+   * un déploiement muet composer ses liens à partir de ce qu'on lui souffle.
+   *
+   * **Le banc en est dispensé** (`exigencesDeDeploiement`), et c'est nécessaire :
+   * son adresse change à chaque espace de travail, personne ne peut la poser
+   * d'avance, et c'est précisément le cas que `adressePublique` traite en
+   * retombant sur l'en-tête.
+   */
+  const urlPublique = optionnel("ATLAS_URL_PUBLIQUE");
+  if (exigencesDeDeploiement && !urlPublique) {
+    throw new ErreurConfiguration(
+      "ATLAS_URL_PUBLIQUE manquante en production.\n" +
+        "Sans elle, l'adresse du site se déduit d'un en-tête que le client peut écrire — et c'est\n" +
+        "cette adresse qui compose les liens de devis et de facture que le patron envoie à ses\n" +
+        "clients. Poser l'adresse publique complète, par exemple https://atlas.exemple.fr"
+    );
+  }
+  if (urlPublique && !/^https?:\/\/[^\s/]+/.test(urlPublique)) {
+    throw new ErreurConfiguration(
+      `ATLAS_URL_PUBLIQUE vaut « ${urlPublique} », qui n'est pas une adresse complète.\n` +
+        "Il faut le protocole et l'hôte, par exemple https://atlas.exemple.fr"
+    );
+  }
+
+  /**
    * **UN DÉPLOIEMENT RÉEL NE PEUT PAS SE DÉCLARER BANC D'ESSAI** (audit du
    * 23 août 2026, constat M8).
    *
@@ -429,8 +500,49 @@ function construireEnv(): Env {
   // instances : REDIS_URL est donc obligatoire en production, comme pour le
   // stockage — échec explicite au démarrage plutôt qu'un rate limit
   // silencieusement inefficace une fois déployé.
-  if (exigencesDeProduction && !process.env.REDIS_URL) {
+  if (exigencesDeProduction && !optionnel("REDIS_URL")) {
     throw new ErreurConfiguration("REDIS_URL manquant en production (la limitation de débit en mémoire n'est jamais autorisée).");
+  }
+
+  /**
+   * **LES ADRESSES DE FOURNISSEURS NE SE DÉTOURNENT PAS EN PRODUCTION.**
+   *
+   * ═════════════════════════════════════════════════════════════════════════
+   * Constat de l'audit final, 29 août 2026 — et c'était le seul repli
+   * permissif qui restait dans ce fichier.
+   *
+   * `ANTHROPIC_BASE_URL` et `OPENAI_BASE_URL` sont là pour les essais : elles
+   * font parler la fabrique à un serveur local plutôt qu'au vrai fournisseur.
+   * L'en-tête de ce fichier l'écrit — « surchargeables pour les essais
+   * uniquement » — mais **rien ne l'imposait**. Une variable posée sur le
+   * déploiement suffisait à détourner chaque appel.
+   *
+   * **Ce que ça coûtait, exactement.** La clé d'API part dans l'en-tête de la
+   * requête, et avec elle : les dictées de chantier, les photos de tickets de
+   * caisse, les croquis, les noms et les adresses des clients de l'artisan.
+   * Une ligne dans un fichier d'environnement, et tout le carnet d'un
+   * paysagiste s'en va chez qui l'a écrite — sans une erreur, sans une trace à
+   * l'écran, et sans que rien ne ralentisse.
+   *
+   * C'est la faute que ce fichier existe pour empêcher : une valeur par défaut
+   * sûre qu'une variable oubliée, recopiée ou hostile rend permissive.
+   */
+  const ADRESSES_OFFICIELLES: Record<string, string> = {
+    ANTHROPIC_BASE_URL: "https://api.anthropic.com",
+    OPENAI_BASE_URL: "https://api.openai.com",
+  };
+  if (exigencesDeProduction) {
+    for (const [nom, officielle] of Object.entries(ADRESSES_OFFICIELLES)) {
+      const pose = optionnel(nom);
+      if (pose && pose.replace(/\/+$/, "") !== officielle) {
+        throw new ErreurConfiguration(
+          `${nom} détourne les appels vers « ${pose} » en production.\n` +
+            "Cette variable n'existe que pour les essais : en production, la clé d'API et tout ce\n" +
+            "qui est envoyé au modèle — dictées, photos, noms et adresses des clients — partiraient\n" +
+            `à cette adresse. La retirer, ou la remettre à ${officielle}.`
+        );
+      }
+    }
   }
 
   return {
@@ -458,7 +570,12 @@ function construireEnv(): Env {
     // plutôt que d'ouvrir une confiance que personne n'a accordée.
     proxySauts: Math.max(0, Math.trunc(Number(optionnel("ATLAS_PROXY_SAUTS")) || 0)),
     rpId: optionnel("ATLAS_RP_ID")?.trim().toLowerCase() || undefined,
-    redisUrl: process.env.REDIS_URL,
+    // **`optionnel()`, pas `process.env` en brut** — audit final, 29 août 2026.
+    // Lue directement, une valeur blanche (`REDIS_URL=" "`) est *truthy* : elle
+    // franchissait le refus ci-dessus, puis le magasin échouait à chaque appel
+    // et la limitation retombait sur un compteur en mémoire, par instance —
+    // exactement l'état que ce refus déclare « jamais autorisé en production ».
+    redisUrl: optionnel("REDIS_URL"),
     cronSecret,
     sentryDsn: process.env.SENTRY_DSN,
     sentryEnvironment: process.env.SENTRY_ENVIRONMENT ?? nodeEnv,

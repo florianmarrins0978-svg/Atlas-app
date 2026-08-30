@@ -1,5 +1,6 @@
 "use server";
 
+import { exigerEcran } from "@/server/garde-action";
 import { getCurrentCtx } from "@/server/session-ctx";
 import { creerChantier } from "@/server/repositories/chantiers";
 import { trouverOuCreerClient, type CanalClient } from "@/server/repositories/clients";
@@ -27,6 +28,7 @@ export type CreerChantierInput = {
 // comme avant) — retourne l'id du chantier créé, ou lève une erreur explicite.
 export async function creerChantierAction(data: CreerChantierInput): Promise<{ id: string }> {
   const ctx = await getCurrentCtx();
+  await exigerEcran(ctx, "/chantiers", "créer un chantier");
 
   let clientId: string | undefined;
   const nomClient = data.nomClient?.trim();
@@ -109,6 +111,7 @@ export async function dicterCoordonneesAction(formData: FormData) {
 
 
   const ctx = await getCurrentCtx();
+  await exigerEcran(ctx, "/chantiers", "dicter des coordonnées");
   const limite = await verifierLimite(`televersement:${ctx.entrepriseId}`, LIMITES.televersementFichier);
   if (!limite.autorise) throw new Error(limite.message);
 

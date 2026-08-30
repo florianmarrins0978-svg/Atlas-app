@@ -1,6 +1,6 @@
 # État du projet
 
-**Dernière mise à jour :** 2026-08-30 · branche `claude/grey-scrollbar-pc-uueje5`
+**Dernière mise à jour :** 2026-08-30 · branche `main`
 · dernière migration `drizzle/0070_prix_a_chiffrer_et_comparabilite.sql`
 
 *(Deux en-têtes de mise à jour cohabitaient ici depuis une fusion du 29 août,
@@ -17,6 +17,24 @@ Ce fichier dit **où en est le produit**, pas ce qu'on aimerait qu'il soit. Une
 ligne « fait » qui ne l'est pas coûte plus cher qu'une ligne absente.
 
 ---
+
+## Le planning du salarié est en LECTURE SEULE (30 août 2026)
+
+**Sa décision :** *« Un salarié peut uniquement CONSULTER son planning. Il ne
+doit pouvoir effectuer AUCUNE modification depuis le planning. »*
+
+Ni supprimer un chantier, ni le poser, ni le déplacer, ni le retirer du
+planning, ni écrire son pense-bête, ni cocher une équipe. **Refusé au serveur**
+— une requête fabriquée avec l'identifiant de l'action et celui du chantier est
+refusée comme un appui sur un bouton.
+
+**Ce qui n'a pas bougé** : sa portée de lecture, sa feuille de chantier sans
+montants, les droits du patron et ceux du commercial.
+
+Trouvé en chemin et corrigé : les actions **photos** d'un chantier n'avaient
+aucune garde — un salarié pouvait en supprimer n'importe laquelle, pour de bon.
+
+Détail : `docs/salarie-planning-lecture-seule.md`, `ARCHITECTURE.md` §208.
 
 ## Plus aucune barre de défilement grise, la page comprise (30 août 2026)
 

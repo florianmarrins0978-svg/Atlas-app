@@ -9,6 +9,95 @@ Format : le plus récent en tête.
 
 ## 2026-08-30
 
+### Le contrôle élargi a pris sa première action, écrite ailleurs
+
+**À la fusion du 30 août**, `test-actions-gardees-db.ts` a fait rougir
+`corrigerMesurePrestationAction` — arrivée de `main` le jour même, dans un
+fichier dont les **dix-sept autres actions** portent toutes
+`exigerEcran(ctx, "/chantiers", …)`. Celle-là était née sans.
+
+C'est exactement ce que l'élargissement devait attraper, et il l'a fait sur du
+code qui n'est pas le nôtre, quelques heures après avoir été écrit. La garde
+manquante a été posée, identique à celle de ses voisines.
+
+### Le planning du salarié passe en lecture seule
+
+*Décision du patron, et elle tranche la seule question que le lot de clôture lui
+avait renvoyée : « un salarié peut uniquement CONSULTER son planning ».*
+
+**Ce que ça évite.** Un salarié pouvait supprimer un chantier — suppression
+douce, mais qu'aucun écran ne restaure —, le déplacer, le retirer du planning,
+réécrire son pense-bête et changer l'équipe qui part. Le bouton était dessiné
+pour lui, et le serveur ne vérifiait que **quel** chantier, jamais **s'il** avait
+le droit d'écrire.
+
+**Et ce n'était pas qu'une question de boutons :** la requête d'écriture,
+fabriquée à la main avec l'identifiant de l'action et celui du chantier, passait.
+C'est éprouvé pour de bon — la suite intercepte l'appel du patron et le rejoue
+sous le salarié ; garde retirée, il écrit, réponse 200.
+
+**Une seconde porte, trouvée en cherchant celle-ci.** Les actions photos d'un
+chantier n'avaient aucune garde : un salarié pouvait ajouter une photo à
+n'importe quel chantier et en **supprimer** n'importe laquelle, cette fois pour
+de bon. Le contrôle du lot précédent ne le voyait pas — il lisait deux listes de
+fichiers écrites à la main, et le fichier ne s'appelait pas `actions.ts`. Il
+relève désormais **tout** fichier « use server » du dépôt, et ce qui n'a pas de
+garde doit s'expliquer par écrit.
+
+**Ce qui n'a pas bougé, et c'est éprouvé aussi :** la portée de lecture, les
+droits du patron, ceux du commercial, et la feuille de chantier sans montants —
+le seul document du salarié.
+
+### Lot de clôture : ce qui restait ouvert avant le premier artisan
+
+Détail complet dans `docs/cloture-avant-premier-artisan.md`. Ce qui suit est ce
+que ces corrections **évitent**.
+
+**La purge n'était pas seulement débranchée : elle était invisible.** Le grave
+n'est pas l'oubli du planificateur — cela se branche en une ligne. Le grave est
+qu'une purge qui ne tourne pas ne se signale pas : aucune erreur, aucun écran
+rouge. On ne l'aurait découvert qu'en cherchant autre chose, des mois plus tard,
+avec toutes les durées de conservation annoncées fausses depuis le début.
+Un journal des exécutions **réussies**, une sonde qui rend 503 au-delà de 48 h,
+et `docs/DEPLOIEMENT-PURGE.md` pour le reste. Atlas ne planifie toujours rien :
+un minuteur interne mourrait avec le processus sans que personne ne le sache.
+
+**Un écran fermé ne fermait pas l'action.** 37 actions sans garde sur des écrans
+pourtant fermés au salarié, dont quatre suppressions **dures** — prestation,
+matériel, note vocale, passage d'entretien : un `DELETE`, que rien ne défait.
+Et la portée du planning ne filtrait que l'**affichage** : un salarié resserré
+ne voyait pas les autres chantiers et pouvait les supprimer dès qu'il en
+connaissait l'identifiant. Le patron croyait avoir restreint.
+
+**Ce que le patron approuve est désormais ce qui s'écrit.** L'écran affichait
+une description composée par le modèle, l'application écrivait `donnees`, et
+rien ne les confrontait : « Tonte — 120 € » pouvait faire écrire 1 200 €. La
+description se **recalcule** depuis les données écrites — l'écart n'est plus
+détecté, il est impossible.
+
+**Un montant du modèle partait sans être regardé.** La base refusait le négatif
+et rien d'autre. Bornes **factuelles** seulement — ce qui n'est pas un nombre,
+ce que la colonne ne peut pas contenir. Aucun plafond métier inventé : refuser
+au-dessus de dix mille euros refuserait du terrassement réel.
+
+**Le contenu appris avait l'autorité d'une consigne système.** Trois
+emplacements déclarés au lieu de deux : les règles, la donnée à traiter, les
+exemples appris.
+
+**Ma première correction d'invite était fausse, et c'est la leçon du lot.**
+J'avais sorti le bloc de la consigne système — juste — mais préfixé à la
+**dictée**. Or `lireLitteralement` analyse ce message mot à mot, et sert de
+FILET quand un vrai fournisseur répond à côté : le défaut aurait atteint la
+production. Ce ne sont pas des contrôles de sécurité qui l'ont trouvé, mais
+trois suites navigateur ordinaires.
+
+**Trois affirmations fausses corrigées** dans `docs/RGPD.md`, qui portait
+« implémenté » sur des durées que rien n'exécutait. « Implémenté » voulait dire
+« le code est écrit » ; un lecteur comprenait « la donnée est effacée ». Le
+tableau distingue désormais trois états, jamais deux.
+
+Batterie : 265/265 base, 116/116 navigateur, 0 erreur de types.
+
 ### Plus aucune barre de défilement grise, y compris sur la page elle-même
 
 **Sa plainte du jour, sur son PC :** *« sur PC les bandes déroulantes grises
@@ -35,6 +124,52 @@ Détail et raisons : `ARCHITECTURE.md` §206.
 ---
 
 ## 2026-08-29
+
+### Audit final de sécurité : quatre protections qui n'en étaient pas
+
+Sept défauts trouvés avant le premier artisan réel, tous **mesurés** et non
+déduits. Le détail est dans `docs/audit-securite-final.md` ; ce qui suit est ce
+qu'ils **évitent**.
+
+**Une fuite entre entreprises.** `/api/fichiers` servait le logo d'une autre
+société : la table `entreprises` n'a aucune politique RLS — aucune des 78
+migrations n'en pose — et c'était la seule des quatorze requêtes du dépôt sur
+cette table à ne pas écrire son propre filtre. Reproduit en base avant
+correction.
+
+**Une porte ouverte au bourrage de mots de passe.** `POST
+/api/auth/callback/credentials` appelait `authorize()` sans passer par aucune
+des trois défenses, qui vivent toutes dans l'action de l'écran de connexion. Les
+deux suites censées couvrir le sujet ne pouvaient pas le voir : l'une pilote le
+formulaire, l'autre appelle le compteur en direct. La route est murée — `signIn()`
+côté serveur appelle Auth.js en processus, rien ne s'en servait.
+
+**Trente-quatre actions serveur sans garde de rôle.** `GardeAcces` ne s'exécute
+qu'au rendu ; une action s'exécute avant, et le middleware ne regarde que la
+session. Un salarié pouvait ouvrir un devis complet, calculer une marge, envoyer
+un devis chez un client, émettre une facture, supprimer un client.
+
+**Un déni de service à 258 octets.** Une référence de cellule `r="ZZZZZ1"` dans
+un classeur faisait allouer 12 356 630 chaînes : 1,7 s et 196 Mo mesurés. Ni la
+borne de 5 Mo, ni le plafond de décompression, ni la cadence ne bornaient
+l'allocation qui suit la lecture. Même famille sur le plan d'arrosage, dont les
+cotes venaient du navigateur sans être regardées.
+
+**Trois replis permissifs de configuration** : les adresses des fournisseurs
+d'IA étaient surchargeables en production — clé et dictées comprises —,
+`NODE_ENV` acceptait n'importe quelle chaîne via un `as`, et `REDIS_URL` était
+lue en brut, si bien qu'une valeur blanche franchissait son propre garde-fou.
+
+**La leçon commune, et elle vaut plus que les sept défauts.** Dans les quatre
+cas les plus graves, **un commentaire affirmait la protection qui n'existait
+pas**. C'est ce qui les avait rendus invisibles : on ne vérifie pas ce qu'une
+phrase déclare acquis. Les quatre phrases ont été corrigées avec le code.
+
+Cinq contrôles neufs, **tous vus rouges avant d'être verts** — dont
+`test-toute-table-est-cloisonnee.ts`, qui garde la prochaine migration : les
+privilèges par défaut donnent l'écriture à `atlas_app` sur toute table future,
+quand la RLS, elle, est éteinte par défaut. Les deux réglages vont en sens
+contraire, et rien ne surveillait l'écart.
 
 ### Le banc répare ses dépendances désaccordées, au lieu de bâtir en boucle pour rien
 
