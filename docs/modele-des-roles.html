@@ -372,7 +372,42 @@
 <hr>
 <h2 id="g-la-batterie">G. La batterie</h2>
 <a class="retour" href="#sommaire">↑ Sommaire</a>
-<p><em>(chiffres exacts en fin de lot)</em></p>
+<p><code>npm run verifier:avant-livraison</code>, jouée en entier sur l'arbre du lot.</p>
+<div class="tablewrap"><table><thead><tr>
+<th>Étape</th>
+<th>Résultat</th>
+</tr></thead><tbody>
+<tr>
+<td>TypeScript</td>
+<td><strong>0 erreur</strong></td>
+</tr>
+<tr>
+<td>lint</td>
+<td><strong>0 erreur</strong> (16 avertissements, tous antérieurs)</td>
+</tr>
+<tr>
+<td>mémoire du dépôt</td>
+<td>cohérente, 8 fichiers vérifiés</td>
+</tr>
+<tr>
+<td>suites base</td>
+<td><strong>287 / 287</strong> — dont les 22 du modèle des rôles</td>
+</tr>
+<tr>
+<td>suites navigateur</td>
+<td><strong>119 / 119</strong> — dont les 6 de la requête forgée</td>
+</tr>
+<tr>
+<td>connexion derrière une origine étrangère</td>
+<td><strong>réussie</strong>, dans un vrai navigateur</td>
+</tr>
+<tr>
+<td><strong>verdict</strong></td>
+<td><strong>✅ Batterie complète au vert — 0 échec</strong></td>
+</tr>
+</tbody></table></div>
+<p>Les 287 suites base comptaient 286 avant le lot : une seule est née (<code>test-roles-capacites-db.ts</code>). Les 119 navigateur en comptaient 118 : une seule également (<code>test-roles-facturation-e2e.ts</code>).</p>
+<p><strong>Aucun test n'a été désactivé ni assoupli.</strong> Trois contrôles ont été <em>adaptés</em>, et dans le sens du durcissement : deux exigeaient que la TVA soit ouverte au commercial — c'est-à-dire l'inverse de la règle du patron — et le troisième a été rendu plus sévère, pas moins.</p>
 <hr>
 <h2 id="h-les-décisions-restantes">H. Les décisions restantes</h2>
 <a class="retour" href="#sommaire">↑ Sommaire</a>

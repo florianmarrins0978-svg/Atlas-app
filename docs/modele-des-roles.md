@@ -224,7 +224,26 @@ Le code sain a été rétabli à chaque fois, et **vérifié à l'octet près**.
 
 ## G. La batterie
 
-*(chiffres exacts en fin de lot)*
+`npm run verifier:avant-livraison`, jouée en entier sur l'arbre du lot.
+
+| Étape | Résultat |
+|---|---|
+| TypeScript | **0 erreur** |
+| lint | **0 erreur** (16 avertissements, tous antérieurs) |
+| mémoire du dépôt | cohérente, 8 fichiers vérifiés |
+| suites base | **287 / 287** — dont les 22 du modèle des rôles |
+| suites navigateur | **119 / 119** — dont les 6 de la requête forgée |
+| connexion derrière une origine étrangère | **réussie**, dans un vrai navigateur |
+| **verdict** | **✅ Batterie complète au vert — 0 échec** |
+
+Les 287 suites base comptaient 286 avant le lot : une seule est née
+(`test-roles-capacites-db.ts`). Les 119 navigateur en comptaient 118 : une seule
+également (`test-roles-facturation-e2e.ts`).
+
+**Aucun test n'a été désactivé ni assoupli.** Trois contrôles ont été
+*adaptés*, et dans le sens du durcissement : deux exigeaient que la TVA soit
+ouverte au commercial — c'est-à-dire l'inverse de la règle du patron — et le
+troisième a été rendu plus sévère, pas moins.
 
 ---
 
