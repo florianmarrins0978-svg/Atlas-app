@@ -9,6 +9,34 @@ Format : le plus récent en tête.
 
 ## 2026-08-30
 
+### La question du diamètre nomme sa mesure : « la souche » ou « le tronc »
+
+**Son arbitrage entre deux de ses propres consignes**, après le test téléphone :
+*« je préfère cette formulation parce qu'elle indique immédiatement de quelle
+mesure on parle, et évite la confusion constatée. »*
+
+La formulation précédente — « Quel diamètre ? », sans nommer — venait de lui
+aussi, et pour une bonne raison : la dictée disait « deux souches » et la
+question en disait une. **Sur son téléphone, elle ne disait pas DE QUOI**, et il
+a cru qu'on l'interrogeait sur l'érable d'à côté. Il a tranché en connaissance du
+coût : un singulier là où il a pu en dicter deux.
+
+Ce qui ne bouge pas : le mot « tronc » n'apparaît toujours jamais au-dessus d'un
+dessouchage. Rien d'autre n'est touché — ni la détection du diamètre, ni Whisper,
+ni les prix, ni la mémoire.
+
+**Trois contrôles de non-régression** dans `scripts/test-questions-chiffrage.ts`,
+et l'ancien contrôle de `main` (« une question ne parle ni au singulier ni au
+pluriel ») est réécrit plutôt que supprimé — sa règle d'origine y est gardée en
+toutes lettres, sans quoi une session qui ne connaîtrait que la première consigne
+la remettrait.
+
+**Une date fausse relevée au passage, et non propagée.** Les commentaires de ce
+lot datent son travail du « 31 août » ; les commits portent le 30. Les nouveaux
+commentaires s'ancrent donc sur l'événement — *le test téléphone* — plutôt que
+sur un jour. Les anciens ne sont pas réécrits : ils sortent du cadre qu'il a
+fixé, et `git log` fait foi.
+
 ### La note vocale codée : poubelle ou avion, et la fiche tient dans un écran
 
 **Son feu vert :** *« Très bien code exactement ça ! Réfère-toi à cette page une
@@ -631,6 +659,32 @@ treize rougissent sur `html (scrollbar-width: auto)`.
 Détail et raisons : `ARCHITECTURE.md` §206.
 
 ---
+
+### Le client ne relit plus les mesures qu'Atlas range en colonnes
+
+**Son premier vrai devis sorti de la chaîne corrigée** portait « Haie de laurier
+(800 ml) (800 ml) », « Érable (40 cm de diamètre, 12 m de haut) » et « Tonte de
+la pelouse (1 200 m²) (1200 m²) ». Les caractéristiques servent au moteur et au
+prix ; elles n'ont rien à faire dans la description que lit son client.
+
+**Le double parenthésage disait qu'il y avait deux mains, pas une.** Le modèle
+écrit la mesure dans le libellé — c'est ce que la dictée dit — et
+`libelleAvecQuantite` en recollait une seconde depuis les colonnes. L'espace
+insécable de « (1 200 m²) » face à « (1200 m²) » le prouve : le premier est
+écrit comme un humain l'écrit, le second sort d'une colonne numérique. Corriger
+la seule recollure aurait laissé l'érable inchangé.
+
+**Ce qui a failli être fait, et qui aurait cassé le prix :** nettoyer le libellé
+stocké. Quatre moteurs y relisent encore les mesures, et une haie y aurait perdu
+son prix au mètre linéaire. La séparation existait déjà dans le type
+`LigneVendable`, écrite et jamais exploitée — `libelle` est ce que le client
+lit, `membres` ce que les moteurs relisent. Seul le premier est nettoyé.
+
+La règle n'est pas « retirer ce qui ressemble à une mesure » mais « retirer un
+fragment dont TOUT ce qu'il dit est déjà en colonne » : « Érable — démontage en
+rétention » garde sa méthode, qu'aucune colonne ne porte. Rien n'est retiré de
+la base, et aucun devis existant n'est réinterprété — sans colonnes, le libellé
+est rendu tel quel. Détail : `ARCHITECTURE.md` §214.
 
 ## 2026-08-29
 

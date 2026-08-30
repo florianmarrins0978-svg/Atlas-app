@@ -11,6 +11,17 @@
           }
         ]
       }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"${CLAUDE_PROJECT_DIR:-.}/scripts/rappel-dossier-chatgpt.mjs\"",
+            "timeout": 10
+          }
+        ]
+      }
     ]
   }
 }

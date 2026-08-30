@@ -89,6 +89,21 @@ export type Nature = {
    * n'a pas d'unité unique : rien n'est alors traduit, et rien n'est deviné.
    */
   uniteDeMesure: string | null;
+  /**
+   * Le nom de l'OBJET par lequel un libellé de cette nature peut commencer.
+   *
+   * **Déclaré, jamais deviné.** « Haie de laurier » nomme ce qu'on taille, pas
+   * ce qu'on fait : le devis du client doit lire « Taille de haie de laurier ».
+   * Une première version cherchait cette substitution en comparant le dernier
+   * mot de `libelle` au premier mot du texte — une ressemblance de chaînes, qui
+   * aurait fini par produire une phrase fausse sur une nature qu'on ajoute.
+   *
+   * Ici, c'est une donnée : la nature `haie` dit elle-même que son objet
+   * s'appelle « haie », et que le travail sur cet objet s'appelle
+   * « Taille de haie ». `null` quand le libellé nomme déjà le geste — on ne
+   * remplace alors rien.
+   */
+  objet: string | null;
 };
 
 /**
@@ -109,6 +124,7 @@ export const NATURES: readonly Nature[] = [
     chiffrage: "grille",
     ordreDevis: 0,
     uniteDeMesure: null,
+    objet: null,
   },
   {
     cle: "haie",
@@ -119,6 +135,7 @@ export const NATURES: readonly Nature[] = [
     chiffrage: "grille",
     ordreDevis: 10,
     uniteDeMesure: "ml",
+    objet: "haie",
   },
   {
     // Après la haie : « taille de haie » ne doit jamais devenir un élagage.
@@ -136,6 +153,7 @@ export const NATURES: readonly Nature[] = [
     chiffrage: "aucune",
     ordreDevis: 50,
     uniteDeMesure: null,
+    objet: null,
   },
   {
     // Avant les grumes : « enlèvement des grumes et dessouchage » est un
@@ -148,6 +166,7 @@ export const NATURES: readonly Nature[] = [
     chiffrage: "grille",
     ordreDevis: 40,
     uniteDeMesure: null,
+    objet: null,
   },
   {
     cle: "grumes",
@@ -158,6 +177,7 @@ export const NATURES: readonly Nature[] = [
     chiffrage: "grille",
     ordreDevis: 20,
     uniteDeMesure: "tonne",
+    objet: "grumes",
   },
   {
     cle: "fendage",
@@ -168,6 +188,7 @@ export const NATURES: readonly Nature[] = [
     chiffrage: "grille",
     ordreDevis: 30,
     uniteDeMesure: null,
+    objet: null,
   },
   {
     cle: "broyage",
@@ -178,6 +199,7 @@ export const NATURES: readonly Nature[] = [
     chiffrage: "aucune",
     ordreDevis: 90,
     uniteDeMesure: null,
+    objet: null,
   },
   {
     cle: "evacuation",
@@ -188,6 +210,7 @@ export const NATURES: readonly Nature[] = [
     chiffrage: "aucune",
     ordreDevis: 91,
     uniteDeMesure: null,
+    objet: null,
   },
   {
     cle: "billonnage",
@@ -198,6 +221,7 @@ export const NATURES: readonly Nature[] = [
     chiffrage: "aucune",
     ordreDevis: 92,
     uniteDeMesure: null,
+    objet: null,
   },
   {
     // **Elle vient de SA dictée du 26 août**, pas d'une supposition : « tonte de
@@ -212,6 +236,7 @@ export const NATURES: readonly Nature[] = [
     chiffrage: "aucune",
     ordreDevis: 60,
     uniteDeMesure: "m²",
+    objet: null,
   },
   {
     // **Confirmée par lui le 27 août 2026** : « oui j'en vend ».
@@ -223,6 +248,7 @@ export const NATURES: readonly Nature[] = [
     chiffrage: "aucune",
     ordreDevis: 70,
     uniteDeMesure: null,
+    objet: null,
   },
   {
     cle: "cloture",
@@ -233,6 +259,7 @@ export const NATURES: readonly Nature[] = [
     chiffrage: "aucune",
     ordreDevis: 80,
     uniteDeMesure: "ml",
+    objet: null,
   },
 ];
 
