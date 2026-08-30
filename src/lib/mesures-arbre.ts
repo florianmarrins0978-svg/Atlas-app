@@ -25,6 +25,33 @@ const DIAMETRE = [
   // « centimètres » en toutes lettres autant que « cm » : une dictée dit
   // « quatre-vingt-dix centimètres de diamètre », pas « 90 cm ».
   /(\d{1,3})\s*(?:cm|centim[èe]tres?)\s*de\s*diam[èe]tre/i,
+
+  // ─── DEUX TOURNURES DE MÉTIER, et deux seulement ────────────────────────
+  //
+  // **Sa convention du 31 août 2026 :** *« quand une mesure en centimètres est
+  // donnée pour une souche ou un arbre dans certaines formulations métier,
+  // elle doit être interprétée comme un diamètre. »*
+  //
+  //   « dessouchage de deux souches de 60 cm »   → 60 cm de diamètre
+  //   « un chêne de 60 cm au pied »              → 60 cm de diamètre
+  //
+  // Sur un chantier, personne ne dit « une souche de soixante centimètres de
+  // diamètre » : on dit « une souche de soixante ». Exiger le mot « diamètre »
+  // revenait à reposer une question à laquelle il venait de répondre.
+  //
+  // **Et il a posé la borne lui-même :** *« ne généralise pas aveuglément
+  // toute mesure en cm trouvée dans une phrase. »* Ces deux motifs-ci sont donc
+  // ancrés — l'un sur le mot « souche », l'autre sur « au pied ». Une mesure en
+  // centimètres qui flotte ailleurs dans la phrase n'est toujours pas un
+  // diamètre.
+  //
+  // **Le refus explicite compte autant que la lecture.** « 60 cm de
+  // circonférence au pied » ne devient PAS un diamètre : le tour d'un tronc
+  // fait π fois son diamètre, et confondre les deux triplerait la case de sa
+  // grille. Sa règle : *« si le contexte indique clairement une autre mesure,
+  // respecte ce qui est dit. »*
+  /souches?\s+(?:de\s+)?(\d{1,3})\s*(?:cm|centim[èe]tres?)(?!\s*de\s*(?:circonf|haut|long|large))/i,
+  /(\d{1,3})\s*(?:cm|centim[èe]tres?)\s+au\s+pied/i,
 ];
 
 /**

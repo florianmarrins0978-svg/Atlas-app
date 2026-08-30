@@ -291,11 +291,19 @@ export function questionsAvantChiffrage(
       // confondre : demander « la taille » laisserait croire que la hauteur
       // suffit.
       if (!contientDiametre(ligne)) {
+        // **Une souche n'a pas de tronc.** Sa correction du 31 août 2026 :
+        // *« et jamais "Quel diamètre fait le tronc ?" »* sur un dessouchage.
+        // Le mot compte : lire « tronc » au-dessus d'une souche fait croire
+        // que la question porte sur l'arbre d'à côté — c'est exactement ce qui
+        // l'a induit en erreur ce matin-là.
+        const uneSouche = estDeNature(ligne, ["dessouchage"], /\bsouche/i);
         questions.push({
           id: `abattage.diametre#${rang}`,
           libellePrestation: libelle,
-          question: "Quel diamètre fait le tronc ?",
-          pourquoi: "Le prix se compte au diamètre, pas à la hauteur — la hauteur dictée ne suffit pas.",
+          question: uneSouche ? "Quel diamètre fait la souche ?" : "Quel diamètre fait le tronc ?",
+          pourquoi: uneSouche
+            ? "Le prix d'un dessouchage se compte au diamètre de la souche."
+            : "Le prix se compte au diamètre, pas à la hauteur — la hauteur dictée ne suffit pas.",
           options: null,
           unite: "cm",
         });

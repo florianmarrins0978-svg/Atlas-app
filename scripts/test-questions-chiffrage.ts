@@ -392,5 +392,100 @@ cas("chaque question porte le libellé de SA prestation", () => {
 });
 
 
+// =========================================================================
+// LA CONVENTION MÉTIER DU 31 AOÛT 2026 : les centimètres d'un tronc
+// =========================================================================
+//
+// *« Quand une mesure en centimètres est donnée pour une souche ou un arbre
+// dans certaines formulations métier, elle doit être interprétée comme un
+// diamètre. »*
+//
+//   « dessouchage de deux souches de 60 cm »  → diametreCm = 60
+//   « un chêne de 60 cm au pied »             → diametreCm = 60
+//
+// **Et la borne qu'il a posée lui-même**, qui compte autant que la règle :
+// *« ne généralise pas aveuglément toute mesure en cm trouvée dans une
+// phrase. Si le contexte indique clairement une autre mesure — une
+// circonférence, une hauteur — respecte ce qui est dit. »*
+
+console.log("\n=== Les centimètres d'un tronc, et ceux qui n'en sont pas ===\n");
+
+cas("« deux souches de 60 cm » : aucune question de diamètre", () => {
+  const q = questionsAvantChiffrage([
+    { libelle: "Dessouchage de deux souches de 60 cm", nature: "dessouchage" },
+  ]);
+  assert.equal(q.length, 0, `posées : ${q.map((x) => x.question).join(" / ")}`);
+});
+
+cas("« une souche de 50 cm » : aucune question de diamètre", () => {
+  const q = questionsAvantChiffrage([
+    { libelle: "Dessouchage d'une souche de 50 cm", nature: "dessouchage" },
+  ]);
+  assert.equal(q.length, 0, `posées : ${q.map((x) => x.question).join(" / ")}`);
+});
+
+cas("« un chêne de 60 cm au pied » : le diamètre est lu", () => {
+  const q = questionsAvantChiffrage([
+    { libelle: "Abattage d'un chêne de 60 cm au pied", nature: "abattage" },
+  ]);
+  assert.ok(
+    q.every((x) => !x.id.startsWith("abattage.diametre")),
+    `posée quand même : ${q.map((x) => x.question).join(" / ")}`
+  );
+});
+
+cas("« un érable de 40 cm au pied avec rétention » : plus AUCUNE question", () => {
+  // Ses deux règles à la fois : « au pied » donne le diamètre, « rétention »
+  // donne la technique.
+  const q = questionsAvantChiffrage([
+    { libelle: "Démontage d'un érable de 40 cm au pied avec rétention", nature: "abattage" },
+  ]);
+  assert.equal(q.length, 0, `posées : ${q.map((x) => x.question).join(" / ")}`);
+});
+
+cas("« deux souches » SANS mesure : la question se pose, et elle dit « la souche »", () => {
+  // C'est le seul cas où elle doit sortir — et jamais avec le mot « tronc ».
+  const q = questionsAvantChiffrage([
+    { libelle: "Dessouchage de deux souches", nature: "dessouchage" },
+  ]);
+  assert.equal(q.length, 1, `posées : ${q.map((x) => x.question).join(" / ")}`);
+  assert.equal(q[0].question, "Quel diamètre fait la souche ?");
+});
+
+cas("un ABATTAGE sans mesure garde le mot « tronc »", () => {
+  const q = questionsAvantChiffrage([{ libelle: "Abattage d'un chêne", nature: "abattage" }]);
+  const diametre = q.find((x) => x.id.startsWith("abattage.diametre"));
+  assert.equal(diametre?.question, "Quel diamètre fait le tronc ?");
+});
+
+console.log("\n=== La borne : tout ce qui est en cm n'est pas un diamètre ===\n");
+
+cas("« 60 cm de circonférence » n'est JAMAIS un diamètre", () => {
+  // Le tour d'un tronc fait π fois son diamètre : confondre les deux
+  // triplerait la case de sa grille.
+  for (const dit of [
+    "Dessouchage d'une souche de 60 cm de circonférence",
+    "Abattage d'un chêne de 60 cm de circonférence au pied",
+  ]) {
+    const q = questionsAvantChiffrage([{ libelle: dit, nature: dit.startsWith("Dess") ? "dessouchage" : "abattage" }]);
+    assert.ok(
+      q.some((x) => x.id.startsWith("abattage.diametre")),
+      `« ${dit} » a été pris pour un diamètre`
+    );
+  }
+});
+
+cas("une hauteur, une longueur ou une largeur ne deviennent pas un diamètre", () => {
+  assert.equal(diametreLu("un chêne de 12 m de haut"), null);
+  assert.equal(diametreLu("une haie de 800 cm de long"), null);
+  assert.equal(diametreLu("bordure de 30 cm de large"), null);
+});
+
+cas("une mesure en cm qui flotte ailleurs n'est pas un diamètre", () => {
+  // Sa borne, littéralement : le motif est ancré sur « souche » ou « au pied ».
+  assert.equal(diametreLu("évacuation, prévoir 30 cm de paillage"), null);
+});
+
+
 console.log(`\n${echecs === 0 ? "✅ Toutes les vérifications passent." : `❌ ${echecs} échec(s).`}`);
 process.exit(echecs === 0 ? 0 : 1);
