@@ -42,7 +42,8 @@ noir sur blanc, comme le demande `CLAUDE.md` §2 bis.
 | `06-lot-C-suite-r23-et-unites.md` | lot C (suite) | le doublon du rejeu, les unités de comptage, et l'inventaire des natures réellement présentes |
 | `07-correction-complete.md` | **l'état final** | ce que la chaîne fait désormais, ce qui a été refusé, et la seule question qui lui revient |
 | `08-validation-reelle.md` | validation | pourquoi la chaîne n'est PAS prouvée en conditions réelles, et ce qui protège d'une faute de Whisper |
-| `09-mise-sur-main.md` | migrations | la preuve que deux migrations peuvent porter le même numéro sans danger |
+| `09-mise-sur-main.md` | migrations | la preuve que deux migrations peuvent porter le même numéro sans danger — **titre trompeur, voir l'avertissement ci-dessous** |
+| `10-la-correction-atteint-main.md` | mise en ligne | ce qui est sur `main`, le démenti du titre du 09, et trois suites rouges élucidées |
 
 **Le dossier 07 remplace les six premiers.** Ils restent comme le chemin
 parcouru — un instantané ne se corrige pas, `CLAUDE.md` §2 bis — mais ce qui
