@@ -46,6 +46,7 @@ noir sur blanc, comme le demande `CLAUDE.md` §2 bis.
 | `10-la-correction-atteint-main.md` | mise en ligne | ce qui est sur `main`, le démenti du titre du 09, et trois suites rouges élucidées |
 | `11-libelles-du-devis.md` | affichage | pourquoi le client relisait deux fois ses mesures, et pourquoi nettoyer le libellé stocké aurait cassé le prix |
 | `12-rediger-plutot-qu-assembler.md` | rédaction | ce qui décide de l'ordre des mots quand un tiret réunit un sujet et un geste |
+| `13-nature-declaree-et-accord.md` | robustesse | la tournure qui vient d'une donnée déclarée, et l'article qui ne se devine plus |
 
 **Le dossier 07 remplace les six premiers.** Ils restent comme le chemin
 parcouru — un instantané ne se corrige pas, `CLAUDE.md` §2 bis — mais ce qui
