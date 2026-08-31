@@ -9,6 +9,26 @@ Format : le plus récent en tête.
 
 ## 2026-08-31
 
+### La dictée de la fiche chantier « dénature l'appli » — quatre allures à essayer
+
+**Sa remarque du 31 août, capture à l'appui.** Elle se mesure, et c'est ce qui
+a servi de boussole : pendant qu'on dicte, l'écran porte **deux aplats vert
+pin** — le disque de 76 px et le rond d'envoi — soit **7 956 px²** de sombre là
+où le reste de la fiche n'en porte aucun. S'y ajoutent deux défauts visibles sur
+sa capture : rien ne tient les trois boutons ensemble, et le chrono, l'onde et le
+disque sont posés sur **trois axes différents**.
+
+Quatre allures, dans `appli/dictee-embellie.html` — **rien n'est codé**
+(`CLAUDE.md` §3 bis) : la barre (3 176 px²), l'anneau d'Atlas et son arc d'or
+(**289**, le carré d'arrêt et la pastille), la ligne (1 972), le galet clair
+(2 657). Le repos et les deux gestes ne changent pas d'une allure à l'autre :
+changer deux choses à la fois empêche de choisir.
+
+**Le contrôle additionne la surface peinte** plutôt que de lire une classe
+(`scripts/verifier-maquette-dictee-embellie.mjs`) : sans cela, on pouvait livrer
+quatre variations qui déplacent le défaut sans le régler, et le vert n'aurait
+rien prouvé. Confronté à un anneau repeint en plein, il rougit à 6 065 px².
+
 ### Les dix verts étaient CASSÉS en ligne, et mon contrôle ne le voyait pas
 
 **Sa plainte : « sur le lien cliquable ça ne fonctionne toujours pas ».** Elle

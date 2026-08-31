@@ -9,6 +9,34 @@ sert.
 
 ---
 
+## Dernier lot : quatre allures pour la dictée de la fiche chantier (31 août 2026)
+
+**Rien n'est codé, et c'est volontaire** (`CLAUDE.md` §3 bis). Sa remarque,
+capture à l'appui : *« propose-moi une maquette pour embellir cette partie de la
+fiche chantier, je trouve que ça dénature l'appli »*.
+
+| | |
+|---|---|
+| la planche | `appli/dictee-embellie.html` |
+| en ligne | https://florianmarrins0978-svg.github.io/Atlas-app/dictee-embellie.html |
+| son contrôle | `scripts/verifier-maquette-dictee-embellie.mjs` (dans `npm run verifier:maquette`) |
+| ce qu'on attend | **un numéro** : 1 la barre, 2 l'anneau, 3 la ligne, 4 le galet — ou rien ne change |
+| ce que ça touchera | `src/app/chantiers/[id]/AnneauNoteVocale.tsx` et le bloc `.atlas-dictee` de `src/app/globals.css` |
+
+**Ce qui a servi de boussole, et qui se mesure.** Sa plainte n'est pas un goût :
+pendant la dictée, l'écran porte **deux aplats vert pin — 7 956 px²** — là où le
+reste de la fiche n'en porte aucun ; rien ne tient les trois boutons ensemble ;
+et le chrono, l'onde et le disque sont sur trois axes différents. Le contrôle
+**additionne la surface peinte** et refuse une proposition qui ne réduirait pas
+l'aplat : sans lui, quatre variations pouvaient déplacer le défaut sans le
+régler, et rester vertes.
+
+**Le repos ne bouge pas dans les quatre** — le micro plein et ses ondes de
+1,5 cm, son choix du 30 août. Il n'a rien reproché à cet état-là, et changer
+deux choses à la fois l'empêcherait de choisir.
+
+---
+
 ## Dernier lot : une planche pour le geste des boutons (31 août 2026)
 
 **Rien n'est codé, et c'est volontaire** (`CLAUDE.md` §3 bis). Sa demande :

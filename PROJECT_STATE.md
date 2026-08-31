@@ -18,6 +18,19 @@ ligne « fait » qui ne l'est pas coûte plus cher qu'une ligne absente.
 
 ---
 
+## EN ATTENTE : l'allure de la dictée — une planche, pas du code (31 août 2026)
+
+**Rien n'a bougé dans l'application**, et c'est l'état exact du produit : la
+dictée de la fiche chantier porte toujours son disque plein de 76 px, son rond
+d'envoi plein, et le chrono et l'onde en dessous, chacun sur son axe.
+
+Sa remarque du 31 août : *« ça dénature l'appli »*. Quatre allures lui sont
+proposées sur `appli/dictee-embellie.html` — la barre, l'anneau, la ligne, le
+galet —, au même repos et aux mêmes gestes. **Sa réponse est attendue : un
+numéro.**
+
+---
+
 ## EN ATTENTE : le geste des boutons — une planche, pas du code (31 août 2026)
 
 **Rien n'a bougé dans l'application**, et c'est l'état exact du produit : les

@@ -9,6 +9,22 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
+## EN ATTENTE DE SA RÉPONSE : l'allure de la dictée (31 août 2026)
+
+Sa remarque du 31 août — *« ça dénature l'appli »*, devant la dictée de la fiche
+chantier. **Rien n'est codé, et rien ne doit l'être avant sa réponse**
+(`CLAUDE.md` §3 bis).
+
+La planche : `appli/dictee-embellie.html`, en ligne à
+https://florianmarrins0978-svg.github.io/Atlas-app/dictee-embellie.html
+
+**Ce qu'on attend de lui : un numéro.** 1 la barre, 2 l'anneau, 3 la ligne,
+4 le galet — ou « je garde ce qu'il y a ».
+
+**Ce qui change à l'écran une fois choisi :** `AnneauNoteVocale.tsx` (le rendu
+de la dictée) et le bloc `.atlas-dictee` de `src/app/globals.css`. Le repos ne
+bouge pas — c'est son choix du 30 août, et il n'a rien reproché à cet état-là.
+
 ## EN ATTENTE DE SA RÉPONSE : la force du geste des boutons (31 août 2026)
 
 Sa demande du 31 août — une mini vibration à l'appui, et le bouton qui s'enfonce
