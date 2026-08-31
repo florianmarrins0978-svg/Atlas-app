@@ -1,0 +1,262 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas — Les travaux supplémentaires : ce qui manque, et comment le régler</title>
+<style>
+  :root{
+    --ground:#f5f3ee; --surface:#faf9f5; --raised:#ece9e1;
+    --ink:#1c1c1a; --ink-soft:#4a4a44; --muted:#8a8578;
+    --accent:#2f3b2f; --alert:#b5562a; --line:rgba(28,28,26,0.13);
+    --serif:Georgia,'Times New Roman',serif;
+    --sans:system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --ground:#161815; --surface:#1d201c; --raised:#252924;
+      --ink:#eae7df; --ink-soft:#c2bdb1; --muted:#948f83;
+      --accent:#9fbd82; --alert:#e0885a; --line:rgba(234,231,223,0.17);
+    }
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--sans);
+    line-height:1.65;}
+  main{max-width:44rem;margin:0 auto;padding:2.5rem 1.2rem 5rem;}
+  h1,h2,h3,h4{font-family:var(--serif);font-weight:600;line-height:1.2;
+    text-wrap:balance;margin:2rem 0 0.6rem;scroll-margin-top:1rem;}
+  h1{font-size:2rem;margin-top:0;}
+  h2{font-size:1.5rem;padding-top:1.2rem;border-top:1px solid var(--line);}
+  h3{font-size:1.12rem;}
+  h4{font-size:1rem;}
+  p{margin:0 0 0.9rem;}
+  a{color:var(--accent);text-underline-offset:3px;}
+  a:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:3px;}
+  ul,ol{margin:0 0 1rem;padding-left:1.3rem;}
+  li{margin-bottom:0.4rem;}
+  li::marker{color:var(--muted);}
+  /* Le sommaire : des cibles larges, confortables au doigt sur téléphone. */
+  ol li a{display:inline-block;padding:0.15rem 0;}
+  blockquote{margin:1rem 0;padding:0.85rem 1.05rem;background:var(--raised);
+    border-left:3px solid var(--accent);border-radius:0 10px 10px 0;color:var(--ink-soft);}
+  code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:0.87em;
+    background:var(--raised);padding:0.1rem 0.35rem;border-radius:5px;}
+  hr{border:0;border-top:1px solid var(--line);margin:2rem 0;}
+  .tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px;
+    background:var(--surface);margin:0 0 1.2rem;}
+  table{border-collapse:collapse;width:100%;font-size:0.92rem;min-width:22rem;}
+  th,td{text-align:left;padding:0.55rem 0.8rem;border-bottom:1px solid var(--line);
+    vertical-align:top;}
+  th{font-size:0.72rem;letter-spacing:0.08em;text-transform:uppercase;
+    color:var(--muted);white-space:nowrap;}
+  tr:last-child td{border-bottom:none;}
+  .retour{display:inline-block;font-size:0.76rem;color:var(--muted);
+    text-decoration:none;margin:-0.3rem 0 1rem;}
+  .retour:hover{color:var(--accent);text-decoration:underline;}
+</style>
+</head>
+<body>
+<main>
+<h1 id="les-travaux-supplémentaires--ce-qui-manque-et-comment-le-régler">Les travaux supplémentaires : ce qui manque, et comment le régler</h1>
+<p>Son constat du 31 août 2026 : <em>« si on effectue des travaux en plus chez un client, on n'a aucun moyen de rajouter les TS sur la facture »</em>.</p>
+<p>C'est exact. Ce document dit <strong>pourquoi</strong> l'application ne le permet pas aujourd'hui, <strong>comment les artisans font</strong> en dehors de l'outil, et <strong>quatre solutions</strong> avec ce que chacune coûte et ce qu'elle protège. Rien n'a été codé : la décision lui revient.</p>
+<hr>
+<h2 id="1-ce-que-lapplication-permet-aujourdhui--lu-dans-le-code">1. Ce que l'application permet aujourd'hui — lu dans le code</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th></th>
+</tr></thead><tbody>
+<tr>
+<td>La facture naît du devis</td>
+<td><code>terminerChantier</code>, <code>src/server/repositories/factures.ts:201</code> — elle <strong>recopie</strong> les lignes du dernier devis <strong>envoyé</strong></td>
+</tr>
+<tr>
+<td>Ses lignes ne se modifient plus</td>
+<td>l'écran facture n'offre qu'un seul champ : l'échéance (<code>FactureClient.tsx</code>)</td>
+</tr>
+<tr>
+<td>Aucune notion d'avenant</td>
+<td>aucune table, aucun champ, aucun écran — vérifié sur tout le dépôt</td>
+</tr>
+<tr>
+<td>Le devis, lui, a des <strong>versions</strong></td>
+<td><code>numeroVersion</code>, <code>src/server/repositories/devis.ts:275</code></td>
+</tr>
+</tbody></table></div>
+<p><strong>Une version n'est pas un avenant, et c'est tout le problème.</strong> Une version <em>remplace</em> : le client reçoit un nouveau prix global, et le prix qu'il avait accepté disparaît. Un avenant <em>s'ajoute</em> : le client voit « ce qu'on avait convenu » <strong>plus</strong> « ce qui s'est ajouté, que j'ai accepté le 12 ».</p>
+<h3 id="le-contournement-daujourdhui-et-pourquoi-il-ne-tient-pas">Le contournement d'aujourd'hui, et pourquoi il ne tient pas</h3>
+<p>Rien n'interdit d'ajouter les lignes sur l'écran « Prix » du chantier, de laisser l'application créer un devis v2, de l'envoyer, puis d'appuyer sur « Fin de chantier ». Trois défauts, dont un grave :</p>
+<ol>
+<li><strong>Si la facture existe déjà, même en brouillon, elle ne bouge plus.</strong> <code>terminerChantier</code> commence par « une facture existe ? je la rends telle quelle » (<code>factures.ts:102</code>). Le devis v2 n'est <strong>jamais</strong> repris, et rien ne le dit à l'écran : le supplément disparaît en silence, et c'est la facture d'avant qui part chez le client. <em>(Lu dans le code, non rejoué à l'écran.)</em></li>
+<li><strong>Le client reçoit un prix global neuf</strong>, pas un supplément — exactement ce qui déclenche les discussions au moment de payer.</li>
+<li><strong>Rien ne trace son accord</strong> sur le supplément. Or c'est cet écrit qui rend la somme exigible (§2).</li>
+</ol>
+<h3 id="ce-que-la-documentation-avait-pourtant-prévu">Ce que la documentation avait pourtant prévu</h3>
+<p><code>docs/AGENT.md</code> §2.3, sur l'arrêt 3 : <em>« Un chantier finit rarement exactement comme il a été devisé : travaux en plus, journée en moins, matériel non utilisé. »</em> L'arrêt existe <strong>pour ça</strong> — et l'écran ne permet aucune correction. Le besoin était écrit ; c'est l'écran qui est resté en deçà.</p>
+<hr>
+<h2 id="2-comment-les-artisans-font-en-dehors-de-lapplication">2. Comment les artisans font, en dehors de l'application</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<h3 id="la-règle-de-droit-et-elle-est-dure">La règle de droit, et elle est dure</h3>
+<p>L'<strong>article 1793 du Code civil</strong> (marché à forfait) : aucun supplément n'est dû sans <strong>accord écrit du client</strong>, portant à la fois sur <strong>les travaux</strong> et sur <strong>leur prix</strong>. Les deux conditions sont cumulatives, sans seuil de montant. Un artisan qui fait les travaux en plus et les facture après coup peut se les voir refuser <strong>en entier</strong>.</p>
+<p>Hors marché à forfait, la preuve écrite est exigée dès <strong>1 500 €</strong> (art. 1359) ; en dessous, un courriel, un SMS ou un compte rendu de chantier peuvent servir — mais ce sont des preuves faibles, appréciées par un juge.</p>
+<p>Deux échappatoires souvent citées, et à ne pas prendre pour des acquis : une clause du devis initial prévoyant expressément les imprévus, et les travaux indispensables restant sous ~10 % du devis. Elles se plaident ; elles ne se garantissent pas.</p>
+<h3 id="la-pratique-courante">La pratique courante</h3>
+<div class="tablewrap"><table><thead><tr>
+<th>Ce qu'ils font</th>
+<th>À quoi ça sert</th>
+</tr></thead><tbody>
+<tr>
+<td><strong>Avenant au devis</strong>, chiffré et numéroté (« Devis 2026-014 — Avenant n°1 »), signé « bon pour accord » <strong>avant</strong> exécution</td>
+<td>la seule façon sûre de se faire payer</td>
+</tr>
+<tr>
+<td><strong>Bon de travaux supplémentaires</strong> signé sur place — carnet autocopiant, ou photo du bon signé</td>
+<td>le chantier n'attend pas le retour au bureau</td>
+</tr>
+<tr>
+<td><strong>Courriel de confirmation</strong> avec réponse écrite du client</td>
+<td>filet des petits montants, faible mais mieux que rien</td>
+</tr>
+<tr>
+<td><strong>Devis à quantités estimatives</strong> (au métré) : le devis annonce des quantités prévisionnelles, la facture règle au réel</td>
+<td>évite l'avenant sur les seuls <strong>écarts de quantité</strong></td>
+</tr>
+<tr>
+<td>Sur les gros chantiers : situations de travaux, mémoire de TS, décompte définitif</td>
+<td>hors sujet ici — ce n'est pas son échelle</td>
+</tr>
+</tbody></table></div>
+<h3 id="ce-que-font-les-logiciels-du-métier">Ce que font les logiciels du métier</h3>
+<p>Obat, Vertuoza, iXbat, Tactidevis : tous ont l'<strong>avenant comme document à part entière</strong>, rattaché à l'affaire, numéroté à la suite du devis, et une <strong>facturation qui cumule marché initial + avenants</strong> sur un même document, en blocs séparés. Aucun ne fait « éditer la facture à la main » : ce serait facturer ce que le client n'a pas signé.</p>
+<hr>
+<h2 id="3-les-quatre-solutions-possibles">3. Les quatre solutions possibles</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<h3 id="a--lavenant--un-document-lié-au-devis-qui-sajoute-au-lieu-de-remplacer">A — L'avenant : un document lié au devis, qui s'ajoute au lieu de remplacer</h3>
+<p>Un « Avenant n°1 » se crée depuis le chantier, avec ses propres lignes (prix positifs <strong>et négatifs</strong> : la journée en moins, le matériel non utilisé). Il suit <strong>le parcours du devis, déjà écrit</strong> : PDF, envoi au client, page publique, accord. La facture additionne le devis envoyé et les avenants acceptés, et le PDF les montre en deux blocs, avec le récapitulatif.</p>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th></th>
+</tr></thead><tbody>
+<tr>
+<td>Ce que ça protège</td>
+<td>l'accord écrit, la lisibilité pour le client, le prix convenu qui reste visible</td>
+</tr>
+<tr>
+<td>Ce que ça coûte</td>
+<td>une table (ou <code>type</code> + <code>parent_id</code> sur <code>devis</code>), la facture qui somme, le PDF, un écran</td>
+</tr>
+<tr>
+<td>Ce qu'on réutilise</td>
+<td>numérotation, envoi, page client, PDF, relevé de TVA : rien n'est à réinventer</td>
+</tr>
+<tr>
+<td>Risque</td>
+<td>c'est le plus gros des quatre lots</td>
+</tr>
+</tbody></table></div>
+<h3 id="b--rendre-la-facture-modifiable-tant-quelle-est-en-brouillon">B — Rendre la facture modifiable tant qu'elle est en brouillon</h3>
+<p>Ajouter, retirer, corriger une ligne à l'arrêt 3, avant que la facture ne parte.</p>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th></th>
+</tr></thead><tbody>
+<tr>
+<td>Ce que ça protège</td>
+<td>rien juridiquement — le client n'a signé aucun de ces montants</td>
+</tr>
+<tr>
+<td>Ce que ça coûte</td>
+<td>peu : quelques gestes sur un écran qui existe</td>
+</tr>
+<tr>
+<td>Ce que ça règle</td>
+<td>le geste manquant, immédiatement</td>
+</tr>
+<tr>
+<td>Risque</td>
+<td><strong>facturer sans accord = risque d'impayé</strong>, et c'est lui qui le porte. Seul, ce lot déplace le problème du logiciel vers le tribunal</td>
+</tr>
+</tbody></table></div>
+<p>À ne livrer <strong>que</strong> couplé à C, ou avec un avertissement à l'écran.</p>
+<h3 id="c--le-bon-de-travaux-supplémentaires-signé-sur-place">C — Le bon de travaux supplémentaires, signé sur place</h3>
+<p>Sur le chantier : il dicte ou photographie ce qui s'ajoute, l'application chiffre depuis son catalogue, <strong>le client signe du doigt sur le téléphone</strong>, et le bon part par courriel dans la foulée.</p>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th></th>
+</tr></thead><tbody>
+<tr>
+<td>Ce que ça protège</td>
+<td>l'écrit de l'article 1793, obtenu <strong>avant</strong> les travaux, sans retour au bureau</td>
+</tr>
+<tr>
+<td>Ce qu'on réutilise</td>
+<td>dictée, photo, chiffrage, page publique, envoi — tout existe déjà</td>
+</tr>
+<tr>
+<td>Ce qui manque</td>
+<td>la signature au doigt, et le stockage du bon signé</td>
+</tr>
+<tr>
+<td>Risque</td>
+<td>inutile seul : il faut que le bon <strong>devienne</strong> l'avenant (A) ou la ligne de facture (B)</td>
+</tr>
+</tbody></table></div>
+<h3 id="d--les-quantités-estimatives-réglées-au-réel">D — Les quantités estimatives, réglées au réel</h3>
+<p>Une ligne de devis peut se déclarer « au réel » ; la facture demande alors la quantité posée et recalcule. Le devis annonce la règle au client dès le départ.</p>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th></th>
+</tr></thead><tbody>
+<tr>
+<td>Ce que ça protège</td>
+<td>les écarts de quantité — 40 m² de gazon au lieu de 35, une tonne de terre en plus</td>
+</tr>
+<tr>
+<td>Ce que ça ne couvre pas</td>
+<td>les travaux <strong>nouveaux</strong> : une haie qu'il n'avait pas prévue reste un avenant</td>
+</tr>
+<tr>
+<td>Ce que ça coûte</td>
+<td>un champ sur la ligne, un écran de saisie à l'arrêt 3</td>
+</tr>
+</tbody></table></div>
+<hr>
+<h2 id="4-ce-qui-est-recommandé-et-pourquoi">4. Ce qui est recommandé, et pourquoi</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><strong>C puis A</strong>, dans cet ordre, et <strong>B seulement à l'intérieur de A</strong>.</p>
+<ol>
+<li><strong>C d'abord</strong> — le bon signé sur place. C'est là que l'argent se gagne ou se perd : un supplément accepté au jardin se facture ; le même, accepté d'un hochement de tête, se discute trois semaines plus tard.</li>
+<li><strong>A ensuite</strong> — l'avenant, qui porte le bon signé jusqu'à la facture. C'est le modèle du métier, et l'application a déjà les quatre cinquièmes des pièces.</li>
+<li><strong>B jamais seul.</strong> Une facture librement modifiable est un piège à impayés : elle donne le sentiment que c'est réglé, alors que rien n'est signé.</li>
+</ol>
+<p>Et dans tous les cas, <strong>le défaut du §1.1 se corrige</strong> : une facture en brouillon qui ignore silencieusement un devis plus récent est un mensonge qui part chez le client.</p>
+<hr>
+<h2 id="5-ce-quil-doit-trancher">5. Ce qu'il doit trancher</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th>Question</th>
+<th>Pourquoi elle compte</th>
+</tr></thead><tbody>
+<tr>
+<td><strong>Une facture, ou deux ?</strong> Le supplément se fond dans la facture finale (en bloc séparé), ou il part sur sa propre facture</td>
+<td>change le calcul, le PDF, et le relevé de TVA</td>
+</tr>
+<tr>
+<td><strong>L'application bloque-t-elle</strong> une facturation de TS sans accord écrit, ou se contente-t-elle d'avertir ?</td>
+<td>le blocage protège ; il gêne aussi le jour où le client a dit oui au téléphone</td>
+</tr>
+<tr>
+<td><strong>La signature au doigt sur le téléphone</strong> lui paraît-elle tenable devant un client, ou préfère-t-il la photo du bon signé sur papier ?</td>
+<td>décide de la brique C</td>
+</tr>
+<tr>
+<td><strong>Les travaux en MOINS</strong> doivent-ils passer par le même document ?</td>
+<td>une journée en moins est un avenant négatif, pas un oubli</td>
+</tr>
+</tbody></table></div>
+<hr>
+<p><em>Sources métier :</em> <a href="https://vite-un-avocat.fr/travaux-supplementaires-non-prevus-au-devis/" target="_blank" rel="noopener">Article 1793 et travaux supplémentaires</a> · <a href="https://elige-avocats.com/le-client-est-il-en-droit-de-refuser-de-payer-les-travaux-supplementaires/" target="_blank" rel="noopener">Refus de payer sans avenant</a> · <a href="https://www.why.eu/facturation-travaux-supplementaires/" target="_blank" rel="noopener">Avenant, OS et prix nouveaux</a> · <a href="https://www.habitatpresto.com/pro/conseils/juridique/travaux-supplementaires-sans-avenant-ecrit-refus-paiement" target="_blank" rel="noopener">Travaux sans avenant écrit</a> · <a href="https://www.habitatpresto.com/pro/conseils/administratif-fiscalite/bon-pour-accord" target="_blank" rel="noopener">Le « bon pour accord »</a> · <a href="https://www.courtierentravaux.org/quand-et-comment-faire-un-avenant-au-devis/" target="_blank" rel="noopener">Quand et comment faire un avenant</a></p>
+</main>
+</body>
+</html>

@@ -9,6 +9,27 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
+## EN ATTENTE DE SA DÉCISION : les travaux supplémentaires sur la facture (31 août 2026)
+
+**Son constat :** *« si on effectue des travaux en plus chez un client, on n'a
+aucun moyen de rajouter les TS sur la facture »*. Il est juste : la facture
+recopie le devis et ne se modifie plus (`factures.ts:201`).
+
+Quatre solutions, ce qu'elles coûtent et ce qu'elles protègent :
+**`docs/travaux-supplementaires.md`**. Rien n'est codé — la décision lui revient
+(`CLAUDE.md` §3 bis).
+
+Recommandation posée : **le bon signé sur place (C), puis l'avenant (A)** ;
+jamais une facture librement modifiable toute seule — elle facture ce que le
+client n'a pas accepté, et l'article 1793 du Code civil le laisse alors refuser
+le supplément en entier.
+
+**Un défaut à corriger quoi qu'il choisisse :** `terminerChantier` rend la
+facture déjà en brouillon **sans regarder si un devis plus récent existe**
+(`factures.ts:102`). Un devis v2 fait après « Fin de chantier » n'atteint donc
+jamais la facture, et rien ne le dit à l'écran. *Lu dans le code, non rejoué à
+l'écran.*
+
 ## EN ATTENTE DE SA RÉPONSE : l'aplatissement de la touche d'envoi (31 août 2026)
 
 **Il a choisi LA LIGNE** parmi les quatre allures, et l'a corrigée trois fois le

@@ -9,6 +9,21 @@ Format : le plus récent en tête.
 
 ## 2026-08-31
 
+### Les travaux supplémentaires : le manque est réel, quatre solutions posées
+
+Son constat : *« si on effectue des travaux en plus chez un client, on n'a aucun
+moyen de rajouter les TS sur la facture »*. Vérifié dans le code — la facture
+recopie les lignes du devis et ne se modifie plus.
+
+`docs/travaux-supplementaires.md` : ce que permet l'application, ce que font les
+artisans (avenant signé avant exécution, article 1793 du Code civil), et quatre
+solutions chiffrées en coût et en risque. **Rien n'est codé** (`CLAUDE.md`
+§3 bis).
+
+Un défaut trouvé au passage, et noté dans `TODO.md` : une facture déjà en
+brouillon ignore silencieusement un devis plus récent (`factures.ts:102`) — le
+supplément disparaît sans un mot à l'écran.
+
 ### Il a choisi la ligne, et l'a corrigée trois fois : plus aucun aplat
 
 Sa réponse du soir, après avoir essayé les quatre allures : *« garde-moi la
