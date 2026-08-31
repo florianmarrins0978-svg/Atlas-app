@@ -130,10 +130,19 @@ contraire, dis-le : c'est deux lignes.
 
 | | |
 |---|---|
-| suites base | à compléter à la clôture |
-| suites navigateur | à compléter à la clôture |
+| types, lint, mémoire du dépôt, construction | **verts** |
+| suites base de données | **293 / 293** |
+| connexion derrière un proxy | **verte** |
+| suites navigateur du lot | **3 / 3** — la page du client (16 contrôles), la facture au client, l'export de tes données |
 | page du client | 630 px pour 664 disponibles |
-| contrôles neufs | 6 sur la protection du PDF, 2 sur son ouverture par un lecteur tiers, 3 sur la page du client |
+| contrôles neufs | 6 sur la protection du PDF, 2 sur son ouverture par un vrai lecteur, 3 sur la page du client |
+
+**Une chose à dire franchement sur la batterie.** Les cent vingt et une suites
+navigateur ne tiennent plus dans la machine où je travaille : le serveur de
+développement y mange treize gigaoctets et se fait tuer au bout de deux suites.
+Ce n'est pas ce lot — c'est connu depuis le 30 août, et le dépôt porte déjà un
+outil pour contourner. Elles tournent donc **sur les serveurs de GitHub**, où la
+machine est saine : c'est là qu'il faut lire le vert complet.
 
 ---
 
