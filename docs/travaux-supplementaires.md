@@ -201,9 +201,35 @@ déjà : PDF, canal SMS ou courriel, envoi, relevé de TVA. Le supplément n'a r
   correspond plus à son devis, et il appelle.
 - **« Rien n'a changé depuis le devis ? » devient le geste.** La phrase était
   déjà sur son écran, sans réponse possible.
-- **Une trace d'accord se demande à l'écran** — SMS, courriel, signé sur place,
-  ou rien. « Rien » ne bloque pas : il avertit, et l'écrit du bon signé
-  (solution C) reste la façon sûre d'y répondre.
+- **La trace d'accord a été RETIRÉE de l'écran, sur sa demande du 1ᵉʳ septembre
+  à 00 h 56** : *« supprime aussi le client les a acceptés par SMS, e-mail, pas
+  besoin de ça »*. Elle y était une minute plus tôt (quatre boutons : SMS,
+  courriel, signé sur place, rien d'écrit).
+
+  **Ce que cela change, et il faut le savoir avant de coder :** l'écran ne pose
+  plus la question, mais le risque reste entier — un supplément non accepté par
+  écrit peut être refusé (§2). Ce n'est plus la facture qui y répond, c'est le
+  bon signé sur place (solution C), s'il le veut un jour.
+- **Le titre du bloc ne porte que « Travaux supplémentaires »**, en doré, sur
+  l'écran comme sur le PDF. La mention « acceptés par SMS » qui le suivait est
+  partie avec la trace d'accord.
+
+### Sa question du 1ᵉʳ septembre : où se remplit le formulaire ?
+
+*« Lorsqu'il clique sur ajouter des TS, le mieux c'est que la facture s'ouvre et
+qu'il la modifie directement, puis une fois validé il revient sur la page de la
+facture prête à envoyer avec les TS ajoutés. Ou alors on fait un encadré qui se
+déroule sous le "ajouter des TS" — mais du coup la page ne tiendra plus sur une
+seule page. »*
+
+Les deux formes sont sur la planche, en interrupteur, sur les mêmes chiffres.
+
+| | |
+|---|---|
+| **Un écran à part** (proposé par défaut) | la facture revient entière, d'un coup, une fois validée ; on peut poser deux lignes de suite sans rouvrir le formulaire |
+| **Déroulé sous le bouton** | le total et le bouton d'envoi sont poussés hors de l'écran au moment précis où on les regarde — c'est ce qu'il a lui-même vu |
+
+**Avis donné : l'écran à part.** Le reste attend son choix.
 
 La planche : `appli/ts-sur-la-facture.html`, calquée sur sa facture
 F2026-000001.

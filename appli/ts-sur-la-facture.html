@@ -38,6 +38,27 @@
   « RIEN N'A CHANGÉ DEPUIS LE DEVIS ? » — la phrase était déjà sur son écran,
   sans réponse possible. Elle devient le geste.
 
+  ─────────────────────────────────────────────────────────────────────────────
+  CE QU'IL A CORRIGÉ LE 1ᵉʳ SEPTEMBRE 2026, À 00 h 56 :
+
+  · **« Ajouter des travaux supplémentaires, c'est ce qu'il faut. »** Le geste
+    est retenu.
+  · **Le titre du bloc ne porte plus que « Travaux supplémentaires », en doré.**
+    Le « , acceptés par SMS » est parti.
+  · **La trace d'accord est retirée de l'écran** — « pas besoin de ça ». Le
+    risque juridique, lui, ne disparaît pas avec la question : c'est le bon
+    signé sur place (`ts-bon-sur-place.html`) qui y répond, si un jour il le
+    veut. La facture, elle, ne pose plus la question.
+  · **Sa question ouverte, et c'est l'interrupteur du haut :** au clic, un écran
+    de modification qui s'ouvre et rend la facture prête à envoyer, ou un
+    encadré qui se déroule sous le bouton — « mais du coup la page ne tiendra
+    plus sur une seule page ».
+
+  MON AVIS, ET IL EST DANS L'ORDRE DES ONGLETS : **l'écran à part**. Un
+  formulaire déroulé pousse le total et le bouton d'envoi hors de l'écran, et
+  c'est précisément ce qu'on regarde en ajoutant une ligne. L'écran à part rend
+  la facture entière, d'un coup, une fois validée.
+
   RIEN N'EST CODÉ dans l'application (`CLAUDE.md` §3 bis).
 */
 :root{
@@ -66,7 +87,15 @@ h1{margin:10px 0 0;font-family:Georgia,serif;font-weight:400;font-size:30px;
 .chapo b{color:var(--charcoal)}
 
 /* L'écran, tel qu'il est aujourd'hui : des plages posées sur le fond. */
-.ecran{margin-top:18px}
+.formes{display:flex;gap:6px;margin-top:18px}
+.formes button{flex:1;min-height:44px;background:var(--cream);border:0;border-radius:11px;
+               font:inherit;font-size:13.5px;color:var(--charcoal-soft);cursor:pointer;
+               box-shadow:inset 0 0 0 1px var(--line)}
+.formes button[aria-selected="true"]{background:var(--pine);color:var(--surPlein);box-shadow:none}
+.ecran{margin-top:12px}
+.retour{display:inline-block;min-width:34px;min-height:34px;line-height:34px;
+        color:var(--muted);font-size:19px;background:none;border:0;padding:0;cursor:pointer}
+.titreModif{margin:2px 0 0;font-family:Georgia,serif;font-weight:400;font-size:22px}
 .plage{background:var(--cream);border-radius:16px;padding:16px 17px;margin-top:12px}
 .entete{font-family:Georgia,serif;font-size:17px}
 .echeance{display:flex;align-items:center;gap:10px;margin-top:10px;
@@ -117,17 +146,6 @@ h1{margin:10px 0 0;font-family:Georgia,serif;font-weight:400;font-size:30px;
 .suggestions button{background:var(--paper);border:0;border-radius:999px;padding:9px 13px;
                     font:inherit;font-size:12.5px;color:var(--charcoal-soft);cursor:pointer}
 
-/* La trace de l'accord : c'est elle qui rend la somme exigible. */
-.preuve{margin-top:12px;padding-top:12px;border-top:1px solid var(--line-soft)}
-.preuve .q{font-size:12.5px;color:var(--muted)}
-.choix{display:flex;flex-wrap:wrap;gap:7px;margin-top:9px}
-.choix button{flex:1 1 44%;min-width:130px;min-height:42px;background:var(--bone);border:0;
-              border-radius:10px;font:inherit;font-size:12.5px;color:var(--charcoal-soft);
-              cursor:pointer;box-shadow:inset 0 0 0 1px var(--line)}
-.choix button[aria-selected="true"]{box-shadow:inset 0 0 0 1.5px var(--or);
-              background:var(--paper);color:var(--charcoal)}
-.sansPreuve{margin-top:10px;font-size:12.5px;line-height:1.6;color:var(--alert)}
-
 .canal{display:flex;gap:9px;margin-top:10px}
 .canal button{flex:1;min-height:46px;background:none;border:0;border-radius:999px;
               font:inherit;font-size:14px;color:var(--charcoal);cursor:pointer;
@@ -169,7 +187,12 @@ h1{margin:10px 0 0;font-family:Georgia,serif;font-weight:400;font-size:30px;
   <h1>Sur la facture</h1>
   <p class="chapo">Votre écran, tel qu'il est. <b>Ce qui s'ajoute entre dans un bloc à part</b>, et l'envoi ne change pas d'un geste.</p>
 
-  <div class="ecran">
+  <div class="formes" role="tablist">
+    <button type="button" role="tab" aria-selected="true" data-forme="ecran">Sur un écran à part</button>
+    <button type="button" role="tab" aria-selected="false" data-forme="deroule">Déroulé sous le bouton</button>
+  </div>
+
+  <div class="ecran" id="vueFacture">
     <div class="plage">
       <div class="entete">F2026-000001 — Mme Grospiron</div>
       <div class="echeance">À régler avant le <span class="jour">28 sept. 2026</span></div>
@@ -184,16 +207,6 @@ h1{margin:10px 0 0;font-family:Georgia,serif;font-weight:400;font-size:30px;
     <div class="plage" id="plageTs" hidden>
       <p class="cap ts">Travaux supplémentaires</p>
       <div id="lignesTs"></div>
-      <div class="preuve">
-        <p class="q">Le client les a acceptés</p>
-        <div class="choix">
-          <button type="button" data-preuve="sms" aria-selected="false">Par SMS</button>
-          <button type="button" data-preuve="mail" aria-selected="false">Par e-mail</button>
-          <button type="button" data-preuve="signe" aria-selected="false">Signé sur place</button>
-          <button type="button" data-preuve="rien" aria-selected="false">Rien d'écrit</button>
-        </div>
-        <p class="sansPreuve" id="sansPreuve" hidden>Sans écrit, il peut refuser de les payer.</p>
-      </div>
     </div>
 
     <div class="plage">
@@ -212,16 +225,7 @@ h1{margin:10px 0 0;font-family:Georgia,serif;font-weight:400;font-size:30px;
 
     <p class="question">Rien n'a changé depuis le devis ?</p>
     <button class="ajouter" type="button" id="ouvrir">Ajouter des travaux supplémentaires</button>
-
-    <div class="plage saisie" id="saisie" hidden>
-      <input id="nNom" type="text" placeholder="Ce qui a été fait en plus">
-      <div class="duo">
-        <input id="nQte" type="text" inputmode="decimal" placeholder="Quantité et unité" value="1 forfait">
-        <input id="nPu" type="text" inputmode="decimal" placeholder="Prix unitaire €">
-      </div>
-      <div class="suggestions" id="suggestions"></div>
-      <button class="valider" type="button" id="valider">Ajouter à la facture</button>
-    </div>
+    <div id="placeDeroulee"></div>
 
     <div class="plage" id="apercu" hidden>
       <p class="cap">Ce que reçoit Mme Grospiron</p>
@@ -237,6 +241,46 @@ h1{margin:10px 0 0;font-family:Georgia,serif;font-weight:400;font-size:30px;
       <p class="au">Au 0679984514</p>
       <button class="envoyer" type="button">Envoyer la facture</button>
     </div>
+  </div>
+
+  <div class="ecran" id="vueModif" hidden>
+    <div class="plage">
+      <button class="retour" type="button" id="revenir">‹</button>
+      <p class="titreModif">Modifier la facture</p>
+    </div>
+
+    <div class="plage">
+      <p class="cap">Reprise du devis</p>
+      <div class="l ferme"><span class="quoi">Tonte du gazon et entretien des espaces verts (600 m²)</span><span class="mt">350,00 €</span></div>
+      <div class="l ferme"><span class="quoi">Haie de laurier (50 ml)</span><span class="mt">150,00 €</span></div>
+    </div>
+
+    <div class="plage" id="plageTsModif" hidden>
+      <p class="cap ts">Travaux supplémentaires</p>
+      <div id="lignesTsModif"></div>
+    </div>
+
+    <div id="placeEcran"></div>
+
+    <div class="plage">
+      <div class="tot"><span>Total HT</span><span id="htModif">500,00 €</span></div>
+      <div class="tot"><span>TVA 20 %</span><span id="tvaModif">100,00 €</span></div>
+      <div class="sep"></div>
+      <div class="ttc"><span class="cap">Total TTC</span><span class="chiffre" id="ttcModif">600,00 €</span></div>
+      <button class="envoyer" type="button" id="validerFacture">Valider la facture</button>
+    </div>
+  </div>
+
+  <!-- Un SEUL bloc de saisie, déplacé d'une forme à l'autre : deux copies
+       finiraient par diverger, et c'est la règle du dépôt (CLAUDE.md §3). -->
+  <div class="plage saisie" id="saisie" hidden>
+    <input id="nNom" type="text" placeholder="Ce qui a été fait en plus">
+    <div class="duo">
+      <input id="nQte" type="text" inputmode="decimal" placeholder="Quantité et unité" value="1 forfait">
+      <input id="nPu" type="text" inputmode="decimal" placeholder="Prix unitaire €">
+    </div>
+    <div class="suggestions" id="suggestions"></div>
+    <button class="valider" type="button" id="valider">Ajouter</button>
   </div>
 
   <div class="note"><span class="t">Est-ce légal ? oui</span>
@@ -283,12 +327,48 @@ const $ = s => document.querySelector(s);
 const devisHt = DEVIS.reduce((s,l) => s + l.mt, 0);
 
 let ts = [];
-let preuve = null;
+let forme = 'ecran';
 
-/* ── Le bloc des travaux en plus ──────────────────────────────────────────── */
-function dessinerTs(){
-  $('#plageTs').hidden = ts.length === 0;
-  const hote = $('#lignesTs');
+/* ── Les deux formes ──────────────────────────────────────────────────────
+   Le bloc de saisie est UNIQUE : il déménage sous le bouton, ou dans l'écran
+   de modification. Deux formulaires jumeaux auraient divergé au premier
+   changement de libellé. */
+document.querySelectorAll('[data-forme]').forEach(b => b.addEventListener('click', () => {
+  document.querySelectorAll('[data-forme]').forEach(x => x.setAttribute('aria-selected', x === b));
+  forme = b.dataset.forme;
+  fermerSaisie();
+  montrerFacture();
+}));
+
+function montrerFacture(){
+  $('#vueFacture').hidden = false;
+  $('#vueModif').hidden = true;
+  window.scrollTo({ top:0, behavior:'smooth' });
+}
+function montrerModif(){
+  $('#vueFacture').hidden = true;
+  $('#vueModif').hidden = false;
+  window.scrollTo({ top:0, behavior:'smooth' });
+}
+function fermerSaisie(){ $('#saisie').hidden = true; }
+
+$('#ouvrir').addEventListener('click', () => {
+  if (forme === 'ecran'){
+    $('#placeEcran').appendChild($('#saisie'));
+    $('#saisie').hidden = false;
+    montrerModif();
+  } else {
+    $('#placeDeroulee').appendChild($('#saisie'));
+    $('#saisie').hidden = !$('#saisie').hidden;
+  }
+  if (!$('#saisie').hidden) $('#nNom').focus();
+});
+
+$('#revenir').addEventListener('click', montrerFacture);
+$('#validerFacture').addEventListener('click', montrerFacture);
+
+/* ── Les lignes ajoutées, rendues aux deux endroits ───────────────────────── */
+function rendreLignes(hote){
   hote.innerHTML = '';
   ts.forEach((l,i) => {
     const d = document.createElement('div');
@@ -296,30 +376,32 @@ function dessinerTs(){
     d.innerHTML = '<span class="quoi">' + l.nom + '<small>' + l.qte + ' × ' + euros(l.pu) + '</small></span>' +
                   '<span class="mt">' + euros(l.mt) + '</span>' +
                   '<button class="x" type="button" aria-label="Retirer">×</button>';
-    d.querySelector('.x').addEventListener('click', () => { ts.splice(i,1); dessinerTs(); });
+    d.querySelector('.x').addEventListener('click', () => { ts.splice(i,1); dessiner(); });
     hote.appendChild(d);
   });
-  majTotaux();
-  dessinerPapier();
 }
 
-function majTotaux(){
+function dessiner(){
+  $('#plageTs').hidden = ts.length === 0;
+  $('#plageTsModif').hidden = ts.length === 0;
+  rendreLignes($('#lignesTs'));
+  rendreLignes($('#lignesTsModif'));
   const ht = devisHt + ts.reduce((s,l) => s + l.mt, 0);
-  $('#ht').textContent  = euros(ht);
-  $('#tva').textContent = euros(ht * TAUX);
-  $('#ttc').textContent = euros(ht * (1 + TAUX));
-  $('#sansPreuve').hidden = !(ts.length > 0 && preuve === 'rien');
+  $('#ht').textContent  = $('#htModif').textContent  = euros(ht);
+  $('#tva').textContent = $('#tvaModif').textContent = euros(ht * TAUX);
+  $('#ttc').textContent = $('#ttcModif').textContent = euros(ht * (1 + TAUX));
+  dessinerPapier(ht);
 }
 
 /* ── L'aperçu du papier ───────────────────────────────────────────────────── */
-function dessinerPapier(){
-  const ht = devisHt + ts.reduce((s,l) => s + l.mt, 0);
+function dessinerPapier(ht){
   let h = '<div class="tete"><span class="num">F2026-000001</span>' +
           '<span class="jour">Mme Grospiron</span></div>' +
           '<h4>Travaux du devis</h4>';
   DEVIS.forEach(l => h += '<div class="pl"><span>' + l.quoi + '</span><span>' + euros(l.mt) + '</span></div>');
   if (ts.length){
-    h += '<h4>Travaux supplémentaires' + (preuve && preuve !== 'rien' ? ', acceptés ' + motPreuve(preuve) : '') + '</h4>';
+    /* Le titre ne porte que le nom du bloc — sa correction du 1ᵉʳ septembre. */
+    h += '<h4>Travaux supplémentaires</h4>';
     ts.forEach(l => h += '<div class="pl"><span>' + l.nom + ' · ' + l.qte + ' × ' + euros(l.pu) +
                          '</span><span>' + euros(l.mt) + '</span></div>');
   }
@@ -330,17 +412,7 @@ function dessinerPapier(){
   $('#papier').innerHTML = h;
 }
 
-function motPreuve(p){
-  return p === 'sms' ? 'par SMS' : p === 'mail' ? 'par courriel' : 'et signés sur place';
-}
-
 /* ── La saisie ────────────────────────────────────────────────────────────── */
-$('#ouvrir').addEventListener('click', () => {
-  const s = $('#saisie');
-  s.hidden = !s.hidden;
-  if (!s.hidden) $('#nNom').focus();
-});
-
 function dessinerRaccourcis(){
   RACCOURCIS.forEach(r => {
     const b = document.createElement('button');
@@ -370,17 +442,14 @@ $('#valider').addEventListener('click', () => {
   if (!nom || pu === null) return;
   ts.push({ nom, qte, pu, mt: (combien === null ? 1 : combien) * pu });
   $('#nNom').value = ''; $('#nQte').value = '1 forfait'; $('#nPu').value = '';
-  $('#saisie').hidden = true;
   majValider();
-  dessinerTs();
+  dessiner();
+  /* Sur l'écran à part, la saisie reste ouverte : on ajoute souvent deux
+     lignes de suite, et rouvrir le formulaire à chaque fois serait un geste
+     pour rien. Déroulée sous le bouton, elle se referme — sinon elle pousse
+     le total hors de l'écran, ce qu'il a lui-même relevé. */
+  if (forme !== 'ecran') fermerSaisie();
 });
-
-document.querySelectorAll('[data-preuve]').forEach(b => b.addEventListener('click', () => {
-  document.querySelectorAll('[data-preuve]').forEach(x => x.setAttribute('aria-selected', x === b));
-  preuve = b.dataset.preuve;
-  majTotaux();
-  dessinerPapier();
-}));
 
 document.querySelectorAll('[data-canal]').forEach(b => b.addEventListener('click', () => {
   document.querySelectorAll('[data-canal]').forEach(x => x.setAttribute('aria-selected', x === b));
@@ -395,7 +464,7 @@ $('#voirPdf').addEventListener('click', e => {
 
 dessinerRaccourcis();
 majValider();
-dessinerPapier();
+dessiner();
 </script>
 </body>
 </html>

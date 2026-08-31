@@ -283,8 +283,29 @@
 <ul>
 <li><strong>Un bloc séparé</strong>, jamais des lignes fondues dans celles du devis : le client retrouve au centime le prix qu'il avait accepté. Fondu, il lit un total qui ne correspond plus à son devis, et il appelle.</li>
 <li><strong>« Rien n'a changé depuis le devis ? » devient le geste.</strong> La phrase était déjà sur son écran, sans réponse possible.</li>
-<li><strong>Une trace d'accord se demande à l'écran</strong> — SMS, courriel, signé sur place, ou rien. « Rien » ne bloque pas : il avertit, et l'écrit du bon signé (solution C) reste la façon sûre d'y répondre.</li>
+<li><strong>La trace d'accord a été RETIRÉE de l'écran, sur sa demande du 1ᵉʳ septembre à 00 h 56</strong> : <em>« supprime aussi le client les a acceptés par SMS, e-mail, pas besoin de ça »</em>. Elle y était une minute plus tôt (quatre boutons : SMS, courriel, signé sur place, rien d'écrit).</li>
 </ul>
+<p><strong>Ce que cela change, et il faut le savoir avant de coder :</strong> l'écran ne pose plus la question, mais le risque reste entier — un supplément non accepté par écrit peut être refusé (§2). Ce n'est plus la facture qui y répond, c'est le bon signé sur place (solution C), s'il le veut un jour.</p>
+<ul>
+<li><strong>Le titre du bloc ne porte que « Travaux supplémentaires »</strong>, en doré, sur l'écran comme sur le PDF. La mention « acceptés par SMS » qui le suivait est partie avec la trace d'accord.</li>
+</ul>
+<h3 id="sa-question-du-1ᵉʳ-septembre--où-se-remplit-le-formulaire-">Sa question du 1ᵉʳ septembre : où se remplit le formulaire ?</h3>
+<p><em>« Lorsqu'il clique sur ajouter des TS, le mieux c'est que la facture s'ouvre et qu'il la modifie directement, puis une fois validé il revient sur la page de la facture prête à envoyer avec les TS ajoutés. Ou alors on fait un encadré qui se déroule sous le "ajouter des TS" — mais du coup la page ne tiendra plus sur une seule page. »</em></p>
+<p>Les deux formes sont sur la planche, en interrupteur, sur les mêmes chiffres.</p>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th></th>
+</tr></thead><tbody>
+<tr>
+<td><strong>Un écran à part</strong> (proposé par défaut)</td>
+<td>la facture revient entière, d'un coup, une fois validée ; on peut poser deux lignes de suite sans rouvrir le formulaire</td>
+</tr>
+<tr>
+<td><strong>Déroulé sous le bouton</strong></td>
+<td>le total et le bouton d'envoi sont poussés hors de l'écran au moment précis où on les regarde — c'est ce qu'il a lui-même vu</td>
+</tr>
+</tbody></table></div>
+<p><strong>Avis donné : l'écran à part.</strong> Le reste attend son choix.</p>
 <p>La planche : <code>appli/ts-sur-la-facture.html</code>, calquée sur sa facture F2026-000001.</p>
 <hr>
 <p><em>Sources métier :</em> <a href="https://vite-un-avocat.fr/travaux-supplementaires-non-prevus-au-devis/" target="_blank" rel="noopener">Article 1793 et travaux supplémentaires</a> · <a href="https://elige-avocats.com/le-client-est-il-en-droit-de-refuser-de-payer-les-travaux-supplementaires/" target="_blank" rel="noopener">Refus de payer sans avenant</a> · <a href="https://www.why.eu/facturation-travaux-supplementaires/" target="_blank" rel="noopener">Avenant, OS et prix nouveaux</a> · <a href="https://www.habitatpresto.com/pro/conseils/juridique/travaux-supplementaires-sans-avenant-ecrit-refus-paiement" target="_blank" rel="noopener">Travaux sans avenant écrit</a> · <a href="https://www.habitatpresto.com/pro/conseils/administratif-fiscalite/bon-pour-accord" target="_blank" rel="noopener">Le « bon pour accord »</a> · <a href="https://www.courtierentravaux.org/quand-et-comment-faire-un-avenant-au-devis/" target="_blank" rel="noopener">Quand et comment faire un avenant</a></p>

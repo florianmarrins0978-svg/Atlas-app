@@ -28,10 +28,14 @@ regardées, mode nuit compris) :
 | `appli/ts-bon-sur-place.html` | la signature au doigt (C) — le tracé est réel |
 | `appli/ts-avenant.html` | **une facture ou deux**, et les travaux **en moins** (A) |
 | `appli/ts-arret-3.html` | **bloquer ou avertir** quand rien n'est signé (B et D) |
-| `appli/ts-sur-la-facture.html` | **son idée du 31 août au soir**, sur sa vraie facture F2026-000001 |
+| `appli/ts-sur-la-facture.html` | **son idée**, sur sa vraie facture F2026-000001 — et **sa question ouverte** : écran à part ou encadré déroulé |
 
 **Elles ne seront à son adresse qu'une fois sur `main`** : `pages.yml` ne publie
 que sur `main`, et son accord n'a pas encore été demandé.
+
+**Retiré sur sa demande du 1ᵉʳ septembre : la question de l'accord du client
+(SMS, courriel, signé) ne se pose plus à l'écran — « pas besoin de ça ». Le
+risque d'impayé, lui, ne disparaît pas ; il se traite par le bon signé (C).**
 
 **Il a tranché le sens le 31 août au soir : ça se passe SUR la facture, avant
 l'envoi** — la chaîne d'envoi existe déjà. C'est légal en brouillon ; voir §6 du
