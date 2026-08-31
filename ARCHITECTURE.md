@@ -15151,8 +15151,12 @@ Trois suites navigateur appuyaient sur `[data-atlas="retenir-le-jour"]`, et
 deux d'entre elles **refermaient la fiche par un second appui sur la case** —
 ce geste-là retire aujourd'hui la date qu'on vient de poser. Elles visent donc
 la règle et non le widget (`CLAUDE.md` §5 bis) : la case porte-t-elle
-`data-etat="retenu"` ? Un jour trop proche ne l'obtient pas, **et la fiche dit
+`data-etat="retenu"` ? Un jour **passé** ne l'obtient pas, **et la fiche dit
 pourquoi** — une case qui ne s'allume pas sans un mot se lit comme une panne.
+
+*(Ce paragraphe disait « un jour trop proche » jusqu'au 31 août 2026. Le patron
+a retourné cette règle-là ce jour-là : un jour très proche s'obtient désormais,
+avec une remarque. Voir §216.)*
 
 Le contrôle de la planche (`verifier-maquette-choisir-la-date.mjs`) tolérait
 l'absence du bouton (`if (await bouton.count())`) : il serait resté vert sur une
@@ -19021,3 +19025,398 @@ debout pendant qu'il dort — ce banc n'est pas un hébergement. Et si le relais
 perdu le port pour de bon, la remesure le constate mais ne le réenregistre pas :
 `gh` ne sait pas le faire. La fiche donne alors le geste — onglet PORTS, retirer
 puis remettre 3000 — au lieu d'une bascule de visibilité qui ne peut rien.
+
+---
+
+## 216. Un prix posé qui ne débloquait rien, un document qui se contredit, et un lendemain offert puis repris
+
+*Ses deux captures du 31 août 2026, sur le même écran d'envoi.*
+
+### Le premier : « j'ai mis les prix, il ne veut quand même pas »
+
+Dans ses mots : *« j'ai voulu lancer le devis sans mettre de prix pour la tonte,
+il refuse ; je suis revenu en arrière, j'ai mis les prix pour chaque ligne, mais
+il ne veut quand même pas que j'envoie mon devis »*. Sa capture montrait
+2 280,00 € de total, plus une seule ligne marquée « à chiffrer » — et, sous le
+bouton, le refus nommant deux lignes qu'il venait de chiffrer.
+
+**Il n'avait aucune sortie.** Aucun geste, sur aucun écran, ne pouvait rouvrir
+l'envoi ; et le refus le renvoyait vers l'écran Prix, où tout paraissait normal.
+
+Le drapeau `a_chiffrer` (migration 0070) s'éteint dans `modifierLignePrix`. Il
+lisait `data.montant` — **l'entrée**. Or deux écrans écrivent là, et un seul
+envoie un montant :
+
+| Écran | Ce qu'il poste | Le drapeau |
+|---|---|---|
+| Prix | `{ montant }` | s'éteignait |
+| Devis complet | `{ libelle, quantite, prixUnitaire }` | **restait levé** |
+
+Sur le second, le montant est **calculé** quinze lignes plus bas (quantité ×
+prix unitaire). Le total du devis devenait juste, l'étiquette « à chiffrer »
+disparaissait de l'écran — elle ne s'affiche qu'à montant nul —, et rien ne
+trahissait le drapeau resté en base. La photographie du devis le recopiait à la
+régénération suivante, et l'envoi refusait.
+
+**Trois choses cachaient ce défaut, et c'est ce qui le rend intéressant :**
+
+1. l'écran **paraissait juste** — le total, les lignes, l'absence d'étiquette ;
+2. le client posait `aChiffrer: false` dans son état local, avec un commentaire
+   affirmant que le serveur en faisait autant. Il ne le faisait pas ;
+3. le seul contrôle existant passait par l'**autre** chemin d'écriture.
+
+La correction lit `patch.montant` — le **résultat**, après calcul. Et
+l'extinction reste à sens unique : un montant qui retombe à zéro ne relève pas
+le drapeau, sans quoi une remise gratuite délibérée bloquerait l'envoi.
+
+**Au passage, la règle était écrite deux fois** (`CLAUDE.md` §3) : dans
+`peutPreparerDevis` pour l'écran, et réécrite dans `envoyerDevis` pour le
+serveur. Elles avaient divergé, et sa capture le montre : « 2 lignes attendent
+**son** prix […] Posez-**le** sur l'écran Prix » — le pluriel traité sur le verbe
+et nulle part ailleurs. Une seule fonction, `lignesEnAttenteDePrix`, écrit
+désormais la phrase pour les deux.
+
+### Le troisième, trouvé sur sa capture suivante : un document qui se contredit
+
+Son devis brouillon en PDF portait « à chiffrer » en face du dessouchage et de
+la tonte, un seul montant visible — **560,00 €** — et un **Total HT de
+2 280,00 €**. Le total comptait 1 720 € que le tableau refusait de montrer.
+
+**C'est le plus grave des trois, et pour une raison de nature :**
+
+| | |
+|---|---|
+| un devis **bloqué** | se voit, et n'atteint personne |
+| un devis **qui se contredit** | part chez le client, qui additionne, n'y arrive pas, et cesse de croire le reste |
+
+Le rendu lisait le drapeau **seul** — son commentaire affirmait « ni prix
+unitaire, ni montant : il n'y en a pas », et c'était faux dès qu'un prix avait
+été posé sur l'écran du devis. Le total, lui, se calcule sur `montant` : les
+deux ne pouvaient qu'être d'accord tant que le drapeau ne survivait pas à un
+prix.
+
+**L'invariant, désormais partagé** (`ligneAttendSonPrix`) : un montant posé
+répond à la question, quel que soit l'état du drapeau ; « à chiffrer » est
+réservé aux lignes qui ne portent réellement rien. **Ce qui est imprimé fait
+donc toujours le total imprimé.**
+
+**Pourquoi c'est sûr, et ce n'est pas une supposition** — c'est la question qui
+tranche, parce qu'un prix deviné ne doit jamais passer (`CLAUDE.md` §4) : les
+deux seuls chemins qui lèvent le drapeau (`devis-depuis-dictee.ts`,
+`appliquer-proposition.ts`) écrivent `montant: "0"` avec lui. Un montant non nul
+sur une ligne marquée ne peut donc venir que d'une saisie du patron.
+
+**Et la règle était déjà écrite, une fois sur trois.** L'écran du devis complet
+l'appliquait (`l.aChiffrer && montantDeLaLigne(l) <= 0`) ; le PDF et le contrôle
+d'envoi lisaient le drapeau seul. C'est le §3 dans son cas le plus coûteux :
+l'écran avait raison, et les deux autres se contredisaient sur le même document.
+
+**Effet de bord voulu :** les devis déjà bloqués dans sa base se rouvrent sans
+qu'il ait à retaper le moindre prix — le montant y est, il répond.
+
+**Le contrôle ne compare pas des chaînes.** Le séparateur de milliers est une
+espace insécable étroite, invisible dans un fichier source ; un contrôle qui
+rougirait sur ce caractère accuserait le mauvais coupable. Les montants sont
+relus en nombres, et la propriété éprouvée est celle qui compte : ce que le
+tableau montre fait le total qu'il affiche.
+
+### Le second : « si l'utilisateur veut choisir le 1ᵉʳ septembre il doit pouvoir ! »
+
+Sa capture montrait le 1ᵉʳ septembre encadré, et sous le calendrier : « Ce jour
+est trop proche. Le premier possible est le mercredi 2 septembre. » Le
+calendrier lui montrait le lendemain, la case s'ouvrait sous son doigt, et le
+verdict la reprenait.
+
+**C'est le même arbitrage qu'il avait déjà rendu le 23 août** pour les journées
+pleines — *« si l'utilisateur juge qu'il peut rajouter un chantier, il doit
+pouvoir le faire quand même ; nous on prévient juste »*. Lui seul sait qu'il a
+une remorque libre demain matin.
+
+Le délai de deux jours n'est donc pas supprimé : il **change de rôle**.
+
+| | |
+|---|---|
+| ce que l'application **suggère** d'elle-même (`fenetreProposition`) | plancher inchangé à **+2** |
+| ce qu'il **choisit** au calendrier (`fenetrePatron`) | dès **aujourd'hui**, avec une remarque |
+| le **passé** | refusé, et ce n'est pas un arbitrage d'artisan |
+
+Suggérer, c'est décider à sa place ; accepter son choix, c'est le laisser
+décider. Confondre les deux fenêtres remettrait l'application à proposer demain
+toute seule — ce que personne n'a demandé, et ce que sa règle du 22 août
+interdit.
+
+**La remarque s'AJOUTE aux autres, elle ne les remplace pas.** Un samedi demain,
+ou une journée déjà pleine demain, doivent dire les deux choses ; le premier jet
+retournait tôt et perdait l'avertissement de journée complète — le plus cher des
+deux.
+
+### La barrière muette : le client n'aurait pas pu accepter
+
+**Rendre le lendemain choisissable au patron ne suffisait pas, et rien ne
+l'aurait signalé.** La revérification côté client se fait contre
+`fenetrePourDates`, dont la bande ordinaire commence après-demain. Une date
+proposée en deçà tombait dessous : son client aurait lu « date indisponible » en
+acceptant la date qu'il venait de recevoir. L'écran du patron disant oui, la
+page du client non, et le devis perdu là.
+
+C'est la symétrie exacte du défaut que la borne haute avait coûté le 8 août — la
+bande s'étirait déjà vers le haut pour une date lointaine, jamais vers le bas,
+parce que le cas ne pouvait pas se produire. `bandesVisibles` descend désormais
+son plancher jusqu'à la date proposée la plus tôt, **et pas plus bas** : ce n'est
+pas une fenêtre élargie, c'est une fenêtre qui contient ce qu'elle transporte.
+
+### Les contrôles, et ce qu'ils ont valu
+
+Les trois nouveaux ont été **vus rouges** contre la version d'avant :
+
+- `test-prix-repo.ts` — le chemin « devis complet » ; l'ancien code y échoue en
+  nommant exactement le défaut, l'autre chemin restant vert ;
+- `test-fenetre-lointaine.ts` — le plancher client ; son balayage de propriété
+  partait de `DELAI_MINIMAL_JOURS`, c'est-à-dire **juste à côté** des seuls jours
+  que la nouvelle règle rend proposables. Il part de zéro ;
+- `test-envois-devis.ts` — le parcours entier d'une date de demain, jusqu'à
+  l'acceptation par le client.
+
+Deux contrôles réclamaient l'ancienne règle et ont changé de camp
+(`CLAUDE.md` §5 bis) : `test-preparation-envoi.ts` et
+`test-date-lointaine-e2e.ts` prouvaient que demain ne partait pas chez le
+client. Ils prouvent maintenant qu'il part **et** que la fiche prévient.
+
+## 217. La connexion tient dans un écran : 1203 px demandés pour 664 disponibles
+
+*31 août 2026 — `ConnexionClient.tsx`, `SectionFaceId.tsx`, `mot-de-passe.ts`.*
+
+**Sa demande, capture à l'appui :** *« Pour la page connexion je veux qu'elle
+tienne sur une seule page et supprime toutes les petites phrases en gris sous
+les boutons, garde que les titres. »* Sa capture montrait l'écran au milieu de
+sa course : le titre du champ de confirmation coupé en haut, « Ailleurs » à un
+écran de là, et quatre lignes grises entre les deux.
+
+L'écran demandait **1203 px** pour une hauteur utile de 664 — presque deux
+écrans. Il en demande **658**.
+
+### D'où viennent les 545 px, mesurés un par un à 390 px de large
+
+| | |
+|---|---|
+| **248** | les gloses grises hors des champs : Face ID (96), « Un téléphone perdu… » (84), la ligne sous « Me déconnecter partout » (43), « Vous resterez connecté… » (25) |
+| **120** | les trois champs — l'œil qui n'impose plus ses 44 px (60), « Au moins 12 caractères. » (23), leurs marges (37) |
+| **96** | `pb-24` sur le contenu : la barre du bas était réservée **deux fois** |
+| **81** | les écarts entre rubriques et autour des boutons, resserrés de 30 à 12 px |
+
+**Les 96 px du haut du tableau sont un DÉFAUT, pas un choix d'aération.**
+`main.atlas-contenu` (`src/app/layout.tsx`) réserve déjà la hauteur de la barre
+pour tous les écrans ; ce `pb-24` la réservait une seconde fois, en plus large.
+C'est exactement le défaut corrigé sur l'export de chantier, revenu ailleurs :
+un vide qui ne porte rien, invisible en relecture, et qui pousse la dernière
+rubrique sous le pli.
+
+**L'œil garde ses 44 px de cible, et n'en impose plus que 24.** Une cible plus
+petite se rate une fois sur trois avec des gants — elle ne bouge donc pas. Ce
+sont des marges négatives (`-my-[10px]`) qui la sortent du calcul de hauteur :
+la rangée se mesure sur son libellé et sa saisie, l'œil déborde par-dessus. 20 px
+gagnés par champ, trois champs, sans qu'un doigt s'en aperçoive.
+
+### Retirer une phrase, ce n'est pas retirer ce qu'elle disait
+
+Deux des lignes supprimées portaient quelque chose. Elles ne sont pas parties
+sans qu'on regarde ce qu'elles tenaient :
+
+| La ligne | Ce qu'elle tenait | Où c'est passé |
+|---|---|---|
+| « Au moins 12 caractères. » | la seule raison lisible d'un bouton éteint | `etatNouveau()` la dit **quand elle mord** : champ vide, rien ; huit caractères, la phrase |
+| la promesse de Face ID | *« votre visage ne quitte jamais votre téléphone »* | nulle part à l'écran — elle survit dans le mode d'emploi (`mode-emploi.ts`, `reglages-face-id`) |
+
+**Le premier cas est la faute qu'on ne voit qu'à l'usage.** Retirer la phrase
+sans rien mettre à la place laissait un écran muet : on tape huit caractères, la
+confirmation répond « les deux sont identiques ✓ », et le bouton reste éteint
+sans qu'aucun mot ne dise pourquoi. La règle vit dans `src/lib/mot-de-passe.ts`,
+avec celle que le serveur applique — jamais recopiée dans l'écran (§3 du
+`CLAUDE.md`).
+
+**Le second se dit, il ne se cache pas.** L'écran ne rassure plus celui qui
+hésite à donner son visage. Les faits n'ont pas changé — `0063_cles_appareil.sql`
+ne porte aucune donnée biométrique — et c'est la base, pas une phrase, que la
+suite interroge. Si le patron veut la promesse ailleurs, elle se remet ailleurs.
+
+### Le contrôle vise la contrainte, pas les mots
+
+`test-face-id-e2e.ts` mesure l'écran **à 390 × 664** — son iPhone quand Safari
+montre ses deux barres. Deux mesures : la page ne doit rien avoir à faire
+défiler, et le dernier geste ne doit pas passer sous les onglets. Une page qui
+mesure moins de 300 px fait échouer le contrôle plutôt que de rendre un vert :
+une mise en page non appliquée rendrait « 0 ≤ 664 », c'est-à-dire rien.
+
+**Et le contrôle qui exigeait la promesse a été RETOURNÉ, pas supprimé.** Il
+réclamait « ne quitte jamais votre téléphone » à l'écran ; il vérifie désormais
+que cette glose **ne revient pas**. C'est la règle du `CLAUDE.md` §5 bis : une
+suite qui réclame ce que le patron a fait retirer rend son écran impossible à
+changer.
+
+**Ce que la mesure ne couvre pas, et qui est écrit dans la suite :** un appareil
+déjà enregistré ajoute sa ligne, soit 56 px. L'écran défile alors de ce qu'il
+faut sur 664 px — mais pas sur son téléphone, dont la hauteur utile mesurée sur
+sa capture est de l'ordre de 770 px.
+## 218. L'or ne change pas d'une apparence à l'autre
+
+**Sa consigne du 31 août 2026 :** *« pour l'apparence, j'aimerais que tout ce
+qui est en doré sur la version originale apparaisse en doré sur les autres
+apparences »*.
+
+Ce n'est pas une demande neuve. Le 27 août, il l'avait déjà posée pour une seule
+charte — *« lorsque je choisis l'apparence Brume, tout ce qui est en doré sur
+Origine le reste aussi sur Brume »* — et l'on avait corrigé le seul endroit qui
+perdait l'or sur Brume, le marqueur d'onglet, sans voir que la règle valait pour
+les six autres. **Une consigne exaucée sur un seul cas n'est pas une consigne
+exaucée.**
+
+### Ce qui changeait, et pourquoi personne ne le voyait
+
+Atlas a **deux** accents, et le partage n'est pas décoratif (`design-tokens.ts`) :
+le vert pin porte ce qu'on **fait**, l'or porte ce qu'on **lit** — l'accueil, les
+libellés d'état, les filets, le sceau, le compteur de la dictée.
+
+La planche du 14 août donnait à chacune des sept chartes son propre second
+accent, et `depuisPlanche` le recopiait tel quel dans `or` :
+
+| Charte | `or` d'avant | `orClair` d'avant |
+|---|---|---|
+| Pierre | `#6f8466` — une sauge | `#8b9d83` — une sauge claire |
+| Beurre | `#8a6a3a` | `#c2a05f` |
+| Moka | `#7c5c46` — une argile | `#b99274` |
+| Prune | `#7a2f52` — un prune | `#d9a2bd` — un rose |
+| Sylve | `#c3b184` | `#3d6b4a` — un vert |
+| Nuit | `#c6a15b` | `#8f7130` |
+| Brume | `#B98B47` (corrigé le 27 août) | `#6f95c4` — un bleu |
+
+Changer d'apparence ne changeait donc pas que le fond : **cela repeignait tout
+ce que l'or porte**, et sur trois chartes l'or n'existait plus du tout.
+
+Aucun contrôle ne l'attrapait, et c'est le point à retenir : les deux suites de
+chartes vérifiaient que **tous les jetons sont présents** et que **tout se lit**.
+Les deux étaient vertes. Un contrôle sur la lisibilité ne dit rien de
+l'identité — c'est une autre question, et il lui fallait sa propre suite
+(`test-chartes.ts`, « l'or est le même sur les huit chartes »).
+
+### Pourquoi l'or peut rester FIXE là où trois autres couleurs doivent bouger
+
+Le §160 a posé l'inverse pour l'alerte, le bordeaux et le vert pâle : leur
+clarté s'accorde au fond, sans quoi elles disparaissent sur Nuit et sur Sylve.
+L'or n'en a pas besoin, et ce n'est pas une intuition — c'est mesuré :
+
+| | l'or sur le fond | l'or sur une plage |
+|---|---|---|
+| Origine — **son écran de tous les jours** | 2,77 | 2,91 |
+| Moka — la plus faible des claires | 2,30 | 2,62 |
+| Sylve | **5,25** | 4,55 |
+| Nuit | **6,14** | 5,55 |
+
+L'or se détache **mieux** sur les deux sombres que sur les cinq claires. Le
+remonter « par précaution » aurait corrigé ce qui n'était pas cassé — et cessé
+d'être le même or, c'est-à-dire manqué la consigne.
+
+### Ce que cela coûte, et qu'il faut dire
+
+Les valeurs de la planche pour ce second accent sont **abandonnées** : elles
+étaient les siennes, choisies au pouce le 14 août devant seize propositions. Sa
+consigne du 31 les remplace ; les deux ne peuvent pas tenir ensemble. Elles
+restent lisibles dans le tableau ci-dessus et dans les planches de
+`docs/maquettes/`, qui racontent le chemin.
+
+Deux phrases de présentation ont dû suivre, sans quoi l'écran des réglages
+décrirait une application disparue : Pierre annonçait *« Aucun or »*, Moka *« une
+argile pour l'accent »*. Une suite le refuse désormais — une charte ne peut plus
+annoncer qu'elle est sans or.
+
+### Où la règle vit
+
+`src/lib/chartes.ts`, `OR_ORIGINE` et `OR_CLAIR_ORIGINE` : deux constantes, que
+`depuisPlanche` pose sur les huit chartes. `depuisPlanche` ne reçoit plus de
+`bronze` ni de `pleinSigne` — un paramètre qui ne sert plus à rien finit par
+resservir à autre chose.
+---
+
+## 219. « Elle est super lente » : `npx` allait chercher un Next au registre quand celui du projet manquait
+
+**Sa plainte du 31 août 2026, à midi**, capture à l'appui : le bandeau
+« Version rapide en construction » en haut de l'écran, et une application qui
+compile chaque page à l'ouverture.
+
+Sa fiche donnait tout, et cette fois elle ne se contredisait plus :
+
+```
+Code SERVI : AUCUNE — la construction a ÉCHOUÉ (10:03:46)
+Serveur    : répond sur le port 3000
+Port 3000  : ouvert — Atlas répond bien à l'adresse publique (vérifié)
+dit:
+▲ Next.js 16.3.3 (Turbopack)          ← le projet épingle 16.3.2
+Error: Could not find the Next.js package (next/package.json)
+Resolved from: /workspaces/Atlas-app/src/app
+```
+
+### Ce que ces trois lignes disent ensemble
+
+`node_modules/next` **manquait** sur son espace. Et `npx next build` ne se
+contente pas d'échouer dans ce cas : **il télécharge la dernière version publiée
+et la lance**. Ce Next-là — 16.3.3, étranger au projet — ne trouve évidemment
+pas le paquet du projet, la construction tombe, le banc reste en mode
+développement, et le veilleur retente la même construction condamnée toutes les
+demi-heures.
+
+**Reproduit ici avant d'être corrigé**, en écartant le paquet à la main :
+
+```
+npm warn exec The following package was not found and will be installed: next@16.3.3
+▲ Next.js 16.3.3 (Turbopack)
+Error: Could not find the Next.js package (next/package.json)
+```
+
+Son message, mot pour mot.
+
+### Et c'est l'explication du « 16.3.3 » du 29 août
+
+`TODO.md` portait depuis deux jours : *« reste inexpliqué : comment ses
+`node_modules` ont dérivé »*. Ils n'ont jamais dérivé. **Ce n'est pas la
+version installée qui a changé, c'est `npx` qui est allé chercher ailleurs ce
+qui manquait chez lui.** Le §205 (cohérence des dépendances) avait donc raison
+sur le symptôme et se trompait de mécanisme ; c'est écrit ici plutôt que corrigé
+en silence, parce qu'une prochaine session lirait le premier récit sans méfiance.
+
+### Les trois verrous posés, et pourquoi trois
+
+| | |
+|---|---|
+| **le binaire du projet, par son chemin** (`node_modules/next/dist/bin/next`) | plus aucun `npx` dans `banc.mjs` : un paquet absent échoue franchement au lieu d'en faire venir un autre |
+| **un paquet ÉPINGLÉ et ABSENT est un défaut, pas une ignorance** | `dependancesIncoherentes` rendait « rien à signaler » sur un `next` introuvable ; il réclame maintenant la réinstallation |
+| **« Could not find the Next.js package » déclenche la réparation** | ce message ne contient ni « Cannot find module » ni « node_modules » : il passait au travers des deux conditions existantes |
+
+### Pourquoi le piège n'a mordu QUE le banc
+
+`scripts/essai.mjs` — la commande qu'on tape à la main — lance Next par
+`npx **--no-install** next dev` depuis longtemps : il ne peut donc rien
+télécharger. `banc.mjs`, lui, appelait `npx` nu. Le garde-fou existait dans ce
+dépôt, à un fichier près, et personne ne l'avait reporté sur celui qui tourne
+tout seul chez le patron.
+
+### Le piège trouvé en le JOUANT, et qui aurait tout gâché
+
+Le premier correctif rendait le banc **pire** : en appelant le binaire du
+projet, un `node_modules/next` absent tue le serveur de développement à la
+seconde — et la mort du serveur **arrête `banc.mjs`** (`surSortie`). La
+réinstallation, qui vivait dans la voie de construction, était donc coupée en
+plein `npm install`.
+
+Cela ne s'est pas vu en relisant : la sortie disait « Réinstallation avant de
+bâtir », puis le processus s'arrêtait sans un mot, code 1. **La réparation est
+maintenant faite AVANT tout lancement.** Vérifié en écartant le paquet et en
+lançant le banc pour de bon :
+
+```
+next ABSENT alors que le projet exige 16.3.2 → npm install → Dépendances remises d'aplomb
+→ serveur de développement → Construction terminée — passage à la version rapide
+→ ▲ Next.js 16.3.2
+```
+
+**Ce qui reste ouvert :** pourquoi `node_modules/next` disparaît de son espace.
+Le correctif répare la conséquence à chaque démarrage ; il n'explique pas la
+cause. Voir `TODO.md`.

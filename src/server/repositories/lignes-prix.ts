@@ -79,12 +79,6 @@ export async function modifierLignePrix(
     // zéro alors que l'écran affichait 750 €. Une ligne dont le total ne
     // correspond pas à son détail ne se rattrape que par un avoir.
     const patch: typeof data = { ...data };
-    // **Poser un prix, c'est répondre à « à chiffrer ».** Sans cela le devis
-    // resterait bloqué après qu'il a fait exactement ce qu'on lui demandait, et
-    // il n'aurait aucun moyen de comprendre pourquoi.
-    if (data.aChiffrer === undefined && data.montant !== undefined && Number(data.montant) > 0) {
-      patch.aChiffrer = false;
-    }
     if (data.montant !== undefined && data.prixUnitaire === undefined && data.quantite === undefined) {
       patch.prixUnitaire = data.montant;
       patch.quantite = "1";
@@ -95,6 +89,45 @@ export async function modifierLignePrix(
         const pu = new Decimal(patch.prixUnitaire ?? avant.prixUnitaire);
         patch.montant = q.times(pu).toFixed(2);
       }
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // **POSER UN PRIX, C'EST RÉPONDRE À « À CHIFFRER » — QUEL QUE SOIT LE
+    // CHAMP PAR LEQUEL ON L'A POSÉ.**
+    //
+    // **Le défaut du 31 août 2026, dans ses mots :** *« je suis revenu en
+    // arrière, j'ai mis les prix pour chaque ligne, mais il ne veut quand même
+    // pas que j'envoie mon devis »*. Et il avait raison de ne rien comprendre :
+    // l'écran affichait 2 280,00 € de total, plus aucune ligne marquée « à
+    // chiffrer », et l'envoi nommait pourtant deux lignes qu'il venait de
+    // chiffrer.
+    //
+    // Cette extinction lisait `data.montant` — l'ENTRÉE. Or il y a deux
+    // chemins d'écriture, et un seul envoie un montant :
+    //
+    // | Écran | Ce qu'il poste | Le drapeau |
+    // |---|---|---|
+    // | Prix | `{ montant }` | s'éteignait |
+    // | Devis complet | `{ libelle, quantite, prixUnitaire }` | **restait levé** |
+    //
+    // Sur le second, le montant est CALCULÉ quinze lignes plus haut
+    // (quantité × prix unitaire) : le total du devis devenait juste, l'étiquette
+    // « à chiffrer » disparaissait de l'écran — elle ne s'affiche qu'à montant
+    // nul —, et rien ne trahissait le drapeau resté en base. La photographie du
+    // devis le recopiait à la régénération suivante (`devis.ts`), et l'envoi
+    // refusait en le renvoyant vers un écran Prix où tout paraissait normal.
+    // **Une boucle sans sortie : aucun geste ne pouvait la rouvrir.**
+    //
+    // On lit donc `patch.montant` — le RÉSULTAT, après calcul —, seul chiffre
+    // qui vaille pour la question « cette ligne est-elle chiffrée ».
+    //
+    // **Et l'extinction reste à sens unique.** Un montant qui retombe à zéro ne
+    // relève pas le drapeau : `aChiffrer` dit « le prix n'a pas été trouvé »,
+    // pas « la ligne vaut zéro ». Le rallumer ferait d'une remise gratuite
+    // délibérée un devis impossible à envoyer.
+    // ═══════════════════════════════════════════════════════════════════════
+    if (data.aChiffrer === undefined && patch.montant !== undefined && Number(patch.montant) > 0) {
+      patch.aChiffrer = false;
     }
     const [row] = await tx
       .update(lignesPrix)
