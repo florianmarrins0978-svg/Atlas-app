@@ -1,0 +1,212 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas — Atlas — Le diamètre n'était pas perdu : il n'était jamais créé</title>
+<style>
+  :root{
+    --ground:#f5f3ee; --surface:#faf9f5; --raised:#ece9e1;
+    --ink:#1c1c1a; --ink-soft:#4a4a44; --muted:#8a8578;
+    --accent:#2f3b2f; --alert:#b5562a; --line:rgba(28,28,26,0.13);
+    --serif:Georgia,'Times New Roman',serif;
+    --sans:system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --ground:#161815; --surface:#1d201c; --raised:#252924;
+      --ink:#eae7df; --ink-soft:#c2bdb1; --muted:#948f83;
+      --accent:#9fbd82; --alert:#e0885a; --line:rgba(234,231,223,0.17);
+    }
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--sans);
+    line-height:1.65;}
+  main{max-width:44rem;margin:0 auto;padding:2.5rem 1.2rem 5rem;}
+  h1,h2,h3,h4{font-family:var(--serif);font-weight:600;line-height:1.2;
+    text-wrap:balance;margin:2rem 0 0.6rem;scroll-margin-top:1rem;}
+  h1{font-size:2rem;margin-top:0;}
+  h2{font-size:1.5rem;padding-top:1.2rem;border-top:1px solid var(--line);}
+  h3{font-size:1.12rem;}
+  h4{font-size:1rem;}
+  p{margin:0 0 0.9rem;}
+  a{color:var(--accent);text-underline-offset:3px;}
+  a:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:3px;}
+  ul,ol{margin:0 0 1rem;padding-left:1.3rem;}
+  li{margin-bottom:0.4rem;}
+  li::marker{color:var(--muted);}
+  /* Le sommaire : des cibles larges, confortables au doigt sur téléphone. */
+  ol li a{display:inline-block;padding:0.15rem 0;}
+  blockquote{margin:1rem 0;padding:0.85rem 1.05rem;background:var(--raised);
+    border-left:3px solid var(--accent);border-radius:0 10px 10px 0;color:var(--ink-soft);}
+  code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:0.87em;
+    background:var(--raised);padding:0.1rem 0.35rem;border-radius:5px;}
+  hr{border:0;border-top:1px solid var(--line);margin:2rem 0;}
+  .tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px;
+    background:var(--surface);margin:0 0 1.2rem;}
+  table{border-collapse:collapse;width:100%;font-size:0.92rem;min-width:22rem;}
+  th,td{text-align:left;padding:0.55rem 0.8rem;border-bottom:1px solid var(--line);
+    vertical-align:top;}
+  th{font-size:0.72rem;letter-spacing:0.08em;text-transform:uppercase;
+    color:var(--muted);white-space:nowrap;}
+  tr:last-child td{border-bottom:none;}
+  .retour{display:inline-block;font-size:0.76rem;color:var(--muted);
+    text-decoration:none;margin:-0.3rem 0 1rem;}
+  .retour:hover{color:var(--accent);text-decoration:underline;}
+</style>
+</head>
+<body>
+<main>
+<h1 id="atlas--le-diamètre-nétait-pas-perdu--il-nétait-jamais-créé">Atlas — Le diamètre n'était pas perdu : il n'était jamais créé</h1>
+<p><strong>30 août 2026.</strong> Un test téléphone réel, deux défauts d'affichage, et un défaut de chaîne qui rendait toutes les suites vertes menteuses.</p>
+<hr>
+<h2 id="1-ce-quil-a-constaté-en-vrai">1. Ce qu'il a constaté, en vrai</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p>Il redicte son chantier dans l'application :</p>
+<blockquote>« Taille de 800 mètres linéaires de haie de laurier, démontage d'un érable de <strong>40 centimètres au pied</strong> et 12 mètres de haut avec rétention, dessouchage de <strong>deux souches de 60</strong>, évacuation des déchets et tonte de 1 200 mètres carrés de pelouse, prévoir deux hommes pendant une journée. »</blockquote>
+<p>Ce qui marche désormais : la méthode « en rétention » n'est plus redemandée.</p>
+<p>Ce qui ne marche pas : Atlas demande <strong>« Quel diamètre fait le tronc ? »</strong> pour l'érable, et <strong>« Quel diamètre fait la souche ? »</strong> pour les souches. Il vient de prononcer les deux.</p>
+<p>Or les conventions métier — « souche de 60 », « 40 au pied », l'unité facultative — étaient codées la veille, avec dix-neuf cas de contrôle, <strong>tous verts</strong>.</p>
+<p>Sa consigne : <em>« Cherche pourquoi les tests passent alors que le parcours téléphone réel ne reçoit pas ces diamètres. Ne corrige pas seulement le symptôme de l'écran. »</em></p>
+<hr>
+<h2 id="2-le-résultat-de-la-remontée-et-il-nest-pas-celui-quon-cherchait">2. Le résultat de la remontée, et il n'est pas celui qu'on cherchait</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p>On cherchait <strong>où la valeur se perd</strong>. Elle ne se perd nulle part.</p>
+<div class="tablewrap"><table><thead><tr>
+<th>étape</th>
+<th>ce qu'elle fait de la mesure</th>
+</tr></thead><tbody>
+<tr>
+<td>transcription</td>
+<td>« souches de 60 » est bien là</td>
+</tr>
+<tr>
+<td><strong>JSON du modèle</strong></td>
+<td><strong>aucun champ pour une mesure</strong> — le contrat n'en a pas</td>
+</tr>
+<tr>
+<td><code>libelleAvecQuantite</code></td>
+<td>ne garde que la quantité : « Dessouchage (2 souche) »</td>
+</tr>
+<tr>
+<td><code>ajouterPrestation</code></td>
+<td>écrit le libellé et les colonnes ; la <code>description</code> <strong>n'est pas persistée</strong></td>
+</tr>
+<tr>
+<td>colonnes structurées</td>
+<td><code>caracteristiques</code> restait <strong>toujours NULL</strong></td>
+</tr>
+<tr>
+<td><code>questionsAvantChiffrage</code></td>
+<td>ne trouve ni colonne ni texte — donc <strong>elle demande</strong></td>
+</tr>
+</tbody></table></div>
+<p>Le contrat d'extraction, verbatim, dans <code>src/server/ai/schemas/extraction.ts</code> :</p>
+<p>``<code>ts export const LigneExtraiteSchema = z.object({ libelle: z.string().min(1), description: z.string().nullable().default(null), quantite: z.string().nullable().default(null), unite: z.string().nullable().default(null), nature: z.string().nullable().optional(), espece: z.string().nullable().optional(), aConfirmer: z.boolean().default(false), }); </code>``</p>
+<p>Aucun champ de mesure. Et le commentaire qui vivait au-dessus de la fonction de structuration disait la chose en toutes lettres, depuis des jours :</p>
+<p>``<code> <em> <strong>Ce que cette fonction ne remplit toujours PAS</strong> : ni </code>methode<code>, ni </em> </code>caracteristiques<code>. Elles arrivent d'ailleurs, et sûrement — des réponses du * patron à l'arrêt d'avant-chiffrage (</code>precisions_chantier<code>). </code>``</p>
+<h3 id="la-boucle-qui-se-referme-sur-elle-même">La boucle qui se referme sur elle-même</h3>
+<p>Le <strong>seul</strong> écrivain de <code>caracteristiques</code> était <code>structureDepuisPrecisions</code>, c'est-à-dire <strong>les réponses du patron aux questions dont il se plaint</strong>.</p>
+<p>Autrement dit : la seule façon d'avoir le diamètre en base était qu'il le saisisse — donc qu'on le lui demande. La question ne pouvait pas disparaître, quel que soit le soin mis dans les expressions régulières.</p>
+<p><strong>C'est le verdict de ce dossier, et il corrige ce que le dossier 16 laissait croire.</strong> Celui-ci annonçait la convention « une souche de 60 » comme acquise. Elle l'était — dans <code>mesures-arbre.ts</code>, jamais dans le parcours réel. Une convention qu'aucun appelant ne consulte n'existe pas.</p>
+<hr>
+<h2 id="3-pourquoi-cinquante-suites-vertes-ne-voyaient-rien">3. Pourquoi cinquante suites vertes ne voyaient rien</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p>Chaque maillon était couvert, et bien couvert :</p>
+<ul>
+<li><code>test-mesures-arbre</code> : « souches de 60 » → 60. ✅</li>
+<li><code>test-questions-chiffrage</code> : <code>caracteristiques.diametreCm = 60</code> → aucune question. ✅</li>
+</ul>
+<p><strong>Le défaut vivait exactement entre les deux</strong>, là où personne ne regardait. Les deux suites auraient pu rester vertes pour toujours.</p>
+<p>C'est la leçon qui compte, plus que le correctif : <strong>on peut avoir une batterie verte sur une chaîne cassée</strong>, dès lors que chaque suite part de données qu'elle fabrique elle-même plutôt que de ce que l'étape précédente produit vraiment.</p>
+<hr>
+<h2 id="4-la-correction">4. La correction</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<h3 id="41-la-mesure-se-lit-là-où-elle-existe-encore">4.1 La mesure se lit là où elle existe encore</h3>
+<p>``<code>ts function mesuresDeLaDictee(ligne: LigneExtraite): Record&lt;string, number&gt; | null { // <strong>Le libellé ET la description.</strong> Le modèle range volontiers la mesure // dans l'une ou dans l'autre, et rien dans le contrat ne l'oblige à choisir. const texte = [ligne.libelle, ligne.description ?? ""].join(" "); const mesures: Record&lt;string, number&gt; = {}; const diametre = diametreLu(texte); if (diametre !== null) mesures.diametreCm = diametre; const hauteur = hauteurLue(texte); if (hauteur !== null) mesures.hauteurM = hauteur; return Object.keys(mesures).length &gt; 0 ? mesures : null; } </code>``</p>
+<p><strong>Pourquoi à cet endroit précis :</strong> <code>ligne.description</code> vit dans le JSON du modèle et <strong>meurt à l'insertion</strong> — <code>ajouterPrestation</code> n'écrit que le libellé et les colonnes. La lire plus tard, dans <code>questions-chiffrage.ts</code>, serait la chercher là où elle n'est plus. Et corriger l'écran aurait laissé le trou intact — <strong>avec le prix</strong>, puisque le chiffrage lit la même colonne.</p>
+<h3 id="42-le-contrat-demande-au-modèle-de-conserver-la-dimension">4.2 Le contrat demande au modèle de conserver la dimension</h3>
+<p>Sans cette règle, le modèle n'a aucune raison de garder « de 60 » : rien ne le lui demandait, et ce que le code ne reçoit pas, il ne peut pas le lire.</p>
+<p>```</p>
+<ul>
+<li><strong>Les DIMENSIONS d'un arbre, d'une souche ou d'une haie ne se perdent jamais.</strong> Diamètre, diamètre au pied, hauteur, longueur : recopie-les dans "description", avec leur nombre et le mot de l'artisan. Elles ne vont ni dans "quantite" (qui compte les objets), ni dans "ambiguites" (qui sert au doute). « dessouchage de deux souches de 60 » -&gt; "libelle": "Dessouchage", "description": "souches de 60", "quantite": "2", "unite": "souche" Recopie le nombre même si l'artisan n'a pas prononcé l'unité.</li>
+</ul>
+<p>```</p>
+<h3 id="43-fusionner-mesure-par-mesure-jamais-en-bloc">4.3 Fusionner mesure par mesure, jamais en bloc</h3>
+<p>Poser l'objet entier effacerait une hauteur qu'il a saisie lui-même le jour où la dictée ne porte qu'un diamètre — et l'écrasement ne se verrait nulle part, la colonne étant un seul JSON.</p>
+<hr>
+<h2 id="5-ce-que-le-contrôle-de-bout-en-bout-a-immédiatement-attrapé">5. Ce que le contrôle de bout en bout a immédiatement attrapé</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><code>scripts/test-son-cas-reel.ts</code> part de ce que le <strong>modèle</strong> rend et va jusqu'à ce que le patron <strong>lit</strong>. Dès sa première exécution, il a fait rougir une régression que le correctif venait d'introduire :</p>
+<p>``` ✗ les trois autres libellés qu'il a validés ne bougent PAS + actual   "Démontage d'un érable de arbre de 40 cm"</p>
+<ul>
+<li>expected "Démontage d'un érable"</li>
+</ul>
+<p>```</p>
+<p>La cause : <code>estUnGeste(texte)</code> répond « oui » dès qu'un geste apparaît <strong>quelque part</strong> dans le texte — ce n'est pas « ce texte EST un geste ». « Démontage d'un érable » en contient un. La borne est devenue : <strong>un seul mot</strong>.</p>
+<p><strong>Aucune suite unitaire ne l'aurait vu</strong>, et c'est exactement le défaut que ce lot corrige, reproduit à l'intérieur du correctif lui-même. Sur une des trois lignes qu'il venait justement de valider.</p>
+<hr>
+<h2 id="6-les-deux-points-daffichage">6. Les deux points d'affichage</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th>il voyait</th>
+<th>il voit</th>
+</tr></thead><tbody>
+<tr>
+<td><code>Dessouchage</code></td>
+<td><code>Dessouchage de souches de 60 cm</code></td>
+</tr>
+<tr>
+<td>en-tête de colonne <code>TOTAL HT</code></td>
+<td><code>MONTANT HT</code> (le total du bas reste <code>Total HT</code>)</td>
+</tr>
+</tbody></table></div>
+<p>Le compte reste dans sa colonne — Qté 2, Unité souche —, jamais dans le libellé : c'est sa règle.</p>
+<h3 id="le-relevé-au-pixel-refait-sur-preuve-mesurée-et-non-à-lœil">Le relevé au pixel, refait sur preuve mesurée et non à l'œil</h3>
+<p>Le PDF porte une empreinte figée. La règle du fichier veut qu'on ne la relève qu'<strong>après avoir regardé le document</strong>. Or le visualiseur de cet environnement rend une page vide, et il n'y a ni <code>pdftoppm</code> ni <code>pdfjs</code> : une capture aurait mesuré <strong>zéro</strong>, ce qui est pire qu'absent.</p>
+<p>La trace des deux documents a donc été relevée <strong>des deux côtés</strong> — sur <code>origin/main</code> dans un arbre de travail séparé, et après correction — puis comparée ligne à ligne. Sur <strong>917 lignes</strong>, deux diffèrent :</p>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th>avant</th>
+<th>après</th>
+</tr></thead><tbody>
+<tr>
+<td>texte</td>
+<td><code>TOTAL HT</code></td>
+<td><code>MONTANT HT</code></td>
+</tr>
+<tr>
+<td>abscisse</td>
+<td>523,55</td>
+<td>509,10</td>
+</tr>
+</tbody></table></div>
+<p>L'étiquette est calée à droite : un mot plus long commence plus à gauche, il ne pousse rien. Le seul risque — cogner la colonne voisine — a été mesuré : « PRIX UNITAIRE HT » finit à 424,28, « MONTANT HT » commence à 509,10, soit <strong>85 points d'écart</strong>.</p>
+<hr>
+<h2 id="7-les-mesures">7. Les mesures</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p>``<code> scripts/test-son-cas-reel.ts        15 / 15   (sa dictée, de bout en bout) suites base                        289 / 289 suites navigateur, groupe A         15 / 15 npx tsc --noEmit                      0 erreur npm run lint                          0 error (16 warnings préexistants) npm run verifier:memoire              ✅ </code>``</p>
+<p>Sur sa dictée exacte, jouée d'un bout à l'autre :</p>
+<p>``<code> l'érable      « 40 centimètres au pied »  → diametreCm 40, hauteurM 12  → 0 question les souches   « souches de 60 »            → diametreCm 60              → 0 question la haie, l'évacuation, la tonte            → aucune mesure inventée un dessouchage SANS mesure                 → la question revient (le garde-fou tient) le devis      → « Dessouchage de souches de 60 cm », sans le « deux » </code>``</p>
+<p><strong>Ce qui n'est PAS prouvé ici, et il faut le dire :</strong> ce que le modèle répond vraiment. Cet environnement n'a aucune clé d'IA. Les sorties de modèle du contrôle sont des <strong>hypothèses</strong> — la plus dure d'abord (tout rangé en colonnes, un seul mot de libellé), puis la variante bavarde. Le contrôle réel reste <code>npm run verifier:chaine-dictee</code>, sur son espace.</p>
+<hr>
+<h2 id="8-questions-pour-toi-chatgpt">8. Questions pour toi, ChatGPT</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<ol>
+<li><strong>Contredis-moi sur le diagnostic.</strong> J'affirme que <code>diametreCm</code> n'était jamais créé, en m'appuyant sur le schéma d'extraction, sur le fait que <code>ajouterPrestation</code> n'écrit pas <code>description</code>, et sur un commentaire du dépôt qui le dit. Mais je n'ai pas pu appeler le modèle. Est-ce que je n'aurais pas dû exiger une trace réelle du JSON avant de conclure — et si oui, qu'est-ce que mon raisonnement structurel ne couvre pas ?</li>
+</ol>
+<ol>
+<li><strong>Le pari sur le modèle.</strong> Mon correctif relit le texte que le modèle rend. Si le modèle décide de résumer « souches de 60 » en « Dessouchage » sans description, je ne récupère rien — j'ai ajouté une règle au contrat pour l'en empêcher, mais c'est une consigne, pas une garantie. Fallait-il plutôt ajouter un champ typé <code>mesures: { diametreCm?: number }</code> au schéma ? J'ai jugé ça plus risqué (tous les consommateurs, la compatibilité des brouillons enregistrés). Où est le bon arbitrage ?</li>
+</ol>
+<ol>
+<li><strong>La leçon de la batterie verte.</strong> Deux suites vertes encadraient un trou. Est-ce qu'un seul contrôle de bout en bout suffit à fermer cette classe de défaut, ou est-ce que je viens juste de déplacer le problème d'un cran — le nouveau contrôle partant lui aussi de données que j'ai écrites à la main ?</li>
+</ol>
+<ol>
+<li><strong>Le relevé au pixel.</strong> J'ai remplacé « regarder l'image » par « comparer la trace des deux côtés ». C'est plus précis (ça nomme chaque élément qui bouge) mais ça ne voit pas ce qu'un œil verrait — un chevauchement, un contraste. Est-ce que j'ai le droit d'appeler ça une vérification, ou est-ce que j'aurais dû refuser de relever l'empreinte et laisser la suite rouge ?</li>
+</ol>
+<ol>
+<li><strong>Ce que j'ai laissé de côté.</strong> Le prix. Remplir <code>diametreCm</code> fait entrer une valeur dans la colonne que le moteur de chiffrage lit déjà — donc le montant d'une ligne peut changer, alors qu'il m'a écrit « ne change rien aux prix ». Je soutiens que c'est exactement le prix qu'il aurait obtenu en répondant « 60 » à la question, et donc que ce n'est pas un changement de règle. Est-ce que tu vois un cas où ce raisonnement est faux ?</li>
+</ol>
+</main>
+</body>
+</html>
