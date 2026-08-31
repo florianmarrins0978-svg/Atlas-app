@@ -9,6 +9,27 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
+## LES BOUTONS PLEINS : lot 1 livré, 31 fichiers restants (31 août 2026)
+
+**Ses réponses sont acquises :** couleur **#29382F**, force **discret**,
+**Origine seule**. Rien à lui redemander.
+
+**Fait (lot 1) :** la classe `.atlas-plein` (`globals.css`), la variable
+`--atlas-plein-fond` ecrite pour Origine seule (`chartes.ts`), et les trois
+pieces partagees — `PrimaryButton`, `ActionPrincipale`, `BoutonAssistant`.
+
+**Reste :** les autres boutons pleins verts, a qui il faut poser la classe.
+L'inventaire tient dans une commande, et il separe les VRAIS boutons des
+pastilles, barres de progression et fonds pales qui emploient la meme couleur :
+
+    grep -rn "backgroundColor: colors.rust" src/ --include=*.tsx
+
+**Ne pas prendre `colors.rustTint`** — c'est le fond pale, pas un aplat
+d'action. **Ni les capsules creuses** : « surtout pas ceux qui sont creux ».
+**Ni `src/app/design/*`**, hors produit depuis le 1er aout.
+
+---
+
 ## EN ATTENTE DE SA RÉPONSE : la force du geste des boutons (31 août 2026)
 
 Sa demande du 31 août — une mini vibration à l'appui, et le bouton qui s'enfonce

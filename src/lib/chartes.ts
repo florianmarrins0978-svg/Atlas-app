@@ -540,13 +540,26 @@ export function variablesCharte(c: Charte): Record<string, string> {
   for (const cle of Object.keys(c.jetons) as (keyof JetonsCharte)[]) {
     sortie[`--atlas-${cle}`] = c.jetons[cle];
   }
-  // **LE VERT 8 DU BOUTON PLEIN — ORIGINE ET ELLE SEULE.**
+  // **LE VERT DU BOUTON PLEIN — ORIGINE ET ELLE SEULE.**
   //
-  // *Sa décision du 31 août 2026, prise sur `appli/le-bouton-qui-repond.html`
-  // parmi dix dégradés :* « mets-moi la couleur 8 partout sur chaque bouton
-  // plein de couleur verte de l'appli ». Puis, la question des sept chartes lui
-  // étant posée : **« les boutons à changer c'est seulement pour la version
-  // origine, ne touche pas aux autres apparences ! »**
+  // *Sa décision du 31 août 2026.* Il a d'abord retenu le vert 8 (Cyprès) sur
+  // `appli/le-bouton-qui-repond.html`, puis demandé à voir **#29382F** sur le
+  // vrai bouton, les deux côte à côte — et il a tranché : **« je garde le
+  // #29382F »**. C'est un vert 11 % plus sombre que celui d'aujourd'hui et à
+  // peine plus froid : 6 points de rouge et 3 de vert en moins, rien sur le
+  // bleu. Le vert 8, plus tranché, a donc été écarté par lui.
+  //
+  // Et la question des sept chartes lui étant posée : **« les boutons à changer
+  // c'est seulement pour la version origine, ne touche pas aux autres
+  // apparences ! »**
+  //
+  // **POURQUOI UN APLAT S'ÉCRIT COMME UN DÉGRADÉ D'UNE SEULE COULEUR.** Les
+  // boutons portent leur fond en style EN LIGNE (`backgroundColor: colors.rust`)
+  // — qu'aucune feuille de style ne peut supplanter. Le seul calque qui passe
+  // par-dessus sans `!important` est `background-image`, et une image de fond
+  // ne prend pas une couleur : d'où `linear-gradient(#29382F, #29382F)`, qui
+  // peint un aplat. C'est laid à lire et c'est le prix d'un changement qui ne
+  // touche ni les six autres apparences, ni les trente-quatre écrans.
   //
   // **D'où une variable écrite pour une seule charte**, exactement comme les
   // formes juste en dessous : les six autres n'écrivent rien, `globals.css`
@@ -561,7 +574,7 @@ export function variablesCharte(c: Charte): Record<string, string> {
   // couleur que la verte » —, et seuls les éléments portant `.atlas-plein` le
   // reçoivent.
   if (c.nom === "origine") {
-    sortie["--atlas-degrade-plein"] = "linear-gradient(180deg, #20502e, #0f3319)";
+    sortie["--atlas-plein-fond"] = "linear-gradient(#29382F, #29382F)";
   }
 
   // **Une forme absente n'écrit RIEN**, et c'est ce qui tient sa consigne du

@@ -87,12 +87,13 @@ essai("le repli de --font-display EST la serif d'aujourd'hui", () => {
   );
 });
 
-essai("le vert 8 du bouton plein ne touche QUE Origine", () => {
-  // **Sa décision du 31 août 2026, en deux temps.** D'abord : « mets-moi la
+essai("le vert du bouton plein ne touche QUE Origine", () => {
+  // **Sa décision du 31 août 2026, en trois temps.** D'abord : « mets-moi la
   // couleur 8 partout sur chaque bouton plein de couleur verte de l'appli ».
   // Puis, la question des sept chartes lui étant posée : **« les boutons à
   // changer c'est seulement pour la version origine, ne touche pas aux autres
-  // apparences ! »**
+  // apparences ! »** Enfin, les deux verts photographiés côte à côte sur le
+  // vrai bouton : **« je garde le #29382F »** — le vert 8 est écarté.
   //
   // Le « seulement » est la moitié qui compte, et c'est elle qui est gardée
   // ici : sur Brume, l'aplat d'action est un bleu marine qu'il a validé au
@@ -100,21 +101,20 @@ essai("le vert 8 du bouton plein ne touche QUE Origine", () => {
   // ne l'ait demandé — et cela ne se verrait qu'en changeant d'apparence,
   // c'est-à-dire jamais pendant qu'on développe.
   for (const c of CHARTES) {
-    const degrade = variablesCharte(c)["--atlas-degrade-plein"];
+    const fond = variablesCharte(c)["--atlas-plein-fond"];
     if (c.nom === "origine") {
-      assert.ok(degrade, "Origine n'écrit plus le dégradé : ses boutons pleins ont perdu le vert 8");
-      // Le vert 8 est « Cyprès » de sa planche, aux deux bouts. Recopié ici
-      // volontairement : si quelqu'un change la valeur, il doit décider AUSSI
-      // de la changer là où sa réponse est consignée.
+      assert.ok(fond, "Origine n'écrit plus le fond : ses boutons pleins ont perdu sa couleur");
+      // Sa couleur, recopiée ici volontairement : qui la change doit décider
+      // AUSSI de la changer là où sa réponse est consignée.
       assert.ok(
-        degrade.includes("#20502e") && degrade.includes("#0f3319"),
-        `le dégradé n'est plus le vert 8 de sa planche : ${degrade}`
+        fond.toUpperCase().includes("#29382F"),
+        `le fond n'est plus le vert qu'il a retenu : ${fond}`
       );
     } else {
       assert.equal(
-        degrade,
+        fond,
         undefined,
-        `${c.nom} reçoit un dégradé vert alors qu'il a dit « seulement pour origine »`
+        `${c.nom} reçoit le vert d'Origine alors qu'il a dit « seulement pour origine »`
       );
     }
   }
