@@ -116,7 +116,7 @@ même endroit, le devis et le choix de la date :
    ┌─────────────────────────────────────────────┐
    │  Devis n° 2026-042                          │
    │  Élagage — 2 jours              1 240 €     │
-   │  [ Voir le devis complet PDF ]              │
+   │  [ Télécharger mon devis (PDF) ]            │
    ├─────────────────────────────────────────────┤
    │  Quelle date vous arrange ?                 │
    │                                             │

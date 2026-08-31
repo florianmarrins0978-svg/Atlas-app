@@ -79,6 +79,18 @@ aujourd'hui.
 feuille. Elle serait alors jouable seule, et son commentaire cesserait de
 décrire un écran qu'elle n'atteint pas toujours.
 
+## Rien n'est proposé au client après un refus ou une correction (31 août 2026)
+
+Depuis ce jour, l'écran de retour d'un devis **accepté** porte « Télécharger mon
+devis » (sa demande). Les deux autres écrans de retour — refus, correction — n'en
+portent aucun.
+
+**C'est délibéré :** on ne propose pas d'emporter un devis auquel on vient de
+renoncer, et celui qui part en correction va changer.
+
+**Qui peut le trancher :** le patron. Deux lignes si sa réponse est l'inverse.
+
+
 ---
 
 ## Le délai avant une date proposée n'est réglable nulle part (31 août 2026)

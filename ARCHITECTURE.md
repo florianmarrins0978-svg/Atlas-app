@@ -19778,3 +19778,163 @@ dans les pièces partagées, sinon deux gestes cohabiteront. Et la vibration se
 pose **une fois**, dans une fonction unique — deux appels écrits à deux endroits
 divergeront sur la durée, et l'un des deux oubliera l'interrupteur de réglage
 qu'il a demandé à voir sur la planche.
+
+## 223. Le devis du client : verrouillé contre la retouche, et tenant dans un écran
+
+*31 août 2026 — `proteger-pdf.ts`, `document-commun.ts`, `devis/[jeton]/`.*
+
+**Ses trois captures, prises sur le téléphone d'une cliente.** La page reçue par
+SMS, dont il fallait faire défiler la moitié pour voir les gestes. Le PDF ouvert
+dans Acrobat, qui proposait *« Ajouter du texte »* et *« Ajouter une image »*.
+L'écran de retour après acceptation, où il ne restait plus rien — ni montant, ni
+devis.
+
+### 1. Un PDF que le client pouvait modifier
+
+**Le défaut n'était pas dans Atlas** : un PDF ordinaire est modifiable, et tous
+les lecteurs modernes savent le faire. Ce qui manquait, c'est la déclaration
+d'autorisations que le format prévoit — et qu'aucun lecteur ne peut ignorer sans
+mentir à son utilisateur.
+
+Le devis part donc **chiffré** (AES-128, révision 4 du gestionnaire standard),
+avec un mot de passe propriétaire tiré au sort et jeté, et un mot de passe
+d'ouverture **vide** : le client ouvre son devis d'un appui, sans rien taper.
+
+| Ce qui reste permis | Ce qui ne l'est plus |
+|---|---|
+| imprimer, en pleine définition | modifier le contenu |
+| copier une adresse | annoter, remplir |
+| lire à voix haute (accessibilité) | assembler, retirer une page |
+
+**Ce que cela ne fait pas, et il faut le dire :** ce n'est pas un coffre-fort.
+Le format est public, un outil déterminé réécrit un PDF quoi qu'on fasse. Le but
+est qu'un client de bonne foi ne puisse pas modifier son devis **par mégarde ou
+d'un doigt**, et que la pièce qui fait foi reste celle qu'Atlas archive à
+l'envoi. Promettre l'inverse serait promettre ce qu'aucun format ne tient.
+
+**Trois pièges payés en le construisant :**
+
+- **Les flux d'objets étaient à interdire, pas à régler.** pdf-lib rassemble par
+  défaut plusieurs objets dans un flux unique. Chiffrés d'un bloc, les textes
+  qu'ils portent l'auraient été deux fois — et le fichier ne se serait ouvert
+  nulle part.
+- **pdf-lib réécrit la date de modification au chargement.** Sans
+  `updateMetadata: false`, le document changeait d'une seconde à l'autre : un
+  défaut invisible, qui ne se serait montré qu'une fois sur deux.
+- **Le tirage au sort devait rester dehors.** `test-allure-pdf.ts` compare deux
+  compositions du même devis **octet pour octet** — c'est ce qui garantit
+  qu'aucun artisan ne voit son devis changer parce qu'un écran est apparu
+  quelque part. Une protection tirée au sort à chaque document aurait fait
+  rougir ce contrôle, et on aurait retiré le contrôle au lieu du défaut. Le mot
+  de passe dérive donc d'une graine tirée **une fois par processus** et de
+  l'empreinte du fichier : propre à chaque document, imprévisible d'un serveur à
+  l'autre, et reproductible dans une même exécution.
+
+**Et le contrôle qui compte n'est pas celui qui vérifie le chiffrement.** Un
+contrôle qui relirait la protection avec le code qui l'a produite ne prouverait
+que sa cohérence avec lui-même. Le danger réel est l'inverse du défaut corrigé :
+un devis que **plus personne** n'ouvre.
+
+`test-devis-lisible.ts` emploie donc un lecteur écrit d'après la norme
+(`scripts/_lecteur-pdf-protege.ts`), qui **n'importe rien de la protection** :
+il ouvre le devis sans mot de passe et y relit le nom du client, la ligne de
+prestation et le total. Son plancher : le même devis dont **un seul chiffre** de
+la clé est faux, que ce lecteur refuse — sans quoi un lecteur complaisant
+passerait les deux contrôles sans rien prouver.
+
+**Ce contrôle a d'abord été écrit avec un vrai navigateur, et la CI l'a fait
+rougir.** Playwright y installe le *headless shell* de Chromium, qui n'embarque
+aucun lecteur PDF : il TÉLÉCHARGE le fichier au lieu de le peindre, et l'erreur
+— « Download is starting » — accusait le devis alors qu'il allait bien. Les
+vrais moteurs ont quand même dit leur mot, le 31 août, à la main : **qpdf** a lu
+les autorisations une par une et déchiffré la page ; le lecteur PDF du
+**Chromium complet** a peint le document sans rien demander, et a réclamé un mot
+de passe sur le même fichier dont un chiffre de la clé était faux. Cette
+vérification-là ne tourne pas en CI, et le dire vaut mieux que de laisser croire
+qu'elle s'y rejoue.
+
+**Un contrôle voisin a été rattrapé au passage, et il s'est défendu tout seul.**
+`test-note-hors-documents-e2e.ts` lit le PDF des gars pour vérifier que le
+pense-bête du patron n'y figure pas. Chiffré, il ne s'y lisait plus rien — et ce
+contrôle a REFUSÉ de conclure plutôt que de rendre un vert : sa garde exige d'y
+retrouver d'abord une ligne du devis. Sans elle, la promesse *« la note ne sort
+pas de l'application »* serait devenue une phrase que plus rien ne tenait. Il
+partage désormais le même lecteur.
+
+### 2. Toute la réponse dans un écran
+
+*« Je veux que le choix de la date qui arrive au client par SMS tienne sur une
+seule page ! Il ne doit pas avoir à scroll pour voir toutes les infos. »*
+
+La page demandait **770 px** pour 664 disponibles — le dernier geste, « Je ne
+donne pas suite », vivait sous le pli. Elle en demande **630**.
+
+| | |
+|---|---|
+| **40 px** | la carte du message a été **réunie** avec celle de la date : deux jeux de marges et une gouttière pour séparer deux choses qui se répondent |
+| **30 px** | la phrase grise sous le bouton de correction, et le bouton éteint qui l'obligeait |
+| **18 px** | le nom de l'entreprise, remonté sur la ligne du numéro de devis |
+| **18 px** | l'invitation à écrire, réunie avec l'intitulé du champ |
+| **15 px** | la mention de preuve, ramenée de trois lignes à une |
+| **45 px** | marges, gouttières et hauteurs de boutons, resserrées |
+
+**Ce qui n'a PAS été retiré, et pourquoi.** Les trois totaux (il accepte un
+montant), le lien vers le PDF complet (son accord porte sur le contenu exact),
+l'adresse du chantier, les trois issues. La zone de message reste une **zone**,
+sur deux lignes au lieu de trois : un champ d'une ligne dissuade d'écrire, et
+c'est ce champ qui évite qu'une coquille se transforme en refus.
+
+**Le bouton de correction n'est plus éteint.** Il l'était tant que rien n'était
+écrit, ce qui obligeait à expliquer dessous pourquoi — trente pixels, et sans
+cette phrase un bouton éteint se lit comme une application cassée. Il répond
+désormais, et c'est sa réponse qui dit ce qui manque, au moment où cela mord.
+**La règle, elle, n'a pas bougé de place** : le dépôt refuse toujours une
+correction sans message (motif `message_manquant`) ; l'écran ne fait que
+l'annoncer sans aller-retour.
+
+**Une suite a été retournée plutôt que satisfaite.** Elle exigeait la phrase
+« vous pouvez laisser un mot à votre artisan », mot pour mot — celle-là même que
+ce lot réunit avec l'intitulé. Elle vérifie maintenant ce qu'elle défendait :
+que le libellé du champ **invite** à écrire, et qu'il soit au-dessus (`CLAUDE.md`
+§5 bis).
+
+**Ce que la mesure couvre, et ce qu'elle ne couvre pas.** Le cas le plus haut est
+tenu : un client nommé, une adresse, **deux dates** (le maximum que l'écran
+d'envoi autorise) et la contre-proposition ouverte. Ouvrir le calendrier d'une
+autre date, ou cocher une date dans le délai de rétractation, rallonge la page —
+ce sont des gestes du client, pas ce qu'il voit en arrivant.
+
+### 3. Le devis reste à portée après l'acceptation
+
+*« Lorsque le client a accepté le devis et qu'il revient sur la page via le SMS,
+il n'a plus accès à son devis — or il doit encore pouvoir le télécharger s'il a
+oublié de le faire. »*
+
+L'écran de retour ne portait aucun geste : le lien reçu par SMS devenait un
+cul-de-sac le jour même de l'accord, et il fallait rappeler l'artisan pour
+obtenir la pièce qu'on venait de signer. Il porte désormais **Télécharger mon
+devis**, et la carte de confirmation aussi — c'est là que le client le cherche.
+
+**`?telecharger` plutôt qu'un simple lien**, et la nuance compte sur un
+téléphone : sans lui, le PDF s'ouvre dans le lecteur du navigateur et le client
+croit l'avoir enregistré alors qu'il n'a fait que le regarder. L'attribut
+`download` d'un lien n'y aurait rien changé — les navigateurs de téléphone
+l'ignorent largement. C'est le serveur qui décide, par son en-tête.
+
+**Après un refus, aucun geste.** On ne propose pas d'emporter un devis auquel on
+vient de renoncer ; après une demande de correction non plus, puisque le
+document va changer.
+
+**Et « Voir le devis complet (PDF) » est devenu « Télécharger mon devis (PDF) »,
+en gras et souligné** — sa demande, le même jour, après avoir vu l'écran. Le
+changement n'est pas typographique : le lien porte désormais `?telecharger`, donc
+il EMPORTE le fichier au lieu de l'ouvrir dans le lecteur du navigateur. Un lien
+qui dit « télécharger » et se contente d'afficher est un mensonge d'une ligne :
+le client croit avoir gardé son devis, et il n'en reste rien à la fermeture de
+l'onglet.
+
+Le geste existe donc à deux endroits sur l'écran d'après-acceptation — la ligne
+de l'en-tête et la touche de la carte de confirmation. C'est assumé : l'une est
+une ligne de texte dans le récapitulatif, l'autre est le geste qu'on cherche à
+ce moment-là. La suite ne compte donc plus les liens, elle vérifie qu'il en
+existe au moins un et **qu'il rend vraiment le fichier**.

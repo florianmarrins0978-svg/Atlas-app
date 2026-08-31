@@ -128,6 +128,48 @@ rapide ».
 
 Détail et ce qui reste ouvert : `ARCHITECTURE.md` §219.
 
+### Le devis du client ne se modifie plus, tient dans un écran, et reste à portée
+
+**Ses trois captures, prises sur le téléphone d'une cliente.**
+
+**Le PDF s'ouvrait dans Acrobat avec « Ajouter du texte » et « Ajouter une
+image ».** Le document qui engage les deux parties était retouchable d'un doigt.
+Devis, factures et feuilles de chantier partent désormais chiffrés, avec les
+autorisations que le format prévoit : imprimer et copier restent permis,
+modifier, annoter et assembler ne le sont plus. Le client ouvre toujours son
+devis d'un appui — aucun mot de passe à taper.
+
+*Ce n'est pas un coffre-fort, et personne ne doit le croire : le format est
+public, un outil déterminé réécrit un PDF quoi qu'on fasse. Ce qui change, c'est
+qu'on ne modifie plus un devis par mégarde, et que la pièce qui fait foi reste
+celle qu'Atlas archive à l'envoi.*
+
+**La page reçue par SMS demandait 770 px pour 664.** Le dernier geste vivait sous
+le pli. Elle en demande 630 : la carte du message a rejoint celle de la date, le
+nom de l'entreprise est remonté sur la ligne du numéro, et la phrase grise sous
+le bouton de correction est partie — ce bouton n'est plus éteint, il répond.
+
+**Après acceptation, l'écran de retour ne portait plus rien.** Le lien du SMS
+devenait un cul-de-sac le jour même de l'accord. Il porte maintenant
+**Télécharger mon devis**, et le fichier descend vraiment au lieu de s'ouvrir
+dans le lecteur du téléphone.
+
+Et sur la page elle-même, « Voir le devis complet (PDF) » est devenu
+**« Télécharger mon devis (PDF) »**, en gras et souligné — et il télécharge pour
+de bon, au lieu d'ouvrir le lecteur du navigateur.
+
+*Éprouvé par un lecteur qui ne sait rien d'Atlas :* un lecteur écrit d'après la
+norme, qui n'importe rien de la protection, ouvre le devis sans mot de passe et
+y relit le nom du client, sa ligne de prestation et son total — et refuse le
+même devis dont un seul chiffre de la clé a été faussé. Le danger était l'inverse
+du défaut corrigé : un devis que plus personne n'ouvre. Deux vrais moteurs l'ont
+confirmé à la main le même jour (qpdf, le lecteur PDF de Chromium) ; la CI, elle,
+n'installe qu'un Chromium sans lecteur PDF, et c'est ce qui avait fait rougir la
+première version de ce contrôle.
+
+Raisons et pièges : `ARCHITECTURE.md` §223. Compte-rendu : `docs/devis-client-verrouille.md`.
+
+
 
 ### Un prix posé sur l'écran du devis débloque enfin l'envoi
 

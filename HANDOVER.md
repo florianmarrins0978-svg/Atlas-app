@@ -91,6 +91,58 @@ Raisons et pièges : `ARCHITECTURE.md` §221.
 
 ## Le même jour : le prix qui ne débloquait rien, et le lendemain qu'on lui refusait (31 août 2026)
 
+## Dernier lot : le devis du client, verrouillé et tenant dans un écran (31 août 2026)
+
+Ses trois captures du téléphone d'une cliente. Compte-rendu qui lui est
+destiné : `docs/devis-client-verrouille.md`.
+
+**Ce qu'il faut savoir avant d'y toucher :**
+
+- **Tout ce qui sort de `composerDocument` part chiffré** — devis, facture,
+  feuille de chantier. Un seul endroit, parce qu'un document oublié ne se
+  verrait pas : c'est chez le client qu'on l'apprendrait.
+- **Le chiffrement doit rester REPRODUCTIBLE.** `test-allure-pdf.ts` compare
+  deux compositions du même devis octet pour octet, et cette égalité garde une
+  promesse qui compte. Le mot de passe propriétaire dérive donc d'une graine
+  tirée **une fois par processus** et de l'empreinte du fichier. Tirer au sort
+  par document ferait rougir ce contrôle — et c'est le contrôle qu'on
+  retirerait, pas le défaut.
+- **`useObjectStreams: false` n'est pas un réglage, c'est une nécessité** : un
+  flux d'objets chiffrerait deux fois les textes qu'il porte, et le fichier ne
+  s'ouvrirait nulle part. Idem pour `updateMetadata: false`, sans quoi pdf-lib
+  réécrit la date de modification au chargement.
+- **Le contrôle qui compte est `test-devis-lisible.ts`**, pas celui qui relit la
+  protection : le danger réel est un devis que plus personne n'ouvre. Il emploie
+  un lecteur écrit d'après la norme (`scripts/_lecteur-pdf-protege.ts`), qui
+  n'importe rien du produit, avec pour plancher le même devis dont un chiffre de
+  la clé est faux.
+- **NE PAS le réécrire avec un navigateur.** La première version demandait à
+  Chromium de peindre le PDF : la CI installe le *headless shell*, sans lecteur
+  PDF, qui le télécharge au lieu de l'afficher — « Download is starting », et un
+  rouge qui accuse le devis. Les vrais moteurs (qpdf, Chromium complet) ont
+  validé le document à la main le 31 août ; cela ne se rejoue pas en CI.
+- **Tout contrôle qui LIT un PDF doit désormais le déchiffrer** —
+  `texteDuPdf` de `scripts/_lecteur-pdf-protege.ts`. C'est ce qui a rattrapé
+  `test-note-hors-documents-e2e.ts`, dont la garde a refusé de conclure plutôt
+  que de rendre un vert imprenable.
+- **La page du client tient dans 664 px, et rien ne doit la rallonger sans que
+  la mesure le dise** (`test-devis-client-e2e.ts`, « TOUT TIENT DANS UN ÉCRAN »).
+  Elle est mesurée sur le cas le plus haut : client nommé, adresse, deux dates et
+  la contre-proposition ouverte.
+- **Le bouton de correction n'est plus éteint**, et sa phrase grise est partie :
+  il refuse en répondant. La règle, elle, n'a pas bougé — le dépôt refuse
+  toujours une correction sans message (`message_manquant`).
+- **Le lien de l'en-tête TÉLÉCHARGE, il n'ouvre plus.** « Voir le devis complet »
+  est devenu « Télécharger mon devis (PDF) », en gras et souligné, avec
+  `?telecharger`. Le remettre en simple lecture rendrait son libellé faux.
+- **Ce qui reste ouvert :** rien n'est proposé après un refus ni après une
+  demande de correction. À rouvrir avec lui s'il veut le contraire.
+
+Raisons et pièges : `ARCHITECTURE.md` §223.
+
+## Lot précédent : le prix qui ne débloquait rien, et le lendemain qu'on lui refusait (31 août 2026)
+
+
 Ses deux captures du matin, sur l'écran d'envoi du devis. Compte-rendu qui lui
 est destiné : `docs/devis-prix-et-date-proche.md`.
 
@@ -177,7 +229,7 @@ contre la version d'avant. `ARCHITECTURE.md` §218.
 
 ---
 
-## Lot précédent : la note vocale à la messagerie, et la fiche qui tient dans un écran (30 août 2026)
+## Encore avant : la note vocale à la messagerie, et la fiche qui tient dans un écran (30 août 2026)
 
 Ses trois choix codés (`appli/note-vocale-choix.html`) : au repos un **disque
 plein** avec deux ondes de **1,5 cm** ; dès qu'on parle, la **poubelle à gauche**
