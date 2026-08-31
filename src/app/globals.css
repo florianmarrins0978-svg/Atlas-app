@@ -1210,10 +1210,12 @@ body {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  /* La réserve ne bouge pas d'un état à l'autre : sans elle, la barre étant plus
-   * haute que le micro seul, tout ce qui suit — le bouton compris — sauterait
-   * vers le bas à l'instant où l'on appuie, c'est-à-dire au moment où l'écran
-   * doit être le plus stable. */
+  /* La réserve ne bouge pas d'un état à l'autre, et depuis le 31 août 2026 elle
+   * retient l'écran dans l'AUTRE sens : la ligne de dictée (58 px) est plus
+   * BASSE que le micro et son indice, si bien que tout ce qui suit remonterait
+   * à l'instant où l'on appuie — c'est-à-dire au moment où l'écran doit être le
+   * plus stable. Le chiffre reste celui du repos, qui est le plus haut des
+   * deux. */
   min-height: 104px;
   /* **Les ondes ne doivent JAMAIS élargir la page.** Elles sont posées en
    * absolu de part et d'autre du disque — 1,5 cm plus 9 px, soit 66 px de
@@ -1234,26 +1236,46 @@ body {
   overflow-x: clip;
 }
 
-/* L'objet au centre, les deux gestes de part et d'autre. Au repos ils n'existent
- * pas : il n'y a rien à jeter ni à envoyer. */
-.atlas-trio {
+/* ─── LA LIGNE DE DICTÉE — sa décision du 31 août 2026 ───────────────────
+ *
+ * Planche `appli/dictee-la-ligne.html`, onglet « Avec le rond ». Elle remplace
+ * le trio (poubelle · disque · avion) et la rangée chrono + onde qui vivait
+ * dessous.
+ *
+ * **Ce que le trio avait de faux, et qui se mesurait** — sa plainte du matin,
+ * « ça dénature l'appli » :
+ *
+ *   · deux aplats vert pin (76 px et 46 px), ~7 950 px² de sombre, là où le
+ *     reste de la fiche n'en porte AUCUN. Il en reste 64 : la pastille ;
+ *   · rien ne tenait les trois boutons ensemble — ils flottaient sur le fond ;
+ *   · le chrono à gauche, l'onde à droite et le disque au milieu : trois
+ *     objets sur trois axes.
+ *
+ * Le trait du haut est ce qui les tient désormais, et il suffit : la ligne ne
+ * porte plus d'objet, elle traverse l'écran. */
+.atlas-ligne-dictee {
   display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 22px;
+  gap: 12px;
   width: 100%;
+  padding-top: 14px;
+  border-top: 1px solid var(--atlas-line, rgba(28, 28, 26, 0.12));
+  animation: atlas-venir 0.26s cubic-bezier(0.22, 0.61, 0.36, 1) both;
 }
-.atlas-cote {
+/* Les deux gestes ne partagent PAS un bloc commun, et ce n'est pas une
+ * répétition par distraction : `test-classes-atlas-uniques` refuse qu'une
+ * classe soit déclarée deux fois, parce que la dernière écrase les autres sur
+ * tous les écrans qui la portent. Six lignes en double coûtent moins qu'un
+ * groupe qu'on croit sûr. */
+.atlas-jeter {
   display: flex;
   align-items: center;
   justify-content: center;
   flex: 0 0 auto;
-  width: 46px;
-  height: 46px;
+  width: 32px;
+  height: 32px;
   border-radius: 99px;
   -webkit-tap-highlight-color: transparent;
-  animation: atlas-venir 0.26s cubic-bezier(0.22, 0.61, 0.36, 1) both;
-  transition: color 0.18s, background 0.18s;
 }
 /* **La poubelle ne rougit QUE sous le doigt** — `.jeter:active` de sa planche.
  * Rouge au repos, elle mettrait en garde avant qu'on ait rien fait ; ici elle
@@ -1263,8 +1285,21 @@ body {
   from { opacity: 0; transform: scale(0.7); }
   to { opacity: 1; transform: none; }
 }
+/* **UN ROND, ET NON UN OVALE** — sa correction du 31 août au soir, après avoir
+ * vu trois aplatissements proposés (44 × 44, 48 × 40, 52 × 36) : *« autour de
+ * la flèche envoyer je veux un rond, pas un ovale »*. Largeur et hauteur sont
+ * la même mesure, et le fond vient de la page (posé `transparent` dans le
+ * composant) : c'est ce qu'il a demandé, et c'est ce qui tient sur les sept
+ * chartes sans qu'aucun beige soit écrit en dur. */
 .atlas-envoyer {
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.18);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  width: 44px;
+  height: 44px;
+  border-radius: 99px;
+  -webkit-tap-highlight-color: transparent;
   transition: transform 0.18s;
 }
 .atlas-envoyer:active { transform: scale(0.93); }
@@ -1296,17 +1331,6 @@ body {
   transition: transform 0.2s;
 }
 .atlas-micro:active { transform: scale(0.95); }
-/* `display:block` n'est pas cosmétique : un `<span>` resté en ligne ne prend ni
- * `width` ni `height`, sa boîte vaut zéro pixel, et le disque s'affiche vide.
- * Trouvé sur capture le 30 août 2026 — aucun contrôle ne le voyait, l'élément
- * existant bel et bien. */
-.atlas-carre-stop {
-  display: block;
-  width: 19px;
-  height: 19px;
-  border-radius: 3px;
-}
-
 /* LES DEUX SOUFFLES — « 1,5 cm max de chaque côté », sa mesure exacte, écrite
  * en centimètres plutôt que traduite en pixels : dans six mois, « 57 px » ne
  * dirait plus d'où il sort. Ils s'éteignent vers l'extérieur — une onde qui
@@ -1363,21 +1387,14 @@ body {
  * téléphone ne laisse pas le choix. Les barreaux passaient donc PAR-DESSUS les
  * deux gestes, à l'endroit exact où il faut viser. Vu sur capture, jamais
  * autrement. Le mouvement n'est pas perdu : l'onde du dessous le porte. */
+/* **Les souffles n'existent qu'au repos.** Ils accompagnent le micro, et le
+ * micro s'efface dès qu'on parle : depuis le 31 août 2026, la dictée est une
+ * ligne, et il n'y a plus d'objet central à border. */
 .atlas-dictee[data-etat="dicte"] .atlas-frange,
-.atlas-dictee[data-etat="pause"] .atlas-frange,
 .atlas-dictee[data-etat="envoi"] .atlas-frange {
   opacity: 0;
 }
 
-/* Le chrono et l'onde qui se déroule, sous le trio. */
-.atlas-sous-trio {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  width: 100%;
-  margin-top: 8px;
-  padding: 0 4px;
-}
 .atlas-compteur {
   display: flex;
   align-items: center;
@@ -1396,7 +1413,6 @@ body {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.25; }
 }
-.atlas-dictee[data-etat="pause"] .atlas-pastille { animation: none; opacity: 0.3; }
 
 /* L'onde part PLEINE, à plat : sinon les deux premières secondes montrent un
  * trait qui pousse dans le vide, et la barre paraît mal cadrée. */

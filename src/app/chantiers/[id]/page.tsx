@@ -201,8 +201,15 @@ export default async function FicheChantierPage({ params }: { params: Promise<{ 
             n'y a plus rien à écouter — proposer d'en dicter une autre à cet
             endroit effacerait le travail déjà fait. La ligne « Note vocale » du
             tiroir mène alors à l'écran qui explique l'effacement. */}
+        {/* **Les mêmes 26 px que le reste de l'écran, depuis le 31 août 2026.**
+            Le corps de la fiche est en `px-[26px]` ; ce bloc-ci ne l'était pas,
+            et cela ne se voyait pas tant que la dictée était un disque CENTRÉ —
+            un objet au milieu ne touche aucun bord. Devenue une ligne, elle
+            s'étalait d'un bord à l'autre : la poubelle collée à gauche, le rond
+            d'envoi rasant la droite. Trouvé sur capture, par aucun test
+            (`CLAUDE.md` §5). */}
         {(!note || note.storageKey) && (
-          <div className="mt-4">
+          <div className="mt-4 px-[26px]">
             <AnneauNoteVocale
               chantierId={chantier.id}
               storageKey={note?.storageKey ?? null}

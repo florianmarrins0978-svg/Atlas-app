@@ -33,16 +33,16 @@ Raisons : `ARCHITECTURE.md` §226.
 
 ---
 
-## EN ATTENTE : l'allure de la dictée — une planche, pas du code (31 août 2026)
+## FAIT : la dictée est une ligne, sans aucun aplat (31 août 2026)
 
-**Rien n'a bougé dans l'application**, et c'est l'état exact du produit : la
-dictée de la fiche chantier porte toujours son disque plein de 76 px, son rond
-d'envoi plein, sa pause, et le chrono et l'onde en dessous, chacun sur son axe.
+**C'est l'état du produit :** pendant qu'on dicte, la fiche porte une ligne fine
+— poubelle, chrono, onde, et un rond d'envoi creux cerclé de vert. Plus de
+disque plein, plus de pause. L'aplat sombre passe de 7 956 px² à 64.
 
-Il a choisi **la ligne** parmi les quatre allures de `appli/dictee-embellie.html`,
-puis l'a corrigée : plus de pause, et une touche d'envoi au fond de la page,
-encadrée de vert. `appli/dictee-la-ligne.html` porte ces corrections et pose la
-dernière question — **de combien la touche s'aplatit : A, B ou C.**
+Sa plainte du matin (*« ça dénature l'appli »*), quatre allures essayées, sa
+réponse : la ligne, avec le rond. Détail et pièges : `ARCHITECTURE.md` §227.
+**Le même dessin sert l'écran d'un chantier neuf**, qui porte le même
+composant.
 
 ---
 ## Le banc garde sa version rapide pendant qu'il bâtit la suivante (31 août 2026, soir)

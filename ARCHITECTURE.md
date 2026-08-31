@@ -20264,3 +20264,78 @@ avant d'ouvrir ce chemin, pas après.
 porte ses photos, son anneau **et** son bouton d'enregistrement. Trois
 assertions, une par pièce — un seul contrôle « la fiche est entière » ne dirait
 pas laquelle manque.
+
+---
+
+## 227. La dictée cesse d'être un objet : une ligne, deux gestes, aucun aplat
+
+**Sa plainte du 31 août 2026, capture à l'appui :** *« propose-moi une maquette
+pour embellir cette partie de la fiche chantier, je trouve que ça dénature
+l'appli »*.
+
+### Ce qui dénaturait, et qui se mesure
+
+Ce n'était pas un goût, et c'est ce qui a permis de le corriger sans tâtonner :
+
+| | |
+|---|---|
+| **l'aplat** | deux disques vert pin pendant la dictée — 76 px et 46 px, ombres portées — soit **7 956 px²**, là où le reste de la fiche n'en porte AUCUN |
+| **rien ne les tient** | trois boutons posés sur le fond, sans cadre ni ligne |
+| **trois axes** | le chrono collé à gauche, l'onde à droite, le disque au milieu |
+
+La surface d'aplat se compte (`scripts/verifier-maquette-dictee-embellie.mjs`,
+qui additionne ce qui tranche avec le fond). Sans ce chiffre, quatre
+propositions pouvaient déplacer le défaut sans le régler, et sembler justes.
+
+### Ce qu'il a choisi, en deux temps
+
+**La ligne**, parmi quatre allures (`appli/dictee-embellie.html` : la barre,
+l'anneau, la ligne, le galet). Puis trois corrections le soir même
+(`appli/dictee-la-ligne.html`) :
+
+1. **plus de pause** — *« supprime le rond avec le carré dedans »* ;
+2. **l'envoi perd son aplat** : fond de la page, encadré vert, avion vert ;
+3. **un ROND, pas un ovale.** Ma lecture de *« légèrement plus à plat »* était
+   fausse : j'avais proposé trois hauteurs, donc deux ovales. « Plus à plat »
+   parlait du POIDS de la touche, pas de sa forme — et cela ne s'est vu qu'en
+   la lui montrant.
+
+Aplat restant pendant la dictée : **64 px²**, la pastille du chrono.
+
+### Trois choses à savoir avant d'y toucher
+
+**Le fond du rond est `transparent`, et non un beige écrit.** Ce composant sert
+aussi l'écran d'un chantier neuf, et sept chartes changent ce fond — dont deux
+sombres. Une teinte posée en dur serait juste sur un écran et se lirait comme
+une pastille collée sur l'autre. Le vide, lui, EST le fond de la page.
+
+**La pause est partie du magnétophone aussi** (`basculerSuspension`, avec son
+état `suspendu`). Elle n'est pas gardée « au cas où » : un geste que plus aucun
+écran n'emploie finit rebranché au hasard. Si elle revient, elle revient avec
+son bouton — et **jamais** en `arreter()` puis `demarrer()`, qui produirait deux
+enregistrements dont le second écraserait le premier.
+
+**Ce que la suppression de la pause coûte, et qui lui a été dit avant :** on ne
+peut plus suspendre une dictée pour répondre à quelqu'un sur un chantier. On
+parle, puis on jette ou on envoie.
+
+### Le défaut que seule la capture a montré
+
+La zone de dictée de la fiche chantier n'avait **aucune marge horizontale**
+(`page.tsx`), et cela ne se voyait pas : un disque CENTRÉ ne touche aucun bord.
+Devenue une ligne, elle s'étalait d'un bord à l'autre de l'écran — poubelle
+collée à gauche, rond d'envoi rasant la droite —, alors que tout le reste de la
+fiche vit en `px-[26px]`.
+
+Aucun test ne le disait, et aucun ne pouvait : la ligne mesurait 390 px sur un
+écran de 390, sans **déborder**. C'est la cinquième fois dans ce dépôt qu'un
+défaut sort d'une image et d'aucun contrôle (`CLAUDE.md` §5).
+
+### Ce que cela touche, et qu'il n'a pas demandé explicitement
+
+`AnneauNoteVocale` sert **deux écrans** : la fiche d'un chantier et la création
+d'un chantier neuf. Sa demande ne parlait que de la première. Les deux changent,
+et c'est délibéré : deux dictées dessinées différemment dans la même application
+se liraient comme deux produits, et la seconde implémentation aurait divergé au
+premier remaniement (`CLAUDE.md` §3). Cela lui est dit ; s'il veut l'ancien
+dessin sur l'écran de création, il le dira.
