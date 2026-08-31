@@ -9,20 +9,19 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
-## UNE RÉPONSE ATTENDUE — le réglage et le planning, planche 99 (31 août 2026)
+## ✅ ~~UNE RÉPONSE ATTENDUE — le réglage et le planning, planche 99~~ — RÉPONDUE ET CODÉE (31 août 2026)
 
 Sa demande : *« écrit deux chantiers par jour, planning complet, et met le petit
 carré vert foncé avec écrit "complet" du planning »* — et, devant la planche 98 :
 *« c'est sur cette page que doit se faire la modification »*, l'écran **Réglages**.
 
-`appli/reglages-planning-complet.html` lui pose la question : **A** la phrase avec
-le carré, **B** l'échelle des trois carrés, **C** la case du planning dessinée.
+**Sa réponse, le jour même : la A.** L'écran porte « 2 chantiers par jour.
+Planning ▪ complet. » — `src/app/reglages/VosEquipes.tsx`, avec le carré pris
+dans `fondDeLEtat` et le mot dans `MOT_ETAT` (`src/lib/planning-jour.ts`, table
+neuve que la légende du calendrier lit désormais aussi).
 
-**Rien n'est codé.** Quand il aura répondu, tout se passe dans
-`src/app/reglages/VosEquipes.tsx` et `phraseDuCompteur` (`src/lib/equipes.ts`) —
-plus le carré, qui doit venir de `fondDeLEtat` et non d'un vert écrit en dur
-(`CLAUDE.md` §3 : aucune couleur en clair dans un écran, et sept chartes dont
-deux sombres).
+La planche garde B et C : elles restent le chemin, si l'échelle lui manque un
+jour.
 
 ---
 

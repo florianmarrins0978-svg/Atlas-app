@@ -223,6 +223,24 @@ régressions. Mesures et pistes écartées : `ARCHITECTURE.md` §203.
 
 ---
 
+## Le réglage dit la couleur qu'il produit au planning (31 août 2026)
+
+**Sa réponse à la planche 99 : A**, arrêtée sur maquette puis codée le jour même
+(`appli/reglages-planning-complet.html`).
+
+Sous « Chantiers menés en même temps », l'écran disait *« C'est ce qui remplit
+votre planning »* : il annonçait un effet sans montrer ce qu'on verrait. Il dit
+maintenant **« 2 chantiers par jour. Planning ▪ complet. »**, avec le carré du
+calendrier et son mot.
+
+Deux pièces le tiennent, et elles ferment une divergence plutôt qu'elles
+n'ajoutent une couleur : `MOT_ETAT` (`src/lib/planning-jour.ts`) porte les
+quatre mots de la légende — que le calendrier écrivait en clair — et
+`phraseDuCompteur` rend deux morceaux, puisque ce qui se glisse entre eux n'est
+pas du texte mais `fondDeLEtat("plein")`.
+
+---
+
 ## Ses salariés se comptent à part de ses équipes (26 août 2026)
 
 **Sa réponse à la planche 97 : A**, arrêtée sur maquette puis codée le jour même

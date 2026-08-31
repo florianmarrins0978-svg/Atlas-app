@@ -8,10 +8,12 @@
 
   CE CONTRÔLE NE REGARDE PAS UNE MISE EN PAGE, IL SE SERT DE LA PLANCHE.
 
-    1. **La vue « Aujourd'hui » dit MOT POUR MOT ce que l'écran dit** — la
-       phrase est comparée à `phraseDuCompteur` (`src/lib/equipes.ts`), lue
-       dans le fichier. Une planche qui partirait d'une phrase approchante
-       ferait choisir sur un écran qui n'existe pas.
+    1. **Les deux états sont ceux du produit, lus dans le produit.** La vue
+       « A · la phrase » est comparée à `phraseDuCompteur` (`src/lib/equipes.ts`)
+       et à `MOT_ETAT.plein` (`src/lib/planning-jour.ts`) : c'est l'écran codé
+       le 31 août 2026, et la planche doit continuer de le montrer. La vue
+       « Aujourd'hui » garde l'écran d'AVANT, écrit ici une fois pour toutes —
+       il n'existe plus dans le code, et c'est le seul endroit où le comparer.
     2. **Chaque proposition porte le carré ET le mot** qu'il demande, et le
        carré a EXACTEMENT la couleur du planning — `colors.rust`, lue dans
        `src/lib/design-tokens.ts`. Un vert redessiné à l'œil ne serait plus
@@ -44,8 +46,13 @@ const dire = (ok, quoi) => { if (!ok) soucis.push(quoi); };
 
 /* Ce que le PRODUIT dit, lu dans le produit — jamais recopié ici. */
 const equipes = readFileSync("src/lib/equipes.ts", "utf8");
-const finDePhrase = equipes.match(/return `\$\{combien\} (par jour\.[^`]*)`/);
+const finDePhrase = equipes.match(/return \{ avant: `\$\{combien\} (par jour\.[^`]*)`, apres: "([^"]*)" \}/);
 dire(finDePhrase !== null, "`phraseDuCompteur` a changé de forme : le contrôle ne sait plus quoi comparer");
+const motComplet = readFileSync("src/lib/planning-jour.ts", "utf8").match(/plein: "([^"]+)"/);
+dire(motComplet !== null, "`MOT_ETAT.plein` ne se lit plus dans `src/lib/planning-jour.ts`");
+
+/* L'écran D'AVANT le 31 août 2026 : il n'existe plus nulle part ailleurs. */
+const AVANT = "2 chantiers par jour. C'est ce qui remplit votre planning.";
 const jetons = readFileSync("src/lib/design-tokens.ts", "utf8");
 const vertDuPlanning = jetons.match(/rust: "var\(--atlas-rust, (#[0-9a-fA-F]{6})\)"/);
 dire(vertDuPlanning !== null, "`colors.rust` a changé de forme : le vert du planning ne se lit plus");
@@ -70,13 +77,18 @@ const voir = async (vue) => {
 };
 const dessous = async () => (await page.textContent("#dessous")).replace(/\s+/g, " ").trim();
 
-// 1 — la phrase d'aujourd'hui, mot pour mot
+// 1 — les deux états, mot pour mot
 await voir("avant");
-if (finDePhrase) {
-  const attendue = `2 chantiers ${finDePhrase[1]}`;
+dire(
+  (await dessous()) === AVANT,
+  `la vue « Aujourd'hui » ne montre plus l'écran d'avant : « ${await dessous()} »`
+);
+await voir("phrase");
+if (finDePhrase && motComplet) {
+  const attendue = `2 chantiers ${finDePhrase[1]} ${motComplet[1]}${finDePhrase[2]}`;
   dire(
     (await dessous()) === attendue,
-    `la vue « Aujourd'hui » dit « ${await dessous()} » là où l'écran dit « ${attendue} »`
+    `la vue « A · la phrase » dit « ${await dessous()} » là où l'écran codé dit « ${attendue} »`
   );
 }
 

@@ -3,7 +3,7 @@
 import { useMemo } from "react";
 import { colors, font, surPlein, voile } from "@/lib/design-tokens";
 import { grilleDuMois, JOURS_COURTS, MOIS_LONGS } from "@/lib/mois";
-import { etatDemi, partDeLaBarre, type EtatDemi } from "@/lib/planning-jour";
+import { etatDemi, MOT_ETAT, partDeLaBarre, type EtatDemi } from "@/lib/planning-jour";
 import type { JourIso } from "@/server/disponibilites";
 
 /**
@@ -244,8 +244,11 @@ export default function MoisCharge({
 /** Ce que dit une barre, en toutes lettres — pour qui n'emploie pas ses yeux. */
 function ditLaBarre(o: OccupationLue): string {
   const etat = etatDemi(o);
+  // « libre » se dit à voix haute là où la légende écrit « rien » : une phrase
+  // lue n'est pas une étiquette. Le reste suit `MOT_ETAT`, pour que la voix et
+  // la couleur ne se mettent pas à nommer différemment le même état.
   if (etat === "libre") return "libre";
-  if (etat === "plein") return "complet";
+  if (etat === "plein") return MOT_ETAT.plein;
   if (etat === "dela") return `${Math.round(o.charge * 100)} % de vos équipes`;
   return `${o.pris.length} chantier${o.pris.length > 1 ? "s" : ""}`;
 }
@@ -351,21 +354,20 @@ export function Legende() {
       }
     />
   );
-  const mots: [EtatDemi, string][] = [
-    ["libre", "rien"],
-    ["dispo", "incomplet"],
-    ["plein", "complet"],
-    ["dela", "au-delà"],
-  ];
+  // **Les mots viennent de `MOT_ETAT`** depuis le 31 août 2026 : le réglage des
+  // chantiers menés en même temps affiche « complet » lui aussi, et deux
+  // rédactions du même mot finiraient par diverger sur deux écrans qui ne se
+  // lisent jamais ensemble.
+  const mots: EtatDemi[] = ["libre", "dispo", "plein", "dela"];
   return (
     <div
       data-atlas="legende"
       className="mt-3.5 flex flex-nowrap items-center justify-center gap-1.5 text-[9px]"
       style={{ color: colors.muted }}
     >
-      {mots.map(([etat, mot]) => (
+      {mots.map((etat) => (
         <span key={etat} className="flex flex-shrink-0 items-center gap-[5px] whitespace-nowrap">
-          {carre(etat)} {mot}
+          {carre(etat)} {MOT_ETAT[etat]}
         </span>
       ))}
       <span

@@ -459,16 +459,21 @@ Le détail : `ARCHITECTURE.md` §192, migration `drizzle/0067_salaries_a_part.sq
 
 ---
 
-## UNE RÉPONSE ATTENDUE — planche 99, le réglage et le planning (31 août 2026)
+## ✅ PLANCHE 99 RÉPONDUE ET CODÉE — le réglage dit sa couleur (31 août 2026)
 
 **Sa demande :** *« écrit deux chantiers par jour, planning complet, et met le
 petit carré vert foncé avec écrit "complet" du planning »* — sur l'écran
 **Réglages**, qu'il a désigné : *« c'est sur cette page que doit se faire la
 modification »*.
 
-`appli/reglages-planning-complet.html` (A la phrase · B l'échelle · C la case)
-attend son choix. **Rien n'est codé.** Le carré, une fois choisi, se prend dans
-`fondDeLEtat` — jamais un vert écrit en dur, deux chartes sont sombres.
+**Sa réponse : la A.** L'écran Réglages dit « 2 chantiers par jour. Planning ▪
+complet. » Le carré vient de `fondDeLEtat`, le mot de `MOT_ETAT`
+(`src/lib/planning-jour.ts`) — une table neuve où la légende du calendrier lit
+elle aussi ses quatre mots. `phraseDuCompteur` rend donc deux morceaux, et non
+plus une phrase : ce qui se glisse entre eux n'est pas du texte.
+
+**Le piège, si l'on y revient :** ne jamais réécrire « complet » ni le vert dans
+un écran. Deux chartes sont sombres, et deux rédactions du même mot divergent.
 
 ## UNE RÉPONSE ATTENDUE — planche 98, le jour proposé (31 août 2026)
 

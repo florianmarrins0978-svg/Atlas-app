@@ -9,6 +9,30 @@ Format : le plus récent en tête.
 
 ## 2026-08-31
 
+### CODÉ : « 2 chantiers par jour. Planning ▪ complet. » — sa réponse A
+
+Sa réponse à la planche 99, le jour même : **« la A »**. L'écran Réglages porte
+désormais le carré vert foncé du planning et son mot, à la place de *« C'est ce
+qui remplit votre planning. »*
+
+**Deux pièces neuves, et aucune couleur ni aucun mot écrits dans un écran :**
+
+- `MOT_ETAT` (`src/lib/planning-jour.ts`) — le mot de chacun des quatre états,
+  écrit une fois. La légende du calendrier les écrivait en clair ; elle les y
+  lit maintenant, et le réglage aussi. Sans cette table, « complet » existerait
+  à deux endroits, sur deux écrans qui ne se lisent jamais ensemble — et le
+  jour où l'un change, rien ne le dirait.
+- `phraseDuCompteur` rend **deux morceaux** au lieu d'une phrase : entre eux se
+  glissent le carré (`fondDeLEtat("plein")`) et le mot. Un `#2f3b2f` posé dans
+  l'écran aurait été faux sur Nuit et Sylve, les deux chartes sombres.
+
+**Le carré est `aria-hidden`, le mot ne l'est pas** : une couleur ne se lit pas
+à voix haute, et l'annonce ne doit pas dire deux fois la même chose.
+
+`ditLaBarre` prend « complet » dans `MOT_ETAT` elle aussi — la voix et la
+couleur ne doivent pas nommer différemment le même état. Elle garde « libre »
+là où la légende écrit « rien » : une phrase lue n'est pas une étiquette.
+
 ### Le réglage dit ce qu'il DONNE au planning — planche 99
 
 **Sa demande, capture des Réglages à l'appui :** *« écrit deux chantiers par
