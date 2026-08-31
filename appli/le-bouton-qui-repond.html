@@ -207,7 +207,10 @@ h1{margin:0;padding:0 20px;font-family:Georgia,serif;font-weight:400;font-size:2
 /* L'interrupteur d'iOS : il doit être RENDU pour que le système joue son
    retour haptique — un `display:none` le rendrait muet. Il est donc posé
    hors de l'écran plutôt que caché. */
-.haptique-ios{position:fixed;left:-9999px;top:0;width:40px;height:24px;opacity:0;pointer-events:none}
+/* Hors de l'écran, mais NI cachée NI inerte : `display:none` et
+   `pointer-events:none` empêchent l'activation, donc le retour haptique.
+   Elle est simplement posée là où personne ne la voit. */
+.haptique-ios{position:fixed;left:-9999px;top:0;width:44px;height:26px}
 
 .reglage-vib{display:flex;align-items:center;justify-content:space-between;gap:12px;
              margin:14px 20px 0;padding:13px 16px;border-radius:6px;background:var(--paper);
@@ -218,6 +221,49 @@ h1{margin:0;padding:0 20px;font-family:Georgia,serif;font-weight:400;font-size:2
 .bascule i{position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:99px;
            background:var(--cream);transition:transform 200ms cubic-bezier(.22,.8,.3,1)}
 .bascule[aria-pressed="true"] i{transform:translateX(20px);background:var(--sur-plein)}
+.essai-vib{border:0;border-radius:99px;padding:9px 20px;background:var(--plein);color:var(--sur-plein);
+           font-family:Georgia,serif;font-size:15px;cursor:pointer;touch-action:manipulation}
+
+/* ─── LES DIX VERTS ───────────────────────────────────────────────────────
+   Sa demande du 31 août : « fais-moi plusieurs déclinaisons du bouton avec
+   des dégradés de vert différents, une dizaine ».
+
+   **Un seul dessin change d'un bouton à l'autre : les deux couleurs.** Même
+   capsule, même serif, même hauteur, même libellé — sinon il comparerait des
+   boutons au lieu de comparer des verts (c'est la faute du premier tour de
+   `le-bouton-moins-lourd.html`, où cinq nuances passaient pour cinq idées).
+
+   **Le voile de l'appui est un calque, pas un filtre.** `filter: brightness()`
+   éclaircirait AUSSI le texte, qui perdrait exactement le contraste que
+   l'éclaircissement du fond vient de lui coûter. Le calque, lui, passe
+   derrière les lettres.
+
+   **Les contrastes sont MESURÉS, pas estimés** — au repos ET sous le doigt,
+   sur les deux extrémités du dégradé, dans les deux teintes. Le pire des
+   quarante relevés est de 5,4:1 en clair et 6,9:1 en sombre, contre 4,5
+   demandés. `verifier-maquette-bouton-qui-repond.mjs` refuse en dessous.
+
+   **En fond noir, les pôles s'inversent** (`CLAUDE.md` §3) : le dégradé passe
+   à sa version claire et l'encre devient sombre. Un vert de mode clair posé
+   sur un fond noir se lit encore, mais il cesse d'être l'aplat le plus fort
+   de l'écran — donc d'être le bouton principal. */
+.vert{position:relative;overflow:hidden;color:#faf9f5;
+      background-image:linear-gradient(180deg, var(--haut), var(--bas))}
+.vert::after{content:"";position:absolute;inset:0;background:#fff;opacity:0;
+             transition:opacity 220ms ease;pointer-events:none}
+.vert.appui::after{opacity:.14;transition-duration:90ms}
+.vert > span{position:relative}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]) .vert{color:#14180f;
+    background-image:linear-gradient(180deg, var(--haut-nuit), var(--bas-nuit))}
+}
+:root[data-theme="dark"] .vert{color:#14180f;
+  background-image:linear-gradient(180deg, var(--haut-nuit), var(--bas-nuit))}
+.grille-verts{display:flex;flex-direction:column;gap:16px;align-items:center}
+.un-vert{display:flex;flex-direction:column;align-items:center;gap:5px;width:100%}
+.un-vert .presse{min-width:78%}
+.un-vert .dit{font-size:12px;color:var(--muted)}
+.un-vert .dit b{color:var(--charcoal);font-weight:600}
 
 .pied{margin:28px 20px 22px;font-size:12px;line-height:1.6;color:var(--muted)}
 </style>
@@ -246,6 +292,11 @@ h1{margin:0;padding:0 20px;font-family:Georgia,serif;font-weight:400;font-size:2
   <div class="etatvib" id="etatvib">
     <span class="compte" id="compte">0</span>
     <span class="pastille" id="pastille"></span><span id="motvib">Vibration : recherche…</span>
+  </div>
+
+  <div class="reglage-vib">
+    <span>Essayer la vibration seule</span>
+    <button type="button" class="essai-vib" id="essai-vib">Vibrer</button>
   </div>
 
   <div class="reglage-vib">
@@ -289,6 +340,63 @@ h1{margin:0;padding:0 20px;font-family:Georgia,serif;font-weight:400;font-size:2
     <p class="legende">Le même mouvement sur l'aplat noir que vous m'avez montré. En fond noir, les pôles s'inversent : l'aplat devient clair, sans quoi il disparaîtrait.</p>
   </section>
 
+  <section class="section">
+    <p class="quoi">Dix verts</p>
+    <div class="grille-verts">
+      <div class="un-vert">
+        <button type="button" class="presse vert presser"
+                style="--haut:#2f3b2f;--bas:#1f291f;--haut-nuit:#a9c68c;--bas-nuit:#8bae6d"><span>Créer le devis</span></button>
+        <span class="dit"><b>1</b> · Pin d'Atlas — le vert d'aujourd'hui, dégradé</span>
+      </div>
+      <div class="un-vert">
+        <button type="button" class="presse vert presser"
+                style="--haut:#42562e;--bas:#2c3a1e;--haut-nuit:#c2d98d;--bas-nuit:#a3bf6c"><span>Créer le devis</span></button>
+        <span class="dit"><b>2</b> · Pin plus vif — franchement herbacé</span>
+      </div>
+      <div class="un-vert">
+        <button type="button" class="presse vert presser"
+                style="--haut:#1f3a2b;--bas:#12261b;--haut-nuit:#8ec7a2;--bas-nuit:#6fae85"><span>Créer le devis</span></button>
+        <span class="dit"><b>3</b> · Forêt — plus froid, plus profond</span>
+      </div>
+      <div class="un-vert">
+        <button type="button" class="presse vert presser"
+                style="--haut:#22413a;--bas:#132b26;--haut-nuit:#8ec7bd;--bas-nuit:#6daea2"><span>Créer le devis</span></button>
+        <span class="dit"><b>4</b> · Sapin bleuté — un fond de bleu</span>
+      </div>
+      <div class="un-vert">
+        <button type="button" class="presse vert presser"
+                style="--haut:#3f4926;--bas:#2a3119;--haut-nuit:#c2c882;--bas-nuit:#a6ad63"><span>Créer le devis</span></button>
+        <span class="dit"><b>5</b> · Olive — vers le jaune, terrien</span>
+      </div>
+      <div class="un-vert">
+        <button type="button" class="presse vert presser"
+                style="--haut:#39463a;--bas:#242e25;--haut-nuit:#a8bfa9;--bas-nuit:#87a189"><span>Créer le devis</span></button>
+        <span class="dit"><b>6</b> · Mousse — gris-vert, le plus sourd</span>
+      </div>
+      <div class="un-vert">
+        <button type="button" class="presse vert presser"
+                style="--haut:#12433a;--bas:#082d26;--haut-nuit:#7fcbb8;--bas-nuit:#5cb09b"><span>Créer le devis</span></button>
+        <span class="dit"><b>7</b> · Émeraude — le plus saturé</span>
+      </div>
+      <div class="un-vert">
+        <button type="button" class="presse vert presser"
+                style="--haut:#20502e;--bas:#0f3319;--haut-nuit:#84d295;--bas-nuit:#5fba76"><span>Créer le devis</span></button>
+        <span class="dit"><b>8</b> · Cyprès — vert pur, le plus vert</span>
+      </div>
+      <div class="un-vert">
+        <button type="button" class="presse vert presser"
+                style="--haut:#3d5436;--bas:#283824;--haut-nuit:#b6d19a;--bas-nuit:#98b87b"><span>Créer le devis</span></button>
+        <span class="dit"><b>9</b> · Basilic — le plus clair des dix</span>
+      </div>
+      <div class="un-vert">
+        <button type="button" class="presse vert presser"
+                style="--haut:#2c3c38;--bas:#1a2725;--haut-nuit:#a5c2b9;--bas-nuit:#85a89d"><span>Créer le devis</span></button>
+        <span class="dit"><b>10</b> · Ardoise verte — à peine vert, minéral</span>
+      </div>
+    </div>
+    <p class="legende">Tous se pressent. Répondez par un numéro.</p>
+  </section>
+
   <div class="note avert">
     <span class="titre">La vibration sur iPhone</span>
     Safari <b>ne donne pas</b> la vibration aux pages web. Cette planche passe donc
@@ -299,9 +407,9 @@ h1{margin:0;padding:0 20px;font-family:Georgia,serif;font-weight:400;font-size:2
   </div>
 
   <p class="pied">
-    Rien n'est codé dans l'application. Dites-moi <b>Discret</b>, <b>le vôtre</b>
-    ou <b>Marqué</b> — et si vous voulez l'interrupteur « Vibration au toucher »
-    dans les réglages.
+    Rien n'est codé dans l'application. Trois réponses attendues : la force
+    (<b>Discret</b>, <b>le vôtre</b>, <b>Marqué</b>), le <b>numéro du vert</b>,
+    et si vous voulez l'interrupteur « Vibration au toucher » dans les réglages.
   </p>
 
   <nav class="barre" aria-label="Navigation">
@@ -321,7 +429,7 @@ h1{margin:0;padding:0 20px;font-family:Georgia,serif;font-weight:400;font-size:2
 
   <!-- iOS 17.4+ : changer cet interrupteur natif fait jouer le retour haptique
        du système. C'est le seul chemin depuis une page web sur iPhone. -->
-  <label class="haptique-ios" aria-hidden="true">
+  <label class="haptique-ios" id="etiquette-ios" aria-hidden="true">
     <input type="checkbox" switch id="switch-ios" tabindex="-1">
   </label>
 </div>
@@ -356,11 +464,17 @@ function vibrer() {
   if (chemin === "api") {
     parti = navigator.vibrate(ms) === true;
   } else if (chemin === "ios") {
-    // Le retour haptique d'iOS suit le CHANGEMENT de la bascule : on la fait
-    // donc basculer pour de bon, dans un sens puis dans l'autre au coup suivant.
-    const b = $("#switch-ios");
-    b.checked = !b.checked;
-    b.dispatchEvent(new Event("change", { bubbles: true }));
+    // **CE QUI NE MARCHAIT PAS, ET POURQUOI — corrigé le 31 août 2026.**
+    // La première version posait `input.checked = !input.checked` puis émettait
+    // un événement `change`. Elle faisait bien basculer l'interrupteur, et le
+    // compteur montait — mais **rien ne vibrait**, et c'est lui qui l'a trouvé.
+    //
+    // Le retour haptique d'iOS ne suit pas la VALEUR de la bascule : il suit son
+    // ACTIVATION par le navigateur. Une propriété posée en JavaScript ne passe
+    // par aucun des deux, et un `change` fabriqué encore moins. Le seul chemin
+    // est un vrai clic sur l'étiquette, que le navigateur traduit lui-même en
+    // activation de l'interrupteur qu'elle porte.
+    $("#etiquette-ios").click();
     parti = true;
   }
   if (parti) { compte += 1; $("#compte").textContent = compte; }
@@ -402,6 +516,8 @@ document.querySelectorAll(".choix").forEach((b) => {
 });
 
 /* ─── L'interrupteur de vibration ───────────────────────────────────────── */
+$("#essai-vib").addEventListener("pointerdown", vibrer);
+
 $("#interrupteur").addEventListener("click", () => {
   vibrationVoulue = !vibrationVoulue;
   $("#interrupteur").setAttribute("aria-pressed", String(vibrationVoulue));

@@ -19678,6 +19678,49 @@ son téléphone a pris**.
 L'interrupteur d'iOS doit être **rendu** pour que le système joue son retour : un
 `display:none` le rendrait muet. Il est donc posé hors de l'écran.
 
+**ET CE PARAGRAPHE ÉTAIT INCOMPLET — corrigé le 31 août 2026, à ses frais.** Il
+a écrit « la vibration ne fonctionne pas », et il avait raison : la première
+version basculait l'interrupteur en JavaScript (`input.checked = !input.checked`,
+plus un `change` fabriqué). Cela change la case et **n'active rien** ; iOS joue
+son retour sur l'ACTIVATION par le navigateur, pas sur la valeur. Le seul chemin
+est un vrai clic sur l'étiquette, que le navigateur traduit lui-même en
+activation. L'étiquette portait de surcroît `pointer-events:none` — seconde
+façon de la rendre inerte, aussi silencieuse que la première.
+
+**Le pire n'est pas la faute, c'est ce qui l'a cachée :** le compteur de la
+planche montait à chaque appui. Il comptait les APPELS, pas les vibrations — et
+personne ne peut compter une vibration depuis une page web. Un chiffre qui monte
+sur une fonction morte est plus dangereux qu'un chiffre absent, parce qu'on cesse
+de chercher. Ce que le contrôle tient désormais, c'est le mécanisme qui manquait
+(étiquette reliée, ni masquée ni inerte, et un clic qui active) ; ce qu'il ne
+tient toujours pas, et qui doit se lire ici, c'est le ressenti — celui-là se
+vérifie sur son téléphone, et nulle part ailleurs.
+
+### Les dix verts, et pourquoi ils sont mesurés
+
+Sa seconde demande du 31 août : *« fais-moi plusieurs déclinaisons du bouton avec
+des dégradés de vert différents, une dizaine »*. Elles vivent dans la même
+planche, numérotées, toutes pressables.
+
+**Une seule chose change de l'une à l'autre : les deux couleurs du dégradé.**
+Même capsule, même serif, même hauteur, même libellé — sinon ce sont des boutons
+qu'il compare, pas des verts. Et **trois teintes du premier jet ont été écartées
+avant de les lui montrer** parce qu'elles se ressemblaient : la faute du premier
+tour de `le-bouton-moins-lourd.html`, où cinq nuances du même vert lui avaient
+été présentées comme cinq idées.
+
+**Le voile de l'appui est un calque, pas un `filter`.** `brightness()`
+éclaircirait aussi le texte, qui perdrait précisément le contraste que
+l'éclaircissement du fond vient de lui coûter.
+
+**Les contrastes se mesurent aux DEUX extrémités du dégradé, et sous le voile.**
+Une capsule dont seul le haut passerait aurait un bas illisible ; et l'état
+pressé — le plus défavorable, puisque le fond monte vers le texte — est celui que
+personne ne pense à regarder. Quarante relevés par teinte : pire 5,26:1 en clair,
+6,42:1 en sombre. Les valeurs sont lues sur les variables que le CSS emploie
+(`--haut`, `--bas`), jamais recopiées dans le contrôle — deux listes finissent
+toujours par diverger.
+
 ### Ce qui l'éprouve, et ce que le contrôle ne peut pas dire
 
 `scripts/verifier-maquette-bouton-qui-repond.mjs` mesure, sur les **quatre**
