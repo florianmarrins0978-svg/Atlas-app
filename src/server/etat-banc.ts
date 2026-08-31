@@ -196,11 +196,14 @@ export function etatConstructionBanc(): EtatConstructionBanc | null {
   // `production`, et `laVersionRapideSeConstruit()` répond « non » — ce qui
   // était juste tant que servir bâti signifiait servir à jour. Le témoin de
   // chantier est le seul à connaître la différence.
-  const chantier =
-    estBancDEssai({
-      ATLAS_PROFIL: process.env.ATLAS_PROFIL,
-      ATLAS_BANC_ESSAI: process.env.ATLAS_BANC_ESSAI,
-    }) && chantierOuvert();
+  //
+  // **`estBancDEssai()` sans argument, et surtout pas les variables à la main.**
+  // Les nommer ici en ferait une SECONDE décision de ce qu'est un banc — c'est
+  // le défaut de M12, où trois endroits lisaient `ATLAS_BANC_ESSAI` et
+  // ignoraient tous `ATLAS_PROFIL`, la seule marque que `demarrer.sh` pose
+  // vraiment. `scripts/test-mise-a-jour-role-db.ts` refuse ce retour, et il
+  // vient de le refuser.
+  const chantier = estBancDEssai() && chantierOuvert();
 
   // On sert la version d'AVANT : il n'y a aucun préchauffage à raconter — les
   // écrans sortent déjà en quelques millisecondes. Ce qu'il faut dire tient en
