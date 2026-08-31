@@ -18,6 +18,28 @@ ligne « fait » qui ne l'est pas coûte plus cher qu'une ligne absente.
 
 ---
 
+## « Terminés » porte la date du chantier, et la ligne dorée a maigri (31 août 2026)
+
+Sous le nom du client, l'écran écrit maintenant **la date du chantier puis le
+montant prévu** — « 12 août · 360,00 € prévus » —, et la capsule dit **« À
+FACTURER »**. « Pas encore facturé » n'existe plus : la capsule le disait déjà,
+sur la même ligne. Il a choisi la proposition B de
+`appli/termines-date-du-chantier.html`, puis : *« très bien, code-moi ça »*.
+
+| | |
+|---|---|
+| la règle | `libelleDateChantier` et `libelleEtatLigne`, dans `src/lib/termines-par-mois.ts` |
+| l'écran | `src/app/termines/ListeTermines.tsx` |
+| l'année | écrite **seulement si ce n'est pas celle du jour** — l'onglet « À facturer » mêle tous les mois |
+| sans date ni devis | **pas de deuxième ligne du tout** : ni tiret, ni phrase, ni « · » pendu |
+
+**Ce que la date EST, et il faut le savoir avant d'y toucher :** `datePlanifiee`,
+la date du planning — l'application n'en garde aucune autre. Un chantier clôturé
+sans être passé par le planning n'a donc pas de date. **Question ouverte, à
+lui :** faut-il saisir une vraie date de réalisation à la clôture ?
+
+---
+
 ## EN ATTENTE : le geste des boutons — une planche, pas du code (31 août 2026)
 
 **Rien n'a bougé dans l'application**, et c'est l'état exact du produit : les

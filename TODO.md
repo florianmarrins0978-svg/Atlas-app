@@ -9,48 +9,33 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
-## EN ATTENTE DE SA RÉPONSE : la date du chantier dans « Terminés » (31 août 2026)
+## ~~La date du chantier dans « Terminés »~~ — FAIT le 31 août 2026
 
 Sa demande du 31 août — *« changer le bouton FACTURER en À FACTURER, et à côté du
-nom du client inscrire la date à laquelle le chantier a été réalisé ; propose,
-fais-moi un visuel seulement pour la date avant de coder »*.
+nom du client inscrire la date à laquelle le chantier a été réalisé »*, puis,
+devant la planche : *« supprime "Pas encore facturé" en doré »*, et *« très bien,
+code-moi ça »*.
 
-La planche : `appli/termines-date-du-chantier.html`, en ligne à
-https://florianmarrins0978-svg.github.io/Atlas-app/termines-date-du-chantier.html
+La planche : `appli/termines-date-du-chantier.html` — quatre places pour la date,
+**il a retenu la B** (la date ouvre la deuxième ligne, devant le montant).
 
-**Ce qui est TRANCHÉ et n'attend rien**, à poser dans
-`src/app/termines/ListeTermines.tsx` **en même temps que la date**, pour ne pas
-lui faire redémarrer son espace trois fois :
+~~Ce qui a été codé~~ (`src/lib/termines-par-mois.ts`,
+`src/app/termines/ListeTermines.tsx`) :
 
-  1. le bouton devient **« À FACTURER »** ;
-  2. **« Pas encore facturé » disparaît** — sa demande du 31 août au soir,
-     devant la planche. Le bouton, à trois centimètres, disait déjà la même
-     chose sur chaque rangée. Ce qui reste de la ligne dorée : la date, et
-     « 360,00 € prévus » quand un devis a été envoyé.
+  1. ~~la capsule dit **« À FACTURER »**~~ ;
+  2. ~~**« Pas encore facturé » a disparu**~~ — la capsule, à trois centimètres,
+     disait déjà la même chose sur chaque rangée ;
+  3. ~~la ligne dorée porte **la date puis le montant prévu**~~ — « 12 août ·
+     360,00 € prévus », et l'**année ne s'écrit que si ce n'est pas celle du
+     jour** (l'onglet « À facturer » mêle tous les mois) ;
+  4. ~~une rangée sans date NI devis envoyé **n'a plus de deuxième ligne**~~ :
+     ni tiret, ni phrase de remplacement, ni « · » pendu tout seul.
 
-**Et son retrait découvre des lignes vides**, ce qui n'existait pas avant : un
-chantier sans montant au devis n'a plus que sa date, et un chantier sans date NI
-montant n'a plus de deuxième ligne du tout. C'est ce qu'il faut coder — pas un
-« — » ni une phrase de remplacement : on n'écrit pas ce qu'on ne sait pas.
-Attention au séparateur « · », qui ne doit jamais rester pendu tout seul.
-
-**« Facturé le 20 août » reste**, lui : aucun bouton ne le dit à sa place.
-
-**Ce qu'on attend de lui :** A, B, C ou D — la place de la date. A derrière le
-nom en gris, B en tête de la ligne d'état, C en surtitre doré, D en étiquette
-devant le nom.
-
-**Et une réserve qui lui revient, écrite sur la planche :** l'application ne
-garde aucune date de réalisation distincte. Elle affichera `datePlanifiee`, la
-date du planning — celle qui range déjà ces chantiers par mois. Un chantier
-clôturé sans être passé par le planning n'a donc pas de date : la ligne n'en
-affiche aucune et n'en invente pas. S'il veut une vraie date de réalisation,
-c'est un geste de plus à la clôture, et c'est à lui de le décider.
-
-**Ce qui reste à écrire quand il aura choisi :** une fonction pure
-(`src/lib/termines-par-mois.ts`) qui rend « 12 août » et **n'écrit l'année que
-si elle n'est pas celle du jour** — l'onglet « À facturer » mêle tous les mois,
-et « 14 septembre » sans année s'y lit comme le mois qui vient.
+**CE QUI RESTE OUVERT, ET C'EST À LUI :** la date affichée est `datePlanifiee`,
+celle du planning — l'application n'en garde aucune autre. Un chantier clôturé
+sans être passé par le planning n'a donc pas de date, et sa rangée n'en affiche
+aucune. S'il veut une vraie date de réalisation, il faudra la saisir à la
+clôture : c'est un geste de plus pour lui, et il n'a pas répondu.
 
 ## EN ATTENTE DE SA RÉPONSE : la force du geste des boutons (31 août 2026)
 

@@ -235,6 +235,69 @@ export function numeroCourt(numero: string): string {
   return fin ? `Facture n° ${Number(fin[1])}` : `Facture ${numero}`;
 }
 
+/**
+ * « 12 août » — la date à laquelle le chantier a été réalisé.
+ *
+ * **Sa demande du 31 août 2026 :** *« à côté du nom du client il faudrait
+ * inscrire la date à laquelle le chantier a été réalisé »*. Planche
+ * `appli/termines-date-du-chantier.html`, proposition **B** retenue : la date
+ * ouvre la deuxième ligne, devant le montant.
+ *
+ * **C'est `datePlanifiee`, et il faut le savoir.** L'application ne garde
+ * aucune date de réalisation distincte : elle garde la date du planning, celle
+ * qui range déjà ces chantiers par mois. Un chantier déplacé la voit changer,
+ * donc dans les faits c'est bien le jour où il a été fait ; un chantier clôturé
+ * sans être passé par le planning n'en a aucune, et la ligne n'en invente pas.
+ *
+ * **L'ANNÉE NE S'ÉCRIT QUE SI CE N'EST PAS CELLE DU JOUR**, et c'est l'onglet
+ * « À facturer » qui l'impose : il mêle tous les mois, pour rattraper un retard
+ * de facturation (sa demande du 22 août). « 14 septembre » sans année, sur un
+ * chantier de l'an dernier, s'y lit comme le mois qui vient — et l'on croit
+ * avoir facturé ce qu'on n'a pas facturé.
+ *
+ * @param anneeCourante `AAAA`, décidée sur le SERVEUR. La lire dans le
+ *   navigateur ferait rendre au serveur une année et au client une autre au
+ *   passage de minuit : React refuse alors l'hydratation, et l'écran fige.
+ */
+export function libelleDateChantier(jour: string | null, anneeCourante: string): string {
+  if (!jour) return "";
+  const numero = Number(jour.slice(8, 10));
+  const mois = moisSeul(jour.slice(0, 7));
+  if (!numero || !mois) return "";
+  const annee = jour.slice(0, 4);
+  return annee === anneeCourante ? `${numero} ${mois}` : `${numero} ${mois} ${annee}`;
+}
+
+/**
+ * La deuxième ligne d'une rangée, assemblée morceau par morceau.
+ *
+ * **« Pas encore facturé » est parti le 31 août 2026, à sa demande** — *« supprime
+ * "Pas encore facturé" en doré »*. La phrase ouvrait chaque rangée dorée pendant
+ * qu'une capsule « À FACTURER » disait exactement la même chose à trois
+ * centimètres, sur la même ligne.
+ *
+ * **Elle rend donc parfois une chaîne VIDE**, ce qui n'existait pas avant : un
+ * chantier sans montant au devis n'a plus que sa date, et un chantier sans date
+ * ni montant n'a plus de deuxième ligne du tout. L'écran n'affiche alors rien —
+ * ni tiret, ni phrase de remplacement : on n'écrit pas ce qu'on ne sait pas
+ * (`docs/AGENT.md` §3).
+ *
+ * **Et les morceaux se JOIGNENT, ils ne se concatènent pas.** Un « · » écrit en
+ * dur derrière la date restait pendu dans le vide dès que le reste manquait.
+ */
+export function libelleEtatLigne(l: LigneAffichee, anneeCourante: string): string {
+  const bouts: string[] = [];
+  const date = libelleDateChantier(l.datePlanifiee, anneeCourante);
+  if (date) bouts.push(date);
+  if (l.aFacturer) {
+    if (l.montant !== null) bouts.push(`${formatEuros(l.montant)} prévus`);
+  } else {
+    // « Facturé le 20 août » reste, lui : aucun bouton ne le dit à sa place.
+    bouts.push(libelleFacturee(l));
+  }
+  return bouts.join(" · ");
+}
+
 /** « Facturé le 20 août », d'après la date d'émission — ou rien si on l'ignore. */
 export function libelleFacturee(l: LigneAffichee): string {
   const jour = l.factureDateEmission;

@@ -9,7 +9,7 @@ import {
   decalerMois,
   factureesPartout,
   formatEuros,
-  libelleFacturee,
+  libelleEtatLigne,
   nomDuMois,
   resumeDuMois,
   type LigneAffichee,
@@ -54,6 +54,16 @@ export default function ListeTermines({
   moisCourant: string;
 }) {
   const [onglet, setOnglet] = useState<"tout" | "attente">("tout");
+
+  /**
+   * L'année du jour, tirée du mois que le SERVEUR a décidé.
+   *
+   * C'est elle qui dit si la date d'un chantier s'écrit avec son année
+   * (`libelleDateChantier`). La relire d'un `new Date()` ici rendrait une année
+   * au serveur et une autre au client au passage de minuit, et React refuserait
+   * l'hydratation — le même piège que `moisCourant` juste en dessous.
+   */
+  const annee = moisCourant.slice(0, 4);
 
   const attente = useMemo(() => aFacturerPartout(lignes), [lignes]);
   const faites = useMemo(() => factureesPartout(lignes), [lignes]);
@@ -101,7 +111,7 @@ export default function ListeTermines({
                 confondus.
               </Compte>
               {attente.map((l) => (
-                <Ligne key={l.id} ligne={l} />
+                <Ligne key={l.id} ligne={l} annee={annee} />
               ))}
             </>
           )}
@@ -166,7 +176,7 @@ export default function ListeTermines({
                 {faites.length} facturé{faites.length > 1 ? "s" : ""}
               </p>
               {mois.lignes.map((l) => (
-                <Ligne key={l.id} ligne={l} />
+                <Ligne key={l.id} ligne={l} annee={annee} />
               ))}
             </>
           )}
@@ -307,7 +317,20 @@ function Onglet({
 }
 
 /**
- * Une ligne : le nom, ce qu'elle en est, et le montant — ou le bouton.
+ * Une ligne : le nom, la date du chantier, et le montant — ou le bouton.
+ *
+ * **La date est arrivée le 31 août 2026**, à sa demande : *« à côté du nom du
+ * client il faudrait inscrire la date à laquelle le chantier a été réalisé »*.
+ * Quatre places lui ont été dessinées (`appli/termines-date-du-chantier.html`,
+ * essayables au doigt) ; il a retenu la **B** — la date ouvre la deuxième ligne,
+ * devant le montant. Elle y coûte zéro pixel de hauteur, et laisse au nom toute
+ * sa largeur : sur la ligne du nom, un nom long se serait coupé pour elle.
+ *
+ * **« Pas encore facturé » est parti le même soir**, à sa demande devant la
+ * planche. La capsule « À FACTURER », à trois centimètres sur la même ligne,
+ * disait déjà exactement cela. **Une rangée peut donc n'avoir PLUS DE DEUXIÈME
+ * LIGNE du tout** — pas de date, pas de devis envoyé : on n'écrit rien plutôt
+ * que d'inventer.
  *
  * **Toute la ligne mène à la facture, et il n'y a qu'UN lien.** La capsule
  * « Facturer » est un `span` à l'intérieur : deux liens superposés dans la même
@@ -317,7 +340,8 @@ function Onglet({
  * **« Facturer » ouvre l'écran de facture, il ne facture pas.** Rien ne part
  * chez un client sans un geste du patron (`docs/AGENT.md` §6).
  */
-function Ligne({ ligne }: { ligne: LigneAffichee }) {
+function Ligne({ ligne, annee }: { ligne: LigneAffichee; annee: string }) {
+  const etat = libelleEtatLigne(ligne, annee);
   return (
     <Link
       href={`/chantiers/${ligne.id}/facture`}
@@ -349,27 +373,35 @@ function Ligne({ ligne }: { ligne: LigneAffichee }) {
           {ligne.nom}
         </b>
         {/* **La ligne d'état s'enroule, elle ne se coupe pas.** Vu sur une
-            capture de l'écran, avec de vrais montants : « Pas encore facturé ·
-            1 764,00 € prévus » perdait « prévus », et parfois le montant
+            capture de l'écran, avec de vrais montants : « 12 août ·
+            1 764,00 € prévus » perdrait « prévus », et parfois le montant
             lui-même. Le NOM, lui, reste sur une ligne — un nom se reconnaît
-            tronqué, un chiffre coupé ne se devine pas. */}
-        <span
-          className="mt-[5px] block text-[13px] leading-[1.5]"
-          style={{ color: ligne.aFacturer ? colors.or : colors.muted }}
-        >
-          {ligne.aFacturer
-            ? ligne.montant === null
-              ? "Pas encore facturé"
-              : `Pas encore facturé · ${formatEuros(ligne.montant)} prévus`
-            : libelleFacturee(ligne)}
-        </span>
+            tronqué, un chiffre coupé ne se devine pas.
+
+            **Vide, elle n'existe pas.** Un `span` vide laisserait ses 5 px de
+            marge et un interligne : la rangée paraîtrait porter une information
+            qu'on n'arrive pas à lire. */}
+        {etat !== "" && (
+          <span
+            className="mt-[5px] block text-[13px] leading-[1.5]"
+            style={{ color: ligne.aFacturer ? colors.or : colors.muted }}
+            data-atlas="etat-ligne"
+          >
+            {etat}
+          </span>
+        )}
       </span>
       {ligne.aFacturer ? (
         <span
           className="flex min-h-11 flex-none items-center rounded-full px-[17px] text-[12.5px] font-semibold uppercase"
           style={{ backgroundColor: colors.rust, color: colors.card, letterSpacing: "0.12em" }}
+          // **Un repère plutôt que son texte** (`CLAUDE.md` §5 bis) : la capsule
+          // s'appelait « Facturer » jusqu'au 31 août 2026, et les contrôles qui
+          // la cherchaient par son libellé ont rougi sur du code juste le jour
+          // où il l'a fait changer.
+          data-atlas="capsule-a-facturer"
         >
-          Facturer
+          À facturer
         </span>
       ) : (
         <span
