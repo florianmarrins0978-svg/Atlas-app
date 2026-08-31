@@ -22,12 +22,12 @@ ligne « fait » qui ne l'est pas coûte plus cher qu'une ligne absente.
 
 **Rien n'a bougé dans l'application**, et c'est l'état exact du produit : la
 dictée de la fiche chantier porte toujours son disque plein de 76 px, son rond
-d'envoi plein, et le chrono et l'onde en dessous, chacun sur son axe.
+d'envoi plein, sa pause, et le chrono et l'onde en dessous, chacun sur son axe.
 
-Sa remarque du 31 août : *« ça dénature l'appli »*. Quatre allures lui sont
-proposées sur `appli/dictee-embellie.html` — la barre, l'anneau, la ligne, le
-galet —, au même repos et aux mêmes gestes. **Sa réponse est attendue : un
-numéro.**
+Il a choisi **la ligne** parmi les quatre allures de `appli/dictee-embellie.html`,
+puis l'a corrigée : plus de pause, et une touche d'envoi au fond de la page,
+encadrée de vert. `appli/dictee-la-ligne.html` porte ces corrections et pose la
+dernière question — **de combien la touche s'aplatit : A, B ou C.**
 
 ---
 

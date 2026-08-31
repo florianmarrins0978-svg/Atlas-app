@@ -9,6 +9,32 @@ sert.
 
 ---
 
+## Dernier lot : la ligne, corrigée trois fois par lui (31 août 2026, au soir)
+
+**Rien n'est codé** (`CLAUDE.md` §3 bis). Il a choisi **la ligne** parmi les
+quatre allures, puis l'a corrigée : *« supprime le rond avec le carré dedans
+pour me mettre pause. Et la touche envoyer : garde l'encadré vert et
+l'intérieur, mais la couleur du fond de la page (beige) […] et fais-la
+légèrement plus à plat. »*
+
+| | |
+|---|---|
+| la planche | `appli/dictee-la-ligne.html` |
+| en ligne | https://florianmarrins0978-svg.github.io/Atlas-app/dictee-la-ligne.html |
+| son contrôle | `scripts/verifier-maquette-dictee-la-ligne.mjs` (dans `npm run verifier:maquette`) |
+| ce qu'on attend | **une lettre** : A ronde, B légèrement à plat, C plus à plat |
+| ce que ça touchera | `src/app/chantiers/[id]/AnneauNoteVocale.tsx` et le bloc `.atlas-dictee` de `src/app/globals.css` |
+
+**Ce qui est tranché et ne se rediscute pas :** la ligne, la disparition de la
+pause (deux gestes : jeter, envoyer), la touche d'envoi au fond de la page
+encadrée de vert. L'aplat de la dictée passe de 7 956 px² à 64.
+
+**Le piège au moment de coder :** supprimer la pause supprime aussi la
+possibilité de suspendre pour répondre à quelqu'un sur un chantier. C'est sa
+demande, ce n'est pas un oubli — mais cela se dit avant, pas après.
+
+---
+
 ## Dernier lot : quatre allures pour la dictée de la fiche chantier (31 août 2026)
 
 **Rien n'est codé, et c'est volontaire** (`CLAUDE.md` §3 bis). Sa remarque,

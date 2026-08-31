@@ -9,6 +9,32 @@ Format : le plus récent en tête.
 
 ## 2026-08-31
 
+### Il a choisi la ligne, et l'a corrigée trois fois : plus aucun aplat
+
+Sa réponse du soir, après avoir essayé les quatre allures : *« garde-moi la
+ligne, mais supprime le rond avec le carré dedans pour me mettre pause. Et la
+touche envoyer : garde l'encadré vert et l'intérieur, mais la couleur du fond
+de la page (beige) […] et fais-la légèrement plus à plat. »*
+
+`appli/dictee-la-ligne.html` — **rien n'est codé** (`CLAUDE.md` §3 bis). La
+pause disparaît (deux gestes, jeter et envoyer) ; la touche d'envoi prend le
+fond de la PAGE (`--bone`, pas le crème des cartes, sans quoi elle se lirait
+comme une pastille collée), encadré vert, avion vert. **L'aplat tombe de
+7 956 px² à 64** — la seule pastille du chrono.
+
+**« Légèrement plus à plat » ne se code pas, ça se regarde** : trois onglets
+qui ne changent QUE la hauteur de cette touche (44 × 44, 48 × 40, 52 × 36).
+Changer autre chose lui ferait choisir un écran au lieu d'une hauteur.
+
+**Ce que la suppression de la pause coûte est écrit dans la planche**, parce
+qu'il le découvrirait autrement sur un chantier : on ne peut plus suspendre
+pour répondre à quelqu'un — on parle, puis on jette ou on envoie.
+
+Le contrôle (`scripts/verifier-maquette-dictee-la-ligne.mjs`) vérifie qu'aucun
+appui ne fige le chrono — un bouton retiré de l'œil mais laissé sous le doigt
+serait pire que rien —, mesure le fond réel de la touche, et additionne
+l'aplat. Confronté aux deux défauts qu'il vise, il rougit sur les deux.
+
 ### La dictée de la fiche chantier « dénature l'appli » — quatre allures à essayer
 
 **Sa remarque du 31 août, capture à l'appui.** Elle se mesure, et c'est ce qui
