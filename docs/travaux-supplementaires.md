@@ -214,6 +214,37 @@ déjà : PDF, canal SMS ou courriel, envoi, relevé de TVA. Le supplément n'a r
   l'écran comme sur le PDF. La mention « acceptés par SMS » qui le suivait est
   partie avec la trace d'accord.
 
+### Sa question du 1ᵉʳ septembre, 01 h 25 : les TS peuvent-ils avoir une autre TVA ?
+
+*« Est-il possible que les TS n'aient pas la même TVA ? Je pense que oui, donc il
+faut rajouter la possibilité de modifier la TVA juste pour les TS. »*
+
+**Oui — et c'est plus grave qu'un confort.** Un paysagiste facture à trois taux :
+
+| Taux | Quoi |
+|---|---|
+| **5,5 %** | entretien du jardin rendu comme service à la personne |
+| **10 %** | travaux sur un logement achevé depuis plus de deux ans |
+| **20 %** | création, terrasse, clôture, et tout client professionnel |
+
+Le devis peut donc être à 10 % et le supplément à 20 % : une haie taillée, puis
+une terrasse posée, ce n'est pas le même taux.
+
+**L'article 268 bis du CGI tranche le reste : une facture qui ne ventile pas ses
+taux est taxée EN ENTIER au taux le plus élevé.** Un supplément à 20 % noyé dans
+une facture à 10 % ne coûte pas dix points sur le supplément — il fait passer
+**toute** la facture à 20 %, à la charge de l'artisan.
+
+D'où, dans la planche : **le taux se choisit à la ligne** (20 / 10 / 5,5), et les
+totaux portent **une ligne de TVA par taux réellement employé**, avec le socle
+sur lequel elle porte. Le PDF fait de même — sans quoi la ventilation ne prouve
+rien : c'est le document qui compte, pas l'écran.
+
+**Ce que cela impose au code, et il faut le savoir avant de commencer :** le taux
+vit aujourd'hui sur la FACTURE (`factures.tauxTva`), pas sur la ligne. Il devra
+descendre sur `lignes_facture`, et les totaux se recalculer par taux — le relevé
+de TVA compris.
+
 ### Sa question du 1ᵉʳ septembre : où se remplit le formulaire ?
 
 *« Lorsqu'il clique sur ajouter des TS, le mieux c'est que la facture s'ouvre et
@@ -229,7 +260,16 @@ Les deux formes sont sur la planche, en interrupteur, sur les mêmes chiffres.
 | **Un écran à part** (proposé par défaut) | la facture revient entière, d'un coup, une fois validée ; on peut poser deux lignes de suite sans rouvrir le formulaire |
 | **Déroulé sous le bouton** | le total et le bouton d'envoi sont poussés hors de l'écran au moment précis où on les regarde — c'est ce qu'il a lui-même vu |
 
-**Avis donné : l'écran à part.** Le reste attend son choix.
+**Avis donné : l'écran à part. IL A CHOISI L'AUTRE** — *« code la mienne,
+déroule sous le bouton »* (1ᵉʳ septembre, 01 h 25). C'est sa décision, elle est
+prise en connaissance du défaut qu'il avait lui-même relevé, et la planche ne
+garde plus que cette forme : une planche qui conserve l'option écartée fait
+rechoisir à chaque fois.
+
+**Et tous les boutons s'alignent sur « Envoyer la facture »**, qui est le bouton
+de référence : le bouton d'ajout vit désormais dans une plage, comme le canal
+d'envoi. Mesuré, pas jugé à l'œil — même x, même largeur, au dixième de pixel.
+Les raccourcis de prestations sont retirés.
 
 La planche : `appli/ts-sur-la-facture.html`, calquée sur sa facture
 F2026-000001.
