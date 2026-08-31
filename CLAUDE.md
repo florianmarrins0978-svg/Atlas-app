@@ -1170,6 +1170,29 @@ catalogue portant une entrée générique nommée « Turbine », l'invention
 tolérant ne prouve rien** — celui-là a été trouvé en le confrontant à
 l'invention même qu'il devait bannir.
 
+## 5 quater. Éprouver le GESTE DU PATRON, pas la fonction qu'on vient d'écrire
+
+**Payé le 28 août 2026.** Six gestes de l'assistant ont été livrés avec leur
+code, leurs refus métier et leurs contrôles — **tous verts**, et **aucun
+atteignable** : la liste que le modèle a le droit d'employer n'avait pas été
+complétée. Le patron a essayé, et il a eu « L'assistant n'a pas pu formuler ses
+propositions correctement. »
+
+**Ce qui a permis de le rater :** les contrôles construisaient la proposition
+**à la main**, puis la confirmaient. Ils éprouvaient donc la moitié qu'on venait
+d'écrire, jamais le chemin qu'il emprunte, lui — dire une phrase, et voir si le
+geste sort.
+
+**La question à se poser avant d'écrire un contrôle :** *par où le patron
+arrive-t-il ?* Si le contrôle entre par une porte de service, il ne dit rien de
+la porte d'entrée — et c'est celle-là qui peut être fermée.
+
+**Et quand un chemin ne peut pas être joué en entier ici** — le modèle réel n'a
+pas de clé sur ce poste —, on tient au moins ce qui se tient : que chaque geste
+soit **nommable** ET **exécutable** (`test-agent-gestes.ts`, « aucune porte
+fermée »). Deux listes finissent toujours par diverger ; celle-là avait un jour
+de retard.
+
 ## 5 bis. Un contrôle ne doit pas réclamer ce que le patron a fait retirer
 
 **Payé le 20 août 2026.** Il a demandé de vider la fiche d'un client — *« tout

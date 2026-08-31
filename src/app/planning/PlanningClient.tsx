@@ -1913,8 +1913,10 @@ function FeuilleChantier({
   if (!chantier) return null;
   const adresse = chantier.adresseChantier?.trim() || null;
   // **Deux destinations, plus trois.** Sa demande du 21 août : « pas besoin
-  // d'en mettre trois ». `plans` est celle qu'il nomme « Maps » sur son
-  // iPhone ; Google Maps sort, elle faisait doublon.
+  // d'en mettre trois ». Et « Maps », c'est **Google Maps** — sa demande du
+  // 31 août 2026, capture à l'appui : *« pour Maps c'est Google Maps que je
+  // veux »*. Le bouton servait Plans d'Apple, qui est ce que son iPhone appelle
+  // « Plans » ; ce n'est pas ce qu'il ouvre pour aller sur un chantier.
   const liens = liensItineraire(adresse);
   const tel = lienAppel(chantier.clientTelephone);
 
@@ -1938,7 +1940,7 @@ function FeuilleChantier({
       </p>
 
       <div className="mt-2.5 flex gap-1.5">
-        <Geste href={liens?.plans ?? null}>Maps</Geste>
+        <Geste href={liens?.google ?? null}>Maps</Geste>
         <Geste href={liens?.waze ?? null}>Waze</Geste>
       </div>
       <div className="mt-1.5 flex gap-1.5">

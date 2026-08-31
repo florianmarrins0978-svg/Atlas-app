@@ -1,6 +1,6 @@
 # État du projet
 
-**Dernière mise à jour :** 2026-08-30 · branche `main`
+**Dernière mise à jour :** 2026-08-31 · branche `main`
 · dernière migration `drizzle/0071_rappel_vu.sql`
 
 *(Deux en-têtes de mise à jour cohabitaient ici depuis une fusion du 29 août,
@@ -24,7 +24,7 @@ ligne « fait » qui ne l'est pas coûte plus cher qu'une ligne absente.
 Atlas lui redemandait les deux. Le diamètre ne se perdait nulle part dans la
 chaîne : **il n'était jamais créé** — le seul écrivain de la colonne était ses
 réponses aux questions dont il se plaignait. Détail et pourquoi :
-`ARCHITECTURE.md` §216.*
+`ARCHITECTURE.md` §220.*
 
 Trois choses en découlent, toutes visibles chez lui :
 
@@ -37,6 +37,71 @@ Trois choses en découlent, toutes visibles chez lui :
 **Ce qui reste à éprouver, et qui ne peut pas l'être ici :** ce que le modèle
 répond vraiment. `npm run verifier:chaine-dictee` sur son espace, où les clés
 sont posées.
+
+---
+
+## Un prix posé débloque l'envoi, et il peut proposer demain (31 août 2026)
+
+Ses deux captures du matin, sur l'écran d'envoi du devis.
+
+| | État |
+|---|---|
+| Un prix tapé sur l'écran du DEVIS efface « à chiffrer » | **fait** — il ne l'effaçait que depuis l'écran Prix, et l'envoi restait bloqué sans aucune sortie |
+| La phrase du refus, écrite une seule fois | **fait** — deux versions avaient divergé, d'où ses fautes d'accord |
+| Un devis ne peut plus afficher un total que son tableau contredit | **fait** — le PDF disait « à chiffrer » sur 1 720 € que le total comptait |
+| Il peut proposer aujourd'hui et demain | **fait** — l'application prévient, elle ne refuse plus |
+| L'application ne SUGGÈRE toujours rien avant après-demain | **inchangé, et voulu** |
+| Un jour passé | **refusé**, et ce n'est pas un arbitrage |
+| Son client peut accepter une date proche | **fait** — il ne le pouvait pas, et rien ne l'aurait signalé |
+
+**Ce qui reste ouvert :** le délai de deux jours n'est réglable nulle part. Il
+est écrit dans le code, pas dans les réglages de l'entreprise. Personne ne l'a
+demandé — à trancher par le patron.
+
+Raisons et pièges : `ARCHITECTURE.md` §216.
+
+## La connexion tient dans un écran (31 août 2026)
+
+**Sa demande :** *« Pour la page connexion je veux qu'elle tienne sur une seule
+page et supprime toutes les petites phrases en gris sous les boutons, garde que
+les titres. »*
+
+| | |
+|---|---|
+| avant | **1203 px** pour 664 de hauteur utile — « Ailleurs » à un écran du reste |
+| après | **658 px**, tout visible d'un seul tenant sur son iPhone |
+| les gloses grises | **parties** : Face ID, « vous resterez connecté », « un téléphone perdu… », la ligne sous « Me déconnecter partout » |
+| ce qui reste | les titres, les trois champs, les trois gestes |
+
+**Ce qui ne s'est pas perdu avec les phrases :** « Au moins 12 caractères »
+n'est plus affiché d'avance mais se dit **quand il tape trop court**
+(`etatNouveau`), sans quoi un bouton serait resté éteint sans raison lisible.
+
+**Ce qui s'est perdu, et qui est ouvert :** la promesse de Face ID — *« votre
+visage ne quitte jamais votre téléphone »* — n'est plus à l'écran. Elle survit
+dans le mode d'emploi. Les faits, eux, n'ont pas bougé : aucune donnée
+biométrique n'entre en base, et c'est la base que la suite interroge.
+
+Compte-rendu qui lui est destiné : `docs/connexion-une-page.md`. Le détail :
+`ARCHITECTURE.md` §217.
+
+## L'or est le même sur les huit apparences (31 août 2026)
+
+**Sa consigne :** *« pour l'apparence, j'aimerais que tout ce qui est en doré
+sur la version originale apparaisse en doré sur les autres apparences »*.
+
+Chaque charte portait son propre second accent — sauge sur Pierre, argile sur
+Moka, prune sur Prune, un bleu et un rose pour les traits de Brume et de Prune.
+Changer d'apparence repeignait donc tout ce que l'or porte : l'accueil, les
+libellés d'état, les filets, le sceau, le compteur de la dictée.
+
+Les huit chartes portent l'or d'Origine, `#B98B47`, au caractère près
+(`src/lib/chartes.ts`). Mesuré : il se détache mieux sur les deux sombres (6,14
+sur Nuit) que sur Origine (2,77) — rien à remonter. Une suite tient la règle
+pour les huit ; les deux suites existantes vérifiaient la présence des jetons et
+la lisibilité, jamais l'identité. Détail : `ARCHITECTURE.md` §218.
+
+---
 
 ## La note vocale à la messagerie, et la fiche qui tient dans un écran (30 août 2026)
 
@@ -240,6 +305,24 @@ machines qui ont la place préchauffent comme avant.
 
 Éprouvé par `scripts/test-memoire-prechauffage.ts`, vu rougir contre trois
 régressions. Mesures et pistes écartées : `ARCHITECTURE.md` §203.
+
+---
+
+## Le réglage dit la couleur qu'il produit au planning (31 août 2026)
+
+**Sa réponse à la planche 99 : A**, arrêtée sur maquette puis codée le jour même
+(`appli/reglages-planning-complet.html`).
+
+Sous « Chantiers menés en même temps », l'écran disait *« C'est ce qui remplit
+votre planning »* : il annonçait un effet sans montrer ce qu'on verrait. Il dit
+maintenant **« 2 chantiers par jour. Planning ▪ complet. »**, avec le carré du
+calendrier et son mot.
+
+Deux pièces le tiennent, et elles ferment une divergence plutôt qu'elles
+n'ajoutent une couleur : `MOT_ETAT` (`src/lib/planning-jour.ts`) porte les
+quatre mots de la légende — que le calendrier écrivait en clair — et
+`phraseDuCompteur` rend deux morceaux, puisque ce qui se glisse entre eux n'est
+pas du texte mais `fondDeLEtat("plein")`.
 
 ---
 
@@ -1329,7 +1412,9 @@ l'application. Ce qui est **fait** :
   manque. Sans adresse, rien ne s'invente : les destinations s'éteignent.
   Retenu après quatre maquettes (`docs/maquettes/29` à `32`). Les gestes ont
   déménagé dans la feuille de chantier le 21 août ; la règle pure, elle, n'a pas
-  bougé (`src/lib/itineraire.ts`). `ARCHITECTURE.md` §70.
+  bougé (`src/lib/itineraire.ts`). Le bouton « Maps » ouvre **Google Maps**
+  depuis le 31 août — c'est Plans d'Apple qui est sorti, pas Google.
+  `ARCHITECTURE.md` §70.
 - **Le planning au mois, et les équipes nommées** (10 août, au soir) : sept
   colonnes sans bordure et la journée qui s'ouvre sous le calendrier. Réglages
   laisse nommer les équipes — mais **seulement à partir de deux** : seul, le mot

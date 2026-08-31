@@ -166,7 +166,26 @@ VEILLEUR=$$
 # trouverait la ligne de commande de ce script et conclurait toujours que le
 # serveur tourne. Le même piège avait déjà fait que `demarrer.sh` se tuait avant
 # de rien lancer.
-MOTIF='[n]ext(-server| dev| start)'
+# ═══════════════════════════════════════════════════════════════════════════
+# **LE MOTIF SE SURCHARGE, PARCE QU'UNE SUITE NE DOIT PAS TUER LA BATTERIE.**
+#
+# Trouvé le 31 août 2026. `test-fiche-pendant-relance.ts` lance CE veilleur sur
+# un faux dépôt, port 59999 où personne n'écoute, pour éprouver qu'il continue
+# de publier la fiche pendant une relance. Mais `pgrep -f` regarde TOUTE la
+# machine : le serveur Next de la batterie répond au motif, à quelques
+# centimètres de là.
+#
+# Le veilleur d'essai concluait donc « un serveur tient le port sans répondre »
+# — jamais « plus rien n'écoute » —, la suite rougissait sur un montage sain,
+# et deux tours plus tard il faisait `pkill` sur ce motif : **il tuait le
+# serveur de la batterie**. D'où des suites navigateur en échec ailleurs, sur
+# des « waitForURL » qui n'accusaient personne.
+#
+# Une variable d'environnement suffit à isoler l'essai, et la valeur par défaut
+# ne bouge pas d'un caractère. Ce n'est pas une porte ouverte : rien d'extérieur
+# ne pose l'environnement du veilleur sur l'espace du patron.
+# ═══════════════════════════════════════════════════════════════════════════
+MOTIF="${ATLAS_MOTIF_SERVEUR:-[n]ext(-server| dev| start)}"
 
 BASCULE="$(dirname "$0")/bascule-en-cours.sh"
 
