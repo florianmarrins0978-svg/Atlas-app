@@ -22,6 +22,17 @@ est destiné : `docs/devis-prix-et-date-proche.md`.
   `{ libelle, quantite, prixUnitaire }`. Lire `data.montant` laissait le second
   chemin bloquer l'envoi pour toujours — sans aucune sortie, et sans que rien à
   l'écran ne le trahisse.
+- **UN MONTANT POSÉ RÉPOND À LA QUESTION — le drapeau ne décide pas seul.**
+  Sa troisième capture : un PDF portant « à chiffrer » sur des lignes qui
+  pesaient 1 720 €, sous un Total HT qui les comptait. Une seule fonction lit
+  désormais cette question (`ligneAttendSonPrix`) pour l'écran, le PDF et
+  l'envoi — elle n'était juste que sur l'écran. **Ce qui est imprimé fait le
+  total imprimé.**
+- **Et c'est sûr parce que les deux chemins qui lèvent le drapeau écrivent
+  `montant: "0"` avec lui.** Un montant non nul sur une ligne marquée vient
+  forcément de sa main, jamais d'un prix deviné. Si un jour un chemin écrit un
+  montant deviné sous le drapeau, cet invariant tombe — c'est la seule chose à
+  surveiller.
 - **L'extinction est à SENS UNIQUE, et c'est délibéré.** Un montant qui retombe
   à zéro ne relève pas le drapeau : « à chiffrer » dit que le prix n'a pas été
   trouvé, pas que la ligne vaut zéro.

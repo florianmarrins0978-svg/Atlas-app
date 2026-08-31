@@ -19028,7 +19028,7 @@ puis remettre 3000 — au lieu d'une bascule de visibilité qui ne peut rien.
 
 ---
 
-## 216. Un prix posé qui ne débloquait rien, et un lendemain offert puis repris
+## 216. Un prix posé qui ne débloquait rien, un document qui se contredit, et un lendemain offert puis repris
 
 *Ses deux captures du 31 août 2026, sur le même écran d'envoi.*
 
@@ -19075,6 +19075,50 @@ serveur. Elles avaient divergé, et sa capture le montre : « 2 lignes attendent
 **son** prix […] Posez-**le** sur l'écran Prix » — le pluriel traité sur le verbe
 et nulle part ailleurs. Une seule fonction, `lignesEnAttenteDePrix`, écrit
 désormais la phrase pour les deux.
+
+### Le troisième, trouvé sur sa capture suivante : un document qui se contredit
+
+Son devis brouillon en PDF portait « à chiffrer » en face du dessouchage et de
+la tonte, un seul montant visible — **560,00 €** — et un **Total HT de
+2 280,00 €**. Le total comptait 1 720 € que le tableau refusait de montrer.
+
+**C'est le plus grave des trois, et pour une raison de nature :**
+
+| | |
+|---|---|
+| un devis **bloqué** | se voit, et n'atteint personne |
+| un devis **qui se contredit** | part chez le client, qui additionne, n'y arrive pas, et cesse de croire le reste |
+
+Le rendu lisait le drapeau **seul** — son commentaire affirmait « ni prix
+unitaire, ni montant : il n'y en a pas », et c'était faux dès qu'un prix avait
+été posé sur l'écran du devis. Le total, lui, se calcule sur `montant` : les
+deux ne pouvaient qu'être d'accord tant que le drapeau ne survivait pas à un
+prix.
+
+**L'invariant, désormais partagé** (`ligneAttendSonPrix`) : un montant posé
+répond à la question, quel que soit l'état du drapeau ; « à chiffrer » est
+réservé aux lignes qui ne portent réellement rien. **Ce qui est imprimé fait
+donc toujours le total imprimé.**
+
+**Pourquoi c'est sûr, et ce n'est pas une supposition** — c'est la question qui
+tranche, parce qu'un prix deviné ne doit jamais passer (`CLAUDE.md` §4) : les
+deux seuls chemins qui lèvent le drapeau (`devis-depuis-dictee.ts`,
+`appliquer-proposition.ts`) écrivent `montant: "0"` avec lui. Un montant non nul
+sur une ligne marquée ne peut donc venir que d'une saisie du patron.
+
+**Et la règle était déjà écrite, une fois sur trois.** L'écran du devis complet
+l'appliquait (`l.aChiffrer && montantDeLaLigne(l) <= 0`) ; le PDF et le contrôle
+d'envoi lisaient le drapeau seul. C'est le §3 dans son cas le plus coûteux :
+l'écran avait raison, et les deux autres se contredisaient sur le même document.
+
+**Effet de bord voulu :** les devis déjà bloqués dans sa base se rouvrent sans
+qu'il ait à retaper le moindre prix — le montant y est, il répond.
+
+**Le contrôle ne compare pas des chaînes.** Le séparateur de milliers est une
+espace insécable étroite, invisible dans un fichier source ; un contrôle qui
+rougirait sur ce caractère accuserait le mauvais coupable. Les montants sont
+relus en nombres, et la propriété éprouvée est celle qui compte : ce que le
+tableau montre fait le total qu'il affiche.
 
 ### Le second : « si l'utilisateur veut choisir le 1ᵉʳ septembre il doit pouvoir ! »
 

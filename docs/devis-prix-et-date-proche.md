@@ -39,6 +39,28 @@ qu'une.
 
 ---
 
+## 1 bis. Ce que ta capture du PDF a montré — et c'est le plus grave des trois
+
+Ton devis brouillon disait **« à chiffrer »** en face du dessouchage et de la
+tonte, un seul montant visible (560,00 €)… et un **Total HT de 2 280,00 €**.
+
+Le total comptait **1 720 €** que le tableau refusait de te montrer.
+
+**Pourquoi c'est pire que le blocage.** Un devis bloqué, tu le vois : il ne part
+pas. Un devis dont le total ne correspond pas à ses lignes, lui, **part chez ton
+client** — il additionne, n'y arrive pas, et il cesse de croire le reste du
+document. Y compris ce qui est juste.
+
+**Ce qui est corrigé.** Un montant posé répond à la question, partout : à
+l'écran, sur le PDF, et au moment de l'envoi. « À chiffrer » ne s'écrit plus que
+sur les lignes qui ne portent réellement rien. Ce que le tableau montre fait
+toujours le total affiché.
+
+**Et ça répare ce que tu as déjà en base :** tes devis actuellement bloqués se
+rouvrent sans que tu retapes le moindre prix. Le montant y est — il compte.
+
+---
+
 ## 2. « Si l'utilisateur veut choisir le 1er septembre il doit pouvoir ! »
 
 **Fait.** Tu peux proposer demain, et même aujourd'hui.
@@ -72,7 +94,7 @@ bout en bout : envoi, ouverture du lien, acceptation, chantier posé au planning
 
 ## Ce qui a été vérifié
 
-- Les trois contrôles neufs ont été **essayés contre l'ancienne version** : ils
+- Les contrôles neufs ont été **essayés contre l'ancienne version** : ils
   rougissent dessus, en nommant le défaut. Un contrôle qui n'a jamais échoué ne
   prouve rien.
 - Deux anciens contrôles exigeaient exactement ce que tu viens de faire changer

@@ -28,6 +28,21 @@ La phrase du refus n'est plus écrite deux fois. C'est de là que venaient ses
 fautes d'accord (« 2 lignes attendent **son** prix », « Posez-**le** ») : deux
 versions de la même règle, et rien ne disait laquelle faisait foi.
 
+### Un devis ne peut plus se contredire : le total fait ce que le tableau montre
+
+**Sa capture suivante, le PDF du brouillon :** « à chiffrer » en face du
+dessouchage et de la tonte, un seul montant visible (560,00 €) — et un Total HT
+de 2 280,00 €. Le document comptait 1 720 € qu'il refusait d'afficher.
+
+C'est plus grave que le blocage qui l'a produit : un devis bloqué se voit ; un
+devis dont le total ne correspond pas à ses lignes part chez le client, qui
+additionne, n'y arrive pas, et cesse de croire le reste.
+
+Le rendu lisait le drapeau seul. Un montant posé répond désormais à la question,
+partout — écran, PDF, contrôle d'envoi —, et « à chiffrer » reste réservé aux
+lignes qui ne portent réellement rien. **Les devis déjà bloqués dans sa base se
+rouvrent sans qu'il retape le moindre prix.**
+
 ### Il peut proposer demain — l'application prévient, elle ne refuse plus
 
 **Sa règle :** *« si l'utilisateur veut choisir le 1ᵉʳ septembre il doit

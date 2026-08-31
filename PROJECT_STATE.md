@@ -26,6 +26,7 @@ Ses deux captures du matin, sur l'écran d'envoi du devis.
 |---|---|
 | Un prix tapé sur l'écran du DEVIS efface « à chiffrer » | **fait** — il ne l'effaçait que depuis l'écran Prix, et l'envoi restait bloqué sans aucune sortie |
 | La phrase du refus, écrite une seule fois | **fait** — deux versions avaient divergé, d'où ses fautes d'accord |
+| Un devis ne peut plus afficher un total que son tableau contredit | **fait** — le PDF disait « à chiffrer » sur 1 720 € que le total comptait |
 | Il peut proposer aujourd'hui et demain | **fait** — l'application prévient, elle ne refuse plus |
 | L'application ne SUGGÈRE toujours rien avant après-demain | **inchangé, et voulu** |
 | Un jour passé | **refusé**, et ce n'est pas un arbitrage |
