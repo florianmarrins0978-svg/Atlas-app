@@ -9,6 +9,38 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
+## CINQ SUITES SONT ROUGES SUR `main` — ce n'est aucun lot en cours (31 août 2026)
+
+Mesuré en rejouant les mêmes six suites sur `f208e68` (l'état de `main` ce
+soir-là) puis sur une branche : **cinq échouent des deux côtés, à l'identique**.
+
+| La suite | Ce qu'elle dit |
+|---|---|
+| `test-facture-e2e.ts` | « la facture réglée ne figure pas au relevé » |
+| `test-tva-au-paiement-e2e.ts` | le relevé reste à 0 quand une facture passe à PAYÉE (4 cas) |
+| `test-planning-vers-facture-e2e.ts` | la confirmation ne porte pas la facture au relevé |
+| `test-facture-au-client-e2e.ts` | « Envoyer le devis » reste désactivé |
+| `test-envoi-client-e2e.ts` | le canal déduit de la seule coordonnée renseignée |
+
+Les quatre premières tournent autour du **relevé de TVA** : une seule cause,
+probablement. Personne ne peut livrer au vert tant qu'elles rougissent, et une
+session qui les découvre les impute à son propre lot — c'est ce qui vient
+d'arriver.
+
+## `test-madame-lucie-e2e.ts` rougit une fois sur deux, et la cause est trouvée
+
+Elle compte les lignes du devis **avant** le clic et exige zéro. Or l'accueil
+pose un `<Link>` vers `/chantiers/<id>/devis-complet` (`lienDeReprise`), et
+**Next.js le préextrait** : le serveur rend alors la page, qui prépare le devis
+(`devisAPreparer`, dans `src/app/chantiers/[id]/devis-complet/page.tsx`). Les lignes existent avant qu'il
+touche quoi que ce soit — sans qu'il ait rien touché, justement.
+
+Ce n'est pas une lenteur : c'est une course entre la préextraction et le clic.
+Le contrôle vise juste (« il n'a appuyé sur rien ») mais le mesure par un état
+que le navigateur peut fabriquer tout seul. À reprendre par quelqu'un qui
+touche ce domaine — vérifié rouge et vert sur la même branche, deux fois
+chacun.
+
 ## EN ATTENTE DE SA RÉPONSE : l'aplatissement de la touche d'envoi (31 août 2026)
 
 **Il a choisi LA LIGNE** parmi les quatre allures, et l'a corrigée trois fois le
