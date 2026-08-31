@@ -1417,3 +1417,95 @@ body {
   border-radius: 2px;
   opacity: 0.85;
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   LE BOUTON PLEIN : SA COULEUR, ET SON GESTE SOUS LE DOIGT
+
+   **Ses deux décisions du 31 août 2026, prises sur planche**
+   (`appli/le-bouton-qui-repond.html`) :
+
+     · *« mets-moi la couleur 8 partout sur chaque bouton plein de couleur
+       verte de l'appli, surtout pas ceux qui sont creux ou d'une autre couleur
+       que la verte »* — le vert 8 est **Cyprès**, `#20502e → #0f3319` ;
+     · *« comme force du geste tu mets discret sur chaque bouton qui demande à
+       être appuyé »* — l'échelle 0,975, la plus légère des trois.
+
+   Puis, quand la question des sept chartes lui a été posée : **« les boutons à
+   changer c'est seulement pour la version origine, ne touche pas aux autres
+   apparences ! »**
+
+   ─── CE QUI SÉPARE LA COULEUR DU GESTE, ET POURQUOI ────────────────────────
+
+   **La couleur ne vaut QUE pour Origine.** Le dégradé arrive par
+   `--atlas-degrade-plein`, que `variablesCharte()` n'écrit que pour elle. Les
+   six autres chartes n'écrivent rien : `none` reste, aucun dégradé n'est peint,
+   et leur aplat d'action — le bleu marine de Brume, par exemple — est intact.
+   C'est la mécanique déjà éprouvée des formes (`chartes.ts`) : une charte
+   muette ne change rien.
+
+   **Le geste, lui, vaut PARTOUT.** Un bouton qui répond au doigt n'est pas une
+   apparence : c'est le même geste quelle que soit la couleur, et le priver aux
+   six autres chartes ferait deux comportements dans la même application.
+
+   ─── POURQUOI UN VOILE, ET NON UN `filter` ─────────────────────────────────
+
+   `brightness()` éclaircirait AUSSI le texte, qui perdrait exactement le
+   contraste que l'éclaircissement du fond vient de lui coûter. Le voile est un
+   calque posé derrière les lettres.
+
+   Et il s'ÉCLAIRCIT, il ne s'assombrit pas : sous un doigt, un aplat qui fonce
+   disparaît dans l'ombre de la main. C'est ce que montrait sa capture.
+
+   ─── CONTRASTES MESURÉS, PAS ESTIMÉS ───────────────────────────────────────
+
+   Crème `#faf9f5` sur le vert 8, aux deux bouts du dégradé et sous le voile :
+   le pire vaut **5,98:1**, contre 4,5 demandés. Relevé par
+   `scripts/verifier-maquette-bouton-qui-repond.mjs`.
+   ═══════════════════════════════════════════════════════════════════════════ */
+.atlas-plein {
+  position: relative;
+  overflow: hidden;
+  /* Sans dégradé de charte, rien n'est peint : l'aplat de l'écran reste seul. */
+  background-image: var(--atlas-degrade-plein, none);
+  transition:
+    transform 190ms cubic-bezier(0.22, 0.8, 0.3, 1),
+    box-shadow 220ms ease;
+}
+
+/* Le voile de l'appui. `inset: 0` le cale sur le bouton — d'où le
+   `position: relative` ci-dessus, qui n'est pas décoratif. */
+.atlas-plein::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: #fff;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 220ms ease;
+}
+
+/* **L'aller est plus rapide que le retour.** Le doigt doit trouver le bouton
+   déjà enfoncé, et le voir remonter quand il lâche ; des durées égales font un
+   bouton mou, qu'on relâche sans savoir si le geste est parti. */
+.atlas-plein:active {
+  transform: scale(0.975);
+  transition-duration: 70ms, 90ms;
+}
+.atlas-plein:active::after {
+  opacity: 0.14;
+  transition-duration: 90ms;
+}
+
+/* Le contenu passe DEVANT le voile. Sans cela, le texte pâlirait avec le fond
+   et l'appui coûterait le contraste qu'il vient de gagner. */
+.atlas-plein > * {
+  position: relative;
+}
+
+/* Un bouton éteint ne répond pas : il n'y a rien à confirmer. */
+.atlas-plein:disabled {
+  transform: none;
+}
+.atlas-plein:disabled::after {
+  opacity: 0;
+}

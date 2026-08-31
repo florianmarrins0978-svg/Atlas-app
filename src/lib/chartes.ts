@@ -540,6 +540,30 @@ export function variablesCharte(c: Charte): Record<string, string> {
   for (const cle of Object.keys(c.jetons) as (keyof JetonsCharte)[]) {
     sortie[`--atlas-${cle}`] = c.jetons[cle];
   }
+  // **LE VERT 8 DU BOUTON PLEIN — ORIGINE ET ELLE SEULE.**
+  //
+  // *Sa décision du 31 août 2026, prise sur `appli/le-bouton-qui-repond.html`
+  // parmi dix dégradés :* « mets-moi la couleur 8 partout sur chaque bouton
+  // plein de couleur verte de l'appli ». Puis, la question des sept chartes lui
+  // étant posée : **« les boutons à changer c'est seulement pour la version
+  // origine, ne touche pas aux autres apparences ! »**
+  //
+  // **D'où une variable écrite pour une seule charte**, exactement comme les
+  // formes juste en dessous : les six autres n'écrivent rien, `globals.css`
+  // garde son `none`, aucun dégradé n'est peint, et leur aplat d'action reste
+  // celui qu'il a validé — le bleu marine de Brume n'a aucune raison de virer
+  // au vert.
+  //
+  // **Ce que cette variable ne touche PAS, et c'est voulu :** l'accent
+  // `rust` lui-même ne bouge pas d'un cheveu. Les textes verts, les icônes,
+  // les liserés, les fonds pâles `rustTint` gardent le vert pin. Sa consigne
+  // vise les boutons PLEINS — « surtout pas ceux qui sont creux ou d'une autre
+  // couleur que la verte » —, et seuls les éléments portant `.atlas-plein` le
+  // reçoivent.
+  if (c.nom === "origine") {
+    sortie["--atlas-degrade-plein"] = "linear-gradient(180deg, #20502e, #0f3319)";
+  }
+
   // **Une forme absente n'écrit RIEN**, et c'est ce qui tient sa consigne du
   // 24 août : « ne change pas l'appli ». Poser `--atlas-police-titres:initial`
   // sur les chartes sans forme aurait écrasé le repli de `globals.css` — donc

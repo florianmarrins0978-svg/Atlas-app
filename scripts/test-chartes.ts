@@ -87,6 +87,52 @@ essai("le repli de --font-display EST la serif d'aujourd'hui", () => {
   );
 });
 
+essai("le vert 8 du bouton plein ne touche QUE Origine", () => {
+  // **Sa décision du 31 août 2026, en deux temps.** D'abord : « mets-moi la
+  // couleur 8 partout sur chaque bouton plein de couleur verte de l'appli ».
+  // Puis, la question des sept chartes lui étant posée : **« les boutons à
+  // changer c'est seulement pour la version origine, ne touche pas aux autres
+  // apparences ! »**
+  //
+  // Le « seulement » est la moitié qui compte, et c'est elle qui est gardée
+  // ici : sur Brume, l'aplat d'action est un bleu marine qu'il a validé au
+  // pouce. Un dégradé vert posé par-dessus le remplacerait sans que personne
+  // ne l'ait demandé — et cela ne se verrait qu'en changeant d'apparence,
+  // c'est-à-dire jamais pendant qu'on développe.
+  for (const c of CHARTES) {
+    const degrade = variablesCharte(c)["--atlas-degrade-plein"];
+    if (c.nom === "origine") {
+      assert.ok(degrade, "Origine n'écrit plus le dégradé : ses boutons pleins ont perdu le vert 8");
+      // Le vert 8 est « Cyprès » de sa planche, aux deux bouts. Recopié ici
+      // volontairement : si quelqu'un change la valeur, il doit décider AUSSI
+      // de la changer là où sa réponse est consignée.
+      assert.ok(
+        degrade.includes("#20502e") && degrade.includes("#0f3319"),
+        `le dégradé n'est plus le vert 8 de sa planche : ${degrade}`
+      );
+    } else {
+      assert.equal(
+        degrade,
+        undefined,
+        `${c.nom} reçoit un dégradé vert alors qu'il a dit « seulement pour origine »`
+      );
+    }
+  }
+});
+
+essai("l'accent lui-même n'a pas bougé — seuls les boutons PLEINS changent", () => {
+  // *« Surtout pas ceux qui sont creux ou d'une autre couleur que la verte. »*
+  //
+  // Le dégradé arrive par une classe posée sur des boutons ; `rust` — qui
+  // teinte aussi des TEXTES, des icônes, des liserés et les fonds pâles — ne
+  // doit pas suivre. Le confondre aurait reverdi la moitié des écrans pour une
+  // demande qui ne visait que des aplats.
+  const origine = CHARTES.find((c) => c.nom === "origine");
+  assert.ok(origine, "la charte Origine a disparu");
+  assert.equal(origine.jetons.rust, "#2f3b2f", "l'accent d'Origine a changé : ce n'est pas ce qu'il a demandé");
+  assert.equal(origine.jetons.rustTint, "#ece9e1", "le fond pâle d'Origine a changé");
+});
+
 essai("le marqueur d'onglet ne bouge QUE pour Brume", () => {
   // **Sa demande du 24 août 2026 :** *« modifie aussi la sélection des
   // catégories, juste pour Brume moderne »*. Le « juste » est la moitié qui

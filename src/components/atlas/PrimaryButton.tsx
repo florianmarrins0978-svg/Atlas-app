@@ -133,8 +133,18 @@ export default function PrimaryButton({
   // La capsule ne prend que la place de son texte : c'est tout son intérêt.
   // 13 px de retrait vertical sur un corps de 17 la posent à 50 px de haut —
   // au-dessus des 44 px qu'Apple demande au doigt, et huit de moins qu'avant.
+  // **`atlas-plein` remplace `active:scale-[0.985]`, et c'est sa décision du
+  // 31 août 2026** : « comme force du geste tu mets discret sur chaque bouton
+  // qui demande à être appuyé ». Discret vaut 0,975 — contre 0,985 ici, soit
+  // moins d'un pixel sur une capsule de 50 px, un geste qui vivait dans le code
+  // et pas sous le doigt. La classe porte aussi le vert 8 (Origine seulement)
+  // et l'éclaircissement à l'appui ; tout est dans `globals.css`.
+  //
+  // **La capsule SECONDAIRE ne la prend pas** : elle est creuse, et sa consigne
+  // dit « surtout pas ceux qui sont creux ». Son geste lui vient d'ailleurs.
+  const geste = secondaire ? "transition-transform active:scale-[0.975]" : "atlas-plein";
   const className =
-    `${pleineLargeur ? "flex w-full" : "inline-flex"} items-center justify-center gap-2 px-9 py-[13px] text-[17px] transition-transform active:scale-[0.985]`;
+    `${pleineLargeur ? "flex w-full" : "inline-flex"} items-center justify-center gap-2 px-9 py-[13px] text-[17px] ${geste}`;
   const dessin: React.CSSProperties = {
     borderRadius: 9999,
     fontFamily: font.display,
