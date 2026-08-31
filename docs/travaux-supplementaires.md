@@ -173,6 +173,43 @@ client.
 
 ---
 
+---
+
+## 6. Son idée du 31 août au soir, et la réponse
+
+*« Depuis cette page, avant d'envoyer la facture, il faut (si c'est légal)
+pouvoir la modifier en stipulant que c'est du TS, et comme ça on a déjà toute
+la chaîne de production de créée pour l'envoyer au client. »* — capture de
+l'écran facture à l'appui.
+
+**C'est la solution B, et il a raison sur les deux points.** La chaîne existe
+déjà : PDF, canal SMS ou courriel, envoi, relevé de TVA. Le supplément n'a rien
+à réinventer, il a juste à entrer **avant** l'arrêt de la facture.
+
+### Est-ce légal ? Oui, avec trois bornes
+
+| | |
+|---|---|
+| **Une facture en brouillon se corrige librement** | elle n'existe pas encore. C'est la facture **émise** qui est verrouillée, et se corrige alors par un avoir |
+| **Chaque ligne porte sa quantité et son prix unitaire** | une ligne globale « Travaux supplémentaires : 320 € » ne satisfait pas les mentions obligatoires. « Dessouchage · 1 forfait × 320,00 € », si |
+| **L'accord du client rend la somme exigible, pas la facture** | facturer un supplément non accepté est permis ; se le faire payer ne l'est pas toujours (article 1793) |
+
+### Ce que ça change dans le dessin
+
+- **Un bloc séparé**, jamais des lignes fondues dans celles du devis : le client
+  retrouve au centime le prix qu'il avait accepté. Fondu, il lit un total qui ne
+  correspond plus à son devis, et il appelle.
+- **« Rien n'a changé depuis le devis ? » devient le geste.** La phrase était
+  déjà sur son écran, sans réponse possible.
+- **Une trace d'accord se demande à l'écran** — SMS, courriel, signé sur place,
+  ou rien. « Rien » ne bloque pas : il avertit, et l'écrit du bon signé
+  (solution C) reste la façon sûre d'y répondre.
+
+La planche : `appli/ts-sur-la-facture.html`, calquée sur sa facture
+F2026-000001.
+
+---
+
 *Sources métier :*
 [Article 1793 et travaux supplémentaires](https://vite-un-avocat.fr/travaux-supplementaires-non-prevus-au-devis/) ·
 [Refus de payer sans avenant](https://elige-avocats.com/le-client-est-il-en-droit-de-refuser-de-payer-les-travaux-supplementaires/) ·

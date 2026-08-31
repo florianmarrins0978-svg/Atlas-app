@@ -27,7 +27,11 @@ supplément disparaît sans un mot à l'écran.
 Puis trois planches à essayer, liées depuis `appli/essais.html` :
 `ts-bon-sur-place.html` (la signature au doigt, tracé réel),
 `ts-avenant.html` (une facture ou deux, et les lignes en moins),
-`ts-arret-3.html` (bloquer ou avertir sur un supplément non signé). Les totaux
+`ts-arret-3.html` (bloquer ou avertir sur un supplément non signé), puis
+`ts-sur-la-facture.html` — son idée du soir, calquée sur sa facture réelle :
+les travaux en plus entrent dans un bloc à part avant l'envoi, et la chaîne
+existante sert telle quelle. Légal tant que la facture est en brouillon
+(`docs/travaux-supplementaires.md` §6). Les totaux
 s'y calculent pour de vrai — une maquette qui affiche un total faux fait douter
 de tout le reste. Parcourues au navigateur, captures regardées, mode nuit
 compris.

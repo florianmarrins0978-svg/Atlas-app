@@ -28,9 +28,14 @@ regardées, mode nuit compris) :
 | `appli/ts-bon-sur-place.html` | la signature au doigt (C) — le tracé est réel |
 | `appli/ts-avenant.html` | **une facture ou deux**, et les travaux **en moins** (A) |
 | `appli/ts-arret-3.html` | **bloquer ou avertir** quand rien n'est signé (B et D) |
+| `appli/ts-sur-la-facture.html` | **son idée du 31 août au soir**, sur sa vraie facture F2026-000001 |
 
 **Elles ne seront à son adresse qu'une fois sur `main`** : `pages.yml` ne publie
 que sur `main`, et son accord n'a pas encore été demandé.
+
+**Il a tranché le sens le 31 août au soir : ça se passe SUR la facture, avant
+l'envoi** — la chaîne d'envoi existe déjà. C'est légal en brouillon ; voir §6 du
+document pour les trois bornes (détail par ligne, bloc séparé, trace d'accord).
 
 Recommandation posée : **le bon signé sur place (C), puis l'avenant (A)** ;
 jamais une facture librement modifiable toute seule — elle facture ce que le
