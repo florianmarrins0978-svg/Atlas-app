@@ -11,9 +11,15 @@ langage, et rien n'y entre sans son accord.
 
 ## EN ATTENTE DE SA RÉPONSE : où mène le retour du devis (31 août 2026, soir)
 
-Il retombe sur la fiche du chantier en faisant « retour » depuis un devis prêt à
-envoyer, et cet écran ne lui propose alors rien. **La fiche ne se supprime pas**
-— elle porte les photos, la sortie vers la facture et neuf portes d'entrée
+**Le cas du devis SANS client est réglé** — il l'a confirmé le 31 août au soir,
+capture à l'appui : le retour le pose sur « Fiche client »
+(`/chantiers/[id]/coordonnees`), et la flèche de cet écran le ramène au devis.
+C'est §221, déjà sur `main`.
+
+**Reste l'autre moitié :** quand le client EST renseigné, le retour le dépose
+sur la fiche du chantier, et cet écran ne lui propose alors rien.
+
+**La fiche ne se supprime pas** — elle porte les photos, la sortie vers la facture et neuf portes d'entrée
 (`ARCHITECTURE.md` §227) ; c'est le RETOUR du devis qui le dépose au mauvais
 endroit.
 
