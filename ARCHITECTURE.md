@@ -19737,6 +19737,19 @@ planche. Rien n'a vibré.** La piste web est close :
 | une page web sur son iPhone | **ne vibrera pas**, quoi qu'on écrive |
 | l'application installée | `@capacitor/haptics`, retour natif et réglable |
 
+**RÉSERVE POSÉE LE 31 AOÛT AU SOIR, ET ELLE COMPTE :** cette conclusion repose
+sur un seul relevé — son interrupteur muet — et **une cause n'a jamais été
+écartée**, faute d'avoir été demandée : son réglage iOS « Retour haptique
+système » (Réglages → Sons et haptiques). **Éteint, il rend muets l'interrupteur
+natif ET l'application installée**, et le verdict ci-dessus serait alors faux :
+ce ne serait pas la plateforme qui refuse, ce serait son téléphone qui est
+réglé pour ne rien sentir.
+
+C'est la faute de la soirée, en plus petit : trois correctifs sur des causes
+supposées, puis une conclusion sur un essai dont on n'a pas vérifié les
+conditions. **Tant qu'il n'a pas répondu sur ce réglage, ce § est une forte
+présomption, pas un fait.**
+
 **Ne pas écrire un quatrième correctif web.** Trois s'y sont succédé le même
 soir — `checked` au lieu de l'activation, l'étiquette rendue inerte par
 `pointer-events:none`, la détection exclusive qui n'essayait plus rien. **Les

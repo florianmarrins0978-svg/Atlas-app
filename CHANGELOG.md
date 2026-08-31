@@ -9,6 +9,32 @@ Format : le plus récent en tête.
 
 ## 2026-08-31
 
+### Les dix verts étaient CASSÉS en ligne, et mon contrôle ne le voyait pas
+
+**Sa plainte : « sur le lien cliquable ça ne fonctionne toujours pas ».** Elle
+était juste, et le défaut venait de mon propre nettoyage une heure plus tôt : un
+`re.sub` posé pour retirer des styles orphelins a emporté avec eux **la règle
+`.vert`** — celle qui peint le dégradé. Les dix capsules étaient servies
+transparentes, texte noir, sans repère de position pour le voile de l'appui.
+
+**Et le contrôle est resté vert, ce qui est le vrai défaut.** Il lisait `--haut`
+et `--bas` dans l'attribut `style` de chaque bouton : **les valeurs DÉCLARÉES**.
+Elles étaient toujours là — c'est la règle qui les EMPLOIE qui avait disparu. Un
+contrôle qui mesure la déclaration et non l'effet rend un vert rassurant sur un
+écran cassé, et c'est le patron qui l'a trouvé.
+
+Il lit désormais `getComputedStyle().backgroundImage`, `color` et `position` :
+le fond réellement peint, couleurs résolues par le navigateur. Confronté au
+dégât exact, il rougit sur douze points.
+
+**Et la capture non plus n'aurait pas menti** : la dernière image des dix verts
+avait été prise AVANT le nettoyage. Regarder l'écran après le dernier
+changement, pas après l'avant-dernier.
+
+**La réserve du soir est aussi passée à l'écran** : la planche n'affirme plus
+que Safari refuse tout, elle nomme le réglage « Retour haptique système » qui
+reste à vérifier.
+
 ### La vibration par le web : tranchée, et close
 
 **Son verdict, le doigt sur l'interrupteur natif d'iOS : « non, ça ne vibre

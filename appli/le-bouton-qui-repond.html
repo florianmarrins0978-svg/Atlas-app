@@ -195,6 +195,26 @@ h1{margin:0;padding:0 20px;font-family:Georgia,serif;font-weight:400;font-size:2
 .barre button.appui{transform:scale(calc(1 - (1 - var(--echelle)) * .7));background:var(--appui-pale);
                     transition-duration:70ms,90ms}
 
+/* ─── LES DIX VERTS ───────────────────────────────────────────────────────
+   Sa demande du 31 août : dix dégradés à essayer. Un seul dessin change d'un
+   bouton à l'autre — les deux couleurs. Même capsule, même serif, même
+   libellé : sinon ce sont des boutons qu'il compare, pas des verts.
+
+   **`position:relative` n'est pas décoratif** : le voile de l'appui est un
+   `::after` en `position:absolute`, et sans repère il se cale sur la page
+   entière au lieu du bouton.
+
+   **Le voile est un calque, pas un `filter`** : `brightness()` éclaircirait
+   aussi le texte, qui perdrait le contraste que le fond vient de lui coûter.
+
+   **RÈGLE PERDUE UNE FOIS, LE 31 AOÛT, ET IL L'A VUE AVANT MOI.** Un nettoyage
+   à l'expression régulière l'a emportée avec les styles voisins : les dix
+   capsules sont devenues transparentes, texte noir, sans dégradé. Le contrôle
+   n'a rien vu parce qu'il lisait `--haut` et `--bas` dans l'attribut `style`
+   — les valeurs DÉCLARÉES — au lieu du fond réellement peint. Il mesure
+   maintenant le rendu. */
+.vert{position:relative;overflow:hidden;color:#faf9f5;
+      background-image:linear-gradient(180deg, var(--haut), var(--bas))}
 .vert::after{content:"";position:absolute;inset:0;background:#fff;opacity:0;
              transition:opacity 220ms ease;pointer-events:none}
 .vert.appui::after{opacity:.14;transition-duration:90ms}
@@ -237,11 +257,13 @@ h1{margin:0;padding:0 20px;font-family:Georgia,serif;font-weight:400;font-size:2
 
   <div class="note avert">
     <span class="titre">La vibration, tranchée le 31 août</span>
-    Vous avez touché l'interrupteur natif d'iOS : <b>il n'a pas vibré</b>. Aucune
-    page web ne fera donc vibrer votre iPhone — ni celle-ci, ni une autre. C'est
-    Safari, pas le réglage ni le code. <b>Elle viendra avec l'application
-    installée</b>, où le retour est natif et réglable. Il n'y a plus rien à
-    essayer ici : ce qui reste à choisir, c'est le geste et le vert.
+    Vous avez touché l'interrupteur natif d'iOS : <b>il n'a pas vibré</b>. Une
+    page web ne fera donc probablement rien vibrer sur votre iPhone.
+    <b>Une chose reste à vérifier</b> avant de le tenir pour acquis : Réglages,
+    Sons et haptiques, <b>Retour haptique système</b>. Éteint, il rend tout muet
+    — même l'application. <b>La vibration viendra avec l'application
+    installée</b>, où le retour est natif. Ici, ce qui reste à choisir, c'est le
+    geste et le vert.
   </div>
 
   <!-- ─── L'écran réel, avec les trois surfaces qu'on touche ─────────────── -->

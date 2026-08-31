@@ -260,19 +260,16 @@ for (const teinte of ["light", "dark"]) {
 // y vaut « transparent » et les contrôles ci-dessus les auraient laissés
 // passer en silence. Ils ont donc leur propre mesure.
 {
-  const NOIR_SUR_CLAIR = "#14180f";
-  const CREME = "#faf9f5";
   const VOILE = 0.14; // le calque blanc de `.vert.appui::after`
 
-  const melange = (hex, a) => {
-    const [r, g, b] = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16));
+  const melangeRgb = (rgb, a) => {
+    const [r, g, b] = rgb.match(/[\d.]+/g).slice(0, 3).map(Number);
     return `rgb(${[r, g, b].map((v) => Math.round(v * (1 - a) + 255 * a)).join(", ")})`;
   };
   const contraste = (a, b) => {
     const [x, y] = [clarte(a), clarte(b)].sort((m, n) => n - m);
     return (x + 0.05) / (y + 0.05);
   };
-  const enRgb = (hex) => melange(hex, 0);
 
   for (const teinte of ["light", "dark"]) {
     const vue = await navigateur.newPage({
@@ -284,15 +281,33 @@ for (const teinte of ["light", "dark"]) {
     await vue.goto(`file://${PAGE}`);
     await vue.waitForLoadState("networkidle");
 
+    // **ON LIT LE FOND RÉELLEMENT PEINT, PAS LES VARIABLES DÉCLARÉES.**
+    //
+    // *Payé le 31 août 2026, et c'est LUI qui l'a vu.* La première version
+    // lisait `--haut` et `--bas` dans l'attribut `style`. Un nettoyage à
+    // l'expression régulière a emporté la règle `.vert` qui les EMPLOIE : les
+    // dix capsules sont devenues transparentes, texte noir, sans dégradé — et
+    // le contrôle est resté vert, parce que les variables, elles, étaient
+    // toujours là. Il mesurait la déclaration, jamais l'effet.
+    //
+    // `backgroundImage` calculé rend le dégradé tel que le navigateur le peint,
+    // couleurs résolues : c'est la seule lecture qui tombe si la règle
+    // disparaît.
     const verts = await vue.$$eval(".vert", (els) =>
-      els.map((e) => ({
-        haut: e.style.getPropertyValue("--haut").trim(),
-        bas: e.style.getPropertyValue("--bas").trim(),
-        hautNuit: e.style.getPropertyValue("--haut-nuit").trim(),
-        basNuit: e.style.getPropertyValue("--bas-nuit").trim(),
-        libelle: e.innerText.trim(),
-      }))
+      els.map((e) => {
+        const s = getComputedStyle(e);
+        return {
+          fond: s.backgroundImage,
+          couleur: s.color,
+          position: s.position,
+          libelle: e.innerText.trim(),
+        };
+      })
     );
+
+    // Sans repère, le voile de l'appui se cale sur la page entière.
+    dire(verts.every((v) => v.position === "relative"), `${teinte} · les dix portent leur repère de position`);
+    dire(verts.every((v) => /^linear-gradient\(/.test(v.fond)), `${teinte} · les dix sont bien PEINTS d'un dégradé (${verts[0]?.fond?.slice(0, 46) ?? "rien"}…)`);
 
     dire(verts.length === 10, `${teinte} · dix verts proposés (${verts.length})`);
 
@@ -300,17 +315,18 @@ for (const teinte of ["light", "dark"]) {
     const libelles = new Set(verts.map((v) => v.libelle));
     dire(libelles.size === 1, `${teinte} · les dix portent le même libellé (${[...libelles].join(" / ")})`);
 
-    const texte = teinte === "dark" ? NOIR_SUR_CLAIR : CREME;
     let pire = { r: 99, ou: "" };
     verts.forEach((v, i) => {
-      const stops = teinte === "dark" ? [v.hautNuit, v.basNuit] : [v.haut, v.bas];
-      if (stops.some((c) => !/^#[0-9a-f]{6}$/i.test(c))) {
-        dire(false, `${teinte} · vert ${i + 1} : couleurs illisibles (${stops.join(" ")}), mesure impossible`);
+      // Les deux extrémités du dégradé PEINT, et la couleur du texte telle
+      // qu'elle s'affiche — plus rien n'est recopié du fichier.
+      const stops = v.fond.match(/rgba?\([^)]*\)/g) ?? [];
+      if (stops.length < 2) {
+        dire(false, `${teinte} · vert ${i + 1} : aucun dégradé peint, mesure impossible`);
         return;
       }
       for (const c of stops) {
         for (const a of [0, VOILE]) {
-          const r = contraste(enRgb(texte), melange(c, a));
+          const r = contraste(v.couleur, melangeRgb(c, a));
           if (r < pire.r) pire = { r, ou: `vert ${i + 1}, ${c}${a ? " appuyé" : ""}` };
         }
       }
