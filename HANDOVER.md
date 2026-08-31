@@ -507,6 +507,32 @@ tôt.
 ne sert pas la même application — la feuille « Absences » ne s'ouvrait plus, et
 deux vérifications rougissaient sur du code juste.
 
+## PIÈGE : `npm run build` PUIS LA BATTERIE = TURBOPACK SE FIGE (31 août 2026)
+
+**Le symptôme, et il n'accuse personne :** une suite navigateur reste plantée
+sur `page.goto` pendant 45 s, le journal du serveur s'arrête sur
+`○ Compiling /paysage ...` et n'écrit plus jamais rien. Le serveur, lui,
+**répond** — `curl /login` rend 200 en 94 ms. Ce n'est donc ni la mémoire, ni un
+serveur mort : c'est UNE ROUTE qui ne finit jamais de compiler.
+
+**La cause :** `npm run build` et `next dev` partagent le dossier `.next`. Une
+construction jouée avant la batterie y laisse un cache que le mode
+développement reprend et sur lequel il se fige.
+
+**Ce qui a été vérifié plutôt que supposé**, parce que le doute portait sur un
+lot en cours :
+
+| | |
+|---|---|
+| la suite sur la branche | rouge, deux fois |
+| la même suite sur `origin/main` **tel quel** | rouge aussi — donc pas le lot |
+| `npm run build` | **vert**, `/paysage` compile sans une erreur |
+| après `rm -rf .next`, sur `main` | **verte** |
+
+**Le geste :** `rm -rf .next` avant de lancer les suites navigateur, dès qu'une
+construction a été jouée depuis. Une heure perdue à chercher un défaut dans du
+code juste — et deux fois failli accuser un lot qui n'y était pour rien.
+
 ## LA BATTERIE NE TIENT PLUS EN UN SEUL SERVEUR — à lire avant de la lancer (27 août 2026)
 
 **Si `npm run verifier:avant-livraison` rend un rouge sur une suite navigateur,
