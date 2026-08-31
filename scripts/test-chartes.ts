@@ -281,6 +281,39 @@ essai("les huit chartes portent les mêmes jetons, aucun vide", () => {
   }
 });
 
+// ─── L'OR NE CHANGE PAS D'UNE APPARENCE À L'AUTRE ───────────────────────────
+//
+// **Sa consigne du 31 août 2026 :** *« pour l'apparence, j'aimerais que tout ce
+// qui est en doré sur la version originale apparaisse en doré sur les autres
+// apparences »* — la généralisation de celle du 27 août, qui ne portait que sur
+// Brume.
+//
+// **Ce que ce contrôle attrape, et qu'aucun autre ne voyait.** `depuisPlanche`
+// recopiait le second accent de chaque charte dans `or` : la sauge de Pierre,
+// l'argile de Moka, le prune de Prune. Tous les jetons étaient présents, tous
+// lisibles — les deux suites existantes passaient au vert pendant que changer
+// d'apparence repeignait l'accueil, les libellés d'état, les filets et le
+// sceau. Un contrôle sur la LISIBILITÉ ne dit rien de l'IDENTITÉ.
+essai("l'or est le même sur les huit chartes — sa consigne du 31 août 2026", () => {
+  const or = charte("origine").jetons;
+  for (const c of CHARTES) {
+    assert.equal(c.jetons.or, or.or, `${c.libelle} : l'or vaut « ${c.jetons.or} » au lieu de « ${or.or} »`);
+    assert.equal(
+      c.jetons.orClair,
+      or.orClair,
+      `${c.libelle} : l'or clair vaut « ${c.jetons.orClair} » au lieu de « ${or.orClair} »`
+    );
+  }
+});
+
+// Une phrase qui décrit la charte d'avant se croit encore : « Aucun or » a été
+// retiré de Pierre le 31 août, en même temps que l'or y revenait.
+essai("aucune charte n'annonce qu'elle est sans or", () => {
+  for (const c of CHARTES) {
+    assert.ok(!/aucun or/i.test(c.dit), `${c.libelle} annonce « ${c.dit} » alors qu'elle porte l'or d'Origine`);
+  }
+});
+
 essai("deux chartes sont sombres, et ce sont les siennes", () => {
   assert.deepEqual(CHARTES.filter((c) => c.sombre).map((c) => c.nom), ["sylve", "nuit"]);
 });

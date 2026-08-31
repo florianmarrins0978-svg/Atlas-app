@@ -63,6 +63,22 @@ biométrique n'entre en base, et c'est la base que la suite interroge.
 Compte-rendu qui lui est destiné : `docs/connexion-une-page.md`. Le détail :
 `ARCHITECTURE.md` §217.
 
+## L'or est le même sur les huit apparences (31 août 2026)
+
+**Sa consigne :** *« pour l'apparence, j'aimerais que tout ce qui est en doré
+sur la version originale apparaisse en doré sur les autres apparences »*.
+
+Chaque charte portait son propre second accent — sauge sur Pierre, argile sur
+Moka, prune sur Prune, un bleu et un rose pour les traits de Brume et de Prune.
+Changer d'apparence repeignait donc tout ce que l'or porte : l'accueil, les
+libellés d'état, les filets, le sceau, le compteur de la dictée.
+
+Les huit chartes portent l'or d'Origine, `#B98B47`, au caractère près
+(`src/lib/chartes.ts`). Mesuré : il se détache mieux sur les deux sombres (6,14
+sur Nuit) que sur Origine (2,77) — rien à remonter. Une suite tient la règle
+pour les huit ; les deux suites existantes vérifiaient la présence des jetons et
+la lisibilité, jamais l'identité. Détail : `ARCHITECTURE.md` §218.
+
 ---
 
 ## La note vocale à la messagerie, et la fiche qui tient dans un écran (30 août 2026)

@@ -77,6 +77,24 @@ le raisonnement complet, `ARCHITECTURE.md` §217.
   mode d'emploi. À rouvrir avec lui s'il la veut ailleurs — pas à remettre sous
   le bouton.
 
+## Le même jour : l'or est le même sur les huit apparences (31 août 2026)
+
+**Sa consigne :** *« pour l'apparence, j'aimerais que tout ce qui est en doré
+sur la version originale apparaisse en doré sur les autres apparences »* — la
+généralisation de celle du 27 août, qui ne portait que sur Brume.
+
+`src/lib/chartes.ts` posait le second accent de chaque planche dans `or` : huit
+chartes, huit ors différents, dont trois qui n'étaient plus dorés du tout.
+`OR_ORIGINE` / `OR_CLAIR_ORIGINE` les remplacent partout ; `depuisPlanche` ne
+reçoit plus de `bronze` ni de `pleinSigne`.
+
+**Ce qu'il faut savoir avant d'y toucher :** la lisibilité de l'or a été mesurée
+charte par charte AVANT de le figer — il tient 6,14 sur Nuit contre 2,77 sur
+Origine, donc rien à remonter sur les sombres. Le remonter romprait la consigne
+sans rien gagner. Le contrôle qui tient la règle est dans
+`scripts/test-chartes.ts` (« l'or est le même sur les huit chartes »), vu rouge
+contre la version d'avant. `ARCHITECTURE.md` §218.
+
 ---
 
 ## Lot précédent : la note vocale à la messagerie, et la fiche qui tient dans un écran (30 août 2026)
