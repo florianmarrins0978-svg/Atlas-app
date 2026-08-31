@@ -9,6 +9,32 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
+## `test-poignee-ferme-e2e.ts` EST ROUGE SUR `main` — et sa cause est trouvée (31 août 2026)
+
+Quatre cas rouges, reproduits à l'identique **sur `main`** (commit `fbb9264`)
+comme sur la branche du jour : ce n'est le lot de personne, c'est un rouge
+installé. Ce n'est pas non plus une intermittence — il se rejoue seul.
+
+**La cause, et elle est dans la suite, pas dans le produit.** Elle ouvre
+`/reglages/equipe` et attend « + Noter une absence », en affirmant en commentaire
+que ce bouton *« est toujours là, sur un écran de réglages qui ne dépend d'aucune
+donnée »*. C'est faux : `AbsencesEquipe` rend une simple phrase et **aucun
+bouton** tant que `nombreSalaries <= 0` (`src/app/reglages/AbsencesEquipe.tsx`),
+et le jeu de démonstration n'en pose aucun. Un artisan seul n'a pas d'absence à
+noter — le produit a raison, c'est la suite qui décrit un écran qu'elle
+n'atteint plus.
+
+**Ce que ça coûte de le laisser :** la batterie de toute session rougit sur ce
+point, et un rouge permanent s'apprend à être ignoré — on perd alors le
+garde-fou sans s'en apercevoir.
+
+**Ce qu'il faut faire :** poser un salarié avant d'ouvrir la feuille, dans la
+suite elle-même. Non fait ici pour ne pas mêler une réparation étrangère au lot
+du retour de devis — mais c'est trois lignes, et la poignée qu'elle défend
+(`BottomSheet`, partagée par une dizaine d'écrans) n'est plus gardée entre-temps.
+
+---
+
 ## POURQUOI LE RELAIS PERD SON PORT 3000 — inexpliqué (31 août 2026)
 
 Sa nuit du 30 au 31 : espace debout, Atlas répondant sur 3000, version rapide
