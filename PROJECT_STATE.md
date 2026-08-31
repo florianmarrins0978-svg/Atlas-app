@@ -18,6 +18,28 @@ ligne « fait » qui ne l'est pas coûte plus cher qu'une ligne absente.
 
 ---
 
+## Le devis du client : verrouillé, dans un écran, et téléchargeable après coup (31 août 2026)
+
+Ses trois captures du téléphone d'une cliente.
+
+| | État |
+|---|---|
+| Le PDF du client ne se modifie plus dans Acrobat | **fait** — chiffré, autorisations posées : imprimer et copier oui, modifier et annoter non |
+| La facture et la feuille de chantier aussi | **fait** — un seul endroit protège les trois |
+| Le devis protégé s'ouvre sans mot de passe | **fait, et éprouvé par un lecteur tiers** (moteur PDF de Chromium) |
+| Toute la réponse tient dans un écran de 664 px | **fait** — 770 px demandés, 630 désormais |
+| Le devis se télécharge après l'avoir accepté | **fait** — sur l'écran de retour et sur la confirmation |
+| Le fichier descend au lieu de s'ouvrir dans le lecteur | **fait** — `?telecharger`, décidé par le serveur |
+
+**Ce qui n'est PAS promis :** la protection n'est pas un coffre-fort. Elle
+empêche la retouche d'un doigt, pas un outil déterminé — le format est public.
+La pièce qui fait foi reste celle qu'Atlas archive à l'envoi.
+
+**Ce qui reste ouvert :** aucun geste n'est proposé après un refus ni après une
+demande de correction — à trancher par le patron.
+
+Raisons et pièges : `ARCHITECTURE.md` §218.
+
 ## Un prix posé débloque l'envoi, et il peut proposer demain (31 août 2026)
 
 Ses deux captures du matin, sur l'écran d'envoi du devis.

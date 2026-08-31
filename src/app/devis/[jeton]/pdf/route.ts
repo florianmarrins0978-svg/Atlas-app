@@ -14,6 +14,18 @@ export const dynamic = "force-dynamic";
 export async function GET(_req: Request, { params }: { params: Promise<{ jeton: string }> }) {
   const { jeton } = await params;
   const fichier = await pdfDevisParJeton(jeton);
+  /**
+   * **`?telecharger` : le fichier descend, il ne s'affiche pas.**
+   *
+   * Sa demande du 31 août 2026 — une touche qui télécharge le devis « en un
+   * seul clic ». Sur un téléphone, `inline` ouvre le lecteur du navigateur :
+   * le client croit avoir enregistré son devis alors qu'il ne fait que le
+   * regarder, et il n'en reste rien une fois l'onglet fermé.
+   *
+   * L'attribut `download` d'un lien ne l'aurait pas fait : les navigateurs de
+   * téléphone l'ignorent largement. Cela se décide ici, dans l'en-tête.
+   */
+  const telecharger = new URL(_req.url).searchParams.has("telecharger");
 
   if (!fichier) {
     // **Jamais de JSON brut à un client.**
@@ -33,7 +45,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ jeton: 
   return new NextResponse(new Uint8Array(fichier.octets), {
     headers: {
       "Content-Type": "application/pdf",
-      "Content-Disposition": `inline; filename="${fichier.nom}"`,
+      "Content-Disposition": `${telecharger ? "attachment" : "inline"}; filename="${fichier.nom}"`,
       // Un devis n'a rien à faire dans un cache partagé ni dans un index.
       "Cache-Control": "no-store",
       "X-Robots-Tag": "noindex, nofollow",
