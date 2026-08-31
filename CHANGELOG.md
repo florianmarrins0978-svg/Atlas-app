@@ -232,6 +232,40 @@ chantier : ouvrez-le » était exactement ce qu'il reproche depuis le 25 août.
 La suite qui exigeait ce libellé mot pour mot a rougi sur une demande exaucée :
 elle vise désormais la règle, pas la phrase (`CLAUDE.md` §5 bis).
 
+## 2026-08-28
+
+### « Il ne peut pas » — six gestes livrés derrière une porte fermée
+
+**Sa capture du 28 août 2026 :** *« rajoute-moi une ligne, tu me mets des
+herbages des allées au chalumeau, et tu peux mettre 500 euros pour le devis
+actuel »* → **« L'assistant n'a pas pu formuler ses propositions
+correctement. »**
+
+**Deux défauts, et le second est le plus grave.**
+
+**1. L'abandon était resté sur le chemin qui ÉCRIT.** Le 26 août, un schéma
+refusé cessait de tuer la réponse pour les outils de LECTURE : le refus repart
+au modèle, qui se reprend. La même ligne était restée ici, sur les propositions
+— c'est-à-dire sur le seul chemin qui modifie quelque chose. Elle rend
+désormais la main au modèle, avec ce qui manque **et la liste des gestes qu'il
+peut nommer** : sans elle, il redevine et se trompe pareil.
+
+**2. LES SIX GESTES DE LA VEILLE ÉTAIENT INATTEIGNABLES.** Supprimer un
+chantier, supprimer un tarif, poser une absence, régler les documents, composer
+la fiche d'entretien : type, `case`, contrôles — tout y était **sauf**
+l'énumération présentée au modèle, qui était une **seconde liste** recopiée à
+la main dans `assistant-service.ts`. Elle avait un jour de retard, et le patron
+ne pouvait obtenir aucun de ces six gestes.
+
+**Ce qui a permis de le rater : mes propres contrôles.** Ils construisaient la
+proposition à la main et la confirmaient — ils éprouvaient donc le `case`, jamais
+la porte. **Verts sur une fonctionnalité que personne ne pouvait atteindre.**
+
+Il n'y a plus qu'une liste (`TYPES_ACTION_PROPOSEE`), lisible à l'exécution, et
+le type se déduit d'elle. Un contrôle neuf ferme les deux bouts : tout geste
+nommable a un `case`, et tout `case` est nommable — vérifié en retirant un geste
+de la liste, ce qui le fait rougir.
+
 ### La dictée façon WhatsApp, la photothèque, et une panne qui parle enfin
 
 **Sa capture du 27 août 2026 au soir : « Ça ne marche pas la dictée. »** À
