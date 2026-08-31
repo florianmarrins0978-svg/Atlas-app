@@ -9,6 +9,31 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
+## LA PORTE : IL DOIT CHOISIR A, B OU C (31 août 2026)
+
+Sa capture du 30 août, et la planche qui en sort :
+`appli/porte-comme-ta-capture.html` — **rien n'est codé**, `src/app/login/` est
+intact.
+
+| | |
+|---|---|
+| **A** | le bleu de sa capture ; la porte devient un écran à part |
+| **B** | le même dessin à ses couleurs — la charte « Nuit », recopiée |
+| **C** | le même dessin en clair ; se lit au soleil, comme le reste de l'appli |
+
+**Deux questions partent avec le choix**, et elles coûtent :
+
+- **Google et Apple pour de bon, ou on les retire ?** Google est le moins cher
+  des deux — l'application parle déjà à Google pour l'agenda
+  (`src/server/agenda/google.ts`). Apple demande un compte développeur payant,
+  et l'App Store l'exige dès que Google est proposé.
+- **Les mentions légales** de la planche renvoient à des pages qui n'existent
+  pas encore.
+
+Tant qu'il n'a pas répondu, rien ne se code : c'est `CLAUDE.md` §3 bis.
+
+---
+
 ## POURQUOI LE RELAIS PERD SON PORT 3000 — inexpliqué (31 août 2026)
 
 Sa nuit du 30 au 31 : espace debout, Atlas répondant sur 3000, version rapide

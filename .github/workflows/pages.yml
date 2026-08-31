@@ -104,6 +104,11 @@ jobs:
           # planche qui lui ferait valider autre chose que sa demande, c'est la
           # porte de l'application qui en sortirait.
           jouer test:face-id
+          # **Même raison, et la même porte.** Trois propositions d'apparence
+          # attendent un choix (A, B ou C) : ce qu'elles montrent doit d'abord
+          # TENIR dans le cadre d'un téléphone — un « Entrer » repoussé hors de
+          # l'écran ne se voit sur aucune capture, et se paie à l'essai.
+          jouer test:porte-capture
 
           if [ -n "$ECHECS" ]; then
             echo "::error::Suites en échec :$ECHECS"

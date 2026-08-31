@@ -10,6 +10,7 @@
     "test:croquis": "node tests/essai-croquis.cjs",
     "test:termines": "node tests/essai-termines.mjs",
     "test:face-id": "node tests/essai-face-id.mjs",
+    "test:porte-capture": "node tests/essai-porte-capture.mjs",
     "cap:sync": "npm run build:www && cap sync"
   },
   "devDependencies": {

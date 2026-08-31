@@ -7,6 +7,37 @@ Format : le plus récent en tête.
 
 ---
 
+## 2026-08-31
+
+### La porte, comme sa capture — trois planches, rien de codé
+
+**Sa demande du 30 août**, avec la photo d'écran d'une application tierce :
+*« voilà à quoi j'aimerais que ressemble la page de connexion de l'appli. Ne
+code rien, présente-moi des maquettes en .html, pas de photo. »*
+
+`appli/porte-comme-ta-capture.html` — trois reprises du dessin relevé sur sa
+capture (fond sombre à dégradé, Google et Apple côte à côte, champs en gélule,
+gros bouton clair) : **A** son bleu, **B** la charte « Nuit » recopiée de
+`src/lib/chartes.ts`, **C** la même en clair sur le crème et le vert pin. Les
+trois basculent de Connexion à Créer un compte.
+
+**Deux écarts assumés, écrits dans la planche** : la phrase qui explique les
+champs juste au-dessus d'eux est retirée (`CLAUDE.md` §3), et aucune flèche
+n'est reprise. **Et ce qui est simulé se dit** : Google et Apple ne mènent
+nulle part, cette entrée n'existe pas dans l'application — seule leur place est
+fidèle.
+
+`src/app/login/` n'a pas bougé d'une ligne (`CLAUDE.md` §3 bis).
+
+### La planche qu'il doit essayer se parcourt d'abord ici
+
+`appli/tests/essai-porte-capture.mjs`, jouée par `pages.yml` avant publication :
+les trois écrans doivent TENIR dans le cadre d'un téléphone, dans les deux vues.
+Un « Entrer » repoussé hors de l'écran ne se voit sur aucune capture prise d'en
+haut, et se paierait à l'essai — sur le seul écran qu'on ne peut pas faire
+défiler avant d'être entré. Vue rouge contre une hauteur ramenée à 520 px (7
+rouges) et contre une bascule débranchée (16).
+
 ## 2026-08-30
 
 ### La fiche n'accuse plus le port quand c'est le serveur qui manque
