@@ -9,6 +9,35 @@ Format : le plus récent en tête.
 
 ## 2026-08-31
 
+### La connexion ne bouge plus — et le bandeau du banc cesse de mentir de 9 px
+
+**Sa capture :** *« la page connexion n'est pas fixe, elle peut bouger encore ;
+aucun scroll possible »*. « Me déconnecter partout » finissait à moitié sous la
+barre du bas.
+
+**Le contrôle du matin était vert et mesurait le mauvais écran** : 658 px pour
+664, SANS le bandeau « Version rapide en construction » que lui a sous les yeux.
+`layout.tsx` retranchait **40 px** pour ce bandeau ; il en mesure **49** — et
+**66** sur un écran étroit, où sa phrase passe à deux lignes. Il gagne aussi une
+barre de progression, et il **disparaît** quand la construction s'achève : un
+nombre écrit à la main ne pouvait pas être juste.
+
+Le bandeau publie désormais sa propre hauteur (`--atlas-bandeau`, remise à zéro
+quand il s'efface), que le gabarit ET les écrans figés lisent. Les trois écrans
+figés du produit cessent d'être cinquante pixels trop hauts sur son banc.
+
+L'écran de connexion prend `atlas-ecran` — la convention de la maison — plus
+`overscroll-behavior: none`, qui arrête l'élastique d'iOS : **la page ne peut
+plus bouger d'un pixel.** Ce qu'elle ne peut pas montrer quand le bandeau est
+là (51 px) glisse dans une colonne intérieure plutôt que de disparaître : un
+bouton hors d'atteinte serait pire.
+
+**Deux fois le contrôle a dû être repris avant de prouver quelque chose** :
+d'abord il restait vert contre l'écran d'avant (il ne rejouait pas le bandeau),
+puis il accusait à tort un bouton d'être coupé (il comparait un `offsetTop` à
+une hauteur de colonne). Il descend maintenant la colonne et regarde.
+
+
 ### Les dix verts étaient CASSÉS en ligne, et mon contrôle ne le voyait pas
 
 **Sa plainte : « sur le lien cliquable ça ne fonctionne toujours pas ».** Elle

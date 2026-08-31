@@ -277,7 +277,13 @@ export default async function RootLayout({
           <FournisseurAssistant disponible={!!role && peutUtiliserLAssistant(role)}>
             <div
               className="mx-auto flex max-w-md flex-col bg-paper"
-              style={{ minHeight: banc ? "calc(100dvh - 40px)" : "100dvh" }}
+              // **Plus aucun nombre écrit à la main ici — 31 août 2026.**
+              // C'était `calc(100dvh - 40px)` pour un bandeau qui en mesure 48,
+              // et qui grandit encore avec sa barre de progression. Le bandeau
+              // publie désormais sa hauteur (`--atlas-bandeau`, remise à zéro
+              // quand il s'efface) : une seule source, et elle suit ce qui est
+              // vraiment à l'écran.
+              style={{ minHeight: "calc(100dvh - var(--atlas-bandeau))" }}
             >
             {/* `atlas-contenu` réserve la hauteur de la barre, indicateur
                 d'accueil compris (voir globals.css) : sans navigation, cette

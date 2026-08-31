@@ -37,13 +37,43 @@ export default async function ConnexionPage() {
   const cles = await listerCles(ctx.utilisateurId);
 
   return (
-    <div style={{ backgroundColor: colors.cream, color: colors.ink, fontFamily: font.body, minHeight: "100%" }}>
+    /**
+     * **L'ÉCRAN NE BOUGE PLUS — sa demande du 31 août 2026 :** *« la page
+     * connexion n'est pas fixe, elle peut bouger encore ; il ne faut pas
+     * qu'elle puisse bouger, aucun scroll possible »*.
+     *
+     * ─── Ce qu'il voyait, mesuré plutôt que supposé ────────────────────────
+     *
+     * Sur son banc, à 390 × 664, l'écran demandait **706 px** : il défilait de
+     * 42, et « Me déconnecter partout » finissait à moitié sous la barre du
+     * bas. Le contrôle du 31 août, lui, était vert — il mesurait 658 ≤ 664,
+     * SANS le bandeau du banc, c'est-à-dire un écran que le patron n'a jamais
+     * sous les yeux.
+     *
+     * **`atlas-ecran`, la convention de la maison** — celle de l'écran des
+     * chantiers et de l'envoi : la hauteur qui reste, une colonne, rien qui
+     * dépasse. Elle retranche désormais le bandeau du banc, et refuse
+     * l'élastique du navigateur.
+     *
+     * **La colonne qui défile dedans n'est PAS un retour du défilement.** Elle
+     * ne bouge que si l'écran ne peut pas tout montrer — un iPhone SE avec les
+     * deux barres de Safari, ou un appareil Face ID déjà enregistré qui ajoute
+     * sa ligne. L'alternative serait de COUPER le dernier geste, et un bouton
+     * qu'on ne peut plus atteindre est pire qu'un écran qui glisse de vingt
+     * pixels. Sur son téléphone, elle ne bouge pas d'un pixel.
+     */
+    <div
+      className="atlas-ecran"
+      style={{ backgroundColor: colors.cream, color: colors.ink, fontFamily: font.body }}
+    >
       <EnTeteEcran
         surtitre="Moi"
         titre="Connexion"
         retour={{ href: "/reglages", libelle: "Retour aux réglages" }}
       />
-      <ConnexionClient cles={cles} />
+      <div className="atlas-colonne-defile" style={{ overscrollBehavior: "contain" }}>
+        <ConnexionClient cles={cles} />
+      </div>
     </div>
   );
 }

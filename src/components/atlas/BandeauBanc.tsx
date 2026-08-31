@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { EtatConstructionBanc } from "@/server/etat-banc";
 import { colors, voile } from "@/lib/design-tokens";
 
@@ -42,6 +42,7 @@ const INTERVALLE_MS = 5000;
 export default function BandeauBanc() {
   const [etat, setEtat] = useState<EtatConstructionBanc | null>(null);
   const [fini, setFini] = useState(false);
+  const cadre = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (fini) return;
@@ -75,6 +76,44 @@ export default function BandeauBanc() {
     };
   }, [fini]);
 
+  /**
+   * **IL PUBLIE SA PROPRE HAUTEUR, ET C'EST UNE RÉPARATION.**
+   *
+   * *Sa capture du 31 août 2026 : « la page connexion n'est pas fixe, elle peut
+   * bouger encore ».* Sur son banc, « Me déconnecter partout » finissait à
+   * moitié sous la barre du bas, et l'écran défilait de 42 px.
+   *
+   * La cause n'était pas l'écran de connexion : `layout.tsx` retranchait
+   * **40 px** en dur pour ce bandeau, qui en mesure **48** — et jusqu'à
+   * davantage, puisqu'il gagne une barre de progression dès qu'un total existe
+   * et que sa phrase passe à deux lignes sur un écran étroit. Un nombre écrit
+   * à la main pour un élément qui change de taille est faux la moitié du temps.
+   *
+   * **Il ne se mesure pas une fois** : il apparaît, grandit, puis DISPARAÎT
+   * quand la construction s'achève. Une valeur posée au premier rendu
+   * survivrait à sa disparition et volerait 48 px à tous les écrans pour
+   * toujours — c'est la « valeur provisoire qui survit » d'`ARCHITECTURE.md`.
+   * D'où l'observateur, et la remise à zéro au démontage.
+   */
+  useEffect(() => {
+    const racine = document.documentElement;
+    const remettre = () => racine.style.setProperty("--atlas-bandeau", "0px");
+    const noeud = cadre.current;
+    if (!noeud) {
+      remettre();
+      return;
+    }
+    const publier = () =>
+      racine.style.setProperty("--atlas-bandeau", `${Math.round(noeud.getBoundingClientRect().height)}px`);
+    publier();
+    const oeil = new ResizeObserver(publier);
+    oeil.observe(noeud);
+    return () => {
+      oeil.disconnect();
+      remettre();
+    };
+  }, [etat]);
+
   if (etat === null) return null;
 
   // Le total vaut zéro tant que le préchauffage n'a pas écrit sa première
@@ -87,6 +126,7 @@ export default function BandeauBanc() {
     <div
       // `data-atlas` sert au contrôle de recouvrement à nommer le coupable
       // quand quelque chose passe dessous.
+      ref={cadre}
       data-atlas="bandeau-banc"
       role="status"
       aria-live="polite"
