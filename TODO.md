@@ -85,6 +85,32 @@ d'eux n'entre dans aucun des deux, et il recopierait une déduction amputée. Au
 moment de coder, `MontantCopiable` doit rendre le montant DÉCLARABLE, jamais un
 sous-total d'écran.
 
+**TROIS RAISONS, PAS DEUX CASES — sa question du 1er septembre 2026 :** *« si
+le client ne veut pas payer parce qu'il estime que les travaux n'ont pas été
+réalisés comme dit sur le devis, on coche quoi ? »* Aucune des deux cases, et
+c'est ce qui a fait refaire l'écran. Une créance **contestée** n'est pas
+irrécouvrable : elle se règle par un **avoir**, total ou partiel — et l'article
+272-1 vise aussi les affaires résiliées, annulées ou dont le prix est réduit,
+donc la TVA revient **tout de suite**, sans preuve à fournir.
+
+| La raison | La voie | Ce que la TVA fait |
+|---|---|---|
+| elle conteste les travaux | **avoir** (facture rectificative) | revient tout de suite |
+| elle ne paiera jamais | **duplicata** + mention, preuve gardée | revient, sous condition |
+| je la relance encore | rien | reste due |
+
+**On ne demande donc plus une PREUVE, on demande la RAISON.** Il la connaît sans
+réfléchir ; la preuve, il faut la chercher. Deux appuis : la raison, puis le
+geste.
+
+**ET L'ENVOI N'A AUCUN CHEMIN AUJOURD'HUI — il l'a relevé le 1er septembre.**
+L'écran disait « à envoyer au client » sans que rien ne l'envoie. Le patron
+existe déjà et il est éprouvé : `FactureClient.envoyerLaFacture()` arrête le
+document ET ouvre le SMS **sur le même appui** (sa demande du 22 août, « ça fait
+beaucoup trop de clics »). L'avoir et le duplicata doivent l'emprunter tel quel
+— `preparerLienFactureAction`, l'ordre messagerie-avant-rafraîchissement, et le
+message qui reste derrière si le téléphone refuse d'ouvrir `sms:`.
+
 **Trois questions posées, sans réponse à ce jour :** l'encadré doré et les ‹ ›
 tels quels ; « Jamais payée » sous le relevé ou sur la facture elle-même ; et
 si Atlas écrit le duplicata ou le prépare seulement.

@@ -44,6 +44,20 @@ La planche pose le geste : un arrêt qui demande la preuve de l'échec, puis une
 ligne négative au relevé et le duplicata à envoyer. `TODO.md` porte les trois
 questions qui restent.
 
+**Puis il a demandé « on coche quoi ? », et les deux cases étaient FAUSSES pour
+son cas.** *« Si le client ne veut pas payer parce qu'il estime que les travaux
+n'ont pas été réalisés comme dit sur le devis »* — ce n'est pas une créance
+irrécouvrable, c'est une créance contestée, et elle se règle par un **avoir** :
+l'article 272-1 vise aussi les affaires annulées ou dont le prix est réduit, donc
+la TVA revient tout de suite, sans rien à prouver. Trois raisons, donc, et trois
+voies : avoir, duplicata, ou rien. **L'écran ne demande plus une preuve mais une
+raison** — il la connaît sans réfléchir, la preuve il faut la chercher.
+
+**Et l'envoi n'avait aucun chemin, ce qu'il a vu aussi.** L'écran disait « à
+envoyer au client » sans que rien ne l'envoie. Le geste existe déjà et il est
+éprouvé : `envoyerLaFacture()` arrête le document et ouvre le SMS sur le même
+appui. L'avoir et le duplicata l'empruntent.
+
 **Puis il a demandé « c'est légal de faire ça ? », et mon arrêt était trop
 large.** Il acceptait « mise en demeure restée sans réponse » — une lettre sans
 réponse prouve qu'on a écrit, pas que la créance est perdue. Restent les deux

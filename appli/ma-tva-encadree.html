@@ -193,17 +193,23 @@
          border:1px solid var(--trait);background:transparent;color:var(--encre);
          font:inherit;font-size:14px;font-weight:600;cursor:pointer;
          -webkit-tap-highlight-color:transparent}
-  .arret{margin-top:12px;padding:14px 15px;border-radius:12px;
-         background:var(--teinte);font-size:13px;line-height:1.55}
-  .arret .t{font-weight:600;display:block;margin-bottom:9px}
-  .arret label{display:flex;gap:9px;align-items:flex-start;padding:6px 0;
-               cursor:pointer;-webkit-tap-highlight-color:transparent}
-  .arret input{margin-top:3px;width:17px;height:17px;flex:none;accent-color:var(--rouille)}
-  .arret .preuve{margin:6px 0 0;font-size:12px;color:var(--gris)}
-  .valider{margin-top:10px;width:100%;padding:12px;border-radius:999px;border:0;
+  .facture .demande{margin:14px 0 8px;font-size:12.5px;color:var(--gris)}
+  .voie{margin-top:12px;padding:14px 15px;border-radius:12px;
+        background:var(--teinte);font-size:13px;line-height:1.55}
+  .voie .preuve{margin:0;font-size:12.5px;color:var(--gris)}
+  .voie .champ{display:block;font-size:12.5px;color:var(--gris);margin-bottom:7px}
+  .saisie{display:flex;align-items:baseline;gap:7px}
+  .saisie input{flex:1;min-width:0;border:0;border-bottom:1px solid var(--trait);
+                background:transparent;color:var(--encre);font:inherit;
+                font-family:Georgia,"Times New Roman",serif;font-size:22px;
+                font-weight:600;padding:2px 0;font-variant-numeric:tabular-nums}
+  .saisie span{font-family:Georgia,"Times New Roman",serif;font-size:22px;
+               font-weight:600}
+  .valider{margin-top:12px;width:100%;padding:12px;border-radius:999px;border:0;
            background:var(--pin);color:var(--surpin);font:inherit;font-size:14px;
-           font-weight:600;cursor:pointer}
-  .valider[disabled]{opacity:.4;cursor:default}
+           font-weight:600;cursor:pointer;-webkit-tap-highlight-color:transparent}
+  .geste + .geste{margin-top:8px}
+  .geste.on{border-color:var(--rouille);color:var(--rouille)}
   .duplicata{margin-top:12px;padding:14px 15px;border-radius:12px;
              background:var(--papier);border-left:3px solid var(--or);
              font-size:12.5px;line-height:1.6;color:var(--gris)}
@@ -316,7 +322,7 @@ chiffre qui répond maintenant</b>, pas une explication.</p>
         </div>
       </div>
       <div class="ligne cache" id="ligneRecup">
-        <span>dont TVA récupérée — Mme Grospiron</span>
+        <span id="nomRecup">dont TVA récupérée — Mme Grospiron</span>
         <span class="m" id="montantRecup">456,00 €</span>
       </div>
       <div class="reste">
@@ -326,34 +332,62 @@ chiffre qui répond maintenant</b>, pas une explication.</p>
       <p class="credit cache" id="credit">Crédit de TVA — c’est l’État qui vous doit.</p>
     </div>
 
-    <!-- ─── LA FACTURE JAMAIS PAYÉE — n'existe qu'aux débits ─────────────── -->
+    <!-- ─── ELLE N'EST PAS PAYÉE — TROIS RAISONS, TROIS CHEMINS ──────────
+         Sa question du 1er septembre 2026 : « si le client ne veut pas payer
+         parce qu'il estime que les travaux n'ont pas été réalisés comme dit
+         sur le devis, on coche quoi ? » — aucune des deux cases, et c'est
+         pourquoi il fallait poser la question autrement. On ne demande plus
+         une PREUVE, on demande la RAISON : c'est elle qui décide de la voie,
+         et l'utilisateur la connaît sans réfléchir. -->
     <div id="impayees" class="cache">
       <h4 class="titre2">Restées impayées</h4>
       <div class="facture">
         <div class="qui">Mme Grospiron</div>
         <div class="quoi">F-2026-041 · envoyée le 4 septembre · déclarée en septembre</div>
-        <div class="som">2 736,00 €</div>
-        <button class="geste" id="ouvrirArret">Jamais payée</button>
+        <div class="som">2 736,00 €</div>
+        <p class="demande">Pourquoi ?</p>
+        <button class="geste" data-voie="avoir">Elle conteste les travaux</button>
+        <button class="geste" data-voie="perdue">Elle ne paiera jamais</button>
+        <button class="geste" data-voie="cours">Je la relance encore</button>
 
-        <div class="arret cache" id="arret">
-          <span class="t">Le recouvrement a-t-il échoué ?</span>
-          <label><input type="checkbox" class="cond"> Liquidation judiciaire — attestation du mandataire</label>
-          <label><input type="checkbox" class="cond"> Huissier ou injonction de payer, restés sans effet</label>
-          <p class="preuve">Gardez la preuve : c'est elle qu'on vous demandera.</p>
-          <button class="valider" id="recuperer" disabled>Récupérer la TVA</button>
+        <!-- ① L'AVOIR — le chemin court, et le seul qui vaille pour un litige.
+             Une facture annulée ou réduite rend sa TVA tout de suite (CGI
+             art. 272-1) : rien à prouver, personne à mettre en demeure. -->
+        <div class="voie cache" id="voie-avoir">
+          <label class="champ" for="montantAvoir">Vous lui enlevez</label>
+          <div class="saisie">
+            <input id="montantAvoir" type="text" inputmode="decimal" value="2 736,00">
+            <span>€</span>
+          </div>
+          <button class="valider" data-fait="avoir">Envoyer l’avoir</button>
+        </div>
+
+        <!-- ② LE DUPLICATA — la créance est perdue pour de bon. -->
+        <div class="voie cache" id="voie-perdue">
+          <p class="preuve">Il vous faut l’attestation du mandataire, ou un
+          recouvrement resté sans effet. Gardez-la.</p>
+          <button class="valider" data-fait="perdue">Envoyer le duplicata</button>
+        </div>
+
+        <!-- ③ RIEN — et le dire vaut mieux que de laisser un bouton. -->
+        <div class="voie cache" id="voie-cours">
+          <p class="preuve">La TVA reste due tant que ce n’est pas tranché.</p>
         </div>
       </div>
     </div>
 
-    <!-- **LE DUPLICATA VIT DEHORS**, et c'est un défaut vu à la capture : posé
+    <!-- **LE MESSAGE VIT DEHORS**, et c'est un défaut vu à la capture : posé
          dans « Restées impayées », il disparaissait avec elle au moment même où
-         il apparaît — la liste se vide quand la TVA est récupérée. -->
-    <div class="duplicata cache" id="duplicata">
-      <span class="t">À envoyer au client</span>
-      Un duplicata de la facture, portant la mention exigée :<br>
-      <span class="mention">« Facture demeurée impayée pour la somme de
-      2 280,00 € HT et pour la somme de 456,00 € de TVA qui ne peut faire
-      l’objet d’une déduction (art. 272 du CGI) »</span>
+         il apparaît — la liste se vide quand la TVA est récupérée.
+
+         **UN SEUL GESTE, comme pour la facture** (`FactureClient.tsx`, sa
+         demande du 22 août : « ça fait beaucoup trop de clics »). Le document
+         s'arrête ET la messagerie s'ouvre sur le même appui ; ce qu'on voit ici
+         est ce qui reste derrière, si le téléphone refuse d'ouvrir le SMS. -->
+    <div class="duplicata cache" id="envoi">
+      <span class="t" id="envoiTitre">Parti chez elle</span>
+      <p id="envoiQuoi"></p>
+      <span class="mention" id="envoiMention"></span>
     </div>
   </div>
 
@@ -365,8 +399,9 @@ chiffre qui répond maintenant</b>, pas une explication.</p>
 
 <h2>Ce qu’il se passe si le client ne paie pas</h2>
 <p class="pourquoi"><b>Touchez « Le mois où j’envoie la facture », puis allez en
-septembre ou octobre</b> : la facture de Mme Grospiron apparaît sous le relevé,
-et « Jamais payée » vous rend la TVA.</p>
+septembre</b> : la facture de Mme Grospiron apparaît sous le relevé. <b>On ne
+vous demande pas une preuve, on vous demande pourquoi</b> — vous le savez sans
+réfléchir, et c’est la raison qui décide de la voie. <b>Deux appuis, pas dix.</b></p>
 
 <table>
   <tr><th>Votre régime</th><th>La facture part, le client ne paie jamais</th></tr>
@@ -376,11 +411,30 @@ et « Jamais payée » vous rend la TVA.</p>
   </tr>
   <tr>
     <td><b>Le mois où j’envoie la facture</b></td>
-    <td>Vous avez avancé la TVA. Elle se récupère — <b>article 272-1 du code
-    général des impôts</b> — mais seulement quand la créance est <b>définitivement
-    perdue</b> : liquidation judiciaire, ou recouvrement engagé et resté sans
-    effet. Un retard, même long, ne suffit pas. Le client reçoit un duplicata
-    portant une mention obligatoire, et vous gardez la preuve.</td>
+    <td>Vous avez avancé la TVA. Elle revient — <b>article 272-1 du code général
+    des impôts</b> — mais par une voie qui dépend de la raison. Trois cas, et un
+    seul se coche vite :</td>
+  </tr>
+</table>
+
+<table>
+  <tr><th>La raison</th><th>Ce qui se passe</th></tr>
+  <tr>
+    <td><b>Elle conteste les travaux</b></td>
+    <td>Vous faites un <b>avoir</b> — total ou partiel. La TVA revient
+    <b>tout de suite</b> : rien à prouver, personne à mettre en demeure. C’est le
+    cas que vous m’avez décrit, et c’est le chemin le plus court des trois.</td>
+  </tr>
+  <tr>
+    <td><b>Elle ne paiera jamais</b></td>
+    <td>Liquidation judiciaire, ou huissier resté sans effet. Un <b>duplicata</b>
+    part chez elle avec la mention obligatoire, et vous <b>gardez la preuve</b> —
+    c’est elle qu’on vous demandera.</td>
+  </tr>
+  <tr>
+    <td><b>Vous la relancez encore</b></td>
+    <td>Rien. <b>La TVA reste due</b> tant que ce n’est pas tranché — un retard,
+    même long, ne rend rien.</td>
   </tr>
 </table>
 
@@ -392,10 +446,11 @@ n’existe nulle part dans l’application. Le geste ci-dessus est une
 Trois choses à me dire :
 <ul>
   <li>l’encadré doré et les ‹ ›, tels quels ?</li>
-  <li>« Jamais payée » posé <b>ici, sous le relevé</b>, ou plutôt sur la facture
-      elle-même ?</li>
-  <li>le duplicata, Atlas l’écrit et vous l’envoyez — ou il vous le prépare
-      seulement ?</li>
+  <li>les trois raisons posées <b>ici, sous le relevé</b>, ou plutôt sur la
+      facture elle-même ?</li>
+  <li><b>l’envoi</b> : Atlas écrit le document et ouvre votre SMS d’un seul
+      appui — comme « Envoyer la facture » le fait déjà. Même geste, ou
+      autrement ?</li>
 </ul>
 <b>Août 2026</b> porte les chiffres de votre capture. Les autres mois sont un
 exemple, et tous les totaux sont recalculés par la page. Elle ne touche <b>ni à
@@ -422,10 +477,13 @@ vos données ni à l’application</b>.
     { nom:'Octobre 2026',   enc:0,       deb:0,       ded:0,      impayee:true },
     { nom:'Novembre 2026',  enc:1420.00, deb:1420.00, ded:96.30  }
   ];
-  var TVA_IMPAYEE = 456.00;
+  var TTC_IMPAYEE = 2736.00;   /* la facture de Mme Grospiron */
+  var TAUX = 0.20;             /* travaux d'entretien : 20 % */
 
-  var i = 2;                 // août
-  var recuperee = false;     // la TVA de Mme Grospiron a-t-elle été récupérée
+  var i = 2;                   /* août */
+  var voie = null;             /* la raison choisie : avoir, perdue, cours */
+  var repriseTva = 0;          /* ce qui revient, une fois le geste fait */
+  var repriseNom = '';         /* comment la ligne s'appelle au relevé */
 
   function euros(n){
     var t = Math.abs(n).toLocaleString('fr-FR',
@@ -434,23 +492,30 @@ vos données ni à l’application</b>.
        taille, sur un écran au soleil, le second se lit comme une poussière. */
     return n < 0 ? '− ' + t : t;
   }
+  function lireEuros(txt){
+    var n = parseFloat(String(txt).replace(/[^0-9,.-]/g,'').replace(/\s/g,'').replace(',','.'));
+    return isFinite(n) ? n : 0;
+  }
   function debits(){ return document.getElementById('deb').checked; }
+  function indexDe(nom){
+    for (var k = 0; k < MOIS.length; k++) if (MOIS[k].nom === nom) return k;
+    return 0;
+  }
 
   function poser(){
     var m = MOIS[i];
     var aux = debits();
     var collectee = aux ? m.deb : m.enc;
-    /* La récupération ne s'applique QU'AUX DÉBITS et QU'À PARTIR DU MOIS OÙ
-       elle est faite — ici octobre, le mois où le geste se fait. */
-    var recup = (aux && recuperee && m.nom === 'Octobre 2026') ? TVA_IMPAYEE : 0;
+    /* La reprise ne s'applique QU'AUX DÉBITS et QU'À PARTIR DU MOIS OÙ le
+       geste se fait — ici octobre. */
+    var recup = (aux && repriseTva && m.nom === 'Octobre 2026') ? repriseTva : 0;
 
     /* **ELLE ENTRE DANS « DÉDUCTIBLE », elle ne fait pas une ligne à part.**
        Corrigé le 31 août 2026, et c'est sa capture qui l'a montré : sur la
-       déclaration, la TVA récupérée sur impayé se porte en TVA à déduire — pas
-       en moins de TVA collectée. Or ce sont ces deux montants-là qu'il COPIE
-       pour les recoller sur impots.gouv. Posée en troisième ligne, elle
-       n'entrait dans aucun des deux : il aurait recopié une déduction amputée
-       de 456 € et payé une TVA qu'il ne devait pas. */
+       déclaration, la TVA reprise se porte en TVA à déduire — pas en moins de
+       TVA collectée. Or ce sont ces deux montants-là qu'il COPIE pour les
+       recoller sur impots.gouv. Posée en troisième ligne, elle n'entrait dans
+       aucun des deux : il aurait recopié une déduction amputée. */
     var deductible = m.ded + recup;
     var reste = collectee - deductible;
 
@@ -458,7 +523,8 @@ vos données ni à l’application</b>.
     document.getElementById('collectee').textContent = euros(collectee);
     document.getElementById('deductible').textContent = euros(deductible);
     document.getElementById('reste').textContent = euros(reste);
-    document.getElementById('montantRecup').textContent = euros(TVA_IMPAYEE);
+    document.getElementById('montantRecup').textContent = euros(recup);
+    document.getElementById('nomRecup').textContent = repriseNom;
     montrer('ligneRecup', recup > 0);
     montrer('credit', reste < 0);
 
@@ -472,16 +538,13 @@ vos données ni à l’application</b>.
     document.getElementById('apres').style.visibility = i < MOIS.length-1 ? 'visible' : 'hidden';
 
     /* Aux encaissements, la facture impayée n'a rien à faire ici : elle n'est
-       jamais entrée au relevé, donc il n'y a rien à récupérer. */
-    montrer('impayees', aux && !!m.impayee && !recuperee);
-    montrer('duplicata', aux && !!m.impayee && recuperee);
+       jamais entrée au relevé, donc il n'y a rien à reprendre. */
+    var fait = repriseTva > 0;
+    montrer('impayees', aux && !!m.impayee && !fait);
+    montrer('envoi', aux && !!m.impayee && fait);
   }
   function montrer(id, oui){
     document.getElementById(id).classList.toggle('cache', !oui);
-  }
-  function indexDe(nom){
-    for (var k = 0; k < MOIS.length; k++) if (MOIS[k].nom === nom) return k;
-    return 0;
   }
   function bouger(pas){
     var j = i + pas;
@@ -496,22 +559,52 @@ vos données ni à l’application</b>.
   document.getElementById('enc').onchange = poser;
   document.getElementById('deb').onchange = poser;
 
-  document.getElementById('ouvrirArret').onclick = function(){
-    montrer('arret', true);
-  };
-  [].forEach.call(document.querySelectorAll('.cond'), function(c){
-    c.onchange = function(){
-      var une = [].some.call(document.querySelectorAll('.cond'), function(x){ return x.checked; });
-      document.getElementById('recuperer').disabled = !une;
+  /* ─── UN APPUI POUR LA RAISON, UN POUR LE GESTE. Deux, jamais dix. ───── */
+  [].forEach.call(document.querySelectorAll('.facture .geste'), function(b){
+    b.onclick = function(){
+      voie = b.getAttribute('data-voie');
+      [].forEach.call(document.querySelectorAll('.facture .geste'), function(x){
+        x.classList.toggle('on', x === b);
+      });
+      ['avoir','perdue','cours'].forEach(function(v){
+        montrer('voie-' + v, v === voie);
+      });
     };
   });
-  document.getElementById('recuperer').onclick = function(){
-    recuperee = true;
-    montrer('arret', false);
-    /* Le geste se fait sur le mois COURANT : on va le voir là où il compte. */
-    i = indexDe('Octobre 2026');
-    poser();
-  };
+
+  [].forEach.call(document.querySelectorAll('[data-fait]'), function(b){
+    b.onclick = function(){
+      var quoi = b.getAttribute('data-fait');
+      var titre = document.getElementById('envoiTitre');
+      var texte = document.getElementById('envoiQuoi');
+      var mention = document.getElementById('envoiMention');
+
+      if (quoi === 'avoir') {
+        var ttc = Math.min(lireEuros(document.getElementById('montantAvoir').value), TTC_IMPAYEE);
+        /* La TVA d'un avoir se calcule sur ce qu'on enlève, pas sur le total :
+           un avoir partiel ne rend qu'une partie de la TVA. */
+        repriseTva = Math.round(ttc / (1 + TAUX) * TAUX * 100) / 100;
+        repriseNom = 'dont avoir — Mme Grospiron';
+        titre.textContent = 'Parti chez elle';
+        texte.textContent = 'Un avoir de ' + euros(ttc) + ', et le SMS tout prêt. '
+          + 'La facture est corrigée d’autant.';
+        mention.textContent = '';
+      } else {
+        repriseTva = Math.round(TTC_IMPAYEE / (1 + TAUX) * TAUX * 100) / 100;
+        repriseNom = 'dont TVA récupérée — Mme Grospiron';
+        titre.textContent = 'Parti chez elle';
+        texte.textContent = 'Un duplicata de la facture, et le SMS tout prêt. '
+          + 'La mention exigée y est déjà :';
+        mention.textContent = '« Facture demeurée impayée pour la somme de '
+          + euros(TTC_IMPAYEE / (1 + TAUX)) + ' HT et pour la somme de '
+          + euros(repriseTva) + ' de TVA qui ne peut faire l’objet d’une '
+          + 'déduction (art. 272 du CGI) »';
+      }
+      /* Le geste se fait sur le mois courant : on va le voir là où il compte. */
+      i = indexDe('Octobre 2026');
+      poser();
+    };
+  });
 
   poser();
 </script>
