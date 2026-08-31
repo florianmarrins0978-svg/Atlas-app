@@ -20074,3 +20074,193 @@ une preuve que si la présence était possible — le contrôle exige donc déso
 qu'un chantier soit là avant de compter les boutons, et vise le nom du salarié
 plutôt qu'un nombre de demi-journées. C'est le contrôle qui mesure zéro de
 `CLAUDE.md` §5, retrouvé une fois de plus.
+
+## 225. « L'appli est lente » (la huitième fois) : la version rapide ne se jette plus pour en bâtir une autre
+
+**Sa plainte du 31 août 2026 au soir**, capture à l'appui : le bandeau « Version
+rapide en construction — un écran jamais ouvert peut tarder », l'indicateur
+« Compiling » de Next.js, et deux minutes écoulées depuis qu'il a rallumé son
+espace.
+
+**Rien n'était cassé. C'était le dessin.** Et c'est la huitième fois qu'il le
+signale : 14, 16, 17, 20, 25, 29 août, puis deux fois le 31. Le 20 août, ses
+mots étaient déjà exactement ceux de ce soir — *« L'application est lente,
+corrige ça. »*
+
+### Le mécanisme, et pourquoi la gêne ne s'arrêtait jamais
+
+Jusqu'ici, dès que le code changeait, `scripts/banc.mjs` repartait sur
+`next dev` le temps de bâtir la version rapide. Or en mode développement un
+écran neuf met trente à cent secondes à compiler, et le relais de GitHub
+abandonne au bout d'une minute : **pendant toute la construction, il ne peut
+ouvrir aucun écran qu'il n'a pas déjà ouvert.**
+
+Ce coût était assumé, et l'arbitrage est écrit noir sur blanc dans
+`memoire-prechauffage.mjs` : *« on préfère une gêne qui s'arrête »*.
+
+**Elle ne s'arrêtait pas**, et le raisonnement avait un trou que rien ne
+mesurait : six sessions poussent sur `main` dans la même soirée. Chacun de ses
+redémarrages tire du code neuf, donc rebâtit, donc le renvoie en mode lent. La
+gêne n'était pas un passage, c'était son état ordinaire. Et quand la
+construction échoue — mémoire trop juste, paquet absent, ce qui lui arrive
+souvent — il y restait jusqu'au lendemain.
+
+### Ce qui change
+
+Une version rapide déjà bâtie **ne se jette plus**. Elle reste en service
+pendant que la neuve se construit à côté, et la bascule est un échange de noms.
+
+| | avant | après |
+|---|---|---|
+| pendant la construction | mode développement : rien ne s'ouvre | version d'avant : tout est immédiat |
+| construction échouée | mode développement jusqu'au lendemain | version d'avant, jusqu'à la tentative suivante |
+| code servi | le neuf, **inatteignable** | celui d'AVANT, et l'écran le dit |
+| préchauffage | 887 Mo pris à une construction qui en manque | inutile : rien à préchauffer |
+
+Cette dernière ligne n'est pas un détail. Le §29 août arbitrait entre
+préchauffer et bâtir parce que son espace n'a pas la mémoire des deux. **Servir
+la version d'avant supprime l'arbitrage** au lieu de le trancher : une version
+bâtie n'a rien à préchauffer, et la construction retrouve ses 887 Mo.
+
+### Le prix, et il est réel
+
+Pendant la construction, il essaie **le code d'avant**. C'est le malentendu du
+12 août — « commit récupéré » contre « commit servi » —, qui a coûté deux
+heures. Trois choses le tiennent, et aucune n'est facultative :
+
+1. **le bandeau le dit** : « Version rapide en construction — vous voyez celle
+   d'avant » (`src/components/atlas/BandeauBanc.tsx`) ;
+2. **la fiche de l'espace le dit**, et son conseil a changé avec elle : « ne
+   rallumez pas, cela jetterait la construction en cours » plutôt que
+   l'ancien « arrêtez puis rouvrez » — qui, dans ce cas de figure, ferait
+   perdre les minutes qu'on vient de gagner ;
+3. **la fenêtre dure une construction, pas une soirée.**
+
+Et il faut comparer à ce qu'on remplace, pas à un idéal : un mode où il voyait
+le code neuf **sans pouvoir en ouvrir un seul écran**.
+
+### Trois dossiers, pas deux
+
+`next build` efface son dossier de destination : bâtir dans celui qu'on sert
+retirerait le sol au serveur en marche. D'où `.next-batie` (servi),
+`.next-batie-neuve` (en construction) et `.next-batie-vieille` (le temps de
+l'effacer). La bascule est **un échange de noms** — instantané, là où recopier
+351 Mo prendrait sur son disque les dizaines de secondes pendant lesquelles le
+veilleur prend le banc pour mort et en lance un second (§10 août).
+
+**L'engagement qui compte, et le seul :** l'échange ne peut pas le laisser sans
+application. Si l'ancienne ne peut pas être écartée, rien n'a bougé. Si la
+neuve ne peut pas prendre la place, l'ancienne revient. Les deux chutes sont
+éprouvées (`scripts/test-relais-version-batie.ts`) avec des gestes de fichiers
+injectés — aucun disque ne les produit sur commande.
+
+### La porte qui a failli rester fermée
+
+Le bandeau était écrit, l'état calculé, la route branchée — et **rien ne se
+serait affiché.** `layout.tsx` ne montait le composant que sous `NODE_ENV`
+développement, or servir une version bâtie impose `production`. Le composant
+n'aurait jamais été monté, au moment précis où il avait quelque chose à dire.
+C'est la faute du 28 août, à l'identique (`CLAUDE.md` §5 quater) : six gestes
+écrits, éprouvés, et injoignables faute d'une entrée dans une liste. D'où
+`leBandeauDoitParler()`, et non `laVersionRapideSeConstruit()`.
+
+### Le témoin de chantier porte un pid, et ce n'est pas une précaution de style
+
+Son banc se fait abattre par le noyau quand la mémoire manque : il laisse alors
+son témoin derrière lui. Sans vérification de vie, le bandeau annoncerait une
+construction en cours **pour toujours**, et l'enverrait attendre ce que plus
+personne ne fait — c'est exactement la faute du 20 août
+(`src/lib/version-lente.ts`).
+
+### Éprouvé en le JOUANT, deux fois, pas en le relisant
+
+Une version bâtie réelle, son témoin forcé sur un commit périmé, puis
+`npm run banc` pour de bon :
+
+```
+  Atlas répond déjà, sur la version rapide PRÉCÉDENTE.
+  → /api/health/live      200 en 2 s          (contre « rien avant la fin »)
+  → /login                200 en 0,28 s        pendant la construction
+  → bandeau               versionDavant: true
+  → Construction terminée — passage à la version rapide
+  → .next-batie/atlas-version-batie.txt == HEAD, les deux dossiers de travail effacés
+```
+
+### Ce qui a été écarté, et pourquoi
+
+**Ne rebâtir que si le code BÂTI a changé.** Un quart des commits de `main` ne
+touchent que `docs/`, `appli/` ou les fichiers de mémoire : comparer une
+empreinte du code plutôt que le numéro de commit éviterait un quart des
+constructions (mesuré sur les quarante derniers commits). Écarté ce soir, et
+noté dans `TODO.md` : la liste des chemins « sans effet sur la construction »
+est exactement le genre d'inclusion qu'on croit complète et qui ne l'est pas —
+se tromper là, c'est servir du code d'hier en croyant servir celui du jour, la
+panne que `doitRebatir` existe pour empêcher. Le gain ne le vaut plus depuis
+que la construction ne coûte plus l'usage de l'application.
+
+---
+
+## 226. Il n'y a plus qu'UNE fiche client : la reprise cesse d'être une version amputée
+
+**Sa demande du 31 août 2026, deux captures à l'appui :** *« lorsque je fais
+retour j'arrive sur la page 1re photo alors que je veux arriver sur la 2e. Je
+sais pas d'où sort la page 1re photo ? Si elle sert à rien il faut la
+supprimer. »*
+
+Les deux photos montraient **le même écran**, `FormulaireNouveauChantier`, et
+c'est bien là le défaut : rien à l'écran ne disait pourquoi l'un portait ses
+photos et son anneau et l'autre non.
+
+| Sa capture | Ce que c'était |
+|---|---|
+| la 1re | la fiche **rouverte** (`/chantiers/[id]/coordonnees`), privée de la pellicule, de l'anneau et de la chaîne du devis par trois `!reprise` |
+| la 2e | la fiche de **création**, entière |
+
+Il venait d'y être envoyé par le retour du devis (§221) — c'est ce chemin neuf
+qui a mis l'écart sous ses yeux. Deux versions du même écran se lisaient comme
+deux écrans, dont un mutilé sans raison visible.
+
+### Ce que les trois gardes défendaient, et pourquoi elles tombent
+
+Elles venaient du 17 août 2026 (*« RIEN DE PLUS, RIEN DE MOINS »*, §124) : la
+reprise devait servir à corriger des coordonnées, pas à refaire un chantier. La
+règle était juste pour ce chemin-là — celui de l'accueil, où l'on vient
+justement corriger une adresse. Elle est devenue fausse dès qu'on y arrive
+**depuis un devis vide**, où tout est à faire : le client, les photos, la
+dictée. Une même porte, deux besoins ; c'est l'écran entier qui les sert tous
+les deux, pas la moitié.
+
+### Ce qui reste différent, et c'est la seule chose
+
+Le bouton **« Enregistrer »**. Il répond à un besoin que la création n'a pas :
+faire partir ce qu'il vient de TAPER sur un chantier qui existe déjà. Sans lui,
+une adresse corrigée au clavier ne partirait nulle part — la création, elle,
+enregistre par le geste (une photo, une dictée) et n'a rien à sauver.
+
+### LES PIÈCES PARTENT DE CE QUE LE CHANTIER PORTE DÉJÀ
+
+C'est la moitié du travail, et la moitié qui se serait oubliée. Montrer la
+pellicule sans lui donner les photos existantes afficherait une pellicule
+**vide** sur un chantier photographié : il croirait ses photos perdues et les
+reprendrait. Même chose pour l'anneau, qui doit être le lecteur de la note
+existante et non un enregistreur neuf. `src/app/chantiers/[id]/coordonnees/page.tsx` lit donc
+`listerPhotos` et `getNoteVocale`, exactement comme la fiche du chantier.
+
+**Et l'anneau disparaît quand la note existe mais que son audio a été purgé** —
+même garde que `/chantiers/[id]` : un lecteur sans rien à lire est une promesse
+fausse.
+
+### Ce qui n'a PAS eu besoin d'être ajouté
+
+Dicter depuis la fiche rouverte d'un chantier dont le devis est déjà corrigé à
+la main **n'écrase rien** : `DevisDepuisDictee` rend un `conflit` et pose la
+question (*« Vous avez corrigé ce brouillon à la main. Repartir de la dictée
+effacerait vos corrections. »*). La garde existait ; il fallait le vérifier
+avant d'ouvrir ce chemin, pas après.
+
+### Ce qui l'éprouve
+
+`scripts/test-devis-sans-client-e2e.ts` : la fiche atteinte depuis le devis
+porte ses photos, son anneau **et** son bouton d'enregistrement. Trois
+assertions, une par pièce — un seul contrôle « la fiche est entière » ne dirait
+pas laquelle manque.

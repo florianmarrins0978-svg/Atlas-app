@@ -9,7 +9,137 @@ sert.
 
 ---
 
-## Dernier lot : une planche pour le geste des boutons (31 août 2026)
+## Dernier lot : la ligne, corrigée trois fois par lui (31 août 2026, au soir)
+
+**Rien n'est codé** (`CLAUDE.md` §3 bis). Il a choisi **la ligne** parmi les
+quatre allures, puis l'a corrigée : *« supprime le rond avec le carré dedans
+pour me mettre pause. Et la touche envoyer : garde l'encadré vert et
+l'intérieur, mais la couleur du fond de la page (beige) […] et fais-la
+légèrement plus à plat. »*
+
+| | |
+|---|---|
+| la planche | `appli/dictee-la-ligne.html` |
+| en ligne | https://florianmarrins0978-svg.github.io/Atlas-app/dictee-la-ligne.html |
+| son contrôle | `scripts/verifier-maquette-dictee-la-ligne.mjs` (dans `npm run verifier:maquette`) |
+| ce qu'on attend | **une lettre** : A ronde, B légèrement à plat, C plus à plat |
+| ce que ça touchera | `src/app/chantiers/[id]/AnneauNoteVocale.tsx` et le bloc `.atlas-dictee` de `src/app/globals.css` |
+
+**Ce qui est tranché et ne se rediscute pas :** la ligne, la disparition de la
+pause (deux gestes : jeter, envoyer), la touche d'envoi au fond de la page
+encadrée de vert. L'aplat de la dictée passe de 7 956 px² à 64.
+
+**Le piège au moment de coder :** supprimer la pause supprime aussi la
+possibilité de suspendre pour répondre à quelqu'un sur un chantier. C'est sa
+demande, ce n'est pas un oubli — mais cela se dit avant, pas après.
+
+---
+
+## Le même soir : il n'y a plus qu'UNE fiche client (31 août 2026)
+
+Sa demande, deux captures à l'appui : *« lorsque je fais retour j'arrive sur la
+page 1re photo alors que je veux arriver sur la 2e. Je sais pas d'où sort la 1re
+photo ? Si elle sert à rien il faut la supprimer. »* Les deux montraient le même
+écran — l'une entière, l'autre privée de ses photos, de son anneau et de la
+chaîne du devis par trois `!reprise`. Ces gardes sont tombées.
+
+**Ce qu'il faut savoir avant d'y toucher :**
+
+- **Les gardes venaient du 17 août (« RIEN DE PLUS, RIEN DE MOINS », §124)** et
+  elles étaient justes pour le chemin de l'accueil, où l'on vient corriger une
+  adresse. Elles sont devenues fausses dès qu'on arrive là **depuis un devis
+  vide**, où tout est à faire. Ne pas les remettre au nom du 17 août.
+- **Les pièces partent de ce que le chantier porte DÉJÀ** : `src/app/chantiers/[id]/coordonnees/page.tsx`
+  lit `listerPhotos` et `getNoteVocale`. Une pellicule vide sur un chantier
+  photographié lui ferait croire ses photos perdues — c'est la moitié du travail,
+  et celle qui s'oublie.
+- **« Enregistrer » est la SEULE différence qui reste**, et elle a une raison :
+  faire partir ce qu'il TAPE sur un chantier qui existe. La création, elle,
+  enregistre par le geste.
+- **Dicter là-dessus n'écrase pas un devis corrigé à la main** : `DevisDepuisDictee`
+  rend un `conflit` et pose la question. Vérifié avant d'ouvrir le chemin.
+
+Raisons et pièges : `ARCHITECTURE.md` §226.
+
+## Le même jour : quatre allures pour la dictée de la fiche chantier (31 août 2026)
+
+**Rien n'est codé, et c'est volontaire** (`CLAUDE.md` §3 bis). Sa remarque,
+capture à l'appui : *« propose-moi une maquette pour embellir cette partie de la
+fiche chantier, je trouve que ça dénature l'appli »*.
+
+| | |
+|---|---|
+| la planche | `appli/dictee-embellie.html` |
+| en ligne | https://florianmarrins0978-svg.github.io/Atlas-app/dictee-embellie.html |
+| son contrôle | `scripts/verifier-maquette-dictee-embellie.mjs` (dans `npm run verifier:maquette`) |
+| ce qu'on attend | **un numéro** : 1 la barre, 2 l'anneau, 3 la ligne, 4 le galet — ou rien ne change |
+| ce que ça touchera | `src/app/chantiers/[id]/AnneauNoteVocale.tsx` et le bloc `.atlas-dictee` de `src/app/globals.css` |
+
+**Ce qui a servi de boussole, et qui se mesure.** Sa plainte n'est pas un goût :
+pendant la dictée, l'écran porte **deux aplats vert pin — 7 956 px²** — là où le
+reste de la fiche n'en porte aucun ; rien ne tient les trois boutons ensemble ;
+et le chrono, l'onde et le disque sont sur trois axes différents. Le contrôle
+**additionne la surface peinte** et refuse une proposition qui ne réduirait pas
+l'aplat : sans lui, quatre variations pouvaient déplacer le défaut sans le
+régler, et rester vertes.
+
+**Le repos ne bouge pas dans les quatre** — le micro plein et ses ondes de
+1,5 cm, son choix du 30 août. Il n'a rien reproché à cet état-là, et changer
+deux choses à la fois l'empêcherait de choisir.
+
+---
+## Le même soir : la version rapide ne se jette plus pour en bâtir une autre (31 août 2026)
+
+Sa plainte, capture à l'appui : *« l'appli est lente, corrige ça »* — **la
+huitième du même genre** (14, 16, 17, 20, 25, 29 août, puis deux fois le 31).
+Compte-rendu qui lui est destiné : `docs/appli-lente-version-davant.md`.
+
+**Ce qu'il faut savoir avant d'y toucher :**
+
+- **Rien n'était cassé, et c'est pour ça que ça durait.** Son banc jetait sa
+  version rapide dès que le code changeait, et servait `next dev` le temps de
+  bâtir — un mode où un écran neuf compile plus lentement que le relais de
+  GitHub n'accepte d'attendre. **Il ne pouvait ouvrir aucun écran qu'il n'avait
+  pas déjà ouvert.** Le coût était assumé comme « une gêne qui s'arrête »
+  (`memoire-prechauffage.mjs`) — sauf qu'avec six sessions poussant sur `main`
+  dans la même soirée, chaque redémarrage l'y remettait.
+- **La version bâtie reste maintenant en service pendant la construction**, qui
+  se fait dans `.next-batie-neuve`, et la bascule est un échange de noms
+  (`scripts/relais-version-batie.mjs`). Trois dossiers, pas deux : `next build`
+  efface sa destination, bâtir dans celui qu'on sert retirerait le sol au
+  serveur.
+- **Le prix se dit à l'écran, et ce n'est pas facultatif** : pendant la
+  construction il voit le code d'AVANT. Le bandeau l'annonce, la fiche aussi.
+  Retirer l'un des deux rouvrirait le malentendu du 12 août — « commit
+  récupéré » contre « commit servi » —, qui a coûté deux heures.
+- **`leBandeauDoitParler()` et non `laVersionRapideSeConstruit()`** dans
+  `layout.tsx`. Le second répond « non » sous `NODE_ENV=production`, c'est-à-dire
+  au moment exact où l'on sert la version d'avant : le composant n'aurait jamais
+  été monté, et tout ce qu'il annonce serait resté lettre morte. **La porte a
+  failli rester fermée** — c'est la faute du 28 août à l'identique.
+- **Le témoin de chantier porte un pid** (`/tmp/atlas-construction-en-cours.json`).
+  Son banc se fait abattre par le noyau quand la mémoire manque, et laisse son
+  témoin ; sans vérification de vie, le bandeau annoncerait une construction
+  éternelle.
+- **Éprouvé en le JOUANT, deux fois** — version bâtie réelle, témoin forcé sur
+  un commit périmé, `npm run banc` pour de bon : `/login` en **0,28 s pendant la
+  construction**, puis échange des dossiers et témoin à jour. Une relecture
+  n'aurait rien prouvé.
+- **Ce qui reste ouvert :** ne pas rebâtir quand le commit ne touche ni `src/`
+  ni la configuration (un quart des commits de `main`). Écarté ce soir — voir
+  `TODO.md` pour la raison.
+- **La batterie : 299/299 en base, 122/122 au navigateur, connexion verte.** Les
+  suites navigateur n'ont PAS tenu d'une traite — serveur abattu par le noyau à
+  13,5 Go, comme les 27, 29 et 30 août — et ont été jouées par
+  `scripts/jouer-suites-par-groupes.mjs`, puis les six d'un groupe manquant
+  rejouées une par une. Rien de ce lot n'y est pour quelque chose : c'est le
+  défaut de machine noté plus bas, dont la cause reste NON ÉTABLIE.
+- **Trois rouges de contrôles en chemin**, tous du même genre : ils visaient la
+  forme d'hier (`detached: true` compté, `let serveur = raison ?` cherché mot
+  pour mot). Un seul accusait à raison — `etat-banc.ts` refaisait la décision
+  « est-ce un banc » au lieu d'appeler `estBancDEssai()`.
+
+## Le même jour : une planche pour le geste des boutons (31 août 2026)
 
 **Rien n'est codé, et c'est volontaire** (`CLAUDE.md` §3 bis). Sa demande :
 *« une mini vibration, que l'utilisateur soit sûr d'avoir appuyé »*, et le
@@ -34,7 +164,7 @@ natif d'iOS, l'application emballée passerait par `@capacitor/haptics`. Dire
 
 ---
 
-## Dernier lot : un devis sans client renvoie à la fiche client (31 août 2026)
+## Le même jour : un devis sans client renvoie à la fiche client (31 août 2026)
 
 Sa demande, deux captures à l'appui : *« j'ai oublié de renseigner la fiche
 client du chantier. Lorsque je fais retour, je dois arriver sur la page de la
@@ -89,9 +219,7 @@ Raisons et pièges : `ARCHITECTURE.md` §221.
   sur son espace.
 
 
-## Le même jour : le prix qui ne débloquait rien, et le lendemain qu'on lui refusait (31 août 2026)
-
-## Dernier lot : le devis du client, verrouillé et tenant dans un écran (31 août 2026)
+## Le même jour : le devis du client, verrouillé et tenant dans un écran (31 août 2026)
 
 Ses trois captures du téléphone d'une cliente. Compte-rendu qui lui est
 destiné : `docs/devis-client-verrouille.md`.
