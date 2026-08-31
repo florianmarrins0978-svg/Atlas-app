@@ -15,6 +15,9 @@
 // qui reste ouverte.**
 
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
+import path from "node:path";
+import { MOT_ETAT } from "../src/lib/planning-jour";
 import {
   libelleSalarie,
   salariesAffiches,
@@ -161,21 +164,46 @@ essai("la phrase du compteur d'équipes ne contient aucun mot de métier", () =>
   // **Sa dictée du 26 août 2026 :** *« en dessous en gris marque 2 chantiers par
   // jour, c'est ce qui remplit votre planning — le chiffre bouge en fonction du
   // nombre d'équipes »*. C'est le CHIFFRE qui doit suivre, pas seulement le mot.
-  assert.equal(phraseDuCompteur(1), "Un chantier par jour. C'est ce qui remplit votre planning.");
-  assert.equal(phraseDuCompteur(2), "2 chantiers par jour. C'est ce qui remplit votre planning.");
-  assert.equal(phraseDuCompteur(5), "5 chantiers par jour. C'est ce qui remplit votre planning.");
+  //
+  // **Elle rend DEUX morceaux depuis le 31 août 2026** (planche 99, réponse A) :
+  // entre les deux se glissent le carré du planning et son mot, qui ne sont pas
+  // du texte. Sa demande : *« écrit deux chantiers par jour, planning complet,
+  // et met le petit carré vert foncé avec écrit "complet" du planning »*.
+  assert.deepEqual(phraseDuCompteur(1), { avant: "Un chantier par jour. Planning", apres: "." });
+  assert.deepEqual(phraseDuCompteur(2), { avant: "2 chantiers par jour. Planning", apres: "." });
+  assert.deepEqual(phraseDuCompteur(5), { avant: "5 chantiers par jour. Planning", apres: "." });
   for (const n of [2, 7, 20]) {
     assert.ok(
-      phraseDuCompteur(n).startsWith(`${n} chantiers`),
-      `phrase(${n}) ne porte pas le chiffre du compteur : « ${phraseDuCompteur(n)} »`
+      phraseDuCompteur(n).avant.startsWith(`${n} chantiers`),
+      `phrase(${n}) ne porte pas le chiffre du compteur : « ${phraseDuCompteur(n).avant} »`
     );
   }
   for (const n of [1, 2, 7, 20]) {
-    assert.ok(!/de front|effectif|ressource/i.test(phraseDuCompteur(n)), `phrase(${n}) emploie un mot de métier`);
+    const entier = phraseDuCompteur(n).avant + phraseDuCompteur(n).apres;
+    assert.ok(!/de front|effectif|ressource/i.test(entier), `phrase(${n}) emploie un mot de métier`);
+    // **Le mot ne s'écrit PAS ici.** Il vient de `MOT_ETAT` : recopié dans la
+    // phrase, il cesserait de suivre la légende du calendrier le jour où elle
+    // change, et les deux écrans diraient deux mots pour la même couleur.
+    assert.ok(!/complet/i.test(entier), `phrase(${n}) écrit « complet » au lieu de le prendre dans MOT_ETAT`);
   }
   // Une valeur aberrante ne doit pas écrire « 0 chantiers par jour » : le
   // compteur est borné à 1 partout ailleurs, et la phrase le suit.
-  assert.equal(phraseDuCompteur(0), "Un chantier par jour. C'est ce qui remplit votre planning.");
+  assert.deepEqual(phraseDuCompteur(0), { avant: "Un chantier par jour. Planning", apres: "." });
+});
+
+essai("le mot du planning est celui de la légende, et il n'existe qu'une fois", () => {
+  // Sa demande du 31 août 2026 : le carré vert foncé et le mot « complet » « du
+  // planning » — donc CELUI de la légende, pas un synonyme.
+  assert.equal(MOT_ETAT.plein, "complet");
+  assert.equal(MOT_ETAT.dispo, "incomplet");
+  // « rien » et non « libre » : c'est le mot que porte la légende du calendrier.
+  assert.equal(MOT_ETAT.libre, "rien");
+  // La légende du calendrier ne les écrit plus en clair : elle les lit ici. Un
+  // mot recopié dans l'écran rouvrirait la divergence que cette table ferme.
+  const legende = readFileSync(path.join(__dirname, "..", "src/components/atlas/MoisCharge.tsx"), "utf8");
+  for (const mot of ["\"incomplet\"", "\"complet\"", "\"au-delà\""]) {
+    assert.ok(!legende.includes(mot), `MoisCharge.tsx écrit ${mot} en clair au lieu de lire MOT_ETAT`);
+  }
 });
 
 essai("la phrase des salariés ne parle jamais d'équipes", () => {
