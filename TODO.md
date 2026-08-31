@@ -19,20 +19,50 @@ https://florianmarrins0978-svg.github.io/Atlas-app/ma-tva-encadree.html
 
 | Ce qu'il demande | Où ça vit aujourd'hui |
 |---|---|
-| ne garder qu'une ligne sous « Je reverse ma TVA aux impôts » | `src/app/termines/tva/RegimeTva.tsx` |
 | border d'or l'encadré Collectée / Déductible | `src/app/termines/tva/page.tsx` |
 | les ‹ › du planning pour changer de mois, voisins en pastilles | `page.tsx` (aujourd'hui « ← Juillet 2026 » / « Septembre 2026 → ») |
+| retirer la ligne grise « ça ne change rien » et la phrase sur le comptable | `src/app/termines/tva/RegimeTva.tsx` |
 
-**CE QU'IL FAUT LUI FAIRE VOIR AVANT DE SUPPRIMER**, et c'est le seul point
-qui mérite une question : reverser la TVA **dès l'envoi de la facture** est une
-option qui se demande aux impôts. La seconde ligne partie, l'écran n'a plus
-d'endroit pour la dire — et le jour où quelqu'un a pris cette option, son relevé
-sera faux sans qu'il puisse le corriger. Partent avec elle la ligne grise « ce
-choix ne change rien » et la phrase sur le comptable.
+**LES DEUX LIGNES DU RÉGIME RESTENT — tranché avec lui le 31 août.** Il avait
+demandé de n'en garder qu'une, puis a posé la bonne question : *« dans la loi
+il faut que l'utilisateur puisse avoir le choix ? »* Oui — encaissements par
+défaut, débits sur option demandée aux impôts (`docs/QUESTIONS.md` §20). Un
+écran qui n'en garderait qu'une ferait déclarer faux celui qui a pris l'option.
+**Ne pas rouvrir ce point.**
 
-**Et quand il aura tranché**, deux conséquences côté code : le contrôle
-`data-atlas="ecart-des-regimes"` n'a plus d'objet, et `relevesSousLesDeuxRegimes`
-n'a plus besoin de calculer l'autre régime pour cet écran.
+**Ce qui remplace la ligne grise, c'est le chiffre lui-même** : basculer de
+régime change « Collectée » sous ses yeux. Sa plainte du 26 août — « je change
+entre les deux, rien ne se passe » — trouve là une meilleure réponse qu'une
+phrase qui l'explique. À vérifier au moment de coder : le montant du dessus
+attend le serveur, donc la bascule ne doit pas devancer la réponse
+(`RegimeTva.tsx`, commentaire « la phrase ne suit pas le doigt »).
+
+---
+
+## LA FACTURE JAMAIS PAYÉE, AUX DÉBITS : Atlas ne sait pas la traiter
+
+**Sa question du 31 août 2026, et c'est un trou réel :** *« lorsqu'on
+sélectionne le mois où j'envoie la facture, elle s'inscrit automatiquement au
+relevé — or si le client ne nous paie pas, comment on fait ? »*
+
+**Aujourd'hui, rien.** Le mot « irrécouvrable » n'existe nulle part dans `src/`.
+Sous le régime des débits, la TVA d'une facture jamais payée est avancée et
+n'en ressort jamais. `EnAttenteDePaiement` ne s'affiche même pas aux débits —
+délibérément, mais cela laisse le patron sans aucun geste.
+
+**Ce que la loi prévoit** (CGI art. 272-1) : la TVA se récupère quand la créance
+est **définitivement irrécouvrable** — recouvrement échoué, pas un simple retard
+—, en envoyant au client un **duplicata** portant la mention obligatoire
+« Facture demeurée impayée pour la somme de … € HT et pour la somme de … € de
+TVA qui ne peut faire l'objet d'une déduction (art. 272 du CGI) ».
+
+**La proposition est sur la planche**, touchable : « Restées impayées » sous le
+relevé, un arrêt qui demande si le recouvrement a échoué, puis une ligne
+négative au relevé du mois courant et le duplicata à envoyer.
+
+**Trois questions posées, sans réponse à ce jour :** l'encadré doré et les ‹ ›
+tels quels ; « Jamais payée » sous le relevé ou sur la facture elle-même ; et
+si Atlas écrit le duplicata ou le prépare seulement.
 
 ---
 

@@ -9,22 +9,45 @@ Format : le plus récent en tête.
 
 ## 2026-08-31
 
-### Ma TVA : une planche pour trois demandes, et la question qu'elle pose
+### Ma TVA : la planche, et la question qu'il a posée mieux que moi
 
-Ses trois demandes du 31 août, capture à l'appui : **ne garder qu'une ligne**
-sous « Je reverse ma TVA aux impôts » — celle qui est cochée —, **border d'or**
-l'encadré Collectée / Déductible, et reprendre **les ‹ › du planning** pour
-changer de mois, les voisins posés en pastilles transparentes.
+Ses trois demandes du 31 août : **border d'or** l'encadré Collectée /
+Déductible, reprendre **les ‹ › du planning** pour changer de mois (voisins en
+pastilles transparentes), et **ne garder qu'une ligne** sous « Je reverse ma TVA
+aux impôts ».
 
-`appli/ma-tva-encadree.html`. **Rien n'est codé** : `src/` n'est pas touché
-tant qu'il n'a pas choisi (§3 bis).
+`appli/ma-tva-encadree.html`. **Rien n'est codé** : `src/` n'est pas touché tant
+qu'il n'a pas choisi (§3 bis).
 
-**Ce que la planche lui montre en plus de ce qu'il a demandé.** Supprimer la
-seconde ligne emporte l'endroit où dire qu'on reverse **dès l'envoi de la
-facture** — une option qui se demande aux impôts, et que quelqu'un aura prise.
-Un écran qui n'a plus qu'un régime ne peut pas se tromper à moitié : il se
-trompe entièrement, et sans le dire. La note sous la maquette pose la question ;
-il tranche.
+**LE TROISIÈME POINT A ÉTÉ REVU, ET C'EST LUI QUI A EU RAISON.** Devant la
+conséquence — l'écran n'aurait plus eu d'endroit pour dire qu'on reverse dès
+l'envoi —, il a demandé : *« dans la loi il faut que l'utilisateur puisse avoir
+le choix ? »* Oui, et `docs/QUESTIONS.md` §20 le portait déjà. **Les deux lignes
+restent** ; ne partent que la phrase sur le comptable et la ligne grise « ce
+choix ne change rien ». Ce qui la remplace est meilleur qu'elle : basculer de
+régime change le montant collecté sous ses yeux.
+
+### La facture jamais payée, aux débits : le trou qu'il a trouvé
+
+*« Lorsqu'on sélectionne le mois où j'envoie la facture, elle s'inscrit
+automatiquement au relevé — or si le client ne nous paie pas, comment on
+fait ? »*
+
+**Aujourd'hui : rien.** Le mot « irrécouvrable » n'existe nulle part dans
+`src/`. Sous les débits, la TVA d'une facture jamais payée est avancée et n'en
+ressort jamais — et `EnAttenteDePaiement` ne s'affiche pas dans ce régime, ce
+qui laisse le patron sans le moindre geste.
+
+La loi la rend récupérable (CGI art. 272-1), mais **seulement une fois le
+recouvrement échoué**, et contre un duplicata portant une mention obligatoire.
+La planche pose le geste : un arrêt qui demande la preuve de l'échec, puis une
+ligne négative au relevé et le duplicata à envoyer. `TODO.md` porte les trois
+questions qui restent.
+
+**Et un défaut de la planche elle-même, trouvé à la capture et pas autrement :**
+le duplicata était posé DANS « Restées impayées », donc il disparaissait avec
+elle à l'instant même où il devait apparaître. La quatrième fois dans ce dépôt
+qu'un défaut sort d'une image et d'aucun contrôle.
 
 ### Les dix verts étaient CASSÉS en ligne, et mon contrôle ne le voyait pas
 
