@@ -33,7 +33,7 @@ Elle a lieu maintenant avant tout lancement. Vérifié de bout en bout : paquet
 écarté, banc lancé, « Dépendances remises d'aplomb » puis « passage à la version
 rapide ».
 
-Détail et ce qui reste ouvert : `ARCHITECTURE.md` §218.
+Détail et ce qui reste ouvert : `ARCHITECTURE.md` §219.
 
 
 ### Un prix posé sur l'écran du devis débloque enfin l'envoi
@@ -133,6 +133,114 @@ interroge.
 Le contrôle qui exigeait cette promesse a été retourné : il vérifie désormais
 qu'elle ne revient pas. Un nouveau mesure l'écran à 390 × 664 — rien à faire
 défiler, et le dernier geste hors de portée des onglets.
+
+### L'or reste l'or, quelle que soit l'apparence choisie
+
+**Sa consigne :** *« pour l'apparence, j'aimerais que tout ce qui est en doré
+sur la version originale apparaisse en doré sur les autres apparences »*.
+
+Chaque charte portait son propre second accent, recopié de la planche du
+14 août : une sauge sur Pierre, une argile sur Moka, un prune sur Prune, un bleu
+et un rose pour les traits de Brume et de Prune. Changer d'apparence repeignait
+donc **tout ce que l'or porte** — l'accueil, les libellés d'état, les filets, le
+sceau, le compteur de la dictée —, et sur trois chartes l'or disparaissait.
+
+Les huit chartes portent désormais l'or d'Origine, `#B98B47`, au caractère près.
+Mesuré sur chacune : il se détache **mieux** sur les deux sombres (6,14 sur Nuit)
+que sur son écran de tous les jours (2,77 sur Origine) — il n'y avait donc rien
+à remonter, et le remonter aurait cessé d'être le même or.
+
+Ce n'était pas une demande neuve : le 27 août il l'avait posée pour Brume seule,
+et l'on avait corrigé Brume seule. Une suite tient maintenant la règle pour les
+huit (`scripts/test-chartes.ts`) — les deux suites existantes vérifiaient que
+tous les jetons sont là et que tout se lit, et restaient vertes pendant que
+l'identité changeait.
+
+Deux présentations ont suivi : Pierre n'annonce plus « Aucun or », Moka plus
+« une argile pour l'accent ». Détail dans `ARCHITECTURE.md` §218.
+
+### CODÉ : « 2 chantiers par jour. Planning ▪ complet. » — sa réponse A
+
+Sa réponse à la planche 99, le jour même : **« la A »**. L'écran Réglages porte
+désormais le carré vert foncé du planning et son mot, à la place de *« C'est ce
+qui remplit votre planning. »*
+
+**Deux pièces neuves, et aucune couleur ni aucun mot écrits dans un écran :**
+
+- `MOT_ETAT` (`src/lib/planning-jour.ts`) — le mot de chacun des quatre états,
+  écrit une fois. La légende du calendrier les écrivait en clair ; elle les y
+  lit maintenant, et le réglage aussi. Sans cette table, « complet » existerait
+  à deux endroits, sur deux écrans qui ne se lisent jamais ensemble — et le
+  jour où l'un change, rien ne le dirait.
+- `phraseDuCompteur` rend **deux morceaux** au lieu d'une phrase : entre eux se
+  glissent le carré (`fondDeLEtat("plein")`) et le mot. Un `#2f3b2f` posé dans
+  l'écran aurait été faux sur Nuit et Sylve, les deux chartes sombres.
+
+**Le carré est `aria-hidden`, le mot ne l'est pas** : une couleur ne se lit pas
+à voix haute, et l'annonce ne doit pas dire deux fois la même chose.
+
+`ditLaBarre` prend « complet » dans `MOT_ETAT` elle aussi — la voix et la
+couleur ne doivent pas nommer différemment le même état. Elle garde « libre »
+là où la légende écrit « rien » : une phrase lue n'est pas une étiquette.
+
+### Le réglage dit ce qu'il DONNE au planning — planche 99
+
+**Sa demande, capture des Réglages à l'appui :** *« écrit deux chantiers par
+jour, planning complet, et met le petit carré vert foncé avec écrit "complet"
+du planning »*, puis, devant la planche 98 qui visait le calendrier d'envoi :
+*« c'est sur cette page que doit se faire la modification »*.
+
+Le compteur dit aujourd'hui *« 2 chantiers par jour. C'est ce qui remplit votre
+planning. »* (`phraseDuCompteur`, `src/lib/equipes.ts`). La phrase dit que le
+réglage remplit le planning ; elle ne montre pas **ce qu'on y verra**, et ce
+qu'on y voit est une couleur. Le réglage vit sur un écran, sa conséquence sur
+un autre, et rien ne les relie.
+
+`appli/reglages-planning-complet.html` propose trois issues — la phrase avec le
+carré, l'échelle des trois carrés, la case du planning dessinée — et **le
+compteur marche** : à 3 l'échelle dit 0 / 1 à 2 / 3, à 1 la ligne « incomplet »
+disparaît, parce qu'entre rien et complet il n'y a plus de place.
+
+**Le vert et la phrase sont LUS dans le produit**, jamais recopiés :
+`scripts/verifier-maquette-reglages-planning-complet.mjs` compare le carré à
+`colors.rust` et la phrase à `phraseDuCompteur`, et il a été vu rouge sur un mot
+changé, un autre vert, un chiffre figé et un « incomplet » de trop.
+
+**Rien n'est codé dans `src/`.**
+
+### Un jour proposé au client se peint comme un jour COMPLET — planche 98
+
+**Cette planche répond à une mauvaise lecture de sa demande** — il visait
+l'écran Réglages (planche 99 ci-dessus). Le défaut qu'elle décrit est réel et
+reste posé, mais il n'est pas ce qu'il demandait.
+
+**Sa remarque, capture à l'appui :** *« écrit deux chantiers par jour, planning
+complet, et met le petit carré vert foncé avec écrit "complet" du planning »*.
+
+Ses réglages disent deux chantiers par jour, son septembre est **vide**, et les
+deux dates qu'il propose à sa cliente se peignent du vert que la légende, juste
+dessous, appelle « complet ».
+
+**Le calcul n'est pas en cause** — `src/lib/planning-jour.ts` rend bien
+« libre » pour ces deux jours-là. C'est la même couleur employée pour deux
+choses sans rapport dans `src/components/atlas/MoisCharge.tsx` :
+`fondDeLEtat("plein")` et `retenus.has(jour)` valent tous deux `colors.rust`.
+L'aplat coûte une seconde chose, plus grave : il **recouvre les deux barres**,
+si bien que le jour qu'il vient de proposer devient le seul du mois dont il ne
+peut plus lire la charge — ce que la planche 91 avait justement apporté.
+
+`appli/jour-propose-pas-complet.html` compare son écran d'aujourd'hui à deux
+issues : **le point** (fond clair, un point vert dans le coin) et **la
+pastille** (le chiffre dans un disque vert). La légende y gagne « proposé », en
+rond quand les quatre états de charge sont carrés. Un troisième essai — un
+liseré vert autour de la case — a été **écarté avant de lui être montré** : à
+l'écran, il se confond avec le liseré noir de la case qu'on vient de toucher,
+trois cases entourées à la suite, ce qu'il avait déjà signalé le 23 août.
+
+**Rien n'est codé dans `src/`** — sa consigne : *« ne code rien, fais-moi un
+visuel »*. `scripts/verifier-maquette-jour-propose.mjs` tient la planche, et il
+a été vu rouge contre l'aplat remis dans les deux issues, contre la légende
+amputée, et contre une vue qui comptait les équipes autrement.
 
 ---
 

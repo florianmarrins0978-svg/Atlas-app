@@ -57,7 +57,7 @@ Le correctif de cette nuit a marché : ta fiche dit maintenant
 
 ## Où c'est écrit dans le dépôt
 
-- `ARCHITECTURE.md` §218 — le raisonnement complet et les pièges
+- `ARCHITECTURE.md` §219 — le raisonnement complet et les pièges
 - `HANDOVER.md` — quoi lire devant « c'est lent »
 - `scripts/banc.mjs`, `scripts/coherence-dependances.mjs` — le correctif
 - `scripts/test-coherence-dependances.ts` — les contrôles, vus rouges contre

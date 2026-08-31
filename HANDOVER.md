@@ -77,6 +77,24 @@ le raisonnement complet, `ARCHITECTURE.md` §217.
   mode d'emploi. À rouvrir avec lui s'il la veut ailleurs — pas à remettre sous
   le bouton.
 
+## Le même jour : l'or est le même sur les huit apparences (31 août 2026)
+
+**Sa consigne :** *« pour l'apparence, j'aimerais que tout ce qui est en doré
+sur la version originale apparaisse en doré sur les autres apparences »* — la
+généralisation de celle du 27 août, qui ne portait que sur Brume.
+
+`src/lib/chartes.ts` posait le second accent de chaque planche dans `or` : huit
+chartes, huit ors différents, dont trois qui n'étaient plus dorés du tout.
+`OR_ORIGINE` / `OR_CLAIR_ORIGINE` les remplacent partout ; `depuisPlanche` ne
+reçoit plus de `bronze` ni de `pleinSigne`.
+
+**Ce qu'il faut savoir avant d'y toucher :** la lisibilité de l'or a été mesurée
+charte par charte AVANT de le figer — il tient 6,14 sur Nuit contre 2,77 sur
+Origine, donc rien à remonter sur les sombres. Le remonter romprait la consigne
+sans rien gagner. Le contrôle qui tient la règle est dans
+`scripts/test-chartes.ts` (« l'or est le même sur les huit chartes »), vu rouge
+contre la version d'avant. `ARCHITECTURE.md` §218.
+
 ---
 
 ## Lot précédent : la note vocale à la messagerie, et la fiche qui tient dans un écran (30 août 2026)
@@ -133,7 +151,7 @@ sert le mode développement. **La fiche (#47) dit toujours pourquoi, à la ligne
 `npx` téléchargeait alors un Next du registre pour le lancer — une version qui
 n'est pas celle du projet, et qui échoue sur « Could not find the Next.js
 package ». Le banc appelle désormais le binaire du projet et se réinstalle tout
-seul (`ARCHITECTURE.md` §218).
+seul (`ARCHITECTURE.md` §219).
 
 **Ce qui reste vrai quoi qu'il arrive :** un `▲ Next.js <version>` qui ne
 correspond pas à `package.json` veut dire que ce n'est PAS le Next du projet qui
@@ -547,6 +565,35 @@ demi-journées.
 Le détail : `ARCHITECTURE.md` §192, migration `drizzle/0067_salaries_a_part.sql`.
 
 ---
+
+## ✅ PLANCHE 99 RÉPONDUE ET CODÉE — le réglage dit sa couleur (31 août 2026)
+
+**Sa demande :** *« écrit deux chantiers par jour, planning complet, et met le
+petit carré vert foncé avec écrit "complet" du planning »* — sur l'écran
+**Réglages**, qu'il a désigné : *« c'est sur cette page que doit se faire la
+modification »*.
+
+**Sa réponse : la A.** L'écran Réglages dit « 2 chantiers par jour. Planning ▪
+complet. » Le carré vient de `fondDeLEtat`, le mot de `MOT_ETAT`
+(`src/lib/planning-jour.ts`) — une table neuve où la légende du calendrier lit
+elle aussi ses quatre mots. `phraseDuCompteur` rend donc deux morceaux, et non
+plus une phrase : ce qui se glisse entre eux n'est pas du texte.
+
+**Le piège, si l'on y revient :** ne jamais réécrire « complet » ni le vert dans
+un écran. Deux chartes sont sombres, et deux rédactions du même mot divergent.
+
+## UNE RÉPONSE ATTENDUE — planche 98, le jour proposé (31 août 2026)
+
+**J'avais mal lu sa demande** : il visait les Réglages, pas le calendrier
+d'envoi. Le défaut décrit ici est réel, mais il ne l'a pas signalé.
+
+**Sa remarque :** *« écrit deux chantiers par jour, planning complet, et met le
+petit carré vert foncé avec écrit "complet" du planning »*. Le calcul est juste ;
+c'est `colors.rust` qui sert à la fois de « complet » et de « proposé » dans
+`src/components/atlas/MoisCharge.tsx`, et l'aplat noie les deux barres du jour.
+
+`appli/jour-propose-pas-complet.html` (le point / la pastille) attend son choix.
+**Rien n'est codé** — sa consigne : *« ne code rien, fais-moi un visuel »*.
 
 ## UNE RÉPONSE ENCORE ATTENDUE DE LUI — planche 96 (26 août 2026)
 

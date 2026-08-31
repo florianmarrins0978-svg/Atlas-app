@@ -63,6 +63,22 @@ biométrique n'entre en base, et c'est la base que la suite interroge.
 Compte-rendu qui lui est destiné : `docs/connexion-une-page.md`. Le détail :
 `ARCHITECTURE.md` §217.
 
+## L'or est le même sur les huit apparences (31 août 2026)
+
+**Sa consigne :** *« pour l'apparence, j'aimerais que tout ce qui est en doré
+sur la version originale apparaisse en doré sur les autres apparences »*.
+
+Chaque charte portait son propre second accent — sauge sur Pierre, argile sur
+Moka, prune sur Prune, un bleu et un rose pour les traits de Brume et de Prune.
+Changer d'apparence repeignait donc tout ce que l'or porte : l'accueil, les
+libellés d'état, les filets, le sceau, le compteur de la dictée.
+
+Les huit chartes portent l'or d'Origine, `#B98B47`, au caractère près
+(`src/lib/chartes.ts`). Mesuré : il se détache mieux sur les deux sombres (6,14
+sur Nuit) que sur Origine (2,77) — rien à remonter. Une suite tient la règle
+pour les huit ; les deux suites existantes vérifiaient la présence des jetons et
+la lisibilité, jamais l'identité. Détail : `ARCHITECTURE.md` §218.
+
 ---
 
 ## La note vocale à la messagerie, et la fiche qui tient dans un écran (30 août 2026)
@@ -267,6 +283,24 @@ machines qui ont la place préchauffent comme avant.
 
 Éprouvé par `scripts/test-memoire-prechauffage.ts`, vu rougir contre trois
 régressions. Mesures et pistes écartées : `ARCHITECTURE.md` §203.
+
+---
+
+## Le réglage dit la couleur qu'il produit au planning (31 août 2026)
+
+**Sa réponse à la planche 99 : A**, arrêtée sur maquette puis codée le jour même
+(`appli/reglages-planning-complet.html`).
+
+Sous « Chantiers menés en même temps », l'écran disait *« C'est ce qui remplit
+votre planning »* : il annonçait un effet sans montrer ce qu'on verrait. Il dit
+maintenant **« 2 chantiers par jour. Planning ▪ complet. »**, avec le carré du
+calendrier et son mot.
+
+Deux pièces le tiennent, et elles ferment une divergence plutôt qu'elles
+n'ajoutent une couleur : `MOT_ETAT` (`src/lib/planning-jour.ts`) porte les
+quatre mots de la légende — que le calendrier écrivait en clair — et
+`phraseDuCompteur` rend deux morceaux, puisque ce qui se glisse entre eux n'est
+pas du texte mais `fondDeLEtat("plein")`.
 
 ---
 

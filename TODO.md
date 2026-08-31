@@ -43,6 +43,42 @@ ailleurs — jamais en gris sous le bouton.
 
 ---
 
+## ✅ ~~UNE RÉPONSE ATTENDUE — le réglage et le planning, planche 99~~ — RÉPONDUE ET CODÉE (31 août 2026)
+
+Sa demande : *« écrit deux chantiers par jour, planning complet, et met le petit
+carré vert foncé avec écrit "complet" du planning »* — et, devant la planche 98 :
+*« c'est sur cette page que doit se faire la modification »*, l'écran **Réglages**.
+
+**Sa réponse, le jour même : la A.** L'écran porte « 2 chantiers par jour.
+Planning ▪ complet. » — `src/app/reglages/VosEquipes.tsx`, avec le carré pris
+dans `fondDeLEtat` et le mot dans `MOT_ETAT` (`src/lib/planning-jour.ts`, table
+neuve que la légende du calendrier lit désormais aussi).
+
+La planche garde B et C : elles restent le chemin, si l'échelle lui manque un
+jour.
+
+---
+
+## UNE RÉPONSE ATTENDUE — le jour proposé, planche 98 (31 août 2026)
+
+**Née d'une mauvaise lecture de sa demande** — voir juste au-dessus. La
+question reste réelle, mais il ne l'a pas posée : ne pas la relancer.
+
+Sa remarque : *« écrit deux chantiers par jour, planning complet, et met le
+petit carré vert foncé avec écrit "complet" du planning »*. Un jour PROPOSÉ au
+client se peint aujourd'hui du vert que la légende appelle COMPLET, et l'aplat
+recouvre les deux barres de charge (`src/components/atlas/MoisCharge.tsx` :
+`fondDeLEtat("plein")` et `retenus.has(jour)` valent tous deux `colors.rust`).
+
+`appli/jour-propose-pas-complet.html` lui pose la question : **le point** ou
+**la pastille**. Le liseré a été écarté — il se confond avec la case touchée.
+
+**Rien n'est codé** : sa consigne était *« ne code rien, fais-moi un visuel »*.
+Quand il aura répondu, la marque se pose dans `MoisCharge` (la case retenue) et
+dans `Legende` (un cinquième repère, rond), et rien d'autre : le calcul de la
+charge ne bouge pas.
+---
+
 ## ✅ LE « 16.3.3 » EST EXPLIQUÉ — c'était `npx`, pas une dérive (31 août 2026)
 
 Ce document portait depuis le 29 août : *« reste inexpliqué : comment ses
@@ -51,7 +87,7 @@ Ce document portait depuis le 29 août : *« reste inexpliqué : comment ses
 `node_modules/next` MANQUAIT, et `npx next build` télécharge alors la dernière
 version publiée pour la lancer — d'où un 16.3.3 sur un projet qui épingle
 16.3.2. Reproduit à l'identique en écartant le paquet. Corrigé aux trois
-endroits : `ARCHITECTURE.md` §218.
+endroits : `ARCHITECTURE.md` §219.
 
 **Ce qui reste ouvert, et c'est la vraie question :** POURQUOI
 `node_modules/next` disparaît de son espace. Trois suspects, aucun mesuré — une

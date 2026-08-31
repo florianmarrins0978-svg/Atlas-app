@@ -19257,9 +19257,86 @@ changer.
 déjà enregistré ajoute sa ligne, soit 56 px. L'écran défile alors de ce qu'il
 faut sur 664 px — mais pas sur son téléphone, dont la hauteur utile mesurée sur
 sa capture est de l'ordre de 770 px.
+## 218. L'or ne change pas d'une apparence à l'autre
+
+**Sa consigne du 31 août 2026 :** *« pour l'apparence, j'aimerais que tout ce
+qui est en doré sur la version originale apparaisse en doré sur les autres
+apparences »*.
+
+Ce n'est pas une demande neuve. Le 27 août, il l'avait déjà posée pour une seule
+charte — *« lorsque je choisis l'apparence Brume, tout ce qui est en doré sur
+Origine le reste aussi sur Brume »* — et l'on avait corrigé le seul endroit qui
+perdait l'or sur Brume, le marqueur d'onglet, sans voir que la règle valait pour
+les six autres. **Une consigne exaucée sur un seul cas n'est pas une consigne
+exaucée.**
+
+### Ce qui changeait, et pourquoi personne ne le voyait
+
+Atlas a **deux** accents, et le partage n'est pas décoratif (`design-tokens.ts`) :
+le vert pin porte ce qu'on **fait**, l'or porte ce qu'on **lit** — l'accueil, les
+libellés d'état, les filets, le sceau, le compteur de la dictée.
+
+La planche du 14 août donnait à chacune des sept chartes son propre second
+accent, et `depuisPlanche` le recopiait tel quel dans `or` :
+
+| Charte | `or` d'avant | `orClair` d'avant |
+|---|---|---|
+| Pierre | `#6f8466` — une sauge | `#8b9d83` — une sauge claire |
+| Beurre | `#8a6a3a` | `#c2a05f` |
+| Moka | `#7c5c46` — une argile | `#b99274` |
+| Prune | `#7a2f52` — un prune | `#d9a2bd` — un rose |
+| Sylve | `#c3b184` | `#3d6b4a` — un vert |
+| Nuit | `#c6a15b` | `#8f7130` |
+| Brume | `#B98B47` (corrigé le 27 août) | `#6f95c4` — un bleu |
+
+Changer d'apparence ne changeait donc pas que le fond : **cela repeignait tout
+ce que l'or porte**, et sur trois chartes l'or n'existait plus du tout.
+
+Aucun contrôle ne l'attrapait, et c'est le point à retenir : les deux suites de
+chartes vérifiaient que **tous les jetons sont présents** et que **tout se lit**.
+Les deux étaient vertes. Un contrôle sur la lisibilité ne dit rien de
+l'identité — c'est une autre question, et il lui fallait sa propre suite
+(`test-chartes.ts`, « l'or est le même sur les huit chartes »).
+
+### Pourquoi l'or peut rester FIXE là où trois autres couleurs doivent bouger
+
+Le §160 a posé l'inverse pour l'alerte, le bordeaux et le vert pâle : leur
+clarté s'accorde au fond, sans quoi elles disparaissent sur Nuit et sur Sylve.
+L'or n'en a pas besoin, et ce n'est pas une intuition — c'est mesuré :
+
+| | l'or sur le fond | l'or sur une plage |
+|---|---|---|
+| Origine — **son écran de tous les jours** | 2,77 | 2,91 |
+| Moka — la plus faible des claires | 2,30 | 2,62 |
+| Sylve | **5,25** | 4,55 |
+| Nuit | **6,14** | 5,55 |
+
+L'or se détache **mieux** sur les deux sombres que sur les cinq claires. Le
+remonter « par précaution » aurait corrigé ce qui n'était pas cassé — et cessé
+d'être le même or, c'est-à-dire manqué la consigne.
+
+### Ce que cela coûte, et qu'il faut dire
+
+Les valeurs de la planche pour ce second accent sont **abandonnées** : elles
+étaient les siennes, choisies au pouce le 14 août devant seize propositions. Sa
+consigne du 31 les remplace ; les deux ne peuvent pas tenir ensemble. Elles
+restent lisibles dans le tableau ci-dessus et dans les planches de
+`docs/maquettes/`, qui racontent le chemin.
+
+Deux phrases de présentation ont dû suivre, sans quoi l'écran des réglages
+décrirait une application disparue : Pierre annonçait *« Aucun or »*, Moka *« une
+argile pour l'accent »*. Une suite le refuse désormais — une charte ne peut plus
+annoncer qu'elle est sans or.
+
+### Où la règle vit
+
+`src/lib/chartes.ts`, `OR_ORIGINE` et `OR_CLAIR_ORIGINE` : deux constantes, que
+`depuisPlanche` pose sur les huit chartes. `depuisPlanche` ne reçoit plus de
+`bronze` ni de `pleinSigne` — un paramètre qui ne sert plus à rien finit par
+resservir à autre chose.
 ---
 
-## 218. « Elle est super lente » : `npx` allait chercher un Next au registre quand celui du projet manquait
+## 219. « Elle est super lente » : `npx` allait chercher un Next au registre quand celui du projet manquait
 
 **Sa plainte du 31 août 2026, à midi**, capture à l'appui : le bandeau
 « Version rapide en construction » en haut de l'écran, et une application qui
