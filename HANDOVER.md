@@ -9,7 +9,33 @@ sert.
 
 ---
 
-## Dernier lot : quatre allures pour la dictée de la fiche chantier (31 août 2026)
+## Dernier lot : il n'y a plus qu'UNE fiche client (31 août 2026)
+
+Sa demande, deux captures à l'appui : *« lorsque je fais retour j'arrive sur la
+page 1re photo alors que je veux arriver sur la 2e. Je sais pas d'où sort la 1re
+photo ? Si elle sert à rien il faut la supprimer. »* Les deux montraient le même
+écran — l'une entière, l'autre privée de ses photos, de son anneau et de la
+chaîne du devis par trois `!reprise`. Ces gardes sont tombées.
+
+**Ce qu'il faut savoir avant d'y toucher :**
+
+- **Les gardes venaient du 17 août (« RIEN DE PLUS, RIEN DE MOINS », §124)** et
+  elles étaient justes pour le chemin de l'accueil, où l'on vient corriger une
+  adresse. Elles sont devenues fausses dès qu'on arrive là **depuis un devis
+  vide**, où tout est à faire. Ne pas les remettre au nom du 17 août.
+- **Les pièces partent de ce que le chantier porte DÉJÀ** : `src/app/chantiers/[id]/coordonnees/page.tsx`
+  lit `listerPhotos` et `getNoteVocale`. Une pellicule vide sur un chantier
+  photographié lui ferait croire ses photos perdues — c'est la moitié du travail,
+  et celle qui s'oublie.
+- **« Enregistrer » est la SEULE différence qui reste**, et elle a une raison :
+  faire partir ce qu'il TAPE sur un chantier qui existe. La création, elle,
+  enregistre par le geste.
+- **Dicter là-dessus n'écrase pas un devis corrigé à la main** : `DevisDepuisDictee`
+  rend un `conflit` et pose la question. Vérifié avant d'ouvrir le chemin.
+
+Raisons et pièges : `ARCHITECTURE.md` §226.
+
+## Le même jour : quatre allures pour la dictée de la fiche chantier (31 août 2026)
 
 **Rien n'est codé, et c'est volontaire** (`CLAUDE.md` §3 bis). Sa remarque,
 capture à l'appui : *« propose-moi une maquette pour embellir cette partie de la
@@ -36,7 +62,7 @@ régler, et rester vertes.
 deux choses à la fois l'empêcherait de choisir.
 
 ---
-## Dernier lot : la version rapide ne se jette plus pour en bâtir une autre (31 août 2026, soir)
+## Le même soir : la version rapide ne se jette plus pour en bâtir une autre (31 août 2026)
 
 Sa plainte, capture à l'appui : *« l'appli est lente, corrige ça »* — **la
 huitième du même genre** (14, 16, 17, 20, 25, 29 août, puis deux fois le 31).
@@ -87,7 +113,7 @@ Compte-rendu qui lui est destiné : `docs/appli-lente-version-davant.md`.
   pour mot). Un seul accusait à raison — `etat-banc.ts` refaisait la décision
   « est-ce un banc » au lieu d'appeler `estBancDEssai()`.
 
-## Dernier lot : une planche pour le geste des boutons (31 août 2026)
+## Le même jour : une planche pour le geste des boutons (31 août 2026)
 
 **Rien n'est codé, et c'est volontaire** (`CLAUDE.md` §3 bis). Sa demande :
 *« une mini vibration, que l'utilisateur soit sûr d'avoir appuyé »*, et le
@@ -112,7 +138,7 @@ natif d'iOS, l'application emballée passerait par `@capacitor/haptics`. Dire
 
 ---
 
-## Dernier lot : un devis sans client renvoie à la fiche client (31 août 2026)
+## Le même jour : un devis sans client renvoie à la fiche client (31 août 2026)
 
 Sa demande, deux captures à l'appui : *« j'ai oublié de renseigner la fiche
 client du chantier. Lorsque je fais retour, je dois arriver sur la page de la
@@ -167,9 +193,7 @@ Raisons et pièges : `ARCHITECTURE.md` §221.
   sur son espace.
 
 
-## Le même jour : le prix qui ne débloquait rien, et le lendemain qu'on lui refusait (31 août 2026)
-
-## Dernier lot : le devis du client, verrouillé et tenant dans un écran (31 août 2026)
+## Le même jour : le devis du client, verrouillé et tenant dans un écran (31 août 2026)
 
 Ses trois captures du téléphone d'une cliente. Compte-rendu qui lui est
 destiné : `docs/devis-client-verrouille.md`.

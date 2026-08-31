@@ -18,6 +18,21 @@ ligne « fait » qui ne l'est pas coûte plus cher qu'une ligne absente.
 
 ---
 
+## Il n'y a plus qu'une fiche client (31 août 2026)
+
+**Sa demande, deux captures à l'appui :** *« lorsque je fais retour j'arrive sur
+la page 1re photo alors que je veux arriver sur la 2e. Je sais pas d'où sort la
+1re photo ? Si elle sert à rien il faut la supprimer. »*
+
+La fiche rouverte (`/chantiers/[id]/coordonnees`) portait tout sauf la
+pellicule, l'anneau et la chaîne du devis. Elle les porte désormais, **nourris
+de ce que le chantier a déjà** — photos prises, note dictée. Seul
+« Enregistrer » l'en distingue encore : elle seule a quelque chose à sauver.
+
+Raisons : `ARCHITECTURE.md` §226.
+
+---
+
 ## EN ATTENTE : l'allure de la dictée — une planche, pas du code (31 août 2026)
 
 **Rien n'a bougé dans l'application**, et c'est l'état exact du produit : la

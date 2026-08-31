@@ -207,6 +207,21 @@ encore posé près de son bord, parce qu'il rétrécit et sortait de sous lui
 (corrigé par `setPointerCapture`). Le contrôle a été confronté au geste
 d'aujourd'hui, celui de l'application : il rougit six fois.
 
+### La fiche client rouverte est la fiche client ENTIÈRE
+
+**Sa demande, deux captures à l'appui :** *« lorsque je fais retour j'arrive sur
+la page 1re photo alors que je veux arriver sur la 2e. Je sais pas d'où sort la
+1re photo ? Si elle sert à rien il faut la supprimer. »*
+
+Les deux photos montraient le même écran : l'une entière, l'autre privée de ses
+photos, de son anneau et de la chaîne du devis. Il n'y en a plus qu'une.
+
+Les pièces partent de ce que le chantier porte **déjà** — les photos prises, la
+note dictée. Les nourrir de vide lui aurait fait croire ses photos perdues.
+
+Seul « Enregistrer » distingue encore la fiche rouverte : elle seule a quelque
+chose à sauver, ce qu'il vient de taper sur un chantier qui existe.
+
 ### Le banc lance le Next DU PROJET, et ne laisse plus `npx` en chercher un autre
 
 **Sa plainte de midi : « version rapide en construction, elle est super
