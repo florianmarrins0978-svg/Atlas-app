@@ -212,9 +212,7 @@ function depuisPlanche(p: {
   plage: string;
   encre: string;
   gris: string;
-  bronze: string;
   plein: string;
-  pleinSigne: string;
 }): JetonsCharte {
   const sombre = lumiere(p.fond) < lumiere(p.encre);
   // Sur une charte sombre on REMONTE la clarté, sur une claire on la descend :
@@ -235,8 +233,13 @@ function depuisPlanche(p: {
     // charte sombre, la valeur claire d'`origine` (#ece9e1) poserait un pavé
     // blanc au milieu de l'écran.
     rustTint: meler(p.fond, p.encre, 0.07),
-    or: p.bronze,
-    orClair: p.pleinSigne,
+    // ─── L'OR NE SUIT PAS LA CHARTE, ET C'EST TOUT L'OBJET DE CE LOT ──────
+    //
+    // Il vaut la valeur d'Origine sur les huit chartes, au caractère près.
+    // Voir `OR_ORIGINE` plus bas pour le pourquoi — c'est sa consigne, et elle
+    // ne se dérive pas.
+    or: OR_ORIGINE,
+    orClair: OR_CLAIR_ORIGINE,
     line: voile(p.encre, "0.12"),
     lineSoft: voile(p.encre, "0.07"),
     chevron: voile(p.encre, "0.28"),
@@ -262,6 +265,45 @@ function depuisPlanche(p: {
 // TEINTE est la sienne et ne bouge pas, leur CLARTÉ s'accorde au fond, sans
 // quoi elles disparaissent sur Nuit et sur Sylve.
 const ALERTE_ORIGINE = "#9C3B2E";
+
+/**
+ * ─── L'OR EST LE MÊME PARTOUT — sa consigne du 31 août 2026 ─────────────────
+ *
+ * ***« Pour l'apparence, j'aimerais que tout ce qui est en doré sur la version
+ * originale apparaisse en doré sur les autres apparences. »***
+ *
+ * **Ce n'est pas une demande neuve : c'est la GÉNÉRALISATION de celle du
+ * 27 août**, qui ne portait que sur une charte — *« lorsque je choisis
+ * l'apparence Brume, tout ce qui est en doré sur Origine le reste aussi sur
+ * Brume »*. On avait alors corrigé le seul endroit qui perdait l'or sur Brume
+ * (le marqueur d'onglet) sans voir que la règle valait pour les six autres.
+ *
+ * **Ce qui changeait avant, et qu'il ne voulait pas.** La planche donnait à
+ * chaque charte son propre second accent, et `or` le recopiait : la sauge de
+ * Pierre (`#6f8466`), l'argile de Moka (`#7c5c46`), le prune de Prune
+ * (`#7a2f52`), et pour `orClair` des valeurs qui n'avaient plus rien de doré —
+ * un bleu sur Brume (`#6f95c4`), un rose sur Prune (`#d9a2bd`), un vert sur
+ * Sylve (`#3d6b4a`). Changer d'apparence ne changeait donc pas que le fond :
+ * **cela repeignait tout ce que l'or porte** — l'accueil, les libellés d'état,
+ * les filets, le sceau, le compteur de la dictée. C'est précisément ce qu'il
+ * refuse.
+ *
+ * **Pourquoi l'or peut rester FIXE là où l'alerte, le bordeaux et le vert pâle
+ * doivent bouger** (`detacher`, plus haut) : mesuré sur les huit chartes, il se
+ * détache du fond partout, et **mieux sur les deux sombres que sur les cinq
+ * claires** — 6,14 sur Nuit et 5,25 sur Sylve, contre 2,77 sur Origine, qui est
+ * l'écran qu'il regarde tous les jours. Un or remonté « par précaution » sur le
+ * sombre aurait donc corrigé ce qui n'était pas cassé, et cessé d'être le même
+ * or. `test-chartes-lisibles.ts` le mesure, charte par charte.
+ *
+ * **Ce que cela coûte, et il faut le dire :** les valeurs de la planche pour ce
+ * second accent sont abandonnées — elles étaient les siennes, choisies au
+ * pouce le 14 août. Sa consigne du 31 les remplace ; les deux ne peuvent pas
+ * tenir ensemble.
+ */
+const OR_ORIGINE = "#B98B47";
+/** Le même or, remonté — posé sur un aplat plein ou sur une photo. */
+const OR_CLAIR_ORIGINE = "#C9A15E";
 const BORDEAUX_ORIGINE = "#6E2433";
 const VERT_PALE_ORIGINE = "#b9c6b4";
 
@@ -331,8 +373,8 @@ export const CHARTES: Charte[] = [
       rust: "#2f3b2f",
       rustDeep: "#4f5f4c",
       rustTint: "#ece9e1",
-      or: "#B98B47",
-      orClair: "#C9A15E",
+      or: OR_ORIGINE,
+      orClair: OR_CLAIR_ORIGINE,
       line: "rgba(28,28,26,0.12)",
       lineSoft: "rgba(28,28,26,0.07)",
       chevron: "rgba(28,28,26,0.28)",
@@ -372,7 +414,7 @@ export const CHARTES: Charte[] = [
     sombre: false,
     jetons: depuisPlanche({
       fond: "#f4f7fb", plage: "#ffffff", encre: "#111823", gris: "#78838f",
-      bronze: "#B98B47", plein: "#22456d", pleinSigne: "#6f95c4",
+      plein: "#22456d",
     }),
     /**
      * **La moitié « moderne », et c'est tout ce que la charte peut en porter.**
@@ -398,11 +440,13 @@ export const CHARTES: Charte[] = [
   {
     nom: "pierre",
     libelle: "Pierre",
-    dit: "Gris légèrement vert, encre presque noire, sauge désaturée. Aucun or.",
+    // « Aucun or » a été retiré le 31 août 2026 : sa consigne y remet l'or, et
+    // une phrase qui décrit la charte d'avant se croit encore.
+    dit: "Gris légèrement vert, encre presque noire, sauge désaturée.",
     sombre: false,
     jetons: depuisPlanche({
       fond: "#e8e8e3", plage: "#f4f4f0", encre: "#1b1d19", gris: "#83867c",
-      bronze: "#6f8466", plein: "#1b1d19", pleinSigne: "#8b9d83",
+      plein: "#1b1d19",
     }),
   },
   {
@@ -412,17 +456,18 @@ export const CHARTES: Charte[] = [
     sombre: false,
     jetons: depuisPlanche({
       fond: "#efe7cf", plage: "#f8f3e4", encre: "#26221a", gris: "#8b8368",
-      bronze: "#8a6a3a", plein: "#26221a", pleinSigne: "#c2a05f",
+      plein: "#26221a",
     }),
   },
   {
     nom: "moka",
     libelle: "Moka",
-    dit: "Un moka laiteux, une encre espresso, une argile pour l'accent.",
+    // L'argile était le second accent, remplacé par l'or le 31 août 2026.
+    dit: "Un moka laiteux, une encre espresso.",
     sombre: false,
     jetons: depuisPlanche({
       fond: "#e6ded5", plage: "#f2ece5", encre: "#2b241e", gris: "#8d8175",
-      bronze: "#7c5c46", plein: "#2b241e", pleinSigne: "#b99274",
+      plein: "#2b241e",
     }),
   },
   {
@@ -432,7 +477,7 @@ export const CHARTES: Charte[] = [
     sombre: false,
     jetons: depuisPlanche({
       fond: "#efe6ea", plage: "#f9f2f5", encre: "#23131c", gris: "#8c7481",
-      bronze: "#7a2f52", plein: "#3d1730", pleinSigne: "#d9a2bd",
+      plein: "#3d1730",
     }),
   },
   {
@@ -442,7 +487,7 @@ export const CHARTES: Charte[] = [
     sombre: true,
     jetons: depuisPlanche({
       fond: "#16241c", plage: "#1e3026", encre: "#e6e6da", gris: "#8ba189",
-      bronze: "#c3b184", plein: "#e6e6da", pleinSigne: "#3d6b4a",
+      plein: "#e6e6da",
     }),
   },
   {
@@ -452,7 +497,7 @@ export const CHARTES: Charte[] = [
     sombre: true,
     jetons: depuisPlanche({
       fond: "#101210", plage: "#1a1d19", encre: "#e9e8de", gris: "#84887b",
-      bronze: "#c6a15b", plein: "#e9e8de", pleinSigne: "#8f7130",
+      plein: "#e9e8de",
     }),
   },
 ];

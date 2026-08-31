@@ -7,6 +7,35 @@ Format : le plus récent en tête.
 
 ---
 
+## 2026-08-31
+
+### L'or reste l'or, quelle que soit l'apparence choisie
+
+**Sa consigne :** *« pour l'apparence, j'aimerais que tout ce qui est en doré
+sur la version originale apparaisse en doré sur les autres apparences »*.
+
+Chaque charte portait son propre second accent, recopié de la planche du
+14 août : une sauge sur Pierre, une argile sur Moka, un prune sur Prune, un bleu
+et un rose pour les traits de Brume et de Prune. Changer d'apparence repeignait
+donc **tout ce que l'or porte** — l'accueil, les libellés d'état, les filets, le
+sceau, le compteur de la dictée —, et sur trois chartes l'or disparaissait.
+
+Les huit chartes portent désormais l'or d'Origine, `#B98B47`, au caractère près.
+Mesuré sur chacune : il se détache **mieux** sur les deux sombres (6,14 sur Nuit)
+que sur son écran de tous les jours (2,77 sur Origine) — il n'y avait donc rien
+à remonter, et le remonter aurait cessé d'être le même or.
+
+Ce n'était pas une demande neuve : le 27 août il l'avait posée pour Brume seule,
+et l'on avait corrigé Brume seule. Une suite tient maintenant la règle pour les
+huit (`scripts/test-chartes.ts`) — les deux suites existantes vérifiaient que
+tous les jetons sont là et que tout se lit, et restaient vertes pendant que
+l'identité changeait.
+
+Deux présentations ont suivi : Pierre n'annonce plus « Aucun or », Moka plus
+« une argile pour l'accent ». Détail dans `ARCHITECTURE.md` §216.
+
+---
+
 ## 2026-08-30
 
 ### La fiche n'accuse plus le port quand c'est le serveur qui manque
