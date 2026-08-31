@@ -10,6 +10,8 @@ import EnTeteEcran from "@/components/atlas/EnTeteEcran";
 import { versFicheClient } from "@/lib/retour-fiche-client";
 import { colors, font } from "@/lib/design-tokens";
 import { getCurrentCtx } from "@/server/session-ctx";
+import { roleDeLaSession } from "@/server/autorisation";
+import { peutFacturer } from "@/lib/acces-roles";
 import { getChantierPourHub } from "@/server/repositories/chantiers";
 import { listerPhotos } from "@/server/repositories/photos";
 import { getNoteVocale } from "@/server/repositories/notes-vocales";
@@ -30,6 +32,10 @@ export default async function FicheChantierPage({ params }: { params: Promise<{ 
   const { id } = await params;
 
   const ctx = await getCurrentCtx();
+  // Le rôle sert à ne pas OFFRIR un geste refusé, jamais à le refuser : la
+  // garde est côté serveur, dans l'action (`exigerFacturation`).
+  const role = await roleDeLaSession();
+  const facture = role !== null && peutFacturer(role);
   const chantier = await getChantierPourHub(ctx, id);
   if (!chantier) notFound();
 
@@ -119,7 +125,11 @@ export default async function FicheChantierPage({ params }: { params: Promise<{ 
                — `terminerChantier` est idempotente, exige un devis réellement
                envoyé, et n'émet rien : elle bâtit la facture qu'il vérifiera
                (arrêt 3, `docs/AGENT.md` §2.3). */
-            chantier.datePlanifiee ? (
+            /* **Et seulement pour qui facture** — 30 août 2026. Un commercial
+               ne clôture pas un chantier : le geste crée la facture. L'écran
+               ne fait qu'éviter de proposer ce que le serveur refusera
+               (`exigerFacturation`) ; ce n'est pas lui qui protège. */
+            chantier.datePlanifiee && facture ? (
               <Link
                 href={`/chantiers/${chantier.id}/facture`}
                 className="flex-shrink-0 px-3 py-2 text-[9.5px] font-medium uppercase"
@@ -164,11 +174,15 @@ export default async function FicheChantierPage({ params }: { params: Promise<{ 
                   ? `Intervention prévue le ${jourLisible(chantier.datePlanifiee)}.`
                   : "Ce chantier est planifié."}
               </p>
-              <p className="mt-1 text-[13px]" style={{ color: colors.muted }}>
-                Une fois le chantier fait, touchez{" "}
-                <strong style={{ color: colors.rust }}>Créer la facture</strong>, en haut : vous la vérifierez
-                avant qu&apos;elle n&apos;existe pour votre client.
-              </p>
+              {/* La phrase suit le bouton : promettre un geste qu'on ne peut
+                  pas faire se lit comme une panne. */}
+              {facture ? (
+                <p className="mt-1 text-[13px]" style={{ color: colors.muted }}>
+                  Une fois le chantier fait, touchez{" "}
+                  <strong style={{ color: colors.rust }}>Créer la facture</strong>, en haut : vous la
+                  vérifierez avant qu&apos;elle n&apos;existe pour votre client.
+                </p>
+              ) : null}
             </div>
           )}
         </div>

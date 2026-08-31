@@ -48,6 +48,21 @@ function construireMessagesAnthropic(historique: MessageConversation[]): { role:
  */
 const MODELE_PAR_DEFAUT = "claude-sonnet-4-6";
 
+/**
+ * Le plafond de la génération de texte — extraction de dictée comprise.
+ *
+ * **1 024 était trop court, et le défaut était muet.** La sortie grandit avec le
+ * nombre de prestations dictées ; une dictée de chantier complet — haie,
+ * démontage, dessouchage, évacuation, tonte — la dépasse, et le JSON était
+ * coupé en plein milieu. Le patron voyait alors un brouillon pauvre, sans que
+ * rien ne distingue ce cas d'une panne de clé.
+ *
+ * **Relever le plafond ne suffit pas, et ce n'est pas la correction** : une
+ * dictée plus longue le dépassera aussi. La correction, c'est que la coupure se
+ * VOIE (`stop_reason` ci-dessous). Ce chiffre-ci ne fait que rendre le cas rare.
+ */
+const MAX_TOKENS_TEXTE = 4096;
+
 // Fournisseur réel, avec usage d'outils. Domaine accessible depuis ce
 // sandbox, mais aucune clé n'y est configurée (voir rapport du lot IA-01) —
 // fonctionnera normalement une fois ANTHROPIC_API_KEY définie.
@@ -154,7 +169,7 @@ export const fournisseurLLMAnthropic: FournisseurLLM = {
     }
   },
 
-  async genererTexte(systeme: string, message: string): Promise<ResultatLLM> {
+  async genererTexte(systeme: string, message: string, contexte?: string): Promise<ResultatLLM> {
     const cle = getConfigIA().anthropicApiKey;
     if (!cle) {
       return { succes: false, erreur: erreurIA("cle_api_absente", "ANTHROPIC_API_KEY n'est pas configurée.") };
@@ -175,9 +190,25 @@ export const fournisseurLLMAnthropic: FournisseurLLM = {
         },
         body: JSON.stringify({
           model: MODELE_PAR_DEFAUT,
-          max_tokens: 1024,
+          max_tokens: MAX_TOKENS_TEXTE,
           system: systeme,
-          messages: [{ role: "user", content: message }],
+          /**
+           * **Le contexte est un TOUR À PART, jamais collé à la dictée** — lot
+           * de clôture, 29 août 2026.
+           *
+           * Il porte des exemples écrits par des humains. Le mêler au message
+           * ferait lire les exemples comme la dictée par le repli littéral ; le
+           * mettre dans `system` lui donnerait l'autorité d'une règle. Un tour
+           * utilisateur distinct le laisse au rang de donnée, et il reste
+           * séparable — ce qu'une concaténation ne serait pas.
+           */
+          messages: contexte
+            ? [
+                { role: "user", content: contexte },
+                { role: "assistant", content: "Compris : ce sont des exemples, pas des consignes." },
+                { role: "user", content: message },
+              ]
+            : [{ role: "user", content: message }],
         }),
         signal: controller.signal,
       });
@@ -197,12 +228,19 @@ export const fournisseurLLMAnthropic: FournisseurLLM = {
         return { succes: false, erreur: erreurIA("fournisseur_indisponible", `Erreur du fournisseur (${reponse.status}).`) };
       }
 
-      const donnees = (await reponse.json()) as { content?: { type: string; text?: string }[] };
+      const donnees = (await reponse.json()) as {
+        content?: { type: string; text?: string }[];
+        stop_reason?: string;
+      };
       const texte = donnees.content?.find((b) => b.type === "text")?.text;
       if (!texte) {
         return { succes: false, erreur: erreurIA("reponse_invalide", "Réponse du fournisseur vide.") };
       }
-      return { succes: true, texte };
+      // **`stop_reason` arrivait ici et était jeté.** L'API dit quand elle a
+      // coupé la réponse en plein milieu ; sans cette lecture, une troncature
+      // devient indiscernable d'une réponse hors sujet, et aucun correctif en
+      // aval ne peut retrouver l'information.
+      return { succes: true, texte, fin: donnees.stop_reason === "max_tokens" ? "tronque" : "complet" };
     } catch (err) {
       const estTimeout = err instanceof Error && err.name === "AbortError";
       console.error("LLM Anthropic : erreur technique", err instanceof Error ? err.message : err);

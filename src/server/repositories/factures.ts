@@ -167,6 +167,12 @@ export async function terminerChantier(ctx: Ctx, chantierId: string, maintenant:
         entrepriseEmail: devisSource.entrepriseEmail,
         entrepriseTelephone: devisSource.entrepriseTelephone,
         entrepriseIban: devisSource.entrepriseIban,
+        // Les trois mentions légales, et leur emplacement (migration 0072) —
+        // recopiées du devis, comme le reste de l'identité.
+        entrepriseFormeJuridique: devisSource.entrepriseFormeJuridique,
+        entrepriseCapitalSocial: devisSource.entrepriseCapitalSocial,
+        entrepriseVilleRcs: devisSource.entrepriseVilleRcs,
+        entrepriseMentionsLegalesPosition: devisSource.entrepriseMentionsLegalesPosition,
         clientNom: devisSource.clientNom,
         clientCivilite: devisSource.clientCivilite,
         clientAdresse: devisSource.clientAdresse,
@@ -312,6 +318,10 @@ function donneesFacture(
     entrepriseTelephone: f.entrepriseTelephone,
     entrepriseEmail: f.entrepriseEmail,
     entrepriseIban: f.entrepriseIban,
+    entrepriseFormeJuridique: f.entrepriseFormeJuridique,
+    entrepriseCapitalSocial: f.entrepriseCapitalSocial,
+    entrepriseVilleRcs: f.entrepriseVilleRcs,
+    entrepriseMentionsLegalesPosition: f.entrepriseMentionsLegalesPosition,
     clientNom: f.clientNom,
     clientCivilite: f.clientCivilite,
     clientAdresse: f.clientAdresse,

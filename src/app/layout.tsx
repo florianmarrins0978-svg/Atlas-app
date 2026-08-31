@@ -90,7 +90,12 @@ export const viewport: Viewport = {
   viewportFit: "cover",
 };
 
-// Écrans qui ne portent NI la navigation, NI l'assistant.
+// Écrans qui ne portent pas la navigation.
+//
+// **Depuis le 30 août 2026, ce n'est plus « ni la navigation, ni l'assistant ».**
+// `…/devis-complet` reste sans onglets, mais garde son panneau — voir
+// `estDevisSeul` plus bas, qui fait l'exception. Le reste de cette liste, lui,
+// n'a droit ni à l'un ni à l'autre.
 //
 // **Les écrans PUBLICS ne sont plus listés ici : ils viennent du même endroit
 // que le contrôle d'accès** (`src/lib/chemins-publics.ts`).
@@ -116,7 +121,10 @@ export const viewport: Viewport = {
 // - `…/devis-complet` est le devis lui-même, seul sur sa page. Le patron l'a
 //   demandé ainsi : « une page où il n'y a que le devis ». Une barre d'onglets
 //   au bas d'une feuille de devis la fait ressembler à un écran d'application,
-//   et c'est précisément ce qu'elle ne doit pas être.
+//   et c'est précisément ce qu'elle ne doit pas être. **L'assistant, lui, y est
+//   revenu le 30 août** — sa propre demande, depuis cette page : un bouton de
+//   plus dans l'en-tête n'en fait pas un écran d'application, contrairement à
+//   une barre d'onglets entière.
 const ECRANS_DU_PATRON_SANS_NAVIGATION = ["/documents-legaux"];
 
 function estEcranSansNavigation(chemin: string | null): boolean {
@@ -167,6 +175,12 @@ export default async function RootLayout({
   // page ne peut pas le connaître autrement.
   const chemin = (await headers()).get("x-atlas-pathname");
   const sansNavigation = estEcranSansNavigation(chemin);
+  // **La seule exception au sans-navigation : le devis seul garde l'assistant.**
+  // Sa demande du 30 août 2026, depuis cette page même : « j'aimerais avoir
+  // accès à l'assistant sur cette page ». Elle reste sans onglets ni titre —
+  // ça, c'est resté un choix délibéré du 5 août — mais elle n'est pas publique
+  // et le patron qui la remplit à la main a le même besoin d'assistant qu'ailleurs.
+  const estDevisSeul = chemin?.endsWith("/devis-complet") ?? false;
   // Le veilleur parle du banc, des mises à jour et d'Atlas : c'est la langue du
   // patron. Sur les deux pages que son client reçoit, elle n'a rien à faire.
   const pageDuClient = estPageDuClient(chemin);
@@ -208,7 +222,7 @@ export default async function RootLayout({
    * requête, à partir de la seule session — et il ne sert qu'à DESSINER : ce qui
    * refuse une adresse, c'est `GardeAcces` juste au-dessus.
    */
-  const role = sansNavigation ? null : await roleDeLaSession();
+  const role = sansNavigation && !estDevisSeul ? null : await roleDeLaSession();
 
   return (
     // **Les variables sont posées sur `<html>`, pas sur `<body>`.**
@@ -232,7 +246,19 @@ export default async function RootLayout({
             (`scripts/test-rien-de-recouvert-e2e.ts`). */}
         {banc && <BandeauBanc />}
         {sansNavigation ? (
-          <main>{children}</main>
+          estDevisSeul ? (
+            // **Le devis seul garde le panneau, sans le reste du décor.**
+            // Aucune barre d'onglets, aucun cadre `atlas-contenu` — seule la
+            // page elle-même dessine son bouton, dans son en-tête (voir
+            // `DevisCompletClient.tsx`). Le panneau, lui, doit couvrir tout
+            // l'écran, donc rester ici comme sur les écrans avec navigation.
+            <FournisseurAssistant disponible={!!role && peutUtiliserLAssistant(role)}>
+              <main>{children}</main>
+              {role !== "salarie" && <AssistantSidebar />}
+            </FournisseurAssistant>
+          ) : (
+            <main>{children}</main>
+          )
         ) : (
           // Le fournisseur entoure le contenu ET le panneau : depuis le
           // 13 août 2026, le bouton de l'assistant vit dans l'en-tête de chaque

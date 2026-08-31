@@ -30,6 +30,7 @@ import {
   lignesDevis,
   lignesFacture,
   lignesPrix,
+  lignesPrixPrestations,
   materiel,
   membresEntreprise,
   achatsTva,
@@ -44,6 +45,7 @@ import {
   prestations,
   propositionsIa,
   messagesAssistant,
+  rappelsVus,
   tarifs,
   motsCatalogue,
 } from "../db/schema";
@@ -85,7 +87,7 @@ export type ExportEntreprise = {
 export type FichierAJoindre = {
   storageKey: string;
   /** D'où vient ce fichier, pour le retrouver dans les données. */
-  origine: "photo" | "note-vocale" | "devis-pdf" | "facture-pdf";
+  origine: "photo" | "note-vocale" | "devis-pdf" | "facture-pdf" | "logo" | "ticket-tva";
 };
 
 /**
@@ -119,6 +121,7 @@ export async function exporterEntreprise(
       lesAchatsTva,
       lesTarifs,
       lesLignesPrix,
+      lesLiaisonsPrestations,
       lesDevis,
       lesLignesDevis,
       lHistorique,
@@ -152,6 +155,7 @@ export async function exporterEntreprise(
       sesHypotheses,
       sesPhotosAPurger,
       sesEchangesAssistant,
+      sesRappelsRanges,
     ] = await Promise.all([
       tx.select().from(entreprises).where(eq(entreprises.id, e)),
       tx.select().from(entrepriseCompteurs).where(eq(entrepriseCompteurs.entrepriseId, e)),
@@ -170,6 +174,13 @@ export async function exporterEntreprise(
       tx.select().from(achatsTva).where(eq(achatsTva.entrepriseId, e)),
       tx.select().from(tarifs).where(eq(tarifs.entrepriseId, e)),
       tx.select().from(lignesPrix).where(eq(lignesPrix.entrepriseId, e)),
+      // **Quelles prestations chaque ligne de devis vend** (migration 0069).
+      // Sans ce lien, une sauvegarde rendrait les lignes et les prestations
+      // sans dire lesquelles vont ensemble : le devis se relirait, mais plus
+      // rien ne saurait à quel travail appartient un montant — et c'est de
+      // cette ignorance-là qu'est venue la case d'abattage fausse du 26 août.
+      // Le contrôle d'exhaustivité l'a réclamé avant qu'on y pense.
+      tx.select().from(lignesPrixPrestations).where(eq(lignesPrixPrestations.entrepriseId, e)),
       tx.select().from(devis).where(eq(devis.entrepriseId, e)),
       tx.select().from(lignesDevis).where(eq(lignesDevis.entrepriseId, e)),
       tx.select().from(historiquePrix).where(eq(historiquePrix.entrepriseId, e)),
@@ -281,6 +292,10 @@ export async function exporterEntreprise(
       // a demandé n'en serait pas une — et c'est le contrôle d'exhaustivité qui
       // l'a réclamée, le jour même où la table est née.
       tx.select().from(messagesAssistant).where(eq(messagesAssistant.entrepriseId, e)),
+      // **Les rappels qu'il a rangés d'un « J'ai vu » (migration 0071).** Ce
+      // sont ses gestes, et ils disent quand il a vu quoi : les taire ferait
+      // revenir, sur une base restaurée, des rappels qu'il avait acquittés.
+      tx.select().from(rappelsVus).where(eq(rappelsVus.entrepriseId, e)),
     ]);
 
     // Ordre volontaire : parents avant enfants. Une reprise qui rejouerait ce
@@ -298,6 +313,7 @@ export async function exporterEntreprise(
       achats_tva: lesAchatsTva,
       tarifs: lesTarifs,
       lignes_prix: lesLignesPrix,
+      lignes_prix_prestations: lesLiaisonsPrestations,
       devis: lesDevis,
       lignes_devis: lesLignesDevis,
       historique_prix: lHistorique,
@@ -352,6 +368,7 @@ export async function exporterEntreprise(
       // Ses échanges avec l'assistant : ce qu'il a demandé, et ce qu'on lui a
       // répondu.
       messages_assistant: sesEchangesAssistant,
+      rappels_vus: sesRappelsRanges,
     };
 
     const compte: Record<string, number> = {};
@@ -376,6 +393,27 @@ export async function exporterEntreprise(
     // l'archive sur un objet qui n'existe plus (c'est le cas normal après
     // 90 jours, pas une anomalie).
     for (const p of sesPhotosDiagnostic) ajouter(p.storageKey as string | null, "photo");
+
+    /**
+     * **LE LOGO ET LES TICKETS DE CAISSE PARTENT AUSSI** — lot de clôture,
+     * 29 août 2026.
+     *
+     * Ils manquaient, et c'était connu depuis le lot Sauvegarde : les LIGNES
+     * `achats_tva` partaient bien, mais **pas la photo du ticket qu'elles
+     * nomment**. Une archive « toutes mes données » qui rend la ligne « Total
+     * Access, 62,40 € » sans le justificatif est incomplète au sens qui compte
+     * — c'est le papier qui vaut preuve devant l'administration.
+     *
+     * Idem pour le logo : il appartient à l'entreprise, il a été téléversé par
+     * elle, et rien ne justifiait qu'il reste derrière.
+     *
+     * **La correction est de deux lignes parce que les données étaient déjà
+     * lues** : `lesAchatsTva` et `entreprise` sont chargés plus haut pour les
+     * tables. Il ne manquait que de les parcourir. C'est ce qui a fait juger la
+     * correction sûre plutôt que disproportionnée.
+     */
+    for (const a of lesAchatsTva) ajouter(a.photoCle as string | null, "ticket-tva");
+    for (const ent of entreprise) ajouter(ent.logoStorageKey as string | null, "logo");
 
     return {
       versionFormat: VERSION_FORMAT_EXPORT,

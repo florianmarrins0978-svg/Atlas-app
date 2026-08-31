@@ -56,6 +56,20 @@ type Props = {
    * a échoué avec une sortie vers le devis tel quel.
    */
   auto?: boolean;
+  /**
+   * Est-on DÉJÀ sur le devis ?
+   *
+   * **Deux notions vivaient dans `auto`, et elles se sont séparées le 30 août
+   * 2026** : « la chaîne part toute seule » et « on est déjà arrivé ». Sur la
+   * page du devis les deux coïncident — `refresh` suffit, et `push` vers
+   * l'adresse courante ne rejouerait pas le rendu serveur. Sur la fiche client,
+   * la chaîne part toute seule elle aussi (l'avion vient d'envoyer la note),
+   * mais il reste à FAIRE LE CHEMIN : sans cette distinction, l'écran
+   * rafraîchissait la fiche et le devis n'arrivait jamais.
+   *
+   * Par défaut il vaut `auto`, pour que les appels d'avant ne changent pas.
+   */
+  surLeDevis?: boolean;
 };
 
 type Etat =
@@ -99,6 +113,7 @@ export default function DevisDepuisDictee({
   transcriptionDisponible,
   variante = "principal",
   auto = false,
+  surLeDevis = auto,
 }: Props) {
   const router = useRouter();
   const [etat, setEtat] = useState<Etat>({ type: "repos" });
@@ -135,7 +150,7 @@ export default function DevisDepuisDictee({
         // **Déjà sur le devis en mode automatique** : `push` vers l'adresse
         // courante ne rejoue pas le rendu serveur, et l'écran resterait sur
         // « Atlas prépare le devis… » devant un devis pourtant écrit.
-        if (auto) router.refresh();
+        if (surLeDevis) router.refresh();
         else router.push(`/chantiers/${chantierId}/devis-complet`);
         return;
       }
@@ -169,7 +184,7 @@ export default function DevisDepuisDictee({
         surAttente: (secondes) => setEtat({ type: "attente", secondes }),
       });
       if (issue === "pret") {
-        if (auto) return router.refresh();
+        if (surLeDevis) return router.refresh();
         return router.push(`/chantiers/${chantierId}/devis-complet`);
       }
       setEtat({
@@ -354,8 +369,13 @@ export default function DevisDepuisDictee({
  *
  * D'où trois partis pris :
  *
- * - **Chaque question dit ce qu'elle change.** Un arrêt sans motif est un arrêt
- *   qu'on subit, et qu'on expédie au hasard.
+ * - **Aucune phrase qui explique.** Sa consigne du 30 août 2026 devant cet
+ *   écran-ci : *« trop de phrases inutiles, il faut aller droit au but,
+ *   l'utilisateur n'aime pas lire »*. Il portait, sous le titre, deux lignes
+ *   disant que la dictée était incomplète — et sous CHAQUE question, une ligne
+ *   disant ce qu'elle changeait. Elles sont parties, `pourquoi` avec elles :
+ *   un champ que plus rien n'affiche revient à l'écran au premier remaniement.
+ *   La prestation, la question, les réponses — rien d'autre (`CLAUDE.md` §3).
  * - **Les choix connus sont des boutons**, jamais une liste déroulante : un
  *   appui contre trois, sur un téléphone, une main dans le gant.
  * - **On peut passer outre.** Il connaît son métier mieux que ces règles ; le
@@ -406,25 +426,21 @@ function QuestionsChiffrage({
   return (
     <div className="rounded-[4px] px-4 py-4" style={{ backgroundColor: colors.rustTint }}>
       <p className="text-[13px] font-medium" style={{ color: colors.rust }}>
-        {questions.length === 1
-          ? "Une précision avant de chiffrer"
-          : `${questions.length} précisions avant de chiffrer`}
-      </p>
-      <p className="text-[12px] leading-snug" style={{ color: colors.inkSoft, marginTop: 2 }}>
-        Votre dictée ne les dit pas, et elles changent le prix. Sans elles, le devis serait faux.
+        Avant de chiffrer
       </p>
 
       <div className="mt-4 flex flex-col gap-5">
-        {questions.map((q) => (
-          <div key={q.id}>
-            <p className="text-[12px]" style={{ color: colors.muted }}>
-              {q.libellePrestation}
-            </p>
+        {questions.map((q, i) => (
+          <div key={q.id} data-atlas="question-chiffrage">
+            {/* La prestation ne se répète pas d'une question à l'autre : deux
+                questions sur le même arbre l'écrivaient deux fois de suite. */}
+            {q.libellePrestation !== questions[i - 1]?.libellePrestation && (
+              <p className="text-[12px]" style={{ color: colors.muted }}>
+                {q.libellePrestation}
+              </p>
+            )}
             <p className="text-[15px] font-medium" style={{ color: colors.ink, marginTop: 2 }}>
               {q.question}
-            </p>
-            <p className="text-[12px] leading-snug" style={{ color: colors.inkSoft, marginTop: 2 }}>
-              {q.pourquoi}
             </p>
 
             {q.options ? (

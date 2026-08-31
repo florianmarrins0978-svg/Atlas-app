@@ -11,15 +11,27 @@ import {
   celluleDessouchage,
   celluleFendage,
 } from "../../lib/grille-prix";
-import { longueurHaieLue, mesuresArbre, tonnageLu } from "../../lib/mesures-arbre";
+import { mesuresResolues } from "../../lib/mesures-prestation";
+import { prixAttribuable, prixAttribuableDes } from "../../lib/prix-attribuable";
+import { prestationsDeLaLigne } from "../repositories/lignes-prix";
+import { logger } from "../logger";
 
-// Même vocabulaire que le découpage des lignes : ce qui fait une ligne à part
-// est ce qui a une grille, et inversement.
-const FENDAGE = /\b(fend|fente)/i;
-const HAIE = /\bhaie/i;
-const DESSOUCHAGE = /\b(dessouch|d[ée]souch|souche|rognage)/i;
-const GRUMES = /\bgrume/i;
-const ABATTAGE = /\b(abattage|abattre|abatt|d[ée]mont)/i;
+// **Le vocabulaire vit dans le référentiel** (`natures-prestation.ts`) depuis le
+// 27 août 2026. Il était recopié ici, et il ne connaissait pas la tonte : c'est
+// exactement ce trou-là qui a fait ranger 1 500 € — tonte comprise — dans la
+// case d'abattage du patron.
+//
+// **Et les natures se lisent d'abord dans les COLONNES** des prestations que la
+// ligne vend (migration 0069), pas dans son texte. Le libellé ne sert plus que
+// pour les lignes d'avant, qui n'ont aucun lien.
+
+/** Les natures pour lesquelles une grille existe (`grille-prix.ts`). */
+const NATURES_DE_GRILLE = ["fendage", "haie", "dessouchage", "grumes", "abattage"] as const;
+type NatureDeGrille = (typeof NATURES_DE_GRILLE)[number];
+
+function natureDeGrille(cle: string | null): NatureDeGrille | null {
+  return (NATURES_DE_GRILLE as readonly string[]).includes(cle ?? "") ? (cle as NatureDeGrille) : null;
+}
 
 /**
  * Les grilles se remplissent toutes seules, à partir des devis réels.
@@ -43,22 +55,59 @@ const ABATTAGE = /\b(abattage|abattre|abatt|d[ée]mont)/i;
 export async function apprendrePrixGrille(
   ctx: Ctx,
   chantierId: string,
-  ligne: { libelle: string; montant: string }
+  ligne: {
+    libelle: string;
+    montant: string;
+    /**
+     * L'identifiant de la ligne de devis, quand l'appelant l'a.
+     *
+     * **Il change tout** : avec lui, on sait quelles prestations cette ligne
+     * vend, donc leurs natures et leurs mesures — en colonnes, pas en relisant
+     * le texte. Sans lui, on retombe sur le libellé, comme avant.
+     */
+    id?: string;
+  }
 ): Promise<void> {
-  // **L'ordre est celui du découpage des lignes, et ce n'est pas un hasard :**
-  // ranger un prix dans une autre case que celle où le chiffrage ira le
-  // chercher revient à ne rien ranger. Les deux listes se corrigent ensemble.
-  const nature = FENDAGE.test(ligne.libelle)
-    ? ("fendage" as const)
-    : HAIE.test(ligne.libelle)
-      ? ("haie" as const)
-      : DESSOUCHAGE.test(ligne.libelle)
-        ? ("dessouchage" as const)
-        : GRUMES.test(ligne.libelle)
-          ? ("grumes" as const)
-          : ABATTAGE.test(ligne.libelle)
-            ? ("abattage" as const)
-            : null;
+  // **Le montant doit appartenir à UN seul travail — sinon on n'apprend rien.**
+  //
+  // Le 26 août 2026, une ligne portait « Tonte de la pelouse (1200 m²) » ET
+  // « Érable — démontage en rétention ». Le classement ci-dessous se fait au
+  // premier motif qui répond : la case d'abattage du patron est passée de 800 €
+  // à 1 500 €, tonte comprise, et ce prix serait revenu seul sur chaque
+  // démontage suivant. Mesuré, pas supposé
+  // (`scripts/test-dictee-devis-identite-db.ts`).
+  //
+  // **Le garde-fou passe AVANT le classement, et il laisse passer sa règle du
+  // 7 août** — « l'abattage, le broyage et l'évacuation, c'est sur une ligne ».
+  // Refuser cette ligne-là aurait arrêté l'apprentissage sur son cas le plus
+  // courant : la règle vit dans `src/lib/prix-attribuable.ts`, pure et éprouvée
+  // dans les deux sens.
+  //
+  // Ce que la ligne vend réellement — vide sur une ligne d'avant la 0069.
+  const vendues = ligne.id ? await prestationsDeLaLigne(ctx, ligne.id).catch(() => []) : [];
+
+  const attribution =
+    vendues.length > 0 ? prixAttribuableDes(vendues) : prixAttribuable(ligne.libelle);
+  if (!attribution.attribuable) {
+    // **Bavard, parce qu'un refus muet ne se diagnostique pas** (`AGENTS.md`).
+    // Le patron ne voit rien — c'est voulu, l'apprentissage ne gêne jamais le
+    // travail —, mais le journal dit pourquoi sa grille n'a pas bougé.
+    logger.info("Grille : montant non attribuable, rien n'est appris", {
+      chantierId,
+      motif: attribution.motif,
+    });
+    return;
+  }
+
+  // **La nature vient de l'attribution elle-même**, qui l'a déjà établie — en
+  // colonne quand la ligne connaît ses prestations, par son libellé sinon.
+  // Deux lectures du même mot rangeaient un prix dans une case que le chiffrage
+  // n'allait pas chercher (`CLAUDE.md` §3).
+  //
+  // **Une nature identifiée sans grille ne range rien, et c'est normal** : une
+  // tonte est parfaitement reconnue, aucune grille ne la chiffre. C'est la
+  // mémoire de prix (`lecons_prix`) qui s'en souvient, pas celle-ci.
+  const nature = natureDeGrille(attribution.nature);
   if (!nature) return;
 
   const montant = Number(ligne.montant);
@@ -66,36 +115,51 @@ export async function apprendrePrixGrille(
   // retenir ferait proposer « 0 € » avec l'autorité de sa grille.
   if (!Number.isFinite(montant) || montant <= 0) return;
 
-  const [precisions, prestations, brouillon] = await Promise.all([
+  const [precisions, toutesLesPrestations, brouillon] = await Promise.all([
     listerPrecisions(ctx, chantierId),
     listerPrestations(ctx, chantierId),
     getBrouillon(ctx, chantierId),
   ]);
+  // **Les mesures de CETTE ligne d'abord.** Sur un chantier à deux arbres, lire
+  // tout le chantier faisait hériter une haie du diamètre de l'érable.
+  const prestations = vendues.length > 0 ? vendues : toutesLesPrestations;
 
-  // Les mesures peuvent être partout : dans ses réponses à l'arrêt, dans le
-  // libellé de la ligne qu'il vient d'écrire, dans une prestation, ou dans la
-  // description de la dictée — la seule à porter « vingt mètres de haut », et
-  // la seule que la table `prestations` ne conserve pas. **Les mêmes sources
-  // que le chiffrage** : ranger un prix dans une case que le chiffrage ne sait
-  // pas retrouver reviendrait à ne rien ranger du tout.
-  const mesures = mesuresArbre(
-    [...precisions.map((p) => p.lisible), ligne.libelle],
+  // Les mesures peuvent être partout : ses réponses à l'arrêt, le libellé de la
+  // ligne, une prestation, ou la description de la dictée — la seule à porter
+  // « vingt mètres de haut », et la seule que la table ne conserve pas.
+  //
+  // **Le même contrat de priorité que le chiffrage** (`mesures-prestation.ts`) :
+  // la colonne structurée d'abord, le libellé ensuite, et **rien du tout** si
+  // les deux se contredisent. Ranger un prix dans une case désignée par une
+  // mesure douteuse serait pire que ne rien ranger : il reviendrait plus tard
+  // avec l'autorité de sa grille.
+  const mesures = mesuresResolues(
+    // **Les prestations entières, plus leurs seules caractéristiques.** C'est ce
+    // qui fait entrer la quantité dictée dans le calcul — 800 « ml » de haie
+    // SONT sa longueur — et ce qui laisse une correction de l'artisan trancher
+    // au lieu de bloquer.
+    prestations,
     [
+      ...precisions.map((p) => p.lisible),
+      ligne.libelle,
       ...prestations.map((p) => p.libelle),
       ...(brouillon?.contenu?.prestations ?? []).map((l) =>
         [l.libelle, l.description ?? "", l.quantite ?? "", l.unite ?? ""].join(" ")
       ),
     ]
   );
+  const contradiction = Object.values(mesures).find((m) => m.origine === "contradiction");
+  if (contradiction) {
+    logger.info("Grille : mesures contradictoires, rien n'est appris", { chantierId });
+    return;
+  }
 
   // **La haie se range au MÈTRE, pas au montant de la ligne.** Écrire 350 € dans
   // sa case ferait facturer 350 € la prochaine haie, quelle que soit sa
   // longueur. C'est le prix unitaire qu'on retient — et seulement si la longueur
   // est connue, faute de quoi on ne retient rien.
   if (nature === "haie") {
-    const longueur = [...precisions.map((p) => p.lisible), ligne.libelle, ...prestations.map((p) => p.libelle)]
-      .map(longueurHaieLue)
-      .find((l) => l !== null);
+    const longueur = mesures.longueurMl.valeur;
     if (!longueur || longueur <= 0) return;
     await poserPrixGrille(ctx, "haie", CELLULE_HAIE, (montant / longueur).toFixed(2), "devis");
     return;
@@ -108,9 +172,7 @@ export async function apprendrePrixGrille(
   //
   // Sans tonnage connu, on ne retient rien plutôt qu'un prix faux.
   if (nature === "grumes") {
-    const tonnage = [...precisions.map((p) => p.lisible), ligne.libelle, ...prestations.map((p) => p.libelle)]
-      .map(tonnageLu)
-      .find((t) => t !== null);
+    const tonnage = mesures.tonnageT.valeur;
     if (!tonnage || tonnage <= 0) return;
     await poserPrixGrille(ctx, "grumes", CELLULE_GRUMES, (montant / tonnage).toFixed(2), "devis");
     return;
@@ -121,14 +183,14 @@ export async function apprendrePrixGrille(
   const { axes } = await lireGrilles(ctx);
   const cellule =
     nature === "dessouchage"
-      ? celluleDessouchage(mesures.diametreCm, axes)
+      ? celluleDessouchage(mesures.diametreCm.valeur, axes)
       : nature === "abattage"
         ? celluleAbattage(
             precisions.find((p) => p.sujet.startsWith("abattage.technique"))?.valeur ?? null,
-            mesures.diametreCm,
+            mesures.diametreCm.valeur,
             axes
           )
-        : celluleFendage(mesures.hauteurM, mesures.diametreCm, axes);
+        : celluleFendage(mesures.hauteurM.valeur, mesures.diametreCm.valeur, axes);
 
   // Sans les mesures qu'il faut, on ne sait pas dans quelle case ranger ce prix.
   // On ne le range nulle part — un prix dans la mauvaise case reviendrait plus

@@ -10,7 +10,17 @@ import path from "node:path";
 // demande côté serveur) — remplaçable par un vrai bucket sans toucher aux
 // repositories ni aux écrans.
 
-const RACINE_STOCKAGE = path.join(process.cwd(), ".storage");
+/**
+ * Où le stockage local pose ses octets.
+ *
+ * **Exporté depuis le 27 août 2026** pour que le contrôle de cohérence
+ * base ↔ fichiers (`scripts/verifier-coherence-fichiers.ts`) interroge le MÊME
+ * dossier, au lieu d'en recopier le chemin. Deux valeurs qui doivent rester
+ * égales finissent toujours par diverger (`CLAUDE.md` §3), et celle-là
+ * divergerait en silence : le contrôle chercherait des fichiers au mauvais
+ * endroit et les déclarerait tous manquants.
+ */
+export const RACINE_STOCKAGE = path.join(process.cwd(), ".storage");
 
 export type ObjetStocke = {
   storageKey: string;

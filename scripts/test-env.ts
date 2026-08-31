@@ -63,6 +63,7 @@ function main() {
         AUTH_SECRET: "",
         STORAGE_PROVIDER: "s3",
         STORAGE_S3_BUCKET: "b",
+        ATLAS_URL_PUBLIQUE: "https://atlas.exemple.fr",
         STORAGE_S3_ACCESS_KEY_ID: "k",
         STORAGE_S3_SECRET_ACCESS_KEY: "s",
       },
@@ -101,6 +102,12 @@ function main() {
     ANTHROPIC_API_KEY: "sk-ant-fictive-pour-les-tests",
     TRANSCRIPTION_PROVIDER: "openai",
     OPENAI_API_KEY: "sk-fictive-pour-les-tests",
+    // **Exigée depuis le lot de clôture du 29 août 2026.** Sans elle, l'adresse
+    // du site se déduit de `x-forwarded-host` — un en-tête que le client écrit
+    // quand le mandataire de tête ne le réécrit pas. Or c'est cette adresse qui
+    // compose le lien de devis que le patron recopie et envoie à son client,
+    // jeton compris.
+    ATLAS_URL_PUBLIQUE: "https://atlas.exemple.fr",
   } as const;
 
   test("Production avec S3, Redis et CRON_SECRET correctement configurés : ne lève pas", () => {
@@ -231,6 +238,7 @@ function main() {
         AUTH_SECRET: "secret-de-production",
         STORAGE_PROVIDER: "s3",
         STORAGE_S3_BUCKET: "mon-bucket",
+        ATLAS_URL_PUBLIQUE: "https://atlas.exemple.fr",
         STORAGE_S3_ACCESS_KEY_ID: "AKIA...",
         STORAGE_S3_SECRET_ACCESS_KEY: "secret-s3",
         REDIS_URL: "",
@@ -250,6 +258,7 @@ function main() {
         AUTH_SECRET: "secret-de-production",
         STORAGE_PROVIDER: "s3",
         STORAGE_S3_BUCKET: "mon-bucket",
+        ATLAS_URL_PUBLIQUE: "https://atlas.exemple.fr",
         STORAGE_S3_ACCESS_KEY_ID: "AKIA...",
         STORAGE_S3_SECRET_ACCESS_KEY: "secret-s3",
         REDIS_URL: "redis://localhost:6379",
@@ -478,6 +487,36 @@ function main() {
     });
   });
 
+  test("ATLAS_URL_PUBLIQUE manquante en production : REFUSÉ", () => {
+    // **Elle compose le lien que le patron envoie à son client.** Sans elle,
+    // l'adresse se déduit de `x-forwarded-host` — que le client écrit quand le
+    // mandataire de tête ne le réécrit pas. Une valeur forgée lui fait
+    // transmettre de sa main un lien qui mène ailleurs, jeton compris.
+    const sansElle = { ...PRODUCTION_VALIDE, ATLAS_URL_PUBLIQUE: undefined };
+    avecEnv(sansElle, () => {
+      assert.throws(() => getEnv(), /ATLAS_URL_PUBLIQUE manquante/);
+    });
+  });
+
+  test("ATLAS_URL_PUBLIQUE qui n'est pas une adresse : REFUSÉE aussi", () => {
+    // « atlas.exemple.fr » sans protocole compose des liens cassés, et
+    // « oui » n'est une adresse pour personne. Le refus les nomme.
+    for (const valeur of ["atlas.exemple.fr", "oui", "/devis"]) {
+      avecEnv({ ...PRODUCTION_VALIDE, ATLAS_URL_PUBLIQUE: valeur }, () => {
+        assert.throws(() => getEnv(), /n'est pas une adresse complète/);
+      });
+    }
+  });
+
+  test("une chaîne d'ESPACES ne vaut pas une adresse", () => {
+    // Le piège que ce fichier documente ailleurs : une variable blanche est
+    // *truthy* et franchit un simple `if (!x)`. `optionnel()` la traite comme
+    // absente — ce contrôle le prouve plutôt que de le supposer.
+    avecEnv({ ...PRODUCTION_VALIDE, ATLAS_URL_PUBLIQUE: "   " }, () => {
+      assert.throws(() => getEnv(), /ATLAS_URL_PUBLIQUE manquante/);
+    });
+  });
+
   test("Un déploiement réel avec S3, SANS profil banc, démarre normalement", () => {
     avecEnv(
       {
@@ -493,6 +532,7 @@ function main() {
         STORAGE_S3_BUCKET: "compartiment",
         STORAGE_S3_ACCESS_KEY_ID: "cle",
         STORAGE_S3_SECRET_ACCESS_KEY: "secret",
+        ATLAS_URL_PUBLIQUE: "https://atlas.exemple.fr",
       },
       () => {
         const env = getEnv();

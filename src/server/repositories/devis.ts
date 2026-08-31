@@ -211,6 +211,12 @@ export async function getOuCreerDevisBrouillon(ctx: Ctx, chantierId: string) {
       entrepriseEmail: entreprise.email,
       entrepriseTelephone: entreprise.telephone,
       entrepriseIban: entreprise.iban,
+      // Les trois mentions légales, et leur emplacement (migration 0072) —
+      // recopiées comme le reste de l'identité.
+      entrepriseFormeJuridique: entreprise.formeJuridique,
+      entrepriseCapitalSocial: entreprise.capitalSocial,
+      entrepriseVilleRcs: entreprise.villeRcs,
+      entrepriseMentionsLegalesPosition: entreprise.mentionsLegalesPosition,
       clientNom: client?.nom,
       // Recopiée comme le nom : le document dit comment on s'adressait à son
       // destinataire CE JOUR-LÀ (migration 0038).
@@ -250,6 +256,12 @@ export async function getOuCreerDevisBrouillon(ctx: Ctx, chantierId: string) {
             quantite: l.quantite,
             prixUnitaire: l.prixUnitaire,
             montant: l.montant,
+            // **L'unité et l'état « à chiffrer » descendent au document**
+            // (migration 0070). Sans l'unité, « 800 × 17,50 € » ne dit pas 800
+            // de quoi ; sans l'état, le contrôle avant envoi devrait relire les
+            // lignes de prix, qui ont pu bouger depuis.
+            unite: l.unite,
+            aChiffrer: l.aChiffrer,
             ordre: i,
           }))
         );
@@ -290,6 +302,8 @@ export async function getOuCreerDevisBrouillon(ctx: Ctx, chantierId: string) {
           quantite: l.quantite,
           prixUnitaire: l.prixUnitaire,
           montant: l.montant,
+          unite: l.unite,
+          aChiffrer: l.aChiffrer,
           ordre: i,
         }))
       );
@@ -325,6 +339,10 @@ export async function genererPdfPourApercu(ctx: Ctx, devisId: string): Promise<U
       // Le modèle d'Arborea imprime les modalités de virement : sans l'IBAN,
       // le client reçoit un devis qu'il ne peut pas payer.
       entrepriseIban: d.entrepriseIban,
+      entrepriseFormeJuridique: d.entrepriseFormeJuridique,
+      entrepriseCapitalSocial: d.entrepriseCapitalSocial,
+      entrepriseVilleRcs: d.entrepriseVilleRcs,
+      entrepriseMentionsLegalesPosition: d.entrepriseMentionsLegalesPosition,
       clientNom: d.clientNom,
       clientCivilite: d.clientCivilite,
       clientAdresse: d.clientAdresse,
@@ -354,6 +372,8 @@ export async function genererPdfPourApercu(ctx: Ctx, devisId: string): Promise<U
         quantite: l.quantite,
         prixUnitaire: l.prixUnitaire,
         montant: l.montant,
+        unite: l.unite,
+        aChiffrer: l.aChiffrer,
       })),
     }, habillage);
   });
@@ -370,6 +390,23 @@ export async function envoyerDevis(ctx: Ctx, devisId: string) {
     if (avant.statut === "envoye") throw new Error("Ce devis a déjà été envoyé.");
 
     const lignes = await tx.select().from(lignesDevis).where(eq(lignesDevis.devisId, devisId));
+
+    // **Un devis dont une ligne attend son prix ne part pas.**
+    //
+    // Sa demande du 27 août 2026. Le document sait lui-même qu'il n'est pas
+    // complet (migration 0070) : le contrôle porte sur SA photographie, et non
+    // sur les lignes de prix, qui ont pu bouger depuis qu'il a été préparé.
+    //
+    // Un devis envoyé est immuable — le corriger demande une nouvelle version,
+    // et le client, lui, a déjà lu « 0 € » en face d'un travail.
+    const enAttente = lignes.filter((l) => l.aChiffrer);
+    if (enAttente.length > 0) {
+      throw new Error(
+        `Ce devis ne peut pas être envoyé : ${enAttente.length === 1 ? "une ligne attend" : `${enAttente.length} lignes attendent`} ` +
+          `son prix (${enAttente.map((l) => `« ${l.libelle.split("\n")[0]} »`).join(", ")}). ` +
+          "Posez-le sur l'écran Prix, puis revenez ici."
+      );
+    }
     const habillage = await allureDesDocuments(tx, ctx.entrepriseId);
     const pdfBytes = await genererPdfDevis({
       numeroCommercial: avant.numeroCommercial,
@@ -382,6 +419,10 @@ export async function envoyerDevis(ctx: Ctx, devisId: string) {
       entrepriseTelephone: avant.entrepriseTelephone,
       entrepriseEmail: avant.entrepriseEmail,
       entrepriseIban: avant.entrepriseIban,
+      entrepriseFormeJuridique: avant.entrepriseFormeJuridique,
+      entrepriseCapitalSocial: avant.entrepriseCapitalSocial,
+      entrepriseVilleRcs: avant.entrepriseVilleRcs,
+      entrepriseMentionsLegalesPosition: avant.entrepriseMentionsLegalesPosition,
       clientNom: avant.clientNom,
       clientCivilite: avant.clientCivilite,
       clientAdresse: avant.clientAdresse,
@@ -400,6 +441,8 @@ export async function envoyerDevis(ctx: Ctx, devisId: string) {
         quantite: l.quantite,
         prixUnitaire: l.prixUnitaire,
         montant: l.montant,
+        unite: l.unite,
+        aChiffrer: l.aChiffrer,
       })),
     }, habillage);
 

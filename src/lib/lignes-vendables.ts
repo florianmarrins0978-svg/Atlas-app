@@ -1,5 +1,7 @@
 import Decimal from "decimal.js";
 import { arrondirALaDizaine } from "./arrondi-prix";
+import { libelleClient } from "./libelle-client";
+import { nature, natureDuLibelle } from "./natures-prestation";
 
 // **Comment une dictée devient des LIGNES de devis — au pluriel.**
 //
@@ -27,82 +29,83 @@ import { arrondirALaDizaine } from "./arrondi-prix";
 // (migration 0025) : les deux disent la même chose, l'une au modèle, l'autre au
 // code. Elles se corrigent ensemble.
 
-// **TROIS groupes, depuis le 8 août 2026 : le chantier, la fente, la haie.**
+// **Le vocabulaire ne vit plus ici — il vit dans le référentiel.**
 //
-// Les deux premiers viennent de sa consigne du 7 août, mot pour mot. Le
-// troisième a été ajouté après une question posée puis tranchée : son devis de
-// référence (`docs/EXEMPLE-DICTEE.md`, 5 août) compte bien trois lignes — haie
-// 350 €, abattage 600 €, fendage 300 € — et l'application n'en produisait que
-// deux.
+// Ce fichier portait six expressions régulières, recopiées de proche en proche
+// dans cinq autres modules. Elles sont dans `natures-prestation.ts` désormais,
+// avec ce que chaque nature implique : détachable ou non, accessoire ou non,
+// chiffrable ou non, et sa place sur le devis. Ce module ne décide plus DE QUOI
+// il s'agit — il décide seulement de ce qui se vend ensemble.
 //
-// **Ce qui a débloqué la haie, c'est un prix, pas une envie.** Tant qu'elle
-// n'avait pas de grille, la séparer aurait exigé de répartir un tarif global
-// entre elle et le chêne — c'est-à-dire d'inventer deux prix
-// (`docs/AGENT.md` §3). Depuis qu'il a posé un prix au mètre linéaire, elle
-// porte le sien : c'est ce qui lui donne le droit d'avoir sa ligne.
+// **Ce qui a changé le 27 août 2026, et pourquoi.** La case `principal`
+// ramassait tout ce qu'aucune de ces six expressions ne reconnaissait. Une tonte
+// de 1 200 m² arrivait donc sur la ligne d'un démontage d'érable, et le montant
+// de cette ligne partait dans la case d'abattage de sa grille. Le fourre-tout
+// n'était pas un défaut de rangement : c'était la porte d'entrée de la
+// corruption.
 
-/** Ce qui se détache : le client peut le refuser, ou le confier à un autre. */
-const FENDAGE = /\b(fend|fente)/i;
-
-/**
- * Une haie : un travail qu'un client commande seul, sans toucher aux arbres.
- *
- * Elle se chiffre au mètre linéaire, et son prix vient de sa grille — voir
- * `grille-prix.ts`, nature `haie`.
- */
-const HAIE = /\bhaie/i;
-
-/**
- * Le billonnage — « on le coupe en 50 », « débité en bûches ».
- *
- * **Il ne fait JAMAIS sa propre ligne quand un abattage l'accompagne**, et
- * c'est le patron qui l'a tranché (`docs/EXEMPLE-DICTEE.md`, 5 août 2026) :
- * *« le devis compte trois lignes, pas quatre : le billonnage est compris dans
- * l'abattage »*. Un client ne fait pas venir un élagueur pour tronçonner un
- * arbre qu'un autre aurait abattu — ce n'est pas détachable, c'est la fin du
- * geste d'abattre.
- *
- * Sans abattage dans la dictée, en revanche, il reste : billonner du bois déjà
- * à terre est un vrai chantier, et le faire disparaître effacerait le seul
- * travail dicté.
- */
-const BILLONNAGE = /\b(billonn|coup[eé]\w*\s+en\s+\d|d[ée]bit\w*\s+en\s+\d|tron[çc]onn\w*\s+en\s+\d)/i;
-
-const ABATTAGE = /\b(abattage|abattre|abatt|d[ée]mont)/i;
-
-/**
- * Le dessouchage — arracher, rogner ou dessoucher ce qui reste au sol.
- *
- * **Sa réponse du 8 août 2026**, à la question « autre chose se détache-t-il ? » :
- * *« le dessouchage oui »*. Et c'est logique : une souche se laisse très bien en
- * place, ou se confie à un autre le mois suivant. Un client qui la refuse ne
- * renonce pas pour autant à faire abattre son arbre.
- */
-const DESSOUCHAGE = /\b(dessouch|d[ée]souch|souche|rognage)/i;
-
-/**
- * L'enlèvement des grumes — le bois d'œuvre, la bille, le tronc à emporter.
- *
- * *« Et les grumes aussi »*, même échange. À ne pas confondre avec l'évacuation
- * du menu bois : **l'évacuation seule ne se détache PAS**, et c'est le troisième
- * cas de la question, celui qu'il n'a pas retenu. Elle reste sur la ligne
- * principale avec l'abattage et le broyage, comme sur son devis du 5 août.
- *
- * La différence n'est pas de mots : une grume a de la valeur, le client peut
- * vouloir la garder ou la vendre, et cela se décide à part. Les branches
- * broyées, elles, ne se gardent pas.
- */
-const GRUMES = /\bgrume/i;
+export type PrestationAGrouper = {
+  /** L'identifiant en base, quand la prestation existe déjà. */
+  id?: string;
+  libelle: string;
+  /**
+   * Sa nature métier, telle qu'elle est **en colonne**.
+   *
+   * Absente, elle est relue depuis le libellé par le mécanisme historique
+   * (`natureDuLibelle`). C'est ce qui permet aux prestations d'avant le
+   * 27 août 2026 — qui n'ont pas de colonne — de continuer à se regrouper
+   * exactement comme avant.
+   */
+  nature?: string | null;
+  quantite?: string | null;
+  unite?: string | null;
+  /**
+   * L'espèce et la technique, telles qu'elles sont en colonne.
+   *
+   * **Elles ne servent qu'à RÉDIGER le libellé du client** (`libelle-client.ts`),
+   * jamais à regrouper : le regroupement se fait sur la nature, et lui ajouter
+   * un critère changerait ce que le client peut refuser séparément. Elles
+   * arrivaient déjà de `listerPrestations`, sans être déclarées — le type ne
+   * disait pas ce que l'objet portait vraiment.
+   */
+  espece?: string | null;
+  methode?: string | null;
+  caracteristiques?: unknown;
+  corrigeParHumain?: boolean | null;
+};
 
 export type LigneVendable = {
-  /** Sert au chiffrage — jamais affiché au client. */
-  cle: "principal" | "fendage" | "haie" | "dessouchage" | "grumes";
+  /**
+   * La NATURE de ce que la ligne vend — ou `"autre"` quand le produit ne sait
+   * pas la nommer.
+   *
+   * **Ce n'était pas ça avant, et c'est le cœur de la correction du 27 août.**
+   * La clé valait `"principal"` : une case qui ramassait tout ce qu'aucune
+   * expression régulière ne reconnaissait — la tonte, la plantation, le
+   * désherbage — et les posait sur la ligne de l'abattage. Le montant de la
+   * ligne partait ensuite dans la case d'abattage de sa grille.
+   *
+   * `"autre"` ne ramasse RIEN : chaque prestation inconnue fait sa propre
+   * ligne. Ce qu'on ne sait pas nommer garde son identité.
+   */
+  cle: string;
   /** Ce que le client lit. Plusieurs travaux réunis : un par ligne. */
   libelle: string;
-  /** Les prestations réunies, dans l'ordre de la dictée. */
+  /** Les libellés réunis, dans l'ordre de la dictée. */
   membres: string[];
+  /** Les prestations réunies — avec leur identifiant quand elles en ont un. */
+  prestations: PrestationAGrouper[];
   /** Le client peut-il refuser cette ligne sans annuler le chantier ? */
   detachable: boolean;
+  /**
+   * La ligne qui absorbe le reste quand un total global se répartit.
+   *
+   * **Un RÔLE, plus une identité.** C'est ce que `"principal"` mélangeait :
+   * « la ligne qui reçoit le solde » et « la ligne des travaux qu'on ne sait
+   * pas classer » étaient la même chose, donc tout travail inconnu héritait du
+   * prix et de l'apprentissage de l'abattage.
+   */
+  principal: boolean;
 };
 
 export type Decoupage = {
@@ -115,6 +118,19 @@ export type Decoupage = {
   absorbes: string[];
 };
 
+/** La clé des lignes que le produit ne sait pas nommer. Elle ne réunit jamais rien. */
+export const CLE_AUTRE = "autre";
+
+function normaliser(entree: string | PrestationAGrouper): PrestationAGrouper | null {
+  const brut = typeof entree === "string" ? { libelle: entree } : entree;
+  const libelle = brut.libelle?.trim() ?? "";
+  if (!libelle) return null;
+  // La colonne d'abord, le libellé ensuite : une prestation d'avant le lot B
+  // n'a pas de colonne, et doit continuer à se regrouper comme avant.
+  const cle = brut.nature?.trim() || natureDuLibelle(libelle);
+  return { ...brut, libelle, nature: cle };
+}
+
 /**
  * Découpe des prestations dictées en lignes réellement vendables.
  *
@@ -125,75 +141,114 @@ export type Decoupage = {
  * du 8 août, et elle a une raison : un point-virgule fait une phrase, et une
  * phrase se lit comme une seule prestation. Empilés, les travaux se comptent
  * d'un coup d'œil sur le devis.
+ *
+ * **Trois règles, et pas une de plus :**
+ *
+ * 1. les accessoires — broyage, évacuation — rejoignent la ligne principale,
+ *    parce que c'est ainsi qu'il les vend (sa règle du 7 août) ;
+ * 2. le billonnage disparaît quand un abattage l'accompagne, et seulement
+ *    alors (sa règle du 5 août) ;
+ * 3. **tout le reste fait sa propre ligne**, y compris — et surtout — ce que le
+ *    produit ne sait pas nommer.
  */
-export function lignesVendables(libelles: readonly string[]): Decoupage {
-  const propres = libelles.map((l) => l.trim()).filter(Boolean);
+export function lignesVendables(entrees: readonly (string | PrestationAGrouper)[]): Decoupage {
+  const propres = entrees.map(normaliser).filter((p): p is PrestationAGrouper => p !== null);
   if (propres.length === 0) return { lignes: [], absorbes: [] };
 
-  const ilYAUnAbattage = propres.some((l) => ABATTAGE.test(l));
-
-  const principal: string[] = [];
-  const fendage: string[] = [];
-  const haie: string[] = [];
-  const dessouchage: string[] = [];
-  const grumes: string[] = [];
+  const ilYAUnAbattage = propres.some((p) => p.nature === "abattage");
   const absorbes: string[] = [];
 
-  for (const libelle of propres) {
-    if (FENDAGE.test(libelle)) {
-      fendage.push(libelle);
-      continue;
+  type Groupe = { cle: string; ordre: number; membres: PrestationAGrouper[] };
+  const groupes: Groupe[] = [];
+  const parCle = new Map<string, Groupe>();
+
+  function poser(cleGroupe: string, ordre: number, p: PrestationAGrouper, reunir: boolean): Groupe {
+    if (reunir) {
+      const deja = parCle.get(cleGroupe);
+      if (deja) {
+        deja.membres.push(p);
+        return deja;
+      }
     }
-    if (HAIE.test(libelle)) {
-      haie.push(libelle);
-      continue;
-    }
-    // **Le dessouchage AVANT les grumes, et les deux avant le billonnage.**
-    // L'ordre compte : « enlèvement des grumes et dessouchage » tomberait dans
-    // la première règle qui le reconnaît. Le dessouchage passe en premier
-    // parce que c'est le geste, quand les grumes sont la matière.
-    if (DESSOUCHAGE.test(libelle)) {
-      dessouchage.push(libelle);
-      continue;
-    }
-    if (GRUMES.test(libelle)) {
-      grumes.push(libelle);
-      continue;
-    }
-    // Le billonnage est compris dans l'abattage — mais seulement s'il y en a
-    // un. (La fente est déjà partie plus haut : « on le coupe en 50 et on le
-    // fend » reste donc une fente, jamais un billonnage absorbé.)
-    if (BILLONNAGE.test(libelle) && ilYAUnAbattage) {
-      absorbes.push(libelle);
-      continue;
-    }
-    principal.push(libelle);
+    const neuf: Groupe = { cle: cleGroupe, ordre, membres: [p] };
+    groupes.push(neuf);
+    if (reunir) parCle.set(cleGroupe, neuf);
+    return neuf;
   }
 
-  const lignes: LigneVendable[] = [];
-  if (principal.length > 0) {
-    lignes.push({ cle: "principal", libelle: principal.join("\n"), membres: principal, detachable: false });
-  }
-  if (haie.length > 0) {
-    lignes.push({ cle: "haie", libelle: haie.join("\n"), membres: haie, detachable: true });
-  }
-  // **L'ordre de lecture du devis suit celui du chantier**, pas celui du code :
-  // on abat, on enlève les grumes, on fend ce qui reste, et la souche part en
-  // dernier — souvent un autre jour, avec une autre machine.
-  if (grumes.length > 0) {
-    lignes.push({ cle: "grumes", libelle: grumes.join("\n"), membres: grumes, detachable: true });
-  }
-  if (fendage.length > 0) {
-    lignes.push({ cle: "fendage", libelle: fendage.join("\n"), membres: fendage, detachable: true });
-  }
-  if (dessouchage.length > 0) {
-    lignes.push({ cle: "dessouchage", libelle: dessouchage.join("\n"), membres: dessouchage, detachable: true });
+  // --- Passe 1 : les travaux qui portent le chantier ------------------------
+  //
+  // Les accessoires attendent la seconde passe : on ne sait pas encore à quelle
+  // ligne les rattacher tant qu'on n'a pas vu tout ce qui a été dicté.
+  const enAttente: PrestationAGrouper[] = [];
+  for (const p of propres) {
+    const n = nature(p.nature);
+
+    // Le billonnage est compris dans l'abattage — mais seulement s'il y en a un.
+    if (n?.cle === "billonnage" && ilYAUnAbattage) {
+      absorbes.push(p.libelle);
+      continue;
+    }
+    if (n?.accessoire) {
+      enAttente.push(p);
+      continue;
+    }
+    // **Ce que le produit ne sait pas nommer ne se réunit avec RIEN** — pas
+    // même avec un autre inconnu. Deux travaux qu'on ne comprend pas ne sont
+    // pas pour autant le même travail.
+    if (!n) {
+      poser(CLE_AUTRE, 100, p, false);
+      continue;
+    }
+    poser(n.cle, n.ordreDevis, p, true);
   }
 
-  // Une dictée qui ne contient QUE de la haie, ou QUE de la fente : elle est
-  // alors le chantier, et non une option de celui-ci. La marquer détachable
-  // ferait proposer d'alléger une ligne principale qui n'existe pas.
-  if (lignes.length === 1) lignes[0].detachable = false;
+  // --- Qui absorbe le solde, et qui accueille les accessoires ---------------
+  //
+  // L'abattage quand il y en a un — c'est le chantier, et c'est sa règle du
+  // 7 août. Sinon le premier travail porteur de la dictée : sans cela, une
+  // dictée d'élagage (« taille d'allégement, broyage, évacuation ») verrait son
+  // broyage et son évacuation faire deux lignes séparées, que le client
+  // pourrait refuser une à une. C'est le devis du 7 août, celui qui est sorti
+  // vide.
+  let principal: Groupe | null = parCle.get("abattage") ?? groupes[0] ?? null;
+
+  // --- Passe 2 : les accessoires rejoignent la ligne principale -------------
+  for (const p of enAttente) {
+    const n = nature(p.nature)!;
+    if (principal && principal.cle !== n.cle) {
+      principal.membres.push(p);
+      continue;
+    }
+    // Un accessoire SEUL redevient le chantier : broyer du bois déjà à terre
+    // est un vrai travail, et le faire disparaître effacerait la seule
+    // prestation dictée.
+    const sien = poser(n.cle, n.ordreDevis, p, true);
+    principal ??= sien;
+  }
+
+  // L'ordre de lecture du devis suit celui du chantier (`ordreDevis`), et ce
+  // que le produit ne nomme pas ferme la marche, dans l'ordre de la dictée.
+  const ordonnes = groupes
+    .map((g, rang) => ({ g, rang }))
+    .sort((a, b) => a.g.ordre - b.g.ordre || a.rang - b.rang)
+    .map(({ g }) => g);
+
+  const lignes: LigneVendable[] = ordonnes.map((g) => ({
+    cle: g.cle,
+    // **Le client lit le libellé nettoyé ; les moteurs relisent le brut.**
+    // La distinction est écrite dans le type depuis le début et n'était pas
+    // exploitée : `libelle` dit « ce que le client lit », `membres` « les
+    // libellés réunis ». Nettoyer les DEUX casserait le chiffrage — le repli
+    // par le texte de `mesuresResolues` y cherche encore les mesures.
+    libelle: g.membres.map((m) => libelleClient(m)).join("\n"),
+    membres: g.membres.map((m) => m.libelle),
+    prestations: g.membres,
+    // La ligne qui absorbe le solde ne peut pas être refusée : ce serait
+    // proposer d'annuler le chantier.
+    detachable: g === principal ? false : (nature(g.cle)?.detachable ?? true),
+    principal: g === principal,
+  }));
 
   return { lignes, absorbes };
 }
@@ -282,4 +337,20 @@ export function repartir(
         ? ` Total : ${nouveauTotal.toFixed(2)} € au lieu de ${total.toFixed(2)} €, l'écart vient de l'arrondi à la dizaine.`
         : ` Le total ne change pas : ${total.toFixed(2)} €.`),
   };
+}
+
+/**
+ * Les travaux qu'une ligne de devis réunit, relus depuis son libellé.
+ *
+ * **Le séparateur est un retour à la ligne, et il est nommé ICI plutôt que
+ * recopié.** C'est sa demande du 8 août — un point-virgule fait une phrase, et
+ * une phrase se lit comme une seule prestation. Trois modules avaient besoin de
+ * refaire ce découpage ; qu'un seul le fasse évite qu'ils divergent le jour où
+ * le séparateur change.
+ */
+export function membresDuLibelle(libelle: string): string[] {
+  return libelle
+    .split("\n")
+    .map((m) => m.trim())
+    .filter(Boolean);
 }

@@ -1,7 +1,12 @@
 # État du projet
 
-**Dernière mise à jour :** 2026-08-29 · branche `main`
-· dernière migration `drizzle/0068_effacement_client_devis_envoye.sql`
+**Dernière mise à jour :** 2026-08-30 · branche `main`
+· dernière migration `drizzle/0071_rappel_vu.sql`
+
+*(Deux en-têtes de mise à jour cohabitaient ici depuis une fusion du 29 août,
+avec deux dates et deux migrations différentes — dont une périmée. Réunis : une
+ligne fausse coûte plus cher qu'une ligne absente, et celle-ci l'était à
+moitié.)*
 
 
 *(Le numéro du dernier commit ne figure plus ici : il était faux dès le commit
@@ -10,6 +15,195 @@ suivant, et une ligne fausse coûte plus cher qu'une ligne absente. `git log
 
 Ce fichier dit **où en est le produit**, pas ce qu'on aimerait qu'il soit. Une
 ligne « fait » qui ne l'est pas coûte plus cher qu'une ligne absente.
+
+---
+
+## La note vocale à la messagerie, et la fiche qui tient dans un écran (30 août 2026)
+
+**Sa demande, en huit messages :** *« Il faut modifier la note vocale pour
+qu'elle soit plus simple à utiliser, à la manière de celle de WhatsApp : on
+appuie dessus, possibilité de supprimer ou d'appuyer sur la flèche pour envoyer
+de suite la transcription, et arriver sur la page du devis. »* Puis, après trois
+planches et ses trois choix : *« Très bien, code exactement ça ! »*
+
+Ce que l'écran fait maintenant :
+
+| | |
+|---|---|
+| au repos | un **disque plein**, son micro, deux ondes de **1,5 cm** de chaque côté |
+| on appuie | la **poubelle** naît à gauche, l'**avion** à droite ; le micro devient un carré d'arrêt, le disque ne bouge pas |
+| la poubelle | jette la note, relâche le micro, rend l'écran à ce qu'il était |
+| l'avion | envoie, transcrit, **mène au devis** — rien d'autre à toucher |
+| « Je rédige à la main » | **secondaire**, large de **66 %**, et il **disparaît** pendant qu'on parle |
+
+**La fiche client tient dans un écran, sans défiler et sans vide en bas.** Elle
+débordait de 492 px : l'anneau et le bouton étaient sous le pli. Mesuré sur son
+écran (390 × 664) et par son parcours : 604 px de feuille pour 601 de contenu.
+
+**Et elle ne se balade plus de droite à gauche.** Deux causes, aucune visible à
+l'œil : le champ du nom gardait sa largeur naturelle et poussait le téléphone
+31 px hors de l'écran ; la pellicule de photos dépassait de deux pixels de
+chaque côté.
+
+Le compte-rendu qui lui est destiné : `docs/note-vocale-messagerie.md`. Les
+raisons et les pièges : `ARCHITECTURE.md` §211.
+
+---
+
+## Chaque notification se range d'un « J'ai vu » (30 août 2026)
+
+**Sa demande, capture à l'appui :** *« pour chaque notification je dois pouvoir
+cliquer sur vu pour les faire disparaître ; pourquoi certaines n'ont pas cette
+fonction ? »*. Trois rappels sur quatre n'avaient aucun geste.
+
+Les quatre cartes de rappel portent désormais le même mot que les réponses de
+clients. **Le geste fait taire, il n'efface pas** : le rappel revient au bout de
+son délai réglé si rien n'a bougé (`rappels_vus`, migration 0071). La facture
+impayée garde sa mécanique du 16 août et ne prend que le libellé — « Plus tard »
+disparaît.
+
+Détail : `docs/j-ai-vu-sur-tous-les-rappels.md`, `ARCHITECTURE.md` §210.
+
+## QUATRE RÔLES, ET LE COMMERCIAL NE FACTURE PLUS (30 août 2026)
+
+Le modèle des utilisateurs est **figé** avant le déploiement.
+
+| | |
+|---|---|
+| **Patron** | tout Atlas — l'administrateur de son entreprise |
+| **Facturation** *(neuf)* | clients, devis, factures, TVA. Planning en lecture. Aucune administration |
+| **Commercial** | clients, devis, planning en écriture (suppression comprise). **Aucune facturation** |
+| **Salarié** | planning en lecture seule, sa feuille sans un montant |
+
+Plusieurs personnes portent le même rôle — c'était déjà vrai en base (clé unique
+sur entreprise + personne), il n'y a **pas** de compte partagé « Facturation ».
+
+**Le défaut fermé dormait depuis le 13 août** : les dix actions du cycle
+comptable se gardaient par « tout sauf le salarié », donc un commercial
+facturait pour de bon — alors que `docs/QUESTIONS.md` §10 disait *« ni les
+factures, ni la TVA »*. L'écran des accès lui **promettait** même le contraire.
+
+**Ce que ça coûte :** un commercial ne clôture plus un chantier — « Créer la
+facture » crée la facture.
+
+Détail : `docs/modele-des-roles.md`, `ARCHITECTURE.md` §212. Migration 0071.
+
+## Le planning du salarié est en LECTURE SEULE (30 août 2026)
+
+**Sa décision :** *« Un salarié peut uniquement CONSULTER son planning. Il ne
+doit pouvoir effectuer AUCUNE modification depuis le planning. »*
+
+Ni supprimer un chantier, ni le poser, ni le déplacer, ni le retirer du
+planning, ni écrire son pense-bête, ni cocher une équipe. **Refusé au serveur**
+— une requête fabriquée avec l'identifiant de l'action et celui du chantier est
+refusée comme un appui sur un bouton.
+
+**Ce qui n'a pas bougé** : sa portée de lecture, sa feuille de chantier sans
+montants, les droits du patron et ceux du commercial.
+
+Trouvé en chemin et corrigé : les actions **photos** d'un chantier n'avaient
+aucune garde — un salarié pouvait en supprimer n'importe laquelle, pour de bon.
+
+Détail : `docs/salarie-planning-lecture-seule.md`, `ARCHITECTURE.md` §208.
+
+## Ce qui a déjà été dicté ne se redemande plus (30 août 2026)
+
+*« Tu dis deux souches de diamètre 60. Question : quel diamètre font les
+souches ? »* La lecture découpe à la virgule ; la question ne regardait que sa
+propre ligne, quand la hauteur était cherchée dans toute la dictée depuis le
+premier jour. Corrigé — avec une garde : à deux arbres, on redemande ligne par
+ligne, un diamètre dit quelque part n'appartenant pas forcément à celui qu'on
+questionne.
+
+Les questions ne nomment plus leur objet : « Quel diamètre ? », « Quelle
+hauteur ? », « Quelle longueur ? ».
+
+Deux textes qui décrivaient ce que l'écran montrait déjà sont partis :
+
+| Où | Ce qui reste |
+|---|---|
+| écran Transcription | rien — le titre et le cadre suffisent |
+| refus de chiffrer | « Aucun tarif ne correspond, et la dictée ne dit ni la durée ni l'équipe. » |
+
+---
+
+## L'arrêt d'avant-chiffrage : moins de mots, et plus de question absurde (30 août 2026)
+
+Deux remarques de lui, le même jour, sur le même écran.
+
+**L'incohérence.** *« Lorsque l'on parle de souche, ça sous-entend que l'arbre a
+déjà été abattu — donc s'il n'y a pas d'arbre, pourquoi il y a la question de
+comment on l'abat ? »* Le dessouchage était rangé avec l'abattage pour ne pas
+redemander le diamètre du même tronc ; le raccourci commandait aussi la question
+de la technique. Une souche reçoit maintenant son diamètre seul, sous le mot
+juste.
+
+**Les mots.** *« Trop de phrases inutiles, il faut aller droit au but,
+l'utilisateur n'aime pas lire. »* Retirées : les deux lignes sous le titre, la
+ligne d'explication sous chaque question — et le champ `pourquoi` avec elles —,
+et la prestation réécrite à chaque question. Titre : « Avant de chiffrer ».
+
+| | |
+|---|---|
+| `src/lib/questions-chiffrage.ts` | `estDessouchage`, sujet `dessouchage.diametre`, `pourquoi` supprimé |
+| `src/app/chantiers/[id]/DevisDepuisDictee.tsx` | l'écran ne porte plus que prestation, question, réponses |
+| trois suites navigateur | comptent les blocs `[data-atlas="question-chiffrage"]`, plus un libellé |
+
+Détail : `ARCHITECTURE.md` §209.
+
+---
+
+## Plus aucune barre de défilement grise, la page comprise (30 août 2026)
+
+Sa plainte du jour, depuis son PC : *« sur PC les bandes déroulantes grises
+apparaissent, supprime-moi ça »*. Deuxième fois — le 11 août, seuls les cadres
+qui défilent avaient été couverts, pas **la page elle-même**, qui défile aussi
+(le gabarit lui donne `100dvh` de hauteur *minimale*).
+
+Sur téléphone cette barre est en surimpression et s'efface seule ; sur
+ordinateur elle s'installe à droite pour de bon. Le défaut ne pouvait apparaître
+que chez lui, et le contrôle qui aurait dû l'attraper écartait explicitement
+`<html>` et `<body>`.
+
+| | |
+|---|---|
+| `src/app/globals.css` | une règle universelle `* { scrollbar-width: none }` remplace la déclaration recopiée zone par zone |
+| `scripts/test-aucune-barre-de-defilement-e2e.ts` | mesure désormais la page ; éprouvé rouge (8 écrans sur 13) avant d'être éprouvé vert |
+
+Le défilement n'a pas changé — molette, doigt, clavier, focus. Détail :
+`ARCHITECTURE.md` §206.
+
+## Le devis client ne répète plus les mesures (30 août 2026)
+
+*Son premier vrai devis sorti de la chaîne corrigée portait « Haie de laurier
+(800 ml) (800 ml) » et « Érable (40 cm de diamètre, 12 m de haut) ». Détail et
+pourquoi : `ARCHITECTURE.md` §214.*
+
+**Fait.**
+
+| | Où |
+|---|---|
+| Le libellé que le client lit est nettoyé des mesures **déjà en colonne** | `src/lib/libelle-client.ts` |
+| Ce que les moteurs de prix relisent — `membres` — reste **intact** | `src/lib/lignes-vendables.ts` |
+| La recollure de la quantité ne double plus ce que le modèle a déjà écrit | `brouillon-service.ts` |
+| Ses quatre lignes du 30 août, plus le refus de retirer une méthode | `scripts/test-libelle-client.ts` |
+
+**Ce qui n'a PAS changé, et c'est délibéré :** aucune donnée structurée n'est
+retirée de la base, aucun devis existant n'est réinterprété, l'invite du modèle
+n'est pas touchée, et le regroupement des prestations est inchangé.
+
+---
+
+## Le banc répare ses dépendances désaccordées (29 août 2026)
+
+Son espace exécutait Next 16.3.3 alors que le projet épingle 16.3.2 : les
+binaires natifs de Next étant versionnés à l'identique, la construction mourait
+après son en-tête, sans un mot — et la réinstallation automatique, qui exigeait
+un message, ne se déclenchait jamais.
+
+Le banc compare les versions avant de bâtir et réinstalle si elles ont dérivé.
+Un second filet rattrape une construction morte sans rien dire. Éprouvé contre
+son état exact. `ARCHITECTURE.md` §204.
 
 ---
 
@@ -105,6 +299,38 @@ rangée à distance du nom de la suivante : retiré sec, deux rangées se liraie
 comme une seule. La respiration passe de 19 à 24 px, et la première rangée garde
 22 px — tout ce qui reste de la démarcation qu'il avait demandée le 23 août.
 
+## La chaîne dictée → devis a été refaite (27 août 2026)
+
+*Le devis du 26 août portait trois défauts : la quantité dictée n'existait plus
+comme donnée, une tonte et un démontage partageaient une identité, et une ligne
+qu'on ne savait pas chiffrer s'écrivait « 0 € ». Le détail est dans
+`ARCHITECTURE.md` §205 ; le dossier à retransmettre est
+`docs/pour-chatgpt/07-correction-complete.md`.*
+
+**Fait.**
+
+| | Où |
+|---|---|
+| **Un référentiel des natures**, à la place de six vocabulaires dispersés — dont aucun ne connaissait la tonte | `src/lib/natures-prestation.ts` |
+| **Une nature inconnue garde sa propre ligne** et sort « à chiffrer » : identité et capacité de chiffrage ne se confondent plus | `src/lib/lignes-vendables.ts` |
+| **La quantité dictée atteint le CALCUL** — elle vivait en colonne et personne ne la lisait | `caracteristiqueDeLaQuantite` + `src/lib/mesures-prestation.ts` |
+| **Quantité physique et quantité commerciale**, formalisées et jamais synchronisées | `src/lib/quantite-commerciale.ts` |
+| **« À chiffrer » remplace « 0 € »** ; le devis ne se prépare ni ne s'envoie tant qu'une ligne attend son prix | migration 0070 + `src/lib/preparation-devis.ts` + `src/server/repositories/devis.ts` |
+| **Comparabilité V2**, à côté de la V1 jamais réécrite : ordre de grandeur, unité, espèce | `src/lib/comparabilite-prix.ts` |
+| **Sa correction tranche** au lieu de bloquer, et aucune extraction ne repasse dessus | `prestations.corrige_par_humain` |
+| **`nature` et `espece` viennent de la dictée**, dans une liste fermée et vérifiée | `src/server/ai/schemas/extraction.ts` + `src/lib/prestation-structuree.ts` |
+| **Une réponse tronquée cesse d'être une panne muette** | `ResultatLLM.fin` + `estJsonTronque` |
+
+**Ce qui n'est PAS vérifié ici, faute de clé :** ce que le modèle rend vraiment
+pour `nature` et `espece`, Whisper, et le `stop_reason` réel. Le §16 du dossier
+07 donne le seul test à jouer sur son espace.
+
+**Deux choses lui reviennent :** la planche
+`https://florianmarrins0978-svg.github.io/Atlas-app/corriger-une-mesure.html`,
+et la question « dessouchage de DEUX souches : faut-il multiplier le prix de
+grille par deux ? ».
+
+---
 ## Le numéro de ses documents se choisit (26 août 2026)
 
 *Sa demande : « dans la catégorie facture il faut rajouter le format de numéro,
@@ -1815,6 +2041,27 @@ ne change tant qu'il n'y touche pas — et cela se vérifie, pas seulement se di
 `test-allure-pdf.ts` compare deux devis octet pour octet.
 
 `ARCHITECTURE.md` §161 et §164.
+
+## Le capital social et le RCS s'impriment, s'il le veut — 30 août 2026
+
+Trois mentions légales de société, réglées dans **Réglages › Identité** :
+forme juridique (existait, jamais imprimée nulle part avant ce lot), capital
+social et ville d'immatriculation au RCS (les deux neufs). Un seul réglage,
+**« sous le nom » / « en bas, avec le SIRET » / « ne pas les imprimer »**,
+gouverne les trois ensemble — défaut « ne pas les imprimer », pour ne
+surprendre personne qui avait déjà saisi une forme juridique sans savoir
+qu'elle ne s'imprimait pas. Le RCS ne redemande pas de numéro : c'est le
+SIREN, déjà affiché sous le SIRET. Les deux champs neufs disparaissent pour
+une EI ou une micro-entreprise (`formeADuCapital`, `src/lib/formes-juridiques.ts`).
+
+**Trois défauts réels du dépôt, trouvés en construisant** : `formeConnue` ne
+reconnaissait jamais « Micro-entreprise » (le tiret n'était retiré que d'un
+côté de la comparaison) ; la forme juridique ne s'enregistrait JAMAIS depuis
+la liste déroulante, une fermeture React périmée dans `ChampFormeJuridique`
+existant depuis le 14 août ; et `enEuros` faisait planter tout PDF portant un
+montant à quatre chiffres (l'espace fine de `Intl.NumberFormat`, que
+l'encodage des polices PDF ne connaît pas). Les trois sont corrigés. Détail
+dans `CHANGELOG.md` du jour et `ARCHITECTURE.md` §213.
 
 ## Vérifications au dernier point
 

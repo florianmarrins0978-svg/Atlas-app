@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { purgerFichiersEnAttente } from "@/server/repositories/fichiers";
 import { purgerPreuvesPerimees } from "@/server/preuve-recente";
 import { purgerAudiosTranscrits, purgerPhotosDiagnostic } from "@/server/repositories/retention";
+import { noterPurgeReussie } from "@/server/journal-purge";
 import { getEnv } from "@/server/env";
 import { logger } from "@/server/logger";
 import { idRequeteValideOuGenere, executerAvecContexte } from "@/server/request-context";
@@ -59,6 +60,29 @@ export async function POST(request: Request) {
        * mort qu'on aurait présenté comme un nettoyage effectif.
        */
       const preuvesPurgees = await purgerPreuvesPerimees();
+
+      /**
+       * **ON NOTE LE SUCCÈS ICI, ET NULLE PART AILLEURS.**
+       *
+       * Cette ligne est à l'intérieur du `try`, après tout le travail, et
+       * surtout **pas dans un `finally`** : un horodatage écrit malgré l'échec
+       * dirait « la purge tourne » pendant que rien n'est purgé. C'est le faux
+       * vert le plus dangereux qui soit, parce qu'il rassure — et c'est
+       * exactement ce que `scripts/test-journal-purge-db.ts` vérifie en faisant
+       * échouer la purge exprès.
+       *
+       * Si l'écriture du journal échoue elle-même, la purge est comptée comme
+       * échouée : c'est le bon sens du côté fermé. Le ménage a bien eu lieu,
+       * mais on ne peut plus le prouver — et une purge qu'on ne sait pas
+       * prouver ne vaut pas mieux qu'une purge qui n'a pas eu lieu.
+       */
+      await noterPurgeReussie({
+        fichiersPurges: nombrePurges,
+        audiosPurges,
+        photosPurgees,
+        preuvesPurgees,
+      });
+
       logger.info("Purge planifiée exécutée", { nombrePurges, audiosPurges, photosPurgees });
       return NextResponse.json({ statut: "ok", nombrePurges, audiosPurges, photosPurgees, preuvesPurgees });
     } catch (err) {

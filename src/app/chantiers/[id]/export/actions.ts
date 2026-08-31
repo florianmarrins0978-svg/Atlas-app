@@ -1,5 +1,6 @@
 "use server";
 
+import { exigerGestionDevis, exigerMontants } from "@/server/garde-action";
 import { getCurrentCtx } from "@/server/session-ctx";
 import { contextePlanning } from "@/server/contexte-planning";
 import { getOuCreerDevisBrouillon, envoyerDevis } from "@/server/repositories/devis";
@@ -12,6 +13,12 @@ import { MOTIF_DEVIS_VIDE } from "@/lib/devis-envoyable";
 
 export async function chargerDevisAction(chantierId: string) {
   const ctx = await getCurrentCtx();
+  // **Une LECTURE, donc la garde des montants et non celle du devis.** Ouvrir
+  // un devis ne l'écrit pas : c'est la question « avez-vous le droit de voir un
+  // prix ? », pas « avez-vous le droit d'en poser un ? ». Les deux rendent le
+  // même verdict aujourd'hui, et c'est précisément pourquoi elles restent
+  // séparées (`peutGererDevis`).
+  await exigerMontants(ctx, "ouvrir le devis");
   const devis = await getOuCreerDevisBrouillon(ctx, chantierId);
   const prestations = await listerPrestations(ctx, chantierId);
   return { devis, prestations: prestations.map((p) => p.libelle) };
@@ -19,6 +26,7 @@ export async function chargerDevisAction(chantierId: string) {
 
 export async function envoyerDevisAction(devisId: string) {
   const ctx = await getCurrentCtx();
+  await exigerGestionDevis(ctx, "envoyer le devis");
   const resultat = await envoyerDevis(ctx, devisId);
   try {
     // Base documentaire (lot IA-07) : rend le devis envoyé recherchable par
@@ -43,6 +51,7 @@ export async function envoyerDevisAction(devisId: string) {
  */
 export async function reprendreDevisAction(chantierId: string) {
   const ctx = await getCurrentCtx();
+  await exigerGestionDevis(ctx, "reprendre le devis");
   const devis = await getOuCreerDevisBrouillon(ctx, chantierId);
   return { devisId: devis.id, numeroVersion: devis.numeroVersion };
 }
@@ -57,6 +66,7 @@ export async function reprendreDevisAction(chantierId: string) {
  */
 export async function preparerEnvoiAction(chantierId: string, dureeDemiJournees?: number) {
   const ctx = await getCurrentCtx();
+  await exigerGestionDevis(ctx, "préparer l'envoi du devis");
 
   // **Le document se recompose DÈS L'OUVERTURE de la feuille d'envoi.**
   //
@@ -114,6 +124,7 @@ export async function verifierJourProposeAction(
   dureeDemiJournees?: number
 ) {
   const ctx = await getCurrentCtx();
+  await exigerGestionDevis(ctx, "vérifier un jour proposé");
   return verifierJourPropose(ctx, chantierId, jour, dureeDemiJournees);
 }
 
@@ -156,6 +167,7 @@ export async function envoyerAuClientAction(
   autreDateAutorisee?: boolean
 ): Promise<ResultatEnvoiClient> {
   const ctx = await getCurrentCtx();
+  await exigerGestionDevis(ctx, "envoyer le devis au client");
 
   /**
    * **LE DOCUMENT SE RECOMPOSE AVANT DE PARTIR, jamais avant.**
@@ -307,6 +319,7 @@ export async function enregistrerCoordonneeClientAction(
   valeur: string
 ) {
   const ctx = await getCurrentCtx();
+  await exigerGestionDevis(ctx, "enregistrer les coordonnées du client");
   const propre = valeur.trim().slice(0, 200);
   if (!propre) return { succes: false as const };
   await mettreAJourClient(ctx, clientId, {

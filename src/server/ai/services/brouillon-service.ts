@@ -6,7 +6,7 @@ import {
   marquerConfirme,
   type Brouillon,
 } from "../../repositories/brouillons-informations";
-import { ajouterPrestation, listerPrestations } from "../../repositories/prestations";
+import { ajouterPrestation, listerPrestations, completerPrestation } from "../../repositories/prestations";
 import { ajouterMateriel, listerMateriel } from "../../repositories/materiel";
 import { mettreAJourDureeEquipe } from "../../repositories/chantiers";
 import { extraire } from "./extraction-service";
@@ -14,6 +14,9 @@ import { termesPourConsigne, correctionsRecentes } from "../../repositories/term
 import { construireConsigneMetier } from "../../../lib/consigne-metier";
 import { estTranscriptionSimulee } from "../providers/transcription/dev";
 import type { PropositionExtraction, LigneExtraite } from "../schemas/extraction";
+import { structureDeLaPrestation } from "../../../lib/prestation-structuree";
+import { prestationCorrespondante, enrichissementPossible } from "../../../lib/correspondance-prestation";
+import { logger } from "../../logger";
 
 export type ResultatGeneration =
   | { statut: "genere"; brouillon: Brouillon }
@@ -133,15 +136,65 @@ export async function confirmerBrouillon(ctx: Ctx, chantierId: string): Promise<
   ]);
   const connus = (lignes: { libelle: string }[]) =>
     new Set(lignes.map((l) => l.libelle.trim().toLowerCase()).filter(Boolean));
-  const prestationsConnues = connus(dejaPrestations);
   const materielConnu = connus(dejaMateriel);
+
+  // **Le rapprochement tolère l'enrichissement, sinon il crée des doublons.**
+  //
+  // Ses réponses à l'arrêt d'avant-chiffrage ALLONGENT le libellé : « Abattage
+  // d'un érable » devient « Abattage d'un érable — démontage avec rétention,
+  // ⌀ 45 cm ». Sur une égalité exacte, le rejeu suivant ne reconnaissait plus
+  // rien et écrivait une SECONDE prestation pour le même arbre. Mesuré en base
+  // le 27 août 2026 — c'est le défaut du 3 août sous un troisième visage.
+  //
+  // La règle vit dans `src/lib/correspondance-prestation.ts`, pure : le libellé
+  // identique, ou identique suivi du tiret d'enrichissement. **Rien
+  // d'approximatif** — une fusion sur une ressemblance ferait disparaître un
+  // travail qu'il facturerait.
+  // **Ce qui était DÉJÀ là, et rien d'autre.**
+  //
+  // Les prestations créées par cette confirmation-ci n'y entrent pas, et c'est
+  // une correction du 27 août 2026 : sans cela, une dictée qui mentionne deux
+  // fois le même travail — « je démonte un érable, puis je démonte un érable
+  // au fond du jardin » — voyait la seconde ligne absorbée par la première.
+  // Deux arbres, une prestation, et l'un des deux ne se facturait jamais.
+  //
+  // **Le dédoublonnage porte sur le REJEU, pas sur la dictée elle-même** : ce
+  // qu'il dicte deux fois, il le veut deux fois.
+  const prestationsDejaLa = [...dejaPrestations];
 
   const prestationsCreees = [];
   for (const ligne of contenu.prestations) {
     const libelle = libelleAvecQuantite(ligne);
-    if (!libelle || prestationsConnues.has(libelle.toLowerCase())) continue;
-    prestationsConnues.add(libelle.toLowerCase());
-    prestationsCreees.push(await ajouterPrestation(ctx, chantierId, libelle));
+    if (!libelle) continue;
+
+    const existante = prestationCorrespondante(libelle, prestationsDejaLa);
+    if (existante) {
+      // **On complète ce qui est vide, on ne remplace jamais ce qui est posé.**
+      // C'est ce qui protège une correction humaine sans avoir à savoir qui
+      // l'a écrite : le dépôt n'a aucune colonne de provenance.
+      const { aPoser, contradictions } = enrichissementPossible(existante, structureDeLaPrestation(ligne));
+      if (Object.keys(aPoser).length > 0) {
+        await completerPrestation(ctx, existante.id, aPoser);
+      }
+      // **Ce qu'il a corrigé lui-même n'est jamais touché.** `completerPrestation`
+      // ne pose déjà que ce qui manque, mais une prestation marquée corrigée par
+      // l'artisan ne reçoit rien du tout — pas même un champ vide qu'une
+      // extraction croirait pouvoir remplir.
+      for (const motif of contradictions) {
+        // Bavard plutôt que muet : ce qui n'a pas été écrit doit pouvoir se
+        // diagnostiquer (`AGENTS.md`).
+        logger.info("Brouillon : la dictée contredit une prestation existante", { chantierId, motif });
+      }
+      continue;
+    }
+    // **La structure part EN MÊME TEMPS que le libellé, pas à sa place.**
+    //
+    // Le libellé continue de porter « (800 ml) » — quatre moteurs le relisent
+    // encore pour retrouver une mesure, et le leur retirer aujourd'hui ferait
+    // perdre à une haie son prix au mètre linéaire, sur un devis qui part chez
+    // un client. Les deux cohabitent le temps que les lecteurs migrent.
+    const creee = await ajouterPrestation(ctx, chantierId, libelle, structureDeLaPrestation(ligne));
+    prestationsCreees.push(creee);
   }
   const materielCree = [];
   for (const ligne of contenu.materiel) {
@@ -163,9 +216,48 @@ export async function confirmerBrouillon(ctx: Ctx, chantierId: string): Promise<
 
 // Recompose un libellé lisible à partir de la ligne structurée. N'ajoute
 // jamais de quantité absente : sans quantité ET unité, le libellé est repris tel quel.
+//
+// **Et jamais DEUX FOIS la même mesure.** C'est le défaut qu'il a lu sur son
+// vrai devis du 30 août 2026 : « Haie de laurier (800 ml) (800 ml) ». Le modèle
+// écrit déjà la mesure dans le libellé — c'est ce que la dictée dit — et cette
+// fonction en recollait une seconde depuis les colonnes.
+//
+// **Pourquoi on n'a pas simplement supprimé la recollure.** Le texte reste le
+// repli des moteurs qui ne lisent pas encore les colonnes
+// (`mesures-prestation.ts`) : si le modèle rendait « Haie de laurier » sans
+// mesure, la retirer d'ici ferait perdre à la haie son prix au mètre linéaire.
+// On la pose donc quand elle manque, et jamais quand elle est déjà là.
 function libelleAvecQuantite(ligne: LigneExtraite): string {
   const base = ligne.libelle.trim();
   if (!base) return "";
-  if (ligne.quantite && ligne.unite) return `${base} (${ligne.quantite} ${ligne.unite})`;
-  return base;
+  if (!ligne.quantite || !ligne.unite) return base;
+  return porteDejaLaMesure(base, ligne.quantite, ligne.unite)
+    ? base
+    : `${base} (${ligne.quantite} ${ligne.unite})`;
+}
+
+/**
+ * Le libellé dit-il déjà cette mesure ?
+ *
+ * La comparaison ignore ce qui sépare deux écritures de la même chose :
+ * l'espace des milliers (« 1 200 » et « 1200 »), la casse, les accents et la
+ * ponctuation. Sans cela, « Tonte de la pelouse (1 200 m²) » recevrait
+ * « (1200 m²) » en plus — c'est exactement ce qu'il a lu.
+ */
+function porteDejaLaMesure(libelle: string, quantite: string, unite: string): boolean {
+  const reduire = (s: string) =>
+    s
+      .normalize("NFD")
+      .replace(/[̀-ͯ]/g, "")
+      .toLowerCase()
+      .replace(/[^\p{L}\p{N}]+/gu, "");
+  const nombre = Number(String(quantite).replace(",", "."));
+  const ecritures = new Set([reduire(String(quantite))]);
+  if (Number.isFinite(nombre)) {
+    ecritures.add(reduire(String(nombre)));
+    if (Number.isInteger(nombre)) ecritures.add(reduire(String(Math.trunc(nombre))));
+  }
+  const texte = reduire(libelle);
+  const u = reduire(unite);
+  return [...ecritures].some((n) => n.length > 0 && texte.includes(n + u));
 }

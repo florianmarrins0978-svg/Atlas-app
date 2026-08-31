@@ -63,16 +63,29 @@ const etat = (await page.evaluate(`(() => {
   const nav = document.querySelector('nav[aria-label="Navigation principale"]');
   const grille = nav ? nav.querySelector('.grid') : null;
   const onglets = nav ? [...nav.querySelectorAll('a')].map((a) => a.textContent.trim()) : [];
-  const lignes = [...document.querySelectorAll('button[aria-expanded]')];
-  const donner = [...document.querySelectorAll('button')].find((b) => b.textContent.includes('Donner un accès'));
+  // **Les lignes de la LISTE, pas tout ce qui se déplie dans la page.**
+  // L'assistant du patron porte lui aussi \`aria-expanded\` : sans ce cadrage,
+  // le compte des personnes est faux d'une unité, et il l'était en silence.
+  const lignes = [...document.querySelectorAll('ul li button[aria-expanded]')];
+  // **Un LIEN depuis le 26 août 2026, plus un bouton** : « Donner un accès »
+  // mène à son propre écran. Cherché parmi les seuls \`button\`, il était
+  // introuvable — et le contrôle annonçait un geste disparu.
+  const donner = [...document.querySelectorAll('a, button')].find((b) => b.textContent.includes('Donner un accès'));
   return {
     onglets,
     colonnes: grille ? getComputedStyle(grille).gridTemplateColumns.split(' ').length : null,
     personnes: lignes.length,
     largeurDeLaPremiere: lignes[0] ? Math.round(lignes[0].getBoundingClientRect().width) : 0,
     donnerVisible: vis(donner),
-    deuxListes:
-      document.body.innerText.includes('Qui a accès') && document.body.innerText.includes('Vos équipes'),
+    // **« Vos salariés », et non « Vos équipes »** : les deux ont été séparées
+    // le 26 août 2026 (une équipe est une file du planning, pas un groupe de
+    // personnes). Le contrôle réclamait encore l'ancien titre.
+    // **Sans casse** : \`innerText\` rend le texte TEL QU'IL EST PEINT, et ces
+    // deux titres portent \`text-transform: uppercase\`. Comparé tel quel, le
+    // contrôle cherchait un texte que la page n'affiche jamais.
+    deuxListes: ['qui a accès', 'vos salariés'].every((t) =>
+      document.body.innerText.toLowerCase().includes(t)
+    ),
   };
 })()`)) as Record<string, unknown>;
 
@@ -83,11 +96,15 @@ if (!etat.largeurDeLaPremiere) {
 }
 if (etat.personnes === 0) echecs.push("aucune personne dans la liste : l'écran ne montre rien à regarder");
 if (!etat.donnerVisible) echecs.push("« Donner un accès » n'est pas visible");
-if (!etat.deuxListes) echecs.push("les deux listes ne cohabitent pas : « Qui a accès » et « Vos équipes »");
+if (!etat.deuxListes) echecs.push("les deux listes ne cohabitent pas : « Qui a accès » et « Vos salariés »");
 if (etat.colonnes !== 5) echecs.push(`le patron devrait voir 5 onglets, la grille en a ${etat.colonnes}`);
 
 // ─── Le rôle déplié ─────────────────────────────────────────────────────────
-await page.click('button[aria-expanded]');
+// **La liste, et pas le premier bouton dépliable de la page.** Payé le
+// 30 août 2026 : l'assistant du patron porte lui aussi `aria-expanded`, et il
+// vient AVANT dans le document — le clic ouvrait donc son fil, et le contrôle
+// attendait des pastilles de rôle dans un panneau de conversation.
+await page.locator('ul li button[aria-expanded]').first().click();
 await page.waitForSelector('button[aria-pressed="true"]', { timeout: 15000 });
 await photographier("2-le-role-deplie");
 
@@ -96,25 +113,47 @@ const deplie = (await page.evaluate(`(() => {
   return { boutons, texte: document.body.innerText.includes('Patron') };
 })()`)) as { boutons: string[]; texte: boolean };
 console.log(`  déplié — ${JSON.stringify(deplie)}`);
-for (const attendu of ["Patron", "Commercial", "Salarié"]) {
+for (const attendu of ["Patron", "Facturation", "Commercial", "Salarié"]) {
   if (!deplie.boutons.includes(attendu)) echecs.push(`le rôle « ${attendu} » n'est pas proposé`);
 }
 
 // ─── Donner un accès ────────────────────────────────────────────────────────
-await page.click('button[aria-expanded]');
+// **Refermer la ligne, et pas ouvrir l'assistant.** Même piège qu'au-dessus, et
+// c'est ICI qu'il faisait tomber la capture : le panneau de l'assistant est
+// `fixed inset-0`, donc il recouvre l'écran entier et le clic suivant part
+// dedans. Le message accusait « Donner un accès », qui n'y était pour rien.
+await page.locator('ul li button[aria-expanded]').first().click();
+
+// **« Donner un accès » MÈNE À UN ÉCRAN depuis le 26 août 2026** — il ne
+// déplie plus un formulaire sous la liste. Ce contrôle attendait encore
+// `input[placeholder="Nom"]` sous la même page : il tombait sur un écran juste.
 await page.click("text=Donner un accès");
-await page.waitForSelector('input[placeholder="Nom"]', { timeout: 15000 });
+await page.waitForURL(/\/reglages\/equipe\/nouveau$/, { timeout: 15000 });
+await page.waitForSelector("input[type=password]", { timeout: 15000 });
 await photographier("3-donner-un-acces");
 
 const champs = (await page.evaluate(`
-  [...document.querySelectorAll('form input')].map((i) => ({
-    place: i.placeholder, type: i.type, large: Math.round(i.getBoundingClientRect().width),
+  [...document.querySelectorAll('input')].map((i) => ({
+    type: i.type, large: Math.round(i.getBoundingClientRect().width),
   }))
-`)) as { place: string; type: string; large: number }[];
+`)) as { type: string; large: number }[];
 console.log(`  champs — ${JSON.stringify(champs)}`);
-if (champs.length !== 3) echecs.push(`le formulaire devrait avoir 3 champs, il en a ${champs.length}`);
+// Nom, e-mail, mot de passe, confirmation : quatre, pas moins.
+if (champs.length < 4) echecs.push(`l'écran devrait avoir au moins 4 champs, il en a ${champs.length}`);
+// Un champ de zéro pixel n'est pas un champ étroit : c'est une mesure
+// impossible, et elle ne se lit pas comme un succès (`CLAUDE.md` §5).
 if (champs.some((c) => c.large === 0)) echecs.push("un champ mesure 0 px de large");
 if (!champs.some((c) => c.type === "password")) echecs.push("le mot de passe n'est pas masqué à la saisie");
+
+// **Les quatre rôles se proposent sur CET écran aussi.** Le 30 août 2026,
+// « Facturation » est né : un écran de création qui n'en proposerait que trois
+// obligerait le patron à créer puis à corriger.
+const rolesOfferts = await page.locator("button[aria-pressed]").allTextContents();
+for (const attendu of ["Patron", "Facturation", "Commercial", "Salarié"]) {
+  if (!rolesOfferts.some((r) => r.trim() === attendu)) {
+    echecs.push(`« ${attendu} » n'est pas proposé à la création d'un accès`);
+  }
+}
 
 await navigateur.close();
 

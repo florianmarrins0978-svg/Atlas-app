@@ -194,8 +194,34 @@ export function construireConsigneMetier(
 }
 
 function formaterTerme(t: TermeMetier): string {
+  // Même neutralisation que les corrections : ces termes sont écrits par
+  // l'éditeur, mais ils voyagent dans le même bloc et une seule brèche suffit.
   const consigne = t.consigne?.trim();
-  return `- « ${t.intitule.trim()} » : ${t.definition.trim()}${consigne ? ` → ${consigne}` : ""}`;
+  return `- « ${neutraliser(t.intitule, 80)} » : ${neutraliser(t.definition, 200)}${
+    consigne ? ` → ${neutraliser(consigne, 200)}` : ""
+  }`;
+}
+
+/**
+ * **CE QUI ENTRE ICI EST ÉCRIT PAR DES HUMAINS, ET SE NEUTRALISE** — lot de
+ * clôture, 29 août 2026.
+ *
+ * Les libellés de lignes de devis partaient **entiers et bruts** dans le bloc
+ * envoyé au modèle. Or un libellé peut venir de `copier_ligne_devis`,
+ * c'est-à-dire du devis d'un autre client, lui-même issu d'un texte collé ou
+ * d'une dictée. Sur plusieurs lignes, il pouvait ouvrir ce qui ressemblait à
+ * une nouvelle section de consigne.
+ *
+ * Deux gestes, et ils sont structurels plutôt que persuasifs :
+ *
+ *   1. **les retours à la ligne et les chevrons disparaissent** — un libellé
+ *      ne peut plus fabriquer de ligne à lui, ni forger la balise qui délimite
+ *      le bloc ;
+ *   2. **il est tronqué** comme la dictée l'était déjà. Un libellé de deux
+ *      mille caractères noyait les autres exemples sans rien apprendre de plus.
+ */
+function neutraliser(texte: string, max: number): string {
+  return resume(texte.replace(/[\r\n<>]+/g, " "), max);
 }
 
 function formaterCorrection(c: CorrectionApprise): string {
@@ -203,8 +229,10 @@ function formaterCorrection(c: CorrectionApprise): string {
   // le détail de chacun. Un exemple qui prend dix lignes chasse les autres du
   // budget sans rien apprendre de plus.
   const lignes = (l: { libelle: string; montant: string }[]) =>
-    l.length === 0 ? "rien" : l.map((x) => `${x.libelle.trim()} ${x.montant} €`).join(" | ");
-  return `- Dicté : « ${resume(c.dictee, 220)} »\n  Proposé : ${lignes(c.propose)}\n  Retenu par lui : ${lignes(c.retenu)}`;
+    l.length === 0
+      ? "rien"
+      : l.map((x) => `${neutraliser(x.libelle, 80)} ${neutraliser(x.montant, 20)} €`).join(" | ");
+  return `- Dicté : « ${neutraliser(c.dictee, 220)} »\n  Proposé : ${lignes(c.propose)}\n  Retenu par lui : ${lignes(c.retenu)}`;
 }
 
 function resume(texte: string, max = 70): string {

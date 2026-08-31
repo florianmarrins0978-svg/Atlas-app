@@ -16,6 +16,7 @@ import path from "node:path";
 import { logger } from "@/server/logger";
 import { avecCivilite } from "@/lib/civilite";
 import { libelleReduction } from "@/lib/reduction-devis";
+import { lignesMentionsLegales, type PositionMentionsLegales } from "@/lib/mentions-legales";
 
 // Le moteur commun des pièces que le client reçoit : devis et facture.
 //
@@ -358,6 +359,17 @@ export type LigneDocument = {
   quantite: string;
   prixUnitaire: string;
   montant: string;
+  /** L'unité de la quantité — « ml », « m² », « souche » (migration 0070). */
+  unite?: string | null;
+  /**
+   * Le travail est identifié, son prix ne l'est pas (migration 0070).
+   *
+   * **Un devis portant une telle ligne ne peut pas être envoyé** — le contrôle
+   * vit dans `envoyerDevis`. Elle n'apparaît donc que sur l'aperçu, celui qu'il
+   * relit avant de décider, et il faut qu'elle y dise « à chiffrer » plutôt que
+   * « 0,00 € » : un zéro se lit « gratuit ».
+   */
+  aChiffrer?: boolean | null;
 };
 
 export type DonneesDocument = {
@@ -367,6 +379,14 @@ export type DonneesDocument = {
   entrepriseTelephone?: string | null;
   entrepriseEmail?: string | null;
   entrepriseIban?: string | null;
+  /**
+   * Les trois mentions légales, et leur emplacement (migration 0072). Absentes
+   * sur un document d'avant la migration : rien de plus ne s'imprime.
+   */
+  entrepriseFormeJuridique?: string | null;
+  entrepriseCapitalSocial?: string | null;
+  entrepriseVilleRcs?: string | null;
+  entrepriseMentionsLegalesPosition?: PositionMentionsLegales | null;
   clientNom?: string | null;
   /** Recopiée sur le document au moment où il est établi (migration 0038). */
   clientCivilite?: "mr" | "mme" | null;
@@ -630,14 +650,37 @@ export async function composerDocument(
   // ça, il faut sauter une ligne, une ligne par information »*. Le téléphone et
   // l'e-mail tenaient sur la même ligne, séparés d'un tiret cadratin — c'est
   // lisible sur un écran large, c'est un pâté sur un devis imprimé.
+  //
+  // **La forme juridique, le capital et le RCS s'y glissent selon SON choix**
+  // (migration 0072) : sous le nom, avec le reste des coordonnées, ou nulle
+  // part. `lignesMentionsLegales` rend déjà zéro ligne quand rien n'a été
+  // réglé — les documents d'avant la migration ressortent identiques à eux-
+  // mêmes, sans qu'il ait fallu un `if` de plus ici.
+  const positionMentions = data.entrepriseMentionsLegalesPosition ?? "aucune";
+  const mentionsLegales = lignesMentionsLegales({
+    formeJuridique: data.entrepriseFormeJuridique,
+    capitalSocial: data.entrepriseCapitalSocial,
+    villeRcs: data.entrepriseVilleRcs,
+    siret: data.entrepriseSiret,
+    position: positionMentions,
+  });
+
+  let yCoord = y - 15;
+  if (positionMentions === "sous_nom") {
+    for (const ligne of mentionsLegales) {
+      ecrire(ctx, ligne, MARGE, yCoord, { taille: 8.5, couleur: ctx.teintes.coordonnees });
+      yCoord -= 11;
+    }
+  }
+
   const coordonnees = [
+    ...(positionMentions === "bas" ? mentionsLegales : []),
     data.entrepriseAdresse,
     data.entrepriseTelephone,
     data.entrepriseEmail,
     data.entrepriseSiret ? `SIRET ${data.entrepriseSiret}` : null,
   ].filter((l): l is string => !!l);
 
-  let yCoord = y - 15;
   for (const ligne of coordonnees) {
     ecrire(ctx, ligne, MARGE, yCoord, { taille: 8.5, couleur: ctx.teintes.coordonnees });
     yCoord -= 11;
@@ -767,12 +810,22 @@ export async function composerDocument(
     }
     lignesLibelle.forEach((l, i) => ecrire(ctx, l, MARGE, y - i * 11, { taille: 9 }));
     if (!options.sansChiffrage) {
-      ecrireADroite(ctx, ligne.quantite, xQte, y, { taille: 9 });
-      ecrireADroite(ctx, formatMontant(ligne.prixUnitaire, data.devise), xPrix, y, { taille: 9 });
-      ecrireADroite(ctx, formatMontant(ligne.montant, data.devise), xMontant, y, {
+      // **L'unité à côté de la quantité** : « 800 ml », plus « 800 » tout court.
+      // Le client lisait « 800 × 17,50 € » sans savoir 800 de quoi.
+      ecrireADroite(ctx, ligne.unite ? `${ligne.quantite} ${ligne.unite}` : ligne.quantite, xQte, y, {
         taille: 9,
-        police: ctx.sansGras,
       });
+      if (ligne.aChiffrer) {
+        // Ni prix unitaire, ni montant : il n'y en a pas. Écrire « 0,00 € »
+        // serait annoncer un travail gratuit (26 août 2026).
+        ecrireADroite(ctx, "à chiffrer", xMontant, y, { taille: 9, police: ctx.sansGras });
+      } else {
+        ecrireADroite(ctx, formatMontant(ligne.prixUnitaire, data.devise), xPrix, y, { taille: 9 });
+        ecrireADroite(ctx, formatMontant(ligne.montant, data.devise), xMontant, y, {
+          taille: 9,
+          police: ctx.sansGras,
+        });
+      }
     }
     y -= Math.max(lignesLibelle.length, 1) * 11 + 7;
     trait(ctx, y, 0.7, ctx.teintes.traitClair);

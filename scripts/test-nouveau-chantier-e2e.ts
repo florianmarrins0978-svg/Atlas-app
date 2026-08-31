@@ -83,12 +83,18 @@ async function main() {
   );
 
   // « Comment lui envoyer son devis, tu le mets sous l'adresse. »
+  //
+  // **On vise les CAPSULES, plus l'intitulé** — 30 août 2026. La question est
+  // partie de l'écran pour qu'il tienne dans une page ; elle reste en
+  // `aria-label` sur le groupe. Ce que sa demande fixait, c'est la PLACE du
+  // choix sous l'adresse, pas la présence d'une phrase au-dessus : chercher le
+  // texte, c'était réclamer ce qu'il a fait retirer (`CLAUDE.md` §5 bis).
   const boiteAdresse = await page.locator('input[placeholder="12 rue des Lilas, Nantes"]').boundingBox();
-  const boiteCanal = await page.getByText("Comment lui envoyer son devis").boundingBox();
-  assert.ok(boiteAdresse && boiteCanal, "l'adresse et la question de l'envoi doivent être visibles");
+  const boiteCanal = await page.getByRole("button", { name: "Par SMS" }).boundingBox();
+  assert.ok(boiteAdresse && boiteCanal, "l'adresse et le choix de l'envoi doivent être visibles");
   assert.ok(
     boiteCanal.y > boiteAdresse.y,
-    "« Comment lui envoyer son devis ? » n'est pas sous l'adresse"
+    "le choix du canal d'envoi n'est pas sous l'adresse"
   );
 
   // Un retrait ne tient que par ce qui ne doit plus être là.

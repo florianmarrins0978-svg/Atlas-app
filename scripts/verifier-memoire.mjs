@@ -1,4 +1,4 @@
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync } from "node:fs";
 
 // Vérifie que la mémoire du dépôt ne pointe pas dans le vide.
 //
@@ -169,7 +169,60 @@ const RAPPELS_ATTENDUS = [
       "le rappel sur la validation Google (docs/A-FAIRE.md §8) doit ressortir " +
       "de lui-même le jour où la commercialisation revient sur la table",
   },
+  {
+    fichier: "HANDOVER.md",
+    titre: "## ⏰ IL ATTEND QU'ON LE RELANCE : LA LISTE DES TRAVAUX QU'IL VEND",
+    // Le mot du travail manquant, pas la consigne : c'est lui qui disparaît le
+    // jour où quelqu'un abrège la section sans savoir ce qu'elle tenait.
+    declencheur: "plantation",
+    pourquoi:
+      "il a demandé le 27 août 2026 qu'on le relance sur la liste complète des " +
+      "travaux qu'il vend — trois modules classent encore les prestations sur un " +
+      "vocabulaire qui ignore la plantation et la clôture",
+  },
 ];
+
+RAPPELS_ATTENDUS.push({
+  fichier: "CLAUDE.md",
+  titre: "**LE DOCUMENT DE RETOUR SE FAIT TOUT SEUL, À LA FIN DE CHAQUE LOT.**",
+  // Sa phrase, pas la consigne reformulée : c'est elle qui disparaîtrait si
+  // quelqu'un « allégeait » la section sans savoir ce qu'elle a coûté.
+  declencheur: "sans avoir besoin de te le demander",
+  pourquoi:
+    "il a dû redemander ce document au lot 2, au lot 2B, à M11, au lot 3, le " +
+    "26 août 2026 en colère, puis encore le 30 août — la règle n'a jamais " +
+    "manqué d'être écrite, elle a manqué d'être tenue",
+});
+
+// --- Tout dossier écrit doit être ATTEIGNABLE depuis son index -------------
+//
+// **Payé le 29 août 2026.** Les dossiers 08 et 09 ont vécu deux jours sans
+// figurer dans `docs/pour-chatgpt/README.md`. Un dossier absent de son index
+// n'existe pas pour qui arrive après : la table est le seul endroit qui dise
+// lequel remplace lequel, et le patron y cherche ce qu'il doit retransmettre.
+//
+// Ce contrôle ne juge pas ce qu'un dossier dit — un instantané ne se corrige
+// pas (`CLAUDE.md` §2 bis). Il vérifie seulement qu'aucun ne dort hors de la
+// liste.
+{
+  const dossier = "docs/pour-chatgpt";
+  const index = `${dossier}/README.md`;
+  if (existsSync(index)) {
+    const table = readFileSync(index, "utf8");
+    const ecrits = readdirSync(dossier)
+      .filter((f) => /^\d{2}-.+\.md$/.test(f))
+      .sort();
+    for (const nom of ecrits) {
+      if (!table.includes(nom)) {
+        problemes.push(
+          `${index} — le dossier « ${nom} » n'est dans aucune ligne de la table. ` +
+            "Un dossier hors de son index n'existe pas pour la session suivante, " +
+            "ni pour le patron qui vient y chercher quoi retransmettre."
+        );
+      }
+    }
+  }
+}
 
 for (const rappel of RAPPELS_ATTENDUS) {
   if (!existsSync(rappel.fichier)) continue;

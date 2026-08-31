@@ -3,11 +3,14 @@
 import { revalidatePath } from "next/cache";
 import { chantierDuGeste } from "@/server/ai/tools/chantier-vise";
 import { jourIso } from "@/lib/jour";
+import { montantEcrivable } from "@/lib/montant-ecrivable";
+import { exigerEcran } from "@/server/garde-action";
 import { getCurrentCtx } from "@/server/session-ctx";
 import { preparerDevisDepuisDictee, enregistrerPrecisionsEtReprendre } from "@/server/services/devis-depuis-dictee";
 import {
   ajouterPrestation,
   modifierPrestation,
+  corrigerMesurePrestation,
   supprimerPrestation,
 } from "@/server/repositories/prestations";
 import { ajouterMateriel, modifierMateriel, supprimerMateriel } from "@/server/repositories/materiel";
@@ -56,31 +59,61 @@ import { verifierLimite, LIMITES } from "@/server/rate-limit";
 
 export async function ajouterPrestationAction(chantierId: string, libelle: string) {
   const ctx = await getCurrentCtx();
+  await exigerEcran(ctx, "/chantiers", "ajouter une prestation");
   return ajouterPrestation(ctx, chantierId, libelle);
 }
 
 export async function modifierPrestationAction(id: string, libelle: string) {
   const ctx = await getCurrentCtx();
+  await exigerEcran(ctx, "/chantiers", "modifier une prestation");
   return modifierPrestation(ctx, id, libelle);
+}
+
+/**
+ * Corriger la quantité d'une prestation, sans passer par son texte.
+ *
+ * **Le chemin explicite du §8 du brief du 27 août 2026.** Ce qu'il pose ici
+ * fait foi : aucune extraction future ne l'écrase, et sa valeur tranche quand
+ * le libellé dit autre chose.
+ *
+ * **Aucun écran ne l'appelle encore**, et c'est délibéré : une demande
+ * d'apparence se dessine avant de toucher `src/` (`CLAUDE.md` §3 bis). La
+ * planche est publiée, l'action l'attend, et le comportement est éprouvé
+ * (`scripts/test-correction-humaine-db.ts`).
+ */
+export async function corrigerMesurePrestationAction(
+  id: string,
+  mesure: { quantite: string | null; unite: string | null }
+) {
+  const ctx = await getCurrentCtx();
+  // Ses dix-sept voisines de ce fichier la portent ; celle-ci est née sans, et
+  // c'est `test-actions-gardees-db.ts` qui l'a relevée à la fusion du 30 août
+  // — la première prise du contrôle élargi, sur du code écrit ailleurs.
+  await exigerEcran(ctx, "/chantiers", "corriger la mesure d'une prestation");
+  return corrigerMesurePrestation(ctx, id, mesure);
 }
 
 export async function supprimerPrestationAction(id: string) {
   const ctx = await getCurrentCtx();
+  await exigerEcran(ctx, "/chantiers", "supprimer une prestation");
   return supprimerPrestation(ctx, id);
 }
 
 export async function ajouterMaterielAction(chantierId: string, libelle: string) {
   const ctx = await getCurrentCtx();
+  await exigerEcran(ctx, "/chantiers", "ajouter du matériel");
   return ajouterMateriel(ctx, chantierId, libelle);
 }
 
 export async function modifierMaterielAction(id: string, libelle: string) {
   const ctx = await getCurrentCtx();
+  await exigerEcran(ctx, "/chantiers", "modifier du matériel");
   return modifierMateriel(ctx, id, libelle);
 }
 
 export async function supprimerMaterielAction(id: string) {
   const ctx = await getCurrentCtx();
+  await exigerEcran(ctx, "/chantiers", "supprimer du matériel");
   return supprimerMateriel(ctx, id);
 }
 
@@ -89,11 +122,13 @@ export async function mettreAJourDureeEquipeAction(
   data: { dureePrevue?: string; tailleEquipe?: string }
 ) {
   const ctx = await getCurrentCtx();
+  await exigerEcran(ctx, "/chantiers", "changer la durée ou l'équipe");
   return mettreAJourDureeEquipe(ctx, chantierId, data);
 }
 
 export async function validerInformationsAction(chantierId: string) {
   const ctx = await getCurrentCtx();
+  await exigerEcran(ctx, "/chantiers", "valider les informations");
   return marquerInformationsVerifiees(ctx, chantierId);
 }
 
@@ -103,7 +138,8 @@ export async function validerInformationsAction(chantierId: string) {
 export async function extraireInformationsAction(texte: string): Promise<
   { succes: true; proposition: PropositionExtraction } | { succes: false; erreur: string }
 > {
-  await getCurrentCtx(); // exige une session valide, même si l'extraction elle-même n'est pas scopée entreprise
+  const ctx = await getCurrentCtx();
+  await exigerEcran(ctx, "/chantiers", "analyser un texte");
   const resultat = await extraire(texte);
   if (!resultat.succes) return { succes: false, erreur: resultat.erreur.message };
   return { succes: true, proposition: resultat.proposition };
@@ -117,6 +153,7 @@ export async function appliquerExtractionAction(
   confirmee: { prestations: string[]; materiel: string[]; dureePrevue?: string; tailleEquipe?: string }
 ) {
   const ctx = await getCurrentCtx();
+  await exigerEcran(ctx, "/chantiers", "appliquer une extraction");
   const prestationsCreees = [];
   for (const libelle of confirmee.prestations) {
     if (libelle.trim()) prestationsCreees.push(await ajouterPrestation(ctx, chantierId, libelle.trim()));
@@ -140,6 +177,7 @@ export async function appliquerExtractionAction(
 
 export async function chargerBrouillonAction(chantierId: string) {
   const ctx = await getCurrentCtx();
+  await exigerEcran(ctx, "/chantiers", "ouvrir le brouillon de devis");
   return getBrouillon(ctx, chantierId);
 }
 
@@ -148,6 +186,7 @@ export async function chargerBrouillonAction(chantierId: string) {
 // d'écraser ses propres corrections, après avoir vu le conflit.
 export async function genererBrouillonAction(chantierId: string, remplacer = false) {
   const ctx = await getCurrentCtx();
+  await exigerEcran(ctx, "/chantiers", "engendrer le brouillon de devis");
   const resultat = await genererBrouillon(ctx, chantierId, { remplacer });
 
   // Le conflit ne traverse pas la frontière client tel quel : seul ce qui est
@@ -162,6 +201,7 @@ export async function genererBrouillonAction(chantierId: string, remplacer = fal
 // client ne peut pas déposer une structure arbitraire dans la base.
 export async function enregistrerBrouillonAction(chantierId: string, contenu: unknown) {
   const ctx = await getCurrentCtx();
+  await exigerEcran(ctx, "/chantiers", "enregistrer le brouillon de devis");
   const analyse = PropositionExtractionSchema.safeParse(contenu);
   if (!analyse.success) {
     return { succes: false as const, erreur: "Brouillon invalide." };
@@ -176,6 +216,7 @@ export async function enregistrerBrouillonAction(chantierId: string, contenu: un
 // Idempotent au sens utile : un brouillon déjà confirmé n'est pas réappliqué.
 export async function confirmerBrouillonAction(chantierId: string) {
   const ctx = await getCurrentCtx();
+  await exigerEcran(ctx, "/chantiers", "confirmer le brouillon de devis");
   const resultat = await confirmerBrouillon(ctx, chantierId);
   if (!resultat.succes) return { succes: false as const, erreur: resultat.erreur };
   return { succes: true as const, prestationsCreees: resultat.prestationsCreees, materielCree: resultat.materielCree };
@@ -446,6 +487,37 @@ export async function appliquerPropositionsAction(
             resultats.push({ ...base, statut: "conflit", categorie: "donnee_invalide", message: "Libellé ou montant manquant." });
             break;
           }
+
+          /**
+           * **UN MONTANT VENU DU MODÈLE SE VÉRIFIE AVANT D'ÊTRE ÉCRIT** — lot
+           * de clôture, 29 août 2026.
+           *
+           * Le commentaire ci-dessus affirmait que « le montant côté
+           * proposition n'est utilisé QUE pour les lignes calculées ». C'est
+           * vrai du chiffrage ; **c'était faux de ce chemin-ci** : sans
+           * `tarifId`, `donnees.montant` est ce que le modèle a composé, et il
+           * partait tel quel en base.
+           *
+           * La base refusait le négatif et rien d'autre : ni `NaN`, ni une
+           * chaîne ambiguë, ni 99 999 999,99 €. Et quand elle refusait, elle
+           * rendait « cette modification n'a pas pu être appliquée » — un
+           * message qui envoie chercher une panne là où il s'agit d'un chiffre.
+           *
+           * La borne n'invente aucun plafond métier : elle refuse ce qui n'est
+           * pas un montant, et ce que la colonne ne peut pas contenir.
+           */
+          const verifie = montantEcrivable(montant);
+          if (!verifie.ok) {
+            resultats.push({
+              ...base,
+              statut: "conflit",
+              categorie: "donnee_invalide",
+              message: verifie.raison,
+            });
+            break;
+          }
+          montant = verifie.montant;
+
           // Remédiation (transaction) : un seul appel, une seule transaction —
           // jamais de ligne vide intermédiaire.
           await ajouterLignePrixDirectAction(chantierVise, libelle, montant);
@@ -925,6 +997,7 @@ export async function appliquerPropositionsAction(
  */
 export async function preparerDevisDepuisDicteeAction(chantierId: string, remplacer = false) {
   const ctx = await getCurrentCtx();
+  await exigerEcran(ctx, "/chantiers", "préparer un devis depuis la dictée");
   const resultat = await preparerDevisDepuisDictee(ctx, chantierId, { remplacer });
 
   if (resultat.statut === "prepare") {
@@ -958,6 +1031,7 @@ export async function repondreQuestionsChiffrageAction(
   reponses: { sujet: string; libellePrestation: string; valeur: string; lisible: string }[]
 ) {
   const ctx = await getCurrentCtx();
+  await exigerEcran(ctx, "/chantiers", "répondre aux questions de chiffrage");
   const resultat = await enregistrerPrecisionsEtReprendre(ctx, chantierId, reponses);
 
   if (resultat.statut === "prepare") {

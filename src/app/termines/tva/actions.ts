@@ -1,5 +1,6 @@
 "use server";
 
+import { exigerFacturation } from "@/server/garde-action";
 import { getCurrentCtx } from "@/server/session-ctx";
 import { creerAchatTva, supprimerAchatTva } from "@/server/repositories/achats-tva";
 import { enregistrerObjet } from "@/server/storage";
@@ -56,6 +57,39 @@ export async function ajouterAchatAction(formData: FormData): Promise<ResultatAc
   }
 
   const ctx = await getCurrentCtx();
+  await exigerFacturation(ctx, "enregistrer un achat");
+
+  /**
+   * **UNE CLÉ DE STOCKAGE NE SE CROIT PAS SUR PAROLE** — constat de l'audit
+   * final, 29 août 2026.
+   *
+   * Le parcours est en deux temps : `rangerTicketAction` range la photo et rend
+   * sa clé au navigateur, qui la reposte ici avec le formulaire. Rien ne
+   * vérifiait que cette clé venait bien de cette session, ni même de cette
+   * entreprise — c'était **la seule clé de stockage d'origine client** de tout
+   * le dépôt.
+   *
+   * **Ce que ça coûtait, et ce que ça allait coûter.** Aujourd'hui, aucune route
+   * ne sert la colonne `achats_tva.photo_cle` : poster la clé d'un autre ne
+   * donne donc rien à lire, seulement une ligne qui ment. Mais `TODO.md` prescrit
+   * noir sur blanc d'ajouter les photos de tickets à l'export « Mes données ».
+   * Le jour où cette ligne sera écrite, `/api/mes-donnees` lira la clé et la
+   * servira **sans aucun contrôle d'appartenance** : un artisan téléchargerait
+   * « ses » données et recevrait la photo d'un autre. La fuite est armée
+   * maintenant, et se déclencherait avec un correctif que le dépôt s'est
+   * lui-même prescrit.
+   *
+   * La règle existe déjà, écrite dans `/api/phyto/image/[id]` : « on sert par
+   * IDENTIFIANT, jamais par clé de stockage ». Elle n'avait pas été appliquée
+   * ici. Le refaire entièrement demanderait de rendre un identifiant plutôt
+   * qu'une clé ; en attendant, on vérifie que la clé a bien la forme que le
+   * serveur produit — et le préfixe porte l'entreprise, donc il tranche.
+   */
+  const prefixeAttendu = `entreprises/${ctx.entrepriseId}/tickets/`;
+  if (photoCle && !photoCle.startsWith(prefixeAttendu)) {
+    return { ok: false, raison: "Cette photo de ticket n'est pas reconnue." };
+  }
+
   const ligne = await creerAchatTva(ctx, {
     dateAchat,
     fournisseur,
@@ -71,6 +105,7 @@ export async function ajouterAchatAction(formData: FormData): Promise<ResultatAc
 
 export async function supprimerAchatAction(id: string): Promise<{ ok: boolean }> {
   const ctx = await getCurrentCtx();
+  await exigerFacturation(ctx, "supprimer un achat");
   const ligne = await supprimerAchatTva(ctx, id);
   // `undefined` = la RLS a filtré, ou la ligne était déjà retirée. Dans les
   // deux cas l'écran doit remettre la ligne plutôt que la faire disparaître à
@@ -96,6 +131,7 @@ export type ResultatTicket =
  */
 export async function rangerTicketAction(formData: FormData): Promise<ResultatTicket> {
   const ctx = await getCurrentCtx();
+  await exigerFacturation(ctx, "ranger un ticket de caisse");
   const limite = await verifierLimite(`televersement:${ctx.entrepriseId}`, LIMITES.televersementFichier);
   if (!limite.autorise) return { ok: false, raison: limite.message };
 
@@ -160,6 +196,7 @@ export async function rangerTicketAction(formData: FormData): Promise<ResultatTi
 
 export async function soldeFactureAction(factureId: string, aujourdHui: string): Promise<ResultatPaiement> {
   const ctx = await getCurrentCtx();
+  await exigerFacturation(ctx, "solder une facture");
   const r = await soldera(ctx, factureId, aujourdHui);
   revalidatePath("/termines/tva");
   return r;
@@ -171,6 +208,7 @@ export async function noterPaiementAction(
   montant: string
 ): Promise<ResultatPaiement> {
   const ctx = await getCurrentCtx();
+  await exigerFacturation(ctx, "noter un paiement");
   const r = await noterPaiement(ctx, factureId, { date, montant });
   revalidatePath("/termines/tva");
   return r;
@@ -178,6 +216,7 @@ export async function noterPaiementAction(
 
 export async function retirerPaiementAction(paiementId: string): Promise<void> {
   const ctx = await getCurrentCtx();
+  await exigerFacturation(ctx, "retirer un paiement");
   await retirerPaiement(ctx, paiementId);
   revalidatePath("/termines/tva");
 }

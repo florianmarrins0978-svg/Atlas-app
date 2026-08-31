@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { exigerGestionDevis } from "@/server/garde-action";
 import { getCurrentCtx } from "@/server/session-ctx";
 import { retenirLecon } from "@/server/repositories/lecons-prix";
 import { mettreAJourEntreprise } from "@/server/repositories/entreprises";
@@ -33,6 +34,7 @@ export async function majEmetteurAction(data: {
   iban?: string;
 }) {
   const ctx = await getCurrentCtx();
+  await exigerGestionDevis(ctx, "modifier l'émetteur du devis");
   await mettreAJourEntreprise(ctx, data);
 }
 
@@ -41,11 +43,13 @@ export async function majClientDuDevisAction(
   data: { nom?: string; civilite?: Civilite | null; adresse?: string; telephone?: string; email?: string }
 ) {
   const ctx = await getCurrentCtx();
+  await exigerGestionDevis(ctx, "modifier le client du devis");
   await mettreAJourClient(ctx, clientId, data);
 }
 
 export async function majAdresseChantierAction(chantierId: string, adresse: string) {
   const ctx = await getCurrentCtx();
+  await exigerGestionDevis(ctx, "modifier l'adresse du chantier");
   await mettreAJourAdresseChantier(ctx, chantierId, adresse);
 }
 
@@ -54,6 +58,7 @@ export async function majLigneAction(
   data: { libelle?: string; quantite?: string; prixUnitaire?: string }
 ) {
   const ctx = await getCurrentCtx();
+  await exigerGestionDevis(ctx, "modifier une ligne du devis");
   const ligne = await modifierLignePrix(ctx, id, data);
 
   // **C'est ici que l'agent apprend.** Ce que le patron écrit sur son devis est
@@ -95,6 +100,10 @@ export async function majLigneAction(
     // à l'avance ne serait jamais remplie ; celle-ci se remplit en travaillant.
     try {
       await apprendrePrixGrille(ctx, ligne.chantierId, {
+        // Son identifiant : c'est ce qui permet de savoir quelles prestations
+        // cette ligne vend, donc de lire leurs natures et leurs mesures en
+        // colonnes plutôt que de relire son texte (migration 0069).
+        id: ligne.id,
         libelle: ligne.libelle,
         montant: ligne.montant,
       });
@@ -108,11 +117,13 @@ export async function majLigneAction(
 
 export async function ajouterLigneAction(chantierId: string) {
   const ctx = await getCurrentCtx();
+  await exigerGestionDevis(ctx, "ajouter une ligne au devis");
   return ajouterLignePrix(ctx, chantierId, "", "0.00");
 }
 
 export async function retirerLigneAction(id: string) {
   const ctx = await getCurrentCtx();
+  await exigerGestionDevis(ctx, "retirer une ligne du devis");
   return supprimerLignePrix(ctx, id);
 }
 
@@ -139,6 +150,7 @@ export async function dicterRetouchesDevisAction(chantierId: string, formData: F
 
 
   const ctx = await getCurrentCtx();
+  await exigerGestionDevis(ctx, "dicter des retouches sur le devis");
   const limite = await verifierLimite(`televersement:${ctx.entrepriseId}`, LIMITES.televersementFichier);
   if (!limite.autorise) throw new Error(limite.message);
 
@@ -202,6 +214,7 @@ export async function appliquerRetouchesAction(chantierId: string, changements: 
         break;
       case "ajouter": {
         const ctx = await getCurrentCtx();
+        await exigerGestionDevis(ctx, "appliquer des retouches au devis");
         // **Un ajout sans prix arrive à zéro, et l'écran le dit.** Poser un
         // montant « probable » ici serait inventer un prix sur un document qui
         // part chez un client — le refus le plus ancien du produit.
@@ -254,6 +267,7 @@ export async function majEnTeteDevisAction(
   data: { tauxTva?: string; conditionsPaiement?: string; reductionPourcent?: string | null }
 ) {
   const ctx = await getCurrentCtx();
+  await exigerGestionDevis(ctx, "modifier l'en-tête du devis");
   const devisModifie = await mettreAJourEnTeteDevis(ctx, devisId, data);
   if (devisModifie?.chantierId) revalidatePath(`/chantiers/${devisModifie.chantierId}/export`);
   return devisModifie;

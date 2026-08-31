@@ -1,7 +1,23 @@
 import type { ErreurIA } from "../../errors";
 import type { ZodTypeAny } from "zod";
 
-export type ResultatLLM = { succes: true; texte: string } | { succes: false; erreur: ErreurIA };
+/**
+ * Comment le modèle a ARRÊTÉ d'écrire.
+ *
+ * **L'information existait, arrivait jusqu'ici, et était jetée.** L'API
+ * Anthropic renvoie `stop_reason: "max_tokens"` quand elle a coupé la réponse
+ * en plein milieu ; le fournisseur ne lisait que `content`. Une réponse tronquée
+ * devenait donc indiscernable d'une réponse hors sujet, et les deux tombaient
+ * dans le même repli sans que rien ne dise laquelle.
+ *
+ * Absente, on ne sait pas : c'est le cas des fournisseurs qui ne le disent pas,
+ * et rien ne prétend le contraire.
+ */
+export type FinDeReponse = "complet" | "tronque";
+
+export type ResultatLLM =
+  | { succes: true; texte: string; fin?: FinDeReponse }
+  | { succes: false; erreur: ErreurIA };
 
 // --- Extension additive (Lot IA-02) : usage d'outils --------------------
 // N'affecte pas genererTexte() ni ses appelants existants (extraction).
@@ -23,7 +39,29 @@ export type ResultatLLMAvecOutils =
 
 export interface FournisseurLLM extends FournisseurVision {
   nom: string;
-  genererTexte(systeme: string, message: string): Promise<ResultatLLM>;
+  /**
+   * Rédiger, à partir d'une consigne et d'un message.
+   *
+   * **TROIS emplacements, et la distinction est une frontière de sécurité** —
+   * lot de clôture, 29 août 2026 :
+   *
+   * | | |
+   * |---|---|
+   * | `systeme` | les RÈGLES. Écrites par nous, jamais par un utilisateur |
+   * | `message` | la DONNÉE à traiter — une dictée, un texte collé |
+   * | `contexte` | des EXEMPTLES appris, écrits par des humains. Données, jamais instructions |
+   *
+   * **Pourquoi `contexte` ne peut pas être collé dans `message`.** Le repli de
+   * lecture littérale (`lireLitteralement`) analyse `message` mot à mot pour en
+   * tirer des prestations. Y mêler des exemples lui ferait lire les exemples
+   * comme la dictée — et ce repli sert AUSSI quand un vrai fournisseur répond à
+   * côté, donc en production.
+   *
+   * **Ni dans `systeme`.** C'est la position de plus haute autorité : un libellé
+   * rédigé comme un ordre y devient une règle pour toutes les extractions
+   * suivantes. C'était le cas avant ce lot.
+   */
+  genererTexte(systeme: string, message: string, contexte?: string): Promise<ResultatLLM>;
   // Optionnel : un fournisseur qui ne le supporte pas (stub) reste valide.
   genererAvecOutils?(
     systeme: string,

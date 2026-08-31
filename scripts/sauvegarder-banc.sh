@@ -37,8 +37,34 @@ if [ "${ATLAS_SANS_PGDUMP:-}" = "1" ] || ! command -v pg_dump > /dev/null 2>&1; 
   cd "$CD" && exec node scripts/sauvegarder-banc.mjs
 fi
 
+# ─────────────────────────────────────────────────────────────────────────────
+# **LE CHEMIN SANS SUPERUTILISATEUR — celui de Scaleway.**
+#
+# Un PostgreSQL géré ne donne PAS de superutilisateur. Or `pg_dump` désactive la
+# RLS par défaut et refuse la copie dès qu'une politique s'applique : sur
+# Scaleway, la sauvegarde d'Atlas serait donc tout simplement IMPOSSIBLE.
+#
+# La parade, mesurée le 27 août 2026 et qui ne demande aucun privilège spécial :
+#   1. un rôle dédié `atlas_sauvegarde`, sans superutilisateur ni BYPASSRLS ;
+#   2. une politique de LECTURE posée par le propriétaire des tables :
+#        CREATE POLICY sauvegarde_lit_tout ON <table>
+#          FOR SELECT TO atlas_sauvegarde USING (true);
+#   3. `--enable-row-security`, pour que pg_dump accepte de copier.
+#
+# **ET LA VÉRIFICATION DES COMPTES DEVIENT VITALE.** Dans ce mode, pg_dump
+# n'échoue plus : il copie ce que le rôle voit. Sans la politique de l'étape 2,
+# il rendrait un fichier plausible amputé de 28 % — code 0, bonne taille, pas un
+# mot. C'est `_compter-lignes-sauvegarde.sh` qui l'attrape, et lui seul.
+if [ "${ATLAS_SAUVEGARDE_RLS:-}" = "1" ]; then
+  OPTIONS_DUMP=(--enable-row-security)
+  echo "→ Mode sans superutilisateur (--enable-row-security)."
+  echo "   Les comptes seront confrontés à la base : c'est ce mode qui l'exige."
+else
+  OPTIONS_DUMP=()
+fi
+
 echo "→ Copie de la base en cours…"
-if ! pg_dump "$URL" > "$FICHIER" 2> /tmp/sauvegarde-banc.err; then
+if ! pg_dump "${OPTIONS_DUMP[@]}" "$URL" > "$FICHIER" 2> /tmp/sauvegarde-banc.err; then
   echo "❌ La copie a échoué. Ce que PostgreSQL a répondu :"
   sed 's/^/   /' /tmp/sauvegarde-banc.err | head -5
   rm -f "$FICHIER"
@@ -54,12 +80,77 @@ if [ "$TAILLE" -lt 1000 ]; then
   exit 1
 fi
 
+# ─────────────────────────────────────────────────────────────────────────────
+# **ET LA TAILLE NE SUFFIT PAS. Mesuré le 27 août 2026.**
+#
+# Une sauvegarde prise sous un rôle qui ne traverse pas la RLS s'arrête sur
+# `ERROR: query would be affected by row-level security policy` — mais elle a
+# DÉJÀ écrit son en-tête : 867 octets, un `COPY public.clients (…) FROM stdin;`
+# parfaitement crédible, et pas une ligne de données. Le seuil de 1 000 octets
+# est passé de justesse ; le schéma seul d'Atlas, lui, le dépasse largement.
+#
+# Autrement dit : le contrôle de taille attrape le fichier vide, et laisse
+# passer le fichier PLAUSIBLE ET VIDE DE DONNÉES — celui qu'on découvre le jour
+# où on en a besoin.
+#
+# On compte donc les lignes de données. `COPY … FROM stdin;` est suivi des
+# lignes, puis d'un `\.` seul sur sa ligne : ce qui est entre les deux, ce sont
+# les données. Zéro partout, c'est une sauvegarde qui ne sauvegarde rien.
+LIGNES_DONNEES=$(awk '
+  /^COPY .* FROM stdin;$/ { dedans = 1; next }
+  /^\\\.$/             { dedans = 0; next }
+  dedans                  { n++ }
+  END                     { print n + 0 }
+' "$FICHIER")
+
+if [ "$LIGNES_DONNEES" -eq 0 ]; then
+  echo "❌ La sauvegarde ne contient AUCUNE ligne de données."
+  echo
+  echo "   Le fichier fait pourtant $TAILLE octets : c'est le SCHÉMA, sans les données."
+  echo
+  # **On n'accuse PAS le rôle ici, et c'est réfléchi.** Un rôle qui ne traverse
+  # pas la RLS fait ÉCHOUER pg_dump (code 1), ce qui est attrapé plus haut. Si
+  # l'on arrive jusqu'ici, c'est que pg_dump a réussi : le rôle était bon, et
+  # dire le contraire enverrait chercher au mauvais endroit. La première version
+  # de ce message faisait exactement cette faute (27 août 2026).
+  echo "   La copie a RÉUSSI : le rôle employé était donc le bon. Il reste"
+  echo "   deux causes, et une seule est grave :"
+  echo "     · la base est réellement vide — normal sur une installation neuve ;"
+  echo "     · la copie n'a pris que le schéma (option --schema-only quelque part)."
+  echo
+  echo "   Dans les deux cas, ce fichier ne protège de rien : il est effacé"
+  echo "   plutôt que d'être gardé sous un nom qui promet une sauvegarde."
+  rm -f "$FICHIER"
+  exit 1
+fi
+
+# **ET ON CONFRONTE AU VIVANT, TABLE PAR TABLE.**
+#
+# Le compte global ci-dessus attrape le fichier VIDE. Il n'attrape pas le
+# fichier AMPUTÉ, et c'est le cas dangereux — mesuré le 27 août 2026 :
+# `pg_dump --enable-row-security` sous un rôle qui ne voit qu'une partie des
+# lignes rend un fichier de 223 Ko, code de sortie 0, **136 lignes sur 189**.
+# Bonne taille, bon code, 28 % des données en moins, et pas un mot.
+#
+# Le seul contrôle qui le voit compare chaque table à la base vivante.
+if ! bash "$CD/scripts/_compter-lignes-sauvegarde.sh" "$FICHIER" "$URL"; then
+  echo
+  echo "   Le fichier est effacé plutôt que gardé sous un nom qui promet"
+  echo "   une sauvegarde."
+  rm -f "$FICHIER"
+  exit 1
+fi
+
 echo
 echo "  ─────────────────────────────────────────────────────────────"
 echo "   Sauvegarde faite : $(basename "$FICHIER")"
-echo "   $(du -h "$FICHIER" | cut -f1) — elle est à la racine, dans la liste de gauche."
+echo "   $(du -h "$FICHIER" | cut -f1), $LIGNES_DONNEES lignes de données, confrontées à la base."
+echo "   Elle est à la racine, dans la liste de gauche."
 echo
 echo "   Pour l'emporter : appui long sur le fichier → « Télécharger »."
 echo "   Tant qu'elle n'est pas sur votre appareil, elle disparaît"
 echo "   avec l'espace de travail — elle vit au même endroit."
+echo
+echo "   Pour PROUVER qu'elle vaut quelque chose, sans toucher à la base :"
+echo "     npx tsx scripts/eprouver-restauration.ts $(basename "$FICHIER")"
 echo "  ─────────────────────────────────────────────────────────────"

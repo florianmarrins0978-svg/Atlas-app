@@ -1,0 +1,212 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas — Le planning du salarié passe en lecture seule</title>
+<style>
+  :root{
+    --ground:#f5f3ee; --surface:#faf9f5; --raised:#ece9e1;
+    --ink:#1c1c1a; --ink-soft:#4a4a44; --muted:#8a8578;
+    --accent:#2f3b2f; --alert:#b5562a; --line:rgba(28,28,26,0.13);
+    --serif:Georgia,'Times New Roman',serif;
+    --sans:system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --ground:#161815; --surface:#1d201c; --raised:#252924;
+      --ink:#eae7df; --ink-soft:#c2bdb1; --muted:#948f83;
+      --accent:#9fbd82; --alert:#e0885a; --line:rgba(234,231,223,0.17);
+    }
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--sans);
+    line-height:1.65;}
+  main{max-width:44rem;margin:0 auto;padding:2.5rem 1.2rem 5rem;}
+  h1,h2,h3,h4{font-family:var(--serif);font-weight:600;line-height:1.2;
+    text-wrap:balance;margin:2rem 0 0.6rem;scroll-margin-top:1rem;}
+  h1{font-size:2rem;margin-top:0;}
+  h2{font-size:1.5rem;padding-top:1.2rem;border-top:1px solid var(--line);}
+  h3{font-size:1.12rem;}
+  h4{font-size:1rem;}
+  p{margin:0 0 0.9rem;}
+  a{color:var(--accent);text-underline-offset:3px;}
+  a:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:3px;}
+  ul,ol{margin:0 0 1rem;padding-left:1.3rem;}
+  li{margin-bottom:0.4rem;}
+  li::marker{color:var(--muted);}
+  /* Le sommaire : des cibles larges, confortables au doigt sur téléphone. */
+  ol li a{display:inline-block;padding:0.15rem 0;}
+  blockquote{margin:1rem 0;padding:0.85rem 1.05rem;background:var(--raised);
+    border-left:3px solid var(--accent);border-radius:0 10px 10px 0;color:var(--ink-soft);}
+  code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:0.87em;
+    background:var(--raised);padding:0.1rem 0.35rem;border-radius:5px;}
+  hr{border:0;border-top:1px solid var(--line);margin:2rem 0;}
+  .tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px;
+    background:var(--surface);margin:0 0 1.2rem;}
+  table{border-collapse:collapse;width:100%;font-size:0.92rem;min-width:22rem;}
+  th,td{text-align:left;padding:0.55rem 0.8rem;border-bottom:1px solid var(--line);
+    vertical-align:top;}
+  th{font-size:0.72rem;letter-spacing:0.08em;text-transform:uppercase;
+    color:var(--muted);white-space:nowrap;}
+  tr:last-child td{border-bottom:none;}
+  .retour{display:inline-block;font-size:0.76rem;color:var(--muted);
+    text-decoration:none;margin:-0.3rem 0 1rem;}
+  .retour:hover{color:var(--accent);text-decoration:underline;}
+</style>
+</head>
+<body>
+<main>
+<h1 id="le-planning-du-salarié-passe-en-lecture-seule">Le planning du salarié passe en lecture seule</h1>
+<p><em>30 août 2026. Décision du patron, appliquée au serveur puis à l'écran.</em></p>
+<hr>
+<h2 id="1-ce-qui-a-été-décidé-et-ce-que-cétait-avant">1. Ce qui a été décidé, et ce que c'était avant</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<blockquote><strong>« Un salarié peut uniquement CONSULTER son planning. Il ne doit pouvoir effectuer AUCUNE modification depuis le planning. »</strong></blockquote>
+<p>Cette phrase tranche la seule question que le lot de clôture avait laissée ouverte, et elle la tranche <strong>plus largement</strong> qu'elle n'était posée : la question était « peut-il supprimer un chantier ? », la réponse ferme les six.</p>
+<p><strong>Ce qu'un salarié pouvait faire jusqu'ici</strong>, depuis son écran, sans rien forcer :</p>
+<div class="tablewrap"><table><thead><tr>
+<th>Le geste</th>
+<th>Ce qu'il coûtait</th>
+</tr></thead><tbody>
+<tr>
+<td>supprimer un chantier</td>
+<td>suppression douce — mais <strong>aucun écran ne la restaure</strong></td>
+</tr>
+<tr>
+<td>le poser sur un jour</td>
+<td>une équipe envoyée où personne ne l'attend</td>
+</tr>
+<tr>
+<td>le déplacer dans la journée</td>
+<td>un client prévenu pour le matin, l'équipe l'après-midi</td>
+</tr>
+<tr>
+<td>le retirer du planning</td>
+<td>le chantier disparaît de la semaine de tout le monde</td>
+</tr>
+<tr>
+<td>réécrire le pense-bête</td>
+<td>« penser à prendre le broyeur » effacé</td>
+</tr>
+<tr>
+<td>cocher une autre équipe</td>
+<td>l'agenda extérieur du patron réécrit avec</td>
+</tr>
+</tbody></table></div>
+<p>Les sept actions du planning vérifiaient <strong>quel</strong> chantier — le lot précédent avait posé ce tamis. Aucune ne vérifiait <strong>si</strong> la personne avait le droit d'écrire.</p>
+<hr>
+<h2 id="2-la-sécurité-est-au-serveur-pas-dans-lécran">2. La sécurité est au serveur, pas dans l'écran</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p>Sa consigne, mot pour mot : <em>« Ne te contente surtout pas de retirer ou masquer les boutons dans l'interface. »</em></p>
+<p><strong>Une règle, un seul endroit.</strong> <code>peutModifierLePlanning</code> dans <code>src/lib/acces-roles.ts</code> — le fichier où toutes les questions de rôle se tranchent déjà.</p>
+<p><strong>Une garde, en tête de chaque action qui écrit.</strong> <code>exigerEcritureSurLePlanning</code> dans <code>src/server/garde-action.ts</code>, appelée par les six actions de <code>src/app/planning/actions.ts</code>.</p>
+<p><strong>Elle passe AVANT le contrôle de portée</strong>, et ce n'est pas un détail : la portée interroge la base — l'équipe de la personne, puis les chantiers de cette équipe. Un salarié doit être refusé sans qu'on paie ces deux requêtes, et surtout sans qu'un chantier hors portée réponde plus lentement qu'un chantier de son équipe. Ce délai-là se mesure, et il dirait à qui cherche lesquels sont les siens.</p>
+<h3 id="deux-choses-qui-nont-pas-bougé-parce-quil-la-demandé">Deux choses qui n'ont PAS bougé, parce qu'il l'a demandé</h3>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th></th>
+</tr></thead><tbody>
+<tr>
+<td><strong>la portée de lecture</strong></td>
+<td>il voit exactement ce qu'il voyait — tous les chantiers, ou ceux de son équipe si le patron l'a resserré</td>
+</tr>
+<tr>
+<td><strong>sa feuille de chantier</strong></td>
+<td>le devis sans un seul prix, son unique document, reste ouverte</td>
+</tr>
+</tbody></table></div>
+<p>Et le <strong>patron</strong> comme le <strong>commercial</strong> gardent exactement leurs droits. C'est éprouvé, pas supposé : une suite le vérifie geste par geste — sans elle, on serait passé au vert en fermant la porte à tout le monde.</p>
+<h3 id="ce-que-lécran-fait-et-ce-quil-ne-fait-pas">Ce que l'écran fait, et ce qu'il ne fait pas</h3>
+<p>L'écran ne protège rien. Il évite seulement de proposer un geste qui sera refusé — un bouton qui répond « action indisponible » se lit comme une panne, et c'est le patron qu'on appellerait un lundi matin.</p>
+<p>Disparaissent pour un salarié : la pastille d'équipe cochable, « Déplacer », « Retirer », « Ajouter un chantier », la section « Sans date », le tiroir d'annulation, et le cadre de saisie de la note.</p>
+<p><strong>La note, elle, se lit</strong> — c'est la raison même pour laquelle elle existe (<em>« elle peut rester là, car les salariés auront accès au planning »</em>, 23 août). Un cadre grisé aurait été le mauvais choix : il se touche, il ne répond pas, et l'on croit à une panne.</p>
+<hr>
+<h2 id="3-ce-qui-prouve-que-ça-tient">3. Ce qui prouve que ça tient</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<h3 id="la-requête-fabriquée--lessai-qui-compte">La requête fabriquée — l'essai qui compte</h3>
+<p><code>scripts/test-salarie-planning-lecture-seule-e2e.ts</code> ne clique sur aucun bouton absent. Il fait ce que le patron décrit :</p>
+<ol>
+<li>le patron écrit une note depuis son planning. La suite <strong>intercepte</strong> l'appel au vol : son adresse, son identifiant d'action serveur, son corps ;</li>
+<li>elle rejoue <strong>exactement</strong> cette requête avec le cookie du salarié, sur un chantier dont il connaît l'identifiant ;</li>
+<li>elle relit la base.</li>
+</ol>
+<p>L'identifiant de l'action est lu au vol et jamais écrit en dur : il est fabriqué à la compilation, et le figer ferait rougir la suite au prochain build sur une fausse alerte.</p>
+<p><strong>Et l'inverse est éprouvé aussi</strong> : la même requête, rejouée par le patron, écrit pour de bon. Sans cette moitié, on serait vert en ayant rendu le pense-bête inutilisable pour tout le monde — un refus qui serait une panne, pas une garde.</p>
+<h3 id="lessai-négatif--la-garde-retirée-puis-rendue">L'essai négatif : la garde retirée, puis rendue</h3>
+<p>Il l'a demandé, et il a eu raison de le demander.</p>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th></th>
+</tr></thead><tbody>
+<tr>
+<td>garde retirée de l'action du pense-bête</td>
+<td><strong>le salarié écrit — réponse 200.</strong> Le contrôle rougit, et son message nomme le défaut</td>
+</tr>
+<tr>
+<td>garde rétablie</td>
+<td>vert, et le fichier rendu à l'octet près</td>
+</tr>
+</tbody></table></div>
+<p>Ce rouge-là dit ce qu'aucune assertion ne dirait : <strong>avant ce lot, il le pouvait pour de bon.</strong></p>
+<p>Un second essai négatif vit dans la suite base, et celui-là <strong>ne touche à aucun fichier</strong> : il vérifie que la garde d'avant — celle de la portée — laisse toujours passer le salarié. Si elle se mettait un jour à refuser, le contrôle principal deviendrait vert pour la mauvaise raison. C'est le faux vert le plus dangereux, celui qui rassure.</p>
+<h3 id="et-lécran-regardé">Et l'écran, regardé</h3>
+<p>Deux captures dans <code>artifacts/screenshots/salarie-planning-lecture-seule/</code> — la sienne et celle du patron, côte à côte. Quatre défauts réels de ce dépôt sont sortis d'une image regardée et d'aucun test vert : l'écran du salarié devait rester un écran, pas une page trouée. Il l'est.</p>
+<hr>
+<h2 id="4-la-vérification-ciblée--y-avait-il-une-seconde-porte">4. La vérification ciblée : y avait-il une seconde porte</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p>Oui. <strong>Une, et elle était pire que celle qu'on fermait.</strong></p>
+<p><code>src/app/chantiers/[id]/photos-actions.ts</code> ne portait <strong>aucune</strong> garde. Un salarié pouvait ajouter une photo à n'importe quel chantier de l'entreprise, et en <strong>supprimer</strong> n'importe laquelle — cette fois pour de bon : un effacement en base, pas une corbeille.</p>
+<p><strong>Pourquoi personne ne l'avait vu.</strong> Le contrôle du lot précédent lisait deux listes de fichiers <strong>écrites à la main</strong>, et toutes deux ne nommaient que des <code>actions.ts</code>. Ce fichier-là s'appelle <code>photos-actions.ts</code>. La suite était verte : elle ne mentait pas, elle ne regardait pas.</p>
+<p><strong>Ce qui a été corrigé, et ça vaut plus que le correctif.</strong> Le contrôle relève désormais <strong>tout</strong> fichier « use server » du dépôt — trente-six aujourd'hui — et ce qui n'a pas de garde doit s'expliquer <strong>par écrit</strong>, dans une table d'exemptions où chaque entrée porte sa raison. Trois familles y sont admises, et aucune quatrième : ce qui s'appelle avant la connexion, ce qui est public par jeton, et ce qui n'écrit que sur la personne elle-même.</p>
+<p><strong>Deux fausses alertes, corrigées dans le contrôle et non dans le produit.</strong> Les six actions de la fiche paysage et les trois du vocabulaire étaient dénoncées comme nues alors qu'elles portent des gardes <strong>plus strictes</strong> — <code>estProprietaire</code> par un aide local, <code>exigerEditeur</code>. Leur ajouter une seconde garde aurait mis deux règles pour une porte, et c'est exactement ce que le dépôt interdit. Le contrôle suit désormais un niveau d'indirection ; un seul, délibérément — un contrôle qui suit les imports finit par tout accepter.</p>
+<p><strong>Les routes d'API ont été passées en revue</strong> : la seule qui écrit et qui n'est pas l'authentification ou la purge est celle des notes vocales, et elle est fermée au salarié par la garde des routes. Aucune autre porte d'écriture.</p>
+<hr>
+<h2 id="5-ce-qui-reste-ouvert">5. Ce qui reste ouvert</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><strong>Rien sur ce sujet.</strong> La décision est appliquée, éprouvée, et le point est barré dans <code>TODO.md</code>.</p>
+<p>Deux choses, qui ne dépendent pas de ce lot :</p>
+<ul>
+<li><strong>l'infrastructure</strong> — brancher le planificateur de purge et poser la sonde, tout est écrit pas à pas dans <code>docs/DEPLOIEMENT-PURGE.md</code> ;</li>
+<li>~~<strong>une question pour lui</strong> : le <strong>commercial</strong> garde-t-il le droit d'écrire sur le planning ?~~ <strong>TRANCHÉE le 30 août 2026, après la livraison du lot : oui.</strong> Le droit est donc confirmé, et non plus seulement laissé en place faute d'avoir été examiné — la nuance est écrite dans <code>peutModifierLePlanning</code> et dans <code>ARCHITECTURE.md</code> §208, pour qu'un prochain lot de sécurité ne le resserre pas « par prudence ». Le resserrer — poser sans supprimer, par exemple — demanderait une seconde décision de sa part.</li>
+</ul>
+<hr>
+<h2 id="les-chiffres">Les chiffres</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th></th>
+</tr></thead><tbody>
+<tr>
+<td><strong>types</strong></td>
+<td>0 erreur</td>
+</tr>
+<tr>
+<td><strong>lint</strong></td>
+<td>0 erreur</td>
+</tr>
+<tr>
+<td><strong>mémoire du dépôt</strong></td>
+<td>cohérente, 8 fichiers vérifiés</td>
+</tr>
+<tr>
+<td><strong>suites base</strong></td>
+<td><strong>267 / 267</strong></td>
+</tr>
+<tr>
+<td><strong>suites navigateur</strong></td>
+<td><strong>117 / 117</strong></td>
+</tr>
+<tr>
+<td><strong>connexion derrière un proxy</strong></td>
+<td>réussie, dans un vrai navigateur, sous une origine étrangère</td>
+</tr>
+</tbody></table></div>
+<p><strong>Batterie complète au vert.</strong></p>
+<p>Deux suites neuves : <code>test-salarie-planning-lecture-seule-db.ts</code> (18 contrôles) et <code>test-salarie-planning-lecture-seule-e2e.ts</code> (6 contrôles, dont la requête forgée). Une réécrite : <code>test-actions-gardees-db.ts</code>, qui relève désormais les 36 fichiers « use server » du dépôt au lieu de deux listes manuelles.</p>
+<h3 id="ce-qui-a-été-trouvé-en-cours-de-route-et-corrigé">Ce qui a été trouvé en cours de route, et corrigé</h3>
+<p><strong>La batterie a fait rougir mon propre écran.</strong> La pastille d'équipe apparaît à deux endroits ; je n'en avais traité qu'un. Le contrôle « aucune commande de modification » l'a dénoncé — mais seulement en batterie, parce que la suite lancée seule tournait sur une entreprise <strong>sans salarié</strong>, où cette pastille ne se dessine pas. Elle mesurait zéro et passait au vert.</p>
+<p>Corrigé des deux côtés : la pastille passe par une seule pièce qui connaît le droit d'écriture, et la suite pose maintenant son décor — deux salariés, un coché sur le chantier — puis <strong>vérifie que le décor a pris</strong> avant de conclure.</p>
+</main>
+</body>
+</html>

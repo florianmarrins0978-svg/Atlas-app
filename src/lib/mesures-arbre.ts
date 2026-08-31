@@ -25,6 +25,48 @@ const DIAMETRE = [
   // « centimètres » en toutes lettres autant que « cm » : une dictée dit
   // « quatre-vingt-dix centimètres de diamètre », pas « 90 cm ».
   /(\d{1,3})\s*(?:cm|centim[èe]tres?)\s*de\s*diam[èe]tre/i,
+
+  // ─── DEUX TOURNURES DE MÉTIER, et deux seulement ────────────────────────
+  //
+  // **Sa convention du 31 août 2026 :** *« quand une mesure en centimètres est
+  // donnée pour une souche ou un arbre dans certaines formulations métier,
+  // elle doit être interprétée comme un diamètre. »*
+  //
+  //   « dessouchage de deux souches de 60 cm »   → 60 cm de diamètre
+  //   « un chêne de 60 cm au pied »              → 60 cm de diamètre
+  //
+  // Sur un chantier, personne ne dit « une souche de soixante centimètres de
+  // diamètre » : on dit « une souche de soixante ». Exiger le mot « diamètre »
+  // revenait à reposer une question à laquelle il venait de répondre.
+  //
+  // **Et il a posé la borne lui-même :** *« ne généralise pas aveuglément
+  // toute mesure en cm trouvée dans une phrase. »* Ces deux motifs-ci sont donc
+  // ancrés — l'un sur le mot « souche », l'autre sur « au pied ». Une mesure en
+  // centimètres qui flotte ailleurs dans la phrase n'est toujours pas un
+  // diamètre.
+  //
+  // **Le refus explicite compte autant que la lecture.** « 60 cm de
+  // circonférence au pied » ne devient PAS un diamètre : le tour d'un tronc
+  // fait π fois son diamètre, et confondre les deux triplerait la case de sa
+  // grille. Sa règle : *« si le contexte indique clairement une autre mesure,
+  // respecte ce qui est dit. »*
+  /souches?\s+(?:de\s+)?(\d{1,3})\s*(?:cm|centim[èe]tres?)(?!\s*de\s*(?:circonf|haut|long|large))/i,
+  /(\d{1,3})\s*(?:cm|centim[èe]tres?)\s+au\s+pied/i,
+
+  // **L'UNITÉ EST FACULTATIVE dans ces deux contextes** — sa précision du
+  // 31 août au soir : *« quand je dis "une souche de 60", cela signifie une
+  // souche de 60 cm de diamètre. »* Il ne prononce pas « centimètres », et
+  // exiger le mot revenait à jeter la mesure qu'il venait de donner.
+  //
+  // **Trois refus rendent la lecture sûre, et ils sont tous dans le motif :**
+  //
+  //   1. une AUTRE unité — « une souche de 2 m » n'est pas 2 cm de diamètre ;
+  //   2. une autre MESURE nommée — circonférence, hauteur, longueur, largeur ;
+  //   3. la QUANTITÉ — « deux souches » s'écrit « 2 souches », et le nombre est
+  //      AVANT le mot. Le motif l'exige APRÈS : « deux souches » ne donne donc
+  //      aucun diamètre, ce qui est exactement ce qu'il demande.
+  /souches?\s+de\s+(\d{1,3})\b(?!\s*(?:m|m[èe]tres?|mm|km|ml|t|tonnes?)\b)(?!\s*(?:cm|centim[èe]tres?)?\s*de\s*(?:circonf|haut|long|large|p[ée]rim))/i,
+  /\b(\d{1,3})\b(?!\s*(?:m|m[èe]tres?|mm|km|ml|t|tonnes?)\b)(?!\s*(?:cm|centim[èe]tres?)?\s*de\s*(?:circonf|haut|long|large|p[ée]rim))\s*(?:cm|centim[èe]tres?)?\s+au\s+pied/i,
 ];
 
 /**
@@ -113,7 +155,15 @@ const SUITE_DE_NOMBRES = new RegExp(
   "gi"
 );
 
-function enChiffres(texte: string): string {
+/**
+ * Les nombres écrits en toutes lettres, remplacés par leurs chiffres.
+ *
+ * **Exportée pour `libelle-client.ts`**, qui doit reconnaître « deux souches »
+ * comme la quantité 2 déjà rangée en colonne. Recopier là-bas le vocabulaire
+ * des mots-nombres en ferait une seconde source, que le §3 de `CLAUDE.md`
+ * interdit : deux listes finissent toujours par diverger.
+ */
+export function enChiffres(texte: string): string {
   return texte.replace(SUITE_DE_NOMBRES, (groupe) => {
     const valeur = valeurDesMots(groupe.toLowerCase().split(/[\s-]+/));
     return valeur === null ? groupe : String(valeur);

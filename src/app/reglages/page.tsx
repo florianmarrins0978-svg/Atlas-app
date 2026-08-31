@@ -55,15 +55,22 @@ export default async function ReglagesPage() {
         {/* **Un écran court dit pourquoi il est court.** Sans cette phrase, le
             salarié lit une application amputée et va demander au patron de
             « lui ouvrir les droits ». Elle était sur la planche du 14 août, et
-            l'oublier en codant l'aurait rendue introuvable. */}
+            l'oublier en codant l'aurait rendue introuvable.
+
+            **Elle a perdu « vous voyez le planning et vos chantiers » le
+            30 août 2026, et c'est une correction.** Écrite pour le salarié,
+            elle est devenue fausse le jour où le rôle « Facturation » est né —
+            lui voit les clients, les devis et les factures, pas des chantiers
+            au planning. Énumérer par rôle aurait fait une seconde liste des
+            droits, qui vieillit (`CLAUDE.md` §3) ; ce qui reste est vrai des
+            trois, et plus court, ce qu'il demande. */}
         {role !== "proprietaire" && (
           <p
             className="mx-[26px] mt-[30px] border-t pt-[18px] text-[12px] leading-[1.75]"
             style={{ borderColor: colors.line, color: colors.muted }}
           >
-            Rien de l&apos;entreprise ici, et ce n&apos;est pas un écran amputé : vous voyez le
-            planning et vos chantiers. Les tarifs, les coordonnées bancaires et les documents
-            appartiennent au patron.
+            Rien de l&apos;entreprise ici, et ce n&apos;est pas un écran amputé : les tarifs, les
+            coordonnées bancaires et les documents appartiennent au patron.
           </p>
         )}
 

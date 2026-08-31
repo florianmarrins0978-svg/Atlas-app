@@ -185,14 +185,36 @@ async function main() {
 
   // === Bug 6 : erreurs avalées ===
 
-  await test("Bug 6 — une donnée invalide (montant non numérique) est catégorisée 'technique'", async () => {
+  await test("Bug 6 — une donnée invalide (montant non numérique) est catégorisée 'donnee_invalide'", async () => {
     const chantier = await chantiersRepo.creerChantier(A, { nom: "Chantier montant invalide" });
     const [enregistree] = await enregistrerPropositions(A, chantier.id, [
       { type: "ajouter_ligne_prix", description: "x", donnees: { libelle: "Ligne invalide", montant: "pas-un-nombre" } },
     ]);
     const { resultats } = await appliquerPropositionsAction(chantier.id, [enregistree.id]);
     assert.equal(resultats[0].statut, "conflit");
-    assert.equal(resultats[0].categorie, "technique");
+    /**
+     * **La catégorie a CHANGÉ, et c'est une amélioration** — lot de clôture,
+     * 29 août 2026.
+     *
+     * Auparavant, « pas-un-nombre » descendait jusqu'à PostgreSQL, qui levait,
+     * et l'erreur était rattrapée en `technique`. Ce contrôle figeait ce
+     * comportement — or `technique` veut dire « Atlas est en panne », et il
+     * envoyait chercher une panne là où il s'agissait d'un chiffre illisible.
+     *
+     * `montantEcrivable` refuse désormais avant d'écrire, et la catégorie dit
+     * la vérité : la donnée est invalide. C'était d'ailleurs l'objet du Bug 6 —
+     * « erreurs avalées » : une erreur mal classée est une erreur à moitié
+     * avalée.
+     *
+     * L'assertion suit la RÈGLE, pas l'ancien moyen (`CLAUDE.md` §5 bis).
+     */
+    assert.equal(resultats[0].categorie, "donnee_invalide");
+    // Et le message NOMME le montant en cause, plutôt que d'accuser le service.
+    assert.match(
+      String(resultats[0].message ?? ""),
+      /pas-un-nombre/,
+      "le refus ne dit pas quel montant pose problème"
+    );
   });
 
   await test("Bug 6 — un conflit métier légitime est catégorisé différemment d'une panne technique", async () => {

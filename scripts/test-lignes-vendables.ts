@@ -20,6 +20,22 @@ import { lignesVendables, repartir } from "../src/lib/lignes-vendables";
 //   3. **aucun point-virgule**, nulle part ;
 //   4. le billonnage ne crée pas de quatrième ligne ;
 //   5. la répartition charge la ligne détachable au lieu de la brader.
+//
+// ─── Ce qui a changé le 27 août 2026, et pourquoi c'est écrit ici ───────────
+//
+// La clé de la ligne principale s'appelait `"principal"`. Ce n'était pas un
+// nom : c'était une CASE, celle qui ramassait tout ce qu'aucune expression
+// régulière ne reconnaissait — la tonte, la plantation, le désherbage. Une
+// tonte de 1 200 m² arrivait donc sur la ligne du démontage d'un érable, et le
+// montant de cette ligne partait dans la case d'abattage de sa grille.
+//
+// La clé porte désormais la NATURE de ce qui est vendu (`"abattage"`), et le
+// rôle de « ligne qui absorbe le solde » vit dans un champ à part
+// (`principal: true`). Les assertions ci-dessous ont été mises à jour pour
+// cette raison, et pour elle seule : **aucune règle métier n'a bougé**, le
+// découpage rend exactement les mêmes lignes, avec les mêmes membres et la même
+// détachabilité. C'est le brief du patron du 27 août, §9 : « supprimer le
+// fourre-tout qui a créé le bug ».
 
 let echecs = 0;
 function cas(nom: string, verifier: () => void): void {
@@ -151,7 +167,8 @@ cas("son devis du 5 août compte bien TROIS lignes", () => {
     3,
     `${lignes.length} ligne(s) : ${lignes.map((l) => l.libelle).join(" | ")}`
   );
-  assert.deepEqual(lignes.map((l) => l.cle), ["principal", "haie", "fendage"]);
+  assert.deepEqual(lignes.map((l) => l.cle), ["abattage", "haie", "fendage"]);
+  assert.equal(lignes.find((l) => l.principal)?.cle, "abattage", "l'abattage absorbe le solde");
 });
 
 cas("la haie ne se mélange pas avec l'arbre", () => {
@@ -159,7 +176,7 @@ cas("la haie ne se mélange pas avec l'arbre", () => {
   const haie = lignes.find((l) => l.cle === "haie")!;
   assert.deepEqual(haie.membres, ["Taille de haie de laurier"]);
   assert.equal(haie.detachable, true, "un client peut commander sa haie seule");
-  const principale = lignes.find((l) => l.cle === "principal")!;
+  const principale = lignes.find((l) => l.principal)!;
   assert.ok(!/haie/i.test(principale.libelle), "la haie est restée collée au chêne");
 });
 
@@ -192,11 +209,11 @@ const DICTEE_COMPLETE_2 = [
 
 cas("cinq lignes : le chantier, les grumes, la fente, la souche", () => {
   const { lignes } = lignesVendables(DICTEE_COMPLETE_2);
-  assert.deepEqual(lignes.map((l) => l.cle), ["principal", "grumes", "fendage", "dessouchage"]);
+  assert.deepEqual(lignes.map((l) => l.cle), ["abattage", "grumes", "fendage", "dessouchage"]);
 });
 
 cas("l'évacuation reste avec l'abattage — il ne l'a PAS détachée", () => {
-  const principale = lignesVendables(DICTEE_COMPLETE_2).lignes.find((l) => l.cle === "principal")!;
+  const principale = lignesVendables(DICTEE_COMPLETE_2).lignes.find((l) => l.principal)!;
   assert.deepEqual(principale.membres, [
     "Abattage d'un chêne mort",
     "Broyage des branches",
@@ -238,6 +255,71 @@ cas("« enlèvement des grumes et dessouchage » ne compte qu'une fois", () => {
     1,
     `la prestation apparaît ${membres.length} fois : ${membres.join(" | ")}`
   );
+});
+
+console.log("\n=== Ce que le produit ne sait pas nommer garde son identité ===");
+
+// **Le défaut du 26 août 2026, tenu ici par un contrôle.** La tonte n'était
+// dans aucun vocabulaire ; elle tombait dans la case qui ramasse tout, sur la
+// ligne d'un démontage d'érable. Son prix, puis son apprentissage, partaient
+// dans la grille d'abattage.
+
+cas("une tonte ne partage pas la ligne d'un démontage", () => {
+  const { lignes } = lignesVendables(["Tonte de la pelouse (1200 m²)", "Érable — démontage en rétention"]);
+  assert.equal(lignes.length, 2, `${lignes.length} ligne(s) : ${lignes.map((l) => l.libelle).join(" | ")}`);
+  const tonte = lignes.find((l) => /tonte/i.test(l.libelle))!;
+  assert.equal(tonte.membres.length, 1, "la tonte partage sa ligne avec un travail d'une autre nature");
+  assert.equal(tonte.principal, false, "c'est l'abattage qui absorbe le solde");
+});
+
+cas("deux travaux INCONNUS ne se réunissent pas entre eux", () => {
+  // Le réflexe qui recréerait le fourre-tout sous un autre nom : ranger tout ce
+  // qu'on ne comprend pas dans une même ligne « autre ». Deux travaux qu'on ne
+  // sait pas nommer ne sont pas pour autant le même travail.
+  const { lignes } = lignesVendables(["Pose d'un bassin", "Désherbage des massifs"]);
+  assert.equal(lignes.length, 2, `${lignes.length} ligne(s) : ${lignes.map((l) => l.libelle).join(" | ")}`);
+});
+
+cas("un travail inconnu ne rejoint jamais l'abattage", () => {
+  const { lignes } = lignesVendables(["Abattage d'un chêne", "Broyage des branches", "Pose d'un bassin"]);
+  const principale = lignes.find((l) => l.principal)!;
+  assert.deepEqual(principale.membres, ["Abattage d'un chêne", "Broyage des branches"]);
+  assert.equal(lignes.length, 2);
+});
+
+cas("la nature en COLONNE l'emporte sur ce que le libellé laisse croire", () => {
+  // Une prestation neuve porte sa nature ; le libellé n'est plus qu'un texte
+  // pour l'humain. « Intervention chez Mme Martin » ne ressemble à rien, et
+  // c'est pourtant bien une taille de haie.
+  const { lignes } = lignesVendables([
+    { libelle: "Abattage d'un chêne", nature: "abattage" },
+    { libelle: "Intervention chez Mme Martin", nature: "haie" },
+  ]);
+  assert.equal(lignes.find((l) => l.cle === "haie")?.membres[0], "Intervention chez Mme Martin");
+});
+
+cas("l'identifiant de la prestation voyage avec sa ligne", () => {
+  // C'est ce qui remplace le rapprochement par texte : la ligne SAIT ce qu'elle
+  // vend, au lieu de le redéduire de son libellé.
+  const { lignes } = lignesVendables([
+    { id: "p1", libelle: "Abattage d'un chêne", nature: "abattage" },
+    { id: "p2", libelle: "Broyage des branches", nature: "broyage" },
+  ]);
+  assert.deepEqual(lignes[0].prestations.map((p) => p.id), ["p1", "p2"]);
+});
+
+cas("un élagage sans abattage garde son broyage et son évacuation", () => {
+  // Le devis du 7 août 2026, celui qui est sorti vide. Les accessoires
+  // rejoignent le travail principal même quand ce n'est pas un abattage —
+  // sinon le client pourrait refuser le broyage d'un élagage qu'il commande.
+  const { lignes } = lignesVendables([
+    "Taille d'allégement sur marronnier",
+    "Broyage des déchets",
+    "Évacuation du gros bois",
+  ]);
+  assert.equal(lignes.length, 1, `${lignes.length} ligne(s) : ${lignes.map((l) => l.libelle).join(" | ")}`);
+  assert.equal(lignes[0].cle, "elagage");
+  assert.equal(lignes[0].principal, true);
 });
 
 console.log("\n=== La répartition : charger les lignes détachables ===");

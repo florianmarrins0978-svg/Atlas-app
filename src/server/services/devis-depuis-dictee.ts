@@ -3,7 +3,12 @@ import { genererBrouillon, confirmerBrouillon } from "../ai/services/brouillon-s
 import { lancerTranscription } from "../ai/services/transcription-service";
 import { getBrouillon } from "../repositories/brouillons-informations";
 import { marquerInformationsVerifiees, marquerPrixValide } from "../repositories/chantiers";
-import { listerLignesPrix, ajouterLignePrix } from "../repositories/lignes-prix";
+import {
+  listerLignesPrix,
+  ajouterLignePrix,
+  lierPrestationsALaLigne,
+  prestationsDuLibelle,
+} from "../repositories/lignes-prix";
 import { noterPropositionDictee } from "../repositories/termes-metier";
 import { getNoteVocale } from "../repositories/notes-vocales";
 import { getOuCreerDevisBrouillon } from "../repositories/devis";
@@ -11,10 +16,12 @@ import { preparerPropositionPrix, type OriginePrix } from "../chiffrage/proposit
 import { appliquerPropositionPrix } from "../chiffrage/appliquer-proposition";
 import { peutPreparerDevis } from "../../lib/preparation-devis";
 import { listerPrecisions, enregistrerPrecisions, type Precision } from "../repositories/precisions-chantier";
-import { listerPrestations, modifierPrestation } from "../repositories/prestations";
+import { listerPrestations, renommerPrestation, completerPrestation } from "../repositories/prestations";
+import { structureDepuisPrecisions } from "../../lib/prestation-structuree";
 import { libelleEnrichi, questionsAvantChiffrage, type QuestionChiffrage } from "../../lib/questions-chiffrage";
 import { lireGrilles } from "../repositories/grilles-reglables";
 import { lignesVendables } from "../../lib/lignes-vendables";
+import { quantiteCommerciale } from "../../lib/quantite-commerciale";
 import type { LectureDictee, PropositionExtraction } from "../ai/schemas/extraction";
 import { logger } from "../logger";
 
@@ -209,7 +216,20 @@ async function questionsRestantes(
   // Ses façons d'abattre à lui : une question qui proposerait les trois
   // d'origine laisserait sa quatrième rangée vide pour toujours.
   const { axes } = await lireGrilles(ctx);
-  return questionsAvantChiffrage(prestations, new Set(deja.map((p) => p.sujet)), axes.techniques);
+
+  // **On interroge les PRESTATIONS EN BASE quand elles existent, pas le
+  // brouillon.** Sa règle du 31 août 2026 : *« une question n'est posée que si
+  // l'information est réellement absente des données structurées de LA
+  // prestation concernée. »*
+  //
+  // Le brouillon ne porte que ce que le modèle a rendu : ni `methode`, ni
+  // `caracteristiques`. Décider sur lui, c'est décider sans regarder les
+  // colonnes — et redemander une technique et un diamètre déjà connus. Le
+  // brouillon reste le repli, pour l'instant qui précède la confirmation.
+  const enBase = await listerPrestations(ctx, chantierId);
+  const surQuoi = enBase.length > 0 ? enBase : prestations;
+
+  return questionsAvantChiffrage(surQuoi, new Set(deja.map((p) => p.sujet)), axes.techniques);
 }
 
 /**
@@ -276,8 +296,25 @@ async function ecrirePrecisionsSurLesPrestations(ctx: Ctx, chantierId: string): 
 
     const enrichi = libelleEnrichi(prestation.libelle, entree[1]);
     if (enrichi !== prestation.libelle) {
-      await modifierPrestation(ctx, prestation.id, enrichi);
+      // `renommerPrestation`, et non `modifierPrestation` : ce report est
+      // automatique, et ne doit pas marquer la ligne « corrigée par l'artisan ».
+      await renommerPrestation(ctx, prestation.id, enrichi);
     }
+
+    // **Et la même précision entre AUSSI dans ses colonnes, pas seulement dans
+    // le texte.** C'est la seule source sûre de la méthode et des mesures : le
+    // contrat d'extraction ne les demande pas au modèle, mais le patron les a
+    // saisies lui-même à l'arrêt qui vaut de l'argent. On déplace une donnée
+    // certaine, on n'en fabrique aucune.
+    //
+    // Le libellé continue de les porter en toutes lettres — « ⌀ 45 cm » est
+    // relu par `mesures-arbre.ts` pour trouver la case de sa grille, et le lui
+    // retirer avant que ce lecteur sache lire la colonne casserait le chiffrage
+    // en silence.
+    const siennes = precisions.filter(
+      (p) => p.libellePrestation.trim().toLowerCase() === entree[0]
+    );
+    await completerPrestation(ctx, prestation.id, structureDepuisPrecisions(siennes));
   }
 }
 
@@ -325,18 +362,13 @@ async function chiffrerEtPreparer(
   let prixImpossible: string | null = null;
 
   if (!proposition) {
-    prixImpossible = "Le chantier est introuvable : aucun prix n'a pu être calculé.";
+    prixImpossible = "Chantier introuvable.";
   } else if (proposition.origine === "tarifs_ambigus") {
     // Choisir à sa place serait choisir son prix. On s'arrête, on le dit.
     const noms = proposition.tarifsCandidats.map((t) => `« ${t.intitule} » (${t.prix} €)`).join(", ");
-    prixImpossible =
-      `Plusieurs de vos tarifs correspondent à ce chantier : ${noms}. ` +
-      "Le choix vous revient — ouvrez l'écran Prix pour désigner celui à appliquer.";
+    prixImpossible = `Plusieurs de vos tarifs correspondent : ${noms}.`;
   } else if (proposition.prixPropose === null || !proposition.libelle) {
-    prixImpossible =
-      "Aucun de vos tarifs ne correspond, et la dictée ne dit ni la durée ni le nombre d'hommes : " +
-      "le prix ne peut pas être calculé sans l'inventer. Complétez la durée et l'équipe sur l'écran " +
-      "Informations, ou enregistrez un tarif pour ce type de prestation.";
+    prixImpossible = "Aucun tarif ne correspond, et la dictée ne dit ni la durée ni l'équipe.";
   } else {
     const application = await appliquerPropositionPrix(ctx, chantierId);
     if (application.succes) {
@@ -370,24 +402,48 @@ async function chiffrerEtPreparer(
   // porter ses quatre prestations, prix à compléter — il n'avait plus qu'à les
   // remplir. À la place, sa dictée avait disparu.
   //
-  // Les lignes sont écrites à 0 € et l'écran les montre comme des prix à saisir,
-  // jamais comme des prix décidés (`DevisCompletClient`, champ souligné tant
-  // qu'il est vide). Un zéro affiché comme un montant se lirait « gratuit ».
+  // **Les lignes sortent « à chiffrer », plus à 0 €** (migration 0070). Un zéro
+  // affiché comme un montant se lit « gratuit » : c'est une décision là où il
+  // n'y a qu'une ignorance, et le devis pouvait partir ainsi. Le travail reste
+  // visible, la quantité dictée aussi, et le devis attend son prix.
   if (prixImpossible && (await listerLignesPrix(ctx, chantierId)).length === 0) {
     // **Le même découpage que lorsqu'un prix existe.** Une ligne par prestation
     // dictée était le premier réflexe, et il était faux : le patron aurait vu
     // « abattage », « broyage », « évacuation » sur trois lignes séparées, puis
     // aurait dû les réunir à la main — l'inverse exact de sa règle.
     const prestations = await listerPrestations(ctx, chantierId);
-    const aEcrire = lignesVendables(prestations.map((p) => p.libelle)).lignes.map((l) => l.libelle);
-    for (const libelle of aEcrire) {
-      await ajouterLignePrix(ctx, chantierId, libelle, "0", { quantite: "1", prixUnitaire: "0" });
+    const aEcrire = lignesVendables(prestations).lignes;
+    for (const vendable of aEcrire) {
+      // La quantité PHYSIQUE survit même sans prix : une haie de 800 ml qu'on
+      // ne sait pas chiffrer reste une haie de 800 ml, et c'est ce qu'il
+      // regardera pour poser son montant.
+      const q = quantiteCommerciale(vendable.prestations);
+      const ligne = await ajouterLignePrix(ctx, chantierId, vendable.libelle, "0", {
+        quantite: q.quantite,
+        unite: q.unite,
+        prixUnitaire: "0",
+        aChiffrer: true,
+      });
+      // Le même lien que sur une ligne chiffrée : ces prestations-là sont bien
+      // vendues par cette ligne, même si son prix reste à poser. Les
+      // identifiants viennent du découpage — plus du rapprochement par texte.
+      try {
+        const ids = vendable.prestations.map((p) => p.id).filter((id): id is string => !!id);
+        await lierPrestationsALaLigne(
+          ctx,
+          ligne.id,
+          ids.length > 0 ? ids : await prestationsDuLibelle(ctx, chantierId, vendable.libelle)
+        );
+      } catch {
+        // Jamais bloquant — un devis vaut mieux qu'un lien.
+      }
     }
-    if (aEcrire.length > 0) {
-      prixImpossible =
-        `${prixImpossible} En attendant, vos ${aEcrire.length} prestation${aEcrire.length > 1 ? "s sont inscrites" : " est inscrite"} ` +
-        "sur le devis : il ne reste qu'à poser les prix.";
-    }
+    // **Ce qui vient d'être écrit ne s'annonce plus en une phrase.** Elle disait
+    // « En attendant, vos 2 prestations sont inscrites sur le devis : il ne
+    // reste qu'à poser les prix » — et sous elle, un bouton disait déjà
+    // « Ouvrir le devis et poser les prix ». Le patron, le 30 août 2026 :
+    // *« beaucoup beaucoup trop long, aucun utilisateur va lire tout ça »*.
+    // Elle écrivait aussi « vos 1 prestation », faute qu'on ne voyait plus.
   }
 
   // --- 4. Le devis ---------------------------------------------------------

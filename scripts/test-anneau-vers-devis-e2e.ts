@@ -72,7 +72,14 @@ async function main() {
   await page.goto(fiche, { waitUntil: "networkidle" });
 
   const monDevis = page.locator('[data-atlas="mon-devis"]');
-  const anneau = page.locator('[data-atlas="anneau-note-vocale"] .atlas-anneaux');
+  // **Le micro, et non plus l'anneau creux** — 30 août 2026. Le repos est
+  // désormais le disque plein qu'il a choisi (repos B), et l'envoi ne se fait
+  // plus au second appui : il a son bouton, l'avion. Ce contrôle vise donc les
+  // marques STABLES (`data-atlas`) plutôt qu'une classe de dessin, pour qu'un
+  // prochain habillage ne le fasse pas rougir sur du code juste
+  // (`CLAUDE.md` §5 bis).
+  const micro = page.locator('[data-atlas="anneau-note-vocale"] .atlas-micro');
+  const avion = page.locator('[data-atlas="dictee-envoyer"]');
 
   await cas("sur un chantier neuf, « Mon devis » n'existe pas", async () => {
     assert.equal(
@@ -83,10 +90,13 @@ async function main() {
   });
 
   await cas("la dictée le fait naître, sous l'anneau", async () => {
-    await anneau.click();
+    await micro.click();
     await page.waitForTimeout(700);
     await page.waitForTimeout(2200);
-    await anneau.click();
+    // **C'est l'avion qui envoie, plus l'arrêt.** Sa demande du 30 août 2026 :
+    // arrêter gardait la note et l'envoyait du même geste ; celui qui avait
+    // laissé courir le micro envoyait quand même.
+    await avion.click();
 
     await monDevis.waitFor({ state: "visible", timeout: 60_000 });
 
@@ -164,7 +174,7 @@ async function main() {
     // simple au double. Ce que le patron a exigé, ce n'est pas l'absence
     // d'arrêt, c'est l'absence d'ÉCRAN de plus — et c'est ce qu'on éprouve
     // ici : les questions s'ouvrent sur la fiche, on répond, la chaîne repart.
-    const questions = page.locator("text=/précisions? avant de chiffrer/i").first();
+    const questions = page.locator('[data-atlas="question-chiffrage"]').first();
     await Promise.race([
       questions.waitFor({ state: "visible", timeout: 120_000 }),
       page.waitForURL(/\/devis-complet$/, { timeout: 120_000 }),

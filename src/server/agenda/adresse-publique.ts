@@ -32,6 +32,31 @@ export function adressePublique(
     ATLAS_URL_PUBLIQUE: process.env.ATLAS_URL_PUBLIQUE,
   }
 ): string {
+  /**
+   * **L'ADRESSE DÉCLARÉE PASSE AVANT L'EN-TÊTE** — audit final, 29 août 2026.
+   *
+   * Cette fonction et `originePublique` répondent à la même question, et elles
+   * y répondaient **dans l'ordre inverse** : celle-ci croyait l'en-tête d'abord,
+   * l'autre l'adresse déclarée d'abord. Deux implémentations d'une même règle
+   * finissent toujours par diverger (`CLAUDE.md` §3) — celles-ci l'avaient fait.
+   *
+   * **Ce que l'ancien ordre coûtait.** `x-forwarded-host` est écrit par le
+   * client quand le mandataire de tête ne le réécrit pas — le cas par défaut de
+   * plusieurs hébergeurs. Or cette adresse compose la **redirection de retour de
+   * Google** : une valeur forgée renvoyait le navigateur, au retour d'une
+   * autorisation, vers l'hôte de qui l'avait écrite.
+   *
+   * **Et le banc continue de marcher**, ce qui était toute la raison de l'ordre
+   * d'origine : `ATLAS_URL_PUBLIQUE` n'y est pas posée, l'en-tête reprend donc la
+   * main, et le défaut du 9 août — le navigateur renvoyé vers `localhost:3000`,
+   * c'est-à-dire vers le téléphone lui-même — ne revient pas.
+   *
+   * `NEXTAUTH_URL` passe en dernier : elle ne gagnait déjà jamais contre un
+   * en-tête présent, et ce n'est pas elle qui décrit l'adresse publique.
+   */
+  const declaree = (environnement.ATLAS_URL_PUBLIQUE ?? "").trim();
+  if (declaree) return declaree.replace(/\/+$/, "");
+
   // `x-forwarded-host` peut porter une liste quand plusieurs mandataires se
   // succèdent : le premier est celui que le navigateur a demandé.
   const hote = entetes.get("x-forwarded-host")?.split(",")[0]?.trim() || entetes.get("host")?.trim();
@@ -39,5 +64,5 @@ export function adressePublique(
     const protocole = entetes.get("x-forwarded-proto")?.split(",")[0]?.trim() || "https";
     return `${protocole}://${hote}`;
   }
-  return environnement.NEXTAUTH_URL ?? environnement.ATLAS_URL_PUBLIQUE ?? "http://localhost:3000";
+  return environnement.NEXTAUTH_URL ?? "http://localhost:3000";
 }

@@ -97,6 +97,23 @@ export const entreprises = pgTable("entreprises", {
   /** « SASU », « EI », « EURL »… Figure sur les documents (migration 0039). */
   formeJuridique: text("forme_juridique"),
   /**
+   * Le capital social et le RCS (migration 0072) — n'ont de sens que pour une
+   * société, jamais une EI ou une micro-entreprise (`formeADuCapital`).
+   * Le RCS n'a pas de second numéro : c'est le SIREN, déjà dans le SIRET.
+   */
+  capitalSocial: numeric("capital_social", { precision: 12, scale: 2 }),
+  villeRcs: text("ville_rcs"),
+  /**
+   * Où — ou si — la forme juridique, le capital et le RCS s'impriment
+   * (migration 0072). Par défaut « aucune » : ces champs existaient déjà
+   * (`formeJuridique`, migration 0039) sans jamais s'imprimer nulle part —
+   * les faire apparaître d'un coup surprendrait qui les avait déjà saisis
+   * sans le savoir.
+   */
+  mentionsLegalesPosition: text("mentions_legales_position", { enum: ["sous_nom", "bas", "aucune"] })
+    .notNull()
+    .default("aucune"),
+  /**
    * Le régime de TVA, **déclaré et jamais déduit** (migration 0039).
    *
    * `facture-pdf.ts` devinait jusqu'ici la franchise en regardant si le taux
@@ -490,15 +507,21 @@ export const membresEntreprise = pgTable(
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),
     /**
-     * **Trois rôles depuis la migration 0065**, et `membre` n'existe plus :
-     * il a été repris en `salarie`, le plus fermé des trois. La contrainte qui
-     * les tient vit en BASE, pas seulement ici — cette énumération-ci ne produit
-     * aucun garde-fou côté PostgreSQL.
+     * **Quatre rôles depuis la migration 0071**, et `membre` n'existe plus : il
+     * a été repris en `salarie` (migration 0065), le plus fermé de tous. La
+     * contrainte qui les tient vit en BASE, pas seulement ici — cette
+     * énumération-ci ne produit aucun garde-fou côté PostgreSQL.
+     *
+     * **Le défaut reste `salarie`, et il ne bougera pas.** Une ligne insérée
+     * sans rôle explicite doit naître avec le moins de droits possible : c'est
+     * le seul défaut qui ne puisse jamais élargir un accès par distraction.
      *
      * Ce que chaque rôle atteint est décidé une seule fois, dans
      * `src/lib/acces-roles.ts` : ni cet écran-ci ni cette table ne le savent.
      */
-    role: text("role", { enum: ["proprietaire", "commercial", "salarie"] }).notNull().default("salarie"),
+    role: text("role", { enum: ["proprietaire", "facturation", "commercial", "salarie"] })
+      .notNull()
+      .default("salarie"),
     /**
      * Ce que la personne voit du planning — un réglage PAR PERSONNE, jamais par
      * rôle (sa décision du 13 août 2026). Le défaut est « tout » : restreindre
@@ -661,12 +684,43 @@ export const prestations = pgTable(
     entrepriseId: uuid("entreprise_id").notNull(),
     chantierId: uuid("chantier_id").notNull(),
     libelle: text("libelle").notNull().default(""),
+    // --- Ce que la dictée dit vraiment, chacun dans son champ (0068) --------
+    //
+    // Jusqu'au 26 août 2026, tout cela vivait collé dans `libelle` : le modèle
+    // rendait « 800 » et « ml », et on les recollait au nom faute d'endroit où
+    // les poser. Quatre morceaux de code les en ressortaient ensuite à coups
+    // d'expressions régulières.
+    //
+    // **Toutes nullables, `aConfirmer` compris.** NULL dit « on ne sait pas » ;
+    // `false` dirait « on a regardé, il n'y a pas de doute ». Les prestations
+    // d'avant cette date sont dans le premier cas, et rien ne doit prétendre le
+    // contraire.
+    quantite: numeric("quantite", { precision: 10, scale: 2 }),
+    unite: text("unite"),
+    nature: text("nature"),
+    espece: text("espece"),
+    methode: text("methode"),
+    /** Ce qui se mesure et gouverne le prix : `diametreCm`, `hauteurM`, `longueurMl`, `tonnageT`. */
+    caracteristiques: jsonb("caracteristiques").$type<Record<string, number | string>>(),
+    aConfirmer: boolean("a_confirmer"),
+    /**
+     * L'artisan a posé lui-même ces valeurs (migration 0070).
+     *
+     * **Le dépôt n'avait aucune provenance**, et il en fallait une : sans elle,
+     * une quantité corrigée à la main et une quantité lue par un modèle se
+     * ressemblent, et le produit refusait de chiffrer dès que le libellé disait
+     * autre chose que la colonne — même quand c'est LUI qui avait tranché.
+     */
+    corrigeParHumain: boolean("corrige_par_humain").notNull().default(false),
     ordre: integer("ordre").notNull().default(0),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (t) => [
     index("prestations_entreprise_chantier_idx").on(t.entrepriseId, t.chantierId),
+    // De quoi désigner une prestation sans pouvoir viser celle d'une autre
+    // société — la clé étrangère de `lignes_prix_prestations` porte les deux.
+    unique("prestations_id_entreprise_uk").on(t.id, t.entrepriseId),
     foreignKey({
       columns: [t.chantierId, t.entrepriseId],
       foreignColumns: [chantiers.id, chantiers.entrepriseId],
@@ -801,6 +855,15 @@ export const lignesPrix = pgTable(
     prixUnitaire: numeric("prix_unitaire", { precision: 10, scale: 2 }).notNull().default("0"),
     unite: text("unite"),
     montant: numeric("montant", { precision: 10, scale: 2 }).notNull().default("0"),
+    /**
+     * Le travail est identifié, son prix ne l'est pas (migration 0070).
+     *
+     * **Ni gratuit, ni oublié.** Une ligne qu'on ne savait pas chiffrer
+     * s'écrivait « 0 € » — un montant, donc une décision, là où il n'y a qu'une
+     * ignorance. Tant que ce drapeau est vrai, le devis ne peut pas être
+     * préparé ni envoyé (`peutPreparerDevis`).
+     */
+    aChiffrer: boolean("a_chiffrer").notNull().default(false),
     ordre: integer("ordre").notNull().default(0),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
@@ -818,6 +881,57 @@ export const lignesPrix = pgTable(
   ]
 );
 
+// **Quelles prestations une ligne de devis vend réellement** (migration 0069).
+//
+// Le lien n'existait pas : une ligne et ses prestations ne se connaissaient que
+// par leur TEXTE, les libellés collés par des retours à la ligne. C'est de là
+// que vient la corruption du 26 août 2026 — un montant posé sur une ligne
+// portant deux travaux partait dans la case du premier mot reconnu.
+//
+// **La cardinalité a été inspectée, pas choisie par facilité** (`CLAUDE.md`
+// §3 ; le détail est dans la migration) :
+//
+//   * une ligne porte **1 à N** prestations — sa règle du 7 août, « l'abattage,
+//     le broyage et l'évacuation, c'est sur une ligne ». Une colonne
+//     `prestation_id` sur `lignes_prix` en aurait retenu une et perdu les deux
+//     autres ;
+//   * une prestation appartient à **0 ou 1** ligne — le découpage range chaque
+//     libellé dans un seul groupe ;
+//   * la plupart des lignes n'en portent **aucune** : une ligne à la main, une
+//     ligne dictée dans le devis, une ligne née d'un tarif.
+//
+// L'unicité vient du CODE et non d'une décision du patron : rien ne dit qu'un
+// travail ne pourrait pas se vendre sur deux lignes. On encode ce que
+// l'application fait, et retirer une unicité est une migration d'une ligne —
+// l'inverse ne l'est pas.
+export const lignesPrixPrestations = pgTable(
+  "lignes_prix_prestations",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    entrepriseId: uuid("entreprise_id").notNull(),
+    lignePrixId: uuid("ligne_prix_id").notNull(),
+    prestationId: uuid("prestation_id").notNull(),
+    /** L'ordre des prestations DANS la ligne — celui de la dictée, celui qu'il relit. */
+    ordre: integer("ordre").notNull().default(0),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    index("lignes_prix_prestations_ligne_idx").on(t.entrepriseId, t.lignePrixId, t.ordre),
+    unique("lignes_prix_prestations_une_seule_ligne").on(t.prestationId, t.entrepriseId),
+    foreignKey({
+      columns: [t.lignePrixId, t.entrepriseId],
+      foreignColumns: [lignesPrix.id, lignesPrix.entrepriseId],
+      name: "lignes_prix_prestations_ligne_fk",
+    }).onDelete("cascade"),
+    foreignKey({
+      columns: [t.prestationId, t.entrepriseId],
+      foreignColumns: [prestations.id, prestations.entrepriseId],
+      name: "lignes_prix_prestations_prestation_fk",
+    }).onDelete("cascade"),
+  ]
+);
+
+
 // --- Devis : versionné, instantané immuable après envoi (correction v2 §5, v2.1 §5/6) ---
 
 // La mémoire des corrections du patron (migration 0023) : ce qu'il a RETENU
@@ -832,8 +946,19 @@ export const leconsPrix = pgTable(
       .notNull()
       .references(() => entreprises.id, { onDelete: "cascade" }),
     lignePrixId: uuid("ligne_prix_id").notNull(),
-    /** Clé de rapprochement : `abattage|retention|d70`. */
+    /** Clé de rapprochement V1 : `abattage|retention|d70`. **Déjà stockée** — jamais réécrite. */
     signature: text("signature").notNull(),
+    /**
+     * Clé V2, construite depuis les colonnes structurées (migration 0070).
+     *
+     * NULL sur les leçons d'avant : leur libellé fait alors foi, relu par le
+     * mécanisme historique. Réécrire leur clé les rendrait introuvables.
+     */
+    signatureV2: text("signature_v2"),
+    /** Ce que la leçon portait vraiment — de quoi calibrer plus tard sur ses vrais devis. */
+    espece: text("espece"),
+    quantite: numeric("quantite", { precision: 10, scale: 2 }),
+    unite: text("unite"),
     libelle: text("libelle").notNull(),
     prix: numeric("prix", { precision: 10, scale: 2 }).notNull(),
     chantierId: uuid("chantier_id").notNull(),
@@ -842,6 +967,7 @@ export const leconsPrix = pgTable(
   (t) => [
     unique("lecons_prix_ligne_uk").on(t.lignePrixId),
     index("lecons_prix_recherche_idx").on(t.entrepriseId, t.signature, t.constateLe),
+    index("lecons_prix_signature_v2_idx").on(t.entrepriseId, t.signatureV2, t.constateLe),
     foreignKey({
       columns: [t.lignePrixId, t.entrepriseId],
       foreignColumns: [lignesPrix.id, lignesPrix.entrepriseId],
@@ -874,6 +1000,17 @@ export const devis = pgTable(
     entrepriseEmail: text("entreprise_email"),
     entrepriseTelephone: text("entreprise_telephone"),
     entrepriseIban: text("entreprise_iban"),
+    /**
+     * Les trois mentions légales, et leur emplacement (migration 0072) —
+     * recopiées comme le reste de l'identité. Nulles pour les devis
+     * antérieurs à la migration : rien de plus ne s'imprime.
+     */
+    entrepriseFormeJuridique: text("entreprise_forme_juridique"),
+    entrepriseCapitalSocial: numeric("entreprise_capital_social", { precision: 12, scale: 2 }),
+    entrepriseVilleRcs: text("entreprise_ville_rcs"),
+    entrepriseMentionsLegalesPosition: text("entreprise_mentions_legales_position", {
+      enum: ["sous_nom", "bas", "aucune"],
+    }),
 
     clientNom: text("client_nom"),
     // Recopiée comme le nom : un document dit comment on s'adressait à son
@@ -971,6 +1108,15 @@ export const lignesDevis = pgTable(
     quantite: numeric("quantite", { precision: 10, scale: 2 }).notNull().default("1"),
     prixUnitaire: numeric("prix_unitaire", { precision: 10, scale: 2 }).notNull(),
     montant: numeric("montant", { precision: 10, scale: 2 }).notNull(),
+    /** « 800 × 17,50 € » ne dit pas 800 de quoi sans elle (migration 0070). */
+    unite: text("unite"),
+    /**
+     * Le document sait lui-même qu'il n'est pas complet (migration 0070).
+     *
+     * Sans cette copie, le contrôle avant envoi devrait relire les lignes de
+     * prix — qui ont pu bouger depuis que le devis a été préparé.
+     */
+    aChiffrer: boolean("a_chiffrer").notNull().default(false),
     ordre: integer("ordre").notNull().default(0),
   },
   (t) => [
@@ -1282,6 +1428,46 @@ export const messagesAssistant = pgTable(
   (t) => [index("messages_assistant_fil_idx").on(t.entrepriseId, t.utilisateurId, t.rang)]
 );
 
+/**
+ * Les rappels acquittés d'un « J'ai vu » (migration 0071).
+ *
+ * **Sa demande du 30 août 2026 :** *« pour chaque notification je dois pouvoir
+ * cliquer sur vu pour les faire disparaître »*. Un rappel n'était calculé qu'à
+ * la lecture : il n'avait aucun endroit où poser un acquittement, et le masquer
+ * à l'écran ne survivait pas au rechargement.
+ *
+ * **« Vu » fait taire, il n'efface pas.** Le rappel revient au bout du délai
+ * réglé pour son genre si la situation n'a pas bougé. Un rappel effacé pour
+ * toujours ferait précisément ce que ces rappels existent pour éviter : perdre
+ * un chantier de vue. Pour ne plus jamais le voir, l'interrupteur est dans
+ * « Réglages › Notifications ».
+ *
+ * **La facture impayée n'est pas ici :** elle garde son propre moteur de
+ * silence (`chantiers.rappelFactureRepousseLe`, migration 0051). Deux endroits
+ * pour une même idée finissent par se contredire.
+ */
+export const rappelsVus = pgTable(
+  "rappels_vus",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    entrepriseId: uuid("entreprise_id")
+      .notNull()
+      .references(() => entreprises.id, { onDelete: "cascade" }),
+    // La cible de ces trois genres est toujours un chantier : la clé étrangère
+    // fait le ménage quand il disparaît pour de bon.
+    chantierId: uuid("chantier_id")
+      .notNull()
+      .references(() => chantiers.id, { onDelete: "cascade" }),
+    genre: text("genre", {
+      enum: ["chantier-sans-devis", "devis-sans-reponse", "chantier-non-facture"],
+    }).notNull(),
+    vuLe: timestamp("vu_le", { withTimezone: true }).notNull().defaultNow(),
+  },
+  // Un seul acquittement par rappel : deux lignes donneraient deux dates de
+  // réveil, et la plus ancienne le ferait revenir alors qu'il vient d'être vu.
+  (t) => [unique("rappels_vus_cible_idx").on(t.entrepriseId, t.genre, t.chantierId)]
+);
+
 // --- Documents légaux et preuve de leur acceptation (voir docs/RGPD.md §8) ---
 
 // Une version publiée est immuable : corriger un texte, c'est publier une
@@ -1475,6 +1661,17 @@ export const factures = pgTable(
     entrepriseEmail: text("entreprise_email"),
     entrepriseTelephone: text("entreprise_telephone"),
     entrepriseIban: text("entreprise_iban"),
+    /**
+     * Les trois mentions légales, et leur emplacement (migration 0072) —
+     * recopiées du devis, comme le reste de l'identité. Nulles pour les
+     * factures antérieures à la migration.
+     */
+    entrepriseFormeJuridique: text("entreprise_forme_juridique"),
+    entrepriseCapitalSocial: numeric("entreprise_capital_social", { precision: 12, scale: 2 }),
+    entrepriseVilleRcs: text("entreprise_ville_rcs"),
+    entrepriseMentionsLegalesPosition: text("entreprise_mentions_legales_position", {
+      enum: ["sous_nom", "bas", "aucune"],
+    }),
 
     clientNom: text("client_nom"),
     // Recopiée comme le nom : un document dit comment on s'adressait à son
@@ -2475,3 +2672,28 @@ export const preuvesAuthentification = pgTable(
   },
   (table) => [primaryKey({ columns: [table.utilisateurId, table.sessionId] })]
 );
+
+/**
+ * LE JOURNAL DES PURGES — une ligne par exécution RÉUSSIE.
+ *
+ * **Pourquoi elle existe** (audit final, 29 août 2026) : une purge qui ne
+ * tourne plus ne se signale pas. Pas d'erreur, pas d'écran rouge, pas de
+ * ralentissement — les audios s'accumulent et tout a l'air normal. Sans cette
+ * trace, la question « depuis quand ? » n'a aucune réponse.
+ *
+ * **Rien n'est écrit quand la purge échoue.** Un horodatage posé malgré l'échec
+ * dirait « tout va bien » pendant que rien n'est purgé : c'est le faux vert le
+ * plus dangereux, celui qui rassure.
+ *
+ * Aucune donnée d'artisan ici — des dates et des compteurs. Pas de colonne
+ * `entreprise_id`, donc pas de cloisonnement à poser : la purge est une
+ * opération globale, comme les files qu'elle vide.
+ */
+export const executionsPurge = pgTable("executions_purge", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  termineeLe: timestamp("terminee_le", { withTimezone: true }).notNull().defaultNow(),
+  fichiersPurges: integer("fichiers_purges").notNull().default(0),
+  audiosPurges: integer("audios_purges").notNull().default(0),
+  photosPurgees: integer("photos_purgees").notNull().default(0),
+  preuvesPurgees: integer("preuves_purgees").notNull().default(0),
+});

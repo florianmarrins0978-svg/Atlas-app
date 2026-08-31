@@ -591,6 +591,34 @@ n'engage pas.
 | **Le commercial** | Les chantiers, le planning, les devis **et les prix** — il en a besoin pour vendre. Ni les factures, ni la TVA, ni l'IBAN, ni les accès, ni l'abonnement. Il lit les tarifs, il ne les change pas |
 | **Le salarié** | Le planning et ses chantiers, les devis **sans aucun montant**. Le patron choisit s'il voit tout le planning ou ses seuls chantiers |
 
+### Le 30 août 2026 : un cinquième niveau, et une règle enfin appliquée
+
+**Ce qui est AJOUTÉ : le rôle « Facturation ».** Une entreprise a souvent
+plusieurs personnes au service administratif, chacune avec son compte. Elles
+tiennent les clients, les devis et les factures — le relevé de TVA, les
+paiements, les achats — et rien d'autre : ni les tarifs, ni l'IBAN, ni les
+accès. Elles voient le planning, en lecture, pour savoir quand un chantier a eu
+lieu avant de le facturer.
+
+**Ce qui est CORRIGÉ, et c'est plus important.** La ligne « ni les factures, ni
+la TVA » du tableau ci-dessus n'avait **jamais été appliquée** : jusqu'à cette
+date, un commercial pouvait émettre une facture, la porter au relevé de TVA et
+noter un paiement. Pire, l'écran qui donne les accès lui promettait « Les
+factures et le relevé de TVA » — le patron lisait donc l'inverse de sa propre
+décision au moment de la prendre.
+
+**Ce que cela coûte, en une phrase :** un commercial ne peut plus clôturer un
+chantier, parce que le bouton « Créer la facture » crée pour de bon la facture.
+
+| Qui | Les factures | Le planning | Les devis |
+|---|---|---|---|
+| **Le patron** | oui | écriture | oui |
+| **La facturation** | oui | **lecture seule** | oui |
+| **Le commercial** | **non** | écriture, suppression comprise | oui |
+| **Le salarié** | non | **lecture seule** | sa feuille, sans un prix |
+
+Le détail est dans `docs/modele-des-roles.md`.
+
 **Attention à un mot qui trompe :** dans Atlas, une « équipe » n'est pas un
 groupe de personnes, c'est une **file du planning** — combien de chantiers
 partent en même temps. « Équipe B » peut désigner deux ouvriers qui n'ouvriront

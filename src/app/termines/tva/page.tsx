@@ -3,6 +3,7 @@ import EnTeteEcran from "@/components/atlas/EnTeteEcran";
 import NumeroDeDocument from "@/components/atlas/NumeroDeDocument";
 import { colors, font, smallCaps } from "@/lib/design-tokens";
 import { getCurrentCtx } from "@/server/session-ctx";
+import { estProprietaire } from "@/server/autorisation";
 import { relevesSousLesDeuxRegimes } from "@/server/repositories/factures";
 import { getEntreprise } from "@/server/repositories/entreprises";
 import {
@@ -48,6 +49,22 @@ export default async function ReleveTvaPage({
   const { annee, t } = await searchParams;
 
   const ctx = await getCurrentCtx();
+  /**
+   * **DEUX DÉCLARATIONS FAITES AUX IMPÔTS, ET ELLES SONT AU PATRON.**
+   *
+   * Le rythme du relevé et le moment où la TVA devient exigible s'écrivent par
+   * `exigerProprietaire` (`reglages/actions.ts`, `tva/actions.ts`) — c'était
+   * déjà vrai avant ce lot, et cela ne bouge pas.
+   *
+   * **Mais l'écran, lui, s'est ouvert au rôle « Facturation » le 30 août 2026.**
+   * Elle y voyait donc deux réglages qu'un appui aurait laissés muets : le
+   * serveur refuse, et un refus sans explication se lit comme une panne. Ils se
+   * retirent plutôt que de se griser — un réglage grisé se touche quand même.
+   *
+   * Le relevé et ses chiffres, eux, restent entiers : c'est ce qu'elle vient
+   * lire.
+   */
+  const patron = await estProprietaire(ctx);
 
   // **La périodicité vient de l'entreprise, jamais de l'adresse.** Elle
   // commande le découpage ET la lecture du numéro : « 12 » est un mois valide
@@ -99,17 +116,19 @@ export default async function ReleveTvaPage({
 
         {/* **Le rythme en haut, à sa demande du 13 août 2026.** Il vit aussi
             dans Réglages ; c'est ici qu'on se pose la question. */}
-        <RythmeTva actuelle={periodicite} />
+        {patron && <RythmeTva actuelle={periodicite} />}
 
         {/* **Quand la TVA devient exigible**, à côté du rythme : ce sont les
             deux mêmes sortes de choses — des déclarations faites aux impôts,
             pas des préférences d'écran. Sa question du 14 août 2026. */}
-        <RegimeTva
-          actuelle={releve.regime}
-          periode={libellePeriode(periode)}
-          tvaRetenue={formatEuros.format(Number(releves.retenu.totalTva))}
-          tvaAutre={formatEuros.format(Number(releves.autre.totalTva))}
-        />
+        {patron && (
+          <RegimeTva
+            actuelle={releve.regime}
+            periode={libellePeriode(periode)}
+            tvaRetenue={formatEuros.format(Number(releves.retenu.totalTva))}
+            tvaAutre={formatEuros.format(Number(releves.autre.totalTva))}
+          />
+        )}
 
         <EnTeteEcran surtitre="Ma TVA" titre={libellePeriode(periode)} />
 

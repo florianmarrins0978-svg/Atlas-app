@@ -144,6 +144,21 @@
     <span class="quoi">Sa demande du 21 août 2026 : <b>le nom et le numéro sur une ligne</b>, plus aucun « facultatif », le carré photo et <b>l’anneau</b> ramenés de la fiche chantier. Le cœur : <b>on rappuie pour arrêter, et c’est enregistré</b> — il est en rendez-vous, il ferme l’appli, et le chantier l’attend à l’accueil avec son devis déjà rempli. L’anneau et le champ de photos sont <b>repris à l’identique du code</b> (<code>AnneauNoteVocale.tsx</code>, <code>Pellicule.tsx</code>), pas redessinés. Un écran <b>« À trancher »</b> pose ce qui reste sans maison si la fiche chantier disparaît. <b>Rien n’est codé.</b></span>
   </a>
 
+  <a class="item retenu" href="../../appli/note-vocale-choix.html">
+    <span class="no">▶</span><span class="titre">La note vocale, ses trois choix réunis — ESSAYABLE</span><span class="fleche">→</span>
+    <span class="quoi">Ses réponses du 30 août 2026 : <b>largeur 4</b> (66 %), <b>geste 2</b> (l’objet au centre entre la poubelle et l’avion), <b>repos B</b> (le micro plein) <b>avec deux petites ondes de 1,5 cm au plus</b> — sa mesure, écrite en centimètres dans le CSS pour qu’elle reste relisible. Plus aucun onglet de proposition : cette planche montre la réponse, pas la question. <b>CODÉE dans l’application le 30 août 2026</b> — c’est la planche à laquelle il a demandé de se référer, et c’est elle qui a corrigé les valeurs de resserrement inventées à côté des siennes (case de 44 px, carré photo de 58, pastille 7/28). Le point qui restait ouvert a été tranché comme la planche le montre : pendant la dictée, le disque plein reste et son micro devient un carré d’arrêt. Deux défauts trouvés à la capture et non par les tests : le carré d’arrêt rendait une boîte de zéro pixel, et les ondes recouvraient les deux gestes. Éprouvée par <code>scripts/verifier-maquette-note-vocale-choix.mjs</code>.</span>
+  </a>
+
+  <a class="item" href="../../appli/note-vocale-au-repos.html">
+    <span class="no">▶</span><span class="titre">La note vocale avant qu’on appuie — ESSAYABLE</span><span class="fleche">→</span>
+    <span class="quoi">Sa demande du 30 août 2026 : <b>« plusieurs visuels pour changer la note vocale AVANT qu’on appuie dessus »</b>, et <b>« ne touche plus à la maquette que tu viens de me faire »</b> — d’où une planche à part, qui ne pose QUE cette question et emprunte tout le reste à la précédente. <b>Cinq repos :</b> l’anneau d’aujourd’hui, un micro plein, une barre d’invitation, l’anneau au micro, une onde à plat. Sa seconde demande n’en est pas une : <b>« Je rédige à la main » disparaît dès qu’on appuie</b>, dans les cinq — il l’a tranché, il ne veut pas de proposition —, et revient si l’on jette la note. Éprouvée par <code>scripts/verifier-maquette-note-vocale-au-repos.mjs</code>, qui distingue un bouton <b>retiré</b> d’un bouton <b>grisé</b>. <b>Sa réponse : B</b>, le micro plein — codé.</span>
+  </a>
+
+  <a class="item" href="../../appli/note-vocale-simple.html">
+    <span class="no">▶</span><span class="titre">La note vocale, comme sur WhatsApp — ESSAYABLE</span><span class="fleche">→</span>
+    <span class="quoi">Sa demande du 30 août 2026 : <b>« on appuie dessus, et il faut la même chose — possibilité de supprimer, ou appuyer sur la flèche pour envoyer de suite la transcription et arriver sur la page du devis »</b>. Ce que ça change vraiment : aujourd’hui <b>arrêter, c’est envoyer</b> — il n’y a pas de retour en arrière, et celui qui a laissé courir le micro envoie quand même. <b>Trois propositions</b> aux mêmes gestes : la barre à deux rangées de sa capture, l’anneau qui reste au centre entre poubelle et avion, ou une seule capsule sans pause. La deuxième a été retirée puis remise — sa règle du 30 août la condamnait (<b>« il doit ensuite disparaître »</b>), et il l’a redemandée pour pouvoir l’essayer. Le bouton du bas est passé <b>secondaire</b> (« Je rédige à la main ») : le seul aplat plein de l’écran est le rond d’envoi. Un dernier onglet propose <b>quatre largeurs</b>. Éprouvée par <code>scripts/verifier-maquette-note-vocale-simple.mjs</code>. <b>Ses réponses : geste 2, largeur 4</b> — codés.</span>
+  </a>
+
   <p class="famille">Trop de mots</p>
 
   <a class="item retenu" href="../../appli/moins-de-mots.html">
@@ -756,6 +771,20 @@
   <a class="item" href="../../appli/allure-de-mes-devis.html">
     <span class="no">▶</span><span class="titre">L’allure de mes devis — ESSAYABLE</span><span class="fleche">→</span>
     <span class="quoi">Sa demande du même jour : <b>« un endroit dédié à la modification de son devis — son logo, la typographie, le fond de page »</b>. « Apparence » ne règle que les couleurs de l’application ; rien ne touche les documents. Logo, trois typographies, trois fonds, quatre accents — et le devis se repeint à l’instant, sur ses vraies coordonnées et ses vraies lignes. Ce qui reste scellé est écrit sur la planche : mentions obligatoires, disposition des colonnes, ordre des totaux — un devis mal posé se conteste.</span>
+  </a>
+
+  <a class="item" href="../../appli/capital-et-forme-juridique.html">
+    <span class="no">▶</span><span class="titre">Le capital, la forme juridique et le RCS sur le devis — ESSAYABLE</span><span class="fleche">→</span>
+    <span class="quoi">Sa demande du 30 août 2026 : pouvoir ajouter, s’il le veut, le capital, la forme juridique et la ville d’immatriculation au RCS de sa société. La forme juridique se choisissait déjà dans Identité, mais ne s’imprimait nulle part — réparé. Capital et RCS s’effacent tout seuls pour une entreprise individuelle, qui n’en a pas légalement. Le numéro du RCS n’est pas ressaisi : c’est le SIREN, déjà affiché sous le SIRET. Trois choix essayables sur le devis : sous le nom, en bas avec le SIRET, ou nulle part.</span>
+  </a>
+
+  <a class="item" href="../../appli/corriger-une-mesure.html">
+    Corriger une mesure — changer « 800 ml » en « 80 ml » sans réécrire le nom de la prestation
+  </a>
+
+  <a class="item" href="../../appli/assistant-sur-le-devis.html">
+    <span class="no">▶</span><span class="titre">L’assistant sur la page du devis seul — ESSAYABLE</span><span class="fleche">→</span>
+    <span class="quoi">Sa demande du 30 août 2026, depuis cette page : <b>« j’aimerais avoir accès à l’assistant sur cette page »</b>. Elle en était privée depuis le 5 août, volontairement — la page « …/devis-complet » exclut tout décor d’application (`src/app/layout.tsx`) pour rester une feuille et non un écran. La planche pose un rond de plus, à droite du micro : même taille et même vert que `BoutonAssistant` sur les autres écrans, ouvrant le même panneau. Rien n’est codé.</span>
   </a>
 
   <p class="note">

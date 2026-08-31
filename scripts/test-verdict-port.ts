@@ -223,6 +223,75 @@ cas("hors Codespace, le regard du dehors s'abstient plutôt que d'inventer", () 
   });
 });
 
+cas("SA NUIT DU 31 AOÛT : un refus du relais N'ACCUSE PLUS le port quand rien ne sert", () => {
+  // **Sa fiche se contredisait sur deux lignes voisines**, à 1 h 07, pendant
+  // qu'il essayait d'ouvrir Atlas depuis son téléphone :
+  //
+  //     Serveur   : NE RÉPOND PAS sur le port 3000
+  //     Port 3000 : INJOIGNABLE — … c'est le port ou le relais, pas le code
+  //
+  // Et le geste proposé — onglet PORTS → « Public » — ne pouvait RIEN : un
+  // relais qui ne trouve personne derrière un port répond 502, public ou non.
+  // Deux chiffres qui se contredisent dans le même écran, c'est toute la fiche
+  // qu'on cesse de croire (`CLAUDE.md` §4 bis).
+  const { souci } = verdictPort({
+    etatPort: "ouvert",
+    dehors: {
+      joignable: false,
+      statut: 502,
+      type: "",
+      motif:
+        "réponse 502 de quelque chose AVANT Atlas (serveur « sans nom », sans type, " +
+        "non signée ; en-têtes reçus : cache-control, connection) — la requête n'atteint " +
+        "PAS l'application : c'est le port ou le relais, pas le code",
+    },
+    serveurLocal: false,
+  });
+  assert.match(souci ?? "", /RIEN NE SERT SUR LE PORT 3000/, "la fiche n'annonce pas la seule cause mesurée");
+  assert.ok(
+    !/« Visibilité du port » → « Public »/.test(souci ?? ""),
+    "elle renvoie encore à l'onglet PORTS — le geste qui ne pouvait rien la nuit du 31 août"
+  );
+  assert.match(souci ?? "", /ligne « Serveur »/, "elle ne renvoie pas vers la ligne qui, elle, dit quoi faire");
+});
+
+cas("le TÉLÉCHARGEMENT qu'il voit est nommé, parce que c'est ÇA qu'il a sous les yeux", () => {
+  // Sa capture ne montre ni « 502 » ni « erreur » : Safari propose d'enregistrer
+  // un fichier. Une réponse sans type ne s'affiche pas — elle se télécharge. Sans
+  // cette phrase, rien ne relie la fiche à ce qu'il décrit.
+  const { souci } = verdictPort({
+    etatPort: "ouvert",
+    dehors: { joignable: false, statut: 502, type: "", motif: "réponse 502 AVANT Atlas" },
+    serveurLocal: false,
+  });
+  assert.match(souci ?? "", /TÉLÉCHARGEMENT/, "le symptôme qu'il décrit n'est nulle part dans la fiche");
+});
+
+cas("un serveur VIVANT laisse le port suspect — on n'a pas juste déplacé l'aveuglement", () => {
+  // Le cas inverse, et il doit rester intact : Atlas écoute bien sur 3000, mais
+  // le dehors ne l'atteint pas. Là, le port EST le coupable, et le geste de
+  // l'onglet PORTS est le bon.
+  const { souci } = verdictPort({
+    etatPort: "ouvert",
+    dehors: { joignable: false, statut: 502, type: "", motif: "réponse 502 AVANT Atlas" },
+    serveurLocal: true,
+  });
+  assert.match(souci ?? "", /N'ATTEINT MÊME PAS ATLAS/, "un port fermé devant un serveur debout n'est plus signalé");
+  assert.match(souci ?? "", /« Visibilité du port »/, "le geste qui répare CE cas a disparu avec le correctif");
+});
+
+cas("sans mesure du serveur local, le verdict reste celui d'avant", () => {
+  // **On ne conclut que sur ce qu'on a mesuré.** `serveurLocal` absent veut dire
+  // « personne n'a regardé » — pas « il est mort ». Conclure ici enverrait le
+  // patron attendre un veilleur devant un port réellement fermé.
+  const { souci } = verdictPort({
+    etatPort: "sans-gh",
+    dehors: { joignable: false, statut: 502, type: "", motif: "réponse 502 AVANT Atlas" },
+  });
+  assert.match(souci ?? "", /N'ATTEINT MÊME PAS ATLAS/, "une ignorance est prise pour une mesure");
+  assert.ok(!/RIEN NE SERT SUR LE PORT 3000/.test(souci ?? ""), "on affirme qu'aucun serveur n'écoute sans l'avoir vérifié");
+});
+
 // Enveloppé dans une fonction : ce dépôt compile ses suites en CommonJS, où
 // l'attente au premier niveau n'existe pas.
 async function jouer() {

@@ -78,15 +78,20 @@ async function main() {
   const chantierId = page.url().split("/").pop()!.split("?")[0];
   await page.waitForTimeout(1500);
 
-  const anneau = page.locator(".atlas-lecteur button").first();
-  await cas("l'anneau est là, dès l'arrivée sur la fiche", async () => {
-    if ((await anneau.count()) === 0) throw new Error("aucun anneau : rien à presser");
+  // **Le micro plein, puis l'AVION** — 30 août 2026. La dictée a son propre
+  // dessin depuis qu'il a choisi le repos B : ce n'est plus l'anneau du lecteur
+  // (`.atlas-lecteur`), et le second appui ne fait plus partir la note — il
+  // suspend. C'est l'avion qui envoie, et c'est LUI que cette suite doit
+  // presser, puisque ce qu'elle éprouve est le CHEMIN de l'envoi.
+  const micro = page.locator('[data-atlas="anneau-note-vocale"] .atlas-micro');
+  await cas("le micro est là, dès l'arrivée sur la fiche", async () => {
+    if ((await micro.count()) === 0) throw new Error("aucun micro : rien à presser");
   });
 
   envois.length = 0;
-  await anneau.click();
+  await micro.click();
   await page.waitForTimeout(3000);
-  await anneau.click();
+  await page.locator('[data-atlas="dictee-envoyer"]').click();
   await page.waitForTimeout(9000);
 
   await cas("l'enregistrement est POSTÉ sur /api/notes-vocales, pas sur une action", async () => {

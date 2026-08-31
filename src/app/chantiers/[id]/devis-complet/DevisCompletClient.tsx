@@ -15,6 +15,7 @@ import { CIVILITES, type Civilite } from "@/lib/civilite";
 import type { Changement } from "@/lib/retouches-devis";
 import { LIBELLE_REDUCTION, pourcentValide, totauxAvecReduction } from "@/lib/reduction-devis";
 import DicterDansLeDevis from "./DicterDansLeDevis";
+import BoutonAssistant from "@/components/atlas/BoutonAssistant";
 import PrimaryButton from "@/components/atlas/PrimaryButton";
 import EnvoiAuClient from "../export/EnvoiAuClient";
 import { ouvrirLaMessagerie } from "@/lib/ouvrir-messagerie";
@@ -51,7 +52,16 @@ import {
 // l'entreprise, la fiche du client, le chantier, les lignes de prix — pour que
 // la facture de fin de chantier et le relevé de TVA continuent d'en découler.
 
-type Ligne = { id: string; libelle: string; quantite: string; prixUnitaire: string; montant: string };
+type Ligne = {
+  id: string;
+  libelle: string;
+  quantite: string;
+  prixUnitaire: string;
+  montant: string;
+  unite?: string | null;
+  /** Le travail est identifié, son prix ne l'est pas (migration 0070). */
+  aChiffrer?: boolean | null;
+};
 
 /**
  * La clé du prix accordé dans le tiroir des retirés.
@@ -245,11 +255,53 @@ export default function DevisCompletClient(props: Props) {
     setLignes((cur) => cur.map((l) => (l.id === id ? { ...l, [champ]: valeur } : l)));
   }
 
-  async function persisterLigne(l: Ligne) {
-    await majLigneAction(l.id, {
-      libelle: l.libelle,
-      quantite: normaliser(l.quantite, "1"),
-      prixUnitaire: normaliser(l.prixUnitaire, "0"),
+  /**
+   * ═══════════════════════════════════════════════════════════════════════
+   * **UN PRIX TAPÉ PUIS QUITTÉ PARTAIT À ZÉRO — 30 août 2026.**
+   *
+   * `onFini` se déclenche à la perte du focus, et il lisait `l` — la ligne du
+   * DERNIER RENDU. Or React ne rend pas au moment de la frappe : il le
+   * programme. Entre la dernière touche et la sortie du champ, rien ne
+   * garantit que `l` porte ce qui vient d'être tapé.
+   *
+   * Sur une machine reposée, le rendu arrive à temps. Sous charge, non — et le
+   * serveur reçoit alors l'ANCIENNE valeur, un zéro sur une ligne neuve,
+   * **pendant que l'écran continue d'afficher le prix tapé**. Rien ne dit
+   * qu'il est perdu : on le découvre au rechargement, ou sur le devis parti
+   * chez le client.
+   *
+   * ═══════════════════════════════════════════════════════════════════════
+   * **CE DÉFAUT A COÛTÉ SIX ENQUÊTES, ET IL A ÉTÉ MANQUÉ UNE FOIS DE PLUS.**
+   *
+   * `test-lecons-prix-e2e` tombait depuis le 26 août sur « le prix 1400 n'est
+   * arrivé sur aucune ligne », et six fois de suite on a conclu à la lenteur de
+   * la machine — le contrôle ne disait pas ce que le navigateur avait envoyé.
+   * Le 30 août, une hypothèse juste a même été écrite **puis retirée**, faute
+   * d'une sonde capable de la reproduire.
+   *
+   * C'est le contrôle rendu bavard qui l'a nommé en une ligne, à l'occurrence
+   * suivante : `{"prixUnitaire":"0"}` posté, réponse 200. La requête partait
+   * bien — avec la mauvaise valeur.
+   *
+   * ═══════════════════════════════════════════════════════════════════════
+   * **LA VALEUR VIENT DU CHAMP, PLUS D'UN RENDU.** Le DOM porte déjà ce qui a
+   * été tapé au moment où l'on quitte le champ : c'est la seule source qui ne
+   * puisse pas être en retard. Le reste de la ligne continue de venir de
+   * l'état — seul le champ qu'on quitte a pu changer sans être encore rendu.
+   *
+   * **Ce n'est pas une attente qu'on allonge, c'est une course qu'on retire.**
+   * Allonger aurait déplacé le seuil sans le supprimer : le piège que
+   * `TODO.md` décrit depuis le 26 août, et qui accusait la machine.
+   */
+  async function persisterLigne(
+    l: Ligne,
+    frais?: Partial<Pick<Ligne, "libelle" | "quantite" | "prixUnitaire">>
+  ) {
+    const ligne = { ...l, ...frais };
+    await majLigneAction(ligne.id, {
+      libelle: ligne.libelle,
+      quantite: normaliser(ligne.quantite, "1"),
+      prixUnitaire: normaliser(ligne.prixUnitaire, "0"),
     });
   }
 
@@ -263,6 +315,9 @@ export default function DevisCompletClient(props: Props) {
    */
   async function reprendreRappel(l: Ligne, prix: string) {
     majLigneLocale(l.id, "prixUnitaire", prix);
+    // Le serveur l'éteint aussi (`modifierLignePrix`) ; l'écran ne doit pas
+    // continuer d'annoncer « à chiffrer » sur une ligne qu'il vient de chiffrer.
+    if (Number(prix) > 0) setLignes((cur) => cur.map((x) => (x.id === l.id ? { ...x, aChiffrer: false } : x)));
     await majLigneAction(l.id, {
       libelle: l.libelle,
       quantite: normaliser(l.quantite, "1"),
@@ -272,7 +327,10 @@ export default function DevisCompletClient(props: Props) {
 
   async function ajouter() {
     const creee = await ajouterLigneAction(props.chantierId);
-    setLignes((cur) => [...cur, { id: creee.id, libelle: "", quantite: "1", prixUnitaire: "", montant: "0.00" }]);
+    setLignes((cur) => [
+      ...cur,
+      { id: creee.id, libelle: "", quantite: "1", prixUnitaire: "", montant: "0.00", aChiffrer: false },
+    ]);
   }
 
 
@@ -302,13 +360,21 @@ export default function DevisCompletClient(props: Props) {
 
   return (
     <>
-      {/* **Le retour à gauche, le micro à droite** — la seule rangée de cet
-          écran qui n'appartienne pas au devis, et elle reste minuscule : sans
-          le retour, la page n'a pas de sortie sur un téléphone.
+      {/* **Le retour à gauche, l'assistant et le micro à droite** — la seule
+          rangée de cet écran qui n'appartienne pas au devis, et elle reste
+          minuscule : sans le retour, la page n'a pas de sortie sur un
+          téléphone.
+
+          **L'assistant, depuis le 30 août 2026** : sa demande, depuis cette
+          page même. Même bouton (`BoutonAssistant`) que dans l'en-tête des
+          autres écrans — il se tait tout seul hors du fournisseur ou pour un
+          rôle qui n'y a pas droit (`assistant-contexte.tsx`), donc rien à
+          re-vérifier ici.
 
           Le micro disparaît sur un devis parti : cet écran ne se modifie plus,
           et un micro qui écouterait pour ne rien pouvoir changer serait une
-          promesse fausse. */}
+          promesse fausse. L'assistant, lui, reste utile même figé — relire un
+          prix passé ne modifie rien. */}
       <div className="mx-auto mb-3 flex w-full max-w-[820px] items-start justify-between sm:mb-4">
         <a
           href={`/chantiers/${props.chantierId}`}
@@ -320,7 +386,10 @@ export default function DevisCompletClient(props: Props) {
             <path d="M15 5l-7 7 7 7" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
         </a>
-        {!fige && <DicterDansLeDevis chantierId={props.chantierId} onApplique={appliquerRetouches} />}
+        <div className="flex items-start gap-2">
+          <BoutonAssistant />
+          {!fige && <DicterDansLeDevis chantierId={props.chantierId} onApplique={appliquerRetouches} />}
+        </div>
       </div>
 
       <article
@@ -555,7 +624,9 @@ export default function DevisCompletClient(props: Props) {
               aria={`Description ${i + 1}`}
               placeholder="Ex : Élagage d'un tilleul — taille architecturée"
               onChange={(v) => majLigneLocale(l.id, "libelle", v)}
-              onFini={() => persisterLigne(l)}
+              onFini={(fraiche) => {
+                void persisterLigne(l, { libelle: fraiche });
+              }}
               className="block w-full resize-none overflow-hidden border-0 bg-transparent p-0 outline-none focus:bg-[rgba(0,0,0,0.03)]"
               style={{ color: colors.ink, fontSize: "16px", lineHeight: 1.45 }}
             />
@@ -567,7 +638,9 @@ export default function DevisCompletClient(props: Props) {
                 aria={`Quantité ${i + 1}`}
                 placeholder="1"
                 onChange={(v) => majLigneLocale(l.id, "quantite", v)}
-                onFini={() => persisterLigne(l)}
+                onFini={(fraiche) => {
+                  void persisterLigne(l, { quantite: fraiche });
+                }}
               />
             </Cellule>
 
@@ -578,12 +651,23 @@ export default function DevisCompletClient(props: Props) {
                 aria={`Prix unitaire ${i + 1}`}
                 placeholder="0,00"
                 onChange={(v) => majLigneLocale(l.id, "prixUnitaire", v)}
-                onFini={() => persisterLigne(l)}
+                onFini={(fraiche) => {
+                  void persisterLigne(l, { prixUnitaire: fraiche });
+                }}
               />
             </Cellule>
 
             <Cellule libelle="Total HT">
-              <span className="text-[16px]">{enEuros(montantDeLaLigne(l))}</span>
+              {/* **« À chiffrer » n'est pas « 0,00 € ».** Un zéro se lit
+                  « gratuit », et le devis pouvait partir ainsi (26 août 2026).
+                  Dès qu'il pose un montant, l'état tombe de lui-même. */}
+              {l.aChiffrer && montantDeLaLigne(l) <= 0 ? (
+                <span className="text-[16px]" style={{ color: colors.or }}>
+                  à chiffrer
+                </span>
+              ) : (
+                <span className="text-[16px]">{enEuros(montantDeLaLigne(l))}</span>
+              )}
             </Cellule>
 
             {/* Ce que l'agent a retenu la dernière fois, sur un travail
@@ -955,7 +1039,8 @@ function ZoneQuiGrandit({
 }: {
   valeur: string;
   onChange: (v: string) => void;
-  onFini: () => void;
+  /** Reçoit ce que le CHAMP porte — voir `persisterLigne`, jamais un rendu. */
+  onFini: (valeurDuChamp: string) => void;
   placeholder: string;
   aria: string;
   fige: boolean;
@@ -985,7 +1070,7 @@ function ZoneQuiGrandit({
       aria-label={aria}
       rows={1}
       onChange={(e) => onChange(e.target.value)}
-      onBlur={onFini}
+      onBlur={(e) => onFini(e.currentTarget.value)}
       className={className}
       style={style}
     />
@@ -1132,7 +1217,8 @@ function ChiffreSaisi({
 }: {
   valeur: string;
   onChange: (v: string) => void;
-  onFini: () => void;
+  /** Reçoit ce que le CHAMP porte — voir `persisterLigne`, jamais un rendu. */
+  onFini: (valeurDuChamp: string) => void;
   placeholder: string;
   aria: string;
   fige: boolean;
@@ -1146,7 +1232,7 @@ function ChiffreSaisi({
       placeholder={placeholder}
       aria-label={aria}
       onChange={(e) => onChange(e.target.value)}
-      onBlur={onFini}
+      onBlur={(e) => onFini(e.currentTarget.value)}
       className="w-24 border-0 bg-transparent px-1 text-right outline-none focus:bg-[rgba(0,0,0,0.03)] sm:w-full"
       style={{
         color: colors.ink,

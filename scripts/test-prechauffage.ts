@@ -301,7 +301,13 @@ async function main() {
 
   console.log("\n=== Les écrans de chantier : lus sur l'écran, jamais en base ===");
 
-  await cas("l'identifiant vient de l'accueil, et les cinq écrans en découlent", async () => {
+  // **Cinq écrans ET la route du PDF, depuis le 30 août 2026.** La feuille de
+  // chantier en PDF met 45 à 50 s à se compiler la première fois, et le serveur
+  // ne répond plus à rien pendant ce temps : elle est donc préchauffée comme
+  // les écrans (`API_DE_CHANTIER`). Ce contrôle fixe la LISTE, pas seulement le
+  // nombre : une entrée qui s'ajouterait par mégarde ferait payer une
+  // compilation à chaque démarrage du banc.
+  await cas("l'identifiant vient de l'accueil, et les écrans en découlent", async () => {
     const { ecransDeChantier } = await import("./prechauffer.mjs");
     const html = '<a href="/chantiers/5be0e3fe-0449-4bdc-ad8e-91d9658cd77b">Chez M. Martins</a>';
     const ecrans = await ecransDeChantier({
@@ -315,6 +321,7 @@ async function main() {
       "/chantiers/5be0e3fe-0449-4bdc-ad8e-91d9658cd77b/note-vocale",
       "/chantiers/5be0e3fe-0449-4bdc-ad8e-91d9658cd77b/prix",
       "/chantiers/5be0e3fe-0449-4bdc-ad8e-91d9658cd77b/devis-complet",
+      "/api/chantiers/5be0e3fe-0449-4bdc-ad8e-91d9658cd77b/feuille/pdf",
     ]);
   });
 

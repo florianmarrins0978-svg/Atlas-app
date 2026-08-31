@@ -4,8 +4,182 @@
 vous ne savez rien de ce qui précède — c'est exactement le cas de figure qu'il
 sert.
 
-**Point de reprise :** 2026-08-29 · `main`
+**Point de reprise :** 2026-08-30 · `main`
 (l'historique fait foi : `git log --oneline -20`)
+
+---
+
+## Dernier lot : la note vocale à la messagerie, et la fiche qui tient dans un écran (30 août 2026)
+
+Ses trois choix codés (`appli/note-vocale-choix.html`) : au repos un **disque
+plein** avec deux ondes de **1,5 cm** ; dès qu'on parle, la **poubelle à gauche**
+et l'**avion à droite**, le micro devenant un carré d'arrêt sans que le disque
+bouge ; l'avion envoie et **mène au devis** sans rien d'autre à toucher. « Je
+rédige à la main » est **secondaire, large de 66 %, et disparaît** pendant la
+dictée. Compte-rendu qui lui est destiné : `docs/note-vocale-messagerie.md`.
+
+**Ce qu'il faut savoir avant d'y toucher :**
+
+- **Suspendre passe par `MediaRecorder.pause()`, jamais par un arrêt suivi d'un
+  redémarrage** — celui-ci produit deux fichiers, et le second écrase le
+  premier : la moitié de ce qu'il a dit, perdue sans qu'il le sache.
+- **Jeter relâche le micro ET oublie les morceaux.** Masquer sans vider laisse
+  une note rejetée partable par mégarde. Jeter ne supprime pas le chantier :
+  une photo a pu le créer avant.
+- **Les ondes de repos s'effacent dès qu'on appuie**, et c'est de la géométrie :
+  1,5 cm plus 9 px font 66 px de part et d'autre du disque, quand la poubelle et
+  l'avion ne peuvent se poser qu'à une vingtaine.
+- **La fiche client a été resserrée avec les mesures de SA planche**, pas avec
+  des valeurs inventées : case 44 px, retrait 11/14, rayon 12, carré photo 58,
+  pastille 7/28, interligne 7. Elle débordait de 492 px ; elle tient.
+- **Mesurer une feuille n'est pas mesurer une page** —
+  `scripts/capture-dictee-fiche-client.mts`, et `ARCHITECTURE.md` §211 pour les
+  trois erreurs de mesure payées ce jour-là.
+
+Raisons et pièges : `ARCHITECTURE.md` §211.
+
+## Lot précédent : « J'ai vu » sur les quatre rappels (30 août 2026)
+
+Sa demande du jour : chaque notification doit pouvoir se ranger d'un appui. Les
+trois rappels qui n'avaient aucun geste en ont un, et la facture impayée prend
+le même mot (son « Plus tard » est parti — la mécanique, elle, n'a pas bougé).
+
+**Ce qu'il faut savoir avant d'y toucher :** « J'ai vu » fait **taire** un
+rappel le temps de son délai réglé, il ne l'efface pas — l'acquittement est en
+base (`rappels_vus`, migration 0071) et le rappel revient si la situation dure.
+En faire un effacement définitif rouvrirait exactement ce que ces rappels
+existent pour éviter. Raisons et pièges : `ARCHITECTURE.md` §210.
+
+---
+
+## PIÈGE : UN TÉLÉCHARGEMENT AU LIEU DE LA PAGE = PERSONNE NE SERT (31 août 2026)
+
+**Sa capture de 1 h 07 :** Safari sur `about:blank`, une feuille qui propose
+d'**enregistrer un fichier** portant le nom de son espace. Pas de page, pas
+d'erreur — et rien qui ressemble à une panne d'application.
+
+**C'est la signature d'un refus NU du relais de GitHub** : une réponse sans
+type ne s'affiche pas, elle se télécharge. Le relais répond ainsi quand il ne
+trouve personne derrière le port 3000 — donc quand aucun serveur ne tourne, ou
+quand l'espace est arrêté.
+
+**Ce qu'il ne faut PAS faire devant cette image :** l'envoyer dans l'onglet
+PORTS. Le port n'y est pour rien tant que rien n'écoute derrière.
+
+**L'ordre qui tranche, et il tient en deux lectures :**
+
+| | |
+|---|---|
+| la fiche (#47) n'a **plus bougé depuis 20 min** | l'espace est **ARRÊTÉ** — il faut le rallumer, rien d'autre ne peut le faire |
+| elle est fraîche, `Serveur : NE RÉPOND PAS` | le veilleur relance ; la fiche dit désormais que le port n'est pas en cause |
+| elle est fraîche, `Serveur : répond` | **là seulement**, le port est le suspect — et c'était SON cas du 31 août |
+
+La fiche ne se contredit plus sur ce point (`ARCHITECTURE.md` §215) : jusqu'au
+31 août, elle accusait le port juste sous la ligne qui disait qu'aucun serveur
+n'écoutait.
+
+**Et le troisième cas est celui qui l'a réellement privé d'application cette
+nuit-là.** Son espace tournait, Atlas répondait, la version rapide était bâtie
+sur le dernier commit — mais le relais avait perdu le port, et `veiller.sh`
+retenait `PORT_OUVERT=oui` pour toute la session : plus rien ne redemandait. Il
+remesure maintenant depuis l'adresse publique toutes les cinq minutes. Si le
+port reste perdu malgré tout, le geste est dans la fiche : onglet PORTS,
+**retirer puis remettre 3000** — la bascule de visibilité ne peut rien sur un
+port que le relais ne connaît plus.
+
+**Et ce qui ne se répare pas :** un Codespace se met en veille seul après un
+temps d'inactivité. L'application ne peut pas rester debout pendant qu'il dort ;
+au réveil, il faut rallumer l'espace.
+
+---
+
+## PIÈGE : `npm test` VIDE LA BASE — RESEMER APRÈS, JAMAIS AVANT, UNE VÉRIFICATION AU NAVIGATEUR (30 août 2026)
+
+Vu en essayant l'écran Identité après une batterie complète : le compte de
+démonstration avait disparu, alors que `npm run db:seed` l'avait créé une
+heure plus tôt. `nettoyerBase()` (`TRUNCATE … CASCADE`) tourne à l'intérieur
+de plusieurs suites — c'est déjà écrit dans `CLAUDE.md` §5 à propos des
+suites jouées EN PARALLÈLE, et ça vaut tout autant en séquence : la batterie
+complète efface le jeu de démonstration au passage. **L'ordre qui marche :**
+`npm test` (ou la batterie complète), PUIS `npm run db:seed`, PUIS la
+vérification au navigateur — jamais l'inverse.
+
+**Second piège, dans la foulée : un verrou de connexion survit au reseed.**
+Plusieurs tentatives de connexion (ratées avant le reseed, le mot de passe
+n'existant plus) posent une clé `ratelimit:connexion:*` dans **Redis**, pas
+dans la base — la reseeder ne le lève pas. Devant « Trop de tentatives
+depuis cet appareil », `redis-cli -u "$REDIS_URL" flushall` avant de
+réessayer.
+
+---
+
+## PIÈGE : CE QUI EST INVISIBLE SUR TÉLÉPHONE PEUT ÊTRE PERMANENT SUR PC (30 août 2026)
+
+Il travaille aussi **depuis un PC**, et une partie de ce qu'il y voit ne se
+reproduit ni ici ni sur son iPhone. Les barres de défilement en sont l'exemple
+type : sur téléphone elles sont en **surimpression** — elles s'effacent seules,
+n'apparaissent sur aucune capture et ne prennent aucune largeur ; sur ordinateur
+elles s'**installent** et ne repartent pas.
+
+D'où la règle : **devant une plainte qui mentionne « sur PC », ne pas chercher à
+la reproduire sur l'écran du patron** (`ECRAN_DU_PATRON`, un iPhone 13). Les
+suites navigateur qui n'imposent pas de `viewport` ouvrent déjà 1280 × 720,
+c'est-à-dire un PC — c'est là qu'il faut mesurer.
+
+Corrigé ce jour-là : `globals.css` masque désormais TOUTE barre
+(`* { scrollbar-width: none }`), la page comprise. Voir `ARCHITECTURE.md` §206 —
+et surtout la leçon générale : `test-aucune-barre-de-defilement-e2e.ts` écartait
+`<html>` et `<body>` avec un commentaire qui justifiait l'exclusion. **Une
+exclusion écrite noir sur blanc se relit sans méfiance ; c'est précisément là
+qu'un défaut se cache.**
+
+## LE LIBELLÉ DU DEVIS A DEUX LECTEURS — ne jamais les confondre
+
+**Posé le 30 août 2026**, après qu'un vrai devis a montré « Haie de laurier
+(800 ml) (800 ml) ». Ce qu'il faut savoir avant de toucher à un libellé :
+
+| | Qui le lit | Ce qu'on a le droit d'en faire |
+|---|---|---|
+| `prestations.libelle` | les **moteurs de prix** — quatre relisent encore le texte | **rien** : le nettoyer fait perdre à une haie son prix au mètre linéaire |
+| `LigneVendable.libelle` | le **client**, sur son devis | nettoyé par `libelleClient()` |
+| `LigneVendable.membres` | `mesuresResolues`, en repli des colonnes | **rien** : c'est le texte brut |
+
+**Le piège, et il est tentant :** corriger l'affichage en nettoyant le libellé
+stocké. `mesures-prestation.ts` prévient contre lui en tête de fichier ; la
+tentation revient à chaque fois qu'on regarde un devis.
+
+**Et si une mesure disparaît d'un devis sans qu'on l'ait demandé**, la cause est
+dans `libelle-client.ts` : il ne retire un fragment que si TOUT ce qu'il dit est
+déjà en colonne. Un fragment retiré à tort veut dire qu'une information a été
+prise pour une mesure — le cas à protéger est « Érable — démontage en
+rétention », dont la méthode n'est nulle part ailleurs.
+
+---
+
+## SA CONSTRUCTION MOURAIT SUR DES DÉPENDANCES DÉSACCORDÉES — 29 août 2026
+
+**Devant « l'appli est lente » ou « ça ne marche toujours pas », lire sa fiche
+et regarder la ligne `dit:` du relevé d'échec.** Deux lignes seulement, dont
+l'en-tête de Next, = dépendances abîmées, PAS un manque de mémoire.
+
+Ce soir-là son relevé disait : `code: 1`, **5,7 Go libres**, et
+« ▲ Next.js 16.3.3 » alors que le projet épingle **16.3.2**. Les binaires natifs
+de Next sont versionnés à l'identique : désaccordés, le compilateur meurt après
+l'en-tête, sans un mot. Son banc ne pouvait pas s'en sortir — sa réinstallation
+automatique exigeait `Cannot find module`, et il n'y avait aucun message.
+
+Le banc compare maintenant les versions avant de bâtir et réinstalle
+(`scripts/coherence-dependances.mjs`). **Reste inexpliqué : comment ses
+`node_modules` ont dérivé.** Voir `TODO.md`.
+
+**L'ordre dans lequel chercher, quand son banc est lent** — les trois causes
+vues en une seule soirée, dans l'ordre où elles se distinguent :
+
+| Ce que dit sa fiche | Cause | Geste |
+|---|---|---|
+| `dit:` = 2 lignes, en-tête Next seul | dépendances désaccordées | réparé tout seul au prochain démarrage |
+| `signal: SIGKILL`, mémoire basse | abattue faute de mémoire | rallumer l'espace |
+| fiche non réécrite depuis 20 min | espace **arrêté** | rallumer l'espace |
 
 ---
 
@@ -50,6 +224,50 @@ témoin est bien écrit. Corrigé le 29 août, sa capture de 22 h 37 à l'appui.
 
 ---
 
+## LA COURBE MÉMOIRE DE LA BATTERIE, MESURÉE (30 août 2026)
+
+Le point ci-dessous datait du 27 août et disait « le serveur meurt, on ne sait
+pas pourquoi ». Il est maintenant mesuré, en échantillonnant `next-server`
+toutes les vingt secondes :
+
+| Moment | `anon-rss` |
+|---|---|
+| serveur démarré | **0,6 Go** |
+| les 33 écrans préchauffés | **8,9 Go** |
+| une suite plus tard | **12,7 Go**, puis abattu par le conteneur |
+
+**Ce n'est aucune suite en particulier** : c'est l'application entière compilée
+par Turbopack qui ne tient pas dans le plafond. Le préchauffage n'en crée pas
+la mémoire — il l'avance —, mais devant un plafond, avancer c'est mourir plus
+tôt.
+
+**Ce qui a changé, et comment jouer la batterie aujourd'hui :**
+
+- la feuille de chantier en PDF est préchauffée (`API_DE_CHANTIER` dans
+  `scripts/prechauffer.mjs`) : 45–50 s de compilation devenus 476 ms ;
+- **en tranche (`--seulement`), le préchauffage se réduit à trois routes** —
+  une tranche démarre à 1 Go au lieu de 9 ;
+- `--seulement` accepte **plusieurs motifs séparés par des virgules**, donc des
+  groupes de la taille qu'on veut :
+  `npm run test:e2e -- --seulement test-x-e2e.ts,test-y-e2e.ts` ;
+- **la batterie d'une traite ne tient toujours pas dans ce conteneur.** Les
+  suites navigateur se jouent par groupes de six, un serveur neuf par groupe :
+
+  ```bash
+  node scripts/jouer-suites-par-groupes.mjs /tmp/atlas-groupes.log 6
+  ```
+
+  **Ce script est commité, et c'est délibéré** : trois sessions l'avaient
+  réécrit puis jeté (27, 29, 30 août), chacune en redécouvrant les deux mêmes
+  pièges — **seul le premier groupe amorce la base** (`--sans-seed` pour les
+  suivants : les suites ne sont pas indépendantes, `test-aucun-texte-coupe`
+  cherche un devis qu'une suite d'avant a créé), et **un seul pilote à la
+  fois** (deux se partageant le port 3000 ont rendu quatorze faux rouges).
+
+**Piste ÉCARTÉE, à ne pas repayer :** `next dev --webpack` tient à 5,7 Go, mais
+ne sert pas la même application — la feuille « Absences » ne s'ouvrait plus, et
+deux vérifications rougissaient sur du code juste.
+
 ## LA BATTERIE NE TIENT PLUS EN UN SEUL SERVEUR — à lire avant de la lancer (27 août 2026)
 
 **Si `npm run verifier:avant-livraison` rend un rouge sur une suite navigateur,
@@ -81,6 +299,85 @@ n'a lancées : une suite jamais jouée n'est ni verte ni rouge.
 
 **Cause NON ÉTABLIE** (`TODO.md`) : la même batterie tenait d'une traite deux
 heures plus tôt, dans ce même conteneur. Ne pas écrire que c'est réglé.
+
+---
+
+## PIÈGE : UNE VALEUR LUE SUR UN RENDU EST UNE VALEUR EN RETARD (30 août 2026)
+
+`onBlur` se déclenche quand on quitte un champ. Si le gestionnaire lit l'état
+React — la ligne du dernier rendu —, il peut lire **ce qui précédait la frappe** :
+React ne rend pas au moment où l'on tape, il le programme.
+
+Sur le devis, cela envoyait un **zéro** au serveur pendant que l'écran affichait
+le prix. Six enquêtes l'ont manqué en accusant la lenteur de la machine.
+
+**La règle qui en sort :** un gestionnaire de sortie de champ prend la valeur
+**du champ** (`e.currentTarget.value`), jamais celle d'un rendu. Le DOM porte
+déjà ce qui a été tapé ; c'est la seule source qui ne puisse pas être en retard.
+
+**Et pour l'éprouver :** poser la valeur dans le DOM **sans** événement `input`
+— React ignore alors le changement, exactement comme un rendu en retard —, puis
+envoyer `focusout`. **Jamais `blur`** : il ne bulle pas, React ne l'écoute pas,
+et une sonde qui l'emploie ne déclenche rien du tout. C'est ce qui a fait
+retirer, à tort, une hypothèse juste (`scripts/test-prix-du-devis-survit-e2e.ts`).
+
+## LES CAPACITÉS S'ÉCRIVENT EN LISTE BLANCHE — ne jamais revenir en arrière (30 août 2026)
+
+`src/lib/acces-roles.ts` porte cinq capacités. **Chacune nomme qui l'a :**
+
+    return role === "proprietaire" || role === "facturation";   // ✅
+    return role !== "salarie";                                   // ❌ jamais
+
+Ce n'est pas un goût de style. Sous l'ancienne forme, le rôle « facturation »
+né le 30 août serait arrivé **avec le droit d'émettre des factures et de
+supprimer des chantiers**, sans qu'une seule ligne change et sans qu'un test
+rougisse. Un contrôle lit désormais la source et refuse toute règle écrite par
+la négative (`test-roles-capacites-db.ts`).
+
+Un rôle ajouté demain naît donc **sans aucun droit**, et il faut l'inscrire
+capacité par capacité. C'est voulu : plus long à écrire une fois, et c'est la
+seule version qui se relit.
+
+**Et le rôle n'est nulle part ailleurs qu'en base.** Il n'est pas dans le jeton
+Auth.js ; `autorisation.ts` le relit à chaque requête sous `withEntreprise`. Un
+rôle changé par le patron s'applique à la requête suivante — ne pas « améliorer »
+cela avec un cache qui survivrait à la requête.
+
+## UN COMMERCIAL NE FACTURE PLUS — et il ne clôture plus un chantier (30 août 2026)
+
+Le geste « Créer la facture » ne change pas un état : `terminerChantier` **crée
+la facture**. Il relève donc de `exigerFacturation`, comme l'émission, les
+paiements, les achats et les tickets de TVA.
+
+Conséquence à connaître avant de croire à un défaut : **un commercial qui dit
+« je ne peux plus finir mes chantiers » n'a pas de bogue.** C'est la règle du
+patron du 13 août, appliquée depuis le 30. Si un jour il veut séparer « marquer
+fait » de « facturer », c'est deux gestes à écrire — un travail de produit.
+
+## UN SALARIÉ NE MODIFIE PLUS RIEN AU PLANNING (30 août 2026)
+
+**Sa décision, et elle est sans nuance :** *« Un salarié peut uniquement
+CONSULTER son planning. »*
+
+Avant d'ajouter quoi que ce soit au planning, savoir ceci :
+
+| | |
+|---|---|
+| **la règle** | `peutModifierLePlanning` (`src/lib/acces-roles.ts`) |
+| **la garde** | `exigerEcritureSurLePlanning` (`src/server/garde-action.ts`) |
+| **où l'appeler** | en PREMIÈRE ligne de toute action du planning qui écrit, **avant** la portée |
+
+**Ne pas confondre avec la portée.** `porteePlanning` dit QUELS chantiers on
+voit ; celle-ci dit si l'on peut y toucher. Les deux se cumulent, aucune ne
+dispense de l'autre — et le patron a demandé expressément que la portée ne bouge
+pas.
+
+**Toute action serveur neuve doit porter une garde**, où qu'elle vive :
+`scripts/test-actions-gardees-db.ts` relève désormais **tout** fichier
+« use server » du dépôt et rougit sur celui qui n'en a pas. Une ouverture voulue
+s'écrit dans sa table d'exemptions, avec sa raison.
+
+Détail : `ARCHITECTURE.md` §208, `docs/salarie-planning-lecture-seule.md`.
 
 ---
 
@@ -164,14 +461,41 @@ Le détail : `ARCHITECTURE.md` §192, migration `drizzle/0067_salaries_a_part.sq
 
 ## UNE RÉPONSE ENCORE ATTENDUE DE LUI — planche 96 (26 août 2026)
 
-Rien n'est codé dans `src/` pour ces deux-là, et il ne faut pas commencer sans
-sa réponse (`CLAUDE.md` §3 bis).
-
 - **Planche 96** — `appli/ecran-equipe.html`. Il a répondu **C** pour le titre
   et la synthèse. Reste à savoir si la phrase sur les congés reste sur l'écran
   Équipe ou retourne dans « Absences ». **Non codée.**
 - **Planche 97** — `appli/salaries-et-equipes.html`. **Répondue (A) et codée le
-  26 août** : voir le paragraphe ci-dessus.
+  26 août** : voir le paragraphe plus haut.
+
+## LA NOTE VOCALE « À LA WHATSAPP » EST CODÉE (30 août 2026)
+
+**Les trois planches restent en ligne, et c'est voulu** : `note-vocale-simple`
+porte les GESTES, `-au-repos` le DESSIN au repos, `-choix` **ses choix réunis**.
+La troisième est la **référence du code** — il a demandé de s'y référer une
+dernière fois avant de conclure, et c'est ce qui a corrigé les valeurs de
+resserrement inventées à côté des siennes.
+
+**Ce qui a été tranché en son absence, et qu'il peut défaire.** Pendant la
+dictée, le disque plein RESTE et son micro devient un carré d'arrêt. Sa
+proposition 2 disait « l'anneau », mais elle le gardait parce que le repos ÉTAIT
+l'anneau — ce qui n'est plus le cas depuis qu'il a choisi le repos B. C'est la
+lecture que porte la planche qu'il a validée. L'autre — le disque cède la place
+à un anneau creux — se refait en deux minutes (`.atlas-micro`,
+`.atlas-carre-stop` dans `globals.css`).
+
+**Deux pièges de dessin, payés ici et qui se reproduiront ailleurs :** un
+`<span>` resté en ligne ne prend ni `width` ni `height` — le carré d'arrêt
+rendait une boîte de zéro pixel et le disque s'affichait vide, sans qu'aucun
+test le voie ; et deux ornements de 1,5 cm de part et d'autre d'un objet de
+76 px **ne laissent pas la place** à deux boutons de 46 px sur un écran de
+390 — ils s'effacent donc pendant la dictée.
+
+**Ce qui reste mesuré comme non résolu**, et qui n'est pas un oubli : sur un
+écran plus court que le sien (un iPhone SE, 560 px utiles) la feuille déborde
+encore de 101 px ; et pendant la dictée, les 40 px libérés par le bouton restent
+vides — les combler ferait descendre le micro sous le doigt qui vient de
+l'appuyer.
+
 ## PIÈGE : `force-dynamic` NE FAIT PAS PARTIR LA DEMANDE (26 août 2026)
 
 On lit `export const dynamic = "force-dynamic"` comme « cette page est toujours
@@ -213,6 +537,72 @@ Ce qu'il faut savoir avant d'y retoucher, et qui ne se devine pas :
 
 `src/app/devis/[jeton]/formulaire.tsx`, `ARCHITECTURE.md` §191. Le même piège
 dort sur `PropositionPrixSection.tsx` (`TODO.md`).
+
+## LA CHAÎNE DICTÉE → DEVIS A ÉTÉ REFAITE LE 27 AOÛT 2026 — à lire avant d'y toucher
+
+**Sept choses ont changé, et chacune ferme un défaut mesuré.** Le détail est
+dans `ARCHITECTURE.md` §205 ; voici ce qu'il faut savoir pour ne pas les
+défaire.
+
+1. **Le vocabulaire métier vit dans UN endroit** : `src/lib/natures-prestation.ts`.
+   Six modules portaient chacun le sien, et aucun ne connaissait la tonte. Ne
+   pas en recréer un septième : ajouter une nature se fait là, et nulle part
+   ailleurs.
+
+2. **Une nature inconnue garde sa propre ligne.** Elle ne rejoint rien — pas
+   même une autre nature inconnue. Le fourre-tout `principal` est mort, et le
+   ressusciter sous un autre nom rouvrirait la corruption du 26 août.
+
+3. **`LigneVendable.cle` porte la nature ; `principal` est un RÔLE à part.**
+   Les confondre était le défaut.
+
+4. **Une ligne sans prix vaut `null`, jamais `"0"`.** Sur un devis, un zéro se
+   lit « gratuit ». `peutPreparerDevis` et `envoyerDevis` refusent tant qu'une
+   ligne est `a_chiffrer`.
+
+5. **La quantité dictée entre dans le CALCUL** (`caracteristiqueDeLaQuantite`).
+   Avant, la colonne existait et personne ne la lisait : la corriger ne changeait
+   rien au prix.
+
+6. **`prestations.corrige_par_humain` change le comportement du chiffrage.**
+   Une valeur qu'il a posée TRANCHE face au libellé, au lieu de produire une
+   contradiction. Attention : `modifierPrestation` marque ce drapeau (c'est le
+   geste de l'artisan), `renommerPrestation` ne le marque pas (c'est le report
+   automatique des réponses de l'arrêt). **Ne pas les confondre** — l'un gèlerait
+   ses colonnes sans que personne ne l'ait demandé.
+
+7. **Les clés `lecons_prix.signature` (V1) ne se réécrivent JAMAIS.** La V2 vit
+   dans `signature_v2`. Toucher à la V1 orphelinerait toute sa mémoire de prix,
+   sans un mot et sans erreur.
+
+**Un écran attend sa réponse** avant d'entrer dans `src/` (`CLAUDE.md` §3 bis) :
+`https://florianmarrins0978-svg.github.io/Atlas-app/corriger-une-mesure.html`
+
+**Et une question métier lui revient** : « dessouchage de DEUX souches » —
+faut-il multiplier le prix de grille par deux ? Le comportement d'aujourd'hui
+est conservé, et l'écran pose la question.
+
+---
+
+## ⏰ IL ATTEND QU'ON LE RELANCE : LA LISTE DES TRAVAUX QU'IL VEND (27 août 2026)
+
+**Sa réponse, en toutes lettres :** *« Oui j'en vend mais attend on créera une
+liste complète ensuite si tu le veux faudra que tu me le rappelle. »*
+
+Il vend de la **plantation** et de la **clôture**. Aucune des deux n'existe dans
+le dépôt — le vocabulaire des trois modules qui classent une prestation
+(`src/lib/lignes-vendables.ts`, `src/lib/prix-attribuable.ts`, `src/lib/lecons-prix.ts`) se
+limite à : abattage, élagage, haie, dessouchage, fendage, grumes, broyage,
+évacuation, billonnage.
+
+**C'est à NOUS de rouvrir le sujet**, il l'a demandé explicitement. Une session
+qui reprend la chaîne dictée → devis le relance en lui montrant cette liste :
+il n'a qu'à dire ce qui manque. Le détail de ce qui reste bloqué en attendant
+est dans `TODO.md`, section « Dictée → devis ».
+
+**Et l'on n'invente pas les natures à sa place** (`CLAUDE.md` §4) : une liste
+devinée ferait retomber ses travaux dans le fourre-tout `principal`, c'est-à-dire
+sur la ligne d'abattage — le défaut que l'audit du 26 août a mesuré.
 
 ---
 
