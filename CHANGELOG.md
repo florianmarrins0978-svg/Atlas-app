@@ -7,6 +7,50 @@ Format : le plus récent en tête.
 
 ---
 
+## 2026-08-31
+
+### Un prix posé sur l'écran du devis débloque enfin l'envoi
+
+**Sa capture du matin :** *« j'ai voulu lancer le devis sans mettre de prix pour
+la tonte, il refuse ; je suis revenu en arrière, j'ai mis les prix pour chaque
+ligne, mais il ne veut quand même pas que j'envoie mon devis »*. Total à
+2 280,00 €, plus une seule ligne signalée — et le refus nommant deux lignes
+qu'il venait de chiffrer.
+
+**Il n'avait aucune sortie :** aucun geste ne pouvait rouvrir l'envoi, et le
+message le renvoyait vers l'écran Prix où tout paraissait normal.
+
+Le drapeau « à chiffrer » ne s'éteignait que lorsqu'un **montant** était posté.
+L'écran du devis, lui, envoie une quantité et un prix unitaire — le montant est
+calculé ensuite. Il lisait l'entrée ; il lit désormais le résultat.
+
+La phrase du refus n'est plus écrite deux fois. C'est de là que venaient ses
+fautes d'accord (« 2 lignes attendent **son** prix », « Posez-**le** ») : deux
+versions de la même règle, et rien ne disait laquelle faisait foi.
+
+### Il peut proposer demain — l'application prévient, elle ne refuse plus
+
+**Sa règle :** *« si l'utilisateur veut choisir le 1ᵉʳ septembre il doit
+pouvoir ! »* Le calendrier lui montrait le lendemain, la case s'ouvrait, et le
+verdict la reprenait : « ce jour est trop proche ».
+
+C'est le même arbitrage qu'il avait rendu le 23 août pour les journées pleines.
+Le délai de deux jours ne disparaît pas, il change de rôle : l'application ne
+**suggère** toujours rien avant après-demain, mais ce qu'il **choisit** est à
+lui, dès aujourd'hui. Seul le passé reste refusé.
+
+**Et une barrière muette a été fermée avec.** Rendre le lendemain choisissable
+ne suffisait pas : son client se serait fait répondre « date indisponible » en
+acceptant la date qu'il venait de recevoir. La fenêtre du client descend
+maintenant jusqu'à la date proposée — pas plus bas.
+
+Trois contrôles neufs, tous **vus rouges** contre la version d'avant ; deux
+anciens réclamaient la règle qu'il vient de retourner, et ont changé de camp.
+
+Détail et pièges : `ARCHITECTURE.md` §216.
+
+---
+
 ## 2026-08-30
 
 ### La fiche n'accuse plus le port quand c'est le serveur qui manque

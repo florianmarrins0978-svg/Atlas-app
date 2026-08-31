@@ -18,6 +18,27 @@ ligne « fait » qui ne l'est pas coûte plus cher qu'une ligne absente.
 
 ---
 
+## Un prix posé débloque l'envoi, et il peut proposer demain (31 août 2026)
+
+Ses deux captures du matin, sur l'écran d'envoi du devis.
+
+| | État |
+|---|---|
+| Un prix tapé sur l'écran du DEVIS efface « à chiffrer » | **fait** — il ne l'effaçait que depuis l'écran Prix, et l'envoi restait bloqué sans aucune sortie |
+| La phrase du refus, écrite une seule fois | **fait** — deux versions avaient divergé, d'où ses fautes d'accord |
+| Il peut proposer aujourd'hui et demain | **fait** — l'application prévient, elle ne refuse plus |
+| L'application ne SUGGÈRE toujours rien avant après-demain | **inchangé, et voulu** |
+| Un jour passé | **refusé**, et ce n'est pas un arbitrage |
+| Son client peut accepter une date proche | **fait** — il ne le pouvait pas, et rien ne l'aurait signalé |
+
+**Ce qui reste ouvert :** le délai de deux jours n'est réglable nulle part. Il
+est écrit dans le code, pas dans les réglages de l'entreprise. Personne ne l'a
+demandé — à trancher par le patron.
+
+Raisons et pièges : `ARCHITECTURE.md` §216.
+
+---
+
 ## La note vocale à la messagerie, et la fiche qui tient dans un écran (30 août 2026)
 
 **Sa demande, en huit messages :** *« Il faut modifier la note vocale pour

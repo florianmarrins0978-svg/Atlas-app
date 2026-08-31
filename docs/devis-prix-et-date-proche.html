@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas — Tes deux blocages de ce matin — c'est réparé</title>
+<style>
+  :root{
+    --ground:#f5f3ee; --surface:#faf9f5; --raised:#ece9e1;
+    --ink:#1c1c1a; --ink-soft:#4a4a44; --muted:#8a8578;
+    --accent:#2f3b2f; --alert:#b5562a; --line:rgba(28,28,26,0.13);
+    --serif:Georgia,'Times New Roman',serif;
+    --sans:system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --ground:#161815; --surface:#1d201c; --raised:#252924;
+      --ink:#eae7df; --ink-soft:#c2bdb1; --muted:#948f83;
+      --accent:#9fbd82; --alert:#e0885a; --line:rgba(234,231,223,0.17);
+    }
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--sans);
+    line-height:1.65;}
+  main{max-width:44rem;margin:0 auto;padding:2.5rem 1.2rem 5rem;}
+  h1,h2,h3,h4{font-family:var(--serif);font-weight:600;line-height:1.2;
+    text-wrap:balance;margin:2rem 0 0.6rem;scroll-margin-top:1rem;}
+  h1{font-size:2rem;margin-top:0;}
+  h2{font-size:1.5rem;padding-top:1.2rem;border-top:1px solid var(--line);}
+  h3{font-size:1.12rem;}
+  h4{font-size:1rem;}
+  p{margin:0 0 0.9rem;}
+  a{color:var(--accent);text-underline-offset:3px;}
+  a:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:3px;}
+  ul,ol{margin:0 0 1rem;padding-left:1.3rem;}
+  li{margin-bottom:0.4rem;}
+  li::marker{color:var(--muted);}
+  /* Le sommaire : des cibles larges, confortables au doigt sur téléphone. */
+  ol li a{display:inline-block;padding:0.15rem 0;}
+  blockquote{margin:1rem 0;padding:0.85rem 1.05rem;background:var(--raised);
+    border-left:3px solid var(--accent);border-radius:0 10px 10px 0;color:var(--ink-soft);}
+  code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:0.87em;
+    background:var(--raised);padding:0.1rem 0.35rem;border-radius:5px;}
+  hr{border:0;border-top:1px solid var(--line);margin:2rem 0;}
+  .tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px;
+    background:var(--surface);margin:0 0 1.2rem;}
+  table{border-collapse:collapse;width:100%;font-size:0.92rem;min-width:22rem;}
+  th,td{text-align:left;padding:0.55rem 0.8rem;border-bottom:1px solid var(--line);
+    vertical-align:top;}
+  th{font-size:0.72rem;letter-spacing:0.08em;text-transform:uppercase;
+    color:var(--muted);white-space:nowrap;}
+  tr:last-child td{border-bottom:none;}
+  .retour{display:inline-block;font-size:0.76rem;color:var(--muted);
+    text-decoration:none;margin:-0.3rem 0 1rem;}
+  .retour:hover{color:var(--accent);text-decoration:underline;}
+</style>
+</head>
+<body>
+<main>
+<h1 id="tes-deux-blocages-de-ce-matin--cest-réparé">Tes deux blocages de ce matin — c'est réparé</h1>
+<p><em>31 août 2026</em></p>
+<hr>
+<h2 id="1--jai-mis-les-prix-il-ne-veut-quand-même-pas-">1. « J'ai mis les prix, il ne veut quand même pas »</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><strong>Tu avais raison, et le problème était pire que ce que tu voyais : il n'y avait aucune sortie.</strong> Aucun geste, sur aucun écran, ne pouvait rouvrir cet envoi.</p>
+<h3 id="ce-qui-se-passait">Ce qui se passait</h3>
+<p>Quand une ligne arrive sans prix (dictée, ou tarif introuvable), elle porte une marque « à chiffrer ». Cette marque devait s'effacer dès que tu posais un prix.</p>
+<p>Elle s'effaçait <strong>sur un seul des deux écrans</strong> :</p>
+<div class="tablewrap"><table><thead><tr>
+<th>Où tu tapes le prix</th>
+<th>Avant</th>
+<th>Maintenant</th>
+</tr></thead><tbody>
+<tr>
+<td>écran <strong>Prix</strong></td>
+<td>la marque partait</td>
+<td>inchangé</td>
+</tr>
+<tr>
+<td>écran <strong>du devis</strong> (celui de ta capture)</td>
+<td><strong>la marque restait</strong></td>
+<td>elle part</td>
+</tr>
+</tbody></table></div>
+<p>Sur l'écran du devis tu tapes une quantité et un prix unitaire ; le montant est calculé ensuite. Le contrôle regardait ce que tu tapais au lieu de regarder le montant obtenu.</p>
+<p><strong>Et rien ne te le montrait :</strong> le total était juste (2 280,00 €), l'étiquette « à chiffrer » avait disparu de l'écran, et seul l'envoi savait encore.</p>
+<h3 id="ce-qui-change-pour-toi">Ce qui change pour toi</h3>
+<p>Tu poses un prix, où que ce soit, et le devis part. Rien d'autre à faire.</p>
+<p><strong>Au passage</strong>, la phrase du refus était mal accordée sur ta capture — « 2 lignes attendent <strong>son</strong> prix », « Posez-<strong>le</strong> ». Elle était écrite à deux endroits différents dans le code, et les deux versions avaient divergé. Il n'y en a plus qu'une.</p>
+<hr>
+<h2 id="2--si-lutilisateur-veut-choisir-le-1er-septembre-il-doit-pouvoir--">2. « Si l'utilisateur veut choisir le 1er septembre il doit pouvoir ! »</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><strong>Fait.</strong> Tu peux proposer demain, et même aujourd'hui.</p>
+<p>C'est exactement l'arbitrage que tu avais déjà rendu le 23 août pour les journées pleines : <em>« si l'utilisateur juge qu'il peut rajouter un chantier, il doit pouvoir le faire quand même ; nous on prévient juste »</em>.</p>
+<h3 id="ce-qui-reste-et-pourquoi">Ce qui reste, et pourquoi</h3>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th></th>
+</tr></thead><tbody>
+<tr>
+<td>ce qu'<strong>Atlas te propose</strong> tout seul</td>
+<td>toujours à partir d'après-demain — il ne te met pas demain sous le doigt sans que tu l'aies demandé</td>
+</tr>
+<tr>
+<td>ce que <strong>tu choisis</strong> au calendrier</td>
+<td>dès aujourd'hui, avec une remarque : <em>« c'est dans moins de deux jours — votre client aura peu de temps pour répondre »</em></td>
+</tr>
+<tr>
+<td>un jour <strong>déjà passé</strong></td>
+<td>refusé, et là il n'y a pas de choix : ton client lira ce devis demain au plus tôt</td>
+</tr>
+</tbody></table></div>
+<p>La remarque s'ajoute aux autres au lieu de les remplacer : si demain est un samedi, ou si ta journée est déjà pleine, il te dit les deux.</p>
+<h3 id="ce-quon-a-trouvé-en-le-faisant-et-que-tu-naurais-vu-que-trop-tard">Ce qu'on a trouvé en le faisant, et que tu n'aurais vu que trop tard</h3>
+<p>Te laisser choisir demain ne suffisait pas. <strong>La page de ton client, elle, n'acceptait pas les dates à moins de deux jours.</strong> Il aurait reçu ton devis, cliqué sur la date que tu venais de lui proposer, et lu « date indisponible ».</p>
+<p>Ton écran aurait dit oui, sa page non, et le devis se serait perdu là — sans que ni toi ni lui puissiez comprendre. C'est corrigé dans le même lot, et éprouvé de bout en bout : envoi, ouverture du lien, acceptation, chantier posé au planning.</p>
+<hr>
+<h2 id="ce-qui-a-été-vérifié">Ce qui a été vérifié</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<ul>
+<li>Les trois contrôles neufs ont été <strong>essayés contre l'ancienne version</strong> : ils rougissent dessus, en nommant le défaut. Un contrôle qui n'a jamais échoué ne prouve rien.</li>
+<li>Deux anciens contrôles exigeaient exactement ce que tu viens de faire changer (« demain ne doit pas partir chez le client »). Ils ont été retournés, pas contournés.</li>
+<li>Batterie complète avant livraison.</li>
+</ul>
+<h2 id="ce-qui-reste-ouvert">Ce qui reste ouvert</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<ul>
+<li><strong>Le délai de deux jours n'est réglable nulle part</strong> — il est écrit dans le code. Si tu veux un jour pouvoir le changer depuis Réglages (par entreprise), c'est à toi de le dire : ce n'est pas fait, et ça ne bloque rien aujourd'hui.</li>
+</ul>
+</main>
+</body>
+</html>

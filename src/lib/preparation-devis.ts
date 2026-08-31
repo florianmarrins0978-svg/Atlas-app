@@ -84,15 +84,11 @@ export function peutPreparerDevis(lignes: readonly LignePrix[]): VerdictPreparat
   //
   // Le contrôle vient APRÈS celui du total : un devis entièrement à chiffrer
   // doit dire « aucune ligne n'a de prix », pas nommer la première.
-  const aChiffrer = lignes.filter((l) => l.aChiffrer);
-  if (aChiffrer.length > 0) {
-    const noms = aChiffrer.map((l) => `« ${premiereLigne(l.libelle)} »`).join(", ");
+  const attente = lignesEnAttenteDePrix(lignes);
+  if (attente) {
     return {
       possible: false,
-      probleme:
-        aChiffrer.length === 1
-          ? `${noms} attend son prix : cette ligne n'est pas gratuite, elle n'est pas chiffrée.`
-          : `${aChiffrer.length} lignes attendent leur prix : ${noms}.`,
+      probleme: attente,
       marcheASuivre: "Posez leur montant ci-dessus. Le devis sera prêt dès qu'aucune ligne n'attend plus rien.",
     };
   }
@@ -101,6 +97,28 @@ export function peutPreparerDevis(lignes: readonly LignePrix[]): VerdictPreparat
   // montant. On ne bloque pas pour autant : c'est au patron de juger, et une
   // description peut se corriger sur l'écran du devis.
   return { possible: true };
+}
+
+/**
+ * Les lignes qui attendent encore leur prix, nommées — ou `null` s'il n'y en a
+ * aucune.
+ *
+ * **Elle existe parce que la règle était écrite DEUX FOIS** (`CLAUDE.md` §3) :
+ * ici pour l'écran, et une seconde fois dans `envoyerDevis` avec sa propre
+ * phrase. Les deux ont divergé, et c'est la capture du patron du 31 août 2026
+ * qui l'a montré : « 2 lignes attendent **son** prix […] Posez-**le** sur
+ * l'écran Prix ». Le pluriel n'avait été traité que sur le verbe.
+ *
+ * Le vrai coût n'est pas la faute d'accord : deux formulations de la même règle
+ * finissent par dire deux choses différentes, et rien ne dit laquelle fait foi.
+ */
+export function lignesEnAttenteDePrix(lignes: readonly LignePrix[]): string | null {
+  const attente = lignes.filter((l) => l.aChiffrer);
+  if (attente.length === 0) return null;
+  const noms = attente.map((l) => `« ${premiereLigne(l.libelle)} »`).join(", ");
+  return attente.length === 1
+    ? `${noms} attend son prix : cette ligne n'est pas gratuite, elle n'est pas chiffrée.`
+    : `${attente.length} lignes attendent leur prix : ${noms}.`;
 }
 
 /** Une ligne peut réunir plusieurs travaux empilés : on n'en nomme qu'un. */

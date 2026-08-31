@@ -4,12 +4,39 @@
 vous ne savez rien de ce qui précède — c'est exactement le cas de figure qu'il
 sert.
 
-**Point de reprise :** 2026-08-30 · `main`
+**Point de reprise :** 2026-08-31 · `main`
 (l'historique fait foi : `git log --oneline -20`)
 
 ---
 
-## Dernier lot : la note vocale à la messagerie, et la fiche qui tient dans un écran (30 août 2026)
+## Dernier lot : le prix qui ne débloquait rien, et le lendemain qu'on lui refusait (31 août 2026)
+
+Ses deux captures du matin, sur l'écran d'envoi du devis. Compte-rendu qui lui
+est destiné : `docs/devis-prix-et-date-proche.md`.
+
+**Ce qu'il faut savoir avant d'y toucher :**
+
+- **Le drapeau « à chiffrer » s'éteint sur le montant CALCULÉ, jamais sur
+  l'entrée.** Deux écrans écrivent dans `modifierLignePrix` et ils n'envoient
+  pas la même chose : l'écran Prix poste `{ montant }`, l'écran du devis poste
+  `{ libelle, quantite, prixUnitaire }`. Lire `data.montant` laissait le second
+  chemin bloquer l'envoi pour toujours — sans aucune sortie, et sans que rien à
+  l'écran ne le trahisse.
+- **L'extinction est à SENS UNIQUE, et c'est délibéré.** Un montant qui retombe
+  à zéro ne relève pas le drapeau : « à chiffrer » dit que le prix n'a pas été
+  trouvé, pas que la ligne vaut zéro.
+- **Le délai de deux jours n'est plus une interdiction.** Il gouverne ce que
+  l'application SUGGÈRE (`fenetreProposition`) ; ce que le patron CHOISIT
+  (`fenetrePatron`) commence aujourd'hui. Réunir les deux fenêtres casserait
+  l'une des deux règles, dans un sens ou dans l'autre.
+- **Le piège qui aurait suivi, et qui était muet :** une date proposée avant
+  après-demain tombait sous la fenêtre du CLIENT, qui se serait fait répondre
+  « date indisponible » sur la date qu'il venait de recevoir. `bandesVisibles`
+  descend son plancher jusqu'à la date proposée, jamais plus bas.
+
+Raisons et pièges : `ARCHITECTURE.md` §216.
+
+## Lot précédent : la note vocale à la messagerie, et la fiche qui tient dans un écran (30 août 2026)
 
 Ses trois choix codés (`appli/note-vocale-choix.html`) : au repos un **disque
 plein** avec deux ondes de **1,5 cm** ; dès qu'on parle, la **poubelle à gauche**
@@ -38,7 +65,7 @@ dictée. Compte-rendu qui lui est destiné : `docs/note-vocale-messagerie.md`.
 
 Raisons et pièges : `ARCHITECTURE.md` §211.
 
-## Lot précédent : « J'ai vu » sur les quatre rappels (30 août 2026)
+## Encore avant : « J'ai vu » sur les quatre rappels (30 août 2026)
 
 Sa demande du jour : chaque notification doit pouvoir se ranger d'un appui. Les
 trois rappels qui n'avaient aucun geste en ont un, et la facture impayée prend
