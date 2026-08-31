@@ -118,3 +118,74 @@ export function estAuPlanning(
 ): boolean {
   return getPlanificationEtat(c, maintenant) === "planifie" && ongletDepuisJalons(c, aujourdHui) === "planning";
 }
+
+// ─── LA MÉMOIRE DU CALENDRIER ──────────────────────────────────────────────
+
+/**
+ * Combien de temps le calendrier du planning garde la mémoire d'un jour passé.
+ *
+ * **Sa question du 31 août 2026 :** *« est-ce que le planning garde en mémoire
+ * les chantiers passés ? Si non il faut qu'il les garde en mémoire au moins sur
+ * une année »*, puis, devant la planche 100 et les chiffres : ***« la B »***, et
+ * ***deux ans***.
+ *
+ * **Ce nombre ne coûte presque rien, et c'est mesuré, pas supposé.** Une ligne
+ * de chantier pèse environ 640 octets dans la page ; deux ans à cinq cents
+ * chantiers par an font 1 000 lignes, soit 594 Ko bruts et **71 Ko** une fois la
+ * page comprimée — le dixième d'une seule photo de chantier.
+ *
+ * **Et il RÉTRÉCIT ce qui partait jusqu'ici.** `listerChantiersPourPlanning`
+ * n'avait aucune borne basse : tous les chantiers datés de toute la vie de
+ * l'entreprise descendaient déjà dans son téléphone à chaque ouverture du
+ * planning, sans que rien ne les affiche. Une borne de deux ans est donc, dès la
+ * troisième année, plus légère que ce qui existait avant elle.
+ */
+export const MEMOIRE_CALENDRIER_JOURS = 730;
+
+/**
+ * Le premier jour dont le calendrier se souvient encore.
+ *
+ * **Une seule source pour deux endroits** : le tamis de l'écran et la borne
+ * basse de la requête SQL. Écrite deux fois, elle aurait fini par ne plus
+ * désigner le même jour — et l'on aurait vu des jours chargés côté serveur que
+ * l'écran refuse de peindre, ou l'inverse (`CLAUDE.md` §3).
+ */
+export function seuilMemoireCalendrier(aujourdHui: string = jourIso(new Date())): string {
+  const d = new Date(`${aujourdHui}T12:00:00Z`);
+  d.setUTCDate(d.getUTCDate() - MEMOIRE_CALENDRIER_JOURS);
+  return d.toISOString().slice(0, 10);
+}
+
+/**
+ * Le calendrier peint-il ce chantier sur son jour ?
+ *
+ * ═══════════════════════════════════════════════════════════════════════════
+ * **CE N'EST PAS LA MÊME QUESTION QU'`estAuPlanning`, et les confondre casserait
+ * la règle du 6 août 2026.** Celle-là décide de l'ONGLET — et un chantier passé
+ * appartient à « Terminés », il n'en bouge pas. Celle-ci décide de ce que le
+ * CALENDRIER dessine, ce qui n'a jamais eu à être la même chose : un mois de
+ * juillet peint est un mois de juillet qu'on regarde, pas un mois de travail
+ * qui reste à faire.
+ *
+ * Élargir `estAuPlanning` aurait remis le chantier dans deux onglets à la fois
+ * — exactement le défaut que ce fichier existe pour empêcher.
+ *
+ * ─── Ce que chaque cas rend, et pourquoi ───────────────────────────────────
+ *
+ * | Le chantier | Rendu | La raison |
+ * |---|---|---|
+ * | sans date | non | il n'y a aucun jour où le peindre |
+ * | daté aujourd'hui ou après | ce que dit `estAuPlanning` | rien ne change pour l'à-venir : un chantier clôturé d'avance libère sa journée, et c'est voulu depuis le 3 août |
+ * | daté avant aujourd'hui, dans la mémoire | **oui**, terminé et facturé compris | c'est tout l'objet : ce qui a été fait s'est fait, quel que soit l'état de sa facture |
+ * | daté avant la mémoire | non | au-delà, « Terminés » reste la mémoire longue |
+ * ═══════════════════════════════════════════════════════════════════════════
+ */
+export function estAuCalendrier(
+  c: JalonsDeRangement & EtatPourPlanification,
+  aujourdHui: string = jourIso(new Date()),
+  maintenant: Date = new Date()
+): boolean {
+  if (!c.datePlanifiee) return false;
+  if (c.datePlanifiee >= aujourdHui) return estAuPlanning(c, aujourdHui, maintenant);
+  return c.datePlanifiee >= seuilMemoireCalendrier(aujourdHui);
+}

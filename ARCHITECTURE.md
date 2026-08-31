@@ -19612,7 +19612,472 @@ mot (`CLAUDE.md` §5 bis).
 
 ---
 
-## 222. Il n'y a plus qu'UNE fiche client : la reprise cesse d'être une version amputée
+## 222. Le bouton qui répond au doigt : ce qui existe, ce qui manque, et ce qu'iOS refuse
+
+*Sa demande du 31 août 2026 : « quand je clique sur les boutons j'aimerais avoir
+une mini vibration, que l'utilisateur soit sûr d'avoir appuyé. Et si possible
+avoir un visuel du bouton qui s'enfonce tout en s'éclaircissant légèrement —
+une touche noire avant qu'on appuie, une fois le doigt dessus elle s'éclaircit,
+et lorsqu'on lâche elle reprend sa couleur d'origine. »*
+
+**Rien n'est codé** (`CLAUDE.md` §3 bis) : ce § existe parce que la planche
+`appli/le-bouton-qui-repond.html` a mis au jour trois choses qu'une nouvelle
+session referait de travers faute de les savoir.
+
+### 1. Le geste EXISTE déjà, et c'est pour ça qu'il ne le sent pas
+
+`PrimaryButton.tsx` porte `transition-transform active:scale-[0.985]`. Sur une
+capsule de 50 px de haut, 1,5 % font **moins d'un pixel de chaque côté**, et
+rien d'autre ne bouge : ni la couleur, ni l'ombre, ni le téléphone. Le geste est
+dans le code, pas sous le doigt. Répondre « c'est déjà fait » à sa demande
+serait donc exact et inutile.
+
+Les trois forces proposées sur la planche : **0,975 / 0,955 / 0,935**, contre
+0,985 aujourd'hui.
+
+### 2. « S'éclaircir » n'a de sens que là où il reste de la place
+
+Sa règle est juste et sa raison est physique : sous un doigt, un aplat qui
+**fonce** disparaît dans l'ombre de la main ; un aplat qui s'éclaircit sort de
+dessous. Elle vaut pour sa touche noire, pour le vert d'Atlas, et pour le crème
+des deux chartes sombres — où l'aplat principal est clair et monte vers le blanc.
+
+**Elle ne peut PAS valoir pour une carte de chantier en mode clair** : `#faf9f5`
+est à 0,95 de clarté, il n'y a rien au-dessus. Elle se teinte donc vers le
+papier, faute de place. C'est la seule exception, et elle est nommée dans le
+contrôle plutôt que laissée au jugé — un contrôle qui exigerait l'éclaircissement
+partout rougirait sur un écran juste.
+
+**Et sur les chartes sombres, `--paper` ne suffisait pas** : crème et papier n'y
+sont séparés que de **six millièmes** de clarté. L'appui existait dans le CSS et
+était invisible sous le doigt — trouvé par la mesure, pas à l'œil. D'où un jeton
+dédié (`--appui-pale`), et un seuil de visibilité (un centième de clarté) dans le
+contrôle.
+
+### 3. Un bouton qui rétrécit perd le doigt qui le tient
+
+Sans `setPointerCapture`, un doigt posé près du bord se retrouve **dehors** dès
+que la capsule rentre : `pointerleave` part, et le bouton remonte alors qu'on
+appuie encore. Le défaut grandit avec la force du geste — donc invisible à la
+souris, au centre, et bien visible au pouce sur le réglage « Marqué ».
+
+### 4. La vibration : trois chemins, et ils ne se valent pas
+
+| Où | Ce qui donne le retour | Réglable |
+|---|---|---|
+| Android, navigateur | `navigator.vibrate(ms)` | oui |
+| **iPhone, Safari** | **rien** — l'API n'existe pas. Reste l'interrupteur natif (`<input type="checkbox" switch>`, iOS 17.4+), dont le système joue le retour au changement | non |
+| L'application emballée (`appli/CAPACITOR.md`) | `@capacitor/haptics` | oui |
+
+**Ses captures portent la pastille dynamique : il est sur iPhone.** Livrer la
+planche sans le dire lui aurait coûté un aller-retour — il aurait essayé, senti
+peu ou rien, et conclu que ça ne marche pas, alors que l'application installée
+saurait le faire. La planche l'écrit à l'écran **et dit lequel des trois chemins
+son téléphone a pris**.
+
+L'interrupteur d'iOS doit être **rendu** pour que le système joue son retour : un
+`display:none` le rendrait muet. Il est donc posé hors de l'écran.
+
+**ET CE PARAGRAPHE ÉTAIT INCOMPLET — corrigé le 31 août 2026, à ses frais.** Il
+a écrit « la vibration ne fonctionne pas », et il avait raison : la première
+version basculait l'interrupteur en JavaScript (`input.checked = !input.checked`,
+plus un `change` fabriqué). Cela change la case et **n'active rien** ; iOS joue
+son retour sur l'ACTIVATION par le navigateur, pas sur la valeur. Le seul chemin
+est un vrai clic sur l'étiquette, que le navigateur traduit lui-même en
+activation. L'étiquette portait de surcroît `pointer-events:none` — seconde
+façon de la rendre inerte, aussi silencieuse que la première.
+
+**Le pire n'est pas la faute, c'est ce qui l'a cachée :** le compteur de la
+planche montait à chaque appui. Il comptait les APPELS, pas les vibrations — et
+personne ne peut compter une vibration depuis une page web. Un chiffre qui monte
+sur une fonction morte est plus dangereux qu'un chiffre absent, parce qu'on cesse
+de chercher. Ce que le contrôle tient désormais, c'est le mécanisme qui manquait
+(étiquette reliée, ni masquée ni inerte, et un clic qui active) ; ce qu'il ne
+tient toujours pas, et qui doit se lire ici, c'est le ressenti — celui-là se
+vérifie sur son téléphone, et nulle part ailleurs.
+
+### La seconde plainte, et ce qu'elle a appris
+
+**Le correctif ci-dessus n'a pas suffi : il a réécrit « la vibration ne marche
+pas ».** Deux corrections de causes supposées à la file, sans jamais voir son
+téléphone — la faute que `AGENTS.md` nomme en toutes lettres.
+
+**Un second défaut, trouvé en cherchant plutôt qu'en devinant, et il suffisait à
+tout expliquer :** le chemin était choisi une fois pour toutes, et de façon
+EXCLUSIVE. Si `"switch" in document.createElement("input")` rendait `false` sur
+son navigateur, le chemin valait « aucun » et la fonction ne tentait **rien** —
+pas même l'étiquette qu'on venait de réparer. **Une détection est une
+supposition ; une tentative est un fait.** Les deux chemins sont maintenant
+essayés à chaque appui.
+
+**Ce qui reste indécidable d'ici, et le geste qui le tranche.** Aucune page web
+ne peut savoir si un téléphone a vibré : il n'existe pas d'accusé de réception.
+La planche porte donc **un interrupteur natif qu'il touche lui-même** — le seul
+geste dont iOS reconnaisse l'activation à coup sûr :
+
+| Ce qu'il sent | Ce que ça prouve |
+|---|---|
+| l'interrupteur vibre | iOS sait vibrer sur une page web ; c'est l'appel par programme qui échoue |
+| il ne vibre pas | **aucune** page web ne fera vibrer ce téléphone — seule l'application installée le pourra |
+
+Sans cette séparation, on corrigerait indéfiniment un code peut-être juste
+devant une plateforme qui refuse.
+
+**Et le compteur mentait.** Il annonçait des vibrations, il comptait des appels
+— et montait pendant que rien ne bougeait, ce qui a retardé la découverte. Un
+chiffre qui monte sur une fonction morte est pire qu'un chiffre absent.
+
+### LE VERDICT, et il ne se rouvre pas
+
+**Le 31 août 2026, il a touché du doigt un interrupteur natif d'iOS posé sur la
+planche. Rien n'a vibré.** La piste web est close :
+
+| | |
+|---|---|
+| une page web sur son iPhone | **ne vibrera pas**, quoi qu'on écrive |
+| l'application installée | `@capacitor/haptics`, retour natif et réglable |
+
+**RÉSERVE POSÉE LE 31 AOÛT AU SOIR, ET ELLE COMPTE :** cette conclusion repose
+sur un seul relevé — son interrupteur muet — et **une cause n'a jamais été
+écartée**, faute d'avoir été demandée : son réglage iOS « Retour haptique
+système » (Réglages → Sons et haptiques). **Éteint, il rend muets l'interrupteur
+natif ET l'application installée**, et le verdict ci-dessus serait alors faux :
+ce ne serait pas la plateforme qui refuse, ce serait son téléphone qui est
+réglé pour ne rien sentir.
+
+C'est la faute de la soirée, en plus petit : trois correctifs sur des causes
+supposées, puis une conclusion sur un essai dont on n'a pas vérifié les
+conditions. **Tant qu'il n'a pas répondu sur ce réglage, ce § est une forte
+présomption, pas un fait.**
+
+**Ne pas écrire un quatrième correctif web.** Trois s'y sont succédé le même
+soir — `checked` au lieu de l'activation, l'étiquette rendue inerte par
+`pointer-events:none`, la détection exclusive qui n'essayait plus rien. **Les
+trois étaient de vrais défauts, et aucun n'était la cause.** Une session qui
+retrouverait l'un de ces motifs et croirait tenir la solution referait le même
+chemin.
+
+**Ce qui a fini par répondre, et qui aurait dû venir en premier :** un objet
+que le PATRON active lui-même, dont la réponse sépare deux pannes
+indiscernables de loin — « mon appel échoue » et « la plateforme refuse ».
+Trois tours de correctifs supposés ont précédé ce geste-là.
+
+**Et ce qui a permis ces trois tours : un chiffre qui montait.** Le compteur de
+la planche comptait des APPELS en annonçant des vibrations — or aucune page web
+n'a d'accusé de réception sur le vibreur. Il a rendu un vert rassurant sur une
+fonction morte, trois fois de suite. **Rien à l'écran ne promet plus une
+vibration**, et `verifier-maquette-bouton-qui-repond.mjs` rougit si le
+compteur, le bouton d'essai, l'interrupteur ou le diagnostic réapparaissent.
+
+### Les dix verts, et pourquoi ils sont mesurés
+
+Sa seconde demande du 31 août : *« fais-moi plusieurs déclinaisons du bouton avec
+des dégradés de vert différents, une dizaine »*. Elles vivent dans la même
+planche, numérotées, toutes pressables.
+
+**Une seule chose change de l'une à l'autre : les deux couleurs du dégradé.**
+Même capsule, même serif, même hauteur, même libellé — sinon ce sont des boutons
+qu'il compare, pas des verts. Et **trois teintes du premier jet ont été écartées
+avant de les lui montrer** parce qu'elles se ressemblaient : la faute du premier
+tour de `le-bouton-moins-lourd.html`, où cinq nuances du même vert lui avaient
+été présentées comme cinq idées.
+
+**Le voile de l'appui est un calque, pas un `filter`.** `brightness()`
+éclaircirait aussi le texte, qui perdrait précisément le contraste que
+l'éclaircissement du fond vient de lui coûter.
+
+**Les contrastes se mesurent aux DEUX extrémités du dégradé, et sous le voile.**
+Une capsule dont seul le haut passerait aurait un bas illisible ; et l'état
+pressé — le plus défavorable, puisque le fond monte vers le texte — est celui que
+personne ne pense à regarder. Quarante relevés par teinte : pire 5,26:1 en clair,
+6,42:1 en sombre. Les valeurs sont lues sur les variables que le CSS emploie
+(`--haut`, `--bas`), jamais recopiées dans le contrôle — deux listes finissent
+toujours par diverger.
+
+### Ce qui l'éprouve, et ce que le contrôle ne peut pas dire
+
+`scripts/verifier-maquette-bouton-qui-repond.mjs` mesure, sur les **quatre**
+surfaces qu'on touche et dans les **deux** teintes, sous les **trois** réglages :
+que la surface rentre, qu'elle change de clarté dans le bon sens et assez pour se
+voir, et qu'elle **revient** quand on lâche. Il sait échouer : confronté au geste
+d'aujourd'hui (0,985 sans couleur), il rougit six fois.
+
+**Ce qu'il ne prouve pas, et qui doit se lire ici :** Chromium rend `true` à
+`navigator.vibrate()` sans qu'aucun moteur ne tourne. Le compteur de la planche
+dit que l'appel PART, jamais que le téléphone bouge — et le chemin d'iPhone
+n'existe pas du tout dans cet environnement. **Cela se vérifie sur son
+téléphone**, et nulle part ailleurs.
+
+Deux faux rouges ont été payés en l'écrivant : une cible hors de la fenêtre, puis
+une cible recouverte par la barre collante — toutes deux mesurées « ne bouge
+pas » sur un bouton parfaitement sain. D'où le refus explicite de conclure sur
+une cible qu'on ne peut pas atteindre (`CLAUDE.md` §5).
+
+### Si la réponse arrive, ce que coder veut dire
+
+Le dessin ne se pose PAS écran par écran : il va dans `PrimaryButton.tsx` et
+dans les pièces partagées, sinon deux gestes cohabiteront. Et la vibration se
+pose **une fois**, dans une fonction unique — deux appels écrits à deux endroits
+divergeront sur la durée, et l'un des deux oubliera l'interrupteur de réglage
+qu'il a demandé à voir sur la planche.
+
+## 223. Le devis du client : verrouillé contre la retouche, et tenant dans un écran
+
+*31 août 2026 — `proteger-pdf.ts`, `document-commun.ts`, `devis/[jeton]/`.*
+
+**Ses trois captures, prises sur le téléphone d'une cliente.** La page reçue par
+SMS, dont il fallait faire défiler la moitié pour voir les gestes. Le PDF ouvert
+dans Acrobat, qui proposait *« Ajouter du texte »* et *« Ajouter une image »*.
+L'écran de retour après acceptation, où il ne restait plus rien — ni montant, ni
+devis.
+
+### 1. Un PDF que le client pouvait modifier
+
+**Le défaut n'était pas dans Atlas** : un PDF ordinaire est modifiable, et tous
+les lecteurs modernes savent le faire. Ce qui manquait, c'est la déclaration
+d'autorisations que le format prévoit — et qu'aucun lecteur ne peut ignorer sans
+mentir à son utilisateur.
+
+Le devis part donc **chiffré** (AES-128, révision 4 du gestionnaire standard),
+avec un mot de passe propriétaire tiré au sort et jeté, et un mot de passe
+d'ouverture **vide** : le client ouvre son devis d'un appui, sans rien taper.
+
+| Ce qui reste permis | Ce qui ne l'est plus |
+|---|---|
+| imprimer, en pleine définition | modifier le contenu |
+| copier une adresse | annoter, remplir |
+| lire à voix haute (accessibilité) | assembler, retirer une page |
+
+**Ce que cela ne fait pas, et il faut le dire :** ce n'est pas un coffre-fort.
+Le format est public, un outil déterminé réécrit un PDF quoi qu'on fasse. Le but
+est qu'un client de bonne foi ne puisse pas modifier son devis **par mégarde ou
+d'un doigt**, et que la pièce qui fait foi reste celle qu'Atlas archive à
+l'envoi. Promettre l'inverse serait promettre ce qu'aucun format ne tient.
+
+**Trois pièges payés en le construisant :**
+
+- **Les flux d'objets étaient à interdire, pas à régler.** pdf-lib rassemble par
+  défaut plusieurs objets dans un flux unique. Chiffrés d'un bloc, les textes
+  qu'ils portent l'auraient été deux fois — et le fichier ne se serait ouvert
+  nulle part.
+- **pdf-lib réécrit la date de modification au chargement.** Sans
+  `updateMetadata: false`, le document changeait d'une seconde à l'autre : un
+  défaut invisible, qui ne se serait montré qu'une fois sur deux.
+- **Le tirage au sort devait rester dehors.** `test-allure-pdf.ts` compare deux
+  compositions du même devis **octet pour octet** — c'est ce qui garantit
+  qu'aucun artisan ne voit son devis changer parce qu'un écran est apparu
+  quelque part. Une protection tirée au sort à chaque document aurait fait
+  rougir ce contrôle, et on aurait retiré le contrôle au lieu du défaut. Le mot
+  de passe dérive donc d'une graine tirée **une fois par processus** et de
+  l'empreinte du fichier : propre à chaque document, imprévisible d'un serveur à
+  l'autre, et reproductible dans une même exécution.
+
+**Et le contrôle qui compte n'est pas celui qui vérifie le chiffrement.** Un
+contrôle qui relirait la protection avec le code qui l'a produite ne prouverait
+que sa cohérence avec lui-même. Le danger réel est l'inverse du défaut corrigé :
+un devis que **plus personne** n'ouvre.
+
+`test-devis-lisible.ts` emploie donc un lecteur écrit d'après la norme
+(`scripts/_lecteur-pdf-protege.ts`), qui **n'importe rien de la protection** :
+il ouvre le devis sans mot de passe et y relit le nom du client, la ligne de
+prestation et le total. Son plancher : le même devis dont **un seul chiffre** de
+la clé est faux, que ce lecteur refuse — sans quoi un lecteur complaisant
+passerait les deux contrôles sans rien prouver.
+
+**Ce contrôle a d'abord été écrit avec un vrai navigateur, et la CI l'a fait
+rougir.** Playwright y installe le *headless shell* de Chromium, qui n'embarque
+aucun lecteur PDF : il TÉLÉCHARGE le fichier au lieu de le peindre, et l'erreur
+— « Download is starting » — accusait le devis alors qu'il allait bien. Les
+vrais moteurs ont quand même dit leur mot, le 31 août, à la main : **qpdf** a lu
+les autorisations une par une et déchiffré la page ; le lecteur PDF du
+**Chromium complet** a peint le document sans rien demander, et a réclamé un mot
+de passe sur le même fichier dont un chiffre de la clé était faux. Cette
+vérification-là ne tourne pas en CI, et le dire vaut mieux que de laisser croire
+qu'elle s'y rejoue.
+
+**Un contrôle voisin a été rattrapé au passage, et il s'est défendu tout seul.**
+`test-note-hors-documents-e2e.ts` lit le PDF des gars pour vérifier que le
+pense-bête du patron n'y figure pas. Chiffré, il ne s'y lisait plus rien — et ce
+contrôle a REFUSÉ de conclure plutôt que de rendre un vert : sa garde exige d'y
+retrouver d'abord une ligne du devis. Sans elle, la promesse *« la note ne sort
+pas de l'application »* serait devenue une phrase que plus rien ne tenait. Il
+partage désormais le même lecteur.
+
+### 2. Toute la réponse dans un écran
+
+*« Je veux que le choix de la date qui arrive au client par SMS tienne sur une
+seule page ! Il ne doit pas avoir à scroll pour voir toutes les infos. »*
+
+La page demandait **770 px** pour 664 disponibles — le dernier geste, « Je ne
+donne pas suite », vivait sous le pli. Elle en demande **630**.
+
+| | |
+|---|---|
+| **40 px** | la carte du message a été **réunie** avec celle de la date : deux jeux de marges et une gouttière pour séparer deux choses qui se répondent |
+| **30 px** | la phrase grise sous le bouton de correction, et le bouton éteint qui l'obligeait |
+| **18 px** | le nom de l'entreprise, remonté sur la ligne du numéro de devis |
+| **18 px** | l'invitation à écrire, réunie avec l'intitulé du champ |
+| **15 px** | la mention de preuve, ramenée de trois lignes à une |
+| **45 px** | marges, gouttières et hauteurs de boutons, resserrées |
+
+**Ce qui n'a PAS été retiré, et pourquoi.** Les trois totaux (il accepte un
+montant), le lien vers le PDF complet (son accord porte sur le contenu exact),
+l'adresse du chantier, les trois issues. La zone de message reste une **zone**,
+sur deux lignes au lieu de trois : un champ d'une ligne dissuade d'écrire, et
+c'est ce champ qui évite qu'une coquille se transforme en refus.
+
+**Le bouton de correction n'est plus éteint.** Il l'était tant que rien n'était
+écrit, ce qui obligeait à expliquer dessous pourquoi — trente pixels, et sans
+cette phrase un bouton éteint se lit comme une application cassée. Il répond
+désormais, et c'est sa réponse qui dit ce qui manque, au moment où cela mord.
+**La règle, elle, n'a pas bougé de place** : le dépôt refuse toujours une
+correction sans message (motif `message_manquant`) ; l'écran ne fait que
+l'annoncer sans aller-retour.
+
+**Une suite a été retournée plutôt que satisfaite.** Elle exigeait la phrase
+« vous pouvez laisser un mot à votre artisan », mot pour mot — celle-là même que
+ce lot réunit avec l'intitulé. Elle vérifie maintenant ce qu'elle défendait :
+que le libellé du champ **invite** à écrire, et qu'il soit au-dessus (`CLAUDE.md`
+§5 bis).
+
+**Ce que la mesure couvre, et ce qu'elle ne couvre pas.** Le cas le plus haut est
+tenu : un client nommé, une adresse, **deux dates** (le maximum que l'écran
+d'envoi autorise) et la contre-proposition ouverte. Ouvrir le calendrier d'une
+autre date, ou cocher une date dans le délai de rétractation, rallonge la page —
+ce sont des gestes du client, pas ce qu'il voit en arrivant.
+
+### 3. Le devis reste à portée après l'acceptation
+
+*« Lorsque le client a accepté le devis et qu'il revient sur la page via le SMS,
+il n'a plus accès à son devis — or il doit encore pouvoir le télécharger s'il a
+oublié de le faire. »*
+
+L'écran de retour ne portait aucun geste : le lien reçu par SMS devenait un
+cul-de-sac le jour même de l'accord, et il fallait rappeler l'artisan pour
+obtenir la pièce qu'on venait de signer. Il porte désormais **Télécharger mon
+devis**, et la carte de confirmation aussi — c'est là que le client le cherche.
+
+**`?telecharger` plutôt qu'un simple lien**, et la nuance compte sur un
+téléphone : sans lui, le PDF s'ouvre dans le lecteur du navigateur et le client
+croit l'avoir enregistré alors qu'il n'a fait que le regarder. L'attribut
+`download` d'un lien n'y aurait rien changé — les navigateurs de téléphone
+l'ignorent largement. C'est le serveur qui décide, par son en-tête.
+
+**Après un refus, aucun geste.** On ne propose pas d'emporter un devis auquel on
+vient de renoncer ; après une demande de correction non plus, puisque le
+document va changer.
+
+**Et « Voir le devis complet (PDF) » est devenu « Télécharger mon devis (PDF) »,
+en gras et souligné** — sa demande, le même jour, après avoir vu l'écran. Le
+changement n'est pas typographique : le lien porte désormais `?telecharger`, donc
+il EMPORTE le fichier au lieu de l'ouvrir dans le lecteur du navigateur. Un lien
+qui dit « télécharger » et se contente d'afficher est un mensonge d'une ligne :
+le client croit avoir gardé son devis, et il n'en reste rien à la fermeture de
+l'onglet.
+
+Le geste existe donc à deux endroits sur l'écran d'après-acceptation — la ligne
+de l'en-tête et la touche de la carte de confirmation. C'est assumé : l'une est
+une ligne de texte dans le récapitulatif, l'autre est le geste qu'on cherche à
+ce moment-là. La suite ne compte donc plus les liens, elle vérifie qu'il en
+existe au moins un et **qu'il rend vraiment le fichier**.
+
+## 224. Le calendrier se souvient : deux questions, pas une
+
+**Sa question du 31 août 2026, capture de juillet à l'appui :** *« est-ce que le
+planning garde en mémoire les chantiers passés ? Si non il faut qu'il les garde
+en mémoire au moins sur une année »* — trente et un jours sans une seule marque.
+Puis, devant la planche 100 : ***« la B »***, et ***deux ans***.
+
+### Ce que le code faisait, vérifié plutôt que supposé
+
+Rien n'était effacé. Aucune purge ne touche les chantiers (`src/server/retention.ts`
+ne connaît que l'audio, les fichiers orphelins et les journaux), et
+`listerChantiersPourPlanning` les chargeait **tous**, sans la moindre borne de
+date. La mémoire existait donc, et elle descendait déjà dans son téléphone.
+
+Ce qui la jetait, c'est l'écran : `estAuPlanning` refuse un chantier dès que sa
+date est passée, parce qu'`ongletDepuisJalons` le range dans « Terminés ». Le
+calendrier repeignait donc chaque jour en blanc le lendemain.
+
+### La faute à ne pas commettre : élargir `estAuPlanning`
+
+C'était le geste évident, et il aurait cassé la règle du 6 août 2026 — *« une
+fois facturé ou leur date de planning passée il doit figurer seulement dans
+terminé »*. `estAuPlanning` décide de l'**onglet** ; un chantier passé qu'elle
+accepterait serait dans « Planning » **et** dans « Terminés » à la fois, ce que
+`src/lib/onglet-chantier.ts` existe précisément pour empêcher.
+
+Ce sont **deux questions différentes**, et elles le restent :
+
+| La question | La fonction | Ce qu'elle commande |
+|---|---|---|
+| ce chantier est-il du travail à venir ? | `estAuPlanning` | l'onglet où il se range |
+| le calendrier le peint-il sur son jour ? | **`estAuCalendrier`** | ce que la case dessine |
+
+`estAuCalendrier` délègue à `estAuPlanning` pour aujourd'hui et l'à-venir — rien
+ne change de ce côté, y compris qu'un chantier clôturé d'avance libère sa
+journée (règle du 3 août 2026). Pour le passé, elle répond oui tant que le jour
+tient dans `MEMOIRE_CALENDRIER_JOURS`, **terminés et facturés compris** : ce qui
+a eu lieu a eu lieu, quel que soit l'état de sa facture.
+
+### Deux ans, et le nombre RÉDUIT ce qui partait
+
+Le poids a été mesuré, pas estimé (`scripts/mesurer-poids-planning.mjs`) :
+
+| Chantiers gardés | Brut | Comprimé |
+|---|---|---|
+| 500 (≈ 1 an) | 297 Ko | **35 Ko** |
+| 1 000 (≈ 2 ans) | 594 Ko | **71 Ko** |
+| 2 500 (≈ 5 ans) | 1 485 Ko | **175 Ko** |
+
+Soixante-et-onze kilo-octets, c'est le dixième d'une seule photo de chantier.
+
+**Et la borne allège au lieu d'alourdir.** La requête n'en avait aucune : à la
+cinquième année, tous les chantiers de l'entreprise descendaient à chaque
+ouverture du planning **sans que rien ne les affiche**. Le tamis de l'écran et la
+borne SQL partagent désormais `seuilMemoireCalendrier` — une seule source, sans
+quoi un chantier serait chargé sans être peint, ou peint sans être chargé.
+
+### Ce que ce lot RÉPARE en passant
+
+L'écran d'envoi peint le même calendrier (`MoisCharge`) à partir de la liste
+**brute**, sans tamis : un jour passé y portait déjà ses chantiers pendant que le
+planning l'affichait vide. Deux vérités sur la même journée, à un écran d'écart
+— ce que `CLAUDE.md` §3 interdit nommément. Elles se rejoignent.
+
+### Un jour passé se lit, il ne s'écrit pas
+
+Cocher un salarié ou déplacer une demi-journée sur un chantier fait il y a huit
+mois ne veut rien dire, et un geste possible est un geste qu'on fait par erreur.
+La carte d'un jour passé reçoit donc `ecriture={false}` — **le même drapeau que
+le salarié en lecture seule** (30 août 2026), jamais un second mécanisme. Le
+« + Ajouter » disparaît aux **deux** endroits où il est posé : sur la fiche du
+jour, et sous la journée dans « Planifiés ».
+
+**Ce qui n'a PAS été fait, et c'est délibéré :** aucun refus n'a été ajouté au
+serveur sur les dates passées. Poser un chantier sur hier reste possible — un
+artisan qui enregistre après coup une journée déjà faite est un cas légitime, et
+le lui interdire pour rendre un écran cohérent aurait coûté plus que ça ne
+rapporte.
+
+### Ce que les contrôles prouvent, et ce qu'ils ont failli ne pas prouver
+
+`test-onglet-chantier.ts` éprouve la règle pure ; `test-planning-memoire-e2e.ts`
+la joue **à l'écran**, parce que c'est la leçon du 8 août 2026 : la fonction
+était juste et l'écran appliquait une copie fautive à côté.
+
+**Deux de ses contrôles ne prouvaient rien, et il a fallu les confronter au
+défaut pour s'en apercevoir.** « Aucun geste d'écriture n'est offert » et « le
+salarié s'affiche en lecture » restaient VERTS contre l'écran d'avant ce lot :
+une carte vide n'a ni bouton d'écriture, ni salarié à montrer. Une absence n'est
+une preuve que si la présence était possible — le contrôle exige donc désormais
+qu'un chantier soit là avant de compter les boutons, et vise le nom du salarié
+plutôt qu'un nombre de demi-journées. C'est le contrôle qui mesure zéro de
+`CLAUDE.md` §5, retrouvé une fois de plus.
+
+---
+
+## 225. Il n'y a plus qu'UNE fiche client : la reprise cesse d'être une version amputée
 
 **Sa demande du 31 août 2026, deux captures à l'appui :** *« lorsque je fais
 retour j'arrive sur la page 1re photo alors que je veux arriver sur la 2e. Je

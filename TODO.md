@@ -9,31 +9,62 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
-## `test-poignee-ferme-e2e.ts` NE PEUT PAS SE JOUER SEUL (31 août 2026)
+## EN ATTENTE DE SA RÉPONSE : l'allure de la dictée (31 août 2026)
 
-**CORRECTION DE CE QUI ÉTAIT ÉCRIT ICI IL Y A UNE HEURE, ET C'ÉTAIT FAUX.** Ce
-paragraphe annonçait « quatre cas rouges, reproduits sur `main` » : la suite est
-**verte** dans la batterie complète (121/121, jouée par groupes le 31 août). Le
-rouge venait de la façon de la jouer, pas du dépôt.
+Sa remarque du 31 août — *« ça dénature l'appli »*, devant la dictée de la fiche
+chantier. **Rien n'est codé, et rien ne doit l'être avant sa réponse**
+(`CLAUDE.md` §3 bis).
 
-**Ce qui est vrai, et qui vaut d'être écrit.** Jouée SEULE
-(`--seulement test-poignee-ferme-e2e.ts`), elle rougit de quatre cas — sur `main`
-comme ailleurs, et de façon reproductible. Elle ouvre `/reglages/equipe` et
-attend « + Noter une absence », en affirmant en commentaire que ce bouton *« est
-toujours là, sur un écran de réglages qui ne dépend d'aucune donnée »*. C'est
-faux : `AbsencesEquipe` ne rend **aucun bouton** tant que `nombreSalaries <= 0`
-(`src/app/reglages/AbsencesEquipe.tsx`), et le jeu de démonstration n'en pose
-aucun. Le salarié qu'elle trouve en batterie vient d'une suite jouée AVANT elle.
+La planche : `appli/dictee-embellie.html`, en ligne à
+https://florianmarrins0978-svg.github.io/Atlas-app/dictee-embellie.html
 
-**Ce que ça coûte :** c'est exactement le piège que documente
-`scripts/jouer-suites-par-groupes.mjs` — les suites navigateur ne sont pas
-indépendantes. Une session qui isole celle-ci pour diagnostiquer autre chose
-conclura à un défaut du produit, et cherchera pendant une heure. C'est arrivé
-aujourd'hui.
+**Ce qu'on attend de lui : un numéro.** 1 la barre, 2 l'anneau, 3 la ligne,
+4 le galet — ou « je garde ce qu'il y a ».
 
-**Ce qu'il faudrait :** qu'elle pose son salarié elle-même avant d'ouvrir la
-feuille. Elle serait alors jouable seule, et son commentaire cesserait de
-décrire un écran qu'elle n'atteint pas toujours.
+**Ce qui change à l'écran une fois choisi :** `AnneauNoteVocale.tsx` (le rendu
+de la dictée) et le bloc `.atlas-dictee` de `src/app/globals.css`. Le repos ne
+bouge pas — c'est son choix du 30 août, et il n'a rien reproché à cet état-là.
+
+## EN ATTENTE DE SA RÉPONSE : la force du geste des boutons (31 août 2026)
+
+Sa demande du 31 août — une mini vibration à l'appui, et le bouton qui s'enfonce
+en s'éclaircissant. **Rien n'est codé, et rien ne doit l'être avant sa réponse**
+(`CLAUDE.md` §3 bis).
+
+La planche : `appli/le-bouton-qui-repond.html`, en ligne à
+https://florianmarrins0978-svg.github.io/Atlas-app/le-bouton-qui-repond.html
+
+**Ce qu'on attend de lui, trois réponses :** la force (Discret, le sien,
+Marqué), **le numéro du vert** parmi les dix, et s'il veut l'interrupteur
+« Vibration au toucher » dans les réglages.
+
+**LA VIBRATION EST TRANCHÉE — ne pas rouvrir la piste web.** Le 31 août, il a
+touché du doigt un interrupteur natif d'iOS sur la planche : rien n'a vibré.
+Aucune page web ne fera vibrer son iPhone. Trois correctifs web l'ont précédé,
+tous des défauts réels, aucun n'était la cause (`ARCHITECTURE.md` §222).
+
+**Ce qui reste à faire quand il aura choisi la force et le vert :** poser le
+retour haptique dans l'application par **`@capacitor/haptics`** — c'est le seul
+chemin qui marche sur son téléphone. À vérifier chez lui, pas ici.
+
+**LA QUESTION À LUI POSER AVANT TOUT LE RESTE, et elle peut annuler le verdict
+ci-dessus :** son réglage iOS **« Retour haptique système »** (Réglages → Sons
+et haptiques) est-il allumé ? Éteint, il rend muets l'interrupteur natif ET
+l'application installée — auquel cas la piste web n'est pas morte du tout, et
+c'est son téléphone qui est réglé pour ne rien sentir. Posée le 31 août au soir,
+sans réponse à ce jour.
+
+## Rien n'est proposé au client après un refus ou une correction (31 août 2026)
+
+Depuis ce jour, l'écran de retour d'un devis **accepté** porte « Télécharger mon
+devis » (sa demande). Les deux autres écrans de retour — refus, correction — n'en
+portent aucun.
+
+**C'est délibéré :** on ne propose pas d'emporter un devis auquel on vient de
+renoncer, et celui qui part en correction va changer.
+
+**Qui peut le trancher :** le patron. Deux lignes si sa réponse est l'inverse.
+
 
 ---
 
@@ -130,6 +161,22 @@ il n'empêche pas la cause.
 la dernière mise en veille répond sans rien demander au patron.
 
 ---
+
+## ~~LE PLANNING GARDE-T-IL LES JOURS PASSÉS~~ — fait le 31 août 2026
+
+~~Sa demande : « il faut qu'il les garde en mémoire au moins sur une année ».~~
+
+**Tranché et codé le 31 août 2026 :** il a répondu **B** devant la planche 100,
+et **deux ans** après avoir vu le poids. `estAuCalendrier`,
+`MEMOIRE_CALENDRIER_JOURS`, borne basse dans la requête, jour passé en lecture
+seule. Le détail et ses pourquoi : `ARCHITECTURE.md` §224.
+
+**Ce qui reste ouvert, et qui n'est pas de lui :** `PlanningClient` refait à la
+main ce que `useOccupation` fait déjà — `parCreneau`, `absentesParCreneau`,
+`occupationDe`, `nomEquipe`, à l'identique. Deux copies d'une même règle, ce que
+`CLAUDE.md` §3 interdit : elles divergeront au premier réglage ajouté d'un seul
+côté. Ce lot ne les a pas réunies pour ne pas mêler un remaniement à un
+changement de comportement — mais la dette est là, et elle porte un vrai risque.
 
 ## POURQUOI LE RELAIS PERD SON PORT 3000 — inexpliqué (31 août 2026)
 

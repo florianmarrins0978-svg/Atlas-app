@@ -9,6 +9,175 @@ Format : le plus récent en tête.
 
 ## 2026-08-31
 
+### La dictée de la fiche chantier « dénature l'appli » — quatre allures à essayer
+
+**Sa remarque du 31 août, capture à l'appui.** Elle se mesure, et c'est ce qui
+a servi de boussole : pendant qu'on dicte, l'écran porte **deux aplats vert
+pin** — le disque de 76 px et le rond d'envoi — soit **7 956 px²** de sombre là
+où le reste de la fiche n'en porte aucun. S'y ajoutent deux défauts visibles sur
+sa capture : rien ne tient les trois boutons ensemble, et le chrono, l'onde et le
+disque sont posés sur **trois axes différents**.
+
+Quatre allures, dans `appli/dictee-embellie.html` — **rien n'est codé**
+(`CLAUDE.md` §3 bis) : la barre (3 176 px²), l'anneau d'Atlas et son arc d'or
+(**289**, le carré d'arrêt et la pastille), la ligne (1 972), le galet clair
+(2 657). Le repos et les deux gestes ne changent pas d'une allure à l'autre :
+changer deux choses à la fois empêche de choisir.
+
+**Le contrôle additionne la surface peinte** plutôt que de lire une classe
+(`scripts/verifier-maquette-dictee-embellie.mjs`) : sans cela, on pouvait livrer
+quatre variations qui déplacent le défaut sans le régler, et le vert n'aurait
+rien prouvé. Confronté à un anneau repeint en plein, il rougit à 6 065 px².
+
+### Les dix verts étaient CASSÉS en ligne, et mon contrôle ne le voyait pas
+
+**Sa plainte : « sur le lien cliquable ça ne fonctionne toujours pas ».** Elle
+était juste, et le défaut venait de mon propre nettoyage une heure plus tôt : un
+`re.sub` posé pour retirer des styles orphelins a emporté avec eux **la règle
+`.vert`** — celle qui peint le dégradé. Les dix capsules étaient servies
+transparentes, texte noir, sans repère de position pour le voile de l'appui.
+
+**Et le contrôle est resté vert, ce qui est le vrai défaut.** Il lisait `--haut`
+et `--bas` dans l'attribut `style` de chaque bouton : **les valeurs DÉCLARÉES**.
+Elles étaient toujours là — c'est la règle qui les EMPLOIE qui avait disparu. Un
+contrôle qui mesure la déclaration et non l'effet rend un vert rassurant sur un
+écran cassé, et c'est le patron qui l'a trouvé.
+
+Il lit désormais `getComputedStyle().backgroundImage`, `color` et `position` :
+le fond réellement peint, couleurs résolues par le navigateur. Confronté au
+dégât exact, il rougit sur douze points.
+
+**Et la capture non plus n'aurait pas menti** : la dernière image des dix verts
+avait été prise AVANT le nettoyage. Regarder l'écran après le dernier
+changement, pas après l'avant-dernier.
+
+**La réserve du soir est aussi passée à l'écran** : la planche n'affirme plus
+que Safari refuse tout, elle nomme le réglage « Retour haptique système » qui
+reste à vérifier.
+
+### La vibration par le web : tranchée, et close
+
+**Son verdict, le doigt sur l'interrupteur natif d'iOS : « non, ça ne vibre
+pas ».** La question qu'aucun code ne pouvait trancher depuis cet
+environnement l'est maintenant, par le seul geste qui pouvait le faire.
+**Aucune page web ne fera vibrer son iPhone** — ce n'était ni l'étiquette, ni
+la détection, ni un réglage.
+
+**Trois correctifs pour rien, et c'est le vrai enseignement.** J'ai corrigé
+trois causes supposées à la file (la valeur écrite au lieu de l'activation,
+l'étiquette inerte, la détection exclusive) — chacune était un défaut réel,
+aucune n'était LA cause. Ce qui a fini par répondre n'est pas un quatrième
+correctif : c'est d'avoir posé sur la planche **un objet qu'il touche
+lui-même**, et dont la réponse sépare « mon code échoue » de « la plateforme
+refuse ». Il aurait fallu commencer par là.
+
+**Ce qui a rendu ces trois tours possibles :** un compteur qui montait à chaque
+appui. Il comptait des APPELS et prétendait compter des vibrations — aucune
+page web ne peut savoir si un téléphone a bougé. Il a fallu trois allers-retours
+pour s'en apercevoir.
+
+**Tout ce qui promettait une vibration est retiré de la planche** — compteur,
+bouton « Vibrer », interrupteur d'essai, diagnostic, voyant. Il ne reste
+qu'une phrase qui dit ce qui a été tranché et où la vibration viendra. Le
+contrôle rougit si l'un d'eux réapparaît : un écran qui annonce ce qu'il ne
+tient pas l'a fait revenir trois fois.
+
+**La suite n'est pas une maquette.** Le retour haptique passera par
+`@capacitor/haptics` dans l'application installée, et cela se code.
+
+### Toujours pas de vibration : arrêter de deviner, faire parler la page
+
+**Sa plainte, une deuxième fois : « la vibration ne marche pas ».** Le premier
+correctif de la soirée — passer par un clic sur l'étiquette au lieu d'écrire
+`checked` — était juste, et il n'a pas suffi. **Deux corrections de causes
+SUPPOSÉES, sans jamais voir son téléphone : c'est exactement ce que `AGENTS.md`
+interdit.** Ce lot ne suppose plus rien.
+
+**Un défaut trouvé en le cherchant, et il pouvait tout expliquer à lui seul :**
+le chemin était **exclusif**. `chemin = aVibrate ? "api" : (aSwitchIOS ? "ios" :
+"aucun")` — si la détection de l'interrupteur natif se trompait sur son Safari,
+`chemin` valait « aucun » et la fonction **ne tentait plus rien**, en silence.
+Une détection est une supposition ; une tentative est un fait. Les deux chemins
+sont désormais essayés à chaque appui, quoi que dise la détection.
+
+**Et la page dit maintenant ce qu'elle a fait** : navigateur reconnu,
+`navigator.vibrate` présent ou non, interrupteur natif reconnu ou non, l'heure du
+dernier essai et ce qui a été tenté. Cela se photographie et s'envoie — c'est la
+règle du 11 août : *devant un défaut muet, la première livraison n'est pas un
+correctif, c'est de rendre le défaut bavard.*
+
+**Un interrupteur natif qu'il touche du doigt** a été ajouté, et c'est lui qui
+tranche : s'il vibre, iOS sait vibrer sur une page web et c'est mon appel par
+programme qui échoue ; s'il ne vibre pas, **aucune page web ne fera vibrer ce
+téléphone**, et seule l'application installée le pourra. Aucune supposition ne
+remplace ce geste-là.
+
+**Le compteur cesse de mentir.** Il annonçait des vibrations ; il comptait des
+appels — et montait joyeusement pendant que rien ne bougeait. L'écran l'écrit
+maintenant en toutes lettres.
+
+### La vibration ne partait pas sur son iPhone, et dix verts à choisir
+
+**Sa plainte : « la vibration ne fonctionne pas ».** Elle était juste, et le
+défaut était dans MON code, pas dans Safari. La planche posait
+`input.checked = !input.checked` sur l'interrupteur natif d'iOS : la case
+basculait, le compteur montait, **et rien ne vibrait**. Le retour haptique d'iOS
+suit l'ACTIVATION de l'interrupteur par le navigateur, jamais la valeur qu'on
+lui écrit — seul un vrai clic sur son étiquette l'obtient
+(`$("#etiquette-ios").click()`). L'étiquette avait en plus `pointer-events:none`,
+seconde façon de la rendre muette.
+
+**Ce que ça apprend, au-delà de ce lot :** le compteur affichait « 3 » pendant
+que rien ne bougeait. **Un contrôle qui mesure l'appel ne mesure pas l'effet**
+— et il rendait un vert rassurant sur une fonction morte.
+`verifier-maquette-bouton-qui-repond.mjs` éprouve maintenant le mécanisme qui
+manquait : que l'étiquette soit reliée, ni masquée ni inerte, et qu'un clic
+l'active. Il rougit si on la remet en `display:none`.
+
+**Et sa seconde demande, dans le même lot :** dix dégradés de vert à essayer,
+numérotés, tous pressables, même libellé et même capsule d'un bout à l'autre —
+sinon ce sont des boutons qu'il compare, pas des verts. Trois teintes du premier
+jet ont été écartées avant de les lui montrer parce qu'elles se ressemblaient :
+c'est la faute exacte du premier tour de `le-bouton-moins-lourd.html`, où cinq
+nuances du même vert étaient passées pour cinq idées.
+
+**Les contrastes sont mesurés, pas estimés** — sur les deux extrémités de chaque
+dégradé, **et sous le voile de l'appui**, qui éclaircit le fond donc rapproche le
+texte. Quarante relevés par teinte : le pire tient 5,26:1 en clair et 6,42:1 en
+sombre, contre 4,5 demandés. Le contrôle refuse en dessous, et rougit sur un vert
+clair posé sous du texte crème.
+
+### Une planche pour le bouton qui répond au doigt — vibration et enfoncement
+
+**Sa demande du 31 août :** *« quand je clique sur les boutons j'aimerais avoir
+une mini vibration, que l'utilisateur soit sûr d'avoir appuyé »*, et *« le
+bouton qui s'enfonce tout en s'éclaircissant légèrement »*, capture d'une touche
+noire à l'appui. **Rien n'est codé** : `appli/le-bouton-qui-repond.html` lui
+donne trois forces à essayer (Discret, la sienne, Marqué) sur les quatre
+surfaces qu'il touche — capsule pleine, capsule creuse, cartes de chantier,
+barre du bas — plus sa touche noire.
+
+**Ce que la planche apprend, et qui n'était écrit nulle part.**
+`PrimaryButton.tsx` porte déjà `active:scale-[0.985]` : sur une capsule de
+50 px, moins d'un pixel de chaque côté, et **aucun changement de couleur**. Le
+geste existait dans le code et pas sous le doigt — c'est pour ça qu'il ne le
+sent pas.
+
+**Et la vibration ne se donne pas de la même main partout** : Safari sur iPhone
+ne fournit pas `navigator.vibrate()` aux pages web. La planche passe donc par
+l'interrupteur natif d'iOS 17.4+, dit à l'écran quel chemin le téléphone a pris,
+et rappelle que l'application emballée par Capacitor, elle, aurait le vrai
+retour haptique réglable. Sans cette phrase, il aurait essayé sur son iPhone,
+n'aurait presque rien senti, et aurait conclu que ça ne marche pas.
+
+**Deux défauts trouvés par le contrôle et non à l'œil**
+(`scripts/verifier-maquette-bouton-qui-repond.mjs`) : sur les chartes sombres,
+une carte appuyée ne changeait que de six millièmes de clarté — un appui présent
+dans le CSS et invisible sous le doigt ; et le bouton remontait sous un doigt
+encore posé près de son bord, parce qu'il rétrécit et sortait de sous lui
+(corrigé par `setPointerCapture`). Le contrôle a été confronté au geste
+d'aujourd'hui, celui de l'application : il rougit six fois.
+
 ### La fiche client rouverte est la fiche client ENTIÈRE
 
 **Sa demande, deux captures à l'appui :** *« lorsque je fais retour j'arrive sur
@@ -23,7 +192,6 @@ note dictée. Les nourrir de vide lui aurait fait croire ses photos perdues.
 
 Seul « Enregistrer » distingue encore la fiche rouverte : elle seule a quelque
 chose à sauver, ce qu'il vient de taper sur un chantier qui existe.
-
 
 ### Le banc lance le Next DU PROJET, et ne laisse plus `npx` en chercher un autre
 
@@ -50,6 +218,48 @@ Elle a lieu maintenant avant tout lancement. Vérifié de bout en bout : paquet
 rapide ».
 
 Détail et ce qui reste ouvert : `ARCHITECTURE.md` §219.
+
+### Le devis du client ne se modifie plus, tient dans un écran, et reste à portée
+
+**Ses trois captures, prises sur le téléphone d'une cliente.**
+
+**Le PDF s'ouvrait dans Acrobat avec « Ajouter du texte » et « Ajouter une
+image ».** Le document qui engage les deux parties était retouchable d'un doigt.
+Devis, factures et feuilles de chantier partent désormais chiffrés, avec les
+autorisations que le format prévoit : imprimer et copier restent permis,
+modifier, annoter et assembler ne le sont plus. Le client ouvre toujours son
+devis d'un appui — aucun mot de passe à taper.
+
+*Ce n'est pas un coffre-fort, et personne ne doit le croire : le format est
+public, un outil déterminé réécrit un PDF quoi qu'on fasse. Ce qui change, c'est
+qu'on ne modifie plus un devis par mégarde, et que la pièce qui fait foi reste
+celle qu'Atlas archive à l'envoi.*
+
+**La page reçue par SMS demandait 770 px pour 664.** Le dernier geste vivait sous
+le pli. Elle en demande 630 : la carte du message a rejoint celle de la date, le
+nom de l'entreprise est remonté sur la ligne du numéro, et la phrase grise sous
+le bouton de correction est partie — ce bouton n'est plus éteint, il répond.
+
+**Après acceptation, l'écran de retour ne portait plus rien.** Le lien du SMS
+devenait un cul-de-sac le jour même de l'accord. Il porte maintenant
+**Télécharger mon devis**, et le fichier descend vraiment au lieu de s'ouvrir
+dans le lecteur du téléphone.
+
+Et sur la page elle-même, « Voir le devis complet (PDF) » est devenu
+**« Télécharger mon devis (PDF) »**, en gras et souligné — et il télécharge pour
+de bon, au lieu d'ouvrir le lecteur du navigateur.
+
+*Éprouvé par un lecteur qui ne sait rien d'Atlas :* un lecteur écrit d'après la
+norme, qui n'importe rien de la protection, ouvre le devis sans mot de passe et
+y relit le nom du client, sa ligne de prestation et son total — et refuse le
+même devis dont un seul chiffre de la clé a été faussé. Le danger était l'inverse
+du défaut corrigé : un devis que plus personne n'ouvre. Deux vrais moteurs l'ont
+confirmé à la main le même jour (qpdf, le lecteur PDF de Chromium) ; la CI, elle,
+n'installe qu'un Chromium sans lecteur PDF, et c'est ce qui avait fait rougir la
+première version de ce contrôle.
+
+Raisons et pièges : `ARCHITECTURE.md` §223. Compte-rendu : `docs/devis-client-verrouille.md`.
+
 
 
 ### Un prix posé sur l'écran du devis débloque enfin l'envoi
@@ -307,6 +517,70 @@ Sans provenance, rien ne bouge : la fiche ouverte depuis l'accueil (« Adresse
 non renseignée ») garde sa sortie du 17 août.
 
 ---
+
+### Le calendrier garde deux ans de jours passés — sa réponse : la B
+
+Il a choisi la proposition **B** de la planche 100 (les jours passés gardent
+leurs couleurs), puis a demandé le prix de deux ans : *« c'est trop lourd ou
+pas ? »* — non, et c'est mesuré (`scripts/mesurer-poids-planning.mjs`) :
+1 000 chantiers font **71 Ko** une fois la page comprimée, le dixième d'une
+photo de chantier.
+
+`estAuCalendrier` est une question NEUVE, à côté d'`estAuPlanning` — et surtout
+pas la même élargie : celle-là décide de l'onglet, et un chantier passé doit
+rester dans « Terminés » (règle du 6 août). Les confondre l'aurait remis dans
+deux onglets à la fois.
+
+**La requête du planning n'avait AUCUNE borne basse** : tous les chantiers datés
+de la vie de l'entreprise descendaient déjà dans son téléphone, sans que rien ne
+les affiche. Elle s'arrête maintenant au même jour que l'écran — dès la
+troisième année, ce lot allège au lieu d'alourdir.
+
+**Ce qu'il répare en passant :** l'écran d'envoi peignait déjà les jours passés
+(il lit la liste brute) pendant que le planning les affichait vides. Deux
+vérités sur la même journée, à un écran d'écart.
+
+**Un jour passé se lit, il ne s'écrit pas** : même drapeau `ecriture` que le
+salarié en lecture seule, et le « + Ajouter » disparaît aux deux endroits où il
+est posé. Aucun refus n'a été ajouté au serveur, en revanche : enregistrer après
+coup une journée déjà faite reste légitime.
+
+**Deux contrôles de la nouvelle suite ne prouvaient rien**, et il a fallu les
+confronter à l'écran d'avant pour le voir : « aucun geste d'écriture » et « le
+salarié s'affiche » restaient verts sur une carte VIDE. Une absence n'est une
+preuve que si la présence était possible.
+
+### Le planning n'a aucune mémoire des jours passés — planche 100, rien n'est codé
+
+**Sa question :** *« est-ce que le planning garde en mémoire les chantiers
+passés ? Si non il faut qu'il les garde en mémoire au moins sur une année »*,
+capture de juillet 2026 à l'appui — trente et un jours sans une seule marque.
+
+**Ce que le code dit, vérifié plutôt que supposé.** Les chantiers ne sont
+**jamais effacés** : aucune purge ne les touche (`src/server/retention.ts` ne
+connaît que l'audio, les fichiers orphelins et les journaux), et
+`listerChantiersPourPlanning` les charge tous, sans borne basse de date. Ce qui
+les retire de l'écran est `rangement()` (`src/lib/onglet-chantier.ts`) : dès que
+`datePlanifiee < aujourd'hui`, le chantier bascule dans « Terminés », et
+`estAuPlanning` le refuse au calendrier. **Le mois passé se repeint donc vide.**
+
+Sa mémoire existe — elle est dans l'onglet **Terminés**, mois par mois. C'est le
+CALENDRIER qui oublie, et c'est là qu'il regarde.
+
+**Ce qui est livré :** une planche essayable, `appli/planning-memoire.html`,
+avec son écran d'aujourd'hui en témoin et deux façons de rendre la mémoire au
+calendrier — les barres du jour passé en gris (« fait », un mot de plus dans la
+légende), ou telles quelles (rien à ajouter, mais l'avant et l'après se
+ressemblent). Butée à douze mois, jour passé en LECTURE seule.
+
+**Rien n'a été touché dans `src/`** : c'est une demande d'apparence, et
+`CLAUDE.md` §3 bis veut la planche d'abord.
+
+**Deux défauts trouvés en REGARDANT la planche, qu'aucun contrôle n'aurait
+vus :** la paire de rectangles « matin / après-midi » de la légende mesurait
+zéro de large — `align-items:center` hérité, sur une colonne, réduit un
+rectangle vide à rien — et « La fiche » s'écrivait sur chaque demi-journée, deux
+portes pour un seul chantier.
 
 ## 2026-08-30
 

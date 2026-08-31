@@ -33,9 +33,62 @@ chaîne du devis par trois `!reprise`. Ces gardes sont tombées.
 - **Dicter là-dessus n'écrase pas un devis corrigé à la main** : `DevisDepuisDictee`
   rend un `conflit` et pose la question. Vérifié avant d'ouvrir le chemin.
 
-Raisons et pièges : `ARCHITECTURE.md` §222.
+Raisons et pièges : `ARCHITECTURE.md` §225.
 
-## Lot précédent : un devis sans client renvoie à la fiche client (31 août 2026)
+## Le même jour : quatre allures pour la dictée de la fiche chantier (31 août 2026)
+
+**Rien n'est codé, et c'est volontaire** (`CLAUDE.md` §3 bis). Sa remarque,
+capture à l'appui : *« propose-moi une maquette pour embellir cette partie de la
+fiche chantier, je trouve que ça dénature l'appli »*.
+
+| | |
+|---|---|
+| la planche | `appli/dictee-embellie.html` |
+| en ligne | https://florianmarrins0978-svg.github.io/Atlas-app/dictee-embellie.html |
+| son contrôle | `scripts/verifier-maquette-dictee-embellie.mjs` (dans `npm run verifier:maquette`) |
+| ce qu'on attend | **un numéro** : 1 la barre, 2 l'anneau, 3 la ligne, 4 le galet — ou rien ne change |
+| ce que ça touchera | `src/app/chantiers/[id]/AnneauNoteVocale.tsx` et le bloc `.atlas-dictee` de `src/app/globals.css` |
+
+**Ce qui a servi de boussole, et qui se mesure.** Sa plainte n'est pas un goût :
+pendant la dictée, l'écran porte **deux aplats vert pin — 7 956 px²** — là où le
+reste de la fiche n'en porte aucun ; rien ne tient les trois boutons ensemble ;
+et le chrono, l'onde et le disque sont sur trois axes différents. Le contrôle
+**additionne la surface peinte** et refuse une proposition qui ne réduirait pas
+l'aplat : sans lui, quatre variations pouvaient déplacer le défaut sans le
+régler, et rester vertes.
+
+**Le repos ne bouge pas dans les quatre** — le micro plein et ses ondes de
+1,5 cm, son choix du 30 août. Il n'a rien reproché à cet état-là, et changer
+deux choses à la fois l'empêcherait de choisir.
+
+---
+
+## Le même jour : une planche pour le geste des boutons (31 août 2026)
+
+**Rien n'est codé, et c'est volontaire** (`CLAUDE.md` §3 bis). Sa demande :
+*« une mini vibration, que l'utilisateur soit sûr d'avoir appuyé »*, et le
+bouton qui **s'enfonce en s'éclaircissant** — capture d'une touche noire qui
+pâlit sous le doigt.
+
+| | |
+|---|---|
+| la planche | `appli/le-bouton-qui-repond.html` |
+| en ligne | https://florianmarrins0978-svg.github.io/Atlas-app/le-bouton-qui-repond.html |
+| son contrôle | `scripts/verifier-maquette-bouton-qui-repond.mjs` (dans `npm run verifier:maquette`) |
+| le pourquoi | `ARCHITECTURE.md` §222 |
+| ce qu'on attend | la force (Discret, le sien, Marqué), **le numéro du vert** parmi dix, et l'interrupteur « Vibration au toucher » ou non |
+| tranché | **la vibration par le web est morte** : il a touché un interrupteur natif d'iOS, rien n'a vibré. Ne pas écrire un quatrième correctif web — ce sera `@capacitor/haptics` dans l'application |
+
+**Les deux choses à savoir avant d'y toucher.** L'application porte DÉJÀ
+`active:scale-[0.985]` sur `PrimaryButton.tsx` — moins d'un pixel, aucune
+couleur : le geste est dans le code et pas sous le doigt. Et **Safari sur iPhone
+ne donne pas la vibration aux pages web** : la planche passe par l'interrupteur
+natif d'iOS, l'application emballée passerait par `@capacitor/haptics`. Dire
+« c'est impossible » serait faux ; dire « c'est fait » aussi.
+
+---
+
+## Le même jour : un devis sans client renvoie à la fiche client (31 août 2026)
 
 Sa demande, deux captures à l'appui : *« j'ai oublié de renseigner la fiche
 client du chantier. Lorsque je fais retour, je dois arriver sur la page de la
@@ -90,7 +143,57 @@ Raisons et pièges : `ARCHITECTURE.md` §221.
   sur son espace.
 
 
-## Le même jour : le prix qui ne débloquait rien, et le lendemain qu'on lui refusait (31 août 2026)
+## Le même jour : le devis du client, verrouillé et tenant dans un écran (31 août 2026)
+
+Ses trois captures du téléphone d'une cliente. Compte-rendu qui lui est
+destiné : `docs/devis-client-verrouille.md`.
+
+**Ce qu'il faut savoir avant d'y toucher :**
+
+- **Tout ce qui sort de `composerDocument` part chiffré** — devis, facture,
+  feuille de chantier. Un seul endroit, parce qu'un document oublié ne se
+  verrait pas : c'est chez le client qu'on l'apprendrait.
+- **Le chiffrement doit rester REPRODUCTIBLE.** `test-allure-pdf.ts` compare
+  deux compositions du même devis octet pour octet, et cette égalité garde une
+  promesse qui compte. Le mot de passe propriétaire dérive donc d'une graine
+  tirée **une fois par processus** et de l'empreinte du fichier. Tirer au sort
+  par document ferait rougir ce contrôle — et c'est le contrôle qu'on
+  retirerait, pas le défaut.
+- **`useObjectStreams: false` n'est pas un réglage, c'est une nécessité** : un
+  flux d'objets chiffrerait deux fois les textes qu'il porte, et le fichier ne
+  s'ouvrirait nulle part. Idem pour `updateMetadata: false`, sans quoi pdf-lib
+  réécrit la date de modification au chargement.
+- **Le contrôle qui compte est `test-devis-lisible.ts`**, pas celui qui relit la
+  protection : le danger réel est un devis que plus personne n'ouvre. Il emploie
+  un lecteur écrit d'après la norme (`scripts/_lecteur-pdf-protege.ts`), qui
+  n'importe rien du produit, avec pour plancher le même devis dont un chiffre de
+  la clé est faux.
+- **NE PAS le réécrire avec un navigateur.** La première version demandait à
+  Chromium de peindre le PDF : la CI installe le *headless shell*, sans lecteur
+  PDF, qui le télécharge au lieu de l'afficher — « Download is starting », et un
+  rouge qui accuse le devis. Les vrais moteurs (qpdf, Chromium complet) ont
+  validé le document à la main le 31 août ; cela ne se rejoue pas en CI.
+- **Tout contrôle qui LIT un PDF doit désormais le déchiffrer** —
+  `texteDuPdf` de `scripts/_lecteur-pdf-protege.ts`. C'est ce qui a rattrapé
+  `test-note-hors-documents-e2e.ts`, dont la garde a refusé de conclure plutôt
+  que de rendre un vert imprenable.
+- **La page du client tient dans 664 px, et rien ne doit la rallonger sans que
+  la mesure le dise** (`test-devis-client-e2e.ts`, « TOUT TIENT DANS UN ÉCRAN »).
+  Elle est mesurée sur le cas le plus haut : client nommé, adresse, deux dates et
+  la contre-proposition ouverte.
+- **Le bouton de correction n'est plus éteint**, et sa phrase grise est partie :
+  il refuse en répondant. La règle, elle, n'a pas bougé — le dépôt refuse
+  toujours une correction sans message (`message_manquant`).
+- **Le lien de l'en-tête TÉLÉCHARGE, il n'ouvre plus.** « Voir le devis complet »
+  est devenu « Télécharger mon devis (PDF) », en gras et souligné, avec
+  `?telecharger`. Le remettre en simple lecture rendrait son libellé faux.
+- **Ce qui reste ouvert :** rien n'est proposé après un refus ni après une
+  demande de correction. À rouvrir avec lui s'il veut le contraire.
+
+Raisons et pièges : `ARCHITECTURE.md` §223.
+
+## Lot précédent : le prix qui ne débloquait rien, et le lendemain qu'on lui refusait (31 août 2026)
+
 
 Ses deux captures du matin, sur l'écran d'envoi du devis. Compte-rendu qui lui
 est destiné : `docs/devis-prix-et-date-proche.md`.
@@ -178,7 +281,7 @@ contre la version d'avant. `ARCHITECTURE.md` §218.
 
 ---
 
-## Lot précédent : la note vocale à la messagerie, et la fiche qui tient dans un écran (30 août 2026)
+## Encore avant : la note vocale à la messagerie, et la fiche qui tient dans un écran (30 août 2026)
 
 Ses trois choix codés (`appli/note-vocale-choix.html`) : au repos un **disque
 plein** avec deux ondes de **1,5 cm** ; dès qu'on parle, la **poubelle à gauche**
@@ -456,6 +559,32 @@ tôt.
 ne sert pas la même application — la feuille « Absences » ne s'ouvrait plus, et
 deux vérifications rougissaient sur du code juste.
 
+## PIÈGE : `npm run build` PUIS LA BATTERIE = TURBOPACK SE FIGE (31 août 2026)
+
+**Le symptôme, et il n'accuse personne :** une suite navigateur reste plantée
+sur `page.goto` pendant 45 s, le journal du serveur s'arrête sur
+`○ Compiling /paysage ...` et n'écrit plus jamais rien. Le serveur, lui,
+**répond** — `curl /login` rend 200 en 94 ms. Ce n'est donc ni la mémoire, ni un
+serveur mort : c'est UNE ROUTE qui ne finit jamais de compiler.
+
+**La cause :** `npm run build` et `next dev` partagent le dossier `.next`. Une
+construction jouée avant la batterie y laisse un cache que le mode
+développement reprend et sur lequel il se fige.
+
+**Ce qui a été vérifié plutôt que supposé**, parce que le doute portait sur un
+lot en cours :
+
+| | |
+|---|---|
+| la suite sur la branche | rouge, deux fois |
+| la même suite sur `origin/main` **tel quel** | rouge aussi — donc pas le lot |
+| `npm run build` | **vert**, `/paysage` compile sans une erreur |
+| après `rm -rf .next`, sur `main` | **verte** |
+
+**Le geste :** `rm -rf .next` avant de lancer les suites navigateur, dès qu'une
+construction a été jouée depuis. Une heure perdue à chercher un défaut dans du
+code juste — et deux fois failli accuser un lot qui n'y était pour rien.
+
 ## LA BATTERIE NE TIENT PLUS EN UN SEUL SERVEUR — à lire avant de la lancer (27 août 2026)
 
 **Si `npm run verifier:avant-livraison` rend un rouge sur une suite navigateur,
@@ -683,6 +812,13 @@ c'est `colors.rust` qui sert à la fois de « complet » et de « proposé » da
   Équipe ou retourne dans « Absences ». **Non codée.**
 - **Planche 97** — `appli/salaries-et-equipes.html`. **Répondue (A) et codée le
   26 août** : voir le paragraphe plus haut.
+- **Planche 98** — `appli/planning-memoire.html` (31 août 2026). *« Est-ce que
+  le planning garde en mémoire les chantiers passés ? »* — **RÉPONDUE (B) et
+  codée le 31 août** : le calendrier garde **deux ans**, les jours passés
+  gardent leurs couleurs, et ils se lisent sans s'écrire. Le pourquoi complet est
+  dans `ARCHITECTURE.md` §224. **À savoir avant d'y toucher :** `estAuCalendrier`
+  et `estAuPlanning` sont deux questions distinctes, et les réunir remettrait un
+  chantier dans deux onglets.
 
 ## LA NOTE VOCALE « À LA WHATSAPP » EST CODÉE (30 août 2026)
 

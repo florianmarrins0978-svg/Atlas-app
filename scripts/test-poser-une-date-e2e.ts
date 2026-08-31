@@ -132,23 +132,52 @@ async function main() {
   // on touche un jour, et l'on ajoute DEPUIS SA FICHE. C'est la réponse au
   // défaut du 17 août : le geste part de là où l'œil est déjà.
   await cas("depuis la fiche d'un jour, « Ajouter un chantier » le pose", async () => {
-    const jours = await page.$$eval('[data-atlas="grille-mois"] [data-jour]', (l) =>
-      l.map((e) => ({
-        jour: e.getAttribute("data-jour"),
-        matin: e.querySelector('[data-demi="matin"]')?.getAttribute("data-etat"),
-        apres: e.querySelector('[data-demi="apres_midi"]')?.getAttribute("data-etat"),
-      }))
-    );
+    const lireLeMois = () =>
+      page.$$eval('[data-atlas="grille-mois"] [data-jour]', (l) =>
+        l.map((e) => ({
+          jour: e.getAttribute("data-jour"),
+          matin: e.querySelector('[data-demi="matin"]')?.getAttribute("data-etat"),
+          apres: e.querySelector('[data-demi="apres_midi"]')?.getAttribute("data-etat"),
+        }))
+      );
+    let jours = await lireLeMois();
     // **On vise un jour OUVRABLE, et depuis le 23 août 2026 ce n'est plus
     // parce qu'un samedi refuserait quoi que ce soit** — il offre désormais les
     // mêmes gestes (sa règle : « s'il a des salariés qui font des extras »).
     // C'est simplement le cas ordinaire que ce contrôle décrit ; le samedi a le
     // sien, dans `test-planning-e2e.ts`.
     const ouvrable = (iso: string) => ![0, 6].includes(new Date(`${iso}T12:00:00Z`).getUTCDay());
-    const libre = jours.find(
-      (j) => j.jour && ouvrable(j.jour) && j.matin === "libre" && j.apres === "libre"
-    );
-    if (!libre) throw new Error("aucun jour ouvrable entièrement libre au calendrier");
+    // **ET UN JOUR QUI N'EST PAS PASSÉ — depuis le 31 août 2026.**
+    //
+    // Ce contrôle prenait le PREMIER jour libre du mois affiché : le 31 août,
+    // c'est le 3 août, un jour déjà passé. Il marchait tant que le planning
+    // offrait « + Ajouter » sur n'importe quelle journée ; depuis que la
+    // mémoire du calendrier existe, un jour passé se lit et ne s'écrit plus
+    // (`ARCHITECTURE.md` §224), et le bouton n'y est plus.
+    //
+    // **On adapte le contrôle, on ne rend pas le bouton** (`CLAUDE.md` §5 bis) :
+    // ce qu'il défend est *« de cet écran-là, une date se pose »*, et une date
+    // se pose sur un jour à venir. Le jour retenu était incident, pas la règle.
+    const aujourdHui = new Date().toISOString().slice(0, 10);
+    const chercher = (l: typeof jours) =>
+      l.find(
+        (j) =>
+          j.jour && j.jour >= aujourdHui && ouvrable(j.jour) && j.matin === "libre" && j.apres === "libre"
+      );
+    // **ET L'ON FEUILLETTE, s'il ne reste rien dans le mois affiché.** Le
+    // 31 août, le mois courant n'offre qu'un seul jour à venir — lui —, que les
+    // suites d'avant ont déjà occupé. Le contrôle rougissait alors sur un
+    // calendrier parfaitement sain, et son verdict dépendait du jour du mois où
+    // la batterie tourne. Le mois suivant est à un doigt : c'est ce que le
+    // patron ferait.
+    let libre = chercher(jours);
+    for (let i = 0; i < 3 && !libre; i++) {
+      await page.click('button[aria-label="Mois suivant"]');
+      await page.waitForTimeout(120);
+      jours = await lireLeMois();
+      libre = chercher(jours);
+    }
+    if (!libre) throw new Error("aucun jour ouvrable à venir entièrement libre, sur quatre mois");
 
     await page.click(`[data-atlas="grille-mois"] [data-jour="${libre.jour}"]`);
     await page.waitForSelector('[data-atlas="carte-jour"]', { timeout: 15_000 });

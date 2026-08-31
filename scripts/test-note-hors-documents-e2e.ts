@@ -3,8 +3,8 @@ import { jourDuPatron } from "./_jour-e2e";
 import { devices } from "playwright";
 import type { Page } from "playwright";
 import { lancerNavigateur } from "./e2e-browser";
-import { inflateSync } from "node:zlib";
 import { pool } from "../src/server/db/client";
+import { texteDuPdf } from "./_lecteur-pdf-protege";
 
 /**
  * Ce que la note ne doit JAMAIS quitter : l'application.
@@ -90,36 +90,19 @@ async function ouvrirLaFeuille(page: Page, nom: string) {
  * elle est restée verte en confrontation avec le défaut qu'elle prétendait
  * interdire.
  */
-function texteDuPdf(octets: Buffer): string {
-  const brut = octets.toString("latin1");
-  let lisible = "";
-  for (const m of brut.matchAll(/stream\r?\n([\s\S]*?)endstream/g)) {
-    const corps = Buffer.from(m[1], "latin1");
-    let flux: string;
-    try {
-      flux = inflateSync(corps).toString("latin1");
-    } catch {
-      // Flux non comprimé (police, image) : on le prend tel quel plutôt que de
-      // le perdre — un flux ignoré serait un endroit où la note pourrait dormir
-      // sans que rien ne le dise.
-      flux = corps.toString("latin1");
-    }
-
-    // **Le texte est écrit en HEXADÉCIMAL** — `<4174656C696572> Tj` —, et c'est
-    // le second piège de ce lecteur : après avoir décomprimé les flux, la
-    // première version cherchait encore des mots en clair et n'en trouvait
-    // toujours aucun. Elle se serait tue sur une note imprimée en toutes
-    // lettres.
-    for (const t of flux.matchAll(/<([0-9A-Fa-f\s]+)>\s*Tj/g)) {
-      lisible += Buffer.from(t[1].replace(/\s+/g, ""), "hex").toString("latin1") + "\n";
-    }
-    // Et la forme littérale, que d'autres producteurs emploient.
-    for (const t of flux.matchAll(/\(((?:[^()\\]|\\.)*)\)\s*Tj/g)) {
-      lisible += t[1] + "\n";
-    }
-  }
-  return lisible;
-}
+/**
+ * **Ce lecteur a dû apprendre à DÉCHIFFRER, le 31 août 2026.** Depuis ce
+ * jour-là, tout ce qu'Atlas produit part protégé contre la retouche
+ * (`src/server/pdf/proteger-pdf.ts`) : les flux ne se décompriment plus, et ce
+ * contrôle-ci a fait exactement ce qu'il fallait — il a REFUSÉ de conclure,
+ * plutôt que de rendre un vert en ne trouvant rien. Sa garde ci-dessous est ce
+ * qui l'a sauvé.
+ *
+ * Le déchiffrement vit dans `_lecteur-pdf-protege.ts`, partagé avec
+ * `test-devis-lisible.ts`, et n'importe rien du produit : un lecteur qui
+ * appellerait la fonction qui a chiffré ne prouverait que sa cohérence avec
+ * elle-même.
+ */
 
 async function main() {
   console.log("=== Le pense-bête de la feuille de chantier ===\n");
@@ -252,7 +235,7 @@ async function main() {
   await cas("SA RÈGLE : elle ne part sur AUCUN document — pas même le PDF des gars", async () => {
     const reponse = await page.request.get(`${BASE}/api/chantiers/${chantierId}/feuille/pdf`);
     assert.equal(reponse.status(), 200, `le PDF répond ${reponse.status()}`);
-    const lisible = texteDuPdf(await reponse.body());
+    const lisible = texteDuPdf(new Uint8Array(await reponse.body()));
 
     // **Le contrôle doit d'abord prouver qu'il SAIT LIRE ce PDF.** Sa première
     // version cherchait les mots dans les octets bruts : le texte d'un PDF étant

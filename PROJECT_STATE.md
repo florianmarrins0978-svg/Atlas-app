@@ -29,7 +29,34 @@ pellicule, l'anneau et la chaîne du devis. Elle les porte désormais, **nourris
 de ce que le chantier a déjà** — photos prises, note dictée. Seul
 « Enregistrer » l'en distingue encore : elle seule a quelque chose à sauver.
 
-Raisons : `ARCHITECTURE.md` §222.
+Raisons : `ARCHITECTURE.md` §225.
+
+---
+
+## EN ATTENTE : l'allure de la dictée — une planche, pas du code (31 août 2026)
+
+**Rien n'a bougé dans l'application**, et c'est l'état exact du produit : la
+dictée de la fiche chantier porte toujours son disque plein de 76 px, son rond
+d'envoi plein, et le chrono et l'onde en dessous, chacun sur son axe.
+
+Sa remarque du 31 août : *« ça dénature l'appli »*. Quatre allures lui sont
+proposées sur `appli/dictee-embellie.html` — la barre, l'anneau, la ligne, le
+galet —, au même repos et aux mêmes gestes. **Sa réponse est attendue : un
+numéro.**
+
+---
+
+## EN ATTENTE : le geste des boutons — une planche, pas du code (31 août 2026)
+
+**Rien n'a bougé dans l'application**, et c'est l'état exact du produit : les
+boutons d'Atlas ne vibrent pas, et leur seul geste est `active:scale-[0.985]` —
+moins d'un pixel sur une capsule de 50 px, aucune couleur.
+
+Sa demande du 31 août : *« une mini vibration, que l'utilisateur soit sûr
+d'avoir appuyé »*, et le bouton qui s'enfonce en s'éclaircissant. Trois forces
+lui sont proposées sur `appli/le-bouton-qui-repond.html` — Discret, la sienne,
+Marqué — sur les quatre surfaces qu'il touche.
+**Sa réponse est attendue ; le pourquoi est en `ARCHITECTURE.md` §222.**
 
 ---
 
@@ -75,6 +102,29 @@ répond vraiment. `npm run verifier:chaine-dictee` sur son espace, où les clés
 sont posées.
 
 ---
+
+## Le devis du client : verrouillé, dans un écran, et téléchargeable après coup (31 août 2026)
+
+Ses trois captures du téléphone d'une cliente.
+
+| | État |
+|---|---|
+| Le PDF du client ne se modifie plus dans Acrobat | **fait** — chiffré, autorisations posées : imprimer et copier oui, modifier et annoter non |
+| La facture et la feuille de chantier aussi | **fait** — un seul endroit protège les trois |
+| Le devis protégé s'ouvre sans mot de passe | **fait, et éprouvé par un lecteur tiers** (moteur PDF de Chromium) |
+| Toute la réponse tient dans un écran de 664 px | **fait** — 770 px demandés, 630 désormais |
+| Le devis se télécharge après l'avoir accepté | **fait** — sur l'écran de retour et sur la confirmation |
+| Le fichier descend au lieu de s'ouvrir dans le lecteur | **fait** — `?telecharger`, décidé par le serveur |
+
+**Ce qui n'est PAS promis :** la protection n'est pas un coffre-fort. Elle
+empêche la retouche d'un doigt, pas un outil déterminé — le format est public.
+La pièce qui fait foi reste celle qu'Atlas archive à l'envoi.
+
+**Ce qui reste ouvert :** aucun geste n'est proposé après un refus ni après une
+demande de correction — à trancher par le patron.
+
+Raisons et pièges : `ARCHITECTURE.md` §223.
+
 
 ## Un prix posé débloque l'envoi, et il peut proposer demain (31 août 2026)
 
@@ -138,6 +188,34 @@ pour les huit ; les deux suites existantes vérifiaient la présence des jetons 
 la lisibilité, jamais l'identité. Détail : `ARCHITECTURE.md` §218.
 
 ---
+
+## Le planning garde deux ans de jours passés (31 août 2026)
+
+**Sa question :** *« est-ce que le planning garde en mémoire les chantiers
+passés ? Si non il faut qu'il les garde en mémoire au moins sur une année »*,
+puis *« combien si je décide de garder en mémoire 2 ans ? C'est trop lourd ou
+pas ? »*
+
+**Ce qui était vrai :** rien n'était effacé — les chantiers sont tous en base, et
+« Terminés » les liste — mais le CALENDRIER repeignait chaque jour en blanc le
+lendemain. Son mois de juillet était vide alors qu'il y avait travaillé.
+
+**Ce qui est fait**, planche 100, proposition **B** :
+
+| | |
+|---|---|
+| le jour passé | garde ses barres et **ses couleurs**, comme s'il était à venir |
+| jusqu'où | **deux ans** (`MEMOIRE_CALENDRIER_JOURS`) ; au-delà, « Terminés » |
+| ce qu'on y fait | on **lit** : pas de « + Ajouter », pas de salarié à cocher, pas de déplacement |
+| ce qui ne bouge pas | le chantier passé reste rangé dans « Terminés », lui seul |
+
+**Le poids, mesuré** (`npm run mesurer:poids-planning`) : 1 000 chantiers — deux
+ans — font 594 Ko bruts, **71 Ko** une fois la page comprimée. Et la requête du
+planning, qui n'avait aucune borne basse, s'arrête désormais au même jour que
+l'écran : dès la troisième année, elle envoie MOINS qu'avant.
+
+Le raisonnement complet, les fautes évitées et les deux contrôles creux
+retrouvés : `ARCHITECTURE.md` §224.
 
 ## La note vocale à la messagerie, et la fiche qui tient dans un écran (30 août 2026)
 
