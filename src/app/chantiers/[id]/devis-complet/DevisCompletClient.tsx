@@ -586,7 +586,7 @@ export default function DevisCompletClient(props: Props) {
           <Colonne>Description</Colonne>
           <Colonne droite>Qté</Colonne>
           <Colonne droite>Prix unitaire HT</Colonne>
-          <Colonne droite>Total HT</Colonne>
+          <Colonne droite>Montant HT</Colonne>
           <span />
         </div>
 
@@ -657,7 +657,7 @@ export default function DevisCompletClient(props: Props) {
               />
             </Cellule>
 
-            <Cellule libelle="Total HT">
+            <Cellule libelle="Montant HT">
               {/* **« À chiffrer » n'est pas « 0,00 € ».** Un zéro se lit
                   « gratuit », et le devis pouvait partir ainsi (26 août 2026).
                   Dès qu'il pose un montant, l'état tombe de lui-même. */}

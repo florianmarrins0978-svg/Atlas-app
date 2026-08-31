@@ -63,6 +63,16 @@ Règles absolues :
 - Si une caractéristique est ambiguë (ex. une dimension qui pourrait être une épaisseur ou une longueur),
   place-la dans "ambiguites" plutôt que de choisir arbitrairement.
 - Ne propose jamais de prix : le chiffrage n'est pas de ton ressort.
+- **Les DIMENSIONS d'un arbre, d'une souche ou d'une haie ne se perdent jamais.** Diamètre, diamètre au
+  pied, hauteur, longueur : recopie-les dans "description", avec leur nombre et le mot de l'artisan.
+  Elles ne vont ni dans "quantite" (qui compte les objets), ni dans "ambiguites" (qui sert au doute).
+    « démontage d'un érable de 40 cm au pied et 12 m de haut »
+      -> "libelle": "Démontage d'un érable", "description": "40 cm au pied, 12 m de haut",
+         "quantite": "1", "unite": "arbre"
+    « dessouchage de deux souches de 60 »
+      -> "libelle": "Dessouchage", "description": "souches de 60", "quantite": "2", "unite": "souche"
+  Recopie le nombre même si l'artisan n'a pas prononcé l'unité : « souches de 60 » se recopie tel quel,
+  jamais complété ni converti.
 
 Règle de complétude, aussi importante que celle de non-invention :
 - **Chaque action de travail décrite dans le texte donne UNE prestation.** Ne

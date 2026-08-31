@@ -19021,3 +19021,102 @@ debout pendant qu'il dort — ce banc n'est pas un hébergement. Et si le relais
 perdu le port pour de bon, la remesure le constate mais ne le réenregistre pas :
 `gh` ne sait pas le faire. La fiche donne alors le geste — onglet PORTS, retirer
 puis remettre 3000 — au lieu d'une bascule de visibilité qui ne peut rien.
+
+---
+
+## 216. Le diamètre n'était pas perdu : il n'était JAMAIS créé
+
+*30 août 2026 — `prestation-structuree.ts`, `correspondance-prestation.ts`,
+`extraction-service.ts`, `libelle-client.ts`.*
+
+Le patron redicte son chantier au téléphone. Il dit « démontage d'un érable de
+**40 centimètres au pied** » et « dessouchage de deux **souches de 60** ». Atlas
+lui redemande, à l'écran, quel diamètre fait le tronc et quel diamètre fait la
+souche.
+
+Or ces deux conventions métier étaient codées, éprouvées, et vertes : « souche
+de X », « X au pied », l'unité facultative. **Les suites passaient, le parcours
+réel échouait** — et c'est ce genre d'écart qui décide s'il croit son outil.
+
+### Ce que la remontée de la chaîne a donné
+
+| étape | ce qu'elle faisait de la mesure |
+|---|---|
+| transcription | « souches de 60 » est bien là |
+| JSON du modèle | **aucun champ pour une mesure** — le contrat n'en avait pas |
+| `libelleAvecQuantite` | ne garde que la quantité : « Dessouchage (2 souche) » |
+| `ajouterPrestation` | écrit le libellé et la structure ; la `description` du modèle **n'est pas persistée** |
+| colonnes | `caracteristiques` restait **toujours NULL** |
+| `questionsAvantChiffrage` | ne trouve ni colonne ni texte — donc **elle demande** |
+
+**Il ne se perdait donc nulle part : il n'était jamais créé.** Le seul écrivain
+de `caracteristiques` était `structureDepuisPrecisions`, c'est-à-dire **ses
+réponses aux questions dont il se plaignait**. La boucle se refermait sur
+elle-même : la seule façon d'avoir le diamètre en base était qu'il le saisisse,
+donc qu'on le lui demande.
+
+### Pourquoi aucune suite ne le voyait
+
+Chacune couvrait son maillon, et le couvrait bien. `mesures-arbre.ts` lisait
+parfaitement « souches de 60 » ; `questions-chiffrage.ts` lisait parfaitement
+une colonne `diametreCm`. **Le défaut vivait entre les deux**, là où aucune ne
+regardait — et l'on peut avoir cinquante suites vertes sur une chaîne cassée.
+
+C'est ce qui justifie `scripts/test-son-cas-reel.ts` : il part de ce que le
+MODÈLE rend et va jusqu'à ce que le patron LIT. Il a d'ailleurs immédiatement
+attrapé une régression que le correctif venait d'introduire — voir plus bas.
+
+### La correction, et où elle est posée
+
+`structureDeLaPrestation` lit désormais les mesures sur le texte du modèle
+(`libelle` + `description`) avec le vocabulaire du chiffrage, et les range en
+colonne. **C'est le dernier endroit où la matière existe encore** : la
+`description` meurt à l'insertion, et la chercher plus tard serait la chercher
+là où elle n'est plus. Corriger l'écran aurait laissé le trou intact — et le
+prix avec, puisque le chiffrage lit la même colonne.
+
+Deux garde-fous s'ajoutent :
+
+- **Le contrat d'extraction demande maintenant au modèle de CONSERVER les
+  dimensions** dans `description`, avec le mot de l'artisan et sans compléter
+  l'unité. Sans cette règle, il n'avait aucune raison de garder « de 60 » — et
+  ce que le code ne reçoit pas, il ne peut pas le lire.
+- **L'enrichissement d'une prestation existante fusionne MESURE PAR MESURE.**
+  Poser l'objet entier effacerait une hauteur qu'il a saisie lui-même le jour
+  où la dictée ne porte qu'un diamètre, et cet écrasement ne se verrait nulle
+  part : la colonne est un seul JSON.
+
+**Aucune valeur n'est devinée, et aucun prix ne change de règle.** Ce qui ne se
+lit pas ne s'écrit pas : la question se pose alors, comme avant. Et le diamètre
+entre dans la colonne que le chiffrage lisait déjà — le résultat est celui
+qu'il aurait obtenu en tapant « 60 » dans la question. On lui épargne la
+frappe, pas l'arbitrage.
+
+### Le libellé du devis, et la régression que le contrôle a attrapée
+
+Sa demande jointe : le PDF affichait « Dessouchage » tout court, il veut
+« Dessouchage de souches de 60 cm » — sans le « deux », qui reste en colonne
+Qté. Un geste d'un seul mot retrouve donc son objet (l'unité de comptage) et sa
+mesure (la colonne).
+
+**La première version testait `estUnGeste(texte)` seul, et c'était faux.** Cette
+fonction répond « oui » dès qu'un geste apparaît QUELQUE PART : « Démontage d'un
+érable » en contient un, et devenait « Démontage d'un érable **de arbre de
+40 cm** ». Le contrôle de bout en bout l'a attrapé sur une des trois lignes
+qu'il venait justement de valider ; aucune suite unitaire ne le voyait, parce
+qu'aucune ne partait de ce que le modèle rend. La borne est donc : **un seul
+mot**, une unité qui compte des objets, et un diamètre en colonne.
+
+### « MONTANT HT » en tête de colonne, « Total HT » en bas
+
+Sa dernière demande du jour. Les deux se ressemblaient assez pour qu'il les
+confonde en lisant son propre devis.
+
+**Le relevé au pixel de `test-fiche-chantier-pdf.ts` a été refait, et pas à
+l'œil :** le visualiseur PDF de cet environnement rend une page vide, et il n'y
+a ni `pdftoppm` ni `pdfjs` — une capture aurait mesuré ZÉRO, ce qui est pire
+qu'absent (`CLAUDE.md` §5). La trace des deux documents a donc été relevée des
+DEUX CÔTÉS — sur `origin/main` dans un arbre de travail séparé, et après
+correction — puis comparée ligne à ligne : sur 917 lignes, **deux** diffèrent
+(le mot, et son abscisse, l'étiquette étant calée à droite). Le seul risque d'un
+en-tête rallongé — cogner la colonne voisine — a été mesuré : 85 points d'écart.

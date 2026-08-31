@@ -9,6 +9,31 @@ sert.
 
 ---
 
+## Lot du 30 août 2026 : le diamètre dicté entre en colonne
+
+**Ce qu'il faut savoir avant d'y toucher :**
+
+- **Le défaut n'était pas une perte, c'était une absence.** `caracteristiques`
+  n'avait qu'un seul écrivain — les réponses du patron à l'arrêt
+  d'avant-chiffrage. La dictée ne pouvait donc jamais y poser un diamètre, et
+  la question revenait toujours. Une session qui chercherait « où la valeur se
+  perd » chercherait indéfiniment.
+- **`structureDeLaPrestation` est le dernier endroit où la mesure existe.** La
+  `description` que le modèle rend n'est PAS persistée : `ajouterPrestation`
+  n'écrit que le libellé et les colonnes. La lire plus loin — dans
+  `questions-chiffrage.ts`, par exemple — serait la chercher là où elle n'est
+  plus.
+- **`estUnGeste(texte)` répond oui dès qu'un geste apparaît QUELQUE PART.** Ce
+  n'est pas « ce texte est un geste ». S'en servir pour reconnaître un libellé
+  nu produit « Démontage d'un érable de arbre de 40 cm » — c'est arrivé, et
+  seul le contrôle de bout en bout l'a vu.
+- **Le contrôle qui compte est `scripts/test-son-cas-reel.ts`** : il part de ce
+  que le modèle rend et va jusqu'à ce que le patron lit. Les suites unitaires
+  étaient toutes vertes pendant que la chaîne était cassée.
+- **Ce qui n'est PAS prouvé ici :** ce que le modèle répond vraiment. Pas de
+  clé dans cet environnement (`CLAUDE.md` §1 ter) — `npm run verifier:chaine-dictee`
+  sur son espace.
+
 ## Dernier lot : la note vocale à la messagerie, et la fiche qui tient dans un écran (30 août 2026)
 
 Ses trois choix codés (`appli/note-vocale-choix.html`) : au repos un **disque

@@ -109,7 +109,12 @@ async function main() {
       "DESCRIPTION",
       "QTÉ",
       "PRIX UNITAIRE HT",
-      "TOTAL HT",
+      // **L'en-tête de COLONNE et le récapitulatif du bas ne disent plus la
+      // même chose, et c'est voulu.** Sa demande du 30 août 2026 : la colonne
+      // de chaque ligne s'appelle « MONTANT HT », le total général reste
+      // « Total HT ». Les deux se ressemblaient assez pour qu'il les confonde
+      // en lisant son devis — c'est exactement ce qu'il a signalé.
+      "MONTANT HT",
       "Total HT",
       "Total TTC",
       "NOTES / CONDITIONS",
