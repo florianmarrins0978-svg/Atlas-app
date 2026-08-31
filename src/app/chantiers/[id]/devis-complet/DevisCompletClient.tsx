@@ -19,6 +19,7 @@ import BoutonAssistant from "@/components/atlas/BoutonAssistant";
 import PrimaryButton from "@/components/atlas/PrimaryButton";
 import EnvoiAuClient from "../export/EnvoiAuClient";
 import { ouvrirLaMessagerie } from "@/lib/ouvrir-messagerie";
+import { libelleRetourDuDevis, retourDuDevis } from "@/lib/retour-du-devis";
 import {
   appliquerRetouchesAction,
   majEmetteurAction,
@@ -374,11 +375,22 @@ export default function DevisCompletClient(props: Props) {
           Le micro disparaît sur un devis parti : cet écran ne se modifie plus,
           et un micro qui écouterait pour ne rien pouvoir changer serait une
           promesse fausse. L'assistant, lui, reste utile même figé — relire un
-          prix passé ne modifie rien. */}
+          prix passé ne modifie rien.
+
+          **LE RETOUR MÈNE À LA FICHE CLIENT QUAND IL N'Y EN A PAS — 31 août
+          2026.** Sa demande, deux captures à l'appui : *« j'ai oublié de
+          renseigner la fiche client du chantier. Lorsque je fais retour, je
+          dois arriver sur la page de la fiche client ! »* Ce devis affiche
+          « Aucun client rattaché à ce chantier » : le déposer sur la fiche du
+          chantier le laissait devant un écran qui ne dit ni ce qui manque, ni
+          où le réparer. La règle est ailleurs, sans écran ni base
+          (`src/lib/retour-du-devis.ts`) — et elle referme le chemin :
+          enregistrer la fiche ramène ici. */}
       <div className="mx-auto mb-3 flex w-full max-w-[820px] items-start justify-between sm:mb-4">
         <a
-          href={`/chantiers/${props.chantierId}`}
-          aria-label="Revenir au chantier"
+          href={retourDuDevis({ chantierId: props.chantierId, clientId: props.clientId })}
+          aria-label={libelleRetourDuDevis(props.clientId)}
+          data-atlas="retour-du-devis"
           className="flex h-9 w-9 items-center justify-center rounded-full"
           style={{ backgroundColor: colors.rustTint }}
         >

@@ -1,6 +1,6 @@
 # État du projet
 
-**Dernière mise à jour :** 2026-08-30 · branche `main`
+**Dernière mise à jour :** 2026-08-31 · branche `main`
 · dernière migration `drizzle/0071_rappel_vu.sql`
 
 *(Deux en-têtes de mise à jour cohabitaient ici depuis une fusion du 29 août,
@@ -15,6 +15,27 @@ suivant, et une ligne fausse coûte plus cher qu'une ligne absente. `git log
 
 Ce fichier dit **où en est le produit**, pas ce qu'on aimerait qu'il soit. Une
 ligne « fait » qui ne l'est pas coûte plus cher qu'une ligne absente.
+
+---
+
+## Un devis sans client renvoie à la fiche client (31 août 2026)
+
+**Sa demande, deux captures à l'appui :** *« j'ai oublié de renseigner la fiche
+client du chantier. Lorsque je fais retour, je dois arriver sur la page de la
+fiche client ! Pas sur la page que je te mets en deuxième photo. »*
+
+| | |
+|---|---|
+| devis **sans client** | la flèche mène au formulaire « Fiche client » du chantier |
+| devis **avec client** | la flèche rend la fiche du chantier, comme avant |
+| fiche enregistrée, venu du devis | on **retourne au devis**, qui porte enfin le client |
+| fiche ouverte depuis l'accueil | inchangé : flèche vers la liste, enregistrement vers le chantier |
+
+La provenance voyage dans l'adresse (`?de=`) et n'est acceptée que si elle vaut
+**exactement** le devis de ce chantier — sans quoi la flèche « retour » pourrait
+sortir d'Atlas. Règle : `src/lib/retour-du-devis.ts`. Éprouvé par
+`scripts/test-retour-du-devis.ts` et `scripts/test-devis-sans-client-e2e.ts`.
+Raisons : `ARCHITECTURE.md` §216.
 
 ---
 
