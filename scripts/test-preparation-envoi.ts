@@ -601,32 +601,69 @@ async function main() {
     );
   });
 
-  await test("une date trop proche NOMME le premier jour possible", async () => {
-    // **Sa remarque du 23 août 2026 :** *« "trop tôt" veut rien dire, on
-    // comprend pas bien »*. La phrase énonçait la règle — « proposez au moins
-    // après-demain » — au lieu de dire quoi faire, et obligeait à compter dans
-    // sa tête devant un calendrier qui affiche déjà les dates.
-    const ctx = await contexte(`tot-${Date.now()}@t.test`);
+  await test("DEMAIN se retient : il prévient, il ne refuse plus", async () => {
+    // ═══════════════════════════════════════════════════════════════════════
+    // **Sa règle du 31 août 2026 :** *« si l'utilisateur veut choisir le
+    // 1ᵉʳ septembre il doit pouvoir ! »* Le calendrier lui montrait le
+    // lendemain, la case s'ouvrait sous son doigt, et le verdict la reprenait.
+    //
+    // C'est le même arbitrage qu'il avait rendu le 23 août pour les journées
+    // pleines : lui seul sait qu'il a une remorque libre demain matin.
+    // ═══════════════════════════════════════════════════════════════════════
+    const ctx = await contexte(`demain-${Date.now()}@t.test`);
+    const chantier = await chantiersRepo.creerChantier(ctx, { nom: "Haie" });
+    await devisRepo.getOuCreerDevisBrouillon(ctx, chantier.id);
+
+    const v = await verifierJourPropose(ctx, chantier.id, dans(1), undefined, LUNDI);
+    assert.strictEqual(v.retenable, true, `demain est encore refusé : « ${v.raison} »`);
+    // **Et il doit le SAVOIR.** Un jour retenu sans un mot, c'est le délai
+    // supprimé plutôt que rendu franchissable : son client a bien peu de temps
+    // pour répondre, et c'est à lui d'en juger en connaissance de cause.
+    assert.ok(
+      /moins de deux jours/i.test(v.raison ?? ""),
+      `demain se retient sans rien dire : « ${v.raison} »`
+    );
+    assert.ok(
+      !/trop proche/i.test(v.raison ?? ""),
+      `la phrase refuse encore : « ${v.raison} »`
+    );
+  });
+
+  await test("AUJOURD'HUI aussi : c'est son chantier, pas le nôtre", async () => {
+    const ctx = await contexte(`aujourdhui-${Date.now()}@t.test`);
     const chantier = await chantiersRepo.creerChantier(ctx, { nom: "Haie" });
     await devisRepo.getOuCreerDevisBrouillon(ctx, chantier.id);
 
     const v = await verifierJourPropose(ctx, chantier.id, dans(0), undefined, LUNDI);
+    assert.strictEqual(v.retenable, true, `aujourd'hui est refusé : « ${v.raison} »`);
+  });
+
+  await test("HIER reste refusé — et ce n'est pas un arbitrage d'artisan", async () => {
+    // La seule borne basse qui subsiste, et elle ne se négocie pas : son client
+    // lira ce devis demain au plus tôt. Sans ce contrôle, la règle du 31 août
+    // aurait ouvert le passé en même temps que le lendemain.
+    const ctx = await contexte(`hier-${Date.now()}@t.test`);
+    const chantier = await chantiersRepo.creerChantier(ctx, { nom: "Haie" });
+    await devisRepo.getOuCreerDevisBrouillon(ctx, chantier.id);
+
+    const v = await verifierJourPropose(ctx, chantier.id, dans(-1), undefined, LUNDI);
     assert.strictEqual(v.retenable, false, "une date passée doit rester refusée");
-    assert.ok(
-      !/trop tôt/i.test(v.raison ?? ""),
-      `« trop tôt » est revenu : « ${v.raison} »`
-    );
-    assert.ok(
-      !/en défaut/i.test(v.raison ?? ""),
-      `la phrase le met encore en tort : « ${v.raison} »`
-    );
-    // **Elle doit NOMMER le jour**, pas le lui faire calculer.
-    assert.match(
-      v.raison ?? "",
-      /\d{1,2}\s+\p{L}+/u,
-      `la phrase ne nomme aucune date : « ${v.raison} »`
-    );
-    assert.strictEqual(v.alternative, dans(2), "le premier jour possible n'est pas offert");
+    assert.match(v.raison ?? "", /pass/i, `la raison ne dit pas que le jour est passé : « ${v.raison} »`);
+  });
+
+  await test("l'application ne SUGGÈRE toujours rien avant après-demain", async () => {
+    // **Ce que la règle du 31 août ne rouvre pas.** Le 22 août il a exigé qu'un
+    // jour ne soit jamais proposé de lui-même sans qu'il l'ait voulu. Rendre le
+    // délai franchissable et le supprimer sont deux choses différentes : la
+    // seconde mettrait demain sous son doigt sans qu'il l'ait demandé.
+    const ctx = await contexte(`suggere-${Date.now()}@t.test`);
+    const chantier = await chantiersRepo.creerChantier(ctx, { nom: "Haie" });
+    await devisRepo.getOuCreerDevisBrouillon(ctx, chantier.id);
+
+    const p = await preparerEnvoi(ctx, chantier.id, LUNDI);
+    for (const j of p.joursLibres) {
+      assert.ok(j >= dans(2), `${j} est suggéré alors qu'il est dans moins de deux jours`);
+    }
   });
 
   console.log(`\n${passed} réussis, ${failed} échoués`);

@@ -5,7 +5,7 @@ import { outilsDisponibles, getOutil } from "../tools/registre";
 import type { ErreurIA } from "../errors";
 import type { MessageConversation, DefinitionOutil } from "../providers/llm/interface";
 import type { ActionProposee, TypeActionProposee } from "../propositions";
-import { NOM_OUTIL_PROPOSITION } from "../propositions";
+import { NOM_OUTIL_PROPOSITION, TYPES_ACTION_PROPOSEE } from "../propositions";
 import { enregistrerPropositions } from "../../repositories/propositions-ia";
 import { logger } from "../../logger";
 import { horsPerimetre, REPONSE_HORS_PERIMETRE } from "../../../lib/perimetre-assistant";
@@ -26,28 +26,14 @@ export type ReponseAssistant =
 // LLM ne fait jamais qu'une chose avec — décrire les modifications souhaitées.
 // Aucune exécution n'a lieu ici ; l'exécution réelle se fait uniquement après
 // confirmation explicite de l'utilisateur (voir appliquerPropositionsAction).
-const TYPES_ACTION: [TypeActionProposee, ...TypeActionProposee[]] = [
-  "ajouter_prestation",
-  "supprimer_prestation",
-  "modifier_prestation",
-  "ajouter_materiel",
-  "supprimer_materiel",
-  "modifier_materiel",
-  "modifier_duree",
-  "modifier_equipe",
-  "ajouter_ligne_prix",
-  "copier_ligne_devis",
-  "creer_chantier",
-  "modifier_client",
-  "modifier_adresse_chantier",
-  "noter_chantier",
-  "planifier_chantier",
-  "deplacer_chantier",
-  "retirer_du_planning",
-  "creer_tarif",
-  "modifier_tarif",
-  "preparer_facture",
-];
+/**
+ * **Ce que le modèle a le DROIT de proposer — la liste du dépôt, pas une copie.**
+ *
+ * Elle était recopiée ici jusqu'au 28 août 2026, et elle avait pris un jour de
+ * retard : six gestes livrés la veille étaient refusés par cette énumération
+ * alors que tout le reste les portait (`propositions.ts`).
+ */
+const TYPES_ACTION = TYPES_ACTION_PROPOSEE as unknown as [TypeActionProposee, ...TypeActionProposee[]];
 
 const schemaProposition = z.object({
   texteIntroduction: z.string(),
@@ -261,7 +247,46 @@ export async function poserQuestion(
     if (resultat.outil === NOM_OUTIL_PROPOSITION) {
       const analyse = schemaProposition.safeParse(resultat.parametres);
       if (!analyse.success) {
-        return { succes: false, erreur: "L'assistant n'a pas pu formuler ses propositions correctement." };
+        /**
+         * **ON LE LAISSE SE REPRENDRE — c'est la MÊME faute qu'au 26 août.**
+         *
+         * **Sa capture du 28 août 2026 :** *« rajoute-moi une ligne, tu me mets
+         * des herbages des allées au chalumeau, et tu peux mettre 500 euros
+         * pour le devis actuel »* → « L'assistant n'a pas pu formuler ses
+         * propositions correctement. » Sa phrase était parfaite ; c'est le nom
+         * d'un geste qui ne tombait pas dans notre vocabulaire.
+         *
+         * Le 26 août, le même abandon avait été retiré des outils de lecture ;
+         * il était resté ici, sur le chemin qui compte le plus — celui qui
+         * ÉCRIT. Le refus part donc au modèle avec ce qui manque et la liste
+         * des gestes qu'il peut nommer, et il rappelle correctement.
+         */
+        logger.warn("Propositions mal formées — on redemande", { issues: analyse.error.issues });
+        corrections++;
+        if (corrections > MAX_CORRECTIONS) {
+          return {
+            succes: false,
+            erreur: "Je n'arrive pas à préparer ce geste. Dites-moi en une phrase ce que je dois ajouter, et sur quel chantier.",
+          };
+        }
+        historique = [
+          ...historique,
+          {
+            role: "outil",
+            outil: NOM_OUTIL_PROPOSITION,
+            resultat: {
+              erreur: "Proposition refusée : elle ne respecte pas la forme attendue.",
+              detail: analyse.error.issues.map((i) => `${i.path.join(".") || "(racine)"} : ${i.message}`),
+              // **On lui redonne la liste.** Sans elle, il redevine — et se
+              // trompe de la même façon.
+              typesPossibles: TYPES_ACTION_PROPOSEE,
+              aFaire:
+                "Rappelle l'outil avec { texteIntroduction, propositions: [{ type, description, donnees }] }, " +
+                "en choisissant « type » DANS la liste ci-dessus.",
+            },
+          },
+        ];
+        continue;
       }
       /**
        * **Une proposition sans chantier est un cas NORMAL depuis le 26 août
