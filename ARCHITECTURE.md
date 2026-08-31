@@ -20200,7 +20200,72 @@ que la construction ne coûte plus l'usage de l'application.
 
 ---
 
-## 226. « Elle peut bouger encore » : quarante pixels écrits à la main pour un bandeau qui en fait quarante-neuf
+## 226. Il n'y a plus qu'UNE fiche client : la reprise cesse d'être une version amputée
+
+**Sa demande du 31 août 2026, deux captures à l'appui :** *« lorsque je fais
+retour j'arrive sur la page 1re photo alors que je veux arriver sur la 2e. Je
+sais pas d'où sort la page 1re photo ? Si elle sert à rien il faut la
+supprimer. »*
+
+Les deux photos montraient **le même écran**, `FormulaireNouveauChantier`, et
+c'est bien là le défaut : rien à l'écran ne disait pourquoi l'un portait ses
+photos et son anneau et l'autre non.
+
+| Sa capture | Ce que c'était |
+|---|---|
+| la 1re | la fiche **rouverte** (`/chantiers/[id]/coordonnees`), privée de la pellicule, de l'anneau et de la chaîne du devis par trois `!reprise` |
+| la 2e | la fiche de **création**, entière |
+
+Il venait d'y être envoyé par le retour du devis (§221) — c'est ce chemin neuf
+qui a mis l'écart sous ses yeux. Deux versions du même écran se lisaient comme
+deux écrans, dont un mutilé sans raison visible.
+
+### Ce que les trois gardes défendaient, et pourquoi elles tombent
+
+Elles venaient du 17 août 2026 (*« RIEN DE PLUS, RIEN DE MOINS »*, §124) : la
+reprise devait servir à corriger des coordonnées, pas à refaire un chantier. La
+règle était juste pour ce chemin-là — celui de l'accueil, où l'on vient
+justement corriger une adresse. Elle est devenue fausse dès qu'on y arrive
+**depuis un devis vide**, où tout est à faire : le client, les photos, la
+dictée. Une même porte, deux besoins ; c'est l'écran entier qui les sert tous
+les deux, pas la moitié.
+
+### Ce qui reste différent, et c'est la seule chose
+
+Le bouton **« Enregistrer »**. Il répond à un besoin que la création n'a pas :
+faire partir ce qu'il vient de TAPER sur un chantier qui existe déjà. Sans lui,
+une adresse corrigée au clavier ne partirait nulle part — la création, elle,
+enregistre par le geste (une photo, une dictée) et n'a rien à sauver.
+
+### LES PIÈCES PARTENT DE CE QUE LE CHANTIER PORTE DÉJÀ
+
+C'est la moitié du travail, et la moitié qui se serait oubliée. Montrer la
+pellicule sans lui donner les photos existantes afficherait une pellicule
+**vide** sur un chantier photographié : il croirait ses photos perdues et les
+reprendrait. Même chose pour l'anneau, qui doit être le lecteur de la note
+existante et non un enregistreur neuf. `src/app/chantiers/[id]/coordonnees/page.tsx` lit donc
+`listerPhotos` et `getNoteVocale`, exactement comme la fiche du chantier.
+
+**Et l'anneau disparaît quand la note existe mais que son audio a été purgé** —
+même garde que `/chantiers/[id]` : un lecteur sans rien à lire est une promesse
+fausse.
+
+### Ce qui n'a PAS eu besoin d'être ajouté
+
+Dicter depuis la fiche rouverte d'un chantier dont le devis est déjà corrigé à
+la main **n'écrase rien** : `DevisDepuisDictee` rend un `conflit` et pose la
+question (*« Vous avez corrigé ce brouillon à la main. Repartir de la dictée
+effacerait vos corrections. »*). La garde existait ; il fallait le vérifier
+avant d'ouvrir ce chemin, pas après.
+
+### Ce qui l'éprouve
+
+`scripts/test-devis-sans-client-e2e.ts` : la fiche atteinte depuis le devis
+porte ses photos, son anneau **et** son bouton d'enregistrement. Trois
+assertions, une par pièce — un seul contrôle « la fiche est entière » ne dirait
+pas laquelle manque.
+
+## 227. « Elle peut bouger encore » : quarante pixels écrits à la main pour un bandeau qui en fait quarante-neuf
 
 *31 août 2026 — `layout.tsx`, `globals.css`, `BandeauBanc.tsx`,
 `src/app/reglages/connexion/page.tsx`.*

@@ -18,16 +18,31 @@ ligne « fait » qui ne l'est pas coûte plus cher qu'une ligne absente.
 
 ---
 
+## Il n'y a plus qu'une fiche client (31 août 2026)
+
+**Sa demande, deux captures à l'appui :** *« lorsque je fais retour j'arrive sur
+la page 1re photo alors que je veux arriver sur la 2e. Je sais pas d'où sort la
+1re photo ? Si elle sert à rien il faut la supprimer. »*
+
+La fiche rouverte (`/chantiers/[id]/coordonnees`) portait tout sauf la
+pellicule, l'anneau et la chaîne du devis. Elle les porte désormais, **nourris
+de ce que le chantier a déjà** — photos prises, note dictée. Seul
+« Enregistrer » l'en distingue encore : elle seule a quelque chose à sauver.
+
+Raisons : `ARCHITECTURE.md` §226.
+
+---
+
 ## EN ATTENTE : l'allure de la dictée — une planche, pas du code (31 août 2026)
 
 **Rien n'a bougé dans l'application**, et c'est l'état exact du produit : la
 dictée de la fiche chantier porte toujours son disque plein de 76 px, son rond
-d'envoi plein, et le chrono et l'onde en dessous, chacun sur son axe.
+d'envoi plein, sa pause, et le chrono et l'onde en dessous, chacun sur son axe.
 
-Sa remarque du 31 août : *« ça dénature l'appli »*. Quatre allures lui sont
-proposées sur `appli/dictee-embellie.html` — la barre, l'anneau, la ligne, le
-galet —, au même repos et aux mêmes gestes. **Sa réponse est attendue : un
-numéro.**
+Il a choisi **la ligne** parmi les quatre allures de `appli/dictee-embellie.html`,
+puis l'a corrigée : plus de pause, et une touche d'envoi au fond de la page,
+encadrée de vert. `appli/dictee-la-ligne.html` porte ces corrections et pose la
+dernière question — **de combien la touche s'aplatit : A, B ou C.**
 
 ---
 ## Le banc garde sa version rapide pendant qu'il bâtit la suivante (31 août 2026, soir)
@@ -205,7 +220,7 @@ il ne faut pas qu'elle puisse bouger, aucun scroll possible »*.
 | ce qui reste | bandeau affiché, il manque 51 px : ils glissent dans une colonne intérieure plutôt que de cacher un bouton |
 
 Sans le bandeau — le produit, et son banc dès que la construction est finie —
-rien ne bouge d'un pixel. Le détail : `ARCHITECTURE.md` §226.
+rien ne bouge d'un pixel. Le détail : `ARCHITECTURE.md` §227.
 
 ## Le planning garde deux ans de jours passés (31 août 2026)
 

@@ -411,7 +411,7 @@ export default function AssistantSidebar() {
                             <button
                               onClick={() => appliquerPropositions(i)}
                               disabled={enCours}
-                              className="flex-1 rounded-full py-2 text-[13px] font-medium text-white disabled:opacity-40"
+                              className="atlas-plein flex-1 rounded-full py-2 text-[13px] font-medium text-white disabled:opacity-40"
                               style={{ backgroundColor: colors.rust }}
                             >
                               Appliquer les modifications
@@ -502,7 +502,7 @@ export default function AssistantSidebar() {
                   onClick={() => arreterLaDictee(true)}
                   aria-label="Envoyer la dictée"
                   data-atlas="envoyer-dictee"
-                  className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full"
+                  className="atlas-plein flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full"
                   style={{ backgroundColor: colors.rust }}
                 >
                   <svg width="16" height="16" viewBox="0 0 24 24" style={{ fill: surPlein }}>
@@ -574,7 +574,7 @@ export default function AssistantSidebar() {
                 onClick={() => void envoyer()}
                 disabled={enCours || (!saisie.trim() && !observation)}
                 aria-label="Envoyer"
-                className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full disabled:opacity-40"
+                className="atlas-plein flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full disabled:opacity-40"
                 style={{ backgroundColor: colors.rust }}
               >
                 <svg width="16" height="16" viewBox="0 0 24 24" style={{ fill: surPlein }}>

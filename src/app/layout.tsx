@@ -198,7 +198,7 @@ export default async function RootLayout({
   // **« D'autant », et plus « de quarante pixels » — 31 août 2026.** Ce nombre
   // était écrit à la main, et faux : le bandeau mesure 49 px, et 66 sur un
   // écran étroit où sa phrase passe à deux lignes. C'est ce qui poussait
-  // « Me déconnecter partout » sous la barre du bas (`ARCHITECTURE.md` §226).
+  // « Me déconnecter partout » sous la barre du bas (`ARCHITECTURE.md` §227).
   // Il publie désormais sa hauteur lui-même.
   // `leBandeauDoitParler` et non `laVersionRapideSeConstruit` : le banc sert
   // désormais la version rapide PRÉCÉDENTE pendant qu'il bâtit la neuve, et

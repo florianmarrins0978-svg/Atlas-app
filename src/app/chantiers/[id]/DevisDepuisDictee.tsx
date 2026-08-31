@@ -257,7 +257,7 @@ export default function DevisDepuisDictee({
           type="button"
           onClick={() => lancer()}
           disabled={etat.type === "encours" || etat.type === "attente"}
-          className="w-full rounded-full py-3.5 text-[15px] font-medium text-white disabled:opacity-40"
+          className="atlas-plein w-full rounded-full py-3.5 text-[15px] font-medium text-white disabled:opacity-40"
           style={{ backgroundColor: colors.rust }}
         >
           {libelleEnCours(etat) ?? "Créer le devis à partir de ma dictée"}
@@ -302,7 +302,7 @@ export default function DevisDepuisDictee({
             <button
               type="button"
               onClick={() => router.push(`/chantiers/${chantierId}/devis-complet`)}
-              className="rounded-full px-4 py-2.5 text-[14px] font-medium"
+              className="atlas-plein rounded-full px-4 py-2.5 text-[14px] font-medium"
               style={{ backgroundColor: colors.rust, color: colors.cream }}
             >
               Ouvrir le devis et poser les prix
@@ -487,7 +487,7 @@ function QuestionsChiffrage({
         type="button"
         onClick={valider}
         disabled={envoi}
-        className="mt-5 w-full rounded-full py-3 text-[15px] font-medium disabled:opacity-40"
+        className="atlas-plein mt-5 w-full rounded-full py-3 text-[15px] font-medium disabled:opacity-40"
         style={{ backgroundColor: colors.rust, color: colors.cream }}
       >
         {envoi ? "Atlas termine le devis…" : toutesRepondues ? "Continuer vers le devis" : "Continuer sans répondre à tout"}

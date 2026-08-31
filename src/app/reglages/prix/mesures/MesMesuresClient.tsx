@@ -227,7 +227,7 @@ function AjouterTranche({
             setA("");
             router.refresh();
           }}
-          className="min-h-[40px] rounded-full px-4 py-2 text-[14px] font-medium disabled:opacity-40"
+          className="atlas-plein min-h-[40px] rounded-full px-4 py-2 text-[14px] font-medium disabled:opacity-40"
           style={{ backgroundColor: colors.rust, color: colors.card }}
         >
           Ajouter
@@ -292,7 +292,7 @@ function AjouterFacon({ onErreur }: { onErreur: (m: string | null) => void }) {
           setNom("");
           router.refresh();
         }}
-        className="min-h-[40px] rounded-full px-4 py-2 text-[14px] font-medium disabled:opacity-40"
+        className="atlas-plein min-h-[40px] rounded-full px-4 py-2 text-[14px] font-medium disabled:opacity-40"
         style={{ backgroundColor: colors.rust, color: colors.card }}
       >
         Ajouter

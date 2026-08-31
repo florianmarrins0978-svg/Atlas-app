@@ -9,6 +9,66 @@ Format : le plus récent en tête.
 
 ## 2026-08-31
 
+### Le geste et le vert sur TOUS les boutons pleins, et sur les deux notes vocales
+
+**Sa demande :** *« pour chaque bouton fais également le geste discret ; lorsque
+le bouton s'enfonce il change de couleur comme on a vu ; et je veux aussi cet
+effet sur la note vocale de la page fiche client et la note vocale, mais là
+aussi au #29382F »*.
+
+**Trente-huit boutons**, dans vingt-cinq fichiers, reçoivent la classe
+`.atlas-plein` posée au lot 1. Les deux notes vocales sont **le même
+composant** (`AnneauNoteVocale`, employé par la fiche client et par le
+chantier) : une seule correction les couvre, et son disque de 76 px prend le
+vert et le geste comme le reste.
+
+**HUIT EMPLOIS DU MÊME VERT ONT ÉTÉ ÉCARTÉS, ET C'EST LE TRAVAIL.** Le vert
+d'action sert aussi à des pastilles clignotantes, des barres de progression et
+des fonds pâles. Sa consigne — « surtout pas ceux qui sont creux ou d'une autre
+couleur » — vise les aplats qu'on appuie. Le tri s'est fait sur la balise
+réellement portante.
+
+**Un défaut attrapé avant d'écrire, et il aurait été invisible :** le premier
+tri remontait jusqu'à la première balise cliquable au-dessus de la ligne. Sur
+l'écran de dictée, il sautait par-dessus **la pastille clignotante de
+l'enregistrement** pour attribuer son fond au bouton du dessus — la pastille
+serait devenue un « bouton plein », avec voile et enfoncement. Corrigé en
+prenant la balise la plus PROCHE, pas la première trouvée.
+
+**Une règle en double retirée :** l'écran de connexion gardait un
+`active:scale-[0.985]` en plus de la classe. Deux règles pour le même geste
+divergent toujours ; celle de la classe reste seule.
+
+Vérifié à l'écran : la note vocale de la fiche client au #29382F, 0,975 et voile
+0,14 sous le doigt. 300/300 suites base — le 299/300 du premier passage venait
+de mon serveur laissé tournant sur la même base, ce que `CLAUDE.md` §5 interdit.
+
+### Il a choisi la ligne, et l'a corrigée trois fois : plus aucun aplat
+
+Sa réponse du soir, après avoir essayé les quatre allures : *« garde-moi la
+ligne, mais supprime le rond avec le carré dedans pour me mettre pause. Et la
+touche envoyer : garde l'encadré vert et l'intérieur, mais la couleur du fond
+de la page (beige) […] et fais-la légèrement plus à plat. »*
+
+`appli/dictee-la-ligne.html` — **rien n'est codé** (`CLAUDE.md` §3 bis). La
+pause disparaît (deux gestes, jeter et envoyer) ; la touche d'envoi prend le
+fond de la PAGE (`--bone`, pas le crème des cartes, sans quoi elle se lirait
+comme une pastille collée), encadré vert, avion vert. **L'aplat tombe de
+7 956 px² à 64** — la seule pastille du chrono.
+
+**« Légèrement plus à plat » ne se code pas, ça se regarde** : trois onglets
+qui ne changent QUE la hauteur de cette touche (44 × 44, 48 × 40, 52 × 36).
+Changer autre chose lui ferait choisir un écran au lieu d'une hauteur.
+
+**Ce que la suppression de la pause coûte est écrit dans la planche**, parce
+qu'il le découvrirait autrement sur un chantier : on ne peut plus suspendre
+pour répondre à quelqu'un — on parle, puis on jette ou on envoie.
+
+Le contrôle (`scripts/verifier-maquette-dictee-la-ligne.mjs`) vérifie qu'aucun
+appui ne fige le chrono — un bouton retiré de l'œil mais laissé sous le doigt
+serait pire que rien —, mesure le fond réel de la touche, et additionne
+l'aplat. Confronté aux deux défauts qu'il vise, il rougit sur les deux.
+
 ### La dictée de la fiche chantier « dénature l'appli » — quatre allures à essayer
 
 **Sa remarque du 31 août, capture à l'appui.** Elle se mesure, et c'est ce qui
@@ -57,6 +117,36 @@ La seconde envoyait chercher le défaut dans le produit — « ce n'est pas votr
 espace » — alors que la cause était écrite trois lignes plus haut. Des trois
 états de la ligne « Code SERVI », celui du milieu n'entrait dans aucun verdict.
 
+### Le bouton plein prend le #29382F, et le geste discret — Origine seule
+
+**Ses trois décisions, prises l'une après l'autre sur des images du VRAI
+bouton :** la couleur 8 de la planche d'abord, puis « seulement pour la version
+origine, ne touche pas aux autres apparences », enfin — les deux verts
+photographiés côte à côte sur le même bouton, au même endroit — **« je garde le
+#29382F »**. Le vert 8 est écarté par lui.
+
+**Une classe, `.atlas-plein`, et rien d'autre.** Elle porte la couleur ET le
+geste (échelle 0,975, éclaircissement de 14 % à l'appui, retour plus lent que
+l'aller). Trente-quatre fichiers emploient le vert d'action : les éditer un par
+un aurait dispersé la règle et rendu impossible de dire, dans six mois, ce qui
+est un bouton plein et ce qui ne l'est pas.
+
+**La couleur ne vaut que pour Origine, le geste vaut partout.** Un bouton qui
+répond au doigt n'est pas une apparence. Mesuré sur trois chartes : Origine
+reçoit `rgb(41,56,47)`, Brume garde son bleu marine `rgb(34,69,109)`, Nuit son
+crème `rgb(233,232,222)` — et les trois s'enfoncent à 0,975.
+
+**Ce que ça ne touche PAS, et c'est voulu :** l'accent d'action ne bouge pas
+d'un cheveu. Textes verts, icônes, liserés, fonds pâles gardent le vert pin —
+sa consigne visait les aplats, pas la moitié des écrans.
+
+**Un aplat écrit comme un dégradé d'une seule couleur**, et ce n'est pas une
+coquetterie : les boutons portent leur fond en style EN LIGNE, qu'aucune feuille
+de style ne peut supplanter sans `!important`. Seul `background-image` passe
+par-dessus, et une image de fond ne prend pas une couleur.
+
+Reste à faire : les autres boutons pleins (31 fichiers), lot par lot comme il
+l'a proposé.
 
 ### La connexion ne bouge plus — et le bandeau du banc cesse de mentir de 9 px
 
@@ -234,6 +324,21 @@ dans le CSS et invisible sous le doigt ; et le bouton remontait sous un doigt
 encore posé près de son bord, parce qu'il rétrécit et sortait de sous lui
 (corrigé par `setPointerCapture`). Le contrôle a été confronté au geste
 d'aujourd'hui, celui de l'application : il rougit six fois.
+
+### La fiche client rouverte est la fiche client ENTIÈRE
+
+**Sa demande, deux captures à l'appui :** *« lorsque je fais retour j'arrive sur
+la page 1re photo alors que je veux arriver sur la 2e. Je sais pas d'où sort la
+1re photo ? Si elle sert à rien il faut la supprimer. »*
+
+Les deux photos montraient le même écran : l'une entière, l'autre privée de ses
+photos, de son anneau et de la chaîne du devis. Il n'y en a plus qu'une.
+
+Les pièces partent de ce que le chantier porte **déjà** — les photos prises, la
+note dictée. Les nourrir de vide lui aurait fait croire ses photos perdues.
+
+Seul « Enregistrer » distingue encore la fiche rouverte : elle seule a quelque
+chose à sauver, ce qu'il vient de taper sur un chantier qui existe.
 
 ### Le banc lance le Next DU PROJET, et ne laisse plus `npx` en chercher un autre
 
