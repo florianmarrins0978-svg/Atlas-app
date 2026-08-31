@@ -19,6 +19,19 @@ Quatre solutions, ce qu'elles coûtent et ce qu'elles protègent :
 **`docs/travaux-supplementaires.md`**. Rien n'est codé — la décision lui revient
 (`CLAUDE.md` §3 bis).
 
+**Trois planches à essayer**, parcourues dans un vrai navigateur avant d'être
+transmises (`scripts/` non concerné : le parcours a été joué à la main, captures
+regardées, mode nuit compris) :
+
+| Planche | Ce qu'elle fait trancher |
+|---|---|
+| `appli/ts-bon-sur-place.html` | la signature au doigt (C) — le tracé est réel |
+| `appli/ts-avenant.html` | **une facture ou deux**, et les travaux **en moins** (A) |
+| `appli/ts-arret-3.html` | **bloquer ou avertir** quand rien n'est signé (B et D) |
+
+**Elles ne seront à son adresse qu'une fois sur `main`** : `pages.yml` ne publie
+que sur `main`, et son accord n'a pas encore été demandé.
+
 Recommandation posée : **le bon signé sur place (C), puis l'avenant (A)** ;
 jamais une facture librement modifiable toute seule — elle facture ce que le
 client n'a pas accepté, et l'article 1793 du Code civil le laisse alors refuser

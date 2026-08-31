@@ -24,6 +24,14 @@ Un défaut trouvé au passage, et noté dans `TODO.md` : une facture déjà en
 brouillon ignore silencieusement un devis plus récent (`factures.ts:102`) — le
 supplément disparaît sans un mot à l'écran.
 
+Puis trois planches à essayer, liées depuis `appli/essais.html` :
+`ts-bon-sur-place.html` (la signature au doigt, tracé réel),
+`ts-avenant.html` (une facture ou deux, et les lignes en moins),
+`ts-arret-3.html` (bloquer ou avertir sur un supplément non signé). Les totaux
+s'y calculent pour de vrai — une maquette qui affiche un total faux fait douter
+de tout le reste. Parcourues au navigateur, captures regardées, mode nuit
+compris.
+
 ### Il a choisi la ligne, et l'a corrigée trois fois : plus aucun aplat
 
 Sa réponse du soir, après avoir essayé les quatre allures : *« garde-moi la
