@@ -17,6 +17,7 @@ import {
   verifierNouveauMotDePasse,
   messageRefus,
   etatConfirmation,
+  etatNouveau,
 } from "../src/lib/mot-de-passe";
 
 let echecs = 0;
@@ -133,6 +134,28 @@ essai("dès qu'il retape, l'écran dit si les deux se rejoignent", () => {
 // formulations pour la même faute se lisent comme deux fautes différentes.
 essai("et cette phrase est LA MÊME que celle du refus serveur", () => {
   assert.equal(etatConfirmation("a", "b")!.message, messageRefus("confirmation-differente"));
+});
+
+console.log("");
+
+// ─── La longueur, dite au moment où elle mord ────────────────────────────────
+//
+// **Née du retrait des phrases grises, le 31 août 2026.** « Au moins 12
+// caractères. » s'affichait en permanence sous le champ ; il l'a fait retirer
+// avec les autres. Sans remplacement, un bouton serait resté éteint sans raison
+// lisible — la confirmation annonçant « les deux sont identiques ✓ » sur huit
+// caractères.
+essai("champ vide : l'exigence ne s'annonce pas d'avance", () => {
+  assert.equal(etatNouveau(""), null);
+});
+
+essai("trop court, elle le dit — et avec les mots du refus serveur", () => {
+  assert.deepEqual(etatNouveau("bruyere"), { message: messageRefus("trop-court") });
+});
+
+essai("assez long, elle se tait", () => {
+  assert.equal(etatNouveau("bruyere-42-nord"), null);
+  assert.equal(etatNouveau("a".repeat(LONGUEUR_MINIMALE)), null);
 });
 
 console.log("");

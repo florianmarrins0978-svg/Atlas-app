@@ -9,6 +9,266 @@ Format : le plus récent en tête.
 
 ## 2026-08-31
 
+### Le banc lance le Next DU PROJET, et ne laisse plus `npx` en chercher un autre
+
+**Sa plainte de midi : « version rapide en construction, elle est super
+lente ».** `node_modules/next` manquait sur son espace — et `npx next build`
+téléchargeait alors la dernière version publiée (16.3.3) pour la lancer, alors
+que le projet épingle 16.3.2. Ce Next étranger ne trouvait pas le paquet du
+projet, la construction tombait, le banc restait en mode développement où
+chaque écran se compile à l'ouverture, et le veilleur retentait la même
+construction condamnée.
+
+Reproduit avant d'être corrigé, en écartant le paquet : son message mot pour
+mot. Trois verrous — le binaire du projet appelé par son chemin, un paquet
+épinglé et absent traité comme un défaut, et le message de Turbopack reconnu.
+
+**C'est aussi l'explication du « 16.3.3 » du 29 août**, que `TODO.md` portait
+comme inexpliqué : ses dépendances n'ont jamais dérivé.
+
+Un piège trouvé en le jouant, et corrigé avant livraison : appeler le binaire du
+projet fait mourir le serveur de développement quand le paquet manque, ce qui
+arrête le banc — donc la réinstallation était coupée en plein `npm install`.
+Elle a lieu maintenant avant tout lancement. Vérifié de bout en bout : paquet
+écarté, banc lancé, « Dépendances remises d'aplomb » puis « passage à la version
+rapide ».
+
+Détail et ce qui reste ouvert : `ARCHITECTURE.md` §219.
+
+
+### Un prix posé sur l'écran du devis débloque enfin l'envoi
+
+**Sa capture du matin :** *« j'ai voulu lancer le devis sans mettre de prix pour
+la tonte, il refuse ; je suis revenu en arrière, j'ai mis les prix pour chaque
+ligne, mais il ne veut quand même pas que j'envoie mon devis »*. Total à
+2 280,00 €, plus une seule ligne signalée — et le refus nommant deux lignes
+qu'il venait de chiffrer.
+
+**Il n'avait aucune sortie :** aucun geste ne pouvait rouvrir l'envoi, et le
+message le renvoyait vers l'écran Prix où tout paraissait normal.
+
+Le drapeau « à chiffrer » ne s'éteignait que lorsqu'un **montant** était posté.
+L'écran du devis, lui, envoie une quantité et un prix unitaire — le montant est
+calculé ensuite. Il lisait l'entrée ; il lit désormais le résultat.
+
+La phrase du refus n'est plus écrite deux fois. C'est de là que venaient ses
+fautes d'accord (« 2 lignes attendent **son** prix », « Posez-**le** ») : deux
+versions de la même règle, et rien ne disait laquelle faisait foi.
+
+### Un contrôle du veilleur tuait le serveur de la batterie
+
+Trouvé en livrant le lot ci-dessous, et il ne se voyait pas : les rouges qu'il
+produisait tombaient **ailleurs**, sur des suites navigateur qui n'accusaient
+personne (« waitForURL: Timeout »).
+
+`test-fiche-pendant-relance.ts` lance le vrai veilleur sur un faux dépôt. Le
+veilleur cherche « un serveur Next » avec `pgrep -f`, qui regarde **toute la
+machine** — et la batterie fait justement tourner le sien. Le veilleur d'essai
+concluait donc « un serveur tient le port sans répondre » au lieu de « plus rien
+n'écoute » : la suite rougissait sur un montage sain, puis, deux tours plus
+tard, faisait `pkill` sur ce motif et **tuait le serveur de la batterie**.
+
+Le motif se surcharge désormais par l'environnement ; la valeur par défaut ne
+bouge pas d'un caractère, et l'essai se donne un motif que rien d'autre ne peut
+porter. Éprouvé dans les deux sens : rouge sur la version d'avant dès qu'un
+processus répond au motif, vert avec le correctif dans les mêmes conditions.
+
+### Un devis ne peut plus se contredire : le total fait ce que le tableau montre
+
+**Sa capture suivante, le PDF du brouillon :** « à chiffrer » en face du
+dessouchage et de la tonte, un seul montant visible (560,00 €) — et un Total HT
+de 2 280,00 €. Le document comptait 1 720 € qu'il refusait d'afficher.
+
+C'est plus grave que le blocage qui l'a produit : un devis bloqué se voit ; un
+devis dont le total ne correspond pas à ses lignes part chez le client, qui
+additionne, n'y arrive pas, et cesse de croire le reste.
+
+Le rendu lisait le drapeau seul. Un montant posé répond désormais à la question,
+partout — écran, PDF, contrôle d'envoi —, et « à chiffrer » reste réservé aux
+lignes qui ne portent réellement rien. **Les devis déjà bloqués dans sa base se
+rouvrent sans qu'il retape le moindre prix.**
+
+### Il peut proposer demain — l'application prévient, elle ne refuse plus
+
+**Sa règle :** *« si l'utilisateur veut choisir le 1ᵉʳ septembre il doit
+pouvoir ! »* Le calendrier lui montrait le lendemain, la case s'ouvrait, et le
+verdict la reprenait : « ce jour est trop proche ».
+
+C'est le même arbitrage qu'il avait rendu le 23 août pour les journées pleines.
+Le délai de deux jours ne disparaît pas, il change de rôle : l'application ne
+**suggère** toujours rien avant après-demain, mais ce qu'il **choisit** est à
+lui, dès aujourd'hui. Seul le passé reste refusé.
+
+**Et une barrière muette a été fermée avec.** Rendre le lendemain choisissable
+ne suffisait pas : son client se serait fait répondre « date indisponible » en
+acceptant la date qu'il venait de recevoir. La fenêtre du client descend
+maintenant jusqu'à la date proposée — pas plus bas.
+
+Trois contrôles neufs, tous **vus rouges** contre la version d'avant ; deux
+anciens réclamaient la règle qu'il vient de retourner, et ont changé de camp.
+
+Détail et pièges : `ARCHITECTURE.md` §216.
+
+### La connexion tient dans un écran, et les phrases grises sont parties
+
+**Sa demande, capture à l'appui :** *« Pour la page connexion je veux qu'elle
+tienne sur une seule page et supprime toutes les petites phrases en gris sous
+les boutons, garde que les titres. »*
+
+L'écran demandait 1203 px pour 664 de hauteur utile — presque deux écrans ; il
+en demande 658. Le plus gros morceau n'était pas une phrase : `pb-24` réservait
+la barre du bas une seconde fois, alors que `main.atlas-contenu` la réserve déjà
+pour tous les écrans — 96 px de vide qui ne portaient rien. L'œil des trois
+champs garde ses 44 px de cible mais n'impose plus sa hauteur à sa rangée :
+60 px de plus.
+
+Cinq gloses grises sont parties. Deux portaient quelque chose : « Au moins
+12 caractères » était la seule raison lisible d'un bouton éteint — elle se dit
+maintenant **quand elle mord**, jamais d'avance (`etatNouveau`) ; la promesse de
+Face ID (« votre visage ne quitte jamais votre téléphone ») n'est plus à
+l'écran, et elle ne survit que dans le mode d'emploi. Les faits n'ont pas
+changé : la base ne porte aucune donnée biométrique, et c'est elle que la suite
+interroge.
+
+Le contrôle qui exigeait cette promesse a été retourné : il vérifie désormais
+qu'elle ne revient pas. Un nouveau mesure l'écran à 390 × 664 — rien à faire
+défiler, et le dernier geste hors de portée des onglets.
+
+### L'or reste l'or, quelle que soit l'apparence choisie
+
+**Sa consigne :** *« pour l'apparence, j'aimerais que tout ce qui est en doré
+sur la version originale apparaisse en doré sur les autres apparences »*.
+
+Chaque charte portait son propre second accent, recopié de la planche du
+14 août : une sauge sur Pierre, une argile sur Moka, un prune sur Prune, un bleu
+et un rose pour les traits de Brume et de Prune. Changer d'apparence repeignait
+donc **tout ce que l'or porte** — l'accueil, les libellés d'état, les filets, le
+sceau, le compteur de la dictée —, et sur trois chartes l'or disparaissait.
+
+Les huit chartes portent désormais l'or d'Origine, `#B98B47`, au caractère près.
+Mesuré sur chacune : il se détache **mieux** sur les deux sombres (6,14 sur Nuit)
+que sur son écran de tous les jours (2,77 sur Origine) — il n'y avait donc rien
+à remonter, et le remonter aurait cessé d'être le même or.
+
+Ce n'était pas une demande neuve : le 27 août il l'avait posée pour Brume seule,
+et l'on avait corrigé Brume seule. Une suite tient maintenant la règle pour les
+huit (`scripts/test-chartes.ts`) — les deux suites existantes vérifiaient que
+tous les jetons sont là et que tout se lit, et restaient vertes pendant que
+l'identité changeait.
+
+Deux présentations ont suivi : Pierre n'annonce plus « Aucun or », Moka plus
+« une argile pour l'accent ». Détail dans `ARCHITECTURE.md` §218.
+
+### CODÉ : « 2 chantiers par jour. Planning ▪ complet. » — sa réponse A
+
+Sa réponse à la planche 99, le jour même : **« la A »**. L'écran Réglages porte
+désormais le carré vert foncé du planning et son mot, à la place de *« C'est ce
+qui remplit votre planning. »*
+
+**Deux pièces neuves, et aucune couleur ni aucun mot écrits dans un écran :**
+
+- `MOT_ETAT` (`src/lib/planning-jour.ts`) — le mot de chacun des quatre états,
+  écrit une fois. La légende du calendrier les écrivait en clair ; elle les y
+  lit maintenant, et le réglage aussi. Sans cette table, « complet » existerait
+  à deux endroits, sur deux écrans qui ne se lisent jamais ensemble — et le
+  jour où l'un change, rien ne le dirait.
+- `phraseDuCompteur` rend **deux morceaux** au lieu d'une phrase : entre eux se
+  glissent le carré (`fondDeLEtat("plein")`) et le mot. Un `#2f3b2f` posé dans
+  l'écran aurait été faux sur Nuit et Sylve, les deux chartes sombres.
+
+**Le carré est `aria-hidden`, le mot ne l'est pas** : une couleur ne se lit pas
+à voix haute, et l'annonce ne doit pas dire deux fois la même chose.
+
+`ditLaBarre` prend « complet » dans `MOT_ETAT` elle aussi — la voix et la
+couleur ne doivent pas nommer différemment le même état. Elle garde « libre »
+là où la légende écrit « rien » : une phrase lue n'est pas une étiquette.
+
+### Le réglage dit ce qu'il DONNE au planning — planche 99
+
+**Sa demande, capture des Réglages à l'appui :** *« écrit deux chantiers par
+jour, planning complet, et met le petit carré vert foncé avec écrit "complet"
+du planning »*, puis, devant la planche 98 qui visait le calendrier d'envoi :
+*« c'est sur cette page que doit se faire la modification »*.
+
+Le compteur dit aujourd'hui *« 2 chantiers par jour. C'est ce qui remplit votre
+planning. »* (`phraseDuCompteur`, `src/lib/equipes.ts`). La phrase dit que le
+réglage remplit le planning ; elle ne montre pas **ce qu'on y verra**, et ce
+qu'on y voit est une couleur. Le réglage vit sur un écran, sa conséquence sur
+un autre, et rien ne les relie.
+
+`appli/reglages-planning-complet.html` propose trois issues — la phrase avec le
+carré, l'échelle des trois carrés, la case du planning dessinée — et **le
+compteur marche** : à 3 l'échelle dit 0 / 1 à 2 / 3, à 1 la ligne « incomplet »
+disparaît, parce qu'entre rien et complet il n'y a plus de place.
+
+**Le vert et la phrase sont LUS dans le produit**, jamais recopiés :
+`scripts/verifier-maquette-reglages-planning-complet.mjs` compare le carré à
+`colors.rust` et la phrase à `phraseDuCompteur`, et il a été vu rouge sur un mot
+changé, un autre vert, un chiffre figé et un « incomplet » de trop.
+
+**Rien n'est codé dans `src/`.**
+
+### Un jour proposé au client se peint comme un jour COMPLET — planche 98
+
+**Cette planche répond à une mauvaise lecture de sa demande** — il visait
+l'écran Réglages (planche 99 ci-dessus). Le défaut qu'elle décrit est réel et
+reste posé, mais il n'est pas ce qu'il demandait.
+
+**Sa remarque, capture à l'appui :** *« écrit deux chantiers par jour, planning
+complet, et met le petit carré vert foncé avec écrit "complet" du planning »*.
+
+Ses réglages disent deux chantiers par jour, son septembre est **vide**, et les
+deux dates qu'il propose à sa cliente se peignent du vert que la légende, juste
+dessous, appelle « complet ».
+
+**Le calcul n'est pas en cause** — `src/lib/planning-jour.ts` rend bien
+« libre » pour ces deux jours-là. C'est la même couleur employée pour deux
+choses sans rapport dans `src/components/atlas/MoisCharge.tsx` :
+`fondDeLEtat("plein")` et `retenus.has(jour)` valent tous deux `colors.rust`.
+L'aplat coûte une seconde chose, plus grave : il **recouvre les deux barres**,
+si bien que le jour qu'il vient de proposer devient le seul du mois dont il ne
+peut plus lire la charge — ce que la planche 91 avait justement apporté.
+
+`appli/jour-propose-pas-complet.html` compare son écran d'aujourd'hui à deux
+issues : **le point** (fond clair, un point vert dans le coin) et **la
+pastille** (le chiffre dans un disque vert). La légende y gagne « proposé », en
+rond quand les quatre états de charge sont carrés. Un troisième essai — un
+liseré vert autour de la case — a été **écarté avant de lui être montré** : à
+l'écran, il se confond avec le liseré noir de la case qu'on vient de toucher,
+trois cases entourées à la suite, ce qu'il avait déjà signalé le 23 août.
+
+**Rien n'est codé dans `src/`** — sa consigne : *« ne code rien, fais-moi un
+visuel »*. `scripts/verifier-maquette-jour-propose.mjs` tient la planche, et il
+a été vu rouge contre l'aplat remis dans les deux issues, contre la légende
+amputée, et contre une vue qui comptait les équipes autrement.
+
+### « Maps », sur la feuille de chantier, ouvre Google Maps
+
+Sa demande, capture à l'appui : *« pour Maps c'est Google Maps que je veux »*.
+Le bouton servait `plans` — Apple — depuis le 21 août, sur la supposition que
+« Maps » désignait chez lui l'application de son iPhone. Elle s'appelle
+« Plans », et ce n'est pas celle qu'il ouvre pour aller sur un chantier : il
+appuyait sur un bouton qui le sortait de l'application où sont ses trajets.
+
+La feuille n'en porte toujours que deux (« pas besoin d'en mettre trois ») :
+c'est Plans qui sort, pas Google. `plans` reste calculée dans
+`src/lib/itineraire.ts` — elle ne coûte rien —, mais aucun écran ne la sert.
+
+**Et le lien Google gagne `travelmode=driving`**, qui lui manquait. Sans lui, la
+carte rouvre le dernier mode utilisé — et Google le retient d'une session à
+l'autre : une rue cherchée à pied en ville la veille, et le chantier de trente
+kilomètres s'annonce à six heures de marche. C'est le `dirflg=d` que Plans avait
+déjà. Le défaut ne se voyait pas tant que le bouton n'ouvrait pas Google.
+
+Les deux contrôles qui gardaient la feuille exigeaient **l'inverse** —
+`maps.apple.com` présent, `google.com/maps` absent : ils auraient rougi sur une
+demande exaucée (`CLAUDE.md` §5 bis). Ils gardent ce qu'il a vraiment demandé —
+deux destinations, pas trois — en refusant Plans cette fois.
+
+`src/app/planning/PlanningClient.tsx`, `src/lib/itineraire.ts`,
+`scripts/test-itineraire.ts` (11), `scripts/test-planning-e2e.ts`,
+`scripts/capture-planning.mts`.
+
 ### Un devis sans client : le retour mène à la fiche client
 
 **Sa demande, deux captures à l'appui :** *« j'ai oublié de renseigner la fiche
@@ -33,6 +293,46 @@ non renseignée ») garde sa sortie du 17 août.
 ---
 
 ## 2026-08-30
+
+### Le diamètre dicté entre enfin en colonne — il n'était jamais créé
+
+**Son test téléphone :** il dit « un érable de 40 centimètres au pied » et
+« deux souches de 60 », et Atlas lui redemande les deux diamètres. Les
+conventions métier étaient pourtant codées et vertes.
+
+**En remontant la chaîne réelle, le diamètre ne se perdait nulle part : il
+n'était jamais créé.** Le contrat d'extraction n'a aucun champ de mesure, la
+`description` du modèle n'est pas persistée, et `caracteristiques` n'avait qu'un
+seul écrivain — `structureDepuisPrecisions`, c'est-à-dire **ses réponses aux
+questions dont il se plaint**. La boucle se refermait sur elle-même.
+
+`structureDeLaPrestation` lit désormais les mesures sur le texte du modèle et
+les range en colonne — c'est le dernier endroit où la matière existe encore. Le
+contrat demande en plus au modèle de conserver les dimensions, et
+l'enrichissement d'une prestation existante fusionne mesure par mesure, pour ne
+pas effacer une hauteur qu'il a saisie lui-même.
+
+Aucune valeur n'est devinée : ce qui ne se lit pas ne s'écrit pas, et la
+question se pose alors comme avant. Aucun prix ne change de règle — le diamètre
+entre dans la colonne que le chiffrage lisait déjà.
+
+**Pourquoi aucune suite ne le voyait, et ce que ça change.** Chaque maillon
+était couvert et bien couvert ; le défaut vivait ENTRE eux. `test-son-cas-reel.ts`
+part maintenant de ce que le modèle rend et va jusqu'à ce que le patron lit — et
+il a immédiatement attrapé une régression que le correctif venait d'introduire :
+« Démontage d'un érable » devenait « Démontage d'un érable de arbre de 40 cm ».
+
+### « Dessouchage de souches de 60 cm », et « Montant HT » en tête de colonne
+
+Un geste d'un seul mot retrouve son objet et sa mesure depuis les colonnes ; le
+nombre, lui, reste dans la colonne Qté — sa règle. Et l'en-tête de la colonne de
+chaque ligne s'appelle « Montant HT », le récapitulatif du bas restant
+« Total HT » : les deux se ressemblaient assez pour qu'il les confonde.
+
+Le relevé au pixel des documents a été refait sur preuve mesurée, pas à l'œil :
+le rendu PDF est impossible ici, la trace a donc été comparée des deux côtés —
+sur 917 lignes, deux diffèrent. Détail : `ARCHITECTURE.md` §220.
+
 
 ### La fiche n'accuse plus le port quand c'est le serveur qui manque
 
@@ -1071,6 +1371,40 @@ un refus incompréhensible.
 chantier : ouvrez-le » était exactement ce qu'il reproche depuis le 25 août.
 La suite qui exigeait ce libellé mot pour mot a rougi sur une demande exaucée :
 elle vise désormais la règle, pas la phrase (`CLAUDE.md` §5 bis).
+
+## 2026-08-28
+
+### « Il ne peut pas » — six gestes livrés derrière une porte fermée
+
+**Sa capture du 28 août 2026 :** *« rajoute-moi une ligne, tu me mets des
+herbages des allées au chalumeau, et tu peux mettre 500 euros pour le devis
+actuel »* → **« L'assistant n'a pas pu formuler ses propositions
+correctement. »**
+
+**Deux défauts, et le second est le plus grave.**
+
+**1. L'abandon était resté sur le chemin qui ÉCRIT.** Le 26 août, un schéma
+refusé cessait de tuer la réponse pour les outils de LECTURE : le refus repart
+au modèle, qui se reprend. La même ligne était restée ici, sur les propositions
+— c'est-à-dire sur le seul chemin qui modifie quelque chose. Elle rend
+désormais la main au modèle, avec ce qui manque **et la liste des gestes qu'il
+peut nommer** : sans elle, il redevine et se trompe pareil.
+
+**2. LES SIX GESTES DE LA VEILLE ÉTAIENT INATTEIGNABLES.** Supprimer un
+chantier, supprimer un tarif, poser une absence, régler les documents, composer
+la fiche d'entretien : type, `case`, contrôles — tout y était **sauf**
+l'énumération présentée au modèle, qui était une **seconde liste** recopiée à
+la main dans `assistant-service.ts`. Elle avait un jour de retard, et le patron
+ne pouvait obtenir aucun de ces six gestes.
+
+**Ce qui a permis de le rater : mes propres contrôles.** Ils construisaient la
+proposition à la main et la confirmaient — ils éprouvaient donc le `case`, jamais
+la porte. **Verts sur une fonctionnalité que personne ne pouvait atteindre.**
+
+Il n'y a plus qu'une liste (`TYPES_ACTION_PROPOSEE`), lisible à l'exécution, et
+le type se déduit d'elle. Un contrôle neuf ferme les deux bouts : tout geste
+nommable a un `case`, et tout `case` est nommable — vérifié en retirant un geste
+de la liste, ce qui le fait rougir.
 
 ### La dictée façon WhatsApp, la photothèque, et une panne qui parle enfin
 

@@ -35,6 +35,100 @@ du retour de devis — mais c'est trois lignes, et la poignée qu'elle défend
 
 ---
 
+## Le délai avant une date proposée n'est réglable nulle part (31 août 2026)
+
+Depuis sa règle du 31 août, le patron peut proposer **aujourd'hui ou demain** :
+l'application prévient au lieu de refuser. Ce qu'elle **suggère** d'elle-même
+reste plafonné à après-demain (`DELAI_MINIMAL_JOURS`, écrit en dur dans
+`src/server/disponibilites.ts`).
+
+**Ce qui reste ouvert :** ce chiffre n'est ni un réglage d'entreprise, ni une
+variable d'environnement. Un artisan dont les chantiers se calent une semaine à
+l'avance verrait toujours après-demain en tête de liste.
+
+**Qui peut le trancher :** le patron. Personne ne l'a demandé, et rien ne bloque
+aujourd'hui — c'est noté pour ne pas le redécouvrir.
+
+## LA PROMESSE DE FACE ID N'EST PLUS À L'ÉCRAN — à trancher avec lui (31 août 2026)
+
+Ses quatre lignes grises sont parties avec les autres, sur sa demande du
+31 août. Elles disaient que c'est **par appareil**, que le **visage ne quitte
+jamais le téléphone**, et que le **mot de passe reste actif**.
+
+**Les faits n'ont pas changé** — aucune donnée biométrique n'entre en base
+(`drizzle/0063_cles_appareil.sql`), et c'est la base que `test-face-id-e2e.ts`
+interroge. C'est la promesse ÉCRITE qui a disparu : quelqu'un qui hésite à
+donner son visage n'a plus de quoi se rassurer à l'écran.
+
+**Ce qui reste :** le mode d'emploi la porte (`mode-emploi.ts`,
+`reglages-face-id`).
+
+**Ce qui ne se fera pas sans lui :** la remettre. Il l'a fait retirer, et une
+suite vérifie désormais qu'elle ne revient pas. S'il la veut, elle se pose
+ailleurs — jamais en gris sous le bouton.
+
+---
+
+## ✅ ~~UNE RÉPONSE ATTENDUE — le réglage et le planning, planche 99~~ — RÉPONDUE ET CODÉE (31 août 2026)
+
+Sa demande : *« écrit deux chantiers par jour, planning complet, et met le petit
+carré vert foncé avec écrit "complet" du planning »* — et, devant la planche 98 :
+*« c'est sur cette page que doit se faire la modification »*, l'écran **Réglages**.
+
+**Sa réponse, le jour même : la A.** L'écran porte « 2 chantiers par jour.
+Planning ▪ complet. » — `src/app/reglages/VosEquipes.tsx`, avec le carré pris
+dans `fondDeLEtat` et le mot dans `MOT_ETAT` (`src/lib/planning-jour.ts`, table
+neuve que la légende du calendrier lit désormais aussi).
+
+La planche garde B et C : elles restent le chemin, si l'échelle lui manque un
+jour.
+
+---
+
+## UNE RÉPONSE ATTENDUE — le jour proposé, planche 98 (31 août 2026)
+
+**Née d'une mauvaise lecture de sa demande** — voir juste au-dessus. La
+question reste réelle, mais il ne l'a pas posée : ne pas la relancer.
+
+Sa remarque : *« écrit deux chantiers par jour, planning complet, et met le
+petit carré vert foncé avec écrit "complet" du planning »*. Un jour PROPOSÉ au
+client se peint aujourd'hui du vert que la légende appelle COMPLET, et l'aplat
+recouvre les deux barres de charge (`src/components/atlas/MoisCharge.tsx` :
+`fondDeLEtat("plein")` et `retenus.has(jour)` valent tous deux `colors.rust`).
+
+`appli/jour-propose-pas-complet.html` lui pose la question : **le point** ou
+**la pastille**. Le liseré a été écarté — il se confond avec la case touchée.
+
+**Rien n'est codé** : sa consigne était *« ne code rien, fais-moi un visuel »*.
+Quand il aura répondu, la marque se pose dans `MoisCharge` (la case retenue) et
+dans `Legende` (un cinquième repère, rond), et rien d'autre : le calcul de la
+charge ne bouge pas.
+---
+
+## ✅ LE « 16.3.3 » EST EXPLIQUÉ — c'était `npx`, pas une dérive (31 août 2026)
+
+Ce document portait depuis le 29 août : *« reste inexpliqué : comment ses
+`node_modules` ont dérivé »*. **Ils n'ont jamais dérivé.**
+
+`node_modules/next` MANQUAIT, et `npx next build` télécharge alors la dernière
+version publiée pour la lancer — d'où un 16.3.3 sur un projet qui épingle
+16.3.2. Reproduit à l'identique en écartant le paquet. Corrigé aux trois
+endroits : `ARCHITECTURE.md` §219.
+
+**Ce qui reste ouvert, et c'est la vraie question :** POURQUOI
+`node_modules/next` disparaît de son espace. Trois suspects, aucun mesuré — une
+mise en veille pendant un `npm install`, un `npm install` concurrent (le banc et
+le veilleur), un disque plein à un moment (21 Go libres au moment de l'échec,
+donc peu probable). Le banc répare désormais la conséquence à chaque démarrage ;
+il n'empêche pas la cause.
+
+**Comment le trancher quand cela se reproduira :** le journal du banc
+(`/tmp/essai.log`) porte maintenant « next ABSENT alors que le projet exige
+16.3.2 » avec son heure. La rapprocher de l'heure du dernier `npm install` et de
+la dernière mise en veille répond sans rien demander au patron.
+
+---
+
 ## POURQUOI LE RELAIS PERD SON PORT 3000 — inexpliqué (31 août 2026)
 
 Sa nuit du 30 au 31 : espace debout, Atlas répondant sur 3000, version rapide

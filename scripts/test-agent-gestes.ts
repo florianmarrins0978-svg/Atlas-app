@@ -9,6 +9,8 @@ import { appliquerPropositionsAction } from "../src/app/chantiers/[id]/informati
 import { enregistrerPropositions } from "../src/server/repositories/propositions-ia";
 import { getOutil } from "../src/server/ai/tools/registre";
 import type { ActionProposee } from "../src/server/ai/propositions";
+import { TYPES_ACTION_PROPOSEE } from "../src/server/ai/propositions";
+import { readFileSync } from "node:fs";
 import type { Ctx } from "../src/server/repositories/context";
 import { fermerLimiteur } from "../src/server/rate-limit";
 import { nettoyerBase } from "./_test-db";
@@ -586,6 +588,34 @@ async function main() {
       },
     ]);
     assert.equal(doublon[0].statut, "conflit");
+  });
+
+  await test("CHAQUE GESTE EST NOMMABLE PAR LE MODÈLE ET EXÉCUTABLE — aucune porte fermée", async () => {
+    /**
+     * **Payé le 28 août 2026, et ce contrôle-ci n'existait pas.** Six gestes
+     * livrés la veille avaient leur `case`, leurs contrôles… et une porte
+     * fermée : l'énumération présentée au modèle était une SECONDE liste,
+     * recopiée à la main, et elle avait un jour de retard. Les contrôles
+     * construisaient la proposition à la main — ils étaient donc verts sur un
+     * geste que le patron ne pouvait pas obtenir.
+     *
+     * Ce cas ferme les deux bouts : le modèle peut le NOMMER (la liste est
+     * unique depuis, et cette assertion le tient), et quelqu'un sait
+     * l'EXÉCUTER (un `case` porte son nom).
+     */
+    const source = readFileSync("src/app/chantiers/[id]/informations/actions.ts", "utf8");
+    const sansCase = TYPES_ACTION_PROPOSEE.filter((t) => !source.includes(`case "${t}"`));
+    assert.deepEqual(
+      sansCase,
+      [],
+      `ces gestes sont proposables mais personne ne sait les appliquer : ${sansCase.join(", ")}`
+    );
+
+    // Et la réciproque : un `case` que le modèle ne peut pas nommer est du code
+    // mort, et une fonctionnalité que le patron croit avoir.
+    const casesEcrits = [...source.matchAll(/case "([a-z_]+)":/g)].map((m) => m[1]);
+    const orphelins = casesEcrits.filter((c) => !(TYPES_ACTION_PROPOSEE as readonly string[]).includes(c));
+    assert.deepEqual(orphelins, [], `ces gestes s'appliquent mais le modèle ne peut pas les nommer : ${orphelins.join(", ")}`);
   });
 
   console.log(`\n${passed} test(s) réussi(s), ${failed} échec(s)`);
