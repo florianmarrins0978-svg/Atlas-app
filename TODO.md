@@ -18,10 +18,23 @@ fais-moi un visuel seulement pour la date avant de coder »*.
 La planche : `appli/termines-date-du-chantier.html`, en ligne à
 https://florianmarrins0978-svg.github.io/Atlas-app/termines-date-du-chantier.html
 
-**Ce qui est TRANCHÉ et n'attend rien :** le bouton devient « À FACTURER ». Il
-est déjà écrit ainsi dans les quatre propositions de la planche ; il reste à le
-poser dans `src/app/termines/ListeTermines.tsx` **en même temps que la date**,
-pour ne pas lui faire redémarrer son espace deux fois.
+**Ce qui est TRANCHÉ et n'attend rien**, à poser dans
+`src/app/termines/ListeTermines.tsx` **en même temps que la date**, pour ne pas
+lui faire redémarrer son espace trois fois :
+
+  1. le bouton devient **« À FACTURER »** ;
+  2. **« Pas encore facturé » disparaît** — sa demande du 31 août au soir,
+     devant la planche. Le bouton, à trois centimètres, disait déjà la même
+     chose sur chaque rangée. Ce qui reste de la ligne dorée : la date, et
+     « 360,00 € prévus » quand un devis a été envoyé.
+
+**Et son retrait découvre des lignes vides**, ce qui n'existait pas avant : un
+chantier sans montant au devis n'a plus que sa date, et un chantier sans date NI
+montant n'a plus de deuxième ligne du tout. C'est ce qu'il faut coder — pas un
+« — » ni une phrase de remplacement : on n'écrit pas ce qu'on ne sait pas.
+Attention au séparateur « · », qui ne doit jamais rester pendu tout seul.
+
+**« Facturé le 20 août » reste**, lui : aucun bouton ne le dit à sa place.
 
 **Ce qu'on attend de lui :** A, B, C ou D — la place de la date. A derrière le
 nom en gris, B en tête de la ligne d'état, C en surtitre doré, D en étiquette

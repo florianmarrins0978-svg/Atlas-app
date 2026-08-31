@@ -21,6 +21,15 @@ chantiers et les montants sont ceux de sa capture ; **les dates sont inventées*
 sa capture n'en montre pas, et elles sont choisies pour éprouver ce qui fait mal :
 un chantier sans date, un de l'an dernier, un nom trop long pour la ligne.
 
+**Puis, le même soir : « supprime "Pas encore facturé" en doré ».** Retiré des
+quatre propositions — sinon la comparaison ne porterait plus sur la même ligne.
+Son retrait découvre des lignes qui n'ont plus rien à écrire : un chantier sans
+montant au devis n'a plus que sa date, un chantier sans date ni montant n'a plus
+de deuxième ligne. La planche assemble donc cette ligne morceau par morceau, et
+se redessine à chaque changement de place — un séparateur « · » écrit en dur y
+restait pendu dans le vide. « Facturé le 20 août » reste : aucun bouton ne le dit
+à sa place.
+
 **Ce que la planche a fait apparaître, et qu'un texte n'aurait pas montré :** sur
 l'onglet « Tout », la proposition B écrit deux dates côte à côte — « 9 août ·
 Facturé le 20 août » —, et la proposition C perd son rang régulier dès qu'un

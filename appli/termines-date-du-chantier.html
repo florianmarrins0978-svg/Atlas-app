@@ -19,12 +19,26 @@
         le chantier a été réalisé. Propose, fais-moi un visuel seulement
         pour la date à côté du nom du client avant de coder. »
 
-    DEUX DEMANDES, ET ELLES NE SE TRAITENT PAS PAREIL.
+    Puis, devant la planche, le même soir :
+
+      « Refais-moi un visuel de celle-là, mais supprime "Pas encore facturé"
+        en doré. »
+
+    TROIS DEMANDES, ET ELLES NE SE TRAITENT PAS PAREIL.
 
       1. **Le bouton** : c'est tranché, il n'y a rien à proposer. « À FACTURER »
          est déjà posé dans les quatre propositions.
-      2. **La date** : c'est ce qui se choisit. Quatre places, et elles ne
+      2. **« Pas encore facturé »** : tranché aussi, et retiré des QUATRE — sinon
+         la comparaison ne porterait plus sur la même ligne. La phrase disait ce
+         que le bouton dit déjà à trois centimètres, sur chaque rangée.
+      3. **La date** : c'est ce qui se choisit. Quatre places, et elles ne
          coûtent pas la même chose — voir plus bas.
+
+    CE QUE SON RETRAIT A DÉCOUVERT, ET QUI N'EXISTAIT PAS AVANT. Des lignes
+    n'ont plus rien à écrire en dessous du nom : un chantier sans montant au
+    devis n'a plus que sa date (« 26 août »), et « Abri Pornic » — sans date NI
+    montant — n'a plus de deuxième ligne du tout. C'est visible dans les quatre,
+    et c'est honnête : on n'écrit pas ce qu'on ne sait pas.
 
     CE QUE LA DATE MONTRE VRAIMENT, ET C'EST UNE RÉSERVE À DIRE.
 
@@ -176,9 +190,11 @@
   .tel[data-place="ligne"] .rangee-nom .date{
     display:inline;font-size:13px;color:var(--e-gris)}
 
-  /* B — en tête de la ligne d'état, avant « Pas encore facturé ». Elle prend
-     alors la couleur de l'état : or tant que ça attend, gris une fois fait. */
-  .tel[data-place="etat"] .etat .date{display:inline}
+  /* B — en tête de la ligne d'état, devant le montant. Elle est écrite là par
+     le script, pas montrée par le CSS : « Pas encore facturé » parti, il reste
+     des lignes où la date est SEULE, et un séparateur posé en dur y laisserait
+     un « · » pendu dans le vide. Elle prend la couleur de l'état : or tant que
+     ça attend, gris une fois fait. */
 
   /* C — au-dessus du nom, en petites capitales dorées. */
   .tel[data-place="dessus"] .sur-nom .date{
@@ -209,8 +225,9 @@
   <button class="nuit" id="nuit" type="button" aria-label="Fond sombre">☾</button>
   <p class="sur">Atlas · planche du 31 août 2026</p>
   <h1>La date du chantier,<br>à côté du nom</h1>
-  <p><b>« À FACTURER » est déjà posé dans les quatre</b> — c'est tranché.
-     Ce qui se choisit, c'est <b>où se met la date</b>. Les onglets marchent.</p>
+  <p><b>« À FACTURER » posé, et « Pas encore facturé » retiré</b> dans les
+     quatre — c'est tranché. Ce qui se choisit, c'est <b>où se met la date</b>.
+     Les onglets marchent.</p>
 </header>
 
 <div class="choix" role="group" aria-label="La place de la date">
@@ -248,16 +265,18 @@
 <div class="note">
   <h2>Ce qu'il faut regarder avant de choisir</h2>
   <ul>
-    <li><b>« Chantier test — Abri Pornic » n'a pas de date.</b> Elle n'est pas
-        inventée : la ligne reste comme aujourd'hui. C'est le cas d'un chantier
-        clôturé sans être passé par le planning.</li>
+    <li><b>« Chantier test — Abri Pornic » n'a ni date ni montant.</b> Sa
+        deuxième ligne est donc vide : « Pas encore facturé » parti, il n'y a
+        plus rien d'exact à y écrire, et rien ne s'invente. C'est le cas d'un
+        chantier clôturé sans être passé par le planning.</li>
     <li><b>« Mme Grospiron » est de l'an dernier</b> — son année s'écrit,
         les autres pas. L'onglet « À facturer » mélange tous les mois : sans
         année, « 14 septembre » se lirait comme le mois qui vient.</li>
     <li><b>Appuyez sur « Tout ».</b> Les chantiers déjà facturés y portent
         <i>deux</i> dates : celle du chantier et celle de la facture. C'est là
         que la proposition B se juge — « 9 août · Facturé le 20 août » sur une
-        seule ligne.</li>
+        seule ligne. <b>« Facturé le 20 août » reste</b> : lui n'est pas
+        « Pas encore facturé », et aucun bouton ne le dit à sa place.</li>
     <li><b>« Chantier test — Muret Clisson » est le nom le plus long.</b> En A
         et en D, c'est lui qui cède : le nom se coupe, jamais la date.</li>
   </ul>
@@ -294,7 +313,7 @@
 
   const DITS = {
     ligne: "<span class='retenu'>La date suit le nom, en gris.</span> Rien ne s'ajoute en hauteur — la liste garde le même nombre de lignes. Sur un nom long, c'est le nom qui se coupe : la date reste entière.",
-    etat: "<b>La date ouvre la deuxième ligne</b> : « 12 août · Pas encore facturé · 360,00 € prévus ». Le nom garde toute sa largeur. En contrepartie, la ligne d'état devient longue — et sur « Tout », elle porte deux dates.",
+    etat: "<b>La date ouvre la deuxième ligne</b> : « 12 août · 360,00 € prévus ». Le nom garde toute sa largeur, et la ligne tient maintenant sur un seul rang. Sur « Tout », elle porte deux dates.",
     dessus: "<b>Une petite ligne dorée au-dessus du nom.</b> La date se repère d'un coup d'œil, en balayant la colonne. Elle coûte <b>une ligne de hauteur par chantier</b>, et le chantier sans date remonte tout seul : le rang n'est plus régulier.",
     etiquette: "<b>La date tamponnée devant le nom.</b> Elle se voit le mieux des quatre. Elle prend aussi la place la plus visible de la ligne — celle que le nom du client occupe aujourd'hui.",
   };
@@ -302,22 +321,46 @@
   const tel = document.getElementById("tel");
   const dit = document.getElementById("dit");
   const liste = document.getElementById("liste");
+  let place = "ligne";
+  let onglet = "attente";
 
   function poserPlace(clef) {
+    place = clef;
     tel.dataset.place = clef;
     dit.innerHTML = DITS[clef];
     for (const b of document.querySelectorAll(".choix button")) {
       b.setAttribute("aria-pressed", String(b.dataset.place === clef));
     }
+    dessinerListe();
   }
   for (const b of document.querySelectorAll(".choix button")) {
     b.addEventListener("click", () => poserPlace(b.dataset.place));
   }
 
-  // La date est écrite QUATRE FOIS dans le HTML de chaque ligne, une par place,
-  // et le CSS n'en montre qu'une. C'est ce qui permet de basculer sans redessiner
-  // — et surtout de mesurer la vraie largeur qui reste au nom.
-  function dessinerListe(onglet) {
+  /**
+   * La deuxième ligne, assemblée MORCEAU PAR MORCEAU.
+   *
+   * **Elle se redessine à chaque changement de place, et c'est délibéré.** La
+   * première version posait la date quatre fois dans le HTML et n'en montrait
+   * qu'une par CSS. « Pas encore facturé » parti (sa demande du 31 août), il
+   * reste des lignes où il n'y a plus rien à écrire — « 26 août » seul en B,
+   * RIEN du tout en A, C et D — et un séparateur écrit en dur y laissait un
+   * « · » pendu dans le vide.
+   */
+  function ligneEtat(c) {
+    const bouts = [];
+    if (place === "etat" && c.date) bouts.push(c.date);
+    if (c.attente) {
+      // « Pas encore facturé » est parti : le bouton « À FACTURER », à trois
+      // centimètres, dit déjà exactement la même chose.
+      if (c.montant !== null) bouts.push(`${c.montant} prévus`);
+    } else {
+      bouts.push(c.quand);
+    }
+    return bouts.join(" · ");
+  }
+
+  function dessinerListe() {
     const vues = onglet === "attente" ? CHANTIERS.filter((c) => c.attente) : CHANTIERS;
     const combien = CHANTIERS.filter((c) => c.attente).length;
     const compte = onglet === "attente"
@@ -328,6 +371,7 @@
       `<p class="compte">${compte}</p>` +
       vues.map((c) => {
         const d = c.date;
+        const etat = ligneEtat(c);
         return `
         <div class="ligne">
           <span class="qui">
@@ -336,13 +380,7 @@
               <span class="nom">${c.nom}</span>
               ${d ? `<span class="date">${d}</span>` : ""}
             </span>
-            <span class="etat${c.attente ? "" : " faite"}">${
-              d ? `<span class="date">${d} · </span>` : ""
-            }${
-              c.attente
-                ? (c.montant === null ? "Pas encore facturé" : `Pas encore facturé · ${c.montant} prévus`)
-                : c.quand
-            }</span>
+            ${etat ? `<span class="etat${c.attente ? "" : " faite"}">${etat}</span>` : ""}
           </span>
           ${c.attente ? `<span class="facturer">À facturer</span>` : `<span class="euros">${c.montant}</span>`}
         </div>`;
@@ -353,7 +391,8 @@
       for (const a of document.querySelectorAll(".onglets button")) {
         a.setAttribute("aria-pressed", String(a === b));
       }
-      dessinerListe(b.dataset.onglet);
+      onglet = b.dataset.onglet;
+      dessinerListe();
     });
   }
 
@@ -362,8 +401,7 @@
     document.documentElement.setAttribute("data-theme", sombre ? "light" : "dark");
   });
 
-  poserPlace("ligne");
-  dessinerListe("attente");
+  poserPlace("etat");
 </script>
 </body>
 </html>
