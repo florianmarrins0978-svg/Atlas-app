@@ -444,7 +444,7 @@ function AjouterTranche({
             }
             router.refresh();
           }}
-          className="min-h-[40px] rounded-full px-4 py-2 text-[14px] font-medium disabled:opacity-40"
+          className="atlas-plein min-h-[40px] rounded-full px-4 py-2 text-[14px] font-medium disabled:opacity-40"
           style={{ backgroundColor: colors.rust, color: colors.card }}
         >
           Ajouter
@@ -505,7 +505,7 @@ function AjouterTechnique({ onErreur }: { onErreur: (m: string | null) => void }
           }
           router.refresh();
         }}
-        className="min-h-[40px] rounded-full px-4 py-2 text-[14px] font-medium disabled:opacity-40"
+        className="atlas-plein min-h-[40px] rounded-full px-4 py-2 text-[14px] font-medium disabled:opacity-40"
         style={{ backgroundColor: colors.rust, color: colors.card }}
       >
         Ajouter
@@ -614,7 +614,7 @@ function AjouterTravail({
           }
           router.refresh();
         }}
-        className="min-h-[44px] self-start rounded-full px-5 py-2.5 text-[14px] font-medium disabled:opacity-40"
+        className="atlas-plein min-h-[44px] self-start rounded-full px-5 py-2.5 text-[14px] font-medium disabled:opacity-40"
         style={{ backgroundColor: colors.rust, color: colors.card }}
       >
         Ajouter ce travail

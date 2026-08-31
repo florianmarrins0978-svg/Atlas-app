@@ -58,24 +58,25 @@ chemins exclus, et l'exclusion doit se PROUVER (aucun `import` depuis `src/` ni
 
 ---
 
-## LES BOUTONS PLEINS : lot 1 livré, 31 fichiers restants (31 août 2026)
+## LES BOUTONS PLEINS : fait (31 août 2026)
 
 **Ses réponses sont acquises :** couleur **#29382F**, force **discret**,
 **Origine seule**. Rien à lui redemander.
 
-**Fait (lot 1) :** la classe `.atlas-plein` (`globals.css`), la variable
-`--atlas-plein-fond` ecrite pour Origine seule (`chartes.ts`), et les trois
-pieces partagees — `PrimaryButton`, `ActionPrincipale`, `BoutonAssistant`.
+**Fait :** la classe `.atlas-plein` (`globals.css`), la variable
+`--atlas-plein-fond` ecrite pour Origine seule (`chartes.ts`), les trois pieces
+partagees, puis les **38 autres boutons** de 25 fichiers et les deux notes
+vocales (`AnneauNoteVocale`, un seul composant pour les deux ecrans).
 
-**Reste :** les autres boutons pleins verts, a qui il faut poser la classe.
-L'inventaire tient dans une commande, et il separe les VRAIS boutons des
-pastilles, barres de progression et fonds pales qui emploient la meme couleur :
+**Ce qui a ete ECARTE volontairement**, et qu'il ne faut pas « corriger » un
+jour en croyant bien faire : huit emplois du meme vert qui ne sont pas des
+boutons — pastilles clignotantes, barres de progression, fonds pales
+(`colors.rustTint`). Ni les capsules creuses. Ni `src/app/design/*`, hors
+produit.
 
-    grep -rn "backgroundColor: colors.rust" src/ --include=*.tsx
-
-**Ne pas prendre `colors.rustTint`** — c'est le fond pale, pas un aplat
-d'action. **Ni les capsules creuses** : « surtout pas ceux qui sont creux ».
-**Ni `src/app/design/*`**, hors produit depuis le 1er aout.
+**Si un bouton plein est ajoute plus tard**, il lui faut la classe : sans elle
+il gardera l'ancien vert et n'aura aucun geste, et cela ne se verra qu'a
+l'usage.
 
 ---
 

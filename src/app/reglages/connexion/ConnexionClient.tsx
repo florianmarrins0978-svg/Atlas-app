@@ -235,7 +235,7 @@ export default function ConnexionClient({ cles }: { cles: CleAppareil[] }) {
                 type="button"
                 onClick={partout}
                 disabled={enCours}
-                className="flex-1 rounded-full py-[13px] text-center text-[15px]"
+                className="atlas-plein flex-1 rounded-full py-[13px] text-center text-[15px]"
                 style={{ backgroundColor: colors.rust, color: colors.cream }}
               >
                 {enCours ? "En cours…" : "Me déconnecter partout"}
