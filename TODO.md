@@ -1263,6 +1263,32 @@ TEXTE des messages — le nom du client, celui de ses chantiers. C'est faisable
 et ce n'est pas anodin (un nom courant balaierait des échanges sans rapport) :
 à trancher avant de coder, pas en codant.
 
+## ~~Deux dictées ne reçoivent pas le vocabulaire~~ — **réglé le 28 août 2026**
+
+Le fournisseur pose lui-même l'indice du métier quand personne ne lui en donne
+(`src/server/ai/providers/transcription/openai.ts`). **Aucun chemin ne peut plus écouter sans savoir**,
+y compris ceux qu'on oublierait — c'était sa remarque : *« pourquoi dans une
+appli SPÉCIFIQUE pour l'espace vert elle comprend pas ? »*
+
+Ce qui reste souhaitable, sans être bloquant : que `retouches-devis-service.ts`
+reçoive un `Ctx` pour y ajouter SES mots à lui, en plus du fond de langue.
+
+## ~~⚠ Deux dictées ne reçoivent pas encore le vocabulaire~~ (repris ci-dessus)
+
+**Depuis le 28 août 2026**, le transcripteur reçoit un indice AVANT d'écouter
+(sa colère : « je lui ai dit désherbage mais il comprend mal »). Il est posé sur
+**la dictée de l'assistant** et sur **la note vocale**.
+
+**Deux chemins ne l'ont pas** :
+
+- `retouches-devis-service.ts` — il dicte une correction sur son devis, et c'est
+  exactement là qu'un libellé de prestation compte. Son service ne reçoit **pas
+  de `Ctx`** : le poser demande de changer sa signature et son appelant ;
+- `coordonnees-service.ts` — la dictée d'une fiche client. Moins urgent : un nom
+  propre ne figure dans aucun vocabulaire, et l'indice n'y peut pas grand-chose.
+
+**Ce n'est pas une régression** : ces deux-là transcrivent comme avant.
+
 ## ⚠ « Ça ne marche pas la dictée » — NON REPRODUIT ici
 
 **Sa capture du 27 août 2026 au soir**, sur son espace : *« La dictée n'a pas

@@ -1,4 +1,5 @@
 import { getFournisseurLLM } from "../providers/llm/fabrique";
+import { METIER_ATLAS } from "../../../lib/metier-atlas";
 import type { FournisseurLLM } from "../providers/llm/interface";
 import { PropositionExtractionSchema, type ResultatExtraction } from "../schemas/extraction";
 import { erreurIA } from "../errors";
@@ -20,7 +21,9 @@ import { NATURES } from "../../../lib/natures-prestation";
  * jamais proposée par le modèle : la case existerait, rien ne pourrait la
  * désigner. C'est la règle dupliquée que `CLAUDE.md` §3 interdit.
  */
-export const SYSTEME = `Tu extrais des informations de chantier depuis un texte dicté par un artisan.
+export const SYSTEME = `${METIER_ATLAS}
+
+Tu extrais des informations de chantier depuis un texte qu'il a dicté.
 Réponds UNIQUEMENT avec un objet JSON valide, sans aucun texte avant ou après, au format exact suivant :
 {
   "prestations": { "libelle": string, "description": string | null, "quantite": string | null, "unite": string | null, "nature": string | null, "espece": string | null, "aConfirmer": boolean }[],

@@ -1,6 +1,7 @@
 import type { FournisseurTranscription, ResultatTranscription } from "./interface";
 import { erreurIA } from "../../errors";
 import { getConfigIA } from "../../config";
+import { construireIndiceDictee } from "@/lib/vocabulaire-dictee";
 
 // Fournisseur réel, prêt pour la production. Non fonctionnel dans cet
 // environnement de développement : api.openai.com n'est pas accessible depuis
@@ -9,7 +10,7 @@ import { getConfigIA } from "../../config";
 // standard et OPENAI_API_KEY définie.
 export const fournisseurTranscriptionOpenAI: FournisseurTranscription = {
   nom: "openai",
-  async transcrire(octets: Buffer, mimeType: string): Promise<ResultatTranscription> {
+  async transcrire(octets: Buffer, mimeType: string, indice?: string): Promise<ResultatTranscription> {
     const cle = getConfigIA().openaiApiKey;
     if (!cle) {
       return { succes: false, erreur: erreurIA("cle_api_absente", "OPENAI_API_KEY n'est pas configurée.") };
@@ -21,6 +22,22 @@ export const fournisseurTranscriptionOpenAI: FournisseurTranscription = {
       formData.set("file", new Blob([new Uint8Array(octets)], { type: mimeType }), `note.${extension}`);
       formData.set("model", "whisper-1");
       formData.set("language", "fr");
+      /**
+       * **Le vocabulaire du métier, soufflé AVANT l'écoute.**
+       *
+       * Whisper accepte un texte d'amorce et s'en sert pour départager les mots
+       * proches : c'est exactement ce qui manquait quand « désherbage » sortait
+       * en « herbages » (28 août 2026). Il ne force rien — il penche.
+       *
+       * Le plafond du service est tenu en amont (`construireIndiceDictee`) :
+       * au-delà, il tronque par la fin, sans prévenir.
+       */
+      // **Et quand personne ne souffle rien, le MÉTIER part quand même.** Sa
+      // colère du 28 août 2026 : *« pourquoi dans une appli SPÉCIFIQUE pour
+      // l'espace vert elle comprend pas ? »* Un indice posé chemin par chemin
+      // s'oublie sur le chemin suivant ; posé ici, aucun appel ne peut plus
+      // écouter sans savoir de quel métier on parle.
+      formData.set("prompt", indice?.trim() || construireIndiceDictee());
 
       const controller = new AbortController();
       const timeout = setTimeout(() => controller.abort(), 30_000);
