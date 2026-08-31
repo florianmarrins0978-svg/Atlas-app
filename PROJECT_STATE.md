@@ -1,6 +1,6 @@
 # État du projet
 
-**Dernière mise à jour :** 2026-08-30 · branche `main`
+**Dernière mise à jour :** 2026-08-31 · branche `main`
 · dernière migration `drizzle/0071_rappel_vu.sql`
 
 *(Deux en-têtes de mise à jour cohabitaient ici depuis une fusion du 29 août,
@@ -15,6 +15,33 @@ suivant, et une ligne fausse coûte plus cher qu'une ligne absente. `git log
 
 Ce fichier dit **où en est le produit**, pas ce qu'on aimerait qu'il soit. Une
 ligne « fait » qui ne l'est pas coûte plus cher qu'une ligne absente.
+
+---
+
+## La connexion tient dans un écran (31 août 2026)
+
+**Sa demande :** *« Pour la page connexion je veux qu'elle tienne sur une seule
+page et supprime toutes les petites phrases en gris sous les boutons, garde que
+les titres. »*
+
+| | |
+|---|---|
+| avant | **1203 px** pour 664 de hauteur utile — « Ailleurs » à un écran du reste |
+| après | **658 px**, tout visible d'un seul tenant sur son iPhone |
+| les gloses grises | **parties** : Face ID, « vous resterez connecté », « un téléphone perdu… », la ligne sous « Me déconnecter partout » |
+| ce qui reste | les titres, les trois champs, les trois gestes |
+
+**Ce qui ne s'est pas perdu avec les phrases :** « Au moins 12 caractères »
+n'est plus affiché d'avance mais se dit **quand il tape trop court**
+(`etatNouveau`), sans quoi un bouton serait resté éteint sans raison lisible.
+
+**Ce qui s'est perdu, et qui est ouvert :** la promesse de Face ID — *« votre
+visage ne quitte jamais votre téléphone »* — n'est plus à l'écran. Elle survit
+dans le mode d'emploi. Les faits, eux, n'ont pas bougé : aucune donnée
+biométrique n'entre en base, et c'est la base que la suite interroge.
+
+Compte-rendu qui lui est destiné : `docs/connexion-une-page.md`. Le détail :
+`ARCHITECTURE.md` §216.
 
 ---
 

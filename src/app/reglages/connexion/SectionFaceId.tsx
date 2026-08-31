@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useTransition } from "react";
 import { colors, font, libelleCaps, texteSituation } from "@/lib/design-tokens";
-import { estAbandon, messageRefusCle, phraseAppareils, type CleAppareil } from "@/lib/cle-appareil";
+import { estAbandon, messageRefusCle, type CleAppareil } from "@/lib/cle-appareil";
 import { defiEnregistrementAction, enregistrerCleAction, retirerCleAction } from "./actions";
 import DemanderPreuve from "@/components/atlas/DemanderPreuve";
 
@@ -15,15 +15,17 @@ import DemanderPreuve from "@/components/atlas/DemanderPreuve";
  * session avec le mot de passe ou le Face ID »*. On n'arrive donc ici qu'une
  * fois entré — et le mot de passe reste, quoi qu'il fasse.
  *
- * **Ce que l'écran DOIT dire, et que rien d'autre ne dirait :**
+ * **CE QUE L'ÉCRAN DISAIT, ET QU'IL NE DIT PLUS — 31 août 2026.** Quatre lignes
+ * grises promettaient ici que c'est par appareil, que le visage ne quitte
+ * jamais le téléphone, et que le mot de passe reste actif. Il les a fait
+ * retirer avec toutes les autres : *« supprime toutes les petites phrases en
+ * gris sous les boutons, garde que les titres »*.
  *
- *   · c'est **par appareil** — allumé sur l'iPhone, il ne l'est pas sur l'iPad ;
- *   · le visage **ne quitte jamais le téléphone** : Atlas ne reçoit qu'une
- *     preuve, jamais une image. C'est vrai (`drizzle/0063_cles_appareil.sql` ne
- *     porte aucune donnée biométrique), et le taire laisserait un artisan
- *     refuser par méfiance une chose qui ne mérite pas cette méfiance ;
- *   · le mot de passe **ne peut pas se retirer** — c'est ce qui fait entrer sur
- *     un téléphone neuf.
+ * **Les faits n'ont pas bougé** — `drizzle/0063_cles_appareil.sql` ne porte
+ * aucune donnée biométrique, et c'est la base, pas une phrase, que
+ * `test-face-id-e2e.ts` interroge. Ce qui a disparu, c'est la promesse écrite :
+ * un artisan méfiant n'a plus de quoi se rassurer à l'écran. Le lui redire
+ * demanderait un autre endroit que cette rubrique — pas ces quatre lignes.
  *
  * ─────────────────────────────────────────────────────────────────────────────
  * **RIEN NE S'AFFICHE SI L'APPAREIL NE SAIT PAS LE FAIRE**, sauf s'il a déjà
@@ -139,8 +141,8 @@ export default function SectionFaceId({ clesInitiales }: { clesInitiales: CleApp
   if (!teste) return null;
 
   return (
-    <section className="mx-[26px] mt-[30px] border-t pt-[18px]" style={{ borderColor: colors.line }}>
-      <p className={`mb-2.5 ${libelleCaps}`} style={{ color: colors.muted }}>
+    <section className="mx-[26px] mt-[12px] border-t pt-[10px]" style={{ borderColor: colors.line }}>
+      <p className={`mb-1.5 ${libelleCaps}`} style={{ color: colors.muted }}>
         Ouvrir avec Face ID
       </p>
 
@@ -168,8 +170,8 @@ export default function SectionFaceId({ clesInitiales }: { clesInitiales: CleApp
           {cles.map((cle) => (
             <li
               key={cle.id}
-              className="flex items-center gap-3 border-b py-[13px]"
-              style={{ borderColor: colors.line, minHeight: 56 }}
+              className="flex items-center gap-3 border-b py-[10px]"
+              style={{ borderColor: colors.line, minHeight: 44 }}
             >
               <span className="min-w-0 flex-1">
                 <span className="block" style={{ fontFamily: font.display, fontSize: 16, lineHeight: 1.25 }}>
@@ -207,27 +209,24 @@ export default function SectionFaceId({ clesInitiales }: { clesInitiales: CleApp
           type="button"
           onClick={activer}
           disabled={enCours}
-          className="w-full rounded-full py-[13px] text-center text-[15px] disabled:opacity-60"
+          className="w-full rounded-full py-[11px] text-center text-[15px] disabled:opacity-60"
           style={{ backgroundColor: colors.card, color: colors.ink, boxShadow: `inset 0 0 0 1px ${colors.line}` }}
         >
           {enCours ? "En cours…" : "Enregistrer cet appareil"}
         </button>
       )}
 
-      {/* **Les espaces autour des `<b>` sont posés à la main**, et ce n'est pas
-          de la superstition : JSX avale l'espace qui borde une balise en fin de
-          ligne. La capture du 24 août montrait « chaque appareilséparément » et
-          « reste actifet ne peut pas ». Aucun test ne l'aurait vu — c'est la
-          cinquième fois dans ce dépôt qu'un défaut sort d'une image regardée
-          (`CLAUDE.md` §5). */}
-      <p className={`mt-2.5 ${texteSituation}`} style={{ color: colors.muted }}>
-        {phraseAppareils(cles.length)}. Sur <b style={{ color: colors.ink }}>chaque appareil</b>{" "}
-        séparément. Votre visage ne quitte jamais votre téléphone : Atlas ne reçoit qu&apos;une preuve,
-        jamais une image.
-        <br />
-        <b style={{ color: colors.ink }}>Votre mot de passe reste actif</b>{" "}
-        et ne peut pas se retirer — c&apos;est lui qui vous fait entrer sur un téléphone neuf.
-      </p>
+      {/* **LA GLOSE EST PARTIE — sa demande du 31 août 2026 :** *« supprime
+          toutes les petites phrases en gris sous les boutons, garde que les
+          titres »*. Quatre lignes vivaient ici : c'est par appareil, le visage
+          ne quitte pas le téléphone, le mot de passe reste actif.
+
+          **Ce que ce retrait coûte, et il faut le savoir avant de le défaire :**
+          l'écran ne promet plus rien à celui qui hésite à donner son visage.
+          Rien ne change dans les faits — `drizzle/0063_cles_appareil.sql` ne
+          porte aucune donnée biométrique, et `test-face-id-e2e.ts` le vérifie
+          en base plutôt que dans une phrase. C'est la promesse ÉCRITE qui a
+          disparu, pas la garantie. */}
 
       {/* **La feuille n'autorise rien** : elle obtient une preuve côté serveur,
           puis on REPREND le geste. Sans cette reprise, l'artisan taperait son

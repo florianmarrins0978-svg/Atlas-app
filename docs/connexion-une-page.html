@@ -1,0 +1,200 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas — La page Connexion tient dans un écran — ce qui a été fait</title>
+<style>
+  :root{
+    --ground:#f5f3ee; --surface:#faf9f5; --raised:#ece9e1;
+    --ink:#1c1c1a; --ink-soft:#4a4a44; --muted:#8a8578;
+    --accent:#2f3b2f; --alert:#b5562a; --line:rgba(28,28,26,0.13);
+    --serif:Georgia,'Times New Roman',serif;
+    --sans:system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --ground:#161815; --surface:#1d201c; --raised:#252924;
+      --ink:#eae7df; --ink-soft:#c2bdb1; --muted:#948f83;
+      --accent:#9fbd82; --alert:#e0885a; --line:rgba(234,231,223,0.17);
+    }
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--sans);
+    line-height:1.65;}
+  main{max-width:44rem;margin:0 auto;padding:2.5rem 1.2rem 5rem;}
+  h1,h2,h3,h4{font-family:var(--serif);font-weight:600;line-height:1.2;
+    text-wrap:balance;margin:2rem 0 0.6rem;scroll-margin-top:1rem;}
+  h1{font-size:2rem;margin-top:0;}
+  h2{font-size:1.5rem;padding-top:1.2rem;border-top:1px solid var(--line);}
+  h3{font-size:1.12rem;}
+  h4{font-size:1rem;}
+  p{margin:0 0 0.9rem;}
+  a{color:var(--accent);text-underline-offset:3px;}
+  a:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:3px;}
+  ul,ol{margin:0 0 1rem;padding-left:1.3rem;}
+  li{margin-bottom:0.4rem;}
+  li::marker{color:var(--muted);}
+  /* Le sommaire : des cibles larges, confortables au doigt sur téléphone. */
+  ol li a{display:inline-block;padding:0.15rem 0;}
+  blockquote{margin:1rem 0;padding:0.85rem 1.05rem;background:var(--raised);
+    border-left:3px solid var(--accent);border-radius:0 10px 10px 0;color:var(--ink-soft);}
+  code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:0.87em;
+    background:var(--raised);padding:0.1rem 0.35rem;border-radius:5px;}
+  hr{border:0;border-top:1px solid var(--line);margin:2rem 0;}
+  .tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px;
+    background:var(--surface);margin:0 0 1.2rem;}
+  table{border-collapse:collapse;width:100%;font-size:0.92rem;min-width:22rem;}
+  th,td{text-align:left;padding:0.55rem 0.8rem;border-bottom:1px solid var(--line);
+    vertical-align:top;}
+  th{font-size:0.72rem;letter-spacing:0.08em;text-transform:uppercase;
+    color:var(--muted);white-space:nowrap;}
+  tr:last-child td{border-bottom:none;}
+  .retour{display:inline-block;font-size:0.76rem;color:var(--muted);
+    text-decoration:none;margin:-0.3rem 0 1rem;}
+  .retour:hover{color:var(--accent);text-decoration:underline;}
+</style>
+</head>
+<body>
+<main>
+<h1 id="la-page-connexion-tient-dans-un-écran--ce-qui-a-été-fait">La page Connexion tient dans un écran — ce qui a été fait</h1>
+<p><em>31 août 2026 · branche <code>claude/connexion-single-page-layout-etkzrh</code></em></p>
+<p><strong>Sa demande, capture à l'appui :</strong> <em>« Pour la page connexion je veux qu'elle tienne sur une seule page et supprime toutes les petites phrases en gris sous les boutons, garde que les titres. »</em></p>
+<hr>
+<h2 id="le-verdict-en-deux-lignes">Le verdict, en deux lignes</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th></th>
+</tr></thead><tbody>
+<tr>
+<td>avant</td>
+<td><strong>1203 px</strong> pour un écran qui en montre <strong>664</strong> — presque deux écrans, « Ailleurs » vivait sous le pli</td>
+</tr>
+<tr>
+<td>après</td>
+<td><strong>658 px</strong> — tout d'un seul tenant, rien à faire défiler</td>
+</tr>
+</tbody></table></div>
+<p>Mesuré sur <strong>son</strong> écran : 390 × 664, un iPhone barre d'adresse déduite. C'est la mesure du dépôt depuis le 30 août, pas un chiffre choisi pour l'occasion.</p>
+<hr>
+<h2 id="ce-qui-a-été-retiré-un-par-un">Ce qui a été retiré, un par un</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th>La phrase grise</th>
+<th>Où elle était</th>
+<th>État</th>
+</tr></thead><tbody>
+<tr>
+<td>« Vous resterez connecté sur cet appareil. »</td>
+<td>sous « Changer mon mot de passe »</td>
+<td>retirée</td>
+</tr>
+<tr>
+<td>« Aucun appareil enregistré. Sur chaque appareil séparément. Votre visage ne quitte jamais votre téléphone… »</td>
+<td>sous « Enregistrer cet appareil »</td>
+<td>retirée</td>
+</tr>
+<tr>
+<td>« Votre mot de passe reste actif et ne peut pas se retirer… »</td>
+<td>même endroit</td>
+<td>retirée</td>
+</tr>
+<tr>
+<td>« Sur tous les téléphones et ordinateurs, y compris celui-ci »</td>
+<td>sous « Me déconnecter partout »</td>
+<td>retirée</td>
+</tr>
+<tr>
+<td>« Un téléphone perdu, un ordinateur prêté : ce qu'on veut… »</td>
+<td>tout en bas de l'écran</td>
+<td>retirée</td>
+</tr>
+<tr>
+<td>« Au moins 12 caractères. »</td>
+<td>sous le champ du nouveau mot de passe</td>
+<td><strong>déplacée</strong> — voir plus bas</td>
+</tr>
+</tbody></table></div>
+<p><strong>Ce qui reste :</strong> les titres (<code>CHANGER DE MOT DE PASSE</code>, <code>OUVRIR AVEC FACE ID</code>, <code>AILLEURS</code>), les trois champs avec leur œil, et les trois gestes.</p>
+<hr>
+<h2 id="ce-qui-a-été-gardé-et-pourquoi">Ce qui a été GARDÉ, et pourquoi</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p>Deux phrases restent, et aucune n'est sous un bouton :</p>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th></th>
+</tr></thead><tbody>
+<tr>
+<td>« Vous devrez vous reconnecter sur tous vos appareils, celui-ci compris. »</td>
+<td>c'est <strong>la question</strong> posée avant de fermer, pas une explication. La retirer laisserait deux boutons sans savoir à quoi on répond</td>
+</tr>
+<tr>
+<td>« Vos appareils enregistrés pourront rouvrir Atlas avec Face ID… »</td>
+<td>elle n'apparaît qu'au moment de confirmer, et <strong>seulement s'il a un appareil enregistré</strong>. C'est le seul endroit où l'on apprend que « me déconnecter partout » ne ferme pas cette porte-là — et on y arrive un soir de téléphone perdu</td>
+</tr>
+</tbody></table></div>
+<p><em>Si tu veux qu'elles partent aussi, dis-le : c'est deux lignes.</em></p>
+<hr>
+<h2 id="les-545-px-repris-et-doù-ils-viennent">Les 545 px repris, et d'où ils viennent</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p>Retirer les phrases n'y suffisait pas : elles pèsent 271 px sur les 545. Le reste était ailleurs, et le plus gros morceau était un défaut.</p>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th></th>
+</tr></thead><tbody>
+<tr>
+<td><strong>248 px</strong></td>
+<td>les phrases grises hors des champs : Face ID (96), « Un téléphone perdu… » (84), la ligne sous « Me déconnecter partout » (43), « Vous resterez connecté… » (25)</td>
+</tr>
+<tr>
+<td><strong>120 px</strong></td>
+<td><strong>les trois champs.</strong> L'œil fait 44 px — la taille qu'il faut pour ne pas le rater avec des gants — et il imposait ces 44 px à sa rangée. Il les garde comme cible, il ne les impose plus comme hauteur : <strong>60 px</strong>. Plus « Au moins 12 caractères » (23) et leurs marges (37)</td>
+</tr>
+<tr>
+<td><strong>96 px</strong></td>
+<td><strong>la barre du bas était réservée DEUX FOIS.</strong> Le gabarit de l'application la réserve déjà pour tous les écrans ; cet écran-ci la réservait une seconde fois, en plus large. Du vide qui ne portait rien et qui poussait « Ailleurs » sous le pli</td>
+</tr>
+<tr>
+<td><strong>81 px</strong></td>
+<td>les écarts entre rubriques et autour des boutons, de 30 px à 1</td>
+</tr>
+</tbody></table></div>
+<hr>
+<h2 id="ce-qui-a-été-fait-autrement-que-demandé-et-pourquoi">Ce qui a été fait AUTREMENT que demandé, et pourquoi</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<h3 id="-au-moins-12-caractères---retirée-de-lécran-mais-pas-supprimée">« Au moins 12 caractères » : retirée de l'écran, mais pas supprimée</h3>
+<p>C'était bien une petite phrase grise sous un champ. Elle est partie de l'écran au repos — mais <strong>la retirer purement et simplement aurait cassé quelque chose</strong> : on tape huit caractères, la ligne de confirmation répond « les deux sont identiques ✓ », le bouton reste éteint, et <strong>plus rien à l'écran ne dit pourquoi</strong>. Un bouton éteint sans raison lisible, c'est une application qu'on croit cassée.</p>
+<p>Elle se dit donc désormais <strong>au moment où elle mord</strong> : rien tant que le champ est vide, la phrase dès que la saisie est trop courte. Au repos, l'écran est nu comme il l'a demandé.</p>
+<h3 id="la-promesse-de-face-id--retirée-pour-de-bon-et-il-faut-le-savoir">La promesse de Face ID : retirée pour de bon, et il faut le savoir</h3>
+<p>Les quatre lignes disaient que c'est par appareil, que le visage ne quitte jamais le téléphone, et que le mot de passe reste actif.</p>
+<p><strong>Les faits n'ont pas changé</strong> — Atlas ne reçoit jamais d'image de visage, seulement une preuve, et rien de biométrique n'entre dans la base. C'est la base elle-même que le contrôle interroge, pas une phrase.</p>
+<p><strong>Ce qui a disparu, c'est la promesse écrite.</strong> Quelqu'un qui hésite à donner son visage n'a plus rien à l'écran pour se rassurer. Elle survit dans le mode d'emploi d'Atlas, et c'est tout.</p>
+<p><em>C'est le seul point du lot qui coûte quelque chose. S'il la veut, elle se remet — mais ailleurs, pas en gris sous le bouton.</em></p>
+<hr>
+<h2 id="ce-qui-a-été-corrigé-dans-les-contrôles-plutôt-que-dans-lécran">Ce qui a été corrigé dans les contrôles, plutôt que dans l'écran</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p>Une suite <strong>exigeait</strong> la promesse de Face ID à l'écran. Elle serait devenue rouge sur du code juste, pour une demande exaucée. Elle a été <strong>retournée</strong> : elle vérifie maintenant que cette glose <strong>ne revient pas</strong>.</p>
+<p>C'est la règle du dépôt : quand une suite rougit après un retrait demandé, on adapte la suite — on ne remet pas le libellé. Écrire l'inverse rendrait son écran impossible à changer.</p>
+<p>Et un contrôle neuf mesure l'écran à 390 × 664 : rien à faire défiler, et le dernier geste jamais recouvert par les onglets. Il refuse de conclure sur une page qui n'est pas mise en page — sans quoi « 0 ≤ 664 » rendrait un vert qui ne mesure rien.</p>
+<hr>
+<h2 id="ce-que-la-mesure-ne-couvre-pas">Ce que la mesure ne couvre pas</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p>Un appareil <strong>déjà enregistré</strong> ajoute sa ligne à la rubrique Face ID, soit 56 px. Sur un écran de 664 px l'écran défile alors de ce qu'il faut ; sur son téléphone, dont la hauteur utile est de l'ordre de 770 px, il tient toujours.</p>
+<hr>
+<h2 id="ce-qui-reste-ouvert-et-qui-peut-le-trancher">Ce qui reste ouvert, et qui peut le trancher</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th>Qui</th>
+</tr></thead><tbody>
+<tr>
+<td>la promesse de Face ID est-elle remise ailleurs, ou pas du tout ?</td>
+<td><strong>lui</strong></td>
+</tr>
+</tbody></table></div>
+<hr>
+<p><em>Le détail technique, et ce qui a été écarté : <code>ARCHITECTURE.md</code> §216.</em></p>
+</main>
+</body>
+</html>

@@ -7,6 +7,35 @@ Format : le plus récent en tête.
 
 ---
 
+## 2026-08-31
+
+### La connexion tient dans un écran, et les phrases grises sont parties
+
+**Sa demande, capture à l'appui :** *« Pour la page connexion je veux qu'elle
+tienne sur une seule page et supprime toutes les petites phrases en gris sous
+les boutons, garde que les titres. »*
+
+L'écran demandait 1203 px pour 664 de hauteur utile — presque deux écrans ; il
+en demande 658. Le plus gros morceau n'était pas une phrase : `pb-24` réservait
+la barre du bas une seconde fois, alors que `main.atlas-contenu` la réserve déjà
+pour tous les écrans — 96 px de vide qui ne portaient rien. L'œil des trois
+champs garde ses 44 px de cible mais n'impose plus sa hauteur à sa rangée :
+60 px de plus.
+
+Cinq gloses grises sont parties. Deux portaient quelque chose : « Au moins
+12 caractères » était la seule raison lisible d'un bouton éteint — elle se dit
+maintenant **quand elle mord**, jamais d'avance (`etatNouveau`) ; la promesse de
+Face ID (« votre visage ne quitte jamais votre téléphone ») n'est plus à
+l'écran, et elle ne survit que dans le mode d'emploi. Les faits n'ont pas
+changé : la base ne porte aucune donnée biométrique, et c'est elle que la suite
+interroge.
+
+Le contrôle qui exigeait cette promesse a été retourné : il vérifie désormais
+qu'elle ne revient pas. Un nouveau mesure l'écran à 390 × 664 — rien à faire
+défiler, et le dernier geste hors de portée des onglets.
+
+---
+
 ## 2026-08-30
 
 ### La fiche n'accuse plus le port quand c'est le serveur qui manque

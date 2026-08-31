@@ -9,6 +9,26 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
+## LA PROMESSE DE FACE ID N'EST PLUS À L'ÉCRAN — à trancher avec lui (31 août 2026)
+
+Ses quatre lignes grises sont parties avec les autres, sur sa demande du
+31 août. Elles disaient que c'est **par appareil**, que le **visage ne quitte
+jamais le téléphone**, et que le **mot de passe reste actif**.
+
+**Les faits n'ont pas changé** — aucune donnée biométrique n'entre en base
+(`drizzle/0063_cles_appareil.sql`), et c'est la base que `test-face-id-e2e.ts`
+interroge. C'est la promesse ÉCRITE qui a disparu : quelqu'un qui hésite à
+donner son visage n'a plus de quoi se rassurer à l'écran.
+
+**Ce qui reste :** le mode d'emploi la porte (`mode-emploi.ts`,
+`reglages-face-id`).
+
+**Ce qui ne se fera pas sans lui :** la remettre. Il l'a fait retirer, et une
+suite vérifie désormais qu'elle ne revient pas. S'il la veut, elle se pose
+ailleurs — jamais en gris sous le bouton.
+
+---
+
 ## POURQUOI LE RELAIS PERD SON PORT 3000 — inexpliqué (31 août 2026)
 
 Sa nuit du 30 au 31 : espace debout, Atlas répondant sur 3000, version rapide
