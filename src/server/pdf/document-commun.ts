@@ -1,4 +1,5 @@
 import { adressesDuDocument } from "../../lib/adresses";
+import { ligneAttendSonPrix } from "../../lib/preparation-devis";
 import { PDFDocument, PDFFont, PDFImage, PDFPage, StandardFonts, rgb, RGB } from "pdf-lib";
 import Decimal from "decimal.js";
 import { couleursDocument } from "@/lib/design-tokens";
@@ -815,7 +816,17 @@ export async function composerDocument(
       ecrireADroite(ctx, ligne.unite ? `${ligne.quantite} ${ligne.unite}` : ligne.quantite, xQte, y, {
         taille: 9,
       });
-      if (ligne.aChiffrer) {
+      // **« À chiffrer » ne se lit plus sur le seul drapeau** — sa capture du
+      // 31 août 2026. Le tableau portait « à chiffrer » en face de deux lignes
+      // qui pesaient 1 720 €, et le Total HT, lui, les comptait : 2 280,00 €
+      // sous 560,00 € de montants visibles. Un client qui additionne n'y
+      // arrive pas, et cesse de croire le reste du document.
+      //
+      // L'invariant vit dans `ligneAttendSonPrix` — un montant posé répond à
+      // la question, quel que soit le drapeau — et il est partagé avec l'écran
+      // et avec le contrôle d'envoi. Ce qui est imprimé fait donc toujours le
+      // total imprimé.
+      if (ligneAttendSonPrix({ libelle: ligne.libelle, montant: ligne.montant, aChiffrer: ligne.aChiffrer })) {
         // Ni prix unitaire, ni montant : il n'y en a pas. Écrire « 0,00 € »
         // serait annoncer un travail gratuit (26 août 2026).
         ecrireADroite(ctx, "à chiffrer", xMontant, y, { taille: 9, police: ctx.sansGras });

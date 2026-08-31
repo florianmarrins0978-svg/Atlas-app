@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { lancerNavigateur } from "./e2e-browser";
 import { Pool } from "pg";
-import { ajouterJours, versJourIso, HORIZON_PATRON_JOURS, DELAI_MINIMAL_JOURS } from "../src/server/disponibilites";
+import { ajouterJours, versJourIso, HORIZON_PATRON_JOURS } from "../src/server/disponibilites";
 import { jourLisible } from "../src/lib/jour";
 import { creerPuisFiche } from "./_creer-chantier-e2e";
 
@@ -66,19 +66,19 @@ async function main() {
     "Aucun calendrier : le patron ne peut proposer que la semaine qui vient."
   );
 
-  // **Le lendemain se REGARDE mais ne se PROPOSE pas.**
+  // ═══════════════════════════════════════════════════════════════════════
+  // **LE LENDEMAIN SE PROPOSE — sa règle du 31 août 2026.**
   //
-  // Le contrôle exigeait auparavant une case éteinte. Depuis le 22 août 2026,
-  // sur sa demande (planche 91), **toutes les cases restent touchables** :
-  // *« un jour complet reste touchable — c'est justement celui sur lequel vous
-  // voulez regarder avant de décider »*. Le refus a donc changé de place : il
-  // n'éteint plus la case, il s'écrit sous elle.
+  // *« Si l'utilisateur veut choisir le 1ᵉʳ septembre il doit pouvoir ! »* Ce
+  // contrôle exigeait exactement l'inverse jusqu'à ce jour-là : il prouvait que
+  // demain ne partait pas chez le client. Il réclamerait désormais ce que le
+  // patron a fait retirer (`CLAUDE.md` §5 bis), donc il change de camp.
   //
-  // **Et depuis le 25 août, ce qu'on éprouve est la RÈGLE, plus le bouton.**
-  // Toucher une case la propose désormais — le bouton n'existe plus, et un
-  // contrôle qui l'exigeait réclamerait ce que le patron a fait retirer
-  // (`CLAUDE.md` §5 bis). Ce qu'il faut prouver n'a pas bougé : un jour trop
-  // proche ne part pas chez le client, quoi que touche le doigt.
+  // **Ce qu'il prouve maintenant, et c'est plus exigeant :** la case s'allume
+  // POUR DE BON — `data-etat="retenu"`, l'état que seul un aller-retour serveur
+  // accorde —, ET la fiche dit pourquoi c'est court. Un jour retenu en silence
+  // serait le délai supprimé plutôt que rendu franchissable.
+  // ═══════════════════════════════════════════════════════════════════════
   const demain = versJourIso(ajouterJours(aujourdHui, 1));
   const caseDemain = page.locator(`[data-jour="${demain}"]`);
   if ((await caseDemain.count()) > 0) {
@@ -90,21 +90,25 @@ async function main() {
       undefined,
       { timeout: 30_000 }
     );
-    // Ce contrôle-ci ne porte pas sur le week-end mais sur le DÉLAI MINIMAL :
-    // demain est trop proche, quel que soit le jour de la semaine.
-    assert.equal(
-      await page.locator(`[data-jour="${demain}"][data-etat="retenu"]`).count(),
-      0,
-      `Le calendrier a PROPOSÉ ${demain} au client (délai minimal : ${DELAI_MINIMAL_JOURS} jours).`
-    );
-    // **Et il doit DIRE pourquoi.** Une case qui ne s'allume pas, sans un mot,
-    // se lit comme une panne : c'est le défaut que la planche 91 a corrigé, et
-    // il reviendrait si l'écran se contentait de ne rien faire.
+    await page.locator(`[data-jour="${demain}"][data-etat="retenu"]`).waitFor({
+      state: "attached",
+      timeout: 30_000,
+    });
     const dit = await page.locator('[data-atlas="verdict-du-jour"]').innerText();
     assert.ok(
-      dit.trim().length > 0 && !/Vérification/.test(dit),
-      `La fiche du ${demain} ne dit pas pourquoi il est refusé. Lue : « ${dit.trim()} »`
+      /moins de deux jours/i.test(dit),
+      `Le ${demain} se retient sans prévenir que c'est court. Lu : « ${dit.trim()} »`
     );
+    assert.ok(
+      !/trop proche/i.test(dit),
+      `Le refus est revenu sous les yeux du patron. Lu : « ${dit.trim()} »`
+    );
+    // On le retire : la suite éprouve une date lointaine, pas un cumul.
+    await caseDemain.first().click();
+    await page.locator(`[data-jour="${demain}"][data-etat="retenu"]`).waitFor({
+      state: "detached",
+      timeout: 30_000,
+    });
   }
 
   // --- 2. Une date à six mois est acceptée, et elle se voit ----------------

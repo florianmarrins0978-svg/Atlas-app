@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { ligneAttendSonPrix } from "@/lib/preparation-devis";
 import { useLayoutEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { colors, font } from "@/lib/design-tokens";
@@ -661,7 +662,7 @@ export default function DevisCompletClient(props: Props) {
               {/* **« À chiffrer » n'est pas « 0,00 € ».** Un zéro se lit
                   « gratuit », et le devis pouvait partir ainsi (26 août 2026).
                   Dès qu'il pose un montant, l'état tombe de lui-même. */}
-              {l.aChiffrer && montantDeLaLigne(l) <= 0 ? (
+              {ligneAttendSonPrix({ libelle: l.libelle, montant: montantDeLaLigne(l).toFixed(2), aChiffrer: l.aChiffrer }) ? (
                 <span className="text-[16px]" style={{ color: colors.or }}>
                   à chiffrer
                 </span>

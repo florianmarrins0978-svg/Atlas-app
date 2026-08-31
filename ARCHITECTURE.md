@@ -15151,8 +15151,12 @@ Trois suites navigateur appuyaient sur `[data-atlas="retenir-le-jour"]`, et
 deux d'entre elles **refermaient la fiche par un second appui sur la case** —
 ce geste-là retire aujourd'hui la date qu'on vient de poser. Elles visent donc
 la règle et non le widget (`CLAUDE.md` §5 bis) : la case porte-t-elle
-`data-etat="retenu"` ? Un jour trop proche ne l'obtient pas, **et la fiche dit
+`data-etat="retenu"` ? Un jour **passé** ne l'obtient pas, **et la fiche dit
 pourquoi** — une case qui ne s'allume pas sans un mot se lit comme une panne.
+
+*(Ce paragraphe disait « un jour trop proche » jusqu'au 31 août 2026. Le patron
+a retourné cette règle-là ce jour-là : un jour très proche s'obtient désormais,
+avec une remarque. Voir §216.)*
 
 Le contrôle de la planche (`verifier-maquette-choisir-la-date.mjs`) tolérait
 l'absence du bouton (`if (await bouton.count())`) : il serait resté vert sur une
@@ -19021,3 +19025,159 @@ debout pendant qu'il dort — ce banc n'est pas un hébergement. Et si le relais
 perdu le port pour de bon, la remesure le constate mais ne le réenregistre pas :
 `gh` ne sait pas le faire. La fiche donne alors le geste — onglet PORTS, retirer
 puis remettre 3000 — au lieu d'une bascule de visibilité qui ne peut rien.
+
+---
+
+## 216. Un prix posé qui ne débloquait rien, un document qui se contredit, et un lendemain offert puis repris
+
+*Ses deux captures du 31 août 2026, sur le même écran d'envoi.*
+
+### Le premier : « j'ai mis les prix, il ne veut quand même pas »
+
+Dans ses mots : *« j'ai voulu lancer le devis sans mettre de prix pour la tonte,
+il refuse ; je suis revenu en arrière, j'ai mis les prix pour chaque ligne, mais
+il ne veut quand même pas que j'envoie mon devis »*. Sa capture montrait
+2 280,00 € de total, plus une seule ligne marquée « à chiffrer » — et, sous le
+bouton, le refus nommant deux lignes qu'il venait de chiffrer.
+
+**Il n'avait aucune sortie.** Aucun geste, sur aucun écran, ne pouvait rouvrir
+l'envoi ; et le refus le renvoyait vers l'écran Prix, où tout paraissait normal.
+
+Le drapeau `a_chiffrer` (migration 0070) s'éteint dans `modifierLignePrix`. Il
+lisait `data.montant` — **l'entrée**. Or deux écrans écrivent là, et un seul
+envoie un montant :
+
+| Écran | Ce qu'il poste | Le drapeau |
+|---|---|---|
+| Prix | `{ montant }` | s'éteignait |
+| Devis complet | `{ libelle, quantite, prixUnitaire }` | **restait levé** |
+
+Sur le second, le montant est **calculé** quinze lignes plus bas (quantité ×
+prix unitaire). Le total du devis devenait juste, l'étiquette « à chiffrer »
+disparaissait de l'écran — elle ne s'affiche qu'à montant nul —, et rien ne
+trahissait le drapeau resté en base. La photographie du devis le recopiait à la
+régénération suivante, et l'envoi refusait.
+
+**Trois choses cachaient ce défaut, et c'est ce qui le rend intéressant :**
+
+1. l'écran **paraissait juste** — le total, les lignes, l'absence d'étiquette ;
+2. le client posait `aChiffrer: false` dans son état local, avec un commentaire
+   affirmant que le serveur en faisait autant. Il ne le faisait pas ;
+3. le seul contrôle existant passait par l'**autre** chemin d'écriture.
+
+La correction lit `patch.montant` — le **résultat**, après calcul. Et
+l'extinction reste à sens unique : un montant qui retombe à zéro ne relève pas
+le drapeau, sans quoi une remise gratuite délibérée bloquerait l'envoi.
+
+**Au passage, la règle était écrite deux fois** (`CLAUDE.md` §3) : dans
+`peutPreparerDevis` pour l'écran, et réécrite dans `envoyerDevis` pour le
+serveur. Elles avaient divergé, et sa capture le montre : « 2 lignes attendent
+**son** prix […] Posez-**le** sur l'écran Prix » — le pluriel traité sur le verbe
+et nulle part ailleurs. Une seule fonction, `lignesEnAttenteDePrix`, écrit
+désormais la phrase pour les deux.
+
+### Le troisième, trouvé sur sa capture suivante : un document qui se contredit
+
+Son devis brouillon en PDF portait « à chiffrer » en face du dessouchage et de
+la tonte, un seul montant visible — **560,00 €** — et un **Total HT de
+2 280,00 €**. Le total comptait 1 720 € que le tableau refusait de montrer.
+
+**C'est le plus grave des trois, et pour une raison de nature :**
+
+| | |
+|---|---|
+| un devis **bloqué** | se voit, et n'atteint personne |
+| un devis **qui se contredit** | part chez le client, qui additionne, n'y arrive pas, et cesse de croire le reste |
+
+Le rendu lisait le drapeau **seul** — son commentaire affirmait « ni prix
+unitaire, ni montant : il n'y en a pas », et c'était faux dès qu'un prix avait
+été posé sur l'écran du devis. Le total, lui, se calcule sur `montant` : les
+deux ne pouvaient qu'être d'accord tant que le drapeau ne survivait pas à un
+prix.
+
+**L'invariant, désormais partagé** (`ligneAttendSonPrix`) : un montant posé
+répond à la question, quel que soit l'état du drapeau ; « à chiffrer » est
+réservé aux lignes qui ne portent réellement rien. **Ce qui est imprimé fait
+donc toujours le total imprimé.**
+
+**Pourquoi c'est sûr, et ce n'est pas une supposition** — c'est la question qui
+tranche, parce qu'un prix deviné ne doit jamais passer (`CLAUDE.md` §4) : les
+deux seuls chemins qui lèvent le drapeau (`devis-depuis-dictee.ts`,
+`appliquer-proposition.ts`) écrivent `montant: "0"` avec lui. Un montant non nul
+sur une ligne marquée ne peut donc venir que d'une saisie du patron.
+
+**Et la règle était déjà écrite, une fois sur trois.** L'écran du devis complet
+l'appliquait (`l.aChiffrer && montantDeLaLigne(l) <= 0`) ; le PDF et le contrôle
+d'envoi lisaient le drapeau seul. C'est le §3 dans son cas le plus coûteux :
+l'écran avait raison, et les deux autres se contredisaient sur le même document.
+
+**Effet de bord voulu :** les devis déjà bloqués dans sa base se rouvrent sans
+qu'il ait à retaper le moindre prix — le montant y est, il répond.
+
+**Le contrôle ne compare pas des chaînes.** Le séparateur de milliers est une
+espace insécable étroite, invisible dans un fichier source ; un contrôle qui
+rougirait sur ce caractère accuserait le mauvais coupable. Les montants sont
+relus en nombres, et la propriété éprouvée est celle qui compte : ce que le
+tableau montre fait le total qu'il affiche.
+
+### Le second : « si l'utilisateur veut choisir le 1ᵉʳ septembre il doit pouvoir ! »
+
+Sa capture montrait le 1ᵉʳ septembre encadré, et sous le calendrier : « Ce jour
+est trop proche. Le premier possible est le mercredi 2 septembre. » Le
+calendrier lui montrait le lendemain, la case s'ouvrait sous son doigt, et le
+verdict la reprenait.
+
+**C'est le même arbitrage qu'il avait déjà rendu le 23 août** pour les journées
+pleines — *« si l'utilisateur juge qu'il peut rajouter un chantier, il doit
+pouvoir le faire quand même ; nous on prévient juste »*. Lui seul sait qu'il a
+une remorque libre demain matin.
+
+Le délai de deux jours n'est donc pas supprimé : il **change de rôle**.
+
+| | |
+|---|---|
+| ce que l'application **suggère** d'elle-même (`fenetreProposition`) | plancher inchangé à **+2** |
+| ce qu'il **choisit** au calendrier (`fenetrePatron`) | dès **aujourd'hui**, avec une remarque |
+| le **passé** | refusé, et ce n'est pas un arbitrage d'artisan |
+
+Suggérer, c'est décider à sa place ; accepter son choix, c'est le laisser
+décider. Confondre les deux fenêtres remettrait l'application à proposer demain
+toute seule — ce que personne n'a demandé, et ce que sa règle du 22 août
+interdit.
+
+**La remarque s'AJOUTE aux autres, elle ne les remplace pas.** Un samedi demain,
+ou une journée déjà pleine demain, doivent dire les deux choses ; le premier jet
+retournait tôt et perdait l'avertissement de journée complète — le plus cher des
+deux.
+
+### La barrière muette : le client n'aurait pas pu accepter
+
+**Rendre le lendemain choisissable au patron ne suffisait pas, et rien ne
+l'aurait signalé.** La revérification côté client se fait contre
+`fenetrePourDates`, dont la bande ordinaire commence après-demain. Une date
+proposée en deçà tombait dessous : son client aurait lu « date indisponible » en
+acceptant la date qu'il venait de recevoir. L'écran du patron disant oui, la
+page du client non, et le devis perdu là.
+
+C'est la symétrie exacte du défaut que la borne haute avait coûté le 8 août — la
+bande s'étirait déjà vers le haut pour une date lointaine, jamais vers le bas,
+parce que le cas ne pouvait pas se produire. `bandesVisibles` descend désormais
+son plancher jusqu'à la date proposée la plus tôt, **et pas plus bas** : ce n'est
+pas une fenêtre élargie, c'est une fenêtre qui contient ce qu'elle transporte.
+
+### Les contrôles, et ce qu'ils ont valu
+
+Les trois nouveaux ont été **vus rouges** contre la version d'avant :
+
+- `test-prix-repo.ts` — le chemin « devis complet » ; l'ancien code y échoue en
+  nommant exactement le défaut, l'autre chemin restant vert ;
+- `test-fenetre-lointaine.ts` — le plancher client ; son balayage de propriété
+  partait de `DELAI_MINIMAL_JOURS`, c'est-à-dire **juste à côté** des seuls jours
+  que la nouvelle règle rend proposables. Il part de zéro ;
+- `test-envois-devis.ts` — le parcours entier d'une date de demain, jusqu'à
+  l'acceptation par le client.
+
+Deux contrôles réclamaient l'ancienne règle et ont changé de camp
+(`CLAUDE.md` §5 bis) : `test-preparation-envoi.ts` et
+`test-date-lointaine-e2e.ts` prouvaient que demain ne partait pas chez le
+client. Ils prouvent maintenant qu'il part **et** que la fiche prévient.

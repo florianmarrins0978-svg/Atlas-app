@@ -9,6 +9,22 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
+## Le délai avant une date proposée n'est réglable nulle part (31 août 2026)
+
+Depuis sa règle du 31 août, le patron peut proposer **aujourd'hui ou demain** :
+l'application prévient au lieu de refuser. Ce qu'elle **suggère** d'elle-même
+reste plafonné à après-demain (`DELAI_MINIMAL_JOURS`, écrit en dur dans
+`src/server/disponibilites.ts`).
+
+**Ce qui reste ouvert :** ce chiffre n'est ni un réglage d'entreprise, ni une
+variable d'environnement. Un artisan dont les chantiers se calent une semaine à
+l'avance verrait toujours après-demain en tête de liste.
+
+**Qui peut le trancher :** le patron. Personne ne l'a demandé, et rien ne bloque
+aujourd'hui — c'est noté pour ne pas le redécouvrir.
+
+---
+
 ## POURQUOI LE RELAIS PERD SON PORT 3000 — inexpliqué (31 août 2026)
 
 Sa nuit du 30 au 31 : espace debout, Atlas répondant sur 3000, version rapide

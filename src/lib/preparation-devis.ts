@@ -84,15 +84,11 @@ export function peutPreparerDevis(lignes: readonly LignePrix[]): VerdictPreparat
   //
   // Le contrôle vient APRÈS celui du total : un devis entièrement à chiffrer
   // doit dire « aucune ligne n'a de prix », pas nommer la première.
-  const aChiffrer = lignes.filter((l) => l.aChiffrer);
-  if (aChiffrer.length > 0) {
-    const noms = aChiffrer.map((l) => `« ${premiereLigne(l.libelle)} »`).join(", ");
+  const attente = lignesEnAttenteDePrix(lignes);
+  if (attente) {
     return {
       possible: false,
-      probleme:
-        aChiffrer.length === 1
-          ? `${noms} attend son prix : cette ligne n'est pas gratuite, elle n'est pas chiffrée.`
-          : `${aChiffrer.length} lignes attendent leur prix : ${noms}.`,
+      probleme: attente,
       marcheASuivre: "Posez leur montant ci-dessus. Le devis sera prêt dès qu'aucune ligne n'attend plus rien.",
     };
   }
@@ -101,6 +97,65 @@ export function peutPreparerDevis(lignes: readonly LignePrix[]): VerdictPreparat
   // montant. On ne bloque pas pour autant : c'est au patron de juger, et une
   // description peut se corriger sur l'écran du devis.
   return { possible: true };
+}
+
+/**
+ * Cette ligne attend-elle encore son prix ?
+ *
+ * ═══════════════════════════════════════════════════════════════════════════
+ * **LE DRAPEAU NE DÉCIDE PAS SEUL — SA TROISIÈME CAPTURE DU 31 AOÛT 2026.**
+ *
+ * Son devis brouillon, en PDF, portait « à chiffrer » en face du dessouchage
+ * et de la tonte, un seul montant visible (560,00 €) — et un **Total HT de
+ * 2 280,00 €**. Le document se contredisait sur la même page : le total
+ * comptait 1 720 € que le tableau refusait de montrer.
+ *
+ * **C'est pire que le blocage qui l'a produit.** Un devis bloqué se voit ; un
+ * devis dont le total ne correspond pas aux lignes part chez le client, qui
+ * additionne, n'y arrive pas, et cesse de croire le reste. Le dépôt le dit
+ * déjà pour les plans d'arrosage : deux chiffres qui se contredisent dans le
+ * même écran, c'est toute la liste qu'on cesse de croire.
+ *
+ * **L'invariant, et il vaut partout :** un montant posé RÉPOND à la question,
+ * quel que soit l'état du drapeau. « À chiffrer » est réservé aux lignes qui
+ * ne portent réellement rien.
+ *
+ * **Pourquoi c'est sûr, et ce n'est pas une supposition :** les deux seuls
+ * chemins qui lèvent le drapeau écrivent `montant: "0"` avec lui
+ * (`devis-depuis-dictee.ts`, `appliquer-proposition.ts`). Un montant non nul
+ * sur une ligne marquée ne peut donc venir que d'une saisie du patron — jamais
+ * d'un prix deviné (`CLAUDE.md` §4).
+ *
+ * **Et la règle était déjà écrite ici, une fois** : l'écran du devis complet
+ * l'appliquait (`l.aChiffrer && montantDeLaLigne(l) <= 0`), le PDF non, et
+ * l'envoi non plus. Trois lectures d'une même question, dont deux fausses
+ * (`CLAUDE.md` §3).
+ * ═══════════════════════════════════════════════════════════════════════════
+ */
+export function ligneAttendSonPrix(ligne: LignePrix): boolean {
+  return Boolean(ligne.aChiffrer) && !(Number(ligne.montant || "0") > 0);
+}
+
+/**
+ * Les lignes qui attendent encore leur prix, nommées — ou `null` s'il n'y en a
+ * aucune.
+ *
+ * **Elle existe parce que la règle était écrite DEUX FOIS** (`CLAUDE.md` §3) :
+ * ici pour l'écran, et une seconde fois dans `envoyerDevis` avec sa propre
+ * phrase. Les deux ont divergé, et c'est la capture du patron du 31 août 2026
+ * qui l'a montré : « 2 lignes attendent **son** prix […] Posez-**le** sur
+ * l'écran Prix ». Le pluriel n'avait été traité que sur le verbe.
+ *
+ * Le vrai coût n'est pas la faute d'accord : deux formulations de la même règle
+ * finissent par dire deux choses différentes, et rien ne dit laquelle fait foi.
+ */
+export function lignesEnAttenteDePrix(lignes: readonly LignePrix[]): string | null {
+  const attente = lignes.filter(ligneAttendSonPrix);
+  if (attente.length === 0) return null;
+  const noms = attente.map((l) => `« ${premiereLigne(l.libelle)} »`).join(", ");
+  return attente.length === 1
+    ? `${noms} attend son prix : cette ligne n'est pas gratuite, elle n'est pas chiffrée.`
+    : `${attente.length} lignes attendent leur prix : ${noms}.`;
 }
 
 /** Une ligne peut réunir plusieurs travaux empilés : on n'en nomme qu'un. */
