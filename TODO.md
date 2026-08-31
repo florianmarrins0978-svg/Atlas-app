@@ -9,6 +9,24 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
+## UNE RÉPONSE ATTENDUE — le jour proposé, planche 98 (31 août 2026)
+
+Sa remarque : *« écrit deux chantiers par jour, planning complet, et met le
+petit carré vert foncé avec écrit "complet" du planning »*. Un jour PROPOSÉ au
+client se peint aujourd'hui du vert que la légende appelle COMPLET, et l'aplat
+recouvre les deux barres de charge (`src/components/atlas/MoisCharge.tsx` :
+`fondDeLEtat("plein")` et `retenus.has(jour)` valent tous deux `colors.rust`).
+
+`appli/jour-propose-pas-complet.html` lui pose la question : **le point** ou
+**la pastille**. Le liseré a été écarté — il se confond avec la case touchée.
+
+**Rien n'est codé** : sa consigne était *« ne code rien, fais-moi un visuel »*.
+Quand il aura répondu, la marque se pose dans `MoisCharge` (la case retenue) et
+dans `Legende` (un cinquième repère, rond), et rien d'autre : le calcul de la
+charge ne bouge pas.
+
+---
+
 ## POURQUOI LE RELAIS PERD SON PORT 3000 — inexpliqué (31 août 2026)
 
 Sa nuit du 30 au 31 : espace debout, Atlas répondant sur 3000, version rapide

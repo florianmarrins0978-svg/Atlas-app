@@ -7,6 +7,38 @@ Format : le plus récent en tête.
 
 ---
 
+## 2026-08-31
+
+### Un jour proposé au client se peint comme un jour COMPLET — planche 98
+
+**Sa remarque, capture à l'appui :** *« écrit deux chantiers par jour, planning
+complet, et met le petit carré vert foncé avec écrit "complet" du planning »*.
+
+Ses réglages disent deux chantiers par jour, son septembre est **vide**, et les
+deux dates qu'il propose à sa cliente se peignent du vert que la légende, juste
+dessous, appelle « complet ».
+
+**Le calcul n'est pas en cause** — `src/lib/planning-jour.ts` rend bien
+« libre » pour ces deux jours-là. C'est la même couleur employée pour deux
+choses sans rapport dans `src/components/atlas/MoisCharge.tsx` :
+`fondDeLEtat("plein")` et `retenus.has(jour)` valent tous deux `colors.rust`.
+L'aplat coûte une seconde chose, plus grave : il **recouvre les deux barres**,
+si bien que le jour qu'il vient de proposer devient le seul du mois dont il ne
+peut plus lire la charge — ce que la planche 91 avait justement apporté.
+
+`appli/jour-propose-pas-complet.html` compare son écran d'aujourd'hui à deux
+issues : **le point** (fond clair, un point vert dans le coin) et **la
+pastille** (le chiffre dans un disque vert). La légende y gagne « proposé », en
+rond quand les quatre états de charge sont carrés. Un troisième essai — un
+liseré vert autour de la case — a été **écarté avant de lui être montré** : à
+l'écran, il se confond avec le liseré noir de la case qu'on vient de toucher,
+trois cases entourées à la suite, ce qu'il avait déjà signalé le 23 août.
+
+**Rien n'est codé dans `src/`** — sa consigne : *« ne code rien, fais-moi un
+visuel »*. `scripts/verifier-maquette-jour-propose.mjs` tient la planche, et il
+a été vu rouge contre l'aplat remis dans les deux issues, contre la légende
+amputée, et contre une vue qui comptait les équipes autrement.
+
 ## 2026-08-30
 
 ### La fiche n'accuse plus le port quand c'est le serveur qui manque
