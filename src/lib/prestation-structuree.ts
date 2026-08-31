@@ -14,6 +14,7 @@
 // contaminerait le regroupement des lignes de devis.
 
 import type { LigneExtraite } from "../server/ai/schemas/extraction";
+import { diametreLu, hauteurLue } from "./mesures-arbre";
 import { nature } from "./natures-prestation";
 
 export type PrestationStructuree = {
@@ -32,6 +33,19 @@ export type PrestationStructuree = {
   nature: string | null;
   /** L'espèce, telle qu'elle a été prononcée. `null` si elle ne l'a pas été. */
   espece: string | null;
+  /**
+   * Les mesures qu'il a DICTÉES, rangées en colonne.
+   *
+   * **Ajouté le 30 août 2026, et c'est la correction d'un trou de la chaîne
+   * réelle** — pas un embellissement. Voir le commentaire de
+   * `mesuresDeLaDictee` plus bas : jusqu'ici, `diametreCm` n'était jamais
+   * créé nulle part, et Atlas lui redemandait un diamètre qu'il venait de
+   * prononcer.
+   *
+   * `null` quand la dictée n'en porte aucune — jamais un objet vide, qui
+   * ferait croire à une mesure connue valant zéro.
+   */
+  caracteristiques: Record<string, number> | null;
   /** Le doute signalé par le modèle. Jamais `null` ici : le modèle a répondu. */
   aConfirmer: boolean;
 };
@@ -72,9 +86,12 @@ export function quantiteLue(brut: string | null): string | null {
  * ensuite vérifiée contre le référentiel ; l'espèce est recopiée telle quelle,
  * et le contrat lui interdit de la déduire.
  *
- * **Ce que cette fonction ne remplit toujours PAS** : ni `methode`, ni
- * `caracteristiques`. Elles arrivent d'ailleurs, et sûrement — des réponses du
- * patron à l'arrêt d'avant-chiffrage (`precisions_chantier`).
+ * **Ce que cette fonction ne remplit toujours PAS** : `methode`. Elle arrive
+ * d'ailleurs, et sûrement — des réponses du patron à l'arrêt d'avant-chiffrage
+ * (`precisions_chantier`).
+ *
+ * `caracteristiques`, en revanche, se remplit ICI depuis le 30 août 2026 —
+ * voir `mesuresDeLaDictee` juste en dessous.
  */
 export function structureDeLaPrestation(ligne: LigneExtraite): PrestationStructuree {
   const quantite = quantiteLue(ligne.quantite);
@@ -89,8 +106,72 @@ export function structureDeLaPrestation(ligne: LigneExtraite): PrestationStructu
     unite: ensemble ? unite : null,
     nature: nature(naturePropose)?.cle ?? null,
     espece: ligne.espece?.trim() || null,
+    caracteristiques: mesuresDeLaDictee(ligne),
     aConfirmer: ligne.aConfirmer,
   };
+}
+
+/**
+ * Les mesures que la dictée porte, lues sur le texte que le modèle a rendu.
+ *
+ * ─── LE DÉFAUT QUE CECI CORRIGE, et il faut le connaître avant d'y toucher ──
+ *
+ * **Le 30 août 2026, sur un vrai test téléphone**, le patron dicte « démontage
+ * d'un érable de 40 centimètres au pied » et « dessouchage de deux souches de
+ * 60 » — puis Atlas lui redemande, à l'écran, quel diamètre fait le tronc et
+ * quel diamètre fait la souche. Il venait de les prononcer.
+ *
+ * En remontant la chaîne réelle, `diametreCm` ne se perdait nulle part : **il
+ * n'était jamais créé.**
+ *
+ * | étape | ce qu'elle fait de la mesure |
+ * |---|---|
+ * | transcription | « souches de 60 » est bien là |
+ * | JSON du modèle | **aucun champ pour une mesure** — le contrat n'en a pas |
+ * | `libelleAvecQuantite` | ne garde que la quantité : « Dessouchage (2 souche) » |
+ * | `ajouterPrestation` | écrit le libellé et la structure — la `description` du modèle n'est pas persistée |
+ * | colonnes | `caracteristiques` restait **toujours NULL** à ce stade |
+ * | `questionsAvantChiffrage` | ne trouve ni colonne ni texte, donc **elle demande** |
+ *
+ * Le seul écrivain de `caracteristiques` était `structureDepuisPrecisions` —
+ * c'est-à-dire **ses réponses aux questions dont il se plaint**. La boucle se
+ * refermait sur elle-même : la seule façon d'avoir le diamètre en base était
+ * qu'il le saisisse, donc qu'on le lui demande.
+ *
+ * ─── POURQUOI ICI, ET PAS AILLEURS ─────────────────────────────────────────
+ *
+ * C'est le dernier endroit où la matière existe encore. `ligne.description`
+ * vit dans le JSON du modèle et **meurt à l'insertion** : la lire plus tard,
+ * dans `questions-chiffrage.ts`, serait la chercher là où elle n'est plus.
+ * Corriger l'écran aurait laissé le trou intact — et le prix avec, puisque le
+ * chiffrage lit la même colonne.
+ *
+ * ─── CE QUE CELA NE FAIT PAS ───────────────────────────────────────────────
+ *
+ * **Aucune valeur n'est devinée.** On relit le texte du modèle avec le même
+ * vocabulaire que le chiffrage (`mesures-arbre.ts`), qui porte déjà ses
+ * conventions métier — « souche de 60 », « 40 au pied », l'unité facultative.
+ * Ce qui ne s'y lit pas ne s'écrit pas : la question se pose alors, comme
+ * avant.
+ *
+ * **Aucun prix ne change de règle.** Le diamètre entre dans la colonne que le
+ * chiffrage lisait déjà ; le résultat est celui qu'il aurait obtenu en tapant
+ * « 60 » dans la question. On lui épargne la frappe, pas l'arbitrage.
+ */
+function mesuresDeLaDictee(ligne: LigneExtraite): Record<string, number> | null {
+  // **Le libellé ET la description.** Le modèle range volontiers la mesure
+  // dans l'une ou dans l'autre, et rien dans le contrat ne l'oblige à choisir.
+  // N'en lire qu'une, c'est perdre la moitié des dictées.
+  const texte = [ligne.libelle, ligne.description ?? ""].join(" ");
+  const mesures: Record<string, number> = {};
+  const diametre = diametreLu(texte);
+  if (diametre !== null) mesures.diametreCm = diametre;
+  const hauteur = hauteurLue(texte);
+  if (hauteur !== null) mesures.hauteurM = hauteur;
+  // `null` plutôt qu'un objet vide : `{}` en base se relit comme « on a
+  // regardé et il n'y a rien », alors que NULL dit « on ne sait pas ». La
+  // nuance compte le jour où une autre source viendra compléter la ligne.
+  return Object.keys(mesures).length > 0 ? mesures : null;
 }
 
 /**

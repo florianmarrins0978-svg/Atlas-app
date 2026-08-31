@@ -548,22 +548,28 @@ async function main() {
   // mettre trois —, la possibilité d'appeler le client et de copier
   // l'adresse. »* On éprouve les ADRESSES des liens, pas leurs libellés : un
   // bouton nommé « Waze » qui pointe ailleurs se lit juste et ne mène nulle part.
-  await essai("la feuille porte Maps, Waze, et l'appel — pas Google", async () => {
+  //
+  // **« Maps » est Google Maps depuis le 31 août 2026** — sa demande, capture à
+  // l'appui. Le contrôle exigeait jusque-là l'inverse (`maps.apple.com`, et
+  // l'absence de Google) : il aurait rougi sur du code exaucé, ce que le §5 bis
+  // de `CLAUDE.md` interdit. On garde ce qu'il a vraiment demandé — DEUX
+  // destinations, pas trois — en refusant cette fois Plans.
+  await essai("la feuille porte Google Maps, Waze, et l'appel — pas Plans", async () => {
     const feuille = page.locator('[data-atlas="feuille"]');
     const liens = await feuille.locator("a").evaluateAll((n) =>
       n.map((e) => (e as HTMLAnchorElement).getAttribute("href") ?? "")
     );
     assert.ok(
-      liens.some((h) => h.startsWith("https://maps.apple.com/")),
-      `Maps manque : ${JSON.stringify(liens)}`
+      liens.some((h) => h.startsWith("https://www.google.com/maps/")),
+      `Google Maps manque : ${JSON.stringify(liens)}`
     );
     assert.ok(
       liens.some((h) => h.startsWith("https://waze.com/")),
       `Waze manque : ${JSON.stringify(liens)}`
     );
     assert.ok(
-      !liens.some((h) => h.includes("google.com/maps")),
-      "Google Maps est revenu : il en voulait deux, pas trois"
+      !liens.some((h) => h.includes("maps.apple.com")),
+      "Plans est revenu : « Maps », c'est Google Maps, et il en veut deux"
     );
     assert.ok(
       liens.some((h) => h.startsWith("tel:")),

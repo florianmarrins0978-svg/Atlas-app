@@ -18,6 +18,7 @@ import { logger } from "@/server/logger";
 import { avecCivilite } from "@/lib/civilite";
 import { libelleReduction } from "@/lib/reduction-devis";
 import { lignesMentionsLegales, type PositionMentionsLegales } from "@/lib/mentions-legales";
+import { protegerContreModification } from "./proteger-pdf";
 
 // Le moteur commun des pièces que le client reçoit : devis et facture.
 //
@@ -779,7 +780,7 @@ export async function composerDocument(
     if (!options.sansChiffrage) {
       ecrireEspaceADroite(ctx, "QTÉ", xQte, y, APPROCHE_ETIQUETTE, enTeteColonne);
       ecrireEspaceADroite(ctx, "PRIX UNITAIRE HT", xPrix, y, APPROCHE_ETIQUETTE, enTeteColonne);
-      ecrireEspaceADroite(ctx, "TOTAL HT", xMontant, y, APPROCHE_ETIQUETTE, enTeteColonne);
+      ecrireEspaceADroite(ctx, "MONTANT HT", xMontant, y, APPROCHE_ETIQUETTE, enTeteColonne);
     }
     y -= 9;
     trait(ctx, y, 1.2, ctx.teintes.encre);
@@ -1017,7 +1018,11 @@ export async function composerDocument(
     });
   }
 
-  return { pdf: await pdfDoc.save(), trace: ctx.trace };
+  // **Tout ce qui sort d'ici part protégé contre la retouche.** Le devis, la
+  // facture, la feuille de chantier : un seul endroit, parce qu'un document
+  // oublié ne se verrait pas — c'est chez le client qu'on l'apprendrait, comme
+  // le 31 août 2026 (`src/server/pdf/proteger-pdf.ts`).
+  return { pdf: await protegerContreModification(await pdfDoc.save()), trace: ctx.trace };
 }
 
 /** Le bas réservé au pied de page, pour que les contrôles parlent des mêmes chiffres. */

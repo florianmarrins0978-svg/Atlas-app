@@ -83,6 +83,15 @@ const LIANTS = [
   "environ", "soit", "par", "sur",
 ];
 
+/**
+ * Ce qui se compte en TEMPS, et qui n'est donc pas un objet du chantier.
+ *
+ * `UNITES_DE_MESURE` ne les portait pas — elle sert au nettoyage d'un libellé,
+ * où une durée n'apparaît pas. Ici la question est autre : « de quoi parle ce
+ * geste ? », et « Dessouchage de jours » serait absurde.
+ */
+const UNITES_DE_DUREE = ["h", "heure", "heures", "jour", "jours", "journee", "journees", "forfait"];
+
 /** Les unités de mesure, en plus de celle que la prestation porte en colonne. */
 const UNITES_DE_MESURE = [
   "cm", "centimetre", "mm", "millimetre", "m", "metre", "metrelineaire", "ml",
@@ -304,6 +313,57 @@ function nommerLeTravail(texte: string, cleNature: string | null | undefined): s
 }
 
 /**
+ * Un geste seul retrouve son objet et sa mesure, depuis les colonnes.
+ *
+ * **Sa demande du 30 août 2026, sur le vrai PDF :** *« il affiche seulement
+ * "Dessouchage". Je veux "Dessouchage de souches de 60 cm". La quantité reste
+ * dans sa colonne : Qté 2, Unité souche. Donc ne remets pas "deux" dans le
+ * libellé, mais conserve bien l'information utile "souches de 60 cm". »*
+ *
+ * Le cas se produit dès que la dictée range tout en colonnes : il reste alors
+ * un libellé d'un seul mot, qui dit ce qu'on fait mais pas à quoi. « 2 » et
+ * « souche » sont dans leurs cases, le diamètre aussi — le client, lui, lit une
+ * ligne, et « Dessouchage » ne lui apprend rien sur ce qu'il paie.
+ *
+ * ─── LES TROIS BORNES, et elles sont étroites ──────────────────────────────
+ *
+ * 1. **Le texte doit être un geste NU — UN SEUL MOT.** « Dessouchage », rien
+ *    d'autre. Dès qu'il porte un complément, on n'y touche pas : il dit déjà à
+ *    quoi il s'applique.
+ *
+ *    **La première version testait `estUnGeste(texte)` seul, et c'était faux.**
+ *    Cette fonction répond « oui » dès qu'un geste apparaît QUELQUE PART :
+ *    « Démontage d'un érable » en contient un, et devenait
+ *    « Démontage d'un érable de arbre de 40 cm ». Le contrôle de bout en bout
+ *    l'a attrapé sur une des trois lignes qu'il avait justement validées ;
+ *    aucune suite unitaire ne le voyait, parce qu'aucune ne partait de ce que
+ *    le modèle rend.
+ * 2. **L'objet vient de l'UNITÉ de comptage**, jamais d'un mot inventé. Sans
+ *    unité qui compte des choses — « ml », « m² » n'en sont pas —, on se tait.
+ * 3. **Le nombre ne revient pas.** Le pluriel est du français, pas une donnée :
+ *    « souches », jamais « deux souches ». C'est sa règle, et la colonne Qté
+ *    porte déjà le compte.
+ */
+function ceSurQuoiLeGestePorte(texte: string, p: PrestationLisible): string {
+  const nu = texte.trim();
+  if (/\s/.test(nu) || !estUnGeste(nu)) return texte;
+  const objet = (p.unite ?? "").trim();
+  // Une unité de MESURE ne se dit pas au client comme un objet : « Dessouchage
+  // de m² » n'a aucun sens. Seul ce qui se compte se nomme. La liste est celle
+  // qui sert déjà au nettoyage, jamais une seconde — deux listes de la même
+  // chose finissent toujours par diverger (`CLAUDE.md` §3).
+  if (!objet || UNITES_DE_MESURE.includes(motNu(objet)) || UNITES_DE_DUREE.includes(motNu(objet))) {
+    return texte;
+  }
+  const { diametreCm } = lireCaracteristiques(p.caracteristiques);
+  if (diametreCm === undefined) return texte;
+  const nombre = Number(p.quantite ?? "1");
+  const pluriel = Number.isFinite(nombre) && nombre > 1 && !/[sx]$/i.test(objet) ? `${objet}s` : objet;
+  return `${texte} de ${pluriel.toLocaleLowerCase("fr")} de ${diametreCm} cm`;
+}
+
+
+/**
  * La technique, écrite comme le CLIENT doit la lire.
  *
  * **Deux écritures, dans un seul fichier.** Sa demande du 30 août :
@@ -384,6 +444,9 @@ export function libelleClient(p: PrestationLisible): string {
 
   // ── 3. Le libellé s'ouvre-t-il sur son objet plutôt que sur le travail ? ─
   reste = nommerLeTravail(reste, p.nature);
+
+  // ── 3 bis. Un geste tout nu retrouve CE SUR QUOI il porte ───────────────
+  reste = ceSurQuoiLeGestePorte(reste, p);
 
   // ── 4. La technique, quand la colonne la porte et que le texte se tait ──
   //

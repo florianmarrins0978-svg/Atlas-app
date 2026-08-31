@@ -4,6 +4,8 @@ import { pool } from "../src/server/db/client";
 import * as entreprisesRepo from "../src/server/repositories/entreprises";
 import * as chantiersRepo from "../src/server/repositories/chantiers";
 import * as devisRepo from "../src/server/repositories/devis";
+import * as clientsRepo from "../src/server/repositories/clients";
+import * as prixRepo from "../src/server/repositories/lignes-prix";
 import { creerEnvoi, lireParJeton, genererJeton } from "../src/server/repositories/envois-devis";
 import { fenetreProposition, versJourIso, ajouterJours } from "../src/server/disponibilites";
 
@@ -27,17 +29,42 @@ async function test(nom: string, fn: () => Promise<void>) {
   }
 }
 
-async function preparerEnvoi(suffixe: string, datesDansNJours: number[]) {
+async function preparerEnvoi(
+  suffixe: string,
+  datesDansNJours: number[],
+  /**
+   * Envoyer le devis pour de bon, ce qui **archive son PDF**.
+   *
+   * Facultatif parce que c'est lent (le document se compose, se protège et
+   * s'écrit), et qu'un seul contrôle en a besoin : celui qui télécharge la
+   * pièce. Sans cela, `pdfStorageKey` est vide et la route renvoie le client
+   * vers la page — un 200 en HTML, qui n'est pas un devis.
+   */
+  avecPdfArchive = false
+) {
   const { entreprise, utilisateurId } = await entreprisesRepo.creerEntreprise(
     { nom: "Atelier du Test" },
     { email: `client-e2e-${suffixe}-${Date.now()}@atlas.test` }
   );
   const ctx = { utilisateurId, entrepriseId: entreprise.id };
+  // **Un client nommé, et une adresse** : c'est le cas du patron, et c'est le
+  // plus haut. Un envoi sans client tient dans l'écran sans rien prouver de
+  // celui qui en porte un — la ligne « Pour Mme … » fait vingt pixels.
+  const client = await clientsRepo.creerClient(ctx, {
+    nom: "Huguette Groupiron",
+    civilite: "mme",
+    telephone: "06 12 34 56 78",
+  });
   const chantier = await chantiersRepo.creerChantier(ctx, {
     nom: "Élagage du grand chêne",
     adresseChantier: "5 avenue de la République",
+    clientId: client.id,
   });
+  if (avecPdfArchive) {
+    await prixRepo.ajouterLignePrix(ctx, chantier.id, "Élagage d'un chêne", "1200.00");
+  }
   const d = await devisRepo.getOuCreerDevisBrouillon(ctx, chantier.id);
+  if (avecPdfArchive) await devisRepo.envoyerDevis(ctx, d.id);
   const maintenant = new Date();
   const envoi = await creerEnvoi(
     ctx,
@@ -363,11 +390,17 @@ async function main() {
     const page = await context.newPage();
     await page.goto(`${BASE}/devis/${envoi.jeton}`, { waitUntil: "networkidle" });
 
-    const invite = page.locator("text=/vous pouvez laisser un mot/i");
-    assert.strictEqual(
-      await invite.count(),
-      1,
-      "aucune phrase n'invite le client à écrire : il ne saura pas qu'il en a le droit"
+    // **Ce contrôle exigeait une phrase, mot pour mot** — « vous pouvez laisser
+    // un mot à votre artisan » — et le patron a fait réunir cette phrase avec
+    // l'intitulé le 31 août 2026, pour que l'écran tienne d'un seul tenant. Il
+    // vise donc ce qu'il défend : que le libellé du champ INVITE à écrire, et
+    // qu'il soit au-dessus (`CLAUDE.md` §5 bis).
+    const invite = page.locator('label[for="precision"]');
+    assert.strictEqual(await invite.count(), 1, "le champ de message n'a plus d'intitulé");
+    const texte = (await invite.first().innerText()).toLowerCase();
+    assert.ok(
+      /écriv|dites|laissez/.test(texte),
+      `l'intitulé ne dit pas au client qu'il peut écrire : « ${texte} »`
     );
 
     // **Au-dessus du champ, jamais en dessous** : une invitation lue après coup
@@ -383,11 +416,158 @@ async function main() {
 
     // Et elle ne promet rien que l'application ne tienne : le client n'a aucun
     // moyen de recevoir une réponse ici.
-    const texte = (await invite.first().innerText()).toLowerCase();
     assert.ok(
       !/répondra|réponse sous|rappellera/.test(texte),
       `l'invitation promet une réponse que rien ne garantit : « ${texte} »`
     );
+    await page.close();
+  });
+
+  await test("TOUT TIENT DANS UN ÉCRAN — sa demande du 31 août 2026", async () => {
+    /**
+     * *« Je veux que le choix de la date qui arrive au client par SMS tienne
+     * sur une seule page ! Il ne doit pas avoir à scroll pour voir toutes les
+     * infos. »*
+     *
+     * Le cas le plus haut, et c'est le sien : un client nommé, une adresse de
+     * chantier, **deux dates proposées** (le maximum que l'écran d'envoi
+     * autorise) et la contre-proposition ouverte.
+     *
+     * Mesuré sur son écran — 390 × 664, un téléphone barre d'adresse déduite,
+     * la mesure du dépôt depuis le 30 août.
+     */
+    const { envoi } = await preparerEnvoi("pli", [3, 10]);
+    const page = await context.newPage();
+    await page.goto(`${BASE}/devis/${envoi.jeton}`, { waitUntil: "networkidle" });
+
+    const m = await page.evaluate(() => ({
+      page: document.documentElement.scrollHeight,
+      ecran: window.innerHeight,
+      dernier: document.querySelector('button[value="refuse"]')?.getBoundingClientRect().bottom ?? 0,
+    }));
+
+    // **Sans ce garde-fou, « 0 ≤ 664 » rendrait un vert qui ne mesure rien** —
+    // une page pas encore mise en page mesure zéro, et c'est arrivé dans ce
+    // dépôt le 15 août 2026 (`CLAUDE.md` §5).
+    assert.ok(m.dernier > 100, `rien n'est mis en page (dernier bouton à ${m.dernier} px)`);
+    assert.ok(m.ecran > 100, `écran de mesure absurde : ${m.ecran} px`);
+
+    assert.ok(
+      m.page <= m.ecran,
+      `la page fait ${m.page} px pour ${m.ecran} px d'écran : le client doit faire défiler`
+    );
+    // Et le dernier geste est réellement visible, pas seulement « dans la
+    // page » : c'est ce que le client regarde.
+    assert.ok(
+      m.dernier <= m.ecran,
+      `« Je ne donne pas suite » finit à ${m.dernier} px, sous un écran de ${m.ecran} px`
+    );
+    await page.close();
+  });
+
+  await test("le devis reste téléchargeable APRÈS l'acceptation", async () => {
+    /**
+     * **Sa demande du 31 août 2026 :** *« lorsque le client a accepté le devis
+     * et qu'il revient sur la page via le SMS il n'a plus accès à son devis, or
+     * il doit encore pouvoir le télécharger s'il a oublié de le faire »*.
+     *
+     * L'écran de retour ne portait aucun geste : le lien reçu par SMS devenait
+     * un cul-de-sac le jour même de l'accord.
+     */
+    const { envoi, maintenant } = await preparerEnvoi("telecharger", [8], true);
+    const page = await context.newPage();
+    await page.goto(`${BASE}/devis/${envoi.jeton}`, { waitUntil: "networkidle" });
+    await page
+      .locator(`input[name="choixDate"][value="${versJourIso(ajouterJours(maintenant, 8))}"]`)
+      .check();
+    await page.click('button:has-text("J\'accepte ce devis")');
+    await page.waitForSelector("text=Votre artisan est prévenu", { timeout: 10000 });
+
+    // **Le compte n'est pas fixé à un**, et c'est voulu : depuis le 31 août
+    // 2026, l'en-tête du devis porte lui aussi « Télécharger mon devis (PDF) ».
+    // Ce qui est vérifié est ce qui compte — qu'il existe un geste pour emporter
+    // la pièce, et qu'il rende vraiment le fichier.
+    const geste = 'a:has-text("Télécharger mon devis")';
+    assert.ok(
+      (await page.locator(geste).count()) >= 1,
+      "aucun geste pour emporter le devis juste après l'avoir accepté"
+    );
+
+    // **Et surtout au RETOUR, des jours plus tard, par le lien du SMS** : c'est
+    // le cas qu'il décrit.
+    await page.goto(`${BASE}/devis/${envoi.jeton}`, { waitUntil: "networkidle" });
+    assert.ok(await page.locator("text=Devis accepté").isVisible());
+    assert.strictEqual(
+      await page.locator(geste).count(),
+      1,
+      "l'écran de retour ne redonne pas le devis : le lien est un cul-de-sac"
+    );
+
+    // **Et le lien de l'en-tête EMPORTE le fichier, il ne l'affiche plus** — sa
+    // demande du 31 août 2026. « Voir le devis complet » est devenu
+    // « Télécharger mon devis (PDF) », en gras et souligné : un lien qui dit
+    // télécharger et se contente d'ouvrir laisse croire qu'on a gardé le devis.
+    const surLaPageDuChoix = await context.newPage();
+    const autre = await preparerEnvoi("entete", [6], true);
+    await surLaPageDuChoix.goto(`${BASE}/devis/${autre.envoi.jeton}`, { waitUntil: "networkidle" });
+    const lienEnTete = surLaPageDuChoix.locator("header a");
+    assert.strictEqual(await lienEnTete.count(), 1, "l'en-tête ne porte plus de lien vers le devis");
+    const libelle = await lienEnTete.innerText();
+    assert.ok(/télécharger/i.test(libelle), `l'en-tête dit « ${libelle} » au lieu de télécharger`);
+    const style = await lienEnTete.evaluate((el) => {
+      const c = getComputedStyle(el);
+      return { graisse: Number(c.fontWeight), souligne: c.textDecorationLine };
+    });
+    assert.ok(style.graisse >= 600, `le lien n'est pas en gras (graisse ${style.graisse})`);
+    assert.ok(style.souligne.includes("underline"), `le lien n'est pas souligné (${style.souligne})`);
+    const fichier = await surLaPageDuChoix.request.get(
+      new URL((await lienEnTete.getAttribute("href"))!, BASE).toString()
+    );
+    assert.strictEqual(fichier.status(), 200, `le devis ne se télécharge pas (${fichier.status()})`);
+    assert.ok(
+      (fichier.headers()["content-disposition"] ?? "").startsWith("attachment"),
+      `le lien de l'en-tête ouvre au lieu d'emporter : ${fichier.headers()["content-disposition"]}`
+    );
+    await surLaPageDuChoix.close();
+
+    // Le geste doit RENDRE le fichier, pas seulement exister. Et le rendre à
+    // enregistrer : ouvert dans le lecteur du téléphone, le client croit
+    // l'avoir gardé alors qu'il n'a fait que le regarder.
+    const adresse = await page.locator(geste).getAttribute("href");
+    assert.ok(adresse, "le geste ne mène nulle part");
+    const reponse = await page.request.get(new URL(adresse!, BASE).toString());
+    assert.strictEqual(reponse.status(), 200, `le devis ne se télécharge pas (${reponse.status()})`);
+    assert.strictEqual(reponse.headers()["content-type"], "application/pdf");
+    assert.ok(
+      (reponse.headers()["content-disposition"] ?? "").startsWith("attachment"),
+      `le fichier s'ouvre au lieu de descendre : ${reponse.headers()["content-disposition"]}`
+    );
+    await page.close();
+  });
+
+  await test("une correction sans un mot ne part pas, et l'écran dit pourquoi", async () => {
+    // Le bouton était éteint, avec une phrase grise en dessous pour dire
+    // pourquoi — trente pixels sur un écran qui doit tenir d'un seul tenant. Il
+    // répond désormais, et c'est sa réponse qui l'explique. Ce qui ne change
+    // pas : rien ne part, et le dépôt le refuserait de toute façon.
+    const { envoi } = await preparerEnvoi("correction-vide", [9]);
+    const page = await context.newPage();
+    await page.goto(`${BASE}/devis/${envoi.jeton}`, { waitUntil: "networkidle" });
+
+    await page.click('button:has-text("Une correction avant d\'accepter")');
+    await page.waitForSelector('p[role="alert"]', { timeout: 10000 });
+    assert.ok(
+      (await page.locator('p[role="alert"]').innerText()).toLowerCase().includes("corrig"),
+      "le message ne dit pas ce qui manque"
+    );
+    assert.strictEqual((await lireParJeton(envoi.jeton))?.reponse, null, "une réponse vide est partie");
+
+    // Un mot écrit, et la voie se rouvre — sans quoi le contrôle prouverait
+    // seulement qu'on a cassé le bouton.
+    await page.fill("#precision", "Mon nom est mal écrit.");
+    await page.click('button:has-text("Une correction avant d\'accepter")');
+    await page.waitForSelector("text=Votre demande est transmise", { timeout: 10000 });
+    assert.strictEqual((await lireParJeton(envoi.jeton))?.reponse, "correction");
     await page.close();
   });
 

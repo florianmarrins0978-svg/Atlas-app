@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { METIER_ATLAS } from "../../../lib/metier-atlas";
 import type { Ctx } from "../../repositories/context";
 import { getFournisseurLLM } from "../providers/llm/fabrique";
 import { outilsDisponibles, getOutil } from "../tools/registre";
@@ -46,7 +47,9 @@ const schemaProposition = z.object({
   ),
 });
 
-const SYSTEME = `Tu es l'assistant intégré à Atlas, une application pour artisans du bâtiment.
+const SYSTEME = `${METIER_ATLAS}
+
+Tu es l'assistant intégré à Atlas.
 Tu es un copilote : tu réponds aux questions, tu expliques les informations disponibles sur le
 chantier courant, et tu peux PRÉPARER des propositions de modification (ajouter/supprimer/modifier une
 prestation ou du matériel, modifier la durée ou la taille d'équipe, préparer un devis à partir d'une

@@ -1,7 +1,7 @@
 # État du projet
 
 **Dernière mise à jour :** 2026-08-31 · branche `main`
-· dernière migration `drizzle/0071_rappel_vu.sql`
+· dernière migration `drizzle/0072_capital_forme_juridique_rcs.sql`
 
 *(Deux en-têtes de mise à jour cohabitaient ici depuis une fusion du 29 août,
 avec deux dates et deux migrations différentes — dont une périmée. Réunis : une
@@ -17,6 +17,86 @@ Ce fichier dit **où en est le produit**, pas ce qu'on aimerait qu'il soit. Une
 ligne « fait » qui ne l'est pas coûte plus cher qu'une ligne absente.
 
 ---
+
+## EN ATTENTE : le geste des boutons — une planche, pas du code (31 août 2026)
+
+**Rien n'a bougé dans l'application**, et c'est l'état exact du produit : les
+boutons d'Atlas ne vibrent pas, et leur seul geste est `active:scale-[0.985]` —
+moins d'un pixel sur une capsule de 50 px, aucune couleur.
+
+Sa demande du 31 août : *« une mini vibration, que l'utilisateur soit sûr
+d'avoir appuyé »*, et le bouton qui s'enfonce en s'éclaircissant. Trois forces
+lui sont proposées sur `appli/le-bouton-qui-repond.html` — Discret, la sienne,
+Marqué — sur les quatre surfaces qu'il touche.
+**Sa réponse est attendue ; le pourquoi est en `ARCHITECTURE.md` §222.**
+
+---
+
+## Un devis sans client renvoie à la fiche client (31 août 2026)
+
+**Sa demande, deux captures à l'appui :** *« j'ai oublié de renseigner la fiche
+client du chantier. Lorsque je fais retour, je dois arriver sur la page de la
+fiche client ! Pas sur la page que je te mets en deuxième photo. »*
+
+| | |
+|---|---|
+| devis **sans client** | la flèche mène au formulaire « Fiche client » du chantier |
+| devis **avec client** | la flèche rend la fiche du chantier, comme avant |
+| fiche enregistrée, venu du devis | on **retourne au devis**, qui porte enfin le client |
+| fiche ouverte depuis l'accueil | inchangé : flèche vers la liste, enregistrement vers le chantier |
+
+La provenance voyage dans l'adresse (`?de=`) et n'est acceptée que si elle vaut
+**exactement** le devis de ce chantier — sans quoi la flèche « retour » pourrait
+sortir d'Atlas. Règle : `src/lib/retour-du-devis.ts`. Éprouvé par
+`scripts/test-retour-du-devis.ts` et `scripts/test-devis-sans-client-e2e.ts`.
+Raisons : `ARCHITECTURE.md` §221.
+
+---
+
+## Le diamètre dicté n'est plus redemandé (30 août 2026)
+
+*Il disait « un érable de 40 centimètres au pied » et « deux souches de 60 », et
+Atlas lui redemandait les deux. Le diamètre ne se perdait nulle part dans la
+chaîne : **il n'était jamais créé** — le seul écrivain de la colonne était ses
+réponses aux questions dont il se plaignait. Détail et pourquoi :
+`ARCHITECTURE.md` §220.*
+
+Trois choses en découlent, toutes visibles chez lui :
+
+| | |
+|---|---|
+| l'arrêt d'avant-chiffrage | ne redemande plus un diamètre qu'il a prononcé |
+| le devis | affiche « Dessouchage de souches de 60 cm », le compte restant en colonne Qté |
+| la colonne de chaque ligne | s'intitule « Montant HT » ; le total du bas reste « Total HT » |
+
+**Ce qui reste à éprouver, et qui ne peut pas l'être ici :** ce que le modèle
+répond vraiment. `npm run verifier:chaine-dictee` sur son espace, où les clés
+sont posées.
+
+---
+
+## Le devis du client : verrouillé, dans un écran, et téléchargeable après coup (31 août 2026)
+
+Ses trois captures du téléphone d'une cliente.
+
+| | État |
+|---|---|
+| Le PDF du client ne se modifie plus dans Acrobat | **fait** — chiffré, autorisations posées : imprimer et copier oui, modifier et annoter non |
+| La facture et la feuille de chantier aussi | **fait** — un seul endroit protège les trois |
+| Le devis protégé s'ouvre sans mot de passe | **fait, et éprouvé par un lecteur tiers** (moteur PDF de Chromium) |
+| Toute la réponse tient dans un écran de 664 px | **fait** — 770 px demandés, 630 désormais |
+| Le devis se télécharge après l'avoir accepté | **fait** — sur l'écran de retour et sur la confirmation |
+| Le fichier descend au lieu de s'ouvrir dans le lecteur | **fait** — `?telecharger`, décidé par le serveur |
+
+**Ce qui n'est PAS promis :** la protection n'est pas un coffre-fort. Elle
+empêche la retouche d'un doigt, pas un outil déterminé — le format est public.
+La pièce qui fait foi reste celle qu'Atlas archive à l'envoi.
+
+**Ce qui reste ouvert :** aucun geste n'est proposé après un refus ni après une
+demande de correction — à trancher par le patron.
+
+Raisons et pièges : `ARCHITECTURE.md` §223.
+
 
 ## Un prix posé débloque l'envoi, et il peut proposer demain (31 août 2026)
 
@@ -107,7 +187,7 @@ planning, qui n'avait aucune borne basse, s'arrête désormais au même jour que
 l'écran : dès la troisième année, elle envoie MOINS qu'avant.
 
 Le raisonnement complet, les fautes évitées et les deux contrôles creux
-retrouvés : `ARCHITECTURE.md` §220.
+retrouvés : `ARCHITECTURE.md` §224.
 
 ## La note vocale à la messagerie, et la fiche qui tient dans un écran (30 août 2026)
 
@@ -1418,7 +1498,9 @@ l'application. Ce qui est **fait** :
   manque. Sans adresse, rien ne s'invente : les destinations s'éteignent.
   Retenu après quatre maquettes (`docs/maquettes/29` à `32`). Les gestes ont
   déménagé dans la feuille de chantier le 21 août ; la règle pure, elle, n'a pas
-  bougé (`src/lib/itineraire.ts`). `ARCHITECTURE.md` §70.
+  bougé (`src/lib/itineraire.ts`). Le bouton « Maps » ouvre **Google Maps**
+  depuis le 31 août — c'est Plans d'Apple qui est sorti, pas Google.
+  `ARCHITECTURE.md` §70.
 - **Le planning au mois, et les équipes nommées** (10 août, au soir) : sept
   colonnes sans bordure et la journée qui s'ouvre sous le calendrier. Réglages
   laisse nommer les équipes — mais **seulement à partir de deux** : seul, le mot

@@ -10,6 +10,7 @@ import { logger } from "@/server/logger";
 import { preparerAudioEntrant } from "@/server/audio-entrant";
 import { preparerPhotoEntrante } from "@/server/photo-entrante";
 import { getFournisseurTranscription } from "@/server/ai/providers/transcription/fabrique";
+import { indicePourDictee } from "@/server/ai/indice-dictee";
 import { regarderPhoto } from "@/server/ai/services/regarder-photo";
 
 /**
@@ -94,7 +95,9 @@ export async function dicterQuestionAction(formData: FormData): Promise<{ ok: tr
     }
 
     const transcripteur = getFournisseurTranscription();
-    const transcrit = await transcripteur.transcrire(audio.octets, audio.mime);
+    // **Le vocabulaire du métier part AVANT l'écoute** — sa colère du 28 août
+    // 2026 : « je lui ai dit désherbage mais il comprend mal ».
+    const transcrit = await transcripteur.transcrire(audio.octets, audio.mime, await indicePourDictee(ctx));
     if (!transcrit.succes) {
       logger.warn("dictee_assistant_transcription_refusee", {
         fournisseur: transcripteur.nom,
