@@ -1,6 +1,7 @@
 import type { FournisseurTranscription, ResultatTranscription } from "./interface";
 import { erreurIA } from "../../errors";
 import { getConfigIA } from "../../config";
+import { construireIndiceDictee } from "@/lib/vocabulaire-dictee";
 
 // Fournisseur réel, prêt pour la production. Non fonctionnel dans cet
 // environnement de développement : api.openai.com n'est pas accessible depuis
@@ -31,7 +32,12 @@ export const fournisseurTranscriptionOpenAI: FournisseurTranscription = {
        * Le plafond du service est tenu en amont (`construireIndiceDictee`) :
        * au-delà, il tronque par la fin, sans prévenir.
        */
-      if (indice?.trim()) formData.set("prompt", indice.trim());
+      // **Et quand personne ne souffle rien, le MÉTIER part quand même.** Sa
+      // colère du 28 août 2026 : *« pourquoi dans une appli SPÉCIFIQUE pour
+      // l'espace vert elle comprend pas ? »* Un indice posé chemin par chemin
+      // s'oublie sur le chemin suivant ; posé ici, aucun appel ne peut plus
+      // écouter sans savoir de quel métier on parle.
+      formData.set("prompt", indice?.trim() || construireIndiceDictee());
 
       const controller = new AbortController();
       const timeout = setTimeout(() => controller.abort(), 30_000);

@@ -13,7 +13,7 @@ import { Pool } from "pg";
 import { construireIndiceDictee, MAX_MOTS_INDICE, MOTS_DU_METIER } from "../src/lib/vocabulaire-dictee";
 import { indicePourDictee } from "../src/server/ai/indice-dictee";
 import * as entreprisesRepo from "../src/server/repositories/entreprises";
-import { ajouterMot, listerCartes } from "../src/server/repositories/mots-catalogue";
+import { ajouterMot, creerEntree, listerCartes } from "../src/server/repositories/mots-catalogue";
 
 let passed = 0;
 let failed = 0;
@@ -78,9 +78,27 @@ async function main() {
     );
     const ctx = { entrepriseId: entreprise.id, utilisateurId };
 
+    // **Cette suite ne s'appuie sur AUCUNE donnée de démonstration.** Elle
+    // dépendait du catalogue partagé — donc du jeu de démonstration —, et
+    // rougissait dès qu'il était vide.
+    //
+    // **Ce qui l'a révélé était ma propre faute, et elle mérite d'être écrite :**
+    // une batterie tournait en fond pendant que je rejouais ces suites à la
+    // main. Elle vide la base (`nettoyerBase`), et mes suites accusaient alors
+    // du code sain — « l'utilisateur n'est pas membre de l'entreprise ». C'est
+    // exactement ce que `CLAUDE.md` §5 interdit : *la batterie est une machine
+    // à un seul occupant*. Une demi-heure à soupçonner du code juste, pour la
+    // deuxième fois dans ce dépôt.
+    //
+    // Le contrôle en sort meilleur quand même : il crée son entrée, comme le
+    // patron le ferait, et ne dépend plus de rien.
+    const entree = await creerEntree(ctx, { famille: "prestation", nom: `Rabattage ${marque}` });
+    assert.equal(entree.ok, true, "l'entrée n'a pas pu être créée");
+    if (!entree.ok) return;
     const cartes = await listerCartes(ctx, "prestation");
-    assert.ok(cartes.length > 0, "aucune entrée de prestation : rien à quoi accrocher un mot");
-    const ajout = await ajouterMot(ctx, { entreeId: cartes[0].id, famille: "prestation", mot: "rabattage sévère" });
+    const sienne = cartes.find((c) => c.nom === `Rabattage ${marque}`);
+    assert.ok(sienne, "l'entrée créée n'est pas relue");
+    const ajout = await ajouterMot(ctx, { entreeId: sienne!.id, famille: "prestation", mot: "rabattage sévère" });
     assert.equal(ajout.ok, true, "le mot n'a pas pu être ajouté");
 
     const indice = await indicePourDictee(ctx);

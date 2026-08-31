@@ -1313,6 +1313,37 @@ elle vise désormais la règle, pas la phrase (`CLAUDE.md` §5 bis).
 
 ## 2026-08-28
 
+### « Pourquoi dans une appli SPÉCIFIQUE pour l'espace vert elle comprend pas ? »
+
+**Sa colère du 28 août 2026, et elle était fondée :** *« ce que je veux, c'est
+que ce soit une intelligence artificielle qui rédige le devis. Si ici je te dis
+désherbage, tu vas comprendre qu'on parle d'espaces verts. Pourquoi dans une
+appli SPÉCIFIQUE pour l'espace vert elle comprend pas ? C'est pas logique ! »*
+
+**Le défaut était structurel : chaque IA d'Atlas déclarait SON métier.**
+
+| Service | Ce qu'il annonçait |
+|---|---|
+| l'assistant | « une application pour **artisans du bâtiment** » |
+| la dictée d'un chantier | « un artisan » |
+| la lecture d'un ticket | « un artisan **élagueur** » |
+| le plan d'arrosage | « un **paysagiste** français » |
+
+Quatre métiers pour une seule application, **dont un qui n'est pas le sien**. Un
+modèle à qui l'on dit « bâtiment » entend « herbages » là où un paysagiste
+entend « désherbage » : ce n'est pas un défaut du modèle, c'est qu'on lui a
+menti sur le métier.
+
+**Il n'y a plus qu'une phrase** (`src/lib/metier-atlas.ts`), et chaque service
+en part. Un contrôle refuse qu'une consigne reparle du bâtiment ou redéclare le
+métier à sa façon — vérifié en remettant « bâtiment » dans une consigne, ce qui
+le fait rougir.
+
+**Et la transcription ne peut PLUS écouter sans savoir.** L'indice posé chemin
+par chemin s'oublie sur le chemin suivant : le fournisseur le pose désormais
+lui-même quand personne ne lui en donne. Les deux dictées qui ne l'avaient pas
+ce matin l'ont maintenant.
+
 ### « Désherbage » entendu « herbages » — le vocabulaire arrivait trop tard
 
 **Sa colère du 28 août 2026 :** *« je lui ai dit désherbage mais il comprend

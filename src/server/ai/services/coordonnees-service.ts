@@ -1,4 +1,5 @@
 import { getFournisseurLLM } from "../providers/llm/fabrique";
+import { METIER_ATLAS_COURT } from "../../../lib/metier-atlas";
 import { getFournisseurTranscription } from "../providers/transcription/fabrique";
 import { lireObjetJson } from "../../../lib/json-du-modele";
 import { assemblerCoordonnees, type CoordonneesDictees } from "../../../lib/coordonnees-dictees";
@@ -22,7 +23,9 @@ import { logger } from "../../logger";
  * rattacher, et garder un enregistrement sans dossier serait garder une voix
  * sans raison.
  */
-const SYSTEME = `Tu extrais les coordonnées d'un client depuis une phrase dictée par un artisan.
+const SYSTEME = `${METIER_ATLAS_COURT}
+
+Tu extrais les coordonnées d'un client depuis une phrase qu'il a dictée.
 Réponds UNIQUEMENT avec un objet JSON valide, sans aucun texte avant ou après, au format exact :
 { "nom": string | null, "telephone": string | null, "email": string | null, "adresse": string | null }
 
