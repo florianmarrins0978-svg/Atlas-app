@@ -24,6 +24,28 @@ https://florianmarrins0978-svg.github.io/Atlas-app/dictee-embellie.html
 **Ce qui change à l'écran une fois choisi :** `AnneauNoteVocale.tsx` (le rendu
 de la dictée) et le bloc `.atlas-dictee` de `src/app/globals.css`. Le repos ne
 bouge pas — c'est son choix du 30 août, et il n'a rien reproché à cet état-là.
+## Ne rebâtir que si le code BÂTI a changé (posé le 31 août 2026, soir)
+
+**Mesuré, pas supposé :** sur les quarante derniers commits de `main`, **un quart
+ne touchent que** `docs/`, `appli/`, `maquettes/`, `.github/` ou les fichiers de
+mémoire. Chacun déclenche pourtant une construction complète chez le patron,
+parce que `doitRebatir` compare le **numéro de commit** et non le code qui entre
+dans la construction.
+
+**Pourquoi ce n'est PAS fait ce soir.** Le gain a beaucoup baissé depuis §225 :
+une construction ne lui coûte plus l'usage de son application, seulement une
+fenêtre où il voit le code d'avant. Et le risque, lui, n'a pas bougé : la liste
+des chemins « sans effet sur la construction » est exactement le genre
+d'inclusion qu'on croit complète et qui ne l'est pas. Se tromper d'un dossier,
+c'est servir du code d'hier en croyant servir celui du jour — la panne que
+`doitRebatir` existe pour empêcher (§11 août).
+
+**Si quelqu'un le reprend :** l'empreinte se calcule sur l'arbre git privé des
+chemins exclus, et l'exclusion doit se PROUVER (aucun `import` depuis `src/` ni
+`next.config.ts` — vérifié le 31 août pour `docs/`, `appli/`, `maquettes/`,
+`.github/`). Le doute tranche vers la reconstruction.
+
+---
 
 ## EN ATTENTE DE SA RÉPONSE : la force du geste des boutons (31 août 2026)
 

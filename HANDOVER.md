@@ -36,6 +36,56 @@ régler, et rester vertes.
 deux choses à la fois l'empêcherait de choisir.
 
 ---
+## Dernier lot : la version rapide ne se jette plus pour en bâtir une autre (31 août 2026, soir)
+
+Sa plainte, capture à l'appui : *« l'appli est lente, corrige ça »* — **la
+huitième du même genre** (14, 16, 17, 20, 25, 29 août, puis deux fois le 31).
+Compte-rendu qui lui est destiné : `docs/appli-lente-version-davant.md`.
+
+**Ce qu'il faut savoir avant d'y toucher :**
+
+- **Rien n'était cassé, et c'est pour ça que ça durait.** Son banc jetait sa
+  version rapide dès que le code changeait, et servait `next dev` le temps de
+  bâtir — un mode où un écran neuf compile plus lentement que le relais de
+  GitHub n'accepte d'attendre. **Il ne pouvait ouvrir aucun écran qu'il n'avait
+  pas déjà ouvert.** Le coût était assumé comme « une gêne qui s'arrête »
+  (`memoire-prechauffage.mjs`) — sauf qu'avec six sessions poussant sur `main`
+  dans la même soirée, chaque redémarrage l'y remettait.
+- **La version bâtie reste maintenant en service pendant la construction**, qui
+  se fait dans `.next-batie-neuve`, et la bascule est un échange de noms
+  (`scripts/relais-version-batie.mjs`). Trois dossiers, pas deux : `next build`
+  efface sa destination, bâtir dans celui qu'on sert retirerait le sol au
+  serveur.
+- **Le prix se dit à l'écran, et ce n'est pas facultatif** : pendant la
+  construction il voit le code d'AVANT. Le bandeau l'annonce, la fiche aussi.
+  Retirer l'un des deux rouvrirait le malentendu du 12 août — « commit
+  récupéré » contre « commit servi » —, qui a coûté deux heures.
+- **`leBandeauDoitParler()` et non `laVersionRapideSeConstruit()`** dans
+  `layout.tsx`. Le second répond « non » sous `NODE_ENV=production`, c'est-à-dire
+  au moment exact où l'on sert la version d'avant : le composant n'aurait jamais
+  été monté, et tout ce qu'il annonce serait resté lettre morte. **La porte a
+  failli rester fermée** — c'est la faute du 28 août à l'identique.
+- **Le témoin de chantier porte un pid** (`/tmp/atlas-construction-en-cours.json`).
+  Son banc se fait abattre par le noyau quand la mémoire manque, et laisse son
+  témoin ; sans vérification de vie, le bandeau annoncerait une construction
+  éternelle.
+- **Éprouvé en le JOUANT, deux fois** — version bâtie réelle, témoin forcé sur
+  un commit périmé, `npm run banc` pour de bon : `/login` en **0,28 s pendant la
+  construction**, puis échange des dossiers et témoin à jour. Une relecture
+  n'aurait rien prouvé.
+- **Ce qui reste ouvert :** ne pas rebâtir quand le commit ne touche ni `src/`
+  ni la configuration (un quart des commits de `main`). Écarté ce soir — voir
+  `TODO.md` pour la raison.
+- **La batterie : 299/299 en base, 122/122 au navigateur, connexion verte.** Les
+  suites navigateur n'ont PAS tenu d'une traite — serveur abattu par le noyau à
+  13,5 Go, comme les 27, 29 et 30 août — et ont été jouées par
+  `scripts/jouer-suites-par-groupes.mjs`, puis les six d'un groupe manquant
+  rejouées une par une. Rien de ce lot n'y est pour quelque chose : c'est le
+  défaut de machine noté plus bas, dont la cause reste NON ÉTABLIE.
+- **Trois rouges de contrôles en chemin**, tous du même genre : ils visaient la
+  forme d'hier (`detached: true` compté, `let serveur = raison ?` cherché mot
+  pour mot). Un seul accusait à raison — `etat-banc.ts` refaisait la décision
+  « est-ce un banc » au lieu d'appeler `estBancDEssai()`.
 
 ## Dernier lot : une planche pour le geste des boutons (31 août 2026)
 
