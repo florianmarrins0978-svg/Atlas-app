@@ -207,6 +207,21 @@ la lisibilité, jamais l'identité. Détail : `ARCHITECTURE.md` §218.
 
 ---
 
+## La connexion ne peut plus bouger (31 août 2026)
+
+**Sa demande :** *« la page connexion n'est pas fixe, elle peut bouger encore ;
+il ne faut pas qu'elle puisse bouger, aucun scroll possible »*.
+
+| | |
+|---|---|
+| la page | **figée** : ni défilement, ni élastique du navigateur |
+| le bandeau du banc | publie sa **vraie** hauteur (49 px, 66 sur écran étroit) au lieu des 40 écrits à la main |
+| ce qui en profite | les trois écrans figés — chantiers, envoi, connexion — cessent d'être 50 px trop hauts sur son banc |
+| ce qui reste | bandeau affiché, il manque 51 px : ils glissent dans une colonne intérieure plutôt que de cacher un bouton |
+
+Sans le bandeau — le produit, et son banc dès que la construction est finie —
+rien ne bouge d'un pixel. Le détail : `ARCHITECTURE.md` §227.
+
 ## Le planning garde deux ans de jours passés (31 août 2026)
 
 **Sa question :** *« est-ce que le planning garde en mémoire les chantiers

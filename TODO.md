@@ -97,6 +97,28 @@ chemins exclus, et l'exclusion doit se PROUVER (aucun `import` depuis `src/` ni
 
 ---
 
+## LES BOUTONS PLEINS : fait (31 août 2026)
+
+**Ses réponses sont acquises :** couleur **#29382F**, force **discret**,
+**Origine seule**. Rien à lui redemander.
+
+**Fait :** la classe `.atlas-plein` (`globals.css`), la variable
+`--atlas-plein-fond` ecrite pour Origine seule (`chartes.ts`), les trois pieces
+partagees, puis les **38 autres boutons** de 25 fichiers et les deux notes
+vocales (`AnneauNoteVocale`, un seul composant pour les deux ecrans).
+
+**Ce qui a ete ECARTE volontairement**, et qu'il ne faut pas « corriger » un
+jour en croyant bien faire : huit emplois du meme vert qui ne sont pas des
+boutons — pastilles clignotantes, barres de progression, fonds pales
+(`colors.rustTint`). Ni les capsules creuses. Ni `src/app/design/*`, hors
+produit.
+
+**Si un bouton plein est ajoute plus tard**, il lui faut la classe : sans elle
+il gardera l'ancien vert et n'aura aucun geste, et cela ne se verra qu'a
+l'usage.
+
+---
+
 ## EN ATTENTE DE SA RÉPONSE : la force du geste des boutons (31 août 2026)
 
 Sa demande du 31 août — une mini vibration à l'appui, et le bouton qui s'enfonce
@@ -5448,6 +5470,18 @@ recharge **trois fois** en laissant du temps à l'action, précisément parce qu
 le défaut avait déjà été vu le 13 août. Trois chances ne suffisent plus. La
 piste est donc la même que pour les deux autres — on attend une valeur à
 l'écran sur une montre, au lieu d'attendre que la base ait bougé.
+
+**REVU LE 31 AOÛT 2026, ET LE CONSTAT TIENT.** Sur une batterie jouée par
+groupes, six suites ont rougi ; quatre sont revenues vertes rejouées
+(`test-dashboard`, `test-lecons-prix`, `test-periodicite-tva`,
+`test-reste-equipes`), et les deux qui restaient — `test-tva-au-paiement-e2e`
+et `test-planning-vers-facture-e2e`, toutes deux sur le **relevé de TVA** —
+**rougissent aussi sur `origin/main` tel quel**, joué exprès pour le savoir.
+
+Ce n'est donc toujours pas un lot qui les casse. Et cela ajoute un nom à la
+liste : `test-planning-vers-facture-e2e`, cas *« la confirmation porte la
+facture au relevé de TVA »*, qui rend « la facture F… ne figure pas au relevé
+du trimestre ».
 
 **Et ATTENTION à ne pas confondre deux rouges dans cette même suite.** Le
 24 août au soir, elle a rougi une seconde fois — sur un autre cas, et pour une

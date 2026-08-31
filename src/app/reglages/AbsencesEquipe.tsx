@@ -315,7 +315,7 @@ export default function AbsencesEquipe({
           type="button"
           onClick={() => void enregistrer()}
           disabled={!armé}
-          className="mt-3 w-full rounded-full py-[15px] text-[15px]"
+          className="atlas-plein mt-3 w-full rounded-full py-[15px] text-[15px]"
           style={{
             backgroundColor: colors.rust,
             color: colors.cream,

@@ -9,6 +9,40 @@ Format : le plus récent en tête.
 
 ## 2026-08-31
 
+### Le geste et le vert sur TOUS les boutons pleins, et sur les deux notes vocales
+
+**Sa demande :** *« pour chaque bouton fais également le geste discret ; lorsque
+le bouton s'enfonce il change de couleur comme on a vu ; et je veux aussi cet
+effet sur la note vocale de la page fiche client et la note vocale, mais là
+aussi au #29382F »*.
+
+**Trente-huit boutons**, dans vingt-cinq fichiers, reçoivent la classe
+`.atlas-plein` posée au lot 1. Les deux notes vocales sont **le même
+composant** (`AnneauNoteVocale`, employé par la fiche client et par le
+chantier) : une seule correction les couvre, et son disque de 76 px prend le
+vert et le geste comme le reste.
+
+**HUIT EMPLOIS DU MÊME VERT ONT ÉTÉ ÉCARTÉS, ET C'EST LE TRAVAIL.** Le vert
+d'action sert aussi à des pastilles clignotantes, des barres de progression et
+des fonds pâles. Sa consigne — « surtout pas ceux qui sont creux ou d'une autre
+couleur » — vise les aplats qu'on appuie. Le tri s'est fait sur la balise
+réellement portante.
+
+**Un défaut attrapé avant d'écrire, et il aurait été invisible :** le premier
+tri remontait jusqu'à la première balise cliquable au-dessus de la ligne. Sur
+l'écran de dictée, il sautait par-dessus **la pastille clignotante de
+l'enregistrement** pour attribuer son fond au bouton du dessus — la pastille
+serait devenue un « bouton plein », avec voile et enfoncement. Corrigé en
+prenant la balise la plus PROCHE, pas la première trouvée.
+
+**Une règle en double retirée :** l'écran de connexion gardait un
+`active:scale-[0.985]` en plus de la classe. Deux règles pour le même geste
+divergent toujours ; celle de la classe reste seule.
+
+Vérifié à l'écran : la note vocale de la fiche client au #29382F, 0,975 et voile
+0,14 sous le doigt. 300/300 suites base — le 299/300 du premier passage venait
+de mon serveur laissé tournant sur la même base, ce que `CLAUDE.md` §5 interdit.
+
 ### Les travaux supplémentaires : le manque est réel, quatre solutions posées
 
 Son constat : *« si on effectue des travaux en plus chez un client, on n'a aucun
@@ -110,6 +144,64 @@ La seconde envoyait chercher le défaut dans le produit — « ce n'est pas votr
 espace » — alors que la cause était écrite trois lignes plus haut. Des trois
 états de la ligne « Code SERVI », celui du milieu n'entrait dans aucun verdict.
 
+### Le bouton plein prend le #29382F, et le geste discret — Origine seule
+
+**Ses trois décisions, prises l'une après l'autre sur des images du VRAI
+bouton :** la couleur 8 de la planche d'abord, puis « seulement pour la version
+origine, ne touche pas aux autres apparences », enfin — les deux verts
+photographiés côte à côte sur le même bouton, au même endroit — **« je garde le
+#29382F »**. Le vert 8 est écarté par lui.
+
+**Une classe, `.atlas-plein`, et rien d'autre.** Elle porte la couleur ET le
+geste (échelle 0,975, éclaircissement de 14 % à l'appui, retour plus lent que
+l'aller). Trente-quatre fichiers emploient le vert d'action : les éditer un par
+un aurait dispersé la règle et rendu impossible de dire, dans six mois, ce qui
+est un bouton plein et ce qui ne l'est pas.
+
+**La couleur ne vaut que pour Origine, le geste vaut partout.** Un bouton qui
+répond au doigt n'est pas une apparence. Mesuré sur trois chartes : Origine
+reçoit `rgb(41,56,47)`, Brume garde son bleu marine `rgb(34,69,109)`, Nuit son
+crème `rgb(233,232,222)` — et les trois s'enfoncent à 0,975.
+
+**Ce que ça ne touche PAS, et c'est voulu :** l'accent d'action ne bouge pas
+d'un cheveu. Textes verts, icônes, liserés, fonds pâles gardent le vert pin —
+sa consigne visait les aplats, pas la moitié des écrans.
+
+**Un aplat écrit comme un dégradé d'une seule couleur**, et ce n'est pas une
+coquetterie : les boutons portent leur fond en style EN LIGNE, qu'aucune feuille
+de style ne peut supplanter sans `!important`. Seul `background-image` passe
+par-dessus, et une image de fond ne prend pas une couleur.
+
+Reste à faire : les autres boutons pleins (31 fichiers), lot par lot comme il
+l'a proposé.
+
+### La connexion ne bouge plus — et le bandeau du banc cesse de mentir de 9 px
+
+**Sa capture :** *« la page connexion n'est pas fixe, elle peut bouger encore ;
+aucun scroll possible »*. « Me déconnecter partout » finissait à moitié sous la
+barre du bas.
+
+**Le contrôle du matin était vert et mesurait le mauvais écran** : 658 px pour
+664, SANS le bandeau « Version rapide en construction » que lui a sous les yeux.
+`layout.tsx` retranchait **40 px** pour ce bandeau ; il en mesure **49** — et
+**66** sur un écran étroit, où sa phrase passe à deux lignes. Il gagne aussi une
+barre de progression, et il **disparaît** quand la construction s'achève : un
+nombre écrit à la main ne pouvait pas être juste.
+
+Le bandeau publie désormais sa propre hauteur (`--atlas-bandeau`, remise à zéro
+quand il s'efface), que le gabarit ET les écrans figés lisent. Les trois écrans
+figés du produit cessent d'être cinquante pixels trop hauts sur son banc.
+
+L'écran de connexion prend `atlas-ecran` — la convention de la maison — plus
+`overscroll-behavior: none`, qui arrête l'élastique d'iOS : **la page ne peut
+plus bouger d'un pixel.** Ce qu'elle ne peut pas montrer quand le bandeau est
+là (51 px) glisse dans une colonne intérieure plutôt que de disparaître : un
+bouton hors d'atteinte serait pire.
+
+**Deux fois le contrôle a dû être repris avant de prouver quelque chose** :
+d'abord il restait vert contre l'écran d'avant (il ne rejouait pas le bandeau),
+puis il accusait à tort un bouton d'être coupé (il comparait un `offsetTop` à
+une hauteur de colonne). Il descend maintenant la colonne et regarde.
 
 ### Les dix verts étaient CASSÉS en ligne, et mon contrôle ne le voyait pas
 
