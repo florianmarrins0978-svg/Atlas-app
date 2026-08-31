@@ -20264,3 +20264,42 @@ avant d'ouvrir ce chemin, pas après.
 porte ses photos, son anneau **et** son bouton d'enregistrement. Trois
 assertions, une par pièce — un seul contrôle « la fiche est entière » ne dirait
 pas laquelle manque.
+
+---
+
+## 227. La fiche du chantier ne se supprime pas : elle porte les photos, et six écrans y reviennent
+
+**Sa demande du 31 août 2026, capture à l'appui :** *« des fois je retombe sur
+cette page, je pense qu'elle sert plus à rien maintenant ; vérifie, si oui on la
+supprime définitivement »*. Sa capture est `/chantiers/[id]` sur un chantier
+« devis prêt à envoyer » : l'en-tête, l'anneau, « Mon devis », et un grand vide
+jusqu'au tiroir.
+
+**La condition n'est pas remplie, et le vérifier a pris dix minutes.** Cet écran
+n'est pas une page oubliée : c'est le carrefour du chantier.
+
+| Ce qui n'existe QUE là | Où c'était avant |
+|---|---|
+| **la pellicule** — ajouter, regarder, retirer une photo d'un chantier existant | `/chantiers/[id]/photos`, supprimé le 11 août 2026 |
+| **« Créer la facture »** d'un chantier planifié pas encore terminé | nulle part — l'onglet Terminés attend que la date d'intervention soit passée |
+| **la porte vers la fiche du client** depuis le chantier | ajoutée ici le 16 août 2026 |
+
+Et l'on y arrive de partout : la flèche de retour de **six** écrans
+(`informations`, `prix`, `note-vocale`, `transcription`, `export`,
+`devis-complet` quand le client est renseigné — `retour-du-devis.ts`), la carte
+du **planning**, une **notification** de devis, et la reprise de la liste pour
+les trois états qui n'ont pas d'écran à eux (`lienDeReprise` : photos, dictée,
+chantier planifié). Le supprimer, c'est perdre les photos et laisser neuf portes
+dans le vide.
+
+**Ce qui EST vrai dans sa remarque, en revanche.** Il n'y retombe pas par
+hasard : sur un devis prêt à partir, la flèche du devis le dépose ici — et ici,
+dans cet état, il n'y a rien à faire. C'est la moitié non traitée de son
+signalement du 31 août au matin (§221) : ce jour-là, le retour n'a été détourné
+que **lorsque le client manque**. Le vide qu'il photographie aujourd'hui est le
+même écran, avec un client renseigné.
+
+**Ce qui n'a PAS été fait, et pourquoi.** Changer où mène cette flèche se décide
+avec lui : selon le chemin qu'il emprunte, le bon retour est la liste des
+chantiers ou l'écran d'où il venait, et se tromper le sortirait du chantier
+qu'il consulte. La question lui est posée ; rien n'est codé avant sa réponse.
