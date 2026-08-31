@@ -170,7 +170,7 @@ export default function LoginPage() {
         <button
           type="submit"
           disabled={enCours}
-          className="inline-flex items-center justify-center rounded-full px-9 py-[13px] text-[17px] transition-transform active:scale-[0.985] disabled:opacity-60"
+          className="atlas-plein inline-flex items-center justify-center rounded-full px-9 py-[13px] text-[17px] disabled:opacity-60"
           style={{ backgroundColor: colors.rust, color: colors.card, fontFamily: font.display }}
         >
           Entrer

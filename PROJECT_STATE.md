@@ -40,6 +40,52 @@ lui :** faut-il saisir une vraie date de réalisation à la clôture ?
 
 ---
 
+## Il n'y a plus qu'une fiche client (31 août 2026)
+
+**Sa demande, deux captures à l'appui :** *« lorsque je fais retour j'arrive sur
+la page 1re photo alors que je veux arriver sur la 2e. Je sais pas d'où sort la
+1re photo ? Si elle sert à rien il faut la supprimer. »*
+
+La fiche rouverte (`/chantiers/[id]/coordonnees`) portait tout sauf la
+pellicule, l'anneau et la chaîne du devis. Elle les porte désormais, **nourris
+de ce que le chantier a déjà** — photos prises, note dictée. Seul
+« Enregistrer » l'en distingue encore : elle seule a quelque chose à sauver.
+
+Raisons : `ARCHITECTURE.md` §226.
+
+---
+
+## EN ATTENTE : l'allure de la dictée — une planche, pas du code (31 août 2026)
+
+**Rien n'a bougé dans l'application**, et c'est l'état exact du produit : la
+dictée de la fiche chantier porte toujours son disque plein de 76 px, son rond
+d'envoi plein, sa pause, et le chrono et l'onde en dessous, chacun sur son axe.
+
+Il a choisi **la ligne** parmi les quatre allures de `appli/dictee-embellie.html`,
+puis l'a corrigée : plus de pause, et une touche d'envoi au fond de la page,
+encadrée de vert. `appli/dictee-la-ligne.html` porte ces corrections et pose la
+dernière question — **de combien la touche s'aplatit : A, B ou C.**
+
+---
+## Le banc garde sa version rapide pendant qu'il bâtit la suivante (31 août 2026, soir)
+
+**Sa huitième plainte de lenteur** — *« l'appli est lente, corrige ça »*.
+Jusqu'ici son banc jetait sa version rapide dès que le code changeait et servait
+le mode développement le temps de bâtir : un mode où un écran neuf compile plus
+lentement que le relais de GitHub n'accepte d'attendre. Il ne pouvait ouvrir
+aucun écran qu'il n'avait pas déjà ouvert, et chaque redémarrage l'y remettait.
+
+La version bâtie reste désormais en service pendant la construction, qui se fait
+dans un dossier voisin ; la bascule est un échange de noms. Mesuré en le jouant :
+`/login` en **0,28 s pendant la construction**. Une construction qui échoue ne le
+condamne plus au mode lent jusqu'au lendemain — il garde une application entière,
+en retard de quelques commits, et **l'écran comme la fiche le disent**.
+
+Au passage : la fiche de son espace concluait « ✅ Tout concorde » sur un banc
+sans version rapide, et envoyait donc chercher le défaut dans le produit.
+
+`ARCHITECTURE.md` §225 · `docs/appli-lente-version-davant.md`
+
 ## EN ATTENTE : le geste des boutons — une planche, pas du code (31 août 2026)
 
 **Rien n'a bougé dans l'application**, et c'est l'état exact du produit : les
@@ -182,6 +228,21 @@ pour les huit ; les deux suites existantes vérifiaient la présence des jetons 
 la lisibilité, jamais l'identité. Détail : `ARCHITECTURE.md` §218.
 
 ---
+
+## La connexion ne peut plus bouger (31 août 2026)
+
+**Sa demande :** *« la page connexion n'est pas fixe, elle peut bouger encore ;
+il ne faut pas qu'elle puisse bouger, aucun scroll possible »*.
+
+| | |
+|---|---|
+| la page | **figée** : ni défilement, ni élastique du navigateur |
+| le bandeau du banc | publie sa **vraie** hauteur (49 px, 66 sur écran étroit) au lieu des 40 écrits à la main |
+| ce qui en profite | les trois écrans figés — chantiers, envoi, connexion — cessent d'être 50 px trop hauts sur son banc |
+| ce qui reste | bandeau affiché, il manque 51 px : ils glissent dans une colonne intérieure plutôt que de cacher un bouton |
+
+Sans le bandeau — le produit, et son banc dès que la construction est finie —
+rien ne bouge d'un pixel. Le détail : `ARCHITECTURE.md` §227.
 
 ## Le planning garde deux ans de jours passés (31 août 2026)
 

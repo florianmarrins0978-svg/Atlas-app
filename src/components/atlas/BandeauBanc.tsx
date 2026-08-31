@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { EtatConstructionBanc } from "@/server/etat-banc";
 import { colors, voile } from "@/lib/design-tokens";
 
@@ -42,6 +42,7 @@ const INTERVALLE_MS = 5000;
 export default function BandeauBanc() {
   const [etat, setEtat] = useState<EtatConstructionBanc | null>(null);
   const [fini, setFini] = useState(false);
+  const cadre = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (fini) return;
@@ -75,18 +76,65 @@ export default function BandeauBanc() {
     };
   }, [fini]);
 
+  /**
+   * **IL PUBLIE SA PROPRE HAUTEUR, ET C'EST UNE RÉPARATION.**
+   *
+   * *Sa capture du 31 août 2026 : « la page connexion n'est pas fixe, elle peut
+   * bouger encore ».* Sur son banc, « Me déconnecter partout » finissait à
+   * moitié sous la barre du bas, et l'écran défilait de 42 px.
+   *
+   * La cause n'était pas l'écran de connexion : `layout.tsx` retranchait
+   * **40 px** en dur pour ce bandeau, qui en mesure **49** — et **66** sur un
+   * écran étroit, où sa phrase passe à deux lignes. Il gagne en plus une barre
+   * de progression dès qu'un total est connu. Un nombre écrit à la main pour un
+   * élément qui change de taille est faux la moitié du temps.
+   *
+   * **Il ne se mesure pas une fois** : il apparaît, grandit, puis DISPARAÎT
+   * quand la construction s'achève. Une valeur posée au premier rendu
+   * survivrait à sa disparition et volerait cinquante pixels à tous les écrans
+   * pour toujours — c'est la « valeur provisoire qui survit » d'`ARCHITECTURE.md`.
+   * D'où l'observateur, et la remise à zéro au démontage.
+   */
+  useEffect(() => {
+    const racine = document.documentElement;
+    const remettre = () => racine.style.setProperty("--atlas-bandeau", "0px");
+    const noeud = cadre.current;
+    if (!noeud) {
+      remettre();
+      return;
+    }
+    const publier = () =>
+      racine.style.setProperty("--atlas-bandeau", `${Math.round(noeud.getBoundingClientRect().height)}px`);
+    publier();
+    const oeil = new ResizeObserver(publier);
+    oeil.observe(noeud);
+    return () => {
+      oeil.disconnect();
+      remettre();
+    };
+  }, [etat]);
+
   if (etat === null) return null;
 
-  // Le total vaut zéro tant que le préchauffage n'a pas écrit sa première
-  // ligne. On ne fabrique alors aucun chiffre — dire « 0 sur 0 » serait
-  // inventer un total (`CLAUDE.md` §4).
-  const avecCompte = etat.total > 0;
+  // **Ce qu'on sert est la version PRÉCÉDENTE : ça se dit, et en premier.**
+  //
+  // Depuis le 31 août 2026 au soir, le banc ne retombe plus en mode
+  // développement pour bâtir : il garde la dernière version rapide en service.
+  // L'application est donc immédiate — et en retard de quelques commits. Taire
+  // ce second point rouvrirait le malentendu du 12 août (« commit récupéré »
+  // contre « commit servi »), qui a coûté deux heures : il essaierait une
+  // correction sur un code qui ne la porte pas encore.
+  //
+  // Aucun compteur ici : il n'y a pas de préchauffage à raconter quand chaque
+  // écran sort déjà en quelques millisecondes.
+  const avecCompte = !etat.versionDavant && etat.total > 0;
   const part = avecCompte ? Math.round((etat.faits / etat.total) * 100) : null;
 
   return (
     <div
       // `data-atlas` sert au contrôle de recouvrement à nommer le coupable
       // quand quelque chose passe dessous.
+      ref={cadre}
       data-atlas="bandeau-banc"
       role="status"
       aria-live="polite"
@@ -98,7 +146,12 @@ export default function BandeauBanc() {
     >
       <p className="text-[12.5px] leading-[1.4]" style={{ color: colors.or }}>
         Version rapide en construction
-        {avecCompte ? (
+        {etat.versionDavant ? (
+          <>
+            {" — "}
+            <b style={{ color: colors.ink, fontWeight: 500 }}>{"vous voyez celle d'avant"}</b>.
+          </>
+        ) : avecCompte ? (
           <>
             {" — "}
             <b style={{ color: colors.ink, fontWeight: 500 }}>

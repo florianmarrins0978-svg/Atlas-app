@@ -37,26 +37,76 @@ sans être passé par le planning n'a donc pas de date, et sa rangée n'en affic
 aucune. S'il veut une vraie date de réalisation, il faudra la saisir à la
 clôture : c'est un geste de plus pour lui, et il n'a pas répondu.
 
-## DEUX SUITES DE TVA SONT ROUGES SUR `main` — pas d'un lot (31 août 2026)
+## EN ATTENTE DE SA RÉPONSE : l'aplatissement de la touche d'envoi (31 août 2026)
 
-Trouvé en jouant la batterie du 31 août au soir, **et vérifié sur `origin/main`
-tel quel** (commit `7a8f3ed`, sans aucun lot en cours) : les deux échouent à
-l'identique. Ce n'est donc pas le lot « date du chantier », et ce n'est
-probablement aucun lot en cours.
+**Il a choisi LA LIGNE** parmi les quatre allures, et l'a corrigée trois fois le
+soir même. **Rien n'est codé, et rien ne doit l'être avant sa dernière réponse**
+(`CLAUDE.md` §3 bis).
 
-| Suite | Ce qu'elle dit |
-|---|---|
-| `test-planning-vers-facture-e2e.ts` | « la facture F2026-000009 ne figure pas au relevé de TVA du trimestre » |
-| `test-tva-au-paiement-e2e.ts` | 4 échecs : « PAYÉE » ne fait pas entrer la facture au relevé (0,00 au lieu de 200,00), l'acompte n'arrive jamais, le régime des débits ne suit pas, la phrase cite un montant qui n'est pas celui du bloc au-dessus |
+La planche : `appli/dictee-la-ligne.html`, en ligne à
+https://florianmarrins0978-svg.github.io/Atlas-app/dictee-la-ligne.html
 
-**Ce n'est pas un défaut de suite : c'est le relevé qui ne bouge pas.** Une
-facture encaissée qui n'entre pas au relevé, c'est de la TVA qu'il déclarerait
-en moins — et c'est lui qui répond devant l'administration. **À traiter avant
-tout lot d'affichage.**
+**Ce qu'on attend de lui : une lettre.** A ronde (44 × 44), B légèrement à plat
+(48 × 40), C plus à plat (52 × 36).
 
-**Reste à faire :** reproduire à la main sur l'écran « Ma TVA à déclarer »,
-puis chercher dans `src/server/tva-courante.ts` et le chemin de paiement. Non
-diagnostiqué : personne n'a encore ouvert le code.
+**Ce qui est DÉJÀ tranché par lui, et qui ne se rediscute pas :** la ligne
+plutôt qu'un objet ; **plus aucune pause** (deux gestes : jeter, envoyer) ; la
+touche d'envoi au fond de la page, encadrée de vert. Le repos ne bouge pas —
+c'est son choix du 30 août.
+
+**À lui dire au moment de coder, parce qu'il le découvrirait sur un chantier :**
+sans pause, on ne peut plus suspendre une dictée pour répondre à quelqu'un.
+
+La planche des quatre allures (`appli/dictee-embellie.html`) reste en ligne :
+c'est elle qui porte la comparaison, et les chiffres d'aplat.
+
+**Ce qui change à l'écran une fois choisi :** `AnneauNoteVocale.tsx` (le rendu
+de la dictée) et le bloc `.atlas-dictee` de `src/app/globals.css`. Le repos ne
+bouge pas — c'est son choix du 30 août, et il n'a rien reproché à cet état-là.
+## Ne rebâtir que si le code BÂTI a changé (posé le 31 août 2026, soir)
+
+**Mesuré, pas supposé :** sur les quarante derniers commits de `main`, **un quart
+ne touchent que** `docs/`, `appli/`, `maquettes/`, `.github/` ou les fichiers de
+mémoire. Chacun déclenche pourtant une construction complète chez le patron,
+parce que `doitRebatir` compare le **numéro de commit** et non le code qui entre
+dans la construction.
+
+**Pourquoi ce n'est PAS fait ce soir.** Le gain a beaucoup baissé depuis §225 :
+une construction ne lui coûte plus l'usage de son application, seulement une
+fenêtre où il voit le code d'avant. Et le risque, lui, n'a pas bougé : la liste
+des chemins « sans effet sur la construction » est exactement le genre
+d'inclusion qu'on croit complète et qui ne l'est pas. Se tromper d'un dossier,
+c'est servir du code d'hier en croyant servir celui du jour — la panne que
+`doitRebatir` existe pour empêcher (§11 août).
+
+**Si quelqu'un le reprend :** l'empreinte se calcule sur l'arbre git privé des
+chemins exclus, et l'exclusion doit se PROUVER (aucun `import` depuis `src/` ni
+`next.config.ts` — vérifié le 31 août pour `docs/`, `appli/`, `maquettes/`,
+`.github/`). Le doute tranche vers la reconstruction.
+
+---
+
+## LES BOUTONS PLEINS : fait (31 août 2026)
+
+**Ses réponses sont acquises :** couleur **#29382F**, force **discret**,
+**Origine seule**. Rien à lui redemander.
+
+**Fait :** la classe `.atlas-plein` (`globals.css`), la variable
+`--atlas-plein-fond` ecrite pour Origine seule (`chartes.ts`), les trois pieces
+partagees, puis les **38 autres boutons** de 25 fichiers et les deux notes
+vocales (`AnneauNoteVocale`, un seul composant pour les deux ecrans).
+
+**Ce qui a ete ECARTE volontairement**, et qu'il ne faut pas « corriger » un
+jour en croyant bien faire : huit emplois du meme vert qui ne sont pas des
+boutons — pastilles clignotantes, barres de progression, fonds pales
+(`colors.rustTint`). Ni les capsules creuses. Ni `src/app/design/*`, hors
+produit.
+
+**Si un bouton plein est ajoute plus tard**, il lui faut la classe : sans elle
+il gardera l'ancien vert et n'aura aucun geste, et cela ne se verra qu'a
+l'usage.
+
+---
 
 ## EN ATTENTE DE SA RÉPONSE : la force du geste des boutons (31 août 2026)
 
@@ -5409,6 +5459,18 @@ recharge **trois fois** en laissant du temps à l'action, précisément parce qu
 le défaut avait déjà été vu le 13 août. Trois chances ne suffisent plus. La
 piste est donc la même que pour les deux autres — on attend une valeur à
 l'écran sur une montre, au lieu d'attendre que la base ait bougé.
+
+**REVU LE 31 AOÛT 2026, ET LE CONSTAT TIENT.** Sur une batterie jouée par
+groupes, six suites ont rougi ; quatre sont revenues vertes rejouées
+(`test-dashboard`, `test-lecons-prix`, `test-periodicite-tva`,
+`test-reste-equipes`), et les deux qui restaient — `test-tva-au-paiement-e2e`
+et `test-planning-vers-facture-e2e`, toutes deux sur le **relevé de TVA** —
+**rougissent aussi sur `origin/main` tel quel**, joué exprès pour le savoir.
+
+Ce n'est donc toujours pas un lot qui les casse. Et cela ajoute un nom à la
+liste : `test-planning-vers-facture-e2e`, cas *« la confirmation porte la
+facture au relevé de TVA »*, qui rend « la facture F… ne figure pas au relevé
+du trimestre ».
 
 **Et ATTENTION à ne pas confondre deux rouges dans cette même suite.** Le
 24 août au soir, elle a rougi une seconde fois — sur un autre cas, et pour une
