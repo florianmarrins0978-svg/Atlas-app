@@ -128,6 +128,31 @@
 <td>échange fait, repère à jour, dossiers de travail nettoyés</td>
 </tr>
 </tbody></table></div>
+<h2 id="la-batterie-chiffres-exacts">La batterie, chiffres exacts</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th></th>
+</tr></thead><tbody>
+<tr>
+<td>types, lint, mémoire du dépôt</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>suites base de données</td>
+<td><strong>299 / 299</strong></td>
+</tr>
+<tr>
+<td>suites navigateur</td>
+<td><strong>122 / 122</strong></td>
+</tr>
+<tr>
+<td>connexion derrière un proxy</td>
+<td>✅</td>
+</tr>
+</tbody></table></div>
+<p><strong>Trois rouges rencontrés en chemin, tous corrigés, et il faut les dire.</strong> Aucun n'était un défaut de l'application : c'étaient des contrôles qui visaient la forme d'hier. L'un comptait les détachements de processus du fichier et en exigeait exactement deux ; un autre cherchait une ligne de code mot pour mot. Le troisième, lui, avait raison — un fichier refaisait de son côté la décision « est-ce le banc d'essai », ce que le dépôt interdit depuis M12 : c'est le code qui a été corrigé, pas le contrôle.</p>
+<p><strong>Et une difficulté qui n'est pas de ce lot.</strong> Les suites navigateur n'ont pas tenu d'une traite : le serveur d'essai a été <strong>tué par le noyau à 13,5 Go</strong>, comme les 27, 29 et 30 août. C'est un défaut connu de la machine des essais, sans rapport avec ton application ni avec ce correctif — le dépôt a un outil fait pour ça, qui les joue par groupes avec un serveur neuf à chaque fois. Les six suites qu'un groupe n'avait pas pu jouer ont été rejouées une par une : toutes vertes.</p>
 <h2 id="ce-qui-a-été-refusé-et-pourquoi">Ce qui a été refusé, et pourquoi</h2>
 <a class="retour" href="#sommaire">↑ Sommaire</a>
 <p><strong>Ne pas refabriquer quand le code de l'application n'a pas changé.</strong> Un quart des mises à jour ne touchent que de la documentation — elles déclenchent quand même une fabrication complète chez toi. C'est mesuré, et c'est vrai.</p>

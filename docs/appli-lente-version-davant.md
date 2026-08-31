@@ -84,6 +84,31 @@ code périmé, puis le démarrage lancé pour de bon — deux fois.
 | le bandeau | annonce bien « celle d'avant » |
 | à la fin | échange fait, repère à jour, dossiers de travail nettoyés |
 
+## La batterie, chiffres exacts
+
+| | |
+|---|---|
+| types, lint, mémoire du dépôt | ✅ |
+| suites base de données | **299 / 299** |
+| suites navigateur | **122 / 122** |
+| connexion derrière un proxy | ✅ |
+
+**Trois rouges rencontrés en chemin, tous corrigés, et il faut les dire.** Aucun
+n'était un défaut de l'application : c'étaient des contrôles qui visaient la
+forme d'hier. L'un comptait les détachements de processus du fichier et en
+exigeait exactement deux ; un autre cherchait une ligne de code mot pour mot.
+Le troisième, lui, avait raison — un fichier refaisait de son côté la décision
+« est-ce le banc d'essai », ce que le dépôt interdit depuis M12 : c'est le code
+qui a été corrigé, pas le contrôle.
+
+**Et une difficulté qui n'est pas de ce lot.** Les suites navigateur n'ont pas
+tenu d'une traite : le serveur d'essai a été **tué par le noyau à 13,5 Go**,
+comme les 27, 29 et 30 août. C'est un défaut connu de la machine des essais,
+sans rapport avec ton application ni avec ce correctif — le dépôt a un outil
+fait pour ça, qui les joue par groupes avec un serveur neuf à chaque fois. Les
+six suites qu'un groupe n'avait pas pu jouer ont été rejouées une par une :
+toutes vertes.
+
 ## Ce qui a été refusé, et pourquoi
 
 **Ne pas refabriquer quand le code de l'application n'a pas changé.** Un quart

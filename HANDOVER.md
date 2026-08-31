@@ -49,6 +49,16 @@ Compte-rendu qui lui est destiné : `docs/appli-lente-version-davant.md`.
 - **Ce qui reste ouvert :** ne pas rebâtir quand le commit ne touche ni `src/`
   ni la configuration (un quart des commits de `main`). Écarté ce soir — voir
   `TODO.md` pour la raison.
+- **La batterie : 299/299 en base, 122/122 au navigateur, connexion verte.** Les
+  suites navigateur n'ont PAS tenu d'une traite — serveur abattu par le noyau à
+  13,5 Go, comme les 27, 29 et 30 août — et ont été jouées par
+  `scripts/jouer-suites-par-groupes.mjs`, puis les six d'un groupe manquant
+  rejouées une par une. Rien de ce lot n'y est pour quelque chose : c'est le
+  défaut de machine noté plus bas, dont la cause reste NON ÉTABLIE.
+- **Trois rouges de contrôles en chemin**, tous du même genre : ils visaient la
+  forme d'hier (`detached: true` compté, `let serveur = raison ?` cherché mot
+  pour mot). Un seul accusait à raison — `etat-banc.ts` refaisait la décision
+  « est-ce un banc » au lieu d'appeler `estBancDEssai()`.
 
 ## Dernier lot : une planche pour le geste des boutons (31 août 2026)
 
