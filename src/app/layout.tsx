@@ -11,7 +11,7 @@ import { FournisseurAssistant } from "@/components/atlas/assistant-contexte";
 import GardeDocumentsLegaux from "@/components/atlas/GardeDocumentsLegaux";
 import GardeAcces from "@/components/atlas/GardeAcces";
 import BandeauBanc from "@/components/atlas/BandeauBanc";
-import { laVersionRapideSeConstruit } from "@/server/etat-banc";
+import { leBandeauDoitParler } from "@/server/etat-banc";
 import { roleDeLaSession } from "@/server/autorisation";
 import { peutUtiliserLAssistant } from "@/lib/acces-roles";
 
@@ -194,7 +194,11 @@ export default async function RootLayout({
   // ferait défiler chaque page de quarante pixels — une barre de défilement que
   // lui seul verrait, `scripts/test-aucune-barre-de-defilement-e2e.ts` ne
   // tournant pas sous ce profil.
-  const banc = !pageDuClient && laVersionRapideSeConstruit();
+  // `leBandeauDoitParler` et non `laVersionRapideSeConstruit` : le banc sert
+  // désormais la version rapide PRÉCÉDENTE pendant qu'il bâtit la neuve, et
+  // `NODE_ENV` y vaut alors `production`. Le second test répondrait « non »
+  // juste au moment où il faut prévenir qu'on regarde le code d'avant.
+  const banc = !pageDuClient && leBandeauDoitParler();
 
   /**
    * La charte de couleurs de la personne connectée (`src/lib/chartes.ts`).

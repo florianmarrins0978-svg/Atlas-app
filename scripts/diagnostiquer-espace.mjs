@@ -43,6 +43,19 @@ const TEMOIN_ECHEC =
   // dans /tmp sans marcher sur le banc réel de la machine qui la joue.
   process.env.ATLAS_TEMOIN_ECHEC || "/tmp/atlas-construction-echouee.txt";
 const FICHIER_ISSUE = "/tmp/atlas-mise-a-jour.txt";
+/**
+ * Le témoin qu'une construction tourne à cet instant (`scripts/banc.mjs`).
+ *
+ * **Il change le CONSEIL, pas le constat.** Depuis le 31 août 2026 au soir, le
+ * banc garde la version rapide précédente en service pendant qu'il bâtit la
+ * neuve : « le code servi n'est pas le code récupéré » devient alors l'état
+ * NORMAL de deux à cinq minutes, et non plus une version figée qu'il faut aller
+ * relever à la main. Envoyer rallumer un espace qui est en train de faire
+ * exactement ce qu'on lui demande coûte un redémarrage pour rien — et jette la
+ * construction en cours.
+ */
+const TEMOIN_CONSTRUCTION =
+  process.env.ATLAS_TEMOIN_CONSTRUCTION || "/tmp/atlas-construction-en-cours.json";
 /** Ce que `ouvrir-port.sh` a rendu au dernier démarrage : un seul mot. */
 const FICHIER_PORT = "/tmp/atlas-port.txt";
 const VERROU_VEILLEUR = "/tmp/atlas-veilleur.pid";
@@ -110,6 +123,19 @@ const retard = amont && tete ? git("rev-list", "--count", `${tete}..${amont}`) :
 const avance = amont && tete ? git("rev-list", "--count", `${amont}..${tete}`) : null;
 const bati = existsSync(TEMOIN_BATI) ? readFileSync(TEMOIN_BATI, "utf8").trim() : null;
 const echecBati = existsSync(TEMOIN_ECHEC) ? readFileSync(TEMOIN_ECHEC, "utf8").trim() : null;
+/** Une construction est-elle en cours, et par un banc encore vivant ? */
+const constructionEnCours = (() => {
+  try {
+    const pid = Number(JSON.parse(readFileSync(TEMOIN_CONSTRUCTION, "utf8")).pid);
+    if (!Number.isInteger(pid) || pid <= 0) return false;
+    process.kill(pid, 0); // Ne tue rien : demande seulement s'il existe.
+    return true;
+  } catch {
+    // Absent, illisible, ou banc mort : rien ne bâtit. Le pid est là pour ça —
+    // un témoin resté d'un banc abattu ferait attendre l'impossible.
+    return false;
+  }
+})();
 
 /**
  * Ce que la ligne « Code SERVI » doit dire, et il y a TROIS cas.
@@ -210,6 +236,36 @@ if (echecBati) {
   );
 }
 
+// **« AUCUNE VERSION BÂTIE » N'ENTRAIT DANS AUCUN VERDICT — 31 août 2026, au soir.**
+//
+// Sa plainte, une capture à l'appui : *« l'appli est lente »*. Sa fiche, fraîche
+// de deux minutes, portait pourtant ces deux lignes ensemble :
+//
+//     Code SERVI : aucune version bâtie — construction en cours, ou pas encore lancée
+//     ✅ Tout concorde : le code récupéré est le code servi, et il est à jour.
+//
+// La seconde est fausse, et elle est **pire que muette** : elle conclut « ce
+// n'est pas votre espace — c'est le produit », c'est-à-dire qu'elle envoie
+// chercher le défaut dans l'application alors que la cause est écrite trois
+// lignes au-dessus. C'est la faute que ce dépôt paie le plus cher : un message
+// qui désigne le mauvais coupable coûte davantage qu'un message absent.
+//
+// Des trois états de la ligne « Code SERVI » (voir `ligneCodeServi`), l'échec
+// avait son verdict et la réussite aussi. **Celui du milieu — le seul qui
+// explique une lenteur PASSAGÈRE — n'en avait aucun**, parce qu'il ne s'écrit
+// pas comme une anomalie : c'est l'état normal des deux premières minutes.
+// Normal ne veut pas dire silencieux, justement quand c'est la question posée.
+if (!bati && !echecBati) {
+  soucis.push(
+    "AUCUNE VERSION RAPIDE N'EST ENCORE EN PLACE : le banc sert le mode\n" +
+      "     développement, où chaque écran met jusqu'à une minute à s'ouvrir la\n" +
+      "     PREMIÈRE fois. C'est la cause d'une application « lente » juste après un\n" +
+      "     démarrage, et elle se dissipe seule : comptez deux à cinq minutes.\n" +
+      "     Si cette ligne dit encore la même chose un quart d'heure plus tard, la\n" +
+      "     construction n'aboutira pas — rallumez l'espace de travail."
+  );
+}
+
 // Placé AVANT le retard de version, comme la lenteur : un port fermé rend
 // l'application injoignable, et savoir qu'elle a deux commits de retard ne sert
 // alors à rien.
@@ -248,9 +304,15 @@ if (avance && Number(avance) > 0) {
 // récupéré. `next start` sert un dossier figé — recharger la page n'y peut rien.
 if (bati && tete && bati !== tete) {
   soucis.push(
-    "LE CODE SERVI N'EST PAS LE CODE RÉCUPÉRÉ. La version rapide a été construite\n" +
-      "     avant, et elle ne se recompile jamais : recharger la page ne changera rien.\n" +
-      "     Arrêtez puis rouvrez l'espace de travail — il se reconstruit au démarrage."
+    constructionEnCours
+      ? "Le code servi n'est pas encore le code récupéré : la version rapide NEUVE\n" +
+        "     est en train de se construire, et l'ancienne reste en service pendant ce\n" +
+        "     temps — l'application est donc entière et rapide, mais c'est le code\n" +
+        "     d'AVANT. La bascule se fait toute seule, comptez deux à cinq minutes.\n" +
+        "     Ne rallumez pas : cela jetterait la construction en cours."
+      : "LE CODE SERVI N'EST PAS LE CODE RÉCUPÉRÉ. La version rapide a été construite\n" +
+        "     avant, et elle ne se recompile jamais : recharger la page ne changera rien.\n" +
+        "     Arrêtez puis rouvrez l'espace de travail — il se reconstruit au démarrage."
   );
 }
 
