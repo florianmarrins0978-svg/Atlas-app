@@ -91,6 +91,28 @@ verifier("sans version bâtie ni échec : on dit que c'est peut-être en cours",
   assert.doesNotMatch(l, /ÉCHOU/, "rien ne permet d'affirmer un échec à ce stade");
 });
 
+verifier("sans version bâtie : le VERDICT le dit, il ne conclut pas « tout concorde »", () => {
+  // **Le trou du 31 août 2026, au soir.** La ligne « Code SERVI » disait bien
+  // « aucune version bâtie » — mais aucun souci n'était poussé pour cet état,
+  // si bien que la fiche du patron concluait « ✅ Tout concorde : le code
+  // récupéré est le code servi », puis « ce n'est pas votre espace — c'est le
+  // produit ». Elle envoyait donc chercher le défaut dans l'application au
+  // moment précis où la cause était la construction en cours.
+  //
+  // On éprouve le VERDICT, pas la ligne d'état : c'est le verdict qui décide
+  // d'où l'on va chercher.
+  assert.match(
+    sansRien,
+    /AUCUNE VERSION RAPIDE N'EST ENCORE EN PLACE/,
+    "l'état « en construction » doit devenir un souci nommé, sinon la fiche se tait dessus"
+  );
+  assert.doesNotMatch(
+    sansRien,
+    /Tout concorde/,
+    "conclure « tout concorde » sans version bâtie accuse le produit à la place du banc"
+  );
+});
+
 verifier("le disque et la mémoire sont publiés à chaque fois", () => {
   // Publiés TOUJOURS, et pas seulement en cas d'échec : quand la fiche est
   // enfin lue, la tentative est finie depuis longtemps et la mémoire est rendue.
@@ -134,7 +156,14 @@ verifier("les trois états rendent trois phrases différentes", () => {
 // de la même règle finissent toujours par diverger.
 verifier("banc.mjs efface le témoin d'échec quand la construction réussit", () => {
   const source = execFileSync("node", ["-e", `process.stdout.write(require("fs").readFileSync(${JSON.stringify(path.join(__dirname, "banc.mjs"))}, "utf8"))`], { encoding: "utf8" });
-  const bloc = source.slice(source.indexOf("if (code === 0)"), source.indexOf("if (code === 0)") + 600);
+  // **Bornée par un repère du code, pas par un nombre de caractères.** La
+  // première version coupait à 600 caractères après `if (code === 0)` : un
+  // commentaire ajouté au-dessus du `rmSync` l'a fait sortir du cadre, et la
+  // suite a rougi sur du code parfaitement juste. Un contrôle qui dépend de la
+  // longueur d'un commentaire ne défend rien (`CLAUDE.md` §5 bis).
+  const debut = source.indexOf("if (code === 0)");
+  const bloc = source.slice(debut, source.indexOf("Construction terminée", debut));
+  assert.ok(bloc.length > 0 && bloc.length < 4000, "le repère de fin de bloc a bougé : ce contrôle ne vise plus rien");
   assert.match(
     bloc,
     /rmSync\(TEMOIN_ECHEC/,

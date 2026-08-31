@@ -13,7 +13,7 @@ import { creerChantierAction } from "./actions";
 import { reprendreChantierAction } from "../[id]/coordonnees/actions";
 import { apresLesCoordonnees, retourDesCoordonnees, type Provenance } from "@/lib/retour-du-devis";
 import ChoixCivilite from "@/components/atlas/ChoixCivilite";
-import Pellicule from "../[id]/Pellicule";
+import Pellicule, { type VignettePhoto } from "../[id]/Pellicule";
 import AnneauNoteVocale from "../[id]/AnneauNoteVocale";
 import DevisDepuisDictee from "../[id]/DevisDepuisDictee";
 import type { Civilite } from "@/lib/civilite";
@@ -66,6 +66,16 @@ export type ChantierRepris = {
   id: string;
   /** D'où il est entré — le devis le renvoie chez lui (`retour-du-devis.ts`). */
   provenance: Provenance;
+  /**
+   * Ce que le chantier porte DÉJÀ — 31 août 2026.
+   *
+   * **Sans elles, l'écran mentirait.** Une pellicule vide sur un chantier
+   * photographié, un anneau muet sur une dictée existante : il croirait avoir
+   * perdu ce qu'il avait posé, et recommencerait.
+   */
+  photos: VignettePhoto[];
+  /** `null` : aucune note. `storageKey` à `null` : la note existe, l'audio a été purgé. */
+  note: { storageKey: string | null; dureeSecondes: number | null } | null;
   nomClient: string;
   civilite: Civilite | null;
   telephone: string;
@@ -542,10 +552,13 @@ export default function FormulaireNouveauChantier({
               « je sais déjà que je l'écrirai moi-même » ; là-bas, « j'ai
               commencé, finalement je l'écris ».
 
-              **En reprise, un seul bouton — et c'est délibéré.** L'écran sert
-              alors à corriger des coordonnées (sa demande du 17 août : « RIEN
-              DE PLUS, RIEN DE MOINS ») ; lui proposer deux devis pour changer
-              une adresse serait lui poser une question qu'il n'a pas. */}
+              **En reprise, « Enregistrer » — et c'est la SEULE différence qui
+              reste.** Le 31 août 2026, tout le reste de l'écart a été supprimé à
+              sa demande : la reprise porte désormais les photos, l'anneau et la
+              chaîne du devis, comme la création. Ce bouton-ci subsiste parce
+              qu'il répond à un besoin que la création n'a pas — enregistrer ce
+              qu'il vient de TAPER, sur un chantier qui existe déjà. Sans lui,
+              une adresse corrigée au clavier ne partirait nulle part. */}
           {/* **Le canal d'envoi vit SOUS l'adresse depuis le 21 août 2026** —
               sa place, choisie par lui : *« comment lui envoyer son devis, tu
               le mets sous l'adresse »*. Il n'apparaît toujours qu'une fois une
@@ -590,22 +603,42 @@ export default function FormulaireNouveauChantier({
               **Elles fonctionnent AVANT que le chantier existe** : c'est le
               geste qui le crée (`assurerChantier`). L'ordre est celui de sa
               maquette (`appli/fiche-client-vocale.html`), qu'il a demandé de
-              coder trait pour trait : photos, puis anneau, puis le devis. */}
-          {!reprise && (
-            <div aria-label="Photos du chantier" role="group">
-              <Pellicule chantierId={chantierCree} assurerChantier={assurerChantier} initiales={[]} />
-            </div>
-          )}
+              coder trait pour trait : photos, puis anneau, puis le devis.
 
-          {!reprise && (
+              **ET ELLES SONT LÀ EN REPRISE AUSSI — 31 août 2026.** Sa demande,
+              deux captures à l'appui : *« lorsque je fais retour j'arrive sur la
+              page 1re photo alors que je veux arriver sur la 2e. Je sais pas
+              d'où sort la 1re photo ? Si elle sert à rien il faut la
+              supprimer. »* La première était CET écran privé de ses photos et de
+              son anneau ; la seconde, le même écran entier. Il n'y a donc plus
+              qu'une fiche client, et c'est la bonne — deux versions du même
+              écran se lisaient comme deux écrans, dont un amputé sans raison
+              visible.
+
+              Ce que la reprise change, et rien d'autre : les pièces partent de
+              ce que le chantier porte DÉJÀ. Les nourrir de vide afficherait une
+              pellicule vide sur un chantier photographié, et il croirait ses
+              photos perdues. */}
+          <div aria-label="Photos du chantier" role="group">
+            <Pellicule
+              chantierId={reprise?.id ?? chantierCree}
+              assurerChantier={assurerChantier}
+              initiales={reprise?.photos ?? []}
+            />
+          </div>
+
+          {/* **L'anneau disparaît quand la note existe mais que son audio a été
+              purgé** — même garde que la fiche du chantier : un lecteur sans
+              rien à lire est une promesse fausse. */}
+          {(!reprise?.note || reprise.note.storageKey) && (
             <div>
               <AnneauNoteVocale
-                chantierId={chantierCree}
+                chantierId={reprise?.id ?? chantierCree}
                 assurerChantier={assurerChantier}
                 onDicte={() => setDicteeFaite(true)}
                 onDictee={setDicteeEnCours}
-                storageKey={null}
-                dureeSecondes={null}
+                storageKey={reprise?.note?.storageKey ?? null}
+                dureeSecondes={reprise?.note?.dureeSecondes ?? null}
               />
             </div>
           )}
@@ -620,10 +653,10 @@ export default function FormulaireNouveauChantier({
               se fait (`surLeDevis={false}`). Ce composant ne rend plus alors que
               ce qui se PASSE — le travail en cours, l'arrêt d'avant-chiffrage,
               ou ce qui a échoué. */}
-          {!reprise && dicteeFaite && chantierCree && (
+          {dicteeFaite && (reprise?.id ?? chantierCree) && (
             <div>
               <DevisDepuisDictee
-                chantierId={chantierCree}
+                chantierId={(reprise?.id ?? chantierCree)!}
                 transcriptionDisponible
                 auto
                 surLeDevis={false}

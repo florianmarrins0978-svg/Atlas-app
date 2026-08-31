@@ -86,6 +86,24 @@ async function main() {
     assert.equal(await nom.inputValue(), "", "un champ prérempli : ce n'est pas ce chantier-là");
   });
 
+  await cas("ET C'EST LA FICHE ENTIÈRE : les photos et l'anneau y sont", async () => {
+    // **Sa demande du 31 août 2026, deux captures à l'appui :** *« lorsque je
+    // fais retour j'arrive sur la page 1re photo alors que je veux arriver sur
+    // la 2e. Je sais pas d'où sort la 1re photo ? Si elle sert à rien il faut
+    // la supprimer. »* La première était cet écran privé de ses photos et de
+    // son anneau. Il n'y a plus qu'une fiche client, et c'est celle-là.
+    const photos = page.locator('[aria-label="Photos du chantier"]');
+    assert.equal(await photos.count(), 1, "la fiche rouverte n'a pas ses photos");
+    const anneau = page.locator('button[aria-label="Dicter une note vocale"]');
+    assert.ok(
+      (await anneau.count()) > 0,
+      "la fiche rouverte n'a pas son anneau : c'est l'écran amputé qu'il a refusé"
+    );
+    // Et le bouton qui la distingue encore : sans lui, ce qu'il TAPE ne part
+    // nulle part sur un chantier qui existe déjà.
+    assert.equal(await page.locator('[data-atlas="action-creation"]').count(), 1);
+  });
+
   const NOM = `Luk ${Date.now()}`;
 
   await cas("enregistrée, la fiche RAMÈNE au devis — le chemin se referme", async () => {

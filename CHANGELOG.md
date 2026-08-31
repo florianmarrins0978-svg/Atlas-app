@@ -54,6 +54,35 @@ changer deux choses à la fois empêche de choisir.
 (`scripts/verifier-maquette-dictee-embellie.mjs`) : sans cela, on pouvait livrer
 quatre variations qui déplacent le défaut sans le régler, et le vert n'aurait
 rien prouvé. Confronté à un anneau repeint en plein, il rougit à 6 065 px².
+### « L'appli est lente » : la version rapide ne se jette plus pour en bâtir une autre
+
+**Sa huitième plainte du même genre** (14, 16, 17, 20, 25, 29 août, puis deux
+fois le 31). Rien n'était cassé : dès que le code changeait, son banc repartait
+en mode développement le temps de bâtir — un mode où un écran neuf met plus
+longtemps à compiler que le relais de GitHub n'accepte d'attendre. **Pendant
+toute la construction, il ne pouvait ouvrir aucun écran qu'il n'avait pas déjà
+ouvert.** Et six sessions poussant sur `main` dans la même soirée, chacun de ses
+redémarrages le remettait dans cet état.
+
+Désormais la version rapide déjà bâtie **reste en service** pendant que la neuve
+se construit à côté ; la bascule est un échange de noms. Mesuré en le jouant :
+`/login` répond en **0,28 s pendant la construction**, contre rien du tout
+avant. Une construction qui échoue ne le condamne plus non plus au mode lent
+jusqu'au lendemain.
+
+**Ce que ça coûte, et qui se dit à l'écran :** pendant la construction il voit
+le code d'avant. Le bandeau l'annonce (« vous voyez celle d'avant ») et la fiche
+de l'espace aussi — sans quoi ce serait le malentendu du 12 août, qui a coûté
+deux heures.
+
+### La fiche de l'espace concluait « tout concorde » sur un banc sans version rapide
+
+Sa fiche de ce soir portait les deux lignes ensemble : « Code SERVI : aucune
+version bâtie » **et** « ✅ Tout concorde : le code récupéré est le code servi ».
+La seconde envoyait chercher le défaut dans le produit — « ce n'est pas votre
+espace » — alors que la cause était écrite trois lignes plus haut. Des trois
+états de la ligne « Code SERVI », celui du milieu n'entrait dans aucun verdict.
+
 
 ### Les dix verts étaient CASSÉS en ligne, et mon contrôle ne le voyait pas
 
@@ -203,6 +232,21 @@ dans le CSS et invisible sous le doigt ; et le bouton remontait sous un doigt
 encore posé près de son bord, parce qu'il rétrécit et sortait de sous lui
 (corrigé par `setPointerCapture`). Le contrôle a été confronté au geste
 d'aujourd'hui, celui de l'application : il rougit six fois.
+
+### La fiche client rouverte est la fiche client ENTIÈRE
+
+**Sa demande, deux captures à l'appui :** *« lorsque je fais retour j'arrive sur
+la page 1re photo alors que je veux arriver sur la 2e. Je sais pas d'où sort la
+1re photo ? Si elle sert à rien il faut la supprimer. »*
+
+Les deux photos montraient le même écran : l'une entière, l'autre privée de ses
+photos, de son anneau et de la chaîne du devis. Il n'y en a plus qu'une.
+
+Les pièces partent de ce que le chantier porte **déjà** — les photos prises, la
+note dictée. Les nourrir de vide lui aurait fait croire ses photos perdues.
+
+Seul « Enregistrer » distingue encore la fiche rouverte : elle seule a quelque
+chose à sauver, ce qu'il vient de taper sur un chantier qui existe.
 
 ### Le banc lance le Next DU PROJET, et ne laisse plus `npx` en chercher un autre
 

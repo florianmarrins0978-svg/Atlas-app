@@ -28,7 +28,7 @@
 
 import { spawn } from "node:child_process";
 import { createServer } from "node:net";
-import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, renameSync, rmSync, writeFileSync } from "node:fs";
 import { execFileSync } from "node:child_process";
 import { annoncePrete } from "./annonce-adresse.mjs";
 import { prendreVerrouBanc, libererVerrouBanc } from "./verrou-banc.mjs";
@@ -43,6 +43,7 @@ import {
   attendreLaConstructionEnCours,
   detenteursDuVerrou,
 } from "./verrou-construction.mjs";
+import { quoiServir, echangerLesDossiers } from "./relais-version-batie.mjs";
 
 const PORT = process.env.PORT ?? "3000";
 const SANTE = `http://127.0.0.1:${PORT}/api/health/live`;
@@ -78,7 +79,61 @@ const SANTE = `http://127.0.0.1:${PORT}/api/health/live`;
 const NEXT = "node_modules/next/dist/bin/next";
 
 const DIST = ".next-batie";
-const TEMOIN_BATI = `${DIST}/atlas-version-batie.txt`;
+
+// **LA VERSION D'AVANT RESTE EN SERVICE PENDANT QU'ON BÂTIT LA NEUVE.**
+// **Correctif du 31 août 2026, au soir — sa huitième plainte de lenteur.**
+//
+// Jusqu'ici, dès que le code changeait, ce script repartait sur `next dev` le
+// temps de bâtir : le patron perdait sa version rapide À CHAQUE mise à jour,
+// et se retrouvait sur un mode où un écran neuf met trente à cent secondes à
+// s'ouvrir — au-delà de la minute que le relais de GitHub accepte d'attendre.
+// Autrement dit : **pendant toute la construction, il ne pouvait rien ouvrir.**
+//
+// Ce n'était pas un accident, c'était le dessin : « une gêne qui s'arrête »
+// (`memoire-prechauffage.mjs`). Sauf qu'elle ne s'arrêtait pas. Six sessions
+// poussent sur `main` dans la même soirée ; chacun de ses redémarrages tire du
+// code neuf, donc rebâtit, donc le renvoie en mode développement. La gêne était
+// devenue son état ordinaire — le 14, le 16, le 17, le 20, le 25, le 29 août,
+// puis deux fois le 31.
+//
+// **Et quand la construction ÉCHOUE, ce qui lui arrive souvent (mémoire trop
+// juste, paquet absent), il restait en mode développement POUR TOUJOURS.**
+// Désormais il reste sur la dernière version rapide : une application entière
+// et immédiate, en retard de quelques commits — ce que la fiche de son espace
+// sait déjà dire (« LE CODE SERVI N'EST PAS LE CODE RÉCUPÉRÉ »).
+//
+// **Le prix, dit franchement, parce qu'il est réel :** pendant la construction
+// il voit le code d'AVANT. C'est le malentendu qui a coûté deux heures le
+// 12 août — « commit récupéré » contre « commit servi ». Trois choses le
+// tiennent : le bandeau de l'écran le dit (`BandeauBanc.tsx`), la fiche le dit,
+// et la fenêtre dure le temps d'une construction, pas une soirée. À comparer
+// avec ce qu'on remplace : un mode développement où il voyait le code neuf sans
+// pouvoir ouvrir un seul écran.
+//
+// **Deux dossiers ne suffisent pas, il en faut trois.** `next build` efface son
+// dossier de destination : bâtir dans celui qu'on sert retirerait le sol au
+// serveur en marche. La neuve se bâtit donc à côté, et la bascule est un
+// ÉCHANGE DE NOMS — deux renommages, instantanés, et réversibles si le second
+// tombe. Coût mesuré : 351 Mo par dossier, dont 255 de cache (31 août 2026).
+const DIST_NEUVE = ".next-batie-neuve";
+const DIST_VIEILLE = ".next-batie-vieille";
+
+const temoinBatiDans = (dossier) => `${dossier}/atlas-version-batie.txt`;
+const TEMOIN_BATI = temoinBatiDans(DIST);
+
+// **Le témoin d'une construction EN COURS, et il porte son pid.**
+//
+// Sans lui, le bandeau « version rapide en construction » s'éteint dès qu'on
+// sert une version bâtie : `next start` impose `NODE_ENV=production`, et c'est
+// à cela que l'écran reconnaissait le mode développement. Le patron verrait
+// donc le code d'avant sans qu'aucun écran ne le lui dise — précisément le
+// malentendu qu'on refuse de rouvrir.
+//
+// Le pid, parce qu'un fichier resté d'un banc tué mentirait indéfiniment : le
+// lecteur demande au système si le processus vit (`src/server/etat-banc.ts`),
+// exactement comme le verrou du veilleur.
+const TEMOIN_CONSTRUCTION =
+  process.env.ATLAS_TEMOIN_CONSTRUCTION || "/tmp/atlas-construction-en-cours.json";
 // **Le témoin d'ÉCHEC, et il vaut le témoin de réussite.**
 //
 // Le 16 août 2026 : « l'appli est vraiment très lente, vraiment ». Sa fiche
@@ -440,6 +495,55 @@ if (!(await portLibre())) {
 const version = versionDuCode();
 const raison = doitRebatir(version);
 
+// **La question n'est plus « faut-il rebâtir », mais « qu'est-ce qu'on sert
+// PENDANT ».** Une version bâtie utilisable — même périmée — vaut mieux qu'un
+// mode développement où rien ne s'ouvre. Le raisonnement, ce qu'il coûte et ce
+// qu'il remplace vivent dans `relais-version-batie.mjs`.
+const { servirDavant, modeDeveloppement, dossierDeConstruction: DIST_CONSTRUCTION } = quoiServir({
+  raison,
+  // `BUILD_ID` et non le dossier : `next build` crée sa destination dès la
+  // première seconde, et un dossier à demi rempli ne se sert pas. Ce fichier-là
+  // n'est écrit qu'à la fin d'une construction réussie.
+  versionDavantUtilisable: existsSync(`${DIST}/BUILD_ID`),
+  dist: DIST,
+  neuve: DIST_NEUVE,
+});
+
+/** L'échange, avec les gestes de fichiers de CETTE machine. */
+function echangerMaintenant() {
+  const { echange, motif } = echangerLesDossiers({
+    dist: DIST,
+    neuve: DIST_NEUVE,
+    vieille: DIST_VIEILLE,
+    renommer: (de, vers) => renameSync(de, vers),
+    effacer: (d) => rmSync(d, { recursive: true, force: true }),
+    effacerEnFond: (d) => spawn("rm", ["-rf", d], { stdio: "ignore", detached: true }).unref(),
+  });
+  if (motif) console.error(`  (Échange des versions : ${motif}.)`);
+  return echange;
+}
+
+/** Dit au bandeau de l'écran qu'une construction est en cours, et laquelle. */
+function ouvrirLeChantier() {
+  try {
+    writeFileSync(
+      TEMOIN_CONSTRUCTION,
+      JSON.stringify({ pid: process.pid, depuis: new Date().toISOString(), versionDavant: servirDavant })
+    );
+  } catch {
+    // Le bandeau est un confort ; son absence ne doit rien arrêter.
+  }
+}
+
+/** La construction est finie — réussie ou non. Le bandeau n'a plus rien à dire. */
+function fermerLeChantier() {
+  try {
+    rmSync(TEMOIN_CONSTRUCTION, { force: true });
+  } catch {
+    // Le pid inscrit dedans sert précisément à ce qu'un reste ne mente pas.
+  }
+}
+
 // **`detached: true` — c'est ce qui rend la bascule sûre, et rien d'autre.**
 //
 // `npx next dev` est une pile d'enveloppes ; le processus qui ÉCOUTE se renomme
@@ -657,22 +761,30 @@ async function prechaufferEcransPublics() {
  * qu'une ligne, l'adresse ne change pas.
  */
 let annonceFaite = false;
-function annoncer(bati) {
+function annoncer(bati, davant = false) {
   if (annonceFaite) return;
   annonceFaite = true;
   console.log(
     annoncePrete({
       port: PORT,
-      precision: bati ? "version bâtie, chaque écran est immédiat." : "mode développement, premier accès lent.",
+      // **Trois états, trois phrases.** « Version bâtie » tout court serait un
+      // demi-mensonge pendant qu'on sert la précédente : il faut qu'il sache
+      // que ce qu'il essaie N'EST PAS le code qu'il vient de récupérer, sans
+      // quoi c'est le malentendu du 12 août qui revient.
+      precision: davant
+        ? "version rapide PRÉCÉDENTE — la neuve se construit."
+        : bati
+          ? "version bâtie, chaque écran est immédiat."
+          : "mode développement, premier accès lent.",
     })
   );
 }
 
-async function annoncerDesQueCaRepond(bati) {
+async function annoncerDesQueCaRepond(bati, davant = false) {
   const limite = Date.now() + 180_000;
   while (Date.now() < limite) {
     if (await repond()) {
-      annoncer(bati);
+      annoncer(bati, davant);
       return;
     }
     await attendre(1000);
@@ -695,12 +807,12 @@ async function annoncerDesQueCaRepond(bati) {
 // Ne coûte rien quand tout va bien : deux `package.json` lus, aucune commande.
 await reinstallerSiDesaccordees();
 
-let serveur = raison ? lancerDev() : lancerBati();
+let serveur = modeDeveloppement ? lancerDev() : lancerBati();
 let enBascule = false;
 // Ce qui SERT réellement, à cet instant — pas ce qu'on espérait servir. La
 // bascule peut échouer (le port n'est pas rendu) : l'annonce doit alors dire
 // « mode développement », sinon elle promet une vitesse qui n'existe pas.
-let sertBati = !raison;
+let sertBati = !modeDeveloppement;
 
 // Le serveur tient ce script en vie ; sa mort l'arrête — SAUF pendant la
 // bascule, où on le tue nous-mêmes pour le remplacer.
@@ -745,14 +857,30 @@ for (const signal of ["SIGINT", "SIGTERM"]) {
 // Même chose pour une sortie ordinaire, ou une exception : un serveur détaché ne
 // meurt plus avec son père, et un orphelin accroché au port est précisément la
 // panne qu'on répare ici.
-process.on("exit", () => tuerLeServeur(serveur));
+process.on("exit", () => {
+  tuerLeServeur(serveur);
+  // Un banc arrêté ne construit plus : laisser le témoin ferait dire au
+  // bandeau qu'une construction avance alors que plus personne ne bâtit.
+  fermerLeChantier();
+});
 
 if (raison) {
-  console.log(`\n  Atlas répond déjà, en mode développement.`);
-  // Pas d'`await` : le préchauffage, l'annonce et la construction avancent
-  // ensemble. L'adresse doit partir la première — c'est elle qu'il attend.
-  void annoncerDesQueCaRepond(false);
-  prechaufferEcransPublics();
+  ouvrirLeChantier();
+  if (servirDavant) {
+    console.log(`\n  Atlas répond déjà, sur la version rapide PRÉCÉDENTE.`);
+    void annoncerDesQueCaRepond(true, true);
+    // **AUCUN PRÉCHAUFFAGE ICI, et ce n'est pas un oubli.** Une version bâtie
+    // n'a rien à préchauffer : ses écrans sortent en 50 à 100 ms. Et les 887 Mo
+    // que le préchauffage retiendrait sont exactement ceux qui manquaient à la
+    // construction sur son espace (`memoire-prechauffage.mjs`) — servir la
+    // version d'avant supprime donc l'arbitrage au lieu de le trancher.
+  } else {
+    console.log(`\n  Atlas répond déjà, en mode développement.`);
+    // Pas d'`await` : le préchauffage, l'annonce et la construction avancent
+    // ensemble. L'adresse doit partir la première — c'est elle qu'il attend.
+    void annoncerDesQueCaRepond(false);
+    prechaufferEcransPublics();
+  }
   console.log(`  Sa version rapide se construit en même temps (${raison}) — ne fermez rien.\n`);
 
   // **Écarter les types laissés par une AUTRE construction, avant de bâtir.**
@@ -815,7 +943,7 @@ if (raison) {
   //
   // On ne double donc pas une construction — on retire celle qui n'a plus de
   // destinataire. Le raisonnement complet est dans `verrou-construction.mjs`.
-  await delogerConstructionsOrphelines({ dossierDist: DIST, dire: (m) => console.log(m) });
+  await delogerConstructionsOrphelines({ dossierDist: DIST_CONSTRUCTION, dire: (m) => console.log(m) });
 
   // **DES DÉPENDANCES DÉSACCORDÉES SE VOIENT AVANT DE BÂTIR — 29 août 2026.**
   //
@@ -839,7 +967,7 @@ if (raison) {
   // Rempli seulement si le verrou parle : c'est la seule information qui
   // manquait pour comprendre pourquoi deux constructions se rencontrent.
   let quiTenaitLeVerrou = "";
-  let { code, signal, sortie } = await jouerEnRetenant(process.execPath, [NEXT, "build"], { ...process.env, ATLAS_DIST_DIR: DIST });
+  let { code, signal, sortie } = await jouerEnRetenant(process.execPath, [NEXT, "build"], { ...process.env, ATLAS_DIST_DIR: DIST_CONSTRUCTION });
 
   // **Une seconde tentative, et une seule, quand c'est LE verrou qui a parlé.**
   //
@@ -859,15 +987,15 @@ if (raison) {
     // Trois matinées de suite ont été perdues faute de cette ligne : on savait
     // qu'un verrou était tenu, jamais par qui. Plus tard, le coupable a disparu
     // et il ne reste qu'à supposer — ce que ce dépôt s'interdit (`AGENTS.md`).
-    quiTenaitLeVerrou = detenteursDuVerrou(DIST)
+    quiTenaitLeVerrou = detenteursDuVerrou(DIST_CONSTRUCTION)
       .map(({ pid, ligne }) => `      pid ${pid} — ${ligne}`)
       .join("\n");
     console.log("\n  (Le verrou de construction est tenu.)\n");
     if (quiTenaitLeVerrou) console.log(`  Il est tenu par :\n${quiTenaitLeVerrou}\n`);
-    await attendreLaConstructionEnCours({ dossierDist: DIST, dire: (m) => console.log(m) });
+    await attendreLaConstructionEnCours({ dossierDist: DIST_CONSTRUCTION, dire: (m) => console.log(m) });
     // Ce qui reste après l'attente est bien une orpheline, ou rien du tout.
-    await delogerConstructionsOrphelines({ dossierDist: DIST, dire: (m) => console.log(m) });
-    ({ code, signal, sortie } = await jouerEnRetenant(process.execPath, [NEXT, "build"], { ...process.env, ATLAS_DIST_DIR: DIST }));
+    await delogerConstructionsOrphelines({ dossierDist: DIST_CONSTRUCTION, dire: (m) => console.log(m) });
+    ({ code, signal, sortie } = await jouerEnRetenant(process.execPath, [NEXT, "build"], { ...process.env, ATLAS_DIST_DIR: DIST_CONSTRUCTION }));
   }
 
   // ─── UNE DÉPENDANCE MANQUANTE SE RÉPARE, ELLE NE S'ATTEND PAS ─────────────
@@ -936,20 +1064,26 @@ if (raison) {
       "--no-fund",
     ]);
     if (codeInstall === 0) {
-      await delogerConstructionsOrphelines({ dossierDist: DIST, dire: (m) => console.log(m) });
+      await delogerConstructionsOrphelines({ dossierDist: DIST_CONSTRUCTION, dire: (m) => console.log(m) });
       ({ code, signal, sortie } = await jouerEnRetenant(process.execPath, [NEXT, "build"], {
         ...process.env,
-        ATLAS_DIST_DIR: DIST,
+        ATLAS_DIST_DIR: DIST_CONSTRUCTION,
       }));
     } else {
       console.log("\n  La réinstallation a échoué : le banc reste en mode développement.\n");
     }
   }
 
+  fermerLeChantier();
+
   if (code === 0) {
     try {
-      mkdirSync(DIST, { recursive: true });
-      writeFileSync(TEMOIN_BATI, version ?? "inconnue");
+      // **Dans le dossier qu'on vient de bâtir, pas dans celui qu'on sert.**
+      // L'écrire dans `DIST` avant l'échange ferait dire à la fiche que le code
+      // neuf est servi alors qu'il ne l'est pas encore — et si l'échange
+      // échoue, elle le dirait pour toujours.
+      mkdirSync(DIST_CONSTRUCTION, { recursive: true });
+      writeFileSync(temoinBatiDans(DIST_CONSTRUCTION), version ?? "inconnue");
       // Un échec d'hier ne doit pas accuser la construction d'aujourd'hui : le
       // témoin d'échec ne survit pas à une réussite.
       rmSync(TEMOIN_ECHEC, { force: true });
@@ -983,6 +1117,18 @@ if (raison) {
     //      réponse engage `next start`.
     tuerLeServeur(serveur);
     delogerCeQuiEcoute();
+
+    // **L'échange n'a lieu qu'ICI, serveur mort.** Renommer sous un serveur
+    // vivant lui retirerait les fichiers qu'il lit encore — un écran sur deux
+    // rendrait une erreur, ce qui est pire que la lenteur qu'on répare.
+    if (servirDavant && !echangerMaintenant()) {
+      console.error(
+        "\n  ⚠️  La version neuve n'a pas pu prendre la place de l'ancienne.\n" +
+          "     Atlas repart sur la version PRÉCÉDENTE — entière et rapide, mais\n" +
+          "     en retard. La fiche de l'espace le dira, et le prochain démarrage\n" +
+          "     refera l'échange.\n"
+      );
+    }
 
     // **Et si `next start` tombe quand même, on RÉESSAIE une fois.** Un banc
     // qui meurt sur son propre remède coûte une soirée ; une seconde tentative
@@ -1078,10 +1224,19 @@ if (raison) {
     }
     // **Jamais en silence, et jamais rien du tout.** Voir l'en-tête : un banc
     // lent reste un banc, un banc mort coûte une soirée.
+    // **Et le repli n'est plus le même selon qu'une version rapide existe.**
+    // C'est tout l'apport du correctif du 31 août au soir : un échec de
+    // construction ne le condamne plus au mode développement — il garde une
+    // application entière et immédiate, simplement en retard.
     console.error(
-      "\n  ⚠️  LA CONSTRUCTION A ÉCHOUÉ — les lignes ci-dessus disent pourquoi.\n" +
-        "     Atlas continue en mode développement : il fonctionne, mais chaque\n" +
-        "     écran mettra jusqu'à une minute à s'ouvrir la première fois.\n"
+      servirDavant
+        ? "\n  ⚠️  LA CONSTRUCTION A ÉCHOUÉ — les lignes ci-dessus disent pourquoi.\n" +
+            "     Atlas RESTE sur la version rapide précédente : chaque écran s'ouvre\n" +
+            "     du premier coup, mais c'est le code d'AVANT. La fiche de l'espace\n" +
+            "     le dit (« LE CODE SERVI N'EST PAS LE CODE RÉCUPÉRÉ »).\n"
+        : "\n  ⚠️  LA CONSTRUCTION A ÉCHOUÉ — les lignes ci-dessus disent pourquoi.\n" +
+            "     Atlas continue en mode développement : il fonctionne, mais chaque\n" +
+            "     écran mettra jusqu'à une minute à s'ouvrir la première fois.\n"
     );
   }
 }
