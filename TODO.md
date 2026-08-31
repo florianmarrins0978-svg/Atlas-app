@@ -25,9 +25,19 @@ Marqué), **le numéro du vert** parmi les dix, et s'il veut l'interrupteur
 **Et une réponse à ne pas oublier de lui demander :** est-ce que la vibration
 part, maintenant, sur son iPhone ? Le 31 août elle ne partait pas — bascule
 posée en JavaScript au lieu d'un clic sur l'étiquette (`ARCHITECTURE.md` §222).
-Corrigé, **mais non éprouvé ici** : aucun Safari sur ce poste, et aucune page web
-ne peut compter une vibration. Tant qu'il n'a pas répondu, cela reste **corrigé
-sans preuve**.
+Corrigé deux fois — **et toujours pas de vibration chez lui après le premier
+correctif**. Le second lot (chemins non exclusifs, diagnostic à l'écran,
+interrupteur natif à toucher) attend sa réponse. Ce qu'il faut lui demander,
+dans cet ordre :
+
+1. **l'interrupteur natif, touché du doigt, vibre-t-il ?** C'est lui qui tranche
+   entre « mon appel échoue » et « iOS refuse toute vibration à une page web » ;
+2. une photo du bloc « Ce que votre téléphone répond ».
+
+**Si l'interrupteur ne vibre pas non plus, la piste web est close** : ne pas
+écrire un troisième correctif. Le retour haptique n'arrivera que par
+`@capacitor/haptics`, dans l'application installée — et cela se code, cela ne se
+maquette pas.
 
 **Ce qu'il faudra faire quand il aura répondu** (le détail est en
 `ARCHITECTURE.md` §222) :

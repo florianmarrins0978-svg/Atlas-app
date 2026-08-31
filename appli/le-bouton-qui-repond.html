@@ -202,6 +202,7 @@ h1{margin:0;padding:0 20px;font-family:Georgia,serif;font-weight:400;font-size:2
 .etatvib .pastille{display:inline-block;width:7px;height:7px;border-radius:99px;
                    margin-right:7px;vertical-align:middle;background:var(--muted)}
 .etatvib b{color:var(--charcoal)}
+.avertir-compte{margin-top:6px;font-size:11.5px;line-height:1.5;color:var(--muted)}
 .compte{float:right;font-variant-numeric:tabular-nums;color:var(--muted);font-size:12px}
 
 /* L'interrupteur d'iOS : il doit être RENDU pour que le système joue son
@@ -221,6 +222,18 @@ h1{margin:0;padding:0 20px;font-family:Georgia,serif;font-weight:400;font-size:2
 .bascule i{position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:99px;
            background:var(--cream);transition:transform 200ms cubic-bezier(.22,.8,.3,1)}
 .bascule[aria-pressed="true"] i{transform:translateX(20px);background:var(--sur-plein)}
+.sous{font-size:12px;color:var(--muted)}
+/* **Le vrai interrupteur d'iOS.** Sur iPhone 17.4+, `switch` lui donne la
+   forme native ET le retour haptique ; ailleurs c'est une case à cocher, d'où
+   le repli dessiné à côté — qui s'efface dès que le natif prend la main. */
+.vrai-switch{position:relative;display:inline-flex;align-items:center;flex:0 0 auto}
+.vrai-switch input{width:51px;height:31px;margin:0}
+.vrai-switch input[switch]{appearance:auto}
+.vrai-switch .repli{display:none}
+.titre-diag{display:block;margin-bottom:7px;font-size:9.5px;font-weight:500;
+            letter-spacing:.26em;text-transform:uppercase;color:var(--or)}
+#lignes-diag div{display:flex;justify-content:space-between;gap:10px;padding:2px 0}
+#lignes-diag b{color:var(--charcoal);font-weight:600;text-align:right}
 .essai-vib{border:0;border-radius:99px;padding:9px 20px;background:var(--plein);color:var(--sur-plein);
            font-family:Georgia,serif;font-size:15px;cursor:pointer;touch-action:manipulation}
 
@@ -292,11 +305,39 @@ h1{margin:0;padding:0 20px;font-family:Georgia,serif;font-weight:400;font-size:2
   <div class="etatvib" id="etatvib">
     <span class="compte" id="compte">0</span>
     <span class="pastille" id="pastille"></span><span id="motvib">Vibration : recherche…</span>
+    <div class="avertir-compte">Le chiffre compte les <b>appels</b>, pas les vibrations : aucune page web ne peut savoir si le téléphone a bougé.</div>
   </div>
 
   <div class="reglage-vib">
     <span>Essayer la vibration seule</span>
     <button type="button" class="essai-vib" id="essai-vib">Vibrer</button>
+  </div>
+
+  <!-- ══ L'ESSAI QUI TRANCHE ═══════════════════════════════════════════════
+       **Pourquoi un interrupteur qu'il touche LUI, et pas un de plus à
+       déclencher par programme.** Il a écrit deux fois « la vibration ne marche
+       pas », et les deux fois j'ai corrigé une cause supposée. Celui-ci ne
+       corrige rien : il SÉPARE deux pannes qu'on ne peut pas distinguer
+       autrement.
+
+         · il vibre  → iOS sait vibrer sur une page web, et c'est mon appel
+           par programme qui n'y arrive pas ;
+         · il ne vibre pas → aucune page web ne fera vibrer ce téléphone, quoi
+           qu'on écrive. Seule l'application installée le pourra.
+
+       Un doigt sur un vrai interrupteur natif est le seul geste dont iOS
+       reconnaisse l'activation à coup sûr. -->
+  <div class="reglage-vib">
+    <span>Touchez cet interrupteur<br><span class="sous">c'est lui qui tranche</span></span>
+    <label class="vrai-switch">
+      <input type="checkbox" switch id="switch-visible">
+      <span class="repli" aria-hidden="true"><i></i></span>
+    </label>
+  </div>
+
+  <div class="etatvib" id="diagnostic">
+    <span class="titre-diag">Ce que votre téléphone répond</span>
+    <div id="lignes-diag"></div>
   </div>
 
   <div class="reglage-vib">
@@ -447,38 +488,71 @@ let compte = 0;
 
 const aVibrate = typeof navigator.vibrate === "function";
 const aSwitchIOS = "switch" in document.createElement("input");
+
+// **LE CHEMIN N'EST PLUS EXCLUSIF — corrigé le 31 août au soir, après sa
+// SECONDE plainte.** La version d'avant choisissait UN chemin : si la détection
+// de l'interrupteur natif se trompait, `chemin` valait « aucun » et la fonction
+// ne tentait plus rien du tout, en silence. Une détection est une supposition ;
+// une tentative est un fait. On tente donc les deux à chaque appui, et l'écran
+// écrit ce qui a été tenté.
 const chemin = aVibrate ? "api" : (aSwitchIOS ? "ios" : "aucun");
 
 const mots = {
   api:    ["Vibration : <b>disponible</b> sur ce téléphone.", "#7d9a6d"],
   ios:    ["Vibration : par <b>l'interrupteur d'iOS</b>. La durée n'est pas réglable.", "#B98B47"],
-  aucun:  ["Vibration : <b>refusée par ce navigateur</b>. Le visuel, lui, marche.", "#8a8578"],
+  aucun:  ["Vibration : <b>aucune API</b> ici. J'essaie quand même l'interrupteur.", "#8a8578"],
+};
+
+/* ─── Le diagnostic, écrit à l'écran ──────────────────────────────────────
+   **Sa plainte, deux fois : « la vibration ne marche pas ».** Deux fois j'ai
+   corrigé une cause SUPPOSÉE, sans jamais voir son téléphone. Le dépôt le dit
+   depuis le 11 août : devant un défaut muet, la première livraison n'est pas un
+   correctif, c'est de rendre le défaut bavard. C'est ce bloc — il se
+   photographie et se lit. */
+const diag = {
+  "Navigateur": /CriOS/.test(navigator.userAgent) ? "Chrome (iOS)"
+              : /FxiOS/.test(navigator.userAgent) ? "Firefox (iOS)"
+              : /iPhone|iPad/.test(navigator.userAgent) ? "Safari (iPhone)"
+              : /Android/.test(navigator.userAgent) ? "Android" : "ordinateur",
+  "navigator.vibrate": aVibrate ? "présent" : "absent",
+  "Interrupteur natif": aSwitchIOS ? "reconnu" : "non reconnu",
+  "Dernier essai": "aucun pour l'instant",
+  "Ce qui a été tenté": "—",
+};
+const ecrireDiag = () => {
+  $("#lignes-diag").innerHTML = Object.entries(diag)
+    .map(([k, v]) => `<div><span>${k}</span><b>${v}</b></div>`).join("");
 };
 $("#motvib").innerHTML = mots[chemin][0];
 $("#pastille").style.background = mots[chemin][1];
 
 function vibrer() {
-  if (!vibrationVoulue) return;
+  if (!vibrationVoulue) { diag["Dernier essai"] = "coupé par l'interrupteur"; ecrireDiag(); return; }
   const ms = parseInt(getComputedStyle(racine).getPropertyValue("--ms"), 10) || 12;
-  let parti = false;
-  if (chemin === "api") {
-    parti = navigator.vibrate(ms) === true;
-  } else if (chemin === "ios") {
-    // **CE QUI NE MARCHAIT PAS, ET POURQUOI — corrigé le 31 août 2026.**
-    // La première version posait `input.checked = !input.checked` puis émettait
-    // un événement `change`. Elle faisait bien basculer l'interrupteur, et le
-    // compteur montait — mais **rien ne vibrait**, et c'est lui qui l'a trouvé.
-    //
-    // Le retour haptique d'iOS ne suit pas la VALEUR de la bascule : il suit son
-    // ACTIVATION par le navigateur. Une propriété posée en JavaScript ne passe
-    // par aucun des deux, et un `change` fabriqué encore moins. Le seul chemin
-    // est un vrai clic sur l'étiquette, que le navigateur traduit lui-même en
-    // activation de l'interrupteur qu'elle porte.
-    $("#etiquette-ios").click();
-    parti = true;
+  const tentes = [];
+
+  // 1. L'API, quand elle existe (Android, ordinateurs).
+  if (aVibrate) {
+    try { tentes.push(navigator.vibrate(ms) ? "vibrate(ok)" : "vibrate(refusé)"); }
+    catch { tentes.push("vibrate(erreur)"); }
   }
-  if (parti) { compte += 1; $("#compte").textContent = compte; }
+
+  // 2. L'interrupteur natif, TOUJOURS — même si la détection dit non.
+  //    Une détection qui se trompe ne doit pas empêcher d'essayer : c'est
+  //    exactement ce qui a fait taire la version précédente.
+  try {
+    $("#etiquette-ios").click();
+    tentes.push("étiquette(cliquée)");
+  } catch { tentes.push("étiquette(erreur)"); }
+
+  compte += 1;
+  $("#compte").textContent = compte;
+  const h = new Date();
+  diag["Dernier essai"] = `${String(h.getHours()).padStart(2, "0")}:${String(h.getMinutes()).padStart(2, "0")}:${String(h.getSeconds()).padStart(2, "0")}`;
+  diag["Ce qui a été tenté"] = tentes.join(" · ") || "rien";
+  ecrireDiag();
 }
+
 
 /* ─── Le geste, posé sur tout ce qui se touche ───────────────────────────
    `pointerdown` plutôt que `click` : le retour doit arriver quand le doigt
@@ -517,6 +591,15 @@ document.querySelectorAll(".choix").forEach((b) => {
 
 /* ─── L'interrupteur de vibration ───────────────────────────────────────── */
 $("#essai-vib").addEventListener("pointerdown", vibrer);
+
+// L'interrupteur visible : c'est SON doigt qui l'active, on ne fait que noter.
+$("#switch-visible").addEventListener("change", () => {
+  diag["Dernier essai"] = "interrupteur touché à la main";
+  diag["Ce qui a été tenté"] = "activation native, sans JavaScript";
+  ecrireDiag();
+});
+
+ecrireDiag();
 
 $("#interrupteur").addEventListener("click", () => {
   vibrationVoulue = !vibrationVoulue;

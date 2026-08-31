@@ -19696,6 +19696,37 @@ de chercher. Ce que le contrôle tient désormais, c'est le mécanisme qui manqu
 tient toujours pas, et qui doit se lire ici, c'est le ressenti — celui-là se
 vérifie sur son téléphone, et nulle part ailleurs.
 
+### La seconde plainte, et ce qu'elle a appris
+
+**Le correctif ci-dessus n'a pas suffi : il a réécrit « la vibration ne marche
+pas ».** Deux corrections de causes supposées à la file, sans jamais voir son
+téléphone — la faute que `AGENTS.md` nomme en toutes lettres.
+
+**Un second défaut, trouvé en cherchant plutôt qu'en devinant, et il suffisait à
+tout expliquer :** le chemin était choisi une fois pour toutes, et de façon
+EXCLUSIVE. Si `"switch" in document.createElement("input")` rendait `false` sur
+son navigateur, le chemin valait « aucun » et la fonction ne tentait **rien** —
+pas même l'étiquette qu'on venait de réparer. **Une détection est une
+supposition ; une tentative est un fait.** Les deux chemins sont maintenant
+essayés à chaque appui.
+
+**Ce qui reste indécidable d'ici, et le geste qui le tranche.** Aucune page web
+ne peut savoir si un téléphone a vibré : il n'existe pas d'accusé de réception.
+La planche porte donc **un interrupteur natif qu'il touche lui-même** — le seul
+geste dont iOS reconnaisse l'activation à coup sûr :
+
+| Ce qu'il sent | Ce que ça prouve |
+|---|---|
+| l'interrupteur vibre | iOS sait vibrer sur une page web ; c'est l'appel par programme qui échoue |
+| il ne vibre pas | **aucune** page web ne fera vibrer ce téléphone — seule l'application installée le pourra |
+
+Sans cette séparation, on corrigerait indéfiniment un code peut-être juste
+devant une plateforme qui refuse.
+
+**Et le compteur mentait.** Il annonçait des vibrations, il comptait des appels
+— et montait pendant que rien ne bougeait, ce qui a retardé la découverte. Un
+chiffre qui monte sur une fonction morte est pire qu'un chiffre absent.
+
 ### Les dix verts, et pourquoi ils sont mesurés
 
 Sa seconde demande du 31 août : *« fais-moi plusieurs déclinaisons du bouton avec

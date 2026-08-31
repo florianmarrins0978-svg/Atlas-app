@@ -9,6 +9,37 @@ Format : le plus récent en tête.
 
 ## 2026-08-31
 
+### Toujours pas de vibration : arrêter de deviner, faire parler la page
+
+**Sa plainte, une deuxième fois : « la vibration ne marche pas ».** Le premier
+correctif de la soirée — passer par un clic sur l'étiquette au lieu d'écrire
+`checked` — était juste, et il n'a pas suffi. **Deux corrections de causes
+SUPPOSÉES, sans jamais voir son téléphone : c'est exactement ce que `AGENTS.md`
+interdit.** Ce lot ne suppose plus rien.
+
+**Un défaut trouvé en le cherchant, et il pouvait tout expliquer à lui seul :**
+le chemin était **exclusif**. `chemin = aVibrate ? "api" : (aSwitchIOS ? "ios" :
+"aucun")` — si la détection de l'interrupteur natif se trompait sur son Safari,
+`chemin` valait « aucun » et la fonction **ne tentait plus rien**, en silence.
+Une détection est une supposition ; une tentative est un fait. Les deux chemins
+sont désormais essayés à chaque appui, quoi que dise la détection.
+
+**Et la page dit maintenant ce qu'elle a fait** : navigateur reconnu,
+`navigator.vibrate` présent ou non, interrupteur natif reconnu ou non, l'heure du
+dernier essai et ce qui a été tenté. Cela se photographie et s'envoie — c'est la
+règle du 11 août : *devant un défaut muet, la première livraison n'est pas un
+correctif, c'est de rendre le défaut bavard.*
+
+**Un interrupteur natif qu'il touche du doigt** a été ajouté, et c'est lui qui
+tranche : s'il vibre, iOS sait vibrer sur une page web et c'est mon appel par
+programme qui échoue ; s'il ne vibre pas, **aucune page web ne fera vibrer ce
+téléphone**, et seule l'application installée le pourra. Aucune supposition ne
+remplace ce geste-là.
+
+**Le compteur cesse de mentir.** Il annonçait des vibrations ; il comptait des
+appels — et montait joyeusement pendant que rien ne bougeait. L'écran l'écrit
+maintenant en toutes lettres.
+
 ### La vibration ne partait pas sur son iPhone, et dix verts à choisir
 
 **Sa plainte : « la vibration ne fonctionne pas ».** Elle était juste, et le
