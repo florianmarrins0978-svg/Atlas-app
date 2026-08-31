@@ -4,6 +4,7 @@ import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { colors, font, texteSituation } from "@/lib/design-tokens";
+import { vibrer } from "@/lib/vibration";
 import BoutonAssistant from "@/components/atlas/BoutonAssistant";
 import TiroirDesRetires from "@/components/atlas/TiroirDesRetires";
 import { useRetraits } from "@/components/atlas/useRetraits";
@@ -273,6 +274,15 @@ export default function EcranChantiers({
             onClick={(e) => {
               if (e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return;
               e.preventDefault();
+              // **Sa demande du 31 août : un seul bouton pour essayer.** Le
+              // retour part AVANT l'ouverture de la feuille, pas après : ce
+              // qu'il veut sentir, c'est que l'appui est pris, et une feuille
+              // qui monte se voit déjà toute seule.
+              //
+              // **Sur son iPhone, cela ne fera rien** tant qu'Atlas est servi
+              // dans Safari — l'API n'y existe pas (`src/lib/vibration.ts`).
+              // C'est délibéré : il a demandé à essayer plutôt qu'à attendre.
+              vibrer();
               ouvrirAvecLeGeste();
             }}
             className="atlas-geste-nouveau"
