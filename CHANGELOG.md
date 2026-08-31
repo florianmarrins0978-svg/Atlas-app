@@ -52,6 +52,15 @@ recouvrement engagé et resté sans effet (huissier, injonction de payer). Un
 écran permissif ici ne rend pas service : il fabrique un redressement, et c'est
 le patron qui rembourse.
 
+**Second défaut, et sa capture l'a montré une seconde fois :** la TVA récupérée
+était posée en TROISIÈME ligne, négative, sous les deux colonnes. Or c'est en
+**TVA à déduire** qu'elle se déclare, pas en moins de TVA collectée — et ce sont
+justement les deux montants des colonnes qu'il COPIE pour les recoller sur
+impots.gouv. Posée à part, elle n'entrait dans aucun des deux : il aurait
+recopié une déduction amputée de 456 € et payé une TVA qu'il ne devait pas. Elle
+entre désormais dans « Déductible », avec une ligne « dont » qui dit d'où elle
+vient.
+
 **Et un défaut de la planche elle-même, trouvé à la capture et pas autrement :**
 le duplicata était posé DANS « Restées impayées », donc il disparaissait avec
 elle à l'instant même où il devait apparaître. La quatrième fois dans ce dépôt

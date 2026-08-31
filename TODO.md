@@ -71,6 +71,13 @@ récupération a une échéance (jusqu'au 31 décembre de la deuxième année qu
 celle où la créance est devenue irrécouvrable). **Un écran permissif ici ne rend
 pas service : il fabrique un redressement.**
 
+**ET LA RÉCUPÉRATION SE PORTE EN TVA À DÉDUIRE, PAS EN MOINS DE COLLECTÉE.**
+Corrigé le 31 août sur sa seconde capture. Les deux montants des colonnes sont
+ceux qu'il copie pour les recoller sur impots.gouv : une ligne posée à côté
+d'eux n'entre dans aucun des deux, et il recopierait une déduction amputée. Au
+moment de coder, `MontantCopiable` doit rendre le montant DÉCLARABLE, jamais un
+sous-total d'écran.
+
 **Trois questions posées, sans réponse à ce jour :** l'encadré doré et les ‹ ›
 tels quels ; « Jamais payée » sous le relevé ou sur la facture elle-même ; et
 si Atlas écrit le duplicata ou le prépare seulement.

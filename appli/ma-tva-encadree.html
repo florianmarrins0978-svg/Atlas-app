@@ -316,8 +316,8 @@ chiffre qui répond maintenant</b>, pas une explication.</p>
         </div>
       </div>
       <div class="ligne cache" id="ligneRecup">
-        <span>TVA récupérée — Mme Grospiron</span>
-        <span class="m" id="montantRecup">− 456,00 €</span>
+        <span>dont TVA récupérée — Mme Grospiron</span>
+        <span class="m" id="montantRecup">456,00 €</span>
       </div>
       <div class="reste">
         <span class="l">Reste à payer</span>
@@ -443,13 +443,22 @@ vos données ni à l’application</b>.
     /* La récupération ne s'applique QU'AUX DÉBITS et QU'À PARTIR DU MOIS OÙ
        elle est faite — ici octobre, le mois où le geste se fait. */
     var recup = (aux && recuperee && m.nom === 'Octobre 2026') ? TVA_IMPAYEE : 0;
-    var reste = collectee - m.ded - recup;
+
+    /* **ELLE ENTRE DANS « DÉDUCTIBLE », elle ne fait pas une ligne à part.**
+       Corrigé le 31 août 2026, et c'est sa capture qui l'a montré : sur la
+       déclaration, la TVA récupérée sur impayé se porte en TVA à déduire — pas
+       en moins de TVA collectée. Or ce sont ces deux montants-là qu'il COPIE
+       pour les recoller sur impots.gouv. Posée en troisième ligne, elle
+       n'entrait dans aucun des deux : il aurait recopié une déduction amputée
+       de 456 € et payé une TVA qu'il ne devait pas. */
+    var deductible = m.ded + recup;
+    var reste = collectee - deductible;
 
     document.getElementById('titre').textContent = m.nom;
     document.getElementById('collectee').textContent = euros(collectee);
-    document.getElementById('deductible').textContent = euros(m.ded);
+    document.getElementById('deductible').textContent = euros(deductible);
     document.getElementById('reste').textContent = euros(reste);
-    document.getElementById('montantRecup').textContent = euros(-TVA_IMPAYEE);
+    document.getElementById('montantRecup').textContent = euros(TVA_IMPAYEE);
     montrer('ligneRecup', recup > 0);
     montrer('credit', reste < 0);
 
