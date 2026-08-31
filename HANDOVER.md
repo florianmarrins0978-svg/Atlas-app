@@ -4516,13 +4516,15 @@ Ils sont nés le 12 août 2026 dans un panneau qu'un chevron doré faisait
 remonter : Plans, Google Maps, Waze, copier l'adresse, appeler le client.
 **Depuis le 21 août 2026 ils vivent dans la FEUILLE DE CHANTIER**, posée dans la
 page du planning refait (planche 84) — et ils ne sont plus que quatre : *« pas
-besoin d'en mettre trois »*, Google Maps est sorti.
+besoin d'en mettre trois »*. C'est **Plans d'Apple** qui est sorti, pas Google :
+le bouton « Maps » le servait jusqu'au 31 août 2026, où il a tranché — *« pour
+Maps c'est Google Maps que je veux »*.
 
 - `src/lib/itineraire.ts` — la règle pure (liens universels, jamais `waze://`).
 - `src/app/planning/PlanningClient.tsx` — la feuille (`FeuilleChantier`), qui
   lit `liensItineraire` et `lienAppel` plutôt que de recomposer les adresses.
 - `listerChantiersPourPlanning` remonte `adresseChantier` et `clientTelephone`.
-- Contrôles : `scripts/test-itineraire.ts` (10), la section « feuille de
+- Contrôles : `scripts/test-itineraire.ts` (11), la section « feuille de
   chantier » de `scripts/test-planning-e2e.ts`, quatre de plus dans
   `scripts/test-nom-chantier.ts`, deux cas de plus dans
   `scripts/test-planning-repo.ts`. Tous ont été confrontés au défaut qu'ils

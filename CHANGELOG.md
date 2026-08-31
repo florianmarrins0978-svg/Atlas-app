@@ -242,6 +242,33 @@ visuel »*. `scripts/verifier-maquette-jour-propose.mjs` tient la planche, et il
 a été vu rouge contre l'aplat remis dans les deux issues, contre la légende
 amputée, et contre une vue qui comptait les équipes autrement.
 
+### « Maps », sur la feuille de chantier, ouvre Google Maps
+
+Sa demande, capture à l'appui : *« pour Maps c'est Google Maps que je veux »*.
+Le bouton servait `plans` — Apple — depuis le 21 août, sur la supposition que
+« Maps » désignait chez lui l'application de son iPhone. Elle s'appelle
+« Plans », et ce n'est pas celle qu'il ouvre pour aller sur un chantier : il
+appuyait sur un bouton qui le sortait de l'application où sont ses trajets.
+
+La feuille n'en porte toujours que deux (« pas besoin d'en mettre trois ») :
+c'est Plans qui sort, pas Google. `plans` reste calculée dans
+`src/lib/itineraire.ts` — elle ne coûte rien —, mais aucun écran ne la sert.
+
+**Et le lien Google gagne `travelmode=driving`**, qui lui manquait. Sans lui, la
+carte rouvre le dernier mode utilisé — et Google le retient d'une session à
+l'autre : une rue cherchée à pied en ville la veille, et le chantier de trente
+kilomètres s'annonce à six heures de marche. C'est le `dirflg=d` que Plans avait
+déjà. Le défaut ne se voyait pas tant que le bouton n'ouvrait pas Google.
+
+Les deux contrôles qui gardaient la feuille exigeaient **l'inverse** —
+`maps.apple.com` présent, `google.com/maps` absent : ils auraient rougi sur une
+demande exaucée (`CLAUDE.md` §5 bis). Ils gardent ce qu'il a vraiment demandé —
+deux destinations, pas trois — en refusant Plans cette fois.
+
+`src/app/planning/PlanningClient.tsx`, `src/lib/itineraire.ts`,
+`scripts/test-itineraire.ts` (11), `scripts/test-planning-e2e.ts`,
+`scripts/capture-planning.mts`.
+
 ---
 
 ## 2026-08-30

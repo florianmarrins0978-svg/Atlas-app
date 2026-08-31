@@ -5039,9 +5039,17 @@ d'économie qu'une maquette trouve et qu'un débat d'architecture manque.
 
 ```
 https://maps.apple.com/?daddr=…&dirflg=d
-https://www.google.com/maps/dir/?api=1&destination=…
+https://www.google.com/maps/dir/?api=1&destination=…&travelmode=driving
 https://waze.com/ul?q=…&navigate=yes
 ```
+
+**Et « Maps », sur la feuille de chantier, c'est GOOGLE Maps** — sa demande du
+31 août 2026, capture à l'appui : *« pour Maps c'est Google Maps que je veux »*.
+Le bouton servait `plans` depuis le 21 août, sur la supposition que « Maps »
+désignait chez lui l'application de son iPhone ; elle s'appelle « Plans », et ce
+n'est pas celle qu'il ouvre. La feuille n'en porte toujours que deux (« pas
+besoin d'en mettre trois ») : `plans` est calculée et ne coûte rien, mais aucun
+écran ne la sert.
 
 `waze://` et `comgooglemaps://` sont plus courts, et ils ont un défaut qu'on ne
 voit pas en les essayant sur une machine qui possède les applications :
@@ -5056,9 +5064,11 @@ Deux détails qui ne se devinent pas :
   (« 12 chemin des Chênes, 33600 Pessac ») ; `encodeURI` la laisse passer, elle
   sépare alors deux paramètres chez Waze, et l'adresse est tronquée au numéro de
   rue. Le GPS s'ouvre — dans une autre commune.
-- **`dirflg=d`.** Sans lui, Plans rouvre le dernier mode utilisé. À pied, s'il a
-  cherché une rue en ville la veille : trente kilomètres, et une estimation
-  absurde qu'il ne pense pas à corriger.
+- **`dirflg=d`, et `travelmode=driving` chez Google.** Sans eux, la carte rouvre
+  le dernier mode utilisé. À pied, s'il a cherché une rue en ville la veille :
+  trente kilomètres, et une estimation absurde qu'il ne pense pas à corriger.
+  Chez Google le piège mord plus longtemps — le mode s'y retient d'une session à
+  l'autre. Le paramètre manquait : il est entré le 31 août, avec le bouton.
 
 **Un téléphone ne dit pas quelles applications il possède.** Impossible donc de
 n'afficher que Waze parce que c'est la seule installée : les trois sont
