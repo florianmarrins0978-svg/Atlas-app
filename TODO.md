@@ -31,10 +31,12 @@ tous des défauts réels, aucun n'était la cause (`ARCHITECTURE.md` §222).
 retour haptique dans l'application par **`@capacitor/haptics`** — c'est le seul
 chemin qui marche sur son téléphone. À vérifier chez lui, pas ici.
 
-**Une question qui reste ouverte et qui compte pour la suite :** son réglage
-« Retour haptique système » (Réglages → Sons et vibrations) est-il activé ? S'il
-est éteint, l'application native ne vibrera pas davantage — et l'on chercherait
-au mauvais endroit.
+**LA QUESTION À LUI POSER AVANT TOUT LE RESTE, et elle peut annuler le verdict
+ci-dessus :** son réglage iOS **« Retour haptique système »** (Réglages → Sons
+et haptiques) est-il allumé ? Éteint, il rend muets l'interrupteur natif ET
+l'application installée — auquel cas la piste web n'est pas morte du tout, et
+c'est son téléphone qui est réglé pour ne rien sentir. Posée le 31 août au soir,
+sans réponse à ce jour.
 
 ## Rien n'est proposé au client après un refus ou une correction (31 août 2026)
 
