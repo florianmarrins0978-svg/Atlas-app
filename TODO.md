@@ -18,8 +18,16 @@ en s'éclaircissant. **Rien n'est codé, et rien ne doit l'être avant sa répon
 La planche : `appli/le-bouton-qui-repond.html`, en ligne à
 https://florianmarrins0978-svg.github.io/Atlas-app/le-bouton-qui-repond.html
 
-**Ce qu'on attend de lui :** Discret, le sien, ou Marqué — et s'il veut
-l'interrupteur « Vibration au toucher » dans les réglages.
+**Ce qu'on attend de lui, trois réponses :** la force (Discret, le sien,
+Marqué), **le numéro du vert** parmi les dix, et s'il veut l'interrupteur
+« Vibration au toucher » dans les réglages.
+
+**Et une réponse à ne pas oublier de lui demander :** est-ce que la vibration
+part, maintenant, sur son iPhone ? Le 31 août elle ne partait pas — bascule
+posée en JavaScript au lieu d'un clic sur l'étiquette (`ARCHITECTURE.md` §222).
+Corrigé, **mais non éprouvé ici** : aucun Safari sur ce poste, et aucune page web
+ne peut compter une vibration. Tant qu'il n'a pas répondu, cela reste **corrigé
+sans preuve**.
 
 **Ce qu'il faudra faire quand il aura répondu** (le détail est en
 `ARCHITECTURE.md` §222) :

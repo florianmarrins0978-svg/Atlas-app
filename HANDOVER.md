@@ -22,7 +22,8 @@ pâlit sous le doigt.
 | en ligne | https://florianmarrins0978-svg.github.io/Atlas-app/le-bouton-qui-repond.html |
 | son contrôle | `scripts/verifier-maquette-bouton-qui-repond.mjs` (dans `npm run verifier:maquette`) |
 | le pourquoi | `ARCHITECTURE.md` §222 |
-| ce qu'on attend | Discret, le sien, ou Marqué — et l'interrupteur « Vibration au toucher » ou non |
+| ce qu'on attend | la force (Discret, le sien, Marqué), **le numéro du vert** parmi dix, et l'interrupteur « Vibration au toucher » ou non |
+| en suspens | **la vibration marchait-elle enfin sur son iPhone ?** Corrigée le 31 août au soir, non éprouvable ici |
 
 **Les deux choses à savoir avant d'y toucher.** L'application porte DÉJÀ
 `active:scale-[0.985]` sur `PrimaryButton.tsx` — moins d'un pixel, aucune

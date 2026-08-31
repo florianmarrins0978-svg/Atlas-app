@@ -37,8 +37,30 @@
   6. **AUCUNE FLÈCHE DÉCORATIVE** dans les libellés (`CLAUDE.md` §3, redit deux
      fois le 25 août).
 
+  7. **LES DIX VERTS SE LISENT AU SOLEIL, ET SOUS LE DOIGT.** Sa demande du
+     31 août. Le contraste est mesuré sur les DEUX extrémités de chaque dégradé
+     — une capsule dont seul le haut passerait aurait un bas illisible — et
+     **une seconde fois avec le voile de l'appui**, qui éclaircit le fond donc
+     rapproche le texte : c'est l'état le plus défavorable, et c'est celui que
+     personne ne regarde. Quarante relevés par teinte, aucun sous 4,5:1.
+
+     Les couleurs sont lues sur les variables que le CSS emploie vraiment
+     (`--haut`, `--bas`), jamais recopiées dans le contrôle : deux listes
+     finissent toujours par diverger.
+
   ───────────────────────────────────────────────────────────────────────────
   CE QUE CE CONTRÔLE NE PEUT PAS TENIR, ET QUI DOIT SE LIRE ICI.
+
+  **CE QUI A CASSÉ LE 31 AOÛT, ET CE QUI LE TIENT MAINTENANT.** La première
+  version posait `input.checked = !input.checked` : l'interrupteur basculait, le
+  compteur montait, et **rien ne vibrait** — c'est lui qui l'a trouvé, sur son
+  iPhone. Le retour haptique d'iOS suit l'ACTIVATION par le navigateur, pas la
+  valeur de la case ; seul un vrai clic sur l'étiquette l'obtient.
+
+  Le contrôle éprouve donc **le mécanisme**, à défaut du ressenti : un clic sur
+  l'étiquette fait bien basculer l'interrupteur qu'elle porte. C'est ce qui
+  attrape les deux façons de le casser sans s'en apercevoir — une étiquette
+  `display:none`, ou un `pointer-events:none` qui la rend inerte.
 
   **La vibration elle-même ne se mesure pas.** Chromium fournit
   `navigator.vibrate()` et rend `true` sans qu'aucun moteur ne tourne : le
@@ -222,6 +244,123 @@ for (const teinte of ["light", "dark"]) {
 
   dire(bavures.length === 0, `${teinte} · aucune erreur JavaScript${bavures.length ? ` (${bavures.join(" | ")})` : ""}`);
   await vue.close();
+}
+
+// ── Le chemin d'iPhone : le mécanisme, à défaut du ressenti ────────────────
+// Safari n'existe pas ici, donc le retour haptique non plus. Ce qui se tient,
+// c'est que l'étiquette soit VRAIMENT reliée à son interrupteur et qu'un clic
+// l'active — la seule chose qui manquait quand ça ne vibrait pas chez lui.
+{
+  const vue = await navigateur.newPage({ viewport: { width: 430, height: HAUTEUR } });
+  await vue.goto(`file://${PAGE}`);
+  await vue.waitForLoadState("networkidle");
+
+  const etiquette = vue.locator("#etiquette-ios");
+  const interrupteur = vue.locator("#switch-ios");
+  dire((await etiquette.count()) === 1 && (await interrupteur.count()) === 1, "le chemin d'iPhone existe : une étiquette et son interrupteur");
+
+  // Ni cachée ni inerte : les deux façons de le rendre muet sans que rien ne
+  // se voie à l'écran.
+  const dessin = await etiquette.evaluate((e) => {
+    const s = getComputedStyle(e);
+    return { affichage: s.display, evenements: s.pointerEvents };
+  });
+  dire(dessin.affichage !== "none", `l'étiquette n'est pas masquée (display: ${dessin.affichage})`);
+  dire(dessin.evenements !== "none", `l'étiquette reste activable (pointer-events: ${dessin.evenements})`);
+
+  const avant = await interrupteur.evaluate((e) => e.checked);
+  await etiquette.evaluate((e) => e.click());
+  const apres = await interrupteur.evaluate((e) => e.checked);
+  dire(apres !== avant, `un clic sur l'étiquette active bien l'interrupteur (${avant} → ${apres})`);
+
+  // Et le code appelle ce chemin-là, pas l'ancien.
+  const source = await vue.evaluate(() => document.documentElement.outerHTML);
+  dire(!/#switch-ios"\)\s*;?\s*\n?\s*\w+\.checked\s*=/.test(source) && source.includes('$("#etiquette-ios").click()'),
+       "la vibration d'iPhone passe par le clic sur l'étiquette, pas par `checked`");
+
+  await vue.close();
+}
+
+// ── Les dix verts ──────────────────────────────────────────────────────────
+// Ils portent un dégradé (`background-image`), pas un aplat : `backgroundColor`
+// y vaut « transparent » et les contrôles ci-dessus les auraient laissés
+// passer en silence. Ils ont donc leur propre mesure.
+{
+  const NOIR_SUR_CLAIR = "#14180f";
+  const CREME = "#faf9f5";
+  const VOILE = 0.14; // le calque blanc de `.vert.appui::after`
+
+  const melange = (hex, a) => {
+    const [r, g, b] = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16));
+    return `rgb(${[r, g, b].map((v) => Math.round(v * (1 - a) + 255 * a)).join(", ")})`;
+  };
+  const contraste = (a, b) => {
+    const [x, y] = [clarte(a), clarte(b)].sort((m, n) => n - m);
+    return (x + 0.05) / (y + 0.05);
+  };
+  const enRgb = (hex) => melange(hex, 0);
+
+  for (const teinte of ["light", "dark"]) {
+    const vue = await navigateur.newPage({
+      viewport: { width: 430, height: HAUTEUR },
+      colorScheme: teinte,
+      hasTouch: true,
+      isMobile: true,
+    });
+    await vue.goto(`file://${PAGE}`);
+    await vue.waitForLoadState("networkidle");
+
+    const verts = await vue.$$eval(".vert", (els) =>
+      els.map((e) => ({
+        haut: e.style.getPropertyValue("--haut").trim(),
+        bas: e.style.getPropertyValue("--bas").trim(),
+        hautNuit: e.style.getPropertyValue("--haut-nuit").trim(),
+        basNuit: e.style.getPropertyValue("--bas-nuit").trim(),
+        libelle: e.innerText.trim(),
+      }))
+    );
+
+    dire(verts.length === 10, `${teinte} · dix verts proposés (${verts.length})`);
+
+    // **Le même libellé partout, sinon ce ne sont plus des verts qu'il compare.**
+    const libelles = new Set(verts.map((v) => v.libelle));
+    dire(libelles.size === 1, `${teinte} · les dix portent le même libellé (${[...libelles].join(" / ")})`);
+
+    const texte = teinte === "dark" ? NOIR_SUR_CLAIR : CREME;
+    let pire = { r: 99, ou: "" };
+    verts.forEach((v, i) => {
+      const stops = teinte === "dark" ? [v.hautNuit, v.basNuit] : [v.haut, v.bas];
+      if (stops.some((c) => !/^#[0-9a-f]{6}$/i.test(c))) {
+        dire(false, `${teinte} · vert ${i + 1} : couleurs illisibles (${stops.join(" ")}), mesure impossible`);
+        return;
+      }
+      for (const c of stops) {
+        for (const a of [0, VOILE]) {
+          const r = contraste(enRgb(texte), melange(c, a));
+          if (r < pire.r) pire = { r, ou: `vert ${i + 1}, ${c}${a ? " appuyé" : ""}` };
+        }
+      }
+    });
+    dire(pire.r >= 4.5, `${teinte} · le pire des quarante contrastes tient (${pire.r.toFixed(2)}:1 — ${pire.ou})`);
+
+    // Et ils se pressent comme le reste : le voile monte, puis retombe.
+    const premier = vue.locator(".vert").first();
+    await premier.evaluate((e) => e.scrollIntoView({ block: "center" }));
+    await vue.waitForTimeout(60);
+    const boite = await premier.boundingBox();
+    const voileDe = () => premier.evaluate((e) => Number(getComputedStyle(e, "::after").opacity));
+    const repos = await voileDe();
+    await vue.mouse.move(boite.x + boite.width / 2, boite.y + boite.height / 2);
+    await vue.mouse.down();
+    await vue.waitForTimeout(160);
+    const appuye = await voileDe();
+    await vue.mouse.up();
+    await vue.waitForTimeout(340);
+    const rendu = await voileDe();
+    dire(repos === 0 && appuye > 0.1 && rendu === 0, `${teinte} · un vert s'éclaircit sous le doigt et redevient net (${repos} → ${appuye} → ${rendu})`);
+
+    await vue.close();
+  }
 }
 
 // ── Aucune flèche décorative dans ce qui s'affiche ─────────────────────────

@@ -9,6 +9,37 @@ Format : le plus récent en tête.
 
 ## 2026-08-31
 
+### La vibration ne partait pas sur son iPhone, et dix verts à choisir
+
+**Sa plainte : « la vibration ne fonctionne pas ».** Elle était juste, et le
+défaut était dans MON code, pas dans Safari. La planche posait
+`input.checked = !input.checked` sur l'interrupteur natif d'iOS : la case
+basculait, le compteur montait, **et rien ne vibrait**. Le retour haptique d'iOS
+suit l'ACTIVATION de l'interrupteur par le navigateur, jamais la valeur qu'on
+lui écrit — seul un vrai clic sur son étiquette l'obtient
+(`$("#etiquette-ios").click()`). L'étiquette avait en plus `pointer-events:none`,
+seconde façon de la rendre muette.
+
+**Ce que ça apprend, au-delà de ce lot :** le compteur affichait « 3 » pendant
+que rien ne bougeait. **Un contrôle qui mesure l'appel ne mesure pas l'effet**
+— et il rendait un vert rassurant sur une fonction morte.
+`verifier-maquette-bouton-qui-repond.mjs` éprouve maintenant le mécanisme qui
+manquait : que l'étiquette soit reliée, ni masquée ni inerte, et qu'un clic
+l'active. Il rougit si on la remet en `display:none`.
+
+**Et sa seconde demande, dans le même lot :** dix dégradés de vert à essayer,
+numérotés, tous pressables, même libellé et même capsule d'un bout à l'autre —
+sinon ce sont des boutons qu'il compare, pas des verts. Trois teintes du premier
+jet ont été écartées avant de les lui montrer parce qu'elles se ressemblaient :
+c'est la faute exacte du premier tour de `le-bouton-moins-lourd.html`, où cinq
+nuances du même vert étaient passées pour cinq idées.
+
+**Les contrastes sont mesurés, pas estimés** — sur les deux extrémités de chaque
+dégradé, **et sous le voile de l'appui**, qui éclaircit le fond donc rapproche le
+texte. Quarante relevés par teinte : le pire tient 5,26:1 en clair et 6,42:1 en
+sombre, contre 4,5 demandés. Le contrôle refuse en dessous, et rougit sur un vert
+clair posé sous du texte crème.
+
 ### Une planche pour le bouton qui répond au doigt — vibration et enfoncement
 
 **Sa demande du 31 août :** *« quand je clique sur les boutons j'aimerais avoir
