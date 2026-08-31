@@ -47,6 +47,38 @@ est destiné : `docs/devis-prix-et-date-proche.md`.
 
 Raisons et pièges : `ARCHITECTURE.md` §216.
 
+## Le même jour : la connexion tient dans un écran (31 août 2026)
+
+**Sa demande :** *« Pour la page connexion je veux qu'elle tienne sur une seule
+page et supprime toutes les petites phrases en gris sous les boutons, garde que
+les titres. »* Compte-rendu qui lui est destiné : `docs/connexion-une-page.md` ;
+le raisonnement complet, `ARCHITECTURE.md` §217.
+
+**Ce qu'il faut savoir avant d'y toucher :**
+
+- **`pb-24` ne doit pas revenir sur cet écran** — ni sur un autre. `main
+  .atlas-contenu` (`src/app/layout.tsx`) réserve déjà la hauteur de la barre du
+  bas ; la réserver une seconde fois coûtait 96 px de vide qui poussaient la
+  dernière rubrique sous le pli. C'est le même défaut que celui corrigé sur
+  l'export de chantier, et il se relit sans méfiance.
+- **L'œil des champs garde ses 44 px de cible.** Ce sont ses marges négatives
+  (`-my-[10px]`) qui l'empêchent d'imposer cette hauteur à sa rangée. Les
+  retirer rendrait 60 px à l'écran et le ferait défiler de nouveau ; réduire la
+  cible à la place se paierait avec des gants, sur un chantier.
+- **Aucune phrase grise ne se remet sous un bouton de cet écran.** Il les a
+  toutes fait retirer, et `test-face-id-e2e.ts` vérifie désormais que la glose
+  de Face ID ne revient pas — le contrôle qui l'exigeait a été retourné, pas
+  supprimé (`CLAUDE.md` §5 bis).
+- **La longueur minimale se dit quand elle mord, jamais d'avance**
+  (`etatNouveau`, `src/lib/mot-de-passe.ts`). La retirer sans ce remplacement
+  laisserait un bouton éteint sans raison lisible.
+- **Ce qui reste ouvert :** la promesse de Face ID (*« votre visage ne quitte
+  jamais votre téléphone »*) n'est plus à l'écran. Elle ne vit plus que dans le
+  mode d'emploi. À rouvrir avec lui s'il la veut ailleurs — pas à remettre sous
+  le bouton.
+
+---
+
 ## Lot précédent : la note vocale à la messagerie, et la fiche qui tient dans un écran (30 août 2026)
 
 Ses trois choix codés (`appli/note-vocale-choix.html`) : au repos un **disque
@@ -101,7 +133,7 @@ sert le mode développement. **La fiche (#47) dit toujours pourquoi, à la ligne
 `npx` téléchargeait alors un Next du registre pour le lancer — une version qui
 n'est pas celle du projet, et qui échoue sur « Could not find the Next.js
 package ». Le banc appelle désormais le binaire du projet et se réinstalle tout
-seul (`ARCHITECTURE.md` §217).
+seul (`ARCHITECTURE.md` §218).
 
 **Ce qui reste vrai quoi qu'il arrive :** un `▲ Next.js <version>` qui ne
 correspond pas à `package.json` veut dire que ce n'est PAS le Next du projet qui

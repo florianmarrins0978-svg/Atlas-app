@@ -19182,9 +19182,84 @@ Deux contrôles réclamaient l'ancienne règle et ont changé de camp
 `test-date-lointaine-e2e.ts` prouvaient que demain ne partait pas chez le
 client. Ils prouvent maintenant qu'il part **et** que la fiche prévient.
 
+## 217. La connexion tient dans un écran : 1203 px demandés pour 664 disponibles
+
+*31 août 2026 — `ConnexionClient.tsx`, `SectionFaceId.tsx`, `mot-de-passe.ts`.*
+
+**Sa demande, capture à l'appui :** *« Pour la page connexion je veux qu'elle
+tienne sur une seule page et supprime toutes les petites phrases en gris sous
+les boutons, garde que les titres. »* Sa capture montrait l'écran au milieu de
+sa course : le titre du champ de confirmation coupé en haut, « Ailleurs » à un
+écran de là, et quatre lignes grises entre les deux.
+
+L'écran demandait **1203 px** pour une hauteur utile de 664 — presque deux
+écrans. Il en demande **658**.
+
+### D'où viennent les 545 px, mesurés un par un à 390 px de large
+
+| | |
+|---|---|
+| **248** | les gloses grises hors des champs : Face ID (96), « Un téléphone perdu… » (84), la ligne sous « Me déconnecter partout » (43), « Vous resterez connecté… » (25) |
+| **120** | les trois champs — l'œil qui n'impose plus ses 44 px (60), « Au moins 12 caractères. » (23), leurs marges (37) |
+| **96** | `pb-24` sur le contenu : la barre du bas était réservée **deux fois** |
+| **81** | les écarts entre rubriques et autour des boutons, resserrés de 30 à 12 px |
+
+**Les 96 px du haut du tableau sont un DÉFAUT, pas un choix d'aération.**
+`main.atlas-contenu` (`src/app/layout.tsx`) réserve déjà la hauteur de la barre
+pour tous les écrans ; ce `pb-24` la réservait une seconde fois, en plus large.
+C'est exactement le défaut corrigé sur l'export de chantier, revenu ailleurs :
+un vide qui ne porte rien, invisible en relecture, et qui pousse la dernière
+rubrique sous le pli.
+
+**L'œil garde ses 44 px de cible, et n'en impose plus que 24.** Une cible plus
+petite se rate une fois sur trois avec des gants — elle ne bouge donc pas. Ce
+sont des marges négatives (`-my-[10px]`) qui la sortent du calcul de hauteur :
+la rangée se mesure sur son libellé et sa saisie, l'œil déborde par-dessus. 20 px
+gagnés par champ, trois champs, sans qu'un doigt s'en aperçoive.
+
+### Retirer une phrase, ce n'est pas retirer ce qu'elle disait
+
+Deux des lignes supprimées portaient quelque chose. Elles ne sont pas parties
+sans qu'on regarde ce qu'elles tenaient :
+
+| La ligne | Ce qu'elle tenait | Où c'est passé |
+|---|---|---|
+| « Au moins 12 caractères. » | la seule raison lisible d'un bouton éteint | `etatNouveau()` la dit **quand elle mord** : champ vide, rien ; huit caractères, la phrase |
+| la promesse de Face ID | *« votre visage ne quitte jamais votre téléphone »* | nulle part à l'écran — elle survit dans le mode d'emploi (`mode-emploi.ts`, `reglages-face-id`) |
+
+**Le premier cas est la faute qu'on ne voit qu'à l'usage.** Retirer la phrase
+sans rien mettre à la place laissait un écran muet : on tape huit caractères, la
+confirmation répond « les deux sont identiques ✓ », et le bouton reste éteint
+sans qu'aucun mot ne dise pourquoi. La règle vit dans `src/lib/mot-de-passe.ts`,
+avec celle que le serveur applique — jamais recopiée dans l'écran (§3 du
+`CLAUDE.md`).
+
+**Le second se dit, il ne se cache pas.** L'écran ne rassure plus celui qui
+hésite à donner son visage. Les faits n'ont pas changé — `0063_cles_appareil.sql`
+ne porte aucune donnée biométrique — et c'est la base, pas une phrase, que la
+suite interroge. Si le patron veut la promesse ailleurs, elle se remet ailleurs.
+
+### Le contrôle vise la contrainte, pas les mots
+
+`test-face-id-e2e.ts` mesure l'écran **à 390 × 664** — son iPhone quand Safari
+montre ses deux barres. Deux mesures : la page ne doit rien avoir à faire
+défiler, et le dernier geste ne doit pas passer sous les onglets. Une page qui
+mesure moins de 300 px fait échouer le contrôle plutôt que de rendre un vert :
+une mise en page non appliquée rendrait « 0 ≤ 664 », c'est-à-dire rien.
+
+**Et le contrôle qui exigeait la promesse a été RETOURNÉ, pas supprimé.** Il
+réclamait « ne quitte jamais votre téléphone » à l'écran ; il vérifie désormais
+que cette glose **ne revient pas**. C'est la règle du `CLAUDE.md` §5 bis : une
+suite qui réclame ce que le patron a fait retirer rend son écran impossible à
+changer.
+
+**Ce que la mesure ne couvre pas, et qui est écrit dans la suite :** un appareil
+déjà enregistré ajoute sa ligne, soit 56 px. L'écran défile alors de ce qu'il
+faut sur 664 px — mais pas sur son téléphone, dont la hauteur utile mesurée sur
+sa capture est de l'ordre de 770 px.
 ---
 
-## 217. « Elle est super lente » : `npx` allait chercher un Next au registre quand celui du projet manquait
+## 218. « Elle est super lente » : `npx` allait chercher un Next au registre quand celui du projet manquait
 
 **Sa plainte du 31 août 2026, à midi**, capture à l'appui : le bandeau
 « Version rapide en construction » en haut de l'écran, et une application qui

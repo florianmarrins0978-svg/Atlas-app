@@ -23,6 +23,24 @@ l'avance verrait toujours après-demain en tête de liste.
 **Qui peut le trancher :** le patron. Personne ne l'a demandé, et rien ne bloque
 aujourd'hui — c'est noté pour ne pas le redécouvrir.
 
+## LA PROMESSE DE FACE ID N'EST PLUS À L'ÉCRAN — à trancher avec lui (31 août 2026)
+
+Ses quatre lignes grises sont parties avec les autres, sur sa demande du
+31 août. Elles disaient que c'est **par appareil**, que le **visage ne quitte
+jamais le téléphone**, et que le **mot de passe reste actif**.
+
+**Les faits n'ont pas changé** — aucune donnée biométrique n'entre en base
+(`drizzle/0063_cles_appareil.sql`), et c'est la base que `test-face-id-e2e.ts`
+interroge. C'est la promesse ÉCRITE qui a disparu : quelqu'un qui hésite à
+donner son visage n'a plus de quoi se rassurer à l'écran.
+
+**Ce qui reste :** le mode d'emploi la porte (`mode-emploi.ts`,
+`reglages-face-id`).
+
+**Ce qui ne se fera pas sans lui :** la remettre. Il l'a fait retirer, et une
+suite vérifie désormais qu'elle ne revient pas. S'il la veut, elle se pose
+ailleurs — jamais en gris sous le bouton.
+
 ---
 
 ## ✅ LE « 16.3.3 » EST EXPLIQUÉ — c'était `npx`, pas une dérive (31 août 2026)
@@ -33,7 +51,7 @@ Ce document portait depuis le 29 août : *« reste inexpliqué : comment ses
 `node_modules/next` MANQUAIT, et `npx next build` télécharge alors la dernière
 version publiée pour la lancer — d'où un 16.3.3 sur un projet qui épingle
 16.3.2. Reproduit à l'identique en écartant le paquet. Corrigé aux trois
-endroits : `ARCHITECTURE.md` §217.
+endroits : `ARCHITECTURE.md` §218.
 
 **Ce qui reste ouvert, et c'est la vraie question :** POURQUOI
 `node_modules/next` disparaît de son espace. Trois suspects, aucun mesuré — une
