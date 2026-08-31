@@ -482,9 +482,14 @@ export default function AnneauNoteVocale({
               type="button"
               onClick={commencerLaDictee}
               disabled={envoi}
-              // Le seul texte de tout l'objet, et il ne s'affiche pas.
+              // Le seul texte de tout l'objet, et il ne s'affiche pas. Il ne
+              // parle plus que de commencer : la pause a été retirée le 31 août
+              // 2026, et l'objet lui-même s'efface dès qu'on parle.
               aria-label="Dicter une note vocale"
-              className="atlas-micro"
+              // `atlas-plein` vient de la session voisine, le même jour : le
+              // vert #29382F d'Origine et le geste « discret » sous le doigt.
+              // Le micro EST un aplat plein — il la porte donc.
+              className="atlas-plein atlas-micro"
               style={{ backgroundColor: colors.rust, color: surPlein }}
             >
               <IconeMicro />

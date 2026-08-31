@@ -44,7 +44,7 @@ export default function ActionPrincipale({
   return (
     <a
       href={href}
-      className="flex items-center gap-5 px-6 py-6 transition-transform active:translate-y-px"
+      className="atlas-plein flex items-center gap-5 px-6 py-6"
       style={{
         backgroundColor: colors.rust,
         color: colors.cream,

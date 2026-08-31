@@ -35,7 +35,7 @@ export default function BoutonAssistant() {
       onClick={assistant.basculer}
       aria-label={assistant.ouvert ? "Fermer l'assistant" : "Ouvrir l'assistant"}
       aria-expanded={assistant.ouvert}
-      className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-full"
+      className="atlas-plein flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-full"
       style={{ backgroundColor: colors.rust }}
     >
       <svg width="19" height="19" viewBox="0 0 24 24" fill="none" style={{ stroke: surPlein }} strokeWidth="1.8">

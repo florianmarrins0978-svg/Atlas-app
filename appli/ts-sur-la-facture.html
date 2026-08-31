@@ -1,0 +1,470 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas — les travaux en plus, ajoutés sur la facture</title>
+<style>
+/*
+  SON IDÉE DU 31 AOÛT 2026, AU SOIR — capture de l'écran facture à l'appui :
+  « depuis cette page, avant d'envoyer la facture, il faut (si c'est légal)
+    pouvoir la modifier en stipulant que c'est du TS, et comme ça on a déjà
+    toute la chaîne de production de créée pour l'envoyer au client ».
+
+  IL A RAISON SUR LES DEUX POINTS, et la planche part de SON écran, pas d'un
+  écran neuf : mêmes libellés, même reprise du devis, même pied d'envoi.
+
+  · **C'est légal.** Une facture en BROUILLON n'existe pas encore : rien
+    n'interdit de la corriger. Ce qui est verrouillé, c'est la facture ÉMISE —
+    celle-là ne se modifie plus, elle se corrige par un avoir.
+  · **La chaîne est déjà là** : PDF, canal SMS ou courriel, envoi, relevé de
+    TVA. Le supplément n'a rien à réinventer, il a juste à entrer AVANT.
+
+  DEUX CHOSES QUE LE DROIT IMPOSE, ET QUI DESSINENT L'ÉCRAN :
+
+  1. **Le détail, jamais un forfait global.** Une facture doit porter le
+     décompte de chaque prestation, en quantité et en prix unitaire. Une ligne
+     « Travaux supplémentaires — 320,00 € » ne suffit pas ; « Dessouchage,
+     1 forfait × 320,00 € », si.
+  2. **L'accord du client rend la somme exigible**, pas la facture. Facturer un
+     supplément qu'il n'a pas accepté est permis ; se le faire payer ne l'est
+     pas toujours (article 1793 du Code civil). D'où la trace demandée sous le
+     bloc — SMS, courriel, ou signature sur place.
+
+  POURQUOI UN BLOC SÉPARÉ plutôt que des lignes fondues dans le devis : le
+  client retrouve, au centime, le prix qu'il avait accepté. Fondu, il lit un
+  total qui ne correspond plus à son devis, et il appelle.
+
+  « RIEN N'A CHANGÉ DEPUIS LE DEVIS ? » — la phrase était déjà sur son écran,
+  sans réponse possible. Elle devient le geste.
+
+  ─────────────────────────────────────────────────────────────────────────────
+  CE QU'IL A CORRIGÉ LE 1ᵉʳ SEPTEMBRE 2026, À 00 h 56 :
+
+  · **« Ajouter des travaux supplémentaires, c'est ce qu'il faut. »** Le geste
+    est retenu.
+  · **Le titre du bloc ne porte plus que « Travaux supplémentaires », en doré.**
+    Le « , acceptés par SMS » est parti.
+  · **La trace d'accord est retirée de l'écran** — « pas besoin de ça ». Le
+    risque juridique, lui, ne disparaît pas avec la question : c'est le bon
+    signé sur place (`ts-bon-sur-place.html`) qui y répond, si un jour il le
+    veut. La facture, elle, ne pose plus la question.
+  · **Sa question ouverte, et c'est l'interrupteur du haut :** au clic, un écran
+    de modification qui s'ouvre et rend la facture prête à envoyer, ou un
+    encadré qui se déroule sous le bouton — « mais du coup la page ne tiendra
+    plus sur une seule page ».
+
+  MON AVIS, ET IL EST DANS L'ORDRE DES ONGLETS : **l'écran à part**. Un
+  formulaire déroulé pousse le total et le bouton d'envoi hors de l'écran, et
+  c'est précisément ce qu'on regarde en ajoutant une ligne. L'écran à part rend
+  la facture entière, d'un coup, une fois validée.
+
+  RIEN N'EST CODÉ dans l'application (`CLAUDE.md` §3 bis).
+*/
+:root{
+  --bone:#f5f3ee; --cream:#faf9f5; --paper:#ece9e1;
+  --charcoal:#1c1c1a; --charcoal-soft:#4a4a44; --muted:#8a8578;
+  --pine:#2f3b2f; --or:#B98B47; --alert:#9C3B2E;
+  --line:rgba(28,28,26,.12); --line-soft:rgba(28,28,26,.07);
+  --surPlein:#faf9f5;
+}
+@media (prefers-color-scheme: dark){
+  :root{ --bone:#171613; --cream:#1e1c18; --paper:#262420; --charcoal:#e9e5dc;
+         --charcoal-soft:#c9c4b8; --muted:#8a867c; --or:#C9A15E;
+         --pine:#9db98f; --alert:#d98b7c; --surPlein:#171613;
+         --line:rgba(233,229,220,.16); --line-soft:rgba(233,229,220,.09); }
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;background:var(--bone);color:var(--charcoal);
+     font:16px/1.55 -apple-system,"Segoe UI",Roboto,sans-serif;
+     padding:30px 0 56px;-webkit-text-size-adjust:100%}
+.page{max-width:430px;margin:0 auto;padding:0 20px}
+.sur{margin:0;font-size:9.5px;font-weight:500;letter-spacing:.3em;
+     text-transform:uppercase;color:var(--or)}
+h1{margin:10px 0 0;font-family:Georgia,serif;font-weight:400;font-size:30px;
+   line-height:1.08;letter-spacing:-.018em}
+.chapo{margin:11px 0 0;font-size:14px;color:var(--charcoal-soft);line-height:1.6}
+.chapo b{color:var(--charcoal)}
+
+/* L'écran, tel qu'il est aujourd'hui : des plages posées sur le fond. */
+.formes{display:flex;gap:6px;margin-top:18px}
+.formes button{flex:1;min-height:44px;background:var(--cream);border:0;border-radius:11px;
+               font:inherit;font-size:13.5px;color:var(--charcoal-soft);cursor:pointer;
+               box-shadow:inset 0 0 0 1px var(--line)}
+.formes button[aria-selected="true"]{background:var(--pine);color:var(--surPlein);box-shadow:none}
+.ecran{margin-top:12px}
+.retour{display:inline-block;min-width:34px;min-height:34px;line-height:34px;
+        color:var(--muted);font-size:19px;background:none;border:0;padding:0;cursor:pointer}
+.titreModif{margin:2px 0 0;font-family:Georgia,serif;font-weight:400;font-size:22px}
+.plage{background:var(--cream);border-radius:16px;padding:16px 17px;margin-top:12px}
+.entete{font-family:Georgia,serif;font-size:17px}
+.echeance{display:flex;align-items:center;gap:10px;margin-top:10px;
+          font-size:13px;color:var(--muted)}
+.echeance .jour{background:var(--bone);border:1px solid var(--line);border-radius:9px;
+                padding:9px 12px;font-size:15px;color:var(--charcoal)}
+.cap{font-size:9.5px;font-weight:600;letter-spacing:.22em;text-transform:uppercase;
+     color:var(--muted)}
+.cap.ts{color:var(--or)}
+
+.l{display:flex;justify-content:space-between;align-items:baseline;gap:12px;
+   padding:8px 0;font-size:14.5px;font-variant-numeric:tabular-nums}
+.l .quoi{flex:1;line-height:1.35}
+.l .quoi small{display:block;color:var(--muted);font-size:11.5px}
+.l .mt{color:var(--muted);white-space:nowrap}
+.l.ferme .mt{color:var(--muted)}
+.l .x{flex:none;width:30px;height:30px;border:0;background:none;color:var(--muted);
+      font-size:16px;cursor:pointer}
+
+.tot{display:flex;justify-content:space-between;padding:3px 0;font-size:14px;
+     color:var(--muted);font-variant-numeric:tabular-nums}
+.sep{height:1px;background:var(--line);margin:10px 0}
+.ttc{text-align:center;margin-top:6px}
+.ttc .cap{display:block}
+.ttc .chiffre{font-family:Georgia,serif;font-size:34px;color:var(--or);
+              line-height:1.2;font-variant-numeric:tabular-nums}
+.liens{text-align:center;margin-top:12px;font-size:14px;line-height:2}
+.liens a{color:var(--charcoal);text-decoration:underline}
+.liens .fichier{font-size:13px;color:var(--charcoal-soft)}
+
+.question{margin:22px 0 0;text-align:center;font-size:14px;color:var(--muted)}
+.ajouter{display:block;width:100%;margin-top:10px;background:none;
+         border:1px solid var(--line);border-radius:999px;padding:13px 18px;
+         font:inherit;font-size:14.5px;font-family:Georgia,serif;color:var(--charcoal);
+         cursor:pointer}
+
+.saisie{margin-top:12px}
+.saisie input{width:100%;margin-top:8px;background:var(--bone);border:1px solid var(--line);
+              border-radius:10px;padding:12px 12px;font:inherit;font-size:14.5px;color:inherit}
+.saisie .duo{display:flex;gap:8px}
+.saisie .duo input{flex:1}
+.saisie .duo input:last-child{flex:1.2}
+.valider{display:block;width:100%;margin-top:10px;background:var(--pine);color:var(--surPlein);
+         border:0;border-radius:999px;padding:13px 18px;font-size:14.5px;
+         font-family:Georgia,serif;cursor:pointer}
+.valider[disabled]{opacity:.38;cursor:default}
+.suggestions{display:flex;flex-wrap:wrap;gap:7px;margin-top:10px}
+.suggestions button{background:var(--paper);border:0;border-radius:999px;padding:9px 13px;
+                    font:inherit;font-size:12.5px;color:var(--charcoal-soft);cursor:pointer}
+
+.canal{display:flex;gap:9px;margin-top:10px}
+.canal button{flex:1;min-height:46px;background:none;border:0;border-radius:999px;
+              font:inherit;font-size:14px;color:var(--charcoal);cursor:pointer;
+              box-shadow:inset 0 0 0 1px var(--line)}
+.canal button[aria-selected="true"]{box-shadow:inset 0 0 0 1.5px var(--or);background:var(--paper)}
+.au{margin:8px 0 0;text-align:center;font-size:12.5px;color:var(--muted)}
+.envoyer{display:block;width:100%;margin-top:14px;background:var(--pine);color:var(--surPlein);
+         border:0;border-radius:999px;padding:15px 20px;font-size:15.5px;
+         font-family:Georgia,serif;cursor:pointer}
+
+/* L'aperçu du papier : ce que le client reçoit. */
+.papier{margin-top:12px;background:var(--bone);border-radius:6px;padding:16px 15px;
+        box-shadow:inset 0 0 0 1px var(--line)}
+.papier .tete{display:flex;justify-content:space-between;align-items:baseline}
+.papier .num{font-family:Georgia,serif;font-size:15px}
+.papier .jour{font-size:11.5px;color:var(--muted)}
+.papier h4{margin:14px 0 3px;font-size:9px;font-weight:600;letter-spacing:.2em;
+           text-transform:uppercase;color:var(--or)}
+.papier .pl{display:flex;justify-content:space-between;gap:10px;padding:4px 0;
+            font-size:12.5px;color:var(--charcoal-soft);font-variant-numeric:tabular-nums}
+.papier .pl span:first-child{flex:1}
+.papier .fin{margin-top:12px;padding-top:9px;border-top:1px solid var(--line)}
+
+.note{margin-top:20px;background:var(--cream);border-radius:13px;padding:15px 16px;
+      font-size:12.5px;line-height:1.65;color:var(--charcoal-soft);
+      box-shadow:inset 0 0 0 1px var(--line)}
+.note .t{display:block;margin-bottom:6px;font-size:9px;font-weight:600;
+         letter-spacing:.2em;text-transform:uppercase;color:var(--or)}
+.note b{color:var(--charcoal)}
+.note a{color:var(--or)}
+.autres{margin-top:14px;font-size:13px;line-height:2}
+.autres a{color:var(--or)}
+[hidden]{display:none!important}
+</style>
+</head>
+<body>
+<div class="page">
+  <p class="sur">Travaux en plus · votre idée</p>
+  <h1>Sur la facture</h1>
+  <p class="chapo">Votre écran, tel qu'il est. <b>Ce qui s'ajoute entre dans un bloc à part</b>, et l'envoi ne change pas d'un geste.</p>
+
+  <div class="formes" role="tablist">
+    <button type="button" role="tab" aria-selected="true" data-forme="ecran">Sur un écran à part</button>
+    <button type="button" role="tab" aria-selected="false" data-forme="deroule">Déroulé sous le bouton</button>
+  </div>
+
+  <div class="ecran" id="vueFacture">
+    <div class="plage">
+      <div class="entete">F2026-000001 — Mme Grospiron</div>
+      <div class="echeance">À régler avant le <span class="jour">28 sept. 2026</span></div>
+    </div>
+
+    <div class="plage">
+      <p class="cap">Reprise du devis</p>
+      <div class="l ferme"><span class="quoi">Tonte du gazon et entretien des espaces verts (600 m²)</span><span class="mt">350,00 €</span></div>
+      <div class="l ferme"><span class="quoi">Haie de laurier (50 ml)</span><span class="mt">150,00 €</span></div>
+    </div>
+
+    <div class="plage" id="plageTs" hidden>
+      <p class="cap ts">Travaux supplémentaires</p>
+      <div id="lignesTs"></div>
+    </div>
+
+    <div class="plage">
+      <div class="tot"><span>Total HT</span><span id="ht">500,00 €</span></div>
+      <div class="tot"><span>TVA 20 %</span><span id="tva">100,00 €</span></div>
+      <div class="sep"></div>
+      <div class="ttc">
+        <span class="cap">Total TTC</span>
+        <span class="chiffre" id="ttc">600,00 €</span>
+      </div>
+      <p class="liens">
+        <a href="#apercu" id="voirPdf">Voir la facture en PDF</a><br>
+        <span class="fichier">Télécharger (F2026-000001-brouillon.pdf)</span>
+      </p>
+    </div>
+
+    <p class="question">Rien n'a changé depuis le devis ?</p>
+    <button class="ajouter" type="button" id="ouvrir">Ajouter des travaux supplémentaires</button>
+    <div id="placeDeroulee"></div>
+
+    <div class="plage" id="apercu" hidden>
+      <p class="cap">Ce que reçoit Mme Grospiron</p>
+      <div class="papier" id="papier"></div>
+    </div>
+
+    <div class="plage">
+      <p class="cap">Comment lui envoyer sa facture ?</p>
+      <div class="canal">
+        <button type="button" data-canal="sms" aria-selected="true">Par SMS</button>
+        <button type="button" data-canal="mail" aria-selected="false">Par e-mail</button>
+      </div>
+      <p class="au">Au 0679984514</p>
+      <button class="envoyer" type="button">Envoyer la facture</button>
+    </div>
+  </div>
+
+  <div class="ecran" id="vueModif" hidden>
+    <div class="plage">
+      <button class="retour" type="button" id="revenir">‹</button>
+      <p class="titreModif">Modifier la facture</p>
+    </div>
+
+    <div class="plage">
+      <p class="cap">Reprise du devis</p>
+      <div class="l ferme"><span class="quoi">Tonte du gazon et entretien des espaces verts (600 m²)</span><span class="mt">350,00 €</span></div>
+      <div class="l ferme"><span class="quoi">Haie de laurier (50 ml)</span><span class="mt">150,00 €</span></div>
+    </div>
+
+    <div class="plage" id="plageTsModif" hidden>
+      <p class="cap ts">Travaux supplémentaires</p>
+      <div id="lignesTsModif"></div>
+    </div>
+
+    <div id="placeEcran"></div>
+
+    <div class="plage">
+      <div class="tot"><span>Total HT</span><span id="htModif">500,00 €</span></div>
+      <div class="tot"><span>TVA 20 %</span><span id="tvaModif">100,00 €</span></div>
+      <div class="sep"></div>
+      <div class="ttc"><span class="cap">Total TTC</span><span class="chiffre" id="ttcModif">600,00 €</span></div>
+      <button class="envoyer" type="button" id="validerFacture">Valider la facture</button>
+    </div>
+  </div>
+
+  <!-- Un SEUL bloc de saisie, déplacé d'une forme à l'autre : deux copies
+       finiraient par diverger, et c'est la règle du dépôt (CLAUDE.md §3). -->
+  <div class="plage saisie" id="saisie" hidden>
+    <input id="nNom" type="text" placeholder="Ce qui a été fait en plus">
+    <div class="duo">
+      <input id="nQte" type="text" inputmode="decimal" placeholder="Quantité et unité" value="1 forfait">
+      <input id="nPu" type="text" inputmode="decimal" placeholder="Prix unitaire €">
+    </div>
+    <div class="suggestions" id="suggestions"></div>
+    <button class="valider" type="button" id="valider">Ajouter</button>
+  </div>
+
+  <div class="note"><span class="t">Est-ce légal ? oui</span>
+    Tant qu'elle est en <b>brouillon</b>, la facture n'existe pas encore : elle
+    se corrige librement. Une fois <b>envoyée</b>, elle ne bouge plus — il faut
+    un avoir. Deux règles s'appliquent quand même : chaque ligne porte sa
+    <b>quantité et son prix unitaire</b> (un « travaux supplémentaires : 320 € »
+    global ne suffit pas), et c'est l'<b>accord du client</b>, pas la facture,
+    qui rend la somme exigible.
+  </div>
+
+  <div class="note"><span class="t">Ce que cette page ne fait pas</span>
+    Rien n'est enregistré, rien ne part chez personne. Le PDF ne s'ouvre pas :
+    <b>son aperçu s'affiche plus haut</b>, pour voir où le supplément se lit.
+  </div>
+
+  <p class="autres">
+    <a href="ts-bon-sur-place.html">Le faire signer sur place</a><br>
+    <a href="ts-avenant.html">L'avenant, si vous voulez la trace avant</a><br>
+    <a href="essais.html">Toutes les maquettes</a>
+  </p>
+</div>
+
+<script>
+/* Le devis de sa facture, au centime. Ces deux lignes ne bougent pas : ce sont
+   celles qu'elle a acceptées, et les retoucher ferait mentir « reprise du
+   devis ». Ce qui s'ajoute vit dans l'autre bloc. */
+const DEVIS = [
+  { quoi:'Tonte du gazon et entretien des espaces verts (600 m²)', mt:350 },
+  { quoi:'Haie de laurier (50 ml)', mt:150 }
+];
+const TAUX = 0.20;
+/* Trois raccourcis pris de sa fiche de chantier et de sa grille — ils
+   REMPLISSENT le formulaire, ils n'ajoutent rien tout seuls : le prix se
+   corrige avant d'entrer sur une facture. */
+const RACCOURCIS = [
+  { nom:'Dessouchage',              qte:'1 forfait', pu:'320' },
+  { nom:'Évacuation des déchets',   qte:'1 forfait', pu:'180' },
+  { nom:"Main-d'œuvre — 1 personne",qte:'1 jour',    pu:'250' }
+];
+
+const euros = n => n.toLocaleString('fr-FR',{minimumFractionDigits:2,maximumFractionDigits:2}) + ' €';
+const $ = s => document.querySelector(s);
+const devisHt = DEVIS.reduce((s,l) => s + l.mt, 0);
+
+let ts = [];
+let forme = 'ecran';
+
+/* ── Les deux formes ──────────────────────────────────────────────────────
+   Le bloc de saisie est UNIQUE : il déménage sous le bouton, ou dans l'écran
+   de modification. Deux formulaires jumeaux auraient divergé au premier
+   changement de libellé. */
+document.querySelectorAll('[data-forme]').forEach(b => b.addEventListener('click', () => {
+  document.querySelectorAll('[data-forme]').forEach(x => x.setAttribute('aria-selected', x === b));
+  forme = b.dataset.forme;
+  fermerSaisie();
+  montrerFacture();
+}));
+
+function montrerFacture(){
+  $('#vueFacture').hidden = false;
+  $('#vueModif').hidden = true;
+  window.scrollTo({ top:0, behavior:'smooth' });
+}
+function montrerModif(){
+  $('#vueFacture').hidden = true;
+  $('#vueModif').hidden = false;
+  window.scrollTo({ top:0, behavior:'smooth' });
+}
+function fermerSaisie(){ $('#saisie').hidden = true; }
+
+$('#ouvrir').addEventListener('click', () => {
+  if (forme === 'ecran'){
+    $('#placeEcran').appendChild($('#saisie'));
+    $('#saisie').hidden = false;
+    montrerModif();
+  } else {
+    $('#placeDeroulee').appendChild($('#saisie'));
+    $('#saisie').hidden = !$('#saisie').hidden;
+  }
+  if (!$('#saisie').hidden) $('#nNom').focus();
+});
+
+$('#revenir').addEventListener('click', montrerFacture);
+$('#validerFacture').addEventListener('click', montrerFacture);
+
+/* ── Les lignes ajoutées, rendues aux deux endroits ───────────────────────── */
+function rendreLignes(hote){
+  hote.innerHTML = '';
+  ts.forEach((l,i) => {
+    const d = document.createElement('div');
+    d.className = 'l';
+    d.innerHTML = '<span class="quoi">' + l.nom + '<small>' + l.qte + ' × ' + euros(l.pu) + '</small></span>' +
+                  '<span class="mt">' + euros(l.mt) + '</span>' +
+                  '<button class="x" type="button" aria-label="Retirer">×</button>';
+    d.querySelector('.x').addEventListener('click', () => { ts.splice(i,1); dessiner(); });
+    hote.appendChild(d);
+  });
+}
+
+function dessiner(){
+  $('#plageTs').hidden = ts.length === 0;
+  $('#plageTsModif').hidden = ts.length === 0;
+  rendreLignes($('#lignesTs'));
+  rendreLignes($('#lignesTsModif'));
+  const ht = devisHt + ts.reduce((s,l) => s + l.mt, 0);
+  $('#ht').textContent  = $('#htModif').textContent  = euros(ht);
+  $('#tva').textContent = $('#tvaModif').textContent = euros(ht * TAUX);
+  $('#ttc').textContent = $('#ttcModif').textContent = euros(ht * (1 + TAUX));
+  dessinerPapier(ht);
+}
+
+/* ── L'aperçu du papier ───────────────────────────────────────────────────── */
+function dessinerPapier(ht){
+  let h = '<div class="tete"><span class="num">F2026-000001</span>' +
+          '<span class="jour">Mme Grospiron</span></div>' +
+          '<h4>Travaux du devis</h4>';
+  DEVIS.forEach(l => h += '<div class="pl"><span>' + l.quoi + '</span><span>' + euros(l.mt) + '</span></div>');
+  if (ts.length){
+    /* Le titre ne porte que le nom du bloc — sa correction du 1ᵉʳ septembre. */
+    h += '<h4>Travaux supplémentaires</h4>';
+    ts.forEach(l => h += '<div class="pl"><span>' + l.nom + ' · ' + l.qte + ' × ' + euros(l.pu) +
+                         '</span><span>' + euros(l.mt) + '</span></div>');
+  }
+  h += '<div class="fin">' +
+       '<div class="pl"><span>Total HT</span><span>' + euros(ht) + '</span></div>' +
+       '<div class="pl"><span>TVA 20 %</span><span>' + euros(ht * TAUX) + '</span></div>' +
+       '<div class="pl"><span>Total TTC</span><span>' + euros(ht * (1 + TAUX)) + '</span></div></div>';
+  $('#papier').innerHTML = h;
+}
+
+/* ── La saisie ────────────────────────────────────────────────────────────── */
+function dessinerRaccourcis(){
+  RACCOURCIS.forEach(r => {
+    const b = document.createElement('button');
+    b.type = 'button'; b.textContent = r.nom;
+    b.addEventListener('click', () => {
+      $('#nNom').value = r.nom; $('#nQte').value = r.qte; $('#nPu').value = r.pu;
+      majValider();
+    });
+    $('#suggestions').appendChild(b);
+  });
+}
+
+function nombre(v){
+  const n = parseFloat(String(v).replace(',','.').replace(/[^0-9.\-]/g,''));
+  return isNaN(n) ? null : n;
+}
+function majValider(){
+  $('#valider').disabled = !($('#nNom').value.trim() && nombre($('#nPu').value) !== null);
+}
+['#nNom','#nQte','#nPu'].forEach(s => $(s).addEventListener('input', majValider));
+
+$('#valider').addEventListener('click', () => {
+  const nom = $('#nNom').value.trim();
+  const qte = $('#nQte').value.trim() || '1';
+  const pu  = nombre($('#nPu').value);
+  const combien = nombre(qte);
+  if (!nom || pu === null) return;
+  ts.push({ nom, qte, pu, mt: (combien === null ? 1 : combien) * pu });
+  $('#nNom').value = ''; $('#nQte').value = '1 forfait'; $('#nPu').value = '';
+  majValider();
+  dessiner();
+  /* Sur l'écran à part, la saisie reste ouverte : on ajoute souvent deux
+     lignes de suite, et rouvrir le formulaire à chaque fois serait un geste
+     pour rien. Déroulée sous le bouton, elle se referme — sinon elle pousse
+     le total hors de l'écran, ce qu'il a lui-même relevé. */
+  if (forme !== 'ecran') fermerSaisie();
+});
+
+document.querySelectorAll('[data-canal]').forEach(b => b.addEventListener('click', () => {
+  document.querySelectorAll('[data-canal]').forEach(x => x.setAttribute('aria-selected', x === b));
+  $('.au').textContent = b.dataset.canal === 'sms' ? 'Au 0679984514' : 'À mme.grospiron@exemple.fr';
+}));
+
+$('#voirPdf').addEventListener('click', e => {
+  e.preventDefault();
+  $('#apercu').hidden = false;
+  $('#apercu').scrollIntoView({ behavior:'smooth', block:'center' });
+});
+
+dessinerRaccourcis();
+majValider();
+dessiner();
+</script>
+</body>
+</html>
