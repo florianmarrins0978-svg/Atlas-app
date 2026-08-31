@@ -129,4 +129,4 @@ téléphone, dont la hauteur utile est de l'ordre de 770 px, il tient toujours.
 
 ---
 
-*Le détail technique, et ce qui a été écarté : `ARCHITECTURE.md` §216.*
+*Le détail technique, et ce qui a été écarté : `ARCHITECTURE.md` §217.*

@@ -9,12 +9,50 @@ sert.
 
 ---
 
-## Dernier lot : la connexion tient dans un écran (31 août 2026)
+## Dernier lot : le prix qui ne débloquait rien, et le lendemain qu'on lui refusait (31 août 2026)
+
+Ses deux captures du matin, sur l'écran d'envoi du devis. Compte-rendu qui lui
+est destiné : `docs/devis-prix-et-date-proche.md`.
+
+**Ce qu'il faut savoir avant d'y toucher :**
+
+- **Le drapeau « à chiffrer » s'éteint sur le montant CALCULÉ, jamais sur
+  l'entrée.** Deux écrans écrivent dans `modifierLignePrix` et ils n'envoient
+  pas la même chose : l'écran Prix poste `{ montant }`, l'écran du devis poste
+  `{ libelle, quantite, prixUnitaire }`. Lire `data.montant` laissait le second
+  chemin bloquer l'envoi pour toujours — sans aucune sortie, et sans que rien à
+  l'écran ne le trahisse.
+- **UN MONTANT POSÉ RÉPOND À LA QUESTION — le drapeau ne décide pas seul.**
+  Sa troisième capture : un PDF portant « à chiffrer » sur des lignes qui
+  pesaient 1 720 €, sous un Total HT qui les comptait. Une seule fonction lit
+  désormais cette question (`ligneAttendSonPrix`) pour l'écran, le PDF et
+  l'envoi — elle n'était juste que sur l'écran. **Ce qui est imprimé fait le
+  total imprimé.**
+- **Et c'est sûr parce que les deux chemins qui lèvent le drapeau écrivent
+  `montant: "0"` avec lui.** Un montant non nul sur une ligne marquée vient
+  forcément de sa main, jamais d'un prix deviné. Si un jour un chemin écrit un
+  montant deviné sous le drapeau, cet invariant tombe — c'est la seule chose à
+  surveiller.
+- **L'extinction est à SENS UNIQUE, et c'est délibéré.** Un montant qui retombe
+  à zéro ne relève pas le drapeau : « à chiffrer » dit que le prix n'a pas été
+  trouvé, pas que la ligne vaut zéro.
+- **Le délai de deux jours n'est plus une interdiction.** Il gouverne ce que
+  l'application SUGGÈRE (`fenetreProposition`) ; ce que le patron CHOISIT
+  (`fenetrePatron`) commence aujourd'hui. Réunir les deux fenêtres casserait
+  l'une des deux règles, dans un sens ou dans l'autre.
+- **Le piège qui aurait suivi, et qui était muet :** une date proposée avant
+  après-demain tombait sous la fenêtre du CLIENT, qui se serait fait répondre
+  « date indisponible » sur la date qu'il venait de recevoir. `bandesVisibles`
+  descend son plancher jusqu'à la date proposée, jamais plus bas.
+
+Raisons et pièges : `ARCHITECTURE.md` §216.
+
+## Le même jour : la connexion tient dans un écran (31 août 2026)
 
 **Sa demande :** *« Pour la page connexion je veux qu'elle tienne sur une seule
 page et supprime toutes les petites phrases en gris sous les boutons, garde que
 les titres. »* Compte-rendu qui lui est destiné : `docs/connexion-une-page.md` ;
-le raisonnement complet, `ARCHITECTURE.md` §216.
+le raisonnement complet, `ARCHITECTURE.md` §217.
 
 **Ce qu'il faut savoir avant d'y toucher :**
 
@@ -70,7 +108,7 @@ dictée. Compte-rendu qui lui est destiné : `docs/note-vocale-messagerie.md`.
 
 Raisons et pièges : `ARCHITECTURE.md` §211.
 
-## Lot précédent : « J'ai vu » sur les quatre rappels (30 août 2026)
+## Encore avant : « J'ai vu » sur les quatre rappels (30 août 2026)
 
 Sa demande du jour : chaque notification doit pouvoir se ranger d'un appui. Les
 trois rappels qui n'avaient aucun geste en ont un, et la facture impayée prend

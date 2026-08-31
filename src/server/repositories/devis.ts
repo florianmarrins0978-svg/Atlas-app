@@ -10,6 +10,7 @@ import type { Ctx } from "./context";
 import { genererPdfDevis } from "../pdf/devis-pdf";
 import { enregistrerObjet } from "../storage";
 import { ecrireNumero, repartChaqueAnnee } from "@/lib/numero-documents";
+import { lignesEnAttenteDePrix } from "@/lib/preparation-devis";
 
 const TAUX_TVA_DEFAUT = "20.00";
 
@@ -399,12 +400,17 @@ export async function envoyerDevis(ctx: Ctx, devisId: string) {
     //
     // Un devis envoyé est immuable — le corriger demande une nouvelle version,
     // et le client, lui, a déjà lu « 0 € » en face d'un travail.
-    const enAttente = lignes.filter((l) => l.aChiffrer);
-    if (enAttente.length > 0) {
+    //
+    // **La phrase vient de `lignesEnAttenteDePrix`, et n'est plus réécrite
+    // ici.** Elle l'était, et les deux versions ont divergé : celle-ci disait
+    // « 2 lignes attendent **son** prix […] Posez-**le** » — le pluriel traité
+    // sur le verbe et nulle part ailleurs. Une seule fonction pour l'écran et
+    // pour le serveur (`CLAUDE.md` §3).
+    const enAttente = lignesEnAttenteDePrix(lignes);
+    if (enAttente) {
       throw new Error(
-        `Ce devis ne peut pas être envoyé : ${enAttente.length === 1 ? "une ligne attend" : `${enAttente.length} lignes attendent`} ` +
-          `son prix (${enAttente.map((l) => `« ${l.libelle.split("\n")[0]} »`).join(", ")}). ` +
-          "Posez-le sur l'écran Prix, puis revenez ici."
+        `Ce devis ne peut pas être envoyé : ${enAttente} ` +
+          "Posez leur montant sur l'écran du devis, puis revenez ici."
       );
     }
     const habillage = await allureDesDocuments(tx, ctx.entrepriseId);
