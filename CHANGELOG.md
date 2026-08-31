@@ -9,6 +9,28 @@ Format : le plus récent en tête.
 
 ## 2026-08-31
 
+### Trois écartés qu'il a fait rentrer : l'étiquette « Facturer » et les deux bandeaux
+
+**Sa réponse, après avoir lu la liste des sept écartés :** *« l'étiquette à
+facturer et les deux bandeaux de confirmation, rajoute-les »*. Les quatre autres
+restent dehors — le point clignotant, la barre de progression, l'étiquette de
+statut d'une journée et l'interrupteur du temps passé.
+
+**Ce qu'ils reçoivent n'est pas la même chose, et il faut le savoir :**
+
+| | |
+|---|---|
+| l'étiquette « Facturer » | le vert **et** le geste : elle vit dans le lien de la ligne, l'appuyer l'active vraiment |
+| les deux bandeaux | le vert **seulement** : ce sont des `role="status"`, rien ne s'y appuie et `:active` ne s'y déclenchera jamais |
+
+Le dire plutôt que de laisser croire que trois éléments se comportent pareil :
+un bandeau qui aurait l'air d'un bouton sans en être un se toucherait pour rien.
+
+**Un point que je n'ai pas su élucider, et qui s'écrit plutôt que de se taire :**
+un premier passage des suites a rendu 299/300 sans que j'aie gardé le journal,
+donc sans pouvoir nommer la rouge. Les deux passages suivants, journal complet
+gardé, donnent 300/300. Ce n'est pas « un flottement » — c'est une inconnue.
+
 ### Le geste et le vert sur TOUS les boutons pleins, et sur les deux notes vocales
 
 **Sa demande :** *« pour chaque bouton fais également le geste discret ; lorsque

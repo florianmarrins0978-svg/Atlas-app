@@ -116,7 +116,10 @@ export default function MesMesuresClient({
       {defait && (
         <div
           role="status"
-          className="flex items-center gap-3 rounded-[4px] px-4 py-3"
+          // **Il l'a demandé dedans le 31 août.** Le bandeau prend le vert des
+          // boutons pleins. Il ne prend PAS de geste utile : rien ne s'y
+          // appuie — `:active` ne se déclenchera jamais, et c'est normal.
+          className="atlas-plein flex items-center gap-3 rounded-[4px] px-4 py-3"
           style={{ backgroundColor: colors.rust, color: colors.card }}
         >
           <span className="flex-1 text-[12.5px] leading-snug">
