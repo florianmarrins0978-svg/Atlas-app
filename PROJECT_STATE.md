@@ -1309,7 +1309,9 @@ l'application. Ce qui est **fait** :
   manque. Sans adresse, rien ne s'invente : les destinations s'éteignent.
   Retenu après quatre maquettes (`docs/maquettes/29` à `32`). Les gestes ont
   déménagé dans la feuille de chantier le 21 août ; la règle pure, elle, n'a pas
-  bougé (`src/lib/itineraire.ts`). `ARCHITECTURE.md` §70.
+  bougé (`src/lib/itineraire.ts`). Le bouton « Maps » ouvre **Google Maps**
+  depuis le 31 août — c'est Plans d'Apple qui est sorti, pas Google.
+  `ARCHITECTURE.md` §70.
 - **Le planning au mois, et les équipes nommées** (10 août, au soir) : sept
   colonnes sans bordure et la journée qui s'ouvre sous le calendrier. Réglages
   laisse nommer les équipes — mais **seulement à partir de deux** : seul, le mot
