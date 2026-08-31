@@ -1,0 +1,499 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Le planning se souvient — un an en arrière</title>
+<style>
+  /* ─── LES JETONS DES DEUX CHARTES, RELEVÉS DANS LE CODE ────────────────────
+     Sortis de `src/lib/chartes.ts` par un script (`variablesCharte`), jamais
+     approchés à l'œil. Sa capture du 31 août est en **Nuit** : la planche s'y
+     ouvre, sans quoi on jugerait une proposition sur un écran qu'il n'a pas.
+     Sur Nuit l'accent est CLAIR et le fond SOMBRE — les pôles s'inversent, et
+     c'est exactement là qu'une couleur écrite en dur se trompe. */
+  :root{
+    --cream:#f5f3ee; --card:#faf9f5; --ink:#1c1c1a; --inkSoft:#4a4a44;
+    --muted:#8a8578; --rust:#2f3b2f; --rustTint:#ece9e1; --or:#B98B47;
+    --line:rgba(28,28,26,0.12); --chevron:rgba(28,28,26,0.28);
+    --vertPale:#b9c6b4; --bordeaux:#6E2433;
+    /* Le voile d'encre : c'est lui qui peint « fait » dans la proposition A.
+       Écrit ainsi, il est sombre sur une charte claire et clair sur une
+       sombre, sans que la planche ait à savoir laquelle est posée. */
+    --fait:rgba(28,28,26,0.30);
+    --weekend:rgba(28,28,26,0.035); --weekendTexte:rgba(28,28,26,0.42);
+    --hors:#e6e3dc; --horsTexte:#4a4a44;
+  }
+  body[data-charte="nuit"]{
+    --cream:#101210; --card:#1a1d19; --ink:#e9e8de; --inkSoft:#c1c2b6;
+    --muted:#84887b; --rust:#e9e8de; --rustTint:#1f211e; --or:#c6a15b;
+    --line:rgba(233,232,222,0.12); --chevron:rgba(233,232,222,0.28);
+    --vertPale:#738b6a; --bordeaux:#b53b54;
+    --fait:rgba(233,232,222,0.30);
+    --weekend:rgba(233,232,222,0.035); --weekendTexte:rgba(233,232,222,0.42);
+    --hors:#0a0b0a; --horsTexte:#c1c2b6;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{background:var(--hors);color:var(--horsTexte);
+       font:16px/1.5 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+       -webkit-text-size-adjust:100%;padding:0 0 34px;
+       transition:background .25s,color .25s}
+
+  .bandeau{background:#1c1c1a;color:#f5f3ee;padding:15px 18px;font-size:13px;line-height:1.55}
+  .bandeau b{color:#fff}
+
+  /* Cibles de 46 px : il regarde cet écran sur un chantier, souvent avec un
+     gant. Une pastille qu'on rate deux fois sur trois n'est pas élégante. */
+  .choix{position:sticky;top:0;z-index:5;background:var(--hors);
+         padding:12px 12px 10px;display:flex;gap:7px;justify-content:center;
+         flex-wrap:wrap;box-shadow:0 6px 18px -12px rgba(0,0,0,.45);
+         transition:background .25s}
+  .choix button{min-height:46px;min-width:46px;padding:0 14px;border-radius:999px;
+                border:1px solid var(--line);background:var(--card);color:var(--ink);
+                font:600 13px/1 ui-sans-serif,sans-serif;letter-spacing:.06em;
+                cursor:pointer;-webkit-tap-highlight-color:transparent;
+                transition:background .18s,color .18s,border-color .18s}
+  .choix button[aria-pressed="true"]{background:var(--rust);color:var(--card);
+                                     border-color:var(--rust)}
+
+  .tel{max-width:430px;margin:16px auto 0;background:var(--cream);
+       border-radius:26px;overflow:hidden;box-shadow:0 18px 46px rgba(20,18,14,.22);
+       padding:0 0 6px;transition:background .25s}
+
+  .tete{padding:26px 26px 0}
+  .tete h1{margin:0;font:400 40px/1.05 ui-serif,Georgia,"Iowan Old Style",serif;color:var(--ink)}
+  .tete p{margin:8px 0 0;font:700 11px/1 ui-sans-serif,sans-serif;
+          letter-spacing:.22em;text-transform:uppercase;color:var(--or)}
+
+  /* ─── LE MOIS — la géométrie de `MoisCharge.tsx`, au pixel ────────────────
+     Cases carrées espacées de 4 px, rayon 10, chiffre serif 17 px, deux barres
+     de 6 px sur 24. La planche ne redessine pas le calendrier : elle ne change
+     QUE ce que les jours passés portent. */
+  .mois{margin:18px 12px 0}
+  .navmois{display:flex;align-items:center;justify-content:space-between;gap:10px}
+  .fleche{width:42px;height:42px;flex:none;border-radius:999px;border:1px solid var(--line);
+          background:var(--card);color:var(--ink);font-size:19px;line-height:1;
+          cursor:pointer;-webkit-tap-highlight-color:transparent}
+  .fleche[disabled]{opacity:.25;cursor:default}
+  .navmois b{flex:1;text-align:center;font:700 15px/1.2 ui-sans-serif,sans-serif;color:var(--ink)}
+
+  .entetes{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;text-align:center;
+           margin:16px 0 6px;font:600 10px/1 ui-sans-serif,sans-serif;
+           letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+  .entetes span.we{color:var(--weekendTexte)}
+
+  .grille{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+  .case{aspect-ratio:1/1.06;border:0;padding:0;border-radius:10px;background:transparent;
+        display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;
+        cursor:pointer;-webkit-tap-highlight-color:transparent}
+  .case.we{background:var(--weekend)}
+  .case.touche{background:var(--rustTint);box-shadow:inset 0 0 0 1.5px var(--ink)}
+  .case.auj{box-shadow:inset 0 0 0 1.5px var(--or)}
+  .case .num{font:400 17px/1 ui-serif,Georgia,serif;color:var(--ink)}
+  .case.we .num{color:var(--weekendTexte)}
+  .case.auj .num{color:var(--or);font-weight:600}
+  .marque{width:24px;display:flex;flex-direction:column;gap:2.5px}
+  .case.we .marque{visibility:hidden}
+  .barre{height:6px;border-radius:2px;background:var(--card);
+         box-shadow:inset 0 0 0 1px var(--line);overflow:hidden;display:flex}
+  .barre i{height:100%;display:block}
+  .seg-dispo{background:var(--vertPale)}
+  .seg-plein{background:var(--rust)}
+  .seg-dela{background:var(--bordeaux)}
+  .seg-fait{background:var(--fait)}
+
+  .retour{display:block;margin:12px auto 0;border:0;background:transparent;
+          font:600 11px/1 ui-sans-serif,sans-serif;letter-spacing:.18em;
+          text-transform:uppercase;color:var(--or);cursor:pointer}
+
+  .legende{margin:14px 0 0;display:flex;flex-wrap:nowrap;align-items:center;
+           justify-content:center;gap:6px;font-size:9px;color:var(--muted)}
+  .legende span{display:flex;align-items:center;gap:5px;white-space:nowrap;flex:none}
+  .legende i.carre{width:10px;height:10px;flex:none;border-radius:3px;display:block}
+  .legende i.libre{background:var(--card);box-shadow:inset 0 0 0 1px var(--line)}
+  .legende .pos{gap:7px}
+  .legende .pos .paire{width:24px;flex:none;display:flex;flex-direction:column;
+                     align-items:stretch;gap:2.5px}
+  .legende .pos .paire i{height:6px;border-radius:2px;background:var(--card);
+                         box-shadow:inset 0 0 0 1px var(--line);display:block}
+  .legende .pos .mots{display:flex;flex-direction:column;gap:2.5px;line-height:1}
+  .legende .pos .mots b{height:6px;display:flex;align-items:center;
+                        font:600 9.5px/1 ui-sans-serif,sans-serif;color:var(--inkSoft)}
+
+  /* ─── LA FICHE DU JOUR ────────────────────────────────────────────────────*/
+  .carte{margin:16px 18px 0;border-radius:10px;background:var(--card);padding:14px 15px}
+  .carte .quand{margin:0 0 14px;text-align:center;font:700 12.5px/1 ui-sans-serif,sans-serif;
+                letter-spacing:.14em;text-transform:uppercase;color:var(--ink)}
+  .bloc{margin-top:16px}
+  .bloc:first-of-type{margin-top:0}
+  .bloc .nom{font:400 19px/1.2 ui-serif,Georgia,serif;color:var(--ink)}
+  .demi{margin-top:8px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .pastille{width:14px;height:14px;flex:none;border-radius:4px;background:var(--card);
+            box-shadow:inset 0 0 0 1px var(--line)}
+  .pastille.dispo{background:var(--vertPale);box-shadow:none}
+  .pastille.plein{background:var(--rust);box-shadow:none}
+  .pastille.dela{background:var(--bordeaux);box-shadow:none}
+  .pastille.fait{background:var(--fait);box-shadow:none}
+  .demi .mot{width:80px;flex:none;font:600 10px/1.15 ui-sans-serif,sans-serif;
+             letter-spacing:.06em;text-transform:uppercase;color:var(--ink)}
+  .demi .qui{border-radius:999px;background:var(--rust);color:var(--card);
+             padding:5px 11px;font-size:12.5px;white-space:nowrap}
+  .demi .libre{margin-left:auto;font-size:12px;color:var(--muted)}
+  .ajouter{margin-top:16px;width:100%;min-height:44px;border-radius:10px;
+           border:1px dashed var(--line);background:transparent;color:var(--inkSoft);
+           font:600 12.5px/1 ui-sans-serif,sans-serif;cursor:default}
+
+  /* Ce que le jour passé porte EN PLUS : la porte vers sa fiche. Un chevron de
+     navigation, pas une flèche d'ornement — il montre un sens. */
+  .versfiche{margin-left:auto;display:flex;align-items:center;gap:6px;
+             font:600 10px/1 ui-sans-serif,sans-serif;letter-spacing:.12em;
+             text-transform:uppercase;color:var(--or)}
+  .versfiche em{font-style:normal;color:var(--chevron);font-size:17px;line-height:1}
+
+  .barrebas{margin:18px 0 0;border-top:1px solid var(--line);
+            display:flex;justify-content:space-between;padding:14px 18px 4px;
+            font:600 11px/1 ui-sans-serif,sans-serif;letter-spacing:.08em;
+            text-transform:uppercase;color:var(--muted)}
+  .barrebas b{color:var(--ink);border-bottom:2px solid var(--or);padding-bottom:6px}
+
+  .pied{max-width:430px;margin:20px auto 0;padding:0 18px;font-size:13px;line-height:1.6}
+  .pied h2{font:700 12px/1 ui-sans-serif,sans-serif;letter-spacing:.16em;
+           text-transform:uppercase;color:var(--horsTexte);margin:22px 0 8px}
+  .pied p{margin:0 0 10px}
+  .pied table{width:100%;border-collapse:collapse;font-size:12.5px}
+  .pied td{border-top:1px solid rgba(128,128,128,.28);padding:7px 0;vertical-align:top}
+  .pied td:first-child{width:34%;padding-right:12px}
+</style>
+</head>
+<body data-charte="nuit" data-vue="temoin">
+
+<div class="bandeau">
+  <b>Votre question du 31 août :</b> « est-ce que le planning garde en mémoire les
+  chantiers passés ? »<br>
+  <b>Réponse : les chantiers ne sont pas perdus</b> — ils sont tous en base, et
+  ils s'affichent dans <b>Terminés</b>, mois par mois. <b>Mais le calendrier du
+  planning, lui, ne les montre plus</b> : dès le lendemain, le jour redevient
+  vide. C'est ce que montre votre capture de juillet.<br>
+  <b>Deux façons de le lui rendre — touchez A et B</b>, puis promenez-vous dans
+  les mois. <b>Rien n'est codé.</b>
+</div>
+
+<div class="choix">
+  <button type="button" data-vue="temoin" aria-pressed="true">Aujourd’hui</button>
+  <button type="button" data-vue="a" aria-pressed="false">A</button>
+  <button type="button" data-vue="b" aria-pressed="false">B</button>
+  <button type="button" id="basculeCharte" aria-pressed="false">Clair</button>
+</div>
+
+<div class="tel">
+  <div class="tete">
+    <h1>Planning</h1>
+    <p>Vos journées</p>
+  </div>
+
+  <div class="mois">
+    <div class="navmois">
+      <button type="button" class="fleche" id="prec" aria-label="Mois précédent">‹</button>
+      <b id="titreMois"></b>
+      <button type="button" class="fleche" id="suiv" aria-label="Mois suivant">›</button>
+    </div>
+    <div class="entetes" id="entetes"></div>
+    <div class="grille" id="grille"></div>
+    <button type="button" class="retour" id="retour" hidden>← Aujourd’hui</button>
+    <div class="legende" id="legende"></div>
+  </div>
+
+  <div id="carte"></div>
+
+  <div class="barrebas">
+    <span>Chantiers</span><b>Planning</b><span>Terminés</span><span>Paysage</span><span>Réglages</span>
+  </div>
+</div>
+
+<div class="pied">
+  <h2>Ce que chaque proposition change</h2>
+  <table>
+    <tr><td><b>Aujourd’hui</b></td><td>Passé le jour dit, la journée redevient vide. Juillet est un mois blanc.</td></tr>
+    <tr><td><b>A</b> — la trace grise</td><td>Le jour passé garde ses deux barres, <b>en gris</b>. On voit d’un coup d’œil ce qui a été fait, sans confondre avec la charge à venir. Coûte <b>un mot de plus</b> dans la légende : « fait ».</td></tr>
+    <tr><td><b>B</b> — les mêmes couleurs</td><td>Le jour passé garde ses barres <b>telles quelles</b>. Aucun mot en plus, mais juillet et septembre se ressemblent : rien ne dit à l’œil ce qui est derrière vous.</td></tr>
+  </table>
+
+  <h2>Un an, et pas au-delà</h2>
+  <p>Le calendrier remonte <b>jusqu’à septembre 2025</b> — douze mois. La flèche de
+  gauche s’arrête là. Au-delà, les chantiers existent toujours : ils sont dans
+  <b>Terminés</b>.</p>
+
+  <h2>Ce qu’un jour passé ne fait pas</h2>
+  <p>Il s’ouvre, il se lit, il mène à la fiche du chantier. <b>Il ne se modifie
+  pas</b> : pas de « + Ajouter », pas de déplacement, pas de salarié à cocher.
+  Ré-organiser hier n’a pas de sens, et un geste possible est un geste qu’on
+  fait par erreur.</p>
+</div>
+
+<script>
+/* ═══════════════════════════════════════════════════════════════════════════
+   LES DONNÉES — un extrait plausible de son entreprise : deux salariés,
+   Julien et Paul, et deux équipes de capacité. Les noms sont ceux de ses
+   propres planches (Martins, Bernard, Pornic) : on n'invente pas un client
+   pour une maquette, pas plus qu'on n'invente une pièce d'arrosage.
+   ═══════════════════════════════════════════════════════════════════════════ */
+const AUJOURDHUI = '2026-08-31';
+const CAPACITE = 2;
+const PLUS_LOIN = '2025-09-01';   // douze mois en arrière : la butée
+
+const CHANTIERS = [
+  // ── Juin 2026
+  { jour:'2026-06-02', demis:['matin','apres_midi'], nom:'Chez Martins', qui:['Julien'] },
+  { jour:'2026-06-04', demis:['matin'],              nom:'Taille des haies — Bernard', qui:['Paul'] },
+  { jour:'2026-06-09', demis:['matin','apres_midi'], nom:'Abri de Pornic', qui:['Julien','Paul'] },
+  { jour:'2026-06-16', demis:['matin'],              nom:'Tonte Le Cloirec', qui:['Julien'] },
+  { jour:'2026-06-16', demis:['apres_midi'],         nom:'Chez Martins', qui:['Paul'] },
+  { jour:'2026-06-23', demis:['matin','apres_midi'], nom:'Massif Guérande', qui:['Julien','Paul'] },
+  { jour:'2026-06-25', demis:['matin'],              nom:'Taille des haies — Bernard', qui:['Paul'] },
+
+  // ── Juillet 2026 — le mois de sa capture
+  { jour:'2026-07-01', demis:['matin','apres_midi'], nom:'Chez Martins', qui:['Julien'] },
+  { jour:'2026-07-02', demis:['matin'],              nom:'Taille des haies — Bernard', qui:['Paul'] },
+  { jour:'2026-07-03', demis:['matin','apres_midi'], nom:'Abri de Pornic', qui:['Julien','Paul'] },
+  { jour:'2026-07-06', demis:['matin'],              nom:'Tonte Le Cloirec', qui:['Julien'] },
+  { jour:'2026-07-06', demis:['apres_midi'],         nom:'Chez Martins', qui:['Paul'] },
+  { jour:'2026-07-07', demis:['matin','apres_midi'], nom:'Massif Guérande', qui:['Julien','Paul'] },
+  { jour:'2026-07-08', demis:['matin'],              nom:'Taille des haies — Bernard', qui:['Paul'] },
+  { jour:'2026-07-10', demis:['matin','apres_midi'], nom:'Tonte Le Cloirec', qui:['Julien'] },
+  { jour:'2026-07-13', demis:['matin','apres_midi'], nom:'Abri de Pornic', qui:['Julien','Paul'] },
+  { jour:'2026-07-15', demis:['matin'],              nom:'Arrosage — Mme Riou', qui:['Julien'] },
+  { jour:'2026-07-16', demis:['matin','apres_midi'], nom:'Arrosage — Mme Riou', qui:['Julien','Paul'] },
+  { jour:'2026-07-17', demis:['matin'],              nom:'Tonte Le Cloirec', qui:['Paul'] },
+  // Un matin à trois chantiers : c'est lui qui peint le bordeaux du 28.
+  { jour:'2026-07-28', demis:['matin'],              nom:'Chez Martins', qui:['Julien'] },
+  { jour:'2026-07-28', demis:['matin'],              nom:'Taille des haies — Bernard', qui:['Paul'] },
+  { jour:'2026-07-28', demis:['matin','apres_midi'], nom:'Massif Guérande', qui:['Julien'] },
+  { jour:'2026-07-30', demis:['apres_midi'],         nom:'Tonte Le Cloirec', qui:['Paul'] },
+
+  // ── Août 2026 — le mois courant : du passé ET de l'à-venir dans la même grille
+  { jour:'2026-08-04', demis:['matin','apres_midi'], nom:'Chez Martins', qui:['Julien','Paul'] },
+  { jour:'2026-08-06', demis:['matin'],              nom:'Tonte Le Cloirec', qui:['Julien'] },
+  { jour:'2026-08-11', demis:['matin','apres_midi'], nom:'Abri de Pornic', qui:['Julien','Paul'] },
+  { jour:'2026-08-18', demis:['matin'],              nom:'Taille des haies — Bernard', qui:['Paul'] },
+  { jour:'2026-08-20', demis:['matin','apres_midi'], nom:'Massif Guérande', qui:['Julien','Paul'] },
+  { jour:'2026-08-25', demis:['apres_midi'],         nom:'Tonte Le Cloirec', qui:['Julien'] },
+  { jour:'2026-08-31', demis:['matin'],              nom:'Chez Martins', qui:['Julien'] },
+
+  // ── Septembre 2026 — l'à-venir
+  { jour:'2026-09-02', demis:['matin','apres_midi'], nom:'Abri de Pornic', qui:['Julien','Paul'] },
+  { jour:'2026-09-03', demis:['matin'],              nom:'Arrosage — Mme Riou', qui:['Paul'] },
+  { jour:'2026-09-08', demis:['matin','apres_midi'], nom:'Massif Guérande', qui:['Julien'] },
+];
+
+const MOIS = ['janvier','février','mars','avril','mai','juin','juillet','août',
+              'septembre','octobre','novembre','décembre'];
+const JOURS_LONGS = ['dimanche','lundi','mardi','mercredi','jeudi','vendredi','samedi'];
+const COURTS = ['lun','mar','mer','jeu','ven','sam','dim'];
+const MOT_DEMI = { matin:'Matin', apres_midi:'Après-midi' };
+
+/* ── Ce que porte une demi-journée ─────────────────────────────────────────
+   La charge se compte comme dans l'application : ce qui est mobilisé sur la
+   demi-journée, rapporté à la capacité — et plafonné par chantier, car trois
+   gars sur un même chantier ne ferment pas une journée qui en accepte deux. */
+function occupation(jour, demi){
+  const pris = CHANTIERS.filter(c => c.jour === jour && c.demis.includes(demi));
+  const charge = pris.reduce((s,c) => s + Math.min(c.qui.length, CAPACITE), 0) / CAPACITE;
+  return { pris, charge };
+}
+function etatDemi(o){
+  if (o.pris.length === 0) return 'libre';
+  if (o.charge > 1.0001)   return 'dela';
+  if (o.charge >= 0.9999)  return 'plein';
+  return 'dispo';
+}
+
+/* ── L'état de la journée SELON LA VUE ────────────────────────────────────
+   C'est le seul endroit où les trois propositions divergent, et c'est
+   volontaire : une seconde implémentation par vue divergerait au premier
+   réglage, et l'on ne comparerait plus la même chose. */
+function peinture(jour, demi, vue){
+  const passe = jour < AUJOURDHUI;
+  const o = occupation(jour, demi);
+  if (passe && vue === 'temoin') return { etat:'libre', part:0, o:{pris:[],charge:0} };
+  if (passe && vue === 'a' && o.pris.length) return { etat:'fait', part:part(o.charge), o };
+  return { etat:etatDemi(o), part:part(o.charge), o };
+}
+function part(charge){ return Math.max(0, Math.min(100, Math.round(charge*100))); }
+
+/* ═══ L'ÉTAT DE LA PLANCHE ═══════════════════════════════════════════════ */
+let vue = 'temoin';
+let curseur = { annee:2026, mois:6 };       // juillet 2026 — le mois de sa capture
+let jourTouche = '2026-07-13';
+
+const iso = (a,m,j) => `${a}-${String(m+1).padStart(2,'0')}-${String(j).padStart(2,'0')}`;
+const enDate = s => new Date(s + 'T12:00:00Z');
+
+function grilleDuMois(annee, mois){
+  const premier = new Date(Date.UTC(annee, mois, 1));
+  const decal = (premier.getUTCDay() + 6) % 7;           // lundi en tête
+  const nb = new Date(Date.UTC(annee, mois+1, 0)).getUTCDate();
+  const cases = [];
+  for (let i=0;i<decal;i++) cases.push(null);
+  for (let j=1;j<=nb;j++){
+    const jour = iso(annee, mois, j);
+    const d = enDate(jour).getUTCDay();
+    cases.push({ jour, numero:j, weekEnd: d===0 || d===6 });
+  }
+  return cases;
+}
+
+function dessiner(){
+  document.body.dataset.vue = vue;
+
+  document.getElementById('titreMois').textContent = `${MOIS[curseur.mois]} ${curseur.annee}`;
+
+  const entetes = document.getElementById('entetes');
+  entetes.innerHTML = COURTS.map((j,i) =>
+    `<span class="${i>=5?'we':''}">${j}</span>`).join('');
+
+  const grille = document.getElementById('grille');
+  grille.innerHTML = '';
+  for (const c of grilleDuMois(curseur.annee, curseur.mois)){
+    if (!c){ grille.appendChild(document.createElement('span')); continue; }
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'case'
+      + (c.weekEnd ? ' we' : '')
+      + (c.jour === jourTouche ? ' touche' : '')
+      + (c.jour === AUJOURDHUI && c.jour !== jourTouche ? ' auj' : '');
+    b.dataset.jour = c.jour;
+    const m = peinture(c.jour, 'matin', vue), a = peinture(c.jour, 'apres_midi', vue);
+    b.setAttribute('aria-label',
+      `${c.numero} ${MOIS[curseur.mois]} — matin : ${dit(m)}, après-midi : ${dit(a)}`);
+    b.innerHTML =
+      `<span class="num">${c.numero}</span>` +
+      `<span class="marque">${barre(m)}${barre(a)}</span>`;
+    b.addEventListener('click', () => {
+      jourTouche = (jourTouche === c.jour) ? null : c.jour;
+      dessiner();
+    });
+    grille.appendChild(b);
+  }
+
+  const surLeMois = curseur.annee === 2026 && curseur.mois === 7;
+  document.getElementById('retour').hidden = surLeMois;
+
+  // La butée : douze mois en arrière, pas un de plus.
+  document.getElementById('prec').disabled = iso(curseur.annee, curseur.mois, 1) <= PLUS_LOIN;
+
+  legende();
+  carte();
+}
+
+function barre(p){
+  const l = p.etat === 'libre' ? '' :
+    `<i class="seg-${p.etat}" style="width:${p.etat==='fait' ? Math.max(p.part,100) : p.part}%"></i>`;
+  return `<span class="barre">${l}</span>`;
+}
+
+function dit(p){
+  if (p.etat === 'libre') return 'libre';
+  if (p.etat === 'fait')  return `fait — ${p.o.pris.length} chantier${p.o.pris.length>1?'s':''}`;
+  if (p.etat === 'plein') return 'complet';
+  if (p.etat === 'dela')  return `${Math.round(p.o.charge*100)} % de vos équipes`;
+  return `${p.o.pris.length} chantier${p.o.pris.length>1?'s':''}`;
+}
+
+function legende(){
+  const mots = [['libre','rien'],['dispo','incomplet'],['plein','complet'],['dela','au-delà']];
+  if (vue === 'a') mots.push(['fait','fait']);
+  const carres = mots.map(([e,m]) =>
+    `<span><i class="carre ${e==='libre'?'libre':'seg-'+e}"></i> ${m}</span>`).join('');
+  document.getElementById('legende').innerHTML = carres +
+    `<span class="pos">
+       <span class="paire"><i></i><i></i></span>
+       <span class="mots"><b>matin</b><b>après-midi</b></span>
+     </span>`;
+}
+
+function carte(){
+  const hote = document.getElementById('carte');
+  if (!jourTouche){ hote.innerHTML = ''; return; }
+
+  const d = enDate(jourTouche);
+  const titre = `${JOURS_LONGS[d.getUTCDay()]} ${d.getUTCDate()} ${MOIS[d.getUTCMonth()]}`;
+  const passe = jourTouche < AUJOURDHUI;
+  const montre = !(passe && vue === 'temoin');
+
+  const duJour = montre ? CHANTIERS.filter(c => c.jour === jourTouche) : [];
+  const noms = [...new Set(duJour.map(c => c.nom))];
+
+  let dedans = '';
+  for (const nom of noms){
+    const siens = duJour.filter(c => c.nom === nom);
+    const demis = ['matin','apres_midi'].filter(dm => siens.some(c => c.demis.includes(dm)));
+    dedans += `<div class="bloc"><div class="nom">${nom}</div>` +
+      demis.map((dm, rang) => {
+        const p = peinture(jourTouche, dm, vue);
+        const qui = [...new Set(siens.filter(c=>c.demis.includes(dm)).flatMap(c=>c.qui))];
+        return `<div class="demi">
+            <i class="pastille ${p.etat}"></i>
+            <span class="mot">${MOT_DEMI[dm]}</span>
+            ${qui.map(q=>`<span class="qui">${q}</span>`).join('')}
+            ${passe && rang === 0 ? '<span class="versfiche">La fiche <em>›</em></span>' : ''}
+          </div>`;
+      }).join('') + `</div>`;
+  }
+
+  // Les demi-journées que personne n'occupe restent SOUS leur journée, même
+  // vides — sa correction du 22 août : « l'après-midi de libre doit rester en
+  // dessous du matin ».
+  for (const dm of ['matin','apres_midi']){
+    const p = peinture(jourTouche, dm, vue);
+    if (p.o.pris.length && montre) continue;
+    dedans += `<div class="bloc"><div class="demi">
+        <i class="pastille libre"></i>
+        <span class="mot">${MOT_DEMI[dm]}</span>
+        <span class="libre">libre</span>
+      </div></div>`;
+  }
+
+  // Le jour passé se lit, il ne s'écrit pas.
+  const ajout = passe ? '' : `<button type="button" class="ajouter">+ Ajouter un chantier</button>`;
+
+  hote.innerHTML = `<div class="carte">
+      <p class="quand">${titre}</p>${dedans}${ajout}
+    </div>`;
+}
+
+/* ═══ LES GESTES ═════════════════════════════════════════════════════════ */
+document.querySelectorAll('.choix button[data-vue]').forEach(b => {
+  b.addEventListener('click', () => {
+    vue = b.dataset.vue;
+    document.querySelectorAll('.choix button[data-vue]').forEach(x =>
+      x.setAttribute('aria-pressed', String(x === b)));
+    dessiner();
+  });
+});
+
+document.getElementById('basculeCharte').addEventListener('click', e => {
+  const nuit = document.body.dataset.charte === 'nuit';
+  document.body.dataset.charte = nuit ? 'origine' : 'nuit';
+  e.currentTarget.textContent = nuit ? 'Nuit' : 'Clair';
+  e.currentTarget.setAttribute('aria-pressed', String(nuit));
+});
+
+document.getElementById('prec').addEventListener('click', () => {
+  curseur = curseur.mois === 0 ? { annee:curseur.annee-1, mois:11 }
+                               : { ...curseur, mois:curseur.mois-1 };
+  dessiner();
+});
+document.getElementById('suiv').addEventListener('click', () => {
+  curseur = curseur.mois === 11 ? { annee:curseur.annee+1, mois:0 }
+                                : { ...curseur, mois:curseur.mois+1 };
+  dessiner();
+});
+document.getElementById('retour').addEventListener('click', () => {
+  curseur = { annee:2026, mois:7 };
+  dessiner();
+});
+
+dessiner();
+</script>
+</body>
+</html>

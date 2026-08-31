@@ -466,6 +466,11 @@ Le détail : `ARCHITECTURE.md` §192, migration `drizzle/0067_salaries_a_part.sq
   Équipe ou retourne dans « Absences ». **Non codée.**
 - **Planche 97** — `appli/salaries-et-equipes.html`. **Répondue (A) et codée le
   26 août** : voir le paragraphe plus haut.
+- **Planche 98** — `appli/planning-memoire.html` (31 août 2026). *« Est-ce que
+  le planning garde en mémoire les chantiers passés ? »* — **non, le calendrier
+  les oublie dès le lendemain**, alors que rien n'est effacé en base. Deux
+  propositions, A (barres grises « fait ») et B (barres inchangées). **Non
+  codée** — le détail de ce qu'il faudra toucher est dans `TODO.md`, en tête.
 
 ## LA NOTE VOCALE « À LA WHATSAPP » EST CODÉE (30 août 2026)
 
