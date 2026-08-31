@@ -19609,3 +19609,98 @@ La suite sans base sait échouer : rendre `/chantiers/${id}` sans regarder
 plutôt que son libellé : elle n'annonce plus la même chose selon où elle mène, et
 `test-dicter-dans-le-devis-e2e.ts`, qui mesurait sa PLACE, la désignait par son
 mot (`CLAUDE.md` §5 bis).
+
+---
+
+## 222. Le bouton qui répond au doigt : ce qui existe, ce qui manque, et ce qu'iOS refuse
+
+*Sa demande du 31 août 2026 : « quand je clique sur les boutons j'aimerais avoir
+une mini vibration, que l'utilisateur soit sûr d'avoir appuyé. Et si possible
+avoir un visuel du bouton qui s'enfonce tout en s'éclaircissant légèrement —
+une touche noire avant qu'on appuie, une fois le doigt dessus elle s'éclaircit,
+et lorsqu'on lâche elle reprend sa couleur d'origine. »*
+
+**Rien n'est codé** (`CLAUDE.md` §3 bis) : ce § existe parce que la planche
+`appli/le-bouton-qui-repond.html` a mis au jour trois choses qu'une nouvelle
+session referait de travers faute de les savoir.
+
+### 1. Le geste EXISTE déjà, et c'est pour ça qu'il ne le sent pas
+
+`PrimaryButton.tsx` porte `transition-transform active:scale-[0.985]`. Sur une
+capsule de 50 px de haut, 1,5 % font **moins d'un pixel de chaque côté**, et
+rien d'autre ne bouge : ni la couleur, ni l'ombre, ni le téléphone. Le geste est
+dans le code, pas sous le doigt. Répondre « c'est déjà fait » à sa demande
+serait donc exact et inutile.
+
+Les trois forces proposées sur la planche : **0,975 / 0,955 / 0,935**, contre
+0,985 aujourd'hui.
+
+### 2. « S'éclaircir » n'a de sens que là où il reste de la place
+
+Sa règle est juste et sa raison est physique : sous un doigt, un aplat qui
+**fonce** disparaît dans l'ombre de la main ; un aplat qui s'éclaircit sort de
+dessous. Elle vaut pour sa touche noire, pour le vert d'Atlas, et pour le crème
+des deux chartes sombres — où l'aplat principal est clair et monte vers le blanc.
+
+**Elle ne peut PAS valoir pour une carte de chantier en mode clair** : `#faf9f5`
+est à 0,95 de clarté, il n'y a rien au-dessus. Elle se teinte donc vers le
+papier, faute de place. C'est la seule exception, et elle est nommée dans le
+contrôle plutôt que laissée au jugé — un contrôle qui exigerait l'éclaircissement
+partout rougirait sur un écran juste.
+
+**Et sur les chartes sombres, `--paper` ne suffisait pas** : crème et papier n'y
+sont séparés que de **six millièmes** de clarté. L'appui existait dans le CSS et
+était invisible sous le doigt — trouvé par la mesure, pas à l'œil. D'où un jeton
+dédié (`--appui-pale`), et un seuil de visibilité (un centième de clarté) dans le
+contrôle.
+
+### 3. Un bouton qui rétrécit perd le doigt qui le tient
+
+Sans `setPointerCapture`, un doigt posé près du bord se retrouve **dehors** dès
+que la capsule rentre : `pointerleave` part, et le bouton remonte alors qu'on
+appuie encore. Le défaut grandit avec la force du geste — donc invisible à la
+souris, au centre, et bien visible au pouce sur le réglage « Marqué ».
+
+### 4. La vibration : trois chemins, et ils ne se valent pas
+
+| Où | Ce qui donne le retour | Réglable |
+|---|---|---|
+| Android, navigateur | `navigator.vibrate(ms)` | oui |
+| **iPhone, Safari** | **rien** — l'API n'existe pas. Reste l'interrupteur natif (`<input type="checkbox" switch>`, iOS 17.4+), dont le système joue le retour au changement | non |
+| L'application emballée (`appli/CAPACITOR.md`) | `@capacitor/haptics` | oui |
+
+**Ses captures portent la pastille dynamique : il est sur iPhone.** Livrer la
+planche sans le dire lui aurait coûté un aller-retour — il aurait essayé, senti
+peu ou rien, et conclu que ça ne marche pas, alors que l'application installée
+saurait le faire. La planche l'écrit à l'écran **et dit lequel des trois chemins
+son téléphone a pris**.
+
+L'interrupteur d'iOS doit être **rendu** pour que le système joue son retour : un
+`display:none` le rendrait muet. Il est donc posé hors de l'écran.
+
+### Ce qui l'éprouve, et ce que le contrôle ne peut pas dire
+
+`scripts/verifier-maquette-bouton-qui-repond.mjs` mesure, sur les **quatre**
+surfaces qu'on touche et dans les **deux** teintes, sous les **trois** réglages :
+que la surface rentre, qu'elle change de clarté dans le bon sens et assez pour se
+voir, et qu'elle **revient** quand on lâche. Il sait échouer : confronté au geste
+d'aujourd'hui (0,985 sans couleur), il rougit six fois.
+
+**Ce qu'il ne prouve pas, et qui doit se lire ici :** Chromium rend `true` à
+`navigator.vibrate()` sans qu'aucun moteur ne tourne. Le compteur de la planche
+dit que l'appel PART, jamais que le téléphone bouge — et le chemin d'iPhone
+n'existe pas du tout dans cet environnement. **Cela se vérifie sur son
+téléphone**, et nulle part ailleurs.
+
+Deux faux rouges ont été payés en l'écrivant : une cible hors de la fenêtre, puis
+une cible recouverte par la barre collante — toutes deux mesurées « ne bouge
+pas » sur un bouton parfaitement sain. D'où le refus explicite de conclure sur
+une cible qu'on ne peut pas atteindre (`CLAUDE.md` §5).
+
+### Si la réponse arrive, ce que coder veut dire
+
+Le dessin ne se pose PAS écran par écran : il va dans `PrimaryButton.tsx` et
+dans les pièces partagées, sinon deux gestes cohabiteront. Et la vibration se
+pose **une fois**, dans une fonction unique — deux appels écrits à deux endroits
+divergeront sur la durée, et l'un des deux oubliera l'interrupteur de réglage
+qu'il a demandé à voir sur la planche.

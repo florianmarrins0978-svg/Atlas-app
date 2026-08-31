@@ -9,6 +9,37 @@ Format : le plus récent en tête.
 
 ## 2026-08-31
 
+### Une planche pour le bouton qui répond au doigt — vibration et enfoncement
+
+**Sa demande du 31 août :** *« quand je clique sur les boutons j'aimerais avoir
+une mini vibration, que l'utilisateur soit sûr d'avoir appuyé »*, et *« le
+bouton qui s'enfonce tout en s'éclaircissant légèrement »*, capture d'une touche
+noire à l'appui. **Rien n'est codé** : `appli/le-bouton-qui-repond.html` lui
+donne trois forces à essayer (Discret, la sienne, Marqué) sur les quatre
+surfaces qu'il touche — capsule pleine, capsule creuse, cartes de chantier,
+barre du bas — plus sa touche noire.
+
+**Ce que la planche apprend, et qui n'était écrit nulle part.**
+`PrimaryButton.tsx` porte déjà `active:scale-[0.985]` : sur une capsule de
+50 px, moins d'un pixel de chaque côté, et **aucun changement de couleur**. Le
+geste existait dans le code et pas sous le doigt — c'est pour ça qu'il ne le
+sent pas.
+
+**Et la vibration ne se donne pas de la même main partout** : Safari sur iPhone
+ne fournit pas `navigator.vibrate()` aux pages web. La planche passe donc par
+l'interrupteur natif d'iOS 17.4+, dit à l'écran quel chemin le téléphone a pris,
+et rappelle que l'application emballée par Capacitor, elle, aurait le vrai
+retour haptique réglable. Sans cette phrase, il aurait essayé sur son iPhone,
+n'aurait presque rien senti, et aurait conclu que ça ne marche pas.
+
+**Deux défauts trouvés par le contrôle et non à l'œil**
+(`scripts/verifier-maquette-bouton-qui-repond.mjs`) : sur les chartes sombres,
+une carte appuyée ne changeait que de six millièmes de clarté — un appui présent
+dans le CSS et invisible sous le doigt ; et le bouton remontait sous un doigt
+encore posé près de son bord, parce qu'il rétrécit et sortait de sous lui
+(corrigé par `setPointerCapture`). Le contrôle a été confronté au geste
+d'aujourd'hui, celui de l'application : il rougit six fois.
+
 ### Le banc lance le Next DU PROJET, et ne laisse plus `npx` en chercher un autre
 
 **Sa plainte de midi : « version rapide en construction, elle est super

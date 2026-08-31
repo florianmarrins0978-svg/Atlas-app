@@ -9,6 +9,32 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
+## EN ATTENTE DE SA RÉPONSE : la force du geste des boutons (31 août 2026)
+
+Sa demande du 31 août — une mini vibration à l'appui, et le bouton qui s'enfonce
+en s'éclaircissant. **Rien n'est codé, et rien ne doit l'être avant sa réponse**
+(`CLAUDE.md` §3 bis).
+
+La planche : `appli/le-bouton-qui-repond.html`, en ligne à
+https://florianmarrins0978-svg.github.io/Atlas-app/le-bouton-qui-repond.html
+
+**Ce qu'on attend de lui :** Discret, le sien, ou Marqué — et s'il veut
+l'interrupteur « Vibration au toucher » dans les réglages.
+
+**Ce qu'il faudra faire quand il aura répondu** (le détail est en
+`ARCHITECTURE.md` §222) :
+
+- poser le dessin dans `PrimaryButton.tsx` et les pièces partagées, jamais écran
+  par écran — sinon deux gestes cohabitent, ce que ce fichier interdit ;
+- une **seule** fonction de vibration, pas un appel par écran ;
+- `@capacitor/haptics` pour l'application emballée : c'est le seul chemin qui
+  donne un vrai retour sur iPhone, Safari ne fournissant rien aux pages web ;
+- rejouer `npm run verifier:maquette`, qui porte désormais
+  `scripts/verifier-maquette-bouton-qui-repond.mjs`.
+
+**Ce qui ne se vérifie PAS ici :** que le téléphone vibre. Chromium rend `true`
+sans qu'aucun moteur ne tourne. C'est sur son téléphone, ou nulle part.
+
 ## `test-poignee-ferme-e2e.ts` NE PEUT PAS SE JOUER SEUL (31 août 2026)
 
 **CORRECTION DE CE QUI ÉTAIT ÉCRIT ICI IL Y A UNE HEURE, ET C'ÉTAIT FAUX.** Ce
