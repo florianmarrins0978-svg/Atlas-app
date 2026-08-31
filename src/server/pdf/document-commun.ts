@@ -780,7 +780,7 @@ export async function composerDocument(
     if (!options.sansChiffrage) {
       ecrireEspaceADroite(ctx, "QTÉ", xQte, y, APPROCHE_ETIQUETTE, enTeteColonne);
       ecrireEspaceADroite(ctx, "PRIX UNITAIRE HT", xPrix, y, APPROCHE_ETIQUETTE, enTeteColonne);
-      ecrireEspaceADroite(ctx, "TOTAL HT", xMontant, y, APPROCHE_ETIQUETTE, enTeteColonne);
+      ecrireEspaceADroite(ctx, "MONTANT HT", xMontant, y, APPROCHE_ETIQUETTE, enTeteColonne);
     }
     y -= 9;
     trait(ctx, y, 1.2, ctx.teintes.encre);

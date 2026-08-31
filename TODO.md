@@ -9,6 +9,32 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
+## `test-poignee-ferme-e2e.ts` NE PEUT PAS SE JOUER SEUL (31 août 2026)
+
+**CORRECTION DE CE QUI ÉTAIT ÉCRIT ICI IL Y A UNE HEURE, ET C'ÉTAIT FAUX.** Ce
+paragraphe annonçait « quatre cas rouges, reproduits sur `main` » : la suite est
+**verte** dans la batterie complète (121/121, jouée par groupes le 31 août). Le
+rouge venait de la façon de la jouer, pas du dépôt.
+
+**Ce qui est vrai, et qui vaut d'être écrit.** Jouée SEULE
+(`--seulement test-poignee-ferme-e2e.ts`), elle rougit de quatre cas — sur `main`
+comme ailleurs, et de façon reproductible. Elle ouvre `/reglages/equipe` et
+attend « + Noter une absence », en affirmant en commentaire que ce bouton *« est
+toujours là, sur un écran de réglages qui ne dépend d'aucune donnée »*. C'est
+faux : `AbsencesEquipe` ne rend **aucun bouton** tant que `nombreSalaries <= 0`
+(`src/app/reglages/AbsencesEquipe.tsx`), et le jeu de démonstration n'en pose
+aucun. Le salarié qu'elle trouve en batterie vient d'une suite jouée AVANT elle.
+
+**Ce que ça coûte :** c'est exactement le piège que documente
+`scripts/jouer-suites-par-groupes.mjs` — les suites navigateur ne sont pas
+indépendantes. Une session qui isole celle-ci pour diagnostiquer autre chose
+conclura à un défaut du produit, et cherchera pendant une heure. C'est arrivé
+aujourd'hui.
+
+**Ce qu'il faudrait :** qu'elle pose son salarié elle-même avant d'ouvrir la
+feuille. Elle serait alors jouable seule, et son commentaire cesserait de
+décrire un écran qu'elle n'atteint pas toujours.
+
 ## Rien n'est proposé au client après un refus ou une correction (31 août 2026)
 
 Depuis ce jour, l'écran de retour d'un devis **accepté** porte « Télécharger mon
@@ -19,6 +45,7 @@ portent aucun.
 renoncer, et celui qui part en correction va changer.
 
 **Qui peut le trancher :** le patron. Deux lignes si sa réponse est l'inverse.
+
 
 ---
 
@@ -53,6 +80,66 @@ donner son visage n'a plus de quoi se rassurer à l'écran.
 **Ce qui ne se fera pas sans lui :** la remettre. Il l'a fait retirer, et une
 suite vérifie désormais qu'elle ne revient pas. S'il la veut, elle se pose
 ailleurs — jamais en gris sous le bouton.
+
+---
+
+## ✅ ~~UNE RÉPONSE ATTENDUE — le réglage et le planning, planche 99~~ — RÉPONDUE ET CODÉE (31 août 2026)
+
+Sa demande : *« écrit deux chantiers par jour, planning complet, et met le petit
+carré vert foncé avec écrit "complet" du planning »* — et, devant la planche 98 :
+*« c'est sur cette page que doit se faire la modification »*, l'écran **Réglages**.
+
+**Sa réponse, le jour même : la A.** L'écran porte « 2 chantiers par jour.
+Planning ▪ complet. » — `src/app/reglages/VosEquipes.tsx`, avec le carré pris
+dans `fondDeLEtat` et le mot dans `MOT_ETAT` (`src/lib/planning-jour.ts`, table
+neuve que la légende du calendrier lit désormais aussi).
+
+La planche garde B et C : elles restent le chemin, si l'échelle lui manque un
+jour.
+
+---
+
+## UNE RÉPONSE ATTENDUE — le jour proposé, planche 98 (31 août 2026)
+
+**Née d'une mauvaise lecture de sa demande** — voir juste au-dessus. La
+question reste réelle, mais il ne l'a pas posée : ne pas la relancer.
+
+Sa remarque : *« écrit deux chantiers par jour, planning complet, et met le
+petit carré vert foncé avec écrit "complet" du planning »*. Un jour PROPOSÉ au
+client se peint aujourd'hui du vert que la légende appelle COMPLET, et l'aplat
+recouvre les deux barres de charge (`src/components/atlas/MoisCharge.tsx` :
+`fondDeLEtat("plein")` et `retenus.has(jour)` valent tous deux `colors.rust`).
+
+`appli/jour-propose-pas-complet.html` lui pose la question : **le point** ou
+**la pastille**. Le liseré a été écarté — il se confond avec la case touchée.
+
+**Rien n'est codé** : sa consigne était *« ne code rien, fais-moi un visuel »*.
+Quand il aura répondu, la marque se pose dans `MoisCharge` (la case retenue) et
+dans `Legende` (un cinquième repère, rond), et rien d'autre : le calcul de la
+charge ne bouge pas.
+---
+
+## ✅ LE « 16.3.3 » EST EXPLIQUÉ — c'était `npx`, pas une dérive (31 août 2026)
+
+Ce document portait depuis le 29 août : *« reste inexpliqué : comment ses
+`node_modules` ont dérivé »*. **Ils n'ont jamais dérivé.**
+
+`node_modules/next` MANQUAIT, et `npx next build` télécharge alors la dernière
+version publiée pour la lancer — d'où un 16.3.3 sur un projet qui épingle
+16.3.2. Reproduit à l'identique en écartant le paquet. Corrigé aux trois
+endroits : `ARCHITECTURE.md` §219.
+
+**Ce qui reste ouvert, et c'est la vraie question :** POURQUOI
+`node_modules/next` disparaît de son espace. Trois suspects, aucun mesuré — une
+mise en veille pendant un `npm install`, un `npm install` concurrent (le banc et
+le veilleur), un disque plein à un moment (21 Go libres au moment de l'échec,
+donc peu probable). Le banc répare désormais la conséquence à chaque démarrage ;
+il n'empêche pas la cause.
+
+**Comment le trancher quand cela se reproduira :** le journal du banc
+(`/tmp/essai.log`) porte maintenant « next ABSENT alors que le projet exige
+16.3.2 » avec son heure. La rapprocher de l'heure du dernier `npm install` et de
+la dernière mise en veille répond sans rien demander au patron.
 
 ---
 
@@ -1187,6 +1274,32 @@ atténuation.
 TEXTE des messages — le nom du client, celui de ses chantiers. C'est faisable
 et ce n'est pas anodin (un nom courant balaierait des échanges sans rapport) :
 à trancher avant de coder, pas en codant.
+
+## ~~Deux dictées ne reçoivent pas le vocabulaire~~ — **réglé le 28 août 2026**
+
+Le fournisseur pose lui-même l'indice du métier quand personne ne lui en donne
+(`src/server/ai/providers/transcription/openai.ts`). **Aucun chemin ne peut plus écouter sans savoir**,
+y compris ceux qu'on oublierait — c'était sa remarque : *« pourquoi dans une
+appli SPÉCIFIQUE pour l'espace vert elle comprend pas ? »*
+
+Ce qui reste souhaitable, sans être bloquant : que `retouches-devis-service.ts`
+reçoive un `Ctx` pour y ajouter SES mots à lui, en plus du fond de langue.
+
+## ~~⚠ Deux dictées ne reçoivent pas encore le vocabulaire~~ (repris ci-dessus)
+
+**Depuis le 28 août 2026**, le transcripteur reçoit un indice AVANT d'écouter
+(sa colère : « je lui ai dit désherbage mais il comprend mal »). Il est posé sur
+**la dictée de l'assistant** et sur **la note vocale**.
+
+**Deux chemins ne l'ont pas** :
+
+- `retouches-devis-service.ts` — il dicte une correction sur son devis, et c'est
+  exactement là qu'un libellé de prestation compte. Son service ne reçoit **pas
+  de `Ctx`** : le poser demande de changer sa signature et son appelant ;
+- `coordonnees-service.ts` — la dictée d'une fiche client. Moins urgent : un nom
+  propre ne figure dans aucun vocabulaire, et l'indice n'y peut pas grand-chose.
+
+**Ce n'est pas une régression** : ces deux-là transcrivent comme avant.
 
 ## ⚠ « Ça ne marche pas la dictée » — NON REPRODUIT ici
 

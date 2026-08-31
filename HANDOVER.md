@@ -9,6 +9,63 @@ sert.
 
 ---
 
+## Dernier lot : un devis sans client renvoie à la fiche client (31 août 2026)
+
+Sa demande, deux captures à l'appui : *« j'ai oublié de renseigner la fiche
+client du chantier. Lorsque je fais retour, je dois arriver sur la page de la
+fiche client ! Pas sur la page que je te mets en deuxième photo. »* La flèche du
+devis mène désormais au formulaire « Fiche client » **quand aucun client n'est
+rattaché**, et enregistrer y ramène au devis.
+
+**Ce qu'il faut savoir avant d'y toucher :**
+
+- **DEUX écrans s'appellent « fiche client ».** `/clients/[id]` est le dossier
+  du client (règle : `src/lib/retour-fiche-client.ts`) ; `/chantiers/[id]/coordonnees`
+  est le formulaire qu'on remplit, titré « Fiche client » à l'écran (règle :
+  `src/lib/retour-du-devis.ts`). C'est le second qu'il désigne — il dit
+  *renseigner*. Les mêler ferait sortir d'un chantier celui qui y était.
+- **Le premier jet de ce lot a ÉCRASÉ `scripts/test-retour-fiche-client-e2e.ts`**,
+  qui existait déjà pour l'autre écran. Récupérée avant commit. Regarder ce
+  qu'on écrase avant d'écrire : un nom « évident » l'est souvent déjà pour
+  quelqu'un d'autre.
+- **La provenance (`?de=`) se valide par ÉGALITÉ, pas par motif** : elle est
+  comparée au seul chemin qu'elle a le droit de valoir — le devis de CE
+  chantier. Un `?de=` étranger ferait de la flèche une sortie hors d'Atlas.
+- **Sans provenance, rien ne bouge** : la fiche ouverte depuis l'accueil
+  (« Adresse non renseignée », 17 août) garde sa flèche vers la liste et son
+  enregistrement vers la fiche du chantier.
+
+Raisons et pièges : `ARCHITECTURE.md` §221.
+
+
+## Le 30 août : le diamètre dicté entre en colonne
+
+**Ce qu'il faut savoir avant d'y toucher :**
+
+- **Le défaut n'était pas une perte, c'était une absence.** `caracteristiques`
+  n'avait qu'un seul écrivain — les réponses du patron à l'arrêt
+  d'avant-chiffrage. La dictée ne pouvait donc jamais y poser un diamètre, et
+  la question revenait toujours. Une session qui chercherait « où la valeur se
+  perd » chercherait indéfiniment.
+- **`structureDeLaPrestation` est le dernier endroit où la mesure existe.** La
+  `description` que le modèle rend n'est PAS persistée : `ajouterPrestation`
+  n'écrit que le libellé et les colonnes. La lire plus loin — dans
+  `questions-chiffrage.ts`, par exemple — serait la chercher là où elle n'est
+  plus.
+- **`estUnGeste(texte)` répond oui dès qu'un geste apparaît QUELQUE PART.** Ce
+  n'est pas « ce texte est un geste ». S'en servir pour reconnaître un libellé
+  nu produit « Démontage d'un érable de arbre de 40 cm » — c'est arrivé, et
+  seul le contrôle de bout en bout l'a vu.
+- **Le contrôle qui compte est `scripts/test-son-cas-reel.ts`** : il part de ce
+  que le modèle rend et va jusqu'à ce que le patron lit. Les suites unitaires
+  étaient toutes vertes pendant que la chaîne était cassée.
+- **Ce qui n'est PAS prouvé ici :** ce que le modèle répond vraiment. Pas de
+  clé dans cet environnement (`CLAUDE.md` §1 ter) — `npm run verifier:chaine-dictee`
+  sur son espace.
+
+
+## Le même jour : le prix qui ne débloquait rien, et le lendemain qu'on lui refusait (31 août 2026)
+
 ## Dernier lot : le devis du client, verrouillé et tenant dans un écran (31 août 2026)
 
 Ses trois captures du téléphone d'une cliente. Compte-rendu qui lui est
@@ -56,9 +113,10 @@ destiné : `docs/devis-client-verrouille.md`.
 - **Ce qui reste ouvert :** rien n'est proposé après un refus ni après une
   demande de correction. À rouvrir avec lui s'il veut le contraire.
 
-Raisons et pièges : `ARCHITECTURE.md` §218.
+Raisons et pièges : `ARCHITECTURE.md` §222.
 
 ## Lot précédent : le prix qui ne débloquait rien, et le lendemain qu'on lui refusait (31 août 2026)
+
 
 Ses deux captures du matin, sur l'écran d'envoi du devis. Compte-rendu qui lui
 est destiné : `docs/devis-prix-et-date-proche.md`.
@@ -126,6 +184,24 @@ le raisonnement complet, `ARCHITECTURE.md` §217.
   mode d'emploi. À rouvrir avec lui s'il la veut ailleurs — pas à remettre sous
   le bouton.
 
+## Le même jour : l'or est le même sur les huit apparences (31 août 2026)
+
+**Sa consigne :** *« pour l'apparence, j'aimerais que tout ce qui est en doré
+sur la version originale apparaisse en doré sur les autres apparences »* — la
+généralisation de celle du 27 août, qui ne portait que sur Brume.
+
+`src/lib/chartes.ts` posait le second accent de chaque planche dans `or` : huit
+chartes, huit ors différents, dont trois qui n'étaient plus dorés du tout.
+`OR_ORIGINE` / `OR_CLAIR_ORIGINE` les remplacent partout ; `depuisPlanche` ne
+reçoit plus de `bronze` ni de `pleinSigne`.
+
+**Ce qu'il faut savoir avant d'y toucher :** la lisibilité de l'or a été mesurée
+charte par charte AVANT de le figer — il tient 6,14 sur Nuit contre 2,77 sur
+Origine, donc rien à remonter sur les sombres. Le remonter romprait la consigne
+sans rien gagner. Le contrôle qui tient la règle est dans
+`scripts/test-chartes.ts` (« l'or est le même sur les huit chartes »), vu rouge
+contre la version d'avant. `ARCHITECTURE.md` §218.
+
 ---
 
 ## Encore avant : la note vocale à la messagerie, et la fiche qui tient dans un écran (30 août 2026)
@@ -168,6 +244,25 @@ rappel le temps de son délai réglé, il ne l'efface pas — l'acquittement est
 base (`rappels_vus`, migration 0071) et le rappel revient si la situation dure.
 En faire un effacement définitif rouvrirait exactement ce que ces rappels
 existent pour éviter. Raisons et pièges : `ARCHITECTURE.md` §210.
+
+---
+
+## PIÈGE : « ELLE EST SUPER LENTE » = LA VERSION RAPIDE N'EST PAS BÂTIE (31 août 2026)
+
+Le bandeau « Version rapide en construction » en haut de son écran, et chaque
+page qui met jusqu'à une minute à s'ouvrir : la construction a échoué, le banc
+sert le mode développement. **La fiche (#47) dit toujours pourquoi, à la ligne
+`dit:` du relevé d'échec.** Ne pas chercher ailleurs avant de l'avoir lue.
+
+**Le cas du 31 août, et il peut revenir :** `node_modules/next` manquait, et
+`npx` téléchargeait alors un Next du registre pour le lancer — une version qui
+n'est pas celle du projet, et qui échoue sur « Could not find the Next.js
+package ». Le banc appelle désormais le binaire du projet et se réinstalle tout
+seul (`ARCHITECTURE.md` §219).
+
+**Ce qui reste vrai quoi qu'il arrive :** un `▲ Next.js <version>` qui ne
+correspond pas à `package.json` veut dire que ce n'est PAS le Next du projet qui
+tourne. C'est la première chose à comparer.
 
 ---
 
@@ -577,6 +672,35 @@ demi-journées.
 Le détail : `ARCHITECTURE.md` §192, migration `drizzle/0067_salaries_a_part.sql`.
 
 ---
+
+## ✅ PLANCHE 99 RÉPONDUE ET CODÉE — le réglage dit sa couleur (31 août 2026)
+
+**Sa demande :** *« écrit deux chantiers par jour, planning complet, et met le
+petit carré vert foncé avec écrit "complet" du planning »* — sur l'écran
+**Réglages**, qu'il a désigné : *« c'est sur cette page que doit se faire la
+modification »*.
+
+**Sa réponse : la A.** L'écran Réglages dit « 2 chantiers par jour. Planning ▪
+complet. » Le carré vient de `fondDeLEtat`, le mot de `MOT_ETAT`
+(`src/lib/planning-jour.ts`) — une table neuve où la légende du calendrier lit
+elle aussi ses quatre mots. `phraseDuCompteur` rend donc deux morceaux, et non
+plus une phrase : ce qui se glisse entre eux n'est pas du texte.
+
+**Le piège, si l'on y revient :** ne jamais réécrire « complet » ni le vert dans
+un écran. Deux chartes sont sombres, et deux rédactions du même mot divergent.
+
+## UNE RÉPONSE ATTENDUE — planche 98, le jour proposé (31 août 2026)
+
+**J'avais mal lu sa demande** : il visait les Réglages, pas le calendrier
+d'envoi. Le défaut décrit ici est réel, mais il ne l'a pas signalé.
+
+**Sa remarque :** *« écrit deux chantiers par jour, planning complet, et met le
+petit carré vert foncé avec écrit "complet" du planning »*. Le calcul est juste ;
+c'est `colors.rust` qui sert à la fois de « complet » et de « proposé » dans
+`src/components/atlas/MoisCharge.tsx`, et l'aplat noie les deux barres du jour.
+
+`appli/jour-propose-pas-complet.html` (le point / la pastille) attend son choix.
+**Rien n'est codé** — sa consigne : *« ne code rien, fais-moi un visuel »*.
 
 ## UNE RÉPONSE ENCORE ATTENDUE DE LUI — planche 96 (26 août 2026)
 
@@ -4499,13 +4623,15 @@ Ils sont nés le 12 août 2026 dans un panneau qu'un chevron doré faisait
 remonter : Plans, Google Maps, Waze, copier l'adresse, appeler le client.
 **Depuis le 21 août 2026 ils vivent dans la FEUILLE DE CHANTIER**, posée dans la
 page du planning refait (planche 84) — et ils ne sont plus que quatre : *« pas
-besoin d'en mettre trois »*, Google Maps est sorti.
+besoin d'en mettre trois »*. C'est **Plans d'Apple** qui est sorti, pas Google :
+le bouton « Maps » le servait jusqu'au 31 août 2026, où il a tranché — *« pour
+Maps c'est Google Maps que je veux »*.
 
 - `src/lib/itineraire.ts` — la règle pure (liens universels, jamais `waze://`).
 - `src/app/planning/PlanningClient.tsx` — la feuille (`FeuilleChantier`), qui
   lit `liensItineraire` et `lienAppel` plutôt que de recomposer les adresses.
 - `listerChantiersPourPlanning` remonte `adresseChantier` et `clientTelephone`.
-- Contrôles : `scripts/test-itineraire.ts` (10), la section « feuille de
+- Contrôles : `scripts/test-itineraire.ts` (11), la section « feuille de
   chantier » de `scripts/test-planning-e2e.ts`, quatre de plus dans
   `scripts/test-nom-chantier.ts`, deux cas de plus dans
   `scripts/test-planning-repo.ts`. Tous ont été confrontés au défaut qu'ils

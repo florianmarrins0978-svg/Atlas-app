@@ -41,8 +41,31 @@ const dire = (bon: boolean, quoi: string) => {
 // document rendu. Celui-ci l'a été, fond clair et fond sombre, logo carré et
 // logo en bandeau (`scripts/capture-allure-devis.mts`). Recopier l'empreinte
 // affichée sans ouvrir le PDF ne prouverait plus rien du tout.
-const EMPREINTE_FACTURE = "9ccd73aa285385eae884321093df687323d1fcccbfa2d78c877b12ed551c8fa1";
-const EMPREINTE_DEVIS = "e67aa8b9e5d62fabebf179204e383fa71c7019219061cf5d8993370abc6d5186";
+// **RELEVÉES DE NOUVEAU LE 30 AOÛT 2026**, après sa demande : l'en-tête de la
+// colonne de chaque ligne s'appelle « MONTANT HT » et non plus « TOTAL HT »
+// (le récapitulatif du bas, lui, garde « Total HT » — les deux se
+// ressemblaient assez pour qu'il les confonde en lisant son devis).
+//
+// **CE QUI A AUTORISÉ CE RELEVÉ, et ce n'est pas un regard à l'œil.** Le
+// visualiseur PDF de cet environnement rend une page vide, et il n'y a ni
+// `pdftoppm` ni `pdfjs` : une capture aurait mesuré ZÉRO, ce qui est pire
+// qu'absent (`CLAUDE.md` §5). La trace des deux documents a donc été relevée
+// des DEUX CÔTÉS — sur `origin/main` dans un arbre de travail séparé, et ici —
+// puis comparée ligne à ligne. Résultat, sur 917 lignes de trace :
+//
+//   | ce qui diffère | avant | après |
+//   |---|---|---|
+//   | le texte de l'en-tête | « TOTAL HT » | « MONTANT HT » |
+//   | son abscisse | 523,55 | 509,10 |
+//
+//   et **rien d'autre**, dans aucun des deux documents. L'étiquette est calée
+//   à droite : un mot plus long commence plus à gauche, il ne pousse rien.
+//
+// Le seul risque d'un en-tête rallongé — cogner la colonne d'à côté — a été
+// mesuré : « PRIX UNITAIRE HT » finit à x = 424,28 et « MONTANT HT » commence
+// à 509,10, soit 85 points d'écart.
+const EMPREINTE_FACTURE = "be97fce1bdbb8159e0829b7220bbc4175401c33c00239dd993fbefa6a35bb5a9";
+const EMPREINTE_DEVIS = "a9a5f58c66c9492b40df7a4793497c529a9a6a3b0e9a6dfad02422dcf4458b36";
 
 const DOCUMENT: FacturePdfData = {
   numeroCommercial: "F-2026-0004",

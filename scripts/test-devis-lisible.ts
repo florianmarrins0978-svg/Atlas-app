@@ -20,7 +20,7 @@ import { ouvrirPdfProtege, texteDuPdf } from "./_lecteur-pdf-protege";
  * l'erreur — « Download is starting » — accusait le devis alors qu'il allait
  * bien. Les vrais moteurs ont quand même dit leur mot le même jour, à la main :
  * `qpdf` a lu les autorisations une par une, et le lecteur PDF du Chromium
- * complet a peint le document (`ARCHITECTURE.md` §218).
+ * complet a peint le document (`ARCHITECTURE.md` §222).
  */
 
 const DEVIS: DevisPdfData = {

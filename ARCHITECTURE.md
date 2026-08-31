@@ -5039,9 +5039,17 @@ d'économie qu'une maquette trouve et qu'un débat d'architecture manque.
 
 ```
 https://maps.apple.com/?daddr=…&dirflg=d
-https://www.google.com/maps/dir/?api=1&destination=…
+https://www.google.com/maps/dir/?api=1&destination=…&travelmode=driving
 https://waze.com/ul?q=…&navigate=yes
 ```
+
+**Et « Maps », sur la feuille de chantier, c'est GOOGLE Maps** — sa demande du
+31 août 2026, capture à l'appui : *« pour Maps c'est Google Maps que je veux »*.
+Le bouton servait `plans` depuis le 21 août, sur la supposition que « Maps »
+désignait chez lui l'application de son iPhone ; elle s'appelle « Plans », et ce
+n'est pas celle qu'il ouvre. La feuille n'en porte toujours que deux (« pas
+besoin d'en mettre trois ») : `plans` est calculée et ne coûte rien, mais aucun
+écran ne la sert.
 
 `waze://` et `comgooglemaps://` sont plus courts, et ils ont un défaut qu'on ne
 voit pas en les essayant sur une machine qui possède les applications :
@@ -5056,9 +5064,11 @@ Deux détails qui ne se devinent pas :
   (« 12 chemin des Chênes, 33600 Pessac ») ; `encodeURI` la laisse passer, elle
   sépare alors deux paramètres chez Waze, et l'adresse est tronquée au numéro de
   rue. Le GPS s'ouvre — dans une autre commune.
-- **`dirflg=d`.** Sans lui, Plans rouvre le dernier mode utilisé. À pied, s'il a
-  cherché une rue en ville la veille : trente kilomètres, et une estimation
-  absurde qu'il ne pense pas à corriger.
+- **`dirflg=d`, et `travelmode=driving` chez Google.** Sans eux, la carte rouvre
+  le dernier mode utilisé. À pied, s'il a cherché une rue en ville la veille :
+  trente kilomètres, et une estimation absurde qu'il ne pense pas à corriger.
+  Chez Google le piège mord plus longtemps — le mode s'y retient d'une session à
+  l'autre. Le paramètre manquait : il est entré le 31 août, avec le bouton.
 
 **Un téléphone ne dit pas quelles applications il possède.** Impossible donc de
 n'afficher que Waze parce que c'est la seule installée : les trois sont
@@ -19257,8 +19267,350 @@ changer.
 déjà enregistré ajoute sa ligne, soit 56 px. L'écran défile alors de ce qu'il
 faut sur 664 px — mais pas sur son téléphone, dont la hauteur utile mesurée sur
 sa capture est de l'ordre de 770 px.
+## 218. L'or ne change pas d'une apparence à l'autre
 
-## 218. Le devis du client : verrouillé contre la retouche, et tenant dans un écran
+**Sa consigne du 31 août 2026 :** *« pour l'apparence, j'aimerais que tout ce
+qui est en doré sur la version originale apparaisse en doré sur les autres
+apparences »*.
+
+Ce n'est pas une demande neuve. Le 27 août, il l'avait déjà posée pour une seule
+charte — *« lorsque je choisis l'apparence Brume, tout ce qui est en doré sur
+Origine le reste aussi sur Brume »* — et l'on avait corrigé le seul endroit qui
+perdait l'or sur Brume, le marqueur d'onglet, sans voir que la règle valait pour
+les six autres. **Une consigne exaucée sur un seul cas n'est pas une consigne
+exaucée.**
+
+### Ce qui changeait, et pourquoi personne ne le voyait
+
+Atlas a **deux** accents, et le partage n'est pas décoratif (`design-tokens.ts`) :
+le vert pin porte ce qu'on **fait**, l'or porte ce qu'on **lit** — l'accueil, les
+libellés d'état, les filets, le sceau, le compteur de la dictée.
+
+La planche du 14 août donnait à chacune des sept chartes son propre second
+accent, et `depuisPlanche` le recopiait tel quel dans `or` :
+
+| Charte | `or` d'avant | `orClair` d'avant |
+|---|---|---|
+| Pierre | `#6f8466` — une sauge | `#8b9d83` — une sauge claire |
+| Beurre | `#8a6a3a` | `#c2a05f` |
+| Moka | `#7c5c46` — une argile | `#b99274` |
+| Prune | `#7a2f52` — un prune | `#d9a2bd` — un rose |
+| Sylve | `#c3b184` | `#3d6b4a` — un vert |
+| Nuit | `#c6a15b` | `#8f7130` |
+| Brume | `#B98B47` (corrigé le 27 août) | `#6f95c4` — un bleu |
+
+Changer d'apparence ne changeait donc pas que le fond : **cela repeignait tout
+ce que l'or porte**, et sur trois chartes l'or n'existait plus du tout.
+
+Aucun contrôle ne l'attrapait, et c'est le point à retenir : les deux suites de
+chartes vérifiaient que **tous les jetons sont présents** et que **tout se lit**.
+Les deux étaient vertes. Un contrôle sur la lisibilité ne dit rien de
+l'identité — c'est une autre question, et il lui fallait sa propre suite
+(`test-chartes.ts`, « l'or est le même sur les huit chartes »).
+
+### Pourquoi l'or peut rester FIXE là où trois autres couleurs doivent bouger
+
+Le §160 a posé l'inverse pour l'alerte, le bordeaux et le vert pâle : leur
+clarté s'accorde au fond, sans quoi elles disparaissent sur Nuit et sur Sylve.
+L'or n'en a pas besoin, et ce n'est pas une intuition — c'est mesuré :
+
+| | l'or sur le fond | l'or sur une plage |
+|---|---|---|
+| Origine — **son écran de tous les jours** | 2,77 | 2,91 |
+| Moka — la plus faible des claires | 2,30 | 2,62 |
+| Sylve | **5,25** | 4,55 |
+| Nuit | **6,14** | 5,55 |
+
+L'or se détache **mieux** sur les deux sombres que sur les cinq claires. Le
+remonter « par précaution » aurait corrigé ce qui n'était pas cassé — et cessé
+d'être le même or, c'est-à-dire manqué la consigne.
+
+### Ce que cela coûte, et qu'il faut dire
+
+Les valeurs de la planche pour ce second accent sont **abandonnées** : elles
+étaient les siennes, choisies au pouce le 14 août devant seize propositions. Sa
+consigne du 31 les remplace ; les deux ne peuvent pas tenir ensemble. Elles
+restent lisibles dans le tableau ci-dessus et dans les planches de
+`docs/maquettes/`, qui racontent le chemin.
+
+Deux phrases de présentation ont dû suivre, sans quoi l'écran des réglages
+décrirait une application disparue : Pierre annonçait *« Aucun or »*, Moka *« une
+argile pour l'accent »*. Une suite le refuse désormais — une charte ne peut plus
+annoncer qu'elle est sans or.
+
+### Où la règle vit
+
+`src/lib/chartes.ts`, `OR_ORIGINE` et `OR_CLAIR_ORIGINE` : deux constantes, que
+`depuisPlanche` pose sur les huit chartes. `depuisPlanche` ne reçoit plus de
+`bronze` ni de `pleinSigne` — un paramètre qui ne sert plus à rien finit par
+resservir à autre chose.
+---
+
+## 219. « Elle est super lente » : `npx` allait chercher un Next au registre quand celui du projet manquait
+
+**Sa plainte du 31 août 2026, à midi**, capture à l'appui : le bandeau
+« Version rapide en construction » en haut de l'écran, et une application qui
+compile chaque page à l'ouverture.
+
+Sa fiche donnait tout, et cette fois elle ne se contredisait plus :
+
+```
+Code SERVI : AUCUNE — la construction a ÉCHOUÉ (10:03:46)
+Serveur    : répond sur le port 3000
+Port 3000  : ouvert — Atlas répond bien à l'adresse publique (vérifié)
+dit:
+▲ Next.js 16.3.3 (Turbopack)          ← le projet épingle 16.3.2
+Error: Could not find the Next.js package (next/package.json)
+Resolved from: /workspaces/Atlas-app/src/app
+```
+
+### Ce que ces trois lignes disent ensemble
+
+`node_modules/next` **manquait** sur son espace. Et `npx next build` ne se
+contente pas d'échouer dans ce cas : **il télécharge la dernière version publiée
+et la lance**. Ce Next-là — 16.3.3, étranger au projet — ne trouve évidemment
+pas le paquet du projet, la construction tombe, le banc reste en mode
+développement, et le veilleur retente la même construction condamnée toutes les
+demi-heures.
+
+**Reproduit ici avant d'être corrigé**, en écartant le paquet à la main :
+
+```
+npm warn exec The following package was not found and will be installed: next@16.3.3
+▲ Next.js 16.3.3 (Turbopack)
+Error: Could not find the Next.js package (next/package.json)
+```
+
+Son message, mot pour mot.
+
+### Et c'est l'explication du « 16.3.3 » du 29 août
+
+`TODO.md` portait depuis deux jours : *« reste inexpliqué : comment ses
+`node_modules` ont dérivé »*. Ils n'ont jamais dérivé. **Ce n'est pas la
+version installée qui a changé, c'est `npx` qui est allé chercher ailleurs ce
+qui manquait chez lui.** Le §205 (cohérence des dépendances) avait donc raison
+sur le symptôme et se trompait de mécanisme ; c'est écrit ici plutôt que corrigé
+en silence, parce qu'une prochaine session lirait le premier récit sans méfiance.
+
+### Les trois verrous posés, et pourquoi trois
+
+| | |
+|---|---|
+| **le binaire du projet, par son chemin** (`node_modules/next/dist/bin/next`) | plus aucun `npx` dans `banc.mjs` : un paquet absent échoue franchement au lieu d'en faire venir un autre |
+| **un paquet ÉPINGLÉ et ABSENT est un défaut, pas une ignorance** | `dependancesIncoherentes` rendait « rien à signaler » sur un `next` introuvable ; il réclame maintenant la réinstallation |
+| **« Could not find the Next.js package » déclenche la réparation** | ce message ne contient ni « Cannot find module » ni « node_modules » : il passait au travers des deux conditions existantes |
+
+### Pourquoi le piège n'a mordu QUE le banc
+
+`scripts/essai.mjs` — la commande qu'on tape à la main — lance Next par
+`npx **--no-install** next dev` depuis longtemps : il ne peut donc rien
+télécharger. `banc.mjs`, lui, appelait `npx` nu. Le garde-fou existait dans ce
+dépôt, à un fichier près, et personne ne l'avait reporté sur celui qui tourne
+tout seul chez le patron.
+
+### Le piège trouvé en le JOUANT, et qui aurait tout gâché
+
+Le premier correctif rendait le banc **pire** : en appelant le binaire du
+projet, un `node_modules/next` absent tue le serveur de développement à la
+seconde — et la mort du serveur **arrête `banc.mjs`** (`surSortie`). La
+réinstallation, qui vivait dans la voie de construction, était donc coupée en
+plein `npm install`.
+
+Cela ne s'est pas vu en relisant : la sortie disait « Réinstallation avant de
+bâtir », puis le processus s'arrêtait sans un mot, code 1. **La réparation est
+maintenant faite AVANT tout lancement.** Vérifié en écartant le paquet et en
+lançant le banc pour de bon :
+
+```
+next ABSENT alors que le projet exige 16.3.2 → npm install → Dépendances remises d'aplomb
+→ serveur de développement → Construction terminée — passage à la version rapide
+→ ▲ Next.js 16.3.2
+```
+
+**Ce qui reste ouvert :** pourquoi `node_modules/next` disparaît de son espace.
+Le correctif répare la conséquence à chaque démarrage ; il n'explique pas la
+cause. Voir `TODO.md`.
+
+## 220. Le diamètre n'était pas perdu : il n'était JAMAIS créé
+
+*30 août 2026 — `prestation-structuree.ts`, `correspondance-prestation.ts`,
+`extraction-service.ts`, `libelle-client.ts`.*
+
+Le patron redicte son chantier au téléphone. Il dit « démontage d'un érable de
+**40 centimètres au pied** » et « dessouchage de deux **souches de 60** ». Atlas
+lui redemande, à l'écran, quel diamètre fait le tronc et quel diamètre fait la
+souche.
+
+Or ces deux conventions métier étaient codées, éprouvées, et vertes : « souche
+de X », « X au pied », l'unité facultative. **Les suites passaient, le parcours
+réel échouait** — et c'est ce genre d'écart qui décide s'il croit son outil.
+
+### Ce que la remontée de la chaîne a donné
+
+| étape | ce qu'elle faisait de la mesure |
+|---|---|
+| transcription | « souches de 60 » est bien là |
+| JSON du modèle | **aucun champ pour une mesure** — le contrat n'en avait pas |
+| `libelleAvecQuantite` | ne garde que la quantité : « Dessouchage (2 souche) » |
+| `ajouterPrestation` | écrit le libellé et la structure ; la `description` du modèle **n'est pas persistée** |
+| colonnes | `caracteristiques` restait **toujours NULL** |
+| `questionsAvantChiffrage` | ne trouve ni colonne ni texte — donc **elle demande** |
+
+**Il ne se perdait donc nulle part : il n'était jamais créé.** Le seul écrivain
+de `caracteristiques` était `structureDepuisPrecisions`, c'est-à-dire **ses
+réponses aux questions dont il se plaignait**. La boucle se refermait sur
+elle-même : la seule façon d'avoir le diamètre en base était qu'il le saisisse,
+donc qu'on le lui demande.
+
+### Pourquoi aucune suite ne le voyait
+
+Chacune couvrait son maillon, et le couvrait bien. `mesures-arbre.ts` lisait
+parfaitement « souches de 60 » ; `questions-chiffrage.ts` lisait parfaitement
+une colonne `diametreCm`. **Le défaut vivait entre les deux**, là où aucune ne
+regardait — et l'on peut avoir cinquante suites vertes sur une chaîne cassée.
+
+C'est ce qui justifie `scripts/test-son-cas-reel.ts` : il part de ce que le
+MODÈLE rend et va jusqu'à ce que le patron LIT. Il a d'ailleurs immédiatement
+attrapé une régression que le correctif venait d'introduire — voir plus bas.
+
+### La correction, et où elle est posée
+
+`structureDeLaPrestation` lit désormais les mesures sur le texte du modèle
+(`libelle` + `description`) avec le vocabulaire du chiffrage, et les range en
+colonne. **C'est le dernier endroit où la matière existe encore** : la
+`description` meurt à l'insertion, et la chercher plus tard serait la chercher
+là où elle n'est plus. Corriger l'écran aurait laissé le trou intact — et le
+prix avec, puisque le chiffrage lit la même colonne.
+
+Deux garde-fous s'ajoutent :
+
+- **Le contrat d'extraction demande maintenant au modèle de CONSERVER les
+  dimensions** dans `description`, avec le mot de l'artisan et sans compléter
+  l'unité. Sans cette règle, il n'avait aucune raison de garder « de 60 » — et
+  ce que le code ne reçoit pas, il ne peut pas le lire.
+- **L'enrichissement d'une prestation existante fusionne MESURE PAR MESURE.**
+  Poser l'objet entier effacerait une hauteur qu'il a saisie lui-même le jour
+  où la dictée ne porte qu'un diamètre, et cet écrasement ne se verrait nulle
+  part : la colonne est un seul JSON.
+
+**Aucune valeur n'est devinée, et aucun prix ne change de règle.** Ce qui ne se
+lit pas ne s'écrit pas : la question se pose alors, comme avant. Et le diamètre
+entre dans la colonne que le chiffrage lisait déjà — le résultat est celui
+qu'il aurait obtenu en tapant « 60 » dans la question. On lui épargne la
+frappe, pas l'arbitrage.
+
+### Le libellé du devis, et la régression que le contrôle a attrapée
+
+Sa demande jointe : le PDF affichait « Dessouchage » tout court, il veut
+« Dessouchage de souches de 60 cm » — sans le « deux », qui reste en colonne
+Qté. Un geste d'un seul mot retrouve donc son objet (l'unité de comptage) et sa
+mesure (la colonne).
+
+**La première version testait `estUnGeste(texte)` seul, et c'était faux.** Cette
+fonction répond « oui » dès qu'un geste apparaît QUELQUE PART : « Démontage d'un
+érable » en contient un, et devenait « Démontage d'un érable **de arbre de
+40 cm** ». Le contrôle de bout en bout l'a attrapé sur une des trois lignes
+qu'il venait justement de valider ; aucune suite unitaire ne le voyait, parce
+qu'aucune ne partait de ce que le modèle rend. La borne est donc : **un seul
+mot**, une unité qui compte des objets, et un diamètre en colonne.
+
+### « MONTANT HT » en tête de colonne, « Total HT » en bas
+
+Sa dernière demande du jour. Les deux se ressemblaient assez pour qu'il les
+confonde en lisant son propre devis.
+
+**Le relevé au pixel de `test-fiche-chantier-pdf.ts` a été refait, et pas à
+l'œil :** le visualiseur PDF de cet environnement rend une page vide, et il n'y
+a ni `pdftoppm` ni `pdfjs` — une capture aurait mesuré ZÉRO, ce qui est pire
+qu'absent (`CLAUDE.md` §5). La trace des deux documents a donc été relevée des
+DEUX CÔTÉS — sur `origin/main` dans un arbre de travail séparé, et après
+correction — puis comparée ligne à ligne : sur 917 lignes, **deux** diffèrent
+(le mot, et son abscisse, l'étiquette étant calée à droite). Le seul risque d'un
+en-tête rallongé — cogner la colonne voisine — a été mesuré : 85 points d'écart.
+
+---
+
+## 221. Un devis sans client : le retour mène à la fiche client, et le chemin se referme
+
+**Sa demande du 31 août 2026, deux captures à l'appui :** *« j'ai oublié de
+renseigner la fiche client du chantier. Lorsque je fais retour, je dois arriver
+sur la page de la fiche client ! Pas sur la page que je te mets en deuxième
+photo. »*
+
+Sa première capture est un devis qui porte, à la place du client, la phrase
+« Aucun client rattaché à ce chantier » — un document qui ne peut partir chez
+personne. Sa seconde est la fiche du chantier : l'écran où la flèche le
+déposait, et où **rien** ne dit ce qui manque ni où le réparer.
+
+C'est la troisième fois qu'il signale le même oubli sous une forme différente :
+le 17 août depuis l'accueil (« Adresse non renseignée », §124), et aujourd'hui
+depuis le devis. Le manque, lui, est toujours le même — un chantier né d'une
+photo ou d'une dictée, sans un mot sur le client.
+
+### DEUX ÉCRANS S'APPELLENT « FICHE CLIENT », ET ILS NE SE MÊLENT PAS
+
+| L'écran | Ce qu'il fait | Sa règle de retour |
+|---|---|---|
+| `/clients/[id]` | ce que l'application SAIT du client — ses chantiers, ce qu'il doit | `src/lib/retour-fiche-client.ts` |
+| `/chantiers/[id]/coordonnees` | le formulaire qu'on REMPLIT, titré « Fiche client » à l'écran | `src/lib/retour-du-devis.ts` |
+
+C'est le second qu'il désigne : il parle de *renseigner*, et il avait employé
+les mêmes mots le 17 août devant l'écran de création — qui est exactement
+celui-là. Les deux règles restent séparées parce que les écrans le sont ; les
+mêler ferait sortir d'un chantier celui qui y était. Un renvoi croisé a été posé
+dans chacun des deux fichiers, faute de quoi la confusion se refera.
+
+**Ce piège a failli coûter une suite.** `scripts/test-retour-fiche-client-e2e.ts`
+existait déjà — pour l'AUTRE écran — et le premier jet de ce lot l'a écrasée en
+choisissant le même nom. Récupérée avant commit, et rejouée verte. La leçon vaut
+au-delà de ce lot : **regarder ce qu'on écrase avant d'écrire**, un nom
+« évident » l'est souvent déjà pour quelqu'un d'autre.
+
+### Pourquoi ce n'est pas « toujours la fiche client »
+
+Un devis dont le client est renseigné n'a rien à corriger : y renvoyer le
+poserait devant un formulaire rempli, sans savoir ce qu'on attend de lui. Le
+détour ne se justifie que par le manque — et le manque est exactement ce que
+l'écran du devis affiche déjà. La condition est donc `clientId === null`, la
+même que celle qui écrit « Aucun client rattaché à ce chantier ».
+
+### Et le chemin se REFERME
+
+Arriver sur la fiche client par cette porte puis être renvoyé sur la fiche du
+chantier après avoir enregistré laisserait son devis à retrouver seul — le devis
+étant justement ce qu'il lisait. La provenance voyage donc dans l'adresse, sous
+le même nom que l'autre fiche (`?de=`), et **la flèche comme l'enregistrement la
+respectent**. Sans provenance, rien ne bouge : la flèche rend la liste et
+l'enregistrement la fiche du chantier, comme depuis le 17 août.
+
+### La provenance ne se valide pas par motif, mais par ÉGALITÉ
+
+Cette valeur vient de l'adresse, donc de n'importe qui : `?de=https://ailleurs`
+ferait de la flèche « retour » une porte de sortie hors d'Atlas. Elle n'est donc
+pas comparée à une forme mais **au seul chemin qu'elle a le droit de valoir** —
+le devis de CE chantier, recomposé côté serveur. Un `?de=` pointant sur le devis
+d'un AUTRE chantier retombe sur le comportement d'avant, jamais sur une erreur.
+
+C'est plus strict que la liste blanche de `retour-fiche-client.ts` (§135), et
+délibérément : là-bas une famille entière de chemins est légitime, ici il n'y en
+a qu'un.
+
+### Ce qui l'éprouve
+
+| | |
+|---|---|
+| `scripts/test-retour-du-devis.ts` | la règle, sans base : l'aller, le retour, et les deux refus |
+| `scripts/test-devis-sans-client-e2e.ts` | qu'elle est BRANCHÉE — la flèche, la fiche, l'enregistrement, le retour au devis |
+
+La suite sans base sait échouer : rendre `/chantiers/${id}` sans regarder
+`clientId` rougit son premier cas, oublier la provenance rougit le cinquième.
+
+**La flèche du devis porte désormais un repère** (`data-atlas="retour-du-devis"`)
+plutôt que son libellé : elle n'annonce plus la même chose selon où elle mène, et
+`test-dicter-dans-le-devis-e2e.ts`, qui mesurait sa PLACE, la désignait par son
+mot (`CLAUDE.md` §5 bis).
+
+## 222. Le devis du client : verrouillé contre la retouche, et tenant dans un écran
 
 *31 août 2026 — `proteger-pdf.ts`, `document-commun.ts`, `devis/[jeton]/`.*
 

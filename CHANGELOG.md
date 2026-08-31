@@ -9,6 +9,32 @@ Format : le plus récent en tête.
 
 ## 2026-08-31
 
+### Le banc lance le Next DU PROJET, et ne laisse plus `npx` en chercher un autre
+
+**Sa plainte de midi : « version rapide en construction, elle est super
+lente ».** `node_modules/next` manquait sur son espace — et `npx next build`
+téléchargeait alors la dernière version publiée (16.3.3) pour la lancer, alors
+que le projet épingle 16.3.2. Ce Next étranger ne trouvait pas le paquet du
+projet, la construction tombait, le banc restait en mode développement où
+chaque écran se compile à l'ouverture, et le veilleur retentait la même
+construction condamnée.
+
+Reproduit avant d'être corrigé, en écartant le paquet : son message mot pour
+mot. Trois verrous — le binaire du projet appelé par son chemin, un paquet
+épinglé et absent traité comme un défaut, et le message de Turbopack reconnu.
+
+**C'est aussi l'explication du « 16.3.3 » du 29 août**, que `TODO.md` portait
+comme inexpliqué : ses dépendances n'ont jamais dérivé.
+
+Un piège trouvé en le jouant, et corrigé avant livraison : appeler le binaire du
+projet fait mourir le serveur de développement quand le paquet manque, ce qui
+arrête le banc — donc la réinstallation était coupée en plein `npm install`.
+Elle a lieu maintenant avant tout lancement. Vérifié de bout en bout : paquet
+écarté, banc lancé, « Dépendances remises d'aplomb » puis « passage à la version
+rapide ».
+
+Détail et ce qui reste ouvert : `ARCHITECTURE.md` §219.
+
 ### Le devis du client ne se modifie plus, tient dans un écran, et reste à portée
 
 **Ses trois captures, prises sur le téléphone d'une cliente.**
@@ -48,7 +74,8 @@ confirmé à la main le même jour (qpdf, le lecteur PDF de Chromium) ; la CI, e
 n'installe qu'un Chromium sans lecteur PDF, et c'est ce qui avait fait rougir la
 première version de ce contrôle.
 
-Raisons et pièges : `ARCHITECTURE.md` §218. Compte-rendu : `docs/devis-client-verrouille.md`.
+Raisons et pièges : `ARCHITECTURE.md` §222. Compte-rendu : `docs/devis-client-verrouille.md`.
+
 
 
 ### Un prix posé sur l'écran du devis débloque enfin l'envoi
@@ -149,9 +176,205 @@ Le contrôle qui exigeait cette promesse a été retourné : il vérifie désorm
 qu'elle ne revient pas. Un nouveau mesure l'écran à 390 × 664 — rien à faire
 défiler, et le dernier geste hors de portée des onglets.
 
+### L'or reste l'or, quelle que soit l'apparence choisie
+
+**Sa consigne :** *« pour l'apparence, j'aimerais que tout ce qui est en doré
+sur la version originale apparaisse en doré sur les autres apparences »*.
+
+Chaque charte portait son propre second accent, recopié de la planche du
+14 août : une sauge sur Pierre, une argile sur Moka, un prune sur Prune, un bleu
+et un rose pour les traits de Brume et de Prune. Changer d'apparence repeignait
+donc **tout ce que l'or porte** — l'accueil, les libellés d'état, les filets, le
+sceau, le compteur de la dictée —, et sur trois chartes l'or disparaissait.
+
+Les huit chartes portent désormais l'or d'Origine, `#B98B47`, au caractère près.
+Mesuré sur chacune : il se détache **mieux** sur les deux sombres (6,14 sur Nuit)
+que sur son écran de tous les jours (2,77 sur Origine) — il n'y avait donc rien
+à remonter, et le remonter aurait cessé d'être le même or.
+
+Ce n'était pas une demande neuve : le 27 août il l'avait posée pour Brume seule,
+et l'on avait corrigé Brume seule. Une suite tient maintenant la règle pour les
+huit (`scripts/test-chartes.ts`) — les deux suites existantes vérifiaient que
+tous les jetons sont là et que tout se lit, et restaient vertes pendant que
+l'identité changeait.
+
+Deux présentations ont suivi : Pierre n'annonce plus « Aucun or », Moka plus
+« une argile pour l'accent ». Détail dans `ARCHITECTURE.md` §218.
+
+### CODÉ : « 2 chantiers par jour. Planning ▪ complet. » — sa réponse A
+
+Sa réponse à la planche 99, le jour même : **« la A »**. L'écran Réglages porte
+désormais le carré vert foncé du planning et son mot, à la place de *« C'est ce
+qui remplit votre planning. »*
+
+**Deux pièces neuves, et aucune couleur ni aucun mot écrits dans un écran :**
+
+- `MOT_ETAT` (`src/lib/planning-jour.ts`) — le mot de chacun des quatre états,
+  écrit une fois. La légende du calendrier les écrivait en clair ; elle les y
+  lit maintenant, et le réglage aussi. Sans cette table, « complet » existerait
+  à deux endroits, sur deux écrans qui ne se lisent jamais ensemble — et le
+  jour où l'un change, rien ne le dirait.
+- `phraseDuCompteur` rend **deux morceaux** au lieu d'une phrase : entre eux se
+  glissent le carré (`fondDeLEtat("plein")`) et le mot. Un `#2f3b2f` posé dans
+  l'écran aurait été faux sur Nuit et Sylve, les deux chartes sombres.
+
+**Le carré est `aria-hidden`, le mot ne l'est pas** : une couleur ne se lit pas
+à voix haute, et l'annonce ne doit pas dire deux fois la même chose.
+
+`ditLaBarre` prend « complet » dans `MOT_ETAT` elle aussi — la voix et la
+couleur ne doivent pas nommer différemment le même état. Elle garde « libre »
+là où la légende écrit « rien » : une phrase lue n'est pas une étiquette.
+
+### Le réglage dit ce qu'il DONNE au planning — planche 99
+
+**Sa demande, capture des Réglages à l'appui :** *« écrit deux chantiers par
+jour, planning complet, et met le petit carré vert foncé avec écrit "complet"
+du planning »*, puis, devant la planche 98 qui visait le calendrier d'envoi :
+*« c'est sur cette page que doit se faire la modification »*.
+
+Le compteur dit aujourd'hui *« 2 chantiers par jour. C'est ce qui remplit votre
+planning. »* (`phraseDuCompteur`, `src/lib/equipes.ts`). La phrase dit que le
+réglage remplit le planning ; elle ne montre pas **ce qu'on y verra**, et ce
+qu'on y voit est une couleur. Le réglage vit sur un écran, sa conséquence sur
+un autre, et rien ne les relie.
+
+`appli/reglages-planning-complet.html` propose trois issues — la phrase avec le
+carré, l'échelle des trois carrés, la case du planning dessinée — et **le
+compteur marche** : à 3 l'échelle dit 0 / 1 à 2 / 3, à 1 la ligne « incomplet »
+disparaît, parce qu'entre rien et complet il n'y a plus de place.
+
+**Le vert et la phrase sont LUS dans le produit**, jamais recopiés :
+`scripts/verifier-maquette-reglages-planning-complet.mjs` compare le carré à
+`colors.rust` et la phrase à `phraseDuCompteur`, et il a été vu rouge sur un mot
+changé, un autre vert, un chiffre figé et un « incomplet » de trop.
+
+**Rien n'est codé dans `src/`.**
+
+### Un jour proposé au client se peint comme un jour COMPLET — planche 98
+
+**Cette planche répond à une mauvaise lecture de sa demande** — il visait
+l'écran Réglages (planche 99 ci-dessus). Le défaut qu'elle décrit est réel et
+reste posé, mais il n'est pas ce qu'il demandait.
+
+**Sa remarque, capture à l'appui :** *« écrit deux chantiers par jour, planning
+complet, et met le petit carré vert foncé avec écrit "complet" du planning »*.
+
+Ses réglages disent deux chantiers par jour, son septembre est **vide**, et les
+deux dates qu'il propose à sa cliente se peignent du vert que la légende, juste
+dessous, appelle « complet ».
+
+**Le calcul n'est pas en cause** — `src/lib/planning-jour.ts` rend bien
+« libre » pour ces deux jours-là. C'est la même couleur employée pour deux
+choses sans rapport dans `src/components/atlas/MoisCharge.tsx` :
+`fondDeLEtat("plein")` et `retenus.has(jour)` valent tous deux `colors.rust`.
+L'aplat coûte une seconde chose, plus grave : il **recouvre les deux barres**,
+si bien que le jour qu'il vient de proposer devient le seul du mois dont il ne
+peut plus lire la charge — ce que la planche 91 avait justement apporté.
+
+`appli/jour-propose-pas-complet.html` compare son écran d'aujourd'hui à deux
+issues : **le point** (fond clair, un point vert dans le coin) et **la
+pastille** (le chiffre dans un disque vert). La légende y gagne « proposé », en
+rond quand les quatre états de charge sont carrés. Un troisième essai — un
+liseré vert autour de la case — a été **écarté avant de lui être montré** : à
+l'écran, il se confond avec le liseré noir de la case qu'on vient de toucher,
+trois cases entourées à la suite, ce qu'il avait déjà signalé le 23 août.
+
+**Rien n'est codé dans `src/`** — sa consigne : *« ne code rien, fais-moi un
+visuel »*. `scripts/verifier-maquette-jour-propose.mjs` tient la planche, et il
+a été vu rouge contre l'aplat remis dans les deux issues, contre la légende
+amputée, et contre une vue qui comptait les équipes autrement.
+
+### « Maps », sur la feuille de chantier, ouvre Google Maps
+
+Sa demande, capture à l'appui : *« pour Maps c'est Google Maps que je veux »*.
+Le bouton servait `plans` — Apple — depuis le 21 août, sur la supposition que
+« Maps » désignait chez lui l'application de son iPhone. Elle s'appelle
+« Plans », et ce n'est pas celle qu'il ouvre pour aller sur un chantier : il
+appuyait sur un bouton qui le sortait de l'application où sont ses trajets.
+
+La feuille n'en porte toujours que deux (« pas besoin d'en mettre trois ») :
+c'est Plans qui sort, pas Google. `plans` reste calculée dans
+`src/lib/itineraire.ts` — elle ne coûte rien —, mais aucun écran ne la sert.
+
+**Et le lien Google gagne `travelmode=driving`**, qui lui manquait. Sans lui, la
+carte rouvre le dernier mode utilisé — et Google le retient d'une session à
+l'autre : une rue cherchée à pied en ville la veille, et le chantier de trente
+kilomètres s'annonce à six heures de marche. C'est le `dirflg=d` que Plans avait
+déjà. Le défaut ne se voyait pas tant que le bouton n'ouvrait pas Google.
+
+Les deux contrôles qui gardaient la feuille exigeaient **l'inverse** —
+`maps.apple.com` présent, `google.com/maps` absent : ils auraient rougi sur une
+demande exaucée (`CLAUDE.md` §5 bis). Ils gardent ce qu'il a vraiment demandé —
+deux destinations, pas trois — en refusant Plans cette fois.
+
+`src/app/planning/PlanningClient.tsx`, `src/lib/itineraire.ts`,
+`scripts/test-itineraire.ts` (11), `scripts/test-planning-e2e.ts`,
+`scripts/capture-planning.mts`.
+
+### Un devis sans client : le retour mène à la fiche client
+
+**Sa demande, deux captures à l'appui :** *« j'ai oublié de renseigner la fiche
+client du chantier. Lorsque je fais retour, je dois arriver sur la page de la
+fiche client ! »* Le devis affichait « Aucun client rattaché à ce chantier », et
+la flèche le déposait sur la fiche du chantier — un écran qui ne dit ni ce qui
+manque ni où le réparer.
+
+La flèche mène désormais au formulaire « Fiche client » quand aucun client n'est
+rattaché, et **seulement dans ce cas** : un devis renseigné n'a rien à corriger.
+
+### Et le chemin se referme : enregistrer la fiche ramène au devis
+
+Sans cela, le document qu'il lisait serait à retrouver seul. La provenance
+voyage dans l'adresse (`?de=`), et elle ne vaut que pour le devis de CE
+chantier : elle est comparée à ce seul chemin, jamais à une forme — un `?de=`
+étranger ferait de la flèche « retour » une sortie hors d'Atlas.
+
+Sans provenance, rien ne bouge : la fiche ouverte depuis l'accueil (« Adresse
+non renseignée ») garde sa sortie du 17 août.
+
 ---
 
 ## 2026-08-30
+
+### Le diamètre dicté entre enfin en colonne — il n'était jamais créé
+
+**Son test téléphone :** il dit « un érable de 40 centimètres au pied » et
+« deux souches de 60 », et Atlas lui redemande les deux diamètres. Les
+conventions métier étaient pourtant codées et vertes.
+
+**En remontant la chaîne réelle, le diamètre ne se perdait nulle part : il
+n'était jamais créé.** Le contrat d'extraction n'a aucun champ de mesure, la
+`description` du modèle n'est pas persistée, et `caracteristiques` n'avait qu'un
+seul écrivain — `structureDepuisPrecisions`, c'est-à-dire **ses réponses aux
+questions dont il se plaint**. La boucle se refermait sur elle-même.
+
+`structureDeLaPrestation` lit désormais les mesures sur le texte du modèle et
+les range en colonne — c'est le dernier endroit où la matière existe encore. Le
+contrat demande en plus au modèle de conserver les dimensions, et
+l'enrichissement d'une prestation existante fusionne mesure par mesure, pour ne
+pas effacer une hauteur qu'il a saisie lui-même.
+
+Aucune valeur n'est devinée : ce qui ne se lit pas ne s'écrit pas, et la
+question se pose alors comme avant. Aucun prix ne change de règle — le diamètre
+entre dans la colonne que le chiffrage lisait déjà.
+
+**Pourquoi aucune suite ne le voyait, et ce que ça change.** Chaque maillon
+était couvert et bien couvert ; le défaut vivait ENTRE eux. `test-son-cas-reel.ts`
+part maintenant de ce que le modèle rend et va jusqu'à ce que le patron lit — et
+il a immédiatement attrapé une régression que le correctif venait d'introduire :
+« Démontage d'un érable » devenait « Démontage d'un érable de arbre de 40 cm ».
+
+### « Dessouchage de souches de 60 cm », et « Montant HT » en tête de colonne
+
+Un geste d'un seul mot retrouve son objet et sa mesure depuis les colonnes ; le
+nombre, lui, reste dans la colonne Qté — sa règle. Et l'en-tête de la colonne de
+chaque ligne s'appelle « Montant HT », le récapitulatif du bas restant
+« Total HT » : les deux se ressemblaient assez pour qu'il les confonde.
+
+Le relevé au pixel des documents a été refait sur preuve mesurée, pas à l'œil :
+le rendu PDF est impossible ici, la trace a donc été comparée des deux côtés —
+sur 917 lignes, deux diffèrent. Détail : `ARCHITECTURE.md` §220.
+
 
 ### La fiche n'accuse plus le port quand c'est le serveur qui manque
 
@@ -1190,6 +1413,103 @@ un refus incompréhensible.
 chantier : ouvrez-le » était exactement ce qu'il reproche depuis le 25 août.
 La suite qui exigeait ce libellé mot pour mot a rougi sur une demande exaucée :
 elle vise désormais la règle, pas la phrase (`CLAUDE.md` §5 bis).
+
+## 2026-08-28
+
+### « Pourquoi dans une appli SPÉCIFIQUE pour l'espace vert elle comprend pas ? »
+
+**Sa colère du 28 août 2026, et elle était fondée :** *« ce que je veux, c'est
+que ce soit une intelligence artificielle qui rédige le devis. Si ici je te dis
+désherbage, tu vas comprendre qu'on parle d'espaces verts. Pourquoi dans une
+appli SPÉCIFIQUE pour l'espace vert elle comprend pas ? C'est pas logique ! »*
+
+**Le défaut était structurel : chaque IA d'Atlas déclarait SON métier.**
+
+| Service | Ce qu'il annonçait |
+|---|---|
+| l'assistant | « une application pour **artisans du bâtiment** » |
+| la dictée d'un chantier | « un artisan » |
+| la lecture d'un ticket | « un artisan **élagueur** » |
+| le plan d'arrosage | « un **paysagiste** français » |
+
+Quatre métiers pour une seule application, **dont un qui n'est pas le sien**. Un
+modèle à qui l'on dit « bâtiment » entend « herbages » là où un paysagiste
+entend « désherbage » : ce n'est pas un défaut du modèle, c'est qu'on lui a
+menti sur le métier.
+
+**Il n'y a plus qu'une phrase** (`src/lib/metier-atlas.ts`), et chaque service
+en part. Un contrôle refuse qu'une consigne reparle du bâtiment ou redéclare le
+métier à sa façon — vérifié en remettant « bâtiment » dans une consigne, ce qui
+le fait rougir.
+
+**Et la transcription ne peut PLUS écouter sans savoir.** L'indice posé chemin
+par chemin s'oublie sur le chemin suivant : le fournisseur le pose désormais
+lui-même quand personne ne lui en donne. Les deux dictées qui ne l'avaient pas
+ce matin l'ont maintenant.
+
+### « Désherbage » entendu « herbages » — le vocabulaire arrivait trop tard
+
+**Sa colère du 28 août 2026 :** *« je lui ai dit désherbage mais il comprend
+mal, il m'énerve »*.
+
+**Ce n'était pas une panne : c'était une transcription qui ne savait pas de quel
+métier on parle**, et qui choisissait le mot le plus courant de la langue.
+
+**Atlas connaissait pourtant son vocabulaire** — `termes_metier`, ses mots à lui
+(`mots_catalogue`), ses corrections — mais il ne servait qu'**APRÈS**, à la
+relecture du texte. Une connaissance qui arrive après le mot mal entendu n'a
+jamais servi à rien. Le transcripteur, lui, écoutait sans rien savoir.
+
+Il reçoit désormais un **indice** avant d'écouter, dans cet ordre : les mots
+qu'il a ajoutés au catalogue, le vocabulaire du métier tenu par Atlas, puis un
+fond de langue de paysagiste. **Ses mots passent devant** — quand la place
+manque, c'est le fond de langue qu'on sacrifie, jamais ce qu'il a pris la peine
+d'apprendre à Atlas.
+
+**Borné à deux cents mots, et c'est une contrainte du dehors** : les services
+plafonnent leur indice et tronquent **par la fin, sans prévenir**. On coupe
+donc nous-mêmes.
+
+**Ce que ce fond de langue n'est PAS.** Aucun de ces mots n'entre dans un devis,
+un prix ni une prestation : c'est un indice donné au transcripteur, qui ne
+produit rien tout seul. La règle du §4 — ne jamais inventer une prestation —
+interdit d'écrire ce qu'on n'a pas relevé, pas d'écouter mieux.
+
+**Posé sur la dictée de l'assistant ET sur la note vocale**, là où il dicte le
+plus. **Reste à faire** : la dictée de retouches d'un devis, dont le service n'a
+pas de contexte d'entreprise sous la main (`TODO.md`).
+
+### « Il ne peut pas » — six gestes livrés derrière une porte fermée
+
+**Sa capture du 28 août 2026 :** *« rajoute-moi une ligne, tu me mets des
+herbages des allées au chalumeau, et tu peux mettre 500 euros pour le devis
+actuel »* → **« L'assistant n'a pas pu formuler ses propositions
+correctement. »**
+
+**Deux défauts, et le second est le plus grave.**
+
+**1. L'abandon était resté sur le chemin qui ÉCRIT.** Le 26 août, un schéma
+refusé cessait de tuer la réponse pour les outils de LECTURE : le refus repart
+au modèle, qui se reprend. La même ligne était restée ici, sur les propositions
+— c'est-à-dire sur le seul chemin qui modifie quelque chose. Elle rend
+désormais la main au modèle, avec ce qui manque **et la liste des gestes qu'il
+peut nommer** : sans elle, il redevine et se trompe pareil.
+
+**2. LES SIX GESTES DE LA VEILLE ÉTAIENT INATTEIGNABLES.** Supprimer un
+chantier, supprimer un tarif, poser une absence, régler les documents, composer
+la fiche d'entretien : type, `case`, contrôles — tout y était **sauf**
+l'énumération présentée au modèle, qui était une **seconde liste** recopiée à
+la main dans `assistant-service.ts`. Elle avait un jour de retard, et le patron
+ne pouvait obtenir aucun de ces six gestes.
+
+**Ce qui a permis de le rater : mes propres contrôles.** Ils construisaient la
+proposition à la main et la confirmaient — ils éprouvaient donc le `case`, jamais
+la porte. **Verts sur une fonctionnalité que personne ne pouvait atteindre.**
+
+Il n'y a plus qu'une liste (`TYPES_ACTION_PROPOSEE`), lisible à l'exécution, et
+le type se déduit d'elle. Un contrôle neuf ferme les deux bouts : tout geste
+nommable a un `case`, et tout `case` est nommable — vérifié en retirant un geste
+de la liste, ce qui le fait rougir.
 
 ### La dictée façon WhatsApp, la photothèque, et une panne qui parle enfin
 

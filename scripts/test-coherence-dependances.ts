@@ -75,11 +75,25 @@ verifier("une version épinglée se lit aussi dans devDependencies", () => {
   assert.equal(versionEpinglee({ devDependencies: { "eslint-config-next": "16.3.2" } }, "eslint-config-next"), "16.3.2");
 });
 
-verifier("un paquet absent ou illisible n'accuse personne", () => {
-  assert.equal(dependancesIncoherentes([{ nom: "next", exigee: "16.3.2", installee: null }]).incoherent, false);
+verifier("un paquet que le projet N'ÉPINGLE PAS n'accuse personne", () => {
   assert.equal(dependancesIncoherentes([{ nom: "next", exigee: null, installee: "16.3.3" }]).incoherent, false);
   assert.equal(versionEpinglee(null, "next"), null);
   assert.equal(versionEpinglee({}, "next"), null);
+});
+
+verifier("SA PANNE DE MIDI : un paquet ÉPINGLÉ et ABSENT se répare, il ne s'ignore plus", () => {
+  // **Ce contrôle disait l'inverse jusqu'au 31 août 2026**, et il avait ses
+  // raisons : on ne compare pas ce qu'on ne lit pas. Sa panne de midi les a
+  // périmées — `node_modules/next` manquait, `npx next build` est allé
+  // télécharger 16.3.3 depuis le registre et l'a lancé, et ce Next étranger a
+  // échoué sur « Could not find the Next.js package ». Le paquet absent ne
+  // s'est jamais plaint : rien ne réparait, et le veilleur retentait la même
+  // construction condamnée toute la matinée.
+  const { incoherent, motif } = dependancesIncoherentes([
+    { nom: "next", exigee: "16.3.2", installee: null },
+  ]);
+  assert.equal(incoherent, true, "un paquet épinglé et introuvable ne déclenche pas la réinstallation");
+  assert.match(motif ?? "", /ABSENT/, "le motif ne dit pas que le paquet manque — le patron lit ça sur un téléphone");
 });
 
 // --- 3. Le second filet : une construction morte sans rien dire ----------
@@ -122,12 +136,46 @@ const BANC = readFileSync(path.join(__dirname, "banc.mjs"), "utf8");
 
 verifier("le banc vérifie les dépendances AVANT de bâtir", () => {
   const garde = BANC.indexOf("await reinstallerSiDesaccordees()");
-  const build = BANC.indexOf('jouerEnRetenant("npx", ["next", "build"]');
+  const build = BANC.indexOf('jouerEnRetenant(process.execPath, [NEXT, "build"]');
   assert.ok(garde > 0, "la vérification a disparu de banc.mjs");
   assert.ok(build > 0, "garde-fou de lecture : la construction a changé de forme");
   assert.ok(
     garde < build,
     "vérifier APRÈS la construction ne sert à rien : elle est déjà morte, et sans rien dire"
+  );
+});
+
+verifier("SA PANNE DE MIDI : le banc n'appelle JAMAIS `npx` pour lancer Next", () => {
+  // **`npx` ne se contente pas d'échouer quand le paquet manque : il le
+  // TÉLÉCHARGE.** Le 31 août 2026, `node_modules/next` manquait sur son espace ;
+  // `npx next build` a donc installé next@16.3.3 depuis le registre et l'a
+  // lancé, alors que le projet épingle 16.3.2. Ce Next étranger ne trouvait pas
+  // le paquet du projet, la construction tombait, et le banc restait en mode
+  // développement — « elle est super lente ».
+  //
+  // Reproduit ici en écartant le paquet : « npm warn exec The following package
+  // was not found and will be installed: next@16.3.3 », puis son erreur mot
+  // pour mot.
+  assert.ok(
+    !/["']npx["']/.test(BANC),
+    "banc.mjs appelle encore npx : un node_modules amputé fera silencieusement " +
+      "tourner un Next venu du registre, et sa version ne sera plus celle du projet"
+  );
+  assert.match(
+    BANC,
+    /const NEXT = "node_modules\/next\/dist\/bin\/next"/,
+    "le binaire du projet n'est plus désigné par son chemin"
+  );
+});
+
+verifier("« Could not find the Next.js package » déclenche la réinstallation", () => {
+  // Le message de Turbopack quand `node_modules/next` manque. Il ne contient ni
+  // « Cannot find module » ni « node_modules » : il passait au travers des deux
+  // conditions, et le veilleur retentait la même construction condamnée.
+  assert.match(
+    BANC,
+    /Could not find the Next\\.js package/,
+    "le message exact de sa panne de midi n'est pas reconnu : rien ne réparerait"
   );
 });
 

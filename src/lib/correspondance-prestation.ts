@@ -35,6 +35,7 @@
 // remplir un champ qu'il avait délibérément vidé. Sa correction est un état
 // final, pas un point de départ.
 
+import { lireCaracteristiques } from "./prestation-structuree";
 import { libelleEnrichi } from "./questions-chiffrage";
 
 /** Une prestation déjà en base, réduite à ce qui sert au rapprochement. */
@@ -45,6 +46,8 @@ export type PrestationExistante = {
   unite?: string | null;
   nature?: string | null;
   espece?: string | null;
+  /** Les mesures déjà en colonne, s'il y en a. */
+  caracteristiques?: unknown;
   aConfirmer?: boolean | null;
   /** L'artisan a posé ces valeurs lui-même (migration 0070). */
   corrigeParHumain?: boolean | null;
@@ -78,7 +81,14 @@ export function prestationCorrespondante(
 
 export type Enrichissement = {
   /** Les champs à poser — uniquement ceux qui étaient vides. */
-  aPoser: { quantite?: string; unite?: string; nature?: string; espece?: string; aConfirmer?: boolean };
+  aPoser: {
+    quantite?: string;
+    unite?: string;
+    nature?: string;
+    espece?: string;
+    caracteristiques?: Record<string, number>;
+    aConfirmer?: boolean;
+  };
   /** Ce que la nouvelle lecture dit et qui contredit ce qui est déjà là. */
   contradictions: string[];
 };
@@ -106,6 +116,7 @@ export function enrichissementPossible(
     unite: string | null;
     nature?: string | null;
     espece?: string | null;
+    caracteristiques?: Record<string, number> | null;
     aConfirmer: boolean;
   }
 ): Enrichissement {
@@ -162,6 +173,30 @@ export function enrichissementPossible(
   }
 
   if (!existante.espece && nouvelle.espece) aPoser.espece = nouvelle.espece;
+
+  // **Les mesures se complètent MESURE PAR MESURE, jamais en bloc.**
+  //
+  // Poser l'objet entier effacerait une hauteur qu'il a saisie lui-même à
+  // l'arrêt d'avant-chiffrage le jour où la dictée ne porte qu'un diamètre —
+  // et cet écrasement ne se verrait nulle part, puisque la colonne est un
+  // seul JSON. On ne pose donc que les clés réellement absentes, et une
+  // valeur différente se dit plutôt qu'elle ne s'impose, comme partout ici.
+  if (nouvelle.caracteristiques) {
+    const deja = lireCaracteristiques(existante.caracteristiques) as Record<string, number>;
+    const fusion: Record<string, number> = { ...deja };
+    let ajout = false;
+    for (const [cle, valeur] of Object.entries(nouvelle.caracteristiques)) {
+      if (deja[cle] === undefined) {
+        fusion[cle] = valeur;
+        ajout = true;
+      } else if (deja[cle] !== valeur) {
+        contradictions.push(
+          `« ${existante.libelle} » porte déjà ${cle} = ${deja[cle]} et la dictée dit ${valeur}. Rien n'a été modifié.`
+        );
+      }
+    }
+    if (ajout) aPoser.caracteristiques = fusion;
+  }
 
   if (existante.aConfirmer === null || existante.aConfirmer === undefined) {
     aPoser.aConfirmer = nouvelle.aConfirmer;

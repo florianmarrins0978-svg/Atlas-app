@@ -1,7 +1,7 @@
 # État du projet
 
 **Dernière mise à jour :** 2026-08-31 · branche `main`
-· dernière migration `drizzle/0071_rappel_vu.sql`
+· dernière migration `drizzle/0072_capital_forme_juridique_rcs.sql`
 
 *(Deux en-têtes de mise à jour cohabitaient ici depuis une fusion du 29 août,
 avec deux dates et deux migrations différentes — dont une périmée. Réunis : une
@@ -15,6 +15,49 @@ suivant, et une ligne fausse coûte plus cher qu'une ligne absente. `git log
 
 Ce fichier dit **où en est le produit**, pas ce qu'on aimerait qu'il soit. Une
 ligne « fait » qui ne l'est pas coûte plus cher qu'une ligne absente.
+
+---
+
+## Un devis sans client renvoie à la fiche client (31 août 2026)
+
+**Sa demande, deux captures à l'appui :** *« j'ai oublié de renseigner la fiche
+client du chantier. Lorsque je fais retour, je dois arriver sur la page de la
+fiche client ! Pas sur la page que je te mets en deuxième photo. »*
+
+| | |
+|---|---|
+| devis **sans client** | la flèche mène au formulaire « Fiche client » du chantier |
+| devis **avec client** | la flèche rend la fiche du chantier, comme avant |
+| fiche enregistrée, venu du devis | on **retourne au devis**, qui porte enfin le client |
+| fiche ouverte depuis l'accueil | inchangé : flèche vers la liste, enregistrement vers le chantier |
+
+La provenance voyage dans l'adresse (`?de=`) et n'est acceptée que si elle vaut
+**exactement** le devis de ce chantier — sans quoi la flèche « retour » pourrait
+sortir d'Atlas. Règle : `src/lib/retour-du-devis.ts`. Éprouvé par
+`scripts/test-retour-du-devis.ts` et `scripts/test-devis-sans-client-e2e.ts`.
+Raisons : `ARCHITECTURE.md` §221.
+
+---
+
+## Le diamètre dicté n'est plus redemandé (30 août 2026)
+
+*Il disait « un érable de 40 centimètres au pied » et « deux souches de 60 », et
+Atlas lui redemandait les deux. Le diamètre ne se perdait nulle part dans la
+chaîne : **il n'était jamais créé** — le seul écrivain de la colonne était ses
+réponses aux questions dont il se plaignait. Détail et pourquoi :
+`ARCHITECTURE.md` §220.*
+
+Trois choses en découlent, toutes visibles chez lui :
+
+| | |
+|---|---|
+| l'arrêt d'avant-chiffrage | ne redemande plus un diamètre qu'il a prononcé |
+| le devis | affiche « Dessouchage de souches de 60 cm », le compte restant en colonne Qté |
+| la colonne de chaque ligne | s'intitule « Montant HT » ; le total du bas reste « Total HT » |
+
+**Ce qui reste à éprouver, et qui ne peut pas l'être ici :** ce que le modèle
+répond vraiment. `npm run verifier:chaine-dictee` sur son espace, où les clés
+sont posées.
 
 ---
 
@@ -38,7 +81,8 @@ La pièce qui fait foi reste celle qu'Atlas archive à l'envoi.
 **Ce qui reste ouvert :** aucun geste n'est proposé après un refus ni après une
 demande de correction — à trancher par le patron.
 
-Raisons et pièges : `ARCHITECTURE.md` §218.
+Raisons et pièges : `ARCHITECTURE.md` §222.
+
 
 ## Un prix posé débloque l'envoi, et il peut proposer demain (31 août 2026)
 
@@ -84,6 +128,22 @@ biométrique n'entre en base, et c'est la base que la suite interroge.
 
 Compte-rendu qui lui est destiné : `docs/connexion-une-page.md`. Le détail :
 `ARCHITECTURE.md` §217.
+
+## L'or est le même sur les huit apparences (31 août 2026)
+
+**Sa consigne :** *« pour l'apparence, j'aimerais que tout ce qui est en doré
+sur la version originale apparaisse en doré sur les autres apparences »*.
+
+Chaque charte portait son propre second accent — sauge sur Pierre, argile sur
+Moka, prune sur Prune, un bleu et un rose pour les traits de Brume et de Prune.
+Changer d'apparence repeignait donc tout ce que l'or porte : l'accueil, les
+libellés d'état, les filets, le sceau, le compteur de la dictée.
+
+Les huit chartes portent l'or d'Origine, `#B98B47`, au caractère près
+(`src/lib/chartes.ts`). Mesuré : il se détache mieux sur les deux sombres (6,14
+sur Nuit) que sur Origine (2,77) — rien à remonter. Une suite tient la règle
+pour les huit ; les deux suites existantes vérifiaient la présence des jetons et
+la lisibilité, jamais l'identité. Détail : `ARCHITECTURE.md` §218.
 
 ---
 
@@ -289,6 +349,24 @@ machines qui ont la place préchauffent comme avant.
 
 Éprouvé par `scripts/test-memoire-prechauffage.ts`, vu rougir contre trois
 régressions. Mesures et pistes écartées : `ARCHITECTURE.md` §203.
+
+---
+
+## Le réglage dit la couleur qu'il produit au planning (31 août 2026)
+
+**Sa réponse à la planche 99 : A**, arrêtée sur maquette puis codée le jour même
+(`appli/reglages-planning-complet.html`).
+
+Sous « Chantiers menés en même temps », l'écran disait *« C'est ce qui remplit
+votre planning »* : il annonçait un effet sans montrer ce qu'on verrait. Il dit
+maintenant **« 2 chantiers par jour. Planning ▪ complet. »**, avec le carré du
+calendrier et son mot.
+
+Deux pièces le tiennent, et elles ferment une divergence plutôt qu'elles
+n'ajoutent une couleur : `MOT_ETAT` (`src/lib/planning-jour.ts`) porte les
+quatre mots de la légende — que le calendrier écrivait en clair — et
+`phraseDuCompteur` rend deux morceaux, puisque ce qui se glisse entre eux n'est
+pas du texte mais `fondDeLEtat("plein")`.
 
 ---
 
@@ -1378,7 +1456,9 @@ l'application. Ce qui est **fait** :
   manque. Sans adresse, rien ne s'invente : les destinations s'éteignent.
   Retenu après quatre maquettes (`docs/maquettes/29` à `32`). Les gestes ont
   déménagé dans la feuille de chantier le 21 août ; la règle pure, elle, n'a pas
-  bougé (`src/lib/itineraire.ts`). `ARCHITECTURE.md` §70.
+  bougé (`src/lib/itineraire.ts`). Le bouton « Maps » ouvre **Google Maps**
+  depuis le 31 août — c'est Plans d'Apple qui est sorti, pas Google.
+  `ARCHITECTURE.md` §70.
 - **Le planning au mois, et les équipes nommées** (10 août, au soir) : sept
   colonnes sans bordure et la journée qui s'ouvre sous le calendrier. Réglages
   laisse nommer les équipes — mais **seulement à partir de deux** : seul, le mot

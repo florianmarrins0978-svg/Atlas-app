@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { colors, libelleCaps } from "@/lib/design-tokens";
 import { MAX_EQUIPES, phraseDuCompteur } from "@/lib/equipes";
+import { MOT_ETAT } from "@/lib/planning-jour";
+import { fondDeLEtat } from "@/components/atlas/MoisCharge";
 import { mettreAJourNombreEquipesAction } from "./actions";
 import CompteurRond from "./CompteurRond";
 
@@ -33,6 +35,7 @@ export default function VosEquipes({
   initialNombreEquipes: number;
 }) {
   const [nombre, setNombre] = useState(initialNombreEquipes);
+  const phrase = phraseDuCompteur(nombre);
 
   async function changerNombre(valeur: number) {
     // Borné ici comme au serveur : à zéro équipe, plus aucun jour ne serait
@@ -70,9 +73,31 @@ export default function VosEquipes({
       {/* Une seule phrase, et **le chiffre y bouge avec le compteur** — sa
           dictée du 26 août : *« en dessous en gris marque 2 chantiers par
           jour ; le chiffre bouge en fonction du nombre d'équipes »*. Elle dit
-          ce que le réglage PRODUIT, pas comment il s'appelle. */}
+          ce que le réglage PRODUIT, pas comment il s'appelle.
+
+          **ET ELLE MONTRE LA COULEUR — sa demande du 31 août 2026** (planche
+          99, réponse A) : *« écrit deux chantiers par jour, planning complet,
+          et met le petit carré vert foncé avec écrit "complet" du planning »*,
+          ici et pas ailleurs — *« c'est sur cette page que doit se faire la
+          modification »*.
+
+          **Le carré vient de `fondDeLEtat`, le mot de `MOT_ETAT`** : ce sont
+          ceux du calendrier, pas leurs sosies. Un vert écrit en clair ici
+          serait illisible sur Nuit et Sylve, et un « complet » recopié
+          finirait un jour par ne plus être le mot de la légende.
+
+          **Le carré est décoratif, le mot porte le sens** : `aria-hidden` sur
+          l'un, rien sur l'autre — une couleur ne se lit pas à voix haute. */}
       <p className="mt-2 text-center text-[12.5px] leading-[1.6]" style={{ color: colors.muted }}>
-        {phraseDuCompteur(nombre)}
+        {phrase.avant}{" "}
+        <span
+          data-atlas="carre-complet"
+          aria-hidden="true"
+          className="inline-block h-[11px] w-[11px] rounded-[3px] align-[-1px]"
+          style={{ backgroundColor: fondDeLEtat("plein") }}
+        />{" "}
+        <span style={{ color: colors.inkSoft }}>{MOT_ETAT.plein}</span>
+        {phrase.apres}
       </p>
     </section>
   );

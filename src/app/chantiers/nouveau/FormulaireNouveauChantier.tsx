@@ -11,6 +11,7 @@ import DicterCoordonnees from "./DicterCoordonnees";
 import type { CoordonneesDictees } from "@/lib/coordonnees-dictees";
 import { creerChantierAction } from "./actions";
 import { reprendreChantierAction } from "../[id]/coordonnees/actions";
+import { apresLesCoordonnees, retourDesCoordonnees, type Provenance } from "@/lib/retour-du-devis";
 import ChoixCivilite from "@/components/atlas/ChoixCivilite";
 import Pellicule from "../[id]/Pellicule";
 import AnneauNoteVocale from "../[id]/AnneauNoteVocale";
@@ -63,6 +64,8 @@ type Destination = "fiche" | "devis";
  */
 export type ChantierRepris = {
   id: string;
+  /** D'où il est entré — le devis le renvoie chez lui (`retour-du-devis.ts`). */
+  provenance: Provenance;
   nomClient: string;
   civilite: Civilite | null;
   telephone: string;
@@ -247,7 +250,15 @@ export default function FormulaireNouveauChantier({
         setEnCoursVers(null);
         return;
       }
-      router.push(vers === "devis" ? `/chantiers/${reprise.id}/devis-complet` : `/chantiers/${reprise.id}`);
+      // **Enregistré, on repart d'où l'on venait** — 31 août 2026. Entré
+      // depuis un devis sans client, il retrouve son devis, qui porte
+      // désormais la fiche qui lui manquait ; entré depuis l'accueil, la fiche
+      // du chantier, comme depuis le 17 août.
+      router.push(
+        vers === "devis"
+          ? `/chantiers/${reprise.id}/devis-complet`
+          : apresLesCoordonnees(reprise.id, reprise.provenance)
+      );
       return;
     }
 
@@ -309,9 +320,16 @@ export default function FormulaireNouveauChantier({
               <FlecheRetour />
             </button>
           ) : (
+            /* **La flèche repart d'où il est entré.** Depuis un devis sans
+               client (31 août 2026), elle y retourne — sans quoi le devis
+               qu'il lisait serait à retrouver seul. Partout ailleurs, la
+               liste : c'est la sortie de l'écran de création, et celle de la
+               reprise ouverte depuis l'accueil. */
             <Link
-              href="/"
-              aria-label="Retour à la liste des chantiers"
+              href={retourDesCoordonnees(reprise?.provenance ?? null)}
+              aria-label={
+                reprise?.provenance ? "Retour au devis" : "Retour à la liste des chantiers"
+              }
               className="-ml-1 flex h-8 w-6 flex-shrink-0 items-center justify-center"
             >
               <FlecheRetour />

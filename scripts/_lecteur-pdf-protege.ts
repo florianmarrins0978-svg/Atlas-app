@@ -22,7 +22,7 @@ import { inflateSync } from "node:zlib";
  *
  * **Ce qu'il ne prouve pas :** qu'Acrobat en fasse autant. Cela s'est vérifié
  * le 31 août avec deux moteurs qui ne sont pas dans ce dépôt — `qpdf` et le
- * lecteur PDF de Chromium (voir `ARCHITECTURE.md` §218). La CI, elle, n'installe
+ * lecteur PDF de Chromium (voir `ARCHITECTURE.md` §222). La CI, elle, n'installe
  * que le « headless shell » de Playwright, qui n'embarque aucun lecteur PDF :
  * il TÉLÉCHARGE le fichier au lieu de le peindre, et c'est ce qui a fait rougir
  * la première version de ce contrôle.

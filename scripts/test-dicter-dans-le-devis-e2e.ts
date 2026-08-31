@@ -82,7 +82,10 @@ async function main() {
 
   await cas("le micro est là, en haut, et À DROITE du retour", async () => {
     await micro.waitFor({ state: "visible", timeout: 10_000 });
-    const retour = page.locator('a[aria-label="Revenir au chantier"]');
+    // **Le repère plutôt que le libellé** (`CLAUDE.md` §5 bis) : depuis le
+    // 31 août 2026, la flèche annonce « Remplir la fiche client » quand aucun
+    // client n'est rattaché. Ce qu'on éprouve ici est sa PLACE, pas son mot.
+    const retour = page.locator('[data-atlas="retour-du-devis"]');
     const [bM, bR] = [await micro.boundingBox(), await retour.boundingBox()];
     assert.ok(bM && bR, "le micro ou le retour n'a pas de place à l'écran");
     assert.ok(
@@ -173,7 +176,7 @@ async function main() {
       "le micro survit à l'envoi : il écouterait pour ne rien pouvoir changer",
     );
     // Le retour, lui, reste : une page sans sortie est un piège sur un téléphone.
-    assert.equal(await page.locator('a[aria-label="Revenir au chantier"]').count(), 1);
+    assert.equal(await page.locator('[data-atlas="retour-du-devis"]').count(), 1);
   });
 
   await contexte.close();
