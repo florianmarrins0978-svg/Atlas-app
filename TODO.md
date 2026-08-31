@@ -60,6 +60,17 @@ TVA qui ne peut faire l'objet d'une déduction (art. 272 du CGI) ».
 relevé, un arrêt qui demande si le recouvrement a échoué, puis une ligne
 négative au relevé du mois courant et le duplicata à envoyer.
 
+**ET LE PREMIER ARRÊT ÉTAIT TROP LARGE — corrigé le 31 août, sur sa question
+« c'est légal de faire ça ? ».** Il acceptait « mise en demeure restée sans
+réponse » : une lettre sans réponse prouve qu'on a écrit, pas que la créance est
+perdue. Un contrôle la rejette, et c'est le patron qui rembourse. Les deux
+portes qui tiennent : **liquidation judiciaire** (attestation d'irrécouvrabilité
+du mandataire), ou **recouvrement réellement engagé et resté sans effet** —
+huissier, injonction de payer. Au moment de coder : la preuve se garde, et la
+récupération a une échéance (jusqu'au 31 décembre de la deuxième année qui suit
+celle où la créance est devenue irrécouvrable). **Un écran permissif ici ne rend
+pas service : il fabrique un redressement.**
+
 **Trois questions posées, sans réponse à ce jour :** l'encadré doré et les ‹ ›
 tels quels ; « Jamais payée » sous le relevé ou sur la facture elle-même ; et
 si Atlas écrit le duplicata ou le prépare seulement.

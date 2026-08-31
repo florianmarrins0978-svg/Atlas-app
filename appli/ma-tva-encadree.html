@@ -41,9 +41,18 @@
     la TVA se récupère quand la créance est DÉFINITIVEMENT irrécouvrable, en
     envoyant au client un duplicata portant une mention obligatoire.
 
-    Ce n'est PAS un simple retard : il faut que le recouvrement ait échoué —
-    mise en demeure restée sans réponse, ou liquidation judiciaire. D'où l'arrêt
-    avant le geste, planche du bas.
+    Ce n'est PAS un simple retard : il faut que la créance soit DÉFINITIVEMENT
+    irrécouvrable. D'où l'arrêt avant le geste, planche du bas.
+
+    ET MA PREMIÈRE VERSION DE CET ARRÊT ÉTAIT TROP LARGE — corrigé le 31 août
+    2026, sur sa question « c'est légal de faire ça ? ». Elle acceptait « mise
+    en demeure restée sans réponse », ce qui ne suffit pas : une lettre sans
+    réponse prouve qu'on a écrit, pas que la créance est perdue. Un contrôle la
+    rejetterait, et c'est LUI qui rembourserait. Les deux portes qui tiennent :
+    une liquidation judiciaire (attestation d'irrécouvrabilité du mandataire),
+    ou un recouvrement réellement engagé et resté sans effet — huissier,
+    injonction de payer. Un écran trop permissif ici ne rend pas service : il
+    fabrique un redressement.
 
     ————————————————————————————————————————————————————————————————
     RIEN N'EST CODÉ : le dossier src/ n'est pas touché (règle du §3 bis).
@@ -190,6 +199,7 @@
   .arret label{display:flex;gap:9px;align-items:flex-start;padding:6px 0;
                cursor:pointer;-webkit-tap-highlight-color:transparent}
   .arret input{margin-top:3px;width:17px;height:17px;flex:none;accent-color:var(--rouille)}
+  .arret .preuve{margin:6px 0 0;font-size:12px;color:var(--gris)}
   .valider{margin-top:10px;width:100%;padding:12px;border-radius:999px;border:0;
            background:var(--pin);color:var(--surpin);font:inherit;font-size:14px;
            font-weight:600;cursor:pointer}
@@ -327,8 +337,9 @@ chiffre qui répond maintenant</b>, pas une explication.</p>
 
         <div class="arret cache" id="arret">
           <span class="t">Le recouvrement a-t-il échoué ?</span>
-          <label><input type="checkbox" class="cond"> Mise en demeure restée sans réponse</label>
-          <label><input type="checkbox" class="cond"> Client en liquidation judiciaire</label>
+          <label><input type="checkbox" class="cond"> Liquidation judiciaire — attestation du mandataire</label>
+          <label><input type="checkbox" class="cond"> Huissier ou injonction de payer, restés sans effet</label>
+          <p class="preuve">Gardez la preuve : c'est elle qu'on vous demandera.</p>
           <button class="valider" id="recuperer" disabled>Récupérer la TVA</button>
         </div>
       </div>
@@ -365,9 +376,11 @@ et « Jamais payée » vous rend la TVA.</p>
   </tr>
   <tr>
     <td><b>Le mois où j’envoie la facture</b></td>
-    <td>Vous avez avancé la TVA. Elle se récupère — mais <b>seulement une fois le
-    recouvrement échoué</b>, et en envoyant au client un duplicata portant une
-    mention obligatoire (CGI art. 272-1). Un simple retard ne suffit pas.</td>
+    <td>Vous avez avancé la TVA. Elle se récupère — <b>article 272-1 du code
+    général des impôts</b> — mais seulement quand la créance est <b>définitivement
+    perdue</b> : liquidation judiciaire, ou recouvrement engagé et resté sans
+    effet. Un retard, même long, ne suffit pas. Le client reçoit un duplicata
+    portant une mention obligatoire, et vous gardez la preuve.</td>
   </tr>
 </table>
 

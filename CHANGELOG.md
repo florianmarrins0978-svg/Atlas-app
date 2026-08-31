@@ -44,6 +44,14 @@ La planche pose le geste : un arrêt qui demande la preuve de l'échec, puis une
 ligne négative au relevé et le duplicata à envoyer. `TODO.md` porte les trois
 questions qui restent.
 
+**Puis il a demandé « c'est légal de faire ça ? », et mon arrêt était trop
+large.** Il acceptait « mise en demeure restée sans réponse » — une lettre sans
+réponse prouve qu'on a écrit, pas que la créance est perdue. Restent les deux
+portes qui tiennent : liquidation judiciaire avec attestation du mandataire, ou
+recouvrement engagé et resté sans effet (huissier, injonction de payer). Un
+écran permissif ici ne rend pas service : il fabrique un redressement, et c'est
+le patron qui rembourse.
+
 **Et un défaut de la planche elle-même, trouvé à la capture et pas autrement :**
 le duplicata était posé DANS « Restées impayées », donc il disparaissait avec
 elle à l'instant même où il devait apparaître. La quatrième fois dans ce dépôt
