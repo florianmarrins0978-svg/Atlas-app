@@ -1,0 +1,369 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas — la date du chantier à côté du nom</title>
+</head>
+<body>
+<style>
+  /*
+    ————————————————————————————————————————————————————————————————
+    « TERMINÉS » — LA DATE DU CHANTIER, À CÔTÉ DU NOM
+    ————————————————————————————————————————————————————————————————
+
+    Sa demande du 31 août 2026, capture de l'écran codé à l'appui :
+
+      « Il faudrait changer le bouton FACTURER en : À FACTURER.
+        Et à côté du nom du client il faudrait inscrire la date à laquelle
+        le chantier a été réalisé. Propose, fais-moi un visuel seulement
+        pour la date à côté du nom du client avant de coder. »
+
+    DEUX DEMANDES, ET ELLES NE SE TRAITENT PAS PAREIL.
+
+      1. **Le bouton** : c'est tranché, il n'y a rien à proposer. « À FACTURER »
+         est déjà posé dans les quatre propositions.
+      2. **La date** : c'est ce qui se choisit. Quatre places, et elles ne
+         coûtent pas la même chose — voir plus bas.
+
+    CE QUE LA DATE MONTRE VRAIMENT, ET C'EST UNE RÉSERVE À DIRE.
+
+    L'application ne garde pas de « date de réalisation » distincte : elle garde
+    LA DATE DU PLANNING (`datePlanifiee`), c'est-à-dire le jour où le chantier
+    était prévu — et c'est déjà elle qui range les chantiers par mois dans cet
+    écran. Dans les faits c'est le jour où il a été fait, puisqu'un chantier
+    déplacé change de date au planning. Mais un chantier clôturé sans jamais
+    avoir été posé au planning n'a AUCUNE date : la ligne n'en affiche alors
+    pas, et n'en invente pas (« Chantier test — Abri Pornic », plus bas, est
+    dans ce cas — regardez-le dans les quatre).
+
+    L'ANNÉE NE S'ÉCRIT QUE QUAND ELLE N'EST PAS CELLE DU JOUR. L'onglet
+    « À facturer » mélange tous les mois — c'est sa demande du 22 août, pour
+    rattraper un retard de facturation. « 14 septembre » sans année, sur un
+    chantier de l'an dernier, se lit comme le mois qui vient.
+
+    CE QUI EST ÉCARTÉ D'AVANCE, ET IL N'Y A PAS À Y REVENIR :
+
+      • **une flèche, un chevron, une puce décorative** — « arrête de mettre des
+        flèches, c'est moche » (25 août, redit le soir même) ;
+      • **le mot « Réalisé le »** devant la date — « pense toujours à mettre le
+        moins de mots possible » (25 août). Sur un écran qui s'appelle
+        « Terminés », une date ne peut pas être autre chose ;
+      • **un trait entre les lignes** pour rattraper la densité — « tous les
+        traits supprimés entre chaque ligne » (26 août).
+
+    CE QUI EST FAUX DANS CETTE PLANCHE, ET QUI EST DÉLIBÉRÉ. Les six chantiers
+    et leurs montants sont ceux de SA capture du 31 août — c'est ce qui permet
+    de comparer à l'écran qu'il a sous les yeux. **Les dates, elles, sont
+    inventées** : sa capture ne les montre pas. Elles sont choisies pour
+    éprouver les cas qui font mal — un chantier sans date, un chantier de
+    l'an dernier, un nom long qui doit cohabiter avec la date.
+
+    RIEN N'EST CODÉ TANT QU'IL N'A PAS CHOISI (`CLAUDE.md` §3 bis).
+  */
+
+  :root{
+    --fond:#e6e3dc; --carte:#f5f3ee; --encre:#1c1c1a; --encre-douce:#4a4a44;
+    --gris:#8a8578; --or:#B98B47; --trait:rgba(28,28,26,.13);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --fond:#141310; --carte:#1e1c18; --encre:#e9e5dc; --encre-douce:#c9c4b8;
+      --gris:#8a867c; --or:#C9A15E; --trait:rgba(233,229,220,.16);
+    }
+  }
+  :root[data-theme="dark"]{
+    --fond:#141310; --carte:#1e1c18; --encre:#e9e5dc; --encre-douce:#c9c4b8;
+    --gris:#8a867c; --or:#C9A15E; --trait:rgba(233,229,220,.16);
+  }
+
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;background:var(--fond)}
+  body{color:var(--encre);font:16px/1.55 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+       padding:0 0 54px;-webkit-text-size-adjust:100%}
+
+  .entete{max-width:430px;margin:0 auto;padding:26px 20px 0;text-align:center;position:relative}
+  .entete .sur{margin:0;font-size:9.5px;font-weight:500;letter-spacing:.3em;
+               text-transform:uppercase;color:var(--or)}
+  .entete h1{margin:11px 0 0;font:400 29px/1.12 ui-serif,Georgia,"Iowan Old Style",serif;
+             letter-spacing:-.015em}
+  .entete p{margin:12px 0 0;font-size:14px;color:var(--encre-douce);line-height:1.62}
+  .entete p b{color:var(--encre)}
+
+  /* Le fond sombre s'essaie sans toucher aux réglages du téléphone. */
+  .nuit{position:absolute;top:20px;right:16px;appearance:none;border:0;cursor:pointer;
+        width:40px;height:40px;border-radius:999px;background:transparent;
+        color:var(--encre-douce);font-size:17px;box-shadow:inset 0 0 0 1px var(--trait)}
+
+  /* ── Le sélecteur : quatre places, un seul téléphone ──────────────────
+     Sur un téléphone, quatre écrans côte à côte font quatre défilements avant
+     de comparer. On en montre UN, et on change. */
+  .choix{max-width:430px;margin:22px auto 0;padding:0 14px;display:grid;
+         grid-template-columns:repeat(2,1fr);gap:7px}
+  .choix button{appearance:none;border:0;cursor:pointer;font:inherit;
+                background:transparent;color:var(--gris);padding:11px 6px 10px;
+                border-radius:13px;font-size:11.5px;font-weight:600;
+                letter-spacing:.08em;text-transform:uppercase;line-height:1.3;
+                box-shadow:inset 0 0 0 1px var(--trait);min-height:50px}
+  .choix button[aria-pressed="true"]{background:var(--encre);color:var(--carte);
+                                     box-shadow:none}
+
+  .dit{max-width:430px;margin:14px auto 0;padding:0 20px;font-size:13.5px;
+       line-height:1.6;color:var(--encre-douce);text-align:center;min-height:74px}
+  .dit b{color:var(--encre)}
+  .dit .retenu{color:var(--or);font-weight:600}
+
+  /* ── Le téléphone ─────────────────────────────────────────────────────
+     Les couleurs de l'écran sont celles de l'application, FIGÉES : c'est ce
+     qu'il a sous les yeux, et une maquette qui change de teinte selon le
+     réglage du téléphone ne se compare plus à rien. */
+  .tel{
+    --e-fond:#f5f3ee; --e-plage:#faf9f5; --e-encre:#1c1c1a; --e-douce:#4a4a44;
+    --e-gris:#8a8578; --e-or:#B98B47; --e-pin:#2f3b2f; --e-trait:rgba(28,28,26,.12);
+    max-width:430px;margin:18px auto 0;background:var(--e-fond);color:var(--e-encre);
+    border-radius:26px;overflow:hidden;box-shadow:0 18px 46px rgba(20,18,14,.2);
+    min-height:680px;display:flex;flex-direction:column}
+  .corps{flex:1;padding:24px 0 10px}
+
+  .titre-ecran{margin:0 26px;display:flex;align-items:center;justify-content:space-between;gap:14px}
+  .titre-ecran h2{margin:0;font:400 40px/1 ui-serif,Georgia,"Iowan Old Style",serif;
+                  letter-spacing:-.02em}
+  .bulle{width:52px;height:52px;flex:none;border-radius:999px;background:var(--e-pin);
+         display:flex;align-items:center;justify-content:center}
+  .bulle svg{width:22px;height:22px;stroke:#faf9f5;fill:none;stroke-width:1.6}
+
+  .onglets{display:flex;gap:8px;margin:22px 26px 0}
+  .onglets button{appearance:none;border:0;cursor:pointer;font:inherit;font-size:13px;
+                  min-height:40px;padding:0 16px;border-radius:999px;
+                  background:transparent;color:var(--e-gris);
+                  box-shadow:inset 0 0 0 1px var(--e-trait)}
+  .onglets button[aria-pressed="true"]{background:var(--e-encre);color:var(--e-plage);
+                                       box-shadow:none}
+
+  /* ── Le compte, puis les lignes ─────────────────────────────────────── */
+  .liste{margin:30px 26px 0}
+  .compte{margin:0 0 8px;font-size:14px;font-weight:700;line-height:1.6}
+  .compte .or{color:var(--e-or)}
+
+  .ligne{display:flex;align-items:center;gap:14px;padding:24px 0;
+         border-radius:10px;cursor:pointer;transition:background .12s ease}
+  .ligne:first-of-type{padding-top:22px}
+  .ligne:active{background:rgba(28,28,26,.045)}
+  .ligne .qui{min-width:0;flex:1}
+
+  /* Le nom garde une ligne pour lui : un nom se reconnaît tronqué, une date
+     coupée ne se devine pas. C'est le nom qui cède, jamais la date. */
+  .rangee-nom{display:flex;align-items:baseline;gap:8px;min-width:0}
+  .ligne .nom{font:400 17px/1.2 ui-serif,Georgia,serif;
+              white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+  .ligne .etat{display:block;margin-top:5px;font-size:13px;line-height:1.5;color:var(--e-or)}
+  .ligne .etat.faite{color:var(--e-gris)}
+  .ligne .euros{flex:none;font:400 16px/1.2 ui-serif,Georgia,serif;
+                font-variant-numeric:tabular-nums;white-space:nowrap}
+  .facturer{flex:none;display:flex;align-items:center;min-height:44px;
+            padding:0 15px;border-radius:999px;background:var(--e-pin);color:#faf9f5;
+            font-size:12px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;
+            white-space:nowrap}
+
+  /* ── LES QUATRE PLACES DE LA DATE ────────────────────────────────────
+     Une seule est visible à la fois : les trois autres sont repliées par CSS,
+     de sorte que la ligne mesure vraiment ce qu'elle mesurerait une fois
+     codée — un `display:none` sur la moitié du contenu ne prouverait rien de
+     la largeur qui reste au nom. */
+  .date{display:none;white-space:nowrap;flex:none}
+
+  /* A — sur la ligne du nom, en gris, derrière le nom. */
+  .tel[data-place="ligne"] .rangee-nom .date{
+    display:inline;font-size:13px;color:var(--e-gris)}
+
+  /* B — en tête de la ligne d'état, avant « Pas encore facturé ». Elle prend
+     alors la couleur de l'état : or tant que ça attend, gris une fois fait. */
+  .tel[data-place="etat"] .etat .date{display:inline}
+
+  /* C — au-dessus du nom, en petites capitales dorées. */
+  .tel[data-place="dessus"] .sur-nom .date{
+    display:block;font-size:10px;font-weight:700;letter-spacing:.2em;
+    text-transform:uppercase;color:var(--e-or);margin-bottom:4px}
+
+  /* D — une étiquette devant le nom, comme une date tamponnée. */
+  .tel[data-place="etiquette"] .rangee-nom .date{
+    display:inline-block;font-size:11.5px;font-weight:600;color:var(--e-douce);
+    background:rgba(28,28,26,.06);border-radius:999px;padding:3px 9px;
+    order:-1;align-self:center}
+
+  .barre{display:flex;justify-content:space-between;gap:4px;padding:16px 15px 20px;
+         background:var(--e-plage);box-shadow:inset 0 1px 0 var(--e-trait)}
+  .barre span{font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--e-gris)}
+  .barre span.actif{color:var(--e-encre);padding-bottom:7px;
+                    border-bottom:2px solid var(--e-or)}
+
+  .note{max-width:430px;margin:22px auto 0;padding:0 20px;font-size:13px;
+        line-height:1.65;color:var(--encre-douce)}
+  .note h2{margin:0 0 8px;font:400 18px/1.25 ui-serif,Georgia,serif;color:var(--encre)}
+  .note ul{margin:8px 0 0;padding-left:18px}
+  .note li{margin:6px 0}
+  .note b{color:var(--encre)}
+</style>
+
+<header class="entete">
+  <button class="nuit" id="nuit" type="button" aria-label="Fond sombre">☾</button>
+  <p class="sur">Atlas · planche du 31 août 2026</p>
+  <h1>La date du chantier,<br>à côté du nom</h1>
+  <p><b>« À FACTURER » est déjà posé dans les quatre</b> — c'est tranché.
+     Ce qui se choisit, c'est <b>où se met la date</b>. Les onglets marchent.</p>
+</header>
+
+<div class="choix" role="group" aria-label="La place de la date">
+  <button type="button" data-place="ligne" aria-pressed="true">A · Sur la ligne du nom</button>
+  <button type="button" data-place="etat" aria-pressed="false">B · Devant l'état</button>
+  <button type="button" data-place="dessus" aria-pressed="false">C · Au-dessus du nom</button>
+  <button type="button" data-place="etiquette" aria-pressed="false">D · Une étiquette</button>
+</div>
+
+<p class="dit" id="dit"></p>
+
+<section class="tel" id="tel" data-place="ligne">
+  <div class="corps">
+    <div class="titre-ecran">
+      <h2>Terminés</h2>
+      <span class="bulle" aria-hidden="true">
+        <svg viewBox="0 0 24 24"><path d="M21 11.5a8.4 8.4 0 0 1-9 8.4 9 9 0 0 1-3.9-.9L3 21l1.9-4.6A8.4 8.4 0 0 1 12 3a8.4 8.4 0 0 1 9 8.5z"/></svg>
+      </span>
+    </div>
+
+    <div class="onglets" role="group" aria-label="Ce qu'on regarde">
+      <button type="button" data-onglet="attente" aria-pressed="true">À facturer</button>
+      <button type="button" data-onglet="tout" aria-pressed="false">Tout</button>
+    </div>
+
+    <div class="liste" id="liste"></div>
+  </div>
+
+  <nav class="barre">
+    <span>Chantiers</span><span>Planning</span><span class="actif">Terminés</span>
+    <span>Paysage</span><span>Réglages</span>
+  </nav>
+</section>
+
+<div class="note">
+  <h2>Ce qu'il faut regarder avant de choisir</h2>
+  <ul>
+    <li><b>« Chantier test — Abri Pornic » n'a pas de date.</b> Elle n'est pas
+        inventée : la ligne reste comme aujourd'hui. C'est le cas d'un chantier
+        clôturé sans être passé par le planning.</li>
+    <li><b>« Mme Grospiron » est de l'an dernier</b> — son année s'écrit,
+        les autres pas. L'onglet « À facturer » mélange tous les mois : sans
+        année, « 14 septembre » se lirait comme le mois qui vient.</li>
+    <li><b>Appuyez sur « Tout ».</b> Les chantiers déjà facturés y portent
+        <i>deux</i> dates : celle du chantier et celle de la facture. C'est là
+        que la proposition B se juge — « 9 août · Facturé le 20 août » sur une
+        seule ligne.</li>
+    <li><b>« Chantier test — Muret Clisson » est le nom le plus long.</b> En A
+        et en D, c'est lui qui cède : le nom se coupe, jamais la date.</li>
+  </ul>
+  <h2 style="margin-top:18px">Ce qui a été écarté</h2>
+  <ul>
+    <li><b>« Réalisé le 12 août ».</b> Deux mots de plus par ligne, sur un écran
+        qui s'appelle « Terminés » : une date n'y peut pas être autre chose.</li>
+    <li><b>Une flèche ou une puce devant la date.</b> Refusées deux fois.</li>
+  </ul>
+  <h2 style="margin-top:18px">Une réserve, et elle vous revient</h2>
+  <p>L'application ne garde pas de date de réalisation à part : elle garde
+     <b>la date du planning</b>, celle qui range déjà ces chantiers par mois.
+     Un chantier déplacé la voit changer, donc dans les faits c'est bien le jour
+     où il a été fait. <b>Dites-moi si ça vous va</b> — sinon, il faudra
+     enregistrer une date au moment où vous clôturez le chantier, et c'est un
+     geste de plus pour vous.</p>
+</div>
+
+<script>
+  // ── Les six chantiers de SA capture du 31 août ─────────────────────────
+  // Montants et noms : les siens. Dates : inventées — sa capture ne les montre
+  // pas —, et choisies pour éprouver ce qui fait mal : un chantier sans date,
+  // un chantier de l'an dernier, un nom long qui doit cohabiter avec la date.
+  const CHANTIERS = [
+    { nom: "Mme Grospiron",                 date: "14 septembre 2025", attente: true, montant: "600,00 €" },
+    { nom: "Chantier test — Abri Pornic",   date: null,                attente: true, montant: null },
+    { nom: "Mr. Marco",                     date: "3 juillet",         attente: true, montant: "0,00 €" },
+    { nom: "Mr. Eric",                      date: "21 juillet",        attente: true, montant: "0,00 €" },
+    { nom: "Mr. Martins",                   date: "12 août",           attente: true, montant: "360,00 €" },
+    { nom: "Chantier test — Muret Clisson", date: "26 août",           attente: true, montant: null },
+    { nom: "Mme Bernard",                   date: "9 août",            attente: false, montant: "1 240,00 €", quand: "Facturé le 20 août" },
+    { nom: "Mr. Lemoine",                   date: "4 août",            attente: false, montant: "890,00 €",   quand: "Facturé le 14 août" },
+  ];
+
+  const DITS = {
+    ligne: "<span class='retenu'>La date suit le nom, en gris.</span> Rien ne s'ajoute en hauteur — la liste garde le même nombre de lignes. Sur un nom long, c'est le nom qui se coupe : la date reste entière.",
+    etat: "<b>La date ouvre la deuxième ligne</b> : « 12 août · Pas encore facturé · 360,00 € prévus ». Le nom garde toute sa largeur. En contrepartie, la ligne d'état devient longue — et sur « Tout », elle porte deux dates.",
+    dessus: "<b>Une petite ligne dorée au-dessus du nom.</b> La date se repère d'un coup d'œil, en balayant la colonne. Elle coûte <b>une ligne de hauteur par chantier</b>, et le chantier sans date remonte tout seul : le rang n'est plus régulier.",
+    etiquette: "<b>La date tamponnée devant le nom.</b> Elle se voit le mieux des quatre. Elle prend aussi la place la plus visible de la ligne — celle que le nom du client occupe aujourd'hui.",
+  };
+
+  const tel = document.getElementById("tel");
+  const dit = document.getElementById("dit");
+  const liste = document.getElementById("liste");
+
+  function poserPlace(clef) {
+    tel.dataset.place = clef;
+    dit.innerHTML = DITS[clef];
+    for (const b of document.querySelectorAll(".choix button")) {
+      b.setAttribute("aria-pressed", String(b.dataset.place === clef));
+    }
+  }
+  for (const b of document.querySelectorAll(".choix button")) {
+    b.addEventListener("click", () => poserPlace(b.dataset.place));
+  }
+
+  // La date est écrite QUATRE FOIS dans le HTML de chaque ligne, une par place,
+  // et le CSS n'en montre qu'une. C'est ce qui permet de basculer sans redessiner
+  // — et surtout de mesurer la vraie largeur qui reste au nom.
+  function dessinerListe(onglet) {
+    const vues = onglet === "attente" ? CHANTIERS.filter((c) => c.attente) : CHANTIERS;
+    const combien = CHANTIERS.filter((c) => c.attente).length;
+    const compte = onglet === "attente"
+      ? `${combien} chantier${combien > 1 ? "s" : ""} à facturer, tous mois confondus.`
+      : `<span class="or">${combien} à facturer</span> · ${CHANTIERS.length - combien} facturés`;
+
+    liste.innerHTML =
+      `<p class="compte">${compte}</p>` +
+      vues.map((c) => {
+        const d = c.date;
+        return `
+        <div class="ligne">
+          <span class="qui">
+            <span class="sur-nom">${d ? `<span class="date">${d}</span>` : ""}</span>
+            <span class="rangee-nom">
+              <span class="nom">${c.nom}</span>
+              ${d ? `<span class="date">${d}</span>` : ""}
+            </span>
+            <span class="etat${c.attente ? "" : " faite"}">${
+              d ? `<span class="date">${d} · </span>` : ""
+            }${
+              c.attente
+                ? (c.montant === null ? "Pas encore facturé" : `Pas encore facturé · ${c.montant} prévus`)
+                : c.quand
+            }</span>
+          </span>
+          ${c.attente ? `<span class="facturer">À facturer</span>` : `<span class="euros">${c.montant}</span>`}
+        </div>`;
+      }).join("");
+  }
+  for (const b of document.querySelectorAll(".onglets button")) {
+    b.addEventListener("click", () => {
+      for (const a of document.querySelectorAll(".onglets button")) {
+        a.setAttribute("aria-pressed", String(a === b));
+      }
+      dessinerListe(b.dataset.onglet);
+    });
+  }
+
+  document.getElementById("nuit").addEventListener("click", () => {
+    const sombre = document.documentElement.getAttribute("data-theme") === "dark";
+    document.documentElement.setAttribute("data-theme", sombre ? "light" : "dark");
+  });
+
+  poserPlace("ligne");
+  dessinerListe("attente");
+</script>
+</body>
+</html>

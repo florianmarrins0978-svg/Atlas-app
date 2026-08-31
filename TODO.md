@@ -9,6 +9,36 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
+## EN ATTENTE DE SA RÉPONSE : la date du chantier dans « Terminés » (31 août 2026)
+
+Sa demande du 31 août — *« changer le bouton FACTURER en À FACTURER, et à côté du
+nom du client inscrire la date à laquelle le chantier a été réalisé ; propose,
+fais-moi un visuel seulement pour la date avant de coder »*.
+
+La planche : `appli/termines-date-du-chantier.html`, en ligne à
+https://florianmarrins0978-svg.github.io/Atlas-app/termines-date-du-chantier.html
+
+**Ce qui est TRANCHÉ et n'attend rien :** le bouton devient « À FACTURER ». Il
+est déjà écrit ainsi dans les quatre propositions de la planche ; il reste à le
+poser dans `src/app/termines/ListeTermines.tsx` **en même temps que la date**,
+pour ne pas lui faire redémarrer son espace deux fois.
+
+**Ce qu'on attend de lui :** A, B, C ou D — la place de la date. A derrière le
+nom en gris, B en tête de la ligne d'état, C en surtitre doré, D en étiquette
+devant le nom.
+
+**Et une réserve qui lui revient, écrite sur la planche :** l'application ne
+garde aucune date de réalisation distincte. Elle affichera `datePlanifiee`, la
+date du planning — celle qui range déjà ces chantiers par mois. Un chantier
+clôturé sans être passé par le planning n'a donc pas de date : la ligne n'en
+affiche aucune et n'en invente pas. S'il veut une vraie date de réalisation,
+c'est un geste de plus à la clôture, et c'est à lui de le décider.
+
+**Ce qui reste à écrire quand il aura choisi :** une fonction pure
+(`src/lib/termines-par-mois.ts`) qui rend « 12 août » et **n'écrit l'année que
+si elle n'est pas celle du jour** — l'onglet « À facturer » mêle tous les mois,
+et « 14 septembre » sans année s'y lit comme le mois qui vient.
+
 ## EN ATTENTE DE SA RÉPONSE : la force du geste des boutons (31 août 2026)
 
 Sa demande du 31 août — une mini vibration à l'appui, et le bouton qui s'enfonce

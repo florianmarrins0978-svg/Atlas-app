@@ -9,6 +9,25 @@ Format : le plus récent en tête.
 
 ## 2026-08-31
 
+### La date du chantier dans « Terminés » : une planche, rien de codé
+
+**Sa demande :** *« changer le bouton FACTURER en À FACTURER, et à côté du nom du
+client inscrire la date à laquelle le chantier a été réalisé ; propose, fais-moi
+un visuel seulement pour la date avant de coder »*.
+
+`appli/termines-date-du-chantier.html` — quatre places pour la date, essayables
+au doigt, avec « À FACTURER » déjà posé dans les quatre (c'est tranché). Les six
+chantiers et les montants sont ceux de sa capture ; **les dates sont inventées**,
+sa capture n'en montre pas, et elles sont choisies pour éprouver ce qui fait mal :
+un chantier sans date, un de l'an dernier, un nom trop long pour la ligne.
+
+**Ce que la planche a fait apparaître, et qu'un texte n'aurait pas montré :** sur
+l'onglet « Tout », la proposition B écrit deux dates côte à côte — « 9 août ·
+Facturé le 20 août » —, et la proposition C perd son rang régulier dès qu'un
+chantier n'a pas de date. Rien n'est codé tant qu'il n'a pas choisi
+(`CLAUDE.md` §3 bis) ; l'attente est notée dans `TODO.md`, réserve comprise :
+l'application ne garde pas de date de réalisation distincte de celle du planning.
+
 ### Les dix verts étaient CASSÉS en ligne, et mon contrôle ne le voyait pas
 
 **Sa plainte : « sur le lien cliquable ça ne fonctionne toujours pas ».** Elle
