@@ -194,10 +194,22 @@ async function main() {
     );
   });
 
-  await cas("la fiche reste à un doigt — reprendre ne ferme aucune porte", async () => {
-    // Photos, dictée, tiroir : tout reste joignable par la flèche de retour.
-    const retour = page.locator(`a[href="/chantiers/${id}"]`).first();
+  await cas("reprendre ne ferme aucune porte — la flèche mène à la fiche client", async () => {
+    // **Depuis le 31 août 2026 au soir, elle mène à la fiche CLIENT** et non
+    // plus à celle du chantier : *« je veux tout le temps revenir à cette page
+    // et seulement celle-là »* (`ARCHITECTURE.md` §228).
+    //
+    // Ce que ce cas défend n'a pas changé pour autant : que le devis ait une
+    // sortie, et qu'elle rouvre ce qu'il avait sous la main. La fiche client
+    // porte ses photos et son anneau depuis §226 — reprendre ne ferme donc
+    // toujours aucune porte, et la fiche du chantier reste à la barre du bas.
+    const retour = page.locator('[data-atlas="retour-du-devis"]').first();
     await retour.waitFor({ state: "visible", timeout: 15000 });
+    const cible = await retour.getAttribute("href");
+    assert.ok(
+      cible?.startsWith(`/chantiers/${id}/coordonnees`),
+      `la flèche du devis mène à « ${cible} » : ce n'est pas la fiche client de ce chantier`
+    );
   });
 
   await contexte.close();
