@@ -9,6 +9,33 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
+## EN ATTENTE DE SA RÉPONSE : l'écran Ma TVA (31 août 2026)
+
+Ses trois demandes, capture à l'appui. **Rien n'est codé, et rien ne doit
+l'être avant sa réponse** (`CLAUDE.md` §3 bis).
+
+La planche : `appli/ma-tva-encadree.html`, en ligne à
+https://florianmarrins0978-svg.github.io/Atlas-app/ma-tva-encadree.html
+
+| Ce qu'il demande | Où ça vit aujourd'hui |
+|---|---|
+| ne garder qu'une ligne sous « Je reverse ma TVA aux impôts » | `src/app/termines/tva/RegimeTva.tsx` |
+| border d'or l'encadré Collectée / Déductible | `src/app/termines/tva/page.tsx` |
+| les ‹ › du planning pour changer de mois, voisins en pastilles | `page.tsx` (aujourd'hui « ← Juillet 2026 » / « Septembre 2026 → ») |
+
+**CE QU'IL FAUT LUI FAIRE VOIR AVANT DE SUPPRIMER**, et c'est le seul point
+qui mérite une question : reverser la TVA **dès l'envoi de la facture** est une
+option qui se demande aux impôts. La seconde ligne partie, l'écran n'a plus
+d'endroit pour la dire — et le jour où quelqu'un a pris cette option, son relevé
+sera faux sans qu'il puisse le corriger. Partent avec elle la ligne grise « ce
+choix ne change rien » et la phrase sur le comptable.
+
+**Et quand il aura tranché**, deux conséquences côté code : le contrôle
+`data-atlas="ecart-des-regimes"` n'a plus d'objet, et `relevesSousLesDeuxRegimes`
+n'a plus besoin de calculer l'autre régime pour cet écran.
+
+---
+
 ## EN ATTENTE DE SA RÉPONSE : la force du geste des boutons (31 août 2026)
 
 Sa demande du 31 août — une mini vibration à l'appui, et le bouton qui s'enfonce

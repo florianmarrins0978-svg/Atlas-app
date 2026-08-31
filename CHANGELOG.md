@@ -9,6 +9,23 @@ Format : le plus récent en tête.
 
 ## 2026-08-31
 
+### Ma TVA : une planche pour trois demandes, et la question qu'elle pose
+
+Ses trois demandes du 31 août, capture à l'appui : **ne garder qu'une ligne**
+sous « Je reverse ma TVA aux impôts » — celle qui est cochée —, **border d'or**
+l'encadré Collectée / Déductible, et reprendre **les ‹ › du planning** pour
+changer de mois, les voisins posés en pastilles transparentes.
+
+`appli/ma-tva-encadree.html`. **Rien n'est codé** : `src/` n'est pas touché
+tant qu'il n'a pas choisi (§3 bis).
+
+**Ce que la planche lui montre en plus de ce qu'il a demandé.** Supprimer la
+seconde ligne emporte l'endroit où dire qu'on reverse **dès l'envoi de la
+facture** — une option qui se demande aux impôts, et que quelqu'un aura prise.
+Un écran qui n'a plus qu'un régime ne peut pas se tromper à moitié : il se
+trompe entièrement, et sans le dire. La note sous la maquette pose la question ;
+il tranche.
+
 ### Les dix verts étaient CASSÉS en ligne, et mon contrôle ne le voyait pas
 
 **Sa plainte : « sur le lien cliquable ça ne fonctionne toujours pas ».** Elle

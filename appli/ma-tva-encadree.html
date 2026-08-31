@@ -1,0 +1,295 @@
+<title>Ma TVA — l'encadré doré et les mois</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  /*
+    MA TVA — trois demandes du 31 août 2026, capture à l'appui.
+
+      1. « Je pense qu'une facture pas encore payée n'est pas déclarée doit
+         être la seule chose qui reste, donc supprime le mois où j'envoie la
+         facture jusqu'à … le dit en une phrase. On garde que celle qui est
+         cochée. »
+      2. « L'encadré de la TVA collectée et la TVA déductible encadré de doré. »
+      3. « Pour changer de mois, les mêmes ‹ › que sur le planning, à droite et
+         à gauche. Et Juillet 2026 / Septembre 2026 en encadré transparent
+         comme les dates. »
+
+    ————————————————————————————————————————————————————————————————
+    CE QUE LE POINT 1 EMPORTE, et il faut le voir avant de choisir :
+
+      — la seconde ligne « Le mois où j'envoie la facture » ;
+      — la ligne grise « Sur Août 2026, ce choix ne change rien — 1188,00 €
+        dans les deux cas » : elle ne comparait deux régimes que parce qu'il y
+        en avait deux à comparer ;
+      — la phrase « Ce choix doit correspondre à ce que les impôts savent de
+        vous. Dans le doute, votre comptable le dit en une phrase. »
+
+    Il reste donc une seule ligne, cochée, qui ÉNONCE le régime au lieu de le
+    faire choisir. Ce qu'il faut savoir avant de trancher : reverser dès
+    l'envoi de la facture est une option qui se demande aux impôts — le jour
+    où quelqu'un l'a prise, cet écran n'a plus d'endroit pour le dire.
+
+    ————————————————————————————————————————————————————————————————
+    RIEN N'EST CODÉ : le dossier src/ n'est pas touché (règle du §3 bis).
+
+    Les chiffres d'AOÛT 2026 sont ceux de sa capture (1 188,00 € collectés,
+    41,67 € déductibles). Les autres mois sont un exemple, pour que les ‹ ›
+    se touchent pour de bon.
+  */
+
+  :root{
+    --fond:#efece6; --encre:#1c1c1a; --gris:#8a8578; --or:#B98B47;
+    --trait:rgba(28,28,26,.13); --traitfin:rgba(28,28,26,.07);
+    --papier:#faf9f5; --creme:#f5f3ee; --teinte:#ece9e1; --rouille:#B5502F;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E;
+      --trait:rgba(233,229,220,.16); --traitfin:rgba(233,229,220,.09);
+      --papier:#201e1a; --creme:#1b1a17; --teinte:#252320; --rouille:#D8825F;
+    }
+  }
+  :root[data-theme="dark"]{
+    --fond:#171613; --encre:#e9e5dc; --gris:#8a867c; --or:#C9A15E;
+    --trait:rgba(233,229,220,.16); --traitfin:rgba(233,229,220,.09);
+    --papier:#201e1a; --creme:#1b1a17; --teinte:#252320; --rouille:#D8825F;
+  }
+
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--fond);color:var(--encre);
+       font:16px/1.6 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+       padding:26px 18px 70px;-webkit-text-size-adjust:100%}
+  .dedans{max-width:940px;margin:0 auto}
+  h1{font-family:Georgia,"Times New Roman",serif;font-weight:400;
+     font-size:27px;line-height:1.2;margin:0 0 8px}
+  .intro{color:var(--gris);font-size:14px;line-height:1.65;margin:0 0 18px}
+  .intro b{color:var(--encre);font-weight:600}
+  h2{font-family:Georgia,"Times New Roman",serif;font-weight:400;font-size:20px;
+     margin:36px 0 4px}
+  .pourquoi{color:var(--gris);font-size:13.5px;line-height:1.6;margin:0 0 14px}
+  .pourquoi b{color:var(--encre);font-weight:600}
+
+  /* ─── LE TÉLÉPHONE — la largeur d'un iPhone, pour qu'il voie ce qu'il verra */
+  .tel{max-width:390px;background:var(--creme);border:1px solid var(--trait);
+       border-radius:26px;padding:22px 0 0;overflow:hidden;margin:0 0 6px}
+  .p{padding-left:24px;padding-right:24px}
+
+  .retour{width:40px;height:40px;border-radius:50%;background:var(--teinte);
+          display:flex;align-items:center;justify-content:center;
+          color:var(--rouille);font-size:19px;line-height:1}
+
+  .surtitre{font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;
+            color:var(--gris);margin:0 0 8px}
+
+  /* Le rythme, inchangé. */
+  .rythme{display:flex;align-items:center;gap:10px;font-size:15px;margin-bottom:22px}
+  .rythme span{padding-bottom:3px;color:var(--gris);border-bottom:1px solid transparent}
+  .rythme .on{color:var(--encre);border-bottom-color:var(--or)}
+  .rythme .pt{color:var(--gris);font-size:12px}
+
+  /* ─── LE RÉGIME — une seule ligne, celle qui était cochée ─────────────── */
+  .regime{display:flex;align-items:flex-start;gap:11px;padding:11px 2px 14px}
+  .rond{margin-top:3px;width:18px;height:18px;flex:none;border-radius:50%;
+        border:1.5px solid var(--rouille);background:var(--rouille);
+        box-shadow:inset 0 0 0 3.2px var(--creme)}
+  .regime .titre{display:block;font-size:15px;font-weight:600}
+  .regime .sous{display:block;font-size:12.5px;color:var(--gris);margin-top:2px}
+
+  /* ─── L'EN-TÊTE — le titre, puis MA TVA en or dessous ─────────────────── */
+  .entete{display:flex;align-items:flex-start;justify-content:space-between;
+          gap:14px;margin-top:26px}
+  .entete h3{font-family:Georgia,"Times New Roman",serif;font-weight:400;
+             font-size:36px;line-height:1.05;margin:0}
+  .entete .caps{font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;
+                color:var(--or);margin:7px 0 0}
+  .bulle{width:56px;height:56px;flex:none;border-radius:50%;background:#2f3b2f;
+         display:flex;align-items:center;justify-content:center}
+  .bulle svg{stroke:#f5f3ee}
+
+  /* ─── LES MOIS — ‹ › du planning, et les voisins en encadré transparent ── */
+  .mois{display:flex;align-items:center;gap:6px;margin-top:20px}
+  .chevron{width:38px;height:38px;flex:none;border-radius:50%;
+           border:1px solid var(--trait);background:var(--papier);
+           color:var(--encre);font-size:19px;line-height:1;cursor:pointer;
+           -webkit-tap-highlight-color:transparent;font-family:inherit}
+  .voisin{flex:1;min-width:0;border:1px solid var(--trait);background:transparent;
+          border-radius:999px;padding:8px 4px;font:inherit;font-size:11.5px;
+          font-weight:600;color:var(--encre);cursor:pointer;white-space:nowrap;
+          -webkit-tap-highlight-color:transparent}
+  .cal{width:26px;flex:none;display:flex;align-items:center;justify-content:center;
+       color:var(--encre);opacity:.85}
+
+  /* ─── L'ENCADRÉ DORÉ ──────────────────────────────────────────────────── */
+  .encadre{margin-top:20px;border:1px solid var(--or);border-radius:12px;
+           overflow:hidden}
+  .colonnes{display:flex;gap:1px;background:var(--traitfin)}
+  .colonne{flex:1;background:var(--papier);text-align:center;padding:17px 10px 14px}
+  .colonne .l{display:block;font-size:10px;letter-spacing:.22em;
+              text-transform:uppercase;color:var(--gris);margin-bottom:8px}
+  .colonne .m{display:block;font-family:Georgia,"Times New Roman",serif;
+              font-size:19.5px;font-weight:600;font-variant-numeric:tabular-nums}
+  .copier{margin:7px auto 0;width:30px;height:30px;border-radius:50%;
+          border:1px solid var(--trait);background:transparent;
+          display:flex;align-items:center;justify-content:center;cursor:pointer}
+  .copier svg{stroke:var(--rouille)}
+  .reste{background:var(--papier);border-top:1px solid var(--traitfin);
+         padding:15px 16px;display:flex;align-items:center;
+         justify-content:space-between;gap:12px}
+  .reste .l{font-size:14px}
+  .reste .m{font-family:Georgia,"Times New Roman",serif;font-size:26px;
+            font-weight:600;color:var(--rouille);font-variant-numeric:tabular-nums}
+
+  /* La barre du bas, pour situer l'écran. */
+  .barre{display:flex;justify-content:space-between;gap:4px;margin-top:26px;
+         padding:14px 18px 16px;border-top:1px solid var(--traitfin);
+         background:var(--creme)}
+  .barre span{font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;
+              color:var(--gris);padding-bottom:5px}
+  .barre .on{color:var(--encre);border-bottom:1.5px solid var(--or)}
+
+  .note{margin:34px 0 0;padding:15px 16px;background:var(--papier);
+        border:1px solid var(--trait);border-radius:12px;font-size:13px;
+        line-height:1.65;color:var(--gris)}
+  .note .t{display:block;font-size:11px;letter-spacing:.13em;
+           text-transform:uppercase;color:var(--or);margin-bottom:7px}
+  .note b{color:var(--encre);font-weight:600}
+  .note ul{margin:8px 0 0;padding-left:18px}
+  .note li{margin:4px 0}
+</style>
+
+<div class="dedans">
+
+<h1>Ma TVA</h1>
+<p class="intro"><b>Touchez les ‹ et les ›</b> — les mois changent pour de bon.
+Une seule ligne reste sous « Je reverse ma TVA aux impôts », et l’encadré des
+deux montants est bordé d’or.</p>
+
+<div class="tel">
+
+  <div class="p"><div class="retour">‹</div></div>
+
+  <div class="p" style="margin-top:22px">
+    <p class="surtitre">Votre rythme</p>
+    <div class="rythme">
+      <span class="on">Tous les mois</span><span class="pt">·</span>
+      <span>Tous les trois mois</span>
+    </div>
+
+    <p class="surtitre">Je reverse ma TVA aux impôts</p>
+    <div class="regime">
+      <span class="rond"></span>
+      <span>
+        <span class="titre">Le mois où mon client me paie</span>
+        <span class="sous">Une facture pas encore payée n’est pas déclarée.</span>
+      </span>
+    </div>
+
+    <div class="entete">
+      <div>
+        <h3 id="titre">Août 2026</h3>
+        <p class="caps">Ma TVA</p>
+      </div>
+      <div class="bulle">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke-width="1.7">
+          <path d="M21 11.5a8.4 8.4 0 0 1-9 8.4 9 9 0 0 1-3.3-.6L3 21l1.8-5.1A8.2 8.2 0 0 1 3.6 11.5 8.4 8.4 0 0 1 12 3.1a8.4 8.4 0 0 1 9 8.4z" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+    </div>
+
+    <div class="mois">
+      <button class="chevron" id="avant" aria-label="Mois précédent">‹</button>
+      <button class="voisin" id="voisinAvant"></button>
+      <span class="cal" aria-hidden="true">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+          <rect x="3.5" y="5" width="17" height="15.5" rx="2.5"/>
+          <path d="M3.5 9.6h17M8 3.5v3M16 3.5v3" stroke-linecap="round"/>
+        </svg>
+      </span>
+      <button class="voisin" id="voisinApres"></button>
+      <button class="chevron" id="apres" aria-label="Mois suivant">›</button>
+    </div>
+
+    <div class="encadre">
+      <div class="colonnes">
+        <div class="colonne">
+          <span class="l">Collectée</span>
+          <span class="m" id="collectee">1 188,00 €</span>
+          <span class="copier"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke-width="1.7"><rect x="9" y="9" width="11" height="12" rx="2.4"/><path d="M15 5.6A2.6 2.6 0 0 0 12.4 3H6.6A2.6 2.6 0 0 0 4 5.6v5.8A2.6 2.6 0 0 0 6.6 14" stroke-linecap="round"/></svg></span>
+        </div>
+        <div class="colonne">
+          <span class="l">Déductible</span>
+          <span class="m" id="deductible">41,67 €</span>
+          <span class="copier"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke-width="1.7"><rect x="9" y="9" width="11" height="12" rx="2.4"/><path d="M15 5.6A2.6 2.6 0 0 0 12.4 3H6.6A2.6 2.6 0 0 0 4 5.6v5.8A2.6 2.6 0 0 0 6.6 14" stroke-linecap="round"/></svg></span>
+        </div>
+      </div>
+      <div class="reste">
+        <span class="l">Reste à payer</span>
+        <span class="m" id="reste">1 146,33 €</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="barre">
+    <span>Chantiers</span><span>Planning</span><span class="on">Terminés</span>
+    <span>Paysage</span><span>Réglages</span>
+  </div>
+</div>
+
+<div class="note"><span class="t">Ce que la suppression emporte</span>
+Trois choses partent avec « Le mois où j’envoie la facture » :
+<ul>
+  <li>la ligne grise <b>« ce choix ne change rien — 1188,00 € dans les deux
+      cas »</b> : elle comparait deux régimes ;</li>
+  <li>la phrase sur le comptable ;</li>
+  <li>et l’endroit où dire qu’on reverse dès l’envoi — <b>c’est une option qui
+      se demande aux impôts</b>, et quelqu’un l’aura prise un jour.</li>
+</ul>
+Dites-moi si vous la voulez quand même retirée : c’est votre écran.
+<br><br>
+<b>Août 2026</b> porte les chiffres de votre capture. Les autres mois sont un
+exemple, pour que les ‹ › se touchent. Cette page ne touche <b>ni à vos données
+ni à l’application</b>.
+</div>
+
+</div>
+
+<script>
+  /* Les mois, pour que la navigation se touche vraiment. Seul AOÛT porte ses
+     vrais chiffres (sa capture du 31 août) ; les autres sont un exemple. */
+  var MOIS = [
+    { nom:'Mai 2026',       collectee:'742,00 €',   deductible:'118,40 €', reste:'623,60 €' },
+    { nom:'Juin 2026',      collectee:'1 960,00 €', deductible:'204,15 €', reste:'1 755,85 €' },
+    { nom:'Juillet 2026',   collectee:'1 344,00 €', deductible:'88,90 €',  reste:'1 255,10 €' },
+    { nom:'Août 2026',      collectee:'1 188,00 €', deductible:'41,67 €',  reste:'1 146,33 €' },
+    { nom:'Septembre 2026', collectee:'0,00 €',     deductible:'312,50 €', reste:'− 312,50 €' },
+    { nom:'Octobre 2026',   collectee:'0,00 €',     deductible:'0,00 €',   reste:'0,00 €' }
+  ];
+  var i = 3;
+
+  function poser(){
+    var m = MOIS[i];
+    document.getElementById('titre').textContent = m.nom;
+    document.getElementById('collectee').textContent = m.collectee;
+    document.getElementById('deductible').textContent = m.deductible;
+    document.getElementById('reste').textContent = m.reste;
+
+    var av = document.getElementById('voisinAvant');
+    var ap = document.getElementById('voisinApres');
+    av.textContent = i > 0 ? MOIS[i-1].nom : '';
+    ap.textContent = i < MOIS.length-1 ? MOIS[i+1].nom : '';
+    av.style.visibility = i > 0 ? 'visible' : 'hidden';
+    ap.style.visibility = i < MOIS.length-1 ? 'visible' : 'hidden';
+    document.getElementById('avant').style.visibility = i > 0 ? 'visible' : 'hidden';
+    document.getElementById('apres').style.visibility = i < MOIS.length-1 ? 'visible' : 'hidden';
+  }
+  function bouger(pas){
+    var j = i + pas;
+    if (j < 0 || j >= MOIS.length) return;
+    i = j; poser();
+  }
+  document.getElementById('avant').onclick = function(){ bouger(-1); };
+  document.getElementById('voisinAvant').onclick = function(){ bouger(-1); };
+  document.getElementById('apres').onclick = function(){ bouger(1); };
+  document.getElementById('voisinApres').onclick = function(){ bouger(1); };
+  poser();
+</script>
