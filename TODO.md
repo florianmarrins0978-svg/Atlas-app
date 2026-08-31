@@ -25,6 +25,30 @@ aujourd'hui — c'est noté pour ne pas le redécouvrir.
 
 ---
 
+## ✅ LE « 16.3.3 » EST EXPLIQUÉ — c'était `npx`, pas une dérive (31 août 2026)
+
+Ce document portait depuis le 29 août : *« reste inexpliqué : comment ses
+`node_modules` ont dérivé »*. **Ils n'ont jamais dérivé.**
+
+`node_modules/next` MANQUAIT, et `npx next build` télécharge alors la dernière
+version publiée pour la lancer — d'où un 16.3.3 sur un projet qui épingle
+16.3.2. Reproduit à l'identique en écartant le paquet. Corrigé aux trois
+endroits : `ARCHITECTURE.md` §217.
+
+**Ce qui reste ouvert, et c'est la vraie question :** POURQUOI
+`node_modules/next` disparaît de son espace. Trois suspects, aucun mesuré — une
+mise en veille pendant un `npm install`, un `npm install` concurrent (le banc et
+le veilleur), un disque plein à un moment (21 Go libres au moment de l'échec,
+donc peu probable). Le banc répare désormais la conséquence à chaque démarrage ;
+il n'empêche pas la cause.
+
+**Comment le trancher quand cela se reproduira :** le journal du banc
+(`/tmp/essai.log`) porte maintenant « next ABSENT alors que le projet exige
+16.3.2 » avec son heure. La rapprocher de l'heure du dernier `npm install` et de
+la dernière mise en veille répond sans rien demander au patron.
+
+---
+
 ## POURQUOI LE RELAIS PERD SON PORT 3000 — inexpliqué (31 août 2026)
 
 Sa nuit du 30 au 31 : espace debout, Atlas répondant sur 3000, version rapide

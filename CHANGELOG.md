@@ -9,6 +9,33 @@ Format : le plus récent en tête.
 
 ## 2026-08-31
 
+### Le banc lance le Next DU PROJET, et ne laisse plus `npx` en chercher un autre
+
+**Sa plainte de midi : « version rapide en construction, elle est super
+lente ».** `node_modules/next` manquait sur son espace — et `npx next build`
+téléchargeait alors la dernière version publiée (16.3.3) pour la lancer, alors
+que le projet épingle 16.3.2. Ce Next étranger ne trouvait pas le paquet du
+projet, la construction tombait, le banc restait en mode développement où
+chaque écran se compile à l'ouverture, et le veilleur retentait la même
+construction condamnée.
+
+Reproduit avant d'être corrigé, en écartant le paquet : son message mot pour
+mot. Trois verrous — le binaire du projet appelé par son chemin, un paquet
+épinglé et absent traité comme un défaut, et le message de Turbopack reconnu.
+
+**C'est aussi l'explication du « 16.3.3 » du 29 août**, que `TODO.md` portait
+comme inexpliqué : ses dépendances n'ont jamais dérivé.
+
+Un piège trouvé en le jouant, et corrigé avant livraison : appeler le binaire du
+projet fait mourir le serveur de développement quand le paquet manque, ce qui
+arrête le banc — donc la réinstallation était coupée en plein `npm install`.
+Elle a lieu maintenant avant tout lancement. Vérifié de bout en bout : paquet
+écarté, banc lancé, « Dépendances remises d'aplomb » puis « passage à la version
+rapide ».
+
+Détail et ce qui reste ouvert : `ARCHITECTURE.md` §217.
+
+
 ### Un prix posé sur l'écran du devis débloque enfin l'envoi
 
 **Sa capture du matin :** *« j'ai voulu lancer le devis sans mettre de prix pour

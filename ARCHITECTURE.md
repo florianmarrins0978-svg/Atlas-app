@@ -19181,3 +19181,90 @@ Deux contrôles réclamaient l'ancienne règle et ont changé de camp
 (`CLAUDE.md` §5 bis) : `test-preparation-envoi.ts` et
 `test-date-lointaine-e2e.ts` prouvaient que demain ne partait pas chez le
 client. Ils prouvent maintenant qu'il part **et** que la fiche prévient.
+
+---
+
+## 217. « Elle est super lente » : `npx` allait chercher un Next au registre quand celui du projet manquait
+
+**Sa plainte du 31 août 2026, à midi**, capture à l'appui : le bandeau
+« Version rapide en construction » en haut de l'écran, et une application qui
+compile chaque page à l'ouverture.
+
+Sa fiche donnait tout, et cette fois elle ne se contredisait plus :
+
+```
+Code SERVI : AUCUNE — la construction a ÉCHOUÉ (10:03:46)
+Serveur    : répond sur le port 3000
+Port 3000  : ouvert — Atlas répond bien à l'adresse publique (vérifié)
+dit:
+▲ Next.js 16.3.3 (Turbopack)          ← le projet épingle 16.3.2
+Error: Could not find the Next.js package (next/package.json)
+Resolved from: /workspaces/Atlas-app/src/app
+```
+
+### Ce que ces trois lignes disent ensemble
+
+`node_modules/next` **manquait** sur son espace. Et `npx next build` ne se
+contente pas d'échouer dans ce cas : **il télécharge la dernière version publiée
+et la lance**. Ce Next-là — 16.3.3, étranger au projet — ne trouve évidemment
+pas le paquet du projet, la construction tombe, le banc reste en mode
+développement, et le veilleur retente la même construction condamnée toutes les
+demi-heures.
+
+**Reproduit ici avant d'être corrigé**, en écartant le paquet à la main :
+
+```
+npm warn exec The following package was not found and will be installed: next@16.3.3
+▲ Next.js 16.3.3 (Turbopack)
+Error: Could not find the Next.js package (next/package.json)
+```
+
+Son message, mot pour mot.
+
+### Et c'est l'explication du « 16.3.3 » du 29 août
+
+`TODO.md` portait depuis deux jours : *« reste inexpliqué : comment ses
+`node_modules` ont dérivé »*. Ils n'ont jamais dérivé. **Ce n'est pas la
+version installée qui a changé, c'est `npx` qui est allé chercher ailleurs ce
+qui manquait chez lui.** Le §205 (cohérence des dépendances) avait donc raison
+sur le symptôme et se trompait de mécanisme ; c'est écrit ici plutôt que corrigé
+en silence, parce qu'une prochaine session lirait le premier récit sans méfiance.
+
+### Les trois verrous posés, et pourquoi trois
+
+| | |
+|---|---|
+| **le binaire du projet, par son chemin** (`node_modules/next/dist/bin/next`) | plus aucun `npx` dans `banc.mjs` : un paquet absent échoue franchement au lieu d'en faire venir un autre |
+| **un paquet ÉPINGLÉ et ABSENT est un défaut, pas une ignorance** | `dependancesIncoherentes` rendait « rien à signaler » sur un `next` introuvable ; il réclame maintenant la réinstallation |
+| **« Could not find the Next.js package » déclenche la réparation** | ce message ne contient ni « Cannot find module » ni « node_modules » : il passait au travers des deux conditions existantes |
+
+### Pourquoi le piège n'a mordu QUE le banc
+
+`scripts/essai.mjs` — la commande qu'on tape à la main — lance Next par
+`npx **--no-install** next dev` depuis longtemps : il ne peut donc rien
+télécharger. `banc.mjs`, lui, appelait `npx` nu. Le garde-fou existait dans ce
+dépôt, à un fichier près, et personne ne l'avait reporté sur celui qui tourne
+tout seul chez le patron.
+
+### Le piège trouvé en le JOUANT, et qui aurait tout gâché
+
+Le premier correctif rendait le banc **pire** : en appelant le binaire du
+projet, un `node_modules/next` absent tue le serveur de développement à la
+seconde — et la mort du serveur **arrête `banc.mjs`** (`surSortie`). La
+réinstallation, qui vivait dans la voie de construction, était donc coupée en
+plein `npm install`.
+
+Cela ne s'est pas vu en relisant : la sortie disait « Réinstallation avant de
+bâtir », puis le processus s'arrêtait sans un mot, code 1. **La réparation est
+maintenant faite AVANT tout lancement.** Vérifié en écartant le paquet et en
+lançant le banc pour de bon :
+
+```
+next ABSENT alors que le projet exige 16.3.2 → npm install → Dépendances remises d'aplomb
+→ serveur de développement → Construction terminée — passage à la version rapide
+→ ▲ Next.js 16.3.2
+```
+
+**Ce qui reste ouvert :** pourquoi `node_modules/next` disparaît de son espace.
+Le correctif répare la conséquence à chaque démarrage ; il n'explique pas la
+cause. Voir `TODO.md`.

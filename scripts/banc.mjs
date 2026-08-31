@@ -51,6 +51,32 @@ const SANTE = `http://127.0.0.1:${PORT}/api/health/live`;
 // permet de SERVIR PENDANT QU'ON BÂTIT — sans quoi le patron regarde une page
 // blanche pendant toute la construction, qui dure des dizaines de minutes sur
 // un disque lent. Voir `next.config.ts` (`ATLAS_DIST_DIR`).
+// **LE NEXT DU PROJET, JAMAIS CELUI QUE `npx` IRAIT CHERCHER — 31 août 2026.**
+//
+// Sa plainte de midi : *« version rapide en construction, elle est super
+// lente »*. Sa fiche donnait le message au mot près :
+//
+//     ▲ Next.js 16.3.3 (Turbopack)          ← le projet épingle 16.3.2
+//     Error: Could not find the Next.js package (next/package.json)
+//     Resolved from: /workspaces/Atlas-app/src/app
+//
+// **`npx next build` ne se contente pas d'échouer quand `node_modules/next`
+// manque : il TÉLÉCHARGE la dernière version depuis le registre et la lance.**
+// Reproduit ici en écartant le paquet — « npm warn exec The following package
+// was not found and will be installed: next@16.3.3 », puis exactement son
+// erreur. Ce Next-là ne trouve évidemment pas le paquet du projet, la
+// construction tombe, le banc reste en mode développement, et le veilleur
+// retente la même construction condamnée indéfiniment.
+//
+// **C'est aussi l'explication du « 16.3.3 » du 29 août**, que `TODO.md` portait
+// comme inexpliqué : ses `node_modules` n'avaient pas dérivé — c'est `npx` qui
+// allait chercher ailleurs ce qui manquait chez lui.
+//
+// On appelle donc le binaire du projet, par son chemin. Absent, l'échec est
+// franc et porte « Cannot find module » — ce que la réinstallation plus bas
+// sait déjà traiter.
+const NEXT = "node_modules/next/dist/bin/next";
+
 const DIST = ".next-batie";
 const TEMOIN_BATI = `${DIST}/atlas-version-batie.txt`;
 // **Le témoin d'ÉCHEC, et il vaut le témoin de réussite.**
@@ -430,10 +456,10 @@ const raison = doitRebatir(version);
 // Ce que cela impose, et qui est fait plus bas : le groupe ne meurt plus avec ce
 // script, il faut donc le tuer explicitement — à la sortie ET sur Ctrl+C.
 const lancerBati = () =>
-  spawn("npx", ["next", "start", "-H", "0.0.0.0", "-p", PORT],
+  spawn(process.execPath, [NEXT, "start", "-H", "0.0.0.0", "-p", PORT],
     { stdio: SANS_TERMINAL, detached: true, env: { ...process.env, ATLAS_DIST_DIR: DIST } });
 const lancerDev = () =>
-  spawn("npx", ["next", "dev", "-H", "0.0.0.0", "-p", PORT],
+  spawn(process.execPath, [NEXT, "dev", "-H", "0.0.0.0", "-p", PORT],
     { stdio: SANS_TERMINAL, detached: true, env: process.env });
 
 /**
@@ -653,6 +679,22 @@ async function annoncerDesQueCaRepond(bati) {
   }
 }
 
+// **RÉPARER AVANT DE LANCER, ET NON PENDANT — 31 août 2026.**
+//
+// Ce contrôle vivait dans la voie de construction, c'est-à-dire APRÈS le
+// lancement du serveur. Tant que le serveur partait par `npx`, cela ne se
+// voyait pas : `npx` téléchargeait un Next du registre et servait quand même,
+// mal. En appelant le binaire du projet, un `node_modules/next` absent tue le
+// serveur à la seconde — et la mort du serveur **arrête ce script** (voir
+// `surSortie` juste en dessous). La réparation était donc coupée en plein
+// `npm install`, ce qui est le pire moment pour interrompre une installation.
+//
+// Trouvé en le JOUANT, pas en le relisant : paquet écarté à la main, banc
+// lancé, sortie 1 sans un mot après « Réinstallation avant de bâtir ».
+//
+// Ne coûte rien quand tout va bien : deux `package.json` lus, aucune commande.
+await reinstallerSiDesaccordees();
+
 let serveur = raison ? lancerDev() : lancerBati();
 let enBascule = false;
 // Ce qui SERT réellement, à cet instant — pas ce qu'on espérait servir. La
@@ -788,15 +830,16 @@ if (raison) {
   // un paquet PRÉSENT MAIS DÉSACCORDÉ, non — il ne dit rien. Le veilleur
   // retentait donc la même construction condamnée, indéfiniment.
   //
-  // Deux nombres suffisent à le voir, et sans rien lancer.
-  await reinstallerSiDesaccordees();
+  // Deux nombres suffisent à le voir, et sans rien lancer — c'est fait plus
+  // haut, AVANT de lancer quoi que ce soit (voir le bloc qui précède le
+  // lancement du serveur).
 
   // La construction écrit dans SON dossier : le serveur de développement garde
   // le sien, et les deux ne se marchent jamais dessus.
   // Rempli seulement si le verrou parle : c'est la seule information qui
   // manquait pour comprendre pourquoi deux constructions se rencontrent.
   let quiTenaitLeVerrou = "";
-  let { code, signal, sortie } = await jouerEnRetenant("npx", ["next", "build"], { ...process.env, ATLAS_DIST_DIR: DIST });
+  let { code, signal, sortie } = await jouerEnRetenant(process.execPath, [NEXT, "build"], { ...process.env, ATLAS_DIST_DIR: DIST });
 
   // **Une seconde tentative, et une seule, quand c'est LE verrou qui a parlé.**
   //
@@ -824,7 +867,7 @@ if (raison) {
     await attendreLaConstructionEnCours({ dossierDist: DIST, dire: (m) => console.log(m) });
     // Ce qui reste après l'attente est bien une orpheline, ou rien du tout.
     await delogerConstructionsOrphelines({ dossierDist: DIST, dire: (m) => console.log(m) });
-    ({ code, signal, sortie } = await jouerEnRetenant("npx", ["next", "build"], { ...process.env, ATLAS_DIST_DIR: DIST }));
+    ({ code, signal, sortie } = await jouerEnRetenant(process.execPath, [NEXT, "build"], { ...process.env, ATLAS_DIST_DIR: DIST }));
   }
 
   // ─── UNE DÉPENDANCE MANQUANTE SE RÉPARE, ELLE NE S'ATTEND PAS ─────────────
@@ -861,10 +904,16 @@ if (raison) {
   // s'arrête : le témoin d'échec garde les deux sorties, et la fiche de son
   // espace les publiera. Insister davantage rendrait la boucle infinie qu'on
   // vient de supprimer.
+  //
+  // **Et « Could not find the Next.js package » en fait partie — 31 août 2026.**
+  // C'est ce que rend Turbopack quand `node_modules/next` manque. Le message ne
+  // contient ni « Cannot find module » ni « node_modules » : il passait donc au
+  // travers des deux conditions ci-dessous, et le veilleur retentait la même
+  // construction condamnée toute la matinée.
   const dependanceManquante =
     code !== 0 &&
-    /Cannot find module|MODULE_NOT_FOUND/i.test(sortie) &&
-    /node_modules/.test(sortie);
+    ((/Cannot find module|MODULE_NOT_FOUND/i.test(sortie) && /node_modules/.test(sortie)) ||
+      /Could not find the Next\.js package/i.test(sortie));
 
   // **Le second filet — 29 août 2026.** La condition ci-dessus exige un
   // message ; sa construction n'en produisait aucun. Une mort juste après
@@ -888,7 +937,7 @@ if (raison) {
     ]);
     if (codeInstall === 0) {
       await delogerConstructionsOrphelines({ dossierDist: DIST, dire: (m) => console.log(m) });
-      ({ code, signal, sortie } = await jouerEnRetenant("npx", ["next", "build"], {
+      ({ code, signal, sortie } = await jouerEnRetenant(process.execPath, [NEXT, "build"], {
         ...process.env,
         ATLAS_DIST_DIR: DIST,
       }));
