@@ -585,6 +585,26 @@ tôt.
 ne sert pas la même application — la feuille « Absences » ne s'ouvrait plus, et
 deux vérifications rougissaient sur du code juste.
 
+## PIÈGE : MESURER UN ÉCRAN SANS LE BANDEAU DU BANC (31 août 2026)
+
+**Son banc porte un bandeau que le produit n'a pas** — « Version rapide en
+construction ». Il mange **49 px** à 390 de large, **66** à 375 (sa phrase passe
+à deux lignes), et il **disparaît** quand la construction s'achève.
+
+**Conséquence, et elle a déjà coûté un aller-retour :** un contrôle de hauteur
+joué sans lui mesure un écran que le patron n'a jamais sous les yeux. Le 31 août,
+`test-face-id-e2e` annonçait « 658 px pour 664 — ça tient » pendant que sa
+capture montrait « Me déconnecter partout » sous la barre du bas.
+
+**Le geste, pour tout contrôle qui mesure une hauteur :** rejouer le bandeau —
+un bloc de 49 px en tête du corps, et `--atlas-bandeau: 49px` sur la racine.
+C'est ce que fait `test-connexion-figee-e2e.ts`, et c'est ce qui l'a rendu
+capable d'échouer.
+
+**Et sur le produit lui-même, `--atlas-bandeau` vaut zéro** : le bandeau
+n'existe pas hors banc. Une mesure faite avec vaut donc pour son banc, pas pour
+ce qu'il livrera.
+
 ## PIÈGE : `npm run build` PUIS LA BATTERIE = TURBOPACK SE FIGE (31 août 2026)
 
 **Le symptôme, et il n'accuse personne :** une suite navigateur reste plantée

@@ -157,6 +157,16 @@ body {
  * s'assurer qu'un jour l'une bougera sans l'autre. */
 :root {
   --atlas-barre: calc(4.25rem + env(safe-area-inset-bottom));
+  /* La hauteur RÉELLE du bandeau du banc, publiée par lui-même
+   * (`BandeauBanc.tsx`) et remise à zéro dès qu'il s'efface. Zéro par défaut :
+   * hors banc d'essai, ce bandeau n'existe pas.
+   *
+   * **Elle valait 40 px, écrits à la main dans `layout.tsx`, pour un bandeau
+   * qui en mesure 48.** Huit pixels de trop, plus la barre de progression, plus
+   * une phrase qui passe à deux lignes sur un écran étroit : c'est ce qui
+   * faisait finir « Me déconnecter partout » sous la barre du bas, le 31 août
+   * 2026. Un élément qui change de taille ne se mesure pas dans un fichier. */
+  --atlas-bandeau: 0px;
 }
 
 .atlas-nav-basse {
@@ -179,11 +189,20 @@ body {
  * déjà `padding-top: env(safe-area-inset-top)`, donc `100dvh` déborderait
  * d'autant. */
 .atlas-ecran {
-  height: calc(100dvh - var(--atlas-barre) - env(safe-area-inset-top));
+  /* **Le bandeau du banc entre dans le calcul depuis le 31 août 2026.** Sans
+   * lui, tout écran figé était 48 px trop haut sur son banc : il débordait, la
+   * page se remettait à défiler, et la dernière rangée passait sous la barre. */
+  height: calc(100dvh - var(--atlas-bandeau) - var(--atlas-barre) - env(safe-area-inset-top));
   display: flex;
   flex-direction: column;
   overflow: hidden;
   position: relative;
+  /* **Sa demande du 31 août : « aucun scroll possible ».** Une page qui tient
+   * dans l'écran REBONDIT quand même sous le doigt, sur iOS — c'est l'élastique
+   * du navigateur, et c'est ce qu'il appelle « ça bouge encore ». Cette ligne
+   * l'arrête. Elle ne peut pas être éprouvée ici : aucun navigateur de ce poste
+   * ne rebondit. */
+  overscroll-behavior: none;
 }
 
 /* --- Une colonne d'écran qui défile, sans barre grise ----------------------

@@ -20197,3 +20197,81 @@ est exactement le genre d'inclusion qu'on croit complète et qui ne l'est pas �
 se tromper là, c'est servir du code d'hier en croyant servir celui du jour, la
 panne que `doitRebatir` existe pour empêcher. Le gain ne le vaut plus depuis
 que la construction ne coûte plus l'usage de l'application.
+
+---
+
+## 226. « Elle peut bouger encore » : quarante pixels écrits à la main pour un bandeau qui en fait quarante-neuf
+
+*31 août 2026 — `layout.tsx`, `globals.css`, `BandeauBanc.tsx`,
+`src/app/reglages/connexion/page.tsx`.*
+
+**Sa demande, capture à l'appui :** *« la page connexion n'est pas fixe, elle
+peut bouger encore ; il ne faut pas qu'elle puisse bouger, aucun scroll
+possible »*.
+
+### Le contrôle disait vrai, et il mesurait le mauvais écran
+
+Le même jour, §217 avait fait tenir cet écran dans un téléphone, avec un
+contrôle qui le vérifiait : **658 px pour 664**, vert. Sur son banc, au même
+moment, l'écran demandait **706 px**, défilait de 42, et « Me déconnecter
+partout » finissait à moitié sous la barre du bas — c'est ce que montre sa
+capture.
+
+L'écart tenait entièrement à ce que la mesure ne reproduisait pas ses
+conditions. Sur son banc, un bandeau annonce « Version rapide en
+construction ». `layout.tsx` lui retranchait **quarante pixels, écrits à la
+main**. Mesuré : il en fait **49** à 390 px de large — et **66** à 375, où sa
+phrase passe à deux lignes.
+
+**Un nombre écrit à la main pour un élément qui change de taille est faux la
+moitié du temps.** Celui-ci l'était trois fois : la barre de progression
+n'apparaît qu'une fois un total connu, la phrase se replie sur un écran
+étroit, et le bandeau **disparaît** quand la construction s'achève.
+
+### Le bandeau publie SA hauteur
+
+`BandeauBanc` mesure son propre cadre et pose `--atlas-bandeau` sur la racine,
+sous l'œil d'un `ResizeObserver` ; il la remet à **zéro** en s'effaçant. Sans
+cette remise à zéro, la valeur survivrait à sa disparition et volerait
+cinquante pixels à tous les écrans pour toujours — la « valeur provisoire qui
+survit » du catalogue d'arrosage, revenue ailleurs.
+
+`layout.tsx` et `.atlas-ecran` lisent tous deux cette variable : **une seule
+source**, et elle suit ce qui est réellement à l'écran. Au passage, les trois
+écrans figés du produit — chantiers, envoi, connexion — cessent d'être
+cinquante pixels trop hauts sur son banc.
+
+### Ce que « aucun scroll » veut dire, et ce qu'il ne peut pas vouloir dire
+
+L'écran de connexion prend la convention de la maison — `atlas-ecran` : la
+hauteur qui reste, une colonne, rien qui dépasse — plus
+`overscroll-behavior: none`, qui arrête l'**élastique** d'iOS. Une page qui
+tient dans l'écran rebondit quand même sous le doigt, et c'est une partie de ce
+qu'il appelait « ça bouge ». *Cette ligne-là ne peut pas être éprouvée ici :
+aucun navigateur de ce poste ne rebondit.*
+
+**Ce qui reste, et qui se dit plutôt que se cache.** Bandeau du banc affiché, un
+écran de 664 px offre 664 − 49 − 68 = **547 px** pour 596 de contenu. Il en
+manque 51, et aucune ligne ne peut disparaître sans qu'il l'ait choisi
+(`CLAUDE.md` §3 bis). La colonne intérieure glisse donc de ces 51 px — c'est le
+moins mauvais des deux : **un bouton qu'on ne peut plus atteindre est pire
+qu'un écran qui bouge d'un pouce.** Sans le bandeau — c'est-à-dire dans le
+produit, et sur son banc dès que la construction est finie — le contenu tient à
+596 px pour 596 : rien ne bouge, d'un pixel.
+
+### Le contrôle vise SES conditions, et il a fallu deux tours pour qu'il les vise
+
+`test-connexion-figee-e2e.ts` mesure à 390 × 664, avec une puce Face ID
+simulée — sans elle, la rubrique ne se dessine pas et il manque cent pixels,
+c'est-à-dire le problème.
+
+**Sa première version ne prouvait rien.** Confrontée à l'écran d'avant ce lot,
+elle restait verte : sans le bandeau, la page tient de justesse, et le défaut ne
+se montre pas. Elle rejoue donc le bandeau à l'identique — un bloc de 49 px en
+tête du corps, et la variable que le vrai bandeau publie.
+
+**Et son contrôle d'« atteignable » accusait à tort.** Il comparait un
+`offsetTop`, qui compte depuis un autre ancêtre, à la hauteur d'une colonne :
+il annonçait un bouton COUPÉ là où il était parfaitement en place. Il **descend**
+désormais la colonne et regarde — le geste, pas deux nombres dont l'origine
+diffère.
