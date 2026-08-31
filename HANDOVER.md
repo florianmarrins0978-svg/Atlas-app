@@ -140,6 +140,25 @@ existent pour éviter. Raisons et pièges : `ARCHITECTURE.md` §210.
 
 ---
 
+## PIÈGE : « ELLE EST SUPER LENTE » = LA VERSION RAPIDE N'EST PAS BÂTIE (31 août 2026)
+
+Le bandeau « Version rapide en construction » en haut de son écran, et chaque
+page qui met jusqu'à une minute à s'ouvrir : la construction a échoué, le banc
+sert le mode développement. **La fiche (#47) dit toujours pourquoi, à la ligne
+`dit:` du relevé d'échec.** Ne pas chercher ailleurs avant de l'avoir lue.
+
+**Le cas du 31 août, et il peut revenir :** `node_modules/next` manquait, et
+`npx` téléchargeait alors un Next du registre pour le lancer — une version qui
+n'est pas celle du projet, et qui échoue sur « Could not find the Next.js
+package ». Le banc appelle désormais le binaire du projet et se réinstalle tout
+seul (`ARCHITECTURE.md` §219).
+
+**Ce qui reste vrai quoi qu'il arrive :** un `▲ Next.js <version>` qui ne
+correspond pas à `package.json` veut dire que ce n'est PAS le Next du projet qui
+tourne. C'est la première chose à comparer.
+
+---
+
 ## PIÈGE : UN TÉLÉCHARGEMENT AU LIEU DE LA PAGE = PERSONNE NE SERT (31 août 2026)
 
 **Sa capture de 1 h 07 :** Safari sur `about:blank`, une feuille qui propose

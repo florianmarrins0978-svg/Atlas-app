@@ -76,11 +76,28 @@ export function versionEpinglee(paquet, nom) {
 export function dependancesIncoherentes(paquets) {
   const ecarts = [];
   for (const { nom, exigee, installee } of paquets) {
-    // **On ne conclut que sur ce qu'on sait.** Une version illisible — paquet
-    // absent, `package.json` inattendu — n'est pas une incohérence : c'est une
-    // ignorance, et réinstaller « au cas où » ferait perdre des minutes à
-    // chaque démarrage.
-    if (!exigee || !installee) continue;
+    // **On ne conclut que sur ce qu'on sait.** Un paquet que le projet
+    // n'épingle pas ne se compare à rien : `^16.3.2` autorise délibérément
+    // 16.3.3, et s'en plaindre ferait réinstaller un espace parfaitement sain.
+    if (!exigee) continue;
+
+    // **UN PAQUET ÉPINGLÉ ET ABSENT N'EST PAS UNE IGNORANCE — 31 août 2026.**
+    //
+    // Cette ligne rendait « pas d'incohérence » sur un `node_modules/next`
+    // introuvable, au motif qu'on ne peut pas comparer ce qu'on ne lit pas.
+    // C'était vrai et sans conséquence tant qu'un paquet absent se signalait
+    // plus tard par « Cannot find module ». Sa panne de midi a montré l'autre
+    // chemin : `npx next build` TÉLÉCHARGE la dernière version publiée et la
+    // lance, si bien que le paquet manquant ne se plaint jamais — c'est un
+    // Next étranger qui échoue, sur un message que rien ne reconnaissait.
+    //
+    // Le projet ÉPINGLE ce paquet : ne pas le trouver n'est pas une ignorance,
+    // c'est le défaut lui-même. On réinstalle avant de bâtir.
+    if (!installee) {
+      ecarts.push(`${nom} ABSENT alors que le projet exige ${exigee}`);
+      continue;
+    }
+
     if (exigee !== installee) ecarts.push(`${nom} ${installee} au lieu de ${exigee}`);
   }
 
