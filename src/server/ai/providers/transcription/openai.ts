@@ -9,7 +9,7 @@ import { getConfigIA } from "../../config";
 // standard et OPENAI_API_KEY définie.
 export const fournisseurTranscriptionOpenAI: FournisseurTranscription = {
   nom: "openai",
-  async transcrire(octets: Buffer, mimeType: string): Promise<ResultatTranscription> {
+  async transcrire(octets: Buffer, mimeType: string, indice?: string): Promise<ResultatTranscription> {
     const cle = getConfigIA().openaiApiKey;
     if (!cle) {
       return { succes: false, erreur: erreurIA("cle_api_absente", "OPENAI_API_KEY n'est pas configurée.") };
@@ -21,6 +21,17 @@ export const fournisseurTranscriptionOpenAI: FournisseurTranscription = {
       formData.set("file", new Blob([new Uint8Array(octets)], { type: mimeType }), `note.${extension}`);
       formData.set("model", "whisper-1");
       formData.set("language", "fr");
+      /**
+       * **Le vocabulaire du métier, soufflé AVANT l'écoute.**
+       *
+       * Whisper accepte un texte d'amorce et s'en sert pour départager les mots
+       * proches : c'est exactement ce qui manquait quand « désherbage » sortait
+       * en « herbages » (28 août 2026). Il ne force rien — il penche.
+       *
+       * Le plafond du service est tenu en amont (`construireIndiceDictee`) :
+       * au-delà, il tronque par la fin, sans prévenir.
+       */
+      if (indice?.trim()) formData.set("prompt", indice.trim());
 
       const controller = new AbortController();
       const timeout = setTimeout(() => controller.abort(), 30_000);

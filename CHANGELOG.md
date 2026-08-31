@@ -1286,6 +1286,38 @@ elle vise désormais la règle, pas la phrase (`CLAUDE.md` §5 bis).
 
 ## 2026-08-28
 
+### « Désherbage » entendu « herbages » — le vocabulaire arrivait trop tard
+
+**Sa colère du 28 août 2026 :** *« je lui ai dit désherbage mais il comprend
+mal, il m'énerve »*.
+
+**Ce n'était pas une panne : c'était une transcription qui ne savait pas de quel
+métier on parle**, et qui choisissait le mot le plus courant de la langue.
+
+**Atlas connaissait pourtant son vocabulaire** — `termes_metier`, ses mots à lui
+(`mots_catalogue`), ses corrections — mais il ne servait qu'**APRÈS**, à la
+relecture du texte. Une connaissance qui arrive après le mot mal entendu n'a
+jamais servi à rien. Le transcripteur, lui, écoutait sans rien savoir.
+
+Il reçoit désormais un **indice** avant d'écouter, dans cet ordre : les mots
+qu'il a ajoutés au catalogue, le vocabulaire du métier tenu par Atlas, puis un
+fond de langue de paysagiste. **Ses mots passent devant** — quand la place
+manque, c'est le fond de langue qu'on sacrifie, jamais ce qu'il a pris la peine
+d'apprendre à Atlas.
+
+**Borné à deux cents mots, et c'est une contrainte du dehors** : les services
+plafonnent leur indice et tronquent **par la fin, sans prévenir**. On coupe
+donc nous-mêmes.
+
+**Ce que ce fond de langue n'est PAS.** Aucun de ces mots n'entre dans un devis,
+un prix ni une prestation : c'est un indice donné au transcripteur, qui ne
+produit rien tout seul. La règle du §4 — ne jamais inventer une prestation —
+interdit d'écrire ce qu'on n'a pas relevé, pas d'écouter mieux.
+
+**Posé sur la dictée de l'assistant ET sur la note vocale**, là où il dicte le
+plus. **Reste à faire** : la dictée de retouches d'un devis, dont le service n'a
+pas de contexte d'entreprise sous la main (`TODO.md`).
+
 ### « Il ne peut pas » — six gestes livrés derrière une porte fermée
 
 **Sa capture du 28 août 2026 :** *« rajoute-moi une ligne, tu me mets des
