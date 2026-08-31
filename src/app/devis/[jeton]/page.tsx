@@ -157,14 +157,19 @@ export default async function PageDevisClient({ params }: { params: Promise<{ je
 
               Le patron pensait le PDF joint au mail. Il ne l'est pas : le
               partage n'envoie que du texte, et un `mailto:` ne peut porter
-              aucune pièce. Le client ne reçoit qu'un lien — celui-ci. */}
+              aucune pièce. Le client ne reçoit qu'un lien — celui-ci.
+
+              **« Voir » est devenu « Télécharger », en gras et souligné** — sa
+              demande du 31 août 2026. Ce n'est pas qu'un mot : le lien EMPORTE
+              désormais le fichier (`?telecharger`), au lieu de l'ouvrir dans le
+              lecteur du navigateur. Un lien qui dit « télécharger » et se
+              contente d'afficher laisse croire qu'on a gardé le devis alors
+              qu'il ne reste rien à la fermeture de l'onglet. */}
           <a
-            href={`/devis/${envoi.jeton}/pdf`}
-            target="_blank"
-            rel="noopener"
-            className="mt-2 block text-[13px] text-ink/50 underline underline-offset-4"
+            href={`/devis/${envoi.jeton}/pdf?telecharger=1`}
+            className="mt-2 block text-[13px] font-semibold text-ink/70 underline underline-offset-4"
           >
-            Voir le devis complet (PDF)
+            Télécharger mon devis (PDF)
           </a>
         </header>
 

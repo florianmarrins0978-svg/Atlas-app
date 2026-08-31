@@ -483,10 +483,13 @@ async function main() {
     await page.click('button:has-text("J\'accepte ce devis")');
     await page.waitForSelector("text=Votre artisan est prévenu", { timeout: 10000 });
 
+    // **Le compte n'est pas fixé à un**, et c'est voulu : depuis le 31 août
+    // 2026, l'en-tête du devis porte lui aussi « Télécharger mon devis (PDF) ».
+    // Ce qui est vérifié est ce qui compte — qu'il existe un geste pour emporter
+    // la pièce, et qu'il rende vraiment le fichier.
     const geste = 'a:has-text("Télécharger mon devis")';
-    assert.strictEqual(
-      await page.locator(geste).count(),
-      1,
+    assert.ok(
+      (await page.locator(geste).count()) >= 1,
       "aucun geste pour emporter le devis juste après l'avoir accepté"
     );
 
@@ -499,6 +502,33 @@ async function main() {
       1,
       "l'écran de retour ne redonne pas le devis : le lien est un cul-de-sac"
     );
+
+    // **Et le lien de l'en-tête EMPORTE le fichier, il ne l'affiche plus** — sa
+    // demande du 31 août 2026. « Voir le devis complet » est devenu
+    // « Télécharger mon devis (PDF) », en gras et souligné : un lien qui dit
+    // télécharger et se contente d'ouvrir laisse croire qu'on a gardé le devis.
+    const surLaPageDuChoix = await context.newPage();
+    const autre = await preparerEnvoi("entete", [6], true);
+    await surLaPageDuChoix.goto(`${BASE}/devis/${autre.envoi.jeton}`, { waitUntil: "networkidle" });
+    const lienEnTete = surLaPageDuChoix.locator("header a");
+    assert.strictEqual(await lienEnTete.count(), 1, "l'en-tête ne porte plus de lien vers le devis");
+    const libelle = await lienEnTete.innerText();
+    assert.ok(/télécharger/i.test(libelle), `l'en-tête dit « ${libelle} » au lieu de télécharger`);
+    const style = await lienEnTete.evaluate((el) => {
+      const c = getComputedStyle(el);
+      return { graisse: Number(c.fontWeight), souligne: c.textDecorationLine };
+    });
+    assert.ok(style.graisse >= 600, `le lien n'est pas en gras (graisse ${style.graisse})`);
+    assert.ok(style.souligne.includes("underline"), `le lien n'est pas souligné (${style.souligne})`);
+    const fichier = await surLaPageDuChoix.request.get(
+      new URL((await lienEnTete.getAttribute("href"))!, BASE).toString()
+    );
+    assert.strictEqual(fichier.status(), 200, `le devis ne se télécharge pas (${fichier.status()})`);
+    assert.ok(
+      (fichier.headers()["content-disposition"] ?? "").startsWith("attachment"),
+      `le lien de l'en-tête ouvre au lieu d'emporter : ${fichier.headers()["content-disposition"]}`
+    );
+    await surLaPageDuChoix.close();
 
     // Le geste doit RENDRE le fichier, pas seulement exister. Et le rendre à
     // enregistrer : ouvert dans le lecteur du téléphone, le client croit

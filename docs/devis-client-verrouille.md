@@ -114,6 +114,11 @@ pièce qu'il venait de signer.
 Il y a maintenant une touche **« Télécharger mon devis »** à deux endroits : sur
 la confirmation, juste après l'acceptation, et sur l'écran de retour.
 
+**Et sur la page elle-même, « Voir le devis complet (PDF) » est devenu
+« Télécharger mon devis (PDF) »**, en gras et souligné — ta demande. Ce n'est
+pas qu'un mot : ce lien télécharge maintenant pour de bon, au lieu d'ouvrir le
+lecteur du navigateur.
+
 **Un détail qui compte sur un téléphone :** le fichier **descend** dans ses
 documents au lieu de s'ouvrir dans le lecteur du navigateur. Ouvert dans le
 lecteur, on croit l'avoir enregistré alors qu'on n'a fait que le regarder — et
@@ -135,7 +140,7 @@ contraire, dis-le : c'est deux lignes.
 | connexion derrière un proxy | **verte** |
 | suites navigateur du lot | **3 / 3** — la page du client (16 contrôles), la facture au client, l'export de tes données |
 | page du client | 630 px pour 664 disponibles |
-| contrôles neufs | 6 sur la protection du PDF, 2 sur son ouverture par un vrai lecteur, 3 sur la page du client |
+| contrôles neufs | 6 sur la protection du PDF, 2 sur son ouverture par un vrai lecteur, 3 sur la page du client (dont le lien en gras, souligné, qui télécharge vraiment) |
 
 **Une chose à dire franchement sur la batterie.** Les cent vingt et une suites
 navigateur ne tiennent plus dans la machine où je travaille : le serveur de

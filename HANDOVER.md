@@ -40,6 +40,9 @@ destiné : `docs/devis-client-verrouille.md`.
 - **Le bouton de correction n'est plus éteint**, et sa phrase grise est partie :
   il refuse en répondant. La règle, elle, n'a pas bougé — le dépôt refuse
   toujours une correction sans message (`message_manquant`).
+- **Le lien de l'en-tête TÉLÉCHARGE, il n'ouvre plus.** « Voir le devis complet »
+  est devenu « Télécharger mon devis (PDF) », en gras et souligné, avec
+  `?telecharger`. Le remettre en simple lecture rendrait son libellé faux.
 - **Ce qui reste ouvert :** rien n'est proposé après un refus ni après une
   demande de correction. À rouvrir avec lui s'il veut le contraire.
 

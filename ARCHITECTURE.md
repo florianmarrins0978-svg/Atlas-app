@@ -19381,3 +19381,17 @@ l'ignorent largement. C'est le serveur qui décide, par son en-tête.
 **Après un refus, aucun geste.** On ne propose pas d'emporter un devis auquel on
 vient de renoncer ; après une demande de correction non plus, puisque le
 document va changer.
+
+**Et « Voir le devis complet (PDF) » est devenu « Télécharger mon devis (PDF) »,
+en gras et souligné** — sa demande, le même jour, après avoir vu l'écran. Le
+changement n'est pas typographique : le lien porte désormais `?telecharger`, donc
+il EMPORTE le fichier au lieu de l'ouvrir dans le lecteur du navigateur. Un lien
+qui dit « télécharger » et se contente d'afficher est un mensonge d'une ligne :
+le client croit avoir gardé son devis, et il n'en reste rien à la fermeture de
+l'onglet.
+
+Le geste existe donc à deux endroits sur l'écran d'après-acceptation — la ligne
+de l'en-tête et la touche de la carte de confirmation. C'est assumé : l'une est
+une ligne de texte dans le récapitulatif, l'autre est le geste qu'on cherche à
+ce moment-là. La suite ne compte donc plus les liens, elle vérifie qu'il en
+existe au moins un et **qu'il rend vraiment le fichier**.

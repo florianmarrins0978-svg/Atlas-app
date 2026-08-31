@@ -35,6 +35,10 @@ devenait un cul-de-sac le jour même de l'accord. Il porte maintenant
 **Télécharger mon devis**, et le fichier descend vraiment au lieu de s'ouvrir
 dans le lecteur du téléphone.
 
+Et sur la page elle-même, « Voir le devis complet (PDF) » est devenu
+**« Télécharger mon devis (PDF) »**, en gras et souligné — et il télécharge pour
+de bon, au lieu d'ouvrir le lecteur du navigateur.
+
 *Éprouvé par un lecteur qui ne sait rien d'Atlas :* le moteur PDF de Chromium
 ouvre le devis protégé et le peint, et refuse le même devis dont un seul chiffre
 de la clé a été faussé. Le danger était l'inverse du défaut corrigé — un devis

@@ -642,7 +642,7 @@ async function main() {
     //
     // Le PDF est archivé dans le même geste, comme le fait `envoyerDevis` en
     // vrai. Sans lui, le devis était marqué envoyé mais aucun document n'existait
-    // : le lien « Voir le devis complet » que le client ouvre depuis sa page
+    // : le lien « Télécharger mon devis » que le client ouvre depuis sa page
     // renvoyait un 404 sur le banc d'essai. Une démonstration qui se contredit
     // fait perdre plus de temps qu'elle n'en gagne — c'est déjà arrivé une fois
     // sur ce même devis.
