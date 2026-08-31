@@ -18,6 +18,20 @@ ligne « fait » qui ne l'est pas coûte plus cher qu'une ligne absente.
 
 ---
 
+## EN ATTENTE : le geste des boutons — une planche, pas du code (31 août 2026)
+
+**Rien n'a bougé dans l'application**, et c'est l'état exact du produit : les
+boutons d'Atlas ne vibrent pas, et leur seul geste est `active:scale-[0.985]` —
+moins d'un pixel sur une capsule de 50 px, aucune couleur.
+
+Sa demande du 31 août : *« une mini vibration, que l'utilisateur soit sûr
+d'avoir appuyé »*, et le bouton qui s'enfonce en s'éclaircissant. Trois forces
+lui sont proposées sur `appli/le-bouton-qui-repond.html` — Discret, la sienne,
+Marqué — sur les quatre surfaces qu'il touche.
+**Sa réponse est attendue ; le pourquoi est en `ARCHITECTURE.md` §222.**
+
+---
+
 ## Un devis sans client renvoie à la fiche client (31 août 2026)
 
 **Sa demande, deux captures à l'appui :** *« j'ai oublié de renseigner la fiche
@@ -81,7 +95,7 @@ La pièce qui fait foi reste celle qu'Atlas archive à l'envoi.
 **Ce qui reste ouvert :** aucun geste n'est proposé après un refus ni après une
 demande de correction — à trancher par le patron.
 
-Raisons et pièges : `ARCHITECTURE.md` §222.
+Raisons et pièges : `ARCHITECTURE.md` §223.
 
 
 ## Un prix posé débloque l'envoi, et il peut proposer demain (31 août 2026)

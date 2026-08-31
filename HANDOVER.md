@@ -9,6 +9,31 @@ sert.
 
 ---
 
+## Dernier lot : une planche pour le geste des boutons (31 août 2026)
+
+**Rien n'est codé, et c'est volontaire** (`CLAUDE.md` §3 bis). Sa demande :
+*« une mini vibration, que l'utilisateur soit sûr d'avoir appuyé »*, et le
+bouton qui **s'enfonce en s'éclaircissant** — capture d'une touche noire qui
+pâlit sous le doigt.
+
+| | |
+|---|---|
+| la planche | `appli/le-bouton-qui-repond.html` |
+| en ligne | https://florianmarrins0978-svg.github.io/Atlas-app/le-bouton-qui-repond.html |
+| son contrôle | `scripts/verifier-maquette-bouton-qui-repond.mjs` (dans `npm run verifier:maquette`) |
+| le pourquoi | `ARCHITECTURE.md` §222 |
+| ce qu'on attend | la force (Discret, le sien, Marqué), **le numéro du vert** parmi dix, et l'interrupteur « Vibration au toucher » ou non |
+| en suspens | **la vibration marchait-elle enfin sur son iPhone ?** Corrigée le 31 août au soir, non éprouvable ici |
+
+**Les deux choses à savoir avant d'y toucher.** L'application porte DÉJÀ
+`active:scale-[0.985]` sur `PrimaryButton.tsx` — moins d'un pixel, aucune
+couleur : le geste est dans le code et pas sous le doigt. Et **Safari sur iPhone
+ne donne pas la vibration aux pages web** : la planche passe par l'interrupteur
+natif d'iOS, l'application emballée passerait par `@capacitor/haptics`. Dire
+« c'est impossible » serait faux ; dire « c'est fait » aussi.
+
+---
+
 ## Dernier lot : un devis sans client renvoie à la fiche client (31 août 2026)
 
 Sa demande, deux captures à l'appui : *« j'ai oublié de renseigner la fiche
@@ -113,7 +138,7 @@ destiné : `docs/devis-client-verrouille.md`.
 - **Ce qui reste ouvert :** rien n'est proposé après un refus ni après une
   demande de correction. À rouvrir avec lui s'il veut le contraire.
 
-Raisons et pièges : `ARCHITECTURE.md` §222.
+Raisons et pièges : `ARCHITECTURE.md` §223.
 
 ## Lot précédent : le prix qui ne débloquait rien, et le lendemain qu'on lui refusait (31 août 2026)
 

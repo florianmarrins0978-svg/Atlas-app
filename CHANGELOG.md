@@ -9,6 +9,99 @@ Format : le plus récent en tête.
 
 ## 2026-08-31
 
+### Toujours pas de vibration : arrêter de deviner, faire parler la page
+
+**Sa plainte, une deuxième fois : « la vibration ne marche pas ».** Le premier
+correctif de la soirée — passer par un clic sur l'étiquette au lieu d'écrire
+`checked` — était juste, et il n'a pas suffi. **Deux corrections de causes
+SUPPOSÉES, sans jamais voir son téléphone : c'est exactement ce que `AGENTS.md`
+interdit.** Ce lot ne suppose plus rien.
+
+**Un défaut trouvé en le cherchant, et il pouvait tout expliquer à lui seul :**
+le chemin était **exclusif**. `chemin = aVibrate ? "api" : (aSwitchIOS ? "ios" :
+"aucun")` — si la détection de l'interrupteur natif se trompait sur son Safari,
+`chemin` valait « aucun » et la fonction **ne tentait plus rien**, en silence.
+Une détection est une supposition ; une tentative est un fait. Les deux chemins
+sont désormais essayés à chaque appui, quoi que dise la détection.
+
+**Et la page dit maintenant ce qu'elle a fait** : navigateur reconnu,
+`navigator.vibrate` présent ou non, interrupteur natif reconnu ou non, l'heure du
+dernier essai et ce qui a été tenté. Cela se photographie et s'envoie — c'est la
+règle du 11 août : *devant un défaut muet, la première livraison n'est pas un
+correctif, c'est de rendre le défaut bavard.*
+
+**Un interrupteur natif qu'il touche du doigt** a été ajouté, et c'est lui qui
+tranche : s'il vibre, iOS sait vibrer sur une page web et c'est mon appel par
+programme qui échoue ; s'il ne vibre pas, **aucune page web ne fera vibrer ce
+téléphone**, et seule l'application installée le pourra. Aucune supposition ne
+remplace ce geste-là.
+
+**Le compteur cesse de mentir.** Il annonçait des vibrations ; il comptait des
+appels — et montait joyeusement pendant que rien ne bougeait. L'écran l'écrit
+maintenant en toutes lettres.
+
+### La vibration ne partait pas sur son iPhone, et dix verts à choisir
+
+**Sa plainte : « la vibration ne fonctionne pas ».** Elle était juste, et le
+défaut était dans MON code, pas dans Safari. La planche posait
+`input.checked = !input.checked` sur l'interrupteur natif d'iOS : la case
+basculait, le compteur montait, **et rien ne vibrait**. Le retour haptique d'iOS
+suit l'ACTIVATION de l'interrupteur par le navigateur, jamais la valeur qu'on
+lui écrit — seul un vrai clic sur son étiquette l'obtient
+(`$("#etiquette-ios").click()`). L'étiquette avait en plus `pointer-events:none`,
+seconde façon de la rendre muette.
+
+**Ce que ça apprend, au-delà de ce lot :** le compteur affichait « 3 » pendant
+que rien ne bougeait. **Un contrôle qui mesure l'appel ne mesure pas l'effet**
+— et il rendait un vert rassurant sur une fonction morte.
+`verifier-maquette-bouton-qui-repond.mjs` éprouve maintenant le mécanisme qui
+manquait : que l'étiquette soit reliée, ni masquée ni inerte, et qu'un clic
+l'active. Il rougit si on la remet en `display:none`.
+
+**Et sa seconde demande, dans le même lot :** dix dégradés de vert à essayer,
+numérotés, tous pressables, même libellé et même capsule d'un bout à l'autre —
+sinon ce sont des boutons qu'il compare, pas des verts. Trois teintes du premier
+jet ont été écartées avant de les lui montrer parce qu'elles se ressemblaient :
+c'est la faute exacte du premier tour de `le-bouton-moins-lourd.html`, où cinq
+nuances du même vert étaient passées pour cinq idées.
+
+**Les contrastes sont mesurés, pas estimés** — sur les deux extrémités de chaque
+dégradé, **et sous le voile de l'appui**, qui éclaircit le fond donc rapproche le
+texte. Quarante relevés par teinte : le pire tient 5,26:1 en clair et 6,42:1 en
+sombre, contre 4,5 demandés. Le contrôle refuse en dessous, et rougit sur un vert
+clair posé sous du texte crème.
+
+### Une planche pour le bouton qui répond au doigt — vibration et enfoncement
+
+**Sa demande du 31 août :** *« quand je clique sur les boutons j'aimerais avoir
+une mini vibration, que l'utilisateur soit sûr d'avoir appuyé »*, et *« le
+bouton qui s'enfonce tout en s'éclaircissant légèrement »*, capture d'une touche
+noire à l'appui. **Rien n'est codé** : `appli/le-bouton-qui-repond.html` lui
+donne trois forces à essayer (Discret, la sienne, Marqué) sur les quatre
+surfaces qu'il touche — capsule pleine, capsule creuse, cartes de chantier,
+barre du bas — plus sa touche noire.
+
+**Ce que la planche apprend, et qui n'était écrit nulle part.**
+`PrimaryButton.tsx` porte déjà `active:scale-[0.985]` : sur une capsule de
+50 px, moins d'un pixel de chaque côté, et **aucun changement de couleur**. Le
+geste existait dans le code et pas sous le doigt — c'est pour ça qu'il ne le
+sent pas.
+
+**Et la vibration ne se donne pas de la même main partout** : Safari sur iPhone
+ne fournit pas `navigator.vibrate()` aux pages web. La planche passe donc par
+l'interrupteur natif d'iOS 17.4+, dit à l'écran quel chemin le téléphone a pris,
+et rappelle que l'application emballée par Capacitor, elle, aurait le vrai
+retour haptique réglable. Sans cette phrase, il aurait essayé sur son iPhone,
+n'aurait presque rien senti, et aurait conclu que ça ne marche pas.
+
+**Deux défauts trouvés par le contrôle et non à l'œil**
+(`scripts/verifier-maquette-bouton-qui-repond.mjs`) : sur les chartes sombres,
+une carte appuyée ne changeait que de six millièmes de clarté — un appui présent
+dans le CSS et invisible sous le doigt ; et le bouton remontait sous un doigt
+encore posé près de son bord, parce qu'il rétrécit et sortait de sous lui
+(corrigé par `setPointerCapture`). Le contrôle a été confronté au geste
+d'aujourd'hui, celui de l'application : il rougit six fois.
+
 ### Le banc lance le Next DU PROJET, et ne laisse plus `npx` en chercher un autre
 
 **Sa plainte de midi : « version rapide en construction, elle est super
@@ -74,7 +167,7 @@ confirmé à la main le même jour (qpdf, le lecteur PDF de Chromium) ; la CI, e
 n'installe qu'un Chromium sans lecteur PDF, et c'est ce qui avait fait rougir la
 première version de ce contrôle.
 
-Raisons et pièges : `ARCHITECTURE.md` §222. Compte-rendu : `docs/devis-client-verrouille.md`.
+Raisons et pièges : `ARCHITECTURE.md` §223. Compte-rendu : `docs/devis-client-verrouille.md`.
 
 
 
