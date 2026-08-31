@@ -9,7 +9,36 @@ sert.
 
 ---
 
-## Lot du 30 août 2026 : le diamètre dicté entre en colonne
+## Dernier lot : un devis sans client renvoie à la fiche client (31 août 2026)
+
+Sa demande, deux captures à l'appui : *« j'ai oublié de renseigner la fiche
+client du chantier. Lorsque je fais retour, je dois arriver sur la page de la
+fiche client ! Pas sur la page que je te mets en deuxième photo. »* La flèche du
+devis mène désormais au formulaire « Fiche client » **quand aucun client n'est
+rattaché**, et enregistrer y ramène au devis.
+
+**Ce qu'il faut savoir avant d'y toucher :**
+
+- **DEUX écrans s'appellent « fiche client ».** `/clients/[id]` est le dossier
+  du client (règle : `src/lib/retour-fiche-client.ts`) ; `/chantiers/[id]/coordonnees`
+  est le formulaire qu'on remplit, titré « Fiche client » à l'écran (règle :
+  `src/lib/retour-du-devis.ts`). C'est le second qu'il désigne — il dit
+  *renseigner*. Les mêler ferait sortir d'un chantier celui qui y était.
+- **Le premier jet de ce lot a ÉCRASÉ `scripts/test-retour-fiche-client-e2e.ts`**,
+  qui existait déjà pour l'autre écran. Récupérée avant commit. Regarder ce
+  qu'on écrase avant d'écrire : un nom « évident » l'est souvent déjà pour
+  quelqu'un d'autre.
+- **La provenance (`?de=`) se valide par ÉGALITÉ, pas par motif** : elle est
+  comparée au seul chemin qu'elle a le droit de valoir — le devis de CE
+  chantier. Un `?de=` étranger ferait de la flèche une sortie hors d'Atlas.
+- **Sans provenance, rien ne bouge** : la fiche ouverte depuis l'accueil
+  (« Adresse non renseignée », 17 août) garde sa flèche vers la liste et son
+  enregistrement vers la fiche du chantier.
+
+Raisons et pièges : `ARCHITECTURE.md` §221.
+
+
+## Le 30 août : le diamètre dicté entre en colonne
 
 **Ce qu'il faut savoir avant d'y toucher :**
 
@@ -35,7 +64,7 @@ sert.
   sur son espace.
 
 
-## Dernier lot : le prix qui ne débloquait rien, et le lendemain qu'on lui refusait (31 août 2026)
+## Le même jour : le prix qui ne débloquait rien, et le lendemain qu'on lui refusait (31 août 2026)
 
 Ses deux captures du matin, sur l'écran d'envoi du devis. Compte-rendu qui lui
 est destiné : `docs/devis-prix-et-date-proche.md`.

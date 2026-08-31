@@ -19527,3 +19527,85 @@ DEUX CÔTÉS — sur `origin/main` dans un arbre de travail séparé, et après
 correction — puis comparée ligne à ligne : sur 917 lignes, **deux** diffèrent
 (le mot, et son abscisse, l'étiquette étant calée à droite). Le seul risque d'un
 en-tête rallongé — cogner la colonne voisine — a été mesuré : 85 points d'écart.
+
+---
+
+## 221. Un devis sans client : le retour mène à la fiche client, et le chemin se referme
+
+**Sa demande du 31 août 2026, deux captures à l'appui :** *« j'ai oublié de
+renseigner la fiche client du chantier. Lorsque je fais retour, je dois arriver
+sur la page de la fiche client ! Pas sur la page que je te mets en deuxième
+photo. »*
+
+Sa première capture est un devis qui porte, à la place du client, la phrase
+« Aucun client rattaché à ce chantier » — un document qui ne peut partir chez
+personne. Sa seconde est la fiche du chantier : l'écran où la flèche le
+déposait, et où **rien** ne dit ce qui manque ni où le réparer.
+
+C'est la troisième fois qu'il signale le même oubli sous une forme différente :
+le 17 août depuis l'accueil (« Adresse non renseignée », §124), et aujourd'hui
+depuis le devis. Le manque, lui, est toujours le même — un chantier né d'une
+photo ou d'une dictée, sans un mot sur le client.
+
+### DEUX ÉCRANS S'APPELLENT « FICHE CLIENT », ET ILS NE SE MÊLENT PAS
+
+| L'écran | Ce qu'il fait | Sa règle de retour |
+|---|---|---|
+| `/clients/[id]` | ce que l'application SAIT du client — ses chantiers, ce qu'il doit | `src/lib/retour-fiche-client.ts` |
+| `/chantiers/[id]/coordonnees` | le formulaire qu'on REMPLIT, titré « Fiche client » à l'écran | `src/lib/retour-du-devis.ts` |
+
+C'est le second qu'il désigne : il parle de *renseigner*, et il avait employé
+les mêmes mots le 17 août devant l'écran de création — qui est exactement
+celui-là. Les deux règles restent séparées parce que les écrans le sont ; les
+mêler ferait sortir d'un chantier celui qui y était. Un renvoi croisé a été posé
+dans chacun des deux fichiers, faute de quoi la confusion se refera.
+
+**Ce piège a failli coûter une suite.** `scripts/test-retour-fiche-client-e2e.ts`
+existait déjà — pour l'AUTRE écran — et le premier jet de ce lot l'a écrasée en
+choisissant le même nom. Récupérée avant commit, et rejouée verte. La leçon vaut
+au-delà de ce lot : **regarder ce qu'on écrase avant d'écrire**, un nom
+« évident » l'est souvent déjà pour quelqu'un d'autre.
+
+### Pourquoi ce n'est pas « toujours la fiche client »
+
+Un devis dont le client est renseigné n'a rien à corriger : y renvoyer le
+poserait devant un formulaire rempli, sans savoir ce qu'on attend de lui. Le
+détour ne se justifie que par le manque — et le manque est exactement ce que
+l'écran du devis affiche déjà. La condition est donc `clientId === null`, la
+même que celle qui écrit « Aucun client rattaché à ce chantier ».
+
+### Et le chemin se REFERME
+
+Arriver sur la fiche client par cette porte puis être renvoyé sur la fiche du
+chantier après avoir enregistré laisserait son devis à retrouver seul — le devis
+étant justement ce qu'il lisait. La provenance voyage donc dans l'adresse, sous
+le même nom que l'autre fiche (`?de=`), et **la flèche comme l'enregistrement la
+respectent**. Sans provenance, rien ne bouge : la flèche rend la liste et
+l'enregistrement la fiche du chantier, comme depuis le 17 août.
+
+### La provenance ne se valide pas par motif, mais par ÉGALITÉ
+
+Cette valeur vient de l'adresse, donc de n'importe qui : `?de=https://ailleurs`
+ferait de la flèche « retour » une porte de sortie hors d'Atlas. Elle n'est donc
+pas comparée à une forme mais **au seul chemin qu'elle a le droit de valoir** —
+le devis de CE chantier, recomposé côté serveur. Un `?de=` pointant sur le devis
+d'un AUTRE chantier retombe sur le comportement d'avant, jamais sur une erreur.
+
+C'est plus strict que la liste blanche de `retour-fiche-client.ts` (§135), et
+délibérément : là-bas une famille entière de chemins est légitime, ici il n'y en
+a qu'un.
+
+### Ce qui l'éprouve
+
+| | |
+|---|---|
+| `scripts/test-retour-du-devis.ts` | la règle, sans base : l'aller, le retour, et les deux refus |
+| `scripts/test-devis-sans-client-e2e.ts` | qu'elle est BRANCHÉE — la flèche, la fiche, l'enregistrement, le retour au devis |
+
+La suite sans base sait échouer : rendre `/chantiers/${id}` sans regarder
+`clientId` rougit son premier cas, oublier la provenance rougit le cinquième.
+
+**La flèche du devis porte désormais un repère** (`data-atlas="retour-du-devis"`)
+plutôt que son libellé : elle n'annonce plus la même chose selon où elle mène, et
+`test-dicter-dans-le-devis-e2e.ts`, qui mesurait sa PLACE, la désignait par son
+mot (`CLAUDE.md` §5 bis).

@@ -269,6 +269,27 @@ deux destinations, pas trois — en refusant Plans cette fois.
 `scripts/test-itineraire.ts` (11), `scripts/test-planning-e2e.ts`,
 `scripts/capture-planning.mts`.
 
+### Un devis sans client : le retour mène à la fiche client
+
+**Sa demande, deux captures à l'appui :** *« j'ai oublié de renseigner la fiche
+client du chantier. Lorsque je fais retour, je dois arriver sur la page de la
+fiche client ! »* Le devis affichait « Aucun client rattaché à ce chantier », et
+la flèche le déposait sur la fiche du chantier — un écran qui ne dit ni ce qui
+manque ni où le réparer.
+
+La flèche mène désormais au formulaire « Fiche client » quand aucun client n'est
+rattaché, et **seulement dans ce cas** : un devis renseigné n'a rien à corriger.
+
+### Et le chemin se referme : enregistrer la fiche ramène au devis
+
+Sans cela, le document qu'il lisait serait à retrouver seul. La provenance
+voyage dans l'adresse (`?de=`), et elle ne vaut que pour le devis de CE
+chantier : elle est comparée à ce seul chemin, jamais à une forme — un `?de=`
+étranger ferait de la flèche « retour » une sortie hors d'Atlas.
+
+Sans provenance, rien ne bouge : la fiche ouverte depuis l'accueil (« Adresse
+non renseignée ») garde sa sortie du 17 août.
+
 ---
 
 ## 2026-08-30

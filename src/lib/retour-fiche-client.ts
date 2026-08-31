@@ -17,6 +17,13 @@
  * clients ferait sortir du chantier celui qui y était. On transporte donc
  * l'origine dans l'adresse, et cette règle la traduit — une seule fois, hors de
  * tout écran (`CLAUDE.md` §3).
+ *
+ * **À NE PAS CONFONDRE AVEC `retour-du-devis.ts`.** Deux écrans s'appellent
+ * « fiche client » : celui-ci, `/clients/[id]`, qui montre ce que l'application
+ * SAIT du client — et `/chantiers/[id]/coordonnees`, le formulaire qu'on
+ * REMPLIT, titré « Fiche client » à l'écran. Les deux transportent leur origine
+ * sous le même nom (`?de=`), et chacun a sa règle : les mêler ferait sortir d'un
+ * chantier celui qui y était.
  */
 
 /** Le retour par défaut : la liste des clients, d'où l'on vient presque toujours. */
