@@ -18,6 +18,28 @@ ligne « fait » qui ne l'est pas coûte plus cher qu'une ligne absente.
 
 ---
 
+## Le diamètre dicté n'est plus redemandé (30 août 2026)
+
+*Il disait « un érable de 40 centimètres au pied » et « deux souches de 60 », et
+Atlas lui redemandait les deux. Le diamètre ne se perdait nulle part dans la
+chaîne : **il n'était jamais créé** — le seul écrivain de la colonne était ses
+réponses aux questions dont il se plaignait. Détail et pourquoi :
+`ARCHITECTURE.md` §220.*
+
+Trois choses en découlent, toutes visibles chez lui :
+
+| | |
+|---|---|
+| l'arrêt d'avant-chiffrage | ne redemande plus un diamètre qu'il a prononcé |
+| le devis | affiche « Dessouchage de souches de 60 cm », le compte restant en colonne Qté |
+| la colonne de chaque ligne | s'intitule « Montant HT » ; le total du bas reste « Total HT » |
+
+**Ce qui reste à éprouver, et qui ne peut pas l'être ici :** ce que le modèle
+répond vraiment. `npm run verifier:chaine-dictee` sur son espace, où les clés
+sont posées.
+
+---
+
 ## Un prix posé débloque l'envoi, et il peut proposer demain (31 août 2026)
 
 Ses deux captures du matin, sur l'écran d'envoi du devis.
