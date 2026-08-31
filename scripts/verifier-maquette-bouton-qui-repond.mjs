@@ -51,16 +51,19 @@
   ───────────────────────────────────────────────────────────────────────────
   CE QUE CE CONTRÔLE NE PEUT PAS TENIR, ET QUI DOIT SE LIRE ICI.
 
-  **CE QUI A CASSÉ LE 31 AOÛT, ET CE QUI LE TIENT MAINTENANT.** La première
-  version posait `input.checked = !input.checked` : l'interrupteur basculait, le
-  compteur montait, et **rien ne vibrait** — c'est lui qui l'a trouvé, sur son
-  iPhone. Le retour haptique d'iOS suit l'ACTIVATION par le navigateur, pas la
-  valeur de la case ; seul un vrai clic sur l'étiquette l'obtient.
+  **LA VIBRATION EST TRANCHÉE, ET CE CONTRÔLE EN GARDE LA TRACE.** Trois
+  correctifs se sont succédé le 31 août — la valeur écrite au lieu de
+  l'activation, l'étiquette rendue inerte, la détection exclusive — et aucun n'a
+  fait vibrer son iPhone. Le dernier essai a été le sien : **il a touché du
+  doigt un interrupteur natif d'iOS, et rien n'a vibré.** Aucune page web ne
+  fera vibrer ce téléphone ; le retour haptique passera par
+  `@capacitor/haptics`, dans l'application installée.
 
-  Le contrôle éprouve donc **le mécanisme**, à défaut du ressenti : un clic sur
-  l'étiquette fait bien basculer l'interrupteur qu'elle porte. C'est ce qui
-  attrape les deux façons de le casser sans s'en apercevoir — une étiquette
-  `display:none`, ou un `pointer-events:none` qui la rend inerte.
+  **Ce que le contrôle tient donc, et qui n'est pas une formalité : que l'écran
+  ne promette plus rien.** Un compteur qui monte, un bouton « Vibrer », un
+  voyant vert — chacun a fait croire à une vibration inexistante, et l'a fait
+  revenir trois fois. Un écran qui annonce ce qu'il ne tient pas est pire que
+  son silence.
 
   **La vibration elle-même ne se mesure pas.** Chromium fournit
   `navigator.vibrate()` et rend `true` sans qu'aucun moteur ne tourne : le
@@ -220,66 +223,37 @@ for (const teinte of ["light", "dark"]) {
     `${teinte} · les trois vibrations s'allongent (${durees.join(" < ")} ms)`
   );
 
-  // ── L'interrupteur coupe pour de bon ────────────────────────────────────
-  const capsule = vue.locator(".principal");
-  await capsule.evaluate((e) => e.scrollIntoView({ block: "center" }));
-  await vue.waitForTimeout(60);
-  const presser = async () => {
-    const b = await capsule.boundingBox();
-    await vue.mouse.move(b.x + b.width / 2, b.y + b.height / 2);
-    await vue.mouse.down();
-    await vue.waitForTimeout(60);
-    await vue.mouse.up();
-    await vue.waitForTimeout(60);
-  };
-  const compte = () => vue.locator("#compte").innerText();
-  const avantCoupure = await compte();
-  await presser();
-  dire((await compte()) !== avantCoupure, `${teinte} · l'appui appelle bien la vibration (compteur ${avantCoupure} → ${await compte()})`);
-  await vue.click("#interrupteur");
-  const coupe = await compte();
-  await presser();
-  dire((await compte()) === coupe, `${teinte} · l'interrupteur coupe vraiment la vibration`);
-  await vue.click("#interrupteur");
-
   dire(bavures.length === 0, `${teinte} · aucune erreur JavaScript${bavures.length ? ` (${bavures.join(" | ")})` : ""}`);
   await vue.close();
 }
 
-// ── Le chemin d'iPhone : le mécanisme, à défaut du ressenti ────────────────
-// Safari n'existe pas ici, donc le retour haptique non plus. Ce qui se tient,
-// c'est que l'étiquette soit VRAIMENT reliée à son interrupteur et qu'un clic
-// l'active — la seule chose qui manquait quand ça ne vibrait pas chez lui.
+// ── Plus aucune promesse de vibration à l'écran ───────────────────────────
+// Trois écrans successifs lui ont annoncé une vibration qu'il ne sentait pas.
+// Ce qui suit garde la planche honnête : rien ne doit prétendre vibrer.
 {
   const vue = await navigateur.newPage({ viewport: { width: 430, height: HAUTEUR } });
   await vue.goto(`file://${PAGE}`);
   await vue.waitForLoadState("networkidle");
 
-  const etiquette = vue.locator("#etiquette-ios");
-  const interrupteur = vue.locator("#switch-ios");
-  dire((await etiquette.count()) === 1 && (await interrupteur.count()) === 1, "le chemin d'iPhone existe : une étiquette et son interrupteur");
+  for (const [selecteur, quoi] of [
+    ["#compte", "le compteur d'appels"],
+    ["#essai-vib", "le bouton « Vibrer »"],
+    ["#switch-visible", "l'interrupteur d'essai"],
+    ["#lignes-diag", "le bloc de diagnostic"],
+    ["#etiquette-ios", "l'étiquette d'iOS"],
+  ]) {
+    dire((await vue.locator(selecteur).count()) === 0, `${quoi} a bien disparu de l'écran`);
+  }
 
-  // Ni cachée ni inerte : les deux façons de le rendre muet sans que rien ne
-  // se voie à l'écran.
-  const dessin = await etiquette.evaluate((e) => {
-    const s = getComputedStyle(e);
-    return { affichage: s.display, evenements: s.pointerEvents };
-  });
-  dire(dessin.affichage !== "none", `l'étiquette n'est pas masquée (display: ${dessin.affichage})`);
-  dire(dessin.evenements !== "none", `l'étiquette reste activable (pointer-events: ${dessin.evenements})`);
-
-  const avant = await interrupteur.evaluate((e) => e.checked);
-  await etiquette.evaluate((e) => e.click());
-  const apres = await interrupteur.evaluate((e) => e.checked);
-  dire(apres !== avant, `un clic sur l'étiquette active bien l'interrupteur (${avant} → ${apres})`);
-
-  // Et le code appelle ce chemin-là, pas l'ancien.
-  const source = await vue.evaluate(() => document.documentElement.outerHTML);
-  dire(!/#switch-ios"\)\s*;?\s*\n?\s*\w+\.checked\s*=/.test(source) && source.includes('$("#etiquette-ios").click()'),
-       "la vibration d'iPhone passe par le clic sur l'étiquette, pas par `checked`");
+  // Et la page DIT ce qui a été tranché plutôt que de se taire : sans cela, une
+  // session future rouvrirait la piste et lui redemanderait d'essayer.
+  const texte = await vue.evaluate(() => document.body.innerText);
+  dire(/n'a pas vibré/.test(texte) && /application install/i.test(texte),
+       "la planche dit que la piste web est close, et où la vibration viendra");
 
   await vue.close();
 }
+
 
 // ── Les dix verts ──────────────────────────────────────────────────────────
 // Ils portent un dégradé (`background-image`), pas un aplat : `backgroundColor`
@@ -381,5 +355,5 @@ if (plaintes.length) {
   process.exit(1);
 }
 console.log(
-  "✓ Le geste tient sur les quatre surfaces, dans les deux teintes et sous les trois réglages : la capsule rentre, s'éclaircit, et reprend sa couleur quand on lâche. La vibration, elle, ne se mesure que sur son téléphone."
+  "✓ Le geste tient sur les quatre surfaces, dans les deux teintes et sous les trois réglages : la capsule rentre, s'éclaircit, et reprend sa couleur quand on lâche. Et plus rien à l'écran ne promet une vibration : la piste web est close depuis le 31 août, elle viendra par Capacitor."
 );

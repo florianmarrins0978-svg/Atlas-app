@@ -9,6 +9,36 @@ Format : le plus récent en tête.
 
 ## 2026-08-31
 
+### La vibration par le web : tranchée, et close
+
+**Son verdict, le doigt sur l'interrupteur natif d'iOS : « non, ça ne vibre
+pas ».** La question qu'aucun code ne pouvait trancher depuis cet
+environnement l'est maintenant, par le seul geste qui pouvait le faire.
+**Aucune page web ne fera vibrer son iPhone** — ce n'était ni l'étiquette, ni
+la détection, ni un réglage.
+
+**Trois correctifs pour rien, et c'est le vrai enseignement.** J'ai corrigé
+trois causes supposées à la file (la valeur écrite au lieu de l'activation,
+l'étiquette inerte, la détection exclusive) — chacune était un défaut réel,
+aucune n'était LA cause. Ce qui a fini par répondre n'est pas un quatrième
+correctif : c'est d'avoir posé sur la planche **un objet qu'il touche
+lui-même**, et dont la réponse sépare « mon code échoue » de « la plateforme
+refuse ». Il aurait fallu commencer par là.
+
+**Ce qui a rendu ces trois tours possibles :** un compteur qui montait à chaque
+appui. Il comptait des APPELS et prétendait compter des vibrations — aucune
+page web ne peut savoir si un téléphone a bougé. Il a fallu trois allers-retours
+pour s'en apercevoir.
+
+**Tout ce qui promettait une vibration est retiré de la planche** — compteur,
+bouton « Vibrer », interrupteur d'essai, diagnostic, voyant. Il ne reste
+qu'une phrase qui dit ce qui a été tranché et où la vibration viendra. Le
+contrôle rougit si l'un d'eux réapparaît : un écran qui annonce ce qu'il ne
+tient pas l'a fait revenir trois fois.
+
+**La suite n'est pas une maquette.** Le retour haptique passera par
+`@capacitor/haptics` dans l'application installée, et cela se code.
+
 ### Toujours pas de vibration : arrêter de deviner, faire parler la page
 
 **Sa plainte, une deuxième fois : « la vibration ne marche pas ».** Le premier
