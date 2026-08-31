@@ -14,8 +14,15 @@ langage, et rien n'y entre sans son accord.
 Ses trois demandes, capture à l'appui. **Rien n'est codé, et rien ne doit
 l'être avant sa réponse** (`CLAUDE.md` §3 bis).
 
-La planche : `appli/ma-tva-encadree.html`, en ligne à
-https://florianmarrins0978-svg.github.io/Atlas-app/ma-tva-encadree.html
+La planche : `appli/ma-tva-encadree.html`.
+
+**ELLE N'EST PAS ENCORE EN LIGNE, et c'est ce qui bloque.** Son adresse sera
+https://florianmarrins0978-svg.github.io/Atlas-app/ma-tva-encadree.html — mais
+`pages.yml` ne publie que `main`, et la session du 31 août s'est vu **refuser la
+poussée sur `main` par son garde-fou d'environnement** (trois tentatives, y
+compris après sa demande explicite). Le patron a donc reçu « le lien ne marche
+pas », ce qui est exact. **Premier geste de la prochaine session : fusionner
+cette branche sur `main`**, et le lien répond dans les trois minutes.
 
 | Ce qu'il demande | Où ça vit aujourd'hui |
 |---|---|
