@@ -3,7 +3,7 @@
 // **Sa question du 31 août 2026 :** *« est-ce que le planning garde en mémoire
 // les chantiers passés ? Si non il faut qu'il les garde en mémoire au moins sur
 // une année »*, capture de juillet à l'appui — trente et un jours sans une
-// marque. Devant la planche 98 et les chiffres du poids : ***« la B »***, et
+// marque. Devant la planche 100 et les chiffres du poids : ***« la B »***, et
 // ***deux ans***.
 //
 // ═══════════════════════════════════════════════════════════════════════════

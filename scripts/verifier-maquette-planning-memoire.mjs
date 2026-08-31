@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /*
-  Éprouve la planche 98 — « le planning se souvient » — dans un vrai navigateur.
+  Éprouve la planche 100 — « le planning se souvient » — dans un vrai navigateur.
 
   **Pourquoi elle se joue plutôt qu'elle ne se relit.** Ce qu'elle promet, ce
   sont des gestes : trois vues qui se comparent d'un doigt, des mois qui se
@@ -161,4 +161,4 @@ if (problemes.length) {
   console.error(`\n  ${problemes.length} problème(s).\n`);
   process.exit(1);
 }
-console.log("\n  La planche 98 tient ses gestes.\n");
+console.log("\n  La planche 100 tient ses gestes.\n");

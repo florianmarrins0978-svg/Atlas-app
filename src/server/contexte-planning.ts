@@ -37,7 +37,7 @@ export async function contextePlanning(ctx: Ctx, maintenant: Date) {
     getEntreprise(ctx),
     listerEquipes(ctx),
     // **La fenêtre s'ouvre EN ARRIÈRE aussi, depuis le 31 août 2026.** Le
-    // calendrier peint désormais les jours passés (planche 98, proposition B) :
+    // calendrier peint désormais les jours passés (planche 100, proposition B) :
     // une fenêtre partant d'aujourd'hui aurait repeint un mardi de mars sans
     // l'absence qui l'avait vraiment vidé — donc plus chargé qu'il ne l'a été.
     // Le coût est nul à l'échelle : une entreprise pose quelques dizaines

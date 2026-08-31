@@ -153,7 +153,7 @@ async function main() {
     // c'est le 3 août, un jour déjà passé. Il marchait tant que le planning
     // offrait « + Ajouter » sur n'importe quelle journée ; depuis que la
     // mémoire du calendrier existe, un jour passé se lit et ne s'écrit plus
-    // (`ARCHITECTURE.md` §216), et le bouton n'y est plus.
+    // (`ARCHITECTURE.md` §220), et le bouton n'y est plus.
     //
     // **On adapte le contrôle, on ne rend pas le bouton** (`CLAUDE.md` §5 bis) :
     // ce qu'il défend est *« de cet écran-là, une date se pose »*, et une date

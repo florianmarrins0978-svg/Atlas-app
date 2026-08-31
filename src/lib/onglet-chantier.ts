@@ -126,7 +126,7 @@ export function estAuPlanning(
  *
  * **Sa question du 31 août 2026 :** *« est-ce que le planning garde en mémoire
  * les chantiers passés ? Si non il faut qu'il les garde en mémoire au moins sur
- * une année »*, puis, devant la planche 98 et les chiffres : ***« la B »***, et
+ * une année »*, puis, devant la planche 100 et les chiffres : ***« la B »***, et
  * ***deux ans***.
  *
  * **Ce nombre ne coûte presque rien, et c'est mesuré, pas supposé.** Une ligne

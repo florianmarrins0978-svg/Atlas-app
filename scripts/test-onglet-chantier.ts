@@ -177,7 +177,7 @@ console.log("\n=== La mémoire du calendrier — deux ans (31 août 2026) ===");
 
 // **Sa question du 31 août 2026 :** « est-ce que le planning garde en mémoire
 // les chantiers passés ? » — non, et son juillet était blanc. Il a choisi la
-// proposition B de la planche 98, et deux ans de mémoire.
+// proposition B de la planche 100, et deux ans de mémoire.
 //
 // Ce qui est éprouvé ici, c'est la SÉPARATION des deux questions : le
 // calendrier peint un jour passé, et le chantier reste malgré tout dans

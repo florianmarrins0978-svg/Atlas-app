@@ -606,7 +606,7 @@ c'est `colors.rust` qui sert à la fois de « complet » et de « proposé » da
   le planning garde en mémoire les chantiers passés ? »* — **RÉPONDUE (B) et
   codée le 31 août** : le calendrier garde **deux ans**, les jours passés
   gardent leurs couleurs, et ils se lisent sans s'écrire. Le pourquoi complet est
-  dans `ARCHITECTURE.md` §216. **À savoir avant d'y toucher :** `estAuCalendrier`
+  dans `ARCHITECTURE.md` §220. **À savoir avant d'y toucher :** `estAuCalendrier`
   et `estAuPlanning` sont deux questions distinctes, et les réunir remettrait un
   chantier dans deux onglets.
 
