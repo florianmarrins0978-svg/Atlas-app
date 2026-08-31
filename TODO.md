@@ -22,62 +22,19 @@ https://florianmarrins0978-svg.github.io/Atlas-app/le-bouton-qui-repond.html
 Marqué), **le numéro du vert** parmi les dix, et s'il veut l'interrupteur
 « Vibration au toucher » dans les réglages.
 
-**Et une réponse à ne pas oublier de lui demander :** est-ce que la vibration
-part, maintenant, sur son iPhone ? Le 31 août elle ne partait pas — bascule
-posée en JavaScript au lieu d'un clic sur l'étiquette (`ARCHITECTURE.md` §222).
-Corrigé deux fois — **et toujours pas de vibration chez lui après le premier
-correctif**. Le second lot (chemins non exclusifs, diagnostic à l'écran,
-interrupteur natif à toucher) attend sa réponse. Ce qu'il faut lui demander,
-dans cet ordre :
+**LA VIBRATION EST TRANCHÉE — ne pas rouvrir la piste web.** Le 31 août, il a
+touché du doigt un interrupteur natif d'iOS sur la planche : rien n'a vibré.
+Aucune page web ne fera vibrer son iPhone. Trois correctifs web l'ont précédé,
+tous des défauts réels, aucun n'était la cause (`ARCHITECTURE.md` §222).
 
-1. **l'interrupteur natif, touché du doigt, vibre-t-il ?** C'est lui qui tranche
-   entre « mon appel échoue » et « iOS refuse toute vibration à une page web » ;
-2. une photo du bloc « Ce que votre téléphone répond ».
+**Ce qui reste à faire quand il aura choisi la force et le vert :** poser le
+retour haptique dans l'application par **`@capacitor/haptics`** — c'est le seul
+chemin qui marche sur son téléphone. À vérifier chez lui, pas ici.
 
-**Si l'interrupteur ne vibre pas non plus, la piste web est close** : ne pas
-écrire un troisième correctif. Le retour haptique n'arrivera que par
-`@capacitor/haptics`, dans l'application installée — et cela se code, cela ne se
-maquette pas.
-
-**Ce qu'il faudra faire quand il aura répondu** (le détail est en
-`ARCHITECTURE.md` §222) :
-
-- poser le dessin dans `PrimaryButton.tsx` et les pièces partagées, jamais écran
-  par écran — sinon deux gestes cohabitent, ce que ce fichier interdit ;
-- une **seule** fonction de vibration, pas un appel par écran ;
-- `@capacitor/haptics` pour l'application emballée : c'est le seul chemin qui
-  donne un vrai retour sur iPhone, Safari ne fournissant rien aux pages web ;
-- rejouer `npm run verifier:maquette`, qui porte désormais
-  `scripts/verifier-maquette-bouton-qui-repond.mjs`.
-
-**Ce qui ne se vérifie PAS ici :** que le téléphone vibre. Chromium rend `true`
-sans qu'aucun moteur ne tourne. C'est sur son téléphone, ou nulle part.
-
-## `test-poignee-ferme-e2e.ts` NE PEUT PAS SE JOUER SEUL (31 août 2026)
-
-**CORRECTION DE CE QUI ÉTAIT ÉCRIT ICI IL Y A UNE HEURE, ET C'ÉTAIT FAUX.** Ce
-paragraphe annonçait « quatre cas rouges, reproduits sur `main` » : la suite est
-**verte** dans la batterie complète (121/121, jouée par groupes le 31 août). Le
-rouge venait de la façon de la jouer, pas du dépôt.
-
-**Ce qui est vrai, et qui vaut d'être écrit.** Jouée SEULE
-(`--seulement test-poignee-ferme-e2e.ts`), elle rougit de quatre cas — sur `main`
-comme ailleurs, et de façon reproductible. Elle ouvre `/reglages/equipe` et
-attend « + Noter une absence », en affirmant en commentaire que ce bouton *« est
-toujours là, sur un écran de réglages qui ne dépend d'aucune donnée »*. C'est
-faux : `AbsencesEquipe` ne rend **aucun bouton** tant que `nombreSalaries <= 0`
-(`src/app/reglages/AbsencesEquipe.tsx`), et le jeu de démonstration n'en pose
-aucun. Le salarié qu'elle trouve en batterie vient d'une suite jouée AVANT elle.
-
-**Ce que ça coûte :** c'est exactement le piège que documente
-`scripts/jouer-suites-par-groupes.mjs` — les suites navigateur ne sont pas
-indépendantes. Une session qui isole celle-ci pour diagnostiquer autre chose
-conclura à un défaut du produit, et cherchera pendant une heure. C'est arrivé
-aujourd'hui.
-
-**Ce qu'il faudrait :** qu'elle pose son salarié elle-même avant d'ouvrir la
-feuille. Elle serait alors jouable seule, et son commentaire cesserait de
-décrire un écran qu'elle n'atteint pas toujours.
+**Une question qui reste ouverte et qui compte pour la suite :** son réglage
+« Retour haptique système » (Réglages → Sons et vibrations) est-il activé ? S'il
+est éteint, l'application native ne vibrera pas davantage — et l'on chercherait
+au mauvais endroit.
 
 ## Rien n'est proposé au client après un refus ou une correction (31 août 2026)
 

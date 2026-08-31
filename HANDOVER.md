@@ -23,7 +23,7 @@ pâlit sous le doigt.
 | son contrôle | `scripts/verifier-maquette-bouton-qui-repond.mjs` (dans `npm run verifier:maquette`) |
 | le pourquoi | `ARCHITECTURE.md` §222 |
 | ce qu'on attend | la force (Discret, le sien, Marqué), **le numéro du vert** parmi dix, et l'interrupteur « Vibration au toucher » ou non |
-| en suspens | **la vibration marchait-elle enfin sur son iPhone ?** Corrigée le 31 août au soir, non éprouvable ici |
+| tranché | **la vibration par le web est morte** : il a touché un interrupteur natif d'iOS, rien n'a vibré. Ne pas écrire un quatrième correctif web — ce sera `@capacitor/haptics` dans l'application |
 
 **Les deux choses à savoir avant d'y toucher.** L'application porte DÉJÀ
 `active:scale-[0.985]` sur `PrimaryButton.tsx` — moins d'un pixel, aucune

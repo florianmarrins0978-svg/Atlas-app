@@ -19727,6 +19727,35 @@ devant une plateforme qui refuse.
 — et montait pendant que rien ne bougeait, ce qui a retardé la découverte. Un
 chiffre qui monte sur une fonction morte est pire qu'un chiffre absent.
 
+### LE VERDICT, et il ne se rouvre pas
+
+**Le 31 août 2026, il a touché du doigt un interrupteur natif d'iOS posé sur la
+planche. Rien n'a vibré.** La piste web est close :
+
+| | |
+|---|---|
+| une page web sur son iPhone | **ne vibrera pas**, quoi qu'on écrive |
+| l'application installée | `@capacitor/haptics`, retour natif et réglable |
+
+**Ne pas écrire un quatrième correctif web.** Trois s'y sont succédé le même
+soir — `checked` au lieu de l'activation, l'étiquette rendue inerte par
+`pointer-events:none`, la détection exclusive qui n'essayait plus rien. **Les
+trois étaient de vrais défauts, et aucun n'était la cause.** Une session qui
+retrouverait l'un de ces motifs et croirait tenir la solution referait le même
+chemin.
+
+**Ce qui a fini par répondre, et qui aurait dû venir en premier :** un objet
+que le PATRON active lui-même, dont la réponse sépare deux pannes
+indiscernables de loin — « mon appel échoue » et « la plateforme refuse ».
+Trois tours de correctifs supposés ont précédé ce geste-là.
+
+**Et ce qui a permis ces trois tours : un chiffre qui montait.** Le compteur de
+la planche comptait des APPELS en annonçant des vibrations — or aucune page web
+n'a d'accusé de réception sur le vibreur. Il a rendu un vert rassurant sur une
+fonction morte, trois fois de suite. **Rien à l'écran ne promet plus une
+vibration**, et `verifier-maquette-bouton-qui-repond.mjs` rougit si le
+compteur, le bouton d'essai, l'interrupteur ou le diagnostic réapparaissent.
+
 ### Les dix verts, et pourquoi ils sont mesurés
 
 Sa seconde demande du 31 août : *« fais-moi plusieurs déclinaisons du bouton avec
