@@ -9,30 +9,21 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
-## LE PLANNING GARDE-T-IL LES JOURS PASSÉS — planche 98 en attente (31 août 2026)
+## ~~LE PLANNING GARDE-T-IL LES JOURS PASSÉS~~ — fait le 31 août 2026
 
-Sa demande : *« il faut qu'il les garde en mémoire au moins sur une année »*.
+~~Sa demande : « il faut qu'il les garde en mémoire au moins sur une année ».~~
 
-**Ce qui est fait :** le constat est vérifié dans le code — rien n'est effacé,
-mais `rangement()` retire du calendrier tout jour antérieur à aujourd'hui — et
-la planche est en ligne : `appli/planning-memoire.html`, deux propositions A
-et B.
+**Tranché et codé le 31 août 2026 :** il a répondu **B** devant la planche 98,
+et **deux ans** après avoir vu le poids. `estAuCalendrier`,
+`MEMOIRE_CALENDRIER_JOURS`, borne basse dans la requête, jour passé en lecture
+seule. Le détail et ses pourquoi : `ARCHITECTURE.md` §216.
 
-**Ce qui attend :** son choix. Rien ne se code avant (`CLAUDE.md` §3 bis).
-
-**Ce que le codage demandera, quand il aura tranché :**
-
-- `estAuPlanning` ne peut pas simplement s'élargir : elle décide AUSSI de
-  l'onglet, et un chantier passé doit rester dans « Terminés » — un chantier
-  dans deux onglets est exactement ce que `src/lib/onglet-chantier.ts`
-  interdit depuis le 6 août. Il faut donc **deux questions distinctes** : « ce
-  chantier vit-il au planning ? » et « le calendrier le peint-il sur son
-  jour ? » ;
-- la fenêtre des absences (`contextePlanning`) part d'aujourd'hui : elle
-  devra remonter d'autant, sinon un jour passé s'affichera sans les absences
-  qui l'ont vraiment vidé ;
-- le jour passé doit être **inerte** à l'écriture, et pas seulement discret :
-  les six actions du planning acceptent aujourd'hui n'importe quelle date.
+**Ce qui reste ouvert, et qui n'est pas de lui :** `PlanningClient` refait à la
+main ce que `useOccupation` fait déjà — `parCreneau`, `absentesParCreneau`,
+`occupationDe`, `nomEquipe`, à l'identique. Deux copies d'une même règle, ce que
+`CLAUDE.md` §3 interdit : elles divergeront au premier réglage ajouté d'un seul
+côté. Ce lot ne les a pas réunies pour ne pas mêler un remaniement à un
+changement de comportement — mais la dette est là, et elle porte un vrai risque.
 
 ## POURQUOI LE RELAIS PERD SON PORT 3000 — inexpliqué (31 août 2026)
 

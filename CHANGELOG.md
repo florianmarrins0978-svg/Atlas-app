@@ -9,6 +9,38 @@ Format : le plus récent en tête.
 
 ## 2026-08-31
 
+### Le calendrier garde deux ans de jours passés — sa réponse : la B
+
+Il a choisi la proposition **B** de la planche 98 (les jours passés gardent
+leurs couleurs), puis a demandé le prix de deux ans : *« c'est trop lourd ou
+pas ? »* — non, et c'est mesuré (`scripts/mesurer-poids-planning.mjs`) :
+1 000 chantiers font **71 Ko** une fois la page comprimée, le dixième d'une
+photo de chantier.
+
+`estAuCalendrier` est une question NEUVE, à côté d'`estAuPlanning` — et surtout
+pas la même élargie : celle-là décide de l'onglet, et un chantier passé doit
+rester dans « Terminés » (règle du 6 août). Les confondre l'aurait remis dans
+deux onglets à la fois.
+
+**La requête du planning n'avait AUCUNE borne basse** : tous les chantiers datés
+de la vie de l'entreprise descendaient déjà dans son téléphone, sans que rien ne
+les affiche. Elle s'arrête maintenant au même jour que l'écran — dès la
+troisième année, ce lot allège au lieu d'alourdir.
+
+**Ce qu'il répare en passant :** l'écran d'envoi peignait déjà les jours passés
+(il lit la liste brute) pendant que le planning les affichait vides. Deux
+vérités sur la même journée, à un écran d'écart.
+
+**Un jour passé se lit, il ne s'écrit pas** : même drapeau `ecriture` que le
+salarié en lecture seule, et le « + Ajouter » disparaît aux deux endroits où il
+est posé. Aucun refus n'a été ajouté au serveur, en revanche : enregistrer après
+coup une journée déjà faite reste légitime.
+
+**Deux contrôles de la nouvelle suite ne prouvaient rien**, et il a fallu les
+confronter à l'écran d'avant pour le voir : « aucun geste d'écriture » et « le
+salarié s'affiche » restaient verts sur une carte VIDE. Une absence n'est une
+preuve que si la présence était possible.
+
 ### Le planning n'a aucune mémoire des jours passés — planche 98, rien n'est codé
 
 **Sa question :** *« est-ce que le planning garde en mémoire les chantiers

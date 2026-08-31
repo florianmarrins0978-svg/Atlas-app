@@ -19021,3 +19021,99 @@ debout pendant qu'il dort — ce banc n'est pas un hébergement. Et si le relais
 perdu le port pour de bon, la remesure le constate mais ne le réenregistre pas :
 `gh` ne sait pas le faire. La fiche donne alors le geste — onglet PORTS, retirer
 puis remettre 3000 — au lieu d'une bascule de visibilité qui ne peut rien.
+
+---
+
+## 216. Le calendrier se souvient : deux questions, pas une
+
+**Sa question du 31 août 2026, capture de juillet à l'appui :** *« est-ce que le
+planning garde en mémoire les chantiers passés ? Si non il faut qu'il les garde
+en mémoire au moins sur une année »* — trente et un jours sans une seule marque.
+Puis, devant la planche 98 : ***« la B »***, et ***deux ans***.
+
+### Ce que le code faisait, vérifié plutôt que supposé
+
+Rien n'était effacé. Aucune purge ne touche les chantiers (`src/server/retention.ts`
+ne connaît que l'audio, les fichiers orphelins et les journaux), et
+`listerChantiersPourPlanning` les chargeait **tous**, sans la moindre borne de
+date. La mémoire existait donc, et elle descendait déjà dans son téléphone.
+
+Ce qui la jetait, c'est l'écran : `estAuPlanning` refuse un chantier dès que sa
+date est passée, parce qu'`ongletDepuisJalons` le range dans « Terminés ». Le
+calendrier repeignait donc chaque jour en blanc le lendemain.
+
+### La faute à ne pas commettre : élargir `estAuPlanning`
+
+C'était le geste évident, et il aurait cassé la règle du 6 août 2026 — *« une
+fois facturé ou leur date de planning passée il doit figurer seulement dans
+terminé »*. `estAuPlanning` décide de l'**onglet** ; un chantier passé qu'elle
+accepterait serait dans « Planning » **et** dans « Terminés » à la fois, ce que
+`src/lib/onglet-chantier.ts` existe précisément pour empêcher.
+
+Ce sont **deux questions différentes**, et elles le restent :
+
+| La question | La fonction | Ce qu'elle commande |
+|---|---|---|
+| ce chantier est-il du travail à venir ? | `estAuPlanning` | l'onglet où il se range |
+| le calendrier le peint-il sur son jour ? | **`estAuCalendrier`** | ce que la case dessine |
+
+`estAuCalendrier` délègue à `estAuPlanning` pour aujourd'hui et l'à-venir — rien
+ne change de ce côté, y compris qu'un chantier clôturé d'avance libère sa
+journée (règle du 3 août 2026). Pour le passé, elle répond oui tant que le jour
+tient dans `MEMOIRE_CALENDRIER_JOURS`, **terminés et facturés compris** : ce qui
+a eu lieu a eu lieu, quel que soit l'état de sa facture.
+
+### Deux ans, et le nombre RÉDUIT ce qui partait
+
+Le poids a été mesuré, pas estimé (`scripts/mesurer-poids-planning.mjs`) :
+
+| Chantiers gardés | Brut | Comprimé |
+|---|---|---|
+| 500 (≈ 1 an) | 297 Ko | **35 Ko** |
+| 1 000 (≈ 2 ans) | 594 Ko | **71 Ko** |
+| 2 500 (≈ 5 ans) | 1 485 Ko | **175 Ko** |
+
+Soixante-et-onze kilo-octets, c'est le dixième d'une seule photo de chantier.
+
+**Et la borne allège au lieu d'alourdir.** La requête n'en avait aucune : à la
+cinquième année, tous les chantiers de l'entreprise descendaient à chaque
+ouverture du planning **sans que rien ne les affiche**. Le tamis de l'écran et la
+borne SQL partagent désormais `seuilMemoireCalendrier` — une seule source, sans
+quoi un chantier serait chargé sans être peint, ou peint sans être chargé.
+
+### Ce que ce lot RÉPARE en passant
+
+L'écran d'envoi peint le même calendrier (`MoisCharge`) à partir de la liste
+**brute**, sans tamis : un jour passé y portait déjà ses chantiers pendant que le
+planning l'affichait vide. Deux vérités sur la même journée, à un écran d'écart
+— ce que `CLAUDE.md` §3 interdit nommément. Elles se rejoignent.
+
+### Un jour passé se lit, il ne s'écrit pas
+
+Cocher un salarié ou déplacer une demi-journée sur un chantier fait il y a huit
+mois ne veut rien dire, et un geste possible est un geste qu'on fait par erreur.
+La carte d'un jour passé reçoit donc `ecriture={false}` — **le même drapeau que
+le salarié en lecture seule** (30 août 2026), jamais un second mécanisme. Le
+« + Ajouter » disparaît aux **deux** endroits où il est posé : sur la fiche du
+jour, et sous la journée dans « Planifiés ».
+
+**Ce qui n'a PAS été fait, et c'est délibéré :** aucun refus n'a été ajouté au
+serveur sur les dates passées. Poser un chantier sur hier reste possible — un
+artisan qui enregistre après coup une journée déjà faite est un cas légitime, et
+le lui interdire pour rendre un écran cohérent aurait coûté plus que ça ne
+rapporte.
+
+### Ce que les contrôles prouvent, et ce qu'ils ont failli ne pas prouver
+
+`test-onglet-chantier.ts` éprouve la règle pure ; `test-planning-memoire-e2e.ts`
+la joue **à l'écran**, parce que c'est la leçon du 8 août 2026 : la fonction
+était juste et l'écran appliquait une copie fautive à côté.
+
+**Deux de ses contrôles ne prouvaient rien, et il a fallu les confronter au
+défaut pour s'en apercevoir.** « Aucun geste d'écriture n'est offert » et « le
+salarié s'affiche en lecture » restaient VERTS contre l'écran d'avant ce lot :
+une carte vide n'a ni bouton d'écriture, ni salarié à montrer. Une absence n'est
+une preuve que si la présence était possible — le contrôle exige donc désormais
+qu'un chantier soit là avant de compter les boutons, et vise le nom du salarié
+plutôt qu'un nombre de demi-journées. C'est le contrôle qui mesure zéro de
+`CLAUDE.md` §5, retrouvé une fois de plus.

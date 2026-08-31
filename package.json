@@ -38,7 +38,8 @@
     "verifier:connexion": "tsx scripts/verifier-connexion-avec-serveur.mts",
     "banc": "node scripts/banc.mjs",
     "diagnostiquer:espace": "node scripts/diagnostiquer-espace.mjs",
-    "rapporter:espace": "node scripts/rapporter-espace.mjs"
+    "rapporter:espace": "node scripts/rapporter-espace.mjs",
+    "mesurer:poids-planning": "node scripts/mesurer-poids-planning.mjs"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1097.0",

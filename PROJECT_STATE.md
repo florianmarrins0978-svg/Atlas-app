@@ -18,6 +18,34 @@ ligne « fait » qui ne l'est pas coûte plus cher qu'une ligne absente.
 
 ---
 
+## Le planning garde deux ans de jours passés (31 août 2026)
+
+**Sa question :** *« est-ce que le planning garde en mémoire les chantiers
+passés ? Si non il faut qu'il les garde en mémoire au moins sur une année »*,
+puis *« combien si je décide de garder en mémoire 2 ans ? C'est trop lourd ou
+pas ? »*
+
+**Ce qui était vrai :** rien n'était effacé — les chantiers sont tous en base, et
+« Terminés » les liste — mais le CALENDRIER repeignait chaque jour en blanc le
+lendemain. Son mois de juillet était vide alors qu'il y avait travaillé.
+
+**Ce qui est fait**, planche 98, proposition **B** :
+
+| | |
+|---|---|
+| le jour passé | garde ses barres et **ses couleurs**, comme s'il était à venir |
+| jusqu'où | **deux ans** (`MEMOIRE_CALENDRIER_JOURS`) ; au-delà, « Terminés » |
+| ce qu'on y fait | on **lit** : pas de « + Ajouter », pas de salarié à cocher, pas de déplacement |
+| ce qui ne bouge pas | le chantier passé reste rangé dans « Terminés », lui seul |
+
+**Le poids, mesuré** (`npm run mesurer:poids-planning`) : 1 000 chantiers — deux
+ans — font 594 Ko bruts, **71 Ko** une fois la page comprimée. Et la requête du
+planning, qui n'avait aucune borne basse, s'arrête désormais au même jour que
+l'écran : dès la troisième année, elle envoie MOINS qu'avant.
+
+Le raisonnement complet, les fautes évitées et les deux contrôles creux
+retrouvés : `ARCHITECTURE.md` §216.
+
 ## La note vocale à la messagerie, et la fiche qui tient dans un écran (30 août 2026)
 
 **Sa demande, en huit messages :** *« Il faut modifier la note vocale pour
