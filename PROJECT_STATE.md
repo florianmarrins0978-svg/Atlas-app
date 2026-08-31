@@ -18,6 +18,25 @@ ligne « fait » qui ne l'est pas coûte plus cher qu'une ligne absente.
 
 ---
 
+## Le banc garde sa version rapide pendant qu'il bâtit la suivante (31 août 2026, soir)
+
+**Sa huitième plainte de lenteur** — *« l'appli est lente, corrige ça »*.
+Jusqu'ici son banc jetait sa version rapide dès que le code changeait et servait
+le mode développement le temps de bâtir : un mode où un écran neuf compile plus
+lentement que le relais de GitHub n'accepte d'attendre. Il ne pouvait ouvrir
+aucun écran qu'il n'avait pas déjà ouvert, et chaque redémarrage l'y remettait.
+
+La version bâtie reste désormais en service pendant la construction, qui se fait
+dans un dossier voisin ; la bascule est un échange de noms. Mesuré en le jouant :
+`/login` en **0,28 s pendant la construction**. Une construction qui échoue ne le
+condamne plus au mode lent jusqu'au lendemain — il garde une application entière,
+en retard de quelques commits, et **l'écran comme la fiche le disent**.
+
+Au passage : la fiche de son espace concluait « ✅ Tout concorde » sur un banc
+sans version rapide, et envoyait donc chercher le défaut dans le produit.
+
+`ARCHITECTURE.md` §225 · `docs/appli-lente-version-davant.md`
+
 ## EN ATTENTE : le geste des boutons — une planche, pas du code (31 août 2026)
 
 **Rien n'a bougé dans l'application**, et c'est l'état exact du produit : les

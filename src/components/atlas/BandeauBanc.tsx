@@ -77,10 +77,18 @@ export default function BandeauBanc() {
 
   if (etat === null) return null;
 
-  // Le total vaut zéro tant que le préchauffage n'a pas écrit sa première
-  // ligne. On ne fabrique alors aucun chiffre — dire « 0 sur 0 » serait
-  // inventer un total (`CLAUDE.md` §4).
-  const avecCompte = etat.total > 0;
+  // **Ce qu'on sert est la version PRÉCÉDENTE : ça se dit, et en premier.**
+  //
+  // Depuis le 31 août 2026 au soir, le banc ne retombe plus en mode
+  // développement pour bâtir : il garde la dernière version rapide en service.
+  // L'application est donc immédiate — et en retard de quelques commits. Taire
+  // ce second point rouvrirait le malentendu du 12 août (« commit récupéré »
+  // contre « commit servi »), qui a coûté deux heures : il essaierait une
+  // correction sur un code qui ne la porte pas encore.
+  //
+  // Aucun compteur ici : il n'y a pas de préchauffage à raconter quand chaque
+  // écran sort déjà en quelques millisecondes.
+  const avecCompte = !etat.versionDavant && etat.total > 0;
   const part = avecCompte ? Math.round((etat.faits / etat.total) * 100) : null;
 
   return (
@@ -98,7 +106,12 @@ export default function BandeauBanc() {
     >
       <p className="text-[12.5px] leading-[1.4]" style={{ color: colors.or }}>
         Version rapide en construction
-        {avecCompte ? (
+        {etat.versionDavant ? (
+          <>
+            {" — "}
+            <b style={{ color: colors.ink, fontWeight: 500 }}>{"vous voyez celle d'avant"}</b>.
+          </>
+        ) : avecCompte ? (
           <>
             {" — "}
             <b style={{ color: colors.ink, fontWeight: 500 }}>
