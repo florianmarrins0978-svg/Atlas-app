@@ -5,6 +5,7 @@ import { absencesSurLaFenetre } from "@/server/repositories/absences-equipe";
 import { HORIZON_OCCUPATION_PATRON_JOURS, ajouterJours, versJourIso } from "@/server/disponibilites";
 import type { Ctx } from "@/server/repositories/context";
 import { accesDeLaPersonne } from "@/server/autorisation";
+import { seuilMemoireCalendrier } from "@/lib/onglet-chantier";
 
 /**
  * TOUT CE QU'IL FAUT POUR PEINDRE UNE JOURNÉE — chargé une seule fois, servi
@@ -35,9 +36,15 @@ export async function contextePlanning(ctx: Ctx, maintenant: Date) {
     listerChantiersPourPlanning(ctx),
     getEntreprise(ctx),
     listerEquipes(ctx),
+    // **La fenêtre s'ouvre EN ARRIÈRE aussi, depuis le 31 août 2026.** Le
+    // calendrier peint désormais les jours passés (planche 100, proposition B) :
+    // une fenêtre partant d'aujourd'hui aurait repeint un mardi de mars sans
+    // l'absence qui l'avait vraiment vidé — donc plus chargé qu'il ne l'a été.
+    // Le coût est nul à l'échelle : une entreprise pose quelques dizaines
+    // d'absences par an, pas des milliers.
     absencesSurLaFenetre(
       ctx,
-      versJourIso(maintenant),
+      seuilMemoireCalendrier(versJourIso(maintenant)),
       versJourIso(ajouterJours(maintenant, HORIZON_OCCUPATION_PATRON_JOURS))
     ),
     accesDeLaPersonne(ctx),

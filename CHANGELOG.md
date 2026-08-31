@@ -457,6 +457,70 @@ non renseignée ») garde sa sortie du 17 août.
 
 ---
 
+### Le calendrier garde deux ans de jours passés — sa réponse : la B
+
+Il a choisi la proposition **B** de la planche 100 (les jours passés gardent
+leurs couleurs), puis a demandé le prix de deux ans : *« c'est trop lourd ou
+pas ? »* — non, et c'est mesuré (`scripts/mesurer-poids-planning.mjs`) :
+1 000 chantiers font **71 Ko** une fois la page comprimée, le dixième d'une
+photo de chantier.
+
+`estAuCalendrier` est une question NEUVE, à côté d'`estAuPlanning` — et surtout
+pas la même élargie : celle-là décide de l'onglet, et un chantier passé doit
+rester dans « Terminés » (règle du 6 août). Les confondre l'aurait remis dans
+deux onglets à la fois.
+
+**La requête du planning n'avait AUCUNE borne basse** : tous les chantiers datés
+de la vie de l'entreprise descendaient déjà dans son téléphone, sans que rien ne
+les affiche. Elle s'arrête maintenant au même jour que l'écran — dès la
+troisième année, ce lot allège au lieu d'alourdir.
+
+**Ce qu'il répare en passant :** l'écran d'envoi peignait déjà les jours passés
+(il lit la liste brute) pendant que le planning les affichait vides. Deux
+vérités sur la même journée, à un écran d'écart.
+
+**Un jour passé se lit, il ne s'écrit pas** : même drapeau `ecriture` que le
+salarié en lecture seule, et le « + Ajouter » disparaît aux deux endroits où il
+est posé. Aucun refus n'a été ajouté au serveur, en revanche : enregistrer après
+coup une journée déjà faite reste légitime.
+
+**Deux contrôles de la nouvelle suite ne prouvaient rien**, et il a fallu les
+confronter à l'écran d'avant pour le voir : « aucun geste d'écriture » et « le
+salarié s'affiche » restaient verts sur une carte VIDE. Une absence n'est une
+preuve que si la présence était possible.
+
+### Le planning n'a aucune mémoire des jours passés — planche 100, rien n'est codé
+
+**Sa question :** *« est-ce que le planning garde en mémoire les chantiers
+passés ? Si non il faut qu'il les garde en mémoire au moins sur une année »*,
+capture de juillet 2026 à l'appui — trente et un jours sans une seule marque.
+
+**Ce que le code dit, vérifié plutôt que supposé.** Les chantiers ne sont
+**jamais effacés** : aucune purge ne les touche (`src/server/retention.ts` ne
+connaît que l'audio, les fichiers orphelins et les journaux), et
+`listerChantiersPourPlanning` les charge tous, sans borne basse de date. Ce qui
+les retire de l'écran est `rangement()` (`src/lib/onglet-chantier.ts`) : dès que
+`datePlanifiee < aujourd'hui`, le chantier bascule dans « Terminés », et
+`estAuPlanning` le refuse au calendrier. **Le mois passé se repeint donc vide.**
+
+Sa mémoire existe — elle est dans l'onglet **Terminés**, mois par mois. C'est le
+CALENDRIER qui oublie, et c'est là qu'il regarde.
+
+**Ce qui est livré :** une planche essayable, `appli/planning-memoire.html`,
+avec son écran d'aujourd'hui en témoin et deux façons de rendre la mémoire au
+calendrier — les barres du jour passé en gris (« fait », un mot de plus dans la
+légende), ou telles quelles (rien à ajouter, mais l'avant et l'après se
+ressemblent). Butée à douze mois, jour passé en LECTURE seule.
+
+**Rien n'a été touché dans `src/`** : c'est une demande d'apparence, et
+`CLAUDE.md` §3 bis veut la planche d'abord.
+
+**Deux défauts trouvés en REGARDANT la planche, qu'aucun contrôle n'aurait
+vus :** la paire de rectangles « matin / après-midi » de la légende mesurait
+zéro de large — `align-items:center` hérité, sur une colonne, réduit un
+rectangle vide à rien — et « La fiche » s'écrivait sur chaque demi-journée, deux
+portes pour un seul chantier.
+
 ## 2026-08-30
 
 ### Le diamètre dicté entre enfin en colonne — il n'était jamais créé

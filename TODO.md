@@ -144,6 +144,22 @@ la dernière mise en veille répond sans rien demander au patron.
 
 ---
 
+## ~~LE PLANNING GARDE-T-IL LES JOURS PASSÉS~~ — fait le 31 août 2026
+
+~~Sa demande : « il faut qu'il les garde en mémoire au moins sur une année ».~~
+
+**Tranché et codé le 31 août 2026 :** il a répondu **B** devant la planche 100,
+et **deux ans** après avoir vu le poids. `estAuCalendrier`,
+`MEMOIRE_CALENDRIER_JOURS`, borne basse dans la requête, jour passé en lecture
+seule. Le détail et ses pourquoi : `ARCHITECTURE.md` §224.
+
+**Ce qui reste ouvert, et qui n'est pas de lui :** `PlanningClient` refait à la
+main ce que `useOccupation` fait déjà — `parCreneau`, `absentesParCreneau`,
+`occupationDe`, `nomEquipe`, à l'identique. Deux copies d'une même règle, ce que
+`CLAUDE.md` §3 interdit : elles divergeront au premier réglage ajouté d'un seul
+côté. Ce lot ne les a pas réunies pour ne pas mêler un remaniement à un
+changement de comportement — mais la dette est là, et elle porte un vrai risque.
+
 ## POURQUOI LE RELAIS PERD SON PORT 3000 — inexpliqué (31 août 2026)
 
 Sa nuit du 30 au 31 : espace debout, Atlas répondant sur 3000, version rapide
