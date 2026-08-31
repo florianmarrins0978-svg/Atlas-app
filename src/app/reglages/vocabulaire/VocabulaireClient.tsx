@@ -124,7 +124,7 @@ export default function VocabulaireClient({ initiaux }: { initiaux: Terme[] }) {
           type="button"
           onClick={ajouter}
           disabled={enCours}
-          className="mt-2 w-full rounded-full py-3 text-[15px] font-medium disabled:opacity-40"
+          className="atlas-plein mt-2 w-full rounded-full py-3 text-[15px] font-medium disabled:opacity-40"
           style={{ backgroundColor: colors.rust, color: colors.cream }}
         >
           {enCours ? "Ajout…" : "Ajouter"}

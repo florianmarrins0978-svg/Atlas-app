@@ -9,6 +9,40 @@ Format : le plus récent en tête.
 
 ## 2026-08-31
 
+### Le geste et le vert sur TOUS les boutons pleins, et sur les deux notes vocales
+
+**Sa demande :** *« pour chaque bouton fais également le geste discret ; lorsque
+le bouton s'enfonce il change de couleur comme on a vu ; et je veux aussi cet
+effet sur la note vocale de la page fiche client et la note vocale, mais là
+aussi au #29382F »*.
+
+**Trente-huit boutons**, dans vingt-cinq fichiers, reçoivent la classe
+`.atlas-plein` posée au lot 1. Les deux notes vocales sont **le même
+composant** (`AnneauNoteVocale`, employé par la fiche client et par le
+chantier) : une seule correction les couvre, et son disque de 76 px prend le
+vert et le geste comme le reste.
+
+**HUIT EMPLOIS DU MÊME VERT ONT ÉTÉ ÉCARTÉS, ET C'EST LE TRAVAIL.** Le vert
+d'action sert aussi à des pastilles clignotantes, des barres de progression et
+des fonds pâles. Sa consigne — « surtout pas ceux qui sont creux ou d'une autre
+couleur » — vise les aplats qu'on appuie. Le tri s'est fait sur la balise
+réellement portante.
+
+**Un défaut attrapé avant d'écrire, et il aurait été invisible :** le premier
+tri remontait jusqu'à la première balise cliquable au-dessus de la ligne. Sur
+l'écran de dictée, il sautait par-dessus **la pastille clignotante de
+l'enregistrement** pour attribuer son fond au bouton du dessus — la pastille
+serait devenue un « bouton plein », avec voile et enfoncement. Corrigé en
+prenant la balise la plus PROCHE, pas la première trouvée.
+
+**Une règle en double retirée :** l'écran de connexion gardait un
+`active:scale-[0.985]` en plus de la classe. Deux règles pour le même geste
+divergent toujours ; celle de la classe reste seule.
+
+Vérifié à l'écran : la note vocale de la fiche client au #29382F, 0,975 et voile
+0,14 sous le doigt. 300/300 suites base — le 299/300 du premier passage venait
+de mon serveur laissé tournant sur la même base, ce que `CLAUDE.md` §5 interdit.
+
 ### Il a choisi la ligne, et l'a corrigée trois fois : plus aucun aplat
 
 Sa réponse du soir, après avoir essayé les quatre allures : *« garde-moi la

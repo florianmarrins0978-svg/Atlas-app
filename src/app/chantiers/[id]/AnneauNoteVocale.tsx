@@ -504,7 +504,7 @@ export default function AnneauNoteVocale({
                     : "Mettre la dictée en pause"
               }
               aria-pressed={magnetophone.enregistre}
-              className="atlas-micro"
+              className="atlas-plein atlas-micro"
               style={{ backgroundColor: colors.rust, color: surPlein }}
             >
               {magnetophone.enregistre ? (
@@ -521,7 +521,7 @@ export default function AnneauNoteVocale({
               onClick={envoyerLaNote}
               disabled={envoi}
               aria-label="Envoyer la note et préparer le devis"
-              className="atlas-cote atlas-envoyer"
+              className="atlas-plein atlas-cote atlas-envoyer"
               style={{ backgroundColor: colors.rust, color: surPlein }}
               data-atlas="dictee-envoyer"
             >
