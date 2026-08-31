@@ -9,7 +9,27 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
+## UNE RÉPONSE ATTENDUE — le réglage et le planning, planche 99 (31 août 2026)
+
+Sa demande : *« écrit deux chantiers par jour, planning complet, et met le petit
+carré vert foncé avec écrit "complet" du planning »* — et, devant la planche 98 :
+*« c'est sur cette page que doit se faire la modification »*, l'écran **Réglages**.
+
+`appli/reglages-planning-complet.html` lui pose la question : **A** la phrase avec
+le carré, **B** l'échelle des trois carrés, **C** la case du planning dessinée.
+
+**Rien n'est codé.** Quand il aura répondu, tout se passe dans
+`src/app/reglages/VosEquipes.tsx` et `phraseDuCompteur` (`src/lib/equipes.ts`) —
+plus le carré, qui doit venir de `fondDeLEtat` et non d'un vert écrit en dur
+(`CLAUDE.md` §3 : aucune couleur en clair dans un écran, et sept chartes dont
+deux sombres).
+
+---
+
 ## UNE RÉPONSE ATTENDUE — le jour proposé, planche 98 (31 août 2026)
+
+**Née d'une mauvaise lecture de sa demande** — voir juste au-dessus. La
+question reste réelle, mais il ne l'a pas posée : ne pas la relancer.
 
 Sa remarque : *« écrit deux chantiers par jour, planning complet, et met le
 petit carré vert foncé avec écrit "complet" du planning »*. Un jour PROPOSÉ au
