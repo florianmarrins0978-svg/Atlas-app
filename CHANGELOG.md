@@ -9,6 +9,30 @@ Format : le plus récent en tête.
 
 ## 2026-08-31
 
+### Le retour du devis mène à la fiche client, toujours
+
+**Sa décision du soir :** *« je veux tout le temps revenir à cette page et
+seulement celle-là ! La page fiche client »*. Le matin, le détour n'avait été
+posé que pour un devis SANS client ; l'autre moitié le déposait sur la fiche du
+chantier, où il n'a rien à faire devant un devis prêt à partir.
+
+Ce que ça évite : rouvrir la fiche pour relire le nom, le numéro et le canal
+d'envoi juste avant d'expédier — une vérification qui ne dépend d'aucun champ
+vide, et que la règle du matin lui refusait une fois sur deux.
+
+`retourDuDevis` ne prend plus de `clientId` : la condition a disparu de la
+signature plutôt que de dormir dedans. La suite sans base refuse désormais que
+la fiche du chantier soit la sortie, et le cas du client PRÉSENT s'éprouve au
+navigateur, le chantier acquérant son client par l'écran.
+
+### La fiche du chantier ne se supprime pas — vérifié
+
+*« Des fois je retombe sur cette page, je pense qu'elle sert plus à rien ;
+vérifie, si oui on la supprime. »* Elle porte la seule pellicule de photos d'un
+chantier existant, la sortie vers la facture d'un chantier planifié, et neuf
+chemins y mènent. Ce qui l'y ramenait pour rien, c'était le retour du devis —
+corrigé ci-dessus. Le détail : `ARCHITECTURE.md` §227.
+
 ### Il a choisi la ligne, et l'a corrigée trois fois : plus aucun aplat
 
 Sa réponse du soir, après avoir essayé les quatre allures : *« garde-moi la

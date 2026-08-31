@@ -1,6 +1,6 @@
 /**
- * Où mène la flèche de retour du devis, quand la fiche client n'a jamais été
- * remplie — et comment on revient ensuite au devis.
+ * Où mène la flèche de retour du devis — la fiche client, toujours — et comment
+ * on revient ensuite au devis.
  *
  * ─────────────────────────────────────────────────────────────────────────────
  * **Le patron, le 31 août 2026, deux captures à l'appui :** *« j'ai oublié de
@@ -28,11 +28,20 @@
  * d'un chantier celui qui y était.
  *
  * ─────────────────────────────────────────────────────────────────────────────
- * **POURQUOI CE N'EST PAS « TOUJOURS LA FICHE CLIENT ».** Un devis dont le
- * client est renseigné n'a rien à corriger : y renvoyer le poserait devant un
- * formulaire rempli, sans savoir ce qu'on attend de lui. Le détour ne se
- * justifie que par le manque — et le manque est exactement ce que l'écran du
- * devis affiche déjà : aucun client n'est rattaché.
+ * **C'EST TOUJOURS LA FICHE CLIENT, ET IL A TRANCHÉ LUI-MÊME.** Le 31 août au
+ * soir, capture à l'appui : *« je veux tout le temps revenir à cette page et
+ * seulement celle-là ! La page fiche client »*.
+ *
+ * La première version ne détournait le retour que **lorsque le client
+ * manquait** — supposant qu'un formulaire déjà rempli n'aurait rien à lui dire.
+ * C'était supposer à sa place : il y relit le nom, le téléphone et le canal
+ * d'envoi juste avant d'expédier le devis, et cette vérification-là ne dépend
+ * pas d'un champ vide. L'autre moitié le déposait sur la fiche du chantier,
+ * où il n'avait rien à faire (`ARCHITECTURE.md` §227).
+ *
+ * **Le chantier ne devient pas injoignable pour autant** : la fiche client
+ * porte sa propre flèche, et neuf autres chemins y mènent — le planning, une
+ * notification, la reprise de la liste, la flèche de cinq autres écrans.
  *
  * **ET LE CHEMIN SE REFERME.** Arriver sur la fiche client par cette porte puis
  * être renvoyé sur la fiche du chantier après avoir enregistré laisserait son
@@ -77,20 +86,27 @@ export function provenanceDesCoordonnees(
 }
 
 /**
- * Où mène le retour de l'écran du devis.
+ * Où mène le retour de l'écran du devis : la fiche client, dans tous les cas.
  *
- * `clientId` à `null` est la formulation exacte de son défaut : le chantier n'a
- * aucune fiche client, et c'est ce que le devis écrit noir sur blanc.
+ * **L'argument reste un objet**, et ce n'est pas une coquetterie : cette
+ * fonction a déjà changé de règle une fois en un jour. Un objet nommé laisse
+ * ajouter demain ce dont elle aurait besoin sans retoucher chaque appel — et
+ * surtout sans risquer d'y glisser un identifiant à la place d'un autre.
  */
-export function retourDuDevis(arg: { chantierId: string; clientId: string | null }): string {
-  return arg.clientId === null
-    ? coordonneesDepuisLeDevis(arg.chantierId)
-    : `/chantiers/${arg.chantierId}`;
+export function retourDuDevis(arg: { chantierId: string }): string {
+  return coordonneesDepuisLeDevis(arg.chantierId);
 }
 
-/** Ce que la flèche annonce à voix haute — elle ne mène plus au même endroit. */
+/**
+ * Ce que la flèche annonce à voix haute.
+ *
+ * Elle mène au même écran dans les deux cas, mais n'y va pas pour la même
+ * raison : remplir ce qui manque, ou relire avant d'envoyer. Une flèche qui
+ * dirait « remplir » devant un formulaire complet ferait chercher un champ vide
+ * qui n'existe pas.
+ */
 export function libelleRetourDuDevis(clientId: string | null): string {
-  return clientId === null ? "Remplir la fiche client" : "Revenir au chantier";
+  return clientId === null ? "Remplir la fiche client" : "Revenir à la fiche client";
 }
 
 /**

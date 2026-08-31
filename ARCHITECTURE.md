@@ -19532,6 +19532,10 @@ en-tête rallongé — cogner la colonne voisine — a été mesuré : 85 points
 
 ## 221. Un devis sans client : le retour mène à la fiche client, et le chemin se referme
 
+> **Sa moitié de règle a été étendue à tous les devis le soir même — voir §228.**
+> Ce qui suit reste vrai du chemin, de la provenance et de ses refus ; seule la
+> condition `clientId === null` est tombée.
+
 **Sa demande du 31 août 2026, deux captures à l'appui :** *« j'ai oublié de
 renseigner la fiche client du chantier. Lorsque je fais retour, je dois arriver
 sur la page de la fiche client ! Pas sur la page que je te mets en deuxième
@@ -19566,13 +19570,13 @@ choisissant le même nom. Récupérée avant commit, et rejouée verte. La leço
 au-delà de ce lot : **regarder ce qu'on écrase avant d'écrire**, un nom
 « évident » l'est souvent déjà pour quelqu'un d'autre.
 
-### Pourquoi ce n'est pas « toujours la fiche client »
+### ~~Pourquoi ce n'est pas « toujours la fiche client »~~ — FAUX le soir même
 
-Un devis dont le client est renseigné n'a rien à corriger : y renvoyer le
-poserait devant un formulaire rempli, sans savoir ce qu'on attend de lui. Le
-détour ne se justifie que par le manque — et le manque est exactement ce que
-l'écran du devis affiche déjà. La condition est donc `clientId === null`, la
-même que celle qui écrit « Aucun client rattaché à ce chantier ».
+Ce paragraphe soutenait que le détour ne se justifiait que par le manque, et que
+la condition devait rester `clientId === null`. **Il a tranché l'inverse le soir
+même** : *« je veux tout le temps revenir à cette page et seulement celle-là »*.
+La règle est désormais sans condition — voir §228, qui dit ce que ce
+raisonnement avait supposé à sa place.
 
 ### Et le chemin se REFERME
 
@@ -19602,8 +19606,8 @@ a qu'un.
 | `scripts/test-retour-du-devis.ts` | la règle, sans base : l'aller, le retour, et les deux refus |
 | `scripts/test-devis-sans-client-e2e.ts` | qu'elle est BRANCHÉE — la flèche, la fiche, l'enregistrement, le retour au devis |
 
-La suite sans base sait échouer : rendre `/chantiers/${id}` sans regarder
-`clientId` rougit son premier cas, oublier la provenance rougit le cinquième.
+La suite sans base sait échouer : rendre `/chantiers/${id}` rougit ses deux
+premiers cas, oublier la provenance rougit le cinquième.
 
 **La flèche du devis porte désormais un repère** (`data-atlas="retour-du-devis"`)
 plutôt que son libellé : elle n'annonce plus la même chose selon où elle mène, et
@@ -20303,3 +20307,54 @@ même écran, avec un client renseigné.
 avec lui : selon le chemin qu'il emprunte, le bon retour est la liste des
 chantiers ou l'écran d'où il venait, et se tromper le sortirait du chantier
 qu'il consulte. La question lui est posée ; rien n'est codé avant sa réponse.
+
+---
+
+## 228. Le retour du devis mène à la fiche client, sans condition
+
+**Sa décision du 31 août 2026 au soir, capture à l'appui :** *« je veux tout le
+temps revenir à cette page et seulement celle-là ! La page fiche client »*.
+
+Le matin même (§221), le retour du devis n'avait été détourné que **lorsque le
+client manquait**. La moitié restante le déposait sur la fiche du chantier —
+l'écran dont il demandait la suppression quelques heures plus tôt, et qui ne lui
+propose rien devant un devis prêt à partir (§227).
+
+### Ce que le raisonnement du matin avait supposé à sa place
+
+« Un formulaire rempli n'a rien à lui dire » : c'était déduire son geste au lieu
+de le regarder. Il rouvre cette fiche **avant d'envoyer** — le nom qui figurera
+sur le document, le numéro, et le canal par lequel le devis part (`Par SMS` /
+`Par e-mail`, qui vit sur cette fiche et nulle part ailleurs). Cette
+vérification-là ne dépend d'aucun champ vide.
+
+C'est la faute du §5 bis de `CLAUDE.md` prise par l'autre bout : on avait fixé
+une règle sur ce que l'écran MONTRE (un manque) plutôt que sur ce qu'il SERT
+(relire le client avant d'expédier).
+
+### Ce que ça ne casse pas
+
+| | |
+|---|---|
+| le chemin se referme toujours | la provenance voyage dans `?de=`, la flèche et l'enregistrement la respectent (§221) |
+| la fiche gardée sans provenance | entrée depuis l'accueil, sa flèche rend la liste — inchangé depuis le 17 août |
+| le chantier reste joignable | la fiche client porte la barre du bas, et neuf chemins mènent encore à la fiche du chantier (§227) |
+
+**La flèche n'annonce plus la même chose pour autant** : « Remplir la fiche
+client » quand il n'y a pas de client, « Revenir à la fiche client » sinon. Même
+écran, deux raisons — et « remplir » devant un formulaire complet ferait
+chercher un champ vide qui n'existe pas.
+
+### Ce qui l'éprouve
+
+`retourDuDevis` ne prend plus de `clientId` : la condition n'est pas devenue
+inutilisée, elle a **disparu de la signature**, et personne ne peut la rétablir
+par distraction. La suite sans base (`scripts/test-retour-du-devis.ts`) barre en
+plus le retour en arrière — elle refuse que la fiche du chantier soit la sortie,
+sous quelque condition que ce soit.
+
+Et le cas du client PRÉSENT ne s'éprouve bien qu'au navigateur
+(`scripts/test-devis-sans-client-e2e.ts`) : le chantier y acquiert son client
+**par l'écran**, en enregistrant la fiche, jamais par une écriture en base. Un
+état fabriqué à la main aurait éprouvé autre chose que son geste
+(`CLAUDE.md` §5 quater).

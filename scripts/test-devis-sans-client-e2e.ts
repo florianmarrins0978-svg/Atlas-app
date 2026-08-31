@@ -3,7 +3,7 @@ import { lancerNavigateur } from "./e2e-browser";
 import { pool } from "../src/server/db/client";
 import { creerPuisFiche } from "./_creer-chantier-e2e";
 
-// **Le retour d'un devis sans client mène à la fiche client.**
+// **Le retour du devis mène à la fiche client — avec ou sans client.**
 //
 // ─────────────────────────────────────────────────────────────────────────────
 // Le patron, le 31 août 2026, deux captures à l'appui : *« j'ai oublié de
@@ -124,10 +124,20 @@ async function main() {
     assert.ok(!ecran.includes("Aucun client rattaché"), "le devis dit encore qu'il n'y a pas de client");
   });
 
-  await cas("le client posé, la flèche retrouve la fiche du chantier", async () => {
-    // Le détour ne se justifie que par le manque : renvoyer sur un formulaire
-    // rempli lui poserait une question qu'il n'a pas.
-    assert.equal(await retour.getAttribute("href"), `/chantiers/${chantierId}`);
+  await cas("LE CLIENT POSÉ, LA FLÈCHE MÈNE ENCORE À LA FICHE CLIENT", async () => {
+    // **Sa décision du 31 août au soir :** *« je veux tout le temps revenir à
+    // cette page et seulement celle-là ! La page fiche client »*. Le matin, le
+    // détour ne valait que faute de client — et l'autre moitié de ses retours
+    // le déposait sur la fiche du chantier, où il n'a rien à faire.
+    //
+    // **Ce cas est le seul qui puisse le voir** : le chantier vient d'acquérir
+    // son client à la ligne du dessus, dans l'application et non en base. Une
+    // suite qui poserait le client à la main éprouverait un état fabriqué.
+    assert.equal(
+      await retour.getAttribute("href"),
+      versLaFiche,
+      "elle le repose sur la fiche du chantier — la page vide qu'il a fait retirer du chemin"
+    );
   });
 
   await cas("la fiche ouverte SANS provenance garde sa sortie du 17 août 2026", async () => {

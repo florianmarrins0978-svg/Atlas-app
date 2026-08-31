@@ -9,24 +9,6 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
-## EN ATTENTE DE SA RÉPONSE : où mène le retour du devis (31 août 2026, soir)
-
-**Le cas du devis SANS client est réglé** — il l'a confirmé le 31 août au soir,
-capture à l'appui : le retour le pose sur « Fiche client »
-(`/chantiers/[id]/coordonnees`), et la flèche de cet écran le ramène au devis.
-C'est §221, déjà sur `main`.
-
-**Reste l'autre moitié :** quand le client EST renseigné, le retour le dépose
-sur la fiche du chantier, et cet écran ne lui propose alors rien.
-
-**La fiche ne se supprime pas** — elle porte les photos, la sortie vers la facture et neuf portes d'entrée
-(`ARCHITECTURE.md` §227) ; c'est le RETOUR du devis qui le dépose au mauvais
-endroit.
-
-**Ce qu'on attend de lui :** la liste des chantiers, ou l'écran d'où il venait.
-Rien n'est codé avant sa réponse — se tromper le sortirait du chantier qu'il
-consulte. Le fichier à toucher : `src/lib/retour-du-devis.ts`.
-
 ## EN ATTENTE DE SA RÉPONSE : l'aplatissement de la touche d'envoi (31 août 2026)
 
 **Il a choisi LA LIGNE** parmi les quatre allures, et l'a corrigée trois fois le

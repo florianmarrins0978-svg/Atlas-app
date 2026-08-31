@@ -378,18 +378,16 @@ export default function DevisCompletClient(props: Props) {
           promesse fausse. L'assistant, lui, reste utile même figé — relire un
           prix passé ne modifie rien.
 
-          **LE RETOUR MÈNE À LA FICHE CLIENT QUAND IL N'Y EN A PAS — 31 août
-          2026.** Sa demande, deux captures à l'appui : *« j'ai oublié de
-          renseigner la fiche client du chantier. Lorsque je fais retour, je
-          dois arriver sur la page de la fiche client ! »* Ce devis affiche
-          « Aucun client rattaché à ce chantier » : le déposer sur la fiche du
-          chantier le laissait devant un écran qui ne dit ni ce qui manque, ni
-          où le réparer. La règle est ailleurs, sans écran ni base
-          (`src/lib/retour-du-devis.ts`) — et elle referme le chemin :
-          enregistrer la fiche ramène ici. */}
+          **LE RETOUR MÈNE À LA FICHE CLIENT, TOUJOURS — 31 août 2026, le
+          soir.** *« Je veux tout le temps revenir à cette page et seulement
+          celle-là ! La page fiche client »*. Le matin même, le détour n'avait
+          été posé que pour un devis SANS client ; l'autre moitié le déposait
+          sur la fiche du chantier, où il n'a rien à faire. La règle est
+          ailleurs, sans écran ni base (`src/lib/retour-du-devis.ts`) — et elle
+          referme le chemin : enregistrer la fiche ramène ici. */}
       <div className="mx-auto mb-3 flex w-full max-w-[820px] items-start justify-between sm:mb-4">
         <a
-          href={retourDuDevis({ chantierId: props.chantierId, clientId: props.clientId })}
+          href={retourDuDevis({ chantierId: props.chantierId })}
           aria-label={libelleRetourDuDevis(props.clientId)}
           data-atlas="retour-du-devis"
           className="flex h-9 w-9 items-center justify-center rounded-full"

@@ -8,14 +8,15 @@ import {
   retourDuDevis,
 } from "../src/lib/retour-du-devis";
 
-// **« J'ai oublié de renseigner la fiche client du chantier. Lorsque je fais
-// retour, je dois arriver sur la page de la fiche client ! Pas sur la page que
-// je te mets en deuxième photo. »** — le patron, 31 août 2026.
+// **« Je veux tout le temps revenir à cette page et seulement celle-là ! La
+// page fiche client »** — le patron, 31 août 2026 au soir, après avoir vu le
+// matin même la moitié du chemin corrigée (un devis SANS client).
 //
-// Cette suite tient les deux moitiés du chemin : l'aller (un devis sans client
-// mène à la fiche) et le retour (la fiche ramène au devis). Elle sait échouer :
-// rendre `/chantiers/${id}` sans regarder `clientId` rougit le premier cas, et
-// oublier la provenance dans `apresLesCoordonnees` rougit le cinquième.
+// Cette suite tient les deux moitiés du chemin : l'aller (le retour du devis
+// mène à la fiche client, avec ou sans client) et le retour (la fiche ramène au
+// devis). Elle sait échouer : rendre `/chantiers/${id}` dans l'un OU l'autre cas
+// rougit les deux premiers, et oublier la provenance dans `apresLesCoordonnees`
+// rougit le cinquième.
 //
 // **Ce qu'elle NE fixe pas, délibérément :** aucun libellé d'écran. Une
 // assertion sur un mot affiché défendrait la formulation du jour plutôt que la
@@ -40,26 +41,31 @@ const CHANTIER = "11111111-2222-3333-4444-555555555555";
 const AUTRE = "99999999-8888-7777-6666-555555555555";
 const SON_DEVIS = `/chantiers/${CHANTIER}/devis-complet`;
 
-console.log("=== Le retour du devis quand la fiche client manque ===\n");
+console.log("=== Le retour du devis mène à la fiche client, toujours ===\n");
 
-cas("SON CAS : aucun client rattaché — le retour mène à la fiche client", () => {
+const VERS_LA_FICHE = `/chantiers/${CHANTIER}/coordonnees?de=${encodeURIComponent(SON_DEVIS)}`;
+
+cas("SON CAS DU MATIN : aucun client rattaché — le retour mène à la fiche client", () => {
   assert.equal(
-    retourDuDevis({ chantierId: CHANTIER, clientId: null }),
-    `/chantiers/${CHANTIER}/coordonnees?de=${encodeURIComponent(SON_DEVIS)}`,
+    retourDuDevis({ chantierId: CHANTIER }),
+    VERS_LA_FICHE,
     "il retomberait sur la fiche du chantier, qui ne dit ni ce qui manque ni où le réparer"
   );
 });
 
-cas("un devis dont le client est renseigné garde sa sortie d'avant", () => {
-  // Le renvoyer sur un formulaire déjà rempli lui poserait une question qu'il
-  // n'a pas — et il n'a signalé QUE le cas où la fiche manque.
-  assert.equal(
-    retourDuDevis({ chantierId: CHANTIER, clientId: "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee" }),
-    `/chantiers/${CHANTIER}`
-  );
+cas("SON CAS DU SOIR : la fiche du chantier n'est plus JAMAIS la sortie", () => {
+  // « Tout le temps cette page et seulement celle-là. » La règle du matin
+  // n'envoyait à la fiche client que faute de client ; rétablir cette
+  // condition — sous n'importe quel nom — remettrait la moitié de ses retours
+  // sur un écran qui ne lui propose rien. C'est ce retour en arrière que ce cas
+  // barre, et non l'adresse, déjà tenue au-dessus.
+  assert.notEqual(retourDuDevis({ chantierId: CHANTIER }), `/chantiers/${CHANTIER}`);
+  assert.ok(retourDuDevis({ chantierId: CHANTIER }).startsWith(`/chantiers/${CHANTIER}/coordonnees`));
 });
 
-cas("la flèche n'annonce pas la même chose selon où elle mène", () => {
+cas("la flèche n'annonce pas la même chose selon la raison d'y aller", () => {
+  // Même écran, deux raisons : remplir ce qui manque, ou relire avant d'envoyer.
+  // « Remplir » devant un formulaire complet ferait chercher un champ vide.
   assert.notEqual(libelleRetourDuDevis(null), libelleRetourDuDevis("un-client"));
 });
 
