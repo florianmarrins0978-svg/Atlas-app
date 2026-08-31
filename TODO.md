@@ -37,6 +37,27 @@ sans être passé par le planning n'a donc pas de date, et sa rangée n'en affic
 aucune. S'il veut une vraie date de réalisation, il faudra la saisir à la
 clôture : c'est un geste de plus pour lui, et il n'a pas répondu.
 
+## DEUX SUITES DE TVA SONT ROUGES SUR `main` — pas d'un lot (31 août 2026)
+
+Trouvé en jouant la batterie du 31 août au soir, **et vérifié sur `origin/main`
+tel quel** (commit `7a8f3ed`, sans aucun lot en cours) : les deux échouent à
+l'identique. Ce n'est donc pas le lot « date du chantier », et ce n'est
+probablement aucun lot en cours.
+
+| Suite | Ce qu'elle dit |
+|---|---|
+| `test-planning-vers-facture-e2e.ts` | « la facture F2026-000009 ne figure pas au relevé de TVA du trimestre » |
+| `test-tva-au-paiement-e2e.ts` | 4 échecs : « PAYÉE » ne fait pas entrer la facture au relevé (0,00 au lieu de 200,00), l'acompte n'arrive jamais, le régime des débits ne suit pas, la phrase cite un montant qui n'est pas celui du bloc au-dessus |
+
+**Ce n'est pas un défaut de suite : c'est le relevé qui ne bouge pas.** Une
+facture encaissée qui n'entre pas au relevé, c'est de la TVA qu'il déclarerait
+en moins — et c'est lui qui répond devant l'administration. **À traiter avant
+tout lot d'affichage.**
+
+**Reste à faire :** reproduire à la main sur l'écran « Ma TVA à déclarer »,
+puis chercher dans `src/server/tva-courante.ts` et le chemin de paiement. Non
+diagnostiqué : personne n'a encore ouvert le code.
+
 ## EN ATTENTE DE SA RÉPONSE : la force du geste des boutons (31 août 2026)
 
 Sa demande du 31 août — une mini vibration à l'appui, et le bouton qui s'enfonce
