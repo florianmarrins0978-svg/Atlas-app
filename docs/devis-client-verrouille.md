@@ -93,14 +93,27 @@ Le risque n'était pas de mal verrouiller : c'était de fabriquer un devis que
 **plus personne n'ouvre**. Un fichier mal chiffré ne s'affiche nulle part, et ton
 client n'aurait plus rien vu du tout.
 
-Un contrôle a donc été ajouté qui ne fait pas confiance à Atlas : il demande au
-lecteur PDF de Chrome — qui ne sait rien de cette application — d'ouvrir le
-devis et de le dessiner. Et pour être sûr que ce contrôle sait dire non, on lui
-donne le même devis dont **un seul chiffre** de la clé a été faussé : celui-là,
-le lecteur le refuse en réclamant un mot de passe.
+Un contrôle a donc été ajouté qui ne fait pas confiance à Atlas : un lecteur
+écrit d'après la norme du format, qui ne réutilise rien du code qui a chiffré.
+Il ouvre le devis sans mot de passe et y relit le nom de ta cliente, la ligne de
+prestation et le total. Et pour être sûr qu'il sait dire non, on lui donne le
+même devis dont **un seul chiffre** de la clé a été faussé : celui-là, il le
+refuse.
 
-Vérifié en plus avec `qpdf`, un outil indépendant : les autorisations sont bien
-celles du tableau ci-dessus, et le contenu se relit correctement.
+**Deux vrais moteurs l'ont confirmé le même jour** : `qpdf` (les autorisations
+lues une par une, le contenu déchiffré) et le lecteur PDF de Chrome, qui a
+affiché le document sans rien demander — et qui a réclamé un mot de passe sur le
+fichier faussé.
+
+*Ce qui a été appris en route, et corrigé :* ce contrôle avait d'abord été écrit
+avec le navigateur. Sur les serveurs de GitHub, Playwright installe une version
+de Chrome **sans lecteur PDF** : elle télécharge le fichier au lieu de
+l'afficher, et le contrôle accusait le devis alors qu'il allait bien.
+
+*Et un autre contrôle s'est défendu tout seul :* celui qui vérifie que ton
+pense-bête ne part sur aucun document ne savait plus lire le PDF chiffré. Plutôt
+que de rendre un vert en ne trouvant rien, il a refusé de conclure. Il sait
+déchiffrer maintenant.
 
 ---
 
@@ -140,7 +153,7 @@ contraire, dis-le : c'est deux lignes.
 | connexion derrière un proxy | **verte** |
 | suites navigateur du lot | **3 / 3** — la page du client (16 contrôles), la facture au client, l'export de tes données |
 | page du client | 630 px pour 664 disponibles |
-| contrôles neufs | 6 sur la protection du PDF, 2 sur son ouverture par un vrai lecteur, 3 sur la page du client (dont le lien en gras, souligné, qui télécharge vraiment) |
+| contrôles neufs | 6 sur la protection du PDF, 3 sur sa relecture par un lecteur indépendant, 3 sur la page du client (dont le lien en gras, souligné, qui télécharge vraiment) |
 
 **Une chose à dire franchement sur la batterie.** Les cent vingt et une suites
 navigateur ne tiennent plus dans la machine où je travaille : le serveur de

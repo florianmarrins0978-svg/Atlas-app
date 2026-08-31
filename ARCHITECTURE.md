@@ -19312,11 +19312,33 @@ l'envoi. Promettre l'inverse serait promettre ce qu'aucun format ne tient.
 **Et le contrôle qui compte n'est pas celui qui vérifie le chiffrement.** Un
 contrôle qui relirait la protection avec le code qui l'a produite ne prouverait
 que sa cohérence avec lui-même. Le danger réel est l'inverse du défaut corrigé :
-un devis que **plus personne** n'ouvre. `test-devis-lisible-e2e.ts` demande donc
-au moteur PDF de Chromium — qui ne sait rien d'Atlas — de l'ouvrir et de le
-peindre, et se donne un plancher : le même devis dont **un seul chiffre** de la
-clé est faux, que ce moteur refuse en réclamant un mot de passe. Vérifié en
-outre, ici, avec qpdf : autorisations lues une par une, page déchiffrée.
+un devis que **plus personne** n'ouvre.
+
+`test-devis-lisible.ts` emploie donc un lecteur écrit d'après la norme
+(`scripts/_lecteur-pdf-protege.ts`), qui **n'importe rien de la protection** :
+il ouvre le devis sans mot de passe et y relit le nom du client, la ligne de
+prestation et le total. Son plancher : le même devis dont **un seul chiffre** de
+la clé est faux, que ce lecteur refuse — sans quoi un lecteur complaisant
+passerait les deux contrôles sans rien prouver.
+
+**Ce contrôle a d'abord été écrit avec un vrai navigateur, et la CI l'a fait
+rougir.** Playwright y installe le *headless shell* de Chromium, qui n'embarque
+aucun lecteur PDF : il TÉLÉCHARGE le fichier au lieu de le peindre, et l'erreur
+— « Download is starting » — accusait le devis alors qu'il allait bien. Les
+vrais moteurs ont quand même dit leur mot, le 31 août, à la main : **qpdf** a lu
+les autorisations une par une et déchiffré la page ; le lecteur PDF du
+**Chromium complet** a peint le document sans rien demander, et a réclamé un mot
+de passe sur le même fichier dont un chiffre de la clé était faux. Cette
+vérification-là ne tourne pas en CI, et le dire vaut mieux que de laisser croire
+qu'elle s'y rejoue.
+
+**Un contrôle voisin a été rattrapé au passage, et il s'est défendu tout seul.**
+`test-note-hors-documents-e2e.ts` lit le PDF des gars pour vérifier que le
+pense-bête du patron n'y figure pas. Chiffré, il ne s'y lisait plus rien — et ce
+contrôle a REFUSÉ de conclure plutôt que de rendre un vert : sa garde exige d'y
+retrouver d'abord une ligne du devis. Sans elle, la promesse *« la note ne sort
+pas de l'application »* serait devenue une phrase que plus rien ne tenait. Il
+partage désormais le même lecteur.
 
 ### 2. Toute la réponse dans un écran
 

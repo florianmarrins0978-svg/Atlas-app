@@ -153,8 +153,10 @@
 <p>Te dire « personne ne pourra jamais le modifier » serait te promettre ce qu'aucun format de document ne tient.</p>
 <h3 id="le-vrai-danger-et-ce-qui-le-tient">Le vrai danger, et ce qui le tient</h3>
 <p>Le risque n'était pas de mal verrouiller : c'était de fabriquer un devis que <strong>plus personne n'ouvre</strong>. Un fichier mal chiffré ne s'affiche nulle part, et ton client n'aurait plus rien vu du tout.</p>
-<p>Un contrôle a donc été ajouté qui ne fait pas confiance à Atlas : il demande au lecteur PDF de Chrome — qui ne sait rien de cette application — d'ouvrir le devis et de le dessiner. Et pour être sûr que ce contrôle sait dire non, on lui donne le même devis dont <strong>un seul chiffre</strong> de la clé a été faussé : celui-là, le lecteur le refuse en réclamant un mot de passe.</p>
-<p>Vérifié en plus avec <code>qpdf</code>, un outil indépendant : les autorisations sont bien celles du tableau ci-dessus, et le contenu se relit correctement.</p>
+<p>Un contrôle a donc été ajouté qui ne fait pas confiance à Atlas : un lecteur écrit d'après la norme du format, qui ne réutilise rien du code qui a chiffré. Il ouvre le devis sans mot de passe et y relit le nom de ta cliente, la ligne de prestation et le total. Et pour être sûr qu'il sait dire non, on lui donne le même devis dont <strong>un seul chiffre</strong> de la clé a été faussé : celui-là, il le refuse.</p>
+<p><strong>Deux vrais moteurs l'ont confirmé le même jour</strong> : <code>qpdf</code> (les autorisations lues une par une, le contenu déchiffré) et le lecteur PDF de Chrome, qui a affiché le document sans rien demander — et qui a réclamé un mot de passe sur le fichier faussé.</p>
+<p><em>Ce qui a été appris en route, et corrigé :</em> ce contrôle avait d'abord été écrit avec le navigateur. Sur les serveurs de GitHub, Playwright installe une version de Chrome <strong>sans lecteur PDF</strong> : elle télécharge le fichier au lieu de l'afficher, et le contrôle accusait le devis alors qu'il allait bien.</p>
+<p><em>Et un autre contrôle s'est défendu tout seul :</em> celui qui vérifie que ton pense-bête ne part sur aucun document ne savait plus lire le PDF chiffré. Plutôt que de rendre un vert en ne trouvant rien, il a refusé de conclure. Il sait déchiffrer maintenant.</p>
 <hr>
 <h2 id="3-le-devis-reste-à-portée-après-lacceptation">3. Le devis reste à portée après l'acceptation</h2>
 <a class="retour" href="#sommaire">↑ Sommaire</a>
@@ -192,7 +194,7 @@
 </tr>
 <tr>
 <td>contrôles neufs</td>
-<td>6 sur la protection du PDF, 2 sur son ouverture par un vrai lecteur, 3 sur la page du client (dont le lien en gras, souligné, qui télécharge vraiment)</td>
+<td>6 sur la protection du PDF, 3 sur sa relecture par un lecteur indépendant, 3 sur la page du client (dont le lien en gras, souligné, qui télécharge vraiment)</td>
 </tr>
 </tbody></table></div>
 <p><strong>Une chose à dire franchement sur la batterie.</strong> Les cent vingt et une suites navigateur ne tiennent plus dans la machine où je travaille : le serveur de développement y mange treize gigaoctets et se fait tuer au bout de deux suites. Ce n'est pas ce lot — c'est connu depuis le 30 août, et le dépôt porte déjà un outil pour contourner. Elles tournent donc <strong>sur les serveurs de GitHub</strong>, où la machine est saine : c'est là qu'il faut lire le vert complet.</p>

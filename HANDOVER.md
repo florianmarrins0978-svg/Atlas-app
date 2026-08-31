@@ -29,10 +29,20 @@ destiné : `docs/devis-client-verrouille.md`.
   flux d'objets chiffrerait deux fois les textes qu'il porte, et le fichier ne
   s'ouvrirait nulle part. Idem pour `updateMetadata: false`, sans quoi pdf-lib
   réécrit la date de modification au chargement.
-- **Le contrôle qui compte est `test-devis-lisible-e2e.ts`**, pas celui qui
-  relit la protection : le danger réel est un devis que plus personne n'ouvre.
-  Il demande au moteur PDF de Chromium de le peindre, avec pour plancher le même
-  devis dont un chiffre de la clé est faux — que ce moteur refuse.
+- **Le contrôle qui compte est `test-devis-lisible.ts`**, pas celui qui relit la
+  protection : le danger réel est un devis que plus personne n'ouvre. Il emploie
+  un lecteur écrit d'après la norme (`scripts/_lecteur-pdf-protege.ts`), qui
+  n'importe rien du produit, avec pour plancher le même devis dont un chiffre de
+  la clé est faux.
+- **NE PAS le réécrire avec un navigateur.** La première version demandait à
+  Chromium de peindre le PDF : la CI installe le *headless shell*, sans lecteur
+  PDF, qui le télécharge au lieu de l'afficher — « Download is starting », et un
+  rouge qui accuse le devis. Les vrais moteurs (qpdf, Chromium complet) ont
+  validé le document à la main le 31 août ; cela ne se rejoue pas en CI.
+- **Tout contrôle qui LIT un PDF doit désormais le déchiffrer** —
+  `texteDuPdf` de `scripts/_lecteur-pdf-protege.ts`. C'est ce qui a rattrapé
+  `test-note-hors-documents-e2e.ts`, dont la garde a refusé de conclure plutôt
+  que de rendre un vert imprenable.
 - **La page du client tient dans 664 px, et rien ne doit la rallonger sans que
   la mesure le dise** (`test-devis-client-e2e.ts`, « TOUT TIENT DANS UN ÉCRAN »).
   Elle est mesurée sur le cas le plus haut : client nommé, adresse, deux dates et

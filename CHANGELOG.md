@@ -39,10 +39,14 @@ Et sur la page elle-même, « Voir le devis complet (PDF) » est devenu
 **« Télécharger mon devis (PDF) »**, en gras et souligné — et il télécharge pour
 de bon, au lieu d'ouvrir le lecteur du navigateur.
 
-*Éprouvé par un lecteur qui ne sait rien d'Atlas :* le moteur PDF de Chromium
-ouvre le devis protégé et le peint, et refuse le même devis dont un seul chiffre
-de la clé a été faussé. Le danger était l'inverse du défaut corrigé — un devis
-que plus personne n'ouvre.
+*Éprouvé par un lecteur qui ne sait rien d'Atlas :* un lecteur écrit d'après la
+norme, qui n'importe rien de la protection, ouvre le devis sans mot de passe et
+y relit le nom du client, sa ligne de prestation et son total — et refuse le
+même devis dont un seul chiffre de la clé a été faussé. Le danger était l'inverse
+du défaut corrigé : un devis que plus personne n'ouvre. Deux vrais moteurs l'ont
+confirmé à la main le même jour (qpdf, le lecteur PDF de Chromium) ; la CI, elle,
+n'installe qu'un Chromium sans lecteur PDF, et c'est ce qui avait fait rougir la
+première version de ce contrôle.
 
 Raisons et pièges : `ARCHITECTURE.md` §218. Compte-rendu : `docs/devis-client-verrouille.md`.
 
