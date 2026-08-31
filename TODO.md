@@ -9,29 +9,31 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
-## `test-poignee-ferme-e2e.ts` EST ROUGE SUR `main` — et sa cause est trouvée (31 août 2026)
+## `test-poignee-ferme-e2e.ts` NE PEUT PAS SE JOUER SEUL (31 août 2026)
 
-Quatre cas rouges, reproduits à l'identique **sur `main`** (commit `fbb9264`)
-comme sur la branche du jour : ce n'est le lot de personne, c'est un rouge
-installé. Ce n'est pas non plus une intermittence — il se rejoue seul.
+**CORRECTION DE CE QUI ÉTAIT ÉCRIT ICI IL Y A UNE HEURE, ET C'ÉTAIT FAUX.** Ce
+paragraphe annonçait « quatre cas rouges, reproduits sur `main` » : la suite est
+**verte** dans la batterie complète (121/121, jouée par groupes le 31 août). Le
+rouge venait de la façon de la jouer, pas du dépôt.
 
-**La cause, et elle est dans la suite, pas dans le produit.** Elle ouvre
-`/reglages/equipe` et attend « + Noter une absence », en affirmant en commentaire
-que ce bouton *« est toujours là, sur un écran de réglages qui ne dépend d'aucune
-donnée »*. C'est faux : `AbsencesEquipe` rend une simple phrase et **aucun
-bouton** tant que `nombreSalaries <= 0` (`src/app/reglages/AbsencesEquipe.tsx`),
-et le jeu de démonstration n'en pose aucun. Un artisan seul n'a pas d'absence à
-noter — le produit a raison, c'est la suite qui décrit un écran qu'elle
-n'atteint plus.
+**Ce qui est vrai, et qui vaut d'être écrit.** Jouée SEULE
+(`--seulement test-poignee-ferme-e2e.ts`), elle rougit de quatre cas — sur `main`
+comme ailleurs, et de façon reproductible. Elle ouvre `/reglages/equipe` et
+attend « + Noter une absence », en affirmant en commentaire que ce bouton *« est
+toujours là, sur un écran de réglages qui ne dépend d'aucune donnée »*. C'est
+faux : `AbsencesEquipe` ne rend **aucun bouton** tant que `nombreSalaries <= 0`
+(`src/app/reglages/AbsencesEquipe.tsx`), et le jeu de démonstration n'en pose
+aucun. Le salarié qu'elle trouve en batterie vient d'une suite jouée AVANT elle.
 
-**Ce que ça coûte de le laisser :** la batterie de toute session rougit sur ce
-point, et un rouge permanent s'apprend à être ignoré — on perd alors le
-garde-fou sans s'en apercevoir.
+**Ce que ça coûte :** c'est exactement le piège que documente
+`scripts/jouer-suites-par-groupes.mjs` — les suites navigateur ne sont pas
+indépendantes. Une session qui isole celle-ci pour diagnostiquer autre chose
+conclura à un défaut du produit, et cherchera pendant une heure. C'est arrivé
+aujourd'hui.
 
-**Ce qu'il faut faire :** poser un salarié avant d'ouvrir la feuille, dans la
-suite elle-même. Non fait ici pour ne pas mêler une réparation étrangère au lot
-du retour de devis — mais c'est trois lignes, et la poignée qu'elle défend
-(`BottomSheet`, partagée par une dizaine d'écrans) n'est plus gardée entre-temps.
+**Ce qu'il faudrait :** qu'elle pose son salarié elle-même avant d'ouvrir la
+feuille. Elle serait alors jouable seule, et son commentaire cesserait de
+décrire un écran qu'elle n'atteint pas toujours.
 
 ---
 
