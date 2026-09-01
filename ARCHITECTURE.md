@@ -20543,3 +20543,119 @@ Et le cas du client PRÉSENT ne s'éprouve bien qu'au navigateur
 **par l'écran**, en enregistrant la fiche, jamais par une écriture en base. Un
 état fabriqué à la main aurait éprouvé autre chose que son geste
 (`CLAUDE.md` §5 quater).
+---
+
+## 231. Plusieurs TVA sur un devis : le taux vit sur la ligne, la catégorie est une vue
+
+**Sa question du 1er septembre 2026 :** *« sur la page du devis, si j'ai de la
+main d'œuvre TVA à 20 et des plantes TVA à 10, je peux avoir deux TVA
+différentes ou il faut rajouter cette option ? »* Il fallait la rajouter : le
+devis portait un taux unique, `devis.taux_tva`, posé sur la totalité du
+document.
+
+### Ce qu'il a tranché, contre la première proposition
+
+Une lecture du code avait proposé une **colonne TVA sur chaque ligne**. Il a
+répondu autrement :
+
+> *« Il ne faut pas la rajouter à chaque ligne, mais lorsque j'ai plusieurs
+> choses à rajouter ou une seule en TVA à 10, j'appuie sur ajouter une TVA, une
+> catégorie s'ajoute et là je mets toutes mes lignes qui seront en TVA à 10.
+> Mais elles doivent avoir la possibilité d'être sur plusieurs lignes
+> différentes. »*
+
+**Et il a raison, pour une raison qui ne se voit pas en écrivant le code.** Sur
+un téléphone, poser le même taux sur huit lignes fait huit gestes et huit
+occasions de se tromper d'un chiffre. Un taux faux ne se voit pas sur le devis —
+il se voit à la déclaration, des mois plus tard, et c'est l'artisan qui répond
+de l'écart.
+
+### La forme retenue : le taux sur la LIGNE, la catégorie à l'écran
+
+| | |
+|---|---|
+| ce qui est **stocké** | `taux_tva` sur `lignes_prix`, `lignes_devis`, `lignes_facture` (migration 0073) |
+| ce qui est **affiché** | des catégories — les lignes qui partagent un taux, groupées |
+| ce qui **n'existe pas** | une table de catégories |
+
+**Pourquoi pas de table.** Une catégorie qui vivrait à part serait une seconde
+source à tenir d'accord avec les lignes (`CLAUDE.md` §3), avec une question sans
+bonne réponse : que devient une catégorie dont toutes les lignes sont parties
+ailleurs ? Ici elle disparaît d'elle-même, parce qu'elle n'était rien d'autre
+que ces lignes.
+
+**Conséquence assumée : « Ajouter une TVA » crée une catégorie ET sa première
+ligne.** Une catégorie vide n'a rien pour exister et s'évaporerait au premier
+rechargement. Créer la ligne dans la foulée, c'est exactement le geste suivant
+qu'il ferait.
+
+### NULLE veut dire « suit le document » — et c'est ce qui protège l'existant
+
+Toutes les lignes déjà écrites restent nulles : elles prennent `devis.taux_tva`
+comme avant. **Pas un devis émis ne change d'un centime, et aucune reprise de
+données n'a été nécessaire** — donc aucune occasion de s'y tromper.
+
+C'est aussi ce qui rend le geste « changer le taux de la première catégorie »
+piégeux, et le piège a été éprouvé : les lignes de main d'œuvre portent `null`,
+pas `20.00`. Chercher « les lignes à 20 » sans le savoir n'en trouve aucune, et
+le taux ne bouge pas. `changerTauxCategorie` reçoit donc le taux du devis en
+paramètre (`test-tva-multiple-db.ts`, « changer la catégorie D'ACCUEIL »).
+
+### LA REMISE SE RÉPARTIT AU PRORATA — le vrai piège du lot
+
+Le prix accordé au client s'applique sur le HT, et la TVA se calcule après
+(§ de `reduction-devis.ts`). Avec plusieurs taux, **il faut encore savoir quelle
+part de la remise appartient à quelle catégorie** :
+
+- retirée du seul total, chaque catégorie calculerait sa TVA sur son **brut** —
+  le client paierait une TVA sur de l'argent qu'il ne verse pas. Sur la maquette
+  de son devis, l'écart est de **44,40 €** sur la seule catégorie à 20 % ;
+- répartie, chaque catégorie voit sa base diminuer en proportion de ce qu'elle
+  porte.
+
+**Et le centime résiduel se pose, il ne se perd pas.** Trois catégories et une
+remise peuvent rendre 0,33 + 0,33 + 0,34 : le résidu va à la **plus grosse
+base**, où il pèse le moins. Sans cela, le total ne vaudrait plus la
+soustraction imprimée juste au-dessus, et le client qui refait le calcul cesse
+de croire la feuille entière.
+
+### Une seule règle, appelée par quatre surfaces
+
+`totauxAvecReduction` rend désormais `parTaux` — **toujours**, même à un seul
+taux, où c'est une liste d'un élément. Deux chemins de calcul selon le nombre de
+catégories auraient fini par rendre deux résultats. L'écran, le PDF du devis,
+la facture et son PDF appellent tous celle-là ; `lignesParCategorie` groupe pour
+l'écran **et** pour le papier, pour que ce qu'il relit ressemble à ce qu'il a
+écrit.
+
+`tauxTvaValide` est née du même principe : la validation d'un taux vivait en dur
+dans `mettreAJourEnTeteDevis` (`Math.min(100, Math.max(0, …))`) et n'était
+partagée avec personne.
+
+### Ce que la capture a trouvé, et qu'aucune suite ne voyait
+
+`scripts/capture-devis-tva-multiple.mts` rend trois PDF — un taux, deux taux,
+trois taux avec remise et assez de lignes pour déborder. **Sur la seconde page,
+une catégorie coupée laissait ses dernières lignes et son sous-total SANS
+titre** : le client lisait « Sous-total HT 1 200,00 € » sans savoir de quelle
+TVA. Un sous-total orphelin sur une pièce qu'il garde est pire qu'absent — il se
+recopie sur une comptabilité. Le titre se redessine maintenant en « TVA 10 %
+(suite) ».
+
+C'est la sixième fois dans ce dépôt qu'un défaut sort d'une image et d'aucun
+test (`CLAUDE.md` §5).
+
+### Ce qui l'éprouve
+
+| | |
+|---|---|
+| `test-tva-multiple.ts` | la règle pure — prorata, résidu, ordre, non-régression à un seul taux |
+| `test-tva-multiple-db.ts` | le parcours : devis → envoi → facture → émission, en LISANT la base des deux côtés |
+| `test-tva-multiple-e2e.ts` | **son geste** : un doigt sur « Ajouter une TVA », par la porte d'entrée (`CLAUDE.md` §5 quater) |
+| `capture-devis-tva-multiple.mts` | la feuille, regardée |
+
+**Un contrôle a su échouer, et sur mon propre calcul.** Le premier cas de résidu
+posait trois bases à 100 € et 33,33 % : 300,01 × 33,33 % fait 99,99 €, soit
+trois fois 33,33 exactement — aucun résidu, et le contrôle passait au vert sans
+rien éprouver. Il a fallu des centimes qui ne se divisent pas (3,02 € à 33,33 %)
+pour que le cas morde vraiment.

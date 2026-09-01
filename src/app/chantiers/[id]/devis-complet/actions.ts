@@ -6,7 +6,14 @@ import { getCurrentCtx } from "@/server/session-ctx";
 import { retenirLecon } from "@/server/repositories/lecons-prix";
 import { mettreAJourEntreprise } from "@/server/repositories/entreprises";
 import { mettreAJourClient } from "@/server/repositories/clients";
-import { modifierLignePrix, supprimerLignePrix, ajouterLignePrix, listerLignesPrix } from "@/server/repositories/lignes-prix";
+import {
+  modifierLignePrix,
+  supprimerLignePrix,
+  ajouterLignePrix,
+  listerLignesPrix,
+  changerTauxCategorie,
+  retirerCategorieTva,
+} from "@/server/repositories/lignes-prix";
 import { noterRetenu } from "@/server/repositories/termes-metier";
 import { apprendrePrixGrille } from "@/server/services/apprendre-grille";
 import { mettreAJourAdresseChantier } from "@/server/repositories/chantiers";
@@ -16,6 +23,7 @@ import { preparerAudioEntrant } from "@/server/audio-entrant";
 import { lireRetouchesDictees } from "@/server/ai/services/retouches-devis-service";
 import type { Changement } from "@/lib/retouches-devis";
 import type { Civilite } from "@/lib/civilite";
+import { tauxTvaValide } from "@/lib/reduction-devis";
 
 // Le devis écrit à la main : chaque champ du document part vers SA source.
 //
@@ -55,7 +63,7 @@ export async function majAdresseChantierAction(chantierId: string, adresse: stri
 
 export async function majLigneAction(
   id: string,
-  data: { libelle?: string; quantite?: string; prixUnitaire?: string }
+  data: { libelle?: string; quantite?: string; prixUnitaire?: string; tauxTva?: string | null }
 ) {
   const ctx = await getCurrentCtx();
   await exigerGestionDevis(ctx, "modifier une ligne du devis");
@@ -115,10 +123,55 @@ export async function majLigneAction(
   return ligne;
 }
 
-export async function ajouterLigneAction(chantierId: string) {
+export async function ajouterLigneAction(chantierId: string, tauxTva?: string | null) {
   const ctx = await getCurrentCtx();
   await exigerGestionDevis(ctx, "ajouter une ligne au devis");
-  return ajouterLignePrix(ctx, chantierId, "", "0.00");
+  // Le taux vient de la catégorie sous laquelle il a appuyé : la ligne naît au
+  // bon endroit plutôt que de tomber dans la première puis d'être déplacée.
+  return ajouterLignePrix(ctx, chantierId, "", "0.00", { tauxTva: tauxTva ?? null });
+}
+
+/**
+ * « Ajouter une TVA » — une catégorie s'ouvre, avec sa première ligne.
+ *
+ * **Pourquoi une ligne tout de suite, et pas une catégorie vide.** Le taux vit
+ * sur la ligne : une catégorie que rien ne porte n'existe nulle part, et
+ * disparaîtrait au premier rechargement de la page. Créer la ligne dans la
+ * foulée, c'est exactement le geste suivant qu'il ferait — et le devis refuse
+ * déjà de partir tant qu'une ligne n'est pas chiffrée, donc rien ne peut filer
+ * chez un client à moitié rempli.
+ */
+export async function ajouterCategorieTvaAction(chantierId: string, taux: string) {
+  const ctx = await getCurrentCtx();
+  await exigerGestionDevis(ctx, "ajouter une TVA au devis");
+  const propre = tauxTvaValide(taux);
+  if (propre === null) return null;
+  return ajouterLignePrix(ctx, chantierId, "", "0.00", { tauxTva: propre });
+}
+
+/** Le taux d'une catégorie change : toutes ses lignes suivent. */
+export async function changerTauxCategorieAction(
+  chantierId: string,
+  ancien: string,
+  nouveau: string,
+  tauxDuDevis: string
+) {
+  const ctx = await getCurrentCtx();
+  await exigerGestionDevis(ctx, "changer un taux de TVA du devis");
+  const propre = tauxTvaValide(nouveau);
+  if (propre === null) return;
+  await changerTauxCategorie(ctx, chantierId, ancien, propre, tauxDuDevis);
+}
+
+/** La catégorie disparaît, ses lignes reviennent au taux du devis. */
+export async function retirerCategorieTvaAction(
+  chantierId: string,
+  taux: string,
+  tauxDuDevis: string
+) {
+  const ctx = await getCurrentCtx();
+  await exigerGestionDevis(ctx, "retirer une TVA du devis");
+  await retirerCategorieTva(ctx, chantierId, taux, tauxDuDevis);
 }
 
 export async function retirerLigneAction(id: string) {

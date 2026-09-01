@@ -9,6 +9,50 @@ sert.
 
 ---
 
+## Dernier lot : plusieurs TVA sur un devis (1ᵉʳ sept. 2026)
+
+**Ce qui est fait, et poussé.** Main d'œuvre à 20 %, végétaux à 10 %, sur le
+même devis — par CATÉGORIE, jamais par ligne (c'est lui qui l'a tranché).
+
+**Ce qu'il faut savoir avant d'y toucher :**
+
+1. **La catégorie est une VUE, pas une table.** Le taux vit sur
+   `lignes_prix.taux_tva` ; l'écran groupe. Une catégorie sans ligne n'existe
+   pas — d'où « Ajouter une TVA » qui crée la catégorie ET sa première ligne.
+2. **`NULL` veut dire « suit le devis ».** Toutes les lignes d'avant sont
+   nulles : aucun devis émis ne change d'un centime, et aucune reprise de
+   données n'a eu lieu. Conséquence : changer le taux de la PREMIÈRE catégorie
+   doit toucher les lignes nulles — `changerTauxCategorie` reçoit donc le taux
+   du devis en paramètre.
+3. **La remise se répartit au prorata**, et le centime résiduel va à la plus
+   grosse base. La retirer du seul total ferait calculer chaque TVA sur le brut.
+4. **`totauxAvecReduction` rend toujours `parTaux`**, même à un seul taux. Ne
+   pas rebrancher un calcul « simple » à côté : ce serait la seconde
+   implémentation que `CLAUDE.md` §3 interdit.
+
+**Trois défauts trouvés en REGARDANT, pas au test** — et c'est ce qui doit
+rester en tête :
+
+| ce qui était vert | ce que l'image montrait |
+|---|---|
+| le calcul sur zéro ligne | un devis **vide** n'avait plus de bouton « Ajouter une ligne » |
+| les totaux justes | le « − » s'affichait sur la catégorie d'accueil (« 20 » ≠ « 20.00 ») |
+| le PDF à deux taux | une catégorie coupée par un saut de page perdait son titre |
+
+**Piège d'environnement, à ne pas re-diagnostiquer :** `monter-base-locale.sh`
+**n'exporte pas `REDIS_URL`** alors qu'il démarre Redis. Sans elle, le limiteur
+de connexion vit en mémoire et **toutes les suites navigateur tombent à partir
+de la deuxième**, sur un « dépassement de délai » qui accuse le formulaire de
+connexion. Lancer la batterie ainsi :
+
+```bash
+source scripts/monter-base-locale.sh && REDIS_URL=redis://localhost:6379 npm run verifier:avant-livraison
+```
+
+Et la batterie e2e **complète** ne tient pas dans ce conteneur : le serveur
+s'arrête vers la troisième suite (le journal noyau dit « out of memory »). Les
+suites se rejouent par groupes de cinq, ce que le runner suggère lui-même.
+
 ## Dernier lot : la date du chantier dans « Terminés » (31 août 2026)
 
 Sa demande, capture à l'appui : *« changer le bouton FACTURER en À FACTURER, et

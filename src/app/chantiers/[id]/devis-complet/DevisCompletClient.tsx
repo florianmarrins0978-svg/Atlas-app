@@ -14,7 +14,15 @@ import TiroirDesRetires from "@/components/atlas/TiroirDesRetires";
 import { useRetraits } from "@/components/atlas/useRetraits";
 import { CIVILITES, type Civilite } from "@/lib/civilite";
 import type { Changement } from "@/lib/retouches-devis";
-import { LIBELLE_REDUCTION, pourcentValide, totauxAvecReduction } from "@/lib/reduction-devis";
+import {
+  LIBELLE_REDUCTION,
+  lignesParCategorie,
+  pourcentValide,
+  tauxDeLaLigne,
+  tauxLisible,
+  tauxTvaValide,
+  totauxAvecReduction,
+} from "@/lib/reduction-devis";
 import DicterDansLeDevis from "./DicterDansLeDevis";
 import BoutonAssistant from "@/components/atlas/BoutonAssistant";
 import PrimaryButton from "@/components/atlas/PrimaryButton";
@@ -30,6 +38,9 @@ import {
   ajouterLigneAction,
   retirerLigneAction,
   majEnTeteDevisAction,
+  ajouterCategorieTvaAction,
+  changerTauxCategorieAction,
+  retirerCategorieTvaAction,
 } from "./actions";
 
 // **Le devis, seul sur sa page — et à l'image du papier.**
@@ -63,6 +74,8 @@ type Ligne = {
   unite?: string | null;
   /** Le travail est identifié, son prix ne l'est pas (migration 0070). */
   aChiffrer?: boolean | null;
+  /** Le taux de sa catégorie. `null` : la ligne suit le taux du devis (migration 0073). */
+  tauxTva?: string | null;
 };
 
 /**
@@ -245,13 +258,35 @@ export default function DevisCompletClient(props: Props) {
   // verrait la différence (`CLAUDE.md` §3).
   const lignesVisibles = lignes.filter((l) => !retraits.estRetire(l.id));
   const totaux = totauxAvecReduction(
-    lignesVisibles.map((l) => ({ montant: montantDeLaLigne(l).toFixed(2) })),
+    lignesVisibles.map((l) => ({ montant: montantDeLaLigne(l).toFixed(2), tauxTva: l.tauxTva })),
     String(nombre(tauxTva)),
     remiseVisible ? reduction : null
   );
   const brutHt = Number(totaux.brutHt);
   const totalHt = Number(totaux.totalHt);
   const totalTva = Number(totaux.totalTva);
+
+  // ─── Les catégories de TVA (migration 0073) ──────────────────────────────
+  //
+  // **Le groupement passe par la MÊME fonction que le PDF.** Deux tris écrits
+  // séparément auraient fini par ranger différemment, et il aurait relu un
+  // document qui ne ressemble plus à son écran (`CLAUDE.md` §3).
+  //
+  // Le taux du devis reste la catégorie d'accueil : c'est là que retombent les
+  // lignes sans taux — toutes celles écrites avant ce lot.
+  // **NORMALISÉ À DEUX DÉCIMALES, et ce n'est pas cosmétique.** `String(nombre())`
+  // rendait « 20 » pendant que les catégories portent « 20.00 » : la comparaison
+  // qui masque le « − » sur la catégorie d'accueil échouait, et un bouton
+  // « retirer » s'affichait sur elle — un bouton qui ne pouvait rien faire, le
+  // dépôt refusant de retirer la catégorie où tout retombe. Vu à la capture,
+  // pas au test (`CLAUDE.md` §5).
+  const tauxDuDevis = tauxTvaValide(tauxTva) ?? "20.00";
+  const categories = lignesParCategorie(lignes, tauxDuDevis);
+  // **Une seule catégorie ne se DESSINE pas.** Son écran d'aujourd'hui ne
+  // change pas d'un pixel tant qu'il n'a pas appuyé sur « Ajouter une TVA » —
+  // un titre « TVA 20 % » au-dessus d'un tableau qui n'a qu'un taux serait du
+  // bruit sur tous ses devis (`CLAUDE.md` §3, le moins de mots possible).
+  const plusieursTva = categories.length > 1;
 
   function majLigneLocale(id: string, champ: keyof Ligne, valeur: string) {
     setLignes((cur) => cur.map((l) => (l.id === id ? { ...l, [champ]: valeur } : l)));
@@ -327,12 +362,78 @@ export default function DevisCompletClient(props: Props) {
     });
   }
 
-  async function ajouter() {
-    const creee = await ajouterLigneAction(props.chantierId);
+  async function ajouter(tauxDeLaCategorie?: string | null) {
+    const creee = await ajouterLigneAction(props.chantierId, tauxDeLaCategorie ?? null);
     setLignes((cur) => [
       ...cur,
-      { id: creee.id, libelle: "", quantite: "1", prixUnitaire: "", montant: "0.00", aChiffrer: false },
+      {
+        id: creee.id,
+        libelle: "",
+        quantite: "1",
+        prixUnitaire: "",
+        montant: "0.00",
+        aChiffrer: false,
+        tauxTva: creee.tauxTva ?? null,
+      },
     ]);
+  }
+
+  /**
+   * « Ajouter une TVA » — sa demande du 1er septembre 2026.
+   *
+   * *« Lorsque j'ai plusieurs choses à rajouter ou une seule en TVA à 10,
+   * j'appuie sur ajouter une TVA, une catégorie s'ajoute et là je mets toutes
+   * mes lignes qui seront en TVA à 10. »*
+   *
+   * **10 % par défaut, et ce n'est pas un chiffre pris au hasard** : c'est
+   * l'exemple qu'il a donné deux fois, et le taux des végétaux qu'il achète.
+   * S'il en veut un autre, le champ du titre se corrige d'un doigt — proposer
+   * une liste de taux aurait fait un écran de plus avant le premier mot écrit.
+   */
+  async function ajouterUneTva() {
+    const dejaPris = categories.map((c) => c.taux);
+    const propose = ["10.00", "5.50", "20.00", "0.00"].find((t) => !dejaPris.includes(t)) ?? "10.00";
+    const creee = await ajouterCategorieTvaAction(props.chantierId, propose);
+    if (!creee) return;
+    setLignes((cur) => [
+      ...cur,
+      {
+        id: creee.id,
+        libelle: "",
+        quantite: "1",
+        prixUnitaire: "",
+        montant: "0.00",
+        aChiffrer: false,
+        tauxTva: creee.tauxTva ?? propose,
+      },
+    ]);
+  }
+
+  /** Le taux d'une catégorie change : toutes ses lignes suivent, d'un geste. */
+  async function changerTaux(ancien: string, saisi: string) {
+    const nouveau = tauxTvaValide(saisi);
+    if (nouveau === null || nouveau === ancien) return;
+    setLignes((cur) =>
+      cur.map((l) =>
+        tauxDeLaLigne({ tauxTva: l.tauxTva }, tauxDuDevis) === ancien ? { ...l, tauxTva: nouveau } : l
+      )
+    );
+    await changerTauxCategorieAction(props.chantierId, ancien, nouveau, tauxDuDevis);
+  }
+
+  /**
+   * Retirer une catégorie — SES LIGNES RESTENT, elles reviennent au taux du devis.
+   *
+   * Les supprimer serait la faute : il retirerait une TVA posée par erreur et
+   * perdrait du même geste le travail qu'il venait de chiffrer.
+   */
+  async function retirerLaTva(taux: string) {
+    setLignes((cur) =>
+      cur.map((l) =>
+        tauxDeLaLigne({ tauxTva: l.tauxTva }, tauxDuDevis) === taux ? { ...l, tauxTva: null } : l
+      )
+    );
+    await retirerCategorieTvaAction(props.chantierId, taux, tauxDuDevis);
   }
 
 
@@ -607,7 +708,55 @@ export default function DevisCompletClient(props: Props) {
           </p>
         )}
 
-        {lignes.map((l, i) => (
+        {categories.map((categorie) => (
+        <div key={categorie.taux}>
+
+        {/* **Le titre de la catégorie — seulement s'il y en a plusieurs.**
+            Sa demande du 1er septembre 2026 : le taux se pose par catégorie, pas
+            par ligne. Le champ est nu comme le reste de la feuille : c'est un
+            document, pas un formulaire. */}
+        {plusieursTva && (
+          <div
+            className="mt-5 flex items-center justify-between gap-3 rounded-md px-3 py-1.5"
+            style={{ backgroundColor: colors.rustTint }}
+          >
+            <span
+              className="flex items-center gap-1 text-[11px] font-semibold uppercase tracking-[0.12em]"
+              style={{ color: colors.rust }}
+            >
+              TVA
+              <input
+                defaultValue={tauxLisible(categorie.taux)}
+                readOnly={fige}
+                inputMode="decimal"
+                aria-label={`Taux de TVA de la catégorie ${tauxLisible(categorie.taux)} %`}
+                onBlur={(e) => void changerTaux(categorie.taux, e.target.value)}
+                className="w-9 border-0 bg-transparent p-0 text-right outline-none focus:bg-[rgba(0,0,0,0.04)]"
+                style={{ color: colors.ink, fontSize: "16px" }}
+              />
+              %
+            </span>
+            {/* **Le « − », comme celui du prix accordé** (sa proposition B du
+                17 août 2026) : 26 px, sans quoi on le rate au doigt. Il ne
+                s'affiche pas sur la catégorie d'accueil — c'est là que les
+                lignes retombent, elle n'a nulle part où aller. */}
+            {!fige && categorie.taux !== tauxDuDevis && (
+              <button
+                type="button"
+                aria-label={`Retirer la TVA à ${tauxLisible(categorie.taux)} %`}
+                onClick={() => void retirerLaTva(categorie.taux)}
+                className="flex h-[26px] w-[26px] flex-none items-center justify-center rounded-full text-[15px] leading-none"
+                style={{ border: `1px solid ${colors.or}`, color: colors.or }}
+              >
+                −
+              </button>
+            )}
+          </div>
+        )}
+
+        {categorie.lignes.map((l) => {
+          const i = lignes.indexOf(l);
+          return (
           <LigneRetirable
             key={l.id}
             libelle={l.libelle ? `« ${l.libelle.split("\n")[0]} »` : `la ligne ${i + 1}`}
@@ -702,11 +851,48 @@ export default function DevisCompletClient(props: Props) {
 
           </div>
           </LigneRetirable>
-        ))}
+          );
+        })}
 
         {!fige && (
-          <button type="button" onClick={ajouter} className="mt-4 text-[14px] font-medium" style={{ color: colors.rust }}>
+          <button
+            type="button"
+            onClick={() => void ajouter(plusieursTva ? categorie.taux : null)}
+            className="mt-4 text-[14px] font-medium"
+            style={{ color: colors.rust }}
+          >
             + Ajouter une ligne
+          </button>
+        )}
+
+        {/* **Le sous-total permet au client de refaire le calcul de SA TVA.**
+            Sans lui, la ligne « TVA (10 %) » des totaux ne se vérifie qu'en
+            additionnant soi-même les montants de la catégorie. */}
+        {plusieursTva && (
+          <div className="mt-2 flex justify-end gap-4 text-[13px]" style={{ color: colors.muted }}>
+            <span>Sous-total HT</span>
+            <span style={{ color: colors.ink }}>
+              {enEuros(
+                categorie.lignes
+                  .filter((l) => !retraits.estRetire(l.id))
+                  .reduce((somme, l) => somme + montantDeLaLigne(l), 0)
+              )}
+            </span>
+          </div>
+        )}
+        </div>
+        ))}
+
+        {/* **« Ajouter une TVA » — le geste qu'il a décrit.** Discret et sous
+            le tableau, même vocabulaire que « + Ajouter une ligne ». */}
+        {!fige && (
+          <button
+            type="button"
+            onClick={() => void ajouterUneTva()}
+            className="mt-5 block text-[14px] font-medium"
+            style={{ color: colors.or }}
+          >
+            + Ajouter une TVA
           </button>
         )}
 
@@ -795,25 +981,43 @@ export default function DevisCompletClient(props: Props) {
               <span className="text-[15px]">{enEuros(totalHt)}</span>
             </div>
           )}
-          <div className="flex items-center justify-between py-1.5">
-            <span className="flex items-center gap-1 text-[15px]">
-              TVA (
-              <input
-                value={tauxTva}
-                readOnly={fige}
-                inputMode="decimal"
-                aria-label="Taux de TVA"
-                onChange={(e) => setTauxTva(e.target.value)}
-                onBlur={() => majEnTeteDevisAction(props.devisId, { tauxTva })}
-                // Collé au « ( » : aligné à droite dans une boîte fixe, le taux
-                // laissait un blanc et se lisait « TVA (    20 %) ».
-                className="w-9 border-0 bg-transparent p-0 text-left outline-none focus:bg-[rgba(0,0,0,0.03)]"
-                style={{ color: colors.ink, fontSize: "16px" }}
-              />
-              %)
-            </span>
-            <span className="text-[15px]">{enEuros(totalTva)}</span>
-          </div>
+          {/* **UNE LIGNE PAR CATÉGORIE — sa demande du 1er septembre 2026.**
+
+              À un seul taux, c'est EXACTEMENT la ligne d'avant : le champ y
+              reste modifiable, et son écran d'aujourd'hui ne bouge pas.
+
+              Dès qu'il y a deux catégories, le taux ne se corrige plus ici mais
+              dans le titre de sa catégorie — le laisser modifiable aux deux
+              endroits aurait donné deux façons de changer la même chose, dont
+              une qui écrase silencieusement l'autre. */}
+          {plusieursTva ? (
+            totaux.parTaux.map((categorie) => (
+              <div key={categorie.taux} className="flex items-center justify-between py-1.5">
+                <span className="text-[15px]">TVA ({tauxLisible(categorie.taux)} %)</span>
+                <span className="text-[15px]">{enEuros(Number(categorie.tva))}</span>
+              </div>
+            ))
+          ) : (
+            <div className="flex items-center justify-between py-1.5">
+              <span className="flex items-center gap-1 text-[15px]">
+                TVA (
+                <input
+                  value={tauxTva}
+                  readOnly={fige}
+                  inputMode="decimal"
+                  aria-label="Taux de TVA"
+                  onChange={(e) => setTauxTva(e.target.value)}
+                  onBlur={() => majEnTeteDevisAction(props.devisId, { tauxTva })}
+                  // Collé au « ( » : aligné à droite dans une boîte fixe, le taux
+                  // laissait un blanc et se lisait « TVA (    20 %) ».
+                  className="w-9 border-0 bg-transparent p-0 text-left outline-none focus:bg-[rgba(0,0,0,0.03)]"
+                  style={{ color: colors.ink, fontSize: "16px" }}
+                />
+                %)
+              </span>
+              <span className="text-[15px]">{enEuros(totalTva)}</span>
+            </div>
+          )}
           <div className="mt-1 flex items-center justify-between pt-2.5" style={{ borderTop: `2px solid ${colors.ink}` }}>
             <span className="text-[17px] font-semibold">Total TTC</span>
             <span className="text-[20px] font-semibold" style={{ fontFamily: font.display }}>

@@ -18,6 +18,29 @@ ligne « fait » qui ne l'est pas coûte plus cher qu'une ligne absente.
 
 ---
 
+## FAIT : plusieurs TVA sur un même devis (1ᵉʳ sept. 2026)
+
+**Sa question :** *« si j'ai de la main d'œuvre TVA à 20 et des plantes TVA à
+10, je peux avoir deux TVA différentes ? »* Le devis n'en portait qu'une.
+
+**Le taux ne se pose PAS ligne par ligne** — il l'a tranché contre la première
+proposition : *« j'appuie sur ajouter une TVA, une catégorie s'ajoute et là je
+mets toutes mes lignes qui seront en TVA à 10 »*.
+
+| | |
+|---|---|
+| un seul taux | l'écran et le PDF sont **exactement** ceux d'avant |
+| « + Ajouter une TVA » | une catégorie s'ouvre, avec sa première ligne |
+| une catégorie | porte autant de lignes qu'il veut, et son sous-total HT |
+| les totaux | une ligne de TVA par catégorie |
+| le « − » | retire la catégorie ; **ses lignes reviennent**, elles ne meurent pas |
+
+Le taux vit sur la ligne (migration 0073, nul = suit le devis) et voyage jusqu'à
+la facture émise. Le prix accordé au client se répartit au prorata entre les
+catégories — sans quoi la TVA se calculerait sur le brut. Règle :
+`src/lib/reduction-devis.ts`. Détail : `ARCHITECTURE.md` §231. Maquette :
+`appli/devis-tva-multiple.html`.
+
 ## « Terminés » porte la date du chantier, et la ligne dorée a maigri (31 août 2026)
 
 Sous le nom du client, l'écran écrit maintenant **la date du chantier puis le

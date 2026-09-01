@@ -9,6 +9,40 @@ Format : le plus récent en tête.
 
 ## 2026-09-01
 
+### Plusieurs TVA sur un même devis
+
+**Sa question :** *« si j'ai de la main d'œuvre TVA à 20 et des plantes TVA à
+10, je peux avoir deux TVA différentes ? »* Non — le devis portait un taux
+unique posé sur tout le document.
+
+**Le taux ne se pose PAS ligne par ligne**, et c'est lui qui l'a tranché contre
+la première proposition : *« j'appuie sur ajouter une TVA, une catégorie
+s'ajoute et là je mets toutes mes lignes qui seront en TVA à 10 »*. Sur un
+téléphone, poser le même taux sur huit lignes fait huit occasions de se tromper
+d'un chiffre — et un taux faux ne se voit qu'à la déclaration.
+
+Le taux vit donc sur la ligne (migration 0073) et l'écran groupe : la catégorie
+est une vue, jamais une table. Elle voyage du devis à la facture émise.
+
+**Ce qui ne change pas :** un devis à un seul taux — tous ceux déjà émis — sort
+identique à lui-même, sans titre de catégorie ni sous-total. Les lignes
+existantes restent nulles et suivent le taux du devis ; aucune reprise de
+données.
+
+**Le piège, invisible à l'œil :** le prix accordé au client se répartit au
+prorata entre les catégories, sinon chaque TVA se calcule sur le brut et le
+client paie une TVA sur de l'argent qu'il ne verse pas — 44,40 € d'écart sur le
+devis de la maquette. Le centime résiduel va à la plus grosse base.
+
+**Trouvé en regardant la capture, pas au test :** une catégorie coupée par un
+saut de page laissait ses dernières lignes et son sous-total sans titre. Il se
+redessine en « TVA 10 % (suite) ».
+
+Éprouvé : `test-tva-multiple.ts` (la règle), `test-tva-multiple-db.ts` (devis →
+facture émise, en base), `test-tva-multiple-e2e.ts` (son geste, par le bouton),
+`capture-devis-tva-multiple.mts` (la feuille). Maquette :
+`appli/devis-tva-multiple.html`. Détail dans `ARCHITECTURE.md` §231.
+
 ### Le trait au-dessus de la dictée s'en va
 
 **Sa demande, en une ligne :** *« supprime le trait gris qu'il y a au-dessus »*.

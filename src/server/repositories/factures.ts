@@ -206,6 +206,10 @@ export async function terminerChantier(ctx: Ctx, chantierId: string, maintenant:
           quantite: l.quantite,
           prixUnitaire: l.prixUnitaire,
           montant: l.montant,
+          // **Sans ce report, une facture née d'un devis à deux TVA se réglait
+          // sur un seul taux** — et l'écart partait dans une déclaration
+          // trimestrielle, là où il coûte à l'artisan (migration 0073).
+          tauxTva: l.tauxTva,
           ordre: l.ordre,
         }))
       );
@@ -343,6 +347,9 @@ function donneesFacture(
         quantite: l.quantite,
         prixUnitaire: l.prixUnitaire,
         montant: l.montant,
+        // Le taux de sa catégorie voyage jusqu'au papier : sans lui, la facture
+        // ventilerait tout sur le taux du document (migration 0073).
+        tauxTva: l.tauxTva,
       })),
   };
 }

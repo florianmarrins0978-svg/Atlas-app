@@ -33,7 +33,14 @@ export async function ajouterLignePrix(
   chantierId: string,
   libelle: string,
   montant: string,
-  options?: { quantite?: string; prixUnitaire?: string; unite?: string | null; aChiffrer?: boolean }
+  options?: {
+    quantite?: string;
+    prixUnitaire?: string;
+    unite?: string | null;
+    aChiffrer?: boolean;
+    /** Le taux de sa catégorie (migration 0073). Absent : la ligne suit le devis. */
+    tauxTva?: string | null;
+  }
 ) {
   return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
     const existantes = await tx.select().from(lignesPrix).where(eq(lignesPrix.chantierId, chantierId));
@@ -48,6 +55,7 @@ export async function ajouterLignePrix(
         prixUnitaire: options?.prixUnitaire ?? montant,
         unite: options?.unite ?? undefined,
         aChiffrer: options?.aChiffrer ?? false,
+        tauxTva: options?.tauxTva ?? null,
         ordre: existantes.length,
       })
       .returning();
@@ -65,6 +73,13 @@ export async function modifierLignePrix(
     prixUnitaire?: string;
     unite?: string;
     aChiffrer?: boolean;
+    /**
+     * Déplacer la ligne d'une catégorie de TVA à l'autre (migration 0073).
+     *
+     * `null` la renvoie au taux du devis — c'est ce que fait le retrait d'une
+     * catégorie, plutôt que de supprimer les lignes qu'elle portait.
+     */
+    tauxTva?: string | null;
   }
 ) {
   return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
@@ -278,4 +293,74 @@ export async function prestationsDeLaLigneDans(tx: DbOrTx, lignePrixId: string) 
       .where(eq(lignesPrixPrestations.lignePrixId, lignePrixId))
       .orderBy(_asc(lignesPrixPrestations.ordre))
   );
+}
+
+// ─── Les catégories de TVA (migration 0073) ─────────────────────────────────
+//
+// **Sa demande du 1er septembre 2026** : *« quand j'appuie sur ajouter une TVA,
+// une catégorie s'ajoute, et là je mets toutes mes lignes qui seront en TVA à
+// 10 »*. Une catégorie n'est pas une table : c'est l'ensemble des lignes qui
+// partagent un taux. Les trois gestes ci-dessous sont donc des écritures sur
+// des LIGNES — mais groupées ici, parce qu'ils portent tous sur plusieurs à la
+// fois et qu'un écran qui les ferait une par une laisserait une catégorie à
+// moitié déplacée si le réseau lâche au milieu.
+
+/**
+ * Changer le taux d'une catégorie entière.
+ *
+ * **Toutes ses lignes suivent, et c'est tout l'intérêt du geste** : c'est
+ * précisément ce qu'il ne voulait pas refaire ligne par ligne.
+ *
+ * `ancien` est le taux tel que l'écran l'affiche ; les lignes qui suivent le
+ * devis (taux nul) sont concernées quand `ancien` est le taux du document —
+ * d'où le paramètre `tauxDuDevis`, sans lequel changer la première catégorie
+ * d'un devis existant n'aurait touché aucune ligne.
+ */
+export async function changerTauxCategorie(
+  ctx: Ctx,
+  chantierId: string,
+  ancien: string,
+  nouveau: string,
+  tauxDuDevis: string
+) {
+  const avant = new Decimal(ancien).toFixed(2);
+  const apres = new Decimal(nouveau).toFixed(2);
+  const suitLeDevis = new Decimal(tauxDuDevis).toFixed(2) === avant;
+
+  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    const lignes = await tx.select().from(lignesPrix).where(eq(lignesPrix.chantierId, chantierId));
+    for (const ligne of lignes) {
+      const sien = ligne.tauxTva === null ? (suitLeDevis ? avant : null) : new Decimal(ligne.tauxTva).toFixed(2);
+      if (sien !== avant) continue;
+      await tx.update(lignesPrix).set({ tauxTva: apres, updatedAt: new Date() }).where(eq(lignesPrix.id, ligne.id));
+    }
+  });
+}
+
+/**
+ * Retirer une catégorie — SES LIGNES NE SONT PAS SUPPRIMÉES.
+ *
+ * Elles reviennent à la catégorie d'accueil, celle du taux du devis. Supprimer
+ * les lignes serait la faute : il retirerait une TVA posée par erreur et
+ * perdrait du même geste le travail qu'il venait de chiffrer, sans qu'aucun
+ * écran ne le prévienne.
+ */
+export async function retirerCategorieTva(
+  ctx: Ctx,
+  chantierId: string,
+  taux: string,
+  tauxDuDevis: string
+) {
+  const vise = new Decimal(taux).toFixed(2);
+  // Retirer la catégorie d'accueil n'a pas de sens : c'est celle où tout
+  // retombe. L'écran ne propose d'ailleurs pas le geste sur elle.
+  if (new Decimal(tauxDuDevis).toFixed(2) === vise) return;
+
+  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    const lignes = await tx.select().from(lignesPrix).where(eq(lignesPrix.chantierId, chantierId));
+    for (const ligne of lignes) {
+      if (ligne.tauxTva === null || new Decimal(ligne.tauxTva).toFixed(2) !== vise) continue;
+      await tx.update(lignesPrix).set({ tauxTva: null, updatedAt: new Date() }).where(eq(lignesPrix.id, ligne.id));
+    }
+  });
 }

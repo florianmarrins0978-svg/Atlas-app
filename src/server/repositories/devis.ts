@@ -3,7 +3,7 @@ import { jourIso } from "@/lib/jour";
 import { withEntreprise } from "../db/with-entreprise";
 import { allureDesDocuments, formatNumeroDe } from "./entreprises";
 import { conditionsDepuisEntreprise } from "@/lib/conditions-documents";
-import { totauxAvecReduction, pourcentValide } from "@/lib/reduction-devis";
+import { totauxAvecReduction, pourcentValide, tauxTvaValide } from "@/lib/reduction-devis";
 import type { DbOrTx } from "../db/client";
 import { devis, lignesDevis, lignesPrix, chantiers, clients, entreprises } from "../db/schema";
 import type { Ctx } from "./context";
@@ -63,7 +63,7 @@ export async function attribuerNumeroDevis(tx: DbOrTx, entrepriseId: string): Pr
  * client. Une seule règle, appelée partout.
  */
 function calculerTotaux(
-  lignes: { montant: string }[],
+  lignes: { montant: string; tauxTva?: string | null }[],
   tauxTva: string,
   reductionPourcent?: string | null
 ) {
@@ -263,6 +263,11 @@ export async function getOuCreerDevisBrouillon(ctx: Ctx, chantierId: string) {
             // lignes de prix, qui ont pu bouger depuis.
             unite: l.unite,
             aChiffrer: l.aChiffrer,
+            // **Le taux de sa catégorie descend au document** (migration 0073).
+            // Recopié, jamais relu : un devis garde ce qu'il portait, et changer
+            // la ligne du chantier l'an prochain ne doit pas réécrire une pièce
+            // déjà partie. Nul quand il n'a qu'un taux — le devis commande.
+            tauxTva: l.tauxTva,
             ordre: i,
           }))
         );
@@ -305,6 +310,7 @@ export async function getOuCreerDevisBrouillon(ctx: Ctx, chantierId: string) {
           montant: l.montant,
           unite: l.unite,
           aChiffrer: l.aChiffrer,
+          tauxTva: l.tauxTva,
           ordre: i,
         }))
       );
@@ -375,6 +381,9 @@ export async function genererPdfPourApercu(ctx: Ctx, devisId: string): Promise<U
         montant: l.montant,
         unite: l.unite,
         aChiffrer: l.aChiffrer,
+        // Le taux de sa catégorie voyage jusqu'au papier : sans lui, le PDF
+        // ventilerait tout sur le taux du document (migration 0073).
+        tauxTva: l.tauxTva,
       })),
     }, habillage);
   });
@@ -449,6 +458,9 @@ export async function envoyerDevis(ctx: Ctx, devisId: string) {
         montant: l.montant,
         unite: l.unite,
         aChiffrer: l.aChiffrer,
+        // Le taux de sa catégorie voyage jusqu'au papier : sans lui, le PDF
+        // ventilerait tout sur le taux du document (migration 0073).
+        tauxTva: l.tauxTva,
       })),
     }, habillage);
 
@@ -506,10 +518,12 @@ export async function mettreAJourEnTeteDevis(
       updatedAt: Date;
     } = { updatedAt: new Date() };
     if (data.tauxTva !== undefined) {
-      // Borné : un taux négatif ou à trois chiffres produirait un total que le
-      // patron ne comprendrait pas, et qu'aucun client n'accepterait.
-      const taux = Math.min(100, Math.max(0, Number(data.tauxTva.replace(",", "."))));
-      if (Number.isFinite(taux)) valeurs.tauxTva = taux.toFixed(2);
+      // **La même règle que les catégories, appelée et non réécrite.** Elle
+      // vivait ici en `Math.min(100, Math.max(0, …))` ; depuis que l'écran des
+      // catégories valide lui aussi des taux, deux validations séparées
+      // auraient fini par accepter deux choses différentes (`CLAUDE.md` §3).
+      const taux = tauxTvaValide(data.tauxTva);
+      if (taux !== null) valeurs.tauxTva = taux;
     }
     if (data.conditionsPaiement !== undefined) valeurs.conditionsPaiement = data.conditionsPaiement;
     // **Le prix accordé au client passe par la MÊME borne que l'écran**

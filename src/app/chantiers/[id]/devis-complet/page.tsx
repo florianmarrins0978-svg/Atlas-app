@@ -156,6 +156,9 @@ export default async function DevisCompletPage({ params }: { params: Promise<{ i
           montant: l.montant,
           unite: l.unite,
           aChiffrer: l.aChiffrer,
+          // Le taux de sa catégorie : sans lui, l'écran regrouperait tout sous
+          // le taux du devis et ses catégories disparaîtraient au rechargement.
+          tauxTva: l.tauxTva,
         }))}
         tauxTva={devisRow.tauxTva}
         reductionPourcent={devisRow.reductionPourcent}

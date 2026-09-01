@@ -864,6 +864,19 @@ export const lignesPrix = pgTable(
      * préparé ni envoyé (`peutPreparerDevis`).
      */
     aChiffrer: boolean("a_chiffrer").notNull().default(false),
+    /**
+     * Le taux de SA catégorie de TVA (migration 0073).
+     *
+     * **Nul veut dire « suit le taux du devis »**, et c'est ce qui protège
+     * l'existant : toutes les lignes écrites avant restent nulles, donc pas un
+     * devis émis ne change d'un centime.
+     *
+     * Sa règle du 1er septembre 2026 : le taux ne se pose pas ligne par ligne
+     * mais par catégorie — l'écran groupe les lignes qui partagent le même
+     * taux. La catégorie est donc une VUE, jamais une table : deux sources
+     * auraient fini par diverger (`CLAUDE.md` §3).
+     */
+    tauxTva: numeric("taux_tva", { precision: 5, scale: 2 }),
     ordre: integer("ordre").notNull().default(0),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
@@ -1117,6 +1130,14 @@ export const lignesDevis = pgTable(
      * prix — qui ont pu bouger depuis que le devis a été préparé.
      */
     aChiffrer: boolean("a_chiffrer").notNull().default(false),
+    /**
+     * Le taux de sa catégorie, recopié de la ligne de prix (migration 0073).
+     *
+     * Recopié, et non relu : un document garde ce qu'il portait le jour de son
+     * émission — même règle que l'identité de l'entreprise ou la durée de
+     * validité. Nul sur les devis d'avant : ils suivent `devis.tauxTva`.
+     */
+    tauxTva: numeric("taux_tva", { precision: 5, scale: 2 }),
     ordre: integer("ordre").notNull().default(0),
   },
   (t) => [
@@ -1776,6 +1797,13 @@ export const lignesFacture = pgTable(
     quantite: numeric("quantite", { precision: 10, scale: 2 }).notNull().default("1"),
     prixUnitaire: numeric("prix_unitaire", { precision: 10, scale: 2 }).notNull(),
     montant: numeric("montant", { precision: 10, scale: 2 }).notNull(),
+    /**
+     * Le taux de sa catégorie, recopié du devis (migration 0073).
+     *
+     * **Sans lui, une facture née d'un devis à deux TVA se réglerait sur un
+     * seul taux** — et l'écart partirait dans une déclaration trimestrielle.
+     */
+    tauxTva: numeric("taux_tva", { precision: 5, scale: 2 }),
     ordre: integer("ordre").notNull().default(0),
   },
   (t) => [

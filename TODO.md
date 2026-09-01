@@ -9,6 +9,29 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
+## `monter-base-locale.sh` N'EXPORTE PAS `REDIS_URL` — et ça coûte une heure (1ᵉʳ sept. 2026)
+
+Le script démarre Redis mais laisse `REDIS_URL` vide. Or `CLAUDE.md` §5 la liste
+parmi les variables nécessaires, et sans elle le limiteur de connexion vit en
+mémoire : **toutes les suites navigateur tombent à partir de la deuxième**, sur
+un « dépassement de délai » à la connexion qui accuse le formulaire alors qu'il
+va très bien. `run-e2e-tests.ts` sait pourtant le dire — mais seulement quand on
+l'appelle directement, pas à travers `verifier:avant-livraison`.
+
+**Qui peut le faire :** une session, en deux lignes — poser
+`export REDIS_URL=redis://localhost:6379` dans `monter-base-locale.sh`, et faire
+remonter la garde de `run-e2e-tests.ts` dans `verifier-avant-livraison.ts` pour
+qu'elle parle aussi en batterie.
+
+## LA BATTERIE E2E COMPLÈTE NE TIENT PAS DANS LE CONTENEUR (1ᵉʳ sept. 2026)
+
+Le serveur s'arrête vers la troisième suite navigateur — le journal noyau dit
+« out of memory », et le runner le signale lui-même en proposant de rejouer par
+groupes. Les suites passent toutes une par une ou par cinq.
+
+Ce n'est donc **pas** un rouge du produit, mais on ne peut pas rendre un vert de
+batterie complète depuis ici. À jouer sur un espace plus large, ou en CI.
+
 ## ACCORDÉ : supprimer la fiche du chantier — en attente de sa photo (1er sept. 2026)
 
 *« On peut supprimer cette page, et je vais te montrer où emmener le bouton
