@@ -1,0 +1,300 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Déplacer une ligne d'une TVA à l'autre</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#1c1c1a; --muted:#8a8578; --rust:#2f3b2f; --or:#B98B47;
+    --cream:#f5f3ee; --card:#ffffff; --rustTint:#ece9e1;
+    --line:rgba(28,28,26,0.12); --lineSoft:rgba(28,28,26,0.07);
+    --display:"Playfair Display",Georgia,serif;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  body{
+    margin:0;background:var(--cream);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,system-ui,sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  .bandeau{max-width:820px;margin:0 auto;padding:26px 20px 0}
+  .bandeau h1{font-family:var(--display);font-size:22px;font-weight:600;margin:0 0 6px}
+  .bandeau p{margin:0;font-size:14px;color:var(--muted);line-height:1.55}
+  .consigne{
+    max-width:820px;margin:16px auto 0;padding:11px 14px;border-radius:8px;
+    background:var(--rustTint);color:var(--rust);font-size:14px;line-height:1.5;
+  }
+  .consigne b{font-weight:600}
+
+  .feuille{
+    max-width:820px;margin:18px auto 40px;background:var(--card);border-radius:10px;
+    padding:28px 24px;box-shadow:0 12px 40px rgba(28,28,26,.10);
+  }
+  @media(max-width:640px){ .feuille{padding:20px 18px;margin:14px 12px 30px} }
+
+  .cols{display:grid;grid-template-columns:1fr 70px 120px 120px;gap:12px;padding-bottom:8px;border-bottom:1px solid var(--ink)}
+  .col{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:var(--muted)}
+  .col.d{text-align:right}
+  @media(max-width:640px){ .cols{display:none} }
+
+  .cat-tete{
+    display:flex;align-items:center;justify-content:space-between;gap:12px;
+    background:var(--rustTint);border-radius:6px;padding:7px 12px;margin:18px 0 2px;
+  }
+  .cat-nom{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.12em;color:var(--rust)}
+  .cat-nom span{font-size:16px;letter-spacing:0;margin:0 2px}
+
+  .ligne{
+    display:grid;grid-template-columns:1fr 70px 120px 120px;gap:12px;padding:12px 0;
+    border-bottom:1px solid var(--lineSoft);align-items:start;
+    border-radius:6px;transition:background .18s, transform .18s;
+    user-select:none;-webkit-user-select:none;touch-action:manipulation;cursor:pointer;
+  }
+  .ligne .desc{font-size:16px;line-height:1.45;text-wrap:pretty}
+  .ligne .n{font-size:16px;text-align:right}
+  /* Le retour du geste : la ligne se soulève PENDANT l'appui, avant que la
+     feuille s'ouvre. Sans lui, on ne sait pas que l'appui a été compris. */
+  .ligne.saisie{background:var(--rustTint);transform:scale(.985)}
+  .ligne.partie{opacity:0;transform:translateX(18px)}
+  @media(max-width:640px){
+    .ligne{grid-template-columns:1fr 1fr;gap:4px 12px;padding:12px 8px;margin:0 -8px}
+    .ligne .desc{grid-column:1/-1}
+    .ligne .n{text-align:left}
+    .ligne .n::before{content:attr(data-lib);display:block;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:var(--muted)}
+  }
+
+  .sous-total{display:flex;justify-content:flex-end;gap:16px;padding:8px 0 0;font-size:13px;color:var(--muted)}
+  .sous-total b{font-weight:600;color:var(--ink)}
+  .ajouter{margin-top:12px;font-size:13.5px;font-weight:500;color:var(--rust);background:none;border:0;padding:0;font-family:inherit}
+
+  .totaux{display:flex;justify-content:flex-end;margin-top:26px}
+  .totaux-boite{width:300px;max-width:100%}
+  .t-ligne{display:flex;align-items:center;justify-content:space-between;padding:6px 0;font-size:15px}
+  .t-ttc{display:flex;align-items:center;justify-content:space-between;padding-top:10px;margin-top:4px;border-top:2px solid var(--ink)}
+  .t-ttc .lib{font-size:17px;font-weight:600}
+  .t-ttc .val{font-size:20px;font-weight:600;font-family:var(--display)}
+
+  /* --- la feuille qui monte du bas --- */
+  .voile{
+    position:fixed;inset:0;background:rgba(28,28,26,.34);opacity:0;pointer-events:none;
+    transition:opacity .22s;z-index:20;
+  }
+  .voile.ouvert{opacity:1;pointer-events:auto}
+  .tiroir{
+    position:fixed;left:0;right:0;bottom:0;z-index:21;background:var(--card);
+    border-radius:16px 16px 0 0;padding:8px 18px 26px;transform:translateY(102%);
+    transition:transform .26s cubic-bezier(.22,.9,.3,1);box-shadow:0 -8px 40px rgba(28,28,26,.18);
+    max-width:520px;margin:0 auto;
+  }
+  .tiroir.ouvert{transform:translateY(0)}
+  .poignee{width:38px;height:4px;border-radius:2px;background:var(--line);margin:0 auto 14px}
+  .tiroir h2{font-size:15px;font-weight:600;margin:0 0 2px}
+  .tiroir .quoi{font-size:14px;color:var(--muted);margin:0 0 16px;line-height:1.45}
+  .choix{
+    display:block;width:100%;text-align:left;background:none;border:0;font-family:inherit;
+    font-size:17px;color:var(--ink);padding:15px 2px;border-top:1px solid var(--lineSoft);
+  }
+  .choix b{font-weight:600}
+  .choix .sous{display:block;font-size:13px;color:var(--muted);margin-top:2px}
+  .annuler{
+    display:block;width:100%;margin-top:14px;padding:14px;border:0;border-radius:10px;
+    background:var(--rustTint);color:var(--rust);font-size:15px;font-weight:600;font-family:inherit;
+  }
+</style>
+</head>
+<body>
+
+<div class="bandeau">
+  <h1>Déplacer une ligne d'une TVA à l'autre</h1>
+  <p>Vous avez choisi l'appui long. Voici ce que ça donne — essayez-le pour de vrai.</p>
+</div>
+
+<div class="consigne">
+  <b>Appuyez sur une ligne et gardez le doigt</b> une demi-seconde. Elle se
+  soulève, puis le choix monte du bas.
+</div>
+
+<article class="feuille">
+  <div class="cols">
+    <span class="col">Description</span>
+    <span class="col d">Qté</span>
+    <span class="col d">Prix unitaire HT</span>
+    <span class="col d">Montant HT</span>
+  </div>
+  <div id="tableau"></div>
+
+  <div class="totaux">
+    <div class="totaux-boite">
+      <div class="t-ligne"><span>Total HT</span><span id="tht">—</span></div>
+      <div id="tvas"></div>
+      <div class="t-ttc"><span class="lib">Total TTC</span><span class="val" id="tttc">—</span></div>
+    </div>
+  </div>
+</article>
+
+<div class="voile" id="voile"></div>
+<div class="tiroir" id="tiroir">
+  <div class="poignee"></div>
+  <h2 id="tiroirTitre">Déplacer cette ligne</h2>
+  <p class="quoi" id="tiroirLigne"></p>
+  <div id="tiroirChoix"></div>
+  <button class="annuler" id="annuler">Annuler</button>
+</div>
+
+<script>
+const euros = (n) => n.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €';
+
+let lignes = [
+  { id: 1, libelle: "Taille de haie de charmille", qte: 80, pu: 17.5, taux: "20" },
+  { id: 2, libelle: "Évacuation des déchets verts", qte: 1, pu: 180, taux: "20" },
+  { id: 3, libelle: "Charmille en motte — 1,50/1,75 m", qte: 45, pu: 22, taux: "10" },
+  { id: 4, libelle: "Terreau de plantation — sac 40 L", qte: 12, pu: 8.9, taux: "10" },
+];
+const montant = (l) => Math.round(l.qte * l.pu * 100) / 100;
+
+function categories() {
+  const vues = [];
+  for (const l of lignes) if (!vues.includes(l.taux)) vues.push(l.taux);
+  return vues;
+}
+
+function dessiner() {
+  const t = document.getElementById('tableau');
+  t.innerHTML = '';
+  for (const taux of categories()) {
+    const tete = document.createElement('div');
+    tete.className = 'cat-tete';
+    tete.innerHTML = '<span class="cat-nom">TVA <span>' + taux + '</span> %</span>';
+    t.appendChild(tete);
+
+    let sous = 0;
+    for (const l of lignes.filter((x) => x.taux === taux)) {
+      sous += montant(l);
+      const d = document.createElement('div');
+      d.className = 'ligne';
+      d.dataset.id = l.id;
+      d.innerHTML =
+        '<span class="desc">' + l.libelle + '</span>' +
+        '<span class="n" data-lib="Qté">' + l.qte + '</span>' +
+        '<span class="n" data-lib="Prix unitaire HT">' + euros(l.pu) + '</span>' +
+        '<span class="n" data-lib="Montant HT">' + euros(montant(l)) + '</span>';
+      brancherAppuiLong(d, l);
+      t.appendChild(d);
+    }
+    const b = document.createElement('button');
+    b.className = 'ajouter';
+    b.textContent = '+ Ajouter une ligne';
+    t.appendChild(b);
+
+    const st = document.createElement('div');
+    st.className = 'sous-total';
+    st.innerHTML = 'Sous-total HT <b>' + euros(sous) + '</b>';
+    t.appendChild(st);
+  }
+
+  const ht = lignes.reduce((a, l) => a + montant(l), 0);
+  let tva = 0;
+  const zone = document.getElementById('tvas');
+  zone.innerHTML = '';
+  for (const taux of categories()) {
+    const base = lignes.filter((l) => l.taux === taux).reduce((a, l) => a + montant(l), 0);
+    const t2 = Math.round(base * Number(taux)) / 100;
+    tva += t2;
+    const d = document.createElement('div');
+    d.className = 't-ligne';
+    d.innerHTML = '<span>TVA (' + taux + ' %)</span><span>' + euros(t2) + '</span>';
+    zone.appendChild(d);
+  }
+  document.getElementById('tht').textContent = euros(ht);
+  document.getElementById('tttc').textContent = euros(ht + tva);
+}
+
+// ─── L'appui long ──────────────────────────────────────────────────────────
+//
+// 500 ms : en dessous, un doigt qui hésite sur une ligne ouvre le tiroir sans
+// l'avoir voulu ; au-dessus, on croit que rien ne répond. Le geste s'annule dès
+// que le doigt bouge de plus de 10 px — sinon on ne pourrait plus faire défiler
+// la page en partant d'une ligne.
+function brancherAppuiLong(element, ligne) {
+  let minuteur = null, depart = null;
+  const arreter = () => {
+    clearTimeout(minuteur);
+    minuteur = null;
+    element.classList.remove('saisie');
+  };
+  element.addEventListener('pointerdown', (e) => {
+    depart = { x: e.clientX, y: e.clientY };
+    element.classList.add('saisie');
+    minuteur = setTimeout(() => { element.classList.remove('saisie'); ouvrir(ligne); }, 500);
+  });
+  element.addEventListener('pointermove', (e) => {
+    if (!depart || !minuteur) return;
+    if (Math.hypot(e.clientX - depart.x, e.clientY - depart.y) > 10) arreter();
+  });
+  element.addEventListener('pointerup', arreter);
+  element.addEventListener('pointercancel', arreter);
+  element.addEventListener('pointerleave', arreter);
+  element.addEventListener('contextmenu', (e) => e.preventDefault());
+}
+
+let ligneVisee = null;
+function ouvrir(ligne) {
+  ligneVisee = ligne;
+  document.getElementById('tiroirLigne').textContent = ligne.libelle;
+  const zone = document.getElementById('tiroirChoix');
+  zone.innerHTML = '';
+
+  const autres = categories().filter((t) => t !== ligne.taux);
+  for (const taux of autres) {
+    const b = document.createElement('button');
+    b.className = 'choix';
+    b.innerHTML = 'Vers la <b>TVA ' + taux + ' %</b>';
+    b.onclick = () => deplacer(taux);
+    zone.appendChild(b);
+  }
+  // **Une porte de sortie même quand il n'y a qu'une catégorie** : sans elle,
+  // l'appui long semblerait cassé le jour où il n'a pas encore ajouté de TVA.
+  const neuve = document.createElement('button');
+  neuve.className = 'choix';
+  const propose = ['10', '5,5', '20', '0'].find((t) => !categories().includes(t)) || '10';
+  neuve.innerHTML = 'Vers une <b>TVA ' + propose + ' %</b><span class="sous">une catégorie de plus s\'ouvre</span>';
+  neuve.onclick = () => deplacer(propose);
+  zone.appendChild(neuve);
+
+  document.getElementById('voile').classList.add('ouvert');
+  document.getElementById('tiroir').classList.add('ouvert');
+}
+
+function fermer() {
+  document.getElementById('voile').classList.remove('ouvert');
+  document.getElementById('tiroir').classList.remove('ouvert');
+  ligneVisee = null;
+}
+
+function deplacer(taux) {
+  const el = document.querySelector('.ligne[data-id="' + ligneVisee.id + '"]');
+  if (el) el.classList.add('partie');
+  const cible = ligneVisee;
+  fermer();
+  // On laisse la ligne s'effacer avant de la redessiner ailleurs : sans ce
+  // délai, elle saute d'un bloc à l'autre et on ne voit pas où elle est allée.
+  setTimeout(() => {
+    cible.taux = taux;
+    // **LA LIGNE REJOINT LE GROUPE, elle ne l'emmène pas devant.** L'ordre des
+    // catégories suit celui des lignes : sans ce déplacement en fin de liste,
+    // déplacer la PREMIÈRE ligne du devis faisait remonter toute sa nouvelle
+    // catégorie au-dessus de l'autre — on croyait avoir bougé le tableau entier.
+    lignes = lignes.filter((l) => l.id !== cible.id).concat(cible);
+    dessiner();
+  }, 180);
+}
+
+document.getElementById('voile').onclick = fermer;
+document.getElementById('annuler').onclick = fermer;
+dessiner();
+</script>
+</body>
+</html>

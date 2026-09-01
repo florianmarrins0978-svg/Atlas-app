@@ -190,6 +190,10 @@ async function main() {
   // réels de ce dépôt sont sortis d'une image et d'aucun test. L'état est monté
   // ici, avec ses deux catégories remplies — c'est le moment de le photographier,
   // plutôt qu'un second parcours qui reconstruirait la même chose.
+  // L'indicateur de développement de Next se pose par-dessus l'écran : il
+  // masquait une ligne du tableau sur la capture, et c'est l'outillage qu'on
+  // aurait regardé au lieu du produit.
+  await page.addStyleTag({ content: "nextjs-portal, #__next-build-watcher { display: none !important; }" });
   await page.screenshot({ path: "/tmp/atlas-captures/devis-tva-deux-categories.png", fullPage: true });
 
   await cas("les totaux montrent une TVA par catégorie, et le TTC tombe juste", async () => {
