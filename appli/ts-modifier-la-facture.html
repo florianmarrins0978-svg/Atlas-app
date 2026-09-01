@@ -1,0 +1,402 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas — modifier la facture avant de l'envoyer</title>
+<style>
+/*
+  SA PRÉCISION DU 1ᵉʳ SEPTEMBRE 2026 — et elle corrige ce que j'avais bloqué.
+
+  « Ce qu'il faudrait, c'est que lorsqu'on appuie sur le bouton qui aujourd'hui
+    s'appelle "ajouter des travaux supplémentaires", ça ouvre LA FACTURE —
+    comme ça, si le professionnel n'a pas fait tous les travaux indiqués sur le
+    devis, il peut SUPPRIMER des lignes de la facture qui étaient les lignes
+    principales du devis. Plus avoir, dans cet encadré facture, une petite
+    touche où on appuie et ça ajoute des travaux supplémentaires. Ensuite on
+    garde le même schéma qu'hier : on peut rajouter des lignes et mettre une
+    TVA différente de celle du devis. »
+
+  ─────────────────────────────────────────────────────────────────────────────
+  IL A RAISON, ET J'AVAIS TORT.
+
+  Le code livré cette nuit REFUSE de retirer une ligne du devis, au motif que la
+  facture doit rester fidèle à ce que le client a accepté. Ce raisonnement ne
+  tient que si tout le devis a été réalisé. **Facturer un travail qu'on n'a pas
+  fait est une faute plus grave** que de s'écarter du devis — et c'est le
+  client qui la découvre.
+
+  Ce qui reste vrai, et qui se voit à l'écran : l'écart avec le devis est
+  ANNONCÉ. Une facture plus légère que son devis n'a rien de suspect ; une
+  facture plus légère SANS que personne ne le remarque, si.
+
+  ─────────────────────────────────────────────────────────────────────────────
+  CE QUE CETTE PLANCHE MONTRE, EN DEUX ÉCRANS
+
+  1. **La facture**, telle qu'elle est aujourd'hui — avec le bouton, renommé :
+     « Modifier la facture » plutôt qu'« Ajouter des travaux supplémentaires »,
+     puisqu'on peut désormais aussi en retirer.
+  2. **L'écran de modification** : toutes les lignes, une croix sur chacune,
+     une touche « + Ajouter une ligne » dans l'encadré, le formulaire avec son
+     taux de TVA, les totaux qui suivent, et « Valider la facture » qui ramène
+     à la facture prête à envoyer.
+
+  Tout se manipule, tous les totaux se calculent. RIEN N'EST CODÉ dans
+  l'application (`CLAUDE.md` §3 bis) : le lot d'hier soir attend, et ce sera à
+  reprendre.
+*/
+:root{
+  --bone:#f5f3ee; --cream:#faf9f5; --paper:#ece9e1;
+  --charcoal:#1c1c1a; --charcoal-soft:#4a4a44; --muted:#8a8578;
+  --pine:#2f3b2f; --or:#B98B47; --alert:#9C3B2E;
+  --line:rgba(28,28,26,.12); --line-soft:rgba(28,28,26,.07);
+  --surPlein:#faf9f5;
+}
+@media (prefers-color-scheme: dark){
+  :root{ --bone:#171613; --cream:#1e1c18; --paper:#262420; --charcoal:#e9e5dc;
+         --charcoal-soft:#c9c4b8; --muted:#8a867c; --or:#C9A15E;
+         --pine:#9db98f; --alert:#d98b7c; --surPlein:#171613;
+         --line:rgba(233,229,220,.16); --line-soft:rgba(233,229,220,.09); }
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;background:var(--bone);color:var(--charcoal);
+     font:16px/1.55 -apple-system,"Segoe UI",Roboto,sans-serif;
+     padding:30px 0 56px;-webkit-text-size-adjust:100%}
+.page{max-width:430px;margin:0 auto;padding:0 20px}
+.sur{margin:0;font-size:9.5px;font-weight:500;letter-spacing:.3em;
+     text-transform:uppercase;color:var(--or)}
+h1{margin:10px 0 0;font-family:Georgia,serif;font-weight:400;font-size:30px;
+   line-height:1.08;letter-spacing:-.018em}
+.chapo{margin:11px 0 0;font-size:14px;color:var(--charcoal-soft);line-height:1.6}
+.chapo b{color:var(--charcoal)}
+
+.ecran{margin-top:16px}
+.plage{background:var(--cream);border-radius:16px;padding:16px 17px;margin-top:12px}
+.entete{font-family:Georgia,serif;font-size:17px}
+.echeance{display:flex;align-items:center;gap:10px;margin-top:10px;font-size:13px;color:var(--muted)}
+.echeance .jour{background:var(--bone);border:1px solid var(--line);border-radius:9px;
+                padding:9px 12px;font-size:15px;color:var(--charcoal)}
+.retour{display:inline-block;min-width:34px;min-height:34px;line-height:34px;
+        color:var(--muted);font-size:19px;background:none;border:0;padding:0;cursor:pointer}
+.titre{margin:2px 0 0;font-family:Georgia,serif;font-weight:400;font-size:22px}
+.cap{margin:0;font-size:9.5px;font-weight:600;letter-spacing:.22em;
+     text-transform:uppercase;color:var(--muted)}
+.cap.ts{color:var(--or)}
+
+.l{display:flex;justify-content:space-between;align-items:baseline;gap:10px;
+   padding:9px 0;font-size:14.5px;font-variant-numeric:tabular-nums;
+   border-bottom:1px solid var(--line-soft)}
+.l:last-child{border-bottom:none}
+.l .quoi{flex:1;line-height:1.35}
+.l .quoi small{display:block;color:var(--muted);font-size:11.5px}
+.l .mt{color:var(--muted);white-space:nowrap}
+.l .x{flex:none;width:32px;height:32px;border:0;background:none;color:var(--muted);
+      font-size:17px;cursor:pointer}
+.vide{padding:10px 0;font-size:13px;color:var(--muted)}
+
+.tot{display:flex;justify-content:space-between;padding:3px 0;font-size:14px;
+     color:var(--muted);font-variant-numeric:tabular-nums}
+.sep{height:1px;background:var(--line);margin:10px 0}
+.ttc{text-align:center;margin-top:6px}
+.ttc .cap{display:block}
+.ttc .chiffre{font-family:Georgia,serif;font-size:34px;color:var(--or);
+              line-height:1.2;font-variant-numeric:tabular-nums}
+.ecart{margin:10px 0 0;text-align:center;font-size:12.5px;color:var(--or)}
+.liens{text-align:center;margin-top:12px;font-size:14px;line-height:2}
+.liens a{color:var(--charcoal);text-decoration:underline}
+.liens .fichier{font-size:13px;color:var(--charcoal-soft)}
+
+.bouton{display:block;width:100%;background:none;border:1px solid var(--line);
+        border-radius:999px;padding:14px 18px;font:inherit;font-size:15px;
+        font-family:Georgia,serif;color:var(--charcoal);cursor:pointer}
+.plein{display:block;width:100%;margin-top:12px;background:var(--pine);
+       color:var(--surPlein);border:0;border-radius:999px;padding:14px 18px;
+       font-size:15px;font-family:Georgia,serif;cursor:pointer}
+.plein[disabled]{opacity:.38;cursor:default}
+
+/* La petite touche DANS l'encadré : elle ajoute une ligne là où on les lit. */
+.ajout{display:block;width:100%;margin-top:10px;background:none;border:1px dashed var(--line);
+       border-radius:999px;padding:11px 16px;font:inherit;font-size:13.5px;
+       color:var(--or);cursor:pointer}
+
+.saisie{margin-top:10px;background:var(--bone);border-radius:12px;padding:13px 13px;
+        box-shadow:inset 0 0 0 1px var(--line)}
+.saisie input{width:100%;margin-top:8px;background:var(--cream);border:1px solid var(--line);
+              border-radius:10px;padding:11px 12px;font:inherit;font-size:14.5px;color:inherit}
+.saisie .duo{display:flex;gap:8px}
+.saisie .duo input{flex:1}
+.taux{display:flex;gap:8px;margin-top:10px}
+.taux button{flex:1;min-height:44px;background:var(--cream);border:0;border-radius:999px;
+             font:inherit;font-size:13.5px;color:var(--charcoal-soft);cursor:pointer;
+             box-shadow:inset 0 0 0 1px var(--line);font-variant-numeric:tabular-nums}
+.taux button[aria-selected="true"]{box-shadow:inset 0 0 0 1.5px var(--or);
+             background:var(--paper);color:var(--charcoal)}
+
+.canal{display:flex;gap:9px;margin-top:10px}
+.canal button{flex:1;min-height:46px;background:none;border:0;border-radius:999px;
+              font:inherit;font-size:14px;color:var(--charcoal);cursor:pointer;
+              box-shadow:inset 0 0 0 1px var(--line)}
+.canal button[aria-selected="true"]{box-shadow:inset 0 0 0 1.5px var(--or);background:var(--paper)}
+.au{margin:8px 0 0;text-align:center;font-size:12.5px;color:var(--muted)}
+.envoyer{display:block;width:100%;margin-top:12px;background:var(--pine);color:var(--surPlein);
+         border:0;border-radius:999px;padding:14px 18px;font-size:15px;
+         font-family:Georgia,serif;cursor:pointer}
+
+.note{margin-top:20px;background:var(--cream);border-radius:13px;padding:15px 16px;
+      font-size:12.5px;line-height:1.65;color:var(--charcoal-soft);
+      box-shadow:inset 0 0 0 1px var(--line)}
+.note .t{display:block;margin-bottom:6px;font-size:9px;font-weight:600;
+         letter-spacing:.2em;text-transform:uppercase;color:var(--or)}
+.note b{color:var(--charcoal)}
+.autres{margin-top:14px;font-size:13px;line-height:2}
+.autres a{color:var(--or)}
+[hidden]{display:none!important}
+</style>
+</head>
+<body>
+<div class="page">
+  <p class="sur">Travaux en plus · votre précision</p>
+  <h1>Modifier la facture</h1>
+  <p class="chapo">Le bouton ouvre <b>la facture entière</b> : on retire ce qui n'a pas été fait, on ajoute ce qui l'a été en plus.</p>
+
+  <!-- ─── 1 · LA FACTURE, prête à envoyer ─────────────────────────────── -->
+  <div class="ecran" id="vueFacture">
+    <div class="plage">
+      <div class="entete">F2026-000001 — Mme Grospiron</div>
+      <div class="echeance">À régler avant le <span class="jour">28 sept. 2026</span></div>
+    </div>
+
+    <div class="plage">
+      <p class="cap">Reprise du devis</p>
+      <div id="lignesDevisFacture"></div>
+    </div>
+
+    <div class="plage" id="plageTsFacture" hidden>
+      <p class="cap ts">Travaux supplémentaires</p>
+      <div id="lignesTsFacture"></div>
+    </div>
+
+    <div class="plage">
+      <div id="totauxFacture"></div>
+      <div class="sep"></div>
+      <div class="ttc"><span class="cap">Total TTC</span><span class="chiffre" id="ttcFacture">600,00 €</span></div>
+      <p class="ecart" id="ecartFacture"></p>
+      <p class="liens">
+        <a href="#" id="voirPdf">Voir la facture en PDF</a><br>
+        <span class="fichier">Télécharger (F2026-000001-brouillon.pdf)</span>
+      </p>
+    </div>
+
+    <div class="plage">
+      <button class="bouton" type="button" id="ouvrirModif">Modifier la facture</button>
+    </div>
+
+    <div class="plage">
+      <p class="cap">Comment lui envoyer sa facture ?</p>
+      <div class="canal">
+        <button type="button" data-canal="sms" aria-selected="true">Par SMS</button>
+        <button type="button" data-canal="mail" aria-selected="false">Par e-mail</button>
+      </div>
+      <p class="au">Au 0679984514</p>
+      <button class="envoyer" type="button">Envoyer la facture</button>
+    </div>
+  </div>
+
+  <!-- ─── 2 · L'ÉCRAN DE MODIFICATION ─────────────────────────────────── -->
+  <div class="ecran" id="vueModif" hidden>
+    <div class="plage">
+      <button class="retour" type="button" id="revenir">‹</button>
+      <p class="titre">Modifier la facture</p>
+    </div>
+
+    <div class="plage">
+      <p class="cap">Facture F2026-000001</p>
+      <div id="lignesModif"></div>
+      <button class="ajout" type="button" id="ouvrirSaisie">+ Ajouter une ligne</button>
+
+      <div class="saisie" id="saisie" hidden>
+        <input id="nNom" type="text" placeholder="Ce qui a été fait en plus">
+        <div class="duo">
+          <input id="nQte" type="text" inputmode="decimal" placeholder="Quantité et unité" value="1 forfait">
+          <input id="nPu" type="text" inputmode="decimal" placeholder="Prix unitaire €">
+        </div>
+        <div class="taux" id="taux">
+          <button type="button" data-taux="20" aria-selected="true">TVA 20 %</button>
+          <button type="button" data-taux="10" aria-selected="false">10 %</button>
+          <button type="button" data-taux="5.5" aria-selected="false">5,5 %</button>
+        </div>
+        <button class="plein" type="button" id="valider">Ajouter à la facture</button>
+      </div>
+    </div>
+
+    <div class="plage">
+      <div id="totauxModif"></div>
+      <div class="sep"></div>
+      <div class="ttc"><span class="cap">Total TTC</span><span class="chiffre" id="ttcModif">600,00 €</span></div>
+      <p class="ecart" id="ecartModif"></p>
+      <button class="plein" type="button" id="validerFacture">Valider la facture</button>
+    </div>
+  </div>
+
+  <div class="note"><span class="t">Ce qui change par rapport à hier</span>
+    Le bouton s'appelle <b>« Modifier la facture »</b>, parce qu'on peut aussi en
+    <b>retirer</b>. Chaque ligne porte une croix, <b>y compris celles du devis</b> :
+    un travail non fait ne se facture pas. L'écart avec le devis est écrit sous
+    le total — une facture plus légère n'a rien de suspect, mais elle se voit.
+  </div>
+
+  <div class="note"><span class="t">Ce que cette page ne fait pas</span>
+    Rien n'est enregistré, rien ne part chez personne. Le PDF ne s'ouvre pas.
+  </div>
+
+  <p class="autres">
+    <a href="ts-sur-la-facture.html">La version d'hier soir</a><br>
+    <a href="ts-bon-sur-place.html">Le faire signer sur place</a><br>
+    <a href="essais.html">Toutes les maquettes</a>
+  </p>
+</div>
+
+<script>
+/* Sa facture : deux lignes de devis à 20 %. Tout part de là. */
+let lignes = [
+  { id:1, nom:"Tonte du gazon et entretien des espaces verts (600 m²)", detail:"forfait", mt:350, taux:20, origine:"devis" },
+  { id:2, nom:"Haie de laurier (50 ml)", detail:"forfait", mt:150, taux:20, origine:"devis" }
+];
+let prochainId = 3;
+let tauxChoisi = 20;
+const DEVIS_HT = 500;
+
+const euros = n => n.toLocaleString('fr-FR',{minimumFractionDigits:2,maximumFractionDigits:2}) + ' €';
+const pourcent = t => (t % 1 === 0 ? String(t) : String(t).replace('.',',')) + ' %';
+const $ = s => document.querySelector(s);
+
+/* ── Les totaux, ventilés par taux ───────────────────────────────────────── */
+function socles(){
+  const m = new Map();
+  lignes.forEach(l => m.set(l.taux, (m.get(l.taux) || 0) + l.mt));
+  return [...m.entries()].map(([taux, ht]) => ({ taux, ht, tva: ht * taux / 100 }))
+    .sort((a,b) => b.taux - a.taux);
+}
+
+function ecrireTotaux(hote, ttc, ecart){
+  const parts = socles();
+  const ht = parts.reduce((s,p) => s + p.ht, 0);
+  const tva = parts.reduce((s,p) => s + p.tva, 0);
+  let h = '<div class="tot"><span>Total HT</span><span>' + euros(ht) + '</span></div>';
+  parts.forEach(p => {
+    const socle = parts.length > 1 ? ' sur ' + euros(p.ht) : '';
+    h += '<div class="tot"><span>TVA ' + pourcent(p.taux) + socle + '</span><span>' + euros(p.tva) + '</span></div>';
+  });
+  hote.innerHTML = h;
+  ttc.textContent = euros(ht + tva);
+  /* L'écart avec le devis, dit sans reproche : une facture plus légère qu'un
+     devis est normale quand un travail n'a pas été fait — mais elle se voit. */
+  const d = ht - DEVIS_HT;
+  ecart.textContent = d === 0 ? '' :
+    (d > 0 ? 'En plus du devis : ' : 'En moins du devis : ') + euros(Math.abs(d)) + ' HT';
+}
+
+/* ── Les lignes, aux deux endroits ──────────────────────────────────────── */
+function ligneHtml(l, avecCroix){
+  return '<span class="quoi">' + l.nom + '<small>' + l.detail + ' · TVA ' + pourcent(l.taux) + '</small></span>' +
+         '<span class="mt">' + euros(l.mt) + '</span>' +
+         (avecCroix ? '<button class="x" type="button" aria-label="Retirer ' + l.nom + '">×</button>' : '');
+}
+
+function rendre(hote, jeu, avecCroix){
+  hote.innerHTML = '';
+  if (jeu.length === 0){
+    hote.innerHTML = '<p class="vide">Plus aucune ligne.</p>';
+    return;
+  }
+  jeu.forEach(l => {
+    const d = document.createElement('div');
+    d.className = 'l';
+    d.innerHTML = ligneHtml(l, avecCroix);
+    const x = d.querySelector('.x');
+    if (x) x.addEventListener('click', () => {
+      lignes = lignes.filter(u => u.id !== l.id);
+      dessiner();
+    });
+    hote.appendChild(d);
+  });
+}
+
+function dessiner(){
+  const duDevis = lignes.filter(l => l.origine === 'devis');
+  const enPlus = lignes.filter(l => l.origine === 'supplement');
+
+  // L'écran de la facture : deux blocs, sans croix — on n'y modifie rien.
+  rendre($('#lignesDevisFacture'), duDevis, false);
+  $('#plageTsFacture').hidden = enPlus.length === 0;
+  rendre($('#lignesTsFacture'), enPlus, false);
+
+  // L'écran de modification : TOUTES les lignes, chacune avec sa croix.
+  rendre($('#lignesModif'), lignes, true);
+
+  ecrireTotaux($('#totauxFacture'), $('#ttcFacture'), $('#ecartFacture'));
+  ecrireTotaux($('#totauxModif'), $('#ttcModif'), $('#ecartModif'));
+}
+
+/* ── La navigation entre les deux écrans ────────────────────────────────── */
+function aller(vers){
+  $('#vueFacture').hidden = vers !== 'facture';
+  $('#vueModif').hidden = vers !== 'modif';
+  window.scrollTo({ top:0, behavior:'smooth' });
+}
+$('#ouvrirModif').addEventListener('click', () => aller('modif'));
+$('#revenir').addEventListener('click', () => aller('facture'));
+$('#validerFacture').addEventListener('click', () => { $('#saisie').hidden = true; aller('facture'); });
+
+/* ── La saisie ──────────────────────────────────────────────────────────── */
+$('#ouvrirSaisie').addEventListener('click', () => {
+  const s = $('#saisie');
+  s.hidden = !s.hidden;
+  if (!s.hidden) $('#nNom').focus();
+});
+
+document.querySelectorAll('[data-taux]').forEach(b => b.addEventListener('click', () => {
+  document.querySelectorAll('[data-taux]').forEach(x => x.setAttribute('aria-selected', x === b));
+  tauxChoisi = parseFloat(b.dataset.taux);
+}));
+
+function nombre(v){
+  const n = parseFloat(String(v).replace(',','.').replace(/[^0-9.\-]/g,''));
+  return isNaN(n) ? null : n;
+}
+function majValider(){
+  $('#valider').disabled = !($('#nNom').value.trim() && nombre($('#nPu').value) !== null);
+}
+['#nNom','#nQte','#nPu'].forEach(s => $(s).addEventListener('input', majValider));
+
+$('#valider').addEventListener('click', () => {
+  const nom = $('#nNom').value.trim();
+  const qte = $('#nQte').value.trim() || '1';
+  const pu = nombre($('#nPu').value);
+  const combien = nombre(qte);
+  if (!nom || pu === null) return;
+  lignes.push({
+    id: prochainId++,
+    nom,
+    detail: qte + ' × ' + euros(pu),
+    mt: (combien === null ? 1 : combien) * pu,
+    taux: tauxChoisi,
+    origine: 'supplement'
+  });
+  $('#nNom').value = ''; $('#nQte').value = '1 forfait'; $('#nPu').value = '';
+  majValider();
+  $('#saisie').hidden = true;
+  dessiner();
+});
+
+document.querySelectorAll('[data-canal]').forEach(b => b.addEventListener('click', () => {
+  document.querySelectorAll('[data-canal]').forEach(x => x.setAttribute('aria-selected', x === b));
+  $('.au').textContent = b.dataset.canal === 'sms' ? 'Au 0679984514' : 'À mme.grospiron@exemple.fr';
+}));
+$('#voirPdf').addEventListener('click', e => e.preventDefault());
+
+majValider();
+dessiner();
+</script>
+</body>
+</html>
