@@ -9,6 +9,20 @@ sert.
 
 ---
 
+## Le même jour : la fiche client remise dans un écran (1ᵉʳ sept. 2026)
+
+**Le piège à connaître avant d'y retoucher :** le gabarit réserve DÉJÀ la barre
+d'onglets (`main.atlas-contenu`, `padding-bottom: var(--atlas-barre)`). Toute
+hauteur d'écran posée dans un écran s'y AJOUTE. Et `min-h-full` n'y sert à rien :
+le parent n'a qu'un `min-height` en pourcentage, qui ne résout pas.
+
+La bonne forme, sur cet écran : `minHeight: calc(100svh - var(--atlas-barre))`
+et `my-auto` sur le contenu — jamais `justify-center`, qui couperait le haut sur
+un petit téléphone.
+
+Pour mesurer plutôt que deviner : `npx tsx scripts/capture-fiche-client-hauteur.mts`
+(serveur lancé), qui rend le débordement sur trois tailles d'iPhone.
+
 ## Le même jour : deux défauts de la dictée signalés par lui (1ᵉʳ sept. 2026)
 
 1. **L'invite « Appuyez et décrivez le chantier » restait** pendant que le devis

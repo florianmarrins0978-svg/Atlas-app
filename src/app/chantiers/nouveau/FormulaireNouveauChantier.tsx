@@ -305,7 +305,44 @@ export default function FormulaireNouveauChantier({
           recouvre déjà la bulle et le bandeau du bas (`EcranChantiers.tsx`).
           Y poser la même réserve ajoutait quatre-vingts pixels de vide sous le
           formulaire, pour se protéger de quelque chose qui n'y arrive pas. */}
-      <div className={enFeuille ? "" : "pb-40"}>
+      {/* ═══════════════════════════════════════════════════════════════════
+          **UNE SEULE PAGE, CENTRÉE — sa demande du 1ᵉʳ septembre 2026 :**
+          *« la page doit remplir tout l'espace, elle n'est pas centrée. Je veux
+          qu'une seule page mais centrée, il y a trop de marge en bas et en
+          haut, la note vocale est presque coupée tellement elle est haute. »*
+
+          **MESURÉ AVANT DE TOUCHER** (`scripts/capture-fiche-client-hauteur.mts`) :
+          la page faisait 933 px pour un écran de 844, dont **272 px de réserve
+          en bas** — un `pb-40` ici PLUS un `pb-28` sur le formulaire, cumulés
+          sans que rien ne les additionne jamais. La barre d'onglets, elle,
+          mesure **48 px**. On réservait donc près de six fois ce qu'il fallait,
+          et tout le contenu était poussé vers le haut : d'où le micro « presque
+          coupé » et le grand vide sous le bouton.
+
+          **LA HAUTEUR SE CALCULE, elle ne se copie pas — et deux essais l'ont
+          appris.** Une hauteur d'écran entière (`100svh`) s'AJOUTE à la réserve
+          que le gabarit pose déjà (`main.atlas-contenu`, 68 px) : la page
+          faisait alors 912 px pour 844 de fenêtre. Et `min-h-full` ne vaut
+          rien du tout — un pourcentage sur un parent qui n'a lui-même qu'un
+          `min-height` ne résout pas, si bien que la page cessait de déborder
+          mais restait collée en haut, tout le vide en dessous.
+
+          On retire donc la réserve du gabarit à la hauteur d'écran, en lisant
+          SA variable : le jour où la barre d'onglets change de taille, ce
+          calcul suit tout seul.
+
+          **`my-auto` plutôt que `justify-center`, et ce n'est pas un détail.**
+          Un centrage par `justify-content` déborde des DEUX côtés quand le
+          contenu dépasse : sur un petit iPhone, le haut de la fiche passerait
+          au-dessus du pli, inatteignable même en défilant. Les marges
+          automatiques, elles, n'absorbent que la place LIBRE — s'il n'y en a
+          pas, elles valent zéro et l'écran se lit normalement depuis le haut.
+          ═══════════════════════════════════════════════════════════════════ */}
+      <div
+        className={enFeuille ? "" : "flex flex-col"}
+        style={enFeuille ? undefined : { minHeight: "calc(100svh - var(--atlas-barre))" }}
+      >
+      <div className={enFeuille ? "" : "my-auto w-full"}>
         {/* Retour discret — même style que la fiche chantier. En feuille il
             referme sans quitter l'accueil ; en page il y revient. Le dessin est
             le même : c'est le même geste pour le patron. */}
@@ -384,7 +421,7 @@ export default function FormulaireNouveauChantier({
           // capture) : la barre d'onglets est FIXÉE au bas de l'écran, et sans
           // lui elle coupait l'anneau en deux — le geste principal de l'écran,
           // à moitié sous une barre. Ni les types ni les suites ne voient cela.
-          className={`flex flex-col gap-[7px] px-6 pt-1.5 ${enFeuille ? "pb-2" : "pb-28"}`}
+          className={`flex flex-col gap-[7px] px-6 pt-1.5 pb-2`}
           onSubmit={(e) => {
             e.preventDefault();
             // « Entrée » fait ce que fait le bouton, et il n'y en a plus qu'un.
@@ -744,6 +781,7 @@ export default function FormulaireNouveauChantier({
             {erreur}
           </p>
         </form>
+      </div>
       </div>
     </div>
   );

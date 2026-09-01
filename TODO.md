@@ -14,6 +14,22 @@ langage, et rien n'y entre sans son accord.
 Il a choisi l'appui long, et c'est codé. Le sous-total HT par catégorie est
 gardé, à sa demande.
 
+## `test-aucun-texte-coupe-e2e` EST ROUGE SUR `main` — pas un lot (1ᵉʳ sept. 2026)
+
+Son message le dit lui-même : *« aucun devis non envoyé en base. Ce contrôle ne
+peut RIEN éprouver […] Recharger le jeu de démonstration. »* Or le seed ne pose
+qu'un devis **envoyé** (« Insertion du devis envoyé pour Reprise de toiture »),
+et un devis parti est figé : ses zones sont en lecture seule.
+
+**Rejoué sur `main` sans aucun changement local : il tombe pareil.** Ce n'est
+donc ni le lot de la TVA ni celui de la mise en page — c'est le jeu de
+démonstration qui ne porte plus ce que la suite exige.
+
+**Qui peut le faire :** une session, en ajoutant un devis BROUILLON au seed, ou
+en faisant créer à la suite le devis dont elle a besoin plutôt que d'en attendre
+un du jeu de démonstration (`CLAUDE.md` §5 bis : un contrôle ne doit pas réclamer
+ce qu'un autre a fait disparaître).
+
 ## SA NOTE VOCALE N'ATTEINT PAS LE DEVIS — non reproduit (1ᵉʳ sept. 2026)
 
 Sa capture : « Atlas prépare toujours votre devis… (96 s) », et rien ne vient.

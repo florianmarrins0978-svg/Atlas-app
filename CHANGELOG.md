@@ -9,6 +9,40 @@ Format : le plus récent en tête.
 
 ## 2026-09-01
 
+### La fiche client tient dans un écran, et son contenu y est centré
+
+**Sa demande :** *« la page doit remplir tout l'espace, elle n'est pas centrée.
+Je veux qu'une seule page mais centrée, il y a trop de marge en bas et en haut,
+la note vocale est presque coupée tellement elle est haute. »*
+
+**Mesuré avant de toucher** (`scripts/capture-fiche-client-hauteur.mts`) : la
+page faisait **933 px pour un écran de 844**, dont **272 px de réserve en bas** —
+un `pb-40` sur le conteneur PLUS un `pb-28` sur le formulaire, cumulés sans que
+rien ne les additionne jamais. La barre d'onglets mesure **48 px**. On réservait
+près de six fois ce qu'il fallait, et tout remontait : d'où le micro « presque
+coupé » et le grand vide sous le bouton.
+
+Résultat : **0 px de débordement** sur iPhone 13 et iPhone Max, 2 px sur un
+iPhone SE, et le contenu centré (87 px de marge de part et d'autre).
+
+**Deux essais ont appris quelque chose avant le bon.** `100svh` s'AJOUTE à la
+réserve que le gabarit pose déjà (`main.atlas-contenu`) — la page passait à
+912 px. Et `min-h-full` ne vaut rien : un pourcentage sur un parent qui n'a
+qu'un `min-height` ne résout pas, si bien que la page cessait de déborder mais
+restait collée en haut. La hauteur se calcule donc en retirant la variable du
+gabarit.
+
+**`my-auto` plutôt que `justify-center`** : un centrage par `justify-content`
+déborde des deux côtés quand le contenu dépasse, et le haut de la fiche
+passerait au-dessus du pli sur un petit téléphone. Les marges automatiques
+n'absorbent que la place libre.
+
+**Rien ne gardait cette hauteur** — il l'avait déjà demandée le 30 août, et le
+resserrement d'alors n'était éprouvé par aucune suite. `test-fiche-client-e2e`
+la mesure désormais sur deux tailles d'écran, et sait rougir : rendu aux marges
+d'avant, il annonce « la fiche déborde de 266 px ».
+
+
 ### L'invite à dicter se tait pendant que le devis se prépare
 
 **Sa remarque, deux captures à l'appui :** *« lorsqu'on dicte notre devis et

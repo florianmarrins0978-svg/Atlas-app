@@ -18,6 +18,15 @@ ligne « fait » qui ne l'est pas coûte plus cher qu'une ligne absente.
 
 ---
 
+## FAIT : la fiche client tient dans un écran, centrée (1ᵉʳ sept. 2026)
+
+Sa demande : une seule page, centrée, sans marge excessive. La page faisait
+933 px pour 844 de fenêtre — 272 px de réserve en bas pour une barre de 48.
+
+Désormais **0 px de débordement** sur ses tailles d'iPhone, contenu centré.
+Mesuré par `scripts/capture-fiche-client-hauteur.mts`, gardé par
+`test-fiche-client-e2e` (qui sait rougir).
+
 ## FAIT : plusieurs TVA sur un même devis (1ᵉʳ sept. 2026)
 
 **Sa question :** *« si j'ai de la main d'œuvre TVA à 20 et des plantes TVA à
