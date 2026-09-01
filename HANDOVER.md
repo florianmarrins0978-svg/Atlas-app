@@ -9,7 +9,36 @@ sert.
 
 ---
 
-## Dernier lot : la dictée est une LIGNE, et elle est codée (31 août 2026, au soir)
+## Dernier lot : la date du chantier dans « Terminés » (31 août 2026)
+
+Sa demande, capture à l'appui : *« changer le bouton FACTURER en À FACTURER, et
+à côté du nom du client inscrire la date à laquelle le chantier a été réalisé »*.
+Puis, devant la planche : *« supprime "Pas encore facturé" en doré »*. Il a
+retenu la **proposition B** et dit *« code-moi ça »* — c'est codé.
+
+| | |
+|---|---|
+| la planche | `appli/termines-date-du-chantier.html` (quatre places, A à D) |
+| la règle | `libelleDateChantier`, `libelleEtatLigne` — `src/lib/termines-par-mois.ts` |
+| l'écran | `src/app/termines/ListeTermines.tsx` |
+| les contrôles | `scripts/test-termines-par-mois.ts` (7 cas neufs), `scripts/capture-termines.mts` |
+| ce qui reste à lui | faut-il une VRAIE date de réalisation, saisie à la clôture ? |
+
+**Les deux choses à savoir avant d'y toucher.** La date affichée est
+`datePlanifiee` — celle du planning, la seule que l'application garde ; un
+chantier clôturé sans y être passé n'en a aucune, et sa rangée n'a alors **plus
+de deuxième ligne du tout**. Et l'**année du jour vient de `moisCourant`**, que
+le serveur calcule : la relire d'un `new Date()` dans le composant casserait
+l'hydratation au passage de minuit.
+
+**Ne pas chercher la capsule par son texte** : elle porte
+`data-atlas="capsule-a-facturer"` depuis que « Facturer » est devenu « À
+facturer », et deux contrôles avaient rougi sur du code juste faute de ce repère
+(`CLAUDE.md` §5 bis).
+
+---
+
+## Le même soir : la dictée est une LIGNE, et elle est codée (31 août 2026)
 
 Sa plainte du matin — *« ça dénature l'appli »* —, quatre allures essayées, puis
 sa réponse : **la ligne**, avec un **rond** autour de l'avion.

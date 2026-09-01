@@ -21,7 +21,10 @@ import {
   aFacturerPartout,
   factureesPartout,
   somme,
+  formatEuros,
   libelleFacturee,
+  libelleDateChantier,
+  libelleEtatLigne,
   numeroCourt,
   estFacture,
   type LigneTerminee,
@@ -295,6 +298,73 @@ essai("« émise » est le seul état qui vaut facturé", () => {
   assert.equal(estFacture({ factureStatut: "emise" }), true);
   assert.equal(estFacture({ factureStatut: "brouillon" }), false);
   assert.equal(estFacture({ factureStatut: null }), false);
+});
+
+// ─── La date du chantier, et la ligne d'état — sa demande du 31 août 2026 ────
+
+essai("la date du chantier s'écrit sans son année quand c'est celle du jour", () => {
+  assert.equal(libelleDateChantier("2026-08-12", "2026"), "12 août");
+  assert.equal(libelleDateChantier("2026-01-03", "2026"), "3 janvier");
+});
+
+essai("l'ANNÉE s'écrit dès que ce n'est plus celle du jour", () => {
+  // C'est l'onglet « À facturer » qui l'impose : il mêle tous les mois, pour
+  // rattraper un retard de facturation. « 14 septembre » sans année s'y lirait
+  // comme le mois qui vient — et l'on croirait avoir facturé un chantier vieux
+  // d'un an.
+  assert.equal(libelleDateChantier("2025-09-14", "2026"), "14 septembre 2025");
+});
+
+essai("sans date au planning, on n'invente rien", () => {
+  assert.equal(libelleDateChantier(null, "2026"), "");
+  assert.equal(libelleDateChantier("", "2026"), "");
+});
+
+essai("la ligne d'état porte la date puis le montant prévu", () => {
+  const [l] = preparer([ligne({ id: "a", datePlanifiee: "2026-08-12", devisTotalTtc: "360.00" })]);
+  // Le montant se compare par `formatEuros`, jamais par une chaîne écrite à la
+  // main : l'espace qui précède le « € » est une espace fine insécable, et deux
+  // caractères invisibles qui diffèrent font rougir un contrôle juste.
+  assert.equal(libelleEtatLigne(l, "2026"), `12 août · ${formatEuros(360)} prévus`);
+});
+
+essai("« Pas encore facturé » n'est plus écrit nulle part", () => {
+  // Sa demande du 31 août 2026, devant la planche : la capsule « À FACTURER »
+  // disait déjà la même chose, sur la même ligne, à trois centimètres.
+  const lignes = preparer([
+    ligne({ id: "a", datePlanifiee: "2026-08-12", devisTotalTtc: "360.00" }),
+    ligne({ id: "b", datePlanifiee: "2026-08-26" }),
+  ]);
+  for (const l of lignes) {
+    assert.ok(!/pas encore factur/i.test(libelleEtatLigne(l, "2026")), libelleEtatLigne(l, "2026"));
+  }
+});
+
+essai("sans devis envoyé, il ne reste que la date — et JAMAIS un « · » pendu", () => {
+  const [l] = preparer([ligne({ id: "a", datePlanifiee: "2026-08-26" })]);
+  assert.equal(libelleEtatLigne(l, "2026"), "26 août");
+});
+
+essai("sans date NI montant, la ligne d'état n'existe pas", () => {
+  // L'écran n'affiche alors rien du tout : ni tiret, ni phrase de remplacement.
+  // Un chantier clôturé sans être passé par le planning est dans ce cas.
+  const [l] = preparer([ligne({ id: "a", termineAt: "2026-08-30T10:00:00Z" } as Partial<LigneTerminee> & { id: string })]);
+  assert.equal(libelleEtatLigne(l, "2026"), "");
+});
+
+essai("une fois facturé, la date du chantier précède celle de la facture", () => {
+  // « Facturé le 20 août » reste : aucun bouton ne le dit à sa place.
+  const [l] = preparer([
+    ligne({
+      id: "a",
+      datePlanifiee: "2026-08-09",
+      factureStatut: "emise",
+      factureDateEmission: "2026-08-20",
+      totalTtc: "1240.00",
+      factureNumero: "F2026-0005",
+    }),
+  ]);
+  assert.equal(libelleEtatLigne(l, "2026"), "9 août · Facturé le 20 août · Facture n° 5");
 });
 
 console.log(`\n${echecs === 0 ? "✅" : "❌"} « Terminés » — ${echecs} échec(s).`);

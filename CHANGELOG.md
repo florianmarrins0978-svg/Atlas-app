@@ -54,6 +54,62 @@ donc pas ce lot. **Rejouées après minuit, le 1ᵉʳ septembre, elles sont vert
 sans qu'une ligne ait changé.** Le défaut est daté, pas produit : il est
 consigné dans `TODO.md`, avec ce qu'il faudra faire pour qu'un 30 ou un 31 ne
 coûte plus une soirée.
+### « Terminés » : la date du chantier, et la ligne dorée allégée — CODÉ
+
+**Il a choisi la B, puis : « très bien, code-moi ça ».** L'écran porte désormais,
+sous le nom du client : **la date du chantier, puis le montant prévu** — « 12 août
+· 360,00 € prévus ». La capsule dit **« À FACTURER »**, et « Pas encore facturé »
+n'est plus écrit nulle part : la capsule le disait déjà, sur la même ligne.
+
+**L'année ne s'écrit que si ce n'est pas celle du jour.** L'onglet « À facturer »
+mêle tous les mois — c'est sa demande du 22 août, pour rattraper un retard de
+facturation. « 14 septembre » sans année s'y lisait comme le mois qui vient, et
+l'on croyait avoir facturé un chantier vieux d'un an. Elle se décide sur le
+serveur, à partir du mois qu'il calcule déjà : lue dans le navigateur, elle
+casserait l'hydratation au passage de minuit.
+
+**Une rangée peut n'avoir plus de deuxième ligne du tout** — pas de date au
+planning, pas de devis envoyé. On n'y écrit ni tiret ni phrase de remplacement,
+et le `span` disparaît plutôt que de laisser sa marge : une rangée qui garde son
+interligne paraît porter une information qu'on n'arrive pas à lire.
+
+**Deux contrôles visaient un libellé, ils visent maintenant un repère**
+(`CLAUDE.md` §5 bis) : `capture-termines.mts` cherchait la capsule par le mot
+« Facturer » et exigeait « Pas encore facturé » quelque part dans l'écran. Le
+premier aurait rougi sur du code juste ; le second prouvait peu — une seule
+occurrence suffisait pour dix rangées muettes. Il compare désormais le nombre de
+capsules `data-atlas="capsule-a-facturer"` au nombre de rangées en attente.
+
+**Ce qui reste ouvert, et c'est à lui :** la date affichée est celle du planning
+(`datePlanifiee`), la seule que l'application garde.
+
+### La date du chantier dans « Terminés » : la planche qui a servi à choisir
+
+**Sa demande :** *« changer le bouton FACTURER en À FACTURER, et à côté du nom du
+client inscrire la date à laquelle le chantier a été réalisé ; propose, fais-moi
+un visuel seulement pour la date avant de coder »*.
+
+`appli/termines-date-du-chantier.html` — quatre places pour la date, essayables
+au doigt, avec « À FACTURER » déjà posé dans les quatre (c'est tranché). Les six
+chantiers et les montants sont ceux de sa capture ; **les dates sont inventées**,
+sa capture n'en montre pas, et elles sont choisies pour éprouver ce qui fait mal :
+un chantier sans date, un de l'an dernier, un nom trop long pour la ligne.
+
+**Puis, le même soir : « supprime "Pas encore facturé" en doré ».** Retiré des
+quatre propositions — sinon la comparaison ne porterait plus sur la même ligne.
+Son retrait découvre des lignes qui n'ont plus rien à écrire : un chantier sans
+montant au devis n'a plus que sa date, un chantier sans date ni montant n'a plus
+de deuxième ligne. La planche assemble donc cette ligne morceau par morceau, et
+se redessine à chaque changement de place — un séparateur « · » écrit en dur y
+restait pendu dans le vide. « Facturé le 20 août » reste : aucun bouton ne le dit
+à sa place.
+
+**Ce que la planche a fait apparaître, et qu'un texte n'aurait pas montré :** sur
+l'onglet « Tout », la proposition B écrit deux dates côte à côte — « 9 août ·
+Facturé le 20 août » —, et la proposition C perd son rang régulier dès qu'un
+chantier n'a pas de date. Rien n'est codé tant qu'il n'a pas choisi
+(`CLAUDE.md` §3 bis) ; l'attente est notée dans `TODO.md`, réserve comprise :
+l'application ne garde pas de date de réalisation distincte de celle du planning.
 ### Trois écartés qu'il a fait rentrer : l'étiquette « Facturer » et les deux bandeaux
 
 **Sa réponse, après avoir lu la liste des sept écartés :** *« l'étiquette à
