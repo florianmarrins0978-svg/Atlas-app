@@ -9,6 +9,24 @@ sert.
 
 ---
 
+## Le même jour : deux défauts de la dictée signalés par lui (1ᵉʳ sept. 2026)
+
+1. **L'invite « Appuyez et décrivez le chantier » restait** pendant que le devis
+   se préparait — l'écran demandait de refaire ce qui était en cours. Corrigé :
+   `AnneauNoteVocale` reçoit `preparationEnCours`.
+2. **« La note n'atteint plus le devis. »** Sa capture montrait le compteur à
+   96 s. **NON REPRODUIT ICI** — le parcours dictée → devis passe au vert sur ce
+   poste (`test-devis-depuis-dictee-e2e`, 8/8), sur le commit qu'il servait.
+
+   Ce qui a été livré n'est donc PAS un correctif mais un **bavardage** : la
+   panne se dit au lieu de se compter. L'exception traversait l'action serveur,
+   Next.js la remplaçait par un identifiant opaque, et l'écran comptait des
+   secondes. Au prochain essai, il aura la raison à l'écran — et c'est elle qui
+   dira quoi réparer.
+
+   **Ne pas conclure sans elle.** Le service journalise déjà la cause côté
+   serveur (`devis-depuis-dictee.ts`) : le journal de son espace la porte.
+
 ## Dernier lot : plusieurs TVA sur un devis (1ᵉʳ sept. 2026)
 
 **Ce qui est fait, et poussé.** Main d'œuvre à 20 %, végétaux à 10 %, sur le

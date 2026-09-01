@@ -9,6 +9,36 @@ Format : le plus récent en tête.
 
 ## 2026-09-01
 
+### L'invite à dicter se tait pendant que le devis se prépare
+
+**Sa remarque, deux captures à l'appui :** *« lorsqu'on dicte notre devis et
+qu'on envoie la note vocale, la phrase "appuyez et décrivez le chantier" doit
+disparaître, sinon ça incite à appuyer »*.
+
+Il avait sous les yeux « Atlas prépare toujours votre devis… (96 s) » et, juste
+au-dessus, une invitation à appuyer. **L'écran lui demandait de recommencer ce
+qu'il était en train de faire** — et une seconde dictée par-dessus la première
+écrase celle qui travaille.
+
+La phrase ne se taisait que PENDANT l'enregistrement. Elle se tait maintenant
+aussi tant que la chaîne du devis tourne (`preparationEnCours`). Le micro reste :
+il peut redicter si la préparation échoue.
+
+### Une préparation qui échoue le DIT, au lieu de compter des secondes
+
+Le service journalisait déjà la cause, puis relançait. Or **le message d'une
+exception d'action serveur n'arrive jamais jusqu'à lui** : Next.js le remplace
+par un identifiant opaque (`AGENTS.md`). L'écran tombait donc dans son
+rattrapage — celui du 12 août, écrit pour les réponses PERDUES — et se mettait à
+compter devant un travail déjà mort.
+
+L'action rend désormais un refus EN VALEUR, avec la première ligne du motif. Le
+rattrapage garde son rôle : les vraies coupures, où rien ne revient.
+
+Éprouvé par `test-dictee-invite-e2e.ts`, qui entre par le micro et sait rougir :
+sans le correctif, il retrouve la phrase après l'envoi.
+
+
 ### Déplacer une ligne d'une TVA à l'autre — appui long
 
 **Son choix**, entre les deux chemins proposés : *« un appui long »*. Le geste a

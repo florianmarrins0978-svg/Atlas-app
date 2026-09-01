@@ -14,6 +14,20 @@ langage, et rien n'y entre sans son accord.
 Il a choisi l'appui long, et c'est codé. Le sous-total HT par catégorie est
 gardé, à sa demande.
 
+## SA NOTE VOCALE N'ATTEINT PAS LE DEVIS — non reproduit (1ᵉʳ sept. 2026)
+
+Sa capture : « Atlas prépare toujours votre devis… (96 s) », et rien ne vient.
+Son espace servait bien le commit annoncé, tout concordait sur sa fiche d'état.
+
+**Le parcours passe au vert ici** (`test-devis-depuis-dictee-e2e`, 8/8), donc le
+défaut n'a pas été reproduit et **rien n'a été « corrigé » à l'aveugle**. Ce qui
+a été livré rend la panne bavarde : la raison s'affichera à l'écran au lieu d'un
+compteur.
+
+**Qui peut le faire avancer :** lui, au prochain essai — la phrase qui
+s'affichera nomme la cause. À défaut, le journal de son espace la porte déjà
+(`logger.error`, « Devis depuis dictée : la chaîne a échoué »).
+
 ## `monter-base-locale.sh` N'EXPORTE PAS `REDIS_URL` — et ça coûte une heure (1ᵉʳ sept. 2026)
 
 Le script démarre Redis mais laisse `REDIS_URL` vide. Or `CLAUDE.md` §5 la liste

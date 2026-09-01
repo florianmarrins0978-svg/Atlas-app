@@ -125,6 +125,7 @@ export default function AnneauNoteVocale({
   assurerChantier,
   onDicte,
   onDictee,
+  preparationEnCours = false,
   storageKey,
   dureeSecondes,
 }: {
@@ -162,6 +163,15 @@ export default function AnneauNoteVocale({
    * tromper. »* C'est l'écran du dessus qui porte ce bouton : il doit savoir.
    */
   onDictee?: (enCours: boolean) => void;
+  /**
+   * Le devis se prépare : l'invite à dicter se tait.
+   *
+   * **Sa remarque du 1ᵉʳ septembre 2026** : *« la phrase "appuyez et décrivez
+   * le chantier" doit disparaître, sinon ça incite à appuyer »*. Il l'avait
+   * sous les yeux pendant que l'écran annonçait « Atlas prépare toujours votre
+   * devis… (96 s) » — l'écran l'invitait à recommencer ce qu'il faisait déjà.
+   */
+  preparationEnCours?: boolean;
   /** Absent, l'audio a été purgé après transcription : il n'y a rien à écouter. */
   storageKey: string | null;
   dureeSecondes: number | null;
@@ -564,8 +574,18 @@ export default function AnneauNoteVocale({
         )}
         {/* **Rien à dire pendant qu'on parle** : sa planche efface l'indice dès
             la dictée (`[data-etat="dicte"] .atlas-indice{display:none}`). Un
-            écran n'explique pas ce qui est en train de se faire sous les yeux. */}
-        {!magnetophone.enregistre && (
+            écran n'explique pas ce qui est en train de se faire sous les yeux.
+
+            **ET RIEN NON PLUS PENDANT QUE LE DEVIS SE PRÉPARE** — sa remarque
+            du 1ᵉʳ septembre 2026, capture à l'appui : *« lorsqu'on dicte notre
+            devis et qu'on envoie la note vocale, la phrase "appuyez et décrivez
+            le chantier" doit disparaître, sinon ça incite à appuyer »*.
+
+            Il avait sous les yeux « Atlas prépare toujours votre devis… (96 s) »
+            SOUS une invitation à appuyer : l'écran demandait de recommencer ce
+            qu'il était en train de faire. Une seconde dictée par-dessus la
+            première, c'est la note qui écrase celle qui travaille. */}
+        {!magnetophone.enregistre && !preparationEnCours && (
           <p className="atlas-indice mt-1 text-[11px]" style={{ color: colors.muted }}>
             Appuyez et décrivez le chantier
           </p>

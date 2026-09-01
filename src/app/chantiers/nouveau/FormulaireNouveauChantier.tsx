@@ -637,6 +637,9 @@ export default function FormulaireNouveauChantier({
                 assurerChantier={assurerChantier}
                 onDicte={() => setDicteeFaite(true)}
                 onDictee={setDicteeEnCours}
+                // Dès que la note est partie, la chaîne du devis démarre seule
+                // (`auto`, plus bas) : l'anneau cesse alors d'inviter à dicter.
+                preparationEnCours={dicteeFaite}
                 storageKey={reprise?.note?.storageKey ?? null}
                 dureeSecondes={reprise?.note?.dureeSecondes ?? null}
               />
