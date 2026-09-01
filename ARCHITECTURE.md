@@ -20397,6 +20397,13 @@ enregistrements dont le second écraserait le premier.
 peut plus suspendre une dictée pour répondre à quelqu'un sur un chantier. On
 parle, puis on jette ou on envoie.
 
+### Le trait du dessus, retiré le lendemain
+
+Le 1ᵉʳ septembre 2026 : *« supprime le trait gris qu'il y a au-dessus »*. La
+ligne n'a donc plus AUCUN filet — seul l'espace la sépare de la fiche. À ne pas
+remettre en croyant « tenir » la ligne : c'est exactement ce qu'il a fait
+retirer, et l'écran n'en porte nulle part ailleurs.
+
 ### Le défaut que seule la capture a montré
 
 La zone de dictée de la fiche chantier n'avait **aucune marge horizontale**

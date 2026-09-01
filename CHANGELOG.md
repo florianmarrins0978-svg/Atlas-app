@@ -7,6 +7,21 @@ Format : le plus récent en tête.
 
 ---
 
+## 2026-09-01
+
+### Le trait au-dessus de la dictée s'en va
+
+**Sa demande, en une ligne :** *« supprime le trait gris qu'il y a au-dessus »*.
+Il tenait la ligne au moment où elle remplaçait un objet centré ; l'aplat parti,
+c'était un trait de plus sur un écran qui n'en porte nulle part ailleurs.
+
+**L'espace, lui, reste** (`padding-top: 14px`) : c'est lui qui sépare la dictée
+du reste, et le retirer avec le trait ferait remonter la ligne contre la fiche.
+La planche `appli/dictee-la-ligne.html` a été corrigée en même temps — une
+planche qui montre autre chose que l'écran ne sert plus de référence.
+
+Éprouvé : les dix suites de la dictée, les contrôles de planches, types et lint.
+
 ## 2026-08-31
 
 ### La dictée est CODÉE : une ligne, deux gestes, plus aucun aplat

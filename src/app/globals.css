@@ -1277,8 +1277,14 @@ body {
   align-items: center;
   gap: 12px;
   width: 100%;
+  /* **PLUS DE TRAIT AU-DESSUS** — sa demande du 1ᵉʳ septembre 2026 : *« supprime
+   * le trait gris qu'il y a au-dessus »*. Il tenait la ligne au moment où elle
+   * remplaçait un objet centré ; une fois l'aplat parti, c'était un trait de
+   * plus sur un écran qui n'en porte nulle part ailleurs.
+   *
+   * **L'espace, lui, RESTE** : c'est lui qui sépare la dictée du reste, et le
+   * retirer avec le trait ferait remonter la ligne contre la fiche. */
   padding-top: 14px;
-  border-top: 1px solid var(--atlas-line, rgba(28, 28, 26, 0.12));
   animation: atlas-venir 0.26s cubic-bezier(0.22, 0.61, 0.36, 1) both;
 }
 /* Les deux gestes ne partagent PAS un bloc commun, et ce n'est pas une
