@@ -9,6 +9,51 @@ Format : le plus récent en tête.
 
 ## 2026-08-31
 
+### La dictée est CODÉE : une ligne, deux gestes, plus aucun aplat
+
+**Sa réponse, après avoir essayé les planches : « code-moi la A ronde ».**
+Ce qui vit maintenant dans l'application (`AnneauNoteVocale.tsx`, bloc
+`.atlas-ligne-dictee` de `globals.css`) :
+
+| | avant | après |
+|---|---|---|
+| l'aplat sombre pendant la dictée | **7 956 px²** | **64** (la pastille du chrono) |
+| les gestes | jeter · pause · envoyer | **jeter · envoyer** |
+| le chrono et l'onde | sous le trio, chacun sur son axe | sur la ligne |
+
+**Le fond du rond d'envoi est `transparent`, pas un beige écrit** : ce composant
+sert aussi l'écran d'un chantier neuf, et sept chartes changent ce fond — dont
+deux sombres. Le vide, lui, EST le fond de la page, quelle qu'elle soit.
+
+**La pause quitte aussi le magnétophone** (`basculerSuspension`, `suspendu`) :
+un geste que plus aucun écran n'emploie finit rebranché au hasard. Ce que cela
+coûte lui a été dit avant d'être codé — on ne peut plus suspendre une dictée
+pour répondre à quelqu'un sur un chantier.
+
+**Et une correction à l'entrée du soir de la session voisine** (« Le geste et le
+vert sur TOUS les boutons pleins ») : elle annonce le vert #29382F et le geste
+sur le rond d'envoi de la note vocale. Ce rond est **creux** depuis ce lot-ci,
+et il ne porte donc pas `atlas-plein` — c'est sa propre consigne du même jour,
+*« surtout pas ceux qui sont creux »*. Il garde le geste seul, à la force
+« discret » (0,975) qu'elle a posée. Le micro plein, lui, prend bien les deux.
+
+**Un défaut trouvé à la CAPTURE, par aucun test** : la zone de dictée de la
+fiche chantier n'avait pas les 26 px du reste de l'écran. Invisible tant que
+l'objet était un disque centré ; devenue une ligne, elle touchait les deux
+bords. Elle ne débordait pas — donc rien ne rougissait (`ARCHITECTURE.md` §228).
+
+**Batterie : 122/122 suites navigateur, 298 suites base, connexion derrière un
+proxy, 60 planches.**
+
+**Et la démonstration, au passage, du défaut de fin de mois.** Joué le 31 au
+soir, ce lot rendait 117/122 : `envoi-client`, `facture`, `facture-au-client`,
+`planning-vers-facture` et `tva-au-paiement` tombaient sur un bouton « Envoyer
+le devis » désactivé et un relevé de TVA vide. Un arbre de travail posé sur
+`main` **sans ces modifications** les faisait tomber à l'identique — ce n'était
+donc pas ce lot. **Rejouées après minuit, le 1ᵉʳ septembre, elles sont vertes
+sans qu'une ligne ait changé.** Le défaut est daté, pas produit : il est
+consigné dans `TODO.md`, avec ce qu'il faudra faire pour qu'un 30 ou un 31 ne
+coûte plus une soirée.
 ### « Terminés » : la date du chantier, et la ligne dorée allégée — CODÉ
 
 **Il a choisi la B, puis : « très bien, code-moi ça ».** L'écran porte désormais,

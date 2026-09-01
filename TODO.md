@@ -118,54 +118,39 @@ facture déjà en brouillon **sans regarder si un devis plus récent existe**
 jamais la facture, et rien ne le dit à l'écran. *Lu dans le code, non rejoué à
 l'écran.*
 
-## EN ATTENTE DE SA RÉPONSE : l'aplatissement de la touche d'envoi (31 août 2026)
+## ~~L'allure de la dictée~~ — TRANCHÉ ET CODÉ le 31 août 2026
 
-**Il a choisi LA LIGNE** parmi les quatre allures, et l'a corrigée trois fois le
-soir même. **Rien n'est codé, et rien ne doit l'être avant sa dernière réponse**
-(`CLAUDE.md` §3 bis).
+Il a choisi **la ligne**, puis le **rond** autour de l'avion. C'est dans
+l'application : `AnneauNoteVocale.tsx` et `.atlas-ligne-dictee`
+(`ARCHITECTURE.md` §228). Les deux planches restent en ligne — elles portent le
+pourquoi, et les formes écartées.
 
-La planche : `appli/dictee-la-ligne.html`, en ligne à
-https://florianmarrins0978-svg.github.io/Atlas-app/dictee-la-ligne.html
+**Ce qu'il reste à lui demander, et seulement s'il le soulève :** la dictée de
+l'écran « chantier neuf » a changé en même temps, parce que c'est le même
+composant. Il n'avait parlé que de la fiche chantier.
 
-**Ce qu'on attend de lui : une lettre.** A ronde (44 × 44), B légèrement à plat
-(48 × 40), C plus à plat (52 × 36).
+## Cinq suites tombent le dernier jour du mois (31 août 2026)
 
-**Ce qui est DÉJÀ tranché par lui, et qui ne se rediscute pas :** la ligne
-plutôt qu'un objet ; **plus aucune pause** (deux gestes : jeter, envoyer) ; la
-touche d'envoi au fond de la page, encadrée de vert. Le repos ne bouge pas —
-c'est son choix du 30 août.
+**Ce ne sont pas des défauts du produit, et il faut le savoir avant d'accuser un
+lot :** `test-envoi-client`, `test-facture`, `test-facture-au-client`,
+`test-planning-vers-facture` et `test-tva-au-paiement` échouent le 31 août au
+soir — bouton « Envoyer le devis » désactivé, facture absente du relevé de TVA.
 
-**À lui dire au moment de coder, parce qu'il le découvrirait sur un chantier :**
-sans pause, on ne peut plus suspendre une dictée pour répondre à quelqu'un.
+**Vérifié deux fois, pas supposé :** un arbre de travail posé sur `main` **sans
+le lot du soir** les fait échouer à l'identique ; et **rejouées après minuit,
+le 1ᵉʳ septembre, elles passent toutes sans qu'une ligne ait changé**. C'est le
+troisième épisode de ce genre (voir le 26 août, « la troisième suite qui tombe
+sur la fin du mois »).
 
-La planche des quatre allures (`appli/dictee-embellie.html`) reste en ligne :
-c'est elle qui porte la comparaison, et les chiffres d'aplat.
+**Une sixième s'y ajoute, vue le 1ᵉʳ au petit matin :** `test-facture-e2e`
+(« le chantier réalisé apparaît dans l'onglet Terminés ») tombe si la batterie
+**franchit minuit** en cours de route — le chantier est posé la veille et
+cherché le lendemain. Rejouée seule, elle passe.
 
-**Ce qui change à l'écran une fois choisi :** `AnneauNoteVocale.tsx` (le rendu
-de la dictée) et le bloc `.atlas-dictee` de `src/app/globals.css`. Le repos ne
-bouge pas — c'est son choix du 30 août, et il n'a rien reproché à cet état-là.
-## Ne rebâtir que si le code BÂTI a changé (posé le 31 août 2026, soir)
-
-**Mesuré, pas supposé :** sur les quarante derniers commits de `main`, **un quart
-ne touchent que** `docs/`, `appli/`, `maquettes/`, `.github/` ou les fichiers de
-mémoire. Chacun déclenche pourtant une construction complète chez le patron,
-parce que `doitRebatir` compare le **numéro de commit** et non le code qui entre
-dans la construction.
-
-**Pourquoi ce n'est PAS fait ce soir.** Le gain a beaucoup baissé depuis §225 :
-une construction ne lui coûte plus l'usage de son application, seulement une
-fenêtre où il voit le code d'avant. Et le risque, lui, n'a pas bougé : la liste
-des chemins « sans effet sur la construction » est exactement le genre
-d'inclusion qu'on croit complète et qui ne l'est pas. Se tromper d'un dossier,
-c'est servir du code d'hier en croyant servir celui du jour — la panne que
-`doitRebatir` existe pour empêcher (§11 août).
-
-**Si quelqu'un le reprend :** l'empreinte se calcule sur l'arbre git privé des
-chemins exclus, et l'exclusion doit se PROUVER (aucun `import` depuis `src/` ni
-`next.config.ts` — vérifié le 31 août pour `docs/`, `appli/`, `maquettes/`,
-`.github/`). Le doute tranche vers la reconstruction.
-
----
+**Ce qui reste à faire :** les rendre indépendantes du jour où on les joue —
+elles choisissent des dates relatives à aujourd'hui et tombent quand le mois se
+termine. Personne ne l'a encore fait ; le premier qui repasse un 30 ou un 31 le
+repaiera.
 
 ## LES BOUTONS PLEINS : fait (31 août 2026)
 

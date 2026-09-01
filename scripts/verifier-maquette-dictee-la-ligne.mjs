@@ -8,6 +8,12 @@
   l'intérieur, mais la couleur du fond de la page (beige) […] et fais-la
   légèrement plus à plat. »*
 
+  **Puis sa correction, une heure plus tard :** *« autour de la flèche envoyer
+  je veux un rond, pas un ovale. Et fais-moi un visuel sans le rond aussi. »*
+  Mes trois aplatissements (44 × 44, 48 × 40, 52 × 36) donnaient deux ovales :
+  « plus à plat » parlait du POIDS de la touche, pas de sa forme. Le contrôle
+  interdit désormais l'ovale — c'est ce qui empêche de le refaire.
+
   ───────────────────────────────────────────────────────────────────────────
   CE QUE CE CONTRÔLE TIENT — ses trois corrections, une par une.
 
@@ -22,11 +28,12 @@
      la zone : pendant la dictée, elle doit tomber à la seule pastille du
      chrono (64 px²), contre 7 956 px² sur l'écran d'aujourd'hui.
 
-  3. **LES TROIS APLATISSEMENTS EXISTENT ET DIFFÈRENT**, et ils ne changent QUE
-     la touche : A ronde, B légèrement à plat, C plus à plat. Le contrôle
-     mesure les trois, vérifie qu'elles vont en s'aplatissant, et que rien
-     d'autre de la ligne ne bouge — sinon il choisirait un écran au lieu d'une
-     hauteur.
+  3. **UN ROND, JAMAIS UN OVALE**, et **les deux visuels qu'il demande** : avec
+     le rond, et sans. Le contrôle mesure la touche au pixel près dans les deux
+     onglets et refuse le moindre écart entre largeur et hauteur ; il vérifie
+     que « sans le rond » n'a plus ni contour ni fond, que l'avion reste vert,
+     et que **la cible du doigt garde ses 44 px** — un geste qu'on rate n'est
+     pas un geste plus discret, c'est un geste perdu.
 
   4. **Le geste du patron, entier** : appuyer sur le micro, parler deux
      secondes, jeter — et repartir de zéro ; puis envoyer, et voir la
@@ -49,12 +56,6 @@ const RACINE = join(dirname(fileURLToPath(import.meta.url)), "..");
 const FICHIER = join(RACINE, "appli", "dictee-la-ligne.html");
 const CAPTURES = process.argv[2] ?? null;
 if (CAPTURES) mkdirSync(CAPTURES, { recursive: true });
-
-const FORMES = [
-  { f: "a", nom: "Ronde" },
-  { f: "b", nom: "Légèrement à plat" },
-  { f: "c", nom: "Plus à plat" },
-];
 
 // Aucune flèche décorative (`CLAUDE.md` §3), avant même d'ouvrir un navigateur.
 const source = readFileSync(FICHIER, "utf8");
@@ -162,32 +163,57 @@ assert.ok(plein <= 100,
   `La dictée porte encore ${plein} px² d'aplat : sa plainte du matin portait exactement là-dessus.`);
 console.log(`Aplat pendant la dictée : ${plein} px² (7 956 sur l'écran d'aujourd'hui).`);
 
-// ─── 3. LES TROIS APLATISSEMENTS ──────────────────────────────────────────
-const mesures = {};
-for (const { f, nom } of FORMES) {
+// ─── 3. UN ROND, JAMAIS UN OVALE — et les deux visuels ───────────────────
+const FORMES2 = [
+  { f: "rond", nom: "Avec le rond", encadre: true },
+  { f: "nu", nom: "Sans le rond", encadre: false },
+];
+for (const { f, nom, encadre } of FORMES2) {
   await page.locator(`.onglets [data-f="${f}"]`).click();
   assert.equal(await page.evaluate(() => document.body.dataset.forme), f);
+
   const t = await page.locator(".envoyer").boundingBox();
   assert.ok(t && t.width > 20 && t.height > 20, `La touche « ${nom} » mesure une boîte vide.`);
-  // Rien d'autre ne bouge : la poubelle et le chrono gardent leur place.
+  assert.equal(Math.round(t.width), Math.round(t.height),
+    `« ${nom} » : la touche fait ${Math.round(t.width)} × ${Math.round(t.height)} — c'est un ovale, il veut un rond.`);
+  assert.ok(t.width >= 44,
+    `« ${nom} » : la cible du doigt tombe à ${Math.round(t.width)} px. Un geste qu'on rate n'est pas un geste plus discret.`);
+
+  const dessin = await page.evaluate(() => {
+    const b = document.querySelector(".envoyer");
+    const s = getComputedStyle(b);
+    return {
+      trait: s.boxShadow,
+      fond: s.backgroundColor,
+      encre: s.color,
+      avion: !!b.querySelector("svg"),
+      fondDeLaPage: getComputedStyle(document.body).backgroundColor,
+    };
+  });
+  assert.ok(dessin.avion, `L'avion a disparu de « ${nom} » : il ne reste plus de geste.`);
+  assert.equal(dessin.encre, "rgb(47, 59, 47)", `L'avion de « ${nom} » n'est pas vert : ${dessin.encre}`);
+  if (encadre) {
+    assert.ok(/inset/.test(dessin.trait) && /47, 59, 47/.test(dessin.trait),
+      `« ${nom} » n'a pas son encadré vert : ${dessin.trait}`);
+    assert.equal(dessin.fond, dessin.fondDeLaPage,
+      `« ${nom} » : le fond de la touche n'est pas celui de la page.`);
+  } else {
+    assert.equal(dessin.trait, "none", `« ${nom} » garde un contour : ${dessin.trait}`);
+    assert.equal(dessin.fond, "rgba(0, 0, 0, 0)",
+      `« ${nom} » garde un fond peint (${dessin.fond}) : sur une charte sombre, il se verrait.`);
+  }
+
+  // Rien d'autre ne bouge d'un onglet à l'autre.
   const poubelle = await page.locator("#ligne .jeter").boundingBox();
-  mesures[f] = { large: Math.round(t.width), haute: Math.round(t.height), poubelle: Math.round(poubelle.height) };
+  assert.equal(Math.round(poubelle.height), 32,
+    `La poubelle change de taille dans « ${nom} » : il choisirait un écran, pas une touche.`);
+
   await pasDeDebordement(`forme ${nom}`);
   if (CAPTURES) {
     await page.waitForTimeout(300);
     await page.screenshot({ path: join(CAPTURES, `ligne-${f}-clair.png`) });
   }
 }
-console.log("La touche d'envoi, par onglet :");
-for (const { f, nom } of FORMES) {
-  console.log(`  ${f} · ${nom.padEnd(20)} ${mesures[f].large} × ${mesures[f].haute}`);
-}
-assert.ok(mesures.a.haute > mesures.b.haute && mesures.b.haute > mesures.c.haute,
-  "Les trois formes ne vont pas en s'aplatissant : il n'y aurait rien à choisir.");
-assert.ok(mesures.a.large < mesures.b.large && mesures.b.large < mesures.c.large,
-  "La touche ne s'élargit pas en s'aplatissant : elle rétrécirait au lieu de s'aplatir.");
-assert.equal(mesures.a.poubelle, mesures.c.poubelle,
-  "La poubelle change d'une forme à l'autre : il choisirait un écran, pas une hauteur.");
 
 // ─── 4. Le geste entier : jeter, puis envoyer ─────────────────────────────
 await page.locator("#ligne .jeter").click();
@@ -201,6 +227,10 @@ await page.waitForTimeout(2600);
 assert.equal(await etat(), "repos", "La planche reste bloquée sur l'attente.");
 
 // ─── 6. La teinte sombre ──────────────────────────────────────────────────
+// Sur l'onglet AVEC le rond : c'est lui qui prend le fond de la page, et c'est
+// là que l'inversion de la charte se joue. La boucle ci-dessus s'est arrêtée
+// sur « sans le rond », où il n'y a plus rien à peindre.
+await page.locator('.onglets [data-f="rond"]').click();
 await page.locator("#teinte").click();
 assert.equal(await page.evaluate(() => document.documentElement.getAttribute("data-theme")), "dark");
 await page.locator(".micro-plein").click();
@@ -225,8 +255,8 @@ assert.equal(nuit.fond, nuit.fondDeLaPage, "En nuit, la touche cesse de prendre 
 assert.ok(nuit.contraste >= 4.5,
   `En nuit, l'avion tient ${nuit.contraste.toFixed(2)} de contraste : un geste qu'on ne voit pas n'existe pas.`);
 await pasDeDebordement("en nuit");
-if (CAPTURES) await page.screenshot({ path: join(CAPTURES, "ligne-b-nuit.png") });
+if (CAPTURES) await page.screenshot({ path: join(CAPTURES, "ligne-nuit.png") });
 
 await navigateur.close();
 if (process.exitCode) process.exit(process.exitCode);
-console.log("\nLa ligne tient : deux gestes, aucun aplat, trois aplatissements, deux teintes.");
+console.log("\nLa ligne tient : deux gestes, aucun aplat, un rond qui n'est pas un ovale, deux teintes.");

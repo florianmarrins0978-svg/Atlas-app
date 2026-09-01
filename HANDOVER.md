@@ -38,29 +38,34 @@ facturer », et deux contrôles avaient rougi sur du code juste faute de ce rep�
 
 ---
 
-## Le même soir : la ligne, corrigée trois fois par lui (31 août 2026)
+## Le même soir : la dictée est une LIGNE, et elle est codée (31 août 2026)
 
-**Rien n'est codé** (`CLAUDE.md` §3 bis). Il a choisi **la ligne** parmi les
-quatre allures, puis l'a corrigée : *« supprime le rond avec le carré dedans
-pour me mettre pause. Et la touche envoyer : garde l'encadré vert et
-l'intérieur, mais la couleur du fond de la page (beige) […] et fais-la
-légèrement plus à plat. »*
+Sa plainte du matin — *« ça dénature l'appli »* —, quatre allures essayées, puis
+sa réponse : **la ligne**, avec un **rond** autour de l'avion.
 
 | | |
 |---|---|
-| la planche | `appli/dictee-la-ligne.html` |
-| en ligne | https://florianmarrins0978-svg.github.io/Atlas-app/dictee-la-ligne.html |
-| son contrôle | `scripts/verifier-maquette-dictee-la-ligne.mjs` (dans `npm run verifier:maquette`) |
-| ce qu'on attend | **une lettre** : A ronde, B légèrement à plat, C plus à plat |
-| ce que ça touchera | `src/app/chantiers/[id]/AnneauNoteVocale.tsx` et le bloc `.atlas-dictee` de `src/app/globals.css` |
+| ce qui a changé | `src/app/chantiers/[id]/AnneauNoteVocale.tsx`, `magnetophone.ts`, bloc `.atlas-ligne-dictee` de `globals.css`, la marge de `page.tsx` |
+| le pourquoi | `ARCHITECTURE.md` §228 |
+| les planches | `appli/dictee-embellie.html` (les quatre allures) et `appli/dictee-la-ligne.html` (ses corrections) |
+| l'aplat sombre | **7 956 px² → 64** |
 
-**Ce qui est tranché et ne se rediscute pas :** la ligne, la disparition de la
-pause (deux gestes : jeter, envoyer), la touche d'envoi au fond de la page
-encadrée de vert. L'aplat de la dictée passe de 7 956 px² à 64.
+**Les trois choses à savoir avant d'y toucher :**
 
-**Le piège au moment de coder :** supprimer la pause supprime aussi la
-possibilité de suspendre pour répondre à quelqu'un sur un chantier. C'est sa
-demande, ce n'est pas un oubli — mais cela se dit avant, pas après.
+1. **La pause n'existe plus** — ni bouton, ni `basculerSuspension` dans le
+   magnétophone. C'est sa demande, pas un oubli : on parle, puis on jette ou on
+   envoie. Si elle revient, jamais en `arreter()` puis `demarrer()` (deux
+   enregistrements, le second écrase le premier).
+2. **Le fond du rond est `transparent`**, jamais un beige écrit : sept chartes,
+   dont deux sombres, et deux écrans qui n'ont pas le même fond.
+3. **Le même composant sert l'écran d'un chantier neuf.** Sa demande ne parlait
+   que de la fiche chantier ; les deux ont changé, délibérément.
+
+**La batterie est au vert** : 122/122 suites navigateur, les suites base, la
+connexion derrière un proxy, les 60 planches. Les cinq suites qui tombaient le
+31 au soir sont vertes le 1ᵉʳ sans qu'une ligne ait changé — défaut de fin de
+mois, consigné dans `TODO.md`. Ne pas accuser un lot avant d'avoir regardé la
+date.
 
 ---
 
