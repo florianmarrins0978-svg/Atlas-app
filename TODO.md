@@ -9,6 +9,29 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
+## ACCORDÉ : supprimer la fiche du chantier — en attente de sa photo (1er sept. 2026)
+
+*« On peut supprimer cette page, et je vais te montrer où emmener le bouton
+Créer la facture. »* Il a tranché ; ce qui manque est **l'endroit du bouton**,
+qu'il montre en capture. Rien ne se code avant.
+
+**Pourquoi c'est devenu possible :** la fiche client porte désormais les photos
+et l'anneau (§226). Il ne restait à la fiche du chantier que « Créer la
+facture » et son tiroir.
+
+**Les chemins à redresser, relevés :**
+
+| Où | Ce qui pointe sur `/chantiers/[id]` |
+|---|---|
+| `src/lib/chantier-etat.ts` | `lienDeReprise` (photos, dictée, chantier planifié), `getNextActionHref` (photos), la ligne « Photos » des étapes |
+| `src/app/planning/PlanningClient.tsx` | la carte d'un chantier planifié |
+| `src/app/Notifications.tsx` | la suite d'une réponse de devis |
+| `src/lib/retour-du-devis.ts` | plus rien depuis §228 — déjà la fiche client |
+| cinq écrans | la flèche de retour d'`informations`, `prix`, `note-vocale`, `transcription`, `export` |
+
+**Ce qui reste à trancher avec lui, hors bouton :** ce que devient le tiroir
+(les étapes restantes) — la fiche client ne le porte pas.
+
 ## CINQ SUITES SONT ROUGES SUR `main` — ce n'est aucun lot en cours (31 août 2026)
 
 Mesuré en rejouant les mêmes six suites sur `f208e68` (l'état de `main` ce
