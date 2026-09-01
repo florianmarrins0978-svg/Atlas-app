@@ -70,9 +70,16 @@ lot :** `test-envoi-client`, `test-facture`, `test-facture-au-client`,
 `test-planning-vers-facture` et `test-tva-au-paiement` échouent le 31 août au
 soir — bouton « Envoyer le devis » désactivé, facture absente du relevé de TVA.
 
-**Vérifié, pas supposé :** un arbre de travail posé sur `main` **sans le lot du
-soir** les fait échouer à l'identique. C'est le troisième épisode de ce genre
-(voir le 26 août, « la troisième suite qui tombe sur la fin du mois »).
+**Vérifié deux fois, pas supposé :** un arbre de travail posé sur `main` **sans
+le lot du soir** les fait échouer à l'identique ; et **rejouées après minuit,
+le 1ᵉʳ septembre, elles passent toutes sans qu'une ligne ait changé**. C'est le
+troisième épisode de ce genre (voir le 26 août, « la troisième suite qui tombe
+sur la fin du mois »).
+
+**Une sixième s'y ajoute, vue le 1ᵉʳ au petit matin :** `test-facture-e2e`
+(« le chantier réalisé apparaît dans l'onglet Terminés ») tombe si la batterie
+**franchit minuit** en cours de route — le chantier est posé la veille et
+cherché le lendemain. Rejouée seule, elle passe.
 
 **Ce qui reste à faire :** les rendre indépendantes du jour où on les joue —
 elles choisissent des dates relatives à aujourd'hui et tombent quand le mois se

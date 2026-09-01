@@ -42,12 +42,18 @@ fiche chantier n'avait pas les 26 px du reste de l'écran. Invisible tant que
 l'objet était un disque centré ; devenue une ligne, elle touchait les deux
 bords. Elle ne débordait pas — donc rien ne rougissait (`ARCHITECTURE.md` §228).
 
-**Cinq suites navigateur échouent ce soir, et ce n'est pas ce lot** :
-`envoi-client`, `facture`, `facture-au-client`, `planning-vers-facture`,
-`tva-au-paiement`. Vérifié dans un arbre de travail posé sur `main` **sans ces
-modifications** : elles y échouent à l'identique, sur le même bouton « Envoyer
-le devis » désactivé et le même relevé de TVA. C'est le défaut de fin de mois
-déjà consigné le 26 août — nous sommes le 31 au soir. 117/122 pour ce lot.
+**Batterie : 122/122 suites navigateur, 298 suites base, connexion derrière un
+proxy, 60 planches.**
+
+**Et la démonstration, au passage, du défaut de fin de mois.** Joué le 31 au
+soir, ce lot rendait 117/122 : `envoi-client`, `facture`, `facture-au-client`,
+`planning-vers-facture` et `tva-au-paiement` tombaient sur un bouton « Envoyer
+le devis » désactivé et un relevé de TVA vide. Un arbre de travail posé sur
+`main` **sans ces modifications** les faisait tomber à l'identique — ce n'était
+donc pas ce lot. **Rejouées après minuit, le 1ᵉʳ septembre, elles sont vertes
+sans qu'une ligne ait changé.** Le défaut est daté, pas produit : il est
+consigné dans `TODO.md`, avec ce qu'il faudra faire pour qu'un 30 ou un 31 ne
+coûte plus une soirée.
 ### Trois écartés qu'il a fait rentrer : l'étiquette « Facturer » et les deux bandeaux
 
 **Sa réponse, après avoir lu la liste des sept écartés :** *« l'étiquette à

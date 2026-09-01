@@ -32,9 +32,11 @@ sa réponse : **la ligne**, avec un **rond** autour de l'avion.
 3. **Le même composant sert l'écran d'un chantier neuf.** Sa demande ne parlait
    que de la fiche chantier ; les deux ont changé, délibérément.
 
-**Et une chose sur la vérification, ce soir-là :** cinq suites navigateur
-échouent le 31 août sur `main` AUSSI, sans ce lot — c'est le défaut de fin de
-mois (`TODO.md`). 117/122 pour ce lot, et les dix suites de la dictée au vert.
+**La batterie est au vert** : 122/122 suites navigateur, les suites base, la
+connexion derrière un proxy, les 60 planches. Les cinq suites qui tombaient le
+31 au soir sont vertes le 1ᵉʳ sans qu'une ligne ait changé — défaut de fin de
+mois, consigné dans `TODO.md`. Ne pas accuser un lot avant d'avoir regardé la
+date.
 
 ---
 
