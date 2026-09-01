@@ -55,10 +55,26 @@ La planche : `appli/termines-date-du-chantier.html` — quatre places pour la da
      ni tiret, ni phrase de remplacement, ni « · » pendu tout seul.
 
 **CE QUI RESTE OUVERT, ET C'EST À LUI :** la date affichée est `datePlanifiee`,
-celle du planning — l'application n'en garde aucune autre. Un chantier clôturé
-sans être passé par le planning n'a donc pas de date, et sa rangée n'en affiche
-aucune. S'il veut une vraie date de réalisation, il faudra la saisir à la
-clôture : c'est un geste de plus pour lui, et il n'a pas répondu.
+celle du planning — l'application n'en garde aucune autre. S'il veut une vraie
+date de réalisation, il faudra la saisir à la clôture : c'est un geste de plus
+pour lui, et il n'a pas répondu.
+
+**PAR OÙ UN CHANTIER ARRIVE DANS « TERMINÉS » SANS DATE — sa question du
+1ᵉʳ septembre, cherchée dans le code, pas supposée.** `rangement()`
+(`src/lib/onglet-chantier.ts`) range dans « terminés » tout ce qui est
+`termineAt` OU `factureEnvoyeeAt`, **quelle que soit la date** — et
+`terminerChantier` (`factures.ts:95`) ne regarde jamais `datePlanifiee` : elle
+exige un devis **envoyé**, rien d'autre. Deux portes, donc :
+
+| | |
+|---|---|
+| **l'assistant** | *« prépare la facture »* → `preparer_facture` appelle `terminerChantier` sans aucun contrôle de date (`informations/actions.ts:941`) |
+| **l'adresse `/chantiers/<id>/facture`** | le serveur l'accepte ; c'est seulement le LIEN de la fiche qui exige `chantier.datePlanifiee` (`chantiers/[id]/page.tsx:128`) |
+
+**Ce n'est donc pas un trou par ses boutons à lui** — depuis la fiche, sans date,
+le lien n'apparaît pas. Ne pas « réparer » en exigeant une date dans
+`terminerChantier` : le 3 août, il s'est plaint de l'inverse (*« pourquoi n'y
+ai-je pas accès ??? »*), et un chantier se finit parfois avant sa date.
 ## EN ATTENTE DE SA DÉCISION : les travaux supplémentaires sur la facture (31 août 2026)
 
 **Son constat :** *« si on effectue des travaux en plus chez un client, on n'a
