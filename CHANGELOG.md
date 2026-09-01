@@ -7,6 +7,28 @@ Format : le plus récent en tête.
 
 ---
 
+## 2026-09-01
+
+### La facture au planning : trois allures à essayer, rien de codé
+
+Sa décision : la fiche du chantier disparaît, et « Créer la facture » va sur les
+chantiers du planning. Ce qui reste vraiment à déménager est mince — trois
+portes : la facture, le devis, le client. Photos, informations et prix en
+étaient partis le 11 août, et la fiche du client les porte depuis le 31.
+
+`appli/facture-au-planning.html` — **rien n'est codé** (`CLAUDE.md` §3 bis).
+A · les trois portes dépliées ; B · une seule, celle du moment ; C · une feuille
+que le chevron fait monter.
+
+**Une quatrième a été dessinée puis jetée, et c'est la capture qui l'a montré :**
+le glissement à l'iPhone pousse la ligne entière, donc **le nom du chantier sort
+de l'écran** — on choisirait une facture sans savoir de qui. Le raisonnement
+seul ne l'aurait pas vu ; il ne disait que « un geste caché s'apprend mal ».
+
+La planche montre **deux journées**, dont une passée : un chantier déjà facturé
+n'attend pas dans un jour à venir, et le troisième cas aurait été un chantier
+impossible.
+
 ## 2026-08-31
 
 ### Le retour du devis mène à la fiche client, toujours

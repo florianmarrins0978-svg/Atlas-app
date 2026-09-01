@@ -29,8 +29,19 @@ facture » et son tiroir.
 | `src/lib/retour-du-devis.ts` | plus rien depuis §228 — déjà la fiche client |
 | cinq écrans | la flèche de retour d'`informations`, `prix`, `note-vocale`, `transcription`, `export` |
 
-**Ce qui reste à trancher avec lui, hors bouton :** ce que devient le tiroir
-(les étapes restantes) — la fiche client ne le porte pas.
+**Où va le bouton : il a répondu — sur les chantiers du planning.** Trois
+allures lui sont proposées, et **rien ne se code avant sa lettre** :
+`appli/facture-au-planning.html`, en ligne à
+https://florianmarrins0978-svg.github.io/Atlas-app/facture-au-planning.html
+
+| | |
+|---|---|
+| **A** | les trois portes dépliées sous le chantier |
+| **B** | une seule, celle du moment ; le reste derrière le chevron |
+| **C** | rien au repos, le chevron fait monter une feuille |
+
+Le glissement à l'iPhone a été dessiné puis **jeté** : il pousse la ligne
+entière, donc le nom du chantier sort de l'écran.
 
 ## CINQ SUITES SONT ROUGES SUR `main` — ce n'est aucun lot en cours (31 août 2026)
 
