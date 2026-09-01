@@ -19,6 +19,13 @@ qu'il montre en capture. Rien ne se code avant.
 et l'anneau (§226). Il ne restait à la fiche du chantier que « Créer la
 facture » et son tiroir.
 
+**Et sa raison, redite le 1er septembre :** *« toutes ces infos sont déjà sur
+cette page — on la garde, donc ça fait des doublons si on garde l'autre
+aussi »*. Ce qu'il refuse n'est pas un écran de trop : c'est **deux écrans qui
+montrent la même chose**. Les portes du planning devront donc MENER à la fiche
+client, jamais en recopier le contenu — sans quoi le doublon renaîtrait
+ailleurs.
+
 **Les chemins à redresser, relevés :**
 
 | Où | Ce qui pointe sur `/chantiers/[id]` |
