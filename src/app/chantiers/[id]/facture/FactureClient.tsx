@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { colors, font, smallCaps, couleursDocument } from "@/lib/design-tokens";
 import PrimaryButton from "@/components/atlas/PrimaryButton";
@@ -17,7 +17,10 @@ import {
   emettreFactureAction,
   preparerLienFactureAction,
   majEcheanceFactureAction,
+  ajouterTravailSupplementaireAction,
+  retirerTravailSupplementaireAction,
 } from "./actions";
+import { tauxLisible } from "@/lib/ventilation-tva";
 import { avecCivilite } from "@/lib/civilite";
 import { ECHEANCE_MAX_JOURS } from "@/lib/echeance-facture";
 import { jourIso } from "@/lib/jour";
@@ -47,7 +50,23 @@ export type FacturePourEcran = {
   totalHt: string;
   totalTva: string;
   totalTtc: string;
-  lignes: { id: string; libelle: string; montant: string }[];
+  lignes: {
+    id: string;
+    libelle: string;
+    montant: string;
+    quantite: string;
+    unite: string | null;
+    prixUnitaire: string;
+    /** Ce qui vient du devis, ce qui s'est ajouté à l'arrêt 3 (migration 0073). */
+    origine: "devis" | "supplement";
+    tauxTva: string;
+  }[];
+  /**
+   * Un socle par taux employé — calculé au serveur par `ventilerTva`, la même
+   * fonction que le PDF. Deux calculs finiraient par se contredire sous les
+   * yeux du client (`CLAUDE.md` §3).
+   */
+  socles: { tauxTva: string; ht: string; tva: string }[];
 };
 
 export default function FactureClient({
@@ -108,7 +127,23 @@ export default function FactureClient({
   // 30 jours), et modifiable ICI tant que la facture n'est pas arrêtée. Sa
   // demande du 25 août : « qu'il puisse la modifier », et si elle part sans
   // qu'il y touche, elle part quand même avec une VRAIE date, jamais un vide.
-  const [dateEcheance, setDateEcheance] = useState<string | null>(initialFacture?.dateEcheance ?? null);
+  /**
+   * L'échéance : celle du serveur, sauf si CET écran l'a corrigée.
+   *
+   * **Elle apparaissait avec un écran de retard — trouvé le 1ᵉʳ septembre 2026
+   * sur une CAPTURE, et par aucun test.** Cet écran est monté AVANT que la
+   * facture existe : « Créer la facture » naît sur la face vide, où
+   * `initialFacture` vaut `null`. Un `useState(initialFacture?.dateEcheance)`
+   * figeait donc `null`, et `router.refresh()` — qui renouvelle pourtant les
+   * props — ne réveille pas un état déjà initialisé : le champ « À régler avant
+   * le … » restait invisible jusqu'à un rechargement complet, alors que la base
+   * portait bien la date.
+   *
+   * D'où une valeur DÉRIVÉE plutôt qu'un état miroir : rien à resynchroniser,
+   * et pas d'effet qui rappelle `setState` (ce que le lint refuse, à raison).
+   */
+  const [echeanceCorrigee, setEcheanceCorrigee] = useState<string | null>(null);
+  const dateEcheance = echeanceCorrigee ?? initialFacture?.dateEcheance ?? null;
   const [refusEcheance, setRefusEcheance] = useState<string | null>(null);
   const [echeanceEnCours, setEcheanceEnCours] = useState(false);
 
@@ -119,10 +154,79 @@ export default function FactureClient({
     try {
       const r = await majEcheanceFactureAction(initialFacture.id, valeur);
       // On affiche ce que la BASE porte : une saisie hors bornes y est retombée.
-      if (r.succes) setDateEcheance(r.dateEcheance);
+      if (r.succes) setEcheanceCorrigee(r.dateEcheance);
       else setRefusEcheance(r.erreur);
     } finally {
       setEcheanceEnCours(false);
+    }
+  }
+
+  /**
+   * LES TRAVAUX EN PLUS — son idée du 31 août 2026, sa forme du 1ᵉʳ septembre.
+   *
+   * *« Depuis cette page, avant d'envoyer la facture, il faut pouvoir la
+   * modifier en stipulant que c'est du TS. »* Puis, la forme choisie sur la
+   * planche : *« code la mienne, déroule sous le bouton »* — le formulaire
+   * s'ouvre SOUS le bouton, et non sur un écran à part.
+   *
+   * **Le taux se choisit à la ligne** (sa question du même message) : un devis
+   * à 10 % peut recevoir une terrasse à 20 %, et l'article 268 bis du CGI taxe
+   * en entier au taux le plus élevé une facture qui ne ventile pas ses taux.
+   */
+  const [saisieOuverte, setSaisieOuverte] = useState(false);
+  const [tsLibelle, setTsLibelle] = useState("");
+  const [tsQuantite, setTsQuantite] = useState("1");
+  const [tsUnite, setTsUnite] = useState("");
+  const [tsPrix, setTsPrix] = useState("");
+  const [tsTaux, setTsTaux] = useState(initialFacture?.tauxTva ?? "20.00");
+  const [tsEnCours, setTsEnCours] = useState(false);
+  const [tsRefus, setTsRefus] = useState<string | null>(null);
+
+  async function ajouterTs() {
+    if (!initialFacture) return;
+    setTsEnCours(true);
+    setTsRefus(null);
+    try {
+      const r = await ajouterTravailSupplementaireAction(initialFacture.id, {
+        libelle: tsLibelle,
+        quantite: tsQuantite,
+        unite: tsUnite.trim() || null,
+        prixUnitaire: tsPrix,
+        tauxTva: tsTaux,
+      });
+      if (!r.succes) {
+        setTsRefus(r.erreur);
+        return;
+      }
+      setTsLibelle("");
+      setTsQuantite("1");
+      setTsUnite("");
+      setTsPrix("");
+      // Elle se referme : déroulée, elle pousse le total et le bouton d'envoi
+      // hors de l'écran — c'est lui qui l'a relevé avant de choisir cette forme.
+      setSaisieOuverte(false);
+      // L'écran se relit au serveur plutôt que de recopier les totaux ici :
+      // une seconde addition dans le navigateur finirait par diverger de la
+      // facture qui part.
+      router.refresh();
+    } catch {
+      setTsRefus("La ligne n'a pas pu être ajoutée.");
+    } finally {
+      setTsEnCours(false);
+    }
+  }
+
+  async function retirerTs(ligneId: string) {
+    setTsEnCours(true);
+    setTsRefus(null);
+    try {
+      const r = await retirerTravailSupplementaireAction(ligneId);
+      if (!r.succes) setTsRefus(r.erreur);
+      else router.refresh();
+    } catch {
+      setTsRefus("La ligne n'a pas pu être retirée.");
+    } finally {
+      setTsEnCours(false);
     }
   }
 
@@ -283,6 +387,12 @@ export default function FactureClient({
     );
   }
 
+  // **Deux familles, une seule liste en base** (migration 0073) : ce qui vient
+  // du devis, et ce qui s'est ajouté avant l'envoi.
+  const lignesDuDevis = initialFacture.lignes.filter((l) => l.origine !== "supplement");
+  const lignesEnPlus = initialFacture.lignes.filter((l) => l.origine === "supplement");
+  const socles = initialFacture.socles ?? [];
+
   // La borne haute du sélecteur : un an après la facture (au-delà, c'est
   // l'année mal tapée). La borne basse est la date de la facture elle-même.
   const maxEcheance = jourIso(
@@ -343,13 +453,13 @@ export default function FactureClient({
         )}
       </div>
 
-      {initialFacture.lignes.length > 0 && (
+      {lignesDuDevis.length > 0 && (
         <div className="rounded-[4px] px-5 py-5" style={{ backgroundColor: colors.card }}>
           <p className={smallCaps} style={{ color: colors.muted, marginBottom: 10 }}>
             Reprise du devis
           </p>
           <ul className="flex flex-col gap-2">
-            {initialFacture.lignes.map((l) => (
+            {lignesDuDevis.map((l) => (
               <li key={l.id} className="flex items-baseline justify-between gap-4 text-[15px]">
                 {/* **Les travaux réunis s'empilent, un par ligne.** Depuis que
                     le devis sépare ses prestations par un retour à la ligne
@@ -372,9 +482,67 @@ export default function FactureClient({
         </div>
       )}
 
+      {/* ── LES TRAVAUX EN PLUS ────────────────────────────────────────────
+          Un bloc À PART, jamais fondu dans les lignes du devis : le client
+          retrouve au centime le prix qu'il avait accepté. Fondu, il lit un
+          total qui ne correspond plus au devis, et il appelle. */}
+      {lignesEnPlus.length > 0 && (
+        <div data-atlas="bloc-ts" className="rounded-[4px] px-5 py-5" style={{ backgroundColor: colors.card }}>
+          <p className={smallCaps} style={{ color: couleursDocument.accent, marginBottom: 10 }}>
+            Travaux supplémentaires
+          </p>
+          <ul className="flex flex-col gap-3">
+            {lignesEnPlus.map((l) => (
+              <li key={l.id} className="flex items-baseline justify-between gap-3 text-[15px]">
+                <span className="min-w-0 whitespace-pre-line break-words" style={{ color: colors.ink }}>
+                  {l.libelle}
+                  {/* La quantité, l'unité et le taux SOUS le libellé : une
+                      facture doit porter le décompte de chaque prestation, et
+                      c'est ici qu'il se relit avant de partir. */}
+                  <span className="mt-0.5 block text-[12px]" style={{ color: colors.muted }}>
+                    {Number(l.quantite)} {l.unite ?? ""} × {formatEuros.format(Number(l.prixUnitaire))} · TVA{" "}
+                    {tauxLisible(l.tauxTva)} %
+                  </span>
+                </span>
+                <span className="flex flex-shrink-0 items-baseline gap-3">
+                  <span style={{ color: colors.muted }}>{formatEuros.format(Number(l.montant))}</span>
+                  {!emise && (
+                    <button
+                      type="button"
+                      data-atlas="retirer-ts"
+                      disabled={tsEnCours}
+                      onClick={() => retirerTs(l.id)}
+                      aria-label={`Retirer ${l.libelle}`}
+                      className="px-1 text-[16px] leading-none"
+                      style={{ color: colors.muted }}
+                    >
+                      ×
+                    </button>
+                  )}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
       <div className="rounded-[4px] px-5 py-5" style={{ backgroundColor: colors.card }}>
         <Ligne label="Total HT" valeur={initialFacture.totalHt} />
-        <Ligne label={`TVA ${Number(initialFacture.tauxTva)} %`} valeur={initialFacture.totalTva} />
+        {/* **Une ligne de TVA par taux dès qu'il y en a deux** — sa question du
+            1ᵉʳ septembre. Le socle est rappelé : « TVA 20 % » seul ne dit pas
+            sur quoi elle porte, et c'est ce qu'on vérifie quand deux taux se
+            côtoient. Un seul taux : la ligne est exactement celle d'avant. */}
+        {socles.length > 1 ? (
+          socles.map((socle) => (
+            <Ligne
+              key={socle.tauxTva}
+              label={`TVA ${tauxLisible(socle.tauxTva)} % sur ${formatEuros.format(Number(socle.ht))}`}
+              valeur={socle.tva}
+            />
+          ))
+        ) : (
+          <Ligne label={`TVA ${tauxLisible(initialFacture.tauxTva)} %`} valeur={initialFacture.totalTva} />
+        )}
         <div className="mt-3 border-t pt-3 text-center" style={{ borderColor: colors.line }}>
           {/* **En noir, pas en gris** — sa demande du 24 août 2026, capture à
               l'appui. C'est l'intitulé du montant qu'il vérifie ; en gris, il
@@ -482,6 +650,111 @@ export default function FactureClient({
           <p className="text-center text-[14px]" style={{ color: colors.muted }}>
             Rien n&apos;a changé depuis le devis ?
           </p>
+
+      {/* ── AJOUTER DES TRAVAUX EN PLUS ────────────────────────────────────
+          Sa phrase « Rien n'a changé depuis le devis ? » était déjà là, sans
+          réponse possible : elle devient le geste. Le formulaire se DÉROULE
+          sous le bouton — sa forme, choisie le 1ᵉʳ septembre.
+
+          Rien de tout cela une fois la facture arrêtée : elle est partie chez
+          le client et inscrite au relevé. Le dépôt refuse de toute façon ;
+          l'écran n'est qu'une politesse. */}
+      {!emise && (
+        <div>
+          <button
+            type="button"
+            data-atlas="ouvrir-ts"
+            onClick={() => setSaisieOuverte((v) => !v)}
+            className="mt-3 block w-full rounded-full px-5 py-3.5 text-[15px]"
+            style={{
+              fontFamily: font.display,
+              color: colors.ink,
+              border: `1px solid ${colors.line}`,
+              backgroundColor: "transparent",
+            }}
+          >
+            Ajouter des travaux supplémentaires
+          </button>
+
+          {saisieOuverte && (
+            <div className="mt-4 flex flex-col gap-2">
+              <input
+                type="text"
+                data-atlas="ts-libelle"
+                value={tsLibelle}
+                onChange={(e) => setTsLibelle(e.target.value)}
+                placeholder="Ce qui a été fait en plus"
+                // 16 px : sous ce seuil, iOS zoome à la mise au point.
+                className="rounded-[4px] px-3 py-3"
+                style={{ fontSize: 16, backgroundColor: colors.cream, color: colors.ink, border: `1px solid ${colors.line}` }}
+              />
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  inputMode="decimal"
+                  data-atlas="ts-quantite"
+                  value={tsQuantite}
+                  onChange={(e) => setTsQuantite(e.target.value)}
+                  placeholder="Quantité"
+                  className="w-1/4 rounded-[4px] px-3 py-3"
+                  style={{ fontSize: 16, backgroundColor: colors.cream, color: colors.ink, border: `1px solid ${colors.line}` }}
+                />
+                <input
+                  type="text"
+                  data-atlas="ts-unite"
+                  value={tsUnite}
+                  onChange={(e) => setTsUnite(e.target.value)}
+                  placeholder="Unité"
+                  className="w-1/4 rounded-[4px] px-3 py-3"
+                  style={{ fontSize: 16, backgroundColor: colors.cream, color: colors.ink, border: `1px solid ${colors.line}` }}
+                />
+                <input
+                  type="text"
+                  inputMode="decimal"
+                  data-atlas="ts-prix"
+                  value={tsPrix}
+                  onChange={(e) => setTsPrix(e.target.value)}
+                  placeholder="Prix unitaire €"
+                  className="w-1/2 rounded-[4px] px-3 py-3"
+                  style={{ fontSize: 16, backgroundColor: colors.cream, color: colors.ink, border: `1px solid ${colors.line}` }}
+                />
+              </div>
+              {/* **Le taux de CETTE ligne** : un devis à 10 % peut recevoir une
+                  terrasse à 20 %. Trois touches plutôt qu'un champ libre — ce
+                  sont les trois seuls taux d'un paysagiste, et un taux tapé de
+                  travers part chez le client et dans la déclaration. */}
+              <div className="flex gap-2">
+                {["20.00", "10.00", "5.50"].map((taux) => (
+                  <button
+                    key={taux}
+                    type="button"
+                    data-atlas={`ts-taux-${tauxLisible(taux)}`}
+                    aria-pressed={tsTaux === taux}
+                    onClick={() => setTsTaux(taux)}
+                    className="flex-1 rounded-[4px] py-3 text-[14px]"
+                    style={{
+                      color: tsTaux === taux ? colors.ink : colors.muted,
+                      backgroundColor: tsTaux === taux ? colors.cream : "transparent",
+                      border: `1px solid ${tsTaux === taux ? couleursDocument.accent : colors.line}`,
+                    }}
+                  >
+                    TVA {tauxLisible(taux)} %
+                  </button>
+                ))}
+              </div>
+              {tsRefus && (
+                <p role="alert" data-atlas="ts-refus" className="text-[13px]" style={{ color: colors.alert }}>
+                  {tsRefus}
+                </p>
+              )}
+              <PrimaryButton disabled={tsEnCours} onClick={ajouterTs}>
+                {tsEnCours ? "Ajout…" : "Ajouter à la facture"}
+              </PrimaryButton>
+            </div>
+          )}
+        </div>
+      )}
+
 
           {/* **L'encart du canal, à la forme de la fiche client — sa demande du
               22 août 2026 :** *« le choix SMS ou e-mail, mais de la même forme

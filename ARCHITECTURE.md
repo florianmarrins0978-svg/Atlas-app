@@ -20340,3 +20340,93 @@ tête du corps, et la variable que le vrai bandeau publie.
 il annonçait un bouton COUPÉ là où il était parfaitement en place. Il **descend**
 désormais la colonne et regarde — le geste, pas deux nombres dont l'origine
 diffère.
+
+---
+
+## §228. Les travaux en plus entrent sur la facture, et chaque ligne porte son taux
+
+**Son constat du 31 août 2026 :** *« si on effectue des travaux en plus chez un
+client, on n'a aucun moyen de rajouter les TS sur la facture. »* Puis son idée,
+capture de l'écran à l'appui : *« depuis cette page, avant d'envoyer la facture,
+il faut (si c'est légal) pouvoir la modifier en stipulant que c'est du TS, et
+comme ça on a déjà toute la chaîne de production de créée pour l'envoyer au
+client. »*
+
+Il avait raison sur les deux points, et le lot ne fait qu'ouvrir la porte qui
+manquait : PDF, canal SMS ou courriel, envoi, relevé de TVA — tout existait
+déjà. Ce qui n'existait pas, c'est le geste.
+
+### Ce qui a été écarté, et pourquoi
+
+Quatre chemins avaient été posés (`docs/travaux-supplementaires.md`) :
+
+| | Écarté parce que |
+|---|---|
+| **A — l'avenant**, document lié au devis | le plus juste, et le plus gros ; il reste ouvert |
+| **C — le bon signé sur place** | c'est la façon SÛRE de se faire payer, mais elle ne dépend pas de la facture. Elle reste à faire |
+| **D — les quantités au réel** | ne couvre que les écarts de quantité |
+| **B — la facture corrigeable** | **retenu**, parce que c'est ce qu'il a demandé et que la chaîne existe |
+
+**Ce que B ne règle pas, et il faut le dire :** l'accord du client. Un
+supplément qu'il n'a pas accepté par écrit peut être refusé (article 1793 du
+Code civil, marché à forfait). L'écran ne pose plus la question — sa demande du
+1ᵉʳ septembre, *« pas besoin de ça »* — mais le risque demeure, et c'est la
+solution C qui y répondra.
+
+### Trois colonnes, et pas une de plus (migration 0073)
+
+`lignes_facture` reçoit `origine` (`devis` ou `supplement`), `taux_tva` et
+`unite`.
+
+**`origine` fait les DEUX BLOCS**, sur l'écran comme sur le PDF. Fondu dans les
+lignes du devis, un supplément fait lire au client un total qui ne correspond
+plus à ce qu'il avait accepté ; à côté, il retrouve son prix au centime. C'est
+la seule raison de cette colonne, et elle vaut son coût.
+
+**`taux_tva` est nullable, et ce n'est pas de la négligence :** les lignes
+d'avant la migration prennent le taux de leur facture, et les milliers de
+factures déjà émises sortent identiques à elles-mêmes. `test-ventilation-tva.ts`
+tient cet invariant : avec un seul taux, la nouvelle règle rend **au centime**
+ce que rendait `totauxAvecReduction`.
+
+### L'article 268 bis du CGI commande le calcul
+
+Sa question du même message : *« est-il possible que les TS n'aient pas la même
+TVA ? »* Oui — 5,5 % l'entretien, 10 % les travaux sur un logement de plus de
+deux ans, 20 % la création et les professionnels.
+
+**Et une facture qui ne ventile pas ses taux est taxée EN ENTIER au taux le plus
+élevé.** Un supplément à 20 % noyé dans une facture à 10 % ne coûte donc pas dix
+points sur le supplément : il fait passer toute la facture à 20 %, à la charge
+de l'artisan. D'où `src/lib/ventilation-tva.ts` — une règle pure, éprouvable
+sans base, appelée par le dépôt, par le PDF et par l'écran. **Une seule
+implémentation** : trois additions du même total finiraient par se contredire
+sous les yeux du client.
+
+Deux choix y sont posés, et ils se discutent :
+
+1. **La remise ne mord que sur les lignes du devis.** Le prix accordé au client
+   a été consenti avant que le supplément existe ; l'étendre offrirait un rabais
+   que personne n'a accordé, et ferait diverger le « Prix accordé au client
+   10 % » de la facture de celui que le client lit sur son devis.
+2. **Le centime perdu par les arrondis tombe sur le plus gros socle.** Ce qui est
+   garanti, c'est que la somme des socles vaille EXACTEMENT le total HT, et que
+   « brut − remise = net » se vérifie sur le papier : c'est ce que le client
+   refait de tête.
+
+**Ce second invariant a été trouvé en confrontant le contrôle à sa mutation.**
+Couper le rattrapage du reste ne faisait rougir aucun test : aucun jeu ne
+déclenchait le cas. Deux cas ont été ajoutés pour cela (`CLAUDE.md` §5 — un
+contrôle qui n'a jamais échoué ne prouve rien).
+
+### Ce que la facture porte encore, et qui reste imparfait
+
+`factures.taux_tva` existe toujours : une douzaine d'écrans et de suites le
+lisent. Quand la facture porte plusieurs taux, il reçoit **le plus élevé** —
+aucun taux unique n'est juste, et le plus élevé est celui qui ne sous-déclare
+pas. Il ne sert plus à calculer quoi que ce soit.
+
+**Le relevé de TVA, lui, n'est PAS ventilé par taux**, et c'est une limite
+connue : il additionne les totaux des factures, et affiche un taux effectif
+(TVA ÷ HT). Les montants déclarés restent justes ; c'est la présentation qui ne
+distingue pas les taux, alors qu'une CA3 les sépare. Noté dans `TODO.md`.

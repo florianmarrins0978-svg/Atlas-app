@@ -10,6 +10,7 @@ import { getClient } from "@/server/repositories/clients";
 import { getEntreprise } from "@/server/repositories/entreprises";
 import { exigibiliteDe } from "@/server/repositories/paiements-facture";
 import { dernierEnvoiFacture } from "@/server/repositories/envois-factures";
+import { ventilerTva } from "@/lib/ventilation-tva";
 import FactureClient from "./FactureClient";
 
 export const dynamic = "force-dynamic";
@@ -90,7 +91,23 @@ export default async function FacturePage({ params }: { params: Promise<{ id: st
                     id: l.id,
                     libelle: l.libelle,
                     montant: l.montant,
+                    quantite: l.quantite,
+                    unite: l.unite,
+                    prixUnitaire: l.prixUnitaire,
+                    // Ce qui vient du devis, ce qui s'est ajouté (migration
+                    // 0073) : c'est ce qui fait les deux blocs de l'écran.
+                    origine: l.origine,
+                    tauxTva: l.tauxTva ?? existante.facture.tauxTva,
                   })),
+                  // **Les socles, calculés par la MÊME fonction que le PDF.**
+                  // Les recalculer à l'écran serait une seconde implémentation,
+                  // et les deux finiraient par se contredire sous les yeux du
+                  // client (`CLAUDE.md` §3).
+                  socles: ventilerTva(
+                    existante.lignes,
+                    existante.facture.tauxTva,
+                    existante.facture.reductionPourcent
+                  ).socles,
                 }
               : null
           }

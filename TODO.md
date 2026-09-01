@@ -9,48 +9,37 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
-## EN ATTENTE DE SA DÉCISION : les travaux supplémentaires sur la facture (31 août 2026)
+## LIVRÉ : les travaux en plus sur la facture (1ᵉʳ septembre 2026)
 
-**Son constat :** *« si on effectue des travaux en plus chez un client, on n'a
-aucun moyen de rajouter les TS sur la facture »*. Il est juste : la facture
-recopie le devis et ne se modifie plus (`factures.ts:201`).
+**Son constat, puis son idée, puis sa forme** — trois messages, un lot. Le geste
+existe : depuis l'écran de la facture, sous « Rien n'a changé depuis le devis ? »,
+un formulaire se déroule et le supplément entre dans un bloc à part, avec son
+propre taux de TVA. Migration 0073. Détail : `ARCHITECTURE.md` §228, verdict :
+`docs/travaux-supplementaires.md`.
 
-Quatre solutions, ce qu'elles coûtent et ce qu'elles protègent :
-**`docs/travaux-supplementaires.md`**. Rien n'est codé — la décision lui revient
-(`CLAUDE.md` §3 bis).
+### Ce qui reste ouvert, et qui compte
 
-**Trois planches à essayer**, parcourues dans un vrai navigateur avant d'être
-transmises (`scripts/` non concerné : le parcours a été joué à la main, captures
-regardées, mode nuit compris) :
+1. **L'accord écrit du client sur le supplément.** L'écran ne le demande plus
+   (sa demande du 1ᵉʳ septembre, « pas besoin de ça ») — mais l'article 1793 du
+   Code civil laisse le client refuser un supplément qu'il n'a pas accepté par
+   écrit. La réponse est le **bon signé sur place**
+   (`appli/ts-bon-sur-place.html`, planche en ligne, non codée). **À lui de
+   dire** s'il le veut.
+2. **Le relevé de TVA ne ventile pas ses taux.** Les montants déclarés sont
+   justes — il additionne les totaux des factures —, mais il affiche un taux
+   effectif (TVA ÷ HT) là où une CA3 sépare les taux. Sans conséquence tant
+   qu'une facture n'a qu'un taux ; à reprendre quand il en aura plusieurs
+   couramment.
+3. **L'avenant** (`appli/ts-avenant.html`) reste la façon la plus juste de
+   facturer un supplément : un document que le client accepte AVANT. Le lot
+   livré ne l'empêche pas — il le prépare.
 
-| Planche | Ce qu'elle fait trancher |
-|---|---|
-| `appli/ts-bon-sur-place.html` | la signature au doigt (C) — le tracé est réel |
-| `appli/ts-avenant.html` | **une facture ou deux**, et les travaux **en moins** (A) |
-| `appli/ts-arret-3.html` | **bloquer ou avertir** quand rien n'est signé (B et D) |
-| `appli/ts-sur-la-facture.html` | **son idée**, sur sa vraie facture F2026-000001 — et **sa question ouverte** : écran à part ou encadré déroulé |
+### Les planches, en ligne
 
-**Elles ne seront à son adresse qu'une fois sur `main`** : `pages.yml` ne publie
-que sur `main`, et son accord n'a pas encore été demandé.
-
-**Retiré sur sa demande du 1ᵉʳ septembre : la question de l'accord du client
-(SMS, courriel, signé) ne se pose plus à l'écran — « pas besoin de ça ». Le
-risque d'impayé, lui, ne disparaît pas ; il se traite par le bon signé (C).**
-
-**Il a tranché le sens le 31 août au soir : ça se passe SUR la facture, avant
-l'envoi** — la chaîne d'envoi existe déjà. C'est légal en brouillon ; voir §6 du
-document pour les trois bornes (détail par ligne, bloc séparé, trace d'accord).
-
-Recommandation posée : **le bon signé sur place (C), puis l'avenant (A)** ;
-jamais une facture librement modifiable toute seule — elle facture ce que le
-client n'a pas accepté, et l'article 1793 du Code civil le laisse alors refuser
-le supplément en entier.
-
-**Un défaut à corriger quoi qu'il choisisse :** `terminerChantier` rend la
-facture déjà en brouillon **sans regarder si un devis plus récent existe**
-(`factures.ts:102`). Un devis v2 fait après « Fin de chantier » n'atteint donc
-jamais la facture, et rien ne le dit à l'écran. *Lu dans le code, non rejoué à
-l'écran.*
+https://florianmarrins0978-svg.github.io/Atlas-app/ts-sur-la-facture.html ·
+https://florianmarrins0978-svg.github.io/Atlas-app/ts-bon-sur-place.html ·
+https://florianmarrins0978-svg.github.io/Atlas-app/ts-avenant.html ·
+https://florianmarrins0978-svg.github.io/Atlas-app/ts-arret-3.html
 
 ## EN ATTENTE DE SA RÉPONSE : l'aplatissement de la touche d'envoi (31 août 2026)
 

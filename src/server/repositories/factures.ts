@@ -19,7 +19,12 @@ import { enregistrerObjet } from "../storage";
 import { jourIso } from "../../lib/jour";
 import { echeanceFacture } from "../../lib/rappels";
 import { validerEcheance } from "../../lib/echeance-facture";
-import { totauxAvecReduction } from "../../lib/reduction-devis";
+import {
+  tauxNormalise,
+  tauxRepresentatif,
+  ventilerTva,
+  type SocleTva,
+} from "../../lib/ventilation-tva";
 import { ongletDepuisJalons } from "../../lib/onglet-chantier";
 import {
   dansLaPeriode,
@@ -206,6 +211,14 @@ export async function terminerChantier(ctx: Ctx, chantierId: string, maintenant:
           quantite: l.quantite,
           prixUnitaire: l.prixUnitaire,
           montant: l.montant,
+          // **L'unité descend jusqu'à la facture** (migration 0073) : sans elle,
+          // « 12 × 6,00 € » ne dit pas 12 de quoi, et la facture est la pièce
+          // que le client garde.
+          unite: l.unite,
+          // Le taux du devis, figé sur chaque ligne : ce qui s'ajoutera ensuite
+          // pourra porter le sien sans que celui-ci bouge (migration 0073).
+          tauxTva: devisSource.tauxTva,
+          origine: "devis" as const,
           ordre: l.ordre,
         }))
       );
@@ -279,6 +292,185 @@ export async function majEcheanceFacture(
   });
 }
 
+/**
+ * LES TRAVAUX EN PLUS, AJOUTÉS SUR LA FACTURE AVANT SON ENVOI.
+ *
+ * **Son idée du 31 août 2026**, capture de l'écran à l'appui : *« depuis cette
+ * page, avant d'envoyer la facture, il faut (si c'est légal) pouvoir la
+ * modifier en stipulant que c'est du TS, et comme ça on a déjà toute la chaîne
+ * de production de créée pour l'envoyer au client. »*
+ *
+ * **C'est légal, et seulement en brouillon.** Une facture non émise n'existe
+ * pas encore : elle se corrige librement. Une fois émise, elle est immuable —
+ * un trigger PostgreSQL l'interdit (`0018_factures.sql`), et la corriger demande
+ * un avoir. Le refus se rend donc en valeur, jamais en exception (`AGENTS.md`).
+ *
+ * **Le taux est celui de la LIGNE** (sa question du 1ᵉʳ septembre) : un devis à
+ * 10 % peut recevoir une terrasse à 20 %. Sans ventilation, l'article 268 bis du
+ * CGI ferait taxer toute la facture au taux le plus élevé.
+ *
+ * **Les totaux se recalculent ici, en base, dans la même transaction.** Les
+ * laisser à l'écran ferait diverger ce qui s'affiche de ce qui s'imprimera —
+ * et c'est le PDF qui part chez le client.
+ */
+export type NouveauTravailSupplementaire = {
+  libelle: string;
+  quantite: string;
+  unite?: string | null;
+  prixUnitaire: string;
+  /** « 20 », « 10 », « 5.5 ». Hors bornes : ramené entre 0 et 100. */
+  tauxTva: string;
+};
+
+export type ResultatLigneFacture =
+  | { ok: true; ligneId: string; totaux: TotauxFacture }
+  | { ok: false; raison: string };
+
+export type TotauxFacture = {
+  totalHt: string;
+  totalTva: string;
+  totalTtc: string;
+  socles: SocleTva[];
+};
+
+/** Un nombre saisi à la main, ramené à une valeur sûre. `null` : inutilisable. */
+function montantSaisi(valeur: string): Decimal | null {
+  const brut = String(valeur ?? "").replace(",", ".").trim();
+  if (!/^-?\d+(\.\d+)?$/.test(brut)) return null;
+  const n = new Decimal(brut);
+  if (!n.isFinite()) return null;
+  return n;
+}
+
+export async function ajouterTravailSupplementaire(
+  ctx: Ctx,
+  factureId: string,
+  saisie: NouveauTravailSupplementaire
+): Promise<ResultatLigneFacture> {
+  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    const [f] = await tx.select().from(factures).where(eq(factures.id, factureId)).limit(1);
+    // `withEntreprise` borne déjà à son entreprise : une facture d'à côté
+    // n'est pas « refusée », elle n'existe pas pour cette requête.
+    if (!f) return { ok: false as const, raison: "Cette facture est introuvable." };
+    if (f.statut !== "brouillon") {
+      return {
+        ok: false as const,
+        raison: "La facture est déjà arrêtée : elle ne se modifie plus. Il faut un avoir.",
+      };
+    }
+
+    const libelle = String(saisie.libelle ?? "").trim();
+    if (!libelle) return { ok: false as const, raison: "Dites ce qui a été fait en plus." };
+
+    const prix = montantSaisi(saisie.prixUnitaire);
+    if (prix === null) return { ok: false as const, raison: "Le prix n'est pas un nombre." };
+
+    // Une quantité absente vaut 1 : c'est un forfait, et le cas le plus courant.
+    const quantite = montantSaisi(saisie.quantite ?? "1") ?? new Decimal(1);
+    const montant = quantite.times(prix).toDecimalPlaces(2);
+    const taux = tauxNormalise(saisie.tauxTva, f.tauxTva);
+
+    const [dernier] = await tx
+      .select({ ordre: lignesFacture.ordre })
+      .from(lignesFacture)
+      .where(eq(lignesFacture.factureId, factureId))
+      .orderBy(sql`${lignesFacture.ordre} DESC`)
+      .limit(1);
+
+    const [ligne] = await tx
+      .insert(lignesFacture)
+      .values({
+        entrepriseId: ctx.entrepriseId,
+        factureId,
+        libelle,
+        quantite: quantite.toFixed(2),
+        unite: saisie.unite?.trim() || null,
+        prixUnitaire: prix.toFixed(2),
+        montant: montant.toFixed(2),
+        tauxTva: taux,
+        origine: "supplement",
+        // À la suite : le supplément se lit APRÈS le devis, sur l'écran comme
+        // sur le document.
+        ordre: (dernier?.ordre ?? 0) + 1,
+      })
+      .returning();
+
+    const totaux = await recalculerTotauxFacture(tx, factureId);
+    return { ok: true as const, ligneId: ligne.id, totaux };
+  });
+}
+
+/**
+ * Retire un travail supplémentaire — jamais une ligne du devis.
+ *
+ * **Une ligne du devis ne se retire pas ici**, et le refus est délibéré : la
+ * facture reprend ce que le client a accepté. En retirer une ligne
+ * silencieusement ferait diverger la facture de son devis, sans qu'aucun des
+ * deux ne le dise. Ce qui n'a pas été fait se règle par une remise ou par un
+ * avoir, tous deux visibles.
+ */
+export async function retirerTravailSupplementaire(
+  ctx: Ctx,
+  ligneId: string
+): Promise<{ ok: true; totaux: TotauxFacture } | { ok: false; raison: string }> {
+  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    const [ligne] = await tx
+      .select()
+      .from(lignesFacture)
+      .where(eq(lignesFacture.id, ligneId))
+      .limit(1);
+    if (!ligne) return { ok: false as const, raison: "Cette ligne est introuvable." };
+    if (ligne.origine !== "supplement") {
+      return { ok: false as const, raison: "Cette ligne vient du devis : elle ne se retire pas." };
+    }
+
+    const [f] = await tx
+      .select({ statut: factures.statut })
+      .from(factures)
+      .where(eq(factures.id, ligne.factureId))
+      .limit(1);
+    if (!f) return { ok: false as const, raison: "Cette facture est introuvable." };
+    if (f.statut !== "brouillon") {
+      return {
+        ok: false as const,
+        raison: "La facture est déjà arrêtée : elle ne se modifie plus. Il faut un avoir.",
+      };
+    }
+
+    await tx.delete(lignesFacture).where(eq(lignesFacture.id, ligneId));
+    const totaux = await recalculerTotauxFacture(tx, ligne.factureId);
+    return { ok: true as const, totaux };
+  });
+}
+
+/**
+ * Réécrit les totaux d'une facture d'après ses lignes.
+ *
+ * **`taux_tva` de la facture reçoit le taux le plus élevé** quand il y en a
+ * plusieurs : aucun taux unique n'est juste dans ce cas, et le plus élevé est
+ * celui qui ne sous-déclare pas. Il ne sert plus à calculer quoi que ce soit —
+ * les totaux viennent des socles — mais une douzaine d'écrans et de suites le
+ * lisent encore, et une colonne laissée en arrière mentirait.
+ */
+async function recalculerTotauxFacture(tx: DbOrTx, factureId: string): Promise<TotauxFacture> {
+  const [f] = await tx.select().from(factures).where(eq(factures.id, factureId)).limit(1);
+  const lignes = await tx.select().from(lignesFacture).where(eq(lignesFacture.factureId, factureId));
+  const t = ventilerTva(lignes, f.tauxTva, f.reductionPourcent);
+  await tx
+    .update(factures)
+    .set({
+      totalHt: t.totalHt,
+      totalTva: t.totalTva,
+      totalTtc: t.totalTtc,
+      // Le montant retiré suit le HT : une remise calculée sur l'ancien total
+      // donnerait un « Total HT après remise » qui n'est la différence de rien.
+      reductionMontant: t.reductionMontant,
+      tauxTva: tauxRepresentatif(t.socles, f.tauxTva),
+    })
+    .where(eq(factures.id, factureId));
+  return { totalHt: t.totalHt, totalTva: t.totalTva, totalTtc: t.totalTtc, socles: t.socles };
+}
+
 export class FactureDejaEmiseError extends Error {
   constructor() {
     super("Cette facture a déjà été émise.");
@@ -335,16 +527,43 @@ function donneesFacture(
     totalTtc: f.totalTtc,
     reductionPourcent: f.reductionPourcent,
     reductionMontant: f.reductionMontant,
+    // **La ventilation par taux, quand il y en a plus d'un** (migration 0073).
+    // Sans elle, l'article 268 bis du CGI ferait taxer toute la facture au taux
+    // le plus élevé. Un seul taux : le document est exactement celui d'avant.
+    ventilationTva: ventilationDuDocument(f, lignes),
     lignes: lignes
       .slice()
       .sort((a, b) => a.ordre - b.ordre)
-      .map((l) => ({
+      .map((l, i, toutes) => ({
         libelle: l.libelle,
         quantite: l.quantite,
         prixUnitaire: l.prixUnitaire,
         montant: l.montant,
+        unite: l.unite,
+        // Le titre du bloc ne s'écrit qu'à SON PREMIER élément : répété à
+        // chaque ligne, il hacherait le tableau. Et il n'apparaît du tout que
+        // si la facture porte réellement deux blocs — une facture conforme au
+        // devis sort inchangée.
+        intertitre:
+          i > 0 && l.origine === "supplement" && toutes[i - 1].origine !== "supplement"
+            ? "Travaux supplémentaires"
+            : null,
       })),
   };
+}
+
+/**
+ * Les socles par taux d'une facture — ou `null` quand elle n'en a qu'un.
+ *
+ * `null` est le cas de l'immense majorité, et il vaut « écris le bloc de totaux
+ * exactement comme avant » : ni ligne en plus, ni mot en plus.
+ */
+function ventilationDuDocument(
+  f: typeof factures.$inferSelect,
+  lignes: (typeof lignesFacture.$inferSelect)[]
+): SocleTva[] | null {
+  const v = ventilerTva(lignes, f.tauxTva, f.reductionPourcent);
+  return v.socles.length > 1 ? v.socles : null;
 }
 
 /**
@@ -387,7 +606,11 @@ export async function emettreFacture(ctx: Ctx, factureId: string, maintenant: Da
     // choisi l'arrangement B : la réduction n'est pas une ligne, donc ce
     // recalcul-ci l'oublierait s'il additionnait seulement les lignes — et la
     // facture émise, immuable, partirait au prix plein.
-    const t = totauxAvecReduction(lignes, avant.tauxTva, avant.reductionPourcent);
+    // **Ventilé par taux depuis la migration 0073** : une facture peut porter
+    // des travaux en plus à un autre taux que le devis. Avec un seul taux, le
+    // résultat est au centime celui de `totauxAvecReduction` — c'est un
+    // invariant, et `test-ventilation-tva.ts` le tient.
+    const t = ventilerTva(lignes, avant.tauxTva, avant.reductionPourcent);
     const totalHt = new Decimal(t.totalHt);
     const totalTva = new Decimal(t.totalTva);
     const totalTtc = new Decimal(t.totalTtc);

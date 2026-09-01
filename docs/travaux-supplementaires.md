@@ -276,6 +276,76 @@ F2026-000001.
 
 ---
 
+---
+
+## 7. CE QUI A ÉTÉ CODÉ — livré le 1ᵉʳ septembre 2026
+
+**Sa décision :** *« code la mienne, déroule sous le bouton. »* Le lot B est
+livré, sur son écran, avec le taux de TVA à la ligne qu'il a demandé.
+
+### Un verdict par point
+
+| Ce qu'il a demandé | Fait | Où |
+|---|---|---|
+| Ajouter des TS depuis l'écran de la facture, avant l'envoi | **oui** | `FactureClient.tsx`, sous « Rien n'a changé depuis le devis ? » |
+| Le formulaire se déroule sous le bouton | **oui** | rien ne s'ouvre tant qu'on ne le demande pas ; il se referme après l'ajout |
+| Le supplément marqué comme tel | **oui** | un bloc « Travaux supplémentaires » à part, sur l'écran **et** sur le PDF |
+| Réutiliser la chaîne d'envoi | **oui** | rien n'a été touché : PDF, canal, envoi, relevé de TVA servent tels quels |
+| Un taux de TVA propre aux TS | **oui, à la LIGNE** | 20 / 10 / 5,5 au choix, et les totaux ventilent |
+| Titre « Travaux supplémentaires » seul, en doré | **oui** | ni mention d'accord, ni sous-titre |
+| Plus de question sur l'accord du client | **oui, retiré** | et le risque est écrit ci-dessous |
+| Tous les boutons alignés | **oui** | mesuré au navigateur : même x, même largeur que « Envoyer la facture » |
+| Les raccourcis de prestations retirés | **oui** | il ne reste que les champs |
+
+### Ce qui a été fait AUTREMENT que demandé, et pourquoi
+
+**Le taux se choisit à la ligne, pas « pour les TS ».** Il l'avait formulé
+comme un réglage du bloc ; deux suppléments peuvent relever de deux taux — une
+terrasse à 20 % et une taille de haie à 10 % le même jour. Un taux par bloc
+aurait forcé à en sacrifier un.
+
+**Une ligne du devis ne se retire pas.** Seuls les suppléments portent une
+croix. En retirer une du devis ferait diverger la facture de ce que le client a
+accepté, sans que ni l'un ni l'autre document ne le dise. Ce qui n'a pas été
+fait se règle par une remise ou par un avoir — tous deux visibles.
+
+**La remise ne s'applique pas aux travaux en plus.** Le prix accordé au client
+a été consenti sur le devis, avant que le supplément existe.
+
+### Ce qui a été trouvé en cherchant, et corrigé
+
+**Un contrôle qui ne savait pas rougir.** Couper le rattrapage du centime
+d'arrondi ne faisait échouer aucun test : aucun jeu ne déclenchait le cas. Deux
+cas ont été ajoutés, dont celui que le client vérifie de tête — « brut − remise
+= net ». Sans cette confrontation, la règle serait passée pour éprouvée.
+
+**Deux faux rouges, sur du code juste**, et ils valent d'être dits parce qu'ils
+coûtent du temps à chaque fois : les montants français groupent leurs milliers
+avec une espace **insécable** (« 1 020,00 € » ne contient pas l'espace qu'on
+tape), et les titres de bloc sont rendus en **majuscules** par la feuille de
+style. Les contrôles comparaient à la lettre et accusaient l'écran.
+
+**Un doublon d'écran évité de justesse :** la phrase « Rien n'a changé depuis le
+devis ? » existait DÉJÀ sur sa facture. Le bouton s'est posé dessous plutôt que
+de la répéter.
+
+### Les chiffres de la batterie
+
+| | |
+|---|---|
+| `test-ventilation-tva.ts` | **17 contrôles**, dont mille tirages aléatoires |
+| `test-travaux-supplementaires.ts` | **11 contrôles** — base, isolation, refus |
+| `test-facture-travaux-supplementaires-e2e.ts` | **8 contrôles** au navigateur, par sa porte à lui |
+| `test-facture-pdf.ts` | **4 contrôles neufs** sur le document du client |
+
+### CE QUI RESTE OUVERT — et qui peut le trancher
+
+| | Qui |
+|---|---|
+| **L'accord écrit du client.** L'écran ne le demande plus. L'article 1793 laisse le client refuser un supplément non accepté par écrit : c'est le **bon signé sur place** qui y répond, et il n'est pas codé | **lui** |
+| **Le relevé de TVA ne sépare pas les taux.** Les montants déclarés restent justes ; c'est la présentation qui ne distingue pas, alors qu'une CA3 le fait. Sans conséquence tant qu'une facture n'a qu'un taux | nous, quand il en aura besoin |
+| **L'avenant** reste la façon la plus sûre de facturer un supplément : un document accepté AVANT les travaux | **lui** |
+
 *Sources métier :*
 [Article 1793 et travaux supplémentaires](https://vite-un-avocat.fr/travaux-supplementaires-non-prevus-au-devis/) ·
 [Refus de payer sans avenant](https://elige-avocats.com/le-client-est-il-en-droit-de-refuser-de-payer-les-travaux-supplementaires/) ·

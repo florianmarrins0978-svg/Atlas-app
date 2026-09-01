@@ -48,6 +48,14 @@ const FACTURE: FacturePdfData = {
 };
 
 const contenus = (trace: TraceDocument) => trace.textes.map((t) => t.contenu);
+/**
+ * Le même texte, ses espaces insécables ramenées à des espaces ordinaires.
+ *
+ * `formatMontant` groupe les milliers avec U+202F : « 2 450,00 € » ne contient
+ * pas l'espace qu'on tape. Comparé tel quel, un document JUSTE fait rougir le
+ * contrôle — c'est arrivé, et c'est une demi-heure perdue à soupçonner le PDF.
+ */
+const plat = (t: string) => t.replace(/[\u00a0\u202f\u2009\u2007]/g, " ");
 
 let echecs = 0;
 function cas(nom: string, verifier: () => void | Promise<void>) {
@@ -204,6 +212,104 @@ async function main() {
       assert.ok(
         t.y >= PIED_DOCUMENT.plancher,
         `« ${t.contenu} » (page ${t.page}) descend sous le plancher réservé au pied.`
+      );
+    }
+  });
+
+  // ── Les travaux en plus, et leurs taux (migration 0073) ──────────────────
+
+  /** Sa facture du 31 août, plus une terrasse à 20 % sur un devis à 10 %. */
+  const AVEC_SUPPLEMENT: FacturePdfData = {
+    ...FACTURE,
+    tauxTva: "20.00",
+    totalHt: "2950.00",
+    totalTva: "345.00",
+    totalTtc: "3295.00",
+    ventilationTva: [
+      { tauxTva: "20.00", ht: "500.00", tva: "100.00" },
+      { tauxTva: "10.00", ht: "2450.00", tva: "245.00" },
+    ],
+    lignes: [
+      ...FACTURE.lignes,
+      {
+        libelle: "Terrasse bois",
+        quantite: "1",
+        prixUnitaire: "500.00",
+        montant: "500.00",
+        intertitre: "Travaux supplémentaires",
+      },
+    ],
+  };
+
+  await cas("le supplément s'imprime SOUS son propre titre, pas fondu dans le devis", async () => {
+    const { trace } = await composerFacturePdf(AVEC_SUPPLEMENT);
+    const textes = contenus(trace);
+    // Le titre est écrit lettre par lettre espacée (`ecrireEspace`) : on le
+    // cherche donc sans se fier à la casse ni aux espaces d'approche.
+    const compact = textes.map((t) => t.replace(/\s+/g, "").toUpperCase());
+    assert.ok(
+      compact.some((t) => t.includes("TRAVAUXSUPPLÉMENTAIRES")),
+      `Le titre du bloc manque. Écrits : ${textes.slice(0, 40).join(" | ")}`
+    );
+    assert.ok(textes.some((t) => t.includes("Terrasse bois")), "La ligne ajoutée manque.");
+  });
+
+  await cas("DEUX taux : une ligne de TVA chacun, avec le socle sur lequel elle porte", async () => {
+    // **Article 268 bis du CGI** : sans ventilation, toute la facture serait
+    // taxée au taux le plus élevé. Ces deux lignes sont ce qui l'évite.
+    const { trace } = await composerFacturePdf(AVEC_SUPPLEMENT);
+    const textes = contenus(trace);
+    assert.ok(
+      textes.some((t) => plat(t).includes("TVA (20 %)") && plat(t).includes("500,00")),
+      `La ligne « TVA (20 %) sur 500,00 € » manque : ${textes.filter((t) => t.includes("TVA")).join(" | ")}`
+    );
+    assert.ok(
+      textes.some((t) => plat(t).includes("TVA (10 %)") && plat(t).includes("2 450,00")),
+      "La ligne « TVA (10 %) sur 2 450,00 € » manque."
+    );
+    // Et le TTC reste celui de la facture, pas une somme refaite au dessin.
+    assert.ok(textes.some((t) => plat(t).includes("3 295,00")), "Le Total TTC manque.");
+  });
+
+  await cas("UN SEUL taux : le bloc de totaux est exactement celui d'avant", async () => {
+    // L'immense majorité des factures est dans ce cas. Une ligne en plus, un
+    // mot en plus, et ce sont des milliers de documents qui changent d'allure.
+    const { trace } = await composerFacturePdf(FACTURE);
+    const lignesTva = contenus(trace).filter((t) => t.startsWith("TVA ("));
+    assert.equal(lignesTva.length, 1, `Une seule ligne de TVA attendue : ${lignesTva.join(" | ")}`);
+    assert.equal(lignesTva[0], "TVA (10 %)");
+  });
+
+  await cas("le titre du bloc ne reste jamais seul en bas d'une page", async () => {
+    // Un intertitre orphelin — sa première ligne partie à la page suivante —
+    // se lit comme un bloc vide, et fait douter du reste du document.
+    for (let combien = 18; combien <= 28; combien++) {
+      const lignes = Array.from({ length: combien }, (_, i) => ({
+        libelle: `Prestation ${i + 1} — abattage par démontage avec rétention`,
+        quantite: "1",
+        prixUnitaire: "180.00",
+        montant: "180.00",
+      }));
+      const { trace } = await composerFacturePdf({
+        ...AVEC_SUPPLEMENT,
+        lignes: [
+          ...lignes,
+          {
+            libelle: "Terrasse bois",
+            quantite: "1",
+            prixUnitaire: "500.00",
+            montant: "500.00",
+            intertitre: "Travaux supplémentaires",
+          },
+        ],
+      });
+      const titre = trace.textes.find((t) => t.contenu.replace(/\s+/g, "").toUpperCase().includes("TRAVAUXSUPPL"));
+      const ligne = trace.textes.find((t) => t.contenu.includes("Terrasse bois"));
+      assert.ok(titre && ligne, `Titre ou ligne manquants à ${combien} lignes.`);
+      assert.equal(
+        titre!.page,
+        ligne!.page,
+        `À ${combien} lignes, le titre est page ${titre!.page} et sa ligne page ${ligne!.page}.`
       );
     }
   });

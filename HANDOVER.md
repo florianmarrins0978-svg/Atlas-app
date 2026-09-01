@@ -4,12 +4,46 @@
 vous ne savez rien de ce qui précède — c'est exactement le cas de figure qu'il
 sert.
 
-**Point de reprise :** 2026-08-31 · `main`
+**Point de reprise :** 2026-09-01 · `main`
 (l'historique fait foi : `git log --oneline -20`)
 
 ---
 
-## Dernier lot : la ligne, corrigée trois fois par lui (31 août 2026, au soir)
+## Dernier lot : les travaux en plus se facturent (1ᵉʳ septembre 2026)
+
+**Son constat, puis son idée, puis sa forme** — trois messages dans la nuit. Ce
+qui manquait : aucun moyen d'ajouter des travaux supplémentaires sur une
+facture. C'est fait, sur SON écran, avant l'envoi.
+
+| | |
+|---|---|
+| la migration | `drizzle/0073_travaux_supplementaires_sur_la_facture.sql` |
+| la règle | `src/lib/ventilation-tva.ts` — appelée par le dépôt, le PDF et l'écran |
+| le dépôt | `ajouterTravailSupplementaire` / `retirerTravailSupplementaire` |
+| l'écran | `src/app/chantiers/[id]/facture/FactureClient.tsx` |
+| le détail | `ARCHITECTURE.md` §228 · le verdict pour lui : `docs/travaux-supplementaires.md` §7 |
+
+**Ce qu'il faut savoir avant d'y toucher :**
+
+- **L'article 268 bis du CGI commande le calcul.** Une facture qui ne ventile
+  pas ses taux est taxée EN ENTIER au plus élevé. C'est pour cela que le taux vit
+  sur la LIGNE et que les totaux portent une ligne par taux. Ne pas revenir à un
+  taux unique « pour simplifier ».
+- **`lignes_facture.taux_tva` est nullable, et doit le rester** : les lignes
+  d'avant la migration prennent le taux de leur facture, et les factures déjà
+  émises sortent identiques à elles-mêmes. `test-ventilation-tva.ts` tient cet
+  invariant au centime.
+- **Une ligne du devis ne se retire pas**, et une facture émise ne se modifie
+  plus. Les deux refus sont dans le dépôt, pas seulement à l'écran.
+- **La remise ne mord que sur les lignes du devis** — un supplément n'a été
+  remisé par personne.
+- **Ce qui n'est PAS fait :** l'accord écrit du client (il a fait retirer la
+  question de l'écran ; le bon signé sur place y répondrait, et n'est pas codé)
+  et la ventilation du relevé de TVA. Voir `TODO.md`.
+
+---
+
+## La veille : la ligne, corrigée trois fois par lui (31 août 2026, au soir)
 
 **Rien n'est codé** (`CLAUDE.md` §3 bis). Il a choisi **la ligne** parmi les
 quatre allures, puis l'a corrigée : *« supprime le rond avec le carré dedans

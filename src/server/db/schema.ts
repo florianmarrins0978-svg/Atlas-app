@@ -1776,6 +1776,32 @@ export const lignesFacture = pgTable(
     quantite: numeric("quantite", { precision: 10, scale: 2 }).notNull().default("1"),
     prixUnitaire: numeric("prix_unitaire", { precision: 10, scale: 2 }).notNull(),
     montant: numeric("montant", { precision: 10, scale: 2 }).notNull(),
+    /** « 12 m² » plutôt que « 12 » — comme la ligne de devis (migration 0070). */
+    unite: text("unite"),
+    /**
+     * D'où vient la ligne (migration 0073).
+     *
+     * `devis` : recopiée à la création de la facture. `supplement` : ajoutée à
+     * l'arrêt 3, avant l'envoi — son idée du 31 août 2026.
+     *
+     * **C'est ce qui fait les DEUX BLOCS du document.** Fondu dans les lignes du
+     * devis, un supplément fait lire au client un total qui ne correspond plus
+     * à ce qu'il avait accepté ; à côté, il retrouve son prix au centime.
+     */
+    origine: text("origine", { enum: ["devis", "supplement"] }).notNull().default("devis"),
+    /**
+     * Le taux de CETTE ligne (migration 0073) — sa question du 1ᵉʳ septembre.
+     *
+     * Un paysagiste facture à 5,5 %, 10 % ou 20 % selon la nature du travail :
+     * un devis à 10 % peut donc recevoir un supplément à 20 %. Et l'article
+     * 268 bis du CGI taxe **en entier au taux le plus élevé** une facture qui ne
+     * ventile pas ses taux — d'où le taux à la ligne, et la ventilation dans
+     * `src/lib/ventilation-tva.ts`.
+     *
+     * `null` : le taux de la facture s'applique. C'est le cas de toutes les
+     * lignes d'avant la migration, et elles sortent identiques à elles-mêmes.
+     */
+    tauxTva: numeric("taux_tva", { precision: 5, scale: 2 }),
     ordre: integer("ordre").notNull().default(0),
   },
   (t) => [

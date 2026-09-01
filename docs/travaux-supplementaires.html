@@ -333,6 +333,110 @@
 <p><strong>Et tous les boutons s'alignent sur « Envoyer la facture »</strong>, qui est le bouton de référence : le bouton d'ajout vit désormais dans une plage, comme le canal d'envoi. Mesuré, pas jugé à l'œil — même x, même largeur, au dixième de pixel. Les raccourcis de prestations sont retirés.</p>
 <p>La planche : <code>appli/ts-sur-la-facture.html</code>, calquée sur sa facture F2026-000001.</p>
 <hr>
+<hr>
+<h2 id="7-ce-qui-a-été-codé--livré-le-1ᵉʳ-septembre-2026">7. CE QUI A ÉTÉ CODÉ — livré le 1ᵉʳ septembre 2026</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><strong>Sa décision :</strong> <em>« code la mienne, déroule sous le bouton. »</em> Le lot B est livré, sur son écran, avec le taux de TVA à la ligne qu'il a demandé.</p>
+<h3 id="un-verdict-par-point">Un verdict par point</h3>
+<div class="tablewrap"><table><thead><tr>
+<th>Ce qu'il a demandé</th>
+<th>Fait</th>
+<th>Où</th>
+</tr></thead><tbody>
+<tr>
+<td>Ajouter des TS depuis l'écran de la facture, avant l'envoi</td>
+<td><strong>oui</strong></td>
+<td><code>FactureClient.tsx</code>, sous « Rien n'a changé depuis le devis ? »</td>
+</tr>
+<tr>
+<td>Le formulaire se déroule sous le bouton</td>
+<td><strong>oui</strong></td>
+<td>rien ne s'ouvre tant qu'on ne le demande pas ; il se referme après l'ajout</td>
+</tr>
+<tr>
+<td>Le supplément marqué comme tel</td>
+<td><strong>oui</strong></td>
+<td>un bloc « Travaux supplémentaires » à part, sur l'écran <strong>et</strong> sur le PDF</td>
+</tr>
+<tr>
+<td>Réutiliser la chaîne d'envoi</td>
+<td><strong>oui</strong></td>
+<td>rien n'a été touché : PDF, canal, envoi, relevé de TVA servent tels quels</td>
+</tr>
+<tr>
+<td>Un taux de TVA propre aux TS</td>
+<td><strong>oui, à la LIGNE</strong></td>
+<td>20 / 10 / 5,5 au choix, et les totaux ventilent</td>
+</tr>
+<tr>
+<td>Titre « Travaux supplémentaires » seul, en doré</td>
+<td><strong>oui</strong></td>
+<td>ni mention d'accord, ni sous-titre</td>
+</tr>
+<tr>
+<td>Plus de question sur l'accord du client</td>
+<td><strong>oui, retiré</strong></td>
+<td>et le risque est écrit ci-dessous</td>
+</tr>
+<tr>
+<td>Tous les boutons alignés</td>
+<td><strong>oui</strong></td>
+<td>mesuré au navigateur : même x, même largeur que « Envoyer la facture »</td>
+</tr>
+<tr>
+<td>Les raccourcis de prestations retirés</td>
+<td><strong>oui</strong></td>
+<td>il ne reste que les champs</td>
+</tr>
+</tbody></table></div>
+<h3 id="ce-qui-a-été-fait-autrement-que-demandé-et-pourquoi">Ce qui a été fait AUTREMENT que demandé, et pourquoi</h3>
+<p><strong>Le taux se choisit à la ligne, pas « pour les TS ».</strong> Il l'avait formulé comme un réglage du bloc ; deux suppléments peuvent relever de deux taux — une terrasse à 20 % et une taille de haie à 10 % le même jour. Un taux par bloc aurait forcé à en sacrifier un.</p>
+<p><strong>Une ligne du devis ne se retire pas.</strong> Seuls les suppléments portent une croix. En retirer une du devis ferait diverger la facture de ce que le client a accepté, sans que ni l'un ni l'autre document ne le dise. Ce qui n'a pas été fait se règle par une remise ou par un avoir — tous deux visibles.</p>
+<p><strong>La remise ne s'applique pas aux travaux en plus.</strong> Le prix accordé au client a été consenti sur le devis, avant que le supplément existe.</p>
+<h3 id="ce-qui-a-été-trouvé-en-cherchant-et-corrigé">Ce qui a été trouvé en cherchant, et corrigé</h3>
+<p><strong>Un contrôle qui ne savait pas rougir.</strong> Couper le rattrapage du centime d'arrondi ne faisait échouer aucun test : aucun jeu ne déclenchait le cas. Deux cas ont été ajoutés, dont celui que le client vérifie de tête — « brut − remise = net ». Sans cette confrontation, la règle serait passée pour éprouvée.</p>
+<p><strong>Deux faux rouges, sur du code juste</strong>, et ils valent d'être dits parce qu'ils coûtent du temps à chaque fois : les montants français groupent leurs milliers avec une espace <strong>insécable</strong> (« 1 020,00 € » ne contient pas l'espace qu'on tape), et les titres de bloc sont rendus en <strong>majuscules</strong> par la feuille de style. Les contrôles comparaient à la lettre et accusaient l'écran.</p>
+<p><strong>Un doublon d'écran évité de justesse :</strong> la phrase « Rien n'a changé depuis le devis ? » existait DÉJÀ sur sa facture. Le bouton s'est posé dessous plutôt que de la répéter.</p>
+<h3 id="les-chiffres-de-la-batterie">Les chiffres de la batterie</h3>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th></th>
+</tr></thead><tbody>
+<tr>
+<td><code>test-ventilation-tva.ts</code></td>
+<td><strong>17 contrôles</strong>, dont mille tirages aléatoires</td>
+</tr>
+<tr>
+<td><code>test-travaux-supplementaires.ts</code></td>
+<td><strong>11 contrôles</strong> — base, isolation, refus</td>
+</tr>
+<tr>
+<td><code>test-facture-travaux-supplementaires-e2e.ts</code></td>
+<td><strong>8 contrôles</strong> au navigateur, par sa porte à lui</td>
+</tr>
+<tr>
+<td><code>test-facture-pdf.ts</code></td>
+<td><strong>4 contrôles neufs</strong> sur le document du client</td>
+</tr>
+</tbody></table></div>
+<h3 id="ce-qui-reste-ouvert--et-qui-peut-le-trancher">CE QUI RESTE OUVERT — et qui peut le trancher</h3>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th>Qui</th>
+</tr></thead><tbody>
+<tr>
+<td><strong>L'accord écrit du client.</strong> L'écran ne le demande plus. L'article 1793 laisse le client refuser un supplément non accepté par écrit : c'est le <strong>bon signé sur place</strong> qui y répond, et il n'est pas codé</td>
+<td><strong>lui</strong></td>
+</tr>
+<tr>
+<td><strong>Le relevé de TVA ne sépare pas les taux.</strong> Les montants déclarés restent justes ; c'est la présentation qui ne distingue pas, alors qu'une CA3 le fait. Sans conséquence tant qu'une facture n'a qu'un taux</td>
+<td>nous, quand il en aura besoin</td>
+</tr>
+<tr>
+<td><strong>L'avenant</strong> reste la façon la plus sûre de facturer un supplément : un document accepté AVANT les travaux</td>
+<td><strong>lui</strong></td>
+</tr>
+</tbody></table></div>
 <p><em>Sources métier :</em> <a href="https://vite-un-avocat.fr/travaux-supplementaires-non-prevus-au-devis/" target="_blank" rel="noopener">Article 1793 et travaux supplémentaires</a> · <a href="https://elige-avocats.com/le-client-est-il-en-droit-de-refuser-de-payer-les-travaux-supplementaires/" target="_blank" rel="noopener">Refus de payer sans avenant</a> · <a href="https://www.why.eu/facturation-travaux-supplementaires/" target="_blank" rel="noopener">Avenant, OS et prix nouveaux</a> · <a href="https://www.habitatpresto.com/pro/conseils/juridique/travaux-supplementaires-sans-avenant-ecrit-refus-paiement" target="_blank" rel="noopener">Travaux sans avenant écrit</a> · <a href="https://www.habitatpresto.com/pro/conseils/administratif-fiscalite/bon-pour-accord" target="_blank" rel="noopener">Le « bon pour accord »</a> · <a href="https://www.courtierentravaux.org/quand-et-comment-faire-un-avenant-au-devis/" target="_blank" rel="noopener">Quand et comment faire un avenant</a></p>
 </main>
 </body>

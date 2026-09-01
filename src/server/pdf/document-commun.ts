@@ -372,6 +372,15 @@ export type LigneDocument = {
    * « 0,00 € » : un zéro se lit « gratuit ».
    */
   aChiffrer?: boolean | null;
+  /**
+   * Le titre du bloc que CETTE ligne ouvre (migration 0073).
+   *
+   * « Travaux supplémentaires » sur la première ligne ajoutée à l'arrêt 3, et
+   * rien sur les autres. Les fondre dans les lignes du devis ferait lire au
+   * client un total qui ne correspond plus à ce qu'il avait accepté — à côté,
+   * il retrouve son prix au centime.
+   */
+  intertitre?: string | null;
 };
 
 export type DonneesDocument = {
@@ -415,6 +424,16 @@ export type DonneesDocument = {
    */
   reductionPourcent?: string | null;
   reductionMontant?: string | null;
+  /**
+   * Les socles par taux, quand la pièce en porte PLUSIEURS (migration 0073).
+   *
+   * Absent — le cas de tous les devis et de l'immense majorité des factures —,
+   * le bloc de totaux est exactement celui d'avant : une seule ligne « TVA
+   * (20 %) ». Présent, une ligne par taux, avec le montant sur lequel elle
+   * porte : **l'article 268 bis du CGI taxe en entier au taux le plus élevé une
+   * facture qui ne ventile pas ses opérations.**
+   */
+  ventilationTva?: { tauxTva: string; ht: string; tva: string }[] | null;
   lignes: LigneDocument[];
 };
 
@@ -797,6 +816,18 @@ export async function composerDocument(
   }
 
   for (const ligne of data.lignes) {
+    // **Le titre du bloc, quand cette ligne en ouvre un** (migration 0073).
+    // Il se réserve sa place AVANT le calcul de saut de page, sinon il resterait
+    // seul en bas d'une feuille, sa première ligne partie à la suivante.
+    if (ligne.intertitre) {
+      if (y - 30 < PLANCHER) {
+        y = pageSuivante(ctx);
+        enTeteTableau();
+      }
+      y -= 4;
+      ecrireEspace(ctx, ligne.intertitre.toUpperCase(), MARGE, y, APPROCHE_ETIQUETTE, enTeteColonne);
+      y -= 15;
+    }
     // Sans colonnes de prix, le libellé dispose de toute la feuille : garder la
     // largeur du devis couperait « Démontage de trois chênes en tête de chat »
     // en deux pour laisser la place à des colonnes qui n'existent pas.
@@ -858,7 +889,10 @@ export async function composerDocument(
   // Deux lignes de plus quand une remise est accordée : la place se réserve
   // AVANT le saut de page, sinon « Total TTC » se retrouve seul en haut de la
   // page suivante.
-  place(avecRemise ? 74 + 32 : 74);
+  // Chaque taux supplémentaire ajoute une ligne au bloc : sans elle dans le
+  // calcul, « Total TTC » se retrouverait seul en haut de la page suivante.
+  const lignesTvaEnPlus = Math.max((data.ventilationTva?.length ?? 1) - 1, 0) * 16;
+  place((avecRemise ? 74 + 32 : 74) + lignesTvaEnPlus);
   y -= 6;
   const gaucheTotaux = DROITE - 220;
 
@@ -891,10 +925,26 @@ export async function composerDocument(
     y -= 16;
   }
 
-  const tauxLisible = new Decimal(data.tauxTva).toFixed(2).replace(/[.]00$/, "").replace(".", ",");
-  ecrire(ctx, `TVA (${tauxLisible} %)`, gaucheTotaux, y, { taille: 9.5 });
-  ecrireADroite(ctx, formatMontant(data.totalTva, data.devise), DROITE, y, { taille: 9.5 });
-  y -= 14;
+  // **Une ligne de TVA par taux dès qu'il y en a deux** (migration 0073). Le
+  // socle est rappelé : « TVA (20 %) » seul ne dit pas sur quoi elle porte, et
+  // c'est exactement ce que le client vérifie quand deux taux se côtoient.
+  const socles = data.ventilationTva ?? [];
+  if (socles.length > 1) {
+    for (const socle of socles) {
+      const lisible = new Decimal(socle.tauxTva).toFixed(2).replace(/[.]00$/, "").replace(".", ",");
+      ecrire(ctx, `TVA (${lisible} %) sur ${formatMontant(socle.ht, data.devise)}`, gaucheTotaux, y, {
+        taille: 9.5,
+      });
+      ecrireADroite(ctx, formatMontant(socle.tva, data.devise), DROITE, y, { taille: 9.5 });
+      y -= 16;
+    }
+    y += 2;
+  } else {
+    const tauxLisible = new Decimal(data.tauxTva).toFixed(2).replace(/[.]00$/, "").replace(".", ",");
+    ecrire(ctx, `TVA (${tauxLisible} %)`, gaucheTotaux, y, { taille: 9.5 });
+    ecrireADroite(ctx, formatMontant(data.totalTva, data.devise), DROITE, y, { taille: 9.5 });
+    y -= 14;
+  }
 
   trait(ctx, y, 1.6, ctx.teintes.encre, gaucheTotaux, DROITE);
   y -= 22;

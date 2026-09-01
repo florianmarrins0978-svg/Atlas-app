@@ -3,11 +3,14 @@
 import { exigerFacturation } from "@/server/garde-action";
 import { getCurrentCtx } from "@/server/session-ctx";
 import {
+  ajouterTravailSupplementaire,
   emettreFacture,
   majEcheanceFacture,
+  retirerTravailSupplementaire,
   terminerChantier,
   FactureDejaEmiseError,
   FinChantierImpossibleError,
+  type TotauxFacture,
 } from "@/server/repositories/factures";
 import { logger } from "@/server/logger";
 import {
@@ -129,5 +132,56 @@ export async function preparerLienFactureAction(
     return { succes: true, jeton: envoi.jeton };
   } catch (e) {
     return { succes: false, erreur: e instanceof Error ? e.message : "Le lien n'a pas pu être préparé." };
+  }
+}
+
+/**
+ * LES TRAVAUX EN PLUS, AJOUTÉS AVANT L'ENVOI — son idée du 31 août 2026.
+ *
+ * *« Depuis cette page, avant d'envoyer la facture, il faut pouvoir la modifier
+ * en stipulant que c'est du TS, et comme ça on a déjà toute la chaîne de
+ * production de créée pour l'envoyer au client. »*
+ *
+ * **Le refus se rend en valeur, jamais en exception** (`AGENTS.md`) : le message
+ * d'une exception d'action serveur n'atteint jamais le patron — Next.js le
+ * remplace par un identifiant opaque. Toutes les décisions vivent dans le dépôt,
+ * qui les rend en `{ ok, raison }` ; cette couche ne fait que porter la réponse.
+ */
+export type ResultatTravailSupplementaire =
+  | { succes: true; totaux: TotauxFacture }
+  | { succes: false; erreur: string };
+
+export async function ajouterTravailSupplementaireAction(
+  factureId: string,
+  saisie: { libelle: string; quantite: string; unite: string | null; prixUnitaire: string; tauxTva: string }
+): Promise<ResultatTravailSupplementaire> {
+  const ctx = await getCurrentCtx();
+  await exigerFacturation(ctx, "ajouter des travaux supplémentaires à la facture");
+  try {
+    const r = await ajouterTravailSupplementaire(ctx, factureId, saisie);
+    return r.ok ? { succes: true, totaux: r.totaux } : { succes: false, erreur: r.raison };
+  } catch (err) {
+    // Journalisé AVANT de rendre une phrase générique : sans cette ligne, le
+    // défaut serait muet des deux côtés (`AGENTS.md`, piège 0 ter).
+    logger.error("Travail supplémentaire non ajouté", {
+      erreur: err instanceof Error ? err.message : String(err),
+    });
+    return { succes: false, erreur: "La ligne n'a pas pu être ajoutée. Réessayez dans un instant." };
+  }
+}
+
+export async function retirerTravailSupplementaireAction(
+  ligneId: string
+): Promise<ResultatTravailSupplementaire> {
+  const ctx = await getCurrentCtx();
+  await exigerFacturation(ctx, "retirer des travaux supplémentaires de la facture");
+  try {
+    const r = await retirerTravailSupplementaire(ctx, ligneId);
+    return r.ok ? { succes: true, totaux: r.totaux } : { succes: false, erreur: r.raison };
+  } catch (err) {
+    logger.error("Travail supplémentaire non retiré", {
+      erreur: err instanceof Error ? err.message : String(err),
+    });
+    return { succes: false, erreur: "La ligne n'a pas pu être retirée. Réessayez dans un instant." };
   }
 }

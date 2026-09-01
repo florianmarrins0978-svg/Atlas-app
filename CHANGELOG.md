@@ -7,6 +7,47 @@ Format : le plus récent en tête.
 
 ---
 
+## 2026-09-01
+
+### Les travaux en plus s'ajoutent sur la facture, chacun avec son taux de TVA
+
+**Son constat du 31 août :** *« si on effectue des travaux en plus chez un
+client, on n'a aucun moyen de rajouter les TS sur la facture. »* Puis son idée,
+capture à l'appui : le faire depuis l'écran de la facture, avant l'envoi, « et
+comme ça on a déjà toute la chaîne de production de créée ». C'est légal tant
+que la facture est en brouillon ; une fois envoyée, elle est immuable.
+
+Le geste vit sous la phrase qui était déjà là — « Rien n'a changé depuis le
+devis ? » —, et le formulaire se déroule dessous : sa forme, choisie sur la
+planche. Le supplément entre dans un **bloc à part**, sur l'écran comme sur le
+PDF : fondu dans les lignes du devis, il ferait lire un total qui ne correspond
+plus à ce que le client avait accepté.
+
+**Et chaque ligne porte SON taux** — sa question du même message. Un paysagiste
+facture à 5,5, 10 et 20 % ; surtout, l'article 268 bis du CGI taxe **en entier
+au taux le plus élevé** une facture qui ne ventile pas ses taux. Un supplément à
+20 % noyé dans une facture à 10 % ferait donc passer toute la facture à 20 %, à
+sa charge. `src/lib/ventilation-tva.ts` porte la règle, appelée par le dépôt, le
+PDF et l'écran — une seule addition, jamais trois.
+
+L'invariant qui protège l'existant : avec un seul taux, la nouvelle règle rend
+**au centime** ce que rendait l'ancienne. Sans lui, des milliers de factures
+émises changeraient de montant.
+
+**Un contrôle qui ne savait pas rougir a été corrigé avant livraison :** couper
+le rattrapage du centime d'arrondi ne faisait échouer aucun test, faute de jeu
+qui déclenche le cas. Deux cas ont été ajoutés, dont l'invariant que le client
+vérifie de tête — « brut − remise = net ».
+
+Migration 0073 : `origine`, `taux_tva` et `unite` sur `lignes_facture`.
+
+**Ce que ce lot ne règle pas, et qui reste ouvert :** l'accord écrit du client
+sur le supplément (article 1793 du Code civil) — l'écran ne le demande plus, sur
+sa demande ; et le relevé de TVA, qui reste juste en montants mais ne ventile
+pas ses taux (`TODO.md`).
+
+---
+
 ## 2026-08-31
 
 ### Trois écartés qu'il a fait rentrer : l'étiquette « Facturer » et les deux bandeaux

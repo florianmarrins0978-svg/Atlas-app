@@ -18,6 +18,39 @@ ligne « fait » qui ne l'est pas coûte plus cher qu'une ligne absente.
 
 ---
 
+## Les travaux en plus se facturent (1ᵉʳ septembre 2026)
+
+**Son constat :** *« si on effectue des travaux en plus chez un client, on n'a
+aucun moyen de rajouter les TS sur la facture. »* C'était exact : la facture
+recopiait le devis et ne se modifiait plus.
+
+**Ce qui est fait.** Depuis l'écran de la facture, tant qu'elle est en
+brouillon, un bouton sous « Rien n'a changé depuis le devis ? » déroule un
+formulaire — libellé, quantité, unité, prix, **taux de TVA**. Le supplément
+entre dans un **bloc à part**, sur l'écran comme sur le PDF, et se retire d'une
+croix. Les totaux se recalculent en base, jamais à l'écran seul. Une facture
+arrêtée ne propose plus rien : elle est immuable, et se corrige par un avoir.
+
+**Chaque ligne porte son taux**, et les totaux les ventilent : l'article 268 bis
+du CGI taxe en entier au taux le plus élevé une facture qui ne ventile pas.
+`src/lib/ventilation-tva.ts` porte la règle — une seule, appelée par le dépôt,
+le PDF et l'écran.
+
+| | |
+|---|---|
+| Migration | `0073_travaux_supplementaires_sur_la_facture.sql` |
+| Règle pure | `src/lib/ventilation-tva.ts` |
+| Dépôt | `ajouterTravailSupplementaire`, `retirerTravailSupplementaire` |
+| Écran | `src/app/chantiers/[id]/facture/FactureClient.tsx` |
+| Suites | `test-ventilation-tva.ts`, `test-travaux-supplementaires.ts`, `test-facture-travaux-supplementaires-e2e.ts`, `test-facture-pdf.ts` |
+
+**Ce qui n'est PAS fait, et qu'il faut savoir :** l'accord écrit du client sur le
+supplément (il a fait retirer la question de l'écran), et la ventilation du
+relevé de TVA — juste en montants, mais sans séparer les taux. Détail dans
+`ARCHITECTURE.md` §228 et `TODO.md`.
+
+---
+
 ## Il n'y a plus qu'une fiche client (31 août 2026)
 
 **Sa demande, deux captures à l'appui :** *« lorsque je fais retour j'arrive sur
