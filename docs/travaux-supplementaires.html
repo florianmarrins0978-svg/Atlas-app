@@ -289,6 +289,30 @@
 <ul>
 <li><strong>Le titre du bloc ne porte que « Travaux supplémentaires »</strong>, en doré, sur l'écran comme sur le PDF. La mention « acceptés par SMS » qui le suivait est partie avec la trace d'accord.</li>
 </ul>
+<h3 id="sa-question-du-1ᵉʳ-septembre-01-h-25--les-ts-peuvent-ils-avoir-une-autre-tva-">Sa question du 1ᵉʳ septembre, 01 h 25 : les TS peuvent-ils avoir une autre TVA ?</h3>
+<p><em>« Est-il possible que les TS n'aient pas la même TVA ? Je pense que oui, donc il faut rajouter la possibilité de modifier la TVA juste pour les TS. »</em></p>
+<p><strong>Oui — et c'est plus grave qu'un confort.</strong> Un paysagiste facture à trois taux :</p>
+<div class="tablewrap"><table><thead><tr>
+<th>Taux</th>
+<th>Quoi</th>
+</tr></thead><tbody>
+<tr>
+<td><strong>5,5 %</strong></td>
+<td>entretien du jardin rendu comme service à la personne</td>
+</tr>
+<tr>
+<td><strong>10 %</strong></td>
+<td>travaux sur un logement achevé depuis plus de deux ans</td>
+</tr>
+<tr>
+<td><strong>20 %</strong></td>
+<td>création, terrasse, clôture, et tout client professionnel</td>
+</tr>
+</tbody></table></div>
+<p>Le devis peut donc être à 10 % et le supplément à 20 % : une haie taillée, puis une terrasse posée, ce n'est pas le même taux.</p>
+<p><strong>L'article 268 bis du CGI tranche le reste : une facture qui ne ventile pas ses taux est taxée EN ENTIER au taux le plus élevé.</strong> Un supplément à 20 % noyé dans une facture à 10 % ne coûte pas dix points sur le supplément — il fait passer <strong>toute</strong> la facture à 20 %, à la charge de l'artisan.</p>
+<p>D'où, dans la planche : <strong>le taux se choisit à la ligne</strong> (20 / 10 / 5,5), et les totaux portent <strong>une ligne de TVA par taux réellement employé</strong>, avec le socle sur lequel elle porte. Le PDF fait de même — sans quoi la ventilation ne prouve rien : c'est le document qui compte, pas l'écran.</p>
+<p><strong>Ce que cela impose au code, et il faut le savoir avant de commencer :</strong> le taux vit aujourd'hui sur la FACTURE (<code>factures.tauxTva</code>), pas sur la ligne. Il devra descendre sur <code>lignes_facture</code>, et les totaux se recalculer par taux — le relevé de TVA compris.</p>
 <h3 id="sa-question-du-1ᵉʳ-septembre--où-se-remplit-le-formulaire-">Sa question du 1ᵉʳ septembre : où se remplit le formulaire ?</h3>
 <p><em>« Lorsqu'il clique sur ajouter des TS, le mieux c'est que la facture s'ouvre et qu'il la modifie directement, puis une fois validé il revient sur la page de la facture prête à envoyer avec les TS ajoutés. Ou alors on fait un encadré qui se déroule sous le "ajouter des TS" — mais du coup la page ne tiendra plus sur une seule page. »</em></p>
 <p>Les deux formes sont sur la planche, en interrupteur, sur les mêmes chiffres.</p>
@@ -305,7 +329,8 @@
 <td>le total et le bouton d'envoi sont poussés hors de l'écran au moment précis où on les regarde — c'est ce qu'il a lui-même vu</td>
 </tr>
 </tbody></table></div>
-<p><strong>Avis donné : l'écran à part.</strong> Le reste attend son choix.</p>
+<p><strong>Avis donné : l'écran à part. IL A CHOISI L'AUTRE</strong> — <em>« code la mienne, déroule sous le bouton »</em> (1ᵉʳ septembre, 01 h 25). C'est sa décision, elle est prise en connaissance du défaut qu'il avait lui-même relevé, et la planche ne garde plus que cette forme : une planche qui conserve l'option écartée fait rechoisir à chaque fois.</p>
+<p><strong>Et tous les boutons s'alignent sur « Envoyer la facture »</strong>, qui est le bouton de référence : le bouton d'ajout vit désormais dans une plage, comme le canal d'envoi. Mesuré, pas jugé à l'œil — même x, même largeur, au dixième de pixel. Les raccourcis de prestations sont retirés.</p>
 <p>La planche : <code>appli/ts-sur-la-facture.html</code>, calquée sur sa facture F2026-000001.</p>
 <hr>
 <p><em>Sources métier :</em> <a href="https://vite-un-avocat.fr/travaux-supplementaires-non-prevus-au-devis/" target="_blank" rel="noopener">Article 1793 et travaux supplémentaires</a> · <a href="https://elige-avocats.com/le-client-est-il-en-droit-de-refuser-de-payer-les-travaux-supplementaires/" target="_blank" rel="noopener">Refus de payer sans avenant</a> · <a href="https://www.why.eu/facturation-travaux-supplementaires/" target="_blank" rel="noopener">Avenant, OS et prix nouveaux</a> · <a href="https://www.habitatpresto.com/pro/conseils/juridique/travaux-supplementaires-sans-avenant-ecrit-refus-paiement" target="_blank" rel="noopener">Travaux sans avenant écrit</a> · <a href="https://www.habitatpresto.com/pro/conseils/administratif-fiscalite/bon-pour-accord" target="_blank" rel="noopener">Le « bon pour accord »</a> · <a href="https://www.courtierentravaux.org/quand-et-comment-faire-un-avenant-au-devis/" target="_blank" rel="noopener">Quand et comment faire un avenant</a></p>

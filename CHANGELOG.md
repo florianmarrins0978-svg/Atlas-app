@@ -125,6 +125,11 @@ Un défaut trouvé au passage, et noté dans `TODO.md` : une facture déjà en
 brouillon ignore silencieusement un devis plus récent (`factures.ts:102`) — le
 supplément disparaît sans un mot à l'écran.
 
+Sa forme est choisie le 1ᵉʳ septembre — le formulaire se déroule sous le bouton
+—, et sa question sur la TVA a trouvé une réponse qui pèse : **une facture qui
+ne ventile pas ses taux est taxée en entier au taux le plus élevé** (article
+268 bis du CGI). Le taux se choisit donc à la ligne, et les totaux le ventilent.
+
 Puis trois planches à essayer, liées depuis `appli/essais.html` :
 `ts-bon-sur-place.html` (la signature au doigt, tracé réel),
 `ts-avenant.html` (une facture ou deux, et les lignes en moins),
