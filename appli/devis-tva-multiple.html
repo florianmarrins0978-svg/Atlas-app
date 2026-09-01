@@ -57,7 +57,9 @@
   .col{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:var(--muted)}
   .col.d{text-align:right}
   .ligne{display:grid;grid-template-columns:1fr 70px 130px 130px;gap:12px;padding:12px 0;border-bottom:1px solid var(--lineSoft);align-items:start}
-  .ligne .desc{font-size:16px;line-height:1.45}
+  /* `pretty` évite le mot seul en fin de description — « hauteur 1,80 m »
+     laissait le « m » tout seul sur la ligne suivante. */
+  .ligne .desc{font-size:16px;line-height:1.45;text-wrap:pretty}
   .ligne .n{font-size:16px;text-align:right}
   @media(max-width:640px){
     .cols{display:none}
