@@ -131,10 +131,11 @@
 </tbody></table></div>
 <h2 id="ce-qui-a-été-dit-et-qui-était-faux">Ce qui a été dit et qui était faux</h2>
 <a class="retour" href="#sommaire">↑ Sommaire</a>
-<p><strong>Deux corrections à écrire noir sur blanc :</strong></p>
+<p><strong>Trois corrections à écrire noir sur blanc :</strong></p>
 <ol>
 <li><strong>Le premier contrôle du centime résiduel ne prouvait rien.</strong> Il posait trois bases à 100 € avec 33,33 % : ça fait 99,99 €, soit trois fois 33,33 exactement — aucun reste à répartir. Le contrôle passait au vert sans rien éprouver. Il a fallu des centimes qui ne se divisent pas (3,02 € à 33,33 %) pour qu'il morde.</li>
 <li><strong>Deux contrôles ont rougi sur du code juste.</strong> Ils cherchaient le libellé d'une ligne dans le texte de la page — or une description est une zone de saisie, dont le contenu n'est jamais dans le texte rendu. La base était parfaite ; c'est le contrôle qui regardait au mauvais endroit.</li>
+<li><strong>Le bouton « Annuler » de la feuille était carré</strong>, avec le rayon repris de la maquette. Ta règle du 12 août — la même forme partout — est tenue par un contrôle du dépôt, qui l'a attrapé. La maquette a été corrigée aussi : une planche qui montre autre chose que l'écran ne sert plus de référence.</li>
 </ol>
 <h2 id="ce-qui-a-été-éprouvé">Ce qui a été éprouvé</h2>
 <a class="retour" href="#sommaire">↑ Sommaire</a>
@@ -155,6 +156,10 @@
 <td><strong>20 / 20</strong>, jouées par groupes</td>
 </tr>
 <tr>
+<td>l'appui long</td>
+<td>éprouvé par un vrai appui maintenu dans un navigateur</td>
+</tr>
+<tr>
 <td>connexion derrière un proxy</td>
 <td>✅</td>
 </tr>
@@ -168,12 +173,34 @@
 </tr>
 </tbody></table></div>
 <p><strong>Ce qui n'a PAS pu être éprouvé ici, et il faut le dire :</strong> la batterie navigateur <strong>complète</strong> (124 suites d'affilée) ne tient pas dans ce conteneur — le serveur s'arrête vers la troisième suite, et le journal noyau dit « out of memory ». Les suites passent toutes une par une ou par groupes de cinq ; le runner lui-même propose ce découpage. Ce n'est pas un rouge du produit, mais je ne peux pas te rendre un vert de batterie complète depuis ce poste.</p>
-<h2 id="deux-choses-restent-ouvertes-et-elles-te-reviennent">Deux choses restent ouvertes, et elles te reviennent</h2>
+<h2 id="les-deux-points-ouverts-sont-tranchés">Les deux points ouverts sont tranchés</h2>
 <a class="retour" href="#sommaire">↑ Sommaire</a>
 <ol>
-<li><strong>Le sous-total HT par catégorie</strong> — je l'ai gardé. Il te permet, et permet à ton client, de vérifier d'où sort chaque ligne de TVA. Ça fait deux lignes de plus sur le devis. <strong>Dis-moi si tu préfères l'enlever.</strong></li>
-<li><strong>Déplacer une ligne déjà écrite d'une TVA à l'autre.</strong> Aujourd'hui il faut la retirer et la réécrire dans la bonne catégorie. <strong>Dis-moi ce que tu veux</strong> : un appui long sur la ligne, ou un petit bouton qui la fait basculer.</li>
+<li><strong>Le sous-total HT est gardé</strong>, tu l'as vu et validé.</li>
+<li><strong>Déplacer une ligne : l'appui long</strong>, comme tu l'as choisi. C'est codé.</li>
 </ol>
+<h3 id="lappui-long-en-détail">L'appui long, en détail</h3>
+<p>Un appui d'une demi-seconde sur une ligne la soulève, puis la feuille monte du bas : les autres catégories, plus « vers une TVA 5,5 % » qui en ouvre une de plus sans avoir à fermer.</p>
+<p><strong>Ce que la maquette a corrigé avant que ce soit codé :</strong> la ligne déplacée rejoint la FIN de son nouveau groupe. Sans ça, déplacer la première ligne du devis faisait remonter toute sa catégorie au-dessus de l'autre — on croyait avoir bougé le tableau entier.</p>
+<p><strong>Trois réglages, chacun pour éviter une gêne :</strong></p>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th></th>
+</tr></thead><tbody>
+<tr>
+<td>une demi-seconde</td>
+<td>en dessous, un doigt qui hésite ouvre la feuille tout seul</td>
+</tr>
+<tr>
+<td>le doigt qui glisse annule</td>
+<td>sinon tu ne peux plus faire défiler la page en partant d'une ligne</td>
+</tr>
+<tr>
+<td>les champs de saisie sont épargnés</td>
+<td>l'appui long y sert à sélectionner et copier, ça reste au téléphone</td>
+</tr>
+</tbody></table></div>
+<p>Sur un devis à un seul taux, l'appui long ne fait rien : une feuille ouverte sur un seul choix ferait croire à un geste cassé.</p>
 <h2 id="un-défaut-du-dépôt-trouvé-au-passage">Un défaut du dépôt trouvé au passage</h2>
 <a class="retour" href="#sommaire">↑ Sommaire</a>
 <p><code>monter-base-locale.sh</code> démarre Redis mais <strong>n'exporte pas <code>REDIS_URL</code></strong>. Sans elle, toutes les suites navigateur tombent à partir de la deuxième, sur un « dépassement de délai » qui accuse le formulaire de connexion alors qu'il va très bien. C'est noté dans <code>TODO.md</code> avec le correctif.</p>

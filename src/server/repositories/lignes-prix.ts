@@ -364,3 +364,51 @@ export async function retirerCategorieTva(
     }
   });
 }
+
+/**
+ * Déplacer UNE ligne d'une catégorie de TVA à l'autre — son appui long.
+ *
+ * **La ligne rejoint la FIN de son nouveau groupe, et ce n'est pas un détail.**
+ * L'ordre des catégories suit celui des lignes : sans ce déplacement de rang,
+ * déplacer la PREMIÈRE ligne du devis faisait remonter toute sa nouvelle
+ * catégorie au-dessus de l'autre — on croyait avoir bougé le tableau entier
+ * alors qu'on n'avait bougé qu'une ligne. Trouvé en JOUANT la planche
+ * (`appli/devis-tva-deplacer-ligne.html`), avant d'écrire ce code.
+ *
+ * **Vers le taux du devis, on écrit `null`** plutôt que la valeur : c'est ce que
+ * porte la catégorie d'accueil, et ce que `retirerCategorieTva` y remet. Deux
+ * façons d'être « au taux du devis » se seraient mises à diverger le jour où il
+ * change ce taux — les lignes marquées « 20.00 » y seraient restées pendant que
+ * les nulles suivaient.
+ */
+export async function deplacerLigneVersCategorie(
+  ctx: Ctx,
+  ligneId: string,
+  taux: string,
+  tauxDuDevis: string
+) {
+  const vise = new Decimal(taux).toFixed(2);
+  const versLAccueil = new Decimal(tauxDuDevis).toFixed(2) === vise;
+
+  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    const [ligne] = await tx.select().from(lignesPrix).where(eq(lignesPrix.id, ligneId)).limit(1);
+    if (!ligne) return null;
+
+    const soeurs = await tx
+      .select()
+      .from(lignesPrix)
+      .where(eq(lignesPrix.chantierId, ligne.chantierId));
+    const dernier = soeurs.reduce((max, l) => Math.max(max, l.ordre), 0);
+
+    const [row] = await tx
+      .update(lignesPrix)
+      .set({
+        tauxTva: versLAccueil ? null : vise,
+        ordre: dernier + 1,
+        updatedAt: new Date(),
+      })
+      .where(eq(lignesPrix.id, ligneId))
+      .returning();
+    return row ?? null;
+  });
+}

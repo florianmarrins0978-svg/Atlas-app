@@ -220,6 +220,103 @@ async function main() {
     assert.equal(rows[0].total_ttc, "3102.48");
   });
 
+  await cas("L'APPUI LONG déplace une ligne d'une TVA à l'autre — son geste", async () => {
+    // **Éprouvé par le doigt, pas par l'action.** Le 28 août 2026, six gestes
+    // ont été livrés verts et aucun atteignable parce que les contrôles
+    // entraient par une porte de service (`CLAUDE.md` §5 quater). Ici on presse
+    // vraiment, on tient, et on regarde si la feuille monte.
+    const cible = page.locator('textarea[aria-label*="escription"]').nth(2);
+    await cible.scrollIntoViewIfNeeded();
+    const boite = (await cible.boundingBox())!;
+    // Sous le champ : l'appui long épargne délibérément les zones de saisie,
+    // où le geste appartient au téléphone (sélection, copier-coller).
+    await page.mouse.move(boite.x + boite.width / 2, boite.y + boite.height + 26);
+    await page.mouse.down();
+    await page.waitForTimeout(800);
+    await page.mouse.up();
+    await page.waitForTimeout(600);
+
+    const feuille = page.getByText("Déplacer cette ligne");
+    assert.equal(await feuille.count(), 1, "l'appui long n'a pas ouvert la feuille");
+    // On la REGARDE : une feuille juste au test peut être illisible à l'écran.
+    await page.addStyleTag({ content: "nextjs-portal, #__next-build-watcher { display: none !important; }" });
+    await page.screenshot({ path: "/tmp/atlas-captures/devis-tva-appui-long.png" });
+
+    // La feuille ne propose pas la catégorie où la ligne se trouve déjà.
+    const vers20 = page.getByRole("button", { name: /Vers la TVA 20 %/ });
+    assert.equal(await vers20.count(), 1, "la feuille ne propose pas l'autre catégorie");
+    await vers20.click();
+    await page.waitForTimeout(1400);
+
+    // **Elle a rejoint la FIN du groupe à 20 %, pas son début** — sans quoi
+    // déplacer la première ligne ferait remonter toute une catégorie.
+    for (const essai of [1, 2, 3, 4]) {
+      await page.goto(`${url}/devis-complet`, { waitUntil: "networkidle" });
+      if ((await libellesAffiches())[2] === "Charmille en motte") break;
+      await page.waitForTimeout(essai * 500);
+    }
+    const apres = await libellesAffiches();
+    assert.deepEqual(
+      apres,
+      ["Taille de haie de charmille", "Évacuation des déchets verts", "Charmille en motte", "Terreau de plantation"],
+      "la ligne déplacée n'est pas à la fin de sa nouvelle catégorie"
+    );
+
+    // Et les totaux ont suivi : 2 570,00 à 20 %, 106,80 à 10 %.
+    const t = (await totaux().innerText()).replace(/\s/g, " ");
+    assert.match(t, /514,00/, `la TVA à 20 % n'a pas suivi le déplacement :\n${t}`);
+    assert.match(t, /10,68/, `la TVA à 10 % n'a pas suivi le déplacement :\n${t}`);
+
+    // On remet la ligne où elle était, pour que le cas suivant retrouve ses deux
+    // catégories — un contrôle ne doit pas laisser l'état d'un autre en ruine.
+    await page.locator('textarea[aria-label*="escription"]').nth(2).scrollIntoViewIfNeeded();
+    const b2 = (await page.locator('textarea[aria-label*="escription"]').nth(2).boundingBox())!;
+    await page.mouse.move(b2.x + b2.width / 2, b2.y + b2.height + 26);
+    await page.mouse.down();
+    await page.waitForTimeout(800);
+    await page.mouse.up();
+    await page.waitForTimeout(600);
+    await page.getByRole("button", { name: /Vers la TVA 10 %/ }).click();
+    await page.waitForTimeout(1400);
+    await page.goto(`${url}/devis-complet`, { waitUntil: "networkidle" });
+  });
+
+  await cas("un appui long sur un devis à UN SEUL taux n'ouvre rien", async () => {
+    // Une feuille qui s'ouvrirait sur un seul choix — celui où la ligne est
+    // déjà — ferait croire à un geste cassé.
+    const p2 = await contexte.newPage();
+    await p2.goto(`${BASE}/login`, { waitUntil: "networkidle" });
+    await p2.fill('input[name="email"]', "demo@atlas.local");
+    await p2.fill('input[name="password"]', "demo1234");
+    await p2.click('button[type="submit"]');
+    await p2.waitForURL(`${BASE}/`, { timeout: 30_000 });
+    await p2.goto(`${BASE}/chantiers/nouveau`, { waitUntil: "networkidle" });
+    await p2.fill('input[placeholder="Bernard"]', `Mme UnSeulTaux ${Date.now()}`);
+    await creerPuisFiche(p2);
+    await p2.waitForURL(/\/chantiers\/[0-9a-f-]{36}/, { timeout: 30_000 });
+    const u2 = p2.url();
+    await p2.goto(`${u2}/devis-complet`, { waitUntil: "networkidle" });
+    await p2.click('button:has-text("Ajouter une ligne")');
+    await p2.waitForTimeout(1200);
+    const z = p2.locator('textarea[aria-label*="escription"]').first();
+    await z.fill("Élagage");
+    await p2.keyboard.press("Tab");
+    await p2.waitForTimeout(600);
+
+    const boite = (await z.boundingBox())!;
+    await p2.mouse.move(boite.x + boite.width / 2, boite.y + boite.height + 26);
+    await p2.mouse.down();
+    await p2.waitForTimeout(900);
+    await p2.mouse.up();
+    await p2.waitForTimeout(500);
+    assert.equal(
+      await p2.getByText("Déplacer cette ligne").count(),
+      0,
+      "la feuille s'ouvre alors qu'il n'y a nulle part où déplacer"
+    );
+    await p2.close();
+  });
+
   await cas("RETIRER la catégorie ne supprime pas ses lignes", async () => {
     // La faute à ne pas commettre : il retire une TVA posée par erreur et perd
     // le travail qu'il venait de chiffrer, sans un mot.

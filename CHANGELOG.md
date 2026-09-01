@@ -9,6 +9,30 @@ Format : le plus récent en tête.
 
 ## 2026-09-01
 
+### Déplacer une ligne d'une TVA à l'autre — appui long
+
+**Son choix**, entre les deux chemins proposés : *« un appui long »*. Le geste a
+été dessiné et joué avant d'être codé (`appli/devis-tva-deplacer-ligne.html`).
+
+Un appui d'une demi-seconde sur une ligne la soulève, puis la feuille de la
+maison monte du bas avec les autres catégories — plus « vers une TVA 5,5 % »,
+qui en ouvre une de plus sans avoir à fermer.
+
+**Ce que la planche a corrigé avant le code :** la ligne déplacée rejoint la FIN
+de son nouveau groupe. Sans ce rang, déplacer la première ligne du devis faisait
+remonter toute sa catégorie au-dessus de l'autre — on croyait avoir bougé le
+tableau entier.
+
+**Trois réglages qui évitent chacun une panne :** 500 ms (en dessous, un doigt
+qui hésite ouvre la feuille) ; annulation au-delà de 10 px de glissement (sinon
+on ne peut plus faire défiler la page en partant d'une ligne) ; et les champs de
+saisie sont épargnés — l'appui long y appartient au téléphone.
+
+Le geste ne s'arme pas sur un devis à un seul taux : une feuille ouverte sur un
+seul choix ferait croire à un geste cassé.
+
+Éprouvé par un vrai appui maintenu dans un navigateur (`test-tva-multiple-e2e.ts`).
+
 ### Plusieurs TVA sur un même devis
 
 **Sa question :** *« si j'ai de la main d'œuvre TVA à 20 et des plantes TVA à

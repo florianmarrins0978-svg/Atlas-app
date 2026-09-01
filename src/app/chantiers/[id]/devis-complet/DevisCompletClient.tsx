@@ -25,6 +25,8 @@ import {
 } from "@/lib/reduction-devis";
 import DicterDansLeDevis from "./DicterDansLeDevis";
 import BoutonAssistant from "@/components/atlas/BoutonAssistant";
+import BottomSheet from "@/components/atlas/BottomSheet";
+import { useAppuiLong } from "@/components/atlas/useAppuiLong";
 import PrimaryButton from "@/components/atlas/PrimaryButton";
 import EnvoiAuClient from "../export/EnvoiAuClient";
 import { ouvrirLaMessagerie } from "@/lib/ouvrir-messagerie";
@@ -41,6 +43,7 @@ import {
   ajouterCategorieTvaAction,
   changerTauxCategorieAction,
   retirerCategorieTvaAction,
+  deplacerLigneVersTvaAction,
 } from "./actions";
 
 // **Le devis, seul sur sa page — et à l'image du papier.**
@@ -161,6 +164,18 @@ export default function DevisCompletClient(props: Props) {
    * `CLAUDE.md` §3 interdit.
    */
   const [feuilleOuverte, setFeuilleOuverte] = useState(false);
+
+  /**
+   * La ligne qu'un appui long vient de saisir, et celle qui se soulève.
+   *
+   * **Deux états et non un** : `saisie` s'allume dès que le doigt se pose et
+   * s'éteint au relâchement — c'est le retour du geste, sans lui on ne sait pas
+   * que l'appui a été compris. `aDeplacer` ne s'allume qu'au bout des 500 ms,
+   * et c'est elle qui ouvre la feuille.
+   */
+  const [ligneSaisie, setLigneSaisie] = useState<string | null>(null);
+  const [aDeplacer, setADeplacer] = useState<Ligne | null>(null);
+  const appuiLong = useAppuiLong();
 
   const [emetteur, setEmetteur] = useState(props.emetteur);
   const [client, setClient] = useState(props.client);
@@ -287,6 +302,17 @@ export default function DevisCompletClient(props: Props) {
   // un titre « TVA 20 % » au-dessus d'un tableau qui n'a qu'un taux serait du
   // bruit sur tous ses devis (`CLAUDE.md` §3, le moins de mots possible).
   const plusieursTva = categories.length > 1;
+  /**
+   * Le taux proposé quand il ouvre une catégorie de plus.
+   *
+   * **10 % d'abord, et ce n'est pas un chiffre au hasard** : c'est l'exemple
+   * qu'il a donné deux fois, et le taux des végétaux qu'il achète. Les suivants
+   * sont les autres taux français usuels. Calculé une seule fois — « Ajouter une
+   * TVA » et la feuille de déplacement doivent proposer LE MÊME, sinon le même
+   * geste ouvre deux catégories différentes selon la porte empruntée.
+   */
+  const tauxNeuf =
+    ["10.00", "5.50", "20.00", "0.00"].find((t) => !categories.some((c) => c.taux === t)) ?? "10.00";
 
   function majLigneLocale(id: string, champ: keyof Ligne, valeur: string) {
     setLignes((cur) => cur.map((l) => (l.id === id ? { ...l, [champ]: valeur } : l)));
@@ -391,8 +417,7 @@ export default function DevisCompletClient(props: Props) {
    * une liste de taux aurait fait un écran de plus avant le premier mot écrit.
    */
   async function ajouterUneTva() {
-    const dejaPris = categories.map((c) => c.taux);
-    const propose = ["10.00", "5.50", "20.00", "0.00"].find((t) => !dejaPris.includes(t)) ?? "10.00";
+    const propose = tauxNeuf;
     const creee = await ajouterCategorieTvaAction(props.chantierId, propose);
     if (!creee) return;
     setLignes((cur) => [
@@ -419,6 +444,28 @@ export default function DevisCompletClient(props: Props) {
       )
     );
     await changerTauxCategorieAction(props.chantierId, ancien, nouveau, tauxDuDevis);
+  }
+
+  /**
+   * Déplacer la ligne saisie vers une autre TVA — ce que son appui long ouvre.
+   *
+   * **Elle rejoint la FIN de son nouveau groupe**, comme sur la planche : sans
+   * cela, déplacer la première ligne du devis fait remonter toute sa nouvelle
+   * catégorie au-dessus de l'autre, et l'on croit avoir bougé le tableau entier.
+   */
+  async function deplacerVers(taux: string) {
+    const ligne = aDeplacer;
+    setADeplacer(null);
+    if (!ligne) return;
+    const propre = tauxTvaValide(taux);
+    if (propre === null) return;
+    const versLAccueil = propre === tauxDuDevis;
+
+    setLignes((cur) => [
+      ...cur.filter((l) => l.id !== ligne.id),
+      { ...ligne, tauxTva: versLAccueil ? null : propre },
+    ]);
+    await deplacerLigneVersTvaAction(ligne.id, propre, tauxDuDevis);
   }
 
   /**
@@ -772,7 +819,24 @@ export default function DevisCompletClient(props: Props) {
           >
           <div
             className="grid w-full gap-2 py-3 sm:grid-cols-[1fr_70px_130px_130px] sm:items-start sm:gap-3"
-            style={{ borderBottom: `1px solid ${colors.lineSoft}` }}
+            style={{
+              borderBottom: `1px solid ${colors.lineSoft}`,
+              // Le retour du geste : la ligne se soulève PENDANT l'appui, avant
+              // que la feuille s'ouvre. Sans lui, on ne sait pas que l'appui a
+              // été compris, et on relâche trop tôt.
+              backgroundColor: ligneSaisie === l.id ? colors.rustTint : undefined,
+              transform: ligneSaisie === l.id ? "scale(0.99)" : undefined,
+              borderRadius: ligneSaisie === l.id ? 6 : undefined,
+              transition: "background-color .18s, transform .18s",
+            }}
+            {...appuiLong.pour(() => setADeplacer(l), {
+              // **Rien à proposer tant qu'il n'a qu'une TVA** : une feuille qui
+              // s'ouvrirait sur un seul choix — celui où la ligne est déjà —
+              // ferait croire à un geste cassé. Et un devis parti ne se retouche
+              // plus, comme le reste de cet écran.
+              actif: plusieursTva && !fige,
+              onEtat: (enCours) => setLigneSaisie(enCours ? l.id : null),
+            })}
           >
             {/* La ligne principale réunit plusieurs travaux, un par ligne
                 (« abattage / broyage / évacuation »). Compter les retours à la
@@ -1117,6 +1181,66 @@ export default function DevisCompletClient(props: Props) {
           récapitulatif ; c'est le même composant, ouvert plus tôt. Après
           l'envoi, on mène à l'écran du devis parti — c'est lui qui porte le
           lien à transmettre au client, et il n'a pas bougé. */}
+      {/* ─── La feuille de l'appui long ──────────────────────────────────
+          Sa demande du 1ᵉʳ septembre 2026 : déplacer une ligne d'une TVA à
+          l'autre par un appui long. La feuille est celle de la maison
+          (`BottomSheet`) — en écrire une seconde aurait donné deux tiroirs à
+          tenir d'accord sur les mêmes écrans (`CLAUDE.md` §3). */}
+      <BottomSheet open={aDeplacer !== null} onBackdropClick={() => setADeplacer(null)}>
+        <h2 className="text-[17px] font-semibold" style={{ color: colors.ink }}>
+          Déplacer cette ligne
+        </h2>
+        {/* Le libellé rappelle CE QU'ON DÉPLACE : sur un devis de dix lignes,
+            une feuille anonyme ne dit pas laquelle le doigt a saisie. */}
+        <p className="mt-0.5 text-[14px]" style={{ color: colors.muted }}>
+          {aDeplacer?.libelle?.split("\n")[0] || "Ligne sans description"}
+        </p>
+
+        <div className="mt-4">
+          {categories
+            .map((c) => c.taux)
+            .filter((t) => t !== tauxDeLaLigne({ tauxTva: aDeplacer?.tauxTva ?? null }, tauxDuDevis))
+            .map((taux) => (
+              <button
+                key={taux}
+                type="button"
+                onClick={() => void deplacerVers(taux)}
+                className="block w-full py-4 text-left text-[17px]"
+                style={{ borderTop: `1px solid ${colors.lineSoft}`, color: colors.ink }}
+              >
+                Vers la <span className="font-semibold">TVA {tauxLisible(taux)} %</span>
+              </button>
+            ))}
+
+          {/* **Une catégorie de plus, depuis la feuille.** Sans elle, déplacer
+              une ligne vers un taux qui n'existe pas encore obligerait à fermer,
+              ajouter la TVA, puis recommencer le geste. */}
+          <button
+            type="button"
+            onClick={() => void deplacerVers(tauxNeuf)}
+            className="block w-full py-4 text-left text-[17px]"
+            style={{ borderTop: `1px solid ${colors.lineSoft}`, color: colors.ink }}
+          >
+            Vers une <span className="font-semibold">TVA {tauxLisible(tauxNeuf)} %</span>
+            <span className="mt-0.5 block text-[13px]" style={{ color: colors.muted }}>
+              une catégorie de plus s&apos;ouvre
+            </span>
+          </button>
+        </div>
+
+        <button
+          type="button"
+          onClick={() => setADeplacer(null)}
+          // `rounded-full` : sa règle du 12 août 2026, la même forme partout.
+          // Un rayon de 10 px avait été repris de la planche — mais une planche
+          // n'est pas tenue par `test-boutons-arrondis.ts`, et l'écran l'est.
+          className="mt-4 w-full rounded-full py-3.5 text-[15px] font-semibold"
+          style={{ backgroundColor: colors.rustTint, color: colors.rust }}
+        >
+          Annuler
+        </button>
+      </BottomSheet>
+
       <EnvoiAuClient
         chantierId={props.chantierId}
         devisId={props.devisId}

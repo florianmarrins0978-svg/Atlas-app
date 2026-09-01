@@ -34,6 +34,7 @@ mets toutes mes lignes qui seront en TVA à 10 »*.
 | une catégorie | porte autant de lignes qu'il veut, et son sous-total HT |
 | les totaux | une ligne de TVA par catégorie |
 | le « − » | retire la catégorie ; **ses lignes reviennent**, elles ne meurent pas |
+| **appui long** sur une ligne | la déplace vers une autre TVA — son choix du 1ᵉʳ sept. |
 
 Le taux vit sur la ligne (migration 0073, nul = suit le devis) et voyage jusqu'à
 la facture émise. Le prix accordé au client se répartit au prorata entre les

@@ -72,7 +72,7 @@ Les trois étaient verts au typage et aux suites. Ils se sont vus à l'image.
 
 ## Ce qui a été dit et qui était faux
 
-**Deux corrections à écrire noir sur blanc :**
+**Trois corrections à écrire noir sur blanc :**
 
 1. **Le premier contrôle du centime résiduel ne prouvait rien.** Il posait trois
    bases à 100 € avec 33,33 % : ça fait 99,99 €, soit trois fois 33,33
@@ -83,6 +83,10 @@ Les trois étaient verts au typage et aux suites. Ils se sont vus à l'image.
    d'une ligne dans le texte de la page — or une description est une zone de
    saisie, dont le contenu n'est jamais dans le texte rendu. La base était
    parfaite ; c'est le contrôle qui regardait au mauvais endroit.
+3. **Le bouton « Annuler » de la feuille était carré**, avec le rayon repris de
+   la maquette. Ta règle du 12 août — la même forme partout — est tenue par un
+   contrôle du dépôt, qui l'a attrapé. La maquette a été corrigée aussi : une
+   planche qui montre autre chose que l'écran ne sert plus de référence.
 
 ## Ce qui a été éprouvé
 
@@ -91,6 +95,7 @@ Les trois étaient verts au typage et aux suites. Ils se sont vus à l'image.
 | types, lint, mémoire du dépôt | ✅ |
 | **suites base de données** | **302 / 302** |
 | **suites navigateur du domaine** (devis, facture, TVA, prix) | **20 / 20**, jouées par groupes |
+| l'appui long | éprouvé par un vrai appui maintenu dans un navigateur |
 | connexion derrière un proxy | ✅ |
 | la feuille imprimée | regardée : un taux, deux taux, trois taux sur deux pages |
 | l'écran | regardé sur téléphone, à deux catégories |
@@ -102,14 +107,32 @@ memory ». Les suites passent toutes une par une ou par groupes de cinq ; le
 runner lui-même propose ce découpage. Ce n'est pas un rouge du produit, mais je
 ne peux pas te rendre un vert de batterie complète depuis ce poste.
 
-## Deux choses restent ouvertes, et elles te reviennent
+## Les deux points ouverts sont tranchés
 
-1. **Le sous-total HT par catégorie** — je l'ai gardé. Il te permet, et permet à
-   ton client, de vérifier d'où sort chaque ligne de TVA. Ça fait deux lignes de
-   plus sur le devis. **Dis-moi si tu préfères l'enlever.**
-2. **Déplacer une ligne déjà écrite d'une TVA à l'autre.** Aujourd'hui il faut la
-   retirer et la réécrire dans la bonne catégorie. **Dis-moi ce que tu veux** :
-   un appui long sur la ligne, ou un petit bouton qui la fait basculer.
+1. **Le sous-total HT est gardé**, tu l'as vu et validé.
+2. **Déplacer une ligne : l'appui long**, comme tu l'as choisi. C'est codé.
+
+### L'appui long, en détail
+
+Un appui d'une demi-seconde sur une ligne la soulève, puis la feuille monte du
+bas : les autres catégories, plus « vers une TVA 5,5 % » qui en ouvre une de plus
+sans avoir à fermer.
+
+**Ce que la maquette a corrigé avant que ce soit codé :** la ligne déplacée
+rejoint la FIN de son nouveau groupe. Sans ça, déplacer la première ligne du
+devis faisait remonter toute sa catégorie au-dessus de l'autre — on croyait
+avoir bougé le tableau entier.
+
+**Trois réglages, chacun pour éviter une gêne :**
+
+| | |
+|---|---|
+| une demi-seconde | en dessous, un doigt qui hésite ouvre la feuille tout seul |
+| le doigt qui glisse annule | sinon tu ne peux plus faire défiler la page en partant d'une ligne |
+| les champs de saisie sont épargnés | l'appui long y sert à sélectionner et copier, ça reste au téléphone |
+
+Sur un devis à un seul taux, l'appui long ne fait rien : une feuille ouverte sur
+un seul choix ferait croire à un geste cassé.
 
 ## Un défaut du dépôt trouvé au passage
 

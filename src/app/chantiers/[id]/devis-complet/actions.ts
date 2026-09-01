@@ -13,6 +13,7 @@ import {
   listerLignesPrix,
   changerTauxCategorie,
   retirerCategorieTva,
+  deplacerLigneVersCategorie,
 } from "@/server/repositories/lignes-prix";
 import { noterRetenu } from "@/server/repositories/termes-metier";
 import { apprendrePrixGrille } from "@/server/services/apprendre-grille";
@@ -161,6 +162,24 @@ export async function changerTauxCategorieAction(
   const propre = tauxTvaValide(nouveau);
   if (propre === null) return;
   await changerTauxCategorie(ctx, chantierId, ancien, propre, tauxDuDevis);
+}
+
+/**
+ * Déplacer une ligne vers une autre TVA — ce que fait son appui long.
+ *
+ * Le taux est validé ici comme partout ailleurs : la feuille propose des taux
+ * connus, mais rien n'oblige un appel à passer par elle.
+ */
+export async function deplacerLigneVersTvaAction(
+  ligneId: string,
+  taux: string,
+  tauxDuDevis: string
+) {
+  const ctx = await getCurrentCtx();
+  await exigerGestionDevis(ctx, "déplacer une ligne du devis");
+  const propre = tauxTvaValide(taux);
+  if (propre === null) return null;
+  return deplacerLigneVersCategorie(ctx, ligneId, propre, tauxDuDevis);
 }
 
 /** La catégorie disparaît, ses lignes reviennent au taux du devis. */

@@ -9,6 +9,11 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
+## ~~Déplacer une ligne d'une TVA à l'autre~~ — FAIT le 1ᵉʳ septembre 2026
+
+Il a choisi l'appui long, et c'est codé. Le sous-total HT par catégorie est
+gardé, à sa demande.
+
 ## `monter-base-locale.sh` N'EXPORTE PAS `REDIS_URL` — et ça coûte une heure (1ᵉʳ sept. 2026)
 
 Le script démarre Redis mais laisse `REDIS_URL` vide. Or `CLAUDE.md` §5 la liste

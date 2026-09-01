@@ -29,6 +29,10 @@ même devis — par CATÉGORIE, jamais par ligne (c'est lui qui l'a tranché).
 4. **`totauxAvecReduction` rend toujours `parTaux`**, même à un seul taux. Ne
    pas rebrancher un calcul « simple » à côté : ce serait la seconde
    implémentation que `CLAUDE.md` §3 interdit.
+5. **L'appui long déplace une ligne** (`useAppuiLong`), et la ligne rejoint la
+   FIN de son nouveau groupe — sans ce rang, déplacer la première ligne fait
+   remonter toute sa catégorie. Le geste épargne les champs de saisie et ne
+   s'arme pas quand il n'y a qu'une TVA.
 
 **Trois défauts trouvés en REGARDANT, pas au test** — et c'est ce qui doit
 rester en tête :

@@ -20645,13 +20645,48 @@ recopie sur une comptabilité. Le titre se redessine maintenant en « TVA 10 %
 C'est la sixième fois dans ce dépôt qu'un défaut sort d'une image et d'aucun
 test (`CLAUDE.md` §5).
 
+### DÉPLACER une ligne : l'appui long, et le rang qui va avec
+
+Sa réponse du 1ᵉʳ septembre, entre les deux chemins proposés : **« un appui
+long »**. Le geste a été dessiné et JOUÉ avant d'être codé
+(`appli/devis-tva-deplacer-ligne.html`), et c'est en le jouant qu'un défaut de
+conception est apparu.
+
+**La ligne rejoint la FIN de son nouveau groupe.** L'ordre des catégories suit
+celui des lignes : sans déplacement de rang, déplacer la PREMIÈRE ligne du devis
+faisait remonter toute sa nouvelle catégorie au-dessus de l'autre — on croyait
+avoir bougé le tableau entier alors qu'on n'avait bougé qu'une ligne.
+`deplacerLigneVersCategorie` pose donc `ordre = max + 1`.
+
+**Trois réglages, et chacun évite une panne** (`useAppuiLong`) :
+
+| | |
+|---|---|
+| **500 ms** | en dessous, un doigt qui hésite ouvre la feuille sans l'avoir voulu ; au-dessus, on croit que rien ne répond |
+| **10 px** | sans annulation au glissement, on ne pourrait plus faire défiler la page en partant d'une ligne — et le tableau occupe tout l'écran |
+| **les champs sont épargnés** | l'appui long sur une zone de texte appartient au téléphone : sélectionner, copier, coller. Le confisquer casserait la saisie pour ajouter un geste |
+
+**Un seul appui à la fois, donc pas un hook par ligne.** Un doigt ne peut pas
+appuyer longuement sur deux lignes : l'état vit au niveau de la liste et
+`pour()` fabrique les gestionnaires. Un hook dans une boucle aurait de toute
+façon été refusé par React — et aurait laissé croire que deux appuis coexistent.
+
+**Le geste ne s'arme pas quand il n'y a qu'une TVA** : une feuille qui s'ouvrirait
+sur un seul choix — celui où la ligne se trouve déjà — ferait croire à un geste
+cassé.
+
+**Vers le taux du devis, on écrit `null`** et non la valeur : c'est ce que porte
+la catégorie d'accueil, et ce que `retirerCategorieTva` y remet. Deux façons
+d'être « au taux du devis » auraient divergé le jour où il change ce taux — les
+lignes marquées « 20.00 » y seraient restées pendant que les nulles suivaient.
+
 ### Ce qui l'éprouve
 
 | | |
 |---|---|
 | `test-tva-multiple.ts` | la règle pure — prorata, résidu, ordre, non-régression à un seul taux |
 | `test-tva-multiple-db.ts` | le parcours : devis → envoi → facture → émission, en LISANT la base des deux côtés |
-| `test-tva-multiple-e2e.ts` | **son geste** : un doigt sur « Ajouter une TVA », par la porte d'entrée (`CLAUDE.md` §5 quater) |
+| `test-tva-multiple-e2e.ts` | **ses gestes** : un doigt sur « Ajouter une TVA », et un vrai appui long maintenu — par la porte d'entrée (`CLAUDE.md` §5 quater) |
 | `capture-devis-tva-multiple.mts` | la feuille, regardée |
 
 **Un contrôle a su échouer, et sur mon propre calcul.** Le premier cas de résidu
