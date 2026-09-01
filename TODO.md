@@ -9,6 +9,29 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
+## `test-facture-e2e` ROUGIT LES PREMIERS JOURS D'UN MOIS — pas d'un lot (1ᵉʳ sept. 2026)
+
+Cas *« le chantier réalisé apparaît dans l'onglet Terminés »*, qui rend **« le
+chantier n'apparaît pas »**. **Vérifié sur `origin/main` tel quel** (commit
+`f03e112`, sans aucun lot), en rejouant le même groupe de six : il tombe
+pareil. Vert joué seul.
+
+**Le mécanisme, et il n'est pas dans le produit.** La suite pose son chantier à
+`CURRENT_DATE - 3`. Le 1ᵉʳ septembre, cela le range en **août** — pendant que
+les suites d'à côté, dans le même groupe, laissent des chantiers datés de
+**septembre**. « Terminés » s'ouvre alors sur septembre (le mois le plus récent
+qui porte quelque chose, `bornesDuFeuilletage`), et le chantier d'août est
+derrière la flèche ‹. Le 31 août, les deux tombaient dans le même mois : la
+suite était verte.
+
+**Ce n'est donc pas l'écran qui a un défaut, c'est la suite qui suppose que
+« il y a trois jours » et « aujourd'hui » sont le même mois.** Le remède, quand
+quelqu'un la reprendra : viser la ligne par son lien
+(`a[href="/chantiers/…/facture"]`) **depuis l'onglet « À facturer »**, qui
+ignore délibérément le mois affiché — la seconde moitié du cas le fait déjà.
+Ne pas « corriger » l'écran : son ouverture sur le mois le plus récent est une
+demande du patron du 22 août.
+
 ## ~~La date du chantier dans « Terminés »~~ — FAIT le 31 août 2026
 
 Sa demande du 31 août — *« changer le bouton FACTURER en À FACTURER, et à côté du
