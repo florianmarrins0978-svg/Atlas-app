@@ -731,7 +731,7 @@ export default function FactureClient({
                     data-atlas={`ts-taux-${tauxLisible(taux)}`}
                     aria-pressed={tsTaux === taux}
                     onClick={() => setTsTaux(taux)}
-                    className="flex-1 rounded-[4px] py-3 text-[14px]"
+                    className="flex-1 rounded-full py-3 text-[14px]"
                     style={{
                       color: tsTaux === taux ? colors.ink : colors.muted,
                       backgroundColor: tsTaux === taux ? colors.cream : "transparent",
