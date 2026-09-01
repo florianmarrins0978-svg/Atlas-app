@@ -18,6 +18,28 @@ ligne « fait » qui ne l'est pas coûte plus cher qu'une ligne absente.
 
 ---
 
+## « Terminés » porte la date du chantier, et la ligne dorée a maigri (31 août 2026)
+
+Sous le nom du client, l'écran écrit maintenant **la date du chantier puis le
+montant prévu** — « 12 août · 360,00 € prévus » —, et la capsule dit **« À
+FACTURER »**. « Pas encore facturé » n'existe plus : la capsule le disait déjà,
+sur la même ligne. Il a choisi la proposition B de
+`appli/termines-date-du-chantier.html`, puis : *« très bien, code-moi ça »*.
+
+| | |
+|---|---|
+| la règle | `libelleDateChantier` et `libelleEtatLigne`, dans `src/lib/termines-par-mois.ts` |
+| l'écran | `src/app/termines/ListeTermines.tsx` |
+| l'année | écrite **seulement si ce n'est pas celle du jour** — l'onglet « À facturer » mêle tous les mois |
+| sans date ni devis | **pas de deuxième ligne du tout** : ni tiret, ni phrase, ni « · » pendu |
+
+**Ce que la date EST, et il faut le savoir avant d'y toucher :** `datePlanifiee`,
+la date du planning — l'application n'en garde aucune autre. Un chantier clôturé
+sans être passé par le planning n'a donc pas de date. **Question ouverte, à
+lui :** faut-il saisir une vraie date de réalisation à la clôture ?
+
+---
+
 ## Il n'y a plus qu'une fiche client (31 août 2026)
 
 **Sa demande, deux captures à l'appui :** *« lorsque je fais retour j'arrive sur
@@ -33,16 +55,16 @@ Raisons : `ARCHITECTURE.md` §226.
 
 ---
 
-## EN ATTENTE : l'allure de la dictée — une planche, pas du code (31 août 2026)
+## FAIT : la dictée est une ligne, sans aucun aplat (31 août 2026)
 
-**Rien n'a bougé dans l'application**, et c'est l'état exact du produit : la
-dictée de la fiche chantier porte toujours son disque plein de 76 px, son rond
-d'envoi plein, sa pause, et le chrono et l'onde en dessous, chacun sur son axe.
+**C'est l'état du produit :** pendant qu'on dicte, la fiche porte une ligne fine
+— poubelle, chrono, onde, et un rond d'envoi creux cerclé de vert. Plus de
+disque plein, plus de pause. L'aplat sombre passe de 7 956 px² à 64.
 
-Il a choisi **la ligne** parmi les quatre allures de `appli/dictee-embellie.html`,
-puis l'a corrigée : plus de pause, et une touche d'envoi au fond de la page,
-encadrée de vert. `appli/dictee-la-ligne.html` porte ces corrections et pose la
-dernière question — **de combien la touche s'aplatit : A, B ou C.**
+Sa plainte du matin (*« ça dénature l'appli »*), quatre allures essayées, sa
+réponse : la ligne, avec le rond. Détail et pièges : `ARCHITECTURE.md` §228.
+**Le même dessin sert l'écran d'un chantier neuf**, qui porte le même
+composant.
 
 ---
 ## Le banc garde sa version rapide pendant qu'il bâtit la suivante (31 août 2026, soir)
@@ -206,6 +228,21 @@ pour les huit ; les deux suites existantes vérifiaient la présence des jetons 
 la lisibilité, jamais l'identité. Détail : `ARCHITECTURE.md` §218.
 
 ---
+
+## La connexion ne peut plus bouger (31 août 2026)
+
+**Sa demande :** *« la page connexion n'est pas fixe, elle peut bouger encore ;
+il ne faut pas qu'elle puisse bouger, aucun scroll possible »*.
+
+| | |
+|---|---|
+| la page | **figée** : ni défilement, ni élastique du navigateur |
+| le bandeau du banc | publie sa **vraie** hauteur (49 px, 66 sur écran étroit) au lieu des 40 écrits à la main |
+| ce qui en profite | les trois écrans figés — chantiers, envoi, connexion — cessent d'être 50 px trop hauts sur son banc |
+| ce qui reste | bandeau affiché, il manque 51 px : ils glissent dans une colonne intérieure plutôt que de cacher un bouton |
+
+Sans le bandeau — le produit, et son banc dès que la construction est finie —
+rien ne bouge d'un pixel. Le détail : `ARCHITECTURE.md` §227.
 
 ## Le planning garde deux ans de jours passés (31 août 2026)
 

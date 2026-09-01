@@ -191,9 +191,15 @@ export default async function RootLayout({
   //
   // **Et la hauteur du cadre en tient compte** (plus bas, `minHeight`).
   // `min-h-dvh` seul ajouterait la hauteur du bandeau à celle de l'écran et
-  // ferait défiler chaque page de quarante pixels — une barre de défilement que
-  // lui seul verrait, `scripts/test-aucune-barre-de-defilement-e2e.ts` ne
-  // tournant pas sous ce profil.
+  // ferait défiler chaque page d'autant — une barre de défilement que lui seul
+  // verrait, `scripts/test-aucune-barre-de-defilement-e2e.ts` ne tournant pas
+  // sous ce profil.
+  //
+  // **« D'autant », et plus « de quarante pixels » — 31 août 2026.** Ce nombre
+  // était écrit à la main, et faux : le bandeau mesure 49 px, et 66 sur un
+  // écran étroit où sa phrase passe à deux lignes. C'est ce qui poussait
+  // « Me déconnecter partout » sous la barre du bas (`ARCHITECTURE.md` §227).
+  // Il publie désormais sa hauteur lui-même.
   // `leBandeauDoitParler` et non `laVersionRapideSeConstruit` : le banc sert
   // désormais la version rapide PRÉCÉDENTE pendant qu'il bâtit la neuve, et
   // `NODE_ENV` y vaut alors `production`. Le second test répondrait « non »
@@ -281,7 +287,13 @@ export default async function RootLayout({
           <FournisseurAssistant disponible={!!role && peutUtiliserLAssistant(role)}>
             <div
               className="mx-auto flex max-w-md flex-col bg-paper"
-              style={{ minHeight: banc ? "calc(100dvh - 40px)" : "100dvh" }}
+              // **Plus aucun nombre écrit à la main ici — 31 août 2026.**
+              // C'était `calc(100dvh - 40px)` pour un bandeau qui en mesure 48,
+              // et qui grandit encore avec sa barre de progression. Le bandeau
+              // publie désormais sa hauteur (`--atlas-bandeau`, remise à zéro
+              // quand il s'efface) : une seule source, et elle suit ce qui est
+              // vraiment à l'écran.
+              style={{ minHeight: "calc(100dvh - var(--atlas-bandeau))" }}
             >
             {/* `atlas-contenu` réserve la hauteur de la barre, indicateur
                 d'accueil compris (voir globals.css) : sans navigation, cette

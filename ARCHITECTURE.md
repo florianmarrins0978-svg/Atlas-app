@@ -19532,7 +19532,7 @@ en-tête rallongé — cogner la colonne voisine — a été mesuré : 85 points
 
 ## 221. Un devis sans client : le retour mène à la fiche client, et le chemin se referme
 
-> **Sa moitié de règle a été étendue à tous les devis le soir même — voir §228.**
+> **Sa moitié de règle a été étendue à tous les devis le soir même — voir §230.**
 > Ce qui suit reste vrai du chemin, de la provenance et de ses refus ; seule la
 > condition `clientId === null` est tombée.
 
@@ -19575,7 +19575,7 @@ au-delà de ce lot : **regarder ce qu'on écrase avant d'écrire**, un nom
 Ce paragraphe soutenait que le détour ne se justifiait que par le manque, et que
 la condition devait rester `clientId === null`. **Il a tranché l'inverse le soir
 même** : *« je veux tout le temps revenir à cette page et seulement celle-là »*.
-La règle est désormais sans condition — voir §228, qui dit ce que ce
+La règle est désormais sans condition — voir §230, qui dit ce que ce
 raisonnement avait supposé à sa place.
 
 ### Et le chemin se REFERME
@@ -20269,9 +20269,182 @@ porte ses photos, son anneau **et** son bouton d'enregistrement. Trois
 assertions, une par pièce — un seul contrôle « la fiche est entière » ne dirait
 pas laquelle manque.
 
+## 227. « Elle peut bouger encore » : quarante pixels écrits à la main pour un bandeau qui en fait quarante-neuf
+
+*31 août 2026 — `layout.tsx`, `globals.css`, `BandeauBanc.tsx`,
+`src/app/reglages/connexion/page.tsx`.*
+
+**Sa demande, capture à l'appui :** *« la page connexion n'est pas fixe, elle
+peut bouger encore ; il ne faut pas qu'elle puisse bouger, aucun scroll
+possible »*.
+
+### Le contrôle disait vrai, et il mesurait le mauvais écran
+
+Le même jour, §217 avait fait tenir cet écran dans un téléphone, avec un
+contrôle qui le vérifiait : **658 px pour 664**, vert. Sur son banc, au même
+moment, l'écran demandait **706 px**, défilait de 42, et « Me déconnecter
+partout » finissait à moitié sous la barre du bas — c'est ce que montre sa
+capture.
+
+L'écart tenait entièrement à ce que la mesure ne reproduisait pas ses
+conditions. Sur son banc, un bandeau annonce « Version rapide en
+construction ». `layout.tsx` lui retranchait **quarante pixels, écrits à la
+main**. Mesuré : il en fait **49** à 390 px de large — et **66** à 375, où sa
+phrase passe à deux lignes.
+
+**Un nombre écrit à la main pour un élément qui change de taille est faux la
+moitié du temps.** Celui-ci l'était trois fois : la barre de progression
+n'apparaît qu'une fois un total connu, la phrase se replie sur un écran
+étroit, et le bandeau **disparaît** quand la construction s'achève.
+
+### Le bandeau publie SA hauteur
+
+`BandeauBanc` mesure son propre cadre et pose `--atlas-bandeau` sur la racine,
+sous l'œil d'un `ResizeObserver` ; il la remet à **zéro** en s'effaçant. Sans
+cette remise à zéro, la valeur survivrait à sa disparition et volerait
+cinquante pixels à tous les écrans pour toujours — la « valeur provisoire qui
+survit » du catalogue d'arrosage, revenue ailleurs.
+
+`layout.tsx` et `.atlas-ecran` lisent tous deux cette variable : **une seule
+source**, et elle suit ce qui est réellement à l'écran. Au passage, les trois
+écrans figés du produit — chantiers, envoi, connexion — cessent d'être
+cinquante pixels trop hauts sur son banc.
+
+### Ce que « aucun scroll » veut dire, et ce qu'il ne peut pas vouloir dire
+
+L'écran de connexion prend la convention de la maison — `atlas-ecran` : la
+hauteur qui reste, une colonne, rien qui dépasse — plus
+`overscroll-behavior: none`, qui arrête l'**élastique** d'iOS. Une page qui
+tient dans l'écran rebondit quand même sous le doigt, et c'est une partie de ce
+qu'il appelait « ça bouge ». *Cette ligne-là ne peut pas être éprouvée ici :
+aucun navigateur de ce poste ne rebondit.*
+
+**Ce qui reste, et qui se dit plutôt que se cache.** Bandeau du banc affiché, un
+écran de 664 px offre 664 − 49 − 68 = **547 px** pour 596 de contenu. Il en
+manque 51, et aucune ligne ne peut disparaître sans qu'il l'ait choisi
+(`CLAUDE.md` §3 bis). La colonne intérieure glisse donc de ces 51 px — c'est le
+moins mauvais des deux : **un bouton qu'on ne peut plus atteindre est pire
+qu'un écran qui bouge d'un pouce.** Sans le bandeau — c'est-à-dire dans le
+produit, et sur son banc dès que la construction est finie — le contenu tient à
+596 px pour 596 : rien ne bouge, d'un pixel.
+
+### Le contrôle vise SES conditions, et il a fallu deux tours pour qu'il les vise
+
+`test-connexion-figee-e2e.ts` mesure à 390 × 664, avec une puce Face ID
+simulée — sans elle, la rubrique ne se dessine pas et il manque cent pixels,
+c'est-à-dire le problème.
+
+**Sa première version ne prouvait rien.** Confrontée à l'écran d'avant ce lot,
+elle restait verte : sans le bandeau, la page tient de justesse, et le défaut ne
+se montre pas. Elle rejoue donc le bandeau à l'identique — un bloc de 49 px en
+tête du corps, et la variable que le vrai bandeau publie.
+
+**Et son contrôle d'« atteignable » accusait à tort.** Il comparait un
+`offsetTop`, qui compte depuis un autre ancêtre, à la hauteur d'une colonne :
+il annonçait un bouton COUPÉ là où il était parfaitement en place. Il **descend**
+désormais la colonne et regarde — le geste, pas deux nombres dont l'origine
+diffère.
+
 ---
 
-## 227. La fiche du chantier ne se supprime pas d'un trait : huit chemins y mènent
+---
+
+## 228. La dictée cesse d'être un objet : une ligne, deux gestes, aucun aplat
+
+**Sa plainte du 31 août 2026, capture à l'appui :** *« propose-moi une maquette
+pour embellir cette partie de la fiche chantier, je trouve que ça dénature
+l'appli »*.
+
+### Ce qui dénaturait, et qui se mesure
+
+Ce n'était pas un goût, et c'est ce qui a permis de le corriger sans tâtonner :
+
+| | |
+|---|---|
+| **l'aplat** | deux disques vert pin pendant la dictée — 76 px et 46 px, ombres portées — soit **7 956 px²**, là où le reste de la fiche n'en porte AUCUN |
+| **rien ne les tient** | trois boutons posés sur le fond, sans cadre ni ligne |
+| **trois axes** | le chrono collé à gauche, l'onde à droite, le disque au milieu |
+
+La surface d'aplat se compte (`scripts/verifier-maquette-dictee-embellie.mjs`,
+qui additionne ce qui tranche avec le fond). Sans ce chiffre, quatre
+propositions pouvaient déplacer le défaut sans le régler, et sembler justes.
+
+### Ce qu'il a choisi, en deux temps
+
+**La ligne**, parmi quatre allures (`appli/dictee-embellie.html` : la barre,
+l'anneau, la ligne, le galet). Puis trois corrections le soir même
+(`appli/dictee-la-ligne.html`) :
+
+1. **plus de pause** — *« supprime le rond avec le carré dedans »* ;
+2. **l'envoi perd son aplat** : fond de la page, encadré vert, avion vert ;
+3. **un ROND, pas un ovale.** Ma lecture de *« légèrement plus à plat »* était
+   fausse : j'avais proposé trois hauteurs, donc deux ovales. « Plus à plat »
+   parlait du POIDS de la touche, pas de sa forme — et cela ne s'est vu qu'en
+   la lui montrant.
+
+Aplat restant pendant la dictée : **64 px²**, la pastille du chrono.
+
+### Trois choses à savoir avant d'y toucher
+
+**Le fond du rond est `transparent`, et non un beige écrit.** Ce composant sert
+aussi l'écran d'un chantier neuf, et sept chartes changent ce fond — dont deux
+sombres. Une teinte posée en dur serait juste sur un écran et se lirait comme
+une pastille collée sur l'autre. Le vide, lui, EST le fond de la page.
+
+**La pause est partie du magnétophone aussi** (`basculerSuspension`, avec son
+état `suspendu`). Elle n'est pas gardée « au cas où » : un geste que plus aucun
+écran n'emploie finit rebranché au hasard. Si elle revient, elle revient avec
+son bouton — et **jamais** en `arreter()` puis `demarrer()`, qui produirait deux
+enregistrements dont le second écraserait le premier.
+
+**Ce que la suppression de la pause coûte, et qui lui a été dit avant :** on ne
+peut plus suspendre une dictée pour répondre à quelqu'un sur un chantier. On
+parle, puis on jette ou on envoie.
+
+### Le trait du dessus, retiré le lendemain
+
+Le 1ᵉʳ septembre 2026 : *« supprime le trait gris qu'il y a au-dessus »*. La
+ligne n'a donc plus AUCUN filet — seul l'espace la sépare de la fiche. À ne pas
+remettre en croyant « tenir » la ligne : c'est exactement ce qu'il a fait
+retirer, et l'écran n'en porte nulle part ailleurs.
+
+### Le défaut que seule la capture a montré
+
+La zone de dictée de la fiche chantier n'avait **aucune marge horizontale**
+(`page.tsx`), et cela ne se voyait pas : un disque CENTRÉ ne touche aucun bord.
+Devenue une ligne, elle s'étalait d'un bord à l'autre de l'écran — poubelle
+collée à gauche, rond d'envoi rasant la droite —, alors que tout le reste de la
+fiche vit en `px-[26px]`.
+
+Aucun test ne le disait, et aucun ne pouvait : la ligne mesurait 390 px sur un
+écran de 390, sans **déborder**. C'est la cinquième fois dans ce dépôt qu'un
+défaut sort d'une image et d'aucun contrôle (`CLAUDE.md` §5).
+
+### Ce qui a croisé une autre session le même soir
+
+`.atlas-plein` (le vert #29382F d'Origine et le geste « discret ») a été posé le
+même jour par une session voisine, sur trente-huit boutons pleins — dont les
+deux boutons de la dictée. Après ce lot-ci :
+
+| | |
+|---|---|
+| le micro du repos | plein → il porte `atlas-plein` |
+| le rond d'envoi | **creux** → il ne la porte pas, et c'est sa consigne du jour : *« surtout pas ceux qui sont creux »* |
+
+Le rond garde le geste seul, à la même force (0,975) : deux forces d'appui dans
+le même écran se sentiraient.
+
+### Ce que cela touche, et qu'il n'a pas demandé explicitement
+
+`AnneauNoteVocale` sert **deux écrans** : la fiche d'un chantier et la création
+d'un chantier neuf. Sa demande ne parlait que de la première. Les deux changent,
+et c'est délibéré : deux dictées dessinées différemment dans la même application
+se liraient comme deux produits, et la seconde implémentation aurait divergé au
+premier remaniement (`CLAUDE.md` §3). Cela lui est dit ; s'il veut l'ancien
+dessin sur l'écran de création, il le dira.
+---
+
+## 229. La fiche du chantier ne se supprime pas d'un trait : huit chemins y mènent
 
 **Sa demande du 31 août 2026, capture à l'appui :** *« des fois je retombe sur
 cette page, je pense qu'elle sert plus à rien maintenant ; vérifie, si oui on la
@@ -20322,7 +20495,7 @@ qu'il consulte. La question lui est posée ; rien n'est codé avant sa réponse.
 
 ---
 
-## 228. Le retour du devis mène à la fiche client, sans condition
+## 230. Le retour du devis mène à la fiche client, sans condition
 
 **Sa décision du 31 août 2026 au soir, capture à l'appui :** *« je veux tout le
 temps revenir à cette page et seulement celle-là ! La page fiche client »*.
@@ -20330,7 +20503,7 @@ temps revenir à cette page et seulement celle-là ! La page fiche client »*.
 Le matin même (§221), le retour du devis n'avait été détourné que **lorsque le
 client manquait**. La moitié restante le déposait sur la fiche du chantier —
 l'écran dont il demandait la suppression quelques heures plus tôt, et qui ne lui
-propose rien devant un devis prêt à partir (§227).
+propose rien devant un devis prêt à partir (§229).
 
 ### Ce que le raisonnement du matin avait supposé à sa place
 
@@ -20350,7 +20523,7 @@ une règle sur ce que l'écran MONTRE (un manque) plutôt que sur ce qu'il SERT
 |---|---|
 | le chemin se referme toujours | la provenance voyage dans `?de=`, la flèche et l'enregistrement la respectent (§221) |
 | la fiche gardée sans provenance | entrée depuis l'accueil, sa flèche rend la liste — inchangé depuis le 17 août |
-| le chantier reste joignable | la fiche client porte la barre du bas, et neuf chemins mènent encore à la fiche du chantier (§227) |
+| le chantier reste joignable | la fiche client porte la barre du bas, et huit chemins mènent encore à la fiche du chantier (§229) |
 
 **La flèche n'annonce plus la même chose pour autant** : « Remplir la fiche
 client » quand il n'y a pas de client, « Revenir à la fiche client » sinon. Même

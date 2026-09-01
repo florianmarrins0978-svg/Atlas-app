@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Atlas — la ligne, ses trois aplatissements</title>
+<title>Atlas — la ligne, avec ou sans le rond d'envoi</title>
 <style>
 /*
   LA LIGNE, TELLE QU'IL L'A CORRIGÉE — 31 août 2026, au soir.
@@ -33,17 +33,36 @@
      la dictée : sa plainte du matin (« ça dénature l'appli ») portait sur
      7 956 px² de vert pin ; il n'en reste que la pastille rouge du chrono.
 
-  3. **LA TOUCHE S'APLATIT** — et « légèrement » ne se code pas, ça se
-     regarde. D'où les trois onglets, qui ne changent QUE la hauteur de ce
-     bouton :
+  3. **LA TOUCHE RESTE UN ROND — l'aplatissement est ÉCARTÉ, par lui.**
 
-       A · Ronde              44 × 44
-       B · Légèrement à plat  48 × 40   (ce que je comprends de sa phrase,
-                                        et l'onglet ouvert par défaut)
-       C · Plus à plat        52 × 36
+     Ma lecture de « légèrement plus à plat » était fausse : j'avais proposé
+     trois hauteurs (44 × 44, 48 × 40, 52 × 36), donc deux ovales. Sa réponse,
+     le soir même : *« autour de la flèche envoyer je veux un rond, pas un
+     ovale. Et fais-moi un visuel sans le rond aussi. »*
 
-     Rien d'autre ne bouge d'un onglet à l'autre : sinon il choisirait un
-     écran au lieu d'une hauteur.
+     **Ce qu'il faut retenir de l'erreur** : « plus à plat » ne parlait pas de
+     la forme du bouton mais de son POIDS — moins d'épaisseur, moins de
+     relief. Un ovale, lui, se voit tout de suite ; c'est en le regardant
+     qu'il a tranché, pas en le lisant.
+
+     Deux onglets, et rien d'autre ne change de l'un à l'autre :
+
+       1 · Avec le rond   un cercle de 44, encadré vert, fond de la page
+       2 · Sans le rond   l'avion vert seul, posé sur la ligne
+
+  ───────────────────────────────────────────────────────────────────────────
+  **SA RÉPONSE : « le rond ». CODÉ DANS L'APPLICATION LE 31 AOÛT 2026.**
+
+  Cette planche reste en ligne parce qu'elle porte le pourquoi, et le second
+  visuel qu'il a écarté. Ce qui vit maintenant dans l'application :
+  `src/app/chantiers/[id]/AnneauNoteVocale.tsx` et le bloc
+  `.atlas-ligne-dictee` de `src/app/globals.css`.
+
+  **Une différence entre la planche et le code, et elle est délibérée :** ici
+  le rond est peint du beige de la page (`--bone`) ; dans l'application il est
+  `transparent`. Le composant sert aussi l'écran d'un chantier neuf, et sept
+  chartes changent ce fond — dont deux sombres. Le vide, lui, EST le fond de la
+  page, quelle qu'elle soit.
 
   ───────────────────────────────────────────────────────────────────────────
   CE QUI NE CHANGE PAS.
@@ -138,8 +157,10 @@ body{margin:0;background:var(--bone);color:var(--charcoal);
 .aile i{display:block;flex:0 0 2px;border-radius:2px;background:var(--or);opacity:.7}
 
 /* ─── LA LIGNE ─────────────────────────────────────────────────────────── */
-.ligne{display:flex;align-items:center;gap:12px;width:100%;
-       padding-top:14px;border-top:1px solid var(--line)}
+/* **Le trait du dessus est parti le 1ᵉʳ septembre 2026**, à sa demande : une
+   fois l'aplat retiré, c'était un trait de plus sur un écran qui n'en porte
+   nulle part ailleurs. L'espace reste. */
+.ligne{display:flex;align-items:center;gap:12px;width:100%;padding-top:14px}
 .jeter{width:32px;height:32px;border-radius:99px;border:0;background:none;padding:0;
        cursor:pointer;display:flex;align-items:center;justify-content:center;
        flex:0 0 auto;color:var(--muted);
@@ -168,18 +189,27 @@ body{margin:0;background:var(--bone);color:var(--charcoal);
      se lirait comme une pastille collée, ce qui est exactement ce qu'il
      reproche à l'aplat. En nuit, `--bone` devient le noir chaud et le trait
      passe au crème : le geste reste visible sans jamais redevenir un aplat. */
+/* **UN ROND, ET NON UN OVALE** — sa correction du 31 août au soir, après avoir
+   vu mes trois aplatissements : « autour de la flèche envoyer je veux un rond,
+   pas un ovale ». La largeur et la hauteur sont donc la MÊME mesure, écrite une
+   seule fois : deux valeurs séparées, c'est un ovale qui revient à la première
+   retouche.
+
+   **Et la cible du doigt ne rétrécit pas quand le rond disparaît** : sans
+   contour, le bouton garde ses 44 px. Un geste qu'on rate n'est pas un geste
+   plus discret, c'est un geste perdu. */
 .envoyer{flex:0 0 auto;border:0;padding:0;cursor:pointer;
          display:flex;align-items:center;justify-content:center;
-         border-radius:99px;background:var(--bone);color:var(--plein);
+         width:44px;height:44px;border-radius:99px;
+         background:var(--bone);color:var(--plein);
          box-shadow:inset 0 0 0 1.5px var(--plein);
          transition:transform .18s;
-         animation:venir .26s cubic-bezier(.22,.61,.36,1) both;
-         width:var(--large-touche);height:var(--haute-touche)}
+         animation:venir .26s cubic-bezier(.22,.61,.36,1) both}
 .envoyer:active{transform:scale(.93)}
-/* Les trois aplatissements — ils ne changent QUE ces deux mesures. */
-body[data-forme="a"]{--large-touche:44px;--haute-touche:44px}
-body[data-forme="b"]{--large-touche:48px;--haute-touche:40px}
-body[data-forme="c"]{--large-touche:52px;--haute-touche:36px}
+/* Sans le rond : l'avion seul. Le fond redevient transparent — poser le beige
+   de la page sur la page ne se verrait pas, mais laisserait une pastille dans
+   le code, qu'une charte sombre trahirait. */
+body[data-forme="nu"] .envoyer{background:transparent;box-shadow:none}
 
 /* ─── L'attente de transcription ───────────────────────────────────────── */
 .attente{display:flex;align-items:center;justify-content:center;gap:9px;min-height:76px;
@@ -205,14 +235,13 @@ body[data-forme="c"]{--large-touche:52px;--haute-touche:36px}
 .etape .dit{font-size:9.5px;letter-spacing:.28em;text-transform:uppercase;color:var(--muted)}
 </style>
 </head>
-<body data-etat="repos" data-forme="b">
+<body data-etat="repos" data-forme="rond">
 <div class="tel">
 
-  <nav class="onglets" aria-label="Les trois aplatissements de la touche">
+  <nav class="onglets" aria-label="La touche d'envoi, avec ou sans son rond">
     <div class="onglets-piste" id="piste">
-      <button type="button" data-f="a" aria-pressed="false">A · Ronde</button>
-      <button type="button" data-f="b" aria-pressed="true">B · Légèrement à plat</button>
-      <button type="button" data-f="c" aria-pressed="false">C · Plus à plat</button>
+      <button type="button" data-f="rond" aria-pressed="true">1 · Avec le rond</button>
+      <button type="button" data-f="nu" aria-pressed="false">2 · Sans le rond</button>
     </div>
     <button type="button" class="teinte" id="teinte" aria-label="Passer en fond noir">☾</button>
   </nav>

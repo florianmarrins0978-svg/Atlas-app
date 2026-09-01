@@ -84,71 +84,168 @@ chacun.
 
 ## EN ATTENTE DE SA RÉPONSE : l'aplatissement de la touche d'envoi (31 août 2026)
 
-**Il a choisi LA LIGNE** parmi les quatre allures, et l'a corrigée trois fois le
-soir même. **Rien n'est codé, et rien ne doit l'être avant sa dernière réponse**
+## `test-facture-e2e` ROUGIT LES PREMIERS JOURS D'UN MOIS — pas d'un lot (1ᵉʳ sept. 2026)
+
+Cas *« le chantier réalisé apparaît dans l'onglet Terminés »*, qui rend **« le
+chantier n'apparaît pas »**. **Vérifié sur `origin/main` tel quel** (commit
+`f03e112`, sans aucun lot), en rejouant le même groupe de six : il tombe
+pareil. Vert joué seul.
+
+**Le mécanisme, et il n'est pas dans le produit.** La suite pose son chantier à
+`CURRENT_DATE - 3`. Le 1ᵉʳ septembre, cela le range en **août** — pendant que
+les suites d'à côté, dans le même groupe, laissent des chantiers datés de
+**septembre**. « Terminés » s'ouvre alors sur septembre (le mois le plus récent
+qui porte quelque chose, `bornesDuFeuilletage`), et le chantier d'août est
+derrière la flèche ‹. Le 31 août, les deux tombaient dans le même mois : la
+suite était verte.
+
+**Ce n'est donc pas l'écran qui a un défaut, c'est la suite qui suppose que
+« il y a trois jours » et « aujourd'hui » sont le même mois.** Le remède, quand
+quelqu'un la reprendra : viser la ligne par son lien
+(`a[href="/chantiers/…/facture"]`) **depuis l'onglet « À facturer »**, qui
+ignore délibérément le mois affiché — la seconde moitié du cas le fait déjà.
+Ne pas « corriger » l'écran : son ouverture sur le mois le plus récent est une
+demande du patron du 22 août.
+
+## ~~La date du chantier dans « Terminés »~~ — FAIT le 31 août 2026
+
+Sa demande du 31 août — *« changer le bouton FACTURER en À FACTURER, et à côté du
+nom du client inscrire la date à laquelle le chantier a été réalisé »*, puis,
+devant la planche : *« supprime "Pas encore facturé" en doré »*, et *« très bien,
+code-moi ça »*.
+
+La planche : `appli/termines-date-du-chantier.html` — quatre places pour la date,
+**il a retenu la B** (la date ouvre la deuxième ligne, devant le montant).
+
+~~Ce qui a été codé~~ (`src/lib/termines-par-mois.ts`,
+`src/app/termines/ListeTermines.tsx`) :
+
+  1. ~~la capsule dit **« À FACTURER »**~~ ;
+  2. ~~**« Pas encore facturé » a disparu**~~ — la capsule, à trois centimètres,
+     disait déjà la même chose sur chaque rangée ;
+  3. ~~la ligne dorée porte **la date puis le montant prévu**~~ — « 12 août ·
+     360,00 € prévus », et l'**année ne s'écrit que si ce n'est pas celle du
+     jour** (l'onglet « À facturer » mêle tous les mois) ;
+  4. ~~une rangée sans date NI devis envoyé **n'a plus de deuxième ligne**~~ :
+     ni tiret, ni phrase de remplacement, ni « · » pendu tout seul.
+
+**CE QUI RESTE OUVERT, ET C'EST À LUI :** la date affichée est `datePlanifiee`,
+celle du planning — l'application n'en garde aucune autre. S'il veut une vraie
+date de réalisation, il faudra la saisir à la clôture : c'est un geste de plus
+pour lui, et il n'a pas répondu.
+
+**PAR OÙ UN CHANTIER ARRIVE DANS « TERMINÉS » SANS DATE — sa question du
+1ᵉʳ septembre, cherchée dans le code, pas supposée.** `rangement()`
+(`src/lib/onglet-chantier.ts`) range dans « terminés » tout ce qui est
+`termineAt` OU `factureEnvoyeeAt`, **quelle que soit la date** — et
+`terminerChantier` (`factures.ts:95`) ne regarde jamais `datePlanifiee` : elle
+exige un devis **envoyé**, rien d'autre. Deux portes, donc :
+
+| | |
+|---|---|
+| **l'assistant** | *« prépare la facture »* → `preparer_facture` appelle `terminerChantier` sans aucun contrôle de date (`informations/actions.ts:941`) |
+| **l'adresse `/chantiers/<id>/facture`** | le serveur l'accepte ; c'est seulement le LIEN de la fiche qui exige `chantier.datePlanifiee` (`chantiers/[id]/page.tsx:128`) |
+
+**Ce n'est donc pas un trou par ses boutons à lui** — depuis la fiche, sans date,
+le lien n'apparaît pas. Ne pas « réparer » en exigeant une date dans
+`terminerChantier` : le 3 août, il s'est plaint de l'inverse (*« pourquoi n'y
+ai-je pas accès ??? »*), et un chantier se finit parfois avant sa date.
+## EN ATTENTE DE SA DÉCISION : les travaux supplémentaires sur la facture (31 août 2026)
+
+**Son constat :** *« si on effectue des travaux en plus chez un client, on n'a
+aucun moyen de rajouter les TS sur la facture »*. Il est juste : la facture
+recopie le devis et ne se modifie plus (`factures.ts:201`).
+
+Quatre solutions, ce qu'elles coûtent et ce qu'elles protègent :
+**`docs/travaux-supplementaires.md`**. Rien n'est codé — la décision lui revient
 (`CLAUDE.md` §3 bis).
 
-La planche : `appli/dictee-la-ligne.html`, en ligne à
-https://florianmarrins0978-svg.github.io/Atlas-app/dictee-la-ligne.html
+**Trois planches à essayer**, parcourues dans un vrai navigateur avant d'être
+transmises (`scripts/` non concerné : le parcours a été joué à la main, captures
+regardées, mode nuit compris) :
 
-**Ce qu'on attend de lui : une lettre.** A ronde (44 × 44), B légèrement à plat
-(48 × 40), C plus à plat (52 × 36).
+| Planche | Ce qu'elle fait trancher |
+|---|---|
+| `appli/ts-bon-sur-place.html` | la signature au doigt (C) — le tracé est réel |
+| `appli/ts-avenant.html` | **une facture ou deux**, et les travaux **en moins** (A) |
+| `appli/ts-arret-3.html` | **bloquer ou avertir** quand rien n'est signé (B et D) |
+| `appli/ts-sur-la-facture.html` | **son idée**, sur sa vraie facture F2026-000001 — et **sa question ouverte** : écran à part ou encadré déroulé |
 
-**Ce qui est DÉJÀ tranché par lui, et qui ne se rediscute pas :** la ligne
-plutôt qu'un objet ; **plus aucune pause** (deux gestes : jeter, envoyer) ; la
-touche d'envoi au fond de la page, encadrée de vert. Le repos ne bouge pas —
-c'est son choix du 30 août.
+**Elles ne seront à son adresse qu'une fois sur `main`** : `pages.yml` ne publie
+que sur `main`, et son accord n'a pas encore été demandé.
 
-**À lui dire au moment de coder, parce qu'il le découvrirait sur un chantier :**
-sans pause, on ne peut plus suspendre une dictée pour répondre à quelqu'un.
+**Retiré sur sa demande du 1ᵉʳ septembre : la question de l'accord du client
+(SMS, courriel, signé) ne se pose plus à l'écran — « pas besoin de ça ». Le
+risque d'impayé, lui, ne disparaît pas ; il se traite par le bon signé (C).**
 
-La planche des quatre allures (`appli/dictee-embellie.html`) reste en ligne :
-c'est elle qui porte la comparaison, et les chiffres d'aplat.
+**Il a tranché le sens le 31 août au soir : ça se passe SUR la facture, avant
+l'envoi** — la chaîne d'envoi existe déjà. C'est légal en brouillon ; voir §6 du
+document pour les trois bornes (détail par ligne, bloc séparé, trace d'accord).
 
-**Ce qui change à l'écran une fois choisi :** `AnneauNoteVocale.tsx` (le rendu
-de la dictée) et le bloc `.atlas-dictee` de `src/app/globals.css`. Le repos ne
-bouge pas — c'est son choix du 30 août, et il n'a rien reproché à cet état-là.
-## Ne rebâtir que si le code BÂTI a changé (posé le 31 août 2026, soir)
+Recommandation posée : **le bon signé sur place (C), puis l'avenant (A)** ;
+jamais une facture librement modifiable toute seule — elle facture ce que le
+client n'a pas accepté, et l'article 1793 du Code civil le laisse alors refuser
+le supplément en entier.
 
-**Mesuré, pas supposé :** sur les quarante derniers commits de `main`, **un quart
-ne touchent que** `docs/`, `appli/`, `maquettes/`, `.github/` ou les fichiers de
-mémoire. Chacun déclenche pourtant une construction complète chez le patron,
-parce que `doitRebatir` compare le **numéro de commit** et non le code qui entre
-dans la construction.
+**Un défaut à corriger quoi qu'il choisisse :** `terminerChantier` rend la
+facture déjà en brouillon **sans regarder si un devis plus récent existe**
+(`factures.ts:102`). Un devis v2 fait après « Fin de chantier » n'atteint donc
+jamais la facture, et rien ne le dit à l'écran. *Lu dans le code, non rejoué à
+l'écran.*
 
-**Pourquoi ce n'est PAS fait ce soir.** Le gain a beaucoup baissé depuis §225 :
-une construction ne lui coûte plus l'usage de son application, seulement une
-fenêtre où il voit le code d'avant. Et le risque, lui, n'a pas bougé : la liste
-des chemins « sans effet sur la construction » est exactement le genre
-d'inclusion qu'on croit complète et qui ne l'est pas. Se tromper d'un dossier,
-c'est servir du code d'hier en croyant servir celui du jour — la panne que
-`doitRebatir` existe pour empêcher (§11 août).
+## ~~L'allure de la dictée~~ — TRANCHÉ ET CODÉ le 31 août 2026
 
-**Si quelqu'un le reprend :** l'empreinte se calcule sur l'arbre git privé des
-chemins exclus, et l'exclusion doit se PROUVER (aucun `import` depuis `src/` ni
-`next.config.ts` — vérifié le 31 août pour `docs/`, `appli/`, `maquettes/`,
-`.github/`). Le doute tranche vers la reconstruction.
+Il a choisi **la ligne**, puis le **rond** autour de l'avion. C'est dans
+l'application : `AnneauNoteVocale.tsx` et `.atlas-ligne-dictee`
+(`ARCHITECTURE.md` §228). Les deux planches restent en ligne — elles portent le
+pourquoi, et les formes écartées.
 
----
+**Ce qu'il reste à lui demander, et seulement s'il le soulève :** la dictée de
+l'écran « chantier neuf » a changé en même temps, parce que c'est le même
+composant. Il n'avait parlé que de la fiche chantier.
 
-## LES BOUTONS PLEINS : lot 1 livré, 31 fichiers restants (31 août 2026)
+## Cinq suites tombent le dernier jour du mois (31 août 2026)
+
+**Ce ne sont pas des défauts du produit, et il faut le savoir avant d'accuser un
+lot :** `test-envoi-client`, `test-facture`, `test-facture-au-client`,
+`test-planning-vers-facture` et `test-tva-au-paiement` échouent le 31 août au
+soir — bouton « Envoyer le devis » désactivé, facture absente du relevé de TVA.
+
+**Vérifié deux fois, pas supposé :** un arbre de travail posé sur `main` **sans
+le lot du soir** les fait échouer à l'identique ; et **rejouées après minuit,
+le 1ᵉʳ septembre, elles passent toutes sans qu'une ligne ait changé**. C'est le
+troisième épisode de ce genre (voir le 26 août, « la troisième suite qui tombe
+sur la fin du mois »).
+
+**Une sixième s'y ajoute, vue le 1ᵉʳ au petit matin :** `test-facture-e2e`
+(« le chantier réalisé apparaît dans l'onglet Terminés ») tombe si la batterie
+**franchit minuit** en cours de route — le chantier est posé la veille et
+cherché le lendemain. Rejouée seule, elle passe.
+
+**Ce qui reste à faire :** les rendre indépendantes du jour où on les joue —
+elles choisissent des dates relatives à aujourd'hui et tombent quand le mois se
+termine. Personne ne l'a encore fait ; le premier qui repasse un 30 ou un 31 le
+repaiera.
+
+## LES BOUTONS PLEINS : fait (31 août 2026)
 
 **Ses réponses sont acquises :** couleur **#29382F**, force **discret**,
 **Origine seule**. Rien à lui redemander.
 
-**Fait (lot 1) :** la classe `.atlas-plein` (`globals.css`), la variable
-`--atlas-plein-fond` ecrite pour Origine seule (`chartes.ts`), et les trois
-pieces partagees — `PrimaryButton`, `ActionPrincipale`, `BoutonAssistant`.
+**Fait :** la classe `.atlas-plein` (`globals.css`), la variable
+`--atlas-plein-fond` ecrite pour Origine seule (`chartes.ts`), les trois pieces
+partagees, puis les **38 autres boutons** de 25 fichiers et les deux notes
+vocales (`AnneauNoteVocale`, un seul composant pour les deux ecrans).
 
-**Reste :** les autres boutons pleins verts, a qui il faut poser la classe.
-L'inventaire tient dans une commande, et il separe les VRAIS boutons des
-pastilles, barres de progression et fonds pales qui emploient la meme couleur :
+**Ce qui a ete ECARTE volontairement**, et qu'il ne faut pas « corriger » un
+jour en croyant bien faire : huit emplois du meme vert qui ne sont pas des
+boutons — pastilles clignotantes, barres de progression, fonds pales
+(`colors.rustTint`). Ni les capsules creuses. Ni `src/app/design/*`, hors
+produit.
 
-    grep -rn "backgroundColor: colors.rust" src/ --include=*.tsx
-
-**Ne pas prendre `colors.rustTint`** — c'est le fond pale, pas un aplat
-d'action. **Ni les capsules creuses** : « surtout pas ceux qui sont creux ».
-**Ni `src/app/design/*`**, hors produit depuis le 1er aout.
+**Si un bouton plein est ajoute plus tard**, il lui faut la classe : sans elle
+il gardera l'ancien vert et n'aura aucun geste, et cela ne se verra qu'a
+l'usage.
 
 ---
 
@@ -5503,6 +5600,18 @@ recharge **trois fois** en laissant du temps à l'action, précisément parce qu
 le défaut avait déjà été vu le 13 août. Trois chances ne suffisent plus. La
 piste est donc la même que pour les deux autres — on attend une valeur à
 l'écran sur une montre, au lieu d'attendre que la base ait bougé.
+
+**REVU LE 31 AOÛT 2026, ET LE CONSTAT TIENT.** Sur une batterie jouée par
+groupes, six suites ont rougi ; quatre sont revenues vertes rejouées
+(`test-dashboard`, `test-lecons-prix`, `test-periodicite-tva`,
+`test-reste-equipes`), et les deux qui restaient — `test-tva-au-paiement-e2e`
+et `test-planning-vers-facture-e2e`, toutes deux sur le **relevé de TVA** —
+**rougissent aussi sur `origin/main` tel quel**, joué exprès pour le savoir.
+
+Ce n'est donc toujours pas un lot qui les casse. Et cela ajoute un nom à la
+liste : `test-planning-vers-facture-e2e`, cas *« la confirmation porte la
+facture au relevé de TVA »*, qui rend « la facture F… ne figure pas au relevé
+du trimestre ».
 
 **Et ATTENTION à ne pas confondre deux rouges dans cette même suite.** Le
 24 août au soir, elle a rougi une seconde fois — sur un autre cas, et pour une

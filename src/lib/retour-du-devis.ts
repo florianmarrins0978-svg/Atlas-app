@@ -37,7 +37,7 @@
  * C'était supposer à sa place : il y relit le nom, le téléphone et le canal
  * d'envoi juste avant d'expédier le devis, et cette vérification-là ne dépend
  * pas d'un champ vide. L'autre moitié le déposait sur la fiche du chantier,
- * où il n'avait rien à faire (`ARCHITECTURE.md` §227).
+ * où il n'avait rien à faire (`ARCHITECTURE.md` §229).
  *
  * **Le chantier ne devient pas injoignable pour autant** : la fiche client
  * porte sa propre flèche, et neuf autres chemins y mènent — le planning, une

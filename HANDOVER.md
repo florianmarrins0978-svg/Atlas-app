@@ -9,29 +9,63 @@ sert.
 
 ---
 
-## Dernier lot : la ligne, corrigée trois fois par lui (31 août 2026, au soir)
+## Dernier lot : la date du chantier dans « Terminés » (31 août 2026)
 
-**Rien n'est codé** (`CLAUDE.md` §3 bis). Il a choisi **la ligne** parmi les
-quatre allures, puis l'a corrigée : *« supprime le rond avec le carré dedans
-pour me mettre pause. Et la touche envoyer : garde l'encadré vert et
-l'intérieur, mais la couleur du fond de la page (beige) […] et fais-la
-légèrement plus à plat. »*
+Sa demande, capture à l'appui : *« changer le bouton FACTURER en À FACTURER, et
+à côté du nom du client inscrire la date à laquelle le chantier a été réalisé »*.
+Puis, devant la planche : *« supprime "Pas encore facturé" en doré »*. Il a
+retenu la **proposition B** et dit *« code-moi ça »* — c'est codé.
 
 | | |
 |---|---|
-| la planche | `appli/dictee-la-ligne.html` |
-| en ligne | https://florianmarrins0978-svg.github.io/Atlas-app/dictee-la-ligne.html |
-| son contrôle | `scripts/verifier-maquette-dictee-la-ligne.mjs` (dans `npm run verifier:maquette`) |
-| ce qu'on attend | **une lettre** : A ronde, B légèrement à plat, C plus à plat |
-| ce que ça touchera | `src/app/chantiers/[id]/AnneauNoteVocale.tsx` et le bloc `.atlas-dictee` de `src/app/globals.css` |
+| la planche | `appli/termines-date-du-chantier.html` (quatre places, A à D) |
+| la règle | `libelleDateChantier`, `libelleEtatLigne` — `src/lib/termines-par-mois.ts` |
+| l'écran | `src/app/termines/ListeTermines.tsx` |
+| les contrôles | `scripts/test-termines-par-mois.ts` (7 cas neufs), `scripts/capture-termines.mts` |
+| ce qui reste à lui | faut-il une VRAIE date de réalisation, saisie à la clôture ? |
 
-**Ce qui est tranché et ne se rediscute pas :** la ligne, la disparition de la
-pause (deux gestes : jeter, envoyer), la touche d'envoi au fond de la page
-encadrée de vert. L'aplat de la dictée passe de 7 956 px² à 64.
+**Les deux choses à savoir avant d'y toucher.** La date affichée est
+`datePlanifiee` — celle du planning, la seule que l'application garde ; un
+chantier clôturé sans y être passé n'en a aucune, et sa rangée n'a alors **plus
+de deuxième ligne du tout**. Et l'**année du jour vient de `moisCourant`**, que
+le serveur calcule : la relire d'un `new Date()` dans le composant casserait
+l'hydratation au passage de minuit.
 
-**Le piège au moment de coder :** supprimer la pause supprime aussi la
-possibilité de suspendre pour répondre à quelqu'un sur un chantier. C'est sa
-demande, ce n'est pas un oubli — mais cela se dit avant, pas après.
+**Ne pas chercher la capsule par son texte** : elle porte
+`data-atlas="capsule-a-facturer"` depuis que « Facturer » est devenu « À
+facturer », et deux contrôles avaient rougi sur du code juste faute de ce repère
+(`CLAUDE.md` §5 bis).
+
+---
+
+## Le même soir : la dictée est une LIGNE, et elle est codée (31 août 2026)
+
+Sa plainte du matin — *« ça dénature l'appli »* —, quatre allures essayées, puis
+sa réponse : **la ligne**, avec un **rond** autour de l'avion.
+
+| | |
+|---|---|
+| ce qui a changé | `src/app/chantiers/[id]/AnneauNoteVocale.tsx`, `magnetophone.ts`, bloc `.atlas-ligne-dictee` de `globals.css`, la marge de `page.tsx` |
+| le pourquoi | `ARCHITECTURE.md` §228 |
+| les planches | `appli/dictee-embellie.html` (les quatre allures) et `appli/dictee-la-ligne.html` (ses corrections) |
+| l'aplat sombre | **7 956 px² → 64** |
+
+**Les trois choses à savoir avant d'y toucher :**
+
+1. **La pause n'existe plus** — ni bouton, ni `basculerSuspension` dans le
+   magnétophone. C'est sa demande, pas un oubli : on parle, puis on jette ou on
+   envoie. Si elle revient, jamais en `arreter()` puis `demarrer()` (deux
+   enregistrements, le second écrase le premier).
+2. **Le fond du rond est `transparent`**, jamais un beige écrit : sept chartes,
+   dont deux sombres, et deux écrans qui n'ont pas le même fond.
+3. **Le même composant sert l'écran d'un chantier neuf.** Sa demande ne parlait
+   que de la fiche chantier ; les deux ont changé, délibérément.
+
+**La batterie est au vert** : 122/122 suites navigateur, les suites base, la
+connexion derrière un proxy, les 60 planches. Les cinq suites qui tombaient le
+31 au soir sont vertes le 1ᵉʳ sans qu'une ligne ait changé — défaut de fin de
+mois, consigné dans `TODO.md`. Ne pas accuser un lot avant d'avoir regardé la
+date.
 
 ---
 
@@ -634,6 +668,26 @@ tôt.
 **Piste ÉCARTÉE, à ne pas repayer :** `next dev --webpack` tient à 5,7 Go, mais
 ne sert pas la même application — la feuille « Absences » ne s'ouvrait plus, et
 deux vérifications rougissaient sur du code juste.
+
+## PIÈGE : MESURER UN ÉCRAN SANS LE BANDEAU DU BANC (31 août 2026)
+
+**Son banc porte un bandeau que le produit n'a pas** — « Version rapide en
+construction ». Il mange **49 px** à 390 de large, **66** à 375 (sa phrase passe
+à deux lignes), et il **disparaît** quand la construction s'achève.
+
+**Conséquence, et elle a déjà coûté un aller-retour :** un contrôle de hauteur
+joué sans lui mesure un écran que le patron n'a jamais sous les yeux. Le 31 août,
+`test-face-id-e2e` annonçait « 658 px pour 664 — ça tient » pendant que sa
+capture montrait « Me déconnecter partout » sous la barre du bas.
+
+**Le geste, pour tout contrôle qui mesure une hauteur :** rejouer le bandeau —
+un bloc de 49 px en tête du corps, et `--atlas-bandeau: 49px` sur la racine.
+C'est ce que fait `test-connexion-figee-e2e.ts`, et c'est ce qui l'a rendu
+capable d'échouer.
+
+**Et sur le produit lui-même, `--atlas-bandeau` vaut zéro** : le bandeau
+n'existe pas hors banc. Une mesure faite avec vaut donc pour son banc, pas pour
+ce qu'il livrera.
 
 ## PIÈGE : `npm run build` PUIS LA BATTERIE = TURBOPACK SE FIGE (31 août 2026)
 

@@ -197,7 +197,7 @@ async function main() {
   await cas("reprendre ne ferme aucune porte — la flèche mène à la fiche client", async () => {
     // **Depuis le 31 août 2026 au soir, elle mène à la fiche CLIENT** et non
     // plus à celle du chantier : *« je veux tout le temps revenir à cette page
-    // et seulement celle-là »* (`ARCHITECTURE.md` §228).
+    // et seulement celle-là »* (`ARCHITECTURE.md` §230).
     //
     // Ce que ce cas défend n'a pas changé pour autant : que le devis ait une
     // sortie, et qu'elle rouvre ce qu'il avait sous la main. La fiche client

@@ -31,7 +31,7 @@ facture d'un chantier planifié et son tiroir, plus les photos. La supprimer
 reste un vrai lot : déménager « Créer la facture », et redresser huit chemins.
 
 Le fichier qui le fonde : `src/app/chantiers/[id]/page.tsx`. Le détail dans
-`ARCHITECTURE.md` §227.
+`ARCHITECTURE.md` §229.
 
 ## 2. « Je veux tout le temps revenir à cette page, et seulement celle-là »
 
@@ -55,7 +55,7 @@ client, « Revenir à la fiche client » sinon. Même écran, deux raisons — e
 
 Fichiers : `src/lib/retour-du-devis.ts`,
 `src/app/chantiers/[id]/devis-complet/DevisCompletClient.tsx`.
-Le pourquoi : `ARCHITECTURE.md` §228, qui corrige noir sur blanc le §221 du
+Le pourquoi : `ARCHITECTURE.md` §230, qui corrige noir sur blanc le §221 du
 matin — son raisonnement (« un formulaire rempli n'a rien à lui dire ») était
 faux, et c'est lui qui l'a redressé.
 

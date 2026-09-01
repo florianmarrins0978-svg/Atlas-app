@@ -80,7 +80,7 @@
 <h3 id="ce-que-jai-dit-de-faux-et-quil-a-corrigé">CE QUE J'AI DIT DE FAUX, ET QU'IL A CORRIGÉ</h3>
 <p>J'ai d'abord écrit que la pellicule de photos n'existait QUE sur cette page. <strong>C'est faux depuis la veille</strong> : la fiche client porte le même composant, avec les photos du chantier — il l'a relevé le 1er septembre (<em>« mais maintenant on ajoute des photos depuis cette page ? »</em>). L'erreur vient d'avoir cherché l'écran supprimé le 11 août sans regarder celui ajouté la veille.</p>
 <p>Le verdict ne change pas — la page reste —, mais la raison, si : c'est la facture d'un chantier planifié et son tiroir, plus les photos. La supprimer reste un vrai lot : déménager « Créer la facture », et redresser huit chemins.</p>
-<p>Le fichier qui le fonde : <code>src/app/chantiers/[id]/page.tsx</code>. Le détail dans <code>ARCHITECTURE.md</code> §227.</p>
+<p>Le fichier qui le fonde : <code>src/app/chantiers/[id]/page.tsx</code>. Le détail dans <code>ARCHITECTURE.md</code> §229.</p>
 <h2 id="2--je-veux-tout-le-temps-revenir-à-cette-page-et-seulement-celle-là-">2. « Je veux tout le temps revenir à cette page, et seulement celle-là »</h2>
 <a class="retour" href="#sommaire">↑ Sommaire</a>
 <p><strong>Fait.</strong> La flèche de retour du devis mène désormais à la fiche client, dans tous les cas.</p>
@@ -93,7 +93,7 @@
 <li>la fiche du chantier reste joignable : la barre du bas, la liste, le planning.</li>
 </ul>
 <p><strong>Un mot change à la flèche</strong> : « Remplir la fiche client » quand il n'y a pas de client, « Revenir à la fiche client » sinon. Même écran, deux raisons — et « remplir » devant un formulaire complet ferait chercher un champ vide.</p>
-<p>Fichiers : <code>src/lib/retour-du-devis.ts</code>, <code>src/app/chantiers/[id]/devis-complet/DevisCompletClient.tsx</code>. Le pourquoi : <code>ARCHITECTURE.md</code> §228, qui corrige noir sur blanc le §221 du matin — son raisonnement (« un formulaire rempli n'a rien à lui dire ») était faux, et c'est lui qui l'a redressé.</p>
+<p>Fichiers : <code>src/lib/retour-du-devis.ts</code>, <code>src/app/chantiers/[id]/devis-complet/DevisCompletClient.tsx</code>. Le pourquoi : <code>ARCHITECTURE.md</code> §230, qui corrige noir sur blanc le §221 du matin — son raisonnement (« un formulaire rempli n'a rien à lui dire ») était faux, et c'est lui qui l'a redressé.</p>
 <h2 id="ce-qui-léprouve">Ce qui l'éprouve</h2>
 <a class="retour" href="#sommaire">↑ Sommaire</a>
 <div class="tablewrap"><table><thead><tr>

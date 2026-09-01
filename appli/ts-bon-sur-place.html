@@ -1,0 +1,376 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas — le bon de travaux en plus, signé sur place</title>
+<style>
+/*
+  LE BON DE TRAVAUX EN PLUS, SIGNÉ SUR PLACE — solution C du document
+  `docs/travaux-supplementaires.md`.
+
+  Son constat du 31 août 2026 : « si on effectue des travaux en plus chez un
+  client, on n'a aucun moyen de rajouter les TS sur la facture ».
+
+  CE QUE CETTE PLANCHE MET À L'ÉPREUVE, et pourquoi c'est celle-là d'abord :
+  l'argent d'un supplément se gagne ou se perd AU JARDIN, pas au bureau.
+  L'article 1793 du Code civil laisse le client refuser en entier un supplément
+  qu'il n'a pas accepté par écrit — sur les travaux ET sur le prix.
+
+  TOUT SE MANIPULE : les prestations s'ajoutent d'un doigt, les quantités se
+  changent, les totaux se recalculent pour de vrai, et LA SIGNATURE SE TRACE
+  AU DOIGT sur le verre. Aucun chiffre n'est écrit en dur dans le récapitulatif.
+
+  RIEN N'EST CODÉ dans l'application (`CLAUDE.md` §3 bis).
+*/
+:root{
+  --bone:#f5f3ee; --cream:#faf9f5; --paper:#ece9e1;
+  --charcoal:#1c1c1a; --charcoal-soft:#4a4a44; --muted:#8a8578;
+  --pine:#2f3b2f; --or:#B98B47; --alert:#9C3B2E;
+  --line:rgba(28,28,26,.12); --line-soft:rgba(28,28,26,.07);
+  --surPlein:#faf9f5;
+}
+@media (prefers-color-scheme: dark){
+  :root{ --bone:#171613; --cream:#1e1c18; --paper:#262420; --charcoal:#e9e5dc;
+         --charcoal-soft:#c9c4b8; --muted:#8a867c; --or:#C9A15E;
+         --pine:#9db98f; --alert:#d98b7c; --surPlein:#171613;
+         --line:rgba(233,229,220,.16); --line-soft:rgba(233,229,220,.09); }
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;background:var(--bone);color:var(--charcoal);
+     font:16px/1.55 -apple-system,"Segoe UI",Roboto,sans-serif;
+     padding:30px 0 56px;-webkit-text-size-adjust:100%}
+.page{max-width:430px;margin:0 auto;padding:0 20px}
+.sur{margin:0;font-size:9.5px;font-weight:500;letter-spacing:.3em;
+     text-transform:uppercase;color:var(--or)}
+h1{margin:10px 0 0;font-family:Georgia,serif;font-weight:400;font-size:30px;
+   line-height:1.08;letter-spacing:-.018em}
+.chapo{margin:11px 0 0;font-size:14px;color:var(--charcoal-soft);line-height:1.6}
+.chapo b{color:var(--charcoal)}
+
+.tel{margin-top:20px;background:var(--cream);border-radius:20px;padding:20px 18px 22px;
+     box-shadow:inset 0 0 0 1px var(--line)}
+.retour{display:inline-block;min-width:34px;min-height:34px;line-height:34px;
+        color:var(--muted);font-size:19px;background:none;border:0;padding:0;cursor:pointer}
+.tel h2{margin:8px 0 0;font-family:Georgia,serif;font-weight:400;font-size:23px;line-height:1.12}
+.ou{margin:4px 0 0;font-size:9px;font-weight:600;letter-spacing:.24em;
+    text-transform:uppercase;color:var(--or)}
+.dit{margin:8px 0 0;font-size:12.5px;line-height:1.55;color:var(--muted)}
+
+.etiq{margin:18px 0 0;font-size:11.5px;color:var(--muted)}
+.bouton{display:block;width:100%;margin-top:16px;background:var(--pine);color:var(--surPlein);
+        border:0;border-radius:999px;padding:14px 20px;font-size:15px;
+        font-family:Georgia,serif;cursor:pointer}
+.bouton[disabled]{opacity:.38;cursor:default}
+.bouton.creux{background:none;color:var(--charcoal);box-shadow:inset 0 0 0 1px var(--line)}
+
+/* Le catalogue qu'on touche : 44 px de haut, on est debout dans un jardin. */
+.presta{display:flex;justify-content:space-between;align-items:center;gap:10px;
+        width:100%;min-height:46px;padding:9px 0;background:none;border:0;
+        border-bottom:1px solid var(--line-soft);font:inherit;font-size:14.5px;
+        color:inherit;text-align:left;cursor:pointer}
+.presta .pu{font-size:12px;color:var(--muted);white-space:nowrap}
+.plus{flex:none;width:26px;height:26px;border-radius:999px;background:var(--paper);
+      color:var(--charcoal-soft);font-size:17px;line-height:24px;text-align:center}
+
+.lgn{display:flex;align-items:center;gap:9px;padding:10px 0;
+     border-bottom:1px solid var(--line-soft);font-size:14px}
+.lgn .nom{flex:1;line-height:1.3}
+.lgn .nom small{display:block;color:var(--muted);font-size:11.5px}
+.lgn input.qte{width:56px;background:var(--bone);border:1px solid var(--line);
+               border-radius:8px;padding:8px 6px;font:inherit;font-size:14px;
+               color:inherit;text-align:right}
+.lgn .mt{width:74px;text-align:right;font-variant-numeric:tabular-nums}
+.lgn .x{flex:none;width:30px;height:30px;border:0;background:none;color:var(--muted);
+        font-size:16px;cursor:pointer}
+.vide{padding:14px 0;font-size:13px;color:var(--muted)}
+#recap .lgn:last-child{border-bottom:none}
+
+.totaux{margin-top:14px;padding-top:12px;border-top:1px solid var(--line)}
+.tot{display:flex;justify-content:space-between;padding:3px 0;font-size:13.5px;
+     color:var(--charcoal-soft);font-variant-numeric:tabular-nums}
+.tot.gros{margin-top:5px;font-family:Georgia,serif;font-size:19px;color:var(--charcoal)}
+
+/* La signature : un vrai tracé, pas une image. C'est le seul geste que cette
+   planche doit prouver — s'il ne passe pas au doigt, la solution ne tient pas. */
+.ardoise{margin-top:8px;position:relative;background:var(--bone);border-radius:12px;
+         border:1px dashed var(--line);height:150px;overflow:hidden;touch-action:none}
+.ardoise canvas{display:block;width:100%;height:100%}
+.ardoise .invite{position:absolute;inset:0;display:flex;align-items:center;
+                 justify-content:center;color:var(--muted);font-size:13px;pointer-events:none}
+.effacer{margin-top:8px;background:none;border:0;color:var(--or);font:inherit;
+         font-size:12.5px;padding:6px 0;cursor:pointer}
+
+.bandeau{margin-top:16px;padding:13px 15px;border-radius:12px;background:var(--paper);
+         font-size:12.5px;line-height:1.6;color:var(--charcoal-soft)}
+.bandeau b{color:var(--charcoal)}
+.bandeau.dur{box-shadow:inset 0 0 0 1px var(--alert);color:var(--charcoal)}
+
+.recu{text-align:center;padding:22px 0 6px}
+.recu .pastille{width:54px;height:54px;border-radius:999px;background:var(--pine);
+                color:var(--surPlein);font-size:25px;line-height:54px;margin:0 auto}
+.recu h3{margin:14px 0 0;font-family:Georgia,serif;font-weight:400;font-size:21px}
+.recu p{margin:8px 0 0;font-size:13px;color:var(--muted);line-height:1.6}
+
+.note{margin-top:20px;background:var(--cream);border-radius:13px;padding:15px 16px;
+      font-size:12.5px;line-height:1.65;color:var(--charcoal-soft);
+      box-shadow:inset 0 0 0 1px var(--line)}
+.note .t{display:block;margin-bottom:6px;font-size:9px;font-weight:600;
+         letter-spacing:.2em;text-transform:uppercase;color:var(--or)}
+.note b{color:var(--charcoal)}
+.autres{margin-top:14px;font-size:13px;line-height:2}
+.autres a{color:var(--or)}
+[hidden]{display:none!important}
+</style>
+</head>
+<body>
+<div class="page">
+  <p class="sur">Travaux en plus · solution C</p>
+  <h1>Le bon signé sur place</h1>
+  <p class="chapo">Le client accepte <b>avant</b> que vous sortiez la tronçonneuse. <b>Signez du doigt sur l'écran</b> — le tracé est réel.</p>
+
+  <div class="tel">
+    <!-- 1 · le chantier -->
+    <section id="ecran1">
+      <span class="retour">‹</span>
+      <h2>M. Bernard</h2>
+      <p class="ou">Chantier en cours</p>
+      <p class="dit">12 rue des Tilleuls · devis 2026-014 accepté · 950,00 € HT</p>
+      <button class="bouton" type="button" data-va="2">Travaux en plus</button>
+      <button class="bouton creux" type="button">Fin de chantier</button>
+    </section>
+
+    <!-- 2 · ce qui s'ajoute -->
+    <section id="ecran2" hidden>
+      <button class="retour" type="button" data-va="1">‹</button>
+      <h2>Travaux en plus</h2>
+      <p class="ou">M. Bernard</p>
+
+      <p class="etiq">Ce qui s'ajoute</p>
+      <div id="lignes"></div>
+
+      <p class="etiq">Vos prestations</p>
+      <div id="catalogue"></div>
+
+      <div class="totaux">
+        <div class="tot"><span>Total HT</span><span id="e2ht">0,00 €</span></div>
+        <div class="tot"><span>TVA 10 %</span><span id="e2tva">0,00 €</span></div>
+        <div class="tot gros"><span>À faire accepter</span><span id="e2ttc">0,00 €</span></div>
+      </div>
+
+      <button class="bouton" type="button" id="versSignature" disabled>Faire signer</button>
+    </section>
+
+    <!-- 3 · le bon et sa signature -->
+    <section id="ecran3" hidden>
+      <button class="retour" type="button" data-va="2">‹</button>
+      <h2>Bon n°1</h2>
+      <p class="ou">Travaux supplémentaires</p>
+      <p class="dit">Chantier M. Bernard · en plus du devis 2026-014</p>
+
+      <div id="recap"></div>
+      <div class="totaux">
+        <div class="tot"><span>Total HT</span><span id="e3ht">0,00 €</span></div>
+        <div class="tot"><span>TVA 10 %</span><span id="e3tva">0,00 €</span></div>
+        <div class="tot gros"><span>Total TTC</span><span id="e3ttc">0,00 €</span></div>
+      </div>
+
+      <p class="etiq">Signature du client</p>
+      <div class="ardoise">
+        <canvas id="toile"></canvas>
+        <div class="invite" id="invite">Signez ici avec le doigt</div>
+      </div>
+      <button class="effacer" type="button" id="effacer">Effacer</button>
+
+      <button class="bouton" type="button" id="envoyer" disabled>Envoyer le bon au client</button>
+      <p class="dit" id="pourquoiDesactive">La signature manque.</p>
+    </section>
+
+    <!-- 4 · signé -->
+    <section id="ecran4" hidden>
+      <div class="recu">
+        <div class="pastille">✓</div>
+        <h3>Bon n°1 signé</h3>
+        <p id="signeLe"></p>
+      </div>
+      <div class="bandeau"><b id="montantAcquis"></b> entrent dans la facture de fin de chantier, en bloc séparé du devis.</div>
+      <button class="bouton creux" type="button" data-va="1">Revenir au chantier</button>
+    </section>
+  </div>
+
+  <div class="note"><span class="t">Ce que cette page ne fait pas</span>
+    Rien n'est enregistré, rien ne part chez personne. Les prix sont des
+    exemples : votre grille les remplacera. La <b>journée à 250 €</b> vient
+    d'elle.
+  </div>
+
+  <p class="autres">
+    <a href="ts-avenant.html">L'avenant et la facture qui l'additionne</a><br>
+    <a href="ts-arret-3.html">Corriger la facture avant qu'elle parte</a><br>
+    <a href="essais.html">Toutes les maquettes</a>
+  </p>
+</div>
+
+<script>
+/* Les prestations proposées — celles de sa fiche de chantier, plus la journée
+   d'homme de sa grille (250 €). Un prix « null » se demanderait à l'écran ;
+   cette planche n'en montre pas, pour ne pas mêler deux questions. */
+const CATALOGUE = [
+  { nom:"Dessouchage",              unite:"forfait", pu:320 },
+  { nom:"Bêchage massif",           unite:"m²",      pu:6 },
+  { nom:"Main-d'œuvre — 1 personne",unite:"jour",    pu:250 },
+  { nom:"Taille des rosiers",       unite:"forfait", pu:90 },
+  { nom:"Évacuation des déchets",   unite:"forfait", pu:180 }
+];
+const TVA = 0.10;
+const euros = n => n.toLocaleString('fr-FR',{minimumFractionDigits:2,maximumFractionDigits:2}) + ' €';
+
+let lignes = [];
+
+const $ = s => document.querySelector(s);
+const ecrans = ['#ecran1','#ecran2','#ecran3','#ecran4'];
+function aller(n){
+  ecrans.forEach((s,i) => $(s).hidden = (i !== n-1));
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+document.querySelectorAll('[data-va]').forEach(b =>
+  b.addEventListener('click', () => aller(+b.dataset.va)));
+
+function totaux(){
+  const ht = lignes.reduce((s,l) => s + l.qte * l.pu, 0);
+  return { ht, tva: ht * TVA, ttc: ht * (1 + TVA) };
+}
+
+function dessinerCatalogue(){
+  $('#catalogue').innerHTML = '';
+  CATALOGUE.forEach((p,i) => {
+    const b = document.createElement('button');
+    b.type = 'button'; b.className = 'presta';
+    b.innerHTML = '<span>' + p.nom + '</span>' +
+      '<span class="pu">' + euros(p.pu) + ' / ' + p.unite + '</span>' +
+      '<span class="plus">+</span>';
+    b.addEventListener('click', () => {
+      lignes.push({ nom:p.nom, unite:p.unite, pu:p.pu, qte:1 });
+      dessiner();
+    });
+    $('#catalogue').appendChild(b);
+  });
+}
+
+function dessiner(){
+  const hote = $('#lignes');
+  hote.innerHTML = '';
+  if (lignes.length === 0){
+    hote.innerHTML = '<p class="vide">Rien pour l’instant. Touchez une prestation ci-dessous.</p>';
+  }
+  lignes.forEach((l,i) => {
+    const d = document.createElement('div');
+    d.className = 'lgn';
+    d.innerHTML =
+      '<span class="nom">' + l.nom + '<small>' + euros(l.pu) + ' / ' + l.unite + '</small></span>' +
+      '<input class="qte" type="number" inputmode="decimal" step="0.5" value="' + l.qte + '">' +
+      '<span class="mt">' + euros(l.qte * l.pu) + '</span>' +
+      '<button class="x" type="button" aria-label="Retirer">×</button>';
+    d.querySelector('.qte').addEventListener('input', e => {
+      const v = parseFloat(e.target.value.replace(',','.'));
+      l.qte = isNaN(v) ? 0 : v;
+      majTotaux();
+      d.querySelector('.mt').textContent = euros(l.qte * l.pu);
+    });
+    d.querySelector('.x').addEventListener('click', () => { lignes.splice(i,1); dessiner(); });
+    hote.appendChild(d);
+  });
+  majTotaux();
+}
+
+function majTotaux(){
+  const t = totaux();
+  $('#e2ht').textContent = euros(t.ht);
+  $('#e2tva').textContent = euros(t.tva);
+  $('#e2ttc').textContent = euros(t.ttc);
+  $('#versSignature').disabled = t.ht <= 0;
+}
+
+function dessinerRecap(){
+  const t = totaux();
+  $('#recap').innerHTML = '';
+  lignes.forEach(l => {
+    const d = document.createElement('div');
+    d.className = 'lgn';
+    d.innerHTML = '<span class="nom">' + l.nom +
+      '<small>' + l.qte + ' ' + l.unite + ' × ' + euros(l.pu) + '</small></span>' +
+      '<span class="mt">' + euros(l.qte * l.pu) + '</span>';
+    $('#recap').appendChild(d);
+  });
+  $('#e3ht').textContent = euros(t.ht);
+  $('#e3tva').textContent = euros(t.tva);
+  $('#e3ttc').textContent = euros(t.ttc);
+}
+
+$('#versSignature').addEventListener('click', () => { dessinerRecap(); aller(3); toileAuxMesures(); });
+
+/* ── La signature ──────────────────────────────────────────────────────────
+   Un canvas à la résolution de l'écran : signer sur une toile deux fois trop
+   petite rend un trait crénelé, et c'est exactement ce qu'un client regarde. */
+const toile = $('#toile');
+const ctx = toile.getContext('2d');
+let signee = false, trace = false, dernier = null;
+
+function toileAuxMesures(){
+  const r = toile.getBoundingClientRect();
+  const dpr = window.devicePixelRatio || 1;
+  const image = signee ? ctx.getImageData(0,0,toile.width,toile.height) : null;
+  toile.width = Math.round(r.width * dpr);
+  toile.height = Math.round(r.height * dpr);
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+  ctx.lineWidth = 2.2; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+  ctx.strokeStyle = getComputedStyle(document.body).color;
+  if (image) ctx.putImageData(image,0,0);
+}
+window.addEventListener('resize', toileAuxMesures);
+
+function point(e){
+  const r = toile.getBoundingClientRect();
+  return { x: e.clientX - r.left, y: e.clientY - r.top };
+}
+toile.addEventListener('pointerdown', e => {
+  toile.setPointerCapture(e.pointerId);
+  trace = true; dernier = point(e);
+  if (!signee){ signee = true; $('#invite').hidden = true; majEnvoi(); }
+});
+toile.addEventListener('pointermove', e => {
+  if (!trace) return;
+  const p = point(e);
+  ctx.beginPath(); ctx.moveTo(dernier.x,dernier.y); ctx.lineTo(p.x,p.y); ctx.stroke();
+  dernier = p;
+});
+['pointerup','pointercancel','pointerleave'].forEach(t =>
+  toile.addEventListener(t, () => { trace = false; }));
+
+$('#effacer').addEventListener('click', () => {
+  ctx.clearRect(0,0,toile.width,toile.height);
+  signee = false; $('#invite').hidden = false; majEnvoi();
+});
+
+function majEnvoi(){
+  $('#envoyer').disabled = !signee;
+  $('#pourquoiDesactive').textContent = signee
+    ? 'Le bon part par courriel, et reste dans le chantier.'
+    : 'La signature manque.';
+}
+
+$('#envoyer').addEventListener('click', () => {
+  const t = totaux();
+  const d = new Date();
+  $('#signeLe').textContent = 'Signé par M. Bernard le ' +
+    d.toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'}) +
+    ', à ' + d.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
+  $('#montantAcquis').textContent = euros(t.ttc) + ' TTC';
+  aller(4);
+});
+
+dessinerCatalogue();
+dessiner();
+</script>
+</body>
+</html>

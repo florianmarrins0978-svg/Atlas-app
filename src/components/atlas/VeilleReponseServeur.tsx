@@ -76,7 +76,7 @@ export default function VeilleReponseServeur() {
           <button
             type="button"
             onClick={() => window.location.reload()}
-            className="rounded-full px-4 py-2.5 text-[14px] font-medium text-white"
+            className="atlas-plein rounded-full px-4 py-2.5 text-[14px] font-medium text-white"
             style={{ backgroundColor: colors.rust, fontFamily: font.display }}
           >
             Recharger
