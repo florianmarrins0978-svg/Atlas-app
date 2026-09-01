@@ -65,6 +65,28 @@ Facturé le 20 août » —, et la proposition C perd son rang régulier dès qu
 chantier n'a pas de date. Rien n'est codé tant qu'il n'a pas choisi
 (`CLAUDE.md` §3 bis) ; l'attente est notée dans `TODO.md`, réserve comprise :
 l'application ne garde pas de date de réalisation distincte de celle du planning.
+### Trois écartés qu'il a fait rentrer : l'étiquette « Facturer » et les deux bandeaux
+
+**Sa réponse, après avoir lu la liste des sept écartés :** *« l'étiquette à
+facturer et les deux bandeaux de confirmation, rajoute-les »*. Les quatre autres
+restent dehors — le point clignotant, la barre de progression, l'étiquette de
+statut d'une journée et l'interrupteur du temps passé.
+
+**Ce qu'ils reçoivent n'est pas la même chose, et il faut le savoir :**
+
+| | |
+|---|---|
+| l'étiquette « Facturer » | le vert **et** le geste : elle vit dans le lien de la ligne, l'appuyer l'active vraiment |
+| les deux bandeaux | le vert **seulement** : ce sont des `role="status"`, rien ne s'y appuie et `:active` ne s'y déclenchera jamais |
+
+Le dire plutôt que de laisser croire que trois éléments se comportent pareil :
+un bandeau qui aurait l'air d'un bouton sans en être un se toucherait pour rien.
+
+**Un point que je n'ai pas su élucider, et qui s'écrit plutôt que de se taire :**
+un premier passage des suites a rendu 299/300 sans que j'aie gardé le journal,
+donc sans pouvoir nommer la rouge. Les deux passages suivants, journal complet
+gardé, donnent 300/300. Ce n'est pas « un flottement » — c'est une inconnue.
+
 ### Le geste et le vert sur TOUS les boutons pleins, et sur les deux notes vocales
 
 **Sa demande :** *« pour chaque bouton fais également le geste discret ; lorsque
@@ -98,6 +120,38 @@ divergent toujours ; celle de la classe reste seule.
 Vérifié à l'écran : la note vocale de la fiche client au #29382F, 0,975 et voile
 0,14 sous le doigt. 300/300 suites base — le 299/300 du premier passage venait
 de mon serveur laissé tournant sur la même base, ce que `CLAUDE.md` §5 interdit.
+
+### Les travaux supplémentaires : le manque est réel, quatre solutions posées
+
+Son constat : *« si on effectue des travaux en plus chez un client, on n'a aucun
+moyen de rajouter les TS sur la facture »*. Vérifié dans le code — la facture
+recopie les lignes du devis et ne se modifie plus.
+
+`docs/travaux-supplementaires.md` : ce que permet l'application, ce que font les
+artisans (avenant signé avant exécution, article 1793 du Code civil), et quatre
+solutions chiffrées en coût et en risque. **Rien n'est codé** (`CLAUDE.md`
+§3 bis).
+
+Un défaut trouvé au passage, et noté dans `TODO.md` : une facture déjà en
+brouillon ignore silencieusement un devis plus récent (`factures.ts:102`) — le
+supplément disparaît sans un mot à l'écran.
+
+Sa forme est choisie le 1ᵉʳ septembre — le formulaire se déroule sous le bouton
+—, et sa question sur la TVA a trouvé une réponse qui pèse : **une facture qui
+ne ventile pas ses taux est taxée en entier au taux le plus élevé** (article
+268 bis du CGI). Le taux se choisit donc à la ligne, et les totaux le ventilent.
+
+Puis trois planches à essayer, liées depuis `appli/essais.html` :
+`ts-bon-sur-place.html` (la signature au doigt, tracé réel),
+`ts-avenant.html` (une facture ou deux, et les lignes en moins),
+`ts-arret-3.html` (bloquer ou avertir sur un supplément non signé), puis
+`ts-sur-la-facture.html` — son idée du soir, calquée sur sa facture réelle :
+les travaux en plus entrent dans un bloc à part avant l'envoi, et la chaîne
+existante sert telle quelle. Légal tant que la facture est en brouillon
+(`docs/travaux-supplementaires.md` §6). Les totaux
+s'y calculent pour de vrai — une maquette qui affiche un total faux fait douter
+de tout le reste. Parcourues au navigateur, captures regardées, mode nuit
+compris.
 
 ### Il a choisi la ligne, et l'a corrigée trois fois : plus aucun aplat
 

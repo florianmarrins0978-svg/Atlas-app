@@ -393,7 +393,11 @@ function Ligne({ ligne, annee }: { ligne: LigneAffichee; annee: string }) {
       </span>
       {ligne.aFacturer ? (
         <span
-          className="flex min-h-11 flex-none items-center rounded-full px-[17px] text-[12.5px] font-semibold uppercase"
+          // **Il l'a demandée dedans le 31 août**, après avoir vu la liste des
+          // écartés : elle prend le vert des boutons pleins et leur geste. Elle
+          // vit à l'intérieur du lien de la ligne — l'appuyer active donc bien
+          // l'étiquette elle-même, et le geste se voit.
+          className="atlas-plein flex min-h-11 flex-none items-center rounded-full px-[17px] text-[12.5px] font-semibold uppercase"
           style={{ backgroundColor: colors.rust, color: colors.card, letterSpacing: "0.12em" }}
           // **Un repère plutôt que son texte** (`CLAUDE.md` §5 bis) : la capsule
           // s'appelait « Facturer » jusqu'au 31 août 2026, et les contrôles qui

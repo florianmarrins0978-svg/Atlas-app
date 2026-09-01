@@ -1,0 +1,396 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas — les travaux en plus, ajoutés sur la facture</title>
+<style>
+/*
+  SON IDÉE DU 31 AOÛT 2026, AU SOIR — capture de l'écran facture à l'appui :
+  « depuis cette page, avant d'envoyer la facture, il faut (si c'est légal)
+    pouvoir la modifier en stipulant que c'est du TS, et comme ça on a déjà
+    toute la chaîne de production de créée pour l'envoyer au client ».
+
+  C'est légal tant que la facture est en BROUILLON : elle n'existe pas encore.
+  Une fois envoyée, elle ne bouge plus — il faut un avoir.
+
+  ─────────────────────────────────────────────────────────────────────────────
+  CE QU'IL A TRANCHÉ, ET DANS QUEL ORDRE
+
+  · 1ᵉʳ septembre, 00 h 56 — le geste est retenu ; le titre du bloc ne porte que
+    « Travaux supplémentaires », en doré ; la question de l'accord du client
+    disparaît (« pas besoin de ça »). Le risque, lui, reste : c'est le bon signé
+    sur place qui y répond (`ts-bon-sur-place.html`), pas la facture.
+  · 1ᵉʳ septembre, 01 h 25 — **la forme est choisie : déroulé sous le bouton.**
+    L'écran à part est retiré, et l'interrupteur avec : une planche qui garde
+    l'option écartée fait rechoisir à chaque fois.
+  · Même message — **les raccourcis de prestations sont retirés.**
+  · Même message — **tous les boutons s'alignent sur « Envoyer la facture »**,
+    qui est le bouton de référence. D'où les plages de même gabarit : le bouton
+    d'ajout vit désormais DANS une plage, comme le canal d'envoi, et non plus à
+    la largeur de la page.
+
+  ─────────────────────────────────────────────────────────────────────────────
+  SA QUESTION DE 01 h 25 : « EST-IL POSSIBLE QUE LES TS N'AIENT PAS LA MÊME
+  TVA ? » — OUI, et c'est plus grave qu'un confort.
+
+  Un paysagiste facture à trois taux : 5,5 % (entretien à domicile),
+  10 % (travaux sur un logement de plus de deux ans), 20 % (création, terrasse,
+  clôture, ou client professionnel). Le devis peut être à 10 % et le supplément
+  à 20 % — une haie taillée puis une terrasse posée, ce n'est pas le même taux.
+
+  **ARTICLE 268 bis DU CGI : une facture qui ne VENTILE PAS ses taux est taxée
+  ENTIÈREMENT AU TAUX LE PLUS ÉLEVÉ.** Un supplément à 20 % noyé dans une
+  facture à 10 % ne coûte donc pas 10 points sur le supplément : il fait passer
+  TOUTE la facture à 20 %. Sur cet exemple, 50 € de TVA en trop, à sa charge.
+
+  D'où : **le taux se choisit à la LIGNE**, et les totaux le ventilent — une
+  ligne de TVA par taux réellement employé, jamais un taux moyen.
+*/
+:root{
+  --bone:#f5f3ee; --cream:#faf9f5; --paper:#ece9e1;
+  --charcoal:#1c1c1a; --charcoal-soft:#4a4a44; --muted:#8a8578;
+  --pine:#2f3b2f; --or:#B98B47; --alert:#9C3B2E;
+  --line:rgba(28,28,26,.12); --line-soft:rgba(28,28,26,.07);
+  --surPlein:#faf9f5;
+}
+@media (prefers-color-scheme: dark){
+  :root{ --bone:#171613; --cream:#1e1c18; --paper:#262420; --charcoal:#e9e5dc;
+         --charcoal-soft:#c9c4b8; --muted:#8a867c; --or:#C9A15E;
+         --pine:#9db98f; --alert:#d98b7c; --surPlein:#171613;
+         --line:rgba(233,229,220,.16); --line-soft:rgba(233,229,220,.09); }
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;background:var(--bone);color:var(--charcoal);
+     font:16px/1.55 -apple-system,"Segoe UI",Roboto,sans-serif;
+     padding:30px 0 56px;-webkit-text-size-adjust:100%}
+.page{max-width:430px;margin:0 auto;padding:0 20px}
+.sur{margin:0;font-size:9.5px;font-weight:500;letter-spacing:.3em;
+     text-transform:uppercase;color:var(--or)}
+h1{margin:10px 0 0;font-family:Georgia,serif;font-weight:400;font-size:30px;
+   line-height:1.08;letter-spacing:-.018em}
+.chapo{margin:11px 0 0;font-size:14px;color:var(--charcoal-soft);line-height:1.6}
+.chapo b{color:var(--charcoal)}
+
+/* TOUTES les plages ont le même gabarit : c'est ce qui aligne les boutons
+   entre eux. « Envoyer la facture » est la référence — sa demande du
+   1ᵉʳ septembre —, donc aucun bouton ne vit hors d'une plage. */
+.ecran{margin-top:18px}
+.plage{background:var(--cream);border-radius:16px;padding:16px 17px;margin-top:12px}
+.entete{font-family:Georgia,serif;font-size:17px}
+.echeance{display:flex;align-items:center;gap:10px;margin-top:10px;
+          font-size:13px;color:var(--muted)}
+.echeance .jour{background:var(--bone);border:1px solid var(--line);border-radius:9px;
+                padding:9px 12px;font-size:15px;color:var(--charcoal)}
+.cap{margin:0;font-size:9.5px;font-weight:600;letter-spacing:.22em;
+     text-transform:uppercase;color:var(--muted)}
+.cap.ts{color:var(--or)}
+
+.l{display:flex;justify-content:space-between;align-items:baseline;gap:12px;
+   padding:8px 0;font-size:14.5px;font-variant-numeric:tabular-nums}
+.l .quoi{flex:1;line-height:1.35}
+.l .quoi small{display:block;color:var(--muted);font-size:11.5px}
+.l .mt{color:var(--muted);white-space:nowrap}
+.l .x{flex:none;width:30px;height:30px;border:0;background:none;color:var(--muted);
+      font-size:16px;cursor:pointer}
+
+.tot{display:flex;justify-content:space-between;padding:3px 0;font-size:14px;
+     color:var(--muted);font-variant-numeric:tabular-nums}
+.sep{height:1px;background:var(--line);margin:10px 0}
+.ttc{text-align:center;margin-top:6px}
+.ttc .cap{display:block}
+.ttc .chiffre{font-family:Georgia,serif;font-size:34px;color:var(--or);
+              line-height:1.2;font-variant-numeric:tabular-nums}
+.liens{text-align:center;margin-top:12px;font-size:14px;line-height:2}
+.liens a{color:var(--charcoal);text-decoration:underline}
+.liens .fichier{font-size:13px;color:var(--charcoal-soft)}
+
+.question{margin:0 0 10px;text-align:center;font-size:14px;color:var(--muted)}
+
+/* Les trois formes de bouton, toutes à la largeur de la plage. */
+.ajouter{display:block;width:100%;background:none;border:1px solid var(--line);
+         border-radius:999px;padding:14px 18px;font:inherit;font-size:15px;
+         font-family:Georgia,serif;color:var(--charcoal);cursor:pointer}
+.valider{display:block;width:100%;margin-top:12px;background:var(--pine);
+         color:var(--surPlein);border:0;border-radius:999px;padding:14px 18px;
+         font-size:15px;font-family:Georgia,serif;cursor:pointer}
+.valider[disabled]{opacity:.38;cursor:default}
+.envoyer{display:block;width:100%;margin-top:12px;background:var(--pine);
+         color:var(--surPlein);border:0;border-radius:999px;padding:14px 18px;
+         font-size:15px;font-family:Georgia,serif;cursor:pointer}
+
+.saisie input{width:100%;margin-top:8px;background:var(--bone);border:1px solid var(--line);
+              border-radius:10px;padding:12px 12px;font:inherit;font-size:14.5px;color:inherit}
+.saisie .duo{display:flex;gap:8px}
+.saisie .duo input{flex:1}
+
+/* Le taux, à la ligne : sans ventilation, TOUTE la facture passerait au taux
+   le plus élevé (article 268 bis du CGI). */
+.taux{display:flex;gap:8px;margin-top:10px}
+.taux button{flex:1;min-height:46px;background:var(--bone);border:0;border-radius:10px;
+             font:inherit;font-size:14px;color:var(--charcoal-soft);cursor:pointer;
+             box-shadow:inset 0 0 0 1px var(--line);font-variant-numeric:tabular-nums}
+.taux button[aria-selected="true"]{box-shadow:inset 0 0 0 1.5px var(--or);
+             background:var(--paper);color:var(--charcoal)}
+
+.canal{display:flex;gap:9px;margin-top:10px}
+.canal button{flex:1;min-height:46px;background:none;border:0;border-radius:999px;
+              font:inherit;font-size:14px;color:var(--charcoal);cursor:pointer;
+              box-shadow:inset 0 0 0 1px var(--line)}
+.canal button[aria-selected="true"]{box-shadow:inset 0 0 0 1.5px var(--or);background:var(--paper)}
+.au{margin:8px 0 0;text-align:center;font-size:12.5px;color:var(--muted)}
+
+.papier{margin-top:12px;background:var(--bone);border-radius:6px;padding:16px 15px;
+        box-shadow:inset 0 0 0 1px var(--line)}
+.papier .tete{display:flex;justify-content:space-between;align-items:baseline}
+.papier .num{font-family:Georgia,serif;font-size:15px}
+.papier .jour{font-size:11.5px;color:var(--muted)}
+.papier h4{margin:14px 0 3px;font-size:9px;font-weight:600;letter-spacing:.2em;
+           text-transform:uppercase;color:var(--or)}
+.papier .pl{display:flex;justify-content:space-between;gap:10px;padding:4px 0;
+            font-size:12.5px;color:var(--charcoal-soft);font-variant-numeric:tabular-nums}
+.papier .pl span:first-child{flex:1}
+.papier .fin{margin-top:12px;padding-top:9px;border-top:1px solid var(--line)}
+
+.note{margin-top:20px;background:var(--cream);border-radius:13px;padding:15px 16px;
+      font-size:12.5px;line-height:1.65;color:var(--charcoal-soft);
+      box-shadow:inset 0 0 0 1px var(--line)}
+.note .t{display:block;margin-bottom:6px;font-size:9px;font-weight:600;
+         letter-spacing:.2em;text-transform:uppercase;color:var(--or)}
+.note b{color:var(--charcoal)}
+.note a{color:var(--or)}
+.autres{margin-top:14px;font-size:13px;line-height:2}
+.autres a{color:var(--or)}
+[hidden]{display:none!important}
+</style>
+</head>
+<body>
+<div class="page">
+  <p class="sur">Travaux en plus · votre idée</p>
+  <h1>Sur la facture</h1>
+  <p class="chapo">Votre écran, tel qu'il est. <b>Ce qui s'ajoute entre dans un bloc à part</b>, avec <b>son propre taux de TVA</b>.</p>
+
+  <div class="ecran">
+    <div class="plage">
+      <div class="entete">F2026-000001 — Mme Grospiron</div>
+      <div class="echeance">À régler avant le <span class="jour">28 sept. 2026</span></div>
+    </div>
+
+    <div class="plage">
+      <p class="cap">Reprise du devis</p>
+      <div class="l"><span class="quoi">Tonte du gazon et entretien des espaces verts (600 m²)<small>TVA 20 %</small></span><span class="mt">350,00 €</span></div>
+      <div class="l"><span class="quoi">Haie de laurier (50 ml)<small>TVA 20 %</small></span><span class="mt">150,00 €</span></div>
+    </div>
+
+    <div class="plage" id="plageTs" hidden>
+      <p class="cap ts">Travaux supplémentaires</p>
+      <div id="lignesTs"></div>
+    </div>
+
+    <div class="plage">
+      <div id="totaux"></div>
+      <div class="sep"></div>
+      <div class="ttc">
+        <span class="cap">Total TTC</span>
+        <span class="chiffre" id="ttc">600,00 €</span>
+      </div>
+      <p class="liens">
+        <a href="#apercu" id="voirPdf">Voir la facture en PDF</a><br>
+        <span class="fichier">Télécharger (F2026-000001-brouillon.pdf)</span>
+      </p>
+    </div>
+
+    <div class="plage">
+      <p class="question">Rien n'a changé depuis le devis ?</p>
+      <button class="ajouter" type="button" id="ouvrir">Ajouter des travaux supplémentaires</button>
+    </div>
+
+    <div class="plage saisie" id="saisie" hidden>
+      <input id="nNom" type="text" placeholder="Ce qui a été fait en plus">
+      <div class="duo">
+        <input id="nQte" type="text" inputmode="decimal" placeholder="Quantité et unité" value="1 forfait">
+        <input id="nPu" type="text" inputmode="decimal" placeholder="Prix unitaire €">
+      </div>
+      <div class="taux" id="taux">
+        <button type="button" data-taux="20" aria-selected="true">TVA 20 %</button>
+        <button type="button" data-taux="10" aria-selected="false">10 %</button>
+        <button type="button" data-taux="5.5" aria-selected="false">5,5 %</button>
+      </div>
+      <button class="valider" type="button" id="valider">Ajouter à la facture</button>
+    </div>
+
+    <div class="plage" id="apercu" hidden>
+      <p class="cap">Ce que reçoit Mme Grospiron</p>
+      <div class="papier" id="papier"></div>
+    </div>
+
+    <div class="plage">
+      <p class="cap">Comment lui envoyer sa facture ?</p>
+      <div class="canal">
+        <button type="button" data-canal="sms" aria-selected="true">Par SMS</button>
+        <button type="button" data-canal="mail" aria-selected="false">Par e-mail</button>
+      </div>
+      <p class="au">Au 0679984514</p>
+      <button class="envoyer" type="button">Envoyer la facture</button>
+    </div>
+  </div>
+
+  <div class="note"><span class="t">Pourquoi le taux se choisit à la ligne</span>
+    Vous facturez à trois taux — 5,5 % l'entretien, 10 % les travaux sur un
+    logement de plus de deux ans, 20 % la création et les professionnels. Une
+    facture qui <b>ne ventile pas ses taux est taxée en entier au plus élevé</b>
+    (article 268 bis du Code général des impôts) : un supplément à 20 % noyé
+    dans une facture à 10 % ferait passer <b>toute</b> la facture à 20 %.
+  </div>
+
+  <div class="note"><span class="t">Est-ce légal ? oui</span>
+    Tant qu'elle est en <b>brouillon</b>, la facture se corrige librement. Une
+    fois <b>envoyée</b>, elle ne bouge plus — il faut un avoir. Chaque ligne
+    porte sa <b>quantité, son prix unitaire et son taux</b>.
+  </div>
+
+  <div class="note"><span class="t">Ce que cette page ne fait pas</span>
+    Rien n'est enregistré, rien ne part chez personne. Le PDF ne s'ouvre pas :
+    <b>son aperçu s'affiche plus haut</b>.
+  </div>
+
+  <p class="autres">
+    <a href="ts-bon-sur-place.html">Le faire signer sur place</a><br>
+    <a href="ts-avenant.html">L'avenant, si vous voulez la trace avant</a><br>
+    <a href="essais.html">Toutes les maquettes</a>
+  </p>
+</div>
+
+<script>
+/* Le devis de sa facture, au centime. Ces deux lignes ne bougent pas : ce sont
+   celles qu'elle a acceptées, et les retoucher ferait mentir « reprise du
+   devis ». Ce qui s'ajoute vit dans l'autre bloc, avec SON taux. */
+const DEVIS = [
+  { quoi:'Tonte du gazon et entretien des espaces verts (600 m²)', mt:350, taux:20 },
+  { quoi:'Haie de laurier (50 ml)', mt:150, taux:20 }
+];
+const euros = n => n.toLocaleString('fr-FR',{minimumFractionDigits:2,maximumFractionDigits:2}) + ' €';
+const pourcent = t => (t % 1 === 0 ? String(t) : String(t).replace('.',',')) + '\u202f%';
+const $ = s => document.querySelector(s);
+
+let ts = [];
+let tauxChoisi = 20;
+
+/* ── Les totaux, VENTILÉS PAR TAUX ────────────────────────────────────────
+   Un seul « TVA 20 % » suffisait tant que la facture n'avait qu'un taux. Dès
+   qu'il y en a deux, une ligne par taux est obligatoire : sans elle, tout
+   serait taxé au plus élevé (article 268 bis du CGI). */
+function parTaux(){
+  const socles = new Map();
+  [...DEVIS.map(l => ({ mt:l.mt, taux:l.taux })), ...ts.map(l => ({ mt:l.mt, taux:l.taux }))]
+    .forEach(l => socles.set(l.taux, (socles.get(l.taux) || 0) + l.mt));
+  return [...socles.entries()]
+    .map(([taux, ht]) => ({ taux, ht, tva: ht * taux / 100 }))
+    .sort((a,b) => b.taux - a.taux);
+}
+
+function dessinerTotaux(){
+  const parts = parTaux();
+  const ht = parts.reduce((s,p) => s + p.ht, 0);
+  const tva = parts.reduce((s,p) => s + p.tva, 0);
+  let h = '<div class="tot"><span>Total HT</span><span>' + euros(ht) + '</span></div>';
+  parts.forEach(p => {
+    /* Le socle est rappelé dès qu'il y a deux taux : « TVA 20 % » seul ne dit
+       pas sur quoi elle porte, et c'est ce que le client vérifie. */
+    const socle = parts.length > 1 ? ' sur ' + euros(p.ht) : '';
+    h += '<div class="tot"><span>TVA ' + pourcent(p.taux) + socle + '</span><span>' + euros(p.tva) + '</span></div>';
+  });
+  $('#totaux').innerHTML = h;
+  $('#ttc').textContent = euros(ht + tva);
+  dessinerPapier(parts, ht, tva);
+}
+
+/* ── Les lignes ajoutées ──────────────────────────────────────────────────── */
+function dessiner(){
+  $('#plageTs').hidden = ts.length === 0;
+  const hote = $('#lignesTs');
+  hote.innerHTML = '';
+  ts.forEach((l,i) => {
+    const d = document.createElement('div');
+    d.className = 'l';
+    d.innerHTML = '<span class="quoi">' + l.nom +
+                  '<small>' + l.qte + ' × ' + euros(l.pu) + ' · TVA ' + pourcent(l.taux) + '</small></span>' +
+                  '<span class="mt">' + euros(l.mt) + '</span>' +
+                  '<button class="x" type="button" aria-label="Retirer">×</button>';
+    d.querySelector('.x').addEventListener('click', () => { ts.splice(i,1); dessiner(); });
+    hote.appendChild(d);
+  });
+  dessinerTotaux();
+}
+
+/* ── L'aperçu du papier ───────────────────────────────────────────────────── */
+function dessinerPapier(parts, ht, tva){
+  let h = '<div class="tete"><span class="num">F2026-000001</span>' +
+          '<span class="jour">Mme Grospiron</span></div>' +
+          '<h4>Travaux du devis</h4>';
+  DEVIS.forEach(l => h += '<div class="pl"><span>' + l.quoi + ' · TVA ' + pourcent(l.taux) +
+                          '</span><span>' + euros(l.mt) + '</span></div>');
+  if (ts.length){
+    h += '<h4>Travaux supplémentaires</h4>';
+    ts.forEach(l => h += '<div class="pl"><span>' + l.nom + ' · ' + l.qte + ' × ' + euros(l.pu) +
+                         ' · TVA ' + pourcent(l.taux) + '</span><span>' + euros(l.mt) + '</span></div>');
+  }
+  h += '<div class="fin"><div class="pl"><span>Total HT</span><span>' + euros(ht) + '</span></div>';
+  parts.forEach(p => h += '<div class="pl"><span>TVA ' + pourcent(p.taux) + ' sur ' + euros(p.ht) +
+                          '</span><span>' + euros(p.tva) + '</span></div>');
+  h += '<div class="pl"><span>Total TTC</span><span>' + euros(ht + tva) + '</span></div></div>';
+  $('#papier').innerHTML = h;
+}
+
+/* ── La saisie, déroulée sous le bouton — sa forme, choisie le 1ᵉʳ sept. ──── */
+$('#ouvrir').addEventListener('click', () => {
+  const s = $('#saisie');
+  s.hidden = !s.hidden;
+  if (!s.hidden) $('#nNom').focus();
+});
+
+document.querySelectorAll('[data-taux]').forEach(b => b.addEventListener('click', () => {
+  document.querySelectorAll('[data-taux]').forEach(x => x.setAttribute('aria-selected', x === b));
+  tauxChoisi = parseFloat(b.dataset.taux);
+}));
+
+function nombre(v){
+  const n = parseFloat(String(v).replace(',','.').replace(/[^0-9.\-]/g,''));
+  return isNaN(n) ? null : n;
+}
+function majValider(){
+  $('#valider').disabled = !($('#nNom').value.trim() && nombre($('#nPu').value) !== null);
+}
+['#nNom','#nQte','#nPu'].forEach(s => $(s).addEventListener('input', majValider));
+
+$('#valider').addEventListener('click', () => {
+  const nom = $('#nNom').value.trim();
+  const qte = $('#nQte').value.trim() || '1';
+  const pu  = nombre($('#nPu').value);
+  const combien = nombre(qte);
+  if (!nom || pu === null) return;
+  ts.push({ nom, qte, pu, taux: tauxChoisi, mt: (combien === null ? 1 : combien) * pu });
+  $('#nNom').value = ''; $('#nQte').value = '1 forfait'; $('#nPu').value = '';
+  majValider();
+  /* Elle se referme : déroulée, elle pousse le total et l'envoi hors de
+     l'écran — c'est lui qui l'a relevé avant de choisir cette forme. */
+  $('#saisie').hidden = true;
+  dessiner();
+});
+
+document.querySelectorAll('[data-canal]').forEach(b => b.addEventListener('click', () => {
+  document.querySelectorAll('[data-canal]').forEach(x => x.setAttribute('aria-selected', x === b));
+  $('.au').textContent = b.dataset.canal === 'sms' ? 'Au 0679984514' : 'À mme.grospiron@exemple.fr';
+}));
+
+$('#voirPdf').addEventListener('click', e => {
+  e.preventDefault();
+  $('#apercu').hidden = false;
+  $('#apercu').scrollIntoView({ behavior:'smooth', block:'center' });
+});
+
+majValider();
+dessiner();
+</script>
+</body>
+</html>

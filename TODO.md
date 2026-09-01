@@ -36,6 +36,48 @@ celle du planning — l'application n'en garde aucune autre. Un chantier clôtur
 sans être passé par le planning n'a donc pas de date, et sa rangée n'en affiche
 aucune. S'il veut une vraie date de réalisation, il faudra la saisir à la
 clôture : c'est un geste de plus pour lui, et il n'a pas répondu.
+## EN ATTENTE DE SA DÉCISION : les travaux supplémentaires sur la facture (31 août 2026)
+
+**Son constat :** *« si on effectue des travaux en plus chez un client, on n'a
+aucun moyen de rajouter les TS sur la facture »*. Il est juste : la facture
+recopie le devis et ne se modifie plus (`factures.ts:201`).
+
+Quatre solutions, ce qu'elles coûtent et ce qu'elles protègent :
+**`docs/travaux-supplementaires.md`**. Rien n'est codé — la décision lui revient
+(`CLAUDE.md` §3 bis).
+
+**Trois planches à essayer**, parcourues dans un vrai navigateur avant d'être
+transmises (`scripts/` non concerné : le parcours a été joué à la main, captures
+regardées, mode nuit compris) :
+
+| Planche | Ce qu'elle fait trancher |
+|---|---|
+| `appli/ts-bon-sur-place.html` | la signature au doigt (C) — le tracé est réel |
+| `appli/ts-avenant.html` | **une facture ou deux**, et les travaux **en moins** (A) |
+| `appli/ts-arret-3.html` | **bloquer ou avertir** quand rien n'est signé (B et D) |
+| `appli/ts-sur-la-facture.html` | **son idée**, sur sa vraie facture F2026-000001 — et **sa question ouverte** : écran à part ou encadré déroulé |
+
+**Elles ne seront à son adresse qu'une fois sur `main`** : `pages.yml` ne publie
+que sur `main`, et son accord n'a pas encore été demandé.
+
+**Retiré sur sa demande du 1ᵉʳ septembre : la question de l'accord du client
+(SMS, courriel, signé) ne se pose plus à l'écran — « pas besoin de ça ». Le
+risque d'impayé, lui, ne disparaît pas ; il se traite par le bon signé (C).**
+
+**Il a tranché le sens le 31 août au soir : ça se passe SUR la facture, avant
+l'envoi** — la chaîne d'envoi existe déjà. C'est légal en brouillon ; voir §6 du
+document pour les trois bornes (détail par ligne, bloc séparé, trace d'accord).
+
+Recommandation posée : **le bon signé sur place (C), puis l'avenant (A)** ;
+jamais une facture librement modifiable toute seule — elle facture ce que le
+client n'a pas accepté, et l'article 1793 du Code civil le laisse alors refuser
+le supplément en entier.
+
+**Un défaut à corriger quoi qu'il choisisse :** `terminerChantier` rend la
+facture déjà en brouillon **sans regarder si un devis plus récent existe**
+(`factures.ts:102`). Un devis v2 fait après « Fin de chantier » n'atteint donc
+jamais la facture, et rien ne le dit à l'écran. *Lu dans le code, non rejoué à
+l'écran.*
 
 ## EN ATTENTE DE SA RÉPONSE : l'aplatissement de la touche d'envoi (31 août 2026)
 
