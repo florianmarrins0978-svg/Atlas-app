@@ -20271,7 +20271,7 @@ pas laquelle manque.
 
 ---
 
-## 227. La fiche du chantier ne se supprime pas : elle porte les photos, et six écrans y reviennent
+## 227. La fiche du chantier ne se supprime pas d'un trait : huit chemins y mènent
 
 **Sa demande du 31 août 2026, capture à l'appui :** *« des fois je retombe sur
 cette page, je pense qu'elle sert plus à rien maintenant ; vérifie, si oui on la
@@ -20282,19 +20282,31 @@ jusqu'au tiroir.
 **La condition n'est pas remplie, et le vérifier a pris dix minutes.** Cet écran
 n'est pas une page oubliée : c'est le carrefour du chantier.
 
-| Ce qui n'existe QUE là | Où c'était avant |
+| Ce qui n'existe QUE là | |
 |---|---|
-| **la pellicule** — ajouter, regarder, retirer une photo d'un chantier existant | `/chantiers/[id]/photos`, supprimé le 11 août 2026 |
-| **« Créer la facture »** d'un chantier planifié pas encore terminé | nulle part — l'onglet Terminés attend que la date d'intervention soit passée |
-| **la porte vers la fiche du client** depuis le chantier | ajoutée ici le 16 août 2026 |
+| **« Créer la facture »** d'un chantier planifié pas encore terminé | l'onglet Terminés attend que la date d'intervention soit passée |
+| **le tiroir** — les étapes restantes, et la porte vers la fiche du client | posée ici le 16 août 2026 |
+
+**ET LA PELLICULE N'EN FAIT PAS PARTIE — ce paragraphe l'a d'abord affirmé, et
+c'était FAUX.** C'est le patron qui l'a relevé, le 1er septembre 2026 :
+*« mais maintenant on ajoute des photos depuis cette page ? La fiche client »*.
+Oui : depuis §226, la veille, la fiche client porte le MÊME composant
+`Pellicule`, nourri des photos du chantier. L'erreur vient d'avoir cherché
+l'écran supprimé (`/chantiers/[id]/photos`, 11 août) sans regarder l'écran
+ajouté la veille — un état du dépôt vieux de vingt-quatre heures.
+
+**Ce que la correction change au verdict : rien, et il faut le dire aussi.**
+La fiche du chantier reste en place — mais pour la facture d'un chantier
+planifié et pour son tiroir, non plus pour les photos.
 
 Et l'on y arrive de partout : la flèche de retour de **six** écrans
 (`informations`, `prix`, `note-vocale`, `transcription`, `export`,
 `devis-complet` quand le client est renseigné — `retour-du-devis.ts`), la carte
 du **planning**, une **notification** de devis, et la reprise de la liste pour
 les trois états qui n'ont pas d'écran à eux (`lienDeReprise` : photos, dictée,
-chantier planifié). Le supprimer, c'est perdre les photos et laisser neuf portes
-dans le vide.
+chantier planifié). Le supprimer, ce n'est donc pas une ligne de code : c'est
+déménager « Créer la facture », et redresser huit chemins qui pointeraient dans
+le vide.
 
 **Ce qui EST vrai dans sa remarque, en revanche.** Il n'y retombe pas par
 hasard : sur un devis prêt à partir, la flèche du devis le dépose ici — et ici,

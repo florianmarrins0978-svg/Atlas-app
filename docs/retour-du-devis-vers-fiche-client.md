@@ -11,13 +11,24 @@ fiche du chantier (`/chantiers/[id]`).
 
 | Ce qui n'existe QUE là | |
 |---|---|
-| la pellicule de photos | ajouter, regarder, retirer une photo d'un chantier existant. L'écran `/chantiers/[id]/photos` a été supprimé le 11 août |
 | « Créer la facture » | pour un chantier planifié dont la date n'est pas passée — l'onglet Terminés ne le montre pas encore |
-| la porte vers la fiche du client | posée là le 16 août |
+| le tiroir | les étapes restantes, et la porte vers la fiche du client |
 
-**Et neuf chemins y mènent** : la flèche de retour de six écrans, la carte du
+**Et huit chemins y mènent** : la flèche de retour de cinq écrans, la carte du
 planning, une notification de devis, et la reprise depuis la liste pour les
-trois états qui n'ont pas d'écran à eux. La supprimer, c'est perdre les photos.
+états qui n'ont pas d'écran à eux.
+
+### CE QUE J'AI DIT DE FAUX, ET QU'IL A CORRIGÉ
+
+J'ai d'abord écrit que la pellicule de photos n'existait QUE sur cette page.
+**C'est faux depuis la veille** : la fiche client porte le même composant, avec
+les photos du chantier — il l'a relevé le 1er septembre (*« mais maintenant on
+ajoute des photos depuis cette page ? »*). L'erreur vient d'avoir cherché
+l'écran supprimé le 11 août sans regarder celui ajouté la veille.
+
+Le verdict ne change pas — la page reste —, mais la raison, si : c'est la
+facture d'un chantier planifié et son tiroir, plus les photos. La supprimer
+reste un vrai lot : déménager « Créer la facture », et redresser huit chemins.
 
 Le fichier qui le fonde : `src/app/chantiers/[id]/page.tsx`. Le détail dans
 `ARCHITECTURE.md` §227.

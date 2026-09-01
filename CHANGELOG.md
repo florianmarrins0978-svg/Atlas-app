@@ -28,9 +28,10 @@ navigateur, le chantier acquérant son client par l'écran.
 ### La fiche du chantier ne se supprime pas — vérifié
 
 *« Des fois je retombe sur cette page, je pense qu'elle sert plus à rien ;
-vérifie, si oui on la supprime. »* Elle porte la seule pellicule de photos d'un
-chantier existant, la sortie vers la facture d'un chantier planifié, et neuf
-chemins y mènent. Ce qui l'y ramenait pour rien, c'était le retour du devis —
+vérifie, si oui on la supprime. »* Elle porte la sortie vers la facture d'un
+chantier planifié, son tiroir, et huit chemins y mènent. (Première réponse
+corrigée par lui le lendemain : les photos, elles, s'ajoutent AUSSI depuis la
+fiche client depuis §226.) Ce qui l'y ramenait pour rien, c'était le retour du devis —
 corrigé ci-dessus. Le détail : `ARCHITECTURE.md` §227.
 
 ### Il a choisi la ligne, et l'a corrigée trois fois : plus aucun aplat
