@@ -4,11 +4,123 @@
 vous ne savez rien de ce qui précède — c'est exactement le cas de figure qu'il
 sert.
 
-**Point de reprise :** 2026-08-31 · `main`
+**Point de reprise :** 2026-09-01 · `main`
 (l'historique fait foi : `git log --oneline -20`)
 
 ---
 
+## PIÈGE CONNU : Pages blanches après un merge vers main (1ᵉʳ sept. 2026)
+
+**Le symptôme :** Après un merge de code vers `main`, la page s'affiche blanche au
+lieu du formulaire attendu.
+
+**La cause :** Artefacts de build stale (`.next/`, `.turbo/`) qui interfèrent
+avec la nouvelle version. Le navigateur charge des fichiers JavaScript qui
+n'existent plus.
+
+**La solution immédiate :**
+```bash
+bash scripts/nettoyer-build.sh
+npm run dev
+# Puis vider le cache navigateur (Ctrl+Maj+Delete) et recharger (Ctrl+Maj+R)
+```
+
+**La solution complète après un pull :**
+```bash
+bash scripts/recuperer-main-proprement.sh
+npm run dev
+```
+
+**LA PRÉVENTION :** Avant chaque fusion vers main, valider :
+```bash
+bash scripts/valider-avant-merge-main.sh
+```
+
+**Documentation complète :** voir `docs/BLANK-PAGE-FIX.md`.
+
+---
+
+## Le même jour : la fiche client remise dans un écran (1ᵉʳ sept. 2026)
+
+**Le piège à connaître avant d'y retoucher :** le gabarit réserve DÉJÀ la barre
+d'onglets (`main.atlas-contenu`, `padding-bottom: var(--atlas-barre)`). Toute
+hauteur d'écran posée dans un écran s'y AJOUTE. Et `min-h-full` n'y sert à rien :
+le parent n'a qu'un `min-height` en pourcentage, qui ne résout pas.
+
+La bonne forme, sur cet écran : `minHeight: calc(100svh - var(--atlas-barre))`
+et `my-auto` sur le contenu — jamais `justify-center`, qui couperait le haut sur
+un petit téléphone.
+
+Pour mesurer plutôt que deviner : `npx tsx scripts/capture-fiche-client-hauteur.mts`
+(serveur lancé), qui rend le débordement sur trois tailles d'iPhone.
+
+## Le même jour : deux défauts de la dictée signalés par lui (1ᵉʳ sept. 2026)
+
+1. **L'invite « Appuyez et décrivez le chantier » restait** pendant que le devis
+   se préparait — l'écran demandait de refaire ce qui était en cours. Corrigé :
+   `AnneauNoteVocale` reçoit `preparationEnCours`.
+2. **« La note n'atteint plus le devis. »** Sa capture montrait le compteur à
+   96 s. **NON REPRODUIT ICI** — le parcours dictée → devis passe au vert sur ce
+   poste (`test-devis-depuis-dictee-e2e`, 8/8), sur le commit qu'il servait.
+
+   Ce qui a été livré n'est donc PAS un correctif mais un **bavardage** : la
+   panne se dit au lieu de se compter. L'exception traversait l'action serveur,
+   Next.js la remplaçait par un identifiant opaque, et l'écran comptait des
+   secondes. Au prochain essai, il aura la raison à l'écran — et c'est elle qui
+   dira quoi réparer.
+
+   **Ne pas conclure sans elle.** Le service journalise déjà la cause côté
+   serveur (`devis-depuis-dictee.ts`) : le journal de son espace la porte.
+
+## Dernier lot : plusieurs TVA sur un devis (1ᵉʳ sept. 2026)
+
+**Ce qui est fait, et poussé.** Main d'œuvre à 20 %, végétaux à 10 %, sur le
+même devis — par CATÉGORIE, jamais par ligne (c'est lui qui l'a tranché).
+
+**Ce qu'il faut savoir avant d'y toucher :**
+
+1. **La catégorie est une VUE, pas une table.** Le taux vit sur
+   `lignes_prix.taux_tva` ; l'écran groupe. Une catégorie sans ligne n'existe
+   pas — d'où « Ajouter une TVA » qui crée la catégorie ET sa première ligne.
+2. **`NULL` veut dire « suit le devis ».** Toutes les lignes d'avant sont
+   nulles : aucun devis émis ne change d'un centime, et aucune reprise de
+   données n'a eu lieu. Conséquence : changer le taux de la PREMIÈRE catégorie
+   doit toucher les lignes nulles — `changerTauxCategorie` reçoit donc le taux
+   du devis en paramètre.
+3. **La remise se répartit au prorata**, et le centime résiduel va à la plus
+   grosse base. La retirer du seul total ferait calculer chaque TVA sur le brut.
+4. **`totauxAvecReduction` rend toujours `parTaux`**, même à un seul taux. Ne
+   pas rebrancher un calcul « simple » à côté : ce serait la seconde
+   implémentation que `CLAUDE.md` §3 interdit.
+5. **L'appui long déplace une ligne** (`useAppuiLong`), et la ligne rejoint la
+   FIN de son nouveau groupe — sans ce rang, déplacer la première ligne fait
+   remonter toute sa catégorie. Le geste épargne les champs de saisie et ne
+   s'arme pas quand il n'y a qu'une TVA.
+
+**Trois défauts trouvés en REGARDANT, pas au test** — et c'est ce qui doit
+rester en tête :
+
+| ce qui était vert | ce que l'image montrait |
+|---|---|
+| le calcul sur zéro ligne | un devis **vide** n'avait plus de bouton « Ajouter une ligne » |
+| les totaux justes | le « − » s'affichait sur la catégorie d'accueil (« 20 » ≠ « 20.00 ») |
+| le PDF à deux taux | une catégorie coupée par un saut de page perdait son titre |
+
+**Piège d'environnement, à ne pas re-diagnostiquer :** `monter-base-locale.sh`
+**n'exporte pas `REDIS_URL`** alors qu'il démarre Redis. Sans elle, le limiteur
+de connexion vit en mémoire et **toutes les suites navigateur tombent à partir
+de la deuxième**, sur un « dépassement de délai » qui accuse le formulaire de
+connexion. Lancer la batterie ainsi :
+
+```bash
+source scripts/monter-base-locale.sh && REDIS_URL=redis://localhost:6379 npm run verifier:avant-livraison
+```
+
+Et la batterie e2e **complète** ne tient pas dans ce conteneur : le serveur
+s'arrête vers la troisième suite (le journal noyau dit « out of memory »). Les
+suites se rejouent par groupes de cinq, ce que le runner suggère lui-même.
+
+>>>>>>> Stashed changes
 ## Dernier lot : la date du chantier dans « Terminés » (31 août 2026)
 
 Sa demande, capture à l'appui : *« changer le bouton FACTURER en À FACTURER, et
