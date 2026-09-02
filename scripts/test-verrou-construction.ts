@@ -367,7 +367,7 @@ await verifierAsync("sans orpheline, on ne déloge rien et on ne se tue pas soi-
 
 verifier("banc.mjs déloge l'orpheline AVANT de bâtir", () => {
   const iDelogement = source.indexOf("delogerConstructionsOrphelines");
-  const iConstruction = source.indexOf('jouerEnRetenant("npx", ["next", "build"]');
+  const iConstruction = source.indexOf('jouerEnRetenant(process.execPath, [NEXT, "build"]');
   assert.ok(iDelogement > 0, "banc.mjs ne déloge aucune construction orpheline");
   assert.ok(
     iDelogement < iConstruction,

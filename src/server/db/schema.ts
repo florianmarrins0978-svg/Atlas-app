@@ -97,6 +97,23 @@ export const entreprises = pgTable("entreprises", {
   /** « SASU », « EI », « EURL »… Figure sur les documents (migration 0039). */
   formeJuridique: text("forme_juridique"),
   /**
+   * Le capital social et le RCS (migration 0072) — n'ont de sens que pour une
+   * société, jamais une EI ou une micro-entreprise (`formeADuCapital`).
+   * Le RCS n'a pas de second numéro : c'est le SIREN, déjà dans le SIRET.
+   */
+  capitalSocial: numeric("capital_social", { precision: 12, scale: 2 }),
+  villeRcs: text("ville_rcs"),
+  /**
+   * Où — ou si — la forme juridique, le capital et le RCS s'impriment
+   * (migration 0072). Par défaut « aucune » : ces champs existaient déjà
+   * (`formeJuridique`, migration 0039) sans jamais s'imprimer nulle part —
+   * les faire apparaître d'un coup surprendrait qui les avait déjà saisis
+   * sans le savoir.
+   */
+  mentionsLegalesPosition: text("mentions_legales_position", { enum: ["sous_nom", "bas", "aucune"] })
+    .notNull()
+    .default("aucune"),
+  /**
    * Le régime de TVA, **déclaré et jamais déduit** (migration 0039).
    *
    * `facture-pdf.ts` devinait jusqu'ici la franchise en regardant si le taux
@@ -847,6 +864,19 @@ export const lignesPrix = pgTable(
      * préparé ni envoyé (`peutPreparerDevis`).
      */
     aChiffrer: boolean("a_chiffrer").notNull().default(false),
+    /**
+     * Le taux de SA catégorie de TVA (migration 0073).
+     *
+     * **Nul veut dire « suit le taux du devis »**, et c'est ce qui protège
+     * l'existant : toutes les lignes écrites avant restent nulles, donc pas un
+     * devis émis ne change d'un centime.
+     *
+     * Sa règle du 1er septembre 2026 : le taux ne se pose pas ligne par ligne
+     * mais par catégorie — l'écran groupe les lignes qui partagent le même
+     * taux. La catégorie est donc une VUE, jamais une table : deux sources
+     * auraient fini par diverger (`CLAUDE.md` §3).
+     */
+    tauxTva: numeric("taux_tva", { precision: 5, scale: 2 }),
     ordre: integer("ordre").notNull().default(0),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
@@ -983,6 +1013,17 @@ export const devis = pgTable(
     entrepriseEmail: text("entreprise_email"),
     entrepriseTelephone: text("entreprise_telephone"),
     entrepriseIban: text("entreprise_iban"),
+    /**
+     * Les trois mentions légales, et leur emplacement (migration 0072) —
+     * recopiées comme le reste de l'identité. Nulles pour les devis
+     * antérieurs à la migration : rien de plus ne s'imprime.
+     */
+    entrepriseFormeJuridique: text("entreprise_forme_juridique"),
+    entrepriseCapitalSocial: numeric("entreprise_capital_social", { precision: 12, scale: 2 }),
+    entrepriseVilleRcs: text("entreprise_ville_rcs"),
+    entrepriseMentionsLegalesPosition: text("entreprise_mentions_legales_position", {
+      enum: ["sous_nom", "bas", "aucune"],
+    }),
 
     clientNom: text("client_nom"),
     // Recopiée comme le nom : un document dit comment on s'adressait à son
@@ -1089,6 +1130,14 @@ export const lignesDevis = pgTable(
      * prix — qui ont pu bouger depuis que le devis a été préparé.
      */
     aChiffrer: boolean("a_chiffrer").notNull().default(false),
+    /**
+     * Le taux de sa catégorie, recopié de la ligne de prix (migration 0073).
+     *
+     * Recopié, et non relu : un document garde ce qu'il portait le jour de son
+     * émission — même règle que l'identité de l'entreprise ou la durée de
+     * validité. Nul sur les devis d'avant : ils suivent `devis.tauxTva`.
+     */
+    tauxTva: numeric("taux_tva", { precision: 5, scale: 2 }),
     ordre: integer("ordre").notNull().default(0),
   },
   (t) => [
@@ -1633,6 +1682,17 @@ export const factures = pgTable(
     entrepriseEmail: text("entreprise_email"),
     entrepriseTelephone: text("entreprise_telephone"),
     entrepriseIban: text("entreprise_iban"),
+    /**
+     * Les trois mentions légales, et leur emplacement (migration 0072) —
+     * recopiées du devis, comme le reste de l'identité. Nulles pour les
+     * factures antérieures à la migration.
+     */
+    entrepriseFormeJuridique: text("entreprise_forme_juridique"),
+    entrepriseCapitalSocial: numeric("entreprise_capital_social", { precision: 12, scale: 2 }),
+    entrepriseVilleRcs: text("entreprise_ville_rcs"),
+    entrepriseMentionsLegalesPosition: text("entreprise_mentions_legales_position", {
+      enum: ["sous_nom", "bas", "aucune"],
+    }),
 
     clientNom: text("client_nom"),
     // Recopiée comme le nom : un document dit comment on s'adressait à son
@@ -1737,6 +1797,13 @@ export const lignesFacture = pgTable(
     quantite: numeric("quantite", { precision: 10, scale: 2 }).notNull().default("1"),
     prixUnitaire: numeric("prix_unitaire", { precision: 10, scale: 2 }).notNull(),
     montant: numeric("montant", { precision: 10, scale: 2 }).notNull(),
+    /**
+     * Le taux de sa catégorie, recopié du devis (migration 0073).
+     *
+     * **Sans lui, une facture née d'un devis à deux TVA se réglerait sur un
+     * seul taux** — et l'écart partirait dans une déclaration trimestrielle.
+     */
+    tauxTva: numeric("taux_tva", { precision: 5, scale: 2 }),
     ordre: integer("ordre").notNull().default(0),
   },
   (t) => [

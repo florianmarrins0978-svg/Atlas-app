@@ -230,7 +230,7 @@ export default function ExportClient({
                 type="button"
                 onClick={reprendre}
                 disabled={reprise}
-                className="mt-4 block w-full rounded-full py-3 text-[15px] font-medium text-white disabled:opacity-50"
+                className="atlas-plein mt-4 block w-full rounded-full py-3 text-[15px] font-medium text-white disabled:opacity-50"
                 style={{ backgroundColor: colors.rust }}
               >
                 {reprise
@@ -335,7 +335,7 @@ function AvertissementModification({
           type="button"
           onClick={onConfirmer}
           disabled={enCours}
-          className="mt-6 block w-full rounded-full py-3 text-center text-[15px] font-medium text-white disabled:opacity-50"
+          className="atlas-plein mt-6 block w-full rounded-full py-3 text-center text-[15px] font-medium text-white disabled:opacity-50"
           style={{ backgroundColor: colors.rust }}
         >
           {enCours ? "Ouverture…" : "Modifier quand même"}

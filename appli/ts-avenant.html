@@ -1,0 +1,347 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas — l'avenant, et la facture qui l'additionne</title>
+<style>
+/*
+  L'AVENANT — solution A du document `docs/travaux-supplementaires.md`.
+
+  CE QU'ELLE MET À L'ÉPREUVE : un avenant N'EST PAS une nouvelle version du
+  devis. Une version REMPLACE — le client reçoit un prix global neuf, et le
+  prix qu'il avait accepté disparaît. Un avenant S'AJOUTE : le devis reste
+  visible, le supplément se lit à côté, et la facture les additionne.
+
+  DEUX CHOSES SE TRANCHENT ICI, et c'est pour ça que la planche existe :
+
+  1. **Une facture, ou deux ?** L'interrupteur de l'onglet « La facture »
+     montre les deux présentations sur les mêmes chiffres.
+  2. **Les travaux en MOINS** — une journée non réalisée, du matériel non
+     utilisé — passent-ils par le même document ? La ligne négative du
+     catalogue le montre : le total de l'avenant descend, et la facture avec.
+
+  Tous les totaux se recalculent. Rien n'est écrit en dur.
+  RIEN N'EST CODÉ dans l'application (`CLAUDE.md` §3 bis).
+*/
+:root{
+  --bone:#f5f3ee; --cream:#faf9f5; --paper:#ece9e1;
+  --charcoal:#1c1c1a; --charcoal-soft:#4a4a44; --muted:#8a8578;
+  --pine:#2f3b2f; --or:#B98B47; --alert:#9C3B2E;
+  --line:rgba(28,28,26,.12); --line-soft:rgba(28,28,26,.07);
+  --surPlein:#faf9f5;
+}
+@media (prefers-color-scheme: dark){
+  :root{ --bone:#171613; --cream:#1e1c18; --paper:#262420; --charcoal:#e9e5dc;
+         --charcoal-soft:#c9c4b8; --muted:#8a867c; --or:#C9A15E;
+         --pine:#9db98f; --alert:#d98b7c; --surPlein:#171613;
+         --line:rgba(233,229,220,.16); --line-soft:rgba(233,229,220,.09); }
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;background:var(--bone);color:var(--charcoal);
+     font:16px/1.55 -apple-system,"Segoe UI",Roboto,sans-serif;
+     padding:30px 0 56px;-webkit-text-size-adjust:100%}
+.page{max-width:430px;margin:0 auto;padding:0 20px}
+.sur{margin:0;font-size:9.5px;font-weight:500;letter-spacing:.3em;
+     text-transform:uppercase;color:var(--or)}
+h1{margin:10px 0 0;font-family:Georgia,serif;font-weight:400;font-size:30px;
+   line-height:1.08;letter-spacing:-.018em}
+.chapo{margin:11px 0 0;font-size:14px;color:var(--charcoal-soft);line-height:1.6}
+.chapo b{color:var(--charcoal)}
+
+.onglets{display:flex;gap:6px;margin-top:18px}
+.onglets button{flex:1;min-height:44px;background:var(--cream);border:0;border-radius:11px;
+                font:inherit;font-size:13.5px;color:var(--charcoal-soft);cursor:pointer;
+                box-shadow:inset 0 0 0 1px var(--line)}
+.onglets button[aria-selected="true"]{background:var(--pine);color:var(--surPlein);box-shadow:none}
+
+.tel{margin-top:12px;background:var(--cream);border-radius:20px;padding:20px 18px 22px;
+     box-shadow:inset 0 0 0 1px var(--line)}
+.tel h2{margin:0;font-family:Georgia,serif;font-weight:400;font-size:23px;line-height:1.12}
+.ou{margin:4px 0 0;font-size:9px;font-weight:600;letter-spacing:.24em;
+    text-transform:uppercase;color:var(--or)}
+.dit{margin:8px 0 0;font-size:12.5px;line-height:1.55;color:var(--muted)}
+.etiq{margin:18px 0 0;font-size:11.5px;color:var(--muted)}
+
+.bloc{margin-top:12px;background:var(--bone);border-radius:13px;padding:14px 15px;
+      box-shadow:inset 0 0 0 1px var(--line-soft)}
+.bloc .cap{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.bloc .cap .qui{font-family:Georgia,serif;font-size:16px}
+.bloc .cap .etat{font-size:9px;font-weight:600;letter-spacing:.18em;
+                 text-transform:uppercase;color:var(--or)}
+.bloc .l{display:flex;justify-content:space-between;gap:10px;padding:6px 0;
+         font-size:13.5px;color:var(--charcoal-soft);font-variant-numeric:tabular-nums}
+.bloc .l span:first-child{flex:1}
+.bloc .st{display:flex;justify-content:space-between;margin-top:8px;padding-top:8px;
+          border-top:1px solid var(--line-soft);font-size:13.5px;font-variant-numeric:tabular-nums}
+
+.presta{display:flex;justify-content:space-between;align-items:center;gap:10px;
+        width:100%;min-height:46px;padding:9px 0;background:none;border:0;
+        border-bottom:1px solid var(--line-soft);font:inherit;font-size:14.5px;
+        color:inherit;text-align:left;cursor:pointer}
+.presta .pu{font-size:12px;color:var(--muted);white-space:nowrap}
+.presta.moins .pu{color:var(--alert)}
+.plus{flex:none;width:26px;height:26px;border-radius:999px;background:var(--paper);
+      color:var(--charcoal-soft);font-size:17px;line-height:24px;text-align:center}
+
+.lgn{display:flex;align-items:center;gap:9px;padding:10px 0;
+     border-bottom:1px solid var(--line-soft);font-size:14px}
+.lgn .nom{flex:1;line-height:1.3}
+.lgn .nom small{display:block;color:var(--muted);font-size:11.5px}
+.lgn input.qte{width:56px;background:var(--bone);border:1px solid var(--line);
+               border-radius:8px;padding:8px 6px;font:inherit;font-size:14px;
+               color:inherit;text-align:right}
+.lgn .mt{width:78px;text-align:right;font-variant-numeric:tabular-nums}
+.lgn .mt.neg{color:var(--alert)}
+.lgn .x{flex:none;width:30px;height:30px;border:0;background:none;color:var(--muted);
+        font-size:16px;cursor:pointer}
+.vide{padding:14px 0;font-size:13px;color:var(--muted)}
+
+.totaux{margin-top:14px;padding-top:12px;border-top:1px solid var(--line)}
+.tot{display:flex;justify-content:space-between;padding:3px 0;font-size:13.5px;
+     color:var(--charcoal-soft);font-variant-numeric:tabular-nums}
+.tot.gros{margin-top:5px;font-family:Georgia,serif;font-size:19px;color:var(--charcoal)}
+
+.bascule{display:flex;gap:6px;margin-top:14px}
+.bascule button{flex:1;min-height:42px;background:var(--bone);border:0;border-radius:10px;
+                font:inherit;font-size:13px;color:var(--charcoal-soft);cursor:pointer;
+                box-shadow:inset 0 0 0 1px var(--line)}
+.bascule button[aria-selected="true"]{background:var(--paper);color:var(--charcoal);
+                box-shadow:inset 0 0 0 1.5px var(--or)}
+
+.papier{margin-top:14px;background:var(--bone);border-radius:6px;padding:16px 15px;
+        box-shadow:inset 0 0 0 1px var(--line)}
+.papier .tete{display:flex;justify-content:space-between;align-items:baseline}
+.papier .tete .num{font-family:Georgia,serif;font-size:16px}
+.papier .tete .jour{font-size:11.5px;color:var(--muted)}
+.papier h4{margin:16px 0 4px;font-size:9px;font-weight:600;letter-spacing:.2em;
+           text-transform:uppercase;color:var(--or)}
+.papier .l{display:flex;justify-content:space-between;gap:10px;padding:5px 0;
+           font-size:13px;font-variant-numeric:tabular-nums;color:var(--charcoal-soft)}
+.papier .l span:first-child{flex:1}
+.papier .l.neg span:last-child{color:var(--alert)}
+.papier .recap{margin-top:14px;padding-top:10px;border-top:1px solid var(--line)}
+
+.note{margin-top:20px;background:var(--cream);border-radius:13px;padding:15px 16px;
+      font-size:12.5px;line-height:1.65;color:var(--charcoal-soft);
+      box-shadow:inset 0 0 0 1px var(--line)}
+.note .t{display:block;margin-bottom:6px;font-size:9px;font-weight:600;
+         letter-spacing:.2em;text-transform:uppercase;color:var(--or)}
+.note b{color:var(--charcoal)}
+.autres{margin-top:14px;font-size:13px;line-height:2}
+.autres a{color:var(--or)}
+[hidden]{display:none!important}
+</style>
+</head>
+<body>
+<div class="page">
+  <p class="sur">Travaux en plus · solution A</p>
+  <h1>L'avenant</h1>
+  <p class="chapo">Le devis accepté ne bouge pas. <b>Le supplément se pose à côté</b>, et la facture additionne les deux.</p>
+
+  <div class="onglets" role="tablist">
+    <button type="button" role="tab" aria-selected="true" data-vue="chantier">Le chantier</button>
+    <button type="button" role="tab" aria-selected="false" data-vue="facture">La facture</button>
+  </div>
+
+  <!-- ─── Le chantier : devis figé + avenant composable ─────────────────── -->
+  <div class="tel" id="vueChantier">
+    <h2>M. Bernard</h2>
+    <p class="ou">Chantier en cours</p>
+
+    <div class="bloc">
+      <div class="cap"><span class="qui">Devis 2026-014</span><span class="etat">Accepté le 18 août</span></div>
+      <div class="l"><span>Taille de haie automne · 60 ml</span><span>270,00 €</span></div>
+      <div class="l"><span>Ramassage des feuilles · 2 j</span><span>500,00 €</span></div>
+      <div class="l"><span>Évacuation des déchets · forfait</span><span>180,00 €</span></div>
+      <div class="st"><span>Total HT</span><span>950,00 €</span></div>
+    </div>
+
+    <p class="etiq">Avenant n°1</p>
+    <div id="lignes"></div>
+
+    <p class="etiq">Vos prestations</p>
+    <div id="catalogue"></div>
+
+    <div class="totaux">
+      <div class="tot"><span>Avenant HT</span><span id="avHt">0,00 €</span></div>
+      <div class="tot gros"><span>Marché total HT</span><span id="marcheHt">950,00 €</span></div>
+    </div>
+    <p class="dit" id="motAvenant">Un avenant vide ne part pas.</p>
+  </div>
+
+  <!-- ─── La facture ───────────────────────────────────────────────────── -->
+  <div class="tel" id="vueFacture" hidden>
+    <h2>Fin de chantier</h2>
+    <p class="ou">Facture, en brouillon</p>
+
+    <div class="bascule" role="tablist">
+      <button type="button" role="tab" aria-selected="true" data-forme="une">Une facture</button>
+      <button type="button" role="tab" aria-selected="false" data-forme="deux">Deux factures</button>
+    </div>
+
+    <div id="papiers"></div>
+  </div>
+
+  <div class="note"><span class="t">Ce que cette page ne fait pas</span>
+    Rien n'est enregistré, rien ne part chez personne. Ce qui compte ici, ce
+    n'est pas le dessin : c'est <b>où le supplément se lit</b> une fois la
+    facture faite, et <b>ce que le client comprend</b> en la recevant.
+  </div>
+
+  <p class="autres">
+    <a href="ts-bon-sur-place.html">Le bon signé sur place</a><br>
+    <a href="ts-arret-3.html">Corriger la facture avant qu'elle parte</a><br>
+    <a href="essais.html">Toutes les maquettes</a>
+  </p>
+</div>
+
+<script>
+const DEVIS = {
+  numero:'2026-014', jour:'18 août',
+  lignes:[
+    { nom:'Taille de haie automne', detail:'60 ml × 4,50 €', mt:270 },
+    { nom:'Ramassage des feuilles', detail:'2 j × 250,00 €', mt:500 },
+    { nom:'Évacuation des déchets', detail:'forfait',        mt:180 }
+  ]
+};
+const CATALOGUE = [
+  { nom:'Dessouchage',                unite:'forfait', pu:320 },
+  { nom:'Bêchage massif',             unite:'m²',      pu:6 },
+  { nom:"Main-d'œuvre — 1 personne",  unite:'jour',    pu:250 },
+  { nom:'Journée non réalisée',       unite:'jour',    pu:-250 }
+];
+const TVA = 0.10;
+const euros = n => n.toLocaleString('fr-FR',{minimumFractionDigits:2,maximumFractionDigits:2}) + ' €';
+const $ = s => document.querySelector(s);
+
+let lignes = [];
+const devisHt = DEVIS.lignes.reduce((s,l) => s + l.mt, 0);
+const avenantHt = () => lignes.reduce((s,l) => s + l.qte * l.pu, 0);
+
+/* ── Onglets ─────────────────────────────────────────────────────────────── */
+document.querySelectorAll('[data-vue]').forEach(b => b.addEventListener('click', () => {
+  document.querySelectorAll('[data-vue]').forEach(x => x.setAttribute('aria-selected', x === b));
+  $('#vueChantier').hidden = b.dataset.vue !== 'chantier';
+  $('#vueFacture').hidden  = b.dataset.vue !== 'facture';
+  if (b.dataset.vue === 'facture') dessinerFacture();
+}));
+
+let forme = 'une';
+document.querySelectorAll('[data-forme]').forEach(b => b.addEventListener('click', () => {
+  document.querySelectorAll('[data-forme]').forEach(x => x.setAttribute('aria-selected', x === b));
+  forme = b.dataset.forme;
+  dessinerFacture();
+}));
+
+/* ── L'avenant ───────────────────────────────────────────────────────────── */
+function dessinerCatalogue(){
+  $('#catalogue').innerHTML = '';
+  CATALOGUE.forEach(p => {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'presta' + (p.pu < 0 ? ' moins' : '');
+    b.innerHTML = '<span>' + p.nom + '</span>' +
+      '<span class="pu">' + euros(p.pu) + ' / ' + p.unite + '</span>' +
+      '<span class="plus">+</span>';
+    b.addEventListener('click', () => { lignes.push({ ...p, qte:1 }); dessiner(); });
+    $('#catalogue').appendChild(b);
+  });
+}
+
+function dessiner(){
+  const hote = $('#lignes');
+  hote.innerHTML = '';
+  if (lignes.length === 0)
+    hote.innerHTML = '<p class="vide">Aucun supplément. Touchez une prestation ci-dessous.</p>';
+  lignes.forEach((l,i) => {
+    const mt = l.qte * l.pu;
+    const d = document.createElement('div');
+    d.className = 'lgn';
+    d.innerHTML =
+      '<span class="nom">' + l.nom + '<small>' + euros(l.pu) + ' / ' + l.unite + '</small></span>' +
+      '<input class="qte" type="number" inputmode="decimal" step="0.5" value="' + l.qte + '">' +
+      '<span class="mt' + (mt < 0 ? ' neg' : '') + '">' + euros(mt) + '</span>' +
+      '<button class="x" type="button" aria-label="Retirer">×</button>';
+    d.querySelector('.qte').addEventListener('input', e => {
+      const v = parseFloat(e.target.value.replace(',','.'));
+      l.qte = isNaN(v) ? 0 : v;
+      const m = l.qte * l.pu;
+      const c = d.querySelector('.mt');
+      c.textContent = euros(m);
+      c.classList.toggle('neg', m < 0);
+      majTotaux();
+    });
+    d.querySelector('.x').addEventListener('click', () => { lignes.splice(i,1); dessiner(); });
+    hote.appendChild(d);
+  });
+  majTotaux();
+}
+
+function majTotaux(){
+  const av = avenantHt();
+  $('#avHt').textContent = euros(av);
+  $('#marcheHt').textContent = euros(devisHt + av);
+  $('#motAvenant').textContent = av === 0
+    ? 'Un avenant vide ne part pas.'
+    : (av < 0
+        ? 'Un avenant négatif : le client paie moins que prévu, et il le voit.'
+        : 'À faire accepter par le client avant les travaux.');
+}
+
+/* ── La facture ──────────────────────────────────────────────────────────── */
+function papier(numero, titre, blocs){
+  const ht = blocs.reduce((s,b) => s + b.lignes.reduce((t,l) => t + l.mt, 0), 0);
+  let h = '<div class="papier"><div class="tete"><span class="num">' + numero +
+          '</span><span class="jour">' + titre + '</span></div>';
+  blocs.forEach(b => {
+    h += '<h4>' + b.titre + '</h4>';
+    b.lignes.forEach(l => {
+      h += '<div class="l' + (l.mt < 0 ? ' neg' : '') + '"><span>' + l.nom +
+           (l.detail ? ' · ' + l.detail : '') + '</span><span>' + euros(l.mt) + '</span></div>';
+    });
+  });
+  h += '<div class="recap">' +
+       '<div class="l"><span>Total HT</span><span>' + euros(ht) + '</span></div>' +
+       '<div class="l"><span>TVA 10 %</span><span>' + euros(ht * TVA) + '</span></div>' +
+       '<div class="l"><span>Total TTC</span><span>' + euros(ht * (1 + TVA)) + '</span></div>' +
+       '</div></div>';
+  return h;
+}
+
+function dessinerFacture(){
+  const blocDevis = {
+    titre:'Devis ' + DEVIS.numero + ', accepté le ' + DEVIS.jour,
+    lignes: DEVIS.lignes
+  };
+  const blocAvenant = {
+    titre:'Avenant n°1, signé sur place',
+    lignes: lignes.map(l => ({
+      nom:l.nom,
+      /* Un prix unitaire négatif ne se lit pas : « 1 jour × -250,00 € » se
+         déchiffre, « 1 jour, en moins » se lit. */
+      detail: l.pu < 0 ? l.qte + ' ' + l.unite + ', en moins'
+                       : l.qte + ' ' + l.unite + ' × ' + euros(l.pu),
+      mt: l.qte * l.pu
+    }))
+  };
+  let h = '';
+  if (lignes.length === 0){
+    h = papier('Facture 2026-031', 'Fin de chantier', [blocDevis]) +
+        '<p class="dit">Sans avenant, la facture est celle du devis. Composez-en un dans l’onglet du chantier.</p>';
+  } else if (forme === 'une'){
+    h = papier('Facture 2026-031', 'Fin de chantier', [blocDevis, blocAvenant]) +
+        '<p class="dit">Un seul papier, deux blocs : le client retrouve le prix qu’il avait accepté, et ce qui s’y est ajouté.</p>';
+  } else {
+    h = papier('Facture 2026-031', 'Travaux du devis', [blocDevis]) +
+        papier('Facture 2026-032', 'Travaux supplémentaires', [blocAvenant]) +
+        '<p class="dit">Deux papiers : le supplément se règle à part, et se relance à part. Deux numéros, deux échéances.</p>';
+  }
+  $('#papiers').innerHTML = h;
+}
+
+dessinerCatalogue();
+dessiner();
+</script>
+</body>
+</html>

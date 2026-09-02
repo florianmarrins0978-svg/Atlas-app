@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { colors, font, libelleCaps, texteSituation } from "@/lib/design-tokens";
-import { etatConfirmation, verifierNouveauMotDePasse, LONGUEUR_MINIMALE } from "@/lib/mot-de-passe";
+import { etatConfirmation, etatNouveau, verifierNouveauMotDePasse } from "@/lib/mot-de-passe";
 import { changerMotDePasseAction, deconnecterPartoutAction } from "./actions";
 import SectionFaceId from "./SectionFaceId";
 import type { CleAppareil } from "@/lib/cle-appareil";
@@ -37,6 +37,7 @@ export default function ConnexionClient({ cles }: { cles: CleAppareil[] }) {
   const bloquant = verifierNouveauMotDePasse(nouveau, confirmation);
   const pret = actuel !== "" && bloquant === null && !enCours;
   const etat = etatConfirmation(nouveau, confirmation);
+  const court = etatNouveau(nouveau);
 
   function changer() {
     demarrer(async () => {
@@ -73,8 +74,13 @@ export default function ConnexionClient({ cles }: { cles: CleAppareil[] }) {
   }
 
   return (
-    // `pb-24` : plus que les onglets à loger — le bouton a rejoint ses champs.
-    <div className="pb-24">
+    // **PLUS AUCUNE RÉSERVE ICI, et c'est 96 px repris — sa demande du 31 août
+    // 2026 : « je veux qu'elle tienne sur une seule page ».** `pb-24` comptait
+    // la barre du bas UNE SECONDE FOIS : `main.atlas-contenu`
+    // (`src/app/layout.tsx`) la réserve déjà pour tous les écrans. C'est le
+    // même défaut que celui corrigé sur l'export de chantier — un vide qui ne
+    // porte rien et qui pousse la dernière rubrique hors de l'écran.
+    <div>
       {refus && (
         <p
           role="alert"
@@ -95,10 +101,10 @@ export default function ConnexionClient({ cles }: { cles: CleAppareil[] }) {
       )}
 
       <section
-        className="mx-[26px] mt-[26px] [&>*:last-child]:border-b-0"
+        className="mx-[26px] mt-[10px] [&>*:last-child]:border-b-0"
         style={{ borderColor: colors.line }}
       >
-        <p className={`mb-2.5 ${libelleCaps}`} style={{ color: colors.muted }}>
+        <p className={`mb-1.5 ${libelleCaps}`} style={{ color: colors.muted }}>
           Changer de mot de passe
         </p>
 
@@ -113,7 +119,13 @@ export default function ConnexionClient({ cles }: { cles: CleAppareil[] }) {
           valeur={nouveau}
           onChange={setNouveau}
           autoComplete="new-password"
-          sous={`Au moins ${LONGUEUR_MINIMALE} caractères.`}
+          // **La longueur ne s'annonce plus au repos — 31 août 2026.** Elle
+          // vivait ici en gris, en permanence, et il les a toutes fait
+          // retirer. Elle parle désormais quand elle mord, et seulement là :
+          // sans elle, un bouton éteint sur huit caractères n'aurait plus
+          // aucune explication à l'écran.
+          sous={court?.message ?? null}
+          sousTeinte={court ? colors.alert : undefined}
         />
         <ChampSecret
           etiquette="Confirmer le nouveau mot de passe"
@@ -140,12 +152,12 @@ export default function ConnexionClient({ cles }: { cles: CleAppareil[] }) {
           entier.
 
           Sous ses champs, il ne peut plus se lire autrement. */}
-      <div className="mx-[26px] mt-[22px]">
+      <div className="mx-[26px] mt-[10px]">
         <button
           type="button"
           onClick={changer}
           disabled={!pret}
-          className="block w-full rounded-full py-[15px] text-center text-[16px]"
+          className="block w-full rounded-full py-[13px] text-center text-[16px]"
           style={{
             backgroundColor: pret ? colors.rust : colors.card,
             color: pret ? colors.cream : colors.muted,
@@ -154,9 +166,6 @@ export default function ConnexionClient({ cles }: { cles: CleAppareil[] }) {
         >
           {enCours ? "En cours…" : "Changer mon mot de passe"}
         </button>
-        <p className={`mt-2 text-center ${texteSituation}`} style={{ color: colors.muted }}>
-          Vous resterez connecté sur cet appareil.
-        </p>
       </div>
 
       {/* **Face ID vient APRÈS le mot de passe, et ce n'est pas un hasard de
@@ -166,10 +175,10 @@ export default function ConnexionClient({ cles }: { cles: CleAppareil[] }) {
       <SectionFaceId clesInitiales={cles} />
 
       <section
-        className="mx-[26px] mt-[30px] border-t pt-[18px]"
+        className="mx-[26px] mt-[12px] border-t pt-[10px]"
         style={{ borderColor: colors.line }}
       >
-        <p className={`mb-2.5 ${libelleCaps}`} style={{ color: colors.muted }}>
+        <p className={`mb-1.5 ${libelleCaps}`} style={{ color: colors.muted }}>
           Ailleurs
         </p>
 
@@ -181,15 +190,12 @@ export default function ConnexionClient({ cles }: { cles: CleAppareil[] }) {
           <button
             type="button"
             onClick={() => setPartoutDemande(true)}
-            className="flex w-full items-center gap-3.5 py-[13px] text-left"
-            style={{ minHeight: 56 }}
+            className="flex w-full items-center gap-3.5 py-[10px] text-left"
+            style={{ minHeight: 44 }}
           >
             <span className="min-w-0 flex-1">
               <span className="block" style={{ fontFamily: font.display, fontSize: 17, lineHeight: 1.25 }}>
                 Me déconnecter partout
-              </span>
-              <span className={`mt-1 block ${texteSituation}`} style={{ color: colors.muted }}>
-                Sur tous les téléphones et ordinateurs, y compris celui-ci
               </span>
             </span>
             <span
@@ -229,7 +235,7 @@ export default function ConnexionClient({ cles }: { cles: CleAppareil[] }) {
                 type="button"
                 onClick={partout}
                 disabled={enCours}
-                className="flex-1 rounded-full py-[13px] text-center text-[15px]"
+                className="atlas-plein flex-1 rounded-full py-[13px] text-center text-[15px]"
                 style={{ backgroundColor: colors.rust, color: colors.cream }}
               >
                 {enCours ? "En cours…" : "Me déconnecter partout"}
@@ -246,14 +252,6 @@ export default function ConnexionClient({ cles }: { cles: CleAppareil[] }) {
           </div>
         )}
       </section>
-
-      <p
-        className={`mx-[26px] mt-[30px] border-t pt-[18px] ${texteSituation}`}
-        style={{ borderColor: colors.line, color: colors.muted }}
-      >
-        Un téléphone perdu, un ordinateur prêté : ce qu&apos;on veut, ce n&apos;est pas lire une liste, c&apos;est
-        fermer tout d&apos;un coup.
-      </p>
     </div>
   );
 }
@@ -285,8 +283,8 @@ function ChampSecret({
   const [visible, setVisible] = useState(false);
 
   return (
-    <div className="border-b py-[13px]" style={{ borderColor: colors.line }}>
-      <span className={`mb-[5px] block ${libelleCaps}`} style={{ color: colors.muted }}>
+    <div className="border-b py-[8px]" style={{ borderColor: colors.line }}>
+      <span className={`mb-[3px] block ${libelleCaps}`} style={{ color: colors.muted }}>
         {etiquette}
       </span>
       <div className="flex items-center gap-3">
@@ -307,17 +305,21 @@ function ChampSecret({
           // sur un mot de passe déjà visible envoie appuyer pour rien.
           aria-label={visible ? `Masquer ${etiquette.toLowerCase()}` : `Afficher ${etiquette.toLowerCase()}`}
           aria-pressed={visible}
-          // 44 px, et `-mr-[11px]` pour que la cible déborde sans décaler le
-          // filet : une cible plus petite se rate une fois sur trois avec des
-          // gants.
-          className="-mr-[11px] flex h-11 w-11 flex-none items-center justify-center"
+          // **44 px de cible, mais 24 px de hauteur DANS la rangée.** Une
+          // cible plus petite se rate une fois sur trois avec des gants — elle
+          // ne bouge donc pas. Ce sont les marges négatives qui changent :
+          // sans elles, l'œil imposait sa taille aux trois rangées et leur
+          // ajoutait 20 px chacune, soit 60 px sur un écran qui doit tenir
+          // d'un seul tenant (31 août 2026). `-mr-[11px]` déborde à droite
+          // sans décaler le filet.
+          className="-my-[10px] -mr-[11px] flex h-11 w-11 flex-none items-center justify-center"
           style={{ color: visible ? colors.or : colors.muted }}
         >
           <Oeil barre={visible} />
         </button>
       </div>
       {sous && (
-        <span className={`mt-1.5 block ${texteSituation}`} style={{ color: sousTeinte ?? colors.muted }}>
+        <span className={`mt-1 block ${texteSituation}`} style={{ color: sousTeinte ?? colors.muted }}>
           {sous}
         </span>
       )}

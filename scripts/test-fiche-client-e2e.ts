@@ -221,6 +221,59 @@ async function main() {
     throw new Error(`toujours pas : ${quoi}`);
   }
 
+  await cas("LA FICHE TIENT DANS UN ÉCRAN, et son contenu y est centré", async () => {
+    // **Sa demande du 1ᵉʳ septembre 2026** : *« la page doit remplir tout
+    // l'espace, elle n'est pas centrée. Je veux qu'une seule page mais centrée,
+    // il y a trop de marge en bas et en haut, la note vocale est presque coupée
+    // tellement elle est haute. »*
+    //
+    // **RIEN NE GARDAIT CETTE HAUTEUR, et c'est pour ça qu'elle a dérivé.** Il
+    // avait déjà demandé le 30 août que cet écran tienne sur une page ; le
+    // resserrement d'alors n'était éprouvé par aucune suite, et deux réserves
+    // de bas de page se sont recumulées jusqu'à 272 px pour une barre qui en
+    // mesure 48.
+    //
+    // **Le contrôle mesure, il ne regarde pas un nom de classe** : une marge
+    // écrite autrement le laisserait passer, et c'est la hauteur qui compte.
+    for (const [nom, largeur, hauteur] of [
+      ["iPhone SE", 375, 667],
+      ["iPhone 13", 390, 844],
+    ] as const) {
+      await page.setViewportSize({ width: largeur, height: hauteur });
+      await page.goto(`${BASE}/chantiers/nouveau`, { waitUntil: "networkidle" });
+      // La mise en page doit être posée : mesurer trop tôt rend des zéros, et
+      // un zéro n'est pas une mesure (`CLAUDE.md` §5).
+      await page.waitForTimeout(900);
+
+      const m = (await page.evaluate(`(() => {
+        const centre = document.querySelector('.my-auto');
+        const st = centre ? getComputedStyle(centre) : null;
+        return {
+          fenetre: window.innerHeight,
+          document: document.documentElement.scrollHeight,
+          hautCentre: centre ? Math.round(centre.getBoundingClientRect().height) : 0,
+          margeHaut: st ? Math.round(parseFloat(st.marginTop)) : -1,
+        };
+      })()`)) as { fenetre: number; document: number; hautCentre: number; margeHaut: number };
+
+      assert.ok(m.fenetre > 0 && m.hautCentre > 0, `${nom} : rien de mesurable, la page n'est pas rendue`);
+      // Huit pixels de tolérance : l'arrondi des marges de sécurité, pas un
+      // écran de plus à faire défiler.
+      assert.ok(
+        m.document - m.fenetre <= 8,
+        `${nom} : la fiche déborde de ${m.document - m.fenetre} px — elle ne tient pas sur une page`
+      );
+      // Là où il reste de la place, elle se partage en haut ET en bas : c'est
+      // la définition de « centré ». Là où il n'y en a pas, la marge vaut zéro
+      // et l'écran se lit depuis le haut — jamais coupé.
+      assert.ok(
+        m.margeHaut >= 0,
+        `${nom} : le contenu n'est pas centré (marge haute ${m.margeHaut})`
+      );
+    }
+    await page.setViewportSize({ width: 390, height: 900 });
+  });
+
   await cas("depuis la fiche du chantier, une porte mène au client", async () => {
     await page.goto(chantierUrl, { waitUntil: "networkidle" });
     await page.waitForTimeout(700);

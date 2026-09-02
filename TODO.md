@@ -9,6 +9,479 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
+## ~~Déplacer une ligne d'une TVA à l'autre~~ — FAIT le 1ᵉʳ septembre 2026
+
+Il a choisi l'appui long, et c'est codé. Le sous-total HT par catégorie est
+gardé, à sa demande.
+
+## `test-aucun-texte-coupe-e2e` EST ROUGE SUR `main` — pas un lot (1ᵉʳ sept. 2026)
+
+Son message le dit lui-même : *« aucun devis non envoyé en base. Ce contrôle ne
+peut RIEN éprouver […] Recharger le jeu de démonstration. »* Or le seed ne pose
+qu'un devis **envoyé** (« Insertion du devis envoyé pour Reprise de toiture »),
+et un devis parti est figé : ses zones sont en lecture seule.
+
+**Rejoué sur `main` sans aucun changement local : il tombe pareil.** Ce n'est
+donc ni le lot de la TVA ni celui de la mise en page — c'est le jeu de
+démonstration qui ne porte plus ce que la suite exige.
+
+**Qui peut le faire :** une session, en ajoutant un devis BROUILLON au seed, ou
+en faisant créer à la suite le devis dont elle a besoin plutôt que d'en attendre
+un du jeu de démonstration (`CLAUDE.md` §5 bis : un contrôle ne doit pas réclamer
+ce qu'un autre a fait disparaître).
+
+## SA NOTE VOCALE N'ATTEINT PAS LE DEVIS — non reproduit (1ᵉʳ sept. 2026)
+
+Sa capture : « Atlas prépare toujours votre devis… (96 s) », et rien ne vient.
+Son espace servait bien le commit annoncé, tout concordait sur sa fiche d'état.
+
+**Le parcours passe au vert ici** (`test-devis-depuis-dictee-e2e`, 8/8), donc le
+défaut n'a pas été reproduit et **rien n'a été « corrigé » à l'aveugle**. Ce qui
+a été livré rend la panne bavarde : la raison s'affichera à l'écran au lieu d'un
+compteur.
+
+**Qui peut le faire avancer :** lui, au prochain essai — la phrase qui
+s'affichera nomme la cause. À défaut, le journal de son espace la porte déjà
+(`logger.error`, « Devis depuis dictée : la chaîne a échoué »).
+
+## `monter-base-locale.sh` N'EXPORTE PAS `REDIS_URL` — et ça coûte une heure (1ᵉʳ sept. 2026)
+
+Le script démarre Redis mais laisse `REDIS_URL` vide. Or `CLAUDE.md` §5 la liste
+parmi les variables nécessaires, et sans elle le limiteur de connexion vit en
+mémoire : **toutes les suites navigateur tombent à partir de la deuxième**, sur
+un « dépassement de délai » à la connexion qui accuse le formulaire alors qu'il
+va très bien. `run-e2e-tests.ts` sait pourtant le dire — mais seulement quand on
+l'appelle directement, pas à travers `verifier:avant-livraison`.
+
+**Qui peut le faire :** une session, en deux lignes — poser
+`export REDIS_URL=redis://localhost:6379` dans `monter-base-locale.sh`, et faire
+remonter la garde de `run-e2e-tests.ts` dans `verifier-avant-livraison.ts` pour
+qu'elle parle aussi en batterie.
+
+## LA BATTERIE E2E COMPLÈTE NE TIENT PAS DANS LE CONTENEUR (1ᵉʳ sept. 2026)
+
+Le serveur s'arrête vers la troisième suite navigateur — le journal noyau dit
+« out of memory », et le runner le signale lui-même en proposant de rejouer par
+groupes. Les suites passent toutes une par une ou par cinq.
+
+Ce n'est donc **pas** un rouge du produit, mais on ne peut pas rendre un vert de
+batterie complète depuis ici. À jouer sur un espace plus large, ou en CI.
+
+## ACCORDÉ : supprimer la fiche du chantier — en attente de sa photo (1er sept. 2026)
+
+*« On peut supprimer cette page, et je vais te montrer où emmener le bouton
+Créer la facture. »* Il a tranché ; ce qui manque est **l'endroit du bouton**,
+qu'il montre en capture. Rien ne se code avant.
+
+**Pourquoi c'est devenu possible :** la fiche client porte désormais les photos
+et l'anneau (§226). Il ne restait à la fiche du chantier que « Créer la
+facture » et son tiroir.
+
+**Et sa raison, redite le 1er septembre :** *« toutes ces infos sont déjà sur
+cette page — on la garde, donc ça fait des doublons si on garde l'autre
+aussi »*. Ce qu'il refuse n'est pas un écran de trop : c'est **deux écrans qui
+montrent la même chose**. Les portes du planning devront donc MENER à la fiche
+client, jamais en recopier le contenu — sans quoi le doublon renaîtrait
+ailleurs.
+
+**Les chemins à redresser, relevés :**
+
+| Où | Ce qui pointe sur `/chantiers/[id]` |
+|---|---|
+| `src/lib/chantier-etat.ts` | `lienDeReprise` (photos, dictée, chantier planifié), `getNextActionHref` (photos), la ligne « Photos » des étapes |
+| `src/app/planning/PlanningClient.tsx` | la carte d'un chantier planifié |
+| `src/app/Notifications.tsx` | la suite d'une réponse de devis |
+| `src/lib/retour-du-devis.ts` | plus rien depuis §228 — déjà la fiche client |
+| cinq écrans | la flèche de retour d'`informations`, `prix`, `note-vocale`, `transcription`, `export` |
+
+**Où va le bouton : il a répondu — sur les chantiers du planning.** Trois
+allures lui sont proposées, et **rien ne se code avant sa lettre** :
+`appli/facture-au-planning.html`, en ligne à
+https://florianmarrins0978-svg.github.io/Atlas-app/facture-au-planning.html
+
+| | |
+|---|---|
+| **A** | les trois portes dépliées sous le chantier |
+| **B** | une seule, celle du moment ; le reste derrière le chevron |
+| **C** | rien au repos, le chevron fait monter une feuille |
+
+Le glissement à l'iPhone a été dessiné puis **jeté** : il pousse la ligne
+entière, donc le nom du chantier sort de l'écran.
+
+## CINQ SUITES SONT ROUGES SUR `main` — ce n'est aucun lot en cours (31 août 2026)
+
+Mesuré en rejouant les mêmes six suites sur `f208e68` (l'état de `main` ce
+soir-là) puis sur une branche : **cinq échouent des deux côtés, à l'identique**.
+
+| La suite | Ce qu'elle dit |
+|---|---|
+| `test-facture-e2e.ts` | « la facture réglée ne figure pas au relevé » |
+| `test-tva-au-paiement-e2e.ts` | le relevé reste à 0 quand une facture passe à PAYÉE (4 cas) |
+| `test-planning-vers-facture-e2e.ts` | la confirmation ne porte pas la facture au relevé |
+| `test-facture-au-client-e2e.ts` | « Envoyer le devis » reste désactivé |
+| `test-envoi-client-e2e.ts` | le canal déduit de la seule coordonnée renseignée |
+
+Les quatre premières tournent autour du **relevé de TVA** : une seule cause,
+probablement. Personne ne peut livrer au vert tant qu'elles rougissent, et une
+session qui les découvre les impute à son propre lot — c'est ce qui vient
+d'arriver.
+
+## `test-madame-lucie-e2e.ts` rougit une fois sur deux, et la cause est trouvée
+
+Elle compte les lignes du devis **avant** le clic et exige zéro. Or l'accueil
+pose un `<Link>` vers `/chantiers/<id>/devis-complet` (`lienDeReprise`), et
+**Next.js le préextrait** : le serveur rend alors la page, qui prépare le devis
+(`devisAPreparer`, dans `src/app/chantiers/[id]/devis-complet/page.tsx`). Les lignes existent avant qu'il
+touche quoi que ce soit — sans qu'il ait rien touché, justement.
+
+Ce n'est pas une lenteur : c'est une course entre la préextraction et le clic.
+Le contrôle vise juste (« il n'a appuyé sur rien ») mais le mesure par un état
+que le navigateur peut fabriquer tout seul. À reprendre par quelqu'un qui
+touche ce domaine — vérifié rouge et vert sur la même branche, deux fois
+chacun.
+
+## EN ATTENTE DE SA RÉPONSE : l'aplatissement de la touche d'envoi (31 août 2026)
+
+## `test-facture-e2e` ROUGIT LES PREMIERS JOURS D'UN MOIS — pas d'un lot (1ᵉʳ sept. 2026)
+
+Cas *« le chantier réalisé apparaît dans l'onglet Terminés »*, qui rend **« le
+chantier n'apparaît pas »**. **Vérifié sur `origin/main` tel quel** (commit
+`f03e112`, sans aucun lot), en rejouant le même groupe de six : il tombe
+pareil. Vert joué seul.
+
+**Le mécanisme, et il n'est pas dans le produit.** La suite pose son chantier à
+`CURRENT_DATE - 3`. Le 1ᵉʳ septembre, cela le range en **août** — pendant que
+les suites d'à côté, dans le même groupe, laissent des chantiers datés de
+**septembre**. « Terminés » s'ouvre alors sur septembre (le mois le plus récent
+qui porte quelque chose, `bornesDuFeuilletage`), et le chantier d'août est
+derrière la flèche ‹. Le 31 août, les deux tombaient dans le même mois : la
+suite était verte.
+
+**Ce n'est donc pas l'écran qui a un défaut, c'est la suite qui suppose que
+« il y a trois jours » et « aujourd'hui » sont le même mois.** Le remède, quand
+quelqu'un la reprendra : viser la ligne par son lien
+(`a[href="/chantiers/…/facture"]`) **depuis l'onglet « À facturer »**, qui
+ignore délibérément le mois affiché — la seconde moitié du cas le fait déjà.
+Ne pas « corriger » l'écran : son ouverture sur le mois le plus récent est une
+demande du patron du 22 août.
+
+## ~~La date du chantier dans « Terminés »~~ — FAIT le 31 août 2026
+
+Sa demande du 31 août — *« changer le bouton FACTURER en À FACTURER, et à côté du
+nom du client inscrire la date à laquelle le chantier a été réalisé »*, puis,
+devant la planche : *« supprime "Pas encore facturé" en doré »*, et *« très bien,
+code-moi ça »*.
+
+La planche : `appli/termines-date-du-chantier.html` — quatre places pour la date,
+**il a retenu la B** (la date ouvre la deuxième ligne, devant le montant).
+
+~~Ce qui a été codé~~ (`src/lib/termines-par-mois.ts`,
+`src/app/termines/ListeTermines.tsx`) :
+
+  1. ~~la capsule dit **« À FACTURER »**~~ ;
+  2. ~~**« Pas encore facturé » a disparu**~~ — la capsule, à trois centimètres,
+     disait déjà la même chose sur chaque rangée ;
+  3. ~~la ligne dorée porte **la date puis le montant prévu**~~ — « 12 août ·
+     360,00 € prévus », et l'**année ne s'écrit que si ce n'est pas celle du
+     jour** (l'onglet « À facturer » mêle tous les mois) ;
+  4. ~~une rangée sans date NI devis envoyé **n'a plus de deuxième ligne**~~ :
+     ni tiret, ni phrase de remplacement, ni « · » pendu tout seul.
+
+**CE QUI RESTE OUVERT, ET C'EST À LUI :** la date affichée est `datePlanifiee`,
+celle du planning — l'application n'en garde aucune autre. S'il veut une vraie
+date de réalisation, il faudra la saisir à la clôture : c'est un geste de plus
+pour lui, et il n'a pas répondu.
+
+**PAR OÙ UN CHANTIER ARRIVE DANS « TERMINÉS » SANS DATE — sa question du
+1ᵉʳ septembre, cherchée dans le code, pas supposée.** `rangement()`
+(`src/lib/onglet-chantier.ts`) range dans « terminés » tout ce qui est
+`termineAt` OU `factureEnvoyeeAt`, **quelle que soit la date** — et
+`terminerChantier` (`factures.ts:95`) ne regarde jamais `datePlanifiee` : elle
+exige un devis **envoyé**, rien d'autre. Deux portes, donc :
+
+| | |
+|---|---|
+| **l'assistant** | *« prépare la facture »* → `preparer_facture` appelle `terminerChantier` sans aucun contrôle de date (`informations/actions.ts:941`) |
+| **l'adresse `/chantiers/<id>/facture`** | le serveur l'accepte ; c'est seulement le LIEN de la fiche qui exige `chantier.datePlanifiee` (`chantiers/[id]/page.tsx:128`) |
+
+**Ce n'est donc pas un trou par ses boutons à lui** — depuis la fiche, sans date,
+le lien n'apparaît pas. Ne pas « réparer » en exigeant une date dans
+`terminerChantier` : le 3 août, il s'est plaint de l'inverse (*« pourquoi n'y
+ai-je pas accès ??? »*), et un chantier se finit parfois avant sa date.
+## EN ATTENTE DE SA DÉCISION : les travaux supplémentaires sur la facture (31 août 2026)
+
+**Son constat :** *« si on effectue des travaux en plus chez un client, on n'a
+aucun moyen de rajouter les TS sur la facture »*. Il est juste : la facture
+recopie le devis et ne se modifie plus (`factures.ts:201`).
+
+Quatre solutions, ce qu'elles coûtent et ce qu'elles protègent :
+**`docs/travaux-supplementaires.md`**. Rien n'est codé — la décision lui revient
+(`CLAUDE.md` §3 bis).
+
+**Trois planches à essayer**, parcourues dans un vrai navigateur avant d'être
+transmises (`scripts/` non concerné : le parcours a été joué à la main, captures
+regardées, mode nuit compris) :
+
+| Planche | Ce qu'elle fait trancher |
+|---|---|
+| `appli/ts-bon-sur-place.html` | la signature au doigt (C) — le tracé est réel |
+| `appli/ts-avenant.html` | **une facture ou deux**, et les travaux **en moins** (A) |
+| `appli/ts-arret-3.html` | **bloquer ou avertir** quand rien n'est signé (B et D) |
+| `appli/ts-sur-la-facture.html` | **son idée**, sur sa vraie facture F2026-000001 — et **sa question ouverte** : écran à part ou encadré déroulé |
+
+**Elles ne seront à son adresse qu'une fois sur `main`** : `pages.yml` ne publie
+que sur `main`, et son accord n'a pas encore été demandé.
+
+**Retiré sur sa demande du 1ᵉʳ septembre : la question de l'accord du client
+(SMS, courriel, signé) ne se pose plus à l'écran — « pas besoin de ça ». Le
+risque d'impayé, lui, ne disparaît pas ; il se traite par le bon signé (C).**
+
+**Il a tranché le sens le 31 août au soir : ça se passe SUR la facture, avant
+l'envoi** — la chaîne d'envoi existe déjà. C'est légal en brouillon ; voir §6 du
+document pour les trois bornes (détail par ligne, bloc séparé, trace d'accord).
+
+Recommandation posée : **le bon signé sur place (C), puis l'avenant (A)** ;
+jamais une facture librement modifiable toute seule — elle facture ce que le
+client n'a pas accepté, et l'article 1793 du Code civil le laisse alors refuser
+le supplément en entier.
+
+**Un défaut à corriger quoi qu'il choisisse :** `terminerChantier` rend la
+facture déjà en brouillon **sans regarder si un devis plus récent existe**
+(`factures.ts:102`). Un devis v2 fait après « Fin de chantier » n'atteint donc
+jamais la facture, et rien ne le dit à l'écran. *Lu dans le code, non rejoué à
+l'écran.*
+
+## ~~L'allure de la dictée~~ — TRANCHÉ ET CODÉ le 31 août 2026
+
+Il a choisi **la ligne**, puis le **rond** autour de l'avion. C'est dans
+l'application : `AnneauNoteVocale.tsx` et `.atlas-ligne-dictee`
+(`ARCHITECTURE.md` §228). Les deux planches restent en ligne — elles portent le
+pourquoi, et les formes écartées.
+
+**Ce qu'il reste à lui demander, et seulement s'il le soulève :** la dictée de
+l'écran « chantier neuf » a changé en même temps, parce que c'est le même
+composant. Il n'avait parlé que de la fiche chantier.
+
+## Cinq suites tombent le dernier jour du mois (31 août 2026)
+
+**Ce ne sont pas des défauts du produit, et il faut le savoir avant d'accuser un
+lot :** `test-envoi-client`, `test-facture`, `test-facture-au-client`,
+`test-planning-vers-facture` et `test-tva-au-paiement` échouent le 31 août au
+soir — bouton « Envoyer le devis » désactivé, facture absente du relevé de TVA.
+
+**Vérifié deux fois, pas supposé :** un arbre de travail posé sur `main` **sans
+le lot du soir** les fait échouer à l'identique ; et **rejouées après minuit,
+le 1ᵉʳ septembre, elles passent toutes sans qu'une ligne ait changé**. C'est le
+troisième épisode de ce genre (voir le 26 août, « la troisième suite qui tombe
+sur la fin du mois »).
+
+**Une sixième s'y ajoute, vue le 1ᵉʳ au petit matin :** `test-facture-e2e`
+(« le chantier réalisé apparaît dans l'onglet Terminés ») tombe si la batterie
+**franchit minuit** en cours de route — le chantier est posé la veille et
+cherché le lendemain. Rejouée seule, elle passe.
+
+**Ce qui reste à faire :** les rendre indépendantes du jour où on les joue —
+elles choisissent des dates relatives à aujourd'hui et tombent quand le mois se
+termine. Personne ne l'a encore fait ; le premier qui repasse un 30 ou un 31 le
+repaiera.
+
+## LES BOUTONS PLEINS : fait (31 août 2026)
+
+**Ses réponses sont acquises :** couleur **#29382F**, force **discret**,
+**Origine seule**. Rien à lui redemander.
+
+**Fait :** la classe `.atlas-plein` (`globals.css`), la variable
+`--atlas-plein-fond` ecrite pour Origine seule (`chartes.ts`), les trois pieces
+partagees, puis les **38 autres boutons** de 25 fichiers et les deux notes
+vocales (`AnneauNoteVocale`, un seul composant pour les deux ecrans).
+
+**Ce qui a ete ECARTE volontairement**, et qu'il ne faut pas « corriger » un
+jour en croyant bien faire : huit emplois du meme vert qui ne sont pas des
+boutons — pastilles clignotantes, barres de progression, fonds pales
+(`colors.rustTint`). Ni les capsules creuses. Ni `src/app/design/*`, hors
+produit.
+
+**Si un bouton plein est ajoute plus tard**, il lui faut la classe : sans elle
+il gardera l'ancien vert et n'aura aucun geste, et cela ne se verra qu'a
+l'usage.
+
+---
+
+## EN ATTENTE DE SA RÉPONSE : la force du geste des boutons (31 août 2026)
+
+Sa demande du 31 août — une mini vibration à l'appui, et le bouton qui s'enfonce
+en s'éclaircissant. **Rien n'est codé, et rien ne doit l'être avant sa réponse**
+(`CLAUDE.md` §3 bis).
+
+La planche : `appli/le-bouton-qui-repond.html`, en ligne à
+https://florianmarrins0978-svg.github.io/Atlas-app/le-bouton-qui-repond.html
+
+**Ce qu'on attend de lui, trois réponses :** la force (Discret, le sien,
+Marqué), **le numéro du vert** parmi les dix, et s'il veut l'interrupteur
+« Vibration au toucher » dans les réglages.
+
+**LA VIBRATION EST TRANCHÉE — ne pas rouvrir la piste web.** Le 31 août, il a
+touché du doigt un interrupteur natif d'iOS sur la planche : rien n'a vibré.
+Aucune page web ne fera vibrer son iPhone. Trois correctifs web l'ont précédé,
+tous des défauts réels, aucun n'était la cause (`ARCHITECTURE.md` §222).
+
+**Ce qui reste à faire quand il aura choisi la force et le vert :** poser le
+retour haptique dans l'application par **`@capacitor/haptics`** — c'est le seul
+chemin qui marche sur son téléphone. À vérifier chez lui, pas ici.
+
+**LA QUESTION À LUI POSER AVANT TOUT LE RESTE, et elle peut annuler le verdict
+ci-dessus :** son réglage iOS **« Retour haptique système »** (Réglages → Sons
+et haptiques) est-il allumé ? Éteint, il rend muets l'interrupteur natif ET
+l'application installée — auquel cas la piste web n'est pas morte du tout, et
+c'est son téléphone qui est réglé pour ne rien sentir. Posée le 31 août au soir,
+sans réponse à ce jour.
+
+## Rien n'est proposé au client après un refus ou une correction (31 août 2026)
+
+Depuis ce jour, l'écran de retour d'un devis **accepté** porte « Télécharger mon
+devis » (sa demande). Les deux autres écrans de retour — refus, correction — n'en
+portent aucun.
+
+**C'est délibéré :** on ne propose pas d'emporter un devis auquel on vient de
+renoncer, et celui qui part en correction va changer.
+
+**Qui peut le trancher :** le patron. Deux lignes si sa réponse est l'inverse.
+
+
+---
+
+## Le délai avant une date proposée n'est réglable nulle part (31 août 2026)
+
+Depuis sa règle du 31 août, le patron peut proposer **aujourd'hui ou demain** :
+l'application prévient au lieu de refuser. Ce qu'elle **suggère** d'elle-même
+reste plafonné à après-demain (`DELAI_MINIMAL_JOURS`, écrit en dur dans
+`src/server/disponibilites.ts`).
+
+**Ce qui reste ouvert :** ce chiffre n'est ni un réglage d'entreprise, ni une
+variable d'environnement. Un artisan dont les chantiers se calent une semaine à
+l'avance verrait toujours après-demain en tête de liste.
+
+**Qui peut le trancher :** le patron. Personne ne l'a demandé, et rien ne bloque
+aujourd'hui — c'est noté pour ne pas le redécouvrir.
+
+## LA PROMESSE DE FACE ID N'EST PLUS À L'ÉCRAN — à trancher avec lui (31 août 2026)
+
+Ses quatre lignes grises sont parties avec les autres, sur sa demande du
+31 août. Elles disaient que c'est **par appareil**, que le **visage ne quitte
+jamais le téléphone**, et que le **mot de passe reste actif**.
+
+**Les faits n'ont pas changé** — aucune donnée biométrique n'entre en base
+(`drizzle/0063_cles_appareil.sql`), et c'est la base que `test-face-id-e2e.ts`
+interroge. C'est la promesse ÉCRITE qui a disparu : quelqu'un qui hésite à
+donner son visage n'a plus de quoi se rassurer à l'écran.
+
+**Ce qui reste :** le mode d'emploi la porte (`mode-emploi.ts`,
+`reglages-face-id`).
+
+**Ce qui ne se fera pas sans lui :** la remettre. Il l'a fait retirer, et une
+suite vérifie désormais qu'elle ne revient pas. S'il la veut, elle se pose
+ailleurs — jamais en gris sous le bouton.
+
+---
+
+## ✅ ~~UNE RÉPONSE ATTENDUE — le réglage et le planning, planche 99~~ — RÉPONDUE ET CODÉE (31 août 2026)
+
+Sa demande : *« écrit deux chantiers par jour, planning complet, et met le petit
+carré vert foncé avec écrit "complet" du planning »* — et, devant la planche 98 :
+*« c'est sur cette page que doit se faire la modification »*, l'écran **Réglages**.
+
+**Sa réponse, le jour même : la A.** L'écran porte « 2 chantiers par jour.
+Planning ▪ complet. » — `src/app/reglages/VosEquipes.tsx`, avec le carré pris
+dans `fondDeLEtat` et le mot dans `MOT_ETAT` (`src/lib/planning-jour.ts`, table
+neuve que la légende du calendrier lit désormais aussi).
+
+La planche garde B et C : elles restent le chemin, si l'échelle lui manque un
+jour.
+
+---
+
+## UNE RÉPONSE ATTENDUE — le jour proposé, planche 98 (31 août 2026)
+
+**Née d'une mauvaise lecture de sa demande** — voir juste au-dessus. La
+question reste réelle, mais il ne l'a pas posée : ne pas la relancer.
+
+Sa remarque : *« écrit deux chantiers par jour, planning complet, et met le
+petit carré vert foncé avec écrit "complet" du planning »*. Un jour PROPOSÉ au
+client se peint aujourd'hui du vert que la légende appelle COMPLET, et l'aplat
+recouvre les deux barres de charge (`src/components/atlas/MoisCharge.tsx` :
+`fondDeLEtat("plein")` et `retenus.has(jour)` valent tous deux `colors.rust`).
+
+`appli/jour-propose-pas-complet.html` lui pose la question : **le point** ou
+**la pastille**. Le liseré a été écarté — il se confond avec la case touchée.
+
+**Rien n'est codé** : sa consigne était *« ne code rien, fais-moi un visuel »*.
+Quand il aura répondu, la marque se pose dans `MoisCharge` (la case retenue) et
+dans `Legende` (un cinquième repère, rond), et rien d'autre : le calcul de la
+charge ne bouge pas.
+---
+
+## ✅ LE « 16.3.3 » EST EXPLIQUÉ — c'était `npx`, pas une dérive (31 août 2026)
+
+Ce document portait depuis le 29 août : *« reste inexpliqué : comment ses
+`node_modules` ont dérivé »*. **Ils n'ont jamais dérivé.**
+
+`node_modules/next` MANQUAIT, et `npx next build` télécharge alors la dernière
+version publiée pour la lancer — d'où un 16.3.3 sur un projet qui épingle
+16.3.2. Reproduit à l'identique en écartant le paquet. Corrigé aux trois
+endroits : `ARCHITECTURE.md` §219.
+
+**Ce qui reste ouvert, et c'est la vraie question :** POURQUOI
+`node_modules/next` disparaît de son espace. Trois suspects, aucun mesuré — une
+mise en veille pendant un `npm install`, un `npm install` concurrent (le banc et
+le veilleur), un disque plein à un moment (21 Go libres au moment de l'échec,
+donc peu probable). Le banc répare désormais la conséquence à chaque démarrage ;
+il n'empêche pas la cause.
+
+**Comment le trancher quand cela se reproduira :** le journal du banc
+(`/tmp/essai.log`) porte maintenant « next ABSENT alors que le projet exige
+16.3.2 » avec son heure. La rapprocher de l'heure du dernier `npm install` et de
+la dernière mise en veille répond sans rien demander au patron.
+
+---
+
+## ~~LE PLANNING GARDE-T-IL LES JOURS PASSÉS~~ — fait le 31 août 2026
+
+~~Sa demande : « il faut qu'il les garde en mémoire au moins sur une année ».~~
+
+**Tranché et codé le 31 août 2026 :** il a répondu **B** devant la planche 100,
+et **deux ans** après avoir vu le poids. `estAuCalendrier`,
+`MEMOIRE_CALENDRIER_JOURS`, borne basse dans la requête, jour passé en lecture
+seule. Le détail et ses pourquoi : `ARCHITECTURE.md` §224.
+
+**Ce qui reste ouvert, et qui n'est pas de lui :** `PlanningClient` refait à la
+main ce que `useOccupation` fait déjà — `parCreneau`, `absentesParCreneau`,
+`occupationDe`, `nomEquipe`, à l'identique. Deux copies d'une même règle, ce que
+`CLAUDE.md` §3 interdit : elles divergeront au premier réglage ajouté d'un seul
+côté. Ce lot ne les a pas réunies pour ne pas mêler un remaniement à un
+changement de comportement — mais la dette est là, et elle porte un vrai risque.
+
+## POURQUOI LE RELAIS PERD SON PORT 3000 — inexpliqué (31 août 2026)
+
+Sa nuit du 30 au 31 : espace debout, Atlas répondant sur 3000, version rapide
+bâtie sur le dernier commit — et l'adresse publique rendant un 404 du relais.
+
+**Ce qui est réparé :** le veilleur ne retient plus « ouvert » pour toute la
+session ; il remesure depuis l'adresse publique toutes les cinq minutes et
+redemande le port quand il ne s'atteint plus (`ARCHITECTURE.md` §215).
+
+**Ce qui reste ouvert :** on ne sait pas POURQUOI le relais perd ce port. Trois
+suspects plausibles, aucun mesuré — la bascule du serveur de développement vers
+la version bâtie (`pkill` puis `next start`), une reprise après mise en veille,
+un enregistrement de tunnel qui expire. Tant que la cause n'est pas connue, le
+correctif rattrape le symptôme toutes les cinq minutes ; il ne l'empêche pas.
+
+**Comment le trancher quand cela se reproduira :** le journal du veilleur
+(`/tmp/essai.log`) porte désormais l'heure de chaque perte constatée. La
+rapprocher de l'heure de la bascule, qui y figure déjà, répond à la question
+sans rien demander au patron.
+
+---
+
 ## ✅ LA NOTE VOCALE EST CODÉE — ses trois choix, dans l'application (30 août 2026)
 
 *« Très bien, code exactement ça ! Réfère-toi à cette page une fois que tu auras
@@ -1118,6 +1591,32 @@ atténuation.
 TEXTE des messages — le nom du client, celui de ses chantiers. C'est faisable
 et ce n'est pas anodin (un nom courant balaierait des échanges sans rapport) :
 à trancher avant de coder, pas en codant.
+
+## ~~Deux dictées ne reçoivent pas le vocabulaire~~ — **réglé le 28 août 2026**
+
+Le fournisseur pose lui-même l'indice du métier quand personne ne lui en donne
+(`src/server/ai/providers/transcription/openai.ts`). **Aucun chemin ne peut plus écouter sans savoir**,
+y compris ceux qu'on oublierait — c'était sa remarque : *« pourquoi dans une
+appli SPÉCIFIQUE pour l'espace vert elle comprend pas ? »*
+
+Ce qui reste souhaitable, sans être bloquant : que `retouches-devis-service.ts`
+reçoive un `Ctx` pour y ajouter SES mots à lui, en plus du fond de langue.
+
+## ~~⚠ Deux dictées ne reçoivent pas encore le vocabulaire~~ (repris ci-dessus)
+
+**Depuis le 28 août 2026**, le transcripteur reçoit un indice AVANT d'écouter
+(sa colère : « je lui ai dit désherbage mais il comprend mal »). Il est posé sur
+**la dictée de l'assistant** et sur **la note vocale**.
+
+**Deux chemins ne l'ont pas** :
+
+- `retouches-devis-service.ts` — il dicte une correction sur son devis, et c'est
+  exactement là qu'un libellé de prestation compte. Son service ne reçoit **pas
+  de `Ctx`** : le poser demande de changer sa signature et son appelant ;
+- `coordonnees-service.ts` — la dictée d'une fiche client. Moins urgent : un nom
+  propre ne figure dans aucun vocabulaire, et l'indice n'y peut pas grand-chose.
+
+**Ce n'est pas une régression** : ces deux-là transcrivent comme avant.
 
 ## ⚠ « Ça ne marche pas la dictée » — NON REPRODUIT ici
 
@@ -5160,6 +5659,18 @@ le défaut avait déjà été vu le 13 août. Trois chances ne suffisent plus. L
 piste est donc la même que pour les deux autres — on attend une valeur à
 l'écran sur une montre, au lieu d'attendre que la base ait bougé.
 
+**REVU LE 31 AOÛT 2026, ET LE CONSTAT TIENT.** Sur une batterie jouée par
+groupes, six suites ont rougi ; quatre sont revenues vertes rejouées
+(`test-dashboard`, `test-lecons-prix`, `test-periodicite-tva`,
+`test-reste-equipes`), et les deux qui restaient — `test-tva-au-paiement-e2e`
+et `test-planning-vers-facture-e2e`, toutes deux sur le **relevé de TVA** —
+**rougissent aussi sur `origin/main` tel quel**, joué exprès pour le savoir.
+
+Ce n'est donc toujours pas un lot qui les casse. Et cela ajoute un nom à la
+liste : `test-planning-vers-facture-e2e`, cas *« la confirmation porte la
+facture au relevé de TVA »*, qui rend « la facture F… ne figure pas au relevé
+du trimestre ».
+
 **Et ATTENTION à ne pas confondre deux rouges dans cette même suite.** Le
 24 août au soir, elle a rougi une seconde fois — sur un autre cas, et pour une
 tout autre raison : elle **exigeait la phrase grise** que le patron venait de
@@ -6565,8 +7076,10 @@ dessin** (`ARCHITECTURE.md` §81) :
   `document-commun.ts` porte le nom, l'adresse et le SIRET, rien d'autre. Le
   client n'a aucun moyen d'appeler l'artisan depuis son devis.
 
-Manquent aussi en base, et la maquette les montre : **forme juridique** et
-**titulaire du compte**.
+Manquent aussi en base, et la maquette les montre : ~~**forme juridique**~~ —
+**fait le 30 août 2026** (migration 0072, `ARCHITECTURE.md` §213) : elle
+s'imprime désormais, avec le capital social et le RCS, si l'artisan choisit
+de les montrer — et **titulaire du compte**.
 
 **LE DEUXIÈME CERVEAU : CE QUI NE RETIENT RIEN.** Direction posée le 13 août
 2026 (`ARCHITECTURE.md` §90, `docs/QUESTIONS.md` §17). Ce qui apprend déjà est

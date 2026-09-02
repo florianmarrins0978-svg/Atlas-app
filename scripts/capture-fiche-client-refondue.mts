@@ -130,7 +130,7 @@ await page.screenshot({ path: `${dossier}/fiche-client-reelle.png`, fullPage: tr
 // « Enregistrer » : c'est le geste qui a changé, et une image le dit mieux
 // qu'une assertion.
 // Depuis le 2 septembre 2026 le dossier est en REGISTRES : on touche l'onglet,
-// puis la pièce — c'est le chemin qu'il emprunte (`ARCHITECTURE.md` §213).
+// puis la pièce — c'est le chemin qu'il emprunte (`ARCHITECTURE.md` §232).
 await page.locator('[data-atlas="registre"]:text-is("Fiches")').click();
 await page.waitForTimeout(400);
 const registreFiches = page.locator('[role="tabpanel"]:not([hidden])');

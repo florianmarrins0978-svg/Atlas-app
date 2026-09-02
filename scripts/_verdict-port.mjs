@@ -26,18 +26,6 @@
  */
 
 /**
- * Le verdict, à partir de ce qu'on a pu constater.
- *
- * Fonction pure, éprouvée sans réseau (`scripts/test-verdict-port.ts`).
- *
- * @param {object} vu
- * @param {string|null} vu.etatPort  Le mot rendu par `ouvrir-port.sh`, ou `null`.
- * @param {null|{joignable:boolean, statut?:number, type?:string, motif?:string}} vu.dehors
- *   Ce que l'appel à l'adresse publique a rendu, ou `null` si on n'a pas pu
- *   l'essayer (hors Codespace, variables absentes).
- * @returns {{ligne:string, souci:string|null}}
- */
-/**
  * LE GESTE À FAIRE, D'APRÈS CE QUE L'ESPACE A PU FAIRE LUI-MÊME.
  *
  * **Né le 23 août 2026, après trois « ça ne marche pas » d'affilée.** La fiche
@@ -92,7 +80,22 @@ function gestePort(etatPort) {
   );
 }
 
-export function verdictPort({ etatPort, dehors }) {
+/**
+ * Le verdict, à partir de ce qu'on a pu constater.
+ *
+ * Fonction pure, éprouvée sans réseau (`scripts/test-verdict-port.ts`).
+ *
+ * @param {object} vu
+ * @param {string|null} vu.etatPort  Le mot rendu par `ouvrir-port.sh`, ou `null`.
+ * @param {null|{joignable:boolean, statut?:number, type?:string|null, motif?:string}} vu.dehors
+ *   Ce que l'appel à l'adresse publique a rendu, ou `null` si on n'a pas pu
+ *   l'essayer (hors Codespace, variables absentes).
+ * @param {boolean|null} [vu.serveurLocal] Atlas répond-il sur `127.0.0.1:3000` ?
+ *   `null` quand personne ne l'a mesuré — et l'on ne conclut alors rien de plus
+ *   qu'avant. Voir le bloc « RIEN NE SERT SUR 3000 » plus bas.
+ * @returns {{ligne:string, souci:string|null}}
+ */
+export function verdictPort({ etatPort, dehors, serveurLocal = null }) {
   // **La mesure prime sur le réglage, toujours.** Un port qu'il a lui-même
   // rendu public répond, quoi qu'ait pu faire — ou ne pas faire — le script de
   // démarrage. C'est exactement le cas qui a fait mentir la fiche.
@@ -110,6 +113,52 @@ export function verdictPort({ etatPort, dehors }) {
     // « je suis déjà en public ». La signature d'Atlas tranche : on ne lui
     // propose plus une liste, on lui donne le geste.
     const atteintAtlas = /d'ATLAS lui-même/.test(detail);
+
+    // **CE QU'IL VOIT, LUI : un TÉLÉCHARGEMENT, pas une erreur.** Sa capture du
+    // 31 août 2026 à 1 h 07 montre Safari sur `about:blank`, proposant
+    // d'enregistrer un fichier nommé comme son espace. Ce n'est pas une panne
+    // de plus : c'est ce que fait un navigateur devant une réponse SANS TYPE —
+    // il ne sait pas l'afficher, donc il l'enregistre. Le refus nu du relais
+    // arrive exactement ainsi. Sans cette phrase, la fiche décrit un « 502 »
+    // que rien ne relie à ce qu'il a sous les yeux.
+    const sansType = dehors.statut !== undefined && !dehors.type;
+    const vuDuTelephone = sansType
+      ? "\n     Sur son téléphone, cela se voit comme un TÉLÉCHARGEMENT proposé à la\n" +
+        "     place de la page : un navigateur enregistre ce qu'il ne sait pas afficher."
+      : "";
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // **RIEN NE SERT SUR 3000 : LE RELAIS NE PEUT RENDRE QUE ÇA — 31 août 2026.**
+    //
+    // Sa fiche de la nuit se contredisait sur deux lignes voisines :
+    //
+    //     Serveur   : NE RÉPOND PAS sur le port 3000
+    //     Port 3000 : INJOIGNABLE DE L'EXTÉRIEUR — réponse 502 … c'est le port
+    //                 ou le relais, PAS le code
+    //
+    // La seconde accusait le port pendant que la première disait qu'aucun
+    // serveur n'écoutait — et le geste proposé (onglet PORTS → « Public »)
+    // n'aurait rien pu réparer : un relais qui ne trouve personne derrière un
+    // port répond 502, public ou non. C'est la faute que ce fichier existe pour
+    // ne plus commettre : « une erreur qui accuse à tort coûte plus cher que
+    // pas d'erreur du tout » (`AGENTS.md`).
+    //
+    // On ne conclut que sur une MESURE : `serveurLocal` vaut `false` quand
+    // `127.0.0.1:3000` a été interrogé et s'est tu. À `null` — non mesuré — le
+    // verdict reste celui d'avant, faute de savoir.
+    if (!atteintAtlas && serveurLocal === false) {
+      return {
+        ligne: `INJOIGNABLE DE L'EXTÉRIEUR — ${detail}`,
+        souci:
+          "RIEN NE SERT SUR LE PORT 3000, ET C'EST TOUT : le relais de GitHub ne\n" +
+          "     trouve personne derrière, donc il refuse. Le port n'y est pour rien —\n" +
+          "     public ou non, il n'y a rien à atteindre.\n" +
+          `     Ce que voit son téléphone : ${detail}.${vuDuTelephone}\n` +
+          "     NE PAS toucher à l'onglet PORTS : c'est la ligne « Serveur » ci-dessus\n" +
+          "     qu'il faut suivre, et elle dit quoi faire.",
+      };
+    }
+
     return {
       ligne: `INJOIGNABLE DE L'EXTÉRIEUR — ${detail}`,
       souci: atteintAtlas
@@ -118,7 +167,7 @@ export function verdictPort({ etatPort, dehors }) {
           "     Le port n'y est pour rien — inutile d'y toucher. C'est le JOURNAL DE\n" +
           "     DÉMARRAGE qu'il faut lire (/tmp/essai.log), et lui seul."
         : "L'ADRESSE PUBLIQUE N'ATTEINT MÊME PAS ATLAS. L'espace tourne, mais la\n" +
-          `     requête s'arrête avant : ${detail}.\n` +
+          `     requête s'arrête avant : ${detail}.${vuDuTelephone}\n` +
           "     Le code n'y est pour rien — inutile de lire le journal du serveur.\n" +
           gestePort(etatPort),
     };

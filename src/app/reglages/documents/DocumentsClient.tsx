@@ -664,7 +664,7 @@ export default function DocumentsClient({
             data-atlas="photo-devis"
             disabled={allureEnCours}
             onClick={() => choixPhoto.current?.click()}
-            className="flex min-h-[52px] w-full items-center justify-center rounded-full px-4 text-[15px]"
+            className="atlas-plein flex min-h-[52px] w-full items-center justify-center rounded-full px-4 text-[15px]"
             style={{ backgroundColor: colors.rust, color: surPlein, opacity: allureEnCours ? 0.6 : 1 }}
           >
             {allureEnCours ? "Lecture…" : "Photographier mon devis"}

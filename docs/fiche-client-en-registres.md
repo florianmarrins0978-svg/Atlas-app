@@ -1,7 +1,7 @@
 # La fiche client, refaite — ce qui a changé et ce qui n'a pas bougé
 
 *2 septembre 2026. À lire en cinq minutes ; tout le détail technique est dans
-`ARCHITECTURE.md` §213.*
+`ARCHITECTURE.md` §232.*
 
 ---
 

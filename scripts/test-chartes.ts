@@ -87,6 +87,52 @@ essai("le repli de --font-display EST la serif d'aujourd'hui", () => {
   );
 });
 
+essai("le vert du bouton plein ne touche QUE Origine", () => {
+  // **Sa décision du 31 août 2026, en trois temps.** D'abord : « mets-moi la
+  // couleur 8 partout sur chaque bouton plein de couleur verte de l'appli ».
+  // Puis, la question des sept chartes lui étant posée : **« les boutons à
+  // changer c'est seulement pour la version origine, ne touche pas aux autres
+  // apparences ! »** Enfin, les deux verts photographiés côte à côte sur le
+  // vrai bouton : **« je garde le #29382F »** — le vert 8 est écarté.
+  //
+  // Le « seulement » est la moitié qui compte, et c'est elle qui est gardée
+  // ici : sur Brume, l'aplat d'action est un bleu marine qu'il a validé au
+  // pouce. Un dégradé vert posé par-dessus le remplacerait sans que personne
+  // ne l'ait demandé — et cela ne se verrait qu'en changeant d'apparence,
+  // c'est-à-dire jamais pendant qu'on développe.
+  for (const c of CHARTES) {
+    const fond = variablesCharte(c)["--atlas-plein-fond"];
+    if (c.nom === "origine") {
+      assert.ok(fond, "Origine n'écrit plus le fond : ses boutons pleins ont perdu sa couleur");
+      // Sa couleur, recopiée ici volontairement : qui la change doit décider
+      // AUSSI de la changer là où sa réponse est consignée.
+      assert.ok(
+        fond.toUpperCase().includes("#29382F"),
+        `le fond n'est plus le vert qu'il a retenu : ${fond}`
+      );
+    } else {
+      assert.equal(
+        fond,
+        undefined,
+        `${c.nom} reçoit le vert d'Origine alors qu'il a dit « seulement pour origine »`
+      );
+    }
+  }
+});
+
+essai("l'accent lui-même n'a pas bougé — seuls les boutons PLEINS changent", () => {
+  // *« Surtout pas ceux qui sont creux ou d'une autre couleur que la verte. »*
+  //
+  // Le dégradé arrive par une classe posée sur des boutons ; `rust` — qui
+  // teinte aussi des TEXTES, des icônes, des liserés et les fonds pâles — ne
+  // doit pas suivre. Le confondre aurait reverdi la moitié des écrans pour une
+  // demande qui ne visait que des aplats.
+  const origine = CHARTES.find((c) => c.nom === "origine");
+  assert.ok(origine, "la charte Origine a disparu");
+  assert.equal(origine.jetons.rust, "#2f3b2f", "l'accent d'Origine a changé : ce n'est pas ce qu'il a demandé");
+  assert.equal(origine.jetons.rustTint, "#ece9e1", "le fond pâle d'Origine a changé");
+});
+
 essai("le marqueur d'onglet ne bouge QUE pour Brume", () => {
   // **Sa demande du 24 août 2026 :** *« modifie aussi la sélection des
   // catégories, juste pour Brume moderne »*. Le « juste » est la moitié qui
@@ -278,6 +324,39 @@ essai("les huit chartes portent les mêmes jetons, aucun vide", () => {
       const v = (c.jetons as unknown as Record<string, string>)[cle];
       assert.match(v, /^(#[0-9a-fA-F]{6}|rgba\()/, `${c.nom}.${cle} vaut « ${v} »`);
     }
+  }
+});
+
+// ─── L'OR NE CHANGE PAS D'UNE APPARENCE À L'AUTRE ───────────────────────────
+//
+// **Sa consigne du 31 août 2026 :** *« pour l'apparence, j'aimerais que tout ce
+// qui est en doré sur la version originale apparaisse en doré sur les autres
+// apparences »* — la généralisation de celle du 27 août, qui ne portait que sur
+// Brume.
+//
+// **Ce que ce contrôle attrape, et qu'aucun autre ne voyait.** `depuisPlanche`
+// recopiait le second accent de chaque charte dans `or` : la sauge de Pierre,
+// l'argile de Moka, le prune de Prune. Tous les jetons étaient présents, tous
+// lisibles — les deux suites existantes passaient au vert pendant que changer
+// d'apparence repeignait l'accueil, les libellés d'état, les filets et le
+// sceau. Un contrôle sur la LISIBILITÉ ne dit rien de l'IDENTITÉ.
+essai("l'or est le même sur les huit chartes — sa consigne du 31 août 2026", () => {
+  const or = charte("origine").jetons;
+  for (const c of CHARTES) {
+    assert.equal(c.jetons.or, or.or, `${c.libelle} : l'or vaut « ${c.jetons.or} » au lieu de « ${or.or} »`);
+    assert.equal(
+      c.jetons.orClair,
+      or.orClair,
+      `${c.libelle} : l'or clair vaut « ${c.jetons.orClair} » au lieu de « ${or.orClair} »`
+    );
+  }
+});
+
+// Une phrase qui décrit la charte d'avant se croit encore : « Aucun or » a été
+// retiré de Pierre le 31 août, en même temps que l'or y revenait.
+essai("aucune charte n'annonce qu'elle est sans or", () => {
+  for (const c of CHARTES) {
+    assert.ok(!/aucun or/i.test(c.dit), `${c.libelle} annonce « ${c.dit} » alors qu'elle porte l'or d'Origine`);
   }
 });
 

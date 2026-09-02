@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { execFileSync } from "node:child_process";
+import { execFileSync, spawnSync } from "node:child_process";
 import { chmodSync, mkdtempSync, readFileSync, rmSync, writeFileSync, existsSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
@@ -289,6 +289,55 @@ cas("le veilleur redemande l'ouverture du port quand le serveur répond", () => 
     /\/tmp\/atlas-port\.txt/,
     "veiller.sh n'écrit pas le nouvel état du port : la fiche annoncerait encore le refus"
   );
+});
+
+// ─── LE PORT SE REVÉRIFIE, ET « OUVERT » N'EST PLUS UN ACQUIS ───────────────
+//
+// **Sa nuit du 30 au 31 août 2026 : « l'appli ne se lance plus ».** Son espace
+// tournait, Atlas répondait sur 127.0.0.1:3000, la version rapide était bâtie
+// sur le dernier commit — et son adresse publique rendait un 404 du relais.
+//
+// Le veilleur posait `PORT_OUVERT=oui` dès que `gh` avait répondu « ouvert », et
+// n'y revenait plus de la session. Ce mot ne dit pourtant pas que le port est
+// joignable : il dit qu'une commande a réussi, à un instant. Le relais peut
+// perdre le port ensuite — et le verrou tenait quand même, toute la nuit.
+cas("le veilleur REMESURE le port du dehors, au lieu de croire « ouvert » pour toujours", () => {
+  const veilleur = readFileSync(path.join(__dirname, "..", ".devcontainer", "veiller.sh"), "utf8")
+    .split("\n")
+    .filter((l) => !l.trimStart().startsWith("#"))
+    .join("\n");
+
+  assert.match(
+    veilleur,
+    /port-joignable\.mjs/,
+    "veiller.sh ne mesure jamais si l'adresse publique atteint Atlas : un port perdu " +
+      "en cours de session le reste jusqu'au prochain allumage"
+  );
+  assert.match(
+    veilleur,
+    /PORT_OUVERT=non/,
+    "rien ne peut plus DÉFAIRE le verrou : c'est exactement ce qui a laissé passer sa nuit du 31 août"
+  );
+  // **Ne rien conclure d'une ignorance.** Hors Codespace, la mesure est
+  // impossible : la traiter comme un refus rappellerait `gh` toutes les cinq
+  // minutes sur une machine qui n'a aucun port à ouvrir.
+  assert.match(
+    veilleur,
+    /\*\)\s*:\s*;;/,
+    "le cas « pas mesurable » n'est pas distingué du refus"
+  );
+});
+
+cas("hors Codespace, la mesure du port s'abstient (code 2) au lieu d'accuser", () => {
+  // Joué pour de bon : un contrôle qui n'a jamais été exécuté ne prouve rien.
+  const sans = { ...process.env };
+  delete sans.CODESPACE_NAME;
+  delete sans.GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN;
+  const rendu = spawnSync(process.execPath, [path.join(__dirname, "port-joignable.mjs")], {
+    env: sans,
+    encoding: "utf8",
+  });
+  assert.equal(rendu.status, 2, "la sonde conclut là où elle n'a rien pu mesurer");
 });
 
 rmSync(dossier, { recursive: true, force: true });

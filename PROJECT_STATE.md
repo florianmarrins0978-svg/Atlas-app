@@ -1,8 +1,7 @@
 # État du projet
 
 **Dernière mise à jour :** 2026-09-02 · branche `main`
-· dernière migration `drizzle/0071_rappel_vu.sql` (inchangée : ce lot ne touche
-que l'affichage)
+· dernière migration `drizzle/0072_capital_forme_juridique_rcs.sql`
 
 *(Deux en-têtes de mise à jour cohabitaient ici depuis une fusion du 29 août,
 avec deux dates et deux migrations différentes — dont une périmée. Réunis : une
@@ -19,7 +18,7 @@ ligne « fait » qui ne l'est pas coûte plus cher qu'une ligne absente.
 
 ---
 
-## La fiche client en registres (2 septembre 2026)
+## FAIT : la fiche client en registres (2 septembre 2026)
 
 **Son feu vert, après avoir manipulé la maquette :** *« c'est très bien, code
 exactement ce que tu viens de me faire comme maquette »*. Deux allers-retours
@@ -49,9 +48,294 @@ ni le tri, ni les trois choix d'un appui, ni les trois temps de la suppression.
 rendait ses neuf étapes en échec en une seconde sous Windows — `spawnSync` n'y
 sait pas lancer `npm`. La batterie tourne maintenant sur cette machine.
 
-Détail : `docs/fiche-client-en-registres.md`, `ARCHITECTURE.md` §213.
+Détail : `docs/fiche-client-en-registres.md`, `ARCHITECTURE.md` §232.
+
+## FAIT : la fiche client tient dans un écran, centrée (1ᵉʳ sept. 2026)
+
+Sa demande : une seule page, centrée, sans marge excessive. La page faisait
+933 px pour 844 de fenêtre — 272 px de réserve en bas pour une barre de 48.
+
+Désormais **0 px de débordement** sur ses tailles d'iPhone, contenu centré.
+Mesuré par `scripts/capture-fiche-client-hauteur.mts`, gardé par
+`test-fiche-client-e2e` (qui sait rougir).
+
+## FAIT : plusieurs TVA sur un même devis (1ᵉʳ sept. 2026)
+
+**Sa question :** *« si j'ai de la main d'œuvre TVA à 20 et des plantes TVA à
+10, je peux avoir deux TVA différentes ? »* Le devis n'en portait qu'une.
+
+**Le taux ne se pose PAS ligne par ligne** — il l'a tranché contre la première
+proposition : *« j'appuie sur ajouter une TVA, une catégorie s'ajoute et là je
+mets toutes mes lignes qui seront en TVA à 10 »*.
+
+| | |
+|---|---|
+| un seul taux | l'écran et le PDF sont **exactement** ceux d'avant |
+| « + Ajouter une TVA » | une catégorie s'ouvre, avec sa première ligne |
+| une catégorie | porte autant de lignes qu'il veut, et son sous-total HT |
+| les totaux | une ligne de TVA par catégorie |
+| le « − » | retire la catégorie ; **ses lignes reviennent**, elles ne meurent pas |
+| **appui long** sur une ligne | la déplace vers une autre TVA — son choix du 1ᵉʳ sept. |
+
+Le taux vit sur la ligne (migration 0073, nul = suit le devis) et voyage jusqu'à
+la facture émise. Le prix accordé au client se répartit au prorata entre les
+catégories — sans quoi la TVA se calculerait sur le brut. Règle :
+`src/lib/reduction-devis.ts`. Détail : `ARCHITECTURE.md` §231. Maquette :
+`appli/devis-tva-multiple.html`.
+
+## « Terminés » porte la date du chantier, et la ligne dorée a maigri (31 août 2026)
+
+Sous le nom du client, l'écran écrit maintenant **la date du chantier puis le
+montant prévu** — « 12 août · 360,00 € prévus » —, et la capsule dit **« À
+FACTURER »**. « Pas encore facturé » n'existe plus : la capsule le disait déjà,
+sur la même ligne. Il a choisi la proposition B de
+`appli/termines-date-du-chantier.html`, puis : *« très bien, code-moi ça »*.
+
+| | |
+|---|---|
+| la règle | `libelleDateChantier` et `libelleEtatLigne`, dans `src/lib/termines-par-mois.ts` |
+| l'écran | `src/app/termines/ListeTermines.tsx` |
+| l'année | écrite **seulement si ce n'est pas celle du jour** — l'onglet « À facturer » mêle tous les mois |
+| sans date ni devis | **pas de deuxième ligne du tout** : ni tiret, ni phrase, ni « · » pendu |
+
+**Ce que la date EST, et il faut le savoir avant d'y toucher :** `datePlanifiee`,
+la date du planning — l'application n'en garde aucune autre. Un chantier clôturé
+sans être passé par le planning n'a donc pas de date. **Question ouverte, à
+lui :** faut-il saisir une vraie date de réalisation à la clôture ?
 
 ---
+
+## Il n'y a plus qu'une fiche client (31 août 2026)
+
+**Sa demande, deux captures à l'appui :** *« lorsque je fais retour j'arrive sur
+la page 1re photo alors que je veux arriver sur la 2e. Je sais pas d'où sort la
+1re photo ? Si elle sert à rien il faut la supprimer. »*
+
+La fiche rouverte (`/chantiers/[id]/coordonnees`) portait tout sauf la
+pellicule, l'anneau et la chaîne du devis. Elle les porte désormais, **nourris
+de ce que le chantier a déjà** — photos prises, note dictée. Seul
+« Enregistrer » l'en distingue encore : elle seule a quelque chose à sauver.
+
+Raisons : `ARCHITECTURE.md` §226.
+
+---
+
+## FAIT : la dictée est une ligne, sans aucun aplat (31 août 2026)
+
+**C'est l'état du produit :** pendant qu'on dicte, la fiche porte une ligne fine
+— poubelle, chrono, onde, et un rond d'envoi creux cerclé de vert. Plus de
+disque plein, plus de pause. L'aplat sombre passe de 7 956 px² à 64.
+
+Sa plainte du matin (*« ça dénature l'appli »*), quatre allures essayées, sa
+réponse : la ligne, avec le rond. Détail et pièges : `ARCHITECTURE.md` §228.
+**Le même dessin sert l'écran d'un chantier neuf**, qui porte le même
+composant.
+
+---
+## Le banc garde sa version rapide pendant qu'il bâtit la suivante (31 août 2026, soir)
+
+**Sa huitième plainte de lenteur** — *« l'appli est lente, corrige ça »*.
+Jusqu'ici son banc jetait sa version rapide dès que le code changeait et servait
+le mode développement le temps de bâtir : un mode où un écran neuf compile plus
+lentement que le relais de GitHub n'accepte d'attendre. Il ne pouvait ouvrir
+aucun écran qu'il n'avait pas déjà ouvert, et chaque redémarrage l'y remettait.
+
+La version bâtie reste désormais en service pendant la construction, qui se fait
+dans un dossier voisin ; la bascule est un échange de noms. Mesuré en le jouant :
+`/login` en **0,28 s pendant la construction**. Une construction qui échoue ne le
+condamne plus au mode lent jusqu'au lendemain — il garde une application entière,
+en retard de quelques commits, et **l'écran comme la fiche le disent**.
+
+Au passage : la fiche de son espace concluait « ✅ Tout concorde » sur un banc
+sans version rapide, et envoyait donc chercher le défaut dans le produit.
+
+`ARCHITECTURE.md` §225 · `docs/appli-lente-version-davant.md`
+
+## EN ATTENTE : le geste des boutons — une planche, pas du code (31 août 2026)
+
+**Rien n'a bougé dans l'application**, et c'est l'état exact du produit : les
+boutons d'Atlas ne vibrent pas, et leur seul geste est `active:scale-[0.985]` —
+moins d'un pixel sur une capsule de 50 px, aucune couleur.
+
+Sa demande du 31 août : *« une mini vibration, que l'utilisateur soit sûr
+d'avoir appuyé »*, et le bouton qui s'enfonce en s'éclaircissant. Trois forces
+lui sont proposées sur `appli/le-bouton-qui-repond.html` — Discret, la sienne,
+Marqué — sur les quatre surfaces qu'il touche.
+**Sa réponse est attendue ; le pourquoi est en `ARCHITECTURE.md` §222.**
+
+---
+
+## Un devis sans client renvoie à la fiche client (31 août 2026)
+
+**Sa demande, deux captures à l'appui :** *« j'ai oublié de renseigner la fiche
+client du chantier. Lorsque je fais retour, je dois arriver sur la page de la
+fiche client ! Pas sur la page que je te mets en deuxième photo. »*
+
+| | |
+|---|---|
+| devis **sans client** | la flèche mène au formulaire « Fiche client » du chantier |
+| devis **avec client** | la flèche rend la fiche du chantier, comme avant |
+| fiche enregistrée, venu du devis | on **retourne au devis**, qui porte enfin le client |
+| fiche ouverte depuis l'accueil | inchangé : flèche vers la liste, enregistrement vers le chantier |
+
+La provenance voyage dans l'adresse (`?de=`) et n'est acceptée que si elle vaut
+**exactement** le devis de ce chantier — sans quoi la flèche « retour » pourrait
+sortir d'Atlas. Règle : `src/lib/retour-du-devis.ts`. Éprouvé par
+`scripts/test-retour-du-devis.ts` et `scripts/test-devis-sans-client-e2e.ts`.
+Raisons : `ARCHITECTURE.md` §221.
+
+---
+
+## Le diamètre dicté n'est plus redemandé (30 août 2026)
+
+*Il disait « un érable de 40 centimètres au pied » et « deux souches de 60 », et
+Atlas lui redemandait les deux. Le diamètre ne se perdait nulle part dans la
+chaîne : **il n'était jamais créé** — le seul écrivain de la colonne était ses
+réponses aux questions dont il se plaignait. Détail et pourquoi :
+`ARCHITECTURE.md` §220.*
+
+Trois choses en découlent, toutes visibles chez lui :
+
+| | |
+|---|---|
+| l'arrêt d'avant-chiffrage | ne redemande plus un diamètre qu'il a prononcé |
+| le devis | affiche « Dessouchage de souches de 60 cm », le compte restant en colonne Qté |
+| la colonne de chaque ligne | s'intitule « Montant HT » ; le total du bas reste « Total HT » |
+
+**Ce qui reste à éprouver, et qui ne peut pas l'être ici :** ce que le modèle
+répond vraiment. `npm run verifier:chaine-dictee` sur son espace, où les clés
+sont posées.
+
+---
+
+## Le devis du client : verrouillé, dans un écran, et téléchargeable après coup (31 août 2026)
+
+Ses trois captures du téléphone d'une cliente.
+
+| | État |
+|---|---|
+| Le PDF du client ne se modifie plus dans Acrobat | **fait** — chiffré, autorisations posées : imprimer et copier oui, modifier et annoter non |
+| La facture et la feuille de chantier aussi | **fait** — un seul endroit protège les trois |
+| Le devis protégé s'ouvre sans mot de passe | **fait, et éprouvé par un lecteur tiers** (moteur PDF de Chromium) |
+| Toute la réponse tient dans un écran de 664 px | **fait** — 770 px demandés, 630 désormais |
+| Le devis se télécharge après l'avoir accepté | **fait** — sur l'écran de retour et sur la confirmation |
+| Le fichier descend au lieu de s'ouvrir dans le lecteur | **fait** — `?telecharger`, décidé par le serveur |
+
+**Ce qui n'est PAS promis :** la protection n'est pas un coffre-fort. Elle
+empêche la retouche d'un doigt, pas un outil déterminé — le format est public.
+La pièce qui fait foi reste celle qu'Atlas archive à l'envoi.
+
+**Ce qui reste ouvert :** aucun geste n'est proposé après un refus ni après une
+demande de correction — à trancher par le patron.
+
+Raisons et pièges : `ARCHITECTURE.md` §223.
+
+
+## Un prix posé débloque l'envoi, et il peut proposer demain (31 août 2026)
+
+Ses deux captures du matin, sur l'écran d'envoi du devis.
+
+| | État |
+|---|---|
+| Un prix tapé sur l'écran du DEVIS efface « à chiffrer » | **fait** — il ne l'effaçait que depuis l'écran Prix, et l'envoi restait bloqué sans aucune sortie |
+| La phrase du refus, écrite une seule fois | **fait** — deux versions avaient divergé, d'où ses fautes d'accord |
+| Un devis ne peut plus afficher un total que son tableau contredit | **fait** — le PDF disait « à chiffrer » sur 1 720 € que le total comptait |
+| Il peut proposer aujourd'hui et demain | **fait** — l'application prévient, elle ne refuse plus |
+| L'application ne SUGGÈRE toujours rien avant après-demain | **inchangé, et voulu** |
+| Un jour passé | **refusé**, et ce n'est pas un arbitrage |
+| Son client peut accepter une date proche | **fait** — il ne le pouvait pas, et rien ne l'aurait signalé |
+
+**Ce qui reste ouvert :** le délai de deux jours n'est réglable nulle part. Il
+est écrit dans le code, pas dans les réglages de l'entreprise. Personne ne l'a
+demandé — à trancher par le patron.
+
+Raisons et pièges : `ARCHITECTURE.md` §216.
+
+## La connexion tient dans un écran (31 août 2026)
+
+**Sa demande :** *« Pour la page connexion je veux qu'elle tienne sur une seule
+page et supprime toutes les petites phrases en gris sous les boutons, garde que
+les titres. »*
+
+| | |
+|---|---|
+| avant | **1203 px** pour 664 de hauteur utile — « Ailleurs » à un écran du reste |
+| après | **658 px**, tout visible d'un seul tenant sur son iPhone |
+| les gloses grises | **parties** : Face ID, « vous resterez connecté », « un téléphone perdu… », la ligne sous « Me déconnecter partout » |
+| ce qui reste | les titres, les trois champs, les trois gestes |
+
+**Ce qui ne s'est pas perdu avec les phrases :** « Au moins 12 caractères »
+n'est plus affiché d'avance mais se dit **quand il tape trop court**
+(`etatNouveau`), sans quoi un bouton serait resté éteint sans raison lisible.
+
+**Ce qui s'est perdu, et qui est ouvert :** la promesse de Face ID — *« votre
+visage ne quitte jamais votre téléphone »* — n'est plus à l'écran. Elle survit
+dans le mode d'emploi. Les faits, eux, n'ont pas bougé : aucune donnée
+biométrique n'entre en base, et c'est la base que la suite interroge.
+
+Compte-rendu qui lui est destiné : `docs/connexion-une-page.md`. Le détail :
+`ARCHITECTURE.md` §217.
+
+## L'or est le même sur les huit apparences (31 août 2026)
+
+**Sa consigne :** *« pour l'apparence, j'aimerais que tout ce qui est en doré
+sur la version originale apparaisse en doré sur les autres apparences »*.
+
+Chaque charte portait son propre second accent — sauge sur Pierre, argile sur
+Moka, prune sur Prune, un bleu et un rose pour les traits de Brume et de Prune.
+Changer d'apparence repeignait donc tout ce que l'or porte : l'accueil, les
+libellés d'état, les filets, le sceau, le compteur de la dictée.
+
+Les huit chartes portent l'or d'Origine, `#B98B47`, au caractère près
+(`src/lib/chartes.ts`). Mesuré : il se détache mieux sur les deux sombres (6,14
+sur Nuit) que sur Origine (2,77) — rien à remonter. Une suite tient la règle
+pour les huit ; les deux suites existantes vérifiaient la présence des jetons et
+la lisibilité, jamais l'identité. Détail : `ARCHITECTURE.md` §218.
+
+---
+
+## La connexion ne peut plus bouger (31 août 2026)
+
+**Sa demande :** *« la page connexion n'est pas fixe, elle peut bouger encore ;
+il ne faut pas qu'elle puisse bouger, aucun scroll possible »*.
+
+| | |
+|---|---|
+| la page | **figée** : ni défilement, ni élastique du navigateur |
+| le bandeau du banc | publie sa **vraie** hauteur (49 px, 66 sur écran étroit) au lieu des 40 écrits à la main |
+| ce qui en profite | les trois écrans figés — chantiers, envoi, connexion — cessent d'être 50 px trop hauts sur son banc |
+| ce qui reste | bandeau affiché, il manque 51 px : ils glissent dans une colonne intérieure plutôt que de cacher un bouton |
+
+Sans le bandeau — le produit, et son banc dès que la construction est finie —
+rien ne bouge d'un pixel. Le détail : `ARCHITECTURE.md` §227.
+
+## Le planning garde deux ans de jours passés (31 août 2026)
+
+**Sa question :** *« est-ce que le planning garde en mémoire les chantiers
+passés ? Si non il faut qu'il les garde en mémoire au moins sur une année »*,
+puis *« combien si je décide de garder en mémoire 2 ans ? C'est trop lourd ou
+pas ? »*
+
+**Ce qui était vrai :** rien n'était effacé — les chantiers sont tous en base, et
+« Terminés » les liste — mais le CALENDRIER repeignait chaque jour en blanc le
+lendemain. Son mois de juillet était vide alors qu'il y avait travaillé.
+
+**Ce qui est fait**, planche 100, proposition **B** :
+
+| | |
+|---|---|
+| le jour passé | garde ses barres et **ses couleurs**, comme s'il était à venir |
+| jusqu'où | **deux ans** (`MEMOIRE_CALENDRIER_JOURS`) ; au-delà, « Terminés » |
+| ce qu'on y fait | on **lit** : pas de « + Ajouter », pas de salarié à cocher, pas de déplacement |
+| ce qui ne bouge pas | le chantier passé reste rangé dans « Terminés », lui seul |
+
+**Le poids, mesuré** (`npm run mesurer:poids-planning`) : 1 000 chantiers — deux
+ans — font 594 Ko bruts, **71 Ko** une fois la page comprimée. Et la requête du
+planning, qui n'avait aucune borne basse, s'arrête désormais au même jour que
+l'écran : dès la troisième année, elle envoie MOINS qu'avant.
+
+Le raisonnement complet, les fautes évitées et les deux contrôles creux
+retrouvés : `ARCHITECTURE.md` §224.
 
 ## La note vocale à la messagerie, et la fiche qui tient dans un écran (30 août 2026)
 
@@ -208,6 +492,25 @@ que chez lui, et le contrôle qui aurait dû l'attraper écartait explicitement
 Le défilement n'a pas changé — molette, doigt, clavier, focus. Détail :
 `ARCHITECTURE.md` §206.
 
+## Le devis client ne répète plus les mesures (30 août 2026)
+
+*Son premier vrai devis sorti de la chaîne corrigée portait « Haie de laurier
+(800 ml) (800 ml) » et « Érable (40 cm de diamètre, 12 m de haut) ». Détail et
+pourquoi : `ARCHITECTURE.md` §214.*
+
+**Fait.**
+
+| | Où |
+|---|---|
+| Le libellé que le client lit est nettoyé des mesures **déjà en colonne** | `src/lib/libelle-client.ts` |
+| Ce que les moteurs de prix relisent — `membres` — reste **intact** | `src/lib/lignes-vendables.ts` |
+| La recollure de la quantité ne double plus ce que le modèle a déjà écrit | `brouillon-service.ts` |
+| Ses quatre lignes du 30 août, plus le refus de retirer une méthode | `scripts/test-libelle-client.ts` |
+
+**Ce qui n'a PAS changé, et c'est délibéré :** aucune donnée structurée n'est
+retirée de la base, aucun devis existant n'est réinterprété, l'invite du modèle
+n'est pas touchée, et le regroupement des prestations est inchangé.
+
 ---
 
 ## Le banc répare ses dépendances désaccordées (29 août 2026)
@@ -236,6 +539,24 @@ machines qui ont la place préchauffent comme avant.
 
 Éprouvé par `scripts/test-memoire-prechauffage.ts`, vu rougir contre trois
 régressions. Mesures et pistes écartées : `ARCHITECTURE.md` §203.
+
+---
+
+## Le réglage dit la couleur qu'il produit au planning (31 août 2026)
+
+**Sa réponse à la planche 99 : A**, arrêtée sur maquette puis codée le jour même
+(`appli/reglages-planning-complet.html`).
+
+Sous « Chantiers menés en même temps », l'écran disait *« C'est ce qui remplit
+votre planning »* : il annonçait un effet sans montrer ce qu'on verrait. Il dit
+maintenant **« 2 chantiers par jour. Planning ▪ complet. »**, avec le carré du
+calendrier et son mot.
+
+Deux pièces le tiennent, et elles ferment une divergence plutôt qu'elles
+n'ajoutent une couleur : `MOT_ETAT` (`src/lib/planning-jour.ts`) porte les
+quatre mots de la légende — que le calendrier écrivait en clair — et
+`phraseDuCompteur` rend deux morceaux, puisque ce qui se glisse entre eux n'est
+pas du texte mais `fondDeLEtat("plein")`.
 
 ---
 
@@ -1325,7 +1646,9 @@ l'application. Ce qui est **fait** :
   manque. Sans adresse, rien ne s'invente : les destinations s'éteignent.
   Retenu après quatre maquettes (`docs/maquettes/29` à `32`). Les gestes ont
   déménagé dans la feuille de chantier le 21 août ; la règle pure, elle, n'a pas
-  bougé (`src/lib/itineraire.ts`). `ARCHITECTURE.md` §70.
+  bougé (`src/lib/itineraire.ts`). Le bouton « Maps » ouvre **Google Maps**
+  depuis le 31 août — c'est Plans d'Apple qui est sorti, pas Google.
+  `ARCHITECTURE.md` §70.
 - **Le planning au mois, et les équipes nommées** (10 août, au soir) : sept
   colonnes sans bordure et la journée qui s'ouvre sous le calendrier. Réglages
   laisse nommer les équipes — mais **seulement à partir de deux** : seul, le mot
@@ -2057,6 +2380,27 @@ ne change tant qu'il n'y touche pas — et cela se vérifie, pas seulement se di
 `test-allure-pdf.ts` compare deux devis octet pour octet.
 
 `ARCHITECTURE.md` §161 et §164.
+
+## Le capital social et le RCS s'impriment, s'il le veut — 30 août 2026
+
+Trois mentions légales de société, réglées dans **Réglages › Identité** :
+forme juridique (existait, jamais imprimée nulle part avant ce lot), capital
+social et ville d'immatriculation au RCS (les deux neufs). Un seul réglage,
+**« sous le nom » / « en bas, avec le SIRET » / « ne pas les imprimer »**,
+gouverne les trois ensemble — défaut « ne pas les imprimer », pour ne
+surprendre personne qui avait déjà saisi une forme juridique sans savoir
+qu'elle ne s'imprimait pas. Le RCS ne redemande pas de numéro : c'est le
+SIREN, déjà affiché sous le SIRET. Les deux champs neufs disparaissent pour
+une EI ou une micro-entreprise (`formeADuCapital`, `src/lib/formes-juridiques.ts`).
+
+**Trois défauts réels du dépôt, trouvés en construisant** : `formeConnue` ne
+reconnaissait jamais « Micro-entreprise » (le tiret n'était retiré que d'un
+côté de la comparaison) ; la forme juridique ne s'enregistrait JAMAIS depuis
+la liste déroulante, une fermeture React périmée dans `ChampFormeJuridique`
+existant depuis le 14 août ; et `enEuros` faisait planter tout PDF portant un
+montant à quatre chiffres (l'espace fine de `Intl.NumberFormat`, que
+l'encodage des polices PDF ne connaît pas). Les trois sont corrigés. Détail
+dans `CHANGELOG.md` du jour et `ARCHITECTURE.md` §213.
 
 ## Vérifications au dernier point
 

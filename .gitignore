@@ -90,6 +90,10 @@ maquettes/*-essai.html
 sauvegarde-atlas-*.sql
 sauvegarde-atlas-*.json
 .next-batie
+# La neuve se bâtit à côté pendant que l'ancienne sert, et l'échange laisse la
+# vieille le temps de l'effacer en fond (`scripts/relais-version-batie.mjs`).
+.next-batie-neuve
+.next-batie-vieille
 .next-verification
 # Le serveur au profil « banc » monté par `test-bandeau-banc-e2e.ts` : Next.js
 # refuse deux serveurs de développement dans un même dossier, il lui faut donc

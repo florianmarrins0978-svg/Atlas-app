@@ -1,0 +1,469 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Atlas — le bouton qui répond au doigt</title>
+<style>
+/*
+  LE BOUTON QUI RÉPOND — sa demande du 31 août 2026 :
+
+    « Quand je clique sur les boutons j'aimerais avoir une mini vibration, que
+      l'utilisateur soit sûr d'avoir appuyé. Et si possible avoir un visuel du
+      bouton qui s'enfonce tout en s'éclaircissant légèrement, comme sur la
+      deuxième photo : une touche noire avant qu'on appuie, et une fois le doigt
+      dessus elle s'éclaircit, et lorsqu'on lâche elle reprend sa couleur
+      d'origine. »
+
+  RIEN N'EST CODÉ : `src/` n'est pas touché (règle du §3 bis). Cette planche
+  sert à CHOISIR l'intensité, pas à illustrer un choix déjà fait.
+
+  ───────────────────────────────────────────────────────────────────────────
+  CE QUE L'APPLICATION FAIT AUJOURD'HUI, et pourquoi ça ne suffit pas.
+
+  `PrimaryButton.tsx` porte déjà `active:scale-[0.985]` — 1,5 % de rétrécissement,
+  et RIEN d'autre : pas de changement de couleur, pas de vibration. Sur une
+  capsule de 50 px, 1,5 % font moins d'un pixel de chaque côté. C'est pourquoi il
+  ne le sent pas : le geste existe dans le code et pas sous le doigt.
+
+  ───────────────────────────────────────────────────────────────────────────
+  LA VIBRATION SUR IPHONE — À DIRE AVANT QU'IL ESSAIE, PAS APRÈS.
+
+  Ses captures portent la pastille dynamique : il est sur iPhone. Or Safari sur
+  iOS **ne donne pas** `navigator.vibrate()` aux pages web — c'est un refus du
+  navigateur, pas un manque de la planche. Trois situations, et elles se
+  distinguent :
+
+    · Android, navigateur    → `navigator.vibrate()`, vraie vibration ;
+    · iPhone, Safari         → **RIEN, et c'est définitif.** Aucune API, et
+      l'astuce de l'interrupteur natif (`<input type="checkbox" switch>`) n'a
+      rien donné non plus : il l'a touché du doigt le 31 août, sans vibration.
+      La piste web est close — voir le commentaire de `vibrer()` plus bas ;
+    · l'APPLICATION INSTALLÉE (Capacitor, `appli/CAPACITOR.md`) → le module
+      `@capacitor/haptics` donne le vrai retour haptique d'iOS, réglable et
+      identique à celui des applications natives. C'est CELUI-LÀ que le produit
+      emploierait ; la planche ne peut que l'approcher.
+
+  Ne pas confondre les trois lui coûterait un aller-retour : il essaierait sur
+  son iPhone, ne sentirait rien ou presque, et conclurait que ça ne marche pas
+  alors que l'application, elle, saurait le faire.
+
+  ───────────────────────────────────────────────────────────────────────────
+  POURQUOI L'ÉCLAIRCISSEMENT ET NON L'ASSOMBRISSEMENT.
+
+  Sa capture montre une touche noire qui **s'éclaircit** sous le doigt. C'est le
+  sens juste, et il vaut aussi pour le vert d'Atlas : un aplat qui s'assombrit
+  sous un doigt disparaît sous l'ombre de la main, on ne voit rien. Un aplat qui
+  s'éclaircit sort de sous le doigt.
+
+  **Et les deux chartes sombres inversent les pôles** (`CLAUDE.md` §3) : sur
+  fond noir l'aplat principal est CLAIR. « S'éclaircir » y veut dire aller vers
+  le blanc, pas vers le gris — chaque réglage a donc sa valeur d'ici, jamais un
+  éclaircissement calculé une fois pour toutes.
+
+  ───────────────────────────────────────────────────────────────────────────
+  AUCUN PRIX INVENTÉ, aucun nom de client réel (`CLAUDE.md` §4).
+*/
+:root{
+  --bone:#f5f3ee; --cream:#faf9f5; --paper:#ece9e1;
+  --charcoal:#1c1c1a; --charcoal-soft:#4a4a44; --muted:#8a8578;
+  --pine:#2f3b2f; --or:#B98B47;
+  --line:rgba(28,28,26,.12); --line-soft:rgba(28,28,26,.07);
+  --plein:var(--pine); --sur-plein:#faf9f5;
+  --noir:#111110; --sur-noir:#faf9f5;
+  /* Le fond d'une carte appuyée. Il ne vaut PAS --paper : sur les chartes
+     sombres, papier et crème ne sont séparés que de six millièmes de
+     clarté — l'appui existait dans le code et pas sous le doigt. */
+  --appui-pale:#ece9e1;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bone:#171613; --cream:#1e1c18; --paper:#262420; --charcoal:#e9e5dc;
+    --charcoal-soft:#c9c4b8; --muted:#8a867c; --or:#C9A15E;
+    --line:rgba(233,229,220,.16); --line-soft:rgba(233,229,220,.09);
+    --plein:#e9e8de; --sur-plein:#1a1d19;
+    --noir:#e9e8de; --sur-noir:#1a1d19; --appui-pale:#3a362f; }
+}
+:root[data-theme="dark"]{
+    --bone:#171613; --cream:#1e1c18; --paper:#262420; --charcoal:#e9e5dc;
+    --charcoal-soft:#c9c4b8; --muted:#8a867c; --or:#C9A15E;
+    --line:rgba(233,229,220,.16); --line-soft:rgba(233,229,220,.09);
+    --plein:#e9e8de; --sur-plein:#1a1d19;
+    --noir:#e9e8de; --sur-noir:#1a1d19; --appui-pale:#3a362f; }
+
+/* ─── LES TROIS RÉGLAGES ─────────────────────────────────────────────────
+   Une seule ligne change d'un réglage à l'autre : de combien la capsule
+   rentre, vers quelle couleur elle va, combien de temps le téléphone vibre.
+   Tout le reste de la planche est identique — sans quoi il comparerait des
+   écrans au lieu de comparer un geste. */
+[data-reglage="1"]{ --echelle:.975; --appui:#3d4a3c; --appui-noir:#32322e; --ms:8;  --creux:.055; }
+[data-reglage="2"]{ --echelle:.955; --appui:#4f5f4c; --appui-noir:#4a4a45; --ms:14; --creux:.085; }
+[data-reglage="3"]{ --echelle:.935; --appui:#62735e; --appui-noir:#5f5f58; --ms:22; --creux:.12;  }
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"])[data-reglage="1"]{ --appui:#f4f2ea; --appui-noir:#f4f2ea; }
+  :root:not([data-theme="light"])[data-reglage="2"]{ --appui:#fbfaf4; --appui-noir:#fbfaf4; }
+  :root:not([data-theme="light"])[data-reglage="3"]{ --appui:#ffffff; --appui-noir:#ffffff; }
+}
+:root[data-theme="dark"][data-reglage="1"]{ --appui:#f4f2ea; --appui-noir:#f4f2ea; }
+:root[data-theme="dark"][data-reglage="2"]{ --appui:#fbfaf4; --appui-noir:#fbfaf4; }
+:root[data-theme="dark"][data-reglage="3"]{ --appui:#ffffff; --appui-noir:#ffffff; }
+
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+[hidden]{display:none!important}
+body{margin:0;background:var(--bone);color:var(--charcoal);
+     font:16px/1.5 -apple-system,"Segoe UI",Roboto,sans-serif;-webkit-text-size-adjust:100%}
+.tel{max-width:430px;margin:0 auto;min-height:100vh;display:flex;flex-direction:column}
+
+.onglets{position:sticky;top:0;z-index:9;display:flex;align-items:center;gap:6px;
+         padding:6px 12px;background:var(--bone);border-bottom:1px solid var(--line)}
+.onglets .quoi{flex:1;min-width:0;font-size:11px;letter-spacing:.16em;
+               text-transform:uppercase;color:var(--muted)}
+.onglets button{flex:0 0 auto;border:1px solid var(--line);background:transparent;border-radius:99px;
+                padding:7px 11px;font-size:13px;line-height:1;color:var(--charcoal-soft);
+                cursor:pointer;font-family:inherit}
+.onglets button[aria-pressed="true"]{background:var(--paper);color:var(--charcoal);border-color:transparent}
+.onglets .teinte{font-size:15px;color:var(--or)}
+
+.note{margin:16px 20px 0;padding:14px 16px;border-radius:6px;background:var(--paper);
+      font-size:13px;line-height:1.6;color:var(--charcoal-soft)}
+.note b{color:var(--charcoal)}
+.note .titre{display:block;margin-bottom:6px;font-size:9.5px;font-weight:500;letter-spacing:.26em;
+             text-transform:uppercase;color:var(--or)}
+.note.avert{background:transparent;box-shadow:inset 0 0 0 1px var(--line)}
+
+.marque{padding:14px 0 1px;text-align:center;font-size:9px;letter-spacing:.34em;color:var(--muted)}
+h1{margin:0;padding:0 20px;font-family:Georgia,serif;font-weight:400;font-size:27px;line-height:1.1}
+.section{margin:26px 20px 0}
+.section .quoi{margin:0 0 12px;font-size:9.5px;font-weight:500;letter-spacing:.26em;
+               text-transform:uppercase;color:var(--or)}
+
+/* ─── LE GESTE ────────────────────────────────────────────────────────────
+   L'aller est PLUS RAPIDE que le retour : le doigt doit trouver le bouton
+   déjà enfoncé, et le voir remonter quand il lâche. Des durées égales font
+   un bouton mou, qu'on relâche sans savoir si le geste est parti. */
+.presse{
+  font-family:Georgia,serif;font-size:17px;border:0;cursor:pointer;
+  border-radius:9999px;padding:13px 36px;
+  touch-action:manipulation;user-select:none;-webkit-user-select:none;
+  transform:translateZ(0);
+  transition:transform 190ms cubic-bezier(.22,.8,.3,1),
+             background-color 220ms ease,
+             box-shadow 220ms ease;
+}
+.presse.appui{
+  transform:scale(var(--echelle));
+  transition-duration:70ms,90ms,90ms;
+}
+.principal{background:var(--plein);color:var(--sur-plein);
+           box-shadow:0 1px 2px rgba(28,28,26,.10)}
+.principal.appui{background:var(--appui);
+                 box-shadow:inset 0 1px 3px rgba(0,0,0,var(--creux))}
+.secondaire{background:transparent;color:var(--charcoal);box-shadow:inset 0 0 0 1.5px var(--or)}
+.secondaire.appui{background:color-mix(in srgb, var(--or) 14%, transparent);
+                  box-shadow:inset 0 0 0 1.5px var(--or)}
+.touche{background:var(--noir);color:var(--sur-noir)}
+.touche.appui{background:var(--appui-noir);
+              box-shadow:inset 0 1px 3px rgba(0,0,0,var(--creux))}
+.pleine{display:block;width:100%}
+.centre{display:flex;justify-content:center}
+
+/* Une tuile : un bouton n'est pas toujours une capsule, et le geste doit
+   tenir sur une carte qu'on touche aussi. */
+.tuile{width:100%;text-align:left;background:var(--cream);border:0;border-radius:14px;
+       padding:15px 17px;box-shadow:inset 0 0 0 1px var(--line-soft);cursor:pointer;
+       font-family:inherit;color:var(--charcoal);
+       touch-action:manipulation;user-select:none;-webkit-user-select:none;
+       transition:transform 190ms cubic-bezier(.22,.8,.3,1),background-color 220ms ease}
+.tuile.appui{transform:scale(calc(1 - (1 - var(--echelle)) * .5));background:var(--appui-pale);
+             transition-duration:70ms,90ms}
+.tuile .haut{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+.tuile .nom{font-family:Georgia,serif;font-size:17px}
+.tuile .etat{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--or)}
+.tuile .bas{margin-top:3px;font-size:13px;color:var(--muted)}
+
+.rangee{display:flex;gap:10px;align-items:center;flex-wrap:wrap;justify-content:center}
+.legende{margin:9px 0 0;font-size:12px;line-height:1.55;color:var(--muted);text-align:center}
+
+/* ─── LA BARRE DU BAS ─────────────────────────────────────────────────── */
+.barre{position:sticky;bottom:0;margin-top:auto;display:flex;justify-content:space-around;
+       align-items:center;gap:4px;padding:9px 14px calc(9px + env(safe-area-inset-bottom));
+       background:var(--cream);border-top:1px solid var(--line-soft)}
+.barre button{border:0;background:transparent;padding:9px 16px;border-radius:14px;cursor:pointer;
+              color:var(--muted);touch-action:manipulation;
+              transition:transform 190ms cubic-bezier(.22,.8,.3,1),background-color 220ms ease}
+.barre button[aria-current="page"]{color:var(--plein)}
+.barre button.appui{transform:scale(calc(1 - (1 - var(--echelle)) * .7));background:var(--appui-pale);
+                    transition-duration:70ms,90ms}
+
+/* ─── LES DIX VERTS ───────────────────────────────────────────────────────
+   Sa demande du 31 août : dix dégradés à essayer. Un seul dessin change d'un
+   bouton à l'autre — les deux couleurs. Même capsule, même serif, même
+   libellé : sinon ce sont des boutons qu'il compare, pas des verts.
+
+   **`position:relative` n'est pas décoratif** : le voile de l'appui est un
+   `::after` en `position:absolute`, et sans repère il se cale sur la page
+   entière au lieu du bouton.
+
+   **Le voile est un calque, pas un `filter`** : `brightness()` éclaircirait
+   aussi le texte, qui perdrait le contraste que le fond vient de lui coûter.
+
+   **RÈGLE PERDUE UNE FOIS, LE 31 AOÛT, ET IL L'A VUE AVANT MOI.** Un nettoyage
+   à l'expression régulière l'a emportée avec les styles voisins : les dix
+   capsules sont devenues transparentes, texte noir, sans dégradé. Le contrôle
+   n'a rien vu parce qu'il lisait `--haut` et `--bas` dans l'attribut `style`
+   — les valeurs DÉCLARÉES — au lieu du fond réellement peint. Il mesure
+   maintenant le rendu. */
+.vert{position:relative;overflow:hidden;color:#faf9f5;
+      background-image:linear-gradient(180deg, var(--haut), var(--bas))}
+.vert::after{content:"";position:absolute;inset:0;background:#fff;opacity:0;
+             transition:opacity 220ms ease;pointer-events:none}
+.vert.appui::after{opacity:.14;transition-duration:90ms}
+.vert > span{position:relative}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]) .vert{color:#14180f;
+    background-image:linear-gradient(180deg, var(--haut-nuit), var(--bas-nuit))}
+}
+:root[data-theme="dark"] .vert{color:#14180f;
+  background-image:linear-gradient(180deg, var(--haut-nuit), var(--bas-nuit))}
+.grille-verts{display:flex;flex-direction:column;gap:16px;align-items:center}
+.un-vert{display:flex;flex-direction:column;align-items:center;gap:5px;width:100%}
+.un-vert .presse{min-width:78%}
+.un-vert .dit{font-size:12px;color:var(--muted)}
+.un-vert .dit b{color:var(--charcoal);font-weight:600}
+
+.pied{margin:28px 20px 22px;font-size:12px;line-height:1.6;color:var(--muted)}
+</style>
+</head>
+<body>
+<div class="tel">
+
+  <nav class="onglets" aria-label="Réglages de la planche">
+    <span class="quoi">Force du geste</span>
+    <button type="button" class="choix" data-r="1" aria-pressed="false">Discret</button>
+    <button type="button" class="choix" data-r="2" aria-pressed="true">Le vôtre</button>
+    <button type="button" class="choix" data-r="3" aria-pressed="false">Marqué</button>
+    <button type="button" class="teinte" id="teinte" aria-label="Passer en fond noir">☾</button>
+  </nav>
+
+  <p class="marque">ATLAS</p>
+  <h1>Le bouton qui répond</h1>
+
+  <div class="note">
+    <span class="titre">Ce que vous essayez</span>
+    Appuyez et <b>gardez le doigt</b> : la capsule rentre et s'éclaircit. Lâchez :
+    elle reprend sa couleur. Les trois onglets du haut changent la force du
+    geste. <b>Rien d'autre ne change entre eux.</b>
+  </div>
+
+  <div class="note avert">
+    <span class="titre">La vibration, tranchée le 31 août</span>
+    Vous avez touché l'interrupteur natif d'iOS : <b>il n'a pas vibré</b>. Une
+    page web ne fera donc probablement rien vibrer sur votre iPhone.
+    <b>Une chose reste à vérifier</b> avant de le tenir pour acquis : Réglages,
+    Sons et haptiques, <b>Retour haptique système</b>. Éteint, il rend tout muet
+    — même l'application. <b>La vibration viendra avec l'application
+    installée</b>, où le retour est natif. Ici, ce qui reste à choisir, c'est le
+    geste et le vert.
+  </div>
+
+  <!-- ─── L'écran réel, avec les trois surfaces qu'on touche ─────────────── -->
+  <section class="section">
+    <p class="quoi">Sur un vrai écran</p>
+
+    <button type="button" class="tuile presser">
+      <span class="haut"><span class="nom">Jardin des Tilleuls</span><span class="etat">Devis à faire</span></span>
+      <span class="bas">Taille de haie, 3 jours</span>
+    </button>
+
+    <div style="height:10px"></div>
+
+    <button type="button" class="tuile presser">
+      <span class="haut"><span class="nom">Résidence du Parc</span><span class="etat">En cours</span></span>
+      <span class="bas">Arrosage, 2 réseaux posés</span>
+    </button>
+  </section>
+
+  <section class="section">
+    <p class="quoi">La capsule d'aujourd'hui</p>
+    <div class="centre"><button type="button" class="presse principal presser">Créer le devis</button></div>
+    <p class="legende">Le vert d'Atlas, inchangé. Seul le geste est neuf.</p>
+  </section>
+
+  <section class="section">
+    <p class="quoi">La capsule creuse</p>
+    <div class="centre"><button type="button" class="presse secondaire presser">Je rédige à la main</button></div>
+    <p class="legende">Sans aplat, l'éclaircissement n'existe pas : c'est le fond qui se teinte.</p>
+  </section>
+
+  <section class="section">
+    <p class="quoi">La touche de votre capture</p>
+    <div class="centre"><button type="button" class="presse touche presser" style="min-width:80%">Rafraîchir</button></div>
+    <p class="legende">Le même mouvement sur l'aplat noir que vous m'avez montré. En fond noir, les pôles s'inversent : l'aplat devient clair, sans quoi il disparaîtrait.</p>
+  </section>
+
+  <section class="section">
+    <p class="quoi">Dix verts</p>
+    <div class="grille-verts">
+      <div class="un-vert">
+        <button type="button" class="presse vert presser"
+                style="--haut:#2f3b2f;--bas:#1f291f;--haut-nuit:#a9c68c;--bas-nuit:#8bae6d"><span>Créer le devis</span></button>
+        <span class="dit"><b>1</b> · Pin d'Atlas — le vert d'aujourd'hui, dégradé</span>
+      </div>
+      <div class="un-vert">
+        <button type="button" class="presse vert presser"
+                style="--haut:#42562e;--bas:#2c3a1e;--haut-nuit:#c2d98d;--bas-nuit:#a3bf6c"><span>Créer le devis</span></button>
+        <span class="dit"><b>2</b> · Pin plus vif — franchement herbacé</span>
+      </div>
+      <div class="un-vert">
+        <button type="button" class="presse vert presser"
+                style="--haut:#1f3a2b;--bas:#12261b;--haut-nuit:#8ec7a2;--bas-nuit:#6fae85"><span>Créer le devis</span></button>
+        <span class="dit"><b>3</b> · Forêt — plus froid, plus profond</span>
+      </div>
+      <div class="un-vert">
+        <button type="button" class="presse vert presser"
+                style="--haut:#22413a;--bas:#132b26;--haut-nuit:#8ec7bd;--bas-nuit:#6daea2"><span>Créer le devis</span></button>
+        <span class="dit"><b>4</b> · Sapin bleuté — un fond de bleu</span>
+      </div>
+      <div class="un-vert">
+        <button type="button" class="presse vert presser"
+                style="--haut:#3f4926;--bas:#2a3119;--haut-nuit:#c2c882;--bas-nuit:#a6ad63"><span>Créer le devis</span></button>
+        <span class="dit"><b>5</b> · Olive — vers le jaune, terrien</span>
+      </div>
+      <div class="un-vert">
+        <button type="button" class="presse vert presser"
+                style="--haut:#39463a;--bas:#242e25;--haut-nuit:#a8bfa9;--bas-nuit:#87a189"><span>Créer le devis</span></button>
+        <span class="dit"><b>6</b> · Mousse — gris-vert, le plus sourd</span>
+      </div>
+      <div class="un-vert">
+        <button type="button" class="presse vert presser"
+                style="--haut:#12433a;--bas:#082d26;--haut-nuit:#7fcbb8;--bas-nuit:#5cb09b"><span>Créer le devis</span></button>
+        <span class="dit"><b>7</b> · Émeraude — le plus saturé</span>
+      </div>
+      <div class="un-vert">
+        <button type="button" class="presse vert presser"
+                style="--haut:#20502e;--bas:#0f3319;--haut-nuit:#84d295;--bas-nuit:#5fba76"><span>Créer le devis</span></button>
+        <span class="dit"><b>8</b> · Cyprès — vert pur, le plus vert</span>
+      </div>
+      <div class="un-vert">
+        <button type="button" class="presse vert presser"
+                style="--haut:#3d5436;--bas:#283824;--haut-nuit:#b6d19a;--bas-nuit:#98b87b"><span>Créer le devis</span></button>
+        <span class="dit"><b>9</b> · Basilic — le plus clair des dix</span>
+      </div>
+      <div class="un-vert">
+        <button type="button" class="presse vert presser"
+                style="--haut:#2c3c38;--bas:#1a2725;--haut-nuit:#a5c2b9;--bas-nuit:#85a89d"><span>Créer le devis</span></button>
+        <span class="dit"><b>10</b> · Ardoise verte — à peine vert, minéral</span>
+      </div>
+    </div>
+    <p class="legende">Tous se pressent. Répondez par un numéro.</p>
+  </section>
+
+  <p class="pied">
+    Rien n'est codé dans l'application. Deux réponses attendues : la force
+    (<b>Discret</b>, <b>le vôtre</b>, <b>Marqué</b>) et le <b>numéro du vert</b>.
+  </p>
+
+  <nav class="barre" aria-label="Navigation">
+    <button type="button" class="presser" aria-current="page" aria-label="Accueil">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 10.5 12 4l8 6.5V20a1 1 0 0 1-1 1h-4v-6H9v6H5a1 1 0 0 1-1-1z" stroke-linejoin="round"/></svg>
+    </button>
+    <button type="button" class="presser" aria-label="Rechercher">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4.5 4.5" stroke-linecap="round"/></svg>
+    </button>
+    <button type="button" class="presser" aria-label="Chantiers">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="4" width="7" height="7" rx="1.6"/><rect x="13" y="4" width="7" height="7" rx="1.6"/><rect x="4" y="13" width="7" height="7" rx="1.6"/><rect x="13" y="13" width="7" height="7" rx="1.6"/></svg>
+    </button>
+    <button type="button" class="presser" aria-label="Facturation">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3.5" y="7" width="17" height="12" rx="2"/><path d="M8 7V5.5A1.5 1.5 0 0 1 9.5 4h5A1.5 1.5 0 0 1 16 5.5V7"/></svg>
+    </button>
+  </nav>
+
+</div>
+
+<script>
+const $ = (s) => document.querySelector(s);
+const racine = document.documentElement;
+racine.dataset.reglage = "2";
+
+/* ─── La vibration ────────────────────────────────────────────────────────
+   **TRANCHÉ LE 31 AOÛT 2026, PAR SON DOIGT.** Il a touché l'interrupteur natif
+   d'iOS posé sur cette planche : rien n'a vibré. La question qu'aucun code ne
+   pouvait trancher d'ici est donc close — **aucune page web ne fera vibrer son
+   iPhone**, et ce n'était ni l'étiquette, ni la détection, ni le réglage.
+
+   Ce qui a été essayé avant d'en arriver là, pour qu'on ne le refasse pas :
+
+     1. `navigator.vibrate()` — n'existe pas dans Safari d'iOS ;
+     2. l'interrupteur natif basculé en JavaScript — la case change, rien ne
+        vibre : iOS suit l'ACTIVATION, pas la valeur ;
+     3. un clic sur son étiquette — le bon chemin, et toujours rien ;
+     4. l'interrupteur touché À LA MAIN — muet lui aussi, ce qui clôt la piste.
+
+   **Ce qui reste ici, et pourquoi.** L'appel est conservé : sur Android il
+   marche vraiment, et cette planche n'est pas réservée à un téléphone. Mais
+   **plus rien à l'écran ne promet une vibration** — ni compteur, ni bouton
+   d'essai, ni voyant. Un écran qui annonce ce qu'il ne tient pas est pire que
+   son silence, et celui-ci l'a fait revenir trois fois.
+
+   **Le vrai retour haptique passera par `@capacitor/haptics`**, dans
+   l'application installée (`appli/CAPACITOR.md`). Cela se code, cela ne se
+   maquette pas. */
+const aVibrate = typeof navigator.vibrate === "function";
+
+function vibrer() {
+  if (!aVibrate) return;
+  const ms = parseInt(getComputedStyle(racine).getPropertyValue("--ms"), 10) || 12;
+  try { navigator.vibrate(ms); } catch { /* un refus du navigateur ne casse pas le geste */ }
+}
+
+/* ─── Le geste, posé sur tout ce qui se touche ───────────────────────────
+   `pointerdown` plutôt que `click` : le retour doit arriver quand le doigt
+   ARRIVE, pas quand il repart — c'est toute sa demande. Et la classe part
+   aussi sur `pointercancel`, sans quoi un bouton resterait enfoncé quand le
+   téléphone décide que le geste était un défilement. */
+document.querySelectorAll(".presser").forEach((el) => {
+  const lacher = () => el.classList.remove("appui");
+  el.addEventListener("pointerdown", (e) => {
+    if (e.pointerType === "mouse" && e.button !== 0) return;
+    // **La capture, et c'est elle qui règle un défaut qu'on ne voit qu'au
+    // doigt.** Le bouton RÉTRÉCIT sous le doigt : sans capture, un doigt posé
+    // près du bord se retrouve dehors dès que la capsule rentre, `pointerleave`
+    // part, et le bouton remonte alors qu'on appuie encore. Plus le réglage est
+    // marqué, plus le défaut se voit — donc invisible à la souris, au centre.
+    try { el.setPointerCapture(e.pointerId); } catch { /* rien : le geste tient sans */ }
+    el.classList.add("appui");
+    vibrer();
+  });
+  el.addEventListener("pointerup", lacher);
+  el.addEventListener("pointercancel", lacher);
+  el.addEventListener("lostpointercapture", lacher);
+  el.addEventListener("contextmenu", (e) => e.preventDefault());
+});
+// Filet : un doigt relâché hors de la page ne rend pas d'événement au bouton.
+window.addEventListener("pointerup", () =>
+  document.querySelectorAll(".appui").forEach((el) => el.classList.remove("appui")));
+
+/* ─── Les trois forces ──────────────────────────────────────────────────── */
+document.querySelectorAll(".choix").forEach((b) => {
+  b.addEventListener("click", () => {
+    document.querySelectorAll(".choix").forEach((a) => a.setAttribute("aria-pressed", String(a === b)));
+    racine.dataset.reglage = b.dataset.r;
+  });
+});
+
+/* ─── La teinte ─────────────────────────────────────────────────────────── */
+$("#teinte").addEventListener("click", () => {
+  const sombreMaintenant =
+    racine.dataset.theme === "dark" ||
+    (!racine.dataset.theme && window.matchMedia("(prefers-color-scheme: dark)").matches);
+  racine.dataset.theme = sombreMaintenant ? "light" : "dark";
+  $("#teinte").textContent = sombreMaintenant ? "☾" : "☀";
+  $("#teinte").setAttribute("aria-label", sombreMaintenant ? "Passer en fond noir" : "Revenir au fond clair");
+});
+if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
+  $("#teinte").textContent = "☀";
+  $("#teinte").setAttribute("aria-label", "Revenir au fond clair");
+}
+</script>
+</body>
+</html>

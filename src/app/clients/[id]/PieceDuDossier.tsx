@@ -157,7 +157,7 @@ export default function PieceDuDossier({ piece }: { piece: PieceDuClient }) {
             download={nomFichier}
             onClick={() => setFeuilleOuverte(false)}
             data-atlas="piece-enregistrer"
-            className="mt-4 block rounded-full py-4 text-center text-[16px] font-medium"
+            className="atlas-plein mt-4 block rounded-full py-4 text-center text-[16px] font-medium"
             style={{ backgroundColor: colors.rust, color: colors.cream }}
           >
             Enregistrer
@@ -175,7 +175,11 @@ export default function PieceDuDossier({ piece }: { piece: PieceDuClient }) {
           className={
             estUnFichier
               ? "mt-2 block py-4 text-center text-[15px]"
-              : "mt-4 block rounded-full py-4 text-center text-[16px] font-medium"
+              // **Seule cette branche est un aplat.** L'autre est un simple
+              // lien à l'encre : lui poser la classe du bouton plein lui
+              // donnerait un geste que rien ne peint — « surtout pas ceux qui
+              // sont creux » (sa consigne du 31 août).
+              : "atlas-plein mt-4 block rounded-full py-4 text-center text-[16px] font-medium"
           }
           style={estUnFichier ? { color: colors.ink } : { backgroundColor: colors.rust, color: colors.cream }}
         >

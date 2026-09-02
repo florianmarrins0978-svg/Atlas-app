@@ -1,0 +1,307 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Capital, forme juridique et RCS sur le devis</title>
+<style>
+  :root{
+    --fond:#f5f3ee; --papier:#faf9f5; --encre:#1c1c1a; --encre-douce:#4a4a44;
+    --gris:#8a8578; --or:#B98B47; --trait:rgba(28,28,26,.12); --carte:#ece9e1;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:var(--fond)}
+  body{font:16px/1.5 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;color:var(--encre);
+       -webkit-text-size-adjust:100%;padding:0 0 50px}
+
+  .bandeau{background:#1c1c1a;color:#f5f3ee;padding:16px 20px;font-size:14px;line-height:1.5}
+  .bandeau b{color:#fff}
+
+  .bloc{max-width:430px;margin:24px auto 0;padding:0 20px}
+  .bloc h2{margin:0 0 8px;font:700 10px/1 ui-sans-serif,sans-serif;letter-spacing:.2em;
+           text-transform:uppercase;color:var(--or)}
+  .bloc p{margin:0 0 10px;font-size:14.5px;line-height:1.55;color:var(--encre-douce)}
+  .bloc p b{color:var(--encre)}
+
+  /* ── L'écran Réglages → Identité, extrait ─────────────────────────── */
+  .ecran{max-width:430px;margin:10px auto 0;background:var(--fond);border-radius:14px;
+         padding:16px 16px 6px;box-shadow:0 10px 28px rgba(20,18,14,.13)}
+  .ecran .chapeau{font:700 10px/1 ui-sans-serif,sans-serif;letter-spacing:.2em;
+                  text-transform:uppercase;color:var(--or);margin:0}
+  .ecran .titre{margin:8px 0 16px;font:400 24px/1.2 ui-serif,Georgia,serif}
+
+  .champ{border-top:1px solid var(--trait);padding:13px 0}
+  .champ:first-of-type{border-top:0}
+  .champ .etiquette{display:block;margin:0 0 5px;font:700 10px/1 ui-sans-serif,sans-serif;
+                    letter-spacing:.14em;text-transform:uppercase;color:var(--gris)}
+  .champ .valeur-fixe{font:400 17px/1.35 ui-serif,Georgia,serif;color:var(--encre)}
+  .champ input[type=text]{width:100%;border:0;background:transparent;padding:0;outline:none;
+                          font:400 17px/1.35 ui-serif,Georgia,serif;color:var(--encre)}
+  .champ input::placeholder{color:var(--gris)}
+
+  .forme-bouton{display:flex;align-items:center;gap:10px;width:100%;border:0;background:transparent;
+               padding:0;text-align:left;cursor:pointer;font:400 17px/1.35 ui-serif,Georgia,serif;color:var(--encre)}
+  .forme-bouton .fleche{margin-left:auto;width:7px;height:7px;border-right:1.5px solid var(--gris);
+                        border-bottom:1.5px solid var(--gris);transform:rotate(45deg);flex:none}
+  .forme-liste{margin-top:8px;border-radius:4px;overflow:hidden;background:var(--carte)}
+  .forme-liste button{display:flex;width:100%;align-items:center;gap:10px;border:0;border-top:1px solid var(--trait);
+                      background:transparent;padding:12px 14px;text-align:left;cursor:pointer;min-height:46px}
+  .forme-liste button:first-child{border-top:0}
+  .forme-liste button[aria-pressed="true"]{background:var(--trait)}
+  .forme-liste .sigle{font:400 16px/1 ui-serif,Georgia,serif;flex:none}
+  .forme-liste .nom{margin-left:auto;text-align:right;font-size:12.5px;color:var(--gris)}
+
+  /* Le nouveau champ : il apparaît et disparaît, il ne se grise jamais. */
+  .champ-capital{animation:apparait .15s ease-out}
+  @keyframes apparait{from{opacity:0}to{opacity:1}}
+
+  .position{max-width:430px;margin:22px auto 0;padding:0 20px;display:flex;gap:8px;flex-wrap:wrap}
+  .position button{flex:1;min-width:100px;min-height:44px;border:1px solid var(--trait);border-radius:10px;
+                   background:var(--papier);color:var(--encre);font-size:13.5px;cursor:pointer;
+                   -webkit-tap-highlight-color:transparent;padding:6px 8px;line-height:1.3}
+  .position button[aria-pressed="true"]{border-color:var(--or);background:rgba(185,139,71,.14)}
+  .position button[data-p="aucune"][aria-pressed="true"]{border-color:var(--gris);background:var(--carte)}
+
+  /* ── La feuille : le devis, dans son allure d'aujourd'hui ────────────── */
+  .feuille{max-width:430px;margin:16px auto 0;background:var(--papier);border-radius:4px;
+           padding:26px 22px 24px;box-shadow:0 10px 28px rgba(20,18,14,.16);color:var(--encre)}
+  .feuille .refs{float:right;text-align:right;font-size:9.5px;line-height:1.7;color:var(--gris)}
+  .feuille .refs b{display:block;color:var(--encre);font-size:11px}
+  .feuille .nom{margin:0;font:400 24px/1.2 ui-serif,Georgia,serif}
+  .feuille .mention{margin:5px 0 0;font-size:9.5px;color:var(--gris);letter-spacing:.01em}
+  .feuille .coord{clear:both;margin:9px 0 0;font-size:9.5px;line-height:1.75;color:var(--gris)}
+  .feuille hr{border:0;border-top:1.5px solid var(--encre);margin:18px 0}
+  .feuille h1{margin:0 0 18px;text-align:center;font:400 17px/1 ui-serif,Georgia,serif;
+             letter-spacing:.06em}
+  .feuille .client-etiq{margin:0 0 6px;font-size:9.5px;letter-spacing:.16em;color:var(--or)}
+  .feuille .client{margin:0 0 16px;font-size:12.5px;line-height:1.6}
+  .feuille table{width:100%;border-collapse:collapse;font-size:11.5px}
+  .feuille th{text-align:left;font-size:9px;letter-spacing:.1em;text-transform:uppercase;
+             color:var(--gris);padding:0 0 6px;font-weight:400}
+  .feuille th.n,.feuille td.n{text-align:right}
+  .feuille td{padding:9px 0;border-top:1px solid var(--trait);vertical-align:top}
+
+  .verdict{max-width:430px;margin:20px auto 0;padding:14px 18px;border-radius:14px;
+           font-size:14.5px;line-height:1.5;background:var(--carte);color:var(--encre-douce)}
+  .verdict b{color:var(--encre)}
+
+  .question{max-width:430px;margin:16px auto 0;padding:16px 18px;border-radius:14px;
+            background:var(--carte);font-size:15px;line-height:1.55}
+  .question > b:first-child{display:block;margin-bottom:10px;font-size:16px}
+</style>
+</head>
+<body>
+
+<div class="bandeau">
+  <b>Ce que vous avez demandé le 30 août :</b> pouvoir ajouter, si vous le
+  voulez, le capital ou la forme juridique de votre société, avec ou sans le
+  nom de société. <b>La solution retenue (B) :</b> la forme juridique existe
+  déjà dans vos réglages mais ne s'imprime nulle part — je la répare — et
+  j'ajoute le capital, qui ne s'affiche que pour une vraie société, jamais
+  pour une entreprise individuelle. <b>Touchez, le devis dessous change.</b>
+  <b>Ajout du même jour :</b> une troisième mention légale, la ville
+  d'immatriculation au RCS — le numéro, lui, existe déjà, c'est votre SIREN.
+</div>
+
+<div class="bloc">
+  <h2>L'écran, dans Réglages → Identité</h2>
+  <p>Rien de nouveau pour la forme juridique — vous la choisissez déjà. <b>Le
+     capital est le seul champ neuf</b>, et il s'efface tout seul dès que la
+     forme n'en a pas.</p>
+</div>
+
+<div class="ecran">
+  <p class="chapeau">Mon entreprise</p>
+  <p class="titre">Identité</p>
+
+  <div class="champ">
+    <span class="etiquette">Nom de l'entreprise</span>
+    <span class="valeur-fixe">Atlas</span>
+  </div>
+
+  <div class="champ">
+    <span class="etiquette">Forme juridique</span>
+    <button type="button" class="forme-bouton" id="formeBouton" aria-expanded="false">
+      <span id="formeAffichee"></span>
+      <span class="fleche" aria-hidden="true"></span>
+    </button>
+    <div class="forme-liste" id="formeListe" hidden></div>
+  </div>
+
+  <div id="hoteCapital"></div>
+</div>
+
+<div class="bloc" style="margin-top:26px">
+  <h2>Si la mention s'imprime, et où</h2>
+</div>
+<div class="position" id="position">
+  <button type="button" data-p="sous-nom" aria-pressed="true">Sous le nom</button>
+  <button type="button" data-p="bas" aria-pressed="false">En bas, avec le SIRET</button>
+  <button type="button" data-p="aucune" aria-pressed="false">Ne pas l'imprimer</button>
+</div>
+
+<div class="feuille" id="feuille"></div>
+
+<div class="verdict">
+  <b>« Ne pas l'imprimer » n'efface rien.</b> La forme et le capital restent
+  enregistrés dans Identité — seul le devis cesse de les montrer. Rallumer
+  l'affichage plus tard n'oblige pas à ressaisir le capital.
+  <b>Et ça vaut pour la facture aussi</b> : les deux documents lisent la même
+  identité d'entreprise et le même réglage d'affichage, donc un seul geste
+  couvre les deux.
+</div>
+
+<div class="question">
+  <b>Une chose à trancher :</b> pour « Autre » (société civile, GAEC…), je
+  laisse le champ Capital apparaître, faute de savoir s'il en a un — dites-moi
+  si je dois plutôt le masquer. <b>Rien n'est codé.</b>
+</div>
+
+<script>
+/* ── Les formes, et qui a un capital ──────────────────────────────────
+   Reprend exactement `src/lib/formes-juridiques.ts` : même liste, même
+   ordre. `capital` dit si la mention a un sens pour cette forme — une
+   entreprise individuelle n'a pas de capital social, une SASU en a un.
+   `null` pour « Autre » : une société civile ou un GAEC peuvent en avoir
+   un, une association non — on ne tranche pas à sa place. */
+const FORMES = [
+  { sigle: "EI", nom: "Entreprise individuelle", capital: false },
+  { sigle: "Micro-entreprise", nom: "Régime de l'entreprise individuelle", capital: false },
+  { sigle: "EURL", nom: "SARL à associé unique", capital: true },
+  { sigle: "SARL", nom: "Société à responsabilité limitée", capital: true },
+  { sigle: "SASU", nom: "SAS à associé unique", capital: true },
+  { sigle: "SAS", nom: "Société par actions simplifiée", capital: true },
+  { sigle: "SA", nom: "Société anonyme", capital: true },
+  { sigle: "SNC", nom: "Société en nom collectif", capital: true },
+  { sigle: "SCOP", nom: "Société coopérative de production", capital: true },
+  { sigle: "SCI", nom: "Société civile immobilière", capital: true },
+  { sigle: "Autre", nom: "À écrire vous-même", capital: null },
+];
+
+const etat = { formeIndex: 4, capital: "1 000", villeRcs: "Versailles", position: "sous-nom", formeOuverte: false };
+
+const formeBouton = document.getElementById("formeBouton");
+const formeAffichee = document.getElementById("formeAffichee");
+const formeListe = document.getElementById("formeListe");
+const hoteCapital = document.getElementById("hoteCapital");
+const feuille = document.getElementById("feuille");
+
+function formeCourante() { return FORMES[etat.formeIndex]; }
+
+function peindreForme() {
+  formeAffichee.textContent = formeCourante().sigle;
+  formeListe.innerHTML = FORMES.map((f, i) =>
+    '<button type="button" data-i="' + i + '" aria-pressed="' + (i === etat.formeIndex) + '">'
+    + '<span class="sigle">' + f.sigle + '</span><span class="nom">' + f.nom + '</span></button>'
+  ).join("");
+  for (const bouton of formeListe.querySelectorAll("button")) {
+    bouton.addEventListener("click", () => {
+      etat.formeIndex = Number(bouton.dataset.i);
+      etat.formeOuverte = false;
+      formeListe.hidden = true;
+      formeBouton.setAttribute("aria-expanded", "false");
+      peindreForme();
+      peindreCapital();
+      peindreFeuille();
+    });
+  }
+}
+
+function peindreCapital() {
+  // **Silence, pas grisé.** Les deux champs disparaissent entièrement pour
+  // une forme sans capital ni RCS — grisés, ils se rempliraient quand même
+  // « au cas où ».
+  if (formeCourante().capital === false) {
+    hoteCapital.innerHTML = "";
+    return;
+  }
+  hoteCapital.innerHTML =
+    '<div class="champ champ-capital">'
+    + '<span class="etiquette">Capital social</span>'
+    + '<input type="text" id="capitalChamp" inputmode="numeric" placeholder="1 000" value="'
+    + etat.capital.replace(/"/g, "&quot;") + '">'
+    + '</div>'
+    + '<div class="champ champ-capital">'
+    + '<span class="etiquette">Ville du RCS</span>'
+    + '<input type="text" id="villeRcsChamp" placeholder="Versailles" value="'
+    + etat.villeRcs.replace(/"/g, "&quot;") + '">'
+    + '</div>';
+  document.getElementById("capitalChamp").addEventListener("input", (e) => {
+    etat.capital = e.target.value;
+    peindreFeuille();
+  });
+  document.getElementById("villeRcsChamp").addEventListener("input", (e) => {
+    etat.villeRcs = e.target.value;
+    peindreFeuille();
+  });
+}
+
+formeBouton.addEventListener("click", () => {
+  etat.formeOuverte = !etat.formeOuverte;
+  formeListe.hidden = !etat.formeOuverte;
+  formeBouton.setAttribute("aria-expanded", String(etat.formeOuverte));
+});
+
+/* ── La position de la mention sur le devis ───────────────────────────── */
+const position = document.getElementById("position");
+for (const bouton of position.querySelectorAll("button")) {
+  bouton.addEventListener("click", () => {
+    etat.position = bouton.dataset.p;
+    for (const autre of position.querySelectorAll("button")) {
+      autre.setAttribute("aria-pressed", String(autre === bouton));
+    }
+    peindreFeuille();
+  });
+}
+
+/* ── La mention telle qu'elle s'imprimerait ───────────────────────────── */
+const SIREN_DEMO = "123 456 789";
+
+function ligneRcs() {
+  const f = formeCourante();
+  if (f.capital === false) return null;
+  const ville = etat.villeRcs.trim();
+  if (ville === "") return null;
+  return "RCS " + ville + " " + SIREN_DEMO;
+}
+
+function mentionCapital() {
+  const f = formeCourante();
+  if (f.capital === false) return null; // EI, Micro-entreprise : jamais de mention
+  const montant = etat.capital.trim();
+  if (montant === "") return f.sigle; // forme dite, capital pas encore saisi
+  return f.sigle + " au capital de " + montant + " €";
+}
+
+function peindreFeuille() {
+  const lignes = etat.position === "aucune" ? [] : [mentionCapital(), ligneRcs()].filter(Boolean);
+  const mentionSousNom = etat.position === "sous-nom" && lignes.length
+    ? '<p class="mention">' + lignes.join("<br>") + '</p>' : "";
+  const mentionEnBas = etat.position === "bas" && lignes.length ? lignes.join("<br>") + "<br>" : "";
+
+  feuille.innerHTML =
+    '<div class="refs"><b>Devis n° 2026-000005</b>30/08/2026<br>Validité 30 jours</div>'
+    + '<p class="nom">Atlas</p>'
+    + mentionSousNom
+    + '<p class="coord">' + mentionEnBas
+      + '10 rue Denfert-Rochereau, 78200 Mantes-la-Jolie<br>'
+      + '06 79 98 45 14<br>Florian.Martins0978@laposte.net<br>'
+      + 'SIRET 123 456 789 00012</p>'
+    + '<hr>'
+    + '<h1>DEVIS (BROUILLON)</h1>'
+    + '<p class="client-etiq">CLIENT</p>'
+    + '<p class="client">Monsieur Arnaud<br>Avenue du Père Lachaise, 75020 Paris<br>06 79 98 45 14</p>'
+    + '<table><thead><tr><th>Description</th><th class="n">Qté</th>'
+      + '<th class="n">Prix unitaire HT</th><th class="n">Total HT</th></tr></thead><tbody>'
+      + '<tr><td>Démontage en rétention d’un érable (1 arbre)<br>Évacuation des déchets</td>'
+        + '<td class="n">1,00</td><td class="n">560,00 €</td><td class="n">560,00 €</td></tr>'
+    + '</tbody></table>';
+}
+
+peindreForme();
+peindreCapital();
+peindreFeuille();
+</script>
+
+</body>
+</html>

@@ -471,7 +471,12 @@ async function main() {
   // d'elles a fait accuser le calcul du prix.
   await cas("`banc.mjs` installe son gardien de signal AVANT d'attendre quoi que ce soit", () => {
     const source = readFileSync(path.join(RACINE, "scripts", "banc.mjs"), "utf8");
-    const iLancement = source.indexOf("let serveur = raison ?");
+    // **`let serveur = ` et non la condition qui suit.** Le 31 août 2026, la
+    // condition est passée de `raison ?` à `modeDeveloppement ?` — le lancement
+    // du serveur n'avait pas bougé d'une ligne, et ce contrôle a pourtant rougi
+    // en annonçant qu'il « n'éprouve rien ». Un repère doit viser ce qu'on
+    // défend, pas la façon dont c'était écrit le jour où on l'a posé.
+    const iLancement = source.indexOf("let serveur = ");
     const iGardien = source.indexOf('process.on(signal, () => {');
     assert.ok(iLancement > 0, "le lancement du serveur est introuvable : ce contrôle n'éprouve rien");
     assert.ok(iGardien > 0, "aucun gestionnaire de signal : fermer le banc laisserait son serveur sur le port");
@@ -482,7 +487,7 @@ async function main() {
     // L'attente longue du fil principal : la construction. Tout ce qui est
     // installé après elle ne protège pas pendant ces minutes-là — et c'est
     // exactement la fenêtre où le signal arrivait.
-    const iConstruction = source.search(/"npx", \["next", "build"\]/);
+    const iConstruction = source.search(/process\.execPath, \[NEXT, "build"\]/);
     assert.ok(
       iConstruction > 0,
       "la construction est introuvable : ce contrôle ne sait plus où est la fenêtre qu'il surveille"

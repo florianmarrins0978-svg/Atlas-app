@@ -167,6 +167,12 @@ export async function terminerChantier(ctx: Ctx, chantierId: string, maintenant:
         entrepriseEmail: devisSource.entrepriseEmail,
         entrepriseTelephone: devisSource.entrepriseTelephone,
         entrepriseIban: devisSource.entrepriseIban,
+        // Les trois mentions légales, et leur emplacement (migration 0072) —
+        // recopiées du devis, comme le reste de l'identité.
+        entrepriseFormeJuridique: devisSource.entrepriseFormeJuridique,
+        entrepriseCapitalSocial: devisSource.entrepriseCapitalSocial,
+        entrepriseVilleRcs: devisSource.entrepriseVilleRcs,
+        entrepriseMentionsLegalesPosition: devisSource.entrepriseMentionsLegalesPosition,
         clientNom: devisSource.clientNom,
         clientCivilite: devisSource.clientCivilite,
         clientAdresse: devisSource.clientAdresse,
@@ -200,6 +206,10 @@ export async function terminerChantier(ctx: Ctx, chantierId: string, maintenant:
           quantite: l.quantite,
           prixUnitaire: l.prixUnitaire,
           montant: l.montant,
+          // **Sans ce report, une facture née d'un devis à deux TVA se réglait
+          // sur un seul taux** — et l'écart partait dans une déclaration
+          // trimestrielle, là où il coûte à l'artisan (migration 0073).
+          tauxTva: l.tauxTva,
           ordre: l.ordre,
         }))
       );
@@ -312,6 +322,10 @@ function donneesFacture(
     entrepriseTelephone: f.entrepriseTelephone,
     entrepriseEmail: f.entrepriseEmail,
     entrepriseIban: f.entrepriseIban,
+    entrepriseFormeJuridique: f.entrepriseFormeJuridique,
+    entrepriseCapitalSocial: f.entrepriseCapitalSocial,
+    entrepriseVilleRcs: f.entrepriseVilleRcs,
+    entrepriseMentionsLegalesPosition: f.entrepriseMentionsLegalesPosition,
     clientNom: f.clientNom,
     clientCivilite: f.clientCivilite,
     clientAdresse: f.clientAdresse,
@@ -333,6 +347,9 @@ function donneesFacture(
         quantite: l.quantite,
         prixUnitaire: l.prixUnitaire,
         montant: l.montant,
+        // Le taux de sa catégorie voyage jusqu'au papier : sans lui, la facture
+        // ventilerait tout sur le taux du document (migration 0073).
+        tauxTva: l.tauxTva,
       })),
   };
 }

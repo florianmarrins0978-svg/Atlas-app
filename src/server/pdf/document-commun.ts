@@ -1,4 +1,5 @@
 import { adressesDuDocument } from "../../lib/adresses";
+import { ligneAttendSonPrix } from "../../lib/preparation-devis";
 import { PDFDocument, PDFFont, PDFImage, PDFPage, StandardFonts, rgb, RGB } from "pdf-lib";
 import Decimal from "decimal.js";
 import { couleursDocument } from "@/lib/design-tokens";
@@ -15,7 +16,9 @@ import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { logger } from "@/server/logger";
 import { avecCivilite } from "@/lib/civilite";
-import { libelleReduction } from "@/lib/reduction-devis";
+import { libelleReduction, lignesParCategorie, tauxLisible, totauxAvecReduction } from "@/lib/reduction-devis";
+import { lignesMentionsLegales, type PositionMentionsLegales } from "@/lib/mentions-legales";
+import { protegerContreModification } from "./proteger-pdf";
 
 // Le moteur commun des pièces que le client reçoit : devis et facture.
 //
@@ -369,6 +372,13 @@ export type LigneDocument = {
    * « 0,00 € » : un zéro se lit « gratuit ».
    */
   aChiffrer?: boolean | null;
+  /**
+   * Le taux de sa catégorie de TVA (migration 0073).
+   *
+   * Absent ou nul : la ligne suit `tauxTva` du document — c'est le cas de tous
+   * les documents émis avant, qui sortent identiques à eux-mêmes.
+   */
+  tauxTva?: string | null;
 };
 
 export type DonneesDocument = {
@@ -378,6 +388,14 @@ export type DonneesDocument = {
   entrepriseTelephone?: string | null;
   entrepriseEmail?: string | null;
   entrepriseIban?: string | null;
+  /**
+   * Les trois mentions légales, et leur emplacement (migration 0072). Absentes
+   * sur un document d'avant la migration : rien de plus ne s'imprime.
+   */
+  entrepriseFormeJuridique?: string | null;
+  entrepriseCapitalSocial?: string | null;
+  entrepriseVilleRcs?: string | null;
+  entrepriseMentionsLegalesPosition?: PositionMentionsLegales | null;
   clientNom?: string | null;
   /** Recopiée sur le document au moment où il est établi (migration 0038). */
   clientCivilite?: "mr" | "mme" | null;
@@ -641,14 +659,37 @@ export async function composerDocument(
   // ça, il faut sauter une ligne, une ligne par information »*. Le téléphone et
   // l'e-mail tenaient sur la même ligne, séparés d'un tiret cadratin — c'est
   // lisible sur un écran large, c'est un pâté sur un devis imprimé.
+  //
+  // **La forme juridique, le capital et le RCS s'y glissent selon SON choix**
+  // (migration 0072) : sous le nom, avec le reste des coordonnées, ou nulle
+  // part. `lignesMentionsLegales` rend déjà zéro ligne quand rien n'a été
+  // réglé — les documents d'avant la migration ressortent identiques à eux-
+  // mêmes, sans qu'il ait fallu un `if` de plus ici.
+  const positionMentions = data.entrepriseMentionsLegalesPosition ?? "aucune";
+  const mentionsLegales = lignesMentionsLegales({
+    formeJuridique: data.entrepriseFormeJuridique,
+    capitalSocial: data.entrepriseCapitalSocial,
+    villeRcs: data.entrepriseVilleRcs,
+    siret: data.entrepriseSiret,
+    position: positionMentions,
+  });
+
+  let yCoord = y - 15;
+  if (positionMentions === "sous_nom") {
+    for (const ligne of mentionsLegales) {
+      ecrire(ctx, ligne, MARGE, yCoord, { taille: 8.5, couleur: ctx.teintes.coordonnees });
+      yCoord -= 11;
+    }
+  }
+
   const coordonnees = [
+    ...(positionMentions === "bas" ? mentionsLegales : []),
     data.entrepriseAdresse,
     data.entrepriseTelephone,
     data.entrepriseEmail,
     data.entrepriseSiret ? `SIRET ${data.entrepriseSiret}` : null,
   ].filter((l): l is string => !!l);
 
-  let yCoord = y - 15;
   for (const ligne of coordonnees) {
     ecrire(ctx, ligne, MARGE, yCoord, { taille: 8.5, couleur: ctx.teintes.coordonnees });
     yCoord -= 11;
@@ -746,7 +787,7 @@ export async function composerDocument(
     if (!options.sansChiffrage) {
       ecrireEspaceADroite(ctx, "QTÉ", xQte, y, APPROCHE_ETIQUETTE, enTeteColonne);
       ecrireEspaceADroite(ctx, "PRIX UNITAIRE HT", xPrix, y, APPROCHE_ETIQUETTE, enTeteColonne);
-      ecrireEspaceADroite(ctx, "TOTAL HT", xMontant, y, APPROCHE_ETIQUETTE, enTeteColonne);
+      ecrireEspaceADroite(ctx, "MONTANT HT", xMontant, y, APPROCHE_ETIQUETTE, enTeteColonne);
     }
     y -= 9;
     trait(ctx, y, 1.2, ctx.teintes.encre);
@@ -762,7 +803,48 @@ export async function composerDocument(
     y -= 12;
   }
 
-  for (const ligne of data.lignes) {
+  // **LES CATÉGORIES DE TVA, quand il y en a plus d'une** (migration 0073).
+  //
+  // Un seul taux — tous les documents d'avant, et la plupart des siens — ne
+  // dessine AUCUN titre : la feuille sort exactement comme elle sortait. Le
+  // groupement ne se voit que là où il apprend quelque chose.
+  const categories = lignesParCategorie(data.lignes, data.tauxTva);
+  const montrerCategories = categories.length > 1 && !options.sansChiffrage;
+
+  for (const categorie of categories) {
+  /**
+   * Le titre de la catégorie — et il se REDESSINE à chaque nouvelle page.
+   *
+   * **Trouvé en regardant la capture, pas en lisant le code.** Une catégorie
+   * qui débordait sur la page suivante y laissait ses dernières lignes et son
+   * sous-total SANS titre : le client lisait « Sous-total HT 1 200,00 € » sans
+   * savoir de quelle TVA il s'agissait. Sur une pièce qu'il garde, un sous-
+   * total orphelin est pire qu'absent — il se recopie sur une comptabilité.
+   */
+  const titreCategorie = (suite: boolean) => {
+    if (!montrerCategories) return;
+    ecrireEspace(
+      ctx,
+      `TVA ${tauxLisible(categorie.taux)} %${suite ? " (suite)" : ""}`,
+      MARGE,
+      y,
+      APPROCHE_ETIQUETTE,
+      { taille: 7.5, police: ctx.sansGras, couleur: ctx.teintes.titrePartie }
+    );
+    y -= 15;
+  };
+
+  if (montrerCategories) {
+    // Le titre ne se sépare jamais de sa première ligne : seul en bas de page,
+    // il annoncerait une catégorie vide.
+    if (y - 34 < PLANCHER) {
+      y = pageSuivante(ctx);
+      enTeteTableau();
+    }
+    titreCategorie(false);
+  }
+
+  for (const ligne of categorie.lignes) {
     // Sans colonnes de prix, le libellé dispose de toute la feuille : garder la
     // largeur du devis couperait « Démontage de trois chênes en tête de chat »
     // en deux pour laisser la place à des colonnes qui n'existent pas.
@@ -775,6 +857,9 @@ export async function composerDocument(
     if (y - hauteurLigne < PLANCHER) {
       y = pageSuivante(ctx);
       enTeteTableau();
+      // La catégorie se rappelle sur la page qu'elle continue, sans quoi ses
+      // dernières lignes et son sous-total y seraient orphelins.
+      titreCategorie(true);
     }
     lignesLibelle.forEach((l, i) => ecrire(ctx, l, MARGE, y - i * 11, { taille: 9 }));
     if (!options.sansChiffrage) {
@@ -783,7 +868,17 @@ export async function composerDocument(
       ecrireADroite(ctx, ligne.unite ? `${ligne.quantite} ${ligne.unite}` : ligne.quantite, xQte, y, {
         taille: 9,
       });
-      if (ligne.aChiffrer) {
+      // **« À chiffrer » ne se lit plus sur le seul drapeau** — sa capture du
+      // 31 août 2026. Le tableau portait « à chiffrer » en face de deux lignes
+      // qui pesaient 1 720 €, et le Total HT, lui, les comptait : 2 280,00 €
+      // sous 560,00 € de montants visibles. Un client qui additionne n'y
+      // arrive pas, et cesse de croire le reste du document.
+      //
+      // L'invariant vit dans `ligneAttendSonPrix` — un montant posé répond à
+      // la question, quel que soit le drapeau — et il est partagé avec l'écran
+      // et avec le contrôle d'envoi. Ce qui est imprimé fait donc toujours le
+      // total imprimé.
+      if (ligneAttendSonPrix({ libelle: ligne.libelle, montant: ligne.montant, aChiffrer: ligne.aChiffrer })) {
         // Ni prix unitaire, ni montant : il n'y en a pas. Écrire « 0,00 € »
         // serait annoncer un travail gratuit (26 août 2026).
         ecrireADroite(ctx, "à chiffrer", xMontant, y, { taille: 9, police: ctx.sansGras });
@@ -800,6 +895,17 @@ export async function composerDocument(
     y -= 12;
   }
 
+  // **Le sous-total permet au client de refaire le calcul de SA TVA.** Sans
+  // lui, la ligne « TVA (10 %) — 109,68 € » des totaux ne se vérifie qu'en
+  // additionnant soi-même les montants de la catégorie.
+  if (montrerCategories) {
+    const brut = categorie.lignes.reduce((acc, l) => acc.plus(new Decimal(l.montant)), new Decimal(0));
+    ecrire(ctx, "Sous-total HT", xPrix - 80, y + 4, { taille: 8, couleur: ctx.teintes.etiquette });
+    ecrireADroite(ctx, formatMontant(brut.toFixed(2), data.devise), xMontant, y + 4, { taille: 8 });
+    y -= 14;
+  }
+  }
+
   // ─── Totaux, calés à droite ─────────────────────────────────────────────
   // Le bloc entier tient sur une seule page : un « Total TTC » séparé de son
   // « Total HT » par un saut de page se lit de travers.
@@ -811,10 +917,28 @@ export async function composerDocument(
   if (!options.sansChiffrage) {
   const libelleRemise = libelleReduction(data.reductionPourcent ?? null);
   const avecRemise = libelleRemise !== null && data.reductionMontant != null;
-  // Deux lignes de plus quand une remise est accordée : la place se réserve
-  // AVANT le saut de page, sinon « Total TTC » se retrouve seul en haut de la
-  // page suivante.
-  place(avecRemise ? 74 + 32 : 74);
+
+  // **UNE LIGNE DE TVA PAR CATÉGORIE — sa demande du 1er septembre 2026.**
+  //
+  // La ventilation se DEMANDE à la règle commune plutôt que de se refaire ici :
+  // c'est elle qui répartit le prix accordé au prorata et qui place le centime
+  // résiduel. La recalculer sur le papier aurait donné une seconde
+  // implémentation, donc un jour deux résultats — sur la seule pièce que le
+  // client garde (`CLAUDE.md` §3).
+  //
+  // Les totaux, eux, restent ceux du document : ils ont été figés à l'émission
+  // et font foi. Sur un document à un seul taux — tous ceux d'avant — la
+  // ventilation ne rend qu'une catégorie, et la feuille sort à l'identique.
+  const parTaux = totauxAvecReduction(
+    data.lignes,
+    data.tauxTva,
+    data.reductionPourcent ?? null
+  ).parTaux;
+
+  // Deux lignes de plus quand une remise est accordée, et une par catégorie
+  // au-delà de la première : la place se réserve AVANT le saut de page, sinon
+  // « Total TTC » se retrouve seul en haut de la page suivante.
+  place((avecRemise ? 74 + 32 : 74) + (parTaux.length - 1) * 16);
   y -= 6;
   const gaucheTotaux = DROITE - 220;
 
@@ -847,10 +971,15 @@ export async function composerDocument(
     y -= 16;
   }
 
-  const tauxLisible = new Decimal(data.tauxTva).toFixed(2).replace(/[.]00$/, "").replace(".", ",");
-  ecrire(ctx, `TVA (${tauxLisible} %)`, gaucheTotaux, y, { taille: 9.5 });
-  ecrireADroite(ctx, formatMontant(data.totalTva, data.devise), DROITE, y, { taille: 9.5 });
-  y -= 14;
+  // **Une ligne par catégorie, et l'ordre est celui de son tableau.** Un seul
+  // taux : c'est exactement la ligne d'avant, au pixel près.
+  for (const categorie of parTaux) {
+    const lisible = new Decimal(categorie.taux).toFixed(2).replace(/[.]00$/, "").replace(".", ",");
+    ecrire(ctx, `TVA (${lisible} %)`, gaucheTotaux, y, { taille: 9.5 });
+    ecrireADroite(ctx, formatMontant(categorie.tva, data.devise), DROITE, y, { taille: 9.5 });
+    y -= 16;
+  }
+  y += 2;
 
   trait(ctx, y, 1.6, ctx.teintes.encre, gaucheTotaux, DROITE);
   y -= 22;
@@ -974,7 +1103,11 @@ export async function composerDocument(
     });
   }
 
-  return { pdf: await pdfDoc.save(), trace: ctx.trace };
+  // **Tout ce qui sort d'ici part protégé contre la retouche.** Le devis, la
+  // facture, la feuille de chantier : un seul endroit, parce qu'un document
+  // oublié ne se verrait pas — c'est chez le client qu'on l'apprendrait, comme
+  // le 31 août 2026 (`src/server/pdf/proteger-pdf.ts`).
+  return { pdf: await protegerContreModification(await pdfDoc.save()), trace: ctx.trace };
 }
 
 /** Le bas réservé au pied de page, pour que les contrôles parlent des mêmes chiffres. */

@@ -26,6 +26,7 @@
 
 import { diametreLu, hauteurLue } from "./mesures-arbre";
 import { TECHNIQUES_PAR_DEFAUT, type Technique } from "./grille-prix";
+import { lireCaracteristiques } from "./prestation-structuree";
 
 /** Une réponse proposée, quand la question se referme sur un choix connu. */
 export type OptionReponse = {
@@ -75,6 +76,9 @@ const ABATTAGE = /\b(abattage|abattre|abatt|démont|demont|dessouch)/i;
  * La technique, c'est ce qui suit : au pied, démontage, avec rétention.
  */
 function techniqueDeja(ligne: LignePourQuestions): boolean {
+  // La colonne fait foi quand elle existe : c'est une valeur posée, pas une
+  // ressemblance de mots. Le texte reste le repli des prestations d'avant.
+  if (ligne.methode?.trim()) return true;
   return /\b(au\s+pied|démont|demont|rétention|retention)/i.test(
     [ligne.libelle, ligne.description ?? ""].join(" ")
   );
@@ -140,10 +144,12 @@ function toutLeTexte(ligne: LignePourQuestions): string {
  * poser une question déjà répondue, ou l'inverse.
  */
 function contientDiametre(ligne: LignePourQuestions): boolean {
+  if (lireCaracteristiques(ligne.caracteristiques).diametreCm !== undefined) return true;
   return diametreLu(toutLeTexte(ligne)) !== null;
 }
 
 function contientHauteur(ligne: LignePourQuestions): boolean {
+  if (lireCaracteristiques(ligne.caracteristiques).hauteurM !== undefined) return true;
   return hauteurLue(toutLeTexte(ligne)) !== null;
 }
 
@@ -161,6 +167,23 @@ export type LignePourQuestions = {
    * prestations d'avant, et des dictées lues mot à mot.
    */
   nature?: string | null;
+  /**
+   * La technique et les mesures, telles qu'elles sont EN COLONNE.
+   *
+   * **Sa règle du 31 août 2026, après un test téléphone :** *« une question
+   * n'est posée que si l'information nécessaire au prix est réellement absente
+   * des données structurées de LA prestation concernée. Si méthode =
+   * demontage_retention, ne demande pas comment l'arbre est abattu. Si
+   * diametreCm = 40, ne demande pas son diamètre. Ne récupère pas
+   * l'information depuis une autre prestation. »*
+   *
+   * Avant, ces deux faits ne se lisaient que dans le TEXTE. Une prestation qui
+   * les portait en colonne mais pas dans son libellé se faisait redemander ce
+   * qu'elle savait déjà — et le nettoyage des libellés du 30 août a rendu le
+   * cas ordinaire au lieu d'exceptionnel.
+   */
+  methode?: string | null;
+  caracteristiques?: unknown;
 };
 
 /**
@@ -292,8 +315,14 @@ export function questionsAvantChiffrage(
       const souche = estDessouchage(ligne);
 
       // La technique : c'est elle qui fait 600 ou 1 400 €. Une dictée ne la
-      // contient à peu près jamais ; quand elle la contient, le modèle l'a
-      // rangée dans le libellé, et `techniqueDeja` l'y trouve.
+      // contient à peu près jamais ; quand elle la contient, elle est en
+      // COLONNE ou dans le libellé, et `techniqueDeja` l'y trouve — la colonne
+      // d'abord depuis le 31 août 2026 : une prestation qui portait la
+      // technique en base se la faisait redemander.
+      //
+      // **Elle n'appartient qu'à l'abattage.** Une souche ne s'abat pas : elle
+      // se rogne, ou elle s'arrache. Deux sessions l'ont corrigé le même jour,
+      // et c'est la formulation de `main` qui est gardée.
       if (!souche && !techniqueDeja(ligne)) {
         questions.push({
           id: `abattage.technique#${rang}`,
@@ -309,17 +338,53 @@ export function questionsAvantChiffrage(
       // elle que la dictée donne (« de vingt mètres de haut »). Ne pas la
       // confondre : demander « la taille » laisserait croire que la hauteur
       // suffit.
+      // **Sa règle du 31 août — « ne récupère pas l'information depuis une
+      // autre prestation » — ne vise PAS `diametreDansLaDictee`, et j'ai
+      // d'abord cru le contraire.**
+      //
+      // Le retrait avait été fait à la fusion, puis annulé après lecture du
+      // paragraphe ci-dessus : ce n'est pas un emprunt au voisin, c'est le
+      // même fait dicté, coupé en deux par une virgule. « Un dessouchage, deux
+      // souches de soixante » donne DEUX prestations — la première pose la
+      // question, la seconde porte la réponse. Redemander là, c'est lui faire
+      // répéter ce qu'il vient de dire.
+      //
+      // Et la garde du seul arbre tient sa règle au mot près : à deux arbres,
+      // on demande ligne par ligne, parce qu'un diamètre dit quelque part
+      // n'appartient plus forcément à celui qu'on questionne.
       if (!contientDiametre(ligne) && !diametreDansLaDictee) {
         questions.push({
           id: `${souche ? "dessouchage" : "abattage"}.diametre#${rang}`,
           libellePrestation: libelle,
-          // **« Quel diamètre ? », et pas « quel diamètre fait la souche ? ».**
-          // Même remarque du 30 août : la dictée disait « deux souches », la
-          // question en disait une. Accorder au nombre supposerait de le
-          // compter — un travail de plus pour un mot de moins. La prestation
-          // est écrite juste au-dessus : elle dit déjà de quoi l'on parle, au
-          // pluriel comme au singulier.
-          question: "Quel diamètre ?",
+          // **LA QUESTION NOMME SA MESURE — et c'est LUI qui a tranché entre
+          // ses deux décisions, le soir du test téléphone.**
+          //
+          // *« Je préfère cette formulation parce qu'elle indique immédiatement
+          // de quelle mesure on parle, et évite la confusion constatée pendant
+          // le test téléphone. »*
+          //
+          // ─── L'ARBITRAGE, à ne pas renverser sans lui ────────────────────
+          //
+          // Deux de ses propres consignes s'opposaient ici, et une session qui
+          // n'en connaîtrait qu'une remettrait l'autre :
+          //
+          // | ce qu'il a demandé | pourquoi | quand |
+          // |---|---|---|
+          // | « Quel diamètre ? », sans nommer | la dictée disait « deux souches », la question en disait une | d'abord |
+          // | « Quel diamètre fait la souche ? » | sur son téléphone, « Quel diamètre ? » sous un titre ne disait pas DE QUOI | **ensuite, et c'est elle qui tient** |
+          //
+          // **Il a choisi la seconde, en connaissance de la première.** Le coût
+          // qu'il accepte est un singulier là où il a pu dicter deux souches ;
+          // ce qu'il gagne est une question qu'on comprend sans lever les yeux
+          // vers le titre — et c'est précisément le geste qui lui a fait croire,
+          // pendant le test, qu'on l'interrogeait sur son érable.
+          //
+          // Accorder au nombre reste écarté : il faudrait compter, pour un mot.
+          //
+          // *(Les commentaires voisins datent ce lot du « 31 août » ; les
+          // commits, eux, portent le 30. On n'ancre donc plus l'arbitrage sur
+          // un jour, mais sur l'événement qui l'a produit — le test téléphone.)*
+          question: souche ? "Quel diamètre fait la souche ?" : "Quel diamètre fait le tronc ?",
           options: null,
           unite: "cm",
         });

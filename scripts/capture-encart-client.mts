@@ -82,17 +82,21 @@ await page.locator("#precision").scrollIntoViewIfNeeded();
 await page.waitForTimeout(400);
 await page.screenshot({ path: `${dossier}/client-encart.png` });
 
-const invite = page.locator("text=/vous pouvez laisser un mot/i");
-if ((await invite.count()) === 0) {
-  echecs.push("aucune phrase n'invite le client à écrire — c'est ce qu'il a demandé le 13 août");
+// **La phrase et l'intitulé ont été RÉUNIS le 31 août 2026**, pour que l'écran
+// tienne dans un téléphone. Ce qui se vérifie est donc ce qu'ils défendaient : le
+// libellé du champ invite à écrire (`CLAUDE.md` §5 bis).
+const invite = page.locator('label[for="precision"]');
+if (!/écriv|dites|laissez/i.test((await invite.count()) ? await invite.first().innerText() : "")) {
+  echecs.push("l'intitulé du champ n'invite pas le client à écrire — c'est ce qu'il a demandé le 13 août");
 }
 
 // **La page nomme le client comme le message qui l'y a mené.** Il lit « Bonjour
 // Mr. Martins » dans son SMS ; trouver « Pour Martins » en tête de la page
 // ouverte juste après ferait douter qu'elle lui soit destinée. C'est ici que ça
-// s'éprouve, et non dans `test-devis-client-e2e` : la préparation de cette
-// suite-là ne nomme aucun client, donc la ligne n'y existe pas et le contrôle
-// serait vert sans rien avoir vu.
+// s'éprouve d'abord, sur une capture qu'on REGARDE : la civilité s'y lit, là où
+// une assertion ne dit que « présent ». (`test-devis-client-e2e` nomme lui aussi
+// son client depuis le 31 août — la ligne « Pour … » y pèse vingt pixels, et
+// c'est le cas le plus haut de l'écran.)
 const ecranClient = await page.locator("body").innerText();
 if (!ecranClient.includes(`Pour ${avecCivilite(CLIENT)}`)) {
   const vu = /Pour\s+.*/.exec(ecranClient)?.[0] ?? "(aucune ligne « Pour … »)";

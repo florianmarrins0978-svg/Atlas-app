@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState, useTransition } from
 import { useAncrageDuGeste } from "@/components/atlas/useAncrageDuGeste";
 import Link from "next/link";
 import { getPlanificationEtat, trierParDatePlanifiee } from "@/lib/chantier-etat";
-import { estAuPlanning } from "@/lib/onglet-chantier";
+import { estAuCalendrier } from "@/lib/onglet-chantier";
 import { jourIso } from "@/lib/jour";
 import EnTeteEcran from "@/components/atlas/EnTeteEcran";
 import { cheminAutorise, peutModifierLePlanning, type Role } from "@/lib/acces-roles";
@@ -257,8 +257,28 @@ export default function PlanningClient({
     [chantiers, retraits]
   );
 
+  /**
+   * CE QUE LE CALENDRIER PEINT — et depuis le 31 août 2026, les jours passés
+   * aussi.
+   *
+   * **Sa question :** *« est-ce que le planning garde en mémoire les chantiers
+   * passés ? »* — non : `estAuPlanning` les refusait dès le lendemain, et son
+   * mois de juillet était blanc alors qu'il y avait travaillé tous les jours.
+   * Il a choisi la proposition **B** (planche 98) : le jour passé garde ses
+   * couleurs, et la mémoire tient **deux ans**.
+   *
+   * **`estAuCalendrier` et non `estAuPlanning` élargie** : la seconde décide de
+   * l'onglet, et un chantier passé doit rester dans « Terminés ». Les élargir
+   * ensemble l'aurait remis dans deux onglets — le défaut du 6 août 2026.
+   *
+   * **Ce que ce changement RÉPARE en passant.** L'écran d'envoi peint le même
+   * calendrier (`MoisCharge`) à partir de la liste BRUTE, sans ce tamis : un
+   * jour passé y portait déjà ses chantiers pendant que le planning l'affichait
+   * vide. Deux vérités sur la même journée, à un écran d'écart — ce que
+   * `CLAUDE.md` §3 interdit nommément. Elles se rejoignent.
+   */
   const planifies = useMemo(
-    () => trierParDatePlanifiee(visibles.filter((c) => estAuPlanning(c, aujourdHui))),
+    () => trierParDatePlanifiee(visibles.filter((c) => estAuCalendrier(c, aujourdHui))),
     [visibles, aujourdHui]
   );
 
@@ -661,7 +681,19 @@ export default function PlanningClient({
         {/* ─── LA FICHE DU JOUR, DIRECTEMENT SOUS LE CALENDRIER ───────────── */}
         <div ref={carteRef}>
           {jourTouche && (
-            <CarteDuJour cle="jour" jour={jourTouche} {...gestesCarte} />
+            <CarteDuJour
+              cle="jour"
+              jour={jourTouche}
+              {...gestesCarte}
+              // **Un jour passé se lit, il ne s'écrit pas** (planche 98). Ce
+              // n'est pas une précaution de style : cocher un salarié ou
+              // déplacer une demi-journée sur un chantier fait il y a huit mois
+              // ne veut rien dire, et un geste possible est un geste qu'on fait
+              // par erreur. C'est le MÊME drapeau que celui du salarié en
+              // lecture seule — une seconde façon de rendre une carte inerte
+              // aurait divergé de la première.
+              ecriture={gestesCarte.ecriture && jourTouche >= aujourdHui}
+            />
           )}
         </div>
 
@@ -871,6 +903,7 @@ export default function PlanningClient({
                         jour={carteListe.jour}
                         seulement={c.id}
                         {...gestesCarte}
+                        ecriture={gestesCarte.ecriture && carteListe.jour >= aujourdHui}
                       />
                     )}
                   </div>
@@ -880,7 +913,9 @@ export default function PlanningClient({
                   C'est ce que montre la planche 86 : un seul « + » sous les
                   chantiers du jour, quel que soit le nombre de volets ouverts.
                   Et il n'existe pas pour un salarié (30 août 2026). */}
-              {ouvertes.ecriture && (
+              {/* **Pas de « + » sur une journée passée** : on n'ajoute pas un
+                  chantier à un jour qui a déjà eu lieu. */}
+              {ouvertes.ecriture && jour >= aujourdHui && (
               <AjoutAuJour
                 cle={`ajout:${jour}`}
                 jour={jour}
@@ -1913,8 +1948,10 @@ function FeuilleChantier({
   if (!chantier) return null;
   const adresse = chantier.adresseChantier?.trim() || null;
   // **Deux destinations, plus trois.** Sa demande du 21 août : « pas besoin
-  // d'en mettre trois ». `plans` est celle qu'il nomme « Maps » sur son
-  // iPhone ; Google Maps sort, elle faisait doublon.
+  // d'en mettre trois ». Et « Maps », c'est **Google Maps** — sa demande du
+  // 31 août 2026, capture à l'appui : *« pour Maps c'est Google Maps que je
+  // veux »*. Le bouton servait Plans d'Apple, qui est ce que son iPhone appelle
+  // « Plans » ; ce n'est pas ce qu'il ouvre pour aller sur un chantier.
   const liens = liensItineraire(adresse);
   const tel = lienAppel(chantier.clientTelephone);
 
@@ -1938,7 +1975,7 @@ function FeuilleChantier({
       </p>
 
       <div className="mt-2.5 flex gap-1.5">
-        <Geste href={liens?.plans ?? null}>Maps</Geste>
+        <Geste href={liens?.google ?? null}>Maps</Geste>
         <Geste href={liens?.waze ?? null}>Waze</Geste>
       </div>
       <div className="mt-1.5 flex gap-1.5">

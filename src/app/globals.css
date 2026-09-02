@@ -157,6 +157,16 @@ body {
  * s'assurer qu'un jour l'une bougera sans l'autre. */
 :root {
   --atlas-barre: calc(4.25rem + env(safe-area-inset-bottom));
+  /* La hauteur RÉELLE du bandeau du banc, publiée par lui-même
+   * (`BandeauBanc.tsx`) et remise à zéro dès qu'il s'efface. Zéro par défaut :
+   * hors banc d'essai, ce bandeau n'existe pas.
+   *
+   * **Elle valait 40 px, écrits à la main dans `layout.tsx`, pour un bandeau
+   * qui en mesure 48.** Huit pixels de trop, plus la barre de progression, plus
+   * une phrase qui passe à deux lignes sur un écran étroit : c'est ce qui
+   * faisait finir « Me déconnecter partout » sous la barre du bas, le 31 août
+   * 2026. Un élément qui change de taille ne se mesure pas dans un fichier. */
+  --atlas-bandeau: 0px;
 }
 
 .atlas-nav-basse {
@@ -179,11 +189,20 @@ body {
  * déjà `padding-top: env(safe-area-inset-top)`, donc `100dvh` déborderait
  * d'autant. */
 .atlas-ecran {
-  height: calc(100dvh - var(--atlas-barre) - env(safe-area-inset-top));
+  /* **Le bandeau du banc entre dans le calcul depuis le 31 août 2026.** Sans
+   * lui, tout écran figé était 48 px trop haut sur son banc : il débordait, la
+   * page se remettait à défiler, et la dernière rangée passait sous la barre. */
+  height: calc(100dvh - var(--atlas-bandeau) - var(--atlas-barre) - env(safe-area-inset-top));
   display: flex;
   flex-direction: column;
   overflow: hidden;
   position: relative;
+  /* **Sa demande du 31 août : « aucun scroll possible ».** Une page qui tient
+   * dans l'écran REBONDIT quand même sous le doigt, sur iOS — c'est l'élastique
+   * du navigateur, et c'est ce qu'il appelle « ça bouge encore ». Cette ligne
+   * l'arrête. Elle ne peut pas être éprouvée ici : aucun navigateur de ce poste
+   * ne rebondit. */
+  overscroll-behavior: none;
 }
 
 /* --- Une colonne d'écran qui défile, sans barre grise ----------------------
@@ -1210,10 +1229,12 @@ body {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  /* La réserve ne bouge pas d'un état à l'autre : sans elle, la barre étant plus
-   * haute que le micro seul, tout ce qui suit — le bouton compris — sauterait
-   * vers le bas à l'instant où l'on appuie, c'est-à-dire au moment où l'écran
-   * doit être le plus stable. */
+  /* La réserve ne bouge pas d'un état à l'autre, et depuis le 31 août 2026 elle
+   * retient l'écran dans l'AUTRE sens : la ligne de dictée (58 px) est plus
+   * BASSE que le micro et son indice, si bien que tout ce qui suit remonterait
+   * à l'instant où l'on appuie — c'est-à-dire au moment où l'écran doit être le
+   * plus stable. Le chiffre reste celui du repos, qui est le plus haut des
+   * deux. */
   min-height: 104px;
   /* **Les ondes ne doivent JAMAIS élargir la page.** Elles sont posées en
    * absolu de part et d'autre du disque — 1,5 cm plus 9 px, soit 66 px de
@@ -1234,26 +1255,52 @@ body {
   overflow-x: clip;
 }
 
-/* L'objet au centre, les deux gestes de part et d'autre. Au repos ils n'existent
- * pas : il n'y a rien à jeter ni à envoyer. */
-.atlas-trio {
+/* ─── LA LIGNE DE DICTÉE — sa décision du 31 août 2026 ───────────────────
+ *
+ * Planche `appli/dictee-la-ligne.html`, onglet « Avec le rond ». Elle remplace
+ * le trio (poubelle · disque · avion) et la rangée chrono + onde qui vivait
+ * dessous.
+ *
+ * **Ce que le trio avait de faux, et qui se mesurait** — sa plainte du matin,
+ * « ça dénature l'appli » :
+ *
+ *   · deux aplats vert pin (76 px et 46 px), ~7 950 px² de sombre, là où le
+ *     reste de la fiche n'en porte AUCUN. Il en reste 64 : la pastille ;
+ *   · rien ne tenait les trois boutons ensemble — ils flottaient sur le fond ;
+ *   · le chrono à gauche, l'onde à droite et le disque au milieu : trois
+ *     objets sur trois axes.
+ *
+ * Le trait du haut est ce qui les tient désormais, et il suffit : la ligne ne
+ * porte plus d'objet, elle traverse l'écran. */
+.atlas-ligne-dictee {
   display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 22px;
+  gap: 12px;
   width: 100%;
+  /* **PLUS DE TRAIT AU-DESSUS** — sa demande du 1ᵉʳ septembre 2026 : *« supprime
+   * le trait gris qu'il y a au-dessus »*. Il tenait la ligne au moment où elle
+   * remplaçait un objet centré ; une fois l'aplat parti, c'était un trait de
+   * plus sur un écran qui n'en porte nulle part ailleurs.
+   *
+   * **L'espace, lui, RESTE** : c'est lui qui sépare la dictée du reste, et le
+   * retirer avec le trait ferait remonter la ligne contre la fiche. */
+  padding-top: 14px;
+  animation: atlas-venir 0.26s cubic-bezier(0.22, 0.61, 0.36, 1) both;
 }
-.atlas-cote {
+/* Les deux gestes ne partagent PAS un bloc commun, et ce n'est pas une
+ * répétition par distraction : `test-classes-atlas-uniques` refuse qu'une
+ * classe soit déclarée deux fois, parce que la dernière écrase les autres sur
+ * tous les écrans qui la portent. Six lignes en double coûtent moins qu'un
+ * groupe qu'on croit sûr. */
+.atlas-jeter {
   display: flex;
   align-items: center;
   justify-content: center;
   flex: 0 0 auto;
-  width: 46px;
-  height: 46px;
+  width: 32px;
+  height: 32px;
   border-radius: 99px;
   -webkit-tap-highlight-color: transparent;
-  animation: atlas-venir 0.26s cubic-bezier(0.22, 0.61, 0.36, 1) both;
-  transition: color 0.18s, background 0.18s;
 }
 /* **La poubelle ne rougit QUE sous le doigt** — `.jeter:active` de sa planche.
  * Rouge au repos, elle mettrait en garde avant qu'on ait rien fait ; ici elle
@@ -1263,11 +1310,29 @@ body {
   from { opacity: 0; transform: scale(0.7); }
   to { opacity: 1; transform: none; }
 }
+/* **UN ROND, ET NON UN OVALE** — sa correction du 31 août au soir, après avoir
+ * vu trois aplatissements proposés (44 × 44, 48 × 40, 52 × 36) : *« autour de
+ * la flèche envoyer je veux un rond, pas un ovale »*. Largeur et hauteur sont
+ * la même mesure, et le fond vient de la page (posé `transparent` dans le
+ * composant) : c'est ce qu'il a demandé, et c'est ce qui tient sur les sept
+ * chartes sans qu'aucun beige soit écrit en dur. */
 .atlas-envoyer {
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.18);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  width: 44px;
+  height: 44px;
+  border-radius: 99px;
+  -webkit-tap-highlight-color: transparent;
   transition: transform 0.18s;
 }
-.atlas-envoyer:active { transform: scale(0.93); }
+/* **0,975 — le geste « discret », sa décision du 31 août** (`.atlas-plein` plus
+ * bas, posé le même jour par la session voisine). La touche d'envoi ne porte
+ * PAS `atlas-plein` : il a été clair — *« surtout pas ceux qui sont creux »* —,
+ * et depuis ce soir celle-ci est creuse. Elle prend donc le geste seul, à la
+ * même force que les pleins : deux forces dans le même écran se sentiraient. */
+.atlas-envoyer:active { transform: scale(0.975); }
 
 /* L'OBJET — un disque plein, son micro, ses deux souffles. Il ne change jamais
  * de forme, seulement de signe : le micro devient un carré d'arrêt. C'est sa
@@ -1296,17 +1361,6 @@ body {
   transition: transform 0.2s;
 }
 .atlas-micro:active { transform: scale(0.95); }
-/* `display:block` n'est pas cosmétique : un `<span>` resté en ligne ne prend ni
- * `width` ni `height`, sa boîte vaut zéro pixel, et le disque s'affiche vide.
- * Trouvé sur capture le 30 août 2026 — aucun contrôle ne le voyait, l'élément
- * existant bel et bien. */
-.atlas-carre-stop {
-  display: block;
-  width: 19px;
-  height: 19px;
-  border-radius: 3px;
-}
-
 /* LES DEUX SOUFFLES — « 1,5 cm max de chaque côté », sa mesure exacte, écrite
  * en centimètres plutôt que traduite en pixels : dans six mois, « 57 px » ne
  * dirait plus d'où il sort. Ils s'éteignent vers l'extérieur — une onde qui
@@ -1363,21 +1417,14 @@ body {
  * téléphone ne laisse pas le choix. Les barreaux passaient donc PAR-DESSUS les
  * deux gestes, à l'endroit exact où il faut viser. Vu sur capture, jamais
  * autrement. Le mouvement n'est pas perdu : l'onde du dessous le porte. */
+/* **Les souffles n'existent qu'au repos.** Ils accompagnent le micro, et le
+ * micro s'efface dès qu'on parle : depuis le 31 août 2026, la dictée est une
+ * ligne, et il n'y a plus d'objet central à border. */
 .atlas-dictee[data-etat="dicte"] .atlas-frange,
-.atlas-dictee[data-etat="pause"] .atlas-frange,
 .atlas-dictee[data-etat="envoi"] .atlas-frange {
   opacity: 0;
 }
 
-/* Le chrono et l'onde qui se déroule, sous le trio. */
-.atlas-sous-trio {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  width: 100%;
-  margin-top: 8px;
-  padding: 0 4px;
-}
 .atlas-compteur {
   display: flex;
   align-items: center;
@@ -1396,7 +1443,6 @@ body {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.25; }
 }
-.atlas-dictee[data-etat="pause"] .atlas-pastille { animation: none; opacity: 0.3; }
 
 /* L'onde part PLEINE, à plat : sinon les deux premières secondes montrent un
  * trait qui pousse dans le vide, et la barre paraît mal cadrée. */
@@ -1416,4 +1462,97 @@ body {
   flex: 0 0 2px;
   border-radius: 2px;
   opacity: 0.85;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   LE BOUTON PLEIN : SA COULEUR, ET SON GESTE SOUS LE DOIGT
+
+   **Ses deux décisions du 31 août 2026, prises sur planche**
+   (`appli/le-bouton-qui-repond.html`) :
+
+     · *« mets-moi la couleur 8 partout sur chaque bouton plein de couleur
+       verte de l'appli, surtout pas ceux qui sont creux ou d'une autre couleur
+       que la verte »* — puis, après avoir vu les deux verts côte à côte sur le
+       vrai bouton : **« je garde le #29382F »**, plus sourd que le vert 8 ;
+     · *« comme force du geste tu mets discret sur chaque bouton qui demande à
+       être appuyé »* — l'échelle 0,975, la plus légère des trois.
+
+   Puis, quand la question des sept chartes lui a été posée : **« les boutons à
+   changer c'est seulement pour la version origine, ne touche pas aux autres
+   apparences ! »**
+
+   ─── CE QUI SÉPARE LA COULEUR DU GESTE, ET POURQUOI ────────────────────────
+
+   **La couleur ne vaut QUE pour Origine.** Elle arrive par
+   `--atlas-plein-fond`, que `variablesCharte()` n'écrit que pour elle. Les
+   six autres chartes n'écrivent rien : `none` reste, rien n'est peint par-dessus,
+   et leur aplat d'action — le bleu marine de Brume, par exemple — est intact.
+   C'est la mécanique déjà éprouvée des formes (`chartes.ts`) : une charte
+   muette ne change rien.
+
+   **Le geste, lui, vaut PARTOUT.** Un bouton qui répond au doigt n'est pas une
+   apparence : c'est le même geste quelle que soit la couleur, et le priver aux
+   six autres chartes ferait deux comportements dans la même application.
+
+   ─── POURQUOI UN VOILE, ET NON UN `filter` ─────────────────────────────────
+
+   `brightness()` éclaircirait AUSSI le texte, qui perdrait exactement le
+   contraste que l'éclaircissement du fond vient de lui coûter. Le voile est un
+   calque posé derrière les lettres.
+
+   Et il s'ÉCLAIRCIT, il ne s'assombrit pas : sous un doigt, un aplat qui fonce
+   disparaît dans l'ombre de la main. C'est ce que montrait sa capture.
+
+   ─── CONTRASTES MESURÉS, PAS ESTIMÉS ───────────────────────────────────────
+
+   Crème `#faf9f5` sur `#29382F` : **11,72:1** au repos, et **7,55:1** sous le
+   voile de l'appui — le pire des deux, et celui que personne ne pense à
+   mesurer. Il en faut 4,5.
+   ═══════════════════════════════════════════════════════════════════════════ */
+.atlas-plein {
+  position: relative;
+  overflow: hidden;
+  /* Sans dégradé de charte, rien n'est peint : l'aplat de l'écran reste seul. */
+  background-image: var(--atlas-plein-fond, none);
+  transition:
+    transform 190ms cubic-bezier(0.22, 0.8, 0.3, 1),
+    box-shadow 220ms ease;
+}
+
+/* Le voile de l'appui. `inset: 0` le cale sur le bouton — d'où le
+   `position: relative` ci-dessus, qui n'est pas décoratif. */
+.atlas-plein::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: #fff;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 220ms ease;
+}
+
+/* **L'aller est plus rapide que le retour.** Le doigt doit trouver le bouton
+   déjà enfoncé, et le voir remonter quand il lâche ; des durées égales font un
+   bouton mou, qu'on relâche sans savoir si le geste est parti. */
+.atlas-plein:active {
+  transform: scale(0.975);
+  transition-duration: 70ms, 90ms;
+}
+.atlas-plein:active::after {
+  opacity: 0.14;
+  transition-duration: 90ms;
+}
+
+/* Le contenu passe DEVANT le voile. Sans cela, le texte pâlirait avec le fond
+   et l'appui coûterait le contraste qu'il vient de gagner. */
+.atlas-plein > * {
+  position: relative;
+}
+
+/* Un bouton éteint ne répond pas : il n'y a rien à confirmer. */
+.atlas-plein:disabled {
+  transform: none;
+}
+.atlas-plein:disabled::after {
+  opacity: 0;
 }
