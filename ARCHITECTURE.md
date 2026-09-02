@@ -20947,3 +20947,116 @@ par lots de deux à quatre, elles passent toutes.
 symptômes différents — `spawn EINVAL`, un journal vide, un serveur qui meurt —
 avaient une seule racine commune : la batterie n'avait jamais été jouée en
 entier sous Windows.
+
+## §235. Le galet : une matière fixe posée sur deux objets de « Terminés »
+
+**Ses choix du 2 septembre 2026**, faits sur deux planches et en deux messages :
+*« code moi la A le calme avec la 4 le galet »*, puis *« code l'idée du galet
+aussi pour le bouton Tout et À facturer »*.
+
+### Ce qu'il a demandé, et ce que ça a exigé de mesurer
+
+Sa demande de départ tenait en une phrase : mettre la capsule « À facturer »
+*« de la même couleur que la note vocale »*. Transposée telle quelle, elle ne
+tenait pas — et c'est la planche qui l'a montré, pas une intuition.
+
+La matière du micro (§233) a été dessinée pour porter **un pictogramme blanc de
+28 px**, où le seuil de contraste est de 3 ; `globals.css` le dit noir sur
+blanc, mesuré à 3,2. « À FACTURER » est **un mot de 12,5 px en capitales
+espacées**, où le seuil est de 4,5 — et le coin clair du dégradé radial n'en
+tient que **2,1**. Le mot s'effaçait donc là où le dessin, lui, tenait ; et il
+s'effaçait d'abord en plein soleil, c'est-à-dire sur le chantier
+(`PRODUCT.md`, sa scène d'usage).
+
+Quatre déclinaisons lui ont été dessinées, **chacune avec son chiffre écrit sous
+elle** (`appli/facturer-note-vocale.html`) : la tasse telle quelle (2,1), la
+tasse profonde (3,1), le filet doré — le vert plein et la seule joaillerie
+(10,9) —, et le galet. Il a pris le galet, le chiffre sous les yeux.
+
+### Pourquoi le galet n'est pas la tasse
+
+| | Le micro (§233) | Le galet |
+|---|---|---|
+| forme | un disque de 80 px | une capsule de 127 × 44 |
+| lumière | dégradé **radial**, à 34 % / 26 % | dégradé **linéaire**, sur le grand axe |
+| bord | **trois** anneaux : or, porcelaine, or | **un** filet d'or |
+
+Les deux écarts ont la même cause : **une capsule est longue**. Une lumière
+radiale y devient une ellipse qui déborde et traverse le mot ; trois anneaux
+concentriques y dessinent un cadre au lieu du bord d'une tasse. Le galet garde
+donc le vert, l'or, le creux, l'ombre portée et le geste — et abandonne la
+géométrie du disque, qui n'était pas transposable.
+
+### La matière est FIXE sur les huit chartes, et c'est ce qui compte
+
+C'est le même arbitrage qu'au §233, pour la même raison. Un dégradé qui suivrait
+`rust` finirait **clair** sur Nuit et Sylve — l'accent y EST l'encre — avec du
+blanc écrit dessus : 1,05 de contraste, exactement le défaut du 22 août 2026.
+Les trois verts sont donc ceux d'Origine, écrits dans `globals.css` et non dans
+l'écran ; seul l'or passe par une variable, puisqu'il vaut la même valeur
+partout. Le blanc du mot est fixe pour la même raison que le pictogramme du
+micro l'est : *ce qui fait une matière, c'est de ne pas changer de visage.*
+
+### Deux pannes MUETTES, et la suite qui les garde
+
+`scripts/test-galet.ts` ne mesure pas un goût : il garde deux défauts qu'aucun
+type, aucun lint et aucune capture ne verrait.
+
+1. **L'ordre dans le fichier.** La capsule porte `atlas-plein` ET `atlas-galet`,
+   et les deux posent un `background-image` à spécificité égale : c'est le
+   **dernier écrit** qui gagne. Déplacer le galet plus haut, ou rouvrir un bloc
+   `.atlas-plein` en dessous, effacerait le dégradé sans que rien ne rougisse.
+   Le piège n'est pas théorique : `AnneauNoteVocale.tsx` porte déjà le
+   commentaire d'un écrasement partiel du même genre, payé une fois.
+2. **La matière qui se mettrait à suivre la charte.** Le réflexe du dépôt est
+   d'écrire `var(--atlas-rust)` plutôt qu'un vert en clair, et c'est la bonne
+   règle **partout ailleurs**. Ici elle casserait tout.
+
+**Elle sait échouer**, et cela a été vérifié contre les trois états qu'elle
+prétend détecter : la matière rendue variable, `.atlas-plein` rouvert après le
+galet, et le raccourci `background:` à la place des deux propriétés. Les trois
+rougissent, et `globals.css` a été restauré à l'octet près.
+
+**Ce qu'elle NE prouve PAS, et c'est écrit dedans :** que le mot tient la norme
+des textes. Il ne la tient pas — 3,1 à l'entrée du dégradé, là où il en faudrait
+4,5. C'est un choix qu'il a fait en connaissance de cause. Ce qui rend ce choix
+tenable, et qu'il faut garder : **la pente est raide** (6,8 dès 46 %) et **le mot
+est centré**, donc aucune lettre ne se pose sur le premier quart. Allonger la
+capsule ou déplacer les arrêts romprait ce compromis en silence. La version
+prudente reste dessinée dans la planche si l'usage lui donne tort.
+
+## §236. « Le calme » : ce qu'un écran gagne sans que rien ne change de place
+
+**Sa proposition A du 2 septembre 2026** (`appli/termines-elegance.html`),
+retenue avec le galet. Trois crans lui avaient été dessinés — A le calme, B le
+relevé, C la colonne ; **il a pris A seul**, et la plaque de B n'est pas codée.
+
+Quatre corrections, et **aucune ne déplace un élément ni n'en retire un** :
+
+- **Les montants s'alignent sur le NOM, en ligne de base.** `items-center` les
+  centrait sur la HAUTEUR de la rangée : sur une rangée à deux étages, un
+  montant se posait à mi-chemin entre le nom et la date, aligné sur rien. Douze
+  montants d'affilée ne faisaient donc pas une colonne — alors que c'est
+  exactement ce qu'on vient lire. Les rangées qui portent la capsule gardent le
+  centrage : une pastille de 44 px n'a pas de ligne d'écriture.
+- **Le nom du mois passe de 21 à 26 px.** C'est lui qui dit où l'on est ; à
+  21 px il avait le corps d'un nom de client (17 px de serif, trois centimètres
+  plus bas), et la page n'avait plus de repère.
+- **La ligne d'état passe à `inkSoft`.** Elle s'écrivait en or quand la rangée
+  attendait, en gris quand elle était facturée : **2,8 et 3,4** de contraste sur
+  le crème, là où il en faut 4,5. `inkSoft` en tient **8,0**. Le signal « ça
+  attend » ne repose plus sur une nuance mais sur la capsule verte, qui se voit
+  de loin — et l'or n'a pas quitté l'écran : il porte toujours « 3 à facturer »
+  au-dessus de la liste, en gras, où il a la place de se voir.
+- **Les onglets passent à 44 px.** Ils étaient les seuls de l'application à 40,
+  et 44 est la mesure d'un pouce ganté.
+
+**Ce qui n'a pas été touché, et qui ne doit pas l'être sans lui :** les traits
+absents entre les lignes (26 août), les 24 px de respiration, le total du mois
+retiré (23 août), la forme et la place de la carte de TVA (23 puis 26 août),
+et la capsule à l'intérieur de la rangée (31 août).
+
+**Une question reste ouverte, et elle est posée sur la planche :**
+« 3 à facturer · 10 facturés » compte **tous les mois**, comme il l'a demandé le
+23 août — mais la phrase est posée juste sous le nom d'un mois précis, et elle
+ne bouge pas quand on recule. Rien n'a été changé sans son avis.

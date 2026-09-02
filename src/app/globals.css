@@ -1687,3 +1687,76 @@ body {
 .atlas-plein:disabled::after {
   opacity: 0;
 }
+
+/* ═══ LE GALET — son choix du 2 septembre 2026 ═══════════════════════════════
+ *
+ * Planche `appli/facturer-note-vocale.html`, déclinaison 4, retenue par lui :
+ * *« code moi la A le calme avec la 4 le galet »*. Il voulait la capsule
+ * « À facturer » dans la matière de sa note vocale ; celle-ci en garde le vert
+ * et l'or, et abandonne le reste — voir pourquoi juste en dessous.
+ *
+ * POURQUOI UN DÉGRADÉ EN LONG, ET NON LE DÉGRADÉ RADIAL DU MICRO. La tasse
+ * (`.atlas-micro`) rayonne d'un point placé à 34 % / 26 %. Sur un disque, cette
+ * lumière est un rond ; sur une capsule de 127 × 44, elle devient une ellipse
+ * qui déborde et coupe le mot en deux. Le galet suit donc le GRAND AXE : la
+ * lumière entre par l'épaule gauche et s'éteint à droite, sans jamais traverser
+ * les lettres en travers.
+ *
+ * UN SEUL FILET D'OR, ET NON TROIS ANNEAUX. Sur les 80 px du micro, les trois
+ * anneaux or / porcelaine / or se lisent comme le bord d'une tasse. Posés sur
+ * une capsule longue, ils dessinent un CADRE — un objet encadré, pas un galet.
+ * Les deux lui ont été montrés côte à côte ; c'est celle-ci qu'il a prise.
+ *
+ * LA MATIÈRE EST FIXE SUR LES HUIT CHARTES, ET C'EST DÉLIBÉRÉ. Elle ne dérive
+ * PAS de `rust` : sur Nuit et Sylve, l'accent EST l'encre — clair —, et un
+ * dégradé qui le suivrait finirait en blanc cassé avec du blanc écrit dessus
+ * (`design-tokens.ts`, le défaut du 22 août 2026). C'est exactement l'arbitrage
+ * déjà pris pour `sage` et pour la porcelaine du micro : ce qui fait une
+ * matière, c'est de ne pas changer de visage. Les trois verts sont donc ceux
+ * d'Origine, et le blanc du mot l'est aussi.
+ *
+ * CE QUE ÇA COÛTE, ET IL L'A VU AVANT DE CHOISIR. À l'entrée du dégradé, le
+ * blanc tient 3,1 de contraste ; il en faudrait 4,5 pour un mot. Le chiffre
+ * était écrit sous le bouton sur la planche. Deux choses le rendent tenable, et
+ * il faut les garder : la pente est RAIDE — à 46 % on est déjà à 6,8 —, et le
+ * mot est centré, donc aucune lettre ne se pose sur le premier quart. Déplacer
+ * les arrêts ou allonger la capsule romprait ce compromis sans que rien ne
+ * rougisse. La version prudente reste dessinée dans la planche (« le filet
+ * doré », 10,9) si l'usage sur le chantier lui donne tort.
+ *
+ * IL SERT DEUX OBJETS SUR CET ÉCRAN, et c'est sa demande : la capsule d'une
+ * rangée qui attend, et l'onglet actif au-dessus. */
+.atlas-galet {
+  position: relative;
+  overflow: hidden;
+  /* Le mot est blanc parce que la matière est fixe : voir `.atlas-micro`, même
+   * raisonnement, même conclusion. L'écrire ici plutôt qu'en style en ligne,
+   * c'est ce qu'exige `CLAUDE.md` §3 — aucune couleur en clair dans un écran. */
+  color: #ffffff;
+  /* `background-color` ET `background-image` séparés, jamais le raccourci :
+   * `.atlas-plein` pose déjà un `background-image`, et un raccourci placé plus
+   * haut dans le fichier ne l'écraserait que par accident d'ordre. */
+  background-color: #2f3b2f;
+  background-image: linear-gradient(103deg, #7d9a6d 0%, #4f5f4c 46%, #2f3b2f 100%);
+  /* Le filet d'or au bord ; la lumière rasante sous l'épaule haute ; l'ombre
+   * interne du bas qui donne l'épaisseur ; l'ombre portée verte, la même que
+   * celle du micro, qui décolle l'objet du papier. */
+  box-shadow:
+    inset 0 0 0 1px var(--atlas-or, #B98B47),
+    inset 0 7px 10px -7px rgba(255, 255, 255, 0.3),
+    inset 0 -7px 10px -7px rgba(47, 59, 47, 0.55),
+    0 6px 14px -5px rgba(79, 95, 76, 0.36);
+  transition:
+    transform 190ms cubic-bezier(0.22, 0.8, 0.3, 1),
+    box-shadow 220ms ease;
+}
+/* Le même geste que la note vocale et que tous ses boutons pleins : l'objet
+ * rentre, il ne clignote pas. `.atlas-plein` porte déjà le voile blanc quand
+ * les deux classes sont posées ensemble ; seul, le galet garde son enfoncement. */
+.atlas-galet:active {
+  transform: scale(0.975);
+  transition-duration: 70ms, 90ms;
+}
+.atlas-galet > * {
+  position: relative;
+}

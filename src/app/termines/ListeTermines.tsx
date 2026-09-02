@@ -89,7 +89,12 @@ export default function ListeTermines({
           disait la même chose en d'autres mots. Deux phrases pour un seul état,
           à trois centimètres l'une de l'autre, faisaient hésiter — est-ce le
           même chiffre ? */}
-      <div className="mx-[26px] mt-[22px] flex gap-2">
+      {/* **28 px au lieu de 22, et 44 px de haut au lieu de 40 — « le calme »,
+          sa proposition A du 2 septembre 2026** (`appli/termines-elegance.html`).
+          Les 44 px ne sont pas un goût : c'est la mesure que tout le reste de
+          l'application tient déjà pour un pouce, sur un chantier, parfois avec
+          des gants. Ces onglets étaient les seuls à 40. */}
+      <div className="mx-[26px] mt-7 flex gap-2">
         <Onglet repere="tout" actif={onglet === "tout"} onClick={() => setOnglet("tout")}>
           Tout
         </Onglet>
@@ -99,7 +104,7 @@ export default function ListeTermines({
       </div>
 
       {onglet === "attente" ? (
-        <section className="mx-[26px] mt-[30px]" data-atlas="tout-ce-qui-attend">
+        <section className="mx-[26px] mt-8" data-atlas="tout-ce-qui-attend">
           {attente.length === 0 ? (
             <p className="text-[13.5px] leading-[1.65]" style={{ color: colors.muted }}>
               Rien n&apos;attend. Vous êtes à jour.
@@ -117,7 +122,7 @@ export default function ListeTermines({
           )}
         </section>
       ) : (
-        <section className="mx-[26px] mt-[30px]" data-atlas="le-mois">
+        <section className="mx-[26px] mt-8" data-atlas="le-mois">
           <NavigationMois
             cle={cle}
             peutReculer={cle > plancher}
@@ -158,7 +163,7 @@ export default function ListeTermines({
                   il ne reste plus rien à mettre en retrait : deux graisses pour
                   deux mots feraient une hiérarchie sans objet. */}
               <p
-                className="mb-[9px] mt-3.5 text-[14px] font-bold leading-[1.6]"
+                className="mb-3 mt-3.5 text-[14px] font-bold leading-[1.6]"
                 style={{ color: colors.ink }}
                 data-atlas="compte-du-mois"
               >
@@ -224,7 +229,21 @@ function NavigationMois({
         desactivee={!peutReculer}
         onClick={() => surMois(decalerMois(cle, 1))}
       />
-      <span style={{ fontFamily: font.display, fontSize: 21, lineHeight: 1.2, whiteSpace: "nowrap" }}>
+      {/* **26 px au lieu de 21 — « le calme », sa proposition A du 2 septembre
+          2026** (`appli/termines-elegance.html`). C'est ce nom qui dit où l'on
+          est dans la page ; à 21 px il avait exactement le corps d'un nom de
+          client — 17 px de serif, à trois centimètres en dessous —, et l'écran
+          n'avait plus de repère. Les deux pixels de marge resserrent
+          « ‹ Août 2026 › » en UN objet, au lieu de trois signes qui se suivent. */}
+      <span
+        style={{
+          fontFamily: font.display,
+          fontSize: 26,
+          lineHeight: 1.2,
+          whiteSpace: "nowrap",
+          marginInline: 2,
+        }}
+      >
         {nomDuMois(cle)}
       </span>
       <Fleche sens="futur" desactivee={!peutAvancer} onClick={() => surMois(decalerMois(cle, -1))} />
@@ -248,11 +267,11 @@ function Fleche({
       disabled={desactivee}
       aria-label={sens === "passe" ? "Mois précédent" : "Mois suivant"}
       data-atlas={sens === "passe" ? "mois-precedent" : "mois-suivant"}
-      className="flex h-11 w-[38px] items-center justify-center text-[22px] leading-none"
+      className="flex h-11 w-[34px] items-center justify-center text-[22px] leading-none"
       style={{
         fontFamily: font.display,
         color: desactivee ? colors.line : colors.or,
-        marginLeft: sens === "passe" ? -10 : 0,
+        marginLeft: sens === "passe" ? -9 : 0,
         WebkitTapHighlightColor: "transparent",
       }}
     >
@@ -270,7 +289,7 @@ function Fleche({
 function Compte({ children }: { children: React.ReactNode }) {
   return (
     <p
-      className="mb-[9px] mt-1.5 text-[13px] font-bold leading-[1.55]"
+      className="mb-3 mt-0.5 text-[13px] font-bold leading-[1.55]"
       style={{ color: colors.ink }}
       data-atlas="compte-du-mois"
     >
@@ -303,13 +322,30 @@ function Onglet({
       onClick={onClick}
       data-atlas={`onglet-${repere}`}
       aria-pressed={actif}
-      className="min-h-10 rounded-full px-4 text-[13px]"
-      style={{
-        backgroundColor: actif ? colors.ink : "transparent",
-        color: actif ? colors.card : colors.muted,
-        boxShadow: actif ? "none" : `inset 0 0 0 1px ${colors.line}`,
-        WebkitTapHighlightColor: "transparent",
-      }}
+      // **L'onglet actif est un galet — sa demande du 2 septembre 2026** :
+      // *« code l'idée du galet aussi pour le bouton Tout et À facturer »*.
+      //
+      // **Seul l'ACTIF le prend, et c'est ce qui garde l'écran lisible.** Deux
+      // galets côte à côte ne diraient plus lequel des deux on regarde : un
+      // onglet ne se distingue que de son voisin. L'éteint garde donc son
+      // cheveu et son gris.
+      //
+      // **Il perd son fond noir au passage.** Ce n'est pas une perte : le noir
+      // était le seul aplat d'encre de l'écran, et il ne se rattachait à rien —
+      // ni au vert des actions, ni à l'or de ce qu'on lit.
+      className={`min-h-11 rounded-full px-[18px] text-[13px] ${
+        actif ? "atlas-plein atlas-galet" : ""
+      }`}
+      style={
+        actif
+          ? { WebkitTapHighlightColor: "transparent" }
+          : {
+              backgroundColor: "transparent",
+              color: colors.muted,
+              boxShadow: `inset 0 0 0 1px ${colors.line}`,
+              WebkitTapHighlightColor: "transparent",
+            }
+      }
     >
       {children}
     </button>
@@ -362,7 +398,21 @@ function Ligne({ ligne, annee }: { ligne: LigneAffichee; annee: string }) {
       // paraît appartenir à l'état du précédent. 19 px de respiration deviennent
       // donc 24, et la PREMIÈRE ligne en garde 22 pour tenir la démarcation
       // qu'il avait demandée le 23 août sous la phrase de compte.
-      className="flex items-center gap-3.5 py-[24px] first:pt-[22px]"
+      //
+      // **L'ALIGNEMENT CHANGE LE 2 SEPTEMBRE 2026 — « le calme », sa
+      // proposition A** (`appli/termines-elegance.html`). `items-center`
+      // centrait le montant sur la HAUTEUR de la rangée : sur une rangée à deux
+      // étages — le nom, puis la date et l'état — il se posait à mi-chemin
+      // entre les deux, aligné sur rien. Douze montants d'affilée ne faisaient
+      // donc pas une colonne, alors que c'est exactement ce qu'on vient lire.
+      // En ligne de base, le montant se pose sur le NOM.
+      //
+      // **Sauf quand la rangée porte la capsule**, qui garde le centrage : une
+      // pastille de 44 px n'a pas de ligne d'écriture, et l'aligner sur une
+      // lettre la ferait descendre sous la rangée.
+      className={`flex ${
+        ligne.aFacturer ? "items-center" : "items-baseline"
+      } gap-3.5 py-[24px] first:pt-[22px]`}
       style={{ minWidth: 0 }}
     >
       <span className="min-w-0 flex-1">
@@ -381,10 +431,27 @@ function Ligne({ ligne, annee }: { ligne: LigneAffichee; annee: string }) {
             **Vide, elle n'existe pas.** Un `span` vide laisserait ses 5 px de
             marge et un interligne : la rangée paraîtrait porter une information
             qu'on n'arrive pas à lire. */}
+        {/* **CETTE LIGNE PASSE À L'ENCRE DOUCE LE 2 SEPTEMBRE 2026 — « le
+              calme », sa proposition A.** Elle s'écrivait en or quand la rangée
+              attendait, en gris quand elle était facturée. Mesuré sur le crème
+              d'Origine : l'or tient **2,8** de contraste et le gris **3,4** ; il
+              en faut 4,5 pour un texte de 13 px. `inkSoft` en tient **8,0**.
+
+              **Sa scène d'usage tranche** (`PRODUCT.md`) : debout, une main, en
+              plein soleil. Ces deux lignes-là étaient les premières à
+              disparaître, et ce sont elles qui portent la date et le montant
+              prévu.
+
+              **Ce qui remplace l'or n'est pas rien.** Le signal « ça attend »
+              ne repose plus sur une nuance de couleur mais sur la CAPSULE, à
+              trois centimètres sur la même rangée — un objet vert de 44 px qui
+              se voit de loin, là où une teinte se devine. L'or n'a pas quitté
+              l'écran : il porte toujours « 3 à facturer » au-dessus de la
+              liste, en gras, où il a la place de se voir. */}
         {etat !== "" && (
           <span
             className="mt-[5px] block text-[13px] leading-[1.5]"
-            style={{ color: ligne.aFacturer ? colors.or : colors.muted }}
+            style={{ color: colors.inkSoft, fontVariantNumeric: "tabular-nums" }}
             data-atlas="etat-ligne"
           >
             {etat}
@@ -397,8 +464,18 @@ function Ligne({ ligne, annee }: { ligne: LigneAffichee; annee: string }) {
           // écartés : elle prend le vert des boutons pleins et leur geste. Elle
           // vit à l'intérieur du lien de la ligne — l'appuyer active donc bien
           // l'étiquette elle-même, et le geste se voit.
-          className="atlas-plein flex min-h-11 flex-none items-center rounded-full px-[17px] text-[12.5px] font-semibold uppercase"
-          style={{ backgroundColor: colors.rust, color: colors.card, letterSpacing: "0.12em" }}
+          // **ELLE PREND LE GALET LE 2 SEPTEMBRE 2026 — sa déclinaison 4**
+          // (`appli/facturer-note-vocale.html`), après sa demande de la mettre
+          // « de la même couleur que la note vocale ».
+          //
+          // **Le fond et le mot ne s'écrivent plus ici**, et c'est la règle du
+          // dépôt : la matière du galet est FIXE sur les huit chartes — elle ne
+          // suit pas `rust`, qui devient clair sur Nuit et Sylve —, donc elle
+          // vit dans `globals.css` avec le blanc qui va dessus, comme celle du
+          // micro. Un `backgroundColor` laissé ici l'écraserait sur cinq
+          // chartes et la casserait sur deux.
+          className="atlas-plein atlas-galet flex min-h-11 flex-none items-center rounded-full px-[17px] text-[12.5px] font-semibold uppercase"
+          style={{ letterSpacing: "0.12em" }}
           // **Un repère plutôt que son texte** (`CLAUDE.md` §5 bis) : la capsule
           // s'appelait « Facturer » jusqu'au 31 août 2026, et les contrôles qui
           // la cherchaient par son libellé ont rougi sur du code juste le jour

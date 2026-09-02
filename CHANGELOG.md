@@ -9,6 +9,50 @@ Format : le plus récent en tête.
 
 ## 2026-09-02
 
+### « Terminés » : le calme, et le galet sur deux boutons — CODÉ
+
+**Ses deux choix, faits sur planches** (`appli/termines-elegance.html`,
+`appli/facturer-note-vocale.html`) : *« code moi la A le calme avec la 4 le
+galet »*, puis *« code l'idée du galet aussi pour le bouton Tout et À
+facturer »*.
+
+- **Le calme** — quatre corrections, aucune qui déplace ou retire quoi que ce
+  soit. Les montants se posent sur la **ligne de base du nom** au lieu d'être
+  centrés sur la hauteur de la rangée : douze montants font enfin une colonne.
+  Le nom du mois passe de **21 à 26 px** — à 21 il avait le corps d'un nom de
+  client, et l'écran n'avait plus de repère. Les onglets passent à **44 px**,
+  la mesure d'un pouce ganté, qu'ils étaient les seuls à ne pas tenir. La carte
+  de TVA respire de 20 px au lieu de 17, sa forme inchangée.
+- **La ligne d'état passe à l'encre douce.** Elle s'écrivait en or ou en gris :
+  **2,8 et 3,4** de contraste sur le crème, là où il en faut 4,5 — en plein
+  soleil, les deux premières choses à disparaître, et ce sont elles qui portent
+  la date et le montant prévu. `inkSoft` en tient **8,0**. Ce qui dit « ça
+  attend » est désormais la capsule verte, qui se voit de loin ; l'or reste sur
+  « 3 à facturer », en gras, où il a la place de se voir.
+- **Le galet** — la capsule « À facturer » et l'onglet actif prennent la matière
+  de la note vocale : son vert, son filet d'or, son creux, son ombre portée et
+  son geste. Le dégradé suit le **grand axe** au lieu de rayonner, et il n'y a
+  **qu'un** filet au lieu de trois : sur une capsule longue, une lumière radiale
+  traverse le mot et trois anneaux dessinent un cadre. L'onglet éteint garde son
+  cheveu — deux galets côte à côte ne diraient plus lequel on regarde.
+
+**Ce que la mesure a appris, et qui n'était écrit nulle part.** La matière du
+micro a été dessinée pour un **pictogramme** de 28 px, où le seuil est de 3 ;
+« À FACTURER » est un **mot** de 12,5 px, où il est de 4,5, et le coin clair du
+dégradé radial n'en tient que **2,1**. Les quatre déclinaisons de la planche
+portaient chacune son chiffre : il a choisi en le voyant. Le galet tient 3,1 à
+l'entrée et 6,8 dès 46 % — la pente raide et le mot centré sont ce qui rend ce
+choix tenable, et les toucher le romprait en silence.
+
+**La matière est FIXE sur les huit chartes**, comme celle du micro : un dégradé
+qui suivrait `rust` finirait clair sur Nuit et Sylve, avec du blanc écrit
+dessus. `scripts/test-galet.ts` garde deux pannes muettes — l'ordre des règles
+dans `globals.css`, où `.atlas-plein` écraserait le dégradé, et la matière qui
+se remettrait à suivre la charte. Éprouvée contre les trois états dégradés.
+
+**Ce qui n'est PAS codé, et c'est son choix :** les propositions B (la plaque)
+et C (la colonne d'euros) de la planche restent dessinées, pas écrites.
+
 ### La fiche client épurée, et la note vocale « en tasse » — CODÉ
 
 **Ses quatre choix, faits sur planches après huit séries de dessins :** la

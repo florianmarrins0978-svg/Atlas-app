@@ -9,6 +9,23 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
+## EN ATTENTE DE SA RÉPONSE : le compte « tous mois » sous un mois précis (2 sept. 2026)
+
+Sur « Terminés », onglet « Tout », la phrase « 3 à facturer · 10 facturés »
+compte **tous les mois** — c'est ainsi qu'il l'a demandée le 23 août. Mais elle
+est posée juste sous le nom d'un mois, et **elle ne bouge pas quand on recule** :
+en juillet, elle affiche encore les chiffres d'août.
+
+La question lui est posée sur la planche `appli/termines-elegance.html`, en
+clair : *« Reculez d'un mois : le chiffre ne bouge pas. Faut-il le laisser
+ainsi ? »* **Rien n'a été changé sans lui** — c'est sa demande qu'on toucherait.
+
+| | |
+|---|---|
+| qui tranche | **lui**, et lui seul |
+| où c'est écrit | `src/app/termines/ListeTermines.tsx`, `data-atlas="compte-du-mois"` |
+| ce que ça coûte s'il ne répond pas | rien ne casse ; on continue de lire deux portées différentes à trois centimètres l'une de l'autre |
+
 ## ~~Déplacer une ligne d'une TVA à l'autre~~ — FAIT le 1ᵉʳ septembre 2026
 
 Il a choisi l'appui long, et c'est codé. Le sous-total HT par catégorie est

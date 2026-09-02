@@ -9,7 +9,38 @@ sert.
 
 ---
 
-## Dernier lot : la fiche client en registres (2 septembre 2026)
+## Dernier lot : « Terminés » — le calme, et le galet (2 septembre 2026)
+
+Maquette d'abord, code ensuite, deux fois de suite. Il a demandé un visuel de
+« Terminés » plus haut de gamme (`appli/termines-elegance.html`, trois crans),
+puis la capsule « À facturer » dans la matière de sa note vocale
+(`appli/facturer-note-vocale.html`, quatre déclinaisons). Il a pris **A + 4**,
+puis a ajouté : *« code l'idée du galet aussi pour le bouton Tout et À
+facturer »*.
+
+| | |
+|---|---|
+| ce qui a bougé | `src/app/termines/ListeTermines.tsx`, `page.tsx`, `globals.css` |
+| la matière | `.atlas-galet` — elle DOIT rester après `.atlas-plein` |
+| la garde | `npx tsx scripts/test-galet.ts` — 10 s, sans base ni navigateur |
+| le pourquoi | `ARCHITECTURE.md` §235 (le galet) et §236 (le calme) |
+
+**Le piège à connaître avant de toucher à cet écran.** La capsule porte
+`atlas-plein` ET `atlas-galet`, qui posent tous deux un `background-image` à
+spécificité égale : **c'est le dernier écrit dans `globals.css` qui gagne**.
+Déplacer le bloc, ou rouvrir `.atlas-plein` en dessous, efface le dégradé sans
+que rien ne rougisse — sauf `test-galet.ts`, qui existe pour ça.
+
+**Et la matière ne suit PAS la charte, délibérément.** Écrire
+`var(--atlas-rust)` à la place d'un vert en clair est le bon réflexe partout
+ailleurs ; ici, sur Nuit et Sylve, l'accent EST l'encre, et le bouton finirait
+clair avec du blanc écrit dessus.
+
+**Deux propositions ne sont pas codées, et c'est son choix :** la plaque sous le
+mois (B) et la colonne d'euros dans « À facturer » (C). Elles restent
+essayables en ligne si la question revient.
+
+## Le même jour : la fiche client en registres (2 septembre 2026)
 
 Maquette d'abord, code ensuite. *« C'est très bien, code exactement ce que tu
 viens de me faire comme maquette. »* Les trois encadrés côte à côte sont devenus

@@ -19,6 +19,35 @@ ligne « fait » qui ne l'est pas coûte plus cher qu'une ligne absente.
 
 ---
 
+## FAIT : « Terminés » — le calme, et le galet (2 septembre 2026)
+
+*Ses deux choix, faits sur planches : « code moi la A le calme avec la 4 le
+galet », puis « code l'idée du galet aussi pour le bouton Tout et À facturer ».*
+
+| | |
+|---|---|
+| les planches | `appli/termines-elegance.html` · `appli/facturer-note-vocale.html` |
+| l'écran | `src/app/termines/ListeTermines.tsx` · `src/app/termines/page.tsx` |
+| la matière | `.atlas-galet`, dans `src/app/globals.css` — **après** `.atlas-plein` |
+| la garde | `scripts/test-galet.ts` (sans base, sans navigateur) |
+| le pourquoi | `ARCHITECTURE.md` §235 et §236 |
+
+**Le calme :** les montants se posent sur la ligne de base du nom au lieu d'être
+centrés sur la rangée (une colonne, enfin) ; le nom du mois passe de 21 à 26 px ;
+les onglets à 44 px ; la carte de TVA respire de 20 px. La ligne d'état quitte
+l'or et le gris — 2,8 et 3,4 de contraste — pour l'encre douce, à 8,0.
+
+**Le galet :** la capsule « À facturer » et l'onglet actif prennent le vert, l'or
+et l'ombre de la note vocale, avec un dégradé qui suit le grand axe et un seul
+filet. La matière est **fixe sur les huit chartes**, comme celle du micro.
+
+**Ce qui n'est PAS codé, et c'est son choix :** les propositions B (la plaque
+sous le mois) et C (la colonne d'euros dans « À facturer ») restent dessinées.
+
+**Ce qui reste ouvert :** « 3 à facturer · 10 facturés » compte tous les mois —
+sa demande du 23 août — mais s'affiche sous le nom d'un mois précis, et ne bouge
+pas quand on recule. Posé sur la planche, pas tranché.
+
 ## FAIT : l'accueil respire (2 septembre 2026)
 
 Ses trois chiffres : **44 px** au-dessus du titre (au lieu de 34), titre à
