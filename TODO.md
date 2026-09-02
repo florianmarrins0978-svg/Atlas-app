@@ -9,6 +9,26 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
+## Le planning « impeccable » — maquettes d'abord (2 sept. 2026)
+
+Sa demande : *« pareil, j'ai envie de passer le planning [en] impeccable »* —
+« pareil » que la fiche client et « Terminés », traités le même jour : plusieurs
+crans d'élégance en maquette, il choisit, on code trait pour trait.
+
+| | |
+|---|---|
+| l'écran | `/planning` — `src/app/planning/PlanningClient.tsx` (2 094 lignes) |
+| la planche qu'il suit aujourd'hui | `appli/planning-simple.html` (planche 84, tranchée le 21 août) |
+| ce qui ne se décide pas seul | l'agencement — le mois vise, la semaine lit ; un changement de structure se PROPOSE dans un cran à part |
+| la matière à retrouver | le galet (`.atlas-galet`, `ARCHITECTURE.md` §235 et §236), sinon les écrans cessent de se ressembler |
+| les cas qui doivent être dessinés | journée à deux chantiers, jour complet, absence, équipe sans nom |
+
+Rien dans `src/` avant son choix (`CLAUDE.md` §3 bis). Les pages vivent dans
+`appli/`, sont liées depuis `appli/essais.html`, et il reçoit l'**adresse
+entière** — jamais une capture de maquette.
+
+---
+
 ## NON REPRODUIT : rien ne servait sur son port pendant une construction (2 sept. 2026)
 
 Sa plainte : *« l'appli ne démarre pas, page blanche »*. Sa fiche, à 18 h 55
