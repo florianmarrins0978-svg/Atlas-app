@@ -349,6 +349,25 @@ body{margin:0;background:var(--bone);color:var(--charcoal);
 [data-repos="tasse-vert"] .disque::before{inset:5px;
   background:radial-gradient(circle at 68% 74%, rgba(159,189,130,.24), transparent 58%)}
 
+/* — 6 · LE VERT MOYEN — le barreau du milieu de l'échelle. Ses trois verts
+   sont désormais un dégradé complet de VOS jetons, du plus sombre au plus
+   clair : pin, pin clair, sauge, sauge clair. Aucun n'est inventé. */
+[data-repos="tasse-vert-moyen"] .disque{width:80px;height:80px;color:var(--cream);
+  background:radial-gradient(circle at 34% 26%, var(--sauge) 0%, var(--pine-light) 52%, var(--pine) 100%);
+  box-shadow:inset 0 0 0 1.1px var(--or),
+             inset 0 0 0 3px #f3efe6,
+             inset 0 0 0 4.1px var(--or),
+             inset 0 8px 12px -6px rgba(28,32,26,.5),
+             0 10px 22px -6px rgba(60,76,58,.4)}
+[data-repos="tasse-vert-moyen"] .disque:active{
+  box-shadow:inset 0 0 0 1.1px var(--or),
+             inset 0 0 0 3px #f3efe6,
+             inset 0 0 0 4.1px var(--or),
+             inset 0 10px 16px -6px rgba(28,32,26,.5),
+             0 4px 12px -6px rgba(60,76,58,.4)}
+[data-repos="tasse-vert-moyen"] .disque::before{inset:5px;
+  background:radial-gradient(circle at 68% 74%, rgba(255,255,255,.26), transparent 58%)}
+
 /* — 5 · LE VERT CLAIR — sa demande : plus clair que le n° 3.
    **Les deux teintes existent déjà dans la charte et rien ne les employait
    ici : « sauge » (#7d9a6d) et « sauge clair » (#9fbd82).** Elles sont
@@ -428,6 +447,74 @@ body{margin:0;background:var(--bone);color:var(--charcoal);
          background:transparent;border:0;box-shadow:inset 0 0 0 1.5px var(--pine);color:var(--pine);
          display:flex;align-items:center;justify-content:center;transition:transform .18s}
 .envoyer:active{transform:scale(.975)}
+
+
+/* ═══ « CERCLE DORÉ » — le filet d'or, et la couleur dedans ═══════════════
+   Sa correction du 2 septembre : la première version était CREUSE, il la
+   voulait pleine. C'est donc la tasse privée de sa porcelaine : un seul
+   anneau au lieu de trois, et la matière du disque à l'intérieur. */
+[data-envoi="cercle-or"][data-repos] .envoyer{width:46px;height:46px;
+  transition:transform .18s cubic-bezier(.22,.61,.36,1),box-shadow .2s}
+[data-envoi="cercle-or"][data-repos="tasse-cafe"] .envoyer{color:var(--mousse);
+  background:radial-gradient(circle at 34% 26%, var(--cafe) 0%, var(--cafe-fonce) 48%, var(--cafe-noir) 100%);
+  box-shadow:inset 0 0 0 1.3px var(--or),
+             inset 0 5px 8px -5px rgba(0,0,0,.5),
+             0 6px 14px -5px rgba(89,31,11,.4)}
+[data-envoi="cercle-or"][data-repos="tasse-cafe"] .envoyer:active{transform:scale(.96);
+  box-shadow:inset 0 0 0 1.6px var(--or),
+             inset 0 7px 11px -5px rgba(0,0,0,.5),
+             0 3px 8px -5px rgba(89,31,11,.4)}
+[data-envoi="cercle-or"][data-repos="tasse-vert"] .envoyer{color:var(--cream);
+  background:radial-gradient(circle at 34% 26%, var(--pine-light) 0%, var(--pine) 48%, var(--charcoal) 100%);
+  box-shadow:inset 0 0 0 1.3px var(--or),
+             inset 0 5px 8px -5px rgba(0,0,0,.5),
+             0 6px 14px -5px rgba(30,38,30,.4)}
+[data-envoi="cercle-or"][data-repos="tasse-vert"] .envoyer:active{transform:scale(.96);
+  box-shadow:inset 0 0 0 1.6px var(--or),
+             inset 0 7px 11px -5px rgba(0,0,0,.5),
+             0 3px 8px -5px rgba(30,38,30,.4)}
+[data-envoi="cercle-or"][data-repos="tasse-vert-moyen"] .envoyer{color:var(--cream);
+  background:radial-gradient(circle at 34% 26%, var(--sauge) 0%, var(--pine-light) 52%, var(--pine) 100%);
+  box-shadow:inset 0 0 0 1.3px var(--or),
+             inset 0 5px 8px -5px rgba(28,32,26,.5),
+             0 6px 14px -5px rgba(60,76,58,.4)}
+[data-envoi="cercle-or"][data-repos="tasse-vert-moyen"] .envoyer:active{transform:scale(.96);
+  box-shadow:inset 0 0 0 1.6px var(--or),
+             inset 0 7px 11px -5px rgba(28,32,26,.5),
+             0 3px 8px -5px rgba(60,76,58,.4)}
+[data-envoi="cercle-or"][data-repos="tasse-vert-clair"] .envoyer{color:var(--pine);
+  background:radial-gradient(circle at 34% 26%, var(--sauge-clair) 0%, var(--sauge) 50%, var(--pine-light) 100%);
+  box-shadow:inset 0 0 0 1.3px var(--or),
+             inset 0 5px 8px -5px rgba(47,59,47,.42),
+             0 6px 14px -5px rgba(79,95,76,.36)}
+[data-envoi="cercle-or"][data-repos="tasse-vert-clair"] .envoyer:active{transform:scale(.96);
+  box-shadow:inset 0 0 0 1.6px var(--or),
+             inset 0 7px 11px -5px rgba(47,59,47,.42),
+             0 3px 8px -5px rgba(79,95,76,.36)}
+[data-envoi="cercle-or"][data-repos="tasse-eau"] .envoyer{color:var(--pine);
+  background:radial-gradient(ellipse 52% 34% at 32% 24%, rgba(255,255,255,.95), transparent 62%),radial-gradient(circle at 40% 34%, #eef3f2 0%, #d7e0de 52%, #b3c2bf 100%);
+  box-shadow:inset 0 0 0 1.3px var(--or),
+             inset 0 5px 8px -5px rgba(60,80,78,.45),
+             0 6px 14px -5px rgba(90,110,108,.32)}
+[data-envoi="cercle-or"][data-repos="tasse-eau"] .envoyer:active{transform:scale(.96);
+  box-shadow:inset 0 0 0 1.6px var(--or),
+             inset 0 7px 11px -5px rgba(60,80,78,.45),
+             0 3px 8px -5px rgba(90,110,108,.32)}
+
+[data-repos="tasse-vert-moyen"] .envoyer{width:46px;height:46px;color:var(--cream);
+  background:radial-gradient(circle at 34% 26%, var(--sauge) 0%, var(--pine-light) 52%, var(--pine) 100%);
+  box-shadow:inset 0 0 0 1px var(--or),
+             inset 0 0 0 2.4px #f3efe6,
+             inset 0 0 0 3.2px var(--or),
+             inset 0 5px 8px -5px rgba(28,32,26,.5),
+             0 6px 14px -5px rgba(60,76,58,.4);
+  transition:transform .18s cubic-bezier(.22,.61,.36,1),box-shadow .2s}
+[data-repos="tasse-vert-moyen"] .envoyer:active{transform:scale(.96);
+  box-shadow:inset 0 0 0 1px var(--or),
+             inset 0 0 0 2.4px #f3efe6,
+             inset 0 0 0 3.2px var(--or),
+             inset 0 7px 11px -5px rgba(28,32,26,.5),
+             0 3px 8px -5px rgba(60,76,58,.4)}
 
 /* ═══ DEUX AXES INDÉPENDANTS ══════════════════════════════════════════════
    La matière du disque d'un côté, le traitement de la touche d'envoi de
@@ -593,12 +680,14 @@ body{margin:0;background:var(--bone);color:var(--charcoal);
     <button type="button" data-repos="tasse-cafe" aria-pressed="false">2 · Café, auréole fine</button>
     <button type="button" data-repos="tasse-vert" aria-pressed="false">3 · Vert, auréole fine</button>
     <button type="button" data-repos="tasse-eau" aria-pressed="false">4 · Le verre d'eau</button>
-    <button type="button" data-repos="tasse-vert-clair" aria-pressed="false">5 · Le vert clair</button>
+    <button type="button" data-repos="tasse-vert-moyen" aria-pressed="false">5 · Le vert moyen</button>
+    <button type="button" data-repos="tasse-vert-clair" aria-pressed="false">6 · Le vert clair</button>
   </div>
   <div class="rangee" role="group" aria-label="La touche d'envoi">
     <p class="quoi">La flèche</p>
     <button type="button" data-envoi="tasse" aria-pressed="true">En tasse</button>
-    <button type="button" data-envoi="or" aria-pressed="false">Cercle doré seul</button>
+    <button type="button" data-envoi="cercle-or" aria-pressed="false">Cercle doré</button>
+    <button type="button" data-envoi="or" aria-pressed="false">Cercle nu</button>
   </div>
   <div class="rangee" role="group" aria-label="Pendant la dictée">
     <p class="quoi">Pendant la dictée</p>
@@ -735,8 +824,11 @@ const MOTS_REPOS = {
   "tasse-cafe": ["En tasse — votre demande", "Le café, jusqu'à la flèche",
     "Le disque et la touche d'envoi dans la même matière. Les épaisseurs des anneaux sont retenues, pas divisées : sous un pixel, un filet ne s'affiche plus. La poubelle, elle, reste un simple trait — elle jette, ce n'est pas le geste qu'on veut donner envie de faire.",
     "5 026 px²"],
-  "tasse-vert": ["En tasse — le vert d'origine", "Le vert, jusqu'à la flèche",
+  "tasse-vert": ["En tasse — le vert d'origine", "Le vert foncé",
     "La même tasse et la même flèche, en vert pin. Les trois nuances sont vos jetons : pine-light, pine, et le charbon des titres. Ce qu'on emprunte au café, c'est la lumière, pas la couleur.",
+    "5 026 px²"],
+  "tasse-vert-moyen": ["En tasse — le vert moyen", "Le vert moyen",
+    "Le barreau du milieu : sauge, puis pin clair, puis pin. Vos trois verts forment maintenant une échelle complète, du plus sombre au plus clair, et aucune teinte n'est inventée.",
     "5 026 px²"],
   "tasse-vert-clair": ["En tasse — le vert clair", "Le vert clair, jusqu'à la flèche",
     "Plus clair que le n° 3, comme demandé. Les deux teintes existaient déjà dans votre charte et rien ne les employait ici : sauge et sauge clair. Elles sont fixes — elles ne changent pas d'un thème à l'autre —, ce qui en fait de bonnes matières. Le micro y passe en vert foncé : sur ce fond, un micro crème tient 3,0 de contraste, un micro pin 3,7.",
