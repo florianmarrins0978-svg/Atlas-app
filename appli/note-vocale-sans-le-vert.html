@@ -36,10 +36,15 @@
     le galet. **Il a choisi la ligne**, et c'est ce que l'application porte :
     poubelle, chrono, onde d'or, rond d'envoi.
 
-  Les sept dessins ci-dessous sont donc NEUFS. Ils sont pris dans le registre
-  qu'il a lui-même applaudi sur l'accueil (`cadran-des-chantiers.html`, la
-  couronne d'or d'une montre de manufacture) : la gravure, le godron, le
-  guillochage, la réglette d'instrument — jamais le décor d'écran.
+  · **Première série du 2 septembre**, écartée par lui d'un mot — « j'aime
+    pas » : au repos la couronne godronnée, le guilloché, l'empreinte, le
+    cabochon d'or ; pendant la dictée le sillon, la règle, le fil.
+
+  CE QUE CETTE PREMIÈRE SÉRIE AVAIT DE COMMUN, ET QUI EST SANS DOUTE LA
+  RAISON DU REFUS : les quatre dessins du repos gardaient TOUS le même gros
+  rond de 76 px au centre. On changeait la matière — or, gravure, creux —,
+  jamais la silhouette. La deuxième série change la forme elle-même, et va
+  jusqu'à la supprimer : « la phrase » ne pose plus rien sur la fiche.
 
   ───────────────────────────────────────────────────────────────────────────
   CE QUI NE CHANGE PAS D'UN DESSIN À L'AUTRE — sinon il choisirait un écran
@@ -211,59 +216,49 @@ body{margin:0;background:var(--bone);color:var(--charcoal);
                              box-shadow:0 8px 22px rgba(0,0,0,.16)}
 @media (prefers-color-scheme: dark){ [data-repos="plein"] .disque{color:#171613} }
 
-/* — REPOS 1 · LA COURONNE — le godron d'une couronne de montre.
-   Le godron est un vrai motif, pas une bordure décorée : une couronne crantée
-   se reconnaît à ses stries radiales. Il est masqué en anneau, donc l'intérieur
-   reste le fond de la page — aucune encre ajoutée. */
-[data-repos="couronne"] .disque{color:var(--pine);box-shadow:inset 0 0 0 1.2px var(--or)}
-/* **Le godron est CONTENU entre deux joncs, sinon ce n'est plus un godron.**
-   Première version : les stries couraient jusqu'au bord et débordaient — cela
-   dessinait un soleil, pas une couronne. Une couronne crantée se reconnaît à
-   ce que ses stries sont bornées. */
-[data-repos="couronne"] .disque::before{
-  content:"";position:absolute;inset:0;border-radius:99px;
-  background:repeating-conic-gradient(var(--or) 0deg 1.6deg, transparent 1.6deg 8deg);
-  -webkit-mask:radial-gradient(circle, transparent 0 29px, #000 30px 36px, transparent 37px);
-  mask:radial-gradient(circle, transparent 0 29px, #000 30px 36px, transparent 37px);
-  opacity:.9}
-/* Le jonc intérieur, seul : un anneau d'un cheveu à 28 px de rayon. Écrit en
-   `inset … 1.2px` sur un carré posé à 10 px du bord, jamais en épaisseur —
-   une ombre interne épaisse ne fait pas un anneau, elle remplit le disque. */
-[data-repos="couronne"] .disque::after{
-  content:"";position:absolute;inset:10px;border-radius:99px;
-  box-shadow:inset 0 0 0 1.2px var(--or)}
+/* ═══ LA DEUXIÈME SÉRIE — 2 septembre 2026, après « j'aime pas » ═══════
+   Les quatre premiers dessins gardaient TOUS le même gros rond de 76 px au
+   centre : on changeait la matière, jamais la silhouette. C'est probablement
+   ça qu'il refuse. Cette série change la forme elle-même, et va jusqu'à la
+   supprimer. */
 
-/* — REPOS 2 · LE GUILLOCHÉ — le cadran gravé. Des cercles d'un cheveu, en or,
-   sur le beige des cases : la masse de l'objet reste — on le voit de loin —,
-   l'encre sombre part. */
-[data-repos="guilloche"] .disque{color:var(--pine);background:var(--paper);
-  box-shadow:inset 0 0 0 1px var(--or), 0 6px 16px rgba(20,18,14,.10)}
-/* Le centre reste NU : la gravure passait derrière le micro et lui mangeait son
-   dessin. Sur un cadran, le guichet est toujours dégagé. */
-[data-repos="guilloche"] .disque::before{
-  content:"";position:absolute;inset:0;border-radius:99px;
-  background:repeating-radial-gradient(circle at 50% 50%,
-    rgba(185,139,71,.45) 0 1px, transparent 1px 4px);
-  -webkit-mask:radial-gradient(circle, transparent 0 17px, #000 21px);
-  mask:radial-gradient(circle, transparent 0 17px, #000 21px)}
+/* — REPOS 1 · LA PHRASE — aucun objet du tout : la ligne EST le geste.
+   C'est la seule proposition qui ne pose rien sur la fiche. Le serif de vos
+   titres, un filet d'or dessous, et l'on appuie sur les mots. */
+[data-repos="phrase"] .disque{width:auto;height:auto;min-height:44px;padding:6px 4px;
+  border-radius:0;color:var(--charcoal);box-shadow:inset 0 -1.5px 0 var(--or)}
+[data-repos="phrase"] .signe{display:none}
 
-/* — REPOS 3 · L'EMPREINTE — le disque est CREUSÉ dans le papier. Zéro encre
-   ajoutée : la profondeur seule le dessine. L'ombre porte un décalage et un
-   flou — un halo sans décalage serait de la décoration. */
-[data-repos="empreinte"] .disque{color:var(--pine);background:var(--paper);
-  box-shadow:inset 0 4px 6px var(--creux), inset 0 -3px 3px var(--relief),
-             inset 0 0 0 1px var(--line)}
+[data-repos="phrase"] .frange{display:none}
+[data-repos="phrase"] .indice{visibility:hidden}
+/* Un micro d'or de quinze pixels précède les mots : sans lui, une belle ligne
+   ne dit pas qu'elle enregistre — c'est le seul risque de ce dessin, et il ne
+   coûte que ça à écarter. */
+.mot{display:none;align-items:center;gap:9px;
+     font:400 22px/1.3 "Playfair Display",Georgia,serif;white-space:nowrap}
+.mot svg{color:var(--or);flex:0 0 auto}
+[data-repos="phrase"] .mot{display:flex}
 
-/* — REPOS 4 · LE CABOCHON — la masse reste, elle devient précieuse. C'est le
-   plus proche de ce qu'il a : même présence, même ombre portée, l'or au lieu
-   du vert. */
-[data-repos="cabochon"] .disque{color:var(--pine);
-  background:linear-gradient(158deg,var(--or-clair) 0%,var(--or) 52%,#9c7335 100%);
-  box-shadow:0 8px 22px rgba(0,0,0,.16)}
-@media (prefers-color-scheme: dark){
-  [data-repos="cabochon"] .disque{background:linear-gradient(158deg,#e0bd83 0%,#C9A15E 52%,#a07c42 100%);
-                                  color:#171613}
-}
+/* — REPOS 2 · LE CACHET — on sort du rond. Un cachet à angles adoucis, du
+   beige de vos cases, un filet d'or, le micro gravé dedans. Plus petit que le
+   disque, et il ne roule plus. */
+[data-repos="cachet"] .disque{width:62px;height:62px;border-radius:15px;background:var(--paper);
+  color:var(--pine);box-shadow:inset 0 0 0 1px var(--or), 0 6px 16px rgba(20,18,14,.10)}
+
+/* — REPOS 3 · LE MICRO NU — pas de contenant. Le dessin seul, plus grand et
+   plus fin, comme gravé à même le papier. Rien à remplir, rien à cerner. */
+[data-repos="micro"] .disque{color:var(--pine)}
+[data-repos="micro"] .signe svg{width:46px;height:46px;stroke-width:1.1}
+
+/* — REPOS 4 · LE SIGNET — le ruban d'une reliure, avec son encoche. C'est le
+   seul dessin qui n'est pas centré sur lui-même : il pend, comme un signet
+   sorti d'un livre. */
+[data-repos="signet"] .disque{width:50px;height:74px;border-radius:4px 4px 0 0;
+  background:var(--paper);color:var(--pine);overflow:hidden;
+  clip-path:polygon(0 0,100% 0,100% 100%,50% 76%,0 100%)}
+[data-repos="signet"] .disque::before{content:"";position:absolute;left:0;right:0;top:0;height:3px;
+  background:var(--or)}
+[data-repos="signet"] .signe{margin-bottom:12px}
 
 /* ─── PENDANT LA DICTÉE — la ligne, recopiée de `globals.css` ──────────── */
 .ligne{display:flex;align-items:center;gap:12px;width:100%;padding:0 0 0 0}
@@ -290,49 +285,43 @@ body{margin:0;background:var(--bone);color:var(--charcoal);
 .onde i{flex:0 0 2px;border-radius:2px;background:var(--or);opacity:.85;
         transform:scaleY(var(--v));transition:transform 90ms linear}
 
-/* — DICTÉE 1 · LE SILLON — l'onde devient un sillon creusé dans le papier, et
-   l'or avance dedans. Ce n'est pas une jauge : une dictée n'a pas de durée
-   connue, donc rien ne se « remplit ». C'est une lueur qui passe, et sa
-   largeur suit le volume. */
-/* **Une lueur qui PASSE, jamais une jauge qui se remplit.** Première version :
-   un bloc d'or ancré à gauche — on y lisait un chargement, et une dictée n'a
-   pas de durée connue à remplir. La lueur est donc étroite, elle part de
-   l'extérieur et ressort de l'autre côté ; seule sa largeur suit la voix. */
-.sillon{position:absolute;left:0;right:0;height:8px;border-radius:99px;background:var(--bone);
-        box-shadow:inset 0 2px 4px var(--creux), inset 0 -1px 1px var(--relief);overflow:hidden}
-.sillon b{position:absolute;top:0;bottom:0;left:0;
-          width:calc(14px + var(--v) * 22px);
-          background:linear-gradient(90deg,transparent,var(--or) 45%,transparent);
-          animation:glisser 2.8s linear infinite}
-@keyframes glisser{from{transform:translateX(-42px)}to{transform:translateX(calc(100vw))}}
+/* — DICTÉE 1 · LE SISMOGRAPHE — un TRAIT continu qui se trace et défile.
+   Les barreaux d'aujourd'hui découpent la voix en morceaux ; un sismographe
+   la garde d'un seul tenant. C'est la même information, écrite à la plume
+   plutôt qu'en bâtons. */
+.sismo{position:absolute;inset:0;overflow:hidden;
+       -webkit-mask-image:linear-gradient(90deg,transparent,#000 22%,#000);
+       mask-image:linear-gradient(90deg,transparent,#000 22%,#000)}
+.sismo svg{position:absolute;top:0;right:0;height:26px;width:420px;
+           transform:scaleY(var(--v));transition:transform 110ms linear;
+           animation:derouler 6s linear infinite}
+.sismo path{fill:none;stroke:var(--or);stroke-width:1.4;stroke-linejoin:round;stroke-linecap:round}
+@keyframes derouler{from{transform:translateX(0) scaleY(var(--v))}
+                    to{transform:translateX(210px) scaleY(var(--v))}}
 
-/* — DICTÉE 2 · LA RÈGLE — la réglette d'un instrument de mesure : des
-   graduations d'or, et une aiguille fine qui bouge avec la voix. On lit qu'on
-   enregistre à ce qui BOUGE, pas à ce qui clignote. */
-/* Des graduations MAJEURES et mineures, comme sur une vraie réglette : des
-   traits tous égaux forment un code-barres, pas un instrument. */
-.regle{position:absolute;left:0;right:0;height:16px;opacity:.6;
-       background-image:
-         repeating-linear-gradient(90deg,var(--or) 0 1px,transparent 1px 7px),
-         repeating-linear-gradient(90deg,var(--or) 0 1.3px,transparent 1.3px 35px);
-       background-size:100% 8px,100% 16px;
-       background-position:center,center;
-       background-repeat:no-repeat,no-repeat;
-       -webkit-mask-image:linear-gradient(90deg,transparent,#000 18%,#000);
-       mask-image:linear-gradient(90deg,transparent,#000 18%,#000)}
-.aiguille{position:absolute;top:-4px;bottom:-4px;width:1.5px;border-radius:2px;background:var(--or);
-          right:calc(6px + var(--v) * 26px);transition:right 120ms linear;
-          box-shadow:0 0 0 2px var(--cream)}
+/* — DICTÉE 2 · LES CHIFFRES — la durée EST l'objet, et il n'y a rien d'autre.
+   Le plus dépouillé des trois : la poubelle à gauche, le temps en grand dans
+   vos caractères de titre, l'avion à droite. Aucune onde. */
+[data-ligne="chiffres"] .compteur{display:none}
+.chiffres{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;gap:9px;
+          font:400 30px/1 "Playfair Display",Georgia,serif;color:var(--charcoal);
+          font-variant-numeric:tabular-nums}
+.chiffres .pastille{width:7px;height:7px}
 
-/* — DICTÉE 3 · LE FIL — un filet d'or tendu, une perle qui glisse dessus. La
-   perle grossit avec la voix : c'est elle qui dit que ça enregistre. */
-.fil{position:absolute;left:0;right:0;height:1px;background:var(--or);opacity:.5}
-.perle{position:absolute;width:9px;height:9px;border-radius:99px;background:var(--or);
-       top:calc(50% - 4.5px);transform:scale(calc(.7 + var(--v) * .5));
-       transition:transform 100ms linear;animation:courir 3.4s ease-in-out infinite alternate}
-@keyframes courir{from{left:2px}to{left:calc(100% - 11px)}}
+/* — DICTÉE 3 · LA GOUTTE — la vôtre, celle de la première page, en or.
+   Elle grossit quand vous parlez et retombe quand vous vous taisez : c'est la
+   voix qu'on voit, sans une seule barre. */
+.goutte{position:absolute;left:50%;top:50%;width:15px;height:15px;margin:-8px 0 0 -8px;
+        background:var(--or);border-radius:0 50% 50% 50%;
+        transform:rotate(45deg) scale(calc(.5 + var(--v) * .6));
+        transition:transform 110ms cubic-bezier(.22,.61,.36,1)}
+.ondulation{position:absolute;left:50%;top:50%;width:15px;height:15px;margin:-8px 0 0 -8px;
+            border-radius:99px;box-shadow:0 0 0 1px var(--or);opacity:.5;
+            animation:essaimer 2.2s ease-out infinite}
+@keyframes essaimer{from{transform:scale(1);opacity:.45}to{transform:scale(3.6);opacity:0}}
+
 @media (prefers-reduced-motion:reduce){
-  .sillon b,.perle{animation:none}
+  .sismo svg,.ondulation{animation:none}
 }
 
 .a-bulle{position:absolute;left:14px;bottom:14px;width:46px;height:46px;border-radius:99px;
@@ -346,26 +335,27 @@ body{margin:0;background:var(--bone);color:var(--charcoal);
 
 <header class="tete">
   <h1>La note vocale, ses deux moments</h1>
-  <p>La fiche « Épurée » que vous avez retenue, inchangée. Seule la dictée change : quatre
-     dessins avant d'appuyer, trois pendant. Appuyez sur l'objet, il dicte ; réappuyez, il
-     s'arrête. Les deux choix sont indépendants.</p>
+  <p>Deuxième série. Les quatre premiers dessins gardaient tous le même gros rond au centre :
+     on changeait la matière, jamais la forme. Cette fois la silhouette change — et « la phrase »
+     va jusqu'à ne plus rien poser du tout. Appuyez sur l'objet, il dicte. Les deux choix sont
+     indépendants.</p>
 </header>
 
 <nav class="choix" aria-label="Choisir les dessins">
   <div class="rangee" role="group" aria-label="Avant d'appuyer">
     <p class="quoi">Avant d'appuyer</p>
     <button type="button" data-repos="plein" aria-pressed="true">Aujourd'hui</button>
-    <button type="button" data-repos="couronne" aria-pressed="false">1 · Couronne</button>
-    <button type="button" data-repos="guilloche" aria-pressed="false">2 · Guilloché</button>
-    <button type="button" data-repos="empreinte" aria-pressed="false">3 · Empreinte</button>
-    <button type="button" data-repos="cabochon" aria-pressed="false">4 · Cabochon</button>
+    <button type="button" data-repos="phrase" aria-pressed="false">1 · La phrase</button>
+    <button type="button" data-repos="cachet" aria-pressed="false">2 · Le cachet</button>
+    <button type="button" data-repos="micro" aria-pressed="false">3 · Le micro nu</button>
+    <button type="button" data-repos="signet" aria-pressed="false">4 · Le signet</button>
   </div>
   <div class="rangee" role="group" aria-label="Pendant la dictée">
     <p class="quoi">Pendant la dictée</p>
     <button type="button" data-ligne="onde" aria-pressed="true">Aujourd'hui</button>
-    <button type="button" data-ligne="sillon" aria-pressed="false">1 · Le sillon</button>
-    <button type="button" data-ligne="regle" aria-pressed="false">2 · La règle</button>
-    <button type="button" data-ligne="fil" aria-pressed="false">3 · Le fil</button>
+    <button type="button" data-ligne="sismo" aria-pressed="false">1 · Sismographe</button>
+    <button type="button" data-ligne="chiffres" aria-pressed="false">2 · Les chiffres</button>
+    <button type="button" data-ligne="goutte" aria-pressed="false">3 · La goutte</button>
   </div>
 </nav>
 
@@ -437,7 +427,13 @@ body{margin:0;background:var(--bone);color:var(--charcoal);
                 <span class="frange frange-g" aria-hidden="true"></span>
                 <span class="frange frange-d" aria-hidden="true"></span>
                 <button class="disque" type="button" id="dicter" aria-label="Dicter le chantier">
-                  <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11.5a6.5 6.5 0 0 0 13 0"/><path d="M12 18v3"/></svg>
+                  <span class="signe">
+                    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11.5a6.5 6.5 0 0 0 13 0"/><path d="M12 18v3"/></svg>
+                  </span>
+                  <span class="mot">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11.5a6.5 6.5 0 0 0 13 0"/><path d="M12 18v3"/></svg>
+                    Décrivez le chantier
+                  </span>
                 </button>
               </div>
               <p class="indice" id="indice">Appuyez et décrivez le chantier</p>
@@ -452,11 +448,10 @@ body{margin:0;background:var(--bone);color:var(--charcoal);
 
               <span class="trace" aria-hidden="true">
                 <span class="onde" id="onde"></span>
-                <span class="sillon" hidden><b></b></span>
-                <span class="regle" hidden></span>
-                <span class="aiguille" hidden></span>
-                <span class="fil" hidden></span>
-                <span class="perle" hidden></span>
+                <span class="sismo" hidden><svg viewBox="0 0 420 26" preserveAspectRatio="none"><path d=""/></svg></span>
+                <span class="chiffres" hidden><span class="pastille"></span><span id="chrono-grand">0:00</span></span>
+                <span class="goutte" hidden></span>
+                <span class="ondulation" hidden></span>
               </span>
 
               <button class="envoyer" type="button" id="envoyer" aria-label="Envoyer la note et préparer le devis">
@@ -494,28 +489,28 @@ const MOTS_REPOS = {
   plein: ["Avant d'appuyer — aujourd'hui", "Le disque plein, votre choix du 30 août",
     "C'est le « B » de la planche des cinq dessins. Il est ici pour comparer : c'est la seule tache sombre de la fiche, et c'est elle que vous ne voulez plus.",
     "4 536 px²"],
-  couronne: ["Avant d'appuyer — dessin 1", "La couronne",
-    "Le godron d'une couronne de montre : des stries d'or, un jonc fin, et le fond de la page à l'intérieur. C'est le registre de l'accueil que vous avez applaudi. Aucune encre sombre ajoutée.",
+  phrase: ["Avant d'appuyer — dessin 1", "La phrase",
+    "Aucun objet du tout : la ligne est le geste. Vos caractères de titre, un filet d'or dessous, et l'on appuie sur les mots. C'est la seule proposition qui ne pose plus rien sur la fiche.",
     "0 px²"],
-  guilloche: ["Avant d'appuyer — dessin 2", "Le guilloché",
-    "Le cadran gravé : des cercles d'un cheveu, en or, sur le beige de vos cases. L'objet garde toute sa présence — on le voit de loin —, mais il ne pose plus de noir sur la fiche.",
+  cachet: ["Avant d'appuyer — dessin 2", "Le cachet",
+    "On sort du rond : un cachet à angles adoucis, du beige de vos cases, un filet d'or, le micro gravé dedans. Plus petit que le disque, et il ne roule plus.",
     "0 px²"],
-  empreinte: ["Avant d'appuyer — dessin 3", "L'empreinte",
-    "Le disque est creusé dans le papier, comme un gaufrage de reliure. Rien n'est ajouté : la profondeur seule le dessine. Le plus discret des quatre, et celui qui demande la meilleure lumière.",
+  micro: ["Avant d'appuyer — dessin 3", "Le micro nu",
+    "Pas de contenant. Le dessin seul, plus grand et plus fin, comme gravé à même le papier. Rien à remplir, rien à cerner — et rien à colorer.",
     "0 px²"],
-  cabochon: ["Avant d'appuyer — dessin 4", "Le cabochon",
-    "La masse reste, elle change de matière : l'or au lieu du vert, avec la même ombre portée. C'est le plus proche de ce que vous avez — vous ne perdez rien de sa présence, vous perdez le vert.",
-    "0 px² de sombre"],
+  signet: ["Avant d'appuyer — dessin 4", "Le signet",
+    "Le ruban d'une reliure, avec son encoche. Le seul dessin qui ne soit pas centré sur lui-même : il pend, comme un signet sorti d'un livre.",
+    "0 px²"],
 };
 const MOTS_LIGNE = {
   onde: ["Pendant la dictée — aujourd'hui", "La ligne, votre choix du 31 août",
     "Poubelle, chrono, onde d'or en barreaux, rond d'envoi. C'est ce que l'application porte, et le point de départ des trois dessins d'à côté."],
-  sillon: ["Pendant la dictée — dessin 1", "Le sillon",
-    "L'onde devient un sillon creusé dans le papier, où une lueur d'or passe. Ce n'est pas une jauge : une dictée n'a pas de durée connue, donc rien ne se remplit. La largeur de la lueur suit votre voix."],
-  regle: ["Pendant la dictée — dessin 2", "La règle",
-    "La réglette d'un instrument de mesure : des graduations d'or, et une aiguille fine qui bouge avec la voix. C'est le dessin le plus « métier » des trois — on lit qu'on enregistre à ce qui bouge."],
-  fil: ["Pendant la dictée — dessin 3", "Le fil",
-    "Un filet d'or tendu, une perle qui glisse dessus et grossit quand vous parlez. Le plus silencieux des trois : la ligne ne bat plus, elle respire."],
+  sismo: ["Pendant la dictée — dessin 1", "Le sismographe",
+    "Un trait continu qui se trace et défile. Les barreaux d'aujourd'hui découpent la voix en morceaux ; celui-ci la garde d'un seul tenant. Même information, écrite à la plume plutôt qu'en bâtons."],
+  chiffres: ["Pendant la dictée — dessin 2", "Les chiffres",
+    "La durée est l'objet, et il n'y a rien d'autre : la poubelle à gauche, le temps en grand dans vos caractères de titre, l'avion à droite. Aucune onde. Le plus dépouillé des trois."],
+  goutte: ["Pendant la dictée — dessin 3", "La goutte",
+    "La vôtre, celle de la première page, en or. Elle grossit quand vous parlez et retombe quand vous vous taisez : c'est la voix qu'on voit, sans une seule barre."],
 };
 
 const cadre = document.getElementById("cadre");
@@ -542,7 +537,7 @@ document.querySelectorAll(".rangee").forEach((rangee) => {
 });
 
 // La trace : un seul dessin visible à la fois, les autres retirés du document.
-const PIECES = { onde: [".onde"], sillon: [".sillon"], regle: [".regle", ".aiguille"], fil: [".fil", ".perle"] };
+const PIECES = { onde: [".onde"], sismo: [".sismo"], chiffres: [".chiffres"], goutte: [".goutte", ".ondulation"] };
 function montrerLaTrace() {
   const choisi = cadre.dataset.ligne;
   for (const nom in PIECES) {
@@ -578,6 +573,17 @@ document.querySelectorAll(".frange").forEach((f) => {
 document.getElementById("onde").innerHTML =
   Array.from({ length: 26 }, (_, i) => `<i style="height:${6 + ((i * 7) % 17)}px"></i>`).join("");
 
+// Le tracé du sismographe : 210 px de dents, répétés deux fois. La boucle
+// défile d'exactement 210 px, donc la reprise ne se voit pas.
+const PAS = 6, MOTIF = [];
+for (let x = 0; x <= 210; x += PAS) {
+  const t = x / PAS;
+  const h = 4.5 * Math.sin(t * 1.7) + 3.2 * Math.sin(t * 0.61) + 2.4 * Math.sin(t * 2.9);
+  MOTIF.push(`${x} ${(13 + h).toFixed(1)}`);
+}
+const SUITE = MOTIF.map((p) => { const [x, y] = p.split(" "); return `${Number(x) + 210} ${y}`; });
+document.querySelector(".sismo path").setAttribute("d", "M" + MOTIF.concat(SUITE.slice(1)).join(" L"));
+
 const dictee = document.getElementById("dictee");
 const chrono = document.getElementById("chrono");
 const indice = document.getElementById("indice");
@@ -586,9 +592,12 @@ let horloge = null, souffle = null, secondes = 0;
 function demarrer() {
   dictee.dataset.lit = "oui";
   secondes = 0; chrono.textContent = "0:00";
+  document.getElementById("chrono-grand").textContent = "0:00";
   horloge = setInterval(() => {
     secondes++;
-    chrono.textContent = `${Math.floor(secondes / 60)}:${String(secondes % 60).padStart(2, "0")}`;
+    const mmss = `${Math.floor(secondes / 60)}:${String(secondes % 60).padStart(2, "0")}`;
+    chrono.textContent = mmss;
+    document.getElementById("chrono-grand").textContent = mmss;
   }, 1000);
   // Le volume est SIMULÉ ici : une maquette n'a pas de micro. Dans
   // l'application, cette valeur vient du son réellement capté.
