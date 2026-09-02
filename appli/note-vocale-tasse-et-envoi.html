@@ -103,6 +103,7 @@
   --exemple:#6b6659;
   /* Relevées sur SA palette, à l'identique. Elles ne suivent pas les huit
      chartes : un café qui change de couleur n'est plus du café. */
+  --sauge:#7d9a6d; --sauge-clair:#9fbd82;
   --cafe-noir:#2D0C05; --cafe-fonce:#591F0B; --cafe:#794022; --cafe-clair:#9E7148;
   --crema:#B57537; --crema-clair:#DEAC76; --mousse:#E8C5A5; --lait:#C6A988;
   --ombre-feuille:0 -22px 50px rgba(20,18,14,.22);
@@ -348,6 +349,32 @@ body{margin:0;background:var(--bone);color:var(--charcoal);
 [data-repos="tasse-vert"] .disque::before{inset:5px;
   background:radial-gradient(circle at 68% 74%, rgba(159,189,130,.24), transparent 58%)}
 
+/* — 5 · LE VERT CLAIR — sa demande : plus clair que le n° 3.
+   **Les deux teintes existent déjà dans la charte et rien ne les employait
+   ici : « sauge » (#7d9a6d) et « sauge clair » (#9fbd82).** Elles sont
+   FIXES, comme l'alerte — elles ne changent pas d'un thème à l'autre — ce
+   qui en fait justement les bonnes candidates pour une matière.
+
+   **LE MICRO Y PASSE EN VERT FONCÉ, ET C'EST MESURÉ.** Sur ce vert-là, un
+   micro crème tient 3,0 de contraste et un micro pin 3,7. Le pictogramme
+   suit donc le fond, comme sur le verre d'eau : c'est la clarté du dessous
+   qui décide, jamais l'habitude. */
+[data-repos="tasse-vert-clair"] .disque{width:80px;height:80px;color:var(--pine);
+  background:radial-gradient(circle at 34% 26%, var(--sauge-clair) 0%, var(--sauge) 50%, var(--pine-light) 100%);
+  box-shadow:inset 0 0 0 1.1px var(--or),
+             inset 0 0 0 3px #f3efe6,
+             inset 0 0 0 4.1px var(--or),
+             inset 0 8px 12px -6px rgba(47,59,47,.42),
+             0 10px 22px -6px rgba(79,95,76,.38)}
+[data-repos="tasse-vert-clair"] .disque:active{
+  box-shadow:inset 0 0 0 1.1px var(--or),
+             inset 0 0 0 3px #f3efe6,
+             inset 0 0 0 4.1px var(--or),
+             inset 0 10px 16px -6px rgba(47,59,47,.52),
+             0 4px 12px -6px rgba(79,95,76,.46)}
+[data-repos="tasse-vert-clair"] .disque::before{inset:5px;
+  background:radial-gradient(circle at 68% 74%, rgba(255,255,255,.34), transparent 58%)}
+
 /* — 4 · LE VERRE D'EAU — le contrepoint : froid et clair là où le café est
    chaud et sombre. Et pour un paysagiste, l'eau n'est pas un ornement.
 
@@ -402,11 +429,32 @@ body{margin:0;background:var(--bone);color:var(--charcoal);
          display:flex;align-items:center;justify-content:center;transition:transform .18s}
 .envoyer:active{transform:scale(.975)}
 
+/* ═══ DEUX AXES INDÉPENDANTS ══════════════════════════════════════════════
+   La matière du disque d'un côté, le traitement de la touche d'envoi de
+   l'autre : il peut donc essayer le café avec le cercle doré, ou le vert
+   avec la tasse. Lier les deux l'obligerait à choisir deux choses d'un coup.
+
+   « LE CERCLE DORÉ SEUL » — sa demande : plus d'auréole, plus de matière,
+   rien que le filet d'or autour de la flèche. Le dedans est le fond de la
+   page, quel qu'il soit : c'est la règle de ce composant dans l'application,
+   et elle vaut ici pour la même raison — sept chartes changent ce fond.
+
+   Deux attributs valent mieux qu'un « !important » : « [data-envoi][data-repos] »
+   pèse plus lourd que « [data-repos] » seul, donc l'or l'emporte sans qu'on ait
+   à forcer quoi que ce soit. */
+[data-envoi="or"][data-repos] .envoyer{width:46px;height:46px;
+  background:transparent;color:var(--pine);
+  box-shadow:inset 0 0 0 1.3px var(--or);
+  transition:transform .18s cubic-bezier(.22,.61,.36,1),box-shadow .2s}
+[data-envoi="or"][data-repos] .envoyer:active{transform:scale(.96);
+  box-shadow:inset 0 0 0 1.6px var(--or)}
+
 /* ═══ LA TOUCHE D'ENVOI, DANS LA MATIÈRE DU DISQUE ════════════════════════
    Elle grandit de 44 à 46 px : un objet à trois anneaux a besoin d'un peu
    plus de place qu'un cercle nu, sinon les filets se touchent. */
 [data-repos="tasse-cafe"] .envoyer,
 [data-repos="tasse-vert"] .envoyer,
+[data-repos="tasse-vert-clair"] .envoyer,
 [data-repos="tasse-eau"] .envoyer{width:46px;height:46px;
   transition:transform .18s cubic-bezier(.22,.61,.36,1),box-shadow .2s}
 
@@ -437,6 +485,20 @@ body{margin:0;background:var(--bone);color:var(--charcoal);
              inset 0 0 0 3.2px var(--or),
              inset 0 7px 11px -4px rgba(0,0,0,.6),
              0 3px 8px -5px rgba(30,38,30,.5)}
+
+[data-repos="tasse-vert-clair"] .envoyer{color:var(--pine);
+  background:radial-gradient(circle at 34% 26%, var(--sauge-clair) 0%, var(--sauge) 50%, var(--pine-light) 100%);
+  box-shadow:inset 0 0 0 1px var(--or),
+             inset 0 0 0 2.4px #f3efe6,
+             inset 0 0 0 3.2px var(--or),
+             inset 0 5px 8px -5px rgba(47,59,47,.42),
+             0 6px 14px -5px rgba(79,95,76,.36)}
+[data-repos="tasse-vert-clair"] .envoyer:active{transform:scale(.96);
+  box-shadow:inset 0 0 0 1px var(--or),
+             inset 0 0 0 2.4px #f3efe6,
+             inset 0 0 0 3.2px var(--or),
+             inset 0 7px 11px -5px rgba(47,59,47,.52),
+             0 3px 8px -5px rgba(79,95,76,.46)}
 
 [data-repos="tasse-eau"] .envoyer{color:var(--pine);
   background:
@@ -531,6 +593,12 @@ body{margin:0;background:var(--bone);color:var(--charcoal);
     <button type="button" data-repos="tasse-cafe" aria-pressed="false">2 · Café, auréole fine</button>
     <button type="button" data-repos="tasse-vert" aria-pressed="false">3 · Vert, auréole fine</button>
     <button type="button" data-repos="tasse-eau" aria-pressed="false">4 · Le verre d'eau</button>
+    <button type="button" data-repos="tasse-vert-clair" aria-pressed="false">5 · Le vert clair</button>
+  </div>
+  <div class="rangee" role="group" aria-label="La touche d'envoi">
+    <p class="quoi">La flèche</p>
+    <button type="button" data-envoi="tasse" aria-pressed="true">En tasse</button>
+    <button type="button" data-envoi="or" aria-pressed="false">Cercle doré seul</button>
   </div>
   <div class="rangee" role="group" aria-label="Pendant la dictée">
     <p class="quoi">Pendant la dictée</p>
@@ -539,7 +607,7 @@ body{margin:0;background:var(--bone);color:var(--charcoal);
 </nav>
 
 <div class="scene">
-  <div class="tel" data-repos="plein" data-ligne="onde" id="cadre">
+  <div class="tel" data-repos="plein" data-envoi="tasse" id="cadre">
     <div class="derriere">ATLAS</div>
     <div class="feuille">
       <div class="dedans">
@@ -670,6 +738,9 @@ const MOTS_REPOS = {
   "tasse-vert": ["En tasse — le vert d'origine", "Le vert, jusqu'à la flèche",
     "La même tasse et la même flèche, en vert pin. Les trois nuances sont vos jetons : pine-light, pine, et le charbon des titres. Ce qu'on emprunte au café, c'est la lumière, pas la couleur.",
     "5 026 px²"],
+  "tasse-vert-clair": ["En tasse — le vert clair", "Le vert clair, jusqu'à la flèche",
+    "Plus clair que le n° 3, comme demandé. Les deux teintes existaient déjà dans votre charte et rien ne les employait ici : sauge et sauge clair. Elles sont fixes — elles ne changent pas d'un thème à l'autre —, ce qui en fait de bonnes matières. Le micro y passe en vert foncé : sur ce fond, un micro crème tient 3,0 de contraste, un micro pin 3,7.",
+    "5 026 px²"],
   "tasse-eau": ["En tasse — le verre d'eau", "L'eau, jusqu'à la flèche",
     "Le contrepoint : froid et clair là où le café est chaud et sombre. La paroi du verre remplace la porcelaine — un anneau translucide, parce qu'on voit à travers un verre. À dire franchement : ces trois teintes ne sont PAS dans votre charte, qui n'a ni bleu ni gris froid. Elles sont proposées, pas relevées.",
     "5 026 px²"],
@@ -698,6 +769,8 @@ document.querySelectorAll(".rangee").forEach((rangee) => {
       document.getElementById("titre-repos").textContent = t;
       document.getElementById("propos-repos").textContent = p;
       document.getElementById("encre").textContent = e;
+    } else if (b.dataset.envoi) {
+      cadre.dataset.envoi = b.dataset.envoi;
     } else {
       cadre.dataset.ligne = b.dataset.ligne;
     }
