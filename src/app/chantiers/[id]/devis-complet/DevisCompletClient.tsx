@@ -92,6 +92,17 @@ type Ligne = {
  */
 const CLE_REDUCTION = "prix-accorde-au-client";
 
+/**
+ * Le pourcentage que « + Prix accordé au client » pose d'emblée.
+ *
+ * **Écrit ICI et nulle part ailleurs.** Il vivait en double dans le bouton —
+ * une fois pour l'écran (`setReduction("5")`), une fois pour le serveur
+ * (`majEnTeteDevisAction(… "5")`) — et deux chiffres censés dire la même chose
+ * finissent toujours par diverger : le jour où l'un passe à 10, l'écran et le
+ * devis ne s'accordent plus, et c'est le client qui voit l'écart.
+ */
+const REMISE_PAR_DEFAUT = "5";
+
 type Props = {
   chantierId: string;
   devisId: string;
@@ -202,8 +213,17 @@ export default function DevisCompletClient(props: Props) {
    */
   const [remiseOuverte, setRemiseOuverte] = useState(props.reductionPourcent !== null);
 
-  async function enregistrerRemise() {
-    const valeur = reduction.trim() || null;
+  /**
+   * **L'UNIQUE écriture du prix accordé.** Elle prend la valeur en argument
+   * pour que le bouton « + » puisse s'en servir sans attendre un tour de rendu :
+   * l'état de React n'est pas encore à jour dans le clic qui vient de l'appeler.
+   *
+   * Avant, ce bouton écrivait lui-même, avec son propre littéral — deux chemins
+   * pour un seul fait métier, et l'un des deux ne passait par aucune des règles
+   * ci-dessous.
+   */
+  async function enregistrerRemise(valeurBrute: string = reduction) {
+    const valeur = valeurBrute.trim() || null;
     await majEnTeteDevisAction(props.devisId, { reductionPourcent: valeur });
     // **On se referme sur ce que le serveur a RETENU, pas sur ce qu'il a tapé.**
     // La case vide n'est pas le seul moyen d'annuler : « 0 », « 0,00 », ou une
@@ -1022,7 +1042,10 @@ export default function DevisCompletClient(props: Props) {
                     inputMode="decimal"
                     aria-label="Prix accordé au client, en pourcentage"
                     onChange={(e) => setReduction(e.target.value)}
-                    onBlur={enregistrerRemise}
+                    // Enveloppé, et ce n'est pas du style : passé nu, `onBlur`
+                    // donnerait son ÉVÉNEMENT comme pourcentage. Ici c'est
+                    // l'état du champ qui fait foi, comme avant.
+                    onBlur={() => enregistrerRemise()}
                     className="w-9 border-0 bg-transparent p-0 text-right outline-none focus:bg-[rgba(0,0,0,0.03)]"
                     style={{ color: colors.or, fontSize: "16px" }}
                   />
@@ -1096,8 +1119,10 @@ export default function DevisCompletClient(props: Props) {
               type="button"
               onClick={() => {
                 setRemiseOuverte(true);
-                setReduction("5");
-                majEnTeteDevisAction(props.devisId, { reductionPourcent: "5" });
+                setReduction(REMISE_PAR_DEFAUT);
+                // Le même écrivain que la saisie et que le retrait : une remise
+                // n'a qu'une façon d'arriver en base.
+                void enregistrerRemise(REMISE_PAR_DEFAUT);
               }}
               className="mt-2.5 text-[13.5px]"
               style={{ color: colors.or }}
