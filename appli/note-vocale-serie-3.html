@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Atlas — note vocale, série 4 : le signe, et ce qui défile</title>
+<title>Atlas — note vocale, série 3 : le minimum</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
@@ -11,7 +11,7 @@
 /*
   ═══════════════════════════════════════════════════════════════════════════
   LA NOTE VOCALE — SES DEUX MOMENTS, SUR LA FICHE « ÉPURÉE »
-  Quatrième série : le signe reste, et la dictée défile. RIEN N'EST CODÉ.
+  Quatre dessins au repos, trois pendant la dictée. RIEN N'EST CODÉ.
   ═══════════════════════════════════════════════════════════════════════════
 
   Ses deux demandes du 2 septembre 2026 :
@@ -47,21 +47,11 @@
     Elle changeait la FORME, mais chaque dessin restait un ornement — un
     cachet doré, un ruban de reliure, des franges d'onde autour de l'objet.
 
-  · **Troisième série du 2 septembre**, écartée aussi — « propose d'autres,
-    je veux LE SIGNE de la note vocale » : au repos le mot, le point, le
-    cercle, le fil ; pendant la dictée le pointillé, la respiration, rien.
-    Elle était minimaliste, mais trois dessins sur quatre avaient RETIRÉ le
-    micro. Et rien n'y défilait.
-
-  CE QUE LA QUATRIÈME SÉRIE TRANCHE, ET QUI VALAIT LES TROIS PRÉCÉDENTES :
-  le micro n'est pas un ornement dont on cherche la bonne matière, c'est le
-  PANNEAU qui dit ce que fait le bouton. Les séries 1 et 2 l'habillaient, la
-  3 l'a retiré. Les quatre dessins du repos le portent donc TOUS, et ne se
-  distinguent que par ce qu'il y a autour — de moins en moins.
-
-  Et sa seconde phrase donne la loi de la dictée : « quelque chose qui
-  défile ». Les trois traces défilent, toutes dans le même sens — de la
-  droite vers la gauche, comme un papier qu'on tire.
+  D'OÙ LA TROISIÈME SÉRIE, ET SA LOGIQUE : il a nommé le style lui-même —
+  minimaliste. On ne remplace plus l'ornement par un autre ornement, on le
+  RETIRE : plus de franges autour de l'objet, plus de dorure en aplat, plus
+  de serif hors des titres. Il reste ce que la fiche emploie déjà — un mot en
+  petites capitales, un point, un filet, un trait de plume — et du blanc.
 
   ───────────────────────────────────────────────────────────────────────────
   CE QUI NE CHANGE PAS D'UN DESSIN À L'AUTRE — sinon il choisirait un écran
@@ -71,10 +61,10 @@
   · la réserve de la dictée reste de 104 px : rien ne bouge au-dessus ni en
     dessous quand on change de dessin ;
   · un appui dicte, la poubelle jette, le rond envoie ;
-  · **ce qui défile lit le volume**, jamais le hasard : la hauteur du tracé,
-    celle des graduations et l'épaisseur du trait viennent toutes de la même
-    courbe — SIMULÉE ici, faute de micro dans une maquette, et c'est dit.
-    Dans l'application, elle vient du son réellement capté.
+  · **ce qui bouge lit le volume**, jamais le hasard : le dernier point du
+    pointillé et la respiration suivent la voix — SIMULÉE ici, faute de
+    micro dans une maquette, et c'est dit. « Rien », lui, ne bouge pas du
+    tout, et c'est son propos : la pastille qui bat suffit.
 
   L'ÉCART SE MESURE : l'encre sombre posée au repos, en pixels carrés, est
   écrite sous chaque dessin. Le disque d'aujourd'hui en porte 4 536 sur une
@@ -235,53 +225,39 @@ body{margin:0;background:var(--bone);color:var(--charcoal);
                              box-shadow:0 8px 22px rgba(0,0,0,.16)}
 @media (prefers-color-scheme: dark){ [data-repos="plein"] .disque{color:#171613} }
 
-/* ═══ LA QUATRIÈME SÉRIE — LE SIGNE RESTE, ET LA DICTÉE DÉFILE ═══════════
-   Ses deux phrases du 2 septembre 2026 : « je veux le signe de la note
-   vocale », et « pour la dictée j'aimerais quelque chose qui défile ».
+/* ═══ LA TROISIÈME SÉRIE — minimaliste, le style qu'il a nommé lui-même ═══
+   Plus rien qui décore : un mot, un point, un filet, un trait de plume.
+   Le vocabulaire vient de la fiche elle-même — « + CLIENT » est déjà une
+   action en petites capitales, l'or souligne déjà l'onglet d'envoi. */
 
-   CE QUE ÇA TRANCHE, ET QUI VALAIT LES TROIS SÉRIES PRÉCÉDENTES : le micro
-   n'est pas un ornement dont on cherche la bonne matière, c'est le PANNEAU
-   qui dit ce que fait le bouton. Les séries 1 et 2 l'habillaient ; la 3 l'a
-   retiré, et c'est ce retrait qu'il refuse. Les quatre dessins ci-dessous le
-   portent donc tous, et ne se distinguent que par ce qu'il y a AUTOUR — de
-   moins en moins. */
-
-/* — REPOS 1 · LE SIGNE ET LE MOT — le micro, puis l'action en petites
-   capitales. C'est « le mot » de la série précédente, avec le signe qui lui
-   manquait, et le vocabulaire de « + CLIENT » juste au-dessus. */
-[data-repos="signe-mot"] .disque{width:auto;height:auto;min-height:44px;gap:11px;
-  padding:10px 8px;border-radius:0;color:var(--pine)}
-/* **La règle de base doit exister, sinon le mot s'affiche PARTOUT.** Elle
-   vivait dans le bloc de la série précédente ; en retirant celui-ci, « Dicter
-   le chantier » est apparu sous les quatre dessins. Vu à la capture, et
-   invisible autrement — un `<span>` sans règle est visible par défaut. */
+/* — REPOS 1 · LE MOT — l'action en petites capitales, comme « + CLIENT ».
+   La dictée devient un geste du formulaire, pas un objet posé dessus. */
+[data-repos="mot"] .disque{width:auto;height:auto;min-height:44px;padding:10px 8px;
+  border-radius:0;color:var(--pine)}
+[data-repos="mot"] .signe{display:none}
+[data-repos="mot"] .indice{visibility:hidden}
 .mot{display:none;font:500 10.5px/1.4 Inter,sans-serif;letter-spacing:.3em;
      text-transform:uppercase;white-space:nowrap}
-[data-repos="signe-mot"] .signe svg{width:20px;height:20px;stroke-width:1.5}
-[data-repos="signe-mot"] .mot{display:block}
-[data-repos="signe-mot"] .indice{visibility:hidden}
+[data-repos="mot"] .mot{display:block}
 
-/* — REPOS 2 · LE SIGNE SUR SON FILET — le micro posé sur un filet d'or, comme
-   un objet sur sa tablette. Ce filet-là existe déjà sur l'écran : c'est celui
-   qui souligne « SMS » quand vous le choisissez. */
-[data-repos="signe-filet"] .disque{flex-direction:column;gap:10px;width:auto;height:auto;
-  color:var(--pine)}
-[data-repos="signe-filet"] .signe svg{width:28px;height:28px;stroke-width:1.4}
-[data-repos="signe-filet"] .disque::after{content:"";width:58px;height:1.5px;
+/* — REPOS 2 · LE POINT — un point d'or de 9 px, rien d'autre. Le point final
+   de la fiche. La cible reste le bouton entier de 76 px, invisible. */
+[data-repos="point"] .signe{display:none}
+[data-repos="point"] .disque::before{content:"";width:9px;height:9px;
+  border-radius:99px;background:var(--or)}
+
+/* — REPOS 3 · LE CERCLE — un filet gris au trait de la fiche, le micro
+   affiné dedans. Le contour le plus discret qu'un objet puisse garder. */
+[data-repos="cercle"] .disque{width:54px;height:54px;color:var(--pine);
+  box-shadow:inset 0 0 0 1px var(--line)}
+[data-repos="cercle"] .signe svg{width:22px;height:22px;stroke-width:1.2}
+
+/* — REPOS 4 · LE FIL — un filet d'or de 56 px, posé comme un alinéa.
+   C'est le soulignage de vos onglets d'envoi, devenu le geste lui-même. */
+[data-repos="fil"] .signe{display:none}
+[data-repos="fil"] .disque{height:44px}
+[data-repos="fil"] .disque::before{content:"";width:56px;height:2px;
   border-radius:2px;background:var(--or)}
-
-/* — REPOS 3 · LE SIGNE EN PASTILLE — le micro dans un rond du beige des
-   cases. Aucun vert, aucun or : exactement la matière des champs au-dessus,
-   donc rien de neuf n'entre sur la fiche. */
-[data-repos="signe-pastille"] .disque{width:54px;height:54px;background:var(--paper);
-  color:var(--pine)}
-[data-repos="signe-pastille"] .signe svg{width:23px;height:23px;stroke-width:1.4}
-
-/* — REPOS 4 · LE SIGNE AGRANDI — le micro seul, en grand, rien autour. Le
-   symbole EST l'objet. C'est le « micro nu » de la deuxième série, reproporté
-   — il y était tracé à 1,1 px et se perdait ; il est ici à 1,6. */
-[data-repos="signe-grand"] .disque{color:var(--pine)}
-[data-repos="signe-grand"] .signe svg{width:54px;height:54px;stroke-width:1.6}
 
 /* ─── PENDANT LA DICTÉE — la ligne, recopiée de `globals.css` ──────────── */
 .ligne{display:flex;align-items:center;gap:12px;width:100%}
@@ -308,49 +284,23 @@ body{margin:0;background:var(--bone);color:var(--charcoal);
 .onde i{flex:0 0 2px;border-radius:2px;background:var(--or);opacity:.85;
         transform:scaleY(var(--v));transition:transform 90ms linear}
 
-/* ═══ LES TROIS DÉFILENT, ET DANS LE MÊME SENS : de la droite vers la
-   gauche, comme un papier qu'on tire. Ce qui est à gauche est déjà dit, ce
-   qui arrive à droite est ce qu'on est en train de dire. */
+/* — DICTÉE 1 · LE POINTILLÉ — un point d'or par seconde. Le temps se voit
+   s'écrire, la voix règle la taille du dernier point. Aucune onde. */
+.pointille{position:absolute;inset:0;display:flex;align-items:center;justify-content:flex-end;gap:6px;
+           overflow:hidden;-webkit-mask-image:linear-gradient(90deg,transparent,#000 22%,#000);
+           mask-image:linear-gradient(90deg,transparent,#000 22%,#000)}
+.pointille i{flex:0 0 4px;height:4px;border-radius:99px;background:var(--or)}
+.pointille i:last-child{transform:scale(calc(.7 + var(--v) * .8));transition:transform 110ms linear}
 
-/* — DICTÉE 1 · LA BANDE — une bande de papier qui sort de l'appareil, liseré
-   d'or en haut et en bas, le tracé imprimé dessus. */
-.bande{position:absolute;left:0;right:0;height:20px;overflow:hidden;background:var(--paper);
-       border-radius:2px;box-shadow:inset 0 1px 0 var(--or),inset 0 -1px 0 var(--or);
-       -webkit-mask-image:linear-gradient(90deg,transparent,#000 12%,#000 88%,transparent);
-       mask-image:linear-gradient(90deg,transparent,#000 12%,#000 88%,transparent)}
-.bande svg{position:absolute;top:0;left:0;height:20px;width:840px;
-           animation:defiler 7s linear infinite}
-.bande path{fill:none;stroke:var(--or);stroke-width:1.3;stroke-linejoin:round}
-@keyframes defiler{from{transform:translateX(0)}to{transform:translateX(-420px)}}
+/* — DICTÉE 2 · LA RESPIRATION — un seul point, que la voix fait respirer.
+   Le frère du « point » du repos : le même objet, devenu vivant. */
+.respire{position:absolute;left:50%;top:50%;width:10px;height:10px;margin:-5px 0 0 -5px;
+         border-radius:99px;background:var(--or);
+         transform:scale(calc(.7 + var(--v) * .9));transition:transform 110ms linear}
 
-/* — DICTÉE 2 · LE MÈTRE — votre mètre ruban qui se déroule. Les graduations
-   passent avec le temps ; leur hauteur, elle, garde ce que la voix a fait à
-   cet instant-là. */
-.metre{position:absolute;left:0;right:0;height:22px;overflow:hidden;
-       -webkit-mask-image:linear-gradient(90deg,transparent,#000 12%,#000 88%,transparent);
-       mask-image:linear-gradient(90deg,transparent,#000 12%,#000 88%,transparent)}
-.metre span{position:absolute;left:0;bottom:0;display:flex;align-items:flex-end;gap:5px;
-            width:840px;height:22px;animation:defiler 7s linear infinite}
-.metre i{flex:0 0 1.4px;border-radius:2px;background:var(--or);opacity:.85}
-.metre::after{content:"";position:absolute;left:0;right:0;bottom:0;height:1px;background:var(--or);
-              opacity:.45}
-
-/* — DICTÉE 3 · LE TRAIT — un seul trait continu qui défile, épais quand la
-   voix monte, fin quand elle baisse. Le dessin le plus sobre des trois : ni
-   papier, ni graduation, juste la ligne. */
-.trait{position:absolute;left:0;right:0;height:26px;overflow:hidden;
-       -webkit-mask-image:linear-gradient(90deg,transparent,#000 12%,#000 88%,transparent);
-       mask-image:linear-gradient(90deg,transparent,#000 12%,#000 88%,transparent)}
-.trait svg{position:absolute;top:0;left:0;height:26px;width:840px;
-           animation:defiler 7s linear infinite}
-.trait path{fill:var(--or);opacity:.9}
-
-/* Ce qui DÉFILE ne s'arrête pas au repos : les trois traces n'existent que
-   pendant la dictée, et la boucle est calculée pour que la reprise ne se voie
-   pas — 420 px de motif, répétés, défilés de 420. */
-@media (prefers-reduced-motion:reduce){
-  .bande svg,.metre span,.trait svg{animation:none}
-}
+/* — DICTÉE 3 · RIEN — la trace disparaît. La pastille qui bat et le chrono
+   disent déjà qu'on enregistre ; le reste est du papier. Le seul dessin qui
+   ne lit pas le volume — délibérément : il ne montre rien, il ne ment pas. */
 
 .a-bulle{position:absolute;left:14px;bottom:14px;width:46px;height:46px;border-radius:99px;
          background:var(--charcoal);color:var(--bone);display:flex;align-items:center;
@@ -362,25 +312,25 @@ body{margin:0;background:var(--bone);color:var(--charcoal);
 <body>
 
 <header class="tete">
-  <h1>La note vocale — série 4 : le signe, et ce qui défile</h1>
-  <p>Le micro est sur les quatre dessins, et les trois traces défilent. Au repos : le signe et le mot, sur son filet, en pastille, le signe seul. Pendant la dictée : la bande, le mètre, le trait.</p>
+  <h1>La note vocale — série 3 : le minimum</h1>
+  <p>Plus rien qui décore : le mot, le point, le cercle, le fil. Pendant la dictée : le pointillé, la respiration, rien. C'est la série où le micro disparaît. Page conservée pour comparer.</p>
 </header>
 
 <nav class="choix" aria-label="Choisir les dessins">
   <div class="rangee" role="group" aria-label="Avant d'appuyer">
     <p class="quoi">Avant d'appuyer</p>
     <button type="button" data-repos="plein" aria-pressed="true">Aujourd'hui</button>
-    <button type="button" data-repos="signe-mot" aria-pressed="false">1 · Signe et mot</button>
-    <button type="button" data-repos="signe-filet" aria-pressed="false">2 · Sur son filet</button>
-    <button type="button" data-repos="signe-pastille" aria-pressed="false">3 · En pastille</button>
-    <button type="button" data-repos="signe-grand" aria-pressed="false">4 · Le signe seul</button>
+    <button type="button" data-repos="mot" aria-pressed="false">1 · Le mot</button>
+    <button type="button" data-repos="point" aria-pressed="false">2 · Le point</button>
+    <button type="button" data-repos="cercle" aria-pressed="false">3 · Le cercle</button>
+    <button type="button" data-repos="fil" aria-pressed="false">4 · Le fil</button>
   </div>
   <div class="rangee" role="group" aria-label="Pendant la dictée">
     <p class="quoi">Pendant la dictée</p>
     <button type="button" data-ligne="onde" aria-pressed="true">Aujourd'hui</button>
-    <button type="button" data-ligne="bande" aria-pressed="false">1 · La bande</button>
-    <button type="button" data-ligne="metre" aria-pressed="false">2 · Le mètre</button>
-    <button type="button" data-ligne="trait" aria-pressed="false">3 · Le trait</button>
+    <button type="button" data-ligne="pointille" aria-pressed="false">1 · Le pointillé</button>
+    <button type="button" data-ligne="respire" aria-pressed="false">2 · La respiration</button>
+    <button type="button" data-ligne="rien" aria-pressed="false">3 · Rien</button>
   </div>
 </nav>
 
@@ -470,9 +420,8 @@ body{margin:0;background:var(--bone);color:var(--charcoal);
 
               <span class="trace" aria-hidden="true">
                 <span class="onde" id="onde"></span>
-                <span class="bande" hidden><svg viewBox="0 0 840 20" preserveAspectRatio="none"><path d=""/></svg></span>
-                <span class="metre" hidden><span></span></span>
-                <span class="trait" hidden><svg viewBox="0 0 840 26" preserveAspectRatio="none"><path d=""/></svg></span>
+                <span class="pointille" id="pointille" hidden></span>
+                <span class="respire" hidden></span>
               </span>
 
               <button class="envoyer" type="button" id="envoyer" aria-label="Envoyer la note et préparer le devis">
@@ -510,29 +459,28 @@ const MOTS_REPOS = {
   plein: ["Avant d'appuyer — aujourd'hui", "Le disque plein, votre choix du 30 août",
     "Il est ici pour comparer : c'est la seule tache sombre de la fiche, et c'est elle que vous ne voulez plus.",
     "4 536 px²"],
-  "signe-mot": ["Avant d'appuyer — dessin 1", "Le signe et le mot",
-    "Le micro, puis l'action en petites capitales — le vocabulaire de « + Client » juste au-dessus. C'est le dessin de la série précédente, avec le signe qui lui manquait.",
-    "≈ 320 px²"],
-  "signe-filet": ["Avant d'appuyer — dessin 2", "Le signe sur son filet",
-    "Le micro posé sur un filet d'or, comme un objet sur sa tablette. Ce filet existe déjà sur votre écran : c'est celui qui souligne « SMS » quand vous le choisissez.",
-    "≈ 260 px²"],
-  "signe-pastille": ["Avant d'appuyer — dessin 3", "Le signe en pastille",
-    "Le micro dans un rond du beige de vos cases. Aucun vert, aucun or : exactement la matière des champs au-dessus, donc rien de neuf n'entre sur la fiche.",
-    "≈ 210 px²"],
-  "signe-grand": ["Avant d'appuyer — dessin 4", "Le signe seul",
-    "Le micro en grand, rien autour : le symbole est l'objet. C'est le « micro nu » d'une série précédente, reproporté — il y était tracé trop fin et se perdait.",
-    "≈ 330 px²"],
+  mot: ["Avant d'appuyer — dessin 1", "Le mot",
+    "L'action en petites capitales, comme « + Client » juste au-dessus : la dictée devient un geste du formulaire, plus un objet posé dessus. Rien d'autre.",
+    "≈ 150 px²"],
+  point: ["Avant d'appuyer — dessin 2", "Le point",
+    "Un point d'or de neuf pixels, et c'est tout — le point final de la fiche. La zone d'appui reste large, elle est simplement invisible.",
+    "0 px²"],
+  cercle: ["Avant d'appuyer — dessin 3", "Le cercle",
+    "Un filet gris au trait de la fiche, le micro affiné dedans. Le contour le plus discret qu'un objet puisse garder.",
+    "≈ 250 px²"],
+  fil: ["Avant d'appuyer — dessin 4", "Le fil",
+    "Un filet d'or de 56 pixels, posé comme un alinéa. C'est le soulignage de vos onglets d'envoi, devenu le geste lui-même.",
+    "0 px²"],
 };
 const MOTS_LIGNE = {
   onde: ["Pendant la dictée — aujourd'hui", "La ligne, votre choix du 31 août",
     "Poubelle, chrono, onde d'or en barreaux, rond d'envoi. C'est ce que l'application porte, et le point de départ des trois dessins d'à côté."],
-  bande: ["Pendant la dictée — dessin 1", "La bande",
-    "Une bande de papier qui sort de l'appareil et défile vers la gauche, liseré d'or en haut et en bas, le tracé imprimé dessus. Ce qui est passé à gauche est déjà dit."],
-  metre: ["Pendant la dictée — dessin 2", "Le mètre",
-    "Votre mètre ruban qui se déroule. Les graduations passent avec le temps ; leur hauteur garde ce que la voix a fait à cet instant-là."],
-  trait: ["Pendant la dictée — dessin 3", "Le trait",
-    "Un seul trait continu qui défile, épais quand la voix monte, fin quand elle baisse. Le plus sobre des trois : ni papier, ni graduation, juste la ligne."],
-
+  pointille: ["Pendant la dictée — dessin 1", "Le pointillé",
+    "Un point d'or s'écrit chaque seconde : on voit le temps se déposer. La voix règle la taille du dernier point. Aucune onde."],
+  respire: ["Pendant la dictée — dessin 2", "La respiration",
+    "Un seul point, que la voix fait respirer. Le frère du « point » du repos : le même objet, devenu vivant. Rien d'autre ne bouge."],
+  rien: ["Pendant la dictée — dessin 3", "Rien",
+    "La trace disparaît : la pastille qui bat et le chrono disent déjà qu'on enregistre, le reste est du papier. Le plus dépouillé possible."],
 };
 
 const cadre = document.getElementById("cadre");
@@ -560,7 +508,7 @@ document.querySelectorAll(".rangee").forEach((rangee) => {
 
 // La trace : un seul dessin visible à la fois, les autres retirés du document.
 // « rien » n'a pas de pièce : tout se cache, et c'est son propos.
-const PIECES = { onde: [".onde"], bande: [".bande"], metre: [".metre"], trait: [".trait"] };
+const PIECES = { onde: [".onde"], pointille: [".pointille"], respire: [".respire"], rien: [] };
 function montrerLaTrace() {
   const choisi = cadre.dataset.ligne;
   document.querySelectorAll(".trace > span").forEach((el) => { el.hidden = true; });
@@ -593,69 +541,21 @@ document.querySelectorAll(".frange").forEach((f) => {
 document.getElementById("onde").innerHTML =
   Array.from({ length: 26 }, (_, i) => `<i style="height:${6 + ((i * 7) % 17)}px"></i>`).join("");
 
-// ─── LES TROIS TRACES QUI DÉFILENT ──────────────────────────────────────
-//
-// **Le motif fait 420 px et il est POSÉ DEUX FOIS ; la boucle défile de 420.**
-// C'est ce qui fait qu'on ne voit pas la reprise : au moment où l'animation
-// revient à zéro, le pixel affiché est exactement le même. Un motif qui ne se
-// répète pas au pas de la boucle fabrique un saut, une fois toutes les sept
-// secondes — assez rare pour passer les tests, assez visible pour agacer.
-const LARGE = 420, PAS = 6;
-const AMPLEUR = [];
-for (let x = 0; x <= LARGE; x += PAS) {
-  const t = x / PAS;
-  // Trois sinus de périodes non multiples : le motif paraît irrégulier, mais
-  // il se referme exactement sur 420 px.
-  AMPLEUR.push(0.34 + 0.3 * Math.abs(Math.sin(t * 0.41)) + 0.26 * Math.abs(Math.sin(t * 1.13)));
-}
-AMPLEUR[AMPLEUR.length - 1] = AMPLEUR[0];
-
-// 1 · LA BANDE — un tracé imprimé sur le papier.
-{
-  const pts = [];
-  for (let k = 0; k < AMPLEUR.length; k++) pts.push(`${k * PAS} ${(10 + (AMPLEUR[k] - 0.6) * 13).toFixed(1)}`);
-  const suite = pts.map((p) => { const [x, y] = p.split(" "); return `${Number(x) + LARGE} ${y}`; });
-  document.querySelector(".bande path").setAttribute("d", "M" + pts.concat(suite.slice(1)).join(" L"));
-}
-
-// 2 · LE MÈTRE — des graduations dont la hauteur garde ce que la voix a fait.
-{
-  const un = AMPLEUR.slice(0, -1)
-    .map((a, k) => `<i style="height:${(4 + a * 15).toFixed(1)}px${k % 5 === 0 ? ";opacity:1" : ""}"></i>`)
-    .join("");
-  document.querySelector(".metre span").innerHTML = un + un;
-}
-
-// 3 · LE TRAIT — un ruban dont l'épaisseur suit la voix : un seul contour
-// fermé, dessiné aller par le dessus et retour par le dessous.
-{
-  const haut = [], bas = [];
-  for (let k = 0; k < AMPLEUR.length; k++) {
-    // **Un TRAIT, pas un ruban.** Première version à 0,8 + 7 × l'ampleur : le
-    // tracé faisait quinze pixels d'épais et se lisait comme un boudin d'or.
-    // Une ligne qui varie doit rester une ligne.
-    const e = 0.3 + AMPLEUR[k] * 1.55;
-    haut.push(`${k * PAS} ${(13 - e).toFixed(1)}`);
-    bas.push(`${k * PAS} ${(13 + e).toFixed(1)}`);
-  }
-  const dec = (p) => { const [x, y] = p.split(" "); return `${Number(x) + LARGE} ${y}`; };
-  const h = haut.concat(haut.slice(1).map(dec));
-  const b = bas.concat(bas.slice(1).map(dec));
-  document.querySelector(".trait path")
-    .setAttribute("d", "M" + h.join(" L") + " L" + b.reverse().join(" L") + " Z");
-}
-
 const dictee = document.getElementById("dictee");
 const chrono = document.getElementById("chrono");
 const indice = document.getElementById("indice");
+const pointille = document.getElementById("pointille");
 let horloge = null, souffle = null, secondes = 0;
 
 function demarrer() {
   dictee.dataset.lit = "oui";
   secondes = 0; chrono.textContent = "0:00";
+  // Le pointillé repart d'un seul point : vide, le champ semblerait en panne.
+  pointille.innerHTML = "<i></i>";
   horloge = setInterval(() => {
     secondes++;
     chrono.textContent = `${Math.floor(secondes / 60)}:${String(secondes % 60).padStart(2, "0")}`;
+    if (pointille.children.length < 40) pointille.insertAdjacentHTML("beforeend", "<i></i>");
   }, 1000);
   // Le volume est SIMULÉ ici : une maquette n'a pas de micro. Dans
   // l'application, cette valeur vient du son réellement capté.
