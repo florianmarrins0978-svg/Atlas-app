@@ -9,6 +9,29 @@ Format : le plus récent en tête.
 
 ## 2026-09-02
 
+### Deux maquettes d'ouverture de la première page — rien dans `src/`
+
+**Sa demande :** *« ne code rien, fais-moi un visuel de la première page,
+esprit luxe, splendide, qui ne ressemble à aucune appli qui existe »* — puis,
+devant la première proposition : *« c'est très très moche ! je veux une
+animation d'une goutte d'eau qui tombe, qu'on suit en tournant autour d'elle,
+elle arrive sur le rond de créer un chantier et hop, la page entière »*.
+
+- **`appli/la-goutte-d-eau.html`** — la retenue : la goutte perle à la pointe
+  de la feuille Atlas, chute orbitale à la 3ᵉ personne, impact qui APPUIE le
+  rond (gerbe d'or, mesures de `globals.css` au pixel), éclosion circulaire
+  sur **la page d'origine, intacte**. Toute la mécanique est ancrée sur les
+  coordonnées MESURÉES du rond (`--rx/--ry`) — trois captures ont payé le
+  contraire : dos-miroir, tête-bêche, décalage de 200 px quand l'axe d'orbite
+  restait au centre de l'écran. **Piège à retenir :** une nappe de brume
+  montée derrière la caméra voilait la moitié basse de la page à l'impact —
+  le DOM disait la page entière, seule la capture le montrait.
+- **`appli/cadran-des-chantiers.html`** — l'écartée (*« c'est très très
+  moche »*, cadran de haute horlogerie), gardée comme trace du chemin.
+
+**Ce que ça évite :** coder une ouverture avant son choix. Rien n'a bougé dans
+`src/` ; l'écran réel est inchangé.
+
 ### L'accueil respire, et la typographie ne change pas
 
 **Ses trois chiffres, donnés après avoir manipulé la planche :** *« garde
