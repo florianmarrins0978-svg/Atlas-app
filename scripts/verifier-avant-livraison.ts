@@ -176,7 +176,24 @@ for (const etape of ETAPES) {
   const env = { ...process.env, ...(etape.env ?? {}) };
   for (const cle of etape.envSupprime ?? []) delete env[cle];
 
-  const r = spawnSync(etape.commande, etape.args, { stdio: "inherit", env });
+  // **`shell` sous Windows, et rien d'autre — 2 septembre 2026.**
+  //
+  // Sur Windows, `npm` et `npx` sont des fichiers `.cmd` : `spawnSync` ne sait
+  // pas les lancer sans passer par l'interpréteur, et rend ENOENT. La batterie
+  // affichait alors **les neuf étapes en échec d'un coup, en une seconde**, y
+  // compris « Types » et « Lint » qui passent quand on les joue à la main —
+  // c'est-à-dire le pire des verdicts : faux, complet, et instantané.
+  //
+  // Le drapeau reste FAUX partout ailleurs. Sous shell, les arguments sont
+  // ré-interprétés (guillemets, `&`, espaces) : l'activer sur Linux et en CI
+  // changerait le comportement d'étapes qui marchent depuis des mois, pour
+  // corriger un défaut qui ne s'y produit pas. Les arguments passés ici sont de
+  // simples jetons sans espace — la condition tient tant que cela reste vrai.
+  const r = spawnSync(etape.commande, etape.args, {
+    stdio: "inherit",
+    env,
+    shell: process.platform === "win32",
+  });
   if (r.status === 0) {
     console.log(`   ✅ ${etape.nom}`);
   } else {
