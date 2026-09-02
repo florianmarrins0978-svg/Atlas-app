@@ -177,7 +177,12 @@ export default function EcranChantiers({
             **Le prénom n'est plus lu du tout** : le garder pour ne rien en
             faire aurait laissé croire, à la prochaine lecture, qu'il servait
             encore quelque part. */}
-        <div className="px-[26px] pt-[34px]">
+        {/* **44 px au-dessus du titre, et non 34 — sa demande du 2 septembre
+            2026**, après avoir manipulé la planche d'accueil : *« garde l'air,
+            les 44 px, 40 px et 21 px, par contre ne touche à rien d'autre »*.
+            Les dix pixels vont AU TITRE, pas à la marque : c'est la première
+            ligne qu'il lit, et elle démarrait collée au bord. */}
+        <div className="px-[26px] pt-[44px]">
           {/*
             **L'assistant se pose à côté du titre**, comme sur les autres écrans
             — cet accueil ne passe pas par `EnTeteEcran`, la pièce partagée ne
@@ -189,7 +194,10 @@ export default function EcranChantiers({
           */}
           <div className="flex items-start justify-between gap-4">
             <h1
-              className="mt-3.5 whitespace-nowrap text-[36px] leading-[1.02]"
+              // 40 px depuis le 2 septembre 2026, comme la fiche client : le nom
+              // de l'écran est ce qu'on lit en premier, et les 44 px au-dessus
+              // ne servent à rien si le titre reste au format d'un sous-titre.
+              className="mt-3.5 whitespace-nowrap text-[40px] leading-[1.02]"
               style={{ fontFamily: font.display, letterSpacing: "-0.018em" }}
             >
               Vos chantiers

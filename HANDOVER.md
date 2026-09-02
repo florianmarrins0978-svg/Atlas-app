@@ -36,6 +36,16 @@ prend toute la largeur.
   `shell`, `spawnSync` n'y lance pas `npm` : la batterie rendait ses neuf étapes
   en échec en une seconde, y compris celles qui passent à la main.
 
+- **L’accueil a été aéré le 2 septembre, à SES chiffres** : 44 px au-dessus
+  du titre, titre à 40 px, 21 px entre deux chantiers. « Ne touche à rien
+  d’autre » — le bouton « Créer un devis » reste sous le titre, au-dessus de
+  « En cours », et ce n’est pas un oubli.
+- **LA TYPOGRAPHIE A ÉTÉ PROPOSÉE ET REFUSÉE.** Quatre identités lui ont été
+  montrées sur l’accueil (Playfair · Inter, Fraunces · Public Sans, Schibsted
+  Grotesk, contre l’actuelle) : « j’aime pas, garde l’original ». Atlas ne
+  charge donc AUCUNE police — Georgia et celle du téléphone —, et c’est une
+  décision, pas une lacune. Ne pas la rouvrir sans qu’il le demande.
+
 Compte-rendu qui lui est destiné : `docs/fiche-client-en-registres.md`.
 Raisons et pièges : `ARCHITECTURE.md` §232.
 

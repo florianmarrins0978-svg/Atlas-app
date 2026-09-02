@@ -247,7 +247,10 @@ export default function ListeChantiers({
           onRetirer={() => onRetirer(c.id, `le chantier ${c.nom}`)}
           refus={c.refusRetrait}
           avant={<JourDuBrin jour={c.jour} mois={c.mois} />}
-          className="relative grid grid-cols-[47px_1fr] gap-x-[26px] py-[17px]"
+          // 21 px, et non 17 : sa demande du 2 septembre 2026. Le fil porte
+          // jusqu'à cinq chantiers, chacun sur quatre lignes — quatre pixels de
+          // plus entre deux, et l'œil cesse de les lire comme un pavé.
+          className="relative grid grid-cols-[47px_1fr] gap-x-[26px] py-[21px]"
         >
           {/* Ce qui glisse : le nom, le lieu, l'état. Le fil et la date
               restent en place — une ligne qui part d'un bloc coupe le nom en

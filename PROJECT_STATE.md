@@ -19,6 +19,19 @@ ligne « fait » qui ne l'est pas coûte plus cher qu'une ligne absente.
 
 ---
 
+## FAIT : l'accueil respire (2 septembre 2026)
+
+Ses trois chiffres : **44 px** au-dessus du titre (au lieu de 34), titre à
+**40 px** (au lieu de 36), **21 px** entre deux chantiers (au lieu de 17).
+*« Par contre ne touche à rien d'autre »* — le bouton « Créer un devis » reste
+où il est, sous le titre et au-dessus de « En cours ».
+
+**La typographie ne change pas.** Trois identités lui ont été montrées sur cet
+écran ; il garde Georgia et la police du téléphone. Aucune police n'est chargée
+dans Atlas, et c'est délibéré.
+
+---
+
 ## FAIT : la fiche client en registres (2 septembre 2026)
 
 **Son feu vert, après avoir manipulé la maquette :** *« c'est très bien, code

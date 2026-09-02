@@ -9,6 +9,50 @@ Format : le plus récent en tête.
 
 ## 2026-09-02
 
+### L'accueil respire, et la typographie ne change pas
+
+**Ses trois chiffres, donnés après avoir manipulé la planche :** *« garde
+l'air, les 44 px, 40 px et 21 px, par contre ne touche à rien d'autre »*.
+
+| | Avant | Après |
+|---|---|---|
+| au-dessus du titre | 34 px | **44 px** |
+| le titre | 36 px | **40 px** |
+| entre deux chantiers | 17 px | **21 px** |
+
+Mesuré sur iPhone 13 : le titre occupe 230 px des 338 disponibles, il ne se
+coupe pas, et la page ne déborde ni en largeur ni en hauteur.
+
+**Et la typographie reste celle d'aujourd'hui.** Quatre identités lui ont été
+soumises sur son écran d'accueil — Playfair Display · Inter, Fraunces · Public
+Sans, Schibsted Grotesk seule, contre Georgia et la police du téléphone. Sa
+réponse : *« j'aime pas, garde l'original »*. **Aucune police n'est donc
+chargée, et c'est un choix, pas un oubli** — zéro kilo-octet, rien qui clignote
+au chargement, et l'écran s'affiche sans réseau.
+
+### Deux maquettes d'ouverture de la première page — rien dans `src/`
+
+**Sa demande :** *« ne code rien, fais-moi un visuel de la première page,
+esprit luxe, splendide, qui ne ressemble à aucune appli qui existe »* — puis,
+devant la première proposition : *« c'est très très moche ! je veux une
+animation d'une goutte d'eau qui tombe, qu'on suit en tournant autour d'elle,
+elle arrive sur le rond de créer un chantier et hop, la page entière »*.
+
+- **`appli/la-goutte-d-eau.html`** — la retenue à lui montrer : la goutte
+  perle à la pointe de la feuille Atlas, chute orbitale à la 3ᵉ personne,
+  impact qui APPUIE le rond (gerbe d'or, mesures de `globals.css` au pixel),
+  éclosion circulaire sur **la page d'origine, intacte**. Toute la mécanique
+  est ancrée sur les coordonnées MESURÉES du rond (`--rx/--ry`) — trois
+  captures ont payé le contraire : dos-miroir, tête-bêche, décalage de 200 px
+  quand l'axe d'orbite restait au centre de l'écran. **Piège à retenir :** une
+  nappe de brume montée derrière la caméra voilait la moitié basse de la page
+  à l'impact — le DOM disait la page entière, seule la capture le montrait.
+- **`appli/cadran-des-chantiers.html`** — l'écartée (cadran de haute
+  horlogerie), gardée comme trace du chemin.
+
+**Ce que ça évite :** coder une ouverture avant son choix. Rien n'a bougé dans
+`src/` ; l'écran réel est inchangé.
+
 ### La fiche client passe en registres — ses catégories, une autre forme
 
 **Son feu vert, maquette manipulée puis retenue :** *« c'est très bien, code
