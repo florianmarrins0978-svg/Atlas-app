@@ -521,7 +521,12 @@ async function main() {
     // On vise donc le lancement du serveur par ce qu'il EST — un `spawn` qui
     // demande `dev` sur le port 3000 —, pas par la commande qui le porte, qui a
     // déjà changé deux fois.
-    const iSpawn = source.search(/spawn\([^)]*"dev"[^)]*"-p", "3000"/s);
+    //
+    // **Sans le drapeau `s`, et ce n'est pas un détail de style :** la cible de
+    // `tsconfig.json` est antérieure à ES2018, et `tsc` refuse ce drapeau
+    // (TS1501). Il ne servait à rien ici — `[^)]` accepte déjà les retours à la
+    // ligne, seul un `.` aurait eu besoin de lui.
+    const iSpawn = source.search(/spawn\([^)]*"dev"[^)]*"-p", "3000"/);
     assert.ok(
       iGarde > 0,
       "aucune garde en tête de batterie : un orphelin du banc rendrait les cinquante suites ininterprétables"
