@@ -20907,12 +20907,43 @@ Deux causes, toutes deux invisibles ailleurs :
    lancé et gardait le port 3000 pour la suivante — qui accusait alors le
    produit d'un « ECONNREFUSED » qui n'était pas le sien.
 
-`scripts/_processus.ts` porte les deux réponses, écrites **une fois** pour les
-deux appelants (`run-e2e-tests.ts` et `verifier-connexion-avec-serveur.mts`) :
-deux serveurs lancés séparément auraient divergé au premier ajustement.
+`scripts/_processus.ts` porte les réponses, écrites **une fois** pour les deux
+appelants (`run-e2e-tests.ts` et `verifier-connexion-avec-serveur.mts`) : deux
+serveurs lancés séparément auraient divergé au premier ajustement.
 
-**Le drapeau `shell` reste faux ailleurs**, et ce n'est pas une précaution :
-sous shell les arguments sont ré-interprétés par l'interpréteur, et l'activer
-partout changerait le comportement d'étapes qui marchent depuis des mois pour
-un défaut qui ne s'y produit pas. C'est la même règle que la batterie elle-même
-avait déjà retenue un cran plus haut — le piège restait dans ce qu'ELLE lance.
+### Le shell répare la première étape, et casse la seconde
+
+La réponse évidente — `shell: true` — suffit pour « Connexion derrière un
+proxy », qui lance `npm run banc` et n'attend rien d'autre que son code de
+sortie. Elle **ne suffit pas** pour les suites navigateur, et c'est une leçon
+qu'il a fallu payer : le shell AVALE la redirection du journal.
+`atlas-serveur-e2e.log` restait à **zéro octet**. Le jour où le serveur est mort
+au milieu des suites, il n'y avait donc rien à lire pour savoir pourquoi — un
+contrôle qui ne sait pas dire d'où vient sa panne ne vaut guère mieux qu'un
+contrôle absent (`AGENTS.md`).
+
+**Les suites navigateur lancent donc `next` DIRECTEMENT**, par l'exécutable
+Node qui les porte déjà (`CHEMIN_NEXT`) : plus de `.cmd`, plus de shell, plus
+d'interposition. Le journal est revenu, et c'est lui qui a permis de nommer la
+vraie cause de l'arrêt — voir ci-dessous.
+
+**Le drapeau `shell` reste faux partout ailleurs**, et ce n'est pas une
+précaution : sous shell les arguments sont ré-interprétés par l'interpréteur, et
+l'activer partout changerait le comportement d'étapes qui marchent depuis des
+mois pour un défaut qui ne s'y produit pas.
+
+### Et ce que le journal, une fois lisible, a fini par dire
+
+Le serveur ne plantait pas : il **mourait après avoir compilé 33 écrans d'un
+coup** au préchauffage, sur une machine qui n'a pas la mémoire de la CI. Code
+de sortie `4294967295` — un `TerminateProcess` de Windows, sans message.
+
+Le remède existait déjà dans le dépôt, et le lanceur le suggère lui-même :
+rejouer par groupes (`--seulement <motif>`, ou
+`scripts/jouer-suites-par-groupes.mjs`). Les suites, elles, sont saines : jouées
+par lots de deux à quatre, elles passent toutes.
+
+**Ce paragraphe existe pour qu'on ne cherche plus dans le produit.** Trois
+symptômes différents — `spawn EINVAL`, un journal vide, un serveur qui meurt —
+avaient une seule racine commune : la batterie n'avait jamais été jouée en
+entier sous Windows.

@@ -41,6 +41,21 @@ export const SOUS_WINDOWS = process.platform === "win32";
 export const NPM = SOUS_WINDOWS ? "npm.cmd" : "npm";
 
 /**
+ * Le script Node de `next`, à lancer par l'exécutable qui nous porte.
+ *
+ * **Pourquoi ne PAS passer par `npm run dev`.** Sous Windows, `npm` est un
+ * `.cmd` : il faut un shell, et le shell AVALE la redirection du journal —
+ * `atlas-serveur-e2e.log` restait à zéro octet. Le jour où le serveur est mort
+ * au milieu des suites, il n'y avait donc rien à lire pour savoir pourquoi.
+ * Un contrôle qui ne sait pas dire d'où vient sa panne ne vaut guère mieux
+ * qu'un contrôle absent (`AGENTS.md`).
+ *
+ * En le lançant par `process.execPath`, il n'y a plus ni `.cmd`, ni shell, ni
+ * interposition : le journal revient, et l'arbre se tue proprement.
+ */
+export const CHEMIN_NEXT = "node_modules/next/dist/bin/next";
+
+/**
  * Les options de `spawn` qui font qu'un `npm run …` démarre, et qu'on saura
  * l'arrêter.
  *

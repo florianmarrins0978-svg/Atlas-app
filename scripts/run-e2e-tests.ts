@@ -8,7 +8,7 @@ import { SUITES_SERVEUR } from "./_suites-serveur";
 const DOSSIER = path.join(__dirname);
 const NODE = process.execPath;
 const TSX = path.join(__dirname, "..", "node_modules", "tsx", "dist", "cli.mjs");
-import { NPM, OPTIONS_SERVEUR, arreterArbre } from "./_processus";
+import { CHEMIN_NEXT, arreterArbre } from "./_processus";
 
 function attendre(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -479,14 +479,21 @@ async function main() {
   // code juste. Un empaqueteur qui fabrique des faux rouges ne mesure rien —
   // il fait pire que ne rien mesurer, puisqu'on cherche la panne dans le
   // produit (`CLAUDE.md` §5). La mémoire reste donc à traiter ailleurs.
-  // **`shell` sous Windows, sinon rien ne démarre.** `npm` y est un `.cmd`, et
-  // Node refuse de le lancer sans interpréteur depuis la CVE-2024-27980 : la
-  // batterie tombait sur un `spawn EINVAL` qui ne nommait ni le fichier ni la
-  // raison. Voir `scripts/_processus.ts`.
-  const serveur = spawn(NPM, ["run", "dev", "--", "-p", "3000"], {
+  // **ON LANCE `next` DIRECTEMENT, PAS `npm run dev` — et ce n'est pas un
+  // raccourci.** Passer par `npm` obligeait à un shell sous Windows (`npm` y
+  // est un `.cmd` que Node refuse depuis la CVE-2024-27980), et le shell
+  // AVALAIT le journal : `atlas-serveur-e2e.log` restait à zéro octet. Quand le
+  // serveur est mort au milieu des suites, il n'y avait donc rien à lire — un
+  // contrôle qui ne sait pas dire POURQUOI il tombe ne vaut guère mieux qu'un
+  // contrôle absent (`AGENTS.md`).
+  //
+  // `next` est un script Node : on le lance par l'exécutable qui nous porte
+  // déjà. Plus de `.cmd`, plus de shell, plus d'interposition — le journal
+  // revient, et l'arbre se tue proprement des deux côtés.
+  const serveur = spawn(process.execPath, [CHEMIN_NEXT, "dev", "-p", "3000"], {
     env: { ...process.env, ATLAS_URL_PUBLIQUE: "https://atlas-suites.test" },
     stdio: ["ignore", journalFd, journalFd],
-    ...OPTIONS_SERVEUR,
+    detached: true,
   });
 
   let serveurTermine: string | null = null;
