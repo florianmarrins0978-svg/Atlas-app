@@ -9,6 +9,22 @@ Format : le plus récent en tête.
 
 ## 2026-09-02
 
+### Une suite rouge deux heures chaque nuit, sur du code juste
+
+Trouvé à 23 h 36 UTC en fermant la batterie : `test-poser-une-date-e2e`
+cherchait la carte du jour au calendrier avec un « aujourd'hui » calculé en
+**UTC** (`new Date().toISOString()`), alors que l'application compte ses
+journées à l'heure de l'atelier (`Europe/Paris`). Passé 22 h UTC l'été, elle
+réclamait un jour déjà passé pour l'écran — qui ne l'offre plus — et
+rougissait sur du code parfaitement juste.
+
+`_jour-e2e.ts` existe précisément pour cela, et son en-tête raconte la même
+panne pour deux autres suites. Celle-ci n'y avait jamais été branchée : deux
+définitions d'une même règle, qui divergent (`CLAUDE.md` §3). Elle lit
+désormais `jourDuPatron()`, comme l'écran.
+
+Éprouvé à 23 h 39 UTC — l'heure même qui la faisait tomber : 5/5.
+
 ### La page blanche : `npm ci` effaçait `node_modules` sous un serveur qui tournait
 
 **La racine de sa panne, trouvée dans le journal de son espace.** Une heure
