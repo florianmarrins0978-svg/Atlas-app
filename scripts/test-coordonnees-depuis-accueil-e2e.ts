@@ -173,8 +173,20 @@ async function main() {
         );
       }
     }
-    if (!ecran.includes("Ajouter une adresse client différente")) {
-      throw new Error("le lien vers l'adresse client différente manque de l'écran d'arrivée.");
+    // **On éprouve le GESTE, plus son libellé.** Ce contrôle lisait « Ajouter
+    // une adresse client différente » ; le 2 septembre 2026 ces cinq mots sont
+    // devenus « + Client », au bout de l'intitulé « Chantier » (planche
+    // « A — Épurée »). Un contrôle qui réclame un libellé rend l'écran
+    // impossible à retoucher — `CLAUDE.md` §5 bis. Ce qui compte, et qui
+    // survivra au prochain remaniement : il existe une commande qui fait
+    // apparaître la case de l'adresse du client.
+    const ouvrirAdresseClient = page.locator('[data-atlas="adresse-client"]');
+    if ((await ouvrirAdresseClient.count()) === 0) {
+      throw new Error("la commande qui ouvre l'adresse du client manque de l'écran d'arrivée.");
+    }
+    await ouvrirAdresseClient.click();
+    if ((await page.getByLabel("Adresse du client", { exact: true }).count()) === 0) {
+      throw new Error("la case « Adresse du client » ne s'ouvre pas quand on la demande.");
     }
   });
 

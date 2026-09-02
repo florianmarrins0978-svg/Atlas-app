@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { colors, libelleCaps, surPlein } from "@/lib/design-tokens";
+import { colors, libelleCaps } from "@/lib/design-tokens";
 import { useRetraits } from "@/components/atlas/useRetraits";
 import { supprimerNoteVocaleAction } from "./note-vocale/actions";
 import { useMagnetophone, formulaireDeNote } from "./magnetophone";
@@ -67,6 +67,45 @@ const SOUFFLE = [22, 10, 17, 7, 20, 12, 15, 6, 13, 9, 11, 5, 8, 4];
  * sauterait sous le doigt pour rien.
  */
 const BARREAUX_ONDE = 64;
+
+/**
+ * La largeur du repère du trait. Elle est ARBITRAIRE et c'est voulu : le SVG
+ * s'étire à la largeur réelle (`preserveAspectRatio="none"`), donc ce chiffre
+ * ne fixe que la finesse du pas, jamais une taille à l'écran. Une largeur
+ * mesurée obligerait à recompter à chaque redimensionnement, pour un dessin
+ * qui n'y gagne rien.
+ */
+const LARGEUR_TRAIT = 260;
+
+/**
+ * Le contour fermé du trait, à partir des mesures de voix.
+ *
+ * **Pourquoi un contour et pas un trait épaissi** : la largeur d'un tracé SVG
+ * vaut pour toute sa longueur — elle ne peut pas suivre la voix. On dessine
+ * donc le dessus, puis le dessous en sens inverse, et l'on referme.
+ *
+ * **Le plancher de 0,35 px n'est pas décoratif** : à zéro, le trait
+ * disparaîtrait tout à fait et l'écran paraîtrait figé au premier silence. Il
+ * reste un filet, comme un stylo posé sur la ligne.
+ *
+ * Fonction PURE, hors du composant : elle s'éprouve sans navigateur
+ * (`CLAUDE.md` §3), et c'est elle qui porte la règle du dessin.
+ */
+export function contourDuTrait(mesures: number[]): string {
+  if (mesures.length < 2) return "";
+  const milieu = 13;
+  const dessus: string[] = [];
+  const dessous: string[] = [];
+  for (let i = 0; i < mesures.length; i++) {
+    const x = (i * LARGEUR_TRAIT) / (mesures.length - 1);
+    // Bornée : une mesure aberrante ne doit pas déborder de la bande de 26 px.
+    const force = Math.max(0, Math.min(1, mesures[i]));
+    const demi = 0.35 + force * 9;
+    dessus.push(`${x.toFixed(1)} ${(milieu - demi).toFixed(2)}`);
+    dessous.push(`${x.toFixed(1)} ${(milieu + demi).toFixed(2)}`);
+  }
+  return `M${dessus.join(" L")} L${dessous.reverse().join(" L")} Z`;
+}
 
 function IconeMicro() {
   return (
@@ -418,7 +457,7 @@ export default function AnneauNoteVocale({
   // **Elle part PLEINE, à plat.** Sans cela les deux premières secondes montrent
   // un trait qui pousse dans le vide, et la barre paraît mal cadrée — mesuré sur
   // capture. Un barreau naît toutes les 95 ms à droite, les plus vieux tombent.
-  const [onde, setOnde] = useState<number[]>(() => Array(BARREAUX_ONDE).fill(2));
+  const [onde, setOnde] = useState<number[]>(() => Array(BARREAUX_ONDE).fill(0));
   useEffect(() => {
     if (!magnetophone.enregistre) return;
     const t = setInterval(() => {
@@ -426,8 +465,8 @@ export default function AnneauNoteVocale({
       // `null` veut dire « on ne sait pas » — pas « silence ». Sans Web Audio on
       // garde un dessin vraisemblable plutôt qu'une ligne plate qui ferait
       // croire à un micro muet.
-      const hauteur = mesure === null ? 5 + Math.random() * 18 : 4 + mesure * 22;
-      setOnde((precedente) => [...precedente.slice(1), Math.round(hauteur)]);
+      const force = mesure === null ? 0.15 + Math.random() * 0.6 : mesure;
+      setOnde((precedente) => [...precedente.slice(1), force]);
     }, 95);
     return () => clearInterval(t);
   }, [magnetophone.enregistre, magnetophone]);
@@ -436,7 +475,7 @@ export default function AnneauNoteVocale({
   // l'état depuis un effet déclenche un second rendu en cascade — le lint le
   // refuse, et il a raison : ici, jeter et envoyer savent tous deux qu'ils
   // terminent. `remettreLOnde` est donc appelée par eux.
-  const remettreLOnde = () => setOnde(Array(BARREAUX_ONDE).fill(2));
+  const remettreLOnde = () => setOnde(Array(BARREAUX_ONDE).fill(0));
 
   // ═══════════════════════════════════════════════════════════════════════
   // LA DICTÉE — le dessin qu'il a choisi le 30 août 2026.
@@ -499,8 +538,16 @@ export default function AnneauNoteVocale({
               // `atlas-plein` vient de la session voisine, le même jour : le
               // vert #29382F d'Origine et le geste « discret » sous le doigt.
               // Le micro EST un aplat plein — il la porte donc.
-              className="atlas-plein atlas-micro"
-              style={{ backgroundColor: colors.rust, color: surPlein }}
+              // **Plus d'`atlas-plein`, et ce n'est pas un oubli.** Cette classe
+              // pose un voile blanc en `overflow: hidden` : il rognerait les
+              // trois anneaux de la tasse. La matière porte désormais son propre
+              // appui — l'enfoncement et l'ondulation vivent dans `.atlas-micro`.
+              //
+              // **Et plus d'aplat de charte non plus.** Le fond est la matière
+              // qu'il a choisie le 2 septembre 2026, écrite dans la feuille de
+              // style : `sage` et `sageLight` sont fixes sur les huit chartes,
+              // comme `alert`. Un fond posé ici en style en ligne l'écraserait.
+              className="atlas-micro"
             >
               <IconeMicro />
             </button>
@@ -537,13 +584,23 @@ export default function AnneauNoteVocale({
               {mmss(magnetophone.secondes)}
             </span>
 
-            {/* L'onde suit le volume RÉELLEMENT capté (`magnetophone.niveau`) :
+            {/* **LE TRAIT — son choix du 2 septembre 2026**, planche
+                `appli/note-vocale-tasse-et-envoi.html`, après l'avoir essayé au
+                micro : *« j'aimerais essayer le trait à la voix, voir comment il
+                augmente »*.
+
+                Il suit le volume RÉELLEMENT capté (`magnetophone.niveau`) :
                 une onde tirée au sort serait un décor, et c'est le reproche
-                qu'il a déjà fait à un anneau qui battait sans rien lire. */}
-            <span className="atlas-onde" aria-hidden="true">
-              {onde.map((hauteur, i) => (
-                <i key={i} style={{ height: hauteur, backgroundColor: colors.or }} />
-              ))}
+                qu'il a déjà fait à un anneau qui battait sans rien lire.
+
+                **Un seul contour fermé** — aller par le dessus, retour par le
+                dessous — plutôt qu'un trait épaissi : la largeur d'un trait SVG
+                est la même sur toute sa longueur, elle ne peut pas suivre la
+                voix. C'est donc un ruban, et son épaisseur est la mesure. */}
+            <span className="atlas-trait" aria-hidden="true">
+              <svg viewBox={`0 0 ${LARGEUR_TRAIT} 26`} preserveAspectRatio="none">
+                <path d={contourDuTrait(onde)} fill={colors.or} />
+              </svg>
             </span>
 
             {/* **Un ROND, et son dedans est le fond de la page.** Sa correction
@@ -560,12 +617,16 @@ export default function AnneauNoteVocale({
               onClick={envoyerLaNote}
               disabled={envoi}
               aria-label="Envoyer la note et préparer le devis"
+              // **PLUS DE STYLE EN LIGNE ICI, ET C'EST UN DÉFAUT QUI A ÉTÉ VU
+              // À LA CAPTURE.** Le fond et le liseré vivaient en style en
+              // ligne ; ils écrasaient les trois anneaux de la tasse et la
+              // flèche revenait à un disque vert nu. Pire, l'écrasement était
+              // PARTIEL — `backgroundColor` ne touche pas `background-image`,
+              // si bien que le dégradé passait et que seuls les anneaux
+              // disparaissaient. Ni les types ni le lint ne voient cela.
+              //
+              // La matière entière vit désormais dans `.atlas-envoyer`.
               className="atlas-envoyer"
-              style={{
-                backgroundColor: "transparent",
-                color: colors.rust,
-                boxShadow: `inset 0 0 0 1.5px ${colors.rust}`,
-              }}
               data-atlas="dictee-envoyer"
             >
               <IconeAvion />

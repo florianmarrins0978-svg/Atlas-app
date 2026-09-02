@@ -9,6 +9,51 @@ Format : le plus récent en tête.
 
 ## 2026-09-02
 
+### La fiche client épurée, et la note vocale « en tasse » — CODÉ
+
+**Ses quatre choix, faits sur planches après huit séries de dessins :** la
+fiche **A — Épurée**, la note vocale **vert clair en tasse**, **le trait** à la
+voix pendant la dictée, la flèche d'envoi **en tasse**.
+
+- **La fiche** : les quatre cases portent de nouveau leur nom, « + Client » vit
+  au bout de l'intitulé « Chantier », le carré photo prend son mot, le micro du
+  coin passe au trait, et « Je rédige à la main » perd son or.
+  **C'est un revirement du 30 août, et il est assumé** — les intitulés avaient
+  été retirés ce jour-là pour tenir dans une page. Les 36 px sont payés, pas
+  ajoutés : 28 par la rangée « + Ajouter une adresse client différente » qui
+  disparaît, 27 par l'écart des blocs ramené de 7 à 4 px. **Mesuré sur
+  l'application : 604 px, la feuille exacte, aucun défilement.**
+- **La note vocale** : l'aplat vert pin devient une tasse de 80 px — filet d'or,
+  auréole de porcelaine, second filet, et un vert clair de la charte (`sage` et
+  `sageLight`, fixes sur les huit thèmes). Micro **blanc**, mesuré à 3,2 de
+  contraste. La surface tourne en huit secondes et ondule à l'appui.
+- **Pendant la dictée, le trait remplace les barreaux** : un ruban dont
+  l'épaisseur EST la force de la voix (`magnetophone.niveau`), et qui n'avance
+  pas par une animation — ce sont les mesures qui glissent. Ce qu'il a dit il y
+  a deux secondes reste mince à gauche.
+- **La flèche d'envoi** devient la même tasse, à 46 px. Ses anneaux ne sont pas
+  mis à l'échelle (1,0 et 1,4 au lieu de 1,1 et 1,9) : sous un pixel, un anneau
+  ne s'affiche plus. La poubelle reste un simple trait — elle jette, ce n'est
+  pas le geste qu'on veut donner envie de faire.
+
+**Deux défauts trouvés en REGARDANT, et par aucun test :** la flèche gardait un
+style en ligne qui écrasait ses anneaux — et l'écrasement était partiel, le
+dégradé passant mais pas les filets ; et « + Adresse client » se brisait sur
+deux lignes avec l'intitulé qu'il jouxtait.
+
+### La batterie ne finissait pas sous Windows — ses deux dernières étapes
+
+« Suites navigateur » et « Connexion derrière un proxy » tombaient sur un
+`spawn EINVAL` sans jamais démarrer. Deux causes, propres à Windows : `npm` y
+est un `.cmd` que Node refuse de lancer sans shell depuis la CVE-2024-27980, et
+`process.kill(-pid)` est un groupe de processus POSIX qui n'existe pas — le
+serveur d'essai survivait à la suite qui l'avait lancé et gardait le port.
+`scripts/_processus.ts` porte les deux réponses, écrites une fois pour les deux
+appelants.
+
+C'est le même piège que la batterie elle-même avait déjà payé un cran plus
+haut : il restait dans ce qu'ELLE lance.
+
 ### Deux maquettes d'ouverture de la première page — rien dans `src/`
 
 **Sa demande :** *« ne code rien, fais-moi un visuel de la première page,

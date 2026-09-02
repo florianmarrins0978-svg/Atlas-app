@@ -8,7 +8,7 @@ import { SUITES_SERVEUR } from "./_suites-serveur";
 const DOSSIER = path.join(__dirname);
 const NODE = process.execPath;
 const TSX = path.join(__dirname, "..", "node_modules", "tsx", "dist", "cli.mjs");
-const NPM = process.platform === "win32" ? "npm.cmd" : "npm";
+import { NPM, OPTIONS_SERVEUR, arreterArbre } from "./_processus";
 
 function attendre(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -479,10 +479,14 @@ async function main() {
   // code juste. Un empaqueteur qui fabrique des faux rouges ne mesure rien —
   // il fait pire que ne rien mesurer, puisqu'on cherche la panne dans le
   // produit (`CLAUDE.md` §5). La mémoire reste donc à traiter ailleurs.
+  // **`shell` sous Windows, sinon rien ne démarre.** `npm` y est un `.cmd`, et
+  // Node refuse de le lancer sans interpréteur depuis la CVE-2024-27980 : la
+  // batterie tombait sur un `spawn EINVAL` qui ne nommait ni le fichier ni la
+  // raison. Voir `scripts/_processus.ts`.
   const serveur = spawn(NPM, ["run", "dev", "--", "-p", "3000"], {
     env: { ...process.env, ATLAS_URL_PUBLIQUE: "https://atlas-suites.test" },
     stdio: ["ignore", journalFd, journalFd],
-    detached: true,
+    ...OPTIONS_SERVEUR,
   });
 
   let serveurTermine: string | null = null;
@@ -509,7 +513,7 @@ async function main() {
   if (!pret) {
     console.error("❌ Le serveur n'a jamais répondu — abandon.");
     montrerJournalServeur();
-    process.kill(-serveur.pid!);
+    arreterArbre(serveur.pid);
     process.exit(1);
   }
 
@@ -537,7 +541,7 @@ async function main() {
     );
     if (fichiers.length === 0) {
       console.error(`❌ Aucune suite ne correspond à « ${motifDemande} ».`);
-      process.kill(-serveur.pid!);
+      arreterArbre(serveur.pid);
       process.exit(1);
     }
   }
@@ -597,7 +601,7 @@ async function main() {
   // Le serveur a pu mourir de lui-même : le tuer alors lève ESRCH et masque le
   // bilan, qui est la seule ligne que quiconque va lire.
   try {
-    process.kill(-serveur.pid!);
+    arreterArbre(serveur.pid);
   } catch {
     // Déjà parti — rien à faire, et surtout rien à cacher.
   }

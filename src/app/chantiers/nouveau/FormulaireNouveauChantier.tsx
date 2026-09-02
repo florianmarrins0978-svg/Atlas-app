@@ -421,7 +421,7 @@ export default function FormulaireNouveauChantier({
           // capture) : la barre d'onglets est FIXÉE au bas de l'écran, et sans
           // lui elle coupait l'anneau en deux — le geste principal de l'écran,
           // à moitié sous une barre. Ni les types ni les suites ne voient cela.
-          className={`flex flex-col gap-[7px] px-6 pt-1.5 pb-2`}
+          className={`flex flex-col gap-[4px] px-6 pt-1.5 pb-2`}
           onSubmit={(e) => {
             e.preventDefault();
             // « Entrée » fait ce que fait le bouton, et il n'y en a plus qu'un.
@@ -515,45 +515,93 @@ export default function FormulaireNouveauChantier({
             </div>
           </div>
 
-          <Field
-            label="E-mail"
-            placeholder="bernard@exemple.fr"
-            type="email"
-            value={email}
-            onChange={setEmail}
-            sansLibelle
-          />
+          {/* ═══════════════════════════════════════════════════════════════
+              **LES QUATRE CASES PORTENT DE NOUVEAU LEUR NOM — son choix du
+              2 septembre 2026**, planche « A — Épurée »
+              (`appli/fiche-client-haut-de-gamme.html`).
+
+              **C'EST UN REVIREMENT, ET IL EST ASSUMÉ.** Les intitulés avaient
+              été retirés le 30 août à sa demande : *« je veux que tout tienne
+              sur une seule page »*. Deux d'entre eux seulement étaient restés
+              (le nom et le numéro), et les deux autres cases ne tenaient qu'à
+              leur exemple en gris — qui disparaît à la première touche. Au
+              soleil, on ne savait plus laquelle attendait quoi.
+
+              **CE QUI REND SA CONTRAINTE DU 30 AOÛT TENABLE MALGRÉ TOUT :** les
+              trente-six pixels des deux libellés sont payés, pas ajoutés —
+              vingt-huit rendus par la rangée « + Ajouter une adresse client
+              différente », qui remonte au bout de l'intitulé « Chantier », et
+              vingt-sept par l'écart des blocs, ramené de 7 à 4 px. L'écran
+              reste dans la feuille, et `scripts/capture-fiche-client-hauteur.mts`
+              le mesure.
+              ═══════════════════════════════════════════════════════════════ */}
+          <div>
+            <div className={`mb-1 ${libelleCaps}`} style={{ color: colors.muted }}>
+              E-mail
+            </div>
+            <Field
+              label="E-mail"
+              placeholder="bernard@exemple.fr"
+              type="email"
+              value={email}
+              onChange={setEmail}
+              sansLibelle
+            />
+          </div>
 
           {/* 6 — Adresse du chantier : facultative, et proposée pendant la
               frappe. Le champ reste libre : un lieu-dit ou un chemin de
               campagne ne figure dans aucune base, et le patron y travaille
               (`src/components/atlas/ChampAdresse.tsx`). */}
-          <ChampAdresse
-            label="Adresse du chantier"
-            placeholder="12 rue des Lilas, Nantes"
-            value={adresseChantier}
-            onChange={setAdresseChantier}
-            sansLibelle
-          />
-
-          {/* 7 — Adresse client, masquée par défaut */}
-          {!adresseClientVisible ? (
-            <button
-              type="button"
-              onClick={() => setAdresseClientVisible(true)}
-              className="self-start text-[14px] font-medium"
-              style={{ color: colors.rust }}
-            >
-              + Ajouter une adresse client différente
-            </button>
-          ) : (
+          <div>
+            {/* **« + CLIENT » VIT AU BOUT DE L'INTITULÉ, plus sur sa propre
+                rangée.** C'est là qu'on y pense — en écrivant l'adresse — et
+                cela rend vingt-huit pixels à l'écran. Les deux mots ne se
+                coupent jamais : « Chantier » et « + Client » tiennent sur une
+                ligne à 390 px, là où « Adresse du chantier » et « + Adresse
+                client » se brisaient tous les deux (vu à la capture). */}
+            <div className="mb-1 flex items-baseline justify-between gap-2.5">
+              <span className={`whitespace-nowrap ${libelleCaps}`} style={{ color: colors.muted }}>
+                Chantier
+              </span>
+              {!adresseClientVisible && (
+                <button
+                  type="button"
+                  onClick={() => setAdresseClientVisible(true)}
+                  data-atlas="adresse-client"
+                  className={`whitespace-nowrap ${libelleCaps}`}
+                  style={{ color: colors.rust }}
+                >
+                  + Client
+                </button>
+              )}
+            </div>
             <ChampAdresse
-              label="Adresse du client"
-              placeholder="Si différente de l'adresse du chantier"
-              value={adresseClient}
-              onChange={setAdresseClient}
+              label="Adresse du chantier"
+              placeholder="12 rue des Lilas, Nantes"
+              value={adresseChantier}
+              onChange={setAdresseChantier}
               sansLibelle
             />
+          </div>
+
+          {/* 7 — Adresse client, demandée au bout de l'intitulé ci-dessus.
+              Elle porte son nom comme les quatre autres : une case sans
+              intitulé est exactement ce que cet écran vient de corriger, et
+              une exception suffit à défaire la règle. */}
+          {adresseClientVisible && (
+            <div>
+              <div className={`mb-1 ${libelleCaps}`} style={{ color: colors.muted }}>
+                Client
+              </div>
+              <ChampAdresse
+                label="Adresse du client"
+                placeholder="Si différente de l'adresse du chantier"
+                value={adresseClient}
+                onChange={setAdresseClient}
+                sansLibelle
+              />
+            </div>
           )}
 
           {/* 8 — Les deux actions.
@@ -656,7 +704,14 @@ export default function FormulaireNouveauChantier({
               ce que le chantier porte DÉJÀ. Les nourrir de vide afficherait une
               pellicule vide sur un chantier photographié, et il croirait ses
               photos perdues. */}
+          {/* **Le carré de photo cesse d'être orphelin.** Il flottait seul,
+              en pointillé doré, sans un mot — le seul objet « brouillon » d'un
+              écran par ailleurs net. Son intitulé le fait rentrer dans le
+              rythme des quatre cases au-dessus. */}
           <div aria-label="Photos du chantier" role="group">
+            <div className={`mb-1 ${libelleCaps}`} style={{ color: colors.muted }}>
+              Photos
+            </div>
             <Pellicule
               chantierId={reprise?.id ?? chantierCree}
               assurerChantier={assurerChantier}

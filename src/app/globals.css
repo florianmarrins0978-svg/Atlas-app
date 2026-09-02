@@ -1316,23 +1316,55 @@ body {
  * la même mesure, et le fond vient de la page (posé `transparent` dans le
  * composant) : c'est ce qu'il a demandé, et c'est ce qui tient sur les sept
  * chartes sans qu'aucun beige soit écrit en dur. */
+/* **LA FLÈCHE EST UNE TASSE AUSSI — son choix du 2 septembre 2026.** Elle
+ * passe de 44 à 46 px : un objet à trois anneaux a besoin d'un peu plus de
+ * place qu'un cercle nu, sinon les filets se touchent.
+ *
+ * Les épaisseurs ne sont PAS mises à l'échelle (1,0 et 1,4 au lieu de 1,1 et
+ * 1,9) : voir `.atlas-micro` ci-dessus — sous un pixel, un anneau disparaît.
+ *
+ * **La poubelle, elle, reste un simple trait, et c'est délibéré.** Elle jette ;
+ * ce n'est pas le geste qu'on veut donner envie de faire. Deux objets précieux
+ * côte à côte, et l'on ne saurait plus lequel est l'action. */
 .atlas-envoyer {
   display: flex;
   align-items: center;
   justify-content: center;
   flex: 0 0 auto;
-  width: 44px;
-  height: 44px;
+  width: 46px;
+  height: 46px;
   border-radius: 99px;
   -webkit-tap-highlight-color: transparent;
-  transition: transform 0.18s;
+  /* Blanc, comme le micro : c'est le même objet à deux tailles. */
+  color: #ffffff;
+  background: radial-gradient(
+    circle at 34% 26%,
+    var(--atlas-sageLight, #9fbd82) 0%,
+    var(--atlas-sage, #7d9a6d) 50%,
+    var(--atlas-rustDeep, #4f5f4c) 100%
+  );
+  box-shadow:
+    inset 0 0 0 1px var(--atlas-or, #B98B47),
+    inset 0 0 0 2.4px #f3efe6,
+    inset 0 0 0 3.2px var(--atlas-or, #B98B47),
+    inset 0 5px 8px -5px rgba(47, 59, 47, 0.42),
+    0 6px 14px -5px rgba(79, 95, 76, 0.36);
+  transition: transform 0.18s cubic-bezier(0.22, 0.61, 0.36, 1), box-shadow 0.2s;
 }
 /* **0,975 — le geste « discret », sa décision du 31 août** (`.atlas-plein` plus
  * bas, posé le même jour par la session voisine). La touche d'envoi ne porte
  * PAS `atlas-plein` : il a été clair — *« surtout pas ceux qui sont creux »* —,
  * et depuis ce soir celle-ci est creuse. Elle prend donc le geste seul, à la
  * même force que les pleins : deux forces dans le même écran se sentiraient. */
-.atlas-envoyer:active { transform: scale(0.975); }
+.atlas-envoyer:active {
+  transform: scale(0.96);
+  box-shadow:
+    inset 0 0 0 1px var(--atlas-or, #B98B47),
+    inset 0 0 0 2.4px #f3efe6,
+    inset 0 0 0 3.2px var(--atlas-or, #B98B47),
+    inset 0 7px 11px -5px rgba(47, 59, 47, 0.52),
+    0 3px 8px -5px rgba(79, 95, 76, 0.46);
+}
 
 /* L'OBJET — un disque plein, son micro, ses deux souffles. Il ne change jamais
  * de forme, seulement de signe : le micro devient un carré d'arrêt. C'est sa
@@ -1344,23 +1376,106 @@ body {
   justify-content: center;
   flex: 0 0 auto;
 }
+/* ═══ « EN TASSE », VERT CLAIR — son choix du 2 septembre 2026 ═════════════
+ *
+ * Planche `appli/note-vocale-tasse-et-envoi.html`, matière 6 et flèche « en
+ * tasse ». Ce qui remplace l'aplat vert pin plat du 30 août, et pourquoi :
+ * sa plainte du matin — *« je n'aime pas la grosse note vocale verte »* — ne
+ * visait pas la COULEUR mais l'aplat. Le même vert, éclairé et cerclé, lui
+ * convient ; c'est ce que la planche a permis de trancher, en posant côte à
+ * côte le brun et le vert dans la même matière.
+ *
+ * TROIS ANNEAUX, ET LEURS ÉPAISSEURS SONT RETENUES, PAS DÉRIVÉES. Le filet
+ * d'or au bord, la porcelaine, un second filet d'or, puis le liquide. Sur la
+ * flèche (46 px) les mêmes anneaux à proportion tomberaient à 1,1 et 0,63 px :
+ * sous un pixel, un anneau ne s'affiche plus — il devient une teinte pâle, et
+ * la tasse disparaît. On garde donc la LISIBILITÉ du trait avant sa
+ * proportion.
+ *
+ * CE QUI SUIT LA CHARTE ET CE QUI NE LA SUIT PAS :
+ *   · l'or du filet — il vaut déjà la même valeur sur les huit chartes
+ *     (`OR_ORIGINE`), donc rien à faire ;
+ *   · les deux verts — `sage` et `sageLight` sont FIXES par construction
+ *     (`design-tokens.ts`), au même titre qu'`alert` : ils ne changent pas
+ *     d'un thème à l'autre, ce qui en fait justement une matière ;
+ *   · la porcelaine reste claire sur les huit. Une porcelaine qui suivrait le
+ *     fond deviendrait sombre sur Nuit et Sylve — l'anneau disparaîtrait, et
+ *     avec lui l'objet. C'est le même arbitrage que pour `sage`.
+ *
+ * L'ANIMATION EST LENTE À DESSEIN : huit secondes par tour. On ne doit pas la
+ * voir tourner, on doit sentir que ce n'est pas figé. Elle s'arrête sous
+ * `prefers-reduced-motion`. */
 .atlas-micro {
   position: relative;
   z-index: 2;
-  width: 76px;
-  height: 76px;
+  width: 80px;
+  height: 80px;
   border-radius: 99px;
   display: flex;
   align-items: center;
   justify-content: center;
   -webkit-tap-highlight-color: transparent;
-  /* Les deux ombres viennent de sa planche (`.micro-plein`, `.envoyer`) : elles
-   * décollent le disque du fond, et c'est ce qui le désigne comme LE geste de
-   * l'écran. Sans elles, il se lit comme une pastille posée à plat. */
-  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.16);
-  transition: transform 0.2s;
+  /* **Le signe est BLANC, et sa couleur vit ICI, pas dans l'écran.** La
+   * matière est fixe sur les huit chartes ; son pictogramme l'est donc aussi.
+   * L'écrire en style en ligne reviendrait à poser une couleur en clair dans
+   * un `.tsx`, ce que le dépôt refuse. Mesuré : le blanc tient 3,2 de
+   * contraste sur ce vert — au-dessus du seuil de 3 pour un pictogramme. */
+  color: #ffffff;
+  background: radial-gradient(
+    circle at 34% 26%,
+    var(--atlas-sageLight, #9fbd82) 0%,
+    var(--atlas-sage, #7d9a6d) 50%,
+    var(--atlas-rustDeep, #4f5f4c) 100%
+  );
+  /* Le creux sous le bord dit que le liquide est DANS la tasse ; l'ombre
+   * portée la décolle du papier, et c'est ce qui désigne LE geste de l'écran. */
+  box-shadow:
+    inset 0 0 0 1.1px var(--atlas-or, #B98B47),
+    inset 0 0 0 3px #f3efe6,
+    inset 0 0 0 4.1px var(--atlas-or, #B98B47),
+    inset 0 8px 12px -6px rgba(47, 59, 47, 0.42),
+    0 10px 22px -6px rgba(79, 95, 76, 0.36);
+  transition: transform 0.2s cubic-bezier(0.22, 0.61, 0.36, 1), box-shadow 0.22s;
 }
-.atlas-micro:active { transform: scale(0.95); }
+/* La surface qui tourne, et l'ondulation de la tension de surface à l'appui :
+ * deux pseudo-éléments plutôt qu'un, parce que l'un tourne en permanence et
+ * l'autre ne vit qu'un demi-tiers de seconde sous le doigt. */
+.atlas-micro::before {
+  content: "";
+  position: absolute;
+  inset: 5px;
+  border-radius: 99px;
+  pointer-events: none;
+  background: radial-gradient(circle at 68% 74%, rgba(255, 255, 255, 0.34), transparent 58%);
+  animation: atlas-tourner 8s linear infinite;
+}
+.atlas-micro::after {
+  content: "";
+  position: absolute;
+  inset: 6px;
+  border-radius: 99px;
+  pointer-events: none;
+  opacity: 0;
+  box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.55);
+}
+.atlas-micro:active {
+  transform: scale(0.97);
+  box-shadow:
+    inset 0 0 0 1.1px var(--atlas-or, #B98B47),
+    inset 0 0 0 3px #f3efe6,
+    inset 0 0 0 4.1px var(--atlas-or, #B98B47),
+    inset 0 10px 16px -6px rgba(47, 59, 47, 0.52),
+    0 4px 12px -6px rgba(79, 95, 76, 0.46);
+}
+.atlas-micro:active::after { animation: atlas-onduler 0.5s ease-out; }
+@keyframes atlas-tourner { to { transform: rotate(360deg); } }
+@keyframes atlas-onduler {
+  from { opacity: 0.8; box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.55); }
+  to { opacity: 0; box-shadow: 0 0 0 16px rgba(255, 255, 255, 0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .atlas-micro::before { animation: none; }
+}
 /* LES DEUX SOUFFLES — « 1,5 cm max de chaque côté », sa mesure exacte, écrite
  * en centimètres plutôt que traduite en pixels : dans six mois, « 57 px » ne
  * dirait plus d'où il sort. Ils s'éteignent vers l'extérieur — une onde qui
@@ -1446,22 +1561,38 @@ body {
 
 /* L'onde part PLEINE, à plat : sinon les deux premières secondes montrent un
  * trait qui pousse dans le vide, et la barre paraît mal cadrée. */
-.atlas-onde {
+/* ═══ LE TRAIT — son choix du 2 septembre 2026 ════════════════════════════
+ *
+ * Il remplace les barreaux. Sa demande : *« pour la dictée j'aimerais essayer
+ * le trait à la voix, voir comment il augmente »*.
+ *
+ * **Un trait continu garde la voix d'un seul tenant** là où des barreaux la
+ * découpent en morceaux. C'est la même information — la force du son —, écrite
+ * à la plume plutôt qu'en bâtons.
+ *
+ * **ET IL NE DÉFILE PAS PAR UNE ANIMATION : ce sont les MESURES qui avancent.**
+ * Le composant tient soixante cases ; à chaque tour il pousse la mesure du
+ * moment à droite et tout glisse d'un cran. Ce qu'il a dit il y a deux
+ * secondes reste donc mince à gauche — le trait garde sa voix au lieu de la
+ * rejouer. Une animation CSS ferait passer un motif figé sous ses yeux, ce qui
+ * est exactement le contraire de « voir comment il augmente ».
+ *
+ * Le fondu des deux bords évite que le trait ne bute contre le chrono à
+ * gauche et contre la flèche à droite. */
+.atlas-trait {
   flex: 1;
   min-width: 0;
   height: 26px;
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 2px;
-  overflow: hidden;
-  -webkit-mask-image: linear-gradient(90deg, transparent, #000 22%, #000);
-  mask-image: linear-gradient(90deg, transparent, #000 22%, #000);
+  position: relative;
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent);
+  mask-image: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent);
 }
-.atlas-onde i {
-  flex: 0 0 2px;
-  border-radius: 2px;
-  opacity: 0.85;
+.atlas-trait svg {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 26px;
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════

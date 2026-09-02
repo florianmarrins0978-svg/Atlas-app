@@ -189,7 +189,17 @@ export default function PrimaryButton({
         // Un liseré posé en `box-shadow` plutôt qu'en `border` : la bordure
         // ajouterait trois pixels de haut, et la capsule secondaire cesserait
         // d'avoir exactement la taille de la pleine.
-        boxShadow: `inset 0 0 0 1.5px ${colors.or}`,
+        //
+        // **IL N'EST PLUS EN OR DEPUIS LE 2 SEPTEMBRE 2026** — planche
+        // « A — Épurée ». L'or dit « à faire » partout ailleurs dans
+        // l'application, et il cerclait ici le bouton dont on veut justement
+        // qu'on se détourne. Pire depuis le même jour : la note vocale porte
+        // désormais un filet d'or, à trente pixels au-dessus. Deux ors qui
+        // s'appellent, et l'œil ne sait plus lequel est le geste.
+        //
+        // Cette capsule ne sert QUE sur la fiche client (`secondaire` n'a pas
+        // d'autre appel) : le changement ne déborde nulle part.
+        boxShadow: `inset 0 0 0 1.5px ${colors.line}`,
       }
     : { ...dessin, backgroundColor: colors.rust, color: colors.card };
 

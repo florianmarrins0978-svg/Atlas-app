@@ -1,4 +1,5 @@
 import { spawn, spawnSync } from "node:child_process";
+import { NPM, OPTIONS_SERVEUR, arreterArbre } from "./_processus";
 import { setTimeout as attendre } from "node:timers/promises";
 import { existsSync, readdirSync } from "node:fs";
 
@@ -51,18 +52,20 @@ if (await repond()) {
 //
 // `detached` permet de tuer tout l'arbre de processus : `npm run banc` lance
 // lui-même le serveur, et tuer le parent seul laisserait le port occupé.
-const serveur = spawn("npm", ["run", "banc"], {
+// **`npm` s'appelle `npm.cmd` sous Windows, et il lui faut un shell** : sans
+// cela, `spawn` rend `EINVAL` et l'étape tombe avant d'avoir rien vérifié.
+const serveur = spawn(NPM, ["run", "banc"], {
   stdio: "ignore",
   // Le profil est posé ici comme `.devcontainer/demarrer.sh` le pose sur le
   // banc : sans lui, la version bâtie refuse de démarrer, et le contrôle
   // échouerait pour une raison qui n'a rien à voir avec la connexion.
   env: { ...process.env, ATLAS_PROFIL: "banc" },
-  detached: true,
+  ...OPTIONS_SERVEUR,
 });
 
 function eteindre() {
   try {
-    if (serveur.pid) process.kill(-serveur.pid, "SIGTERM");
+    arreterArbre(serveur.pid);
   } catch {
     /* déjà mort */
   }

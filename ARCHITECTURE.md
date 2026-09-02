@@ -20800,3 +20800,119 @@ verdicts : faux, complet et instantané.
 ailleurs** : sous shell les arguments sont ré-interprétés, et l'activer partout
 changerait le comportement d'étapes qui marchent depuis des mois pour un défaut
 qui ne s'y produit pas.
+
+
+## §233. La note vocale « en tasse » : une matière fixe dans une charte qui bouge
+
+*Ses choix du 2 septembre 2026, après huit séries de dessins et quatre
+planches. Ce paragraphe garde ce qui, sans lui, se redéciderait au hasard.*
+
+### Ce qu'il refusait n'était pas le vert
+
+Toute la journée a commencé sur *« je n'aime pas la grosse note vocale
+verte »*, et quatre séries de dessins ont supposé que le coupable était la
+COULEUR : on a essayé la matière (couronne, guilloché, empreinte, cabochon
+d'or), puis la forme (la phrase, le cachet, le micro nu, le signet), puis le
+minimum (le mot, le point, le cercle, le fil), puis le signe. Aucune n'a pris.
+
+C'est la planche « en tasse » qui a tranché, en posant côte à côte le MÊME
+objet, la même lumière, l'un brun et l'autre vert : le vert lui convient dès
+qu'il n'est plus un aplat mat. **Ce n'était pas la couleur, c'était la
+platitude.** La leçon vaut au-delà de cet objet — devant un refus qui nomme une
+couleur, faire varier la matière AVANT de changer la teinte.
+
+### Pourquoi cette matière ne suit pas les huit chartes
+
+Le disque emploie `sage` et `sageLight`, qui sont FIXES par construction
+(`design-tokens.ts`), au même titre qu'`alert` — et la porcelaine reste claire
+sur les huit. C'est délibéré, et voici l'arbitrage :
+
+| | |
+|---|---|
+| l'or du filet | il vaut déjà la même valeur sur les huit thèmes (`OR_ORIGINE`) |
+| les deux verts | fixes : une matière qui change de couleur n'est plus la même matière |
+| la porcelaine | fixe aussi. Une porcelaine qui suivrait le fond deviendrait sombre sur Nuit et Sylve, l'anneau disparaîtrait, et l'objet avec |
+| le micro | **blanc**, et sa couleur vit dans `globals.css`. La poser en style en ligne écrirait une couleur en clair dans un écran, ce que le dépôt refuse |
+
+### Les épaisseurs de trait ne se mettent pas à l'échelle
+
+Le disque fait 80 px, la flèche d'envoi 46. À proportion exacte, l'auréole de
+1,9 px tomberait à 1,1 et le filet d'or à 0,63. **Sous un pixel, un anneau ne
+s'affiche plus** : il devient une teinte pâle, et la tasse disparaît. Les
+épaisseurs sont donc RETENUES (1,0 et 1,4), pas divisées.
+
+C'est une règle générale, pas une exception locale : **on garde la lisibilité
+du trait avant sa proportion.** Un anneau juste au calcul et invisible à
+l'écran est faux.
+
+### Le trait de la dictée : ce sont les mesures qui avancent, pas une image
+
+Les barreaux découpaient la voix en morceaux ; le trait la garde d'un seul
+tenant. Deux choix portent tout le reste :
+
+1. **Un contour fermé, pas un tracé épaissi.** La largeur d'un tracé SVG vaut
+   pour toute sa longueur — elle ne peut pas suivre la voix. On dessine donc le
+   dessus, puis le dessous en sens inverse, et l'on referme (`contourDuTrait`,
+   fonction PURE, éprouvable sans navigateur) ;
+2. **Aucune animation de défilement.** Le composant tient soixante mesures ; à
+   chaque tour il pousse celle du moment à droite et tout glisse d'un cran. Ce
+   qu'il a dit il y a deux secondes reste mince à gauche. Une animation CSS
+   ferait passer un motif figé sous ses yeux — le contraire exact de sa
+   demande, *« voir comment il augmente »*.
+
+Le plancher de 0,35 px n'est pas décoratif : à zéro, le trait disparaîtrait au
+premier silence et l'écran paraîtrait figé.
+
+### Ce qu'un style en ligne écrase, et comment il ment
+
+La flèche gardait `backgroundColor` et `boxShadow` en style en ligne. Ils
+écrasaient les anneaux — mais **partiellement** : `backgroundColor` ne touche
+pas `background-image`, si bien que le dégradé passait et que seuls les filets
+disparaissaient. L'objet avait donc l'air presque juste, ce qui est le pire des
+cas. Ni les types ni le lint ne voient cela ; **la capture, si.**
+
+### La fiche : un revirement assumé, et payé en pixels
+
+Les intitulés des cases avaient été retirés le 30 août à sa demande — *« je
+veux que tout tienne sur une seule page »*. Ils reviennent le 2 septembre,
+choisis sur planche. La contrainte du 30 août tient quand même, et c'est ce qui
+rend le revirement possible : les 36 px des deux libellés sont **payés**, pas
+ajoutés — 28 par la rangée « + Ajouter une adresse client différente », qui
+remonte au bout de l'intitulé « Chantier », et 27 par l'écart des blocs ramené
+de 7 à 4 px. L'écran mesure 604 px, la hauteur exacte de la feuille.
+
+**Un contrôle réclamait le libellé disparu**
+(`test-coordonnees-depuis-accueil-e2e`). Il éprouve désormais le GESTE — la
+commande ouvre-t-elle la case de l'adresse du client ? — plutôt que cinq mots.
+C'est `CLAUDE.md` §5 bis : une suite qui fixe un libellé rend l'écran
+impossible à retoucher.
+
+## §234. La batterie ne finissait pas sous Windows, et le verdict accusait le produit
+
+*Trouvé le 2 septembre 2026, en voulant éprouver le lot ci-dessus.*
+
+Les sept premières étapes passaient ; les DEUX DERNIÈRES — « Suites
+navigateur » et « Connexion derrière un proxy » — tombaient sur un unique
+`spawn EINVAL`, sans avoir rien vérifié. Ce sont précisément celles qui
+couvrent les écrans.
+
+Deux causes, toutes deux invisibles ailleurs :
+
+1. **`npm` est un `.cmd` sous Windows**, et Node refuse de le lancer sans shell
+   depuis la correction de la CVE-2024-27980. Le message ne nomme ni le fichier
+   ni la raison : il dit « argument invalide », et l'on cherche dans le
+   produit ;
+2. **`process.kill(-pid)` n'existe pas** : le moins-devant-le-pid est un groupe
+   de processus POSIX. Le serveur d'essai survivait donc à la suite qui l'avait
+   lancé et gardait le port 3000 pour la suivante — qui accusait alors le
+   produit d'un « ECONNREFUSED » qui n'était pas le sien.
+
+`scripts/_processus.ts` porte les deux réponses, écrites **une fois** pour les
+deux appelants (`run-e2e-tests.ts` et `verifier-connexion-avec-serveur.mts`) :
+deux serveurs lancés séparément auraient divergé au premier ajustement.
+
+**Le drapeau `shell` reste faux ailleurs**, et ce n'est pas une précaution :
+sous shell les arguments sont ré-interprétés par l'interpréteur, et l'activer
+partout changerait le comportement d'étapes qui marchent depuis des mois pour
+un défaut qui ne s'y produit pas. C'est la même règle que la batterie elle-même
+avait déjà retenue un cran plus haut — le piège restait dans ce qu'ELLE lance.
