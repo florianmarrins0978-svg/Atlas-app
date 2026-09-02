@@ -1,0 +1,642 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas — Le cadran des chantiers</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Italiana&family=Jost:wght@400;500;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+<!--
+  ————————————————————————————————————————————————————————————————————————
+  LE CADRAN DES CHANTIERS — maquette ESSAYABLE, rien n'est codé
+  ————————————————————————————————————————————————————————————————————————
+
+  Votre demande du 2 septembre 2026 : « ne code rien mais fais-moi un visuel
+  de la première page de mon appli (chantiers) dans un esprit luxe, je veux
+  qu'elle soit splendide et qu'elle ne ressemble à aucune appli qui existe ».
+
+  LE PARTI PRIS. L'écran est traité comme le cadran d'une montre de
+  manufacture — l'objet de luxe que les artisans connaissent le mieux :
+
+    · le fond est UN émail bleu nuit, guilloché « clous de Paris » —
+      aucune carte, aucun second fond : tout est posé SUR le cadran ;
+    · « En cours · 3 » est un GUICHET, comme la date d'une montre ;
+    · « Créer un devis » est la COURONNE : un bouton d'or cannelé qui
+      dépasse du boîtier, à droite. On appuie, elle se remonte, la feuille
+      monte — la demi-seconde et le recul de l'écran sont ceux de
+      l'application d'aujourd'hui, repris tels quels ;
+    · la liste descend le long d'un CHEMIN DE FER — le rail minuté des
+      cadrans — et les quantièmes sont portés à la taille d'une
+      complication ;
+    · l'OR ne se pose que sur ce qui attend un geste de vous : la couronne,
+      et le cabochon posé sur la ligne à reprendre. Le reste est argent.
+
+  CE QUI EST VRAI ET CE QUI EST DÉMO. La structure reprend l'écran réel
+  (ATLAS, le titre, Vos clients, le compte, la liste, les cinq onglets, la
+  feuille qui monte avec le champ « Nom du client » — le vrai premier champ).
+  Les trois chantiers et leurs dates sont des DONNÉES DE DÉMONSTRATION.
+
+  RIEN N'EST DÉCIDÉ. C'est une proposition de monde visuel, pas la charte :
+  l'application garde la sienne tant que vous n'avez pas choisi.
+  ————————————————————————————————————————————————————————————————————————
+-->
+<style>
+  :root{
+    /* L'émail — un seul fond pour tout l'écran, éclairci au centre comme
+       un émail grand feu sous la lumière. */
+    --email:#0d1522;
+    --email-creux:#080d16;   /* le fond d'un guichet, en retrait */
+    --email-nuit:#060a12;    /* autour du cadran, sur grand écran */
+    /* Les cinq marches d'opalin — aucune autre valeur d'argenté n'existe. */
+    --op1:#f4f6f9;
+    --op2:#dfe5ec;
+    --op3:#b9c3d1;
+    --op4:#93a1b5;
+    --op5:#48586f;
+    /* L'or — uniquement ce qui attend un geste. */
+    --or:#c9a15e;
+    --or-clair:#e7cc93;
+    --or-sombre:#8f6c33;
+    --serif:'Italiana', Georgia, serif;
+    --sans:'Jost', system-ui, sans-serif;
+  }
+
+  *{ margin:0; padding:0; box-sizing:border-box; }
+  html{ background:var(--email-nuit); }
+
+  body{
+    font-family:var(--sans);
+    color:var(--op2);
+    background:var(--email-nuit);
+    min-height:100dvh;
+    display:flex;
+    justify-content:center;
+  }
+
+  /* Ce que le navigateur dessine lui-même suit le cadran. */
+  ::selection{ background:rgba(201,161,94,.32); color:var(--op1); }
+  input{ caret-color:var(--or); }
+  :focus-visible{ outline:1px solid var(--or); outline-offset:3px; border-radius:2px; }
+  ::-webkit-scrollbar{ width:4px; }
+  ::-webkit-scrollbar-thumb{ background:var(--op5); }
+
+  /* ── Le cadran ─────────────────────────────────────────────────────── */
+  .cadran{
+    position:relative;
+    width:100%;
+    max-width:430px;
+    height:100dvh;
+    overflow:hidden;
+    background:
+      /* la lumière de l'émail, puis sa profondeur vers les bords */
+      radial-gradient(120% 90% at 50% 12%, #17253c 0%, var(--email) 52%, #0a111d 100%);
+    display:flex;
+    flex-direction:column;
+  }
+  /* Le guilloché clous de Paris : deux trames croisées, sous tout le
+     texte et jamais en concurrence avec lui. */
+  .cadran::before{
+    content:"";
+    position:absolute; inset:0;
+    background-image:
+      repeating-linear-gradient(45deg,  rgba(244,246,249,.028) 0 1px, transparent 1px 7px),
+      repeating-linear-gradient(-45deg, rgba(244,246,249,.028) 0 1px, transparent 1px 7px),
+      repeating-linear-gradient(45deg,  rgba(0,0,0,.20) 0 1px, transparent 1px 7px),
+      repeating-linear-gradient(-45deg, rgba(0,0,0,.20) 0 1px, transparent 1px 7px);
+    background-position:0 0, 0 0, 3px 3px, 3px 3px;
+    pointer-events:none;
+  }
+  .cadran > *{ position:relative; }
+
+  /* La scène entière recule quand la feuille monte — mesures de
+     l'application d'aujourd'hui, reprises telles quelles. */
+  .scene{
+    display:flex; flex-direction:column; flex:1; min-height:0;
+    transform-origin:50% 44%;
+    transition:transform 560ms cubic-bezier(.22,.61,.36,1), filter 560ms;
+  }
+  body.ouvert .scene{ transform:scale(.93) translateY(-10px); filter:brightness(.78); }
+
+  /* ── La signature ──────────────────────────────────────────────────── */
+  .signature{
+    padding-top:30px;
+    text-align:center;
+    font-size:11px; font-weight:500;
+    letter-spacing:.52em; text-indent:.52em;
+    color:var(--op2);
+  }
+
+  h1{
+    margin-top:26px;
+    text-align:center;
+    font-family:var(--serif);
+    font-weight:400;
+    font-size:44px;
+    line-height:1;
+    letter-spacing:.01em;
+    color:var(--op1);
+    /* Gravé EN CREUX dans l'émail : l'ombre mord le haut des lettres, la
+       lumière accroche leur bas — l'inverse d'un embossage. */
+    text-shadow:0 -1px 0 rgba(0,0,0,.65), 0 1px 0 rgba(244,246,249,.14);
+  }
+
+  .clients{
+    display:inline-flex; align-items:center; gap:7px;
+    margin-top:14px;
+    font-size:9.5px; font-weight:500;
+    letter-spacing:.3em; text-indent:.3em;
+    text-transform:uppercase;
+    color:var(--op3);
+    text-decoration:none;
+  }
+  .clients i{
+    width:5px; height:5px;
+    border-right:1px solid var(--op3);
+    border-top:1px solid var(--op3);
+    transform:rotate(45deg);
+  }
+  .clients:hover{ color:var(--op1); }
+  .clients:hover i{ border-color:var(--op1); }
+  .axe{ text-align:center; }
+
+  /* ── Le guichet — « En cours », comme la date d'une montre ─────────── */
+  .guichet-ligne{
+    margin-top:24px;
+    display:flex; justify-content:center; align-items:center; gap:12px;
+  }
+  .guichet-ligne .mot{
+    font-size:9.5px; font-weight:500;
+    letter-spacing:.3em; text-indent:.3em;
+    text-transform:uppercase;
+    color:var(--op4);
+  }
+  .guichet{
+    min-width:44px; height:34px;
+    padding:0 10px;
+    display:flex; align-items:center; justify-content:center;
+    background:linear-gradient(180deg, #060b13, var(--email-creux));
+    border:1px solid var(--op5);
+    box-shadow:inset 0 2px 5px rgba(0,0,0,.55), 0 1px 0 rgba(244,246,249,.05);
+    font-family:var(--serif);
+    font-size:21px;
+    color:var(--op1);
+    font-variant-numeric:tabular-nums;
+  }
+
+  /* ── La couronne ───────────────────────────────────────────────────── */
+  /* Elle dépasse du boîtier, à droite, comme sur la montre. Le libellé et
+     ses mesures (13px, graisse 800, 0,22em) sont ceux d'aujourd'hui. */
+  .remontoir{
+    margin-top:30px;
+    display:flex; align-items:center; justify-content:flex-end; gap:16px;
+    padding-right:0;
+    background:none; border:none;
+    width:100%;
+    cursor:pointer;
+    color:var(--or);
+    font-family:var(--sans);
+  }
+  .remontoir .mot{
+    font-size:13px; font-weight:800;
+    letter-spacing:.22em; text-indent:.22em;
+    text-transform:uppercase;
+  }
+  .couronne{
+    width:26px; height:56px;
+    border-radius:8px 0 0 8px;
+    background:
+      repeating-linear-gradient(180deg,
+        var(--or-sombre) 0 3px, var(--or) 3px 6px, var(--or-clair) 6px 8px, var(--or) 8px 11px),
+      var(--or);
+    background-size:100% 22px;
+    box-shadow:
+      inset 2px 0 3px rgba(255,244,214,.5),
+      inset -4px 0 6px rgba(63,42,10,.6),
+      0 2px 10px rgba(0,0,0,.5);
+    flex:none;
+  }
+  /* Au survol, la couronne s'éclaire par sa matière — jamais par un halo. */
+  .remontoir:hover .couronne{ filter:brightness(1.12); }
+  /* Le remontage : les cannelures défilent — un seul mouvement sur tout
+     l'écran, et il précède la feuille d'une demi-seconde. */
+  @keyframes remonter{ from{ background-position-y:0; } to{ background-position-y:132px; } }
+  body.remonte .couronne{ animation:remonter 520ms cubic-bezier(.3,.1,.3,1); }
+
+  /* ── Le chemin de fer ──────────────────────────────────────────────── */
+  .fil{ flex:1; min-height:0; overflow-y:auto; padding:26px 0 96px; }
+
+  /* Une ligne = le brin (lien) + « Retirer », découvert au glissement —
+     le geste de l'application, rejoué ici pour qu'il s'essaye. */
+  .ligne{ position:relative; overflow:hidden; }
+  .ligne.parti{ display:none; }
+  .ligne .quand, .ligne .cabochon, .ligne .corps{
+    transition:transform 300ms cubic-bezier(.22,.61,.36,1);
+  }
+  .ligne.glisse .quand, .ligne.glisse .cabochon, .ligne.glisse .corps{
+    transform:translateX(-88px);
+  }
+  .retirer{
+    position:absolute; right:0; top:0; bottom:0; width:88px;
+    display:flex; align-items:center; justify-content:center;
+    background:var(--email-creux);
+    border:none; border-left:1px solid var(--op5);
+    box-shadow:inset 2px 0 6px rgba(0,0,0,.45);
+    color:var(--op1);
+    font-family:var(--sans); font-size:9.5px; font-weight:700;
+    letter-spacing:.24em; text-indent:.24em; text-transform:uppercase;
+    cursor:pointer;
+    opacity:0; pointer-events:none;
+    transition:opacity 200ms;
+  }
+  .ligne.glisse .retirer{ opacity:1; pointer-events:auto; }
+
+  .brin{
+    position:relative;
+    display:grid;
+    grid-template-columns:64px 26px 1fr;
+    align-items:center;
+    padding:20px 22px 20px 0;
+    text-decoration:none;
+    color:inherit;
+  }
+  .brin:hover{ background:rgba(244,246,249,.03); }
+
+  /* Le rail minuté, continu de brin en brin. */
+  .brin::before{
+    content:"";
+    position:absolute; top:0; bottom:0; left:76px;
+    width:7px;
+    border-left:1px solid var(--op5);
+    border-right:1px solid var(--op5);
+    background:repeating-linear-gradient(180deg, var(--op5) 0 1px, transparent 1px 8px);
+  }
+
+  .quand{
+    text-align:right; padding-right:26px;
+    grid-column:1; grid-row:1 / span 3;
+  }
+  .quand b{
+    display:block;
+    font-family:var(--serif); font-weight:400;
+    font-size:34px; line-height:.95;
+    color:var(--op1);
+    font-variant-numeric:tabular-nums;
+  }
+  .quand span{
+    display:block; margin-top:4px;
+    font-size:9px; font-weight:500;
+    letter-spacing:.28em; text-indent:.28em;
+    text-transform:uppercase;
+    color:var(--op4);
+  }
+
+  /* Le cabochon : la seule pierre de l'écran, sur la ligne qui attend. */
+  .cabochon{
+    grid-column:2; grid-row:1 / span 3;
+    justify-self:center;
+    width:11px; height:11px; border-radius:50%;
+    background:radial-gradient(circle at 35% 30%, var(--or-clair), var(--or) 55%, var(--or-sombre));
+    box-shadow:0 0 0 3px var(--email), 0 2px 4px rgba(0,0,0,.55);
+  }
+
+  .corps{ grid-column:3; padding-left:16px; min-width:0; }
+  .corps > span{ display:block; }
+  .nom{
+    font-family:var(--serif); font-weight:400;
+    font-size:21px; line-height:1.15;
+    color:var(--op1);
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+  }
+  .lieu{
+    margin-top:3px;
+    font-size:13px; font-weight:400;
+    color:var(--op3);
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+  }
+  .etat{
+    margin-top:7px;
+    font-size:9.5px; font-weight:500;
+    letter-spacing:.24em; text-indent:.24em;
+    text-transform:uppercase;
+    color:var(--op4);
+  }
+  .attend .etat{ color:var(--or); }
+  .precision{ margin-top:3px; font-size:12px; color:var(--op4); }
+
+  /* ── Le réhaut — les cinq onglets, comme les index d'un cadran ─────── */
+  .rehaut{
+    position:absolute; left:0; right:0; bottom:0;
+    display:flex;
+    background:linear-gradient(180deg, rgba(6,10,18,.86), #060a12 40%);
+    border-top:1px solid var(--op5);
+    backdrop-filter:blur(6px);
+    padding:10px 0 max(14px, env(safe-area-inset-bottom));
+  }
+  .rehaut a{
+    flex:1;
+    display:flex; flex-direction:column; align-items:center; gap:7px;
+    text-decoration:none;
+    /* Lu debout, en plein soleil : une marche d'opalin plus claire et un
+       corps plus grand que la seule norme de contraste. */
+    font-size:9.5px; font-weight:500;
+    letter-spacing:.18em; text-indent:.18em;
+    text-transform:uppercase;
+    color:var(--op3);
+  }
+  .rehaut .index{ width:1px; height:7px; background:var(--op5); }
+  .rehaut a[aria-current]{ color:var(--op1); }
+  .rehaut a[aria-current] .index{
+    width:7px; height:7px; background:var(--op1);
+    transform:rotate(45deg); /* l'index de midi, en losange */
+  }
+
+  /* ── La trappe des retirés ─────────────────────────────────────────── */
+  /* Le tiroir de l'application, dans le vocabulaire du cadran : un guichet
+     posé au-dessus du réhaut. Rien n'est écrit tant qu'il est ouvert —
+     « Annuler » attend un geste, donc il est d'or. */
+  .trappe{
+    position:absolute; left:14px; right:14px; bottom:76px; z-index:4;
+    display:none; align-items:center; justify-content:space-between; gap:12px;
+    padding:12px 6px 12px 18px;
+    background:linear-gradient(180deg, #060b13, var(--email-creux));
+    border:1px solid var(--op5);
+    box-shadow:inset 0 1px 0 rgba(244,246,249,.05), 0 10px 26px rgba(0,0,0,.55);
+  }
+  body.retrait .trappe{ display:flex; }
+  .trappe .qui{
+    font-family:var(--serif); font-size:18px; color:var(--op1);
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+  }
+  .trappe .annuler{
+    background:none; border:none; cursor:pointer;
+    color:var(--or);
+    font-family:var(--sans); font-size:9.5px; font-weight:700;
+    letter-spacing:.24em; text-indent:.24em; text-transform:uppercase;
+    padding:10px 14px;
+    flex:none;
+  }
+
+  /* ── Le voile et la feuille ────────────────────────────────────────── */
+  .voile{
+    position:absolute; inset:0; z-index:5;
+    background:rgba(4,7,12,.35);
+    border:none; cursor:pointer;
+    opacity:0; visibility:hidden;
+    transition:opacity 460ms, visibility 0s 460ms;
+  }
+  body.ouvert .voile{ opacity:1; visibility:visible; transition:opacity 460ms, visibility 0s 0s; }
+
+  .feuille{
+    position:absolute; left:0; right:0; bottom:0; top:60px; z-index:6;
+    overflow:hidden;
+    background:radial-gradient(130% 80% at 50% 0%, #17253c 0%, var(--email) 55%);
+    border-top:1px solid var(--or);
+    border-radius:26px 26px 0 0;
+    box-shadow:0 -22px 50px rgba(0,0,0,.55);
+    transform:translateY(102%);
+    visibility:hidden;
+    transition:transform 560ms cubic-bezier(.22,.61,.36,1), visibility 0s 560ms;
+    padding:26px 26px 0;
+  }
+  /* Le même émail partout : la feuille porte son guilloché, comme le cadran. */
+  .feuille::before{
+    content:"";
+    position:absolute; inset:0;
+    background-image:
+      repeating-linear-gradient(45deg,  rgba(244,246,249,.028) 0 1px, transparent 1px 7px),
+      repeating-linear-gradient(-45deg, rgba(244,246,249,.028) 0 1px, transparent 1px 7px),
+      repeating-linear-gradient(45deg,  rgba(0,0,0,.20) 0 1px, transparent 1px 7px),
+      repeating-linear-gradient(-45deg, rgba(0,0,0,.20) 0 1px, transparent 1px 7px);
+    background-position:0 0, 0 0, 3px 3px, 3px 3px;
+    pointer-events:none;
+  }
+  .feuille > *{ position:relative; }
+  body.ouvert .feuille{ transform:none; visibility:visible; transition:transform 560ms cubic-bezier(.22,.61,.36,1), visibility 0s 0s; }
+
+  .retour{
+    background:none; border:none; cursor:pointer;
+    font-size:22px; line-height:1;
+    color:var(--op3);
+    padding:12px 16px 12px 2px;
+  }
+  .feuille h2{
+    margin-top:10px;
+    text-align:center;
+    font-family:var(--serif); font-weight:400;
+    font-size:30px;
+    color:var(--op1);
+  }
+  .champ{ margin-top:34px; }
+  .champ label{
+    display:block;
+    font-size:9.5px; font-weight:500;
+    letter-spacing:.3em; text-indent:.3em;
+    text-transform:uppercase;
+    color:var(--op4);
+  }
+  .champ input{
+    width:100%; margin-top:8px; padding:10px 2px;
+    background:none; border:none;
+    border-bottom:1px solid var(--op5);
+    font-family:var(--serif); font-size:20px;
+    color:var(--op1);
+  }
+  .champ input:focus{ outline:none; border-bottom-color:var(--or); }
+
+  /* ── Le boîtier, sur grand écran ───────────────────────────────────── */
+  /* Une montre a une boîte : carrure d'émail sombre, chant d'or, et le
+     cadran s'en détache — jamais un recadrage de téléphone qui flotte. */
+  @media (min-width:480px){
+    body{ align-items:center; padding:32px 0; }
+    .cadran{
+      height:min(880px, calc(100dvh - 64px));
+      border-radius:6px;
+      box-shadow:
+        0 0 0 1px var(--op5),
+        0 0 0 9px #0e1726,
+        0 0 0 10px var(--or-sombre),
+        0 34px 90px rgba(0,0,0,.65);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    .scene, .feuille, .voile, .couronne{ transition:none !important; animation:none !important; }
+  }
+</style>
+
+<div class="cadran">
+  <div class="scene" id="scene">
+
+    <p class="signature">ATLAS</p>
+    <h1>Vos chantiers</h1>
+
+    <p class="axe">
+      <a class="clients" href="#">Vos clients<i aria-hidden="true"></i></a>
+    </p>
+
+    <div class="guichet-ligne">
+      <span class="mot" id="encours">En cours</span>
+      <span class="guichet" id="compte" aria-labelledby="encours">3</span>
+    </div>
+
+    <button class="remontoir" type="button" id="remontoir">
+      <span class="mot">Créer un devis</span>
+      <span class="couronne" aria-hidden="true"></span>
+    </button>
+
+    <nav class="fil" aria-label="Chantiers">
+
+      <div class="ligne" data-nom="M. Martins">
+        <a class="brin attend" href="#">
+          <span class="quand"><b>28</b><span>août</span></span>
+          <span class="cabochon" aria-hidden="true"></span>
+          <span class="corps">
+            <span class="nom">M. Martins</span>
+            <span class="lieu">Biot, route des Serres</span>
+            <span class="etat">Devis accepté</span>
+            <span class="precision">Accepté le mardi 1er septembre.</span>
+          </span>
+        </a>
+        <button class="retirer" type="button">Retirer</button>
+      </div>
+
+      <div class="ligne" data-nom="Mme Grospiron">
+        <a class="brin" href="#">
+          <span class="quand"><b>31</b><span>août</span></span>
+          <span class="corps">
+            <span class="nom">Mme Grospiron</span>
+            <span class="lieu">Antibes, chemin des Restanques</span>
+            <span class="etat">Envoyé</span>
+            <span class="precision">Envoyé le lundi 31 août.</span>
+          </span>
+        </a>
+        <button class="retirer" type="button">Retirer</button>
+      </div>
+
+      <div class="ligne" data-nom="Villa Beaumont">
+        <a class="brin" href="#">
+          <span class="quand"><b>02</b><span>sept.</span></span>
+          <span class="corps">
+            <span class="nom">Villa Beaumont</span>
+            <span class="lieu">Saint-Jean, chemin des Cyprès</span>
+            <span class="etat">Brouillon · 3 photos</span>
+          </span>
+        </a>
+        <button class="retirer" type="button">Retirer</button>
+      </div>
+
+    </nav>
+
+    <div class="trappe" role="status">
+      <span class="qui" id="trappe-nom"></span>
+      <button class="annuler" type="button" id="annuler">Annuler</button>
+    </div>
+
+    <nav class="rehaut" aria-label="Écrans">
+      <a href="#" aria-current="page"><span class="index" aria-hidden="true"></span>Chantiers</a>
+      <a href="#"><span class="index" aria-hidden="true"></span>Planning</a>
+      <a href="#"><span class="index" aria-hidden="true"></span>Terminés</a>
+      <a href="#"><span class="index" aria-hidden="true"></span>Paysage</a>
+      <a href="#"><span class="index" aria-hidden="true"></span>Réglages</a>
+    </nav>
+  </div>
+
+  <button class="voile" type="button" id="voile" tabindex="-1" aria-hidden="true"></button>
+
+  <div class="feuille" role="dialog" aria-modal="true" aria-label="Créer un devis" id="feuille">
+    <button class="retour" type="button" id="retour" aria-label="Retour aux chantiers">‹</button>
+    <h2>Créer un devis</h2>
+    <div class="champ">
+      <label for="nom-client">Nom du client</label>
+      <input id="nom-client" type="text" autocomplete="off">
+    </div>
+    <div class="champ">
+      <label for="adresse">Adresse du chantier</label>
+      <input id="adresse" type="text" autocomplete="off">
+    </div>
+  </div>
+</div>
+
+<script>
+  // Le geste de la couronne : le remontage d'abord, la feuille une
+  // demi-seconde plus tard — les mesures de l'application, reprises
+  // telles quelles. Sous « mouvement réduit », la feuille monte tout
+  // de suite. Un second appui pendant le geste est ignoré.
+  const corps = document.body;
+  let enGeste = false;
+
+  document.getElementById('remontoir').addEventListener('click', () => {
+    if (enGeste || corps.classList.contains('ouvert')) return;
+    if (matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      corps.classList.add('ouvert');
+      return;
+    }
+    enGeste = true;
+    corps.classList.add('remonte');
+    setTimeout(() => corps.classList.add('ouvert'), 520);
+    setTimeout(() => { corps.classList.remove('remonte'); enGeste = false; }, 940);
+  });
+
+  const fermer = () => corps.classList.remove('ouvert');
+  document.getElementById('voile').addEventListener('click', fermer);
+  document.getElementById('retour').addEventListener('click', fermer);
+  addEventListener('keydown', (e) => { if (e.key === 'Escape') fermer(); });
+
+  // Le retrait, comme dans l'application : le texte glisse, « Retirer » se
+  // découvre, la ligne tombe dans la trappe — et « Annuler » la rend
+  // vraiment, elle n'a jamais quitté l'écran. Le décompte suit ce qui
+  // reste, sans attendre personne.
+  const compte = document.getElementById('compte');
+  const trappeNom = document.getElementById('trappe-nom');
+  const retires = [];
+
+  document.querySelectorAll('.ligne').forEach((ligne) => {
+    const brin = ligne.querySelector('.brin');
+    let x0 = null, vientDeGlisser = false;
+
+    brin.addEventListener('pointerdown', (e) => { x0 = e.clientX; });
+    brin.addEventListener('pointermove', (e) => {
+      if (x0 === null) return;
+      if (x0 - e.clientX > 40 && !ligne.classList.contains('glisse')) {
+        ligne.classList.add('glisse');
+        vientDeGlisser = true;
+      }
+      if (e.clientX - x0 > 40) ligne.classList.remove('glisse');
+    });
+    brin.addEventListener('pointerup', () => { x0 = null; });
+    // Une ligne glissée ne navigue pas : le geste en cours prime sur le lien.
+    brin.addEventListener('click', (e) => {
+      if (vientDeGlisser || ligne.classList.contains('glisse')) {
+        e.preventDefault();
+        ligne.classList.remove('glisse');
+      }
+      vientDeGlisser = false;
+    });
+
+    ligne.querySelector('.retirer').addEventListener('click', () => {
+      ligne.classList.remove('glisse');
+      ligne.classList.add('parti');
+      retires.push(ligne);
+      trappeNom.textContent = ligne.dataset.nom;
+      corps.classList.add('retrait');
+      compte.textContent = Number(compte.textContent) - 1;
+    });
+  });
+
+  document.getElementById('annuler').addEventListener('click', () => {
+    const ligne = retires.pop();
+    if (!ligne) return;
+    ligne.classList.remove('parti');
+    compte.textContent = Number(compte.textContent) + 1;
+    if (retires.length) {
+      trappeNom.textContent = retires[retires.length - 1].dataset.nom;
+    } else {
+      corps.classList.remove('retrait');
+    }
+  });
+</script>
+</body>
+</html>
