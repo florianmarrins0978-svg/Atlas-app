@@ -4,12 +4,44 @@
 vous ne savez rien de ce qui précède — c'est exactement le cas de figure qu'il
 sert.
 
-**Point de reprise :** 2026-08-30 · `main`
+**Point de reprise :** 2026-09-02 · `main`
 (l'historique fait foi : `git log --oneline -20`)
 
 ---
 
-## Dernier lot : la note vocale à la messagerie, et la fiche qui tient dans un écran (30 août 2026)
+## Dernier lot : la fiche client en registres (2 septembre 2026)
+
+Maquette d'abord, code ensuite. *« C'est très bien, code exactement ce que tu
+viens de me faire comme maquette. »* Les trois encadrés côte à côte sont devenus
+**trois onglets** (`src/app/clients/[id]/RegistresDuDossier.tsx`), et la pièce
+prend toute la largeur.
+
+**Ce qu'il faut savoir avant d'y toucher :**
+
+- **Ses catégories, son ordre et son tri sont intacts** — seule la forme a
+  changé. Ne pas les rouvrir en croyant qu'un onglet est une simplification.
+- **« Client » est DORÉ et AU-DESSUS du nom sur cet écran, et il l'a demandé
+  deux fois.** Ailleurs le surtitre reste sous le titre (sa règle du 26 août) :
+  la différence vit dans `EnTeteEcran`, réglage `allure="ample"`, dont le repli
+  est la grammaire commune au caractère près.
+- **Le noir gras est passé de l'étiquette « Dernière prestation » à son
+  CONTENU.** C'est un revirement de sa demande du 20 août, assumé et écrit
+  (`ARCHITECTURE.md` §213) — ne pas le « corriger » en citant l'ancienne.
+- **Les trois panneaux sont TOUS rendus**, un seul est visible : les suites
+  lisent le dossier entier. Une suite qui clique une pièce doit d'abord toucher
+  son onglet.
+- **La pastille rouge « PDF » a été retirée volontairement** : `colors.alert` sur
+  un document qui n'alerte rien. `estUnFichier` commande toujours la feuille.
+- **`npm run verifier:avant-livraison` tourne enfin sous Windows.** Sans
+  `shell`, `spawnSync` n'y lance pas `npm` : la batterie rendait ses neuf étapes
+  en échec en une seconde, y compris celles qui passent à la main.
+
+Compte-rendu qui lui est destiné : `docs/fiche-client-en-registres.md`.
+Raisons et pièges : `ARCHITECTURE.md` §213.
+
+---
+
+## Lot précédent : la note vocale à la messagerie, et la fiche qui tient dans un écran (30 août 2026)
 
 Ses trois choix codés (`appli/note-vocale-choix.html`) : au repos un **disque
 plein** avec deux ondes de **1,5 cm** ; dès qu'on parle, la **poubelle à gauche**

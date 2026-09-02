@@ -18712,3 +18712,109 @@ d'état : `terminerChantier` **crée la facture**, et refuse même de le faire t
 que le devis n'est pas parti. C'est l'entrée du cycle comptable. La fermer au
 commercial est la conséquence honnête de la règle du 13 août, et elle se paie —
 c'est le seul point du lot qui retire quelque chose à quelqu'un qui l'avait.
+
+---
+
+## 213. La fiche client en registres : ses catégories, une autre forme
+
+*(2 septembre 2026. Maquette d'abord, code ensuite — `CLAUDE.md` §3 bis.)*
+
+**Ce qu'il a dit, après avoir manipulé la maquette :** *« c'est très bien, code
+exactement ce que tu viens de me faire comme maquette »*. Deux allers-retours
+l'ont précédée, et chacun a corrigé une de mes décisions : *« je veux garder le
+client en doré »*, puis *« mets-le au-dessus du nom comme tu avais fait »* et
+*« remets le style pour supprimer le client que tu avais fait juste avant »*.
+
+### Ce qui a changé, et ce qui n'a surtout pas changé
+
+| | |
+|---|---|
+| **Sa vérité** | les trois catégories, leur ordre du 20 août, le tri du plus récent au plus ancien, les mots des registres vides, les trois choix d'un appui sur une pièce |
+| **La forme** | trois onglets au lieu de trois encadrés ; la pièce prend toute la largeur |
+
+### Pourquoi les colonnes sont tombées
+
+Sa demande du 20 août posait trois encadrés côte à côte. Sur 390 px, cela fait
+118 px par colonne, dont **~79 px de texte** — et « n° 2026-0031 » n'y tient
+pas. Le dépôt portait déjà deux correctifs à ce sujet : la vignette montée
+AU-DESSUS du numéro, et les marges tombées à 16 px. On soignait le symptôme, et
+`test-fiche-client-e2e` gardait un seuil de 100 px qui ne laissait aucune marge.
+
+Le registre pleine largeur supprime la cause. **Ce qu'il perd :** les trois
+catégories ne se voient plus d'un seul coup d'œil. Il a été prévenu en ces
+termes avant de trancher.
+
+### La pastille rouge « PDF » a disparu, et c'était une faute
+
+Chaque vignette portait un carré `colors.alert` — la couleur qui, partout
+ailleurs dans Atlas, veut dire *refus*. C'était **la seule tache d'alerte de
+l'écran**, posée sur un document qui n'alerte rien. Ce qu'elle disait, l'onglet
+le dit mieux : la nature d'une pièce EST son registre. `estUnFichier` continue
+de commander la feuille, où la différence a une conséquence réelle — on
+n'enregistre pas une page d'entretien, on l'ouvre.
+
+### Le noir gras a changé de ligne, et c'est un revirement assumé
+
+Sa demande du 20 août : *« en titre noir gras, dernière prestation avec ce
+qu'elle comprend »*. Le code la prenait au pied de la lettre : l'ÉTIQUETTE en
+noir gras, son CONTENU en gris dessous. C'est l'inverse de ce qu'il vient lire —
+« ce qu'on lui a fait la dernière fois » n'est pas le mot « Dernière
+prestation ».
+
+Les deux ont donc échangé leur voix : l'étiquette prend celle des libellés
+(capitales espacées, gris), le contenu passe en serif 17 px, encre pleine.
+**La règle défendue par la suite n'a pas bougé** — *la dernière prestation est la
+chose la plus appuyée sous son nom* — seule change la ligne qui la porte
+(`CLAUDE.md` §5 bis).
+
+### `EnTeteEcran` gagne UNE allure, pas quatre interrupteurs
+
+L'en-tête de cette fiche change sur quatre points : surtitre doré au-dessus du
+nom, titre à 40 px, coordonnées en bas de casse, flèche de retour cernée. Quatre
+propos indépendants auraient invité à en mélanger deux sur un troisième écran,
+et la grammaire commune aurait cessé de l'être. Un seul réglage —
+`allure="ample"` — porte la décision entière, et **son repli est la grammaire
+commune au caractère près** : aucun autre écran ne bouge d'un pixel.
+
+**Les coordonnées quittent les capitales espacées**, et c'est le point le moins
+visible et le plus utile : une adresse en `letter-spacing: 0.28em` se déchiffre,
+elle ne se lit pas. La suite qui vérifie qu'adresse et téléphone tiennent sur
+deux lignes compare déjà sans la casse : elle passe sans être touchée.
+
+### Le geste de suppression ne s'annonce plus, il se trouve
+
+C'était une capsule cernée de rouge sur toute la largeur : le seul objet dessiné
+de l'écran, et il désignait la seule chose irréparable qu'on puisse y faire.
+Devenu une ligne en capitales espacées, il reste lisible et cesse d'appeler —
+ce que sa PLACE disait déjà (« un geste qu'on trouve en le cherchant ne se
+déclenche pas au pouce »), le dessin le dit maintenant aussi. **Les 44 px de
+cible restent**, invisibles : le mot fait 9,5 px, pas la cible.
+
+La feuille de prévention garde ses trois temps du 27 août — ce que la loi
+conserve avec son numéro, ce qui sera détruit, la case qui déverrouille — et
+perd son pavé teinté au profit de deux filets. Un aplat de couleur au milieu
+d'une feuille de suppression se lit comme un encart d'information, alors qu'il
+porte la seule bonne nouvelle de l'écran. **« Annuler » redevient un mot** : deux
+capsules empilées se pèsent l'une l'autre, et la plus grave des deux y perdait.
+
+### Le trait d'or glisse, et il ne se réinvente pas
+
+Le marqueur des onglets reprend la courbe de la barre du bas — ce « G » qu'il a
+retenu en le voyant. Il n'est mesuré qu'APRÈS le premier rendu, et sa transition
+n'est posée qu'à ce moment-là : sans cela, on le verrait grandir depuis zéro à
+chaque ouverture de l'écran. **Les trois panneaux sont tous rendus**, un seul est
+visible : les suites lisent le dossier entier, et un panneau démonté à chaque
+appui rejouerait le rendu de ses pièces sur un écran ouvert vingt fois par jour.
+
+### Un défaut d'outillage trouvé au passage : la batterie ne tournait pas sous Windows
+
+`scripts/verifier-avant-livraison.ts` lance ses étapes par `spawnSync("npm", …)`.
+Sous Windows, `npm` est un `.cmd` : `spawnSync` rend ENOENT sans shell, et la
+batterie affichait **ses neuf étapes en échec en une seconde**, y compris
+« Types » et « Lint » qui passent quand on les joue à la main. Le pire des
+verdicts : faux, complet et instantané.
+
+`shell: process.platform === "win32"` corrige, et **le drapeau reste faux
+ailleurs** : sous shell les arguments sont ré-interprétés, et l'activer partout
+changerait le comportement d'étapes qui marchent depuis des mois pour un défaut
+qui ne s'y produit pas.

@@ -129,11 +129,12 @@ await page.screenshot({ path: `${dossier}/fiche-client-reelle.png`, fullPage: tr
 // **Et la feuille d'une fiche d'entretien**, celle qui n'offre plus
 // « Enregistrer » : c'est le geste qui a changé, et une image le dit mieux
 // qu'une assertion.
-const colonneFiche = page
-  .locator("div")
-  .filter({ has: page.locator('h3:text-is("Fiche chantier")') })
-  .last();
-await colonneFiche.locator('[data-atlas="piece"]').first().click();
+// Depuis le 2 septembre 2026 le dossier est en REGISTRES : on touche l'onglet,
+// puis la pièce — c'est le chemin qu'il emprunte (`ARCHITECTURE.md` §213).
+await page.locator('[data-atlas="registre"]:text-is("Fiches")').click();
+await page.waitForTimeout(400);
+const registreFiches = page.locator('[role="tabpanel"]:not([hidden])');
+await registreFiches.locator('[data-atlas="piece"]').first().click();
 await page.locator('[data-atlas="piece-ouvrir"]').waitFor({ state: "visible", timeout: 20_000 });
 await page.waitForTimeout(400);
 await page.screenshot({ path: `${dossier}/feuille-de-la-fiche.png` });

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import BottomSheet from "@/components/atlas/BottomSheet";
-import { colors, voile } from "@/lib/design-tokens";
+import { colors, font } from "@/lib/design-tokens";
 import { nomDuFichierDeLaPiece, type PieceDuClient } from "@/lib/documents-du-client";
 
 /**
@@ -87,8 +87,21 @@ export default function PieceDuDossier({ piece }: { piece: PieceDuClient }) {
           l'attend : « Ouvrir les actions » plutôt que le seul numéro, qui
           laisserait croire que l'appui ouvre le document.
 
-          Les 56 px de haut viennent de la règle de cet écran : « un lien qu'il
-          touche d'une main, dehors, parfois avec des gants ». */}
+          Les 64 px de haut viennent de la règle de cet écran : « un lien qu'il
+          touche d'une main, dehors, parfois avec des gants ».
+
+          ── LA PIÈCE EST UNE LIGNE DEPUIS LE 2 SEPTEMBRE 2026 ──────────────
+          Retenu sur maquette. Elle était une vignette dans une colonne de
+          118 px, et son numéro n'y tenait pas : « n° 2026-0031 » se coupait.
+          Le registre porte maintenant toute la largeur, le numéro se lit en
+          serif comme un nom de chantier, et la date se range à droite en
+          chiffres alignés.
+
+          **La pastille rouge « PDF » a disparu, et c'était la seule tache
+          d'alerte de l'écran** — posée sur un document qui n'alerte rien. Ce
+          qu'elle disait, l'onglet le dit mieux : la nature de la pièce EST son
+          registre. `estUnFichier` continue de commander la feuille, où la
+          différence a une conséquence (on n'enregistre pas une page). */}
       <button
         type="button"
         onClick={() => {
@@ -97,27 +110,32 @@ export default function PieceDuDossier({ piece }: { piece: PieceDuClient }) {
         }}
         data-atlas="piece"
         aria-label={`${piece.titre} — que faire de ce document ?`}
-        className="mt-2 block min-h-[56px] w-full pb-0.5 pt-2 text-center"
+        className="grid min-h-[64px] w-full grid-cols-[1fr_auto_auto] items-center gap-x-[14px] py-[15px] text-left"
+        style={{ borderTop: `1px solid ${colors.lineSoft}`, WebkitTapHighlightColor: "transparent" }}
       >
-        <span
-          className="mx-auto flex h-[29px] w-[24px] items-end justify-center rounded-[3px] pb-[3px] text-[6.5px] font-bold"
-          style={{
-            backgroundColor: colors.card,
-            boxShadow: `inset 0 0 0 1px ${voile(colors.alert, 0.35)}`,
-            color: colors.alert,
-            letterSpacing: "0.06em",
-          }}
-        >
-          {estUnFichier ? "PDF" : "FICHE"}
-        </span>
-        <span data-atlas="piece-titre" className="mt-[5px] block truncate text-[12.5px] leading-[1.2]">
+        <span data-atlas="piece-titre" className="block truncate text-[19px] leading-[1.15]" style={{ fontFamily: font.display }}>
           {piece.titre}
         </span>
-        {piece.precision && (
-          <span className="mt-0.5 block truncate text-[10.5px] leading-[1.25]" style={{ color: colors.muted }}>
-            {piece.precision}
-          </span>
-        )}
+        {/* **UNE DATE NE SE MET JAMAIS EN CAPITALES.** Écrite ici en petites
+            capitales espacées, « 12 août 2026 » devenait « 12 AOÛT 2026 » : le
+            mois cesse d'avoir une forme, et l'on épelle au lieu de lire. C'est
+            l'argument même qui a fait repasser l'adresse en bas de casse dans
+            l'en-tête — il vaut autant ici.
+
+            Et cela cassait une règle qu'il avait payée : une seule façon
+            d'écrire une date sur cet écran, en toutes lettres
+            (`test-fiche-client-e2e`, qui l'a vu avant lui). */}
+        <span
+          className="text-[11.5px] leading-[1.5]"
+          style={{ color: colors.muted, fontVariantNumeric: "tabular-nums" }}
+        >
+          {piece.precision ?? ""}
+        </span>
+        {/* Le chevron : seule affordance de navigation vers l'intérieur, et
+            discret — il montre un sens, il ne décore pas (`CLAUDE.md` §3). */}
+        <svg width="7" height="12" viewBox="0 0 8 14" fill="none" stroke={colors.chevron} strokeWidth="1.5" aria-hidden="true">
+          <path d="M1.5 1l5 6-5 6" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
       </button>
 
       <BottomSheet open={feuilleOuverte} onBackdropClick={() => setFeuilleOuverte(false)}>

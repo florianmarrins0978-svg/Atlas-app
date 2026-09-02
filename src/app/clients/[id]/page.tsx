@@ -1,11 +1,11 @@
 import { notFound } from "next/navigation";
-import { colors, libelleCaps } from "@/lib/design-tokens";
+import { colors, font, libelleCaps } from "@/lib/design-tokens";
 import EnTeteEcran from "@/components/atlas/EnTeteEcran";
 import { getCurrentCtx } from "@/server/session-ctx";
 import { chargerFicheClient } from "@/server/repositories/fiche-client";
 import { retourFicheClient } from "@/lib/retour-fiche-client";
-import { jourCourt, type PieceDuClient } from "@/lib/documents-du-client";
-import PieceDuDossier from "./PieceDuDossier";
+import { jourCourt } from "@/lib/documents-du-client";
+import RegistresDuDossier from "./RegistresDuDossier";
 import SupprimerCeClient from "./SupprimerCeClient";
 import { apercuSuppressionClient } from "@/server/repositories/donnees-client";
 
@@ -26,9 +26,22 @@ import { apercuSuppressionClient } from "@/server/repositories/donnees-client";
 // **Puis, toujours le 20 août, deux corrections sur capture :** le « nom » sous
 // « Dernière prestation » répétait le nom du client déjà en tête (un chantier
 // porte le nom de son client) — « je veux plus voir le nom en dessous ». Il est
-// retiré, et c'est la ligne « Dernière prestation · date » elle-même qui passe
-// en noir gras. Et l'ordre des colonnes devient **Devis · Facture · Fiche
-// chantier** — la facture avant la fiche.
+// retiré. Et l'ordre devient **Devis · Facture · Fiche chantier** — la facture
+// avant la fiche.
+//
+// **REFONDU LE 2 SEPTEMBRE 2026, sur maquette qu'il a regardée puis retenue :**
+// *« c'est très bien, code exactement ce que tu viens de me faire comme
+// maquette »*. Trois choses changent, et rien de sa VÉRITÉ ne bouge :
+//
+//   1. l'en-tête passe en allure « ample » — « Client » doré AU-DESSUS du nom,
+//      nom à 40 px, coordonnées en bas de casse (`EnTeteEcran`) ;
+//   2. « Dernière prestation » cède son noir gras à CE QU'ELLE NOMME : le
+//      contenu passe en serif 17 px, l'étiquette en capitales grises. C'est un
+//      revirement de sa demande du 20 août, assumé — le bloc à l'endroit même
+//      dit pourquoi ;
+//   3. les trois colonnes deviennent trois REGISTRES à onglets
+//      (`RegistresDuDossier`) : ses catégories et son tri survivent, la forme
+//      change parce que 118 px coupaient les numéros.
 //
 // **CE QUI A ÉTÉ RETIRÉ, et c'était l'essentiel de la demande** : les trois
 // cases (chantiers · facturés · reste dû), la liste « Ce qu'on lui fait, et
@@ -95,36 +108,51 @@ export default async function FicheClientPage({
         surtitre="Client"
         titre={fiche.client.nom}
         precision={coordonnees || undefined}
+        // La grammaire ample, retenue sur maquette le 2 septembre 2026 : le
+        // « Client » doré au-dessus du nom, le nom à 40 px, et les coordonnées
+        // en bas de casse. Le détail et son pourquoi vivent dans `EnTeteEcran`.
+        allure="ample"
       />
 
-      {/* ─── La dernière prestation, en titre noir gras ────────────────────
-          Il l'a demandée en toutes lettres, et c'est la première chose qu'il
-          cherche en ouvrant la fiche d'un client au téléphone : ce qu'on lui a
-          fait la dernière fois. Le noir franc la sépare du gris des
-          coordonnées — sans quoi elle se lirait comme une ligne d'information
-          de plus. */}
+      {/* ─── La dernière prestation ─────────────────────────────────────────
+          C'est la première chose qu'il cherche en ouvrant la fiche d'un client
+          au téléphone : ce qu'on lui a fait la dernière fois. */}
       {fiche.derniere && (
-        <div className="px-[26px] pt-5">
-          {/* **Le titre EST « Dernière prestation », en noir gras.** Sa demande
-              du 20 août 2026 : le nom qui suivait (le nom du chantier) répétait
-              le nom du client en tête d'écran — « je veux plus voir le nom en
-              dessous ». On l'a retiré, et c'est cette ligne-ci qui porte le noir
-              gras, avec la date. Le détail vit dans les puces en dessous. */}
-          <p className={libelleCaps} style={{ color: colors.ink, fontWeight: 700 }}>
+        <div className="px-[26px] pt-9">
+          {/* ── LE POIDS A CHANGÉ DE LIGNE — 2 septembre 2026, sur maquette ──
+              Sa demande du 20 août posait le titre « Dernière prestation » en
+              noir gras, et son contenu en gris dessous. C'était l'étiquette qui
+              portait le poids, pas ce qu'elle nomme — or c'est le contenu qu'il
+              vient lire : « ce qu'on lui a fait la dernière fois ».
+
+              Les deux ont donc échangé leur voix : l'étiquette prend celle des
+              libellés (capitales espacées, gris), le contenu passe en serif à
+              17 px, encre pleine. Ce qu'il cherche est maintenant ce qui se voit
+              en premier sous son nom. Le noir gras n'a pas été perdu : il a été
+              déplacé sur ce qu'il désignait.
+
+              **Le « · » sépare ici deux choses de MÊME RANG** — l'étiquette et
+              sa date —, là où le « : » du 26 août complétait un titre. Le titre
+              n'en est plus un. */}
+          {/* **La DATE échappe aux capitales**, et seulement elle. « 12 AOÛT
+              2026 » s'épelle ; « 12 août 2026 » se lit. L'étiquette, elle, est
+              un libellé et garde sa voix. */}
+          <p className={libelleCaps} style={{ color: colors.muted }}>
             Dernière prestation
-            {/* **Deux points, plus un point médian — 26 août 2026 :** *« pareil,
-                supprime le point après "dernière prestation", remplacé par
-                : »*. Le « · » sépare deux choses de même rang ; ici la date
-                COMPLÈTE le titre, elle ne s'ajoute pas à côté de lui. */}
-            {fiche.derniere.jour ? ` : ${jourCourt(fiche.derniere.jour)}` : ""}
+            {fiche.derniere.jour ? (
+              <span style={{ textTransform: "none" }}> · {jourCourt(fiche.derniere.jour)}</span>
+            ) : null}
           </p>
           {fiche.derniere.comprend.length > 0 && (
-            <ul className="mt-[11px] list-none p-0">
+            <ul className="mt-3.5 list-none p-0">
               {fiche.derniere.comprend.map((quoi, rang) => (
-                <li key={`${quoi}-${rang}`} className="relative mt-1.5 pl-[15px] text-[14px] leading-[1.45]"
-                    style={{ color: colors.inkSoft }}>
+                <li
+                  key={`${quoi}-${rang}`}
+                  className={`relative pl-[19px] text-[17px] leading-[1.5] ${rang === 0 ? "" : "mt-1"}`}
+                  style={{ color: colors.ink, fontFamily: font.display }}
+                >
                   <span
-                    className="absolute left-0 top-2 block h-[5px] w-[5px] rounded-full"
+                    className="absolute left-0 top-[11px] block h-[5px] w-[5px] rounded-full"
                     style={{ backgroundColor: colors.or }}
                   />
                   {quoi}
@@ -135,17 +163,18 @@ export default async function FicheClientPage({
         </div>
       )}
 
-      {/* ─── Les trois colonnes de papiers ─────────────────────────────────
-          Trois colonnes sur 390 px : la vignette monte AU-DESSUS du numéro, et
-          les marges tombent à 16 px. Mesuré sur la maquette — la vignette à
-          gauche ne laissait que ~79 px de texte, et « n° 2026-031 » se coupait.
-          `min-w-0` sur chaque colonne : sans lui, un enfant de grille prend la
-          largeur de son plus long contenu et pousse la page de côté. */}
-      <div className="mt-6 grid grid-cols-3 gap-[7px] px-4">
-        <Colonne titre="Devis" pieces={devis} rien="Aucun devis parti" />
-        <Colonne titre="Facture" pieces={factures} rien="Aucune facture émise" />
-        <Colonne titre="Fiche chantier" pieces={fiches} rien="Aucune fiche envoyée" />
-      </div>
+      {/* ─── Le dossier : trois registres, un seul ouvert ───────────────────
+          Ses trois catégories et son ordre du 20 août au soir — Devis, Facture,
+          Fiche chantier — mais en onglets plutôt qu'en colonnes de 118 px, où
+          « n° 2026-0031 » ne tenait pas. Le pourquoi entier est dans
+          `RegistresDuDossier`. */}
+      <RegistresDuDossier
+        registres={[
+          { cle: "devis", libelle: "Devis", pieces: devis, rien: "Aucun devis parti" },
+          { cle: "factures", libelle: "Factures", pieces: factures, rien: "Aucune facture émise" },
+          { cle: "fiches", libelle: "Fiches", pieces: fiches, rien: "Aucune fiche envoyée" },
+        ]}
+      />
 
       <SupprimerCeClient
         clientId={id}
@@ -156,52 +185,9 @@ export default async function FicheClientPage({
 
       {/* **Plus de phrase quand il n'y a aucun document — 26 août 2026 :**
           *« supprime la phrase en gris lorsqu'il n'y a aucun document, on le
-          voit, pas besoin de l'écrire »*. Les trois colonnes disent déjà
+          voit, pas besoin de l'écrire »*. Les trois registres disent déjà
           « Aucun devis parti », « Aucune facture émise », « Aucune fiche
           envoyée » : la phrase les répétait une quatrième fois. */}
-    </div>
-  );
-}
-
-/**
- * Un encadré de papiers.
- *
- * **Une colonne vide DIT qu'elle est vide**, et dit pourquoi. « Aucun devis
- * parti » n'est pas la même chose que « aucun chantier terminé » : la première
- * se règle en envoyant un devis, la seconde en finissant un chantier. Un cadre
- * muet ferait chercher une panne.
- */
-function Colonne({ titre, pieces, rien }: { titre: string; pieces: PieceDuClient[]; rien: string }) {
-  return (
-    <div className="min-w-0 rounded-[12px] px-[9px] pb-2.5 pt-3" style={{ backgroundColor: colors.card }}>
-      <h3
-        className="m-0 text-[9px] font-semibold uppercase leading-[1.3]"
-        style={{ letterSpacing: "0.12em", color: colors.ink }}
-      >
-        {titre}
-      </h3>
-      <span className="mt-[3px] block text-[10.5px]" style={{ color: colors.muted }}>
-        {pieces.length === 0 ? "—" : `${pieces.length} pièce${pieces.length > 1 ? "s" : ""}`}
-      </span>
-
-      {pieces.length === 0 ? (
-        <p className="mt-2.5 text-[10.5px] leading-snug" style={{ color: colors.muted }}>
-          {rien}
-        </p>
-      ) : (
-        // **Un appui ouvre trois choix, il ne télécharge plus d'office.**
-        // Sa demande du 21 août 2026, et son choix devant la planche 83 : la C.
-        // Le raisonnement — et les trois conditions de « Enregistrer » — vit
-        // dans `PieceDuDossier`.
-        pieces.map((piece, rang) => (
-          <div
-            key={piece.id}
-            style={rang === 0 ? undefined : { borderTop: `1px solid ${colors.line}` }}
-          >
-            <PieceDuDossier piece={piece} />
-          </div>
-        ))
-      )}
     </div>
   );
 }

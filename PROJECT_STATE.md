@@ -1,7 +1,8 @@
 # État du projet
 
-**Dernière mise à jour :** 2026-08-30 · branche `main`
-· dernière migration `drizzle/0071_rappel_vu.sql`
+**Dernière mise à jour :** 2026-09-02 · branche `main`
+· dernière migration `drizzle/0071_rappel_vu.sql` (inchangée : ce lot ne touche
+que l'affichage)
 
 *(Deux en-têtes de mise à jour cohabitaient ici depuis une fusion du 29 août,
 avec deux dates et deux migrations différentes — dont une périmée. Réunis : une
@@ -15,6 +16,40 @@ suivant, et une ligne fausse coûte plus cher qu'une ligne absente. `git log
 
 Ce fichier dit **où en est le produit**, pas ce qu'on aimerait qu'il soit. Une
 ligne « fait » qui ne l'est pas coûte plus cher qu'une ligne absente.
+
+---
+
+## La fiche client en registres (2 septembre 2026)
+
+**Son feu vert, après avoir manipulé la maquette :** *« c'est très bien, code
+exactement ce que tu viens de me faire comme maquette »*. Deux allers-retours
+l'ont précédée, et il a corrigé deux de mes choix : le « Client » reste **doré**
+et repasse **au-dessus** du nom ; la suppression garde le style discret et sa
+fenêtre de prévention.
+
+Ce que l'écran fait maintenant :
+
+| | |
+|---|---|
+| l'en-tête | « CLIENT » doré au-dessus du nom, nom à **40 px**, adresse et téléphone en bas de casse |
+| la dernière prestation | l'étiquette en capitales grises, **son contenu en serif encre pleine** |
+| le dossier | **trois onglets** — Devis · Factures · Fiches — et un trait d'or qui glisse |
+| une pièce | une ligne pleine largeur : numéro en serif à gauche, date à droite, chevron |
+| un appui | inchangé — Enregistrer · Ouvrir · Partager (sa proposition C du 21 août) |
+| supprimer | une ligne en capitales, puis la feuille de prévention du 27 août, refaite en filets |
+
+**Ce que ça retire, et il a été prévenu :** on ne voit plus les trois catégories
+d'un seul coup d'œil. C'est le prix des 118 px de colonne qui coupaient les
+numéros de devis.
+
+**Aucune règle métier n'a bougé** : ni les catégories, ni leur ordre du 20 août,
+ni le tri, ni les trois choix d'un appui, ni les trois temps de la suppression.
+
+**Un défaut d'outillage corrigé au passage :** `npm run verifier:avant-livraison`
+rendait ses neuf étapes en échec en une seconde sous Windows — `spawnSync` n'y
+sait pas lancer `npm`. La batterie tourne maintenant sur cette machine.
+
+Détail : `docs/fiche-client-en-registres.md`, `ARCHITECTURE.md` §213.
 
 ---
 

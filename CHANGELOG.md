@@ -7,6 +7,48 @@ Format : le plus récent en tête.
 
 ---
 
+## 2026-09-02
+
+### La fiche client passe en registres — ses catégories, une autre forme
+
+**Son feu vert, maquette manipulée puis retenue :** *« c'est très bien, code
+exactement ce que tu viens de me faire comme maquette »*.
+
+Les trois encadrés côte à côte deviennent **trois onglets** et la pièce prend
+toute la largeur. Sa vérité ne bouge pas — mêmes catégories, même ordre du
+20 août, même tri, mêmes mots pour un registre vide, mêmes trois choix quand on
+touche une pièce. **Ce que ça évite :** 118 px de colonne laissaient ~79 px de
+texte, et « n° 2026-0031 » se coupait — deux correctifs avaient déjà été posés
+pour gagner quelques pixels sur le symptôme.
+
+**La pastille rouge « PDF » disparaît.** C'était la seule tache d'alerte de
+l'écran, posée sur un document qui n'alerte rien ; l'onglet dit déjà la nature
+de la pièce.
+
+**Le noir gras change de ligne**, et c'est un revirement de sa demande du
+20 août, assumé : l'étiquette « Dernière prestation » prend la voix des
+libellés, et son CONTENU passe en serif encre pleine. C'est le contenu qu'il
+vient lire.
+
+**`EnTeteEcran` gagne une allure `ample`** — surtitre doré au-dessus du nom, nom
+à 40 px, coordonnées en bas de casse, retour cerné. Un seul réglage, dont le
+repli est la grammaire commune au caractère près : aucun autre écran ne bouge.
+
+**Le geste de suppression** perd sa capsule rouge pleine largeur pour une ligne
+en capitales (cible de 44 px conservée), et sa feuille de prévention troque son
+pavé teinté contre deux filets. Les trois temps du 27 août sont intacts.
+
+Détail et pourquoi : `ARCHITECTURE.md` §213, `docs/fiche-client-en-registres.md`.
+
+### La batterie de livraison ne tournait pas sous Windows
+
+`spawnSync("npm", …)` rend ENOENT sous Windows, où `npm` est un `.cmd` : la
+batterie annonçait **ses neuf étapes en échec en une seconde**, dont « Types » et
+« Lint » qui passent à la main. Un verdict faux, complet et instantané.
+`shell: process.platform === "win32"` corrige, et reste faux partout ailleurs.
+
+---
+
 ## 2026-08-30
 
 ### La note vocale codée : poubelle ou avion, et la fiche tient dans un écran
