@@ -1,7 +1,8 @@
 # État du projet
 
 **Dernière mise à jour :** 2026-09-02 · branche `main`
-· dernière migration `drizzle/0072_capital_forme_juridique_rcs.sql`
+· dernière migration `drizzle/0073_tva_par_ligne.sql` (ce lot ne touche que
+l’affichage)
 
 *(Deux en-têtes de mise à jour cohabitaient ici depuis une fusion du 29 août,
 avec deux dates et deux migrations différentes — dont une périmée. Réunis : une
