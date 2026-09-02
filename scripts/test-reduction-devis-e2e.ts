@@ -93,6 +93,39 @@ async function main() {
 
   const totaux = () => page.locator("section").filter({ hasText: "Total TTC" }).last();
 
+  /**
+   * Attend que la base porte le pourcentage annoncé, et rend la ligne du devis.
+   *
+   * **Pourquoi une attente et pas un délai.** L'écriture suit la saisie de
+   * loin : l'écran affiche le pourcentage dès la frappe, le serveur l'enregistre
+   * après. Une pause choisie au doigt mouillé passe seule et manque sous cent
+   * dix suites — et le contrôle accuse alors le produit d'écrire un chiffre
+   * faux sur un devis, ce qui est le pire des rouges (`AGENTS.md`).
+   *
+   * **Le contrôle ne s'affaiblit pas** : l'appelant exige toujours la valeur
+   * exacte et dit ce que la base portait quand elle ne vient pas. Un vrai
+   * désaccord entre l'écran et la base rougit donc encore.
+   *
+   * Écrite une fois pour les deux endroits qui en ont besoin — les 15 % de la
+   * saisie et les 5 % du bouton « + ». Deux boucles recopiées auraient divergé
+   * au premier ajustement (`CLAUDE.md` §3).
+   */
+  async function quandLaBasePorte(pourcent: string): Promise<Record<string, string>[]> {
+    let rows: Record<string, string>[] = [];
+    for (const essai of [0, 1, 2, 3, 4, 5]) {
+      if (essai > 0) await page.waitForTimeout(essai * 700);
+      rows = (
+        await pool.query(
+          `SELECT reduction_pourcent, reduction_montant, total_ht, total_tva, total_ttc
+             FROM devis WHERE chantier_id = $1 ORDER BY numero_version DESC LIMIT 1`,
+          [chantierId]
+        )
+      ).rows;
+      if (rows[0]?.reduction_pourcent === pourcent) break;
+    }
+    return rows;
+  }
+
   await cas("sans réduction, l'écran est EXACTEMENT celui d'avant", async () => {
     const texte = await totaux().innerText();
     assert.ok(texte.includes("870,00"), `le total plein manque :\n${texte}`);
@@ -169,18 +202,7 @@ async function main() {
     // valeur exacte, et il dit ce que la base portait quand elle ne vient pas.
     // Un vrai désaccord entre l'écran et la base rougirait donc encore — c'est
     // la seule chose que ce cas ait à défendre.
-    let rows: Record<string, string>[] = [];
-    for (const essai of [0, 1, 2, 3, 4, 5]) {
-      if (essai > 0) await page.waitForTimeout(essai * 700);
-      rows = (
-        await pool.query(
-          `SELECT reduction_pourcent, reduction_montant, total_ht, total_tva, total_ttc
-             FROM devis WHERE chantier_id = $1 ORDER BY numero_version DESC LIMIT 1`,
-          [chantierId]
-        )
-      ).rows;
-      if (rows[0]?.reduction_pourcent === "15.00") break;
-    }
+    const rows = await quandLaBasePorte("15.00");
     assert.equal(rows.length, 1, "aucun devis en base");
     assert.equal(
       rows[0].reduction_pourcent,
@@ -273,7 +295,21 @@ async function main() {
 
   await cas("le « − » existe, et se touche : 26 px", async () => {
     await page.getByRole("button", { name: /^\+ Prix accordé au client/ }).click();
-    await page.waitForTimeout(900);
+    // **On attend la TRACE, jamais un délai** — et c'est le cas SUIVANT qui
+    // paie quand on l'oublie : il lit la base juste après le « − » et exige d'y
+    // trouver les 5 % que ce bouton vient de poser. Sous la charge de la CI,
+    // 900 ms ne suffisaient pas, et le contrôle accusait alors le produit
+    // d'avoir effacé une remise qui n'était simplement pas encore écrite —
+    // exactement le rouge le plus coûteux qui soit (`AGENTS.md`).
+    //
+    // La même cause a déjà frappé plus haut, sur les 15 %. C'est la seconde
+    // fois : d'où la fonction commune plutôt qu'une seconde boucle recopiée.
+    const posee = await quandLaBasePorte("5.00");
+    assert.equal(
+      posee[0]?.reduction_pourcent,
+      "5.00",
+      `les 5 % du « + » ne sont pas arrivés en base : ${JSON.stringify(posee[0])}`
+    );
     assert.equal(await moins().count(), 1, "aucun « − » en face de la ligne");
     const b = await moins().boundingBox();
     // Une boîte de zéro pixel ne prouve rien : refuser de conclure plutôt que

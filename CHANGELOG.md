@@ -9,6 +9,37 @@ Format : le plus récent en tête.
 
 ## 2026-09-02
 
+### Le prix accordé n'a plus qu'une façon d'arriver en base
+
+**La CI rougissait sur `test-reduction-devis-e2e`, et le message accusait le
+produit** : « la remise est déjà effacée : Annuler ne rendrait rien ». La
+suite passe pourtant ici, jouée seule — c'était donc une COURSE, pas une
+erreur de règle.
+
+**Cause racine.** Le bouton « + Prix accordé au client » écrivait lui-même en
+base, avec son propre littéral `"5"`, sans passer par `enregistrerRemise` —
+l'unique écrivain de cette valeur — et sans que rien n'attende sa réponse. Le
+contrôle lisait ensuite la base après 900 ms choisies au doigt mouillé : sous
+la charge de la CI, l'écriture n'était pas retombée, et le contrôle accusait
+le produit d'avoir effacé une remise qui n'était simplement pas encore écrite.
+
+Deux chemins pour un même fait métier, dont un qui ne passait par aucune des
+règles de l'autre. Il n'en reste qu'un, et le pourcentage par défaut est écrit
+une seule fois (`REMISE_PAR_DEFAUT`).
+
+**Ce qui n'a PAS été fusionné, et pourquoi.** Le retrait par le tiroir écrit
+lui aussi `null`, mais il pose son état AVANT d'attendre le serveur, là où la
+saisie ne se referme QU'APRÈS. Les deux ordres sont délibérés : l'un évite que
+la ligne or ne réapparaisse pendant l'attente, l'autre qu'un champ ne se ferme
+sur une écriture refusée. Les confondre casserait l'un des deux.
+
+**Et la suite attend désormais la TRACE, jamais un délai** — la même cause
+avait déjà frappé sur les 15 %, et la boucle d'attente était recopiée : elle
+est écrite une fois pour les deux.
+
+**Le typage a attrapé un défaut que ce lot aurait introduit** : `onBlur` passé
+nu donnait son ÉVÉNEMENT comme pourcentage.
+
 ### « Terminés » : le calme, et le galet sur deux boutons — CODÉ
 
 **Ses deux choix, faits sur planches** (`appli/termines-elegance.html`,
