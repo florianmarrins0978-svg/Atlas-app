@@ -21060,3 +21060,116 @@ et la capsule à l'intérieur de la rangée (31 août).
 « 3 à facturer · 10 facturés » compte **tous les mois**, comme il l'a demandé le
 23 août — mais la phrase est posée juste sous le nom d'un mois précis, et elle
 ne bouge pas quand on recule. Rien n'a été changé sans son avis.
+
+---
+
+## §237. La fiche de l'espace disait le contraire d'elle-même, et envoyait rallumer
+
+**Sa plainte du 2 septembre 2026 : *« l'appli ne démarre pas, page blanche »*.**
+`CLAUDE.md` §1 bis dit quoi faire d'abord : lire la fiche. Elle a été lue — et
+c'est elle qui était fausse.
+
+### Ce que la fiche a publié, ce jour-là
+
+À l'allumage (18 h 40 UTC), puis par le veilleur (18 h 55), elle portait
+côte à côte, à trois lignes d'écart :
+
+```
+Serveur : NE RÉPOND PAS sur le port 3000
+⚠ … l'ancienne reste en service pendant ce temps — l'application est donc
+    entière et rapide …
+```
+
+et, à l'allumage :
+
+```
+Écrite : à l'allumage — le serveur n'a pas encore eu le temps de démarrer
+⚠ … elle ne se recompile jamais … Arrêtez puis rouvrez l'espace de travail.
+```
+
+Trois défauts, tous dans `scripts/diagnostiquer-espace.mjs`, et tous de la
+même famille : **un verdict qui affirme ce qu'il ne mesure pas.**
+
+### 1. Le moment d'écriture n'entrait pas dans le raisonnement
+
+`rapporter-espace.mjs` distingue ses passages depuis le 12 août — « à
+l'allumage », « après démarrage », « par le veilleur » — précisément parce que
+*les mêmes mots ne veulent pas dire la même chose selon l'heure*. Il l'écrivait
+en tête de fiche, et le diagnostic n'en savait rien : il raisonnait toujours
+comme devant une machine posée.
+
+À l'allumage, le banc n'a pas encore démarré — le veilleur le lance dans les
+quinze secondes. La fiche ordonnait pourtant de rallumer, ce qui **jette la
+construction qui allait partir**. Il rallume, retombe sur la même fiche,
+rallume encore.
+
+`ATLAS_MOMENT` est désormais lu par le diagnostic : c'est la même variable, pas
+une seconde façon de dire la même chose.
+
+### 2. « Elle ne se recompile jamais » était faux depuis le 31 août
+
+`banc.mjs` rebâtit dès que le commit bâti diffère du commit récupéré
+(`doitRebatir`), et le veilleur retente indéfiniment — une salve rapide, puis
+une tentative par demi-heure. `ligneCodeServi` avait reçu cette correction le
+20 août pour l'échec de construction (« et le restera » retiré) ; elle n'avait
+jamais été reportée sur ce verdict-ci.
+
+La fiche se contredisait donc d'un point à l'autre — *« le veilleur retente,
+indéfiniment »* plus haut, *« jamais »* ici. **Et c'est la ligne qui accuse
+qu'on croit.**
+
+### 3. « L'application est entière et rapide » n'était pas mesuré
+
+Ce verdict-là répond à la question *quel code est servi*. Il affirmait en prime
+que l'application tournait, alors que la ligne « Serveur », trois lignes plus
+haut, disait le contraire. Deux affirmations opposées dans un même écran, et
+c'est tout l'écran qu'on cesse de croire — la faute déjà payée sur la liste de
+pièces d'arrosage (`CLAUDE.md` §4 bis).
+
+La promesse est retirée. Qui répond ou non est dit par la ligne « Serveur » et
+par son propre verdict, **une seule fois**.
+
+### Et « NE RÉPOND PAS » recouvrait deux états opposés
+
+C'est le défaut de la ligne « Code SERVI » du 16 août, un cran plus loin. Cette
+phrase valait aussi bien pour :
+
+| L'état | Ce qu'il faut en faire |
+|---|---|
+| plus rien n'écoute | le banc n'a pas démarré — chercher pourquoi |
+| quelque chose tient le port et se tait | le veilleur va le déloger — attendre une minute |
+
+Le veilleur, lui, fait déjà cette distinction pour décider s'il relance ou s'il
+déloge (`.devcontainer/veiller.sh`). La fiche ne la publiait pas. Elle la
+publie désormais, avec la MÊME fonction que le banc emploie —
+`scripts/port-libre.mjs`, sortie de `banc.mjs` pour l'occasion. La recopier
+aurait fait deux implémentations d'une même question, et celle-ci a **déjà été
+fausse une fois** : jusqu'au 10 août elle demandait « la santé répond-elle ? »
+au lieu de « puis-je écouter ? », d'où l'`EADDRINUSE` de ce soir-là.
+
+### Le verdict qui promettait un secours qui ne vient pas
+
+*« Le veilleur devrait le relever dans quinze secondes »* est faux pendant une
+construction : le banc qui bâtit **tient le verrou** (`verrou-banc.mjs`), et le
+banc que le veilleur relance refuse alors de démarrer et rend la main aussitôt.
+Tant que la construction dure, personne ne prendra le port.
+
+C'est exactement l'état de son espace à 18 h 55 : construction en cours,
+veilleur en place, rien sur le port. La fiche disait d'attendre quinze
+secondes ; il n'y avait rien à attendre. Le verdict nomme désormais cet état, et
+dit où est écrit ce qui a empêché le banc de servir (`/tmp/essai.log`).
+
+### Ce qui reste ouvert, et qu'il ne faut pas croire réglé
+
+**Pourquoi rien ne servait sur son port n'est PAS établi.** Le banc doit servir
+la version rapide précédente *avant* de bâtir la neuve (`relais-version-batie.mjs`,
+31 août) : `.next-batie` portait bien `ddf69f2`, donc cette version existait.
+Ce qui l'a empêchée de prendre le port n'est écrit que dans son
+`/tmp/essai.log`, auquel l'agent n'a pas accès.
+
+Ce lot ne corrige donc **pas** la panne : il corrige la fiche, pour que la
+prochaine la nomme au lieu d'affirmer que tout va bien. `TODO.md` le porte.
+
+**Éprouvé** : `npx tsx scripts/test-banc-lent-se-dit.ts` — cinq cas neufs, tous
+rouges contre la version d'avant (c'est ainsi qu'ils ont été vérifiés), dont le
+port tenu pour de vrai par un processus voisin plutôt que simulé.

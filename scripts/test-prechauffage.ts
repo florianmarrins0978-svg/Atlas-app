@@ -510,7 +510,18 @@ async function main() {
   await cas("`run-e2e-tests` refuse de continuer si quelque chose écoute déjà", () => {
     const source = readFileSync(path.join(RACINE, "scripts", "run-e2e-tests.ts"), "utf8");
     const iGarde = source.indexOf('if (await quelquUnEcouteDeja("http://localhost:3000');
-    const iSpawn = source.indexOf('spawn(NPM, ["run", "dev"');
+    // **Ce repère a vieilli, et le contrôle est resté vert d'un côté et muet de
+    // l'autre — 2 septembre 2026.** `run-e2e-tests.ts` lançait `npm run dev` ;
+    // le commit `3cd0d21` l'a remplacé par l'exécutable Node et le binaire du
+    // projet, pour que le journal du serveur cesse d'être avalé. Personne n'a
+    // reporté le changement ici : `iSpawn` valait -1, et l'assertion qui vient
+    // ensuite — la garde arrive-t-elle AVANT le lancement ? — n'éprouvait plus
+    // rien du tout. Elle rougissait sur du code juste.
+    //
+    // On vise donc le lancement du serveur par ce qu'il EST — un `spawn` qui
+    // demande `dev` sur le port 3000 —, pas par la commande qui le porte, qui a
+    // déjà changé deux fois.
+    const iSpawn = source.search(/spawn\([^)]*"dev"[^)]*"-p", "3000"/s);
     assert.ok(
       iGarde > 0,
       "aucune garde en tête de batterie : un orphelin du banc rendrait les cinquante suites ininterprétables"

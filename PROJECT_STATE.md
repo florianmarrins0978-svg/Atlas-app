@@ -19,6 +19,28 @@ ligne « fait » qui ne l'est pas coûte plus cher qu'une ligne absente.
 
 ---
 
+## FAIT : la fiche de l'espace ne se contredit plus (2 septembre 2026)
+
+*Sa plainte : « l'appli ne démarre pas, page blanche ». La fiche a été lue en
+premier, comme le veut la règle — et c'est elle qui était fausse.*
+
+| | |
+|---|---|
+| ce qui a bougé | `scripts/diagnostiquer-espace.mjs` · `scripts/port-libre.mjs` (neuf) · `scripts/banc.mjs` |
+| la garde | `scripts/test-banc-lent-se-dit.ts` — 5 cas neufs |
+| le pourquoi | `ARCHITECTURE.md` §237 |
+
+Quatre phrases fausses retirées : l'ordre de rallumer publié à l'allumage,
+« elle ne se recompile jamais », « l'application est entière et rapide » posée à
+côté de « Serveur : NE RÉPOND PAS », et le relèvement « dans quinze secondes »
+promis pendant une construction qui tient le verrou. La ligne « Serveur »
+distingue enfin « plus rien n'écoute » de « quelque chose tient le port et se
+tait ».
+
+**PAS FAIT, et il ne faut pas le croire :** la panne elle-même. Rien ne servait
+sur son port pendant une construction, alors que la version bâtie précédente
+existait et devait servir. **Non reproduit ici** — voir `TODO.md`.
+
 ## FAIT : « Terminés » — le calme, et le galet (2 septembre 2026)
 
 *Ses deux choix, faits sur planches : « code moi la A le calme avec la 4 le

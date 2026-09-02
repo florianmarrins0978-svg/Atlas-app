@@ -27,7 +27,6 @@
 // banc ; un banc mort lui coûte sa soirée.
 
 import { spawn } from "node:child_process";
-import { createServer } from "node:net";
 import { existsSync, mkdirSync, readFileSync, renameSync, rmSync, writeFileSync } from "node:fs";
 import { execFileSync } from "node:child_process";
 import { annoncePrete } from "./annonce-adresse.mjs";
@@ -44,6 +43,7 @@ import {
   detenteursDuVerrou,
 } from "./verrou-construction.mjs";
 import { quoiServir, echangerLesDossiers } from "./relais-version-batie.mjs";
+import { portLibre } from "./port-libre.mjs";
 
 const PORT = process.env.PORT ?? "3000";
 const SANTE = `http://127.0.0.1:${PORT}/api/health/live`;
@@ -376,30 +376,6 @@ function jouerEnRetenant(commande, args, env = process.env, lignes = 30) {
 }
 
 /**
- * **Le PORT est-il libre — pas « la santé se tait-elle ».**
- *
- * La version précédente interrogeait `/api/health/live` et concluait « port
- * rendu » dès qu'il ne répondait plus. C'est faux, et c'est ce qui a fait
- * revenir « EADDRINUSE » chez le patron le 10 août 2026 au soir, APRÈS une
- * construction réussie : un serveur qu'on vient de tuer cesse de répondre bien
- * avant de rendre sa socket, et un processus qui tient le port sans servir
- * Atlas ne répond à cette route dans aucun cas. Le banc lançait donc
- * `next start` sur un port encore occupé.
- *
- * On demande maintenant au système, en essayant d'ÉCOUTER dessus : c'est la
- * seule question dont la réponse engage `next start`. La socket d'essai est
- * refermée aussitôt.
- */
-function portLibre() {
-  return new Promise((resoudre) => {
-    const essai = createServer();
-    essai.once("error", () => resoudre(false));
-    essai.once("listening", () => essai.close(() => resoudre(true)));
-    essai.listen(Number(PORT), "0.0.0.0");
-  });
-}
-
-/**
  * Déloge ce qui écoute encore, sans condition.
  *
  * `serveur.kill()` ne tue que l'enveloppe `npx` : le processus qui écoute
@@ -418,7 +394,7 @@ function delogerCeQuiEcoute() {
 async function portRendu(limiteMs) {
   const fin = Date.now() + limiteMs;
   while (Date.now() < fin) {
-    if (await portLibre()) return true;
+    if (await portLibre(PORT)) return true;
     await attendre(1000);
   }
   return false;
@@ -478,7 +454,7 @@ process.on("exit", () => libererVerrouBanc());
 // **La distinction qui compte** : si quelque chose répond à la santé, c'est
 // Atlas qui sert — on n'y touche pas, et le verrou ci-dessus a déjà tranché. Si
 // le port est pris SANS que rien ne réponde, c'est un orphelin, et lui seul.
-if (!(await portLibre())) {
+if (!(await portLibre(PORT))) {
   if (await repond()) {
     console.log(
       "\n  ─────────────────────────────────────────────────────────────\n" +

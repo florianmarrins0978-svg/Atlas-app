@@ -9,6 +9,52 @@ Format : le plus récent en tête.
 
 ## 2026-09-02
 
+### La fiche de l'espace se contredisait, et envoyait rallumer pour rien
+
+**Sa plainte : *« l'appli ne démarre pas, page blanche »*.** La fiche de son
+espace a été lue en premier, comme le veut `CLAUDE.md` §1 bis — et c'est elle
+qui était fausse. Trois verdicts affirmaient ce qu'ils ne mesuraient pas.
+
+- **À l'allumage, elle disait de rallumer l'espace.** Le diagnostic ignorait à
+  quel moment il était joué, alors que `rapporter-espace.mjs` l'écrit en tête de
+  fiche depuis le 12 août. Or à l'allumage le banc n'a pas encore démarré :
+  rallumer **jette la construction qui allait partir**, et l'on retombe sur la
+  même fiche. `ATLAS_MOMENT` entre désormais dans le raisonnement.
+- **« La version rapide ne se recompile jamais » était faux depuis le 31 août.**
+  Le banc rebâtit dès que le commit bâti diffère du commit récupéré, et le
+  veilleur retente indéfiniment — ce que le verdict d'échec, dans la MÊME fiche,
+  disait déjà. Elle se contredisait d'un point à l'autre.
+- **« L'application est entière et rapide » contredisait « Serveur : NE RÉPOND
+  PAS », trois lignes plus haut.** Ce verdict dit quel CODE est servi ; il ne
+  mesure pas si l'application tourne, et il ne l'affirme plus.
+- **« NE RÉPOND PAS » recouvrait deux états opposés** — plus rien n'écoute, ou
+  quelque chose tient le port et se tait. Le premier veut dire « le banc n'a pas
+  démarré », le second « le veilleur va le déloger, attendez une minute ». La
+  fiche les distingue, avec la fonction que le banc emploie déjà
+  (`scripts/port-libre.mjs`, sortie de `banc.mjs` plutôt que recopiée).
+- **« Le veilleur devrait le relever dans quinze secondes » est faux pendant une
+  construction** : le banc qui bâtit tient le verrou, et celui qu'on relance
+  refuse de démarrer. C'était l'état exact de son espace à 18 h 55 — rien à
+  attendre, et la fiche disait d'attendre.
+
+**Ce que ce lot NE corrige pas, et il faut le lire :** pourquoi rien ne servait
+sur son port. La version rapide précédente (`ddf69f2`) existait bien et devait
+servir pendant la construction. Ce qui l'en a empêché n'est écrit que dans son
+`/tmp/essai.log`. **Panne NON reproduite ici** — la fiche a été rendue capable
+de la nommer, elle n'a pas été réparée. Voir `TODO.md`.
+
+**Au passage, un contrôle qui ne visait plus rien.** `test-prechauffage.ts`
+cherchait `spawn(NPM, ["run", "dev"` dans `run-e2e-tests.ts` ; le commit
+`3cd0d21`, du même jour, y a remplacé `npm` par l'exécutable Node et le binaire
+du projet. Le repère valait -1, l'assertion qui suit — la garde arrive-t-elle
+AVANT le lancement du serveur ? — n'éprouvait plus rien, et la batterie
+rougissait sur du code juste. Le repère vise désormais ce que le lancement EST,
+pas la commande qui le porte, qui a déjà changé deux fois.
+
+Raisons et pièges : `ARCHITECTURE.md` §237.
+Éprouvé : `scripts/test-banc-lent-se-dit.ts`, cinq cas neufs, tous vérifiés
+rouges contre la version d'avant.
+
 ### « Terminés » : le calme, et le galet sur deux boutons — CODÉ
 
 **Ses deux choix, faits sur planches** (`appli/termines-elegance.html`,

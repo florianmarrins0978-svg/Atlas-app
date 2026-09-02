@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas — « L'appli ne démarre pas, page blanche » — ce qui a été trouvé</title>
+<style>
+  :root{
+    --ground:#f5f3ee; --surface:#faf9f5; --raised:#ece9e1;
+    --ink:#1c1c1a; --ink-soft:#4a4a44; --muted:#8a8578;
+    --accent:#2f3b2f; --alert:#b5562a; --line:rgba(28,28,26,0.13);
+    --serif:Georgia,'Times New Roman',serif;
+    --sans:system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --ground:#161815; --surface:#1d201c; --raised:#252924;
+      --ink:#eae7df; --ink-soft:#c2bdb1; --muted:#948f83;
+      --accent:#9fbd82; --alert:#e0885a; --line:rgba(234,231,223,0.17);
+    }
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--sans);
+    line-height:1.65;}
+  main{max-width:44rem;margin:0 auto;padding:2.5rem 1.2rem 5rem;}
+  h1,h2,h3,h4{font-family:var(--serif);font-weight:600;line-height:1.2;
+    text-wrap:balance;margin:2rem 0 0.6rem;scroll-margin-top:1rem;}
+  h1{font-size:2rem;margin-top:0;}
+  h2{font-size:1.5rem;padding-top:1.2rem;border-top:1px solid var(--line);}
+  h3{font-size:1.12rem;}
+  h4{font-size:1rem;}
+  p{margin:0 0 0.9rem;}
+  a{color:var(--accent);text-underline-offset:3px;}
+  a:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:3px;}
+  ul,ol{margin:0 0 1rem;padding-left:1.3rem;}
+  li{margin-bottom:0.4rem;}
+  li::marker{color:var(--muted);}
+  /* Le sommaire : des cibles larges, confortables au doigt sur téléphone. */
+  ol li a{display:inline-block;padding:0.15rem 0;}
+  blockquote{margin:1rem 0;padding:0.85rem 1.05rem;background:var(--raised);
+    border-left:3px solid var(--accent);border-radius:0 10px 10px 0;color:var(--ink-soft);}
+  code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:0.87em;
+    background:var(--raised);padding:0.1rem 0.35rem;border-radius:5px;}
+  hr{border:0;border-top:1px solid var(--line);margin:2rem 0;}
+  .tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px;
+    background:var(--surface);margin:0 0 1.2rem;}
+  table{border-collapse:collapse;width:100%;font-size:0.92rem;min-width:22rem;}
+  th,td{text-align:left;padding:0.55rem 0.8rem;border-bottom:1px solid var(--line);
+    vertical-align:top;}
+  th{font-size:0.72rem;letter-spacing:0.08em;text-transform:uppercase;
+    color:var(--muted);white-space:nowrap;}
+  tr:last-child td{border-bottom:none;}
+  .retour{display:inline-block;font-size:0.76rem;color:var(--muted);
+    text-decoration:none;margin:-0.3rem 0 1rem;}
+  .retour:hover{color:var(--accent);text-decoration:underline;}
+</style>
+</head>
+<body>
+<main>
+<h1 id="-lappli-ne-démarre-pas-page-blanche---ce-qui-a-été-trouvé">« L'appli ne démarre pas, page blanche » — ce qui a été trouvé</h1>
+<p>2 septembre 2026. Document de retour du lot.</p>
+<hr>
+<h2 id="en-trois-lignes">En trois lignes</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p>Votre espace tournait. Ce qui était cassé, c'est <strong>la fiche qui vous dit ce qui ne va pas</strong> : elle affirmait quatre choses fausses, dont une qui vous envoyait rallumer l'espace — le seul geste qui empêche l'application de revenir.</p>
+<p>La panne elle-même n'est <strong>pas</strong> corrigée. Elle est maintenant <em>visible</em>, ce qu'elle n'était pas.</p>
+<hr>
+<h2 id="ce-que-votre-espace-a-publié-et-pourquoi-cétait-trompeur">Ce que votre espace a publié, et pourquoi c'était trompeur</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p>À 18 h 40 (allumage), puis à 18 h 55 (le veilleur), votre fiche portait ceci — à trois lignes d'écart :</p>
+<p>``<code> Serveur : NE RÉPOND PAS sur le port 3000 ⚠ … l'application est donc entière et rapide … </code>``</p>
+<p>Les deux ne peuvent pas être vraies ensemble. Et c'est la seconde qu'on lit : elle fait chercher le défaut dans l'application, alors que rien ne servait.</p>
+<hr>
+<h2 id="un-point-un-verdict">Un point, un verdict</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th>#</th>
+<th>Ce qui était écrit</th>
+<th>Vrai ?</th>
+<th>Ce qui a été fait</th>
+</tr></thead><tbody>
+<tr>
+<td>1</td>
+<td>« Arrêtez puis rouvrez l'espace de travail » — publié <strong>à l'allumage</strong></td>
+<td><strong>Faux, et nuisible</strong></td>
+<td>Retiré à ce moment-là. À l'allumage, votre banc n'a pas encore démarré : rallumer <strong>jette la construction qui allait partir</strong>. Vous rallumez, vous retombez sur la même fiche, vous rallumez encore</td>
+</tr>
+<tr>
+<td>2</td>
+<td>« La version rapide ne se recompile jamais »</td>
+<td><strong>Faux depuis le 31 août</strong></td>
+<td>Votre banc rebâtit tout seul dès que le code a changé, et le veilleur retente toutes les demi-heures. La fiche disait déjà l'inverse deux points plus haut : elle se contredisait</td>
+</tr>
+<tr>
+<td>3</td>
+<td>« L'application est entière et rapide »</td>
+<td><strong>Non mesuré</strong></td>
+<td>Ce point-là répond à « quel code est servi », pas à « est-ce que ça tourne ». Il ne le prétend plus. Une seule ligne répond à cette question : « Serveur »</td>
+</tr>
+<tr>
+<td>4</td>
+<td>« Serveur : NE RÉPOND PAS »</td>
+<td><strong>Vrai mais incomplet</strong></td>
+<td>Cette phrase valait pour deux situations opposées : <em>plus rien n'écoute</em> (le banc n'a pas démarré) ou <em>quelque chose tient le port sans répondre</em> (le veilleur va le déloger, une minute d'attente). Elle les distingue désormais</td>
+</tr>
+<tr>
+<td>5</td>
+<td>« Le veilleur devrait le relever dans quinze secondes »</td>
+<td><strong>Faux pendant une construction</strong></td>
+<td>Un banc qui construit tient un verrou ; celui que le veilleur relance refuse alors de démarrer. Tant que la construction dure, personne ne prend le port. C'était <strong>exactement</strong> votre état à 18 h 55 : il n'y avait rien à attendre</td>
+</tr>
+</tbody></table></div>
+<hr>
+<h2 id="ce-qui-na-pas-été-corrigé-et-quil-faut-lire">Ce qui n'a PAS été corrigé, et qu'il faut lire</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><strong>Pourquoi rien ne servait sur votre port.</strong> Votre fiche de 18 h 55 montrait trois choses ensemble :</p>
+<ul>
+<li>une construction en cours ;</li>
+<li>une version rapide déjà bâtie et utilisable (<code>ddf69f2</code>) ;</li>
+<li><strong>rien sur le port 3000.</strong></li>
+</ul>
+<p>Depuis le 31 août, le banc doit servir la version bâtie précédente <strong>pendant</strong> qu'il construit la neuve. Elle existait. Elle n'a pas pris le port, et <strong>on ne sait pas pourquoi</strong>.</p>
+<p><strong>Ce n'a pas pu être reproduit ici.</strong> Sur ce poste, au même code que le vôtre, le banc démarre et sert : l'écran de connexion répond du premier coup. La réponse est dans le journal de votre machine (<code>/tmp/essai.log</code>), auquel je n'ai pas accès depuis ici.</p>
+<p>Ce lot rend donc la fiche capable de <strong>nommer</strong> cet état au lieu d'affirmer que tout va bien. Il ne répare pas la panne, et personne ne doit croire le contraire.</p>
+<hr>
+<h2 id="ce-quil-faut-faire-maintenant">Ce qu'il faut faire maintenant</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<ol>
+<li><strong>Rallumez votre espace</strong> (github.com/codespaces) et <strong>attendez cinq minutes</strong> sans recharger.</li>
+<li>Si l'adresse reste blanche, <strong>lancez <code>claude</code> dans votre espace</strong> et dites-lui : <em>« regarde /tmp/essai.log et dis-moi pourquoi le serveur ne prend pas le port »</em>. Lui y a accès, moi non.</li>
+</ol>
+<p>Rien d'autre à taper.</p>
+<hr>
+<h2 id="ce-qui-le-tient-et-comment-on-sait-que-ça-marche">Ce qui le tient, et comment on sait que ça marche</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><code>npx tsx scripts/test-banc-lent-se-dit.ts</code> — cinq contrôles neufs. <strong>Tous ont été vérifiés rouges contre la version d'avant</strong> : un contrôle qui n'a jamais échoué ne prouve rien. Le cas du port occupé est joué en tenant vraiment le port avec un processus voisin, pas en recopiant une phrase.</p>
+<p>La batterie complète (<code>npm run verifier:avant-livraison</code>) a été jouée avant livraison.</p>
+<p>Raisons et pièges, pour une prochaine session : <code>ARCHITECTURE.md</code> §237. Ce qui reste ouvert : <code>TODO.md</code>.</p>
+</main>
+</body>
+</html>

@@ -9,7 +9,41 @@ sert.
 
 ---
 
-## Dernier lot : « Terminés » — le calme, et le galet (2 septembre 2026)
+## Dernier lot : la fiche de l'espace mentait sur sa propre panne (2 sept. 2026)
+
+**Sa plainte : *« l'appli ne démarre pas, page blanche »*.** `CLAUDE.md` §1 bis
+dit de lire la fiche avant tout — elle a été lue, et **c'est elle qui était
+fausse**. Trois verdicts affirmaient ce qu'ils ne mesuraient pas ; l'un d'eux
+envoyait rallumer l'espace au moment précis où cela jette la construction.
+
+| | |
+|---|---|
+| ce qui a bougé | `scripts/diagnostiquer-espace.mjs`, `scripts/port-libre.mjs` (neuf), `scripts/banc.mjs` |
+| la garde | `npx tsx scripts/test-banc-lent-se-dit.ts` — 5 cas neufs, vérifiés rouges contre la version d'avant |
+| le pourquoi | `ARCHITECTURE.md` §237 |
+| le retour pour lui | `docs/page-blanche-au-demarrage.md` |
+
+**À SAVOIR AVANT DE TOUCHER À CET ÉCRAN-LÀ, ou de conclure quoi que ce soit :**
+
+- **La panne n'est PAS corrigée, et il ne faut pas le croire.** Ce lot corrige
+  ce que la fiche DIT, pas ce qui empêchait son banc de servir. Sa fiche de
+  18 h 55 montrait une construction en cours, une version bâtie utilisable
+  (`ddf69f2`) et **rien sur le port** — un état que `relais-version-batie.mjs`
+  interdit depuis le 31 août. `TODO.md` porte le point ouvert.
+- **La cause n'est lisible que dans SON `/tmp/essai.log`.** Depuis ce poste, le
+  banc joué au même commit sert sans faute : `npm run banc` puis `/login` rend
+  200. Ne pas conclure d'ici.
+- **`portLibre` a quitté `banc.mjs`** pour `scripts/port-libre.mjs`, parce que
+  la fiche pose désormais la même question. Ne pas la recopier ailleurs : cette
+  question-là a déjà été fausse une fois (elle demandait « la santé
+  répond-elle ? » jusqu'au 10 août, d'où l'`EADDRINUSE` de ce soir-là).
+- **`ATLAS_MOMENT` et `ATLAS_VERROU_VEILLEUR` sont lus par le diagnostic.** Ce
+  sont les variables qui existaient déjà (`rapporter-espace.mjs`,
+  `veiller.sh`) — ne pas en inventer de secondes.
+
+---
+
+## Lot précédent : « Terminés » — le calme, et le galet (2 septembre 2026)
 
 Maquette d'abord, code ensuite, deux fois de suite. Il a demandé un visuel de
 « Terminés » plus haut de gamme (`appli/termines-elegance.html`, trois crans),
