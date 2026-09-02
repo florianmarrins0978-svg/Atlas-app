@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { execFileSync, spawn } from "node:child_process";
-import { mkdtempSync, writeFileSync, rmSync, existsSync } from "node:fs";
+import { mkdtempSync, writeFileSync, rmSync, existsSync, readFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 
@@ -189,6 +189,68 @@ verifier("banc.mjs efface le témoin d'échec quand la construction réussit", (
     bloc,
     /rmSync\(TEMOIN_ECHEC/,
     "une construction réussie doit retirer le témoin d'échec, sinon la fiche accuse à tort pour toujours"
+  );
+});
+
+// ── 3 bis. La réparation des dépendances va jusqu'au bout, ou le dit ────────
+//
+// **Sa panne du 2 septembre 2026, une heure de page blanche.** Une installation
+// interrompue avait laissé `node_modules` amputé : `next` manquait. La garde
+// s'est bien déclenchée, puis `npm install` a rendu, deux fois de suite :
+//
+//     npm error ENOTEMPTY: directory not empty, rmdir '.../scope-manager/dist'
+//
+// `npm install` répare un arbre COHÉRENT auquel il manque des paquets ; devant
+// des dossiers à demi effacés il bute sur ses propres restes, et il y butera
+// encore au tour suivant. Le banc concluait « on tente la construction telle
+// quelle » — ce qui, sans `next`, n'est pas un repli mais un mur : le serveur
+// meurt à la seconde, le veilleur le relance, et cela recommence toutes les
+// quinze secondes SANS QUE RIEN NE SOIT ENREGISTRÉ.
+//
+// Éprouvé sur `banc.mjs` lui-même, comme le cas voisin : la voie complète
+// demande un npm qui échoue, ce qu'aucune suite ne peut exiger d'une machine.
+// (Elle a été JOUÉE à la main, cache vide et registre injoignable, avant
+// d'écrire ces lignes — voir `ARCHITECTURE.md` §238.)
+verifier("la réparation des dépendances ne s'arrête pas au premier refus de npm", () => {
+  const source = readFileSync(path.join(__dirname, "banc.mjs"), "utf8");
+  const debut = source.indexOf("async function reinstallerSiDesaccordees");
+  assert.ok(debut > 0, "la réparation des dépendances a changé de nom : ce contrôle ne vise plus rien");
+  const entier = source.slice(debut, source.indexOf("function paquetsEpinglesAbsents", debut));
+  assert.ok(entier.length > 0 && entier.length < 8000, "le repère de fin de bloc a bougé : ce contrôle ne vise plus rien");
+  // **Les commentaires sont écartés, et ce n'est pas de la coquetterie.** Le
+  // pavé qui explique cette correction CITE la phrase fautive d'avant : sans ce
+  // filtre, le contrôle la retrouvait dans son propre commentaire et rougissait
+  // sur du code juste. On éprouve ce que la machine fait, pas ce qu'on en dit.
+  const bloc = entier
+    .split("\n")
+    .filter((l) => !/^\s*(\/\/|\*|\/\*)/.test(l))
+    .join("\n");
+
+  assert.match(
+    bloc,
+    /"ci",/,
+    "npm install ne répare pas un node_modules amputé : sans repli sur npm ci, le banc reste condamné"
+  );
+  assert.match(
+    bloc,
+    /deposerEchec\(/,
+    "une réparation qui échoue doit se déposer là où la fiche la lit, sinon la panne est muette"
+  );
+  assert.doesNotMatch(
+    bloc,
+    /on tente la construction telle quelle/,
+    "ce n'est pas un repli quand le paquet absent est `next` : c'est un mur, et une boucle sans fin"
+  );
+});
+
+verifier("un paquet épinglé ABSENT ne compte pas comme une réussite", () => {
+  // Le code de sortie de npm ne suffit pas : une commande qui rend 0 en ayant
+  // laissé `next` absent était comptée comme réparée. On regarde le disque.
+  const source = readFileSync(path.join(__dirname, "banc.mjs"), "utf8");
+  assert.match(
+    source,
+    /paquetsEpinglesAbsents\(\)/,
+    "rien ne vérifie que le paquet est VRAIMENT là après la réinstallation"
   );
 });
 

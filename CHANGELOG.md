@@ -9,6 +9,49 @@ Format : le plus récent en tête.
 
 ## 2026-09-02
 
+### La page blanche : `npm ci` effaçait `node_modules` sous un serveur qui tournait
+
+**La racine de sa panne, trouvée dans le journal de son espace.** Une heure
+d'application morte, et deux lignes l'expliquent :
+
+```
+npm error ENOTEMPTY: directory not empty, rmdir '.../scope-manager/dist'
+Error: Cannot find module '.../node_modules/next/dist/bin/next'   (× 30)
+```
+
+`demarrer.sh` posait le veilleur — donc un banc qui SERT et qui BÂTIT — puis
+lançait `npm ci`, **qui efface `node_modules`**, et n'arrêtait ces processus que
+vingt lignes plus bas. npm a effacé ce qu'il pouvait, échoué sur ce qui était
+tenu ouvert, et laissé l'arbre amputé. `next` a disparu : le serveur mourait à
+la seconde, le veilleur le relançait, il remourait — toutes les quinze secondes,
+**sans que rien ne soit enregistré nulle part**.
+
+- **Le banc s'arrête AVANT l'installation, plus après.** Ces processus étaient
+  tués de toute façon : les tuer avant ne coûte aucun service et supprime la
+  course. C'est la correction de la cause.
+- **`npm install` ne répare pas un arbre amputé — on se replie sur `npm ci`.**
+  Le premier répare un arbre cohérent auquel il manque des paquets ; devant des
+  dossiers à demi effacés il bute sur ses propres restes, et il y butera encore
+  au tour suivant.
+- **On ne fonce plus dans le mur en silence.** « On tente la construction telle
+  quelle » n'est pas un repli quand `next` manque. Le banc vérifie que le paquet
+  est VRAIMENT sur le disque — le code de sortie de npm ne suffit pas — et
+  dépose l'échec là où la fiche le lit. Elle nomme désormais les paquets absents
+  au lieu de répéter « NE RÉPOND PAS ».
+- **L'échec d'installation au démarrage ne s'avale plus** dans un `|| true` : le
+  bandeau le dit, avec le geste à faire.
+- **Un seul écrivain pour le témoin d'échec** (`deposerEchec`), partagé par la
+  construction et par la réparation : deux copies d'un même format auraient
+  divergé, et la fiche n'en lit qu'un.
+
+Éprouvé en JOUANT la panne — `next` écarté, cache npm vide, registre
+injoignable : les deux commandes échouent et le banc nomme les paquets absents.
+Quatre contrôles neufs, tous vérifiés rouges contre la version d'avant — dont
+le premier jet de celui qui fixe l'ordre, **inutile** parce qu'il trouvait le
+`pkill` de l'en-tête et passait au vert sur le code défectueux.
+
+Raisons et pièges : `ARCHITECTURE.md` §238.
+
 ### La fiche de l'espace se contredisait, et envoyait rallumer pour rien
 
 **Sa plainte : *« l'appli ne démarre pas, page blanche »*.** La fiche de son

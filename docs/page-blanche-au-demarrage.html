@@ -62,80 +62,99 @@
 <hr>
 <h2 id="en-trois-lignes">En trois lignes</h2>
 <a class="retour" href="#sommaire">↑ Sommaire</a>
-<p>Votre espace tournait. Ce qui était cassé, c'est <strong>la fiche qui vous dit ce qui ne va pas</strong> : elle affirmait quatre choses fausses, dont une qui vous envoyait rallumer l'espace — le seul geste qui empêche l'application de revenir.</p>
-<p>La panne elle-même n'est <strong>pas</strong> corrigée. Elle est maintenant <em>visible</em>, ce qu'elle n'était pas.</p>
+<p><code>npm ci</code> effaçait <code>node_modules</code> <strong>pendant</strong> qu'un serveur y travaillait. Le dossier restait à moitié détruit, <code>next</code> disparaissait, et l'application ne pouvait plus démarrer du tout — en boucle, toutes les quinze secondes, sans que rien ne le dise.</p>
+<p>C'est corrigé à la racine. Et deux garde-fous qui auraient dû l'attraper ont été corrigés aussi.</p>
 <hr>
-<h2 id="ce-que-votre-espace-a-publié-et-pourquoi-cétait-trompeur">Ce que votre espace a publié, et pourquoi c'était trompeur</h2>
+<h2 id="correction-de-ce-que-jai-dit-plus-tôt">Correction de ce que j'ai dit plus tôt</h2>
 <a class="retour" href="#sommaire">↑ Sommaire</a>
-<p>À 18 h 40 (allumage), puis à 18 h 55 (le veilleur), votre fiche portait ceci — à trois lignes d'écart :</p>
-<p>``<code> Serveur : NE RÉPOND PAS sur le port 3000 ⚠ … l'application est donc entière et rapide … </code>``</p>
-<p>Les deux ne peuvent pas être vraies ensemble. Et c'est la seconde qu'on lit : elle fait chercher le défaut dans l'application, alors que rien ne servait.</p>
+<p><strong>J'ai d'abord écrit que la panne n'était pas trouvée</strong>, et que seule la fiche avait été réparée. C'était vrai à ce moment-là, et ce ne l'est plus : ton journal, lu depuis ton espace, portait la réponse. Ce document remplace la version précédente.</p>
+<hr>
+<h2 id="ce-qui-sest-réellement-passé">Ce qui s'est réellement passé</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p>À 21 h 13, pendant la mise à jour de ton espace :</p>
+<p>``<code> npm error ENOTEMPTY: directory not empty, rmdir '.../scope-manager/dist' npm error ENOTEMPTY: directory not empty, rename '.../zod' -&gt; '.../.zod-Nu9WQpaH' </code>``</p>
+<p>puis, trente fois d'affilée :</p>
+<p>``<code> Error: Cannot find module '.../node_modules/next/dist/bin/next' 02/09 21:21:58 — le serveur s'est arrêté 02/09 21:22:13 — plus rien n'écoute sur le port 3000, relance du serveur </code>``</p>
+<p><strong>Le mécanisme, en trois lignes de script.</strong> Ton espace lance d'abord l'application — pour que tu aies toujours quelque chose qui répond —, puis réinstalle les dépendances. Or cette réinstallation <strong>supprime le dossier des dépendances</strong> avant de le refaire. L'application, elle, était en train de s'en servir. Le dossier est resté à moitié détruit.</p>
+<p>Ensuite, tout est cohérent : sans <code>next</code>, le serveur meurt à la seconde ; le veilleur fait son travail et le relance ; il remeurt. Une heure.</p>
 <hr>
 <h2 id="un-point-un-verdict">Un point, un verdict</h2>
 <a class="retour" href="#sommaire">↑ Sommaire</a>
 <div class="tablewrap"><table><thead><tr>
 <th>#</th>
-<th>Ce qui était écrit</th>
-<th>Vrai ?</th>
+<th>Le point</th>
+<th>Verdict</th>
 <th>Ce qui a été fait</th>
 </tr></thead><tbody>
 <tr>
 <td>1</td>
-<td>« Arrêtez puis rouvrez l'espace de travail » — publié <strong>à l'allumage</strong></td>
-<td><strong>Faux, et nuisible</strong></td>
-<td>Retiré à ce moment-là. À l'allumage, votre banc n'a pas encore démarré : rallumer <strong>jette la construction qui allait partir</strong>. Vous rallumez, vous retombez sur la même fiche, vous rallumez encore</td>
+<td>L'ordre des opérations au démarrage</td>
+<td><strong>la cause</strong></td>
+<td>L'application est arrêtée <strong>avant</strong> la réinstallation, plus après. Elle était arrêtée de toute façon vingt lignes plus bas : ça ne coûte rien, et ça supprime le problème</td>
 </tr>
 <tr>
 <td>2</td>
-<td>« La version rapide ne se recompile jamais »</td>
-<td><strong>Faux depuis le 31 août</strong></td>
-<td>Votre banc rebâtit tout seul dès que le code a changé, et le veilleur retente toutes les demi-heures. La fiche disait déjà l'inverse deux points plus haut : elle se contredisait</td>
+<td>La réparation automatique existait — elle s'est déclenchée</td>
+<td><strong>vrai, mais insuffisante</strong></td>
+<td>Elle utilisait <code>npm install</code>, qui ne sait pas réparer un dossier à moitié détruit. Elle se replie désormais sur <code>npm ci</code>, qui repart d'un dossier propre</td>
 </tr>
 <tr>
 <td>3</td>
-<td>« L'application est entière et rapide »</td>
-<td><strong>Non mesuré</strong></td>
-<td>Ce point-là répond à « quel code est servi », pas à « est-ce que ça tourne ». Il ne le prétend plus. Une seule ligne répond à cette question : « Serveur »</td>
+<td>« On tente la construction telle quelle »</td>
+<td><strong>c'était un mur</strong></td>
+<td>Sans <code>next</code>, il n'y a rien à tenter. Le banc vérifie maintenant que le paquet est <strong>vraiment là</strong>, et si ce n'est pas le cas il le dit sur la fiche au lieu de boucler en silence</td>
 </tr>
 <tr>
 <td>4</td>
-<td>« Serveur : NE RÉPOND PAS »</td>
-<td><strong>Vrai mais incomplet</strong></td>
-<td>Cette phrase valait pour deux situations opposées : <em>plus rien n'écoute</em> (le banc n'a pas démarré) ou <em>quelque chose tient le port sans répondre</em> (le veilleur va le déloger, une minute d'attente). Elle les distingue désormais</td>
+<td>L'échec d'installation au démarrage</td>
+<td><strong>avalé</strong></td>
+<td>Il était noyé dans un `\</td>
+<td>\</td>
+<td>true`. Il s'affiche maintenant, avec le geste à faire</td>
 </tr>
 <tr>
 <td>5</td>
-<td>« Le veilleur devrait le relever dans quinze secondes »</td>
-<td><strong>Faux pendant une construction</strong></td>
-<td>Un banc qui construit tient un verrou ; celui que le veilleur relance refuse alors de démarrer. Tant que la construction dure, personne ne prend le port. C'était <strong>exactement</strong> votre état à 18 h 55 : il n'y avait rien à attendre</td>
+<td>La fiche de ton espace</td>
+<td><strong>elle mentait</strong></td>
+<td>Corrigé plus tôt dans la journée : quatre phrases fausses retirées, dont une qui t'envoyait rallumer l'espace au pire moment</td>
 </tr>
 </tbody></table></div>
 <hr>
-<h2 id="ce-qui-na-pas-été-corrigé-et-quil-faut-lire">Ce qui n'a PAS été corrigé, et qu'il faut lire</h2>
+<h2 id="ce-que-ça-change-pour-toi">Ce que ça change pour toi</h2>
 <a class="retour" href="#sommaire">↑ Sommaire</a>
-<p><strong>Pourquoi rien ne servait sur votre port.</strong> Votre fiche de 18 h 55 montrait trois choses ensemble :</p>
-<ul>
-<li>une construction en cours ;</li>
-<li>une version rapide déjà bâtie et utilisable (<code>ddf69f2</code>) ;</li>
-<li><strong>rien sur le port 3000.</strong></li>
-</ul>
-<p>Depuis le 31 août, le banc doit servir la version bâtie précédente <strong>pendant</strong> qu'il construit la neuve. Elle existait. Elle n'a pas pris le port, et <strong>on ne sait pas pourquoi</strong>.</p>
-<p><strong>Ce n'a pas pu être reproduit ici.</strong> Sur ce poste, au même code que le vôtre, le banc démarre et sert : l'écran de connexion répond du premier coup. La réponse est dans le journal de votre machine (<code>/tmp/essai.log</code>), auquel je n'ai pas accès depuis ici.</p>
-<p>Ce lot rend donc la fiche capable de <strong>nommer</strong> cet état au lieu d'affirmer que tout va bien. Il ne répare pas la panne, et personne ne doit croire le contraire.</p>
-<hr>
-<h2 id="ce-quil-faut-faire-maintenant">Ce qu'il faut faire maintenant</h2>
-<a class="retour" href="#sommaire">↑ Sommaire</a>
-<ol>
-<li><strong>Rallumez votre espace</strong> (github.com/codespaces) et <strong>attendez cinq minutes</strong> sans recharger.</li>
-<li>Si l'adresse reste blanche, <strong>lancez <code>claude</code> dans votre espace</strong> et dites-lui : <em>« regarde /tmp/essai.log et dis-moi pourquoi le serveur ne prend pas le port »</em>. Lui y a accès, moi non.</li>
-</ol>
-<p>Rien d'autre à taper.</p>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th>avant</th>
+<th>après</th>
+</tr></thead><tbody>
+<tr>
+<td>pendant une mise à jour</td>
+<td>l'application pouvait se faire casser</td>
+<td>plus rien ne tourne pendant ce temps</td>
+</tr>
+<tr>
+<td>dépendances abîmées</td>
+<td>boucle infinie, page blanche, aucune explication</td>
+<td>réparation automatique complète</td>
+</tr>
+<tr>
+<td>si la réparation échoue quand même</td>
+<td>rien, nulle part</td>
+<td>la fiche <strong>nomme</strong> ce qui manque, et donne la commande</td>
+</tr>
+</tbody></table></div>
 <hr>
 <h2 id="ce-qui-le-tient-et-comment-on-sait-que-ça-marche">Ce qui le tient, et comment on sait que ça marche</h2>
 <a class="retour" href="#sommaire">↑ Sommaire</a>
-<p><code>npx tsx scripts/test-banc-lent-se-dit.ts</code> — cinq contrôles neufs. <strong>Tous ont été vérifiés rouges contre la version d'avant</strong> : un contrôle qui n'a jamais échoué ne prouve rien. Le cas du port occupé est joué en tenant vraiment le port avec un processus voisin, pas en recopiant une phrase.</p>
-<p>La batterie complète (<code>npm run verifier:avant-livraison</code>) a été jouée avant livraison.</p>
-<p>Raisons et pièges, pour une prochaine session : <code>ARCHITECTURE.md</code> §237. Ce qui reste ouvert : <code>TODO.md</code>.</p>
+<p>La panne a été <strong>rejouée</strong>, pas raisonnée : <code>next</code> écarté, cache de npm vidé, registre injoignable — les deux commandes échouent, et le banc rend :</p>
+<p>``<code> ⚠️  LES DÉPENDANCES N'ONT PAS PU ÊTRE RÉPARÉES — next, eslint-config-next manque encore. Depuis un terminal de l'espace :  rm -rf node_modules &amp;&amp; npm ci </code>``</p>
+<p>avec la trace déposée pour la fiche.</p>
+<p>Quatre contrôles neufs, <strong>tous vérifiés rouges contre la version d'avant</strong> — un contrôle qui n'a jamais échoué ne prouve rien. Le premier jet de celui qui fixe l'ordre des opérations était d'ailleurs <strong>inutile</strong> : il se laissait berner par une ligne du haut du script et passait au vert sur le code cassé. Il est écrit noir sur blanc ici parce que c'est le genre d'erreur qui rend tout le reste douteux.</p>
+<hr>
+<h2 id="ce-qui-reste-et-que-je-nai-pas-fait">Ce qui reste, et que je n'ai pas fait</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p>Rien sur cette panne. Si elle revenait malgré tout, la fiche de ton espace dira cette fois quoi taper — elle ne se contentera plus de « ne répond pas ».</p>
+<p>Raisons et pièges, pour une prochaine session : <code>ARCHITECTURE.md</code> §237 et §238.</p>
 </main>
 </body>
 </html>

@@ -420,6 +420,87 @@ async function main() {
     assert.deepEqual(lancements, [], `le serveur est encore lancé sans veilleur : ${lancements.join(" | ")}`);
   });
 
+  await cas("le banc est ARRÊTÉ avant l'installation, jamais pendant", () => {
+    // ─────────────────────────────────────────────────────────────────────────
+    // **La racine de sa panne du 2 septembre 2026, et elle a coûté une heure
+    // de page blanche.**
+    //
+    // `npm ci` EFFACE `node_modules` avant de réinstaller. Le veilleur, lui,
+    // est posé cinquante lignes plus haut — délibérément — et quinze secondes
+    // plus tard un `next-server` sert pendant qu'un `next build` bâtit. Les
+    // deux tiennent des fichiers ouverts dans `node_modules`.
+    //
+    // L'installation effaçait donc ce qu'elle pouvait, échouait sur le reste :
+    //
+    //     npm error ENOTEMPTY: directory not empty, rmdir '.../scope-manager/dist'
+    //     npm error ENOTEMPTY: directory not empty, rename '.../zod' -> '.../.zod-…'
+    //
+    // et laissait l'arbre AMPUTÉ. `next` en fut la victime : le serveur suivant
+    // mourait à la seconde sur « Cannot find module », le veilleur le relançait,
+    // il remourait — trente fois d'affilée, sans que rien ne l'enregistre.
+    //
+    // Les processus étaient tués vingt lignes plus bas, c'est-à-dire après les
+    // dégâts. Ce contrôle fixe l'ORDRE, qui est tout ce qui compte ici.
+    const lignes = readFileSync(path.join(RACINE, ".devcontainer", "demarrer.sh"), "utf8")
+      .split("\n")
+      .map((texte, numero) => ({ numero, texte: texte.trim() }))
+      .filter((l) => !l.texte.startsWith("#"));
+    const ou = (motif: RegExp) => lignes.find((l) => motif.test(l.texte))?.numero ?? -1;
+
+    // **Le repère de DÉPART compte autant que celui d'arrivée, et l'oublier a
+    // rendu ce contrôle inutile pendant sa première écriture.** Le script tue
+    // déjà un serveur orphelin tout en HAUT du fichier, avant la mise à jour.
+    // Une recherche naïve « existe-t-il un pkill avant l'installation ? »
+    // trouvait donc celui-là, et passait au VERT sur la version défectueuse —
+    // celle où le banc n'était arrêté qu'après les dégâts. On borne des deux
+    // côtés : l'arrêt doit vivre DANS le bloc de mise à jour.
+    const miseAJour = ou(/MISE_A_JOUR="\$\(bash/);
+    const installation = ou(/npm ci .*>> "\$JOURNAL"|if npm ci/);
+    assert.ok(miseAJour > 0, "le bloc de mise à jour est introuvable : ce contrôle n'éprouve rien");
+    assert.ok(installation > 0, "l'installation des dépendances est introuvable : ce contrôle n'éprouve rien");
+    assert.ok(
+      miseAJour < installation,
+      "les repères sont dans le désordre : ce contrôle ne vise plus ce qu'il croit"
+    );
+    const arretsAvant = lignes.filter(
+      (l) =>
+        l.numero > miseAJour &&
+        l.numero < installation &&
+        /pkill -f "\[n\]ext\(-server\| dev\| start\| build\)"/.test(l.texte)
+    );
+    assert.ok(
+      arretsAvant.length > 0,
+      "`npm ci` efface node_modules sous un serveur qui tourne : il faut l'arrêter AVANT, pas après"
+    );
+    // Et le veilleur repart APRÈS, sinon il relancerait un banc au milieu de
+    // l'installation — le désordre qu'on vient d'éviter.
+    const relance = lignes.filter((l) => l.numero > installation && /lancer_veilleur/.test(l.texte));
+    assert.ok(relance.length > 0, "le veilleur ne repart pas après l'installation : le banc resterait mort");
+  });
+
+  await cas("un échec d'installation ne s'avale pas", () => {
+    // Le `|| true` d'avant le taisait : le code neuf arrivait sur des
+    // dépendances amputées, et le seul endroit qui le savait était un journal
+    // que personne ne lit. C'est la faute déjà payée sur les migrations le
+    // 9 août — une commande qui échoue en silence est pire qu'une qui échoue.
+    const demarrage = readFileSync(path.join(RACINE, ".devcontainer", "demarrer.sh"), "utf8");
+    assert.doesNotMatch(
+      demarrage,
+      /npm ci --silent[^\n]*\|\| npm install --silent[^\n]*\|\| true/,
+      "l'échec d'installation est encore avalé par un `|| true`"
+    );
+    assert.match(
+      demarrage,
+      /DEPENDANCES="échec"/,
+      "rien ne retient l'échec de l'installation : le bandeau ne pourra pas le dire"
+    );
+    assert.match(
+      demarrage,
+      /LES DÉPENDANCES N'ONT PAS SUIVI LE CODE/,
+      "l'échec est retenu mais jamais montré : le patron ne le verra pas"
+    );
+  });
+
   await cas("le constat des migrations arrive intact jusqu'au bandeau", () => {
     // **Ce cas éprouvait la survie d'un `exec` qui n'existe plus.** Le script se
     // relançait dans sa version neuve, et le second passage recalculait tout :

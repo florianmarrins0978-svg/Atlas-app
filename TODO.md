@@ -9,7 +9,7 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
-## NON REPRODUIT : rien ne servait sur son port pendant une construction (2 sept. 2026)
+## ~~NON REPRODUIT : rien ne servait sur son port~~ — TROUVÉ le 2 septembre 2026, au soir
 
 Sa plainte : *« l'appli ne démarre pas, page blanche »*. Sa fiche, à 18 h 55
 UTC, portait un état que le dessin du banc interdit :
@@ -24,11 +24,11 @@ Depuis le 31 août (`relais-version-batie.mjs`), `banc.mjs` lance le serveur sur
 la version bâtie **avant** de bâtir la neuve. Une version bâtie existait. Elle
 n'a pas pris le port, et l'on ne sait pas pourquoi.
 
-**Ce qui a été livré, et ce qui ne l'a pas été.** La fiche a été rendue capable
-de NOMMER cet état au lieu d'affirmer « l'application est entière et rapide »
-(`ARCHITECTURE.md` §237). **La panne elle-même n'est pas corrigée** — elle n'a
-pas pu être reproduite ici : le banc, joué sur ce poste au même commit, sert
-sans faute.
+**RÉSOLU LE SOIR MÊME.** Son journal, lu depuis son espace, portait la réponse :
+`npm ci` effaçait `node_modules` pendant qu'un banc y tenait des fichiers
+ouverts, laissait l'arbre amputé, et `next` disparaissait. Cause, correction et
+preuves : `ARCHITECTURE.md` §238. Ce qui suit décrit l'état d'AVANT cette
+découverte, et se lit comme tel.
 
 | | |
 |---|---|

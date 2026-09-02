@@ -37,9 +37,23 @@ promis pendant une construction qui tient le verrou. La ligne « Serveur »
 distingue enfin « plus rien n'écoute » de « quelque chose tient le port et se
 tait ».
 
-**PAS FAIT, et il ne faut pas le croire :** la panne elle-même. Rien ne servait
-sur son port pendant une construction, alors que la version bâtie précédente
-existait et devait servir. **Non reproduit ici** — voir `TODO.md`.
+**Et la panne elle-même a été trouvée le soir même** (voir juste en dessous) :
+ce lot-ci ne corrigeait que ce que la fiche DIT.
+
+## FAIT : la page blanche, à la racine (2 septembre 2026, au soir)
+
+*« L'appli ne démarre pas, page blanche » — une heure durant.*
+
+| | |
+|---|---|
+| la cause | `npm ci` effaçait `node_modules` sous un banc qui tournait ; l'arbre restait amputé et `next` disparaissait |
+| ce qui a bougé | `.devcontainer/demarrer.sh` · `scripts/banc.mjs` |
+| la garde | `test-prechauffage.ts` et `test-banc-lent-se-dit.ts` — 4 cas neufs |
+| le pourquoi | `ARCHITECTURE.md` §238 |
+
+Le banc s'arrête désormais AVANT l'installation ; `npm install` se replie sur
+`npm ci` quand l'arbre est abîmé ; et une réparation impossible se DIT au lieu
+de boucler en silence toutes les quinze secondes.
 
 ## FAIT : « Terminés » — le calme, et le galet (2 septembre 2026)
 

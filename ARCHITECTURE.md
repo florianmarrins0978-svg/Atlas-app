@@ -21173,3 +21173,102 @@ prochaine la nomme au lieu d'affirmer que tout va bien. `TODO.md` le porte.
 **Éprouvé** : `npx tsx scripts/test-banc-lent-se-dit.ts` — cinq cas neufs, tous
 rouges contre la version d'avant (c'est ainsi qu'ils ont été vérifiés), dont le
 port tenu pour de vrai par un processus voisin plutôt que simulé.
+
+---
+
+## §238. `npm ci` effaçait `node_modules` sous un serveur qui tournait
+
+**Sa panne du 2 septembre 2026 au soir, et c'est la RACINE de la page blanche
+que §237 n'avait fait que rendre lisible.** Une heure d'application morte, et
+le journal de son espace la raconte en deux temps.
+
+### Ce que sa machine a écrit
+
+À 21 h 13, pendant la mise à jour de l'espace :
+
+```
+npm error ENOTEMPTY: directory not empty, rmdir '.../@typescript-eslint/scope-manager/dist'
+npm error ENOTEMPTY: directory not empty, rename '.../zod' -> '.../.zod-Nu9WQpaH'
+La réinstallation a échoué : on tente la construction telle quelle.
+```
+
+puis, trente fois d'affilée, toutes les quinze secondes :
+
+```
+Error: Cannot find module '/workspaces/Atlas-app/node_modules/next/dist/bin/next'
+02/09 21:21:58 — le serveur s'est arrêté
+02/09 21:22:13 — plus rien n'écoute sur le port 3000, relance du serveur
+```
+
+### La cause, et elle tient dans l'ordre de trois lignes
+
+`demarrer.sh` faisait, dans cet ordre :
+
+| | |
+|---|---|
+| ligne 212 | `lancer_veilleur` — quinze secondes plus tard, un banc SERT et BÂTIT |
+| ligne 232 | `npm ci` — **qui efface `node_modules`** |
+| ligne 248 | `pkill next…` — l'arrêt du banc, **après les dégâts** |
+
+`npm ci` supprime `node_modules` avant de réinstaller. Un `next-server` et un
+`next build` y tenaient des fichiers ouverts : npm a effacé ce qu'il pouvait,
+échoué sur ce qui était tenu (`ENOTEMPTY`), et **laissé l'arbre amputé**.
+`next` en fut la victime.
+
+Le veilleur a fait exactement son travail — relancer un serveur mort — et
+chaque relance mourait sur le même module absent. Une boucle sans fin, et
+**aucune trace nulle part** : le témoin d'échec n'est déposé que lorsque
+`next build` rend un code non nul, or le banc s'arrêtait bien avant, avec son
+serveur.
+
+**Le veilleur posé avant la mise à jour n'est pas le défaut** — c'est le
+correctif du 9 août, et il tient : le patron doit avoir une application qui
+répond quoi qu'il arrive. Le défaut est d'avoir laissé une commande
+DESTRUCTRICE s'exécuter par-dessus.
+
+### Les trois corrections, et ce que chacune répare
+
+1. **La racine — le banc s'arrête AVANT d'installer** (`demarrer.sh`). Les
+   processus étaient tués de toute façon vingt lignes plus bas ; les tuer avant
+   ne coûte aucun service perdu, et supprime la course entièrement.
+2. **`npm install` ne répare pas un arbre amputé** (`banc.mjs`). Il répare un
+   arbre COHÉRENT auquel il manque des paquets ; devant des dossiers à demi
+   effacés, il bute sur ses propres restes — et il y butera encore au tour
+   suivant. On se replie donc sur `npm ci`, seul capable de repartir d'un
+   dossier propre. **Et c'est sans danger ici**, contrairement à ce que ce
+   fichier a longtemps dit : depuis le 31 août la garde s'exécute AVANT le
+   lancement du serveur, il n'y a plus aucun sol à retirer.
+3. **On ne fonce plus dans le mur en silence.** « On tente la construction telle
+   quelle » n'est pas un repli quand le paquet absent est `next` : c'est un mur.
+   Le banc vérifie désormais que le paquet est VRAIMENT sur le disque — le code
+   de sortie de npm ne suffit pas —, et dépose l'échec là où la fiche le lit.
+
+**Et le dépôt du témoin d'échec n'a plus qu'un écrivain** (`deposerEchec`),
+partagé par la construction et par la réparation des dépendances : deux copies
+d'un même format auraient divergé, et la fiche n'en lit qu'un.
+
+### Ce que cela change pour la prochaine fois
+
+| | avant | après |
+|---|---|---|
+| pendant l'installation | un banc tourne et se fait amputer | plus rien ne tourne |
+| `npm install` refusé | on continue vers un serveur qui ne peut pas démarrer | on repart proprement (`npm ci`) |
+| réparation impossible | **rien**, une boucle muette de quinze secondes | la fiche NOMME les paquets absents |
+| échec d'installation au démarrage | avalé par un `\|\| true` | écrit au bandeau, avec le geste à faire |
+
+**Éprouvé, et pas seulement relu.** La voie de secours a été JOUÉE ici, `next`
+écarté, cache npm vide et registre injoignable — les deux commandes échouent, et
+le banc a rendu :
+
+```
+⚠️  LES DÉPENDANCES N'ONT PAS PU ÊTRE RÉPARÉES — next, eslint-config-next manque encore.
+    Depuis un terminal de l'espace :  rm -rf node_modules && npm ci
+```
+
+avec le témoin déposé, portant `paquets épinglés toujours absents : next`.
+
+Les quatre contrôles neufs (`test-prechauffage.ts`, `test-banc-lent-se-dit.ts`)
+ont tous été **vérifiés rouges contre la version d'avant**. Le premier jet de
+celui qui fixe l'ordre était d'ailleurs **inutile** : il trouvait le `pkill` de
+l'en-tête du script et passait au vert sur le code défectueux. Il est désormais
+borné des deux côtés — un contrôle qui ne sait pas échouer ne prouve rien.

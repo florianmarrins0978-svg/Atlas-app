@@ -9,7 +9,44 @@ sert.
 
 ---
 
-## Dernier lot : la fiche de l'espace mentait sur sa propre panne (2 sept. 2026)
+## Dernier lot : la page blanche, à la racine (2 sept. 2026, au soir)
+
+**`npm ci` effaçait `node_modules` sous un banc qui tournait.** `demarrer.sh`
+posait le veilleur — donc un `next-server` qui sert et un `next build` qui
+bâtit —, puis lançait `npm ci`, qui SUPPRIME `node_modules`, et n'arrêtait ces
+processus que vingt lignes plus bas. npm effaçait ce qu'il pouvait, échouait sur
+ce qui était tenu ouvert (`ENOTEMPTY`), et laissait l'arbre amputé. `next`
+disparaissait : le serveur mourait à la seconde, le veilleur le relançait, il
+remourait — toutes les quinze secondes, une heure durant, **sans qu'aucune trace
+ne soit écrite nulle part**.
+
+| | |
+|---|---|
+| ce qui a bougé | `.devcontainer/demarrer.sh`, `scripts/banc.mjs` |
+| la garde | `npx tsx scripts/test-prechauffage.ts` et `scripts/test-banc-lent-se-dit.ts` — 4 cas neufs |
+| le pourquoi | `ARCHITECTURE.md` §238 |
+| le retour pour lui | `docs/page-blanche-au-demarrage.md` |
+
+**À SAVOIR AVANT D'Y RETOUCHER :**
+
+- **L'ordre de `demarrer.sh` est le correctif, et il est fragile.** Le banc doit
+  être arrêté AVANT `npm ci`, jamais après. `test-prechauffage.ts` le fixe — et
+  son premier jet était INUTILE : il trouvait le `pkill` de l'en-tête du script
+  et passait au vert sur le code défectueux. Il est borné des deux côtés
+  (entre `MISE_A_JOUR=` et l'installation) ; ne pas relâcher cette borne.
+- **Le veilleur posé AVANT la mise à jour n'est pas le défaut.** C'est le
+  correctif du 9 août, et il tient : le patron doit avoir une application qui
+  répond quoi qu'il arrive. Ne pas le déplacer en croyant simplifier.
+- **`npm ci` est sans danger dans `reinstallerSiDesaccordees`**, contrairement à
+  ce que `banc.mjs` a longtemps dit : depuis le 31 août cette garde s'exécute
+  AVANT le lancement du serveur, il n'y a plus aucun sol à retirer.
+- **Le code de sortie de npm ne prouve rien** : `paquetsEpinglesAbsents()`
+  regarde le disque. Une commande qui rend 0 en laissant `next` absent était
+  comptée comme réparée.
+- **`deposerEchec` est le seul écrivain du témoin d'échec.** La fiche n'en lit
+  qu'un format (`lire-echec-construction.mjs`) : ne pas recopier le bloc.
+
+## Lot précédent : la fiche de l'espace mentait sur sa propre panne (2 sept. 2026)
 
 **Sa plainte : *« l'appli ne démarre pas, page blanche »*.** `CLAUDE.md` §1 bis
 dit de lire la fiche avant tout — elle a été lue, et **c'est elle qui était

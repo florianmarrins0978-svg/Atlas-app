@@ -6,87 +6,99 @@
 
 ## En trois lignes
 
-Votre espace tournait. Ce qui était cassé, c'est **la fiche qui vous dit ce qui
-ne va pas** : elle affirmait quatre choses fausses, dont une qui vous envoyait
-rallumer l'espace — le seul geste qui empêche l'application de revenir.
+`npm ci` effaçait `node_modules` **pendant** qu'un serveur y travaillait. Le
+dossier restait à moitié détruit, `next` disparaissait, et l'application ne
+pouvait plus démarrer du tout — en boucle, toutes les quinze secondes, sans que
+rien ne le dise.
 
-La panne elle-même n'est **pas** corrigée. Elle est maintenant *visible*, ce
-qu'elle n'était pas.
+C'est corrigé à la racine. Et deux garde-fous qui auraient dû l'attraper ont été
+corrigés aussi.
 
 ---
 
-## Ce que votre espace a publié, et pourquoi c'était trompeur
+## Correction de ce que j'ai dit plus tôt
 
-À 18 h 40 (allumage), puis à 18 h 55 (le veilleur), votre fiche portait ceci —
-à trois lignes d'écart :
+**J'ai d'abord écrit que la panne n'était pas trouvée**, et que seule la fiche
+avait été réparée. C'était vrai à ce moment-là, et ce ne l'est plus : ton
+journal, lu depuis ton espace, portait la réponse. Ce document remplace la
+version précédente.
+
+---
+
+## Ce qui s'est réellement passé
+
+À 21 h 13, pendant la mise à jour de ton espace :
 
 ```
-Serveur : NE RÉPOND PAS sur le port 3000
-⚠ … l'application est donc entière et rapide …
+npm error ENOTEMPTY: directory not empty, rmdir '.../scope-manager/dist'
+npm error ENOTEMPTY: directory not empty, rename '.../zod' -> '.../.zod-Nu9WQpaH'
 ```
 
-Les deux ne peuvent pas être vraies ensemble. Et c'est la seconde qu'on lit :
-elle fait chercher le défaut dans l'application, alors que rien ne servait.
+puis, trente fois d'affilée :
+
+```
+Error: Cannot find module '.../node_modules/next/dist/bin/next'
+02/09 21:21:58 — le serveur s'est arrêté
+02/09 21:22:13 — plus rien n'écoute sur le port 3000, relance du serveur
+```
+
+**Le mécanisme, en trois lignes de script.** Ton espace lance d'abord
+l'application — pour que tu aies toujours quelque chose qui répond —, puis
+réinstalle les dépendances. Or cette réinstallation **supprime le dossier des
+dépendances** avant de le refaire. L'application, elle, était en train de s'en
+servir. Le dossier est resté à moitié détruit.
+
+Ensuite, tout est cohérent : sans `next`, le serveur meurt à la seconde ; le
+veilleur fait son travail et le relance ; il remeurt. Une heure.
 
 ---
 
 ## Un point, un verdict
 
-| # | Ce qui était écrit | Vrai ? | Ce qui a été fait |
+| # | Le point | Verdict | Ce qui a été fait |
 |---|---|---|---|
-| 1 | « Arrêtez puis rouvrez l'espace de travail » — publié **à l'allumage** | **Faux, et nuisible** | Retiré à ce moment-là. À l'allumage, votre banc n'a pas encore démarré : rallumer **jette la construction qui allait partir**. Vous rallumez, vous retombez sur la même fiche, vous rallumez encore |
-| 2 | « La version rapide ne se recompile jamais » | **Faux depuis le 31 août** | Votre banc rebâtit tout seul dès que le code a changé, et le veilleur retente toutes les demi-heures. La fiche disait déjà l'inverse deux points plus haut : elle se contredisait |
-| 3 | « L'application est entière et rapide » | **Non mesuré** | Ce point-là répond à « quel code est servi », pas à « est-ce que ça tourne ». Il ne le prétend plus. Une seule ligne répond à cette question : « Serveur » |
-| 4 | « Serveur : NE RÉPOND PAS » | **Vrai mais incomplet** | Cette phrase valait pour deux situations opposées : *plus rien n'écoute* (le banc n'a pas démarré) ou *quelque chose tient le port sans répondre* (le veilleur va le déloger, une minute d'attente). Elle les distingue désormais |
-| 5 | « Le veilleur devrait le relever dans quinze secondes » | **Faux pendant une construction** | Un banc qui construit tient un verrou ; celui que le veilleur relance refuse alors de démarrer. Tant que la construction dure, personne ne prend le port. C'était **exactement** votre état à 18 h 55 : il n'y avait rien à attendre |
+| 1 | L'ordre des opérations au démarrage | **la cause** | L'application est arrêtée **avant** la réinstallation, plus après. Elle était arrêtée de toute façon vingt lignes plus bas : ça ne coûte rien, et ça supprime le problème |
+| 2 | La réparation automatique existait — elle s'est déclenchée | **vrai, mais insuffisante** | Elle utilisait `npm install`, qui ne sait pas réparer un dossier à moitié détruit. Elle se replie désormais sur `npm ci`, qui repart d'un dossier propre |
+| 3 | « On tente la construction telle quelle » | **c'était un mur** | Sans `next`, il n'y a rien à tenter. Le banc vérifie maintenant que le paquet est **vraiment là**, et si ce n'est pas le cas il le dit sur la fiche au lieu de boucler en silence |
+| 4 | L'échec d'installation au démarrage | **avalé** | Il était noyé dans un `\|\| true`. Il s'affiche maintenant, avec le geste à faire |
+| 5 | La fiche de ton espace | **elle mentait** | Corrigé plus tôt dans la journée : quatre phrases fausses retirées, dont une qui t'envoyait rallumer l'espace au pire moment |
 
 ---
 
-## Ce qui n'a PAS été corrigé, et qu'il faut lire
+## Ce que ça change pour toi
 
-**Pourquoi rien ne servait sur votre port.** Votre fiche de 18 h 55 montrait
-trois choses ensemble :
-
-- une construction en cours ;
-- une version rapide déjà bâtie et utilisable (`ddf69f2`) ;
-- **rien sur le port 3000.**
-
-Depuis le 31 août, le banc doit servir la version bâtie précédente **pendant**
-qu'il construit la neuve. Elle existait. Elle n'a pas pris le port, et **on ne
-sait pas pourquoi**.
-
-**Ce n'a pas pu être reproduit ici.** Sur ce poste, au même code que le vôtre,
-le banc démarre et sert : l'écran de connexion répond du premier coup. La
-réponse est dans le journal de votre machine (`/tmp/essai.log`), auquel je n'ai
-pas accès depuis ici.
-
-Ce lot rend donc la fiche capable de **nommer** cet état au lieu d'affirmer que
-tout va bien. Il ne répare pas la panne, et personne ne doit croire le
-contraire.
-
----
-
-## Ce qu'il faut faire maintenant
-
-1. **Rallumez votre espace** (github.com/codespaces) et **attendez cinq
-   minutes** sans recharger.
-2. Si l'adresse reste blanche, **lancez `claude` dans votre espace** et
-   dites-lui : *« regarde /tmp/essai.log et dis-moi pourquoi le serveur ne
-   prend pas le port »*. Lui y a accès, moi non.
-
-Rien d'autre à taper.
+| | avant | après |
+|---|---|---|
+| pendant une mise à jour | l'application pouvait se faire casser | plus rien ne tourne pendant ce temps |
+| dépendances abîmées | boucle infinie, page blanche, aucune explication | réparation automatique complète |
+| si la réparation échoue quand même | rien, nulle part | la fiche **nomme** ce qui manque, et donne la commande |
 
 ---
 
 ## Ce qui le tient, et comment on sait que ça marche
 
-`npx tsx scripts/test-banc-lent-se-dit.ts` — cinq contrôles neufs. **Tous ont
-été vérifiés rouges contre la version d'avant** : un contrôle qui n'a jamais
-échoué ne prouve rien. Le cas du port occupé est joué en tenant vraiment le
-port avec un processus voisin, pas en recopiant une phrase.
+La panne a été **rejouée**, pas raisonnée : `next` écarté, cache de npm vidé,
+registre injoignable — les deux commandes échouent, et le banc rend :
 
-La batterie complète (`npm run verifier:avant-livraison`) a été jouée avant
-livraison.
+```
+⚠️  LES DÉPENDANCES N'ONT PAS PU ÊTRE RÉPARÉES — next, eslint-config-next manque encore.
+    Depuis un terminal de l'espace :  rm -rf node_modules && npm ci
+```
 
-Raisons et pièges, pour une prochaine session : `ARCHITECTURE.md` §237.
-Ce qui reste ouvert : `TODO.md`.
+avec la trace déposée pour la fiche.
+
+Quatre contrôles neufs, **tous vérifiés rouges contre la version d'avant** — un
+contrôle qui n'a jamais échoué ne prouve rien. Le premier jet de celui qui fixe
+l'ordre des opérations était d'ailleurs **inutile** : il se laissait berner par
+une ligne du haut du script et passait au vert sur le code cassé. Il est écrit
+noir sur blanc ici parce que c'est le genre d'erreur qui rend tout le reste
+douteux.
+
+---
+
+## Ce qui reste, et que je n'ai pas fait
+
+Rien sur cette panne. Si elle revenait malgré tout, la fiche de ton espace dira
+cette fois quoi taper — elle ne se contentera plus de « ne répond pas ».
+
+Raisons et pièges, pour une prochaine session : `ARCHITECTURE.md` §237 et §238.
