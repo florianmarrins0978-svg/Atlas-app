@@ -9,6 +9,40 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
+## EN ATTENTE DE SA RÉPONSE : la matière de la note vocale sur tous les boutons verts (3 sept. 2026)
+
+Ses deux messages : *« utilise la couleur de la note vocale page fiche client et
+mets-la sur chaque bouton à cliquer qui sont aujourd'hui de couleur verte »*,
+puis *« c'est celle-là la bonne couleur mais sans le petit halo lumineux qui
+tourne à l'intérieur »*.
+
+**La matière est tranchée : LA TASSE (`.atlas-micro`), sans le `::before` qui
+tourne.** Pas le galet — celui-ci reste sur « À facturer » et sur l'onglet actif
+de « Terminés ».
+
+**Ne pas la poser telle quelle sur `PrimaryButton`.** Sa lumière est un cercle
+placé **en pour cent** (34 % / 26 %) : sur un bouton, ce point tombe au MILIEU
+du mot, qui ne tient plus que **2,1** de contraste pour un seuil de 4,5 — et
+c'est vrai dès 148 px, pas seulement sur les longs. Mesuré, pas supposé
+(`appli/boutons-verts.html`, qui calcule ses chiffres sur les boutons rendus).
+
+Quatre déclinaisons lui sont posées, A à D, **aucune ne touche au vert ni aux
+anneaux**. **Ma recommandation : B**, la lumière gardée aux 50 px qu'elle a sur
+la note vocale — une ellipse de 46 × 36 posée à l'épaule : 6,5 à toutes les
+largeurs, et identique à A sur une capsule courte.
+
+| | |
+|---|---|
+| qui tranche | **lui**, une lettre |
+| la planche | `https://florianmarrins0978-svg.github.io/Atlas-app/boutons-verts.html` |
+| la garde | `appli/tests/essai-boutons-verts.mjs`, jouée par `pages.yml` |
+| où ça se coderait | `--atlas-plein-fond` dans `src/lib/chartes.ts` (Origine seule), et un relief à ajouter à `.atlas-plein` pour les trois anneaux |
+| ce qui ne bougerait pas | les boutons creux, les sept autres apparences, les capsules de « Terminés » |
+
+**Deux questions restent ouvertes, posées en bas de la planche :** faut-il aussi
+retirer le halo de la note vocale elle-même, et les trois anneaux tiennent-ils
+sur un bouton de 321 px ou faut-il n'en garder qu'un ?
+
 ## EN ATTENTE DE SA RÉPONSE : le compte « tous mois » sous un mois précis (2 sept. 2026)
 
 Sur « Terminés », onglet « Tout », la phrase « 3 à facturer · 10 facturés »

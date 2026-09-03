@@ -7,6 +7,58 @@ Format : le plus récent en tête.
 
 ---
 
+## 2026-09-03
+
+### La tasse sur tous les boutons verts : la couleur est prise, la lumière reste à trancher
+
+**Ses deux messages :** *« utilise la couleur de la note vocale page fiche
+client et mets-la sur chaque bouton à cliquer qui sont aujourd'hui de couleur
+verte »*, puis, capture à l'appui devant la déclinaison 1 de
+`appli/facturer-note-vocale.html` : *« c'est celle-là la bonne couleur mais sans
+le petit halo lumineux qui tourne à l'intérieur »*.
+
+**LA MATIÈRE EST DONC TRANCHÉE : c'est LA TASSE (`.atlas-micro`), pas le galet
+du 2 septembre.** Dégradé radial, trois anneaux or / porcelaine / or, creux du
+bord, ombre portée verte — et **aucun `::before` animé**. Le galet reste ce
+qu'il est sur « À facturer » et sur l'onglet actif de « Terminés » ; il ne
+s'étend pas aux boutons.
+
+**Ce que la mesure a montré, et qui n'était écrit nulle part.** La lumière du
+micro est placée **en pour cent** — un cercle centré à 34 % / 26 %. Sur le
+disque de 80 px, elle fait environ 50 px. Sur un bouton de 321 px elle en ferait
+200, et son centre tombe **au milieu du mot**, pas à son bord : le mot ne tient
+plus que **2,1** de contraste, pour un seuil de 4,5. Le défaut ne dépend pas de
+la largeur — il est là dès 148 px, parce que le point lumineux suit le texte.
+
+**Quatre déclinaisons lui sont posées** (`appli/boutons-verts.html`), et **aucune
+ne touche au vert ni aux anneaux** : elles ne changent que la TAILLE de la
+lumière. A la tasse telle quelle (2,1) · **B la lumière gardée à ses 50 px** —
+une ellipse de 46 × 36 posée à l'épaule, donc dans la marge du bouton : **6,5 à
+toutes les largeurs**, et rigoureusement identique à A sur une capsule courte ·
+C la même en verts descendus d'un cran (11,2) · D les anneaux seuls (11,7).
+
+**Les chiffres de la planche sont CALCULÉS par elle**, sur les boutons tels
+qu'ils sont rendus : elle lit la largeur réelle, **balaie le mot d'un bout à
+l'autre** et garde le pire. Ne mesurer que la première lettre — ce que faisait
+la première version — rendait un vert convenable là où le mot s'efface, puisque
+c'est au MILIEU que la lumière tombe.
+
+**Et le retrait du halo est GARDÉ, pas seulement fait.**
+`appli/tests/essai-boutons-verts.mjs` refuse toute animation sur les
+pseudo-éléments du bouton, compare les trois verts et **compte** les anneaux
+contre `.atlas-micro` lu dans `src/app/globals.css`, et exige que A rougisse
+partout pendant que B tient partout. Confrontée à un halo remis et à un anneau
+changé : rouge sur l'un puis sur l'autre. Jouée par `pages.yml` avant toute
+publication.
+
+**Ce que la planche ne touche pas, et le dit** : les boutons creux (sa règle du
+31 août), les sept autres apparences — la matière ne s'écrirait que pour Origine,
+par `--atlas-plein-fond`, comme le vert d'aujourd'hui.
+
+**Rien n'est codé** (`CLAUDE.md` §3 bis) : la réponse attendue est une lettre.
+Deux questions restent posées en bas de la planche — le halo sur la note vocale
+elle-même, et les trois anneaux sur un bouton long.
+
 ## 2026-09-02
 
 ### Le prix accordé n'a plus qu'une façon d'arriver en base

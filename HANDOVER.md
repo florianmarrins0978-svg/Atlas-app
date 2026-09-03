@@ -4,12 +4,38 @@
 vous ne savez rien de ce qui précède — c'est exactement le cas de figure qu'il
 sert.
 
-**Point de reprise :** 2026-09-02 · `main`
+**Point de reprise :** 2026-09-03 · `main`
 (l'historique fait foi : `git log --oneline -20`)
 
 ---
 
-## Dernier lot : « Terminés » — le calme, et le galet (2 septembre 2026)
+## Dernier lot : la matière de la note vocale sur les boutons verts — PLANCHE (3 septembre 2026)
+
+Ses deux messages : *« utilise la couleur de la note vocale page fiche client et
+mets-la sur chaque bouton à cliquer qui sont aujourd'hui de couleur verte »*,
+puis *« c'est celle-là la bonne couleur mais sans le petit halo lumineux qui
+tourne à l'intérieur »*. **Rien n'est codé** — une planche, et une réponse
+attendue (`CLAUDE.md` §3 bis).
+
+**La matière est tranchée : LA TASSE (`.atlas-micro`), sans son `::before`
+animé.** Pas le galet du 2 septembre, qui reste sur « À facturer ».
+
+**Le piège, si quelqu'un reprend ce travail :** ne pas poser ce dégradé tel quel
+sur `PrimaryButton`. Sa lumière est un cercle placé en **pour cent** (34 % /
+26 %) ; sur un bouton, ce point tombe au MILIEU du mot, qui ne tient plus que
+**2,1** de contraste pour un seuil de 4,5 — dès 148 px, pas seulement sur les
+longs.
+
+| | |
+|---|---|
+| la planche | `appli/boutons-verts.html` — ses chiffres sont calculés sur les boutons rendus, pas écrits |
+| l'adresse | `https://florianmarrins0978-svg.github.io/Atlas-app/boutons-verts.html` |
+| la garde | `appli/tests/essai-boutons-verts.mjs` — refuse le retour du halo, compte les anneaux contre `globals.css` |
+| ma recommandation | **B** — même vert, mêmes anneaux, lumière gardée à ses 50 px : 6,5 partout |
+| où ça se coderait | `--atlas-plein-fond` (`src/lib/chartes.ts`, Origine seule) + un relief à ajouter à `.atlas-plein` pour les trois anneaux |
+| ce qui ne bouge pas | les boutons creux, les sept autres apparences, les capsules de « Terminés » |
+
+## Lot précédent : « Terminés » — le calme, et le galet (2 septembre 2026)
 
 Maquette d'abord, code ensuite, deux fois de suite. Il a demandé un visuel de
 « Terminés » plus haut de gamme (`appli/termines-elegance.html`, trois crans),
