@@ -324,6 +324,22 @@ h2.titre{
 .attente h3{ margin:4px 0 0; font:400 19px/1.15 var(--serif); color:var(--ink);
   overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .dit{ margin:4px 0 0; font-size:11.5px; line-height:1.5; color:var(--muted) }
+/* LA PAROLE DU CLIENT PASSE EN TÊTE, ET EN SERIF.
+
+   C'est la seule chose de cet écran qui ne soit pas écrite par l'application :
+   elle mérite la voix des titres, pas celle des notes de bas de page. 16 px et
+   non 19 — un message de trois lignes en 19 px mange l'écran, et il y a
+   toujours une liste dessous.
+
+   Le filet reste à un cheveu et prend l'or : c'est ce qu'on LIT. */
+.parole{
+  margin:6px 0 0; padding-left:11px; border-left:1px solid var(--or);
+  font:400 16px/1.45 var(--serif); color:var(--ink); white-space:pre-wrap;
+}
+/* Le client a décidé sans écrire un mot : sa décision passe en tête, à la même
+   place et dans la même voix — mais sans guillemets, parce qu'il n'a rien dit,
+   et sans filet, parce qu'il n'y a personne à citer. */
+.decision{ margin:6px 0 0; font:400 16px/1.35 var(--serif); color:var(--ink) }
 .mot-client{
   margin:9px 0 0; padding-left:11px; border-left:1px solid var(--or);
   font-size:12.5px; line-height:1.5; color:var(--ink); white-space:pre-wrap;
@@ -583,9 +599,15 @@ const LIMITES = [
 /* Ce qui attend un geste. `jours` alimente À LA FOIS le rail et la phrase :
    une seule source, comme `depuisJours` / `depuisTexte` au serveur. */
 const ATTENTES = [
-  { id:"a1", genre:"correction", jours:1, etiquette:"Correction demandée", nom:"Mme Lucie",
-    mot:"Il manque l'évacuation des déchets verts, et je voudrais le paillage en écorce.",
-    faire:"Corriger le devis", ferme:[] },
+  /* UNE PERSONNE A ÉCRIT — `parle` porte ses mots, et ils passent en tête. */
+  { id:"a1", genre:"correction", jours:0, qui:"Mme Lucie", verbe:"a répondu",
+    parle:"Il manque l'évacuation des déchets verts, et je voudrais le paillage en écorce.",
+    etat:"Correction demandée", faire:"Corriger le devis", ferme:[] },
+  /* UNE PERSONNE A DÉCIDÉ, SANS UN MOT — `decide` porte sa décision. */
+  { id:"a5", genre:"acceptee", jours:1, qui:"Mme Rialland", verbe:"a accepté",
+    decide:"Retenu le mardi 15 septembre.",
+    faire:"Ouvrir le devis validé", ferme:[] },
+  /* PERSONNE N'A RIEN DIT — c'est l'application qui compte les jours. */
   { id:"a2", genre:"facture-impayee", jours:9, etiquette:"Facture impayée", nom:"Mr. Gourdon",
     dit:"Échéance dépassée.", somme:"1 240,00 €", sur:"2 480,00 €",
     faire:"Noter un règlement", ferme:["commercial"] },
@@ -594,6 +616,10 @@ const ATTENTES = [
   { id:"a4", genre:"chantier-non-facture", jours:5, etiquette:"À facturer", nom:"Mme Peltier",
     dit:"Chantier terminé, et aucune facture n'est partie.",
     faire:"Créer la facture", ferme:["commercial"] },
+  /* LE LIEN A EXPIRÉ : personne n'a rien dit. C'est donc un rappel, pas une
+     réponse — et c'est la limite de la règle, assumée. */
+  { id:"a6", genre:"caduc", jours:3, etiquette:"Devis caduc", nom:"Mr. Gourdon",
+    dit:"Le lien a expiré sans réponse.", faire:"Reprendre le devis", ferme:[] },
 ];
 
 /* Les onglets du bas, par rôle — ce que `cheminAutorise()` autorise, vérifié
@@ -639,7 +665,15 @@ function attentes() {
   if (etat.cas === "trente" || etat.cas === "limites") a = ATTENTES.slice(0, 1);
   /* Un commercial n'atteint ni /termines/tva ni /chantiers/<id>/facture : les
      deux rappels d'argent ne lui sont pas montrés. Voir les notes. */
-  return a.filter((x) => !x.ferme.includes(etat.role)).filter((x) => !masquees.includes(x.id));
+  return a
+    .filter((x) => !x.ferme.includes(etat.role))
+    .filter((x) => !masquees.includes(x.id))
+    /* LE PLUS RÉCENT EN HAUT, ET RIEN D'AUTRE — sa règle du 26 août 2026
+       ($src/lib/ordre-notifications.ts). Ni la sorte, ni l'urgence, ni le
+       montant : une seule question, quand est-ce arrivé. Le tri est le MÊME
+       dans les deux versions de l'écran, sans quoi la comparaison mentirait. */
+    .slice()
+    .sort((x, y) => x.jours - y.jours);
 }
 
 const svgAssistant = `<svg width="19" height="19" viewBox="0 0 24 24" fill="none"
@@ -700,13 +734,38 @@ function uneAttente(a) {
   const rail = r.haut
     ? `<span class="rail retard"><b>${r.haut}</b><span>${r.bas}</span></span>`
     : `<span class="rail retard seul"><span>${r.bas}</span></span>`;
-  return `<div class="attente">
+
+  /* ══════════════════════════════════════════════════════════════════════
+     UNE RÉPONSE DE CLIENT NE RESSEMBLE PAS À UN RAPPEL.
+
+     Sa remarque, et elle visait juste : les deux avaient la même colonne, le
+     même or, la même graisse. Or un rappel COMPTE DES JOURS ; une réponse,
+     c'est QUELQU'UN QUI A ÉCRIT.
+
+     La règle tient en une ligne : **la grande ligne porte ce que la PERSONNE
+     a dit ou décidé.** S'il n'y a personne — un rappel, un lien expiré —,
+     elle porte le nom du chantier, comme avant. Les deux rangées n'ont donc
+     plus la même silhouette : l'une s'ouvre sur des mots entre guillemets,
+     l'autre sur un nom.
+
+     Et l'étiquette NOMME LA PERSONNE ET SON GESTE — « Mme Lucie a répondu »,
+     « Mme Rialland a accepté » — au lieu de nommer un état de dossier.
+
+     Ce qui NE change pas : l'ordre reste la date, sa règle du 26 août. Une
+     réponse ne double personne ; elle se reconnaît, c'est tout.
+     ══════════════════════════════════════════════════════════════════════ */
+  const dUnePersonne = a.parle || a.decide;
+  const tete = a.parle
+    ? `<blockquote class="parole">« ${a.parle} »</blockquote>`
+    : `<p class="decision">${a.decide}</p>`;
+  const corps = dUnePersonne
+    ? `<p class="etiquette qui">${a.qui} ${a.verbe}</p>${tete}${a.etat ? `<p class="dit">${a.etat}</p>` : ""}`
+    : `<p class="etiquette">${a.etiquette}</p><h3>${a.nom}</h3>${a.dit ? `<p class="dit">${a.dit}</p>` : ""}`;
+
+  return `<div class="attente" data-de="${dUnePersonne ? "personne" : "machine"}">
     ${rail}
     <div class="corps">
-      <p class="etiquette">${a.etiquette}</p>
-      <h3>${a.nom}</h3>
-      ${a.mot ? `<p class="mot-client">« ${a.mot} »</p>` : ""}
-      ${a.dit ? `<p class="dit">${a.dit}</p>` : ""}
+      ${corps}
       ${a.somme ? `<p class="somme">${a.somme}<small>restant sur ${a.sur}</small></p>` : ""}
       <div class="gestes">
         <button class="faire">${a.faire}</button>
@@ -771,20 +830,29 @@ function rendreAvant() {
   const visibles = toutVoir ? as : as.slice(0, 2);
   const enPlus = as.length - visibles.length;
 
+  /* Les libellés et les phrases sont ceux de $src/app/Notifications.tsx$ :
+     c'est ce qu'il a sous les yeux aujourd'hui, pas une reconstitution. */
   const carte = (a) => {
     const urgent = a.genre === "correction" || a.genre === "chantier-sans-devis";
-    const texte = a.genre === "correction"
-      ? "Le client veut ce devis corrigé avant de l'accepter."
-      : a.genre === "chantier-sans-devis"
-        ? `Chantier ouvert ${depuisCombien(a.jours)}, et aucun devis n'est parti.`
-        : a.genre === "facture-impayee"
-          ? `Échéance dépassée ${depuisCombien(a.jours)}.`
-          : `Chantier terminé ${depuisCombien(a.jours)}, et aucune facture n'est partie.`;
-    const titre = a.genre === "chantier-sans-devis"
-      ? `Devis en attente · ${a.jours} jours` : a.etiquette;
+    const texte =
+      a.genre === "correction" ? "Le client veut ce devis corrigé avant de l'accepter."
+      : a.genre === "acceptee" ? "Le client a accepté, et retenu le mardi 15 septembre."
+      : a.genre === "caduc" ? "Le lien a expiré sans réponse. Le client n'a rien dit — ni oui, ni non. Le devis peut être repris et renvoyé."
+      : a.genre === "chantier-sans-devis" ? `Chantier ouvert ${depuisCombien(a.jours)}, et aucun devis n'est parti.`
+      : a.genre === "facture-impayee" ? `Échéance dépassée ${depuisCombien(a.jours)}.`
+      : `Chantier terminé ${depuisCombien(a.jours)}, et aucune facture n'est partie.`;
+    const titre =
+      a.genre === "chantier-sans-devis" ? `Devis en attente · ${a.jours} jours`
+      : a.genre === "correction" ? "Correction demandée"
+      : a.genre === "acceptee" ? "Autre date proposée"
+      : a.etiquette;
+    /* Le nom du chantier, qui est celui du client quand rien ne l'a nommé
+       ($src/lib/nom-chantier.ts$). Une réponse et un rappel l'affichent
+       pareil — c'est exactement ce qu'il reproche à cet écran. */
+    const nom = a.qui || a.nom;
     return `<div class="carte" data-ton="${urgent ? "teinte" : "nu"}">
-      <p class="t">${titre}</p><p class="n">${a.nom}</p><p class="x">${texte}</p>
-      ${a.mot ? `<blockquote>« ${a.mot} »</blockquote>` : ""}
+      <p class="t">${titre}</p><p class="n">${nom}</p><p class="x">${texte}</p>
+      ${a.parle ? `<blockquote>« ${a.parle} »</blockquote>` : ""}
       ${a.somme ? `<p class="s">${a.somme}<small>restant sur ${a.sur}</small></p>` : ""}
       <div class="g"><button class="faire">${a.faire}</button>
         <button class="vu" data-vu="${a.id}">J'ai vu</button></div></div>`;
@@ -955,6 +1023,24 @@ window.addEventListener("resize", mesurer);
 
 /* ─── Les notes, sous la maquette ──────────────────────────────────────── */
 document.getElementById("notes").innerHTML = `
+<h3>Une réponse de client ne ressemble plus à un rappel</h3>
+<p><b>Sa remarque, et elle visait juste :</b> les deux avaient la même colonne, le même or,
+la même graisse. Or un rappel <b>compte des jours</b> ; une réponse, c'est <b>quelqu'un qui a
+écrit</b>. Rien ne les distinguait.</p>
+<p>La règle tient en une ligne : <b>la grande ligne porte ce que la personne a dit ou
+décidé.</b> S'il n'y a personne, elle porte le nom du chantier, comme avant.</p>
+<table>
+<tr><th>Ce qui est arrivé</th><th>Ce que la rangée montre</th></tr>
+<tr><td>Le client a <b>écrit</b></td><td>« Mme Lucie a répondu », puis <b>ses mots</b>, en serif, sous un cheveu d'or</td></tr>
+<tr><td>Le client a <b>décidé</b> sans un mot</td><td>« Mme Rialland a accepté », puis <b>sa décision</b> — sans guillemets, il n'a rien dit</td></tr>
+<tr><td><b>Personne</b> n'a rien dit</td><td>le délai en gros à gauche, l'état, le nom du chantier</td></tr>
+</table>
+<p>L'étiquette <b>nomme la personne et son geste</b> au lieu de nommer un état de dossier.
+Touchez <b>« 5 de plus »</b> pour voir les deux formes l'une sous l'autre.</p>
+<p><b>Ce qui ne change pas :</b> l'ordre reste la date, votre règle du 26 août — une réponse
+ne double personne, elle se reconnaît. <b>Et une limite, dite franchement :</b> un devis caduc
+garde la forme d'un rappel, parce que personne n'a rien dit — ni oui, ni non.</p>
+
 <h3>Ce qui change</h3>
 <ul>
   <li><b>Le rail de gauche porte le retard, pas la date.</b> « Hier », « 14 / jours ».
