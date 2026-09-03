@@ -9,6 +9,37 @@ Format : le plus récent en tête.
 
 ## 2026-09-03
 
+### Un prompt `/impeccable` pour le devis, pour qu'il n'ait plus à le réécrire
+
+**Sa demande :** *« fais-moi un prompt /impeccable pour le devis »*.
+`docs/prompt-impeccable-devis.md` porte un texte qui tient seul — l'outillage
+Impeccable relit `PRODUCT.md`, pas nos conversations, et une session neuve lui
+propose sinon exactement ce qu'il a déjà fait retirer.
+
+**Ce que le prompt empêche, et c'est là sa valeur :** la liste « déjà tranché »
+nomme sept décisions qu'un regard neuf rouvrirait de bonne foi — bloquer l'envoi
+tant que le SIRET manque (codé, vu, retiré le 14 août 2026), demander un devis
+signé en retour, ajouter un troisième arrêt, proposer un fournisseur d'envoi
+automatique. Chacune coûterait un aller-retour et un lot défait.
+
+Il nomme aussi ce qui est **connu comme bancal** — la préparation qui reste à
+96 s sans jamais avoir été reproduite ici, les 1 637 lignes de
+`DevisCompletClient.tsx`, l'artisan aux mains vides jamais essayé —, pour qu'un
+lot commence là plutôt que de les redécouvrir.
+
+### Compter huit chartes là où le dépôt en annonçait sept
+
+`src/lib/chartes.ts` en porte **huit** (`origine`, `brume`, `pierre`, `beurre`,
+`moka`, `prune`, `sylve`, `nuit`), et `PRODUCT.md` le dit déjà ; `CLAUDE.md` §3
+disait « sept », et en tirait un « juste cinq fois sur sept » faux d'une charte.
+Aucun contrôle n'en dépend — `test-chartes-lisibles.ts` parcourt la liste — mais
+une session qui écrit ce nombre à l'écran l'aurait recopié.
+
+**Reste à corriger, et non fait ici :** une douzaine de commentaires de code
+(`design-tokens.ts`, `chartes.ts`, `ApparenceClient.tsx`, quatre suites) disent
+encore « sept chartes ». Une passe de `sed` pendant que d'autres sessions
+travaillent coûte plus qu'elle ne rapporte.
+
 ### La liste de ses clients, codée — le lieu, le montant dû, et l'ordre enfin dit
 
 **Son verdict sur la planche :** *« tu peux coder exactement cette maquette »*.
