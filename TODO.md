@@ -14,11 +14,13 @@ langage, et rien n'y entre sans son accord.
 Ses deux messages : *« utilise la couleur de la note vocale page fiche client et
 mets-la sur chaque bouton à cliquer qui sont aujourd'hui de couleur verte »*,
 puis *« c'est celle-là la bonne couleur mais sans le petit halo lumineux qui
-tourne à l'intérieur »*.
+tourne à l'intérieur »*, puis *« garde la tasse telle qu'elle la A mais avec
+seulement un bord doré tout autour »*.
 
-**La matière est tranchée : LA TASSE (`.atlas-micro`), sans le `::before` qui
-tourne.** Pas le galet — celui-ci reste sur « À facturer » et sur l'onglet actif
-de « Terminés ».
+**La matière est tranchée, et par lui : LA TASSE (`.atlas-micro`), UN SEUL BORD
+DORÉ, sans le `::before` qui tourne.** Ni le galet, ni les trois anneaux de la
+note vocale. Le galet reste sur « À facturer » et sur l'onglet actif de
+« Terminés ».
 
 **Ne pas la poser telle quelle sur `PrimaryButton`.** Sa lumière est un cercle
 placé **en pour cent** (34 % / 26 %) : sur un bouton, ce point tombe au MILIEU
@@ -26,22 +28,24 @@ du mot, qui ne tient plus que **2,1** de contraste pour un seuil de 4,5 — et
 c'est vrai dès 148 px, pas seulement sur les longs. Mesuré, pas supposé
 (`appli/boutons-verts.html`, qui calcule ses chiffres sur les boutons rendus).
 
-Quatre déclinaisons lui sont posées, A à D, **aucune ne touche au vert ni aux
-anneaux**. **Ma recommandation : B**, la lumière gardée aux 50 px qu'elle a sur
-la note vocale — une ellipse de 46 × 36 posée à l'épaule : 6,5 à toutes les
+**La A est ce qu'il a demandé**, et son chiffre est écrit sous elle sans être
+arrondi. La B est la même à une chose près — la lumière gardée aux 50 px qu'elle
+a sur la note vocale, une ellipse de 46 × 36 posée à l'épaule : 6,5 à toutes les
 largeurs, et identique à A sur une capsule courte.
+
+**Et changer la couleur des lettres ne sauve pas la A**, c'est mesuré : la crème
+s'efface au clair (2,1), l'encre au foncé (2,5 sur `#4f5f4c`).
 
 | | |
 |---|---|
 | qui tranche | **lui**, une lettre |
 | la planche | `https://florianmarrins0978-svg.github.io/Atlas-app/boutons-verts.html` |
 | la garde | `appli/tests/essai-boutons-verts.mjs`, jouée par `pages.yml` |
-| où ça se coderait | `--atlas-plein-fond` dans `src/lib/chartes.ts` (Origine seule), et un relief à ajouter à `.atlas-plein` pour les trois anneaux |
+| où ça se coderait | `--atlas-plein-fond` dans `src/lib/chartes.ts` (Origine seule), et un relief à ajouter à `.atlas-plein` pour le filet d'or |
 | ce qui ne bougerait pas | les boutons creux, les sept autres apparences, les capsules de « Terminés » |
 
-**Deux questions restent ouvertes, posées en bas de la planche :** faut-il aussi
-retirer le halo de la note vocale elle-même, et les trois anneaux tiennent-ils
-sur un bouton de 321 px ou faut-il n'en garder qu'un ?
+**Une question reste ouverte, posée en bas de la planche :** faut-il aussi
+retirer le halo qui tourne de la note vocale elle-même ?
 
 ## ~~NON REPRODUIT : rien ne servait sur son port~~ — TROUVÉ le 2 septembre 2026, au soir
 

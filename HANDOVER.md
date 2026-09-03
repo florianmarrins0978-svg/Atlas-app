@@ -14,11 +14,13 @@ sert.
 Ses deux messages : *« utilise la couleur de la note vocale page fiche client et
 mets-la sur chaque bouton à cliquer qui sont aujourd'hui de couleur verte »*,
 puis *« c'est celle-là la bonne couleur mais sans le petit halo lumineux qui
-tourne à l'intérieur »*. **Rien n'est codé** — une planche, et une réponse
+tourne à l'intérieur »*, puis *« garde la tasse telle qu'elle la A mais avec
+seulement un bord doré tout autour »*. **Rien n'est codé** — une planche, et une réponse
 attendue (`CLAUDE.md` §3 bis).
 
-**La matière est tranchée : LA TASSE (`.atlas-micro`), sans son `::before`
-animé.** Pas le galet du 2 septembre, qui reste sur « À facturer ».
+**La matière est tranchée, et par lui : LA TASSE (`.atlas-micro`), UN SEUL BORD
+DORÉ, sans son `::before` animé.** Ni le galet du 2 septembre — qui reste sur
+« À facturer » —, ni les trois anneaux or / porcelaine / or de la note vocale.
 
 **Le piège, si quelqu'un reprend ce travail :** ne pas poser ce dégradé tel quel
 sur `PrimaryButton`. Sa lumière est un cercle placé en **pour cent** (34 % /
@@ -30,9 +32,9 @@ longs.
 |---|---|
 | la planche | `appli/boutons-verts.html` — ses chiffres sont calculés sur les boutons rendus, pas écrits |
 | l'adresse | `https://florianmarrins0978-svg.github.io/Atlas-app/boutons-verts.html` |
-| la garde | `appli/tests/essai-boutons-verts.mjs` — refuse le retour du halo, compte les anneaux contre `globals.css` |
-| ma recommandation | **B** — même vert, mêmes anneaux, lumière gardée à ses 50 px : 6,5 partout |
-| où ça se coderait | `--atlas-plein-fond` (`src/lib/chartes.ts`, Origine seule) + un relief à ajouter à `.atlas-plein` pour les trois anneaux |
+| la garde | `appli/tests/essai-boutons-verts.mjs` — refuse le retour du halo et de la porcelaine, compare les verts à `globals.css` |
+| son choix | **A** — sa tasse telle quelle, un bord doré. Le mot y tient 2,1, et il l'a vu écrit |
+| où ça se code | `--atlas-plein-fond` (`src/lib/chartes.ts`, Origine seule) + un relief à ajouter à `.atlas-plein` pour le filet d'or |
 | ce qui ne bouge pas | les boutons creux, les sept autres apparences, les capsules de « Terminés » |
 
 ## Lot précédent : la page blanche, à la racine (2 sept. 2026, au soir)

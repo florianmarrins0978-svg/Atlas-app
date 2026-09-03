@@ -58,7 +58,8 @@ const bloc = GLOBALS.slice(GLOBALS.indexOf(".atlas-micro {"));
 const micro = bloc.slice(0, bloc.indexOf("\n}"));
 const hexes = (t) => t.match(/#[0-9a-fA-F]{6}/g) || [];
 const VERTS = hexes(micro.slice(micro.indexOf("background:"), micro.indexOf("box-shadow:")));
-const JOAILLERIE = [...new Set(hexes(micro.slice(micro.indexOf("box-shadow:"))))];
+// L'or et la porcelaine, dans l'ordre où la tasse les pose.
+const [OR, PORCELAINE] = [...new Set(hexes(micro.slice(micro.indexOf("box-shadow:"))))];
 
 const nav = await chromium.launch();
 const page = await nav.newPage({ viewport: { width: 390, height: 844 } });
@@ -74,11 +75,11 @@ await page.goto(`${BASE}/boutons-verts.html`, { waitUntil: "networkidle" });
 // 0. La matière relevée dans le code est bien celle du dépôt : sans cela, les
 //    comparaisons plus bas ne diraient rien de l'application.
 dire(VERTS.length >= 3, `\`.atlas-micro\` donne ses verts : ${VERTS.join(", ") || "aucun"}`);
-dire(JOAILLERIE.length >= 2, `\`.atlas-micro\` donne ses anneaux : ${JOAILLERIE.join(", ") || "aucun"}`);
+dire(!!OR && !!PORCELAINE, `\`.atlas-micro\` donne ses anneaux : ${OR}, ${PORCELAINE}`);
 
-// ─── 1. Les cinq déclinaisons s'affichent, et l'écran a de la matière ────────
+// ─── 1. Les quatre déclinaisons s'affichent, et l'écran a de la matière ────────
 for (const [cle, nom] of [
-  ["zero", "Aujourd’hui"], ["a", "A"], ["b", "B"], ["c", "C"], ["d", "D"],
+  ["zero", "Aujourd’hui"], ["a", "A"], ["b", "B"], ["d", "D"],
 ]) {
   await page.click(`.choix button[data-v="${cle}"]`);
   await page.waitForTimeout(200);
@@ -118,17 +119,16 @@ for (const vert of VERTS) {
   dire(peinture.fond.includes(enRgb(vert)),
     `A — le dégradé porte ${vert} (${enRgb(vert)}), comme \`.atlas-micro\``);
 }
-// **On compte les anneaux, on ne se contente pas de les trouver.** La tasse en
-// a TROIS — or, porcelaine, or —, et c'est ce qui la distingue du galet à un
-// seul filet. Chercher la couleur sans la compter laisserait passer un bouton
-// dont deux anneaux sur trois auraient changé.
+// **UN SEUL BORD DORÉ, et pas trois anneaux** — sa décision du 3 septembre :
+// *« garde la tasse telle qu'elle la A mais avec seulement un bord doré tout
+// autour »*. On COMPTE, on ne se contente pas de trouver : la porcelaine de la
+// note vocale reviendrait sans que la couleur de l'or change, et un simple
+// « l'or est là » ne le verrait pas.
 const compter = (texte, motif) => texte.split(motif).length - 1;
-for (const piece of JOAILLERIE) {
-  const attendu = compter(micro.slice(micro.indexOf("box-shadow:")), piece);
-  const trouve = compter(peinture.ombre, enRgb(piece));
-  dire(trouve === attendu,
-    `A — l'anneau ${piece} revient ${trouve} fois, comme sur la note vocale (${attendu})`);
-}
+dire(compter(peinture.ombre, enRgb(OR)) === 1,
+  `A — un seul bord doré ${OR}, et c'est celui de la note vocale`);
+dire(compter(peinture.ombre, enRgb(PORCELAINE)) === 0,
+  `A — pas d'anneau de porcelaine ${PORCELAINE} : il a demandé un seul bord`);
 
 // **Le halo qu'il a fait retirer ne revient pas** — sa demande du 3 septembre.
 // Un retrait sans garde se refait tout seul au lot suivant.
@@ -137,7 +137,7 @@ dire(peinture.tourne.length === 0,
 
 // ─── 3. Ce que la planche AFFIRME, relu à l'écran ────────────────────────────
 //
-// A : le galet en pour cent s'efface quand le bouton s'allonge. Le contrôle
+// A : la lumière placée en pour cent tombe au milieu du mot. Le contrôle
 // prend le PLUS LARGE des boutons et exige qu'il soit sous le seuil — c'est la
 // démonstration entière de la planche ; si elle passait, il n'y aurait rien à
 // lui demander.
@@ -181,7 +181,7 @@ dire((await lire())[0].tenu === aujourdhui,
 //
 // Sa règle du 31 août : « surtout pas ceux qui sont creux ». Le bouton
 // secondaire doit rester sans aplat dans les cinq déclinaisons.
-for (const cle of ["zero", "a", "b", "c", "d"]) {
+for (const cle of ["zero", "a", "b", "d"]) {
   await page.click(`.choix button[data-v="${cle}"]`);
   await page.waitForTimeout(120);
   const creux = await page.locator(".creux").evaluate((e) => {

@@ -21,12 +21,16 @@
     déclinaison 1 de `facturer-note-vocale.html` : « c'est celle-là la bonne
     couleur mais sans le petit halo lumineux qui tourne à l'intérieur ».
 
-    LA MATIÈRE EST DONC TRANCHÉE : c'est LA TASSE (`.atlas-micro`), pas le
-    galet du 2 septembre. Relevée dans `src/app/globals.css`, rien n'est
-    approché à l'œil :
+    Puis, la déclinaison A vue : « garde la tasse telle qu'elle la A mais avec
+    seulement un bord doré tout autour ».
+
+    LA MATIÈRE EST DONC TRANCHÉE, et par lui : c'est LA TASSE
+    (`.atlas-micro`), pas le galet du 2 septembre. Relevée dans
+    `src/app/globals.css`, rien n'est approché à l'œil :
       · un dégradé RADIAL, lumière à 34 % / 26 % :
         #9fbd82 → #7d9a6d → #4f5f4c ;
-      · TROIS anneaux or / porcelaine / or, à l'échelle de 46 px ;
+      · UN SEUL filet d'or #B98B47 tout autour — les trois anneaux or /
+        porcelaine / or de la note vocale ne passent PAS sur les boutons ;
       · un creux sous le bord, une ombre portée VERTE ;
       · AUCUN HALO QUI TOURNE — c'est le `::before` de `.atlas-micro`, et il
         n'est repris nulle part ici.
@@ -41,8 +45,14 @@
     chiffre qu'il a déjà vu le 2 septembre sous la capsule « À facturer », et
     il empire quand le bouton s'allonge.
 
-    LES DÉCLINAISONS NE CHANGENT NI LA COULEUR NI LES ANNEAUX : elles ne
-    changent que la TAILLE et la PLACE de la lumière.
+    CE QUE CHANGER LA COULEUR DES LETTRES NE RÉSOUT PAS, et c'est mesuré : sur
+    ce dégradé, la crème s'efface au clair (2,1) et l'encre s'efface au foncé
+    (2,5 sur #4f5f4c). Le mot traverse les deux bouts ; aucune couleur de
+    lettre ne tient sur les deux. C'est la LUMIÈRE qu'il faut bouger — ou rien,
+    et l'assumer.
+
+    LES DÉCLINAISONS NE CHANGENT NI LA COULEUR NI LE BORD : elles ne changent
+    que la TAILLE de la lumière.
 
     LES CHIFFRES SOUS CHAQUE BOUTON SONT MESURÉS PAR LA PAGE, pas tapés à la
     main : le script lit la largeur réellement rendue, balaie le mot d'un bout
@@ -171,20 +181,18 @@
   .bouton:active::after{opacity:.14;transition-duration:90ms}
   .bouton.large{display:flex;width:100%}
 
-  /* ── LA JOAILLERIE — commune à A, B et C ─────────────────────────────
-     Les trois anneaux or / porcelaine / or, le creux sous le bord et
-     l'ombre portée verte, recopiés de `.atlas-envoyer` : c'est l'échelle de
-     46 px, la seule proche d'un bouton. AUCUN HALO QUI TOURNE — sa demande
-     du 3 septembre : « c'est celle-là la bonne couleur mais sans le petit
-     halo lumineux qui tourne à l'intérieur ». */
+  /* ── UN SEUL BORD DORÉ — sa décision du 3 septembre 2026 ─────────────
+     *« Garde la tasse telle qu'elle la A mais avec seulement un bord doré
+     tout autour. »* Les trois anneaux or / porcelaine / or de la note vocale
+     ne passent donc PAS sur les boutons : il reste le filet d'or, le creux
+     sous le bord et l'ombre portée verte.
+
+     Et toujours AUCUN HALO QUI TOURNE — sa demande du même jour. */
   [data-b="a"] .bouton,
   [data-b="b"] .bouton,
-  [data-b="c"] .bouton,
   [data-b="d"] .bouton{
     box-shadow:
       inset 0 0 0 1px var(--or-vif),
-      inset 0 0 0 2.4px var(--creme-anneau),
-      inset 0 0 0 3.2px var(--or-vif),
       inset 0 5px 8px -5px rgba(47,59,47,.42),
       0 6px 14px -5px rgba(79,95,76,.36)}
 
@@ -205,14 +213,9 @@
     background-image:radial-gradient(46px 36px at 6px 2px,
       var(--sage-clair) 0%, var(--sage) 30%, var(--pin-clair) 82%)}
 
-  /* C — LA TASSE PROFONDE. La lumière de B, et l'échelle des verts descendue
-     d'un cran : sage → pin clair → pin. */
-  [data-b="c"] .bouton{
-    background-image:radial-gradient(46px 36px at 6px 2px,
-      var(--sage) 0%, var(--pin-clair) 30%, var(--pin) 82%)}
-
-  /* D — LE FILET SEUL. Le vert d'aujourd'hui et, de la note vocale, rien
-     que la joaillerie : les trois anneaux, le creux, l'ombre verte. */
+  /* D — LE VERT D'AUJOURD'HUI, BORD DORÉ. Aucun dégradé : l'aplat qu'il a
+     retenu le 31 août, avec le filet d'or et l'ombre verte. C'est le bout
+     prudent de l'échelle, gardé pour comparer. */
 
   /* ── Le chiffre sous chaque bouton, mesuré par la page ────────────────── */
   .rangee{display:flex;flex-direction:column;align-items:center;gap:8px;
@@ -253,19 +256,18 @@
 
 <header class="entete">
   <h1>Vos boutons verts, dans la matière de la note vocale</h1>
-  <p>C'est <b>votre tasse</b>, celle que vous avez retenue — même dégradé,
-     mêmes trois anneaux, et <b>plus de halo qui tourne</b>. Le disque du haut
-     est votre note vocale, recopiée du code. Les boutons en dessous sont les
-     vôtres, à leurs <b>vraies largeurs</b>. <b>Appuyez sur tout</b> : ils
-     rentrent du même geste.</p>
+  <p>C'est <b>votre tasse</b>, telle que vous l'avez retenue : même dégradé,
+     <b>un seul bord doré</b>, aucun halo. Le disque du haut est votre note
+     vocale, recopiée du code. Les boutons en dessous sont les vôtres, à leurs
+     <b>vraies largeurs</b>. <b>Appuyez sur tout</b> : ils rentrent du même
+     geste.</p>
 </header>
 
 <div class="choix" role="group" aria-label="Les déclinaisons">
   <button type="button" data-v="zero" aria-pressed="false">Aujourd'hui</button>
-  <button type="button" data-v="a" aria-pressed="true">A · La tasse telle quelle</button>
-  <button type="button" data-v="b" aria-pressed="false">B · La lumière à sa vraie taille</button>
-  <button type="button" data-v="c" aria-pressed="false">C · La tasse profonde</button>
-  <button type="button" data-v="d" aria-pressed="false">D · Les anneaux seuls</button>
+  <button type="button" data-v="a" aria-pressed="true">A · Votre tasse, un bord doré</button>
+  <button type="button" data-v="b" aria-pressed="false">B · La même, lumière à sa taille</button>
+  <button type="button" data-v="d" aria-pressed="false">D · Le vert d'aujourd'hui, bord doré</button>
 </div>
 
 <p class="dit" id="dit"></p>
@@ -326,27 +328,28 @@
 </section>
 
 <div class="note">
-  <h2>La couleur est prise, il reste la lumière</h2>
-  <p>Vous avez tranché la matière : <b>la tasse, sans le halo qui tourne</b>.
-     Les quatre déclinaisons ne touchent ni au vert ni aux anneaux — elles ne
-     changent que la <b>taille</b> de la lumière et l'endroit où elle tombe.</p>
-  <p><b>Pourquoi ça se pose.</b> Sur votre note vocale, le disque fait 80 px et
-     la lumière environ 50. Écrite en pour cent, elle grandit avec l'objet : sur
-     « Confirmer le départ de la facture », qui fait 321 px, elle en ferait
-     200 — et son centre tombe <b>au milieu du mot</b>. Un mot doit tenir
-     <b>4,5</b> de contraste pour se lire à bout de bras ; là, il en tient
-     <b>2,1</b>. C'est le chiffre que vous avez déjà vu le 2 septembre sous
-     « À facturer ».</p>
+  <h2>La A est ce que vous avez demandé, et voici ce qu'elle coûte</h2>
+  <p>Votre tasse, un bord doré, aucun halo. La <b>parenté est entière</b> : posé
+     à côté du disque, c'est le même objet à deux formes.</p>
+  <p><b>La réserve, et elle est unique.</b> Un mot doit tenir <b>4,5</b> de
+     contraste pour se lire à bout de bras, en plein soleil. Sur la A, il en
+     tient <b>2,1</b> — le même chiffre que vous aviez vu le 2 septembre sous
+     « À facturer ». Ce n'est pas la longueur du bouton qui le cause : la
+     lumière du dégradé est placée <b>en pour cent</b>, à 34 % de la largeur,
+     donc son centre tombe au milieu du mot quelle que soit la taille.</p>
+  <p><b>Et changer la couleur des lettres ne le sauve pas</b>, je l'ai mesuré :
+     en crème le mot s'efface sur le clair, en encre il s'efface sur le foncé —
+     le dégradé traverse les deux. C'est la lumière qu'il faut bouger, ou
+     rien.</p>
 
-  <h2>Ce que je vous recommande, et pourquoi</h2>
-  <p><b>La B.</b> Même vert, mêmes anneaux, même ombre, aucun halo. La lumière
-     garde simplement les <b>50 px</b> qu'elle a sur la note vocale : elle se
-     pose sur l'épaule gauche, dans la marge, et le mot repose sur le vert
-     profond. <b>Sur une capsule courte, B et A sont exactement le même
-     objet</b> — la différence n'apparaît que quand le bouton s'allonge.</p>
-  <p><b>La C si vous voulez le maximum de lisibilité en plein soleil</b> : la
-     même lumière, l'échelle des verts descendue d'un cran. Plus sombre, plus
-     sûre.</p>
+  <h2>Si vous voulez la même en lisible</h2>
+  <p><b>La B.</b> Même vert, même bord doré, même ombre. La lumière garde
+     seulement les <b>50 px</b> qu'elle a sur votre note vocale au lieu de
+     s'étirer : elle se pose sur l'épaule, dans la marge, et le mot tient
+     <b>6,5</b>. <b>Sur un bouton court, A et B sont rigoureusement le même
+     objet</b> — la différence n'apparaît que sur les longs.</p>
+  <p>Comparez-les sur « Confirmer le départ de la facture », le plus long de
+     l'application : c'est là que tout se joue.</p>
 
   <h2>Ce qui ne bouge dans aucune</h2>
   <ul>
@@ -363,15 +366,11 @@
         bouton.</li>
   </ul>
 
-  <h2>Deux choses à me dire</h2>
+  <h2>Une question, et je code</h2>
   <p><b>Le halo qui tourne, sur la note vocale elle-même.</b> Vous l'avez fait
-     retirer du bouton. Sur le disque du haut il tourne encore, parce que c'est
-     votre écran d'aujourd'hui et que je n'y touche pas sans vous. <b>Je le
-     retire là aussi ?</b></p>
-  <p><b>Les trois anneaux sur un bouton long.</b> Sur un disque, ils se lisent
-     comme le bord d'une tasse ; sur une capsule de 321 px, ils dessinent un
-     cadre. Regardez le bouton de la facture : si c'est de trop, il n'en reste
-     qu'un, le filet d'or — dites-le et je le dessine.</p>
+     retirer des boutons. Sur le disque du haut il tourne encore, parce que
+     c'est votre écran d'aujourd'hui et que je n'y touche pas sans vous.
+     <b>Je le retire là aussi ?</b></p>
 </div>
 
 <script>
@@ -404,7 +403,7 @@
   }
 
   var SAGE_CLAIR = hex('#9fbd82'), SAGE = hex('#7d9a6d');
-  var PIN_CLAIR = hex('#4f5f4c'), PIN = hex('#2f3b2f');
+  var PIN_CLAIR = hex('#4f5f4c');
   var BOUTON = hex('#29382F');
 
   /* Le rayon d'un `radial-gradient(circle at …)` : par défaut
@@ -442,9 +441,6 @@
     b: function (x, y) {
       return entre([[0, SAGE_CLAIR], [0.30, SAGE], [0.82, PIN_CLAIR]], ellipse(x, y));
     },
-    c: function (x, y) {
-      return entre([[0, SAGE], [0.30, PIN_CLAIR], [0.82, PIN]], ellipse(x, y));
-    },
     d: function () { return BOUTON; }
   };
 
@@ -452,11 +448,10 @@
   var dit = document.getElementById('dit');
 
   var DITS = {
-    zero: "<b>Ce que vous avez aujourd'hui.</b> Un vert plein, sans anneau ni ombre. Rien ne le rattache à la note vocale.",
-    a: "<b>Votre tasse, posée telle quelle</b> sur les boutons — même dégradé, mêmes trois anneaux, et <b>plus aucun halo qui tourne</b>. La parenté est entière. <b>Regardez le mot</b> : la lumière s'étire avec le bouton et vient se poser dessus.",
-    b: "<span class='retenu'>Les mêmes verts, les mêmes anneaux, la même ombre.</span> La lumière garde les <b>50 px</b> qu'elle a sur votre note vocale au lieu de s'étirer : elle se pose sur l'épaule, dans la marge, et le mot reste sur le vert profond.",
-    c: "<b>La lumière de B, et l'échelle des verts descendue d'un cran.</b> Le mot repose sur du vert foncé partout où il passe — c'est le plus lisible en plein soleil, et le plus sombre.",
-    d: "<b>Votre vert d'aujourd'hui, et la joaillerie seule</b> — les trois anneaux, le creux du haut, l'ombre verte. On reconnaît la famille, le mot ne perd rien."
+    zero: "<b>Ce que vous avez aujourd'hui.</b> Un vert plein, sans bord ni ombre. Rien ne le rattache à la note vocale.",
+    a: "<span class='retenu'>Ce que vous avez demandé :</span> votre tasse telle quelle, <b>un seul bord doré tout autour</b>, aucun halo. C'est la parenté entière. <b>Regardez le mot en plein jour</b> — c'est la seule réserve, et elle est chiffrée dessous.",
+    b: "<b>Exactement la même chose, sauf une :</b> la lumière garde les <b>50 px</b> qu'elle a sur votre note vocale au lieu de s'étirer avec le bouton. Même vert, même bord doré. Sur un bouton court, A et B sont le même objet.",
+    d: "<b>Votre vert d'aujourd'hui, avec le bord doré.</b> Aucun dégradé. On reconnaît la famille par le filet et l'ombre verte, et le mot ne perd rien."
   };
 
   function mesurer() {

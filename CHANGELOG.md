@@ -17,11 +17,15 @@ verte »*, puis, capture à l'appui devant la déclinaison 1 de
 `appli/facturer-note-vocale.html` : *« c'est celle-là la bonne couleur mais sans
 le petit halo lumineux qui tourne à l'intérieur »*.
 
-**LA MATIÈRE EST DONC TRANCHÉE : c'est LA TASSE (`.atlas-micro`), pas le galet
-du 2 septembre.** Dégradé radial, trois anneaux or / porcelaine / or, creux du
-bord, ombre portée verte — et **aucun `::before` animé**. Le galet reste ce
-qu'il est sur « À facturer » et sur l'onglet actif de « Terminés » ; il ne
-s'étend pas aux boutons.
+Puis, la déclinaison A vue : *« garde la tasse telle qu'elle la A mais avec
+seulement un bord doré tout autour »*.
+
+**LA MATIÈRE EST DONC TRANCHÉE, ET PAR LUI : c'est LA TASSE (`.atlas-micro`),
+pas le galet du 2 septembre.** Dégradé radial, **un seul filet d'or**, creux du
+bord, ombre portée verte — et **aucun `::before` animé**. Les trois anneaux
+or / porcelaine / or de la note vocale ne passent PAS sur les boutons, et le
+galet reste ce qu'il est sur « À facturer » et sur l'onglet actif de
+« Terminés » : il ne s'étend pas aux boutons.
 
 **Ce que la mesure a montré, et qui n'était écrit nulle part.** La lumière du
 micro est placée **en pour cent** — un cercle centré à 34 % / 26 %. Sur le
@@ -30,12 +34,18 @@ disque de 80 px, elle fait environ 50 px. Sur un bouton de 321 px elle en ferait
 plus que **2,1** de contraste, pour un seuil de 4,5. Le défaut ne dépend pas de
 la largeur — il est là dès 148 px, parce que le point lumineux suit le texte.
 
-**Quatre déclinaisons lui sont posées** (`appli/boutons-verts.html`), et **aucune
-ne touche au vert ni aux anneaux** : elles ne changent que la TAILLE de la
-lumière. A la tasse telle quelle (2,1) · **B la lumière gardée à ses 50 px** —
-une ellipse de 46 × 36 posée à l'épaule, donc dans la marge du bouton : **6,5 à
+**Trois déclinaisons lui sont posées** (`appli/boutons-verts.html`), et **aucune
+ne touche au vert ni au bord** : elles ne changent que la TAILLE de la lumière.
+**A — ce qu'il a demandé** (2,1) · **B la lumière gardée à ses 50 px** — une
+ellipse de 46 × 36 posée à l'épaule, donc dans la marge du bouton : **6,5 à
 toutes les largeurs**, et rigoureusement identique à A sur une capsule courte ·
-C la même en verts descendus d'un cran (11,2) · D les anneaux seuls (11,7).
+D le vert d'aujourd'hui avec le bord doré (11,7).
+
+**CHANGER LA COULEUR DES LETTRES NE SAUVE PAS LA A, et il fallait le mesurer
+avant de le proposer :** en crème le mot s'efface sur le clair (2,1), en encre
+il s'efface sur le foncé (2,5 sur `#4f5f4c`). Le mot traverse les deux bouts du
+dégradé — aucune couleur de lettre ne tient sur les deux. C'est la lumière qu'il
+faut bouger, ou rien, et l'assumer.
 
 **Les chiffres de la planche sont CALCULÉS par elle**, sur les boutons tels
 qu'ils sont rendus : elle lit la largeur réelle, **balaie le mot d'un bout à
@@ -43,21 +53,21 @@ l'autre** et garde le pire. Ne mesurer que la première lettre — ce que faisai
 la première version — rendait un vert convenable là où le mot s'efface, puisque
 c'est au MILIEU que la lumière tombe.
 
-**Et le retrait du halo est GARDÉ, pas seulement fait.**
+**Et ses deux retraits sont GARDÉS, pas seulement faits.**
 `appli/tests/essai-boutons-verts.mjs` refuse toute animation sur les
-pseudo-éléments du bouton, compare les trois verts et **compte** les anneaux
-contre `.atlas-micro` lu dans `src/app/globals.css`, et exige que A rougisse
-partout pendant que B tient partout. Confrontée à un halo remis et à un anneau
-changé : rouge sur l'un puis sur l'autre. Jouée par `pages.yml` avant toute
-publication.
+pseudo-éléments du bouton, compare les trois verts au `.atlas-micro` lu dans
+`src/app/globals.css`, exige **un seul** filet d'or et **aucune** porcelaine, et
+veut que A rougisse partout pendant que B tient partout. Confrontée à un halo
+remis, à un filet changé, puis à la porcelaine remise : rouge sur chacun. Jouée
+par `pages.yml` avant toute publication.
 
 **Ce que la planche ne touche pas, et le dit** : les boutons creux (sa règle du
 31 août), les sept autres apparences — la matière ne s'écrirait que pour Origine,
 par `--atlas-plein-fond`, comme le vert d'aujourd'hui.
 
 **Rien n'est codé** (`CLAUDE.md` §3 bis) : la réponse attendue est une lettre.
-Deux questions restent posées en bas de la planche — le halo sur la note vocale
-elle-même, et les trois anneaux sur un bouton long.
+Une question reste posée en bas de la planche : faut-il aussi retirer le halo de
+la note vocale elle-même ?
 
 ## 2026-09-02
 

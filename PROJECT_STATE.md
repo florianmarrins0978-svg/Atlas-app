@@ -24,15 +24,17 @@ ligne « fait » qui ne l'est pas coûte plus cher qu'une ligne absente.
 *Ses deux messages : « utilise la couleur de la note vocale page fiche client et
 mets-la sur chaque bouton à cliquer qui sont aujourd'hui de couleur verte »,
 puis « c'est celle-là la bonne couleur mais sans le petit halo lumineux qui
-tourne à l'intérieur ».*
+tourne à l'intérieur », puis « garde la tasse telle qu'elle la A mais avec
+seulement un bord doré tout autour ».*
 
 **Une planche, pas du code** (`CLAUDE.md` §3 bis) : `appli/boutons-verts.html`,
 quatre déclinaisons, une lettre attendue. Gardée par
 `appli/tests/essai-boutons-verts.mjs`, jouée par `pages.yml`.
 
-**La matière est tranchée : LA TASSE (`.atlas-micro`), sans son `::before`
-animé** — pas le galet du 2 septembre, qui reste sur « À facturer » et sur
-l'onglet actif de « Terminés ».
+**La matière est tranchée, et par lui : LA TASSE (`.atlas-micro`), UN SEUL BORD
+DORÉ, sans son `::before` animé** — ni le galet du 2 septembre, qui reste sur
+« À facturer » et sur l'onglet actif de « Terminés », ni les trois anneaux de la
+note vocale.
 
 **Ce que la mesure a établi, et qui compte pour la suite :** la lumière du micro
 est un cercle placé en **pour cent** (34 % / 26 %). Sur un bouton, ce point
@@ -40,9 +42,10 @@ tombe au MILIEU du mot : il ne tient plus que **2,1** de contraste, pour un
 seuil de 4,5, et ce dès 148 px. La planche calcule ses chiffres sur les boutons
 rendus, en balayant le mot entier — elle ne les récite pas.
 
-Ma recommandation : **B**, la même matière avec la lumière gardée aux 50 px
-qu'elle a sur la note vocale (6,5 à toutes les largeurs). Rien ne toucherait les
-boutons creux ni les sept autres apparences.
+Son choix : **A**, sa tasse telle quelle — le mot y tient 2,1, et le chiffre est
+écrit sous le bouton. La B reste dessinée à côté : la même à une chose près, la
+lumière gardée aux 50 px qu'elle a sur la note vocale (6,5 partout). Rien ne
+touche les boutons creux ni les sept autres apparences.
 
 ## FAIT : la fiche de l'espace ne se contredit plus (2 septembre 2026)
 
