@@ -16,7 +16,7 @@ pour la page planning, code-moi exactement cette maquette pour mon appli ! Ne
 fais pas de pansement ou d'ajout de code sur du code, remplace, modifie, corrige
 pour que ça fonctionne sans rien casser. »* L'écran est en place —
 `src/app/planning/PlanningClient.tsx`, `src/components/atlas/MoisCharge.tsx`,
-`ARCHITECTURE.md` §242, verdict point par point : `docs/planning-verdict.md`.
+`ARCHITECTURE.md` §243, verdict point par point : `docs/planning-verdict.md`.
 
 **Ce qu'il faut savoir avant d'y toucher :**
 
@@ -48,7 +48,7 @@ de toucher « Sans date » — la pièce commune est `scripts/_tiroir-planning-e
 
 **Son verdict sur la planche :** *« je valide cette maquette pour la page Ma
 TVA, tu peux coder exactement ça »*. L'écran est en place —
-`src/app/termines/tva/`, `ARCHITECTURE.md` §241, verdict point par point :
+`src/app/termines/tva/`, `ARCHITECTURE.md` §242, verdict point par point :
 `docs/tva-verdict.md`.
 
 **Ce qu'il faut savoir avant d'y toucher :**
@@ -66,6 +66,40 @@ TVA, tu peux coder exactement ça »*. L'écran est en place —
 **Le calcul n'a pas bougé d'une ligne** : régime, périodicité, crédit de TVA,
 attente non bornée à la période et effacée aux débits, ticket hors période qui
 emmène l'écran là où il atterrit, mention finale mot pour mot.
+
+---
+
+## Lot précédent : « Internal Server Error » — on demande à npm (3 sept. 2026)
+
+**Un `node_modules` amputé d'une dépendance de Sentry.** `instrumentation.ts`
+la charge avant toute requête : le serveur démarre, répond à
+`/api/health/live` — qui ne touche rien —, et rend « Internal Server Error »
+sur chaque écran. La fiche voyait donc un serveur en bonne santé.
+
+**Et le banc ne s'est pas réparé pour la TROISIÈME fois**, parce que la
+réparation reconnaissait des PHRASES : `Cannot find module` (22 août),
+`Could not find the Next.js package` (31 août), `Module not found` de Turbopack
+(3 septembre). Chaque correctif ajoutait une phrase à la liste.
+
+| | |
+|---|---|
+| ce qui a bougé | `scripts/coherence-dependances.mjs`, `scripts/banc.mjs` |
+| la garde | `npx tsx scripts/test-coherence-dependances.ts` — 6 cas vérifiés rouges contre la version d'avant |
+| le pourquoi | `ARCHITECTURE.md` §241 |
+
+**À SAVOIR AVANT D'Y RETOUCHER :**
+
+- **Ne jamais rajouter une phrase d'outil.** L'énumération a été supprimée
+  exprès. La question se pose à npm (`arbreIncomplet`), qui nomme ce qui manque.
+- **« Extraneous » n'est PAS « manquant ».** `npm ls` rend un code non nul pour
+  des paquets EN TROP, ce qui est banal après un changement de branche. Les
+  compter ferait réinstaller un espace sain à chaque démarrage — un garde-fou
+  qui parle à tort s'apprend à être ignoré.
+- **`jouerEnRetenant` sait se taire** (5ᵉ paramètre) : `npm ls` liste l'arbre
+  entier, et le journal du patron n'a pas à le recevoir.
+- **Les cas asynchrones de `test-coherence-dependances.ts` sont ATTENDUS.** Ils
+  ne l'étaient pas : ils s'affichaient verts quoi qu'il arrive. Si l'on ajoute
+  un cas qui rend une promesse, il doit passer par `enCours`.
 
 ---
 
@@ -218,7 +252,6 @@ longs.
 | ce qu'il regarde | **A**, la couleur seule. Le mot y tient 2,1, et il l'a vu écrit sous le bouton |
 | où ça se code | `--atlas-plein-fond` (`src/lib/chartes.ts`, Origine seule) + un relief à ajouter à `.atlas-plein` pour le filet d'or |
 | ce qui ne bouge pas | les boutons creux, les sept autres apparences, les capsules de « Terminés » |
-
 ## Lot précédent : la page blanche, à la racine (2 sept. 2026, au soir)
 
 **`npm ci` effaçait `node_modules` sous un banc qui tournait.** `demarrer.sh`

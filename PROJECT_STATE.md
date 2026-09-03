@@ -39,7 +39,7 @@ les deux nouvelles options, et rend exactement ce qu'il rendait.
 
 **Un point de la maquette a été refusé** — « toucher un nom dans les planifiés
 remonte au mois » : cela ferait défiler la page sous son doigt, sa plainte du
-22 août 2026. Détail : `ARCHITECTURE.md` §242, `docs/planning-verdict.md`.
+22 août 2026. Détail : `ARCHITECTURE.md` §243, `docs/planning-verdict.md`.
 
 ---
 

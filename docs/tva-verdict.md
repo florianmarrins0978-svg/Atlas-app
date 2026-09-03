@@ -162,4 +162,4 @@ session travaille dans le même arbre de travail, en ce moment :
 
 ---
 
-*Détail technique et raisons complètes : `ARCHITECTURE.md` §241.*
+*Détail technique et raisons complètes : `ARCHITECTURE.md` §242.*

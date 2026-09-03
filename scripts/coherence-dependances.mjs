@@ -112,6 +112,79 @@ export function dependancesIncoherentes(paquets) {
 }
 
 /**
+ * L'ARBRE DES DÉPENDANCES EST-IL COMPLET ? — on le DEMANDE, on ne le devine pas.
+ *
+ * ───────────────────────────────────────────────────────────────────────────
+ * **Trois fois le même piège, et la troisième a coûté une matinée.**
+ *
+ * `banc.mjs` savait se réparer quand une construction échouait faute d'un
+ * paquet — mais à condition de RECONNAÎTRE la phrase :
+ *
+ *   | quand | ce que l'outil a dit | ce qu'on cherchait |
+ *   |---|---|---|
+ *   | 22 août 2026 | `Cannot find module` | rien : ajouté ce jour-là |
+ *   | 31 août 2026 | `Could not find the Next.js package` | ne correspondait pas |
+ *   | 3 septembre 2026 | `Module not found` (Turbopack) | ne correspondait toujours pas |
+ *
+ * À chaque fois, la même conséquence : le veilleur retentait indéfiniment une
+ * construction condamnée, et le patron restait devant une application morte.
+ * Sa fiche du 3 septembre le montre au mot près — `module-not-found`, sur
+ * `@apm-js-collab/tracing-hooks`, un paquet que `npm ci` n'avait pas posé.
+ *
+ * **On cesse donc d'énumérer les formulations d'autrui.** La question n'a
+ * jamais été « quel message a-t-il écrit », mais « le dossier des dépendances
+ * est-il entier ». npm sait y répondre, en une seconde, et il NOMME ce qui
+ * manque. Un fournisseur peut changer ses phrases à chaque version ; il ne
+ * change pas la réponse à cette question-là.
+ *
+ * Le lanceur est injecté : c'est ce qui permet d'éprouver les deux réponses
+ * sans casser l'arbre de la machine qui joue la suite.
+ *
+ * @param {(commande: string, args: string[]) => Promise<{ code: number, sortie: string }>} jouer
+ *   Le lanceur du banc, injecté : `banc.mjs` en a déjà un, et deux façons de
+ *   jouer une commande finiraient par diverger (`CLAUDE.md` §3).
+ * @returns {Promise<{ incomplet: boolean, motif: string | null }>}
+ */
+export async function arbreIncomplet(jouer) {
+  let resultat;
+  try {
+    resultat = await jouer("npm", ["ls", "--silent"]);
+  } catch {
+    // **Une mesure impossible n'est pas un échec** (`CLAUDE.md` §5) : si npm ne
+    // peut pas répondre, on ne conclut PAS que l'arbre est cassé — on
+    // réinstallerait à tort, et un remède qui parle à tort s'apprend à être
+    // ignoré.
+    return { incomplet: false, motif: null };
+  }
+  if (resultat.code === 0) return { incomplet: false, motif: null };
+
+  // **« EXTRANEOUS » N'EST PAS « MANQUANT », et les confondre ferait
+  // réinstaller à tort.** npm rend un code non nul dès qu'il a quoi que ce soit
+  // à signaler, y compris des paquets EN TROP — ce qui arrive banalement après
+  // un changement de branche, et n'empêche aucune construction. Un garde-fou
+  // qui parle à tort s'apprend à être ignoré (`CLAUDE.md` §1 bis), et
+  // celui-ci coûterait plusieurs minutes de réinstallation à chaque démarrage.
+  //
+  // On ne retient donc que ce qui MANQUE ou qui est cassé — la seule chose qui
+  // condamne une construction.
+  const details = String(resultat.sortie ?? "")
+    .split("\n")
+    .map((l) => l.trim())
+    .filter((l) => /UNMET DEPENDENCY|missing:|invalid:/i.test(l))
+    .slice(0, 4);
+
+  if (details.length === 0) return { incomplet: false, motif: null };
+
+  return {
+    incomplet: true,
+    motif:
+      "Le dossier des dépendances est incomplet — npm le dit" +
+      (details.length ? ` : ${details.join(" ; ")}` : "") +
+      ". La construction ne peut pas aboutir dans cet état.",
+  };
+}
+
+/**
  * Une construction est-elle morte SANS RIEN DIRE ?
  *
  * Le second filet, pour ce que la comparaison de versions ne verra pas : un
