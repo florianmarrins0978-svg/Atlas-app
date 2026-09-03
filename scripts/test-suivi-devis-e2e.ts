@@ -1,6 +1,7 @@
 import assert from "node:assert";
 import type { Page, BrowserContext } from "playwright";
 import { lancerNavigateur } from "./e2e-browser";
+import { ouvrirLeTiroirDuPlanning } from "./_tiroir-planning-e2e";
 // Le nom du chantier se DÉDUIT du client (`src/lib/nom-chantier.ts`) : on
 // applique la même règle que le produit plutôt que de recomposer « Chez … ».
 // Recopié ici, ce contrôle est passé au rouge le 13 août 2026, le jour où le
@@ -142,6 +143,13 @@ async function main() {
     // Planifier soi-même une date que le client s'apprête à choisir préparerait
     // deux engagements sur le même jour.
     await page.goto(`${BASE}/planning`, { waitUntil: "networkidle" });
+    // **« En attente du client » vit dans le tiroir du bas depuis le
+    // 3 septembre 2026** (`ARCHITECTURE.md` §243). La règle que ce contrôle
+    // fixe n'a pas bougé — un chantier dont le client choisit sa date est
+    // ANNONCÉ, jamais proposé à la planification — mais elle se lit après un
+    // appui. On rejoue son geste plutôt que d'exiger un écran qui n'existe
+    // plus (`CLAUDE.md` §5 bis).
+    await ouvrirLeTiroirDuPlanning(page);
     const sectionAPlanifier = page.locator("text=À planifier").locator("xpath=..");
     assert.strictEqual(
       await sectionAPlanifier.locator(`text=${nom}`).count(),

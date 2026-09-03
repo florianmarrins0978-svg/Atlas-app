@@ -8,7 +8,7 @@ import { estAuCalendrier } from "@/lib/onglet-chantier";
 import { jourIso } from "@/lib/jour";
 import EnTeteEcran from "@/components/atlas/EnTeteEcran";
 import { cheminAutorise, peutModifierLePlanning, type Role } from "@/lib/acces-roles";
-import { colors, font, libelleCaps, surPlein } from "@/lib/design-tokens";
+import { colors, font, libelleCaps, surPlein, voile } from "@/lib/design-tokens";
 import MoisCharge, { fondDeLEtat } from "@/components/atlas/MoisCharge";
 import {
   cleCreneau,
@@ -17,6 +17,7 @@ import {
   type JourIso,
 } from "@/server/disponibilites";
 import { fusionnerAbsences, type AbsenceEquipe } from "@/lib/absences-equipe";
+import { communeDeLAdresse } from "@/lib/commune-adresse";
 import {
   jourLisibleCourt,
   MOIS_LONGS,
@@ -234,7 +235,6 @@ export default function PlanningClient({
   const [, enTransition] = useTransition();
 
   const grilleRef = useRef<HTMLDivElement>(null);
-  const carteRef = useRef<HTMLDivElement>(null);
   /**
    * **Ce qu'il touche ne doit pas lui échapper.** Ouvrir une fiche en referme
    * une autre ; si celle-ci était plus haut, tout remonte de sa hauteur et la
@@ -390,11 +390,13 @@ export default function PlanningClient({
   // même composant, écrit une fois.
   type Ouvert =
     | { quoi: "equipe"; cle: string; chantierId: string; demi: Demi }
-    // **`demi` compte ici aussi**, et c'est une réparation : sans elle, la liste
-    // des trois moments s'ouvrait dans les DEUX lignes du chantier à la fois —
-    // six boutons pour un seul geste, et le doigt tombait sur la mauvaise.
-    // Un chantier à la journée porte deux lignes ; on n'en touche qu'une.
-    | { quoi: "deplacer"; cle: string; chantierId: string; demi: Demi }
+    // **`demi` a disparu d'ici le 3 septembre 2026, et c'est un nettoyage, pas
+    // une perte.** Il n'existait que pour empêcher la liste des trois moments
+    // de s'ouvrir dans les DEUX lignes d'un chantier à la journée — six boutons
+    // pour un seul geste. Les deux gestes vivent désormais sur UNE rangée par
+    // chantier : il n'y a plus qu'une place où les ouvrir, et une donnée qui ne
+    // décide plus de rien se retire plutôt que de se traîner.
+    | { quoi: "deplacer"; cle: string; chantierId: string }
     | { quoi: "ajout-qui"; cle: string }
     | { quoi: "ajout-quand"; cle: string; chantierId: string };
   const [ouvert, setOuvert] = useState<Ouvert | null>(null);
@@ -444,14 +446,20 @@ export default function PlanningClient({
   }
 
   /**
-   * **Ouvrir ET amener à l'écran.** Deux fois de suite le patron a écrit « rien
-   * ne s'ouvre quand je touche un jour », avec quarante contrôles au vert :
-   * posée hors du champ, la fiche laissait l'écran mort sous le doigt.
+   * ─── PLUS DE `scrollIntoView` : LA FICHE S'OUVRE À LA PLACE DE LA CASE ─────
+   *
+   * **Ce qu'il y avait ici, et pourquoi ça a disparu le 3 septembre 2026.** La
+   * fiche du jour était rendue SOUS le calendrier entier ; deux fois de suite
+   * le patron a écrit « rien ne s'ouvre quand je touche un jour », avec
+   * quarante contrôles au vert — posée hors du champ, elle laissait l'écran
+   * mort sous le doigt. On la ramenait donc de force.
+   *
+   * **Le remède soignait le symptôme, pas la place.** Depuis la maquette qu'il
+   * a retenue, la fiche se déplie ENTRE la semaine qui porte le jour et la
+   * suivante (`MoisCharge`, prop `volet`) : elle naît sous le doigt, et il n'y
+   * a plus rien à rattraper. Un défilement automatique serait même nuisible —
+   * il déplacerait la case qu'il vient de toucher.
    */
-  useEffect(() => {
-    if (!jourTouche) return;
-    carteRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
-  }, [jourTouche]);
 
   // ─── Les gestes, tous rendus au serveur puis relus ──────────────────────
 
@@ -675,26 +683,33 @@ export default function PlanningClient({
             jourTouche={jourTouche}
             onToucherJour={toucherLeJour}
             occupationDe={occupationDe}
+            // **La semaine que lit la liste du bas, teintée dans le mois.** Les
+            // deux navigations cessent de s'ignorer : toucher un jour amenait
+            // déjà la liste sur sa semaine, mais changer de semaine ne disait
+            // rien au mois, et rien ne montrait d'où venait la liste.
+            semaineLue={lundi}
+            // ─── LA FICHE DU JOUR, DANS LE MOIS ────────────────────────────
+            //
+            // **Sa maquette du 3 septembre 2026.** Elle s'ouvre entre la
+            // semaine qui porte le jour et la suivante, l'encoche pointant la
+            // case. C'est ce qui a supprimé le `scrollIntoView` plus haut.
+            volet={(jour) => (
+              <CarteDuJour
+                cle="jour"
+                jour={jour}
+                dansLeMois
+                {...gestesCarte}
+                // **Un jour passé se lit, il ne s'écrit pas** (planche 98). Ce
+                // n'est pas une précaution de style : cocher un salarié ou
+                // déplacer une demi-journée sur un chantier fait il y a huit
+                // mois ne veut rien dire, et un geste possible est un geste
+                // qu'on fait par erreur. C'est le MÊME drapeau que celui du
+                // salarié en lecture seule — une seconde façon de rendre une
+                // carte inerte aurait divergé de la première.
+                ecriture={gestesCarte.ecriture && jour >= aujourdHui}
+              />
+            )}
           />
-        </div>
-
-        {/* ─── LA FICHE DU JOUR, DIRECTEMENT SOUS LE CALENDRIER ───────────── */}
-        <div ref={carteRef}>
-          {jourTouche && (
-            <CarteDuJour
-              cle="jour"
-              jour={jourTouche}
-              {...gestesCarte}
-              // **Un jour passé se lit, il ne s'écrit pas** (planche 98). Ce
-              // n'est pas une précaution de style : cocher un salarié ou
-              // déplacer une demi-journée sur un chantier fait il y a huit mois
-              // ne veut rien dire, et un geste possible est un geste qu'on fait
-              // par erreur. C'est le MÊME drapeau que celui du salarié en
-              // lecture seule — une seconde façon de rendre une carte inerte
-              // aurait divergé de la première.
-              ecriture={gestesCarte.ecriture && jourTouche >= aujourdHui}
-            />
-          )}
         </div>
 
         {/* ─── PLANIFIÉS, à la semaine ────────────────────────────────────── */}
@@ -834,6 +849,10 @@ export default function PlanningClient({
                         >
                           {ditLaDuree(c.dureeDemiJournees ?? DUREE_PAR_DEFAUT_DEMI_JOURNEES)}
                         </span>
+                        {/* **Le lieu, sous la durée.** C'est la deuxième
+                            question après « qui » — et sur quatre clients qui
+                            s'appellent Martins, c'est la seule qui distingue. */}
+                        <LieuDuChantier chantier={c} />
                       </button>
                       {/* La pastille MÈNE AU JOUR au lieu d'ouvrir un choix : un
                           chantier à la journée porte deux listes d'équipes —
@@ -929,135 +948,15 @@ export default function PlanningClient({
           ))
         )}
 
-        {/* ─── SANS DATE — et c'est d'ici qu'on POSE ──────────────────────── */}
-        {/* **RIEN N'ATTEND DE JOUR : LA SECTION N'EXISTE PAS.** Sa question du
-            25 août 2026 : *« est-ce que la catégorie sans date a un réel besoin
-            d'exister ? »*. Elle en a un — c'est le seul endroit d'où un
-            chantier reçoit sa date, et « Retirer » l'y renvoie — mais VIDE elle
-            ne rend qu'un titre et un refus, au milieu d'un écran déjà long.
-
-            C'est sa propre règle du 23 août, celle qui a fait disparaître
-            « Ajouter un chantier » : un geste qui ne peut mener nulle part se
-            retire au lieu de s'annoncer. La phrase du cul-de-sac vivait ici,
-            et c'est elle que ce bouton promettait. */}
-        {/* **PAS DE « SANS DATE » POUR UN SALARIÉ** — 30 août 2026. Cette
-            section n'existe que pour deux gestes : poser un chantier sur le
-            jour touché, et le supprimer. Les deux lui sont refusés au serveur.
-            La laisser afficherait une liste de chantiers sans date accompagnée
-            de boutons morts — sa propre règle du 23 août : un geste qui ne peut
-            mener nulle part se retire au lieu de s'annoncer. */}
-        {ouvertes.ecriture && sansDate.length > 0 && (
-          <>
-            <TitreSection encadre data-atlas="titre-sans-date">Sans date</TitreSection>
-            <p
-              data-atlas="ou-poser"
-              className="mx-[18px] mt-2 text-center text-[12.5px]"
-              style={{ color: colors.muted }}
-            >
-              {/* **Un samedi touché est un jour comme un autre** — sa règle
-                  du 23 août 2026. La condition écartait le week-end : il
-                  touchait son samedi, et l'écran continuait de lui dire de
-                  toucher un jour. */}
-              {jourTouche
-                ? `À poser sur ${jourLisibleCourt(jourTouche).toLowerCase()}`
-                : "Touchez d’abord un jour du calendrier"}
-            </p>
-            <div className="mx-[18px] mt-3">
-              {sansDate.map((c, i) => (
-                <LigneRetirable
-                  key={c.id}
-                  libelle={`le chantier ${c.nom}`}
-                  retiree={retraits.estRetire(c.id)}
-                  onRetirer={() => retraits.retirer(c.id, `le chantier ${c.nom}`)}
-                  hauteurMax={64}
-                  className="flex"
-                >
-                  <div
-                    data-atlas="sans-date"
-                    className="flex w-full items-center justify-between gap-2.5 py-[11px]"
-                    // **Le filet SÉPARE deux lignes, il ne souligne pas la
-                    // dernière** — sa demande du 26 août : *« supprime le trait
-                    // sous Jean Louis »*. Avec un seul chantier en attente, le
-                    // trait ne séparait rien : il soulignait un nom. C'est la
-                    // règle qu'emploie déjà la liste « En attente du client »
-                    // deux blocs plus bas, reprise ici plutôt qu'inventée.
-                    style={{
-                      borderBottom:
-                        i === sansDate.length - 1 ? "none" : `1px solid ${colors.line}`,
-                    }}
-                  >
-                    <span
-                      className="min-w-0 flex-1 truncate"
-                      style={{ fontFamily: font.display, fontSize: 19, lineHeight: 1.2 }}
-                    >
-                      {c.nom}
-                    </span>
-                    {jourTouche ? (
-                      <span className="flex flex-shrink-0 gap-[5px]">
-                        {(
-                          [
-                            ["matin", "Matin"],
-                            ["apres", "Ap.-m."],
-                            ["journee", "Journée"],
-                          ] as [QuandChantier, string][]
-                        ).map(([v, mot]) => (
-                          <Petit
-                            key={v}
-                            data-poser={v}
-                            onClick={() => poser(c.id, jourTouche, v)}
-                          >
-                            {mot}
-                          </Petit>
-                        ))}
-                      </span>
-                    ) : (
-                      <span className="text-[12.5px]" style={{ color: colors.muted }}>
-                        en attente d’un jour
-                      </span>
-                    )}
-                  </div>
-                </LigneRetirable>
-              ))}
-            </div>
-          </>
-        )}
-
-        {/* Le tiroir, en fin de contenu et non par-dessus : il pousse la
-            dernière ligne vers le haut au lieu de la masquer. */}
-        {ouvertes.ecriture && (
-          <TiroirDesRetires
-            dernier={retraits.dernier}
-            nombre={retraits.nombre}
-            onAnnuler={retraits.annuler}
-            className="mt-6"
-          />
-        )}
-
-        {/* ─── EN ATTENTE DU CLIENT ───────────────────────────────────────── */}
-        {attenteClient.length > 0 && (
-          <>
-            <TitreSection encadre>En attente du client</TitreSection>
-            <div className="mx-[18px] mt-3">
-              {attenteClient.map((c, i) => (
-                <div
-                  key={c.id}
-                  className="flex items-center justify-between gap-2.5 py-[11px]"
-                  style={{
-                    borderBottom:
-                      i === attenteClient.length - 1 ? "none" : `1px solid ${colors.line}`,
-                  }}
-                >
-                  <span style={{ fontFamily: font.display, fontSize: 19, lineHeight: 1.2 }}>
-                    {c.nom}
-                  </span>
-                  <span className="text-right text-[12.5px]" style={{ color: colors.muted }}>
-                    Il choisit sa date
-                  </span>
-                </div>
-              ))}
-            </div>
-          </>
-        )}
+        {/* ─── CE QUI N'A PAS ENCORE DE JOUR — dans le tiroir du bas ────── */}
+        <TiroirDuBas
+          ecriture={ouvertes.ecriture}
+          sansDate={sansDate}
+          attenteClient={attenteClient}
+          jourTouche={jourTouche}
+          poser={poser}
+          retraits={retraits}
+        />
       </div>
     </div>
   );
@@ -1281,6 +1180,36 @@ function PastilleEquipe({
   );
 }
 
+/**
+ * OÙ VA CE CHANTIER — la commune, sous sa durée.
+ *
+ * **Sa maquette du 3 septembre 2026.** L'adresse existait en base et ne servait
+ * qu'aux boutons de la feuille : Maps, Waze, « copier l'adresse » la lisaient
+ * sans jamais la montrer. Sur une liste où quatre clients s'appellent Martins,
+ * c'est pourtant la seule chose qui dit LEQUEL.
+ *
+ * **Rien quand on ne sait pas.** `communeDeLAdresse` rend `null` plutôt que de
+ * deviner, et la ligne disparaît alors : un nom de rue écrit à la place d'une
+ * commune ferait partir le patron au mauvais endroit (`CLAUDE.md` §4).
+ *
+ * **Elle ne peut pas déborder.** La ligne des planifiés est mesurée au pixel
+ * (`test-ligne-planning-e2e.ts`) : une commune longue est coupée plutôt que de
+ * pousser la colonne — c'est le nom du client qui commande la largeur.
+ */
+function LieuDuChantier({ chantier }: { chantier: ChantierPlanning }) {
+  const commune = communeDeLAdresse(chantier.adresseChantier);
+  if (!commune) return null;
+  return (
+    <span
+      data-atlas="lieu-du-chantier"
+      className="mt-[2px] block truncate text-[11.5px] leading-[1.5]"
+      style={{ color: colors.muted }}
+    >
+      {commune}
+    </span>
+  );
+}
+
 /** La rangée de boutons qui remplace ce qu'on vient de toucher. */
 function Choisir({ children }: { children: React.ReactNode }) {
   return (
@@ -1317,7 +1246,7 @@ type GestesCarte = {
   nombreSalaries: number;
   ouvert:
     | { quoi: "equipe"; cle: string; chantierId: string; demi: Demi }
-    | { quoi: "deplacer"; cle: string; chantierId: string; demi: Demi }
+    | { quoi: "deplacer"; cle: string; chantierId: string }
     | { quoi: "ajout-qui"; cle: string }
     | { quoi: "ajout-quand"; cle: string; chantierId: string }
     | null;
@@ -1473,6 +1402,7 @@ function CarteDuJour({
   cle,
   jour,
   seulement,
+  dansLeMois = false,
   ecriture,
   nombreSalaries,
   ouvert,
@@ -1510,6 +1440,20 @@ function CarteDuJour({
    * porte tous les chantiers.
    */
   seulement?: string;
+  /**
+   * La carte est-elle rendue DANS le mois, à la place de la case touchée ?
+   *
+   * **Elle change deux choses, et seulement deux** : ses marges, qui suivent
+   * alors celles de la grille (12 px) au lieu de celles de la liste (18 px), et
+   * son relief — dans le mois, elle est un objet posé sur la page, et son fond
+   * (`card`) n'est qu'à 4 % du fond de page. Sans ombre ni filet, on ne la
+   * distinguerait pas de la grille qu'elle interrompt.
+   *
+   * **Rien d'autre ne diffère**, et c'est le but : deux cartes qui se seraient
+   * mises à proposer des gestes différents selon l'endroit où l'on touche sont
+   * exactement ce que sa demande du 21 août 2026 interdit.
+   */
+  dansLeMois?: boolean;
 } & GestesCarte) {
   const feuilleIci = feuille && feuille.cle === cle ? feuille.chantierId : null;
 
@@ -1552,8 +1496,22 @@ function CarteDuJour({
       <div
         data-atlas="carte-jour"
         data-jour={jour}
-        className="mx-[18px] mt-4 rounded-[10px] px-[15px] py-[14px]"
-        style={{ background: colors.card }}
+        className={
+          dansLeMois
+            ? "mt-[9px] rounded-[14px] px-[15px] py-[14px]"
+            : "mx-[18px] mt-4 rounded-[10px] px-[15px] py-[14px]"
+        }
+        style={
+          dansLeMois
+            ? {
+                background: colors.card,
+                // Un décalage ET un flou : un halo sans décalage n'est pas une
+                // ombre, c'est un contour de plus.
+                boxShadow: `0 6px 20px ${voile(colors.ink, 0.07)}`,
+                border: `1px solid ${colors.lineSoft}`,
+              }
+            : { background: colors.card }
+        }
       >
         {!seulement && (
           <p
@@ -1595,6 +1553,12 @@ function CarteDuJour({
           }
 
           const c = bloc.chantier;
+          // **Au CHANTIER, plus à la demi-journée.** « Déplacer » écrit un
+          // départ et une durée sur le chantier entier : le rattacher à une
+          // moitié de journée n'avait de sens que tant que le bouton vivait sur
+          // sa ligne, et il en ouvrait alors deux à la fois.
+          const choixDeplacer =
+            ouvert?.quoi === "deplacer" && ouvert.cle === cle && ouvert.chantierId === c.id;
 
           return (
             <div
@@ -1608,16 +1572,16 @@ function CarteDuJour({
                   Ce que la journée porte se voit déjà aux pastilles de chaque
                   demi-journée, et au calendrier juste au-dessus. */}
               {!seulement && (
-                <div className="flex items-baseline gap-2.5">
-                  <button
-                    type="button"
-                    data-atlas="nom-du-jour"
-                    onClick={() =>
-                      setFeuille(
-                        feuilleIci === c.id ? null : { chantierId: c.id, cle }
-                      )
-                    }
-                    className="flex-1 cursor-pointer border-0 bg-transparent p-0 text-left"
+                <button
+                  type="button"
+                  data-atlas="nom-du-jour"
+                  onClick={() =>
+                    setFeuille(feuilleIci === c.id ? null : { chantierId: c.id, cle })
+                  }
+                  className="w-full cursor-pointer border-0 bg-transparent p-0 text-left"
+                >
+                  <span
+                    className="block"
                     style={{
                       fontFamily: font.display,
                       fontSize: 19,
@@ -1626,8 +1590,22 @@ function CarteDuJour({
                     }}
                   >
                     {c.nom}
-                  </button>
-                </div>
+                  </span>
+                  {/* **La durée, ici aussi.** Elle était sur la ligne des
+                      planifiés et nulle part dans la fiche du jour : en ouvrant
+                      une journée depuis le calendrier, on ne savait pas si le
+                      chantier tenait la demi-journée ou trois jours. Même
+                      fonction, même or, même place que sur la ligne — deux
+                      écritures pour une seule durée finiraient par diverger. */}
+                  <span
+                    data-atlas="duree-du-jour"
+                    className="mt-[3px] block text-[12.5px]"
+                    style={{ color: colors.or }}
+                  >
+                    {ditLaDuree(c.dureeDemiJournees ?? DUREE_PAR_DEFAUT_DEMI_JOURNEES)}
+                  </span>
+                  <LieuDuChantier chantier={c} />
+                </button>
               )}
 
               {bloc.demis.map((demi) => {
@@ -1635,11 +1613,6 @@ function CarteDuJour({
                 const rangs = demi === "matin" ? c.equipes.matin : c.equipes.apres_midi;
                 const choixEquipe =
                   ouvert?.quoi === "equipe" &&
-                  ouvert.cle === cle &&
-                  ouvert.chantierId === c.id &&
-                  ouvert.demi === demi;
-                const choixDeplacer =
-                  ouvert?.quoi === "deplacer" &&
                   ouvert.cle === cle &&
                   ouvert.chantierId === c.id &&
                   ouvert.demi === demi;
@@ -1703,53 +1676,80 @@ function CarteDuJour({
                       />
                     )}
 
-                    {!ecriture ? null : choixDeplacer ? (
-                      // **Déplacer se CHOISIT aussi** : une liste, jamais une
-                      // rotation qui déciderait à sa place. C'est la règle qu'il
-                      // a posée pour l'équipe, et elle vaut partout.
-                      <Choisir>
-                        {/* **« Journée » disparaît au-delà d'une journée.**
-                            Sur un chantier de trois jours, elle écrit le même
-                            état que « Matin » — le départ, la durée étant
-                            protégée — et l'une des deux ne faisait donc rien.
-                            Un bouton qui n'écrit rien se retire ; le laisser en
-                            expliquant serait pire, puisqu'il faut le lire pour
-                            savoir de ne pas l'employer. */}
-                        {(Object.keys(MOT_QUAND) as QuandChantier[])
-                          .filter(
-                            (v) =>
-                              v !== "journee" ||
-                              (c.dureeDemiJournees ?? DUREE_PAR_DEFAUT_DEMI_JOURNEES) <= 2
-                          )
-                          .map((v) => (
-                            <Petit
-                              key={v}
-                              serre
-                              data-vers={v}
-                              retenue={quandDuChantier(c) === v}
-                              onClick={() => deplacer(c.id, v)}
-                            >
-                              {MOT_QUAND[v]}
-                            </Petit>
-                          ))}
-                      </Choisir>
-                    ) : (
-                      <>
-                        <Petit
-                          serre
-                          data-atlas="deplacer"
-                          onClick={() => setOuvert({ quoi: "deplacer", cle, chantierId: c.id, demi })}
-                        >
-                          Déplacer
-                        </Petit>
-                        <Petit serre data-atlas="retirer" onClick={() => retirerDuJour(c.id)}>
-                          Retirer
-                        </Petit>
-                      </>
-                    )}
                   </div>
                 );
               })}
+
+              {/* ─── LES DEUX GESTES DU CHANTIER, UNE SEULE FOIS ─────────────
+                  **Ils étaient sur CHAQUE ligne de demi-journée jusqu'au
+                  3 septembre 2026, et c'était deux fautes en une.**
+
+                  La première est une redite : `deplacer` et `retirerDuJour`
+                  prennent un CHANTIER, jamais une moitié de journée — la demi
+                  ne servait qu'à savoir laquelle des deux lignes ouvrait la
+                  liste. Un chantier à la journée affichait donc « Déplacer » et
+                  « Retirer » deux fois, à quinze pixels d'écart, pour un seul
+                  geste. C'est exactement ce qu'il a fait retirer ailleurs :
+                  *« c'est le même chantier, pas besoin de répéter »*.
+
+                  La seconde est une question de place. La ligne alignait
+                  pastille + mot + équipe + deux boutons dans 324 px : il a fallu
+                  resserrer les boutons à 9 px de marge pour que « Retirer » ne
+                  bascule pas à la ligne suivante. Sortis de la ligne, ils
+                  reprennent leur taille, et la demi-journée respire.
+
+                  **Ils gardent leurs repères `deplacer` et `retirer`** : c'est
+                  le même geste, à une autre place — les suites le désignent par
+                  ce qu'il FAIT, pas par la ligne où il se trouvait. */}
+              {ecriture && (
+                <div
+                  data-atlas="actes-chantier"
+                  className="mt-2.5 flex flex-wrap items-center justify-end gap-1.5"
+                >
+                  {choixDeplacer ? (
+                    // **Déplacer se CHOISIT** : une liste, jamais une rotation
+                    // qui déciderait à sa place. C'est la règle qu'il a posée
+                    // pour l'équipe, et elle vaut partout.
+                    <>
+                      {/* **« Journée » disparaît au-delà d'une journée.** Sur un
+                          chantier de trois jours, elle écrit le même état que
+                          « Matin » — le départ, la durée étant protégée — et
+                          l'une des deux ne faisait donc rien. Un bouton qui
+                          n'écrit rien se retire ; le laisser en expliquant
+                          serait pire, puisqu'il faut le lire pour savoir de ne
+                          pas l'employer. */}
+                      {(Object.keys(MOT_QUAND) as QuandChantier[])
+                        .filter(
+                          (v) =>
+                            v !== "journee" ||
+                            (c.dureeDemiJournees ?? DUREE_PAR_DEFAUT_DEMI_JOURNEES) <= 2
+                        )
+                        .map((v) => (
+                          <Petit
+                            key={v}
+                            data-vers={v}
+                            retenue={quandDuChantier(c) === v}
+                            onClick={() => deplacer(c.id, v)}
+                          >
+                            {MOT_QUAND[v]}
+                          </Petit>
+                        ))}
+                    </>
+                  ) : (
+                    <>
+                      <Petit
+                        data-atlas="deplacer"
+                        onClick={() => setOuvert({ quoi: "deplacer", cle, chantierId: c.id })}
+                      >
+                        Déplacer
+                      </Petit>
+                      <Petit data-atlas="retirer" onClick={() => retirerDuJour(c.id)}>
+                        Retirer
+                      </Petit>
+                    </>
+                  )}
+                </div>
+              )}
             </div>
           );
         })}
@@ -1772,6 +1772,7 @@ function CarteDuJour({
           chantier={duJour.find((c) => c.id === feuilleIci) ?? null}
           feuille={taches[feuilleIci]}
           ecriture={ecriture}
+          dansLeMois={dansLeMois}
         />
       )}
     </>
@@ -1933,11 +1934,14 @@ function FeuilleChantier({
   chantier,
   feuille,
   ecriture = true,
+  dansLeMois = false,
 }: {
   chantier: ChantierPlanning | null;
   feuille?: FeuilleDuChantier;
   /** Faux pour un salarié : la note se LIT, elle ne s'écrit pas (30 août 2026). */
   ecriture?: boolean;
+  /** Dans le mois, elle suit les marges de la grille et non celles de la liste. */
+  dansLeMois?: boolean;
 }) {
   // **`key={chantier.id}` là où elle est rendue** : changer de chantier remonte
   // le composant, et « Adresse copiée » repart à zéro sans qu'un effet ait à le
@@ -1958,7 +1962,7 @@ function FeuilleChantier({
   return (
     <div
       data-atlas="feuille"
-      className="mx-[18px] mt-3 rounded-[10px] px-4 pb-[18px] pt-4"
+      className={`${dansLeMois ? "" : "mx-[18px] "}mt-3 rounded-[10px] px-4 pb-[18px] pt-4`}
       style={{ background: colors.rustTint, boxShadow: `inset 0 0 0 1px ${colors.line}` }}
     >
       <p
@@ -2090,5 +2094,303 @@ function Geste({
     <span className={classe} style={style}>
       {children}
     </span>
+  );
+}
+
+
+/**
+ * LE TIROIR DU BAS — ce qui n'a pas encore de jour, à portée du pouce.
+ *
+ * ───────────────────────────────────────────────────────────────────────────
+ * **Sa maquette du 3 septembre 2026, retenue telle quelle.**
+ *
+ * « Sans date » et « En attente du client » vivaient tout en bas d'un écran qui
+ * porte déjà le mois, la journée ouverte et la semaine des planifiés. Or **poser
+ * un chantier est le geste le plus actif de cet écran**, et il était le plus
+ * loin du pouce : on touchait un jour en haut, on descendait, on posait, et l'on
+ * remontait voir le résultat.
+ *
+ * **CE QUE ÇA COÛTE, ET IL FAUT LE DIRE :** ces deux listes étaient visibles en
+ * faisant défiler ; elles demandent maintenant un appui. C'est le seul échange
+ * de ce lot, et il a été accepté en connaissance de cause. La poignée les
+ * NOMME et les COMPTE — « 3 sans date · 2 chez le client » —, si bien que rien
+ * ne devient introuvable : ce qui se perdait était leur position, pas leur
+ * existence.
+ *
+ * **La poignée change de mot dès qu'un jour est touché** : elle écrit alors « À
+ * poser sur jeudi 3 septembre », en or. C'est la phrase que l'écran écrivait
+ * déjà sous « Sans date » — rendue à l'endroit du geste plutôt qu'au bas de la
+ * page.
+ *
+ * **Il n'existe pas quand il n'a rien à porter.** Sa règle du 23 août 2026, la
+ * même qui a fait disparaître « Ajouter un chantier » : un geste qui ne peut
+ * mener nulle part se retire au lieu de s'annoncer. Un salarié n'en voit que la
+ * moitié « En attente du client », et rien du tout si elle est vide.
+ * ───────────────────────────────────────────────────────────────────────────
+ */
+function TiroirDuBas({
+  ecriture,
+  sansDate,
+  attenteClient,
+  jourTouche,
+  poser,
+  retraits,
+}: {
+  ecriture: boolean;
+  sansDate: ChantierPlanning[];
+  attenteClient: ChantierPlanning[];
+  jourTouche: JourIso | null;
+  poser: (chantierId: string, jour: JourIso, quand: QuandChantier) => void;
+  /**
+   * **Le type vient de la source, jamais recopié.** Une liste de champs écrite
+   * ici aurait divergé au premier champ ajouté à `useRetraits` — et le tiroir
+   * d'annulation se serait mis à recevoir autre chose que ce qu'il attend.
+   */
+  retraits: ReturnType<typeof useRetraits>;
+}) {
+  const [ouvert, setOuvert] = useState(false);
+
+  // **« Sans date » n'existe que pour qui peut écrire** (30 août 2026) : ses
+  // deux seuls gestes — poser et supprimer — sont refusés au serveur pour un
+  // salarié, et une liste accompagnée de boutons morts se lit comme une panne.
+  const aSansDate = ecriture && sansDate.length > 0;
+  const aAttente = attenteClient.length > 0;
+  if (!aSansDate && !aAttente) return null;
+
+  /**
+   * Ce que dit la poignée, et rien de plus.
+   *
+   * **Un jour touché change tout** : la question n'est plus « qu'ai-je en
+   * attente » mais « qu'est-ce que je pose ici ». Le mot suit le geste.
+   */
+  const aPoser = aSansDate && jourTouche !== null;
+  const resume = aPoser
+    ? `À poser sur ${jourLisibleCourt(jourTouche).toLowerCase()}`
+    : [
+        aSansDate ? `${sansDate.length} sans date` : null,
+        aAttente
+          ? `${attenteClient.length} chez le client`
+          : null,
+      ]
+        .filter(Boolean)
+        .join(" · ");
+
+  return (
+    <div
+      data-atlas="tiroir-planning"
+      data-ouvert={ouvert ? "1" : "0"}
+      className="fixed inset-x-0 z-[19] mx-auto max-w-md"
+      style={{
+        // **Juste au-dessus de la barre du bas, et mesuré par elle.**
+        // `--atlas-barre` est sa hauteur réelle, indicateur d'accueil compris
+        // (`globals.css`) : la recopier ici serait s'assurer qu'un jour l'une
+        // bougera sans l'autre.
+        bottom: "var(--atlas-barre)",
+        background: colors.cream,
+        borderTop: `1px solid ${colors.line}`,
+        boxShadow: `0 -10px 28px ${voile(colors.ink, 0.08)}`,
+      }}
+    >
+      {/* Le voile : sans lui, la poignée tranche net la rangée du mois qui
+          passe dessous, et la coupure se lit comme un défaut d'affichage. */}
+      <span
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-x-0 h-6"
+        style={{
+          top: -24,
+          background: `linear-gradient(to top, ${colors.cream}, ${voile(colors.cream, 0)})`,
+        }}
+      />
+      <button
+        type="button"
+        data-atlas="poignee-tiroir"
+        aria-expanded={ouvert}
+        aria-controls="tiroir-du-bas"
+        onClick={() => setOuvert((o) => !o)}
+        className="flex w-full cursor-pointer items-center gap-3 border-0 bg-transparent px-[18px] py-[15px] text-left"
+        style={{ WebkitTapHighlightColor: "transparent" }}
+      >
+        <span
+          className="min-w-0 flex-1 truncate text-[13px]"
+          style={{ color: aPoser ? colors.or : colors.inkSoft }}
+        >
+          {resume}
+        </span>
+        <svg
+          aria-hidden="true"
+          width="14"
+          height="14"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke={colors.chevron}
+          strokeWidth="2.2"
+          style={{
+            flex: "none",
+            transform: ouvert ? "rotate(180deg)" : "none",
+            transition: "transform 320ms cubic-bezier(0.16,1,0.3,1)",
+          }}
+        >
+          <path d="M5 15l7-7 7 7" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      </button>
+      <div
+        id="tiroir-du-bas"
+        className="overflow-hidden"
+        // **FERMÉ, IL N'EXISTE PLUS POUR PERSONNE.**
+        //
+        // `max-height: 0` avec `overflow: hidden` ne cache rien : les boutons
+        // gardent leur taille, le clavier les atteint encore par tabulation, et
+        // un lecteur d'écran les annonce. Le navigateur, lui, les tient pour
+        // VISIBLES — c'est ce qui a fait rougir `test-planning-e2e` : « Journée »
+        // était trouvé, cliqué, et la poignée interceptait le doigt.
+        //
+        // `visibility` retire l'élément du doigt, du clavier et de la voix,
+        // sans casser l'animation : à l'ouverture elle passe à `visible` tout de
+        // suite, à la fermeture elle attend que le repli soit fini.
+        style={{
+          // **Une hauteur MAXIMALE, jamais une hauteur.** Le contenu varie —
+          // trois chantiers sans date ou dix —, et une valeur fixe laisserait
+          // soit un vide sous la dernière ligne, soit une liste coupée.
+          maxHeight: ouvert ? 352 : 0,
+          overflowY: ouvert ? "auto" : "hidden",
+          visibility: ouvert ? "visible" : "hidden",
+          transition: `max-height 420ms cubic-bezier(0.16,1,0.3,1), visibility 0s linear ${
+            ouvert ? "0s" : "420ms"
+          }`,
+        }}
+      >
+        {/* ─── SANS DATE — et c'est d'ici qu'on POSE ──────────────────────── */}
+        {/* **RIEN N'ATTEND DE JOUR : LA SECTION N'EXISTE PAS.** Sa question du
+            25 août 2026 : *« est-ce que la catégorie sans date a un réel besoin
+            d'exister ? »*. Elle en a un — c'est le seul endroit d'où un
+            chantier reçoit sa date, et « Retirer » l'y renvoie — mais VIDE elle
+            ne rend qu'un titre et un refus, au milieu d'un écran déjà long.
+
+            C'est sa propre règle du 23 août, celle qui a fait disparaître
+            « Ajouter un chantier » : un geste qui ne peut mener nulle part se
+            retire au lieu de s'annoncer. La phrase du cul-de-sac vivait ici,
+            et c'est elle que ce bouton promettait. */}
+        {/* **PAS DE « SANS DATE » POUR UN SALARIÉ** — 30 août 2026. Cette
+            section n'existe que pour deux gestes : poser un chantier sur le
+            jour touché, et le supprimer. Les deux lui sont refusés au serveur.
+            La laisser afficherait une liste de chantiers sans date accompagnée
+            de boutons morts — sa propre règle du 23 août : un geste qui ne peut
+            mener nulle part se retire au lieu de s'annoncer. */}
+        {ecriture && sansDate.length > 0 && (
+          <>
+            <TitreSection encadre data-atlas="titre-sans-date">Sans date</TitreSection>
+            <p
+              data-atlas="ou-poser"
+              className="mx-[18px] mt-2 text-center text-[12.5px]"
+              style={{ color: colors.muted }}
+            >
+              {/* **Un samedi touché est un jour comme un autre** — sa règle
+                  du 23 août 2026. La condition écartait le week-end : il
+                  touchait son samedi, et l'écran continuait de lui dire de
+                  toucher un jour. */}
+              {jourTouche
+                ? `À poser sur ${jourLisibleCourt(jourTouche).toLowerCase()}`
+                : "Touchez d’abord un jour du calendrier"}
+            </p>
+            <div className="mx-[18px] mt-3">
+              {sansDate.map((c, i) => (
+                <LigneRetirable
+                  key={c.id}
+                  libelle={`le chantier ${c.nom}`}
+                  retiree={retraits.estRetire(c.id)}
+                  onRetirer={() => retraits.retirer(c.id, `le chantier ${c.nom}`)}
+                  hauteurMax={64}
+                  className="flex"
+                >
+                  <div
+                    data-atlas="sans-date"
+                    className="flex w-full items-center justify-between gap-2.5 py-[11px]"
+                    // **Le filet SÉPARE deux lignes, il ne souligne pas la
+                    // dernière** — sa demande du 26 août : *« supprime le trait
+                    // sous Jean Louis »*. Avec un seul chantier en attente, le
+                    // trait ne séparait rien : il soulignait un nom. C'est la
+                    // règle qu'emploie déjà la liste « En attente du client »
+                    // deux blocs plus bas, reprise ici plutôt qu'inventée.
+                    style={{
+                      borderBottom:
+                        i === sansDate.length - 1 ? "none" : `1px solid ${colors.line}`,
+                    }}
+                  >
+                    <span
+                      className="min-w-0 flex-1 truncate"
+                      style={{ fontFamily: font.display, fontSize: 19, lineHeight: 1.2 }}
+                    >
+                      {c.nom}
+                    </span>
+                    {jourTouche ? (
+                      <span className="flex flex-shrink-0 gap-[5px]">
+                        {(
+                          [
+                            ["matin", "Matin"],
+                            ["apres", "Ap.-m."],
+                            ["journee", "Journée"],
+                          ] as [QuandChantier, string][]
+                        ).map(([v, mot]) => (
+                          <Petit
+                            key={v}
+                            data-poser={v}
+                            onClick={() => poser(c.id, jourTouche, v)}
+                          >
+                            {mot}
+                          </Petit>
+                        ))}
+                      </span>
+                    ) : (
+                      <span className="text-[12.5px]" style={{ color: colors.muted }}>
+                        en attente d’un jour
+                      </span>
+                    )}
+                  </div>
+                </LigneRetirable>
+              ))}
+            </div>
+          </>
+        )}
+
+        {/* Le tiroir d'annulation vit DANS celui du bas, et non plus en fin de
+            page. Deux tiroirs cloués au même bord se seraient recouverts ; et
+            « Retirer » se déclenche depuis cette liste-ci, donc l'annulation
+            doit être là où le geste a eu lieu. */}
+        {ecriture && (
+          <TiroirDesRetires
+            dernier={retraits.dernier}
+            nombre={retraits.nombre}
+            onAnnuler={retraits.annuler}
+            className="mt-6"
+          />
+        )}
+
+        {/* ─── EN ATTENTE DU CLIENT ───────────────────────────────────────── */}
+        {attenteClient.length > 0 && (
+          <>
+            <TitreSection encadre>En attente du client</TitreSection>
+            <div className="mx-[18px] mt-3">
+              {attenteClient.map((c, i) => (
+                <div
+                  key={c.id}
+                  className="flex items-center justify-between gap-2.5 py-[11px]"
+                  style={{
+                    borderBottom:
+                      i === attenteClient.length - 1 ? "none" : `1px solid ${colors.line}`,
+                  }}
+                >
+                  <span style={{ fontFamily: font.display, fontSize: 19, lineHeight: 1.2 }}>
+                    {c.nom}
+                  </span>
+                  <span className="text-right text-[12.5px]" style={{ color: colors.muted }}>
+                    Il choisit sa date
+                  </span>
+                </div>
+              ))}
+            </div>
+          </>
+        )}
+      </div>
+    </div>
   );
 }

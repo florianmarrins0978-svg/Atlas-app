@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas — Le planning : la maquette, codée — verdict point par point</title>
+<style>
+  :root{
+    --ground:#f5f3ee; --surface:#faf9f5; --raised:#ece9e1;
+    --ink:#1c1c1a; --ink-soft:#4a4a44; --muted:#8a8578;
+    --accent:#2f3b2f; --alert:#b5562a; --line:rgba(28,28,26,0.13);
+    --serif:Georgia,'Times New Roman',serif;
+    --sans:system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --ground:#161815; --surface:#1d201c; --raised:#252924;
+      --ink:#eae7df; --ink-soft:#c2bdb1; --muted:#948f83;
+      --accent:#9fbd82; --alert:#e0885a; --line:rgba(234,231,223,0.17);
+    }
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--sans);
+    line-height:1.65;}
+  main{max-width:44rem;margin:0 auto;padding:2.5rem 1.2rem 5rem;}
+  h1,h2,h3,h4{font-family:var(--serif);font-weight:600;line-height:1.2;
+    text-wrap:balance;margin:2rem 0 0.6rem;scroll-margin-top:1rem;}
+  h1{font-size:2rem;margin-top:0;}
+  h2{font-size:1.5rem;padding-top:1.2rem;border-top:1px solid var(--line);}
+  h3{font-size:1.12rem;}
+  h4{font-size:1rem;}
+  p{margin:0 0 0.9rem;}
+  a{color:var(--accent);text-underline-offset:3px;}
+  a:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:3px;}
+  ul,ol{margin:0 0 1rem;padding-left:1.3rem;}
+  li{margin-bottom:0.4rem;}
+  li::marker{color:var(--muted);}
+  /* Le sommaire : des cibles larges, confortables au doigt sur téléphone. */
+  ol li a{display:inline-block;padding:0.15rem 0;}
+  blockquote{margin:1rem 0;padding:0.85rem 1.05rem;background:var(--raised);
+    border-left:3px solid var(--accent);border-radius:0 10px 10px 0;color:var(--ink-soft);}
+  code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:0.87em;
+    background:var(--raised);padding:0.1rem 0.35rem;border-radius:5px;}
+  hr{border:0;border-top:1px solid var(--line);margin:2rem 0;}
+  .tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px;
+    background:var(--surface);margin:0 0 1.2rem;}
+  table{border-collapse:collapse;width:100%;font-size:0.92rem;min-width:22rem;}
+  th,td{text-align:left;padding:0.55rem 0.8rem;border-bottom:1px solid var(--line);
+    vertical-align:top;}
+  th{font-size:0.72rem;letter-spacing:0.08em;text-transform:uppercase;
+    color:var(--muted);white-space:nowrap;}
+  tr:last-child td{border-bottom:none;}
+  .retour{display:inline-block;font-size:0.76rem;color:var(--muted);
+    text-decoration:none;margin:-0.3rem 0 1rem;}
+  .retour:hover{color:var(--accent);text-decoration:underline;}
+</style>
+</head>
+<body>
+<main>
+<h1 id="le-planning--la-maquette-codée--verdict-point-par-point">Le planning : la maquette, codée — verdict point par point</h1>
+<p><strong>Sa validation, le 3 septembre 2026 :</strong> <em>« je valide la maquette que tu as faite pour la page planning, code-moi exactement cette maquette pour mon appli ! Ne fais pas de pansement ou d’ajout de code sur du code, remplace, modifie, corrige pour que ça fonctionne sans rien casser. »</em></p>
+<p>Ce document dit, pour chaque point de la maquette : ce qui a été fait, ce qui a été fait <strong>autrement</strong>, ce qui a été <strong>refusé</strong> et ce que ça aurait coûté.</p>
+<hr>
+<h2 id="en-un-coup-dœil">En un coup d'œil</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th></th>
+</tr></thead><tbody>
+<tr>
+<td><strong>Codé</strong></td>
+<td>6 points sur 7</td>
+</tr>
+<tr>
+<td><strong>Refusé, avec sa raison</strong></td>
+<td>1 — « toucher un nom dans les planifiés remonte au mois »</td>
+</tr>
+<tr>
+<td><strong>Fonctions retirées</strong></td>
+<td><strong>aucune</strong></td>
+</tr>
+<tr>
+<td><strong>Défaut trouvé par le contrôle</strong></td>
+<td>1, réel : le tiroir fermé restait atteignable au clavier</td>
+</tr>
+<tr>
+<td><strong>Fichiers de l'application touchés</strong></td>
+<td>3 · <code>PlanningClient.tsx</code>, <code>MoisCharge.tsx</code>, <code>commune-adresse.ts</code> (neuf)</td>
+</tr>
+</tbody></table></div>
+<hr>
+<h2 id="point-par-point">Point par point</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<h3 id="1-la-journée-souvre-dans-le-mois--fait">1. La journée s'ouvre DANS le mois — <strong>fait</strong></h3>
+<p>La fiche se déplie entre la semaine qui porte le jour et la suivante, l'encoche pointant la case touchée.</p>
+<p><strong>Ce que ça répare, et ce n'était pas qu'une question d'allure.</strong> Elle naissait sous le calendrier ENTIER. Il avait fallu poser un <code>scrollIntoView</code> pour la ramener sous le doigt, après deux <em>« rien ne s'ouvre quand je touche un jour »</em> — un remède qui soignait le symptôme, pas la place. <strong>Ce rattrapage est supprimé</strong> : il n'a plus d'objet, et il déplacerait désormais la case qu'on vient de toucher.</p>
+<p><code>MoisCharge</code> rend maintenant une rangée par semaine au lieu d'une grille d'un bloc. <strong>L'écran d'envoi, qui emploie le même calendrier, ne bouge pas d'un pixel</strong> : il ne passe pas la nouvelle option.</p>
+<h3 id="2-rien-nest-ouvert-à-larrivée--fait-et-cest-un-revirement-assumé">2. Rien n'est ouvert à l'arrivée — <strong>fait, et c'est un revirement assumé</strong></h3>
+<p>La première version de la maquette ouvrait aujourd'hui d'office, pour répondre sans un geste à « qu'est-ce que je fais aujourd'hui ». <strong>La capture l'a démentie</strong> : un volet fait environ 330 px, et il ne restait plus qu'une semaine de calendrier à l'écran — soit l'inverse exact de votre règle du 21 août, <em>« je veux un accès au mois »</em>.</p>
+<p>C'est écrit ici parce que c'est une chose dite puis corrigée, et que ça compte plus que les points justes.</p>
+<h3 id="3-la-semaine-lue-est-marquée-dans-le-mois--fait">3. La semaine lue est marquée dans le mois — <strong>fait</strong></h3>
+<p>Une teinte de papier derrière ses sept cases. Toucher un jour amenait déjà la liste du bas sur sa semaine ; changer de semaine ne disait rien au mois, et rien à l'écran ne montrait <strong>d'où</strong> venait la liste.</p>
+<h3 id="4--déplacer--et--retirer--passent-au-chantier--fait">4. « Déplacer » et « Retirer » passent au chantier — <strong>fait</strong></h3>
+<p>Une seule rangée sous ses demi-journées, à leur taille normale.</p>
+<p><strong>Deux fautes réparées d'un coup.</strong> Ces deux gestes prennent un CHANTIER, jamais une moitié de journée : un chantier à la journée les affichait <strong>deux fois</strong>, à quinze pixels d'écart, pour un seul geste. Et la ligne alignait cinq objets dans 324 px — il avait fallu resserrer les boutons à 9 px pour que « Retirer » ne bascule pas à la ligne suivante.</p>
+<h3 id="5-le-lieu-sécrit-enfin--fait-avec-une-réserve-qui-compte">5. Le lieu s'écrit enfin — <strong>fait, avec une réserve qui compte</strong></h3>
+<p>La commune se lit sous la durée, dans la fiche du jour comme sur la ligne des planifiés. L'adresse existait en base et ne servait qu'aux boutons de la feuille — Maps, Waze, « copier l'adresse » : elle était lue sans jamais être montrée.</p>
+<p><strong>Et elle ne devine RIEN.</strong> « Chemin du Moulin » et « Pornic » sont deux suites de mots sans chiffre : rien ne les distingue. Sans code postal et sans virgule, <strong>la ligne ne s'affiche pas</strong> plutôt que d'écrire un nom de rue à la place d'une commune — vous seriez parti avec.</p>
+<h3 id="6-le-tiroir-du-bas--fait-et-cest-le-seul-échange-du-lot">6. Le tiroir du bas — <strong>fait, et c'est le seul échange du lot</strong></h3>
+<p>« Sans date », « En attente du client » et le tiroir d'annulation descendent au bord bas, sous une poignée qui les nomme et les compte. Dès qu'un jour est touché, elle écrit <em>« À poser sur jeudi 3 septembre »</em> en or — la phrase que l'écran écrivait déjà sous « Sans date », rendue à l'endroit du geste.</p>
+<p><strong>CE QUE ÇA COÛTE :</strong> ces deux listes étaient visibles en faisant défiler ; elles demandent maintenant un appui. Rien ne devient introuvable — la poignée les compte — mais c'est un geste de plus, et seule une semaine de chantier dira s'il gêne.</p>
+<h3 id="7--toucher-un-nom-dans-les-planifiés-remonte-au-mois---refusé">7. « Toucher un nom dans les planifiés remonte au mois » — <strong>REFUSÉ</strong></h3>
+<p>C'est le seul point de la maquette qui n'a pas été codé, et il ne doit pas l'être.</p>
+<p><strong>Remonter au mois veut dire faire défiler la page sous votre doigt.</strong> C'est exactement votre plainte du 22 août 2026 : <em>« le client remonte et la fiche chantier aussi […] tout remonte d'un bloc et je suis perdu, je ne sais plus où est mon client. Il disparaît sous mes yeux. »</em> Une suite entière la défend, et elle rejoue la séquence — ouvrir une fiche, faire défiler, en toucher une autre — au lieu du seul geste.</p>
+<p><strong>Ce que la maquette voulait supprimer n'était d'ailleurs pas tout à fait un doublon</strong> : la ligne des planifiés ne dépliait déjà que ce qu'elle ne dit pas — les demi-journées et la feuille, jamais un second titre de journée. Elle garde donc son dépliage sur place.</p>
+<hr>
+<h2 id="un-défaut-réel-trouvé-par-le-contrôle-et-pas-par-la-relecture">Un défaut réel, trouvé par le contrôle et pas par la relecture</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><strong>Tiroir fermé, ses boutons restaient atteignables.</strong> <code>max-height: 0</code> ne cache rien : les boutons gardaient leur taille, la tabulation les atteignait, un lecteur d'écran les annonçait, et le navigateur les tenait pour visibles — au point que « Journée » était trouvé et cliqué à travers la poignée. Corrigé par <code>visibility</code>, qui les retire vraiment sans casser l'animation.</p>
+<p>C'est la suite qui l'a vu. Personne ne l'aurait vu en relisant.</p>
+<hr>
+<h2 id="ce-qui-a-dû-être-adapté-ailleurs-et-pourquoi-ce-nest-pas-de-la-triche">Ce qui a dû être adapté ailleurs, et pourquoi ce n'est pas de la triche</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p>Trois suites cherchaient « Sans date » là où elle n'est plus. Elles rejouent maintenant votre geste — un appui sur la poignée — au lieu d'exiger un écran qui n'existe plus. C'est la règle du dépôt : <strong>une suite fixe la règle, pas la façon dont un écran la montre</strong>. Réclamer ce que vous avez fait déplacer rendrait votre écran impossible à changer.</p>
+<p>De même, un contrôle exigeait que le bouton du nom porte <em>exactement</em> le nom du client. Il porte maintenant le nom, la durée et la commune : le contrôle vérifie désormais que le nom n'est écrit <strong>qu'une fois</strong> — la règle — au lieu du texte exact — la mise en page.</p>
+<hr>
+<h2 id="les-chiffres-de-la-batterie-et-ce-quils-valent-sur-cette-machine">Les chiffres de la batterie, et ce qu'ils valent sur cette machine</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><strong>Ce qui est vert, et qui éprouve ce lot :</strong></p>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th></th>
+</tr></thead><tbody>
+<tr>
+<td><code>test-planning-e2e</code></td>
+<td><strong>43 réussis, 0 échec</strong> — la suite du planning, entière</td>
+</tr>
+<tr>
+<td><code>test-planning-memoire-e2e</code></td>
+<td>12 / 0</td>
+</tr>
+<tr>
+<td><code>test-salarie-planning-lecture-seule-e2e</code></td>
+<td>8 / 0</td>
+</tr>
+<tr>
+<td><code>test-glisser-supprimer-e2e</code></td>
+<td>5 / 0</td>
+</tr>
+<tr>
+<td><code>test-suivi-devis-e2e</code></td>
+<td>5 / 0</td>
+</tr>
+<tr>
+<td><code>test-ligne-planning-e2e</code></td>
+<td>6 / 0 — dont <em>« le client touché ne remonte pas »</em></td>
+</tr>
+<tr>
+<td><code>test-rien-de-recouvert-e2e</code></td>
+<td><strong>« le planning — rien n'est recouvert » ✓</strong> : le tiroir ne cache aucun bouton</td>
+</tr>
+<tr>
+<td><code>test-commune-adresse</code> (neuve)</td>
+<td>9 / 0</td>
+</tr>
+<tr>
+<td>Types, lint, construction, mémoire du dépôt, données de démonstration</td>
+<td>verts</td>
+</tr>
+</tbody></table></div>
+<p><strong>CE QUI EST ROUGE, ET POURQUOI CE N'EST PAS CE LOT.</strong> La batterie complète n'est pas verte sur cette machine, et il faut le dire plutôt que de le taire :</p>
+<ol>
+<li><strong>Dix suites base de données sur 306</strong> (296 passent). Aucune ne cite un seul des fichiers touchés ici — vérifié fichier par fichier. Celle qui nomme le planning cherche un motif de code se terminant par un retour à la ligne : sur Windows les lignes en portent deux caractères au lieu d’un, et elle en trouve <strong>zéro</strong> sur un fichier que ce lot n’a pas ouvert.</li>
+<li><strong>Trois suites décalées d'un jour</strong> (<code>2026-09-03</code> au lieu de <code>2026-09-04</code>). PostgreSQL rend une date à <strong>minuit local</strong> ; la suite la relit en <strong>UTC</strong>. Ce poste est à UTC+2, donc elle recule d'un jour. En intégration continue, qui tourne en UTC, l'écart est nul.</li>
+<li><strong>Le serveur d'essai s'arrête après la première suite</strong> sur cette machine : toutes les suivantes tombent alors sur « connexion refusée ». C'est ce qui a fait cascader la batterie — et c'est pourquoi chaque suite ci-dessus a été jouée dans son propre lancement.</li>
+</ol>
+<p><strong>Ce que cela veut dire honnêtement :</strong> ce lot est éprouvé, suite par suite, et il est vert. La batterie <strong>d'un seul tenant</strong> ne peut pas l'être ici, et ce n'est pas ce lot qui l'en empêche.</p>
+<hr>
+<h2 id="ce-qui-reste-ouvert-et-qui-est-à-vous">Ce qui reste ouvert, et qui est à vous</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<ul>
+<li><strong>L'appui sur la poignée vous gêne-t-il à l'usage ?</strong> C'est le seul échange du lot. Une semaine de chantier tranchera mieux que n'importe quelle mesure ici.</li>
+<li><strong>Le volet repousse la fin du mois</strong> d'environ 330 px quand une journée est ouverte. C'est voulu — on regarde une journée, pas le mois — mais il faut faire défiler pour retrouver les dernières semaines.</li>
+</ul>
+</main>
+</body>
+</html>

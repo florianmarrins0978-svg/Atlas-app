@@ -1,4 +1,5 @@
 import { lancerNavigateur } from "./e2e-browser";
+import { ouvrirLeTiroirDuPlanning } from "./_tiroir-planning-e2e";
 import { devices } from "playwright";
 import { pool } from "../src/server/db/client";
 import { creerPuisFiche } from "./_creer-chantier-e2e";
@@ -104,6 +105,10 @@ async function main() {
   await cas("le chantier attend bien une date, sous « Sans date »", async () => {
     await page.goto(`${BASE}/planning`, { waitUntil: "networkidle" });
     await page.waitForTimeout(700);
+    // Depuis le 3 septembre 2026, la liste vit dans le tiroir du bas
+    // (`ARCHITECTURE.md` §243) : on rejoue son appui plutôt que d'exiger un
+    // écran qui n'existe plus.
+    await ouvrirLeTiroirDuPlanning(page);
     if ((await ligne.count()) === 0) {
       const ecran = await page.locator("body").innerText();
       throw new Error(
@@ -119,6 +124,7 @@ async function main() {
   // offrir aucun chemin. Ici la liste le dit en toutes lettres tant qu'aucun
   // jour n'est touché.
   await cas("tant qu'aucun jour n'est touché, la liste DIT quoi faire", async () => {
+    await ouvrirLeTiroirDuPlanning(page);
     await page.locator('[data-atlas="sans-date"]').last().scrollIntoViewIfNeeded();
     const dit = await page.locator('[data-atlas="ou-poser"]').innerText();
     if (!/Touchez d’abord un jour/.test(dit)) {
@@ -239,6 +245,11 @@ async function main() {
     if (!libre) throw new Error("aucun jour ouvrable libre au calendrier");
     await page.click(`[data-atlas="grille-mois"] [data-jour="${libre.jour}"]`);
     await page.waitForTimeout(600);
+    // **Le tiroir se rouvre APRÈS avoir touché le jour**, et l'ordre compte :
+    // c'est le jour touché qui arme les trois boutons, donc les lire avant
+    // n'éprouverait rien. La liste vit dans le tiroir du bas depuis le
+    // 3 septembre 2026 (`ARCHITECTURE.md` §243).
+    await ouvrirLeTiroirDuPlanning(page);
 
     const moments = await ligne.locator("[data-poser]").allInnerTexts();
     if (moments.length !== 3) {

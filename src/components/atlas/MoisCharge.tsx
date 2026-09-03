@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, type ReactNode } from "react";
 import { colors, font, surPlein, voile } from "@/lib/design-tokens";
 import { grilleDuMois, JOURS_COURTS, MOIS_LONGS } from "@/lib/mois";
 import { etatDemi, MOT_ETAT, partDeLaBarre, type EtatDemi } from "@/lib/planning-jour";
@@ -59,6 +59,8 @@ export default function MoisCharge({
   occupationDe,
   jourRetenu,
   jourRetenus,
+  semaineLue,
+  volet,
   reperePrefixe = "",
 }: {
   curseur: Curseur;
@@ -81,10 +83,49 @@ export default function MoisCharge({
    */
   jourRetenu?: JourIso | null;
   jourRetenus?: readonly JourIso[];
+  /**
+   * LE LUNDI DE LA SEMAINE QUE LIT LA LISTE DU BAS — teintée dans le mois.
+   *
+   * **Sa maquette du 3 septembre 2026.** Le planning porte deux navigations :
+   * le mois vise, la semaine lit. Toucher un jour du mois amenait déjà la liste
+   * sur sa semaine, mais l'inverse ne disait rien — changer de semaine laissait
+   * le mois muet, et rien à l'écran ne montrait D'OÙ venait la liste.
+   *
+   * **Absente ailleurs, et c'est voulu** : l'écran d'envoi n'a pas de liste en
+   * dessous, donc aucune semaine à désigner. Sans cette valeur, le mois est
+   * exactement celui d'avant, au pixel.
+   */
+  semaineLue?: JourIso | null;
+  /**
+   * CE QUI SE DÉPLIE SOUS LA SEMAINE DU JOUR TOUCHÉ.
+   *
+   * **Sa maquette du 3 septembre 2026, et c'est le cœur du changement.** La
+   * fiche d'une journée était rendue SOUS le calendrier entier : il a fallu un
+   * `scrollIntoView` pour la ramener sous le doigt, après deux « rien ne
+   * s'ouvre quand je touche un jour ». Rendue ici, elle s'ouvre à la place même
+   * de la case — le remède n'a plus lieu d'être.
+   *
+   * **Le calendrier ne décide de rien de son contenu** : il ouvre une place et
+   * dit quel jour. Ce qu'on y écrit reste à l'écran qui l'emploie, sans quoi ce
+   * composant partagé se mettrait à connaître les chantiers.
+   */
+  volet?: (jour: JourIso) => ReactNode;
   /** Préfixe des repères `data-atlas`, quand deux mois cohabitent sur un écran. */
   reperePrefixe?: string;
 }) {
   const cases = useMemo(() => grilleDuMois(curseur.annee, curseur.mois), [curseur]);
+  /**
+   * Le mois en rangées de sept, lundi en tête.
+   *
+   * `grilleDuMois` rend toujours des semaines COMPLÈTES — c'est sa garantie, et
+   * elle est éprouvée (`test-calendrier.ts`) : ce découpage ne peut donc pas
+   * rendre de rangée bancale, et chaque rangée commence bien un lundi. C'est ce
+   * qui permet de reconnaître la semaine lue à son seul premier jour.
+   */
+  const semaines = useMemo(
+    () => Array.from({ length: cases.length / 7 }, (_, i) => cases.slice(i * 7, i * 7 + 7)),
+    [cases]
+  );
   const retenus = useMemo(
     () => new Set([...(jourRetenus ?? []), ...(jourRetenu ? [jourRetenu] : [])]),
     [jourRetenus, jourRetenu]
@@ -134,12 +175,90 @@ export default function MoisCharge({
         ))}
       </div>
 
-      <div className="grid grid-cols-7 gap-1" data-atlas={`${reperePrefixe}grille-mois`}>
-        {cases.map((c) =>
-          c.horsMois ? (
-            <span key={c.jour} data-atlas="creux" style={{ aspectRatio: "1 / 1.06" }} />
-          ) : (
-            <button
+      {/* ─── LE MOIS, UNE RANGÉE PAR SEMAINE ───────────────────────────────
+          **Ce n'était qu'une grille de quarante-deux cases jusqu'au 3 septembre
+          2026.** Elle est découpée en semaines pour une seule raison : la fiche
+          d'une journée s'ouvre désormais ENTRE deux rangées, à la place de la
+          case touchée (`volet`). Une grille d'un bloc ne sait pas faire ça —
+          l'insertion aurait glissé les cases suivantes d'un cran.
+
+          **La géométrie ne bouge pas d'un pixel** : mêmes sept colonnes, même
+          écart de 4 px entre les cases comme entre les rangées. L'écran d'envoi,
+          qui ne passe ni `volet` ni `semaineLue`, rend exactement ce qu'il
+          rendait. */}
+      <div
+        className="flex flex-col gap-1"
+        data-atlas={`${reperePrefixe}grille-mois`}
+      >
+        {semaines.map((semaine) => {
+          const rang = semaine.findIndex((c) => !c.horsMois && c.jour === jourTouche);
+          return (
+            <div key={semaine[0].jour}>
+              <div
+                data-atlas="semaine-du-mois"
+                data-lue={semaineLue && semaine[0].jour === semaineLue ? "1" : undefined}
+                className="grid grid-cols-7 gap-1 rounded-[12px]"
+                style={
+                  semaineLue && semaine[0].jour === semaineLue
+                    ? { background: voile(colors.rustTint, 0.72) }
+                    : undefined
+                }
+              >
+                {semaine.map(caseDuJour)}
+              </div>
+              {/* L'encoche vise la case touchée : le volet n'est pas « en
+                  dessous », il appartient à ce jour-là. */}
+              {volet && rang >= 0 && jourTouche && (
+                <div className="relative">
+                  <span
+                    aria-hidden="true"
+                    data-atlas="encoche"
+                    className="absolute z-[1] h-[10px] w-[10px] rotate-45"
+                    style={{
+                      top: 4,
+                      left: `${((rang + 0.5) / 7) * 100}%`,
+                      transform: "translateX(-50%) rotate(45deg)",
+                      background: colors.card,
+                      borderLeft: `1px solid ${colors.lineSoft}`,
+                      borderTop: `1px solid ${colors.lineSoft}`,
+                    }}
+                  />
+                  {volet(jourTouche)}
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Le retour n'existe QUE si l'on s'est éloigné : un bouton toujours là
+          se lit comme une action à faire. */}
+      {!surLeMois && (
+        <button
+          type="button"
+          data-atlas={`${reperePrefixe}retour-aujourdhui`}
+          onClick={() =>
+            setCurseur(() => ({
+              annee: dAujourdHui.getUTCFullYear(),
+              mois: dAujourdHui.getUTCMonth(),
+            }))
+          }
+          className="mx-auto mt-3 block border-0 bg-transparent text-[11px] font-semibold uppercase"
+          style={{ letterSpacing: "0.18em", color: colors.or }}
+        >
+          ← Aujourd’hui
+        </button>
+      )}
+
+      <Legende />
+    </div>
+  );
+
+  function caseDuJour(c: (typeof cases)[number]) {
+    return c.horsMois ? (
+      <span key={c.jour} data-atlas="creux" style={{ aspectRatio: "1 / 1.06" }} />
+    ) : (
+      <button
               key={c.jour}
               type="button"
               data-jour={c.jour}
@@ -213,32 +332,8 @@ export default function MoisCharge({
                 surFondPlein={retenus.has(c.jour)}
               />
             </button>
-          )
-        )}
-      </div>
-
-      {/* Le retour n'existe QUE si l'on s'est éloigné : un bouton toujours là
-          se lit comme une action à faire. */}
-      {!surLeMois && (
-        <button
-          type="button"
-          data-atlas={`${reperePrefixe}retour-aujourdhui`}
-          onClick={() =>
-            setCurseur(() => ({
-              annee: dAujourdHui.getUTCFullYear(),
-              mois: dAujourdHui.getUTCMonth(),
-            }))
-          }
-          className="mx-auto mt-3 block border-0 bg-transparent text-[11px] font-semibold uppercase"
-          style={{ letterSpacing: "0.18em", color: colors.or }}
-        >
-          ← Aujourd’hui
-        </button>
-      )}
-
-      <Legende />
-    </div>
-  );
+    );
+  }
 }
 
 /** Ce que dit une barre, en toutes lettres — pour qui n'emploie pas ses yeux. */

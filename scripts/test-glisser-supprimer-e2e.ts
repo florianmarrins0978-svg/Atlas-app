@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { lancerNavigateur } from "./e2e-browser";
+import { ouvrirLeTiroirDuPlanning } from "./_tiroir-planning-e2e";
 
 // **Le retrait, sur toutes les listes — pas seulement au planning.**
 //
@@ -126,6 +127,11 @@ async function main() {
   // --- 4. Le planning : ses trois listes ----------------------------------
   await page.goto(`${BASE}/planning`, { waitUntil: "networkidle" });
   await page.locator("[data-atlas-vivant='oui']").first().waitFor({ state: "attached", timeout: 30000 });
+  // « Sans date » — la seule liste retirable du planning — vit dans le tiroir du
+  // bas depuis le 3 septembre 2026 (`ARCHITECTURE.md` §243). Sans cet appui,
+  // `getByRole` ne voit rien : un tiroir fermé est hors de l'arbre
+  // d'accessibilité, et le contrôle accuserait le geste d'être débranché.
+  await ouvrirLeTiroirDuPlanning(page);
 
   // `innerText` applique `text-transform` : les titres de section, en petites
   // capitales, en ressortent en majuscules. Comparer tel quel n'aurait rien
