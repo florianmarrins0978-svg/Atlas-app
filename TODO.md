@@ -9,6 +9,28 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
+## ROUGE SUR `main` : un chantier à date passée est AUSSI au planning (3 sept. 2026)
+
+`test-planning-vers-facture-e2e` échoue, **seule et avec une base fraîche** —
+ce n'est donc ni un dépassement de délai ni un effet de découpe :
+
+```
+❌ date passée : dans les terminés, et nulle part ailleurs
+   attendu : ['termines']
+   obtenu  : ['planning', 'termines']
+```
+
+Un chantier dont la date est passée apparaît dans les DEUX onglets. Soit
+l'écran a changé et le contrôle n'a pas suivi, soit la règle a été cassée —
+et dans ce cas le patron voit au planning un chantier qu'il a terminé.
+
+| | |
+|---|---|
+| **ce n'est pas le lot « page blanche »** | ce lot ne touche AUCUN fichier de `src/`, ni cette suite : le code applicatif est identique à `main`, donc le rouge y est déjà |
+| où regarder | `scripts/test-planning-vers-facture-e2e.ts`, et ce qui range un chantier entre planning et terminés |
+| qui peut trancher | la session qui a touché « Terminés » ou le planning en dernier — `git log -5 -- src/app/termines src/app/planning` |
+| ce que ça coûte de ne rien faire | un rouge permanent dans la batterie, et un rouge permanent s'apprend à être ignoré |
+
 ## ~~NON REPRODUIT : rien ne servait sur son port~~ — TROUVÉ le 2 septembre 2026, au soir
 
 Sa plainte : *« l'appli ne démarre pas, page blanche »*. Sa fiche, à 18 h 55
