@@ -19,10 +19,12 @@ ligne « fait » qui ne l'est pas coûte plus cher qu'une ligne absente.
 
 ---
 
-## EN ATTENTE : la liste de ses clients — une planche, pas du code (3 septembre 2026)
+## FAIT : la liste de ses clients — planche retenue, puis codée (3 septembre 2026)
 
-**Planche essayable, aucun code dans `src/`** —
-`appli/vos-clients.html`, liée depuis `appli/essais.html` et
+**Son verdict, le soir même :** *« tu peux coder exactement cette maquette »*.
+L'écran est donc **codé et éprouvé** ; ce qui suit décrit ce qui est en place.
+
+**La planche reste** — `appli/vos-clients.html`, liée depuis `appli/essais.html` et
 `docs/maquettes/index.html`. Adresse à lui donner **entière** :
 `https://florianmarrins0978-svg.github.io/Atlas-app/vos-clients.html`
 
@@ -47,29 +49,39 @@ proposition y met **le lieu**.
 remonte dans l'en-tête et suit la recherche ; le gris secondaire passe de
 `muted` à `inkSoft` — **3,32 de contraste contre 8,04**.
 
-**EN ATTENTE DE SA RÉPONSE, une seule chose :** le total facturé par client
-quitte la ligne, et depuis l'allègement de la fiche le 2 septembre, il ne se lit
-plus nulle part ailleurs. Détail dans `TODO.md`.
+**TRANCHÉ PAR LUI :** le total facturé par client quitte la ligne. Le prix lui
+avait été dit avant qu'on code — depuis l'allègement de la fiche le 2 septembre,
+ce total ne se lit plus nulle part ailleurs — et il a répondu « code exactement
+cette maquette ». **C'est la seule chose que ce lot retire.**
 
 **Deux réparations que seule la capture a montrées :** la ligne du compte garde
 sa place quand la recherche ne trouve rien (sinon le champ de saisie remontait
 de 24 px sous le doigt à chaque frappe infructueuse), et la barre de recherche
 est collante.
 
-**ET UNE AUTRE SESSION CODAIT LE MÊME ÉCRAN À LA MÊME HEURE.** À 18 h 55 ce
-3 septembre, l'arbre de travail portait des modifications non commises de
-`src/app/clients/ListeClients.tsx`, `page.tsx`,
-`src/server/repositories/fiche-client.ts`, `src/lib/recherche-client.ts` et
-deux fichiers neufs (`src/lib/bandes-clients.ts`,
-`scripts/test-bandes-clients.ts`) — écrites par une session voisine, pas par
-celle-ci. **Elles ne sont pas dans ce commit** : on ne livre pas le travail d'un
-autre sans savoir où il en est.
+**LEVÉE, l'alerte de 18 h 55 :** une session voisine avait vu dans l'arbre de
+travail des modifications non commises de `src/app/clients/`, de
+`fiche-client.ts` et de `recherche-client.ts`, plus deux fichiers neufs, et
+avait eu raison de ne pas les livrer sans savoir d'où elles venaient. **C'était
+ce lot-ci, en cours d'écriture** — il est désormais commité en entier. Il n'y a
+pas deux implémentations.
 
-**Ce qu'une nouvelle conversation doit en tirer :** avant de traiter ce lot
-comme « en attente de sa réponse », **regarder si l'écran n'a pas déjà été
-codé** (`git log -- src/app/clients/`). Et lire `CLAUDE.md` §6, point A :
-regarder les autres branches AVANT d'ouvrir un lot — deux sessions ont déjà
-codé la même chose le 23 août.
+**Ce qu'une nouvelle conversation doit en tirer, et qui reste vrai :** avant
+d'ouvrir un lot sur cet écran, `git log -- src/app/clients/`, et `CLAUDE.md`
+§6 point A — regarder les autres branches AVANT d'écrire. Deux sessions ont déjà
+codé la même chose le 23 août ; ce soir-là, deux ont failli recommencer.
+
+### Ce que le lot a mis en place
+
+| | |
+|---|---|
+| `src/lib/bandes-clients.ts` | la bande d'un client, et le regroupement — règle pure, sans base ni écran |
+| `src/lib/recherche-client.ts` | `normaliserCaractere` et `morceauxSurlignes`, pour marquer ce qui répond à la frappe |
+| `src/lib/jour.ts` | `moisDuJour` — **une seule table de mois dans le dépôt** |
+| `fiche-client.ts` | `adresse` chargée et rendue par `listerFichesClients` |
+| `src/app/clients/` | l'écran : fournisseur, compte animé, barre collante, bandes, ligne à deux blocs |
+| `globals.css` | la couleur de la plage « Chercher un client » — un style en ligne ne vise pas un pseudo-élément |
+| suites | `test-bandes-clients.ts` (neuve, 12 cas), `test-recherche-client.ts` (+7), `test-liste-clients.ts` (+1), `test-recherche-client-e2e.ts` (repères `data-atlas`, +5 cas) |
 
 **Au passage, deux défauts du sommaire :** le premier essai d'`essais.html`
 n'avait **pas de balise de fin** — le lien avalait le titre de famille suivant —,

@@ -5,6 +5,7 @@ import {
   normaliserPourRecherche,
   filtrerClientsParNom,
   aucunClientTrouve,
+  morceauxSurlignes,
 } from "../src/lib/recherche-client";
 
 // **Retrouver un client en tapant son nom.**
@@ -115,6 +116,102 @@ cas("le message d'échec CITE ce qu'il a tapé — la faute de frappe se voit", 
 cas("la ponctuation ne sépare pas : « (test) » n'empêche pas de trouver Moreau", () => {
   assert.equal(normaliserPourRecherche("M. Moreau (test)").includes("moreau"), true);
   assert.equal(filtrerClientsParNom(SES_CLIENTS, "moreau").length, 1);
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// **CE QUI A ÉTÉ TROUVÉ SE VOIT — sa remarque du 3 septembre 2026.**
+//
+// Sur quatre clients qui s'appellent Martins, une recherche sans marque
+// ressemble à une recherche qui n'a pas filtré. Le surlignage a donc besoin de
+// savoir QUELLES LETTRES répondent — ce que la normalisation, qui change la
+// longueur du texte, ne dit plus. D'où `morceauxSurlignes`.
+
+/** Le nom recomposé à partir de ses morceaux : rien ne doit s'y perdre. */
+function recompose(nom: string, saisie: string): string {
+  return morceauxSurlignes(nom, saisie)
+    .map((m) => m.texte)
+    .join("");
+}
+/** Ce qui est marqué, bout à bout. */
+function marque(nom: string, saisie: string): string {
+  return morceauxSurlignes(nom, saisie)
+    .filter((m) => m.trouve)
+    .map((m) => m.texte)
+    .join("");
+}
+
+const TOUS_LES_NOMS = [
+  ...SES_CLIENTS.map((c) => c.nom),
+  "Moréau",
+  "M. Dupont",
+  "Martins Frères",
+  "Copropriété Les Cèdres",
+  "Mme d’Hauteville",
+];
+
+cas("une saisie vide ne marque rien, et rend le nom d'un seul tenant", () => {
+  const morceaux = morceauxSurlignes("Monsieur Martins", "");
+  assert.equal(morceaux.length, 1, "le nom au repos se découpe pour rien");
+  assert.equal(morceaux[0].trouve, false);
+  assert.equal(morceaux[0].texte, "Monsieur Martins");
+});
+
+cas("« martins » ne marque que « Martins » dans « Monsieur Martins »", () => {
+  assert.equal(marque("Monsieur Martins", "martins"), "Martins");
+});
+
+cas("un accent ne DÉCALE pas la marque : « moreau » éclaire « Moréau » en entier", () => {
+  // C'est tout l'objet de la normalisation caractère par caractère : sur le
+  // texte comparé, « Moréau » fait six lettres comme « moreau » ; sur le nom
+  // affiché aussi — mais `normalize("NFD")` en fait sept, et la marque
+  // s'arrêtait une lettre trop tôt.
+  assert.equal(marque("Moréau", "moreau"), "Moréau");
+});
+
+cas("la ponctuation ne décale pas non plus : « dupont » éclaire « Dupont »", () => {
+  assert.equal(marque("M. Dupont", "dupont"), "Dupont");
+});
+
+cas("toutes les occurrences sont marquées, pas seulement la première", () => {
+  // Sans cela, la seconde moitié du nom paraît n'avoir rien à voir avec ce qui
+  // a été tapé.
+  assert.equal(marque("Martins Martins", "martins"), "MartinsMartins");
+});
+
+cas("aucune lettre ne se perd en découpant le nom", () => {
+  for (const nom of TOUS_LES_NOMS) {
+    for (const frappe of ["", "mar", "martins", "é", "d'h", "les cedres", "zzz"]) {
+      assert.equal(
+        recompose(nom, frappe),
+        nom,
+        `« ${nom} » se rend autrement une fois découpé pour « ${frappe} »`
+      );
+    }
+  }
+});
+
+// **LE GARDE-FOU, et c'est le cas qui compte.** Le surlignage et le filtre sont
+// deux lectures du même texte, écrites séparément (`normaliserCaractere` d'un
+// côté, `normaliserPourRecherche` de l'autre — la seconde regroupe les espaces,
+// la première non). Deux règles qui se ressemblent finissent toujours par
+// diverger : le jour où elles le feront, une ligne sortira sans qu'aucune
+// lettre ne s'y éclaire, et l'on croira la recherche cassée.
+cas("marquer et filtrer disent toujours la même chose", () => {
+  const frappes = ["", "m", "mar", "martins", "moreau", "moréau", "dupont", "d'hauteville",
+    "les cedres", "cèdres", "martins freres", "freres martins", "bernard", "zzz", "  martins  "];
+  for (const nom of TOUS_LES_NOMS) {
+    for (const frappe of frappes) {
+      const garde = filtrerClientsParNom([{ nom }], frappe).length === 1;
+      const eclaire = marque(nom, frappe).length > 0;
+      const attendu = garde && frappe.trim().length > 0;
+      assert.equal(
+        eclaire,
+        attendu,
+        `« ${nom} » avec « ${frappe} » : le filtre ${garde ? "garde" : "écarte"} la ligne, ` +
+          `le surlignage ${eclaire ? "marque" : "ne marque rien"}`
+      );
+    }
+  }
 });
 
 // ─────────────────────────────────────────────────────────────────────────────

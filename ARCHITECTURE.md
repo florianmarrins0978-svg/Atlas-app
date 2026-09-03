@@ -21355,3 +21355,157 @@ calque, des deux côtés : la variable et la feuille de style.
 | les capsules de « **Terminés** » | elles portent le galet, son choix du 2 septembre — ce ne sont pas des « verts foncés » |
 | le carré du **planning** | `data-atlas="carre"` dit l'état d'une demi-journée, pas une action : les quatre états doivent rester distinguables (`design-tokens.ts`) |
 | l'**interrupteur** de la fiche paysage | un interrupteur n'est pas un bouton ; son vert dit « actif », comme les autres emplois de l'accent |
+
+## §240. La liste des clients : ce que l'écran savait déjà et ne montrait pas
+
+**Ses trois remarques du 3 septembre 2026**, devant la liste de ses vingt et un
+clients :
+
+> *« J'ai vingt et un clients, dont QUATRE qui s'appellent Martins. Aujourd'hui
+> la ligne ne montre que le nom et des comptes : rien ne me dit lequel c'est.*
+>
+> *Ce qui reste dû est la seule chose qui demande un geste, et c'est écrit tout
+> petit, en bout de ligne.*
+>
+> *Une liste longue se parcourt à l'aveugle : il n'y a ni ordre annoncé, ni
+> repère pour sauter quelque part. »*
+
+Dessiné avant d'être codé (`appli/vos-clients.html`), puis : *« tu peux coder
+exactement cette maquette »*.
+
+### Ce qui n'était pas su, et qui a décidé de tout le reste
+
+Les trois manques avaient l'air de demander des données neuves. Aucun ne le
+demandait : **l'application les avait déjà, et les jetait au bord de l'écran.**
+
+| Ce qui manquait à l'œil | Où c'était, en réalité |
+|---|---|
+| de quoi distinguer quatre Martins | `clients.adresse` — colonne présente depuis la migration 0038, affichée par la FICHE d'un client, et la seule requête qui ne la chargeait pas était celle de la liste |
+| l'ordre de la liste | `listerFichesClients` **range déjà** du chantier le plus récent au plus ancien, et **rend `dernierJour`** ; `page.tsx` ne le transmettait pas au composant |
+
+C'est le contraire du diagnostic qu'on pose d'instinct devant un écran pauvre —
+« il faudrait charger plus » : ici, tout était chargé, et deux valeurs se
+perdaient à la dernière marche. **La question à se poser devant un manque
+d'affichage n'est donc pas « d'où viendrait cette donnée ? » mais « où
+s'arrête-t-elle ? ».**
+
+### La ligne, et le partage des deux moitiés
+
+Une ligne porte désormais deux blocs, et ils ne disent pas la même chose :
+
+| | |
+|---|---|
+| à gauche, ce qui **identifie** | le nom en serif, et sous lui le lieu puis le nombre de chantiers |
+| à droite, ce qui **demande un geste** | ce qui reste dû, et lui seul |
+
+**Un seul montant par ligne, et c'est une décision.** L'écran en portait deux —
+« 3 200,00 € facturés » en gris sur la deuxième ligne, « 740,00 € DUS » en
+capitales de 9,5 px à droite. Deux sommes d'argent sur une même ligne se
+confondent au premier coup d'œil, et c'est la rouge qui compte. Le total
+facturé quitte donc la liste ; il ne se lit plus nulle part ailleurs depuis que
+la fiche a été allégée le 2 septembre, **le prix a été dit avant de coder, et il
+l'a accepté**.
+
+### Les bandes : nommer un ordre qui existait déjà
+
+`src/lib/bandes-clients.ts`, règle pure. Les trois derniers mois portent leur
+nom (« septembre », « août », « juillet ») ; au-delà tout se groupe sous « plus
+ancien » ; les clients sans chantier ferment la liste.
+
+**Trois choix qui ne se devinent pas :**
+
+- **la frontière est un mois de calendrier, pas trente jours.** Le 1er septembre
+  et le 31 août sont à un jour l'un de l'autre et dans deux bandes : compter en
+  jours ferait sauter la frontière selon la longueur de février ;
+- **trois mois nommés, pas neuf.** Un mois par bande donnerait neuf titres pour
+  vingt et un clients : le repère deviendrait le bruit qu'il devait réduire ;
+- **le regroupement ne TRIE rien.** Il suit les clients qui se touchent. Une
+  liste qui aurait perdu son ordre montrerait donc deux bandes du même nom — et
+  c'est voulu : regrouper par clé masquerait le désordre au lieu de le révéler
+  (`test-bandes-clients.ts` fixe ce cas).
+
+### Le compte a changé de place, et il a fallu un contexte pour ça
+
+Il était écrit **sous le dernier résultat** : hors de l'écran au moment précis
+où il sert — on tape, on regarde le haut, et rien ne dit combien de noms
+restent. Il remonte dans la fente `precision` d'`EnTeteEcran` et suit la frappe.
+
+Or l'en-tête est rendu au serveur et ne connaît pas la saisie. Deux voies :
+monter tout l'écran dans le navigateur, ou faire descendre la saisie à deux
+endroits. C'est la seconde — `FournisseurClients` enveloppe l'en-tête ET la
+liste, `CompteClients` est passé en accessoire à `EnTeteEcran`, qui reste un
+composant serveur. Le contexte ne sert qu'à ça, et c'est assez pour le
+justifier.
+
+### Le jour se lit au SERVEUR, jamais dans le navigateur
+
+`page.tsx` passe `jourIso(new Date())` en accessoire. Le lire dans le composant
+client donnerait l'horloge du téléphone : entre minuit et deux heures du matin,
+l'heure d'été sépare les deux (`src/lib/jour.ts`), le serveur et le navigateur
+ne nommeraient pas la même bande, et « août » clignoterait en « septembre » à
+l'hydratation.
+
+### Le surlignage : une seconde lecture du même texte, et son garde-fou
+
+Sur quatre homonymes, une recherche sans marque ressemble à une recherche qui
+n'a pas filtré. `morceauxSurlignes` marque donc ce qui répond à la frappe.
+
+**Il lui a fallu une normalisation caractère par caractère**, et ce n'est pas un
+raffinement : `normaliserPourRecherche` change la LONGUEUR du texte — « Moréau »
+y perd son accent, une apostrophe devient une espace, deux espaces n'en font
+plus qu'une. L'indice d'une lettre dans le texte comparé ne désigne plus la même
+lettre dans le nom affiché, et la marque tombe à côté.
+
+**Deux lectures du même texte, écrites séparément : c'est exactement ce que le
+§3 de `CLAUDE.md` interdit de laisser sans surveillance.** D'où le contrôle qui
+les confronte sur un corpus de noms et de frappes — et **il a immédiatement
+trouvé un écart réel** : le filtre exige que CHAQUE mot tapé soit présent, tandis
+que le surlignage les cherchait un par un. « martins freres » écartait
+« Martins » de la liste mais aurait éclairé son nom si l'écran l'avait affiché.
+Le code a cédé, pas le contrôle : un seul mot manquant, et rien ne s'éclaire.
+
+### Ce que la mesure a corrigé, et que l'œil seul n'aurait pas tranché
+
+| | Contraste sur le fond crème |
+|---|---|
+| `muted` — le gris des méta, employé pour la deuxième ligne | **3,32** |
+| `inkSoft` | **8,04** |
+
+La ligne qui répond à « lequel des quatre Martins ? » était donc écrite sous le
+seuil de lecture, et c'est la première chose qui s'efface en plein soleil sur un
+chantier. Elle passe à `inkSoft`, comme la phrase « Aucun client ne s'appelle… »
+et la plage de saisie. **Et le fait mérite d'être noté tel quel : sur la charte
+Nuit, ce même gris en tient 5,19 — la liste était plus lisible la nuit qu'au
+soleil.**
+
+Les bandes, elles, restent en `muted` : ce sont des titres répétés, pas le
+contenu qu'on déchiffre.
+
+### Deux réparations vues en CAPTURE, jamais par un contrôle
+
+- **la ligne du compte garde sa place.** Quand une recherche ne trouve rien, ce
+  compte n'a rien à dire et se vidait : la ligne disparaissait, et le champ de
+  saisie remontait de vingt-quatre pixels sous le doigt — à chaque frappe qui ne
+  trouve pas. `min-h-[14px]` le tient ;
+- **la phrase d'échec était en `muted`** — le défaut même qu'on venait de
+  reprocher à l'écran, recopié dans son remède.
+
+C'est la sixième fois dans ce dépôt qu'un défaut sort d'une image et d'aucun
+test (`CLAUDE.md` §5).
+
+### La plage de saisie n'appartenait à aucune charte
+
+`[data-atlas="chercher-client"]::placeholder` est posé dans `globals.css` — un
+style en ligne ne peut pas viser un pseudo-élément. Sans lui, « Chercher un
+client » s'écrivait de la couleur que chaque navigateur décide : la même faute
+que la croix bleue de `type="search"`, et trouvée de la même façon, en
+regardant. `inkSoft` à 85 % tient 5,0 sur la plage teintée.
+
+### Ce qu'une suite ne doit pas fixer
+
+`test-recherche-client-e2e.ts` lisait les noms par
+`ul li a span span:first-child` — l'emboîtement exact des balises du 20 août.
+Cette refonte l'aurait fait rougir sur du code juste. Les repères sont désormais
+des `data-atlas` (`nom-client`, `situation-client`, `reste-du`,
+`compte-clients`) : ils survivent au remaniement, l'emboîtement non
+(`CLAUDE.md` §5 bis).

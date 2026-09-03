@@ -9,57 +9,70 @@ sert.
 
 ---
 
-## Dernier lot — LA PLANCHE : la liste de ses clients (3 septembre 2026)
+## Dernier lot — la liste de ses clients, CODÉE (3 septembre 2026)
 
-**Planche essayable, aucun code dans `src/`** —
-`appli/vos-clients.html`, liée depuis `appli/essais.html` et
-`docs/maquettes/index.html`. Adresse à lui donner **entière** :
+**Son verdict sur la planche, le soir même :** *« tu peux coder exactement cette
+maquette »*. L'écran est en place — `src/app/clients/`,
+`src/lib/bandes-clients.ts`, `ARCHITECTURE.md` §240.
+
+**Ce qu'il faut savoir avant d'y toucher :**
+
+| | |
+|---|---|
+| l'ordre de la liste | il vient du **dépôt** (`listerFichesClients`), pas de l'écran. `grouperEnBandes` ne trie rien — deux règles d'ordre pour une liste, et c'est l'écran qui aurait tort en silence |
+| « aujourd'hui » | posé au **serveur** (`jourIso`) et descendu en accessoire. Le lire dans le navigateur ferait clignoter « août » en « septembre » à l'hydratation, entre minuit et 2 h |
+| le surlignage | `morceauxSurlignes` est une **seconde lecture** du texte que le filtre lit. Une suite les confronte sur un corpus : elle a déjà attrapé un écart réel. Ne pas la contourner |
+| les repères de suite | `data-atlas="nom-client"`, `situation-client`, `reste-du`, `compte-clients`. Une suite qui viserait de nouveau l'emboîtement des balises rougirait à la prochaine refonte |
+
+**La planche reste essayable** — `appli/vos-clients.html`, liée depuis
+`appli/essais.html` et `docs/maquettes/index.html`. Adresse **entière** :
 `https://florianmarrins0978-svg.github.io/Atlas-app/vos-clients.html`
 
-**Ce que la planche démontre, et qui n'était pas su :** sur **quatre clients
-nommés Martins**, la liste d'aujourd'hui n'affiche rien qui les distingue — la
-deuxième ligne porte « 5 chantiers · 3 200,00 € facturés » pour tous. La
-proposition y met **le lieu**.
+---
 
-**Rien n'est inventé.** Les cinq informations d'une ligne existent :
+### Ce que la planche démontrait, et qui a décidé du code
+
+**Ce qui n'était pas su :** sur **quatre clients nommés Martins**, la liste
+n'affichait rien qui les distingue — la deuxième ligne portait « 5 chantiers ·
+3 200,00 € facturés » pour tous. Le **lieu** y est désormais.
+
+**Rien n'est inventé.** Les cinq informations d'une ligne existaient déjà :
 
 | | |
 |---|---|
 | le nom | `clients.nom` |
-| le lieu | `clients.adresse` — colonne présente, **que la liste ne charge pas** |
+| le lieu | `clients.adresse` — colonne présente, que la liste **ne chargeait pas** ; elle la charge |
 | les chantiers | compté (`fiche.chantiers`) |
 | ce qui reste dû | `resteDu()` |
-| la date du dernier chantier | `dernierJour` — **déjà calculé par `listerFichesClients`, jamais transmis à l'écran** |
+| la date du dernier chantier | `dernierJour` — **déjà calculé par `listerFichesClients`, jamais transmis à l'écran** ; il l'est |
 
-**Le reste de la proposition :** le montant dû passe de 9,5 px en capitales à
-16 px à côté du nom ; la liste **annonce son ordre** par bandes de mois (elle
-était déjà rangée du plus récent au plus ancien, sans le dire) ; le compte
-remonte dans l'en-tête et suit la recherche ; le gris secondaire passe de
-`muted` à `inkSoft` — **3,32 de contraste contre 8,04**.
+**Le reste :** le montant dû passe de 9,5 px en capitales à 16 px à côté du
+nom ; la liste **annonce son ordre** par bandes de mois (elle était déjà rangée
+du plus récent au plus ancien, sans le dire) ; le compte remonte dans l'en-tête
+et suit la recherche ; le gris secondaire passe de `muted` à `inkSoft` —
+**3,32 de contraste contre 8,04**.
 
-**EN ATTENTE DE SA RÉPONSE, une seule chose :** le total facturé par client
-quitte la ligne, et depuis l'allègement de la fiche le 2 septembre, il ne se lit
-plus nulle part ailleurs. Détail dans `TODO.md`.
+**TRANCHÉ PAR LUI :** le total facturé par client quitte la ligne. Le prix lui
+avait été dit — depuis l'allègement de la fiche le 2 septembre, ce total ne se
+lit plus nulle part ailleurs —, et il a répondu de coder la maquette telle
+quelle.
 
 **Deux réparations que seule la capture a montrées :** la ligne du compte garde
 sa place quand la recherche ne trouve rien (sinon le champ de saisie remontait
 de 24 px sous le doigt à chaque frappe infructueuse), et la barre de recherche
 est collante.
 
-**ET UNE AUTRE SESSION CODAIT LE MÊME ÉCRAN À LA MÊME HEURE.** À 18 h 55 ce
-3 septembre, l'arbre de travail portait des modifications non commises de
-`src/app/clients/ListeClients.tsx`, `page.tsx`,
-`src/server/repositories/fiche-client.ts`, `src/lib/recherche-client.ts` et
-deux fichiers neufs (`src/lib/bandes-clients.ts`,
-`scripts/test-bandes-clients.ts`) — écrites par une session voisine, pas par
-celle-ci. **Elles ne sont pas dans ce commit** : on ne livre pas le travail d'un
-autre sans savoir où il en est.
+**LEVÉE, l'alerte de 18 h 55 :** une session voisine avait vu dans l'arbre de
+travail des modifications non commises de `src/app/clients/`, de
+`fiche-client.ts` et de `recherche-client.ts`, plus deux fichiers neufs, et
+avait eu raison de ne pas les livrer sans savoir d'où elles venaient. **C'était
+ce lot-ci, en cours d'écriture** — il est commité en entier. Il n'y a pas deux
+implémentations de cet écran.
 
-**Ce qu'une nouvelle conversation doit en tirer :** avant de traiter ce lot
-comme « en attente de sa réponse », **regarder si l'écran n'a pas déjà été
-codé** (`git log -- src/app/clients/`). Et lire `CLAUDE.md` §6, point A :
-regarder les autres branches AVANT d'ouvrir un lot — deux sessions ont déjà
-codé la même chose le 23 août.
+**Ce qu'une nouvelle conversation doit en tirer, et qui reste vrai :** avant
+d'ouvrir un lot sur cet écran, `git log -- src/app/clients/`. Et `CLAUDE.md` §6
+point A : regarder les autres branches AVANT d'écrire — deux sessions ont déjà
+codé la même chose le 23 août, et deux ont failli recommencer ce soir-là.
 
 **Au passage, deux défauts du sommaire :** le premier essai d'`essais.html`
 n'avait **pas de balise de fin** — le lien avalait le titre de famille suivant —,

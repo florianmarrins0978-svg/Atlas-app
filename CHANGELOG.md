@@ -9,6 +9,51 @@ Format : le plus récent en tête.
 
 ## 2026-09-03
 
+### La liste de ses clients, codée — le lieu, le montant dû, et l'ordre enfin dit
+
+**Son verdict sur la planche :** *« tu peux coder exactement cette maquette »*.
+Ce que ça change, écran en main, et **ce que ça évite** :
+
+- **le lieu prend la deuxième ligne** — sur quatre clients nommés Martins, plus
+  rien ne se ressemblait après « Nantes », « Vertou », « Rezé ». La colonne
+  `clients.adresse` existait depuis la migration 0038 : **la seule requête du
+  dépôt qui ne la chargeait pas était celle de cette liste** ;
+- **ce qui reste dû passe de 9,5 px en capitales à 16 px**, à hauteur du nom, et
+  c'est le seul montant de la ligne. Deux sommes d'argent côte à côte, l'une
+  grise l'autre rouge, se confondent au premier coup d'œil — et c'est la rouge
+  qui demande un geste ;
+- **la liste annonce son ordre** par bandes de mois. Elle était **déjà** rangée
+  du chantier le plus récent au plus ancien ; `dernierJour` était **déjà**
+  calculé et rendu par le dépôt, et `page.tsx` ne le transmettait pas ;
+- **le compte remonte dans l'en-tête et suit la frappe.** Il était écrit sous le
+  DERNIER résultat : hors de l'écran au moment précis où il sert ;
+- **ce qui est trouvé s'éclaire dans le nom** — sans marque, une recherche qui
+  rend quatre homonymes ressemble à une recherche qui n'a pas filtré.
+
+**Ce que ça retire, et il l'a tranché avant qu'on code :** le total facturé par
+client quitte la ligne. Il ne se lit plus nulle part ailleurs depuis que la
+fiche a été allégée le 2 septembre.
+
+**Le contrôle a corrigé le code, et pas l'inverse.** Le surlignage et le filtre
+sont deux lectures du même texte ; la suite qui les confronte a trouvé un écart
+réel dès le premier passage — « martins freres » écartait « Martins » de la
+liste mais aurait éclairé son nom. Un seul mot manquant, et plus rien ne
+s'éclaire désormais.
+
+**Mesuré, et c'est ce qui a décidé d'une couleur :** la deuxième ligne était en
+`muted`, **3,32 de contraste** sur le fond crème — sous le seuil de lecture, et
+la première chose qui s'efface au soleil. Elle passe à `inkSoft`, **8,04**. Sur
+la charte Nuit ce même gris en tenait 5,19 : la liste était plus lisible la nuit
+qu'en plein jour.
+
+**Deux réparations vues en capture, jamais par un test :** la ligne du compte
+garde sa place quand la recherche ne trouve rien (sans quoi le champ remontait
+de 24 px sous le doigt à chaque frappe infructueuse), et la phrase d'échec était
+écrite dans le gris qu'on venait justement de condamner.
+
+`ARCHITECTURE.md` §240 · `src/lib/bandes-clients.ts` ·
+`scripts/test-bandes-clients.ts` · planche : `appli/vos-clients.html`.
+
 ### La liste de ses clients, proposée en planche essayable
 
 **Ce qu'elle démontre, et qui n'était pas su :** sur quatre clients nommés

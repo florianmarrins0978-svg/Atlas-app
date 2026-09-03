@@ -9,26 +9,27 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
-## EN ATTENTE DE SA RÉPONSE : la liste de ses clients (3 sept. 2026)
+## ~~EN ATTENTE DE SA RÉPONSE : la liste de ses clients~~ — CODÉ le 3 septembre 2026
 
-Planche essayable : `appli/vos-clients.html`, en ligne sur
-`https://florianmarrins0978-svg.github.io/Atlas-app/vos-clients.html`.
+**Son verdict :** *« tu peux coder exactement cette maquette »*. Planche :
+`appli/vos-clients.html`. Détail et pourquoi : `ARCHITECTURE.md` §240 ; verdict
+point par point : `docs/liste-clients-verdict.md`.
 
-**Ce qu'il doit trancher, et rien d'autre :** le total facturé par client
+**Ce qu'il a tranché en répondant :** le total facturé par client
 (« 2 400,00 € facturés ») quitte la ligne. Deux montants sur une même ligne,
-l'un gris l'autre rouge, se confondent d'un coup d'œil — mais depuis que la
-fiche client a été allégée le 2 septembre, **ce total ne se lit plus nulle part
-ailleurs**.
+l'un gris l'autre rouge, se confondent d'un coup d'œil — et depuis l'allègement
+de la fiche le 2 septembre, **ce total ne se lit plus nulle part ailleurs**. Le
+prix lui avait été dit avant.
 
-**Si la proposition est retenue, ce que ça coûte en code** — et c'est peu :
+**Ce que ça a coûté, et c'était bien peu :** `clients.adresse` chargée dans
+`listerFichesClients` (une ligne), `dernierJour` transmis par `page.tsx` (il
+était déjà calculé), et de la mise en forme. Deux règles pures neuves :
+`src/lib/bandes-clients.ts` et `morceauxSurlignes` dans
+`src/lib/recherche-client.ts`.
 
-| | |
-|---|---|
-| `clients.adresse` | la colonne existe ; une ligne à ajouter dans `listerFichesClients` |
-| `dernierJour` | **déjà calculé** par le même dépôt ; `page.tsx` ne le transmet pas |
-| le reste | de la mise en forme dans `ListeClients.tsx` |
-
-**Ne rien coder avant sa réponse** (`CLAUDE.md` §3 bis).
+**Ce qui reste ouvert, et qui n'attend que lui :** rien sur cet écran. S'il
+trouve le lieu trop discret ou les bandes bavardes, les deux se règlent d'une
+ligne — mais ne rien changer sans qu'il le demande.
 
 
 ## ~~EN ATTENTE DE SA RÉPONSE : la matière de la note vocale sur tous les boutons verts~~ — CODÉ le 3 septembre 2026

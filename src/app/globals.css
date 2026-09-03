@@ -1200,6 +1200,27 @@ body {
   box-shadow: inset 0 0 0 1.5px var(--atlas-or, #B98B47);
 }
 
+/* ─── « Chercher un client » : la plage grise du navigateur n'est d'aucune
+ * charte ───────────────────────────────────────────────────────────────────
+ *
+ * **Posée le 3 septembre 2026, avec la refonte de la liste des clients.** Ce
+ * champ-là n'avait aucune couleur de repère : il héritait donc de celle que
+ * chaque navigateur décide, un gris bleuté sur Safari — la même faute que la
+ * croix bleue de `type="search"`, et trouvée de la même façon, en regardant.
+ *
+ * **Mesuré, et c'est pourquoi ce n'est pas `muted`.** Le gris des méta tient
+ * 3,32 de contraste sur le fond crème : sous le seuil de lecture, et c'est la
+ * première chose qui disparaît en plein soleil, sur un chantier. `inkSoft` à
+ * 85 % en tient 5,0 sur la plage teintée — assez pour se lire, assez clair pour
+ * ne pas se confondre avec un nom déjà tapé.
+ *
+ * Ce réglage est ICI et pas dans l'écran : aucun style en ligne ne peut viser
+ * `::placeholder`. */
+[data-atlas="chercher-client"]::placeholder {
+  color: var(--atlas-inkSoft, #4a4a44);
+  opacity: 0.85;
+}
+
 /* ═══ LA NOTE VOCALE « À LA MESSAGERIE » ══════════════════════════════════
  *
  * Ses choix du 30 août 2026, faits sur trois planches successives
