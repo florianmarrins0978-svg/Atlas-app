@@ -46,6 +46,35 @@ poussée.
 | le plus rentable | normaliser les séparateurs dans les trois suites de chemins (`split(path.sep).join("/")`), ce qui en rend trois sur huit |
 | ce qui restera | Redis et le port 3000 : ce sont des services, pas des suites |
 
+## À FAIRE : la CI est rouge sur `main` depuis le 2 septembre — trois suites e2e
+
+**Ce n'est pas le lot des boutons verts, et c'est MESURÉ, pas supposé.** Les
+mêmes trois suites échouent sur la CI de `main` (course 33753872485, arbre sans
+une ligne de mon code) et sur celle de la branche (33762884903) — la comparaison
+des deux journaux ne fait apparaître AUCUN échec neuf. La commande qui le
+refait, sur les deux courses puis `comm -13` entre les deux listes :
+
+```bash
+gh run view <course> --log-failed | grep "a échoué (code"
+```
+
+| La suite | Ce que dit son rouge |
+|---|---|
+| `test-facture-e2e` | « le chantier réalisé apparaît dans l'onglet Terminés, et mène à sa facture » |
+| `test-lecons-prix-e2e` | « Le prix 1400 n'est arrivé sur AUCUNE ligne du chantier — lues : ["0.00"] » |
+| `test-planning-vers-facture-e2e` | « date passée : dans les terminés, et nulle part ailleurs » |
+
+Les huit dernières courses de `ci.yml` sont rouges, la plus ancienne remontant à
+`9edfe4b9` (2 septembre). **Personne ne l'a signalé depuis**, et c'est le vrai
+coût : une CI rouge en permanence cesse d'être lue, et le jour où un lot casse
+quelque chose, plus rien ne le dit.
+
+| | |
+|---|---|
+| qui peut le faire | une session, sans lui |
+| par où commencer | les trois messages ci-dessus désignent le même coin — le passage du chantier réalisé à sa facture ; il est probable qu'une seule cause les tienne toutes les trois |
+| ce qu'il ne faut PAS faire | les rejouer pour voir : elles sont rouges depuis huit courses, ce n'est pas de l'intermittence |
+
 ## ~~NON REPRODUIT : rien ne servait sur son port~~ — TROUVÉ le 2 septembre 2026, au soir
 
 Sa plainte : *« l'appli ne démarre pas, page blanche »*. Sa fiche, à 18 h 55
