@@ -15,12 +15,15 @@ Ses deux messages : *« utilise la couleur de la note vocale page fiche client e
 mets-la sur chaque bouton à cliquer qui sont aujourd'hui de couleur verte »*,
 puis *« c'est celle-là la bonne couleur mais sans le petit halo lumineux qui
 tourne à l'intérieur »*, puis *« garde la tasse telle qu'elle la A mais avec
-seulement un bord doré tout autour »*.
+seulement un bord doré tout autour »*, puis *« mets juste la couleur de la note
+vocale sur les boutons sans le liseré doré, seulement la couleur pour voir »*, et
+enfin *« fais une planche avec la couleur de la note vocale mais sans l'effet
+brillant »*.
 
-**La matière est tranchée, et par lui : LA TASSE (`.atlas-micro`), UN SEUL BORD
-DORÉ, sans le `::before` qui tourne.** Ni le galet, ni les trois anneaux de la
-note vocale. Le galet reste sur « À facturer » et sur l'onglet actif de
-« Terminés ».
+**La matière est tranchée : LA TASSE (`.atlas-micro`), sans le `::before` qui
+tourne.** Ni le galet — il reste sur « À facturer » et sur l'onglet actif de
+« Terminés » —, ni les trois anneaux de la note vocale. **Reste ouvert : le
+brillant et le bord.**
 
 **Ne pas la poser telle quelle sur `PrimaryButton`.** Sa lumière est un cercle
 placé **en pour cent** (34 % / 26 %) : sur un bouton, ce point tombe au MILIEU
@@ -28,10 +31,10 @@ du mot, qui ne tient plus que **2,1** de contraste pour un seuil de 4,5 — et
 c'est vrai dès 148 px, pas seulement sur les longs. Mesuré, pas supposé
 (`appli/boutons-verts.html`, qui calcule ses chiffres sur les boutons rendus).
 
-**La A est ce qu'il a demandé**, et son chiffre est écrit sous elle sans être
-arrondi. La B est la même à une chose près — la lumière gardée aux 50 px qu'elle
-a sur la note vocale, une ellipse de 46 × 36 posée à l'épaule : 6,5 à toutes les
-largeurs, et identique à A sur une capsule courte.
+Cinq déclinaisons, toutes dans SA couleur : **A la couleur seule** (2,1, ce qu'il
+regarde), **B la même avec le bord doré** (2,1), **C la même, lumière gardée aux
+50 px qu'elle a sur la note vocale** — 6,5 partout, et identique à A sur une
+capsule courte —, **D à plat** (3,0) et **E à plat, son vert du bord** (6,5).
 
 **Et changer la couleur des lettres ne sauve pas la A**, c'est mesuré : la crème
 s'efface au clair (2,1), l'encre au foncé (2,5 sur `#4f5f4c`).
@@ -40,7 +43,7 @@ s'efface au clair (2,1), l'encre au foncé (2,5 sur `#4f5f4c`).
 |---|---|
 | qui tranche | **lui**, une lettre |
 | la planche | `https://florianmarrins0978-svg.github.io/Atlas-app/boutons-verts.html` |
-| la garde | `appli/tests/essai-boutons-verts.mjs`, jouée par `pages.yml` |
+| la garde | `appli/tests/essai-boutons-verts.mjs`, jouée par `pages.yml` — les aplats y sont comparés aux verts de `globals.css`, pas approchés |
 | où ça se coderait | `--atlas-plein-fond` dans `src/lib/chartes.ts` (Origine seule), et un relief à ajouter à `.atlas-plein` pour le filet d'or |
 | ce qui ne bougerait pas | les boutons creux, les sept autres apparences, les capsules de « Terminés » |
 

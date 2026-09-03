@@ -77,9 +77,9 @@ await page.goto(`${BASE}/boutons-verts.html`, { waitUntil: "networkidle" });
 dire(VERTS.length >= 3, `\`.atlas-micro\` donne ses verts : ${VERTS.join(", ") || "aucun"}`);
 dire(!!OR && !!PORCELAINE, `\`.atlas-micro\` donne ses anneaux : ${OR}, ${PORCELAINE}`);
 
-// ─── 1. Les quatre déclinaisons s'affichent, et l'écran a de la matière ────────
+// ─── 1. Les six déclinaisons s'affichent, et l'écran a de la matière ────────
 for (const [cle, nom] of [
-  ["zero", "Aujourd’hui"], ["a", "A"], ["b", "B"], ["d", "D"],
+  ["zero", "Aujourd’hui"], ["a", "A"], ["b", "B"], ["c", "C"], ["d", "D"], ["e", "E"],
 ]) {
   await page.click(`.choix button[data-v="${cle}"]`);
   await page.waitForTimeout(200);
@@ -104,36 +104,66 @@ for (const [cle, nom] of [
 }
 
 // ─── 2. La matière est celle de l'application, au caractère près ─────────────
-await page.click('.choix button[data-v="a"]');
-await page.waitForTimeout(200);
-const peinture = await page.locator(".bouton").first().evaluate((e) => {
-  const s = getComputedStyle(e);
-  const avant = getComputedStyle(e, "::before"), apres = getComputedStyle(e, "::after");
-  return {
-    fond: s.backgroundImage,
-    ombre: s.boxShadow,
-    tourne: [avant.animationName, apres.animationName].filter((n) => n && n !== "none"),
-  };
-});
+// **400 ms, et ce n'est pas une marge de confort.** `.bouton` porte
+// `transition: box-shadow 220ms` : lu à 200 ms, le filet d'or est encore une
+// couleur INTERMÉDIAIRE, et le contrôle rougit sur un bouton juste. Attrapé en
+// écrivant cette suite — c'est exactement le genre de rouge qui accuse le
+// produit à la place de la mesure (`CLAUDE.md` §5).
+const peindre = async (cle) => {
+  await page.click(`.choix button[data-v="${cle}"]`);
+  await page.waitForTimeout(400);
+  return page.locator(".bouton").first().evaluate((e) => {
+    const s = getComputedStyle(e);
+    const avant = getComputedStyle(e, "::before"), apres = getComputedStyle(e, "::after");
+    return {
+      fond: s.backgroundImage,
+      aplat: s.backgroundColor,
+      ombre: s.boxShadow,
+      tourne: [avant.animationName, apres.animationName].filter((n) => n && n !== "none"),
+    };
+  });
+};
+const compter = (texte, motif) => texte.split(motif).length - 1;
+
+const peintureA = await peindre("a");
 for (const vert of VERTS) {
-  dire(peinture.fond.includes(enRgb(vert)),
+  dire(peintureA.fond.includes(enRgb(vert)),
     `A — le dégradé porte ${vert} (${enRgb(vert)}), comme \`.atlas-micro\``);
 }
-// **UN SEUL BORD DORÉ, et pas trois anneaux** — sa décision du 3 septembre :
-// *« garde la tasse telle qu'elle la A mais avec seulement un bord doré tout
-// autour »*. On COMPTE, on ne se contente pas de trouver : la porcelaine de la
+
+// **LA COULEUR SEULE — sa demande du 3 septembre au soir :** *« mets juste la
+// couleur de la note vocale sur les boutons sans le liseré doré, seulement la
+// couleur pour voir »*. Rien autour, donc : ni filet, ni ombre.
+dire(compter(peintureA.ombre, enRgb(OR)) === 0 && peintureA.ombre === "none",
+  `A — aucun liseré ni ombre : la couleur seule (${peintureA.ombre})`);
+
+// **UN SEUL BORD DORÉ SUR LA B, et pas trois anneaux** — son choix d'une heure
+// plus tôt. On COMPTE, on ne se contente pas de trouver : la porcelaine de la
 // note vocale reviendrait sans que la couleur de l'or change, et un simple
 // « l'or est là » ne le verrait pas.
-const compter = (texte, motif) => texte.split(motif).length - 1;
-dire(compter(peinture.ombre, enRgb(OR)) === 1,
-  `A — un seul bord doré ${OR}, et c'est celui de la note vocale`);
-dire(compter(peinture.ombre, enRgb(PORCELAINE)) === 0,
-  `A — pas d'anneau de porcelaine ${PORCELAINE} : il a demandé un seul bord`);
+const peintureB = await peindre("b");
+dire(compter(peintureB.ombre, enRgb(OR)) === 1,
+  `B — un seul bord doré ${OR}, et c'est celui de la note vocale`);
+dire(compter(peintureB.ombre, enRgb(PORCELAINE)) === 0,
+  `B — pas d'anneau de porcelaine ${PORCELAINE} : il a demandé un seul bord`);
+dire(peintureB.fond === peintureA.fond,
+  "B — exactement le même dégradé que A : seul le bord les sépare");
+
+// **LES APLATS SONT PRIS DANS L'ÉCHELLE DE LA TASSE, pas approchés à l'œil.**
+// « Sans l'effet brillant » ne veut pas dire « un vert qui ressemble » : D et E
+// doivent être deux des trois verts que `.atlas-micro` pose vraiment.
+for (const [cle, rang] of [["d", 1], ["e", 2]]) {
+  const p = await peindre(cle);
+  dire(p.fond === "none" && p.aplat === enRgb(VERTS[rang]),
+    `${cle.toUpperCase()} — un aplat, et c'est ${VERTS[rang]} de la note vocale (${p.aplat})`);
+}
 
 // **Le halo qu'il a fait retirer ne revient pas** — sa demande du 3 septembre.
 // Un retrait sans garde se refait tout seul au lot suivant.
-dire(peinture.tourne.length === 0,
-  `A — aucun halo qui tourne sur le bouton${peinture.tourne.length ? " — " + peinture.tourne.join(", ") : ""}`);
+for (const [cle, p] of [["A", peintureA], ["B", peintureB]]) {
+  dire(p.tourne.length === 0,
+    `${cle} — aucun halo qui tourne sur le bouton${p.tourne.length ? " — " + p.tourne.join(", ") : ""}`);
+}
 
 // ─── 3. Ce que la planche AFFIRME, relu à l'écran ────────────────────────────
 //
@@ -150,38 +180,44 @@ const lire = async () =>
     }))
   );
 
+await page.click('.choix button[data-v="a"]');
+await page.waitForTimeout(200);
 const mesuresA = await lire();
 const plusLarge = mesuresA.reduce((a, b) => (b.largeur > a.largeur ? b : a));
 dire(plusLarge.largeur > 300, `A — le plus large des boutons fait ${plusLarge.largeur} px`);
 dire(mesuresA.every((m) => m.tenu < 4.5 && m.rouge),
   `A — le mot ne tient nulle part (${mesuresA.map((m) => m.tenu).join(" · ")}), tout est signalé en rouge`);
 
-// B : la lumière gardée à sa taille ne dépend plus de la largeur. Deux choses à
+// C : la lumière gardée à sa taille ne dépend plus de la largeur. Deux choses à
 // prouver, et la seconde est sa raison d'être : le mot tient partout, ET il
 // tient la MÊME chose partout.
-await page.click('.choix button[data-v="b"]');
+await page.click('.choix button[data-v="c"]');
 await page.waitForTimeout(200);
-const mesuresB = await lire();
-dire(mesuresB.every((m) => m.tenu >= 4.5 && !m.rouge),
-  `B — le mot tient partout (${mesuresB.map((m) => m.tenu).join(" · ")})`);
-dire(new Set(mesuresB.map((m) => m.tenu)).size === 1,
-  `B — et le même chiffre de ${Math.min(...mesuresB.map((m) => m.largeur))} à ${Math.max(...mesuresB.map((m) => m.largeur))} px`);
+const mesuresC = await lire();
+dire(mesuresC.every((m) => m.tenu >= 4.5 && !m.rouge),
+  `C — le mot tient partout (${mesuresC.map((m) => m.tenu).join(" · ")})`);
+dire(new Set(mesuresC.map((m) => m.tenu)).size === 1,
+  `C — et le même chiffre de ${Math.min(...mesuresC.map((m) => m.largeur))} à ${Math.max(...mesuresC.map((m) => m.largeur))} px`);
 
-// D : le filet seul ne touche pas au vert — le chiffre doit rester celui
-// d'aujourd'hui, sinon la déclinaison ne dit pas ce qu'elle prétend.
-await page.click('.choix button[data-v="zero"]');
-await page.waitForTimeout(200);
-const aujourdhui = (await lire())[0].tenu;
+// **Les deux aplats se départagent, sinon ils ne servent à rien.** D et E
+// portent le même dessin et deux verts voisins : ce qui les sépare est le
+// chiffre, et c'est ce que la planche lui donne à trancher.
 await page.click('.choix button[data-v="d"]');
 await page.waitForTimeout(200);
-dire((await lire())[0].tenu === aujourdhui,
-  `D — le vert ne bouge pas : ${aujourdhui} avant comme après`);
+const platClair = (await lire())[0];
+await page.click('.choix button[data-v="e"]');
+await page.waitForTimeout(200);
+const platFonce = (await lire())[0];
+dire(platClair.tenu < 4.5 && platClair.rouge,
+  `D — l'aplat clair laisse le mot à ${platClair.tenu}, signalé en rouge`);
+dire(platFonce.tenu >= 4.5 && !platFonce.rouge,
+  `E — l'aplat du bord le tient à ${platFonce.tenu}`);
 
 // ─── 4. Ce qu'il a fait retirer ne revient pas ───────────────────────────────
 //
 // Sa règle du 31 août : « surtout pas ceux qui sont creux ». Le bouton
 // secondaire doit rester sans aplat dans les cinq déclinaisons.
-for (const cle of ["zero", "a", "b", "d"]) {
+for (const cle of ["zero", "a", "b", "c", "d", "e"]) {
   await page.click(`.choix button[data-v="${cle}"]`);
   await page.waitForTimeout(120);
   const creux = await page.locator(".creux").evaluate((e) => {

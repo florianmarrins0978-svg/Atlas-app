@@ -181,41 +181,54 @@
   .bouton:active::after{opacity:.14;transition-duration:90ms}
   .bouton.large{display:flex;width:100%}
 
-  /* ── UN SEUL BORD DORÉ — sa décision du 3 septembre 2026 ─────────────
-     *« Garde la tasse telle qu'elle la A mais avec seulement un bord doré
-     tout autour. »* Les trois anneaux or / porcelaine / or de la note vocale
-     ne passent donc PAS sur les boutons : il reste le filet d'or, le creux
-     sous le bord et l'ombre portée verte.
+  /* ── LE DÉGRADÉ DE LA TASSE — commun à A et à B ──────────────────────
+     Le dégradé du micro transposé sans rien changer : un cercle, lumière à
+     34 % / 26 %. Sur le disque de 80 px la lumière fait 50 px de large ; sur
+     le bouton de la facture, la même en pour cent en fait 200 — et elle se
+     pose sous le mot.
 
-     Et toujours AUCUN HALO QUI TOURNE — sa demande du même jour. */
+     AUCUN HALO QUI TOURNE — sa demande du 3 septembre. */
   [data-b="a"] .bouton,
-  [data-b="b"] .bouton,
-  [data-b="d"] .bouton{
+  [data-b="b"] .bouton{
+    background-image:radial-gradient(circle at 34% 26%,
+      var(--sage-clair) 0%, var(--sage) 50%, var(--pin-clair) 100%)}
+
+  /* A — LA COULEUR SEULE. Sa demande du 3 septembre au soir : *« mets juste
+     la couleur de la note vocale sur les boutons sans le liseré doré,
+     seulement la couleur pour voir »*. Donc rien d'autre que le dégradé :
+     ni filet, ni creux, ni ombre portée. C'est le bouton d'aujourd'hui, sa
+     couleur remplacée. */
+
+  /* B — LA MÊME, AVEC LE BORD DORÉ. Ce qu'il avait retenu une heure plus
+     tôt — *« seulement un bord doré tout autour »* —, gardé à côté pour que
+     les deux se comparent dans le même geste. Le filet, le creux sous le
+     bord, l'ombre portée verte ; jamais les trois anneaux de la note vocale. */
+  [data-b="b"] .bouton{
     box-shadow:
       inset 0 0 0 1px var(--or-vif),
       inset 0 5px 8px -5px rgba(47,59,47,.42),
       0 6px 14px -5px rgba(79,95,76,.36)}
 
-  /* A — LA TASSE TELLE QUELLE. Le dégradé du micro transposé sans rien
-     changer : un cercle, lumière à 34 % / 26 %. Sur le disque de 80 px la
-     lumière fait 50 px de large ; sur le bouton de la facture, la même en
-     pour cent en fait 200 — et elle se pose sous le mot. */
-  [data-b="a"] .bouton{
-    background-image:radial-gradient(circle at 34% 26%,
-      var(--sage-clair) 0%, var(--sage) 50%, var(--pin-clair) 100%)}
-
-  /* B — LA MÊME, LUMIÈRE À SA VRAIE TAILLE. Mêmes verts, mêmes anneaux,
-     même ombre. Un seul changement : la lumière garde les 50 px qu'elle a
-     sur la note vocale, au lieu de s'étirer avec le bouton. Elle se pose
-     alors sur l'épaule gauche, dans la marge, et le mot repose sur le vert
-     profond. Sur une capsule courte, A et B sont le même objet. */
-  [data-b="b"] .bouton{
+  /* C — LA COULEUR SEULE, LUMIÈRE À SA VRAIE TAILLE. Mêmes verts, rien
+     autour non plus. Un seul changement : la lumière garde les 50 px qu'elle
+     a sur la note vocale au lieu de s'étirer avec le bouton. Elle se pose
+     alors sur l'épaule, dans la marge, et le mot repose sur le vert profond.
+     Sur une capsule courte, A et C sont le même objet. */
+  [data-b="c"] .bouton{
     background-image:radial-gradient(46px 36px at 6px 2px,
       var(--sage-clair) 0%, var(--sage) 30%, var(--pin-clair) 82%)}
 
-  /* D — LE VERT D'AUJOURD'HUI, BORD DORÉ. Aucun dégradé : l'aplat qu'il a
-     retenu le 31 août, avec le filet d'or et l'ombre verte. C'est le bout
-     prudent de l'échelle, gardé pour comparer. */
+  /* ── SANS L'EFFET BRILLANT — sa demande du 3 septembre au soir ────────
+     *« Fais une planche avec la couleur de la note vocale mais sans l'effet
+     brillant. »* Donc aucun dégradé du tout : un aplat, pris DANS l'échelle
+     de la tasse et non approché à l'œil.
+
+     D prend son vert du milieu — celui qu'on voit quand on regarde le
+     disque —, E son vert profond, celui du bord. Ce sont les deux seuls
+     aplats qui peuvent se dire « la couleur de la note vocale » : le
+     troisième, #9fbd82, n'est que le point de lumière. */
+  [data-b="d"] .bouton{ background-color:var(--sage) }
+  [data-b="e"] .bouton{ background-color:var(--pin-clair) }
 
   /* ── Le chiffre sous chaque bouton, mesuré par la page ────────────────── */
   .rangee{display:flex;flex-direction:column;align-items:center;gap:8px;
@@ -256,18 +269,19 @@
 
 <header class="entete">
   <h1>Vos boutons verts, dans la matière de la note vocale</h1>
-  <p>C'est <b>votre tasse</b>, telle que vous l'avez retenue : même dégradé,
-     <b>un seul bord doré</b>, aucun halo. Le disque du haut est votre note
-     vocale, recopiée du code. Les boutons en dessous sont les vôtres, à leurs
-     <b>vraies largeurs</b>. <b>Appuyez sur tout</b> : ils rentrent du même
-     geste.</p>
+  <p>La <b>couleur seule</b>, sans rien autour — c'est ce que vous vouliez voir.
+     Le disque du haut est votre note vocale, recopiée du code. Les boutons en
+     dessous sont les vôtres, à leurs <b>vraies largeurs</b>. <b>Appuyez sur
+     tout</b> : ils rentrent du même geste.</p>
 </header>
 
 <div class="choix" role="group" aria-label="Les déclinaisons">
   <button type="button" data-v="zero" aria-pressed="false">Aujourd'hui</button>
-  <button type="button" data-v="a" aria-pressed="true">A · Votre tasse, un bord doré</button>
-  <button type="button" data-v="b" aria-pressed="false">B · La même, lumière à sa taille</button>
-  <button type="button" data-v="d" aria-pressed="false">D · Le vert d'aujourd'hui, bord doré</button>
+  <button type="button" data-v="a" aria-pressed="true">A · La couleur seule</button>
+  <button type="button" data-v="b" aria-pressed="false">B · La couleur, un bord doré</button>
+  <button type="button" data-v="c" aria-pressed="false">C · La couleur, lumière à sa taille</button>
+  <button type="button" data-v="d" aria-pressed="false">D · À plat, sans brillant</button>
+  <button type="button" data-v="e" aria-pressed="false">E · À plat, le vert du bord</button>
 </div>
 
 <p class="dit" id="dit"></p>
@@ -329,8 +343,8 @@
 
 <div class="note">
   <h2>La A est ce que vous avez demandé, et voici ce qu'elle coûte</h2>
-  <p>Votre tasse, un bord doré, aucun halo. La <b>parenté est entière</b> : posé
-     à côté du disque, c'est le même objet à deux formes.</p>
+  <p>La couleur de la note vocale, seule. Rien autour : ni liseré, ni ombre, ni
+     halo.</p>
   <p><b>La réserve, et elle est unique.</b> Un mot doit tenir <b>4,5</b> de
      contraste pour se lire à bout de bras, en plein soleil. Sur la A, il en
      tient <b>2,1</b> — le même chiffre que vous aviez vu le 2 septembre sous
@@ -342,14 +356,25 @@
      le dégradé traverse les deux. C'est la lumière qu'il faut bouger, ou
      rien.</p>
 
-  <h2>Si vous voulez la même en lisible</h2>
-  <p><b>La B.</b> Même vert, même bord doré, même ombre. La lumière garde
-     seulement les <b>50 px</b> qu'elle a sur votre note vocale au lieu de
-     s'étirer : elle se pose sur l'épaule, dans la marge, et le mot tient
-     <b>6,5</b>. <b>Sur un bouton court, A et B sont rigoureusement le même
-     objet</b> — la différence n'apparaît que sur les longs.</p>
-  <p>Comparez-les sur « Confirmer le départ de la facture », le plus long de
-     l'application : c'est là que tout se joue.</p>
+  <h2>Sans l'effet brillant : D et E</h2>
+  <p>Aucun dégradé, aucune lumière — un aplat, pris dans l'échelle de la tasse
+     et non approché à l'œil. <b>D</b> est son vert du milieu, celui qu'on voit
+     en regardant le disque de loin ; <b>E</b> est son vert du bord, le fond de
+     la tasse.</p>
+  <p><b>Ce que ça change pour le mot :</b> D le laisse à <b>3,0</b>, E le monte
+     à <b>6,5</b>. Le troisième vert de la tasse, le plus clair, n'est pas
+     proposé à plat : ce n'est pas une couleur, c'est le point de lumière — le
+     mot y tombe à 2,0.</p>
+
+  <h2>Les deux voisines, pour comparer dans le même geste</h2>
+  <p><b>La B</b> ajoute le bord doré que vous aviez retenu il y a une heure, et
+     rien d'autre : même couleur, même chiffre. Passez de A à B et revenez —
+     c'est le seul écart.</p>
+  <p><b>La C</b> garde la couleur nue de la A, mais la lumière y garde les
+     <b>50 px</b> qu'elle a sur votre note vocale au lieu de s'étirer : le mot
+     tient alors <b>6,5</b>. <b>Sur un bouton court, A et C sont rigoureusement
+     le même objet</b> — la différence n'apparaît que sur les longs. Comparez-les
+     sur « Confirmer le départ de la facture », le plus long de l'application.</p>
 
   <h2>Ce qui ne bouge dans aucune</h2>
   <ul>
@@ -438,20 +463,25 @@
       var t = Math.sqrt(Math.pow(x - cx, 2) + Math.pow(y - cy, 2)) / rayonCercle(cx, cy, L, H);
       return entre([[0, SAGE_CLAIR], [0.5, SAGE], [1, PIN_CLAIR]], t);
     },
-    b: function (x, y) {
+    c: function (x, y) {
       return entre([[0, SAGE_CLAIR], [0.30, SAGE], [0.82, PIN_CLAIR]], ellipse(x, y));
     },
-    d: function () { return BOUTON; }
+    d: function () { return SAGE; },
+    e: function () { return PIN_CLAIR; }
   };
+  // A et B portent le MÊME dégradé : seul le bord les sépare.
+  FOND.b = FOND.a;
 
   var banc = document.getElementById('banc');
   var dit = document.getElementById('dit');
 
   var DITS = {
     zero: "<b>Ce que vous avez aujourd'hui.</b> Un vert plein, sans bord ni ombre. Rien ne le rattache à la note vocale.",
-    a: "<span class='retenu'>Ce que vous avez demandé :</span> votre tasse telle quelle, <b>un seul bord doré tout autour</b>, aucun halo. C'est la parenté entière. <b>Regardez le mot en plein jour</b> — c'est la seule réserve, et elle est chiffrée dessous.",
-    b: "<b>Exactement la même chose, sauf une :</b> la lumière garde les <b>50 px</b> qu'elle a sur votre note vocale au lieu de s'étirer avec le bouton. Même vert, même bord doré. Sur un bouton court, A et B sont le même objet.",
-    d: "<b>Votre vert d'aujourd'hui, avec le bord doré.</b> Aucun dégradé. On reconnaît la famille par le filet et l'ombre verte, et le mot ne perd rien."
+    a: "<span class='retenu'>Ce que vous avez demandé :</span> la couleur de la note vocale, <b>et rien d'autre</b> — aucun liseré, aucune ombre, aucun halo. C'est le bouton d'aujourd'hui, sa couleur remplacée. <b>Regardez le mot en plein jour</b> : c'est la seule réserve, et elle est chiffrée dessous.",
+    b: "<b>La même couleur, avec le bord doré</b> — ce que vous aviez retenu il y a une heure. Il est là pour que les deux se comparent dans le même geste : <b>appuyez d'un onglet à l'autre</b>.",
+    c: "<b>La même couleur, sans bord non plus</b>, à une chose près : la lumière garde les <b>50 px</b> qu'elle a sur votre note vocale au lieu de s'étirer avec le bouton. Sur un bouton court, A et C sont le même objet.",
+    d: "<span class='retenu'>Sans l'effet brillant :</span> le vert du milieu de votre note vocale, <b>à plat</b>. Aucun dégradé, aucune lumière. C'est la couleur qu'on voit quand on regarde le disque de loin.",
+    e: "<b>À plat aussi, mais le vert du bord</b> de votre note vocale — celui du fond de la tasse. Le même objet sans brillant, pris une nuance plus bas : c'est le seul aplat où le mot se lit en plein soleil."
   };
 
   function mesurer() {

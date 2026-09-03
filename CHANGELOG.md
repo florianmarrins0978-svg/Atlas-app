@@ -18,14 +18,21 @@ verte »*, puis, capture à l'appui devant la déclinaison 1 de
 le petit halo lumineux qui tourne à l'intérieur »*.
 
 Puis, la déclinaison A vue : *« garde la tasse telle qu'elle la A mais avec
-seulement un bord doré tout autour »*.
+seulement un bord doré tout autour »*, puis *« mets juste la couleur de la note
+vocale sur les boutons sans le liseré doré, seulement la couleur pour voir »*,
+et enfin *« fais une planche avec la couleur de la note vocale mais sans l'effet
+brillant »*.
 
-**LA MATIÈRE EST DONC TRANCHÉE, ET PAR LUI : c'est LA TASSE (`.atlas-micro`),
-pas le galet du 2 septembre.** Dégradé radial, **un seul filet d'or**, creux du
-bord, ombre portée verte — et **aucun `::before` animé**. Les trois anneaux
-or / porcelaine / or de la note vocale ne passent PAS sur les boutons, et le
-galet reste ce qu'il est sur « À facturer » et sur l'onglet actif de
-« Terminés » : il ne s'étend pas aux boutons.
+**LA MATIÈRE EST TRANCHÉE, ET PAR LUI : c'est LA TASSE (`.atlas-micro`), pas le
+galet du 2 septembre**, qui reste sur « À facturer » et sur l'onglet actif de
+« Terminés ». **Aucun `::before` animé**, et les trois anneaux or / porcelaine /
+or de la note vocale ne passent pas sur les boutons.
+
+**CE QU'IL DÉPOUILLE, ET C'EST LE SENS DE SES TROIS MESSAGES :** il a demandé le
+bord doré, puis l'a retiré, puis a demandé à voir la couleur sans le brillant du
+tout. La planche a suivi à chaque fois, sans discuter et sans rien garder « au
+cas où » — ce qui devient sans objet est retiré (les trois anneaux, la tasse
+profonde, le vert d'aujourd'hui cerclé).
 
 **Ce que la mesure a montré, et qui n'était écrit nulle part.** La lumière du
 micro est placée **en pour cent** — un cercle centré à 34 % / 26 %. Sur le
@@ -34,12 +41,19 @@ disque de 80 px, elle fait environ 50 px. Sur un bouton de 321 px elle en ferait
 plus que **2,1** de contraste, pour un seuil de 4,5. Le défaut ne dépend pas de
 la largeur — il est là dès 148 px, parce que le point lumineux suit le texte.
 
-**Trois déclinaisons lui sont posées** (`appli/boutons-verts.html`), et **aucune
-ne touche au vert ni au bord** : elles ne changent que la TAILLE de la lumière.
-**A — ce qu'il a demandé** (2,1) · **B la lumière gardée à ses 50 px** — une
-ellipse de 46 × 36 posée à l'épaule, donc dans la marge du bouton : **6,5 à
-toutes les largeurs**, et rigoureusement identique à A sur une capsule courte ·
-D le vert d'aujourd'hui avec le bord doré (11,7).
+**Cinq déclinaisons lui sont posées** (`appli/boutons-verts.html`), et toutes
+portent la couleur de sa note vocale — c'est le brillant et le bord qui varient.
+**A la couleur seule**, ce qu'il a demandé en dernier (2,1) · **B la même avec le
+bord doré**, son choix d'une heure plus tôt, gardé à côté pour comparer dans le
+même geste (2,1) · **C la même, lumière gardée à ses 50 px** — une ellipse de
+46 × 36 posée à l'épaule, donc dans la marge : **6,5 à toutes les largeurs**, et
+rigoureusement identique à A sur une capsule courte · **D à plat**, le vert du
+milieu de la tasse (3,0) · **E à plat**, son vert du bord (6,5).
+
+**Les deux aplats sont PRIS DANS l'échelle de la tasse, pas approchés à l'œil**,
+et le contrôle le vérifie contre `globals.css`. Le troisième vert, #9fbd82, n'est
+pas proposé à plat : ce n'est pas une couleur, c'est le point de lumière — le mot
+y tombe à 2,0.
 
 **CHANGER LA COULEUR DES LETTRES NE SAUVE PAS LA A, et il fallait le mesurer
 avant de le proposer :** en crème le mot s'efface sur le clair (2,1), en encre
@@ -56,10 +70,17 @@ c'est au MILIEU que la lumière tombe.
 **Et ses deux retraits sont GARDÉS, pas seulement faits.**
 `appli/tests/essai-boutons-verts.mjs` refuse toute animation sur les
 pseudo-éléments du bouton, compare les trois verts au `.atlas-micro` lu dans
-`src/app/globals.css`, exige **un seul** filet d'or et **aucune** porcelaine, et
-veut que A rougisse partout pendant que B tient partout. Confrontée à un halo
-remis, à un filet changé, puis à la porcelaine remise : rouge sur chacun. Jouée
-par `pages.yml` avant toute publication.
+`src/app/globals.css`, exige **aucun** liseré sur A, **un seul** filet d'or et
+**aucune** porcelaine sur B, et que les deux aplats soient deux de ses verts et
+pas un vert qui ressemble. Confrontée à un halo remis, à un filet changé, puis à
+la porcelaine remise : rouge sur chacun. Jouée par `pages.yml` avant toute
+publication.
+
+**Et elle a rougi une fois sur du code juste, ce qui valait la peine :** lue
+200 ms après le clic, la couleur du filet est encore INTERMÉDIAIRE — `.bouton`
+porte `transition: box-shadow 220ms`. Un contrôle qui mesure pendant une
+transition accuse le produit à la place de la mesure ; l'attente est passée à
+400 ms, et la raison est écrite dans le fichier.
 
 **Ce que la planche ne touche pas, et le dit** : les boutons creux (sa règle du
 31 août), les sept autres apparences — la matière ne s'écrirait que pour Origine,
@@ -68,6 +89,11 @@ par `--atlas-plein-fond`, comme le vert d'aujourd'hui.
 **Rien n'est codé** (`CLAUDE.md` §3 bis) : la réponse attendue est une lettre.
 Une question reste posée en bas de la planche : faut-il aussi retirer le halo de
 la note vocale elle-même ?
+
+**Ce qui a été retiré au fil de ses messages, et qui ne doit pas revenir « au cas
+où » :** les trois anneaux de la note vocale sur un bouton, la déclinaison
+« tasse profonde », et celle du vert d'aujourd'hui cerclé d'or. Une planche qui
+garde toutes ses versions cesse de poser une question.
 
 ## 2026-09-02
 

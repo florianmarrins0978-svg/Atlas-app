@@ -25,16 +25,20 @@ ligne « fait » qui ne l'est pas coûte plus cher qu'une ligne absente.
 mets-la sur chaque bouton à cliquer qui sont aujourd'hui de couleur verte »,
 puis « c'est celle-là la bonne couleur mais sans le petit halo lumineux qui
 tourne à l'intérieur », puis « garde la tasse telle qu'elle la A mais avec
-seulement un bord doré tout autour ».*
+seulement un bord doré tout autour », puis « mets juste la couleur de la note
+vocale sur les boutons sans le liseré doré, seulement la couleur pour voir », et
+enfin « fais une planche avec la couleur de la note vocale mais sans l'effet
+brillant ».*
 
 **Une planche, pas du code** (`CLAUDE.md` §3 bis) : `appli/boutons-verts.html`,
 quatre déclinaisons, une lettre attendue. Gardée par
 `appli/tests/essai-boutons-verts.mjs`, jouée par `pages.yml`.
 
-**La matière est tranchée, et par lui : LA TASSE (`.atlas-micro`), UN SEUL BORD
-DORÉ, sans son `::before` animé** — ni le galet du 2 septembre, qui reste sur
-« À facturer » et sur l'onglet actif de « Terminés », ni les trois anneaux de la
-note vocale.
+**La matière est tranchée, et par lui : LA TASSE (`.atlas-micro`), sans son
+`::before` animé** — ni le galet du 2 septembre, qui reste sur « À facturer » et
+sur l'onglet actif de « Terminés », ni les trois anneaux de la note vocale.
+**Reste ouvert : le brillant et le bord**, et c'est ce que les cinq déclinaisons
+posent.
 
 **Ce que la mesure a établi, et qui compte pour la suite :** la lumière du micro
 est un cercle placé en **pour cent** (34 % / 26 %). Sur un bouton, ce point
@@ -42,10 +46,10 @@ tombe au MILIEU du mot : il ne tient plus que **2,1** de contraste, pour un
 seuil de 4,5, et ce dès 148 px. La planche calcule ses chiffres sur les boutons
 rendus, en balayant le mot entier — elle ne les récite pas.
 
-Son choix : **A**, sa tasse telle quelle — le mot y tient 2,1, et le chiffre est
-écrit sous le bouton. La B reste dessinée à côté : la même à une chose près, la
-lumière gardée aux 50 px qu'elle a sur la note vocale (6,5 partout). Rien ne
-touche les boutons creux ni les sept autres apparences.
+Ce qu'il regarde : **A**, la couleur seule — le mot y tient 2,1, et le chiffre
+est écrit sous le bouton. **C** est la même à une chose près, la lumière gardée
+aux 50 px qu'elle a sur la note vocale (6,5 partout) ; **E** est son vert du bord
+à plat (6,5). Rien ne touche les boutons creux ni les sept autres apparences.
 
 ## FAIT : la fiche de l'espace ne se contredit plus (2 septembre 2026)
 
