@@ -33,7 +33,6 @@
   a.item .no{font-variant-numeric:tabular-nums;color:var(--bronze);font-size:12px;letter-spacing:.1em}
   a.item .titre{font:400 19px/1.2 ui-serif,Georgia,serif}
   a.item .quoi{grid-column:2;margin-top:5px;font-size:12.5px;color:var(--gris);line-height:1.5}
-  a.item .fleche{color:var(--gris)}
   a.item.retenu{box-shadow:inset 2px 0 0 var(--bronze)}
   .note{margin-top:26px;padding:16px 18px;border:1px solid var(--trait);border-radius:6px;
         font-size:13px;color:var(--gris);line-height:1.6}
@@ -51,527 +50,532 @@
   <p class="famille">Tout d’un coup</p>
 
   <a class="item retenu" href="../../appli/reglages-planning-complet.html">
-    <span class="no">99</span><span class="titre">Réglages : « 2 chantiers par jour = complet »</span><span class="fleche">→</span>
+    <span class="no">99</span><span class="titre">Réglages : « 2 chantiers par jour = complet »</span>
     <span class="quoi">Sa demande du 31 août 2026, capture des Réglages à l’appui : <b>« écrit deux chantiers par jour, planning complet, et met le petit carré vert foncé avec écrit "complet" du planning »</b>, puis, devant une première planche qui visait le calendrier d’envoi : <b>« c’est sur cette page que doit se faire la modification »</b>. Aujourd’hui le compteur dit <i>« 2 chantiers par jour. C’est ce qui remplit votre planning. »</i> (<code>phraseDuCompteur</code>, <code>src/lib/equipes.ts</code>) : la phrase dit que le réglage remplit le planning, elle ne montre pas <b>ce qu’il y verra</b> — et ce qu’on voit au planning, c’est une couleur. Le réglage et sa conséquence vivent sur deux écrans, rien ne les relie. <b>Trois issues</b> : <b>A</b> la phrase gagne le carré et le mot ; <b>B</b> l’échelle, les trois carrés du planning avec ce que vaut chacun à ce réglage-là ; <b>C</b> la case du planning dessinée. <b>Le compteur marche</b>, et c’est ce qui se vérifie : à 3, l’échelle dit 0 / 1 à 2 / 3 ; à 1, la ligne « incomplet » <b>disparaît</b> — entre rien et complet il n’y a plus de place, et une ligne qui prétendrait le contraire serait fausse. Les carrés ne sont pas redessinés : leur vert est comparé à <code>colors.rust</code> et la phrase d’aujourd’hui à <code>phraseDuCompteur</code>, tous deux <b>lus dans le produit</b> par <code>scripts/verifier-maquette-reglages-planning-complet.mjs</code> — vu rougir sur un mot changé, un autre vert, un chiffre figé et un « incomplet » de trop. <b>RETENUE ET CODÉE le 31 août 2026 : la A</b> — « 2 chantiers par jour. Planning ▪ complet. » Le carré vient de <code>fondDeLEtat</code> et le mot de <code>MOT_ETAT</code>, une table neuve de <code>planning-jour.ts</code> que la légende du calendrier lit désormais elle aussi : un seul mot pour deux écrans qui ne se lisent jamais ensemble. La planche garde B et C, pour le chemin.</span>
   </a>
 
   <a class="item" href="../../appli/jour-propose-pas-complet.html">
-    <span class="no">98</span><span class="titre">Un jour proposé, pris pour complet</span><span class="fleche">→</span>
+    <span class="no">98</span><span class="titre">Un jour proposé, pris pour complet</span>
     <span class="quoi"><b>Née d’une mauvaise lecture de sa demande</b> — il visait l’écran Réglages (planche 99), pas le calendrier d’envoi ; la question posée ici reste réelle, mais elle n’est pas la sienne. Sa remarque du 31 août 2026, capture à l’appui : <b>« écrit deux chantiers par jour, planning complet, et met le petit carré vert foncé avec écrit "complet" du planning »</b>. Ses réglages disent deux chantiers par jour, son septembre est <b>vide</b>, et les deux dates qu’il propose à sa cliente se peignent du vert que la légende, juste dessous, appelle « complet ». <b>Ce n’est pas un défaut de calcul</b> — <code>src/lib/planning-jour.ts</code> rend bien « libre » pour ces deux jours-là : c’est la MÊME couleur employée pour deux choses sans rapport dans <code>src/components/atlas/MoisCharge.tsx</code>, <code>fondDeLEtat("plein")</code> et <code>retenus.has(jour)</code> valant tous deux <code>colors.rust</code>. Et l’aplat coûte une seconde chose, plus grave : <b>il recouvre les deux barres</b>, si bien que le jour qu’il vient de proposer devient le seul du mois dont il ne peut plus lire la charge — précisément ce que la planche 91 avait apporté. <b>Trois états à comparer d’un doigt</b> : « Aujourd’hui », ce qu’il a photographié ; <b>« Le point »</b>, la case garde son fond clair et reçoit un point vert dans le coin ; <b>« La pastille »</b>, le chiffre entre dans un disque vert et les barres restent lisibles dessous. La légende gagne « proposé » dans les deux, en <b>rond</b> quand les quatre états de charge sont carrés. <b>Un quatrième essai a été écarté avant de lui être montré</b> : entourer la case d’un liseré vert — vu à l’écran, il se confond avec le liseré noir de la case qu’on vient de toucher, trois cases entourées à la suite, ce qu’il avait déjà signalé le 23 août (planche 92). <b>Aucune vue ne touche au calcul</b>, et son contrôle le mesure (<code>scripts/verifier-maquette-jour-propose.mjs</code>, vu rougir contre l’aplat remis, contre la légende amputée, et contre une vue qui comptait les équipes autrement). <b>En attente de sa réponse ; rien n’est codé.</b></span>
   </a>
 
   <a class="item" href="../../appli/facture-au-planning.html">
-    <span class="no">101</span><span class="titre">La facture, sur le chantier du planning</span><span class="fleche">→</span>
+    <span class="no">101</span><span class="titre">La facture, sur le chantier du planning</span>
     <span class="quoi">Sa décision du 1er septembre 2026 : <b>« on peut supprimer cette page, et je vais te montrer où emmener le bouton Créer la facture »</b>, puis <b>« on va le mettre sur les clients au planning »</b>. <b>Ce que le code dit</b> : le tiroir de la fiche du chantier est bien plus mince qu’il n’en a l’air — photos, informations et prix en avaient été retirés le 11 août, et la fiche du client porte tout cela depuis le 31 (§226). Il ne reste que <b>trois portes</b> à déménager : « Créer la facture », le devis, le client. <b>Trois allures</b> : <b>A · Dépliées</b> (tout se voit, l’écran s’allonge de trois lignes par chantier), <b>B · Une seule</b> (le geste du moment seulement — mais le vert plein revient sur un écran qui n’en portait aucun, ce dont il se plaignait le 31 août sur la dictée), <b>C · La feuille</b> (rien au repos, le chevron fait monter les trois portes). <b>Trois chantiers, trois cas</b>, dont un déjà facturé — c’est lui qui départage A et B. <b>Une quatrième allure a été dessinée puis jetée</b> : le glissement à l’iPhone, parce qu’en poussant la ligne entière <b>le nom du chantier sort de l’écran</b> ; vu sur la capture, pas au raisonnement. <b>Rien n’est codé</b>, et la suppression de la fiche attend son choix.</span>
   </a>
 
   <a class="item retenu" href="../../appli/planning-memoire.html">
-    <span class="no">100</span><span class="titre">Le planning se souvient — deux ans en arrière</span><span class="fleche">→</span>
+    <span class="no">100</span><span class="titre">Le planning se souvient — deux ans en arrière</span>
     <span class="quoi">Sa question du 31 août 2026 : <b>« est-ce que le planning garde en mémoire les chantiers passés ? Si non il faut qu’il les garde en mémoire au moins sur une année »</b>. <b>Ce que le code dit</b> (<code>src/lib/onglet-chantier.ts</code>, <code>rangement()</code>) : les chantiers ne sont <b>jamais effacés</b> — aucune purge ne les touche, et <code>listerChantiersTermines</code> les rend tous — mais dès que <code>datePlanifiee &lt; aujourd’hui</code> ils basculent dans « Terminés », et <code>estAuPlanning</code> les retire du calendrier. <b>Une journée passée redevient donc vide le lendemain</b>, ce que sa capture de juillet montre : trente et un jours sans une marque. <b>La planche montre trois états</b> — son écran d’aujourd’hui, puis deux façons de rendre la mémoire au calendrier : <b>A</b> les barres du jour passé en gris (« fait »), un mot de plus dans la légende ; <b>B</b> les barres telles quelles, rien à ajouter mais rien ne sépare l’avant de l’après. <b>Elle se manipule</b> : les mois se feuillettent jusqu’à la butée de septembre 2025, et toucher un jour passé ouvre sa fiche — <b>en lecture</b>, sans « + Ajouter » ni salarié à cocher. <b>Les deux chartes</b>, dont Nuit, celle de sa capture. <b>RETENUE ET CODÉE le 31 août 2026 : la B, sur deux ans</b> — il a demandé le poids avant de trancher (<code>scripts/mesurer-poids-planning.mjs</code> : 71 Ko comprimés pour mille chantiers). Le raisonnement, la faute évitée et les deux contrôles creux retrouvés : <code>ARCHITECTURE.md</code> §224.</span>
   </a>
 
   <a class="item" href="../../appli/salaries-et-equipes.html">
-    <span class="no">97</span><span class="titre">Vos salariés, et ce qui remplit le planning</span><span class="fleche">→</span>
+    <span class="no">97</span><span class="titre">Vos salariés, et ce qui remplit le planning</span>
     <span class="quoi">Sa demande du 25 août 2026 : <b>« un curseur + ou − qui définit le nombre de salariés, et pouvoir affilier des noms ; ceux-là permettront d’ajouter ces noms au chantier, et plus les équipes A ou B. Néanmoins les équipes doivent toujours servir à définir le remplissage du planning »</b>. <b>Ce que le code dit</b> (<code>src/lib/equipes.ts</code>, <code>entreprise.nombreEquipes</code>) : un seul nombre porte DEUX responsabilités — la capacité du planning, et la fabrique des libellés « Équipe A / B ». Les séparer est juste. <b>Trois propositions essayables</b> : <b>A</b> curseur salariés + on coche les gens sur le chantier, <b>B</b> les gens rangés dans des équipes, le chantier prend l’équipe et le planning écrit les prénoms, <b>C</b> la A sans le curseur des salariés. <b>La planche rend le défaut touchable</b> plutôt que de l’affirmer : en A, monter le curseur à 5 sans taper de nom laisse l’écran annoncer 5 salariés quand le chantier n’en connaît que 3 — deux vérités sur la même question, ce que <code>CLAUDE.md</code> §3 interdit. <b>Une remarque lui est posée, pas imposée</b> : il demande ce curseur, c’est son appel. En B, baisser le compteur d’équipes montre ce que deviennent les gens de celle qui disparaît — ils restent visibles sous « Sans équipe » plutôt que d’être perdus sans geste. Le doublon (la même personne sur deux chantiers le même jour) est signalé sur les deux chantiers. Le curseur des <b>équipes</b> reste dans les trois : c’est une capacité, rien ne la compte à sa place.</span>
   </a>
 
   <a class="item" href="../../appli/ecran-equipe.html">
-    <span class="no">96</span><span class="titre">L’écran Équipe, dégraissé</span><span class="fleche">→</span>
+    <span class="no">96</span><span class="titre">L’écran Équipe, dégraissé</span>
     <span class="quoi">Sa demande du 25 août 2026 : <b>« combien partent en même temps, ça ne veut pas dire grand-chose ; il y a beaucoup d’infos, il faut synthétiser »</b>. À une équipe, l’écran aligne QUATRE blocs, dont deux qui disent la même chose à quinze lignes d’écart. La planche <b>compte les mots</b> — 83 aujourd’hui contre 24 — plutôt que d’affirmer que c’est plus court. Trois propositions <b>essayables</b>, et le compteur se touche : c’est en passant de 1 à 2 que chaque proposition montre ce qu’elle garde.</span>
   </a>
 
   <a class="item" href="../../appli/premiere-page.html">
-    <span class="no">95</span><span class="titre">La première page, revue</span><span class="fleche">→</span>
+    <span class="no">95</span><span class="titre">La première page, revue</span>
     <span class="quoi">Sa demande du 24 août 2026 : <b>« fais-moi une maquette dynamique de la première page améliorée, je te laisse proposer »</b>, puis <b>« une sans le trait gris, supprime le bonjour compte »</b>. <b>Ce que sa capture montre et qu’il n’a pas signalé :</b> « En cours 0 », deux cartes, puis « Aucun chantier pour l’instant ». Les trois disent vrai — les cartes sont des AVIS, et le code a raison — mais l’œil lit une contradiction. Trois propositions <b>essayables</b> : la sienne d’aujourd’hui, les avis distingués par un intertitre et un filet or (la phrase d’accueil se taisant tant que l’écran n’est pas vide), et <b>la sienne</b> — son écran d’aujourd’hui, sans le trait ni le bonjour, et rien d’autre (sa consigne : « pour la mienne, fais seulement les changements que je t’ai demandés »). <b>Ajouter un chantier</b> fait apparaître le défaut ; « J’ai vu » retire l’avis pour de bon.</span>
   </a>
 
   <a class="item retenu" href="../../appli/essais.html">
-    <span class="no">▶</span><span class="titre">À ESSAYER — les onze, sur une page</span><span class="fleche">→</span>
+    <span class="no">▶</span><span class="titre">À ESSAYER — les onze, sur une page</span>
     <span class="quoi">Sa demande, répétée trois fois : <b>« des maquettes dynamiques, pas de photo, que je puisse essayer »</b>. Elles existaient — <b>aucune page ne les rassemblait</b> : la racine du site publié renvoie droit à l’application, et il fallait connaître chaque nom de fichier. Une seule adresse désormais : <b>…github.io/Atlas-app/essais.html</b>. Chaque lien est suivi par un contrôle qui refuse une page vide, un débordement, ou une cible trop petite pour le pouce.</span>
   </a>
 
   <a class="item retenu" href="toutes-les-maquettes.html">
-    <span class="no">∑</span><span class="titre">Toutes sur une seule page</span><span class="fleche">→</span>
+    <span class="no">∑</span><span class="titre">Toutes sur une seule page</span>
     <span class="quoi">Le même sommaire, mais les écrans sont dessous : cliquer un titre y descend, sans quitter la page. Engendrée par <code>scripts/fusionner-maquettes.mjs</code>.</span>
   </a>
 
   <p class="famille">L’entretien récurrent</p>
 
   <a class="item retenu" href="../../appli/fiche-de-chantier.html">
-    <span class="no">▶</span><span class="titre">La fiche de chantier — ESSAYABLE</span><span class="fleche">→</span>
+    <span class="no">▶</span><span class="titre">La fiche de chantier — ESSAYABLE</span>
     <span class="quoi">Sa demande du 27 août 2026 : <b>« je veux un lien cliquable »</b>, après trois captures. Ce n’est pas une proposition : ce sont les <b>trois écrans tels qu’ils sont codés</b>, à toucher. Les cases se cochent, les molettes tournent — et la page dit ce qu’elle ne fait pas, pour qu’il ne croie pas avoir envoyé un rapport.</span>
   </a>
 
   <a class="item retenu" href="../../appli/ou-composer-ma-fiche.html">
-    <span class="no">▶</span><span class="titre">La rendre visible — ESSAYABLE</span><span class="fleche">→</span>
+    <span class="no">▶</span><span class="titre">La rendre visible — ESSAYABLE</span>
     <span class="quoi">Sa remarque du 26 août 2026 sur l’écran livré une heure plus tôt : <b>« c’est bien mais juste une phrase, on la trouve difficilement ; je pense qu’un onglet carré serait le mieux »</b>. Trois formes — une carte, deux carrés, un bouton d’en-tête —, <b>à la place qu’il a déjà tranchée</b>, chacune avec son défaut écrit.</span>
   </a>
 
   <a class="item retenu" href="../../appli/ma-fiche-rangee.html">
-    <span class="no">▶</span><span class="titre">La liste, dans Paysage — ESSAYABLE</span><span class="fleche">→</span>
+    <span class="no">▶</span><span class="titre">La liste, dans Paysage — ESSAYABLE</span>
     <span class="quoi">Sa proposition du 26 août 2026, après la planche des deux fiches : <b>sortir la liste des Réglages</b> et la ranger sous la fiche de chantier. Deux emplacements, <b>chacun avec son défaut écrit</b> — sur l’écran (long) ou derrière une porte (un appui de plus). La réserve au patron ne change pas.</span>
   </a>
 
   <a class="item retenu" href="../../appli/deux-fiches.html">
-    <span class="no">▶</span><span class="titre">Les deux fiches, côte à côte — ESSAYABLE</span><span class="fleche">→</span>
+    <span class="no">▶</span><span class="titre">Les deux fiches, côte à côte — ESSAYABLE</span>
     <span class="quoi">Sa question du 26 août 2026 : <b>« la fiche d’entretien c’est la fiche de chantier »</b>, et faut-il supprimer celle des Réglages. Non : à gauche <b>la liste</b>, à droite <b>la fiche d’un jour</b> qui en naît — trois onglets montrent ce qui les relie, et ce qu’un renommage changerait. Les vingt prestations sont celles du code, un contrôle le tient (<code>scripts/verifier-maquette-deux-fiches.mjs</code>).</span>
   </a>
 
   <a class="item retenu" href="../../appli/composer-sa-fiche.html">
-    <span class="no">▶</span><span class="titre">Composer sa fiche d’entretien — ESSAYABLE</span><span class="fleche">→</span>
+    <span class="no">▶</span><span class="titre">Composer sa fiche d’entretien — ESSAYABLE</span>
     <span class="quoi">Dans les Réglages : ajouter, retirer, renommer ses prestations. <b>La question qui reste</b> — une seule fiche pour tous ses clients, ou un modèle puis une fiche par client. <b>Déplacée dans <code>appli/</code> le 25 août 2026</b> : elle vivait dans ce dossier-ci, que <code>pages.yml</code> ne publie pas, et n’avait donc aucune adresse — on attendait de lui un choix qu’il n’avait pas les moyens de faire.</span>
   </a>
 
   <a class="item retenu" href="../../appli/choisir-l-heure.html">
-    <span class="no">▶</span><span class="titre">Choisir l’heure au pouce — ESSAYABLE</span><span class="fleche">→</span>
+    <span class="no">▶</span><span class="titre">Choisir l’heure au pouce — ESSAYABLE</span>
     <span class="quoi">Le temps passé sans le taper : la molette du téléphone, les quarts d’heure, ou la molette Atlas — faite <b>sans une ligne de JavaScript</b> (accroche au défilement et repère collé), donc elle tourne au doigt sur son téléphone. <b>Déplacée dans <code>appli/</code> le 25 août 2026</b>, pour la même raison.</span>
   </a>
 
   <a class="item retenu" href="../../appli/quand-je-reverse-la-tva.html">
-    <span class="no">▶</span><span class="titre">Quand je reverse la TVA — ESSAYABLE</span><span class="fleche">→</span>
+    <span class="no">▶</span><span class="titre">Quand je reverse la TVA — ESSAYABLE</span>
     <span class="quoi">Sa capture du 26 août 2026 : <b>« Quand le client le paye / quand je met la facture. C’est pas clair, on comprend rien. »</b> Puis, dans la foulée : <b>« lorsque je change entre les deux, rien ne se passe, c’est normal ? »</b> — et c’était normal, ce qui manquait était une PHRASE. <b>Retenu le 26 août : les libellés réécrits, sans le tableau d'exemple</b> — il explique, et un écran n'explique pas. Reste la ligne qui dit ce que le choix change sur le mois affiché, y compris quand il n’y change rien.</span>
   </a>
 
   <a class="item retenu" href="../../appli/le-bouton-en-verre.html">
-    <span class="no">▶</span><span class="titre">Le bouton en verre — ESSAYABLE</span><span class="fleche">→</span>
+    <span class="no">▶</span><span class="titre">Le bouton en verre — ESSAYABLE</span>
     <span class="quoi">Sa demande du 26 août 2026, après deux tours écartés : <b>« fais-moi un verre mais avec la couleur actuelle »</b>. Le « verre » du second tour posait le vert à 14 % — la capsule devenait blanche avec du texte vert, c'est-à-dire un AUTRE bouton ; sa phrase demande l'inverse, garder la couleur et n'ôter que l'opacité. Trois épaisseurs, 90 / 85 / 80 %, avec reflet et ombre portée. <b>Il n'y a pas de quatrième, et c'est une mesure, pas un goût</b> : sous le reflet, 80 % rend 4,66:1 et 72 % tombe à 3,87 — un bouton qu'on ne lit pas au soleil n'est pas plus léger, il est perdu.</span>
   </a>
 
   <a class="item retenu" href="../../appli/le-bouton-moins-lourd.html">
-    <span class="no">▶</span><span class="titre">Le bouton principal, second tour — ESSAYABLE</span><span class="fleche">→</span>
+    <span class="no">▶</span><span class="titre">Le bouton principal, second tour — ESSAYABLE</span>
     <span class="quoi">Sa remarque du 26 août 2026 : <b>« tous les boutons en vert foncé, je les trouve très opaques »</b>. <b>Le premier tour a été écarté — « j'aime pas, propose autre chose »</b> —, et il apprend quelque chose : ses cinq propositions étaient toutes des NUANCES DU MÊME VERT PIN, c'est-à-dire cinq fois la même idée présentée comme cinq. Le second tour change de FAMILLE à chaque fois : verre translucide, or, sauge, encre, bronze, filet. Les contrastes sont <b>mesurés</b> (4,5:1 minimum tenu partout), et la mesure avait attrapé au premier tour deux défauts que l'œil ne voyait pas — une capsule 2 px plus grande que les autres, et une ombre vert foncé invisible en mode sombre.</span>
   </a>
 
   <a class="item" href="../../appli/quand-il-parle-le-premier.html">
-    <span class="no">▶</span><span class="titre">Quand il parle le premier — ESSAYABLE</span><span class="fleche">→</span>
+    <span class="no">▶</span><span class="titre">Quand il parle le premier — ESSAYABLE</span>
     <span class="quoi">Sa réponse du 27 août 2026 — <b>« 2 et 3 déjà »</b> — sur cinq pistes proposées pour l’assistant. Le 2 était : <b>qu’il ouvre la bouche le premier</b>. Trois places à départager (dans le panneau, une pastille sur le bouton, une carte d’accueil) et quatre signaux à retenir. <b>L’accueil pose DÉJÀ les réponses des clients, les liens expirés et les rappels</b> : la planche ne porte que ce qu’il ne dit pas, sans quoi l’assistant répéterait et s’apprendrait à être ignoré. Trois onglets en CSS, sans une ligne de JavaScript.</span>
   </a>
 
   <p class="famille">La fiche client</p>
 
   <a class="item retenu" href="../../appli/cases-page-entiere.html">
-    <span class="no">▶</span><span class="titre">La page entière, cinq dessins de cases — ESSAYABLE</span><span class="fleche">→</span>
+    <span class="no">▶</span><span class="titre">La page entière, cinq dessins de cases — ESSAYABLE</span>
     <span class="quoi">Sa demande du 21 août 2026 : <b>« toute la page de haut en bas avec les cinq différentes cases, ce sera plus visuel et je pourrai choisir »</b>. Un seul jeu de balises, cinq feuilles de style : l’écran est écrit UNE fois et se relit sous chaque dessin — aucune case ne peut être plus soignée dans l’une que dans l’autre. Le contrôle mesure les cinq (mêmes champs, rien de coupé, 48 px de prise) et refuse qu’un dessin gagne en perdant un intitulé — ce que la capture a montré et qu’aucune mesure n’aurait vu.</span>
   </a>
 
   <a class="item" href="../../appli/cases-a-remplir.html">
-    <span class="no">▶</span><span class="titre">Les cases à remplir, cinq façons — ESSAYABLE</span><span class="fleche">→</span>
+    <span class="no">▶</span><span class="titre">Les cases à remplir, cinq façons — ESSAYABLE</span>
     <span class="quoi">Sa demande du 21 août 2026 : <b>« fais-moi des photos des cases à remplir plus jolies, je peux plus voir ces encadrés carrés »</b>. Le trait, la capsule, la ligne de fiche, la carte douce, le creux — <b>le même bloc à chaque fois</b>, sinon on choisit un contenu au lieu d’un dessin. La charte et la hauteur de prise (48 px minimum) ne bougent pas d’une proposition à l’autre. <b>Rien n’est codé</b>, il tranche.</span>
   </a>
 
   <a class="item retenu" href="../../appli/fiche-client-vocale.html">
-    <span class="no">▶</span><span class="titre">La fiche client qui dicte le devis — ESSAYABLE</span><span class="fleche">→</span>
+    <span class="no">▶</span><span class="titre">La fiche client qui dicte le devis — ESSAYABLE</span>
     <span class="quoi">Sa demande du 21 août 2026 : <b>le nom et le numéro sur une ligne</b>, plus aucun « facultatif », le carré photo et <b>l’anneau</b> ramenés de la fiche chantier. Le cœur : <b>on rappuie pour arrêter, et c’est enregistré</b> — il est en rendez-vous, il ferme l’appli, et le chantier l’attend à l’accueil avec son devis déjà rempli. L’anneau et le champ de photos sont <b>repris à l’identique du code</b> (<code>AnneauNoteVocale.tsx</code>, <code>Pellicule.tsx</code>), pas redessinés. Un écran <b>« À trancher »</b> pose ce qui reste sans maison si la fiche chantier disparaît. <b>Rien n’est codé.</b></span>
   </a>
 
   <a class="item" href="../../appli/boutons-verts.html">
-    <span class="no">▶</span><span class="titre">Vos boutons verts, dans la matière de la note vocale — ESSAYABLE</span><span class="fleche">→</span>
+    <span class="no">▶</span><span class="titre">Vos boutons verts, dans la matière de la note vocale — ESSAYABLE</span>
     <span class="quoi">Sa demande du 3 septembre 2026 : <b>la couleur de la note vocale sur chaque bouton aujourd’hui vert</b>, puis, capture à l’appui devant la déclinaison 1 de <code>facturer-note-vocale.html</code> : <b>« c’est celle-là la bonne couleur mais sans le petit halo lumineux qui tourne à l’intérieur »</b>. Puis trois corrections successives, chacune plus dépouillée que la précédente : <b>« seulement un bord doré tout autour »</b>, <b>« seulement la couleur pour voir »</b>, <b>« sans l’effet brillant »</b>. <b>La matière est tranchée par lui : c’est la tasse</b> (<code>.atlas-micro</code>), pas le galet du 2 septembre — aucun <code>::before</code> animé, et les trois anneaux or / porcelaine / or ne passent pas sur les boutons. Ce qui reste ouvert est le <b>brillant</b> et le <b>bord</b>. Relevée dans <code>globals.css</code>, pas approchée à l’œil. <b>Ce que la planche établit, et qui reste seul à trancher :</b> la lumière du micro est écrite <b>en pour cent</b> ; sur le disque de 80 px elle fait 50 px, sur un bouton de 321 px elle en ferait 200, et son centre — à 34 % de la largeur — tombe <b>au milieu du mot</b>, qui ne tient alors que <b>2,1</b> de contraste pour un seuil de 4,5. <b>Cinq déclinaisons</b>, toutes dans sa couleur : <b>A la couleur seule</b> — ce qu’il a demandé en dernier (2,1) —, B la même avec le bord doré (2,1), <b>C la même, lumière gardée à ses 50 px</b> (ellipse de 46 × 36 posée à l’épaule : <b>6,5</b> à toutes les largeurs, et identique à A sur une capsule courte), D à plat sur le vert du milieu (3,0), E à plat sur celui du bord (6,5). Les deux aplats sont <b>pris dans l’échelle de la tasse</b>, et le contrôle le vérifie contre <code>globals.css</code> ; le troisième vert, #9fbd82, n’est pas proposé à plat — ce n’est pas une couleur, c’est le point de lumière. <b>Changer la couleur des lettres ne sauve pas la A</b>, c’est mesuré : la crème s’efface au clair (2,1), l’encre au foncé (2,5 sur #4f5f4c) — le mot traverse les deux bouts. <b>Les chiffres sont calculés par la page</b> : elle balaie le mot d’un bout à l’autre et garde le pire — ne mesurer que la première lettre rendrait un vert convenable là où le mot s’efface. Gardée par <code>appli/tests/essai-boutons-verts.mjs</code>, qui compare la matière à <code>.atlas-micro</code> et refuse le retour du halo comme celui de la porcelaine. <b>Elle a rougi une fois sur du code juste</b>, et c’était instructif : lue 200 ms après le clic, la couleur du filet est encore intermédiaire — <code>.bouton</code> porte <code>transition: box-shadow 220ms</code>. Un contrôle qui mesure pendant une transition accuse le produit à la place de la mesure. Les boutons creux et les sept autres apparences ne bougent dans aucune. <b>Rien n’est codé.</b></span>
   </a>
 
   <a class="item" href="../../appli/le-bouton-qui-repond.html">
-    <span class="no">▶</span><span class="titre">Le bouton qui répond au doigt — ESSAYABLE</span><span class="fleche">→</span>
+    <span class="no">▶</span><span class="titre">Le bouton qui répond au doigt — ESSAYABLE</span>
     <span class="quoi">Sa demande du 31 août 2026 : <b>une mini vibration à l’appui</b>, et <b>le bouton qui s’enfonce en s’éclaircissant</b> — capture à l’appui d’une touche noire qui pâlit sous le doigt. Trois forces à choisir (Discret, le sien, Marqué), posées sur la capsule pleine, la capsule creuse, les cartes de chantier, la barre du bas et sa touche noire. <b>Ce qui existe déjà et ne suffit pas :</b> <code>PrimaryButton.tsx</code> porte <code>active:scale-[0.985]</code>, soit moins d’un pixel sur une capsule de 50 px, et aucun changement de couleur. <b>La vibration sur iPhone :</b> Safari ne la donne pas aux pages web — la planche passe par l’interrupteur natif d’iOS 17.4+, et l’écran dit lequel des trois chemins le téléphone a pris ; dans l’application emballée par Capacitor, <code>@capacitor/haptics</code> donne le vrai retour, réglable. <b>Rien n’est codé.</b></span>
   </a>
 
   <a class="item" href="../../appli/dictee-la-ligne.html">
-    <span class="no">▶</span><span class="titre">La ligne, avec ses corrections — ESSAYABLE</span><span class="fleche">→</span>
+    <span class="no">▶</span><span class="titre">La ligne, avec ses corrections — ESSAYABLE</span>
     <span class="quoi">Sa réponse du 31 août au soir, après avoir essayé les quatre allures : <b>« garde-moi la ligne »</b>, plus trois corrections. <b>1</b> La pause disparaît — il ne reste que jeter et envoyer, et le contrôle vérifie qu’aucun appui ne fige le chrono : un bouton retiré de l’œil mais laissé sous le doigt serait pire que rien. <b>2</b> La touche d’envoi prend le fond de la PAGE (`--bone`, pas le crème des cartes), encadré vert et avion vert : l’aplat tombe à <b>64 px²</b> — la seule pastille du chrono — contre 7 956 sur l’écran d’aujourd’hui. <b>3</b> « Légèrement plus à plat » ne se code pas, ça se regarde : trois onglets, 44 × 44, 48 × 40, 52 × 36, et rien d’autre ne bouge d’un onglet à l’autre. <b>Ce que la suppression de la pause coûte</b> est écrit noir sur blanc dans la planche :  on ne peut plus suspendre pour répondre à quelqu’un. Éprouvée par <code>scripts/verifier-maquette-dictee-la-ligne.mjs</code>. <b>Rien n’est codé</b> — une réponse : A, B ou C.</span>
   </a>
 
   <a class="item" href="../../appli/dictee-embellie.html">
-    <span class="no">▶</span><span class="titre">La dictée, quatre allures — ESSAYABLE</span><span class="fleche">→</span>
+    <span class="no">▶</span><span class="titre">La dictée, quatre allures — ESSAYABLE</span>
     <span class="quoi">Sa remarque du 31 août 2026, capture à l’appui : <b>« ça dénature l’appli »</b>. Ce n’est pas un goût, ça se mesure : pendant la dictée, la fiche porte <b>deux aplats vert pin — ~7 950 px²</b> — là où le reste de l’écran n’en porte aucun ; rien ne tient les trois boutons ensemble ; et le chrono, l’onde et le disque sont sur <b>trois axes différents</b>. <b>Quatre allures</b>, au même repos et aux mêmes gestes : <b>la barre</b> (une capsule tient tout, l’envoi devient le seul plein — 3 176 px²), <b>l’anneau</b> (l’anneau d’Atlas et un arc d’or qui tourne, <b>aucun aplat</b> — 289 px², le carré d’arrêt et la pastille), <b>la ligne</b> (1 972) et <b>le galet</b> clair cerclé d’or (2 657). Éprouvée par <code>scripts/verifier-maquette-dictee-embellie.mjs</code>, qui <b>additionne la surface peinte</b> et refuse une proposition qui déplacerait le défaut sans le régler. <b>Rien n’est codé</b> — une réponse attendue, le numéro.</span>
   </a>
 
   <a class="item retenu" href="../../appli/note-vocale-choix.html">
-    <span class="no">▶</span><span class="titre">La note vocale, ses trois choix réunis — ESSAYABLE</span><span class="fleche">→</span>
+    <span class="no">▶</span><span class="titre">La note vocale, ses trois choix réunis — ESSAYABLE</span>
     <span class="quoi">Ses réponses du 30 août 2026 : <b>largeur 4</b> (66 %), <b>geste 2</b> (l’objet au centre entre la poubelle et l’avion), <b>repos B</b> (le micro plein) <b>avec deux petites ondes de 1,5 cm au plus</b> — sa mesure, écrite en centimètres dans le CSS pour qu’elle reste relisible. Plus aucun onglet de proposition : cette planche montre la réponse, pas la question. <b>CODÉE dans l’application le 30 août 2026</b> — c’est la planche à laquelle il a demandé de se référer, et c’est elle qui a corrigé les valeurs de resserrement inventées à côté des siennes (case de 44 px, carré photo de 58, pastille 7/28). Le point qui restait ouvert a été tranché comme la planche le montre : pendant la dictée, le disque plein reste et son micro devient un carré d’arrêt. Deux défauts trouvés à la capture et non par les tests : le carré d’arrêt rendait une boîte de zéro pixel, et les ondes recouvraient les deux gestes. Éprouvée par <code>scripts/verifier-maquette-note-vocale-choix.mjs</code>.</span>
   </a>
 
   <a class="item" href="../../appli/note-vocale-au-repos.html">
-    <span class="no">▶</span><span class="titre">La note vocale avant qu’on appuie — ESSAYABLE</span><span class="fleche">→</span>
+    <span class="no">▶</span><span class="titre">La note vocale avant qu’on appuie — ESSAYABLE</span>
     <span class="quoi">Sa demande du 30 août 2026 : <b>« plusieurs visuels pour changer la note vocale AVANT qu’on appuie dessus »</b>, et <b>« ne touche plus à la maquette que tu viens de me faire »</b> — d’où une planche à part, qui ne pose QUE cette question et emprunte tout le reste à la précédente. <b>Cinq repos :</b> l’anneau d’aujourd’hui, un micro plein, une barre d’invitation, l’anneau au micro, une onde à plat. Sa seconde demande n’en est pas une : <b>« Je rédige à la main » disparaît dès qu’on appuie</b>, dans les cinq — il l’a tranché, il ne veut pas de proposition —, et revient si l’on jette la note. Éprouvée par <code>scripts/verifier-maquette-note-vocale-au-repos.mjs</code>, qui distingue un bouton <b>retiré</b> d’un bouton <b>grisé</b>. <b>Sa réponse : B</b>, le micro plein — codé.</span>
   </a>
 
   <a class="item" href="../../appli/note-vocale-simple.html">
-    <span class="no">▶</span><span class="titre">La note vocale, comme sur WhatsApp — ESSAYABLE</span><span class="fleche">→</span>
+    <span class="no">▶</span><span class="titre">La note vocale, comme sur WhatsApp — ESSAYABLE</span>
     <span class="quoi">Sa demande du 30 août 2026 : <b>« on appuie dessus, et il faut la même chose — possibilité de supprimer, ou appuyer sur la flèche pour envoyer de suite la transcription et arriver sur la page du devis »</b>. Ce que ça change vraiment : aujourd’hui <b>arrêter, c’est envoyer</b> — il n’y a pas de retour en arrière, et celui qui a laissé courir le micro envoie quand même. <b>Trois propositions</b> aux mêmes gestes : la barre à deux rangées de sa capture, l’anneau qui reste au centre entre poubelle et avion, ou une seule capsule sans pause. La deuxième a été retirée puis remise — sa règle du 30 août la condamnait (<b>« il doit ensuite disparaître »</b>), et il l’a redemandée pour pouvoir l’essayer. Le bouton du bas est passé <b>secondaire</b> (« Je rédige à la main ») : le seul aplat plein de l’écran est le rond d’envoi. Un dernier onglet propose <b>quatre largeurs</b>. Éprouvée par <code>scripts/verifier-maquette-note-vocale-simple.mjs</code>. <b>Ses réponses : geste 2, largeur 4</b> — codés.</span>
   </a>
 
   <p class="famille">Trop de mots</p>
 
   <a class="item retenu" href="../../appli/moins-de-mots.html">
-    <span class="no">▶</span><span class="titre">Moins de mots — la maquette ESSAYABLE</span><span class="fleche">→</span>
+    <span class="no">▶</span><span class="titre">Moins de mots — la maquette ESSAYABLE</span>
     <span class="quoi">Sa plainte du 19 août — <b>« il y a beaucoup trop de mots dans tous les sens »</b> —, et c’est la <b>troisième fois</b>. Deux versions ont raté la demande : des planches à REGARDER, alors qu’il voulait <b>« une maquette dynamique que je puisse utiliser »</b>. Celle-ci est <b>Atlas dépouillé, qui se sert</b> : la barre du bas marche, « Créer un devis » ouvre la fiche, les champs se remplissent au clavier, le devis part. Un bouton <b>« Avant »</b> remet l’écran d’aujourd’hui — la comparaison vit dans le même geste. Sans une ligne de JavaScript. <b>Rien n’est codé.</b></span>
   </a>
 
   <p class="famille">L’argent qui ne rentre pas</p>
 
   <a class="item retenu" href="86-ou-mettre-ma-tva.html">
-    <span class="no">86</span><span class="titre">Où mettre « Ma TVA à déclarer »</span><span class="fleche">→</span>
+    <span class="no">86</span><span class="titre">Où mettre « Ma TVA à déclarer »</span>
     <span class="quoi">Sa remarque du 23 août : <b>« il est caché, on ne le voit pas trop »</b> — il vit tout en bas, après la liste entière. Le code assumait cette place ; il la révise, et il a passé devant sans le voir. Trois emplacements, <b>essayables</b> : en tête dans le blanc libéré la veille, une carte portant le montant restant à payer, ou sur la ligne du mois — <b>changez de mois, le lien suit</b>. <b>Retenu : la B</b> — une carte en tête, portant le montant.</span>
   </a>
 
   <a class="item retenu" href="85-achats-tva-deductible.html">
-    <span class="no">85</span><span class="titre">Dire que ces achats FONT la TVA déductible</span><span class="fleche">→</span>
+    <span class="no">85</span><span class="titre">Dire que ces achats FONT la TVA déductible</span>
     <span class="quoi">Sa remarque du 23 août : <b>« on ne comprend pas trop que scanner ou écrire à la main, c’est pour la TVA déductible »</b>. La preuve du lien est pourtant sous ses yeux — l’essence porte 41,67 €, exactement le chiffre de la tuile « Déductible » quinze lignes plus haut. Trois dosages, <b>essayables</b> : ajoutez un ticket et regardez la tuile monter pendant que « Reste à payer » baisse. <b>Retenu : la C</b> — les deux gestes cousus sous l’encadré des chiffres, sans un mot de plus.</span>
   </a>
 
   <a class="item retenu" href="84-envoyer-la-facture.html">
-    <span class="no">84</span><span class="titre">Envoyer la facture en un seul geste</span><span class="fleche">→</span>
+    <span class="no">84</span><span class="titre">Envoyer la facture en un seul geste</span>
     <span class="quoi">Sa demande du 22 août : <b>« ça fait beaucoup trop de clics »</b> — trois appuis pour envoyer une facture. Et le premier ment : « Confirmer le départ » ne fait rien partir, il <b>ARRÊTE</b> la facture, définitivement. Les trois planches font ce qu’il demande — encart SMS / e-mail, « Envoyer la facture » sans flèche, messagerie immédiate — et ne diffèrent que sur <b>une question</b> : le bouton doit-il dire qu’il arrête ?</span>
   </a>
 
   <a class="item retenu" href="83-enregistrer-le-pdf.html">
-    <span class="no">83</span><span class="titre">Enregistrer le PDF depuis la fiche client</span><span class="fleche">→</span>
+    <span class="no">83</span><span class="titre">Enregistrer le PDF depuis la fiche client</span>
     <span class="quoi">Sa remarque du 21 août : <b>« une fois le devis envoyé, il doit s’enregistrer en PDF dans la catégorie client »</b> — vérifié, c’est bien le cas. Mais les vignettes <b>ouvrent</b> le document sans proposer de l’enregistrer, et il veut pouvoir le garder. Trois dosages : la vignette enregistre, un rond à côté, ou une petite feuille à trois choix. Et <b>la question qu’il doit trancher</b> : vient-il ici pour regarder un montant, ou pour archiver ?</span>
   </a>
 
   <a class="item" href="82-choisir-la-date.html">
-    <span class="no">82</span><span class="titre">Choisir la date, sans l’écran du milieu</span><span class="fleche">→</span>
+    <span class="no">82</span><span class="titre">Choisir la date, sans l’écran du milieu</span>
     <span class="quoi">Sa demande du 20 août : <b>« le bouton envoyer au client, tu vas me le modifier par Choisir la date »</b>, en vert, sans flèche, et l’aperçu du PDF en dessous. Surtout : <b>qu’il mène droit au calendrier</b>, en supprimant l’écran du milieu — qui redit le client, les lignes et le total que le devis vient d’afficher en entier. Trois écrans deviennent deux. Deux dosages pour l’aperçu, et <b>une question qu’il n’a pas tranchée</b> : cet écran travaille encore APRÈS l’envoi — il porte le lien du client et la reprise.</span>
   </a>
 
   <a class="item retenu" href="81-simple-il-ne-paie-pas.html">
-    <span class="no">81</span><span class="titre">Simple : il ne paie pas</span><span class="fleche">→</span>
+    <span class="no">81</span><span class="titre">Simple : il ne paie pas</span>
     <span class="quoi">Sa correction du 17 août devant les deux planches d’avant : <b>« c’est trop compliqué, il faut faire quelque chose de simple, l’utilisateur a besoin d’aller à l’essentiel constamment »</b>. Refait : <b>un lien sur la facture, une question, deux réponses</b>, quatre écrans en tout. Le mot « avoir » a disparu de l’écran, le choix de forme aussi. Ne restent que les deux réponses — elles font l’inverse l’une de l’autre, et l’une est irréversible.</span>
   </a>
 
   <a class="item" href="79-il-ne-paie-pas.html">
-    <span class="no">79</span><span class="titre">Il ne paie pas</span><span class="fleche">→</span>
+    <span class="no">79</span><span class="titre">Il ne paie pas</span>
     <span class="quoi"><b>Le raisonnement, jugé trop compliqué</b> — la version retenue est la 81. Trois arrangements — et une distinction qui vaut de l’argent : <b>un avoir éteint la dette</b> et lui interdit de réclamer, alors qu’une facture déclarée <b>perdue</b> reste entière et réclamable. C’est le second cas qu’il décrivait. Sa TVA, elle, ne bouge pas : il la paie à l’encaissement.</span>
   </a>
 
   <a class="item" href="80-l-avoir.html">
-    <span class="no">80</span><span class="titre">L’avoir</span><span class="fleche">→</span>
+    <span class="no">80</span><span class="titre">L’avoir</span>
     <span class="quoi"><b>Le raisonnement, jugé trop compliqué</b> — la version retenue est la 81. La forme du document, sur ses chiffres : un <b>document à part</b>, une <b>mention sur la facture</b>, ou une <b>facture refaite</b>. Trois montants essayables — 200 €, 300 €, tout — et chaque total recalculé par le contrôle. Ce que le code ne permet pas encore y est écrit : une seule facture par chantier, une seule série de numéros.</span>
   </a>
 
   <p class="famille">Les clients</p>
 
+  <a class="item retenu" href="../../appli/vos-clients.html">
+    <span class="no">▶</span><span class="titre">Vos clients, la liste — la maquette ESSAYABLE</span>
+    <span class="quoi">La liste elle-même, pas la fiche. <b>Le bouton « Aujourd’hui » passe de l’écran actuel à la proposition</b>, sur les mêmes vingt et un clients, et <b>la recherche filtre pour de vrai</b> — la règle est recopiée de <code>src/lib/recherche-client.ts</code>. Ce qu’elle démontre : <b>quatre Martins que rien ne distingue</b> aujourd’hui, parce que la deuxième ligne porte des comptes d’argent au lieu du lieu. Les cinq informations d’une ligne <b>existent en base</b> ; <code>dernierJour</code> est déjà calculé par <code>listerFichesClients</code> et jamais transmis à l’écran, <code>clients.adresse</code> existe et n’est pas chargée. <b>Quatre états et les deux chartes</b> se touchent depuis le banc. <b>À trancher :</b> le total facturé par client quitte la ligne et ne se lit alors plus nulle part.</span>
+  </a>
+
   <a class="item retenu" href="../../appli/clients-recherche.html">
-    <span class="no">▶</span><span class="titre">Chercher un client — la maquette ESSAYABLE</span><span class="fleche">→</span>
+    <span class="no">▶</span><span class="titre">Chercher un client — la maquette ESSAYABLE</span>
     <span class="quoi">La <b>suite</b> de celle du dessous, sur sa demande du 17 août : <b>« une recherche en haut, on cherche Martins, le nom sort, on clique dessus, on voit tous les devis et les factures rangées par date, par année »</b>. Elle se manipule : l’alphabet filtre pour de vrai, la frappe « m » puis « mar » se rejoue, et la fiche range <b>devis et factures mêlés, par année</b>, avec le total des factures à droite. Plus le réglage des <b>photos</b> — deux ans, et la réduction à l’envoi. <b>Aucun JavaScript</b>, donc ouvrable au téléphone hors ligne. Ce qui reste à trancher est écrit sur la page : <b>mêlés ou en deux piles</b>.</span>
   </a>
 
   <a class="item retenu" href="../../appli/clients.html">
-    <span class="no">▶</span><span class="titre">Vos clients — la maquette ESSAYABLE</span><span class="fleche">→</span>
+    <span class="no">▶</span><span class="titre">Vos clients — la maquette ESSAYABLE</span>
     <span class="quoi">Sa demande du 17 août au soir : <b>« montre-moi depuis chantier ce que ça donnerait, une maquette dynamique que je puisse essayer »</b>. Elle se manipule : l’accueil, le lien <b>« Vos clients » en or sous le nombre de chantiers</b> (qu’il a validé, et qui est codé), la liste, la fiche d’un client, et le chemin <b>depuis un chantier</b>. Sans une ligne de JavaScript — donc ouvrable au téléphone, hors ligne : <b>…github.io/Atlas-app/clients.html</b>.</span>
   </a>
 
   <p class="famille">L’arrosage automatique</p>
 
   <a class="item retenu" href="../../appli/arrosage.html">
-    <span class="no">▶</span><span class="titre">La maquette ESSAYABLE</span><span class="fleche">→</span>
+    <span class="no">▶</span><span class="titre">La maquette ESSAYABLE</span>
     <span class="quoi">Sa demande du 17 août : <b>« des maquettes dynamiques en .html que je puisse essayer, pas de photo »</b>. Celle-ci <b>calcule pour de bon</b> : on entre son propre jardin, et le découpage, les durées, le plan et la liste du matériel se refont à chaque frappe. Publiée avec l’appli, donc ouvrable au téléphone : <b>…github.io/Atlas-app/arrosage.html</b>. Les trois planches ci-dessous restent le raisonnement ; celle-ci est l’essai.</span>
   </a>
 
   <a class="item" href="69-le-plan-darrosage.html">
-    <span class="no">69</span><span class="titre">Le plan d’arrosage</span><span class="fleche">→</span>
+    <span class="no">69</span><span class="titre">Le plan d’arrosage</span>
     <span class="quoi">Sa demande du 17 août : <b>« un outil pour les paysagistes pour réaliser des plans d’arrosage automatique »</b>. Terrain neuf. Trois façons d’entrer le jardin : la feuille où il saisit tout, <b>les zones qu’il mesure et qu’Atlas pose</b>, ou le plan dessiné. Le jardin de l’exemple est calculé, pas écrit — débit, arroseurs, secteurs et durées découlent de cinq mesures.</span>
   </a>
 
   <a class="item" href="70-le-debit-ne-se-partage-pas.html">
-    <span class="no">70</span><span class="titre">Le débit ne se partage pas</span><span class="fleche">→</span>
+    <span class="no">70</span><span class="titre">Le débit ne se partage pas</span>
     <span class="quoi">Le calcul qui fait tout l’outil, et <b>il n’y a rien à y choisir</b>. Un robinet donne 1,80 m³/h, ce jardin en demande 8,47 : il faut <b>huit secteurs</b>, et un cycle de 3 h 14 qui doit finir avant le soleil. Deux règles passent avant le remplissage — une pluviométrie par secteur, un rythme par secteur.</span>
   </a>
 
   <a class="item" href="71-ce-qui-sort-du-plan.html">
-    <span class="no">71</span><span class="titre">Ce qui sort du plan</span><span class="fleche">→</span>
+    <span class="no">71</span><span class="titre">Ce qui sort du plan</span>
     <span class="quoi">Trois documents, et ils ne se valent pas : <b>le devis</b> (la nomenclature entre dans le parcours qui existe déjà), <b>la carte du coffret</b> (ce que le client redemande six mois plus tard), <b>le plan remis au client</b>. Ce qu’il y a à choisir : par lequel on commence. Aucun prix n’est inventé — ce qui manque dans « Mes prix » part vide et signalé.</span>
   </a>
 
   <a class="item" href="78-le-quinconce-dans-un-couloir.html">
-    <span class="no">78</span><span class="titre">Le quinconce dans un couloir</span><span class="fleche">→</span>
+    <span class="no">78</span><span class="titre">Le quinconce dans un couloir</span>
     <span class="quoi">Sa règle du 18 août : <b>« dans les couloirs, le but c’est de poser les tuyères en quinconce, celle de gauche recouvre quasi 100 % jusqu’à celle de droite »</b>. Son couloir de 10 × 2 m posé de trois façons — <b>12 tuyères aujourd’hui, 5 en quinconce, 3 avec une plus grosse buse</b>. Cette règle ne déplace pas des points : elle change ce qu’il commande. La seule chose à trancher : <b>jusqu’où il accepte que ça arrose à côté</b>.</span>
   </a>
 
   <a class="item" href="73-le-trace-du-tuyau.html">
-    <span class="no">73</span><span class="titre">Le tracé du tuyau</span><span class="fleche">→</span>
+    <span class="no">73</span><span class="titre">Le tracé du tuyau</span>
     <span class="quoi">La question qui bloque le comptage des tés et coudes : <b>une seule ligne en serpentin</b> depuis le regard, ou <b>plusieurs lignes parallèles</b> pour un même secteur ? Le même secteur — 3 rangées de 4 arroseurs — tracé des deux façons, pour qu’il pointe son geste réel plutôt que de le décrire en mots. <b>Tranché : c’est B</b>, avec sa correction sur le té et le coude.</span>
   </a>
 
   <a class="item retenu" href="76-le-cinquieme-onglet.html">
-    <span class="no">76</span><span class="titre">Le cinquième onglet</span><span class="fleche">→</span>
+    <span class="no">76</span><span class="titre">Le cinquième onglet</span>
     <span class="quoi">Sa question du 17 août : où ranger les outils métier — arrosage, puis terrasses bois ? <b>Sa décision : un cinquième onglet « Outils »</b>. Le seul vrai risque est la place : à cinq colonnes sur 360 px, <b>« CHANTIERS » déborde de 12,4 px</b>. Cinq variantes mesurées, pas supposées — et <b>deux d’entre elles ne rentrent pas</b>. <b>Retenue : C</b>, la lettre plus petite.</span>
   </a>
 
   <a class="item retenu" href="75-le-plan-comme-le-sien.html">
-    <span class="no">75</span><span class="titre">Le plan comme le sien</span><span class="fleche">→</span>
+    <span class="no">75</span><span class="titre">Le plan comme le sien</span>
     <span class="quoi">Sa photo du 17 août — un plan d’exécution au 1/100e, sa légende, ses symboles, ses diamètres cotés — et sa demande : <b>« tu me fais ça en couleur, tu sépares les réseaux […] c’est là où je veux arriver au final »</b>. Le même plan, refait <b>un réseau par couleur</b>, sur les nombres que l’outil calcule déjà. <b>Rien n’est codé</b> : c’est la planche à corriger avant d’écrire le moteur de plan.</span>
   </a>
 
   <a class="item" href="74-ou-sont-les-tes.html">
-    <span class="no">74</span><span class="titre">Où sont les tés</span><span class="fleche">→</span>
+    <span class="no">74</span><span class="titre">Où sont les tés</span>
     <span class="quoi">Son contrôle du 17 août, sur son propre tracé : <b>« Combien de té ? Où sont-ils ? Marque-les d’un point jaune ! »</b> — et le tracé n’est <b>pas une grille</b>, six arroseurs répartis n’importe comment. Réponse : <b>cinq</b>, marqués et numérotés. Et ce n’est pas un comptage à l’œil : <b>N arroseurs sur un réseau, c’est toujours N − 1 tés</b> — exactement ce que l’outil calcule déjà sur une grille.</span>
   </a>
 
   <p class="famille">Le point de départ</p>
 
   <a class="item" href="01-reference-du-patron.html">
-    <span class="no">01</span><span class="titre">La référence</span><span class="fleche">→</span>
+    <span class="no">01</span><span class="titre">La référence</span>
     <span class="quoi">Votre capture, reproduite. Sceau, branche, cartes, barre en pilule.</span>
   </a>
 
   <p class="famille">Chercher plus minimal</p>
 
   <a class="item" href="02-index-et-calme.html">
-    <span class="no">02</span><span class="titre">L’index et le calme</span><span class="fleche">→</span>
+    <span class="no">02</span><span class="titre">L’index et le calme</span>
     <span class="quoi">Deux directions : lignes séparées par un cheveu, ou plages sans bordure ni ombre.</span>
   </a>
   <a class="item" href="03-index-trois-chartes.html">
-    <span class="no">03</span><span class="titre">L’index, trois chartes</span><span class="fleche">→</span>
+    <span class="no">03</span><span class="titre">L’index, trois chartes</span>
     <span class="quoi">Nuit, Pierre, Brume — la même mise en page, trois couleurs.</span>
   </a>
 
   <p class="famille">Le langage d’Aman</p>
 
   <a class="item" href="04-aman.html">
-    <span class="no">04</span><span class="titre">D’après Aman</span><span class="fleche">→</span>
+    <span class="no">04</span><span class="titre">D’après Aman</span>
     <span class="quoi">Ivoire, serif claire, capitales espacées, aucun coin arrondi. Jour et nuit.</span>
   </a>
   <a class="item" href="05-calme-x-aman.html">
-    <span class="no">05</span><span class="titre">Le calme × Aman</span><span class="fleche">→</span>
+    <span class="no">05</span><span class="titre">Le calme × Aman</span>
     <span class="quoi">Les plages de « Le calme », habillées d’ivoire et de capitales.</span>
   </a>
   <a class="item" href="06-nuancier-neuf-chartes.html">
-    <span class="no">06</span><span class="titre">Le nuancier</span><span class="fleche">→</span>
+    <span class="no">06</span><span class="titre">Le nuancier</span>
     <span class="quoi">Neuf couleurs sur la même page : les vôtres, les miennes, celles de 2026.</span>
   </a>
 
   <p class="famille">Vers la décision</p>
 
   <a class="item" href="07-cinq-mises-en-page.html">
-    <span class="no">07</span><span class="titre">Cinq mises en page</span><span class="fleche">→</span>
+    <span class="no">07</span><span class="titre">Cinq mises en page</span>
     <span class="quoi">Registre, colonne, plages larges, action au pouce, vignette — toutes en ivoire.</span>
   </a>
   <a class="item retenu" href="08-la-colonne-retenue.html">
-    <span class="no">08</span><span class="titre">La colonne — retenue</span><span class="fleche">→</span>
+    <span class="no">08</span><span class="titre">La colonne — retenue</span>
     <span class="quoi">Les trois déclinaisons que vous gardez : le repère, en plages, l’action au pouce.</span>
   </a>
 
   <a class="item retenu" href="09-calme-x-aman-retouche.html">
-    <span class="no">09</span><span class="titre">Le calme × Aman, retouché</span><span class="fleche">→</span>
+    <span class="no">09</span><span class="titre">Le calme × Aman, retouché</span>
     <span class="quoi">Le premier écran de 05, avec le pied d’Aman et le trait qui ferme l’en-tête. Deux versions du trait.</span>
   </a>
 
   <a class="item retenu" href="10-le-calme-en-couleurs.html">
-    <span class="no">10</span><span class="titre">Les deux retenus, en seize chartes</span><span class="fleche">→</span>
+    <span class="no">10</span><span class="titre">Les deux retenus, en seize chartes</span>
     <span class="quoi">La même paire d’écrans, seize fois. Les neuf couleurs déjà vues, plus sept qui vont jusqu’à cinq teintes.</span>
   </a>
 
   <a class="item retenu" href="11-ecran-retenu-seize-couleurs.html">
-    <span class="no">11</span><span class="titre">L’écran retenu, seize couleurs</span><span class="fleche">→</span>
+    <span class="no">11</span><span class="titre">L’écran retenu, seize couleurs</span>
     <span class="quoi">Le trait seul — celui qu’il garde — dans les seize chartes, quatre par rangée.</span>
   </a>
 
   <a class="item retenu" href="12-origine-plus-fin.html">
-    <span class="no">12</span><span class="titre">Origine, plus fin — trois tentatives</span><span class="fleche">→</span>
+    <span class="no">12</span><span class="titre">Origine, plus fin — trois tentatives</span>
     <span class="quoi">Encadrés amincis et resserrés, puis deux façons d’enlever la boîte : l’ourlet, et le fil.</span>
   </a>
 
   <a class="item retenu" href="13-le-fil-quatre-couleurs.html">
-    <span class="no">13</span><span class="titre">Le fil, en quatre couleurs</span><span class="fleche">→</span>
+    <span class="no">13</span><span class="titre">Le fil, en quatre couleurs</span>
     <span class="quoi">Sans le cheveu sous ATLAS. Les trois formes de liste × Origine, Ivoire, Sylve, Océan.</span>
   </a>
 
   <p class="famille">Enlever le gros bouton</p>
 
   <a class="item retenu" href="14-le-geste-nouveau-chantier.html">
-    <span class="no">14</span><span class="titre">Six façons d’ouvrir un chantier</span><span class="fleche">→</span>
+    <span class="no">14</span><span class="titre">Six façons d’ouvrir un chantier</span>
     <span class="quoi">L’aplat vert « Nouveau chantier » remplacé six fois, sur la vraie dalle de votre téléphone (390 × 664) : le filet qui se trace, le sceau, le premier brin, le cartouche gravé, la pastille au pouce, la légende sur le trait. Chaque proposition bouge d’elle-même — rien à survoler.</span>
   </a>
 
   <a class="item retenu" href="15-encore-six-gestes.html">
-    <span class="no">15</span><span class="titre">Encore six gestes</span><span class="fleche">→</span>
+    <span class="no">15</span><span class="titre">Encore six gestes</span>
     <span class="quoi">Deuxième tournée, après « je ne suis pas encore hyper convaincu ». Six idées qui ne se ressemblent pas entre elles : la ligne du registre, le titre qui porte l’action, la marque d’imprimeur, le cinquième onglet, tirer pour ouvrir, le signet sur la tranche.</span>
   </a>
 
   <a class="item retenu" href="16-la-pastille-qui-tourne.html">
-    <span class="no">16</span><span class="titre">La pastille qui tourne</span><span class="fleche">→</span>
+    <span class="no">16</span><span class="titre">La pastille qui tourne</span>
     <span class="quoi">La seule des seize qui <b>répond au doigt</b> : on appuie, la rose des vents part en trois tours, jette une onde et dix éclats d’or, et la feuille du nouveau chantier monte une demi-seconde plus tard. Trois habillages, et le geste démonté image par image pour les lecteurs sans script.</span>
   </a>
 
   <a class="item retenu" href="17-six-marques.html">
-    <span class="no">17</span><span class="titre">Six marques pour le sceau</span><span class="fleche">→</span>
+    <span class="no">17</span><span class="titre">Six marques pour le sceau</span>
     <span class="quoi">Le sceau clair est retenu — <b>seule la gravure dedans change</b>. Le cadran gradué, le trait pur, le monogramme, la facette, l’anneau et la bille, le point. Les six se pressent : d’abord côte à côte pour comparer, puis chacun dans l’écran avec la feuille qui monte.</span>
   </a>
 
   <a class="item retenu" href="18-six-matieres.html">
-    <span class="no">18</span><span class="titre">Six matières, et deux qui s’ouvrent en devenant la page</span><span class="fleche">→</span>
+    <span class="no">18</span><span class="titre">Six matières, et deux qui s’ouvrent en devenant la page</span>
     <span class="quoi"><b>Plus aucun fond clair</b> : de la laque profonde, de l’or brossé, de la cire, une encre vivante — ou pas de disque du tout. Et sur deux d’entre elles, la feuille ne monte plus du bas : <b>le bouton s’agrandit jusqu’à devenir la page</b>. Les six se pressent.</span>
   </a>
 
   <a class="item retenu" href="19-six-gestes-tenus.html">
-    <span class="no">19</span><span class="titre">Six gestes tenus</span><span class="fleche">→</span>
+    <span class="no">19</span><span class="titre">Six gestes tenus</span>
     <span class="quoi">Retour à la <b>retenue</b> : la gerbe d’éclats est partie, les matières imitées aussi. Une seule chose bouge à la fois, entre une demi-seconde et six dixièmes. Le mot, la goutte d’or, le disque de nuit, le cercle qui se ferme, le filet traversé, les deux volets — les six se pressent.</span>
   </a>
 
   <a class="item retenu" href="20-le-rond-qui-eclate.html">
-    <span class="no">20</span><span class="titre">Le rond éclate, et devient la page</span><span class="fleche">→</span>
+    <span class="no">20</span><span class="titre">Le rond éclate, et devient la page</span>
     <span class="quoi">Le squelette demandé : <b>un rond plein, un « + », une explosion de débris, et le rond qui s’agrandit</b> jusqu’à remplir l’écran. Aucun fond clair. Ce qui varie d’une proposition à l’autre, c’est la nature des débris — poussière, tessons du rond lui-même, braises qui retombent, aucun débris, gerbe sombre sur or, ou le signe qui se brise.</span>
   </a>
 
   <a class="item retenu" href="21-le-plus-du-titre.html">
-    <span class="no">21</span><span class="titre">Le « + » du titre, et six tours</span><span class="fleche">→</span>
+    <span class="no">21</span><span class="titre">Le « + » du titre, et six tours</span>
     <span class="quoi"><b>Le bouton qu’il a désigné</b> : l’anneau posé au bout de « Vos chantiers », qui ne coûte aucune ligne à l’écran. Trois tours rapides, freinés, puis la page — décliné six fois : rien, une poussière d’or, l’anneau qui devient la page, un contre-tour, le filet aspiré, l’écran qui recule.</span>
   </a>
 
   <a class="item retenu" href="22-le-rond-entre-deux-traits.html">
-    <span class="no">22</span><span class="titre">Le rond au milieu, entre deux traits</span><span class="fleche">→</span>
+    <span class="no">22</span><span class="titre">Le rond au milieu, entre deux traits</span>
     <span class="quoi">Le même anneau, mais <b>ramené au centre</b> — à la place qu’occupait l’aplat vert — avec <b>un petit trait de chaque côté</b> qui s’écarte quand le signe part en trois tours. Huit déclinaisons, toutes pressables — dont <b>deux qui reprennent l’anneau de la note vocale</b> (un cercle dehors, un cercle dedans), et une qui remplace les traits par les petits crans de la dictée.</span>
   </a>
 
   <a class="item retenu" href="23-le-mot-et-le-rond-qui-bat.html">
-    <span class="no">23</span><span class="titre">Le mot, le rond qui bat, et la poussière</span><span class="fleche">→</span>
+    <span class="no">23</span><span class="titre">Le mot, le rond qui bat, et la poussière</span>
     <span class="quoi">Le mixte : <b>« Nouveau chantier » écrit</b>, le rond qui <b>bat doucement</b> en attendant le doigt, et au clic <b>le tour et la poussière</b>. Sept dispositions du mot — à droite du rond, coupé en deux par lui, en petit doré dessous, réduit à « Ajouter », avec les traits, posé au-dessus, ou effacé par le geste lui-même.</span>
   </a>
 
   <a class="item retenu" href="24-le-bouton-retenu.html">
-    <span class="no">24</span><span class="titre">Le bouton retenu, resserré</span><span class="fleche">→</span>
+    <span class="no">24</span><span class="titre">Le bouton retenu, resserré</span>
     <span class="quoi"><b>Celui qu’il a gardé, et lui seul</b> : « Nouveau chantier » écrit, le rond qui bat à sa droite. Resserré à sa demande — l’onde d’attente ramenée de 1,85 à 1,42 fois le rond, le rond de 46 à 38 px, la gerbe de seize grains à onze. Tous les écarts sont chiffrés au bas de la page.</span>
   </a>
 
   <p class="famille">Les deux portes de la création</p>
 
   <a class="item retenu" href="25-les-deux-portes.html">
-    <span class="no">25</span><span class="titre">Les deux portes, côte à côte</span><span class="fleche">→</span>
+    <span class="no">25</span><span class="titre">Les deux portes, côte à côte</span>
     <span class="quoi">Six façons de montrer « créer le chantier » ET « devis à la main » d’un seul coup d’œil. La 4 bascule pour de bon, sans script.</span>
   </a>
 
   <a class="item retenu" href="26-la-bascule-affinee.html">
-    <span class="no">26</span><span class="titre">La bascule, affinée</span><span class="fleche">→</span>
+    <span class="no">26</span><span class="titre">La bascule, affinée</span>
     <span class="quoi">Six déclinaisons de la proposition 4 : le trait qui glisse, le point d’or, la plage, la perle, le cartouche, la bascule en pied. La 1 est retenue.</span>
   </a>
 
   <a class="item retenu" href="27-banc-dessai-bascule.html">
-    <span class="no">27</span><span class="titre">Banc d’essai — la bascule</span><span class="fleche">→</span>
+    <span class="no">27</span><span class="titre">Banc d’essai — la bascule</span>
     <span class="quoi">Celle-ci s’UTILISE : on tape dans les champs, on bascule, et le bouton mène vraiment quelque part — pas au même endroit selon le choix. Volontairement absente de la page unique : elle navigue entre plusieurs écrans et prend tout le téléphone.</span>
   </a>
 
   <a class="item retenu" href="../../appli/la-date-qui-ressort.html">
-    <span class="no">94</span><span class="titre">La date qui ressort</span><span class="fleche">&rarr;</span>
+    <span class="no">94</span><span class="titre">La date qui ressort</span>
     <span class="quoi">Sa question du 23 août 2026, capture des « Planifiés » à l’appui : <b>« comment on peut faire pour que la date ressorte par rapport au nom du client ? »</b> Le diagnostic tient en une ligne, et il est mesuré, pas supposé : la date et le nom portent <b>exactement la même encre</b> (<code>colors.ink</code>), et le nom fait 19 px en serif contre 12,5 px en capitales — deux tailles ne font pas une hiérarchie quand la couleur est identique. La planche montre <b>le témoin d’abord</b>, puis quatre issues sur ses vrais chantiers de la semaine. <b>A</b> la date prend l’or — l’accent qui porte partout ailleurs ce qu’on LIT ; un seul mot change dans le code, mais la durée sous le nom est déjà en or, et c’est la seule question de cette proposition. <b>B</b> la date s’assoit sur le filet, qui passe derrière elle : aucune couleur ne change, c’est la place qui sépare, et elle cesse d’être un titre pour devenir la couture entre deux journées. <b>C</b> le jour en chiffre à gauche, dans le serif du calendrier juste au-dessus — le décalage fait le travail, au prix de 36 px de moins pour les noms longs. <b>D</b> une pastille de papier, qu’on repère du pouce sans lire — au prix de trois aplats sur une semaine chargée. Chaque proposition <b>porte son défaut écrit</b> : une planche qui ne dit que ses avantages ne se choisit pas, elle se subit. Aucune n’écrit une couleur en dur — toutes se retournent sur Nuit et Sylve. <b>RETENUE ET CODÉE le 24 août 2026 : la D.</b> Le filet qui séparait deux journées part avec elle — la pastille fait la couture, et deux séparateurs pour une seule se verraient.</span>
   </a>
 
   <a class="item" href="../../appli/temps-sur-la-fiche.html">
-    <span class="no">92</span><span class="titre">Le temps passé, montré ou non</span><span class="fleche">→</span>
+    <span class="no">92</span><span class="titre">Le temps passé, montré ou non</span>
     <span class="quoi">Sa demande du 22 août 2026, capture de la fiche d’entretien à l’appui : <b>« il faudrait mettre un petit bouton on/off pour si l’utilisateur ne veut pas que le temps apparaisse sur la fiche, pouvoir l’effacer — on, le temps apparaîtrait sur la fiche ; off, il n’apparaîtrait pas »</b>. La planche montre <b>les deux côtés à la fois</b> : sa fiche à gauche, le compte rendu de la cliente à droite, qui se recompose sous le doigt — c’est le seul moyen de répondre à la question qu’il pose vraiment, « qu’est-ce que mon client voit ? ». <b>Trois partis pris, et aucun n’allait de soi :</b> « effacer » ne veut pas dire <b>oublier</b> — le temps reste enregistré sur le passage, seul le compte rendu l’ignore, et une phrase le dit sous la molette (sans elle il croit avoir perdu sa durée et la ressaisit) ; l’état se lit <b>en toutes lettres</b>, « Visible » / « Masqué », parce qu’un curseur nu se décode et qu’on regarde cet écran avec un gant ; et la ligne du client <b>disparaît</b> au lieu de se griser, comme sur le compte rendu qu’il recevra pour de bon. <b>Deux questions pour lui :</b> le réglage de départ (la planche s’ouvre sur « Visible », ce que l’application fait aujourd’hui) et le cas où il voudrait <b>ne rien saisir du tout</b>, qui serait autre chose. <b>Elle se manipule</b> — l’interrupteur, les deux listes de durée, l’envoi qui fige tout — et son contrôle (<code>scripts/verifier-maquette-temps-sur-la-fiche.mjs</code>) a été <b>vu rougir</b> contre une ligne seulement grisée, contre la phrase supprimée, et contre un interrupteur qui survivait à l’envoi. <b>En attente de sa réponse ; rien n’est codé.</b></span>
   </a>
 
   <a class="item" href="../../appli/choisir-la-date.html">
-    <span class="no">91</span><span class="titre">Choisir la date, avec le planning</span><span class="fleche">→</span>
+    <span class="no">91</span><span class="titre">Choisir la date, avec le planning</span>
     <span class="quoi">Sa demande du 22 août 2026 : <b>« lorsqu’on clique sur "Choisir la date" […] on devrait avoir le visuel du calendrier qui se trouve dans la catégorie planning, avec la possibilité de cliquer sur les jours pour voir quels chantiers y sont déjà affectés — comme ça on peut savoir si oui ou non on peut rajouter des clients sur les jours »</b>. La planche montre les deux états, à comparer d’un doigt : le calendrier NU d’aujourd’hui, qui éteint un jour sans jamais dire pourquoi ni ce qui s’y trouve ; et le calendrier DU PLANNING — les deux barres sous le chiffre, le week-end teinté, aujourd’hui cerclé d’or —, suivi de <b>la fiche du jour</b> : qui est déjà là, à quelle demi-journée, avec quelle équipe, et un verdict pour CE chantier-ci. <b>Trois partis pris à trancher :</b> le calendrier est le même dessin que le planning (valeurs recopiées de la planche 84, pas redessinées) ; un jour complet <b>reste touchable</b>, puisque c’est celui qu’il veut regarder avant de décider ; et rien n’est proposé au client tant qu’il n’a pas touché « Envoyer ». <b>Elle se manipule</b> — jours, mois, durée du chantier — et tout se recalcule sur les mêmes règles de charge que l’application. <b>Retenu le 23 août : la A</b> — le cadre toujours ouvert —, <b>et la note ne part sur AUCUN document</b>, pas même le PDF des gars. C’est cette promesse qui l’autorise à y écrire ce qu’il ne dirait pas devant le client.</span>
   </a>
 
     <span class="quoi">Sa demande du 22 août 2026 : <b>« lorsqu’on clique sur "Choisir la date" […] on devrait avoir le visuel du calendrier qui se trouve dans la catégorie planning, avec la possibilité de cliquer sur les jours pour voir quels chantiers y sont déjà affectés — comme ça on peut savoir si oui ou non on peut rajouter des clients sur les jours »</b>. La planche montre les deux états, à comparer d’un doigt : le calendrier NU d’aujourd’hui, qui éteint un jour sans jamais dire pourquoi ni ce qui s’y trouve ; et le calendrier DU PLANNING — les deux barres sous le chiffre, le week-end teinté, aujourd’hui cerclé d’or —, suivi de <b>la fiche du jour</b> : qui est déjà là, à quelle demi-journée, avec quelle équipe, et un verdict pour CE chantier-ci. <b>Trois partis pris à trancher :</b> le calendrier est le même dessin que le planning (valeurs recopiées de la planche 84, pas redessinées) ; un jour complet <b>reste touchable</b>, puisque c’est celui qu’il veut regarder avant de décider ; et rien n’est proposé au client tant qu’il n’a pas touché « Envoyer ». <b>Elle se manipule</b> — jours, mois, et la durée du chantier au <b>bandeau déroulant</b>, d’une demi-journée à 200 jours (sa correction du 22 août : trois pastilles figées ne couvraient pas un chantier de trois semaines) — et tout se recalcule sur les mêmes règles de charge que l’application. <b>En attente de sa réponse ; rien n’est codé.</b></span>
   <a class="item retenu" href="../../appli/termines-simple.html">
-    <span class="no">90</span><span class="titre">« Terminés », simplifié</span><span class="fleche">→</span>
+    <span class="no">90</span><span class="titre">« Terminés », simplifié</span>
     <span class="quoi">Sa demande du 22 août 2026, capture à l’appui : <b>« je la trouve beaucoup trop compliquée ; un utilisateur qui ne connaît pas l’application n’y comprend rien »</b> — les mêmes mots que pour le planning le 19 (planche 84), donc la même réponse : une planche qui s’essaie, et <b>rien dans <code>src/</code></b>. Six choses s’y comprennent mal, relevées sur sa capture : <b>le seul travail qui reste est replié</b> derrière une ligne en petites capitales ; <b>3 828,00 € est écrit deux fois</b> sans qu’on sache pourquoi c’est le même chiffre ; <b>trois codes que personne n’a appris</b> (la pastille dorée, les points pleins/creux, l’or contre le noir) ; « F2026-0005 · LE 20 » ; le fil vertical qui prend 47 px ; la TVA coupée par la barre du bas. Trois propositions — <b>A</b> deux piles (ce qui reste en haut, déplié, avec son bouton), <b>B</b> une seule liste où l’état s’écrit en toutes lettres, <b>C</b> une page qui ne fait qu’une chose et s’appelle « À facturer ». <b>Elles facturent pour de bon</b> : les totaux se recalculent, jamais recopiés. Les cinq factures et les deux totaux sont ceux de sa capture ; les quatre chantiers en attente sont des exemples à 2 040,00 €. <b>RETENUE ET CODÉE le 22 août 2026 : la proposition B</b>, avec ses deux corrections du soir — <b>le mois se feuillette</b> (« ‹ Août 2026 › », et un mois vide répond « Rien en juillet 2026 » : on se déplace sur le calendrier, pas sur les mois qui portent quelque chose), et <b>ce qui reste à facturer NE SUIT PAS le mois</b>, parce qu’un chantier de juillet jamais facturé doit rester sous ses yeux en août. Le compte des factures passe en <b>noir gras</b>, à sa demande. La planche garde ses trois propositions et <b>reste la référence</b> de <code>src/app/termines/</code>.</span>
   </a>
 
   <a class="item retenu" href="../../appli/note-feuille-chantier.html">
-    <span class="no">93</span><span class="titre">Une note sur la feuille</span><span class="fleche">→</span>
+    <span class="no">93</span><span class="titre">Une note sur la feuille</span>
     <span class="quoi">Sa demande du 23 août 2026 : <b>« entre "Copier l’adresse" et "Ouvrir le PDF", j’aimerais avoir un petit encadré où l’utilisateur peut marquer quelque chose — penser à prendre le broyeur, client plus disponible à partir de neuf heures »</b>. <b>Cherché avant d’affirmer</b> (<code>CLAUDE.md</code> §5 ter) : la table <code>chantiers</code> ne porte aucun champ libre, <code>notes_vocales</code> est la dictée, et le <code>note</code> du schéma appartient aux paiements. C’est donc bien neuf. Deux façons — <b>A</b> le cadre toujours ouvert, <b>B</b> une ligne discrète qui s’ouvre au doigt — et la planche <b>mesure ce qui les sépare</b> : à vide, A occupe 141 px sur chaque feuille, B 45. Les deux s’écrivent réellement, l’enregistrement se fait à la sortie du cadre (un bouton non touché perdrait la note d’un homme qui range son téléphone et démarre). Le champ est à <b>16 px</b>, sous quoi iOS zoome et fait sauter l’écran — contrôlé, pas supposé. <b>Une seconde question lui est posée</b>, qu’il n’a pas soulevée et qui décide de l’implémentation : la note va-t-elle sur le PDF sans les prix, celui que ses gars emportent, ou reste-t-elle dans l’application ? <b>RETENUE ET CODÉE le 23 août 2026 : la proposition A</b> — et c’est LUI qui a tranché sans le savoir. Devant les captures, il a répondu <i>« B, y’a rien ? Je vois rien »</i> : la ligne dorée était pourtant là. <b>Une invitation qu’il ne voit pas sur une image, il ne la trouvera pas davantage sur un chantier</b>, et l’économie de 96 px ne pesait plus rien. Sur le PDF : <i>« non, elle peut rester là, car les salariés auront accès au planning ; justement, c’est pour cela que je voulais le devis sans les prix »</i> — la note ne s’imprime nulle part. Migration 0060, <code>NOTE_MAX</code> posé dans <code>src/lib/</code> pour que l’écran le lise sans tirer la base dans le navigateur.</span>
   </a>
 
   <a class="item" href="../../appli/calendrier-aujourdhui.html">
-    <span class="no">92</span><span class="titre">Deux cases entourées</span><span class="fleche">→</span>
+    <span class="no">92</span><span class="titre">Deux cases entourées</span>
     <span class="quoi">Sa remarque du 23 août 2026, capture à l’appui : <b>« je ne comprends pas pourquoi le vingt-deux reste sélectionné, ce n’est pas très clair ; ça doit être un bug, je pense »</b>. <b>Ce n’en est pas un</b>, et le dire d’abord importe : le 22 porte un anneau doré parce que c’est <i>aujourd’hui</i>, le 20 un anneau noir parce que c’est le jour <i>touché</i>. Deux anneaux de 1,5 px, distingués par la seule couleur — sur un téléphone, cela se lit « deux jours choisis ». <b>Et l’anneau doré est redondant</b> : le chiffre d’aujourd’hui est déjà doré et gras (<code>PlanningClient.tsx</code>, et la même règle dans la planche 84). Le retirer n’invente rien, il supprime un signal en double — mais il touche une planche qu’il a validée trait pour trait, donc il se dessine avant de se coder (<code>CLAUDE.md</code> §3 bis). <b>La planche se mesure elle-même</b> : elle compte les cases dont le <code>box-shadow</code> n’est pas <code>none</code> — deux dans la version actuelle, une dans l’autre. <b>TRANCHÉ le 23 août 2026 : on garde l’anneau.</b> Sa réponse une fois la planche vue — <i>« ah, je n’avais pas compris que c’était le jour qu’on est ; peut-être le laisser »</i>. Ce n’était donc pas un défaut d’affichage mais un code qu’il n’avait pas appris, et la planche a servi à le lui apprendre plutôt qu’à changer le produit. <b>Rien n’a été codé, et il ne faut pas rouvrir</b> sans qu’il le redemande.</span>
   </a>
 
   <a class="item" href="../../appli/equipes-ou-chantiers.html">
-    <span class="no">89</span><span class="titre">Deux équipes sur un chantier</span><span class="fleche">→</span>
+    <span class="no">89</span><span class="titre">Deux équipes sur un chantier</span>
     <span class="quoi">Sa question du 22 août 2026, capture à l’appui : <b>« pourquoi le matin et l’après-midi de monsieur Eric s’affichent en incomplet ? »</b> — Julien et Antoine sont tous deux affectés, et la pastille reste vert pâle. <b>La réponse : la charge compte les CHANTIERS, jamais les équipes affectées</b> (<code>occupationDemi</code>, <code>src/lib/planning-jour.ts</code>) : 1 chantier ÷ 2 équipes = 0,5, donc « incomplet ». L’affectation des équipes par demi-journée, posée le 21 août, ne pèse aujourd’hui sur aucune capacité — elle est <b>décorative</b> de ce point de vue. <b>La conséquence n’est pas cosmétique :</b> ce mardi-là est proposé aux clients alors que ses deux équipes y sont déjà. Planche en quatre temps — ce qu’il a fait, ce que l’application calcule, ce que donnerait un compte par équipes, et le cas où une seule équipe est posée (où « incomplet » reste juste). <b>Une seconde demande, écartée de cette planche :</b> il avait d’abord été proposé un A/B/C sur l’affichage du jour déjà pris — *« je ne comprends pas ta proposition A B ou C, ça n’a rien à voir »* —, et c’était en effet répondre à côté. <b>Le fond n’est pas un choix d’écran mais de règle</b>, et il touche les dates offertes au client autant que la couleur d’une pastille : les deux doivent dire la même chose (<code>CLAUDE.md</code> §3). <b>En attente de sa réponse ; rien n’est codé.</b></span>
   </a>
 
   <a class="item" href="../../appli/envoi-jour-deja-pris.html">
-    <span class="no">88</span><span class="titre">Un jour déjà pris, proposé quand même</span><span class="fleche">→</span>
+    <span class="no">88</span><span class="titre">Un jour déjà pris, proposé quand même</span>
     <span class="quoi">Sa colère du 22 août 2026, capture de l’écran d’envoi à l’appui : <b>« je peux proposer le 24 alors qu’un client a validé le 24 — corrige-moi ça ! Ça ne doit jamais se reproduire, c’est une erreur gravissime »</b>. Sa liste — 24, 25, 26, 27, 28, 31 — est compatible avec <b>deux causes</b>, et l’une est un vrai défaut : <b>trouvé, corrigé, poussé</b>. Les trois chemins qui calculent l’occupation bornaient leur requête sur <code>date_planifiee &gt;= début</code>, le jour où le chantier <b>commence</b> ; un trois-jours parti le jeudi tient encore le lundi, sa ligne n’était donc pas ramenée, et ce lundi paraissait libre. <b>La revérification de la réponse du client lisait la même occupation tronquée</b> — donc rien ne rattrapait la faute, et deux chantiers tombaient le même jour. Corrigé par un prédicat unique, <code>encoreEnCoursDepuis</code>, partagé par les trois (<code>CLAUDE.md</code> §3), et tenu par trois contrôles <b>vus rougir contre l’ancienne borne</b> — le troisième était d’abord vert pour un mauvais motif (<code>expire</code>), ce que seule la vérification du motif exact a montré. <b>Cette planche porte l’autre cause</b>, qui n’est pas un défaut mais un silence : avec deux équipes, un jour où une seule est prise est proposé à dessein, sans que rien ne le signale. Trois façons de l’écrire — rien, en toutes lettres, ou deux carrés comme au planning. <b>En attente de sa réponse ; rien n’est codé de ce côté-là.</b></span>
   </a>
 
   <a class="item" href="../../appli/planning-semaine-ouverte.html">
-    <span class="no">87</span><span class="titre">Un devis accepté, invisible</span><span class="fleche">→</span>
+    <span class="no">87</span><span class="titre">Un devis accepté, invisible</span>
     <span class="quoi">Sa panne du 22 août 2026 : <b>« un devis a été accepter mais rien n’ai visible sur mon planning »</b>, capture de la confirmation client à l’appui — « Intervention prévue le lundi 24 août ». <b>Reproduit à l’écran avant de répondre</b>, pas deviné : chantier inséré au 24, connexion réelle, capture. Le chantier <b>est bien posé</b> — <code>enregistrerReponse</code> écrit <code>date_planifiee</code> dans la <b>même transaction</b> que la réponse du client, il n’y a jamais l’une sans l’autre — et le 24 porte bien sa barre pleine dans le calendrier. Le défaut est ailleurs : la liste des planifiés <b>s’ouvre sur la semaine du jour</b> (<code>useState(() =&gt; lundiDe(aujourdHui))</code>), la trouve vide, et écrit « Aucun chantier posé cette semaine » pendant que le chantier attend trois jours plus loin. <b>L’écran lui dit donc le contraire de ce qui est vrai</b>, et la seule trace du contraire est une barre de 3 px. Trois écrans : <b>A</b> ce qu’il a, <b>B</b> s’ouvrir sur la semaine du prochain chantier quand celle du jour est vide, <b>C</b> rester sur cette semaine mais écrire où est le prochain, et y emmener. Les trois se promènent — une seule liste les dessine, jamais deux (<code>CLAUDE.md</code> §3). <b>En attente de sa réponse ; rien n’est codé.</b></span>
   </a>
 
   <a class="item" href="../../appli/planning-planifies.html">
-    <span class="no">86</span><span class="titre">Les planifiés, sans répétition</span><span class="fleche">→</span>
+    <span class="no">86</span><span class="titre">Les planifiés, sans répétition</span>
     <span class="quoi">Ses trois corrections du 22 août, sur la liste des planifiés de l’écran codé. <b>La durée remplace le moment</b> — <i>« ce n’est pas clair quand il y a marqué le matin et l’après-midi »</i> : la ligne dit désormais le temps que prend le chantier, lu de sa durée en base et non du nombre de demi-journées visibles ce jour-là. <b>Le compte « 1 chantier » disparaît</b> — <i>« on n’a pas besoin de cette information »</i>. <b>Et la répétition cesse</b> : <i>« sur le premier nom il faudrait qu’on clique et que ça se transforme en le menu déroulant qu’on a juste en dessous »</i> — la ligne se déplie sur place, le jour et le nom ne s’écrivent qu’une fois. Un réglage hors de l’écran compare « une demi-journée » et « une demi-journée · matin », la seule chose que la durée seule cesse de dire. <b>En attente de sa réponse ; rien n’est codé.</b></span>
   </a>
 
   
   <a class="item" href="../../appli/planning-equipe-sans-nom.html">
-    <span class="no">85</span><span class="titre">Une équipe sans nom</span><span class="fleche">→</span>
+    <span class="no">85</span><span class="titre">Une équipe sans nom</span>
     <span class="quoi">Trouvé le 22 août 2026 en <b>regardant une capture</b> de l’écran codé, puis mesuré : sur la fiche du jour, une équipe qui existe <b>sans porter de nom</b> s’écrit « Équipe A » — 91 px là où « Équipe ? » en fait 75 — et la ligne déborde de <b>quatre pixels</b>, si bien que « Retirer » passe dessous. La planche 84 ne dessine jamais cette étiquette : elle n’a donc rien tranché, et le régler voudrait dire retoucher un dessin qu’il a validé (<code>CLAUDE.md</code> §3 bis). Cette planche montre l’état actuel et trois issues — l’étiquette réduite à sa lettre, le mot « Ap.-m. » que ses boutons emploient déjà, ou un appui qui lui demande le nom. <b>Elle se mesure elle-même</b> : les chiffres viennent du navigateur, jamais de la main. <b>En attente de sa réponse ; rien n’est codé.</b></span>
   </a>
 
   <a class="item retenu" href="../../appli/planning-simple.html">
-    <span class="no">84</span><span class="titre">Le planning, en semaines</span><span class="fleche">→</span>
+    <span class="no">84</span><span class="titre">Le planning, en semaines</span>
     <span class="quoi">Sa demande du 19 août : <b>« cette page est beaucoup trop compliquée à comprendre »</b>. Corrigée le 21 août sur sa réponse — <b>« je veux un accès au mois ; la semaine, c’était pour les chantiers planifiés »</b>. Le calendrier reste donc au MOIS ; seule la liste du bas se déplace par semaine, jours <b>nommés</b> et clients dessous, titres noirs et centrés. Toucher un jour du mois amène la liste sur sa semaine : on vise en haut, on lit en bas. <b>Retenu le 21 août : les deux barres</b> sous le chiffre (matin dessus, après-midi dessous), et la fiche du jour dit le compte — « 2 équipes sur 2 — complet » — et l’équipe affiliée. <b>Elle s’essaie</b>, et tout se calcule sur les mêmes chantiers que la liste. <b>RETENUE ET CODÉE le 21 août 2026</b> — « code trait pour trait cette maquette » : elle reste la référence, et toute correction du planning se porte d’abord ici.</span>
   </a>
 
   <a class="item retenu" href="../../appli/en-cours-le-chiffre.html">
-    <span class="no">83</span><span class="titre">« En cours », et le chiffre</span><span class="fleche">→</span>
+    <span class="no">83</span><span class="titre">« En cours », et le chiffre</span>
     <span class="quoi">Sa demande du 19 août : <b>le même nombre était écrit trois fois sur l’accueil</b> — « Un en cours » sous le titre, « En cours » à gauche, « Un » à droite. Il n’est plus dit qu’une fois, <b>en chiffre et en gras, collé au mot</b>. Trois gris proposés pour le mot ; <b>il a pris le C</b>, le plus foncé — le jeton <code>inkSoft</code>, qui se dérive pour les sept chartes.</span>
   </a>
 
   <a class="item retenu" href="../../appli/deux-boutons-devis.html">
-    <span class="no">82</span><span class="titre">Je dicte / J’écris mon devis</span><span class="fleche">→</span>
+    <span class="no">82</span><span class="titre">Je dicte / J’écris mon devis</span>
     <span class="quoi">Sa demande du 18 août : <b>« supprime je dicterai / je l’écris, mets deux boutons cliquables »</b>. Cinq façons de le poser — et la mesure, faite dans un navigateur à 390 px, tranche : <b>empilées, les libellés tiennent sur une ligne ; côte à côte, « Je dicte mon devis » casse sur deux</b>. <b>Retenue : la 5, sans les flèches</b> — deux capsules vertes empilées, à égalité. Le mot « Créer le chantier » disparaît de l’écran, et c’est assumé : les deux boutons créent le chantier avant d’aller où ils disent.</span>
   </a>
 
   <a class="item retenu" href="28-le-bouton.html">
-    <span class="no">28</span><span class="titre">Le bouton, huit façons</span><span class="fleche">→</span>
+    <span class="no">28</span><span class="titre">Le bouton, huit façons</span>
     <span class="quoi">« Trop gros, carré. » Filet, bandeau fin, plaque gravée, sceau, capsule, double filet, trait d’or, angle adouci. La capsule est retenue, et posée sur tous les écrans.</span>
   </a>
 
   <p class="famille">Le planning et la route</p>
 
   <a class="item" href="29-y-aller.html">
-    <span class="no">29</span><span class="titre">Y aller</span><span class="fleche">→</span>
+    <span class="no">29</span><span class="titre">Y aller</span>
     <span class="quoi">Sur le planning, l’adresse d’un chantier planifié <b>part dans le GPS en un doigt</b> — Plans, Google Maps ou Waze. Trois entrées au choix : l’adresse écrite sous le nom, une pastille au bout de la ligne, ou la ligne entière qui s’ouvre. <b>Les trois destinations sont de vrais liens</b> : ouverte depuis un iPhone, cette page ouvre vraiment le GPS.</span>
   </a>
 
   <a class="item retenu" href="30-le-plus-vers-le-gps.html">
-    <span class="no">30</span><span class="titre">Le « + » qui mène au GPS</span><span class="fleche">→</span>
+    <span class="no">30</span><span class="titre">Le « + » qui mène au GPS</span>
     <span class="quoi">Sa réponse à la 29 : <b>le chevron devient un « + » doré</b>, le même que la pellicule des photos. <b>Tout répond au doigt</b> — les trois GPS ouvrent vraiment l’application, « copier » copie, « appeler » appelle, « le chantier » change d’écran, et un onglet absent de la maquette le dit au lieu de rester muet. Le cas sans adresse y est aussi.</span>
   </a>
 
   <a class="item retenu" href="31-la-feuille-y-aller.html">
-    <span class="no">31</span><span class="titre">La feuille « Y aller »</span><span class="fleche">→</span>
+    <span class="no">31</span><span class="titre">La feuille « Y aller »</span>
     <span class="quoi"><b>« Il manque tout là en fait. »</b> Dans la 30, la feuille était enfermée dans le téléphone dessiné — trois centimètres au milieu de la page. Ici, sur un téléphone, <b>la maquette EST l’écran</b> : plus de cadre. La feuille porte l’adresse, le client, le chantier, le jour, les trois GPS, copier et appeler — avec leurs mots entiers. <b>Trois ouvertures à essayer</b> : du bas, page entière, ou depuis le « + » touché.</span>
   </a>
 
   <a class="item retenu" href="32-le-chevron.html">
-    <span class="no">32</span><span class="titre">Le chevron du planning</span><span class="fleche">→</span>
+    <span class="no">32</span><span class="titre">Le chevron du planning</span>
     <span class="quoi">Ses corrections sur la 31 : <b>le « + » devient le chevron</b> — celui-là même qui est à droite de « Google Maps » dans la feuille, même dessin et <b>même doré</b>, écrit une seule fois pour les deux — et <b>« Ouvrir la fiche du chantier » disparaît</b>, le nom du chantier y menant déjà. Une flèche de navigation promettait un départ ; un chevron promet qu’<i>on ouvre quelque chose</i>, ce qui reste vrai même sans adresse.</span>
     <span class="quoi"><b>Retenue et codée le 12 août 2026</b> — « tu mets le chevron en doré et ensuite tu peux la coder ». Voir <code>ARCHITECTURE.md</code> §70.</span>
   </a>
 
   <a class="item" href="33-la-ligne-chargee.html">
-    <span class="no">33</span><span class="titre">La ligne du planning, trois façons</span><span class="fleche">→</span>
+    <span class="no">33</span><span class="titre">La ligne du planning, trois façons</span>
     <span class="quoi"><b>« Montre-moi la différence en photo, je veux voir avant de prendre une décision. »</b> Le chevron posé, la ligne d’un chantier porte trois gestes et son nom sur 390 px — et c’est le nom qui cède. Trois façons à la largeur exacte de son téléphone : <b>A</b> ce qu’il a aujourd’hui, <b>B</b> le nom sur sa propre ligne, <b>C</b> « Déplacer » repoussé dans la feuille. Aucune n’est codée.</span>
   </a>
 
   <a class="item" href="34-sans-adresse.html">
-    <span class="no">34</span><span class="titre">Un chantier sans adresse</span><span class="fleche">→</span>
+    <span class="no">34</span><span class="titre">Un chantier sans adresse</span>
     <span class="quoi"><b>« Montre-moi. »</b> Ce que fait l’application quand un chantier n’a pas d’adresse — les trois GPS s’éteignent, <b>rien ne s’invente</b> — et ce que donnerait un bouton « Saisir l’adresse » qui ouvre la fiche directement au bon endroit. Le bouton n’est pas codé.</span>
   </a>
 
   <a class="item" href="35-le-calendrier-des-trimestres.html">
-    <span class="no">35</span><span class="titre">Le calendrier des trimestres</span><span class="fleche">→</span>
+    <span class="no">35</span><span class="titre">Le calendrier des trimestres</span>
     <span class="quoi">Sa demande du 12 août : <b>un petit calendrier entre les deux flèches</b> du relevé de TVA, « sans les jours, puisque ce n’est que des mois ». Remonter au 1<sup>er</sup> trimestre 2025 demande aujourd’hui <b>sept appuis</b> et sept chargements d’écran ; avec lui, deux appuis et un seul. Trois formes à essayer au doigt : les quatre trimestres, les douze mois, ou la liste. <b>En attente de son choix — rien n’est codé.</b></span>
   </a>
 
   <a class="item" href="36-la-tva-due-et-le-scanner.html">
-    <span class="no">36</span><span class="titre">La TVA due, et le scanner de tickets</span><span class="fleche">→</span>
+    <span class="no">36</span><span class="titre">La TVA due, et le scanner de tickets</span>
     <span class="quoi">Sa demande du 12 août : intégrer la <b>TVA déductible</b> — le gazole, la tronçonneuse — pour afficher enfin <b>ce qu'il reste à payer</b>, et les saisir en <b>passant les tickets devant l'appareil photo</b>. Trois présentations des trois chiffres, le mois et le trimestre, et le scanner du premier geste jusqu'à la confirmation. <b>Rien n'entre sans son accord</b> : un ticket thermique se lit mal, et un chiffre faux entré tout seul coûterait plus cher que pas de chiffre. <b>En attente de son choix.</b></span>
   </a>
 
   <a class="item" href="37-deux-colonnes-copier-et-saisie.html">
-    <span class="no">37</span><span class="titre">Copier un montant, et écrire un achat à la main</span><span class="fleche">→</span>
+    <span class="no">37</span><span class="titre">Copier un montant, et écrire un achat à la main</span>
     <span class="quoi">Ses quatre corrections sur la 36 : <b>les deux colonnes</b> retenues et seules, <b>les trois chiffres en gras</b> et de la même encre (la déductible était en gris), le bouton <b>redevenu une pastille</b> — il était le seul carré de l'écran —, et <b>copier un montant</b>, en trois façons à essayer. Plus l'entrée qui manquait : <b>écrire un achat à la main</b>, la TVA se calculant pendant la frappe. <b>En attente de son choix.</b></span>
   </a>
 
@@ -579,134 +583,134 @@
   <p class="famille">La dernière porte</p>
 
   <a class="item" href="../../appli/face-id.html">
-    <span class="no">94</span><span class="titre">Ouvrir avec Face ID — ESSAYABLE</span><span class="fleche">→</span>
+    <span class="no">94</span><span class="titre">Ouvrir avec Face ID — ESSAYABLE</span>
     <span class="quoi">Sa demande du 23 août 2026 : <b>« je veux bien que tu me codes le Face ID pour le mot de passe, et bien entendu qu’il faut conserver le mot de passe. L’utilisateur va commencer par créer son compte avec son mot de passe et ensuite il décidera s’il veut ouvrir sa session avec le mot de passe ou le Face ID. »</b> Un GESTE sur la porte : il se dessine avant de toucher à <code>src/</code> (<code>CLAUDE.md</code> §3 bis). Deux places — <b>A</b> le visage d’abord, le mot de passe en une ligne dessous ; <b>B</b> la porte d’aujourd’hui inchangée, plus un encadré au-dessus — et <b>tout le reste est identique dans les deux</b> : c’est la seule question posée. <b>Elle se manipule</b> : le visage ouvre une fenêtre système <b>dessinée</b> (aucune page web ne peut afficher celle d’iOS, et la planche l’écrit plutôt que de le maquiller — appeler <code>navigator.credentials</code> depuis une maquette poserait une vraie clé sur son téléphone, pour un domaine qui n’est pas celui d’Atlas). Deux interrupteurs portent ce qu’aucune image fixe ne montrerait : <b>faire échouer Face ID</b> — le refus se dit dans la fenêtre, puis ramène au mot de passe, <b>l’adresse déjà remplie</b>, clavier ouvert, et <b>sans compter de tentative ratée</b> (sans quoi un visage mal reconnu temporiserait son propre compte, la faute du 6 août) ; et <b>l’éteindre</b> — la porte redevient exactement celle d’aujourd’hui, ce que voit tout compte neuf. <b>Ce qui n’est pas une question, et la planche l’écrit</b> : le mot de passe ne se retire pas (son interrupteur est allumé et inerte), le compte se crée au mot de passe, l’activation est <b>par appareil</b>, et le même geste ouvre l’empreinte sur Android. <b>Une suite la parcourt en entier</b> avant publication (<code>appli/tests/essai-face-id.mjs</code>) : elle a été vue rouge contre une porte A privée de son chemin vers le mot de passe, et contre un échec de visage qui aurait accusé le mot de passe. <b>Côté code, le chemin est arrêté et vérifié</b> : <code>next-auth/providers/passkey</code> est écarté — <code>@auth/core</code> refuse le WebAuthn sans adaptateur (« WebAuthn requires an adapter »), et en brancher un réécrirait la couche session entière. Un <b>second fournisseur Credentials</b> vérifiant l’assertion avec <code>@simplewebauthn/server</code> laisse le JWT, le cookie et le <code>middleware</code> intacts. <b>En attente de sa réponse ; rien n’est codé.</b></span>
   </a>
 
   <a class="item" href="35-l-ecran-de-connexion.html">
-    <span class="no">35</span><span class="titre">L’écran de connexion</span><span class="fleche">→</span>
+    <span class="no">35</span><span class="titre">L’écran de connexion</span>
     <span class="quoi">Le seul écran resté dans l’identité d’avant le 3 août — terre cuite, carte blanche, aucune serif. <b>L’avant, puis quatre après</b> : la carte gardée, sans carte, le sceau, la ligne d’imprimé. Un bouton montre le <b>refus de connexion</b> sur les cinq écrans en même temps. Un défaut invisible ici y est signalé : <b>ses champs en 15 px font agrandir la page par iOS</b> dès qu’on tape dedans.</span>
   </a>
 
   <a class="item" href="36-le-logo-qui-sanime.html">
-    <span class="no">36</span><span class="titre">Le logo qui s’anime</span><span class="fleche">→</span>
+    <span class="no">36</span><span class="titre">Le logo qui s’anime</span>
     <span class="quoi">Sa réponse à la 35 : <b>la proposition 4 sans son titre</b>, avec le sceau et ATLAS du modèle 3, et <b>la marque qui s’anime une demi-seconde avant d’entrer</b>. <b>Ça s’essaie</b> — on tape, on appuie sur « Entrer », l’application arrive, « ↺ Recommencer » remet l’écran. Six animations au choix, l’écran étant identique partout : le cercle qui se ferme, la feuille qui pousse, le tour, le battement et l’onde, l’or qui monte, le sceau qui s’imprime.</span>
   </a>
 
   <a class="item" href="37-le-motif-du-sceau.html">
-    <span class="no">37</span><span class="titre">Le motif dans le rond d’or</span><span class="fleche">→</span>
+    <span class="no">37</span><span class="titre">Le motif dans le rond d’or</span>
     <span class="quoi">Sa réponse à la 36 : <b>il garde « le tour »</b>, et seule la gravure change. Huit motifs — la feuille d’aujourd’hui, la feuille seule, le A, les cernes et la fente, le conifère, la rose des vents, l’arbre au trait, la ligne de crête. <b>Une bande en tête les montre à leur taille réelle</b> : c’est là que se juge lequel tient encore à six millimètres, et c’est elle qui en a fait jeter deux.</span>
   </a>
 
   <a class="item retenu" href="33-le-devis-parti-allege.html">
-    <span class="no">33</span><span class="titre">Le devis parti, allégé</span><span class="fleche">→</span>
+    <span class="no">33</span><span class="titre">Le devis parti, allégé</span>
     <span class="quoi"><b>« Trop d’infos sur cette page. »</b> L’écran du devis envoyé porte <b>onze blocs</b> et déborde de 382 px — il faut défiler pour tout voir. Quatre façons de retrancher, et elles ne retranchent pas au même endroit : l’adresse effacée, l’état monté dans le titre, le devis replié, ou <b>le geste seul sous le pouce</b>. Avec, à la fin, la question du bouton « carré » — mesurée : il est déjà au rayon des cartes, et c’est l’aplat sombre qui l’efface.</span>
   </a>
 
   <a class="item retenu" href="34-le-devis-sur-sa-base.html">
-    <span class="no">34</span><span class="titre">Le devis parti, sur sa base</span><span class="fleche">→</span>
+    <span class="no">34</span><span class="titre">Le devis parti, sur sa base</span>
     <span class="quoi"><b>Ce que vous avez arrêté</b> : le nom du devis et le total, plus de lignes de prestations, <b>« Modifier mon devis »</b> sous le total, et les trois actions du bas <b>en encre foncée</b>. Votre base au mot près, puis <b>quatre façons de la tenir</b> — le montant à même la page, le montant dans le titre, les trois actions empilées, ou le signet d’or.</span>
   </a>
 
   <a class="item retenu" href="40-le-message-du-devis-fige.html">
-    <span class="no">40</span><span class="titre">Le message du devis figé</span><span class="fleche">→</span>
+    <span class="no">40</span><span class="titre">Le message du devis figé</span>
     <span class="quoi"><b>« Le message dit de consulter la case devis, mais aucune case devis n’existe. »</b> L’écran Devis existe pourtant — mais depuis cette page, aucune porte n’y mène. Le témoin, puis trois façons : <b>le message devient la porte</b>, un vrai bouton, ou plus de message du tout.</span>
   </a>
 
   <p class="famille">La liste, et l’attente</p>
 
   <a class="item" href="41-la-ligne-sous-le-nom.html">
-    <span class="no">41</span><span class="titre">La ligne sous le nom</span><span class="fleche">→</span>
+    <span class="no">41</span><span class="titre">La ligne sous le nom</span>
     <span class="quoi">« <b>Le devis a été envoyé et il n’a toujours pas eu de réponse. Il faut le notifier sous le nom.</b> » Ce qui s’écrit sous le nom d’un chantier dans la liste : cinq façons, <b>photographiées et non dessinées</b> — la page est engendrée depuis l’application elle-même, donc à jour par construction.</span>
   </a>
 
   <a class="item" href="42-les-trois-points-qui-attendent.html">
-    <span class="no">42</span><span class="titre">Les trois points qui attendent</span><span class="fleche">→</span>
+    <span class="no">42</span><span class="titre">Les trois points qui attendent</span>
     <span class="quoi">« <b>Une fois qu’on a appuyé sur le dictaphone, on ne sait pas ce qui se passe. Les trois petits points sont fixes.</b> » Mesuré dans le code : ce n’est pas une animation arrêtée, c’est le caractère « … », un seul glyphe — il n’y a rien à faire bouger. Cinq attentes, et les deux choses qui aggravent celle-ci.</span>
   </a>
 
   <a class="item" href="43-l-attente-a-lessai.html">
-    <span class="no">43</span><span class="titre">L’attente, à l’essai</span><span class="fleche">→</span>
+    <span class="no">43</span><span class="titre">L’attente, à l’essai</span>
     <span class="quoi">Sa demande : « <b>juste des points que je puisse cliquer dessus […] pour voir comment ça rend</b> ». Celle-ci <b>se manipule</b> — on appuie sur le micro, on arrête, les points bougent. Sans une ligne de script : des boutons radio et des étiquettes, pour qu’elle s’ouvre aussi dans un aperçu.</span>
   </a>
 
   <p class="famille">Le bouton de la facture</p>
 
   <a class="item" href="38-le-bouton-de-la-facture.html">
-    <span class="no">38</span><span class="titre">Le bouton de la facture</span><span class="fleche">→</span>
+    <span class="no">38</span><span class="titre">Le bouton de la facture</span>
     <span class="quoi">« <b>Ouvrir le SMS tout prêt est carré, je le veux ovale comme tous les autres.</b> » Depuis, la capsule est devenue la règle sur les dix-sept écrans — sauf celui-ci, peint à la main, qui n’a jamais reçu la décision d’ensemble. Deux façons de la lui appliquer.</span>
   </a>
 
   <a class="item" href="39-le-bouton-de-la-facture-a-lessai.html">
-    <span class="no">39</span><span class="titre">Le même, à l’essai</span><span class="fleche">→</span>
+    <span class="no">39</span><span class="titre">Le même, à l’essai</span>
     <span class="quoi">« <b>Plusieurs versions cliquables et dynamiques</b> », demandées le 12 août. Cinq boutons qui se pressent pour de vrai — <b>et sans une ligne de script</b> : la version d’avant les engendrait en JavaScript et s’ouvrait vide chez lui (« rien apparaît sur ta maquette »).</span>
   </a>
 
   <p class="famille">La feuille d’envoi</p>
 
   <a class="item" href="44-la-feuille-denvoi.html">
-    <span class="no">44</span><span class="titre">Un seul geste à la fois</span><span class="fleche">→</span>
+    <span class="no">44</span><span class="titre">Un seul geste à la fois</span>
     <span class="quoi">Sa capture du 13 août : <b>deux boutons pleins l’un sous l’autre</b> sur la feuille d’un devis corrigé. « Copier le lien » part, « Plutôt par e-mail → » passe en or. Et surtout <b>deux lectures du retrait de « Corriger et renvoyer »</b>, montrées dans les DEUX moments — car c’est le seul endroit d’Atlas où naît une version corrigée. Trois dosages de la ligne dorée en bas de page.</span>
   </a>
 
   <p class="famille">Le devis avant l’envoi</p>
 
   <a class="item" href="56-le-devis-qui-tarde.html">
-    <span class="no">56</span><span class="titre">Le devis qui tarde</span><span class="fleche">→</span>
+    <span class="no">56</span><span class="titre">Le devis qui tarde</span>
     <span class="quoi">« Un rappel lorsque le chantier a été ouvert mais le devis n’a pas été envoyé », et le nombre de jours réglable. <b>La rubrique Notifications a été codée pendant que cette page se dessinait</b> : elle porte déjà deux rappels réglables et le délai qui se tape. Vos deux-là parlent d’un devis <b>parti</b> ; vous parlez d’un devis <b>jamais parti</b>. C’est donc une <b>troisième ligne</b> dans un écran qui tourne. <b>Codée le 16 août</b> sur vos réponses : carte teintée avec le compte des jours, quatre jours, et « Chantier sans devis » — le seul libellé qui ne se confond pas avec sa voisine.</span>
   </a>
 
   <a class="item" href="45-modifier-son-devis.html">
-    <span class="no">45</span><span class="titre">Le reprendre avant de l’envoyer</span><span class="fleche">→</span>
+    <span class="no">45</span><span class="titre">Le reprendre avant de l’envoyer</span>
     <span class="quoi">Sa capture du 13 août, 21 h 00 : <b>tout est là pour vérifier, rien pour corriger</b>. « Modifier mon devis » n’existe qu’APRÈS l’envoi. Son idée — le mot « Devis » cliquable — est dessinée telle quelle, avec la marque qui la rend trouvable, et <b>quatre autres façons</b> : le mot en face du titre, sur la carte des lignes, à côté de l’aperçu du PDF, ou la carte entière touchable.</span>
   </a>
 
   <p class="famille">Le nom</p>
 
   <a class="item" href="50-le-nom-gunzi.html">
-    <span class="no">50</span><span class="titre">Si l’application s’appelait Gunzi</span><span class="fleche">→</span>
+    <span class="no">50</span><span class="titre">Si l’application s’appelait Gunzi</span>
     <span class="quoi">Sa demande du 13 août : <b>le même produit sous un autre nom</b>. Rien d’autre ne change — la charte, le sceau, les gestes, l’écran d’entrée et son tour sont ceux d’aujourd’hui. Le mot à sa <b>taille réelle</b> sous le sceau, la porte qu’on peut essayer, et les deux seuls autres endroits où le nom se voit. <b>Cinq lettres, et la largeur exacte d’ATLAS</b> — 97 px, mesuré.</span>
   </a>
 
   <a class="item" href="50-le-nom-goonzi.html">
-    <span class="no">50</span><span class="titre">Si l’application s’appelait Goonzi</span><span class="fleche">→</span>
+    <span class="no">50</span><span class="titre">Si l’application s’appelait Goonzi</span>
     <span class="quoi">La même planche, au mot près. <b>Six lettres : 118 px contre 97</b> — un cinquième de plus qu’ATLAS. Le point à regarder de près est <b>le double O</b>, que l’espacement de la marque peut faire lire comme un trou au milieu du mot. Cela ne se juge qu’à la taille réelle.</span>
   </a>
 
   <a class="item" href="50-le-nom-gunzy.html">
-    <span class="no">50</span><span class="titre">Si l’application s’appelait Gunzy</span><span class="fleche">→</span>
+    <span class="no">50</span><span class="titre">Si l’application s’appelait Gunzy</span>
     <span class="quoi">La même planche, au mot près. <b>Cinq lettres, et pourtant 105 px contre 97</b> : compter les lettres ne suffit pas, G, U, N et Y sont larges là où T, L et S sont étroites. Et le mot <b>finit sur un Y</b> là où le S d’ATLAS le refermait.</span>
   </a>
 
   <p class="famille">Le planning : l’équipe, et la demi-journée</p>
 
   <a class="item" href="51-le-moment-qui-dit-toujours-matin.html">
-    <span class="no">51</span><span class="titre">« Matin » quoi qu’il arrive</span><span class="fleche">→</span>
+    <span class="no">51</span><span class="titre">« Matin » quoi qu’il arrive</span>
     <span class="quoi">Sa capture du 13 août : <b>« ça laisse à penser que juste le matin est bloqué, alors que c’est la journée »</b>. La ligne écrit la demi-journée de <b>départ</b>, jamais ce que le chantier occupe — et comme un chantier posé dure une journée entière par défaut, le cas le plus courant est celui qui trompe. <b>Le calendrier, lui, avait toujours compté juste</b> : seule la phrase mentait. La même liste écrite de quatre façons, à basculer au doigt, plus le tableau des cinq cas.</span>
   </a>
 
   <a class="item" href="52-appliquer-une-equipe.html">
-    <span class="no">52</span><span class="titre">Donner une équipe à un chantier</span><span class="fleche">→</span>
+    <span class="no">52</span><span class="titre">Donner une équipe à un chantier</span>
     <span class="quoi">Sa demande du même jour : <b>« appliquer une équipe à un chantier n’est pas intuitif »</b>. En lisant le code, c’est pire : <b>l’équipe ne s’écrit qu’en posant une date</b> — six gestes pour changer une lettre, et la fiche du chantier ne la montre nulle part. Trois gestes <b>qui se touchent pour de vrai</b> : la pastille sur la ligne, la feuille du chevron, les cases au moment de poser. Deux défauts trouvés en chemin : une équipe posée <b>ne peut jamais être retirée</b>, et le serveur revalide la demi-journée mais <b>pas l’équipe</b>.</span>
   </a>
 
   <a class="item" href="46-pendant-que-ca-batit.html">
-    <span class="no">46</span><span class="titre">Pendant que ça bâtit</span><span class="fleche">→</span>
+    <span class="no">46</span><span class="titre">Pendant que ça bâtit</span>
     <span class="quoi">Son signalement du 14 août : <b>« les nouvelles pages ne chargent mal ou pas du tout »</b>. Rien n’était cassé — le banc sert en mode développement pendant qu’il bâtit la version rapide, et <b>rien ne le disait</b> depuis un téléphone. Trois façons de montrer l’avancement, avec les mesures à froid de chaque écran. <b>Retenue : A</b>, le bandeau, codé le jour même.</span>
   </a>
 
   <a class="item" href="53-le-mot-juste-sans-la-date.html">
-    <span class="no">53</span><span class="titre">Le mot juste, sans la date</span><span class="fleche">→</span>
+    <span class="no">53</span><span class="titre">Le mot juste, sans la date</span>
     <span class="quoi">Sa réponse à la 51 : <b>« la A »</b>, puis <b>« que ça dise matin, après-midi ou les deux, mais pas la date, elle est déjà juste au-dessus »</b>. Cette planche ne rouvre pas le choix : elle l’applique, et ne montre <b>que les deux cas que sa phrase ne tranche pas</b> — le chantier de plusieurs jours, qui n’est ni matin ni après-midi, et celui dont on ne sait rien.</span>
   </a>
 
   <a class="item" href="55-une-equipe-part-cinq-jours.html">
-    <span class="no">55</span><span class="titre">Une équipe part cinq jours</span><span class="fleche">→</span>
+    <span class="no">55</span><span class="titre">Une équipe part cinq jours</span>
     <span class="quoi">Sa question du 14 août : <b>« une équipe qui doit partir en déplacement pour cinq jours »</b>. Si <b>toute</b> l’entreprise part, l’agenda Google suffit déjà. Si <b>une équipe sur deux</b> part, rien ne convient : l’agenda bloque tout le monde, et le nombre d’équipes est un nombre <b>sans dates</b>. Trois endroits où poser le geste — <b>A</b> sous les noms, dans Réglages ; <b>B</b> en tenant le jour, sur le planning ; <b>C</b> une ligne de déplacement comme un chantier. Trouvé en chemin : <b>l’équipe inscrite sur un chantier est une étiquette, pas une contrainte</b> — deux chantiers le même matin sur « Équipe 1 » sont acceptés.</span>
   </a>
 
   <a class="item" href="54-dicter-dans-le-devis.html">
-    <span class="no">54</span><span class="titre">Dicter dans le devis</span><span class="fleche">→</span>
+    <span class="no">54</span><span class="titre">Dicter dans le devis</span>
     <span class="quoi">Sa demande du 15 août : <b>le même dictaphone que sur les infos client</b>, en haut à droite du devis, « pour dicter s'il y a des choses à reprendre ou à modifier », et <b>exactement les mêmes trois points qui soufflent</b>. Le micro et les points ne sont pas à choisir — ils sont copiés au trait près. Ce qui l'est : <b>ce que la dictée fait</b>. <b>A</b> propose des changements que vous cochez ; <b>B</b> écrit une note et le devis ne bouge pas. Un prix que vous n'avez pas dicté n'est jamais inventé.</span>
   </a>
 
@@ -722,78 +726,78 @@
   <p class="famille">L’assistant</p>
 
   <a class="item" href="47-ou-mettre-l-assistant.html">
-    <span class="no">47</span><span class="titre">Où mettre l’assistant</span><span class="fleche">→</span>
+    <span class="no">47</span><span class="titre">Où mettre l’assistant</span>
     <span class="quoi">Sa demande du 13 août : <b>« l’onglet de l’assistant est hyper mal placé »</b>. La gêne est <b>mesurée, pas discutée</b> : sur son écran de 390 × 664, la bulle occupe 56 × 56 px à (318, 512) — donc par-dessus les dimanches 23 et 30, deux cases qu’on touche. Cinq places proposées, sur le planning, là où ça gêne vraiment.</span>
   </a>
 
   <p class="famille">Le planning</p>
 
   <a class="item" href="57-apparier-deux-demi-journees.html">
-    <span class="no">57</span><span class="titre">Apparier deux demi-journées</span><span class="fleche">→</span>
+    <span class="no">57</span><span class="titre">Apparier deux demi-journées</span>
     <span class="quoi">Sa demande du 13 août : quand une demi-journée est prise et l’autre libre, <b>Atlas propose le chantier en attente le plus proche</b>. Quatre façons de le dire — sur la ligne, en bandeau, en feuille de trois candidats, ou au moment où l’on pose la date. Le bandeau est dessiné <b>deux fois</b>, à vol d’oiseau et par la route : seule la phrase change. Et les deux écrans ingrats — rien d’assez proche, adresse non situable — parce qu’un écran muet passe pour une panne.</span>
   </a>
 
   <a class="item" href="58-le-nombre-de-jours-en-or.html">
-    <span class="no">58</span><span class="titre">Le nombre de jours, en or</span><span class="fleche">→</span>
+    <span class="no">58</span><span class="titre">Le nombre de jours, en or</span>
     <span class="quoi">Sa question du 15 août : <b>« avant il y avait le nombre de jour en doré, où c’est passé ? »</b>. Il n’avait <b>jamais existé</b> dans l’application — l’historique a été fouillé avant de répondre, et il a rendu trois choses qui en approchaient, dont une ligne dorée d’une maquette qu’il avait manipulée la veille. Quatre écritures de la même ligne, il en désigne une.</span>
   </a>
 
   <a class="item" href="66-ce-que-je-sais-du-client.html">
-    <span class="no">66</span><span class="titre">Ce que je sais du client</span><span class="fleche">→</span>
+    <span class="no">66</span><span class="titre">Ce que je sais du client</span>
     <span class="quoi">Sa question du 16 août, photo d’un « graphe de connaissances » à l’appui : <b>« ça peut me servir ? »</b>. Non pour le graphe — mais l’application <b>sait déjà</b> qu’un client est venu 4 fois, qu’il doit encore 740 €, qu’on lui fait toujours de l’élagage… <b>et elle ne le montre nulle part.</b> Trois façons de le dire, de l’encart au cinquième onglet.</span>
   </a>
 
   <a class="item" href="68-retirer-le-prix-accorde.html">
-    <span class="no">68</span><span class="titre">Retirer le prix accordé</span><span class="fleche">→</span>
+    <span class="no">68</span><span class="titre">Retirer le prix accordé</span>
     <span class="quoi">Son constat du 17 août : <b>« il n’y a aucun moyen de retirer les cinq pour cent »</b>. <b>Deux de ses trois phrases étaient des défauts, et ils sont réparés</b> — écrire « 0 » laissait une ligne or que le PDF n’imprimait pas, et à la voix le retrait était compris, enregistré… puis défait. Reste le <b>« petit moins »</b> qu’il demande : trois façons de le poser, sur ses chiffres à lui.</span>
   </a>
 
   <a class="item" href="72-mes-mots-au-catalogue.html">
-    <span class="no">72</span><span class="titre">Mes mots au catalogue</span><span class="fleche">→</span>
+    <span class="no">72</span><span class="titre">Mes mots au catalogue</span>
     <span class="quoi">Sa question du 17 août, capture à l’appui : <b>« À quoi sert cette page ?? On peut rien modifier rajouter »</b> — la <b>seconde</b> fois qu’il la pose. Le catalogue est le vocabulaire commun à toutes les entreprises : trois façons d’y faire une place à <b>ses</b> mots — à part, par-dessus, ou tout mélangé. Au passage, les deux défauts de sa capture du 14 août : la <b>flèche de retour</b> revient, et la phrase <b>« aucun prix encore constaté »</b> — qui ne se serait jamais éteinte — s’en va.</span>
   </a>
 
   <a class="item" href="67-le-nouveau-chantier-plus-gros.html">
-    <span class="no">67</span><span class="titre">Le nouveau chantier, plus gros</span><span class="fleche">→</span>
+    <span class="no">67</span><span class="titre">Le nouveau chantier, plus gros</span>
     <span class="quoi">Sa demande du 16 août : <b>« le nouveau chantier fait le plus gros et en gras »</b>. Trois formes — les capitales grossies, la serif du titre, ou toute la largeur —, trois tailles et trois graisses, avec <b>le témoin d’aujourd’hui figé à côté</b> pour comparer. Le cran le plus gros est le plus gros qui <b>tienne sans couper le mot</b> sur un écran de 360 px. C’est <b>lui</b> qui avait resserré cet endroit le 11 août (maquette 24) : grossir revient dessus.</span>
   </a>
 
   <a class="item" href="61-la-reduction-au-client.html">
-    <span class="no">61</span><span class="titre">La réduction au client</span><span class="fleche">→</span>
+    <span class="no">61</span><span class="titre">La réduction au client</span>
     <span class="quoi">Sa demande du 16 août : <b>« fais cinq pour cent sur le montant du devis »</b>, et une petite ligne s’ajoute — « réduction » ou « prix accordé au client », au pourcentage qu’il choisit. Trois endroits possibles sur le document, deux mots possibles. <b>Le coût des trois est très inégal</b> : une ligne voyage seule jusqu’à la facture, un bloc à part demande une colonne partout.</span>
   </a>
 
   <a class="item" href="60-les-conditions-sur-le-devis.html">
-    <span class="no">60</span><span class="titre">Les conditions sur le devis</span><span class="fleche">→</span>
+    <span class="no">60</span><span class="titre">Les conditions sur le devis</span>
     <span class="quoi">Son constat du 16 août : <b>« lorsque l’on coche le bouton on/off pour les formalités de devis, rien n’apparaît sur le devis, c’est normal ? »</b> — et il avait raison : sur les <b>six</b> conditions réglables, <b>une seule</b> atteint le document. Trois façons de faire arriver les cinq autres, face au champ « Notes / conditions » qu’il peut déjà avoir rempli à la main.</span>
   </a>
 
   <a class="item" href="59-la-ligne-qui-dit-tout.html">
-    <span class="no">59</span><span class="titre">La ligne qui dit tout</span><span class="fleche">→</span>
+    <span class="no">59</span><span class="titre">La ligne qui dit tout</span>
     <span class="quoi">Sa réponse : <b>« il doit y avoir le nombre de jour, le matin, l’après-midi et la journée comme infos possible »</b>, puis <b>« je veux journée et toute la ligne »</b>. La date, le moment de départ et la durée, sur les <b>cinq</b> cas du produit — dont celui qui part l’après-midi et déborde sur le lendemain matin. <b>Codée le 15 août</b> (`ARCHITECTURE.md` §111).</span>
   </a>
 
   <p class="famille">Les accès de ses salariés</p>
 
   <a class="item" href="../../appli/donner-un-acces.html">
-    <span class="no">▶</span><span class="titre">Donner un accès — ESSAYABLE</span><span class="fleche">→</span>
+    <span class="no">▶</span><span class="titre">Donner un accès — ESSAYABLE</span>
     <span class="quoi">Ses trois reproches du 26 août 2026, capture à l&rsquo;appui, sur l&rsquo;écran livré le matin même : <b>« mettre le petit œil à côté du mdp […] et il faut confirmer son mdp donc l&rsquo;écrire deux fois »</b>, <b>« pour valider un compte c&rsquo;est pas clair, la case est déjà noire comme la catégorie salarié »</b>, <b>« la démarcation entre vous patron et le compte qu&rsquo;on est en train d&rsquo;attribuer n&rsquo;est pas bien séparée »</b>. <b>Les trois ont la même racine</b> : le formulaire du compte NEUF avait été posé dans la liste des comptes EXISTANTS, sans rien entre les deux. L&rsquo;œil et la double saisie sont <b>recopiés de l&rsquo;écran qu&rsquo;il a arrêté le 14 août</b> (<code>atlas-reglages-moi.html</code>), pas réinventés. Le rôle choisi devient <b>teinté avec un coche</b> au lieu de noir plein — la charte le disait déjà : le plein porte ce qu&rsquo;on FAIT, et le seul bouton de l&rsquo;écran redevient celui qui crée le compte. Deux séparations proposées : <b>A</b> une carte posée sur la liste, <b>B</b> un écran à lui seul. <b>Tout se touche sans une ligne de JavaScript</b> — les deux yeux, les rôles, l&rsquo;ouverture du formulaire. <b>Un défaut trouvé en la regardant</b> : le périmètre affiché ne suivait pas le rôle coché, si bien qu&rsquo;on lisait « le planning et rien d&rsquo;autre » sous « Commercial ». <b>Sa réponse le jour même : « B, tu peux coder »</b> — l&rsquo;écran « Nouveau compte » vit désormais à son adresse, et la liste ne porte plus de formulaire. La proposition A est gardée sur la planche, écartée.</span>
   </a>
 
   <p class="famille">Ce qui part chez le client, et son allure</p>
 
   <a class="item" href="../../appli/allure-bleutee.html">
-    <span class="no">▶</span><span class="titre">Un blanc à reflets bleutés — ESSAYABLE</span><span class="fleche">→</span>
+    <span class="no">▶</span><span class="titre">Un blanc à reflets bleutés — ESSAYABLE</span>
     <span class="quoi">Sa demande du 23 août 2026 : <b>« une version plus stylée, dans le style des applis d’aujourd’hui, un fond blanc avec des reflets bleutés »</b>. La planche sépare ce que la demande mélange : <b>la couleur</b>, qui tient dans les huit valeurs de <code>src/lib/chartes.ts</code> sans toucher un écran, et <b>l’allure</b> — typographie, rayons, ombres, air — qui les touche tous. Trois propositions du moins cher au plus engageant (A · Brume, B · Brume+, C · Verre), avec l’allure d’aujourd’hui pour comparer, et sous chacune <b>ce qu’elle coûte et ce qu’elle risque</b>. <b>Un défaut trouvé en regardant la capture, jamais par un test</b> : la barre du bas gardait le crème d’Origine, parce qu’un jeton composé sur <code>:root</code> est substitué là où il est déclaré, pas là où il est lu.</span>
   </a>
 
   <a class="item" href="../../appli/mon-message-au-client.html">
-    <span class="no">▶</span><span class="titre">Mon message au client — ESSAYABLE</span><span class="fleche">→</span>
+    <span class="no">▶</span><span class="titre">Mon message au client — ESSAYABLE</span>
     <span class="quoi">Sa demande du 23 août 2026 : <b>« y a-t-il un endroit dans les réglages où l’utilisateur peut rédiger ce message automatique ? »</b> Il n’y en a pas — le texte vit dans <code>src/lib/message-client.ts</code>, identique pour tous. Deux endroits proposés (dans « Devis &amp; factures », ou une rubrique « Mes messages »), puis l’écran lui-même : le cadre s’écrit, et le téléphone dessous rend le SMS que reçoit vraiment le client, lien bleu compris. Les trois pastilles posent <code>[client]</code>, <code>[lien]</code>, <code>[entreprise]</code> là où le curseur est. <b>Le texte d’origine est RECOPIÉ du code</b> qui l’envoie : l’écrire de mémoire aurait montré une maquette qui ne dit pas ce que ses clients reçoivent.</span>
   </a>
 
   <a class="item" href="../../appli/allure-mieux-rangee.html">
-    <span class="no">96</span><span class="titre">Voir son devis pendant qu’on le change</span><span class="fleche">→</span>
+    <span class="no">96</span><span class="titre">Voir son devis pendant qu’on le change</span>
     <span class="quoi">Sa demande du 24 août 2026, capture à l’appui : <b>« lorsque je modifie mon devis, je suis obligé de descendre pour voir les modifications ; il faut mieux organiser la page pour pouvoir voir ce qu’on modifie — propose, ne code rien »</b>. <b>Un défaut d’ORDRE, pas de contenu</b> : l’écran range logo → dix typographies (cinq rangées) → fond → accent → <b>puis</b> l’aperçu, qui tombe à plus de 900 px du haut. Neuf polices à essayer font dix-huit trajets. <b>Trois rangements, tous manipulables</b> — <b>A</b> l’aperçu en tête, qui ne règle que la moitié et le dit ; <b>B</b> l’aperçu collé en haut, qui suit chaque choix au prix du tiers haut de l’écran ; <b>C</b> la feuille pleine page et les réglages en tiroir, la plus grande feuille contre un geste de plus à apprendre. <b>La planche se mesure elle-même</b> : elle annonce si la feuille est dans l’écran, et de combien de pixels il faudrait remonter sinon. Les dix polices, les quatre fonds et les quatre accents sont <b>recopiés du code</b>, jamais inventés — et le contrôle les compare à <code>src/lib/allure-documents.ts</code> à chaque exécution. Il a été <b>vu rougir</b> quatre fois : sans le collage de B, sur une police inventée, sur une feuille de C qui ne grandit pas, et sur un tiroir qui recouvre la feuille — ce dernier a fait ramener le tiroir de 74 % à 62 % de l’écran. <b>En attente de sa réponse ; rien n’est codé.</b></span>
   </a>
 
@@ -812,12 +816,12 @@
   </a>
 
   <a class="item" href="../../appli/allure-de-mes-devis.html">
-    <span class="no">▶</span><span class="titre">L’allure de mes devis — ESSAYABLE</span><span class="fleche">→</span>
+    <span class="no">▶</span><span class="titre">L’allure de mes devis — ESSAYABLE</span>
     <span class="quoi">Sa demande du même jour : <b>« un endroit dédié à la modification de son devis — son logo, la typographie, le fond de page »</b>. « Apparence » ne règle que les couleurs de l’application ; rien ne touche les documents. Logo, trois typographies, trois fonds, quatre accents — et le devis se repeint à l’instant, sur ses vraies coordonnées et ses vraies lignes. Ce qui reste scellé est écrit sur la planche : mentions obligatoires, disposition des colonnes, ordre des totaux — un devis mal posé se conteste.</span>
   </a>
 
   <a class="item" href="../../appli/capital-et-forme-juridique.html">
-    <span class="no">▶</span><span class="titre">Le capital, la forme juridique et le RCS sur le devis — ESSAYABLE</span><span class="fleche">→</span>
+    <span class="no">▶</span><span class="titre">Le capital, la forme juridique et le RCS sur le devis — ESSAYABLE</span>
     <span class="quoi">Sa demande du 30 août 2026 : pouvoir ajouter, s’il le veut, le capital, la forme juridique et la ville d’immatriculation au RCS de sa société. La forme juridique se choisissait déjà dans Identité, mais ne s’imprimait nulle part — réparé. Capital et RCS s’effacent tout seuls pour une entreprise individuelle, qui n’en a pas légalement. Le numéro du RCS n’est pas ressaisi : c’est le SIREN, déjà affiché sous le SIRET. Trois choix essayables sur le devis : sous le nom, en bas avec le SIRET, ou nulle part.</span>
   </a>
 
@@ -826,7 +830,7 @@
   </a>
 
   <a class="item" href="../../appli/assistant-sur-le-devis.html">
-    <span class="no">▶</span><span class="titre">L’assistant sur la page du devis seul — ESSAYABLE</span><span class="fleche">→</span>
+    <span class="no">▶</span><span class="titre">L’assistant sur la page du devis seul — ESSAYABLE</span>
     <span class="quoi">Sa demande du 30 août 2026, depuis cette page : <b>« j’aimerais avoir accès à l’assistant sur cette page »</b>. Elle en était privée depuis le 5 août, volontairement — la page « …/devis-complet » exclut tout décor d’application (`src/app/layout.tsx`) pour rester une feuille et non un écran. La planche pose un rond de plus, à droite du micro : même taille et même vert que `BoutonAssistant` sur les autres écrans, ouvrant le même panneau. Rien n’est codé.</span>
   </a>
 

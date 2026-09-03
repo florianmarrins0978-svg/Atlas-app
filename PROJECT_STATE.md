@@ -19,6 +19,66 @@ ligne « fait » qui ne l'est pas coûte plus cher qu'une ligne absente.
 
 ---
 
+## EN ATTENTE : la liste de ses clients — une planche, pas du code (3 septembre 2026)
+
+**Planche essayable, aucun code dans `src/`** —
+`appli/vos-clients.html`, liée depuis `appli/essais.html` et
+`docs/maquettes/index.html`. Adresse à lui donner **entière** :
+`https://florianmarrins0978-svg.github.io/Atlas-app/vos-clients.html`
+
+**Ce que la planche démontre, et qui n'était pas su :** sur **quatre clients
+nommés Martins**, la liste d'aujourd'hui n'affiche rien qui les distingue — la
+deuxième ligne porte « 5 chantiers · 3 200,00 € facturés » pour tous. La
+proposition y met **le lieu**.
+
+**Rien n'est inventé.** Les cinq informations d'une ligne existent :
+
+| | |
+|---|---|
+| le nom | `clients.nom` |
+| le lieu | `clients.adresse` — colonne présente, **que la liste ne charge pas** |
+| les chantiers | compté (`fiche.chantiers`) |
+| ce qui reste dû | `resteDu()` |
+| la date du dernier chantier | `dernierJour` — **déjà calculé par `listerFichesClients`, jamais transmis à l'écran** |
+
+**Le reste de la proposition :** le montant dû passe de 9,5 px en capitales à
+16 px à côté du nom ; la liste **annonce son ordre** par bandes de mois (elle
+était déjà rangée du plus récent au plus ancien, sans le dire) ; le compte
+remonte dans l'en-tête et suit la recherche ; le gris secondaire passe de
+`muted` à `inkSoft` — **3,32 de contraste contre 8,04**.
+
+**EN ATTENTE DE SA RÉPONSE, une seule chose :** le total facturé par client
+quitte la ligne, et depuis l'allègement de la fiche le 2 septembre, il ne se lit
+plus nulle part ailleurs. Détail dans `TODO.md`.
+
+**Deux réparations que seule la capture a montrées :** la ligne du compte garde
+sa place quand la recherche ne trouve rien (sinon le champ de saisie remontait
+de 24 px sous le doigt à chaque frappe infructueuse), et la barre de recherche
+est collante.
+
+**ET UNE AUTRE SESSION CODAIT LE MÊME ÉCRAN À LA MÊME HEURE.** À 18 h 55 ce
+3 septembre, l'arbre de travail portait des modifications non commises de
+`src/app/clients/ListeClients.tsx`, `page.tsx`,
+`src/server/repositories/fiche-client.ts`, `src/lib/recherche-client.ts` et
+deux fichiers neufs (`src/lib/bandes-clients.ts`,
+`scripts/test-bandes-clients.ts`) — écrites par une session voisine, pas par
+celle-ci. **Elles ne sont pas dans ce commit** : on ne livre pas le travail d'un
+autre sans savoir où il en est.
+
+**Ce qu'une nouvelle conversation doit en tirer :** avant de traiter ce lot
+comme « en attente de sa réponse », **regarder si l'écran n'a pas déjà été
+codé** (`git log -- src/app/clients/`). Et lire `CLAUDE.md` §6, point A :
+regarder les autres branches AVANT d'ouvrir un lot — deux sessions ont déjà
+codé la même chose le 23 août.
+
+**Au passage, deux défauts du sommaire :** le premier essai d'`essais.html`
+n'avait **pas de balise de fin** — le lien avalait le titre de famille suivant —,
+et les **141 flèches décoratives** de `docs/maquettes/index.html` sont
+retirées (sa règle du 25 août ; `test-aucune-fleche.ts` ne parcourt que
+`src/`, il ne pouvait pas les voir).
+
+---
+
 ## FAIT : les boutons verts portent le vert de sa note vocale, à plat (3 septembre 2026)
 
 *Son verdict, après cinq déclinaisons sur `appli/boutons-verts.html` : « verdict

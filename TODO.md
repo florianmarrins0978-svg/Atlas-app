@@ -9,6 +9,28 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
+## EN ATTENTE DE SA RÉPONSE : la liste de ses clients (3 sept. 2026)
+
+Planche essayable : `appli/vos-clients.html`, en ligne sur
+`https://florianmarrins0978-svg.github.io/Atlas-app/vos-clients.html`.
+
+**Ce qu'il doit trancher, et rien d'autre :** le total facturé par client
+(« 2 400,00 € facturés ») quitte la ligne. Deux montants sur une même ligne,
+l'un gris l'autre rouge, se confondent d'un coup d'œil — mais depuis que la
+fiche client a été allégée le 2 septembre, **ce total ne se lit plus nulle part
+ailleurs**.
+
+**Si la proposition est retenue, ce que ça coûte en code** — et c'est peu :
+
+| | |
+|---|---|
+| `clients.adresse` | la colonne existe ; une ligne à ajouter dans `listerFichesClients` |
+| `dernierJour` | **déjà calculé** par le même dépôt ; `page.tsx` ne le transmet pas |
+| le reste | de la mise en forme dans `ListeClients.tsx` |
+
+**Ne rien coder avant sa réponse** (`CLAUDE.md` §3 bis).
+
+
 ## ~~EN ATTENTE DE SA RÉPONSE : la matière de la note vocale sur tous les boutons verts~~ — CODÉ le 3 septembre 2026
 
 Son verdict, après cinq déclinaisons : **la D — le vert du milieu de sa note
