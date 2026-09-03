@@ -2,6 +2,7 @@ import { lancerNavigateur } from "./e2e-browser";
 import { devices } from "playwright";
 import { pool } from "../src/server/db/client";
 import { creerPuisFiche } from "./_creer-chantier-e2e";
+import { jourDuPatron } from "./_jour-e2e";
 
 // **« Je peux toujours pas poser de date sur les chantiers test. »**
 //
@@ -158,7 +159,18 @@ async function main() {
     // **On adapte le contrôle, on ne rend pas le bouton** (`CLAUDE.md` §5 bis) :
     // ce qu'il défend est *« de cet écran-là, une date se pose »*, et une date
     // se pose sur un jour à venir. Le jour retenu était incident, pas la règle.
-    const aujourdHui = new Date().toISOString().slice(0, 10);
+    // **« Aujourd'hui » se lit comme l'ÉCRAN le lit, jamais en UTC.**
+    //
+    // Trouvé le 2 septembre 2026 à 23 h 36 UTC : cette suite cherchait la carte
+    // du 2 septembre alors qu'il était déjà le 3 à l'atelier. Le calendrier
+    // n'offre plus un jour passé (`ARCHITECTURE.md` §224), la carte n'existait
+    // pas, et le contrôle rougissait — sur du code parfaitement juste, DEUX
+    // HEURES CHAQUE NUIT.
+    //
+    // C'est exactement le piège que `_jour-e2e.ts` a été écrit pour fermer, et
+    // que `CLAUDE.md` §3 nomme : deux définitions de la même règle finissent
+    // toujours par diverger. Celle-ci n'avait jamais été branchée dessus.
+    const aujourdHui = jourDuPatron();
     const chercher = (l: typeof jours) =>
       l.find(
         (j) =>

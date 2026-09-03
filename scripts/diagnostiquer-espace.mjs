@@ -23,6 +23,7 @@
 import { execFileSync } from "node:child_process";
 import { existsSync, readFileSync } from "node:fs";
 import { verdictPort, regarderDuDehors } from "./_verdict-port.mjs";
+import { portLibre } from "./port-libre.mjs";
 import { lireEchecConstruction, phraseEchec } from "./lire-echec-construction.mjs";
 
 const DIST = ".next-batie";
@@ -56,9 +57,36 @@ const FICHIER_ISSUE = "/tmp/atlas-mise-a-jour.txt";
  */
 const TEMOIN_CONSTRUCTION =
   process.env.ATLAS_TEMOIN_CONSTRUCTION || "/tmp/atlas-construction-en-cours.json";
+/**
+ * À quel moment cette fiche est écrite — la MÊME variable que l'en-tête.
+ *
+ * **Le trou du 2 septembre 2026, et il envoyait faire exactement le geste
+ * qu'il ne fallait pas.** `rapporter-espace.mjs` distingue ses passages depuis
+ * le 12 août — « à l'allumage », « après démarrage », « par le veilleur » —
+ * parce que les mêmes mots ne veulent pas dire la même chose selon l'heure. Il
+ * l'écrivait en tête de fiche… et ce diagnostic-ci n'en savait rien : il
+ * raisonnait toujours comme devant une machine posée.
+ *
+ * Ce que cela donnait à l'allumage, sur la fiche du patron : l'en-tête
+ * annonçait « le serveur n'a pas encore eu le temps de démarrer », et quatre
+ * lignes plus bas le verdict lui ordonnait « arrêtez puis rouvrez l'espace de
+ * travail ». Or à cet instant le banc n'a pas encore démarré — le veilleur le
+ * lance dans les quinze secondes — et rallumer JETTE la construction qui
+ * allait partir. Il rallume, retombe sur la même fiche, rallume encore.
+ *
+ * Lue ici plutôt que passée en argument : il n'y a qu'un chemin d'appel, et
+ * deux façons de dire le même moment finiraient par diverger (`CLAUDE.md` §3).
+ */
+const auDemarrage = process.env.ATLAS_MOMENT === "allumage";
 /** Ce que `ouvrir-port.sh` a rendu au dernier démarrage : un seul mot. */
 const FICHIER_PORT = "/tmp/atlas-port.txt";
-const VERROU_VEILLEUR = "/tmp/atlas-veilleur.pid";
+// **Le MÊME nom de variable que `veiller.sh`, et détournable pour la même
+// raison.** Une suite qui poserait ce fichier dans `/tmp` écraserait l'état du
+// veilleur RÉEL de la machine qui la joue — la fiche du patron annoncerait
+// alors un veilleur qui n'est pas le sien. Le veilleur s'isole déjà ainsi
+// (`ATLAS_VERROU_VEILLEUR`) ; en inventer un second ici aurait fait deux noms
+// pour un seul fichier.
+const VERROU_VEILLEUR = process.env.ATLAS_VERROU_VEILLEUR || "/tmp/atlas-veilleur.pid";
 const PORT = process.env.PORT ?? "3000";
 
 /**
@@ -169,6 +197,24 @@ function ligneCodeServi() {
 }
 const derniereIssue = existsSync(FICHIER_ISSUE) ? readFileSync(FICHIER_ISSUE, "utf8").trim() : null;
 const vivant = await serveurRepond();
+/**
+ * Quelqu'un tient-il le port sans répondre ?
+ *
+ * **« NE RÉPOND PAS » recouvrait deux états opposés — 2 septembre 2026.** Sa
+ * fiche disait « Serveur : NE RÉPOND PAS », et cette phrase valait aussi bien
+ * pour « plus rien n'écoute, le banc n'a jamais démarré » que pour « un
+ * serveur tient le port et s'est enlisé ». Les deux n'appellent pas le même
+ * geste, et le veilleur, lui, fait déjà cette distinction pour décider s'il
+ * relance ou s'il déloge (`.devcontainer/veiller.sh`). La fiche ne la publiait
+ * pas : on lisait donc « rien ne répond » sans pouvoir dire lequel des deux.
+ *
+ * C'est le même défaut que la ligne « Code SERVI » du 16 août, et il se répare
+ * pareil : une phrase par état.
+ *
+ * Sondé seulement quand la santé ne répond pas — sur un serveur qui répond, la
+ * réponse est connue d'avance et l'essai d'écoute ne servirait à rien.
+ */
+const portTenu = vivant ? true : !(await portLibre(PORT));
 
 console.log("\n── Votre espace de travail ────────────────────────\n");
 // **« HEAD » n'est pas un nom de branche, c'est l'aveu qu'il n'y en a pas.**
@@ -180,7 +226,15 @@ const brancheLisible =
 console.log(`  Branche suivie   : ${brancheLisible}`);
 console.log(`  Code récupéré    : ${court(tete)}`);
 console.log(`  Code SERVI       : ${ligneCodeServi()}`);
-console.log(`  Serveur          : ${vivant ? `répond sur le port ${PORT}` : `NE RÉPOND PAS sur le port ${PORT}`}`);
+console.log(
+  `  Serveur          : ${
+    vivant
+      ? `répond sur le port ${PORT}`
+      : portTenu
+        ? `TIENT LE PORT ${PORT} MAIS NE RÉPOND PAS`
+        : `ABSENT — plus rien n'écoute sur le port ${PORT}`
+  }`
+);
 console.log(`  Veilleur         : ${veilleurVivant() ? "en place" : "absent"}`);
 // **Le port, et ce n'est pas un détail d'installation.** Un port privé fait
 // répondre GitHub à la place d'Atlas : depuis un téléphone non connecté, on ne
@@ -303,23 +357,73 @@ if (avance && Number(avance) > 0) {
 // l'écran ne change pas : la version bâtie est plus ancienne que le code
 // récupéré. `next start` sert un dossier figé — recharger la page n'y peut rien.
 if (bati && tete && bati !== tete) {
+  // **Deux corrections du 2 septembre 2026, et chacune corrige une phrase FAUSSE.**
+  //
+  // 1. « Elle ne se recompile jamais » ne l'est plus depuis le 31 août :
+  //    `banc.mjs` rebâtit dès que le commit bâti diffère du commit récupéré
+  //    (`doitRebatir`), et le veilleur retente indéfiniment. C'est la même
+  //    correction que `ligneCodeServi` a reçue le 20 août pour l'échec de
+  //    construction, jamais reportée ici — si bien que la fiche se contredisait
+  //    d'un point à l'autre, « le veilleur retente » plus haut et « jamais »
+  //    ici. Elle envoyait rallumer un espace qui se réparait tout seul.
+  //
+  // 2. Ce verdict dit QUEL CODE, jamais si l'application tourne. Il affirmait
+  //    « l'application est donc entière et rapide » — une promesse qu'il ne
+  //    mesure pas, et qui a contredit la ligne « Serveur : NE RÉPOND PAS » de
+  //    la même fiche, à trois lignes d'écart. Deux affirmations opposées dans
+  //    un même écran, et c'est tout l'écran qu'on cesse de croire. Qui répond
+  //    ou non est dit par la ligne « Serveur » et par son propre verdict, une
+  //    seule fois.
   soucis.push(
-    constructionEnCours
+    constructionEnCours || auDemarrage
       ? "Le code servi n'est pas encore le code récupéré : la version rapide NEUVE\n" +
-        "     est en train de se construire, et l'ancienne reste en service pendant ce\n" +
-        "     temps — l'application est donc entière et rapide, mais c'est le code\n" +
-        "     d'AVANT. La bascule se fait toute seule, comptez deux à cinq minutes.\n" +
-        "     Ne rallumez pas : cela jetterait la construction en cours."
-      : "LE CODE SERVI N'EST PAS LE CODE RÉCUPÉRÉ. La version rapide a été construite\n" +
-        "     avant, et elle ne se recompile jamais : recharger la page ne changera rien.\n" +
-        "     Arrêtez puis rouvrez l'espace de travail — il se reconstruit au démarrage."
+        "     se construit, et c'est l'ANCIENNE qui doit servir pendant ce temps. La\n" +
+        "     bascule se fait toute seule, comptez deux à cinq minutes.\n" +
+        "     Ne rallumez pas : cela jetterait la construction."
+      : "LE CODE SERVI N'EST PAS LE CODE RÉCUPÉRÉ, et aucune construction ne tourne\n" +
+        "     en ce moment : recharger la page ne changera rien. Le veilleur en relance\n" +
+        "     une toutes les demi-heures. Si cette ligne dit encore la même chose un\n" +
+        "     quart d'heure plus tard, rallumez l'espace de travail."
   );
 }
 
 if (!vivant) {
-  soucis.push(
-    `Rien ne répond sur le port ${PORT}. ${veilleurVivant() ? "Le veilleur devrait le relever dans quinze secondes." : "Aucun veilleur : relancez l'espace de travail."}`
-  );
+  // **« Le veilleur devrait le relever dans quinze secondes » était une
+  // promesse, et elle ne tient pas toujours — 2 septembre 2026.** Le veilleur
+  // relance bien `npm run banc` toutes les quinze secondes ; mais un banc qui
+  // BÂTIT tient le verrou, et celui qu'on relance refuse alors de démarrer
+  // (`scripts/verrou-banc.mjs`, `scripts/banc.mjs`). Tant que la construction
+  // dure, personne ne prendra le port — et la fiche annonçait le contraire.
+  //
+  // Un verdict qui promet un secours qui ne viendra pas fait attendre au lieu
+  // de faire chercher : c'est la faute que ce dépôt paie le plus cher.
+  if (!veilleurVivant()) {
+    soucis.push(
+      `Rien ne répond sur le port ${PORT}, et AUCUN VEILLEUR n'est en place :\n` +
+        "     personne ne relèvera le serveur. Rallumez l'espace de travail."
+    );
+  } else if (portTenu) {
+    soucis.push(
+      `Un serveur TIENT le port ${PORT} sans répondre. Le veilleur lui laisse deux\n` +
+        "     tours — une compilation lourde peut faire taire la santé un instant — puis\n" +
+        "     le déloge et en relance un. Comptez une minute."
+    );
+  } else if (constructionEnCours) {
+    soucis.push(
+      `PLUS RIEN N'ÉCOUTE sur le port ${PORT} PENDANT UNE CONSTRUCTION, et le\n` +
+        "     veilleur n'y peut rien : le banc qui bâtit tient le verrou, et tout banc\n" +
+        "     relancé refuse de démarrer tant qu'il le tient. Personne ne servira avant\n" +
+        "     la fin de la construction.\n" +
+        "     C'est une PANNE, pas une attente : le banc doit servir la version rapide\n" +
+        "     PRÉCÉDENTE pendant qu'il bâtit la neuve. Ce qui l'en a empêché est écrit\n" +
+        "     dans /tmp/essai.log, et nulle part ailleurs."
+    );
+  } else {
+    soucis.push(
+      `Plus rien n'écoute sur le port ${PORT}. Le veilleur devrait relancer un banc\n` +
+        "     dans quinze secondes."
+    );
+  }
 }
 
 if (soucis.length === 0) {

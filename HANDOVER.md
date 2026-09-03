@@ -35,6 +35,77 @@ longs.
 | où ça se coderait | `--atlas-plein-fond` (`src/lib/chartes.ts`, Origine seule) + un relief à ajouter à `.atlas-plein` pour les trois anneaux |
 | ce qui ne bouge pas | les boutons creux, les sept autres apparences, les capsules de « Terminés » |
 
+## Lot précédent : la page blanche, à la racine (2 sept. 2026, au soir)
+
+**`npm ci` effaçait `node_modules` sous un banc qui tournait.** `demarrer.sh`
+posait le veilleur — donc un `next-server` qui sert et un `next build` qui
+bâtit —, puis lançait `npm ci`, qui SUPPRIME `node_modules`, et n'arrêtait ces
+processus que vingt lignes plus bas. npm effaçait ce qu'il pouvait, échouait sur
+ce qui était tenu ouvert (`ENOTEMPTY`), et laissait l'arbre amputé. `next`
+disparaissait : le serveur mourait à la seconde, le veilleur le relançait, il
+remourait — toutes les quinze secondes, une heure durant, **sans qu'aucune trace
+ne soit écrite nulle part**.
+
+| | |
+|---|---|
+| ce qui a bougé | `.devcontainer/demarrer.sh`, `scripts/banc.mjs` |
+| la garde | `npx tsx scripts/test-prechauffage.ts` et `scripts/test-banc-lent-se-dit.ts` — 4 cas neufs |
+| le pourquoi | `ARCHITECTURE.md` §238 |
+| le retour pour lui | `docs/page-blanche-au-demarrage.md` |
+
+**À SAVOIR AVANT D'Y RETOUCHER :**
+
+- **L'ordre de `demarrer.sh` est le correctif, et il est fragile.** Le banc doit
+  être arrêté AVANT `npm ci`, jamais après. `test-prechauffage.ts` le fixe — et
+  son premier jet était INUTILE : il trouvait le `pkill` de l'en-tête du script
+  et passait au vert sur le code défectueux. Il est borné des deux côtés
+  (entre `MISE_A_JOUR=` et l'installation) ; ne pas relâcher cette borne.
+- **Le veilleur posé AVANT la mise à jour n'est pas le défaut.** C'est le
+  correctif du 9 août, et il tient : le patron doit avoir une application qui
+  répond quoi qu'il arrive. Ne pas le déplacer en croyant simplifier.
+- **`npm ci` est sans danger dans `reinstallerSiDesaccordees`**, contrairement à
+  ce que `banc.mjs` a longtemps dit : depuis le 31 août cette garde s'exécute
+  AVANT le lancement du serveur, il n'y a plus aucun sol à retirer.
+- **Le code de sortie de npm ne prouve rien** : `paquetsEpinglesAbsents()`
+  regarde le disque. Une commande qui rend 0 en laissant `next` absent était
+  comptée comme réparée.
+- **`deposerEchec` est le seul écrivain du témoin d'échec.** La fiche n'en lit
+  qu'un format (`lire-echec-construction.mjs`) : ne pas recopier le bloc.
+
+## Lot précédent : la fiche de l'espace mentait sur sa propre panne (2 sept. 2026)
+
+**Sa plainte : *« l'appli ne démarre pas, page blanche »*.** `CLAUDE.md` §1 bis
+dit de lire la fiche avant tout — elle a été lue, et **c'est elle qui était
+fausse**. Trois verdicts affirmaient ce qu'ils ne mesuraient pas ; l'un d'eux
+envoyait rallumer l'espace au moment précis où cela jette la construction.
+
+| | |
+|---|---|
+| ce qui a bougé | `scripts/diagnostiquer-espace.mjs`, `scripts/port-libre.mjs` (neuf), `scripts/banc.mjs` |
+| la garde | `npx tsx scripts/test-banc-lent-se-dit.ts` — 5 cas neufs, vérifiés rouges contre la version d'avant |
+| le pourquoi | `ARCHITECTURE.md` §237 |
+| le retour pour lui | `docs/page-blanche-au-demarrage.md` |
+
+**À SAVOIR AVANT DE TOUCHER À CET ÉCRAN-LÀ, ou de conclure quoi que ce soit :**
+
+- **La panne n'est PAS corrigée, et il ne faut pas le croire.** Ce lot corrige
+  ce que la fiche DIT, pas ce qui empêchait son banc de servir. Sa fiche de
+  18 h 55 montrait une construction en cours, une version bâtie utilisable
+  (`ddf69f2`) et **rien sur le port** — un état que `relais-version-batie.mjs`
+  interdit depuis le 31 août. `TODO.md` porte le point ouvert.
+- **La cause n'est lisible que dans SON `/tmp/essai.log`.** Depuis ce poste, le
+  banc joué au même commit sert sans faute : `npm run banc` puis `/login` rend
+  200. Ne pas conclure d'ici.
+- **`portLibre` a quitté `banc.mjs`** pour `scripts/port-libre.mjs`, parce que
+  la fiche pose désormais la même question. Ne pas la recopier ailleurs : cette
+  question-là a déjà été fausse une fois (elle demandait « la santé
+  répond-elle ? » jusqu'au 10 août, d'où l'`EADDRINUSE` de ce soir-là).
+- **`ATLAS_MOMENT` et `ATLAS_VERROU_VEILLEUR` sont lus par le diagnostic.** Ce
+  sont les variables qui existaient déjà (`rapporter-espace.mjs`,
+  `veiller.sh`) — ne pas en inventer de secondes.
+
+---
+
 ## Lot précédent : « Terminés » — le calme, et le galet (2 septembre 2026)
 
 Maquette d'abord, code ensuite, deux fois de suite. Il a demandé un visuel de

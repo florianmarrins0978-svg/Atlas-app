@@ -43,6 +43,68 @@ largeurs, et identique à A sur une capsule courte.
 retirer le halo de la note vocale elle-même, et les trois anneaux tiennent-ils
 sur un bouton de 321 px ou faut-il n'en garder qu'un ?
 
+## ~~NON REPRODUIT : rien ne servait sur son port~~ — TROUVÉ le 2 septembre 2026, au soir
+
+Sa plainte : *« l'appli ne démarre pas, page blanche »*. Sa fiche, à 18 h 55
+UTC, portait un état que le dessin du banc interdit :
+
+| Ce que la fiche mesurait | Ce que le banc promet |
+|---|---|
+| construction en cours | oui, c'est normal |
+| `Code SERVI : ddf69f2` | donc `.next-batie` existe et est utilisable |
+| **rien sur le port 3000** | **la version d'avant DEVAIT servir pendant ce temps** |
+
+Depuis le 31 août (`relais-version-batie.mjs`), `banc.mjs` lance le serveur sur
+la version bâtie **avant** de bâtir la neuve. Une version bâtie existait. Elle
+n'a pas pris le port, et l'on ne sait pas pourquoi.
+
+**RÉSOLU LE SOIR MÊME.** Son journal, lu depuis son espace, portait la réponse :
+`npm ci` effaçait `node_modules` pendant qu'un banc y tenait des fichiers
+ouverts, laissait l'arbre amputé, et `next` disparaissait. Cause, correction et
+preuves : `ARCHITECTURE.md` §238. Ce qui suit décrit l'état d'AVANT cette
+découverte, et se lit comme tel.
+
+| | |
+|---|---|
+| où est la réponse | son `/tmp/essai.log`, et nulle part ailleurs |
+| ce qu'il faut y chercher | ce qu'a écrit `next start` juste après « Atlas répond déjà, sur la version rapide PRÉCÉDENTE » |
+| qui peut le lire | l'agent, dans une session lancée depuis son espace (`claude`) |
+| ce que ça coûte de ne pas le faire | la panne reviendra, et la fiche la nommera sans dire d'où elle vient |
+
+### Ce que TROIS fiches d'affilée ont établi, et qui désigne la vraie lacune
+
+Relevés le 2 septembre, sur le même allumage de 18 h 40 :
+
+| Heure | Construction | Échec enregistré | Serveur |
+|---|---|---|---|
+| 18 h 55 | **en cours** | aucun | rien sur le port |
+| 19 h 10 | aucune | **aucun** | rien sur le port |
+| 19 h 25 | aucune | **aucun** | rien sur le port |
+
+Quarante-cinq minutes, et **rien n'a jamais servi**. Le veilleur relance un banc
+toutes les quinze secondes ; le banc meurt ; on recommence. Et **aucune trace
+n'est écrite nulle part** : `banc.mjs` ne dépose son témoin d'échec que lorsque
+`next build` rend un code non nul. Quand c'est le SERVEUR qui meurt, le script
+sort avec lui (`surSortie`), en silence.
+
+### LA LACUNE À COMBLER, ET ELLE SE DÉCIDE AVANT DE CODER
+
+**Un défaut muet se rend bavard AVANT d'être corrigé** (`AGENTS.md`). Ici, la
+mort du serveur ne laisse de trace que dans `/tmp/essai.log` — que le patron ne
+lit pas et que l'agent ne peut pas atteindre.
+
+Ce qu'il faudrait : une **extraction structurée** de la mort du serveur — la
+date, le code de sortie, la ligne qui nomme l'erreur — déposée dans un témoin
+que la fiche sait lire, comme `TEMOIN_ECHEC` le fait déjà pour la construction
+(`lire-echec-construction.mjs`). Le journal entier ne se publie pas : tranché
+par le patron le 12 août, dépôt public.
+
+**Ce que cela coûte, et pourquoi ce n'est pas fait dans ce lot :** il faut
+changer le câblage des sorties du serveur dans `banc.mjs` (`SANS_TERMINAL`,
+aujourd'hui `inherit`), c'est-à-dire le fichier le plus délicat du dépôt — dont
+l'en-tête documente un `setRawMode EIO` suivi d'un *segmentation fault* provoqué
+par un choix de `stdio`. **À faire valider par le patron avant d'y toucher.**
+
 ## EN ATTENTE DE SA RÉPONSE : le compte « tous mois » sous un mois précis (2 sept. 2026)
 
 Sur « Terminés », onglet « Tout », la phrase « 3 à facturer · 10 facturés »

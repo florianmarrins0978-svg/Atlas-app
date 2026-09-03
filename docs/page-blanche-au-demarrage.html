@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas — « L'appli ne démarre pas, page blanche » — ce qui a été trouvé</title>
+<style>
+  :root{
+    --ground:#f5f3ee; --surface:#faf9f5; --raised:#ece9e1;
+    --ink:#1c1c1a; --ink-soft:#4a4a44; --muted:#8a8578;
+    --accent:#2f3b2f; --alert:#b5562a; --line:rgba(28,28,26,0.13);
+    --serif:Georgia,'Times New Roman',serif;
+    --sans:system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --ground:#161815; --surface:#1d201c; --raised:#252924;
+      --ink:#eae7df; --ink-soft:#c2bdb1; --muted:#948f83;
+      --accent:#9fbd82; --alert:#e0885a; --line:rgba(234,231,223,0.17);
+    }
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--sans);
+    line-height:1.65;}
+  main{max-width:44rem;margin:0 auto;padding:2.5rem 1.2rem 5rem;}
+  h1,h2,h3,h4{font-family:var(--serif);font-weight:600;line-height:1.2;
+    text-wrap:balance;margin:2rem 0 0.6rem;scroll-margin-top:1rem;}
+  h1{font-size:2rem;margin-top:0;}
+  h2{font-size:1.5rem;padding-top:1.2rem;border-top:1px solid var(--line);}
+  h3{font-size:1.12rem;}
+  h4{font-size:1rem;}
+  p{margin:0 0 0.9rem;}
+  a{color:var(--accent);text-underline-offset:3px;}
+  a:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:3px;}
+  ul,ol{margin:0 0 1rem;padding-left:1.3rem;}
+  li{margin-bottom:0.4rem;}
+  li::marker{color:var(--muted);}
+  /* Le sommaire : des cibles larges, confortables au doigt sur téléphone. */
+  ol li a{display:inline-block;padding:0.15rem 0;}
+  blockquote{margin:1rem 0;padding:0.85rem 1.05rem;background:var(--raised);
+    border-left:3px solid var(--accent);border-radius:0 10px 10px 0;color:var(--ink-soft);}
+  code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:0.87em;
+    background:var(--raised);padding:0.1rem 0.35rem;border-radius:5px;}
+  hr{border:0;border-top:1px solid var(--line);margin:2rem 0;}
+  .tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px;
+    background:var(--surface);margin:0 0 1.2rem;}
+  table{border-collapse:collapse;width:100%;font-size:0.92rem;min-width:22rem;}
+  th,td{text-align:left;padding:0.55rem 0.8rem;border-bottom:1px solid var(--line);
+    vertical-align:top;}
+  th{font-size:0.72rem;letter-spacing:0.08em;text-transform:uppercase;
+    color:var(--muted);white-space:nowrap;}
+  tr:last-child td{border-bottom:none;}
+  .retour{display:inline-block;font-size:0.76rem;color:var(--muted);
+    text-decoration:none;margin:-0.3rem 0 1rem;}
+  .retour:hover{color:var(--accent);text-decoration:underline;}
+</style>
+</head>
+<body>
+<main>
+<h1 id="-lappli-ne-démarre-pas-page-blanche---ce-qui-a-été-trouvé">« L'appli ne démarre pas, page blanche » — ce qui a été trouvé</h1>
+<p>2 septembre 2026. Document de retour du lot.</p>
+<hr>
+<h2 id="en-trois-lignes">En trois lignes</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><code>npm ci</code> effaçait <code>node_modules</code> <strong>pendant</strong> qu'un serveur y travaillait. Le dossier restait à moitié détruit, <code>next</code> disparaissait, et l'application ne pouvait plus démarrer du tout — en boucle, toutes les quinze secondes, sans que rien ne le dise.</p>
+<p>C'est corrigé à la racine. Et deux garde-fous qui auraient dû l'attraper ont été corrigés aussi.</p>
+<hr>
+<h2 id="correction-de-ce-que-jai-dit-plus-tôt">Correction de ce que j'ai dit plus tôt</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><strong>J'ai d'abord écrit que la panne n'était pas trouvée</strong>, et que seule la fiche avait été réparée. C'était vrai à ce moment-là, et ce ne l'est plus : ton journal, lu depuis ton espace, portait la réponse. Ce document remplace la version précédente.</p>
+<hr>
+<h2 id="ce-qui-sest-réellement-passé">Ce qui s'est réellement passé</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p>À 21 h 13, pendant la mise à jour de ton espace :</p>
+<p>``<code> npm error ENOTEMPTY: directory not empty, rmdir '.../scope-manager/dist' npm error ENOTEMPTY: directory not empty, rename '.../zod' -&gt; '.../.zod-Nu9WQpaH' </code>``</p>
+<p>puis, trente fois d'affilée :</p>
+<p>``<code> Error: Cannot find module '.../node_modules/next/dist/bin/next' 02/09 21:21:58 — le serveur s'est arrêté 02/09 21:22:13 — plus rien n'écoute sur le port 3000, relance du serveur </code>``</p>
+<p><strong>Le mécanisme, en trois lignes de script.</strong> Ton espace lance d'abord l'application — pour que tu aies toujours quelque chose qui répond —, puis réinstalle les dépendances. Or cette réinstallation <strong>supprime le dossier des dépendances</strong> avant de le refaire. L'application, elle, était en train de s'en servir. Le dossier est resté à moitié détruit.</p>
+<p>Ensuite, tout est cohérent : sans <code>next</code>, le serveur meurt à la seconde ; le veilleur fait son travail et le relance ; il remeurt. Une heure.</p>
+<hr>
+<h2 id="un-point-un-verdict">Un point, un verdict</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th>#</th>
+<th>Le point</th>
+<th>Verdict</th>
+<th>Ce qui a été fait</th>
+</tr></thead><tbody>
+<tr>
+<td>1</td>
+<td>L'ordre des opérations au démarrage</td>
+<td><strong>la cause</strong></td>
+<td>L'application est arrêtée <strong>avant</strong> la réinstallation, plus après. Elle était arrêtée de toute façon vingt lignes plus bas : ça ne coûte rien, et ça supprime le problème</td>
+</tr>
+<tr>
+<td>2</td>
+<td>La réparation automatique existait — elle s'est déclenchée</td>
+<td><strong>vrai, mais insuffisante</strong></td>
+<td>Elle utilisait <code>npm install</code>, qui ne sait pas réparer un dossier à moitié détruit. Elle se replie désormais sur <code>npm ci</code>, qui repart d'un dossier propre</td>
+</tr>
+<tr>
+<td>3</td>
+<td>« On tente la construction telle quelle »</td>
+<td><strong>c'était un mur</strong></td>
+<td>Sans <code>next</code>, il n'y a rien à tenter. Le banc vérifie maintenant que le paquet est <strong>vraiment là</strong>, et si ce n'est pas le cas il le dit sur la fiche au lieu de boucler en silence</td>
+</tr>
+<tr>
+<td>4</td>
+<td>L'échec d'installation au démarrage</td>
+<td><strong>avalé</strong></td>
+<td>Il était noyé dans un `\</td>
+<td>\</td>
+<td>true`. Il s'affiche maintenant, avec le geste à faire</td>
+</tr>
+<tr>
+<td>5</td>
+<td>La fiche de ton espace</td>
+<td><strong>elle mentait</strong></td>
+<td>Corrigé plus tôt dans la journée : quatre phrases fausses retirées, dont une qui t'envoyait rallumer l'espace au pire moment</td>
+</tr>
+</tbody></table></div>
+<hr>
+<h2 id="ce-que-ça-change-pour-toi">Ce que ça change pour toi</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th>avant</th>
+<th>après</th>
+</tr></thead><tbody>
+<tr>
+<td>pendant une mise à jour</td>
+<td>l'application pouvait se faire casser</td>
+<td>plus rien ne tourne pendant ce temps</td>
+</tr>
+<tr>
+<td>dépendances abîmées</td>
+<td>boucle infinie, page blanche, aucune explication</td>
+<td>réparation automatique complète</td>
+</tr>
+<tr>
+<td>si la réparation échoue quand même</td>
+<td>rien, nulle part</td>
+<td>la fiche <strong>nomme</strong> ce qui manque, et donne la commande</td>
+</tr>
+</tbody></table></div>
+<hr>
+<h2 id="ce-qui-le-tient-et-comment-on-sait-que-ça-marche">Ce qui le tient, et comment on sait que ça marche</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p>La panne a été <strong>rejouée</strong>, pas raisonnée : <code>next</code> écarté, cache de npm vidé, registre injoignable — les deux commandes échouent, et le banc rend :</p>
+<p>``<code> ⚠️  LES DÉPENDANCES N'ONT PAS PU ÊTRE RÉPARÉES — next, eslint-config-next manque encore. Depuis un terminal de l'espace :  rm -rf node_modules &amp;&amp; npm ci </code>``</p>
+<p>avec la trace déposée pour la fiche.</p>
+<p>Quatre contrôles neufs, <strong>tous vérifiés rouges contre la version d'avant</strong> — un contrôle qui n'a jamais échoué ne prouve rien. Le premier jet de celui qui fixe l'ordre des opérations était d'ailleurs <strong>inutile</strong> : il se laissait berner par une ligne du haut du script et passait au vert sur le code cassé. Il est écrit noir sur blanc ici parce que c'est le genre d'erreur qui rend tout le reste douteux.</p>
+<hr>
+<h2 id="ce-qui-reste-et-que-je-nai-pas-fait">Ce qui reste, et que je n'ai pas fait</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p>Rien sur cette panne. Si elle revenait malgré tout, la fiche de ton espace dira cette fois quoi taper — elle ne se contentera plus de « ne répond pas ».</p>
+<p>Raisons et pièges, pour une prochaine session : <code>ARCHITECTURE.md</code> §237 et §238.</p>
+</main>
+</body>
+</html>

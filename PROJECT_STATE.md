@@ -44,6 +44,42 @@ Ma recommandation : **B**, la même matière avec la lumière gardée aux 50 px
 qu'elle a sur la note vocale (6,5 à toutes les largeurs). Rien ne toucherait les
 boutons creux ni les sept autres apparences.
 
+## FAIT : la fiche de l'espace ne se contredit plus (2 septembre 2026)
+
+*Sa plainte : « l'appli ne démarre pas, page blanche ». La fiche a été lue en
+premier, comme le veut la règle — et c'est elle qui était fausse.*
+
+| | |
+|---|---|
+| ce qui a bougé | `scripts/diagnostiquer-espace.mjs` · `scripts/port-libre.mjs` (neuf) · `scripts/banc.mjs` |
+| la garde | `scripts/test-banc-lent-se-dit.ts` — 5 cas neufs |
+| le pourquoi | `ARCHITECTURE.md` §237 |
+
+Quatre phrases fausses retirées : l'ordre de rallumer publié à l'allumage,
+« elle ne se recompile jamais », « l'application est entière et rapide » posée à
+côté de « Serveur : NE RÉPOND PAS », et le relèvement « dans quinze secondes »
+promis pendant une construction qui tient le verrou. La ligne « Serveur »
+distingue enfin « plus rien n'écoute » de « quelque chose tient le port et se
+tait ».
+
+**Et la panne elle-même a été trouvée le soir même** (voir juste en dessous) :
+ce lot-ci ne corrigeait que ce que la fiche DIT.
+
+## FAIT : la page blanche, à la racine (2 septembre 2026, au soir)
+
+*« L'appli ne démarre pas, page blanche » — une heure durant.*
+
+| | |
+|---|---|
+| la cause | `npm ci` effaçait `node_modules` sous un banc qui tournait ; l'arbre restait amputé et `next` disparaissait |
+| ce qui a bougé | `.devcontainer/demarrer.sh` · `scripts/banc.mjs` |
+| la garde | `test-prechauffage.ts` et `test-banc-lent-se-dit.ts` — 4 cas neufs |
+| le pourquoi | `ARCHITECTURE.md` §238 |
+
+Le banc s'arrête désormais AVANT l'installation ; `npm install` se replie sur
+`npm ci` quand l'arbre est abîmé ; et une réparation impossible se DIT au lieu
+de boucler en silence toutes les quinze secondes.
+
 ## FAIT : « Terminés » — le calme, et le galet (2 septembre 2026)
 
 *Ses deux choix, faits sur planches : « code moi la A le calme avec la 4 le

@@ -27,7 +27,6 @@
 // banc ; un banc mort lui coûte sa soirée.
 
 import { spawn } from "node:child_process";
-import { createServer } from "node:net";
 import { existsSync, mkdirSync, readFileSync, renameSync, rmSync, writeFileSync } from "node:fs";
 import { execFileSync } from "node:child_process";
 import { annoncePrete } from "./annonce-adresse.mjs";
@@ -44,6 +43,7 @@ import {
   detenteursDuVerrou,
 } from "./verrou-construction.mjs";
 import { quoiServir, echangerLesDossiers } from "./relais-version-batie.mjs";
+import { portLibre } from "./port-libre.mjs";
 
 const PORT = process.env.PORT ?? "3000";
 const SANTE = `http://127.0.0.1:${PORT}/api/health/live`;
@@ -170,6 +170,52 @@ function mesure(commande, args) {
   }
 }
 
+/**
+ * Dépose l'échec là où la fiche de l'espace saura le lire.
+ *
+ * **Sorti de la branche « construction échouée » le 2 septembre 2026, parce
+ * qu'un second endroit en a besoin.** Sa panne de ce soir-là : `node_modules`
+ * amputé, `next` absent, le serveur mort à la seconde — et **rien n'était
+ * enregistré nulle part**, parce que seul un `next build` non nul écrivait ce
+ * témoin. Sa fiche a donc répété « NE RÉPOND PAS » pendant une heure sans
+ * jamais pouvoir dire pourquoi, et il a fallu lui faire lire son journal à la
+ * main. Une copie de ce bloc aurait divergé au premier changement de format ;
+ * la fiche, elle, n'en lit qu'un (`lire-echec-construction.mjs`).
+ *
+ * Ne lève jamais : un témoin qu'on ne peut pas écrire ne doit rien empêcher.
+ */
+function deposerEchec({ code, signal = null, sortie, verrou = null }) {
+  try {
+    writeFileSync(
+      TEMOIN_ECHEC,
+      [
+        `quand: ${new Date().toISOString()}`,
+        `code: ${code}`,
+        // **Le signal, quand il y en a un.** C'est LUI qui distingue une
+        // erreur de compilation d'un abattage par le noyau : sans cette ligne,
+        // les deux s'écrivent `code: 1` et la fiche ne peut plus nommer le
+        // coupable (29 août 2026).
+        `signal: ${signal ?? "aucun"}`,
+        // Les deux suspects d'une panne sur une machine modeste, relevés À
+        // L'INSTANT de l'échec : plus tard, la mémoire est rendue et le
+        // coupable a disparu.
+        `disque: ${mesure("df", ["-h", "--output=avail", "."])}`,
+        `memoire: ${mesure("free", ["-h"])}`,
+        // **Qui tenait le verrou, s'il a parlé.** Relevé à l'instant du refus,
+        // pas maintenant : le coupable a souvent disparu depuis.
+        ...(verrou ? ["verrou tenu par :", verrou] : []),
+        // **CE QUI A ÉTÉ DIT.** Sans ces lignes, le 16 août a été passé à
+        // chercher une saturation qui n'existait pas, alors que le message
+        // tenait en une phrase.
+        "dit:",
+        sortie || "(rien n'a été écrit)",
+      ].join("\n")
+    );
+  } catch {
+    // Un témoin qu'on ne peut pas écrire ne doit pas empêcher le repli.
+  }
+}
+
 // **Prévenir le veilleur pendant la bascule, sinon il tue ce qu'on remplace.**
 //
 // Le 10 août 2026 chez le patron : construction réussie, puis
@@ -243,12 +289,88 @@ async function reinstallerSiDesaccordees() {
   if (!incoherent) return;
 
   console.log(`\n  ${motif}\n`);
-  const { code } = await jouerEnRetenant("npm", ["install", "--no-audit", "--no-fund"]);
+  const { code, sortie } = await jouerEnRetenant("npm", ["install", "--no-audit", "--no-fund"]);
+  if (code === 0 && !paquetsEpinglesAbsents().length) {
+    console.log("\n  Dépendances remises d'aplomb.\n");
+    return;
+  }
+
+  // ───────────────────────────────────────────────────────────────────────────
+  // **`npm install` NE RÉPARE PAS UN `node_modules` AMPUTÉ — 2 septembre 2026.**
+  //
+  // Sa panne du soir, et elle a duré une heure. Une installation interrompue
+  // avait laissé l'arbre à moitié ; `next` manquait. Cette garde s'est bien
+  // déclenchée — puis `npm install` a rendu, deux fois de suite :
+  //
+  //     npm error ENOTEMPTY: directory not empty, rmdir '.../scope-manager/dist'
+  //     npm error ENOTEMPTY: directory not empty, rename '.../zod' -> '.../.zod-Nu9WQpaH'
+  //
+  // `npm install` répare un arbre COHÉRENT auquel il manque des paquets. Devant
+  // des dossiers à demi effacés, il bute sur ses propres restes, et il y butera
+  // encore au tour suivant : ce n'est pas une malchance passagère, c'est un
+  // arbre qu'il ne sait plus démêler.
+  //
+  // `npm ci` efface `node_modules` avant de réinstaller — c'est exactement le
+  // geste qui manquait, et c'est celui qui a rendu son application.
+  //
+  // **Et il est sans danger ICI, contrairement à ce que ce fichier a longtemps
+  // dit.** L'ancienne consigne — « `npm install` et non `npm ci`, parce que le
+  // serveur de développement TOURNE pendant ce temps » — datait d'avant le
+  // 31 août, quand cette garde vivait APRÈS le lancement. Elle vient désormais
+  // AVANT : rien ne sert, il n'y a aucun sol à retirer.
   console.log(
-    code === 0
-      ? "\n  Dépendances remises d'aplomb.\n"
-      : "\n  La réinstallation a échoué : on tente la construction telle quelle.\n"
+    "\n  npm install n'a pas suffi — l'arbre des dépendances est abîmé.\n" +
+      "  Réinstallation complète (npm ci), deux à trois minutes.\n"
   );
+  const propre = await jouerEnRetenant("npm", ["ci", "--no-audit", "--no-fund"]);
+
+  const manquants = paquetsEpinglesAbsents();
+  if (propre.code === 0 && !manquants.length) {
+    console.log("\n  Dépendances remises d'aplomb.\n");
+    return;
+  }
+
+  // **ET SI ÇA NE SUFFIT PAS, ON LE DIT — au lieu de foncer dans le mur.**
+  //
+  // L'ancienne version concluait « on tente la construction telle quelle ». Ce
+  // n'est pas un repli quand le paquet ABSENT est `next` : le serveur meurt à
+  // la seconde (« Cannot find module »), le banc s'arrête avec lui, le veilleur
+  // le relance, et cela recommence toutes les quinze secondes SANS QUE RIEN NE
+  // SOIT ENREGISTRÉ. C'est ce qui s'est passé pendant une heure : sa fiche
+  // répétait « NE RÉPOND PAS » sans jamais pouvoir dire pourquoi.
+  //
+  // On dépose donc l'échec là où la fiche le lit. Le banc continue quand même —
+  // un banc mort coûte plus cher qu'un banc qui se plaint —, mais il ne se tait
+  // plus.
+  deposerEchec({
+    code: propre.code,
+    sortie:
+      (manquants.length ? `paquets épinglés toujours absents : ${manquants.join(", ")}\n` : "") +
+      (propre.sortie || sortie || "(npm n'a rien écrit)"),
+  });
+  console.error(
+    "\n  ⚠️  LES DÉPENDANCES N'ONT PAS PU ÊTRE RÉPARÉES" +
+      (manquants.length ? ` — ${manquants.join(", ")} manque encore.` : ".") +
+      "\n     Depuis un terminal de l'espace :  rm -rf node_modules && npm ci\n"
+  );
+}
+
+/**
+ * Les paquets que le projet ÉPINGLE et qui ne sont pas sur le disque.
+ *
+ * **La question qui manquait, et elle coûtait une heure de boucle.** La garde
+ * se contentait du code de sortie de npm : une commande qui rend 0 en ayant
+ * laissé `next` absent était comptée comme une réussite. On regarde ce qui
+ * compte — le paquet est-il là ? —, pas ce que la commande a bien voulu dire.
+ */
+function paquetsEpinglesAbsents() {
+  let paquet;
+  try {
+    paquet = JSON.parse(readFileSync("package.json", "utf8"));
+  } catch {
+    return [];
+  }
+  return PAQUETS_SENSIBLES.filter((nom) => versionEpinglee(paquet, nom) && !versionInstallee(nom));
 }
 
 async function repond() {
@@ -376,30 +498,6 @@ function jouerEnRetenant(commande, args, env = process.env, lignes = 30) {
 }
 
 /**
- * **Le PORT est-il libre — pas « la santé se tait-elle ».**
- *
- * La version précédente interrogeait `/api/health/live` et concluait « port
- * rendu » dès qu'il ne répondait plus. C'est faux, et c'est ce qui a fait
- * revenir « EADDRINUSE » chez le patron le 10 août 2026 au soir, APRÈS une
- * construction réussie : un serveur qu'on vient de tuer cesse de répondre bien
- * avant de rendre sa socket, et un processus qui tient le port sans servir
- * Atlas ne répond à cette route dans aucun cas. Le banc lançait donc
- * `next start` sur un port encore occupé.
- *
- * On demande maintenant au système, en essayant d'ÉCOUTER dessus : c'est la
- * seule question dont la réponse engage `next start`. La socket d'essai est
- * refermée aussitôt.
- */
-function portLibre() {
-  return new Promise((resoudre) => {
-    const essai = createServer();
-    essai.once("error", () => resoudre(false));
-    essai.once("listening", () => essai.close(() => resoudre(true)));
-    essai.listen(Number(PORT), "0.0.0.0");
-  });
-}
-
-/**
  * Déloge ce qui écoute encore, sans condition.
  *
  * `serveur.kill()` ne tue que l'enveloppe `npx` : le processus qui écoute
@@ -418,7 +516,7 @@ function delogerCeQuiEcoute() {
 async function portRendu(limiteMs) {
   const fin = Date.now() + limiteMs;
   while (Date.now() < fin) {
-    if (await portLibre()) return true;
+    if (await portLibre(PORT)) return true;
     await attendre(1000);
   }
   return false;
@@ -478,7 +576,7 @@ process.on("exit", () => libererVerrouBanc());
 // **La distinction qui compte** : si quelque chose répond à la santé, c'est
 // Atlas qui sert — on n'y touche pas, et le verrou ci-dessus a déjà tranché. Si
 // le port est pris SANS que rien ne réponde, c'est un orphelin, et lui seul.
-if (!(await portLibre())) {
+if (!(await portLibre(PORT))) {
   if (await repond()) {
     console.log(
       "\n  ─────────────────────────────────────────────────────────────\n" +
@@ -1193,35 +1291,9 @@ if (raison) {
     // L'échec se dépose là où la fiche saura le lire. Sans cela il ne vit que
     // dans un journal local, et l'agent voit un banc « sans version bâtie »
     // sans pouvoir dire si c'est passager ou définitif.
-    try {
-      writeFileSync(
-        TEMOIN_ECHEC,
-        [
-          `quand: ${new Date().toISOString()}`,
-          `code: ${code}`,
-          // **Le signal, quand il y en a un.** C'est LUI qui distingue une
-          // erreur de compilation d'un abattage par le noyau : sans cette
-          // ligne, les deux s'écrivent `code: 1` et la fiche ne peut plus
-          // nommer le coupable (29 août 2026).
-          `signal: ${signal ?? "aucun"}`,
-          // Les deux suspects d'une construction qui tombe sur une machine
-          // modeste, relevés À L'INSTANT de l'échec : plus tard, la mémoire est
-          // rendue et le coupable a disparu.
-          `disque: ${mesure("df", ["-h", "--output=avail", "."])}`,
-          `memoire: ${mesure("free", ["-h"])}`,
-          // **Qui tenait le verrou, s'il a parlé.** Relevé à l'instant du
-          // refus, pas maintenant : le coupable a souvent disparu depuis.
-          ...(quiTenaitLeVerrou ? ["verrou tenu par :", quiTenaitLeVerrou] : []),
-          // **CE QUE LA CONSTRUCTION A DIT.** Sans ces lignes, le 16 août a été
-          // passé à chercher une saturation qui n'existait pas, alors que le
-          // message tenait en une phrase.
-          "dit:",
-          sortie || "(la construction n'a rien écrit)",
-        ].join("\n")
-      );
-    } catch {
-      // Un témoin qu'on ne peut pas écrire ne doit pas empêcher le repli.
-    }
+    // L'échec se dépose là où la fiche saura le lire — un seul écrivain pour
+    // ce format, partagé avec la réparation des dépendances (`deposerEchec`).
+    deposerEchec({ code, signal, sortie, verrou: quiTenaitLeVerrou });
     // **Jamais en silence, et jamais rien du tout.** Voir l'en-tête : un banc
     // lent reste un banc, un banc mort coûte une soirée.
     // **Et le repli n'est plus le même selon qu'une version rapide existe.**

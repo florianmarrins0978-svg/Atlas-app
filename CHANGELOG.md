@@ -61,6 +61,111 @@ elle-même, et les trois anneaux sur un bouton long.
 
 ## 2026-09-02
 
+### Une suite rouge deux heures chaque nuit, sur du code juste
+
+Trouvé à 23 h 36 UTC en fermant la batterie : `test-poser-une-date-e2e`
+cherchait la carte du jour au calendrier avec un « aujourd'hui » calculé en
+**UTC** (`new Date().toISOString()`), alors que l'application compte ses
+journées à l'heure de l'atelier (`Europe/Paris`). Passé 22 h UTC l'été, elle
+réclamait un jour déjà passé pour l'écran — qui ne l'offre plus — et
+rougissait sur du code parfaitement juste.
+
+`_jour-e2e.ts` existe précisément pour cela, et son en-tête raconte la même
+panne pour deux autres suites. Celle-ci n'y avait jamais été branchée : deux
+définitions d'une même règle, qui divergent (`CLAUDE.md` §3). Elle lit
+désormais `jourDuPatron()`, comme l'écran.
+
+Éprouvé à 23 h 39 UTC — l'heure même qui la faisait tomber : 5/5.
+
+### La page blanche : `npm ci` effaçait `node_modules` sous un serveur qui tournait
+
+**La racine de sa panne, trouvée dans le journal de son espace.** Une heure
+d'application morte, et deux lignes l'expliquent :
+
+```
+npm error ENOTEMPTY: directory not empty, rmdir '.../scope-manager/dist'
+Error: Cannot find module '.../node_modules/next/dist/bin/next'   (× 30)
+```
+
+`demarrer.sh` posait le veilleur — donc un banc qui SERT et qui BÂTIT — puis
+lançait `npm ci`, **qui efface `node_modules`**, et n'arrêtait ces processus que
+vingt lignes plus bas. npm a effacé ce qu'il pouvait, échoué sur ce qui était
+tenu ouvert, et laissé l'arbre amputé. `next` a disparu : le serveur mourait à
+la seconde, le veilleur le relançait, il remourait — toutes les quinze secondes,
+**sans que rien ne soit enregistré nulle part**.
+
+- **Le banc s'arrête AVANT l'installation, plus après.** Ces processus étaient
+  tués de toute façon : les tuer avant ne coûte aucun service et supprime la
+  course. C'est la correction de la cause.
+- **`npm install` ne répare pas un arbre amputé — on se replie sur `npm ci`.**
+  Le premier répare un arbre cohérent auquel il manque des paquets ; devant des
+  dossiers à demi effacés il bute sur ses propres restes, et il y butera encore
+  au tour suivant.
+- **On ne fonce plus dans le mur en silence.** « On tente la construction telle
+  quelle » n'est pas un repli quand `next` manque. Le banc vérifie que le paquet
+  est VRAIMENT sur le disque — le code de sortie de npm ne suffit pas — et
+  dépose l'échec là où la fiche le lit. Elle nomme désormais les paquets absents
+  au lieu de répéter « NE RÉPOND PAS ».
+- **L'échec d'installation au démarrage ne s'avale plus** dans un `|| true` : le
+  bandeau le dit, avec le geste à faire.
+- **Un seul écrivain pour le témoin d'échec** (`deposerEchec`), partagé par la
+  construction et par la réparation : deux copies d'un même format auraient
+  divergé, et la fiche n'en lit qu'un.
+
+Éprouvé en JOUANT la panne — `next` écarté, cache npm vide, registre
+injoignable : les deux commandes échouent et le banc nomme les paquets absents.
+Quatre contrôles neufs, tous vérifiés rouges contre la version d'avant — dont
+le premier jet de celui qui fixe l'ordre, **inutile** parce qu'il trouvait le
+`pkill` de l'en-tête et passait au vert sur le code défectueux.
+
+Raisons et pièges : `ARCHITECTURE.md` §238.
+
+### La fiche de l'espace se contredisait, et envoyait rallumer pour rien
+
+**Sa plainte : *« l'appli ne démarre pas, page blanche »*.** La fiche de son
+espace a été lue en premier, comme le veut `CLAUDE.md` §1 bis — et c'est elle
+qui était fausse. Trois verdicts affirmaient ce qu'ils ne mesuraient pas.
+
+- **À l'allumage, elle disait de rallumer l'espace.** Le diagnostic ignorait à
+  quel moment il était joué, alors que `rapporter-espace.mjs` l'écrit en tête de
+  fiche depuis le 12 août. Or à l'allumage le banc n'a pas encore démarré :
+  rallumer **jette la construction qui allait partir**, et l'on retombe sur la
+  même fiche. `ATLAS_MOMENT` entre désormais dans le raisonnement.
+- **« La version rapide ne se recompile jamais » était faux depuis le 31 août.**
+  Le banc rebâtit dès que le commit bâti diffère du commit récupéré, et le
+  veilleur retente indéfiniment — ce que le verdict d'échec, dans la MÊME fiche,
+  disait déjà. Elle se contredisait d'un point à l'autre.
+- **« L'application est entière et rapide » contredisait « Serveur : NE RÉPOND
+  PAS », trois lignes plus haut.** Ce verdict dit quel CODE est servi ; il ne
+  mesure pas si l'application tourne, et il ne l'affirme plus.
+- **« NE RÉPOND PAS » recouvrait deux états opposés** — plus rien n'écoute, ou
+  quelque chose tient le port et se tait. Le premier veut dire « le banc n'a pas
+  démarré », le second « le veilleur va le déloger, attendez une minute ». La
+  fiche les distingue, avec la fonction que le banc emploie déjà
+  (`scripts/port-libre.mjs`, sortie de `banc.mjs` plutôt que recopiée).
+- **« Le veilleur devrait le relever dans quinze secondes » est faux pendant une
+  construction** : le banc qui bâtit tient le verrou, et celui qu'on relance
+  refuse de démarrer. C'était l'état exact de son espace à 18 h 55 — rien à
+  attendre, et la fiche disait d'attendre.
+
+**Ce que ce lot NE corrige pas, et il faut le lire :** pourquoi rien ne servait
+sur son port. La version rapide précédente (`ddf69f2`) existait bien et devait
+servir pendant la construction. Ce qui l'en a empêché n'est écrit que dans son
+`/tmp/essai.log`. **Panne NON reproduite ici** — la fiche a été rendue capable
+de la nommer, elle n'a pas été réparée. Voir `TODO.md`.
+
+**Au passage, un contrôle qui ne visait plus rien.** `test-prechauffage.ts`
+cherchait `spawn(NPM, ["run", "dev"` dans `run-e2e-tests.ts` ; le commit
+`3cd0d21`, du même jour, y a remplacé `npm` par l'exécutable Node et le binaire
+du projet. Le repère valait -1, l'assertion qui suit — la garde arrive-t-elle
+AVANT le lancement du serveur ? — n'éprouvait plus rien, et la batterie
+rougissait sur du code juste. Le repère vise désormais ce que le lancement EST,
+pas la commande qui le porte, qui a déjà changé deux fois.
+
+Raisons et pièges : `ARCHITECTURE.md` §237.
+Éprouvé : `scripts/test-banc-lent-se-dit.ts`, cinq cas neufs, tous vérifiés
+rouges contre la version d'avant.
+
 ### Le prix accordé n'a plus qu'une façon d'arriver en base
 
 **La CI rougissait sur `test-reduction-devis-e2e`, et le message accusait le

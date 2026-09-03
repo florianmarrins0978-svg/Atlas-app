@@ -21060,3 +21060,215 @@ et la capsule à l'intérieur de la rangée (31 août).
 « 3 à facturer · 10 facturés » compte **tous les mois**, comme il l'a demandé le
 23 août — mais la phrase est posée juste sous le nom d'un mois précis, et elle
 ne bouge pas quand on recule. Rien n'a été changé sans son avis.
+
+---
+
+## §237. La fiche de l'espace disait le contraire d'elle-même, et envoyait rallumer
+
+**Sa plainte du 2 septembre 2026 : *« l'appli ne démarre pas, page blanche »*.**
+`CLAUDE.md` §1 bis dit quoi faire d'abord : lire la fiche. Elle a été lue — et
+c'est elle qui était fausse.
+
+### Ce que la fiche a publié, ce jour-là
+
+À l'allumage (18 h 40 UTC), puis par le veilleur (18 h 55), elle portait
+côte à côte, à trois lignes d'écart :
+
+```
+Serveur : NE RÉPOND PAS sur le port 3000
+⚠ … l'ancienne reste en service pendant ce temps — l'application est donc
+    entière et rapide …
+```
+
+et, à l'allumage :
+
+```
+Écrite : à l'allumage — le serveur n'a pas encore eu le temps de démarrer
+⚠ … elle ne se recompile jamais … Arrêtez puis rouvrez l'espace de travail.
+```
+
+Trois défauts, tous dans `scripts/diagnostiquer-espace.mjs`, et tous de la
+même famille : **un verdict qui affirme ce qu'il ne mesure pas.**
+
+### 1. Le moment d'écriture n'entrait pas dans le raisonnement
+
+`rapporter-espace.mjs` distingue ses passages depuis le 12 août — « à
+l'allumage », « après démarrage », « par le veilleur » — précisément parce que
+*les mêmes mots ne veulent pas dire la même chose selon l'heure*. Il l'écrivait
+en tête de fiche, et le diagnostic n'en savait rien : il raisonnait toujours
+comme devant une machine posée.
+
+À l'allumage, le banc n'a pas encore démarré — le veilleur le lance dans les
+quinze secondes. La fiche ordonnait pourtant de rallumer, ce qui **jette la
+construction qui allait partir**. Il rallume, retombe sur la même fiche,
+rallume encore.
+
+`ATLAS_MOMENT` est désormais lu par le diagnostic : c'est la même variable, pas
+une seconde façon de dire la même chose.
+
+### 2. « Elle ne se recompile jamais » était faux depuis le 31 août
+
+`banc.mjs` rebâtit dès que le commit bâti diffère du commit récupéré
+(`doitRebatir`), et le veilleur retente indéfiniment — une salve rapide, puis
+une tentative par demi-heure. `ligneCodeServi` avait reçu cette correction le
+20 août pour l'échec de construction (« et le restera » retiré) ; elle n'avait
+jamais été reportée sur ce verdict-ci.
+
+La fiche se contredisait donc d'un point à l'autre — *« le veilleur retente,
+indéfiniment »* plus haut, *« jamais »* ici. **Et c'est la ligne qui accuse
+qu'on croit.**
+
+### 3. « L'application est entière et rapide » n'était pas mesuré
+
+Ce verdict-là répond à la question *quel code est servi*. Il affirmait en prime
+que l'application tournait, alors que la ligne « Serveur », trois lignes plus
+haut, disait le contraire. Deux affirmations opposées dans un même écran, et
+c'est tout l'écran qu'on cesse de croire — la faute déjà payée sur la liste de
+pièces d'arrosage (`CLAUDE.md` §4 bis).
+
+La promesse est retirée. Qui répond ou non est dit par la ligne « Serveur » et
+par son propre verdict, **une seule fois**.
+
+### Et « NE RÉPOND PAS » recouvrait deux états opposés
+
+C'est le défaut de la ligne « Code SERVI » du 16 août, un cran plus loin. Cette
+phrase valait aussi bien pour :
+
+| L'état | Ce qu'il faut en faire |
+|---|---|
+| plus rien n'écoute | le banc n'a pas démarré — chercher pourquoi |
+| quelque chose tient le port et se tait | le veilleur va le déloger — attendre une minute |
+
+Le veilleur, lui, fait déjà cette distinction pour décider s'il relance ou s'il
+déloge (`.devcontainer/veiller.sh`). La fiche ne la publiait pas. Elle la
+publie désormais, avec la MÊME fonction que le banc emploie —
+`scripts/port-libre.mjs`, sortie de `banc.mjs` pour l'occasion. La recopier
+aurait fait deux implémentations d'une même question, et celle-ci a **déjà été
+fausse une fois** : jusqu'au 10 août elle demandait « la santé répond-elle ? »
+au lieu de « puis-je écouter ? », d'où l'`EADDRINUSE` de ce soir-là.
+
+### Le verdict qui promettait un secours qui ne vient pas
+
+*« Le veilleur devrait le relever dans quinze secondes »* est faux pendant une
+construction : le banc qui bâtit **tient le verrou** (`verrou-banc.mjs`), et le
+banc que le veilleur relance refuse alors de démarrer et rend la main aussitôt.
+Tant que la construction dure, personne ne prendra le port.
+
+C'est exactement l'état de son espace à 18 h 55 : construction en cours,
+veilleur en place, rien sur le port. La fiche disait d'attendre quinze
+secondes ; il n'y avait rien à attendre. Le verdict nomme désormais cet état, et
+dit où est écrit ce qui a empêché le banc de servir (`/tmp/essai.log`).
+
+### Ce qui reste ouvert, et qu'il ne faut pas croire réglé
+
+**Pourquoi rien ne servait sur son port n'est PAS établi.** Le banc doit servir
+la version rapide précédente *avant* de bâtir la neuve (`relais-version-batie.mjs`,
+31 août) : `.next-batie` portait bien `ddf69f2`, donc cette version existait.
+Ce qui l'a empêchée de prendre le port n'est écrit que dans son
+`/tmp/essai.log`, auquel l'agent n'a pas accès.
+
+Ce lot ne corrige donc **pas** la panne : il corrige la fiche, pour que la
+prochaine la nomme au lieu d'affirmer que tout va bien. `TODO.md` le porte.
+
+**Éprouvé** : `npx tsx scripts/test-banc-lent-se-dit.ts` — cinq cas neufs, tous
+rouges contre la version d'avant (c'est ainsi qu'ils ont été vérifiés), dont le
+port tenu pour de vrai par un processus voisin plutôt que simulé.
+
+---
+
+## §238. `npm ci` effaçait `node_modules` sous un serveur qui tournait
+
+**Sa panne du 2 septembre 2026 au soir, et c'est la RACINE de la page blanche
+que §237 n'avait fait que rendre lisible.** Une heure d'application morte, et
+le journal de son espace la raconte en deux temps.
+
+### Ce que sa machine a écrit
+
+À 21 h 13, pendant la mise à jour de l'espace :
+
+```
+npm error ENOTEMPTY: directory not empty, rmdir '.../@typescript-eslint/scope-manager/dist'
+npm error ENOTEMPTY: directory not empty, rename '.../zod' -> '.../.zod-Nu9WQpaH'
+La réinstallation a échoué : on tente la construction telle quelle.
+```
+
+puis, trente fois d'affilée, toutes les quinze secondes :
+
+```
+Error: Cannot find module '/workspaces/Atlas-app/node_modules/next/dist/bin/next'
+02/09 21:21:58 — le serveur s'est arrêté
+02/09 21:22:13 — plus rien n'écoute sur le port 3000, relance du serveur
+```
+
+### La cause, et elle tient dans l'ordre de trois lignes
+
+`demarrer.sh` faisait, dans cet ordre :
+
+| | |
+|---|---|
+| ligne 212 | `lancer_veilleur` — quinze secondes plus tard, un banc SERT et BÂTIT |
+| ligne 232 | `npm ci` — **qui efface `node_modules`** |
+| ligne 248 | `pkill next…` — l'arrêt du banc, **après les dégâts** |
+
+`npm ci` supprime `node_modules` avant de réinstaller. Un `next-server` et un
+`next build` y tenaient des fichiers ouverts : npm a effacé ce qu'il pouvait,
+échoué sur ce qui était tenu (`ENOTEMPTY`), et **laissé l'arbre amputé**.
+`next` en fut la victime.
+
+Le veilleur a fait exactement son travail — relancer un serveur mort — et
+chaque relance mourait sur le même module absent. Une boucle sans fin, et
+**aucune trace nulle part** : le témoin d'échec n'est déposé que lorsque
+`next build` rend un code non nul, or le banc s'arrêtait bien avant, avec son
+serveur.
+
+**Le veilleur posé avant la mise à jour n'est pas le défaut** — c'est le
+correctif du 9 août, et il tient : le patron doit avoir une application qui
+répond quoi qu'il arrive. Le défaut est d'avoir laissé une commande
+DESTRUCTRICE s'exécuter par-dessus.
+
+### Les trois corrections, et ce que chacune répare
+
+1. **La racine — le banc s'arrête AVANT d'installer** (`demarrer.sh`). Les
+   processus étaient tués de toute façon vingt lignes plus bas ; les tuer avant
+   ne coûte aucun service perdu, et supprime la course entièrement.
+2. **`npm install` ne répare pas un arbre amputé** (`banc.mjs`). Il répare un
+   arbre COHÉRENT auquel il manque des paquets ; devant des dossiers à demi
+   effacés, il bute sur ses propres restes — et il y butera encore au tour
+   suivant. On se replie donc sur `npm ci`, seul capable de repartir d'un
+   dossier propre. **Et c'est sans danger ici**, contrairement à ce que ce
+   fichier a longtemps dit : depuis le 31 août la garde s'exécute AVANT le
+   lancement du serveur, il n'y a plus aucun sol à retirer.
+3. **On ne fonce plus dans le mur en silence.** « On tente la construction telle
+   quelle » n'est pas un repli quand le paquet absent est `next` : c'est un mur.
+   Le banc vérifie désormais que le paquet est VRAIMENT sur le disque — le code
+   de sortie de npm ne suffit pas —, et dépose l'échec là où la fiche le lit.
+
+**Et le dépôt du témoin d'échec n'a plus qu'un écrivain** (`deposerEchec`),
+partagé par la construction et par la réparation des dépendances : deux copies
+d'un même format auraient divergé, et la fiche n'en lit qu'un.
+
+### Ce que cela change pour la prochaine fois
+
+| | avant | après |
+|---|---|---|
+| pendant l'installation | un banc tourne et se fait amputer | plus rien ne tourne |
+| `npm install` refusé | on continue vers un serveur qui ne peut pas démarrer | on repart proprement (`npm ci`) |
+| réparation impossible | **rien**, une boucle muette de quinze secondes | la fiche NOMME les paquets absents |
+| échec d'installation au démarrage | avalé par un `\|\| true` | écrit au bandeau, avec le geste à faire |
+
+**Éprouvé, et pas seulement relu.** La voie de secours a été JOUÉE ici, `next`
+écarté, cache npm vide et registre injoignable — les deux commandes échouent, et
+le banc a rendu :
+
+```
+⚠️  LES DÉPENDANCES N'ONT PAS PU ÊTRE RÉPARÉES — next, eslint-config-next manque encore.
+    Depuis un terminal de l'espace :  rm -rf node_modules && npm ci
+```
+
+avec le témoin déposé, portant `paquets épinglés toujours absents : next`.
+
+Les quatre contrôles neufs (`test-prechauffage.ts`, `test-banc-lent-se-dit.ts`)
+ont tous été **vérifiés rouges contre la version d'avant**. Le premier jet de
+celui qui fixe l'ordre était d'ailleurs **inutile** : il trouvait le `pkill` de
+l'en-tête du script et passait au vert sur le code défectueux. Il est désormais
+borné des deux côtés — un contrôle qui ne sait pas échouer ne prouve rien.
