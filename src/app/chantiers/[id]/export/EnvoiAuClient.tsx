@@ -762,9 +762,30 @@ function Contenu({
           décision d'ensemble : elle ne change que si quelqu'un pense à elle.
           C'est le composant qui porte la forme, jamais l'écran. */}
       <div className="flex flex-col gap-2.5">
+        {/* ═══════════════════════════════════════════════════════════════
+            **IL RÉPOND, IL NE S'ÉTEINT PLUS FAUTE DE DATE — 3 septembre 2026.**
+
+            Sa règle : un refus nomme sa raison ET le geste qui le débloque ;
+            un bouton grisé sans phrase est un défaut, pas une protection.
+
+            Elle était déjà tenue sur l'écran de son CLIENT — « il n'est plus
+            éteint, et il ne porte plus sa phrase grise » (`devis/[jeton]/
+            formulaire.tsx`) — et pas ici. Pire : la phrase existait,
+            « Proposez au moins une date d'intervention », et elle était
+            INATTEIGNABLE. Un bouton désactivé n'appelle jamais la fonction qui
+            la pose. Elle n'a donc jamais pu s'afficher depuis qu'elle a été
+            écrite.
+
+            Cela arrive pour de bon : agenda plein ou chantier long — aucun jour
+            n'est présélectionné —, ou quand il décoche sa seule date.
+
+            `blocage` reste éteignant, et lui porte déjà sa phrase au-dessus
+            (`MESSAGES_BLOCAGE`) : il n'y a alors rien à envoyer, et le dire
+            deux fois serait du bruit.
+            ═══════════════════════════════════════════════════════════════ */}
         <PrimaryButton
           onClick={confirmer}
-          disabled={enCours || !preparation || !!blocage || selection.length === 0}
+          disabled={enCours || !preparation || !!blocage}
         >
           {enCours ? "Envoi…" : "Envoyer le devis"}
         </PrimaryButton>

@@ -183,9 +183,22 @@ export default function DevisDepuisDictee({
       const issue = await attendreLeDevis(chantierId, {
         surAttente: (secondes) => setEtat({ type: "attente", secondes }),
       });
-      if (issue === "pret") {
+      if (issue.type === "pret") {
         if (surLeDevis) return router.refresh();
         return router.push(`/chantiers/${chantierId}/devis-complet`);
+      }
+      // **L'arrêt d'avant-chiffrage se rattrape, il ne se perd plus.**
+      //
+      // Sa capture du 1ᵉʳ septembre 2026 : « Atlas prépare toujours votre
+      // devis… (96 s) », et rien ne vient. La chaîne avait fini — elle
+      // l'attendait à l'arrêt, avec ses deux questions — mais sa réponse
+      // s'était perdue, et cette attente-ci ne savait reconnaître qu'un devis
+      // écrit. Elle comptait donc des secondes devant un serveur au repos.
+      //
+      // Répondre ici termine le devis sans relire la dictée : le modèle n'est
+      // pas rappelé, et les questions ne se renumérotent pas.
+      if (issue.type === "questions") {
+        return setEtat({ type: "questions", questions: issue.questions });
       }
       setEtat({
         type: "message",
@@ -325,7 +338,13 @@ export default function DevisDepuisDictee({
           questions={etat.questions}
           onAbandon={() => setEtat({ type: "repos" })}
           onEchec={(texte) => setEtat({ type: "message", texte })}
-          onPrepare={() => router.push(`/chantiers/${chantierId}/devis-complet`)}
+          /* **Le même partage que `lancer` — et pour le même piège.** Sur la
+             page du devis, `push` vers l'adresse courante ne rejoue pas le
+             rendu serveur : le patron répondait à ses questions et restait
+             devant la feuille vide qu'il venait de remplir. */
+          onPrepare={() =>
+            surLeDevis ? router.refresh() : router.push(`/chantiers/${chantierId}/devis-complet`)
+          }
         />
       )}
 

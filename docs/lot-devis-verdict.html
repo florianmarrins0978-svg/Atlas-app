@@ -1,0 +1,370 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas — Le devis, de la dictée à l'écran du client — verdict</title>
+<style>
+  :root{
+    --ground:#f5f3ee; --surface:#faf9f5; --raised:#ece9e1;
+    --ink:#1c1c1a; --ink-soft:#4a4a44; --muted:#8a8578;
+    --accent:#2f3b2f; --alert:#b5562a; --line:rgba(28,28,26,0.13);
+    --serif:Georgia,'Times New Roman',serif;
+    --sans:system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --ground:#161815; --surface:#1d201c; --raised:#252924;
+      --ink:#eae7df; --ink-soft:#c2bdb1; --muted:#948f83;
+      --accent:#9fbd82; --alert:#e0885a; --line:rgba(234,231,223,0.17);
+    }
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--sans);
+    line-height:1.65;}
+  main{max-width:44rem;margin:0 auto;padding:2.5rem 1.2rem 5rem;}
+  h1,h2,h3,h4{font-family:var(--serif);font-weight:600;line-height:1.2;
+    text-wrap:balance;margin:2rem 0 0.6rem;scroll-margin-top:1rem;}
+  h1{font-size:2rem;margin-top:0;}
+  h2{font-size:1.5rem;padding-top:1.2rem;border-top:1px solid var(--line);}
+  h3{font-size:1.12rem;}
+  h4{font-size:1rem;}
+  p{margin:0 0 0.9rem;}
+  a{color:var(--accent);text-underline-offset:3px;}
+  a:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:3px;}
+  ul,ol{margin:0 0 1rem;padding-left:1.3rem;}
+  li{margin-bottom:0.4rem;}
+  li::marker{color:var(--muted);}
+  /* Le sommaire : des cibles larges, confortables au doigt sur téléphone. */
+  ol li a{display:inline-block;padding:0.15rem 0;}
+  blockquote{margin:1rem 0;padding:0.85rem 1.05rem;background:var(--raised);
+    border-left:3px solid var(--accent);border-radius:0 10px 10px 0;color:var(--ink-soft);}
+  code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:0.87em;
+    background:var(--raised);padding:0.1rem 0.35rem;border-radius:5px;}
+  hr{border:0;border-top:1px solid var(--line);margin:2rem 0;}
+  .tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px;
+    background:var(--surface);margin:0 0 1.2rem;}
+  table{border-collapse:collapse;width:100%;font-size:0.92rem;min-width:22rem;}
+  th,td{text-align:left;padding:0.55rem 0.8rem;border-bottom:1px solid var(--line);
+    vertical-align:top;}
+  th{font-size:0.72rem;letter-spacing:0.08em;text-transform:uppercase;
+    color:var(--muted);white-space:nowrap;}
+  tr:last-child td{border-bottom:none;}
+  .retour{display:inline-block;font-size:0.76rem;color:var(--muted);
+    text-decoration:none;margin:-0.3rem 0 1rem;}
+  .retour:hover{color:var(--accent);text-decoration:underline;}
+</style>
+</head>
+<body>
+<main>
+<h1 id="le-devis-de-la-dictée-à-lécran-du-client--verdict">Le devis, de la dictée à l'écran du client — verdict</h1>
+<p><em>Lot du 3 septembre 2026. Périmètre : les quatre surfaces du devis. Ni l'arrosage, ni le planning, ni la facture — sauf pour dire ce que le devis leur casse.</em></p>
+<hr>
+<h2 id="en-cinq-lignes">En cinq lignes</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p>Trois défauts réparés, un mesuré et laissé à votre arbitrage, une planche à regarder. Le compteur « (96 s) » a une explication, trouvée dans le code et non supposée : l'écran d'attente ne savait reconnaître qu'une seule des six issues de la chaîne. L'envoi écrivait en deux temps sans filet, et son refus accusait une journée prise là où la date était simplement passée. Un bouton s'éteignait sans un mot chez vous, alors que la même règle était tenue chez votre client.</p>
+<p><strong>La planche à regarder, adresse entière :</strong> https://florianmarrins0978-svg.github.io/Atlas-app/ecran-de-son-client.html</p>
+<hr>
+<h2 id="1--atlas-prépare-toujours-votre-devis-96-s---expliqué-pas-deviné">1. « Atlas prépare toujours votre devis… (96 s) » — expliqué, pas deviné</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><strong>Verdict : défaut réel, réparé. La cause était dans le code, pas dans une hypothèse sur votre machine.</strong></p>
+<p>Le fichier qui le prouve : <a href="../src/lib/attente-devis.ts" target="_blank" rel="noopener"><code>src/lib/attente-devis.ts</code></a>, [<code>src/app/api/chantiers/[chantierId]/devis-pret/route.ts</code>](../src/app/api/chantiers/%5BchantierId%5D/devis-pret/route.ts).</p>
+<h3 id="ce-que-votre-capture-prouvait-déjà">Ce que votre capture prouvait déjà</h3>
+<p>Ce compteur n'est atteignable que par <strong>une seule voie</strong> : le rattrapage écrit le 12 août, celui qui se déclenche quand la réponse du serveur <strong>se perd</strong> (<code>DevisDepuisDictee.tsx</code>, le <code>catch</code>). Votre capture ne dit donc pas que la chaîne a bouclé : elle dit que sa réponse n'est jamais revenue jusqu'à votre téléphone.</p>
+<h3 id="le-vrai-défaut-et-il-rendait-la-panne-inévitable">Le vrai défaut, et il rendait la panne inévitable</h3>
+<p>Ce rattrapage n'avait qu'un seul signal de réussite : « le devis est écrit ». Or la chaîne s'arrête <strong>légitimement sans écrire de devis</strong> dans cinq de ses six issues (<code>devis-depuis-dictee.ts</code>) :</p>
+<div class="tablewrap"><table><thead><tr>
+<th>Issue</th>
+<th>Un devis est-il écrit ?</th>
+</tr></thead><tbody>
+<tr>
+<td>dictée non transcrite</td>
+<td>non</td>
+</tr>
+<tr>
+<td>transcription simulée</td>
+<td>non</td>
+</tr>
+<tr>
+<td>brouillon corrigé à la main</td>
+<td>non</td>
+</tr>
+<tr>
+<td>échec</td>
+<td>non</td>
+</tr>
+<tr>
+<td><strong>arrêt d'avant-chiffrage</strong> — vos deux questions à 800 €</td>
+<td><strong>non</strong></td>
+</tr>
+<tr>
+<td>devis préparé</td>
+<td>oui</td>
+</tr>
+</tbody></table></div>
+<p>Réponse perdue <strong>plus</strong> arrêt d'avant-chiffrage — le cas le plus fréquent d'une vraie dictée d'arbre — donnait une attente qui <strong>ne pouvait jamais aboutir</strong> : cinq minutes de compteur, puis « la préparation n'a pas abouti », devant un serveur qui avait fini son travail et vous attendait avec ses questions.</p>
+<h3 id="un-second-défaut-découvert-en-le-réparant">Un second défaut, découvert en le réparant</h3>
+<p>Le témoin lu était <code>devis_genere_at</code>. Il est posé par <code>getOuCreerDevisBrouillon</code> — que <strong>la page du devis appelle elle-même en s'ouvrant</strong>. Sur cette page-là, l'attente répondait donc « prêt » avant que la dictée ait produit la moindre ligne, et vous ramenait sur une feuille vide.</p>
+<p>L'écran, lui, décidait déjà sur le <strong>nombre de lignes</strong> (<code>devis-a-preparer.ts</code>) : deux lectures d'une même question, dont une fausse. Il n'en reste qu'une, et c'est celle de l'écran.</p>
+<h3 id="ce-qui-a-changé">Ce qui a changé</h3>
+<ul>
+<li>l'attente rapporte l'arrêt d'avant-chiffrage et <strong>l'écran le montre</strong> : répondre termine le devis sans relire la dictée, donc sans rappeler le modèle ni renuméroter les questions ;</li>
+<li>le témoin est le nombre de lignes, plus une date qu'une page pose elle-même ;</li>
+<li><code>questionsRestantes</code> est <strong>exportée</strong> plutôt que recopiée : la liste que la chaîne pose et celle que l'attente annonce ne peuvent pas diverger.</li>
+<li>un défaut voisin, trouvé en chemin : sur la page du devis, répondre aux questions faisait un <code>push</code> vers l'adresse courante — qui ne rejoue pas le rendu serveur. Vous répondiez, et vous restiez devant la feuille vide que vous veniez de remplir.</li>
+</ul>
+<p><strong>Le contrôle sait rougir</strong> : confronté à l'ancienne version, il tombe sur « L'ARRÊT D'AVANT-CHIFFRAGE LA FAIT ABOUTIR » et sur elle seule (vérifié).</p>
+<p><strong>Ce qui n'est PAS affirmé.</strong> La panne n'a toujours pas été reproduite ici : ce qui est réparé, c'est l'impossibilité d'en sortir. Si la réponse se perd encore sur votre espace, l'écran vous montrera désormais où en est le travail au lieu de compter.</p>
+<hr>
+<h2 id="2-lenvoi-écrivait-en-deux-temps-sans-filet">2. L'envoi écrivait en deux temps, sans filet</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><strong>Verdict : défaut réel, réparé — et le refus mentait sur la cause.</strong></p>
+<p>Le fichier qui le fonde : [<code>src/app/chantiers/[id]/export/actions.ts</code>](../src/app/chantiers/%5Bid%5D/export/actions.ts), <a href="../src/lib/dates-envoi.ts" target="_blank" rel="noopener"><code>src/lib/dates-envoi.ts</code></a>.</p>
+<p><code>envoyerDevis</code> fige le devis pour de bon — statut « envoyé », PDF archivé, numéro consommé, document immuable — <strong>puis</strong> le lien du client se crée. Quand la seconde moitié refusait une date, la première avait déjà eu lieu : le devis était parti pour l'application et <strong>n'existait nulle part pour le client</strong>. En rouvrant, vous lisiez « Ce devis est parti chez votre client : il ne se modifie plus » — faux, sur une pièce qui ne se réécrit pas.</p>
+<p>Et la phrase du refus disait <em>« Une des dates proposées n'est plus libre »</em>, alors que l'occupation d'une journée ne refuse plus rien depuis votre règle du 23 août. Le seul motif restant est la fenêtre : une date <strong>passée</strong>, ou au-delà de dix-huit mois. Vous cherchiez une autre date libre pour un jour qui n'avait jamais été pris.</p>
+<p><strong>Trois réparations :</strong></p>
+<ol>
+<li>les dates sont validées <strong>avant</strong> que quoi que ce soit soit figé — le seul refus que le dépôt sache encore opposer ne peut plus surprendre un devis déjà parti ;</li>
+<li>la phrase nomme le bon coupable et le geste qui débloque — « cette date est déjà passée […] choisissez un jour à venir », ou « dépasse dix-huit mois […] un jour plus proche » ;</li>
+<li>l'écran ne dit plus « parti chez votre client » sans l'avoir vérifié : il demande si un lien existe réellement pour <strong>ce devis-là</strong> (<code>unLienExistePourLeDevis</code>), et écrit sinon « figé, mais aucun lien n'est parti », avec « Reprendre et envoyer ».</li>
+</ol>
+<p><strong>Une règle, deux appelants</strong> : l'action et le dépôt appellent la même fonction. La suite qui l'éprouvait n'utilisait qu'une date à −30 jours et ne regardait jamais la phrase ; <code>scripts/test-dates-envoi.ts</code> regarde les deux bords et refuse le mot « libre ».</p>
+<hr>
+<h2 id="3-un-bouton-éteint-sans-un-mot--chez-vous-pas-chez-votre-client">3. Un bouton éteint sans un mot — chez vous, pas chez votre client</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><strong>Verdict : défaut réel, réparé.</strong></p>
+<p>Le fichier : [<code>src/app/chantiers/[id]/export/EnvoiAuClient.tsx</code>](../src/app/chantiers/%5Bid%5D/export/EnvoiAuClient.tsx).</p>
+<p>Sur l'écran de votre client, vous aviez fait retirer le bouton éteint : <em>« il n'est plus éteint, et il ne porte plus sa phrase grise »</em>. Sur <strong>votre</strong> écran d'envoi, l'inverse : « Envoyer le devis » s'éteignait dès qu'aucune date n'était retenue, sans un mot.</p>
+<p>Pire : la phrase existait — « Proposez au moins une date d'intervention » — et elle était <strong>inatteignable</strong>. Un bouton désactivé n'appelle jamais la fonction qui la pose. Elle n'a donc jamais pu s'afficher depuis qu'elle a été écrite.</p>
+<p>Cela arrive pour de bon : agenda plein ou chantier long — aucun jour n'est présélectionné —, ou quand vous décochez votre seule date.</p>
+<p>Le bouton répond désormais, et c'est sa réponse qui dit ce qui manque.</p>
+<hr>
+<h2 id="4-lécran-de-votre-client-déborde--mesuré-et-laissé-à-votre-arbitrage">4. L'écran de votre client déborde — mesuré, et laissé à votre arbitrage</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><strong>Verdict : défaut réel. NON corrigé, et c'est délibéré.</strong></p>
+<p>Votre règle du 31 août tient tant que la contre-proposition reste repliée. Dès qu'elle s'ouvre, mesuré sur votre écran de 390 × 664 (<code>scripts/mesurer-pli-devis-client.mts</code>) :</p>
+<div class="tablewrap"><table><thead><tr>
+<th>état</th>
+<th>hauteur de page</th>
+<th>« Je ne donne pas suite » finit à</th>
+</tr></thead><tbody>
+<tr>
+<td>replié</td>
+<td>664 px</td>
+<td>602 px — tient</td>
+</tr>
+<tr>
+<td>calendrier ouvert</td>
+<td><strong>990 px</strong></td>
+<td><strong>963 px</strong></td>
+</tr>
+<tr>
+<td>+ case de rétractation</td>
+<td><strong>1 148 px</strong></td>
+<td><strong>1 121 px</strong></td>
+</tr>
+</tbody></table></div>
+<p>Vos trois issues passent donc sous le pli <strong>à l'instant précis où le client cherche une autre date</strong> — c'est-à-dire au moment où ce parcours évite l'aller-retour téléphonique.</p>
+<p><strong>Pourquoi ce n'est pas corrigé :</strong> ce qui doit céder sur 664 px est votre arbitrage, pas une décision de code. Trois façons vous sont proposées, toutes mesurées comme tenant dans l'écran, sur la planche ci-dessus.</p>
+<p><strong>Et la suite qui l'éprouvait annonçait cette mesure sans la faire.</strong> Son commentaire disait « et la contre-proposition ouverte » ; elle ne l'ouvrait jamais. Elle dit désormais exactement ce qu'elle mesure, et porte les trois chiffres ci-dessus pour que personne ne les redécouvre.</p>
+<hr>
+<h2 id="5-sa-page-et-son-pdf-ne-portent-pas-la-même-identité">5. Sa page et son PDF ne portent pas la même identité</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><strong>Verdict : constat réel. NON corrigé — une question vous est posée.</strong></p>
+<p><code>couleursDocument</code> existe précisément pour ce qui part chez le client, et son commentaire dit son rôle : <em>« le jour où l'application passera au sombre, ce fichier sera l'endroit où l'on empêchera le devis de partir en noir chez le client »</em>. Le PDF y passe, et suit le papier et l'accent que vous réglez.</p>
+<p><strong>La page que votre client ouvre en premier ne passe pas par là.</strong> Elle code ses couleurs en dur — <code>#F4EFE8</code>, <code>#2F3B2F</code>, <code>#B5502F</code> —, qui ne sont ni celles du document (<code>#faf9f5</code>, or <code>#B98B47</code>), ni les vôtres. Le même devis, deux identités, à une minute d'intervalle. Et le fond que vous choisissez dans Réglages n'atteint pas cet écran.</p>
+<p>C'est un changement d'apparence sur ce que voit votre client : il se dessine avant de se coder. La planche porte la bascule.</p>
+<hr>
+<h2 id="ce-qui-a-été-vérifié-et-qui-tient--pour-ne-pas-le-rouvrir">Ce qui a été VÉRIFIÉ et qui tient — pour ne pas le rouvrir</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th>Invariant</th>
+<th>Comment il a été vérifié</th>
+</tr></thead><tbody>
+<tr>
+<td>La page par jeton éprouvée sous le rôle applicatif</td>
+<td><code>test-facture-jeton-rls.ts</code> couvre bien <code>lireParJeton</code> et <code>pdfDevisParJeton</code> du devis, pas seulement la facture</td>
+</tr>
+<tr>
+<td>« Le devis ne part pas en noir parce qu'il a choisi Nuit »</td>
+<td><code>layout.tsx</code> coupe la charte sur <code>estPageDuClient</code>, et le middleware couvre <code>/devis</code> — lu, pas supposé</td>
+</tr>
+</tbody></table></div>
+<hr>
+<h2 id="ce-qui-a-été-refusé-et-ce-que-ça-aurait-coûté">Ce qui a été REFUSÉ, et ce que ça aurait coûté</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th>Refusé</th>
+<th>Ce que ça aurait coûté</th>
+</tr></thead><tbody>
+<tr>
+<td>Deviner une cause au « 96 s » et livrer un correctif</td>
+<td>Réparer une panne imaginée. La cause trouvée est dans le code et se démontre ; une hypothèse sur votre machine aurait consommé un aller-retour de plus</td>
+</tr>
+<tr>
+<td>Découper <code>DevisCompletClient.tsx</code> (1 637 lignes)</td>
+<td>C'est le fichier qui écrit ce que votre client signe, et chaque bloc porte une panne payée. Le remanier pour sa taille aurait été le geste le plus risqué et le moins visible du lot</td>
+</tr>
+<tr>
+<td>Corriger le débordement de l'écran client sans vous demander</td>
+<td>Décider à votre place ce qui disparaît de la page que voit votre client</td>
+</tr>
+<tr>
+<td>Changer les couleurs de sa page sans planche</td>
+<td>Vous l'avez interdit six fois : une apparence se dessine d'abord</td>
+</tr>
+</tbody></table></div>
+<hr>
+<h2 id="ce-que-je-vous-ai-promis-de-ne-pas-rouvrir-et-qui-na-pas-bougé">Ce que je vous ai promis de ne pas rouvrir, et qui n'a pas bougé</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p>Les deux arrêts, l'envoi depuis votre messagerie, l'acceptation en ligne sans devis signé renvoyé, le devis accepté sans date retenue, l'envoi non bloqué par un SIRET ou un IBAN manquant, le devis envoyé figé, et les écrans de retour « refus » et « correction » sans téléchargement.</p>
+<hr>
+<h2 id="ce-qui-reste-ouvert-et-qui-peut-le-trancher">Ce qui reste ouvert, et qui peut le trancher</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th>Point</th>
+<th>Qui</th>
+</tr></thead><tbody>
+<tr>
+<td>Question 1 de la planche — A, B ou C pour le calendrier du client</td>
+<td><strong>vous</strong></td>
+</tr>
+<tr>
+<td>Question 2 de la planche — la page suit-elle les couleurs de votre devis</td>
+<td><strong>vous</strong></td>
+</tr>
+<tr>
+<td>La panne du 96 s reproduite sur votre espace</td>
+<td><strong>vous</strong>, au prochain essai : l'écran nommera désormais l'état au lieu de compter</td>
+</tr>
+<tr>
+<td>Neuf suites rouges hors du devis (banc, veilleur, rôles, port)</td>
+<td>une session — mesurées ci-dessous comme antérieures à ce lot</td>
+</tr>
+</tbody></table></div>
+<hr>
+<h2 id="les-chiffres-exacts-de-la-batterie">Les chiffres exacts de la batterie</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p>Jouée sur <code>atlas_test</code> — jamais sur <code>atlas_dev</code>, que <code>nettoyerBase()</code> aurait vidé.</p>
+<div class="tablewrap"><table><thead><tr>
+<th>Étape</th>
+<th>Résultat</th>
+</tr></thead><tbody>
+<tr>
+<td><code>npx tsc --noEmit</code></td>
+<td><strong>vert</strong></td>
+</tr>
+<tr>
+<td><code>npm run lint</code></td>
+<td><strong>vert</strong> — 0 erreur, 16 avertissements, tous antérieurs et hors des fichiers touchés</td>
+</tr>
+<tr>
+<td><code>verifier:memoire</code></td>
+<td><strong>vert</strong> — 8 fichiers, 3 rappels armés</td>
+</tr>
+<tr>
+<td>Suites base (<code>run-all-tests</code>)</td>
+<td><strong>298 / 307</strong></td>
+</tr>
+<tr>
+<td>Suites du devis</td>
+<td><strong>toutes vertes</strong> — aucune des neuf tombées n'est du devis</td>
+</tr>
+</tbody></table></div>
+<p><strong>Les neuf rouges ne viennent pas de ce lot, et c'est mesuré, pas affirmé.</strong> L'arbre a été remis à <code>HEAD</code> (<code>git stash</code>) et les neuf suites rejouées seules :</p>
+<div class="tablewrap"><table><thead><tr>
+<th>Suite</th>
+<th>Sur <code>HEAD</code>, sans le lot</th>
+</tr></thead><tbody>
+<tr>
+<td><code>test-fiche-pendant-relance</code></td>
+<td>déjà rouge</td>
+</tr>
+<tr>
+<td><code>test-mise-a-jour-role-db</code></td>
+<td>déjà rouge</td>
+</tr>
+<tr>
+<td><code>test-ouvrir-port</code></td>
+<td>déjà rouge</td>
+</tr>
+<tr>
+<td><code>test-relance-construction</code></td>
+<td>déjà rouge</td>
+</tr>
+<tr>
+<td><code>test-roles-capacites-db</code></td>
+<td>déjà rouge</td>
+</tr>
+<tr>
+<td><code>test-salarie-planning-lecture-seule-db</code></td>
+<td>déjà rouge</td>
+</tr>
+<tr>
+<td><code>test-seed-conserve-identifiants</code></td>
+<td>déjà rouge</td>
+</tr>
+<tr>
+<td><code>test-verrou-construction</code></td>
+<td>déjà rouge</td>
+</tr>
+<tr>
+<td><code>db-tests</code></td>
+<td><strong>verte seule</strong>, avec ET sans le lot — sa chute en batterie est un <strong>interblocage</strong> de base (<code>DeadLockReport</code>), un effet de la course entre suites, pas du devis</td>
+</tr>
+</tbody></table></div>
+<p>Suites neuves ou complétées par ce lot : <code>test-attente-devis</code> (11 tests, dont trois neufs), <code>test-dates-envoi</code> (9 tests, neuf).</p>
+<h3 id="les-suites-navigateur">Les suites navigateur</h3>
+<div class="tablewrap"><table><thead><tr>
+<th>Suite</th>
+<th>Résultat</th>
+</tr></thead><tbody>
+<tr>
+<td><code>test-devis-depuis-dictee-e2e</code> — la chaîne, le cœur de ce lot</td>
+<td><strong>verte</strong></td>
+</tr>
+<tr>
+<td><code>test-devis-qui-tarde-e2e</code> — l'écran d'attente</td>
+<td><strong>verte</strong></td>
+</tr>
+<tr>
+<td><code>test-envoi-client-e2e</code> — l'envoi, dates comprises</td>
+<td><strong>verte</strong></td>
+</tr>
+<tr>
+<td><code>test-devis-complet-e2e</code> — l'écran où vous validez</td>
+<td><strong>verte</strong></td>
+</tr>
+<tr>
+<td><code>test-anneau-vers-devis-e2e</code></td>
+<td><strong>verte</strong></td>
+</tr>
+<tr>
+<td><code>test-dicter-dans-le-devis-e2e</code></td>
+<td><strong>verte</strong></td>
+</tr>
+<tr>
+<td><code>test-devis-a-la-main-e2e</code></td>
+<td><strong>verte</strong></td>
+</tr>
+<tr>
+<td><code>test-devis-client-e2e</code> — l'écran de votre client</td>
+<td><strong>instable</strong> : verte, puis rouge, puis verte sur le MÊME code</td>
+</tr>
+</tbody></table></div>
+<p>L'instable ne l'est que sur son premier contrôle — « un jeton inconnu ne révèle rien » —, qui est le tout premier appel à cette page et tombe donc sur sa compilation à la demande. <strong>Ce lot ne touche aucun fichier de cette page</strong> (<code>git status src/app/devis</code> : rien). Le contrôle du pli, lui, est vert aux trois tours.</p>
+<p><strong>Et la batterie navigateur COMPLÈTE n'a pas pu être rendue depuis ce poste.</strong> Le serveur d'essai meurt en cours de route — deux fois, à la 81ᵉ suite puis à la 3ᵉ, sans rien écrire dans son journal. Le dépôt connaît déjà ce genre de limite (<code>TODO.md</code> : « la batterie e2e complète ne tient pas dans le conteneur »). Les huit suites ci-dessus ont donc été jouées <strong>une par une</strong>, chacune avec son propre serveur et sa propre base amorcée.</p>
+<hr>
+<h2 id="ce-que-jai-dit-et-qui-sest-révélé-faux">Ce que j'ai dit et qui s'est révélé FAUX</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><strong>Un premier passage de la batterie navigateur a rendu vingt-quatre suites rouges. Aucune ne l'était à cause du produit : la faute était la mienne.</strong></p>
+<p>J'avais branché les suites sur le rôle <code>atlas_owner</code>. Or les tables portent <strong>FORCE ROW LEVEL SECURITY</strong> : un propriétaire qui n'est pas superutilisateur y reste soumis. Les suites, qui inspectent la base pour vérifier ce qu'elles affirment, ne voyaient donc <strong>aucune ligne</strong> — d'où des cascades du genre « impossible de lire <code>entreprise_id</code> » ou « aucun client avec un devis parti dans le jeu de démonstration », qui accusaient le produit.</p>
+<p><code>CLAUDE.md</code> §5 le disait déjà, noir sur blanc : pour <code>test:e2e</code>, un rôle qui <strong>traverse</strong> la RLS — le superutilisateur <code>postgres</code>. Je ne l'ai pas suivi. Rejouées avec le bon rôle, les suites du devis sont vertes.</p>
+<p><strong>Ce que ça a coûté</strong>, et pourquoi c'est écrit ici : une heure, et failli faire chercher un défaut dans du code juste. C'est exactement la faute que ce dépôt paie en boucle — un environnement de vérification qui diffère du vrai ne vérifie pas ce qu'on croit.</p>
+<hr>
+<h2 id="ce-que-jai-regardé-en-image">Ce que j'ai regardé, en image</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p>L'écran du devis figé <strong>sans lien parti</strong> — l'état que le point 2 rend enfin honnête — a été atteint pour de bon et photographié : le bandeau dit « Ce devis a été figé, mais aucun lien n'est parti : votre client n'a rien reçu », et la porte dessous dit « Reprendre et envoyer ». Aucune suite ne l'atteignait ; il a fallu fabriquer l'état à la main (<code>capturer-devis</code>, jeté après usage).</p>
+</main>
+</body>
+</html>

@@ -19,6 +19,30 @@ ligne « fait » qui ne l'est pas coûte plus cher qu'une ligne absente.
 
 ---
 
+## FAIT : le devis, de la dictée à l'écran du client (3 septembre 2026)
+
+Trois défauts réparés, un mesuré et rendu au patron, un constat posé.
+
+| | |
+|---|---|
+| **fait** | l'attente du devis reconnaît l'arrêt d'avant-chiffrage, et son témoin est celui de l'écran (§244) |
+| **fait** | les dates d'un envoi sont validées AVANT que le devis soit figé, et le refus nomme le bon bord (§245) |
+| **fait** | « parti chez votre client » se vérifie au lieu de se déduire du statut |
+| **fait** | « Envoyer le devis » ne s'éteint plus sans un mot (§246) |
+| **mesuré, non corrigé** | l'écran du client déborde dès que le calendrier s'ouvre — 990 px pour 664 (§247). Trois formes lui sont soumises |
+| **constaté, non corrigé** | sa page et son PDF ne portent pas la même identité (§248) |
+
+**Deux réponses l'attendent** sur
+https://florianmarrins0978-svg.github.io/Atlas-app/ecran-de-son-client.html —
+rien ne se code avant.
+
+**Ce qui reste vrai et ne doit pas être rouvert :** la panne du « 96 s » n'a
+jamais été reproduite sur un poste de développement. Ce qui est réparé, c'est
+l'impossibilité d'en sortir ; la cause première — une réponse d'action serveur
+perdue — reste à observer sur son espace.
+
+---
+
 ## FAIT : le planning — la journée s'ouvre dans le mois (3 septembre 2026)
 
 **Sa validation :** *« je valide la maquette que tu as faite pour la page

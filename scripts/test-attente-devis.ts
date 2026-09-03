@@ -56,7 +56,7 @@ async function main() {
         return reponse({ pret: true });
       },
     });
-    assert.equal(issue, "pret");
+    assert.equal(issue.type, "pret");
     assert.equal(appels, 1, "elle ne doit pas continuer à interroger après un « prêt »");
   });
 
@@ -81,7 +81,7 @@ async function main() {
         return reponse({ pret: appels >= 12 });
       },
     });
-    assert.equal(issue, "pret");
+    assert.equal(issue.type, "pret");
     assert.equal(appels, 12);
   });
 
@@ -97,7 +97,7 @@ async function main() {
         return reponse({ pret: true });
       },
     });
-    assert.equal(issue, "pret");
+    assert.equal(issue.type, "pret");
   });
 
   await test("une réponse qui n'est pas du JSON ne passe pas pour un « prêt »", async () => {
@@ -116,7 +116,7 @@ async function main() {
           },
         }) as unknown as Response,
     });
-    assert.equal(issue, "abandon");
+    assert.equal(issue.type, "abandon");
   });
 
   await test("un « pas prêt » répondu poliment n'est pas un « prêt »", async () => {
@@ -126,7 +126,7 @@ async function main() {
       patienter: sansAttendre,
       interroger: async () => reponse({ pret: false }),
     });
-    assert.equal(issue, "abandon");
+    assert.equal(issue.type, "abandon");
   });
 
   await test("ELLE SAIT RENONCER — une attente sans fin est le défaut réparé", async () => {
@@ -140,8 +140,71 @@ async function main() {
         return reponse({ pret: false });
       },
     });
-    assert.equal(issue, "abandon");
+    assert.equal(issue.type, "abandon");
     assert.equal(appels, 5, "vingt secondes par pas de quatre : cinq questions, pas une de plus");
+  });
+
+  await test(
+    "L'ARRÊT D'AVANT-CHIFFRAGE LA FAIT ABOUTIR — sa capture du 1ᵉʳ septembre 2026",
+    async () => {
+      /**
+       * *« Atlas prépare toujours votre devis… (96 s) »*, et rien ne vient.
+       *
+       * Ce compteur ne s'atteint que par CE rattrapage : une réponse d'action
+       * serveur perdue. La chaîne, elle, avait fini — elle l'attendait à
+       * l'arrêt d'avant-chiffrage, sans avoir écrit le moindre devis, ce
+       * qu'elle fait dans cinq de ses six issues.
+       *
+       * L'attente ne reconnaissait qu'un devis écrit : elle ne pouvait donc
+       * JAMAIS aboutir dans ce cas — cinq minutes de compteur devant un
+       * serveur au repos. **Contre l'ancienne version, ce contrôle rougit :**
+       * elle rendait « abandon » après la limite au lieu de rapporter l'arrêt.
+       */
+      const questions = [
+        {
+          id: "technique#1",
+          libellePrestation: "Abattage d'un chêne mort",
+          question: "Au pied, en démontage, ou en démontage avec rétention ?",
+          options: [{ valeur: "retention", libelle: "Démontage avec rétention" }],
+          unite: null,
+        },
+      ];
+      let appels = 0;
+      const issue = await attendreLeDevis("c1", {
+        patienter: sansAttendre,
+        interroger: async () => {
+          appels++;
+          return reponse({ pret: false, questions });
+        },
+      });
+      assert.equal(issue.type, "questions", "elle doit rapporter l'arrêt, pas renoncer");
+      assert.deepEqual(issue.type === "questions" ? issue.questions : null, questions);
+      assert.equal(appels, 1, "il n'y a plus rien à attendre : elle s'arrête");
+    }
+  );
+
+  await test("un devis écrit prime sur des questions restées sans réponse", async () => {
+    // Ce qu'il a laissé de côté ressort SIGNALÉ sur le devis
+    // (`chiffrerEtPreparer`, `aSignaler`). Le renvoyer à l'arrêt lui ferait
+    // refaire un chemin déjà franchi, devant un devis qui l'attend.
+    const issue = await attendreLeDevis("c1", {
+      patienter: sansAttendre,
+      interroger: async () =>
+        reponse({ pret: true, questions: [{ id: "x", libellePrestation: "", question: "", options: null, unite: null }] }),
+    });
+    assert.equal(issue.type, "pret");
+  });
+
+  await test("une liste de questions VIDE ne l'arrête pas", async () => {
+    // La chaîne n'a pas encore écrit ses prestations : il n'y a rien à
+    // demander, et rien à montrer. Elle continue d'attendre.
+    const issue = await attendreLeDevis("c1", {
+      limiteMs: 8_000,
+      intervalleMs: 4_000,
+      patienter: sansAttendre,
+      interroger: async () => reponse({ pret: false, questions: [] }),
+    });
+    assert.equal(issue.type, "abandon");
   });
 
   await test("elle rend compte du temps écoulé, pour que l'écran ne paraisse pas figé", async () => {

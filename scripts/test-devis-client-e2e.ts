@@ -429,12 +429,39 @@ async function main() {
      * sur une seule page ! Il ne doit pas avoir à scroll pour voir toutes les
      * infos. »*
      *
-     * Le cas le plus haut, et c'est le sien : un client nommé, une adresse de
-     * chantier, **deux dates proposées** (le maximum que l'écran d'envoi
-     * autorise) et la contre-proposition ouverte.
+     * Un client nommé, une adresse de chantier, **deux dates proposées** — le
+     * maximum que l'écran d'envoi autorise —, la contre-proposition REPLIÉE.
      *
      * Mesuré sur son écran — 390 × 664, un téléphone barre d'adresse déduite,
      * la mesure du dépôt depuis le 30 août.
+     *
+     * ═══════════════════════════════════════════════════════════════════════
+     * **CE CONTRÔLE ANNONÇAIT « la contre-proposition ouverte » ET NE
+     * L'OUVRAIT PAS — corrigé le 3 septembre 2026.**
+     *
+     * Il chargeait la page et mesurait, sans jamais toucher « Une autre
+     * date ». Il éprouvait donc l'état replié en promettant l'autre, et son
+     * vert se lisait comme une garantie qu'il ne donnait pas.
+     *
+     * **La mesure manquante, faite le 3 septembre** (`scripts/
+     * mesurer-pli-devis-client.mts`), sur ce même écran de 390 × 664 :
+     *
+     * | état | page | dernier bouton |
+     * |---|---|---|
+     * | replié | 664 px | 602 px — tient |
+     * | calendrier ouvert | **990 px** | **963 px** |
+     * | + case de rétractation | **1 148 px** | **1 121 px** |
+     *
+     * Ses trois issues passent donc sous le pli à l'instant précis où le
+     * client cherche une autre date — c'est-à-dire au moment où ce parcours
+     * évite l'aller-retour téléphonique.
+     *
+     * **Ce n'est pas corrigé ici, et c'est délibéré :** ce qui doit céder sur
+     * 664 px est un arbitrage du patron, pas une décision de code. La planche
+     * lui est soumise (`appli/ecran-de-son-client.html`), et l'assertion sur
+     * l'état ouvert arrivera avec sa réponse. En attendant, ce contrôle dit
+     * exactement ce qu'il mesure — plus ce qu'il aimerait mesurer.
+     * ═══════════════════════════════════════════════════════════════════════
      */
     const { envoi } = await preparerEnvoi("pli", [3, 10]);
     const page = await context.newPage();

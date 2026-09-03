@@ -10,6 +10,7 @@ import {
 import { configurationGoogle } from "../agenda/google";
 import { periodesOccupeesExterieures } from "./agendas-externes";
 import { absencesEquipe, chantiers, devis, entreprises, envoisDevis, lignesDevis } from "../db/schema";
+import { datesHorsFenetre, type RefusDate } from "../../lib/dates-envoi";
 import type { Ctx } from "./context";
 import { encoreEnCoursDepuis, equipesParChantier } from "./occupation-chantiers";
 import { lireObjet } from "../storage";
@@ -27,7 +28,6 @@ import {
   type FenetreProposition,
   type JourIso,
   type Moment,
-  type MotifRefusDate,
 } from "../disponibilites";
 
 // Envoi d'un devis au client et recueil de sa réponse — docs/AGENT.md §2.1
@@ -221,7 +221,7 @@ export type CreationEnvoi = {
 };
 
 export class DatesProposeesInvalidesError extends Error {
-  constructor(public readonly motifs: { date: JourIso; motif: MotifRefusDate }[]) {
+  constructor(public readonly motifs: RefusDate[]) {
     super(`Dates proposées invalides : ${motifs.map((m) => `${m.date} (${m.motif})`).join(", ")}`);
     this.name = "DatesProposeesInvalidesError";
   }
@@ -294,13 +294,12 @@ export async function creerEnvoi(
     //
     // Hors fenêtre reste un refus, et ce n'en est pas un de jugement : une date
     // passée ou à plus de dix-huit mois n'est pas un arbitrage d'artisan.
-    const motifs = creation.datesProposees
-      .map((date) => ({
-        date,
-        motif:
-          date < horizon.debut || date > horizon.fin ? ("hors_fenetre" as const) : null,
-      }))
-      .filter((m): m is { date: JourIso; motif: "hors_fenetre" } => m.motif !== null);
+    // **La MÊME fonction que l'action, qui l'a déjà consultée avant de figer**
+    // le devis (`src/lib/dates-envoi.ts`). Ce contrôle-ci reste : ce dépôt est
+    // appelable ailleurs, et un envoi hors fenêtre poserait au client une date
+    // qu'il ne peut pas retenir. Mais il ne décide plus seul, et il ne peut
+    // plus surprendre un devis déjà parti.
+    const motifs = datesHorsFenetre(creation.datesProposees, horizon);
     if (motifs.length > 0) throw new DatesProposeesInvalidesError(motifs);
 
     // **Ce qu'il a forcé, retenu ici et nulle part ailleurs.** Calculé au
@@ -880,6 +879,35 @@ export async function reponsesNonVues(ctx: Ctx) {
       )
       .orderBy(desc(envoisDevis.responduAt))
   );
+}
+
+/**
+ * Un lien est-il RÉELLEMENT parti pour ce devis-là ?
+ *
+ * ═══════════════════════════════════════════════════════════════════════════
+ * **L'écran affirmait « parti chez votre client » sans jamais le vérifier.**
+ *
+ * Il lisait le statut du devis, et le statut se pose en deux temps :
+ * `envoyerDevis` fige le document, `creerEnvoi` crée le lien. Entre les deux,
+ * il existe un état où le devis est immuable et où le client n'a rien reçu.
+ * L'écran y annonçait pourtant l'envoi — et sur une pièce comptable qui ne se
+ * réécrit pas, une phrase fausse coûte le chantier.
+ *
+ * **Par DEVIS et non par chantier**, contrairement à `dernierEnvoi` : un devis
+ * figé sans lien, suivi d'une version 2 réellement envoyée, laisse un envoi sur
+ * le chantier. Interroger le chantier redirait donc « parti » sur la version
+ * qui, elle, n'est jamais partie.
+ * ═══════════════════════════════════════════════════════════════════════════
+ */
+export async function unLienExistePourLeDevis(ctx: Ctx, devisId: string): Promise<boolean> {
+  return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+    const [row] = await tx
+      .select({ id: envoisDevis.id })
+      .from(envoisDevis)
+      .where(and(eq(envoisDevis.devisId, devisId), eq(envoisDevis.entrepriseId, ctx.entrepriseId)))
+      .limit(1);
+    return row !== undefined;
+  });
 }
 
 /**

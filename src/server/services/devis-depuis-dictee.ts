@@ -206,8 +206,20 @@ async function executerChaineDevis(
  * Les réponses déjà données sont relues depuis la base : c'est ce qui empêche
  * l'arrêt de se rouvrir tout seul après avoir été franchi, y compris si la
  * dictée est relue plus tard.
+ *
+ * **Exportée depuis le 3 septembre 2026, et pour une seule raison.** La route
+ * qui dit où en est la préparation (`api/chantiers/[chantierId]/devis-pret`)
+ * doit pouvoir rapporter l'arrêt d'avant-chiffrage quand la réponse de l'action
+ * s'est perdue. La recopier là-bas aurait donné deux listes de questions à
+ * tenir d'accord — celle que la chaîne pose et celle que l'attente annonce —
+ * et l'écart se serait vu sur un devis (`CLAUDE.md` §3).
+ *
+ * `prestations` reste le repli du brouillon, pour l'instant qui précède la
+ * confirmation ; un appelant qui n'en a pas passe une liste vide, et ce sont
+ * alors les prestations en base qui décident — ou rien, si la chaîne n'est pas
+ * encore allée jusque-là.
  */
-async function questionsRestantes(
+export async function questionsRestantes(
   ctx: Ctx,
   chantierId: string,
   prestations: { libelle: string; description?: string | null; quantite?: string | null; unite?: string | null }[]

@@ -9,6 +9,72 @@ Format : le plus récent en tête.
 
 ## 2026-09-03
 
+### L'attente du devis ne regardait qu'une issue sur six
+
+**Sa capture du 1ᵉʳ septembre :** « Atlas prépare toujours votre devis…
+(96 s) », et rien ne vient. La cause est dans le code, et elle se démontre.
+
+Ce compteur n'est atteignable que par le rattrapage du 12 août — celui qui se
+déclenche quand la réponse de l'action serveur **se perd**. La capture prouve
+donc une réponse perdue, pas une chaîne bloquée.
+
+Or ce rattrapage n'avait qu'un signal de réussite : « le devis est écrit ». La
+chaîne s'arrête légitimement **sans écrire de devis** dans cinq de ses six
+issues — dictée non transcrite, transcription simulée, brouillon corrigé,
+échec, et surtout **l'arrêt d'avant-chiffrage**, le cas le plus fréquent d'une
+vraie dictée d'arbre. Réponse perdue plus arrêt = une attente qui ne peut
+jamais aboutir : cinq minutes de compteur devant un serveur qui avait fini.
+
+**Second défaut, trouvé en réparant le premier.** Le témoin lu était
+`devis_genere_at`, que `getOuCreerDevisBrouillon` pose — et que la page du devis
+appelle en s'ouvrant. Sur cette page, l'attente répondait « prêt » avant que la
+dictée ait produit une ligne. L'écran, lui, décidait déjà sur le nombre de
+lignes : deux lectures d'une même question, dont une fausse. Il n'en reste
+qu'une.
+
+L'attente rapporte désormais l'arrêt, et l'écran le montre : répondre termine le
+devis sans relire la dictée. `questionsRestantes` est exportée plutôt que
+recopiée. Et sur la page du devis, répondre faisait un `push` vers l'adresse
+courante — qui ne rejoue pas le rendu serveur : on répondait, et on restait
+devant la feuille vide qu'on venait de remplir.
+
+### L'envoi figeait le devis avant de savoir si le lien pouvait naître
+
+`envoyerDevis` fige pour de bon — statut, PDF archivé, numéro consommé —
+puis `creerEnvoi` crée le lien. Quand la seconde moitié refusait une date, la
+première avait déjà eu lieu : le devis était parti pour l'application et
+n'existait nulle part pour le client. L'écran annonçait pourtant « parti chez
+votre client », sur une pièce qui ne se réécrit pas.
+
+**Et le refus accusait le mauvais coupable :** « Une des dates proposées n'est
+plus libre », alors que l'occupation d'un jour ne refuse plus rien depuis la
+règle du 23 août. Le seul motif restant est la fenêtre — une date passée, ou
+au-delà de dix-huit mois. On cherchait une autre date libre pour un jour jamais
+pris.
+
+Les dates se valident maintenant **avant** que rien ne soit figé, par la même
+fonction que le dépôt (`src/lib/dates-envoi.ts`) ; la phrase nomme lequel des
+deux bords a été franchi ; et l'écran vérifie qu'un lien existe pour CE devis
+avant de dire qu'il est parti.
+
+### « Envoyer le devis » s'éteignait sans un mot
+
+La règle « un refus nomme sa raison et le geste qui le débloque » était tenue
+sur l'écran du client et pas sur celui du patron. Pire : la phrase existait —
+« Proposez au moins une date d'intervention » — et elle était **inatteignable**,
+un bouton désactivé n'appelant jamais la fonction qui la pose. Elle n'a jamais
+pu s'afficher depuis qu'elle a été écrite. Arrive quand l'agenda est plein, sur
+un chantier long, ou quand la seule date est décochée.
+
+### L'écran du client déborde dès que le calendrier s'ouvre — mesuré
+
+Sur 390 × 664 : 664 px replié, **990 px** calendrier ouvert, **1 148 px** avec
+la case de rétractation. Les trois issues passent sous le pli à l'instant où le
+client cherche une autre date. **Non corrigé** : ce qui doit céder est
+l'arbitrage du patron (`appli/ecran-de-son-client.html`). La suite qui
+l'éprouvait annonçait « la contre-proposition ouverte » et ne l'ouvrait jamais ;
+elle dit désormais ce qu'elle mesure, et porte les trois chiffres.
+
 ### « Internal Server Error » : on demande à npm au lieu de deviner ses phrases
 
 **Sa panne du jour**, sur un espace dont la fiche disait « le serveur répond »

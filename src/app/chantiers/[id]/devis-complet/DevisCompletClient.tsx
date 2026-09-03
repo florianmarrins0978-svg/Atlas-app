@@ -111,6 +111,16 @@ type Props = {
   validite: string;
   statut: "brouillon" | "envoye";
   /**
+   * Un lien est-il RÉELLEMENT parti pour ce devis ?
+   *
+   * **Ce n'est pas la même question que `statut`**, et les confondre faisait
+   * mentir cet écran. Le départ s'écrit en deux temps — le devis se fige
+   * (`envoyerDevis`), puis le lien se crée (`creerEnvoi`) — et il existe entre
+   * les deux un état où le document est immuable et où le client n'a rien reçu.
+   * L'écran y annonçait pourtant « parti chez votre client ».
+   */
+  lienParti?: boolean;
+  /**
    * La clef de son logo dans le stockage, ou `null`.
    *
    * **Il l'avait posé et ne le voyait pas** (25 août 2026) : le PDF le portait,
@@ -604,13 +614,23 @@ export default function DevisCompletClient(props: Props) {
           cette phrase il ne se passerait rien et rien ne dirait pourquoi. */}
       {fige && (
         <div className="mb-6 rounded-lg px-4 py-3" style={{ backgroundColor: colors.rustTint, color: colors.rust }}>
-          <p className="text-[13px]">Ce devis est parti chez votre client : il ne se modifie plus.</p>
+          {/* **Deux phrases, parce que ce sont deux situations.** Un devis figé
+              dont aucun lien n'est parti n'est pas un devis envoyé : le
+              document est immuable, et son client n'a rien reçu. Lui dire
+              « parti chez votre client » l'enverrait attendre une réponse qui
+              ne viendra jamais. Dans les deux cas la porte est la même — une
+              nouvelle version —, mais elle ne se pousse pas pour la même raison. */}
+          <p className="text-[13px]">
+            {props.lienParti === false
+              ? "Ce devis a été figé, mais aucun lien n'est parti : votre client n'a rien reçu."
+              : "Ce devis est parti chez votre client : il ne se modifie plus."}
+          </p>
           <Link
             href={`/chantiers/${props.chantierId}/export`}
             className="mt-2 block text-[13px] font-semibold"
             style={{ color: colors.rust }}
           >
-            Le corriger et le renvoyer
+            {props.lienParti === false ? "Reprendre et envoyer" : "Le corriger et le renvoyer"}
           </Link>
         </div>
       )}

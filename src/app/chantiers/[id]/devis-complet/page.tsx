@@ -12,6 +12,7 @@ import { getOuCreerDevisBrouillon, chargerDevisPourEcran } from "@/server/reposi
 import { getBrouillon } from "@/server/repositories/brouillons-informations";
 import { getNoteVocale } from "@/server/repositories/notes-vocales";
 import { devisAPreparer } from "@/lib/devis-a-preparer";
+import { unLienExistePourLeDevis } from "@/server/repositories/envois-devis";
 import { leconsComparables } from "@/server/repositories/lecons-prix";
 import { rappelDePrix } from "@/lib/lecons-prix";
 import DevisCompletClient from "./DevisCompletClient";
@@ -66,6 +67,12 @@ export default async function DevisCompletPage({ params }: { params: Promise<{ i
   // 2026 : il dicte chez sa cliente, ferme l'application, revient, ouvre le
   // chantier, et tombe sur une feuille vide. La règle vit dans une fonction
   // pure (`src/lib/devis-a-preparer.ts`) ; cet écran n'a qu'à l'appliquer.
+  // **« Parti chez votre client » se VÉRIFIE, il ne se déduit plus du statut.**
+  // Le statut se pose en deux temps — le devis se fige, puis le lien se crée —
+  // et il existe entre les deux un état où le document est immuable et où le
+  // client n'a rien reçu (`unLienExistePourLeDevis`).
+  const lienParti = devisRow.statut === "envoye" ? await unLienExistePourLeDevis(ctx, devisRow.id) : false;
+
   const aPreparer = devisAPreparer({
     aUneNoteVocale: note !== null,
     nombreDeLignes: lignes.length,
@@ -114,6 +121,7 @@ export default async function DevisCompletPage({ params }: { params: Promise<{ i
         dateEmission={devisRow.dateEmission}
         validite={VALIDITE}
         statut={devisRow.statut as "brouillon" | "envoye"}
+        lienParti={lienParti}
         // **Son logo, sur l'écran où il regarde son devis** (18 août 2026).
         // Il l'avait posé dans « Devis & factures », vu dans l'aperçu de ce
         // réglage, puis constaté qu'il n'apparaissait pas ici : *« j'ai rajouté

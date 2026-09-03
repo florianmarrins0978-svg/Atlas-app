@@ -9,6 +9,38 @@ sert.
 
 ---
 
+## Dernier lot — LE DEVIS, de la dictée à l'écran du client (3 septembre 2026)
+
+**Périmètre demandé par le patron :** les quatre surfaces du devis — préparation
+depuis la dictée, l'arrêt où il valide, la pièce qui part, l'écran du client. Ni
+l'arrosage, ni le planning, ni la facture.
+
+**Verdict point par point, à lui retransmettre :** `docs/lot-devis-verdict.md`
+(page : `docs/lot-devis-verdict.html`). Paragraphes d'architecture : §244 à §248.
+
+**Ce qu'il faut savoir avant d'y toucher :**
+
+| | |
+|---|---|
+| l'**attente du devis** | rend un objet, plus une chaîne : `{type:"pret"}`, `{type:"questions", questions}`, `{type:"abandon"}` (`src/lib/attente-devis.ts`) |
+| le **témoin de « prêt »** | c'est le NOMBRE DE LIGNES, plus `devisGenereAt` — que la page du devis pose elle-même en s'ouvrant, donc vrai avant tout travail (§244) |
+| `questionsRestantes` | **exportée** du service : la route `devis-pret` l'appelle. Ne pas la recopier — deux listes de questions divergeraient |
+| les **dates d'un envoi** | `src/lib/dates-envoi.ts`, appelée par l'action AVANT de figer le devis, et par `creerEnvoi` à l'écriture. Motifs `passee` / `trop_loin`, jamais « n'est plus libre » (§245) |
+| « **parti chez votre client** » | ne se déduit plus du statut : `unLienExistePourLeDevis(ctx, devisId)`, par devis et non par chantier |
+| « **Envoyer le devis** » | n'est plus éteint faute de date : il répond, et c'est sa réponse qui dit ce qui manque (§246) |
+
+**Deux réponses sont attendues du patron**, et rien ne se code avant :
+https://florianmarrins0978-svg.github.io/Atlas-app/ecran-de-son-client.html
+
+1. le calendrier du client déborde de l'écran (990 px pour 664) — A, B ou C ;
+2. sa page suit-elle les couleurs de son devis (§248).
+
+**La panne du « 96 s » n'est toujours pas reproduite ici** — ce qui est réparé,
+c'est l'impossibilité d'en sortir. Au prochain essai sur son espace, l'écran
+nommera l'état au lieu de compter.
+
+---
+
 ## Dernier lot — LE PLANNING, la journée dans le mois (3 septembre 2026)
 
 **Sa validation, maquette en main :** *« je valide la maquette que tu as faite

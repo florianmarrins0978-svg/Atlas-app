@@ -1,0 +1,406 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas — l'écran de son client</title>
+<style>
+  /*
+    L'ÉCRAN DE SON CLIENT — deux questions, mesurées.
+
+    Sa règle du 31 août 2026 : « je veux que le choix de la date qui arrive au
+    client par SMS tienne sur une seule page ! Il ne doit pas avoir à scroll
+    pour voir toutes les infos ».
+
+    Elle est tenue tant que la contre-proposition reste repliée. Dès qu'elle
+    s'ouvre, mesuré le 3 septembre 2026 sur son écran de 390 × 664 :
+
+        replié                    664 px — tient
+        calendrier ouvert         990 px
+        + case de rétractation  1 148 px
+
+    Ses trois issues passent donc sous le pli à l'instant précis où le client
+    cherche une autre date. Ce qui doit céder est SON arbitrage, pas une
+    décision de code : d'où cette planche.
+
+    Le cadre fait 390 × 664 pour de vrai, et la page mesure sa propre hauteur —
+    le chiffre affiché sous le téléphone n'est pas décoratif, il est calculé.
+  */
+  :root{
+    --bone:#f5f3ee; --cream:#faf9f5; --paper:#ece9e1;
+    --charcoal:#1c1c1a; --charcoal-soft:#4a4a44; --muted:#8a8578;
+    --pine:#2f3b2f; --or:#B98B47; --line:rgba(28,28,26,.12);
+  }
+  @media (prefers-color-scheme: dark){
+    :root{ --bone:#171613; --cream:#1e1c18; --paper:#262420; --charcoal:#e9e5dc;
+           --charcoal-soft:#c9c4b8; --muted:#8a867c; --or:#C9A15E;
+           --line:rgba(233,229,220,.16); }
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html{ scrollbar-color:var(--muted) transparent }
+  ::selection{ background:var(--or); color:var(--cream) }
+  body{margin:0;background:var(--bone);color:var(--charcoal);
+       font:16px/1.55 -apple-system,"Segoe UI",Roboto,sans-serif;
+       padding:34px 0 70px;-webkit-text-size-adjust:100%}
+  .page{max-width:460px;margin:0 auto;padding:0 22px}
+  h1{font:600 25px/1.2 ui-serif,Georgia,serif;margin:0 0 6px;letter-spacing:-.01em}
+  .sous{color:var(--charcoal-soft);margin:0 0 30px;font-size:14.5px}
+  .famille{font:600 11px/1 -apple-system,sans-serif;letter-spacing:.13em;
+           text-transform:uppercase;color:var(--muted);margin:40px 0 12px}
+  .q{font:600 17px/1.35 ui-serif,Georgia,serif;margin:0 0 4px}
+  .qd{color:var(--charcoal-soft);font-size:14px;margin:0 0 16px}
+
+  /* Le choix — des pastilles, pas un menu : un appui contre trois. */
+  .choix{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:16px}
+  .choix button{flex:1 1 auto;min-width:78px;border:1px solid var(--line);
+    background:var(--cream);color:var(--charcoal);border-radius:999px;
+    padding:9px 13px;font:500 13.5px/1 inherit;cursor:pointer;
+    transition:background .22s cubic-bezier(.16,1,.3,1),color .22s,border-color .22s}
+  .choix button:hover{border-color:var(--or)}
+  .choix button[aria-pressed="true"]{background:var(--charcoal);color:var(--cream);
+    border-color:var(--charcoal)}
+  .choix button:focus-visible{outline:2px solid var(--or);outline-offset:2px}
+
+  /* Le téléphone, à sa taille réelle. */
+  .tel{width:390px;max-width:100%;height:664px;margin:0 auto;position:relative;
+       border-radius:22px;overflow:hidden;border:1px solid var(--line);
+       box-shadow:0 18px 46px rgba(28,28,26,.16)}
+  .ecran{position:absolute;inset:0;overflow-y:auto;overflow-x:hidden}
+  .mesure{max-width:390px;margin:12px auto 0;font-size:12.5px;
+          display:flex;justify-content:space-between;gap:10px;color:var(--muted)}
+  .mesure b{font-variant-numeric:tabular-nums;font-weight:600}
+  .tient{color:var(--pine)} .deborde{color:#B5502F}
+  @media (prefers-color-scheme: dark){ .tient{color:#8fae8f} .deborde{color:#e08a6a} }
+
+  /* ─── L'écran du client lui-même. Deux palettes, une structure. ───────── */
+  .c{ --fond:#F4EFE8; --carte:#ffffff; --encre:#1c1c1a; --doux:rgba(28,28,26,.62);
+      --pale:rgba(28,28,26,.45); --trait:rgba(0,0,0,.10);
+      --plein:#2F3B2F; --surPlein:#ffffff; --signal:#B5502F; --filet:rgba(0,0,0,.10);
+      min-height:100%;background:var(--fond);color:var(--encre);
+      padding:8px 16px;font:15px/1.5 -apple-system,"Segoe UI",Roboto,sans-serif}
+  /* Le papier, l'encre et l'or de `couleursDocument` — ceux de son PDF. L'or
+     ne porte aucun texte : 2,9 de contraste sur le crème. Il tient les filets,
+     l'encre tient les mots. */
+  .c.devis{ --fond:#faf9f5; --carte:#ffffff; --encre:#1c1c1a; --doux:#6b6b5c;
+      --pale:#6b6b5c; --trait:rgba(185,139,71,.34);
+      --plein:#1c1c1a; --surPlein:#faf9f5; --signal:#8a4b2a; --filet:#B98B47 }
+  .c .carte{background:var(--carte);border-radius:16px;padding:12px;
+            box-shadow:0 1px 2px rgba(28,28,26,.06);margin-bottom:4px}
+  .c.devis .carte{box-shadow:none;border:1px solid var(--trait)}
+  .c .tete{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:0 12px}
+  .c h2{font:600 19px/1.25 ui-serif,Georgia,serif;margin:0}
+  .c .ent{font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--pale);flex:none;margin:0}
+  .c .pour{margin:2px 0 0;font-size:14px;color:var(--doux)}
+  .c .adr{margin:0;font-size:13px;color:var(--pale)}
+  .c dl{margin:8px 0 0;padding-top:6px;border-top:1px solid var(--filet);font-size:14px}
+  .c .l{display:flex;justify-content:space-between;color:var(--doux)}
+  .c .l dt,.c .l dd{margin:0}
+  .c .l dd{font-variant-numeric:tabular-nums}
+  .c .ttc{color:var(--encre);font-size:16px;font-weight:600}
+  .c .tel-pdf{display:block;margin-top:8px;font-size:13px;font-weight:600;
+              color:var(--doux);text-decoration:underline;text-underline-offset:4px}
+  .c h3{font:600 15px/1.3 -apple-system,sans-serif;margin:0}
+  .c .dates{margin-top:6px;display:flex;flex-direction:column;gap:2px}
+  .c label.d{display:flex;align-items:center;gap:12px;font-size:15px;cursor:pointer;padding:1px 0}
+  .c input[type=radio]{width:20px;height:20px;accent-color:var(--plein);flex:none;margin:0}
+  .c .mot{margin-top:10px;font-size:13px;font-weight:500;color:var(--doux);display:block}
+  .c textarea{margin-top:6px;width:100%;height:56px;resize:none;border-radius:12px;
+              border:1px solid var(--trait);background:var(--carte);color:var(--encre);
+              padding:8px 12px;font:15px/1.4 inherit}
+  .c textarea:focus{outline:2px solid var(--filet);outline-offset:-1px}
+  .c .actions{display:flex;flex-direction:column;gap:6px;margin-top:4px}
+  .c .b1{border:0;border-radius:999px;background:var(--plein);color:var(--surPlein);
+         padding:13px;font:500 16px/1 inherit;cursor:pointer;width:100%}
+  .c .b2,.c .b3{border-radius:999px;background:transparent;padding:11px;
+         font:500 14px/1 inherit;cursor:pointer;color:var(--encre);
+         border:1px solid var(--trait)}
+  .c .b2{border-color:color-mix(in srgb,var(--plein) 34%,transparent);color:var(--plein)}
+  .c .b3{color:var(--doux)}
+  .c .preuve{text-align:center;font-size:11px;color:var(--pale);margin:6px 0 0;line-height:1.35}
+  .c .retract{border-radius:16px;padding:12px;margin-bottom:4px;
+     border:1px solid color-mix(in srgb,var(--signal) 26%,transparent);
+     background:color-mix(in srgb,var(--signal) 6%,transparent);font-size:14px}
+  .c .retract label{display:flex;gap:12px;align-items:flex-start;cursor:pointer}
+  .c .retract input{width:20px;height:20px;margin:2px 0 0;flex:none;accent-color:var(--plein)}
+
+  /* Le calendrier — les vraies dimensions de l'application : cases de 44 px. */
+  .cal{margin-top:6px}
+  .cal .mois{display:flex;align-items:center;justify-content:space-between;height:36px}
+  .cal .mois span{font-size:15px;font-weight:500;text-transform:capitalize}
+  .cal .mois button{width:36px;height:36px;border:0;background:transparent;
+     color:var(--encre);font-size:18px;border-radius:999px;cursor:pointer}
+  .cal .grille{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;text-align:center}
+  .cal .j{font-size:11px;text-transform:uppercase;opacity:.45;padding-bottom:4px}
+  .cal .grille button{height:44px;border:0;border-radius:999px;cursor:pointer;
+     font-size:15px;color:var(--encre);background:rgba(0,0,0,.035);
+     transition:background .18s cubic-bezier(.16,1,.3,1)}
+  .cal .grille button[disabled]{opacity:.32;text-decoration:line-through;cursor:default;background:transparent}
+  .cal .grille button[aria-pressed="true"]{background:var(--plein);color:var(--surPlein);font-weight:600}
+  .cal .note{margin:8px 0 0;font-size:12px;opacity:.55}
+
+  /* A — la feuille : elle monte du bas, la page ne grandit pas. */
+  /* Elle appartient à l'écran du client : son fond vient de SA palette, pas
+     de celle du cadre — sans quoi elle passerait en sombre chez qui regarde
+     la planche de nuit, sur une page qui, elle, reste claire. */
+  .feuille{position:absolute;left:0;right:0;bottom:0;background:transparent;
+     border-radius:20px 20px 0 0;padding:14px 16px 18px;
+     box-shadow:0 -10px 34px rgba(28,28,26,.18);
+     transform:translateY(101%);transition:transform .36s cubic-bezier(.16,1,.3,1);
+     padding:0}
+  .feuille > .c{background:var(--carte);border-radius:20px 20px 0 0;
+     padding:14px 16px 18px;min-height:0}
+  .feuille[data-ouverte="oui"]{transform:translateY(0)}
+  .voile{position:absolute;inset:0;background:rgba(28,28,26,.32);opacity:0;
+     pointer-events:none;transition:opacity .36s cubic-bezier(.16,1,.3,1)}
+  .voile[data-ouverte="oui"]{opacity:1;pointer-events:auto}
+
+  .retour{display:flex;align-items:center;gap:8px;border:0;background:transparent;
+    color:var(--doux);font:500 14px/1 inherit;padding:4px 0;cursor:pointer}
+  .replie{display:flex;justify-content:space-between;align-items:baseline;
+    gap:12px;font-size:14px;color:var(--doux)}
+  .replie b{color:var(--encre);font-variant-numeric:tabular-nums}
+
+  .note{font-size:13.5px;color:var(--charcoal-soft);margin:14px 0 0;
+        padding-left:12px;border-left:1px solid var(--or)}
+  .rep{margin:36px 0 0;padding:16px 18px;background:var(--cream);
+       border:1px solid var(--line);border-radius:14px;font-size:14.5px}
+  .rep p{margin:0 0 8px} .rep p:last-child{margin:0}
+  .rep b{font-weight:600}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <h1>L'écran de son client</h1>
+  <p class="sous">Deux questions. Le cadre ci-dessous fait 390 × 664 pour de vrai, et le chiffre sous le téléphone est mesuré à chaque geste, pas dessiné.</p>
+
+  <p class="famille">Question 1 — quand il cherche une autre date</p>
+  <p class="q">Aujourd'hui, ses trois boutons passent sous le pli</p>
+  <p class="qd">Touchez « Une autre date » sur le premier choix : la page passe de 664 à 990 px, et « J'accepte ce devis » sort de l'écran. Les trois autres le gardent en vue.</p>
+
+  <div class="choix" role="group" aria-label="Comment le calendrier tient dans l'écran">
+    <button type="button" data-forme="aujourdhui" aria-pressed="true">Aujourd'hui</button>
+    <button type="button" data-forme="feuille" aria-pressed="false">A — La feuille</button>
+    <button type="button" data-forme="echange" aria-pressed="false">B — L'échange</button>
+    <button type="button" data-forme="second" aria-pressed="false">C — Le second écran</button>
+  </div>
+
+  <div class="tel">
+    <div class="ecran" id="ecran"></div>
+    <div class="voile" id="voile"></div>
+    <div class="feuille" id="feuille"></div>
+  </div>
+  <p class="mesure">
+    <span id="etat">—</span>
+    <span>la page fait <b id="hauteur">—</b> pour 664 px d'écran</span>
+  </p>
+
+  <p class="note" id="explication"></p>
+
+  <p class="famille">Question 2 — l'identité de la pièce</p>
+  <p class="q">Sa page et son PDF ne se ressemblent pas</p>
+  <p class="qd">Le PDF suit le papier et l'accent qu'il règle dans Atlas. Cette page-ci porte des couleurs figées qui ne sont ni celles du document, ni les siennes. Le même devis, deux identités, à une minute d'intervalle.</p>
+
+  <div class="choix" role="group" aria-label="Les couleurs de la page du client">
+    <button type="button" data-palette="" aria-pressed="true">Les couleurs d'aujourd'hui</button>
+    <button type="button" data-palette="devis" aria-pressed="false">Celles de son devis</button>
+  </div>
+
+  <div class="rep">
+    <p><b>Ce qui vous est demandé :</b> une lettre pour la question 1 — A, B ou C —, et pour la question 2, si la page doit suivre son devis.</p>
+    <p>Rien n'est codé avant votre réponse : ce qui doit céder sur 664 px vous appartient.</p>
+  </div>
+</div>
+
+<script>
+/* Aucune règle métier ici : une planche montre, elle ne décide pas.
+   La hauteur affichée est mesurée sur le rendu, jamais écrite à la main. */
+const MOIS = "septembre 2026";
+const OCCUPES = [4, 5, 11, 18, 19, 25];
+const PROPOSEES = ["Vendredi 11 septembre", "Vendredi 18 septembre"];
+
+let forme = "aujourdhui";
+let palette = "";
+let ouvert = false;      /* « une autre date » est cochée */
+let jour = null;         /* le jour retenu au calendrier */
+let ecranSecond = false; /* C : on est sur le calendrier */
+
+const ecran = document.getElementById("ecran");
+const feuille = document.getElementById("feuille");
+const voile = document.getElementById("voile");
+
+function calendrier(){
+  const cases = [];
+  /* Le 1ᵉʳ septembre 2026 tombe un mardi : une seule case vide devant. */
+  for (let i = 0; i < 1; i++) cases.push('<button type="button" disabled aria-hidden="true" style="opacity:.18"></button>');
+  for (let d = 1; d <= 30; d++){
+    const pris = OCCUPES.indexOf(d) !== -1;
+    cases.push(
+      '<button type="button" data-jour="' + d + '"' + (pris ? " disabled" : "") +
+      ' aria-pressed="' + (jour === d) + '" aria-label="' + d + ' septembre">' + d + '</button>'
+    );
+  }
+  return '<div class="cal">' +
+    '<div class="mois"><button type="button" aria-label="Mois precedent">‹</button>' +
+    '<span>' + MOIS + '</span>' +
+    '<button type="button" aria-label="Mois suivant">›</button></div>' +
+    '<div class="grille">' +
+      ["L","M","M","J","V","S","D"].map(function(x){ return '<span class="j" aria-hidden="true">' + x + '</span>'; }).join("") +
+      cases.join("") +
+    '</div>' +
+    '<p class="note">Les jours barrés sont déjà pris.</p>' +
+  '</div>';
+}
+
+function enTete(replie){
+  if (replie) {
+    return '<div class="carte"><div class="replie"><span>Devis n° 2026-042</span><b>1 656,00 €</b></div></div>';
+  }
+  return '<div class="carte">' +
+    '<div class="tete"><h2>Devis n° 2026-042</h2><p class="ent">Arborea</p></div>' +
+    '<p class="pour">Pour Mme Groupiron</p>' +
+    '<p class="adr">Rue du Tourigou 29950 Bénodet</p>' +
+    '<dl>' +
+      '<div class="l"><dt>Total HT</dt><dd>1 380,00 €</dd></div>' +
+      '<div class="l"><dt>TVA (20 %)</dt><dd>276,00 €</dd></div>' +
+      '<div class="l ttc"><dt>Total TTC</dt><dd>1 656,00 €</dd></div>' +
+    '</dl>' +
+    '<a class="tel-pdf" href="#">Télécharger mon devis (PDF)</a>' +
+  '</div>';
+}
+
+function choixDeDate(){
+  return PROPOSEES.map(function(d, i){
+    return '<label class="d"><input type="radio" name="q" value="p' + i + '"><span>' + d + '</span></label>';
+  }).join("") +
+  '<label class="d"><input type="radio" name="q" value="autre" id="autre"' +
+    (ouvert ? " checked" : "") + '><span>Une autre date</span></label>';
+}
+
+function messageEtActions(){
+  return '<span class="mot">Une erreur ? Écrivez-la, votre artisan la lira.</span>' +
+    '<textarea placeholder="« Mon nom est mal écrit », « plutôt le matin »…"></textarea>';
+}
+
+function actions(){
+  return '<div class="actions">' +
+    '<button type="button" class="b1">J’accepte ce devis</button>' +
+    '<button type="button" class="b2">Une correction avant d’accepter</button>' +
+    '<button type="button" class="b3">Je ne donne pas suite</button>' +
+  '</div>' +
+  '<p class="preuve">Votre accord est horodaté et conservé avec le devis.</p>';
+}
+
+function retractation(){
+  /* Dans les quatorze jours seulement : la case n'apparaît que si elle sert. */
+  if (jour === null || jour > 17) return "";
+  return '<div class="retract"><label><input type="checkbox">' +
+    '<span>Cette date se situe dans mon délai de rétractation de 14 jours. ' +
+    '<strong>Je demande expressément que les travaux commencent avant sa fin.</strong></span></label></div>';
+}
+
+function peindre(){
+  const c = "c" + (palette ? " " + palette : "");
+  let corps = "";
+  let dansLaFeuille = "";
+
+  if (forme === "second" && ouvert && ecranSecond) {
+    /* C — le calendrier prend l'écran, avec un retour. La décision reste dessous. */
+    corps =
+      '<button type="button" class="retour" id="revenir">‹ Vos dates</button>' +
+      '<div class="carte"><h3>Quelle date vous arrange ?</h3>' + calendrier() + '</div>' +
+      (jour ? '<div class="carte"><div class="replie"><span>Vous avez choisi</span><b>' + jour + ' septembre</b></div></div>' : "") +
+      retractation() + actions();
+  } else if (forme === "echange" && ouvert) {
+    /* B — le haut se replie, les deux dates cèdent la place au calendrier. */
+    corps = enTete(true) +
+      '<div class="carte"><h3>Quelle date vous arrange ?</h3>' +
+      '<button type="button" class="retour" id="revenir">‹ Vos deux dates</button>' +
+      calendrier() + '</div>' +
+      retractation() + actions();
+  } else {
+    const calDedans = forme === "aujourdhui" && ouvert;
+    corps = enTete(false) +
+      '<div class="carte"><h3>Quelle date vous arrange ?</h3>' +
+      '<div class="dates">' + choixDeDate() + '</div>' +
+      (calDedans ? calendrier() : "") +
+      messageEtActions() + '</div>' +
+      retractation() + actions();
+    if (forme === "feuille" && ouvert) {
+      /* A — la feuille : la page derrière ne bouge pas d'un pixel. */
+      dansLaFeuille = '<h3>Quelle date vous arrange ?</h3>' + calendrier() +
+        '<button type="button" class="b1" id="fermer" style="margin-top:10px">Retenir cette date</button>';
+    }
+  }
+
+  ecran.innerHTML = '<div class="' + c + '">' + corps + '</div>';
+  feuille.innerHTML = dansLaFeuille
+    ? '<div class="' + c + '">' + dansLaFeuille + '</div>'
+    : "";
+  feuille.dataset.ouverte = dansLaFeuille ? "oui" : "non";
+  voile.dataset.ouverte = dansLaFeuille ? "oui" : "non";
+  mesurer();
+}
+
+function mesurer(){
+  const h = ecran.scrollHeight;
+  const tient = h <= 664;
+  document.getElementById("hauteur").textContent = h + " px";
+  const etat = document.getElementById("etat");
+  etat.textContent = tient ? "Tout est en vue" : "Il doit faire défiler";
+  etat.className = tient ? "tient" : "deborde";
+}
+
+const EXPLICATIONS = {
+  aujourdhui: "Le calendrier s’ajoute sous les dates et pousse tout le reste. C’est l’état actuel.",
+  feuille: "Le calendrier monte du bas, par-dessus. La page derrière garde exactement la hauteur qu’elle avait.",
+  echange: "Le devis se replie en une ligne et les deux dates cèdent la place au calendrier. On revient d’un doigt.",
+  second: "« Une autre date » ouvre le calendrier seul, avec un retour. Les trois issues restent dessous."
+};
+
+Array.prototype.forEach.call(document.querySelectorAll("[data-forme]"), function(b){
+  b.addEventListener("click", function(){
+    Array.prototype.forEach.call(document.querySelectorAll("[data-forme]"), function(x){
+      x.setAttribute("aria-pressed", String(x === b));
+    });
+    forme = b.dataset.forme;
+    ouvert = false; jour = null; ecranSecond = false;
+    document.getElementById("explication").textContent = EXPLICATIONS[forme];
+    peindre();
+  });
+});
+
+Array.prototype.forEach.call(document.querySelectorAll("[data-palette]"), function(b){
+  b.addEventListener("click", function(){
+    Array.prototype.forEach.call(document.querySelectorAll("[data-palette]"), function(x){
+      x.setAttribute("aria-pressed", String(x === b));
+    });
+    palette = b.dataset.palette;
+    peindre();
+  });
+});
+
+/* Un seul écouteur, posé sur le cadre : le contenu est repeint à chaque geste. */
+document.querySelector(".tel").addEventListener("click", function(e){
+  const cible = e.target.closest("#autre, [data-jour], #revenir, #fermer, .voile");
+  if (!cible) return;
+  if (cible.id === "autre") {
+    ouvert = !ouvert;
+    ecranSecond = ouvert && forme === "second";
+    if (!ouvert) jour = null;
+  } else if (cible.hasAttribute("data-jour")) {
+    jour = Number(cible.getAttribute("data-jour"));
+    if (forme === "second") ecranSecond = true;
+  } else if (cible.id === "revenir") {
+    ecranSecond = false; ouvert = false; jour = null;
+  } else if (cible.id === "fermer" || cible.classList.contains("voile")) {
+    ouvert = false;
+  }
+  peindre();
+});
+
+document.getElementById("explication").textContent = EXPLICATIONS.aujourdhui;
+peindre();
+</script>
+</body>
+</html>

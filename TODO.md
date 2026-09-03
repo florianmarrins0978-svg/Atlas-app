@@ -264,19 +264,51 @@ en faisant créer à la suite le devis dont elle a besoin plutôt que d'en atten
 un du jeu de démonstration (`CLAUDE.md` §5 bis : un contrôle ne doit pas réclamer
 ce qu'un autre a fait disparaître).
 
-## SA NOTE VOCALE N'ATTEINT PAS LE DEVIS — non reproduit (1ᵉʳ sept. 2026)
+## SA NOTE VOCALE N'ATTEINT PAS LE DEVIS — l'impasse est fermée (3 sept. 2026)
 
 Sa capture : « Atlas prépare toujours votre devis… (96 s) », et rien ne vient.
-Son espace servait bien le commit annoncé, tout concordait sur sa fiche d'état.
 
-**Le parcours passe au vert ici** (`test-devis-depuis-dictee-e2e`, 8/8), donc le
-défaut n'a pas été reproduit et **rien n'a été « corrigé » à l'aveugle**. Ce qui
-a été livré rend la panne bavarde : la raison s'affichera à l'écran au lieu d'un
-compteur.
+**Ce qui a été TROUVÉ dans le code, et qui n'est pas une hypothèse.** Ce
+compteur n'est atteignable que par le rattrapage du 12 août — celui des
+réponses PERDUES. Sa capture prouve donc une réponse perdue, pas une chaîne
+bloquée. Et ce rattrapage ne savait reconnaître qu'une des six issues de la
+chaîne : réponse perdue **plus** arrêt d'avant-chiffrage — le cas le plus
+fréquent d'une vraie dictée d'arbre — donnait une attente qui ne pouvait
+**jamais** aboutir. Voir `ARCHITECTURE.md` §244.
 
-**Qui peut le faire avancer :** lui, au prochain essai — la phrase qui
-s'affichera nomme la cause. À défaut, le journal de son espace la porte déjà
-(`logger.error`, « Devis depuis dictée : la chaîne a échoué »).
+**Ce qui est réparé :** l'impasse. L'attente rapporte l'arrêt, l'écran le
+montre, et répondre termine le devis. Le témoin est désormais celui de l'écran
+— le nombre de lignes — et plus `devisGenereAt`, que la page du devis pose
+elle-même en s'ouvrant.
+
+**Ce qui reste, et ne doit pas être annoncé comme corrigé :** la cause
+PREMIÈRE — pourquoi la réponse se perd sur son espace — n'a jamais été
+reproduite ici. Le parcours passe au vert sur un poste de développement.
+
+**Qui peut le faire avancer :** lui, au prochain essai. L'écran nommera
+l'état au lieu de compter. À défaut, le journal de son espace porte déjà
+« Devis depuis dictée : la chaîne a échoué ».
+
+## DEUX RÉPONSES ATTENDUES SUR L'ÉCRAN DE SON CLIENT (3 sept. 2026)
+
+Planche en ligne, adresse entière :
+https://florianmarrins0978-svg.github.io/Atlas-app/ecran-de-son-client.html
+
+**1. Le calendrier déborde de son écran.** Mesuré sur 390 × 664
+(`scripts/mesurer-pli-devis-client.mts`) : 664 px replié, **990 px**
+calendrier ouvert, **1 148 px** avec la case de rétractation. Ses trois issues
+passent sous le pli à l'instant où le client cherche une autre date. Trois
+formes lui sont proposées — A la feuille, B l'échange, C le second écran —,
+toutes mesurées comme tenant dans l'écran.
+
+**2. Sa page suit-elle les couleurs de son devis ?** `couleursDocument` existe
+pour ce qui part chez le client, le PDF y passe et suit l'allure qu'il règle ;
+la page par jeton code ses couleurs en dur. Voir `ARCHITECTURE.md` §248.
+
+**Qui peut le faire : LUI.** Rien ne se code avant sa réponse — ce qui doit
+céder sur 664 px est son arbitrage. La suite qui éprouve le pli dit désormais
+ce qu'elle mesure (l'état replié) et porte les trois chiffres ; l'assertion sur
+l'état ouvert arrivera avec sa lettre.
 
 ## `monter-base-locale.sh` N'EXPORTE PAS `REDIS_URL` — et ça coûte une heure (1ᵉʳ sept. 2026)
 

@@ -21851,3 +21851,261 @@ seule place pour la fiche ouverte depuis le calendrier — reste acquis.
   La capture l'a démentie : il ne restait plus qu'une semaine à l'écran, soit
   l'inverse de sa règle du 21 août — *« je veux un accès au mois »*.
 
+
+## §244. Une attente ne vaut que ce que vaut son témoin
+
+*3 septembre 2026. Ce paragraphe explique pourquoi la préparation du devis
+savait aboutir sur une seule de ses six issues, et pourquoi le témoin qu'elle
+lisait pouvait être vrai avant que le travail commence.*
+
+### Le vécu
+
+Sa capture du 1ᵉʳ septembre : **« Atlas prépare toujours votre devis… (96 s) »**,
+et rien ne vient. Le parcours était vert en test, son espace servait bien le
+commit annoncé, et la panne n'a jamais été reproduite sur un poste de
+développement.
+
+### Ce que la capture prouvait, et que personne n'avait lu
+
+Ce compteur n'est atteignable **que** par le rattrapage écrit le 12 août
+(`DevisDepuisDictee.tsx`, le `catch` de `lancer`) — celui qui se déclenche quand
+la réponse de l'action serveur **se perd**. Il n'existe aucun autre chemin vers
+l'état `attente`.
+
+La capture ne disait donc pas « la chaîne est bloquée ». Elle disait : *la
+réponse n'est jamais revenue jusqu'à son téléphone.* C'est une information
+gratuite, présente depuis le premier jour, et elle réduisait la recherche de
+moitié.
+
+### Le défaut, en une phrase
+
+**Le rattrapage n'avait qu'un seul signal de réussite — « le devis est écrit » —
+alors que la chaîne s'arrête légitimement sans écrire de devis dans cinq de ses
+six issues.**
+
+| Issue de `executerChaineDevis` | Un devis est-il écrit ? |
+|---|---|
+| `transcription_absente` | non |
+| `transcription_simulee` | non |
+| `conflit` | non |
+| `echec` | non |
+| **`questions`** — l'arrêt d'avant-chiffrage | **non** |
+| `prepare` | oui |
+
+Seule la dernière atteint l'étape 4 de `chiffrerEtPreparer`, la seule qui appelle
+`getOuCreerDevisBrouillon`.
+
+Réponse perdue **plus** arrêt d'avant-chiffrage — c'est-à-dire le cas le plus
+fréquent d'une vraie dictée d'arbre, celle qui ne dit ni la technique ni le
+diamètre — donnait une attente qui **ne pouvait pas aboutir**. Cinq minutes de
+compteur, puis « la préparation n'a pas abouti », devant un serveur qui avait
+fini son travail et l'attendait avec deux questions valant 800 €.
+
+### Le second défaut, et c'est le plus instructif
+
+Le témoin lu était `devisGenereAt`. Il n'est écrit qu'à un endroit
+(`src/server/repositories/devis.ts`), dans `getOuCreerDevisBrouillon` — **que la page du
+devis appelle elle-même en s'ouvrant** (`src/app/chantiers/[id]/devis-complet/page.tsx`).
+
+Sur cette page, la route répondait donc « prêt » **avant que la dictée ait
+produit la moindre ligne**, et l'attente y ramenait le patron sur une feuille
+vide en croyant l'emmener sur son devis.
+
+L'écran, lui, décidait déjà de tout autre chose : le **nombre de lignes**
+(`devis-a-preparer.ts`). Deux lectures d'une même question — « ce chantier
+a-t-il un devis ? » — dont une fausse, et c'est exactement ce que `CLAUDE.md`
+§3 interdit. Il n'en reste qu'une, et c'est celle de l'écran.
+
+### Ce qui a été fait
+
+- la route rend **où en est la préparation**, plus un simple booléen : le nombre
+  de lignes, et l'arrêt d'avant-chiffrage avec ses questions ;
+- `questionsRestantes` est **exportée** du service plutôt que recopiée dans la
+  route — deux listes de questions à tenir d'accord auraient divergé, et l'écart
+  se serait vu sur un devis ;
+- l'écran montre l'arrêt : répondre reprend la chaîne **sans relire la dictée**
+  (`enregistrerPrecisionsEtReprendre`), donc sans rappeler le modèle ni
+  renuméroter les questions.
+
+Un défaut voisin est tombé avec : sur la page du devis, `onPrepare` faisait un
+`push` vers l'adresse courante — qui ne rejoue pas le rendu serveur. Le patron
+répondait à ses questions et restait devant la feuille vide qu'il venait de
+remplir. Le partage `surLeDevis ? refresh : push` était déjà écrit dans `lancer`,
+et manquait ici.
+
+### La leçon, qui dépasse le devis
+
+**Un témoin ne vaut que s'il est écrit par le travail qu'on attend.**
+`devisGenereAt` était écrit par une PAGE ; il ne disait donc rien du travail. La
+question à se poser devant toute attente : *qui pose ce drapeau, et peut-il être
+vrai sans que rien ne se soit passé ?*
+
+Et : **une attente doit connaître toutes les issues de ce qu'elle attend, pas
+seulement l'heureuse.** Une issue non représentée n'est pas un cas rare — c'est
+un puits.
+
+---
+
+## §245. Deux écritures, une seule irréversible : valider avant de figer
+
+*3 septembre 2026. Pourquoi l'envoi d'un devis pouvait laisser une pièce
+comptable immuable dont le client n'avait jamais rien reçu.*
+
+### Le défaut
+
+`envoyerAuClientAction` faisait deux écritures à la suite :
+
+1. `envoyerDevis` — statut « envoyé », PDF archivé, numéro consommé, **document
+   immuable** (le déclencheur d'immuabilité refuse toute modification après) ;
+2. `creerEnvoi` — le jeton, les dates proposées, le chantier en attente.
+
+La seconde pouvait refuser une date. La première avait alors **déjà eu lieu**,
+et rien ne la défait : le devis était parti pour l'application et n'existait
+nulle part pour le client. En rouvrant l'écran, le patron lisait « Ce devis est
+parti chez votre client : il ne se modifie plus » — une phrase fausse, sur une
+pièce qui ne se réécrit pas.
+
+Rejouer l'envoi ne bloquait pas — `getOuCreerDevisBrouillon` ouvre une version 2
+— mais laissait derrière une version fantôme, envoyée et jamais reçue, avec son
+numéro consommé.
+
+### Le refus accusait le mauvais coupable
+
+Le seul motif que `creerEnvoi` sait encore opposer est **la fenêtre** : une date
+passée, ou au-delà de dix-huit mois. L'occupation d'une journée ne refuse plus
+rien depuis la règle du 23 août 2026 — *« si l'utilisateur juge qu'il peut
+rajouter un chantier, il doit pouvoir le faire quand même »*.
+
+La phrase, elle, disait *« Une des dates proposées n'est plus libre. Choisissez-en
+une autre. »* Le patron cherchait donc une autre date **libre** pour un jour qui
+n'avait jamais été pris. Une erreur qui envoie chercher au mauvais endroit coûte
+plus cher que pas d'erreur du tout (`AGENTS.md`).
+
+La suite qui l'éprouvait n'employait qu'une date à −30 jours et ne regardait
+jamais la phrase : elle vérifiait que ça refusait, pas que le refus se comprenne.
+
+### Ce qui a été fait
+
+- **la règle passe dans une fonction pure** (`src/lib/dates-envoi.ts`), appelée
+  par l'action **avant** toute écriture irréversible, et par le dépôt à
+  l'écriture. Une seule règle, deux appelants — le contrôle du dépôt reste, car
+  il est appelable ailleurs, mais il ne peut plus surprendre un devis figé ;
+- le motif distingue **`passee`** de **`trop_loin`** : les deux se réparent par
+  des gestes opposés — avancer, ou reculer —, et une phrase unique ne pouvait
+  dire ni l'un ni l'autre ;
+- l'écran ne dit plus « parti chez votre client » sans l'avoir vérifié. Il
+  demande si un lien existe pour **ce devis-là** (`unLienExistePourLeDevis`, par
+  devis et non par chantier), et écrit sinon « figé, mais aucun lien n'est
+  parti », avec la porte : « Reprendre et envoyer ».
+
+### La leçon
+
+**Quand deux écritures se suivent et qu'une seule est irréversible, tout ce qui
+peut refuser doit refuser AVANT elle.** Ce n'est pas de l'atomicité — la
+transaction ne peut pas couvrir un PDF archivé — c'est de l'ordre.
+
+Et : **un écran qui affirme un fait doit lire ce fait**, pas un état voisin. Le
+statut d'un devis dit qu'il est figé ; il ne dit pas que le client l'a reçu.
+
+---
+
+## §246. Un bouton éteint est un refus muet — y compris chez le patron
+
+*3 septembre 2026.*
+
+La règle est ancienne : **tout refus nomme sa raison et le geste qui le
+débloque ; un bouton grisé sans phrase est un défaut, pas une protection.** Elle
+avait été appliquée à l'écran du CLIENT le 31 août — *« il n'est plus éteint, et
+il ne porte plus sa phrase grise »* — et pas à celui du patron.
+
+Sur la feuille d'envoi, « Envoyer le devis » s'éteignait dès que
+`selection.length === 0`. Aucune phrase.
+
+**Le pire n'est pas le bouton, c'est ce qu'on a trouvé derrière.** La phrase
+existait — « Proposez au moins une date d'intervention », posée par `confirmer`
+— et elle était **inatteignable** : un bouton désactivé n'appelle jamais son
+gestionnaire. Elle n'a donc jamais pu s'afficher depuis qu'elle a été écrite.
+
+Le cas se produit pour de bon : agenda plein ou chantier long — aucun jour libre
+n'est présélectionné —, ou quand le patron décoche sa seule date.
+
+`blocage` reste éteignant, et lui porte déjà sa phrase au-dessus
+(`MESSAGES_BLOCAGE`) : il n'y a alors rien à envoyer, et le dire deux fois serait
+du bruit.
+
+**La leçon :** une phrase de refus posée par le gestionnaire d'un bouton qu'on
+désactive dans le même cas est du code mort qui se fait passer pour un
+garde-fou. Devant un `disabled`, la question est : *qui dit pourquoi, et ce
+quelqu'un peut-il encore parler ?*
+
+---
+
+## §247. Un contrôle qui annonce plus qu'il ne mesure
+
+*3 septembre 2026.*
+
+`test-devis-client-e2e.ts` tient la règle du patron : *« je veux que le choix de
+la date qui arrive au client par SMS tienne sur une seule page ! »*. Son
+commentaire annonçait « le cas le plus haut […] et la contre-proposition
+ouverte ».
+
+**Il ne l'ouvrait jamais.** Il chargeait la page et mesurait. Il éprouvait donc
+l'état replié en promettant l'autre, et son vert se lisait comme une garantie
+qu'il ne donnait pas.
+
+La mesure manquante, faite le 3 septembre (`scripts/mesurer-pli-devis-client.mts`),
+sur l'écran du patron — 390 × 664 :
+
+| état | hauteur de page | dernier bouton |
+|---|---|---|
+| replié | 664 px | 602 px — tient |
+| calendrier ouvert | **990 px** | **963 px** |
+| + case de rétractation | **1 148 px** | **1 121 px** |
+
+Les trois issues du client passent sous le pli **à l'instant précis où il
+cherche une autre date** — c'est-à-dire au moment où ce parcours évite
+l'aller-retour téléphonique.
+
+**Ce n'est pas corrigé, et c'est délibéré :** ce qui doit céder sur 664 px est
+un arbitrage du patron, pas une décision de code. Trois formes lui sont
+soumises, toutes mesurées comme tenant dans l'écran
+(`appli/ecran-de-son-client.html`). En attendant, le contrôle dit exactement ce
+qu'il mesure, et porte les trois chiffres pour que personne ne les redécouvre.
+
+**La leçon**, et c'est la sœur de celle du 15 août sur les mesures à zéro : un
+contrôle qui décrit un cas qu'il n'atteint pas est pire qu'absent, parce qu'on
+le croit. Le commentaire d'une suite fait partie de ce qu'elle affirme.
+
+---
+
+## §248. La page du client ne passe pas par les couleurs du document
+
+*3 septembre 2026. Constat, non corrigé — une question est posée au patron.*
+
+`couleursDocument` (`src/lib/design-tokens.ts`) existe pour ce qui part chez le
+client, et son commentaire dit son rôle : *« le jour où l'application passera au
+sombre, ce fichier sera l'endroit où l'on empêchera le devis de partir en noir
+chez le client »*. Le PDF y passe, et suit en plus le papier et l'accent que
+l'artisan règle (`allureDesDocuments`).
+
+**La page par jeton — le premier écran que le client ouvre — n'y passe pas.**
+Elle code ses couleurs en dur : `#F4EFE8` en fond, `#2F3B2F` sur ses boutons,
+`#B5502F` en signal. Aucune n'est celle du document (`#faf9f5`, or `#B98B47`),
+et le vert pin est précisément l'accent que le bloc dit avoir écarté pour les
+documents — *« il porte ce qu'on FAIT, et il n'y a rien à faire sur un devis
+imprimé »*.
+
+Deux conséquences :
+
+1. le même devis porte **deux identités** à une minute d'intervalle — la page,
+   puis le PDF téléchargé depuis elle ;
+2. l'allure que l'artisan règle n'atteint pas cet écran.
+
+**Ce qui est vérifié et qui tient :** la charte de l'artisan, elle, ne fuit pas
+sur cette page. `layout.tsx` la coupe sur `estPageDuClient`, et le middleware
+couvre bien `/devis` — donc un artisan sur « Nuit » n'envoie pas un devis noir.
+La règle du patron est tenue ; c'est l'identité du document qui ne l'est pas.
+
+**Non corrigé** : changer les couleurs de ce que voit le client est une décision
+d'apparence, elle se dessine avant de se coder
+(`appli/ecran-de-son-client.html`, question 2).

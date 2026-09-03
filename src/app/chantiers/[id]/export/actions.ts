@@ -10,6 +10,8 @@ import { preparerEnvoi, verifierJourPropose } from "@/server/repositories/prepar
 import { creerEnvoi, DatesProposeesInvalidesError } from "@/server/repositories/envois-devis";
 import { mettreAJourClient } from "@/server/repositories/clients";
 import { MOTIF_DEVIS_VIDE } from "@/lib/devis-envoyable";
+import { datesHorsFenetre, motifDatesRefusees } from "@/lib/dates-envoi";
+import { fenetrePatron } from "@/server/disponibilites";
 
 export async function chargerDevisAction(chantierId: string) {
   const ctx = await getCurrentCtx();
@@ -228,6 +230,30 @@ export async function envoyerAuClientAction(
     return { succes: false, erreur: "Proposez une date, ou deux au choix du client." };
   }
 
+  /**
+   * ═════════════════════════════════════════════════════════════════════════
+   * **LES DATES SE VALIDENT AVANT QUE LE DEVIS SOIT FIGÉ — 3 septembre 2026.**
+   *
+   * Juste en dessous, `envoyerDevisAction` fige le devis pour de bon : statut
+   * « envoyé », PDF archivé, numéro consommé, document immuable. La création
+   * du lien, elle, venait APRÈS — et quand elle refusait une date, la moitié
+   * irréversible avait déjà eu lieu.
+   *
+   * Le résultat n'était pas un simple échec : le devis était parti pour
+   * l'application et n'existait nulle part pour le client. En rouvrant, il
+   * lisait « Ce devis est parti chez votre client : il ne se modifie plus » —
+   * faux, et sur une pièce qui ne se réécrit pas.
+   *
+   * **La MÊME règle que le dépôt** (`src/lib/dates-envoi.ts`), consultée ici
+   * en premier : le seul refus que `creerEnvoi` sache encore opposer ne peut
+   * donc plus surprendre un devis déjà figé.
+   * ═════════════════════════════════════════════════════════════════════════
+   */
+  const refusees = datesHorsFenetre(datesProposees, fenetrePatron(new Date()));
+  if (refusees.length > 0) {
+    return { succes: false, erreur: motifDatesRefusees(refusees) };
+  }
+
   // L'envoi du devis (PDF figé) précède la création du lien : c'est ce PDF dont
   // on prend l'empreinte, et c'est lui que le client acceptera.
   //
@@ -270,10 +296,12 @@ export async function envoyerAuClientAction(
     };
   } catch (err) {
     if (err instanceof DatesProposeesInvalidesError) {
-      return {
-        succes: false,
-        erreur: "Une des dates proposées n'est plus libre. Choisissez-en une autre.",
-      };
+      // **La phrase vient de la règle, elle n'est plus écrite ici.** Celle qui
+      // s'y trouvait disait « n'est plus libre » — or l'occupation d'un jour
+      // ne refuse plus rien depuis sa règle du 23 août 2026, et le seul motif
+      // restant est la fenêtre. Le patron cherchait une autre date libre pour
+      // un jour qui n'avait jamais été pris.
+      return { succes: false, erreur: motifDatesRefusees(err.motifs) };
     }
     // Plus rien ne sort d'ici sans sa raison : voir le commentaire ci-dessus.
     return { succes: false, erreur: raisonLisible(err) };
