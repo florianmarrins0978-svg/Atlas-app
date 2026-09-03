@@ -36,6 +36,7 @@ import {
   versionEpinglee,
   dependancesIncoherentes,
   constructionMuette,
+  arbreIncomplet,
 } from "./coherence-dependances.mjs";
 import {
   delogerConstructionsOrphelines,
@@ -279,18 +280,32 @@ async function reinstallerSiDesaccordees() {
     return; // Hors du dépôt : rien à comparer.
   }
 
-  const { incoherent, motif } = dependancesIncoherentes(
+  const versions = dependancesIncoherentes(
     PAQUETS_SENSIBLES.map((nom) => ({
       nom,
       exigee: versionEpinglee(paquet, nom),
       installee: versionInstallee(nom),
     }))
   );
-  if (!incoherent) return;
 
-  console.log(`\n  ${motif}\n`);
+  // **DEUX QUESTIONS, ET LA SECONDE EST LA PLUS LARGE — 3 septembre 2026.**
+  //
+  // La comparaison de versions ci-dessus ne regarde que deux paquets nommés à
+  // la main (`PAQUETS_SENSIBLES`). Le 3 septembre, l'arbre du patron était
+  // amputé AILLEURS — `@apm-js-collab/tracing-hooks`, une dépendance de Sentry
+  // — : ce garde a répondu « tout va bien », le serveur est parti, et chaque
+  // écran a rendu « Internal Server Error » parce que `instrumentation.ts` ne
+  // pouvait plus se charger.
+  //
+  // On demande donc aussi à npm si le dossier est ENTIER. Une seconde, mesurée,
+  // et elle couvre les centaines de paquets qu'aucune liste écrite à la main ne
+  // couvrira jamais.
+  const arbre = versions.incoherent ? { incomplet: false, motif: null } : await arbreIncomplet((c, a) => jouerEnRetenant(c, a, process.env, 400, true));
+  if (!versions.incoherent && !arbre.incomplet) return;
+
+  console.log(`\n  ${versions.motif ?? arbre.motif}\n`);
   const { code, sortie } = await jouerEnRetenant("npm", ["install", "--no-audit", "--no-fund"]);
-  if (code === 0 && !paquetsEpinglesAbsents().length) {
+  if (code === 0 && !paquetsEpinglesAbsents().length && !(await arbreIncomplet((c, a) => jouerEnRetenant(c, a, process.env, 400, true))).incomplet) {
     console.log("\n  Dépendances remises d'aplomb.\n");
     return;
   }
@@ -325,7 +340,8 @@ async function reinstallerSiDesaccordees() {
   const propre = await jouerEnRetenant("npm", ["ci", "--no-audit", "--no-fund"]);
 
   const manquants = paquetsEpinglesAbsents();
-  if (propre.code === 0 && !manquants.length) {
+  const restant = await arbreIncomplet((c, a) => jouerEnRetenant(c, a, process.env, 400, true));
+  if (propre.code === 0 && !manquants.length && !restant.incomplet) {
     console.log("\n  Dépendances remises d'aplomb.\n");
     return;
   }
@@ -346,6 +362,7 @@ async function reinstallerSiDesaccordees() {
     code: propre.code,
     sortie:
       (manquants.length ? `paquets épinglés toujours absents : ${manquants.join(", ")}\n` : "") +
+      (restant.motif ? `${restant.motif}\n` : "") +
       (propre.sortie || sortie || "(npm n'a rien écrit)"),
   });
   console.error(
@@ -459,7 +476,11 @@ function jouer(commande, args, env = process.env) {
  * La sortie reste héritée — le patron doit voir la construction avancer — et
  * elle est en plus RETENUE, pour que l'échec puisse se raconter.
  */
-function jouerEnRetenant(commande, args, env = process.env, lignes = 30) {
+// **`silencieux` : la sortie est RETENUE sans être déversée.** `npm ls` répond
+// en listant l'arbre entier — des centaines de lignes que le patron n'a aucune
+// raison de lire dans son journal, et qui noieraient le message qui compte.
+// Une question n'a pas à publier son inventaire pour rendre son verdict.
+function jouerEnRetenant(commande, args, env = process.env, lignes = 30, silencieux = false) {
   return new Promise((resoudre) => {
     const gardees = [];
     const retenir = (morceau) => {
@@ -471,11 +492,11 @@ function jouerEnRetenant(commande, args, env = process.env, lignes = 30) {
     };
     const p = spawn(commande, args, { stdio: ["ignore", "pipe", "pipe"], env });
     p.stdout?.on("data", (m) => {
-      process.stdout.write(m);
+      if (!silencieux) process.stdout.write(m);
       retenir(m);
     });
     p.stderr?.on("data", (m) => {
-      process.stderr.write(m);
+      if (!silencieux) process.stderr.write(m);
       retenir(m);
     });
     // **LE SIGNAL SE GARDE, et c'est un correctif — 29 août 2026.**
@@ -1131,15 +1152,21 @@ if (raison) {
   // espace les publiera. Insister davantage rendrait la boucle infinie qu'on
   // vient de supprimer.
   //
-  // **Et « Could not find the Next.js package » en fait partie — 31 août 2026.**
-  // C'est ce que rend Turbopack quand `node_modules/next` manque. Le message ne
-  // contient ni « Cannot find module » ni « node_modules » : il passait donc au
-  // travers des deux conditions ci-dessous, et le veilleur retentait la même
-  // construction condamnée toute la matinée.
-  const dependanceManquante =
-    code !== 0 &&
-    ((/Cannot find module|MODULE_NOT_FOUND/i.test(sortie) && /node_modules/.test(sortie)) ||
-      /Could not find the Next\.js package/i.test(sortie));
+  // **ON NE LIT PLUS LES PHRASES DE L'OUTIL, ON LUI DEMANDE — 3 septembre 2026.**
+  //
+  // Cette condition énumérait les formulations rencontrées : `Cannot find
+  // module` (22 août), puis `Could not find the Next.js package` (31 août). Le
+  // 3 septembre, Turbopack en a écrit une troisième — `Module not found` — et
+  // elle est passée au travers comme les deux précédentes. Le veilleur a
+  // retenté la même construction condamnée toute la matinée, et le patron est
+  // resté devant « Internal Server Error ».
+  //
+  // Trois fois la même faute : on cherchait à reconnaître un message au lieu de
+  // poser la question. `arbreIncomplet` la pose à npm, qui répond en une
+  // seconde et NOMME ce qui manque (`coherence-dependances.mjs`).
+  const { incomplet, motif: motifArbre } =
+    code !== 0 ? await arbreIncomplet((c, a) => jouerEnRetenant(c, a, process.env, 400, true)) : { incomplet: false, motif: null };
+  const dependanceManquante = incomplet;
 
   // **Le second filet — 29 août 2026.** La condition ci-dessus exige un
   // message ; sa construction n'en produisait aucun. Une mort juste après
@@ -1153,7 +1180,7 @@ if (raison) {
       (morteSansRienDire && !dependanceManquante
         ? "\n  La construction s'est arrêtée sans rien dire — c'est la marque de\n" +
           "  dépendances abîmées.\n"
-        : "\n  Un paquet manque dans node_modules — la construction ne peut pas aboutir.\n") +
+        : `\n  ${motifArbre}\n`) +
         "  Réinstallation des dépendances, puis nouvelle tentative.\n"
     );
     const { code: codeInstall } = await jouerEnRetenant("npm", [

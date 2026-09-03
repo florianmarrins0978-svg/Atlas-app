@@ -26,17 +26,35 @@ import {
   versionEpinglee,
   dependancesIncoherentes,
   constructionMuette,
+  arbreIncomplet,
 } from "./coherence-dependances.mjs";
 
 let echecs = 0;
-function verifier(intitule: string, fn: () => void) {
-  try {
-    fn();
-    console.log(`✅ ${intitule}`);
-  } catch (err) {
+// **UN CAS ASYNCHRONE DOIT ÊTRE ATTENDU, SINON IL EST TOUJOURS VERT.**
+//
+// Écrit le 3 septembre 2026, après m'être fait prendre par ma propre règle :
+// les quatre cas neufs de la section 4 bis interrogent un npm simulé, donc
+// rendent une promesse. `verifier` ne l'attendait pas : la promesse rejetée
+// partait en rejet non intercepté, le cas s'affichait ✅, et les quatre
+// passaient au vert CONTRE LE CODE D'AVANT — qui n'a même pas la fonction
+// qu'ils prétendent éprouver. Un contrôle qui ne sait pas échouer ne prouve
+// rien (`CLAUDE.md` §5), et celui-là ne prouvait rien quatre fois.
+const enCours: Promise<void>[] = [];
+function verifier(intitule: string, fn: () => void | Promise<void>) {
+  const rate = (e: unknown) => {
     echecs++;
     console.error(`❌ ${intitule}`);
-    console.error(`   ${(err as Error).message}`);
+    console.error(`   ${(e as Error).message}`);
+  };
+  try {
+    const rendu = fn();
+    if (rendu instanceof Promise) {
+      enCours.push(rendu.then(() => console.log(`✅ ${intitule}`), rate));
+      return;
+    }
+    console.log(`✅ ${intitule}`);
+  } catch (e) {
+    rate(e);
   }
 }
 
@@ -168,15 +186,24 @@ verifier("SA PANNE DE MIDI : le banc n'appelle JAMAIS `npx` pour lancer Next", (
   );
 });
 
-verifier("« Could not find the Next.js package » déclenche la réinstallation", () => {
-  // Le message de Turbopack quand `node_modules/next` manque. Il ne contient ni
-  // « Cannot find module » ni « node_modules » : il passait au travers des deux
-  // conditions, et le veilleur retentait la même construction condamnée.
-  assert.match(
-    BANC,
-    /Could not find the Next\\.js package/,
-    "le message exact de sa panne de midi n'est pas reconnu : rien ne réparerait"
-  );
+// Un faux npm : casser l'arbre de la machine qui joue la suite serait un remède
+// pire que le mal.
+const npmQuiRepond = (code: number, sortie: string) => async () => ({ code, sortie });
+
+verifier("un `next` absent déclenche la réinstallation, quelle que soit la phrase", async () => {
+  // **CE CAS EXIGEAIT UNE PHRASE, ET LA PHRASE A CHANGÉ — 3 septembre 2026.**
+  //
+  // Il fixait la présence de « Could not find the Next.js package » dans
+  // `banc.mjs` : le message que Turbopack rendait le 31 août quand
+  // `node_modules/next` manquait. C'était fixer la MÉCANIQUE, pas la règle
+  // (`CLAUDE.md` §5 bis) — et l'énumération a laissé passer une troisième
+  // formulation deux jours plus tard.
+  //
+  // Ce qui doit tenir : un `next` absent de l'arbre déclenche la réparation.
+  // Par quel mot l'outil s'en plaint ne regarde plus personne.
+  const r = await arbreIncomplet(npmQuiRepond(1, "atlas-mvp@0.1.0\n+-- UNMET DEPENDENCY next@16.3.2"));
+  assert.equal(r.incomplet, true, "un `next` absent ne déclenche plus rien : le banc resterait condamné");
+  assert.match(r.motif ?? "", /next/, "le motif doit nommer le paquet, sinon il n'aide pas à comprendre");
 });
 
 verifier("une construction muette déclenche aussi la réinstallation", () => {
@@ -192,6 +219,82 @@ verifier("une construction muette déclenche aussi la réinstallation", () => {
   );
 });
 
+// --- 4 bis. ON DEMANDE À NPM, ON NE LIT PLUS SES PHRASES -----------------
+//
+// **Trois fois le même piège, et la troisième a coûté une matinée au patron.**
+// La réparation ne se déclenchait que si l'on RECONNAISSAIT le message :
+//
+//   | quand | ce que l'outil a dit |
+//   |---|---|
+//   | 22 août 2026 | `Cannot find module` |
+//   | 31 août 2026 | `Could not find the Next.js package` |
+//   | 3 septembre 2026 | `Module not found` (Turbopack) |
+//
+// À chaque fois, la même conséquence : le veilleur retentait indéfiniment une
+// construction condamnée. Le 3 septembre, il a vu « Internal Server Error »
+// pendant des heures — `instrumentation.ts` ne pouvait plus charger Sentry,
+// dont une dépendance manquait.
+//
+// La question n'a jamais été « quel message », mais « le dossier est-il
+// entier ». On l'éprouve avec un faux npm : casser l'arbre de la machine qui
+// joue la suite serait un remède pire que le mal.
+
+verifier("npm content : on ne réinstalle rien", async () => {
+  const r = await arbreIncomplet(npmQuiRepond(0, "atlas-mvp@0.1.0 /workspaces/Atlas-app\n+-- next@16.3.2"));
+  assert.equal(r.incomplet, false, "un arbre sain ne doit JAMAIS déclencher de réinstallation");
+});
+
+verifier("des paquets EN TROP ne sont pas des paquets manquants", async () => {
+  // npm rend un code non nul dès qu'il a quoi que ce soit à signaler, y compris
+  // « extraneous » — banal après un changement de branche, et sans conséquence
+  // sur une construction. S'en servir coûterait plusieurs minutes de
+  // réinstallation à chaque démarrage, pour rien : un garde-fou qui parle à
+  // tort s'apprend à être ignoré.
+  const r = await arbreIncomplet(
+    npmQuiRepond(1, "atlas-mvp@0.1.0\n+-- @emnapi/core@1.10.0 extraneous\n+-- @img/sharp-wasm32@0.35.3 extraneous")
+  );
+  assert.equal(r.incomplet, false, "des paquets en trop feraient réinstaller un espace parfaitement sain");
+});
+
+verifier("un paquet MANQUANT est vu, et NOMMÉ", async () => {
+  // Le cas exact du 3 septembre : Sentry absent, `instrumentation.ts` incapable
+  // de se charger, et chaque écran en « Internal Server Error ».
+  const r = await arbreIncomplet(
+    npmQuiRepond(1, "atlas-mvp@0.1.0\n+-- UNMET DEPENDENCY @sentry/nextjs@^10.68.0\n+-- next@16.3.2")
+  );
+  assert.equal(r.incomplet, true, "un paquet déclaré et absent doit déclencher la réparation");
+  assert.match(
+    r.motif ?? "",
+    /@sentry\/nextjs/,
+    "le motif doit NOMMER ce qui manque : « quelque chose ne va pas » n'aide personne"
+  );
+});
+
+verifier("npm muet : on ne conclut RIEN", async () => {
+  // Une mesure impossible n'est pas un échec (`CLAUDE.md` §5). Conclure « arbre
+  // cassé » parce que npm n'a pas pu répondre ferait réinstaller à tort.
+  const r = await arbreIncomplet(async () => {
+    throw new Error("npm introuvable");
+  });
+  assert.equal(r.incomplet, false, "un npm qui ne répond pas ne prouve pas que l'arbre est cassé");
+});
+
+verifier("le banc n'énumère plus les formulations des outils", () => {
+  const code = BANC.split("\n")
+    .filter((l) => !/^\s*(\/\/|\*|\/\*)/.test(l))
+    .join("\n");
+  assert.doesNotMatch(
+    code,
+    /Could not find the Next\\.js package/,
+    "une phrase d'outil est encore énumérée : la quatrième formulation passera au travers comme les trois premières"
+  );
+  assert.match(
+    code,
+    /arbreIncomplet\(/,
+    "le banc ne pose plus la question à npm : il est revenu à deviner d'après les messages"
+  );
+});
+
 // --- 5. Le projet lui-même est-il cohérent ? -----------------------------
 
 verifier("le dépôt épingle bien Next, sinon ce contrôle ne protège rien", () => {
@@ -203,9 +306,14 @@ verifier("le dépôt épingle bien Next, sinon ce contrôle ne protège rien", (
   );
 });
 
-console.log(
-  echecs === 0
-    ? "\n✅ Cohérence des dépendances : toutes les vérifications passent.\n"
-    : `\n❌ ${echecs} vérification(s) en échec.\n`
-);
-process.exit(echecs === 0 ? 0 : 1);
+// Les cas asynchrones se terminent ICI : le verdict ne peut pas être rendu
+// avant eux, sinon il compterait des échecs qui ne sont pas encore arrivés.
+void (async () => {
+  await Promise.all(enCours);
+  console.log(
+    echecs === 0
+      ? "\n✅ Cohérence des dépendances : toutes les vérifications passent.\n"
+      : `\n❌ ${echecs} vérification(s) en échec.\n`
+  );
+  process.exit(echecs === 0 ? 0 : 1);
+})();

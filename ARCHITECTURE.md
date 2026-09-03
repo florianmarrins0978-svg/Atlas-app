@@ -21272,3 +21272,97 @@ ont tous été **vérifiés rouges contre la version d'avant**. Le premier jet d
 celui qui fixe l'ordre était d'ailleurs **inutile** : il trouvait le `pkill` de
 l'en-tête du script et passait au vert sur le code défectueux. Il est désormais
 borné des deux côtés — un contrôle qui ne sait pas échouer ne prouve rien.
+
+---
+
+## §239. Trois fois la même faute : reconnaître un message au lieu de poser la question
+
+**Sa panne du 3 septembre 2026 : « Internal Server Error » pendant des
+heures**, sur un espace dont la fiche disait pourtant « le serveur répond » et
+« le port est vérifié ».
+
+### Ce que la fiche a fini par dire
+
+Le témoin d'échec posé la veille (§238) a fait son travail, et il donne la
+réponse au mot près :
+
+```
+Au moment de l'échec de construction :
+  quand: 2026-09-03T12:10:41Z   code: 1
+  dit:
+    #2 [Instrumentation]:
+      ./node_modules/@sentry/nextjs/…/devErrorSymbolicationEventProcessor.js
+      ./sentry.server.config.ts
+      ./instrumentation.ts
+    https://nextjs.org/docs/messages/module-not-found
+```
+
+`node_modules` était amputé — non pas de `next` cette fois, mais d'une
+dépendance de **Sentry**. Or `instrumentation.ts` charge Sentry **avant toute
+requête** : le serveur démarre, répond à `/api/health/live` (qui ne touche
+rien), et rend « Internal Server Error » sur chaque écran. La fiche voyait donc
+un serveur en bonne santé.
+
+### Pourquoi le banc ne s'est pas réparé, et c'est la troisième fois
+
+La réparation ne se déclenchait qu'en RECONNAISSANT la phrase de l'outil :
+
+| Quand | Ce que l'outil a écrit | Résultat |
+|---|---|---|
+| 22 août 2026 | `Cannot find module` | motif ajouté ce jour-là |
+| 31 août 2026 | `Could not find the Next.js package` | ne correspondait pas — matinée perdue |
+| 3 septembre 2026 | `Module not found` (Turbopack) | ne correspondait toujours pas |
+
+Trois fois, le veilleur a retenté indéfiniment une construction condamnée. Et
+chaque correctif consistait à **ajouter une phrase à la liste** — c'est-à-dire
+à attendre la suivante.
+
+### Ce qu'on change : on demande, on ne devine plus
+
+La question n'a jamais été *« quel message a-t-il écrit »*, mais *« le dossier
+des dépendances est-il entier »*. `npm ls` y répond en **une seconde**
+(mesurée), et il NOMME ce qui manque :
+
+```
++-- UNMET DEPENDENCY @sentry/nextjs@^10.68.0
+```
+
+Un fournisseur change ses phrases à chaque version ; il ne change pas la
+réponse à cette question-là. L'énumération des formulations est **supprimée**,
+pas complétée.
+
+**Et la question se pose aux DEUX endroits**, avec la même fonction
+(`arbreIncomplet`) :
+
+| | |
+|---|---|
+| **avant de lancer** | c'est là qu'elle l'aurait sauvé : le garde ne regardait que deux paquets nommés à la main, et l'amputation était ailleurs |
+| **après une construction ratée** | à la place de la liste de phrases |
+
+### Deux pièges évités, et ils comptent autant que le reste
+
+1. **« Extraneous » n'est pas « manquant ».** `npm ls` rend un code non nul dès
+   qu'il a quoi que ce soit à signaler, y compris des paquets EN TROP — banal
+   après un changement de branche, et sans aucune conséquence. S'en servir
+   ferait réinstaller un espace parfaitement sain à chaque démarrage, plusieurs
+   minutes à chaque fois. On ne retient que `UNMET DEPENDENCY`, `missing:` et
+   `invalid:`.
+2. **La question ne déverse pas son inventaire.** `npm ls` répond en listant
+   l'arbre entier. Le lanceur du banc diffuse ce qu'il reçoit : le journal du
+   patron aurait reçu des centaines de lignes, noyant le message qui compte.
+   `jouerEnRetenant` sait désormais se taire tout en retenant.
+
+**Et une mesure impossible n'est pas un échec** : si npm ne peut pas répondre,
+on ne conclut PAS que l'arbre est cassé — on réinstallerait à tort.
+
+### Ce que la revue de mes propres contrôles a rattrapé
+
+Les quatre cas neufs interrogent un npm simulé, donc rendent une promesse. Le
+lanceur de cette suite ne les attendait pas : **ils s'affichaient verts quoi
+qu'il arrive**, y compris contre un code qui n'a même pas la fonction qu'ils
+prétendent éprouver. Corrigé avant livraison — un contrôle qui ne sait pas
+échouer ne prouve rien, et celui-là ne prouvait rien quatre fois.
+
+Six contrôles vérifiés rouges contre la version d'avant
+(`scripts/test-coherence-dependances.ts`), dont celui qui exigeait la phrase
+supprimée : il fixait la mécanique, il fixe désormais la règle.

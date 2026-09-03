@@ -9,7 +9,39 @@ sert.
 
 ---
 
-## Dernier lot : la page blanche, à la racine (2 sept. 2026, au soir)
+## Dernier lot : « Internal Server Error » — on demande à npm (3 sept. 2026)
+
+**Un `node_modules` amputé d'une dépendance de Sentry.** `instrumentation.ts`
+la charge avant toute requête : le serveur démarre, répond à
+`/api/health/live` — qui ne touche rien —, et rend « Internal Server Error »
+sur chaque écran. La fiche voyait donc un serveur en bonne santé.
+
+**Et le banc ne s'est pas réparé pour la TROISIÈME fois**, parce que la
+réparation reconnaissait des PHRASES : `Cannot find module` (22 août),
+`Could not find the Next.js package` (31 août), `Module not found` de Turbopack
+(3 septembre). Chaque correctif ajoutait une phrase à la liste.
+
+| | |
+|---|---|
+| ce qui a bougé | `scripts/coherence-dependances.mjs`, `scripts/banc.mjs` |
+| la garde | `npx tsx scripts/test-coherence-dependances.ts` — 6 cas vérifiés rouges contre la version d'avant |
+| le pourquoi | `ARCHITECTURE.md` §239 |
+
+**À SAVOIR AVANT D'Y RETOUCHER :**
+
+- **Ne jamais rajouter une phrase d'outil.** L'énumération a été supprimée
+  exprès. La question se pose à npm (`arbreIncomplet`), qui nomme ce qui manque.
+- **« Extraneous » n'est PAS « manquant ».** `npm ls` rend un code non nul pour
+  des paquets EN TROP, ce qui est banal après un changement de branche. Les
+  compter ferait réinstaller un espace sain à chaque démarrage — un garde-fou
+  qui parle à tort s'apprend à être ignoré.
+- **`jouerEnRetenant` sait se taire** (5ᵉ paramètre) : `npm ls` liste l'arbre
+  entier, et le journal du patron n'a pas à le recevoir.
+- **Les cas asynchrones de `test-coherence-dependances.ts` sont ATTENDUS.** Ils
+  ne l'étaient pas : ils s'affichaient verts quoi qu'il arrive. Si l'on ajoute
+  un cas qui rend une promesse, il doit passer par `enCours`.
+
+## Lot précédent : la page blanche, à la racine (2 sept. 2026, au soir)
 
 **`npm ci` effaçait `node_modules` sous un banc qui tournait.** `demarrer.sh`
 posait le veilleur — donc un `next-server` qui sert et un `next build` qui

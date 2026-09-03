@@ -7,6 +7,45 @@ Format : le plus récent en tête.
 
 ---
 
+## 2026-09-03
+
+### « Internal Server Error » : on demande à npm au lieu de deviner ses phrases
+
+**Sa panne du jour**, sur un espace dont la fiche disait « le serveur répond »
+et « le port est vérifié ». Le témoin posé la veille a donné la réponse :
+`node_modules` était amputé — d'une dépendance de **Sentry**, cette fois. Or
+`instrumentation.ts` charge Sentry avant toute requête : le serveur démarre,
+répond à la santé (qui ne touche rien), et rend « Internal Server Error » sur
+chaque écran.
+
+**Pourquoi le banc ne s'est pas réparé, et c'est la TROISIÈME fois.** La
+réparation ne se déclenchait qu'en reconnaissant la phrase de l'outil :
+`Cannot find module` (22 août), puis `Could not find the Next.js package`
+(31 août), puis `Module not found` de Turbopack (aujourd'hui). Chaque correctif
+ajoutait une phrase à la liste — c'est-à-dire attendait la suivante.
+
+- **L'énumération est supprimée, pas complétée.** `npm ls` répond en une
+  seconde et NOMME ce qui manque (`UNMET DEPENDENCY @sentry/nextjs`). Un
+  fournisseur change ses phrases ; il ne change pas la réponse à cette
+  question-là.
+- **La question se pose aussi AVANT de lancer.** Le garde ne regardait que deux
+  paquets nommés à la main ; l'amputation était ailleurs.
+- **« Extraneous » n'est pas « manquant »** : des paquets en trop sont banals
+  et sans conséquence. Les compter ferait réinstaller un espace sain à chaque
+  démarrage.
+- **La question ne déverse plus son inventaire** dans le journal : `npm ls`
+  liste l'arbre entier, et le lanceur diffusait tout ce qu'il recevait.
+
+**Et une faute rattrapée dans mes propres contrôles :** les quatre cas neufs
+sont asynchrones, et le lanceur de la suite ne les attendait pas — ils
+s'affichaient verts contre un code qui n'a même pas la fonction qu'ils
+éprouvent. Corrigé avant livraison. Six contrôles vérifiés rouges contre la
+version d'avant.
+
+Raisons et pièges : `ARCHITECTURE.md` §239.
+
+---
+
 ## 2026-09-02
 
 ### Une suite rouge deux heures chaque nuit, sur du code juste
