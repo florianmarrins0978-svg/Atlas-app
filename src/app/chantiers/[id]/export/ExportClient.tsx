@@ -231,7 +231,7 @@ export default function ExportClient({
                 onClick={reprendre}
                 disabled={reprise}
                 className="atlas-plein mt-4 block w-full rounded-full py-3 text-[15px] font-medium text-white disabled:opacity-50"
-                style={{ backgroundColor: colors.rust }}
+                style={{ backgroundColor: colors.plein }}
               >
                 {reprise
                   ? "Reprise…"
@@ -336,7 +336,7 @@ function AvertissementModification({
           onClick={onConfirmer}
           disabled={enCours}
           className="atlas-plein mt-6 block w-full rounded-full py-3 text-center text-[15px] font-medium text-white disabled:opacity-50"
-          style={{ backgroundColor: colors.rust }}
+          style={{ backgroundColor: colors.plein }}
         >
           {enCours ? "Ouverture…" : "Modifier quand même"}
         </button>

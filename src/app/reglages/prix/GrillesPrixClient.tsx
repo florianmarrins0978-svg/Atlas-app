@@ -445,7 +445,7 @@ function AjouterTranche({
             router.refresh();
           }}
           className="atlas-plein min-h-[40px] rounded-full px-4 py-2 text-[14px] font-medium disabled:opacity-40"
-          style={{ backgroundColor: colors.rust, color: colors.card }}
+          style={{ backgroundColor: colors.plein, color: colors.card }}
         >
           Ajouter
         </button>
@@ -506,7 +506,7 @@ function AjouterTechnique({ onErreur }: { onErreur: (m: string | null) => void }
           router.refresh();
         }}
         className="atlas-plein min-h-[40px] rounded-full px-4 py-2 text-[14px] font-medium disabled:opacity-40"
-        style={{ backgroundColor: colors.rust, color: colors.card }}
+        style={{ backgroundColor: colors.plein, color: colors.card }}
       >
         Ajouter
       </button>
@@ -615,7 +615,7 @@ function AjouterTravail({
           router.refresh();
         }}
         className="atlas-plein min-h-[44px] self-start rounded-full px-5 py-2.5 text-[14px] font-medium disabled:opacity-40"
-        style={{ backgroundColor: colors.rust, color: colors.card }}
+        style={{ backgroundColor: colors.plein, color: colors.card }}
       >
         Ajouter ce travail
       </button>
@@ -686,7 +686,7 @@ function TiroirDuRetrait({
       // boutons pleins. Il ne prend PAS de geste utile : rien ne s'y appuie —
       // `:active` ne se déclenchera jamais dessus, et c'est normal.
       className="atlas-plein flex items-center gap-3 rounded-[4px] px-4 py-3"
-      style={{ backgroundColor: colors.rust, color: colors.card }}
+      style={{ backgroundColor: colors.plein, color: colors.card }}
     >
       <span className="flex-1 text-[12.5px] leading-snug">
         {quoi.nom} retiré{quoi.quoi === "tranche" ? "e" : ""}

@@ -19,73 +19,39 @@ ligne « fait » qui ne l'est pas coûte plus cher qu'une ligne absente.
 
 ---
 
-## EN ATTENTE : la matière de la note vocale sur les boutons verts (3 septembre 2026)
+## FAIT : les boutons verts portent le vert de sa note vocale, à plat (3 septembre 2026)
 
-*Ses deux messages : « utilise la couleur de la note vocale page fiche client et
-mets-la sur chaque bouton à cliquer qui sont aujourd'hui de couleur verte »,
-puis « c'est celle-là la bonne couleur mais sans le petit halo lumineux qui
-tourne à l'intérieur », puis « garde la tasse telle qu'elle la A mais avec
-seulement un bord doré tout autour », puis « mets juste la couleur de la note
-vocale sur les boutons sans le liseré doré, seulement la couleur pour voir », et
-enfin « fais une planche avec la couleur de la note vocale mais sans l'effet
-brillant ».*
+*Son verdict, après cinq déclinaisons sur `appli/boutons-verts.html` : « verdict
+la D à plat sans brillant, donc tout ce qui est bouton cliquable tu remplaces
+par la D — même pour le planning, le choix des noms des équipes (Julien,
+Antoine) qui était en vert foncé », puis « ne fais pas de bricolage, remplace
+correctement les lignes de code, ne fais pas de pansement », puis « ne touche
+pas à la note vocale par contre ».*
 
-**Une planche, pas du code** (`CLAUDE.md` §3 bis) : `appli/boutons-verts.html`,
-quatre déclinaisons, une lettre attendue. Gardée par
-`appli/tests/essai-boutons-verts.mjs`, jouée par `pages.yml`.
-
-**La matière est tranchée, et par lui : LA TASSE (`.atlas-micro`), sans son
-`::before` animé** — ni le galet du 2 septembre, qui reste sur « À facturer » et
-sur l'onglet actif de « Terminés », ni les trois anneaux de la note vocale.
-**Reste ouvert : le brillant et le bord**, et c'est ce que les cinq déclinaisons
-posent.
-
-**Ce que la mesure a établi, et qui compte pour la suite :** la lumière du micro
-est un cercle placé en **pour cent** (34 % / 26 %). Sur un bouton, ce point
-tombe au MILIEU du mot : il ne tient plus que **2,1** de contraste, pour un
-seuil de 4,5, et ce dès 148 px. La planche calcule ses chiffres sur les boutons
-rendus, en balayant le mot entier — elle ne les récite pas.
-
-Ce qu'il regarde : **A**, la couleur seule — le mot y tient 2,1, et le chiffre
-est écrit sous le bouton. **C** est la même à une chose près, la lumière gardée
-aux 50 px qu'elle a sur la note vocale (6,5 partout) ; **E** est son vert du bord
-à plat (6,5). Rien ne touche les boutons creux ni les sept autres apparences.
-
-## FAIT : la fiche de l'espace ne se contredit plus (2 septembre 2026)
-
-*Sa plainte : « l'appli ne démarre pas, page blanche ». La fiche a été lue en
-premier, comme le veut la règle — et c'est elle qui était fausse.*
+Le chemin dans le code : un jeton nommé, `colors.plein`, posé par l'écran
+lui-même. Il remplace le calque `--atlas-plein-fond` — un `background-image`
+peint par-dessus les fonds en ligne, supprimé avec sa cause. Le pourquoi entier
+est dans `ARCHITECTURE.md` §239.
 
 | | |
 |---|---|
-| ce qui a bougé | `scripts/diagnostiquer-espace.mjs` · `scripts/port-libre.mjs` (neuf) · `scripts/banc.mjs` |
-| la garde | `scripts/test-banc-lent-se-dit.ts` — 5 cas neufs |
-| le pourquoi | `ARCHITECTURE.md` §237 |
+| la couleur | `#7d9a6d` sur Origine ; les sept autres chartes gardent leur accent |
+| ce qui a bougé | `design-tokens.ts`, `chartes.ts`, `globals.css`, et quarante-six aplats de boutons |
+| la garde | `npx tsx scripts/test-boutons-pleins.ts` — 10 s, sans base ni navigateur |
+| ce que ça coûte | la crème tient **2,97** de contraste sur ce vert (2,55 sous le doigt), là où il en faudrait 4,5. **Il l'a vu écrit en rouge sous chaque bouton avant de trancher** |
 
-Quatre phrases fausses retirées : l'ordre de rallumer publié à l'allumage,
-« elle ne se recompile jamais », « l'application est entière et rapide » posée à
-côté de « Serveur : NE RÉPOND PAS », et le relèvement « dans quinze secondes »
-promis pendant une construction qui tient le verrou. La ligne « Serveur »
-distingue enfin « plus rien n'écoute » de « quelque chose tient le port et se
-tait ».
+**Ce qui n'est PAS passé au vert sauge :** la note vocale (sa consigne du jour),
+les capsules de « Terminés » qui portent le galet, le carré d'état du planning,
+l'interrupteur de la fiche paysage, et `rust` lui-même — il teinte des textes,
+des icônes et des liserés.
 
-**Et la panne elle-même a été trouvée le soir même** (voir juste en dessous) :
-ce lot-ci ne corrigeait que ce que la fiche DIT.
+**S'il trouve le mot pâle en plein soleil**, ce qui reste à sa main sans toucher
+à sa couleur : passer les lettres à l'encre plutôt qu'à la crème — #1c1c1a sur
+#7d9a6d tient **5,46**. Ne pas le faire sans lui.
 
-## FAIT : la page blanche, à la racine (2 septembre 2026, au soir)
-
-*« L'appli ne démarre pas, page blanche » — une heure durant.*
-
-| | |
-|---|---|
-| la cause | `npm ci` effaçait `node_modules` sous un banc qui tournait ; l'arbre restait amputé et `next` disparaissait |
-| ce qui a bougé | `.devcontainer/demarrer.sh` · `scripts/banc.mjs` |
-| la garde | `test-prechauffage.ts` et `test-banc-lent-se-dit.ts` — 4 cas neufs |
-| le pourquoi | `ARCHITECTURE.md` §238 |
-
-Le banc s'arrête désormais AVANT l'installation ; `npm install` se replie sur
-`npm ci` quand l'arbre est abîmé ; et une réparation impossible se DIT au lieu
-de boucler en silence toutes les quinze secondes.
+**La planche reste** (`appli/boutons-verts.html`, ses cinq états), gardée par
+`appli/tests/essai-boutons-verts.mjs` : toute correction du bouton passera
+d'abord par elle.
 
 ## FAIT : « Terminés » — le calme, et le galet (2 septembre 2026)
 

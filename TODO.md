@@ -9,46 +9,42 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
-## EN ATTENTE DE SA RÉPONSE : la matière de la note vocale sur tous les boutons verts (3 sept. 2026)
+## ~~EN ATTENTE DE SA RÉPONSE : la matière de la note vocale sur tous les boutons verts~~ — CODÉ le 3 septembre 2026
 
-Ses deux messages : *« utilise la couleur de la note vocale page fiche client et
-mets-la sur chaque bouton à cliquer qui sont aujourd'hui de couleur verte »*,
-puis *« c'est celle-là la bonne couleur mais sans le petit halo lumineux qui
-tourne à l'intérieur »*, puis *« garde la tasse telle qu'elle la A mais avec
-seulement un bord doré tout autour »*, puis *« mets juste la couleur de la note
-vocale sur les boutons sans le liseré doré, seulement la couleur pour voir »*, et
-enfin *« fais une planche avec la couleur de la note vocale mais sans l'effet
-brillant »*.
+Son verdict, après cinq déclinaisons : **la D — le vert du milieu de sa note
+vocale, `#7d9a6d`, à plat**. Codé le même jour par un jeton nommé
+(`colors.plein`) qui remplace le calque `--atlas-plein-fond` : `ARCHITECTURE.md`
+§239, `PROJECT_STATE.md`.
 
-**La matière est tranchée : LA TASSE (`.atlas-micro`), sans le `::before` qui
-tourne.** Ni le galet — il reste sur « À facturer » et sur l'onglet actif de
-« Terminés » —, ni les trois anneaux de la note vocale. **Reste ouvert : le
-brillant et le bord.**
+**Ce qui reste ouvert, et qui n'attend que lui :** la crème sur ce vert tient
+2,97 de contraste, là où il en faudrait 4,5 — il l'a vu écrit avant de trancher.
+S'il trouve le mot pâle en plein soleil, les lettres à l'encre en tiennent 5,46
+sans toucher à sa couleur. **Ne pas le faire sans lui.**
 
-**Ne pas la poser telle quelle sur `PrimaryButton`.** Sa lumière est un cercle
-placé **en pour cent** (34 % / 26 %) : sur un bouton, ce point tombe au MILIEU
-du mot, qui ne tient plus que **2,1** de contraste pour un seuil de 4,5 — et
-c'est vrai dès 148 px, pas seulement sur les longs. Mesuré, pas supposé
-(`appli/boutons-verts.html`, qui calcule ses chiffres sur les boutons rendus).
+## À FAIRE : la batterie ne peut pas être verte sous Windows (3 sept. 2026)
 
-Cinq déclinaisons, toutes dans SA couleur : **A la couleur seule** (2,1, ce qu'il
-regarde), **B la même avec le bord doré** (2,1), **C la même, lumière gardée aux
-50 px qu'elle a sur la note vocale** — 6,5 partout, et identique à A sur une
-capsule courte —, **D à plat** (3,0) et **E à plat, son vert du bord** (6,5).
+Trouvé en jouant `npm run verifier:avant-livraison` sur le poste de
+développement Windows : **huit suites échouent pour des raisons de machine, pas
+de code**, et elles échouaient déjà avant le lot du jour.
 
-**Et changer la couleur des lettres ne sauve pas la A**, c'est mesuré : la crème
-s'efface au clair (2,1), l'encre au foncé (2,5 sur `#4f5f4c`).
+| Ce qui échoue | La cause |
+|---|---|
+| `test-reglages-gardes`, `test-mise-a-jour-role-db`, `test-actions-gardees-db` | elles comparent des chemins écrits avec des barres obliques à ce que `path.relative` rend ici, avec des barres inverses |
+| `test-fiche-pendant-relance`, `test-port-remesure` | `EPERM` en supprimant un dossier temporaire |
+| une série de suites | `MaxRetriesPerRequestError` : Redis n'écoute pas |
+| suites navigateur, `verifier:connexion` | refusent de tourner tant qu'un serveur occupe le port 3000 — celui du développement |
+
+**Ce que ça coûte tel quel :** on ne peut pas obtenir un vert complet ici, donc
+la règle du §5 (« ne rien demander au patron tant qu'elle n'est pas au vert »)
+ne peut se tenir que par la CI, sous Linux. C'est jouable, mais il faut le
+savoir : un lot livré depuis Windows n'a PAS été éprouvé en entier avant la
+poussée.
 
 | | |
 |---|---|
-| qui tranche | **lui**, une lettre |
-| la planche | `https://florianmarrins0978-svg.github.io/Atlas-app/boutons-verts.html` |
-| la garde | `appli/tests/essai-boutons-verts.mjs`, jouée par `pages.yml` — les aplats y sont comparés aux verts de `globals.css`, pas approchés |
-| où ça se coderait | `--atlas-plein-fond` dans `src/lib/chartes.ts` (Origine seule), et un relief à ajouter à `.atlas-plein` pour le filet d'or |
-| ce qui ne bougerait pas | les boutons creux, les sept autres apparences, les capsules de « Terminés » |
-
-**Une question reste ouverte, posée en bas de la planche :** faut-il aussi
-retirer le halo qui tourne de la note vocale elle-même ?
+| qui peut le faire | une session, sans lui — c'est du code d'outillage |
+| le plus rentable | normaliser les séparateurs dans les trois suites de chemins (`split(path.sep).join("/")`), ce qui en rend trois sur huit |
+| ce qui restera | Redis et le port 3000 : ce sont des services, pas des suites |
 
 ## ~~NON REPRODUIT : rien ne servait sur son port~~ — TROUVÉ le 2 septembre 2026, au soir
 

@@ -14,13 +14,20 @@ import { CHARTES, contraste, estSombre } from "../src/lib/chartes";
  * aucune capture ne verrait :
  *
  *   1. **L'ORDRE DANS LE FICHIER.** La capsule porte `atlas-plein` ET
- *      `atlas-galet`. Or `.atlas-plein` pose lui aussi un `background-image`
- *      (`--atlas-plein-fond`). Les deux règles ont la même spécificité : c'est
- *      donc la DERNIÈRE écrite qui gagne. Le jour où quelqu'un déplace le
- *      galet plus haut — ou rouvre un bloc `.atlas-plein` en dessous —, le
- *      dégradé disparaît et il ne reste qu'un aplat vert. Rien ne rougit. Ce
- *      piège n'est pas théorique : `AnneauNoteVocale.tsx` porte déjà le
- *      commentaire d'un écrasement PARTIEL du même genre, payé une fois.
+ *      `atlas-galet`, deux règles de même spécificité : c'est la DERNIÈRE
+ *      écrite qui gagne. Le jour où quelqu'un déplace le galet plus haut — ou
+ *      rouvre un bloc `.atlas-plein` en dessous —, la règle d'en bas emporte
+ *      tout ce qu'elles ont en commun. Rien ne rougit. Ce piège n'est pas
+ *      théorique : `AnneauNoteVocale.tsx` porte déjà le commentaire d'un
+ *      écrasement PARTIEL du même genre, payé une fois.
+ *
+ *      **La collision la plus grosse a disparu le 3 septembre 2026**, et il
+ *      faut le savoir pour ne pas la recréer : `.atlas-plein` posait alors un
+ *      `background-image` (`--atlas-plein-fond`) qui écrasait purement et
+ *      simplement le dégradé du galet. Depuis, les boutons portent leur
+ *      couleur en `colors.plein` et `.atlas-plein` ne peint plus rien. Ce
+ *      contrôle garde donc surtout l'AVENIR : la prochaine propriété de fond
+ *      ajoutée à `.atlas-plein` retomberait dans le même piège.
  *
  *   2. **LA MATIÈRE QUI SE METTRAIT À SUIVRE LA CHARTE.** Le réflexe du dépôt
  *      est d'écrire `var(--atlas-rust)` plutôt qu'un vert en clair, et c'est la

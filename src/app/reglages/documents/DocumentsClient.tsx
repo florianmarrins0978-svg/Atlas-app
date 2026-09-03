@@ -665,7 +665,7 @@ export default function DocumentsClient({
             disabled={allureEnCours}
             onClick={() => choixPhoto.current?.click()}
             className="atlas-plein flex min-h-[52px] w-full items-center justify-center rounded-full px-4 text-[15px]"
-            style={{ backgroundColor: colors.rust, color: surPlein, opacity: allureEnCours ? 0.6 : 1 }}
+            style={{ backgroundColor: colors.plein, color: surPlein, opacity: allureEnCours ? 0.6 : 1 }}
           >
             {allureEnCours ? "Lecture…" : "Photographier mon devis"}
           </button>

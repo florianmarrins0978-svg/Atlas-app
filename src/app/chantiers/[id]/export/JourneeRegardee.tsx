@@ -104,7 +104,7 @@ export default function JourneeRegardee({
                 </span>
                 <span
                   className="flex-shrink-0 whitespace-nowrap rounded-full px-[11px] py-[5px] text-[12.5px]"
-                  style={{ backgroundColor: colors.rust, color: colors.card }}
+                  style={{ backgroundColor: colors.plein, color: colors.card }}
                 >
                   {equipeDe(chantier, d)}
                 </span>

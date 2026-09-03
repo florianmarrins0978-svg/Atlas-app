@@ -9,7 +9,51 @@ sert.
 
 ---
 
-## Dernier lot : la matière de la note vocale sur les boutons verts — PLANCHE (3 septembre 2026)
+## Dernier lot : les boutons verts au vert de sa note vocale, à plat (3 septembre 2026)
+
+*Son verdict, après cinq déclinaisons sur `appli/boutons-verts.html` : « verdict
+la D à plat sans brillant, donc tout ce qui est bouton cliquable tu remplaces
+par la D », puis « ne fais pas de bricolage, remplace correctement les lignes de
+code, ne fais pas de pansement », puis « ne touche pas à la note vocale par
+contre ».*
+
+**Le correctif est un JETON, pas un calque**, et c'est le sens de sa seconde
+phrase : `colors.plein` — l'aplat des boutons qu'on appuie — remplace
+`--atlas-plein-fond`, ce `background-image` qu'on peignait par-dessus les fonds
+en ligne. Le pourquoi entier : `ARCHITECTURE.md` §239.
+
+| | |
+|---|---|
+| la couleur | `#7d9a6d` sur Origine ; les sept autres chartes gardent leur accent |
+| ce qui a bougé | `design-tokens.ts`, `chartes.ts`, `globals.css`, et quarante-six aplats |
+| la garde | `npx tsx scripts/test-boutons-pleins.ts` — 10 s, sans base ni navigateur |
+| la planche | `appli/boutons-verts.html`, ses cinq états — toute correction passe d'abord par elle |
+
+**À SAVOIR AVANT D'Y RETOUCHER :**
+
+- **`rust` n'est PAS l'aplat des boutons.** Il teinte des textes, des icônes,
+  des liserés et les fonds pâles `rustTint`. Un bouton plein pose `colors.plein`,
+  et c'est tout ce qui le pose.
+- **Le calque ne doit pas revenir.** Si quelqu'un rouvre un `background-image`
+  sur `.atlas-plein`, il regagnera en silence sur le jeton — changer la couleur
+  ne fera plus rien, et rien ne rougira. `scripts/test-chartes.ts` le refuse des
+  deux côtés (la variable ET la feuille de style).
+- **Le contraste est un choix, pas un oubli.** La crème tient 2,97 sur ce vert,
+  2,55 sous le doigt, là où il en faudrait 4,5 ; le vert d'avant en tenait
+  11,72. Le chiffre était écrit en rouge sous chaque bouton de la planche quand
+  il a tranché. **Ne pas « réparer » ça tout seul :** ce qui reste à sa main est
+  de passer les lettres à l'encre (5,46), et c'est à lui de le dire.
+- **Ce qui ne doit pas suivre :** la note vocale (sa consigne du jour), les
+  capsules de « Terminés » qui portent le galet du 2 septembre, le carré d'état
+  du planning (`data-atlas="carre"` dit une demi-journée, pas une action), et
+  l'interrupteur de la fiche paysage.
+- **La batterie complète n'a PAS pu être verte ici** — huit suites échouent pour
+  des raisons de machine sous Windows, toutes antérieures à ce lot (détail dans
+  `TODO.md`). Ce qui a été joué et qui est vert : `tsc`, le lint, la mémoire, et
+  les suites du domaine — chartes, chartes lisibles, galet, boutons pleins,
+  aucune flèche. Le reste est éprouvé par la CI, sous Linux.
+
+## Lot précédent — LA PLANCHE : la matière de la note vocale sur les boutons verts — PLANCHE (3 septembre 2026)
 
 Ses deux messages : *« utilise la couleur de la note vocale page fiche client et
 mets-la sur chaque bouton à cliquer qui sont aujourd'hui de couleur verte »*,

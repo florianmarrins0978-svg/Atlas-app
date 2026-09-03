@@ -9,6 +9,73 @@ Format : le plus récent en tête.
 
 ## 2026-09-03
 
+### Les boutons verts passent au vert de sa note vocale, à plat
+
+**Son verdict, sur `appli/boutons-verts.html` :** *« verdict la D à plat sans
+brillant, donc tout ce qui est bouton cliquable tu remplaces par la D — même
+pour le planning, le choix des noms des équipes (Julien, Antoine) qui était en
+vert foncé »*, puis *« ne fais pas de bricolage, remplace correctement les
+lignes de code, ne fais pas de pansement »*, puis *« ne touche pas à la note
+vocale par contre »*.
+
+**CE QUE LA SECONDE PHRASE A CHANGÉ AU CORRECTIF, et c'était juste.** Le chemin
+court existait : une ligne dans `chartes.ts`, et `--atlas-plein-fond` repeignait
+les quarante-six boutons d'un coup. C'était précisément le pansement — un
+`background-image` posé **par-dessus** le fond que chaque écran écrit en style
+en ligne, parce qu'aucune feuille de style ne peut supplanter un style en ligne.
+Le fichier l'avouait : *« c'est laid à lire et c'est le prix d'un changement qui
+ne touche ni les six autres apparences, ni les trente-quatre écrans »*.
+
+**Le calque est donc supprimé, et la cause avec lui.** Un jeton nommé prend sa
+place — `colors.plein`, l'aplat des boutons qu'on appuie —, et c'est l'écran qui
+le pose. Détail dans `ARCHITECTURE.md` §239. Ce que ça règle au passage : la
+collision entre `.atlas-plein` et `.atlas-galet`, qui posaient tous deux un
+`background-image` à spécificité égale ; et le fait que changer le jeton ne
+changeait plus rien, le calque gagnant toujours.
+
+**Ce qui a bougé :** `design-tokens.ts` (le jeton), `chartes.ts` (la valeur, pour
+les huit chartes — `#7d9a6d` sur Origine, leur propre accent sur les sept
+autres, comme il l'a demandé le 31 août), `globals.css` (`.atlas-plein` ne peint
+plus rien, il ne porte que le geste), et quarante-six aplats de boutons, dont
+les trois pastilles de nom d'équipe du planning et de la journée regardée.
+
+**Ce qui ne bouge PAS, et chacun pour une raison :** la note vocale (sa consigne
+du jour), les capsules de « Terminés » qui portent le galet du 2 septembre, le
+carré d'état du planning — qui dit une demi-journée, pas une action —,
+l'interrupteur de la fiche paysage, et `rust` lui-même : il teinte des textes,
+des icônes, des liserés et les fonds pâles, et le confondre aurait reverdi la
+moitié des écrans.
+
+**CE QUE ÇA COÛTE, ET IL L'A VU AVANT DE TRANCHER :** la crème sur `#7d9a6d`
+tient **2,97** de contraste — **2,55** sous le doigt —, là où il en faudrait
+4,5 ; le vert d'avant en tenait 11,72. Le chiffre était écrit en rouge sous
+chaque bouton de la planche quand il a répondu. Ce qui reste à sa main : passer
+les lettres à l'encre (5,46) sans toucher à sa couleur.
+
+**LA PANNE MUETTE DE CE LOT, et le contrôle qui la garde.** Un oubli sur
+quarante-six compile, passe le lint, s'affiche — et reste vert pin au milieu des
+verts sauge, sur un écran que personne ne rouvre avant des semaines.
+`scripts/test-boutons-pleins.ts` refuse qu'un élément portant `atlas-plein`
+peigne encore son fond avec `colors.rust`, et garde `PrimaryButton` à part parce
+que sa classe vit soixante lignes au-dessus de son style, hors de la fenêtre de
+la règle générale. Confronté aux deux états qu'il prétend détecter : rouge sur
+chacun, avec le fichier et la ligne.
+
+**Éprouvé sur l'application qui tourne, pas seulement relu** : la page de
+connexion rend `rgb(125, 154, 109)` sans aucune image de fond, et le balayage de
+l'accueil, du planning et du catalogue ne trouve plus qu'un seul `rgb(47,59,47)`
+— le carré d'état du planning, qui doit rester.
+
+**Ce qui n'a PAS pu être éprouvé ici, et il faut le dire :** la batterie
+complète ne peut pas être verte sous Windows. Cinq suites comparent des chemins
+écrits avec des barres obliques à ce que `path.relative` rend sur cette machine,
+avec des barres inverses ; deux échouent sur un `EPERM` de dossier temporaire, une
+série demande Redis, et les suites navigateur refusent de tourner tant qu'un
+serveur occupe le port 3000. Aucun de ces échecs ne nomme une couleur, et tous
+précèdent ce lot. Ce qui a été joué ici et qui est vert : `tsc`, le lint, la
+mémoire, et les cinq suites du domaine — chartes, chartes lisibles, galet,
+boutons pleins, aucune flèche. Le reste est éprouvé par la CI, sous Linux.
+
 ### La tasse sur tous les boutons verts : la couleur est prise, la lumière reste à trancher
 
 **Ses deux messages :** *« utilise la couleur de la note vocale page fiche

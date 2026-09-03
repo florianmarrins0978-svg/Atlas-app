@@ -21272,3 +21272,86 @@ ont tous été **vérifiés rouges contre la version d'avant**. Le premier jet d
 celui qui fixe l'ordre était d'ailleurs **inutile** : il trouvait le `pkill` de
 l'en-tête du script et passait au vert sur le code défectueux. Il est désormais
 borné des deux côtés — un contrôle qui ne sait pas échouer ne prouve rien.
+
+---
+
+## §239. L'aplat des boutons : un jeton, à la place d'un calque
+
+**Sa décision du 3 septembre 2026**, prise sur `appli/boutons-verts.html` après
+cinq déclinaisons : *« verdict la D à plat sans brillant, donc tout ce qui est
+bouton cliquable tu remplaces par la D »*, puis — et c'est la moitié qui a
+dicté la forme du correctif — *« ne fais pas de bricolage, remplace correctement
+les lignes de code, ne fais pas de pansement »*.
+
+### Ce qui existait, et pourquoi c'était un pansement
+
+Depuis le 31 août, la couleur des boutons pleins arrivait par
+`--atlas-plein-fond` : un `linear-gradient(#29382F, #29382F)` — un aplat écrit
+comme un dégradé d'une seule couleur — peint en `background-image` **par-dessus**
+le fond que chaque écran posait en style en ligne (`backgroundColor:
+colors.rust`). Le fichier le disait lui-même : *« c'est laid à lire et c'est le
+prix d'un changement qui ne touche ni les six autres apparences, ni les
+trente-quatre écrans »*.
+
+Le contournement était nécessaire à l'époque, et il avait un vrai coût :
+
+| | |
+|---|---|
+| deux sources pour une couleur | le style en ligne, et un calque qui le recouvre |
+| une collision réelle | `.atlas-galet` posait aussi un `background-image` : c'est le dernier écrit dans le fichier qui gagnait, et `scripts/test-galet.ts` existe pour ça |
+| un jeton qui ne servait à rien | changer `colors.rust` ne changeait plus les boutons |
+
+### Ce qui le remplace
+
+Un jeton nommé, `colors.plein` — l'aplat des boutons qu'on appuie —, posé
+**par l'écran lui-même** :
+
+- `design-tokens.ts` le déclare `var(--atlas-plein, #7d9a6d)`, avec le vert
+  d'Origine en repli, comme tous les autres jetons ;
+- `variablesCharte()` l'écrit **pour les huit chartes** : `#7d9a6d` pour
+  Origine, **leur propre accent** pour les sept autres. Sa consigne du 31 août
+  — *« les boutons à changer c'est seulement pour la version origine »* — est
+  donc tenue par une valeur, non par une absence ;
+- `.atlas-plein` ne peint plus rien : il ne porte que le geste (l'enfoncement
+  de 2,5 %, le voile blanc de l'appui). La collision avec le galet a disparu ;
+- quarante-six aplats de boutons passent de `colors.rust` à `colors.plein`.
+
+**Ce qui ne change pas, et c'est le même arbitrage qu'au 31 août :** `rust`
+teinte aussi des TEXTES, des icônes, des liserés et les fonds pâles `rustTint`.
+Le confondre avec l'aplat des boutons aurait reverdi la moitié des écrans pour
+une demande qui ne vise que des aplats. Les boutons **creux** n'ont pas d'aplat
+— *« surtout pas ceux qui sont creux »*.
+
+### Ce que ça coûte, écrit noir sur blanc
+
+| | crème sur le fond | sous le doigt |
+|---|---|---|
+| le vert du 31 août, `#29382F` | 11,72 | 7,55 |
+| **le vert du 3 septembre, `#7d9a6d`** | **2,97** | **2,55** |
+
+Il en faudrait 4,5 pour un mot. **C'est un choix, pas un oubli** : le chiffre
+était écrit en rouge sous chaque bouton de la planche — « 3,0 — il en faut
+4,5 » — quand il a répondu « verdict la D ». Ce qui reste à sa main s'il trouve
+le mot pâle en plein soleil : passer les lettres à l'encre plutôt qu'à la crème
+(#1c1c1a sur #7d9a6d tient **5,46**), sans toucher à la couleur qu'il a
+retenue.
+
+### Ce qui garde le tout
+
+`scripts/test-boutons-pleins.ts` refuse qu'un élément portant `atlas-plein`
+peigne encore son fond avec `colors.rust` — c'est **la panne muette de ce
+lot** : un oubli sur quarante-six compile, passe le lint, s'affiche, et reste
+vert pin au milieu des verts sauge sur un écran que personne ne rouvrira. Il
+garde aussi `PrimaryButton` à part, parce que dix-sept écrans en dépendent et
+que sa classe est écrite soixante lignes au-dessus de son style — hors de la
+fenêtre de la règle générale. Et `scripts/test-chartes.ts` refuse le retour du
+calque, des deux côtés : la variable et la feuille de style.
+
+### Ce qui n'est PAS passé au vert sauge, et pourquoi
+
+| | |
+|---|---|
+| la **note vocale** | *« ne touche pas à la note vocale »*, le même jour. Sa tasse a sa propre matière (`.atlas-micro`) et ne passe par aucun jeton d'aplat |
+| les capsules de « **Terminés** » | elles portent le galet, son choix du 2 septembre — ce ne sont pas des « verts foncés » |
+| le carré du **planning** | `data-atlas="carre"` dit l'état d'une demi-journée, pas une action : les quatre états doivent rester distinguables (`design-tokens.ts`) |
+| l'**interrupteur** de la fiche paysage | un interrupteur n'est pas un bouton ; son vert dit « actif », comme les autres emplois de l'accent |

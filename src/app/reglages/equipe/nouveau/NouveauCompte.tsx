@@ -101,7 +101,7 @@ export default function NouveauCompte() {
         type="submit"
         disabled={enCours}
         className="atlas-plein mt-7 flex w-full items-center justify-center rounded-full py-3.5 text-[14px] font-semibold"
-        style={{ backgroundColor: colors.rust, color: surPlein, opacity: enCours ? 0.6 : 1 }}
+        style={{ backgroundColor: colors.plein, color: surPlein, opacity: enCours ? 0.6 : 1 }}
       >
         {enCours ? "Un instant…" : "Créer le compte"}
       </button>

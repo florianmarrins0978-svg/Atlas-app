@@ -202,7 +202,7 @@ export default function TransmettreAuClient({
             data-transmission={canalChoisi}
             onClick={() => marquerDepartMessagerie("devis", clientNom)}
             className="atlas-plein block w-full rounded-full py-3 text-center text-[15px] font-medium text-white"
-            style={{ backgroundColor: colors.rust }}
+            style={{ backgroundColor: colors.plein }}
           >
             {relance ? LIBELLE[canalChoisi].relance : LIBELLE[canalChoisi].bouton}
           </a>

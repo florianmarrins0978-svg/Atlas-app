@@ -73,7 +73,7 @@ export default function MotsProposes({ proposes }: { proposes: MotPropose[] }) {
                 onClick={() => repondre(p, true)}
                 disabled={enCours === p.mot}
                 className="atlas-plein rounded-full px-[15px] py-[8px] text-[13.5px]"
-                style={{ backgroundColor: colors.rust, color: colors.card }}
+                style={{ backgroundColor: colors.plein, color: colors.card }}
               >
                 Oui, retenir
               </button>

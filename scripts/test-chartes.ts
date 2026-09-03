@@ -88,36 +88,61 @@ essai("le repli de --font-display EST la serif d'aujourd'hui", () => {
 });
 
 essai("le vert du bouton plein ne touche QUE Origine", () => {
-  // **Sa décision du 31 août 2026, en trois temps.** D'abord : « mets-moi la
-  // couleur 8 partout sur chaque bouton plein de couleur verte de l'appli ».
-  // Puis, la question des sept chartes lui étant posée : **« les boutons à
-  // changer c'est seulement pour la version origine, ne touche pas aux autres
-  // apparences ! »** Enfin, les deux verts photographiés côte à côte sur le
-  // vrai bouton : **« je garde le #29382F »** — le vert 8 est écarté.
+  // **Sa décision du 3 septembre 2026**, sur `appli/boutons-verts.html` :
+  // *« verdict la D à plat sans brillant, donc tout ce qui est bouton cliquable
+  // tu remplaces par la D »* — le vert du milieu de sa note vocale, à plat.
+  // Elle remplace le #29382F du 31 août, retenu ce jour-là sur
+  // `le-bouton-qui-repond.html`.
   //
-  // Le « seulement » est la moitié qui compte, et c'est elle qui est gardée
-  // ici : sur Brume, l'aplat d'action est un bleu marine qu'il a validé au
-  // pouce. Un dégradé vert posé par-dessus le remplacerait sans que personne
-  // ne l'ait demandé — et cela ne se verrait qu'en changeant d'apparence,
-  // c'est-à-dire jamais pendant qu'on développe.
+  // **Le « seulement pour la version origine » du 31 août tient toujours**, et
+  // c'est la moitié qui compte ici : sur Brume, l'aplat d'action est un bleu
+  // marine qu'il a validé au pouce. Un vert posé par-dessus le remplacerait
+  // sans que personne ne l'ait demandé — et cela ne se verrait qu'en changeant
+  // d'apparence, c'est-à-dire jamais pendant qu'on développe.
   for (const c of CHARTES) {
-    const fond = variablesCharte(c)["--atlas-plein-fond"];
+    const plein = variablesCharte(c)["--atlas-plein"];
+    assert.ok(plein, `${c.nom} n'écrit pas l'aplat de ses boutons pleins`);
     if (c.nom === "origine") {
-      assert.ok(fond, "Origine n'écrit plus le fond : ses boutons pleins ont perdu sa couleur");
       // Sa couleur, recopiée ici volontairement : qui la change doit décider
       // AUSSI de la changer là où sa réponse est consignée.
-      assert.ok(
-        fond.toUpperCase().includes("#29382F"),
-        `le fond n'est plus le vert qu'il a retenu : ${fond}`
+      assert.equal(
+        plein.toLowerCase(),
+        "#7d9a6d",
+        `l'aplat n'est plus le vert qu'il a retenu le 3 septembre : ${plein}`
       );
     } else {
       assert.equal(
-        fond,
-        undefined,
+        plein,
+        c.jetons.rust,
         `${c.nom} reçoit le vert d'Origine alors qu'il a dit « seulement pour origine »`
       );
     }
   }
+});
+
+essai("le calque qui peignait par-dessus les boutons a bien disparu", () => {
+  // **Ce contrôle garde un RETRAIT, et c'est pour cela qu'il existe.**
+  // Jusqu'au 3 septembre 2026, la couleur des boutons arrivait par un
+  // `background-image` peint PAR-DESSUS leur fond en ligne — le seul calque
+  // capable de supplanter un style en ligne. Les écrans posent désormais
+  // `colors.plein` eux-mêmes.
+  //
+  // Laisser les deux vivre côte à côte serait le pire des deux mondes : le
+  // calque gagnerait en silence sur le jeton, et changer `--atlas-plein` ne
+  // ferait plus rien. Ça ne rougirait nulle part — on chercherait dans les
+  // écrans.
+  for (const c of CHARTES) {
+    assert.equal(
+      variablesCharte(c)["--atlas-plein-fond"],
+      undefined,
+      `${c.nom} écrit encore le calque : il repeindrait par-dessus \`colors.plein\``
+    );
+  }
+  const css = readFileSync(new URL("../src/app/globals.css", import.meta.url), "utf8");
+  assert.ok(
+    !css.includes("--atlas-plein-fond,"),
+    "`globals.css` lit encore `--atlas-plein-fond` : le calque est resté dans la feuille"
+  );
 });
 
 essai("l'accent lui-même n'a pas bougé — seuls les boutons PLEINS changent", () => {

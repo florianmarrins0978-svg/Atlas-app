@@ -460,7 +460,7 @@ export default function NoteVocaleClient({
                 onClick={togglerLecture}
                 aria-label={lecture ? "Mettre en pause" : "Écouter la note"}
                 className="atlas-plein ml-5 flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-full"
-                style={{ backgroundColor: colors.rust }}
+                style={{ backgroundColor: colors.plein }}
               >
                 {lecture ? <PauseIcon /> : <PlayIcon />}
               </button>
