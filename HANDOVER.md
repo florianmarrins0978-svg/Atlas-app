@@ -9,7 +9,67 @@ sert.
 
 ---
 
-## Dernier lot — la liste de ses clients, CODÉE (3 septembre 2026)
+## Dernier lot — LE PLANNING, la journée dans le mois (3 septembre 2026)
+
+**Sa validation, maquette en main :** *« je valide la maquette que tu as faite
+pour la page planning, code-moi exactement cette maquette pour mon appli ! Ne
+fais pas de pansement ou d'ajout de code sur du code, remplace, modifie, corrige
+pour que ça fonctionne sans rien casser. »* L'écran est en place —
+`src/app/planning/PlanningClient.tsx`, `src/components/atlas/MoisCharge.tsx`,
+`ARCHITECTURE.md` §242, verdict point par point : `docs/planning-verdict.md`.
+
+**Ce qu'il faut savoir avant d'y toucher :**
+
+| | |
+|---|---|
+| la **fiche d'une journée** | se déplie DANS le mois, entre la semaine qui porte le jour et la suivante — `MoisCharge` a une prop `volet` |
+| **`scrollIntoView` a disparu** | elle naît sous le doigt ; le rattrapage déplacerait maintenant la case qu'on vient de toucher |
+| la **semaine lue** | teintée dans le mois (`semaineLue`) : les deux navigations ne s'ignorent plus |
+| **« Déplacer » / « Retirer »** | une seule rangée par CHANTIER, sous ses demi-journées — plus une paire par demi-journée |
+| la **commune** | sous la durée, des deux côtés (`src/lib/commune-adresse.ts`) — et **rien** quand l'adresse ne permet pas de conclure |
+| **« Sans date » + « En attente »** | dans `TiroirDuBas`, cloué au bord bas sous une poignée qui les compte |
+| **le tiroir fermé n'existe pour personne** | `visibility: hidden` — sans quoi le clavier et les lecteurs d'écran l'atteignent encore |
+| **l'écran d'envoi ne bouge pas** | il ne passe ni `volet` ni `semaineLue` : `MoisCharge` rend exactement ce qu'il rendait |
+
+**Le seul point de la maquette qui n'a PAS été codé, et il ne doit pas l'être :**
+elle annonçait que toucher un nom dans les planifiés « remonte au mois ». Cela
+ferait défiler la page sous son doigt — sa plainte du 22 août 2026, *« il
+disparaît sous mes yeux »*, qu'une suite entière défend
+(`test-ligne-planning-e2e.ts`). La ligne des planifiés garde son dépliage sur
+place.
+
+**Les suites qui ont dû être adaptées** (`CLAUDE.md` §5 bis) : `test-planning-e2e`,
+`test-poser-une-date-e2e` et `test-glisser-supprimer-e2e` ouvrent le tiroir avant
+de toucher « Sans date » — la pièce commune est `scripts/_tiroir-planning-e2e.ts`.
+
+---
+
+## Lot précédent — « Ma TVA », REFONDUE (3 septembre 2026)
+
+**Son verdict sur la planche :** *« je valide cette maquette pour la page Ma
+TVA, tu peux coder exactement ça »*. L'écran est en place —
+`src/app/termines/tva/`, `ARCHITECTURE.md` §241, verdict point par point :
+`docs/tva-verdict.md`.
+
+**Ce qu'il faut savoir avant d'y toucher :**
+
+| | |
+|---|---|
+| l'écran est une **addition** | collectée, moins déductible, un trait, le reste — trois `LigneMontant`, alignées à droite, **toutes les trois copiables** |
+| les **deux réglages** | plus en tête d'écran : une ligne de provenance sous le total ouvre `DeclarationsTva`, qui porte `RythmeTva` et `RegimeTva` intacts |
+| la **facturation** | LIT la ligne de provenance, sans geste, et la feuille n'est **pas rendue** pour elle — une suite lit le texte de la page et le vérifie |
+| les **deux gestes d'achat** | dans l'addition, entre « Déductible » et le trait. La LISTE des achats est redevenue du serveur, dans `page.tsx` |
+| la **frise des périodes** | remplace les deux flèches ; l'année, collée à gauche, ouvre le calendrier |
+| **aucun formateur d'euros local** | `enEuros` partout : `Intl` sépare les milliers par une espace que Playfair ne porte pas, et « 1 620,00 € » sortait « 1620,00 € » |
+| **`rustTint` ne sert plus de plage** ici | 1,14 de contraste sur Nuit : il est dérivé du fond, pas de l'encre |
+
+**Le calcul n'a pas bougé d'une ligne** : régime, périodicité, crédit de TVA,
+attente non bornée à la période et effacée aux débits, ticket hors période qui
+emmène l'écran là où il atterrit, mention finale mot pour mot.
+
+---
+
+## Lot précédent — la liste de ses clients, CODÉE (3 septembre 2026)
 
 **Son verdict sur la planche, le soir même :** *« tu peux coder exactement cette
 maquette »*. L'écran est en place — `src/app/clients/`,

@@ -9,6 +9,52 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
+## ~~Le planning : la journée dans le mois~~ — CODÉ le 3 septembre 2026
+
+**Sa validation :** *« je valide la maquette que tu as faite pour la page
+planning, code-moi exactement cette maquette pour mon appli ! Ne fais pas de
+pansement ou d'ajout de code sur du code. »* Détail : `ARCHITECTURE.md` §242 ;
+verdict point par point : `docs/planning-verdict.md`.
+
+**Ce qui reste ouvert, et qui est à LUI :**
+
+- **le tiroir du bas cache deux listes derrière un appui.** C'est le seul
+  échange du lot, et il a été fait en connaissance de cause : « Sans date » et
+  « En attente du client » étaient visibles en faisant défiler, elles demandent
+  maintenant de toucher la poignée. Elle les NOMME et les COMPTE. **À lui de
+  dire si l'appui le gêne à l'usage** — la mesure n'existe pas encore, seule
+  une semaine de chantier la donnera.
+- **le volet repousse la fin du mois** d'environ 330 px quand une journée est
+  ouverte. Voulu, mais il faut faire défiler pour retrouver les dernières
+  semaines. Idem : à éprouver sur son téléphone, pas ici.
+
+**Ce qui a été REFUSÉ, et pourquoi :** la maquette annonçait que toucher un nom
+dans les planifiés « remonte au mois ». Non — cela ferait défiler la page sous
+son doigt, sa plainte du 22 août 2026 (*« il disparaît sous mes yeux »*), qu'une
+suite entière défend. La ligne garde son dépliage sur place.
+
+---
+
+## ~~La refonte de « Ma TVA »~~ — CODÉE le 3 septembre 2026
+
+**Son verdict :** *« je valide cette maquette pour la page Ma TVA, tu peux coder
+exactement ça — pas de pansement, pas d'ajout de code qui ne sert à rien, pas de
+sur couche »*. Détail : `ARCHITECTURE.md` §241 ; verdict point par point :
+`docs/tva-verdict.md`.
+
+**Ce qui reste ouvert, et qui est à LUI :**
+
+- **le retrait d'un achat.** `supprimerAchatAction` existe, est gardée par rôle
+  et éprouvée (`test-roles-capacites-db.ts`) — et **aucun écran ne l'appelle**.
+  Un ticket mal lu ne se retire donc pas. Le dépôt a déjà la pièce qu'il faut
+  (`LigneRetirable` + `TiroirDesRetires`, la réversibilité après plutôt que la
+  confirmation avant). Non fait ici : ce n'était pas dans la maquette validée ;
+- **le rond de la flèche de retour** reste sur `rustTint`, invisible sur Nuit et
+  Sylve. Il vient d'`EnTeteEcran`, partagé par tous les écrans : le corriger
+  ici seul aurait fait diverger la grammaire commune. Le chevron, lui, se voit.
+
+---
+
 ## ~~EN ATTENTE DE SA RÉPONSE : la liste de ses clients~~ — CODÉ le 3 septembre 2026
 
 **Son verdict :** *« tu peux coder exactement cette maquette »*. Planche :

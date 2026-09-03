@@ -186,6 +186,12 @@ async function main() {
     const avant = (await page.locator("h1").first().textContent())?.trim() ?? "";
     assert.ok(!/trimestre/i.test(avant), `l'écran ne part pas d'un mois : « ${avant} »`);
 
+    // **Les deux mots soulignés vivent dans une feuille depuis le 3 septembre
+    // 2026.** Ils ouvraient l'écran, AVANT son titre et son chiffre ; ils sont
+    // maintenant derrière la ligne de provenance, sous le total. Le geste du
+    // patron a donc un appui de plus, et c'est celui-là qu'on rejoue — pas
+    // celui d'un écran qui n'existe plus.
+    await page.click('[data-atlas="declarations"]');
     await page.getByRole("button", { name: "Tous les trois mois", exact: true }).click();
 
     // **On attend le TITRE, pas un délai.** Un `waitForTimeout` mesurerait la
@@ -207,6 +213,11 @@ async function main() {
 
     // Et le retour au mois doit marcher pareil : une correction qui ne
     // fonctionnerait que dans un sens laisserait la moitié du défaut.
+    //
+    // **La feuille reste ouverte**, et c'est voulu : `RythmeTva` navigue par le
+    // routeur, sans recharger, donc rien ne la referme. La rouvrir ici visait
+    // un bouton que la feuille elle-même recouvrait — Playwright a tourné
+    // quarante-cinq secondes sur « intercepts pointer events ».
     await page.getByRole("button", { name: "Tous les mois", exact: true }).click();
     await page.waitForFunction(
       () => !/trimestre/i.test(document.querySelector("h1")?.textContent ?? ""),

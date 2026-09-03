@@ -362,45 +362,70 @@ async function main() {
     );
   });
 
-  await cas("ils sont cousus à l'encadré des chiffres, sans écart", async () => {
-    // **Mesurer les DEUX ENCADRÉS, jamais leur texte.** Le premier jet mesurait
-    // depuis le bas des mots « Reste à payer » et annonçait 25 px d'écart alors
-    // que les deux pièces se touchaient : il comptait le rembourrage de la
-    // carte comme une brèche. Un contrôle qui accuse à tort coûte plus cher que
-    // pas de contrôle du tout (`AGENTS.md`).
-    const encadre = await page.locator('[data-atlas="encadre-tva"]').first().boundingBox();
-    assert.ok(encadre, "L'encadré des chiffres (« Reste à payer ») n'a aucune boîte.");
-    const gestes = await page
-      .locator('[data-atlas="gestes-deductible"]')
-      .first()
-      .evaluate((el) => {
-        const r = el.parentElement!.getBoundingClientRect();
-        return { haut: r.top + window.scrollY, gauche: r.left, largeur: r.width };
-      });
+  await cas("ils sont posés ENTRE la déductible et le total, dans l'addition", async () => {
+    // ─── CE CONTRÔLE VISAIT UNE MISE EN PAGE, IL VISE MAINTENANT LA RÈGLE ───
+    //
+    // Il mesurait la couture entre `[data-atlas="encadre-tva"]` — la carte du
+    // « Reste à payer » — et le bloc des gestes juste en dessous. La refonte du
+    // 3 septembre 2026 a supprimé cette carte : l'écran est devenu une addition,
+    // et les deux gestes se sont posés à l'intérieur, entre la ligne
+    // « Déductible » et le trait du total.
+    //
+    // **La règle qu'il défend n'a pas bougé d'un pouce** — proposition C du
+    // 23 août 2026 : le lien entre les deux boutons et la TVA déductible se dit
+    // par la PLACE, sans un mot. Elle se dit simplement mieux : ils ne sont plus
+    // cousus sous le bloc des chiffres, ils sont DANS l'opération, contre la
+    // ligne qu'ils font monter (`CLAUDE.md` §5 bis).
+    const boite = async (marque: string) => {
+      const b = await page.locator(`[data-atlas="${marque}"]`).first().boundingBox();
+      assert.ok(b, `« ${marque} » n'a aucune boîte : rien n'est mesurable ici.`);
+      return b;
+    };
+    const deductible = await boite("montant-deductible");
+    const gestes = await boite("gestes-deductible");
+    const total = await boite("montant-reste");
 
-    const ecart = gestes.haut - (encadre.y + encadre.height);
     assert.ok(
-      ecart <= 1,
-      `Un écart de ${Math.round(ecart)} px s'est rouvert entre l'encadré des chiffres ` +
-        `et les gestes. La proposition C ne dit le lien par AUCUN mot : elle le dit par ` +
-        `la couture. Cet écart la défait sans qu'une phrase ait bougé.`
+      gestes.y >= deductible.y + deductible.height - 1,
+      `Les gestes remontent au-dessus de la ligne « Déductible » ` +
+        `(gestes à y=${Math.round(gestes.y)}, déductible finit à ` +
+        `${Math.round(deductible.y + deductible.height)}).`
     );
-    // Et la couture ne tient que si les deux pièces ont la même largeur : deux
-    // marges différentes feraient un décrochement, visible et jamais rouge.
     assert.ok(
-      Math.abs(gestes.gauche - encadre.x) <= 1 && Math.abs(gestes.largeur - encadre.width) <= 1,
-      `Les deux pièces ne sont plus alignées : l'encadré fait ${Math.round(encadre.width)} px ` +
-        `à x=${Math.round(encadre.x)}, le bloc des gestes ${Math.round(gestes.largeur)} px ` +
-        `à x=${Math.round(gestes.gauche)}. Le décrochement se voit, et rien d'autre ne le dirait.`
+      gestes.y + gestes.height <= total.y + 1,
+      `Les gestes sont passés SOUS le total : ils ne disent plus à quel chiffre ` +
+        `ils se rattachent. Le lien ne tient que par la place — c'est ce que le ` +
+        `patron a retenu le 23 août 2026, contre une phrase.`
+    );
+    // Et l'alignement : trois pièces de la même opération, décalées, feraient
+    // un décrochement visible et jamais rouge.
+    assert.ok(
+      Math.abs(gestes.x - deductible.x) <= 1 && Math.abs(gestes.width - deductible.width) <= 1,
+      `Le bloc des gestes ne suit plus la colonne de l'addition : la déductible ` +
+        `fait ${Math.round(deductible.width)} px à x=${Math.round(deductible.x)}, ` +
+        `les gestes ${Math.round(gestes.width)} px à x=${Math.round(gestes.x)}.`
     );
   });
 
-  await cas("le titre du bloc nomme ce à quoi les gestes servent", async () => {
-    const titre = page.getByText("Pour faire monter la déductible", { exact: false });
-    assert.ok(
-      await titre.count(),
-      `Le titre « Pour faire monter la déductible » a disparu. Il est la seule ` +
-        `chose qui relie les deux boutons à la tuile au-dessus.`
+  await cas("et AUCUN mot ne vient expliquer les deux gestes", async () => {
+    // **L'inverse exact du contrôle d'avant, et c'est voulu.** Il exigeait le
+    // titre « Pour faire monter la déductible » ; le patron a retenu la PLACE
+    // contre les mots (23 août 2026), et la refonte du 3 septembre l'a rendue
+    // littérale : les gestes touchent la ligne qu'ils font monter. Le titre est
+    // devenu du bruit, et un écran n'explique pas le bouton d'à côté
+    // (`CLAUDE.md` §3).
+    //
+    // Ce qui se défend désormais, c'est qu'aucune phrase ne revienne s'y
+    // glisser : le bloc ne porte que les deux libellés, et rien d'autre.
+    const dit = (await page.locator('[data-atlas="gestes-deductible"]').first().innerText())
+      .split("\n")
+      .map((l) => l.trim())
+      .filter(Boolean);
+    assert.deepEqual(
+      dit,
+      ["Scanner un ticket", "Écrire à la main"],
+      `Le bloc des gestes s'est remis à parler : « ${dit.join(" · ")} ». La place ` +
+        `dit déjà le lien — c'est ce qu'il a choisi, contre une phrase.`
     );
   });
 

@@ -25,10 +25,18 @@ type TicketLuAffiche = {
 };
 
 /**
- * Les achats de la période, et les deux façons d'en ajouter un.
+ * Les deux façons d'ajouter un achat, et la feuille qui le saisit.
  *
  * *Sa demande du 12 août 2026 : « il faut pouvoir scanner un ticket, mais
  * également l'écrire ».* Retenu sur maquette (`docs/maquettes/37`).
+ *
+ * **La LISTE des achats n'est plus ici, depuis le 3 septembre 2026.** Elle
+ * n'avait aucun état : ni geste, ni saisie, ni rien à écouter. La garder dans
+ * ce fichier obligeait à l'envoyer au navigateur pour rien, et surtout à la
+ * dessiner juste sous les deux boutons — alors que les boutons ont rejoint la
+ * ligne « Déductible » de l'addition, tout en haut. Elle est rendue par le
+ * serveur, dans `page.tsx`, à sa place : sous les factures, comme la preuve du
+ * second terme.
  *
  * **Écrire n'est pas la roue de secours du scanner** : c'est l'autre moitié du
  * geste. Trois cas où l'objectif ne peut rien — le ticket perdu dont il se
@@ -54,42 +62,16 @@ type TicketLuAffiche = {
  * l'est entièrement (`scripts/test-lecture-ticket.ts`).
  */
 
-export type LigneAchat = {
-  id: string;
-  dateAchat: string;
-  fournisseur: string;
-  totalTtc: string | null;
-  tvaDeductible: string;
-  saisie: "scan" | "main";
-};
-
-const EUROS = new Intl.NumberFormat("fr-FR", {
-  style: "currency",
-  currency: "EUR",
-  minimumFractionDigits: 2,
-  maximumFractionDigits: 2,
-});
-
-function jourCourt(iso: string): string {
-  return new Date(`${iso}T12:00:00Z`).toLocaleDateString("fr-FR", {
-    day: "numeric",
-    month: "long",
-    timeZone: "UTC",
-  });
-}
-
 export default function AchatsTva({
-  achats,
   aujourdHui,
   periodicite,
   annee,
   numero,
 }: {
-  achats: LigneAchat[];
   aujourdHui: string;
   /** Le rythme choisi, pour savoir où tombera la date saisie. */
   periodicite: PeriodiciteTva;
-  /** La période REGARDÉE — celle dont la liste ci-dessous est tirée. */
+  /** La période REGARDÉE — celle où le ticket tombera, ou pas. */
   annee: number;
   numero: number;
 }) {
@@ -208,8 +190,7 @@ export default function AchatsTva({
   const armé = fournisseur.trim() !== "" && montantSaisi(tva) !== null && !enCours;
 
   return (
-    <div>
-
+    <>
       {/* **Sans `capture`.** L'attribut forcerait l'appareil photo et retirerait
           l'accès à la photothèque : un ticket déjà photographié la veille
           deviendrait inatteignable. Sans lui, le téléphone propose les deux —
@@ -226,102 +207,52 @@ export default function AchatsTva({
         }}
       />
 
-      {/* **LES DEUX GESTES REMONTENT CONTRE LA TUILE — proposition C, retenue
-          par le patron le 23 août 2026.**
+      {/* **LES DEUX GESTES TOUCHENT LA LIGNE « DÉDUCTIBLE » — c'est la
+          proposition C du 23 août 2026, poussée jusqu'au bout.**
 
-          Sa remarque : *« on ne comprend pas trop que scanner ou écrire à la
-          main, c'est pour la TVA déductible »*. Il avait raison, et la preuve
-          était sous ses yeux sans être écrite : le même montant s'affichait
-          deux fois, dans la tuile et sur la ligne de l'achat, à quinze lignes
-          d'écart, sans rien pour les relier.
+          Sa remarque de ce jour-là : *« on ne comprend pas trop que scanner ou
+          écrire à la main, c'est pour la TVA déductible »*. Trois dosages lui
+          ont été dessinés (`docs/maquettes/85-achats-tva-deductible.html`) —
+          dire le lien par le titre, par une phrase, ou par la PLACE. Il a
+          retenu la place.
 
-          Trois dosages lui ont été dessinés, essayables au doigt
-          (`docs/maquettes/85-achats-tva-deductible.html`) — dire le lien par le
-          titre, par une phrase, ou par la PLACE. Il a retenu la place : aucun
-          mot de plus, et le bloc se referme sous l'encadré des chiffres.
+          Depuis le 3 septembre 2026, l'écran est une addition : collectée,
+          moins déductible, un trait, le reste. Les deux gestes se posent
+          **entre la ligne « Déductible » et le trait**, c'est-à-dire à
+          l'endroit exact du chiffre qu'ils font monter. Le libellé « Pour faire
+          monter la déductible » a donc été retiré : la place le dit, et un
+          écran n'explique pas le bouton d'à côté (`CLAUDE.md` §3).
 
-          Le liseré haut est en pointillé : il rattache sans séparer. Le fond et
-          l'arrondi bas sont ceux de l'encadré au-dessus, qui a perdu le sien —
-          les deux ne font plus qu'une seule pièce. */}
-      <div
-        className="mx-6 rounded-b-[10px] px-3.5 pb-3 pt-2.5"
-        style={{ backgroundColor: colors.card, borderTop: `1px dashed ${colors.line}` }}
-      >
-        <p className={`mb-2 ${libelleCaps}`} style={{ color: colors.or }}>
-          Pour faire monter la déductible
-        </p>
-        <div className="flex gap-2.5" data-atlas="gestes-deductible">
-          <button
-            type="button"
-            onClick={() => objectif.current?.click()}
-            disabled={enCours}
-            className="flex flex-1 flex-col items-center gap-[7px] rounded-full px-2 py-[15px] text-[12.5px]"
-            style={{ backgroundColor: colors.card, border: `1px solid ${colors.line}`, color: colors.ink }}
-          >
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={colors.rust} strokeWidth="1.6" aria-hidden="true">
-              <path d="M4 8.4V6.2A2.2 2.2 0 0 1 6.2 4h2.2M15.6 4h2.2A2.2 2.2 0 0 1 20 6.2v2.2M20 15.6v2.2a2.2 2.2 0 0 1-2.2 2.2h-2.2M8.4 20H6.2A2.2 2.2 0 0 1 4 17.8v-2.2" strokeLinecap="round" />
-              <path d="M4 12h16" strokeLinecap="round" />
-            </svg>
-            {enCours && !ouverte ? "Envoi…" : "Scanner un ticket"}
-          </button>
-          <button
-            type="button"
-            onClick={() => ouvrir(null, null, null)}
-            className="flex flex-1 flex-col items-center gap-[7px] rounded-full px-2 py-[15px] text-[12.5px]"
-            style={{ backgroundColor: colors.card, border: `1px solid ${colors.line}`, color: colors.ink }}
-          >
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={colors.rust} strokeWidth="1.6" aria-hidden="true">
-              <path d="M4 20h4.2L19 9.2a2 2 0 0 0 0-2.8l-1.4-1.4a2 2 0 0 0-2.8 0L4 15.8V20z" strokeLinejoin="round" />
-              <path d="M13.6 6.6l3.8 3.8" strokeLinecap="round" />
-            </svg>
-            Écrire à la main
-          </button>
-        </div>
+          Et le retour est meilleur qu'avant : après un scan, c'est le montant
+          juste au-dessus du doigt qui change — plus besoin d'aller chercher la
+          ligne quinze lignes plus bas. */}
+      <div className="mt-1 flex gap-2.5" data-atlas="gestes-deductible">
+        <button
+          type="button"
+          onClick={() => objectif.current?.click()}
+          disabled={enCours}
+          className="flex flex-1 flex-col items-center gap-[7px] rounded-full px-2 py-[13px] text-[12.5px]"
+          style={{ backgroundColor: colors.card, border: `1px solid ${colors.line}`, color: colors.ink }}
+        >
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={colors.rust} strokeWidth="1.6" aria-hidden="true">
+            <path d="M4 8.4V6.2A2.2 2.2 0 0 1 6.2 4h2.2M15.6 4h2.2A2.2 2.2 0 0 1 20 6.2v2.2M20 15.6v2.2a2.2 2.2 0 0 1-2.2 2.2h-2.2M8.4 20H6.2A2.2 2.2 0 0 1 4 17.8v-2.2" strokeLinecap="round" />
+            <path d="M4 12h16" strokeLinecap="round" />
+          </svg>
+          {enCours && !ouverte ? "Envoi…" : "Scanner un ticket"}
+        </button>
+        <button
+          type="button"
+          onClick={() => ouvrir(null, null, null)}
+          className="flex flex-1 flex-col items-center gap-[7px] rounded-full px-2 py-[13px] text-[12.5px]"
+          style={{ backgroundColor: colors.card, border: `1px solid ${colors.line}`, color: colors.ink }}
+        >
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={colors.rust} strokeWidth="1.6" aria-hidden="true">
+            <path d="M4 20h4.2L19 9.2a2 2 0 0 0 0-2.8l-1.4-1.4a2 2 0 0 0-2.8 0L4 15.8V20z" strokeLinejoin="round" />
+            <path d="M13.6 6.6l3.8 3.8" strokeLinecap="round" />
+          </svg>
+          Écrire à la main
+        </button>
       </div>
-
-      {/* La liste garde son titre, et son mot juste : ce qu'il ajoute, ce sont
-          des ACHATS. « TVA déductible », c'est ce que l'administration en fait. */}
-      <p className={`mb-2.5 mt-5 px-6 ${libelleCaps}`} style={{ color: colors.muted }}>
-        Vos achats
-      </p>
-
-      <div className="px-6">
-      {achats.length === 0 ? (
-        <p className="py-4 text-center text-[13px] leading-[1.6]" style={{ color: colors.muted }}>
-          Rien encore. Scannez un ticket, ou écrivez-le.
-        </p>
-      ) : (
-        <div className="mt-1.5">
-          {achats.map((a) => (
-            <div
-              key={a.id}
-              className="flex items-center gap-3.5 py-3"
-              style={{ borderTop: `1px solid ${colors.lineSoft}` }}
-            >
-              <span
-                className="flex h-[34px] w-[34px] flex-shrink-0 items-center justify-center rounded-full text-[13px]"
-                style={{ backgroundColor: colors.rustTint }}
-                aria-hidden="true"
-              >
-                {a.saisie === "scan" ? "🧾" : "✎"}
-              </span>
-              <span className="min-w-0 flex-1">
-                <span className="block truncate text-[14.5px]">{a.fournisseur}</span>
-                <span className="mt-0.5 block text-[11.5px]" style={{ color: colors.muted }}>
-                  {jourCourt(a.dateAchat)}
-                  {a.totalTtc ? ` · ${EUROS.format(Number(a.totalTtc))}` : ""}
-                </span>
-              </span>
-              <span
-                className="flex-shrink-0 text-[14.5px] font-semibold"
-                style={{ color: colors.rust, fontVariantNumeric: "tabular-nums" }}
-              >
-                {EUROS.format(Number(a.tvaDeductible))}
-              </span>
-            </div>
-          ))}
-        </div>
-      )}
 
       <BottomSheet open={ouverte} onBackdropClick={() => setOuverte(false)}>
         <p className={`text-center ${libelleCaps}`} style={{ color: colors.or }}>
@@ -442,8 +373,7 @@ export default function AchatsTva({
           Annuler
         </button>
       </BottomSheet>
-      </div>
-    </div>
+    </>
   );
 }
 

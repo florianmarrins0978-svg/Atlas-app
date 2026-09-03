@@ -21509,3 +21509,250 @@ Cette refonte l'aurait fait rougir sur du code juste. Les repères sont désorma
 des `data-atlas` (`nom-client`, `situation-client`, `reste-du`,
 `compte-clients`) : ils survivent au remaniement, l'emboîtement non
 (`CLAUDE.md` §5 bis).
+
+---
+
+## §241. « Ma TVA » : une addition, et les deux déclarations sous le total
+
+**Sa validation du 3 septembre 2026, planche en main :** *« je valide cette
+maquette pour la page Ma TVA, tu peux coder exactement ça »*.
+
+### Ce que l'écran faisait, et ce que ça coûtait
+
+Il ouvrait sur **deux réglages, avant son titre et avant le moindre chiffre** :
+le rythme du relevé (`RythmeTva`), puis le régime d'exigibilité (`RegimeTva`)
+avec ses deux lignes, son encart d'écart et sa phrase de prudence. Environ trois
+cent quarante pixels. Mesuré sur son écran de 390 × 664, le **« Reste à
+payer » — la seule raison d'ouvrir cet écran — tombait sous la ligne de
+flottaison**. Il fallait faire défiler pour voir le chiffre qu'on venait
+chercher.
+
+Ce ne sont pourtant pas des filtres d'affichage : ce sont deux **déclarations
+faites aux impôts**, qu'on change une fois par entreprise. Leur place n'est pas
+en tête d'un relevé qu'on consulte tous les mois.
+
+Les trois montants, eux, formaient **trois objets différents** : deux tuiles
+centrées côte à côte, puis un encadré. Trois conséquences :
+
+| | |
+|---|---|
+| rien ne disait que le troisième chiffre est la **soustraction** des deux autres | trois présentations pour une seule opération |
+| deux montants **centrés** de longueurs différentes ne partagent aucun bord | or un chiffre se compare sur sa colonne des unités |
+| le **« Reste à payer » ne se copiait pas** | c'est pourtant le seul des trois qu'il recopie pour payer ; les deux copiables étaient les deux dont il n'a pas besoin dans ce geste-là |
+
+### La forme retenue
+
+**Deux termes, un trait, un total** — un reçu, pas un tableau de bord. Les trois
+lignes emploient la même pièce (`LigneMontant`), alignée à droite sur la même
+colonne, et **chacune copie son montant**. Chaque montant portant deux
+décimales, l'alignement à droite EST l'alignement des virgules : il ne dépend
+d'aucun caractère tabulaire, donc d'aucune police.
+
+**La hiérarchie passe par la TAILLE, plus par la couleur** — vingt pixels contre
+trente-quatre. Le total était en `colors.rust` quand les deux termes étaient en
+`colors.ink` ; or sur Nuit et Sylve l'accent EST l'encre (`chartes.ts`) : la
+distinction n'existait que sur **six chartes sur huit**.
+
+Le reste de l'écran suit le même ordre : ce qui reste **à faire** (les factures
+en attente), puis les deux **preuves** — les factures qui font la collectée, les
+achats qui font la déductible.
+
+### Les deux gestes touchent la ligne qu'ils font monter
+
+« Scanner un ticket » et « Écrire à la main » se posent **entre la ligne
+« Déductible » et le trait**. C'est la proposition C du 23 août 2026 poussée
+jusqu'au bout : il avait retenu la PLACE plutôt qu'une phrase. Le libellé
+« Pour faire monter la déductible » est donc retiré — la place le dit, et un
+écran n'explique pas le bouton d'à côté (`CLAUDE.md` §3).
+
+Le retour est meilleur qu'avant : après un scan, c'est le montant **juste
+au-dessus du doigt** qui change, au lieu d'une ligne quinze rangs plus bas.
+
+**La LISTE des achats a quitté `AchatsTva.tsx`** et redevient du serveur, dans
+`page.tsx` : elle n'avait aucun état — ni geste, ni saisie, ni rien à écouter —
+et la garder dans un composant client l'envoyait au navigateur pour rien.
+
+### La frise remplace les deux flèches
+
+« ← Juillet 2026 », l'icône du calendrier, « Septembre 2026 → » : deux libellés
+longs qui redisent ce que le titre dit déjà, autour d'une cible de dix-neuf
+pixels — et **un chargement d'écran par flèche**, chacune étant un lien.
+
+`FrisePeriodes` montre où l'on est **dans l'année**, ce qu'aucune flèche ne
+pouvait dire, et met tout mois à un doigt. Le calendrier garde son rôle — les
+autres années — et **l'année en est devenue le bouton**, collée à gauche
+(`sticky`) : elle sortait de l'écran dès juin, or c'est la seule porte vers 2025.
+
+**Aucune animation sur le trait d'or**, contrairement à la barre du bas : chaque
+période est un LIEN, l'écran est refait par le serveur, et il n'existe aucun
+instant où un trait pourrait glisser d'un mois à l'autre.
+
+### Trois défauts trouvés en REGARDANT la maquette, pas en la relisant
+
+1. **« 1 620,00 € » s'affichait « 1620,00 € ».** `Intl` sépare les milliers par
+   une espace fine insécable (U+202F) que **Playfair Display ne porte pas** : à
+   trente-quatre pixels, le montant se lisait comme un seul nombre. Le dépôt
+   avait déjà la réponse — `enEuros` (`src/lib/euros.ts`) remplace U+202F par
+   l'espace insécable ordinaire depuis le 30 août, pour une raison d'impression
+   PDF. Cet écran portait **trois formateurs locaux** qui l'ignoraient ; il
+   n'en porte plus aucun.
+2. **`rustTint` n'existe pas sur les chartes sombres.** Dérivé du FOND
+   (`chartes.ts`), il vaut `#1f211e` sur Nuit, soit **1,14 de contraste** contre
+   `#101210`. L'encart d'écart des régimes et la pastille des lignes d'achat
+   disparaissaient donc sur deux chartes sur huit. L'encart passe à `card`
+   + cheveu ; la pastille est supprimée.
+3. **`colors.muted` sur crème tient 3,25 de contraste**, sous le seuil de 4,5.
+   Il portait les phrases de second rang, à 11,5-13 px, sur un écran qu'on lit
+   au soleil. Elles passent à `inkSoft` (7,98) ; `muted` reste aux capitales
+   espacées et aux comptes.
+
+### Ce que la facturation LIT désormais
+
+Les deux réglages lui étaient **entièrement retirés** depuis le 30 août 2026 —
+le serveur refuse ces écritures (`exigerProprietaire`), et un réglage grisé se
+touche quand même. Mais elle ne pouvait alors pas savoir si « Août 2026 » était
+compté à l'encaissement ou aux débits, **alors que c'est elle qui relit le
+relevé**. `DeclarationsTva` rend donc un paragraphe au lieu d'un bouton, et **la
+feuille n'est pas rendue du tout** : `test-roles-facturation-e2e.ts` lit le
+texte de la page et refuse qu'elle y voie « Votre rythme » ou « Je reverse ma
+TVA aux impôts ».
+
+### Ce qui n'a pas bougé, et qui ne devait pas
+
+Le calcul, entièrement : le régime, la périodicité, le crédit de TVA quand le
+reste est négatif avec son vrai signe moins et sa phrase, l'attente **non bornée
+à la période**, son effacement complet aux débits, le ticket daté hors période
+qui emmène l'écran là où il atterrit, la mention finale mot pour mot.
+
+### Deux suites visaient une mise en page, pas une règle
+
+`test-achat-hors-periode-e2e.ts` lisait `div:has(> span:text-is("Déductible"))`
+— c'est-à-dire la TUILE — et remontait au fournisseur par
+`xpath=ancestor::div[1]`. Les deux seraient devenues rouges sur du code juste.
+Elles visent maintenant `data-atlas` (`montant-collectee`, `montant-deductible`,
+`montant-reste`, `ligne-achat`), qui survit au remaniement (`CLAUDE.md` §5 bis).
+
+`test-periodicite-tva-e2e.ts` touchait les deux mots soulignés directement sur
+l'écran ; ils sont derrière la ligne de provenance, et la suite rejoue donc le
+geste du patron — un appui de plus — au lieu d'un écran qui n'existe plus.
+
+### Une heure perdue sur un défaut qui n'existait pas — et ce qui l'a évité
+
+La frise s'ouvrait sur **janvier** au lieu du mois regardé, sur les deux chartes
+et sur les quatre captures. Deux correctifs ont été écrits, puis mesurés :
+aucun ne changeait rien.
+
+**La cause n'était pas dans le produit.** Le banc de capture ouvrait
+l'application sur `http://127.0.0.1:3000` ; **Next 16, en mode développement,
+refuse alors les fichiers JavaScript de la page** — trois `403` sur
+`/_next/static/chunks`, silencieux dans l'écran. Rien ne s'hydratait, donc aucun
+composant client ne vivait, donc aucun effet ne s'exécutait. Les captures
+étaient belles et fausses.
+
+**Ce qui a tranché, et rien d'autre :** sonder la page plutôt que la relire.
+Écrire `scrollLeft` à la main depuis la console le déplaçait très bien — ce qui
+écartait la mise en page —, puis relever les réponses en erreur a désigné les
+trois `403`. Sur `localhost`, `scrollLeft` vaut 415, la valeur attendue.
+
+**Ce qui reste du second correctif, et qui se justifie tout seul :** le rappel
+sur `document.fonts.ready`. Relevé image par image, le rail affiche un
+`scrollWidth` de **0** à 250 ms et de 934 à 280 ms : une écriture avant cet
+instant est ramenée à zéro par le navigateur, et plus rien ne recalcule ensuite.
+
+`scripts/capturer-tva.ts` vise donc `localhost` et porte la raison en tête. Un
+banc qui ment coûte plus cher que pas de banc du tout (`AGENTS.md`).
+
+---
+
+## §242. Le planning : la journée s'ouvre DANS le mois, et le reste descend dans un tiroir
+
+**Sa validation du 3 septembre 2026, maquette en main :** *« je valide la
+maquette que tu as faite pour la page planning, code-moi exactement cette
+maquette pour mon appli ! Ne fais pas de pansement ou d'ajout de code sur du
+code, remplace, modifie, corrige pour que ça fonctionne sans rien casser. »*
+
+**La planche vit hors du dépôt**, publiée et essayable au doigt — « Le mois qui
+se déplie », `https://claude.ai/code/artifact/637fb037-7b47-4a8c-a427-68b635460cb2`.
+Elle n'a volontairement laissé aucun fichier dans `src/` ni dans `appli/` : il
+avait demandé qu'aucun fichier du projet ne soit touché tant qu'il n'avait pas
+choisi. Le verdict point par point est dans `docs/planning-verdict.md`.
+
+Ce paragraphe porte ce qu'elle change dans le code, et surtout **ce qui a été
+refusé**.
+
+### Ce que l'écran empilait
+
+Cinq blocs, dans cet ordre : le mois, la fiche du jour, les planifiés à la
+semaine, « Sans date », « En attente du client ». Six mesures les condamnaient,
+toutes prises dans le code plutôt que ressenties :
+
+| | |
+|---|---|
+| la fiche du jour naissait **sous le calendrier entier** | il a fallu un `scrollIntoView` pour la ramener sous le doigt, après deux *« rien ne s'ouvre quand je touche un jour »* |
+| **deux navigations à moitié liées** | toucher un jour amenait la liste sur sa semaine ; changer de semaine ne disait rien au mois, et rien ne montrait d'où venait la liste |
+| **cinq objets dans 324 px** | pastille, mot, équipe, « Déplacer », « Retirer » — les deux boutons resserrés à 9 px pour que le second ne bascule pas à la ligne |
+| **les deux gestes écrits deux fois** | ils prennent un CHANTIER (`deplacer`, `retirerDuJour`) ; un chantier à la journée les affichait sur ses deux demi-journées |
+| **le geste le plus actif, le plus loin du pouce** | poser un chantier se fait depuis « Sans date », au bas de cinq blocs |
+| **la carte ne se détachait pas** | son fond (`card`) est à 4 % du fond de page, sans ombre |
+
+### Ce qui a été fait
+
+1. **`MoisCharge` rend une rangée par semaine** au lieu d'une grille de
+   quarante-deux cases, et accepte deux props facultatives : `volet` — ce qui se
+   déplie entre la semaine du jour touché et la suivante, avec une encoche qui
+   vise la case — et `semaineLue`, la semaine que lit la liste du bas, teintée
+   dans le mois. **L'écran d'envoi ne passe ni l'une ni l'autre** : il rend
+   exactement ce qu'il rendait, au pixel. La géométrie est inchangée — mêmes
+   sept colonnes, même écart de 4 px.
+2. **`scrollIntoView` a disparu de `PlanningClient`.** La fiche naît sous le
+   doigt ; le rattrapage n'a plus d'objet, et il serait même nuisible — il
+   déplacerait la case qu'on vient de toucher.
+3. **« Déplacer » et « Retirer » passent au chantier** : une rangée sous ses
+   demi-journées, à leur taille normale. `Ouvert` perd son champ `demi` pour
+   `deplacer` — il n'existait que pour empêcher la liste des trois moments de
+   s'ouvrir sur les deux lignes à la fois.
+4. **La commune s'écrit sous la durée**, dans la fiche du jour comme sur la
+   ligne des planifiés (`src/lib/commune-adresse.ts`). L'adresse existait en
+   base et ne servait qu'aux boutons de la feuille : elle était lue sans jamais
+   être montrée. Sur une liste où quatre clients s'appellent Martins, c'est la
+   seule chose qui dit lequel.
+5. **« Sans date », « En attente du client » et le tiroir d'annulation
+   descendent dans un tiroir cloué au bord bas** (`TiroirDuBas`), sous une
+   poignée qui les nomme et les compte. Dès qu'un jour est touché, elle écrit
+   *« À poser sur jeudi 3 septembre »* en or — la phrase que l'écran écrivait
+   déjà sous « Sans date », rendue à l'endroit du geste.
+6. **La fiche rendue dans le mois est un objet** : ombre à décalage et flou,
+   filet, coins à 14 px. Ailleurs, elle ne bouge pas.
+
+### CE QUI A ÉTÉ REFUSÉ, ET POURQUOI — la seule entorse à la maquette
+
+La planche annonçait : *« toucher un nom dans les planifiés remonte au mois et
+l'ouvre là-haut »*, au motif qu'une journée ne doit être dessinée qu'à un seul
+endroit. **Ce point n'a pas été codé, et il ne doit pas l'être.**
+
+Remonter au mois veut dire faire défiler la page sous son doigt. Or c'est
+exactement la plainte du 22 août 2026 : *« le client remonte et la fiche
+chantier aussi […] tout remonte d'un bloc et je suis perdu, je ne sais plus où
+est mon client. Il disparaît sous mes yeux. »* Une suite entière la défend
+(`test-ligne-planning-e2e.ts`, « Le client touché ne remonte pas »), et elle
+rejoue la SÉQUENCE, pas le geste.
+
+La ligne des planifiés garde donc son dépliage sur place (`seulement`), qui ne
+montre que ce que la ligne ne dit pas — les demi-journées et la feuille. **Le
+doublon que la maquette voulait supprimer n'en était pas tout à fait un** : le
+drapeau `seulement` existait déjà pour ça. Ce qui a été gagné ailleurs — une
+seule place pour la fiche ouverte depuis le calendrier — reste acquis.
+
+### Ce que ça coûte, et qui doit se lire
+
+- **Le tiroir cache deux listes derrière un appui.** Elles étaient visibles en
+  faisant défiler. La poignée les nomme et les compte, donc rien ne devient
+  introuvable — ce qui se perd est leur position, pas leur existence. C'est le
+  seul échange de ce lot.
+- **Le volet repousse la fin du mois** d'environ 330 px. C'est voulu : on
+  regarde une journée, pas le mois. Mais il faut faire défiler pour retrouver
+  les dernières semaines, ce qui n'était pas le cas avant.
+- **Rien n'est ouvert à l'arrivée.** Une première version ouvrait aujourd'hui
+  d'office, pour répondre sans un geste à « qu'est-ce que je fais aujourd'hui ».
+  La capture l'a démentie : il ne restait plus qu'une semaine à l'écran, soit
+  l'inverse de sa règle du 21 août — *« je veux un accès au mois »*.

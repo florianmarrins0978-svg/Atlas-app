@@ -265,6 +265,11 @@ async function main() {
     await page.goto(`${BASE}/termines/tva`, { waitUntil: "networkidle" });
     const avant = await collectee(page);
 
+    // **Le régime vit dans une feuille depuis le 3 septembre 2026** : il
+    // ouvrait l'écran, avant le titre et le premier chiffre. On rejoue donc le
+    // geste du patron — la ligne de provenance, puis le choix. La feuille reste
+    // ensuite ouverte, `RegimeTva` ne faisant que rafraîchir.
+    await page.click('[data-atlas="declarations"]');
     await page.getByRole("radio", { name: /Le mois où j'envoie la facture/ }).click();
     await page.waitForFunction(
       (a) => {
@@ -312,6 +317,9 @@ async function main() {
     const { chantierId } = await chantierRealise(page, "ecart");
     await emettre(page, chantierId); // émise, et jamais payée
     await page.goto(`${BASE}/termines/tva`, { waitUntil: "networkidle" });
+    // La phrase accompagne le choix, et le choix est dans la feuille : c'est
+    // là qu'on se demande ce qu'il change, et nulle part ailleurs.
+    await page.click('[data-atlas="declarations"]');
 
     const phrase = page.locator('[data-atlas="ecart-des-regimes"]');
     assert.equal(await phrase.count(), 1, "la phrase qui dit ce que le choix change a disparu");

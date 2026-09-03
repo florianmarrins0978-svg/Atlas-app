@@ -19,6 +19,30 @@ ligne « fait » qui ne l'est pas coûte plus cher qu'une ligne absente.
 
 ---
 
+## FAIT : le planning — la journée s'ouvre dans le mois (3 septembre 2026)
+
+**Sa validation :** *« je valide la maquette que tu as faite pour la page
+planning, code-moi exactement cette maquette pour mon appli ! »* L'écran est
+**codé et éprouvé** ; ce qui suit décrit ce qui est en place.
+
+| Ce qui est en place | Où |
+|---|---|
+| la fiche d'une journée se déplie DANS le mois, sous sa semaine | `MoisCharge.tsx`, prop `volet` |
+| la semaine lue est teintée dans le mois | `MoisCharge.tsx`, prop `semaineLue` |
+| « Déplacer » / « Retirer » : une rangée par chantier | `PlanningClient.tsx`, `actes-chantier` |
+| la commune sous la durée, des deux côtés | `src/lib/commune-adresse.ts` |
+| « Sans date » + « En attente » + annulation dans un tiroir bas | `PlanningClient.tsx`, `TiroirDuBas` |
+| `scrollIntoView` supprimé | la fiche naît sous le doigt |
+
+**L'écran d'envoi ne bouge pas** : il emploie le même `MoisCharge` sans passer
+les deux nouvelles options, et rend exactement ce qu'il rendait.
+
+**Un point de la maquette a été refusé** — « toucher un nom dans les planifiés
+remonte au mois » : cela ferait défiler la page sous son doigt, sa plainte du
+22 août 2026. Détail : `ARCHITECTURE.md` §242, `docs/planning-verdict.md`.
+
+---
+
 ## FAIT : la liste de ses clients — planche retenue, puis codée (3 septembre 2026)
 
 **Son verdict, le soir même :** *« tu peux coder exactement cette maquette »*.

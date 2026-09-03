@@ -69,12 +69,6 @@ const AUTORISEES: { fichier: string; motif: RegExp; pourquoi: string }[] = [
     pourquoi: "feuilleter les années du calendrier de TVA",
   },
   {
-    fichier: "src/app/termines/tva/page.tsx",
-    motif: /libellePeriode\((precedent|suivant)\)/,
-    pourquoi:
-      "période précédente et suivante, à sa demande du 12 août 2026 : « le calendrier se glisse ENTRE les deux flèches »",
-  },
-  {
     fichier: "src/components/atlas/MoisCharge.tsx",
     motif: /← Aujourd/,
     pourquoi: "revenir au mois courant — la flèche EST le retour, elle ne suit pas un libellé",

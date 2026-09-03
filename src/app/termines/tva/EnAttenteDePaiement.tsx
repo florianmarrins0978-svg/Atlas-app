@@ -3,6 +3,8 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { colors, font } from "@/lib/design-tokens";
+import { jourEtMois } from "@/lib/jour";
+import { enEuros } from "@/lib/euros";
 import { noterPaiementAction, retirerPaiementAction, soldeFactureAction } from "./actions";
 
 export type FactureAttendue = {
@@ -68,16 +70,19 @@ export default function EnAttenteDePaiement({
   }
 
   return (
-    <div className="mt-6 px-6">
+    <div className="mt-[34px] px-6">
       <div className="flex items-baseline justify-between gap-3">
         <h2 className="text-[17px]" style={{ color: colors.ink, fontFamily: font.display }}>
           En attente de paiement
         </h2>
-        <span className="text-[12px]" style={{ color: colors.muted }}>
+        <span className="text-[12px] tabular-nums" style={{ color: colors.muted }}>
           {factures.length === 0 ? "rien" : `${factures.length} facture${factures.length > 1 ? "s" : ""}`}
         </span>
       </div>
-      <p className="mt-1 text-[13px] leading-snug" style={{ color: colors.muted }}>
+      {/* `inkSoft` et non `muted` : sur le fond crème, le gris secondaire tient
+          3,25 de contraste — sous le seuil de 4,5 —, et cette phrase-ci se lit
+          debout, au soleil. `inkSoft` en tient 7,98, et vient de la charte. */}
+      <p className="mt-1.5 text-[13px] leading-snug" style={{ color: colors.inkSoft }}>
         Ces factures sont parties chez vos clients. Elles entreront au relevé{" "}
         <strong style={{ color: colors.ink }}>le jour où vous serez payé</strong>, pas avant.
       </p>
@@ -89,26 +94,32 @@ export default function EnAttenteDePaiement({
       )}
 
       {factures.length === 0 ? (
-        <div className="mt-3 rounded-[4px] px-5 py-6 text-center" style={{ backgroundColor: colors.card }}>
-          <p className="text-[14px]" style={{ color: colors.muted }}>
-            Tout est réglé. Rien n&apos;attend son paiement.
-          </p>
-        </div>
+        <p className="mt-4 text-center text-[13px]" style={{ color: colors.inkSoft }}>
+          Tout est réglé. Rien n&apos;attend son paiement.
+        </p>
       ) : (
-        <ul className="mt-3 flex flex-col gap-2">
+        /* **Des lignes, plus des cartes — 3 septembre 2026.** Six plages
+           arrondies empilées faisaient de cet écran une grille de tableau de
+           bord, ce que le patron refuse. Un cheveu suffit à séparer deux
+           factures, et le montant retrouve la colonne de droite que partagent
+           tous les montants de l'écran. */
+        <ul className="mt-1 flex flex-col">
           {factures.map((f) => (
-            <li key={f.id} className="rounded-[4px] px-4 py-3" style={{ backgroundColor: colors.card }}>
+            <li key={f.id} className="py-3.5" style={{ borderTop: `1px solid ${colors.lineSoft}` }}>
               <div className="flex items-baseline justify-between gap-3">
                 <div className="min-w-0">
-                  <p className="truncate text-[14px] font-medium" style={{ color: colors.ink }}>
+                  <p className="truncate text-[14.5px]" style={{ color: colors.ink }}>
                     {f.clientNom ?? "Client"}
                   </p>
-                  <p className="text-[11.5px]" style={{ color: colors.muted }}>
+                  <p className="text-[11.5px] leading-[1.45]" style={{ color: colors.muted }}>
                     {f.numeroCommercial} · émise le {enClair(f.dateEmission)}
                   </p>
                 </div>
-                <div className="text-right">
-                  <p className="text-[15px] font-medium" style={{ color: colors.ink, fontVariantNumeric: "tabular-nums" }}>
+                <div className="flex-shrink-0 text-right">
+                  <p
+                    className="text-[15.5px]"
+                    style={{ color: colors.ink, fontFamily: font.display, fontVariantNumeric: "tabular-nums" }}
+                  >
                     {euros(f.reste)}
                   </p>
                   {/* Un acompte déjà reçu se dit : sans cela, « 940 € » sur une
@@ -260,17 +271,18 @@ function SaisieDuReglement({
   );
 }
 
-/** « 2026-08-14 » → « 14 août 2026 ». Le patron ne lit pas de dates à l'envers. */
+/**
+ * « 2026-08-14 » → « 14 août 2026 ». Le patron ne lit pas de dates à l'envers.
+ *
+ * La table des mois vient de `jour.ts` : elle en portait une seconde copie, et
+ * deux tables finissent toujours par diverger (`CLAUDE.md` §3). L'année reste,
+ * elle : une facture impayée de l'an dernier doit se dire comme telle.
+ */
 function enClair(iso: string): string {
-  const [a, m, j] = iso.split("-").map(Number);
-  const mois = [
-    "janvier", "février", "mars", "avril", "mai", "juin",
-    "juillet", "août", "septembre", "octobre", "novembre", "décembre",
-  ];
-  return `${j} ${mois[(m ?? 1) - 1]} ${a}`;
+  return `${jourEtMois(iso)} ${iso.slice(0, 4)}`;
 }
 
-const formatEuros = new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR" });
+/** Le format de tout le dépôt, espace des milliers comprise (`euros.ts`). */
 function euros(montant: string): string {
-  return formatEuros.format(Number(montant || "0"));
+  return enEuros(Number(montant || "0"));
 }

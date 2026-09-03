@@ -51,7 +51,7 @@ export default function RythmeTva({ actuelle }: { actuelle: PeriodiciteTva }) {
   }
 
   return (
-    <div className="px-6 pt-[22px]">
+    <div>
       <p className={libelleCaps} style={{ color: colors.muted }}>
         Votre rythme
       </p>

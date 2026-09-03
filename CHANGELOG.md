@@ -9,6 +9,96 @@ Format : le plus récent en tête.
 
 ## 2026-09-03
 
+### Le planning : la journée s'ouvre DANS le mois, et ce qui n'a pas de jour descend dans un tiroir
+
+**Sa validation, maquette en main :** *« je valide la maquette que tu as faite
+pour la page planning, code-moi exactement cette maquette »*. Ce que ça change,
+et **ce que ça évite** :
+
+- **la fiche d'une journée se déplie entre la semaine qui la porte et la
+  suivante**, l'encoche pointant la case touchée. Elle naissait sous le
+  calendrier ENTIER, et il avait fallu un `scrollIntoView` pour la ramener sous
+  le doigt — après deux *« rien ne s'ouvre quand je touche un jour »*. Le remède
+  est supprimé : il n'a plus d'objet, et il déplacerait désormais la case qu'on
+  vient de toucher ;
+- **la semaine que lit la liste du bas est teintée dans le mois.** Toucher un
+  jour amenait déjà la liste sur sa semaine ; changer de semaine ne disait rien
+  au mois, et rien à l'écran ne montrait d'où venait la liste ;
+- **« Déplacer » et « Retirer » passent au chantier**, sur une rangée unique
+  sous ses demi-journées. Ils agissaient déjà sur le chantier entier : un
+  chantier à la journée les écrivait DEUX fois, et il avait fallu les resserrer
+  à 9 px pour que « Retirer » ne bascule pas à la ligne suivante ;
+- **la commune s'écrit sous la durée** (`src/lib/commune-adresse.ts`).
+  L'adresse était en base et ne servait qu'aux boutons de la feuille : elle
+  était lue sans jamais être montrée. Sur une liste où quatre clients
+  s'appellent Martins, c'est la seule chose qui dit lequel — et **rien ne
+  s'écrit** quand l'adresse ne permet pas de conclure ;
+- **« Sans date », « En attente du client » et le tiroir d'annulation
+  descendent dans un tiroir cloué au bord bas.** Poser un chantier est le geste
+  le plus actif de cet écran, et il était le plus loin du pouce : on touchait un
+  jour en haut, on descendait, on posait, on remontait voir.
+
+**Ce qui a été REFUSÉ de la maquette, et il faut le lire :** elle annonçait que
+toucher un nom dans les planifiés « remonte au mois ». Non — cela ferait défiler
+la page sous son doigt, c'est-à-dire exactement sa plainte du 22 août 2026
+(*« il disparaît sous mes yeux »*), qu'une suite entière défend. La ligne des
+planifiés garde donc son dépliage sur place.
+
+**Un vrai défaut trouvé par le contrôle, pas par la relecture :** tiroir fermé,
+ses boutons gardaient leur taille — le clavier les atteignait, un lecteur
+d'écran les annonçait, et le navigateur les tenait pour visibles. `visibility`
+les retire vraiment, sans casser l'animation.
+
+Détail, et ce que ça coûte : `ARCHITECTURE.md` §242.
+
+
+### « Ma TVA » devient une addition, et son chiffre passe au-dessus de la ligne de flottaison
+
+**Son verdict sur la planche :** *« je valide cette maquette pour la page Ma
+TVA, tu peux coder exactement ça »*. Ce que ça change, et **ce que ça évite** :
+
+- **les deux réglages descendent sous le total.** Ils ouvraient l'écran — avant
+  le titre, avant le moindre chiffre — sur environ trois cent quarante pixels.
+  Sur son écran de 390 × 664, le « Reste à payer » tombait **sous la ligne de
+  flottaison** : il fallait faire défiler pour voir le chiffre qu'on venait
+  chercher. Ils tiennent maintenant en une ligne de provenance — « Calculé tous
+  les mois, quand votre client vous paie » — qui ouvre une feuille où ils sont
+  **entiers**, écart des régimes compris ;
+- **les trois montants deviennent une opération** : collectée, moins déductible,
+  un trait, le reste — alignés à droite sur la même colonne. Deux tuiles
+  centrées de longueurs différentes ne partagent aucun bord, et rien ne disait
+  que le troisième chiffre est la soustraction des deux autres ;
+- **le « Reste à payer » se copie**, enfin. C'était le seul des trois qu'il
+  recopie pour payer, et le seul qui ne se copiait pas ;
+- **la hiérarchie passe par la taille, plus par la couleur.** Le total était en
+  vert pin et les deux termes en encre : sur Nuit et Sylve l'accent EST l'encre,
+  la distinction n'existait donc que sur six chartes sur huit ;
+- **les deux gestes touchent la ligne « Déductible »** qu'ils font monter. Après
+  un scan, c'est le montant juste au-dessus du doigt qui change, au lieu d'une
+  ligne quinze rangs plus bas ;
+- **une frise des mois remplace les deux flèches.** « ← Juillet 2026 » et
+  « Septembre 2026 → » redisaient le titre, coûtaient un chargement d'écran
+  chacune, et n'apprenaient rien. La frise dit où l'on est dans l'année et met
+  tout mois à un doigt ; l'année, collée à gauche, ouvre le calendrier ;
+- **la facturation LIT le rythme et le régime**, sans pouvoir y toucher. Ils lui
+  étaient entièrement cachés depuis le 30 août : elle ne pouvait pas savoir si
+  « Août 2026 » était compté à l'encaissement ou aux débits, alors que c'est
+  elle qui relit le relevé.
+
+**Trois défauts trouvés en REGARDANT, pas en relisant :**
+
+- **« 1 620,00 € » s'affichait « 1620,00 € ».** `Intl` sépare les milliers par
+  une espace fine insécable que Playfair Display ne porte pas. Le dépôt avait
+  déjà la réponse — `enEuros` — depuis le 30 août ; cet écran portait trois
+  formateurs locaux qui l'ignoraient. Il n'en porte plus aucun ;
+- **`rustTint` n'existe pas sur les chartes sombres** : 1,14 de contraste sur
+  Nuit. L'encart d'écart des régimes et la pastille des lignes d'achat y
+  disparaissaient ;
+- **`colors.muted` sur crème tient 3,25**, sous le seuil de 4,5. Les phrases de
+  second rang passent à `inkSoft`.
+
+Détail complet et ce qui a été écarté : `ARCHITECTURE.md` §241.
+
 ### La liste de ses clients, codée — le lieu, le montant dû, et l'ordre enfin dit
 
 **Son verdict sur la planche :** *« tu peux coder exactement cette maquette »*.

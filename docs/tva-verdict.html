@@ -1,0 +1,299 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas — « Ma TVA » : ce qui a été codé, et ce qui ne l'a pas été</title>
+<style>
+  :root{
+    --ground:#f5f3ee; --surface:#faf9f5; --raised:#ece9e1;
+    --ink:#1c1c1a; --ink-soft:#4a4a44; --muted:#8a8578;
+    --accent:#2f3b2f; --alert:#b5562a; --line:rgba(28,28,26,0.13);
+    --serif:Georgia,'Times New Roman',serif;
+    --sans:system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --ground:#161815; --surface:#1d201c; --raised:#252924;
+      --ink:#eae7df; --ink-soft:#c2bdb1; --muted:#948f83;
+      --accent:#9fbd82; --alert:#e0885a; --line:rgba(234,231,223,0.17);
+    }
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--sans);
+    line-height:1.65;}
+  main{max-width:44rem;margin:0 auto;padding:2.5rem 1.2rem 5rem;}
+  h1,h2,h3,h4{font-family:var(--serif);font-weight:600;line-height:1.2;
+    text-wrap:balance;margin:2rem 0 0.6rem;scroll-margin-top:1rem;}
+  h1{font-size:2rem;margin-top:0;}
+  h2{font-size:1.5rem;padding-top:1.2rem;border-top:1px solid var(--line);}
+  h3{font-size:1.12rem;}
+  h4{font-size:1rem;}
+  p{margin:0 0 0.9rem;}
+  a{color:var(--accent);text-underline-offset:3px;}
+  a:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:3px;}
+  ul,ol{margin:0 0 1rem;padding-left:1.3rem;}
+  li{margin-bottom:0.4rem;}
+  li::marker{color:var(--muted);}
+  /* Le sommaire : des cibles larges, confortables au doigt sur téléphone. */
+  ol li a{display:inline-block;padding:0.15rem 0;}
+  blockquote{margin:1rem 0;padding:0.85rem 1.05rem;background:var(--raised);
+    border-left:3px solid var(--accent);border-radius:0 10px 10px 0;color:var(--ink-soft);}
+  code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:0.87em;
+    background:var(--raised);padding:0.1rem 0.35rem;border-radius:5px;}
+  hr{border:0;border-top:1px solid var(--line);margin:2rem 0;}
+  .tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px;
+    background:var(--surface);margin:0 0 1.2rem;}
+  table{border-collapse:collapse;width:100%;font-size:0.92rem;min-width:22rem;}
+  th,td{text-align:left;padding:0.55rem 0.8rem;border-bottom:1px solid var(--line);
+    vertical-align:top;}
+  th{font-size:0.72rem;letter-spacing:0.08em;text-transform:uppercase;
+    color:var(--muted);white-space:nowrap;}
+  tr:last-child td{border-bottom:none;}
+  .retour{display:inline-block;font-size:0.76rem;color:var(--muted);
+    text-decoration:none;margin:-0.3rem 0 1rem;}
+  .retour:hover{color:var(--accent);text-decoration:underline;}
+</style>
+</head>
+<body>
+<main>
+<h1 id="-ma-tva---ce-qui-a-été-codé-et-ce-qui-ne-la-pas-été">« Ma TVA » : ce qui a été codé, et ce qui ne l'a pas été</h1>
+<p><strong>Sa validation, le 3 septembre 2026 :</strong> <em>« je valide cette maquette pour la page Ma TVA, tu peux coder exactement ça — pas de pansement, pas d'ajout de code qui ne sert à rien, pas de sur couche. Ne crée pas de problème, fais en sorte que tout fonctionne correctement. »</em></p>
+<p>Maquette validée : <code>https://claude.ai/code/artifact/b5ca650a-c15b-4995-96a6-190268a650da</code></p>
+<hr>
+<h2 id="1-ce-qui-est-en-place-point-par-point">1. Ce qui est en place, point par point</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th>Ce que la maquette montrait</th>
+<th>Codé</th>
+<th>Où</th>
+</tr></thead><tbody>
+<tr>
+<td>L'écran est une <strong>addition</strong> : collectée, − déductible, un trait, le reste</td>
+<td>oui</td>
+<td><code>LigneMontant.tsx</code>, <code>page.tsx</code></td>
+</tr>
+<tr>
+<td>Les trois montants <strong>alignés à droite sur la même colonne</strong></td>
+<td>oui</td>
+<td><code>LigneMontant.tsx</code></td>
+</tr>
+<tr>
+<td><strong>Les trois se copient</strong>, le reste compris</td>
+<td>oui</td>
+<td><code>LigneMontant.tsx</code></td>
+</tr>
+<tr>
+<td>Le total à 34 px, les deux termes à 20</td>
+<td>oui</td>
+<td><code>LigneMontant.tsx</code></td>
+</tr>
+<tr>
+<td>Le signe <strong>−</strong> sorti de la colonne, pour ne pas décaler les chiffres</td>
+<td>oui</td>
+<td><code>LigneMontant.tsx</code></td>
+</tr>
+<tr>
+<td>Les deux gestes d'achat <strong>entre « Déductible » et le trait</strong></td>
+<td>oui</td>
+<td><code>AchatsTva.tsx</code></td>
+</tr>
+<tr>
+<td>La ligne de provenance sous le total, qui ouvre les deux réglages</td>
+<td>oui</td>
+<td><code>DeclarationsTva.tsx</code></td>
+</tr>
+<tr>
+<td>La <strong>frise des périodes</strong>, l'année collée à gauche</td>
+<td>oui</td>
+<td><code>FrisePeriodes.tsx</code></td>
+</tr>
+<tr>
+<td>Le calendrier ouvert par l'année</td>
+<td>oui</td>
+<td><code>CalendrierPeriodes.tsx</code></td>
+</tr>
+<tr>
+<td>« En attente » en <strong>lignes</strong>, plus en cartes</td>
+<td>oui</td>
+<td><code>EnAttenteDePaiement.tsx</code></td>
+</tr>
+<tr>
+<td>« Vos factures » puis « Vos achats », les deux preuves</td>
+<td>oui</td>
+<td><code>page.tsx</code></td>
+</tr>
+<tr>
+<td>Icônes <strong>dessinées</strong> à la place des émoji 🧾 ✎</td>
+<td>oui</td>
+<td><code>page.tsx</code></td>
+</tr>
+<tr>
+<td>Vue <strong>Facturation</strong> : la provenance se lit, ne se touche pas</td>
+<td>oui</td>
+<td><code>DeclarationsTva.tsx</code></td>
+</tr>
+<tr>
+<td>La flèche de retour et l'assistant sur la rangée du haut</td>
+<td>oui</td>
+<td><code>EnTeteEcran</code> (pièce partagée)</td>
+</tr>
+</tbody></table></div>
+<h2 id="2-ce-que-la-logique-métier-garde-mot-pour-mot">2. Ce que la logique métier garde, mot pour mot</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p>Rien n'a bougé du calcul. Vérifié suite par suite :</p>
+<ul>
+<li>le <strong>régime</strong> (débits / encaissements) et son effet sur la collectée ;</li>
+<li>la <strong>périodicité</strong>, mensuelle ou trimestrielle, et le découpage qu'elle commande ;</li>
+<li>le <strong>crédit de TVA</strong> quand le reste est négatif : vrai signe moins, et la phrase <em>« Crédit de TVA — c'est l'État qui vous doit. »</em>, qui n'apparaît que dans ce cas ;</li>
+<li>l'attente <strong>non bornée à la période</strong>, et <strong>effacée entièrement aux débits</strong> ;</li>
+<li>le ticket daté hors période qui <strong>emmène l'écran là où il atterrit</strong> ;</li>
+<li>la TVA recalculée pendant la frappe, et qui <strong>cesse</strong> dès qu'il l'écrit ;</li>
+<li>la mention finale : <em>« Ce relevé est préparé par Atlas… Il ne vaut pas déclaration »</em>, au caractère près.</li>
+</ul>
+<h2 id="3-trois-défauts-trouvés-en-regardant-la-maquette">3. Trois défauts trouvés en REGARDANT la maquette</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p>Ils ne se voyaient dans aucun test, et deux d'entre eux <strong>existaient déjà dans l'application</strong>.</p>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th>Ce que c'était</th>
+<th>Ce que ça donnait</th>
+</tr></thead><tbody>
+<tr>
+<td><strong>1</strong></td>
+<td><code>Intl</code> sépare les milliers par une espace fine insécable (U+202F) que <strong>Playfair Display ne porte pas</strong></td>
+<td>« 1 620,00 € » s'affichait <strong>« 1620,00 € »</strong>. À 34 px, sur un chiffre qu'on recopie chez les impôts</td>
+</tr>
+<tr>
+<td><strong>2</strong></td>
+<td><code>rustTint</code> est dérivé du <strong>fond</strong>, pas de l'encre (<code>chartes.ts</code>)</td>
+<td>sur Nuit il vaut <code>#1f211e</code> sur <code>#101210</code>, soit <strong>1,14 de contraste</strong> : l'encart d'écart des régimes et la pastille des lignes d'achat n'existaient pas sur deux chartes sur huit</td>
+</tr>
+<tr>
+<td><strong>3</strong></td>
+<td><code>colors.muted</code> sur crème tient <strong>3,25</strong> de contraste, sous le seuil de 4,5</td>
+<td>il portait les phrases de second rang, à 11,5-13 px, sur un écran qu'on lit debout au soleil</td>
+</tr>
+</tbody></table></div>
+<p><strong>Le premier était déjà résolu dans le dépôt</strong> : <code>enEuros</code> (<code>src/lib/euros.ts</code>) remplace U+202F depuis le 30 août 2026, pour une raison d'impression PDF. Cet écran portait <strong>trois formateurs locaux</strong> qui l'ignoraient. Il n'en porte plus aucun.</p>
+<h2 id="4-ce-que-jai-retiré-et-ce-que-ça-coûterait-de-le-remettre">4. Ce que j'ai retiré, et ce que ça coûterait de le remettre</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th>Retiré</th>
+<th>Pourquoi</th>
+<th>Si tu le veux</th>
+</tr></thead><tbody>
+<tr>
+<td>le libellé <strong>« Pour faire monter la déductible »</strong></td>
+<td>les deux boutons touchent maintenant la ligne « Déductible » : la place le dit, et un écran n'explique pas le bouton d'à côté</td>
+<td>une ligne à remettre</td>
+</tr>
+<tr>
+<td>les deux libellés <strong>« ← Juillet 2026 » / « Septembre 2026 → »</strong></td>
+<td>ils redisaient le titre et coûtaient un chargement d'écran chacun ; la frise fait mieux</td>
+<td>la frise devrait alors repartir</td>
+</tr>
+<tr>
+<td>les <strong>émoji 🧾 et ✎</strong> et leur pastille</td>
+<td>l'émoji du téléphone est en couleurs au milieu d'un écran qui n'en a aucune, et la pastille n'existe pas sur Nuit</td>
+<td>rien à défaire, c'est un remplacement</td>
+</tr>
+<tr>
+<td>les <strong>cartes</strong> de « En attente »</td>
+<td>six plages arrondies empilées font une grille de tableau de bord</td>
+<td>les lignes gardent tous les gestes</td>
+</tr>
+</tbody></table></div>
+<h2 id="5-ce-que-je-nai-pas-fait-et-qui-reste-à-toi">5. Ce que je n'ai PAS fait, et qui reste à toi</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<ul>
+<li><strong>Retirer un achat.</strong> <code>supprimerAchatAction</code> existe, est gardée par rôle et éprouvée — et <strong>aucun écran ne l'appelle</strong>. Un ticket mal lu ne se retire donc pas. Le dépôt a déjà la pièce (<code>LigneRetirable</code> + le tiroir d'annulation). Ce n'était pas dans la maquette validée : je ne l'ai pas ajouté tout seul.</li>
+<li><strong>Le rond de la flèche de retour</strong> reste sur <code>rustTint</code>, donc invisible sur Nuit et Sylve. Il vient d'<code>EnTeteEcran</code>, partagé par tous les écrans : le corriger ici seul aurait fait diverger la grammaire commune. Le chevron, lui, se voit — c'est un défaut d'aplat, pas d'usage.</li>
+</ul>
+<h2 id="6-deux-suites-visaient-une-mise-en-page-pas-une-règle">6. Deux suites visaient une mise en page, pas une règle</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p>Elles seraient devenues rouges <strong>sur du code juste</strong> :</p>
+<ul>
+<li><code>test-achat-hors-periode-e2e.ts</code> lisait <code>div:has(&gt; span:text-is("Déductible"))</code> — c'est-à-dire la TUILE — et remontait au fournisseur par <code>xpath=ancestor::div[1]</code>. Elle vise maintenant des repères <code>data-atlas</code>, qui survivent au remaniement ;</li>
+<li><code>test-periodicite-tva-e2e.ts</code> touchait les deux mots soulignés directement sur l'écran ; ils sont derrière la ligne de provenance. Elle rejoue donc <strong>ton</strong> geste — un appui de plus — au lieu d'un écran qui n'existe plus.</li>
+</ul>
+<h2 id="7-deux-contrôles-qui-accusaient-à-tort-corrigés-au-passage">7. Deux contrôles qui accusaient à tort, corrigés au passage</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><code>test-actions-gardees-db.ts</code> déclarait <strong>treize actions serveur sans garde de rôle</strong> — connexion, déconnexion, réponse du client au devis, choix de la charte… Toutes sont pourtant exemptées, avec leur raison écrite.</p>
+<p><code>test-reglages-gardes.ts</code> faisait la même chose sur <strong>trois rubriques</strong> des réglages : « elles se laissent ouvrir par un salarié qui tape leur adresse ».</p>
+<p>La cause est commune : sur Windows, l'énumération rend <code>src\app\login\actions.ts</code> quand les exemptions sont écrites <code>src/app/login/actions.ts</code>. Aucune ne correspondait. <strong>Le défaut n'existe que sur ta machine, jamais sur la CI</strong>, et il désigne le mauvais coupable — ce que <code>CLAUDE.md</code> §5 refuse. Une ligne chacun : les chemins sont normalisés en barres obliques. <strong>Les deux sont au vert.</strong></p>
+<h2 id="8-ce-que-jai-dit-et-qui-était-faux--noir-sur-blanc">8. Ce que j'ai dit et qui était faux — noir sur blanc</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><strong>J'ai annoncé deux fois un défaut du produit qui n'existait pas.</strong></p>
+<p>En regardant les captures, la frise s'ouvrait sur <strong>janvier</strong> au lieu du mois regardé. J'ai écrit deux correctifs, en expliquant à chaque fois pourquoi. Les deux étaient inutiles : <strong>la cause était dans mon banc de capture</strong>, qui ouvrait l'application sur <code>127.0.0.1</code>. Next 16, en développement, refuse alors les fichiers JavaScript de la page — trois erreurs <code>403</code>, muettes à l'écran. Rien ne s'hydratait ; aucun bouton n'aurait répondu non plus.</p>
+<p>Ce qui a tranché : <strong>sonder la page</strong>, au lieu de la relire. Déplacer la frise à la main depuis la console marchait — donc la mise en page n'était pas en cause ; relever les réponses en erreur a montré les trois <code>403</code>. Sur <code>localhost</code>, la frise se centre.</p>
+<p>Une heure. Le banc vise désormais <code>localhost</code> et porte la raison en tête, pour que personne ne la repaie.</p>
+<h2 id="9-les-chiffres-de-la-batterie">9. Les chiffres de la batterie</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th></th>
+</tr></thead><tbody>
+<tr>
+<td>Types, lint, construction</td>
+<td><strong>verts</strong></td>
+</tr>
+<tr>
+<td>Mémoire du dépôt, fournisseurs d'IA</td>
+<td><strong>verts</strong></td>
+</tr>
+<tr>
+<td>Les quatre suites de TVA</td>
+<td><strong>4/4</strong></td>
+</tr>
+<tr>
+<td>Connexion derrière un proxy</td>
+<td><strong>verte</strong></td>
+</tr>
+</tbody></table></div>
+<p><strong>La batterie complète, rejouée après tous les correctifs :</strong> treize suites rouges au premier passage sont devenues vertes — les quatre de la TVA, mais aussi <code>test-facture-e2e</code>, <code>test-planning-e2e</code>, <code>test-poser-une-date-e2e</code>, <code>test-face-id-e2e</code> et les autres. Elles tombaient sur un décor laissé par la suite précédente, pas sur du code.</p>
+<p><strong>Trois rouges neufs sont apparus, et aucun n'est de ce lot</strong> — une autre session travaille dans le même arbre de travail, en ce moment :</p>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th></th>
+</tr></thead><tbody>
+<tr>
+<td>deux erreurs de types</td>
+<td><code>devis-pret/route.ts</code> et <code>DevisDepuisDictee.tsx</code>, tous deux modifiés à côté, pas par moi</td>
+</tr>
+<tr>
+<td>une référence morte de la mémoire</td>
+<td><code>docs/planning-le-mois-qui-se-deplie.md</code> — déjà repartie de <code>ARCHITECTURE.md</code> depuis</td>
+</tr>
+<tr>
+<td>« le port 3000 est déjà pris »</td>
+<td>un serveur laissé en marche à côté</td>
+</tr>
+</tbody></table></div>
+<p><strong>Ce qui reste rouge sur ta machine, et qui ne vient pas de ce lot :</strong></p>
+<div class="tablewrap"><table><thead><tr>
+<th>Ce qui rougit</th>
+<th>Pourquoi</th>
+</tr></thead><tbody>
+<tr>
+<td>huit suites du <strong>banc d'essai</strong> (ports, verrou de construction, relance, veilleur)</td>
+<td>elles pilotent le conteneur Linux ; elles ne peuvent pas passer sur Windows</td>
+</tr>
+<tr>
+<td><code>test-roles-capacites-db</code></td>
+<td><code>git config core.autocrlf</code> vaut <code>true</code> : le fichier des capacités est en CRLF sur ton disque, le contrôle le compare à un texte en <code>\n</code>. Le vrai correctif est un <code>.gitattributes</code> qui réécrirait tout le dépôt — <strong>c'est ta décision, je n'y touche pas</strong></td>
+</tr>
+<tr>
+<td><code>test-facture-e2e</code>, <code>test-planning-vers-facture-e2e</code></td>
+<td><strong>déjà rouges sur <code>main</code> avant ce lot</strong> — mesuré et écrit dans le commit <code>4a30d9da</code>, avec la course CI qui le prouve</td>
+</tr>
+<tr>
+<td><code>test-boutons-pleins</code></td>
+<td>le lot « boutons verts » d'une autre session, en cours dans le même arbre</td>
+</tr>
+</tbody></table></div>
+<hr>
+<p><em>Détail technique et raisons complètes : <code>ARCHITECTURE.md</code> §241.</em></p>
+</main>
+</body>
+</html>

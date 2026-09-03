@@ -59,10 +59,12 @@ export default function CalendrierPeriodes({
 
   return (
     <>
-      {/* Le carré de 44 px est invisible, mais il est là : une icône de 19 px
-          ferait une cible qu'on rate deux fois sur trois avec des gants. Les
-          marges négatives le reprennent en hauteur pour ne pas gonfler la
-          rangée où il se glisse, entre les deux flèches. */}
+      {/* **L'année EST le bouton**, depuis la refonte du 3 septembre 2026 : elle
+          ouvre le calendrier, et le calendrier est le seul chemin vers les
+          autres années. Une icône seule de dix-neuf pixels se ratait deux fois
+          sur trois avec des gants ; l'année lui donne sa largeur et dit ce
+          qu'on va y choisir. L'intitulé pour les lecteurs d'écran ne bouge pas :
+          c'est le geste qui compte, pas le millésime. */}
       <button
         type="button"
         aria-label="Choisir une période"
@@ -71,13 +73,16 @@ export default function CalendrierPeriodes({
           setAnneeVue(annee);
           setOuvert(true);
         }}
-        className="-my-3 flex h-11 w-11 flex-shrink-0 items-center justify-center"
+        className="flex h-11 flex-shrink-0 items-center gap-1.5"
       >
-        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke={colors.rust} strokeWidth="1.6" aria-hidden="true">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke={colors.or} strokeWidth="1.6" aria-hidden="true">
           <rect x="3.2" y="5" width="17.6" height="15.4" rx="2.4" />
           <path d="M3.2 9.6h17.6" />
           <path d="M8 3.4v3.2M16 3.4v3.2" strokeLinecap="round" />
         </svg>
+        <span className="text-[14px] tabular-nums" style={{ fontFamily: font.display, color: colors.inkSoft }}>
+          {annee}
+        </span>
       </button>
 
       <BottomSheet open={ouvert} onBackdropClick={() => setOuvert(false)}>
