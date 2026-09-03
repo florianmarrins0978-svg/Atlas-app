@@ -1201,8 +1201,8 @@ function Petit({
         serre ? "px-[9px]" : "px-3"
       }`}
       style={{
-        border: `1px solid ${retenue ? colors.rust : fini ? colors.or : colors.line}`,
-        background: retenue ? colors.rust : colors.card,
+        border: `1px solid ${retenue ? colors.plein : fini ? colors.or : colors.line}`,
+        background: retenue ? colors.plein : colors.card,
         color: retenue ? surPlein : fini ? colors.or : colors.inkSoft,
         WebkitTapHighlightColor: "transparent",
       }}
@@ -1250,7 +1250,7 @@ function PastilleEquipe({
       <span
         data-atlas="equipe-lecture"
         className="flex-shrink-0 whitespace-nowrap rounded-full px-3 py-1.5 text-[12.5px]"
-        style={{ background: colors.rust, color: surPlein }}
+        style={{ background: colors.plein, color: surPlein }}
       >
         {libelle}
       </span>
@@ -1266,7 +1266,7 @@ function PastilleEquipe({
       className="flex-shrink-0 cursor-pointer whitespace-nowrap rounded-full px-3 py-1.5 text-[12.5px]"
       style={{
         border: vide ? `1px dashed ${colors.or}` : "0",
-        background: vide ? "transparent" : colors.rust,
+        background: vide ? "transparent" : colors.plein,
         color: vide ? colors.or : surPlein,
         WebkitTapHighlightColor: "transparent",
       }}
@@ -2038,7 +2038,7 @@ function FeuilleChantier({
           target="_blank"
           rel="noreferrer"
           className="mx-auto mt-3 block w-max rounded-full px-5 py-2.5 text-[13px]"
-          style={{ background: colors.rust, color: surPlein }}
+          style={{ background: colors.plein, color: surPlein }}
         >
           Ouvrir le PDF sans les prix
         </a>

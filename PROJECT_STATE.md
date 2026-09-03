@@ -1,6 +1,6 @@
 # État du projet
 
-**Dernière mise à jour :** 2026-09-02 · branche `main`
+**Dernière mise à jour :** 2026-09-03 · branche `main`
 · dernière migration `drizzle/0073_tva_par_ligne.sql` (ce lot ne touche que
 l’affichage)
 
@@ -19,41 +19,111 @@ ligne « fait » qui ne l'est pas coûte plus cher qu'une ligne absente.
 
 ---
 
-## FAIT : la fiche de l'espace ne se contredit plus (2 septembre 2026)
+## FAIT : la liste de ses clients — planche retenue, puis codée (3 septembre 2026)
 
-*Sa plainte : « l'appli ne démarre pas, page blanche ». La fiche a été lue en
-premier, comme le veut la règle — et c'est elle qui était fausse.*
+**Son verdict, le soir même :** *« tu peux coder exactement cette maquette »*.
+L'écran est donc **codé et éprouvé** ; ce qui suit décrit ce qui est en place.
 
-| | |
-|---|---|
-| ce qui a bougé | `scripts/diagnostiquer-espace.mjs` · `scripts/port-libre.mjs` (neuf) · `scripts/banc.mjs` |
-| la garde | `scripts/test-banc-lent-se-dit.ts` — 5 cas neufs |
-| le pourquoi | `ARCHITECTURE.md` §237 |
+**La planche reste** — `appli/vos-clients.html`, liée depuis `appli/essais.html` et
+`docs/maquettes/index.html`. Adresse à lui donner **entière** :
+`https://florianmarrins0978-svg.github.io/Atlas-app/vos-clients.html`
 
-Quatre phrases fausses retirées : l'ordre de rallumer publié à l'allumage,
-« elle ne se recompile jamais », « l'application est entière et rapide » posée à
-côté de « Serveur : NE RÉPOND PAS », et le relèvement « dans quinze secondes »
-promis pendant une construction qui tient le verrou. La ligne « Serveur »
-distingue enfin « plus rien n'écoute » de « quelque chose tient le port et se
-tait ».
+**Ce que la planche démontre, et qui n'était pas su :** sur **quatre clients
+nommés Martins**, la liste d'aujourd'hui n'affiche rien qui les distingue — la
+deuxième ligne porte « 5 chantiers · 3 200,00 € facturés » pour tous. La
+proposition y met **le lieu**.
 
-**Et la panne elle-même a été trouvée le soir même** (voir juste en dessous) :
-ce lot-ci ne corrigeait que ce que la fiche DIT.
-
-## FAIT : la page blanche, à la racine (2 septembre 2026, au soir)
-
-*« L'appli ne démarre pas, page blanche » — une heure durant.*
+**Rien n'est inventé.** Les cinq informations d'une ligne existent :
 
 | | |
 |---|---|
-| la cause | `npm ci` effaçait `node_modules` sous un banc qui tournait ; l'arbre restait amputé et `next` disparaissait |
-| ce qui a bougé | `.devcontainer/demarrer.sh` · `scripts/banc.mjs` |
-| la garde | `test-prechauffage.ts` et `test-banc-lent-se-dit.ts` — 4 cas neufs |
-| le pourquoi | `ARCHITECTURE.md` §238 |
+| le nom | `clients.nom` |
+| le lieu | `clients.adresse` — colonne présente, **que la liste ne charge pas** |
+| les chantiers | compté (`fiche.chantiers`) |
+| ce qui reste dû | `resteDu()` |
+| la date du dernier chantier | `dernierJour` — **déjà calculé par `listerFichesClients`, jamais transmis à l'écran** |
 
-Le banc s'arrête désormais AVANT l'installation ; `npm install` se replie sur
-`npm ci` quand l'arbre est abîmé ; et une réparation impossible se DIT au lieu
-de boucler en silence toutes les quinze secondes.
+**Le reste de la proposition :** le montant dû passe de 9,5 px en capitales à
+16 px à côté du nom ; la liste **annonce son ordre** par bandes de mois (elle
+était déjà rangée du plus récent au plus ancien, sans le dire) ; le compte
+remonte dans l'en-tête et suit la recherche ; le gris secondaire passe de
+`muted` à `inkSoft` — **3,32 de contraste contre 8,04**.
+
+**TRANCHÉ PAR LUI :** le total facturé par client quitte la ligne. Le prix lui
+avait été dit avant qu'on code — depuis l'allègement de la fiche le 2 septembre,
+ce total ne se lit plus nulle part ailleurs — et il a répondu « code exactement
+cette maquette ». **C'est la seule chose que ce lot retire.**
+
+**Deux réparations que seule la capture a montrées :** la ligne du compte garde
+sa place quand la recherche ne trouve rien (sinon le champ de saisie remontait
+de 24 px sous le doigt à chaque frappe infructueuse), et la barre de recherche
+est collante.
+
+**LEVÉE, l'alerte de 18 h 55 :** une session voisine avait vu dans l'arbre de
+travail des modifications non commises de `src/app/clients/`, de
+`fiche-client.ts` et de `recherche-client.ts`, plus deux fichiers neufs, et
+avait eu raison de ne pas les livrer sans savoir d'où elles venaient. **C'était
+ce lot-ci, en cours d'écriture** — il est désormais commité en entier. Il n'y a
+pas deux implémentations.
+
+**Ce qu'une nouvelle conversation doit en tirer, et qui reste vrai :** avant
+d'ouvrir un lot sur cet écran, `git log -- src/app/clients/`, et `CLAUDE.md`
+§6 point A — regarder les autres branches AVANT d'écrire. Deux sessions ont déjà
+codé la même chose le 23 août ; ce soir-là, deux ont failli recommencer.
+
+### Ce que le lot a mis en place
+
+| | |
+|---|---|
+| `src/lib/bandes-clients.ts` | la bande d'un client, et le regroupement — règle pure, sans base ni écran |
+| `src/lib/recherche-client.ts` | `normaliserCaractere` et `morceauxSurlignes`, pour marquer ce qui répond à la frappe |
+| `src/lib/jour.ts` | `moisDuJour` — **une seule table de mois dans le dépôt** |
+| `fiche-client.ts` | `adresse` chargée et rendue par `listerFichesClients` |
+| `src/app/clients/` | l'écran : fournisseur, compte animé, barre collante, bandes, ligne à deux blocs |
+| `globals.css` | la couleur de la plage « Chercher un client » — un style en ligne ne vise pas un pseudo-élément |
+| suites | `test-bandes-clients.ts` (neuve, 12 cas), `test-recherche-client.ts` (+7), `test-liste-clients.ts` (+1), `test-recherche-client-e2e.ts` (repères `data-atlas`, +5 cas) |
+
+**Au passage, deux défauts du sommaire :** le premier essai d'`essais.html`
+n'avait **pas de balise de fin** — le lien avalait le titre de famille suivant —,
+et les **141 flèches décoratives** de `docs/maquettes/index.html` sont
+retirées (sa règle du 25 août ; `test-aucune-fleche.ts` ne parcourt que
+`src/`, il ne pouvait pas les voir).
+
+---
+
+## FAIT : les boutons verts portent le vert de sa note vocale, à plat (3 septembre 2026)
+
+*Son verdict, après cinq déclinaisons sur `appli/boutons-verts.html` : « verdict
+la D à plat sans brillant, donc tout ce qui est bouton cliquable tu remplaces
+par la D — même pour le planning, le choix des noms des équipes (Julien,
+Antoine) qui était en vert foncé », puis « ne fais pas de bricolage, remplace
+correctement les lignes de code, ne fais pas de pansement », puis « ne touche
+pas à la note vocale par contre ».*
+
+Le chemin dans le code : un jeton nommé, `colors.plein`, posé par l'écran
+lui-même. Il remplace le calque `--atlas-plein-fond` — un `background-image`
+peint par-dessus les fonds en ligne, supprimé avec sa cause. Le pourquoi entier
+est dans `ARCHITECTURE.md` §239.
+
+| | |
+|---|---|
+| la couleur | `#7d9a6d` sur Origine ; les sept autres chartes gardent leur accent |
+| ce qui a bougé | `design-tokens.ts`, `chartes.ts`, `globals.css`, et quarante-six aplats de boutons |
+| la garde | `npx tsx scripts/test-boutons-pleins.ts` — 10 s, sans base ni navigateur |
+| ce que ça coûte | la crème tient **2,97** de contraste sur ce vert (2,55 sous le doigt), là où il en faudrait 4,5. **Il l'a vu écrit en rouge sous chaque bouton avant de trancher** |
+
+**Ce qui n'est PAS passé au vert sauge :** la note vocale (sa consigne du jour),
+les capsules de « Terminés » qui portent le galet, le carré d'état du planning,
+l'interrupteur de la fiche paysage, et `rust` lui-même — il teinte des textes,
+des icônes et des liserés.
+
+**S'il trouve le mot pâle en plein soleil**, ce qui reste à sa main sans toucher
+à sa couleur : passer les lettres à l'encre plutôt qu'à la crème — #1c1c1a sur
+#7d9a6d tient **5,46**. Ne pas le faire sans lui.
+
+**La planche reste** (`appli/boutons-verts.html`, ses cinq états), gardée par
+`appli/tests/essai-boutons-verts.mjs` : toute correction du bouton passera
+d'abord par elle.
 
 ## FAIT : « Terminés » — le calme, et le galet (2 septembre 2026)
 

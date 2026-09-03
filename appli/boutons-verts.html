@@ -1,0 +1,547 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas — vos boutons verts, dans la matière de la note vocale</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+<style>
+  /*
+    ————————————————————————————————————————————————————————————————
+    VOS BOUTONS VERTS, DANS LA MATIÈRE DE LA NOTE VOCALE
+    ————————————————————————————————————————————————————————————————
+
+    Sa demande du 3 septembre 2026 : « utilise la couleur de la note vocale
+    page fiche client et mets-la sur chaque bouton à cliquer qui sont
+    aujourd'hui de couleur verte ». Puis, capture à l'appui, devant la
+    déclinaison 1 de `facturer-note-vocale.html` : « c'est celle-là la bonne
+    couleur mais sans le petit halo lumineux qui tourne à l'intérieur ».
+
+    Puis, la déclinaison A vue : « garde la tasse telle qu'elle la A mais avec
+    seulement un bord doré tout autour ».
+
+    LA MATIÈRE EST DONC TRANCHÉE, et par lui : c'est LA TASSE
+    (`.atlas-micro`), pas le galet du 2 septembre. Relevée dans
+    `src/app/globals.css`, rien n'est approché à l'œil :
+      · un dégradé RADIAL, lumière à 34 % / 26 % :
+        #9fbd82 → #7d9a6d → #4f5f4c ;
+      · UN SEUL filet d'or #B98B47 tout autour — les trois anneaux or /
+        porcelaine / or de la note vocale ne passent PAS sur les boutons ;
+      · un creux sous le bord, une ombre portée VERTE ;
+      · AUCUN HALO QUI TOURNE — c'est le `::before` de `.atlas-micro`, et il
+        n'est repris nulle part ici.
+    Le mot reste en crème #faf9f5, comme sur les boutons d'aujourd'hui.
+
+    CE QUI CHANGE ENTRE UNE CAPSULE ET UN BOUTON, ET C'EST TOUT CE QUI RESTE
+    À TRANCHER. Sur le disque de 80 px, la lumière du dégradé fait environ
+    50 px de large. Écrite en POUR CENT, elle s'étire avec l'objet : sur le
+    bouton « Confirmer le départ de la facture » (321 px), elle en ferait 200,
+    et son centre — placé à 34 % de la largeur — tombe au MILIEU du mot. Le
+    mot ne tient alors que 2,1 de contraste, là où il en faut 4,5. C'est le
+    chiffre qu'il a déjà vu le 2 septembre sous la capsule « À facturer », et
+    il empire quand le bouton s'allonge.
+
+    CE QUE CHANGER LA COULEUR DES LETTRES NE RÉSOUT PAS, et c'est mesuré : sur
+    ce dégradé, la crème s'efface au clair (2,1) et l'encre s'efface au foncé
+    (2,5 sur #4f5f4c). Le mot traverse les deux bouts ; aucune couleur de
+    lettre ne tient sur les deux. C'est la LUMIÈRE qu'il faut bouger — ou rien,
+    et l'assumer.
+
+    LES DÉCLINAISONS NE CHANGENT NI LA COULEUR NI LE BORD : elles ne changent
+    que la TAILLE de la lumière.
+
+    LES CHIFFRES SOUS CHAQUE BOUTON SONT MESURÉS PAR LA PAGE, pas tapés à la
+    main : le script lit la largeur réellement rendue, balaie le mot d'un bout
+    à l'autre, retrouve la couleur du dégradé sous chaque lettre et garde la
+    PIRE. Changez la largeur de la fenêtre, ils bougent.
+
+    Balayer le mot entier n'est pas un excès de zèle : la lumière du micro
+    rayonne d'un point placé à 34 % de la largeur, c'est-à-dire au MILIEU du
+    mot sur un bouton long. Un contrôle qui ne regarderait que la première
+    lettre rendrait un vert convenable là où le mot s'efface.
+
+    RIEN N'EST CODÉ (`CLAUDE.md` §3 bis).
+  */
+
+  :root{
+    --fond:#e6e3dc; --carte:#f5f3ee; --encre:#1c1c1a; --encre-douce:#4a4a44;
+    --gris:#8a8578; --or:#8A6530; --trait:rgba(28,28,26,.14);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --fond:#141310; --carte:#1e1c18; --encre:#e9e5dc; --encre-douce:#c9c4b8;
+      --gris:#948f84; --or:#C9A15E; --trait:rgba(233,229,220,.16);
+    }
+  }
+  :root[data-theme="dark"]{
+    --fond:#141310; --carte:#1e1c18; --encre:#e9e5dc; --encre-douce:#c9c4b8;
+    --gris:#948f84; --or:#C9A15E; --trait:rgba(233,229,220,.16);
+  }
+
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;background:var(--fond)}
+  body{color:var(--encre);
+       font:16px/1.55 Inter,ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+       padding:0 0 60px;-webkit-text-size-adjust:100%}
+  ::selection{background:rgba(138,101,48,.22)}
+  :focus-visible{outline:2px solid var(--or);outline-offset:3px;border-radius:4px}
+
+  .entete{max-width:430px;margin:0 auto;padding:30px 22px 0}
+  .entete h1{margin:0;
+             font:400 30px/1.14 "Playfair Display",ui-serif,Georgia,serif;
+             letter-spacing:-.018em}
+  .entete p{margin:14px 0 0;font-size:14px;color:var(--encre-douce);line-height:1.62}
+  .entete p b{color:var(--encre)}
+
+  .choix{max-width:430px;margin:24px auto 0;padding:0 16px;display:grid;
+         grid-template-columns:repeat(2,1fr);gap:8px}
+  .choix button{appearance:none;border:0;cursor:pointer;font:inherit;
+                background:transparent;color:var(--gris);padding:12px 8px 11px;
+                border-radius:12px;font-size:11.5px;font-weight:600;
+                letter-spacing:.07em;text-transform:uppercase;line-height:1.35;
+                box-shadow:inset 0 0 0 1px var(--trait);min-height:54px;
+                transition:background .14s ease,color .14s ease}
+  .choix button[aria-pressed="true"]{background:var(--encre);color:var(--carte);
+                                     box-shadow:none}
+  .choix button:first-child{grid-column:1 / -1}
+
+  .dit{max-width:430px;margin:16px auto 0;padding:0 22px;font-size:13.5px;
+       line-height:1.62;color:var(--encre-douce);min-height:66px}
+  .dit b{color:var(--encre)}
+  .dit .retenu{color:var(--or);font-weight:600}
+
+  /* ═══ LE BANC — la largeur de son téléphone, 390 px ═══════════════════ */
+  .banc{
+    --sage-clair:#9fbd82; --sage:#7d9a6d; --pin-clair:#4f5f4c; --pin:#2f3b2f;
+    --pin-bouton:#29382F; --or-vif:#B98B47; --creme-anneau:#f3efe6;
+    --e-fond:#f5f3ee; --e-plage:#faf9f5; --e-encre:#1c1c1a; --e-douce:#4a4a44;
+    --e-gris:#8a8578; --e-trait:rgba(28,28,26,.12);
+    width:390px;max-width:calc(100% - 24px);margin:20px auto 0;
+    background:var(--e-fond);color:var(--e-encre);
+    border-radius:26px;overflow:hidden;
+    box-shadow:0 20px 50px rgba(20,18,14,.22)}
+
+  .scene{padding:26px 26px 20px}
+  .scene + .scene{border-top:1px solid var(--e-trait)}
+  .surtitre{margin:0 0 14px;font-size:9.5px;font-weight:500;letter-spacing:.28em;
+            text-transform:uppercase;color:var(--e-gris)}
+
+  /* ── LA FICHE — c'est l'écran qu'il a nommé ───────────────────────────
+     Le disque est le `.atlas-micro` de l'application, au caractère près,
+     réduit de 80 à 68 px. Il est là pour une seule raison : une parenté ne
+     se juge pas de mémoire. */
+  .fiche{display:flex;align-items:center;gap:18px}
+  .micro{position:relative;flex:none;width:68px;height:68px;border-radius:99px;
+         display:flex;align-items:center;justify-content:center;color:#fff;
+         background:radial-gradient(circle at 34% 26%,
+                    var(--sage-clair) 0%, var(--sage) 50%, var(--pin-clair) 100%);
+         box-shadow:
+           inset 0 0 0 1.1px var(--or-vif),
+           inset 0 0 0 2.6px var(--creme-anneau),
+           inset 0 0 0 3.6px var(--or-vif),
+           inset 0 7px 10px -5px rgba(47,59,47,.42),
+           0 9px 20px -6px rgba(79,95,76,.36);
+         transition:transform .2s cubic-bezier(.22,.61,.36,1)}
+  .micro::before{content:"";position:absolute;inset:5px;border-radius:99px;
+                 pointer-events:none;
+                 background:radial-gradient(circle at 68% 74%,
+                            rgba(255,255,255,.34), transparent 58%);
+                 animation:tourner 8s linear infinite}
+  .micro svg{position:relative;width:26px;height:26px;fill:none;
+             stroke:currentColor;stroke-width:1.8;stroke-linecap:round}
+  .micro:active{transform:scale(.97)}
+  @keyframes tourner{to{transform:rotate(360deg)}}
+  @media (prefers-reduced-motion:reduce){ .micro::before{animation:none} }
+  .fiche .mot{min-width:0}
+  .fiche .mot .nom{display:block;
+                   font:400 20px/1.2 "Playfair Display",ui-serif,Georgia,serif}
+  .fiche .mot .sous{display:block;margin-top:5px;font-size:13px;
+                    color:var(--e-douce);line-height:1.5}
+
+  /* ── LE BOUTON DE L'APPLICATION ───────────────────────────────────────
+     Socle commun aux cinq déclinaisons : c'est `PrimaryButton` trait pour
+     trait — Playfair 17 px, 36 px de marge de chaque côté, 50 px de haut,
+     rayon plein. Seuls le fond, le filet et l'ombre changent. */
+  .bouton{position:relative;overflow:hidden;display:inline-flex;border:0;
+          appearance:none;cursor:pointer;
+          align-items:center;justify-content:center;
+          padding:13px 36px;border-radius:999px;
+          font:400 17px/1.25 "Playfair Display",ui-serif,Georgia,serif;
+          white-space:nowrap;
+          background-color:var(--pin-bouton);color:var(--e-plage);
+          transition:transform 190ms cubic-bezier(.22,.8,.3,1),box-shadow 220ms ease}
+  .bouton > span{position:relative;z-index:2}
+  .bouton::after{content:"";position:absolute;inset:0;background:#fff;opacity:0;
+                 pointer-events:none;transition:opacity 220ms ease}
+  .bouton:active{transform:scale(.975);transition-duration:70ms,90ms}
+  .bouton:active::after{opacity:.14;transition-duration:90ms}
+  .bouton.large{display:flex;width:100%}
+
+  /* ── LE DÉGRADÉ DE LA TASSE — commun à A et à B ──────────────────────
+     Le dégradé du micro transposé sans rien changer : un cercle, lumière à
+     34 % / 26 %. Sur le disque de 80 px la lumière fait 50 px de large ; sur
+     le bouton de la facture, la même en pour cent en fait 200 — et elle se
+     pose sous le mot.
+
+     AUCUN HALO QUI TOURNE — sa demande du 3 septembre. */
+  [data-b="a"] .bouton,
+  [data-b="b"] .bouton{
+    background-image:radial-gradient(circle at 34% 26%,
+      var(--sage-clair) 0%, var(--sage) 50%, var(--pin-clair) 100%)}
+
+  /* A — LA COULEUR SEULE. Sa demande du 3 septembre au soir : *« mets juste
+     la couleur de la note vocale sur les boutons sans le liseré doré,
+     seulement la couleur pour voir »*. Donc rien d'autre que le dégradé :
+     ni filet, ni creux, ni ombre portée. C'est le bouton d'aujourd'hui, sa
+     couleur remplacée. */
+
+  /* B — LA MÊME, AVEC LE BORD DORÉ. Ce qu'il avait retenu une heure plus
+     tôt — *« seulement un bord doré tout autour »* —, gardé à côté pour que
+     les deux se comparent dans le même geste. Le filet, le creux sous le
+     bord, l'ombre portée verte ; jamais les trois anneaux de la note vocale. */
+  [data-b="b"] .bouton{
+    box-shadow:
+      inset 0 0 0 1px var(--or-vif),
+      inset 0 5px 8px -5px rgba(47,59,47,.42),
+      0 6px 14px -5px rgba(79,95,76,.36)}
+
+  /* C — LA COULEUR SEULE, LUMIÈRE À SA VRAIE TAILLE. Mêmes verts, rien
+     autour non plus. Un seul changement : la lumière garde les 50 px qu'elle
+     a sur la note vocale au lieu de s'étirer avec le bouton. Elle se pose
+     alors sur l'épaule, dans la marge, et le mot repose sur le vert profond.
+     Sur une capsule courte, A et C sont le même objet. */
+  [data-b="c"] .bouton{
+    background-image:radial-gradient(46px 36px at 6px 2px,
+      var(--sage-clair) 0%, var(--sage) 30%, var(--pin-clair) 82%)}
+
+  /* ── SANS L'EFFET BRILLANT — sa demande du 3 septembre au soir ────────
+     *« Fais une planche avec la couleur de la note vocale mais sans l'effet
+     brillant. »* Donc aucun dégradé du tout : un aplat, pris DANS l'échelle
+     de la tasse et non approché à l'œil.
+
+     D prend son vert du milieu — celui qu'on voit quand on regarde le
+     disque —, E son vert profond, celui du bord. Ce sont les deux seuls
+     aplats qui peuvent se dire « la couleur de la note vocale » : le
+     troisième, #9fbd82, n'est que le point de lumière. */
+  [data-b="d"] .bouton{ background-color:var(--sage) }
+  [data-b="e"] .bouton{ background-color:var(--pin-clair) }
+
+  /* ── Le chiffre sous chaque bouton, mesuré par la page ────────────────── */
+  .rangee{display:flex;flex-direction:column;align-items:center;gap:8px;
+          padding-top:16px}
+  .chiffre{margin:0;font-size:11.5px;line-height:1.5;color:var(--e-douce);
+           text-align:center;font-variant-numeric:tabular-nums}
+  .chiffre .bon{color:#2f3b2f;font-weight:600}
+  .chiffre .faible{color:#9C3B2E;font-weight:600}
+  .chiffre .px{color:var(--e-gris)}
+
+  /* ── La fiche client : son bouton pleine largeur ──────────────────────── */
+  .piece{border-radius:16px;background:var(--e-plage);padding:16px 16px 18px;
+         box-shadow:inset 0 0 0 1px var(--e-trait)}
+  .piece .quoi{display:block;font-size:9.5px;font-weight:500;letter-spacing:.28em;
+               text-transform:uppercase;color:var(--e-gris)}
+  .piece .titre{display:block;margin-top:7px;
+                font:400 17px/1.3 "Playfair Display",ui-serif,Georgia,serif}
+  .piece .bouton{margin-top:15px}
+
+  /* ── Le creux, pour montrer ce qui NE change PAS ──────────────────────── */
+  .creux{display:flex;width:66%;align-items:center;justify-content:center;
+         padding:13px 20px;border-radius:999px;
+         font:400 17px/1.25 "Playfair Display",ui-serif,Georgia,serif;
+         background:transparent;color:var(--e-encre);border:0;cursor:pointer;
+         box-shadow:inset 0 0 0 1.5px var(--e-trait);white-space:nowrap;
+         transition:transform 190ms cubic-bezier(.22,.8,.3,1)}
+  .creux:active{transform:scale(.975)}
+
+  .note{max-width:430px;margin:30px auto 0;padding:0 22px;font-size:13.5px;
+        line-height:1.68;color:var(--encre-douce)}
+  .note h2{margin:26px 0 8px;font:400 19px/1.25 "Playfair Display",ui-serif,Georgia,serif;
+           color:var(--encre)}
+  .note h2:first-child{margin-top:0}
+  .note ul{margin:8px 0 0;padding-left:19px}
+  .note li{margin:7px 0}
+  .note b{color:var(--encre)}
+</style>
+
+<header class="entete">
+  <h1>Vos boutons verts, dans la matière de la note vocale</h1>
+  <p>La <b>couleur seule</b>, sans rien autour — c'est ce que vous vouliez voir.
+     Le disque du haut est votre note vocale, recopiée du code. Les boutons en
+     dessous sont les vôtres, à leurs <b>vraies largeurs</b>. <b>Appuyez sur
+     tout</b> : ils rentrent du même geste.</p>
+</header>
+
+<div class="choix" role="group" aria-label="Les déclinaisons">
+  <button type="button" data-v="zero" aria-pressed="false">Aujourd'hui</button>
+  <button type="button" data-v="a" aria-pressed="true">A · La couleur seule</button>
+  <button type="button" data-v="b" aria-pressed="false">B · La couleur, un bord doré</button>
+  <button type="button" data-v="c" aria-pressed="false">C · La couleur, lumière à sa taille</button>
+  <button type="button" data-v="d" aria-pressed="false">D · À plat, sans brillant</button>
+  <button type="button" data-v="e" aria-pressed="false">E · À plat, le vert du bord</button>
+</div>
+
+<p class="dit" id="dit"></p>
+
+<section class="banc" id="banc" data-b="a">
+
+  <div class="scene">
+    <p class="surtitre">La fiche</p>
+    <div class="fiche">
+      <span class="micro" role="img" aria-label="La note vocale">
+        <svg viewBox="0 0 24 24">
+          <rect x="9" y="3" width="6" height="11" rx="3"/>
+          <path d="M5 11a7 7 0 0 0 14 0"/>
+          <path d="M12 18v3"/>
+        </svg>
+      </span>
+      <span class="mot">
+        <span class="nom">Mr. Martins</span>
+        <span class="sous">14 rue des Tilleuls · 2 photos</span>
+      </span>
+    </div>
+    <div class="rangee">
+      <button type="button" class="bouton"><span>Enregistrer</span></button>
+      <p class="chiffre" data-mesure></p>
+      <button type="button" class="creux">Je rédige à la main</button>
+      <p class="chiffre"><span class="px">Le creux ne bouge dans aucune</span></p>
+    </div>
+  </div>
+
+  <div class="scene">
+    <p class="surtitre">Vos boutons, à leurs vraies largeurs</p>
+    <div class="rangee">
+      <button type="button" class="bouton"><span>Réessayer</span></button>
+      <p class="chiffre" data-mesure></p>
+    </div>
+    <div class="rangee">
+      <button type="button" class="bouton"><span>Préparer le devis</span></button>
+      <p class="chiffre" data-mesure></p>
+    </div>
+    <div class="rangee">
+      <button type="button" class="bouton"><span>Confirmer le départ de la facture</span></button>
+      <p class="chiffre" data-mesure></p>
+    </div>
+  </div>
+
+  <div class="scene">
+    <p class="surtitre">La fiche client</p>
+    <div class="piece">
+      <span class="quoi">Devis · n° 2026-0031</span>
+      <span class="titre">Taille de haie et évacuation</span>
+      <button type="button" class="bouton large"><span>Enregistrer le PDF</span></button>
+    </div>
+    <div class="rangee">
+      <p class="chiffre" data-mesure></p>
+    </div>
+  </div>
+
+</section>
+
+<div class="note">
+  <h2>La A est ce que vous avez demandé, et voici ce qu'elle coûte</h2>
+  <p>La couleur de la note vocale, seule. Rien autour : ni liseré, ni ombre, ni
+     halo.</p>
+  <p><b>La réserve, et elle est unique.</b> Un mot doit tenir <b>4,5</b> de
+     contraste pour se lire à bout de bras, en plein soleil. Sur la A, il en
+     tient <b>2,1</b> — le même chiffre que vous aviez vu le 2 septembre sous
+     « À facturer ». Ce n'est pas la longueur du bouton qui le cause : la
+     lumière du dégradé est placée <b>en pour cent</b>, à 34 % de la largeur,
+     donc son centre tombe au milieu du mot quelle que soit la taille.</p>
+  <p><b>Et changer la couleur des lettres ne le sauve pas</b>, je l'ai mesuré :
+     en crème le mot s'efface sur le clair, en encre il s'efface sur le foncé —
+     le dégradé traverse les deux. C'est la lumière qu'il faut bouger, ou
+     rien.</p>
+
+  <h2>Sans l'effet brillant : D et E</h2>
+  <p>Aucun dégradé, aucune lumière — un aplat, pris dans l'échelle de la tasse
+     et non approché à l'œil. <b>D</b> est son vert du milieu, celui qu'on voit
+     en regardant le disque de loin ; <b>E</b> est son vert du bord, le fond de
+     la tasse.</p>
+  <p><b>Ce que ça change pour le mot :</b> D le laisse à <b>3,0</b>, E le monte
+     à <b>6,5</b>. Le troisième vert de la tasse, le plus clair, n'est pas
+     proposé à plat : ce n'est pas une couleur, c'est le point de lumière — le
+     mot y tombe à 2,0.</p>
+
+  <h2>Les deux voisines, pour comparer dans le même geste</h2>
+  <p><b>La B</b> ajoute le bord doré que vous aviez retenu il y a une heure, et
+     rien d'autre : même couleur, même chiffre. Passez de A à B et revenez —
+     c'est le seul écart.</p>
+  <p><b>La C</b> garde la couleur nue de la A, mais la lumière y garde les
+     <b>50 px</b> qu'elle a sur votre note vocale au lieu de s'étirer : le mot
+     tient alors <b>6,5</b>. <b>Sur un bouton court, A et C sont rigoureusement
+     le même objet</b> — la différence n'apparaît que sur les longs. Comparez-les
+     sur « Confirmer le départ de la facture », le plus long de l'application.</p>
+
+  <h2>Ce qui ne bouge dans aucune</h2>
+  <ul>
+    <li>La forme, la hauteur de 50 px, le rayon plein, la police, les
+        libellés.</li>
+    <li>Les boutons <b>creux</b> — « Je rédige à la main » et les autres :
+        c'est votre règle du 31 août.</li>
+    <li>Les <b>sept autres apparences</b>. Le bleu marine de Brume ne devient
+        pas vert : la matière ne s'écrit que pour Origine, exactement comme le
+        vert d'aujourd'hui.</li>
+    <li>L'appui : le bouton rentre de 2,5 % et s'éclaircit, comme la note
+        vocale.</li>
+    <li>Les documents que reçoit le client — devis, facture : ils n'ont pas de
+        bouton.</li>
+  </ul>
+
+  <h2>Une question, et je code</h2>
+  <p><b>Le halo qui tourne, sur la note vocale elle-même.</b> Vous l'avez fait
+     retirer des boutons. Sur le disque du haut il tourne encore, parce que
+     c'est votre écran d'aujourd'hui et que je n'y touche pas sans vous.
+     <b>Je le retire là aussi ?</b></p>
+</div>
+
+<script>
+  /* ────────────────────────────────────────────────────────────────────
+     LES CHIFFRES SONT MESURÉS, PAS TAPÉS.
+
+     Le script lit la largeur réellement rendue de chaque bouton, retrouve
+     la couleur du dégradé sous la PREMIÈRE LETTRE du mot, et calcule le
+     contraste. Un chiffre écrit à la main vieillirait au premier
+     changement de police ; celui-ci, non.
+     ──────────────────────────────────────────────────────────────────── */
+  var CREME = [250, 249, 245], BLANC = [255, 255, 255];
+
+  function hex(h) {
+    return [1, 3, 5].map(function (i) { return parseInt(h.slice(i, i + 2), 16); });
+  }
+  function lum(c) {
+    function f(v) {
+      v /= 255;
+      return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
+    }
+    return 0.2126 * f(c[0]) + 0.7152 * f(c[1]) + 0.0722 * f(c[2]);
+  }
+  function contraste(a, b) {
+    var x = lum(a), y = lum(b);
+    return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05);
+  }
+  function melange(a, b, t) {
+    return a.map(function (v, i) { return v + (b[i] - v) * t; });
+  }
+
+  var SAGE_CLAIR = hex('#9fbd82'), SAGE = hex('#7d9a6d');
+  var PIN_CLAIR = hex('#4f5f4c');
+  var BOUTON = hex('#29382F');
+
+  /* Le rayon d'un `radial-gradient(circle at …)` : par défaut
+     `farthest-corner`, c'est-à-dire la distance au coin le plus lointain.
+     C'est la définition, pas une approximation. */
+  function rayonCercle(cx, cy, L, H) {
+    return Math.sqrt(Math.pow(Math.max(cx, L - cx), 2) + Math.pow(Math.max(cy, H - cy), 2));
+  }
+  function entre(stops, t) {
+    if (t <= stops[0][0]) return stops[0][1];
+    for (var i = 1; i < stops.length; i++) {
+      if (t <= stops[i][0]) {
+        return melange(stops[i - 1][1], stops[i][1],
+          (t - stops[i - 1][0]) / (stops[i][0] - stops[i - 1][0]));
+      }
+    }
+    return stops[stops.length - 1][1];
+  }
+
+  /* Une fonction par déclinaison : elle rend la couleur du fond au point
+     (x, y) d'un bouton de L × H. */
+  /* La lumière de B et de C : une ellipse de 46 × 36 posée à 6 / 2 — les
+     mêmes valeurs que la feuille de style juste au-dessus. */
+  function ellipse(x, y) {
+    return Math.sqrt(Math.pow((x - 6) / 46, 2) + Math.pow((y - 2) / 36, 2));
+  }
+
+  var FOND = {
+    zero: function () { return BOUTON; },
+    a: function (x, y, L, H) {
+      var cx = 0.34 * L, cy = 0.26 * H;
+      var t = Math.sqrt(Math.pow(x - cx, 2) + Math.pow(y - cy, 2)) / rayonCercle(cx, cy, L, H);
+      return entre([[0, SAGE_CLAIR], [0.5, SAGE], [1, PIN_CLAIR]], t);
+    },
+    c: function (x, y) {
+      return entre([[0, SAGE_CLAIR], [0.30, SAGE], [0.82, PIN_CLAIR]], ellipse(x, y));
+    },
+    d: function () { return SAGE; },
+    e: function () { return PIN_CLAIR; }
+  };
+  // A et B portent le MÊME dégradé : seul le bord les sépare.
+  FOND.b = FOND.a;
+
+  var banc = document.getElementById('banc');
+  var dit = document.getElementById('dit');
+
+  var DITS = {
+    zero: "<b>Ce que vous avez aujourd'hui.</b> Un vert plein, sans bord ni ombre. Rien ne le rattache à la note vocale.",
+    a: "<span class='retenu'>Ce que vous avez demandé :</span> la couleur de la note vocale, <b>et rien d'autre</b> — aucun liseré, aucune ombre, aucun halo. C'est le bouton d'aujourd'hui, sa couleur remplacée. <b>Regardez le mot en plein jour</b> : c'est la seule réserve, et elle est chiffrée dessous.",
+    b: "<b>La même couleur, avec le bord doré</b> — ce que vous aviez retenu il y a une heure. Il est là pour que les deux se comparent dans le même geste : <b>appuyez d'un onglet à l'autre</b>.",
+    c: "<b>La même couleur, sans bord non plus</b>, à une chose près : la lumière garde les <b>50 px</b> qu'elle a sur votre note vocale au lieu de s'étirer avec le bouton. Sur un bouton court, A et C sont le même objet.",
+    d: "<span class='retenu'>Sans l'effet brillant :</span> le vert du milieu de votre note vocale, <b>à plat</b>. Aucun dégradé, aucune lumière. C'est la couleur qu'on voit quand on regarde le disque de loin.",
+    e: "<b>À plat aussi, mais le vert du bord</b> de votre note vocale — celui du fond de la tasse. Le même objet sans brillant, pris une nuance plus bas : c'est le seul aplat où le mot se lit en plein soleil."
+  };
+
+  function mesurer() {
+    var v = banc.dataset.b;
+    var chiffres = banc.querySelectorAll('[data-mesure]');
+    for (var i = 0; i < chiffres.length; i++) {
+      var p = chiffres[i];
+      var bouton = p.previousElementSibling;
+      if (!bouton || !bouton.classList.contains('bouton')) {
+        bouton = p.closest('.scene').querySelector('.bouton');
+      }
+      if (!bouton) continue;
+      var mot = bouton.querySelector('span');
+      var bb = bouton.getBoundingClientRect(), mb = mot.getBoundingClientRect();
+      var L = bb.width, H = bb.height;
+
+      /* **On balaie le mot ENTIER, pas sa première lettre.** Le dégradé du
+         micro rayonne d'un point situé à 34 % de la largeur : sur un bouton
+         long, ce point tombe au MILIEU du mot, pas à son bord. Ne mesurer
+         qu'au début rendrait un vert convenable là où le mot s'efface. */
+      var repos = 99, doigt = 99;
+      var debut = Math.round(mb.left - bb.left), fin = Math.round(mb.right - bb.left);
+      for (var x = debut; x <= fin; x++) {
+        var fond = FOND[v](x, H / 2, L, H);
+        repos = Math.min(repos, contraste(fond, CREME));
+        doigt = Math.min(doigt, contraste(melange(fond, BLANC, 0.14), CREME));
+      }
+      /* **Le seuil ne se rappelle que là où il n'est pas tenu.** Répété sous
+         chaque bouton, « il en faut 4,5 » devient du bruit qu'on saute — et
+         c'est précisément la ligne rouge qu'on saute avec. */
+      var tenu = repos >= 4.5;
+      p.innerHTML =
+        '<span class="px">' + Math.round(L) + ' px</span> · le mot tient ' +
+        '<span class="' + (tenu ? 'bon' : 'faible') + '">' +
+        repos.toFixed(1).replace('.', ',') + '</span>' +
+        (tenu ? '' : ' <span class="faible">— il en faut 4,5</span>') +
+        ' <span class="px">· ' + doigt.toFixed(1).replace('.', ',') +
+        ' sous le doigt</span>';
+    }
+  }
+
+  function poser(nom) {
+    banc.dataset.b = nom;
+    dit.innerHTML = DITS[nom];
+    var choix = document.querySelectorAll('.choix button');
+    for (var i = 0; i < choix.length; i++) {
+      choix[i].setAttribute('aria-pressed', String(choix[i].dataset.v === nom));
+    }
+    mesurer();
+  }
+
+  var choix = document.querySelectorAll('.choix button');
+  for (var i = 0; i < choix.length; i++) {
+    choix[i].addEventListener('click', function (e) {
+      poser(e.currentTarget.dataset.v);
+    });
+  }
+  window.addEventListener('resize', mesurer);
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(mesurer);
+  poser('a');
+</script>
+</body>
+</html>

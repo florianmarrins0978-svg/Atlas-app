@@ -147,6 +147,42 @@ async function main() {
     );
   });
 
+  // ── Le lieu, sa remarque du 3 septembre 2026 ──────────────────────────────
+  //
+  // *« J'ai vingt et un clients, dont QUATRE qui s'appellent Martins.
+  // Aujourd'hui la ligne ne montre que le nom et des comptes : rien ne me dit
+  // lequel c'est. »*
+  //
+  // La colonne existait, la fiche l'affichait, et cette requête-ci ne la
+  // chargeait pas : le seul écran où quatre noms identiques se côtoient était
+  // aussi le seul à ne pas savoir les distinguer.
+  await essai("l'adresse voyage jusqu'à la liste — c'est elle qui sépare quatre Martins", async () => {
+    await nettoyerBase();
+    const ctx = await monterEntreprise("Essai lieu");
+    await creerClient(ctx, { nom: "M. Martins", adresse: "10 rue d'Enfer, Nantes" });
+    await creerClient(ctx, { nom: "M. Martins", adresse: "4 allée des Chênes, Vertou" });
+    // **Un client sans adresse est un état NORMAL**, pas une donnée manquante :
+    // saisi à la volée, il n'a pas eu droit à un appui de plus. La liste doit le
+    // rendre tel quel plutôt que d'inventer un lieu (`CLAUDE.md` §4).
+    await creerClient(ctx, { nom: "Mme Sans-Lieu" });
+
+    const liste = await listerFichesClients(ctx);
+    const lieux = liste.map((c) => c.adresse).sort();
+    assert.deepEqual(
+      lieux,
+      ["10 rue d'Enfer, Nantes", "4 allée des Chênes, Vertou", null].sort(),
+      `la liste ne porte pas les adresses attendues : ${JSON.stringify(lieux)}`
+    );
+
+    const martins = liste.filter((c) => c.nom === "M. Martins");
+    assert.equal(martins.length, 2);
+    assert.notEqual(
+      martins[0].adresse,
+      martins[1].adresse,
+      "deux clients du même nom rendent le même lieu : rien ne les distingue à l'écran"
+    );
+  });
+
   await essai("un chantier supprimé ne compte plus", async () => {
     await nettoyerBase();
     const ctx = await monterEntreprise("Essai retrait");

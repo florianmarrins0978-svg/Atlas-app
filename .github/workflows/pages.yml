@@ -104,6 +104,12 @@ jobs:
           # planche qui lui ferait valider autre chose que sa demande, c'est la
           # porte de l'application qui en sortirait.
           jouer test:face-id
+          # **Celle-ci garde deux choses qu'aucun œil ne revérifie.** La matière
+          # du bouton est comparée à `.atlas-micro` DANS `src/app/globals.css` :
+          # le jour où la note vocale change de vert, la planche rougit au lieu
+          # de lui montrer une couleur qui n'existe plus. Et le halo qu'il a
+          # fait retirer le 3 septembre ne peut pas revenir sans que ça se voie.
+          jouer test:boutons-verts
 
           if [ -n "$ECHECS" ]; then
             echo "::error::Suites en échec :$ECHECS"

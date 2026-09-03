@@ -30,7 +30,94 @@ et dans ce cas le patron voit au planning un chantier qu'il a terminé.
 | où regarder | `scripts/test-planning-vers-facture-e2e.ts`, et ce qui range un chantier entre planning et terminés |
 | qui peut trancher | la session qui a touché « Terminés » ou le planning en dernier — `git log -5 -- src/app/termines src/app/planning` |
 | ce que ça coûte de ne rien faire | un rouge permanent dans la batterie, et un rouge permanent s'apprend à être ignoré |
+## ~~EN ATTENTE DE SA RÉPONSE : la liste de ses clients~~ — CODÉ le 3 septembre 2026
 
+**Son verdict :** *« tu peux coder exactement cette maquette »*. Planche :
+`appli/vos-clients.html`. Détail et pourquoi : `ARCHITECTURE.md` §240 ; verdict
+point par point : `docs/liste-clients-verdict.md`.
+
+**Ce qu'il a tranché en répondant :** le total facturé par client
+(« 2 400,00 € facturés ») quitte la ligne. Deux montants sur une même ligne,
+l'un gris l'autre rouge, se confondent d'un coup d'œil — et depuis l'allègement
+de la fiche le 2 septembre, **ce total ne se lit plus nulle part ailleurs**. Le
+prix lui avait été dit avant.
+
+**Ce que ça a coûté, et c'était bien peu :** `clients.adresse` chargée dans
+`listerFichesClients` (une ligne), `dernierJour` transmis par `page.tsx` (il
+était déjà calculé), et de la mise en forme. Deux règles pures neuves :
+`src/lib/bandes-clients.ts` et `morceauxSurlignes` dans
+`src/lib/recherche-client.ts`.
+
+**Ce qui reste ouvert, et qui n'attend que lui :** rien sur cet écran. S'il
+trouve le lieu trop discret ou les bandes bavardes, les deux se règlent d'une
+ligne — mais ne rien changer sans qu'il le demande.
+
+
+## ~~EN ATTENTE DE SA RÉPONSE : la matière de la note vocale sur tous les boutons verts~~ — CODÉ le 3 septembre 2026
+
+Son verdict, après cinq déclinaisons : **la D — le vert du milieu de sa note
+vocale, `#7d9a6d`, à plat**. Codé le même jour par un jeton nommé
+(`colors.plein`) qui remplace le calque `--atlas-plein-fond` : `ARCHITECTURE.md`
+§239, `PROJECT_STATE.md`.
+
+**Ce qui reste ouvert, et qui n'attend que lui :** la crème sur ce vert tient
+2,97 de contraste, là où il en faudrait 4,5 — il l'a vu écrit avant de trancher.
+S'il trouve le mot pâle en plein soleil, les lettres à l'encre en tiennent 5,46
+sans toucher à sa couleur. **Ne pas le faire sans lui.**
+
+## À FAIRE : la batterie ne peut pas être verte sous Windows (3 sept. 2026)
+
+Trouvé en jouant `npm run verifier:avant-livraison` sur le poste de
+développement Windows : **huit suites échouent pour des raisons de machine, pas
+de code**, et elles échouaient déjà avant le lot du jour.
+
+| Ce qui échoue | La cause |
+|---|---|
+| `test-reglages-gardes`, `test-mise-a-jour-role-db`, `test-actions-gardees-db` | elles comparent des chemins écrits avec des barres obliques à ce que `path.relative` rend ici, avec des barres inverses |
+| `test-fiche-pendant-relance`, `test-port-remesure` | `EPERM` en supprimant un dossier temporaire |
+| une série de suites | `MaxRetriesPerRequestError` : Redis n'écoute pas |
+| suites navigateur, `verifier:connexion` | refusent de tourner tant qu'un serveur occupe le port 3000 — celui du développement |
+
+**Ce que ça coûte tel quel :** on ne peut pas obtenir un vert complet ici, donc
+la règle du §5 (« ne rien demander au patron tant qu'elle n'est pas au vert »)
+ne peut se tenir que par la CI, sous Linux. C'est jouable, mais il faut le
+savoir : un lot livré depuis Windows n'a PAS été éprouvé en entier avant la
+poussée.
+
+| | |
+|---|---|
+| qui peut le faire | une session, sans lui — c'est du code d'outillage |
+| le plus rentable | normaliser les séparateurs dans les trois suites de chemins (`split(path.sep).join("/")`), ce qui en rend trois sur huit |
+| ce qui restera | Redis et le port 3000 : ce sont des services, pas des suites |
+
+## À FAIRE : la CI est rouge sur `main` depuis le 2 septembre — trois suites e2e
+
+**Ce n'est pas le lot des boutons verts, et c'est MESURÉ, pas supposé.** Les
+mêmes trois suites échouent sur la CI de `main` (course 33753872485, arbre sans
+une ligne de mon code) et sur celle de la branche (33762884903) — la comparaison
+des deux journaux ne fait apparaître AUCUN échec neuf. La commande qui le
+refait, sur les deux courses puis `comm -13` entre les deux listes :
+
+```bash
+gh run view <course> --log-failed | grep "a échoué (code"
+```
+
+| La suite | Ce que dit son rouge |
+|---|---|
+| `test-facture-e2e` | « le chantier réalisé apparaît dans l'onglet Terminés, et mène à sa facture » |
+| `test-lecons-prix-e2e` | « Le prix 1400 n'est arrivé sur AUCUNE ligne du chantier — lues : ["0.00"] » |
+| `test-planning-vers-facture-e2e` | « date passée : dans les terminés, et nulle part ailleurs » |
+
+Les huit dernières courses de `ci.yml` sont rouges, la plus ancienne remontant à
+`9edfe4b9` (2 septembre). **Personne ne l'a signalé depuis**, et c'est le vrai
+coût : une CI rouge en permanence cesse d'être lue, et le jour où un lot casse
+quelque chose, plus rien ne le dit.
+
+| | |
+|---|---|
+| qui peut le faire | une session, sans lui |
+| par où commencer | les trois messages ci-dessus désignent le même coin — le passage du chantier réalisé à sa facture ; il est probable qu'une seule cause les tienne toutes les trois |
+| ce qu'il ne faut PAS faire | les rejouer pour voir : elles sont rouges depuis huit courses, ce n'est pas de l'intermittence |
 ## ~~NON REPRODUIT : rien ne servait sur son port~~ — TROUVÉ le 2 septembre 2026, au soir
 
 Sa plainte : *« l'appli ne démarre pas, page blanche »*. Sa fiche, à 18 h 55

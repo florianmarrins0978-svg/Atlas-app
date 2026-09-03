@@ -347,10 +347,23 @@ export async function chargerFicheClient(ctx: Ctx, clientId: string): Promise<Fi
 }
 
 
-/** Ce que la liste des clients montre de chacun : son nom, et deux chiffres. */
+/** Ce que la liste des clients montre de chacun : son nom, son lieu, ses chiffres. */
 export type ClientEnListe = {
   id: string;
   nom: string;
+  /**
+   * Là où il habite — **ce qui distingue quatre clients du même nom**.
+   *
+   * *Sa remarque du 3 septembre 2026 :* « j'ai vingt et un clients, dont QUATRE
+   * qui s'appellent Martins. Aujourd'hui la ligne ne montre que le nom et des
+   * comptes : rien ne me dit lequel c'est. »
+   *
+   * La colonne existait déjà (`clients.adresse`, migration 0038) et la fiche
+   * l'affichait ; seule cette liste-ci ne la chargeait pas. `null` est un état
+   * normal — un client saisi à la volée n'a pas toujours eu droit à un appui de
+   * plus —, et la ligne se contente alors de ses chantiers.
+   */
+  adresse: string | null;
   chantiers: number;
   /** `null` : rien n'a encore été facturé — ce n'est pas « zéro euro ». */
   facture: string | null;
@@ -382,7 +395,7 @@ export async function listerFichesClients(ctx: Ctx): Promise<ClientEnListe[]> {
   return withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
     const [sesClients, sesChantiers] = await Promise.all([
       tx
-        .select({ id: clients.id, nom: clients.nom })
+        .select({ id: clients.id, nom: clients.nom, adresse: clients.adresse })
         .from(clients)
         .where(eq(clients.entrepriseId, ctx.entrepriseId)),
       tx
@@ -474,6 +487,7 @@ export async function listerFichesClients(ctx: Ctx): Promise<ClientEnListe[]> {
       return {
         id: client.id,
         nom: client.nom,
+        adresse: client.adresse,
         chantiers: fiche.chantiers,
         facture: fiche.facture,
         du: fiche.du,

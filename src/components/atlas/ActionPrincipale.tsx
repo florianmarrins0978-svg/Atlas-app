@@ -46,7 +46,7 @@ export default function ActionPrincipale({
       href={href}
       className="atlas-plein flex items-center gap-5 px-6 py-6"
       style={{
-        backgroundColor: colors.rust,
+        backgroundColor: colors.plein,
         color: colors.cream,
         borderRadius: 20,
         boxShadow: "0 16px 36px rgba(47,59,47,0.22)",

@@ -158,7 +158,7 @@ export default function PieceDuDossier({ piece }: { piece: PieceDuClient }) {
             onClick={() => setFeuilleOuverte(false)}
             data-atlas="piece-enregistrer"
             className="atlas-plein mt-4 block rounded-full py-4 text-center text-[16px] font-medium"
-            style={{ backgroundColor: colors.rust, color: colors.cream }}
+            style={{ backgroundColor: colors.plein, color: colors.cream }}
           >
             Enregistrer
           </a>
@@ -181,7 +181,7 @@ export default function PieceDuDossier({ piece }: { piece: PieceDuClient }) {
               // sont creux » (sa consigne du 31 août).
               : "atlas-plein mt-4 block rounded-full py-4 text-center text-[16px] font-medium"
           }
-          style={estUnFichier ? { color: colors.ink } : { backgroundColor: colors.rust, color: colors.cream }}
+          style={estUnFichier ? { color: colors.ink } : { backgroundColor: colors.plein, color: colors.cream }}
         >
           Ouvrir
         </a>

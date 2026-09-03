@@ -535,47 +535,63 @@ export function normaliserCharte(nom: string | null | undefined): NomCharte | nu
  * Les deux formes dérivent désormais d'ici : ajouter une variable la donne aux
  * deux, ou à aucune.
  */
+/**
+ * L'aplat des boutons pleins d'Origine — sa décision du 3 septembre 2026.
+ *
+ * **Écrit ici en clair, et une seule fois.** C'est le vert du milieu de sa note
+ * vocale (`sage` dans `design-tokens.ts`, #7d9a6d), mais il n'est PAS écrit
+ * `colors.sage` : ce serait dire que le bouton suit la note vocale, alors qu'il
+ * a été choisi pour lui-même, sur une planche, parmi cinq. Le jour où l'un des
+ * deux bouge, l'autre ne doit pas suivre en silence.
+ *
+ * Le repli de `colors.plein` porte la même valeur : une page rendue hors du
+ * gabarit — un courriel, un document — retombe donc sur Origine, comme tous
+ * les autres jetons.
+ */
+export const VERT_DES_BOUTONS = "#7d9a6d";
+
 export function variablesCharte(c: Charte): Record<string, string> {
   const sortie: Record<string, string> = {};
   for (const cle of Object.keys(c.jetons) as (keyof JetonsCharte)[]) {
     sortie[`--atlas-${cle}`] = c.jetons[cle];
   }
-  // **LE VERT DU BOUTON PLEIN — ORIGINE ET ELLE SEULE.**
+  // **L'APLAT DES BOUTONS QU'ON APPUIE — ORIGINE ET ELLE SEULE.**
   //
-  // *Sa décision du 31 août 2026.* Il a d'abord retenu le vert 8 (Cyprès) sur
-  // `appli/le-bouton-qui-repond.html`, puis demandé à voir **#29382F** sur le
-  // vrai bouton, les deux côte à côte — et il a tranché : **« je garde le
-  // #29382F »**. C'est un vert 11 % plus sombre que celui d'aujourd'hui et à
-  // peine plus froid : 6 points de rouge et 3 de vert en moins, rien sur le
-  // bleu. Le vert 8, plus tranché, a donc été écarté par lui.
+  // *Sa décision du 3 septembre 2026, prise sur planche* (`boutons-verts.html`,
+  // la déclinaison D) : **« verdict la D à plat sans brillant, donc tout ce qui
+  // est bouton cliquable tu remplaces par la D »**. C'est le vert du milieu de
+  // sa note vocale, à plat — ni dégradé, ni filet d'or, ni halo. Il a écarté ce
+  // jour-là, dans l'ordre, le galet, la tasse entière, le bord doré et la
+  // lumière rasante : chaque message allait vers plus dépouillé.
   //
-  // Et la question des sept chartes lui étant posée : **« les boutons à changer
-  // c'est seulement pour la version origine, ne touche pas aux autres
-  // apparences ! »**
+  // **CE QUE CE VERT REMPLACE**, et il faut le savoir pour ne pas le rouvrir :
+  // le #29382F qu'il avait retenu le 31 août sur `le-bouton-qui-repond.html`,
+  // les deux verts photographiés côte à côte — *« je garde le #29382F »*. Ce
+  // choix-là tenait onze mois de contraste (11,7 avec la crème) ; celui-ci en
+  // tient **3,0**, et le chiffre était écrit en rouge sous chaque bouton de la
+  // planche quand il a tranché.
   //
-  // **POURQUOI UN APLAT S'ÉCRIT COMME UN DÉGRADÉ D'UNE SEULE COULEUR.** Les
-  // boutons portent leur fond en style EN LIGNE (`backgroundColor: colors.rust`)
-  // — qu'aucune feuille de style ne peut supplanter. Le seul calque qui passe
-  // par-dessus sans `!important` est `background-image`, et une image de fond
-  // ne prend pas une couleur : d'où `linear-gradient(#29382F, #29382F)`, qui
-  // peint un aplat. C'est laid à lire et c'est le prix d'un changement qui ne
-  // touche ni les six autres apparences, ni les trente-quatre écrans.
+  // Et la question des sept autres chartes lui étant posée le 31 août :
+  // **« les boutons à changer c'est seulement pour la version origine, ne
+  // touche pas aux autres apparences ! »** — d'où le ternaire ci-dessous plutôt
+  // qu'une valeur unique.
   //
-  // **D'où une variable écrite pour une seule charte**, exactement comme les
-  // formes juste en dessous : les six autres n'écrivent rien, `globals.css`
-  // garde son `none`, aucun dégradé n'est peint, et leur aplat d'action reste
-  // celui qu'il a validé — le bleu marine de Brume n'a aucune raison de virer
-  // au vert.
+  // **POURQUOI UNE VARIABLE ÉCRITE POUR TOUTES, ET NON POUR UNE SEULE.** La
+  // version d'avant n'écrivait `--atlas-plein-fond` que pour Origine, et
+  // peignait un `background-image` PAR-DESSUS le fond en ligne des boutons —
+  // un contournement assumé, parce que les écrans écrivaient
+  // `backgroundColor: colors.rust` et qu'aucune feuille de style ne peut
+  // supplanter un style en ligne. Depuis le 3 septembre les boutons portent
+  // `colors.plein` : ils posent leur couleur eux-mêmes, le calque n'a plus lieu
+  // d'être, et la variable peut valoir quelque chose pour les huit. Les sept
+  // autres reçoivent leur PROPRE accent — rien ne bouge chez elles.
   //
-  // **Ce que cette variable ne touche PAS, et c'est voulu :** l'accent
-  // `rust` lui-même ne bouge pas d'un cheveu. Les textes verts, les icônes,
-  // les liserés, les fonds pâles `rustTint` gardent le vert pin. Sa consigne
-  // vise les boutons PLEINS — « surtout pas ceux qui sont creux ou d'une autre
-  // couleur que la verte » —, et seuls les éléments portant `.atlas-plein` le
-  // reçoivent.
-  if (c.nom === "origine") {
-    sortie["--atlas-plein-fond"] = "linear-gradient(#29382F, #29382F)";
-  }
+  // **Ce que ce jeton ne touche PAS, et c'est voulu :** l'accent `rust`
+  // lui-même ne bouge pas d'un cheveu. Les textes verts, les icônes, les
+  // liserés, les fonds pâles `rustTint` gardent le vert pin. Sa consigne vise
+  // les boutons PLEINS — « surtout pas ceux qui sont creux ou d'une autre
+  // couleur que la verte ».
+  sortie["--atlas-plein"] = c.nom === "origine" ? VERT_DES_BOUTONS : c.jetons.rust;
 
   // **Une forme absente n'écrit RIEN**, et c'est ce qui tient sa consigne du
   // 24 août : « ne change pas l'appli ». Poser `--atlas-police-titres:initial`

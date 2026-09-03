@@ -1200,6 +1200,27 @@ body {
   box-shadow: inset 0 0 0 1.5px var(--atlas-or, #B98B47);
 }
 
+/* ─── « Chercher un client » : la plage grise du navigateur n'est d'aucune
+ * charte ───────────────────────────────────────────────────────────────────
+ *
+ * **Posée le 3 septembre 2026, avec la refonte de la liste des clients.** Ce
+ * champ-là n'avait aucune couleur de repère : il héritait donc de celle que
+ * chaque navigateur décide, un gris bleuté sur Safari — la même faute que la
+ * croix bleue de `type="search"`, et trouvée de la même façon, en regardant.
+ *
+ * **Mesuré, et c'est pourquoi ce n'est pas `muted`.** Le gris des méta tient
+ * 3,32 de contraste sur le fond crème : sous le seuil de lecture, et c'est la
+ * première chose qui disparaît en plein soleil, sur un chantier. `inkSoft` à
+ * 85 % en tient 5,0 sur la plage teintée — assez pour se lire, assez clair pour
+ * ne pas se confondre avec un nom déjà tapé.
+ *
+ * Ce réglage est ICI et pas dans l'écran : aucun style en ligne ne peut viser
+ * `::placeholder`. */
+[data-atlas="chercher-client"]::placeholder {
+  color: var(--atlas-inkSoft, #4a4a44);
+  opacity: 0.85;
+}
+
 /* ═══ LA NOTE VOCALE « À LA MESSAGERIE » ══════════════════════════════════
  *
  * Ses choix du 30 août 2026, faits sur trois planches successives
@@ -1614,12 +1635,18 @@ body {
 
    ─── CE QUI SÉPARE LA COULEUR DU GESTE, ET POURQUOI ────────────────────────
 
-   **La couleur ne vaut QUE pour Origine.** Elle arrive par
-   `--atlas-plein-fond`, que `variablesCharte()` n'écrit que pour elle. Les
-   six autres chartes n'écrivent rien : `none` reste, rien n'est peint par-dessus,
-   et leur aplat d'action — le bleu marine de Brume, par exemple — est intact.
-   C'est la mécanique déjà éprouvée des formes (`chartes.ts`) : une charte
-   muette ne change rien.
+   **LA COULEUR N'EST PLUS ICI DEPUIS LE 3 SEPTEMBRE 2026, et c'est le
+   correctif.** Elle arrivait par un `background-image: var(--atlas-plein-fond)`
+   peint PAR-DESSUS le fond en ligne des boutons — le seul calque capable de
+   supplanter un style en ligne. Les écrans posent désormais `colors.plein`
+   eux-mêmes : la cause a disparu, et le calque avec elle. Ce qui reste ici est
+   ce qui doit y être — le geste, et lui seul.
+
+   Sa décision de ce jour-là, sur `appli/boutons-verts.html` : **« verdict la D
+   à plat sans brillant, donc tout ce qui est bouton cliquable tu remplaces par
+   la D »** — le vert du milieu de sa note vocale, #7d9a6d. Le « seulement pour
+   la version origine » du 31 août tient toujours : c'est `chartes.ts` qui
+   décide, charte par charte.
 
    **Le geste, lui, vaut PARTOUT.** Un bouton qui répond au doigt n'est pas une
    apparence : c'est le même geste quelle que soit la couleur, et le priver aux
@@ -1636,15 +1663,22 @@ body {
 
    ─── CONTRASTES MESURÉS, PAS ESTIMÉS ───────────────────────────────────────
 
-   Crème `#faf9f5` sur `#29382F` : **11,72:1** au repos, et **7,55:1** sous le
-   voile de l'appui — le pire des deux, et celui que personne ne pense à
-   mesurer. Il en faut 4,5.
+   Crème `#faf9f5` sur le vert du 3 septembre `#7d9a6d` : **2,97:1** au repos,
+   et **2,55:1** sous le voile de l'appui. Il en faudrait 4,5.
+
+   **C'est un choix, pas un oubli, et il faut le savoir avant d'y toucher.** Le
+   chiffre était écrit EN ROUGE sous chaque bouton de la planche — « 3,0 — il en
+   faut 4,5 » — quand il a répondu « verdict la D ». Le vert d'avant, #29382F,
+   en tenait 11,72 au repos et 7,55 sous le doigt.
+
+   Ce qui reste à sa main s'il trouve le mot pâle en plein soleil : passer les
+   lettres à l'encre plutôt qu'à la crème — #1c1c1a sur #7d9a6d tient **5,46**,
+   sans toucher à la couleur qu'il a retenue. Ne pas le faire sans lui : le
+   blanc sur vert est ce qu'il regarde depuis trois jours.
    ═══════════════════════════════════════════════════════════════════════════ */
 .atlas-plein {
   position: relative;
   overflow: hidden;
-  /* Sans dégradé de charte, rien n'est peint : l'aplat de l'écran reste seul. */
-  background-image: var(--atlas-plein-fond, none);
   transition:
     transform 190ms cubic-bezier(0.22, 0.8, 0.3, 1),
     box-shadow 220ms ease;

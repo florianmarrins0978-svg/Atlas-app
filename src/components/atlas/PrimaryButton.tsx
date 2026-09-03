@@ -201,7 +201,7 @@ export default function PrimaryButton({
         // d'autre appel) : le changement ne déborde nulle part.
         boxShadow: `inset 0 0 0 1.5px ${colors.line}`,
       }
-    : { ...dessin, backgroundColor: colors.rust, color: colors.card };
+    : { ...dessin, backgroundColor: colors.plein, color: colors.card };
 
   if (href) {
     return centrer(

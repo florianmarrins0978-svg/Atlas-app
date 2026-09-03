@@ -230,7 +230,7 @@ export default function AgendaAppleClient({ etat }: { etat: EtatAgendaApple }) {
             disabled={enCours}
             onClick={relier}
             className="atlas-plein w-full rounded-full px-5 py-3 text-[15px] font-medium"
-            style={{ backgroundColor: colors.rust, color: surPlein, opacity: enCours ? 0.6 : 1 }}
+            style={{ backgroundColor: colors.plein, color: surPlein, opacity: enCours ? 0.6 : 1 }}
           >
             {enCours ? "Connexion à Apple…" : "Relier mon agenda Apple"}
           </button>

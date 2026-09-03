@@ -425,7 +425,7 @@ export default function AchatsTva({
           disabled={!armé}
           className="atlas-plein mt-3 w-full rounded-full py-[15px] text-[15px]"
           style={{
-            backgroundColor: colors.rust,
+            backgroundColor: colors.plein,
             color: colors.cream,
             fontFamily: font.display,
             opacity: armé ? 1 : 0.35,

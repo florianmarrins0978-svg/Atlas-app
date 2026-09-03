@@ -4,7 +4,7 @@
 vous ne savez rien de ce qui précède — c'est exactement le cas de figure qu'il
 sert.
 
-**Point de reprise :** 2026-09-02 · `main`
+**Point de reprise :** 2026-09-03 · `main`
 (l'historique fait foi : `git log --oneline -20`)
 
 ---
@@ -25,7 +25,7 @@ réparation reconnaissait des PHRASES : `Cannot find module` (22 août),
 |---|---|
 | ce qui a bougé | `scripts/coherence-dependances.mjs`, `scripts/banc.mjs` |
 | la garde | `npx tsx scripts/test-coherence-dependances.ts` — 6 cas vérifiés rouges contre la version d'avant |
-| le pourquoi | `ARCHITECTURE.md` §239 |
+| le pourquoi | `ARCHITECTURE.md` §241 |
 
 **À SAVOIR AVANT D'Y RETOUCHER :**
 
@@ -40,7 +40,155 @@ réparation reconnaissait des PHRASES : `Cannot find module` (22 août),
 - **Les cas asynchrones de `test-coherence-dependances.ts` sont ATTENDUS.** Ils
   ne l'étaient pas : ils s'affichaient verts quoi qu'il arrive. Si l'on ajoute
   un cas qui rend une promesse, il doit passer par `enCours`.
+## Dernier lot — la liste de ses clients, CODÉE (3 septembre 2026)
 
+**Son verdict sur la planche, le soir même :** *« tu peux coder exactement cette
+maquette »*. L'écran est en place — `src/app/clients/`,
+`src/lib/bandes-clients.ts`, `ARCHITECTURE.md` §240.
+
+**Ce qu'il faut savoir avant d'y toucher :**
+
+| | |
+|---|---|
+| l'ordre de la liste | il vient du **dépôt** (`listerFichesClients`), pas de l'écran. `grouperEnBandes` ne trie rien — deux règles d'ordre pour une liste, et c'est l'écran qui aurait tort en silence |
+| « aujourd'hui » | posé au **serveur** (`jourIso`) et descendu en accessoire. Le lire dans le navigateur ferait clignoter « août » en « septembre » à l'hydratation, entre minuit et 2 h |
+| le surlignage | `morceauxSurlignes` est une **seconde lecture** du texte que le filtre lit. Une suite les confronte sur un corpus : elle a déjà attrapé un écart réel. Ne pas la contourner |
+| les repères de suite | `data-atlas="nom-client"`, `situation-client`, `reste-du`, `compte-clients`. Une suite qui viserait de nouveau l'emboîtement des balises rougirait à la prochaine refonte |
+
+**La planche reste essayable** — `appli/vos-clients.html`, liée depuis
+`appli/essais.html` et `docs/maquettes/index.html`. Adresse **entière** :
+`https://florianmarrins0978-svg.github.io/Atlas-app/vos-clients.html`
+
+---
+
+### Ce que la planche démontrait, et qui a décidé du code
+
+**Ce qui n'était pas su :** sur **quatre clients nommés Martins**, la liste
+n'affichait rien qui les distingue — la deuxième ligne portait « 5 chantiers ·
+3 200,00 € facturés » pour tous. Le **lieu** y est désormais.
+
+**Rien n'est inventé.** Les cinq informations d'une ligne existaient déjà :
+
+| | |
+|---|---|
+| le nom | `clients.nom` |
+| le lieu | `clients.adresse` — colonne présente, que la liste **ne chargeait pas** ; elle la charge |
+| les chantiers | compté (`fiche.chantiers`) |
+| ce qui reste dû | `resteDu()` |
+| la date du dernier chantier | `dernierJour` — **déjà calculé par `listerFichesClients`, jamais transmis à l'écran** ; il l'est |
+
+**Le reste :** le montant dû passe de 9,5 px en capitales à 16 px à côté du
+nom ; la liste **annonce son ordre** par bandes de mois (elle était déjà rangée
+du plus récent au plus ancien, sans le dire) ; le compte remonte dans l'en-tête
+et suit la recherche ; le gris secondaire passe de `muted` à `inkSoft` —
+**3,32 de contraste contre 8,04**.
+
+**TRANCHÉ PAR LUI :** le total facturé par client quitte la ligne. Le prix lui
+avait été dit — depuis l'allègement de la fiche le 2 septembre, ce total ne se
+lit plus nulle part ailleurs —, et il a répondu de coder la maquette telle
+quelle.
+
+**Deux réparations que seule la capture a montrées :** la ligne du compte garde
+sa place quand la recherche ne trouve rien (sinon le champ de saisie remontait
+de 24 px sous le doigt à chaque frappe infructueuse), et la barre de recherche
+est collante.
+
+**LEVÉE, l'alerte de 18 h 55 :** une session voisine avait vu dans l'arbre de
+travail des modifications non commises de `src/app/clients/`, de
+`fiche-client.ts` et de `recherche-client.ts`, plus deux fichiers neufs, et
+avait eu raison de ne pas les livrer sans savoir d'où elles venaient. **C'était
+ce lot-ci, en cours d'écriture** — il est commité en entier. Il n'y a pas deux
+implémentations de cet écran.
+
+**Ce qu'une nouvelle conversation doit en tirer, et qui reste vrai :** avant
+d'ouvrir un lot sur cet écran, `git log -- src/app/clients/`. Et `CLAUDE.md` §6
+point A : regarder les autres branches AVANT d'écrire — deux sessions ont déjà
+codé la même chose le 23 août, et deux ont failli recommencer ce soir-là.
+
+**Au passage, deux défauts du sommaire :** le premier essai d'`essais.html`
+n'avait **pas de balise de fin** — le lien avalait le titre de famille suivant —,
+et les **141 flèches décoratives** de `docs/maquettes/index.html` sont
+retirées (sa règle du 25 août ; `test-aucune-fleche.ts` ne parcourt que
+`src/`, il ne pouvait pas les voir).
+
+---
+
+## Dernier lot : les boutons verts au vert de sa note vocale, à plat (3 septembre 2026)
+
+*Son verdict, après cinq déclinaisons sur `appli/boutons-verts.html` : « verdict
+la D à plat sans brillant, donc tout ce qui est bouton cliquable tu remplaces
+par la D », puis « ne fais pas de bricolage, remplace correctement les lignes de
+code, ne fais pas de pansement », puis « ne touche pas à la note vocale par
+contre ».*
+
+**Le correctif est un JETON, pas un calque**, et c'est le sens de sa seconde
+phrase : `colors.plein` — l'aplat des boutons qu'on appuie — remplace
+`--atlas-plein-fond`, ce `background-image` qu'on peignait par-dessus les fonds
+en ligne. Le pourquoi entier : `ARCHITECTURE.md` §239.
+
+| | |
+|---|---|
+| la couleur | `#7d9a6d` sur Origine ; les sept autres chartes gardent leur accent |
+| ce qui a bougé | `design-tokens.ts`, `chartes.ts`, `globals.css`, et quarante-six aplats |
+| la garde | `npx tsx scripts/test-boutons-pleins.ts` — 10 s, sans base ni navigateur |
+| la planche | `appli/boutons-verts.html`, ses cinq états — toute correction passe d'abord par elle |
+
+**À SAVOIR AVANT D'Y RETOUCHER :**
+
+- **`rust` n'est PAS l'aplat des boutons.** Il teinte des textes, des icônes,
+  des liserés et les fonds pâles `rustTint`. Un bouton plein pose `colors.plein`,
+  et c'est tout ce qui le pose.
+- **Le calque ne doit pas revenir.** Si quelqu'un rouvre un `background-image`
+  sur `.atlas-plein`, il regagnera en silence sur le jeton — changer la couleur
+  ne fera plus rien, et rien ne rougira. `scripts/test-chartes.ts` le refuse des
+  deux côtés (la variable ET la feuille de style).
+- **Le contraste est un choix, pas un oubli.** La crème tient 2,97 sur ce vert,
+  2,55 sous le doigt, là où il en faudrait 4,5 ; le vert d'avant en tenait
+  11,72. Le chiffre était écrit en rouge sous chaque bouton de la planche quand
+  il a tranché. **Ne pas « réparer » ça tout seul :** ce qui reste à sa main est
+  de passer les lettres à l'encre (5,46), et c'est à lui de le dire.
+- **Ce qui ne doit pas suivre :** la note vocale (sa consigne du jour), les
+  capsules de « Terminés » qui portent le galet du 2 septembre, le carré d'état
+  du planning (`data-atlas="carre"` dit une demi-journée, pas une action), et
+  l'interrupteur de la fiche paysage.
+- **La batterie complète n'a PAS pu être verte ici** — huit suites échouent pour
+  des raisons de machine sous Windows, toutes antérieures à ce lot (détail dans
+  `TODO.md`). Ce qui a été joué et qui est vert : `tsc`, le lint, la mémoire, et
+  les suites du domaine — chartes, chartes lisibles, galet, boutons pleins,
+  aucune flèche. Le reste est éprouvé par la CI, sous Linux.
+
+## Lot précédent — LA PLANCHE : la matière de la note vocale sur les boutons verts — PLANCHE (3 septembre 2026)
+
+Ses deux messages : *« utilise la couleur de la note vocale page fiche client et
+mets-la sur chaque bouton à cliquer qui sont aujourd'hui de couleur verte »*,
+puis *« c'est celle-là la bonne couleur mais sans le petit halo lumineux qui
+tourne à l'intérieur »*, puis *« garde la tasse telle qu'elle la A mais avec
+seulement un bord doré tout autour »*, puis *« mets juste la couleur de la note
+vocale sur les boutons sans le liseré doré, seulement la couleur pour voir »*,
+et enfin *« fais une planche avec la couleur de la note vocale mais sans l'effet
+brillant »*. **Rien n'est codé** — une planche, et une réponse
+attendue (`CLAUDE.md` §3 bis).
+
+**La matière est tranchée, et par lui : LA TASSE (`.atlas-micro`), sans son
+`::before` animé.** Ni le galet du 2 septembre — qui reste sur « À facturer » —,
+ni les trois anneaux or / porcelaine / or de la note vocale. **Ce qui reste
+ouvert, c'est le brillant et le bord**, et c'est ce que la planche pose : la
+couleur seule, avec un bord doré, la lumière gardée à sa taille, ou à plat.
+
+**Le piège, si quelqu'un reprend ce travail :** ne pas poser ce dégradé tel quel
+sur `PrimaryButton`. Sa lumière est un cercle placé en **pour cent** (34 % /
+26 %) ; sur un bouton, ce point tombe au MILIEU du mot, qui ne tient plus que
+**2,1** de contraste pour un seuil de 4,5 — dès 148 px, pas seulement sur les
+longs.
+
+| | |
+|---|---|
+| la planche | `appli/boutons-verts.html` — ses chiffres sont calculés sur les boutons rendus, pas écrits |
+| l'adresse | `https://florianmarrins0978-svg.github.io/Atlas-app/boutons-verts.html` |
+| la garde | `appli/tests/essai-boutons-verts.mjs` — refuse le halo et la porcelaine, compare les verts à `globals.css`, et attend 400 ms parce que le filet est en transition à 220 |
+| ce qu'il regarde | **A**, la couleur seule. Le mot y tient 2,1, et il l'a vu écrit sous le bouton |
+| où ça se code | `--atlas-plein-fond` (`src/lib/chartes.ts`, Origine seule) + un relief à ajouter à `.atlas-plein` pour le filet d'or |
+| ce qui ne bouge pas | les boutons creux, les sept autres apparences, les capsules de « Terminés » |
 ## Lot précédent : la page blanche, à la racine (2 sept. 2026, au soir)
 
 **`npm ci` effaçait `node_modules` sous un banc qui tournait.** `demarrer.sh`

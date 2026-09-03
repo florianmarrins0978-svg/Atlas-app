@@ -127,7 +127,7 @@ export default function EnAttenteDePaiement({
                   disabled={enCours === f.id}
                   onClick={() => solder(f.id)}
                   className="atlas-plein min-h-[40px] rounded-full px-5 py-2 text-[14px] font-medium disabled:opacity-40"
-                  style={{ backgroundColor: colors.rust, color: colors.card }}
+                  style={{ backgroundColor: colors.plein, color: colors.card }}
                 >
                   {enCours === f.id ? "…" : "Payée"}
                 </button>
@@ -249,7 +249,7 @@ function SaisieDuReglement({
           }
         }}
         className="atlas-plein min-h-[44px] self-start rounded-full px-5 py-2.5 text-[14px] font-medium disabled:opacity-40"
-        style={{ backgroundColor: colors.rust, color: colors.card }}
+        style={{ backgroundColor: colors.plein, color: colors.card }}
       >
         Enregistrer ce règlement
       </button>

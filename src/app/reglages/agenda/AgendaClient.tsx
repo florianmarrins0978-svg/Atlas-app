@@ -221,7 +221,7 @@ export default function AgendaClient({ etat, issue }: { etat: EtatAgenda; issue:
                 disabled={enCours}
                 onClick={enregistrerIdentifiants}
                 className="atlas-plein rounded-full px-5 py-3 text-[15px] font-medium"
-                style={{ backgroundColor: colors.rust, color: surPlein, opacity: enCours ? 0.6 : 1 }}
+                style={{ backgroundColor: colors.plein, color: surPlein, opacity: enCours ? 0.6 : 1 }}
               >
                 Enregistrer
               </button>
@@ -248,7 +248,7 @@ export default function AgendaClient({ etat, issue }: { etat: EtatAgenda; issue:
             disabled={enCours}
             onClick={() => demarrer(() => void demarrerRaccordementAction())}
             className="atlas-plein rounded-full px-5 py-3 text-[15px] font-medium"
-            style={{ backgroundColor: colors.rust, color: surPlein, opacity: enCours ? 0.6 : 1 }}
+            style={{ backgroundColor: colors.plein, color: surPlein, opacity: enCours ? 0.6 : 1 }}
           >
             {etat.relie ? "Rebrancher mon agenda Google" : "Relier mon agenda Google"}
           </button>

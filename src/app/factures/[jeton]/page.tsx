@@ -108,7 +108,7 @@ export default async function PageFactureClient({ params }: { params: Promise<{ 
           target="_blank"
           rel="noopener"
           className="atlas-plein mt-6 block rounded-full px-5 py-3 text-[15px] font-medium"
-          style={{ backgroundColor: colors.rust, color: surPlein }}
+          style={{ backgroundColor: colors.plein, color: surPlein }}
         >
           Voir la facture en PDF
         </a>

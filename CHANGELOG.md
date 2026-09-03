@@ -42,10 +42,256 @@ s'affichaient verts contre un code qui n'a même pas la fonction qu'ils
 éprouvent. Corrigé avant livraison. Six contrôles vérifiés rouges contre la
 version d'avant.
 
-Raisons et pièges : `ARCHITECTURE.md` §239.
+Raisons et pièges : `ARCHITECTURE.md` §241.
 
 ---
+### La liste de ses clients, codée — le lieu, le montant dû, et l'ordre enfin dit
 
+**Son verdict sur la planche :** *« tu peux coder exactement cette maquette »*.
+Ce que ça change, écran en main, et **ce que ça évite** :
+
+- **le lieu prend la deuxième ligne** — sur quatre clients nommés Martins, plus
+  rien ne se ressemblait après « Nantes », « Vertou », « Rezé ». La colonne
+  `clients.adresse` existait depuis la migration 0038 : **la seule requête du
+  dépôt qui ne la chargeait pas était celle de cette liste** ;
+- **ce qui reste dû passe de 9,5 px en capitales à 16 px**, à hauteur du nom, et
+  c'est le seul montant de la ligne. Deux sommes d'argent côte à côte, l'une
+  grise l'autre rouge, se confondent au premier coup d'œil — et c'est la rouge
+  qui demande un geste ;
+- **la liste annonce son ordre** par bandes de mois. Elle était **déjà** rangée
+  du chantier le plus récent au plus ancien ; `dernierJour` était **déjà**
+  calculé et rendu par le dépôt, et `page.tsx` ne le transmettait pas ;
+- **le compte remonte dans l'en-tête et suit la frappe.** Il était écrit sous le
+  DERNIER résultat : hors de l'écran au moment précis où il sert ;
+- **ce qui est trouvé s'éclaire dans le nom** — sans marque, une recherche qui
+  rend quatre homonymes ressemble à une recherche qui n'a pas filtré.
+
+**Ce que ça retire, et il l'a tranché avant qu'on code :** le total facturé par
+client quitte la ligne. Il ne se lit plus nulle part ailleurs depuis que la
+fiche a été allégée le 2 septembre.
+
+**Le contrôle a corrigé le code, et pas l'inverse.** Le surlignage et le filtre
+sont deux lectures du même texte ; la suite qui les confronte a trouvé un écart
+réel dès le premier passage — « martins freres » écartait « Martins » de la
+liste mais aurait éclairé son nom. Un seul mot manquant, et plus rien ne
+s'éclaire désormais.
+
+**Mesuré, et c'est ce qui a décidé d'une couleur :** la deuxième ligne était en
+`muted`, **3,32 de contraste** sur le fond crème — sous le seuil de lecture, et
+la première chose qui s'efface au soleil. Elle passe à `inkSoft`, **8,04**. Sur
+la charte Nuit ce même gris en tenait 5,19 : la liste était plus lisible la nuit
+qu'en plein jour.
+
+**Deux réparations vues en capture, jamais par un test :** la ligne du compte
+garde sa place quand la recherche ne trouve rien (sans quoi le champ remontait
+de 24 px sous le doigt à chaque frappe infructueuse), et la phrase d'échec était
+écrite dans le gris qu'on venait justement de condamner.
+
+`ARCHITECTURE.md` §240 · `src/lib/bandes-clients.ts` ·
+`scripts/test-bandes-clients.ts` · planche : `appli/vos-clients.html`.
+
+### La liste de ses clients, proposée en planche essayable
+
+**Ce qu'elle démontre, et qui n'était pas su :** sur quatre clients nommés
+Martins, l'écran d'aujourd'hui n'affiche **rien qui les distingue** — la
+deuxième ligne porte « 5 chantiers · 3 200,00 € facturés », et les quatre se
+ressemblent. La planche y met **le lieu**.
+
+**Rien n'y est inventé, et c'est le point.** Les cinq informations d'une ligne
+existent déjà : `clients.nom`, `clients.adresse` (colonne présente, que la
+liste ne charge pas), le compte de chantiers, `resteDu()`, et `dernierJour`
+— **déjà calculé par `listerFichesClients`, jamais transmis à l'écran**. La
+proposition ne demande donc pas de données neuves : deux valeurs à faire
+descendre jusqu'à l'écran.
+
+**Ce qui change d'autre :** le montant dû quitte les capitales de 9,5 px pour
+16 px à côté du nom (c'est la seule chose de l'écran qui demande un geste) ; la
+liste **annonce son ordre** par bandes de mois, alors qu'elle était déjà rangée
+du chantier le plus récent au plus ancien sans le dire ; le compte remonte dans
+l'en-tête et suit la recherche ; le gris secondaire passe de `muted` à
+`inkSoft` — **3,32 de contraste contre 8,04**, et c'est ce qui s'efface au
+soleil.
+
+**Deux réparations vues en capture, pas en test :** la ligne du compte garde sa
+place quand la recherche ne trouve rien (sans quoi le champ de saisie remontait
+de 24 px sous le doigt à chaque frappe infructueuse), et la barre de recherche
+est collante — sur vingt et un noms, l'outil qui sert à remonter ne doit pas
+être resté en haut.
+
+**La planche porte du JavaScript, contrairement à l'usage du dépôt** : c'est le
+filtrage qu'il faut juger, et la règle y est recopiée de
+`src/lib/recherche-client.ts` plutôt que réinventée. La liste est écrite dans
+le HTML : sans script, elle reste lisible.
+
+**`appli/vos-clients.html`, liée depuis `appli/essais.html` et
+`docs/maquettes/index.html`. Rien n'est codé dans `src/`** — c'est la règle
+de la maquette d'abord (`CLAUDE.md` §3 bis).
+
+### Deux défauts du sommaire des essais, réparés au passage
+
+**Le premier essai de `appli/essais.html` n'avait pas de balise de fin.** Le
+navigateur refermait donc le lien sur le titre de famille suivant, qui devenait
+cliquable et menait à la mauvaise planche. Vu en regardant la page, pas en la
+lisant.
+
+**Les 141 flèches décoratives de `docs/maquettes/index.html` sont retirées.**
+Elles tombaient sous sa règle du 25 août — *« arrête de mettre des flèches,
+c'est moche »* —, que `scripts/test-aucune-fleche.ts` ne pouvait pas voir :
+il ne parcourt que `src/`. La ligne entière est déjà le lien.
+
+
+### Les boutons verts passent au vert de sa note vocale, à plat
+
+**Son verdict, sur `appli/boutons-verts.html` :** *« verdict la D à plat sans
+brillant, donc tout ce qui est bouton cliquable tu remplaces par la D — même
+pour le planning, le choix des noms des équipes (Julien, Antoine) qui était en
+vert foncé »*, puis *« ne fais pas de bricolage, remplace correctement les
+lignes de code, ne fais pas de pansement »*, puis *« ne touche pas à la note
+vocale par contre »*.
+
+**CE QUE LA SECONDE PHRASE A CHANGÉ AU CORRECTIF, et c'était juste.** Le chemin
+court existait : une ligne dans `chartes.ts`, et `--atlas-plein-fond` repeignait
+les quarante-six boutons d'un coup. C'était précisément le pansement — un
+`background-image` posé **par-dessus** le fond que chaque écran écrit en style
+en ligne, parce qu'aucune feuille de style ne peut supplanter un style en ligne.
+Le fichier l'avouait : *« c'est laid à lire et c'est le prix d'un changement qui
+ne touche ni les six autres apparences, ni les trente-quatre écrans »*.
+
+**Le calque est donc supprimé, et la cause avec lui.** Un jeton nommé prend sa
+place — `colors.plein`, l'aplat des boutons qu'on appuie —, et c'est l'écran qui
+le pose. Détail dans `ARCHITECTURE.md` §239. Ce que ça règle au passage : la
+collision entre `.atlas-plein` et `.atlas-galet`, qui posaient tous deux un
+`background-image` à spécificité égale ; et le fait que changer le jeton ne
+changeait plus rien, le calque gagnant toujours.
+
+**Ce qui a bougé :** `design-tokens.ts` (le jeton), `chartes.ts` (la valeur, pour
+les huit chartes — `#7d9a6d` sur Origine, leur propre accent sur les sept
+autres, comme il l'a demandé le 31 août), `globals.css` (`.atlas-plein` ne peint
+plus rien, il ne porte que le geste), et quarante-six aplats de boutons, dont
+les trois pastilles de nom d'équipe du planning et de la journée regardée.
+
+**Ce qui ne bouge PAS, et chacun pour une raison :** la note vocale (sa consigne
+du jour), les capsules de « Terminés » qui portent le galet du 2 septembre, le
+carré d'état du planning — qui dit une demi-journée, pas une action —,
+l'interrupteur de la fiche paysage, et `rust` lui-même : il teinte des textes,
+des icônes, des liserés et les fonds pâles, et le confondre aurait reverdi la
+moitié des écrans.
+
+**CE QUE ÇA COÛTE, ET IL L'A VU AVANT DE TRANCHER :** la crème sur `#7d9a6d`
+tient **2,97** de contraste — **2,55** sous le doigt —, là où il en faudrait
+4,5 ; le vert d'avant en tenait 11,72. Le chiffre était écrit en rouge sous
+chaque bouton de la planche quand il a répondu. Ce qui reste à sa main : passer
+les lettres à l'encre (5,46) sans toucher à sa couleur.
+
+**LA PANNE MUETTE DE CE LOT, et le contrôle qui la garde.** Un oubli sur
+quarante-six compile, passe le lint, s'affiche — et reste vert pin au milieu des
+verts sauge, sur un écran que personne ne rouvre avant des semaines.
+`scripts/test-boutons-pleins.ts` refuse qu'un élément portant `atlas-plein`
+peigne encore son fond avec `colors.rust`, et garde `PrimaryButton` à part parce
+que sa classe vit soixante lignes au-dessus de son style, hors de la fenêtre de
+la règle générale. Confronté aux deux états qu'il prétend détecter : rouge sur
+chacun, avec le fichier et la ligne.
+
+**Éprouvé sur l'application qui tourne, pas seulement relu** : la page de
+connexion rend `rgb(125, 154, 109)` sans aucune image de fond, et le balayage de
+l'accueil, du planning et du catalogue ne trouve plus qu'un seul `rgb(47,59,47)`
+— le carré d'état du planning, qui doit rester.
+
+**Ce qui n'a PAS pu être éprouvé ici, et il faut le dire :** la batterie
+complète ne peut pas être verte sous Windows. Cinq suites comparent des chemins
+écrits avec des barres obliques à ce que `path.relative` rend sur cette machine,
+avec des barres inverses ; deux échouent sur un `EPERM` de dossier temporaire, une
+série demande Redis, et les suites navigateur refusent de tourner tant qu'un
+serveur occupe le port 3000. Aucun de ces échecs ne nomme une couleur, et tous
+précèdent ce lot. Ce qui a été joué ici et qui est vert : `tsc`, le lint, la
+mémoire, et les cinq suites du domaine — chartes, chartes lisibles, galet,
+boutons pleins, aucune flèche. Le reste est éprouvé par la CI, sous Linux.
+
+### La tasse sur tous les boutons verts : la couleur est prise, la lumière reste à trancher
+
+**Ses deux messages :** *« utilise la couleur de la note vocale page fiche
+client et mets-la sur chaque bouton à cliquer qui sont aujourd'hui de couleur
+verte »*, puis, capture à l'appui devant la déclinaison 1 de
+`appli/facturer-note-vocale.html` : *« c'est celle-là la bonne couleur mais sans
+le petit halo lumineux qui tourne à l'intérieur »*.
+
+Puis, la déclinaison A vue : *« garde la tasse telle qu'elle la A mais avec
+seulement un bord doré tout autour »*, puis *« mets juste la couleur de la note
+vocale sur les boutons sans le liseré doré, seulement la couleur pour voir »*,
+et enfin *« fais une planche avec la couleur de la note vocale mais sans l'effet
+brillant »*.
+
+**LA MATIÈRE EST TRANCHÉE, ET PAR LUI : c'est LA TASSE (`.atlas-micro`), pas le
+galet du 2 septembre**, qui reste sur « À facturer » et sur l'onglet actif de
+« Terminés ». **Aucun `::before` animé**, et les trois anneaux or / porcelaine /
+or de la note vocale ne passent pas sur les boutons.
+
+**CE QU'IL DÉPOUILLE, ET C'EST LE SENS DE SES TROIS MESSAGES :** il a demandé le
+bord doré, puis l'a retiré, puis a demandé à voir la couleur sans le brillant du
+tout. La planche a suivi à chaque fois, sans discuter et sans rien garder « au
+cas où » — ce qui devient sans objet est retiré (les trois anneaux, la tasse
+profonde, le vert d'aujourd'hui cerclé).
+
+**Ce que la mesure a montré, et qui n'était écrit nulle part.** La lumière du
+micro est placée **en pour cent** — un cercle centré à 34 % / 26 %. Sur le
+disque de 80 px, elle fait environ 50 px. Sur un bouton de 321 px elle en ferait
+200, et son centre tombe **au milieu du mot**, pas à son bord : le mot ne tient
+plus que **2,1** de contraste, pour un seuil de 4,5. Le défaut ne dépend pas de
+la largeur — il est là dès 148 px, parce que le point lumineux suit le texte.
+
+**Cinq déclinaisons lui sont posées** (`appli/boutons-verts.html`), et toutes
+portent la couleur de sa note vocale — c'est le brillant et le bord qui varient.
+**A la couleur seule**, ce qu'il a demandé en dernier (2,1) · **B la même avec le
+bord doré**, son choix d'une heure plus tôt, gardé à côté pour comparer dans le
+même geste (2,1) · **C la même, lumière gardée à ses 50 px** — une ellipse de
+46 × 36 posée à l'épaule, donc dans la marge : **6,5 à toutes les largeurs**, et
+rigoureusement identique à A sur une capsule courte · **D à plat**, le vert du
+milieu de la tasse (3,0) · **E à plat**, son vert du bord (6,5).
+
+**Les deux aplats sont PRIS DANS l'échelle de la tasse, pas approchés à l'œil**,
+et le contrôle le vérifie contre `globals.css`. Le troisième vert, #9fbd82, n'est
+pas proposé à plat : ce n'est pas une couleur, c'est le point de lumière — le mot
+y tombe à 2,0.
+
+**CHANGER LA COULEUR DES LETTRES NE SAUVE PAS LA A, et il fallait le mesurer
+avant de le proposer :** en crème le mot s'efface sur le clair (2,1), en encre
+il s'efface sur le foncé (2,5 sur `#4f5f4c`). Le mot traverse les deux bouts du
+dégradé — aucune couleur de lettre ne tient sur les deux. C'est la lumière qu'il
+faut bouger, ou rien, et l'assumer.
+
+**Les chiffres de la planche sont CALCULÉS par elle**, sur les boutons tels
+qu'ils sont rendus : elle lit la largeur réelle, **balaie le mot d'un bout à
+l'autre** et garde le pire. Ne mesurer que la première lettre — ce que faisait
+la première version — rendait un vert convenable là où le mot s'efface, puisque
+c'est au MILIEU que la lumière tombe.
+
+**Et ses deux retraits sont GARDÉS, pas seulement faits.**
+`appli/tests/essai-boutons-verts.mjs` refuse toute animation sur les
+pseudo-éléments du bouton, compare les trois verts au `.atlas-micro` lu dans
+`src/app/globals.css`, exige **aucun** liseré sur A, **un seul** filet d'or et
+**aucune** porcelaine sur B, et que les deux aplats soient deux de ses verts et
+pas un vert qui ressemble. Confrontée à un halo remis, à un filet changé, puis à
+la porcelaine remise : rouge sur chacun. Jouée par `pages.yml` avant toute
+publication.
+
+**Et elle a rougi une fois sur du code juste, ce qui valait la peine :** lue
+200 ms après le clic, la couleur du filet est encore INTERMÉDIAIRE — `.bouton`
+porte `transition: box-shadow 220ms`. Un contrôle qui mesure pendant une
+transition accuse le produit à la place de la mesure ; l'attente est passée à
+400 ms, et la raison est écrite dans le fichier.
+
+**Ce que la planche ne touche pas, et le dit** : les boutons creux (sa règle du
+31 août), les sept autres apparences — la matière ne s'écrirait que pour Origine,
+par `--atlas-plein-fond`, comme le vert d'aujourd'hui.
+
+**Rien n'est codé** (`CLAUDE.md` §3 bis) : la réponse attendue est une lettre.
+Une question reste posée en bas de la planche : faut-il aussi retirer le halo de
+la note vocale elle-même ?
+
+**Ce qui a été retiré au fil de ses messages, et qui ne doit pas revenir « au cas
+où » :** les trois anneaux de la note vocale sur un bouton, la déclinaison
+« tasse profonde », et celle du vert d'aujourd'hui cerclé d'or. Une planche qui
+garde toutes ses versions cesse de poser une question.
 ## 2026-09-02
 
 ### Une suite rouge deux heures chaque nuit, sur du code juste

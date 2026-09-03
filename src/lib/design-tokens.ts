@@ -47,6 +47,33 @@ export const colors = {
   rust: "var(--atlas-rust, #2f3b2f)", // --pine
   rustDeep: "var(--atlas-rustDeep, #4f5f4c)", // --pine-light : survol, second niveau
   rustTint: "var(--atlas-rustTint, #ece9e1)", // --paper : fond des avatars d'icône et éléments teintés
+  // ─── L'APLAT DES BOUTONS QU'ON APPUIE, posé le 3 septembre 2026 ──────────
+  //
+  // **Sa décision, prise sur planche** (`appli/boutons-verts.html`, la D) :
+  // *« verdict la D à plat sans brillant, donc tout ce qui est bouton
+  // cliquable tu remplaces par la D ».* C'est le vert du milieu de sa note
+  // vocale — `sage`, #7d9a6d —, à plat : ni dégradé, ni filet d'or, ni halo.
+  //
+  // **POURQUOI UN JETON À PART, ET NON `rust` MODIFIÉ.** `rust` teinte aussi
+  // des TEXTES, des icônes, des liserés et les fonds pâles : le changer aurait
+  // reverdi la moitié des écrans pour une demande qui ne vise que des aplats.
+  // C'est déjà l'arbitrage du 31 août, et il n'a pas bougé.
+  //
+  // **ET POURQUOI IL REMPLACE `--atlas-plein-fond`.** Jusqu'ici la couleur
+  // arrivait par un `background-image` peint PAR-DESSUS le fond en ligne des
+  // boutons — un contournement assumé, écrit noir sur blanc dans `chartes.ts` :
+  // « c'est laid à lire et c'est le prix d'un changement qui ne touche ni les
+  // six autres apparences, ni les trente-quatre écrans ». Le jeton supprime la
+  // cause : le bouton pose sa couleur lui-même, et le calque n'a plus lieu
+  // d'être.
+  //
+  // **CE JETON EST L'AFFAIRE DES BOUTONS PLEINS, DE RIEN D'AUTRE.** Un texte,
+  // un liseré, une icône gardent `rust`. Un bouton CREUX n'en a pas — sa
+  // consigne du 31 août : *« surtout pas ceux qui sont creux »*.
+  //
+  // Sur les sept autres chartes, il vaut leur accent : le bleu marine de Brume
+  // ne devient pas vert (`chartes.ts`, et `scripts/test-chartes.ts` le garde).
+  plein: "var(--atlas-plein, #7d9a6d)",
   sage: "#7d9a6d", // --sage : bordure de survol, encarts d'information
   sageLight: "#9fbd82", // --sage-light
   // Exception discrète, sans équivalent chez Arborea : uniquement pour

@@ -1,0 +1,273 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas — La liste de vos clients — ce qui a été codé, et ce que ça coûte</title>
+<style>
+  :root{
+    --ground:#f5f3ee; --surface:#faf9f5; --raised:#ece9e1;
+    --ink:#1c1c1a; --ink-soft:#4a4a44; --muted:#8a8578;
+    --accent:#2f3b2f; --alert:#b5562a; --line:rgba(28,28,26,0.13);
+    --serif:Georgia,'Times New Roman',serif;
+    --sans:system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --ground:#161815; --surface:#1d201c; --raised:#252924;
+      --ink:#eae7df; --ink-soft:#c2bdb1; --muted:#948f83;
+      --accent:#9fbd82; --alert:#e0885a; --line:rgba(234,231,223,0.17);
+    }
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--sans);
+    line-height:1.65;}
+  main{max-width:44rem;margin:0 auto;padding:2.5rem 1.2rem 5rem;}
+  h1,h2,h3,h4{font-family:var(--serif);font-weight:600;line-height:1.2;
+    text-wrap:balance;margin:2rem 0 0.6rem;scroll-margin-top:1rem;}
+  h1{font-size:2rem;margin-top:0;}
+  h2{font-size:1.5rem;padding-top:1.2rem;border-top:1px solid var(--line);}
+  h3{font-size:1.12rem;}
+  h4{font-size:1rem;}
+  p{margin:0 0 0.9rem;}
+  a{color:var(--accent);text-underline-offset:3px;}
+  a:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:3px;}
+  ul,ol{margin:0 0 1rem;padding-left:1.3rem;}
+  li{margin-bottom:0.4rem;}
+  li::marker{color:var(--muted);}
+  /* Le sommaire : des cibles larges, confortables au doigt sur téléphone. */
+  ol li a{display:inline-block;padding:0.15rem 0;}
+  blockquote{margin:1rem 0;padding:0.85rem 1.05rem;background:var(--raised);
+    border-left:3px solid var(--accent);border-radius:0 10px 10px 0;color:var(--ink-soft);}
+  code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:0.87em;
+    background:var(--raised);padding:0.1rem 0.35rem;border-radius:5px;}
+  hr{border:0;border-top:1px solid var(--line);margin:2rem 0;}
+  .tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px;
+    background:var(--surface);margin:0 0 1.2rem;}
+  table{border-collapse:collapse;width:100%;font-size:0.92rem;min-width:22rem;}
+  th,td{text-align:left;padding:0.55rem 0.8rem;border-bottom:1px solid var(--line);
+    vertical-align:top;}
+  th{font-size:0.72rem;letter-spacing:0.08em;text-transform:uppercase;
+    color:var(--muted);white-space:nowrap;}
+  tr:last-child td{border-bottom:none;}
+  .retour{display:inline-block;font-size:0.76rem;color:var(--muted);
+    text-decoration:none;margin:-0.3rem 0 1rem;}
+  .retour:hover{color:var(--accent);text-decoration:underline;}
+</style>
+</head>
+<body>
+<main>
+<h1 id="la-liste-de-vos-clients--ce-qui-a-été-codé-et-ce-que-ça-coûte">La liste de vos clients — ce qui a été codé, et ce que ça coûte</h1>
+<p><strong>3 septembre 2026.</strong> Vous avez regardé la maquette, puis dit : <em>« tu peux coder exactement cette maquette »</em>. C'est fait. Ce document dit <strong>quoi</strong>, <strong>pourquoi</strong>, et <strong>ce que ça vous retire</strong> — point par point, avec le fichier qui le fonde.</p>
+<p>La maquette reste essayable : <code>https://florianmarrins0978-svg.github.io/Atlas-app/vos-clients.html</code></p>
+<hr>
+<h2 id="vos-trois-remarques-une-par-une">Vos trois remarques, une par une</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<h3 id="1--quatre-clients-sappellent-martins--rien-ne-me-dit-lequel-cest-">1. « Quatre clients s'appellent Martins : rien ne me dit lequel c'est »</h3>
+<p><strong>Fait.</strong> La deuxième ligne porte désormais <strong>le lieu</strong>, puis le nombre de chantiers : « 10 rue d'Enfer, Nantes · 5 chantiers ».</p>
+<p><strong>Et voici ce qui n'était pas su, et qui compte plus que le correctif :</strong> cette adresse était <strong>déjà dans votre base</strong>. La fiche d'un client l'affiche depuis le début. La seule requête de toute l'application qui ne la chargeait pas était celle de la liste — c'est-à-dire le seul endroit où quatre noms identiques se côtoient.</p>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th></th>
+</tr></thead><tbody>
+<tr>
+<td>ce qu'il a fallu</td>
+<td><strong>une ligne</strong> dans <code>src/server/repositories/fiche-client.ts</code></td>
+</tr>
+<tr>
+<td>ce que ça a coûté en base</td>
+<td>rien : aucune migration, aucune donnée neuve</td>
+</tr>
+</tbody></table></div>
+<p><strong>Un client sans adresse reste normal.</strong> Sa ligne se contente de ses chantiers. Rien n'est inventé, rien ne réclame.</p>
+<h3 id="2--ce-qui-reste-dû-est-écrit-tout-petit-en-bout-de-ligne-">2. « Ce qui reste dû est écrit tout petit, en bout de ligne »</h3>
+<p><strong>Fait.</strong> Il passe de <strong>9,5 px en capitales espacées</strong> à <strong>16 px</strong>, à hauteur du nom, avec « dus » en dessous. Les chiffres sont alignés en colonne : « 740,00 € » et « 1 260,00 € » tombent sur la même virgule.</p>
+<p><strong>Et il est désormais le SEUL montant de la ligne</strong> — voir « ce que ça vous retire », plus bas.</p>
+<h3 id="3--ni-ordre-annoncé-ni-repère-pour-sauter-quelque-part-">3. « Ni ordre annoncé, ni repère pour sauter quelque part »</h3>
+<p><strong>Fait.</strong> Des bandes nomment les mois : SEPTEMBRE, AOÛT, JUILLET, puis PLUS ANCIEN, puis SANS CHANTIER.</p>
+<p><strong>Là encore, la liste ÉTAIT déjà rangée</strong> — du chantier le plus récent au plus ancien — et personne ne pouvait le savoir. La date qui commande ce tri était calculée par l'application et <strong>abandonnée avant d'arriver à l'écran</strong>. Les bandes ne changent donc pas l'ordre : elles le disent.</p>
+<p><strong>Trois mois nommés, pas neuf.</strong> Un titre par mois donnerait neuf titres pour vingt et un clients : le repère deviendrait le bruit qu'il devait réduire.</p>
+<hr>
+<h2 id="ce-qui-a-été-fait-sans-que-vous-le-demandiez-et-pourquoi">Ce qui a été fait sans que vous le demandiez, et pourquoi</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th>Pourquoi</th>
+</tr></thead><tbody>
+<tr>
+<td><strong>le compte remonte en haut</strong> et suit la frappe</td>
+<td>il était écrit <strong>sous le dernier résultat</strong> : hors de l'écran au moment précis où il sert. On tape, on regarde le haut, et rien ne dit combien de noms restent</td>
+</tr>
+<tr>
+<td><strong>le titre devient « Vos clients »</strong>, le compte passe dessous</td>
+<td>l'écran affichait « 21 clients » en gros et « VOS CLIENTS » en doré dessous : le compte à la place du nom, et deux fois la même chose en deux voix</td>
+</tr>
+<tr>
+<td><strong>la barre de recherche reste collée en haut</strong></td>
+<td>sur vingt et un noms on descend ; l'outil qui sert à remonter ne doit pas être resté en haut de la page</td>
+</tr>
+<tr>
+<td><strong>ce qui est trouvé s'éclaire</strong> dans le nom</td>
+<td>sur quatre homonymes, une recherche sans marque ressemble à une recherche qui n'a pas filtré</td>
+</tr>
+<tr>
+<td><strong>une loupe</strong> dans la barre</td>
+<td>elle dit ce que fait la plage sans un mot de plus</td>
+</tr>
+</tbody></table></div>
+<hr>
+<h2 id="ce-que-ça-vous-retire--une-seule-chose-et-il-faut-la-dire">Ce que ça vous RETIRE — une seule chose, et il faut la dire</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><strong>Le total facturé par client (« 2 940,00 € facturés ») quitte la ligne.</strong></p>
+<p><strong>Pourquoi :</strong> deux sommes d'argent sur une même ligne, l'une grise l'autre rouge, se confondent au premier coup d'œil — et c'est la rouge qui demande un geste.</p>
+<p><strong>Ce que ça coûte, et vous le saviez avant de répondre :</strong> depuis que la fiche d'un client a été allégée le 2 septembre, ce total <strong>ne se lit plus nulle part ailleurs</strong>. Il est toujours calculé, toujours en base : le remettre est l'affaire de dix minutes si vous le regrettez.</p>
+<hr>
+<h2 id="ce-qui-a-été-mesuré-et-qui-a-changé-une-couleur">Ce qui a été mesuré, et qui a changé une couleur</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th>Le gris de la deuxième ligne</th>
+<th>Contraste sur votre fond crème</th>
+</tr></thead><tbody>
+<tr>
+<td>celui d'avant (<code>muted</code>)</td>
+<td><strong>3,32</strong></td>
+</tr>
+<tr>
+<td>le seuil de lecture</td>
+<td>4,5</td>
+</tr>
+<tr>
+<td>celui d'aujourd'hui (<code>inkSoft</code>)</td>
+<td><strong>8,04</strong></td>
+</tr>
+</tbody></table></div>
+<p>La ligne qui répond à « lequel des quatre Martins ? » était donc écrite <strong>sous le seuil de lecture</strong> : la première chose qui s'efface en plein soleil, sur un chantier.</p>
+<p><strong>Et le détail qui dit tout :</strong> sur la charte <strong>Nuit</strong>, ce même gris tenait 5,19. <strong>Votre liste était plus lisible la nuit qu'en plein jour.</strong></p>
+<hr>
+<h2 id="ce-que-javais-dit-et-qui-était-faux">Ce que j'avais dit et qui était FAUX</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><strong>Deux corrections, noir sur blanc.</strong></p>
+<ol>
+<li>Vous m'aviez écrit que la charte d'Atlas était <strong>Playfair Display et Inter</strong>. Le code dit l'inverse : <code>src/app/globals.css</code> emploie la <strong>serif de votre téléphone</strong> (<code>ui-serif</code>) et une sans du système. Vous aviez comparé les deux le 10 août 2026 et retenu celle de l'iPhone, pas Playfair. La maquette et l'écran suivent le code.</li>
+<li>Vous parliez du lien <strong>« Mes clients »</strong> sur l'accueil. Il s'appelle <strong>« Vos clients »</strong>. Le titre de l'écran a été aligné dessus.</li>
+</ol>
+<hr>
+<h2 id="ce-que-les-contrôles-ont-attrapé--y-compris-contre-moi">Ce que les contrôles ont attrapé — y compris contre moi</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><strong>Le contrôle a corrigé mon code, pas l'inverse.</strong> Le surlignage et le filtre sont deux façons de lire le même nom. J'ai écrit une suite qui les confronte sur une centaine de combinaisons ; <strong>elle a rougi au premier passage</strong>, sur un écart réel : en tapant « martins freres », la ligne « Martins » était écartée de la liste — mais son nom se serait éclairé si l'écran l'avait affichée. C'est le code qui a cédé.</p>
+<p><strong>Deux défauts vus en CAPTURE, par aucun test :</strong></p>
+<ul>
+<li>quand une recherche ne trouvait rien, la ligne du compte se vidait et disparaissait : <strong>le champ de saisie remontait de 24 px sous le doigt</strong>, à chaque frappe infructueuse ;</li>
+<li>la phrase « Aucun client ne s'appelle… » était écrite dans le gris que je venais justement de condamner comme illisible.</li>
+</ul>
+<p>C'est la sixième fois dans ce dépôt qu'un défaut sort d'une image et d'aucun test.</p>
+<hr>
+<h2 id="la-batterie--les-chiffres-exacts-et-ce-quils-valent">La batterie — les chiffres exacts, et ce qu'ils valent</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><code>npm run verifier:avant-livraison</code>, jouée en entier sur votre poste :</p>
+<div class="tablewrap"><table><thead><tr>
+<th>Étape</th>
+<th></th>
+</tr></thead><tbody>
+<tr>
+<td>Types</td>
+<td><strong>✅</strong></td>
+</tr>
+<tr>
+<td>Lint</td>
+<td><strong>✅</strong></td>
+</tr>
+<tr>
+<td>Mémoire du dépôt</td>
+<td><strong>✅</strong> (8 fichiers vérifiés)</td>
+</tr>
+<tr>
+<td>Construction</td>
+<td><strong>✅</strong></td>
+</tr>
+<tr>
+<td>Fournisseurs d'IA</td>
+<td><strong>✅</strong></td>
+</tr>
+<tr>
+<td>Données de démonstration</td>
+<td><strong>✅</strong></td>
+</tr>
+<tr>
+<td>Suites base de données</td>
+<td><strong>❌ 285/306</strong></td>
+</tr>
+<tr>
+<td>Suites navigateur</td>
+<td><strong>❌ 113/125</strong></td>
+</tr>
+<tr>
+<td>Connexion derrière un proxy</td>
+<td><strong>✅</strong></td>
+</tr>
+</tbody></table></div>
+<p><strong>Elle n'est donc PAS verte, et il faut le dire.</strong> 33 suites rouges. <strong>Aucune n'est de ce lot</strong>, et voici comment cela se vérifie plutôt que de se supposer : les dix suites qui couvrent cet écran ont toutes été jouées, et toutes sont vertes — <code>test-bandes-clients</code>, <code>test-recherche-client</code>, <code>test-liste-clients</code>, <code>test-fiche-client</code>, <code>test-fiche-client-db</code>, <code>test-recherche-client-e2e</code>, <code>test-fiche-client-e2e</code>, <code>test-mode-sombre-lisible-e2e</code>, <code>test-chartes-lisibles</code>, <code>test-aucune-fleche</code>.</p>
+<p><strong>D'où viennent les 33, alors :</strong></p>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th></th>
+</tr></thead><tbody>
+<tr>
+<td>une vingtaine</td>
+<td><strong>la machine, pas le code</strong> — Windows : des chemins comparés avec des barres obliques, un <code>bash</code> que le poste n'a pas, des dossiers temporaires qu'il refuse d'effacer. C'était déjà écrit dans <code>TODO.md</code> avant ce lot</td>
+</tr>
+<tr>
+<td>une dizaine</td>
+<td><strong>une autre session travaille dans le même dossier, en ce moment</strong> — les écrans de TVA et le planning sont ouverts et à moitié réécrits. Un fichier qu'elle a supprimé (<code>MontantCopiable.tsx</code>) est encore cherché par une suite</td>
+</tr>
+<tr>
+<td>deux</td>
+<td>la CI est rouge sur <code>main</code> depuis le 2 septembre, sans rapport avec nous (<code>TODO.md</code>)</td>
+</tr>
+</tbody></table></div>
+<h2 id="ce-qui-ma-fait-recommencer-la-vérification">Ce qui m'a fait recommencer la vérification</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><strong>Un vert qui ne prouvait rien.</strong> Dans la batterie, la suite navigateur de la recherche est passée <strong>sans rien vérifier</strong> : elle a une échappatoire pour le cas où la page ne s'anime pas, elle l'a prise, et elle a rendu un vert vide. Mes cinq contrôles neufs n'ont donc jamais été joués.</p>
+<p><strong>Trouvé en regardant une capture</strong> : l'image montrait « martins » dans le champ, dix-huit clients en dessous, aucune croix et aucune marque.</p>
+<p>J'ai monté un serveur bâti et tout rejoué contre lui :</p>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th></th>
+</tr></thead><tbody>
+<tr>
+<td><code>test-recherche-client-e2e</code></td>
+<td><strong>13/13</strong>, cette fois pour de vrai</td>
+</tr>
+<tr>
+<td><code>test-fiche-client-e2e</code></td>
+<td><strong>✅</strong></td>
+</tr>
+<tr>
+<td><code>test-mode-sombre-lisible-e2e</code></td>
+<td><strong>✅</strong> — l'écran se lit aussi bien en Nuit</td>
+</tr>
+</tbody></table></div>
+<p><strong>Et l'écran a été regardé</strong>, pas seulement testé : au repos, en cherchant « martins » (les homonymes se distinguent par leur commune, la marque s'allume), sur une recherche vide, et défilé jusqu'en bas (la barre reste en haut). Mesuré sur ces images : 46 lignes, 69 px de haut au minimum, <strong>aucun libellé coupé</strong>, aucune boîte de zéro pixel, aucun débordement, et les cinq bandes dans l'ordre.</p>
+<hr>
+<h2 id="ce-qui-reste-ouvert">Ce qui reste ouvert</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th>Qui peut le trancher</th>
+</tr></thead><tbody>
+<tr>
+<td>le total facturé, s'il vous manque</td>
+<td><strong>vous</strong> — dix minutes pour le remettre</td>
+</tr>
+<tr>
+<td>la CI est rouge depuis le 2 septembre sur trois suites, <strong>sans rapport avec ce lot</strong></td>
+<td>une session, sans vous (<code>TODO.md</code>)</td>
+</tr>
+<tr>
+<td>la batterie ne peut pas être entièrement verte sous Windows — huit suites échouent pour des raisons de machine</td>
+<td>une session, sans vous (<code>TODO.md</code>)</td>
+</tr>
+</tbody></table></div>
+</main>
+</body>
+</html>
