@@ -212,10 +212,14 @@ verifier("une construction muette déclenche aussi la réinstallation", () => {
     /const morteSansRienDire = constructionMuette\(/,
     "le second filet a disparu : un node_modules abîmé sans écart de version ne serait plus rattrapé"
   );
+  // **Trois signaux, et chacun voit ce que les deux autres ne voient pas :**
+  // un paquet mutilé (le message de Node), un paquet absent (`npm ls`), une
+  // construction morte sans un mot. Calculer l'un sans l'employer ne sert à
+  // personne — c'est leur emploi qu'on fixe, pas leur ordre.
   assert.match(
     BANC,
-    /if \(dependanceManquante \|\| morteSansRienDire\)/,
-    "le filet est calculé mais pas utilisé — il ne sert alors à personne"
+    /if \(dependanceManquante \|\| incomplet \|\| morteSansRienDire\)/,
+    "un des trois filets est calculé mais pas utilisé — il ne sert alors à personne"
   );
 });
 

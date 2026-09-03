@@ -1166,7 +1166,37 @@ if (raison) {
   // seconde et NOMME ce qui manque (`coherence-dependances.mjs`).
   const { incomplet, motif: motifArbre } =
     code !== 0 ? await arbreIncomplet((c, a) => jouerEnRetenant(c, a, process.env, 400, true)) : { incomplet: false, motif: null };
-  const dependanceManquante = incomplet;
+
+  // **DEUX SIGNAUX, ET ILS NE REGARDENT PAS LA MÊME CHOSE.** Le second a
+  // failli disparaître avec l'énumération, et c'est la batterie qui l'a
+  // rattrapé — `test-dependance-manquante.ts` défend deux pannes réelles.
+  //
+  //   | ce qui est cassé | qui le voit |
+  //   |---|---|
+  //   | un paquet déclaré et ABSENT | `npm ls` ci-dessus, quelle que soit la phrase |
+  //   | un paquet PRÉSENT mais mutilé — des fichiers manquants dedans | lui seul : npm le compte installé, à la bonne version |
+  //
+  // La panne du 22 août 2026 était de la seconde espèce : `./detect-typo`
+  // absent À L'INTÉRIEUR de `node_modules/next`. `npm ls` n'y voit rien.
+  //
+  // **Ce qui a été supprimé, c'est la course aux formulations.** « Could not
+  // find the Next.js package » disait qu'un paquet MANQUE — cas que `npm ls`
+  // couvre désormais sans qu'on ait à connaître la phrase. Ce qui reste ici
+  // est le message de NODE, pas celui d'un outil de construction : il ne
+  // change pas, et il est le seul à nommer un fichier introuvable au fond de
+  // `node_modules`.
+  //
+  // La clause `node_modules` reste indispensable : sans elle, un import cassé
+  // du dépôt (`@/lib/…`) ferait réinstaller pour rien.
+  //
+  // **Ce signal-ci reste une expression PURE de la sortie**, et ce n'est pas
+  // un détail de style : `test-dependance-manquante.ts` l'extrait du fichier
+  // et le joue tel quel, plutôt que d'en écrire une copie qui divergerait
+  // (`CLAUDE.md` §3). Y mêler la réponse de npm le rendrait inextractible, et
+  // la suite perdrait les deux pannes réelles qu'elle défend. Les deux signaux
+  // se composent plus bas, comme le troisième le fait déjà.
+  const dependanceManquante =
+    code !== 0 && /Cannot find module|MODULE_NOT_FOUND/i.test(sortie) && /node_modules/.test(sortie);
 
   // **Le second filet — 29 août 2026.** La condition ci-dessus exige un
   // message ; sa construction n'en produisait aucun. Une mort juste après
@@ -1175,12 +1205,14 @@ if (raison) {
   // installé — que la comparaison de versions ne peut pas voir.
   const morteSansRienDire = constructionMuette({ code, sortie });
 
-  if (dependanceManquante || morteSansRienDire) {
+  if (dependanceManquante || incomplet || morteSansRienDire) {
     console.log(
-      (morteSansRienDire && !dependanceManquante
-        ? "\n  La construction s'est arrêtée sans rien dire — c'est la marque de\n" +
-          "  dépendances abîmées.\n"
-        : `\n  ${motifArbre}\n`) +
+      (dependanceManquante
+        ? "\n  Un paquet de node_modules est mutilé — la construction ne peut pas aboutir.\n"
+        : incomplet
+          ? `\n  ${motifArbre}\n`
+          : "\n  La construction s'est arrêtée sans rien dire — c'est la marque de\n" +
+            "  dépendances abîmées.\n") +
         "  Réinstallation des dépendances, puis nouvelle tentative.\n"
     );
     const { code: codeInstall } = await jouerEnRetenant("npm", [
