@@ -4,6 +4,8 @@ import { db } from "../db/client";
 import { withEntreprise } from "../db/with-entreprise";
 import { envoisFactures, factures, chantiers } from "../db/schema";
 import { lireObjet } from "../storage";
+import { allureSeuleDesDocuments } from "./entreprises";
+import type { Allure } from "@/lib/allure-documents";
 import type { Ctx } from "./context";
 
 // **Transmettre la facture, puisque personne ne le fait à la place du patron.**
@@ -176,6 +178,25 @@ export type FacturePourClient = {
   entrepriseNom: string;
   totalTtc: string;
   echeanceLe: string | null;
+  /**
+   * L'allure de SES documents — typographie, fond, accent (migration 0063).
+   *
+   * **`null` : la page d'aujourd'hui, au pixel près.** C'est ce que reçoit
+   * l'immense majorité — il n'a rien réglé —, et c'est la garantie qu'un
+   * réglage ouvert puis refermé ne repeint pas la page de son client.
+   *
+   * **Ce n'est PAS sa charte d'écran**, et les deux ne doivent jamais se
+   * confondre : une facture ne part pas en noir chez le client parce qu'il a
+   * choisi « Nuit » (`layout.tsx`, `estPageDuClient`). C'est l'allure de ses
+   * PIÈCES, celle que le PDF porte déjà — la page et le papier disaient jusqu'ici
+   * deux choses différentes du même document.
+   *
+   * **Elle est lue au moment de la consultation, pas figée à l'émission**, et
+   * c'est la limite connue : s'il change son allure après l'envoi, la page suit
+   * et le PDF archivé, lui, ne bouge pas. La figer demande trois colonnes de
+   * plus sur `factures` — voir `docs/facture-impeccable.md`.
+   */
+  allure: Allure | null;
 };
 
 export async function factureParJeton(
@@ -217,6 +238,9 @@ export async function factureParJeton(
       entrepriseNom: f.entrepriseNom,
       totalTtc: f.totalTtc,
       echeanceLe: f.dateEcheance ?? null,
+      // L'entreprise vient du jeton, jamais d'une entrée du client — comme la
+      // facture elle-même, deux lignes plus haut.
+      allure: await allureSeuleDesDocuments(tx, envoi.entrepriseId),
     };
   });
 }

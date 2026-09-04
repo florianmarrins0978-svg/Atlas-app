@@ -19,6 +19,24 @@ ligne « fait » qui ne l'est pas coûte plus cher qu'une ligne absente.
 
 ---
 
+## FAIT : la facture, le second arrêt (4 septembre 2026)
+
+Le dernier écran avant que l'argent parte n'était jamais passé par une revue.
+
+| | |
+|---|---|
+| **Fait** | un devis renvoyé après la fin de chantier atteint enfin la facture — l'écran le nomme, avec sa version, et porte le geste qui rattrape (`src/lib/facture-face-au-devis.ts`) |
+| | le devis qui fait foi est la dernière version **envoyée** : un chantier dont la v2 traînait en brouillon n'est plus refusé à tort |
+| | le total se recompose à la main — prix accordé au client et un taux par catégorie, comme sur le papier |
+| | la page que son client ouvre suit l'allure de SES documents ; sans réglage, elle est celle d'aujourd'hui au pixel près |
+| **Mesuré, pas corrigé** | « Envoyer la facture » tombe **309 px sous le pli** à 390 × 664 |
+| **Attend sa réponse** | `appli/ts-la-trace-de-laccord.html` — A ou B, le geste au-dessus du pli, ce que « sans accord » autorise |
+| **Reste** | figer l'allure sur la facture émise (trois colonnes, une migration) |
+
+Détail : `ARCHITECTURE.md` §255 et `docs/facture-impeccable.md`.
+
+---
+
 ## FAIT : la fiche du chantier est retirée (4 septembre 2026)
 
 **Sa décision, prise deux fois** — 21 août : *« la fiche chantier, on la

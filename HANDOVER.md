@@ -9,7 +9,39 @@ sert.
 
 ---
 
-## Dernier lot — LA FICHE DU CHANTIER RETIRÉE (4 septembre 2026)
+## Dernier lot — LA FACTURE, LE SECOND ARRÊT (4 septembre 2026)
+
+**Trois lots ont tourné EN MÊME TEMPS ce jour-là, dans le même dossier :** la
+fiche du chantier retirée, la feuille du planning, et celui-ci. Si l'arbre paraît
+incohérent en reprenant, c'est de là que ça vient — voir plus bas.
+
+**Ce que ce lot ferme** (`ARCHITECTURE.md` §255,
+`docs/facture-impeccable.md`) :
+
+| | |
+|---|---|
+| un devis renvoyé après la fin de chantier | n'atteignait **jamais** la facture. L'écran le nomme désormais, avec sa version, et porte le geste qui rattrape |
+| un chantier facturable | était refusé quand une v2 traînait en brouillon (« n'a jamais été envoyé » — faux) |
+| le total de l'arrêt | ne se recomposait pas : ni le prix accordé, ni les taux multiples. Il appelle maintenant `totauxAvecReduction`, comme l'émission |
+| la page du client | portait le crème d'Atlas, pas l'allure de ses documents |
+
+**Ce qui attend SA réponse :** `appli/ts-la-trace-de-laccord.html` — A ou B, le
+geste au-dessus du pli, et ce que « sans accord » autorise. **Ne pas rouvrir la
+FORME des travaux supplémentaires** : elle a été tranchée le 1ᵉʳ septembre à
+01 h 25 et c'est écrit en tête de `appli/ts-sur-la-facture.html`.
+
+**Le piège à connaître avant de mesurer quoi que ce soit.** La batterie base a
+rendu **287/310 puis un tout autre relevé** à quelques minutes d'intervalle, sur
+le même code : les suites tombées disaient *« deadlock detected »* et
+*« Utilisateur X n'est pas membre de l'entreprise Y »* — la signature d'un
+`TRUNCATE` venu d'à côté. `nettoyerBase()` vide la base, et deux batteries
+concurrentes se détruisent l'une l'autre. **Une batterie est une machine à un
+seul occupant** ; jouée pendant qu'une autre session travaille, son total ne veut
+rien dire. Chaque suite de ce lot est verte jouée seule.
+
+---
+
+## Lot précédent — LA FICHE DU CHANTIER RETIRÉE (4 septembre 2026)
 
 **Sa décision, prise deux fois** — 21 août : *« la fiche chantier, on la supprime
 pour de bon »* ; 1er septembre : *« toutes ces infos sont déjà sur cette page,

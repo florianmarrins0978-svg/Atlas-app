@@ -22647,3 +22647,120 @@ plus profond, jamais restaurées (`CLAUDE.md` §5 bis) :
 | `test-devis-a-la-main-e2e`, `test-devis-complet-e2e` | la ligne « Devis à la main » du tiroir | l'arrivée sur le devis, sans détour |
 | `test-retour-fiche-client` | `versFicheClient(` dans l'écran retiré | **rien** — le cas est supprimé, et la perte écrite noir sur blanc |
 | `test-reprendre-ou-il-en-etait`, `test-retour-du-devis`, `test-hub-repo` | la fiche comme destination | **qu'elle ne le soit JAMAIS** — le contrôle qui empêche la boucle de renaître |
+
+---
+
+## §255. La facture face au devis qui fait foi, et le total qui se recompose
+
+**Le 4 septembre 2026, sur le second arrêt du parcours** — le dernier écran
+avant que l'argent parte, et le seul qui n'était jamais passé par une revue.
+
+### Ce qui coûtait de l'argent, et que rien ne disait
+
+Une facture naît en brouillon du devis, à la fin du chantier. Un devis corrigé
+et **renvoyé ensuite** ne l'atteignait jamais : `terminerChantier` est
+idempotente — et elle a raison de l'être, un double appui est le geste le plus
+banal sur un téléphone —, si bien que la facture gardait les lignes et les
+montants d'avant. Pire, le cas courant n'est pas de rappuyer sur « Créer la
+facture » mais d'ouvrir l'écran : `getFacturePourChantier` servait alors le
+brouillon périmé **sans un mot**, sur un écran qui ne nommait même pas le devis
+dont il reprenait les lignes — quand le PDF, lui, écrit « Établie à partir du
+devis n° … » depuis toujours.
+
+**La réponse est en trois pièces, et la séparation n'est pas décorative :**
+
+| | |
+|---|---|
+| `src/lib/facture-face-au-devis.ts` | la règle **dit** — pure, éprouvée sans base |
+| `FactureClient.tsx` | l'écran **montre**, en nommant le devis et sa version |
+| `reprendreLeDevisSurLaFacture` | le geste **fait**, et seulement sur demande |
+
+**Reprendre automatiquement a été refusé.** Les montants changeraient entre le
+moment où il ouvre l'écran et celui où il appuie, sur le seul écran qui engage
+son argent. C'est `CLAUDE.md` §4 : rien n'est validé sans un geste du patron.
+
+**Une facture ARRÊTÉE ne se compare à rien**, et c'est dans la règle pure : elle
+est partie chez le client et inscrite au relevé. Lui reprocher de ne pas suivre
+un devis postérieur serait un avertissement qu'aucun geste ne peut lever —
+c'est-à-dire du bruit qu'on apprend à ignorer.
+
+### Le devis qui fait foi est la dernière version ENVOYÉE
+
+`terminerChantier` prenait la dernière version, **puis** refusait si elle n'était
+pas envoyée. Un devis v1 parti chez le client et une v2 laissée en brouillon
+rendaient donc « Le devis de ce chantier n'a jamais été envoyé » : une phrase
+fausse, sur un chantier parfaitement facturable, et un refus qu'aucun geste ne
+pouvait lever. `lireDevisQuiFaitFoi` (`src/server/repositories/devis.ts`) porte la règle,
+et les deux refus — aucun devis, aucun devis envoyé — se distinguent enfin.
+
+C'était **déjà** la règle ailleurs : `listerChantiersTermines` annonce le montant
+« prévu au devis » d'après la dernière version envoyée. Les deux écrans disent
+désormais la même chose du même chantier.
+
+### Le total se recompose à la main, ligne à ligne
+
+L'écran de l'arrêt affichait les lignes, puis « Total HT », « TVA X % »,
+« Total TTC ». Deux choses manquaient, que le papier imprimait toutes les deux :
+
+- **le prix accordé au client** — la somme des lignes affichées ne faisait alors
+  pas le Total HT affiché, et rien ne disait pourquoi ;
+- **les taux multiples** — chaque ligne porte le sien depuis la migration 0073,
+  l'écran n'en annonçait qu'un.
+
+Un total qu'on ne peut pas refaire de tête est un total qu'on cesse de croire, et
+c'est le patron qui le défend devant son client.
+
+**Les totaux ne sont plus transmis à l'écran.** Ils étaient lus dans les colonnes
+de la facture, qui peuvent prendre du retard sur leurs propres lignes ; l'écran
+appelle désormais `totauxAvecReduction(lignes, tauxTva, reductionPourcent)` —
+**l'appel exact que fait `emettreFacture` juste avant de figer la pièce**. Ce
+qu'il voit est ce qui partira.
+
+### La page du client suit l'allure de ses DOCUMENTS, pas sa charte
+
+Le client reçoit deux pièces pour une même facture : la page par jeton, puis le
+PDF qu'elle ouvre. Le PDF porte depuis le 23 août la typographie, le fond et
+l'accent réglés dans « Devis & factures » ; la page écrivait `ui-serif, Georgia`
+en dur et prenait le crème et le vert d'Atlas. Le même document arrivait en deux
+allures — et c'est celle de la page qu'il voit d'abord.
+
+**L'invariant qui rend le changement sûr :** `allureDesDocuments` rend `null`
+quand rien n'est réglé, et `null` veut dire *la page d'aujourd'hui, au pixel
+près*. C'est le cas de tous tant qu'ils n'y ont pas touché.
+
+**Sa charte d'écran, elle, ne fuit toujours pas** : `estPageDuClient` la coupe
+dans le gabarit racine, et la page en « Nuit » est identique à la page par
+défaut — photographié, pas supposé.
+
+**Une seconde porte, pas une seconde règle.** `allureSeuleDesDocuments` évite
+d'aller chercher le logo dans le stockage à chaque consultation — un
+aller-retour réseau pour une image que la page n'affiche pas, payé en secondes
+d'attente sur un téléphone au bord d'une route. Les deux portes passent par
+`allureLue`.
+
+**Ce qui reste : l'allure est lue à la CONSULTATION, pas figée à l'émission.**
+Un changement de réglage après l'envoi fait diverger la page du PDF archivé. La
+figer demande trois colonnes sur `factures`, et cela se décide.
+
+### Deux défauts trouvés sur la capture, et par aucun test
+
+Cinquième et sixième fois dans ce dépôt (`CLAUDE.md` §5) :
+
+1. les deux versions d'un devis partagent leur numéro commercial — l'écran
+   affichait « Reprise du devis 2026-000006 » au-dessus de « Le devis
+   2026-000006 v2 est parti depuis ». La version s'écrit désormais **toujours** ;
+2. l'écran se contredisait : il annonçait un devis plus récent, puis demandait
+   quatre blocs plus bas « Rien n'a changé depuis le devis ? ».
+
+### Ce qui est MESURÉ et non corrigé
+
+`scripts/capture-facture-impeccable.mts` bâtit les états par les dépôts — il ne
+passe pas par la fiche du chantier, qu'un autre lot retire — puis photographie
+l'écran à 390 × 664, en Origine et en Nuit, et **mesure** où tombe le geste :
+« Envoyer la facture » est à **309 px sous le pli**, 331 quand la facture est en
+retard. Il refuse de conclure sur une boîte de zéro pixel.
+
+Déplacer un bouton est une affaire d'apparence : elle se dessine avant de se
+coder (`CLAUDE.md` §3 bis). C'est sur `appli/ts-la-trace-de-laccord.html`, avec
+la seule question réellement ouverte sur les travaux supplémentaires — **d'où
+vient l'accord du client** —, la forme ayant été tranchée le 1ᵉʳ septembre.

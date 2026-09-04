@@ -9,6 +9,44 @@ Format : le plus récent en tête.
 
 ## 2026-09-04
 
+### La facture ne peut plus facturer l'ancien prix, et son total se recompose
+
+**Le second arrêt du parcours** — le dernier écran avant que l'argent parte —
+n'était jamais passé par une revue. Trois choses en sortent.
+
+**Un devis renvoyé après la fin de chantier n'atteignait jamais la facture.**
+Elle gardait les lignes et les montants d'avant, et rien ne le disait : l'écran
+ne nommait même pas le devis dont il reprenait les lignes, quand le PDF l'écrit
+depuis toujours. Il le nomme, avec sa version, et porte le geste qui rattrape.
+**Ce que ça évite :** confirmer l'ancien prix sur le seul écran qui engage son
+argent. La reprise ne se fait JAMAIS toute seule — des montants qui changent
+entre l'ouverture et l'appui seraient pires que le défaut.
+
+**Un chantier facturable était refusé.** Un devis v1 envoyé et une v2 laissée en
+brouillon rendaient « Le devis de ce chantier n'a jamais été envoyé » : faux, et
+sans issue. Le devis qui fait foi est la dernière version **envoyée**.
+
+**Le total ne se recomposait pas.** Ni le prix accordé au client, ni les taux
+multiples n'étaient à l'écran — le papier imprimait les deux. Dès qu'une remise
+existait, la somme des lignes affichées ne faisait pas le Total HT affiché.
+**Ce que ça évite :** un total qu'on ne peut pas refaire de tête est un total
+qu'on cesse de croire, et c'est lui qui le défend devant son client.
+
+**La page que son client ouvre suit enfin l'allure de ses documents** —
+typographie, fond, accent — au lieu du crème et du vert d'Atlas, pendant que le
+PDF à un doigt de là portait les siens. Sans réglage, la page est celle
+d'aujourd'hui au pixel près ; sa charte d'écran, elle, ne fuit toujours pas.
+
+**Deux défauts trouvés sur la capture, et par aucun test :** deux fois le même
+numéro de devis à trois lignes d'écart, l'un dit périmé et l'autre pas ; et
+l'écran qui demandait « Rien n'a changé depuis le devis ? » juste après avoir
+annoncé qu'un devis plus récent était parti.
+
+**Mesuré et non corrigé :** « Envoyer la facture » tombe **309 px sous le pli**
+sur un écran de 390 × 664. Déplacer un bouton se dessine d'abord —
+`appli/ts-la-trace-de-laccord.html`. Détail : `docs/facture-impeccable.md`,
+`ARCHITECTURE.md` §255.
+
 ### La fiche du chantier est retirée : une adresse qui ne montre plus rien
 
 **Sa décision, prise deux fois** — le 21 août (*« la fiche chantier, on la

@@ -9,6 +9,27 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
+## LA FACTURE — CE QUI RESTE APRÈS LE LOT DU 4 SEPTEMBRE
+
+Le lot est fait (`ARCHITECTURE.md` §255, `docs/facture-impeccable.md`). Quatre
+choses restent, et trois attendent SA réponse :
+
+- **La planche `appli/ts-la-trace-de-laccord.html` attend sa lettre** : A ou B
+  (chaque ligne de travaux en plus dit-elle d'où vient son accord ?), le geste
+  au-dessus du pli, et ce que « sans accord » autorise. **Sa forme, elle, était
+  déjà tranchée le 1ᵉʳ septembre** — le brief du 4 se trompait en la rouvrant.
+- **« Envoyer la facture » tombe 309 px sous le pli** (331 en retard de devis),
+  mesuré par `scripts/capture-facture-impeccable.mts`. Déplacer un bouton se
+  dessine d'abord : c'est sur la planche ci-dessus.
+- **L'allure des documents n'est pas FIGÉE sur la facture émise.** La page du
+  client la lit à la consultation ; s'il change son réglage après l'envoi, la
+  page suit et le PDF archivé, non. Trois colonnes sur `factures` et une
+  migration — à décider, pas à glisser.
+- **Les trois suites navigateur que le brief annonce rouges** — `test-facture-e2e`,
+  `test-tva-au-paiement-e2e`, `test-facture-au-client-e2e` — n'ont pas pu être
+  mesurées dans ce lot : deux autres sessions écrivaient dans le même dossier,
+  et l'arbre ne compilait pas. À rejouer une fois leurs lots posés.
+
 ## ~~LA FEUILLE « ENVOYER À … » — SEPT POINTS~~ FAIT LE 4 SEPT. 2026
 
 ~~Planche 102, sept défauts trouvés à l'image.~~ **Sa réponse : « 1 à 7 fais-les,

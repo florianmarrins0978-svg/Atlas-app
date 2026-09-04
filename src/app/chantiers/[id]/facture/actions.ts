@@ -5,6 +5,7 @@ import { getCurrentCtx } from "@/server/session-ctx";
 import {
   emettreFacture,
   majEcheanceFacture,
+  reprendreLeDevisSurLaFacture,
   terminerChantier,
   FactureDejaEmiseError,
   FinChantierImpossibleError,
@@ -65,6 +66,36 @@ export async function emettreFactureAction(factureId: string): Promise<ResultatE
       return { succes: false, erreur: err.message };
     }
     throw err;
+  }
+}
+
+/**
+ * Reprend le dernier devis envoyé sur une facture encore en brouillon.
+ *
+ * **Le geste que le refus de l'écran désigne.** Une facture bâtie avant qu'un
+ * devis soit corrigé garde les montants d'avant, et rien ne le disait : le
+ * second arrêt se franchissait sur l'ancien prix. L'écran nomme désormais le
+ * devis manquant ET porte ce bouton — un refus qui ne nomme pas son geste est
+ * un cul-de-sac (`CLAUDE.md`, ce que « impeccable » veut dire, point 5).
+ *
+ * **Le refus se rend en valeur** (`AGENTS.md`) : le message d'une exception
+ * d'action serveur n'atteint jamais le patron.
+ */
+export type ResultatReprise =
+  | { succes: true; numeroDevis: string }
+  | { succes: false; erreur: string };
+
+export async function reprendreLeDevisAction(factureId: string): Promise<ResultatReprise> {
+  const ctx = await getCurrentCtx();
+  await exigerFacturation(ctx, "reprendre le devis sur la facture");
+  try {
+    const r = await reprendreLeDevisSurLaFacture(ctx, factureId);
+    return r.ok ? { succes: true, numeroDevis: r.numeroDevis } : { succes: false, erreur: r.raison };
+  } catch (err) {
+    logger.error("Devis non repris sur la facture", {
+      erreur: err instanceof Error ? err.message : String(err),
+    });
+    return { succes: false, erreur: "Le devis n'a pas pu être repris. Réessayez dans un instant." };
   }
 }
 

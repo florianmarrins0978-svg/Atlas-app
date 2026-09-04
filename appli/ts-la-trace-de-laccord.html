@@ -1,0 +1,256 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas — les travaux en plus, et la trace de l'accord</title>
+<style>
+/*
+  CE QUI EST DÉJÀ TRANCHÉ, ET QUE CETTE PLANCHE NE ROUVRE PAS.
+
+  Le 1ᵉʳ septembre 2026 à 01 h 25, la FORME a été choisie : le bloc des travaux
+  supplémentaires se déroule SOUS le bouton, sur la facture. L'écran à part a
+  été retiré, et l'interrupteur avec (`ts-sur-la-facture.html`). Le taux se
+  choisit à la ligne, et les totaux le ventilent — sans quoi l'article 268 bis
+  du CGI fait passer TOUTE la facture au taux le plus élevé.
+
+  Le 4 septembre, le brief demandait de rechoisir cette forme. Elle était déjà
+  choisie : cette planche ne la repose pas.
+
+  ─────────────────────────────────────────────────────────────────────────────
+  CE QUI RESTE OUVERT, ET QUI COÛTE DE L'ARGENT
+
+  Le 1ᵉʳ septembre, la question de l'accord du client a été écartée d'un mot —
+  « pas besoin de ça ». Le risque, lui, n'a pas bougé, et la planche d'alors
+  l'écrivait déjà : **l'article 1793 du Code civil laisse un client refuser EN
+  ENTIER un supplément qu'il n'a pas accepté par écrit**, sur les travaux comme
+  sur le prix. Ce n'est pas une pénalité : c'est la ligne entière qui tombe.
+
+  Deux réponses existent déjà dans le dépôt, et personne n'a dit laquelle :
+    · le bon signé au doigt, sur place (`ts-bon-sur-place.html`) ;
+    · le devis corrigé et renvoyé, que le client accepte par son lien.
+
+  ─────────────────────────────────────────────────────────────────────────────
+  CE QUE CETTE PLANCHE PROPOSE, ET QUI N'EST NI L'UN NI L'AUTRE
+
+  **Les deux ne sont pas des options : ce sont deux façons de tracer LA MÊME
+  chose.** Le bloc des travaux en plus ne change pas d'un pixel ; ce qui change,
+  c'est ce que l'écran affiche À CÔTÉ de chaque ligne : d'où vient l'accord.
+
+  Trois états, et un seul est nouveau :
+    · ACCEPTÉ AU DEVIS — la ligne vient d'un devis renvoyé et accepté ;
+    · SIGNÉ SUR PLACE — la ligne vient d'un bon signé au jardin ;
+    · SANS ACCORD — la ligne part quand même, et l'écran dit ce qu'elle risque.
+
+  **Rien n'est bloqué.** Il facture ce qu'il veut : c'est son chantier et son
+  client. L'écran ne fait que refuser de se taire — la règle du dépôt sur les
+  réserves d'arrosage, appliquée à l'argent.
+
+  ─────────────────────────────────────────────────────────────────────────────
+  ET LE GESTE REDEVIENT ATTEIGNABLE — mesuré, pas supposé.
+
+  Sur l'écran d'aujourd'hui, à 390 × 664, « Envoyer la facture » tombe **309 px
+  sous le pli** (331 quand la facture est en retard sur son devis) :
+  `scripts/capture-facture-impeccable.mts` le mesure à chaque passage. Le second
+  arrêt du parcours demande donc une demi-page de défilement avant d'être
+  franchi. La colonne de droite le remonte, sans retirer un mot.
+
+  RIEN N'EST CODÉ (`CLAUDE.md` §3 bis).
+*/
+:root{
+  --bone:#f5f3ee; --cream:#faf9f5; --paper:#ece9e1;
+  --charcoal:#1c1c1a; --charcoal-soft:#4a4a44; --muted:#8a8578;
+  --pine:#2f3b2f; --or:#B98B47; --alert:#9C3B2E;
+  --line:rgba(28,28,26,.12); --line-soft:rgba(28,28,26,.07);
+  --surPlein:#faf9f5;
+}
+@media (prefers-color-scheme: dark){
+  :root{ --bone:#171613; --cream:#1e1c18; --paper:#262420; --charcoal:#e9e5dc;
+         --charcoal-soft:#c9c4b8; --muted:#8a867c; --or:#C9A15E;
+         --pine:#9db98f; --alert:#d98b7c; --surPlein:#171613;
+         --line:rgba(233,229,220,.16); --line-soft:rgba(233,229,220,.09); }
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;background:var(--bone);color:var(--charcoal);
+     font:16px/1.55 -apple-system,"Segoe UI",Roboto,sans-serif;
+     padding:30px 0 56px;-webkit-text-size-adjust:100%}
+.page{max-width:980px;margin:0 auto;padding:0 20px}
+.sur{margin:0;font-size:9.5px;font-weight:500;letter-spacing:.3em;
+     text-transform:uppercase;color:var(--or)}
+h1{margin:10px 0 0;font-family:Georgia,serif;font-weight:400;font-size:30px;
+   line-height:1.08;letter-spacing:-.018em}
+.chapo{margin:11px 0 0;font-size:14px;color:var(--charcoal-soft);line-height:1.6;max-width:60ch}
+.chapo b{color:var(--charcoal)}
+.deux{display:flex;flex-wrap:wrap;gap:26px;margin-top:26px;align-items:flex-start}
+.col{flex:1 1 330px;min-width:0}
+.titre{margin:0 0 4px;font-family:Georgia,serif;font-size:19px}
+.dit{margin:0 0 12px;font-size:13px;color:var(--muted);line-height:1.5;min-height:3.2em}
+.tel{width:390px;max-width:100%;background:var(--bone);border:1px solid var(--line);
+     border-radius:22px;padding:14px;overflow:hidden}
+.pli{position:relative}
+/* Le repère du pli occupe sa PLACE, il ne flotte pas : posé en absolu, son
+   libellé retombait sur le paragraphe suivant — vu sur ma propre planche avant
+   de la livrer. */
+.pli{border-top:1px dashed var(--alert);color:var(--alert);font-size:10px;
+     letter-spacing:.08em;text-transform:uppercase;padding-top:4px}
+.plage{background:var(--cream);border-radius:16px;padding:15px 16px;margin-top:10px}
+.cap{margin:0;font-size:9.5px;font-weight:600;letter-spacing:.22em;
+     text-transform:uppercase;color:var(--muted)}
+.cap.ts{color:var(--or)}
+.entete{font-family:Georgia,serif;font-size:17px;margin:4px 0 0}
+.l{display:flex;justify-content:space-between;align-items:baseline;gap:12px;
+   padding:7px 0;font-size:14.5px;font-variant-numeric:tabular-nums}
+.l .quoi{flex:1;line-height:1.35}
+.l .mt{color:var(--muted);white-space:nowrap}
+.marque{display:inline-block;margin-top:3px;font-size:10.5px;letter-spacing:.06em;
+        text-transform:uppercase;padding:2px 7px;border-radius:999px;
+        box-shadow:inset 0 0 0 1px var(--line);color:var(--muted)}
+.marque.devis{box-shadow:inset 0 0 0 1px var(--or);color:var(--or)}
+.marque.bon{box-shadow:inset 0 0 0 1px var(--pine);color:var(--pine)}
+.marque.nu{box-shadow:inset 0 0 0 1px var(--alert);color:var(--alert)}
+.tot{display:flex;justify-content:space-between;padding:3px 0;font-size:14px;
+     color:var(--muted);font-variant-numeric:tabular-nums}
+.tot b{color:var(--charcoal);font-weight:400}
+.sep{height:1px;background:var(--line);margin:9px 0}
+.ttc{text-align:center;margin-top:6px}
+.ttc .chiffre{font-family:Georgia,serif;font-size:32px;color:var(--or);
+              line-height:1.2;font-variant-numeric:tabular-nums}
+.envoyer{display:block;width:100%;margin-top:12px;background:var(--pine);
+         color:var(--surPlein);border:0;border-radius:999px;padding:14px 18px;
+         font-size:15px;font-family:Georgia,serif;cursor:pointer}
+.ajouter{display:block;width:100%;margin-top:10px;background:none;
+         border:1px solid var(--line);border-radius:999px;padding:13px 18px;
+         font:inherit;font-size:15px;font-family:Georgia,serif;
+         color:var(--charcoal);cursor:pointer}
+.reserve{border-left:1px solid var(--alert);padding:3px 0 3px 13px;margin-top:12px}
+.reserve p{margin:0;font-size:13px;line-height:1.45}
+.reserve .quoi{color:var(--charcoal)}
+.reserve .prix{margin-top:3px;font-size:12px;color:var(--muted)}
+.engage{border-left:1px solid var(--or);padding:3px 0 3px 13px;margin-top:12px}
+.engage p{margin:0;font-size:13px;line-height:1.4;color:var(--charcoal)}
+.engage .sous{margin-top:3px;font-size:12px;color:var(--muted)}
+.note{margin-top:14px;font-size:12.5px;color:var(--muted);line-height:1.6}
+.note b{color:var(--charcoal)}
+.choix{margin-top:30px;border-top:1px solid var(--line);padding-top:18px}
+.choix h2{margin:0 0 8px;font-family:Georgia,serif;font-weight:400;font-size:20px}
+.choix ul{margin:0;padding-left:18px;font-size:14px;line-height:1.7;color:var(--charcoal-soft)}
+.choix ul b{color:var(--charcoal)}
+</style>
+</head>
+<body>
+<div class="page">
+  <p class="sur">Atlas · le second arrêt</p>
+  <h1>Les travaux en plus,<br>et la trace de l'accord</h1>
+  <p class="chapo">
+    La <b>forme est déjà choisie</b> — le bloc se déroule sous le bouton, le taux se
+    pose à la ligne (1<sup>er</sup> septembre). Cette planche ne la repose pas.
+    Elle pose la seule chose qui reste : <b>d'où vient l'accord du client</b>, et ce
+    que l'écran en dit. À droite, le même écran avec le geste <b>au-dessus du pli</b>.
+  </p>
+
+  <div class="deux">
+    <div class="col">
+      <p class="titre">A · L'écran d'aujourd'hui</p>
+      <p class="dit">Les travaux en plus s'ajoutent, et rien ne distingue une ligne
+        acceptée d'une ligne posée de mémoire. « Envoyer la facture » tombe 309 px
+        sous le pli.</p>
+      <div class="tel">
+        <div class="plage">
+          <p class="cap">Facture</p>
+          <p class="entete">F2026-000001 — Mme Grospiron</p>
+        </div>
+        <div class="plage">
+          <p class="cap">Reprise du devis 2026-000002 v1</p>
+          <div class="l"><span class="quoi">Élagage d'un tilleul</span><span class="mt">800,00 €</span></div>
+          <div class="l"><span class="quoi">Fourniture de végétaux</span><span class="mt">400,00 €</span></div>
+        </div>
+        <div class="plage">
+          <p class="cap ts">Travaux supplémentaires</p>
+          <div class="l"><span class="quoi">Dessouchage</span><span class="mt">260,00 €</span></div>
+          <div class="l"><span class="quoi">Évacuation</span><span class="mt">140,00 €</span></div>
+          <button class="ajouter">Ajouter des travaux supplémentaires</button>
+        </div>
+        <div class="plage">
+          <div class="tot"><span>Total HT</span><b>1 600,00 €</b></div>
+          <div class="tot"><span>Prix accordé au client 15 %</span><b>- 240,00 €</b></div>
+          <div class="tot"><span>Total HT après remise</span><b>1 360,00 €</b></div>
+          <div class="tot"><span>TVA 20 %</span><b>204,00 €</b></div>
+          <div class="tot"><span>TVA 10 %</span><b>34,00 €</b></div>
+          <div class="sep"></div>
+          <div class="ttc"><p class="cap">Total TTC</p><div class="chiffre">1 598,00 €</div></div>
+        </div>
+        <div class="pli" style="margin:16px 0 14px">le pli · 664 px</div>
+        <div class="plage">
+          <button class="envoyer">Envoyer la facture</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="col">
+      <p class="titre">B · Chaque ligne dit d'où vient son accord</p>
+      <p class="dit">Trois états, et un seul est neuf. Rien n'est bloqué : ce qui
+        part sans accord part quand même, et l'écran dit ce qu'il risque. Le geste
+        remonte au-dessus du pli.</p>
+      <div class="tel">
+        <div class="plage">
+          <p class="cap">Facture</p>
+          <p class="entete">F2026-000001 — Mme Grospiron</p>
+        </div>
+        <div class="plage">
+          <p class="cap ts">Travaux supplémentaires</p>
+          <div class="l">
+            <span class="quoi">Dessouchage<br><span class="marque devis">Accepté au devis v2</span></span>
+            <span class="mt">260,00 €</span>
+          </div>
+          <div class="l">
+            <span class="quoi">Évacuation<br><span class="marque bon">Signé sur place</span></span>
+            <span class="mt">140,00 €</span>
+          </div>
+          <div class="l">
+            <span class="quoi">Reprise du massif<br><span class="marque nu">Sans accord</span></span>
+            <span class="mt">180,00 €</span>
+          </div>
+          <button class="ajouter">Ajouter des travaux supplémentaires</button>
+        </div>
+        <div class="reserve">
+          <p class="quoi">180,00 € partent sans accord écrit. Votre cliente peut
+            refuser cette ligne en entier.</p>
+          <p class="prix">Faire signer le bon, ou lui renvoyer le devis.</p>
+        </div>
+        <div class="plage">
+          <div class="tot"><span>Total HT</span><b>1 780,00 €</b></div>
+          <div class="tot"><span>Prix accordé au client 15 %</span><b>- 267,00 €</b></div>
+          <div class="tot"><span>Total HT après remise</span><b>1 513,00 €</b></div>
+          <div class="tot"><span>TVA 20 %</span><b>234,60 €</b></div>
+          <div class="tot"><span>TVA 10 %</span><b>34,00 €</b></div>
+          <div class="sep"></div>
+          <div class="ttc"><p class="cap">Total TTC</p><div class="chiffre">1 781,60 €</div></div>
+          <button class="envoyer">Envoyer la facture</button>
+          <div class="engage">
+            <p>En l'envoyant, vous l'arrêtez : elle ne se modifie plus, et entrera
+              au relevé de TVA le jour où votre cliente vous paiera.</p>
+            <p class="sous">Une correction passerait par un avoir.</p>
+          </div>
+        </div>
+        <div class="pli" style="margin:16px 0 14px">le pli · 664 px</div>
+        <p class="note">Sous le pli, il ne reste que le détail du devis et les liens
+          du PDF — ce qu'on relit, jamais ce qu'on appuie.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="choix">
+    <h2>Ce sur quoi j'attends votre lettre</h2>
+    <ul>
+      <li><b>A ou B.</b> B ajoute une pastille par ligne et une réserve quand
+        l'accord manque ; A garde l'écran d'aujourd'hui.</li>
+      <li><b>Le geste au-dessus du pli.</b> Dans B, « Envoyer la facture » vit dans
+        la plage des totaux : le détail du devis passe dessous. C'est le seul
+        déplacement, et il vaut pour A comme pour B.</li>
+      <li><b>Ce que « sans accord » autorise.</b> Ici, tout : ça part quand même.
+        Dites si vous préférez que ça vous arrête.</li>
+    </ul>
+  </div>
+</div>
+</body>
+</html>
