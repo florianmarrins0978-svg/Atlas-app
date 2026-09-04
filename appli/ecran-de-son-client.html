@@ -66,6 +66,16 @@
        border-radius:22px;overflow:hidden;border:1px solid var(--line);
        box-shadow:0 18px 46px rgba(28,28,26,.16)}
   .ecran{position:absolute;inset:0;overflow-y:auto;overflow-x:hidden}
+  /* **Sur un téléphone, le cadre prend toute la largeur.** Avec les marges de
+     la page, il tombait à 346 px sur un écran de 390 — et la planche annonçait
+     alors une largeur qu'elle n'avait pas, là même où on la lit. Vu à la
+     capture, à son adresse publiée. */
+  @media (max-width:433px){
+    /* `max-width:100%` reprenait la main sur `100vw` et ramenait le cadre à
+       346 px : il faut le neutraliser ici, pas seulement poser la largeur. */
+    .tel{width:100vw;max-width:none;margin-left:calc(50% - 50vw);border-radius:0;border-left:0;border-right:0}
+    .mesure{max-width:none;padding:0 4px}
+  }
   .mesure{max-width:390px;margin:12px auto 0;font-size:12.5px;
           display:flex;justify-content:space-between;gap:10px;color:var(--muted)}
   .mesure b{font-variant-numeric:tabular-nums;font-weight:600}
@@ -172,7 +182,7 @@
 <div class="page">
 
   <h1>L'écran de son client</h1>
-  <p class="sous">Deux questions. Le cadre ci-dessous fait 390 × 664 pour de vrai, et le chiffre sous le téléphone est mesuré à chaque geste, pas dessiné.</p>
+  <p class="sous">Deux questions. Le cadre ci-dessous a la hauteur d'un vrai téléphone — 664 px, barre d'adresse déduite —, et le chiffre en dessous est mesuré à chaque geste, pas dessiné.</p>
 
   <p class="famille">Question 1 — quand il cherche une autre date</p>
   <p class="q">Aujourd'hui, ses trois boutons passent sous le pli</p>
