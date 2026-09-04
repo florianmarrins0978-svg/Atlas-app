@@ -290,6 +290,10 @@
 <script>
 (function () {
   var vue = "avant";
+  // L onglet du champ garde l allure choisie juste avant : vu a la capture, il
+  // ramenait l ecran a « Aujourd hui » et donnait a croire que le champ defaisait
+  // la correction du dessus.
+  var allure = "a";
   var dit = document.getElementById("dit");
   var apres = document.getElementById("apres");
   var compte = document.getElementById("compte");
@@ -311,7 +315,7 @@
       apres: "B — repérable. Les deux plages passent à l’or : ça se voit au soleil, du coin de l’oeil. Plus présent sur un devis qui compte dix lignes."
     },
     champ: {
-      dit: "Le champ, en vrai. Il est le même dans A et dans B : ce n’est pas un choix, c’est la correction du troisième point.",
+      dit: "Le champ, en vrai — l’écran garde l’allure que vous venez de choisir. Il est le même dans A et dans B : ce n’est pas un choix, c’est la correction du troisième point.",
       apres: "Aujourd’hui la case est un type=\"number\" : une virgule y devient du vide, et le vide s’enregistre en 0,00 € sans un mot."
     }
   };
@@ -320,7 +324,7 @@
     dit.textContent = TEXTES[vue].dit;
     apres.textContent = TEXTES[vue].apres;
 
-    var neuf = vue === "a" || vue === "b";
+    var neuf = vue !== "avant";
     compte.hidden = !neuf;
     banc.hidden = vue !== "champ";
 
@@ -332,7 +336,7 @@
       if (neuf) {
         mnt.value = "";
         mnt.placeholder = "à chiffrer";
-        if (vue === "b") lig.classList.add("marquee");
+        if (allure === "b") lig.classList.add("marquee");
       } else {
         mnt.value = "0";
         mnt.placeholder = "";
@@ -352,6 +356,7 @@
     var b = e.target.closest("button");
     if (!b) return;
     vue = b.getAttribute("data-vue");
+    if (vue === "a" || vue === "b") allure = vue;
     Array.prototype.forEach.call(this.children, function (x) {
       x.setAttribute("aria-pressed", String(x === b));
     });
