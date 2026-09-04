@@ -19,6 +19,23 @@ ligne « fait » qui ne l'est pas coûte plus cher qu'une ligne absente.
 
 ---
 
+## FAIT (à moitié) : l'écran des prix (5 septembre 2026)
+
+**Le code est écrit et les contrôles rapides sont verts ; la batterie complète,
+la suite navigateur et les captures ne sont PAS jouées.** Il a demandé à être
+prévenu avant toute batterie — ses sessions partagent le dossier —, et aucun
+serveur ne répondait sur le port 3000.
+
+| | |
+|---|---|
+| la case du montant garde la **virgule** française | `PrixClient.tsx` consomme `montantEcrivable` ; le `type="number"` qui écrivait zéro est parti |
+| « à chiffrer » se **voit** et se **compte** | son choix « la B » sur planche, avec `ligneAttendSonPrix` — pas de seconde règle |
+| le refus **emmène le doigt** sur la case | `/reglages` réservé au cas « aucune ligne » |
+| `orTexte` | un or lisible quand il porte un mot (`ARCHITECTURE.md` §257) |
+
+Détail et chiffres : `docs/lot-ecran-des-prix.md`. Ce qui reste dû est dans
+`TODO.md`, en tête.
+
 ## FAIT : le devis, le premier arrêt (4 septembre 2026, soir)
 
 L'écran où il relit ce qu'il engage. `ARCHITECTURE.md` §256,

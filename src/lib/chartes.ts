@@ -43,6 +43,29 @@ export type JetonsCharte = {
   rustTint: string;
   or: string;
   orClair: string;
+  /**
+   * ─── L'OR QUAND IL PORTE DU TEXTE, ET SEULEMENT ALORS ──────────────────
+   *
+   * **Mesuré le 4 septembre 2026, sur la planche de l'écran des prix :**
+   * `or` posé sur la plage d'un champ donne **2,62 à 3,07** selon la charte —
+   * sous les 4,5 exigés d'un texte, et sur les **six chartes claires**. Il
+   * passe sur les deux sombres (Nuit 5,55, Sylve 4,55), où les pôles
+   * s'inversent.
+   *
+   * **Ce n'est pas la même question que celle du 31 août.** Sa consigne — *«
+   * tout ce qui est en doré sur Origine reste doré sur les autres apparences »*
+   * — interdit à la CHARTE de repeindre l'or, et `or` ne bouge donc pas d'un
+   * caractère : filets, sceau, marqueur d'onglet, fonds pâles gardent
+   * `#B98B47` partout. Ce jeton-ci ne dépend pas de la charte mais du RÔLE :
+   * un mot qu'on lit, et non un trait qu'on regarde. Le chiffre de 2,77 cité
+   * plus bas pour justifier l'or fixe vaut pour du dessin ; il ne vaut pas
+   * pour « à chiffrer », qui est le mot disant qu'une ligne de devis n'a pas
+   * de prix, et qui se lit au soleil.
+   *
+   * **Sur Nuit et Sylve, il vaut l'or exactement** — `detacher` ne corrige que
+   * ce qui manque, et là il ne manque rien.
+   */
+  orTexte: string;
   line: string;
   lineSoft: string;
   chevron: string;
@@ -240,6 +263,8 @@ function depuisPlanche(p: {
     // ne se dérive pas.
     or: OR_ORIGINE,
     orClair: OR_CLAIR_ORIGINE,
+    // Du texte, donc 4,5 — contre le fond ET contre la plage, comme l'alerte.
+    orTexte: detacher(OR_ORIGINE, [p.fond, p.plage], 4.5, sens),
     line: voile(p.encre, "0.12"),
     lineSoft: voile(p.encre, "0.07"),
     chevron: voile(p.encre, "0.28"),
@@ -375,6 +400,12 @@ export const CHARTES: Charte[] = [
       rustTint: "#ece9e1",
       or: OR_ORIGINE,
       orClair: OR_CLAIR_ORIGINE,
+      // **Dérivé, et non recopié — la seule valeur d'Origine qui le soit.**
+      // Les autres sont recopiées parce qu'elles EXISTAIENT avant les chartes
+      // et qu'un écart ferait bouger l'application sans demande. Celle-ci
+      // n'existait pas : la recopier n'aurait rien conservé, et la poser à la
+      // main aurait donné une seconde façon de calculer la même chose.
+      orTexte: detacher(OR_ORIGINE, ["#f5f3ee", "#faf9f5"], 4.5, -1),
       line: "rgba(28,28,26,0.12)",
       lineSoft: "rgba(28,28,26,0.07)",
       chevron: "rgba(28,28,26,0.28)",

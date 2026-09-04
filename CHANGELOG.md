@@ -7,6 +7,81 @@ Format : le plus récent en tête.
 
 ---
 
+## 2026-09-05
+
+### La case où il tape son prix AVALAIT sa virgule — et écrivait zéro sans un mot
+
+Sur l'écran des prix, le montant était un `<input type="number">`, relu par
+`new Decimal(saisi || "0")`. Un champ numérique **rejette la virgule** : sur un
+clavier français, « 1 400,50 » rend une valeur VIDE, `"" || "0"` vaut zéro, et
+la ligne partait à **0,00 €** pendant que l'écran continuait d'afficher le bon
+chiffre. Sur le seul écran où le patron engage de l'argent avant de l'annoncer.
+
+**Même famille que le défaut du 30 août sur le devis** — « Un prix tapé sur le
+devis pouvait partir à ZÉRO » — mais une autre cause : là, un rendu en retard ;
+ici, le champ lui-même. Et **le devis avait déjà la bonne réponse à côté** : un
+champ de texte avec `inputMode="decimal"`.
+
+**Aucune règle de lecture n'a été écrite pour l'occasion.** Le dépôt en portait
+déjà deux — `montantEcrivable` (29 août, pour les montants venus du modèle) et
+`montantSaisi` (la TVA). L'écran consomme la première : elle refuse le négatif,
+la troisième décimale et ce qu'une colonne `numeric(10,2)` ne peut pas contenir,
+et **nomme le montant en cause**.
+
+**Le piège trouvé en l'écrivant :** la case affiche désormais « 1 400,50 » avec
+l'espace INSÉCABLE d'`Intl`, et sa sortie de champ relit ce qu'elle affiche. Si
+cette espace-là avait été refusée, le patron aurait vu son propre montant rejeté
+sans avoir rien tapé — deux fonctions justes séparément, et l'aller-retour cassé
+entre les deux. `test-case-du-prix.ts` l'éprouve.
+
+### « À chiffrer » vivait dans l'état de l'écran et n'était dessiné nulle part
+
+Le drapeau existait depuis la migration 0070, entrait dans `PrixClient`, y était
+modifié — et **aucun pixel ne le montrait**. Une ligne sans prix ressemblait
+trait pour trait à une ligne qu'on n'avait pas remplie.
+
+**Son choix sur planche, le 5 septembre : la B.** Le mot dans la case, ET les
+deux plages de la ligne teintées. Il a écarté la A, qui ne teintait rien : la B
+se retrouve en défilant, sans lire. Le compte des lignes en attente s'affiche à
+côté de « Détail », **calculé par `ligneAttendSonPrix`** — la règle que le
+serveur, le PDF et l'envoi emploient déjà. Recompter ici aurait fait une
+quatrième lecture de la même question, et c'est exactement ce qui avait produit
+le 31 août un devis dont le total ne correspondait pas à ses lignes.
+
+### Le refus nommait la bonne raison et offrait toujours la mauvaise porte
+
+`peutPreparerDevis` rend trois refus distincts ; l'écran collait sous les trois
+le même « Ouvrir mes tarifs », vers `/reglages`. Quand le blocage était « 2
+lignes attendent leur prix », le seul geste proposé **quittait l'écran où se
+trouve la réparation**. La porte suit désormais la raison : les réglages
+seulement s'il n'y a aucune ligne, sinon « Poser les montants », qui défile
+jusqu'à la première case en attente et y met le curseur — le même idiome que le
+devis (`data-prix-ligne`).
+
+### L'or d'un MOT est désormais plus sombre que l'or d'un TRAIT
+
+`or` sur la plage d'un champ : **2,62 à 3,07** selon la charte, là où un texte
+demande 4,5 ; il ne passe que sur les deux sombres. Le jeton `orTexte` le
+descend jusqu'au seuil, chartes claires seulement — sur Nuit et Sylve il vaut
+`or` au caractère près.
+
+**Ce n'est pas la question du 31 août.** Sa consigne — « tout ce qui est en doré
+sur Origine reste doré sur les autres apparences » — interdit à la CHARTE de
+repeindre l'or, et `or` ne bouge pas : filets, sceau, marqueur d'onglet, fonds
+pâles gardent `#B98B47`. Le nouveau jeton dépend du RÔLE, pas de la charte.
+
+**Et `design-tokens.ts` affirmait le contraire**, noir sur blanc : « sur le fond
+crème, `or` tient le contraste du texte courant ». Faux, et jamais mesuré —
+`test-chartes-lisibles.ts` regarde les chartes, jamais ce qu'un écran en fait.
+La phrase est corrigée sur place, et les deux couples manquants sont entrés dans
+le contrôle. **Il sait échouer** : en ramenant `orTexte` à `or`, les six chartes
+claires rougissent et les deux sombres restent vertes.
+
+**Ce que ce lot n'a PAS fait, et qu'il ne faut pas croire fait :** la batterie
+complète, la suite navigateur `test-case-du-prix-e2e.ts` (écrite, jamais jouée)
+et les captures. Le patron a demandé à être prévenu avant toute batterie — ses
+sessions partagent le dossier — et aucun serveur ne répondait sur le port 3000.
+
 ## 2026-09-04
 
 ### L'or du TEXTE est illisible sur les six chartes claires — mesuré, pas supposé

@@ -1748,3 +1748,29 @@ body {
  * mesure plus rien est pire qu'absent (`CLAUDE.md` §5) : il rassure.
  *
  * Le dessin reste consultable sur la planche, si l'usage lui donne tort. */
+
+/* ─── LA PLAGE D'UNE LIGNE QUI ATTEND SON PRIX ────────────────────────────────
+ *
+ * **Son choix du 5 septembre 2026, sur planche** (`ligne-qui-attend-son-prix.html`,
+ * la B) : le mot « à chiffrer » dans la case, ET les deux plages de la ligne
+ * passées à l'or. Il a écarté la A, qui ne teintait rien : la B se retrouve
+ * **en défilant, sans lire**, et c'est ce qui compte sur un devis de dix lignes.
+ *
+ * **POURQUOI UNE CLASSE, ET NON UN STYLE EN LIGNE.** `color-mix` n'existe pas
+ * avant iOS 16.2. Une couleur inconnue posée en style en ligne est ignorée, et
+ * l'élément retombe alors sur *aucun fond* : la plage DISPARAÎTRAIT, sur un
+ * écran dont tout le dessin repose sur elle (`HANDOVER.md`, piège 18 — un champ
+ * sans plage se lit comme « pas cliquable »). Écrite ici, la déclaration
+ * ordinaire tient le repli et `@supports` ne pose la teinte que là où elle est
+ * comprise : au pire la ligne perd sa couleur et garde son mot.
+ *
+ * **C'est `or` et non `orTexte`** : cette teinte est du dessin, pas un mot. Le
+ * mot, lui, est écrit dans la couleur qui tient 4,5 (`design-tokens.ts`). */
+.atlas-plage-attente {
+  background-color: var(--atlas-card, #faf9f5);
+}
+@supports (background-color: color-mix(in srgb, red 10%, blue)) {
+  .atlas-plage-attente {
+    background-color: color-mix(in srgb, var(--atlas-or, #B98B47) 13%, var(--atlas-card, #faf9f5));
+  }
+}

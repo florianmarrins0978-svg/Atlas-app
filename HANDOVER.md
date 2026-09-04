@@ -9,7 +9,41 @@ sert.
 
 ---
 
-## Dernier lot — LE DEVIS, LE PREMIER ARRÊT (4 septembre 2026, soir)
+## Dernier lot — L'ÉCRAN DES PRIX (5 septembre 2026)
+
+**Ce lot n'est pas fini, et il ne faut pas le croire fini.** Le code est écrit,
+`tsc` et `lint` sont à zéro, `test-case-du-prix.ts` (10/10) et
+`test-chartes-lisibles.ts` (14/14) sont verts. **La batterie complète, la suite
+navigateur `test-case-du-prix-e2e.ts` et les captures n'ont PAS été jouées** —
+le patron a demandé à être prévenu avant, parce que ses sessions partagent le
+dossier, et aucun serveur ne répondait sur le port 3000.
+
+Trois choses corrigées sur `/chantiers/[id]/prix` :
+
+1. **la case du montant avalait la virgule** — un `type="number"` rendait du
+   vide devant « 1 400,50 », et `"" || "0"` partait à zéro pendant que l'écran
+   affichait le bon chiffre. Elle est en `text` + `inputMode="decimal"`, lue par
+   `montantEcrivable` — **la règle existait déjà, on n'en a pas écrit de
+   troisième** ;
+2. **« à chiffrer » n'était dessiné nulle part** alors que le drapeau vivait
+   dans l'état de l'écran depuis la migration 0070. Son choix sur planche : la
+   **B** — le mot dans la case et les deux plages teintées. Le compte se calcule
+   par `ligneAttendSonPrix`, la règle partagée ;
+3. **le refus offrait « Ouvrir mes tarifs » dans ses trois cas**, y compris
+   quand la réparation était trois centimètres plus haut. La porte suit la
+   raison.
+
+**Le piège à connaître si l'on reprend ce fichier :** la case affiche le montant
+à la française, avec l'espace **insécable** d'`Intl`, et sa sortie de champ
+relit ce qu'elle affiche. Toute modification de `enMontant` ou de
+`montantEcrivable` doit garder cet aller-retour — sinon le patron voit son
+propre montant refusé sans avoir rien tapé. C'est éprouvé, ne pas retirer le
+contrôle.
+
+**Une question lui revient**, sur capture : l'or d'un mot est passé plus sombre
+sur les six chartes claires (`ARCHITECTURE.md` §257). Ça se défait en une ligne.
+
+## Lot précédent — LE DEVIS, LE PREMIER ARRÊT (4 septembre 2026, soir)
 
 **Quatre lots ont tourné dans le même dossier ce jour-là.** Celui-ci ne touche
 QUE `src/app/chantiers/[id]/devis-complet/`.

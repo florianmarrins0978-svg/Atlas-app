@@ -125,11 +125,30 @@ export const colors = {
   // bavard — c'est exactement l'aspect « tableau de bord » que le patron
   // refuse.
   //
-  // Sur le fond crème, `or` tient le contraste du texte courant ; `orClair` est
-  // réservé aux traits, cercles et icônes posés sur le vert pin, où il faut
-  // remonter la clarté.
+  // **CORRIGÉ LE 4 SEPTEMBRE 2026, CONTRE CE QUE CETTE LIGNE AFFIRMAIT.** Il
+  // était écrit ici que « sur le fond crème, `or` tient le contraste du texte
+  // courant ». C'est faux, et mesuré : 2,91 sur la plage d'Origine, 2,62 sur
+  // celle de Moka — contre les 4,5 qu'un texte demande. L'or tient le contraste
+  // d'un TRAIT, pas d'un mot ; personne ne l'avait mesuré parce que
+  // `test-chartes-lisibles.ts` regarde les chartes, jamais ce qu'un écran en
+  // fait.
+  //
+  // `orClair` est réservé aux traits, cercles et icônes posés sur le vert pin,
+  // où il faut remonter la clarté.
   or: "var(--atlas-or, #B98B47)",
   orClair: "var(--atlas-orClair, #C9A15E)",
+  /**
+   * L'or d'un MOT — le même, assombri jusqu'à 4,5 sur la plage de sa charte.
+   *
+   * Dérivé par `chartes.ts`, comme `alerte` depuis le 22 août 2026 ; sur Nuit
+   * et Sylve il vaut `or` au caractère près, parce qu'il n'y manque rien.
+   *
+   * **La valeur de repli est celle d'Origine**, et `test-or-du-texte.ts` refuse
+   * qu'elles divergent : une page rendue hors du gabarit — un document, un
+   * courriel — ne pose aucune variable, et retomberait sinon sur un or qui
+   * n'est plus celui de personne.
+   */
+  orTexte: "var(--atlas-orTexte, #8b6835)",
   line: "var(--atlas-line, rgba(28,28,26,0.12))", // --line : séparateurs, bordures fines
   lineSoft: "var(--atlas-lineSoft, rgba(28,28,26,0.07))", // --line-soft : bordure des tuiles
   chevron: "var(--atlas-chevron, rgba(28,28,26,0.28))", // affordance de navigation discrète

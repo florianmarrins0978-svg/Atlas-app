@@ -22953,3 +22953,65 @@ avec un bouton qui n'occupe que le milieu se contredit — vu à la capture.
 écartée PAR LUI**, et sa raison tient : c'est ici qu'il relit ce qu'il engage.
 Elle traînait dans `TODO.md` comme si elle était tranchée ; elle ne l'était pas
 (`docs/QUESTIONS.md` §23 se terminait sur la question). **Ne pas la rouvrir.**
+
+
+---
+
+## §257. L'or a deux valeurs : celle d'un trait, celle d'un mot
+
+**Décidé le 5 septembre 2026, sur l'écran des prix, et mesuré avant d'être
+décidé.**
+
+`or` (`#B98B47`) posé sur la plage d'un champ donne **2,62 à 3,07** selon la
+charte. Un texte demande 4,5. Il ne passait que sur les deux chartes sombres,
+où les pôles s'inversent — Nuit 5,55, Sylve 4,55. Tant que l'or ne servait qu'à
+dessiner — un filet, un sceau, le marqueur d'onglet —, personne n'avait de
+raison de le mesurer comme du texte. « À chiffrer » a changé cela : c'est le mot
+qui dit qu'une ligne de devis n'a pas de prix, et il se lit en plein soleil,
+d'une main.
+
+**Le jeton `orTexte`** est le même or descendu jusqu'au seuil par `detacher` —
+la mécanique posée le 22 août pour `alerte`, `bordeaux` et `vertPale`. Sur les
+six chartes claires il vaut un or plus sombre (Origine : `#8b6835`, 4,83 sur la
+plage) ; sur Nuit et Sylve il vaut `or` **au caractère près**, parce qu'il n'y
+manque rien.
+
+### Ce que cela ne remet PAS en cause
+
+Sa consigne du 31 août 2026 — *« tout ce qui est en doré sur la version
+originale apparaisse en doré sur les autres apparences »* — interdit à la
+**charte** de repeindre l'or. Elle tient : `or` ne bouge pas d'un caractère sur
+les huit. Le nouveau jeton ne dépend pas de la charte mais du **rôle** :
+
+| | |
+|---|---|
+| `or` | ce qu'on **regarde** — filets, sceau, marqueur d'onglet, teintes de fond |
+| `orTexte` | ce qu'on **lit** — un mot, un intertitre, un état écrit |
+
+Le chiffre de 2,77 cité au §160 pour justifier un or fixe vaut pour du dessin.
+Il ne vaut pas pour un mot, et c'est la distinction que ce paragraphe pose.
+
+### Une phrase du dépôt était fausse, et personne ne l'avait mesurée
+
+`design-tokens.ts` affirmait que « sur le fond crème, `or` tient le contraste du
+texte courant ». C'était faux depuis toujours. Le contrôle existait pourtant :
+**`test-chartes-lisibles.ts` regarde les CHARTES, jamais ce qu'un écran en
+fait** — un couple qu'on ne lui donne pas ne se mesure pas, et son silence se
+lit comme un accord. Les deux couples manquants y sont entrés, et le contrôle a
+été confronté à l'état dégradé : `orTexte` ramené à `or`, les six claires
+rougissent, les deux sombres restent vertes.
+
+**La leçon qui vaut au-delà de ce lot :** un jeton mesuré dans un rôle n'est pas
+mesuré dans tous. Quand une couleur change d'emploi — d'un trait vers un mot,
+d'un fond vers un texte —, c'est un couple neuf à donner au contrôle, pas une
+propriété acquise.
+
+### Où la teinte d'une ligne se pose, et pourquoi pas en ligne
+
+La plage d'une ligne qui attend son prix est teintée par `color-mix`, dans
+`globals.css` (`.atlas-plage-attente`) et non en style en ligne. `color-mix`
+n'existe pas avant iOS 16.2 : posée en ligne, la déclaration inconnue serait
+ignorée et l'élément retomberait sur **aucun fond** — la plage disparaîtrait, sur
+un écran dont tout le dessin repose sur elle. Écrite dans une classe, la
+déclaration ordinaire tient le repli et `@supports` n'ajoute la teinte que là où
+elle est comprise. Au pire la ligne perd sa couleur et garde son mot.

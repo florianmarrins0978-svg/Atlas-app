@@ -9,19 +9,31 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
-## L'ÉCRAN DES PRIX — la planche attend sa réponse, le code n'est pas écrit
+## L'ÉCRAN DES PRIX — codé le 5 septembre, la batterie et les captures restent dues
 
-Posé le 4 septembre 2026. `appli/ligne-qui-attend-son-prix.html` est en ligne et
-lui a été transmise. **Rien n'est codé tant qu'il n'a pas répondu A ou B.**
+**Il a répondu « la B » le 5 septembre 2026**, et les quatre points sont écrits :
+« à chiffrer » se voit et se compte, le refus emmène le doigt sur la case, la
+case garde la virgule, `orTexte` est dérivé sur les huit chartes.
 
-Ce qui se code une fois la réponse donnée, et rien d'autre :
+**CE QUI RESTE, ET IL FAUT SA FENÊTRE POUR LE FAIRE.** Il a demandé qu'on le
+prévienne avant toute batterie : ses sessions partagent le dossier, et le
+serveur tombe si une autre écrit pendant la mesure.
 
-| | Où |
+| Ce qui est dû | Pourquoi ça n'a pas été fait |
 |---|---|
-| dessiner « à chiffrer » et compter les lignes en attente | `PrixClient.tsx` — en consommant `ligneAttendSonPrix`, **jamais une seconde version de la règle** |
-| le refus mène au champ, plus à `/reglages` | `PrixClient.tsx` — `/reglages` ne reste que pour le cas « aucune ligne » |
-| le champ du montant lit ce qu'il tape | `PrixClient.tsx` — `montantEcrivable`, et le `type="number"` devient `text` + `inputMode="decimal"` comme sur le devis |
-| `orTexte` dérivé par charte | `chartes.ts` / `design-tokens.ts` — même mécanique que `alerte`, mesurée dans `CHANGELOG.md` du 4 septembre |
+| `npm run verifier:avant-livraison` | attend qu'il arrête ses autres sessions |
+| `scripts/test-case-du-prix-e2e.ts` | **écrite, jamais exécutée** — elle prend le port 3000 et la base |
+| les **captures** à 390 × 664, Origine **et** Nuit | aucun serveur ne répondait sur 3000 ; quatre défauts réels de ce projet sont sortis d'une image et d'aucun test vert |
+
+**Et une question lui revient**, sur capture : l'or d'un mot est passé plus
+sombre sur les six chartes claires (2,91 → 4,83 sur la plage d'Origine). Ça se
+défait en une ligne s'il ne l'aime pas — mais « à chiffrer » redevient alors
+difficile à lire au soleil.
+
+Ce qui a été joué ici, et qui est vert : `tsc` (0), `lint` (0 erreur),
+`test-case-du-prix.ts` (10/10), `test-chartes-lisibles.ts` (14/14). Les deux
+derniers ont été **confrontés à l'état dégradé** et rougissent sur le bon
+coupable.
 
 **Deux choses à ne pas déborder, il l'a redit le 4 septembre :**
 
