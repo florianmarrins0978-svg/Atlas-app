@@ -9,6 +9,30 @@ Format : le plus récent en tête.
 
 ## 2026-09-04
 
+### Le devis refuse la date avant de la faire choisir, et ses champs se voient sur Nuit
+
+**Le premier arrêt du parcours** — l'écran où il relit ce qu'il engage — laissait
+partir vers la feuille des dates un devis dont une ligne attendait son prix.
+Le refus existait bien, mais **au bout du chemin** : il choisissait une date,
+parfois deux, appuyait « Envoyer », et le serveur refusait alors. Sa phrase
+l'envoyait « sur l'écran du devis » — où il se tenait déjà, la feuille s'ouvrant
+d'ici depuis le 20 août. L'écran, lui, écrivait « à chiffrer » en face de la
+ligne quelques centimètres plus haut : il refusait de conclure ce qu'il
+affichait. Le refus remonte avant la feuille, nomme la ligne, et porte le geste
+qui ouvre le champ. **Ce que ça évite :** un aller-retour complet pour apprendre
+ce que l'écran savait à l'ouverture. La règle reste unique (`lignesEnAttenteDePrix`)
+et le contrôle du serveur n'a pas bougé — cacher un bouton ne ferme rien.
+
+**Neuf couleurs écrites en clair sur cette feuille.** Ses champs n'ont
+volontairement aucun cadre : le voile de saisie était donc le seul signe qu'on
+écrit dedans, et il valait `rgba(0,0,0,0.03)`. Sur Nuit et Sylve, du noir à 3 %
+sur un fond noir ne se voit pas — le champ actif devenait identique au champ au
+repos. Ils passent par `voile()`. **Ce que ça évite :** la faute exacte du
+22 août, sur l'écran le plus regardé du parcours.
+
+**299 lignes de champs sorties dans `ChampsDuDevis.tsx`**, sans qu'un
+comportement change.
+
 ### La facture ne peut plus facturer l'ancien prix, et son total se recompose
 
 **Le second arrêt du parcours** — le dernier écran avant que l'argent parte —

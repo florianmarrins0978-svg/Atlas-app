@@ -22775,3 +22775,68 @@ au jardin**, c'est sa TRACE qui manque, et elle ne compte que si le client
 conteste. La planche propose désormais un champ à l'ajout d'une ligne — qui l'a
 demandée, et quand — qui **s'imprime sur la facture** : la pièce devient
 elle-même la trace, et le client qui la paie l'accepte.
+
+---
+
+## §256. Le refus « à chiffrer » vit sur l'écran, pas au bout du chemin
+
+**4 septembre 2026.** Sa règle du 27 août — *« le devis ne doit pas pouvoir être
+considéré comme prêt à envoyer tant qu'une ligne nécessitant un prix n'est pas
+chiffrée »* — était tenue, mais au dernier moment et au mauvais endroit.
+
+**Le chemin qu'il parcourait :**
+
+| | |
+|---|---|
+| l'écran du devis | écrit « à chiffrer » en or en face de la ligne |
+| le bouton « Choisir la date » | s'ouvrait **sans condition** |
+| la feuille des dates | ne connaît pas ce blocage : quatre seulement (`preparation-envoi.ts`) — `devis_absent`, `devis_vide`, `canal_absent`, `coordonnee_absente` |
+| le serveur | refusait **après** le choix de la date (`envoyerDevis`) |
+
+**Et la phrase du refus l'envoyait où il se tenait déjà** — « Posez leur montant
+sur l'écran du devis, puis revenez ici. » Elle datait du temps où la feuille
+d'envoi vivait sur `/export` ; elle s'ouvre depuis le devis depuis le 20 août
+2026 (§136). Une phrase juste devenue fausse par déménagement.
+
+**Ce qui a été décidé.** Le refus remonte dans `DevisCompletClient.tsx`, à la
+place du bouton : la raison, la ligne nommée, et « Poser le prix » qui amène le
+doigt sur le champ (`data-prix-ligne`, lu dans le DOM plutôt que tenu dans une
+table de références que les catégories de TVA, les retraits et les déplacements
+feraient vivre).
+
+**Trois choix qui ne se rouvrent pas :**
+
+1. **Aucune seconde règle.** C'est `lignesEnAttenteDePrix` — la fonction pure du
+   dépôt — qui répond, donc mot pour mot la phrase du serveur. Deux
+   formulations d'un même refus divergent toujours, et le 31 août l'a déjà payé
+   (le pluriel traité sur le seul verbe).
+2. **Le contrôle du serveur RESTE.** Cacher un bouton ne ferme rien : l'action
+   est appelable. Le refus tardif devient un filet, pas le chemin normal.
+3. **Le refus PREND LA PLACE du bouton, il ne le grise pas.** Un bouton éteint
+   sans un mot est un défaut ; un bouton éteint avec un mot laisse quand même
+   le doigt appuyer dans le vide.
+
+**Les lignes retirées ne comptent pas** — même règle que les totaux. Refuser
+l'envoi au nom d'une ligne qu'il vient de retirer, et qui n'est plus à l'écran,
+serait un refus impossible à comprendre.
+
+**Ce que la revue a corrigé de sa propre analyse.** Il avait d'abord été écrit
+que la phrase du serveur ne lui parvenait pas, `envoyerDevis` **lançant** une
+erreur — or `envoyerAuClientAction` l'attrape et la rend en valeur
+(`raisonLisible`). Le défaut n'était pas le silence : c'était le moment, et
+l'endroit où la phrase l'envoyait.
+
+**Le voile de saisie de cette feuille suit désormais la charte.** Ses champs
+n'ont volontairement aucun cadre — c'est un document, pas un formulaire —, si
+bien que le voile est le SEUL signe qu'on écrit dedans. Il valait
+`rgba(0,0,0,0.03)`, écrit en clair à huit endroits : sur Nuit (`#1a1d19`) et
+Sylve, du noir à 3 % sur un fond noir n'existe pas, et le champ actif devenait
+identique au champ au repos. Il vit dans `--voile-champ`, posé une fois sur la
+feuille avec `voile(colors.ink, …)` et hérité par `ChampsDuDevis.tsx`.
+`test-chartes-lisibles.ts` ne pouvait pas le voir : il mesure les chartes, pas
+les classes d'un écran.
+
+**Éprouvé par sa porte** (`scripts/test-devis-refus-a-chiffrer-e2e.ts`), et non
+par la fonction qu'on venait d'écrire : la suite ouvre l'écran avec une ligne
+qui attend son prix et regarde ce que l'écran propose. Elle rougit sur l'écran
+d'avant ce lot.

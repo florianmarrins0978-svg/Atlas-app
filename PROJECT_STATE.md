@@ -19,6 +19,19 @@ ligne « fait » qui ne l'est pas coûte plus cher qu'une ligne absente.
 
 ---
 
+## FAIT : le devis, le premier arrêt (4 septembre 2026, soir)
+
+L'écran où il relit ce qu'il engage. `ARCHITECTURE.md` §256,
+`docs/lot-devis-le-premier-arret.md`.
+
+| | |
+|---|---|
+| **Fait** | le refus « à chiffrer » remonte **avant** la feuille des dates : il nomme la ligne et ouvre son champ, au lieu de laisser choisir une date pour refuser au bout (`DevisCompletClient.tsx`) |
+| **Fait** | les neuf couleurs écrites en clair suivent la charte — le voile de saisie était invisible sur Nuit et Sylve, et c'est le seul signe qu'on écrit dans ces champs sans cadre |
+| **Fait** | 299 lignes de champs sorties dans `ChampsDuDevis.tsx`, à comportement identique |
+| **Pas fait, et volontaire** | « Choisir la date » reste au bout de **2,59 hauteurs d'écran**. Trois façons sont dessinées (`appli/devis-le-premier-arret.html`) ; **rien n'est codé sans sa lettre** |
+| **Pas mesuré** | la batterie complète — trois sessions écrivaient dans le même dossier |
+
 ## FAIT : la facture, le second arrêt (4 septembre 2026)
 
 Le dernier écran avant que l'argent parte n'était jamais passé par une revue.

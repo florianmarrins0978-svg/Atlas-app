@@ -1,10 +1,23 @@
 "use client";
 
 import Link from "next/link";
-import { ligneAttendSonPrix } from "@/lib/preparation-devis";
-import { useLayoutEffect, useRef, useState } from "react";
+import { ligneAttendSonPrix, lignesEnAttenteDePrix } from "@/lib/preparation-devis";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { colors, font } from "@/lib/design-tokens";
+import { colors, font, voile } from "@/lib/design-tokens";
+import {
+  Cellule,
+  ChampNu,
+  ChiffreSaisi,
+  Colonne,
+  Intertitre,
+  Reference,
+  ZoneQuiGrandit,
+  montantDeLaLigne,
+  nombre,
+  normaliser,
+  sansZerosInutiles,
+} from "./ChampsDuDevis";
 import { adressesDuDocument } from "@/lib/adresses";
 import { enEuros } from "@/lib/euros";
 import { jourNumerique } from "@/lib/jour";
@@ -302,6 +315,48 @@ export default function DevisCompletClient(props: Props) {
   // ferait diverger l'écran du PDF au premier arrondi — et c'est le client qui
   // verrait la différence (`CLAUDE.md` §3).
   const lignesVisibles = lignes.filter((l) => !retraits.estRetire(l.id));
+
+  /**
+   * ═══════════════════════════════════════════════════════════════════════════
+   * **LE REFUS « À CHIFFRER » ARRIVE ICI, ET PLUS APRÈS LA FEUILLE DES DATES.**
+   *
+   * Sa règle du 27 août 2026 — *« le devis ne doit pas pouvoir être considéré
+   * comme prêt à envoyer tant qu'une ligne nécessitant un prix n'est pas
+   * chiffrée »* — était tenue, mais **au dernier moment et au mauvais endroit** :
+   *
+   *   1. le bouton « Choisir la date » s'ouvrait sans condition ;
+   *   2. la feuille d'envoi ne connaît pas ce blocage — elle n'en porte que
+   *      quatre (`preparation-envoi.ts`), et celui-là n'en fait pas partie ;
+   *   3. le patron choisissait donc une date, parfois deux, appuyait
+   *      « Envoyer », et **le serveur refusait alors** (`envoyerDevis`).
+   *
+   * **Et la phrase du refus l'envoyait où il se tenait déjà** : « Posez leur
+   * montant sur l'écran du devis, puis revenez ici. » Elle a été écrite quand
+   * la feuille vivait sur `/export` ; depuis le 20 août, elle s'ouvre d'ici.
+   *
+   * Or **cet écran sait déjà** : il écrit « à chiffrer » en or, en face de la
+   * ligne, quelques centimètres plus haut. Il refusait de conclure ce qu'il
+   * affichait.
+   *
+   * **AUCUNE SECONDE RÈGLE N'EST ÉCRITE POUR AUTANT** (`CLAUDE.md` §3) : c'est
+   * la fonction pure du dépôt qui répond, celle-là même que le serveur oppose
+   * au refus, et c'est donc mot pour mot la même phrase. Le contrôle du serveur
+   * reste en place — cacher un bouton ne ferme rien, et l'action est appelable.
+   *
+   * **Les lignes retirées ne comptent pas**, comme pour les totaux : refuser
+   * l'envoi au nom d'une ligne qu'il vient de retirer, et qui n'est plus à
+   * l'écran, serait un refus qu'on ne peut pas comprendre.
+   * ═══════════════════════════════════════════════════════════════════════════
+   */
+  const lignesAJuger = lignesVisibles.map((l) => ({
+    id: l.id,
+    libelle: l.libelle,
+    montant: montantDeLaLigne(l).toFixed(2),
+    aChiffrer: l.aChiffrer,
+  }));
+  const refusDePrix = lignesEnAttenteDePrix(lignesAJuger);
+  const sansPrix = lignesAJuger.filter(ligneAttendSonPrix);
+
   const totaux = totauxAvecReduction(
     lignesVisibles.map((l) => ({ montant: montantDeLaLigne(l).toFixed(2), tauxTva: l.tauxTva })),
     String(nombre(tauxTva)),
@@ -346,6 +401,26 @@ export default function DevisCompletClient(props: Props) {
 
   function majLigneLocale(id: string, champ: keyof Ligne, valeur: string) {
     setLignes((cur) => cur.map((l) => (l.id === id ? { ...l, [champ]: valeur } : l)));
+  }
+
+  /**
+   * Emmener le doigt sur le prix qui manque.
+   *
+   * **Un refus nomme sa raison ET le geste qui le débloque** (`CLAUDE.md`). Ici
+   * le geste est un endroit : sur un devis de dix lignes, « posez leur montant »
+   * laisse chercher laquelle, et le tableau fait plusieurs hauteurs d'écran.
+   *
+   * `block: "center"` et non `"start"` : le clavier du téléphone monte sur la
+   * moitié basse de l'écran dès que le champ prend le focus, et une ligne
+   * amenée en haut de page se retrouve alors hors de vue.
+   */
+  function allerAuPrix(ligneId: string) {
+    const champ = document.querySelector<HTMLInputElement>(`[data-prix-ligne="${ligneId}"]`);
+    if (!champ) return;
+    champ.scrollIntoView({ block: "center", behavior: "smooth" });
+    // `preventScroll` : le navigateur ferait sinon son propre saut, sec, par
+    // dessus celui qu'on vient de lancer en douceur.
+    champ.focus({ preventScroll: true });
   }
 
   /**
@@ -583,7 +658,31 @@ export default function DevisCompletClient(props: Props) {
 
       <article
       className="mx-auto w-full max-w-[820px] rounded-[10px] px-5 py-7 sm:px-12 sm:py-12"
-      style={{ backgroundColor: colors.card, boxShadow: "0 12px 40px rgba(28,28,26,0.10)" }}
+      /* **L'ombre et le voile de saisie SUIVENT la charte** (`CLAUDE.md` §3).
+         Ils étaient écrits en clair — `rgba(28,28,26,…)`, l'encre d'Origine —
+         et c'est la faute exacte du 22 août 2026 : sur Nuit et sur Sylve, du
+         noir posé sur du noir n'existe pas. L'ombre s'y perdait, mais surtout
+         le voile : ces champs n'ont volontairement aucun cadre, si bien qu'il
+         est le SEUL signe qu'on écrit dedans — et le champ en cours de saisie
+         devenait identique au champ au repos.
+
+         **Deux voiles et non un**, parce que le fond n'est pas le même : les
+         champs de la feuille reposent sur `card`, ceux du titre d'une catégorie
+         de TVA sur `rustTint`, déjà teinté, où il faut un peu plus pour se
+         voir. C'était déjà le cas avant (0,03 et 0,04) ; c'est simplement
+         nommé.
+
+         Posés ici, sur la feuille, plutôt que sur chaque champ : une propriété
+         personnalisée descend, et `ChampsDuDevis.tsx` n'a pas à savoir quelle
+         charte est en place. */
+      style={
+        {
+          backgroundColor: colors.card,
+          boxShadow: `0 12px 40px ${voile(colors.ink, 0.1)}`,
+          "--voile-champ": voile(colors.ink, 0.03),
+          "--voile-champ-teinte": voile(colors.ink, 0.04),
+        } as React.CSSProperties
+      }
     >
       {props.lectureLitterale && !fige && (
         <p className="mb-6 rounded-lg px-4 py-3 text-[13px]" style={{ backgroundColor: colors.rustTint, color: colors.rust }}>
@@ -818,7 +917,7 @@ export default function DevisCompletClient(props: Props) {
                 inputMode="decimal"
                 aria-label={`Taux de TVA de la catégorie ${tauxLisible(categorie.taux)} %`}
                 onBlur={(e) => void changerTaux(categorie.taux, e.target.value)}
-                className="w-9 border-0 bg-transparent p-0 text-right outline-none focus:bg-[rgba(0,0,0,0.04)]"
+                className="w-9 border-0 bg-transparent p-0 text-right outline-none focus:bg-[var(--voile-champ-teinte)]"
                 style={{ color: colors.ink, fontSize: "16px" }}
               />
               %
@@ -891,7 +990,7 @@ export default function DevisCompletClient(props: Props) {
               onFini={(fraiche) => {
                 void persisterLigne(l, { libelle: fraiche });
               }}
-              className="block w-full resize-none overflow-hidden border-0 bg-transparent p-0 outline-none focus:bg-[rgba(0,0,0,0.03)]"
+              className="block w-full resize-none overflow-hidden border-0 bg-transparent p-0 outline-none focus:bg-[var(--voile-champ)]"
               style={{ color: colors.ink, fontSize: "16px", lineHeight: 1.45 }}
             />
 
@@ -912,6 +1011,7 @@ export default function DevisCompletClient(props: Props) {
               <ChiffreSaisi
                 valeur={l.prixUnitaire}
                 fige={fige}
+                marqueLigne={l.id}
                 aria={`Prix unitaire ${i + 1}`}
                 placeholder="0,00"
                 onChange={(v) => majLigneLocale(l.id, "prixUnitaire", v)}
@@ -1066,7 +1166,7 @@ export default function DevisCompletClient(props: Props) {
                     // donnerait son ÉVÉNEMENT comme pourcentage. Ici c'est
                     // l'état du champ qui fait foi, comme avant.
                     onBlur={() => enregistrerRemise()}
-                    className="w-9 border-0 bg-transparent p-0 text-right outline-none focus:bg-[rgba(0,0,0,0.03)]"
+                    className="w-9 border-0 bg-transparent p-0 text-right outline-none focus:bg-[var(--voile-champ)]"
                     style={{ color: colors.or, fontSize: "16px" }}
                   />
                   %
@@ -1117,7 +1217,7 @@ export default function DevisCompletClient(props: Props) {
                   onBlur={() => majEnTeteDevisAction(props.devisId, { tauxTva })}
                   // Collé au « ( » : aligné à droite dans une boîte fixe, le taux
                   // laissait un blanc et se lisait « TVA (    20 %) ».
-                  className="w-9 border-0 bg-transparent p-0 text-left outline-none focus:bg-[rgba(0,0,0,0.03)]"
+                  className="w-9 border-0 bg-transparent p-0 text-left outline-none focus:bg-[var(--voile-champ)]"
                   style={{ color: colors.ink, fontSize: "16px" }}
                 />
                 %)
@@ -1163,7 +1263,7 @@ export default function DevisCompletClient(props: Props) {
           placeholder="Acompte de 30 % à la signature, solde à réception des travaux. Devis gratuit et sans engagement."
           onChange={setConditions}
           onFini={() => majEnTeteDevisAction(props.devisId, { conditionsPaiement: conditions })}
-          className="block w-full resize-none overflow-hidden border-0 bg-transparent p-0 outline-none focus:bg-[rgba(0,0,0,0.03)]"
+          className="block w-full resize-none overflow-hidden border-0 bg-transparent p-0 outline-none focus:bg-[var(--voile-champ)]"
           style={{ color: colors.ink, fontSize: "16px", lineHeight: 1.5 }}
         />
       </section>
@@ -1205,11 +1305,33 @@ export default function DevisCompletClient(props: Props) {
 
             **Sans flèche**, il l'a dit en toutes lettres. La flèche annonçait
             un écran de plus ; il n'y en a justement plus. */}
-        {!fige && (
-          <div className="w-full px-6 pt-6">
-            <PrimaryButton onClick={() => setFeuilleOuverte(true)}>Choisir la date</PrimaryButton>
-          </div>
-        )}
+        {/* **Le refus prend la place du bouton, il ne le grise pas.** Un bouton
+            éteint sans un mot est un défaut, pas une protection — et un bouton
+            éteint AVEC un mot laisserait quand même le doigt appuyer dans le
+            vide. Ce qui s'affiche à sa place dit ce qui manque, et emmène
+            dessus. Le bouton revient de lui-même dès que le prix est posé. */}
+        {!fige &&
+          (refusDePrix ? (
+            <div className="w-full px-6 pt-6">
+              <div className="rounded-lg px-4 py-3" style={{ backgroundColor: colors.rustTint }}>
+                <p className="text-[13px]" style={{ color: colors.rust }}>
+                  {refusDePrix}
+                </p>
+                <button
+                  type="button"
+                  onClick={() => sansPrix[0] && allerAuPrix(sansPrix[0].id)}
+                  className="mt-2 text-[13px] font-semibold underline"
+                  style={{ color: colors.rust }}
+                >
+                  {sansPrix.length > 1 ? "Poser les prix" : "Poser le prix"}
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="w-full px-6 pt-6">
+              <PrimaryButton onClick={() => setFeuilleOuverte(true)}>Choisir la date</PrimaryButton>
+            </div>
+          ))}
         <a
           href={`/api/devis/${props.devisId}/pdf`}
           target="_blank"
@@ -1353,305 +1475,5 @@ export default function DevisCompletClient(props: Props) {
         }}
       />
     </>
-  );
-}
-
-/** Le montant d'une ligne — quantité × prix unitaire, comme sur le modèle. */
-function montantDeLaLigne(l: { quantite: string; prixUnitaire: string }): number {
-  return nombre(l.quantite) * nombre(l.prixUnitaire);
-}
-
-/**
- * « 3.00 » s'écrit « 3 », « 250.00 » s'écrit « 250 ».
- *
- * La base stocke deux décimales — c'est juste pour de l'argent, et illisible
- * sur un devis : personne n'écrit « 3,00 tilleuls ». Le patron voit donc le
- * nombre tel qu'il l'aurait écrit, et reste libre de taper « 1,5 ».
- */
-function sansZerosInutiles(valeur: string): string {
-  if (!valeur) return "";
-  const n = Number(String(valeur).replace(",", "."));
-  if (!Number.isFinite(n)) return valeur;
-  return String(n).replace(".", ",");
-}
-
-/** Lit un nombre saisi à la française (« 1,5 ») comme à l'anglaise (« 1.5 »). */
-function nombre(valeur: string): number {
-  const n = Number(String(valeur).replace(",", ".").trim());
-  return Number.isFinite(n) ? n : 0;
-}
-
-/** Une valeur vide vaut le défaut, jamais `NaN` en base. */
-function normaliser(valeur: string, defaut: string): string {
-  const n = nombre(valeur);
-  return valeur.trim() === "" ? defaut : String(n);
-}
-
-/**
- * Une zone de texte HAUTE DE CE QU'ELLE CONTIENT — jamais de ce qu'on estime.
- *
- * **Les trois zones du devis estimaient leur hauteur, et les trois estimaient
- * mal.** L'adresse comptait les caractères (`ceil(longueur / 34)`), la
- * description comptait les retours à la ligne, les conditions ne comptaient
- * rien du tout (`rows={2}`). Or un texte ne se coupe ni au caractère ni au
- * retour à la ligne : il se coupe au mot, quand il touche le bord. Deux lignes
- * estimées en font trois à l'écran, la zone se met à défiler, et le patron
- * relit un devis amputé du bas.
- *
- * C'est très exactement le défaut que la zone d'adresse existait pour
- * corriger — *« le patron lit une adresse amputée sur son propre devis »* —
- * revenu par une autre porte.
- *
- * **Trouvé le 11 août 2026 par le balayage des barres de défilement**, qui
- * cherchait tout autre chose. La barre grise était le symptôme ; le texte caché
- * était le défaut. La masquer aurait rendu la coupure silencieuse — c'eût été
- * le pire des deux.
- *
- * On mesure donc au lieu d'estimer. `scrollHeight` donne la hauteur réelle une
- * fois le texte reporté à la ligne. La remise à `auto` avant de lire est
- * indispensable : sans elle la hauteur ne redescend jamais quand on efface.
- */
-function ZoneQuiGrandit({
-  valeur,
-  onChange,
-  onFini,
-  placeholder,
-  aria,
-  fige,
-  className,
-  style,
-}: {
-  valeur: string;
-  onChange: (v: string) => void;
-  /** Reçoit ce que le CHAMP porte — voir `persisterLigne`, jamais un rendu. */
-  onFini: (valeurDuChamp: string) => void;
-  placeholder: string;
-  aria: string;
-  fige: boolean;
-  className: string;
-  style: React.CSSProperties;
-}) {
-  const zone = useRef<HTMLTextAreaElement>(null);
-
-  // À chaque frappe ET au premier rendu : le contenu vient du serveur, il est
-  // déjà long avant qu'on ait touché quoi que ce soit.
-  //
-  // `useLayoutEffect` et non `useEffect` : la mesure doit être posée avant que
-  // le navigateur peigne, sinon la feuille sursaute au chargement.
-  useLayoutEffect(() => {
-    const el = zone.current;
-    if (!el) return;
-    el.style.height = "auto";
-    el.style.height = `${el.scrollHeight}px`;
-  }, [valeur]);
-
-  return (
-    <textarea
-      ref={zone}
-      value={valeur}
-      readOnly={fige}
-      placeholder={placeholder}
-      aria-label={aria}
-      rows={1}
-      onChange={(e) => onChange(e.target.value)}
-      onBlur={(e) => onFini(e.currentTarget.value)}
-      className={className}
-      style={style}
-    />
-  );
-}
-
-/**
- * Un champ sans cadre : le devis reste une feuille, pas un formulaire.
- * Il ne se signale qu'au moment où on écrit dedans.
- */
-function ChampNu({
-  valeur,
-  onChange,
-  onFini,
-  placeholder,
-  aria,
-  fige,
-  grand,
-  long,
-  prefixe,
-}: {
-  valeur: string;
-  onChange: (v: string) => void;
-  onFini: () => void;
-  placeholder: string;
-  aria: string;
-  fige: boolean;
-  grand?: boolean;
-  /**
-   * Écrit devant la valeur, et **hors du champ** : c'est ce que le document
-   * porte sans qu'on l'ait tapé — la civilité, aujourd'hui. Le mettre DANS le
-   * champ le rendrait modifiable, et le patron enregistrerait « Mr. Roux »
-   * comme nom du client : la civilité s'y retrouverait deux fois au premier
-   * document suivant.
-   */
-  prefixe?: string;
-  /**
-   * Passe à plusieurs lignes plutôt que de couper. Réservé aux adresses : dans
-   * un `<input>`, « 10 rue Denfert-Rochereau 78200 Mantes-la-Jolie » s'arrête
-   * au bord de l'écran, et le patron lit une adresse amputée sur son propre
-   * devis. Le PDF, lui, la reporte à la ligne depuis toujours — l'écran devait
-   * dire la même chose que le papier.
-   */
-  long?: boolean;
-}) {
-  if (long) {
-    return (
-      <ZoneQuiGrandit
-        valeur={valeur}
-        onChange={onChange}
-        onFini={onFini}
-        placeholder={placeholder}
-        aria={aria}
-        fige={fige}
-        className="block w-full resize-none overflow-hidden border-0 bg-transparent p-0 py-0.5 outline-none focus:bg-[rgba(0,0,0,0.03)]"
-        style={{ color: colors.ink, fontSize: "16px", lineHeight: 1.4 }}
-      />
-    );
-  }
-  const champ = (
-    <input
-      value={valeur}
-      readOnly={fige}
-      placeholder={placeholder}
-      aria-label={aria}
-      onChange={(e) => onChange(e.target.value)}
-      onBlur={onFini}
-      className="block w-full border-0 bg-transparent p-0 py-0.5 outline-none focus:bg-[rgba(0,0,0,0.03)]"
-      style={{
-        color: colors.ink,
-        // 16 px au minimum : en dessous, iOS agrandit la page au premier appui.
-        fontSize: grand ? "22px" : "16px",
-        fontFamily: grand ? font.display : undefined,
-      }}
-    />
-  );
-
-  if (!prefixe) return champ;
-
-  // `items-baseline` : le mot et le nom reposent sur la même ligne d'écriture,
-  // comme sur le papier. Alignés par le haut, « Mr. » flotterait au-dessus du
-  // nom dès que les deux n'ont pas exactement la même taille.
-  return (
-    <span className="flex items-baseline gap-1.5">
-      <span
-        style={{
-          color: colors.ink,
-          fontSize: grand ? "22px" : "16px",
-          fontFamily: grand ? font.display : undefined,
-        }}
-      >
-        {prefixe}
-      </span>
-      {champ}
-    </span>
-  );
-}
-
-function Intertitre({ children }: { children: React.ReactNode }) {
-  return (
-    <p
-      className="mb-1.5 text-[11px] font-semibold uppercase tracking-[0.12em]"
-      style={{ color: colors.rust }}
-    >
-      {children}
-    </p>
-  );
-}
-
-function Colonne({ children, droite }: { children: React.ReactNode; droite?: boolean }) {
-  return (
-    <span
-      className={`text-[11px] font-semibold uppercase tracking-[0.1em] ${droite ? "text-right" : ""}`}
-      style={{ color: colors.muted }}
-    >
-      {children}
-    </span>
-  );
-}
-
-/** Sur téléphone, chaque cellule porte son libellé — comme le modèle d'origine. */
-/**
- * Un chiffre qu'on saisit — et qu'on VOIT qu'on peut saisir.
- *
- * Le 6 août 2026, le patron : « quand j'essaye de cliquer pour mettre un prix,
- * ce n'est pas cliquable ». Il l'était pourtant. Mais le champ était vide, sans
- * repère, sans placeholder, et haut de 24 pixels dans un coin de l'écran —
- * mesuré : 96 × 24. Apple recommande 44 pixels pour une cible tactile, et un
- * champ invisible n'invite personne à le toucher. Un contrôle automatique
- * répondait « éditable : oui » et n'y voyait donc rien.
- *
- * D'où les trois changements, tous nécessaires ensemble : une hauteur de doigt,
- * un trait sous le champ tant qu'il est vide, et un exemple en gris. Le trait
- * disparaît dès qu'un chiffre est écrit — sur le papier, un devis rempli n'a
- * pas de cases.
- */
-function ChiffreSaisi({
-  valeur,
-  onChange,
-  onFini,
-  placeholder,
-  aria,
-  fige,
-}: {
-  valeur: string;
-  onChange: (v: string) => void;
-  /** Reçoit ce que le CHAMP porte — voir `persisterLigne`, jamais un rendu. */
-  onFini: (valeurDuChamp: string) => void;
-  placeholder: string;
-  aria: string;
-  fige: boolean;
-}) {
-  const vide = valeur.trim() === "";
-  return (
-    <input
-      value={valeur}
-      readOnly={fige}
-      inputMode="decimal"
-      placeholder={placeholder}
-      aria-label={aria}
-      onChange={(e) => onChange(e.target.value)}
-      onBlur={(e) => onFini(e.currentTarget.value)}
-      className="w-24 border-0 bg-transparent px-1 text-right outline-none focus:bg-[rgba(0,0,0,0.03)] sm:w-full"
-      style={{
-        color: colors.ink,
-        fontSize: "16px",
-        minHeight: 44,
-        borderBottom: vide && !fige ? `1px solid ${colors.lineSoft}` : "1px solid transparent",
-      }}
-    />
-  );
-}
-
-function Cellule({ libelle, children }: { libelle: string; children: React.ReactNode }) {
-  return (
-    <div className="flex items-baseline justify-between gap-3 sm:block sm:text-right">
-      <span
-        className="text-[11px] font-semibold uppercase tracking-[0.1em] sm:hidden"
-        style={{ color: colors.muted }}
-      >
-        {libelle}
-      </span>
-      {children}
-    </div>
-  );
-}
-
-function Reference({ libelle, valeur }: { libelle: string; valeur: React.ReactNode }) {
-  return (
-    <div
-      className="flex items-baseline justify-between gap-4 py-1"
-      style={{ borderBottom: `1px solid ${colors.lineSoft}` }}
-    >
-      <span className="text-[12px] font-semibold uppercase tracking-[0.08em]" style={{ color: colors.muted }}>
-        {libelle}
-      </span>
-      <span className="text-[14px]">{valeur}</span>
-    </div>
   );
 }

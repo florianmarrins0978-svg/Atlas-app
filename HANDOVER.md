@@ -9,7 +9,33 @@ sert.
 
 ---
 
-## Dernier lot — LA FACTURE, LE SECOND ARRÊT (4 septembre 2026)
+## Dernier lot — LE DEVIS, LE PREMIER ARRÊT (4 septembre 2026, soir)
+
+**Quatre lots ont tourné dans le même dossier ce jour-là.** Celui-ci ne touche
+QUE `src/app/chantiers/[id]/devis-complet/`.
+
+**Ce qu'il ferme** (`ARCHITECTURE.md` §256, `docs/lot-devis-le-premier-arret.md`) :
+
+| | |
+|---|---|
+| une ligne « à chiffrer » | laissait ouvrir la feuille des dates. Il choisissait une date, appuyait « Envoyer », et **le serveur refusait alors** — en l'envoyant « sur l'écran du devis », où il se tenait déjà. Le refus remonte avant la feuille, nomme la ligne, et ouvre son champ |
+| neuf couleurs écrites en clair | le voile de saisie — **seul signe** qu'on écrit dans ces champs sans cadre — était invisible sur Nuit et Sylve. Il suit la charte (`voile()`) |
+| 1 657 lignes | 299 sorties dans `ChampsDuDevis.tsx`, sans qu'un comportement change (1 479 restantes) |
+
+**⚠ CE QUI N'A PAS ÉTÉ JOUÉ : la batterie.** Trois sessions écrivaient dans le
+dossier. Verts à l'heure du lot : `tsc`, `lint`, `test-aucune-fleche`,
+`test-chartes-lisibles`, `test-devis-envoyable`, `test-preparation-devis`. La
+suite neuve `scripts/test-devis-refus-a-chiffrer-e2e.ts` **n'a pas encore
+tourné** — elle demande un serveur et une base.
+
+**Ce qui attend SA réponse :** `appli/devis-le-premier-arret.html` —
+Aujourd'hui, A ou B. **Ne pas coder « Voir le document » sans elle** : le brief
+le disait tranché, il ne l'est pas (`docs/QUESTIONS.md` §23 finit sur une
+question).
+
+---
+
+## Lot précédent — LA FACTURE, LE SECOND ARRÊT (4 septembre 2026)
 
 **Trois lots ont tourné EN MÊME TEMPS ce jour-là, dans le même dossier :** la
 fiche du chantier retirée, la feuille du planning, et celui-ci. Si l'arbre paraît

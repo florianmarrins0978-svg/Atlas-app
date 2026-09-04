@@ -9,6 +9,33 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
+## LE DEVIS — CE QUI RESTE APRÈS LE LOT DU 4 SEPTEMBRE
+
+Le lot est fait (`ARCHITECTURE.md` §256, `docs/lot-devis-le-premier-arret.md`).
+Le refus « à chiffrer » remonte avant la feuille des dates, les neuf couleurs
+écrites en clair suivent la charte, et 299 lignes de champs sont sorties dans
+`ChampsDuDevis.tsx`. Ce qui reste :
+
+- **La planche `appli/devis-le-premier-arret.html` attend sa lettre** :
+  Aujourd'hui, **A — Replié**, ou **B — Sous le pouce**. « Choisir la date » est
+  le tout dernier élément de la page, à **2,59 hauteurs d'écran** mesurées à
+  390 × 664 — il vient après le cadre de signature. **Ma préférence : B**, qui
+  règle l'accès sans replier ce qu'il relit.
+  **⚠ NE PAS CODER « Voir le document » SANS SA RÉPONSE.** Le brief du
+  4 septembre le range dans « déjà tranché » : c'est inexact. Ça n'existe que
+  dans `appli/moins-de-mots.html`, et `docs/QUESTIONS.md` §23 se termine sur une
+  question qu'il n'a jamais tranchée — *« ces trois écrans vous vont-ils ? »*.
+- **La batterie n'a pas été jouée sur ce lot** : trois sessions écrivaient dans
+  le même dossier. Verts à cette heure : `tsc`, `lint`, `test-aucune-fleche`,
+  `test-chartes-lisibles`, `test-devis-envoyable`, `test-preparation-devis`.
+  La suite neuve `test-devis-refus-a-chiffrer-e2e.ts` demande un serveur et une
+  base : **elle n'a pas encore tourné**.
+- **Le tableau des lignes et le bloc des totaux sont encore dans l'écran**
+  (1 479 lignes). Les sortir demanderait quinze à vingt paramètres chacun : à
+  ne faire que si un besoin le justifie, pas pour le compte de lignes.
+- **« Atlas prépare toujours votre devis… (96 s) »** — signalé le 1ᵉʳ septembre,
+  jamais reproduit sur un poste de développement. **Pas touché dans ce lot.**
+
 ## LA FACTURE — CE QUI RESTE APRÈS LE LOT DU 4 SEPTEMBRE
 
 Le lot est fait (`ARCHITECTURE.md` §255, `docs/facture-impeccable.md`). Quatre
