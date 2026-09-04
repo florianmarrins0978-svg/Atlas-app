@@ -47,53 +47,95 @@ reste du trajet `chantier → terminé` est de **cinq** écrans, pas de dix : la
 fiche de chantier (le hub), les prix, la transcription, la facture, les
 informations. Aucun n'a bougé depuis le 31 août.
 
-### La feuille « Envoyer à … » regardée dans ses onze états — planche 102
+### La feuille « Envoyer à … » : sept défauts trouvés à l'image, et réparés
 
 **Sa demande :** une passe complète sur la feuille du premier arrêt du parcours,
-*« tous les états, pas seulement le nominal »*, chartes sombres comprises.
+*« tous les états, pas seulement le nominal »*, chartes sombres comprises. La
+maquette d'abord (planche 102), puis **sa réponse : « 1 à 7 fais-les, et le 8 je
+choisis la B »**.
 
-**Rien n'est codé** — la maquette d'abord (`CLAUDE.md` §3 bis). Ce qui est livré :
-`appli/la-feuille-qui-envoie.html`, `docs/lot-feuille-qui-envoie.md`, et
-`scripts/voir-envoi-au-client.mts`, qui photographie la feuille dans onze états à
-390 × 664 pour la charte qu'on lui donne.
+`scripts/voir-envoi-au-client.mts` photographie la feuille dans onze états à
+390 × 664, pour la charte qu'on lui donne — c'est lui qui a tout trouvé. Le
+pourquoi entier est en `ARCHITECTURE.md` §252, le retour au patron en
+`docs/lot-feuille-qui-envoie.md`.
 
-**Sept trouvailles, dont trois qui ne sont pas cosmétiques.**
+**Sept défauts, dont trois qui ne sont pas cosmétiques.**
 
-- **Sur Nuit et Sylve, on ne voit pas quel canal est choisi.** Les capsules
-  « Par SMS » / « Par e-mail » sont redessinées à la main dans `EnvoiAuClient`
+- **Sur CINQ chartes, on ne voyait pas quel canal était choisi.** Les capsules
+  « Par SMS » / « Par e-mail » étaient redessinées à la main dans `EnvoiAuClient`
   alors que `ChoixCanal` existe et sert déjà au nouveau chantier et à la
-  facture. La copie ne marque l'actif que par la couleur du texte — or `rust` et
-  `ink` valent le même `#e9e8de` sur ces deux chartes, et les deux fonds sont à
-  **1,05** de contraste. Les deux capsules sont indiscernables.
-- **Le devis vide est un cul-de-sac** : la phrase dit d'aller poser ses prix,
-  aucune porte n'y mène. C'est le cul-de-sac fermé le 11 août pour la coordonnée
-  manquante, resté ouvert sur l'autre blocage — et il s'atteint en trois gestes
-  depuis le chemin ordinaire.
-- **Le refus d'envoi est écrit en `colors.rust`**, l'accent de l'action, donc en
-  texte courant sur les deux sombres — quand l'avertissement du jour complet,
-  quarante pixels plus haut, est en bordeaux. Sur les blocs `role="alert"` de
-  `src/`, 36 emploient `colors.alert` et 5 `colors.rust`.
+  facture. La copie ne marquait l'actif que par la couleur du texte — or `rust`
+  et `ink` valent **exactement la même couleur sur pierre, beurre, moka, sylve
+  et nuit**, et les deux fonds tiennent 1,04 à 1,29 de contraste. Les deux
+  capsules étaient indiscernables : rien ne disait par où le devis partait.
+  *(Le premier document annonçait « les deux sombres » ; c'est le contrôle qui a
+  compté les cinq.)* L'écran emploie désormais `ChoixCanal`, dont la marque
+  d'actif est un liseré d'or — elle ne dépend d'aucune clarté.
+- **Le devis vide était un cul-de-sac** : la phrase disait d'aller poser ses
+  prix, aucune porte n'y menait. C'est le cul-de-sac fermé le 11 août pour la
+  coordonnée manquante, resté ouvert sur l'autre blocage — et il s'atteint en
+  trois gestes depuis le chemin ordinaire. Un bouton mène désormais aux prix de
+  ce chantier ; **la phrase, elle, ne bouge pas d'un mot** — elle vient de
+  `MOTIF_DEVIS_VIDE`, celle qu'oppose le serveur.
+- **Le refus d'envoi était écrit en `colors.rust`**, l'accent de l'action, donc
+  en texte courant sur les cinq chartes ci-dessus — quand l'avertissement du jour
+  complet, quarante pixels plus haut, est en bordeaux. Il passe à `colors.alert` :
+  sur les blocs `role="alert"` de `src/`, 36 l'emploient contre 5 pour `rust`.
 - **Le gris qui porte le sens** — « X jours ouvrés d'affilée », « Reste 1 équipe
-  sur 2 », le sous-titre de l'interrupteur — tient **2,85 à 3,59** sur les six
-  chartes claires, pour un seuil de 4,5.
-- **Le bouton passe de 246 à 118 px et devient gris** au moment de l'envoi.
-- **La feuille fait 882 px** (1 407 un jour chargé) **pour 584 px d'écran** :
-  « Envoyer le devis » n'est jamais visible en arrivant, et il descend de six
-  cents pixels quand la préparation se termine sous le pouce.
-- **La fiche du jour** pose une pastille verte pleine contenant un tiret quand
-  aucune équipe n'est posée, et double le mot « proposé » d'une phrase qui dit la
-  même chose.
+  sur 2 », le sous-titre de l'interrupteur — tenait **2,85 à 3,59** sur les six
+  chartes claires, pour un seuil de 4,5. Ces phrases-là passent à `inkSoft`
+  (6,6 à 10,4). **Le jeton `muted` n'est pas touché** : trois cents endroits
+  l'emploient, et c'est au patron de trancher (`TODO.md`).
+- **Le bouton passait de 246 à 118 px et devenait gris** au moment de l'envoi.
+  Le libellé d'attente est devenu « Envoi du devis… », de même largeur. *Une
+  première version réservait la largeur avec un libellé en creux ; elle a été
+  jetée après l'avoir jouée — le texte se retrouvait deux fois dans la page, et
+  `text=Envoyer le devis` ne désignait plus un élément mais deux.*
+- **La feuille fait 864 px** (1 349 un jour chargé) **pour 584 px d'écran** :
+  « Envoyer le devis » n'était jamais visible en arrivant, et il descendait de
+  six cents pixels quand la préparation se terminait sous le pouce. Le pied de la
+  feuille — l'erreur, l'envoi, « Annuler » — **reste désormais en bas**, le
+  contenu défile au-dessus.
+- **La fiche du jour** posait une pastille verte pleine contenant un tiret quand
+  aucune équipe n'est posée, et doublait le mot « proposé » d'une phrase qui dit
+  la même chose. Elle dit maintenant « équipe non posée », et ce qui reste.
+- **La durée se replie** (sa réponse « la B ») : une ligne, la valeur et
+  « changer ». La phrase du chantier long reste visible repliée — elle parle du
+  chantier, pas de la molette.
 
-**Deux choses apprises sur ce poste, qu'aucun document ne portait :** le décor
+**Trois choses apprises sur ce poste, qu'aucun document ne portait :** le décor
 d'une capture demande un rôle qui **traverse la RLS** — `atlas_owner` est refusé
-comme `atlas_app`, les tables portant `FORCE ROW LEVEL SECURITY` — et la charte
-vit sur `users.charte`, le goût de la personne, pas sur l'entreprise.
+comme `atlas_app`, les tables portant `FORCE ROW LEVEL SECURITY` ; la charte vit
+sur `users.charte`, le goût de la personne, pas sur l'entreprise ; et une série
+de captures finit par déclencher la **limite de connexion**, dont le symptôme
+trompe — la connexion répond 200 et la page ne bouge plus.
 
-**Le contrôle de la planche a attrapé une erreur dans la planche même :** elle
-annonçait « 2,85 à 3,86 », or 3,86 est la mesure du gris sur la plage, pas sur le
-fond de page. La vraie fourchette est 2,85 à 3,59.
-(`scripts/verifier-maquette-feuille-qui-envoie.mts`, enregistré dans
-`npm run verifier:maquette`.)
+**Deux contrôles, et les deux ont été vus rouges.**
+`scripts/test-feuille-envoi-lisible-e2e.ts` exige que la capsule active porte une
+marque que la couleur du texte ne fait pas, que la porte du devis vide mène bien
+aux prix de CE chantier, et que le pied touche le bas — en **refusant de
+conclure** si la feuille tient dans l'écran, parce qu'un zéro n'est pas un
+succès. `scripts/verifier-maquette-feuille-qui-envoie.mts` recalcule les couleurs
+et les chiffres de la planche depuis `chartes.ts` ; à sa première exécution il a
+attrapé **une erreur dans la planche même** — elle annonçait « 2,85 à 3,86 », or
+3,86 est la mesure du gris sur la plage et non sur le fond de page. La fourchette
+juste est 2,85 à 3,59.
+
+**LES CHIFFRES, ET CE QUI EST ROUGE SANS ÊTRE DE CE LOT.** La batterie rend
+**295/306** en base et **118/126** au navigateur. Les huit rouges du navigateur
+ont été rejoués **arbre nu** (`git stash`) : **0/8 avant comme après**. Leur
+cause est la même, et elle n'est pas dans le produit — elles relisent une date de
+chantier par `toISOString().slice(0,10)`, or le pilote PostgreSQL rend une
+colonne `date` à minuit LOCAL, et ce poste est à UTC+2 : la journée recule d'un
+cran. La base garde la bonne date, et la CI, à UTC, passe. Écrit dans `TODO.md`
+avec la preuve en trois lignes, parce que huit rouges permanents empêchent de
+voir un vrai. Côté base, une session voisine avait déjà consigné les onze rouges
+le même jour (`b15a65d4`).
+
+**Le pied collé a demandé une mesure, pas un raisonnement :** `bottom: 0` colle
+la boîte de marge, et la marge négative qui avale le retrait de `BottomSheet`
+laissait le pied 36 px trop haut — on voyait la liste des dates passer dessous.
+Trouvé à la capture (`ARCHITECTURE.md` §252).
 
 ### Treize boutons qui n'étaient pas passés au vert clair — et le galet retiré
 

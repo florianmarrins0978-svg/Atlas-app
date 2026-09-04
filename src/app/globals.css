@@ -1215,8 +1215,15 @@ body {
  * ne pas se confondre avec un nom déjà tapé.
  *
  * Ce réglage est ICI et pas dans l'écran : aucun style en ligne ne peut viser
- * `::placeholder`. */
-[data-atlas="chercher-client"]::placeholder {
+ * `::placeholder`.
+ *
+ * **La coordonnée saisie à l'envoi a rejoint la règle le 4 septembre 2026.**
+ * Elle porte l'exemple — « 06 12 34 56 78 » — sur le seul écran où le patron
+ * répare un client sans numéro, et le gris du navigateur y disparaissait
+ * pareillement. La mesure est la même, la raison est la même : deux règles
+ * séparées auraient fini par diverger. */
+[data-atlas="chercher-client"]::placeholder,
+[data-atlas="coordonnee-client"]::placeholder {
   color: var(--atlas-inkSoft, #4a4a44);
   opacity: 0.85;
 }

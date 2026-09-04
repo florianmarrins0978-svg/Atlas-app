@@ -9,31 +9,54 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
-## LA FEUILLE « ENVOYER À … » — SEPT POINTS DIAGNOSTIQUÉS, RIEN DE CODÉ (4 sept. 2026)
+## ~~LA FEUILLE « ENVOYER À … » — SEPT POINTS~~ FAIT LE 4 SEPT. 2026
 
-Planche 102 en ligne (`appli/la-feuille-qui-envoie.html`), document de retour
-dans `docs/lot-feuille-qui-envoie.md`. **En attente de sa réponse sur le point 8
-seulement** — la durée du chantier dépliée (A) ou repliée (B).
+~~Planche 102, sept défauts trouvés à l'image.~~ **Sa réponse : « 1 à 7 fais-les,
+et le 8 je choisis la B ».** Tout est codé — `ARCHITECTURE.md` §252,
+`docs/lot-feuille-qui-envoie.md`, gardé par
+`scripts/test-feuille-envoi-lisible-e2e.ts`.
 
-Ce qui est prêt à coder dès qu'il ne dit rien contre :
-
-| | où |
-|---|---|
-| employer `ChoixCanal` au lieu des deux capsules recopiées | `EnvoiAuClient.tsx` l. 383-402 |
-| donner sa porte au blocage `devis_vide` | idem, `MESSAGES_BLOCAGE` |
-| passer le refus d'envoi de `colors.rust` à `colors.alert` | idem, bloc `erreur` |
-| passer à `inkSoft` les phrases qui portent du sens | idem + `BandeDuree` |
-| garder la largeur de la capsule pendant « Envoi… » | idem |
-| ancrer le pied de la feuille en bas, le contenu défile | idem |
-| retirer la pastille au tiret et la phrase en double | `JourneeRegardee.tsx` |
-
-**Deux sujets plus larges, qui ne sont PAS de ce lot et qu'il doit trancher :**
+**Deux sujets plus larges, ouverts PAR ce lot et qu'il doit trancher :**
 
 - `colors.muted` tient **2,85 à 3,59** sur les six chartes claires, pour un seuil
   de 4,5. Il porte du texte porteur de sens dans toute l'application. Le changer
   est un changement d'identité, pas un correctif d'écran.
 - Le bouton principal **éteint** est écrit en `muted` sur `line` : illisible sur
   les dix-sept écrans qui emploient `PrimaryButton`.
+
+## HUIT SUITES NAVIGATEUR SONT ROUGES SUR CE POSTE, ET LE PRODUIT N'Y EST POUR RIEN (4 sept. 2026)
+
+**Mesuré**, arbre remis à nu (`git stash`) : `test-bandeau-banc-e2e`,
+`test-carte-reponse-mene-au-geste-e2e`, `test-date-lointaine-e2e`,
+`test-deux-dates-calendrier-e2e`, `test-face-id-e2e`, `test-fiche-client-e2e`,
+`test-planning-vers-facture-e2e`, `test-poser-une-date-e2e` — **0/8 avant comme
+après** tout lot en cours.
+
+**La cause, et elle tient en trois lignes.** Ces suites relisent une date de
+chantier ainsi :
+
+```js
+rows[0].jour.toISOString().slice(0, 10)
+```
+
+Le pilote PostgreSQL rend une colonne `date` comme un `Date` JavaScript à
+**minuit LOCAL**. Sur ce poste (UTC+2), `toISOString()` recule d'une journée :
+
+```
+en base : 2026-09-07  →  toISOString().slice(0,10) : 2026-09-06
+```
+
+**La base garde la bonne date ; c'est la suite qui la relit de travers.** En CI,
+machine à UTC, le décalage est nul et tout passe.
+
+**Pourquoi ça ne peut pas rester.** Huit rouges permanents, c'est un bruit dans
+lequel une vraie régression ne se voit plus — exactement ce que `CLAUDE.md` §5
+nomme (« un contrôle qui échoue au hasard apprend à ignorer le rouge »).
+
+**Ce qu'il faudrait :** une seule fonction partagée qui lise une colonne `date`
+sans passer par `toISOString` — les composantes locales suffisent —, et les huit
+suites qui l'emploient. C'est un lot à soi : huit domaines qui ne sont pas celui
+d'un lot d'écran.
 
 ## `docs/maquettes/index.html` PORTE UN BLOC ORPHELIN (4 sept. 2026)
 

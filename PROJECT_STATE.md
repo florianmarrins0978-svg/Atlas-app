@@ -19,18 +19,19 @@ ligne « fait » qui ne l'est pas coûte plus cher qu'une ligne absente.
 
 ---
 
-## EN ATTENTE DE SA RÉPONSE : la feuille « Envoyer à … » (4 septembre 2026)
+## FAIT : la feuille « Envoyer à … », passée au peigne (4 septembre 2026)
 
-Sa demande : une passe complète sur la feuille du premier arrêt du parcours,
-dans tous ses états. **Diagnostic livré, rien de codé.**
+Sa demande : une passe complète sur la feuille du premier arrêt du parcours, dans
+tous ses états. Maquette d'abord (planche 102), puis sa réponse — *« 1 à 7
+fais-les, et le 8 je choisis la B »*.
 
 | | |
 |---|---|
-| **fait** | onze états photographiés à 390 × 664 en clair et en Nuit ; contrastes recalculés sur les huit chartes ; planche 102 en ligne et document de retour |
-| **outil** | `scripts/voir-envoi-au-client.mts`, rejouable pour n'importe quelle charte |
-| **trouvé** | sept points, dont trois non cosmétiques : les capsules de canal indiscernables sur les deux chartes sombres, le blocage `devis_vide` sans porte, le refus d'envoi écrit dans l'accent de l'action |
-| **attend** | sa réponse sur **un seul** point : la durée dépliée (A) ou repliée (B) |
-| **pas fait** | aucune ligne de `src/` — la maquette passe avant le code |
+| **fait** | les sept défauts réparés, plus le repli de la durée : `ChoixCanal` au lieu des capsules recopiées, une porte au devis vide, le refus en `colors.alert`, l'encre douce sur les phrases qui portent du sens, le libellé d'attente de même largeur, le pied collé en bas, la fiche du jour allégée |
+| **outil** | `scripts/voir-envoi-au-client.mts` — onze états à 390 × 664, pour la charte qu'on lui donne |
+| **gardé par** | `scripts/test-feuille-envoi-lisible-e2e.ts` (vu rouge) et `scripts/verifier-maquette-feuille-qui-envoie.mts` (vu rouge) |
+| **le pourquoi** | `ARCHITECTURE.md` §252 · retour au patron : `docs/lot-feuille-qui-envoie.md` |
+| **reste ouvert, pour lui** | le jeton `colors.muted` sous 4,5 sur six chartes dans toute l'application ; le bouton principal éteint, illisible sur les dix-sept écrans de `PrimaryButton` |
 
 ## FAIT : le vert des boutons, partout (4 septembre 2026)
 
