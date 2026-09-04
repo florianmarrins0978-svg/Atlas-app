@@ -1353,9 +1353,27 @@ export default function DevisCompletClient(props: Props) {
           className="sticky bottom-0 z-10 -mx-5 mt-6 px-5 pb-4 pt-8 sm:-mx-12 sm:px-12"
           style={{
             background: `linear-gradient(to top, ${colors.card} 68%, ${voile(colors.card, 0)})`,
-            // La barre du bas de l'iPhone mange les seize derniers pixels : sans
-            // ça, le bouton se touche à moitié sur le seul appareil qui compte.
-            paddingBottom: "calc(16px + env(safe-area-inset-bottom))",
+            // ═══════════════════════════════════════════════════════════════
+            // **LA BARRE D'ONGLETS PASSAIT PAR-DESSUS LE BOUTON — sa capture du
+            // 5 septembre 2026 : « le sous le pouce est caché par le menu du
+            // bas ».** Le bouton était bien collé au bas de la FENÊTRE, et la
+            // barre du bas de l'application s'y trouvait déjà : elle en cachait
+            // la moitié, sur le geste le plus important de l'écran.
+            //
+            // **On réserve donc sa hauteur, et on la lit là où elle est écrite**
+            // — `--atlas-barre` (`globals.css`), qui porte la barre ET la marge
+            // de sécurité de l'iPhone. Un nombre écrit à la main ici vieillirait
+            // au premier changement de la barre, et personne ne le verrait : la
+            // faute du 31 août, où « Me déconnecter partout » finissait dessous
+            // pour huit pixels.
+            //
+            // **Le rembourrage plutôt qu'un `bottom` décalé**, et ce n'est pas
+            // équivalent : posé sur `bottom`, le bouton remonterait mais le
+            // dégradé s'arrêterait avec lui, laissant une bande de texte du
+            // document défiler entre le bouton et la barre. Ici l'aplat descend
+            // jusqu'à la barre.
+            // ═══════════════════════════════════════════════════════════════
+            paddingBottom: "calc(12px + var(--atlas-barre))",
           }}
         >
           {/* **Le refus prend la place du bouton, il ne le grise pas.** Un bouton

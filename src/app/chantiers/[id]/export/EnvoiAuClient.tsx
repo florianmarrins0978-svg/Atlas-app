@@ -14,6 +14,8 @@ import { ditCeQuiResteCeJour, equipesLibresCeJour } from "@/lib/planning-jour";
 import JourneeRegardee from "./JourneeRegardee";
 import { basculerJour } from "@/lib/calendrier";
 import { MOTIF_DEVIS_VIDE } from "@/lib/devis-envoyable";
+// La même règle que la flèche du devis : une seule adresse pour la fiche client.
+import { libelleRetourDuDevis, retourDuDevis } from "@/lib/retour-du-devis";
 import {
   preparerEnvoiAction,
   envoyerAuClientAction,
@@ -534,13 +536,39 @@ function Contenu({
             {enregistrement ? "Enregistrement…" : "Enregistrer et continuer"}
           </button>
 
-          {/* Sans client rattaché, il n'y a rien à mettre à jour : le dire, au
-              lieu d'offrir un champ qui ne mènerait nulle part. */}
+          {/* ═══════════════════════════════════════════════════════════════
+              **LE REFUS PORTE SA PORTE — sa demande du 5 septembre 2026 :**
+              *« est-ce que ça peut pas m'être un bouton raccourci vers la fiche
+              client, pour qu'il n'y ait pas besoin de faire retour deux fois
+              jusqu'à atteindre la page ? »*
+
+              La phrase disait « ouvrez le devis pour lui donner un nom, puis
+              revenez ici » — **et il était sur le devis**, cette feuille s'y
+              ouvrant depuis le 20 août. Elle lui demandait donc de fermer, de
+              reculer deux fois, et de retrouver seul un écran qu'aucun lien
+              n'indiquait. C'est le même travers que le refus « à chiffrer » du
+              4 septembre : une raison juste, et pas de geste.
+
+              **L'adresse vient de la règle, pas d'ici** (`retour-du-devis.ts`) —
+              celle-là même que porte la flèche du devis. Deux chemins écrits
+              séparément vers la fiche client divergeraient au premier
+              remaniement (`CLAUDE.md` §3). Et le chemin se referme tout seul :
+              la fiche enregistrée ramène au devis, d'où cette feuille se rouvre
+              d'un doigt.
+              ═══════════════════════════════════════════════════════════════ */}
           {!preparation.clientId && (
-            <p className="mt-2 text-center text-[12px]" style={{ color: colors.inkSoft }}>
-              Ce chantier n&apos;a pas encore de client. Ouvrez le devis pour lui donner un nom,
-              puis revenez ici.
-            </p>
+            <div className="mt-2 text-center">
+              <p className="text-[12px]" style={{ color: colors.inkSoft }}>
+                Ce chantier n&apos;a pas encore de client.
+              </p>
+              <a
+                href={retourDuDevis({ chantierId })}
+                className="mt-1.5 inline-block text-[13px] font-semibold underline"
+                style={{ color: colors.rust }}
+              >
+                {libelleRetourDuDevis(null)}
+              </a>
+            </div>
           )}
         </div>
       )}
