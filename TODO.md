@@ -9,6 +9,34 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
+## L'ÉCRAN DES PRIX — la planche attend sa réponse, le code n'est pas écrit
+
+Posé le 4 septembre 2026. `appli/ligne-qui-attend-son-prix.html` est en ligne et
+lui a été transmise. **Rien n'est codé tant qu'il n'a pas répondu A ou B.**
+
+Ce qui se code une fois la réponse donnée, et rien d'autre :
+
+| | Où |
+|---|---|
+| dessiner « à chiffrer » et compter les lignes en attente | `PrixClient.tsx` — en consommant `ligneAttendSonPrix`, **jamais une seconde version de la règle** |
+| le refus mène au champ, plus à `/reglages` | `PrixClient.tsx` — `/reglages` ne reste que pour le cas « aucune ligne » |
+| le champ du montant lit ce qu'il tape | `PrixClient.tsx` — `montantEcrivable`, et le `type="number"` devient `text` + `inputMode="decimal"` comme sur le devis |
+| `orTexte` dérivé par charte | `chartes.ts` / `design-tokens.ts` — même mécanique que `alerte`, mesurée dans `CHANGELOG.md` du 4 septembre |
+
+**Deux choses à ne pas déborder, il l'a redit le 4 septembre :**
+
+- **la qualité des propositions** (prestations mal organisées, unités mal lues,
+  prix historiques incohérents) est un **lot à part** — il fournira ses vraies
+  dictées, et sans elles on répare une qualité imaginée ;
+- le devis, la facture, la fiche du chantier et « Mes prix » appartiennent à
+  d'autres sessions.
+
+**Trouvé au passage, signalé, pas touché :** `src/components/atlas/Calendrier.tsx`
+l. 168-169 porte `rgba(181,80,47,0.14)` — l'ancienne terre cuite, plus la couleur
+d'accent depuis le 31 août — et `rgba(0,0,0,0.035)`, tous deux invisibles sur Nuit
+et Sylve. C'est la session du devis qui travaille sur cet écran ; le patron la
+prévient.
+
 ## ~~LA BATTERIE NE PEUT PAS ÊTRE VERTE SUR LE POSTE DU PATRON~~ — RÉGLÉ le 4 septembre 2026
 
 **Mesuré le 4 septembre 2026 au soir**, et ce n'est aucun lot : les trois
@@ -116,14 +144,19 @@ choses restent, et trois attendent SA réponse :
   2026** — migration 0074, sur sa décision : *« une facture partie ne change plus
   d'aspect »*. `ARCHITECTURE.md` §255.
 
-- **L'immuabilité d'une facture émise n'a AUCUN contrôle automatique.** Le devis
-  a le sien (`scripts/db-tests.ts`, « impossible de modifier un devis envoyé ») ;
-  la facture, non. PostgreSQL la refuse pourtant — vérifié à la main :
-  `UPDATE factures SET doc_fond = NULL WHERE statut = 'emise'` rend « Une facture
-  émise est immuable » (`trg_facture_immuable`, 0018). Un contrôle écrit par le
-  dépôt n'a PAS été refusé et la raison n'a pas été trouvée : il a été retiré
-  plutôt que gardé sans être compris (`scripts/test-facture-reprend-le-devis-db.ts`
-  porte le récit). À reprendre — c'est le trigger qui tient tout le relevé de TVA.
+- ~~**L'immuabilité d'une facture émise n'a aucun contrôle automatique**~~ **FAIT
+  LE 4 SEPT. 2026 — et j'avais écrit le contraire de la vérité.** La protection
+  tient **dans tous les sens** : par le dépôt, en SQL brut, sur l'aspect comme sur
+  le montant ; hors contexte RLS l'écriture ne touche aucune ligne. Le contrôle
+  existe et sait échouer (trigger désactivé : rouge ; réactivé : vert).
+
+  **Le piège qui m'avait fait conclure l'inverse, et il vaut pour tout le dépôt :**
+  `drizzle` ENVELOPPE l'erreur de PostgreSQL. `Error.message` ne porte que
+  « Failed query: … » ; le texte du trigger vit dans `error.cause`. Un
+  `assert.rejects(fn, /immuable/i)` échoue donc sur une protection qui marche.
+  `scripts/db-tests.ts` y échappe parce qu'il passe par `pg` sans ORM. Lire la
+  chaîne des causes — `refusDe`, dans
+  `scripts/test-facture-reprend-le-devis-db.ts`.
 - **Les trois suites navigateur que le brief annonce rouges** — `test-facture-e2e`,
   `test-tva-au-paiement-e2e`, `test-facture-au-client-e2e` — n'ont pas pu être
   mesurées dans ce lot : deux autres sessions écrivaient dans le même dossier,

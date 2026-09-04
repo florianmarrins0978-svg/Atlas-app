@@ -9,6 +9,50 @@ Format : le plus récent en tête.
 
 ## 2026-09-04
 
+### L'or du TEXTE est illisible sur les six chartes claires — mesuré, pas supposé
+
+Trouvé en regardant la planche de l'écran des prix, et personne ne le voyait :
+`#B98B47` posé sur la plage d'un champ donne **2,62 à 3,07** selon la charte —
+sous les 4,5 exigés, et sur les **six chartes claires**. Il passe sur les deux
+sombres (Nuit 5,55, Sylve 4,55), où les pôles s'inversent.
+
+**Pourquoi la batterie est verte quand même.** `scripts/test-chartes-lisibles.ts`
+mesure les **chartes**, pas ce qu'un écran en fait : le couple or/plage n'est
+dans aucune de ses paires. C'est la même faille que le `focus:bg-[rgba(0,0,0,.03)]`
+du 22 août — un contrôle qui ne regarde pas là où la faute se commet.
+
+**Ce que ça coûte, concrètement.** « à chiffrer » est le mot qui dit qu'une ligne
+de devis n'a pas de prix. Écrit en or sur une plage claire, il est le moins
+lisible de l'écran — exactement au soleil, et exactement là où il compte.
+
+**La sortie est déjà dans le dépôt** : `chartes.ts` sait dériver une couleur
+jusqu'au contraste voulu, et c'est ce qu'il fait pour `alerte` depuis le 22 août.
+Un `orTexte` dérivé de la même façon donne `#906c37` sur Origine et **laisse l'or
+intact sur Nuit et Sylve** (zéro pas de correction). Éprouvé dans la planche ;
+**pas encore porté dans `src/`** — il attend le choix du patron entre A et B.
+
+### Une planche pour l'écran des prix, avant d'y toucher
+
+`appli/ligne-qui-attend-son-prix.html` — l'écran `/chantiers/[id]/prix`, jamais
+repris, et le seul du parcours où il engage de l'argent avant de l'annoncer.
+
+Trois défauts, chacun tenu par un fichier :
+
+- le drapeau `aChiffrer` entre dans l'état de `PrixClient.tsx` (l. 27, 79, 104)
+  et **n'est jamais dessiné** — une ligne qui attend son prix affiche un `0`,
+  comme une ligne qu'on n'a pas remplie, et aucun compte n'existe nulle part ;
+- le refus, qui nomme pourtant la bonne raison via `peutPreparerDevis`, colle
+  sous ses **trois** cas le même lien vers `/reglages` — c'est-à-dire propose de
+  quitter l'écran où se trouve la réparation. L'écran du devis fait déjà juste
+  à côté, avec `data-prix-ligne` ;
+- le champ du montant est un `type="number"` lu par `new Decimal(montantSaisi ||
+  "0")`, sans aucune des **deux** règles que le dépôt possède déjà
+  (`montantEcrivable`, `montantSaisi`) : une virgule de clavier français y
+  devient du vide, et le vide s'enregistre en 0,00 € sans un mot. C'est la suite
+  directe du défaut corrigé sur le devis le 30 août, dans une autre forme.
+
+**Rien n'est codé** : A ou B attend sa réponse.
+
 ### Une facture partie ne change plus d'aspect
 
 **Sa décision du 4 septembre au soir :** *« fige l'allure sur la facture émise —
