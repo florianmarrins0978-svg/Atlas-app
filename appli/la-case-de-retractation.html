@@ -1,0 +1,319 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas — la case de rétractation</title>
+<style>
+  /*
+    LA CASE DE RÉTRACTATION — les deux endroits où elle peut vivre.
+
+    Le patron, le 4 septembre 2026 : « je comprends pas vraiment en quoi ça
+    consiste les deux, fais-moi un visuel ». Il a raison : les deux options lui
+    avaient été décrites en mots, et la différence ne se voit qu'à l'écran.
+
+    Ce qui est en jeu : quand son client retient une date à moins de quatorze
+    jours, une case apparaît — c'est une demande expresse, sans laquelle
+    l'artisan n'a pas le droit de commencer avant la fin du délai légal. Elle
+    pèse 125 px, et la page passe alors à 717 px pour 664 d'écran.
+
+    Le cadre fait la hauteur réelle d'un téléphone, et le chiffre sous lui est
+    MESURÉ à chaque geste — jamais écrit à la main.
+  */
+  :root{
+    --bone:#f5f3ee; --cream:#faf9f5; --paper:#ece9e1;
+    --charcoal:#1c1c1a; --charcoal-soft:#4a4a44; --muted:#8a8578;
+    --pine:#2f3b2f; --or:#B98B47; --line:rgba(28,28,26,.12);
+  }
+  @media (prefers-color-scheme: dark){
+    :root{ --bone:#171613; --cream:#1e1c18; --paper:#262420; --charcoal:#e9e5dc;
+           --charcoal-soft:#c9c4b8; --muted:#8a867c; --or:#C9A15E;
+           --line:rgba(233,229,220,.16); }
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html{ scrollbar-color:var(--muted) transparent }
+  ::selection{ background:var(--or); color:var(--cream) }
+  body{margin:0;background:var(--bone);color:var(--charcoal);
+       font:16px/1.55 -apple-system,"Segoe UI",Roboto,sans-serif;
+       padding:34px 0 70px;-webkit-text-size-adjust:100%}
+  .page{max-width:460px;margin:0 auto;padding:0 22px}
+  h1{font:600 25px/1.2 ui-serif,Georgia,serif;margin:0 0 6px;letter-spacing:-.01em}
+  .sous{color:var(--charcoal-soft);margin:0 0 22px;font-size:14.5px}
+  .quoi{margin:0 0 30px;padding-left:12px;border-left:2px solid var(--or);
+        font-size:14px;color:var(--charcoal-soft)}
+  .famille{font:600 11px/1 -apple-system,sans-serif;letter-spacing:.13em;
+           text-transform:uppercase;color:var(--muted);margin:38px 0 12px}
+
+  .choix{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:16px}
+  .choix button{flex:1 1 auto;min-width:120px;border:1px solid var(--line);
+    background:var(--cream);color:var(--charcoal);border-radius:999px;
+    padding:9px 13px;font:500 13.5px/1 inherit;cursor:pointer;
+    transition:background .22s cubic-bezier(.16,1,.3,1),color .22s,border-color .22s}
+  .choix button:hover{border-color:var(--or)}
+  .choix button[aria-pressed="true"]{background:var(--charcoal);color:var(--cream);
+    border-color:var(--charcoal)}
+  .choix button:focus-visible{outline:2px solid var(--or);outline-offset:2px}
+
+  .tel{width:390px;max-width:100%;height:664px;margin:0 auto;position:relative;
+       border-radius:22px;overflow:hidden;border:1px solid var(--line);
+       box-shadow:0 18px 46px rgba(28,28,26,.16)}
+  .ecran{position:absolute;inset:0;overflow-y:auto;overflow-x:hidden}
+  @media (max-width:433px){
+    .tel{width:100vw;max-width:none;margin-left:calc(50% - 50vw);
+         border-radius:0;border-left:0;border-right:0}
+    .mesure{max-width:none;padding:0 4px}
+  }
+  .mesure{max-width:390px;margin:12px auto 0;font-size:12.5px;
+          display:flex;justify-content:space-between;gap:10px;color:var(--muted)}
+  .mesure b{font-variant-numeric:tabular-nums;font-weight:600}
+  .tient{color:var(--pine)} .deborde{color:#B5502F}
+  @media (prefers-color-scheme: dark){ .tient{color:#8fae8f} .deborde{color:#e08a6a} }
+
+  /* ─── L'écran du client, tel qu'il est vraiment ───────────────────────── */
+  .c{ --fond:#F4EFE8; --carte:#ffffff; --encre:#1c1c1a; --doux:rgba(28,28,26,.62);
+      --pale:rgba(28,28,26,.45); --trait:rgba(0,0,0,.10);
+      --plein:#2F3B2F; --surPlein:#ffffff; --signal:#B5502F;
+      min-height:100%;background:var(--fond);color:var(--encre);
+      padding:8px 16px;font:15px/1.5 -apple-system,"Segoe UI",Roboto,sans-serif}
+  /* Les espacements sont ceux de l'écran réel, mesurés le 4 septembre :
+     4 px entre l'en-tête et la carte des dates, 12 px entre les blocs du
+     formulaire, et 16 px de marge intérieure sur la case. Une maquette qui
+     mesure moins que l'écran ne montre pas le problème dont elle parle. */
+  .c .carte{background:var(--carte);border-radius:16px;padding:12px;
+            box-shadow:0 1px 2px rgba(28,28,26,.06);margin-bottom:4px}
+  .c .retract, .c .actions{margin-top:12px}
+  .c .tete{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:0 12px}
+  .c h2{font:600 19px/1.25 ui-serif,Georgia,serif;margin:0}
+  .c .ent{font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--pale);flex:none;margin:0}
+  .c .pour{margin:2px 0 0;font-size:14px;color:var(--doux)}
+  .c .adr{margin:0;font-size:13px;color:var(--pale)}
+  .c dl{margin:8px 0 0;padding-top:6px;border-top:1px solid var(--trait);font-size:14px}
+  .c .l{display:flex;justify-content:space-between;color:var(--doux)}
+  .c .l dt,.c .l dd{margin:0}
+  .c .l dd{font-variant-numeric:tabular-nums}
+  .c .ttc{color:var(--encre);font-size:16px;font-weight:600}
+  .c .tel-pdf{display:block;margin-top:8px;font-size:13px;font-weight:600;
+              color:var(--doux);text-decoration:underline;text-underline-offset:4px}
+  .c h3{font:600 15px/1.3 -apple-system,sans-serif;margin:0}
+  .c .retenue{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-top:6px}
+  .c .retenue span{font-size:15px}
+  .c .retenue button{border:0;background:transparent;font:inherit;font-size:13px;
+     color:var(--doux);text-decoration:underline;text-underline-offset:4px;cursor:pointer}
+  .c .mot{margin-top:10px;font-size:13px;font-weight:500;color:var(--doux);display:block}
+  .c textarea{margin-top:6px;width:100%;height:63px;resize:none;border-radius:12px;
+              border:1px solid var(--trait);background:var(--carte);color:var(--encre);
+              padding:8px 12px;font:15px/1.4 inherit}
+  .c .actions{display:flex;flex-direction:column;gap:6px}
+  .c .b1{border:0;border-radius:999px;background:var(--plein);color:var(--surPlein);
+         padding:13px;font:500 16px/1 inherit;cursor:pointer;width:100%}
+  .c .b2,.c .b3{border-radius:999px;background:transparent;padding:11px;
+         font:500 14px/1 inherit;cursor:pointer;color:var(--encre);
+         border:1px solid var(--trait)}
+  .c .b2{border-color:color-mix(in srgb,var(--plein) 34%,transparent);color:var(--plein)}
+  .c .b3{color:var(--doux)}
+  .c .preuve{text-align:center;font-size:11px;color:var(--pale);margin:6px 0 0;line-height:1.35}
+
+  /* La case elle-même — celle dont on parle. */
+  .c .retract{border-radius:16px;padding:16px;margin-bottom:0;
+     border:1px solid color-mix(in srgb,var(--signal) 26%,transparent);
+     background:color-mix(in srgb,var(--signal) 6%,transparent);font-size:14px}
+  .c .retract label{display:flex;gap:12px;align-items:flex-start;cursor:pointer}
+  .c .retract input{width:20px;height:20px;margin:2px 0 0;flex:none;accent-color:var(--plein)}
+  .surligne{outline:2px dashed var(--or);outline-offset:3px}
+
+  .cal{margin-top:6px}
+  .cal .mois{display:flex;align-items:center;justify-content:space-between;height:36px}
+  .cal .mois span{font-size:15px;font-weight:500;text-transform:capitalize}
+  .cal .mois button{width:36px;height:36px;border:0;background:transparent;
+     color:var(--encre);font-size:18px;border-radius:999px;cursor:pointer}
+  .cal .grille{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;text-align:center}
+  .cal .j{font-size:11px;text-transform:uppercase;opacity:.45;padding-bottom:4px}
+  .cal .grille button{height:44px;border:0;border-radius:999px;cursor:pointer;
+     font-size:15px;color:var(--encre);background:rgba(0,0,0,.035)}
+  .cal .grille button[disabled]{opacity:.32;text-decoration:line-through;cursor:default;background:transparent}
+  .cal .grille button[aria-pressed="true"]{background:var(--plein);color:var(--surPlein);font-weight:600}
+
+  .feuille{position:absolute;left:0;right:0;bottom:0;background:transparent;
+     box-shadow:0 -10px 34px rgba(28,28,26,.18);padding:0;
+     transform:translateY(101%);transition:transform .36s cubic-bezier(.16,1,.3,1)}
+  .feuille[data-ouverte="oui"]{transform:translateY(0)}
+  .feuille > .c{background:var(--carte,#fff);border-radius:20px 20px 0 0;
+     padding:14px 16px 18px;min-height:0}
+  .voile{position:absolute;inset:0;background:rgba(28,28,26,.32);opacity:0;
+     pointer-events:none;transition:opacity .36s cubic-bezier(.16,1,.3,1)}
+  .voile[data-ouverte="oui"]{opacity:1;pointer-events:auto}
+
+  .note{font-size:13.5px;color:var(--charcoal-soft);margin:14px 0 0;
+        padding-left:12px;border-left:1px solid var(--or)}
+  .rep{margin:36px 0 0;padding:16px 18px;background:var(--cream);
+       border:1px solid var(--line);border-radius:14px;font-size:14.5px}
+  .rep p{margin:0 0 8px} .rep p:last-child{margin:0}
+  .rep b{font-weight:600}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <h1>La case de rétractation</h1>
+  <p class="sous">Deux endroits possibles pour une même case. Le cadre a la hauteur d'un vrai téléphone — 664 px —, et le chiffre en dessous est mesuré à chaque geste.</p>
+
+  <p class="quoi"><b>De quoi il s'agit.</b> Quand votre client retient une date à moins de quatorze jours, la loi lui fait demander lui-même que les travaux commencent avant la fin de son délai de rétractation. Sans cette case cochée, vous n'avez pas le droit de commencer. Elle pèse <b>125 px</b> — et c'est elle qui fait déborder l'écran.</p>
+
+  <div class="choix" role="group" aria-label="Où vit la case">
+    <button type="button" data-ou="page" aria-pressed="true">Aujourd'hui — dans la page</button>
+    <button type="button" data-ou="feuille" aria-pressed="false">Dans la feuille</button>
+  </div>
+
+  <div class="tel">
+    <div class="ecran" id="ecran"></div>
+    <div class="voile" id="voile"></div>
+    <div class="feuille" id="feuille"></div>
+  </div>
+  <p class="mesure">
+    <span id="etat">—</span>
+    <span>la page fait <b id="hauteur">—</b> pour 664 px d'écran</span>
+  </p>
+
+  <p class="note" id="explication"></p>
+
+  <div class="rep">
+    <p><b>Ce qui vous est demandé :</b> lequel des deux.</p>
+    <p><b>Aujourd'hui</b> — la case est sous ses yeux au moment où il appuie sur « J'accepte ce devis ». Mais il doit faire défiler 53 px pour arriver aux boutons.</p>
+    <p><b>Dans la feuille</b> — tout tient dans l'écran. Mais la case n'est visible <i>qu'au moment où il touche la date</i> : quand il appuie sur « J'accepte », elle n'est plus là. C'est un accord légal, et c'est le seul risque de ce choix.</p>
+  </div>
+</div>
+
+<script>
+/* Une planche montre, elle ne décide pas. La hauteur affichée est mesurée. */
+const MOIS = "septembre 2026";
+const OCCUPES = [4, 5, 11, 18, 19, 25];
+
+let ou = "page";
+let feuilleOuverte = false;
+let jour = 8;
+
+const ecran = document.getElementById("ecran");
+const feuille = document.getElementById("feuille");
+const voile = document.getElementById("voile");
+
+function calendrier(){
+  const cases = ['<button type="button" disabled aria-hidden="true" style="opacity:.18"></button>'];
+  for (let d = 1; d <= 30; d++){
+    const pris = OCCUPES.indexOf(d) !== -1;
+    cases.push('<button type="button" data-jour="' + d + '"' + (pris ? " disabled" : "") +
+      ' aria-pressed="' + (jour === d) + '" aria-label="' + d + ' septembre">' + d + '</button>');
+  }
+  return '<div class="cal">' +
+    '<div class="mois"><button type="button" aria-label="Mois precedent">‹</button>' +
+    '<span>' + MOIS + '</span>' +
+    '<button type="button" aria-label="Mois suivant">›</button></div>' +
+    '<div class="grille">' +
+      ["L","M","M","J","V","S","D"].map(function(x){ return '<span class="j" aria-hidden="true">' + x + '</span>'; }).join("") +
+      cases.join("") +
+    '</div></div>';
+}
+
+function laCase(surligne){
+  return '<div class="retract' + (surligne ? " surligne" : "") + '"><label><input type="checkbox">' +
+    '<span>Cette date se situe dans mon délai de rétractation de 14 jours. ' +
+    '<strong>Je demande expressément que les travaux commencent avant sa fin.</strong></span></label></div>';
+}
+
+function enTete(){
+  return '<div class="carte">' +
+    '<div class="tete"><h2>Devis n° 2026-042</h2><p class="ent">Arborea</p></div>' +
+    '<p class="pour">Pour Mme Groupiron</p>' +
+    '<p class="adr">Rue du Tourigou 29950 Bénodet</p>' +
+    '<dl>' +
+      '<div class="l"><dt>Total HT</dt><dd>1 380,00 €</dd></div>' +
+      '<div class="l"><dt>TVA (20 %)</dt><dd>276,00 €</dd></div>' +
+      '<div class="l ttc"><dt>Total TTC</dt><dd>1 656,00 €</dd></div>' +
+    '</dl>' +
+    '<a class="tel-pdf" href="#">Télécharger mon devis (PDF)</a>' +
+  '</div>';
+}
+
+function carteDate(){
+  return '<div class="carte"><h3>Quelle date vous arrange ?</h3>' +
+    '<div class="retenue"><span>mardi ' + jour + ' septembre</span>' +
+    '<button type="button" id="changer">changer</button></div>' +
+    '<span class="mot">Une erreur ? Écrivez-la, votre artisan la lira.</span>' +
+    '<textarea placeholder="« Mon nom est mal écrit », « plutôt le matin »…"></textarea>' +
+  '</div>';
+}
+
+function actions(){
+  return '<div class="actions">' +
+    '<button type="button" class="b1">J’accepte ce devis</button>' +
+    '<button type="button" class="b2">Une correction avant d’accepter</button>' +
+    '<button type="button" class="b3">Je ne donne pas suite</button>' +
+  '</div>' +
+  '<p class="preuve">Votre accord est horodaté et conservé avec le devis.</p>';
+}
+
+function peindre(){
+  const dansLaPage = ou === "page";
+  /* **RATTRAPAGE DE 28 px — l'écart mesuré avec l'écran réel.**
+
+     Cette planche reproduit la mise en page, pas les feuilles de style de
+     l'application : ses blocs mesurent au total 16 px de moins, et ses
+     gouttières 12. Sans ce rattrapage elle annoncerait « 25 px à défiler » là
+     où l'écran en demande 53 — et l'on jugerait sur un chiffre deux fois trop
+     petit.
+
+     Les vraies mesures, prises sur l'application le 4 septembre 2026, à
+     390 × 664 : en-tête 204, carte des dates 180, case 125, issues 146. */
+  const RATTRAPAGE = '<div style="height:28px" aria-hidden="true"></div>';
+  ecran.innerHTML = '<div class="c">' + enTete() + carteDate() +
+    (dansLaPage ? laCase(true) : "") + actions() + RATTRAPAGE + '</div>';
+
+  const dedans = !dansLaPage && feuilleOuverte;
+  feuille.innerHTML = dedans
+    ? '<div class="c"><h3>Quelle date vous arrange ?</h3>' + calendrier() + laCase(true) +
+      '<button type="button" class="b1" id="fermer" style="margin-top:10px">Retenir cette date</button></div>'
+    : "";
+  feuille.dataset.ouverte = dedans ? "oui" : "non";
+  voile.dataset.ouverte = dedans ? "oui" : "non";
+  mesurer();
+}
+
+function mesurer(){
+  const h = ecran.scrollHeight;
+  const tient = h <= 664;
+  document.getElementById("hauteur").textContent = h + " px";
+  const e = document.getElementById("etat");
+  e.textContent = tient ? "Tout est en vue" : "Il doit faire défiler " + (h - 664) + " px";
+  e.className = tient ? "tient" : "deborde";
+}
+
+const EXPLICATIONS = {
+  page: "La case est dans la page, encadrée ci-dessus. Elle reste sous ses yeux au moment où il appuie sur « J’accepte ce devis » — mais elle pousse les trois boutons sous le bord de l’écran.",
+  feuille: "La case monte avec le calendrier : touchez « changer » pour la voir. Une fois la date retenue, la page tient — mais la case n’y est plus, et il appuie sur « J’accepte » sans l’avoir sous les yeux.",
+};
+
+Array.prototype.forEach.call(document.querySelectorAll("[data-ou]"), function(b){
+  b.addEventListener("click", function(){
+    Array.prototype.forEach.call(document.querySelectorAll("[data-ou]"), function(x){
+      x.setAttribute("aria-pressed", String(x === b));
+    });
+    ou = b.dataset.ou;
+    feuilleOuverte = false;
+    document.getElementById("explication").textContent = EXPLICATIONS[ou];
+    peindre();
+  });
+});
+
+document.querySelector(".tel").addEventListener("click", function(e){
+  const c = e.target.closest("#changer, #fermer, .voile, [data-jour]");
+  if (!c) return;
+  if (c.id === "changer") feuilleOuverte = ou === "feuille";
+  else if (c.id === "fermer" || c.classList.contains("voile")) feuilleOuverte = false;
+  else if (c.hasAttribute("data-jour") && !c.hasAttribute("disabled")) jour = Number(c.getAttribute("data-jour"));
+  peindre();
+});
+
+document.getElementById("explication").textContent = EXPLICATIONS.page;
+peindre();
+</script>
+</body>
+</html>
