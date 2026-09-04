@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Atlas — La feuille « Envoyer à … » — ce que j'ai trouvé, et ce que je propose</title>
+<title>Atlas — La feuille « Envoyer à … » — ce que j'ai trouvé, et ce qui est fait</title>
 <style>
   :root{
     --ground:#f5f3ee; --surface:#faf9f5; --raised:#ece9e1;
@@ -57,60 +57,69 @@
 </head>
 <body>
 <main>
-<h1 id="la-feuille--envoyer-à----ce-que-jai-trouvé-et-ce-que-je-propose">La feuille « Envoyer à … » — ce que j'ai trouvé, et ce que je propose</h1>
-<p><strong>Demande du 4 septembre 2026.</strong> Une passe complète sur la feuille qui monte du bas quand on appuie sur « Choisir la date » : hiérarchie, densité, rythme vertical, tailles de touche, contraste, lisibilité au soleil — <strong>dans tous ses états</strong>, chartes sombres comprises.</p>
-<p><strong>État à ce jour : rien n'est codé.</strong> Ce document rend la lecture et le diagnostic. La planche est en ligne, elle se touche :</p>
+<h1 id="la-feuille--envoyer-à----ce-que-jai-trouvé-et-ce-qui-est-fait">La feuille « Envoyer à … » — ce que j'ai trouvé, et ce qui est fait</h1>
+<p><strong>Sa demande du 4 septembre 2026.</strong> Une passe complète sur la feuille qui monte du bas quand on appuie sur « Choisir la date » : hiérarchie, densité, rythme vertical, tailles de touche, contraste, lisibilité au soleil — <strong>dans tous ses états</strong>, chartes sombres comprises.</p>
+<p><strong>Sa réponse, le même jour : « 1 à 7 fais-les, et le 8 je choisis la B ».</strong> Les sept points sont codés, et la durée se replie. La planche reste en ligne : elle montre l'avant et l'après, et elle se touche.</p>
 <blockquote><strong>https://florianmarrins0978-svg.github.io/Atlas-app/la-feuille-qui-envoie.html</strong></blockquote>
+<hr>
+<h2 id="ce-qui-a-été-dit-et-qui-était-faux">CE QUI A ÉTÉ DIT ET QUI ÉTAIT FAUX</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><strong>Le défaut du canal touchait CINQ chartes, pas deux.</strong> Le premier document annonçait « Nuit et Sylve ». Le contrôle écrit ensuite les compte lui-même, et il en trouve <strong>cinq</strong> : <code>rust</code> et <code>ink</code> valent exactement la même couleur sur <strong>pierre, beurre, moka, sylve et nuit</strong>. Sur ces cinq-là, les deux capsules étaient rigoureusement identiques — même fond à 1,04-1,29 de contraste, <strong>et la même couleur de texte</strong>. Le défaut était donc plus large que ce que j'ai écrit, et c'est la mesure qui l'a dit, pas la relecture.</p>
+<p><strong>Deux choses ont été faites autrement que la planche ne le montrait</strong>, et les deux sont expliquées à leur point : la phrase du devis vide est gardée mot pour mot (point 2), et le bouton d'envoi a été réparé par son libellé plutôt que par un artifice de largeur — après avoir essayé l'artifice et l'avoir jeté (point 5).</p>
 <hr>
 <h2 id="comment-jai-regardé">Comment j'ai regardé</h2>
 <a class="retour" href="#sommaire">↑ Sommaire</a>
-<p><code>scripts/voir-envoi-au-client.mts</code> photographie la feuille dans <strong>onze états</strong>, à <strong>390 × 664</strong> — l'écran du patron, barre d'adresse déduite —, pour la charte qu'on lui donne. Il pose son propre décor : une journée à demi prise, une journée complète, un client sans coordonnée, un devis sans ligne.</p>
+<p><code>scripts/voir-envoi-au-client.mts</code> photographie la feuille dans <strong>onze états</strong>, à <strong>390 × 664</strong> — son écran, barre d'adresse déduite —, pour la charte qu'on lui donne. Il pose son propre décor : une journée à demi prise, une journée complète, un client sans coordonnée, un devis sans ligne.</p>
 <p>``<code>bash npx tsx scripts/voir-envoi-au-client.mts /tmp/vues            # sa charte npx tsx scripts/voir-envoi-au-client.mts /tmp/vues nuit       # la sombre </code>``</p>
-<p>Deux choses valent d'être notées, parce qu'elles ne se déduisent d'aucun document du dépôt et qu'elles ont coûté une demi-heure chacune :</p>
+<p>Trois choses valent d'être notées, parce qu'elles ne se déduisent d'aucun document du dépôt :</p>
 <ul>
 <li><strong>le décor demande un rôle qui traverse la RLS.</strong> <code>atlas_app</code> ET <code>atlas_owner</code> sont refusés — les tables portent <code>FORCE ROW LEVEL SECURITY</code>, et l'insertion d'un chantier voisin rend « new row violates row-level security policy », qui accuse la requête alors que seul le rôle est en cause ;</li>
-<li><strong>la charte est le goût de la PERSONNE, pas un réglage d'entreprise</strong> (<code>schema.ts</code>, migration 0047) : elle se pose sur <code>users.charte</code>.</li>
+<li><strong>la charte est le goût de la PERSONNE, pas un réglage d'entreprise</strong> (<code>schema.ts</code>, migration 0047) : elle se pose sur <code>users.charte</code> ;</li>
+<li><strong>une série de captures finit par déclencher la limite de connexion.</strong> Le garde-fou fait son travail ; le symptôme, lui, est trompeur — la connexion répond 200 et la page ne bouge plus. Les deux clés Redis se vident à la main.</li>
 </ul>
 <p>Les contrastes ne sont pas estimés à l'œil : ils sont recalculés depuis <code>src/lib/chartes.ts</code> sur les huit chartes.</p>
 <hr>
-<h2 id="les-sept-trouvailles">Les sept trouvailles</h2>
+<h2 id="les-sept-points-et-ce-qui-a-été-fait">Les sept points, et ce qui a été fait</h2>
 <a class="retour" href="#sommaire">↑ Sommaire</a>
-<h3 id="1--sur-nuit-et-sylve-on-ne-voit-pas-quel-canal-est-choisi">1 — Sur Nuit et Sylve, on ne voit pas quel canal est choisi</h3>
-<p><strong>Verdict : défaut réel, et c'est le plus grave du lot.</strong></p>
-<p>Quand le client n'a ni numéro ni e-mail, la feuille propose deux capsules « Par SMS » / « Par e-mail ». Elles sont <strong>redessinées à la main</strong> dans <code>EnvoiAuClient.tsx</code> (l. 383-402), alors que la maison a déjà <code>ChoixCanal</code>, qui sert au nouveau chantier et à la facture.</p>
-<p>La copie ne distingue l'actif que par la couleur du texte — <code>rust</code> contre <code>ink</code>. Or <strong>sur Nuit et Sylve, <code>rust</code> et <code>ink</code> valent exactement le même <code>#e9e8de</code></strong>, et les deux fonds sont à <strong>1,05</strong> de contraste l'un de l'autre.</p>
+<h3 id="1--on-ne-voyait-pas-quel-canal-était-choisi">1 — On ne voyait pas quel canal était choisi</h3>
+<p><strong>Verdict : défaut réel, le plus grave du lot. Réparé.</strong></p>
+<p>Quand le client n'a ni numéro ni e-mail, la feuille propose deux capsules « Par SMS » / « Par e-mail ». Elles étaient <strong>redessinées à la main</strong> dans <code>EnvoiAuClient.tsx</code>, alors que la maison a <code>ChoixCanal</code> depuis le 22 août — la pièce du nouveau chantier et de la facture.</p>
+<p>La copie ne marquait l'actif que par <strong>la couleur du texte</strong> — <code>rust</code> contre <code>ink</code> — et son fond par <code>rustTint</code> contre <code>card</code> :</p>
 <div class="tablewrap"><table><thead><tr>
 <th></th>
+<th><code>rust</code> vs <code>ink</code></th>
 <th>écart entre les deux fonds</th>
 </tr></thead><tbody>
 <tr>
-<td>Origine</td>
-<td>1,15</td>
+<td>origine, brume, prune</td>
+<td>différents</td>
+<td>1,15 à 1,27</td>
 </tr>
 <tr>
-<td>Nuit</td>
-<td><strong>1,05</strong> — et le texte est identique</td>
+<td><strong>pierre, beurre, moka, sylve, nuit</strong></td>
+<td><strong>identiques</strong></td>
+<td>1,04 à 1,29</td>
 </tr>
 </tbody></table></div>
-<p>Les deux capsules sont donc <strong>indiscernables</strong> : il ne peut pas savoir par où le devis va partir. C'est la même famille que sa capture du 22 août — <em>« le mode nuit est illisible »</em> — et elle a survécu ici précisément parce que la pièce avait été recopiée au lieu d'être employée.</p>
-<p><strong>Ce que je propose :</strong> employer <code>ChoixCanal</code>. Sa marque d'actif est un <strong>liseré d'or</strong>, qui ne dépend d'aucune clarté et tient donc sur les huit chartes. Ce n'est pas qu'un correctif de contraste : c'est un doublon de moins (<code>CLAUDE.md</code> §3).</p>
-<h3 id="2--le-devis-vide-est-un-cul-de-sac">2 — Le devis vide est un cul-de-sac</h3>
-<p><strong>Verdict : défaut réel, fonctionnel.</strong></p>
-<p>Le garde-fou du 23 août fait son travail : un devis sans ligne ne part pas. Mais l'écran dit <em>« Posez d'abord vos prix sur ce chantier »</em> et <strong>n'offre aucune porte</strong> — bouton éteint, « Annuler ». Il faut refermer, sortir du devis, retrouver l'écran des prix.</p>
-<p>C'est <strong>exactement</strong> le cul-de-sac qu'il a fait fermer le 11 août pour la coordonnée manquante. Le commentaire en tête du fichier traite le cas <code>devis_absent</code> (<em>« il ne se produit pas depuis ce chemin »</em>) mais pas <code>devis_vide</code> — et celui-là <strong>se produit depuis le chemin ordinaire</strong> : créer un chantier, « Écrire le devis », « Choisir la date ». Trois gestes.</p>
-<p><strong>Ce que je propose :</strong> la phrase garde sa raison et gagne son geste — un bouton qui mène aux prix de ce chantier.</p>
-<h3 id="3--le-refus-est-écrit-dans-la-couleur-de-laction">3 — Le refus est écrit dans la couleur de l'action</h3>
-<p><strong>Verdict : défaut réel.</strong></p>
-<p>Le correctif du 3 septembre marche : le bouton ne s'éteint plus faute de date, et la phrase « Proposez au moins une date d'intervention » s'affiche enfin. Mais elle est posée en <code>colors.rust</code> — <strong>l'accent de ce qu'on FAIT</strong>. Sur Nuit et Sylve, cet accent <em>est</em> l'encre du texte courant : le refus devient un paragraphe ordinaire.</p>
-<p>Et dans la même feuille, quarante pixels plus haut, l'avertissement du jour complet est en <code>bordeaux</code> (<code>JourneeRegardee.tsx</code>, l. 155-160). <strong>Deux couleurs pour « attention » dans le même écran.</strong></p>
-<p><strong>Ce que je propose :</strong> <code>colors.alert</code>. Ce n'est pas une lecture de commentaire, c'est l'usage mesuré du dépôt — sur les blocs portant <code>role="alert"</code> dans <code>src/</code> : <strong>36 emploient <code>colors.alert</code>, 5 emploient <code>colors.rust</code></strong>, et cette feuille est de la seconde catégorie. Le jeton porte déjà sa correction de clarté sur les deux chartes sombres (<code>chartes.ts</code>, <code>detacher</code>).</p>
-<h3 id="4--le-gris-qui-porte-le-sens-passe-sous-le-seuil">4 — Le gris qui porte le sens passe sous le seuil</h3>
-<p><strong>Verdict : défaut réel, mais la cause est systémique — je ne la corrige pas seul.</strong></p>
-<p><code>colors.muted</code> porte sur cette feuille : « Préparation… », « X jours ouvrés d'affilée seront réservés », « Reste 1 équipe sur 2 », le sous-titre de l'interrupteur, « Annuler ». Autrement dit <strong>tout ce que l'écran lui apprend et qu'il ne peut pas deviner</strong>.</p>
-<p>Mesuré sur le fond de page, les huit chartes :</p>
+<p>Sur <strong>cinq chartes sur huit</strong>, les deux capsules étaient donc indiscernables : rien dans la page ne disait par où le devis allait partir.</p>
+<p><strong>Ce qu'aucune suite ne pouvait attraper.</strong> Trois d'entre elles vérifient que « Par SMS » et « Par e-mail » sont présents et cliquables — ce qui était vrai. Aucune ne demandait qu'on puisse <strong>distinguer</strong> lequel est pris ; la question ne se pose pas tant qu'on regarde une seule charte.</p>
+<p><strong>Fait :</strong> l'écran emploie <code>ChoixCanal</code>. Sa marque d'actif est un <strong>liseré d'or</strong>, qui ne dépend d'aucune clarté et tient donc sur les huit chartes. Ce n'est pas qu'un correctif de couleur — c'est un doublon en moins (<code>CLAUDE.md</code> §3).</p>
+<h3 id="2--le-devis-vide-était-un-cul-de-sac">2 — Le devis vide était un cul-de-sac</h3>
+<p><strong>Verdict : défaut réel, fonctionnel. Réparé.</strong></p>
+<p>Le garde-fou du 23 août fait son travail : un devis sans ligne ne part pas. Mais l'écran disait <em>« Posez d'abord vos prix sur ce chantier »</em> et <strong>n'offrait aucune porte</strong> — un bouton éteint, « Annuler ». Il fallait refermer, sortir du devis, retrouver l'écran des prix.</p>
+<p>C'est <strong>exactement</strong> le cul-de-sac qu'il a fait fermer le 11 août pour la coordonnée manquante. Le raisonnement d'alors visait <code>devis_absent</code> — <em>« il ne se produit pas depuis ce chemin »</em> — et il est juste pour celui-là. Il ne l'était pas pour <code>devis_vide</code>, qui s'atteint en <strong>trois gestes</strong> depuis le chemin ordinaire : créer un chantier, « Écrire le devis », « Choisir la date ».</p>
+<p><strong>Fait :</strong> un bouton « Poser mes prix » mène aux prix de ce chantier. Le contrôle vérifie l'adresse ET l'ouvre pour de bon — un lien juste qui ne mène nulle part serait le même défaut dans l'autre sens.</p>
+<p><strong>FAIT AUTREMENT QUE SUR LA PLANCHE.</strong> La planche montrait la phrase raccourcie ; elle est gardée <strong>mot pour mot</strong>. Elle vient de <code>MOTIF_DEVIS_VIDE</code>, celle-là même que le serveur oppose au refus : en écrire une version courte pour l'écran donnerait deux rédactions du même refus, qui divergeraient au premier ajustement. La phrase nomme le geste ; le bouton le fait.</p>
+<h3 id="3--le-refus-était-écrit-dans-la-couleur-de-laction">3 — Le refus était écrit dans la couleur de l'action</h3>
+<p><strong>Verdict : défaut réel. Réparé.</strong></p>
+<p>Le correctif du 3 septembre marche : le bouton ne s'éteint plus faute de date, et la phrase « Proposez au moins une date d'intervention » s'affiche enfin. Mais elle était posée en <code>colors.rust</code> — <strong>l'accent de ce qu'on FAIT</strong>. Sur les cinq chartes du tableau ci-dessus, cet accent <em>est</em> l'encre du texte courant : le refus devenait un paragraphe ordinaire. Et quarante pixels plus haut, dans la même feuille, l'avertissement du jour complet est en bordeaux — <strong>deux couleurs pour « attention » dans un seul écran</strong>.</p>
+<p><strong>Fait :</strong> <code>colors.alert</code>. Ce n'est pas une lecture de commentaire, c'est l'usage mesuré du dépôt — sur les blocs portant <code>role="alert"</code> dans <code>src/</code>, <strong>36 emploient <code>alert</code> et 5 <code>rust</code></strong>, et cette feuille était de la seconde catégorie. Le jeton porte en plus sa correction de clarté sur les deux chartes sombres.</p>
+<h3 id="4--le-gris-qui-porte-le-sens-passait-sous-le-seuil">4 — Le gris qui porte le sens passait sous le seuil</h3>
+<p><strong>Verdict : défaut réel. Réparé SUR CETTE FEUILLE seulement — la cause est plus large, et elle lui revient.</strong></p>
+<p><code>colors.muted</code> portait ici « Préparation… », « X jours ouvrés d'affilée seront réservés », « Reste 1 équipe sur 2 », le sous-titre de l'interrupteur et « Annuler ». Autrement dit <strong>tout ce que l'écran lui apprend et qu'il ne peut pas deviner</strong>.</p>
 <div class="tablewrap"><table><thead><tr>
 <th></th>
-<th><code>muted</code> sur <code>cream</code></th>
+<th><code>muted</code> sur le fond de page</th>
 </tr></thead><tbody>
 <tr>
 <td>moka</td>
@@ -145,14 +154,16 @@
 <td>5,80</td>
 </tr>
 </tbody></table></div>
-<p>Six chartes sur huit sous 4,5 — et il lit ça <strong>debout, en plein soleil</strong>.</p>
-<p><strong>Ce que je propose, et ce que je REFUSE.</strong> Changer <code>muted</code> toucherait trois cents endroits : ce n'est pas une décision de ce lot, et la prendre au passage serait exactement ce que <code>CLAUDE.md</code> interdit. Sur <strong>cette feuille</strong>, je fais passer à <code>inkSoft</code> (6,6 à 10,4 partout) les phrases qui portent du sens, et je laisse <code>muted</code> à ce qui n'est qu'un repère — la légende du calendrier, les noms de jours. <strong>Le sujet du jeton lui-même reste ouvert</strong>, et il est noté.</p>
-<h3 id="5--au-moment-denvoyer-le-bouton-rétrécit-et-séteint">5 — Au moment d'envoyer, le bouton rétrécit et s'éteint</h3>
-<p><strong>Verdict : défaut réel, mais la cause est dans <code>PrimaryButton</code> — partagé.</strong></p>
-<p>« Envoyer le devis » fait <strong>246 px</strong> ; « Envoi… » en fait <strong>118</strong>. La capsule tient à son texte, c'est tout son dessin. Au moment précis du geste irréversible, le bouton <strong>perd la moitié de sa largeur et devient gris</strong> : cela se lit « ça a raté », pas « ça part ».</p>
-<p><strong>Ce que je propose :</strong> la capsule garde la largeur qu'elle avait pendant l'attente. Fait dans cet écran, sans toucher au composant partagé — un réglage d'apparence ajouté à <code>PrimaryButton</code> rouvrirait « une seule forme d'action », qui est le sujet même de ce fichier.</p>
-<h3 id="6---envoyer-le-devis--nest-jamais-à-lécran">6 — « Envoyer le devis » n'est jamais à l'écran</h3>
-<p><strong>Verdict : défaut réel, mesuré.</strong></p>
+<p>Six chartes sur huit sous 4,5 — lu debout, en plein soleil.</p>
+<p><strong>Fait :</strong> ces phrases-là passent à <code>inkSoft</code> (6,6 à 10,4 partout), et l'exemple du champ de coordonnée a rejoint la règle CSS posée le 3 septembre pour la recherche de client, plutôt que d'en écrire une seconde. <code>muted</code> reste sur ce qui n'est qu'un repère — la légende du calendrier, les intitulés de rubrique.</p>
+<p><strong>REFUSÉ :</strong> changer le jeton lui-même. Il vit dans trois cents endroits ; le toucher serait un changement d'identité, pas un correctif d'écran. <strong>C'est à lui de le décider</strong>, et c'est noté dans <code>TODO.md</code>.</p>
+<h3 id="5--le-bouton-rétrécissait-à-lenvoi">5 — Le bouton rétrécissait à l'envoi</h3>
+<p><strong>Verdict : défaut réel. Réparé, mais pas comme annoncé.</strong></p>
+<p>« Envoyer le devis » fait <strong>246 px</strong> ; « Envoi… » en faisait <strong>118</strong>. La capsule tient à son texte, c'est tout son dessin : au moment précis du geste irréversible, le bouton perdait la moitié de sa largeur en même temps qu'il passait au gris. Cela se lit « ça a raté », pas « ça part ».</p>
+<p><strong>FAIT AUTREMENT, et la première version a été jetée après l'avoir essayée.</strong> J'avais annoncé une largeur réservée par un libellé en creux posé sous le vrai. Codé, puis joué : le texte se retrouvait <strong>deux fois dans la page</strong>, et <code>text=Envoyer le devis</code> — qu'emploient trois suites — ne désignait plus un élément mais deux. Un correctif d'apparence qui casse les contrôles du geste coûte plus qu'il ne rapporte.</p>
+<p>Le libellé d'attente est devenu <strong>« Envoi du devis… »</strong>, qui fait la même largeur à huit pixels près et n'ajoute rien à la page. Le coupable n'était pas le bouton, c'était le mot.</p>
+<h3 id="6---envoyer-le-devis--nétait-jamais-à-lécran">6 — « Envoyer le devis » n'était jamais à l'écran</h3>
+<p><strong>Verdict : défaut réel, mesuré. Réparé.</strong></p>
 <div class="tablewrap"><table><thead><tr>
 <th>état</th>
 <th>hauteur de la feuille</th>
@@ -160,42 +171,47 @@
 </tr></thead><tbody>
 <tr>
 <td>préparation</td>
-<td>292 px</td>
+<td>305 px</td>
 <td>584 px</td>
 </tr>
 <tr>
 <td>une journée ordinaire</td>
-<td><strong>882 px</strong></td>
+<td><strong>864 px</strong></td>
 <td>584 px</td>
 </tr>
 <tr>
 <td>une journée chargée</td>
-<td><strong>1 407 px</strong></td>
+<td><strong>1 349 px</strong></td>
 <td>584 px</td>
 </tr>
 </tbody></table></div>
-<p>En arrivant il voit le titre, la durée, deux tiers du calendrier. Le bouton d'envoi est <strong>un écran et demi plus bas</strong>. Et pendant « Préparation… » il est visible — puis <strong>descend de six cents pixels d'un coup</strong> quand le planning arrive : le doigt tombe sur le calendrier.</p>
-<p><strong>Ce que je propose :</strong> le pied de la feuille — « Envoyer le devis » et « Annuler » — <strong>reste en bas</strong>, le contenu défile au-dessus. Un seul changement, et il règle les deux : le bouton est toujours là, et il ne bouge plus sous le pouce. Le calendrier, la fiche du jour et les règles ne sont pas touchés.</p>
+<p>En arrivant il voyait le titre, la durée, deux tiers du calendrier ; le bouton d'envoi était un écran et demi plus bas. Et pendant « Préparation… » il était visible — puis <strong>descendait de six cents pixels d'un coup</strong> quand le planning arrivait : le pouce tombait sur le calendrier.</p>
+<p><strong>Fait :</strong> le pied de la feuille — l'erreur, « Envoyer le devis », « Annuler » — reste en bas, le contenu défile au-dessus. Un seul changement pour les deux défauts, sans toucher au calendrier, ni à la fiche du jour, ni à une règle. <strong>L'erreur voyage avec le bouton</strong> : posée au-dessus du pied, elle défilait hors de l'écran pendant que le bouton restait, et un refus qu'on ne lit plus n'a pas refusé.</p>
+<p><strong>Un détail trouvé à la capture, et pas au raisonnement :</strong> <code>bottom: 0</code> colle la boîte de MARGE au bas de la zone qui défile. Avec la marge négative qui avale le retrait de la feuille, le pied s'arrêtait <strong>36 px trop haut</strong> et l'on voyait la liste des dates passer dessous. Le décalage est désormais mesuré, et le contrôle le mesure aussi.</p>
 <h3 id="7--deux-redites-dans-la-fiche-du-jour">7 — Deux redites dans la fiche du jour</h3>
-<p><strong>Verdict : réel, et petit.</strong></p>
+<p><strong>Verdict : réel, et petit. Fait.</strong></p>
 <ul>
-<li>Une <strong>pastille verte pleine contenant un tiret</strong>, deux fois par chantier, dès qu'aucune équipe n'est posée — ce qui est le cas par défaut d'un chantier créé puis daté. Un aplat de 100 × 36 px qui ne dit rien.</li>
-<li>« Ce jour est proposé à votre client. » <strong>collé au mot « proposé »</strong> qui dit déjà exactement cela. La phrase et le mot ont chacun leur raison (25 août), mais ensemble ils se répètent.</li>
+<li>Une <strong>pastille verte pleine contenant un tiret</strong>, deux fois par chantier, dès qu'aucune équipe n'est posée — ce qui est le cas ordinaire d'un chantier créé puis daté. Elle dit désormais « équipe non posée », en texte.</li>
+<li>« Ce jour est proposé à votre client. » était <strong>collée au mot « proposé »</strong> qui dit exactement cela. La ligne dit maintenant ce qu'elle sait : ce qui reste — avec la fonction du planning, jamais une seconde rédaction.</li>
 </ul>
-<p><strong>Ce que je propose :</strong> le tiret cède la place à « équipe non posée » en texte, et quand le jour est déjà retenu la ligne dit ce qu'elle sait — ce qui reste — plutôt que de redire le badge. <strong>Le dessin validé le 22 août ne bouge pas.</strong></p>
+<p><strong>Le dessin validé le 22 août ne bouge pas.</strong></p>
+<h3 id="8--la-durée-se-replie-sa-réponse--la-b">8 — La durée se replie (sa réponse : la B)</h3>
+<p>Elle prenait 96 px tout en haut, avant le calendrier, alors qu'elle est déjà juste neuf fois sur dix. Repliée, elle tient en une ligne : la valeur, et « changer ». Une fois ouverte elle le reste — la refermer sous son doigt après qu'il a corrigé serait lui reprendre ce qu'il vient de régler.</p>
+<p><strong>Ce qui reste visible même repliée :</strong> la valeur, et la phrase du chantier long. Celle-là parle du CHANTIER, pas de la molette.</p>
 <hr>
-<h2 id="ce-que-je-ne-touche-pas">Ce que je ne touche pas</h2>
+<h2 id="ce-que-je-nai-pas-touché">Ce que je n'ai pas touché</h2>
 <a class="retour" href="#sommaire">↑ Sommaire</a>
 <ul>
-<li><strong>Le calendrier reste celui du planning</strong> — même composant (<code>MoisCharge</code>), même calcul de charge (<code>useOccupation</code>). Aucun second calendrier.</li>
-<li><strong>Le serveur garde le dernier mot</strong> : l'aller-retour de <code>verifierJourPropose</code> reste. Le retirer rendrait le geste plus joli et moins sûr.</li>
+<li><strong>Le calendrier reste celui du planning</strong> — même composant (<code>MoisCharge</code>), même calcul de charge (<code>useOccupation</code>).</li>
+<li><strong>Le serveur garde le dernier mot</strong> : l'aller-retour de <code>verifierJourPropose</code> est intact.</li>
 <li><strong>Deux dates au maximum</strong>, et l'interrupteur reste ouvert par défaut.</li>
-<li><strong>Les trois phrases retirées le 26 août ne reviennent pas.</strong></li>
-<li><strong>Les repères <code>data-atlas</code></strong> (<code>invite-dates</code>, <code>reste-equipes</code>, <code>journee-regardee</code>, <code>verdict-du-jour</code>, <code>jour-propose</code>) sont conservés : les suites visent le repère, jamais le mot.</li>
+<li><strong>Les trois phrases retirées le 26 août ne sont pas revenues.</strong></li>
+<li><strong>Les repères <code>data-atlas</code></strong> sont conservés ; deux s'ajoutent (<code>aller-aux-prix</code>, <code>pied-envoi</code>), aucun ne disparaît.</li>
+<li><strong><code>PrimaryButton</code> n'a pas bougé d'un pixel.</strong></li>
 </ul>
 <h2 id="ce-que-je-refuse">Ce que je refuse</h2>
 <a class="retour" href="#sommaire">↑ Sommaire</a>
-<p><strong>Sortir la durée de la feuille, ou la passer après le calendrier.</strong> C'est elle qui décide quels jours sont proposables : après, elle arriverait trop tard. La seule chose qui se discute est de la <strong>replier</strong> quand elle n'a pas été touchée — c'est le point 8 de la planche, et c'est la seule question que je lui pose.</p>
+<p><strong>Sortir la durée de la feuille, ou la passer après le calendrier.</strong> C'est elle qui décide quels jours sont proposables : après, elle arriverait trop tard. Repliée, elle reste au même endroit et dit la même chose en une ligne.</p>
 <h2 id="ce-qui-reste-ouvert-et-qui-peut-le-trancher">Ce qui reste ouvert, et qui peut le trancher</h2>
 <a class="retour" href="#sommaire">↑ Sommaire</a>
 <div class="tablewrap"><table><thead><tr>
@@ -203,49 +219,33 @@
 <th>qui</th>
 </tr></thead><tbody>
 <tr>
-<td><strong>Le point 8</strong> — durée dépliée (A) ou repliée (B)</td>
-<td><strong>lui</strong></td>
+<td><code>colors.muted</code> sous 4,5 sur six chartes, <strong>dans toute l'application</strong></td>
+<td><strong>lui</strong> — changement d'identité, pas correctif d'écran</td>
 </tr>
 <tr>
-<td>Le jeton <code>muted</code> sous 4,5 sur six chartes, dans toute l'application</td>
-<td><strong>lui</strong> — c'est un changement d'identité, pas un correctif d'écran</td>
+<td>Le bouton principal <strong>éteint</strong>, écrit en <code>muted</code> sur <code>line</code> : illisible sur les dix-sept écrans qui emploient <code>PrimaryButton</code></td>
+<td><strong>lui</strong> — pièce partagée</td>
 </tr>
 <tr>
-<td>Le bouton principal <strong>éteint</strong> écrit en <code>muted</code> sur <code>line</code> : illisible partout, sur les dix-sept écrans qui l'emploient</td>
-<td><strong>lui</strong> — <code>PrimaryButton</code> est partagé</td>
-</tr>
-<tr>
-<td><code>docs/maquettes/index.html</code> porte un bloc <code>&lt;span class="quoi"&gt;</code> <strong>orphelin</strong> après la planche 91, vestige d'une fusion : il s'affiche comme du texte nu dans la liste</td>
+<td><code>docs/maquettes/index.html</code> porte un bloc <code>&lt;span class="quoi"&gt;</code> <strong>orphelin</strong> après la planche 91, vestige d'une fusion</td>
 <td>à corriger, hors de ce lot</td>
 </tr>
 </tbody></table></div>
 <hr>
-<h2 id="ce-qui-a-été-joué">Ce qui a été joué</h2>
+<h2 id="le-contrôle-et-ce-quil-a-attrapé">Le contrôle, et ce qu'il a attrapé</h2>
 <a class="retour" href="#sommaire">↑ Sommaire</a>
-<p><strong>Aucune ligne de <code>src/</code> n'est touchée à ce stade</strong> — la règle de la maison est la maquette d'abord (<code>CLAUDE.md</code> §3 bis). Ont été joués :</p>
-<div class="tablewrap"><table><thead><tr>
-<th></th>
-<th></th>
-</tr></thead><tbody>
-<tr>
-<td><code>npx tsc --noEmit</code></td>
-<td><strong>vert</strong></td>
-</tr>
-<tr>
-<td><code>npm run lint</code></td>
-<td><strong>vert</strong> — 0 erreur, 16 avertissements, tous antérieurs</td>
-</tr>
-<tr>
-<td><code>npm run verifier:memoire</code></td>
-<td><strong>vert</strong> — 8 fichiers, 3 rappels armés</td>
-</tr>
-<tr>
-<td><code>scripts/verifier-maquette-feuille-qui-envoie.mts</code></td>
-<td><strong>vert</strong>, et <strong>vu rouge</strong> deux fois</td>
-</tr>
-</tbody></table></div>
-<p><strong>La batterie complète n'a pas été jouée, et c'est délibéré :</strong> ce lot ne touche ni <code>src/</code>, ni les suites, ni une migration. Elle sera jouée <strong>avant que le code parte</strong>, comme le veut <code>CLAUDE.md</code> §5.</p>
-<p><strong>Le contrôle de la planche sait échouer</strong>, et il a servi : à sa première exécution il a attrapé <strong>une erreur réelle dans ma propre planche</strong> — j'y annonçais « 2,85 à 3,86 » alors que 3,86 est la mesure du gris sur la <em>plage</em>, pas sur le <em>fond de page</em> ; la vraie fourchette est <strong>2,85 à 3,59</strong>. Corrigé. Il recalcule aussi les couleurs de la planche depuis <code>chartes.ts</code> et refuse le moindre écart, pour qu'un jeton retouché demain ne laisse pas la planche affirmer une mesure périmée.</p>
+<p><code>scripts/test-feuille-envoi-lisible-e2e.ts</code> tient les trois points qui comptent :</p>
+<ol>
+<li>la capsule active porte une marque que <strong>la couleur du texte ne fait pas</strong> — et il commence par compter les chartes où <code>rust</code> et <code>ink</code> se confondent, pour que le jour où ce piège disparaîtrait, ce soit lui qui le dise ;</li>
+<li>le devis vide offre une porte, et <strong>elle mène bien aux prix de ce chantier</strong> ;</li>
+<li>le pied touche le bas de la feuille — et il <strong>refuse de conclure</strong> si la feuille tient dans l'écran, parce qu'un zéro n'est pas un succès.</li>
+</ol>
+<p><strong>Il a été vu rouge</strong>, contre la version d'avant :</p>
+<p>``<code> ✗ un devis vide offre la porte des prix, au lieu d'un bouton éteint et muet aucune porte : le refus dit d'aller poser ses prix, et il faut refermer la feuille, sortir du devis et retrouver l'écran des prix pour le faire ✗ le pied de la feuille reste au bas de l'écran le pied s'arrête à 36 px du bas de la feuille : le contenu se voit passer dessous, et « Envoyer le devis » n'est plus au ras du pouce </code>``</p>
+<p><code>scripts/verifier-maquette-feuille-qui-envoie.mts</code> garde la planche honnête : il recalcule ses couleurs et ses chiffres depuis <code>chartes.ts</code>. À sa première exécution il a attrapé <strong>une erreur dans ma propre planche</strong> — elle annonçait « 2,85 à 3,86 », or 3,86 est la mesure du gris sur la plage et non sur le fond de page. La fourchette juste est <strong>2,85 à 3,59</strong>.</p>
+<h2 id="les-chiffres-de-la-batterie">Les chiffres de la batterie</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p>&lt;!-- BATTERIE --&gt;</p>
 </main>
 </body>
 </html>

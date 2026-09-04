@@ -1,9 +1,12 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { colors, font, smallCaps } from "@/lib/design-tokens";
+import Link from "next/link";
+import { colors, font, smallCaps, texteSituation } from "@/lib/design-tokens";
+import { DUREES } from "@/lib/durees-chantier";
 import BottomSheet from "@/components/atlas/BottomSheet";
 import PrimaryButton from "@/components/atlas/PrimaryButton";
+import ChoixCanal from "@/components/atlas/ChoixCanal";
 import { jourIso, jourLisible } from "@/lib/jour";
 import MoisCharge from "@/components/atlas/MoisCharge";
 import { useOccupation } from "@/components/atlas/useOccupation";
@@ -69,10 +72,39 @@ const MESSAGES_BLOCAGE: Record<string, string> = {
  */
 const DATES_AU_MAXIMUM = 2;
 
+/**
+ * Le retrait bas de la feuille de la maison — `pb-9` dans `BottomSheet`.
+ *
+ * Il est recopié ici parce que le pied collé doit l'annuler pour venir au ras
+ * du bas : c'est une valeur de `BottomSheet`, pas de cet écran. Si elle change
+ * là-bas, `scripts/test-feuille-envoi-lisible-e2e.ts` rougit — c'est ce qui empêche les
+ * deux de diverger en silence (`CLAUDE.md` §3).
+ */
+const RETRAIT_BAS_FEUILLE = 36;
+
 const LIBELLE_CANAL = {
   sms: { titre: "Par SMS", champ: "Numéro de téléphone", exemple: "06 12 34 56 78" },
   email: { titre: "Par e-mail", champ: "Adresse e-mail", exemple: "client@exemple.fr" },
 } as const;
+
+/**
+ * « 1 journée », « ½ journée » — le mot de la molette, pas une seconde
+ * rédaction.
+ *
+ * La ligne repliée doit dire EXACTEMENT ce que la molette dirait une fois
+ * ouverte : deux formulations de la même durée, et il croirait avoir changé
+ * quelque chose en dépliant. La liste est celle de `durees-chantier.ts`, la
+ * seule (`CLAUDE.md` §3).
+ *
+ * Le repli n'est proposé que sur une durée connue ; une valeur hors liste
+ * retombe sur les demi-journées plutôt que sur du vide.
+ */
+function libelleDuree(demiJournees: number): string {
+  return (
+    DUREES.find((d) => d.demiJournees === demiJournees)?.libelle ??
+    `${demiJournees} demi-journées`
+  );
+}
 
 type Props = {
   chantierId: string;
@@ -129,6 +161,9 @@ function Contenu({
   // `undefined` tant que le patron n'a rien corrigé : le serveur déduit alors
   // la durée de la dictée. Une valeur ici veut dire « c'est lui qui a tranché ».
   const [dureeChoisie, setDureeChoisie] = useState<number | undefined>(undefined);
+  // La molette de durée est repliée à l'ouverture (sa réponse « la B » du
+  // 4 septembre 2026) et ne se referme plus une fois ouverte.
+  const [dureeDepliee, setDureeDepliee] = useState(false);
   // **Le dernier jour INTERROGÉ au calendrier, et ce que le serveur en a dit.**
   //
   // Il ne porte plus la sélection — c'était le défaut du 12 août 2026, signalé
@@ -344,6 +379,23 @@ function Contenu({
     }
   }
 
+  /**
+   * **Le seul cas où l'écran apprend quelque chose sur la durée.**
+   *
+   * Les deux phrases qui l'entouraient sont parties le 26 août 2026, à sa
+   * demande : « Repris de votre dictée. Corrigez-le si besoin… » et « Votre
+   * client ne verra que la date… ». Une molette qu'on peut tourner n'a pas
+   * besoin qu'on écrive dessous qu'elle se tourne.
+   *
+   * Celle-ci reste, et elle se montre **repliée comme dépliée** : elle parle du
+   * chantier, pas de la molette. Sans elle, il s'étonnerait de ne plus rien
+   * pouvoir proposer pendant un mois.
+   */
+  const aideDuree =
+    preparation && preparation.dureeDemiJournees > 6
+      ? `${preparation.dureeDemiJournees / 2} jours ouvrés d'affilée seront réservés à partir de la date retenue.`
+      : "";
+
   const blocage = preparation?.blocage ? MESSAGES_BLOCAGE[preparation.blocage] : null;
   // Deux des trois blocages se lèvent d'une saisie ici même. `devis_absent`,
   // non : rien à écrire ne le résout.
@@ -356,8 +408,15 @@ function Contenu({
         Envoyer à {clientNom}
       </p>
 
+      {/* **Le gris des méta a cédé la place à l'encre douce — 4 septembre 2026.**
+          `colors.muted` tient 2,85 à 3,59 de contraste sur les six chartes
+          claires, pour un seuil de 4,5 : c'était la seule chose écrite à
+          l'écran pendant l'attente, et la première à disparaître au soleil.
+          `inkSoft` en tient 6,6 à 10,4 partout. Le jeton lui-même n'est pas
+          touché — il sert dans trois cents endroits, et le changer serait un
+          changement d'identité, pas un correctif d'écran (`TODO.md`). */}
       {!preparation && !erreur && (
-        <p className="my-6 text-center text-[13px]" style={{ color: colors.muted }}>
+        <p className="my-6 text-center text-[13px]" style={{ color: colors.inkSoft }}>
           Préparation…
         </p>
       )}
@@ -368,30 +427,83 @@ function Contenu({
         </p>
       )}
 
+      {/* ═══════════════════════════════════════════════════════════════════
+          **LE DEVIS VIDE AVAIT SA RAISON, PAS SON GESTE — 4 septembre 2026.**
+
+          Le garde-fou du 23 août fait son travail : un devis sans ligne ne part
+          pas. Mais l'écran disait *« Posez d'abord vos prix sur ce chantier »*
+          et n'offrait **aucune porte** — un bouton éteint et « Annuler ». Il
+          fallait refermer la feuille, sortir du devis, retrouver l'écran des
+          prix.
+
+          **C'est exactement le cul-de-sac qu'il a fait fermer le 11 août** pour
+          la coordonnée manquante (commentaire en tête de ce fichier). Le
+          raisonnement d'alors visait `devis_absent` — « rien à saisir ne le
+          résout, et il ne se produit pas depuis ce chemin » — et il est juste
+          pour celui-là. Il ne l'était pas pour `devis_vide`, qui s'atteint en
+          TROIS GESTES depuis le chemin ordinaire : créer un chantier, « Écrire
+          le devis », « Choisir la date ».
+
+          **La phrase ne bouge pas d'un mot**, et c'est délibéré : elle vient de
+          `MOTIF_DEVIS_VIDE`, celle-là même que le serveur oppose au refus. En
+          écrire une version courte pour l'écran donnerait deux rédactions du
+          même refus, qui divergeraient au premier ajustement (`CLAUDE.md` §3).
+          Elle nomme le geste ; ce bouton le fait.
+          ═══════════════════════════════════════════════════════════════════ */}
+      {preparation?.blocage === "devis_vide" && (
+        <div className="mb-4 flex justify-center">
+          <Link
+            href={`/chantiers/${chantierId}/prix`}
+            data-atlas="aller-aux-prix"
+            className="rounded-full px-6 py-3 text-[15px] font-medium"
+            style={{ backgroundColor: colors.rustTint, color: colors.rust }}
+          >
+            Poser mes prix
+          </Link>
+        </div>
+      )}
+
       {/* **On répare, on ne renvoie pas ailleurs.** Les deux voies sont offertes
           et la coordonnée se saisit ici : c'est le seul endroit atteignable
           depuis un chantier dicté, dont le client reste « non renseigné ». */}
       {preparation && reparable && (
         <div className="mb-5">
+          {/* ═══════════════════════════════════════════════════════════════
+              **LA CAPSULE DE LA MAISON, ET PLUS UNE COPIE — 4 septembre 2026.**
+
+              Les deux capsules étaient redessinées ici, alors que `ChoixCanal`
+              existe depuis le 22 août et sert au nouveau chantier comme à la
+              facture. La copie ne marquait l'actif que par la COULEUR DU TEXTE
+              — `rust` contre `ink`.
+
+              **Or `rust` ET `ink` valent EXACTEMENT la même couleur sur cinq
+              chartes — pierre, beurre, moka, sylve, nuit —, et les deux fonds
+              tiennent 1,04 à 1,29 de contraste.** Les deux capsules étaient
+              donc rigoureusement INDISCERNABLES sur cinq écrans sur huit : le
+              patron ne pouvait pas savoir par où son devis allait partir.
+              *(Le premier diagnostic n'avait vu que les deux sombres ; c'est le
+              contrôle qui les a comptées.)* C'est la famille de sa
+              capture du 22 août — *« le mode nuit est illisible »* —, et elle a
+              survécu ici précisément parce que la pièce avait été recopiée au
+              lieu d'être employée (`CLAUDE.md` §3).
+
+              La pièce de la maison marque l'actif d'un **liseré d'or**, qui ne
+              dépend d'aucune clarté et tient donc sur les huit chartes.
+
+              `disponible` vaut toujours vrai : ailleurs il dit « ce canal n'a
+              pas de coordonnée » ; ICI c'est justement la coordonnée qu'on
+              saisit, et éteindre les deux capsules fermerait la seule porte.
+              ═══════════════════════════════════════════════════════════════ */}
           <div className="mb-2.5 flex gap-2">
-            {(["sms", "email"] as const).map((c) => {
-              const actif = canalChoisi === c;
-              return (
-                <button
-                  key={c}
-                  type="button"
-                  onClick={() => setCanalChoisi(c)}
-                  aria-pressed={actif}
-                  className="flex-1 rounded-full py-3 text-[15px] font-medium"
-                  style={{
-                    backgroundColor: actif ? colors.rustTint : colors.card,
-                    color: actif ? colors.rust : colors.ink,
-                  }}
-                >
-                  {LIBELLE_CANAL[c].titre}
-                </button>
-              );
-            })}
+            {(["sms", "email"] as const).map((c) => (
+              <ChoixCanal
+                key={c}
+                libelle={LIBELLE_CANAL[c].titre}
+                actif={canalChoisi === c}
+                disponible
+                onClick={() => setCanalChoisi(c)}
+              />
+            ))}
           </div>
 
           <input
@@ -404,6 +516,10 @@ function Contenu({
             autoComplete={canalChoisi === "sms" ? "tel" : "email"}
             aria-label={LIBELLE_CANAL[canalChoisi].champ}
             placeholder={LIBELLE_CANAL[canalChoisi].exemple}
+            // L'exemple se lisait dans le gris du navigateur, qui n'est d'aucune
+            // charte. Le repère sert à `globals.css`, seul endroit d'où l'on
+            // puisse viser `::placeholder` — jamais lu par le produit.
+            data-atlas="coordonnee-client"
             className="w-full rounded-[4px] px-3.5 py-3 text-[16px] outline-none"
             style={{ backgroundColor: colors.card, color: colors.ink }}
           />
@@ -421,7 +537,7 @@ function Contenu({
           {/* Sans client rattaché, il n'y a rien à mettre à jour : le dire, au
               lieu d'offrir un champ qui ne mènerait nulle part. */}
           {!preparation.clientId && (
-            <p className="mt-2 text-center text-[12px]" style={{ color: colors.muted }}>
+            <p className="mt-2 text-center text-[12px]" style={{ color: colors.inkSoft }}>
               Ce chantier n&apos;a pas encore de client. Ouvrez le devis pour lui donner un nom,
               puis revenez ici.
             </p>
@@ -447,7 +563,53 @@ function Contenu({
 
               L'arrêt reste unique (`docs/AGENT.md` §2.2) : la question posée est
               toujours « une date, ou deux ? ». Ceci en est le préalable. */}
+          {/* ═══════════════════════════════════════════════════════════════
+              **LA DURÉE SE REPLIE — 4 septembre 2026, sa réponse « la B ».**
+
+              Neuf fois sur dix elle est déjà juste et il ne la touche pas ; elle
+              prenait pourtant 96 px tout en haut, avant le calendrier — sur une
+              feuille de 882 px pour 584 px d'écran.
+
+              **Elle ne DESCEND pas pour autant, et c'est un refus assumé :**
+              c'est elle qui décide quels jours sont proposables. Posée après le
+              calendrier, elle arriverait trop tard. Repliée, elle reste au même
+              endroit et dit la même chose en une ligne.
+
+              **Ce qui reste visible même repliée** : la valeur, parce que c'est
+              elle qu'il vérifie du coin de l'œil ; et la phrase du chantier
+              long, parce qu'elle parle du CHANTIER et non de la molette — sans
+              elle il s'étonnerait de ne plus rien pouvoir proposer pendant un
+              mois.
+
+              Une fois ouverte, elle le reste : refermer sous son doigt après
+              qu'il a corrigé serait lui reprendre ce qu'il vient de régler.
+              ═══════════════════════════════════════════════════════════════ */}
           <div className="mb-4">
+            {!dureeDepliee && (
+              <div
+                className="flex items-baseline justify-between pb-2.5"
+                style={{ borderBottom: `1px solid ${colors.lineSoft}` }}
+              >
+                <span className="text-[15px]" style={{ color: colors.ink }}>
+                  {libelleDuree(preparation.dureeDemiJournees)}
+                </span>
+                <button
+                  type="button"
+                  data-atlas="changer-duree"
+                  onClick={() => setDureeDepliee(true)}
+                  className="py-1 text-[13px] font-medium"
+                  style={{ color: colors.rust }}
+                >
+                  changer
+                </button>
+              </div>
+            )}
+            {!dureeDepliee && aideDuree && (
+              <p className={`mt-2 ${texteSituation}`} style={{ color: colors.inkSoft }}>
+                {aideDuree}
+              </p>
+            )}
+            {dureeDepliee && (
             <BandeDuree
               label="Ce chantier prend"
               valeur={preparation.dureeDemiJournees}
@@ -462,12 +624,9 @@ function Contenu({
                  chose** : un chantier long réserve beaucoup de jours d'affilée.
                  C'est juste, et invisible — sans cette phrase, il s'étonnerait
                  de ne plus rien pouvoir proposer pendant un mois. */
-              aide={
-                preparation.dureeDemiJournees > 6
-                  ? `${preparation.dureeDemiJournees / 2} jours ouvrés d'affilée seront réservés à partir de la date retenue.`
-                  : ""
-              }
+              aide={aideDuree}
             />
+            )}
           </div>
 
           {/* ═══════════════════════════════════════════════════════════
@@ -589,6 +748,7 @@ function Contenu({
                 nomEquipe={nomEquipe}
                 verdict={verification || !verdict ? null : verdict}
                 dejaRetenu={selection.includes(jourInterroge)}
+                nombreEquipes={nombreEquipes}
               />
             )}
 
@@ -675,7 +835,7 @@ function Contenu({
                           <span
                             data-atlas="reste-equipes"
                             className="mt-0.5 block text-[12px]"
-                            style={{ color: colors.muted }}
+                            style={{ color: colors.inkSoft }}
                           >
                             {reste}
                           </span>
@@ -708,7 +868,7 @@ function Contenu({
               <span className="block text-[15px]" style={{ color: colors.ink }}>
                 Il peut proposer une autre date
               </span>
-              <span className="mt-0.5 block text-[12px] leading-[1.45]" style={{ color: colors.muted }}>
+              <span className="mt-0.5 block text-[12px] leading-[1.45]" style={{ color: colors.inkSoft }}>
                 {autreDateAutorisee
                   ? "Un calendrier de vos jours libres s'ouvrira sous vos dates."
                   : "Il choisira uniquement parmi vos dates, ou demandera une correction."}
@@ -749,19 +909,74 @@ function Contenu({
         </>
       )}
 
-      {erreur && (
-        <p role="alert" className="mb-3 text-center text-[13px]" style={{ color: colors.rust }}>
-          {erreur}
-        </p>
-      )}
+      {/* **UN REFUS N'EST PAS UNE ACTION — 4 septembre 2026.**
 
+          Cette phrase était écrite en `colors.rust`, l'accent de ce qu'on FAIT.
+          Sur Nuit et Sylve, cet accent EST l'encre du texte courant : le refus
+          y devenait un paragraphe ordinaire. Et dans la même feuille, quarante
+          pixels plus haut, l'avertissement du jour complet est en bordeaux —
+          deux couleurs pour « attention » dans un seul écran.
+
+          `colors.alert` n'est pas une lecture de commentaire mais l'usage
+          mesuré du dépôt : sur les blocs portant `role="alert"` dans `src/`,
+          trente-six emploient `alert` et cinq `rust`. Il porte en plus sa
+          correction de clarté sur les deux chartes sombres (`chartes.ts`,
+          `detacher`) — ce que `rust` ne pouvait pas faire ici. */}
       {/* **Ce bouton était écrit à la main, et le patron l'a vu le 12 août 2026 :**
           *« déjà le bouton, ce n'est pas le même »*. Il avait raison — la
           capsule avait été posée sur `PrimaryButton`, et cet écran-ci ne s'en
           servait pas. Une action principale dessinée sur place échappe à toute
           décision d'ensemble : elle ne change que si quelqu'un pense à elle.
           C'est le composant qui porte la forme, jamais l'écran. */}
-      <div className="flex flex-col gap-2.5">
+
+      {/* ═══════════════════════════════════════════════════════════════════
+          **LE PIED RESTE EN BAS — 4 septembre 2026, sa réponse « la B ».**
+
+          Mesuré sur son écran (390 × 664, soit 584 px de feuille utile) :
+          la feuille fait **882 px** sur une journée ordinaire et **1 407 px**
+          sur une journée chargée. « Envoyer le devis » n'était donc JAMAIS
+          visible en arrivant — un écran et demi plus bas.
+
+          Pire pendant la préparation : la feuille fait 292 px, le bouton est
+          sous ses yeux, puis le planning arrive et il **descend de six cents
+          pixels d'un coup**. Le pouce tombe sur le calendrier.
+
+          Le pied collé règle les deux d'un seul geste, sans toucher au
+          calendrier, ni à la fiche du jour, ni à une règle.
+
+          **Trois mesures, et aucune n'est décorative.** `-mx-6 px-6` annule les
+          marges de `BottomSheet` pour que l'aplat barre toute la largeur — sans
+          quoi le contenu défilerait dans les six pixels laissés de chaque côté.
+          `-mb-9 pb-9` avale le retrait bas de la feuille : sans lui, le pied
+          remonterait de 36 px en fin de course, un sursaut au dernier
+          défilement. Et l'aplat de `cream` est obligatoire — un pied
+          transparent laisse voir le calendrier passer dessous.
+
+          **L'erreur voyage AVEC le bouton**, et c'est le point : posée
+          au-dessus du pied, elle défilait hors de l'écran pendant que le bouton
+          restait — un refus qu'on ne lit plus n'a pas refusé.
+          ═══════════════════════════════════════════════════════════════════ */}
+      <div
+        data-atlas="pied-envoi"
+        className="sticky -mx-6 -mb-9 flex flex-col gap-2.5 px-6 pb-9 pt-3"
+        style={{
+          backgroundColor: colors.cream,
+          borderTop: `1px solid ${colors.lineSoft}`,
+          // **Le décalage vaut le retrait bas de `BottomSheet` (`pb-9`), et il
+          // se MESURE.** `bottom: 0` colle la boîte de marge au bas de la zone
+          // qui défile : avec la marge négative qui avale ce retrait, le pied
+          // s'arrêtait 36 px trop haut et la liste des dates se voyait passer
+          // dessous — trouvé à la capture, pas au raisonnement. Le décalage
+          // remet le bord bas du pied au ras de la feuille, et sa place de
+          // repos ne bouge pas d'un pixel : aucun sursaut en fin de défilement.
+          bottom: -RETRAIT_BAS_FEUILLE,
+        }}
+      >
+        {erreur && (
+          <p role="alert" className="text-center text-[13px]" style={{ color: colors.alert }}>
+            {erreur}
+          </p>
+        )}
         {/* ═══════════════════════════════════════════════════════════════
             **IL RÉPOND, IL NE S'ÉTEINT PLUS FAUTE DE DATE — 3 septembre 2026.**
 
@@ -787,7 +1002,26 @@ function Contenu({
           onClick={confirmer}
           disabled={enCours || !preparation || !!blocage}
         >
-          {enCours ? "Envoi…" : "Envoyer le devis"}
+          {/* ═══════════════════════════════════════════════════════════
+              **LA CAPSULE NE RÉTRÉCIT PLUS À L'ENVOI — 4 septembre 2026.**
+
+              Mesuré : « Envoyer le devis » fait 246 px, « Envoi… » en faisait
+              118. Au moment précis du geste irréversible, le bouton perdait la
+              MOITIÉ de sa largeur en même temps qu'il passait au gris — cela
+              se lit « ça a raté », pas « ça part ». La capsule tient à son
+              texte, c'est tout son dessin : le coupable n'était pas le bouton,
+              c'était le mot.
+
+              **Une première version réservait la largeur** avec un libellé
+              en creux posé sous le vrai. Elle a été jetée après l'avoir
+              essayée : le texte se retrouvait DEUX FOIS dans la page, et
+              `text=Envoyer le devis` — qu'emploient trois suites — ne
+              désignait plus un élément mais deux. Un correctif d'apparence qui
+              casse les contrôles du geste coûte plus qu'il ne rapporte.
+
+              Le libellé d'attente fait donc la même largeur, à huit pixels
+              près, et rien n'est ajouté à la page. */}
+          {enCours ? "Envoi du devis…" : "Envoyer le devis"}
         </PrimaryButton>
         {/* **Un nom qui le distingue, depuis que la feuille vit sur le devis**
             (20 août 2026). L'écran du devis porte déjà un « Annuler » — celui
@@ -801,7 +1035,7 @@ function Contenu({
           aria-label="Annuler l’envoi"
           onClick={onFermer}
           className="rounded-full py-3.5 text-[15px] font-medium"
-          style={{ color: colors.muted }}
+          style={{ color: colors.inkSoft }}
         >
           Annuler
         </button>

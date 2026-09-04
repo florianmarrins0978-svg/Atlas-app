@@ -9,24 +9,31 @@ sert.
 
 ---
 
-## Dernier lot — LA FEUILLE « ENVOYER À … », DIAGNOSTIQUÉE (4 septembre 2026)
+## Dernier lot — LA FEUILLE « ENVOYER À … », PASSÉE AU PEIGNE (4 septembre 2026)
 
 **Sa demande :** une passe complète sur la feuille qui monte quand on appuie sur
 « Choisir la date », **dans tous ses états**, chartes sombres comprises.
 
-**RIEN N'EST CODÉ, ET C'EST VOULU** — la maquette d'abord (`CLAUDE.md` §3 bis).
-La planche 102 est en ligne, le document de retour est
-`docs/lot-feuille-qui-envoie.md`, et **il n'a répondu que sur un point** : la
-durée du chantier dépliée (A) ou repliée (B). Les six autres correctifs sont
-listés dans `TODO.md`, prêts à coder.
+**La maquette d'abord** (planche 102), puis **sa réponse : « 1 à 7 fais-les, et
+le 8 je choisis la B »**. Tout est codé. Le pourquoi entier est en
+`ARCHITECTURE.md` §252, le retour au patron en `docs/lot-feuille-qui-envoie.md`.
 
-**Ce que la lecture a trouvé, et qu'aucun test ne voyait :** sur Nuit et Sylve,
-les deux capsules « Par SMS » / « Par e-mail » sont **indiscernables** — elles
-sont recopiées à la main dans `EnvoiAuClient.tsx` au lieu d'employer
-`ChoixCanal`, et leur seule marque d'actif est une couleur de texte que ces deux
-chartes rendent identique (`#e9e8de` des deux côtés, fonds à 1,05 de contraste).
-Et le blocage `devis_vide` est un **cul-de-sac** : il dit d'aller poser ses prix
-sans offrir de porte, alors qu'il s'atteint en trois gestes.
+**Ce que la lecture a trouvé, et qu'aucun test ne voyait :** sur **cinq chartes
+sur huit** — pierre, beurre, moka, sylve, nuit —, les deux capsules « Par SMS » /
+« Par e-mail » étaient **indiscernables**. Elles étaient recopiées à la main dans
+`EnvoiAuClient.tsx` au lieu d'employer `ChoixCanal`, et leur seule marque d'actif
+était une couleur de texte que ces cinq chartes rendent identique (`rust` et
+`ink` valent la même valeur ; fonds à 1,04-1,29 de contraste). Trois suites
+vérifiaient que les deux capsules sont présentes et cliquables — aucune ne
+demandait qu'on puisse **distinguer** laquelle est prise.
+
+Et le blocage `devis_vide` était un **cul-de-sac** : il disait d'aller poser ses
+prix sans offrir de porte, alors qu'il s'atteint en trois gestes.
+
+**Un piège de CSS payé à la capture** : le pied collé de la feuille demande
+`bottom: -36px`, pas `bottom: 0` — la règle colle la boîte de MARGE, et la marge
+négative qui avale le `pb-9` de `BottomSheet` laissait le pied 36 px trop haut,
+avec la liste des dates qui passait dessous.
 
 **L'outil de regard vit désormais dans le dépôt :**
 
@@ -35,11 +42,27 @@ npx tsx scripts/voir-envoi-au-client.mts /tmp/vues        # onze états, 390 × 
 npx tsx scripts/voir-envoi-au-client.mts /tmp/vues nuit   # la charte sombre
 ```
 
-**Deux pièges de ce poste, découverts là et écrits nulle part ailleurs :** poser
+**Trois pièges de ce poste, découverts là et écrits nulle part ailleurs :** poser
 un décor de chantiers demande un rôle qui **traverse la RLS** (`atlas_owner` est
 refusé comme `atlas_app` — `FORCE ROW LEVEL SECURITY`), d'où
-`DATABASE_DECOR_URL` ; et la charte de couleurs vit sur **`users.charte`**, pas
-sur l'entreprise.
+`DATABASE_DECOR_URL` ; la charte de couleurs vit sur **`users.charte`**, pas sur
+l'entreprise ; et **une série de captures déclenche la limite de connexion** —
+le symptôme trompe (la connexion répond 200, la page ne bouge plus), et les deux
+clés se vident à la main :
+
+```bash
+docker exec atlas-redis redis-cli DEL \
+  "ratelimit:connexion:compte:demo@atlas.local" \
+  "ratelimit:connexion:demo@atlas.local:essai:::1"
+```
+
+**ET SURTOUT — HUIT SUITES NAVIGATEUR SONT ROUGES SUR CE POSTE, ET CE N'EST PAS
+LE PRODUIT.** Mesuré arbre nu : 0/8 avant comme après tout lot. Elles relisent
+une date de chantier par `rows[0].jour.toISOString().slice(0,10)`, or le pilote
+PostgreSQL rend une colonne `date` à **minuit LOCAL** — sur ce poste réglé à
+UTC+2, `toISOString()` recule d'une journée. La base garde la bonne date ; en CI
+(UTC) tout passe. **Ne pas chercher dans son propre lot** : le détail, la preuve
+en trois lignes et la liste des huit sont dans `TODO.md`.
 
 ---
 

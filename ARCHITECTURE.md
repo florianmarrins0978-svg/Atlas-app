@@ -22381,3 +22381,96 @@ Cet écran n'est pas une page du client : `estPageDuClient` ne le compte pas
 (`CHEMINS_DU_CLIENT` = `/devis`, `/factures`, `/entretien`). **Les vraies pages
 du client, elles, n'ont pas bougé** — sa décision du 4 septembre au matin
 (§248) : *« garde les couleurs d'origine »*.
+
+---
+
+## §252. La feuille d'envoi : cinq chartes où l'on ne voyait pas le canal choisi
+
+**4 septembre 2026, à sa demande** — une passe complète sur la feuille
+« Envoyer à … », *dans tous ses états*. Onze états photographiés à 390 × 664
+(`scripts/voir-envoi-au-client.mts`), en clair et en Nuit, et les paires de
+jetons recalculées sur les huit chartes.
+
+### Ce qui ne se voyait pas, et pourquoi aucun test ne pouvait le voir
+
+Les capsules « Par SMS » / « Par e-mail » du bloc de réparation étaient
+**redessinées à la main** dans `EnvoiAuClient`, alors que `ChoixCanal` existait
+depuis le 22 août et servait déjà au nouveau chantier et à la facture. La copie
+ne marquait l'actif que par **la couleur du texte** — `colors.rust` contre
+`colors.ink` — et son fond par `rustTint` contre `card`.
+
+**Mesuré, et c'est le cœur de l'affaire :**
+
+| | `rust` vs `ink` | fonds `rustTint` vs `card` |
+|---|---|---|
+| origine, brume, prune | différents | 1,15 à 1,27 |
+| **pierre, beurre, moka, sylve, nuit** | **identiques** | 1,04 à 1,29 |
+
+**Cinq chartes sur huit** — et non les deux sombres seulement, comme la première
+lecture l'avait écrit. Sur ces cinq-là les deux capsules étaient **rigoureusement
+indiscernables** : rien, dans la page, ne disait par où le devis allait partir.
+
+**Ce qu'aucune suite ne pouvait attraper.** Trois d'entre elles vérifiaient que
+« Par SMS » et « Par e-mail » sont *présents* et cliquables — ce qui était vrai.
+Aucune ne demandait qu'on puisse **distinguer** lequel est pris, parce que la
+question ne se pose pas tant qu'on regarde une seule charte.
+
+**La réparation est un doublon en moins**, pas un correctif de couleur :
+l'écran emploie `ChoixCanal`, dont la marque d'actif est un **liseré d'or** —
+elle ne dépend d'aucune clarté et tient donc sur les huit chartes.
+
+### Le gris qui porte le sens
+
+`colors.muted` tient **2,85 à 3,59** de contraste sur les six chartes claires,
+pour un seuil de 4,5. Sur cette feuille il portait « Préparation… », « 8 jours
+ouvrés d'affilée seront réservés », « Reste 1 équipe sur 2 » et le sous-titre de
+l'interrupteur — c'est-à-dire **tout ce que l'écran apprend et qui ne se devine
+pas**, lu debout, en plein soleil.
+
+Ce qui a été fait : ces phrases-là passent à `inkSoft` (6,6 à 10,4 partout).
+`muted` reste sur ce qui n'est qu'un repère — la légende du calendrier, les
+intitulés de rubrique. **Le jeton lui-même n'est pas touché** : il vit dans trois
+cents endroits, et le changer serait un changement d'identité, pas un correctif
+d'écran. Le sujet est ouvert dans `TODO.md`, et il lui revient.
+
+*(Le précédent existe : `[data-atlas="chercher-client"]::placeholder` a reçu le
+même traitement le 3 septembre, avec la même mesure. La règle CSS couvre
+désormais les deux champs plutôt que d'en avoir deux copies.)*
+
+### Le pied qui reste en bas
+
+Mesuré sur son écran : la feuille fait **882 px** sur une journée ordinaire et
+**1 407 px** sur une journée chargée, pour **584 px** de hauteur utile.
+« Envoyer le devis » n'était donc jamais visible en arrivant. Pire pendant
+« Préparation… » : la feuille fait 305 px, le bouton est sous ses yeux, puis le
+planning arrive et il **descend de six cents pixels** — le pouce tombe sur le
+calendrier.
+
+Le pied de la feuille — l'erreur, « Envoyer le devis », « Annuler » — est
+désormais `sticky`. Trois mesures, et aucune n'est décorative :
+
+| | pourquoi |
+|---|---|
+| `-mx-6 px-6` | l'aplat barre toute la largeur ; sinon le contenu défile dans les marges de `BottomSheet` |
+| `-mb-9 pb-9` | avale le retrait bas de la feuille, pour que la place de repos du pied soit déjà au ras |
+| `bottom: -36px` | **trouvé à la capture, pas au raisonnement** : `bottom: 0` colle la boîte de MARGE, et la marge négative laissait le pied 36 px trop haut — la liste des dates se voyait passer dessous |
+
+Le 36 est le `pb-9` de `BottomSheet`, recopié ici parce que c'est sa valeur, pas
+celle de cet écran. `scripts/test-feuille-envoi-lisible-e2e.ts` mesure l'écart
+entre le bas du pied et le bas de la feuille, et **refuse de conclure** si la
+feuille tient dans l'écran — un zéro n'est pas un succès.
+
+### Deux corrections à ce qui avait été annoncé
+
+**Un.** Le premier correctif du bouton d'envoi réservait la largeur avec un
+libellé en creux posé sous le vrai. Il a été **jeté après l'avoir essayé** : le
+texte se retrouvait deux fois dans la page, et `text=Envoyer le devis` — qu'emploient
+trois suites — ne désignait plus un élément mais deux. Le libellé d'attente est
+devenu « Envoi du devis… », qui fait la même largeur à huit pixels près et
+n'ajoute rien à la page. Le coupable n'était pas le bouton, c'était le mot.
+
+**Deux.** La planche montrait la phrase du devis vide raccourcie. Elle est
+gardée **mot pour mot** : elle vient de `MOTIF_DEVIS_VIDE`, celle-là même que le
+serveur oppose au refus. En écrire une version courte pour l'écran donnerait
+deux rédactions du même refus. La phrase nomme le geste ; le bouton
+`aller-aux-prix` le fait.
