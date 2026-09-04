@@ -342,7 +342,10 @@ function Rappel({
                   className="rounded-full px-[11px] py-[7px] text-[12px] disabled:opacity-60"
                   style={{
                     minHeight: 32,
-                    backgroundColor: pris ? colors.rust : "transparent",
+                    // Le vert des boutons — 4 septembre 2026. L'interrupteur
+                    // juste au-dessus garde `rust`, lui : il dit un état, pas
+                    // un geste (`ARCHITECTURE.md` §239).
+                    backgroundColor: pris ? colors.plein : "transparent",
                     color: pris ? colors.cream : colors.muted,
                     boxShadow: pris ? "none" : `inset 0 0 0 1px ${colors.line}`,
                   }}

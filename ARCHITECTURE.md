@@ -20999,7 +20999,7 @@ micro l'est : *ce qui fait une matière, c'est de ne pas changer de visage.*
 
 ### Deux pannes MUETTES, et la suite qui les garde
 
-`scripts/test-galet.ts` ne mesure pas un goût : il garde deux défauts qu'aucun
+`test-galet.ts` ne mesure pas un goût : il garde deux défauts qu'aucun
 type, aucun lint et aucune capture ne verrait.
 
 1. **L'ordre dans le fichier.** La capsule porte `atlas-plein` ET `atlas-galet`,
@@ -21298,7 +21298,7 @@ Le contournement était nécessaire à l'époque, et il avait un vrai coût :
 | | |
 |---|---|
 | deux sources pour une couleur | le style en ligne, et un calque qui le recouvre |
-| une collision réelle | `.atlas-galet` posait aussi un `background-image` : c'est le dernier écrit dans le fichier qui gagnait, et `scripts/test-galet.ts` existe pour ça |
+| une collision réelle | `.atlas-galet` posait aussi un `background-image` : c'est le dernier écrit dans le fichier qui gagnait, et `test-galet.ts` existe pour ça |
 | un jeton qui ne servait à rien | changer `colors.rust` ne changeait plus les boutons |
 
 ### Ce qui le remplace
@@ -22248,3 +22248,136 @@ des arbitrages, pas des évidences.
 
 À trancher par le patron. En attendant, le pire cas est passé de **1 148 px à
 790 px**, et le cas courant — sans date proche — tient dans l'écran.
+
+## §250. Les 53 px pris dans les espacements, sans retirer un mot
+
+*4 septembre 2026. Le patron : « il y a pas moyen de garder aujourd'hui mais de
+resserrer le texte pour gagner les px manquants ? » Ce paragraphe dit ce que
+chaque resserrement a rendu, et pourquoi il ne reste plus aucune marge.*
+
+### La question, et pourquoi elle était bonne
+
+Deux options lui avaient été soumises pour les 53 px qui débordaient encore sur
+l'écran de son client : descendre la case de rétractation dans la feuille, ou
+replier la liste des dates. La première sortait un consentement légal de sa vue
+au moment de signer ; la seconde ne rendait que 73 px sur les 126 nécessaires.
+
+**Il en a proposé une troisième, et elle était la bonne.** Personne ne l'avait
+regardée : prendre la place ailleurs que dans le contenu.
+
+### Ce que chaque piste rend, mesuré sur l'écran réel
+
+Aucune n'a été estimée. Chacune a été appliquée à la page servie, une par une, à
+390 × 664, la case de rétractation affichée :
+
+| piste | gain |
+|---|---|
+| zone de message à une ligne (63 → 40 px) | **23 px** |
+| gouttières du formulaire (12 → 8) | **8 px** |
+| marges haut/bas de la page (8 → 4) | **8 px** |
+| intérieur de la case (16 → 12) | **8 px** |
+| gouttière de la colonne (4 → 2), lien du PDF, marge du bas | le reste |
+| *(écartées)* phrase légale en 2 lignes au lieu de 4 | *45 px* |
+| *(écartée)* invitation au message retirée | *29 px* |
+| *(écartée)* mention de preuve retirée | *19 px* |
+
+**Les trois dernières n'ont pas été prises, et c'est délibéré.** La phrase de la
+case est une formule légale, dont `docs/AGENT.md` §2.2 ter dit qu'elle reste à
+faire valider ; l'invitation au message est ce qui évite qu'un client repère une
+faute et touche « Je ne donne pas suite » ; la mention de preuve est ce qui dit
+au client que son accord est conservé. **Trois informations, pas trois
+espacements.**
+
+### Le résultat
+
+| état | 3 septembre | 4 septembre |
+|---|---|---|
+| calendrier ouvert | 990 px | **664 px** |
+| + date à moins de quatorze jours | 1 148 px | **664 px** |
+
+Sa règle du 31 août est donc tenue **dans tous les états de cet écran**, y
+compris celui que personne n'éprouvait.
+
+### CE QU'IL FAUT SAVOIR AVANT D'AJOUTER QUOI QUE CE SOIT ICI
+
+**Il ne reste plus un pixel.** Le pire cas mesure exactement 664 px pour 664
+d'écran. Deux px ajoutés n'importe où — une ligne de texte, une marge, un
+bouton — rouvrent le défaut.
+
+C'est pourquoi `test-devis-client-e2e` éprouve désormais **le pire cas** :
+calendrier ouvert, date à moins de quatorze jours, case de rétractation
+affichée. Il ne se contente plus de charger la page. Si vous ajoutez quelque
+chose ici et qu'il rougit, il ne se trompe pas : il faudra prendre la place
+ailleurs, et les trois pistes écartées ci-dessus restent la réserve — chacune au
+prix d'une information en moins, à demander au patron.
+
+## §251. Le vert des boutons : ce qui l'avait manqué, et le contrôle qui le voit
+
+**Le 4 septembre 2026, il rouvre « Terminés » et écrit :** *« j'avais demandé à
+changer tous les boutons en vert clair, or si tu regardes la page terminé ils
+n'ont pas changé — et vérifie s'il n'y a pas le problème ailleurs »*. Il y en
+avait **douze ailleurs**, et le galet de « Terminés » en plus.
+
+### Ce que le contrôle du 3 septembre ne pouvait pas voir
+
+`test-boutons-pleins.ts` gardait une règle juste : *un élément qui porte
+`atlas-plein` ne peint jamais son fond avec `colors.rust`*. Elle ne pouvait
+rougir que sur les boutons **déjà trouvés** par le balayage du même jour — ceux
+qui portaient la classe. Un bouton oublié l'était donc **des deux côtés à la
+fois** : pas de classe, donc pas de contrôle, donc pas de rouge. Le garde-fou
+veillait exactement là où il n'y avait plus rien à attraper.
+
+**La leçon dépasse ce lot.** Un contrôle dont le périmètre est défini par le
+correctif qu'il accompagne ne prouve rien : il redit que ce qu'on a fait a été
+fait. Le périmètre doit venir du **produit**, pas du travail.
+
+### Le sens inverse : l'inventaire des aplats
+
+La question n'est plus « ce bouton est-il au bon vert ? » mais **« cet aplat de
+`rust` a-t-il le droit d'exister ? »**. Douze aplats légitimes sont nommés dans
+`APLATS_DECLARES`, chacun avec sa raison ; **tout aplat non déclaré fait
+rougir**. La liste ne s'allonge pas toute seule, et une entrée qui ne vise plus
+rien fait rougir aussi — une déclaration périmée donne l'illusion d'une
+couverture.
+
+| Ce qui garde `rust`, et pourquoi | |
+|---|---|
+| un **interrupteur** | il dit un état, on ne l'appuie pas pour agir |
+| une **coche**, une **pastille radio** | une marque de 18 px, pas une capsule |
+| une **barre d'avancement**, un **témoin qui bat** | ils montrent, ils ne se pressent pas |
+
+Tout le reste — ce qu'on appuie pour faire quelque chose, y compris une pastille
+de choix — est `colors.plein`.
+
+### LE GALET EST RETIRÉ, ET IL L'A TRANCHÉ LUI-MÊME
+
+Il l'avait demandé le 2 septembre, sur les deux onglets de « Terminés » et sur
+la capsule « À facturer ». Deux jours plus tard, planche en main : **« oui, vert
+clair partout »**.
+
+**Ce que ça pose, et qui vaut au-delà de cet écran :** il n'y a plus qu'**une**
+matière pour ce qu'on appuie dans Atlas, l'aplat `colors.plein`. La note vocale
+(`.atlas-micro`) garde la sienne, et elle seule — c'est un objet, pas un bouton,
+et il l'a nommément mise à part le 3 septembre.
+
+`test-galet.ts` est parti avec le dessin qu'il gardait. **Un contrôle
+qui ne mesure plus rien est pire qu'absent** (`CLAUDE.md` §5) : il rassure.
+
+### Deux trouvailles que sa question n'appelait pas
+
+**Le rond d'envoi de la discussion d'arrosage** (`DiscuterLePlan.tsx`) écrivait
+son mot en `#FFFFFF` — juste sur cinq chartes, illisible sur Nuit et Sylve, où
+l'aplat devient clair. Il passe à `surPlein`.
+
+**L'écran « Avant de commencer »** — celui des documents légaux, le tout premier
+que voit un artisan — était entièrement hors charte : fond `#F4EFE8` écrit en
+clair, cartes en blanc, bouton en terre cuite `#B5502F`. Son **texte**, lui,
+suivait `--atlas-ink`. Sur Nuit, l'encre passait au clair sur un fond resté
+crème : **la page devenait illisible**, et c'est le défaut qu'il a signalé le
+22 août. L'écran est ramené sur les jetons (`bg-paper`, `bg-card`,
+`text-accent`, `border-line`), et son bouton sur `colors.plein`.
+
+Cet écran n'est pas une page du client : `estPageDuClient` ne le compte pas
+(`CHEMINS_DU_CLIENT` = `/devis`, `/factures`, `/entretien`). **Les vraies pages
+du client, elles, n'ont pas bougé** — sa décision du 4 septembre au matin
+(§248) : *« garde les couleurs d'origine »*.

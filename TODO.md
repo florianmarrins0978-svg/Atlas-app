@@ -9,6 +9,25 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
+## « AVANT DE COMMENCER » N'EST PAS ENCORE TOUT À FAIT DANS LA CHARTE (4 sept. 2026)
+
+L'écran des documents légaux — le tout premier qu'un artisan voit — a été ramené
+sur les jetons le 4 septembre : fond, cartes, liens, liseré et bouton
+(`ARCHITECTURE.md` §251). **Ce qui a été fait règle la panne** : son texte
+suivait `--atlas-ink` sur un fond figé en crème, donc illisible sur Nuit.
+
+Il reste trois choses qui ne cassent rien mais qui le distinguent du reste :
+
+| | |
+|---|---|
+| `rounded-[4px]` et `shadow-sm` sur les cartes | ailleurs, une carte n'a ni l'un ni l'autre |
+| la serif écrite en clair (`ui-serif, Georgia, serif`) | ailleurs, c'est `font.display`, que la charte peut reprendre |
+| `text-red-600` pour l'erreur | ailleurs, c'est `colors.bordeaux` |
+
+**Qui peut le faire : n'importe quelle session.** Ce n'est pas un arbitrage, et
+l'écran est court. Ne pas y toucher en revanche sans regarder la capture : il
+n'est atteignable qu'avec un document légal en attente d'acceptation.
+
 ## ROUGE SUR `main` : un chantier à date passée est AUSSI au planning (3 sept. 2026)
 
 `test-planning-vers-facture-e2e` échoue, **seule et avec une base fraîche** —

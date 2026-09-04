@@ -471,9 +471,14 @@ function QuestionsChiffrage({
                       key={o.valeur}
                       type="button"
                       onClick={() => setReponses((r) => ({ ...r, [q.id]: o.valeur }))}
+                      // **Le vert des boutons, comme les pastilles d'équipe du
+                      // planning — 4 septembre 2026.** Une pastille retenue est un
+                      // aplat qu'on appuie : sa phrase du 3 septembre nommait ce
+                      // cas-là (« le choix des noms des équipes »), et celles-ci
+                      // avaient été manquées.
                       className="rounded-full px-4 py-2.5 text-left text-[14px] font-medium"
                       style={{
-                        backgroundColor: choisie ? colors.rust : colors.card,
+                        backgroundColor: choisie ? colors.plein : colors.card,
                         color: choisie ? colors.cream : colors.ink,
                       }}
                     >

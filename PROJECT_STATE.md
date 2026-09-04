@@ -1,6 +1,6 @@
 # État du projet
 
-**Dernière mise à jour :** 2026-09-03 · branche `main`
+**Dernière mise à jour :** 2026-09-04 · branche `main`
 · dernière migration `drizzle/0073_tva_par_ligne.sql` (ce lot ne touche que
 l’affichage)
 
@@ -19,6 +19,23 @@ ligne « fait » qui ne l'est pas coûte plus cher qu'une ligne absente.
 
 ---
 
+## FAIT : le vert des boutons, partout (4 septembre 2026)
+
+Sa remarque : *« j'avais demandé à changer tous les boutons en vert clair, or si
+tu regardes la page terminé ils n'ont pas changé — et vérifie s'il n'y a pas le
+problème ailleurs »*. Treize boutons manquaient (`ARCHITECTURE.md` §251).
+
+| | |
+|---|---|
+| **fait** | treize boutons passent à `colors.plein`, dont les deux onglets et la capsule de « Terminés » |
+| **fait** | le galet est retiré — *« oui, vert clair partout »*, sa décision du jour. Une seule matière pour ce qu'on appuie |
+| **fait** | `test-boutons-pleins` prend le sens inverse : tout aplat de `rust` doit être déclaré avec sa raison |
+| **fait** | le rond d'envoi de l'arrosage n'écrit plus son mot en `#FFFFFF` (illisible sur Nuit et Sylve) |
+| **fait** | « Avant de commencer », le premier écran d'un artisan, revient dans la charte — il était illisible sur Nuit |
+| **reste** | trois détails de forme sur ce même écran, sans conséquence (`TODO.md`) |
+
+---
+
 ## FAIT : le calendrier du client monte du bas (4 septembre 2026)
 
 Sa réponse A, codée. La page du client garde ses 664 px quand la
@@ -29,7 +46,7 @@ contre-proposition s'ouvre — elle en faisait 990 (`ARCHITECTURE.md` §249).
 | **fait** | le calendrier monte par-dessus, la page derrière ne bouge plus |
 | **fait** | le contrôle du pli ouvre enfin la feuille qu'il annonçait |
 | **reste** | avec une date à moins de 14 jours, la case de rétractation porte la page à 790 px — deux arbitrages, à lui |
-| **reste** | sa seconde question : la page du client suit-elle les couleurs de son devis (§248) |
+| **tranché** | non : la page du client garde ses couleurs, il l'a dit le 4 septembre (§248) |
 
 ---
 
@@ -189,6 +206,9 @@ d'abord par elle.
 
 ## FAIT : « Terminés » — le calme, et le galet (2 septembre 2026)
 
+> **Le galet a été retiré le 4 septembre 2026**, à sa demande : *« oui, vert
+> clair partout »*. Le **calme** reste ; la matière est de l'histoire.
+
 *Ses deux choix, faits sur planches : « code moi la A le calme avec la 4 le
 galet », puis « code l'idée du galet aussi pour le bouton Tout et À facturer ».*
 
@@ -196,8 +216,8 @@ galet », puis « code l'idée du galet aussi pour le bouton Tout et À facturer
 |---|---|
 | les planches | `appli/termines-elegance.html` · `appli/facturer-note-vocale.html` |
 | l'écran | `src/app/termines/ListeTermines.tsx` · `src/app/termines/page.tsx` |
-| la matière | `.atlas-galet`, dans `src/app/globals.css` — **après** `.atlas-plein` |
-| la garde | `scripts/test-galet.ts` (sans base, sans navigateur) |
+| la matière | `.atlas-galet` — **retirée le 4 septembre 2026** (`ARCHITECTURE.md` §251) |
+| la garde | `test-galet.ts` — supprimé avec elle ; `scripts/test-boutons-pleins.ts` a pris le relais |
 | le pourquoi | `ARCHITECTURE.md` §235 et §236 |
 
 **Le calme :** les montants se posent sur la ligne de base du nom au lieu d'être

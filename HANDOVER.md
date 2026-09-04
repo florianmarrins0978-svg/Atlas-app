@@ -4,12 +4,44 @@
 vous ne savez rien de ce qui précède — c'est exactement le cas de figure qu'il
 sert.
 
-**Point de reprise :** 2026-09-03 · `main`
+**Point de reprise :** 2026-09-04 · `main`
 (l'historique fait foi : `git log --oneline -20`)
 
 ---
 
-## Dernier lot — LE CALENDRIER DU CLIENT MONTE DU BAS (4 septembre 2026)
+## Dernier lot — LE VERT DES BOUTONS, PARTOUT (4 septembre 2026)
+
+**Sa remarque :** *« j'avais demandé à changer tous les boutons en vert clair,
+or si tu regardes la page terminé ils n'ont pas changé — et vérifie s'il n'y a
+pas le problème ailleurs »*. Treize boutons manquaient.
+
+**Le trou était dans le contrôle, pas dans le balayage.** `test-boutons-pleins`
+ne regardait que ce qui portait déjà `atlas-plein` — donc uniquement les boutons
+que le balayage du 3 septembre avait trouvés. Il regarde désormais dans l'autre
+sens : **tout aplat de `colors.rust` doit être déclaré**, avec sa raison
+(`APLATS_DECLARES`). Le pourquoi entier est en `ARCHITECTURE.md` §251.
+
+**LE GALET EST RETIRÉ, et c'est lui qui l'a tranché** — *« oui, vert clair
+partout »*. Il n'y a plus qu'une matière pour ce qu'on appuie : `colors.plein`.
+La note vocale garde la sienne, et elle seule. `test-galet.ts` est
+supprimé avec le dessin qu'il gardait.
+
+**Ce qu'il ne faut pas défaire :** les interrupteurs, les coches et les pastilles
+radio gardent `rust` — ils disent un état ; les remettre au vert ferait un écran
+où tout se ressemble. Et les pages du client n'ont pas bougé (§248).
+
+**Deux réparations trouvées en cherchant :** le rond d'envoi de l'arrosage
+écrivait son mot en `#FFFFFF` (illisible sur Nuit et Sylve) ; et l'écran
+« Avant de commencer » — le premier qu'un artisan voit — avait un fond figé en
+crème sous un texte qui suivait la charte, donc **illisible sur Nuit**.
+
+**Sur ce poste, la batterie se joue sur `atlas_test`** — `.env` pointe sur
+`atlas_dev`, que `nettoyerBase()` viderait — et les suites navigateur demandent
+que le `next dev` du port 3000 soit arrêté.
+
+---
+
+## Le lot d'avant — LE CALENDRIER DU CLIENT MONTE DU BAS (4 septembre 2026)
 
 **Sa réponse, sur planche :** *« J'aime bien la À la feuille »*. Codé —
 `src/app/devis/[jeton]/formulaire.tsx`, `ARCHITECTURE.md` §249. La page du
@@ -21,8 +53,8 @@ dans la feuille. Le pourquoi de chacun est en §249.
 
 **Ce qui reste, mesuré :** avec une date à moins de quatorze jours, la case de
 rétractation porte la page à 790 px. Deux façons d'y arriver, deux arbitrages —
-à lui (`TODO.md`). Et sa seconde question — les couleurs de la page du client —
-n'a toujours pas de réponse.
+à lui (`TODO.md`). Sa seconde question — les couleurs de la page du client — a
+été tranchée le 4 septembre : *« garde les couleurs d'origine »* (§248).
 
 ---
 
@@ -374,6 +406,11 @@ envoyait rallumer l'espace au moment précis où cela jette la construction.
 
 ## Lot précédent : « Terminés » — le calme, et le galet (2 septembre 2026)
 
+> **LE GALET N'EXISTE PLUS depuis le 4 septembre 2026** — *« oui, vert clair
+> partout »*. Ce qui suit reste vrai du **calme** (les mesures, les
+> espacements), et devient de l'histoire pour la matière. Ne pas s'en servir
+> comme d'une consigne : `ARCHITECTURE.md` §251 dit ce qui est en place.
+
 Maquette d'abord, code ensuite, deux fois de suite. Il a demandé un visuel de
 « Terminés » plus haut de gamme (`appli/termines-elegance.html`, trois crans),
 puis la capsule « À facturer » dans la matière de sa note vocale
@@ -384,20 +421,15 @@ facturer »*.
 | | |
 |---|---|
 | ce qui a bougé | `src/app/termines/ListeTermines.tsx`, `page.tsx`, `globals.css` |
-| la matière | `.atlas-galet` — elle DOIT rester après `.atlas-plein` |
-| la garde | `npx tsx scripts/test-galet.ts` — 10 s, sans base ni navigateur |
+| la matière | `.atlas-galet` — **retirée le 4 septembre 2026** |
+| la garde | `test-galet.ts` — **supprimé avec elle** ; `npx tsx scripts/test-boutons-pleins.ts` a pris le relais |
 | le pourquoi | `ARCHITECTURE.md` §235 (le galet) et §236 (le calme) |
 
-**Le piège à connaître avant de toucher à cet écran.** La capsule porte
-`atlas-plein` ET `atlas-galet`, qui posent tous deux un `background-image` à
-spécificité égale : **c'est le dernier écrit dans `globals.css` qui gagne**.
-Déplacer le bloc, ou rouvrir `.atlas-plein` en dessous, efface le dégradé sans
-que rien ne rougisse — sauf `test-galet.ts`, qui existe pour ça.
-
-**Et la matière ne suit PAS la charte, délibérément.** Écrire
-`var(--atlas-rust)` à la place d'un vert en clair est le bon réflexe partout
-ailleurs ; ici, sur Nuit et Sylve, l'accent EST l'encre, et le bouton finirait
-clair avec du blanc écrit dessus.
+**Le piège qui allait avec, et qui n'a plus lieu d'être.** La capsule portait
+`atlas-plein` ET `atlas-galet`, qui posaient tous deux un `background-image` à
+spécificité égale : c'était le dernier écrit dans `globals.css` qui gagnait.
+Les deux boutons prennent aujourd'hui `colors.plein` en style en ligne, et la
+collision a disparu avec la classe.
 
 **Deux propositions ne sont pas codées, et c'est son choix :** la plaque sous le
 mois (B) et la colonne d'euros dans « À facturer » (C). Elles restent

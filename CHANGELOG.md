@@ -9,6 +9,46 @@ Format : le plus récent en tête.
 
 ## 2026-09-04
 
+### Treize boutons qui n'étaient pas passés au vert clair — et le galet retiré
+
+**Sa remarque :** *« j'avais demandé à changer tous les boutons en vert clair,
+or si tu regardes la page terminé ils n'ont pas changé — et vérifie s'il n'y a
+pas le problème ailleurs »*.
+
+**Le trou était dans le CONTRÔLE, pas dans le balayage.** `test-boutons-pleins`
+ne regardait que les éléments portant déjà `atlas-plein` — c'est-à-dire ceux que
+le balayage du 3 septembre avait trouvés. Un bouton oublié l'était des deux
+côtés à la fois : pas de classe, donc pas de contrôle, donc pas de rouge
+(`ARCHITECTURE.md` §251).
+
+**Passés au vert clair :** les deux onglets de « Terminés » et la capsule
+« À facturer » ; le pavé du mois sur le calendrier de « Ma TVA » ; les barres
+« Enregistrer » de Mon entreprise, Mon compte et Devis & factures ; « Changer
+mon mot de passe » ; les deux boutons du diagnostic paysage ; le rond d'envoi de
+la discussion d'arrosage ; les options d'une question de devis ; le canal d'envoi
+de la fiche paysage ; le rythme des rappels ; le rythme de TVA ; et « Continuer »
+de l'écran des documents légaux.
+
+**LE GALET EST RETIRÉ — sa décision du jour**, planche en main : *« oui, vert
+clair partout »*. Il l'avait demandé le 2 septembre ; il n'y a plus qu'une
+matière pour ce qu'on appuie. `test-galet.ts` part avec le dessin qu'il
+gardait — un contrôle qui ne mesure plus rien rassure à tort.
+
+**Deux trouvailles que sa question n'appelait pas.** Le rond d'envoi de
+l'arrosage écrivait son mot en `#FFFFFF`, illisible sur Nuit et Sylve. Et
+l'écran « Avant de commencer » — le tout premier qu'un artisan voit — était
+entièrement hors charte : son fond était figé en crème pendant que son texte
+suivait `--atlas-ink`, donc **illisible sur Nuit**. Les deux sont réparés.
+
+**Ce qui NE change pas :** les pages que reçoit son client gardent leurs
+couleurs (sa décision du matin, §248) ; les interrupteurs, les coches et les
+pastilles radio gardent `rust` — ils disent un état, on ne les appuie pas.
+
+**Le contrôle prend le sens inverse.** Il ne demande plus « ce bouton est-il au
+bon vert ? » mais « cet aplat de `rust` a-t-il le droit d'exister ? ». Douze
+sont nommés avec leur raison ; un aplat non déclaré, ou une déclaration qui ne
+vise plus rien, fait rougir.
+
 ### La fiche d’une journée se RATTACHE à ce qu’il a touché
 
 **Sa correction :** *« lorsque je clique sur un jour, le client doit être
@@ -742,7 +782,7 @@ choix tenable, et les toucher le romprait en silence.
 
 **La matière est FIXE sur les huit chartes**, comme celle du micro : un dégradé
 qui suivrait `rust` finirait clair sur Nuit et Sylve, avec du blanc écrit
-dessus. `scripts/test-galet.ts` garde deux pannes muettes — l'ordre des règles
+dessus. `test-galet.ts` garde deux pannes muettes — l'ordre des règles
 dans `globals.css`, où `.atlas-plein` écraserait le dégradé, et la matière qui
 se remettrait à suivre la charte. Éprouvée contre les trois états dégradés.
 

@@ -91,6 +91,149 @@ essai("aucun bouton plein n'est resté au vert pin", () => {
   );
 });
 
+/**
+ * ═══ L'INVENTAIRE DES APLATS DE `rust` QUI RESTENT ═══════════════════════════
+ *
+ * **Posé le 4 septembre 2026, parce que la règle du dessus ne l'a pas vu.**
+ * Il a rouvert « Terminés » et écrit : *« j'avais demandé à changer tous les
+ * boutons en vert clair, or si tu regardes la page terminé ils n'ont pas
+ * changé — et vérifie s'il n'y a pas le problème ailleurs »*. Il y en avait
+ * douze ailleurs.
+ *
+ * **LE TROU ÉTAIT DANS LE CONTRÔLE, pas dans le balayage.** La règle du dessus
+ * ne regarde QUE les éléments portant déjà `atlas-plein` — c'est-à-dire ceux
+ * que le balayage du 3 septembre avait trouvés. Un bouton oublié était oublié
+ * des deux côtés à la fois : pas de classe, donc pas de contrôle, donc pas de
+ * rouge. Le garde-fou ne pouvait rougir que là où il n'y avait plus rien à
+ * attraper.
+ *
+ * **D'où le sens inverse.** On ne demande plus « ce bouton est-il au bon
+ * vert ? » — on demande **« cet aplat de `rust` a-t-il le droit d'exister ? »**,
+ * et la réponse doit être écrite ici, avec sa raison. La liste ne s'allonge pas
+ * toute seule : un aplat neuf et non déclaré fait rougir la suite.
+ *
+ * **Ce qui a le droit d'y figurer, et rien d'autre :** ce qui n'est pas un
+ * bouton. Un interrupteur dit un ÉTAT, une coche dit un fait, une barre de
+ * progression dit une avancée — aucun des trois ne se « presse » pour agir, et
+ * `rust` reste leur couleur (`ARCHITECTURE.md` §239). Dès qu'on presse pour
+ * faire quelque chose, c'est `colors.plein`.
+ */
+const APLATS_DECLARES: { fichier: string; motif: RegExp; pourquoi: string }[] = [
+  {
+    fichier: "src/app/chantiers/[id]/export/EnvoiAuClient.tsx",
+    motif: /autreDateAutorisee \? colors\.rust/,
+    pourquoi: "un interrupteur : il dit un état, on ne le presse pas pour agir",
+  },
+  {
+    fichier: "src/app/chantiers/[id]/note-vocale/NoteVocaleClient.tsx",
+    motif: /animate-pulse/,
+    pourquoi: "la pastille qui bat pendant l'enregistrement — un témoin, pas un bouton",
+  },
+  {
+    fichier: "src/app/chantiers/[id]/note-vocale/NoteVocaleClient.tsx",
+    motif: /width: `\$\{progression\}%`/,
+    pourquoi: "la barre d'avancement de l'envoi",
+  },
+  {
+    fichier: "src/app/clients/[id]/SupprimerCeClient.tsx",
+    motif: /sauvegarde \? colors\.rust/,
+    pourquoi: "la coche de « j'ai sauvegardé ailleurs » — une marque, pas un aplat de bouton",
+  },
+  {
+    fichier: "src/app/paysage/arrosage/ArrosageClient.tsx",
+    motif: /plan\.couleurs\[i\] \?\? colors\.rust/,
+    pourquoi: "la couleur de repli d'un réseau d'arrosage sur le plan",
+  },
+  {
+    fichier: "src/app/paysage/fiche/[id]/FicheChantierClient.tsx",
+    motif: /l\.faite \? colors\.rust/,
+    pourquoi: "la coche d'une prestation faite",
+  },
+  {
+    fichier: "src/app/paysage/fiche/[id]/FicheChantierClient.tsx",
+    motif: /\? \{ backgroundColor: colors\.rust \}/,
+    pourquoi: "l'interrupteur « temps visible », nommément écarté le 3 septembre",
+  },
+  {
+    fichier: "src/app/reglages/agenda/AgendaAppleClient.tsx",
+    motif: /etat\.ecritureActive \? colors\.rust/,
+    pourquoi: "un interrupteur",
+  },
+  {
+    fichier: "src/app/reglages/documents/DocumentsClient.tsx",
+    motif: /allume \? colors\.rust/,
+    pourquoi: "un interrupteur",
+  },
+  {
+    fichier: "src/app/reglages/notifications/NotificationsClient.tsx",
+    motif: /allume \? colors\.rust/,
+    pourquoi: "un interrupteur",
+  },
+  {
+    fichier: "src/app/reglages/prix/GrillesPrixClient.tsx",
+    motif: /forme === f\.valeur \? colors\.rust/,
+    pourquoi: "la pastille d'un choix en liste — une marque de 18 px, pas une capsule",
+  },
+  {
+    fichier: "src/app/termines/tva/RegimeTva.tsx",
+    motif: /choisie === o\.valeur \? colors\.rust/,
+    pourquoi: "la même pastille de choix en liste",
+  },
+];
+
+/** Un aplat écrit dans un écran, quelle que soit la propriété employée. */
+const APLAT = /(?:backgroundColor|background):\s*[^,;}]*\bcolors\.rust\b/;
+
+essai("aucun aplat de `rust` non déclaré ne subsiste dans un écran", () => {
+  const inconnus: string[] = [];
+  for (const fichier of ECRANS) {
+    // **Découpé sur \r?\n, et ce n'est pas une coquetterie.** La moitié de ce
+    // dépôt est écrite sous Windows : découper sur \n seul laisse un \r
+    // invisible en fin de ligne, contre lequel toute ancre échoue — et le
+    // contrôle accuse alors une ligne parfaitement déclarée.
+    const lignes = readFileSync(fichier, "utf8").split(/\r?\n/);
+    for (let i = 0; i < lignes.length; i++) {
+      const ligne = lignes[i];
+      // Les commentaires de ce dépôt CITENT le code qu'ils remplacent : sans
+      // cela, expliquer pourquoi un aplat est parti ferait rougir le contrôle,
+      // et l'on cesserait d'expliquer.
+      const nu = ligne.trim();
+      if (nu.startsWith("//") || nu.startsWith("*")) continue;
+      if (!APLAT.test(ligne)) continue;
+      const chemin = fichier.split("\\").join("/");
+      const declare = APLATS_DECLARES.some(
+        (d) => d.fichier === chemin && d.motif.test(ligne)
+      );
+      if (!declare) inconnus.push(`${chemin}:${i + 1} — ${nu}`);
+    }
+  }
+  assert.deepEqual(
+    inconnus,
+    [],
+    "Ces aplats peignent encore le vert pin. Si c'est un BOUTON, il doit " +
+      "passer à `colors.plein` ; si c'est un état — interrupteur, coche, " +
+      "barre —, il se déclare dans `APLATS_DECLARES` avec sa raison :\n      " +
+      inconnus.join("\n      ")
+  );
+});
+
+essai("l'inventaire ne garde aucune ligne morte", () => {
+  // **Une déclaration périmée est pire qu'absente.** Elle donne l'illusion
+  // qu'un cas est couvert, et le jour où l'aplat revient ailleurs, personne ne
+  // le cherche. Une entrée qui ne vise plus rien se supprime.
+  const orphelines = APLATS_DECLARES.filter((d) => {
+    const source = ECRANS.includes(d.fichier)
+      ? readFileSync(d.fichier, "utf8")
+      : "";
+    return !source.split(/\r?\n/).some((l) => APLAT.test(l) && d.motif.test(l));
+  }).map((d) => `${d.fichier} — ${d.pourquoi}`);
+  assert.deepEqual(
+    orphelines,
+    [],
+    "Ces déclarations ne visent plus aucun aplat :\n      " + orphelines.join("\n      ")
+  );
+});
+
 essai("l'action principale de l'application porte le jeton, pas une couleur", () => {
   // **`PrimaryButton` mérite son contrôle à lui.** Il n'existe qu'UNE forme
   // d'action principale dans Atlas — c'est le sujet de son propre fichier —, et

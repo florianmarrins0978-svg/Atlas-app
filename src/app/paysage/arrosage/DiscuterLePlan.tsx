@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { colors, font, libelleCaps } from "@/lib/design-tokens";
+import { colors, font, libelleCaps, surPlein } from "@/lib/design-tokens";
 import PointsQuiSoufflent from "@/components/atlas/PointsQuiSoufflent";
 import { discuterDuPlan, type EtatDiscussion } from "./actions";
 import type { ParametresPlan } from "@/lib/arrosage/consignes";
@@ -157,10 +157,21 @@ export default function DiscuterLePlan({
           disabled={enCours || saisie.trim() === ""}
           aria-label="Envoyer la demande"
           data-atlas="envoyer-discussion"
-          className="flex h-11 w-11 flex-none items-center justify-center rounded-full text-[19px]"
+          // **Le vert des boutons — 4 septembre 2026.** Ce rond-là n'était pas
+          // dans le balayage du 3 : il peint son fond avec `colors.rust`, mais
+          // l'écrit sur la même ligne qu'un `rustTint`, et le relevé qui a servi
+          // ce jour-là écartait tout ce qui portait `rustTint`.
+          //
+          // **Le blanc écrit en clair part avec lui** : il est juste sur cinq
+          // chartes et illisible sur Nuit et Sylve, où l'aplat devient clair
+          // (`CLAUDE.md` §3). `surPlein` est le jeton de ce qu'on pose SUR un
+          // aplat, et il suit la charte.
+          className={`flex h-11 w-11 flex-none items-center justify-center rounded-full text-[19px] ${
+            saisie.trim() === "" ? "" : "atlas-plein"
+          }`}
           style={{
-            backgroundColor: saisie.trim() === "" ? colors.rustTint : colors.rust,
-            color: saisie.trim() === "" ? colors.muted : "#FFFFFF",
+            backgroundColor: saisie.trim() === "" ? colors.rustTint : colors.plein,
+            color: saisie.trim() === "" ? colors.muted : surPlein,
             fontFamily: font.display,
           }}
         >

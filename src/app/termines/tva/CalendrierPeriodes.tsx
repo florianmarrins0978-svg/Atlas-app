@@ -131,8 +131,12 @@ export default function CalendrierPeriodes({
                   // Le pavé plein dit ce qu'on REGARDE ; le point doré, ce qui
                   // est aujourd'hui. Deux repères qui ne se confondent pas —
                   // et la charte réserve le plein à ce qu'on fait.
-                  backgroundColor: regarde ? colors.rust : colors.card,
-                  border: `1px solid ${regarde ? colors.rust : colors.line}`,
+                  //
+                  // **Le vert des boutons depuis le 4 septembre 2026**, quand il
+                  // a relevé que « la page terminé » n'avait pas suivi. Ce pavé
+                  // est le seul aplat qu'on appuie de cet écran.
+                  backgroundColor: regarde ? colors.plein : colors.card,
+                  border: `1px solid ${regarde ? colors.plein : colors.line}`,
                   color: regarde ? colors.cream : colors.ink,
                 }}
               >
