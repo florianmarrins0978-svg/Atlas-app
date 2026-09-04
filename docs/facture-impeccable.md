@@ -100,16 +100,42 @@ dans ce dépôt qu'un défaut sort d'une image.
 
 ## Ce qui a été MESURÉ et non corrigé — parce que ça se dessine d'abord
 
-**« Envoyer la facture » tombe 309 px sous le pli** sur votre écran de
-390 × 664, et 331 px quand la facture est en retard sur son devis.
-`scripts/capture-facture-impeccable.mts` le mesure à chaque passage, et **refuse
-de conclure sur une boîte de zéro pixel** — une capture prise avant la mise en
-page mesurerait 0, et « 0 est au-dessus du pli » serait un vert qui ne prouve
-rien (`CLAUDE.md` §5).
+**« Envoyer la facture » finit à 951 px, soit 287 px sous le pli** sur votre
+écran de 390 × 664. `scripts/capture-facture-impeccable.mts` le mesure à chaque
+passage, et **refuse de conclure sur une boîte de zéro pixel** — une capture
+prise avant la mise en page mesurerait 0, et « 0 est au-dessus du pli » serait un
+vert qui ne prouve rien (`CLAUDE.md` §5).
 
-Le geste du second arrêt demande donc une demi-page de défilement. **Déplacer un
-bouton est une affaire d'apparence : elle se dessine et se choisit avant de se
-coder** (`CLAUDE.md` §3 bis). C'est sur la planche.
+**CORRECTION : j'ai d'abord annoncé 309 px, et c'était faux.** Le chiffre venait
+d'une capture où le nom du client d'essai passait à la ligne, ce qui ajoutait une
+vingtaine de pixels. La mesure refaite bloc par bloc donne 287.
+
+**VOTRE VERDICT DU 4 SEPTEMBRE : « on laisse et on descend comme aujourd'hui ».**
+Le bouton ne bouge pas.
+
+Vous aviez d'abord demandé s'il n'était pas possible de **resserrer la page**
+pour gagner les pixels manquants. La mesure dit non, et voici pourquoi :
+
+| | px |
+|---|---|
+| en-tête (retour, « Facture », nom du chantier) | 151 |
+| carte Facture + échéance | 123 |
+| carte Reprise du devis | 120 |
+| **carte des totaux** | **297** |
+| « Rien n'a changé depuis le devis ? » | 21 |
+| Par SMS / Par e-mail | 84 |
+| les cinq espaces entre les blocs | 88 |
+| **le bouton finit à** | **951** — pour 664 d'écran |
+
+Espaces à 12 px au lieu de 16, marges de carte à 14 au lieu de 20 : **une
+soixantaine de pixels**, contre 287 manquants. Et ces pixels-là ont déjà été
+pris — le 31 août, un lot en a récupéré **53 dans les espacements sans retirer un
+mot**. Ce qui reste n'est plus de l'air, c'est de la cible sous le doigt, en
+plein soleil et à une main.
+
+**La carte qui pèse est celle des totaux, et elle a grossi ce jour-là** : elle
+décompose le total au lieu de l'affirmer, ce qui est très exactement la
+correction demandée. La resserrer déferait ce qu'on venait de réparer.
 
 ---
 
@@ -165,7 +191,7 @@ point ci-dessus, et c'est ce que la planche propose de rendre.
 | Point | Qui tranche |
 |---|---|
 | ~~**A ou B sur la planche**~~ — **TRANCHÉ le 4 sept. : « la A »**, aucun champ de trace | *fermé* |
-| **Le geste au-dessus du pli** — « Envoyer la facture » remonte-t-il dans la plage des totaux ? | **vous** |
+| ~~**Le geste au-dessus du pli**~~ — **TRANCHÉ le 4 sept. : « on laisse »** | *fermé* |
 | ~~**Ce qu'une ligne muette autorise**~~ — sans objet, A ne pose aucune réserve | *fermé* |
 | **Figer l'allure des documents sur la facture émise** (trois colonnes, une migration) — pour que la page du client ne bouge plus après l'envoi | **vous**, sur le principe ; moi sur la façon |
 | **Les trois suites navigateur que le brief annonce rouges** | mesurées à part, voir ci-dessous |

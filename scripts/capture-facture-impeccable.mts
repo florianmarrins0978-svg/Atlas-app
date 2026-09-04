@@ -137,6 +137,13 @@ async function exiger(nom: string, texte: string) {
  * d'apparence : elle se dessine et se choisit avant de se coder (`CLAUDE.md`
  * §3 bis). Ce chiffre est là pour qu'on lui montre le vrai, pas le supposé.
  *
+ * **ET IL A TRANCHÉ, LE 4 SEPTEMBRE 2026 : « on laisse et on descend comme
+ * aujourd'hui ».** Ce chiffre n'est donc plus une question ouverte — c'est une
+ * VEILLE : il dit de combien l'écran s'allonge quand on lui ajoute quelque
+ * chose. Ne pas « corriger » le pli au motif qu'il est mesuré ; le resserrage
+ * ne rendrait qu'une soixantaine de pixels contre 287, et 53 ont déjà été pris
+ * le 31 août dans les mêmes espacements (`ARCHITECTURE.md` §255).
+ *
  * **Et l'on refuse de conclure sur une boîte de zéro pixel** : une capture
  * prise avant la mise en page mesurerait 0, et « 0 est au-dessus du pli »
  * serait un vert qui ne prouve rien (`CLAUDE.md` §5).

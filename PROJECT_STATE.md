@@ -42,8 +42,8 @@ Le dernier écran avant que l'argent parte n'était jamais passé par une revue.
 | | le devis qui fait foi est la dernière version **envoyée** : un chantier dont la v2 traînait en brouillon n'est plus refusé à tort |
 | | le total se recompose à la main — prix accordé au client et un taux par catégorie, comme sur le papier |
 | | la page que son client ouvre suit l'allure de SES documents ; sans réglage, elle est celle d'aujourd'hui au pixel près |
-| **Mesuré, pas corrigé** | « Envoyer la facture » tombe **309 px sous le pli** à 390 × 664 |
-| **Attend sa réponse** | `appli/ts-la-trace-de-laccord.html` — A ou B, le geste au-dessus du pli, ce que « sans accord » autorise |
+| **Mesuré, puis tranché par lui** | « Envoyer la facture » finit **287 px sous le pli** à 390 × 664 — *« on laisse et on descend comme aujourd'hui »*. Le resserrage ne rendrait qu'une soixantaine de pixels |
+| **Tranché aussi** | les travaux en plus n'auront **aucun champ de trace** — « la A », sa deuxième réponse dans le même sens |
 | **Reste** | figer l'allure sur la facture émise (trois colonnes, une migration) |
 
 Détail : `ARCHITECTURE.md` §255 et `docs/facture-impeccable.md`.

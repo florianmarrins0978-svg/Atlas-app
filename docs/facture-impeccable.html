@@ -146,8 +146,49 @@
 <hr>
 <h2 id="ce-qui-a-été-mesuré-et-non-corrigé--parce-que-ça-se-dessine-dabord">Ce qui a été MESURÉ et non corrigé — parce que ça se dessine d'abord</h2>
 <a class="retour" href="#sommaire">↑ Sommaire</a>
-<p><strong>« Envoyer la facture » tombe 309 px sous le pli</strong> sur votre écran de 390 × 664, et 331 px quand la facture est en retard sur son devis. <code>scripts/capture-facture-impeccable.mts</code> le mesure à chaque passage, et <strong>refuse de conclure sur une boîte de zéro pixel</strong> — une capture prise avant la mise en page mesurerait 0, et « 0 est au-dessus du pli » serait un vert qui ne prouve rien (<code>CLAUDE.md</code> §5).</p>
-<p>Le geste du second arrêt demande donc une demi-page de défilement. <strong>Déplacer un bouton est une affaire d'apparence : elle se dessine et se choisit avant de se coder</strong> (<code>CLAUDE.md</code> §3 bis). C'est sur la planche.</p>
+<p><strong>« Envoyer la facture » finit à 951 px, soit 287 px sous le pli</strong> sur votre écran de 390 × 664. <code>scripts/capture-facture-impeccable.mts</code> le mesure à chaque passage, et <strong>refuse de conclure sur une boîte de zéro pixel</strong> — une capture prise avant la mise en page mesurerait 0, et « 0 est au-dessus du pli » serait un vert qui ne prouve rien (<code>CLAUDE.md</code> §5).</p>
+<p><strong>CORRECTION : j'ai d'abord annoncé 309 px, et c'était faux.</strong> Le chiffre venait d'une capture où le nom du client d'essai passait à la ligne, ce qui ajoutait une vingtaine de pixels. La mesure refaite bloc par bloc donne 287.</p>
+<p><strong>VOTRE VERDICT DU 4 SEPTEMBRE : « on laisse et on descend comme aujourd'hui ».</strong> Le bouton ne bouge pas.</p>
+<p>Vous aviez d'abord demandé s'il n'était pas possible de <strong>resserrer la page</strong> pour gagner les pixels manquants. La mesure dit non, et voici pourquoi :</p>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th>px</th>
+</tr></thead><tbody>
+<tr>
+<td>en-tête (retour, « Facture », nom du chantier)</td>
+<td>151</td>
+</tr>
+<tr>
+<td>carte Facture + échéance</td>
+<td>123</td>
+</tr>
+<tr>
+<td>carte Reprise du devis</td>
+<td>120</td>
+</tr>
+<tr>
+<td><strong>carte des totaux</strong></td>
+<td><strong>297</strong></td>
+</tr>
+<tr>
+<td>« Rien n'a changé depuis le devis ? »</td>
+<td>21</td>
+</tr>
+<tr>
+<td>Par SMS / Par e-mail</td>
+<td>84</td>
+</tr>
+<tr>
+<td>les cinq espaces entre les blocs</td>
+<td>88</td>
+</tr>
+<tr>
+<td><strong>le bouton finit à</strong></td>
+<td><strong>951</strong> — pour 664 d'écran</td>
+</tr>
+</tbody></table></div>
+<p>Espaces à 12 px au lieu de 16, marges de carte à 14 au lieu de 20 : <strong>une soixantaine de pixels</strong>, contre 287 manquants. Et ces pixels-là ont déjà été pris — le 31 août, un lot en a récupéré <strong>53 dans les espacements sans retirer un mot</strong>. Ce qui reste n'est plus de l'air, c'est de la cible sous le doigt, en plein soleil et à une main.</p>
+<p><strong>La carte qui pèse est celle des totaux, et elle a grossi ce jour-là</strong> : elle décompose le total au lieu de l'affirmer, ce qui est très exactement la correction demandée. La resserrer déferait ce qu'on venait de réparer.</p>
 <hr>
 <h2 id="les-gestes-comptés">Les gestes, comptés</h2>
 <a class="retour" href="#sommaire">↑ Sommaire</a>
@@ -272,8 +313,8 @@
 <td><em>fermé</em></td>
 </tr>
 <tr>
-<td><strong>Le geste au-dessus du pli</strong> — « Envoyer la facture » remonte-t-il dans la plage des totaux ?</td>
-<td><strong>vous</strong></td>
+<td>~~<strong>Le geste au-dessus du pli</strong>~~ — <strong>TRANCHÉ le 4 sept. : « on laisse »</strong></td>
+<td><em>fermé</em></td>
 </tr>
 <tr>
 <td>~~<strong>Ce qu'une ligne muette autorise</strong>~~ — sans objet, A ne pose aucune réserve</td>

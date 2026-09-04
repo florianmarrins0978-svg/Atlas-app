@@ -22757,8 +22757,18 @@ Cinquième et sixième fois dans ce dépôt (`CLAUDE.md` §5) :
 `scripts/capture-facture-impeccable.mts` bâtit les états par les dépôts — il ne
 passe pas par la fiche du chantier, qu'un autre lot retire — puis photographie
 l'écran à 390 × 664, en Origine et en Nuit, et **mesure** où tombe le geste :
-« Envoyer la facture » est à **309 px sous le pli**, 331 quand la facture est en
-retard. Il refuse de conclure sur une boîte de zéro pixel.
+« Envoyer la facture » finit à 951 px, soit **287 px sous le pli** — et non 309,
+chiffre d'une première mesure faussée par un nom de client d'essai qui passait à
+la ligne.
+
+**Il a tranché le soir même : le bouton ne bouge pas** — *« on laisse et on
+descend comme aujourd'hui »*. Sa question préalable vaut d'être gardée, parce
+qu'elle reviendra : *« on ne peut pas resserrer toute la page ? »*. Non — espaces
+à 12 px au lieu de 16 et marges de carte à 14 au lieu de 20 rendent **une
+soixantaine de pixels** contre 287 manquants, et 53 ont déjà été pris le 31 août
+dans ces mêmes espacements. Le bloc qui pèse est la carte des totaux (297 px),
+qui a grossi le jour même pour que le total se recompose : la resserrer déferait
+la correction. Il refuse de conclure sur une boîte de zéro pixel.
 
 Déplacer un bouton est une affaire d'apparence : elle se dessine avant de se
 coder (`CLAUDE.md` §3 bis). C'est sur `appli/ts-la-trace-de-laccord.html`, avec

@@ -74,9 +74,17 @@ choses restent, et trois attendent SA réponse :
   lui renvoyer le devis ». **On ne renvoie pas un devis après coup** — un devis
   se fait AVANT le travail, et le travail est fait. **Sa forme, elle, était
   déjà tranchée le 1ᵉʳ septembre** — le brief du 4 se trompait en la rouvrant.
-- **« Envoyer la facture » tombe 309 px sous le pli** (331 en retard de devis),
-  mesuré par `scripts/capture-facture-impeccable.mts`. Déplacer un bouton se
-  dessine d'abord : c'est sur la planche ci-dessus.
+- ~~**« Envoyer la facture » sous le pli**~~ **TRANCHÉ LE 4 SEPT. 2026 : « on
+  laisse et on descend comme aujourd'hui ».** Le bouton ne bouge pas. Le chiffre
+  juste est **287 px** (951 px pour 664 d'écran), et non 309 — première mesure
+  faussée par un nom de client d'essai qui passait à la ligne.
+  `scripts/capture-facture-impeccable.mts` le remesure à chaque passage.
+
+  **Sa question mérite d'être gardée, parce qu'elle reviendra :** « on ne peut pas
+  resserrer toute la page ? ». Non — le resserrage rend une soixantaine de pixels
+  contre 287 manquants, et 53 ont déjà été pris le 31 août dans ces mêmes
+  espacements. La carte qui pèse (297 px) est celle des totaux, qui a grossi le
+  jour même pour que le total se recompose : la resserrer déferait la correction.
 - **L'allure des documents n'est pas FIGÉE sur la facture émise.** La page du
   client la lit à la consultation ; s'il change son réglage après l'envoi, la
   page suit et le PDF archivé, non. Trois colonnes sur `factures` et une

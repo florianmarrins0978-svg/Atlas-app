@@ -7,7 +7,7 @@
 <style>
 /*
   ═══════════════════════════════════════════════════════════════════════════
-  SON VERDICT, LE 4 SEPTEMBRE 2026 AU SOIR : « la A ».
+  SON VERDICT, LE 4 SEPTEMBRE 2026 AU SOIR : « la A », ET LE PLI RESTE.
 
   **AUCUN CHAMP DE TRACE SUR LES TRAVAUX SUPPLÉMENTAIRES.** Pas de pastille par
   ligne, pas de réserve quand la ligne est muette, pas de « qui l'a demandée ».
@@ -20,8 +20,19 @@
   réponse est le bon signé sur place (`ts-bon-sur-place.html`), pas un champ de
   plus sur l'écran de la facture.
 
-  La colonne B de cette planche est donc une proposition ÉCARTÉE. Elle reste ici
-  parce qu'une planche raconte le chemin, y compris ce qui n'a pas été retenu.
+  **ET LE BOUTON NE REMONTE PAS.** Sa réponse à la seconde question, le même
+  soir : *« on laisse et on descend comme aujourd'hui »*. « Envoyer la facture »
+  reste sous le pli, après le détail du devis et les liens du PDF. Il descend, et
+  cela lui va.
+
+  Il avait d'abord demandé s'il n'était pas possible de RESSERRER la page pour
+  gagner les pixels manquants — et la mesure a répondu non, chiffres à l'appui
+  (plus bas). Ce n'était pas une objection de principe : la réponse est arrivée
+  après le tableau, pas avant.
+
+  La colonne B de cette planche est donc une proposition ÉCARTÉE, et le
+  déplacement du bouton aussi. Elles restent ici parce qu'une planche raconte le
+  chemin, y compris ce qui n'a pas été retenu.
   ═══════════════════════════════════════════════════════════════════════════
 
   CE QUI EST DÉJÀ TRANCHÉ, ET QUE CETTE PLANCHE NE ROUVRE PAS.
@@ -78,11 +89,33 @@
   ─────────────────────────────────────────────────────────────────────────────
   ET LE GESTE REDEVIENT ATTEIGNABLE — mesuré, pas supposé.
 
-  Sur l'écran d'aujourd'hui, à 390 × 664, « Envoyer la facture » tombe **309 px
-  sous le pli** (331 quand la facture est en retard sur son devis) :
-  `scripts/capture-facture-impeccable.mts` le mesure à chaque passage. Le second
-  arrêt du parcours demande donc une demi-page de défilement avant d'être
-  franchi. La colonne de droite le remonte, sans retirer un mot.
+  Sur l'écran d'aujourd'hui, à 390 × 664, « Envoyer la facture » finit à 951 px,
+  soit **287 px sous le pli** — et non 309, chiffre d'une première mesure faussée
+  par un nom de client d'essai qui passait à la ligne.
+  `scripts/capture-facture-impeccable.mts` le mesure à chaque passage.
+
+  **CE QUE LE RESSERRAGE PEUT RENDRE, ET POURQUOI CE N'EST PAS ASSEZ** — sa
+  question du 4 septembre au soir, et elle méritait des chiffres :
+
+      en-tête (retour, titre, chantier)      151 px
+      carte Facture + échéance               123
+      carte Reprise du devis                 120
+      carte des totaux                       297
+      « Rien n'a changé depuis le devis ? »   21
+      Par SMS / Par e-mail                    84
+      les cinq espaces entre les blocs        88
+      ─────────────────────────────────────────
+      le bouton finit à                      951      (pour 664 d'écran)
+
+  Espaces à 12 px au lieu de 16, marges de carte à 14 au lieu de 20 : **une
+  soixantaine de pixels**, contre 287 manquants. Et ces pixels-là ont déjà été
+  pris — le 31 août, un lot en a récupéré 53 dans les espacements sans retirer un
+  mot. Ce qui reste n'est plus de l'air, c'est de la cible sous le doigt, en plein
+  soleil et à une main.
+
+  **La carte qui pèse est celle des totaux, et elle a grossi le jour même** :
+  elle décompose le total au lieu de l'affirmer. La resserrer déferait ce qu'on
+  venait de réparer.
 
   RIEN N'EST CODÉ (`CLAUDE.md` §3 bis).
 */
@@ -182,8 +215,8 @@ h1{margin:10px 0 0;font-family:Georgia,serif;font-weight:400;font-size:30px;
     <div class="col">
       <p class="titre">A · L'écran d'aujourd'hui</p>
       <p class="dit">Les travaux en plus s'ajoutent, et rien ne distingue une ligne
-        acceptée d'une ligne posée de mémoire. « Envoyer la facture » tombe 309 px
-        sous le pli.</p>
+        acceptée d'une ligne posée de mémoire. « Envoyer la facture » tombe 287 px
+        sous le pli — et il a choisi de l'y laisser.</p>
       <div class="tel">
         <div class="plage">
           <p class="cap">Facture</p>
