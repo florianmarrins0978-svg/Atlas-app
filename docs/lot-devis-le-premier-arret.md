@@ -112,6 +112,43 @@ n'occupe que le milieu se contredisent — vu à la capture, pas au test.
 « Voir le document » aurait caché ce qu'il signe sur le seul écran dont c'est
 le sujet.
 
+### 5. Deux défauts qu'il a vus sur son téléphone, le 5 septembre — CORRIGÉS
+
+**a) La barre collée était cachée par la barre d'onglets.** *« Le sous le pouce
+est caché par le menu du bas. »* Le bouton était bien collé au bas de la
+**fenêtre** — et la barre du bas de l'application s'y trouvait déjà, lui
+mangeant la moitié. Le geste le plus important de l'écran était à moitié
+intouchable : la barre livrée la veille ne servait donc à rien là où il s'en
+sert.
+
+Elle réserve désormais la hauteur de la barre, **lue là où elle est écrite**
+(`--atlas-barre`, qui porte la barre et la marge de sécurité de l'iPhone). Un
+nombre écrit à la main ici vieillirait au premier changement sans que personne
+le voie — c'est la faute du 31 août, où « Me déconnecter partout » finissait
+dessous pour huit pixels. Rembourrage plutôt que `bottom` décalé : sur `bottom`,
+le dégradé remonterait avec le bouton et laisserait une bande de document
+défiler entre les deux.
+
+**Ce que ça dit de ma vérification de la veille :** mes captures étaient prises
+sur un écran **sans** cette barre. Une mesure juste sur une page qui n'est pas
+la sienne ne prouve rien de la sienne.
+
+**b) Le refus « pas de client » l'envoyait où il était déjà.** La feuille disait
+*« Ouvrez le devis pour lui donner un nom, puis revenez ici »* — or elle s'ouvre
+**depuis** le devis depuis le 20 août. Il devait fermer, reculer deux fois, et
+retrouver seul un écran qu'aucun lien n'indiquait. Sa demande : *« un bouton
+raccourci vers la fiche client, pour qu'il n'y ait pas besoin de faire retour
+deux fois »*.
+
+La phrase porte désormais le lien, et **son adresse vient de la règle qui porte
+déjà la flèche du devis** (`src/lib/retour-du-devis.ts`) — deux chemins écrits
+séparément vers la fiche client divergeraient. Le chemin se referme tout seul :
+la fiche enregistrée ramène au devis.
+
+**C'est le même travers que le refus « à chiffrer » du point 1** : une raison
+juste, et pas de geste. Deux fois le même défaut sur le même parcours, à un jour
+d'intervalle.
+
 ---
 
 ## Ce qui a été REFUSÉ
