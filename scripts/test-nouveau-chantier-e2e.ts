@@ -89,8 +89,14 @@ async function main() {
   // `aria-label` sur le groupe. Ce que sa demande fixait, c'est la PLACE du
   // choix sous l'adresse, pas la présence d'une phrase au-dessus : chercher le
   // texte, c'était réclamer ce qu'il a fait retirer (`CLAUDE.md` §5 bis).
+  // **Le canal se désigne par sa MARQUE, plus par son libellé** — 4 septembre
+  // 2026. Le mot est passé de « Par SMS » à « SMS » avec la planche
+  // « A — Épurée », qu'il a retenue : *« l'envoi n'est plus une action, c'est
+  // un réglage »*. Viser le texte, c'était réclamer ce qu'il vient de faire
+  // changer ; `data-atlas="canal-sms"` survit au remaniement, et c'est la
+  // PLACE sous l'adresse que ce contrôle défend (`CLAUDE.md` §5 bis).
   const boiteAdresse = await page.locator('input[placeholder="12 rue des Lilas, Nantes"]').boundingBox();
-  const boiteCanal = await page.getByRole("button", { name: "Par SMS" }).boundingBox();
+  const boiteCanal = await page.locator('[data-atlas="canal-sms"]').boundingBox();
   assert.ok(boiteAdresse && boiteCanal, "l'adresse et le choix de l'envoi doivent être visibles");
   assert.ok(
     boiteCanal.y > boiteAdresse.y,

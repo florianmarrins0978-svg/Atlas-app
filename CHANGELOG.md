@@ -9,6 +9,32 @@ Format : le plus récent en tête.
 
 ## 2026-09-04
 
+### La fiche client finit d’adopter la planche « A — Épurée »
+
+**Sa question :** *« et la page fiche client, la A épurée, tu l’as mise ? »* —
+à moitié. La planche et l’écran mis côte à côte, trois écarts restaient :
+
+- **l’envoi redevient un réglage.** Deux capsules pleine largeur « Par SMS » /
+  « Par e-mail » se lisaient comme des boutons d’envoi ; elles ne disent que
+  par où le devis partira. La planche l’écrit : *« une ligne, deux mots, et
+  40 px rendus à l’anneau »*. Le canal retenu porte un trait d’or sous son mot ;
+  **la facture garde ses capsules**, un `apparence` sur `ChoixCanal` plutôt
+  qu’un second composant ;
+- **le filet revient** au-dessus de l’envoi, et il sépare les coordonnées du
+  réglage. Il n’existe pas à part : c’est la bordure haute de la rangée ;
+- **le carré photo devient un aplat d’or** — sa correction du 4 septembre :
+  *« seulement pour le carré photo, je le veux plein doré »*. Ni les tirets
+  d’avant, ni le carré gris de la planche. Les tirets disaient « il n’y a rien
+  encore » ; l’aplat dit « posez ici ».
+
+**Ce qui n’a PAS été touché** : l’anneau. La planche A montre le vieux disque
+vert foncé ; la tasse vert clair à filet d’or est un choix POSTÉRIEUR, fait sur
+les planches de la note vocale.
+
+Trois suites visaient le libellé « Par SMS » ; elles visent désormais
+`data-atlas="canal-sms"`, qui survit au remaniement (`CLAUDE.md` §5 bis).
+
+
 ### Le calendrier du client monte du bas — sa réponse A
 
 Sur planche, trois formes lui avaient été soumises pour que le choix d'une

@@ -3,7 +3,7 @@
 import { useRef, useState, type ChangeEvent } from "react";
 import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
-import { colors, libelleCaps } from "@/lib/design-tokens";
+import { colors, libelleCaps, surPlein } from "@/lib/design-tokens";
 import PointsQuiSoufflent from "@/components/atlas/PointsQuiSoufflent";
 import TiroirDesRetires from "@/components/atlas/TiroirDesRetires";
 import { useRetraits } from "@/components/atlas/useRetraits";
@@ -156,10 +156,24 @@ export default function Pellicule({
           // montre et ce qu'il annonce doivent raconter le même instant.
           aria-label={enCours ? "Envoi des photos en cours" : "Ajouter des photos"}
           className="atlas-ajouter"
-          // Le liseré est en TIRETS et doré, comme sur sa maquette : un carré
-          // en trait plein se lit comme une case vide, pas comme un endroit où
-          // poser une photo.
-          style={{ border: `1px dashed ${colors.or}`, color: colors.or }}
+          // ─── PLEIN DORÉ — sa demande du 4 septembre 2026 ─────────────────
+          //
+          // *« Seulement pour le carré photo, je le veux plein doré. »* Il
+          // tranche entre deux dessins : le liseré en TIRETS d'avant, et le
+          // carré plein et sobre que proposait la planche « A — Épurée ». Ni
+          // l'un ni l'autre : l'aplat, mais en or.
+          //
+          // **Ce qui disparaît avec les tirets**, et qu'il faut avoir en tête :
+          // ils disaient « il n'y a rien encore ». L'aplat, lui, dit « posez
+          // ici » — c'est une invitation plus qu'un vide, et c'est ce qu'il
+          // veut d'un bouton qu'il touche sur un chantier.
+          //
+          // **`surPlein` et jamais une couleur écrite en clair** (`CLAUDE.md`
+          // §3) : c'est le jeton de ce qu'on pose SUR un aplat. Il tient ici
+          // sans réserve, parce que l'or est le seul jeton FIXE des huit
+          // chartes (`chartes.ts`) — le fond de ce carré ne bouge donc jamais,
+          // et ce qu'on écrit dessus non plus.
+          style={{ border: `1px solid ${colors.or}`, background: colors.or, color: surPlein }}
         >
           {/* **Le même souffle que la dictée**, sur sa demande du 13 août 2026 :
               *« oui souffle aussi pour la photo »*. C'était ici le même

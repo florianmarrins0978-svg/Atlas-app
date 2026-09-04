@@ -71,9 +71,11 @@ async function creerChantierFacturable(
   // Le canal convenu avec le client, quand les deux coordonnées existent : sans
   // lui, rien ne se devine, et c'est exactement le cas de son défaut du 20 août.
   if (client.canal) {
-    await page
-      .getByRole("button", { name: client.canal === "sms" ? "Par SMS" : "Par e-mail" })
-      .click();
+    // **Le canal se désigne par sa MARQUE.** Sur la fiche client, le mot est
+    // passé de « Par SMS » à « SMS » le 4 septembre 2026, avec la planche
+    // « A — Épurée » qu'il a retenue. `data-atlas` survit au remaniement, et
+    // c'est le GESTE que ce montage rejoue, pas un libellé (`CLAUDE.md` §5 bis).
+    await page.locator(`[data-atlas="canal-${client.canal}"]`).click();
   }
   await creerPuisFiche(page);
   // Sans délai explicite : celui du contexte s'applique (`e2e-browser.ts`).
