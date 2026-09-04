@@ -29,15 +29,27 @@ lot.** Vérifié plutôt que supposé : cinq suites tombées ont été rejouées
 puis **sans** le lot (`DevisCompletClient.tsx` remis dans son état d'avant), et
 elles rendent **0/5 des deux côtés**.
 
-**⚠ DEUX CHOSES QUI COÛTENT UNE SOIRÉE SI ON NE LES SAIT PAS :**
+**⚠ DEUX CHOSES À SAVOIR, ET LA SECONDE EST UNE ERREUR DE MA PART :**
 
-1. **`npm run verifier:avant-livraison` ne peut pas être verte sur son poste.**
-   Elle code en dur `postgres_ci_pw` ; son Docker répond à `postgres_dev_pw`.
-   Trois étapes tombent alors d'affilée et l'écran de connexion accuse le
-   produit. Rejouées avec la bonne adresse : vertes. Piège : `docker exec … psql`
-   accepte les deux mots de passe — essayer **depuis l'hôte**.
-2. **La barre d'onglets est revenue sur la page du devis** (et sur les pages du
-   client). Antérieur au lot, non corrigé : pièces partagées. Voir `TODO.md`.
+1. **La batterie se lance chez lui avec son adresse à lui**, depuis que les
+   trois adresses sont surchargeables :
+
+   ```bash
+   export ATLAS_BASE_SUPER="postgresql://postgres:postgres_dev_pw@localhost:5432/atlas_test"
+   npm run verifier:avant-livraison
+   ```
+
+   Piège qui a coûté le diagnostic : `docker exec … psql` accepte les deux mots
+   de passe — l'authentification locale du conteneur est en confiance. Essayer
+   **depuis l'hôte**.
+   **Et le prévenir AVANT de la lancer** : ses sessions partagent le dossier, et
+   le serveur tombe si une autre écrit pendant la mesure.
+2. ~~La barre d'onglets est revenue sur la page du devis~~ — **FAUX, c'était
+   moi.** Il l'a mesuré page par page sur le serveur : aucune barre nulle part,
+   et `layout.tsx` n'a pas bougé depuis le 31 août. J'avais déduit un défaut du
+   produit d'une suite rouge, **sans regarder le produit** — alors que mes
+   propres captures du soir ne portaient aucune barre. Ne pas rouvrir de ce
+   côté.
 
 **Ne pas rouvrir « Voir le document » (la A)** : il l'a écartée.
 

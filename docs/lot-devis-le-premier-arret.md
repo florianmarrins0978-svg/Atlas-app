@@ -252,21 +252,44 @@ Les suites qui ouvrent l'écran du devis et qui passent le disent aussi :
 `test-devis-refus-a-chiffrer-e2e` (neuve), `test-devis-sans-client-e2e`,
 `test-devis-a-la-main-e2e`.
 
-### Un défaut TROUVÉ sur cet écran, et NON corrigé — il n'est pas de ce lot
+### CE QUE J'AI ANNONCÉ ET QUI EST FAUX : la barre d'onglets
 
-`test-devis-complet-e2e` échoue sur : **« La barre d'onglets est revenue sur la
-page du devis »** (1 au lieu de 0). C'est une règle de cet écran depuis le
-5 août 2026 — *« une page où il n'y a QUE le devis »*, sans décor d'application.
+**J'ai écrit que la barre d'onglets était revenue sur la page du devis et sur
+les pages publiques du client. C'est faux.**
 
-La règle est pourtant écrite et juste (`layout.tsx`,
-`estEcranSansNavigation` → `chemin.endsWith("/devis-complet")`). Ce qui manque
-est en amont : le chemin est lu dans l'en-tête `x-atlas-pathname`, posée par le
-middleware ; sans elle, la fonction rend `false` et les onglets reviennent —
-**sur cet écran comme sur les pages publiques du client**.
+Je m'appuyais sur `test-devis-complet-e2e`, qui échoue sur cette assertion
+(1 au lieu de 0), à l'identique avant et après le lot. Le patron l'a mesuré
+**page par page, sur le serveur** : aucune barre sur la page que reçoit son
+client, aucune sur le devis seul, et `src/app/layout.tsx` n'a pas bougé depuis
+le 31 août. **Non reproduit.**
 
-**Pas touché**, et c'est délibéré : `layout.tsx` et `middleware.ts` sont des
-pièces partagées, l'échec est antérieur au lot, et trois sessions écrivent dans
-le dossier. Porté dans `TODO.md`.
+**La faute n'est pas d'avoir vu la suite rouge — c'est d'en avoir déduit un
+défaut du produit sans regarder le produit.** J'avais pourtant l'image sous les
+yeux : mes propres captures de l'écran du devis, prises le soir même à
+390 × 664, ne portent aucune barre d'onglets. Une suite rouge dit qu'une mesure
+a échoué ; elle ne dit jamais laquelle des deux a tort, le produit ou la mesure.
+
+`AGENTS.md` connaît ce piège dans un sens — *« ne pas annoncer une panne
+corrigée quand seul le silence l'a été »*. Celui-ci en est le miroir, et il
+mérite d'être écrit : **ne pas annoncer une panne trouvée quand seul un contrôle
+a parlé.**
+
+### CE QUE J'AI ANNONCÉ ET QUI N'EST DÉJÀ PLUS VRAI : la batterie
+
+J'ai écrit que `verifier:avant-livraison` ne pouvait pas être verte sur son
+poste. C'était exact au moment de la mesure ; **ça ne l'est plus.** Une session
+voisine a rendu les trois adresses surchargeables — `ATLAS_BASE_APP`,
+`ATLAS_BASE_OWNER`, `ATLAS_BASE_SUPER` — sans toucher au défaut de la CI. Chez
+lui, la batterie va au bout ainsi :
+
+```bash
+export ATLAS_BASE_SUPER="postgresql://postgres:postgres_dev_pw@localhost:5432/atlas_test"
+npm run verifier:avant-livraison
+```
+
+Ce qui reste vrai, et qui a coûté le diagnostic : `docker exec … psql` accepte
+les deux mots de passe — l'authentification locale du conteneur est en
+confiance. **Il faut essayer depuis l'hôte pour voir l'échec.** Porté dans `TODO.md`.
 
 ---
 
@@ -274,9 +297,7 @@ le dossier. Porté dans `TODO.md`.
 
 | Quoi | Qui peut trancher |
 |---|---|
-| **La barre d'onglets revenue sur la page du devis** (et sur les pages du client) | la session qui tient `layout.tsx` / `middleware.ts` |
-| **Les 57 suites navigateur rouges sur `main`** | mesurées comme antérieures ; à reprendre par lot |
-| **La batterie inutilisable sur son poste** (mot de passe `postgres`) | une ligne dans `verifier-avant-livraison.ts` |
+| **Les 57 suites navigateur rouges** — mesurées comme antérieures au lot | à reprendre par lot, avec la batterie qui va désormais au bout |
 | « Atlas prépare toujours votre devis… (96 s) » — jamais reproduit sur un poste de développement | à rendre bavard avant de corriger ; **pas touché ici** |
 | Un artisan qui arrive les mains vides n'a jamais été essayé (`docs/A-FAIRE.md`) | ouvert |
 | Le tableau et les totaux, encore dans l'écran | un lot suivant, si le besoin se présente |

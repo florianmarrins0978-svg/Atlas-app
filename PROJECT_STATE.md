@@ -31,7 +31,7 @@ L'écran où il relit ce qu'il engage. `ARCHITECTURE.md` §256,
 | **Fait** | 299 lignes de champs sorties dans `ChampsDuDevis.tsx`, à comportement identique |
 | **Fait** | « Choisir la date » était au bout de **2,59 hauteurs d'écran** ; il a choisi **la B** sur `appli/devis-le-premier-arret.html`, et la barre collée est codée — 648 px d'une fenêtre de 664, à toute hauteur |
 | **Mesuré** | base **300/310** et navigateur **70/127** : aucun rouge n'est de ce lot, vérifié en rejouant cinq suites tombées avec ET sans le lot (0/5 des deux côtés) |
-| **Trouvé, pas corrigé** | la barre d'onglets est revenue sur la page du devis et sur les pages du client — antérieur au lot, pièces partagées (`TODO.md`) |
+| **Annoncé à tort, puis corrigé** | j'ai déclaré la barre d'onglets revenue sur le devis et sur les pages du client. **Faux** : il l'a mesuré page par page sur le serveur, aucune barre nulle part. J'avais déduit un défaut du produit d'une suite rouge, sans regarder le produit (`docs/lot-devis-le-premier-arret.md`) |
 
 ## FAIT : la facture, le second arrêt (4 septembre 2026)
 

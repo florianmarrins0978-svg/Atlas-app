@@ -987,6 +987,20 @@ Elle enchaîne, dans cet ordre — les contrôles rapides d'abord :
 Elle ne s'arrête pas à la première erreur : savoir que trois choses cassent, et
 lesquelles, vaut mieux que de les découvrir une par une.
 
+**LE PRÉVENIR AVANT DE LA LANCER — sa consigne du 4 septembre 2026 :**
+*« préviens-moi avant de lancer une batterie : mes sessions partagent le même
+dossier, et le serveur tombe si une autre écrit pendant que tu mesures. »*
+
+Ce n'est pas une politesse, c'est ce qui rend la mesure lisible. **Lui seul sait
+ce que ses autres sessions sont en train de faire** — le dépôt, lui, ne le dit
+nulle part. Une batterie jouée pendant qu'une session voisine enregistre un
+fichier rend des chiffres qui n'accusent personne et qu'il faut rejouer : dix
+minutes perdues, et l'envie d'y croire quand même.
+
+Une ligne suffit avant de la lancer, et l'on attend sa réponse. Vaut aussi pour
+tout ce qui prend le port 3000 ou vide la base — les suites navigateur, le seed,
+un serveur de développement.
+
 **NE RIEN JOUER À LA MAIN PENDANT QU'ELLE TOURNE — surtout pas une suite
 base.** Payé le 26 août 2026. Pendant une batterie, cinq suites navigateur ont
 rougi d'un coup et l'étape « Connexion derrière un proxy » avec elles. Aucune

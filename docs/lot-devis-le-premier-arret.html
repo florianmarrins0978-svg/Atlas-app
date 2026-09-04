@@ -283,10 +283,15 @@
 </tbody></table></div>
 <p>Elles tombent à l'identique. Et <code>test-devis-complet-e2e</code> échoue sur la <strong>même assertion, à la même ligne</strong>, avant comme après.</p>
 <p>Les suites qui ouvrent l'écran du devis et qui passent le disent aussi : <code>test-devis-refus-a-chiffrer-e2e</code> (neuve), <code>test-devis-sans-client-e2e</code>, <code>test-devis-a-la-main-e2e</code>.</p>
-<h3 id="un-défaut-trouvé-sur-cet-écran-et-non-corrigé--il-nest-pas-de-ce-lot">Un défaut TROUVÉ sur cet écran, et NON corrigé — il n'est pas de ce lot</h3>
-<p><code>test-devis-complet-e2e</code> échoue sur : <strong>« La barre d'onglets est revenue sur la page du devis »</strong> (1 au lieu de 0). C'est une règle de cet écran depuis le 5 août 2026 — <em>« une page où il n'y a QUE le devis »</em>, sans décor d'application.</p>
-<p>La règle est pourtant écrite et juste (<code>layout.tsx</code>, <code>estEcranSansNavigation</code> → <code>chemin.endsWith("/devis-complet")</code>). Ce qui manque est en amont : le chemin est lu dans l'en-tête <code>x-atlas-pathname</code>, posée par le middleware ; sans elle, la fonction rend <code>false</code> et les onglets reviennent — <strong>sur cet écran comme sur les pages publiques du client</strong>.</p>
-<p><strong>Pas touché</strong>, et c'est délibéré : <code>layout.tsx</code> et <code>middleware.ts</code> sont des pièces partagées, l'échec est antérieur au lot, et trois sessions écrivent dans le dossier. Porté dans <code>TODO.md</code>.</p>
+<h3 id="ce-que-jai-annoncé-et-qui-est-faux--la-barre-donglets">CE QUE J'AI ANNONCÉ ET QUI EST FAUX : la barre d'onglets</h3>
+<p><strong>J'ai écrit que la barre d'onglets était revenue sur la page du devis et sur les pages publiques du client. C'est faux.</strong></p>
+<p>Je m'appuyais sur <code>test-devis-complet-e2e</code>, qui échoue sur cette assertion (1 au lieu de 0), à l'identique avant et après le lot. Le patron l'a mesuré <strong>page par page, sur le serveur</strong> : aucune barre sur la page que reçoit son client, aucune sur le devis seul, et <code>src/app/layout.tsx</code> n'a pas bougé depuis le 31 août. <strong>Non reproduit.</strong></p>
+<p><strong>La faute n'est pas d'avoir vu la suite rouge — c'est d'en avoir déduit un défaut du produit sans regarder le produit.</strong> J'avais pourtant l'image sous les yeux : mes propres captures de l'écran du devis, prises le soir même à 390 × 664, ne portent aucune barre d'onglets. Une suite rouge dit qu'une mesure a échoué ; elle ne dit jamais laquelle des deux a tort, le produit ou la mesure.</p>
+<p><code>AGENTS.md</code> connaît ce piège dans un sens — <em>« ne pas annoncer une panne corrigée quand seul le silence l'a été »</em>. Celui-ci en est le miroir, et il mérite d'être écrit : <strong>ne pas annoncer une panne trouvée quand seul un contrôle a parlé.</strong></p>
+<h3 id="ce-que-jai-annoncé-et-qui-nest-déjà-plus-vrai--la-batterie">CE QUE J'AI ANNONCÉ ET QUI N'EST DÉJÀ PLUS VRAI : la batterie</h3>
+<p>J'ai écrit que <code>verifier:avant-livraison</code> ne pouvait pas être verte sur son poste. C'était exact au moment de la mesure ; <strong>ça ne l'est plus.</strong> Une session voisine a rendu les trois adresses surchargeables — <code>ATLAS_BASE_APP</code>, <code>ATLAS_BASE_OWNER</code>, <code>ATLAS_BASE_SUPER</code> — sans toucher au défaut de la CI. Chez lui, la batterie va au bout ainsi :</p>
+<p>``<code>bash export ATLAS_BASE_SUPER="postgresql://postgres:postgres_dev_pw@localhost:5432/atlas_test" npm run verifier:avant-livraison </code>``</p>
+<p>Ce qui reste vrai, et qui a coûté le diagnostic : <code>docker exec … psql</code> accepte les deux mots de passe — l'authentification locale du conteneur est en confiance. <strong>Il faut essayer depuis l'hôte pour voir l'échec.</strong> Porté dans <code>TODO.md</code>.</p>
 <hr>
 <h2 id="ce-qui-reste-ouvert">Ce qui reste ouvert</h2>
 <a class="retour" href="#sommaire">↑ Sommaire</a>
@@ -295,16 +300,8 @@
 <th>Qui peut trancher</th>
 </tr></thead><tbody>
 <tr>
-<td><strong>La barre d'onglets revenue sur la page du devis</strong> (et sur les pages du client)</td>
-<td>la session qui tient <code>layout.tsx</code> / <code>middleware.ts</code></td>
-</tr>
-<tr>
-<td><strong>Les 57 suites navigateur rouges sur <code>main</code></strong></td>
-<td>mesurées comme antérieures ; à reprendre par lot</td>
-</tr>
-<tr>
-<td><strong>La batterie inutilisable sur son poste</strong> (mot de passe <code>postgres</code>)</td>
-<td>une ligne dans <code>verifier-avant-livraison.ts</code></td>
+<td><strong>Les 57 suites navigateur rouges</strong> — mesurées comme antérieures au lot</td>
+<td>à reprendre par lot, avec la batterie qui va désormais au bout</td>
 </tr>
 <tr>
 <td>« Atlas prépare toujours votre devis… (96 s) » — jamais reproduit sur un poste de développement</td>
