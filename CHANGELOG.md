@@ -7,6 +7,67 @@ Format : le plus récent en tête.
 
 ---
 
+## 2026-09-04
+
+### Le calendrier du client monte du bas — sa réponse A
+
+Sur planche, trois formes lui avaient été soumises pour que le choix d'une
+autre date cesse de pousser ses trois issues sous le pli. Sa réponse : *« j'aime
+bien la À la feuille »*. Le calendrier monte par-dessus, la page derrière garde
+sa hauteur — **990 px → 664 px**, dernier bouton de 963 à 602.
+
+Trois pièges tenus au passage : le champ caché vit HORS de la feuille (dedans,
+il disparaîtrait du formulaire à la fermeture, et la date ne partirait jamais) ;
+refermer sans avoir choisi défait le choix (sinon le serveur refuse une
+acceptation sans que rien à l'écran dise pourquoi) ; la phrase de refus vit
+dans la feuille, celle du formulaire étant derrière elle.
+
+**Sa règle du 26 août tient par un autre geste.** Le calendrier couvre le bouton
+radio : on ne le rappuie plus pour le décocher, on referme la feuille. Le
+contrôle a suivi la RÈGLE et non la mise en page, et il a gagné ce que personne
+ne vérifiait — qu'une date RETENUE survive à la fermeture.
+
+**Ce qui reste, mesuré :** avec une date à moins de quatorze jours, la case de
+rétractation (125 px) porte la page à **790 px**. Deux façons d'y arriver, deux
+arbitrages — à trancher par lui (`ARCHITECTURE.md` §249).
+
+### La planche montrait le même écran sous les quatre choix
+
+*« Rien ne change quand je clique sur A B C »* — il avait raison, et c'était une
+faute de conception : le gestionnaire refermait le calendrier à chaque
+changement de choix. Or c'est l'état OUVERT qui est en question ; refermés, les
+quatre rendaient exactement le même écran. Reproduit à son adresse publiée, avec
+son geste.
+
+Et le cadre annonçait « 390 × 664 pour de vrai » en faisant 346 px de large sur
+un écran de 390 : les marges le rognaient, et `max-width:100%` reprenait la main
+sur `100vw`.
+
+---
+
+## 2026-09-04
+
+### La fiche client rouverte ouvrait toute seule une liste d’adresses
+
+**Sa plainte du 4 septembre :** *« je suis arrivé sur la page de la fiche
+client […] ce n’est pas la même que lorsque j’ai cliqué sur nouveau chantier »*.
+C’était pourtant le même écran, le même composant.
+
+**Ce qui différait :** la fiche rouverte depuis le devis remplit l’adresse du
+chantier, et le champ traitait cette valeur **reçue** comme une frappe. Il
+interrogeait le service d’adresses et ouvrait sa liste : six adresses
+recouvraient les photos, la note vocale et « Je rédige à la main ». Mesuré :
+**672 px** de haut à la création, **1099 px** à la reprise ; **701 px** une fois
+corrigé.
+
+**La racine :** le champ ne distinguait pas ce qu’il a REÇU de ce qu’il a lu
+sous les doigts. Une valeur posée au montage ne se cherche plus ; ce qui bouge
+ensuite, si — une adresse dictée mérite d’être confirmée.
+
+Le contrôle a été **vu rouge** contre le défaut : *« la fiche rouverte a
+interrogé le service d’adresses 1 fois sur une valeur qu’elle venait elle-même
+de remplir »*.
+
 ## 2026-09-03
 
 ### L'attente du devis ne regardait qu'une issue sur six
