@@ -384,6 +384,37 @@ Concrètement, pour toute planche dont on attend un choix :
    `https://florianmarrins0978-svg.github.io/Atlas-app/<la-planche>.html`.
    C'est la quatrième fois qu'une adresse lui coûte un aller-retour, et les
    quatre fois le code était juste ;
+2 bis bis. **ON NE DONNE L'ADRESSE QU'UNE FOIS QU'ELLE RÉPOND — 4 septembre
+   2026, et il l'a payée deux fois dans la même journée.** Sa réponse :
+   *« Le liens erreur 404 »*.
+
+   La planche était poussée sur `main` et le flux de publication tournait —
+   mais il joue **toute la batterie avant de publier**, soit une dizaine de
+   minutes. L'adresse a été transmise dans l'intervalle, avec un « je te
+   confirme dès que c'est en ligne » qui ne l'a pas retenu : il a cliqué tout
+   de suite, et il a eu une erreur. C'est exactement ce que le dépôt s'était
+   promis d'arrêter — *« ne jamais transmettre une commande non vérifiée sans
+   le dire »* (`AGENTS.md`).
+
+   **Pire : deux poussées rapprochées s'annulent l'une l'autre.** Le flux
+   porte `concurrency: cancel-in-progress` — une nouvelle poussée tue le
+   déploiement en cours. Un lot livré en trois commits d'affilée peut donc
+   laisser l'adresse morte bien plus longtemps qu'on ne l'imagine.
+
+   **Donc, avant d'écrire une adresse dans un message :**
+
+   | | |
+   |---|---|
+   | on l'interroge | `curl -s -o /dev/null -w '%{http_code}' <adresse>` — et l'on attend le 200 |
+   | on regarde le flux | `gh run list --limit 1 --workflow=pages.yml` dit s'il tourne encore, ou s'il a été annulé |
+   | on la parcourt | l'ouvrir soi-même, à SON adresse et à la largeur de son téléphone (§5) |
+
+   **Et l'on groupe les poussées d'un même lot** plutôt que d'en enchaîner
+   trois : chacune annule le déploiement de la précédente.
+
+   « Je te confirme quand ce sera en ligne » n'est pas une précaution : c'est
+   une adresse morte qu'on lui met sous le doigt en promettant de s'excuser
+   après. On ne donne rien, ou on donne quelque chose qui répond ;
 2 ter. **ON NE LUI ENVOIE JAMAIS UNE CAPTURE DE LA MAQUETTE.** Sa consigne du
    26 août 2026, excédée : *« une maquette ! Pas de photo ! Comme d'habitude,
    enregistre une bonne fois pour toutes — certaines sessions le font très bien
