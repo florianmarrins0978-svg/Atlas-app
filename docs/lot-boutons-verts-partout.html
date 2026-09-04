@@ -187,8 +187,30 @@
 <td>le bouton « Enregistrer » et le pavé du mois rendent bien <code>rgb(125, 154, 109)</code> — votre vert</td>
 </tr>
 </tbody></table></div>
-<p><strong>Ce qui n'a PAS pu l'être ici, et il faut le dire.</strong> Les suites navigateur demandent le port 3000, que votre serveur de développement occupe : les arrêter aurait éteint votre application pendant dix minutes. Aucune d'elles ne regarde une couleur, et aucune ne cite le galet — vérifié. La CI les jouera.</p>
-<p><strong>Un rouge qui n'est pas de ce lot :</strong> <code>ChoixCanal.tsx</code> a un bouton à coins carrés, sur du travail en cours qui n'est pas le mien. Je n'y ai pas touché.</p>
+<p><strong>La batterie base : 295 suites sur 306.</strong> Les onze rouges ont été regardées une par une, et <strong>aucune n'est de ce lot</strong> :</p>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th></th>
+</tr></thead><tbody>
+<tr>
+<td>huit</td>
+<td>déjà rouges avant, mesuré : verrous de construction, rôles en base, ports d'essai — de la machine, pas du produit</td>
+</tr>
+<tr>
+<td><code>test-boutons-arrondis</code></td>
+<td>un bouton à coins carrés dans <code>ChoixCanal</code>, arrivé sur <code>main</code> avec le lot voisin de la journée</td>
+</tr>
+<tr>
+<td><code>test-mode-emploi</code></td>
+<td>le mode d'emploi cherche encore « Par SMS » là où ce même lot voisin a écrit « SMS »</td>
+</tr>
+<tr>
+<td><code>test-banc-lent-se-dit</code></td>
+<td>un port d'essai sous Windows</td>
+</tr>
+</tbody></table></div>
+<p>Les deux du milieu appartiennent à la session qui a travaillé en parallèle sur la fiche client : elles étaient rouges avant que je pousse, et je n'ai pas touché à ses fichiers.</p>
+<p><strong>Ce qui n'a PAS pu être joué ici, et il faut le dire.</strong> Les suites navigateur demandent le port 3000, que votre serveur de développement occupe : les arrêter aurait éteint votre application pendant dix minutes. Aucune d'elles ne regarde une couleur, et aucune ne citait le galet — vérifié une par une. La CI les jouera sous Linux.</p>
 <hr>
 <h2 id="7-ce-qui-reste">7. Ce qui reste</h2>
 <a class="retour" href="#sommaire">↑ Sommaire</a>

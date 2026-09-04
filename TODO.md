@@ -43,6 +43,37 @@ s'affiche comme du texte nu au milieu de la liste, et il décrit une version
 périmée de la planche. Trouvé en ajoutant la planche 102 ; laissé en place pour
 ne pas mêler une correction de fusion à un lot de diagnostic.
 
+## ROUGE SUR `main` : le mode d'emploi enseigne « Par SMS », l'écran dit « SMS » (4 sept. 2026)
+
+`test-mode-emploi` échoue sur `main` depuis la planche « A — Épurée » :
+
+```
+nouveau-chantier-saisie : « Par SMS » ne se trouve plus dans
+  src/app/chantiers/nouveau/FormulaireNouveauChantier.tsx
+```
+
+Les deux suites navigateur du même lot ont été adaptées (elles visent
+`data-atlas="canal-sms"`) ; **les fiches du mode d'emploi ne l'ont pas été**. Or
+c'est ce que l'assistant récite au patron : il lui décrira un bouton qui n'existe
+plus, et le contrôle existe précisément pour empêcher ça.
+
+**Qui peut le faire : n'importe quelle session.** Corriger la preuve de la fiche
+`nouveau-chantier-saisie`, pas l'écran — le libellé court est son choix du
+4 septembre.
+
+*(Relevé en jouant la batterie du lot « boutons verts ». Ce lot-là ne touche
+aucun de ces fichiers.)*
+
+## ROUGE SUR `main` : un bouton à coins carrés dans `ChoixCanal` (4 sept. 2026)
+
+`test-boutons-arrondis` échoue sur `ChoixCanal.tsx:84`, `rounded-[2px]`, arrivé
+avec la même planche. Sa règle du 12 août — *« il faut qu'il soit arrondi comme
+tous les autres »* — vaut pour tout ce qui se touche.
+
+**Deux issues, et c'est une question de dessin, pas de code :** rendre la
+capsule ronde, ou déclarer ce cas dans le contrôle avec sa raison. La seconde
+demande son accord, comme pour les flèches.
+
 ## « AVANT DE COMMENCER » N'EST PAS ENCORE TOUT À FAIT DANS LA CHARTE (4 sept. 2026)
 
 L'écran des documents légaux — le tout premier qu'un artisan voit — a été ramené

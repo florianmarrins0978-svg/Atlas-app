@@ -136,13 +136,25 @@ agit. Chacun est nommé dans le contrôle avec cette raison.
 | **regardé à l'écran** | Terminés, Ma TVA, le calendrier des périodes, et les cinq écrans de Réglages, sur un iPhone 13 |
 | **mesuré au rendu** | le bouton « Enregistrer » et le pavé du mois rendent bien `rgb(125, 154, 109)` — votre vert |
 
-**Ce qui n'a PAS pu l'être ici, et il faut le dire.** Les suites navigateur
+**La batterie base : 295 suites sur 306.** Les onze rouges ont été regardées une
+par une, et **aucune n'est de ce lot** :
+
+| | |
+|---|---|
+| huit | déjà rouges avant, mesuré : verrous de construction, rôles en base, ports d'essai — de la machine, pas du produit |
+| `test-boutons-arrondis` | un bouton à coins carrés dans `ChoixCanal`, arrivé sur `main` avec le lot voisin de la journée |
+| `test-mode-emploi` | le mode d'emploi cherche encore « Par SMS » là où ce même lot voisin a écrit « SMS » |
+| `test-banc-lent-se-dit` | un port d'essai sous Windows |
+
+Les deux du milieu appartiennent à la session qui a travaillé en parallèle sur
+la fiche client : elles étaient rouges avant que je pousse, et je n'ai pas
+touché à ses fichiers.
+
+**Ce qui n'a PAS pu être joué ici, et il faut le dire.** Les suites navigateur
 demandent le port 3000, que votre serveur de développement occupe : les arrêter
 aurait éteint votre application pendant dix minutes. Aucune d'elles ne regarde
-une couleur, et aucune ne cite le galet — vérifié. La CI les jouera.
-
-**Un rouge qui n'est pas de ce lot :** `ChoixCanal.tsx` a un bouton à coins
-carrés, sur du travail en cours qui n'est pas le mien. Je n'y ai pas touché.
+une couleur, et aucune ne citait le galet — vérifié une par une. La CI les
+jouera sous Linux.
 
 ---
 
