@@ -9,6 +9,44 @@ Format : le plus récent en tête.
 
 ## 2026-09-04
 
+### CORRECTION : la trace d'un passage `/impeccable` n'est PAS dans `.impeccable/`
+
+**Sa question du 4 septembre 2026 :** *« quelles sont les pages entre chantier et
+terminer qu'on n'a pas fait corriger par /impeccable ? »* — puis, devant la
+réponse : *« la première page, la fiche client, la liste des clients, le
+planning, la page terminer, la page ma tva ont déjà été corrigées, tu ne le vois
+pas ? »*
+
+**Il avait raison sur les six, et la réponse était fausse.** Elle avait été
+bâtie sur `.impeccable/surfaces/`, qui ne porte que **deux** fiches
+(`cadran-des-chantiers`, `la-goutte-d-eau`). L'outillage tourne en **voie
+code-led** (`.impeccable/config.local.json` : `buildPath=code`) : il ne dépose
+pas de fiche par écran traité. Se fier à ce dossier revient à ne voir que les
+deux passages qui, par accident, en ont laissé une.
+
+**OÙ ÇA SE LIT VRAIMENT**, et c'est la règle à garder :
+
+| | |
+|---|---|
+| la planche | `appli/<le-sujet>.html`, ajoutée le jour du passage — c'est le geste imposé par `CLAUDE.md` §3 bis |
+| le code | le commit qui l'applique, quelques heures ou un jour plus tard |
+| la commande | `git log --all --since=<date> --name-only -- src/app appli` |
+
+Les passages du 2 au 4 septembre 2026 se lisent ainsi, et aucun n'a de fiche
+dans `.impeccable/` : la première page (`la-goutte-d-eau`), la fiche client
+(`fiche-client-haut-de-gamme`, planche « A — Épurée », codée le 4), la note
+vocale (**sept** planches le 2), « Terminés » (`termines-elegance`), « À
+facturer », la liste des clients (`vos-clients`), l'accueil
+(`accueil-ce-qui-vous-attend`), l'écran du client (`ecran-de-son-client`), la
+case de rétractation, la feuille d'envoi. « Ma TVA » et le planning ont été
+repris directement dans `src/`, sans planche.
+
+**Ce que l'erreur a coûté :** un prompt `/impeccable` écrit pour la fiche
+client — un écran déjà refait — puis retiré avant d'aller plus loin. Le vrai
+reste du trajet `chantier → terminé` est de **cinq** écrans, pas de dix : la
+fiche de chantier (le hub), les prix, la transcription, la facture, les
+informations. Aucun n'a bougé depuis le 31 août.
+
 ### La feuille « Envoyer à … » regardée dans ses onze états — planche 102
 
 **Sa demande :** une passe complète sur la feuille du premier arrêt du parcours,
