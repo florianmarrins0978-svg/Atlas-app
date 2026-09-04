@@ -45,7 +45,8 @@ Le dernier écran avant que l'argent parte n'était jamais passé par une revue.
 | | la page que son client ouvre suit l'allure de SES documents ; sans réglage, elle est celle d'aujourd'hui au pixel près |
 | **Mesuré, puis tranché par lui** | « Envoyer la facture » finit **287 px sous le pli** à 390 × 664 — *« on laisse et on descend comme aujourd'hui »*. Le resserrage ne rendrait qu'une soixantaine de pixels |
 | **Tranché aussi** | les travaux en plus n'auront **aucun champ de trace** — « la A », sa deuxième réponse dans le même sens |
-| **Reste** | figer l'allure sur la facture émise (trois colonnes, une migration) |
+| **Fait le soir même** | l'allure se **fige à l'émission** (migration 0074) : une facture partie ne change plus d'aspect, quoi qu'il règle ensuite |
+| **Reste** | l'immuabilité d'une facture émise n'a aucun contrôle automatique — le devis a le sien |
 
 Détail : `ARCHITECTURE.md` §255 et `docs/facture-impeccable.md`.
 

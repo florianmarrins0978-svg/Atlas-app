@@ -20,6 +20,7 @@ import { enregistrerObjet } from "../storage";
 import { jourIso } from "../../lib/jour";
 import { echeanceFacture } from "../../lib/rappels";
 import { validerEcheance } from "../../lib/echeance-facture";
+import { ALLURE_PAR_DEFAUT } from "../../lib/allure-documents";
 import { repriseDuDevis } from "../../lib/facture-face-au-devis";
 import { totauxAvecReduction } from "../../lib/reduction-devis";
 import { ongletDepuisJalons } from "../../lib/onglet-chantier";
@@ -547,11 +548,25 @@ export async function emettreFacture(ctx: Ctx, factureId: string, maintenant: Da
       ".pdf"
     );
 
+    // **L'ALLURE PART AVEC LA PIÈCE, et c'est la même valeur que le PDF.**
+    // `habillage2` vient d'être lu pour composer le document archivé : l'écrire
+    // ici, c'est garantir que la page du client et son PDF montrent la même
+    // chose — pas deux lectures à deux instants, qui divergeraient au premier
+    // changement de réglage (migration 0074).
+    //
+    // **Le défaut s'écrit EN CLAIR**, jamais nul : les trois colonnes nulles
+    // signifient « facture antérieure à 0074 », et confondre les deux ferait
+    // repeindre après coup une facture partie sans allure.
+    const allureFigee = habillage2.allure ?? ALLURE_PAR_DEFAUT;
+
     const [facture] = await tx
       .update(factures)
       .set({
         statut: "emise",
         emiseLe: maintenant,
+        docTypographie: allureFigee.typographie,
+        docFond: allureFigee.fond,
+        docAccent: allureFigee.accent,
         totalHt: totalHt.toFixed(2),
         totalTva: totalTva.toFixed(2),
         totalTtc: totalTtc.toFixed(2),

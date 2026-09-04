@@ -71,10 +71,22 @@ incohérent en reprenant, c'est de là que ça vient — voir plus bas.
 | le total de l'arrêt | ne se recomposait pas : ni le prix accordé, ni les taux multiples. Il appelle maintenant `totauxAvecReduction`, comme l'émission |
 | la page du client | portait le crème d'Atlas, pas l'allure de ses documents |
 
-**Ce qui attend SA réponse :** `appli/ts-la-trace-de-laccord.html` — A ou B, le
-geste au-dessus du pli, et ce que « sans accord » autorise. **Ne pas rouvrir la
-FORME des travaux supplémentaires** : elle a été tranchée le 1ᵉʳ septembre à
-01 h 25 et c'est écrit en tête de `appli/ts-sur-la-facture.html`.
+**TROIS CHOSES ONT ÉTÉ TRANCHÉES PAR LUI LE MÊME SOIR — ne pas les rouvrir :**
+
+| Question | Sa réponse |
+|---|---|
+| la trace de l'accord sur les travaux en plus | **« la A »** — aucun champ, aucune pastille. C'est la DEUXIÈME fois qu'il l'écarte |
+| « Envoyer la facture » à 287 px sous le pli | **« on laisse et on descend comme aujourd'hui »** |
+| l'allure des documents sur la facture émise | **figée à l'envoi** — migration 0074, faite |
+
+Les deux premières sont écrites en tête de `appli/ts-la-trace-de-laccord.html`.
+**Ne pas rouvrir non plus la FORME des travaux supplémentaires** : tranchée le
+1ᵉʳ septembre à 01 h 25, en tête de `appli/ts-sur-la-facture.html`.
+
+**Un point reste, et il n'est pas mince :** l'immuabilité d'une facture émise
+n'a **aucun contrôle automatique**. La base la refuse — vérifié à la main — mais
+le contrôle écrit par le dépôt n'a pas été refusé, sans qu'on sache pourquoi. Il
+a été retiré plutôt que gardé sans être compris (`TODO.md`).
 
 **Le piège à connaître avant de mesurer quoi que ce soit.** La batterie base a
 rendu **287/310 puis un tout autre relevé** à quelques minutes d'intervalle, sur

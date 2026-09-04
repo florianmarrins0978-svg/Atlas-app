@@ -13,7 +13,7 @@
 //   npx tsx scripts/capture-facture-impeccable.mts <dossier>
 //
 // Il attend un serveur sur localhost:3000 servant la MÊME base.
-import { mkdirSync } from "node:fs";
+import { mkdirSync, readFileSync } from "node:fs";
 import { Pool } from "pg";
 import { lancerNavigateur } from "./e2e-browser";
 import { withEntreprise } from "../src/server/db/with-entreprise";
@@ -46,12 +46,16 @@ if (rows.length === 0) {
   process.exit(1);
 }
 const ctx = { utilisateurId: rows[0].uid as string, entrepriseId: rows[0].eid as string };
-const marque = Date.now();
 
 /** Un chantier dont le devis est parti, avec autant de lignes qu'on veut. */
 async function chantier(nom: string, lignes: { libelle: string; montant: string; taux?: string }[]) {
+  // **SON NOM, ET RIEN D'AUTRE.** Il portait l'horodatage qui rend les jeux
+  // d'essai uniques — « Mme Grospiron 1788541773027 » —, et ce nom-là passait à
+  // la ligne : la carte du haut gagnait une vingtaine de pixels, et la mesure du
+  // pli annonçait 309 px au lieu de 287. Un contrôle qui mesure un écran que le
+  // patron ne verra jamais mesure autre chose que ce qu'il prétend.
   const client = await clientsRepo.creerClient(ctx, {
-    nom: `Mme Grospiron ${marque}`,
+    nom: "Mme Grospiron",
     telephone: "0612345678",
   });
   const c = await chantiersRepo.creerChantier(ctx, {
@@ -103,6 +107,22 @@ const factureC = await terminerChantier(ctx, idC);
 await emettreFacture(ctx, factureC.id);
 const envoiC = await creerEnvoiFacture(ctx, factureC.id, "sms");
 
+// ── D. La même page, mais partie APRÈS qu'il a réglé l'allure ───────────────
+//
+// **L'ordre est tout le sujet depuis la migration 0074.** L'aspect se fige à
+// l'ÉMISSION : une facture partie avant le réglage n'en porte rien, une facture
+// partie après le porte pour toujours. Les deux se photographient côte à côte,
+// et c'est la seule façon de VOIR sa règle du 4 septembre.
+await mettreAJourEntreprise(ctx, {
+  allure: { typographie: "inter", fond: "#101010", accent: "#c0392b" },
+});
+const idD = await chantier("Massif d'automne", [{ libelle: "Plantation", montant: "450.00" }]);
+const devisD = await devisRepo.getOuCreerDevisBrouillon(ctx, idD);
+await devisRepo.envoyerDevis(ctx, devisD.id);
+const factureD = await terminerChantier(ctx, idD);
+await emettreFacture(ctx, factureD.id);
+const envoiD = await creerEnvoiFacture(ctx, factureD.id, "sms");
+
 // ── Le navigateur : l'écran qu'il a dans la main, 390 × 664 ─────────────────
 const navigateur = await lancerNavigateur();
 const contexte = await navigateur.newContext({ viewport: { width: 390, height: 664 } });
@@ -118,6 +138,11 @@ const manques: string[] = [];
 
 async function photographier(nom: string, chemin: string) {
   await page.goto(`${BASE}${chemin}`, { waitUntil: "networkidle" });
+  // **L'INDICATEUR DU SERVEUR DE DÉVELOPPEMENT SORT DE L'IMAGE.** Il affiche
+  // tantôt « N », tantôt « Compiling … » : deux captures du MÊME écran ne se
+  // comparaient donc pas, et l'on croyait voir bouger une page qui n'avait pas
+  // bougé d'un pixel. Il n'existe pas chez le patron.
+  await page.addStyleTag({ content: "nextjs-portal, #__next-build-watcher { display: none !important }" });
   // **Attendre la mise en page, jamais `domcontentloaded` seul.** Une capture
   // prise avant la feuille de style montre un écran qui n'existe pas — et un
   // contrôle de dimensions y mesurerait zéro (`CLAUDE.md` §5).
@@ -178,8 +203,10 @@ await photographier("b-en-retard-origine", `/chantiers/${idB}/facture`);
 await exiger("b", "Reprendre ce devis");
 await hauteurDuGeste("b");
 
-// C — la page du client, allure par défaut
+// C — la page du client, partie AVANT tout réglage : elle n'en portera jamais
 await photographier("c-client-defaut", `/factures/${envoiC.jeton}`);
+// D — partie APRÈS le réglage : elle le porte, et elle le gardera
+await photographier("d-client-allure-figee", `/factures/${envoiD.jeton}`);
 
 // ── Les deux mêmes écrans en NUIT — l'accent y est CLAIR, le fond SOMBRE ────
 await ecrireCharte(ctx.utilisateurId, "nuit");
@@ -189,12 +216,47 @@ await photographier("b-en-retard-nuit", `/chantiers/${idB}/facture`);
 await photographier("c-client-en-nuit", `/factures/${envoiC.jeton}`);
 await ecrireCharte(ctx.utilisateurId, null);
 
-// ── C bis — la page du client quand il a réglé l'allure de ses documents ────
+// ── SIX MOIS PLUS TARD, IL REFAIT SON ALLURE ───────────────────────────────
+//
+// **Ni C ni D ne doivent bouger d'un pixel.** C reste sans allure, D garde
+// celle du jour de son envoi. C'est sa règle du 4 septembre, photographiée :
+// *« un changement de réglage ne rattrape pas les anciennes »*.
 await mettreAJourEntreprise(ctx, {
-  allure: { typographie: "inter", fond: "#101010", accent: "#c0392b" },
+  allure: { typographie: "lato", fond: "#ffffff", accent: "#1a5c2e" },
 });
-await photographier("c-client-allure-reglee", `/factures/${envoiC.jeton}`);
+await photographier("c-client-defaut-apres-reglage", `/factures/${envoiC.jeton}`);
+await photographier("d-client-allure-figee-apres-reglage", `/factures/${envoiD.jeton}`);
 await mettreAJourEntreprise(ctx, { allure: null });
+
+/**
+ * DEUX CAPTURES DU MÊME ÉCRAN DOIVENT ÊTRE LE MÊME FICHIER.
+ *
+ * **C'est sa règle du 4 septembre, éprouvée sur l'image et pas sur une colonne
+ * de base :** *« une facture partie ne change plus d'aspect ; un changement de
+ * réglage ne rattrape pas les anciennes »*. Une comparaison d'octets suffit, et
+ * elle attrape ce qu'aucune assertion ne verrait — une couleur relue ailleurs,
+ * une police qui retombe, un fond calculé au vol.
+ *
+ * **Elle n'a été fiable qu'une fois l'indicateur du serveur de développement
+ * masqué** : il affiche tantôt « N », tantôt « Compiling … », et faisait
+ * conclure qu'une page avait bougé alors qu'elle était identique au pixel près.
+ */
+for (const nom of ["c-client-defaut", "d-client-allure-figee"]) {
+  const avant = readFileSync(`${dossier}/${nom}.png`);
+  const apres = readFileSync(`${dossier}/${nom}-apres-reglage.png`);
+  if (!avant.equals(apres)) {
+    manques.push(`${nom} : la page a changé d'aspect après un changement de réglage`);
+  }
+}
+// Et les deux ne doivent PAS se ressembler : sinon le figeage ne prouve rien,
+// c'est le même écran photographié deux fois.
+if (
+  readFileSync(`${dossier}/c-client-defaut.png`).equals(
+    readFileSync(`${dossier}/d-client-allure-figee.png`)
+  )
+) {
+  manques.push("l'allure réglée ne se voit pas : les deux pages sont identiques");
+}
 
 await contexte.close();
 await navigateur.close();

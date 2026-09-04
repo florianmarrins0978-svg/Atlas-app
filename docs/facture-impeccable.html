@@ -115,7 +115,28 @@
 </tr>
 </tbody></table></div>
 <p><strong>Votre charte d'écran, elle, ne fuit toujours pas</strong> : la page en « Nuit » est identique à la page par défaut, et c'est photographié.</p>
-<p><strong>Ce qui n'a PAS été fait, et le dire vaut mieux que le taire :</strong> l'allure est lue <strong>au moment de la consultation</strong>, pas figée à l'émission. Si vous changez votre allure après l'envoi, la page suit et le PDF archivé, non. La figer demande trois colonnes de plus sur <code>factures</code> — voir « Ce qui reste ouvert ».</p>
+<p><strong>Et le soir même, vous l'avez fait figer.</strong> <em>« Au moment de l'envoi, comme les chiffres et l'identité. Mon client doit retrouver en ligne exactement ce qu'il a reçu en PDF, y compris six mois plus tard. »</em> Migration 0074 : l'émission écrit l'allure sur la facture, avec le reste.</p>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th></th>
+</tr></thead><tbody>
+<tr>
+<td><strong>Écrite au moment où le PDF est composé</strong></td>
+<td>la page et le papier montrent la même chose par construction, pas parce que deux lectures sont tombées d'accord</td>
+</tr>
+<tr>
+<td><strong>Le piège évité</strong></td>
+<td>le défaut s'écrit désormais EN CLAIR sur la facture, alors qu'il s'écrit VIDE sur l'entreprise. Sans ce départage, une facture partie sans allure aurait vu son bouton passer du vert à l'or — une migration censée figer les aspects en aurait changé un</td>
+</tr>
+<tr>
+<td><strong>Éprouvé sur l'IMAGE</strong></td>
+<td>deux factures photographiées, une avant réglage et une après ; l'allure changée ; rephotographiées ; <strong>octets comparés</strong>. Confronté au code d'avant, le contrôle rougit sur les deux</td>
+</tr>
+<tr>
+<td><strong>Ce qu'il a fallu corriger pour que ça veuille dire quelque chose</strong></td>
+<td>l'indicateur du serveur de développement affiche tantôt « N », tantôt « Compiling … » : il faisait conclure qu'une page avait bougé alors qu'elle était identique au pixel près</td>
+</tr>
+</tbody></table></div>
 <h3 id="3-le-devis-v2-natteignait-jamais-la-facture">3. Le devis v2 n'atteignait jamais la facture</h3>
 <div class="tablewrap"><table><thead><tr>
 <th></th>
@@ -317,12 +338,16 @@
 <td><em>fermé</em></td>
 </tr>
 <tr>
-<td>~~<strong>Ce qu'une ligne muette autorise</strong>~~ — sans objet, A ne pose aucune réserve</td>
+<td>~~<strong>Figer l'allure sur la facture émise</strong>~~ — <strong>FAIT le 4 sept.</strong>, migration 0074</td>
 <td><em>fermé</em></td>
 </tr>
 <tr>
-<td><strong>Figer l'allure des documents sur la facture émise</strong> (trois colonnes, une migration) — pour que la page du client ne bouge plus après l'envoi</td>
-<td><strong>vous</strong>, sur le principe ; moi sur la façon</td>
+<td><strong>L'immuabilité d'une facture émise n'a aucun contrôle automatique</strong> — le devis a le sien</td>
+<td>moi, au prochain lot</td>
+</tr>
+<tr>
+<td>~~<strong>Ce qu'une ligne muette autorise</strong>~~ — sans objet, A ne pose aucune réserve</td>
+<td><em>fermé</em></td>
 </tr>
 <tr>
 <td><strong>Les trois suites navigateur que le brief annonce rouges</strong></td>
@@ -403,14 +428,15 @@
 </tr>
 <tr>
 <td><code>scripts/test-facture-reprend-le-devis-db.ts</code> <em>(neuf)</em></td>
-<td>✅ <strong>10 réussis, 0 échec</strong></td>
+<td>✅ <strong>12 réussis, 0 échec</strong></td>
 </tr>
 <tr>
 <td><code>scripts/capture-facture-impeccable.mts</code> <em>(neuf)</em></td>
-<td>✅ 7 planches, et la mesure du pli</td>
+<td>✅ 9 planches, la mesure du pli, et la comparaison d'octets qui prouve le figeage</td>
 </tr>
 </tbody></table></div>
-<p><strong>La batterie base : 299/310.</strong> Les onze rouges sont ceux que le dépôt traîne depuis le 3 septembre — ports, verrous de construction, rôles, fiche du banc : <code>test-boutons-arrondis</code>, <code>test-fiche-pendant-relance</code>, <code>test-mise-a-jour-role-db</code>, <code>test-mode-emploi</code>, <code>test-ouvrir-port</code>, <code>test-port-remesure</code>, <code>test-relance-construction</code>, <code>test-roles-capacites-db</code>, <code>test-salarie-planning-lecture-seule-db</code>, <code>test-seed-conserve-identifiants</code>, <code>test-verrou-construction</code>. <strong>Aucun n'est de ce lot, et aucun ne touche la facture.</strong></p>
+<p><strong>La batterie base, rejouée APRÈS la migration : 300/310.</strong> Les dix rouges sont ceux que le dépôt traîne depuis le 3 septembre — ports, verrous de construction, rôles, fiche du banc : <code>test-boutons-arrondis</code>, <code>test-fiche-pendant-relance</code>, <code>test-mise-a-jour-role-db</code>, <code>test-mode-emploi</code>, <code>test-ouvrir-port</code>, <code>test-relance-construction</code>, <code>test-roles-capacites-db</code>, <code>test-salarie-planning-lecture-seule-db</code>, <code>test-seed-conserve-identifiants</code>, <code>test-verrou-construction</code>. <strong>Aucun n'est de ce lot, et aucun ne touche la facture.</strong></p>
+<p>Une migration oblige à rejouer la batterie entière (<code>CLAUDE.md</code> §6) : c'est fait, et sur une base migrée — sans quoi elle rendrait des dizaines de rouges qui n'accuseraient que la base.</p>
 <h3 id="un-piège-de-mesure-payé-et-consigné">Un piège de mesure, payé et consigné</h3>
 <p><strong>La même batterie, sur le même code, a rendu 287/310 puis 299/310</strong> à quelques minutes d'intervalle. Les vingt-trois tombées disaient <em>« deadlock detected »</em> et <em>« Utilisateur X n'est pas membre de l'entreprise Y »</em> — la signature d'un <code>TRUNCATE</code> venu d'à côté. <code>nettoyerBase()</code> vide la base, et deux batteries concurrentes se détruisent l'une l'autre.</p>
 <p><strong>Une batterie est une machine à un seul occupant.</strong> Jouée pendant qu'une autre session travaille, son total ne veut rien dire. C'était déjà écrit dans <code>CLAUDE.md</code> §5 ; ce jour-là, avec trois sessions dans le même dossier, c'est arrivé pour de bon.</p>
@@ -437,8 +463,9 @@
 <hr>
 <h2 id="les-fichiers">Les fichiers</h2>
 <a class="retour" href="#sommaire">↑ Sommaire</a>
-<p><strong>Neufs</strong> — <code>src/lib/facture-face-au-devis.ts</code>, <code>scripts/test-facture-face-au-devis.ts</code>, <code>scripts/test-facture-reprend-le-devis-db.ts</code>, <code>scripts/capture-facture-impeccable.mts</code>, <code>appli/ts-la-trace-de-laccord.html</code>.</p>
-<p><strong>Touchés</strong> — <code>src/app/chantiers/[id]/facture/{FactureClient,page,actions}.tsx|ts</code>, <code>src/app/factures/[jeton]/page.tsx</code>, <code>src/server/repositories/{factures,devis,entreprises,envois-factures}.ts</code>, <code>appli/essais.html</code>.</p>
+<p><strong>Neufs</strong> — <code>drizzle/0074_allure_figee_sur_la_facture.sql</code>, <code>src/lib/facture-face-au-devis.ts</code>, <code>scripts/test-facture-face-au-devis.ts</code>, <code>scripts/test-facture-reprend-le-devis-db.ts</code>, <code>scripts/capture-facture-impeccable.mts</code>, <code>appli/ts-la-trace-de-laccord.html</code>.</p>
+<p><strong>Touchés</strong> — <code>src/app/chantiers/[id]/facture/{FactureClient,page,actions}.tsx|ts</code>, <code>src/app/factures/[jeton]/page.tsx</code>, <code>src/lib/allure-documents.ts</code>, <code>src/server/db/schema.ts</code>, <code>src/server/repositories/{factures,devis,entreprises,envois-factures}.ts</code>, <code>appli/essais.html</code>.</p>
+<p><strong>La migration est appliquée sur <code>atlas_test</code> ET sur <code>atlas_dev</code></strong> — sans quoi l'écran de facture tomberait sur « column does not exist » dès la prochaine ouverture locale. Elle n'ajoute que trois colonnes et ne reprend aucune donnée : la base ne portait aucune facture.</p>
 <p><strong>Non touchés, volontairement</strong> — la flèche de retour de <code>facture/page.tsx</code> (elle est à l'autre lot), <code>TransmettreLaFacture.tsx</code> et les sept corrections du 24 août, <code>src/server/pdf/*</code> (le papier était déjà juste — c'est l'écran qui mentait).</p>
 </main>
 </body>

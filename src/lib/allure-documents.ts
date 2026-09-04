@@ -216,6 +216,33 @@ export function normaliserAllure(brut: Partial<Allure> | null | undefined): Allu
   };
 }
 
+/**
+ * TROIS COLONNES → UNE ALLURE, OU RIEN.
+ *
+ * **Écrite une fois, appelée par les deux tables qui portent ces colonnes** :
+ * `entreprises` (le réglage vivant, migration 0063) et `factures` (l'aspect figé à
+ * l'envoi, migration 0074). La forme est la même ; ce que le `null` SIGNIFIE ne
+ * l'est pas, et c'est l'appelant qui le sait :
+ *
+ *   sur l'entreprise → « il n'a rien réglé » : les documents suivent la charte
+ *   sur la facture   → « antérieure à 0074 » : son aspect n'a jamais été relevé
+ *
+ * Deux lectures écrites séparément auraient fini par ne plus filtrer pareil, et
+ * l'écart se serait vu chez le client (`CLAUDE.md` §3).
+ */
+export function allureDepuisColonnes(e: {
+  typographie: string | null;
+  fond: string | null;
+  accent: string | null;
+}): Allure | null {
+  if (!e.typographie && !e.fond && !e.accent) return null;
+  return normaliserAllure({
+    typographie: e.typographie ?? undefined,
+    fond: e.fond ?? undefined,
+    accent: e.accent ?? undefined,
+  });
+}
+
 /** Vrai quand l'allure est exactement celle d'aujourd'hui — donc rien à écrire. */
 export function estLAllureParDefaut(a: Allure): boolean {
   return (

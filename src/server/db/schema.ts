@@ -1728,6 +1728,31 @@ export const factures = pgTable(
     pdfStorageKey: text("pdf_storage_key"),
     pdfChecksum: text("pdf_checksum"),
 
+    /**
+     * L'ALLURE DE SES DOCUMENTS, FIGÉE AU MOMENT DE L'ENVOI (migration 0074).
+     *
+     * **Sa décision du 4 septembre 2026 :** *« une facture partie ne change plus
+     * d'aspect : mon client doit retrouver en ligne exactement ce qu'il a reçu
+     * en PDF, y compris six mois plus tard. Un changement de réglage ne rattrape
+     * pas les anciennes, c'est voulu. »*
+     *
+     * C'est la même règle que l'identité de l'entreprise, le régime de TVA
+     * (0039) et les mentions légales (0072) : ce qui part figé reste figé.
+     * L'aspect était le dernier à ne pas l'être — la page du client le lisait
+     * sur l'entreprise, donc à l'instant de la consultation.
+     *
+     * **Les trois NULLES ensemble** veulent dire « facture antérieure à 0074 » :
+     * son aspect n'a jamais été relevé, et la page retombe sur l'allure vivante
+     * de l'entreprise. Ce repli porte l'historique — ne pas le retirer.
+     *
+     * **Écrites, elles valent le DÉFAUT en clair** quand il n'avait rien réglé —
+     * l'inverse de ce que fait `entreprises`, et pour la raison inverse : là-bas
+     * c'est une préférence vivante, ici un constat. Voir la migration.
+     */
+    docTypographie: text("doc_typographie"),
+    docFond: text("doc_fond"),
+    docAccent: text("doc_accent"),
+
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
     createdBy: uuid("created_by").references(() => users.id),
     emiseLe: timestamp("emise_le", { withTimezone: true }),

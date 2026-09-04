@@ -59,10 +59,17 @@ Une seule règle sert l'affichage et l'émission — `CLAUDE.md` §3.
 **Votre charte d'écran, elle, ne fuit toujours pas** : la page en « Nuit » est
 identique à la page par défaut, et c'est photographié.
 
-**Ce qui n'a PAS été fait, et le dire vaut mieux que le taire :** l'allure est
-lue **au moment de la consultation**, pas figée à l'émission. Si vous changez
-votre allure après l'envoi, la page suit et le PDF archivé, non. La figer demande
-trois colonnes de plus sur `factures` — voir « Ce qui reste ouvert ».
+**Et le soir même, vous l'avez fait figer.** *« Au moment de l'envoi, comme les
+chiffres et l'identité. Mon client doit retrouver en ligne exactement ce qu'il a
+reçu en PDF, y compris six mois plus tard. »* Migration 0074 : l'émission écrit
+l'allure sur la facture, avec le reste.
+
+| | |
+|---|---|
+| **Écrite au moment où le PDF est composé** | la page et le papier montrent la même chose par construction, pas parce que deux lectures sont tombées d'accord |
+| **Le piège évité** | le défaut s'écrit désormais EN CLAIR sur la facture, alors qu'il s'écrit VIDE sur l'entreprise. Sans ce départage, une facture partie sans allure aurait vu son bouton passer du vert à l'or — une migration censée figer les aspects en aurait changé un |
+| **Éprouvé sur l'IMAGE** | deux factures photographiées, une avant réglage et une après ; l'allure changée ; rephotographiées ; **octets comparés**. Confronté au code d'avant, le contrôle rougit sur les deux |
+| **Ce qu'il a fallu corriger pour que ça veuille dire quelque chose** | l'indicateur du serveur de développement affiche tantôt « N », tantôt « Compiling … » : il faisait conclure qu'une page avait bougé alors qu'elle était identique au pixel près |
 
 ### 3. Le devis v2 n'atteignait jamais la facture
 
@@ -192,8 +199,9 @@ point ci-dessus, et c'est ce que la planche propose de rendre.
 |---|---|
 | ~~**A ou B sur la planche**~~ — **TRANCHÉ le 4 sept. : « la A »**, aucun champ de trace | *fermé* |
 | ~~**Le geste au-dessus du pli**~~ — **TRANCHÉ le 4 sept. : « on laisse »** | *fermé* |
+| ~~**Figer l'allure sur la facture émise**~~ — **FAIT le 4 sept.**, migration 0074 | *fermé* |
+| **L'immuabilité d'une facture émise n'a aucun contrôle automatique** — le devis a le sien | moi, au prochain lot |
 | ~~**Ce qu'une ligne muette autorise**~~ — sans objet, A ne pose aucune réserve | *fermé* |
-| **Figer l'allure des documents sur la facture émise** (trois colonnes, une migration) — pour que la page du client ne bouge plus après l'envoi | **vous**, sur le principe ; moi sur la façon |
 | **Les trois suites navigateur que le brief annonce rouges** | mesurées à part, voir ci-dessous |
 
 ---
@@ -278,17 +286,21 @@ Les deux autres pistes, écartées avec elle :
 | `scripts/test-chartes-lisibles.ts` | ✅ **14 réussis, 0 échec** |
 | `scripts/test-aucune-fleche.ts` | ✅ 115 339 lignes lues, 8 flèches fonctionnelles nommées, **aucune décorative** |
 | `scripts/test-facture-face-au-devis.ts` *(neuf)* | ✅ **5 réussis, 0 échec** |
-| `scripts/test-facture-reprend-le-devis-db.ts` *(neuf)* | ✅ **10 réussis, 0 échec** |
-| `scripts/capture-facture-impeccable.mts` *(neuf)* | ✅ 7 planches, et la mesure du pli |
+| `scripts/test-facture-reprend-le-devis-db.ts` *(neuf)* | ✅ **12 réussis, 0 échec** |
+| `scripts/capture-facture-impeccable.mts` *(neuf)* | ✅ 9 planches, la mesure du pli, et la comparaison d'octets qui prouve le figeage |
 
-**La batterie base : 299/310.** Les onze rouges sont ceux que le dépôt traîne
-depuis le 3 septembre — ports, verrous de construction, rôles, fiche du banc :
-`test-boutons-arrondis`, `test-fiche-pendant-relance`, `test-mise-a-jour-role-db`,
-`test-mode-emploi`, `test-ouvrir-port`, `test-port-remesure`,
+**La batterie base, rejouée APRÈS la migration : 300/310.** Les dix rouges sont
+ceux que le dépôt traîne depuis le 3 septembre — ports, verrous de construction,
+rôles, fiche du banc : `test-boutons-arrondis`, `test-fiche-pendant-relance`,
+`test-mise-a-jour-role-db`, `test-mode-emploi`, `test-ouvrir-port`,
 `test-relance-construction`, `test-roles-capacites-db`,
 `test-salarie-planning-lecture-seule-db`, `test-seed-conserve-identifiants`,
 `test-verrou-construction`. **Aucun n'est de ce lot, et aucun ne touche la
 facture.**
+
+Une migration oblige à rejouer la batterie entière (`CLAUDE.md` §6) : c'est fait,
+et sur une base migrée — sans quoi elle rendrait des dizaines de rouges qui
+n'accuseraient que la base.
 
 ### Un piège de mesure, payé et consigné
 
@@ -324,15 +336,21 @@ fois ces lots posés est dans `TODO.md`.
 
 ## Les fichiers
 
-**Neufs** — `src/lib/facture-face-au-devis.ts`,
-`scripts/test-facture-face-au-devis.ts`,
+**Neufs** — `drizzle/0074_allure_figee_sur_la_facture.sql`,
+`src/lib/facture-face-au-devis.ts`, `scripts/test-facture-face-au-devis.ts`,
 `scripts/test-facture-reprend-le-devis-db.ts`,
 `scripts/capture-facture-impeccable.mts`, `appli/ts-la-trace-de-laccord.html`.
 
 **Touchés** — `src/app/chantiers/[id]/facture/{FactureClient,page,actions}.tsx|ts`,
-`src/app/factures/[jeton]/page.tsx`,
+`src/app/factures/[jeton]/page.tsx`, `src/lib/allure-documents.ts`,
+`src/server/db/schema.ts`,
 `src/server/repositories/{factures,devis,entreprises,envois-factures}.ts`,
 `appli/essais.html`.
+
+**La migration est appliquée sur `atlas_test` ET sur `atlas_dev`** — sans quoi
+l'écran de facture tomberait sur « column does not exist » dès la prochaine
+ouverture locale. Elle n'ajoute que trois colonnes et ne reprend aucune donnée :
+la base ne portait aucune facture.
 
 **Non touchés, volontairement** — la flèche de retour de `facture/page.tsx`
 (elle est à l'autre lot), `TransmettreLaFacture.tsx` et les sept corrections du

@@ -9,6 +9,31 @@ Format : le plus récent en tête.
 
 ## 2026-09-04
 
+### Une facture partie ne change plus d'aspect
+
+**Sa décision du 4 septembre au soir :** *« fige l'allure sur la facture émise —
+au moment de l'envoi, comme les chiffres et l'identité. Mon client doit
+retrouver en ligne exactement ce qu'il a reçu en PDF, y compris six mois plus
+tard. Un changement de réglage ne rattrape pas les anciennes, c'est voulu. »*
+
+La page que son client ouvre porte l'allure de ses documents depuis le matin —
+mais elle la lisait sur l'entreprise, donc à l'instant de la consultation :
+changer son réglage repeignait toutes les pages déjà parties, pendant que les PDF
+archivés ne bougeaient pas. **Ce que ça évite :** son client ouvrant deux pièces
+d'aspects différents pour une même facture, six mois après.
+
+L'aspect était la dernière chose de la facture à ne pas être figée — les
+montants, l'identité et les mentions légales l'étaient déjà (migration 0074).
+
+**Ce qui a failli passer inaperçu :** le défaut s'écrit désormais EN CLAIR sur la
+facture, alors qu'il s'écrit VIDE sur l'entreprise. Sans ce départage, une
+facture partie sans allure aurait vu son bouton passer du vert à l'or — une
+migration censée figer les aspects en aurait changé un.
+
+**Éprouvé sur l'image, pas sur une colonne :** deux factures photographiées, une
+avant réglage et une après, l'allure changée, rephotographiées, octets comparés.
+Confronté au code d'avant, le contrôle rougit sur les deux.
+
 ### La batterie peut enfin être verte sur son poste — et la barre d'onglets, elle, n'est pas revenue
 
 **Deux signalements de la session du devis, traités séparément.**

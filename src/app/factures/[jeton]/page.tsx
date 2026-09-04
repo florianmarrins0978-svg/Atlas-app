@@ -2,7 +2,12 @@ import { factureParJeton } from "@/server/repositories/envois-factures";
 import { jourLisible } from "@/lib/jour";
 import NumeroDeDocument from "@/components/atlas/NumeroDeDocument";
 import { colors, surPlein } from "@/lib/design-tokens";
-import { encreSurFond, typographieDe, type Allure } from "@/lib/allure-documents";
+import {
+  encreSurFond,
+  estLAllureParDefaut,
+  typographieDe,
+  type Allure,
+} from "@/lib/allure-documents";
 
 // **Aux couleurs de l'application — sa demande du 25 août 2026.** La page portait
 // des couleurs écrites en dur (une terre cuite abandonnée le 3 août pour le bouton)
@@ -21,9 +26,17 @@ const SERIF = "ui-serif, Georgia, serif";
  * factures » ; la page, elle, ne portait rien de tout cela. Le même document
  * arrivait donc en deux allures — et c'est celle de la page qu'il voit d'abord.
  *
- * **`null` rend EXACTEMENT la page d'aujourd'hui, au pixel près**, et c'est
+ * **LE DÉFAUT REND EXACTEMENT LA PAGE D'AUJOURD'HUI, AU PIXEL PRÈS**, et c'est
  * l'invariant de tout le réglage (`allure-documents.ts`) : tant qu'il n'y a pas
  * touché, rien ne bouge chez son client.
+ *
+ * **Deux chemins y mènent, et il faut les deux.** `null` — une facture d'avant
+ * la migration 0074, dont l'aspect n'a jamais été relevé. Et une allure ÉCRITE
+ * qui vaut le défaut : depuis 0074, l'émission fige les trois valeurs en clair,
+ * défaut compris, pour distinguer « parti sans allure » de « jamais relevé ».
+ * Sans `estLAllureParDefaut` ici, toutes ces factures-là verraient leur bouton
+ * passer du vert à l'or — un changement d'aspect chez le client, provoqué par
+ * une migration qui prétend justement figer les aspects.
  *
  * **L'encre ne se choisit pas, elle suit le fond** (`encreSurFond`) — la même
  * règle que le papier, appelée et non réécrite : il peut poser n'importe quelle
@@ -31,7 +44,7 @@ const SERIF = "ui-serif, Georgia, serif";
  * le client.
  */
 function habillage(allure: Allure | null) {
-  if (!allure) {
+  if (!allure || estLAllureParDefaut(allure)) {
     return {
       papier: colors.card,
       encre: colors.ink,

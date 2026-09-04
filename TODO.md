@@ -112,10 +112,18 @@ choses restent, et trois attendent SA réponse :
   contre 287 manquants, et 53 ont déjà été pris le 31 août dans ces mêmes
   espacements. La carte qui pèse (297 px) est celle des totaux, qui a grossi le
   jour même pour que le total se recompose : la resserrer déferait la correction.
-- **L'allure des documents n'est pas FIGÉE sur la facture émise.** La page du
-  client la lit à la consultation ; s'il change son réglage après l'envoi, la
-  page suit et le PDF archivé, non. Trois colonnes sur `factures` et une
-  migration — à décider, pas à glisser.
+- ~~**L'allure des documents figée sur la facture émise**~~ **FAIT LE 4 SEPT.
+  2026** — migration 0074, sur sa décision : *« une facture partie ne change plus
+  d'aspect »*. `ARCHITECTURE.md` §255.
+
+- **L'immuabilité d'une facture émise n'a AUCUN contrôle automatique.** Le devis
+  a le sien (`scripts/db-tests.ts`, « impossible de modifier un devis envoyé ») ;
+  la facture, non. PostgreSQL la refuse pourtant — vérifié à la main :
+  `UPDATE factures SET doc_fond = NULL WHERE statut = 'emise'` rend « Une facture
+  émise est immuable » (`trg_facture_immuable`, 0018). Un contrôle écrit par le
+  dépôt n'a PAS été refusé et la raison n'a pas été trouvée : il a été retiré
+  plutôt que gardé sans être compris (`scripts/test-facture-reprend-le-devis-db.ts`
+  porte le récit). À reprendre — c'est le trigger qui tient tout le relevé de TVA.
 - **Les trois suites navigateur que le brief annonce rouges** — `test-facture-e2e`,
   `test-tva-au-paiement-e2e`, `test-facture-au-client-e2e` — n'ont pas pu être
   mesurées dans ce lot : deux autres sessions écrivaient dans le même dossier,

@@ -22736,11 +22736,61 @@ défaut — photographié, pas supposé.
 d'aller chercher le logo dans le stockage à chaque consultation — un
 aller-retour réseau pour une image que la page n'affiche pas, payé en secondes
 d'attente sur un téléphone au bord d'une route. Les deux portes passent par
-`allureLue`.
+`allureDepuisColonnes`.
 
-**Ce qui reste : l'allure est lue à la CONSULTATION, pas figée à l'émission.**
-Un changement de réglage après l'envoi fait diverger la page du PDF archivé. La
-figer demande trois colonnes sur `factures`, et cela se décide.
+### Et l'allure se FIGE à l'émission — migration 0074, le soir même
+
+**Sa décision du 4 septembre 2026 :** *« fige l'allure sur la facture émise — au
+moment de l'envoi, comme les chiffres et l'identité. Une facture partie ne change
+plus d'aspect : mon client doit retrouver en ligne exactement ce qu'il a reçu en
+PDF, y compris six mois plus tard. Un changement de réglage ne rattrape pas les
+anciennes, c'est voulu. »*
+
+L'allure était encore lue sur l'ENTREPRISE, donc à l'instant de la consultation :
+changer son réglage repeignait toutes les pages déjà parties, pendant que les PDF
+archivés ne bougeaient pas. Le client ouvrait alors deux pièces d'aspects
+différents pour une même facture. C'était la dernière chose de la facture à ne
+pas être figée — les montants, l'identité (0039) et les mentions légales (0072)
+l'étaient déjà.
+
+**`emettreFacture` écrit l'allure qu'il vient d'employer pour composer le PDF**,
+pas une seconde lecture : la page et le papier montrent la même chose par
+construction, et non parce que deux lectures sont tombées d'accord.
+
+**Le défaut s'écrit EN CLAIR sur la facture, et VIDE sur l'entreprise. Ce n'est
+pas une contradiction.** Sur `entreprises`, les trois colonnes portent une
+préférence VIVANTE : vides, ses documents suivront la charte le jour où elle
+bougerait. Sur `factures`, elles portent un CONSTAT — voilà de quoi cette pièce
+avait l'air le jour où elle est partie. D'où la convention :
+
+| Les trois colonnes | Ce que ça veut dire |
+|---|---|
+| **nulles** | facture ANTÉRIEURE à 0074, son aspect n'a jamais été relevé — la page retombe sur l'allure vivante, comme avant ce lot |
+| **écrites** | l'aspect du jour de l'envoi, défaut compris |
+
+**Sans ce départage, une migration censée figer les aspects en aurait changé un.**
+Une facture partie sans allure verrait son bouton passer du vert à l'or, parce
+que le défaut écrit en clair emprunte le chemin « allure réglée ». C'est
+`estLAllureParDefaut` qui l'en empêche, à l'écran.
+
+**Ce que la capture prouve, et qu'aucune assertion ne verrait.**
+`scripts/capture-facture-impeccable.mts` photographie deux factures — l'une
+partie avant tout réglage, l'autre après —, change l'allure de l'entreprise, les
+rephotographie, et **compare les octets**. Confronté au code d'avant, il rougit
+sur les deux et nomme la bonne chose.
+
+**Il a fallu masquer l'indicateur du serveur de développement pour que la
+comparaison veuille dire quelque chose** : il affiche tantôt « N », tantôt
+« Compiling … », et faisait conclure qu'une page avait bougé alors qu'elle était
+identique au pixel près.
+
+**Un contrôle a été écrit puis RETIRÉ, et c'est écrit dans la suite.** Il voulait
+prouver que PostgreSQL refuse de réécrire une facture émise. La base le refuse
+bel et bien — `UPDATE factures SET doc_fond = NULL WHERE statut = 'emise'` rend
+« Une facture émise est immuable » (`trg_facture_immuable`, 0018) —, mais le même
+geste passé par le dépôt n'a pas été refusé et la raison n'a pas été trouvée. Un
+contrôle qu'on ne s'explique pas est pire qu'aucun : vert il endort, rouge il
+accuse au hasard. Le point est dans `TODO.md`.
 
 ### Deux défauts trouvés sur la capture, et par aucun test
 

@@ -14,6 +14,14 @@ import {
 } from "../src/server/repositories/factures";
 import { creerEnvoiFacture, factureParJeton } from "../src/server/repositories/envois-factures";
 import { repriseDuDevis } from "../src/lib/facture-face-au-devis";
+import {
+  ALLURE_PAR_DEFAUT,
+  allureDepuisColonnes,
+  estLAllureParDefaut,
+} from "../src/lib/allure-documents";
+import { withEntreprise } from "../src/server/db/with-entreprise";
+import { factures } from "../src/server/db/schema";
+import { eq } from "drizzle-orm";
 import { nettoyerBase } from "./_test-db";
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -201,7 +209,7 @@ async function main() {
 
   // ─── L'allure de ses documents, jusqu'à la page du client ─────────────────
 
-  await test("sans réglage, la page du client ne porte AUCUNE allure — celle d'aujourd'hui", async () => {
+  await test("sans réglage, la page du client rend celle d'aujourd'hui", async () => {
     const ctx = await contexte("allure-defaut");
     const { chantierId } = await chantierAvecDevisEnvoye(ctx, "600.00");
     const facture = await terminerChantier(ctx, chantierId, MAINTENANT);
@@ -210,7 +218,74 @@ async function main() {
 
     const vue = await factureParJeton(envoi.jeton, MAINTENANT);
     assert.ok(vue, "la page du client ne trouve pas sa facture");
-    assert.strictEqual(vue.allure, null, "un réglage jamais touché repeint la page de son client");
+    // **L'allure est ÉCRITE, et elle vaut le défaut.** Écrire en clair est ce
+    // qui distingue « parti sans allure » de « facture antérieure à 0074 » ; et
+    // c'est `estLAllureParDefaut` qui rend alors la page d'aujourd'hui, au pixel
+    // près (`src/app/factures/[jeton]/page.tsx`).
+    assert.ok(vue.allure, "l'aspect n'a pas été figé à l'émission");
+    assert.ok(
+      estLAllureParDefaut(vue.allure),
+      "un réglage jamais touché repeint la page de son client"
+    );
+  });
+
+  await test("UNE FACTURE PARTIE NE CHANGE PLUS D'ASPECT — sa règle du 4 septembre", async () => {
+    const ctx = await contexte("allure-figee");
+    await entreprisesRepo.mettreAJourEntreprise(ctx, {
+      allure: { typographie: "inter", fond: "#101010", accent: "#c0392b" },
+    });
+
+    const { chantierId } = await chantierAvecDevisEnvoye(ctx, "750.00");
+    const facture = await terminerChantier(ctx, chantierId, MAINTENANT);
+    await emettreFacture(ctx, facture.id, MAINTENANT);
+    const envoi = await creerEnvoiFacture(ctx, facture.id, "sms", MAINTENANT);
+
+    // Six mois plus tard, il refait l'allure de ses documents.
+    await entreprisesRepo.mettreAJourEntreprise(ctx, {
+      allure: { typographie: "lato", fond: "#ffffff", accent: "#1a5c2e" },
+    });
+
+    const vue = await factureParJeton(envoi.jeton, MAINTENANT);
+    assert.ok(vue?.allure, "la page du client a perdu son aspect");
+    assert.strictEqual(vue.allure.typographie, "inter", "l'aspect a suivi le nouveau réglage");
+    assert.strictEqual(vue.allure.fond, "#101010");
+    assert.strictEqual(
+      vue.allure.accent,
+      "#c0392b",
+      "son client ne retrouve plus l'aspect du PDF qu'il a reçu"
+    );
+  });
+
+  // **UN CONTRÔLE DU TRIGGER D'IMMUABILITÉ A ÉTÉ ÉCRIT ICI, PUIS RETIRÉ.**
+  //
+  // PostgreSQL refuse bel et bien de réécrire une facture émise — vérifié à la
+  // main : `UPDATE factures SET doc_fond = NULL WHERE statut = 'emise'` rend
+  // « Une facture émise est immuable », par `trg_facture_immuable` (0018). La
+  // règle du 4 septembre tient donc une couche plus bas que l'application.
+  //
+  // Mais le même geste passé par le dépôt n'a PAS été refusé, et la raison n'a
+  // pas été trouvée. **Un contrôle qu'on ne s'explique pas est pire qu'aucun** :
+  // vert, il endort ; rouge, il accuse au hasard. Il est donc retiré, et le
+  // point est consigné dans `TODO.md` — le devis a le sien
+  // (`scripts/db-tests.ts`), la facture n'en a pas.
+
+  await test("le repli d'historique : trois colonnes vides rendent RIEN, jamais le défaut", async () => {
+    // Confondre les deux ferait repeindre une facture partie sans allure — le
+    // bouton passerait du vert à l'or chez son client, à cause d'une migration
+    // censée figer les aspects.
+    assert.strictEqual(
+      allureDepuisColonnes({ typographie: null, fond: null, accent: null }),
+      null,
+      "une facture d'avant 0074 se prend pour une facture sans allure"
+    );
+    const relue = allureDepuisColonnes({
+      typographie: "inter",
+      fond: "#101010",
+      accent: "#c0392b",
+    });
+    assert.ok(relue, "une allure figée ne se relit pas");
+    assert.strictEqual(relue.fond, "#101010");
+    assert.ok(!estLAllureParDefaut(relue));
   });
 
   await test("son allure de documents arrive jusqu'à la page du client", async () => {
@@ -230,6 +305,19 @@ async function main() {
     assert.strictEqual(vue.allure.typographie, "inter");
     assert.strictEqual(vue.allure.fond, "#101010");
     assert.strictEqual(vue.allure.accent, "#c0392b");
+    assert.ok(
+      !estLAllureParDefaut(vue.allure),
+      "une allure réglée ne doit pas être prise pour le défaut"
+    );
+    // Et elle est bien FIGÉE dans la pièce, pas relue sur l'entreprise.
+    const enBase = await withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+      const [f] = await tx.select().from(factures).where(eq(factures.id, facture.id)).limit(1);
+      return f;
+    });
+    assert.strictEqual(enBase.docTypographie, "inter", "l'aspect n'est pas écrit sur la facture");
+    assert.strictEqual(enBase.docFond, "#101010");
+    assert.strictEqual(enBase.docAccent, "#c0392b");
+    assert.notStrictEqual(ALLURE_PAR_DEFAUT.accent, "#c0392b");
   });
 
   await test("un jeton inconnu ou expiré ne rend rien, allure comprise", async () => {
