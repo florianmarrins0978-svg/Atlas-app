@@ -77,7 +77,7 @@ reste du trajet `chantier → terminé` est de **cinq** écrans, pas de dix : la
 fiche de chantier (le hub), les prix, la transcription, la facture, les
 informations. Aucun n'a bougé depuis le 31 août.
 
-### La feuille « Envoyer à … » : sept défauts trouvés à l'image, et réparés
+### La feuille « Envoyer à … » : sept défauts trouvés à l’image, et réparés
 
 **Sa demande :** une passe complète sur la feuille du premier arrêt du parcours,
 *« tous les états, pas seulement le nominal »*, chartes sombres comprises. La
