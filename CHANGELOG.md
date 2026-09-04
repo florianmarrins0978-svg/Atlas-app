@@ -9,6 +9,36 @@ Format : le plus récent en tête.
 
 ## 2026-09-04
 
+### La planche de la facture au planning, refaite sur le planning d'aujourd'hui
+
+**Sa raison de n'avoir jamais répondu, et elle était bonne :** *« on ne l'a pas
+corrigé avec /impeccable, c'est pour ça que je n'ai pas répondu »*. La planche du
+1er septembre dessinait le planning **d'avant** sa refonte du 4, en charte
+claire. On lui demandait de choisir une allure sur un écran qui n'existait plus.
+
+**Refaite avec `/impeccable`** (`appli/facture-au-planning.html`), et **rien
+n'est codé** : le socle est relevé sur SA capture du 4 septembre, en charte Nuit
+— semaine, capsule du jour, nom serif, durée dorée, lieu, pastille d'équipe,
+chevron, tiroir « 3 chez le client ». Sa consigne : *« garde le planning tel
+quel, il est fini. »* Seule varie la façon dont la facture s'y pose.
+
+**Trois corrections que la capture a imposées, et qu'aucun raisonnement n'aurait
+données :**
+
+1. **Le cadre a une hauteur fixe — 390 × 664, son téléphone.** Sur un cadre qui
+   s'allonge, A ne dépasse jamais : son coût était invisible, et c'est
+   précisément ce qu'il faut juger. Avec le cadre, on VOIT que le vendredi sort
+   de l'écran (les deux journées passent de 374 à 794 px, mesuré sur le rendu).
+2. **La feuille de C montait hors du cadre**, donc nulle part. Elle monte
+   maintenant dedans, sur le voile, comme elle le ferait chez lui.
+3. **B posait trois boutons pleins, dont un sur une facture déjà partie** — il
+   appelait « geste » une consultation. B ne pose plus de bouton que là où il y
+   a un geste à faire ; le reste est derrière le chevron.
+
+**Ce qui l'attend, et qui bloque la suite :** répondre **A**, **B** ou **C**.
+Tant que la facture n'a pas de maison, la fiche du chantier ne peut pas partir —
+et c'est elle qu'il veut voir disparaître depuis le 21 août.
+
 ### CORRECTION : la trace d'un passage `/impeccable` n'est PAS dans `.impeccable/`
 
 **Sa question du 4 septembre 2026 :** *« quelles sont les pages entre chantier et
