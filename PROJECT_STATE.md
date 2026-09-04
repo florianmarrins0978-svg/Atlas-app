@@ -19,6 +19,33 @@ ligne « fait » qui ne l'est pas coûte plus cher qu'une ligne absente.
 
 ---
 
+## FAIT : la fiche du chantier est retirée (4 septembre 2026)
+
+**Sa décision, prise deux fois** — 21 août : *« la fiche chantier, on la
+supprime pour de bon »* ; 1er septembre, avec sa raison : *« toutes ces infos
+sont déjà sur cette page — ça fait des doublons si on garde l'autre. »*
+
+L'adresse `/chantiers/[id]` existe encore et **ne montre plus rien** : elle
+redirige là où le travail s'est arrêté. Un signet, un lien profond, une
+notification déjà partie la portent — un 404 les punirait d'avoir eu raison.
+
+| Ce qui y menait | Mène à |
+|---|---|
+| photos, dictée | la fiche client, où la pellicule et l'anneau vivent |
+| une date à poser | le planning |
+| **la date est posée** | **le planning sur SA JOURNÉE**, portes levées — sa réponse du jour |
+| les cinq flèches de retour | la liste des chantiers, comme la fiche elle-même |
+
+**Ce que ce retrait a coûté, et qui est écrit :** « Sans date » et « En attente
+du client » n'avaient aucun lien vers le chantier — elles portent désormais le
+même chevron que les journées ; et plus aucun écran n'ouvre `/clients/[id]`
+depuis un chantier, question laissée à son arbitrage (`TODO.md`).
+
+Raisons : `ARCHITECTURE.md` §254. Retour au patron :
+`docs/retirer-la-fiche-du-chantier.md`.
+
+---
+
 ## FAIT : la feuille « Envoyer à … », passée au peigne (4 septembre 2026)
 
 Sa demande : une passe complète sur la feuille du premier arrêt du parcours, dans
@@ -419,9 +446,9 @@ fiche client ! Pas sur la page que je te mets en deuxième photo. »*
 | | |
 |---|---|
 | devis **sans client** | la flèche mène au formulaire « Fiche client » du chantier |
-| devis **avec client** | la flèche rend la fiche du chantier, comme avant |
+| devis **avec client** | la flèche rend la fiche client aussi — il y relit le nom et le canal avant d'envoyer (§229) |
 | fiche enregistrée, venu du devis | on **retourne au devis**, qui porte enfin le client |
-| fiche ouverte depuis l'accueil | inchangé : flèche vers la liste, enregistrement vers le chantier |
+| fiche ouverte depuis l'accueil | flèche ET enregistrement rendent la liste — accordés le 4 septembre, la fiche du chantier ayant disparu (§254) |
 
 La provenance voyage dans l'adresse (`?de=`) et n'est acceptée que si elle vaut
 **exactement** le devis de ce chantier — sans quoi la flèche « retour » pourrait

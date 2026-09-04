@@ -86,9 +86,13 @@ async function main() {
     const lien = page.locator(`a:has-text("${marque}")`).first();
     await lien.waitFor({ state: "visible", timeout: 20000 });
     const href = await lien.getAttribute("href");
-    assert.ok(
-      href === `/chantiers/${id}` || href === `/chantiers/${id}/devis-complet`,
-      `la ligne mène à « ${href} » : ce n'est ni la fiche du chantier ni son devis`
+    // **La fiche du chantier n'est plus une réponse acceptable** (4 septembre
+    // 2026, `ARCHITECTURE.md` §254) : son adresse ne rend qu'une redirection,
+    // et la laisser ici accepterait un aller-retour invisible au patron.
+    assert.equal(
+      href,
+      `/chantiers/${id}/devis-complet`,
+      `la ligne mène à « ${href} » au lieu du devis où il s'est arrêté`
     );
   });
 

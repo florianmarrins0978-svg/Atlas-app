@@ -71,9 +71,16 @@ async function main() {
   // Un chantier NEUF : ni photo, ni dictée — exactement le sien.
   await page.goto(`${BASE}/chantiers/nouveau`, { waitUntil: "networkidle" });
   await page.fill('input[placeholder="Bernard"]', `Anneau e2e ${Date.now()}`);
-  await creerPuisFiche(page);
-  await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}/, { timeout: 20_000 });
-  const fiche = page.url();
+  const chantierId = await creerPuisFiche(page);
+  // **L'ANNEAU VIT SUR LA FICHE CLIENT** — 4 septembre 2026. Il était au milieu
+  // de la fiche du chantier depuis sa demande du 11 août ; cette fiche est
+  // retirée (`ARCHITECTURE.md` §254) parce qu'elle montrait une seconde fois ce
+  // que la fiche client porte déjà — la pellicule et l'anneau.
+  //
+  // **Sa demande, elle, n'a pas bougé d'un mot** : *« l'anneau qui est en plein
+  // milieu et dès qu'on arrive sur la page, il y est »*. C'est cette page-ci,
+  // désormais.
+  const fiche = `${BASE}/chantiers/${chantierId}/coordonnees`;
   // **On attend que la PAGE soit arrivée, pas plus.** `waitForURL` rend la main
   // dès que l'adresse change, avant que quoi que ce soit soit rendu : sans
   // cela, le premier contrôle mesurait un écran encore vide et accusait
@@ -99,42 +106,21 @@ async function main() {
     );
   });
 
-  // **Rien ne s'est perdu en vidant le corps de la fiche.**
+  // ─── UN CAS A ÉTÉ RETIRÉ ICI, ET IL FAUT SAVOIR LEQUEL ─────────────────────
   //
-  // Le 11 août 2026, le patron a demandé que la fiche respecte strictement sa
-  // maquette : ni bouton, ni lien dans le corps — l'anneau, et rien d'autre.
-  // Alléger un écran est facile ; le faire sans amputer l'est moins. L'étape
-  // suivante et la rédaction à la main descendent dans le tiroir, et ce
-  // contrôle existe pour que personne ne les y oublie : ce sont deux demandes
-  // qu'il avait faites lui-même, les 3 et 4 août.
-  await cas("le corps ne porte que l'anneau, et le tiroir garde tout le reste", async () => {
-    // **On s'assure d'abord que la cible existe.** Un sélecteur qui ne trouve
-    // rien compte zéro lien, et ce contrôle passerait alors au vert sur une
-    // page vide — c'est-à-dire exactement quand il devrait crier.
-    const corps = page.locator(".atlas-scene-fiche");
-    assert.equal(await corps.count(), 1, "le corps de la fiche est introuvable : ce contrôle n'éprouve rien");
-    assert.equal(
-      await corps.locator("a[href*='/devis-complet'], a[href*='/photos']").count(),
-      0,
-      "le corps de la fiche porte encore un bouton ou un lien : la maquette n'en montre aucun"
-    );
-
-    // **Le tiroir est exigé, pas espéré.** Une première version se rabattait
-    // sur la page entière quand elle ne le trouvait pas : le tiroir aurait pu
-    // disparaître sans que rien ne rougisse, alors que c'est précisément lui
-    // qui recueille ce qu'on a retiré du corps.
-    const tiroir = page.locator('[data-atlas="tiroir-fiche"]');
-    assert.equal(await tiroir.count(), 1, "le tiroir a disparu : le corps a été vidé sans que rien ne recueille le reste");
-    for (const [quoi, href] of [
-      ["l'étape suivante", "/note-vocale"],
-      ["la rédaction à la main", "/devis-complet"],
-    ] as const) {
-      assert.ok(
-        await tiroir.locator(`a[href*="${href}"]`).count(),
-        `${quoi} a disparu du tiroir : vider le corps l'a supprimée au lieu de la déplacer`
-      );
-    }
-  });
+  // « le corps ne porte que l'anneau, et le tiroir garde tout le reste »
+  // défendait la maquette du 11 août 2026 : ni bouton ni lien dans le corps de
+  // la fiche du chantier, l'étape suivante et la rédaction à la main
+  // recueillies dans son tiroir. **Cet écran est retiré le 4 septembre** —
+  // corps, tiroir et tout (`ARCHITECTURE.md` §254).
+  //
+  // Le réécrire sur la fiche client aurait été lui prêter une promesse qu'il
+  // n'a jamais faite sur cet écran-là : celui-ci porte un formulaire, et c'est
+  // sa raison d'être. Écrire un contrôle qui réclame ce que le patron a fait
+  // retirer, c'est rendre son écran impossible à changer (`CLAUDE.md` §5 bis).
+  //
+  // Ce que ce cas défendait de vivant — la rédaction à la main reste
+  // atteignable — est tenu sur son écran à lui, `test-devis-a-la-main-e2e.ts`.
 
   await cas("un appui dicte, l'avion envoie — et la note existe", async () => {
     await bouton.click();

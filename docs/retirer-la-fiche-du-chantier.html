@@ -1,0 +1,345 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas — Retirer la fiche du chantier — ce qui a été fait, et ce que ça coûte</title>
+<style>
+  :root{
+    --ground:#f5f3ee; --surface:#faf9f5; --raised:#ece9e1;
+    --ink:#1c1c1a; --ink-soft:#4a4a44; --muted:#8a8578;
+    --accent:#2f3b2f; --alert:#b5562a; --line:rgba(28,28,26,0.13);
+    --serif:Georgia,'Times New Roman',serif;
+    --sans:system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --ground:#161815; --surface:#1d201c; --raised:#252924;
+      --ink:#eae7df; --ink-soft:#c2bdb1; --muted:#948f83;
+      --accent:#9fbd82; --alert:#e0885a; --line:rgba(234,231,223,0.17);
+    }
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--sans);
+    line-height:1.65;}
+  main{max-width:44rem;margin:0 auto;padding:2.5rem 1.2rem 5rem;}
+  h1,h2,h3,h4{font-family:var(--serif);font-weight:600;line-height:1.2;
+    text-wrap:balance;margin:2rem 0 0.6rem;scroll-margin-top:1rem;}
+  h1{font-size:2rem;margin-top:0;}
+  h2{font-size:1.5rem;padding-top:1.2rem;border-top:1px solid var(--line);}
+  h3{font-size:1.12rem;}
+  h4{font-size:1rem;}
+  p{margin:0 0 0.9rem;}
+  a{color:var(--accent);text-underline-offset:3px;}
+  a:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:3px;}
+  ul,ol{margin:0 0 1rem;padding-left:1.3rem;}
+  li{margin-bottom:0.4rem;}
+  li::marker{color:var(--muted);}
+  /* Le sommaire : des cibles larges, confortables au doigt sur téléphone. */
+  ol li a{display:inline-block;padding:0.15rem 0;}
+  blockquote{margin:1rem 0;padding:0.85rem 1.05rem;background:var(--raised);
+    border-left:3px solid var(--accent);border-radius:0 10px 10px 0;color:var(--ink-soft);}
+  code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:0.87em;
+    background:var(--raised);padding:0.1rem 0.35rem;border-radius:5px;}
+  hr{border:0;border-top:1px solid var(--line);margin:2rem 0;}
+  .tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px;
+    background:var(--surface);margin:0 0 1.2rem;}
+  table{border-collapse:collapse;width:100%;font-size:0.92rem;min-width:22rem;}
+  th,td{text-align:left;padding:0.55rem 0.8rem;border-bottom:1px solid var(--line);
+    vertical-align:top;}
+  th{font-size:0.72rem;letter-spacing:0.08em;text-transform:uppercase;
+    color:var(--muted);white-space:nowrap;}
+  tr:last-child td{border-bottom:none;}
+  .retour{display:inline-block;font-size:0.76rem;color:var(--muted);
+    text-decoration:none;margin:-0.3rem 0 1rem;}
+  .retour:hover{color:var(--accent);text-decoration:underline;}
+</style>
+</head>
+<body>
+<main>
+<h1 id="retirer-la-fiche-du-chantier--ce-qui-a-été-fait-et-ce-que-ça-coûte">Retirer la fiche du chantier — ce qui a été fait, et ce que ça coûte</h1>
+<p><em>4 septembre 2026 · lot suivant celui de la facture au planning</em></p>
+<hr>
+<h2 id="en-une-phrase">En une phrase</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p>L'écran <code>/chantiers/[id]</code> ne montre plus rien. Son adresse existe toujours et <strong>redirige</strong> vers l'endroit où le travail s'est arrêté ; un chantier dont la date est posée ouvre <strong>sa journée</strong> au planning, portes levées.</p>
+<hr>
+<h2 id="1-le-brief-point-par-point">1. Le brief, point par point</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th>Ce qui était demandé</th>
+<th>Verdict</th>
+<th>Ce qui le fonde</th>
+</tr></thead><tbody>
+<tr>
+<td>Retirer l'écran <code>/chantiers/[id]</code></td>
+<td><strong>fait</strong></td>
+<td><code>src/app/chantiers/[id]/page.tsx</code> ne rend plus qu'une redirection</td>
+</tr>
+<tr>
+<td>Rediriger les huit chemins relevés</td>
+<td><strong>fait, et il y en avait dix</strong></td>
+<td>voir §2</td>
+</tr>
+<tr>
+<td>Corriger <code>lienDeReprise</code> AVANT la route</td>
+<td><strong>fait — et le piège était pire que décrit</strong></td>
+<td>quatre cas, pas trois, plus un cinquième chemin qui bouclait</td>
+</tr>
+<tr>
+<td>Ne pas rouvrir ce qui est tranché</td>
+<td><strong>tenu</strong></td>
+<td>photos et dictée → fiche client ; devis parti → <code>/export</code> ; les cinq écrans d'étape restent</td>
+</tr>
+<tr>
+<td>Décider ce que devient l'adresse, et le dire</td>
+<td><strong>fait</strong></td>
+<td>§3</td>
+</tr>
+<tr>
+<td>Adapter les suites, ne pas remettre l'écran</td>
+<td><strong>fait — onze suites</strong></td>
+<td>§5</td>
+</tr>
+<tr>
+<td>Ne toucher à rien d'autre</td>
+<td><strong>tenu, à une exception assumée</strong></td>
+<td>§4, le chevron des deux listes du planning</td>
+</tr>
+</tbody></table></div>
+<hr>
+<h2 id="2-le-piège-et-il-était-pire-que-ce-que-le-brief-disait">2. Le piège, et il était pire que ce que le brief disait</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p>Le brief annonçait trois cas où <code>lienDeReprise</code> rendait <code>/chantiers/[id]</code>.</p>
+<p><strong>Il y en avait quatre</strong>, et le quatrième n'était pas dans la liste : un devis parti sans date encore posée. Et surtout, <strong>un cinquième chemin bouclait ailleurs</strong>, que personne n'avait relevé — <code>apresLesCoordonnees()</code> rendait la fiche du chantier quand aucune provenance n'était donnée. Enregistrer la fiche client y renvoyait, la redirection ramenait à la fiche client : le patron serait retombé sur le formulaire qu'il venait de quitter, sans comprendre.</p>
+<p>Les deux fonctions ont donc été corrigées <strong>avant</strong> la route, dans cet ordre.</p>
+<p><strong>Un contrôle nouveau empêche la boucle de renaître</strong> (<code>test-reprendre-ou-il-en-etait.ts</code>, <code>test-retour-du-devis.ts</code>) : il parcourt les huit états possibles d'un chantier et refuse que la reprise rende jamais cette adresse. Sans lui, un retour en arrière dans six mois se verrait chez lui, sur un chantier posé, et nulle part ailleurs.</p>
+<hr>
+<h2 id="3-où-mène-chaque-chemin-maintenant">3. Où mène chaque chemin, maintenant</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th>D'où</th>
+<th>Vers</th>
+<th>Pourquoi celui-là</th>
+</tr></thead><tbody>
+<tr>
+<td>des photos, une dictée à faire</td>
+<td><code>/chantiers/[id]/coordonnees</code></td>
+<td>la pellicule et l'anneau y vivent depuis le 31 août : c'était exactement le doublon qu'il refusait</td>
+</tr>
+<tr>
+<td>une date à poser</td>
+<td><code>/planning</code></td>
+<td>ce que la règle rendait déjà — le chantier est dans « À planifier »</td>
+</tr>
+<tr>
+<td><strong>la date est posée</strong></td>
+<td><code>/planning?chantier=[id]</code></td>
+<td><strong>sa journée</strong>, portes levées. Sa réponse du jour, mot pour mot</td>
+</tr>
+<tr>
+<td>la fiche client enregistrée, sans provenance</td>
+<td><code>/</code></td>
+<td>la flèche du même écran y allait déjà : les deux gestes cessent de se contredire</td>
+</tr>
+<tr>
+<td>les cinq flèches de retour</td>
+<td><code>/</code></td>
+<td>elles <strong>héritent</strong> de celle de la fiche, mot pour mot. Aucune règle inventée</td>
+</tr>
+<tr>
+<td>le rappel « Faire le devis »</td>
+<td><code>/devis-complet</code></td>
+<td>le libellé le dit</td>
+</tr>
+<tr>
+<td>le rappel « Ouvrir le chantier »</td>
+<td><code>/export</code></td>
+<td>la règle du 20 août : un devis parti mène à l'envoi</td>
+</tr>
+</tbody></table></div>
+<p><strong>L'adresse survit à l'écran.</strong> Un signet, un lien profond, <strong>une notification déjà partie</strong> la portent encore. Supprimer le dossier rendrait un 404 à quelqu'un qui avait raison de cliquer. Le fichier fait quinze lignes et ne montre rien.</p>
+<p><strong>L'identifiant voyage, jamais la date.</strong> Le planning connaît déjà la date de chaque chantier ; la répéter dans l'adresse ferait deux vérités sur la même journée — un signet gardé une semaine ouvrirait le mois d'avant.</p>
+<hr>
+<h2 id="4-ce-qui-a-été-fait-en-plus-et-pourquoi-cétait-nécessaire">4. Ce qui a été fait EN PLUS, et pourquoi c'était nécessaire</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><strong>« Sans date » et « En attente du client » n'avaient AUCUN lien vers le chantier.</strong> Ni chevron, ni nom cliquable, ni bouton. Tant que la fiche existait cela ne se voyait pas : la liste des chantiers y menait. En la retirant, un devis parti serait devenu injoignable — c'est-à-dire le cul-de-sac qu'il signalait le 8 août 2026, <em>« comment moi je fais pour avoir accès au devis ? »</em>, sous un autre nom.</p>
+<p>Les deux listes portent donc le <strong>même chevron et la même feuille</strong> que les journées. Aucune règle nouvelle : <code>portesDuPlanning</code> rend déjà le devis et la fiche client sur un chantier sans date, et pas la facture — un chantier qui n'a pas eu lieu ne se facture pas.</p>
+<p><strong>Le chevron, jamais le nom</strong> : sa consigne du 4 septembre.</p>
+<p>Et le chevron vit désormais dans <strong>une seule pièce</strong>, employée par les trois listes. Recopié trois fois, il aurait changé de couleur dans l'une le jour où l'on retouche les deux autres.</p>
+<hr>
+<h2 id="5-ce-qui-a-été-refusé-et-ce-que-ça-aurait-coûté">5. Ce qui a été REFUSÉ, et ce que ça aurait coûté</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th>Refusé</th>
+<th>Pourquoi</th>
+</tr></thead><tbody>
+<tr>
+<td><strong>supprimer le dossier de la route</strong></td>
+<td>un 404 sur les signets, les liens profonds et les notifications déjà parties. La route vidée coûte quinze lignes qui ne montrent rien</td>
+</tr>
+<tr>
+<td><strong>un <code>?de=</code> sur les cinq flèches</strong></td>
+<td>une <strong>troisième</strong> règle de retour pour gagner un cran de navigation. Le brief demandait de ne pas en faire une troisième, et il avait raison</td>
+</tr>
+<tr>
+<td><strong>toucher <code>src/app/design/d/page.tsx</code></strong></td>
+<td>maquette à données simulées : ses liens ne mènent nulle part <strong>déjà</strong>, avant comme après</td>
+</tr>
+<tr>
+<td><strong>garder <code>getSecondarySteps</code> « au cas où »</strong></td>
+<td>c'était la liste du tiroir de la fiche, et elle n'avait qu'un seul appelant. Une liste conservée au cas où se met à mentir en silence</td>
+</tr>
+<tr>
+<td><strong>remettre l'écran quand une suite rougit</strong></td>
+<td>ce serait rendre l'écran impossible à changer. Onze suites ont été visées plus profond — sur une adresse d'arrivée, un identifiant, un compte en base</td>
+</tr>
+</tbody></table></div>
+<hr>
+<h2 id="6-ce-que-ça-coûte--les-deux-contreparties-écrites-plutôt-que-découvertes">6. CE QUE ÇA COÛTE — les deux contreparties, écrites plutôt que découvertes</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<h3 id="a-plus-aucun-écran-nouvre-la-fiche-du-client-depuis-un-chantier">a) Plus aucun écran n'ouvre la fiche du client depuis un chantier</h3>
+<p>Cette porte — « ce qu'on sait de ce client » : ses chantiers, ce qu'il doit — vivait dans le tiroir de la fiche du chantier, retenue le 16 août. Elle part avec l'écran.</p>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th></th>
+</tr></thead><tbody>
+<tr>
+<td>ce qui reste</td>
+<td>la fiche du client s'atteint par la liste des clients, en deux touches</td>
+</tr>
+<tr>
+<td>ce qui manque</td>
+<td>y aller depuis le chantier qu'on a sous les yeux</td>
+</tr>
+</tbody></table></div>
+<p><strong>Ce n'est pas décidé, et c'est délibéré.</strong> L'ajouter à la fiche client, ce serait remettre sur l'écran vidé le 20 août (<em>« tout le reste, tu enlèves, c'est du trop »</em>) ; en faire une quatrième porte du planning, ce serait retoucher une feuille choisie le matin même.</p>
+<p><strong>La question, telle qu'elle se pose :</strong> <em>quand tu regardes un chantier, as-tu besoin d'ouvrir ce qu'Atlas sait du client — ou la liste des clients suffit ?</em></p>
+<h3 id="b-la-flèche-dexport-dun-chantier-planifié-mène-à-la-liste-où-il-nest-plus">b) La flèche d'<code>/export</code> d'un chantier planifié mène à la liste, où il n'est plus</h3>
+<p>Il y arrive par le planning, dont la porte reste, et le retour du navigateur marche. C'est ce qu'un <code>?de=</code> aurait fermé — et il a été refusé plus haut. Si ça le gêne à l'usage, c'est ce refus qu'il faut lever.</p>
+<hr>
+<h2 id="7-les-suites--onze-adaptées-aucune-contournée">7. Les suites — onze adaptées, aucune contournée</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th>Suite</th>
+<th>Ce qu'elle visait</th>
+<th>Ce qu'elle vise maintenant</th>
+</tr></thead><tbody>
+<tr>
+<td><code>_creer-chantier-e2e</code> — le socle de <strong>82 fichiers</strong></td>
+<td>ouvrait la fiche après création</td>
+<td>rien : elles réclament un chantier, pas une page</td>
+</tr>
+<tr>
+<td><code>test-rapprochement-client-e2e</code></td>
+<td>la porte du tiroir vers <code>/clients/[id]</code></td>
+<td><strong>le <code>client_id</code> en base</strong>, que rien ne peut faire retirer</td>
+</tr>
+<tr>
+<td><code>test-anneau-vers-devis-e2e</code></td>
+<td>« Mon devis » sous l'anneau, puis le tiroir</td>
+<td>l'arrivée automatique du devis, <strong>et le signet d'hier qui mène au planning</strong></td>
+</tr>
+<tr>
+<td><code>test-anneau-dictee-e2e</code></td>
+<td>le corps vide et son tiroir</td>
+<td>l'anneau sur la fiche client</td>
+</tr>
+<tr>
+<td><code>test-photos-e2e</code>, <code>test-retrait-differe-e2e</code></td>
+<td>la pellicule dans le tiroir</td>
+<td>la pellicule à découvert, un geste de moins</td>
+</tr>
+<tr>
+<td><code>test-devis-a-la-main-e2e</code>, <code>test-devis-complet-e2e</code></td>
+<td>la ligne « Devis à la main » du tiroir</td>
+<td>l'arrivée sur le devis, sans détour</td>
+</tr>
+<tr>
+<td><code>test-coordonnees-depuis-accueil-e2e</code>, <code>test-devis-qui-tarde-e2e</code>, <code>test-reprise-chantier-e2e</code></td>
+<td>la fiche comme point d'arrivée</td>
+<td>l'écran que le libellé annonce</td>
+</tr>
+<tr>
+<td><code>test-retour-fiche-client</code></td>
+<td><code>versFicheClient(</code> dans l'écran retiré</td>
+<td><strong>le cas est SUPPRIMÉ</strong>, et la perte écrite noir sur blanc dans le fichier</td>
+</tr>
+<tr>
+<td><code>test-hub-repo</code>, <code>test-reprendre-ou-il-en-etait</code>, <code>test-retour-du-devis</code></td>
+<td>la fiche comme destination</td>
+<td><strong>qu'elle ne le soit jamais</strong> — le contrôle anti-boucle</td>
+</tr>
+</tbody></table></div>
+<p><strong>Un cas a été retiré sans remplaçant</strong>, et il faut le savoir : « le corps ne porte que l'anneau, et le tiroir garde tout le reste » défendait la maquette du 11 août sur un écran qui n'existe plus. Le réécrire sur la fiche client aurait été lui prêter une promesse qu'il n'a jamais faite sur cet écran-là.</p>
+<hr>
+<h2 id="8-les-chiffres-de-la-batterie">8. Les chiffres de la batterie</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th>Étape</th>
+<th>Résultat</th>
+</tr></thead><tbody>
+<tr>
+<td><code>npx tsc --noEmit</code></td>
+<td><strong>vert</strong></td>
+</tr>
+<tr>
+<td><code>npm run lint</code></td>
+<td><strong>vert</strong> — 0 erreur, 17 avertissements, tous antérieurs</td>
+</tr>
+<tr>
+<td><code>verifier:memoire</code></td>
+<td><strong>vert</strong></td>
+</tr>
+<tr>
+<td>Suites base (<code>atlas_test</code>)</td>
+<td><strong>291 / 310</strong></td>
+</tr>
+<tr>
+<td>Suites navigateur</td>
+<td><strong>pas encore jouées</strong> — voir ci-dessous</td>
+</tr>
+</tbody></table></div>
+<p><strong>Les 19 rouges des suites base ne désignent pas ce lot, et c'est mesuré.</strong> Aucun ne mentionne la reprise, la fiche, le planning ou les portes. Ils portent trois signatures, et toutes les trois sont des signatures de <strong>collision entre sessions</strong> :</p>
+<div class="tablewrap"><table><thead><tr>
+<th>Signature</th>
+<th>Ce que c'est</th>
+</tr></thead><tbody>
+<tr>
+<td>« n'est pas membre de l'entreprise »</td>
+<td>deux batteries sur la même base</td>
+</tr>
+<tr>
+<td>« deadlock detected »</td>
+<td>idem</td>
+</tr>
+<tr>
+<td>« la capacité n'a pas la forme attendue », « aucune garde n'a été retirée »</td>
+<td>les essais négatifs <strong>écrivent sur disque</strong> pour se prouver capables d'échouer — une autre session écrivait au même moment</td>
+</tr>
+</tbody></table></div>
+<p>Deux rouges sont d'un autre lot en cours et nommément identifiés : <code>ChoixCanal.tsx</code> (bouton rectangulaire) et les capsules « Par SMS » / « Par e-mail » du formulaire de création.</p>
+<p><strong>Les suites navigateur n'ont pas été jouées, et c'est dit plutôt que supposé.</strong> Elles refusent de démarrer tant que le port 3000 est occupé — à raison : elles travailleraient sur le serveur d'un autre code. Elles se jouent quand les autres sessions se taisent.</p>
+<hr>
+<h2 id="9-ce-qui-reste-ouvert">9. Ce qui reste ouvert</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th>Quoi</th>
+<th>Qui peut trancher</th>
+</tr></thead><tbody>
+<tr>
+<td>Faut-il rendre une porte du chantier vers la fiche du client, et où ?</td>
+<td><strong>lui</strong></td>
+</tr>
+<tr>
+<td>La flèche d'<code>/export</code> d'un chantier planifié — la liste suffit-elle ?</td>
+<td><strong>lui</strong>, à l'usage</td>
+</tr>
+<tr>
+<td>Jouer les suites navigateur</td>
+<td>une session, quand les autres se taisent</td>
+</tr>
+</tbody></table></div>
+</main>
+</body>
+</html>

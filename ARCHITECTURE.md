@@ -22474,3 +22474,176 @@ gardée **mot pour mot** : elle vient de `MOTIF_DEVIS_VIDE`, celle-là même que
 serveur oppose au refus. En écrire une version courte pour l'écran donnerait
 deux rédactions du même refus. La phrase nomme le geste ; le bouton
 `aller-aux-prix` le fait.
+
+---
+
+## §253. Les portes d'un chantier vivent au planning, pas sur sa fiche
+
+**Sa décision du 1er septembre 2026 :** la fiche du chantier disparaît, et ce
+qu'elle portait encore va sur les chantiers du planning. Sa raison, dite le même
+jour : *« toutes ces infos sont déjà sur cette page — on la garde, donc ça fait
+des doublons si on garde l'autre aussi. »* Ce qu'il refuse n'est pas un écran de
+trop : ce sont **deux écrans qui montrent la même chose**.
+
+**Son choix d'allure, le 4 septembre : la C.** Trois lui étaient posées sur
+`appli/facture-au-planning.html`, refaite ce jour-là sur le planning
+d'aujourd'hui — la version du 1er dessinait celui d'avant sa refonte, et c'est
+la raison qu'il a donnée de n'avoir jamais répondu.
+
+| | Ce qu'elle coûte, **mesuré sur la planche** |
+|---|---|
+| A · les trois portes dépliées | les deux journées passent de **374 à 794 px** ; le vendredi tombe sous un pli qui en fait 664 |
+| B · un bouton plein par ligne | trois aplats clairs, dont un sur une facture **déjà partie** — elle ne se fait pas, elle se consulte |
+| **C · la feuille** | rien au repos, un appui de plus, **le planning intact** |
+
+### Ce qui vit où, et pourquoi
+
+| | |
+|---|---|
+| `src/lib/portes-du-planning.ts` | la règle : quelles portes existent, laquelle attend un geste |
+| `src/app/planning/PortesDuChantier.tsx` | la feuille, montée par le chevron |
+| `src/components/atlas/BottomSheet.tsx` | la coquille, **partagée** — six écrans montent déjà une feuille avec elle |
+
+**La règle est pure et testée sans base** (`scripts/test-portes-du-planning.ts`),
+parce qu'un écran ne décide de rien (`CLAUDE.md` §3). Écrite dans le composant,
+elle aurait été recopiée le jour où la feuille et la liste des terminés auraient
+dû dire la même chose du même chantier.
+
+**Et elle ne réécrit rien de ce qui existait :**
+
+- « le chantier a-t-il eu lieu » vient de `ongletDepuisJalons` — la règle qui
+  range déjà un chantier entre planning et terminés. La recopier aurait fait
+  deux vérités sur la même journée, à un écran d'écart ;
+- « où mène le devis » vient de `getSecondarySteps` (20 août) : `/export` une
+  fois parti, `/devis-complet` avant. Le planning connaît l'envoi sous le nom
+  `envoiEnvoyeAt` ; c'est le même événement.
+
+### Le chevron a changé de geste, jamais d'objet
+
+Il menait à `/chantiers/[id]`, et ce n'était pas un caprice : un chantier POSÉ
+quitte l'onglet « Chantiers » (`onglet-chantier.ts`), si bien que le planning est
+le seul endroit d'où l'atteindre — c'est le cul-de-sac qu'il signalait le 8 août
+2026, *« comment moi je fais pour avoir accès au devis ? »*.
+
+**La feuille tient cette promesse mieux que le lien** : elle porte le devis, la
+facture et la fiche client, nommés et datés, au lieu d'un écran d'où il fallait
+repartir. Le NOM, lui, garde son geste : il déplie la journée.
+
+`test-planning-vers-facture-e2e.ts` a été **adapté, pas contourné** : il défend
+la règle — *depuis le planning, on atteint le devis* — par le chemin
+d'aujourd'hui. Une suite qui exigerait l'ancien lien rendrait l'écran impossible
+à changer (`CLAUDE.md` §5 bis).
+
+### Ce que ce paragraphe ne dit pas encore
+
+**La fiche `/chantiers/[id]` existe toujours.** Elle reste le point de reprise
+de `lienDeReprise` pour les photos, la dictée et un chantier planifié, et huit
+chemins y mènent. Son retrait est le lot suivant : ce lot-ci lui donne d'abord
+une maison, parce qu'un écran qu'on supprime avant d'avoir déménagé ce qu'il
+porte emporte ce qu'il portait.
+
+## §254. La fiche du chantier retirée : une adresse qui ne montre plus rien
+
+**Sa décision, prise deux fois.** Le 21 août 2026 : *« la fiche chantier, on la
+supprime pour de bon. »* Puis le 1er septembre, sa raison : *« toutes ces infos
+sont déjà sur cette page — on la garde, donc ça fait des doublons si on garde
+l'autre aussi. »* Ce qu'il refusait n'était pas un écran de trop : c'étaient
+**deux écrans qui montraient la même chose**. La fiche client porte les photos,
+l'anneau de dictée et les coordonnées depuis le 31 août (§226) ; la fiche du
+chantier les montrait une seconde fois.
+
+On lui avait répondu le 31 août qu'elle ne pouvait pas partir : elle portait
+encore la seule sortie vers la facture. **Cette réponse est morte le 4 septembre
+au matin**, quand la facture a pris sa maison au planning (§253). Ce paragraphe
+est le lot d'après.
+
+### L'ORDRE, et c'est là qu'on perd une heure
+
+`lienDeReprise` rendait `/chantiers/[id]` dans **quatre** cas — les photos, la
+dictée, un devis parti sans date, et un chantier planifié par son repli. Or la
+route qui remplace la fiche interroge cette fonction. Rediriger avant de la
+corriger, c'était **une boucle**, et sur un chantier posé : le cas du patron.
+
+Et un cinquième chemin bouclait, qu'aucun relevé n'avait vu :
+`apresLesCoordonnees()` rendait la fiche du chantier sans provenance.
+Enregistrer la fiche client y renvoyait, la redirection ramenait à la fiche
+client — sur le formulaire qu'il venait de quitter.
+
+### Où mène chaque chemin, désormais
+
+| D'où | Vers | Pourquoi celui-là |
+|---|---|---|
+| des photos, une dictée à faire | `/chantiers/[id]/coordonnees` | la pellicule et l'anneau y vivent : c'était le doublon |
+| une date à poser | `/planning` | ce que `getNextActionHref` rendait déjà — le chantier est dans « À planifier » |
+| **la date est posée** | `/planning?chantier=[id]` | **sa journée, portes levées** — sa réponse du 4 septembre : *« sa journée »* |
+| la fiche client enregistrée, sans provenance | `/` | la flèche du même écran y allait déjà : les deux gestes cessent de se contredire |
+| les cinq flèches — `informations`, `prix`, `note-vocale`, `transcription`, `export` | `/` | **elles héritent de celle de la fiche**, mot pour mot. Aucune règle neuve |
+| le rappel « Faire le devis » | `/devis-complet` | le libellé le dit |
+| le rappel « Ouvrir le chantier » | `/export` | la règle du 20 août : parti → export |
+
+**Le mois s'ouvre sur SA date, et dans l'état de départ — pas dans un effet.**
+Un effet aurait peint le mois courant puis sauté sur le bon : une cascade que
+l'œil voit et que le lint refuse. Le paramètre vient du serveur ; il est là au
+premier rendu. Refermer la feuille laisse donc le patron devant sa journée.
+
+**L'identifiant voyage, jamais la date.** Le planning connaît déjà la date de
+chaque chantier ; la répéter dans l'adresse ferait deux vérités sur la même
+journée, et la plus vieille serait celle du lien — un signet gardé une semaine
+ouvrirait le mois d'avant.
+
+### La route survit à l'écran, et c'est délibéré
+
+Un signet, un lien profond, **une notification déjà partie** portent encore
+`/chantiers/[id]`. Supprimer le dossier rendrait un 404 à quelqu'un qui avait
+raison de cliquer. Le fichier ne montre donc rien : il redirige. `notFound()` y
+reste — un chantier d'une autre entreprise rend `null` exactement comme un
+chantier inexistant, et les deux doivent rester indiscernables.
+
+### Ce que ce retrait a coûté, et qu'il faut savoir
+
+**Les deux listes du bas du planning n'avaient AUCUN lien vers le chantier** —
+ni chevron, ni nom cliquable. Tant que la fiche existait, cela ne se voyait
+pas : la liste des chantiers y menait. Un devis parti y serait devenu
+injoignable, c'est-à-dire le cul-de-sac du 8 août 2026 sous un autre nom. « Sans
+date » et « En attente du client » portent donc le même chevron et la même
+feuille que les journées — `portesDuPlanning` rend le devis et la fiche client
+sur un chantier sans date, et pas la facture. **Le chevron, jamais le nom** : sa
+consigne du 4 septembre.
+
+**AUCUN ÉCRAN N'OUVRE PLUS `/clients/[id]` DEPUIS UN CHANTIER**, et ce n'est pas
+un oubli. Cette porte vivait dans le tiroir de la fiche (arrangement B du
+16 août). La fiche du client reste à deux touches par la liste des clients ;
+faut-il lui rendre cette porte, et où ? C'est à lui de trancher — l'ajouter à la
+fiche client serait remettre sur un écran qu'il a fait vider le 20 août
+(`TODO.md`).
+
+**La flèche d'`/export` d'un chantier PLANIFIÉ mène à `/`, où ce chantier ne
+figure plus.** Il y arrive par le planning, dont la porte reste ; le retour du
+navigateur marche. Un `?de=` sur les cinq écrans aurait fermé ce trou — et
+ajouté une troisième règle de retour pour un cran de navigation. Refusé, et dit.
+
+### Ce qui a été SUPPRIMÉ avec l'écran, et non gardé « au cas où »
+
+`getSecondarySteps` et `SecondaryStep` construisaient le tiroir de la fiche, et
+n'avaient qu'un seul appelant. Une liste conservée au cas où se met à mentir en
+silence (§3 de `CLAUDE.md`). Ce qu'elle décidait n'est ni perdu ni recopié : la
+destination du devis vit dans `portes-du-planning.ts`, la reprise des photos et
+de la dictée dans `getNextActionHref`. `TiroirFiche.tsx` part avec.
+
+**Les cinq écrans d'étape restent tous** : la fiche n'en était que la liste.
+
+### Les suites : ce qui a été adapté, et ce qui a été retiré
+
+`_creer-chantier-e2e.ts` — le socle de quatre-vingt-deux fichiers — n'ouvre plus
+la fiche : elle réclamait un chantier, pas une page. Onze suites ont été visées
+plus profond, jamais restaurées (`CLAUDE.md` §5 bis) :
+
+| Suite | Ce qu'elle visait | Ce qu'elle vise |
+|---|---|---|
+| `test-rapprochement-client-e2e` | la porte du tiroir vers `/clients/[id]` | **le `client_id` en base**, que rien ne peut faire retirer |
+| `test-anneau-vers-devis-e2e` | « Mon devis » sous l'anneau, puis le tiroir | l'arrivée automatique du devis, et **le signet d'hier qui mène au planning** |
+| `test-anneau-dictee-e2e` | le corps vide et son tiroir | l'anneau sur la fiche client |
+| `test-photos-e2e`, `test-retrait-differe-e2e` | la pellicule dans le tiroir | la pellicule à découvert |
+| `test-devis-a-la-main-e2e`, `test-devis-complet-e2e` | la ligne « Devis à la main » du tiroir | l'arrivée sur le devis, sans détour |
+| `test-retour-fiche-client` | `versFicheClient(` dans l'écran retiré | **rien** — le cas est supprimé, et la perte écrite noir sur blanc |
+| `test-reprendre-ou-il-en-etait`, `test-retour-du-devis`, `test-hub-repo` | la fiche comme destination | **qu'elle ne le soit JAMAIS** — le contrôle qui empêche la boucle de renaître |

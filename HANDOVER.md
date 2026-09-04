@@ -9,7 +9,55 @@ sert.
 
 ---
 
-## Dernier lot — LA FEUILLE « ENVOYER À … », PASSÉE AU PEIGNE (4 septembre 2026)
+## Dernier lot — LA FICHE DU CHANTIER RETIRÉE (4 septembre 2026)
+
+**Sa décision, prise deux fois** — 21 août : *« la fiche chantier, on la supprime
+pour de bon »* ; 1er septembre : *« toutes ces infos sont déjà sur cette page,
+ça fait des doublons si on garde l'autre. »*
+
+**Ce qui l'avait retenue jusque-là :** elle portait la seule sortie vers la
+facture. La facture a déménagé au planning le matin même (§253) ; l'écran a pu
+partir l'après-midi.
+
+**L'ADRESSE `/chantiers/[id]` EXISTE ENCORE — elle ne montre plus rien, elle
+redirige.** Un signet, un lien profond, une notification déjà partie la portent :
+un 404 les punirait d'avoir eu raison.
+
+| Ce qui menait à la fiche | Mène à |
+|---|---|
+| photos, dictée | `/chantiers/[id]/coordonnees` |
+| date à poser | `/planning` |
+| **date posée** | **`/planning?chantier=[id]`** — sa journée, portes levées |
+| les cinq flèches de retour | `/` |
+
+**LE PIÈGE, si l'on doit y revenir :** `lienDeReprise` rendait cette même adresse
+dans quatre cas, et la route l'interroge. La corriger vient TOUJOURS avant de
+rediriger — sinon la boucle, sur un chantier posé, c'est-à-dire son cas.
+
+**Ce qui reste ouvert, et qui est à LUI :** plus aucun écran n'ouvre
+`/clients/[id]` depuis un chantier (`TODO.md`). Le pourquoi entier est en
+`ARCHITECTURE.md` §254, le retour au patron en
+`docs/retirer-la-fiche-du-chantier.md`.
+
+**Ce poste, et ça a coûté une batterie :** toutes ses sessions travaillent dans
+LE MÊME DOSSIER. Deux batteries navigateur ont été perdues le 4 septembre parce
+qu'une autre session écrivait pendant qu'elles tournaient. Les signatures à
+reconnaître, elles ne trompent pas : « n'est pas membre de l'entreprise »,
+« deadlock detected », et les essais négatifs qui écrivent sur disque
+(`roles-capacites`, `salarie-planning-lecture-seule`) qui annoncent « la capacité
+n'a pas la forme attendue ». **Ce ne sont pas des rouges du produit.** Le
+prévenir avant de lancer : il fait taire les autres.
+
+```bash
+docker start atlas-postgres atlas-redis
+sed 's/atlas_dev/atlas_test/g' .env > .env.batterie   # son .env vise atlas_dev, que les suites videraient
+npx tsx --env-file=.env.batterie scripts/run-all-tests.ts > /tmp/base.log 2>&1
+# suites navigateur : DATABASE_URL sur le rôle postgres (postgres_dev_pw), le seul qui traverse la RLS
+```
+
+---
+
+## Lot précédent — LA FEUILLE « ENVOYER À … », PASSÉE AU PEIGNE (4 septembre 2026)
 
 **Sa demande :** une passe complète sur la feuille qui monte quand on appuie sur
 « Choisir la date », **dans tous ses états**, chartes sombres comprises.

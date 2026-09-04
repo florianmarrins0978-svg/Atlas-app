@@ -43,8 +43,12 @@ export default async function TranscriptionPage({ params }: { params: Promise<{ 
   return (
     <div style={{ backgroundColor: colors.cream, color: colors.ink, fontFamily: font.body, minHeight: "100%" }}>
       <div className="pb-16">
+        {/* **La flèche HÉRITE de celle de la fiche du chantier**, mot pour mot,
+            depuis que celle-ci a disparu (4 septembre 2026, `ARCHITECTURE.md`
+            §254). Cet écran était à un cran d'elle : il prend sa place, il
+            n'invente pas une destination. */}
         <EnTeteEcran
-          retour={{ href: `/chantiers/${id}`, libelle: "Retour à la fiche du chantier" }}
+          retour={{ href: "/", libelle: "Retour à la liste des chantiers" }}
           surtitre={chantier.nom}
           titre="Transcription"
         />

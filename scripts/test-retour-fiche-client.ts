@@ -104,17 +104,25 @@ cas("la fiche client emploie la règle partagée, et ne remet pas « / » en dur
   );
 });
 
-cas("le chantier dit d'où il part quand il ouvre la fiche", () => {
-  const ecran = readFileSync(
-    path.join(__dirname, "..", "src", "app", "chantiers", "[id]", "page.tsx"),
-    "utf8"
-  );
-  assert.match(
-    ecran,
-    /versFicheClient\(/,
-    "le chantier pose un lien nu : la flèche ramènerait chez les clients, d'où il ne venait pas"
-  );
-});
+// ─── CE CAS A PERDU SON ÉCRAN, ET IL FAUT SAVOIR CE QUE ÇA COÛTE ────────────
+//
+// « le chantier dit d'où il part quand il ouvre la fiche » lisait
+// `src/app/chantiers/[id]/page.tsx` et y exigeait `versFicheClient(`. Cette
+// porte vers `/clients/[id]` vivait dans le tiroir de la fiche du chantier
+// (arrangement B du 16 août 2026) ; **cette fiche est retirée le 4 septembre**
+// (`ARCHITECTURE.md` §254), et le tiroir avec.
+//
+// **AUCUN ÉCRAN N'OUVRE PLUS `/clients/[id]` DEPUIS UN CHANTIER**, et ce n'est
+// pas un oubli : c'est le prix du retrait, écrit noir sur blanc plutôt que
+// découvert par lui. La fiche du client reste à deux touches par la liste des
+// clients, et `TODO.md` porte la question — faut-il lui rendre cette porte, et
+// où ? Lui seul peut trancher : ajouter un lien à la fiche client serait
+// remettre sur un écran qu'il a fait vider le 20 août.
+//
+// **Le mécanisme, lui, est éprouvé au-dessus** — l'aller (`versFicheClient`) et
+// le retour (`retourFicheClient`) se répondent, et refusent une adresse
+// étrangère. Réécrire ce cas sur un autre écran aurait été lui prêter une
+// promesse qu'il n'a jamais faite (`CLAUDE.md` §5 bis).
 
 console.log(`\n${echecs === 0 ? "✅" : "❌"} Le retour de la fiche client — ${echecs} échec(s).`);
 process.exit(echecs === 0 ? 0 : 1);

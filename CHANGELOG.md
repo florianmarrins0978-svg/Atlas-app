@@ -9,6 +9,77 @@ Format : le plus récent en tête.
 
 ## 2026-09-04
 
+### La fiche du chantier est retirée : une adresse qui ne montre plus rien
+
+**Sa décision, prise deux fois** — le 21 août (*« la fiche chantier, on la
+supprime pour de bon »*) puis le 1er septembre, avec sa raison : *« toutes ces
+infos sont déjà sur cette page — ça fait des doublons si on garde l'autre. »*
+La fiche client porte les photos, la dictée et les coordonnées depuis le
+31 août ; la fiche du chantier les montrait une seconde fois.
+
+**Ce que ça évite :** deux écrans à tenir d'accord pour la même chose. Et le
+piège qu'il fallait désamorcer d'abord — `lienDeReprise` rendait cette adresse
+dans quatre cas, la route qui la remplace l'interroge : rediriger sans corriger,
+c'était une **boucle**, sur un chantier posé, c'est-à-dire le cas du patron.
+
+| Ce qui menait à la fiche | Mène désormais |
+|---|---|
+| des photos, une dictée | la fiche client |
+| une date à poser | le planning |
+| **la date est posée** | **le planning SUR SA JOURNÉE**, portes levées — sa réponse : *« sa journée »* |
+| les cinq flèches de retour | la liste des chantiers, comme la fiche elle-même |
+| « Faire le devis » / « Ouvrir le chantier » | le devis / l'envoi |
+
+**L'adresse survit à l'écran** : un signet, un lien profond, une notification
+déjà partie la portent encore. Elle redirige au lieu de rendre un 404.
+
+**Ce que ce retrait a coûté, et qui est écrit :** « Sans date » et « En attente
+du client » n'avaient aucun lien vers le chantier — un devis parti y serait
+devenu injoignable. Elles portent le même chevron que les journées. Et **plus
+aucun écran n'ouvre `/clients/[id]` depuis un chantier** : la question est dans
+`TODO.md`, il tranchera.
+
+Détail, contreparties et les onze suites adaptées : `ARCHITECTURE.md` §254.
+
+
+### Le chevron du planning fait monter les portes du chantier — son allure C, CODÉE
+
+**Sa réponse du 4 septembre, devant la planche refaite : « je préfère la C. »**
+Rien au repos ; le chevron d'une ligne fait monter une feuille qui porte la
+facture, le devis et la fiche client.
+
+**Ce que ça débloque, et c'est tout l'objet :** la fiche du chantier peut
+maintenant partir. Il la veut supprimée depuis le 21 août (*« on la supprime pour
+de bon »*), et ce qui la retenait était la facture — elle n'avait nulle part où
+aller. Elle a une maison.
+
+| | |
+|---|---|
+| la règle | `src/lib/portes-du-planning.ts`, pure, éprouvée sans base |
+| la feuille | `src/app/planning/PortesDuChantier.tsx`, sur le `BottomSheet` partagé |
+| le geste | le chevron ouvre ; le NOM continue de déplier la journée |
+
+**Ce que la règle sait, et qu'un écran n'aurait pas dû décider :** un chantier à
+venir n'a pas de facture à créer — la proposer, c'est offrir un geste qui ne peut
+mener qu'à une facture fausse, et c'est lui qui la signe. Une facture déjà partie
+n'est plus un geste : elle se consulte. Et il y a **au plus un geste par
+chantier**, ce que la suite vérifie sur toutes les combinaisons.
+
+**Rien n'a été réécrit de ce qui existait** : « le chantier a-t-il eu lieu » vient
+de `ongletDepuisJalons`, et « où mène le devis » de `getSecondarySteps` —
+`/export` une fois parti, `/devis-complet` avant. Deux règles recopiées auraient
+divergé, et le planning aurait fini par contredire la fiche.
+
+**La suite qui gardait l'ancien chemin a été adaptée, pas contournée**
+(`test-planning-vers-facture-e2e.ts`) : elle défend la règle — *depuis le
+planning, on atteint le devis* — par le geste d'aujourd'hui. Exiger l'ancien lien
+aurait rendu l'écran impossible à changer.
+
+**Ce qui reste, et c'est le lot suivant :** retirer `/chantiers/[id]` et
+rediriger les huit chemins qui y mènent encore (`lienDeReprise`, les flèches de
+retour de cinq écrans, les notifications). Le faire dans le même lot aurait
+supprimé l'écran avant d'avoir déménagé tout ce qu'il porte.
+
 ### Le travail non enregistré ne se jette plus sans le dire
 
 **Sa question, après avoir vu qu'un lot avait dû être réécrit de mémoire :**

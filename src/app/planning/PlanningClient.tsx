@@ -39,6 +39,7 @@ import {
 } from "@/lib/planning-jour";
 import { equipesMobilisees, libelleSalarie, salariesAffiches } from "@/lib/equipes";
 import LigneRetirable from "@/components/atlas/LigneRetirable";
+import PortesDuChantier from "./PortesDuChantier";
 import TiroirDesRetires from "@/components/atlas/TiroirDesRetires";
 import { useRetraits } from "@/components/atlas/useRetraits";
 import { lienAppel, liensItineraire } from "@/lib/itineraire";
@@ -162,6 +163,7 @@ export default function PlanningClient({
   agenda = { configure: false, relie: false, actif: false, enPanne: false },
   absences = [],
   role = null,
+  chantierDemande = null,
 }: {
   initialChantiers: ChantierPlanning[];
   /** La CAPACITÉ : combien de chantiers tiennent dans une journée. */
@@ -199,6 +201,18 @@ export default function PlanningClient({
    * même serait un mensonge, et l'inverse une panne (`CLAUDE.md` §3).
    */
   role?: Role | null;
+  /**
+   * Le chantier sur lequel ouvrir — `?chantier=<id>`, lu au serveur.
+   *
+   * **Sa réponse du 4 septembre 2026 : « sa journée ».** Un chantier posé
+   * n'a plus d'écran à lui (`ARCHITECTURE.md` §254) ; le déposer sur le mois
+   * courant, à lui de retrouver sa ligne, c'est l'errance du 8 août 2026.
+   *
+   * **Un identifiant qui ne désigne rien de VISIBLE ne fait rien** : ni
+   * erreur, ni écran vide. Un signet dont le chantier a été retiré ouvre le
+   * planning du jour, ce qui n'est pas une panne.
+   */
+  chantierDemande?: string | null;
 }) {
   // Les deux portes que cet écran propose, décidées par la règle des rôles —
   // jamais par une liste écrite ici. Sans rôle (cas d'un rendu hors session),
@@ -226,12 +240,35 @@ export default function PlanningClient({
   const [chantiers, setChantiers] = useState<ChantierPlanning[]>(initialChantiers);
   const aujourdHui = jourIso(new Date());
 
+  /**
+   * ─── ARRIVER PAR `?chantier=<id>` : SA JOURNÉE, PORTES LEVÉES ──────────────
+   *
+   * **Sa réponse du 4 septembre 2026.** C'est ce qui permet à la fiche du
+   * chantier de partir (`ARCHITECTURE.md` §254) : elle était le seul endroit où
+   * retomber une fois la date posée, puisqu'un chantier posé quitte l'onglet
+   * « Chantiers » (`onglet-chantier.ts`).
+   *
+   * **Il se lit DANS L'ÉTAT DE DÉPART, pas dans un effet.** Un effet aurait
+   * peint le mois courant, puis sauté sur le bon — une cascade de rendus que
+   * l'œil voit, et que le lint refuse à juste titre. Le paramètre vient du
+   * serveur : il est là au premier rendu, il n'y a rien à attendre.
+   *
+   * **Introuvable, ou retiré : on ne dit rien.** Le planning du jour s'ouvre
+   * normalement — un signet dont le chantier a été supprimé n'est pas une
+   * panne, et une page d'erreur le lui ferait croire.
+   */
+  const viseDemande = chantierDemande
+    ? (initialChantiers.find((c) => c.id === chantierDemande) ?? null)
+    : null;
+  /** Le jour sur lequel le calendrier s'ouvre : le sien, sinon aujourd'hui. */
+  const jourDArrivee = viseDemande?.datePlanifiee ?? aujourdHui;
+
   const [curseur, setCurseur] = useState(() => {
-    const d = enDate(aujourdHui);
+    const d = enDate(jourDArrivee as JourIso);
     return { annee: d.getUTCFullYear(), mois: d.getUTCMonth() };
   });
   const [jourTouche, setJourTouche] = useState<JourIso | null>(null);
-  const [lundi, setLundi] = useState<JourIso>(() => lundiDe(aujourdHui));
+  const [lundi, setLundi] = useState<JourIso>(() => lundiDe(jourDArrivee as JourIso));
   const [, enTransition] = useTransition();
 
   const grilleRef = useRef<HTMLDivElement>(null);
@@ -406,6 +443,20 @@ export default function PlanningClient({
 
   /** La carte d'un jour dépliée sous une ligne des planifiés. */
   const [carteListe, setCarteListe] = useState<{ apres: string; jour: JourIso } | null>(null);
+  /**
+   * Le chantier dont le chevron vient d'ouvrir ses portes — son allure C.
+   *
+   * On garde le chantier ENTIER, et non son identifiant : la liste est
+   * repeinte à chaque enregistrement de note, et un identifiant seul obligerait
+   * à la reparcourir pour retrouver ce que le doigt désigne déjà.
+   */
+  /**
+   * **Levées d'emblée quand on arrive par `?chantier=<id>`** — sa réponse du
+   * 4 septembre 2026. Le mois, lui, est déjà calé sur sa journée : voir
+   * `viseDemande`, tout en haut. Refermer la feuille laisse donc le patron
+   * devant SA date, et non devant le mois courant.
+   */
+  const [portes, setPortes] = useState<ChantierPlanning | null>(viseDemande);
 
   /** Ce que porte la feuille de chaque chantier — chargé une fois, jamais deux. */
   const [taches, setTaches] = useState<Record<string, FeuilleDuChantier>>({});
@@ -874,49 +925,29 @@ export default function PlanningClient({
                           libelle={ditQuiPart(toutes.map(nomEquipe))}
                         />
                       )}
-                      {/* **Le chevron MÈNE au chantier, il n'ouvre pas la
-                          feuille.** La planche 84 lui donne le même geste que le
-                          nom ; l'application ne le peut pas, et voici pourquoi.
+                      {/* **LE CHEVRON FAIT MONTER LES PORTES — son allure C,
+                          choisie le 4 septembre 2026** sur
+                          `appli/facture-au-planning.html` : *« je préfère la
+                          C »*. Rien au repos, une feuille à l'appui.
 
-                          Un chantier POSÉ quitte l'onglet « Chantiers »
-                          (`src/lib/onglet-chantier.ts`) : le planning devient
-                          alors le seul endroit d'où l'atteindre. Sans ce lien,
-                          on retombe exactement sur ce qu'il a signalé le 8 août
-                          2026 — *« il se range dans les chantiers planifiés,
-                          mais comment moi je fais pour avoir accès au devis ? »*
-                          —, et la réponse redeviendrait : on ne peut pas.
-
-                          Le nom, lui, garde le geste de la planche : il ouvre la
-                          journée et la feuille. Un chevron promet qu'on PART
-                          quelque part, un nom qu'il se déplie : les deux gestes
-                          se distinguent d'eux-mêmes. */}
-                      {/* **LE CHEVRON RESTE UN LIEN VERS LE CHANTIER**, et
-                          c'est un contrôle du dépôt qui l'a rappelé : *« depuis
-                          le planning, le chantier mène à son devis »*
-                          (`test-planning-vers-facture-e2e.ts`).
-
-                          La planche 86 dessine un chevron qui pivote — mais
-                          c'est son signe de repli à elle, pas le geste de cet
-                          écran : ici le NOM déplie, et le chevron part. Les
-                          confondre coûterait le seul chemin vers le devis d'un
-                          chantier posé, puisqu'un chantier posé quitte l'onglet
-                          « Chantiers » (`src/lib/onglet-chantier.ts`) et que la
-                          feuille n'en offre aucun autre.
-
-                          C'est exactement ce qu'il signalait le 8 août 2026 —
+                          **Il menait à `/chantiers/[id]` jusqu'ici**, et ce
+                          n'était pas un caprice : un chantier POSÉ quitte
+                          l'onglet « Chantiers » (`src/lib/onglet-chantier.ts`),
+                          si bien que le planning est le seul endroit d'où
+                          l'atteindre. C'est ce qu'il signalait le 8 août 2026 —
                           *« il se range dans les chantiers planifiés, mais
-                          comment moi je fais pour avoir accès au devis ? »* — et
-                          la réponse redeviendrait : on ne peut pas. */}
-                      {ouvertes.fiche && (
-                        <Link
-                          href={`/chantiers/${c.id}`}
-                          aria-label={`Ouvrir le chantier — ${c.nom}`}
-                          className="cursor-pointer px-0.5 text-[19px] no-underline"
-                          style={{ color: colors.chevron }}
-                        >
-                          ›
-                        </Link>
-                      )}
+                          comment moi je fais pour avoir accès au devis ? »*.
+
+                          **La feuille tient cette promesse mieux que le lien** :
+                          elle porte le devis, la facture et la fiche client,
+                          nommés et datés, au lieu d'un écran d'où il fallait
+                          repartir. C'est ce qui permet à la fiche du chantier de
+                          disparaître — sa décision du 1er septembre.
+
+                          Le NOM, lui, garde son geste : il déplie la journée. Un
+                          chevron promet qu'on part quelque part, un nom qu'il
+                          s'ouvre : les deux se distinguent toujours. */}
+                      {ouvertes.fiche && <ChevronDesPortes chantier={c} onPortes={setPortes} />}
                     </div>
                     {deplie && (
                       <CarteDuJour
@@ -966,8 +997,19 @@ export default function PlanningClient({
           jourTouche={jourTouche}
           poser={poser}
           retraits={retraits}
+          portesOuvertes={ouvertes.fiche}
+          onPortes={setPortes}
         />
       </div>
+
+      {/* Les portes du chantier, montées par le chevron — son allure C. Posée
+          ici, hors de la liste : une feuille rendue dans la ligne descendrait
+          avec elle au défilement, et la coquille est déjà `fixed`. */}
+      <PortesDuChantier
+        chantier={portes}
+        aujourdHui={aujourdHui}
+        onFermer={() => setPortes(null)}
+      />
     </div>
   );
 }
@@ -975,6 +1017,37 @@ export default function PlanningClient({
 // ─────────────────────────────────────────────────────────────────────────
 // LES PIÈCES DE L'ÉCRAN
 // ─────────────────────────────────────────────────────────────────────────
+
+/**
+ * Le chevron qui fait monter les portes d'un chantier — son allure C.
+ *
+ * **Il vit dans une pièce, et non recopié à trois endroits.** Trois listes le
+ * portent depuis le 4 septembre 2026 — les journées, « Sans date » et « En
+ * attente du client » —, et un chevron recopié aurait changé de couleur ou de
+ * taille dans l'une des trois le jour où l'on retouche les deux autres.
+ *
+ * **Le NOM ne le remplace pas** : sa consigne du 4 septembre. Un chevron
+ * promet qu'on part quelque part, un nom qu'il s'ouvre.
+ */
+function ChevronDesPortes({
+  chantier,
+  onPortes,
+}: {
+  chantier: ChantierPlanning;
+  onPortes: (c: ChantierPlanning) => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={() => onPortes(chantier)}
+      aria-label={`Ouvrir le chantier — ${chantier.nom}`}
+      className="flex-shrink-0 cursor-pointer border-0 bg-transparent px-0.5 text-[19px]"
+      style={{ color: colors.chevron }}
+    >
+      ›
+    </button>
+  );
+}
 
 function Fleche({
   libelle,
@@ -2188,6 +2261,8 @@ function TiroirDuBas({
   jourTouche,
   poser,
   retraits,
+  portesOuvertes,
+  onPortes,
 }: {
   ecriture: boolean;
   sansDate: ChantierPlanning[];
@@ -2200,6 +2275,25 @@ function TiroirDuBas({
    * d'annulation se serait mis à recevoir autre chose que ce qu'il attend.
    */
   retraits: ReturnType<typeof useRetraits>;
+  /**
+   * ─── LES DEUX LISTES DU BAS ONT DES PORTES, ELLES AUSSI — 4 sept. 2026 ──
+   *
+   * **Elles n'avaient AUCUN lien vers le chantier** : ni chevron, ni bouton,
+   * ni nom cliquable. Tant que la fiche existait, cela ne se voyait pas — la
+   * liste des chantiers y menait. Elle est retirée le 4 septembre, et un
+   * devis parti sans date y serait devenu injoignable : exactement le
+   * cul-de-sac du 8 août 2026, *« comment moi je fais pour avoir accès au
+   * devis ? »*, sous un autre nom.
+   *
+   * **La même feuille que les journées, la même règle** (`portesDuPlanning`,
+   * qui rend le devis et la fiche client sur un chantier sans date, et pas la
+   * facture — un chantier qui n'a pas eu lieu ne se facture pas).
+   *
+   * **Le chevron, jamais le nom.** Sa consigne du 4 septembre : la feuille ne
+   * s'accroche pas au nom du chantier.
+   */
+  portesOuvertes: boolean;
+  onPortes: (c: ChantierPlanning) => void;
 }) {
   const [ouvert, setOuvert] = useState(false);
 
@@ -2375,6 +2469,7 @@ function TiroirDuBas({
                     >
                       {c.nom}
                     </span>
+                    {portesOuvertes && <ChevronDesPortes chantier={c} onPortes={onPortes} />}
                     {jourTouche ? (
                       <span className="flex flex-shrink-0 gap-[5px]">
                         {(
@@ -2432,12 +2527,19 @@ function TiroirDuBas({
                       i === attenteClient.length - 1 ? "none" : `1px solid ${colors.line}`,
                   }}
                 >
-                  <span style={{ fontFamily: font.display, fontSize: 19, lineHeight: 1.2 }}>
+                  <span
+                    className="min-w-0 flex-1 truncate"
+                    style={{ fontFamily: font.display, fontSize: 19, lineHeight: 1.2 }}
+                  >
                     {c.nom}
                   </span>
-                  <span className="text-right text-[12.5px]" style={{ color: colors.muted }}>
+                  <span
+                    className="flex-shrink-0 text-right text-[12.5px]"
+                    style={{ color: colors.muted }}
+                  >
                     Il choisit sa date
                   </span>
+                  {portesOuvertes && <ChevronDesPortes chantier={c} onPortes={onPortes} />}
                 </div>
               ))}
             </div>

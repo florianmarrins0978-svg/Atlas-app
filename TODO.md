@@ -471,10 +471,42 @@ ailleurs.
 | `src/lib/retour-du-devis.ts` | plus rien depuis §228 — déjà la fiche client |
 | cinq écrans | la flèche de retour d'`informations`, `prix`, `note-vocale`, `transcription`, `export` |
 
-**Où va le bouton : il a répondu — sur les chantiers du planning.** Trois
-allures lui sont proposées, et **rien ne se code avant sa lettre** :
-`appli/facture-au-planning.html`, en ligne à
+**~~Où va le bouton~~ — TRANCHÉ le 4 septembre 2026 : « je préfère la C »**, et
+**codé le jour même**. Le chevron d'une ligne du planning fait monter une
+feuille qui porte la facture, le devis et la fiche client
+(`src/lib/portes-du-planning.ts`, `src/app/planning/PortesDuChantier.tsx`,
+`ARCHITECTURE.md` §253).
+
+**Pourquoi il n'avait pas répondu plus tôt, et c'était sa raison :** *« on ne
+l'a pas corrigé avec /impeccable »* — la planche du 1er septembre dessinait le
+planning d'AVANT sa refonte du 4. Refaite sur le sien, en Nuit, il a tranché
+dans la minute. Une planche qui montre un écran disparu ne se répond pas.
+
+La planche reste en ligne, à jour :
 https://florianmarrins0978-svg.github.io/Atlas-app/facture-au-planning.html
+
+~~**CE QUI RESTE, ET C'EST LE LOT SUIVANT :** retirer `/chantiers/[id]` et
+rediriger les chemins du tableau ci-dessus.~~ — **FAIT le 4 septembre 2026.**
+L'adresse ne montre plus rien : elle redirige là où le travail s'est arrêté, et
+un chantier posé ouvre **sa journée** au planning, portes levées — sa réponse du
+jour. Le détail, les contreparties et les onze suites adaptées sont dans
+`ARCHITECTURE.md` §254 et `docs/retirer-la-fiche-du-chantier.md`.
+
+**⏸ CE QUI RESTE OUVERT, ET SEUL LE PATRON PEUT LE TRANCHER : plus aucun écran
+n'ouvre `/clients/[id]` depuis un chantier.**
+
+Cette porte — « ce qu'on sait de ce client », ses chantiers, ce qu'il doit —
+vivait dans le tiroir de la fiche du chantier, retenue le 16 août 2026
+(arrangement B de `docs/maquettes/66`). Elle est partie avec l'écran.
+
+| | |
+|---|---|
+| **ce qui reste** | la fiche du client s'atteint par la liste des clients, en deux touches |
+| **ce qui manque** | y aller depuis le chantier qu'on a sous les yeux |
+| **pourquoi on n'a pas décidé** | l'ajouter à la fiche client, ce serait remettre sur l'écran qu'il a fait vider le 20 août (*« tout le reste, tu enlèves, c'est du trop »*) ; en faire une quatrième porte du planning, ce serait retoucher une feuille qu'il vient de choisir |
+
+**La question à lui poser :** *quand tu regardes un chantier, as-tu besoin
+d'ouvrir ce qu'Atlas sait du client — ou la liste des clients suffit ?*
 
 | | |
 |---|---|

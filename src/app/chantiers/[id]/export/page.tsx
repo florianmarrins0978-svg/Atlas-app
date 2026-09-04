@@ -115,8 +115,12 @@ export default async function ExportPage({ params }: { params: Promise<{ id: str
 
           Le trou, lui, ne peut plus se rouvrir : avant l'envoi, l'écran EST le
           devis modifiable. */}
+      {/* **La flèche HÉRITE de celle de la fiche du chantier**, mot pour mot,
+          depuis que celle-ci a disparu (4 septembre 2026, `ARCHITECTURE.md`
+          §254). Cet écran était à un cran d'elle : il prend sa place, il
+          n'invente pas une destination. */}
       <EnTeteEcran
-        retour={{ href: `/chantiers/${id}`, libelle: "Retour à la fiche du chantier" }}
+        retour={{ href: "/", libelle: "Retour à la liste des chantiers" }}
         surtitre={chantier.nom}
         titre="Devis"
       />

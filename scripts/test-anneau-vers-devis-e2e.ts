@@ -65,13 +65,25 @@ async function main() {
 
   await page.goto(`${BASE}/chantiers/nouveau`, { waitUntil: "networkidle" });
   await page.fill('input[placeholder="Bernard"]', `Anneau devis ${Date.now()}`);
-  await creerPuisFiche(page);
-  await page.waitForURL(/\/chantiers\/[0-9a-f-]{36}$/, { timeout: 30_000 });
-  const fiche = page.url();
-  const chantierId = fiche.split("/").pop()!;
+  const chantierId = await creerPuisFiche(page);
+  // **LE PARCOURS A DÉMÉNAGÉ SUR LA FICHE CLIENT — 4 septembre 2026.**
+  //
+  // L'anneau vivait au milieu de la fiche du chantier ; celle-ci est retirée
+  // (`ARCHITECTURE.md` §254) parce qu'elle montrait une seconde fois ce que la
+  // fiche client porte déjà. Sa question du 11 août, elle, ne bouge pas :
+  // *« si je clique dessus, j'arrive directement à la page du devis et je ne
+  // passe pas par une page intermédiaire ? »*
+  const fiche = `${BASE}/chantiers/${chantierId}/coordonnees`;
   await page.goto(fiche, { waitUntil: "networkidle" });
 
-  const monDevis = page.locator('[data-atlas="mon-devis"]');
+  // **CE QU'ON GUETTE A CHANGÉ DE NOM, PAS DE FONCTION.** Sur la fiche du
+  // chantier, il fallait toucher « Mon devis » sous l'anneau. Sur la fiche
+  // client, sa demande du 30 août commande : *« appuyer sur la flèche pour
+  // envoyer de suite la transcription et arriver sur la page du devis »* — la
+  // chaîne part seule (`auto`), et ce qui paraît sous l'anneau n'est plus un
+  // bouton mais **ce qui se passe**. Un déclencheur de moins entre lui et son
+  // devis, ce qui est la direction de tout ce parcours depuis le 11 août.
+  const monDevis = page.locator('[data-atlas="preparation-automatique"]');
   // **Le micro, et non plus l'anneau creux** — 30 août 2026. Le repos est
   // désormais le disque plein qu'il a choisi (repos B), et l'envoi ne se fait
   // plus au second appui : il a son bouton, l'avion. Ce contrôle vise donc les
@@ -81,15 +93,15 @@ async function main() {
   const micro = page.locator('[data-atlas="anneau-note-vocale"] .atlas-micro');
   const avion = page.locator('[data-atlas="dictee-envoyer"]');
 
-  await cas("sur un chantier neuf, « Mon devis » n'existe pas", async () => {
+  await cas("sur un chantier neuf, la chaîne ne s'annonce pas", async () => {
     assert.equal(
       await monDevis.count(),
       0,
-      "le déclencheur est là sans dictée : il n'aurait rien à envoyer"
+      "la chaîne s'annonce sans dictée : elle n'aurait rien à préparer"
     );
   });
 
-  await cas("la dictée le fait naître, sous l'anneau", async () => {
+  await cas("la dictée la fait naître, sous l'anneau", async () => {
     await micro.click();
     await page.waitForTimeout(700);
     await page.waitForTimeout(2200);
@@ -104,26 +116,28 @@ async function main() {
     // au-dessus ou à côté, ce ne serait plus la maquette qu'il a validée.
     const boiteAnneau = await page.locator('[data-atlas="anneau-note-vocale"]').boundingBox();
     const boiteDevis = await monDevis.boundingBox();
-    assert.ok(boiteAnneau && boiteDevis, "l'anneau ou le déclencheur n'a pas de place à l'écran");
+    assert.ok(boiteAnneau && boiteDevis, "l'anneau ou l'annonce n'a pas de place à l'écran");
     assert.ok(
       boiteDevis.y > boiteAnneau.y,
-      "« Mon devis » n'est pas sous l'anneau : la forme choisie le pose dessous"
+      "l'annonce n'est pas sous l'anneau : la forme choisie la pose dessous"
     );
   });
 
-  // **Sans service de transcription raccordé, le geste DIT pourquoi il
+  // **Sans service de transcription raccordé, la chaîne DIT pourquoi elle
   // s'arrête.** C'est l'état réel de l'application au 11 août 2026 : aucun
   // contrat n'est signé (`TODO.md`, décision n°1), et le fournisseur `dev`
-  // recopie une simulation. Ce que le patron verrait aujourd'hui en appuyant,
-  // c'est cette phrase — et il vaut mieux qu'elle soit éprouvée, parce qu'un
-  // geste qui ne fait rien SANS RIEN DIRE se lit comme une panne.
-  await cas("sans service de transcription, il dit pourquoi il s'arrête", async () => {
-    await monDevis.click();
+  // recopie une simulation. Ce que le patron verrait aujourd'hui, c'est cette
+  // phrase — et il vaut mieux qu'elle soit éprouvée, parce qu'un travail qui
+  // s'arrête SANS RIEN DIRE se lit comme une panne.
+  //
+  // **Plus rien à toucher, et c'est la seule différence** : la chaîne est
+  // partie seule avec l'avion (sa demande du 30 août). L'attente reste la même.
+  await cas("sans service de transcription, elle dit pourquoi elle s'arrête", async () => {
     const raison = page.locator("text=/pas été transcrite|aucun prestataire/i").first();
     await raison.waitFor({ state: "visible", timeout: 120_000 });
     assert.ok(
-      page.url().endsWith(`/chantiers/${chantierId}`),
-      "on a quitté la fiche alors que rien ne pouvait être préparé"
+      page.url().startsWith(fiche),
+      `on a quitté la fiche client alors que rien ne pouvait être préparé — ${page.url()}`
     );
   });
 
@@ -215,63 +229,48 @@ async function main() {
     assert.equal(Number(rows[0].envois), 0, "un envoi a été créé : le devis est parti chez le client");
   });
 
-  // **Le tiroir allégé, et ce qui doit y survivre.**
+  // ─── DEUX CAS DU TIROIR ONT ÉTÉ REMPLACÉS PAR UN SEUL, ET PLUS PROFOND ────
   //
-  // Retirer « Informations », « Prix » et « Devis » était sa demande. Les trois
-  // décrivent un travail que la chaîne fait seule. Mais alléger, c'est
-  // déplacer : la note vocale et la rédaction à la main restent, sans quoi on
-  // ne pourrait ni réécouter, ni écrire son devis soi-même.
-  await cas("le tiroir ne garde que ce qui reste à faire à la main", async () => {
-    await page.goto(fiche, { waitUntil: "networkidle" });
-    const tiroir = page.locator('[data-atlas="tiroir-fiche"]');
-    assert.equal(await tiroir.count(), 1, "le tiroir a disparu de la fiche");
-
-    for (const [quoi, href] of [
-      ["la note vocale", "/note-vocale"],
-      ["la rédaction à la main", "/devis-complet"],
-    ] as const) {
-      assert.ok(
-        await tiroir.locator(`a[href*="${href}"]`).count(),
-        `${quoi} a disparu du tiroir : alléger l'a supprimée au lieu de la déplacer`
-      );
-    }
-    for (const [quoi, href] of [
-      ["les informations", "/informations"],
-      ["le prix", "/prix"],
-    ] as const) {
-      assert.equal(
-        await tiroir.locator(`a[href$="${href}"]`).count(),
-        0,
-        `${quoi} est encore dans le tiroir : c'est un travail que la chaîne fait désormais seule`
-      );
-    }
-  });
-
-  // **Le devis d'un chantier dont le devis est PARTI reste joignable.**
+  // « le tiroir ne garde que ce qui reste à faire à la main » et « une fois le
+  // devis parti, le tiroir mène au document » éprouvaient le tiroir de la fiche
+  // du chantier. **Cet écran est retiré le 4 septembre 2026**
+  // (`ARCHITECTURE.md` §254) : le tiroir avec.
   //
-  // Le trou que ce contrôle bouche a été creusé, puis trouvé par une suite —
-  // pas à la lecture. En retirant « Devis » du tiroir, on retirait aussi le
-  // seul chemin vers le document une fois celui-ci envoyé : « Mon devis », lui,
-  // disparaît à ce moment-là, puisqu'il n'y a plus rien à préparer.
+  // Ce qu'ils défendaient de vivant tient en une phrase, et elle n'a pas
+  // changé : **un devis parti ne doit jamais devenir injoignable.** C'est ce
+  // qu'il signalait le 8 août — *« il se range dans les chantiers planifiés,
+  // mais comment moi je fais pour avoir accès au devis ? »*. Le second de ces
+  // deux cas était d'ailleurs né d'un trou creusé par un allègement précédent :
+  // c'est précisément le risque de celui-ci.
   //
-  // La ligne revient donc dès qu'un devis existe. Elle n'annonce alors plus une
-  // besogne — elle mène au document.
-  await cas("une fois le devis parti, le tiroir mène au document", async () => {
+  // **Le contrôle suit donc SON chemin, pas une porte de service**
+  // (`CLAUDE.md` §5 quater) : le signet qu'il a gardé sur l'ancienne fiche.
+  await cas("un devis parti reste joignable, par le planning", async () => {
     await pool.query(
       "update chantiers set devis_genere_at = now(), devis_envoye_at = now() where id = $1",
       [chantierId]
     );
-    await page.goto(fiche, { waitUntil: "networkidle" });
-    const tiroir = page.locator('[data-atlas="tiroir-fiche"]');
-    assert.ok(
-      await tiroir.locator(`a[href$="/export"]`).count(),
-      "le devis envoyé n'est joignable depuis aucune ligne du tiroir : le document est perdu de vue"
+
+    // Son signet d'hier sur la fiche retirée : il ne rend pas un 404, il mène
+    // là où le travail en est — le planning, où ce chantier attend sa date.
+    await page.goto(`${BASE}/chantiers/${chantierId}`, { waitUntil: "networkidle" });
+    assert.match(
+      page.url(),
+      /\/planning/,
+      `l'ancienne adresse ne mène pas au planning — ${page.url()}`
     );
-    assert.equal(
-      await page.locator('[data-atlas="mon-devis"]').count(),
-      0,
-      "« Mon devis » propose encore de préparer un devis déjà parti chez le client"
-    );
+
+    // Et sa ligne y porte une porte vers son devis. Sans elle, un chantier
+    // sans date serait un cul-de-sac : « À planifier » n'avait AUCUN lien
+    // jusqu'au 4 septembre.
+    await page.locator('[data-atlas="tiroir-planning"]').waitFor({ state: "visible", timeout: 20_000 });
+    await page.locator('[data-atlas="tiroir-planning"] button').first().click();
+    const chevron = page.getByRole("button", { name: /^Ouvrir le chantier — / }).first();
+    await chevron.waitFor({ state: "visible", timeout: 20_000 });
+    await chevron.click();
+    const versLeDevis = page.locator(`a[href="/chantiers/${chantierId}/export"]`);
+    await versLeDevis.waitFor({ state: "visible", timeout: 20_000 });
+
     // On remet l'état d'avant : les contrôles suivants parlent d'un chantier
     // dont rien n'est parti, et se mentiraient sur un chantier qu'on vient de
     // marquer envoyé.

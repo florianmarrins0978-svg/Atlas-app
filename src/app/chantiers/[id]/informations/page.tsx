@@ -43,8 +43,12 @@ export default async function InformationsPage({ params }: { params: Promise<{ i
             les six autres sont passés à `EnTeteEcran` le 10 août, il avait été
             oublié. Son titre tenait en 32 px, son surtitre en vert pin —
             l'écart sautait aux yeux dès qu'on venait de la fiche du chantier. */}
+        {/* **La flèche HÉRITE de celle de la fiche du chantier**, mot pour mot,
+            depuis que celle-ci a disparu (4 septembre 2026, `ARCHITECTURE.md`
+            §254). Cet écran était à un cran d'elle : il prend sa place, il
+            n'invente pas une destination. */}
         <EnTeteEcran
-          retour={{ href: `/chantiers/${id}`, libelle: "Retour à la fiche du chantier" }}
+          retour={{ href: "/", libelle: "Retour à la liste des chantiers" }}
           surtitre={chantier.nom}
           titre="Informations"
         />

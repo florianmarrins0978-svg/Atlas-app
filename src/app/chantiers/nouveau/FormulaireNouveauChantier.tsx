@@ -279,7 +279,13 @@ export default function FormulaireNouveauChantier({
       const id = chantierCree
         ? await enregistrerSurLeChantier(chantierCree)
         : await assurerChantier();
-      router.push(vers === "devis" ? `/chantiers/${id}/devis-complet` : `/chantiers/${id}`);
+      // **UN CHANTIER NEUF VA TOUJOURS AU DEVIS**, et le ternaire qui
+      // envoyait vers la fiche du chantier était déjà mort : depuis le
+      // 21 août 2026, la création ne porte plus qu'un bouton, et il vaut
+      // « devis » (`creerPuisAller("fiche")` ne s'appelle que sur un écran
+      // ROUVERT, qui repart plus haut). Le laisser aurait fait croire à un
+      // chemin vers un écran retiré le 4 septembre (`ARCHITECTURE.md` §254).
+      router.push(`/chantiers/${id}/devis-complet`);
     } catch {
       setErreur("Impossible de créer le chantier pour l'instant. Réessayez.");
       setEnCoursVers(null);

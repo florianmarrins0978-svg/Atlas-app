@@ -222,7 +222,12 @@ async function main() {
     await page.locator('input[placeholder="06 12 34 56 78"]').fill("0679984514");
     await page.locator('input[placeholder="12 rue des Lilas, Nantes"]').fill("10 rue des Lilas, Nantes");
     await page.getByRole("button", { name: /Enregistrer/ }).click();
-    await page.waitForURL(new RegExp(`/chantiers/${chantierId}$`), { timeout: 30_000 });
+    // **On repart À LA LISTE, et plus sur la fiche du chantier** (4 septembre
+    // 2026, `ARCHITECTURE.md` §254). Il est entré depuis l'accueil, par la
+    // mention « Adresse non renseignée » : il y retourne. L'y renvoyer sur
+    // l'adresse retirée l'aurait ramené ICI par redirection — sur le
+    // formulaire qu'il vient d'enregistrer.
+    await page.waitForURL(`${BASE}/`, { timeout: 30_000 });
 
     // **Le nom recalculé est ce qui fait disparaître la ligne fautive.** Sans
     // lui, la base porterait le bon client et l'accueil dirait encore
