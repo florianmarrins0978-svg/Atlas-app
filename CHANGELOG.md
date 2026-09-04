@@ -43,10 +43,6 @@ Et le cadre annonçait « 390 × 664 pour de vrai » en faisant 346 px de large 
 un écran de 390 : les marges le rognaient, et `max-width:100%` reprenait la main
 sur `100vw`.
 
----
-
-## 2026-09-04
-
 ### La fiche client rouverte ouvrait toute seule une liste d’adresses
 
 **Sa plainte du 4 septembre :** *« je suis arrivé sur la page de la fiche

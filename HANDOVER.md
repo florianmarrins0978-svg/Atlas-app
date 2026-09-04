@@ -9,7 +9,24 @@ sert.
 
 ---
 
-## Dernier lot — LE DEVIS, de la dictée à l'écran du client (3 septembre 2026)
+## Dernier lot — LE CALENDRIER DU CLIENT MONTE DU BAS (4 septembre 2026)
+
+**Sa réponse, sur planche :** *« J'aime bien la À la feuille »*. Codé —
+`src/app/devis/[jeton]/formulaire.tsx`, `ARCHITECTURE.md` §249. La page du
+client passe de 990 à 664 px quand la contre-proposition s'ouvre.
+
+**Trois pièges à ne pas défaire :** le champ caché `dateAutre` vit HORS de la
+feuille ; refermer sans avoir choisi défait le choix ; la phrase de refus vit
+dans la feuille. Le pourquoi de chacun est en §249.
+
+**Ce qui reste, mesuré :** avec une date à moins de quatorze jours, la case de
+rétractation porte la page à 790 px. Deux façons d'y arriver, deux arbitrages —
+à lui (`TODO.md`). Et sa seconde question — les couleurs de la page du client —
+n'a toujours pas de réponse.
+
+---
+
+## Lot précédent — LE DEVIS, de la dictée à l'écran du client (3 septembre 2026)
 
 **Périmètre demandé par le patron :** les quatre surfaces du devis — préparation
 depuis la dictée, l'arrêt où il valide, la pièce qui part, l'écran du client. Ni

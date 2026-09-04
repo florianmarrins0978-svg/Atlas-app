@@ -19,6 +19,20 @@ ligne « fait » qui ne l'est pas coûte plus cher qu'une ligne absente.
 
 ---
 
+## FAIT : le calendrier du client monte du bas (4 septembre 2026)
+
+Sa réponse A, codée. La page du client garde ses 664 px quand la
+contre-proposition s'ouvre — elle en faisait 990 (`ARCHITECTURE.md` §249).
+
+| | |
+|---|---|
+| **fait** | le calendrier monte par-dessus, la page derrière ne bouge plus |
+| **fait** | le contrôle du pli ouvre enfin la feuille qu'il annonçait |
+| **reste** | avec une date à moins de 14 jours, la case de rétractation porte la page à 790 px — deux arbitrages, à lui |
+| **reste** | sa seconde question : la page du client suit-elle les couleurs de son devis (§248) |
+
+---
+
 ## FAIT : le devis, de la dictée à l'écran du client (3 septembre 2026)
 
 Trois défauts réparés, un mesuré et rendu au patron, un constat posé.

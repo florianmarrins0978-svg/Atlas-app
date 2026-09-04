@@ -22109,3 +22109,88 @@ La règle du patron est tenue ; c'est l'identité du document qui ne l'est pas.
 **Non corrigé** : changer les couleurs de ce que voit le client est une décision
 d'apparence, elle se dessine avant de se coder
 (`appli/ecran-de-son-client.html`, question 2).
+
+## §249. La feuille du client — sa réponse A, et ce qu'elle ne résout pas
+
+*4 septembre 2026. Le patron a choisi, sur planche, la forme que prend le
+calendrier de son client. Ce paragraphe dit ce qui a été codé, ce que cela
+mesure, et le cas qui reste.*
+
+### Ce qu'il a choisi
+
+Trois formes lui ont été soumises (`appli/ecran-de-son-client.html`), toutes
+mesurées comme tenant dans son écran de 390 × 664 : **A la feuille**, **B
+l'échange** — le haut se replie —, **C le second écran**. Sa réponse, en une
+ligne : *« J'aime bien la À la feuille »*.
+
+**A, c'est-à-dire :** le calendrier monte du bas, par-dessus, et la page
+derrière **garde exactement la hauteur qu'elle avait**. Rien ne se replie, rien
+ne disparaît, aucun écran ne s'intercale.
+
+### Ce que cela mesure
+
+| état | avant | après |
+|---|---|---|
+| replié | 664 px | 664 px |
+| **calendrier ouvert** | **990 px** | **664 px** |
+| dernier bouton | 963 px | 602 px |
+
+### Ce qui a demandé de l'attention, et qu'il ne faut pas défaire
+
+- **Le champ caché `dateAutre` vit HORS de la feuille.** C'est lui qui part au
+  serveur : posé dedans, il disparaîtrait du formulaire à la fermeture, et la
+  date choisie ne serait jamais envoyée.
+- **Refermer sans avoir choisi défait le choix.** Sinon le client reste sur
+  « Une autre date » sans date, et son acceptation est refusée par le serveur —
+  un refus qu'il ne comprendrait pas, puisque rien à l'écran ne dit ce qui
+  manque.
+- **La phrase de refus vit DANS la feuille.** Celle du formulaire est plus bas,
+  donc derrière elle : un refus posé là serait caché par ce qui vient de le
+  provoquer.
+- **C'est la feuille de la maison** (`BottomSheet`), pas une seconde. Elle ne
+  porte aucune couleur de l'artisan : cette page n'en reçoit aucune
+  (`layout.tsx`, `estPageDuClient`), et ses jetons retombent sur la charte
+  d'origine.
+
+### La règle du 26 août tient, par un autre geste — et le contrôle a suivi
+
+*« Si par erreur j'ai sélectionné un des 3 champs je ne peux plus le
+désélectionner »* (26 août 2026). Le calendrier couvre maintenant le bouton
+radio : on ne peut plus le rappuyer pour le décocher.
+
+**La règle n'a pas bougé ; le geste, si.** Refermer la feuille sans avoir touché
+de jour défait le choix. `test-devis-client-e2e` a donc été adapté à la RÈGLE et
+non à la mise en page (`CLAUDE.md` §5 bis), et il a gagné un contrôle que
+personne n'avait : **une date retenue survit à la fermeture**. Sans lui, une
+feuille qui viderait tout en se refermant passerait le premier point en beauté
+et perdrait la date du client.
+
+### CE QUI RESTE, et le chiffre exact
+
+**Quand le client retient une date à moins de quatorze jours, la page fait
+790 px.** La case de rétractation — « je demande expressément que les travaux
+commencent avant la fin du délai » — pèse **125 px**, et elle vit dans la page,
+pas dans la feuille.
+
+Décomposition mesurée, à 390 × 664 :
+
+| bloc | hauteur |
+|---|---|
+| en-tête (devis, totaux, téléchargement) | 204 px |
+| carte des dates (titre, 2 dates, « autre », date retenue, message) | 252 px |
+| **case de rétractation** | **125 px** |
+| les trois issues + la mention de preuve | 146 px |
+| gouttières et marges | 63 px |
+
+**Ce n'est pas corrigé, et pour une raison :** les deux façons d'y arriver sont
+des arbitrages, pas des évidences.
+
+1. **Descendre la case dans la feuille**, au moment où il touche la date
+   proche. Elle y serait mieux placée — c'est de CETTE date qu'elle parle — mais
+   elle sortirait du champ de vision à l'instant où il appuie sur « J'accepte ce
+   devis », et c'est un consentement légal qui doit être **exprès**.
+2. **Replier la liste des dates** une fois une date retenue. Gain estimé
+   60 à 70 px : insuffisant seul.
+
+À trancher par le patron. En attendant, le pire cas est passé de **1 148 px à
+790 px**, et le cas courant — sans date proche — tient dans l'écran.

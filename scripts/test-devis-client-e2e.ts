@@ -217,12 +217,38 @@ async function main() {
       "la case de rétractation survit à la date qui l'a fait naître"
     );
 
-    // 4. « Une autre date » se défait pareil, et referme son calendrier.
+    // 4. « Une autre date » se défait pareil — mais le GESTE a changé le
+    //    4 septembre 2026, et sa règle, non.
+    //
+    //    Le calendrier monte désormais du bas (sa réponse A) : il couvre le
+    //    bouton radio, qu'on ne peut donc plus rappuyer. Ce qui compte est la
+    //    RÈGLE — « si par erreur j'ai sélectionné un des 3 champs je ne peux
+    //    plus le désélectionner » —, et elle est tenue autrement : refermer la
+    //    feuille sans avoir touché de jour défait le choix.
+    //
+    //    Viser le rappui du radio, ce serait fixer une mise en page plutôt
+    //    qu'un droit (`CLAUDE.md` §5 bis).
     await uneAutre.click();
     assert.ok((await page.locator("[data-jour]").count()) > 0, "le calendrier ne s'ouvre pas");
-    await uneAutre.click();
+    await page.locator('button[aria-label="Refermer"]').click();
     assert.strictEqual(await uneAutre.isChecked(), false, "« une autre date » reste collée");
     assert.strictEqual(await page.locator("[data-jour]").count(), 0, "le calendrier reste ouvert");
+
+    // 4 bis. **Et une date RETENUE, elle, survit à la fermeture.** Sans ce
+    //    contrôle, une feuille qui vide tout en se refermant passerait le
+    //    point ci-dessus en beauté et perdrait la date du client.
+    await uneAutre.click();
+    const jourLibre = page.locator('[data-jour]:not([disabled])').first();
+    const jourRetenu = await jourLibre.getAttribute("data-jour");
+    await jourLibre.click();
+    await page.locator('button:has-text("Retenir cette date")').click();
+    assert.strictEqual(await page.locator("[data-jour]").count(), 0, "la feuille ne s'est pas refermée");
+    assert.ok(await uneAutre.isChecked(), "le choix s'est perdu en refermant");
+    assert.strictEqual(
+      await page.locator('input[name="dateAutre"]').inputValue(),
+      jourRetenu,
+      "la date retenue ne part pas au serveur"
+    );
 
     await page.close();
   });
@@ -430,42 +456,47 @@ async function main() {
      * infos. »*
      *
      * Un client nommé, une adresse de chantier, **deux dates proposées** — le
-     * maximum que l'écran d'envoi autorise —, la contre-proposition REPLIÉE.
+     * maximum que l'écran d'envoi autorise —, et la contre-proposition OUVERTE.
      *
      * Mesuré sur son écran — 390 × 664, un téléphone barre d'adresse déduite,
      * la mesure du dépôt depuis le 30 août.
      *
      * ═══════════════════════════════════════════════════════════════════════
-     * **CE CONTRÔLE ANNONÇAIT « la contre-proposition ouverte » ET NE
-     * L'OUVRAIT PAS — corrigé le 3 septembre 2026.**
+     * **IL ANNONÇAIT « la contre-proposition ouverte » ET NE L'OUVRAIT PAS —
+     * corrigé le 3 septembre 2026, complété le 4.**
      *
      * Il chargeait la page et mesurait, sans jamais toucher « Une autre
-     * date ». Il éprouvait donc l'état replié en promettant l'autre, et son
-     * vert se lisait comme une garantie qu'il ne donnait pas.
+     * date » : il éprouvait l'état replié en promettant l'autre, et son vert
+     * se lisait comme une garantie qu'il ne donnait pas.
      *
-     * **La mesure manquante, faite le 3 septembre** (`scripts/
-     * mesurer-pli-devis-client.mts`), sur ce même écran de 390 × 664 :
+     * Ce qu'il cachait, mesuré le 3 septembre :
      *
      * | état | page | dernier bouton |
      * |---|---|---|
-     * | replié | 664 px | 602 px — tient |
+     * | replié | 664 px | 602 px |
      * | calendrier ouvert | **990 px** | **963 px** |
-     * | + case de rétractation | **1 148 px** | **1 121 px** |
      *
-     * Ses trois issues passent donc sous le pli à l'instant précis où le
-     * client cherche une autre date — c'est-à-dire au moment où ce parcours
-     * évite l'aller-retour téléphonique.
+     * Le patron a retenu **la feuille** (`appli/ecran-de-son-client.html`,
+     * 4 septembre) : le calendrier monte par-dessus, la page derrière garde sa
+     * hauteur. Mesuré après : **664 px**, dernier bouton à 602 px — inchangé.
      *
-     * **Ce n'est pas corrigé ici, et c'est délibéré :** ce qui doit céder sur
-     * 664 px est un arbitrage du patron, pas une décision de code. La planche
-     * lui est soumise (`appli/ecran-de-son-client.html`), et l'assertion sur
-     * l'état ouvert arrivera avec sa réponse. En attendant, ce contrôle dit
-     * exactement ce qu'il mesure — plus ce qu'il aimerait mesurer.
+     * **Ce contrôle ouvre donc la feuille pour de bon.** Sans ce geste, le
+     * jour où quelqu'un remettrait le calendrier dans le flux, il resterait
+     * vert.
      * ═══════════════════════════════════════════════════════════════════════
      */
     const { envoi } = await preparerEnvoi("pli", [3, 10]);
     const page = await context.newPage();
     await page.goto(`${BASE}/devis/${envoi.jeton}`, { waitUntil: "networkidle" });
+
+    // **La contre-proposition OUVERTE — le geste que ce contrôle annonçait.**
+    // C'est l'instant où le client cherche une autre date, donc celui où ce
+    // parcours évite l'aller-retour téléphonique : ses trois issues doivent
+    // rester sous les yeux.
+    await page.locator('input[value="autre"]').check();
+    await page.waitForTimeout(400);
+    const calendrierVisible = await page.locator("[data-jour]").first().isVisible();
+    assert.ok(calendrierVisible, "le calendrier ne s'est pas ouvert : le contrôle ne mesure pas ce qu'il annonce");
 
     const m = await page.evaluate(() => ({
       page: document.documentElement.scrollHeight,

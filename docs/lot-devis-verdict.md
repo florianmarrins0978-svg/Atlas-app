@@ -154,9 +154,58 @@ Le bouton répond désormais, et c'est sa réponse qui dit ce qui manque.
 
 ---
 
-## 4. L'écran de votre client déborde — mesuré, et laissé à votre arbitrage
+## 4. L'écran de votre client débordait — vous avez tranché, c'est codé
 
-**Verdict : défaut réel. NON corrigé, et c'est délibéré.**
+**Verdict : défaut réel, mesuré, puis corrigé par votre réponse — le 4 septembre.**
+
+Trois formes vous ont été soumises sur planche. Votre réponse : *« J'aime bien
+la À la feuille »*. Le calendrier monte du bas, par-dessus, et la page derrière
+garde exactement la hauteur qu'elle avait.
+
+| état | avant | après |
+|---|---|---|
+| replié | 664 px | 664 px |
+| **calendrier ouvert** | **990 px** | **664 px** |
+| « Je ne donne pas suite » finit à | 963 px | 602 px |
+
+**Et le contrôle ouvre enfin la feuille qu'il annonçait** : il ne mesurait que
+l'état replié. Il a gagné au passage ce que personne ne vérifiait — qu'une date
+RETENUE survive à la fermeture. Sans lui, une feuille qui viderait tout en se
+refermant aurait passé le reste en beauté et perdu la date de votre client.
+
+**Votre règle du 26 août tient, par un autre geste.** Le calendrier couvre le
+bouton : on ne le rappuie plus pour le décocher, on referme la feuille — et le
+choix se défait. Le contrôle a suivi la règle, pas la mise en page.
+
+### Ce qui RESTE, avec le chiffre
+
+Quand votre client retient une date à **moins de quatorze jours**, la case de
+rétractation apparaît — 125 px — et la page fait **790 px** pour 664 d'écran.
+Le pire cas est donc passé de 1 148 à 790, et le cas courant tient.
+
+Deux façons d'y arriver, et les deux sont des arbitrages, pas des évidences :
+
+| | ce que ça coûte |
+|---|---|
+| descendre la case DANS la feuille | mieux placée — elle parle de cette date-là — mais hors de vue au moment où il appuie sur « J'accepte ce devis », et c'est un consentement légal qui doit être exprès |
+| replier la liste des dates une fois une date retenue | 60 à 70 px : insuffisant seul |
+
+**Je ne tranche pas à votre place.** Dites-moi, ou laissez en l'état : 790 px
+veut dire 126 px de défilement dans ce seul cas.
+
+---
+
+## 4 bis. Ce que la planche elle-même a coûté — deux fautes à moi
+
+**« Rien ne change quand je clique sur A B C »** — vous aviez raison. Mon
+gestionnaire refermait le calendrier à chaque changement de choix : refermés,
+les quatre états rendaient exactement le même écran, et la planche ne montrait
+rien de ce qu'elle demandait de comparer. Reproduit à son adresse, avec votre
+geste, puis corrigé.
+
+**Et le cadre annonçait « 390 × 664 pour de vrai »** en faisant 346 px de large
+sur un écran de 390 : les marges le rognaient. Une phrase fausse à l'endroit
+exact où vous alliez la lire.
 
 Votre règle du 31 août tient tant que la contre-proposition reste repliée. Dès
 qu'elle s'ouvre, mesuré sur votre écran de 390 × 664

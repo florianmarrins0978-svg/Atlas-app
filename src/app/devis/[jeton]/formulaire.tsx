@@ -6,6 +6,7 @@ import type { EnvoiPourClient } from "@/server/repositories/envois-devis";
 import { jourLisible, dansDelaiRetractation } from "@/lib/jour";
 import { libelleAutreDate } from "@/lib/libelle-dates";
 import Calendrier from "@/components/atlas/Calendrier";
+import BottomSheet from "@/components/atlas/BottomSheet";
 import BoutonTelechargerDevis from "./BoutonTelechargerDevis";
 
 export default function FormulaireReponse({
@@ -19,6 +20,32 @@ export default function FormulaireReponse({
   const [choixDate, setChoixDate] = useState<string>("");
   const [dateAutre, setDateAutre] = useState<string>("");
   const [precision, setPrecision] = useState<string>("");
+  /**
+   * ═══════════════════════════════════════════════════════════════════════
+   * **LE CALENDRIER MONTE DU BAS — sa réponse A, le 4 septembre 2026.**
+   *
+   * Sa règle du 31 août : *« je veux que le choix de la date qui arrive au
+   * client par SMS tienne sur une seule page ! Il ne doit pas avoir à scroll
+   * pour voir toutes les infos »*. Elle tenait — tant que la
+   * contre-proposition restait repliée. Ouverte, mesuré sur son écran de
+   * 390 × 664 : la page passait à **990 px**, et ses trois issues finissaient
+   * à 963 px, sous le pli. C'est-à-dire hors de vue à l'instant précis où le
+   * client cherche une autre date — le moment où ce parcours évite
+   * l'aller-retour téléphonique.
+   *
+   * Trois formes lui ont été soumises (`appli/ecran-de-son-client.html`), les
+   * trois mesurées comme tenant dans l'écran. Il a retenu **la feuille** : le
+   * calendrier monte par-dessus, et la page derrière garde exactement la
+   * hauteur qu'elle avait.
+   *
+   * **C'est la feuille de la maison** (`BottomSheet`), pas une seconde : en
+   * écrire une autre aurait donné deux tiroirs à tenir d'accord
+   * (`CLAUDE.md` §3). Elle ne porte aucune couleur de l'artisan — cette page
+   * n'en reçoit aucune (`layout.tsx`, `estPageDuClient`), et ses jetons
+   * retombent sur la charte d'origine.
+   * ═══════════════════════════════════════════════════════════════════════
+   */
+  const [feuilleOuverte, setFeuilleOuverte] = useState(false);
   /**
    * Ce que la page refuse d'elle-même, sans aller au serveur.
    *
@@ -115,15 +142,47 @@ export default function FormulaireReponse({
                 value="autre"
                 checked={choixDate === "autre"}
                 onClick={() => devalider("autre")}
-                onChange={(e) => setChoixDate(e.target.value)}
+                // La feuille s'ouvre sur la SÉLECTION, jamais sur l'appui :
+                // `onChange` ne part pas quand la case est déjà cochée, donc
+                // le geste qui la décoche ne la rouvre pas dans la foulée.
+                onChange={(e) => {
+                  setChoixDate(e.target.value);
+                  setFeuilleOuverte(true);
+                }}
                 className="h-5 w-5"
               />
               <span>{libelleAutreDate(envoi.datesProposees.length)}</span>
             </label>
           )}
 
-          {envoi.autreDateAutorisee && choixDate === "autre" && (
-            <div className="mt-1.5 flex flex-col gap-0.5">
+          {/* **Le champ caché vit DEHORS.** Il est ce qui part au serveur : le
+              poser dans la feuille le ferait disparaître du formulaire dès
+              qu'elle se referme, et la date choisie ne serait jamais envoyée. */}
+          {envoi.autreDateAutorisee && <input type="hidden" name="dateAutre" value={dateAutre} />}
+
+          {envoi.autreDateAutorisee && choixDate === "autre" && dateAutre && (
+            <button
+              type="button"
+              onClick={() => setFeuilleOuverte(true)}
+              className="mt-0.5 self-start text-[13px] text-ink/70 underline underline-offset-4"
+            >
+              {jourLisible(dateAutre)} — changer
+            </button>
+          )}
+
+          <BottomSheet
+            open={envoi.autreDateAutorisee && feuilleOuverte}
+            /* **Refermer sans avoir choisi DÉFAIT le choix.** Sinon le client
+               reste sur « Une autre date » sans date, et son acceptation est
+               refusée par le serveur — un refus qu'il ne comprendrait pas,
+               puisque rien à l'écran ne dit qu'il manque quelque chose. */
+            onBackdropClick={() => {
+              setFeuilleOuverte(false);
+              setRefus(null);
+              if (!dateAutre) setChoixDate("");
+            }}
+          >
+            <div className="flex flex-col gap-0.5">
               {/* **Un calendrier, et non plus le sélecteur du téléphone.**
                   Sa demande du 8 août 2026 : « qu'il ait accès au calendrier
                   pour pouvoir proposer une date, avec un système pour qu'il
@@ -137,7 +196,7 @@ export default function FormulaireReponse({
                   Le champ caché reste : c'est lui qui part au serveur, et le
                   serveur revérifie de toute façon — l'affichage n'est qu'un
                   instantané, deux clients peuvent viser le même jour. */}
-              <input type="hidden" name="dateAutre" value={dateAutre} />
+              {/* Le champ caché a quitté la feuille — voir plus haut. */}
               {/* `dureeDemiJournees={null}` : le client n'apprend rien du
                   découpage du planning de son artisan — ni créneau, ni durée.
                   Consigne du patron, tenue par `test-creneaux-planning.ts`. Sa
@@ -151,13 +210,30 @@ export default function FormulaireReponse({
                 dureeDemiJournees={null}
                 onBasculer={(jour) => setDateAutre((actuel) => (actuel === jour ? "" : jour))}
               />
-              {dateAutre && (
-                <p className="text-[13px] text-ink/70">
-                  Vous avez choisi le {jourLisible(dateAutre)}.
+              {/* Le bouton ne s'éteint pas faute de date : il répond, et c'est
+                  sa réponse qui dit ce qui manque — la même règle que les trois
+                  issues plus bas, et que l'écran d'envoi du patron. */}
+              {/* **La phrase se lit DANS la feuille.** Celle du formulaire vit
+                  plus bas, donc derrière elle : un refus posé là serait caché
+                  par ce qui vient de le provoquer. */}
+              {refus && (
+                <p role="alert" className="mt-2 text-[14px] text-[#B5502F]">
+                  {refus}
                 </p>
               )}
+              <button
+                type="button"
+                onClick={() => {
+                  if (!dateAutre) return setRefus("Touchez d'abord un jour dans le calendrier.");
+                  setRefus(null);
+                  setFeuilleOuverte(false);
+                }}
+                className="mt-3 rounded-full bg-[#2F3B2F] py-3 text-[16px] font-medium text-white"
+              >
+                Retenir cette date
+              </button>
             </div>
-          )}
+          </BottomSheet>
         </div>
 
         {/* **Le message vit dans la MÊME carte que la date**, depuis le 31 août
@@ -216,7 +292,9 @@ export default function FormulaireReponse({
         </section>
       )}
 
-      {(refus ?? (etat && "erreur" in etat ? etat.erreur : null)) && (
+      {/* Elle se tait pendant que la feuille est ouverte : celle-ci porte sa
+          propre phrase, et deux fois la même à deux endroits ne se lit pas. */}
+      {!feuilleOuverte && (refus ?? (etat && "erreur" in etat ? etat.erreur : null)) && (
         <p role="alert" className="text-[14px] text-[#B5502F]">
           {refus ?? (etat && "erreur" in etat ? etat.erreur : null)}
         </p>

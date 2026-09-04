@@ -289,26 +289,35 @@ reproduite ici. Le parcours passe au vert sur un poste de développement.
 l'état au lieu de compter. À défaut, le journal de son espace porte déjà
 « Devis depuis dictée : la chaîne a échoué ».
 
-## DEUX RÉPONSES ATTENDUES SUR L'ÉCRAN DE SON CLIENT (3 sept. 2026)
+## LA CASE DE RÉTRACTATION FAIT ENCORE DÉBORDER L'ÉCRAN DU CLIENT (4 sept. 2026)
 
-Planche en ligne, adresse entière :
+**Sa réponse A est codée** — le calendrier monte du bas, la page derrière garde
+sa hauteur : 990 px → 664 (`ARCHITECTURE.md` §249).
+
+**Ce qui reste :** quand le client retient une date à moins de quatorze jours,
+la case de rétractation (125 px) porte la page à **790 px** pour 664 d'écran.
+Le pire cas est donc passé de 1 148 à 790, et le cas courant tient.
+
+Deux façons d'y arriver, et les deux sont des arbitrages :
+
+| | ce que ça coûte |
+|---|---|
+| descendre la case DANS la feuille | mieux placée — elle parle de cette date — mais hors de vue au moment d'appuyer sur « J'accepte », et c'est un consentement légal qui doit être exprès |
+| replier la liste des dates une fois une date retenue | 60 à 70 px : insuffisant seul |
+
+**Qui peut le faire : LUI.** Rien ne se code avant.
+
+## SA PAGE SUIT-ELLE LES COULEURS DE SON DEVIS ? — toujours sans réponse (3 sept. 2026)
+
+La seconde question de la planche, restée ouverte quand il a répondu à la
+première :
 https://florianmarrins0978-svg.github.io/Atlas-app/ecran-de-son-client.html
 
-**1. Le calendrier déborde de son écran.** Mesuré sur 390 × 664
-(`scripts/mesurer-pli-devis-client.mts`) : 664 px replié, **990 px**
-calendrier ouvert, **1 148 px** avec la case de rétractation. Ses trois issues
-passent sous le pli à l'instant où le client cherche une autre date. Trois
-formes lui sont proposées — A la feuille, B l'échange, C le second écran —,
-toutes mesurées comme tenant dans l'écran.
+`couleursDocument` existe pour ce qui part chez le client, le PDF y passe et suit
+l'allure qu'il règle ; la page par jeton code ses couleurs en dur. Le même devis
+porte donc deux identités à une minute d'intervalle (`ARCHITECTURE.md` §248).
 
-**2. Sa page suit-elle les couleurs de son devis ?** `couleursDocument` existe
-pour ce qui part chez le client, le PDF y passe et suit l'allure qu'il règle ;
-la page par jeton code ses couleurs en dur. Voir `ARCHITECTURE.md` §248.
-
-**Qui peut le faire : LUI.** Rien ne se code avant sa réponse — ce qui doit
-céder sur 664 px est son arbitrage. La suite qui éprouve le pli dit désormais
-ce qu'elle mesure (l'état replié) et porte les trois chiffres ; l'assertion sur
-l'état ouvert arrivera avec sa lettre.
+**Qui peut le faire : LUI.** C'est une apparence sur ce que voit son client.
 
 ## `monter-base-locale.sh` N'EXPORTE PAS `REDIS_URL` — et ça coûte une heure (1ᵉʳ sept. 2026)
 
