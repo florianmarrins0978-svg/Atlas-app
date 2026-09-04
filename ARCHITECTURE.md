@@ -22762,5 +22762,16 @@ retard. Il refuse de conclure sur une boîte de zéro pixel.
 
 Déplacer un bouton est une affaire d'apparence : elle se dessine avant de se
 coder (`CLAUDE.md` §3 bis). C'est sur `appli/ts-la-trace-de-laccord.html`, avec
-la seule question réellement ouverte sur les travaux supplémentaires — **d'où
-vient l'accord du client** —, la forme ayant été tranchée le 1ᵉʳ septembre.
+la seule question réellement ouverte sur les travaux supplémentaires, la forme
+ayant été tranchée le 1ᵉʳ septembre.
+
+**Cette planche a été refaite le soir même, sur SA correction, et elle vaut
+d'être écrite.** Sa première version proposait, sous une ligne sans accord
+écrit : « Faire signer le bon, ou lui renvoyer le devis ». Deux fautes dans une
+phrase — aucun de ces gestes n'existe sur cet écran, et surtout **on ne renvoie
+pas un devis après coup** : un devis se fait AVANT le travail, et le travail est
+fait. Il n'y a donc pas d'accord manquant à aller chercher : **l'accord a eu lieu
+au jardin**, c'est sa TRACE qui manque, et elle ne compte que si le client
+conteste. La planche propose désormais un champ à l'ajout d'une ligne — qui l'a
+demandée, et quand — qui **s'imprime sur la facture** : la pièce devient
+elle-même la trace, et le client qui la paie l'accepte.

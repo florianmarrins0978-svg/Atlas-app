@@ -15,8 +15,11 @@ Le lot est fait (`ARCHITECTURE.md` §255, `docs/facture-impeccable.md`). Quatre
 choses restent, et trois attendent SA réponse :
 
 - **La planche `appli/ts-la-trace-de-laccord.html` attend sa lettre** : A ou B
-  (chaque ligne de travaux en plus dit-elle d'où vient son accord ?), le geste
-  au-dessus du pli, et ce que « sans accord » autorise. **Sa forme, elle, était
+  (un champ à l'ajout d'une ligne — qui l'a demandée, et quand — imprimé sur la
+  facture), le geste au-dessus du pli, et ce qu'une ligne muette autorise.
+  **Refaite le 4 septembre au soir sur SA correction** : la première version
+  disait « ou lui renvoyer le devis », ce qui n'a aucun sens une fois le travail
+  fait — l'accord a eu lieu au jardin, c'est la trace qui manque. **Sa forme, elle, était
   déjà tranchée le 1ᵉʳ septembre** — le brief du 4 se trompait en la rouvrant.
 - **« Envoyer la facture » tombe 309 px sous le pli** (331 en retard de devis),
   mesuré par `scripts/capture-facture-impeccable.mts`. Déplacer un bouton se

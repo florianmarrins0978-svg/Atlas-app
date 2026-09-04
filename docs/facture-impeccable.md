@@ -164,9 +164,9 @@ point ci-dessus, et c'est ce que la planche propose de rendre.
 
 | Point | Qui tranche |
 |---|---|
-| **A ou B sur la planche** — chaque ligne de travaux en plus dit-elle d'où vient son accord ? | **vous** |
+| **A ou B sur la planche** — chaque ligne de travaux en plus dit-elle qui l'a demandée ? | **vous** |
 | **Le geste au-dessus du pli** — « Envoyer la facture » remonte-t-il dans la plage des totaux ? | **vous** |
-| **Ce que « sans accord » autorise** — ça part quand même, ou ça vous arrête ? | **vous** |
+| **Ce qu'une ligne muette autorise** — elle part quand même, ou ça vous arrête ? | **vous** |
 | **Figer l'allure des documents sur la facture émise** (trois colonnes, une migration) — pour que la page du client ne bouge plus après l'envoi | **vous**, sur le principe ; moi sur la façon |
 | **Les trois suites navigateur que le brief annonce rouges** | mesurées à part, voir ci-dessous |
 
@@ -189,6 +189,44 @@ planning (`src/app/planning/…`). Leur travail est **en cours et rouge** :
 d'une autre session dans le même commit rendrait les deux illisibles.
 
 Sur les fichiers de ce lot : `tsc` est propre, `eslint` ne dit rien.
+
+---
+
+## SA CORRECTION DU 4 SEPTEMBRE, ET ELLE ANNULE MA PREMIÈRE PROPOSITION
+
+La première version de la planche portait, sous une ligne de travaux en plus
+sans accord écrit : **« Faire signer le bon, ou lui renvoyer le devis. »**
+
+**Il a relevé deux fautes dans cette seule phrase, et les deux sont justes.**
+
+1. *« Depuis cette page, comment l'utilisateur fait pour renvoyer le devis ? »* —
+   il ne le peut pas. La phrase désignait un geste qui n'existe nulle part sur
+   cet écran. C'est exactement ce que ce lot reproche au reste de l'application :
+   un refus qui ne porte pas son geste est un cul-de-sac.
+2. *« Les travaux supplémentaires sont là parce que le client les a demandés sur
+   le chantier ; il ne va pas lui renvoyer un devis, il doit seulement l'ajouter
+   à la facture. »* — et celle-là est plus grave : **le raisonnement était faux**.
+   Un devis se fait AVANT le travail. Le travail est fait. Un devis envoyé après
+   coup est un papier que personne n'attend, et qui rouvrirait une négociation
+   close.
+
+**Ce que cela change dans la façon de poser le problème.** Il n'y a pas
+d'« accord manquant » à aller chercher : **l'accord a eu lieu**, de vive voix, au
+jardin. Ce qui manque est seulement sa **trace**, et elle ne compte que si la
+cliente conteste plus tard.
+
+**La planche est refaite autour de ça.** Quand il ajoute une ligne, un champ dit
+qui l'a demandée et quand ; ce qu'il écrit **s'imprime sur la facture**, si bien
+que la pièce devient elle-même la trace — et la cliente qui la paie l'accepte.
+Une ligne laissée muette part quand même ; l'écran dit seulement ce que sa
+cliente lira, et porte le champ, sur cette page.
+
+**Deux autres pistes lui sont soumises**, et elles ne sont pas dessinées :
+
+| | Ce que ça donne | Ce que ça coûte |
+|---|---|---|
+| **Rien du tout** | la réserve disparaît, l'écran se tait | c'est le plus proche de son « pas besoin de ça » du 1ᵉʳ septembre — et la trace reste au bon signé sur place |
+| **Le client confirme depuis sa page** | son écran par jeton porte le bloc des travaux en plus et un « Je confirme » daté | la trace la plus solide, et la machinerie existe déjà (le devis s'accepte ainsi). **Mais elle invite à ne PAS confirmer** : elle attire l'œil sur un litige qui n'aurait peut-être jamais eu lieu |
 
 ---
 

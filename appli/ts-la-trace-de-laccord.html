@@ -26,21 +26,32 @@
   ENTIER un supplément qu'il n'a pas accepté par écrit**, sur les travaux comme
   sur le prix. Ce n'est pas une pénalité : c'est la ligne entière qui tombe.
 
-  Deux réponses existent déjà dans le dépôt, et personne n'a dit laquelle :
-    · le bon signé au doigt, sur place (`ts-bon-sur-place.html`) ;
-    · le devis corrigé et renvoyé, que le client accepte par son lien.
+  ─────────────────────────────────────────────────────────────────────────────
+  ET LE 4 SEPTEMBRE, IL A CORRIGÉ CETTE PLANCHE — la première version disait
+  « Faire signer le bon, ou lui renvoyer le devis ». Deux fautes dans une phrase :
+
+    · aucun de ces deux gestes n'existe sur cette page ;
+    · surtout, ON NE RENVOIE PAS UN DEVIS APRÈS COUP. Les travaux en plus sont
+      là parce que le client les a demandés SUR LE CHANTIER. Le travail est fait.
+      Un devis envoyé après est un papier que personne n'attend.
+
+  Sa phrase : « il doit seulement l'ajouter à la facture, donc la phrase perd un
+  peu de sens ». Elle en perdait tout.
 
   ─────────────────────────────────────────────────────────────────────────────
   CE QUE CETTE PLANCHE PROPOSE, ET QUI N'EST NI L'UN NI L'AUTRE
 
-  **Les deux ne sont pas des options : ce sont deux façons de tracer LA MÊME
-  chose.** Le bloc des travaux en plus ne change pas d'un pixel ; ce qui change,
-  c'est ce que l'écran affiche À CÔTÉ de chaque ligne : d'où vient l'accord.
+  **Le bloc des travaux en plus ne change pas d'un pixel** ; ce qui change, c'est
+  ce que l'écran affiche À CÔTÉ de chaque ligne, et ce que la facture imprime.
 
-  Trois états, et un seul est nouveau :
-    · ACCEPTÉ AU DEVIS — la ligne vient d'un devis renvoyé et accepté ;
-    · SIGNÉ SUR PLACE — la ligne vient d'un bon signé au jardin ;
-    · SANS ACCORD — la ligne part quand même, et l'écran dit ce qu'elle risque.
+  L'ACCORD A EU LIEU — c'est la TRACE qui manque, et elle s'écrit en un champ.
+  Quand il ajoute une ligne, il dit qui l'a demandée et quand. Ce qu'il écrit
+  s'imprime sur la facture : la pièce devient elle-même la trace, et le client
+  qui la paie l'accepte.
+
+  Une ligne laissée muette part quand même. L'écran dit seulement ce que sa
+  cliente lira — une ligne de plus, sans savoir d'où elle vient — et porte le
+  champ, ici, sur cette page.
 
   **Rien n'est bloqué.** Il facture ce qu'il veut : c'est son chantier et son
   client. L'écran ne fait que refuser de se taire — la règle du dépôt sur les
@@ -144,8 +155,9 @@ h1{margin:10px 0 0;font-family:Georgia,serif;font-weight:400;font-size:30px;
   <p class="chapo">
     La <b>forme est déjà choisie</b> — le bloc se déroule sous le bouton, le taux se
     pose à la ligne (1<sup>er</sup> septembre). Cette planche ne la repose pas.
-    Elle pose la seule chose qui reste : <b>d'où vient l'accord du client</b>, et ce
-    que l'écran en dit. À droite, le même écran avec le geste <b>au-dessus du pli</b>.
+    L'accord, lui, a déjà eu lieu : votre cliente vous l'a demandé sur le chantier.
+    <b>C'est la trace qui manque</b>, et elle tient dans un champ, qui s'imprime sur
+    la facture. À droite, le même écran avec le geste <b>au-dessus du pli</b>.
   </p>
 
   <div class="deux">
@@ -187,10 +199,9 @@ h1{margin:10px 0 0;font-family:Georgia,serif;font-weight:400;font-size:30px;
     </div>
 
     <div class="col">
-      <p class="titre">B · Chaque ligne dit d'où vient son accord</p>
-      <p class="dit">Trois états, et un seul est neuf. Rien n'est bloqué : ce qui
-        part sans accord part quand même, et l'écran dit ce qu'il risque. Le geste
-        remonte au-dessus du pli.</p>
+      <p class="titre">B · Chaque ligne dit qui l'a demandée</p>
+      <p class="dit">Un champ à l'ajout, et il s'imprime sur la facture. Rien n'est
+        bloqué : une ligne muette part quand même. Le geste remonte au-dessus du pli.</p>
       <div class="tel">
         <div class="plage">
           <p class="cap">Facture</p>
@@ -199,23 +210,23 @@ h1{margin:10px 0 0;font-family:Georgia,serif;font-weight:400;font-size:30px;
         <div class="plage">
           <p class="cap ts">Travaux supplémentaires</p>
           <div class="l">
-            <span class="quoi">Dessouchage<br><span class="marque devis">Accepté au devis v2</span></span>
+            <span class="quoi">Dessouchage<br><span class="marque devis">Demandé sur place le 3 sept.</span></span>
             <span class="mt">260,00 €</span>
           </div>
           <div class="l">
-            <span class="quoi">Évacuation<br><span class="marque bon">Signé sur place</span></span>
+            <span class="quoi">Évacuation<br><span class="marque bon">Bon signé le 3 sept.</span></span>
             <span class="mt">140,00 €</span>
           </div>
           <div class="l">
-            <span class="quoi">Reprise du massif<br><span class="marque nu">Sans accord</span></span>
+            <span class="quoi">Reprise du massif<br><span class="marque nu">Ne dit pas qui l'a demandée</span></span>
             <span class="mt">180,00 €</span>
           </div>
           <button class="ajouter">Ajouter des travaux supplémentaires</button>
         </div>
         <div class="reserve">
-          <p class="quoi">180,00 € partent sans accord écrit. Votre cliente peut
-            refuser cette ligne en entier.</p>
-          <p class="prix">Faire signer le bon, ou lui renvoyer le devis.</p>
+          <p class="quoi">Sur sa facture, votre cliente lira « Reprise du massif,
+            180,00 € » sans savoir d'où ça vient.</p>
+          <button class="ajouter" style="margin-top:8px">Dire qui l'a demandée</button>
         </div>
         <div class="plage">
           <div class="tot"><span>Total HT</span><b>1 780,00 €</b></div>
@@ -242,13 +253,14 @@ h1{margin:10px 0 0;font-family:Georgia,serif;font-weight:400;font-size:30px;
   <div class="choix">
     <h2>Ce sur quoi j'attends votre lettre</h2>
     <ul>
-      <li><b>A ou B.</b> B ajoute une pastille par ligne et une réserve quand
-        l'accord manque ; A garde l'écran d'aujourd'hui.</li>
+      <li><b>A ou B.</b> B ajoute un champ à l'ajout d'une ligne — qui l'a
+        demandée, et quand — et l'imprime sur la facture. A garde l'écran
+        d'aujourd'hui.</li>
       <li><b>Le geste au-dessus du pli.</b> Dans B, « Envoyer la facture » vit dans
         la plage des totaux : le détail du devis passe dessous. C'est le seul
         déplacement, et il vaut pour A comme pour B.</li>
-      <li><b>Ce que « sans accord » autorise.</b> Ici, tout : ça part quand même.
-        Dites si vous préférez que ça vous arrête.</li>
+      <li><b>Ce qu'une ligne muette autorise.</b> Ici, tout : elle part quand
+        même. Dites si vous préférez que ça vous arrête.</li>
     </ul>
   </div>
 </div>
