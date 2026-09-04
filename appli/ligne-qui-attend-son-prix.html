@@ -180,7 +180,7 @@
       <button data-vue="avant" aria-pressed="true">Aujourd’hui</button>
       <button data-vue="a" aria-pressed="false">A — dans la case</button>
       <button data-vue="b" aria-pressed="false">B — la ligne se marque</button>
-      <button data-vue="champ" aria-pressed="false">Le champ</button>
+      <button data-vue="champ" aria-pressed="false">La case du prix</button>
     </div>
     <div class="chartes" id="chartes">
       <button data-charte="origine" aria-pressed="true">Origine</button>
@@ -258,10 +258,10 @@
     </div>
 
     <div class="banc" id="banc" hidden>
-      <h2>Le champ du montant</h2>
+      <h2>La case du prix</h2>
       <p class="intro">
-        Tapez avec la <b>virgule</b> de votre clavier, un espace des milliers, un « € ».
-        La case garde ce que vous écrivez, et dit ce qu’elle enregistre.
+        Écrivez un prix comme vous l’écrivez d’habitude — avec la <b>virgule</b>, un espace,
+        un « € ». La case garde ce que vous tapez, et dit dessous ce qu’elle enregistre.
       </p>
       <div class="essai">
         <label class="caps" for="montant">Montant</label>
@@ -315,8 +315,8 @@
       apres: "B — repérable. Les deux plages passent à l’or : ça se voit au soleil, du coin de l’oeil. Plus présent sur un devis qui compte dix lignes."
     },
     champ: {
-      dit: "Le champ, en vrai — l’écran garde l’allure que vous venez de choisir. Il est le même dans A et dans B : ce n’est pas un choix, c’est la correction du troisième point.",
-      apres: "Aujourd’hui la case est un type=\"number\" : une virgule y devient du vide, et le vide s’enregistre en 0,00 € sans un mot."
+      dit: "La petite case où vous tapez le prix d’une ligne. Tapez 1 400,50 avec la virgule de votre clavier : aujourd’hui elle enregistre 0,00 € sans rien dire. Ce n’est pas un choix à faire, c’est un défaut à réparer.",
+      apres: "Aujourd’hui la case n’accepte que le point. Votre virgule y devient du vide, le vide part en 0,00 €, et le devis peut partir avec une ligne à zéro sans que rien ne l’ait dit."
     }
   };
 
