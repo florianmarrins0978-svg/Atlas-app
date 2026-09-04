@@ -308,6 +308,16 @@ Une autre suite du dépôt (`scripts/db-tests.ts`) n'a jamais eu ce problème :
 elle parle à la base sans cet outil. La leçon est écrite dans `HANDOVER.md`,
 parce qu'elle piégera la prochaine session exactement pareil.
 
+**Et j'avais tort sur un second point, que la batterie a montré :** j'avais écrit
+qu'il n'existait « aucun contrôle automatique ». Il en existait un —
+`test-factures.ts`, « une facture émise est immuable jusque dans ses lignes » —
+et il passe **parce qu'il ne cherche aucun mot** : il se contente d'une erreur,
+quelle qu'elle soit. C'est le contraste qui rend le piège lisible.
+
+Ce qui manquait vraiment était plus étroit : ce contrôle-là couvre les **lignes**
+de la facture, pas la **facture elle-même** — donc ni son aspect, ni ses totaux,
+ni l'écriture SQL directe. C'est cette part-là que ce lot comble.
+
 **Et le contrôle sait échouer** : garde-fou désactivé sur la base d'essai, il
 rougit ; réactivé, il repasse au vert. Sans cette confrontation, un test vert ne
 prouve rien.
@@ -329,7 +339,29 @@ prouve rien.
 | `scripts/test-facture-reprend-le-devis-db.ts` *(neuf)* | ✅ **13 réussis, 0 échec** — dont l'immuabilité, confrontée au garde-fou désactivé |
 | `scripts/capture-facture-impeccable.mts` *(neuf)* | ✅ 9 planches, la mesure du pli, et la comparaison d'octets qui prouve le figeage |
 
-**La batterie base, rejouée APRÈS la migration : 300/310.** Les dix rouges sont
+### La batterie de livraison, jouée en entier le 5 septembre
+
+`ATLAS_BASE_SUPER=… npm run verifier:avant-livraison`, sur `atlas_test` — jamais
+sur `atlas_dev` : toutes les étapes qui touchent la base y sont épinglées.
+
+| Étape | Verdict |
+|---|---|
+| Types (`tsc --noEmit`) | ✅ |
+| Lint | ✅ — 17 avertissements, **0 erreur** |
+| **Construction** (`next build`) | ✅ — c'est elle qui protège son banc du mode lent |
+| Mémoire du dépôt | ✅ 8 fichiers vérifiés |
+| Fournisseurs d'IA | ✅ |
+| **Suites base de données** | ❌ **300/310** — les dix rouges d'infrastructure connus |
+| Données de démonstration | ✅ |
+| Suites navigateur | **interrompue** — la session s'est arrêtée pendant le préchauffage des 27 écrans |
+| Connexion derrière un proxy | **non atteinte** |
+
+**Les deux dernières étapes n'ont pas été jouées, et je ne fais pas comme si.**
+La coupure vient de l'arrêt de ma session, pas d'un échec : le journal s'arrête
+sur « Préchauffage de 27 écrans ». Elles se rejouent en une commande, et je
+préviens avant (`CLAUDE.md` §5).
+
+**La batterie base : 300/310.** Les dix rouges sont
 ceux que le dépôt traîne depuis le 3 septembre — ports, verrous de construction,
 rôles, fiche du banc : `test-boutons-arrondis`, `test-fiche-pendant-relance`,
 `test-mise-a-jour-role-db`, `test-mode-emploi`, `test-ouvrir-port`,

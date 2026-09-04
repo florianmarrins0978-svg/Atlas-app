@@ -22808,6 +22808,18 @@ sans ORM, et son `/immuable/` marche depuis toujours. **Toute assertion sur un
 message de base venue du DÉPÔT doit lire la chaîne des causes** — c'est ce que
 fait `refusDe` dans `scripts/test-facture-reprend-le-devis-db.ts`.
 
+**ET LA SECONDE MOITIÉ DE MON ERREUR :** j'avais écrit que l'immuabilité d'une
+facture émise n'avait « aucun contrôle automatique ». Faux aussi. `test-factures.ts`
+en portait un depuis longtemps — « une facture émise est immuable jusque dans ses
+lignes » —, et il passe **parce qu'il n'emploie AUCUN motif** :
+`assert.rejects(fn)` tout court se contente d'une erreur, quelle qu'elle soit.
+C'est le contraste qui rend le piège lisible : sans motif ça passe, avec motif ça
+échoue sur la même protection.
+
+La part qui manquait vraiment était plus étroite, et c'est elle que ce lot
+comble : le contrôle existant couvre `lignes_facture`, **pas la ligne `factures`
+elle-même** — donc ni son aspect, ni ses totaux, ni le chemin SQL direct.
+
 **Et le contrôle sait échouer** : trigger désactivé sur `atlas_test`, il rougit ;
 réactivé, il repasse au vert. C'est le seul moyen de savoir qu'il mesure quelque
 chose (`CLAUDE.md` §5).

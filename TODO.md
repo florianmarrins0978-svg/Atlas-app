@@ -157,6 +157,12 @@ choses restent, et trois attendent SA réponse :
   `scripts/db-tests.ts` y échappe parce qu'il passe par `pg` sans ORM. Lire la
   chaîne des causes — `refusDe`, dans
   `scripts/test-facture-reprend-le-devis-db.ts`.
+
+  **Et « aucun contrôle » était faux aussi :** `test-factures.ts` en portait un
+  sur `lignes_facture` (« immuable jusque dans ses lignes »), qui passe parce
+  qu'il n'emploie AUCUN motif — `assert.rejects(fn)` se contente d'une erreur
+  quelconque. Ce qui manquait était la ligne `factures` elle-même : aspect,
+  totaux, et le chemin SQL direct.
 - **Les trois suites navigateur que le brief annonce rouges** — `test-facture-e2e`,
   `test-tva-au-paiement-e2e`, `test-facture-au-client-e2e` — n'ont pas pu être
   mesurées dans ce lot : deux autres sessions écrivaient dans le même dossier,

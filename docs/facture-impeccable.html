@@ -424,6 +424,8 @@
 <p><strong>La protection tient dans tous les sens.</strong> Ce n'était pas elle qui était en cause : c'était mon contrôle.</p>
 <p><strong>Pourquoi il se trompait, et ça vaut pour tout le dépôt.</strong> L'outil qui parle à la base <strong>enveloppe</strong> le message de PostgreSQL : le message visible ne dit que « Failed query: update … », et la phrase du garde-fou — « Une facture émise est immuable » — est rangée un cran plus bas, dans la <em>cause</em>. Mon contrôle cherchait le mot au mauvais endroit : il échouait <strong>sur une protection qui marche</strong>, et faisait conclure l'inverse de la vérité.</p>
 <p>Une autre suite du dépôt (<code>scripts/db-tests.ts</code>) n'a jamais eu ce problème : elle parle à la base sans cet outil. La leçon est écrite dans <code>HANDOVER.md</code>, parce qu'elle piégera la prochaine session exactement pareil.</p>
+<p><strong>Et j'avais tort sur un second point, que la batterie a montré :</strong> j'avais écrit qu'il n'existait « aucun contrôle automatique ». Il en existait un — <code>test-factures.ts</code>, « une facture émise est immuable jusque dans ses lignes » — et il passe <strong>parce qu'il ne cherche aucun mot</strong> : il se contente d'une erreur, quelle qu'elle soit. C'est le contraste qui rend le piège lisible.</p>
+<p>Ce qui manquait vraiment était plus étroit : ce contrôle-là couvre les <strong>lignes</strong> de la facture, pas la <strong>facture elle-même</strong> — donc ni son aspect, ni ses totaux, ni l'écriture SQL directe. C'est cette part-là que ce lot comble.</p>
 <p><strong>Et le contrôle sait échouer</strong> : garde-fou désactivé sur la base d'essai, il rougit ; réactivé, il repasse au vert. Sans cette confrontation, un test vert ne prouve rien.</p>
 <hr>
 <h2 id="les-chiffres-exacts">Les chiffres exacts</h2>
@@ -466,7 +468,51 @@
 <td>✅ 9 planches, la mesure du pli, et la comparaison d'octets qui prouve le figeage</td>
 </tr>
 </tbody></table></div>
-<p><strong>La batterie base, rejouée APRÈS la migration : 300/310.</strong> Les dix rouges sont ceux que le dépôt traîne depuis le 3 septembre — ports, verrous de construction, rôles, fiche du banc : <code>test-boutons-arrondis</code>, <code>test-fiche-pendant-relance</code>, <code>test-mise-a-jour-role-db</code>, <code>test-mode-emploi</code>, <code>test-ouvrir-port</code>, <code>test-relance-construction</code>, <code>test-roles-capacites-db</code>, <code>test-salarie-planning-lecture-seule-db</code>, <code>test-seed-conserve-identifiants</code>, <code>test-verrou-construction</code>. <strong>Aucun n'est de ce lot, et aucun ne touche la facture.</strong></p>
+<h3 id="la-batterie-de-livraison-jouée-en-entier-le-5-septembre">La batterie de livraison, jouée en entier le 5 septembre</h3>
+<p><code>ATLAS_BASE_SUPER=… npm run verifier:avant-livraison</code>, sur <code>atlas_test</code> — jamais sur <code>atlas_dev</code> : toutes les étapes qui touchent la base y sont épinglées.</p>
+<div class="tablewrap"><table><thead><tr>
+<th>Étape</th>
+<th>Verdict</th>
+</tr></thead><tbody>
+<tr>
+<td>Types (<code>tsc --noEmit</code>)</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>Lint</td>
+<td>✅ — 17 avertissements, <strong>0 erreur</strong></td>
+</tr>
+<tr>
+<td><strong>Construction</strong> (<code>next build</code>)</td>
+<td>✅ — c'est elle qui protège son banc du mode lent</td>
+</tr>
+<tr>
+<td>Mémoire du dépôt</td>
+<td>✅ 8 fichiers vérifiés</td>
+</tr>
+<tr>
+<td>Fournisseurs d'IA</td>
+<td>✅</td>
+</tr>
+<tr>
+<td><strong>Suites base de données</strong></td>
+<td>❌ <strong>300/310</strong> — les dix rouges d'infrastructure connus</td>
+</tr>
+<tr>
+<td>Données de démonstration</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>Suites navigateur</td>
+<td><strong>interrompue</strong> — la session s'est arrêtée pendant le préchauffage des 27 écrans</td>
+</tr>
+<tr>
+<td>Connexion derrière un proxy</td>
+<td><strong>non atteinte</strong></td>
+</tr>
+</tbody></table></div>
+<p><strong>Les deux dernières étapes n'ont pas été jouées, et je ne fais pas comme si.</strong> La coupure vient de l'arrêt de ma session, pas d'un échec : le journal s'arrête sur « Préchauffage de 27 écrans ». Elles se rejouent en une commande, et je préviens avant (<code>CLAUDE.md</code> §5).</p>
+<p><strong>La batterie base : 300/310.</strong> Les dix rouges sont ceux que le dépôt traîne depuis le 3 septembre — ports, verrous de construction, rôles, fiche du banc : <code>test-boutons-arrondis</code>, <code>test-fiche-pendant-relance</code>, <code>test-mise-a-jour-role-db</code>, <code>test-mode-emploi</code>, <code>test-ouvrir-port</code>, <code>test-relance-construction</code>, <code>test-roles-capacites-db</code>, <code>test-salarie-planning-lecture-seule-db</code>, <code>test-seed-conserve-identifiants</code>, <code>test-verrou-construction</code>. <strong>Aucun n'est de ce lot, et aucun ne touche la facture.</strong></p>
 <p>Une migration oblige à rejouer la batterie entière (<code>CLAUDE.md</code> §6) : c'est fait, et sur une base migrée — sans quoi elle rendrait des dizaines de rouges qui n'accuseraient que la base.</p>
 <h3 id="un-piège-de-mesure-payé-et-consigné">Un piège de mesure, payé et consigné</h3>
 <p><strong>La même batterie, sur le même code, a rendu 287/310 puis 299/310</strong> à quelques minutes d'intervalle. Les vingt-trois tombées disaient <em>« deadlock detected »</em> et <em>« Utilisateur X n'est pas membre de l'entreprise Y »</em> — la signature d'un <code>TRUNCATE</code> venu d'à côté. <code>nettoyerBase()</code> vide la base, et deux batteries concurrentes se détruisent l'une l'autre.</p>

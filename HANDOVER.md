@@ -99,6 +99,11 @@ chaîne des causes : `refusDe`, dans
 dépôt, en SQL brut, sur l'aspect comme sur le montant. Son contrôle existe et
 sait échouer.
 
+**Le contraste qui rend le piège lisible :** `test-factures.ts` éprouvait déjà
+l'immuabilité des LIGNES d'une facture émise, et il passe **parce qu'il n'emploie
+aucun motif** — `assert.rejects(fn)` tout court accepte n'importe quelle erreur.
+Sans motif ça passe, avec motif ça échoue sur la même protection.
+
 **Le piège à connaître avant de mesurer quoi que ce soit.** La batterie base a
 rendu **287/310 puis un tout autre relevé** à quelques minutes d'intervalle, sur
 le même code : les suites tombées disaient *« deadlock detected »* et
