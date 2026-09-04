@@ -9,7 +9,7 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
-## LA BATTERIE NE PEUT PAS ÊTRE VERTE SUR LE POSTE DU PATRON
+## ~~LA BATTERIE NE PEUT PAS ÊTRE VERTE SUR LE POSTE DU PATRON~~ — RÉGLÉ le 4 septembre 2026
 
 **Mesuré le 4 septembre 2026 au soir**, et ce n'est aucun lot : les trois
 dernières étapes de `npm run verifier:avant-livraison` tombent toujours sur sa
@@ -26,10 +26,22 @@ le produit — *« un service d'Atlas ne répond pas »*.
 accepte les DEUX mots de passe (l'authentification locale du conteneur est en
 confiance). Il faut essayer **depuis l'hôte** pour voir l'échec.
 
-- **À faire : rendre l'adresse surchargeable** —
-  `process.env.ATLAS_SUPER_URL ?? "…postgres_ci_pw…"`, défaut inchangé donc CI
-  intacte. Non fait dans le lot du devis : ce fichier est de l'outillage
-  partagé, et trois sessions écrivaient dans le dossier.
+- ~~**À faire : rendre l'adresse surchargeable**~~ — **FAIT le 4 septembre au
+  soir.** Les trois adresses se surchargent désormais par l'environnement :
+  `ATLAS_BASE_APP`, `ATLAS_BASE_OWNER`, `ATLAS_BASE_SUPER`. **Le défaut ne bouge
+  pas d'un caractère** — la CI ne pose aucune de ces variables et retombe
+  exactement sur ce qu'elle avait ; une valeur vide retombe sur le défaut elle
+  aussi, sans quoi un `export` malheureux aurait donné une adresse creuse.
+
+  Sur son poste, la batterie se joue donc ainsi, et elle va au bout :
+
+  ```bash
+  export ATLAS_BASE_SUPER="postgresql://postgres:postgres_dev_pw@localhost:5432/atlas_test"
+  npm run verifier:avant-livraison
+  ```
+
+  Éprouvé en jouant le seed par ce chemin : il amorce `atlas_test` au lieu de
+  tomber sur `auth_failed`.
 
 ## LE DEVIS — CE QUI RESTE APRÈS LE LOT DU 4 SEPTEMBRE
 

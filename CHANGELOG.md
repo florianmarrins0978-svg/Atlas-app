@@ -9,6 +9,43 @@ Format : le plus récent en tête.
 
 ## 2026-09-04
 
+### La batterie peut enfin être verte sur son poste — et la barre d'onglets, elle, n'est pas revenue
+
+**Deux signalements de la session du devis, traités séparément.**
+
+**1. La batterie cherchait un mot de passe qui n'est pas le sien.**
+`verifier-avant-livraison.ts` écrivait en dur les trois adresses de la CI, dont
+`postgresql://postgres:postgres_ci_pw@…` — or le rôle `postgres` de son Docker
+répond à `postgres_dev_pw`. Les trois dernières étapes tombaient donc
+**toujours**, quel que soit le code : « Données de démonstration » sur un
+`auth_failed`, puis les suites navigateur et la connexion faute de jeu de
+démonstration — et l'écran de connexion accusait le produit, *« un service
+d'Atlas ne répond pas »*.
+
+Les trois adresses se surchargent désormais par l'environnement
+(`ATLAS_BASE_APP`, `ATLAS_BASE_OWNER`, `ATLAS_BASE_SUPER`). **Le défaut ne bouge
+pas d'un caractère** — la CI ne pose aucune de ces variables ; une valeur vide y
+retombe aussi, sans quoi un `export` malheureux donnerait une adresse creuse.
+
+**Ce que ça évite, et c'est plus grave qu'un rouge :** une batterie qui ne peut
+pas être verte s'apprend à être ignorée. Trois sessions ont rejoué ces étapes à
+la main dans la même soirée, et la quatrième aurait fini par ne plus les lire.
+
+**2. La barre d'onglets sur les pages du client : NON REPRODUIT.** Mesuré sur le
+serveur, page par page, plutôt que déduit :
+
+| | |
+|---|---|
+| `/devis/<jeton>` — la page de son client | **aucune barre** |
+| `/chantiers/<id>/devis-complet` — le devis seul | **aucune barre** |
+| `/planning` (témoin) | barre présente, comme il se doit |
+
+`src/app/layout.tsx` n'a pas bougé depuis le 31 août, et `estEcranSansNavigation`
+tient toujours par `estCheminPublic` — une seule source, comme depuis le 6 août.
+Le signalement portait donc sur autre chose, ou sur un état transitoire de l'arbre
+pendant que trois sessions y écrivaient. **Rien n'a été « corrigé » ici : il n'y
+avait rien à corriger, et l'écrire évite qu'une session le cherche demain.**
+
 ### Le devis refuse la date avant de la faire choisir, et ses champs se voient sur Nuit
 
 **Le premier arrêt du parcours** — l'écran où il relit ce qu'il engage — laissait
