@@ -1350,7 +1350,23 @@ export default function DevisCompletClient(props: Props) {
           ═══════════════════════════════════════════════════════════════════ */}
       {!fige && (
         <div
-          className="sticky bottom-0 z-10 -mx-5 mt-6 px-5 pb-4 pt-8 sm:-mx-12 sm:px-12"
+          /* **La réserve s'efface là où la barre n'existe pas.**
+             Mesuré le 5 septembre 2026, et c'est ce qui a rendu ce défaut si
+             long à voir : sur son téléphone, l'écran du devis PORTE la barre
+             d'onglets — sa capture le montre — tandis qu'ici, sur le même
+             commit, il ne la porte pas. Réserver sa hauteur dans tous les cas
+             corrigeait son écran et laissait, sur le mien, le bouton flotter
+             quatre-vingts pixels au-dessus du vide.
+
+             D'où la question posée au DOM plutôt qu'au code : la barre est-elle
+             là ? Si oui, on lui laisse sa place ; sinon le bouton descend.
+
+             **Le sens de la dégradation est choisi.** `:has()` manque aux
+             navigateurs d'avant 2022 : la règle est alors ignorée, et l'on garde
+             la réserve — c'est-à-dire le cas de SON téléphone, le seul où le
+             bouton était intouchable. Un vieux navigateur voit donc un bouton
+             un peu haut, jamais un bouton caché. */
+          className="sticky bottom-0 z-10 -mx-5 mt-6 px-5 pt-8 pb-[calc(12px+var(--atlas-barre))] sm:-mx-12 sm:px-12 [body:not(:has(.atlas-nav-basse))_&]:pb-3"
           style={{
             background: `linear-gradient(to top, ${colors.card} 68%, ${voile(colors.card, 0)})`,
             // ═══════════════════════════════════════════════════════════════
@@ -1372,8 +1388,11 @@ export default function DevisCompletClient(props: Props) {
             // dégradé s'arrêterait avec lui, laissant une bande de texte du
             // document défiler entre le bouton et la barre. Ici l'aplat descend
             // jusqu'à la barre.
+            //
+            // **Il vit dans les classes, pas ici** : un style en ligne l'emporte
+            // sur toute feuille, et la réserve n'aurait plus pu s'effacer là où
+            // la barre n'existe pas (voir le `className`).
             // ═══════════════════════════════════════════════════════════════
-            paddingBottom: "calc(12px + var(--atlas-barre))",
           }}
         >
           {/* **Le refus prend la place du bouton, il ne le grise pas.** Un bouton
