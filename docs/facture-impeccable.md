@@ -353,13 +353,27 @@ sur `atlas_dev` : toutes les étapes qui touchent la base y sont épinglées.
 | Fournisseurs d'IA | ✅ |
 | **Suites base de données** | ❌ **300/310** — les dix rouges d'infrastructure connus |
 | Données de démonstration | ✅ |
-| Suites navigateur | **interrompue** — la session s'est arrêtée pendant le préchauffage des 27 écrans |
-| Connexion derrière un proxy | **non atteinte** |
+| Suites navigateur | ❌ **refusée** — le port 3000 était pris |
+| Connexion derrière un proxy | ❌ **refusée** — même raison |
 
-**Les deux dernières étapes n'ont pas été jouées, et je ne fais pas comme si.**
-La coupure vient de l'arrêt de ma session, pas d'un échec : le journal s'arrête
-sur « Préchauffage de 27 écrans ». Elles se rejouent en une commande, et je
-préviens avant (`CLAUDE.md` §5).
+**LES DEUX DERNIÈRES ÉTAPES N'ONT PAS PU ÊTRE JOUÉES, ET LE REFUS EST LE BON
+COMPORTEMENT.** Elles ne sont pas tombées sur un défaut : elles ont refusé de
+mesurer. Le message est sans ambiguïté — *« Quelque chose écoute DÉJÀ sur le port
+3000, et ce n'est pas cette batterie. Les suites travailleraient sur ce
+serveur-là — celui d'un autre code, peut-être d'une autre branche — et leur
+résultat ne voudrait rien dire. »*
+
+Le port avait été libéré avant le lancement ; il a été repris pendant les neuf
+minutes qu'ont duré les étapes précédentes, par une **session voisine** qui
+prenait des captures (serveur démarré à 01:01). Je ne l'ai pas tué : elle
+travaillait.
+
+**C'est exactement le coût de plusieurs sessions dans un même dossier** — et une
+batterie reste une machine à un seul occupant. Ces deux étapes se rejouent en une
+commande dès que le port est rendu, et je préviens avant (`CLAUDE.md` §5).
+
+**Ce que cela ne remet PAS en cause :** les six étapes précédentes, dont la
+construction et les suites base, ont été jouées en entier sur un port libre.
 
 **La batterie base : 300/310.** Les dix rouges sont
 ceux que le dépôt traîne depuis le 3 septembre — ports, verrous de construction,
@@ -394,6 +408,12 @@ arrivé pour de bon.
 | `test-facture-e2e` | **0 réussi, 5 échoués** |
 | `test-tva-au-paiement-e2e` | **0 réussi, 7 échoués** |
 | `test-facture-au-client-e2e` | non mesurée (délai dépassé) |
+
+**Une session voisine les a mesurées indépendamment le 4 septembre au soir**, sur
+une batterie complète : elle a rejoué cinq suites tombées **avec et sans son
+lot** — 0/5 des deux côtés. Ces rouges sont donc **antérieurs et collectifs**, et
+les suites navigateur rendaient 70/127 ce soir-là. Deux mesures indépendantes qui
+concordent valent mieux qu'une.
 
 **Les cinq et les sept tombent au même endroit, et ce n'est pas la facture :**
 `waiting for locator('text=+ Ajouter une ligne')` — l'écran du **devis complet**,

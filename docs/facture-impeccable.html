@@ -504,14 +504,17 @@
 </tr>
 <tr>
 <td>Suites navigateur</td>
-<td><strong>interrompue</strong> — la session s'est arrêtée pendant le préchauffage des 27 écrans</td>
+<td>❌ <strong>refusée</strong> — le port 3000 était pris</td>
 </tr>
 <tr>
 <td>Connexion derrière un proxy</td>
-<td><strong>non atteinte</strong></td>
+<td>❌ <strong>refusée</strong> — même raison</td>
 </tr>
 </tbody></table></div>
-<p><strong>Les deux dernières étapes n'ont pas été jouées, et je ne fais pas comme si.</strong> La coupure vient de l'arrêt de ma session, pas d'un échec : le journal s'arrête sur « Préchauffage de 27 écrans ». Elles se rejouent en une commande, et je préviens avant (<code>CLAUDE.md</code> §5).</p>
+<p><strong>LES DEUX DERNIÈRES ÉTAPES N'ONT PAS PU ÊTRE JOUÉES, ET LE REFUS EST LE BON COMPORTEMENT.</strong> Elles ne sont pas tombées sur un défaut : elles ont refusé de mesurer. Le message est sans ambiguïté — <em>« Quelque chose écoute DÉJÀ sur le port 3000, et ce n'est pas cette batterie. Les suites travailleraient sur ce serveur-là — celui d'un autre code, peut-être d'une autre branche — et leur résultat ne voudrait rien dire. »</em></p>
+<p>Le port avait été libéré avant le lancement ; il a été repris pendant les neuf minutes qu'ont duré les étapes précédentes, par une <strong>session voisine</strong> qui prenait des captures (serveur démarré à 01:01). Je ne l'ai pas tué : elle travaillait.</p>
+<p><strong>C'est exactement le coût de plusieurs sessions dans un même dossier</strong> — et une batterie reste une machine à un seul occupant. Ces deux étapes se rejouent en une commande dès que le port est rendu, et je préviens avant (<code>CLAUDE.md</code> §5).</p>
+<p><strong>Ce que cela ne remet PAS en cause :</strong> les six étapes précédentes, dont la construction et les suites base, ont été jouées en entier sur un port libre.</p>
 <p><strong>La batterie base : 300/310.</strong> Les dix rouges sont ceux que le dépôt traîne depuis le 3 septembre — ports, verrous de construction, rôles, fiche du banc : <code>test-boutons-arrondis</code>, <code>test-fiche-pendant-relance</code>, <code>test-mise-a-jour-role-db</code>, <code>test-mode-emploi</code>, <code>test-ouvrir-port</code>, <code>test-relance-construction</code>, <code>test-roles-capacites-db</code>, <code>test-salarie-planning-lecture-seule-db</code>, <code>test-seed-conserve-identifiants</code>, <code>test-verrou-construction</code>. <strong>Aucun n'est de ce lot, et aucun ne touche la facture.</strong></p>
 <p>Une migration oblige à rejouer la batterie entière (<code>CLAUDE.md</code> §6) : c'est fait, et sur une base migrée — sans quoi elle rendrait des dizaines de rouges qui n'accuseraient que la base.</p>
 <h3 id="un-piège-de-mesure-payé-et-consigné">Un piège de mesure, payé et consigné</h3>
@@ -535,6 +538,7 @@
 <td>non mesurée (délai dépassé)</td>
 </tr>
 </tbody></table></div>
+<p><strong>Une session voisine les a mesurées indépendamment le 4 septembre au soir</strong>, sur une batterie complète : elle a rejoué cinq suites tombées <strong>avec et sans son lot</strong> — 0/5 des deux côtés. Ces rouges sont donc <strong>antérieurs et collectifs</strong>, et les suites navigateur rendaient 70/127 ce soir-là. Deux mesures indépendantes qui concordent valent mieux qu'une.</p>
 <p><strong>Les cinq et les sept tombent au même endroit, et ce n'est pas la facture :</strong> <code>waiting for locator('text=+ Ajouter une ligne')</code> — l'écran du <strong>devis complet</strong>, qui ne rend pas son bouton. Aucune des deux n'atteint jamais l'écran de facture.</p>
 <p><strong>Ce lot ne les répare pas, et ne prétend pas le contraire.</strong> Le fichier en cause (<code>DevisCompletClient.tsx</code>) n'est pas touché ici, et l'arbre porte au même moment deux lots en cours qui réécrivent le chemin d'accès à cet écran. Les rejouer une fois ces lots posés est dans <code>TODO.md</code>.</p>
 <hr>
