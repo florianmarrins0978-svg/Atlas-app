@@ -9,6 +9,37 @@ Format : le plus récent en tête.
 
 ## 2026-09-04
 
+### Le travail non enregistré ne se jette plus sans le dire
+
+**Sa question, après avoir vu qu'un lot avait dû être réécrit de mémoire :**
+*« et comment on peut corriger cela pour plus que ça arrive ? »* — puis son
+choix, entre un garde-fou automatique et des dossiers séparés : **le garde-fou**.
+
+Trois sessions travaillent dans le même dossier — un seul arbre git, une seule
+branche, un seul port. Le 4 septembre, les modifications de `CHANGELOG.md` d'une
+session ont disparu pendant qu'elle livrait, sans que personne voie passer le
+geste qui les avait effacées.
+
+`scripts/garde-travail-non-enregistre.mjs` est branché sur chaque commande
+(`PreToolUse`). Dès que l'arbre porte du travail non enregistré, il refuse les
+quatre gestes qui le jettent — `reset --hard`, `checkout -- <fichier>`,
+`restore`, `clean -f` — en NOMMANT les fichiers en jeu et en donnant le geste
+qui fait la même chose sans rien perdre : `git stash push --include-untracked`.
+
+**LA PREMIÈRE VERSION VISAIT À CÔTÉ, et l'écrire l'a montré.** Elle refusait les
+CHANGEMENTS DE BRANCHE. Or `git switch -c` emporte les modifications avec lui :
+il ne perd rien. Un garde-fou posé là aurait gêné tout le monde tous les jours
+sans jamais éviter la panne qu'il prétend éviter — et un garde-fou qui parle à
+tort s'apprend à être ignoré (`CLAUDE.md` §1 bis).
+
+**Sa suite a attrapé deux défauts avant qu'il ne serve** : `git -C . reset
+--hard` n'était pas reconnu, et `git commit -m "… on ne fait jamais git reset
+--hard ici"` était refusé à tort — un message qui PARLE du geste n'est pas le
+geste. Elle lui montre désormais autant de commandes à laisser passer qu'à
+refuser, joue le déclencheur avec son vrai contrat, et refuse de conclure sur un
+arbre propre.
+
+
 ### La planche de la facture au planning, refaite sur le planning d'aujourd'hui
 
 **Sa raison de n'avoir jamais répondu, et elle était bonne :** *« on ne l'a pas

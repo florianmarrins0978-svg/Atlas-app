@@ -1338,6 +1338,43 @@ Trois règles qui en découlent, et qui ne se négocient pas :
 qu'on vient de faire.** Sa décision du 13 août 2026 : *« seulement quand le code
 touche »*.
 
+#### LE TRAVAIL NON ENREGISTRÉ NE SE JETTE PLUS — un garde-fou, pas une consigne
+
+**Payé le 4 septembre 2026.** Trois sessions travaillaient dans le même dossier.
+Pendant qu'une quatrième livrait, ses modifications de `CHANGELOG.md` ont
+disparu de l'arbre : réécrites de mémoire, et personne n'a vu passer le geste
+qui les avait effacées.
+
+**Le patron l'a tranché le jour même**, devant deux propositions : le garde-fou
+automatique plutôt qu'une règle écrite. Il a raison, et §1 bis le dit déjà —
+*une consigne en prose se lit au début d'une conversation et s'oublie au bout de
+trois heures*, or c'est au bout de trois heures qu'une session nettoie son arbre.
+
+`scripts/garde-travail-non-enregistre.mjs` est branché sur chaque commande
+(`.claude/settings.json`, `PreToolUse`). **Dès que l'arbre porte du travail non
+enregistré**, il refuse les quatre gestes qui le jettent :
+
+    git reset --hard   ·   git checkout -- <fichier>
+    git restore <f>    ·   git clean -f
+
+**Ce qu'il ne fait PAS, et c'est le point.** Il ne dit rien sur un arbre propre,
+et il laisse passer les changements de branche : `git switch -c` **emporte** les
+modifications, il ne perd rien. La première version du garde-fou visait
+justement les branches — elle aurait gêné tout le monde tous les jours sans
+jamais éviter la panne qu'elle prétendait éviter. Un garde-fou qui parle à tort
+s'apprend à être ignoré, et l'on perd alors la protection sans s'en apercevoir.
+
+**Il ne ferme aucune porte** : ce qu'il propose à la place — `git stash push
+--include-untracked` — fait la même chose et se défait. Jeter son propre essai
+reste possible ; cela laisse simplement une trace.
+
+`scripts/test-garde-travail-non-enregistre.ts` lui montre autant de gestes à
+laisser passer qu'à refuser, joue le déclencheur avec son vrai contrat, et
+**refuse de conclure** sur un arbre propre. Il a servi tout de suite : il a
+attrapé deux défauts avant que le garde-fou ne serve — `git -C . reset --hard`
+n'était pas reconnu, et `git commit -m "… on ne fait jamais git reset --hard"`
+était refusé à tort.
+
 #### Ce que la soirée du 23 août a coûté, et qui n'était écrit nulle part
 
 **Sa consigne :** *« il y a six sessions qui tournent en même temps ; donc
