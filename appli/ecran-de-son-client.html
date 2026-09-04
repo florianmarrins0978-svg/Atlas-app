@@ -186,7 +186,7 @@
 
   <p class="famille">Question 1 — quand il cherche une autre date</p>
   <p class="q">Aujourd'hui, ses trois boutons passent sous le pli</p>
-  <p class="qd">Touchez « Une autre date » sur le premier choix : la page passe de 664 à 990 px, et « J'accepte ce devis » sort de l'écran. Les trois autres le gardent en vue.</p>
+  <p class="qd">Le calendrier est ouvert ci-dessous, comme chez lui. Sur « Aujourd'hui », la page passe de 664 à 990 px et « J'accepte ce devis » sort de l'écran. Passez d'un choix à l'autre : les trois autres le gardent en vue.</p>
 
   <div class="choix" role="group" aria-label="Comment le calendrier tient dans l'écran">
     <button type="button" data-forme="aujourdhui" aria-pressed="true">Aujourd'hui</button>
@@ -231,7 +231,7 @@ const PROPOSEES = ["Vendredi 11 septembre", "Vendredi 18 septembre"];
 
 let forme = "aujourdhui";
 let palette = "";
-let ouvert = false;      /* « une autre date » est cochée */
+let ouvert = true;       /* « une autre date » est cochée — vrai dès l'arrivée : c'est l'état en question */
 let jour = null;         /* le jour retenu au calendrier */
 let ecranSecond = false; /* C : on est sur le calendrier */
 
@@ -374,7 +374,13 @@ Array.prototype.forEach.call(document.querySelectorAll("[data-forme]"), function
       x.setAttribute("aria-pressed", String(x === b));
     });
     forme = b.dataset.forme;
-    ouvert = false; jour = null; ecranSecond = false;
+    // **Le choix ouvre le calendrier, il ne le referme pas.** Le patron, le
+    // 4 septembre 2026 : « rien ne change quand je clique sur A B C ». Il avait
+    // raison — refermé, les quatre états sont le MÊME écran, et la planche ne
+    // montrait rien de ce qu'elle demande de comparer. C'est l'état ouvert
+    // qui est en question ; c'est donc lui qu'on rend, tout de suite.
+    ouvert = true; jour = null;
+    ecranSecond = forme === "second";
     document.getElementById("explication").textContent = EXPLICATIONS[forme];
     peindre();
   });
