@@ -47,6 +47,30 @@ export default function FormulaireReponse({
    */
   const [feuilleOuverte, setFeuilleOuverte] = useState(false);
   /**
+   * ═══════════════════════════════════════════════════════════════════════
+   * **LA LISTE SE REPLIE UNE FOIS LA DATE RETENUE — son choix du 4 septembre.**
+   *
+   * La feuille avait ramené la page de 990 à 664 px. Restait un cas : une date
+   * à moins de quatorze jours fait apparaître la case de rétractation — 125 px
+   * — et la page repassait à **790 px** pour 664 d'écran.
+   *
+   * Deux façons d'y arriver lui ont été soumises. Il a retenu celle-ci : une
+   * fois une date retenue au calendrier, les deux dates proposées et la ligne
+   * « une autre date » n'ont plus rien à décider — elles cèdent la place à ce
+   * qu'il a choisi.
+   *
+   * **Rien ne se perd : « changer » redéplie la liste entière**, d'où l'on peut
+   * reprendre une date proposée aussi bien que rouvrir le calendrier. Une liste
+   * repliée sans retour ferait d'un simple appui un choix définitif.
+   *
+   * **Et le choix continue de partir au serveur.** Repliés, les boutons radio
+   * quittent le document : un champ caché prend le relais, sans quoi le
+   * formulaire n'enverrait plus AUCUN choix de date.
+   * ═══════════════════════════════════════════════════════════════════════
+   */
+  const [listeDepliee, setListeDepliee] = useState(false);
+  const listeRepliee = choixDate === "autre" && dateAutre !== "" && !listeDepliee;
+  /**
    * Ce que la page refuse d'elle-même, sans aller au serveur.
    *
    * Une demande de correction sans un mot obligerait le patron à rappeler,
@@ -109,7 +133,25 @@ export default function FormulaireReponse({
         <h2 className="text-[15px] font-semibold text-ink">Quelle date vous arrange&nbsp;?</h2>
 
         <div className="mt-1.5 flex flex-col gap-0.5">
-          {envoi.datesProposees.map((d) => (
+          {/* Repliée, la liste ne rend plus qu'une ligne : la date retenue, et
+              de quoi revenir. Voir `listeRepliee` pour le pourquoi. */}
+          {listeRepliee && (
+            <div className="flex items-baseline justify-between gap-3">
+              <span className="text-[15px] text-ink">{jourLisible(dateAutre)}</span>
+              <button
+                type="button"
+                onClick={() => setListeDepliee(true)}
+                className="shrink-0 text-[13px] text-ink/70 underline underline-offset-4"
+              >
+                changer
+              </button>
+            </div>
+          )}
+          {/* Repliés, les boutons radio quittent le document — et avec eux le
+              choix que le formulaire envoie. Ce champ prend leur place. */}
+          {listeRepliee && <input type="hidden" name="choixDate" value="autre" />}
+
+          {!listeRepliee && envoi.datesProposees.map((d) => (
             <label key={d} className="flex items-center gap-3 text-[15px] text-ink">
               <input
                 type="radio"
@@ -134,7 +176,7 @@ export default function FormulaireReponse({
               formulaire se rejoue. Le serveur refuse la contre-proposition de
               son côté (`enregistrerReponse`, motif `autre_date_refusee`) — une
               règle tenue à un seul endroit, jamais deux. */}
-          {envoi.autreDateAutorisee && (
+          {envoi.autreDateAutorisee && !listeRepliee && (
             <label className="flex items-center gap-3 text-[15px] text-ink">
               <input
                 type="radio"
@@ -160,7 +202,7 @@ export default function FormulaireReponse({
               qu'elle se referme, et la date choisie ne serait jamais envoyée. */}
           {envoi.autreDateAutorisee && <input type="hidden" name="dateAutre" value={dateAutre} />}
 
-          {envoi.autreDateAutorisee && choixDate === "autre" && dateAutre && (
+          {envoi.autreDateAutorisee && !listeRepliee && choixDate === "autre" && dateAutre && (
             <button
               type="button"
               onClick={() => setFeuilleOuverte(true)}
@@ -227,6 +269,8 @@ export default function FormulaireReponse({
                   if (!dateAutre) return setRefus("Touchez d'abord un jour dans le calendrier.");
                   setRefus(null);
                   setFeuilleOuverte(false);
+                  // Ce qu'il vient de retenir devient la ligne ; le reste se replie.
+                  setListeDepliee(false);
                 }}
                 className="mt-3 rounded-full bg-[#2F3B2F] py-3 text-[16px] font-medium text-white"
               >

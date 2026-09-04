@@ -234,21 +234,41 @@ async function main() {
     assert.strictEqual(await uneAutre.isChecked(), false, "« une autre date » reste collée");
     assert.strictEqual(await page.locator("[data-jour]").count(), 0, "le calendrier reste ouvert");
 
-    // 4 bis. **Et une date RETENUE, elle, survit à la fermeture.** Sans ce
-    //    contrôle, une feuille qui vide tout en se refermant passerait le
-    //    point ci-dessus en beauté et perdrait la date du client.
+    // 4 bis. **Une date RETENUE survit à la fermeture — et c'est CE QUI PART
+    //    AU SERVEUR qu'on vérifie, plus une case cochée.**
+    //
+    //    Depuis son choix du 4 septembre, la liste se replie une fois la date
+    //    retenue : les boutons radio quittent le document, et un champ caché
+    //    prend leur place. Viser `isChecked()` reviendrait à exiger la mise en
+    //    page d'hier ; ce qui compte est que le formulaire envoie encore le
+    //    choix ET la date (`CLAUDE.md` §5 bis).
+    //
+    //    Sans ce contrôle, une feuille qui viderait tout en se refermant — ou
+    //    un repli qui oublierait son champ caché — perdrait la date du client
+    //    en silence, et son acceptation serait refusée sans qu'il comprenne.
     await uneAutre.click();
     const jourLibre = page.locator('[data-jour]:not([disabled])').first();
     const jourRetenu = await jourLibre.getAttribute("data-jour");
     await jourLibre.click();
     await page.locator('button:has-text("Retenir cette date")').click();
     assert.strictEqual(await page.locator("[data-jour]").count(), 0, "la feuille ne s'est pas refermée");
-    assert.ok(await uneAutre.isChecked(), "le choix s'est perdu en refermant");
     assert.strictEqual(
       await page.locator('input[name="dateAutre"]').inputValue(),
       jourRetenu,
       "la date retenue ne part pas au serveur"
     );
+    assert.strictEqual(
+      await page.locator('input[name="choixDate"]').inputValue(),
+      "autre",
+      "la liste repliée n'envoie plus aucun choix de date"
+    );
+
+    // 4 ter. **« changer » redéplie la liste.** Sans cette sortie, un appui
+    //    ferait de la date retenue un choix définitif : le client ne pourrait
+    //    plus revenir à l'une des deux dates de son artisan.
+    await page.locator('button:has-text("changer")').click();
+    assert.ok(await laProche.isVisible(), "les dates proposées ne reviennent pas");
+    assert.ok(await uneAutre.isVisible(), "« une autre date » ne revient pas");
 
     await page.close();
   });

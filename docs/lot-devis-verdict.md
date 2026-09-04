@@ -190,8 +190,17 @@ Deux façons d'y arriver, et les deux sont des arbitrages, pas des évidences :
 | descendre la case DANS la feuille | mieux placée — elle parle de cette date-là — mais hors de vue au moment où il appuie sur « J'accepte ce devis », et c'est un consentement légal qui doit être exprès |
 | replier la liste des dates une fois une date retenue | 60 à 70 px : insuffisant seul |
 
-**Je ne tranche pas à votre place.** Dites-moi, ou laissez en l'état : 790 px
-veut dire 126 px de défilement dans ce seul cas.
+**Vous avez tranché : replier la liste.** C'est codé — une date retenue au
+calendrier ne laisse plus qu'une ligne, la vôtre, et « changer » redéplie tout.
+
+**Mesuré : 790 → 717 px.** Soixante-treize px gagnés, et **il en reste 53** dans
+ce seul cas : « Je ne donne pas suite » finit à 690 px pour 664 d'écran. C'est ce
+que je vous avais annoncé avant votre choix — « 60 à 70 px : insuffisant seul ».
+
+**Ce qui les fermerait** est l'autre option, celle que vous n'avez pas retenue :
+descendre la case de rétractation dans la feuille. Elle y serait mieux placée,
+mais elle sortirait de votre vue au moment d'appuyer sur « J'accepte ce devis ».
+À vous de dire si on les combine, ou si on laisse ces 53 px.
 
 ---
 

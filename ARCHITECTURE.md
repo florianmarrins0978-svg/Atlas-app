@@ -22182,7 +22182,40 @@ Décomposition mesurée, à 390 × 664 :
 | les trois issues + la mention de preuve | 146 px |
 | gouttières et marges | 63 px |
 
-**Ce n'est pas corrigé, et pour une raison :** les deux façons d'y arriver sont
+**Il a tranché le 4 septembre : replier la liste.** Une fois une date retenue
+au calendrier, les deux dates proposées et la ligne « une autre date » n'ont
+plus rien à décider — elles cèdent la place à ce qu'il a choisi, sur une seule
+ligne, avec « changer » pour tout redéplier.
+
+**Deux pièges, et le second est celui qui perdrait sa date.** Repliés, les
+boutons radio quittent le document : un champ caché prend le relais, sans quoi
+le formulaire n'enverrait plus AUCUN choix. Et « changer » doit redéplier la
+liste ENTIÈRE — sans cette sortie, un appui ferait de la date retenue un choix
+définitif, et le client ne pourrait plus revenir à l'une des deux dates de son
+artisan.
+
+Le contrôle a suivi : il ne regarde plus une case cochée — elle n'existe plus —
+mais **ce qui part au serveur**, `choixDate` et `dateAutre`, plus le retour de
+la liste sur « changer ».
+
+**Mesuré après : 790 → 717 px.** Le gain est de 73 px, et il reste **53 px**
+de trop dans ce seul cas ; le dernier bouton finit à 690 px pour 664 d'écran.
+C'est ce que l'estimation annonçait — « 60 à 70 px : insuffisant seul » —, et
+cela lui a été dit avant qu'il choisisse.
+
+| bloc, après repli | hauteur |
+|---|---|
+| en-tête (devis, totaux, téléchargement) | 204 px |
+| carte des dates (titre, date retenue, message) | 180 px |
+| case de rétractation | 125 px |
+| les trois issues | 146 px |
+
+**La seule combinaison qui fermerait les 53 px restants** est celle qu'il n'a
+pas retenue : descendre la case de rétractation dans la feuille. Elle attend
+sa décision, et rien ne se code avant.
+
+**L'ancien état de ce paragraphe, pour mémoire :** les deux façons d'y arriver
+étaient
 des arbitrages, pas des évidences.
 
 1. **Descendre la case dans la feuille**, au moment où il touche la date

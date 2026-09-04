@@ -289,21 +289,22 @@ reproduite ici. Le parcours passe au vert sur un poste de développement.
 l'état au lieu de compter. À défaut, le journal de son espace porte déjà
 « Devis depuis dictée : la chaîne a échoué ».
 
-## LA CASE DE RÉTRACTATION FAIT ENCORE DÉBORDER L'ÉCRAN DU CLIENT (4 sept. 2026)
+## IL RESTE 53 px DE TROP SUR L'ÉCRAN DU CLIENT (4 sept. 2026)
 
 **Sa réponse A est codée** — le calendrier monte du bas, la page derrière garde
 sa hauteur : 990 px → 664 (`ARCHITECTURE.md` §249).
 
-**Ce qui reste :** quand le client retient une date à moins de quatorze jours,
-la case de rétractation (125 px) porte la page à **790 px** pour 664 d'écran.
-Le pire cas est donc passé de 1 148 à 790, et le cas courant tient.
+**Son second choix est codé** — la liste se replie une fois la date retenue :
+**790 → 717 px**, soit 73 px gagnés.
 
-Deux façons d'y arriver, et les deux sont des arbitrages :
+**Ce qui reste :** 53 px. Dans le seul cas d'une date à moins de quatorze
+jours, la page fait 717 px pour 664 d'écran, et « Je ne donne pas suite » finit
+à 690. C'était annoncé avant son choix — « 60 à 70 px : insuffisant seul ».
 
-| | ce que ça coûte |
-|---|---|
-| descendre la case DANS la feuille | mieux placée — elle parle de cette date — mais hors de vue au moment d'appuyer sur « J'accepte », et c'est un consentement légal qui doit être exprès |
-| replier la liste des dates une fois une date retenue | 60 à 70 px : insuffisant seul |
+**La seule chose qui les fermerait** est l'option qu'il n'a pas retenue :
+descendre la case de rétractation dans la feuille. Elle y serait mieux placée —
+elle parle de CETTE date — mais elle sortirait de sa vue au moment où il appuie
+sur « J'accepte ce devis », et c'est un consentement légal qui doit être exprès.
 
 **Qui peut le faire : LUI.** Rien ne se code avant.
 

@@ -31,6 +31,21 @@ ne vérifiait — qu'une date RETENUE survive à la fermeture.
 rétractation (125 px) porte la page à **790 px**. Deux façons d'y arriver, deux
 arbitrages — à trancher par lui (`ARCHITECTURE.md` §249).
 
+### La liste des dates se replie une fois la date retenue
+
+Son second choix du 4 septembre, contre les 126 px que la case de rétractation
+ajoutait encore. Une date retenue au calendrier ne laisse plus qu'une ligne —
+la sienne — et « changer » redéplie tout.
+
+**Mesuré : 790 → 717 px.** Il reste 53 px de trop dans ce seul cas, et c'était
+annoncé avant son choix (« 60 à 70 px : insuffisant seul »). La combinaison qui
+les fermerait attend sa décision.
+
+**Le piège tenu :** repliés, les boutons radio quittent le document. Un champ
+caché prend leur place, sans quoi le formulaire n'enverrait plus aucun choix de
+date — et l'acceptation du client serait refusée sans qu'il comprenne pourquoi.
+Le contrôle vise désormais ce qui part au serveur, plus une case cochée.
+
 ### La planche montrait le même écran sous les quatre choix
 
 *« Rien ne change quand je clique sur A B C »* — il avait raison, et c'était une
