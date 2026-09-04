@@ -342,8 +342,8 @@
 <td><em>fermé</em></td>
 </tr>
 <tr>
-<td><strong>L'immuabilité d'une facture émise n'a aucun contrôle automatique</strong> — le devis a le sien</td>
-<td>moi, au prochain lot</td>
+<td>~~<strong>L'immuabilité d'une facture émise sans contrôle</strong>~~ — <strong>ÉPROUVÉE le 4 sept.</strong>, et j'avais écrit le contraire de la vérité</td>
+<td><em>fermé</em></td>
 </tr>
 <tr>
 <td>~~<strong>Ce qu'une ligne muette autorise</strong>~~ — sans objet, A ne pose aucune réserve</td>
@@ -395,6 +395,37 @@
 </tr>
 </tbody></table></div>
 <hr>
+<h2 id="correction--jai-écrit-que-votre-facture-nétait-peut-être-pas-protégée-cétait-faux">CORRECTION : j'ai écrit que votre facture n'était peut-être pas protégée. C'était faux.</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><strong>Ce que j'avais écrit :</strong> un contrôle devait prouver que la base refuse de réécrire une facture émise ; il ne passait pas ; je l'ai retiré et j'ai mis le point en attente, en écrivant que la protection ne tenait peut-être que dans un sens.</p>
+<p><strong>Votre réponse :</strong> <em>« si la base refuse la réécriture mais que le même geste passe par le code, alors ma facture n'est pas figée — c'est justement ce que je promets à mon client. Va au fond. »</em> Vous aviez raison d'exiger ça.</p>
+<p><strong>Ce que la mesure dit, angle par angle :</strong></p>
+<div class="tablewrap"><table><thead><tr>
+<th>Le geste</th>
+<th>Ce que ça donne</th>
+</tr></thead><tbody>
+<tr>
+<td>réécrire l'<strong>aspect</strong> par le dépôt</td>
+<td><strong>refusé</strong> — « Une facture émise est immuable »</td>
+</tr>
+<tr>
+<td>réécrire l'aspect <strong>en SQL brut</strong>, dans le même contexte</td>
+<td><strong>refusé</strong></td>
+</tr>
+<tr>
+<td>réécrire le <strong>montant</strong></td>
+<td><strong>refusé</strong> — et c'est lui qui porte le relevé de TVA</td>
+</tr>
+<tr>
+<td>écrire <strong>hors contexte d'isolation</strong></td>
+<td>aucune ligne touchée : la facture n'existe pas pour cette requête</td>
+</tr>
+</tbody></table></div>
+<p><strong>La protection tient dans tous les sens.</strong> Ce n'était pas elle qui était en cause : c'était mon contrôle.</p>
+<p><strong>Pourquoi il se trompait, et ça vaut pour tout le dépôt.</strong> L'outil qui parle à la base <strong>enveloppe</strong> le message de PostgreSQL : le message visible ne dit que « Failed query: update … », et la phrase du garde-fou — « Une facture émise est immuable » — est rangée un cran plus bas, dans la <em>cause</em>. Mon contrôle cherchait le mot au mauvais endroit : il échouait <strong>sur une protection qui marche</strong>, et faisait conclure l'inverse de la vérité.</p>
+<p>Une autre suite du dépôt (<code>scripts/db-tests.ts</code>) n'a jamais eu ce problème : elle parle à la base sans cet outil. La leçon est écrite dans <code>HANDOVER.md</code>, parce qu'elle piégera la prochaine session exactement pareil.</p>
+<p><strong>Et le contrôle sait échouer</strong> : garde-fou désactivé sur la base d'essai, il rougit ; réactivé, il repasse au vert. Sans cette confrontation, un test vert ne prouve rien.</p>
+<hr>
 <h2 id="les-chiffres-exacts">Les chiffres exacts</h2>
 <a class="retour" href="#sommaire">↑ Sommaire</a>
 <p><strong>Sur les fichiers de ce lot</strong></p>
@@ -428,7 +459,7 @@
 </tr>
 <tr>
 <td><code>scripts/test-facture-reprend-le-devis-db.ts</code> <em>(neuf)</em></td>
-<td>✅ <strong>12 réussis, 0 échec</strong></td>
+<td>✅ <strong>13 réussis, 0 échec</strong> — dont l'immuabilité, confrontée au garde-fou désactivé</td>
 </tr>
 <tr>
 <td><code>scripts/capture-facture-impeccable.mts</code> <em>(neuf)</em></td>

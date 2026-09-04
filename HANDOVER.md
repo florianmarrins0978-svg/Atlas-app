@@ -83,10 +83,21 @@ Les deux premières sont écrites en tête de `appli/ts-la-trace-de-laccord.html
 **Ne pas rouvrir non plus la FORME des travaux supplémentaires** : tranchée le
 1ᵉʳ septembre à 01 h 25, en tête de `appli/ts-sur-la-facture.html`.
 
-**Un point reste, et il n'est pas mince :** l'immuabilité d'une facture émise
-n'a **aucun contrôle automatique**. La base la refuse — vérifié à la main — mais
-le contrôle écrit par le dépôt n'a pas été refusé, sans qu'on sache pourquoi. Il
-a été retiré plutôt que gardé sans être compris (`TODO.md`).
+**UN PIÈGE À CONNAÎTRE AVANT D'ÉCRIRE UN CONTRÔLE SUR UNE ERREUR DE BASE.**
+`drizzle` **enveloppe** l'erreur de PostgreSQL : `Error.message` ne porte que
+« Failed query: update … », et le texte du trigger — « Une facture émise est
+immuable » — vit dans `error.cause`. Un `assert.rejects(fn, /immuable/i)` échoue
+donc **sur une protection qui marche**, et fait conclure l'inverse de la vérité.
+Ça a coûté une soirée le 4 septembre, et il a fallu qu'il exige d'aller au fond
+pour que ce soit vu.
+
+`scripts/db-tests.ts` y échappe parce qu'il passe par `pg` sans ORM. Lire la
+chaîne des causes : `refusDe`, dans
+`scripts/test-facture-reprend-le-devis-db.ts`.
+
+**Et l'immuabilité d'une facture émise, elle, tient dans tous les sens** — par le
+dépôt, en SQL brut, sur l'aspect comme sur le montant. Son contrôle existe et
+sait échouer.
 
 **Le piège à connaître avant de mesurer quoi que ce soit.** La batterie base a
 rendu **287/310 puis un tout autre relevé** à quelques minutes d'intervalle, sur

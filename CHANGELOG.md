@@ -148,6 +148,25 @@ ce que la proposition A aurait fait et qu'il a écartée.
 **299 lignes de champs sorties dans `ChampsDuDevis.tsx`**, sans qu'un
 comportement change.
 
+### L'immuabilité d'une facture émise a enfin son contrôle — et j'avais écrit le contraire
+
+**Il a refusé de laisser le point en attente**, et il a eu raison : *« si la base
+refuse la réécriture mais que le même geste passe par le code, alors ma facture
+n'est pas figée — c'est justement ce que je promets à mon client. »*
+
+La protection tient **dans tous les sens** : par le dépôt, en SQL brut, sur
+l'aspect comme sur le montant ; hors contexte d'isolation l'écriture ne touche
+aucune ligne. Ce n'était pas elle qui était en cause, c'était le contrôle.
+
+**Ce que ça évite, et pas seulement ici :** `drizzle` ENVELOPPE l'erreur de
+PostgreSQL — `Error.message` ne porte que « Failed query: … », le texte du
+trigger vit dans `error.cause`. Un `assert.rejects(fn, /immuable/i)` échoue donc
+sur une protection qui marche, et fait conclure l'inverse de la vérité.
+`scripts/db-tests.ts` y échappe parce qu'il parle à `pg` sans ORM.
+
+Le contrôle sait échouer : trigger désactivé, il rougit ; réactivé, il repasse
+au vert.
+
 ### La facture ne peut plus facturer l'ancien prix, et son total se recompose
 
 **Le second arrêt du parcours** — le dernier écran avant que l'argent parte —

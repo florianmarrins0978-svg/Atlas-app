@@ -23,6 +23,7 @@ import { withEntreprise } from "../src/server/db/with-entreprise";
 import { factures } from "../src/server/db/schema";
 import { eq } from "drizzle-orm";
 import { nettoyerBase } from "./_test-db";
+import { sql } from "drizzle-orm";
 
 // ═══════════════════════════════════════════════════════════════════════════
 // LA FACTURE ET LE DEVIS QUI FAIT FOI — et l'allure qui arrive chez le client.
@@ -50,6 +51,38 @@ async function test(nom: string, fn: () => Promise<void>) {
     console.error(`❌ ${nom}`);
     console.error(`   ${err instanceof Error ? err.message : err}`);
     failed++;
+  }
+}
+
+/**
+ * LE MESSAGE D'UNE ERREUR, SA CAUSE COMPRISE — et c'est le piège du 4 septembre.
+ *
+ * **Un contrôle de l'immuabilité a été cru faux pendant une soirée à cause de
+ * ça.** PostgreSQL refusait bel et bien la réécriture ; mais drizzle enveloppe
+ * son erreur, et `Error.message` ne porte alors que « Failed query: update
+ * "factures" … ». Le texte du trigger — « Une facture émise est immuable » —
+ * vit dans `error.cause`. Un `assert.rejects(fn, /immuable/i)` échoue donc
+ * SUR UNE PROTECTION QUI MARCHE, et fait conclure l'inverse de la vérité.
+ *
+ * `scripts/db-tests.ts` n'a pas ce problème : il passe par `pg` directement,
+ * sans ORM. Toute assertion sur un message de base venue du DÉPÔT doit passer
+ * par ici.
+ *
+ * Rend `null` quand rien n'a été refusé — l'appelant décide si c'est un échec.
+ */
+async function refusDe(f: () => Promise<unknown>): Promise<string | null> {
+  try {
+    await f();
+    return null;
+  } catch (e) {
+    let texte = "";
+    let courant: unknown = e;
+    for (let i = 0; i < 5 && courant instanceof Error; i++) {
+      texte += `${courant.message}
+`;
+      courant = (courant as { cause?: unknown }).cause;
+    }
+    return texte;
   }
 }
 
@@ -256,18 +289,46 @@ async function main() {
     );
   });
 
-  // **UN CONTRÔLE DU TRIGGER D'IMMUABILITÉ A ÉTÉ ÉCRIT ICI, PUIS RETIRÉ.**
-  //
-  // PostgreSQL refuse bel et bien de réécrire une facture émise — vérifié à la
-  // main : `UPDATE factures SET doc_fond = NULL WHERE statut = 'emise'` rend
-  // « Une facture émise est immuable », par `trg_facture_immuable` (0018). La
-  // règle du 4 septembre tient donc une couche plus bas que l'application.
-  //
-  // Mais le même geste passé par le dépôt n'a PAS été refusé, et la raison n'a
-  // pas été trouvée. **Un contrôle qu'on ne s'explique pas est pire qu'aucun** :
-  // vert, il endort ; rouge, il accuse au hasard. Il est donc retiré, et le
-  // point est consigné dans `TODO.md` — le devis a le sien
-  // (`scripts/db-tests.ts`), la facture n'en a pas.
+  await test("LA BASE REFUSE de réécrire une facture émise — par le dépôt comme en SQL", async () => {
+    // **Sa règle du 4 septembre tenue une couche plus bas que l'application.**
+    // « Une facture partie ne change plus d'aspect » n'est pas une politesse
+    // d'écran : `trg_facture_immuable` (0018) l'interdit, et c'est ce trigger
+    // qui fait tenir tout le relevé de TVA — un relevé se calcule à partir des
+    // factures émises, donc il ne vaut que si elles ne bougent plus.
+    const ctx = await contexte("immuable");
+    const { chantierId } = await chantierAvecDevisEnvoye(ctx, "550.00");
+    const facture = await terminerChantier(ctx, chantierId, MAINTENANT);
+    await emettreFacture(ctx, facture.id, MAINTENANT);
+
+    const parLeDepot = await refusDe(() =>
+      withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+        await tx
+          .update(factures)
+          .set({ docFond: "#123456" })
+          .where(eq(factures.id, facture.id));
+      })
+    );
+    assert.ok(parLeDepot, "l'aspect d'une facture émise a pu être réécrit par le dépôt");
+    assert.match(parLeDepot, /immuable/i, "le refus ne vient pas du trigger");
+
+    // Et par le chemin le plus court, dans le même contexte d'isolation : un
+    // garde-fou qui ne tiendrait que face à l'ORM n'en serait pas un.
+    const enSqlBrut = await refusDe(() =>
+      withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+        await tx.execute(sql`UPDATE factures SET doc_fond = '#123456' WHERE id = ${facture.id}`);
+      })
+    );
+    assert.ok(enSqlBrut, "une écriture SQL directe a réécrit une facture émise");
+    assert.match(enSqlBrut, /immuable/i);
+
+    // Le montant aussi, pas seulement l'aspect — c'est lui qui porte le relevé.
+    const surLeMontant = await refusDe(() =>
+      withEntreprise(ctx.utilisateurId, ctx.entrepriseId, async (tx) => {
+        await tx.update(factures).set({ totalTtc: "1.00" }).where(eq(factures.id, facture.id));
+      })
+    );
+    assert.ok(surLeMontant, "le montant d'une facture émise a pu être réécrit");
+  });
 
   await test("le repli d'historique : trois colonnes vides rendent RIEN, jamais le défaut", async () => {
     // Confondre les deux ferait repeindre une facture partie sans allure — le

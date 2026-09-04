@@ -22784,13 +22784,33 @@ comparaison veuille dire quelque chose** : il affiche tantôt « N », tantôt
 « Compiling … », et faisait conclure qu'une page avait bougé alors qu'elle était
 identique au pixel près.
 
-**Un contrôle a été écrit puis RETIRÉ, et c'est écrit dans la suite.** Il voulait
-prouver que PostgreSQL refuse de réécrire une facture émise. La base le refuse
-bel et bien — `UPDATE factures SET doc_fond = NULL WHERE statut = 'emise'` rend
-« Une facture émise est immuable » (`trg_facture_immuable`, 0018) —, mais le même
-geste passé par le dépôt n'a pas été refusé et la raison n'a pas été trouvée. Un
-contrôle qu'on ne s'explique pas est pire qu'aucun : vert il endort, rouge il
-accuse au hasard. Le point est dans `TODO.md`.
+### Le contrôle d'immuabilité : mon erreur, et le piège qu'elle a mis au jour
+
+**J'ai d'abord écrit que la protection ne tenait peut-être que dans un sens.**
+C'était faux, et il a eu raison d'exiger d'aller au fond : *« si la base refuse
+la réécriture mais que le même geste passe par le code, alors ma facture n'est
+pas figée — c'est justement ce que je promets à mon client. »*
+
+**Mesuré, angle par angle :** le refus tombe **par le dépôt comme en SQL brut**,
+dans le contexte d'isolation, sur l'aspect comme sur le montant. Hors contexte
+RLS, l'écriture ne touche simplement aucune ligne (`rowCount 0`) — la facture
+n'existe pas pour cette requête. **La protection tient dans tous les sens.**
+
+**LE PIÈGE, ET IL VAUT POUR TOUT LE DÉPÔT.** `drizzle` **enveloppe** l'erreur de
+PostgreSQL : `Error.message` ne porte que « Failed query: update "factures" … »,
+et le texte du trigger — « Une facture émise est immuable » — vit dans
+`error.cause`. Un `assert.rejects(fn, /immuable/i)` échoue donc **sur une
+protection qui marche**, et fait conclure l'inverse de la vérité. C'est ce qui a
+coûté une soirée de doute.
+
+`scripts/db-tests.ts` n'a jamais eu ce problème : il passe par `pg` directement,
+sans ORM, et son `/immuable/` marche depuis toujours. **Toute assertion sur un
+message de base venue du DÉPÔT doit lire la chaîne des causes** — c'est ce que
+fait `refusDe` dans `scripts/test-facture-reprend-le-devis-db.ts`.
+
+**Et le contrôle sait échouer** : trigger désactivé sur `atlas_test`, il rougit ;
+réactivé, il repasse au vert. C'est le seul moyen de savoir qu'il mesure quelque
+chose (`CLAUDE.md` §5).
 
 ### Deux défauts trouvés sur la capture, et par aucun test
 

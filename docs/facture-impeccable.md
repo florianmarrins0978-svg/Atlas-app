@@ -200,7 +200,7 @@ point ci-dessus, et c'est ce que la planche propose de rendre.
 | ~~**A ou B sur la planche**~~ — **TRANCHÉ le 4 sept. : « la A »**, aucun champ de trace | *fermé* |
 | ~~**Le geste au-dessus du pli**~~ — **TRANCHÉ le 4 sept. : « on laisse »** | *fermé* |
 | ~~**Figer l'allure sur la facture émise**~~ — **FAIT le 4 sept.**, migration 0074 | *fermé* |
-| **L'immuabilité d'une facture émise n'a aucun contrôle automatique** — le devis a le sien | moi, au prochain lot |
+| ~~**L'immuabilité d'une facture émise sans contrôle**~~ — **ÉPROUVÉE le 4 sept.**, et j'avais écrit le contraire de la vérité | *fermé* |
 | ~~**Ce qu'une ligne muette autorise**~~ — sans objet, A ne pose aucune réserve | *fermé* |
 | **Les trois suites navigateur que le brief annonce rouges** | mesurées à part, voir ci-dessous |
 
@@ -274,6 +274,46 @@ Les deux autres pistes, écartées avec elle :
 
 ---
 
+## CORRECTION : j'ai écrit que votre facture n'était peut-être pas protégée. C'était faux.
+
+**Ce que j'avais écrit :** un contrôle devait prouver que la base refuse de
+réécrire une facture émise ; il ne passait pas ; je l'ai retiré et j'ai mis le
+point en attente, en écrivant que la protection ne tenait peut-être que dans un
+sens.
+
+**Votre réponse :** *« si la base refuse la réécriture mais que le même geste
+passe par le code, alors ma facture n'est pas figée — c'est justement ce que je
+promets à mon client. Va au fond. »* Vous aviez raison d'exiger ça.
+
+**Ce que la mesure dit, angle par angle :**
+
+| Le geste | Ce que ça donne |
+|---|---|
+| réécrire l'**aspect** par le dépôt | **refusé** — « Une facture émise est immuable » |
+| réécrire l'aspect **en SQL brut**, dans le même contexte | **refusé** |
+| réécrire le **montant** | **refusé** — et c'est lui qui porte le relevé de TVA |
+| écrire **hors contexte d'isolation** | aucune ligne touchée : la facture n'existe pas pour cette requête |
+
+**La protection tient dans tous les sens.** Ce n'était pas elle qui était en
+cause : c'était mon contrôle.
+
+**Pourquoi il se trompait, et ça vaut pour tout le dépôt.** L'outil qui parle à
+la base **enveloppe** le message de PostgreSQL : le message visible ne dit que
+« Failed query: update … », et la phrase du garde-fou — « Une facture émise est
+immuable » — est rangée un cran plus bas, dans la *cause*. Mon contrôle cherchait
+le mot au mauvais endroit : il échouait **sur une protection qui marche**, et
+faisait conclure l'inverse de la vérité.
+
+Une autre suite du dépôt (`scripts/db-tests.ts`) n'a jamais eu ce problème :
+elle parle à la base sans cet outil. La leçon est écrite dans `HANDOVER.md`,
+parce qu'elle piégera la prochaine session exactement pareil.
+
+**Et le contrôle sait échouer** : garde-fou désactivé sur la base d'essai, il
+rougit ; réactivé, il repasse au vert. Sans cette confrontation, un test vert ne
+prouve rien.
+
+---
+
 ## Les chiffres exacts
 
 **Sur les fichiers de ce lot**
@@ -286,7 +326,7 @@ Les deux autres pistes, écartées avec elle :
 | `scripts/test-chartes-lisibles.ts` | ✅ **14 réussis, 0 échec** |
 | `scripts/test-aucune-fleche.ts` | ✅ 115 339 lignes lues, 8 flèches fonctionnelles nommées, **aucune décorative** |
 | `scripts/test-facture-face-au-devis.ts` *(neuf)* | ✅ **5 réussis, 0 échec** |
-| `scripts/test-facture-reprend-le-devis-db.ts` *(neuf)* | ✅ **12 réussis, 0 échec** |
+| `scripts/test-facture-reprend-le-devis-db.ts` *(neuf)* | ✅ **13 réussis, 0 échec** — dont l'immuabilité, confrontée au garde-fou désactivé |
 | `scripts/capture-facture-impeccable.mts` *(neuf)* | ✅ 9 planches, la mesure du pli, et la comparaison d'octets qui prouve le figeage |
 
 **La batterie base, rejouée APRÈS la migration : 300/310.** Les dix rouges sont
