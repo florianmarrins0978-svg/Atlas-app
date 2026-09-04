@@ -85,15 +85,32 @@ changer un comportement en croyant déplacer du code. Le brief dit « aucun
 comportement ne change en passant » ; l'extraction s'arrête donc là où le risque
 commence.
 
-### 4. Le bouton au bout de 2,6 hauteurs d'écran — DESSINÉ, PAS CODÉ
+### 4. Le bouton au bout de 2,6 hauteurs d'écran — DESSINÉ, PUIS CODÉ SUR SA LETTRE
 
 **Mesuré :** 2,59 hauteurs d'écran à 390 × 664 avant d'atteindre « Choisir la
-date », qui est le tout dernier élément de la page — il vient après le cadre de
+date », qui était le tout dernier élément de la page — après le cadre de
 signature. La mesure de `TODO.md` se confirme.
 
-**Rien n'a été codé, et c'est délibéré : voir le refus ci-dessous.** Une
-maquette essayable est livrée : `appli/devis-le-premier-arret.html`, trois
-onglets qui se défilent au doigt.
+**Trois façons ont été dessinées avant d'écrire une ligne**
+(`appli/devis-le-premier-arret.html`), et il a répondu : **« La B »**.
+
+B est codée : le document ne bouge pas d'un pixel, et « Choisir la date » reste
+posé en bas de l'écran à toute hauteur de lecture. Mesuré sur l'écran réel, à
+390 × 664, sur un devis de trois lignes qui fait **3,32 hauteurs** :
+
+| Où il en est de sa lecture | Le bas du bouton |
+|---|---|
+| en haut de page | 648 px (fenêtre : 664) |
+| à mi-parcours | 648 px |
+| en bas | 604 px — il s'est posé à sa place |
+
+**Ce qui a été fait autrement que la maquette :** le bouton est passé en pleine
+largeur (`pleineLargeur`). Une barre qu'on garde sous le pouce et un bouton qui
+n'occupe que le milieu se contredisent — vu à la capture, pas au test.
+
+**A a été écartée par lui**, et sa raison tient : replier le document derrière
+« Voir le document » aurait caché ce qu'il signe sur le seul écran dont c'est
+le sujet.
 
 ---
 
@@ -177,21 +194,79 @@ amène.
 
 ## Les chiffres de la batterie
 
-**À REMPLIR** — la batterie n'a pas encore été jouée : trois sessions
-travaillent dans le même dossier, et une batterie jouée pendant qu'une autre
-écrit ne mesure rien (`CLAUDE.md` §5).
-
-Ce qui est vert à cette heure, et qui ne touche pas la base :
-
-| | |
+| Étape | Résultat |
 |---|---|
-| `npx tsc --noEmit` | vert |
-| `npm run lint` | 0 erreur (17 avertissements, tous antérieurs) |
-| `test-aucune-fleche` | vert — 115 717 lignes lues, 8 flèches fonctionnelles, aucune décorative |
-| `test-chartes-lisibles` | vert — 14 réussis, 0 échec |
-| `test-devis-envoyable` | vert — 5 réussis |
-| `test-preparation-devis` | vert |
-| la maquette, regardée | 390 × 664, aucun débordement horizontal |
+| Types (`tsc --noEmit`) | **vert** |
+| Lint | **vert** — 0 erreur, 17 avertissements tous antérieurs |
+| Construction (`next build`) | **vert** |
+| Mémoire du dépôt | **vert** — 8 fichiers |
+| Fournisseurs d'IA | **vert** |
+| Suites base de données | **300/310** |
+| Données de démonstration | rouge d'abord, **verte après correction de l'adresse** (voir ci-dessous) |
+| Suites navigateur | **70/127** |
+| Connexion derrière un proxy | **verte** |
+
+### Les 10 rouges des suites base ne sont à personne
+
+`test-boutons-arrondis`, `test-fiche-pendant-relance`, `test-mise-a-jour-role-db`,
+`test-mode-emploi`, `test-ouvrir-port`, `test-relance-construction`,
+`test-roles-capacites-db`, `test-salarie-planning-lecture-seule-db`,
+`test-seed-conserve-identifiants`, `test-verrou-construction`.
+
+Ce sont **exactement** ceux que le dépôt connaît déjà : neuf de machine ou
+d'infrastructure, deux venus d'un lot voisin déjà sur `main`. Aucun n'est de ce
+lot.
+
+### La batterie ne peut pas être verte sur son poste, et ce n'est aucun lot
+
+Trois étapes tombaient d'un coup : « Données de démonstration » sur
+`auth_failed`, puis les suites navigateur et la connexion **faute de jeu de
+démonstration**. L'écran de connexion accusait alors le produit — *« un service
+d'Atlas ne répond pas »* — pour un mot de passe.
+
+`verifier-avant-livraison.ts` code en dur celui de la CI
+(`postgres_ci_pw`) ; le rôle `postgres` de son Docker répond à
+`postgres_dev_pw`. **Rejouées avec la bonne adresse, la connexion derrière un
+proxy est verte et le seed passe.**
+
+**Le piège de diagnostic, à ne pas retomber dedans :** `docker exec … psql`
+accepte les deux mots de passe — l'authentification locale du conteneur est en
+confiance. Il faut essayer **depuis l'hôte** pour voir l'échec. Consigné dans
+`TODO.md`, avec le remède (rendre l'adresse surchargeable, défaut CI inchangé).
+
+### Les 57 rouges des suites navigateur ne sont pas de ce lot — MESURÉ, pas supposé
+
+70/127 est anormal, et il aurait été malhonnête de l'annoncer sans le vérifier.
+Cinq suites tombées ont donc été rejouées **avec** puis **sans** le lot, en
+remettant `DevisCompletClient.tsx` dans son état d'avant :
+
+| | `tva-multiple`, `brouillon`, `calcul-prix`, `choisir-la-date`, `adresse-suggestions` |
+|---|---|
+| avec le lot | **0/5** |
+| sans le lot | **0/5** |
+
+Elles tombent à l'identique. Et `test-devis-complet-e2e` échoue sur la **même
+assertion, à la même ligne**, avant comme après.
+
+Les suites qui ouvrent l'écran du devis et qui passent le disent aussi :
+`test-devis-refus-a-chiffrer-e2e` (neuve), `test-devis-sans-client-e2e`,
+`test-devis-a-la-main-e2e`.
+
+### Un défaut TROUVÉ sur cet écran, et NON corrigé — il n'est pas de ce lot
+
+`test-devis-complet-e2e` échoue sur : **« La barre d'onglets est revenue sur la
+page du devis »** (1 au lieu de 0). C'est une règle de cet écran depuis le
+5 août 2026 — *« une page où il n'y a QUE le devis »*, sans décor d'application.
+
+La règle est pourtant écrite et juste (`layout.tsx`,
+`estEcranSansNavigation` → `chemin.endsWith("/devis-complet")`). Ce qui manque
+est en amont : le chemin est lu dans l'en-tête `x-atlas-pathname`, posée par le
+middleware ; sans elle, la fonction rend `false` et les onglets reviennent —
+**sur cet écran comme sur les pages publiques du client**.
+
+**Pas touché**, et c'est délibéré : `layout.tsx` et `middleware.ts` sont des
+pièces partagées, l'échec est antérieur au lot, et trois sessions écrivent dans
+le dossier. Porté dans `TODO.md`.
 
 ---
 
@@ -199,7 +274,9 @@ Ce qui est vert à cette heure, et qui ne touche pas la base :
 
 | Quoi | Qui peut trancher |
 |---|---|
-| Le bouton au bout de 2,6 hauteurs : **Aujourd'hui, A ou B** | **le patron**, sur la maquette |
+| **La barre d'onglets revenue sur la page du devis** (et sur les pages du client) | la session qui tient `layout.tsx` / `middleware.ts` |
+| **Les 57 suites navigateur rouges sur `main`** | mesurées comme antérieures ; à reprendre par lot |
+| **La batterie inutilisable sur son poste** (mot de passe `postgres`) | une ligne dans `verifier-avant-livraison.ts` |
 | « Atlas prépare toujours votre devis… (96 s) » — jamais reproduit sur un poste de développement | à rendre bavard avant de corriger ; **pas touché ici** |
 | Un artisan qui arrive les mains vides n'a jamais été essayé (`docs/A-FAIRE.md`) | ouvert |
 | Le tableau et les totaux, encore dans l'écran | un lot suivant, si le besoin se présente |

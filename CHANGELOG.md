@@ -30,6 +30,15 @@ sur un fond noir ne se voit pas — le champ actif devenait identique au champ a
 repos. Ils passent par `voile()`. **Ce que ça évite :** la faute exacte du
 22 août, sur l'écran le plus regardé du parcours.
 
+**« Choisir la date » ne se mérite plus au bout de 2,6 hauteurs d'écran.** Le
+bouton était le tout dernier élément de la page, après le cadre de signature.
+Trois façons ont été dessinées avant d'écrire une ligne ; il a choisi **la B** :
+le document ne bouge pas d'un pixel, la barre reste posée en bas de l'écran.
+Mesuré sur l'écran réel : le bouton tient à 648 px d'une fenêtre de 664, en haut
+de page comme à mi-parcours. **Ce que ça évite :** traverser tout le document
+pour atteindre le seul geste de la page — sans rien cacher de ce qu'il signe,
+ce que la proposition A aurait fait et qu'il a écartée.
+
 **299 lignes de champs sorties dans `ChampsDuDevis.tsx`**, sans qu'un
 comportement change.
 

@@ -22850,3 +22850,24 @@ les classes d'un écran.
 par la fonction qu'on venait d'écrire : la suite ouvre l'écran avec une ligne
 qui attend son prix et regarde ce que l'écran propose. Elle rougit sur l'écran
 d'avant ce lot.
+
+**LE BOUTON RESTE SOUS LE POUCE — sa lettre du 4 septembre 2026 : « La B ».**
+Trois façons ont été dessinées (`appli/devis-le-premier-arret.html`) avant
+d'écrire une ligne, et il a choisi la barre collée. « Choisir la date » était le
+tout dernier élément de la page — après les conditions, l'IBAN et le cadre de
+signature —, à **2,59 hauteurs d'écran** de défilement à 390 × 664. Il l'est
+désormais à toute hauteur : mesuré sur l'écran réel, le bas du bouton tient à
+648 px d'une fenêtre de 664 en haut de page comme à mi-parcours, et se pose à
+604 px à la fin.
+
+`sticky` et non `fixed` : la barre appartient à la feuille, elle s'arrête d'elle-
+même au bas du document et ne flotte pas par-dessus la feuille des dates ni celle
+de l'appui long. Le dégradé fond vers `card` — le fond de la feuille, qui suit la
+charte —, jamais vers un crème écrit en clair qui serait faux sur les deux
+sombres. Et le bouton est en pleine largeur : une barre qu'on garde sous le pouce
+avec un bouton qui n'occupe que le milieu se contredit — vu à la capture.
+
+**La proposition A — replier le document derrière « Voir le document » — a été
+écartée PAR LUI**, et sa raison tient : c'est ici qu'il relit ce qu'il engage.
+Elle traînait dans `TODO.md` comme si elle était tranchée ; elle ne l'était pas
+(`docs/QUESTIONS.md` §23 se terminait sur la question). **Ne pas la rouvrir.**

@@ -29,8 +29,9 @@ L'écran où il relit ce qu'il engage. `ARCHITECTURE.md` §256,
 | **Fait** | le refus « à chiffrer » remonte **avant** la feuille des dates : il nomme la ligne et ouvre son champ, au lieu de laisser choisir une date pour refuser au bout (`DevisCompletClient.tsx`) |
 | **Fait** | les neuf couleurs écrites en clair suivent la charte — le voile de saisie était invisible sur Nuit et Sylve, et c'est le seul signe qu'on écrit dans ces champs sans cadre |
 | **Fait** | 299 lignes de champs sorties dans `ChampsDuDevis.tsx`, à comportement identique |
-| **Pas fait, et volontaire** | « Choisir la date » reste au bout de **2,59 hauteurs d'écran**. Trois façons sont dessinées (`appli/devis-le-premier-arret.html`) ; **rien n'est codé sans sa lettre** |
-| **Pas mesuré** | la batterie complète — trois sessions écrivaient dans le même dossier |
+| **Fait** | « Choisir la date » était au bout de **2,59 hauteurs d'écran** ; il a choisi **la B** sur `appli/devis-le-premier-arret.html`, et la barre collée est codée — 648 px d'une fenêtre de 664, à toute hauteur |
+| **Mesuré** | base **300/310** et navigateur **70/127** : aucun rouge n'est de ce lot, vérifié en rejouant cinq suites tombées avec ET sans le lot (0/5 des deux côtés) |
+| **Trouvé, pas corrigé** | la barre d'onglets est revenue sur la page du devis et sur les pages du client — antérieur au lot, pièces partagées (`TODO.md`) |
 
 ## FAIT : la facture, le second arrêt (4 septembre 2026)
 

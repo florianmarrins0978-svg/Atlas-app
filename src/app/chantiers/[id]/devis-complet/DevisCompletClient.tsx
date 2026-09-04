@@ -1295,53 +1295,100 @@ export default function DevisCompletClient(props: Props) {
         </div>
       </footer>
 
-      {/* Les seules actions de la page, discrètes, sous le document. */}
-      <div className="mt-10 flex flex-col items-center gap-3" style={{ borderTop: `1px solid ${colors.lineSoft}` }}>
-        {/* **« Choisir la date » EN PREMIER, et l'aperçu en dessous** — sa
-            demande du 20 août 2026, planche `docs/maquettes/82`, proposition A.
-            Un seul geste saute aux yeux : c'est celui qu'il fait neuf fois sur
-            dix. L'aperçu reste un lien parce que ce n'est pas une action, c'est
-            une vérification.
-
-            **Sans flèche**, il l'a dit en toutes lettres. La flèche annonçait
-            un écran de plus ; il n'y en a justement plus. */}
-        {/* **Le refus prend la place du bouton, il ne le grise pas.** Un bouton
-            éteint sans un mot est un défaut, pas une protection — et un bouton
-            éteint AVEC un mot laisserait quand même le doigt appuyer dans le
-            vide. Ce qui s'affiche à sa place dit ce qui manque, et emmène
-            dessus. Le bouton revient de lui-même dès que le prix est posé. */}
-        {!fige &&
-          (refusDePrix ? (
-            <div className="w-full px-6 pt-6">
-              <div className="rounded-lg px-4 py-3" style={{ backgroundColor: colors.rustTint }}>
-                <p className="text-[13px]" style={{ color: colors.rust }}>
-                  {refusDePrix}
-                </p>
-                <button
-                  type="button"
-                  onClick={() => sansPrix[0] && allerAuPrix(sansPrix[0].id)}
-                  className="mt-2 text-[13px] font-semibold underline"
-                  style={{ color: colors.rust }}
-                >
-                  {sansPrix.length > 1 ? "Poser les prix" : "Poser le prix"}
-                </button>
-              </div>
-            </div>
-          ) : (
-            <div className="w-full px-6 pt-6">
-              <PrimaryButton onClick={() => setFeuilleOuverte(true)}>Choisir la date</PrimaryButton>
-            </div>
-          ))}
+      {/* L'aperçu reste DANS le document : ce n'est pas une action, c'est une
+          vérification. On le lit une fois, à la fin, comme le reste du papier. */}
+      <div className="mt-10 flex flex-col items-center" style={{ borderTop: `1px solid ${colors.lineSoft}` }}>
         <a
           href={`/api/devis/${props.devisId}/pdf`}
           target="_blank"
           rel="noopener noreferrer"
-          className={`${fige ? "pt-6" : "pt-3"} text-[14px] font-medium`}
+          className="pt-6 text-[14px] font-medium"
           style={{ color: colors.rust }}
         >
           Aperçu du PDF
         </a>
       </div>
+
+      {/* ═══════════════════════════════════════════════════════════════════
+          **LE PREMIER ARRÊT RESTE SOUS LE POUCE — sa lettre du 4 septembre 2026.**
+
+          *« La B »*, choisie sur `appli/devis-le-premier-arret.html`.
+
+          **Le défaut mesuré :** « Choisir la date » était le tout DERNIER
+          élément de la page — après les conditions, après l'IBAN, après le
+          cadre de signature. À 390 × 664, **2,59 hauteurs d'écran** de
+          défilement avant de l'atteindre, sur l'écran qu'il traverse à chaque
+          devis.
+
+          **Pourquoi B et pas A.** La planche proposait aussi de replier le
+          document derrière « Voir le document » : un seul écran, et le bouton
+          d'emblée. Il a écarté ce chemin, et il a eu raison — c'est ICI qu'il
+          relit ce qu'il engage. Un premier arrêt qui cache ce qu'on signe
+          n'arrête plus rien. **B ne retire pas un mot du document** : il rend
+          seulement le geste atteignable à toute hauteur.
+
+          **Ce que « Voir le document » aurait coûté, et pourquoi on ne le
+          rouvre pas :** cette proposition traînait dans `TODO.md` comme si
+          elle était tranchée. Elle ne l'était pas — `docs/QUESTIONS.md` §23 se
+          termine sur la question, restée sans réponse jusqu'à ce soir. La
+          réponse est venue, et elle est non.
+
+          **`sticky` et non `fixed` :** la barre appartient à la feuille. Fixée
+          à la fenêtre, elle flotterait aussi par-dessus la feuille des dates et
+          celle de l'appui long ; collée, elle s'arrête d'elle-même au bas du
+          document et laisse le reste tranquille.
+
+          **Le dégradé n'est pas un ornement** : sans lui, le texte du document
+          passe derrière le bouton et se lit à moitié. Il fond vers `card` — le
+          fond de la feuille, qui suit la charte —, jamais vers un crème écrit
+          en clair qui serait faux sur Nuit et sur Sylve.
+
+          **Les marges négatives** annulent le rembourrage de la feuille
+          (`px-5 sm:px-12`), pour que le dégradé aille d'un bord à l'autre : un
+          dégradé qui s'arrête avant le bord laisse deux rubans de texte visible
+          de chaque côté du bouton.
+          ═══════════════════════════════════════════════════════════════════ */}
+      {!fige && (
+        <div
+          className="sticky bottom-0 z-10 -mx-5 mt-6 px-5 pb-4 pt-8 sm:-mx-12 sm:px-12"
+          style={{
+            background: `linear-gradient(to top, ${colors.card} 68%, ${voile(colors.card, 0)})`,
+            // La barre du bas de l'iPhone mange les seize derniers pixels : sans
+            // ça, le bouton se touche à moitié sur le seul appareil qui compte.
+            paddingBottom: "calc(16px + env(safe-area-inset-bottom))",
+          }}
+        >
+          {/* **Le refus prend la place du bouton, il ne le grise pas.** Un bouton
+              éteint sans un mot est un défaut, pas une protection — et un bouton
+              éteint AVEC un mot laisserait quand même le doigt appuyer dans le
+              vide. Ce qui s'affiche à sa place dit ce qui manque, et emmène
+              dessus. Le bouton revient de lui-même dès que le prix est posé.
+
+              **Sans flèche**, il l'a dit en toutes lettres. */}
+          {refusDePrix ? (
+            <div className="rounded-lg px-4 py-3" style={{ backgroundColor: colors.rustTint }}>
+              <p className="text-[13px]" style={{ color: colors.rust }}>
+                {refusDePrix}
+              </p>
+              <button
+                type="button"
+                onClick={() => sansPrix[0] && allerAuPrix(sansPrix[0].id)}
+                className="mt-2 text-[13px] font-semibold underline"
+                style={{ color: colors.rust }}
+              >
+                {sansPrix.length > 1 ? "Poser les prix" : "Poser le prix"}
+              </button>
+            </div>
+          ) : (
+            // Pleine largeur, comme sur la planche qu'il a choisie : une barre
+            // qui reste sous le pouce et un bouton qui n'occupe que son milieu
+            // se contredisent — la cible doit valoir la place qu'on lui garde.
+            <PrimaryButton pleineLargeur onClick={() => setFeuilleOuverte(true)}>
+              Choisir la date
+            </PrimaryButton>
+          )}
+        </div>
+      )}
       </article>
 
       {/* **La feuille des dates, montée ici.** Elle vivait sur l'écran

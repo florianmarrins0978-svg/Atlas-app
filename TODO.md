@@ -38,20 +38,19 @@ Le refus « à chiffrer » remonte avant la feuille des dates, les neuf couleurs
 écrites en clair suivent la charte, et 299 lignes de champs sont sorties dans
 `ChampsDuDevis.tsx`. Ce qui reste :
 
-- **La planche `appli/devis-le-premier-arret.html` attend sa lettre** :
-  Aujourd'hui, **A — Replié**, ou **B — Sous le pouce**. « Choisir la date » est
-  le tout dernier élément de la page, à **2,59 hauteurs d'écran** mesurées à
-  390 × 664 — il vient après le cadre de signature. **Ma préférence : B**, qui
-  règle l'accès sans replier ce qu'il relit.
-  **⚠ NE PAS CODER « Voir le document » SANS SA RÉPONSE.** Le brief du
-  4 septembre le range dans « déjà tranché » : c'est inexact. Ça n'existe que
-  dans `appli/moins-de-mots.html`, et `docs/QUESTIONS.md` §23 se termine sur une
-  question qu'il n'a jamais tranchée — *« ces trois écrans vous vont-ils ? »*.
-- **La batterie n'a pas été jouée sur ce lot** : trois sessions écrivaient dans
-  le même dossier. Verts à cette heure : `tsc`, `lint`, `test-aucune-fleche`,
-  `test-chartes-lisibles`, `test-devis-envoyable`, `test-preparation-devis`.
-  La suite neuve `test-devis-refus-a-chiffrer-e2e.ts` demande un serveur et une
-  base : **elle n'a pas encore tourné**.
+- ~~**La planche attend sa lettre**~~ **RÉPONDU LE 4 SEPTEMBRE : « La B ».**
+  La barre collée est codée ; « Choisir la date » tient à 648 px d'une fenêtre
+  de 664, à toute hauteur de lecture. **⚠ « Voir le document » (la A) a été
+  ÉCARTÉ par lui — ne pas le rouvrir.** Le brief du 4 septembre le rangeait dans
+  « déjà tranché » : c'était inexact, et la réponse est venue, et c'est non.
+- **⚠ LA BARRE D'ONGLETS EST REVENUE SUR LA PAGE DU DEVIS** — et sur les pages
+  publiques du client. `test-devis-complet-e2e` le dit (1 au lieu de 0), et
+  l'échec est **antérieur à ce lot** (même assertion, même ligne, avant comme
+  après). La règle est pourtant juste : `estEcranSansNavigation` rend `true` sur
+  `/devis-complet`. Ce qui manque est en amont — le chemin est lu dans l'en-tête
+  `x-atlas-pathname` posée par le middleware, et sans elle la fonction rend
+  `false`. **Non corrigé ici** : `layout.tsx` et `middleware.ts` sont partagés,
+  et trois sessions écrivaient dans le dossier.
 - **Le tableau des lignes et le bloc des totaux sont encore dans l'écran**
   (1 479 lignes). Les sortir demanderait quinze à vingt paramètres chacun : à
   ne faire que si un besoin le justifie, pas pour le compte de lignes.

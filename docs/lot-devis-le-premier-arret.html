@@ -112,9 +112,29 @@
 </tbody></table></div>
 <p><strong>Le chiffre mérite d'être dit franchement :</strong> 299 lignes sont parties, et le correctif du point 1 en a ramené 121 — dont l'essentiel est le paragraphe qui explique pourquoi ce refus vit là et pas ailleurs. L'écran perd donc 178 lignes nettes, pas 299. Un dépôt qui compte ses lignes en cachant ce qu'il rajoute ailleurs se ment à lui-même.</p>
 <p><strong>Ce qui n'a PAS été sorti, et pourquoi.</strong> Le tableau des lignes et le bloc des totaux forment des unités cohérentes, mais chacun demanderait quinze à vingt paramètres pour franchir la frontière — c'est-à-dire autant d'occasions de changer un comportement en croyant déplacer du code. Le brief dit « aucun comportement ne change en passant » ; l'extraction s'arrête donc là où le risque commence.</p>
-<h3 id="4-le-bouton-au-bout-de-26-hauteurs-décran--dessiné-pas-codé">4. Le bouton au bout de 2,6 hauteurs d'écran — DESSINÉ, PAS CODÉ</h3>
-<p><strong>Mesuré :</strong> 2,59 hauteurs d'écran à 390 × 664 avant d'atteindre « Choisir la date », qui est le tout dernier élément de la page — il vient après le cadre de signature. La mesure de <code>TODO.md</code> se confirme.</p>
-<p><strong>Rien n'a été codé, et c'est délibéré : voir le refus ci-dessous.</strong> Une maquette essayable est livrée : <code>appli/devis-le-premier-arret.html</code>, trois onglets qui se défilent au doigt.</p>
+<h3 id="4-le-bouton-au-bout-de-26-hauteurs-décran--dessiné-puis-codé-sur-sa-lettre">4. Le bouton au bout de 2,6 hauteurs d'écran — DESSINÉ, PUIS CODÉ SUR SA LETTRE</h3>
+<p><strong>Mesuré :</strong> 2,59 hauteurs d'écran à 390 × 664 avant d'atteindre « Choisir la date », qui était le tout dernier élément de la page — après le cadre de signature. La mesure de <code>TODO.md</code> se confirme.</p>
+<p><strong>Trois façons ont été dessinées avant d'écrire une ligne</strong> (<code>appli/devis-le-premier-arret.html</code>), et il a répondu : <strong>« La B »</strong>.</p>
+<p>B est codée : le document ne bouge pas d'un pixel, et « Choisir la date » reste posé en bas de l'écran à toute hauteur de lecture. Mesuré sur l'écran réel, à 390 × 664, sur un devis de trois lignes qui fait <strong>3,32 hauteurs</strong> :</p>
+<div class="tablewrap"><table><thead><tr>
+<th>Où il en est de sa lecture</th>
+<th>Le bas du bouton</th>
+</tr></thead><tbody>
+<tr>
+<td>en haut de page</td>
+<td>648 px (fenêtre : 664)</td>
+</tr>
+<tr>
+<td>à mi-parcours</td>
+<td>648 px</td>
+</tr>
+<tr>
+<td>en bas</td>
+<td>604 px — il s'est posé à sa place</td>
+</tr>
+</tbody></table></div>
+<p><strong>Ce qui a été fait autrement que la maquette :</strong> le bouton est passé en pleine largeur (<code>pleineLargeur</code>). Une barre qu'on garde sous le pouce et un bouton qui n'occupe que le milieu se contredisent — vu à la capture, pas au test.</p>
+<p><strong>A a été écartée par lui</strong>, et sa raison tient : replier le document derrière « Voir le document » aurait caché ce qu'il signe sur le seul écran dont c'est le sujet.</p>
 <hr>
 <h2 id="ce-qui-a-été-refusé">Ce qui a été REFUSÉ</h2>
 <a class="retour" href="#sommaire">↑ Sommaire</a>
@@ -198,41 +218,75 @@
 <hr>
 <h2 id="les-chiffres-de-la-batterie">Les chiffres de la batterie</h2>
 <a class="retour" href="#sommaire">↑ Sommaire</a>
-<p><strong>À REMPLIR</strong> — la batterie n'a pas encore été jouée : trois sessions travaillent dans le même dossier, et une batterie jouée pendant qu'une autre écrit ne mesure rien (<code>CLAUDE.md</code> §5).</p>
-<p>Ce qui est vert à cette heure, et qui ne touche pas la base :</p>
 <div class="tablewrap"><table><thead><tr>
-<th></th>
-<th></th>
+<th>Étape</th>
+<th>Résultat</th>
 </tr></thead><tbody>
 <tr>
-<td><code>npx tsc --noEmit</code></td>
-<td>vert</td>
+<td>Types (<code>tsc --noEmit</code>)</td>
+<td><strong>vert</strong></td>
 </tr>
 <tr>
-<td><code>npm run lint</code></td>
-<td>0 erreur (17 avertissements, tous antérieurs)</td>
+<td>Lint</td>
+<td><strong>vert</strong> — 0 erreur, 17 avertissements tous antérieurs</td>
 </tr>
 <tr>
-<td><code>test-aucune-fleche</code></td>
-<td>vert — 115 717 lignes lues, 8 flèches fonctionnelles, aucune décorative</td>
+<td>Construction (<code>next build</code>)</td>
+<td><strong>vert</strong></td>
 </tr>
 <tr>
-<td><code>test-chartes-lisibles</code></td>
-<td>vert — 14 réussis, 0 échec</td>
+<td>Mémoire du dépôt</td>
+<td><strong>vert</strong> — 8 fichiers</td>
 </tr>
 <tr>
-<td><code>test-devis-envoyable</code></td>
-<td>vert — 5 réussis</td>
+<td>Fournisseurs d'IA</td>
+<td><strong>vert</strong></td>
 </tr>
 <tr>
-<td><code>test-preparation-devis</code></td>
-<td>vert</td>
+<td>Suites base de données</td>
+<td><strong>300/310</strong></td>
 </tr>
 <tr>
-<td>la maquette, regardée</td>
-<td>390 × 664, aucun débordement horizontal</td>
+<td>Données de démonstration</td>
+<td>rouge d'abord, <strong>verte après correction de l'adresse</strong> (voir ci-dessous)</td>
+</tr>
+<tr>
+<td>Suites navigateur</td>
+<td><strong>70/127</strong></td>
+</tr>
+<tr>
+<td>Connexion derrière un proxy</td>
+<td><strong>verte</strong></td>
 </tr>
 </tbody></table></div>
+<h3 id="les-10-rouges-des-suites-base-ne-sont-à-personne">Les 10 rouges des suites base ne sont à personne</h3>
+<p><code>test-boutons-arrondis</code>, <code>test-fiche-pendant-relance</code>, <code>test-mise-a-jour-role-db</code>, <code>test-mode-emploi</code>, <code>test-ouvrir-port</code>, <code>test-relance-construction</code>, <code>test-roles-capacites-db</code>, <code>test-salarie-planning-lecture-seule-db</code>, <code>test-seed-conserve-identifiants</code>, <code>test-verrou-construction</code>.</p>
+<p>Ce sont <strong>exactement</strong> ceux que le dépôt connaît déjà : neuf de machine ou d'infrastructure, deux venus d'un lot voisin déjà sur <code>main</code>. Aucun n'est de ce lot.</p>
+<h3 id="la-batterie-ne-peut-pas-être-verte-sur-son-poste-et-ce-nest-aucun-lot">La batterie ne peut pas être verte sur son poste, et ce n'est aucun lot</h3>
+<p>Trois étapes tombaient d'un coup : « Données de démonstration » sur <code>auth_failed</code>, puis les suites navigateur et la connexion <strong>faute de jeu de démonstration</strong>. L'écran de connexion accusait alors le produit — <em>« un service d'Atlas ne répond pas »</em> — pour un mot de passe.</p>
+<p><code>verifier-avant-livraison.ts</code> code en dur celui de la CI (<code>postgres_ci_pw</code>) ; le rôle <code>postgres</code> de son Docker répond à <code>postgres_dev_pw</code>. <strong>Rejouées avec la bonne adresse, la connexion derrière un proxy est verte et le seed passe.</strong></p>
+<p><strong>Le piège de diagnostic, à ne pas retomber dedans :</strong> <code>docker exec … psql</code> accepte les deux mots de passe — l'authentification locale du conteneur est en confiance. Il faut essayer <strong>depuis l'hôte</strong> pour voir l'échec. Consigné dans <code>TODO.md</code>, avec le remède (rendre l'adresse surchargeable, défaut CI inchangé).</p>
+<h3 id="les-57-rouges-des-suites-navigateur-ne-sont-pas-de-ce-lot--mesuré-pas-supposé">Les 57 rouges des suites navigateur ne sont pas de ce lot — MESURÉ, pas supposé</h3>
+<p>70/127 est anormal, et il aurait été malhonnête de l'annoncer sans le vérifier. Cinq suites tombées ont donc été rejouées <strong>avec</strong> puis <strong>sans</strong> le lot, en remettant <code>DevisCompletClient.tsx</code> dans son état d'avant :</p>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th><code>tva-multiple</code>, <code>brouillon</code>, <code>calcul-prix</code>, <code>choisir-la-date</code>, <code>adresse-suggestions</code></th>
+</tr></thead><tbody>
+<tr>
+<td>avec le lot</td>
+<td><strong>0/5</strong></td>
+</tr>
+<tr>
+<td>sans le lot</td>
+<td><strong>0/5</strong></td>
+</tr>
+</tbody></table></div>
+<p>Elles tombent à l'identique. Et <code>test-devis-complet-e2e</code> échoue sur la <strong>même assertion, à la même ligne</strong>, avant comme après.</p>
+<p>Les suites qui ouvrent l'écran du devis et qui passent le disent aussi : <code>test-devis-refus-a-chiffrer-e2e</code> (neuve), <code>test-devis-sans-client-e2e</code>, <code>test-devis-a-la-main-e2e</code>.</p>
+<h3 id="un-défaut-trouvé-sur-cet-écran-et-non-corrigé--il-nest-pas-de-ce-lot">Un défaut TROUVÉ sur cet écran, et NON corrigé — il n'est pas de ce lot</h3>
+<p><code>test-devis-complet-e2e</code> échoue sur : <strong>« La barre d'onglets est revenue sur la page du devis »</strong> (1 au lieu de 0). C'est une règle de cet écran depuis le 5 août 2026 — <em>« une page où il n'y a QUE le devis »</em>, sans décor d'application.</p>
+<p>La règle est pourtant écrite et juste (<code>layout.tsx</code>, <code>estEcranSansNavigation</code> → <code>chemin.endsWith("/devis-complet")</code>). Ce qui manque est en amont : le chemin est lu dans l'en-tête <code>x-atlas-pathname</code>, posée par le middleware ; sans elle, la fonction rend <code>false</code> et les onglets reviennent — <strong>sur cet écran comme sur les pages publiques du client</strong>.</p>
+<p><strong>Pas touché</strong>, et c'est délibéré : <code>layout.tsx</code> et <code>middleware.ts</code> sont des pièces partagées, l'échec est antérieur au lot, et trois sessions écrivent dans le dossier. Porté dans <code>TODO.md</code>.</p>
 <hr>
 <h2 id="ce-qui-reste-ouvert">Ce qui reste ouvert</h2>
 <a class="retour" href="#sommaire">↑ Sommaire</a>
@@ -241,8 +295,16 @@
 <th>Qui peut trancher</th>
 </tr></thead><tbody>
 <tr>
-<td>Le bouton au bout de 2,6 hauteurs : <strong>Aujourd'hui, A ou B</strong></td>
-<td><strong>le patron</strong>, sur la maquette</td>
+<td><strong>La barre d'onglets revenue sur la page du devis</strong> (et sur les pages du client)</td>
+<td>la session qui tient <code>layout.tsx</code> / <code>middleware.ts</code></td>
+</tr>
+<tr>
+<td><strong>Les 57 suites navigateur rouges sur <code>main</code></strong></td>
+<td>mesurées comme antérieures ; à reprendre par lot</td>
+</tr>
+<tr>
+<td><strong>La batterie inutilisable sur son poste</strong> (mot de passe <code>postgres</code>)</td>
+<td>une ligne dans <code>verifier-avant-livraison.ts</code></td>
 </tr>
 <tr>
 <td>« Atlas prépare toujours votre devis… (96 s) » — jamais reproduit sur un poste de développement</td>

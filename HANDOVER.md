@@ -22,16 +22,24 @@ QUE `src/app/chantiers/[id]/devis-complet/`.
 | neuf couleurs écrites en clair | le voile de saisie — **seul signe** qu'on écrit dans ces champs sans cadre — était invisible sur Nuit et Sylve. Il suit la charte (`voile()`) |
 | 1 657 lignes | 299 sorties dans `ChampsDuDevis.tsx`, sans qu'un comportement change (1 479 restantes) |
 
-**⚠ CE QUI N'A PAS ÉTÉ JOUÉ : la batterie.** Trois sessions écrivaient dans le
-dossier. Verts à l'heure du lot : `tsc`, `lint`, `test-aucune-fleche`,
-`test-chartes-lisibles`, `test-devis-envoyable`, `test-preparation-devis`. La
-suite neuve `scripts/test-devis-refus-a-chiffrer-e2e.ts` **n'a pas encore
-tourné** — elle demande un serveur et une base.
+| le bouton du premier arrêt | était au bout de **2,59 hauteurs d'écran**. Il a choisi **la B** sur la planche : la barre reste collée en bas, le document ne bouge pas |
 
-**Ce qui attend SA réponse :** `appli/devis-le-premier-arret.html` —
-Aujourd'hui, A ou B. **Ne pas coder « Voir le document » sans elle** : le brief
-le disait tranché, il ne l'est pas (`docs/QUESTIONS.md` §23 finit sur une
-question).
+**LA BATTERIE : base 300/310, navigateur 70/127 — et AUCUN rouge n'est de ce
+lot.** Vérifié plutôt que supposé : cinq suites tombées ont été rejouées **avec**
+puis **sans** le lot (`DevisCompletClient.tsx` remis dans son état d'avant), et
+elles rendent **0/5 des deux côtés**.
+
+**⚠ DEUX CHOSES QUI COÛTENT UNE SOIRÉE SI ON NE LES SAIT PAS :**
+
+1. **`npm run verifier:avant-livraison` ne peut pas être verte sur son poste.**
+   Elle code en dur `postgres_ci_pw` ; son Docker répond à `postgres_dev_pw`.
+   Trois étapes tombent alors d'affilée et l'écran de connexion accuse le
+   produit. Rejouées avec la bonne adresse : vertes. Piège : `docker exec … psql`
+   accepte les deux mots de passe — essayer **depuis l'hôte**.
+2. **La barre d'onglets est revenue sur la page du devis** (et sur les pages du
+   client). Antérieur au lot, non corrigé : pièces partagées. Voir `TODO.md`.
+
+**Ne pas rouvrir « Voir le document » (la A)** : il l'a écartée.
 
 ---
 
