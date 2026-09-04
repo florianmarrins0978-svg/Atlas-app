@@ -9,6 +9,28 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
+## LA BATTERIE NE PEUT PAS ÊTRE VERTE SUR LE POSTE DU PATRON
+
+**Mesuré le 4 septembre 2026 au soir**, et ce n'est aucun lot : les trois
+dernières étapes de `npm run verifier:avant-livraison` tombent toujours sur sa
+machine. Le script code en dur le mot de passe de la CI —
+`postgresql://postgres:postgres_ci_pw@…` — alors que le rôle `postgres` de son
+Docker répond à `postgres_dev_pw`.
+
+L'enchaînement est trompeur : « Données de démonstration » échoue sur
+`auth_failed`, puis « Suites navigateur » et « Connexion derrière un proxy »
+échouent **faute de jeu de démonstration**, et l'écran de connexion accuse alors
+le produit — *« un service d'Atlas ne répond pas »*.
+
+**Le piège de diagnostic, à ne pas retomber dedans :** `docker exec … psql`
+accepte les DEUX mots de passe (l'authentification locale du conteneur est en
+confiance). Il faut essayer **depuis l'hôte** pour voir l'échec.
+
+- **À faire : rendre l'adresse surchargeable** —
+  `process.env.ATLAS_SUPER_URL ?? "…postgres_ci_pw…"`, défaut inchangé donc CI
+  intacte. Non fait dans le lot du devis : ce fichier est de l'outillage
+  partagé, et trois sessions écrivaient dans le dossier.
+
 ## LE DEVIS — CE QUI RESTE APRÈS LE LOT DU 4 SEPTEMBRE
 
 Le lot est fait (`ARCHITECTURE.md` §256, `docs/lot-devis-le-premier-arret.md`).
@@ -41,12 +63,16 @@ Le refus « à chiffrer » remonte avant la feuille des dates, les neuf couleurs
 Le lot est fait (`ARCHITECTURE.md` §255, `docs/facture-impeccable.md`). Quatre
 choses restent, et trois attendent SA réponse :
 
-- **La planche `appli/ts-la-trace-de-laccord.html` attend sa lettre** : A ou B
-  (un champ à l'ajout d'une ligne — qui l'a demandée, et quand — imprimé sur la
-  facture), le geste au-dessus du pli, et ce qu'une ligne muette autorise.
-  **Refaite le 4 septembre au soir sur SA correction** : la première version
-  disait « ou lui renvoyer le devis », ce qui n'a aucun sens une fois le travail
-  fait — l'accord a eu lieu au jardin, c'est la trace qui manque. **Sa forme, elle, était
+- ~~**La trace de l'accord sur les travaux supplémentaires**~~ **TRANCHÉ LE
+  4 SEPT. 2026 : « la A »** — aucun champ, aucune pastille, aucune réserve. Le
+  bloc reste celui du 1ᵉʳ septembre. C'est la DEUXIÈME fois qu'il écarte cette
+  question ; ne pas la reposer. Sa réponse au risque est le bon signé sur place
+  (`appli/ts-bon-sur-place.html`), pas un champ de plus sur la facture.
+  Verdict écrit en tête de `appli/ts-la-trace-de-laccord.html`.
+
+  *Sa correction du même soir vaut d'être retenue :* la planche proposait « ou
+  lui renvoyer le devis ». **On ne renvoie pas un devis après coup** — un devis
+  se fait AVANT le travail, et le travail est fait. **Sa forme, elle, était
   déjà tranchée le 1ᵉʳ septembre** — le brief du 4 se trompait en la rouvrant.
 - **« Envoyer la facture » tombe 309 px sous le pli** (331 en retard de devis),
   mesuré par `scripts/capture-facture-impeccable.mts`. Déplacer un bouton se

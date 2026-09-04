@@ -164,9 +164,9 @@ point ci-dessus, et c'est ce que la planche propose de rendre.
 
 | Point | Qui tranche |
 |---|---|
-| **A ou B sur la planche** — chaque ligne de travaux en plus dit-elle qui l'a demandée ? | **vous** |
+| ~~**A ou B sur la planche**~~ — **TRANCHÉ le 4 sept. : « la A »**, aucun champ de trace | *fermé* |
 | **Le geste au-dessus du pli** — « Envoyer la facture » remonte-t-il dans la plage des totaux ? | **vous** |
-| **Ce qu'une ligne muette autorise** — elle part quand même, ou ça vous arrête ? | **vous** |
+| ~~**Ce qu'une ligne muette autorise**~~ — sans objet, A ne pose aucune réserve | *fermé* |
 | **Figer l'allure des documents sur la facture émise** (trois colonnes, une migration) — pour que la page du client ne bouge plus après l'envoi | **vous**, sur le principe ; moi sur la façon |
 | **Les trois suites navigateur que le brief annonce rouges** | mesurées à part, voir ci-dessous |
 
@@ -221,7 +221,17 @@ que la pièce devient elle-même la trace — et la cliente qui la paie l'accept
 Une ligne laissée muette part quand même ; l'écran dit seulement ce que sa
 cliente lira, et porte le champ, sur cette page.
 
-**Deux autres pistes lui sont soumises**, et elles ne sont pas dessinées :
+**SON VERDICT, LE SOIR MÊME : « la A ».** Aucun champ, aucune pastille, aucune
+réserve — le bloc des travaux en plus reste exactement celui du 1ᵉʳ septembre.
+
+**C'est la deuxième fois qu'il écarte cette question** (« pas besoin de ça » le
+1ᵉʳ septembre), et elle ne se repose pas une troisième. Le risque juridique
+reste réel, il le connaît, et **sa réponse est le bon signé sur place**
+(`appli/ts-bon-sur-place.html`) — pas un champ de plus sur l'écran de la
+facture. Le verdict est écrit en tête de la planche, pour qu'aucune session ne
+la rouvre.
+
+Les deux autres pistes, écartées avec elle :
 
 | | Ce que ça donne | Ce que ça coûte |
 |---|---|---|
