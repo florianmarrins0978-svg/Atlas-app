@@ -693,11 +693,13 @@ export default function PlanningClient({
             // **Sa maquette du 3 septembre 2026.** Elle s'ouvre entre la
             // semaine qui porte le jour et la suivante, l'encoche pointant la
             // case. C'est ce qui a supprimé le `scrollIntoView` plus haut.
-            volet={(jour) => (
+            volet={(jour, colonne) => (
               <CarteDuJour
                 cle="jour"
                 jour={jour}
-                dansLeMois
+                // La pointe vise le CENTRE de la case touchée : c'est le
+                // calendrier qui donne la colonne, lui seul la connaît.
+                attache={{ colonne }}
                 {...gestesCarte}
                 // **Un jour passé se lit, il ne s'écrit pas** (planche 98). Ce
                 // n'est pas une précaution de style : cocher un salarié ou
@@ -921,6 +923,14 @@ export default function PlanningClient({
                         cle={`liste:${c.id}`}
                         jour={carteListe.jour}
                         seulement={c.id}
+                        // **Sous le NOM, et non au centre** — sa correction du
+                        // 4 septembre 2026 : *« pareil lorsque je clique
+                        // directement sur le nom de mon client »*. Ici la
+                        // pointe ne vise pas une case mais le mot qu'il vient
+                        // de toucher, qui commence au bord gauche de la ligne.
+                        // Vingt-deux pixels : le retrait de la fiche plus la
+                        // demi-largeur de la pointe.
+                        attache={{ colonne: "22px" }}
                         {...gestesCarte}
                         ecriture={gestesCarte.ecriture && carteListe.jour >= aujourdHui}
                       />
@@ -1402,7 +1412,7 @@ function CarteDuJour({
   cle,
   jour,
   seulement,
-  dansLeMois = false,
+  attache,
   ecriture,
   nombreSalaries,
   ouvert,
@@ -1441,19 +1451,26 @@ function CarteDuJour({
    */
   seulement?: string;
   /**
-   * La carte est-elle rendue DANS le mois, à la place de la case touchée ?
+   * OÙ LA FICHE SE RATTACHE — et `undefined` quand elle ne se rattache à rien.
    *
-   * **Elle change deux choses, et seulement deux** : ses marges, qui suivent
-   * alors celles de la grille (12 px) au lieu de celles de la liste (18 px), et
-   * son relief — dans le mois, elle est un objet posé sur la page, et son fond
-   * (`card`) n'est qu'à 4 % du fond de page. Sans ombre ni filet, on ne la
-   * distinguerait pas de la grille qu'elle interrompt.
+   * **Sa correction du 4 septembre 2026 :** *« lorsque je clique sur un jour,
+   * le client doit être rattaché ; or là, il est juste en dessous. Pareil
+   * lorsque je clique directement sur le nom de mon client. »*
+   *
+   * `colonne` est la position HORIZONTALE de la pointe : le centre de la case
+   * touchée dans le mois, le début du nom dans la liste des planifiés. Le
+   * calendrier la calcule — lui seul connaît la colonne — et la fiche la
+   * dessine, parce qu'elle se rattache aussi là où le calendrier n'existe pas.
+   *
+   * **Rattachée, elle prend aussi son relief** : fond de plage, filet et une
+   * ombre portée. Son fond n'est qu'à 4 % du fond de page — sans relief, on ne
+   * la distinguerait pas de ce qu'elle interrompt.
    *
    * **Rien d'autre ne diffère**, et c'est le but : deux cartes qui se seraient
    * mises à proposer des gestes différents selon l'endroit où l'on touche sont
    * exactement ce que sa demande du 21 août 2026 interdit.
    */
-  dansLeMois?: boolean;
+  attache?: { colonne: string };
 } & GestesCarte) {
   const feuilleIci = feuille && feuille.cle === cle ? feuille.chantierId : null;
 
@@ -1493,16 +1510,51 @@ function CarteDuJour({
 
   return (
     <>
+      {/* ─── ELLE SE RATTACHE À CE QU'IL A TOUCHÉ ───────────────────────────
+          **Sa correction du 4 septembre 2026 :** *« lorsque je clique sur un
+          jour, le client doit être rattaché ; or là, il est juste en dessous.
+          Pareil lorsque je clique directement sur le nom de mon client. »*
+
+          **UNE seule pointe dans le code, deux endroits où elle se pose** : la
+          case du mois lui donne sa colonne, la ligne des planifiés la met sous
+          le nom. Deux dessins de la même attache auraient divergé au premier
+          ajustement (`CLAUDE.md` §3).
+
+          La géométrie est celle de la maquette qu'il a validée : un carré de
+          10 px tourné à 45°, dont la pointe DÉPASSE de six pixels au-dessus de
+          la fiche. Elle existait déjà et ne se voyait pas — mesurée sur
+          l'application, elle commençait **un pixel sous** le bord haut, donc
+          entièrement posée dessus et de la même couleur. */}
+      <div className={attache ? "relative" : undefined}>
+        {attache && (
+          <span
+            aria-hidden="true"
+            data-atlas="encoche"
+            className="absolute z-[2] h-[10px] w-[10px]"
+            style={{
+              bottom: "100%",
+              left: attache.colonne,
+              // `bottom: 100%` colle la pointe au bord haut de la fiche quelle
+              // que soit sa marge — la seule ancre qui ne se décale pas quand
+              // l'écart change. Les 8 px la font mordre dessus, pour qu'aucun
+              // filet ne l'en sépare.
+              transform: "translate(-50%, 8px) rotate(45deg)",
+              background: colors.card,
+              borderLeft: `1px solid ${colors.lineSoft}`,
+              borderTop: `1px solid ${colors.lineSoft}`,
+            }}
+          />
+        )}
       <div
         data-atlas="carte-jour"
         data-jour={jour}
         className={
-          dansLeMois
+          attache
             ? "mt-[9px] rounded-[14px] px-[15px] py-[14px]"
             : "mx-[18px] mt-4 rounded-[10px] px-[15px] py-[14px]"
         }
         style={
-          dansLeMois
+          attache
             ? {
                 background: colors.card,
                 // Un décalage ET un flou : un halo sans décalage n'est pas une
@@ -1765,6 +1817,7 @@ function CarteDuJour({
           />
         )}
       </div>
+      </div>
 
       {feuilleIci && (
         <FeuilleChantier
@@ -1772,7 +1825,7 @@ function CarteDuJour({
           chantier={duJour.find((c) => c.id === feuilleIci) ?? null}
           feuille={taches[feuilleIci]}
           ecriture={ecriture}
-          dansLeMois={dansLeMois}
+          dansLeMois={Boolean(attache)}
         />
       )}
     </>

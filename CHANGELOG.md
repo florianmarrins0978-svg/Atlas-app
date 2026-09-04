@@ -9,6 +9,27 @@ Format : le plus récent en tête.
 
 ## 2026-09-04
 
+### La fiche d’une journée se RATTACHE à ce qu’il a touché
+
+**Sa correction :** *« lorsque je clique sur un jour, le client doit être
+rattaché ; or là, il est juste en dessous. Pareil lorsque je clique directement
+sur le nom de mon client. »*
+
+**La pointe existait, et elle était invisible.** Mesurée sur l’application :
+elle commençait **un pixel SOUS** le bord haut de la fiche — donc entièrement
+posée dessus, de la même couleur, ne dépassant nulle part. Sur la maquette
+validée, elle sort de six pixels vers la case. Elle sort maintenant de quatre.
+
+**Et elle se pose aux DEUX endroits qu’il nomme** : sous la case du mois, et
+sous le nom dans la liste des planifiés — où la fiche n’avait ni pointe, ni
+relief, ni les bonnes marges (elle héritait de 36 px au lieu de 18).
+
+**Une seule pointe dans le code.** Elle appartient désormais à la FICHE, plus
+au calendrier : celui-ci donne la colonne de la case, la liste donne celle du
+nom. Deux dessins de la même attache auraient divergé au premier ajustement
+(`CLAUDE.md` §3).
+
+
 ### La fiche client finit d’adopter la planche « A — Épurée »
 
 **Sa question :** *« et la page fiche client, la A épurée, tu l’as mise ? »* —
