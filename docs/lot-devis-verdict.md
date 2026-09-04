@@ -241,9 +241,19 @@ chiffres ci-dessus pour que personne ne les redécouvre.
 
 ---
 
-## 5. Sa page et son PDF ne portent pas la même identité
+## 5. Sa page et son PDF ne portent pas la même identité — vous avez dit non
 
-**Verdict : constat réel. NON corrigé — une question vous est posée.**
+**Verdict : constat réel. Vous avez tranché le 4 septembre : on ne touche à rien.**
+
+*« Non, garde les couleurs d'origine. »* La page de votre client garde donc ses
+couleurs, et ne suit pas l'allure que vous réglez pour vos documents. Les deux
+identités cohabitent, et c'est assumé — écrit dans `ARCHITECTURE.md` §248 pour
+qu'aucune session ne vienne « faire propre » en défaisant votre choix.
+
+**Ce qui ne change pas :** votre charte ne fuit toujours pas sur cette page. Un
+devis ne part pas en noir parce que vous avez choisi « Nuit ».
+
+Le constat d'origine, pour mémoire :
 
 `couleursDocument` existe précisément pour ce qui part chez le client, et son
 commentaire dit son rôle : *« le jour où l'application passera au sombre, ce

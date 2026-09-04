@@ -22106,9 +22106,30 @@ sur cette page. `layout.tsx` la coupe sur `estPageDuClient`, et le middleware
 couvre bien `/devis` — donc un artisan sur « Nuit » n'envoie pas un devis noir.
 La règle du patron est tenue ; c'est l'identité du document qui ne l'est pas.
 
-**Non corrigé** : changer les couleurs de ce que voit le client est une décision
-d'apparence, elle se dessine avant de se coder
-(`appli/ecran-de-son-client.html`, question 2).
+## IL A TRANCHÉ LE 4 SEPTEMBRE : ON NE TOUCHE À RIEN
+
+*« Non, garde les couleurs d'origine. »*
+
+**Ce paragraphe cesse donc d'être un point ouvert et devient une décision.**
+La page du client garde `#F4EFE8`, `#2F3B2F` et `#B5502F` écrits en clair, et
+elle ne suit pas l'allure que l'artisan règle pour ses documents.
+
+**Ce que cela veut dire, et qu'il faut savoir avant d'y revenir :**
+
+| | |
+|---|---|
+| ce qui est **acquis** | la page et le PDF n'ont pas la même identité, et c'est assumé |
+| ce qui **reste vrai** | l'allure qu'il règle n'atteint pas cet écran |
+| ce qui **ne change pas** | sa charte à lui ne fuit toujours pas sur cette page (`layout.tsx`, `estPageDuClient`) — un artisan sur « Nuit » n'envoie pas un devis noir |
+
+**Ce qui serait une faute maintenant :** brancher cette page sur
+`couleursDocument` « pour faire propre ». Ce serait défaire un arbitrage qu'il
+a rendu, planche en main, avec les deux versions sous les yeux.
+
+Les couleurs en clair de cette page ne sont donc plus un oubli à corriger : ce
+sont **les couleurs voulues**. Le seul travail qui reste possible ici serait de
+les nommer quelque part plutôt que de les répéter — et cela ne change rien à
+ce qui s'affiche.
 
 ## §249. La feuille du client — sa réponse A, et ce qu'elle ne résout pas
 

@@ -308,17 +308,19 @@ sur « J'accepte ce devis », et c'est un consentement légal qui doit être exp
 
 **Qui peut le faire : LUI.** Rien ne se code avant.
 
-## SA PAGE SUIT-ELLE LES COULEURS DE SON DEVIS ? — toujours sans réponse (3 sept. 2026)
+## ~~SA PAGE SUIT-ELLE LES COULEURS DE SON DEVIS ?~~ — TRANCHÉ le 4 sept. 2026
 
 La seconde question de la planche, restée ouverte quand il a répondu à la
 première :
 https://florianmarrins0978-svg.github.io/Atlas-app/ecran-de-son-client.html
 
-`couleursDocument` existe pour ce qui part chez le client, le PDF y passe et suit
-l'allure qu'il règle ; la page par jeton code ses couleurs en dur. Le même devis
-porte donc deux identités à une minute d'intervalle (`ARCHITECTURE.md` §248).
+**Sa réponse : *« non, garde les couleurs d'origine »*.**
 
-**Qui peut le faire : LUI.** C'est une apparence sur ce que voit son client.
+La page du client garde ses couleurs écrites en clair et ne suit pas l'allure
+des documents. Les deux identités cohabitent, et c'est assumé.
+
+**À ne pas rouvrir.** Brancher cette page sur `couleursDocument` « pour faire
+propre » défairait un arbitrage rendu planche en main (`ARCHITECTURE.md` §248).
 
 ## `monter-base-locale.sh` N'EXPORTE PAS `REDIS_URL` — et ça coûte une heure (1ᵉʳ sept. 2026)
 
