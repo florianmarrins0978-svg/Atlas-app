@@ -9,6 +9,54 @@ Format : le plus récent en tête.
 
 ## 2026-09-04
 
+### La feuille « Envoyer à … » regardée dans ses onze états — planche 102
+
+**Sa demande :** une passe complète sur la feuille du premier arrêt du parcours,
+*« tous les états, pas seulement le nominal »*, chartes sombres comprises.
+
+**Rien n'est codé** — la maquette d'abord (`CLAUDE.md` §3 bis). Ce qui est livré :
+`appli/la-feuille-qui-envoie.html`, `docs/lot-feuille-qui-envoie.md`, et
+`scripts/voir-envoi-au-client.mts`, qui photographie la feuille dans onze états à
+390 × 664 pour la charte qu'on lui donne.
+
+**Sept trouvailles, dont trois qui ne sont pas cosmétiques.**
+
+- **Sur Nuit et Sylve, on ne voit pas quel canal est choisi.** Les capsules
+  « Par SMS » / « Par e-mail » sont redessinées à la main dans `EnvoiAuClient`
+  alors que `ChoixCanal` existe et sert déjà au nouveau chantier et à la
+  facture. La copie ne marque l'actif que par la couleur du texte — or `rust` et
+  `ink` valent le même `#e9e8de` sur ces deux chartes, et les deux fonds sont à
+  **1,05** de contraste. Les deux capsules sont indiscernables.
+- **Le devis vide est un cul-de-sac** : la phrase dit d'aller poser ses prix,
+  aucune porte n'y mène. C'est le cul-de-sac fermé le 11 août pour la coordonnée
+  manquante, resté ouvert sur l'autre blocage — et il s'atteint en trois gestes
+  depuis le chemin ordinaire.
+- **Le refus d'envoi est écrit en `colors.rust`**, l'accent de l'action, donc en
+  texte courant sur les deux sombres — quand l'avertissement du jour complet,
+  quarante pixels plus haut, est en bordeaux. Sur les blocs `role="alert"` de
+  `src/`, 36 emploient `colors.alert` et 5 `colors.rust`.
+- **Le gris qui porte le sens** — « X jours ouvrés d'affilée », « Reste 1 équipe
+  sur 2 », le sous-titre de l'interrupteur — tient **2,85 à 3,59** sur les six
+  chartes claires, pour un seuil de 4,5.
+- **Le bouton passe de 246 à 118 px et devient gris** au moment de l'envoi.
+- **La feuille fait 882 px** (1 407 un jour chargé) **pour 584 px d'écran** :
+  « Envoyer le devis » n'est jamais visible en arrivant, et il descend de six
+  cents pixels quand la préparation se termine sous le pouce.
+- **La fiche du jour** pose une pastille verte pleine contenant un tiret quand
+  aucune équipe n'est posée, et double le mot « proposé » d'une phrase qui dit la
+  même chose.
+
+**Deux choses apprises sur ce poste, qu'aucun document ne portait :** le décor
+d'une capture demande un rôle qui **traverse la RLS** — `atlas_owner` est refusé
+comme `atlas_app`, les tables portant `FORCE ROW LEVEL SECURITY` — et la charte
+vit sur `users.charte`, le goût de la personne, pas sur l'entreprise.
+
+**Le contrôle de la planche a attrapé une erreur dans la planche même :** elle
+annonçait « 2,85 à 3,86 », or 3,86 est la mesure du gris sur la plage, pas sur le
+fond de page. La vraie fourchette est 2,85 à 3,59.
+(`scripts/verifier-maquette-feuille-qui-envoie.mts`, enregistré dans
+`npm run verifier:maquette`.)
+
 ### Treize boutons qui n'étaient pas passés au vert clair — et le galet retiré
 
 **Sa remarque :** *« j'avais demandé à changer tous les boutons en vert clair,

@@ -9,7 +9,41 @@ sert.
 
 ---
 
-## Dernier lot — LE VERT DES BOUTONS, PARTOUT (4 septembre 2026)
+## Dernier lot — LA FEUILLE « ENVOYER À … », DIAGNOSTIQUÉE (4 septembre 2026)
+
+**Sa demande :** une passe complète sur la feuille qui monte quand on appuie sur
+« Choisir la date », **dans tous ses états**, chartes sombres comprises.
+
+**RIEN N'EST CODÉ, ET C'EST VOULU** — la maquette d'abord (`CLAUDE.md` §3 bis).
+La planche 102 est en ligne, le document de retour est
+`docs/lot-feuille-qui-envoie.md`, et **il n'a répondu que sur un point** : la
+durée du chantier dépliée (A) ou repliée (B). Les six autres correctifs sont
+listés dans `TODO.md`, prêts à coder.
+
+**Ce que la lecture a trouvé, et qu'aucun test ne voyait :** sur Nuit et Sylve,
+les deux capsules « Par SMS » / « Par e-mail » sont **indiscernables** — elles
+sont recopiées à la main dans `EnvoiAuClient.tsx` au lieu d'employer
+`ChoixCanal`, et leur seule marque d'actif est une couleur de texte que ces deux
+chartes rendent identique (`#e9e8de` des deux côtés, fonds à 1,05 de contraste).
+Et le blocage `devis_vide` est un **cul-de-sac** : il dit d'aller poser ses prix
+sans offrir de porte, alors qu'il s'atteint en trois gestes.
+
+**L'outil de regard vit désormais dans le dépôt :**
+
+```bash
+npx tsx scripts/voir-envoi-au-client.mts /tmp/vues        # onze états, 390 × 664
+npx tsx scripts/voir-envoi-au-client.mts /tmp/vues nuit   # la charte sombre
+```
+
+**Deux pièges de ce poste, découverts là et écrits nulle part ailleurs :** poser
+un décor de chantiers demande un rôle qui **traverse la RLS** (`atlas_owner` est
+refusé comme `atlas_app` — `FORCE ROW LEVEL SECURITY`), d'où
+`DATABASE_DECOR_URL` ; et la charte de couleurs vit sur **`users.charte`**, pas
+sur l'entreprise.
+
+---
+
+## Lot précédent — LE VERT DES BOUTONS, PARTOUT (4 septembre 2026)
 
 **Sa remarque :** *« j'avais demandé à changer tous les boutons en vert clair,
 or si tu regardes la page terminé ils n'ont pas changé — et vérifie s'il n'y a

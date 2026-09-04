@@ -9,6 +9,40 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
+## LA FEUILLE « ENVOYER À … » — SEPT POINTS DIAGNOSTIQUÉS, RIEN DE CODÉ (4 sept. 2026)
+
+Planche 102 en ligne (`appli/la-feuille-qui-envoie.html`), document de retour
+dans `docs/lot-feuille-qui-envoie.md`. **En attente de sa réponse sur le point 8
+seulement** — la durée du chantier dépliée (A) ou repliée (B).
+
+Ce qui est prêt à coder dès qu'il ne dit rien contre :
+
+| | où |
+|---|---|
+| employer `ChoixCanal` au lieu des deux capsules recopiées | `EnvoiAuClient.tsx` l. 383-402 |
+| donner sa porte au blocage `devis_vide` | idem, `MESSAGES_BLOCAGE` |
+| passer le refus d'envoi de `colors.rust` à `colors.alert` | idem, bloc `erreur` |
+| passer à `inkSoft` les phrases qui portent du sens | idem + `BandeDuree` |
+| garder la largeur de la capsule pendant « Envoi… » | idem |
+| ancrer le pied de la feuille en bas, le contenu défile | idem |
+| retirer la pastille au tiret et la phrase en double | `JourneeRegardee.tsx` |
+
+**Deux sujets plus larges, qui ne sont PAS de ce lot et qu'il doit trancher :**
+
+- `colors.muted` tient **2,85 à 3,59** sur les six chartes claires, pour un seuil
+  de 4,5. Il porte du texte porteur de sens dans toute l'application. Le changer
+  est un changement d'identité, pas un correctif d'écran.
+- Le bouton principal **éteint** est écrit en `muted` sur `line` : illisible sur
+  les dix-sept écrans qui emploient `PrimaryButton`.
+
+## `docs/maquettes/index.html` PORTE UN BLOC ORPHELIN (4 sept. 2026)
+
+Après la planche 91 (« Choisir la date, avec le planning »), un
+`<span class="quoi">` traîne **hors de tout `<a>`**, vestige d'une fusion : il
+s'affiche comme du texte nu au milieu de la liste, et il décrit une version
+périmée de la planche. Trouvé en ajoutant la planche 102 ; laissé en place pour
+ne pas mêler une correction de fusion à un lot de diagnostic.
+
 ## « AVANT DE COMMENCER » N'EST PAS ENCORE TOUT À FAIT DANS LA CHARTE (4 sept. 2026)
 
 L'écran des documents légaux — le tout premier qu'un artisan voit — a été ramené

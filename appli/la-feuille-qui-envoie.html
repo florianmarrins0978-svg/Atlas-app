@@ -1,0 +1,554 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>La feuille qui envoie</title>
+<style>
+  /* Les valeurs viennent de `src/lib/chartes.ts`, relevées et non approchées.
+     Deux chartes ici : Origine, et Nuit — celle où les pôles s'inversent. */
+  [data-charte="origine"]{
+    --fond:#f5f3ee; --plage:#faf9f5; --encre:#1c1c1a; --encre-douce:#4a4a44;
+    --gris:#8a8578; --accent:#2f3b2f; --papier:#ece9e1; --or:#B98B47;
+    --trait:rgba(28,28,26,.12); --trait-doux:rgba(28,28,26,.07);
+    --plein:#7d9a6d; --sur-plein:#faf9f5; --alerte:#9C3B2E; --bordeaux:#6E2433;
+  }
+  [data-charte="nuit"]{
+    --fond:#101210; --plage:#1a1d19; --encre:#e9e8de; --encre-douce:#c1c2b6;
+    --gris:#84887b; --accent:#e9e8de; --papier:#1f211e; --or:#B98B47;
+    --trait:rgba(233,232,222,.12); --trait-doux:rgba(233,232,222,.07);
+    --plein:#e9e8de; --sur-plein:#1a1d19; --alerte:#cd6456; --bordeaux:#b53b54;
+  }
+
+  *{box-sizing:border-box}
+  html,body{margin:0;background:#e6e3dc}
+  body{font:16px/1.5 ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif;
+       color:#1c1c1a;-webkit-text-size-adjust:100%;padding:0 0 56px}
+
+  .bandeau{background:#1c1c1a;color:#f5f3ee;padding:16px 18px;font-size:13px;line-height:1.5}
+  .bandeau b{color:#fff}
+  .bandeau .titre{display:block;margin-bottom:6px}
+
+  /* Le sélecteur de charte : il commande toutes les vignettes de la page. */
+  .chartes{position:sticky;top:0;z-index:5;background:#1c1c1a;
+           padding:0 18px 14px;display:flex;gap:8px;justify-content:center}
+  .chartes button{border:0;border-radius:999px;padding:9px 20px;font-size:13.5px;
+                  font-weight:500;cursor:pointer;background:rgba(245,243,238,.1);
+                  color:#cdc9c0;-webkit-tap-highlight-color:transparent}
+  .chartes button[aria-pressed="true"]{background:#f5f3ee;color:#1c1c1a}
+
+  .cas{max-width:430px;margin:30px auto 0;padding:0 22px}
+  .cas h2{margin:0;font:700 10px/1 ui-sans-serif,sans-serif;letter-spacing:.2em;
+          text-transform:uppercase;color:#9a7434}
+  .cas p{margin:9px 0 0;font-size:13.5px;line-height:1.55;color:#4a4a44}
+  .cas p b{color:#1c1c1a}
+  .mesure{display:inline-block;margin-top:9px;padding:5px 11px;border-radius:999px;
+          background:#ded9cf;font-size:12px;color:#3c382f}
+
+  /* **Une vignette par ligne sur son téléphone.** Côte à côte, chaque cadre
+     tombait à 165 px : « Envoyer le devis » passait à la ligne, ce que
+     l'application ne fait jamais. Une maquette qui montre un défaut inventé
+     coûte plus cher qu'une maquette qui montre moins. */
+  .duo{max-width:430px;margin:12px auto 0;padding:0 12px;display:flex;
+       flex-direction:column;gap:18px}
+  @media (min-width:640px){
+    .duo{max-width:880px;flex-direction:row;gap:14px}
+  }
+  .duo>figure{flex:1;min-width:0;margin:0}
+  .duo figcaption{margin:0 0 6px;font:600 9.5px/1 ui-sans-serif,sans-serif;
+                  letter-spacing:.16em;text-transform:uppercase;color:#6b6659;text-align:center}
+
+  /* Le cadre du téléphone : la feuille, telle qu'elle monte du bas. */
+  .tel{background:var(--fond);border-radius:22px;overflow:hidden;
+       box-shadow:0 14px 34px rgba(20,18,14,.16);padding:16px 15px 14px}
+  .duo .tel{padding:16px 15px 14px}
+  .poignee{width:38px;height:4px;border-radius:999px;background:var(--trait);margin:0 auto 12px}
+  .chapeau{margin:0 0 12px;text-align:center;font:400 17px/1.25 ui-serif,Georgia,serif;color:var(--encre)}
+  .duo .chapeau{font-size:16px}
+  .smallcaps{font:500 9.5px/1 ui-sans-serif,sans-serif;letter-spacing:.28em;
+             text-transform:uppercase;color:var(--gris);margin:0 0 8px}
+  .question{margin:0 0 10px;text-align:center;font-size:13px;color:var(--encre)}
+  .duo .question{font-size:12.5px}
+
+  /* Les deux capsules de canal. */
+  .canaux{display:flex;gap:8px;margin-bottom:10px}
+  .canaux button{flex:1;border:0;border-radius:999px;padding:11px 4px;font-size:14px;
+                 cursor:pointer;-webkit-tap-highlight-color:transparent;
+                 background:var(--plage);color:var(--encre)}
+  .canaux button[aria-pressed="true"]{background:var(--papier);color:var(--accent)}
+  /* Ce que la maison pose déjà ailleurs (`ChoixCanal`) : un liseré d'or sur
+     l'actif, un liseré de trait sur l'autre. Il ne dépend d'aucune clarté. */
+  .maison .canaux button{background:transparent;color:var(--encre-douce);
+                         box-shadow:inset 0 0 0 1px var(--trait)}
+  .maison .canaux button[aria-pressed="true"]{background:var(--papier);color:var(--encre);
+                         box-shadow:inset 0 0 0 1px var(--or)}
+
+  .champ{width:100%;border:0;border-radius:4px;padding:12px 14px;font-size:15px;
+         background:var(--plage);color:var(--encre)}
+  .champ::placeholder{color:var(--gris)}
+  .maison .champ::placeholder{color:var(--encre-douce)}
+
+  .secondaire{width:100%;margin-top:10px;border:0;border-radius:999px;padding:12px;
+              font-size:14.5px;font-weight:500;background:var(--plage);color:var(--accent);
+              cursor:pointer;-webkit-tap-highlight-color:transparent}
+
+  .principal{display:block;margin:16px auto 0;border:0;border-radius:999px;
+             padding:13px 34px;font:400 17px/1 ui-serif,Georgia,serif;
+             background:var(--plein);color:var(--sur-plein);cursor:pointer;
+             -webkit-tap-highlight-color:transparent}
+  .principal[disabled]{background:var(--trait);color:var(--gris);cursor:default}
+  .maison .principal[disabled]{color:var(--encre-douce)}
+  .annuler{display:block;margin:10px auto 0;border:0;background:none;padding:10px;
+           font-size:14.5px;font-weight:500;color:var(--gris);cursor:pointer}
+  .maison .annuler{color:var(--encre-douce)}
+
+  .refus{margin:12px 0 0;text-align:center;font-size:12.5px;line-height:1.45;color:var(--accent)}
+  .maison .refus{color:var(--alerte)}
+  .aide{margin:8px 0 0;font-size:11.5px;line-height:1.5;color:var(--gris)}
+  .maison .aide{color:var(--encre-douce)}
+
+  .porte{display:block;margin:14px auto 0;border:0;border-radius:999px;padding:12px 22px;
+         font-size:14.5px;font-weight:500;background:var(--papier);color:var(--accent);
+         cursor:pointer;-webkit-tap-highlight-color:transparent}
+
+  .duree{border-radius:4px;background:var(--plage);color:var(--encre);
+         padding:13px 15px;font-size:15px;display:flex;justify-content:space-between;
+         align-items:center}
+  .duree .fleche{color:var(--gris);font-size:12px}
+  .replie{display:flex;justify-content:space-between;align-items:baseline;
+          padding:2px 0 10px;border-bottom:1px solid var(--trait-doux);margin-bottom:12px}
+  .replie .valeur{font-size:15px;color:var(--encre)}
+  .replie .changer{font-size:13px;font-weight:500;color:var(--accent);
+                   background:none;border:0;padding:4px 0;cursor:pointer}
+
+  .journee{border-radius:10px;background:var(--plage);padding:13px 14px;margin-top:12px}
+  .journee .jour{margin:0 0 11px;text-align:center;font:700 12px/1 ui-sans-serif,sans-serif;
+                 letter-spacing:.14em;text-transform:uppercase;color:var(--encre)}
+  .journee .nom{margin:0;font:400 17px/1.2 ui-serif,Georgia,serif;color:var(--encre)}
+  .demi{display:flex;align-items:center;gap:8px;margin-top:7px}
+  .demi .quand{width:70px;flex-shrink:0;font:600 10px/1.15 ui-sans-serif,sans-serif;
+               letter-spacing:.06em;text-transform:uppercase;color:var(--encre)}
+  .demi .equipe{border-radius:999px;padding:5px 11px;font-size:12.5px;
+                background:var(--plein);color:var(--sur-plein)}
+  .demi .rien{font-size:12.5px;color:var(--gris)}
+  .maison .demi .rien{color:var(--encre-douce)}
+  .verdict{display:flex;align-items:center;gap:10px;margin-top:13px;padding-top:11px;
+           border-top:1px solid var(--trait-doux);font-size:12.5px;line-height:1.35}
+  .verdict .dit{flex:1;color:var(--encre-douce)}
+  .verdict .badge{flex-shrink:0;font:600 10px/1 ui-sans-serif,sans-serif;
+                  letter-spacing:.12em;text-transform:uppercase;color:var(--accent)}
+
+  .retenue{display:flex;align-items:center;justify-content:space-between;width:100%;
+           border:0;border-radius:999px;padding:12px 16px;margin-top:10px;text-align:left;
+           background:var(--papier);color:var(--encre);font-size:15px;cursor:pointer}
+  .retenue .reste{display:block;margin-top:2px;font-size:12px;color:var(--gris)}
+  .maison .retenue .reste{color:var(--encre-douce)}
+  .retenue .marque{flex-shrink:0;margin-left:12px;font-size:13px;font-weight:500;color:var(--accent)}
+
+  .fausse-page{height:96px;border-radius:10px;background:var(--plage);
+               display:flex;align-items:center;justify-content:center;
+               font-size:12px;color:var(--gris);margin-bottom:12px}
+
+  /* Le cadre du point 6 : une feuille plus haute que l'écran, pour de vrai.
+     384 px, la place qui reste sous la barre d'adresse à l'échelle de la page. */
+  .cadre{height:384px;padding:0;display:flex;flex-direction:column}
+  .cadre .defile{flex:1;overflow-y:auto;padding:16px 15px 14px}
+  .cadre .principal{margin-top:12px}
+  /* Le pied qui ne bouge plus : le contenu défile au-dessus de lui. */
+  .pied-feuille{flex-shrink:0;padding:10px 15px 12px;background:var(--fond);
+                border-top:1px solid var(--trait-doux)}
+  .pied-feuille .principal{margin-top:0}
+  .pied-feuille .annuler{margin-top:6px;padding:6px}
+
+  .pied{max-width:430px;margin:36px auto 0;padding:0 22px;font-size:13.5px;
+        line-height:1.6;color:#4a4a44}
+  .pied h3{font:700 10px/1 ui-sans-serif,sans-serif;letter-spacing:.2em;
+           text-transform:uppercase;color:#9a7434;margin:26px 0 9px}
+  .pied p{margin:0 0 10px}
+  .pied b{color:#1c1c1a}
+  .pied ul{margin:0 0 10px;padding-left:18px}
+  .pied li{margin:0 0 6px}
+  .encadre{background:#ded9cf;border-radius:10px;padding:13px 15px;margin-top:14px}
+</style>
+</head>
+<body>
+
+<div class="bandeau">
+  <b class="titre">La feuille « Envoyer à … » — ce que j'ai trouvé en la regardant</b>
+  Onze états photographiés sur ton écran, 390 × 664, en clair et en Nuit.
+  Six choses à décider. Touche les vignettes : elles répondent.
+</div>
+
+<div class="chartes">
+  <button type="button" data-poser="origine" aria-pressed="true">Origine</button>
+  <button type="button" data-poser="nuit" aria-pressed="false">Nuit</button>
+</div>
+
+<!-- ─── 1. Le canal ──────────────────────────────────────────────────────── -->
+<div class="cas">
+  <h2>1 — On ne voit pas quel canal est choisi</h2>
+  <p>Quand ton client n'a ni numéro ni e-mail, la feuille te demande par où l'écrire.
+     Les deux capsules sont dessinées <b>ici même</b>, à la main — alors que la maison
+     en a déjà une, celle du nouveau chantier et de la facture. Sur <b>Nuit</b> et
+     <b>Sylve</b>, les deux capsules deviennent <b>identiques</b> : même fond, même
+     couleur de texte. Tu ne peux pas savoir ce que tu vas envoyer.</p>
+  <span class="mesure">écart entre les deux fonds : 1,05 sur Nuit — 1,15 sur Origine</span>
+</div>
+<div class="duo">
+  <figure>
+    <figcaption>Aujourd'hui</figcaption>
+    <div class="tel" data-charte="origine">
+      <div class="poignee"></div>
+      <p class="chapeau">Envoyer à M. Ferrand</p>
+      <p class="question">Comment joindre ce client ?</p>
+      <div class="canaux">
+        <button type="button" aria-pressed="true">Par SMS</button>
+        <button type="button" aria-pressed="false">Par e-mail</button>
+      </div>
+      <input class="champ" placeholder="06 12 34 56 78" aria-label="Numéro de téléphone">
+      <button type="button" class="secondaire">Enregistrer et continuer</button>
+      <button type="button" class="principal" disabled>Envoyer le devis</button>
+    </div>
+  </figure>
+  <figure>
+    <figcaption>La capsule de la maison</figcaption>
+    <div class="tel maison" data-charte="origine">
+      <div class="poignee"></div>
+      <p class="chapeau">Envoyer à M. Ferrand</p>
+      <p class="question">Comment joindre ce client ?</p>
+      <div class="canaux">
+        <button type="button" aria-pressed="true">Par SMS</button>
+        <button type="button" aria-pressed="false">Par e-mail</button>
+      </div>
+      <input class="champ" placeholder="06 12 34 56 78" aria-label="Numéro de téléphone">
+      <button type="button" class="secondaire">Enregistrer et continuer</button>
+      <button type="button" class="principal" disabled>Envoyer le devis</button>
+    </div>
+  </figure>
+</div>
+
+<!-- ─── 2. Le devis vide ─────────────────────────────────────────────────── -->
+<div class="cas">
+  <h2>2 — Le devis vide n'a pas de porte</h2>
+  <p>Le garde-fou du 23 août fait son travail : un devis sans ligne ne part pas.
+     Mais la phrase te dit d'aller poser tes prix, et <b>il n'y a aucun bouton
+     pour y aller</b>. Il faut refermer, sortir du devis, retrouver l'écran des prix.
+     C'est le cul-de-sac que tu as fait fermer le 11 août pour la coordonnée manquante.</p>
+</div>
+<div class="duo">
+  <figure>
+    <figcaption>Aujourd'hui</figcaption>
+    <div class="tel" data-charte="origine">
+      <div class="poignee"></div>
+      <p class="chapeau">Envoyer à M. Sorel</p>
+      <p class="question">Ce devis ne porte aucune ligne : votre client recevrait un
+        document vide, à zéro euro. Posez d'abord vos prix sur ce chantier.</p>
+      <button type="button" class="principal" disabled>Envoyer le devis</button>
+      <button type="button" class="annuler">Annuler</button>
+    </div>
+  </figure>
+  <figure>
+    <figcaption>Proposé</figcaption>
+    <div class="tel maison" data-charte="origine">
+      <div class="poignee"></div>
+      <p class="chapeau">Envoyer à M. Sorel</p>
+      <p class="question">Ce devis ne porte aucune ligne : votre client recevrait un
+        document vide, à zéro euro.</p>
+      <button type="button" class="porte">Poser mes prix</button>
+      <button type="button" class="annuler">Annuler</button>
+    </div>
+  </figure>
+</div>
+
+<!-- ─── 3. Le refus ──────────────────────────────────────────────────────── -->
+<div class="cas">
+  <h2>3 — Le refus est écrit dans la couleur de l'action</h2>
+  <p>Quand tu appuies sans date, la phrase apparaît — c'est le correctif du
+     3 septembre, et il marche. Mais elle est écrite dans le <b>vert d'action</b>.
+     Sur Nuit et Sylve, ce vert <b>est</b> la couleur du texte ordinaire : la phrase
+     devient un paragraphe comme un autre. Quarante pixels plus haut, l'avertissement
+     du jour complet, lui, est en bordeaux. Deux couleurs pour la même chose.</p>
+  <span class="mesure">sur Nuit, l'accent et l'encre valent le même #e9e8de</span>
+</div>
+<div class="duo">
+  <figure>
+    <figcaption>Aujourd'hui</figcaption>
+    <div class="tel" data-charte="origine">
+      <div class="fausse-page" style="height:72px">le calendrier</div>
+      <p class="refus">Proposez au moins une date d'intervention.</p>
+      <button type="button" class="principal">Envoyer le devis</button>
+      <button type="button" class="annuler">Annuler</button>
+    </div>
+  </figure>
+  <figure>
+    <figcaption>Proposé</figcaption>
+    <div class="tel maison" data-charte="origine">
+      <div class="fausse-page" style="height:72px">le calendrier</div>
+      <p class="refus">Proposez au moins une date d'intervention.</p>
+      <button type="button" class="principal">Envoyer le devis</button>
+      <button type="button" class="annuler">Annuler</button>
+    </div>
+  </figure>
+</div>
+
+<!-- ─── 4. Le gris ───────────────────────────────────────────────────────── -->
+<div class="cas">
+  <h2>4 — Le gris de la feuille passe sous le seuil</h2>
+  <p>C'est ce gris qui porte <b>« 8 jours ouvrés d'affilée seront réservés »</b>,
+     <b>« Reste 1 équipe sur 2 »</b>, et ce que dit l'interrupteur. Autrement dit,
+     tout ce que l'écran t'apprend et que tu ne peux pas deviner. Il tient
+     <b>2,85 à 3,59</b> de contraste sur les six chartes claires, là où il en faut
+     4,5 — et tu lis ça en plein soleil, debout.</p>
+  <span class="mesure">gris 3,32 sur Origine · 2,85 sur Moka — l'encre douce : 8,0 et 6,6</span>
+</div>
+<div class="duo">
+  <figure>
+    <figcaption>Aujourd'hui</figcaption>
+    <div class="tel" data-charte="origine">
+      <p class="smallcaps">Ce chantier prend</p>
+      <div class="duree"><span>8 jours</span><span class="fleche">▾</span></div>
+      <p class="aide">8 jours ouvrés d'affilée seront réservés à partir de la date retenue.</p>
+      <button type="button" class="retenue">
+        <span>jeudi 10 septembre<span class="reste">Reste 1 équipe sur 2</span></span>
+        <span class="marque">proposée</span>
+      </button>
+    </div>
+  </figure>
+  <figure>
+    <figcaption>Proposé</figcaption>
+    <div class="tel maison" data-charte="origine">
+      <p class="smallcaps">Ce chantier prend</p>
+      <div class="duree"><span>8 jours</span><span class="fleche">▾</span></div>
+      <p class="aide">8 jours ouvrés d'affilée seront réservés à partir de la date retenue.</p>
+      <button type="button" class="retenue">
+        <span>jeudi 10 septembre<span class="reste">Reste 1 équipe sur 2</span></span>
+        <span class="marque">proposée</span>
+      </button>
+    </div>
+  </figure>
+</div>
+
+<!-- ─── 5. Le bouton qui rétrécit ────────────────────────────────────────── -->
+<div class="cas">
+  <h2>5 — Le bouton rétrécit à l’envoi</h2>
+  <p>« Envoyer le devis » fait 246 px ; « Envoi… » en fait 118. Au moment précis où
+     tu engages ta parole, le bouton <b>rétrécit de moitié et devient gris</b>.
+     Ça ne se lit pas « ça part », ça se lit « ça a raté ». Appuie sur les deux.</p>
+</div>
+<div class="duo">
+  <figure>
+    <figcaption>Aujourd'hui</figcaption>
+    <div class="tel" data-charte="origine">
+      <button type="button" class="principal" data-envoi="court">Envoyer le devis</button>
+      <button type="button" class="annuler">Annuler</button>
+    </div>
+  </figure>
+  <figure>
+    <figcaption>Proposé</figcaption>
+    <div class="tel maison" data-charte="origine">
+      <button type="button" class="principal" data-envoi="stable">Envoyer le devis</button>
+      <button type="button" class="annuler">Annuler</button>
+    </div>
+  </figure>
+</div>
+
+<!-- ─── 6. Le pied de la feuille ─────────────────────────────────────────── -->
+<div class="cas">
+  <h2>6 — « Envoyer le devis » n'est jamais à l'écran</h2>
+  <p>La feuille fait <b>882 px</b> sur une journée ordinaire, <b>1 407 px</b> sur une
+     journée chargée — pour <b>584 px</b> d'écran. En arrivant tu vois le titre, la
+     durée, deux tiers du calendrier. Le bouton d'envoi est <b>à un écran et demi
+     plus bas</b>. Et pendant « Préparation… » il est visible, puis <b>descend de six
+     cents pixels</b> d'un coup quand le planning arrive : ton doigt tombe sur le
+     calendrier. Fais défiler les deux cadres.</p>
+  <span class="mesure">882 px de feuille dans 584 px d'écran — 1 407 px un jour chargé</span>
+</div>
+<div class="duo">
+  <figure>
+    <figcaption>Aujourd'hui — tout défile</figcaption>
+    <div class="tel cadre" data-charte="origine">
+      <div class="defile">
+        <div class="poignee"></div>
+        <p class="chapeau">Envoyer à Mme Lecomte</p>
+        <p class="smallcaps">Ce chantier prend</p>
+        <div class="duree"><span>1 journée</span><span class="fleche">▾</span></div>
+        <p class="smallcaps" style="margin-top:16px">Proposez une ou deux dates</p>
+        <div class="fausse-page" style="height:300px">le calendrier</div>
+        <button type="button" class="retenue">
+          <span>lundi 7 septembre</span><span class="marque">proposée</span>
+        </button>
+        <button type="button" class="principal">Envoyer le devis</button>
+        <button type="button" class="annuler">Annuler</button>
+      </div>
+    </div>
+  </figure>
+  <figure>
+    <figcaption>Proposé — le pied reste en bas</figcaption>
+    <div class="tel maison cadre" data-charte="origine">
+      <div class="defile">
+        <div class="poignee"></div>
+        <p class="chapeau">Envoyer à Mme Lecomte</p>
+        <p class="smallcaps">Ce chantier prend</p>
+        <div class="duree"><span>1 journée</span><span class="fleche">▾</span></div>
+        <p class="smallcaps" style="margin-top:16px">Proposez une ou deux dates</p>
+        <div class="fausse-page" style="height:300px">le calendrier</div>
+        <button type="button" class="retenue">
+          <span>lundi 7 septembre</span><span class="marque">proposée</span>
+        </button>
+      </div>
+      <div class="pied-feuille">
+        <button type="button" class="principal">Envoyer le devis</button>
+        <button type="button" class="annuler">Annuler</button>
+      </div>
+    </div>
+  </figure>
+</div>
+
+<!-- ─── 7. Ce que je retirerais ──────────────────────────────────────────── -->
+<div class="cas">
+  <h2>7 — À retirer de la fiche du jour</h2>
+  <p>Une pastille verte pleine contenant un <b>tiret</b>, deux fois par chantier,
+     quand aucune équipe n'est encore posée. Et la phrase « Ce jour est proposé à
+     votre client. » <b>collée au mot « proposé »</b> qui dit déjà exactement ça.
+     À la place, la ligne dit ce qu'elle sait : ce qui reste.</p>
+</div>
+<div class="duo">
+  <figure>
+    <figcaption>Aujourd'hui</figcaption>
+    <div class="tel" data-charte="origine">
+      <div class="journee">
+        <p class="jour">Vendredi 11 septembre</p>
+        <p class="nom">M. Bernard</p>
+        <div class="demi"><span class="quand">Matin</span><span class="equipe">—</span></div>
+        <div class="demi"><span class="quand">Après-midi</span><span class="equipe">—</span></div>
+        <div class="verdict">
+          <span class="dit">Ce jour est proposé à votre client.</span>
+          <span class="badge">proposé</span>
+        </div>
+      </div>
+    </div>
+  </figure>
+  <figure>
+    <figcaption>Proposé</figcaption>
+    <div class="tel maison" data-charte="origine">
+      <div class="journee">
+        <p class="jour">Vendredi 11 septembre</p>
+        <p class="nom">M. Bernard</p>
+        <div class="demi"><span class="quand">Matin</span><span class="rien">équipe non posée</span></div>
+        <div class="demi"><span class="quand">Après-midi</span><span class="rien">équipe non posée</span></div>
+        <div class="verdict">
+          <span class="dit">Il reste 1 équipe sur 2.</span>
+          <span class="badge">proposé</span>
+        </div>
+      </div>
+    </div>
+  </figure>
+</div>
+
+<!-- ─── 8. Le choix qui te revient ───────────────────────────────────────── -->
+<div class="cas">
+  <h2>8 — Et si on gagnait aussi le haut</h2>
+  <p>Neuf fois sur dix la durée est déjà juste et tu ne la touches pas — elle prend
+     pourtant les <b>96 px du haut</b>, avant même le calendrier. Repliée en une ligne,
+     elle en rend 60. Ça se cumule avec le pied du point 6, ou ça s'y substitue.
+     <b>C'est le seul point où j'attends ta réponse :</b> A, on ne touche pas à la
+     durée ; B, on la replie.</p>
+</div>
+<div class="duo">
+  <figure>
+    <figcaption>A — telle quelle</figcaption>
+    <div class="tel" data-charte="origine">
+      <div class="poignee"></div>
+      <p class="chapeau">Envoyer à Mme Lecomte</p>
+      <p class="smallcaps">Ce chantier prend</p>
+      <div class="duree"><span>1 journée</span><span class="fleche">▾</span></div>
+      <p class="smallcaps" style="margin-top:16px">Proposez une ou deux dates</p>
+      <div class="fausse-page">le calendrier</div>
+    </div>
+  </figure>
+  <figure>
+    <figcaption>B — repliée</figcaption>
+    <div class="tel maison" data-charte="origine">
+      <div class="poignee"></div>
+      <p class="chapeau">Envoyer à Mme Lecomte</p>
+      <div class="replie">
+        <span class="valeur">1 journée</span>
+        <button type="button" class="changer">changer</button>
+      </div>
+      <p class="smallcaps">Proposez une ou deux dates</p>
+      <div class="fausse-page">le calendrier</div>
+      <button type="button" class="principal">Envoyer le devis</button>
+    </div>
+  </figure>
+</div>
+
+<div class="pied">
+  <h3>Ce que je ne touche pas</h3>
+  <ul>
+    <li>Le calendrier reste <b>celui du planning</b>, le même composant, le même calcul.</li>
+    <li>Le serveur garde le dernier mot sur chaque jour proposé.</li>
+    <li>La fiche du jour garde le dessin que tu as validé le 22 août — je n'en retire
+        que le tiret vert et la phrase en double.</li>
+    <li>Les trois phrases supprimées le 26 août <b>ne reviennent pas</b>.</li>
+    <li>Deux dates au maximum, et l'interrupteur reste ouvert par défaut.</li>
+  </ul>
+
+  <h3>Ce que je refuse</h3>
+  <p>Sortir la durée de la feuille, ou la mettre après le calendrier : c'est elle qui
+     décide quels jours tiennent. Après, elle arriverait trop tard.</p>
+
+  <div class="encadre">
+    <b>Réponds-moi juste ça :</b> les points 1 à 7, je les fais. Le 8, dis-moi
+    <b>A</b> ou <b>B</b>.
+  </div>
+</div>
+
+<script>
+  // La charte se pose sur toutes les vignettes à la fois : comparer deux
+  // chartes en changeant chaque cadre à la main, personne ne le fait.
+  const cadres = () => document.querySelectorAll(".tel[data-charte]");
+  for (const b of document.querySelectorAll(".chartes button")) {
+    b.addEventListener("click", () => {
+      for (const autre of document.querySelectorAll(".chartes button")) {
+        autre.setAttribute("aria-pressed", String(autre === b));
+      }
+      for (const c of cadres()) c.dataset.charte = b.dataset.poser;
+    });
+  }
+
+  // Les capsules de canal répondent — c'est tout l'objet du point 1 :
+  // voir, ou ne pas voir, laquelle est prise.
+  for (const groupe of document.querySelectorAll(".canaux")) {
+    for (const b of groupe.querySelectorAll("button")) {
+      b.addEventListener("click", () => {
+        for (const autre of groupe.querySelectorAll("button")) {
+          autre.setAttribute("aria-pressed", String(autre === b));
+        }
+        const champ = groupe.parentElement.querySelector(".champ");
+        if (champ) champ.placeholder = b.textContent.includes("SMS")
+          ? "06 12 34 56 78" : "client@exemple.fr";
+      });
+    }
+  }
+
+  // Le bouton d'envoi : le court rétrécit, le stable garde sa place.
+  for (const b of document.querySelectorAll("[data-envoi]")) {
+    b.addEventListener("click", () => {
+      if (b.disabled) return;
+      const large = b.getBoundingClientRect().width;
+      if (b.dataset.envoi === "stable") b.style.minWidth = large + "px";
+      b.disabled = true;
+      b.textContent = "Envoi…";
+      if (b.dataset.envoi === "stable") b.style.opacity = ".62";
+      setTimeout(() => {
+        b.disabled = false;
+        b.textContent = "Envoyer le devis";
+        b.style.minWidth = "";
+        b.style.opacity = "";
+      }, 2200);
+    });
+  }
+</script>
+
+</body>
+</html>

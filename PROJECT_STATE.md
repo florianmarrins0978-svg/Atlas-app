@@ -19,6 +19,19 @@ ligne « fait » qui ne l'est pas coûte plus cher qu'une ligne absente.
 
 ---
 
+## EN ATTENTE DE SA RÉPONSE : la feuille « Envoyer à … » (4 septembre 2026)
+
+Sa demande : une passe complète sur la feuille du premier arrêt du parcours,
+dans tous ses états. **Diagnostic livré, rien de codé.**
+
+| | |
+|---|---|
+| **fait** | onze états photographiés à 390 × 664 en clair et en Nuit ; contrastes recalculés sur les huit chartes ; planche 102 en ligne et document de retour |
+| **outil** | `scripts/voir-envoi-au-client.mts`, rejouable pour n'importe quelle charte |
+| **trouvé** | sept points, dont trois non cosmétiques : les capsules de canal indiscernables sur les deux chartes sombres, le blocage `devis_vide` sans porte, le refus d'envoi écrit dans l'accent de l'action |
+| **attend** | sa réponse sur **un seul** point : la durée dépliée (A) ou repliée (B) |
+| **pas fait** | aucune ligne de `src/` — la maquette passe avant le code |
+
 ## FAIT : le vert des boutons, partout (4 septembre 2026)
 
 Sa remarque : *« j'avais demandé à changer tous les boutons en vert clair, or si
