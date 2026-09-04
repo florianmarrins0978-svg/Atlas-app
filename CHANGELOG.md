@@ -118,6 +118,26 @@ ne vérifiait — qu'une date RETENUE survive à la fermeture.
 rétractation (125 px) porte la page à **790 px**. Deux façons d'y arriver, deux
 arbitrages — à trancher par lui (`ARCHITECTURE.md` §249).
 
+### Les 53 px derniers pris dans les espacements, sans retirer un mot
+
+Sa troisième voie, et personne ne l'avait regardée : *« il y a pas moyen de
+garder aujourd'hui mais de resserrer le texte ? »*. La case de rétractation
+reste donc dans la page, sous ses yeux au moment où il accepte — et l'écran de
+son client tient enfin **dans tous ses états**, y compris le pire.
+
+| état | 3 septembre | aujourd'hui |
+|---|---|---|
+| calendrier ouvert | 990 px | **664 px** |
+| + date à moins de quatorze jours | 1 148 px | **664 px** |
+
+Chaque piste a été appliquée à l'écran servi, une par une : zone de message à
+une ligne 23 px, gouttières du formulaire 8, marges de la page 8, intérieur de
+la case 8. **Trois pistes ont été écartées** — raccourcir la formule légale,
+retirer l'invitation à signaler une erreur, retirer la mention de preuve : ce
+sont trois informations, pas trois espacements (`ARCHITECTURE.md` §250).
+
+**Il ne reste plus un pixel**, et le contrôle éprouve désormais ce pire cas.
+
 ### La liste des dates se replie une fois la date retenue
 
 Son second choix du 4 septembre, contre les 126 px que la case de rétractation

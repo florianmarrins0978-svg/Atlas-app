@@ -308,24 +308,16 @@ reproduite ici. Le parcours passe au vert sur un poste de développement.
 l'état au lieu de compter. À défaut, le journal de son espace porte déjà
 « Devis depuis dictée : la chaîne a échoué ».
 
-## IL RESTE 53 px DE TROP SUR L'ÉCRAN DU CLIENT (4 sept. 2026)
+## ~~IL RESTE 53 px DE TROP SUR L'ÉCRAN DU CLIENT~~ — CLOS le 4 sept. 2026
 
-**Sa réponse A est codée** — le calendrier monte du bas, la page derrière garde
-sa hauteur : 990 px → 664 (`ARCHITECTURE.md` §249).
+**Sa troisième voie :** *« il y a pas moyen de garder aujourd'hui mais de
+resserrer le texte ? »*. Oui — et les 53 px sont venus des espacements, sans
+qu'un seul mot soit retiré. L'écran tient dans tous ses états, y compris avec
+la case de rétractation (`ARCHITECTURE.md` §250).
 
-**Son second choix est codé** — la liste se replie une fois la date retenue :
-**790 → 717 px**, soit 73 px gagnés.
-
-**Ce qui reste :** 53 px. Dans le seul cas d'une date à moins de quatorze
-jours, la page fait 717 px pour 664 d'écran, et « Je ne donne pas suite » finit
-à 690. C'était annoncé avant son choix — « 60 à 70 px : insuffisant seul ».
-
-**La seule chose qui les fermerait** est l'option qu'il n'a pas retenue :
-descendre la case de rétractation dans la feuille. Elle y serait mieux placée —
-elle parle de CETTE date — mais elle sortirait de sa vue au moment où il appuie
-sur « J'accepte ce devis », et c'est un consentement légal qui doit être exprès.
-
-**Qui peut le faire : LUI.** Rien ne se code avant.
+**Ce qui reste vrai, et qui n'est pas une tâche mais un avertissement :** il ne
+reste plus un pixel de marge. Le contrôle éprouve le pire cas ; s'il rougit
+après un ajout ici, il ne se trompe pas.
 
 ## ~~SA PAGE SUIT-ELLE LES COULEURS DE SON DEVIS ?~~ — TRANCHÉ le 4 sept. 2026
 

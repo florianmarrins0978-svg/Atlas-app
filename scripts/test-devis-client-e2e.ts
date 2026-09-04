@@ -498,7 +498,17 @@ async function main() {
      *
      * Le patron a retenu **la feuille** (`appli/ecran-de-son-client.html`,
      * 4 septembre) : le calendrier monte par-dessus, la page derrière garde sa
-     * hauteur. Mesuré après : **664 px**, dernier bouton à 602 px — inchangé.
+     * hauteur. Puis il a fait replier la liste des dates, puis resserrer les
+     * espacements — sans qu'aucun mot soit retiré.
+     *
+     * | état | avant | après |
+     * |---|---|---|
+     * | calendrier ouvert | 990 px | **664 px** |
+     * | + date à moins de 14 jours | 1 148 px | **664 px** |
+     *
+     * **Le pire cas est éprouvé plus bas**, et c'est lui qui compte : il ne
+     * reste plus un pixel de marge, et deux px ajoutés quelque part le
+     * rouvriraient sans que personne ne s'en aperçoive.
      *
      * **Ce contrôle ouvre donc la feuille pour de bon.** Sans ce geste, le
      * jour où quelqu'un remettrait le calendrier dans le flux, il resterait
@@ -540,6 +550,50 @@ async function main() {
       m.dernier <= m.ecran,
       `« Je ne donne pas suite » finit à ${m.dernier} px, sous un écran de ${m.ecran} px`
     );
+
+    // ═══════════════════════════════════════════════════════════════════
+    // **LE PIRE CAS : une date à MOINS DE QUATORZE JOURS.**
+    //
+    // Elle fait apparaître la case de rétractation — 125 px — que la loi
+    // impose : sans elle cochée, l'artisan n'a pas le droit de commencer
+    // avant la fin du délai. C'est l'état le plus haut de cet écran, et
+    // celui que personne n'éprouvait : la page y faisait **1 148 px** le
+    // 3 septembre, puis 790, puis 717.
+    //
+    // Le 4 septembre, sur sa demande — *« il y a pas moyen de garder
+    // aujourd'hui mais de resserrer le texte ? »* —, les 53 px restants ont
+    // été pris dans les espacements, **sans retirer un seul mot**. Il ne
+    // reste donc plus aucune marge : deux px ajoutés n'importe où rouvrent
+    // le défaut, et c'est ce contrôle qui doit le dire.
+    // ═══════════════════════════════════════════════════════════════════
+    const proche = new Date(Date.now() + 4 * 86400_000).toISOString().slice(0, 10);
+    const caseProche = page.locator(`[data-jour="${proche}"]`);
+    if ((await caseProche.count()) > 0 && !(await caseProche.isDisabled())) {
+      await caseProche.click();
+      await page.locator('button:has-text("Retenir cette date")').click();
+      await page.waitForTimeout(400);
+      const retract = await page
+        .locator("text=délai de rétractation")
+        .first()
+        .isVisible()
+        .catch(() => false);
+      assert.ok(retract, "la case de rétractation ne s'affiche pas sur une date proche");
+
+      const p = await page.evaluate(() => ({
+        page: document.documentElement.scrollHeight,
+        ecran: window.innerHeight,
+        dernier: document.querySelector('button[value="refuse"]')?.getBoundingClientRect().bottom ?? 0,
+      }));
+      assert.ok(p.dernier > 100, `rien n'est mis en page (dernier bouton à ${p.dernier} px)`);
+      assert.ok(
+        p.page <= p.ecran,
+        `avec la case de rétractation, la page fait ${p.page} px pour ${p.ecran} px d'écran`
+      );
+      assert.ok(
+        p.dernier <= p.ecran,
+        `avec la case de rétractation, « Je ne donne pas suite » finit à ${p.dernier} px`
+      );
+    }
     await page.close();
   });
 

@@ -197,10 +197,28 @@ calendrier ne laisse plus qu'une ligne, la vôtre, et « changer » redéplie to
 ce seul cas : « Je ne donne pas suite » finit à 690 px pour 664 d'écran. C'est ce
 que je vous avais annoncé avant votre choix — « 60 à 70 px : insuffisant seul ».
 
-**Ce qui les fermerait** est l'autre option, celle que vous n'avez pas retenue :
-descendre la case de rétractation dans la feuille. Elle y serait mieux placée,
-mais elle sortirait de votre vue au moment d'appuyer sur « J'accepte ce devis ».
-À vous de dire si on les combine, ou si on laisse ces 53 px.
+**Vous avez trouvé la troisième voie**, et elle était la bonne : *« il y a pas
+moyen de garder aujourd'hui mais de resserrer le texte ? »*. Personne ne l'avait
+regardée — prendre la place ailleurs que dans le contenu.
+
+Chaque piste a été appliquée à l'écran servi, une par une : zone de message à
+une ligne **23 px**, gouttières du formulaire **8**, marges de la page **8**,
+intérieur de la case **8**, le reste en ajustements de quelques pixels.
+
+| état | 3 septembre | aujourd'hui |
+|---|---|---|
+| calendrier ouvert | 990 px | **664 px** |
+| + date à moins de quatorze jours | 1 148 px | **664 px** |
+
+**Aucune phrase n'a été retirée, et la formule légale n'a pas été touchée.**
+Trois pistes plus rentables ont été écartées pour cette raison : raccourcir la
+phrase de la case (45 px), retirer l'invitation à signaler une erreur (29 px),
+retirer la mention de preuve (19 px). Ce sont trois informations, pas trois
+espacements.
+
+**Un avertissement, et il compte :** il ne reste plus un pixel. Le contrôle
+éprouve maintenant ce pire cas — calendrier ouvert, date proche, case
+affichée. S'il rougit après un ajout sur cet écran, il aura raison.
 
 ---
 

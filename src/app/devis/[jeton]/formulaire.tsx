@@ -126,7 +126,7 @@ export default function FormulaireReponse({
   }
 
   return (
-    <form action={action} className="flex flex-col gap-3">
+    <form action={action} className="flex flex-col gap-2">
       <input type="hidden" name="jeton" value={envoi.jeton} />
 
       <section className="rounded-2xl bg-white p-3 shadow-sm">
@@ -305,7 +305,9 @@ export default function FormulaireReponse({
           id="precision"
           name="precision"
           ref={champMessage}
-          rows={2}
+          /* Une ligne, pas deux : 23 px des 53 qui manquaient. Le champ
+             continue d'accepter autant de texte — il défile. */
+          rows={1}
           maxLength={500}
           value={precision}
           onChange={(e) => {
@@ -318,7 +320,7 @@ export default function FormulaireReponse({
       </section>
 
       {montrerRetractation && (
-        <section className="rounded-2xl border border-[#B5502F]/25 bg-[#B5502F]/5 p-4">
+        <section className="rounded-2xl border border-[#B5502F]/25 bg-[#B5502F]/5 p-3">
           <label className="flex items-start gap-3 text-[14px] leading-relaxed text-ink">
             {/* Jamais pré-cochée : c'est cette demande, et elle seule, qui
                 autorise l'artisan à intervenir avant la fin du délai légal. */}
