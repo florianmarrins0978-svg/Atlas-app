@@ -9,6 +9,18 @@ Format : le plus récent en tête.
 
 ## 2026-09-05
 
+### Le contrôle de l'unité de tarif cesse de mesurer une page qui glisse encore
+
+Vert joué seul, rouge sous la charge d'une batterie : `test-unite-tarif-e2e`
+lisait la case puis le bandeau **l'une après l'autre**, pendant que le bandeau
+se montre en douceur (`behavior: "smooth"`). Les deux mesures tombaient à deux
+hauteurs de défilement différentes, et le bandeau paraissait recouvrir la case
+de cinq pixels — un contrôle qui accuse le produit de sa propre course.
+
+Les deux boîtes se lisent désormais dans la même image, et l'on relit jusqu'à ce
+que deux lectures consécutives concordent : pas de temps d'attente fixe, et cela
+ne dépend pas de savoir QUI défile. L'assertion, elle, n'a pas bougé.
+
 ### La barre d'onglets ne survit plus à un appui sur un lien
 
 Le devis ouvert à son adresse n'avait pas de barre du bas ; le **même** devis

@@ -150,8 +150,34 @@ async function main() {
   await carte.getByLabel("Unité du tarif").click();
   await bandeau().waitFor({ state: "visible" });
 
-  const c = (await carte.getByLabel("Unité du tarif").boundingBox())!;
-  const b = (await bandeau().boundingBox())!;
+  // **Les deux boîtes se lisent dans la MÊME image, une fois la page arrêtée.**
+  // Le bandeau se montre en douceur (`behavior: "smooth"` dans `ChoixUnite`) :
+  // deux mesures prises l'une après l'autre tombaient à deux hauteurs de
+  // défilement différentes, et le bandeau paraissait recouvrir la case de cinq
+  // pixels. Vert joué seul, rouge sous la charge d'une batterie — c'est-à-dire
+  // un contrôle qui accuse le produit d'un défaut qui n'est que sa propre
+  // course (batterie du 5 septembre 2026, `CLAUDE.md` §5).
+  //
+  // On ne dort pas un temps fixe : on relit jusqu'à ce que deux lectures
+  // consécutives donnent la même chose, ce qui ne dépend pas de QUI défile.
+  const poignees = [
+    await carte.getByLabel("Unité du tarif").elementHandle(),
+    await bandeau().elementHandle(),
+  ] as const;
+  const lire = () =>
+    page.evaluate(([champ, panneau]) => {
+      const rc = (champ as Element).getBoundingClientRect();
+      const rb = (panneau as Element).getBoundingClientRect();
+      return { c: { y: rc.y, height: rc.height }, b: { y: rb.y } };
+    }, poignees);
+  let mesure = await lire();
+  for (const _ of Array.from({ length: 25 })) {
+    await page.waitForTimeout(200);
+    const encore = await lire();
+    if (encore.c.y === mesure.c.y && encore.b.y === mesure.b.y) break;
+    mesure = encore;
+  }
+  const { c, b } = mesure;
   assert.ok(
     b.y >= c.y + c.height - 1,
     `le bandeau recouvre la case (case jusqu'à ${(c.y + c.height).toFixed(0)}, bandeau depuis ${b.y.toFixed(0)}) : il cache justement ce qu'on renseigne`
