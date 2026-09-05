@@ -2,9 +2,20 @@ import { attendLeClient, etatEnvoi } from "./etat-envoi";
 import { jourLisible } from "./jour";
 import { lienVersLeChantierAuPlanning } from "./lien-planning";
 
-// Statut d'un chantier et libellés associés — définis ici (pas dans
-// mock-data.ts) car utilisés par les écrans réels ; réexportés depuis
-// mock-data.ts pour ne pas casser les maquettes /design/* qui les référencent.
+// Statut d'un chantier et libellés associés — définis ici, et employés par les
+// écrans réels.
+//
+// **CE COMMENTAIRE ÉTAIT FAUX, corrigé le 5 septembre 2026 (audit de santé).**
+// Il disait que ces statuts étaient « réexportés depuis mock-data.ts pour ne
+// pas casser les maquettes /design/* ». Ce lien N'EXISTE PLUS : `mock-data.ts`
+// tient depuis sa propre liste, gelée, et explique pourquoi — un outil de
+// conception ne doit pas peser sur les états du produit. Les deux fichiers
+// portent donc un `ChantierStatut` et un `statutLabel` chacun, **délibérément
+// séparés**, et non l'un dérivé de l'autre.
+//
+// Le laisser aurait envoyé chercher une réexportation inexistante, et fait
+// craindre de casser les maquettes en ajoutant un état ici — soit exactement
+// la peur que la coupure du 1er août 2026 avait supprimée.
 export type ChantierStatut =
   | "brouillon"
   | "a_verifier"

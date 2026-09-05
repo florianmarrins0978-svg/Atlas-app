@@ -4,12 +4,60 @@
 vous ne savez rien de ce qui précède — c'est exactement le cas de figure qu'il
 sert.
 
-**Point de reprise :** 2026-09-04 · `main`
+**Point de reprise :** 2026-09-05 · `main`
 (l'historique fait foi : `git log --oneline -20`)
 
 ---
 
-## Dernier lot — L'ÉCRAN DES PRIX (5 septembre 2026)
+## Dernier lot — L'AUDIT DE SANTÉ, ET CE QU'IL A CORRIGÉ (5 septembre 2026)
+
+**Ce lot est vérifié à hauteur de ce qui pouvait l'être, et pas au-delà.**
+`tsc --noEmit` à zéro, `lint` à 0 erreur (18 avertissements, tous antérieurs).
+Suites jouées et vertes : `test-chartes-lisibles` (14/14),
+`test-numeros-migrations` (4/4, neuf), `test-maquettes-hors-production`,
+`test-rubriques-reglages`, `test-numero-lisible`, `test-ligne-etat-chantier`,
+`test-reglages-gardes`, `test-import-fiches-phyto`, `test-allure-documents`.
+**La batterie complète n'a PAS été jouée** — il a demandé à être prévenu avant,
+et une autre de ses sessions travaillait dans le même dossier (voir plus bas).
+
+Cinq choses, toutes nées du skill `atlas-code-health` joué en lecture seule :
+
+1. **La visionneuse de photos était illisible sur Nuit et Sylve.** Fond
+   `colors.ink`, et par-dessus une croix `#F6F1E6` et des pastilles blanches :
+   1,09 et 1,12 de contraste. Sur les deux chartes sombres, l'encre est CLAIRE —
+   on ne voyait plus comment sortir de la photo. Jeton neuf `orSurEncre` pour
+   garder le doré du mot « Retirer » ; `surPlein` et `voile(surPlein, …)` pour
+   le reste.
+2. **Le numéro du client se lit espacé sur sa fiche** (`numeroLisible`), comme à
+   l'écran d'envoi.
+3. **`scripts/test-numeros-migrations.ts`** refuse un numéro de migration neuf en
+   double. Onze existent déjà ; ils sont inscrits et **ne se renomment pas**.
+4. **Cinq exports morts retirés**, plus `mockChantiersTest` et trois scripts du
+   premier commit.
+5. **Quatorze contrôles de maquettes rejoignent `verifier:maquette`.**
+
+**LE PIÈGE À CONNAÎTRE SI L'ON REPREND CE FICHIER.** `orSurEncre` va dans le
+sens INVERSE d'`orTexte` : l'un s'écarte du fond, l'autre de l'encre. Sur une
+charte sombre, le premier s'éclaircit et le second s'assombrit. Les fusionner
+« pour faire propre » redonnerait exactement le défaut réparé, sur l'une des deux
+moitiés. Le contrôle le dit, mais on peut le lire trop vite.
+
+**CE QUI RESTE OUVERT, et qui est dans `TODO.md` :**
+
+| | |
+|---|---|
+| la chaîne `verifier:maquette` **n'est lancée par personne** | ni CI, ni batterie. C'est plus large que ce que l'audit avait annoncé, et cela se décide (coût : dix à vingt minutes de CI) |
+| `verifier-maquette-logo.mjs` | rouge, « Page crashed » sous Playwright, non diagnostiqué, laissé HORS de la chaîne |
+
+**Et une chose qui n'est pas de ce lot mais qu'il faut savoir en arrivant :** le
+5 septembre, une autre session travaillait dans le même arbre — 123 suites
+modifiées pour centraliser l'adresse du serveur (`scripts/_adresse.ts`) et
+paralléliser les suites navigateur. Rien de ce lot-ci ne les touche, et rien
+d'elles n'a été commité ici. Si `git status` paraît énorme, c'est cela.
+
+---
+
+## Lot précédent — L'ÉCRAN DES PRIX (5 septembre 2026)
 
 **Ce lot n'est pas fini, et il ne faut pas le croire fini.** Le code est écrit,
 `tsc` et `lint` sont à zéro, `test-case-du-prix.ts` (10/10) et

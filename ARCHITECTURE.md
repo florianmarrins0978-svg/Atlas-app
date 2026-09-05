@@ -23064,3 +23064,167 @@ arrive sur le devis en APPUYANT sur le lien — comme lui — et comptait 1 barr
 où il en attendait 0. Toute mesure faite en ouvrant l'adresse directement rendait
 vert, la capture comprise. **Un contrôle qui entre par une autre porte que la
 sienne ne dit rien de la sienne** (`CLAUDE.md` §5 quater).
+
+## §259. L'audit de santé : ce qu'il a trouvé, et les deux fois où je me suis trompé
+
+*5 septembre 2026. Premier passage du skill `atlas-code-health` (lecture seule),
+puis le lot qui en découle — sa réponse tenant en une ligne : « oui espace le
+partout et fait les 4 ».*
+
+### Ce que l'audit a réellement rendu
+
+Sur 1 857 fichiers suivis, **un seul défaut visible par le patron**, et le reste
+est du rangement. C'est le résultat qui compte, et il tient à une discipline
+mesurable : aucun `FIXME` ni `HACK` dans tout le dépôt, les treize accès directs
+à `db` portent chacun leur raison écrite, les maquettes `/design` sont coupées en
+production par un contrôle qui APPELLE la mise en page au lieu de lire le
+fichier, et les suites refusent de conclure sur une mesure nulle.
+
+### 1. La visionneuse de photos, invisible sur Nuit et Sylve
+
+`Pellicule.tsx` ouvre la photo en plein écran sur un fond `colors.ink`, et posait
+dessus trois choses écrites en clair : la croix en `#F6F1E6`, les deux pastilles
+en `rgba(255,255,255,0.12)`, le mot « Retirer » en `orClair`.
+
+**C'est la faute du 22 août 2026** — celle de la pastille d'équipe qui a fait
+naître `surPlein` (§160). Sur les six chartes claires l'encre est presque noire
+et tout se lit ; **sur Nuit et Sylve l'encre EST claire**, et l'on obtenait un
+crème sur un crème : **1,09 et 1,12**. On ne voyait plus comment sortir de la
+photo.
+
+| Pourquoi elle a survécu à la passe du 22 août | |
+|---|---|
+| écrite le **11 août** | onze jours avant la passe, donc déjà en place |
+| jamais photographiée | la visionneuse exige qu'une photo soit OUVERTE ; aucune capture, aucune suite ne l'ouvre |
+| jamais mesurée | `test-chartes-lisibles.ts` regarde les CHARTES, pas ce qu'un écran en fait — sa propre leçon, §257 |
+
+**Trouvée sans regarder l'écran**, par le calcul, sur les valeurs de
+`chartes.ts`. C'est la première fois dans ce dépôt qu'un défaut de lisibilité
+sort d'un contraste calculé plutôt que d'une capture.
+
+### 2. `orSurEncre` — un jeton neuf, et pourquoi ce n'est pas `orTexte`
+
+La croix et les pastilles prennent `surPlein` et `voile(surPlein, …)`, qui
+existaient. Le mot « Retirer », lui, n'avait pas de jeton : `or` posé sur l'encre
+tient 5,56 sur les claires et **2,49 sur Nuit**.
+
+**`orTexte` ne pouvait pas servir**, et la raison est géométrique :
+
+| | s'écarte de | donc sur une charte sombre |
+|---|---|---|
+| `orTexte` | le fond et la plage | **s'éclaircit** |
+| `orSurEncre` | l'encre | **s'assombrit** |
+
+Les deux vont en sens contraire ; le même jeton ne peut pas faire les deux.
+`orSurEncre` est donc `detacher(OR_ORIGINE, [encre], 4.5, -sens)`.
+
+**Ce qu'il rend, mesuré :**
+
+| | valeur | sur l'encre | avant |
+|---|---|---|---|
+| les six claires | `#b98b47` — **l'or d'Origine au caractère près** | 4,98 à 5,81 | inchangé |
+| Sylve | `#806031` | 4,59 | 2,44 |
+| Nuit | `#826231` | 4,56 | 2,49 |
+
+Sa consigne du 31 août — *« tout ce qui est en doré reste doré »* — est tenue :
+rien de ce qu'il voit aujourd'hui ne bouge. Le contrôle a gagné le couple, et
+**il sait échouer** : `orSurEncre` ramené à `or` fait rougir les deux sombres.
+
+**La leçon du §257, une seconde fois et sous un autre angle :** un jeton mesuré
+dans un rôle n'est pas mesuré dans tous. Ici ce n'est même pas le rôle qui a
+changé — c'est le FOND. Un écran qui prend l'encre pour fond retourne les pôles
+de la charte, et tout ce qu'on y pose change de règle.
+
+### 3. Le numéro du client se lit espacé, ici comme avant d'envoyer
+
+`numeroLisible` existe depuis le 12 août 2026, écrite pour une raison précise :
+*« dix chiffres collés ne se vérifient pas d'un coup d'œil »*, et un devis
+n'était pas parti à cause d'une coordonnée mal relue. Elle n'avait **qu'un seul
+appelant** — l'écran d'envoi.
+
+La fiche du client, elle, affichait la valeur rangée : `0679984514`. Or c'est là
+qu'on vérifie qu'on a le bon client.
+
+**Ce qui n'a PAS été touché, et il faut le savoir avant d'y revenir :**
+
+| | |
+|---|---|
+| les cases du devis (`ChampNu`) | on y **tape** le numéro ; l'espacer changerait ce qui s'enregistre, et le dépôt tient deux conventions de rangement délibérées |
+| l'écran de la facture | le destinataire y a été **retiré à sa demande** ; le réafficher pour l'espacer serait réclamer ce qu'il a fait enlever (`CLAUDE.md` §5 bis) |
+| `ChoixCanal` / `ChoixDuCanal` | ils ne montrent pas le numéro, seulement « SMS » et « · absent » |
+
+Le numéro ne se lit donc, en tout et pour tout, qu'à **deux** endroits — et les
+deux l'espacent désormais.
+
+### 4. Les numéros de migration : onze doublons, aucun garde-fou
+
+`TODO.md` portait depuis le 27 août *« Deux migrations portent le numéro
+0067 »*. Le compte réel est **onze numéros pris deux ou trois fois, soit
+vingt-quatre fichiers** — et `0067` en porte trois.
+
+**Rien ne casse aujourd'hui**, et c'est vérifié plutôt que supposé : chaque
+groupe a été relevé, tables créées contre tables touchées, et aucun couple de
+même numéro n'a de dépendance croisée. `run-migrations.ts` suit chaque fichier
+par SON NOM, donc les vingt-quatre s'appliquent.
+
+**Ce qui n'est pas garanti, c'est l'ORDRE** — il vient d'un tri alphabétique du
+nom complet. Une base reconstruite de zéro les applique dans un ordre que
+personne n'a choisi, et le jour où deux migrations de même numéro se toucheront,
+la panne ne se verra que là : en production, ou à la restauration d'une
+sauvegarde.
+
+**L'asymétrie que l'audit a mise au jour :** les paragraphes en double
+d'`ARCHITECTURE.md` ont reçu leur garde-fou le 26 août (`verifier-memoire.mjs`,
+`DOUBLONS_CONNUS`). Les migrations, non. **Le document était protégé, la base ne
+l'était pas.** `scripts/test-numeros-migrations.ts` reprend le même idiome, y
+compris la règle qui empêche la liste de pourrir : un numéro démêlé qu'on y
+laisserait fait rougir le contrôle.
+
+Il ne demande de renommer **rien** : un fichier déjà sur `main` qui changerait de
+nom se rejouerait sur toute base à jour. Il ne défend que le douzième.
+
+### 5. Ce qui est parti, et le morceau qu'il fallait suivre
+
+Cinq exports sans aucun appelant, cherchés par nom dans `src`, `scripts`,
+`drizzle` et `appli` : `enComposantes` (`allure-documents.ts`),
+`reservéAuPatron` (`rubriques-reglages.ts`), et trois de `mock-data.ts`.
+
+Deux méritent leur ligne :
+
+- **`enComposantes`** annonçait « ce qu'attend `pdf-lib` » et le PDF ne l'a
+  jamais appelée : `document-commun.ts` fait la conversion lui-même. Ce n'était
+  donc pas une aide mais **une seconde source de vérité endormie** — celle qu'on
+  aurait branchée un jour à côté de celle qui tourne.
+- **`reservéAuPatron`** promettait *« les pages qui doivent quand même refuser,
+  côté serveur »* et n'était appelée par personne. Elle **rejouait F8 à trois
+  lignes du paragraphe qui raconte F8** : une prose qui promet une protection
+  inexistante est pire qu'un silence. Aucun trou n'a été ouvert ni comblé — la
+  garde existe ailleurs (`estProprietaire` sur `/reglages/prix`, `cheminAutorise`
+  dans la mise en page racine), et c'est précisément le point.
+
+Et `mockChantiersTest` (69 lignes) est parti avec `getChantierById`, **qui seul
+l'atteignait** : retirer une fonction sans regarder ce qu'elle seule tenait
+laisse derrière elle une donnée que plus rien n'atteint et que personne n'ose
+toucher.
+
+### LES DEUX FOIS OÙ MON PROPRE AUDIT S'EST TROMPÉ
+
+**A. `estPort` n'était pas un oubli de validation.** L'audit l'avait signalé
+comme suspect — quatre gardes de vocabulaire employées, une cinquième jamais
+appelée, donc un champ peut-être non contrôlé. C'était faux : le `port` d'un hôte
+est validé **à l'entrée** par `TaxonSchema` (`z.enum(PORTS)`), donc plus tôt et
+mieux. La fonction était redondante, pas manquante.
+
+**B. « Quinze contrôles ne sont jamais joués » était vrai et à côté.** Les quinze
+n'étaient pas exclus d'un garde qui tourne : **rien ne lance
+`verifier:maquette`** — ni la CI, ni `verifier-avant-livraison`, ni aucun script.
+Les cinquante déjà dans la chaîne dorment exactement autant que les quinze qui
+n'y étaient pas. Le défaut est d'un cran au-dessus de ce que j'avais écrit, et il
+reste ouvert (`TODO.md`) : le brancher coûte des minutes de CI, et cela se
+décide.
+
+Ce qui a été fait quand même : les quinze ont été **joués un par un**, treize
+verts, un vert mais lent (74 s), un rouge. Les quatorze verts complètent la
+chaîne ; `verifier-maquette-logo.mjs` reste dehors avec son symptôme écrit —
+ajouter un rouge à une chaîne en `&&` barre tout ce qui suit, et le dépôt l'a
+déjà payé dix heures le 23 août 2026.

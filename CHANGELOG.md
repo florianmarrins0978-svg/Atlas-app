@@ -8,6 +8,78 @@ Format : le plus récent en tête.
 ---
 
 ## 2026-09-05
+### La visionneuse de photos était illisible sur Nuit et Sylve
+
+Photo ouverte en plein écran, la croix pour sortir et le mot « Retirer »
+disparaissaient dans le fond : **1,09 et 1,12 de contraste**. Le fond de cet
+écran est l'encre de la charte, et sur les deux chartes sombres l'encre est
+CLAIRE — on posait donc un crème sur un crème. C'est la faute du 22 août 2026,
+écrite le 11 et oubliée par la passe qui avait corrigé les huit autres endroits.
+
+Elle a survécu parce que **rien ne pouvait la voir** : aucune capture ni aucune
+suite n'ouvre la visionneuse, et le contrôle des chartes regarde les chartes,
+jamais ce qu'un écran en fait. Trouvée par le calcul, pas à l'écran.
+
+Un jeton neuf, `orSurEncre`, garde le doré du mot « Retirer » : **les six
+apparences claires ne bougent pas d'un caractère** (`#b98b47`), Nuit et Sylve
+l'assombrissent juste assez pour se lire. Le couple est entré dans
+`test-chartes-lisibles.ts`, qui rougit si on le lui retire.
+
+### Le numéro du client se lit espacé sur sa fiche
+
+`06 79 98 45 14` au lieu de `0679984514`. `numeroLisible` existait depuis le
+12 août — écrite parce qu'un devis était parti au mauvais destinataire — et
+n'avait servi qu'à l'écran d'envoi. La fiche du client est pourtant l'autre
+endroit où l'on vérifie qu'on a le bon client.
+
+Les cases où l'on TAPE le numéro ne sont pas touchées : l'espacer y changerait
+ce qui s'enregistre.
+
+### Deux migrations ne peuvent plus prendre le même numéro
+
+`scripts/test-numeros-migrations.ts`. Le dépôt en portait **onze en double**, et
+`TODO.md` n'en connaissait qu'un — rien ne casse aujourd'hui (vérifié groupe par
+groupe), mais l'ordre d'application d'une base reconstruite de zéro n'est garanti
+par personne.
+
+Les onze sont inscrits comme acquis : renommer une migration déjà sur `main` la
+rejouerait sur toute base à jour. Le contrôle ne défend que le douzième — et sa
+liste ne peut pas pourrir, un numéro démêlé qu'on y laisserait le fait rougir.
+
+**L'asymétrie qu'il corrige :** les paragraphes en double d'`ARCHITECTURE.md`
+étaient gardés depuis le 26 août. Le document était protégé, la base ne l'était
+pas.
+
+### Cinq exports morts retirés, et un commentaire qui promettait une garde
+
+`enComposantes` annonçait « ce qu'attend pdf-lib » et le PDF ne l'a jamais
+appelée : une seconde source de vérité endormie. `reservéAuPatron` promettait un
+refus côté serveur pour deux écrans et n'était appelée par personne — elle
+rejouait F8 à trois lignes du paragraphe qui raconte F8. Aucun trou d'accès
+ouvert ni comblé : la garde existe ailleurs, et c'est le point.
+
+Trois exports de `mock-data.ts` partent avec eux, plus `mockChantiersTest` que
+seul l'un d'eux atteignait. Et trois scripts du tout premier commit, jamais
+appelés, qui visaient un chemin de navigateur Linux et une adresse `/design/prix`
+absente en production.
+
+Corrigé aussi : le commentaire de `chantier-etat.ts` annonçait une réexportation
+vers `mock-data.ts` qui **n'existe plus**, et faisait craindre de casser les
+maquettes en ajoutant un état.
+
+### Quatorze contrôles de maquettes rejoignent la chaîne — et ce que j'avais dit était incomplet
+
+L'audit annonçait « quinze contrôles jamais joués ». C'était vrai et à côté :
+**rien ne lance `verifier:maquette`**, ni la CI ni la batterie de livraison. Les
+cinquante déjà dans la chaîne dorment autant que les quinze qui n'y étaient pas.
+
+Les quinze ont été joués un par un : treize verts, un vert mais lent (74 s), un
+rouge (`verifier-maquette-logo.mjs`, page qui plante sous Playwright). Les
+quatorze verts complètent la chaîne ; le rouge reste dehors avec son symptôme
+écrit — un rouge dans une chaîne en `&&` barre tout ce qui suit, et le dépôt l'a
+payé dix heures le 23 août. Reste à décider où cette chaîne se joue (`TODO.md`).
+
+
 
 ### Le contrôle de l'unité de tarif cesse de mesurer une page qui glisse encore
 

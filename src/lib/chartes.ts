@@ -66,6 +66,27 @@ export type JetonsCharte = {
    * ce qui manque, et là il ne manque rien.
    */
   orTexte: string;
+  /**
+   * ─── L'OR POSÉ SUR L'ENCRE, LÀ OÙ LES PÔLES S'INVERSENT ────────────────
+   *
+   * **Mesuré le 5 septembre 2026, sur la visionneuse de photos.** Un écran
+   * peut prendre `ink` pour FOND — la photo en plein écran le fait, pour
+   * qu'on ne voie que la photo. Sur les six chartes claires l'encre est
+   * sombre, et l'or y tient 5,56 ; sur Nuit et Sylve **l'encre est claire**,
+   * et le même or tombe à **2,49**. Le mot « Retirer » y devenait illisible.
+   *
+   * **Ce n'est pas `orTexte`**, et la nuance est tout l'objet de ce jeton :
+   * `orTexte` s'écarte du FOND et de la PLAGE, c'est-à-dire du pôle ordinaire
+   * de la charte. Ici on s'écarte du pôle CONTRAIRE. Sur une charte claire
+   * `orTexte` s'assombrit quand celui-ci ne bouge pas, et sur une sombre
+   * c'est l'inverse : les deux ne peuvent pas être le même jeton.
+   *
+   * **Sur les six claires il vaut l'or au caractère près** — `detacher` ne
+   * corrige que ce qui manque, et là il ne manque rien. La consigne du
+   * 31 août (*« tout ce qui est en doré reste doré »*) est donc tenue : ce
+   * qu'il voit aujourd'hui ne bouge pas d'un pixel.
+   */
+  orSurEncre: string;
   line: string;
   lineSoft: string;
   chevron: string;
@@ -265,6 +286,12 @@ function depuisPlanche(p: {
     orClair: OR_CLAIR_ORIGINE,
     // Du texte, donc 4,5 — contre le fond ET contre la plage, comme l'alerte.
     orTexte: detacher(OR_ORIGINE, [p.fond, p.plage], 4.5, sens),
+    // **Le sens EST L'INVERSE de celui d'`orTexte`, et c'est le tout.** `sens`
+    // s'éloigne du fond ; ce jeton-ci s'éloigne de l'encre, qui est à l'autre
+    // bout. Le poser avec `sens` corrigerait la charte qui n'en a pas besoin
+    // et laisserait intacte celle qui en a besoin — soit exactement le défaut
+    // qu'on répare, retourné.
+    orSurEncre: detacher(OR_ORIGINE, [p.encre], 4.5, sens === 1 ? -1 : 1),
     line: voile(p.encre, "0.12"),
     lineSoft: voile(p.encre, "0.07"),
     chevron: voile(p.encre, "0.28"),
@@ -406,6 +433,10 @@ export const CHARTES: Charte[] = [
       // n'existait pas : la recopier n'aurait rien conservé, et la poser à la
       // main aurait donné une seconde façon de calculer la même chose.
       orTexte: detacher(OR_ORIGINE, ["#f5f3ee", "#faf9f5"], 4.5, -1),
+      // Dérivé pour la même raison, et il rend l'or intact : sur une encre
+      // `#1c1c1a`, `#B98B47` tient déjà 5,56. Le poser à la main aurait donné
+      // une seconde façon de calculer la même chose.
+      orSurEncre: detacher(OR_ORIGINE, ["#1c1c1a"], 4.5, 1),
       line: "rgba(28,28,26,0.12)",
       lineSoft: "rgba(28,28,26,0.07)",
       chevron: "rgba(28,28,26,0.28)",

@@ -228,15 +228,25 @@ export function surtitreReglages(role: RoleReglages | null): string {
   return role === "proprietaire" ? "Mon entreprise" : "Mon compte";
 }
 
-/**
- * L'écran des réglages est-il réservé au patron pour ce rôle ?
- *
- * Sert aux pages qui ne SONT pas des rubriques du sommaire — « Mes prix », le
- * vocabulaire — et qui doivent quand même refuser, côté serveur.
- */
-export function reservéAuPatron(role: RoleReglages | null): boolean {
-  return role !== "proprietaire";
-}
+// ─── `reservéAuPatron` RETIRÉE LE 5 SEPTEMBRE 2026 — audit de santé ─────────
+//
+// **Elle rejouait F8, juste au-dessus du paragraphe qui raconte F8.** Sa
+// prose disait : *« sert aux pages qui ne SONT pas des rubriques du sommaire —
+// “Mes prix”, le vocabulaire — et qui doivent quand même refuser, côté
+// serveur »*. Elle n'avait **aucun appelant**, ni dans `src/`, ni dans
+// `scripts/` — et son nom accentué la faisait manquer aux recherches.
+//
+// Or c'est exactement la faute que le bloc suivant nomme : *« une prose qui
+// promet une protection inexistante est pire qu'un silence — on s'y fie
+// encore »*. Une session pressée l'aurait lue comme la garde de ces deux
+// écrans, et serait passée à autre chose.
+//
+// **Aucun trou d'accès n'a été ouvert ni comblé** : la garde existe, ailleurs,
+// et c'est le point. `/reglages/prix` pose la sienne avec `estProprietaire`,
+// `cheminAutorise` (`src/lib/acces-roles.ts`) refuse une adresse tapée à la
+// main, et `scripts/test-reglages-gardes.ts` refuse qu'une rubrique non
+// personnelle en soit dépourvue. Retirer cette fonction ne retire donc rien
+// d'autre qu'une phrase qui désignait le mauvais endroit.
 
 /**
  * Les adresses qu'un rôle voit dans le SOMMAIRE des réglages.

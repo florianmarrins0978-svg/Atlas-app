@@ -9,6 +9,81 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
+## À DÉCIDER : la chaîne `verifier:maquette` n'est jouée par PERSONNE (5 sept. 2026)
+
+**Trouvé en réveillant quinze contrôles, et c'est plus grave que ce que l'audit
+avait annoncé.** Le rapport disait « quinze contrôles de maquettes ne sont jamais
+joués ». Le vrai constat :
+
+```
+grep -rn 'verifier:maquette' .github/ package.json scripts/   →  rien
+```
+
+**Rien ne lance cette chaîne** : ni `ci.yml`, ni `verifier-avant-livraison.ts`,
+ni aucun script. Les cinquante maillons qui y étaient déjà dorment exactement
+autant que les quinze qui n'y étaient pas. Depuis le 5 septembre elle en compte
+**77**, et ça ne change rien tant que personne ne l'appelle.
+
+**Ce que cela laisse sans garde :** toutes les planches qu'il ouvre depuis son
+téléphone. `pages.yml` en éprouve six suites (`test:e2e`, `test:arrosage`,
+`test:croquis`, `test:termines`, `test:face-id`, `test:boutons-verts`) — les
+`verifier-maquette-*`, eux, ne sont dans aucun flux.
+
+**Les deux façons de le régler, et leur coût :**
+
+| | ce que ça coûte | ce que ça donne |
+|---|---|---|
+| une étape dans `ci.yml` | des minutes de CI ; Playwright y est **déjà** installé pour l'e2e. `bascule` seul prend 74 s, et la chaîne fait 77 maillons — l'ordre de grandeur est **dix à vingt minutes** | la chaîne tourne à chaque poussée, sans rien lui coûter en local |
+| dans `verifier-avant-livraison` | les mêmes minutes **sur sa machine**, à chaque livraison | rien de plus : ces contrôles ne regardent pas le produit |
+
+**Ma recommandation : la CI, pas la batterie.** Ces contrôles gardent des
+planches, pas l'application ; les faire peser sur une batterie qu'il attend déjà
+serait payer deux fois. Mais la CI est rouge sur `main` depuis le 2 septembre
+(voir plus bas) — y ajouter une étape maintenant noierait un rouge dans un autre.
+
+**Qui peut le faire : n'importe quelle session**, une fois la CI revenue au vert.
+
+## ROUGE : `verifier-maquette-logo.mjs` fait planter la page (5 sept. 2026)
+
+Joué seul, sous Playwright :
+
+```
+locator.evaluate: Page crashed
+  - waiting for locator('.prop[class*=' p']').nth(14).locator('.appli').first()
+```
+
+Il vise `docs/maquettes/37-le-motif-du-sceau.html`. **Non diagnostiqué** : le
+plantage peut venir de la planche (37 propositions rendues d'un coup) comme de
+l'environnement. Les quatorze autres contrôles réveillés le même jour sont verts.
+
+**Il est délibérément resté HORS de la chaîne `verifier:maquette`** : un maillon
+rouge dans une chaîne en `&&` barre tout ce qui suit, et le dépôt l'a payé dix
+heures le 23 août 2026 (`pages.yml`, « on joue les quatre même si la première
+tombe »). L'ajouter avant de l'avoir réparé rendrait les 76 autres inutiles.
+
+**Qui peut le faire : n'importe quelle session.** Le rejouer avec
+`--headed`, ou réduire la planche, dira lequel des deux plante.
+
+## ~~Deux migrations portent le numéro 0067~~ — GARDÉ depuis le 5 septembre 2026
+
+~~`0067_propositions_sans_chantier.sql` et `0067_salaries_a_part.sql`…~~
+
+**Ce que cette entrée disait était juste et INCOMPLET**, et l'audit du
+5 septembre l'a mesuré : le dépôt porte **onze numéros pris deux ou trois fois**,
+soit vingt-quatre fichiers — et `0067` en porte **trois**, pas deux
+(`isolation_contexte_vide` s'y ajoutait).
+
+Ce qui reste vrai, mot pour mot : **rien ne casse**, et **il ne faut PAS les
+renuméroter** — la clé de suivi est le nom du fichier, un renommage rejoue la
+migration sur toute base à jour. Vérifié en plus, cette fois : aucun couple de
+même numéro n'a de dépendance croisée.
+
+Ce qui est nouveau : `scripts/test-numeros-migrations.ts` refuse désormais tout
+numéro NEUF en double, et sa liste ne peut pas pourrir. **Le prochain numéro
+libre est 0075.** Détail et pourquoi : `ARCHITECTURE.md` §259.
+
+---
+
 ## LES SUITES NAVIGATEUR EN PARALLÈLE — à faire LA NUIT, sa décision du 5 septembre 2026
 
 **Il l'a demandé, puis il a lui-même choisi le moment.** Après avoir attendu deux
@@ -1741,24 +1816,6 @@ en une ligne :
 
 Vu rouge exprès avant d'être livré. **Six enquêtes ont recommencé de zéro faute
 de cette ligne ; la septième commencera avec.**
-
-## Deux migrations portent le numéro 0067
-
-`0067_propositions_sans_chantier.sql` et `0067_salaries_a_part.sql`, posées le
-même jour par deux sessions. **Rien ne casse** : `run-migrations.ts` trie les
-noms de fichiers et suit chacun par SON nom, si bien que les deux s'appliquent,
-dans l'ordre alphabétique.
-
-**Et il ne faut PAS les renuméroter** : la clé de suivi est le nom du fichier.
-Renommer l'une la ferait rejouer sur toute base qui l'a déjà appliquée. Le
-numéro suivant est **0070**, à prendre une seule fois.
-
-**La seule renumérotation permise, et elle a servi le 27 août 2026 :** celle
-d'une migration qui n'est **pas encore sur `main`**. Aucune base ne l'a
-appliquée que celle de la session qui l'écrit — il suffit d'y corriger la ligne
-de `_migrations`. C'est ainsi que `0068_fil_assistant.sql` est devenu
-`0069_…` en découvrant `0068_effacement_client_devis_envoye.sql` à la fusion.
-Une fois sur `main`, c'est trop tard : on prend le numéro suivant.
 
 ## ✅ ~~Coder « Quand je reverse la TVA »~~ — fait le 26 août 2026
 

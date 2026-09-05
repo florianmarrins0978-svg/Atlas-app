@@ -5,6 +5,7 @@ import { getCurrentCtx } from "@/server/session-ctx";
 import { chargerFicheClient } from "@/server/repositories/fiche-client";
 import { retourFicheClient } from "@/lib/retour-fiche-client";
 import { jourCourt } from "@/lib/documents-du-client";
+import { numeroLisible } from "@/lib/numero-lisible";
 import RegistresDuDossier from "./RegistresDuDossier";
 import SupprimerCeClient from "./SupprimerCeClient";
 import { apercuSuppressionClient } from "@/server/repositories/donnees-client";
@@ -89,15 +90,23 @@ export default async function FicheClientPage({
   // deux lignes : le numéro collé derrière un séparateur se lisait comme la fin
   // de l'adresse.
   const { adresse, telephone } = fiche.client;
+  // **LE NUMÉRO SE LIT ESPACÉ, ICI COMME AVANT D'ENVOYER.** Il est rangé en
+  // chiffres nus (`numeroEnregistre`, pour que le rapprochement de clients et
+  // le lien `sms:` n'aient pas à le renettoyer), et cette fiche l'affichait
+  // donc tel quel : `0679984514`. Or c'est ici qu'on vérifie qu'on a le bon
+  // client — la raison même pour laquelle `numeroLisible` avait été écrite le
+  // 12 août 2026, et qui n'avait servi qu'à l'écran d'envoi. Trouvé par
+  // l'audit du 5 septembre 2026 ; sa réponse : « espace-le partout ».
+  const telephoneLu = telephone ? numeroLisible(telephone) : telephone;
   const coordonnees =
-    adresse && telephone ? (
+    adresse && telephoneLu ? (
       <>
         {adresse}
         <br />
-        {telephone}
+        {telephoneLu}
       </>
     ) : (
-      adresse || telephone || undefined
+      adresse || telephoneLu || undefined
     );
   const { devis, fiches, factures } = fiche.pieces;
 

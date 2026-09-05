@@ -111,6 +111,22 @@ const ABSOLUS: (Couple & { seuil: number })[] = [
   // égal à `or`, les six chartes claires rougissent d'un coup.
   { quoi: "l'or d'un mot sur une plage", devant: (c) => c.jetons.orTexte, derriere: (c) => c.jetons.card, seuil: TEXTE },
   { quoi: "l'or d'un mot sur le fond de page", devant: (c) => c.jetons.orTexte, derriere: (c) => c.jetons.cream, seuil: TEXTE },
+  // ─── L'OR SUR L'ENCRE PRISE POUR FOND — ajouté le 5 septembre 2026 ───────
+  //
+  // **Le couple que ni celui du dessus ni aucun autre ne couvrait.** La
+  // visionneuse de photos prend `ink` pour FOND, pour qu'on ne voie que la
+  // photo — et là les pôles s'inversent : sur Nuit et Sylve l'encre est un
+  // crème. L'or du mot « Retirer » y tenait **2,49**, et la croix pour sortir,
+  // écrite `#F6F1E6` en clair, **1,09**.
+  //
+  // C'est la leçon du §257 appliquée une seconde fois : un jeton mesuré dans
+  // un rôle n'est pas mesuré dans tous. Il sait échouer — en rendant
+  // `orSurEncre` égal à `or`, les deux sombres rougissent (2,49 et 2,55).
+  //
+  // **`surPlein` sur l'encre n'a pas son couple ici, et c'est voulu :** le
+  // contraste est symétrique, et « l'encre sur une plage » le mesure déjà
+  // plus haut. Un couple de plus n'aurait rien prouvé de neuf.
+  { quoi: "l'or d'un mot sur l'encre prise pour fond", devant: (c) => c.jetons.orSurEncre, derriere: (c) => c.jetons.ink, seuil: TEXTE },
   // ─── Deux des quatre états du calendrier, et seulement ces deux-là ────────
   // « incomplet » contre « complet » : sur les cinq claires, de 6,6 à 9,5.
   // Avant ce lot, 1,5 sur les deux sombres — deux blancs.

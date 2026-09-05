@@ -1,7 +1,7 @@
 # État du projet
 
-**Dernière mise à jour :** 2026-09-04 · branche `main`
-· dernière migration `drizzle/0073_tva_par_ligne.sql` (ce lot ne touche que
+**Dernière mise à jour :** 2026-09-05 · branche `main`
+· dernière migration `drizzle/0074_allure_figee_sur_la_facture.sql` (ce lot ne touche que
 l’affichage)
 
 *(Deux en-têtes de mise à jour cohabitaient ici depuis une fusion du 29 août,
@@ -18,6 +18,32 @@ Ce fichier dit **où en est le produit**, pas ce qu'on aimerait qu'il soit. Une
 ligne « fait » qui ne l'est pas coûte plus cher qu'une ligne absente.
 
 ---
+
+## FAIT : l'audit de santé, et les cinq corrections qui en sortent (5 septembre 2026)
+
+Premier passage du skill `atlas-code-health` (lecture seule) sur 1 857 fichiers,
+puis le lot qui en découle. Sa réponse : *« oui espace le partout et fait les 4 »*.
+
+| | |
+|---|---|
+| **la visionneuse de photos se voit sur les 8 chartes** | elle était à **1,09 / 1,12** de contraste sur Nuit et Sylve — croix et « Retirer » invisibles. Jeton neuf `orSurEncre` : les six claires gardent `#b98b47` au caractère près |
+| **le numéro du client se lit espacé sur sa fiche** | `numeroLisible` n'avait qu'un appelant depuis le 12 août ; elle en a deux |
+| **deux migrations ne peuvent plus prendre le même numéro** | `scripts/test-numeros-migrations.ts`. Onze doublons existent déjà, inscrits, **non renommables** |
+| **cinq exports morts retirés** | dont `reservéAuPatron`, qui promettait une garde qu'elle n'assurait pas — aucun trou ouvert ni comblé, la garde est ailleurs |
+| **quatorze contrôles de maquettes rejoignent la chaîne** | joués un par un avant : 13 verts, 1 vert mais lent, 1 rouge laissé dehors |
+
+**Ce que j'ai dit et qui était faux, corrigé noir sur blanc :** `estPort` n'était
+pas un oubli de validation (Zod le couvre à l'entrée), et « quinze contrôles
+jamais joués » était à côté — **rien ne lance `verifier:maquette`**, ni la CI ni
+la batterie. Le vrai défaut est d'un cran au-dessus, et il reste ouvert.
+
+**Mesuré :** `tsc` 0, `lint` 0 erreur, neuf suites vertes dont la neuve.
+**La batterie complète n'est PAS jouée** — il demande à être prévenu avant, et
+une autre de ses sessions écrivait dans le même dossier.
+
+Détail : `ARCHITECTURE.md` §259 · retour au patron : `docs/lot-audit-de-sante.md`.
+Ce qui reste dû est dans `TODO.md`, en tête.
+
 
 ## FAIT (à moitié) : l'écran des prix (5 septembre 2026)
 

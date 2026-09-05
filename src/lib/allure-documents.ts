@@ -276,15 +276,19 @@ export function encreSurFond(fond: string): { encre: string; encreDouce: string 
     : { encre: "#f5f3ee", encreDouce: "#cfccc4" };
 }
 
-/** Les composantes 0→1, ce qu'attend `pdf-lib`. */
-export function enComposantes(couleur: string): { r: number; v: number; b: number } {
-  const c = couleurNettoyee(couleur) ?? "#000000";
-  return {
-    r: parseInt(c.slice(1, 3), 16) / 255,
-    v: parseInt(c.slice(3, 5), 16) / 255,
-    b: parseInt(c.slice(5, 7), 16) / 255,
-  };
-}
+// **`enComposantes` RETIRÉE LE 5 SEPTEMBRE 2026 — audit de santé.**
+//
+// Elle disait « les composantes 0→1, ce qu'attend `pdf-lib` », et **le PDF ne
+// l'a jamais appelée** : `git grep -w enComposantes` ne rendait que ce fichier.
+// `src/server/pdf/document-commun.ts` fait la conversion lui-même, par
+// décalages de bits, depuis toujours.
+//
+// **Ce qui restait n'était donc pas une aide, c'était une seconde source de
+// vérité endormie** — celle qu'on aurait fini par brancher un jour, à côté de
+// celle qui tourne. La règle du dépôt vaut aussi pour le code que personne
+// n'appelle : une même chose écrite deux fois finit par diverger (`CLAUDE.md`
+// §3). S'il faut un jour partager cette conversion, elle se prendra dans
+// `document-commun.ts`, qui est celle qui a servi.
 
 /**
  * SON LOGO — ce qui est accepté, et pourquoi si peu.

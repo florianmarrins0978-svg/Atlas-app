@@ -149,6 +149,18 @@ export const colors = {
    * n'est plus celui de personne.
    */
   orTexte: "var(--atlas-orTexte, #8b6835)",
+  /**
+   * L'or d'un mot posé sur `ink` — là où un écran prend l'encre pour FOND.
+   *
+   * La visionneuse de photos le fait, pour qu'on ne voie que la photo. Sur
+   * Nuit et Sylve l'encre est CLAIRE : l'or y tombait à 2,49 et le mot
+   * « Retirer » disparaissait. Dérivé par `chartes.ts`, dans le sens inverse
+   * d'`orTexte` — voir le jeton là-bas.
+   *
+   * **Le repli est l'or d'Origine sans retouche**, parce qu'il n'en a pas
+   * besoin : sur une encre presque noire, l'or tient déjà 5,56.
+   */
+  orSurEncre: "var(--atlas-orSurEncre, #B98B47)",
   line: "var(--atlas-line, rgba(28,28,26,0.12))", // --line : séparateurs, bordures fines
   lineSoft: "var(--atlas-lineSoft, rgba(28,28,26,0.07))", // --line-soft : bordure des tuiles
   chevron: "var(--atlas-chevron, rgba(28,28,26,0.28))", // affordance de navigation discrète
