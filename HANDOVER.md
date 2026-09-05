@@ -4,8 +4,32 @@
 vous ne savez rien de ce qui précède — c'est exactement le cas de figure qu'il
 sert.
 
-**Point de reprise :** 2026-09-03 · `main`
+**Point de reprise :** 2026-09-05 · `main`
 (l'historique fait foi : `git log --oneline -20`)
+
+---
+
+## Dernier lot — LA FICHE CLIENT N'A QU'UN VISAGE (5 septembre 2026)
+
+**Sa remarque, capture à l'appui :** *« J'ai fait nouveau chantier […] j'ai
+dicté mon chantier, mais j'ai oublié de remplir les informations de mes clients
+[…] j'ai fait retour […] ce n'est pas la même que lorsque j'ai cliqué sur
+nouveau chantier. Tu verras par toi-même que la note vocale a changé. »*
+
+**Ce qu'il faut savoir avant d'y toucher :**
+
+| | |
+|---|---|
+| la **fiche client** | `/chantiers/nouveau` et `/chantiers/[id]/coordonnees` sont le MÊME composant (`FormulaireNouveauChantier`) — elle ne passe plus jamais de `storageKey` à `AnneauNoteVocale` |
+| l'**objet vocal** | la dictée (`.atlas-dictee`) ici, TOUJOURS. Le lecteur (`.atlas-lecteur`) vit sur la fiche du chantier, et lui seul |
+| `aUneNote` | remplace l'ancien `note: {storageKey, dureeSecondes}` : il ne sert plus qu'à taire l'invite « Appuyez et décrivez le chantier » |
+| le **troisième visage** | l'audio purgé après transcription (`storage_key` à `null`) faisait disparaître l'anneau ENTIER de la fiche. Corrigé, et tenu par une suite |
+| ce que ça **coûte** | écouter et retirer la note ne se font plus depuis la fiche client. Les deux gestes sont sur la fiche du chantier |
+
+**La suite qui le tient :** `scripts/test-fiche-client-un-seul-visage-e2e.ts` —
+elle rejoue sa séquence (créer, dicter, envoyer, ouvrir le devis, faire retour)
+avec le micro simulé de Chromium, et elle a été **vue rouge** sur la version
+d'avant. Paragraphe d'architecture : §249.
 
 ---
 

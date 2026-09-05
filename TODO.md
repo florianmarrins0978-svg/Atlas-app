@@ -9,6 +9,19 @@ langage, et rien n'y entre sans son accord.
 
 ---
 
+## À TRANCHER PAR LE PATRON : écouter sa note depuis la fiche client ? (5 sept. 2026)
+
+Depuis le §249, la fiche client ne porte que la DICTÉE — un seul visage, aux
+deux visites, comme il l'a demandé. Écouter et retirer la note se font sur la
+fiche du CHANTIER.
+
+**Ce qui reste à savoir :** veut-il aussi les réécouter sans quitter la fiche
+client ? C'est une décision d'apparence, donc une maquette d'abord
+(`CLAUDE.md` §3 bis) — et il n'a rien demandé de tel : cette ligne existe pour
+que la question ne se repose pas de mémoire.
+
+---
+
 ## ROUGE SUR `main` : un chantier à date passée est AUSSI au planning (3 sept. 2026)
 
 `test-planning-vers-facture-e2e` échoue, **seule et avec une base fraîche** —

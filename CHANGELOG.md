@@ -7,6 +7,32 @@ Format : le plus récent en tête.
 
 ---
 
+## 2026-09-05
+
+### La fiche client changeait de visage entre deux visites
+
+**Sa remarque, capture à l'appui :** *« ce n'est pas la même que lorsque j'ai
+cliqué sur nouveau chantier. Tu verras par toi-même que la note vocale a
+changé. »*
+
+Mesuré en rejouant sa séquence : à la création, l'objet vocal est le micro vert
+de la dictée ; au retour du devis, le même écran rendait l'anneau creux du
+LECTEUR, dont le seul geste est « Poussez l'anneau vers le haut » — retirer. Et
+un troisième visage attendait : l'audio purgé quelques jours après sa
+transcription, l'anneau disparaissait entièrement de la fiche.
+
+La fiche client ne porte plus qu'un objet, celui de la **dictée**, dans tous les
+cas. Écouter et retirer restent sur la fiche du chantier. Devant une note déjà
+enregistrée, l'invite « Appuyez et décrivez le chantier » se tait — elle
+proposerait de recouvrir ce qu'il a dicté.
+
+**Ce que ça évite :** un écran qu'il ne reconnaît pas au moment où il revient y
+réparer un oubli, et une fiche qui maigrit toute seule au bout de quelques
+jours. `ARCHITECTURE.md` §249 · `scripts/test-fiche-client-un-seul-visage-e2e.ts`
+(vu rouge sur la version d'avant).
+
+---
+
 ## 2026-09-03
 
 ### L'attente du devis ne regardait qu'une issue sur six

@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atlas — La fiche client, une seule et même page</title>
+<style>
+  :root{
+    --ground:#f5f3ee; --surface:#faf9f5; --raised:#ece9e1;
+    --ink:#1c1c1a; --ink-soft:#4a4a44; --muted:#8a8578;
+    --accent:#2f3b2f; --alert:#b5562a; --line:rgba(28,28,26,0.13);
+    --serif:Georgia,'Times New Roman',serif;
+    --sans:system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --ground:#161815; --surface:#1d201c; --raised:#252924;
+      --ink:#eae7df; --ink-soft:#c2bdb1; --muted:#948f83;
+      --accent:#9fbd82; --alert:#e0885a; --line:rgba(234,231,223,0.17);
+    }
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--sans);
+    line-height:1.65;}
+  main{max-width:44rem;margin:0 auto;padding:2.5rem 1.2rem 5rem;}
+  h1,h2,h3,h4{font-family:var(--serif);font-weight:600;line-height:1.2;
+    text-wrap:balance;margin:2rem 0 0.6rem;scroll-margin-top:1rem;}
+  h1{font-size:2rem;margin-top:0;}
+  h2{font-size:1.5rem;padding-top:1.2rem;border-top:1px solid var(--line);}
+  h3{font-size:1.12rem;}
+  h4{font-size:1rem;}
+  p{margin:0 0 0.9rem;}
+  a{color:var(--accent);text-underline-offset:3px;}
+  a:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:3px;}
+  ul,ol{margin:0 0 1rem;padding-left:1.3rem;}
+  li{margin-bottom:0.4rem;}
+  li::marker{color:var(--muted);}
+  /* Le sommaire : des cibles larges, confortables au doigt sur téléphone. */
+  ol li a{display:inline-block;padding:0.15rem 0;}
+  blockquote{margin:1rem 0;padding:0.85rem 1.05rem;background:var(--raised);
+    border-left:3px solid var(--accent);border-radius:0 10px 10px 0;color:var(--ink-soft);}
+  code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:0.87em;
+    background:var(--raised);padding:0.1rem 0.35rem;border-radius:5px;}
+  hr{border:0;border-top:1px solid var(--line);margin:2rem 0;}
+  .tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px;
+    background:var(--surface);margin:0 0 1.2rem;}
+  table{border-collapse:collapse;width:100%;font-size:0.92rem;min-width:22rem;}
+  th,td{text-align:left;padding:0.55rem 0.8rem;border-bottom:1px solid var(--line);
+    vertical-align:top;}
+  th{font-size:0.72rem;letter-spacing:0.08em;text-transform:uppercase;
+    color:var(--muted);white-space:nowrap;}
+  tr:last-child td{border-bottom:none;}
+  .retour{display:inline-block;font-size:0.76rem;color:var(--muted);
+    text-decoration:none;margin:-0.3rem 0 1rem;}
+  .retour:hover{color:var(--accent);text-decoration:underline;}
+</style>
+</head>
+<body>
+<main>
+<h1 id="la-fiche-client-une-seule-et-même-page">La fiche client, une seule et même page</h1>
+<p><em>5 septembre 2026 — ce qui a été trouvé, ce qui a été corrigé, ce que ça coûte.</em></p>
+<hr>
+<h2 id="ce-que-vous-avez-signalé">Ce que vous avez signalé</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<blockquote>« J'ai fait nouveau chantier. Je suis arrivé sur la page de la fiche client, j'ai dicté mon chantier, mais j'ai oublié de remplir les informations de mes clients. Je suis ensuite allé sur la page du devis, j'ai rempli mon devis, j'ai fait retour, donc je suis arrivé sur la page de la fiche client […] Le problème, c'est que ce n'est pas la même que lorsque j'ai cliqué sur nouveau chantier. […] la note vocale a changé. »</blockquote>
+<p><strong>Vous aviez raison.</strong> Votre séquence a été rejouée à l'identique dans un navigateur, et les deux écrans ont été photographiés côte à côte.</p>
+<hr>
+<h2 id="ce-qui-se-passait">Ce qui se passait</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th>Quand</th>
+<th>Ce que la fiche montrait</th>
+</tr></thead><tbody>
+<tr>
+<td><strong>à la création</strong></td>
+<td>le micro vert, sous-titré « Appuyez et décrivez le chantier »</td>
+</tr>
+<tr>
+<td><strong>au retour du devis</strong></td>
+<td>l'anneau creux, sous-titré « Poussez l'anneau vers le haut » — c'est-à-dire <em>retirer</em></td>
+</tr>
+<tr>
+<td><strong>quelques jours plus tard</strong></td>
+<td>plus rien du tout</td>
+</tr>
+</tbody></table></div>
+<p>Le troisième cas n'avait été vu par personne, et il serait arrivé tout seul : l'audio d'une dictée est effacé quelques jours après avoir été transcrit (c'est la règle de conservation, <code>docs/RGPD.md</code>). Ce jour-là, l'anneau <strong>disparaissait entièrement</strong> de votre fiche client, sans qu'un mot le dise.</p>
+<p>Trois écrans différents, donc, pour une seule page.</p>
+<hr>
+<h2 id="ce-qui-a-été-corrigé">Ce qui a été corrigé</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><strong>La fiche client ne porte plus qu'un objet : celui de la dictée.</strong> À la création, au retour du devis, et le mois suivant — le même micro, à la même place.</p>
+<p>Pourquoi celui-là, et pas l'anneau :</p>
+<ul>
+<li>cette page sert à <strong>renseigner le client et à dire le chantier</strong> ; écouter et relire, c'est la fiche du chantier ;</li>
+<li>c'est l'objet que vous laissez deux minutes plus tôt : après l'envoi de la note, la fiche de création redevient le micro. Le retrouver au retour est la seule continuité lisible.</li>
+</ul>
+<p><strong>Et l'écran ne vous invite plus à parler par-dessus.</strong> Devant un chantier qui porte déjà sa dictée, la phrase « Appuyez et décrivez le chantier » ne s'affiche pas — c'est votre règle du 1ᵉʳ septembre, appliquée ici pour la même raison. Le micro reste appuyable : si vous redictez volontairement, la nouvelle note remplace l'ancienne, et un devis déjà corrigé à la main vous le dit avant d'être refait.</p>
+<hr>
+<h2 id="ce-que-ça-coûte-et-il-faut-le-savoir">Ce que ça coûte, et il faut le savoir</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><strong>Depuis la fiche client, on ne peut plus écouter ni retirer la note.</strong> Ces deux gestes sont sur la <strong>fiche du chantier</strong>, où l'anneau et son « Retirer » existent toujours, inchangés.</p>
+<p>Si vous voulez les deux sur la fiche client, c'est une décision d'apparence : on vous fera une maquette avant de coder quoi que ce soit. Dites-le.</p>
+<hr>
+<h2 id="ce-qui-empêche-que-ça-revienne">Ce qui empêche que ça revienne</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p><code>scripts/test-fiche-client-un-seul-visage-e2e.ts</code> rejoue votre séquence entière — créer, dicter, envoyer, ouvrir le devis, faire retour — avec un micro simulé, et vérifie que l'objet est le même aux deux visites. Elle a été <strong>vue rouge sur la version d'avant</strong>, avec les deux messages qui nomment les deux visages de trop : un contrôle qui n'a jamais échoué ne prouve rien.</p>
+<p>Le détail technique est dans <code>ARCHITECTURE.md</code> §249.</p>
+<hr>
+<h2 id="la-batterie-chiffres-exacts">La batterie, chiffres exacts</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<div class="tablewrap"><table><thead><tr>
+<th></th>
+<th></th>
+</tr></thead><tbody>
+<tr>
+<td>types, lint, mémoire du dépôt</td>
+<td><strong>vert</strong></td>
+</tr>
+<tr>
+<td>suites base de données</td>
+<td><strong>vert</strong></td>
+</tr>
+<tr>
+<td>suites navigateur</td>
+<td><strong>125 / 126</strong></td>
+</tr>
+<tr>
+<td>connexion derrière un proxy</td>
+<td><strong>vert</strong></td>
+</tr>
+</tbody></table></div>
+<p>Le seul rouge est <code>test-planning-vers-facture-e2e</code> — <em>« un chantier à date passée est AUSSI au planning »</em> —, <strong>déjà rouge sur <code>main</code> avant ce lot</strong> et noté comme tel dans <code>TODO.md</code> depuis le 3 septembre. Il ne touche rien de ce qui est corrigé ici.</p>
+<p><em>(À la première passe, six suites sont aussi tombées d'un coup : le serveur de développement s'est arrêté sur un défaut interne de Turbopack, en compilant la feuille de chantier en PDF. Rejouées seules : 6/6. Ce n'est pas l'application, c'est l'outil qui la sert ici.)</em></p>
+<hr>
+<h2 id="ce-qui-reste-ouvert">Ce qui reste ouvert</h2>
+<a class="retour" href="#sommaire">↑ Sommaire</a>
+<p>Rien sur ce point. Deux réponses vous attendent toujours sur l'écran de votre client (le calendrier qui déborde, et les couleurs du devis) : https://florianmarrins0978-svg.github.io/Atlas-app/ecran-de-son-client.html</p>
+</main>
+</body>
+</html>

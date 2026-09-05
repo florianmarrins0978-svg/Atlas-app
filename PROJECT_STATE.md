@@ -1,6 +1,6 @@
 # État du projet
 
-**Dernière mise à jour :** 2026-09-03 · branche `main`
+**Dernière mise à jour :** 2026-09-05 · branche `main`
 · dernière migration `drizzle/0073_tva_par_ligne.sql` (ce lot ne touche que
 l’affichage)
 
@@ -16,6 +16,25 @@ suivant, et une ligne fausse coûte plus cher qu'une ligne absente. `git log
 
 Ce fichier dit **où en est le produit**, pas ce qu'on aimerait qu'il soit. Une
 ligne « fait » qui ne l'est pas coûte plus cher qu'une ligne absente.
+
+---
+
+## FAIT : la fiche client n'a plus qu'un visage (5 septembre 2026)
+
+**Sa remarque :** *« ce n'est pas la même que lorsque j'ai cliqué sur nouveau
+chantier […] la note vocale a changé. »*
+
+| | |
+|---|---|
+| **fait** | la fiche client porte l'objet de la DICTÉE à la création comme au retour du devis (§249) |
+| **fait** | elle ne disparaît plus quelques jours après, quand l'audio est purgé |
+| **fait** | devant une note déjà là, l'invite « Appuyez et décrivez le chantier » se tait |
+
+**Ce que cela coûte, et il le saura :** écouter et retirer la note se font
+désormais sur la fiche du CHANTIER, plus sur la fiche client.
+
+**Tenu par** `scripts/test-fiche-client-un-seul-visage-e2e.ts`, vu rouge sur la
+version d'avant.
 
 ---
 

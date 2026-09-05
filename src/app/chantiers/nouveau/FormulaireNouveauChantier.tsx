@@ -74,8 +74,31 @@ export type ChantierRepris = {
    * perdu ce qu'il avait posé, et recommencerait.
    */
   photos: VignettePhoto[];
-  /** `null` : aucune note. `storageKey` à `null` : la note existe, l'audio a été purgé. */
-  note: { storageKey: string | null; dureeSecondes: number | null } | null;
+  /**
+   * Une dictée est DÉJÀ enregistrée sur ce chantier — et c'est tout ce que cet
+   * écran a besoin d'en savoir.
+   *
+   * **Sa remarque du 5 septembre 2026, capture à l'appui :** *« je suis arrivé
+   * sur la page de la fiche client, j'ai dicté mon chantier […] j'ai fait
+   * retour […] ce n'est pas la même que lorsque j'ai cliqué sur nouveau
+   * chantier. Tu verras par toi-même que la note vocale a changé. »*
+   *
+   * Il avait raison, et la mesure le dit : à la création l'objet est le micro
+   * vert (`.atlas-dictee`) ; au retour du devis, le même écran rendait
+   * l'anneau creux du LECTEUR (`.atlas-lecteur`), qui n'offre qu'un geste —
+   * « Poussez l'anneau vers le haut », c'est-à-dire retirer. Un troisième
+   * visage existait même : l'audio purgé après transcription, l'anneau
+   * disparaissait entièrement de la fiche. Trois écrans pour une seule fiche
+   * client.
+   *
+   * **La fiche client ne porte donc plus qu'un objet, celui de la DICTÉE** —
+   * c'est ce qu'elle sert à faire, et c'est l'objet qu'il a laissé deux
+   * minutes plus tôt en envoyant sa note. Écouter et retirer restent sur la
+   * fiche du chantier, où vit le lecteur (`AnneauNoteVocale`, second rendu).
+   *
+   * Ce booléen ne sert plus qu'à taire l'invite : voir `preparationEnCours`.
+   */
+  aUneNote: boolean;
   nomClient: string;
   civilite: Civilite | null;
   telephone: string;
@@ -719,24 +742,35 @@ export default function FormulaireNouveauChantier({
             />
           </div>
 
-          {/* **L'anneau disparaît quand la note existe mais que son audio a été
-              purgé** — même garde que la fiche du chantier : un lecteur sans
-              rien à lire est une promesse fausse. */}
-          {(!reprise?.note || reprise.note.storageKey) && (
-            <div>
-              <AnneauNoteVocale
-                chantierId={reprise?.id ?? chantierCree}
-                assurerChantier={assurerChantier}
-                onDicte={() => setDicteeFaite(true)}
-                onDictee={setDicteeEnCours}
-                // Dès que la note est partie, la chaîne du devis démarre seule
-                // (`auto`, plus bas) : l'anneau cesse alors d'inviter à dicter.
-                preparationEnCours={dicteeFaite}
-                storageKey={reprise?.note?.storageKey ?? null}
-                dureeSecondes={reprise?.note?.dureeSecondes ?? null}
-              />
-            </div>
-          )}
+          {/* **UN SEUL VISAGE, AUX DEUX VISITES — sa remarque du 5 septembre
+              2026** (le détail est sur `aUneNote`, plus haut). Cet écran ne
+              passe donc JAMAIS de note à l'anneau : le lecteur — l'anneau
+              creux, son glisseur « Retirer », son chrono — reste sur la fiche
+              du chantier, qui est faite pour relire. Ici, on dicte.
+
+              **Et il est là dans tous les cas**, y compris quand l'audio a été
+              purgé après transcription : l'ancienne garde faisait disparaître
+              l'anneau entier de la fiche au bout de quelques jours, sans que
+              rien ne le dise. */}
+          <div>
+            <AnneauNoteVocale
+              chantierId={reprise?.id ?? chantierCree}
+              assurerChantier={assurerChantier}
+              onDicte={() => setDicteeFaite(true)}
+              onDictee={setDicteeEnCours}
+              // **L'invite se tait devant une dictée déjà faite.** Dès que la
+              // note est partie, la chaîne du devis démarre seule (`auto`,
+              // plus bas) ; et sur un chantier qui porte DÉJÀ sa note,
+              // « Appuyez et décrivez le chantier » inviterait à recouvrir ce
+              // qu'il a dicté — c'est sa règle du 1ᵉʳ septembre 2026, appliquée
+              // au même endroit pour la même raison. L'objet, lui, ne bouge
+              // pas : il reste appuyable, et une seconde dictée remplace la
+              // première, en le disant (`DevisDepuisDictee`, cas « conflit »).
+              preparationEnCours={dicteeFaite || (reprise?.aUneNote ?? false)}
+              storageKey={null}
+              dureeSecondes={null}
+            />
+          </div>
 
           {/* **L'AVION FAIT TOUT : envoyer, préparer, arriver sur le devis.**
               Sa demande du 30 août 2026 : *« appuyer sur la flèche pour envoyer
